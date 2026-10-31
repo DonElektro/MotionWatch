@@ -2185,6 +2185,12 @@
   "it": "Al margine del Riedmoos",
   "rm": "A l'ur dal Riedmoos"
  },
+ "Am Schluchtweg beim Schild «Absturzgefahr» fotografiert sich jemand. Die Kühe schauen zu.": {
+  "en": "On the gorge path by the «danger of falling» sign someone takes pictures of himself. The cows are watching.",
+  "fr": "Sur le chemin de la gorge, près du panneau «danger de chute», quelqu’un se photographie. Les vaches regardent.",
+  "it": "Sul sentiero della gola, vicino al cartello «pericolo di caduta», qualcuno si fotografa. Le mucche guardano.",
+  "rm": "Sin la senda da la foppa sper la tavla «privel da crudar» sa fotografescha insatgi. Las vatgas guardan tiers."
+ },
  "Am Strand liegt eine Flasche mit einem Zettel – eine Schatzkarte zum Aussichtspunkt.": {
   "en": "A bottle with a note lies on the beach – a treasure map to the viewpoint.",
   "fr": "Sur la plage, une bouteille contient un message – une carte au trésor vers le belvédère.",
@@ -2202,6 +2208,12 @@
   "fr": "Au bord du Gumpisee",
   "it": "Sulla riva del Gumpisee",
   "rm": "A la riva dal Gumpisee"
+ },
+ "Am Ufer des Gumpisees picknicken zwei. Schau genau auf den Hut.": {
+  "en": "Two people have a picnic on the shore of the Gumpisee. Look closely at the hat.",
+  "fr": "Deux personnes pique-niquent au bord du Gumpisee. Regarde bien le chapeau.",
+  "it": "Due persone fanno un picnic sulla riva del Gumpisee. Guarda bene il cappello.",
+  "rm": "Dus fan picnic a la riva dal Gumpisee. Guarda bain il chapè."
  },
  "Am Waldhang gibt es ein dunkles Loch zwischen den Felsen.": {
   "en": "On the wooded slope there is a dark hole between the rocks.",
@@ -2262,6 +2274,12 @@
   "fr": "Fixé à un arbre / un poteau",
   "it": "Fissato a un albero / palo",
   "rm": "Fixà vi d'in pign / pal"
+ },
+ "An einem ruhigen Tag über der Alp Tschuggen in den Himmel schauen – da kommt jemand herunter.": {
+  "en": "On a calm day look into the sky above the Alp Tschuggen – someone is coming down.",
+  "fr": "Par une journée calme, regarde le ciel au-dessus de l’Alp Tschuggen – quelqu’un descend.",
+  "it": "In una giornata calma guarda il cielo sopra l’Alp Tschuggen – qualcuno sta scendendo.",
+  "rm": "En in di quiet guardar en tschiel sur l’Alp Tschuggen – là vegn insatgi engiu."
  },
  "An jedem Punkt umschauen": {
   "en": "Look around at every point",
@@ -2479,6 +2497,12 @@
   "it": "Sul passo Furgga (presso l'ospizio)",
   "rm": "Sin il pass Furgga (tar l'ospizi)"
  },
+ "Auf dem Furggapass einmal nach oben schauen – auf das Dach des Hospizes.": {
+  "en": "On the Furgga pass, look up once – at the roof of the hospice.",
+  "fr": "Sur le col de la Furgga, lève les yeux – vers le toit de l’hospice.",
+  "it": "Sul passo della Furgga guarda in alto – sul tetto dell’ospizio.",
+  "rm": "Sin il pass da la Furgga guardar ina giada ensi – sin il tetg da l’ospizi."
+ },
  "Auf dem Pi bringt MoveEye die neue Version": {
   "en": "On the Pi, MoveEye brings the new version",
   "fr": "Sur le Pi, MoveEye apporte la nouvelle version",
@@ -2604,6 +2628,12 @@
   "fr": "hors de l’image %.0f s · caché %.0f s · perdu %d×",
   "it": "fuori dall’immagine %.0f s · coperto %.0f s · perso %d×",
   "rm": "or dal maletg %.0f s · cuvert %.0f s · pers %d×"
+ },
+ "Aus jedem Loch der alten Mauer schaut das Hermelin heraus, immer schneller – und am Schluss vorne der Kopf und hinten aus einem anderen Loch die schwarze Schwanzspitze.": {
+  "en": "The stoat peeks out of every hole in the old wall, faster and faster – and in the end its head at one end and the black tail tip out of another hole.",
+  "fr": "L’hermine sort la tête de chaque trou du vieux mur, de plus en plus vite – et à la fin la tête d’un côté et le bout noir de la queue d’un autre trou.",
+  "it": "L’ermellino sbuca da ogni buco del vecchio muro, sempre più in fretta – e alla fine la testa da una parte e la punta nera della coda da un altro buco.",
+  "rm": "L’ermellin guarda ord mintga foss dal vegl mir, adina pli svelt – e la fin il chau d’ina vart e la piz naira da la cua ord in auter foss."
  },
  "aus – jeder wählt selbst": {
   "en": "off – everyone chooses",
@@ -2959,6 +2989,18 @@
   "it": "All'Alp Tschuggen",
   "rm": "Tar l'Alp Tschuggen"
  },
+ "Bei der Alp Tschuggen hat eine alte Trockenmauer fünf Löcher. Eine Weile still davor stehen bleiben.": {
+  "en": "Near the Alp Tschuggen an old dry stone wall has five holes. Stand still in front of it for a while.",
+  "fr": "Près de l’Alp Tschuggen, un vieux mur en pierres sèches a cinq trous. Reste un moment immobile devant.",
+  "it": "Vicino all’Alp Tschuggen un vecchio muro a secco ha cinque buchi. Resta fermo davanti per un po’.",
+  "rm": "Sper l’Alp Tschuggen ha in vegl mir sitg tschintg fora. Star in mument quiet davant el."
+ },
+ "Bei der alten Sennerei im Seitental West liegt ein Käse. Leise näher gehen.": {
+  "en": "At the old dairy in the western side valley lies a cheese. Approach quietly.",
+  "fr": "Près de la vieille fromagerie dans le vallon ouest se trouve un fromage. Approche doucement.",
+  "it": "Al vecchio caseificio nella valle laterale ovest c’è un formaggio. Avvicinati piano.",
+  "rm": "Tar la veglia chasaria en la val laterala vest giascha in chaschiel. Ir pian datiers."
+ },
  "Bei der Biwakschachtel": {
   "en": "At the bivouac box",
   "fr": "Au bivouac",
@@ -2983,11 +3025,29 @@
   "it": "Alla rovina Altstafel",
   "rm": "Tar la ruina Altstafel"
  },
+ "Bei Nebel bei der Alp Tschuggen übernachten und gut hinhören. Wenn sie vor MoveEye steht: ein Foto mit MoveEyes Kamera!": {
+  "en": "Spend a foggy night at the Alp Tschuggen and listen carefully. When she stands in front of MoveEye: a photo with MoveEye’s camera!",
+  "fr": "Passe une nuit de brouillard à l’Alp Tschuggen et écoute bien. Quand elle est devant MoveEye : une photo avec la caméra de MoveEye !",
+  "it": "Passa una notte di nebbia all’Alp Tschuggen e ascolta bene. Quando è davanti a MoveEye: una foto con la telecamera di MoveEye!",
+  "rm": "Durmir cun tschajera a l’Alp Tschuggen e tadlar bain. Cur ch’ella stat davant MoveEye: ina foto cun la camera da MoveEye!"
+ },
  "Beim Bungalow (Bungalow-Reihe)": {
   "en": "At the bungalow (bungalow row)",
   "fr": "Au bungalow (rangée de bungalows)",
   "it": "Al bungalow (fila di bungalow)",
   "rm": "Tar il bungalow (retscha da bungalows)"
+ },
+ "Beim Picknick am Gumpisee sucht er den Korkenzieher im Korb, in den Taschen, überall. Er steckt die ganze Zeit an seinem Hut.": {
+  "en": "At the picnic by the Gumpisee he looks for the corkscrew in the basket, in his pockets, everywhere. It is stuck in his hat the whole time.",
+  "fr": "Au pique-nique près du Gumpisee il cherche le tire-bouchon dans le panier, dans ses poches, partout. Il est tout le temps sur son chapeau.",
+  "it": "Al picnic vicino al Gumpisee cerca il cavatappi nel cesto, nelle tasche, dappertutto. È sempre stato infilato nel suo cappello.",
+  "rm": "Al picnic sper il Gumpisee tschertga el il tiracorchs en la canastra, en las giaglioffas, dapertut. El è l’entir temp vi da ses chapè."
+ },
+ "Beim Wegweiser am Gumpisee kommt ab und zu jemand angerannt, der es eilig hat.": {
+  "en": "At the signpost by the Gumpisee now and then someone in a hurry comes running.",
+  "fr": "Au panneau près du Gumpisee arrive parfois quelqu’un en courant, très pressé.",
+  "it": "Al cartello vicino al Gumpisee ogni tanto arriva di corsa qualcuno che ha fretta.",
+  "rm": "Tar la tavla sper il Gumpisee vegn mintgatant insatgi currind ch’ha prescha."
  },
  "Beim Wohnmobil (Wohnmobil-Terrasse)": {
   "en": "At the motorhome (motorhome terrace)",
@@ -3745,6 +3805,12 @@
   "it": "Palco con americana",
   "rm": "Tribuna cun traversa"
  },
+ "CAFFÈ": {
+  "en": "CAFFÈ",
+  "fr": "CAFFÈ",
+  "it": "CAFFÈ",
+  "rm": "CAFFÈ"
+ },
  "Camping": {
   "en": "Camping",
   "fr": "Camping",
@@ -4046,6 +4112,12 @@
   "it": "il telefonino",
   "rm": "il telefonin"
  },
+ "Das Hermelin in der Mauer": {
+  "en": "The stoat in the wall",
+  "fr": "L’hermine dans le mur",
+  "it": "L’ermellino nel muro",
+  "rm": "L’ermellin en il mir"
+ },
  "das Paket": {
   "en": "the parcel",
   "fr": "le colis",
@@ -4063,6 +4135,18 @@
   "fr": "le porte-monnaie",
   "it": "il portafoglio",
   "rm": "la bursa"
+ },
+ "Das Postauto fährt die Passstrasse hinauf und hupt vor der engen Kehre mit dem Dreiklang – das hört man im ganzen Tal.": {
+  "en": "The Postauto bus drives up the pass road and sounds its three-tone horn before the tight hairpin – you hear it in the whole valley.",
+  "fr": "Le car postal monte la route du col et klaxonne avec son triton avant le lacet serré – on l’entend dans toute la vallée.",
+  "it": "L’autopostale sale sulla strada del passo e suona il suo tritono prima del tornante stretto – lo si sente in tutta la valle.",
+  "rm": "L’auto da posta va si per la via dal pass e tuna cun ses tritun avant la storta stretga – quai auda ins en l’entira val."
+ },
+ "Das Schmugglerversteck": {
+  "en": "The smugglers’ hiding place",
+  "fr": "La cachette des contrebandiers",
+  "it": "Il nascondiglio dei contrabbandieri",
+  "rm": "Il zuppader dals contrabandists"
  },
  "das Solarpanel": {
   "en": "the solar panel",
@@ -4358,11 +4442,29 @@
   "it": "Il guardiano bot",
   "rm": "Il guardian-bot"
  },
+ "Der geheime See": {
+  "en": "The secret lake",
+  "fr": "Le lac secret",
+  "it": "Il lago segreto",
+  "rm": "Il lai zuppà"
+ },
  "Der Himmel ist ganz klar.": {
   "en": "The sky is completely clear.",
   "fr": "Le ciel est tout dégagé.",
   "it": "Il cielo è limpidissimo.",
   "rm": "Il tschiel è tut cler."
+ },
+ "Der Holzski im Gletscher": {
+  "en": "The wooden ski in the glacier",
+  "fr": "Le ski en bois dans le glacier",
+  "it": "Lo sci di legno nel ghiacciaio",
+  "rm": "Il skis da lain en il glatscher"
+ },
+ "Der Käse von 1897": {
+  "en": "The cheese of 1897",
+  "fr": "Le fromage de 1897",
+  "it": "Il formaggio del 1897",
+  "rm": "Il chaschiel da 1897"
  },
  "Der Mensch": {
   "en": "The human",
@@ -4424,6 +4526,12 @@
   "it": "",
   "rm": ""
  },
+ "Der Schneehase hat schon sein Winterfell – nur liegt noch kein Schnee. Er sitzt ganz still und glaubt, man sehe ihn nicht. Immer neben dem einzigen weissen Ding weit und breit.": {
+  "en": "The mountain hare already wears its white winter coat – but there is no snow yet. It sits perfectly still and believes nobody can see it. Always next to the only white thing far and wide.",
+  "fr": "Le lièvre variable a déjà son pelage d’hiver – mais il n’y a pas encore de neige. Il reste immobile et croit qu’on ne le voit pas. Toujours à côté de la seule chose blanche à la ronde.",
+  "it": "La lepre variabile ha già il manto invernale – ma la neve non c’è ancora. Sta immobile e crede che nessuno la veda. Sempre accanto all’unica cosa bianca nei dintorni.",
+  "rm": "Il lieur da muntogna ha gia sia pellitscha d’enviern – mo i n’ha anc betg naiv. El sesa quiet e crai che nagin al veza. Adina sper l’unica chaussa alva en la vischinanza."
+ },
  "Der sieht schon Sterne": {
   "en": "That one is already seeing stars",
   "fr": "Celui-là voit déjà des étoiles",
@@ -4454,11 +4562,29 @@
   "it": "",
   "rm": ""
  },
+ "Der Steinmann mit Augen": {
+  "en": "The cairn with eyes",
+  "fr": "Le cairn qui a des yeux",
+  "it": "L’ometto con gli occhi",
+  "rm": "Il crap-um cun egls"
+ },
+ "Der Trailrunner fragt den Wegweiser": {
+  "en": "The trail runner asks the signpost",
+  "fr": "Le traileur demande au panneau",
+  "it": "Il trail runner chiede al cartello",
+  "rm": "Il currider da muntogna dumonda la tavla"
+ },
  "Der Vergleich läuft schon.": {
   "en": "The comparison is already running.",
   "fr": "La comparaison est déjà en cours.",
   "it": "Il confronto è già in corso.",
   "rm": "La cumparegliaziun è gia en cursa."
+ },
+ "Der weisse Hase im braunen Herbst": {
+  "en": "The white hare in the brown autumn",
+  "fr": "Le lièvre blanc dans l’automne brun",
+  "it": "La lepre bianca nell’autunno marrone",
+  "rm": "Il lieur alv en l’atun brin"
  },
  "der Wächter des Simulators (geht ohne Pi)": {
   "en": "the simulator’s guard (works without Pi)",
@@ -4562,6 +4688,12 @@
   "it": "La posizione GPS si allontana a 1.6 m/s (come a piedi). MoveEye richiede «Modulo GPS» e «Allarme furto» e deve essere armato. Premere di nuovo = rimettere.",
   "rm": "La posiziun GPS sa spusta cun 1.6 m/s (sco a pe). MoveEye dovra «Modul GPS» ed «Alarm d’engul» e sto esser activà. Smatgar anc ina giada = metter enavos."
  },
+ "Die Gämse auf dem Hospiz": {
+  "en": "The chamois on the hospice",
+  "fr": "Le chamois sur l’hospice",
+  "it": "Il camoscio sull’ospizio",
+  "rm": "Il chamutsch sin l’ospizi"
+ },
  "die Handtasche": {
   "en": "the handbag",
   "fr": "le sac à main",
@@ -4615,6 +4747,12 @@
   "fr": "L’aide IA n’existe que dans une manche où un humain surveille avec le déclencheur.",
   "it": "L’aiuto IA esiste solo in un turno in cui una persona sorveglia con lo scatto.",
   "rm": "L’agid IA dat i mo en ina runda, en la quala in uman surveglia cun il sajet."
+ },
+ "Die Kreuze in den Steinen führen hinauf zu einem grossen Block. Darunter nachschauen.": {
+  "en": "The crosses in the stones lead up to a big boulder. Look underneath.",
+  "fr": "Les croix dans les pierres mènent à un gros bloc. Regarde dessous.",
+  "it": "Le croci nelle pietre portano a un grande masso. Guarda sotto.",
+  "rm": "Las cruschs en ils crappa mainan si tar in grond bloc. Guardar sutvart."
  },
  "die Kühlbox": {
   "en": "the cool box",
@@ -4676,11 +4814,23 @@
   "it": "Il turno non parte: %s",
   "rm": "La runda na cumenza betg: %s"
  },
+ "Die Salamander-Prozession": {
+  "en": "The salamander procession",
+  "fr": "La procession des salamandres",
+  "it": "La processione delle salamandre",
+  "rm": "La processiun dals salamanders"
+ },
  "Die Schatzkarte aus der Flaschenpost führt hierher.": {
   "en": "The treasure map from the bottle leads here.",
   "fr": "La carte au trésor de la bouteille mène ici.",
   "it": "La mappa del tesoro della bottiglia porta qui.",
   "rm": "La charta da stgazi da la buttiglia maina nà qua."
+ },
+ "Die Schmugglerroute": {
+  "en": "The smugglers’ route",
+  "fr": "La route des contrebandiers",
+  "it": "La via dei contrabbandieri",
+  "rm": "La ruta dals contrabandists"
  },
  "Die Sonne geht auf: bald sieht dich die Kamera wieder besser.": {
   "en": "The sun rises: soon the camera sees you better again.",
@@ -5163,6 +5313,12 @@
   "it": "Una volpe si avvicina di soppiatto – sst!",
   "rm": "Ina vulp sa stula natiers – pst!"
  },
+ "Ein Gast der Selbstversorgerhütte fegt die Veranda – ein Windstoss, und alles liegt wieder da. Beim dritten Mal fegt er einfach in die andere Richtung.": {
+  "en": "A guest of the self-catering hut sweeps the veranda – one gust, and everything is back. The third time he simply sweeps the other way.",
+  "fr": "Un hôte de la cabane non gardiennée balaie la véranda – un coup de vent, et tout est de retour. La troisième fois il balaie simplement dans l’autre sens.",
+  "it": "Un ospite della capanna autogestita spazza la veranda – una raffica, e tutto è di nuovo lì. La terza volta spazza semplicemente dall’altra parte.",
+  "rm": "In giast da la chamona senza chamonier scua la veranda – in buf da vent, e tut è puspè là. La terza giada scua el simplamain en l’autra direcziun."
+ },
  "Ein gemeinsames Erscheinungsbild (Web, Fenster, Simulator)": {
   "en": "One common look (web, window, simulator)",
   "fr": "Une apparence commune (web, fenêtre, simulateur)",
@@ -5174,6 +5330,12 @@
   "fr": "Un orage arrive",
   "it": "Arriva un temporale",
   "rm": "In urizi vegn"
+ },
+ "Ein Gleitschirm kreist über der Alp herunter und landet mitten auf der Weide. Die Kühe kommen sofort und beschnuppern den grossen bunten Schirm.": {
+  "en": "A paraglider circles down over the alp and lands in the middle of the pasture. The cows come at once and sniff the big colourful wing.",
+  "fr": "Un parapente descend en spirale au-dessus de l’alpage et atterrit au milieu du pâturage. Les vaches arrivent aussitôt et reniflent la grande voile colorée.",
+  "it": "Un parapendio scende in spirale sopra l’alpe e atterra in mezzo al pascolo. Le mucche arrivano subito e annusano la grande vela colorata.",
+  "rm": "In parapendist gira sur l’alp engiu ed atterra amez la pastgira. Las vatgas vegnan immediat e sniffan il grond parasol multicolur."
  },
  "Ein Kind kommt zum Spielen!": {
   "en": "A child comes to play!",
@@ -5192,6 +5354,12 @@
   "fr": "Un lynx – tout doucement !",
   "it": "Una lince – silenziosissima!",
   "rm": "In luf tscherver – fitg quiet!"
+ },
+ "Ein Läufer bleibt beim Wegweiser stehen, trippelt an Ort, zeigt auf eine Tafel und wartet auf eine Antwort. Er rennt los – falsch –, kommt zurück und nickt dem Wegweiser dankbar zu.": {
+  "en": "A runner stops at the signpost, jogs on the spot, points at one arm and waits for an answer. He runs off – the wrong way –, comes back and nods gratefully to the signpost.",
+  "fr": "Un coureur s’arrête au panneau, trottine sur place, montre une flèche et attend une réponse. Il part – dans la mauvaise direction –, revient et remercie le panneau d’un signe de tête.",
+  "it": "Un corridore si ferma al cartello, corricchia sul posto, indica una freccia e aspetta una risposta. Parte – dalla parte sbagliata –, torna e fa un cenno di ringraziamento al cartello.",
+  "rm": "In currider sa ferma tar la tavla, trippla sin il lieu, mussa sin ina frizza e spetga ina resposta. El cumenza a currer – fallà –, turna e fa in segn d’engraziament a la tavla."
  },
  "Ein Mensch spaziert vorbei. Sieht MoveEye ihn?": {
   "en": "A person walks past. Does MoveEye see them?",
@@ -5252,6 +5420,12 @@
   "fr": "Un sentier derrière les WC mène à une cabane dans un arbre avec une échelle de corde.",
   "it": "Un sentiero dietro i WC porta a una capanna sull’albero con una scala di corda.",
   "rm": "Ina senda davos il WC maina tar ina chamona en la planta cun stgala da suga."
+ },
+ "Ein Wanderer macht Selfies und geht dabei rückwärts Richtung Schluchtkante. Eine Kuh stupst ihn von der Seite nach vorne – ihm passiert nichts, und das nächste Selfie ist mit der Kuh.": {
+  "en": "A hiker takes selfies and walks backwards towards the edge of the gorge. A cow nudges him forward from the side – nothing happens to him, and the next selfie is with the cow.",
+  "fr": "Un randonneur fait des selfies en reculant vers le bord de la gorge. Une vache le pousse de côté vers l’avant – il ne lui arrive rien, et le selfie suivant est avec la vache.",
+  "it": "Un escursionista si fa dei selfie camminando all’indietro verso il bordo della gola. Una mucca lo spinge in avanti di lato – non gli succede niente, e il selfie successivo è con la mucca.",
+  "rm": "In viandant fa selfies e va enavos vers l’ur da la foppa. Ina vatga al stumpla da la vart enavant – ad el na capita nagut, ed il proxim selfie è cun la vatga."
  },
  "Ein Wildschwein wühlt im Boden!": {
   "en": "A wild boar digs in the ground!",
@@ -5871,6 +6045,12 @@
   "fr": "",
   "it": "",
   "rm": ""
+ },
+ "Fegen gegen den Wind": {
+  "en": "Sweeping against the wind",
+  "fr": "Balayer contre le vent",
+  "it": "Spazzare controvento",
+  "rm": "Scuar cunter il vent"
  },
  "Fehlalarm": {
   "en": "False alarm",
@@ -7182,6 +7362,12 @@
   "it": "Lingua glaciale con crepacci",
   "rm": "Lieunga da glatscher cun sfessas"
  },
+ "Glocken im Nebel": {
+  "en": "Bells in the fog",
+  "fr": "Cloches dans le brouillard",
+  "it": "Campanacci nella nebbia",
+  "rm": "Zampuogns en la tschajera"
+ },
  "glTF %s (glb %d), Erweiterungen: %s": {
   "en": "glTF %s (glb %d), extensions: %s",
   "fr": "glTF %s (glb %d), extensions : %s",
@@ -7711,6 +7897,12 @@
   "it": "Azzurro",
   "rm": "Blau tschiel"
  },
+ "Hinter dem Grat, nur über einen schmalen Pfad: ein kleiner stiller See. Am Morgen und am Abend springen Forellen, eine Steinbank wartet am Ufer.": {
+  "en": "Behind the ridge, only by a narrow path: a small quiet lake. In the morning and evening trout rise, a stone bench waits on the shore.",
+  "fr": "Derrière l’arête, seulement par un sentier étroit : un petit lac tranquille. Le matin et le soir les truites sautent, un banc de pierre attend sur la rive.",
+  "it": "Dietro la cresta, solo per un sentiero stretto: un piccolo lago tranquillo. Al mattino e alla sera saltano le trote, una panca di pietra aspetta sulla riva.",
+  "rm": "Davos la creppa, mo sur ina senda stretga: in pitschen lai quiet. La damaun e la saira sigleschan las litgivas, in banc da crap spetga a la riva."
+ },
  "hinter dem Rover": {
   "en": "behind the rover",
   "fr": "derrière le rover",
@@ -8035,11 +8227,23 @@
   "it": "Trascinare nell’immagine = girare la testa",
   "rm": "Trair en il maletg = volver il chau"
  },
+ "Im dichten Nebel hört man nur Kuhglocken, mal links, mal rechts, immer näher – und plötzlich steht eine Kuh direkt vor MoveEye und schaut in die Kamera. Fotografiert mit MoveEyes Kamera.": {
+  "en": "In thick fog you only hear cow bells, left, right, closer and closer – and suddenly a cow stands right in front of MoveEye and looks into the camera. Photographed with MoveEye’s camera.",
+  "fr": "Dans le brouillard épais on n’entend que des cloches, à gauche, à droite, toujours plus près – et soudain une vache se tient juste devant MoveEye et regarde la caméra. Photographiée avec la caméra de MoveEye.",
+  "it": "Nella nebbia fitta si sentono solo campanacci, a sinistra, a destra, sempre più vicini – e all’improvviso una mucca è proprio davanti a MoveEye e guarda nella telecamera. Fotografata con la telecamera di MoveEye.",
+  "rm": "En la tschajera spessa auda ins mo zampuogns, ina giada a sanestra, ina giada a dretga, adina pli datiers – e cun ina giada stat ina vatga directamain davant MoveEye e guarda en la camera. Fotografada cun la camera da MoveEye."
+ },
  "Im Fenster «Autologon» das Windows-Passwort eingeben und «Enable» drücken": {
   "en": "In the «Autologon» window enter the Windows password and press «Enable»",
   "fr": "Dans la fenêtre «Autologon», saisir le mot de passe Windows et appuyer sur «Enable»",
   "it": "Nella finestra «Autologon» inserire la password di Windows e premere «Enable»",
   "rm": "En la fanestra «Autologon» endatar il pled-clav da Windows e smatgar «Enable»"
+ },
+ "Im flachen Abendlicht sieht man auf einmal Kreuze, in die Steine geritzt – eine alte Schmugglerroute über den Pass, zu einem Versteck.": {
+  "en": "In the low evening light you suddenly see crosses scratched into the stones – an old smugglers’ route over the pass, to a hiding place.",
+  "fr": "Dans la lumière rasante du soir on voit soudain des croix gravées dans les pierres – une ancienne route de contrebandiers par le col, vers une cachette.",
+  "it": "Nella luce radente della sera si vedono all’improvviso croci incise nelle pietre – un’antica via dei contrabbandieri sul passo, verso un nascondiglio.",
+  "rm": "En la glisch bassa da la saira vesan ins cun ina giada cruschs sgrattadas en ils crappa – ina veglia ruta da contrabandists sur il pass, tar in zuppader."
  },
  "im Gewitter": {
   "en": "in the thunderstorm",
@@ -8053,11 +8257,41 @@
   "it": "Più difficile da riconoscere nel verde. Ma: su ghiaia, asfalto e di notte non serve – e sei un po’ più lento.",
   "rm": "En il verd pli grev d’identifitgar. Ma: sin gera, asfalt e da notg na nizza ella nagut – e ti es in pau pli plaun."
  },
+ "Im Herbst unter dem Grat beim Murmelboden: etwas Weisses sitzt da, wo noch gar kein Schnee liegt.": {
+  "en": "In autumn below the ridge near the Murmelboden: something white sits where there is no snow at all.",
+  "fr": "En automne sous l’arête près du Murmelboden : quelque chose de blanc est assis là où il n’y a pas encore de neige.",
+  "it": "In autunno sotto la cresta vicino al Murmelboden: qualcosa di bianco sta seduto dove non c’è ancora neve.",
+  "rm": "En l’atun sut la creppa dal Murmelboden: insatge alv sesa là nua ch’i n’ha anc nagina naiv."
+ },
  "Im Nebel sieht die Kamera schlechter – die Wärmebild-Kamera auch ein bisschen.": {
   "en": "In fog the camera sees worse – the thermal camera a bit too.",
   "fr": "Dans le brouillard, la caméra voit moins bien – la caméra thermique un peu aussi.",
   "it": "Nella nebbia la telecamera vede peggio – un po’ anche la termocamera.",
   "rm": "En la tschajera vesa la camera mender – la camera termica er in pau."
+ },
+ "Im Sommer am Rand des Wyssgletschers, beim Gletscherweg: etwas Braunes im Eis.": {
+  "en": "In summer at the edge of the Wyssgletscher, by the glacier path: something brown in the ice.",
+  "fr": "En été au bord du Wyssgletscher, près du chemin du glacier : quelque chose de brun dans la glace.",
+  "it": "D’estate al margine del Wyssgletscher, vicino al sentiero del ghiacciaio: qualcosa di marrone nel ghiaccio.",
+  "rm": "La stad a l’ur dal Wyssgletscher, sper la senda dal glatscher: insatge brin en il glatsch."
+ },
+ "Im Sommer schmilzt am Wyssgletscher ein alter Holzski aus dem Eis, daneben ein Bambusstock mit Lederteller. Es tropft – das Eis gibt ihn langsam her.": {
+  "en": "In summer an old wooden ski melts out of the ice of the Wyssgletscher, beside it a bamboo pole with a leather basket. It drips – the ice slowly gives it back.",
+  "fr": "En été, un vieux ski en bois sort de la glace du Wyssgletscher, à côté un bâton en bambou avec rondelle en cuir. Ça goutte – la glace le rend lentement.",
+  "it": "D’estate dal ghiaccio del Wyssgletscher affiora un vecchio sci di legno, accanto un bastone di bambù con rotella di cuoio. Gocciola – il ghiaccio lo restituisce piano piano.",
+  "rm": "La stad smalescha ord il glatsch dal Wyssgletscher in vegl skis da lain, sper el in bastun da bambus cun rodella da curom. I dagutta – il glatsch al dat plaun a plaun enavos."
+ },
+ "Im Steinmann-Wald beim Biwak: einer von über zweihundert schaut zurück.": {
+  "en": "In the cairn forest near the bivouac: one of more than two hundred looks back.",
+  "fr": "Dans la forêt de cairns près du bivouac : l’un des plus de deux cents te regarde.",
+  "it": "Nel bosco di ometti vicino al bivacco: uno degli oltre duecento ricambia lo sguardo.",
+  "rm": "En il guaud da crap-umens sper il bivac: in da passa duatschient guarda enavos."
+ },
+ "Im Steinmann-Wald hat einer zwei Augen. Sie schauen dir nach – und wenn du zu nahe kommst, macht er sie zu und ist wieder nur ein Steinmann.": {
+  "en": "In the forest of cairns one has two eyes. They follow you – and when you come too close, it shuts them and is just a cairn again.",
+  "fr": "Dans la forêt de cairns, l’un d’eux a deux yeux. Ils te suivent – et si tu t’approches trop, il les ferme et redevient un simple cairn.",
+  "it": "Nel bosco di ometti uno ha due occhi. Ti seguono – e se ti avvicini troppo, li chiude e torna a essere solo un ometto.",
+  "rm": "En il guaud da crap-umens ha in dus egls. Els ta guardan suenter – e sche ti vegns memia datiers, als serra el ed è puspè mo in crap-um."
  },
  "Im Wald über dem Pfadi-Lager ist eine kleine Höhle. Nachts leuchten dort Glühwürmchen.": {
   "en": "In the forest above the scout camp there is a small cave. At night fireflies glow there.",
@@ -8130,6 +8364,18 @@
   "fr": "Cliquer dans le monde = point, clic droit sur un point = l’enlever",
   "it": "Cliccare nel mondo = punto, clic destro su un punto = via",
   "rm": "Cliccar en il mund = punct, clic dretg sin in punct = davent"
+ },
+ "In einer ganz klaren Winternacht auf dem Furggapass auf die Steinbank sitzen und nach Norden schauen. Es braucht Glück.": {
+  "en": "On a perfectly clear winter night sit on the stone bench on the Furgga pass and look north. It takes luck.",
+  "fr": "Par une nuit d’hiver très claire, assieds-toi sur le banc de pierre du col de la Furgga et regarde vers le nord. Il faut de la chance.",
+  "it": "In una notte d’inverno limpidissima siediti sulla panca di pietra del passo della Furgga e guarda a nord. Ci vuole fortuna.",
+  "rm": "En ina notg d’enviern fitg clera seser sin il banc da crap sin il pass da la Furgga e guardar vers il nord. I dovra fortuna."
+ },
+ "In einer seltenen, ganz klaren Winternacht steht tief im Norden ein schwacher roter Vorhang am Himmel, unten ein wenig grün. In der Schweiz sieht man das nur ein paar Mal in vielen Jahren.": {
+  "en": "On a rare, perfectly clear winter night a faint red curtain hangs low in the northern sky, a little green below. In Switzerland you see this only a few times in many years.",
+  "fr": "Par une rare nuit d’hiver très claire, un faible rideau rouge se tient bas dans le ciel au nord, un peu de vert en dessous. En Suisse on ne le voit que quelques fois en bien des années.",
+  "it": "In una rara notte d’inverno limpidissima, basso a nord c’è una debole tenda rossa nel cielo, sotto un po’ di verde. In Svizzera lo si vede solo poche volte in molti anni.",
+  "rm": "En ina rara notg d’enviern fitg clera stat bass en il nord ina tenda debla cotschna en tschiel, sutvart in pau verd. En Svizra vesan ins quai mo paucas giadas en blers onns."
  },
  "In MoveEye: Reiter Simulator → Verbindung: die Adresse dieses PCs eintragen (gleiches Netz) – oder unten den Tunnel nutzen.": {
   "en": "",
@@ -9517,6 +9763,12 @@
   "fr": "Carte nationale",
   "it": "Carta nazionale",
   "rm": "Charta naziunala"
+ },
+ "Landung auf der Kuhweide": {
+  "en": "Landing on the cow pasture",
+  "fr": "Atterrissage dans le pâturage",
+  "it": "Atterraggio sul pascolo",
+  "rm": "Atterrar sin la pastgira"
  },
  "Lang – Zeit, viele Lockvögel zu testen.": {
   "en": "Long – time to test many decoys.",
@@ -11009,6 +11261,18 @@
   "it": "secondo il mese (stagione)",
   "rm": "tenor il mais (stagiun)"
  },
+ "Nach dem Regen ziehen schwarze Alpensalamander im Gänsemarsch über den Weg. Einer kommt ihnen entgegen, stösst mit der Nase an – und kehrt um. Im Wärmebild sieht man sie kaum: sie sind so kalt wie der Boden.": {
+  "en": "After the rain, black alpine salamanders cross the path in single file. One comes the other way, bumps noses – and turns round. In the thermal picture you hardly see them: they are as cold as the ground.",
+  "fr": "Après la pluie, des salamandres noires traversent le chemin à la queue leu leu. L’une arrive en sens inverse, se cogne le nez – et fait demi-tour. Dans l’image thermique on les voit à peine : elles sont aussi froides que le sol.",
+  "it": "Dopo la pioggia le salamandre nere attraversano il sentiero in fila indiana. Una arriva in senso contrario, sbatte il naso – e torna indietro. Nell’immagine termica si vedono appena: sono fredde come il terreno.",
+  "rm": "Suenter la plievgia traversan salamanders nairs da l’Alp la senda in colonna. In vegn encunter, fa nas cunter nas – e volva. En il maletg termic na vesan ins strusch els: els èn uschè fraids sco il terren."
+ },
+ "Nach einem Regen auf dem Schluchtweg unterhalb der Alp auf den Boden schauen.": {
+  "en": "After rain, look at the ground on the gorge path below the alp.",
+  "fr": "Après une pluie, regarde le sol sur le chemin de la gorge sous l’alpage.",
+  "it": "Dopo una pioggia guarda il terreno sul sentiero della gola sotto l’alpe.",
+  "rm": "Suenter ina plievgia guardar sin il terren da la senda da la foppa sut l’alp."
+ },
  "Nach einem Update kurz zeigen, was neu ist (und was als Nächstes kommt)": {
   "en": "After an update, briefly show what is new (and what comes next)",
   "fr": "Après une mise à jour, montrer brièvement ce qui est nouveau (et ce qui suit)",
@@ -11616,6 +11880,12 @@
   "it": "Nord – cliccare: guardare a nord",
   "rm": "Nord – cliccar: guardar vers nord"
  },
+ "Nordlicht über dem Pass": {
+  "en": "Northern lights over the pass",
+  "fr": "Aurore boréale sur le col",
+  "it": "Aurora boreale sul passo",
+  "rm": "Glisch dal nord sur il pass"
+ },
  "Nordlicht-Platz (seltene klare Winternächte)": {
   "en": "Northern lights spot (rare clear winter nights)",
   "fr": "Point des aurores boréales (rares nuits d'hiver claires)",
@@ -11718,6 +11988,12 @@
   "it": "Nüdelistock (vetta est)",
   "rm": "Nüdelistock (piz ost)"
  },
+ "Ob dem Furggapass, östlich vom Bunker: am Abend, wenn die Sonne tief steht, die Steine genau anschauen.": {
+  "en": "Above the Furgga pass, east of the bunker: in the evening, when the sun is low, look closely at the stones.",
+  "fr": "Au-dessus du col de la Furgga, à l’est du bunker : le soir, quand le soleil est bas, regarde bien les pierres.",
+  "it": "Sopra il passo della Furgga, a est del bunker: la sera, quando il sole è basso, guarda bene le pietre.",
+  "rm": "Sur il pass da la Furgga, a l’ost dal bunker: la saira, cur che il sulegl stat bass, guardar exactamain ils crappa."
+ },
  "Ob dem Tüfelsschlund": {
   "en": "Above the Tüfelsschlund",
   "fr": "Au-dessus du Tüfelsschlund",
@@ -11729,6 +12005,12 @@
   "fr": "Ob em Schwarzseeli",
   "it": "Ob em Schwarzseeli",
   "rm": "Ob em Schwarzseeli"
+ },
+ "Oben auf dem First des Hospizes geht eine Gämse spazieren, als wäre das Dach ein Grat. Am Ende legt sie sich hin und schaut auf den Parkplatz.": {
+  "en": "Up on the ridge of the hospice roof a chamois takes a walk as if the roof were a mountain ridge. At the end it lies down and looks at the car park.",
+  "fr": "Sur le faîte de l’hospice un chamois se promène comme si le toit était une arête. À la fin il se couche et regarde le parking.",
+  "it": "Sul colmo dell’ospizio passeggia un camoscio, come se il tetto fosse una cresta. Alla fine si sdraia e guarda il parcheggio.",
+  "rm": "Sisum il culmen da l’ospizi spassegia in chamutsch, sco sch’il tetg fiss ina creppa. La fin sa metta el giu e guarda sin il plazzal da parcar."
  },
  "Oberflächen (Holz, Kies, Rasen, Beton) für eigene Modelle in Blender.": {
   "en": "Surfaces (wood, gravel, lawn, concrete) for your own models in Blender.",
@@ -13794,6 +14076,12 @@
   "it": "Capanna autogestita Alp Tschuggen",
   "rm": "Tegia senza survegliader Alp Tschuggen"
  },
+ "Selfie mit Kuh": {
+  "en": "Selfie with a cow",
+  "fr": "Selfie avec une vache",
+  "it": "Selfie con la mucca",
+  "rm": "Selfie cun vatga"
+ },
  "Selfie-Wanderer an der Schluchtkante, Kuh stupst": {
   "en": "Selfie hiker at the gorge edge, a cow nudges",
   "fr": "Randonneur selfie au bord de la gorge, une vache pousse",
@@ -15097,6 +15385,12 @@
   "it": "",
   "rm": ""
  },
+ "Tagsüber bei den Kehren der Passstrasse warten und hinhören.": {
+  "en": "During the day, wait by the hairpins of the pass road and listen.",
+  "fr": "En journée, attends près des lacets de la route du col et écoute.",
+  "it": "Di giorno aspetta vicino ai tornanti della strada del passo e ascolta.",
+  "rm": "Durant il di spetgar tar las storta da la via dal pass e tadlar."
+ },
  "tagsüber etwa 30 m": {
   "en": "by day about 30 m",
   "fr": "le jour environ 30 m",
@@ -15794,6 +16088,12 @@
   "it": "Moto",
   "rm": "Moto"
  },
+ "Tü-ta-to in den Kehren": {
+  "en": "Tü-ta-to in the hairpins",
+  "fr": "Tü-ta-to dans les lacets",
+  "it": "Tü-ta-to nei tornanti",
+  "rm": "Tü-ta-to en las storta"
+ },
  "Tüfelsschlund": {
   "en": "Tüfelsschlund",
   "fr": "Tüfelsschlund",
@@ -15955,6 +16255,12 @@
   "fr": "Sous un carton (une caisse qui bouge)",
   "it": "Sotto uno scatolone (una scatola che si muove)",
   "rm": "Sut in cartun (ina chista che sa mova)"
+ },
+ "Unter einer schrägen Steinplatte steht eine alte Holzkiste, darauf verblasst: CAFFÈ. Leer – schon lange.": {
+  "en": "Under a slanting stone slab there is an old wooden box, faded on it: CAFFÈ. Empty – for a long time.",
+  "fr": "Sous une dalle inclinée se trouve une vieille caisse en bois, avec l’inscription pâlie : CAFFÈ. Vide – depuis longtemps.",
+  "it": "Sotto una lastra di pietra inclinata c’è una vecchia cassa di legno, con la scritta sbiadita: CAFFÈ. Vuota – da tanto tempo.",
+  "rm": "Sut ina platta da crap sbiechia stat ina veglia chista da lain, sin quella smarvida: CAFFÈ. Vida – gia daditg."
  },
  "Unterteil vorne, fest (unter dem Kopf, dreht nicht)": {
   "en": "Base front, fixed (below the head, does not turn)",
@@ -16460,6 +16766,12 @@
   "it": "Dalla fine del pontile si vede una vecchia barca nel lago – sporge solo l’albero.",
   "rm": "Da la fin dal punt vesan ins ina veglia bartga en il lai – mo il mast guarda ora."
  },
+ "Vom Gratspitz führt ein schmaler weiss-blau-weisser Pfad nach Westen hinter den Grat.": {
+  "en": "From the Gratspitz a narrow white-blue-white path leads west behind the ridge.",
+  "fr": "Du Gratspitz, un étroit sentier blanc-bleu-blanc mène vers l’ouest derrière l’arête.",
+  "it": "Dal Gratspitz un sentiero stretto bianco-blu-bianco porta a ovest dietro la cresta.",
+  "rm": "Dal Gratspitz maina ina senda stretga alv-blau-alva vers vest davos la creppa."
+ },
  "vom Jäger getroffen, nicht gemeldet": {
   "en": "hit by the hunter, not reported",
   "fr": "touché par le chasseur, pas signalé",
@@ -16495,6 +16807,18 @@
   "fr": "Spontanément",
   "it": "Da soli",
   "rm": "Da sasez"
+ },
+ "Vor der Hütte Alp Tschuggen wird geputzt. Ob der Wind mithilft?": {
+  "en": "Someone is cleaning in front of the Alp Tschuggen hut. Will the wind help?",
+  "fr": "On nettoie devant la cabane de l’Alp Tschuggen. Le vent va-t-il aider ?",
+  "it": "Davanti alla capanna dell’Alp Tschuggen si fanno le pulizie. Il vento darà una mano?",
+  "rm": "Davant la chamona da l’Alp Tschuggen vegn nettegià. Gida il vent?"
+ },
+ "Vor der verlassenen Sennerei liegt ein uralter Käselaib, auf der Rinde «1897». Er ist bewohnt: aus einem Loch schaut eine Maus, oben ab und zu eine junge.": {
+  "en": "In front of the abandoned dairy lies an ancient cheese wheel, on the rind «1897». It is inhabited: a mouse looks out of a hole, now and then a young one at the top.",
+  "fr": "Devant la fromagerie abandonnée se trouve une très vieille meule, sur la croûte «1897». Elle est habitée : une souris sort d’un trou, et parfois une petite en haut.",
+  "it": "Davanti al caseificio abbandonato c’è una forma antichissima, sulla crosta «1897». È abitata: da un buco spunta un topo, e ogni tanto in alto uno piccolo.",
+  "rm": "Davant la chasaria bandunada giascha in chaschiel vegl vegl, sin la crusta «1897». El è abità: ord in foss guarda ina mieur, sisum mintgatant ina giuvna."
  },
  "Vorbereitung: Kopf zur Mitte …": {
   "en": "Preparing: head to the centre …",
@@ -17397,6 +17721,12 @@
   "fr": "Wi-Fi coupé",
   "it": "Wi-Fi assente",
   "rm": "WLAN davent"
+ },
+ "Wo ist der Korkenzieher?": {
+  "en": "Where is the corkscrew?",
+  "fr": "Où est le tire-bouchon ?",
+  "it": "Dov’è il cavatappi?",
+  "rm": "Nua è il tiracorchs?"
  },
  "wohin?": {
   "en": "where to?",

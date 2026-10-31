@@ -952,6 +952,10 @@ class Glocken extends Vig:
 				if ew.walk(cow, tgt, 0.9, dt, null, 3.0) or st_t > 15.0:
 					go("stare")
 			"stare":                                           # looks at MoveEye, chews; bells of the others far away
+				if st_t < 0.05 and ew.ppos(cow).distance_to(Vector3(tgt.x, 0, tgt.z)) > 2.0:   # (tests: jumped here)
+					ew.place(cow, tgt)
+					ew.face(cow, ew.VL(ew.head_pos()) - tgt)
+					cow.visible = true
 				ew.stop(cow, dt)
 				ew.idle(cow, "stare")
 				far_t -= dt
@@ -2212,7 +2216,7 @@ func _register() -> void:
 	var gse: Geheimsee = V["geheimer_see"]
 	_reg(e, "berg.geheimer_see", T.t("Der geheime See"),
 			T.t("Hinter dem Grat, nur über einen schmalen Pfad: ein kleiner stiller See. Am Morgen und am Abend springen Forellen, eine Steinbank wartet am Ufer."),
-			T.t("Vom Gratspitz führt ein schmaler blau-weisser Pfad nach Westen hinter den Grat."), "🏞", "ort",
+			T.t("Vom Gratspitz führt ein schmaler weiss-blau-weisser Pfad nach Westen hinter den Grat."), "🏞", "ort",
 			W(gse.c) + Vector3(0, 1.0, 0), Vector3(20.0, 2.0, 14.0), 45.0)
 	if not e.found.is_connected(_on_found):
 		e.found.connect(_on_found)
@@ -2265,6 +2269,10 @@ func control(d: Dictionary) -> Dictionary:
 					by_id[id].go(str(d.get("state", "")))
 				if d.has("t"):
 					by_id[id].st_t = float(d["t"])
+				var sv = d.get("set", {})
+				if typeof(sv) == TYPE_DICTIONARY:              # tests: a few own values (e.g. {"dist": 300} for the Postauto)
+					for k in sv:
+						by_id[id].set(str(k), sv[k])
 				by_id[id].hold = bool(d.get("hold", false))
 				return {"ok": true, "info": by_id[id].info()}
 			return {"ok": false, "error": "unknown", "ids": by_id.keys()}
