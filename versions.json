@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 11:31",
+ "generated": "2026-10-31 11:37",
  "versions": [
   {
-   "version": "2.98.91",
-   "file": "webcam_bewegung_2_98_91.py",
+   "version": "2.98.92",
+   "file": "webcam_bewegung_2_98_92.py",
    "url": "",
-   "sha256": "d65a71a83e7367217e4f0ab8bf3ea3d4ebbc6d7eecfa449ef83a4e1597321d6b",
-   "date": "2026-10-31 11:31",
-   "notes": "Simulator 3D-4.60: alle Simulator-Texte jetzt auch auf Englisch, Französisch, Italienisch, Rätoromanisch (Rätoromanisch noch prüfen lassen).",
-   "sig": "85f96ac4cc3d4ec118b2837239f83c0cf22af1e39947262c99a638d7d982c758d5f9e200d4ff7c912e6deb70164e6c083459fe08f9f73635e2741c2965920206"
+   "sha256": "13144b38dd38ba529e33163483b689d8ac47f1fe88b0073ee058536b1c7a43a6",
+   "date": "2026-10-31 11:37",
+   "notes": "Simulator 3D-4.61: Figuren aus dem Figuren-Paket – Kriechen und Liegen sehen jetzt richtig aus (Kopf und Füsse am Boden).",
+   "sig": "7cd4106110942c0d3478e73965da653c2e55f485b92c7dd050d3eadf1839a6b0c25650eabb30c6bea3d01ae8332644d342175a7add4cf2b188c9418d32617f02"
   },
   {
    "version": "2.97.1",

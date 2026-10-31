@@ -25,6 +25,12 @@ const CLIP_SPEED := {"Walk_Loop": 1.15, "Jog_Fwd_Loop": 3.4, "Sprint_Loop": 6.0,
 		"Walk_Formal_Loop": 1.15}
 const CHAINS := ["root", "pelvis", "spine_01", "spine_02", "spine_03", "neck_01", "Head", "clavicle_l", "upperarm_l", "lowerarm_l",
 		"hand_l", "clavicle_r", "upperarm_r", "lowerarm_r", "hand_r", "thigh_l", "calf_l", "foot_l", "thigh_r", "calf_r", "foot_r"]
+# Kriechende (31.10.2026): the Idle pose is no neutral pose - thighs 16-25°, a calf 20°, neck / head 13-21° off the
+# straight limbs of actor.gd (joints at 0). Lying, that bowed the head into the ground and lifted a foot ~0.3 m.
+# _reference() measures each segment (bone -> child, Head: its own axis) and straightens it once for the joints.
+const STRAIGHT := {"pelvis": ["spine_01", 1.0], "spine_01": ["spine_03", 1.0], "Head": ["", 1.0],
+		"thigh_l": ["calf_l", -1.0], "calf_l": ["foot_l", -1.0], "thigh_r": ["calf_r", -1.0], "calf_r": ["foot_r", -1.0],
+		"upperarm_l": ["lowerarm_l", -1.0], "lowerarm_l": ["hand_l", -1.0], "upperarm_r": ["lowerarm_r", -1.0], "lowerarm_r": ["hand_r", -1.0]}
 const ARM_BONES := ["clavicle_l", "upperarm_l", "lowerarm_l", "hand_l", "clavicle_r", "upperarm_r", "lowerarm_r", "hand_r"]
 
 static var setting := "auto"             # «Figuren»: auto (pack if there) | paket (same, tells when missing) | eigen (never)
@@ -49,6 +55,7 @@ var clip := ""
 var _bi := {}                            # bone name -> index
 var _ref_local := {}                     # bone -> local rotation in the standing reference pose (Idle, t = 0)
 var _ref_body := {}                      # bone -> rotation in the space of body_root (reference pose)
+var _ref_fix := {}                       # bone -> swing (body space): segment in the Idle pose -> straight like actor.gd
 var _ref_pelvis := Vector3.ZERO
 var _K := Basis()                        # skeleton -> body_root (rotation only)
 var _Ki := Basis()
@@ -286,6 +293,21 @@ func _reference() -> void:
 		_ref_body[b] = Quaternion(_K) * (glob[b] as Quaternion)
 	if _bi.has("pelvis"):
 		_ref_pelvis = skel.get_bone_pose_position(_bi["pelvis"])
+	for b in STRAIGHT:
+		if not _bi.has(b) or not _ref_body.has(b):
+			continue
+		var cn: String = STRAIGHT[b][0]
+		var d: Vector3
+		if cn == "":
+			d = (_ref_body[b] as Quaternion) * Vector3.UP                 # the head: along its bone
+		elif _bi.has(cn):
+			d = _K * (skel.get_bone_global_pose(_bi[cn]).origin - skel.get_bone_global_pose(_bi[b]).origin)
+		else:
+			continue
+		var want := Vector3(0.0, float(STRAIGHT[b][1]), 0.0)
+		if d.length() < 0.001 or d.normalized().dot(want) < 0.5:          # more than 60° off: not a limb - leave it
+			continue
+		_ref_fix[b] = Quaternion(d.normalized(), want)
 
 
 func _parent_global(i: int) -> Quaternion:
@@ -545,7 +567,7 @@ func _retarget(wf: float) -> void:
 			var jq = _joint_q(b)
 			var lr: Quaternion = _ref_local.get(b, local)
 			if jq != null:
-				var gd: Quaternion = Kiq * (jq as Quaternion) * (_ref_body[b] as Quaternion)
+				var gd: Quaternion = Kiq * (jq as Quaternion) * (_ref_fix.get(b, Quaternion.IDENTITY) as Quaternion) * (_ref_body[b] as Quaternion)
 				lr = (pg.inverse() * gd).normalized()
 			local = local.slerp(lr, w)
 		if b == "Head" and head_extra != Quaternion.IDENTITY:
