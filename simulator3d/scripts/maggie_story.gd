@@ -1005,6 +1005,7 @@ func _region_tick() -> void:
 				_save()
 				if first:
 					Welt.rest_lit(e["node"], r["col"])
+					_paint_tasks()                          # (Paket «Dauer»: «Rastplätze: n von 3» blieb sonst stehen)
 					_play("rest")
 					tipp(T.t("Rastplatz %d erreicht – gespeichert. Wenn dich ein Tier erwischt, kommst du hierher zurück.", [i + 1]))
 					moveeye_sagt(T.t(_pick(Welt.MOVEEYE["rast"])))
@@ -1035,6 +1036,8 @@ func _next_goal() -> Array:
 		return [_chapel.to_global(Welt.ALTAR + Vector3(0, 0, 1.2)), T.t("Bergkapelle")]
 	if phase == "intro_walk":
 		return [_dig_p, T.t("Maggie")]
+	if _tor != null and _tor_open:                       # the gate shines: straight there («Geh hindurch»)
+		return [_tor_p, T.t("Jahreszeiten-Tor")]
 	var wg := _weg_goal()
 	if not wg.is_empty():
 		return wg
