@@ -900,6 +900,9 @@ class Aufgaben extends Node:
 				if _sees(v):
 					if not result.has("mw_s"):
 						result["mw_s"] = snappedf(t, 0.1)
+					var cx: float = ferienpark_leben_rect(v).get_center().x
+					if not result.has("pic") and cx > 0.15 and cx < 0.85:      # the picture when he is well in it (live: at the edge)
+						result["pic"] = ""
 						_photo("see.aufgabe_velo", v, "velo")
 					if result.has("grab_s") and not result.has("mw_carry_s"):
 						result["mw_carry_s"] = snappedf(t, 0.1)
@@ -926,8 +929,9 @@ class Aufgaben extends Node:
 		if main.nacht == null:
 			_finish({"state": "error"})
 			return
-		var plan := [{"kind": "wc", "at_s": 20.0, "torch": true}, {"kind": "fox", "at_s": 55.0}, {"kind": "wc", "at_s": 95.0, "torch": false},
-				{"kind": "cat", "at_s": 125.0}, {"kind": "incident", "at_s": 160.0, "target": "tent"}]
+		# early enough that the sneaking intruder (60–110 s on his way) is gone at the end of the 240 s (live 31.10.: at 160 s it ran over)
+		var plan := [{"kind": "wc", "at_s": 15.0, "torch": true}, {"kind": "fox", "at_s": 40.0}, {"kind": "wc", "at_s": 65.0, "torch": false},
+				{"kind": "cat", "at_s": 85.0}, {"kind": "incident", "at_s": 105.0, "target": "tent"}]
 		for i in range(plan.size()):
 			plan[i]["id"] = i + 1
 			plan[i]["at_h"] = snappedf(float(plan[i]["at_s"]) * 30.0 / 3600.0, 0.001)
