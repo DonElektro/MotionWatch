@@ -196,6 +196,7 @@ func _build(sc) -> void:
 		var q := inv * p
 		return H(q.x, q.z) < 0.6 or q.z > 112.0 or _on_way(q.x, q.z))
 	_data()
+	_erleben()
 	info.merge({"ms": Time.get_ticks_msec() - t0, "ground_ms": t1 - t0, "spot": spot, "lite": lite, "lib": bib.stats.duplicate(),
 			"lamps": bib.lamps.size()}, true)
 	print("Ferienpark: %s, %d ms (Gelände %d ms), %s" % [spot, info["ms"], info["ground_ms"], str(bib.stats)])
@@ -1021,6 +1022,7 @@ func _hiding() -> void:
 	var made := 0
 	var tries := 0
 	var kinds := ["bush", "bush", "woodpile", "crates", "barrels", "hedge"]
+	s.data["fp_verstecke"] = []
 	while made < (5 if lite else 9) and tries < 200:
 		tries += 1
 		var wp: Vector3 = m.pos_of(rng.randf_range(-170, 170), rng.randf_range(8.0, 34.0))
@@ -1035,8 +1037,18 @@ func _hiding() -> void:
 		if not ok:
 			continue
 		s.prop(kinds[rng.randi() % kinds.size()], wp, rng.randf() * TAU)
+		(s.data["fp_verstecke"] as Array).append(wp)        # Erlebniswelt 12: the children hide here when MoveEye plays along
 		made += 1
 	info["hiding"] = made
+
+
+# ---- Erlebniswelt 1–19 (erlebniswelt.gd): the vignettes at the reserved places --------------------------------------------------
+func _erleben() -> void:
+	var t0 := Time.get_ticks_msec()
+	var ew = preload("res://scripts/erlebniswelt.gd").new()
+	ew.setup(self)
+	s.data["erleben"] = ew
+	info["erleben_ms"] = Time.get_ticks_msec() - t0
 
 
 # ---- name signs of the places --------------------------------------------------------------------------------------------------
@@ -1119,6 +1131,14 @@ static func control(main, d: Dictionary) -> Dictionary:
 			return {"ok": true, "lite": Bib.lite()}
 		"kinds":
 			return {"ok": true, "kinds": Bib.names(), "n": Bib.KINDS.size()}
+		"erleben", "verstecken":                         # Erlebniswelt: {what: info | verstecken | fish | where (id) | state (id, state)}
+			var ew = main.scenes.data.get("erleben", null) if main.scenes != null else null
+			if ew == null or not is_instance_valid(ew):
+				return {"ok": false, "error": "not in the Ferienpark"}
+			if what == "verstecken":
+				d = d.duplicate()
+				d["what"] = "verstecken"
+			return ew.control(d)
 		"perf":
 			return {"ok": true, "fps": Engine.get_frames_per_second(), "draw": Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME),
 					"objects": Performance.get_monitor(Performance.RENDER_TOTAL_OBJECTS_IN_FRAME), "prims": Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME),

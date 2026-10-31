@@ -1,15 +1,15 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 3151 (Stellen: 4560)
-Übersetzt: en 2920, fr 2920, it 2920, rm 2920
+Texte gesamt: 3211 (Stellen: 4625)
+Übersetzt: en 2980, fr 2980, it 2980, rm 2980
 Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 337 Stellen
-Nicht mehr im Code (noch in texte.json): 28
+Nicht mehr im Code (noch in texte.json): 29
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 42 Stellen in wizpics.gd 16, wordmark.gd 10, testrun.gd 9, smalltv.gd 3, game.gd 2, dataset.gd 1, phone.gd 1
-Übersprungen (Grund: Anzahl): kennung 10855, schlüssel 7470, keine Wörter 5965, index 3835, technisch 1306, doc 868, einheit 116, englisch 60, log 56, pfad 55, html 42, klasse 21
+Übersprungen (Grund: Anzahl): kennung 11203, schlüssel 7641, keine Wörter 6022, index 3902, technisch 1353, doc 883, einheit 116, englisch 61, log 56, pfad 55, html 42, klasse 21
 
 Pro Datei (Texte / davon dynamische Stellen):
-  main.gd                  613    29
+  main.gd                  615    29
   gamewiz.gd               213    14
   game.gd                  211    32
   bib_objekte.gd           108     0
@@ -26,6 +26,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   mehr.gd                   70    13
   feedback.gd               66    17
   parcours.gd               63    10
+  erlebniswelt.gd           62     0
   quick.gd                  57     2
   entdecken.gd              55     0
   mwpc.gd                   46    12
@@ -180,35 +181,35 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   karte.gd:503  'Dazu kommen: '
   karte.gd:511  'ja'
   karte.gd:511  'keine'
-  main.gd:1249  '  %.0f Mbit/s'
-  main.gd:1922  ' (von MoveEye)'
-  main.gd:1955  'Der Simulator ist belegt: '
-  main.gd:2756  'aus'
-  main.gd:2756  'ein'
-  main.gd:2833  'Sabotage-Test: '
-  main.gd:2833  'aus'
-  main.gd:2887  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
-  main.gd:2890  '\n🚨 Bewacht und weg: '
-  main.gd:3605  'keine'
-  main.gd:3631  'Wächter an MoveEye: '
-  main.gd:4345  'Dein Platz: '
-  main.gd:4570  ' · schaut nur zu: '
-  main.gd:4573  ' · Treffer %d von %d Schüssen, %d Punkte'
-  main.gd:4574  ' · Update: '
-  main.gd:4904  'Blinde Flecken: '
-  main.gd:5559  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
-  main.gd:5865  'Autostart: '
-  main.gd:5876  'Autologon: '
-  main.gd:6037  'Karte öffnen: '
-  main.gd:6183  'Echt-Abgleich: '
-  main.gd:6190  'Trainingspaket: '
-  main.gd:6199  ' · %d offen · %.1f MB'
-  main.gd:6199  'Ziel: %s:%d (Port von MoveEye) · '
-  main.gd:6208  'Verbindung · '
-  main.gd:6208  'aus'
-  main.gd:6212  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
-  main.gd:6212  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
-  main.gd:6215  ' – versucht es weiter (gleich auf einem freien Port)'
+  main.gd:1258  '  %.0f Mbit/s'
+  main.gd:1931  ' (von MoveEye)'
+  main.gd:1964  'Der Simulator ist belegt: '
+  main.gd:2765  'aus'
+  main.gd:2765  'ein'
+  main.gd:2842  'Sabotage-Test: '
+  main.gd:2842  'aus'
+  main.gd:2896  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
+  main.gd:2899  '\n🚨 Bewacht und weg: '
+  main.gd:3616  'keine'
+  main.gd:3642  'Wächter an MoveEye: '
+  main.gd:4356  'Dein Platz: '
+  main.gd:4581  ' · schaut nur zu: '
+  main.gd:4584  ' · Treffer %d von %d Schüssen, %d Punkte'
+  main.gd:4585  ' · Update: '
+  main.gd:4915  'Blinde Flecken: '
+  main.gd:5570  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
+  main.gd:5876  'Autostart: '
+  main.gd:5887  'Autologon: '
+  main.gd:6048  'Karte öffnen: '
+  main.gd:6194  'Echt-Abgleich: '
+  main.gd:6201  'Trainingspaket: '
+  main.gd:6210  ' · %d offen · %.1f MB'
+  main.gd:6210  'Ziel: %s:%d (Port von MoveEye) · '
+  main.gd:6219  'Verbindung · '
+  main.gd:6219  'aus'
+  main.gd:6223  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
+  main.gd:6223  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
+  main.gd:6226  ' – versucht es weiter (gleich auf einem freien Port)'
   explore.gd:446  ' (automatisch von oben)'
   explore.gd:446  ' · schnell'
   feedback.gd:266  ' · TESTMODUS: geht nur an '
@@ -406,7 +407,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   mwpc.gd:361  'Unerwartete Datei in versions.json: '
   symbole.gd:27  'Aus'
   net.gd:324  '--%s\r\nContent-Type: image/jpeg\r\nContent-Length: %d\r\n\r\n'
-  news.gd:88  'MOVEEYE SIM · '
+  news.gd:92  'MOVEEYE SIM · '
   padroles.gd:129  'Spiel am PC – '
   padtest.gd:44  '  roh %.2f / %.2f'
   parcours.gd:269  'Simulator beschäftigt: '
