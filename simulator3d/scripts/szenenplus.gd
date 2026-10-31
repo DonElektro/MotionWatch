@@ -625,6 +625,9 @@ func _take_bike(v) -> void:
 	var cp: Node3D = bk.duplicate()
 	v.add_child(cp)
 	cp.transform = Transform3D(Basis.IDENTITY, Vector3(0.5, 0.05, 0.0))
+	if v.has_meta("carry_bike"):                     # Ferienpark-Aufgabe «Velo-Dieb» (ferienpark_leben.gd): lifted and carried away
+		cp.transform = Transform3D(Basis(Vector3(0, 0, 1), -0.12), Vector3(0.42, 0.42, 0.05))
+		v.carry = true
 	bk.visible = false
 	_bike_copy_of = bk
 

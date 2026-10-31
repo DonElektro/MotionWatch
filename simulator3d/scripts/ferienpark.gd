@@ -227,6 +227,8 @@ func _build(sc) -> void:
 		return H(q.x, q.z) < 0.6 or q.z > 112.0 or _on_way(q.x, q.z) or (place != "" and Vector2(q.x, q.z).distance_to(place_c) < place_r))
 	_data()
 	_erleben()
+	if place == "":
+		_leben()
 	info.merge({"ms": Time.get_ticks_msec() - t0, "ground_ms": t1 - t0, "spot": spot, "lite": lite, "lib": bib.stats.duplicate(),
 			"lamps": bib.lamps.size()}, true)
 	print("Ferienpark: %s, %d ms (Gelände %d ms), %s" % [spot, info["ms"], info["ground_ms"], str(bib.stats)])
@@ -1081,6 +1083,18 @@ func _erleben() -> void:
 	info["erleben_ms"] = Time.get_ticks_msec() - t0
 
 
+# ---- Paket «Ferienpark-Leben» (ferienpark_leben.gd): the day by the clock (barbecue, quiet night, early birds) + the tasks ---
+func _leben() -> void:
+	var ew = s.data.get("erleben", null)
+	if ew == null:
+		return
+	var t0 := Time.get_ticks_msec()
+	var lv = preload("res://scripts/ferienpark_leben.gd").new()
+	lv.setup(self, ew)
+	s.data["leben"] = lv
+	info["leben_ms"] = Time.get_ticks_msec() - t0
+
+
 # ---- name signs of the places --------------------------------------------------------------------------------------------------
 func _signs() -> void:
 	for pl in PLACES:
@@ -1161,6 +1175,16 @@ static func control(main, d: Dictionary) -> Dictionary:
 			return {"ok": true, "lite": Bib.lite()}
 		"kinds":
 			return {"ok": true, "kinds": Bib.names(), "n": Bib.KINDS.size()}
+		"leben":                                         # Ferienpark-Leben: {do: leben} info · {do: leben, on: bool}
+			var FL = preload("res://scripts/ferienpark_leben.gd")
+			if d.has("on"):
+				FL.set_on(main, bool(d["on"]))
+			var lv = main.scenes.data.get("leben", null) if main.scenes != null else null
+			if lv == null or not is_instance_valid(lv):
+				return {"ok": false, "error": "not in the Ferienpark (a spot of the park)", "on": FL.on}
+			return lv.info()
+		"aufgabe":                                       # kleine Aufgaben: {do: aufgabe, what: kind | velo | zelt | stop | info}
+			return preload("res://scripts/ferienpark_leben.gd").tasks(main).control(d)
 		"erleben", "verstecken":                         # Erlebniswelt: {what: info | verstecken | fish | where (id) | state (id, state)}
 			var ew = main.scenes.data.get("erleben", null) if main.scenes != null else null
 			if ew == null or not is_instance_valid(ew):
