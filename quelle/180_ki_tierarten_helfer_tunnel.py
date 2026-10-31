@@ -987,7 +987,9 @@ class AIDetector:
             need = own_ai_thresholds(self.meta, float(CFG["ai_conf"]), 0.5)[self.meta["classes"].index("person")] \
                 if self.kind == "yolo" and "person" in (self.meta or {}).get("classes", []) else float(CFG["ai_conf"])
             low = (0.5 + (WEAK_AI_MIN - float(self.meta["conf"].get("person", 0.35)))) if self.kind == "yolo" else WEAK_AI_MIN
-            boxes, objects = self.infer(frame, min(float(CFG["ai_conf"]), low), CFG["object_conf"])
+            img_, k_ = ai_view(self, frame)                 # real-erk-e3: the own YOLO model sees the camera picture (418z)
+            boxes, objects = self.infer(img_, min(float(CFG["ai_conf"]), low), CFG["object_conf"])
+            boxes, objects = ai_unscale(boxes, k_), ai_unscale(objects, k_)
             self.weak = [(b[0] / w, b[1] / h, b[2] / w, b[3] / h, b[4]) for b in boxes if b[4] < need]
             self.weak_t = time.time()
             boxes = [b for b in boxes if b[4] >= need]
@@ -999,23 +1001,12 @@ class AIDetector:
             note = STATE["ai_model_note"]; self.__init__(force_ssd=True); STATE["ai_model_note"] = note
             return self.boxes
         # 2.98.13: «KI-Lupe» - something small moves (a person far away, 20-30 pixels in the 300 x 300 picture of the AI):
-        # look at that part once more, enlarged. Far persons were found by the AI only rarely before.
-        if CFG.get("ai_zoom", True):
-            for hb in sorted(getattr(self, "hints", []), key=lambda b: -b[2] * b[3])[:1]:
-                if any(iou(hb, b[:4]) > 0.1 for b in boxes):
-                    continue
-                side = int(min(min(w, h), max(110, 3.2 * hb[3])))
-                cx, cy = hb[0] + hb[2] // 2, hb[1] + hb[3] // 2
-                x0 = max(0, min(w - side, cx - side // 2)); y0 = max(0, min(h - side, cy - side // 2))
-                crop = frame[y0:y0 + side, x0:x0 + side]
-                if crop.size == 0:
-                    continue
-                for a1, b1, bw, bh, conf in self.infer(crop, CFG["ai_conf"], 2.0)[0]:      # only persons
-                    bx = (x0 + a1, y0 + b1, max(1, bw), max(1, bh), conf)
-                    if bx[3] >= 0.6 * side and side > 0.8 * min(w, h):
-                        continue                               # the whole crop as one «person»: not trusted
-                    if not any(iou(bx[:4], b[:4]) > 0.3 for b in boxes):
-                        boxes.append(bx); STATE["ai_zoom_hits"] = STATE.get("ai_zoom_hits", 0) + 1
+        # look at that part once more, enlarged. real-erk-e3: also far movement without a track, with the camera pixels, the
+        # hints in turn, up to 4 tiles in one run with the own model (418z ai_zoom_run).
+        try:
+            boxes = ai_zoom_run(self, frame, boxes, w, h)
+        except Exception as e:                              # never break the camera loop because of the Lupe
+            log_event("ai", f"AI magnifier: {e}"[:160])
         self.boxes = boxes; self.objects = objects
         STATE["ai_ms"] = int((time.time() - t0) * 1000)
         STATE["ai_status"] = f"running · {STATE['ai_ms']} ms"
