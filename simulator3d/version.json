@@ -1,7 +1,7 @@
 {
- "version": "3D-4.45",
+ "version": "3D-4.46",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 67335680,
- "sha256": "69f91d8a88dab6bde091d061b170368baabc622d2815b9fc1a1af731484ccae6",
- "notes": "Tiere verhalten sich echter (Flucht, Mäusesprung, Einrollen …), neu Krähen, Elstern, Möwen und Hund frei laufend; echte Grössen."
+ "size": 67411548,
+ "sha256": "5ffb349c80f5e3ec759905b1bfeaeab8ab1ffd681aff14199aebe78a6c0a6498",
+ "notes": "Fahrzeuge wie echt: Licht, Blinker, Türen, Parkieren, Blendung der Kamera; neuer Testlauf «Fahrzeuge in der Nacht»."
 }

@@ -421,6 +421,12 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
+NEU IN 3D-4.46
+3D-4.46: Fahrzeuge wie echt: Tempo, Abblend- und Fernlicht, Blinker, Türen, Parkieren und Aussteigen, Blendung der Kamera
+durch Scheinwerfer, Velos mit Licht (einige ohne). Neuer Testlauf «Fahrzeuge in der Nacht».
+So testest du: 1) 23 Uhr, Szene «Stellplatz»: Besuch → «Auto kommt an und parkiert». 2) Fernlicht «oft»: das Bild wird
+überstrahlt. 3) In MoveEye: vorbeifahrende Autos geben keinen Personen-Push, Aussteigende schon.
+
 NEU IN 3D-4.45
 3D-4.45: Tiere verhalten sich echter: Reh äugt und flieht in Sprüngen, Fuchs mit Mäusesprung, Wildschwein-Rotte, Igel
 rollt sich ein, Hase drückt sich, Katze springt aufs Auto; neu Krähen, Elstern, Möwen am Boden und «Hund frei laufend».

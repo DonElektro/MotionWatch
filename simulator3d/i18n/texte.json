@@ -3715,6 +3715,12 @@
   "it": "Auto qui – poi cliccare nel mondo",
   "rm": "Auto qua – lura cliccar en il mund"
  },
+ "Auto kommt an und parkiert (Leute steigen aus)": {
+  "en": "Car arrives and parks (people get out)",
+  "fr": "Une voiture arrive et se gare (des gens descendent)",
+  "it": "Un'auto arriva e parcheggia (scendono delle persone)",
+  "rm": "In auto arriva e parchegia (glieud sortan)"
+ },
  "Auto parkiert (Parkplatz)": {
   "en": "Car parks (car park)",
   "fr": "Voiture se gare (parking)",
@@ -4758,6 +4764,12 @@
   "fr": "Télécharger Blender",
   "it": "Scaricare Blender",
   "rm": "Telechargiar Blender"
+ },
+ "Blendung: Scheinwerfer, die in die Kamera leuchten, überstrahlen das Bild": {
+  "en": "Glare: headlights shining into the camera wash out the picture",
+  "fr": "Éblouissement : les phares qui éclairent la caméra surexposent l'image",
+  "it": "Abbagliamento: i fari che illuminano la telecamera sovraespongono l'immagine",
+  "rm": "Sbarbagl: cazzolas che glischan en la camera surexpuneran il maletg"
  },
  "Blick in Autos und Zelte": {
   "en": "Looking into cars and tents",
@@ -7251,6 +7263,12 @@
   "it": "do: info | open | set_password | unlock | start | go | skip | beat | choose | pause | resume | clips | clip | stop",
   "rm": "do: info | open | set_password | unlock | start | go | skip | beat | choose | pause | resume | clips | clip | stop"
  },
+ "do: info | set | spawn | arrive | toward | leave | reset": {
+  "en": "do: info | set | spawn | arrive | toward | leave | reset",
+  "fr": "do: info | set | spawn | arrive | toward | leave | reset",
+  "it": "do: info | set | spawn | arrive | toward | leave | reset",
+  "rm": "do: info | set | spawn | arrive | toward | leave | reset"
+ },
  "Donut": {
   "en": "Donut",
   "fr": "Beignet",
@@ -7508,6 +7526,12 @@
   "fr": "Crépuscule 21:00",
   "it": "Crepuscolo 21:00",
   "rm": "Crepuscul 21:00"
+ },
+ "Dämmerung, Abblendlicht, Velo mit Licht": {
+  "en": "Dusk, low beam, bike with light",
+  "fr": "Crépuscule, feux de croisement, vélo éclairé",
+  "it": "Crepuscolo, anabbaglianti, bici con luce",
+  "rm": "Crepuscul, glisch sbassa, velo cun glisch"
  },
  "Dämmerung, Tiere am Lockmittel": {
   "en": "Dusk, animals at the lure",
@@ -8974,6 +8998,24 @@
   "it": "Vista del conducente",
   "rm": "Vista dal manischunz"
  },
+ "Fahrzeug (Bewegung)": {
+  "en": "Vehicle (movement)",
+  "fr": "Véhicule (mouvement)",
+  "it": "Veicolo (movimento)",
+  "rm": "Vehichel (moviment)"
+ },
+ "Fahrzeug (Licht und Bewegung)": {
+  "en": "Vehicle (light and movement)",
+  "fr": "Véhicule (lumière et mouvement)",
+  "it": "Veicolo (luce e movimento)",
+  "rm": "Vehichel (glisch e moviment)"
+ },
+ "Fahrzeug (Scheinwerfer blenden)": {
+  "en": "Vehicle (headlights glare)",
+  "fr": "Véhicule (phares éblouissants)",
+  "it": "Veicolo (fari abbaglianti)",
+  "rm": "Vehichel (cazzolas sbarbagliantas)"
+ },
  "Fahrzeuge": {
   "en": "Vehicles",
   "fr": "Véhicules",
@@ -8985,6 +9027,18 @@
   "fr": "Véhicules (voitures garées)",
   "it": "Veicoli (auto parcheggiate)",
   "rm": "Vehichels (autos parcads)"
+ },
+ "Fahrzeuge in der Nacht (vorbeifahren, Fernlicht, Blendung, parkieren, Velos – Autos dürfen nicht alarmieren · etwa 5 Min.)": {
+  "en": "Vehicles at night (passing, high beam, glare, parking, bikes – cars must not raise an alarm · about 5 min)",
+  "fr": "Véhicules la nuit (passage, feux de route, éblouissement, stationnement, vélos – les voitures ne doivent pas déclencher d'alarme · env. 5 min)",
+  "it": "Veicoli di notte (passaggio, abbaglianti, abbagliamento, parcheggio, bici – le auto non devono dare allarme · circa 5 min)",
+  "rm": "Vehichels da notg (passar, glisch auta, sbarbagl, parcar, velos – autos na dastgan betg dar alarm · var 5 min.)"
+ },
+ "Fahrzeuge wie echt: Tempo nach Strasse (50 km/h, auf dem Platz 10 km/h), bremsen vor Kurven, Blinker, Brems- und Rücklichter, Türen auf und zu, Leute steigen aus, der Motor kühlt nach dem Parkieren ab": {
+  "en": "Realistic vehicles: speed by road (50 km/h, 10 km/h on the site), braking before bends, indicators, brake and tail lights, doors open and close, people get out, the engine cools down after parking",
+  "fr": "Véhicules réalistes : vitesse selon la route (50 km/h, 10 km/h sur la place), freinage avant les virages, clignotants, feux stop et arrière, portes qui s'ouvrent et se ferment, des gens descendent, le moteur refroidit après le stationnement",
+  "it": "Veicoli realistici: velocità secondo la strada (50 km/h, 10 km/h sul posto), frenata prima delle curve, frecce, luci di stop e posteriori, porte che si aprono e chiudono, scendono persone, il motore si raffredda dopo il parcheggio",
+  "rm": "Vehichels sco en realitad: tempo tenor la via (50 km/h, sin la plazza 10 km/h), franar avant las stortas, clignoturs, glischs da franar e davos, ischs avran e serran, glieud sorta, il motor sa sfradenta suenter il parcar"
  },
  "Fairness": {
   "en": "Fairness",
@@ -9328,6 +9382,12 @@
   "fr": "Jumelles",
   "it": "Binocolo",
   "rm": "Spieglun"
+ },
+ "Fernlicht in der Nacht (blendet ab, wenn einer entgegenkommt)": {
+  "en": "High beam at night (dips when someone comes the other way)",
+  "fr": "Feux de route la nuit (passe en croisement quand quelqu'un arrive en face)",
+  "it": "Abbaglianti di notte (passa agli anabbaglianti se arriva qualcuno di fronte)",
+  "rm": "Glisch auta da notg (sbassa, sch'insatgi vegn encunter)"
  },
  "Fernseher": {
   "en": "Tv",
@@ -16523,6 +16583,12 @@
   "it": "Notte con infrarossi, i vicini vanno al WC",
   "rm": "Notg cun infracotschen, vischins van al WC"
  },
+ "Nacht mit Infrarot: Fernlicht, Scheinwerfer auf die Kamera, Töff": {
+  "en": "Night with infrared: high beam, headlights at the camera, motorbike",
+  "fr": "Nuit avec infrarouge : feux de route, phares vers la caméra, moto",
+  "it": "Notte con infrarossi: abbaglianti, fari verso la telecamera, moto",
+  "rm": "Notg cun infracotschen: glisch auta, cazzolas vers la camera, moto"
+ },
  "Nacht starten (Zeitraffer)": {
   "en": "Start the night (time-lapse)",
   "fr": "Lancer la nuit (accéléré)",
@@ -16660,6 +16726,12 @@
   "fr": "Nuit : %s",
   "it": "Notte: %s",
   "rm": "Notg: %s"
+ },
+ "Nacht: Auto parkiert, Leute steigen aus, Wohnmobil, E-Trottinett": {
+  "en": "Night: car parks, people get out, motorhome, e-scooter",
+  "fr": "Nuit : une voiture se gare, des gens descendent, camping-car, trottinette électrique",
+  "it": "Notte: un'auto parcheggia, scendono persone, camper, monopattino elettrico",
+  "rm": "Notg: in auto parchegia, glieud sorta, auto da campar, trottinet electric"
  },
  "Nacht: MoveEye meldet %s": {
   "en": "Night: MoveEye reports %s",
@@ -17105,6 +17177,12 @@
   "fr": "Rien trouvé",
   "it": "Niente trovato",
   "rm": "Nagut chattà"
+ },
+ "nie": {
+  "en": "never",
+  "fr": "jamais",
+  "it": "mai",
+  "rm": "mai"
  },
  "Niemand schleicht: mindestens einen Bot (oder ein Handy als Läufer) dazunehmen.": {
   "en": "Nobody is sneaking: add at least one bot (or a phone as runner).",
@@ -17987,6 +18065,12 @@
   "fr": "Places de parc",
   "it": "Posteggi",
   "rm": "Plazzas da parcar"
+ },
+ "Parkierte Autos: nach einigen Minuten kommt jemand zurück und fährt weg": {
+  "en": "Parked cars: after a few minutes someone comes back and drives off",
+  "fr": "Voitures garées : après quelques minutes, quelqu'un revient et repart",
+  "it": "Auto parcheggiate: dopo qualche minuto qualcuno torna e riparte",
+  "rm": "Autos parcadas: suenter in pèr minutas returna insatgi e parta"
  },
  "Parkplatz": {
   "en": "Car park",
@@ -25017,6 +25101,12 @@
   "fr": "Camping-car",
   "it": "Camper",
   "rm": "Auto da campadi"
+ },
+ "Wohnmobil kommt an und parkiert": {
+  "en": "Motorhome arrives and parks",
+  "fr": "Un camping-car arrive et se gare",
+  "it": "Un camper arriva e parcheggia",
+  "rm": "In auto da campar arriva e parchegia"
  },
  "Wohnmobil-Stellplatz": {
   "en": "Camper van site",

@@ -104,7 +104,7 @@ const PERSON_VARIANTS := ["child", "jogger", "cyclist", "stroller", "drunk", "co
 var _eye_t := 0.0                          # 3D-3.95: eye shine follows where the animal looks
 var _bike_lamps := false
 var bike_lamp: Array = []                 # [spot, front material, rear material]
-const CAR_VARIANTS := ["tractor", "moto", "van"]
+const CAR_VARIANTS := ["tractor", "moto", "van", "camper"]   # camper: fahrzeuge.gd (31.10.2026)
 var wheels: Array = []        # cyclist, stroller: wheels that turn
 var carry := false            # courier: holds the box in front with both hands
 var _lie_k := 0.0             # 3D-4.4: 0 standing … 1 lying (deer bedded down, simreal.gd «deer_bedded»)
@@ -832,6 +832,11 @@ func _build_car() -> void:
 	if variant == "moto":
 		_build_moto()
 		return
+	if variant == "camper":
+		if main.get("fahrzeuge") != null:
+			main.fahrzeuge.build_camper(self)              # Paket «Fahrzeuge»: Wohnmobil
+			return
+		variant = "van"
 	var van := variant == "van"
 	var col: Color = [Color(0.6, 0.1, 0.1), Color(0.75, 0.75, 0.78), Color(0.08, 0.08, 0.1), Color(0.1, 0.25, 0.55), Color(0.85, 0.85, 0.85), Color(0.25, 0.35, 0.25)][randi() % 6]
 	if van:
@@ -1089,7 +1094,10 @@ func _step(dt: float) -> void:
 	var want: float = speed * main.time_scale_visitors() * (0.3 if prone > 0.5 else (0.6 if crouch > 0.5 else 1.0))
 	if route.size() > 0 and typeof(route[0]) == TYPE_ARRAY and dist < 2.0:
 		want *= max(0.35, dist / 2.0)                    # slows down before a stop
-	cur_speed = move_toward(cur_speed, want, dt * (2.0 if kind != "car" else 3.0) * max(1.0, want))
+	if kind == "car" and main.get("fahrzeuge") != null and main.fahrzeuge.fz_real:
+		cur_speed = main.fahrzeuge.drive(self, dt, want, dist)   # Paket «Fahrzeuge»: road / place speed, braking before corners
+	else:
+		cur_speed = move_toward(cur_speed, want, dt * (2.0 if kind != "car" else 3.0) * max(1.0, want))
 	_turn(dt, false)
 	var fwd := Vector3(-sin(heading), 0, -cos(heading))
 	var step: float = cur_speed * dt
@@ -1179,6 +1187,8 @@ func _turn(dt: float, standing: bool) -> void:
 	"""turn smoothly towards dir (cars a bit slower, small animals quicker)"""
 	var want := atan2(-dir.x, -dir.z)
 	var rate := 2.2 if kind == "car" else (6.0 if kind in ["cat", "hare", "hedgehog", "fox", "marten", "squirrel"] else 3.5)
+	if kind == "car" and main.get("fahrzeuge") != null and main.fahrzeuge.fz_real:
+		rate *= clampf(cur_speed / 1.5, 0.25, 1.0)        # Paket «Fahrzeuge»: a car does not turn on the spot
 	if fled:
 		rate *= 1.6
 	if standing and now_s() < wait_until and crouch > 0.0:
