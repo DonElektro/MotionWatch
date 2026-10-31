@@ -66,6 +66,7 @@ var _book_list: VBoxContainer = null
 var _demo_nodes: Array = []
 var _demo_glow: Node3D = null
 var _tex_cache := {}                       # pic path -> ImageTexture
+var check_us := 0.0                        # how long one check of all items took (µs, smoothed) - for the report / tests
 
 
 func _lite() -> bool:
@@ -121,6 +122,21 @@ func unregister(id: String) -> void:
 	"""takes the live entry away (the book keeps it as known for its scene)"""
 	items.erase(id)
 	_seen.erase(id)
+
+
+func forget(id: String) -> void:
+	"""gone for good: live entry, «known» and «found» of every scene (an entry renamed or taken out of a scene)"""
+	unregister(id)
+	for sc in data["scenes"]:
+		var S: Dictionary = data["scenes"][sc]
+		S["known"].erase(id)
+		var f: Dictionary = S["found"].get(id, {})
+		if str(f.get("pic", "")) != "" and FileAccess.file_exists(str(f["pic"])):
+			DirAccess.remove_absolute(str(f["pic"]))
+		S["found"].erase(id)
+	_dirty = true
+	_save_t = 0.0
+	_refresh_book()
 
 
 func mark_found(id: String, how := "api") -> bool:
@@ -273,6 +289,7 @@ func _ready() -> void:
 	_thumb_cam.near = 0.1
 	_thumb_cam.far = 600.0
 	_thumb_cam.cull_mask = 1                    # like the cameras of MoveEye: no helper marks, no thermal layer
+	_thumb_cam.attributes = CameraAttributesPractical.new()
 	_thumb_vp.add_child(_thumb_cam)
 	_layer = CanvasLayer.new()
 	_layer.layer = 58                            # above the panel, below the windows of «Mehr» (60) and the tour (63)
@@ -396,6 +413,7 @@ func _process(dt: float) -> void:
 	if items.is_empty():
 		_set_photo("")
 		return
+	var t_us := Time.get_ticks_usec()
 	var quiet := _quiet()
 	var cam := get_viewport().get_camera_3d()
 	var best_photo := ""
@@ -427,6 +445,7 @@ func _process(dt: float) -> void:
 			_seen.erase(id)
 	_set_photo(best_photo)
 	_hint_tick()
+	check_us = lerpf(check_us, float(Time.get_ticks_usec() - t_us), 0.2)
 
 
 func _in_head_cam(it: Dictionary, p: Vector3) -> Rect2:
@@ -518,14 +537,16 @@ func _make_thumb(id: String) -> void:
 	if absf((p - from).normalized().y) < 0.98:
 		_thumb_cam.look_at(p, Vector3.UP)
 	_thumb_cam.fov = clampf(rad_to_deg(2.0 * atan2(maxf((it.size as Vector3).length(), 1.0) * 1.4, from.distance_to(p))), 25.0, 70.0)
+	var dark: bool = main.is_dark()
+	(_thumb_cam.attributes as CameraAttributesPractical).exposure_multiplier = 6.0 if dark else 1.0   # the book: night pictures a little lighter
 	_thumb_vp.render_target_update_mode = SubViewport.UPDATE_ONCE
 	await RenderingServer.frame_post_draw
 	var img := _thumb_vp.get_texture().get_image()
 	if img == null or img.is_empty():
 		return
-	if main.is_dark():                               # the night is drawn dark (like a camera): a little lighter for the book
+	if dark:                                         # the night is drawn dark (like a camera): a little lighter for the book
 		img.convert(Image.FORMAT_RGB8)
-		img.adjust_bcs(2.2, 1.1, 0.9)
+		img.adjust_bcs(1.8, 1.1, 0.9)
 	_store_pic(id, img)
 
 
@@ -695,7 +716,7 @@ func _build_photo_chip() -> void:
 	_photo_chip = Button.new()
 	_photo_chip.theme = UI.theme()
 	_photo_chip.icon = Sym.tex("camera", 16, UI.TXT)
-	_photo_chip.text = T.t("Foto")
+	_photo_chip.text = T.t("Foto fürs Buch")
 	_photo_chip.tooltip_text = T.t("MoveEyes Kamera hat etwas Besonderes im Bild – Foto fürs Entdeckungsbuch")
 	_photo_chip.focus_mode = Control.FOCUS_NONE
 	_photo_chip.add_theme_font_size_override("font_size", 13)
@@ -771,7 +792,8 @@ func open_book() -> void:
 	b.add_child(bar)
 	var sc := ScrollContainer.new()
 	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	sc.custom_minimum_size = Vector2(580, minf(460.0, get_viewport().get_visible_rect().size.y - 260.0))
+	var rows := int(ceil(list().size() / 2.0))           # as high as needed, at most what the window allows
+	sc.custom_minimum_size = Vector2(580, clampf(rows * 120.0 + 70.0, 140.0, minf(460.0, get_viewport().get_visible_rect().size.y - 260.0)))
 	b.add_child(sc)
 	_book_list = VBoxContainer.new()
 	_book_list.add_theme_constant_override("separation", 8)
@@ -883,7 +905,8 @@ func _entry(e: Dictionary) -> Control:
 	t.add_theme_font_override("font", UI.heading_font())
 	t.add_theme_font_size_override("font_size", 13)
 	t.add_theme_color_override("font_color", UI.TXT if e.found else UI.MUT)
-	t.clip_text = true
+	t.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	t.custom_minimum_size = Vector2(110, 0)
 	t.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	tl.add_child(t)
 	for w in e.when:                                # the time / weather symbol: come back at night, in the rain …
@@ -945,12 +968,14 @@ func set_demo(on: bool) -> void:
 # ---- /control {"action": "entdecken", "do": …} (tests and MoveEye) -------------------------------------------------------------
 func info(lite := false) -> Dictionary:
 	var L := list()
-	if lite:
-		for e in L:
-			e.erase("short")
+	for e in L:                                       # in the language of MoveEye (i18n.gd: the language MoveEye sent)
+		e["title"] = T.t(str(e.title)) if e.found else ""
+		e["short"] = T.t(str(e.short)) if e.found and not lite else ""
+		if not e.found:
+			e["icon"] = ""                            # no spoiler on MoveEye's page
 	return {"ok": true, "scene": main.scene, "scene_name": _scene_name(main.scene), "found": count(), "total": L.size(), "items": L,
 			"photo": photo_id != "", "photo_id": photo_id, "hint": hint_id, "hint_text": _hint_l.text if _hint_box.visible else "",
-			"hints_on": hints_on, "hint_min": hint_min, "book": book_open()}
+			"hints_on": hints_on, "hint_min": hint_min, "book": book_open(), "check_us": roundi(check_us)}
 
 
 func control(d: Dictionary) -> Dictionary:
@@ -982,6 +1007,20 @@ func control(d: Dictionary) -> Dictionary:
 				last_hint_t = -1000.0
 		"save":
 			save()
+		"register":                                  # tests: an entry from outside {id, info: {…, position: [x, y, z], size: [x, y, z]}}
+			var inf: Dictionary = (d.get("info", {}) as Dictionary).duplicate()
+			for k in ["position", "size"]:
+				if typeof(inf.get(k, null)) == TYPE_ARRAY and (inf[k] as Array).size() == 3:
+					inf[k] = Vector3(float(inf[k][0]), float(inf[k][1]), float(inf[k][2]))
+				else:
+					inf.erase(k)
+			inf.erase("node")
+			inf.erase("active")
+			return {"ok": register(str(d.get("id", "")), inf)}
+		"unregister":
+			unregister(str(d.get("id", "")))
+		"forget":
+			forget(str(d.get("id", "")))
 		"where":                                     # tests: where an item is, and what the cameras see of it
 			var id := str(d.get("id", ""))
 			if not items.has(id):
