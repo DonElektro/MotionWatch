@@ -370,6 +370,9 @@ MoveEyeSim3D.exe -- --port 8766 --hour 22.5 --quality simple --stream --scene wa
   --win X,Y,BREITE,HOEHE: Fenster an diese Stelle und in diese Grösse
   --mini: gleich als kleines Kästchen in der Ecke starten (--mini-tiny: als kleines Symbol)
   --maximized: gleich als grosses Fenster starten
+  --fernsteuerung-offen: nur für Testläufe von einem anderen Rechner - sonst nehmen Werksrücksetzung, «Spieltest löschen»,
+    Horror-Passwort festlegen und die Entwickler-Seiten /dev/… nur Befehle von diesem PC oder vom verbundenen MoveEye an
+    (gleich: Umgebungsvariable MWSIM_FERNSTEUERUNG_OFFEN=1)
 
 COMPUTERNAME (ab 3D-3.17)
 - Der Simulator schickt den Namen dieses Computers mit. MoveEye (ab 2.95.1) zeigt ihn in der Liste
