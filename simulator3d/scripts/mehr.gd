@@ -43,7 +43,7 @@ const ITEMS := [["help", "help", "Hilfe", "Maus, Tasten, Leiste – und die Anle
 		["diag", "steth", "Selbstdiagnose", "was läuft und was fehlt – mit einem Tipp, was zu tun ist"],
 		["log", "log", "Protokoll", "die letzten Ereignisse und Fehler – Filter, Kopieren"],
 		["updates", "update", "Updates", ""],
-		["theme", "theme", "Ansicht", ""],
+		["theme", "theme", "Hell / Dunkel / Rotlicht", ""],         # Menüs A: «Ansicht» is the menu of the bar (like MoveEye), this is the colour scheme
 		["feedback", "chat", "Rückmeldung an den Entwickler", "Fehler, Wünsche, Lob, Fragen – anonym"],
 		["dev", "bug", "Entwickler", "Karte aller Orte, Flugkamera, Prüfstand, Störungen, Spieltest – nur für den Besitzer"],
 		["werk", "trash", "⚠ Auf Werkseinstellungen zurücksetzen …", "vorher eine Kopie der alten Einstellungen – nur für den Besitzer"],
@@ -204,7 +204,7 @@ func _theme_row() -> Control:
 	v.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	h.add_child(v)
 	var tl := Label.new()
-	tl.text = "Ansicht: Hell / Rotlicht / Dunkel"
+	tl.text = T.t("Hell / Dunkel / Rotlicht")
 	tl.add_theme_font_override("font", UI.heading_font())
 	tl.add_theme_font_size_override("font_size", 14)
 	v.add_child(tl)
@@ -288,7 +288,7 @@ func set_theme(k: String) -> void:
 	if main.toolbar != null and main.toolbar.get("_items") != null and main.toolbar._items.has("theme"):
 		main.toolbar._items["theme"].queue_redraw()
 	if protokoll != null:
-		protokoll.add("info", "Ansicht: " + UI.THEME_NAMES[theme_name])
+		protokoll.add("info", "Hell / Dunkel / Rotlicht: " + UI.THEME_NAMES[theme_name])
 
 
 func theme_next() -> void:
@@ -591,7 +591,7 @@ func help_menu(anchor: Control) -> void:
 	sep.custom_minimum_size = Vector2(0, 1)
 	v.add_child(sep)
 	for it in [["tour", "tour", "Rundgang mit Blinki"], ["help", "help", "Hilfe"], ["diag", "steth", "Selbstdiagnose"], ["log", "log", "Protokoll"],
-			["feedback", "chat", "Rückmeldung an den Entwickler"], ["about", "info", "Über den Simulator"], ["mehr", "more", "Alles unter «Mehr» im Bedienfeld"]]:
+			["about", "info", "Über den Simulator"], ["mehr", "more", "Alles unter «Mehr» im Bedienfeld"]]:   # Menüs A: «Rückmeldung» only in «Mehr»
 		var b := Button.new()
 		b.flat = true
 		b.focus_mode = Control.FOCUS_ALL

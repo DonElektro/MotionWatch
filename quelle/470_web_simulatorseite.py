@@ -107,7 +107,10 @@ const SC_ICON = {
   check: '<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 12l3 3 5-6"/>',
   gear: '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/><circle cx="12" cy="12" r="6.5"/>',
   keys: '<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h1M10 10h1M14 10h1M18 10h1M7 14h10"/>',
-  track: '<rect x="2" y="11" width="20" height="8" rx="4"/><circle cx="7" cy="15" r="1.8"/><circle cx="12" cy="15" r="1.8"/><circle cx="17" cy="15" r="1.8"/><path d="M8 11V6h8v5"/>'};
+  track: '<rect x="2" y="11" width="20" height="8" rx="4"/><circle cx="7" cy="15" r="1.8"/><circle cx="12" cy="15" r="1.8"/><circle cx="17" cy="15" r="1.8"/><path d="M8 11V6h8v5"/>',
+  // Menüs A (31.10.2026): the two strokes the simulator draws (ui_style.gd) - «Licht & Ton» and «Entwickler» had an emoji here
+  sun: '<circle cx="12" cy="12" r="4.5"/><path d="M19 12h2.5M16.95 16.95l1.77 1.77M12 19v2.5M7.05 16.95l-1.77 1.77M5 12H2.5M7.05 7.05L5.28 5.28M12 5V2.5M16.95 7.05l1.77-1.77"/>',
+  tools: '<path d="M6 18l8-8" stroke-width="2.6"/><path d="M12.05 8.63A4 4 0 1 1 15.37 11.95"/>'};
 function scCss() {
   if (document.getElementById("simctl-css")) return;
   const s = document.createElement("style"); s.id = "simctl-css";
@@ -164,7 +167,7 @@ function simCtlBuild(G, r, ctl, fmt) {
   r = Object.assign({}, r, {controls: (r.controls || []).filter(c => !scWizOnly(c) && (only ? scGid(c) === only && SC_TEST_DUP.indexOf(c.id) < 0 : scGid(c) !== "testrun"))});
   const ls = (k, d) => { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } };
   const ss = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
-  const openC = new Set(ls("mw-sc-open", ["Szene", "Besuch"])), openS = new Set(ls("mw-sc-sub2", ["Besuch/Vorlagen", "Besuch/Menschen schicken", "Besuch/Tiere schicken", "Spiel/Runde"]));
+  const openC = new Set(ls("mw-sc-open", ["Szene", "Besuch"])), openS = new Set(ls("mw-sc-sub2", ["Besuch/Vorlagen", "Besuch/Menschen einzeln", "Besuch/Wildtiere"]));   // Menüs A: the parts of the simulator 3.3
   // Aufräumen 2: Einfach / Experte is stored in the settings of MoveEye (page «sim», /api/ui_simple like the main page and the
   // simulator centre 139) - no longer per browser; the first build asks once, later builds take the known value
   let expert = only ? true : window.SC_EXPERT != null ? window.SC_EXPERT : false, q = G.dataset.q || "";
@@ -211,14 +214,14 @@ function simCtlBuild(G, r, ctl, fmt) {
       else if (c.type === "button") {
         let grid = tgt.lastElementChild; if (!grid || !grid.classList.contains("sc-bt")) { grid = el("div", "sc-bt"); tgt.appendChild(grid); }
         const x = el("button", "", (c.emoji ? c.emoji + " " : "") + c.label); x.type = "button"; if (c.label.length > 26) x.className = "wide";
-        x.onclick = () => ctl({ctl: "press", id: c.id}); x.dataset.lab = c.label; x.dataset.ex = scExpert(c) && only ? "1" : ""; grid.appendChild(x); return;
+        x.onclick = () => ctl({ctl: "press", id: c.id}); x.dataset.lab = c.label; if (c.ro) x.disabled = true;   // Menüs A: e.g. «Foto-Modus» without a photo x.dataset.ex = scExpert(c) && only ? "1" : ""; grid.appendChild(x); return;
       } else if (c.type === "toggle") {
         row = el("label", "sc-row sc-tg"); const cb = document.createElement("input"); cb.type = "checkbox"; cb.className = "sc-sw simv";
-        cb.onchange = () => ctl({ctl: "set", id: c.id, value: cb.checked}); row.append(el("span", "", c.label), cb);
+        cb.onchange = () => ctl({ctl: "set", id: c.id, value: cb.checked}); row.append(el("span", "", c.label), cb); if (c.ro) cb.disabled = true;
       } else if (c.type === "slider") {
         row = el("div", "sc-row sc-sl"); const l = el("div", "sc-l"); const vv = el("span", "mut simvv"); l.append(el("span", "", c.label), vv);
         const rg = document.createElement("input"); rg.type = "range"; rg.className = "simv"; rg.min = c.min; rg.max = c.max; rg.step = c.step || 1;
-        if (c.ro) { rg.disabled = true; rg.title = t("from MoveEye (setting of MoveEye, only shown here)"); }   // Aufräumen 2: e.g. the battery size
+        if (c.ro) { rg.disabled = true; rg.title = c.ro_tip || t("from MoveEye (setting of MoveEye, only shown here)"); }   // Menüs A: «ro_tip» (e.g. «zuerst ein Foto laden»)   // Aufräumen 2: e.g. the battery size
         let lvT = 0, lvW = null;                      // «live» (simulator 3D-4.x, e.g. the height of the pole): sent while dragging, 5× a second at most
         const lvSend = () => { lvW = null; lvT = Date.now(); ctl({ctl: "set", id: c.id, value: +rg.value}); };
         rg.oninput = () => { vv.textContent = fmt(c, +rg.value); if (c.live && !lvW) lvW = setTimeout(lvSend, Math.max(0, 200 - (Date.now() - lvT))); };
@@ -226,7 +229,7 @@ function simCtlBuild(G, r, ctl, fmt) {
       } else if (c.type === "select") {
         row = el("div", "sc-row sc-se"); const se = document.createElement("select"); se.className = "simv";
         (c.options || []).forEach(o => { const op = document.createElement("option"); op.value = o[0]; op.textContent = o[1] || o[0]; se.appendChild(op); });
-        se.onchange = () => ctl({ctl: "set", id: c.id, value: se.value}); row.append(el("div", "", c.label), se);
+        se.onchange = () => ctl({ctl: "set", id: c.id, value: se.value}); row.append(el("div", "", c.label), se); if (c.ro) se.disabled = true;
       } else {
         row = el("div", "sc-row sc-tx"); const ti = document.createElement("input"); ti.className = "simv";
         ti.onkeydown = e => { if (e.key === "Enter") ctl({ctl: "set", id: c.id, value: ti.value}); }; row.append(el("div", "", c.label), ti);

@@ -1,8 +1,15 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Version **3.6.2** · MoveEye **3.6.2** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 31.10.2026 · Version **3.7.0** · MoveEye **3.7.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.7.0 (MoveEye 3.7.0): Simulator-Menüs aufgeräumt (Menü A)
+
+- `main.gd` (Bedienfeld): «Einfach» 61 statt 101 Einträge, Besuch → Menschen / Tiere mit Unterkarten, doppelte Regler
+  zusammengelegt (Tropfen, Scheinwerfer, Jahreszeit, Tagesablauf), Prüfstand und Rückmeldung nur an einem Ort, «Mover» /
+  «Patrouille» einheitlich, ein Testen-Symbol, Foto-Regler grau ohne Foto; alte Steuerbefehle bleiben. Dazu `toolbar.gd`,
+  `quick.gd`, `mehr.gd`, `kids.gd`, `fotomodus.gd` u. a.; MoveEye 139, 470, 540.
 
 ## NEU in 3.6.2 (MoveEye 3.6.2): Fehlerkorrekturen MoveEye (nur MoveEye)
 

@@ -63,11 +63,11 @@ func save() -> void:
 
 func add_controls() -> void:
 	var sub := {"sub": "Zusatz-Bildschirm"}
-	main.add_control("toggle", "smalltv_show", "Virtueller SmallTV: Kachel zeigen, sobald MoveEye Bilder schickt (gleiche Schnittstelle wie der echte GeekMagic SmallTV Ultra)",
+	main.add_control("toggle", "smalltv_show", "SmallTV-Kachel zeigen (virtuell: sobald MoveEye Bilder schickt, gleiche Schnittstelle wie der echte GeekMagic SmallTV Ultra)",
 			func(): return show, func(v): show = bool(v); save(), "Sensoren", sub)
-	main.add_control("toggle", "smalltv_quirks", "Virtueller SmallTV: Macken wie das echte Gerät (Upload antwortet «400», Antworten 1,2 s später)",
+	main.add_control("toggle", "smalltv_quirks", "SmallTV mit Macken wie echt (Upload antwortet «400», Antworten 1,2 s später)",
 			func(): return quirks, func(v): quirks = bool(v); save(), "Sensoren", {"sub": "Zusatz-Bildschirm", "expert": true})
-	main.add_control("button", "smalltv_clear", "Virtueller SmallTV: Bilder löschen und Zähler zurücksetzen",
+	main.add_control("button", "smalltv_clear", "SmallTV-Bilder löschen (und Zähler zurücksetzen)",
 			null, func(): reset(true), "Sensoren", sub)
 
 

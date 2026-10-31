@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.6.2 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.7.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -425,6 +425,19 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.7.0
+3.7.0: Simulator-Menüs aufgeräumt:
+- «Einfach» zeigt 61 statt 101 Einträge.
+- Besuch ist aufgeteilt in Menschen und Tiere mit Unterkarten.
+- Doppelte Regler sind zusammengelegt (Tropfen, Scheinwerfer, Jahreszeit, Tagesablauf).
+- Prüfstand und Rückmeldung gibt es nur noch an einem Ort.
+- Einheitlich «Mover» und «Patrouille».
+- Testen hat überall dasselbe Symbol.
+- Foto-Regler sind grau, solange kein Foto geladen ist.
+Alte Steuerbefehle funktionieren weiter.
+So testest du: 1) Einfach: bei Testen erscheinen nur 4 Einträge. 2) Experte → Besuch: 7 Unterkarten. 3) Kamerabild: es gibt
+nur einen Regler für Tropfen.
 
 NEU IN 3.6.2
 3.6.2: Fehlerkorrekturen MoveEye:
