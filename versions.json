@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 22:33",
+ "generated": "2026-10-31 22:40",
  "versions": [
   {
-   "version": "3.19.0",
-   "file": "webcam_bewegung_3_19_0.py",
+   "version": "3.19.1",
+   "file": "webcam_bewegung_3_19_1.py",
    "url": "",
-   "sha256": "69f4a59753183be6f5e7dca70f359ccdfc0216283870f7bab8c0cc5c6c8806df",
-   "date": "2026-10-31 22:33",
-   "notes": "Simulator 3.19.0: Trailer (ca. 3 Min.) zu «Die Karte des Grossvaters» und «Maggie und der Bergkristall»; Karte «🛠 Entwickler» oben im Reiter «Sim» mit Trailer Grossvater, Trailer Maggie und Vorführung (live im Browser).",
-   "size": 4432151,
-   "sig": "da56334db7bfb7312fb5f9ebf36c1640d7f66e00ccc0e78c225507406f7ed702cedbf03a8f7ba77445b3a125473c2db818a32e524a494c5f963b0bbbd2964f08",
+   "sha256": "2b8ea6e72ec7b6b7734d8f46a8a3f06e9bbda30adfa99af972c9a1e3448433b1",
+   "date": "2026-10-31 22:40",
+   "notes": "Vorführung und Trailer im Browser sprechen die Texte selbst vor (🔊 Ton an/aus in der Leiste, Sprache von MoveEye); das iPad bleibt während der Vorführung wach; Karte «🛠 Entwickler» im Reiter «Sim» offen.",
+   "size": 4436366,
+   "sig": "4d3c76f884a2e98d3772a3d628268df280888f503ba329e23ed40396057328bf426b33dfcfcb187683dad019f649db667c7c4d77a7f8da6dec48455e6d185902",
    "data": {
-    "file": "moveeye_daten_3_19_0.zip",
+    "file": "moveeye_daten_3_19_1.zip",
     "url": "",
-    "sha256": "85a695cbf71ac72368c299b3a8ddcd153704c32404df5cc177dc7c123d9ab947",
-    "size": 1614162,
-    "sig": "cabdbd72f5fcf1325d58cfc1c01a9838dbaa237544683d4d1a3f4b635f7ab999ab6dcf733ec000f7bed09fb02021cc535ace96ac9f8f118d6c78f99e650ec10d"
+    "sha256": "ab0cb8d6eb5afa8d6b6f635a8addc79b2208b60b76b06c22349eaee58bdd6abc",
+    "size": 1614304,
+    "sig": "7b4d73ea68fb51a67471dd753af1792cbc59a8b1d5651b233d352754d65ce3f4a9d89318273d8a170ae04d67f0bab22afc29be559d2e9eea3c000eb05cb86f06"
    }
   },
   {
@@ -92,7 +92,7 @@
    "file": "webcam_bewegung_3_14_0.py",
    "url": "",
    "sha256": "0ca50d51d6b70b9123dc21f86c1549d6e31838b26b86ecfc077246a882f174b1",
-   "date": "2026-10-31 22:24",
+   "date": "2026-10-31 22:38",
    "notes": "Simulator 3.14.0: Karte des Grossvaters – Geheimnisse (Steinmännchen mit Geheimwort, doppelter Boden, Licht auf der Nachtaufnahme), Nacht mit Geräuschen und je ein Action-Teil pro Kapitel.",
    "size": 4416066,
    "sig": "d1410bda049ee3670ac6b28ba0c6626a16d945c303ef062329ff682d95b698c0f347f04c9649e2552011d6b2b4cda9d03216b31c271e6738127ca28f58a7110a",

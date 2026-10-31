@@ -23,6 +23,8 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 3.19.1: Vorführung und Trailer im Browser sprechen die Texte selbst vor (🔊 Ton an/aus in der Leiste, Sprache von MoveEye);
+    das iPad bleibt während der Vorführung wach; Karte «🛠 Entwickler» im Reiter «Sim» offen.
   * 3.19.0: Simulator 3.19.0: Trailer (ca. 3 Min.) zu «Die Karte des Grossvaters» und «Maggie und der Bergkristall»; Karte «🛠
     Entwickler» oben im Reiter «Sim» mit Trailer Grossvater, Trailer Maggie und Vorführung (live im Browser).
   * 3.18.0: Simulator 3.18.0: Figuren und Tiere mit echten Gelenken (Knie, Ellbogen, Schultern, Hüfte, Sprunggelenk) und
@@ -89,8 +91,6 @@ Features
     ntfy-Adresse in der Webhook-Karte behoben.
   * 3.0.2: Simulator: «Nur Gruppen» wie in MoveEye (Gruppen offen, Themen zu); Anna ist die Betreuerin der Hütte; Sepp spricht
     passend zur Jahreszeit.
-  * 3.0.1: Geschichten-Texte überarbeitet: stimmiger, lebendiger, Tippfehler korrigiert (Maggie, Die Karte des Grossvaters,
-    Entdecken), Übersetzungen vereinheitlicht.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -99,10 +99,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_3_19_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_3_19_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_3_19_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_3_19_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_3_19_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_3_19_1.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -119,7 +119,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "3.19.0"
+APP_VERSION = "3.19.1"
 
 
 def default_data_dir():
@@ -241,8 +241,8 @@ def prepare_settings_file():
 #     Part 397 fetches the zip over the same update source and restarts once (zusatz_start()).
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
-ZD_FILE = "moveeye_daten_3_19_0.zip"
-ZD_SHA256 = "85a695cbf71ac72368c299b3a8ddcd153704c32404df5cc177dc7c123d9ab947"
+ZD_FILE = "moveeye_daten_3_19_1.zip"
+ZD_SHA256 = "ab0cb8d6eb5afa8d6b6f635a8addc79b2208b60b76b06c22349eaee58bdd6abc"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -24553,8 +24553,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3.19.0", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 35617013,
-         "sha256": "9bafc21af348f2062035f609628aaa4b84e107dfbd10f9fee11087f3c3b3fb0e"}
+SIM3D = {"version": "3.19.1", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 35617612,
+         "sha256": "5bdcc11f5d27ad8d67e22055b42eb2f7f7020cddae0f397d825130fc0f90152e"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -30567,7 +30567,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_3_19_0.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_3_19_1.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -48679,7 +48679,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 3.19.0")
+        self.root.title("MoveEye 3.19.1")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -49050,7 +49050,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 3.19.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 3.19.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -67823,6 +67823,48 @@ def trl_do(d, owner=True):
 
 TRL_PAGE = _zd('639n_trailer/TRL_PAGE', ZD_PAGE)
 
+# Sprachausgabe im Browser (Daniel 31.10.2026, Vorführung und Trailer): der Simulator meldet in /control … info das Feld
+# «sprechen» {id, text, lang} (Erzähler, Untertitel, Texttafeln); die Seite liest jeden neuen Satz mit speechSynthesis vor, in
+# der Sprache von MoveEye (rm: eine romanische Stimme, falls das Gerät eine hat, sonst Deutsch). iOS: Ton erst nach einem
+# Tippen («🔊 Ton an»), dabei wird speechSynthesis einmal angestossen; Pause = Stimme verstummt. Dazu hält navigator.wakeLock
+# den Bildschirm wach, solange der Film läuft (iPad). Die Texte bleiben unten als Untertitel im Bild (der Simulator zeigt sie).
+SPK_JS = r"""
+let SPK = {on: false, last: -1, wl: null};
+try { SPK.on = localStorage.getItem("mw-film-ton") === "1"; } catch (e) {}
+function spkLang(l) { l = (l || (typeof LANG !== "undefined" ? LANG : "de") || "de").toLowerCase(); return l === "de" ? "de-CH" : l; }
+function spkPick(l) {
+  if (!window.speechSynthesis) return null;
+  const vs = speechSynthesis.getVoices() || [], want = spkLang(l).toLowerCase(), base = want.slice(0, 2), L = v => (v.lang || "").toLowerCase().replace("_", "-");
+  return vs.find(v => L(v) === want) || vs.find(v => L(v).startsWith(base))
+    || ((base === "rm" || base === "de") ? vs.find(v => L(v) === "de-ch") || vs.find(v => L(v).startsWith("de")) : null) || null;
+}
+function spkBtn() { document.querySelectorAll(".spk-btn").forEach(b => { b.textContent = SPK.on ? "🔊 " + t("Sound on") : "🔇 " + t("Sound off"); }); }
+function spkToggle() {
+  SPK.on = !SPK.on; try { localStorage.setItem("mw-film-ton", SPK.on ? "1" : "0"); } catch (e) {}
+  if (window.speechSynthesis) { speechSynthesis.cancel(); if (SPK.on) { const u = new SpeechSynthesisUtterance(" "); u.volume = 0; speechSynthesis.speak(u); } }   // iOS: started by this tap
+  spkBtn(); spkWake(SPK.on && !!(S && S.laeuft));
+}
+function spkTick(s, paused, running) {
+  const sp = (s && s.sprechen) || null;
+  if (window.speechSynthesis && (paused || !running)) speechSynthesis.cancel();      // pause / end: the voice stops
+  spkWake(running && !paused);
+  if (!sp) return;
+  if (SPK.last < 0 || !SPK.on || !running || paused || sp.id === SPK.last || !sp.text) { SPK.last = sp.id; return; }   // only new sentences
+  SPK.last = sp.id;
+  if (!window.speechSynthesis) return;
+  if (sp.vorne) speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(String(sp.text).replace(/[«»]/g, ""));
+  const v = spkPick(sp.lang); if (v) { u.voice = v; u.lang = v.lang; } else u.lang = spkLang(sp.lang);
+  u.rate = 0.95; speechSynthesis.speak(u);
+}
+async function spkWake(on) {                               // the screen stays awake while the film runs (iPad)
+  try { if (on && !SPK.wl && navigator.wakeLock) { SPK.wl = await navigator.wakeLock.request("screen"); SPK.wl.addEventListener("release", () => { SPK.wl = null; }); }
+    else if (!on && SPK.wl) { SPK.wl.release(); SPK.wl = null; } } catch (e) {}
+}
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && !SPK.wl && S && S.laeuft) spkWake(true); });
+setTimeout(spkBtn, 50);
+"""
+
 _HX_TRL = {
     'Trailer Grossvater': ('Trailer Grossvater', 'Bande-annonce Grand-père', 'Trailer Nonno', 'Trailer Tat'),
     'Trailer Maggie': ('Trailer Maggie', 'Bande-annonce Maggie', 'Trailer Maggie', 'Trailer Maggie'),
@@ -67832,6 +67874,8 @@ _HX_TRL = {
     'Watch again': ('Nochmals ansehen', 'Revoir', 'Guarda di nuovo', 'Guardar anc ina giada'),
     'The end': ('Ende', 'Fin', 'Fine', 'Fin'),
     'Over': ('Vorbei', 'Terminé', 'Finito', 'Terminà'),
+    'Sound on': ('Ton an', 'Son activé', 'Audio attivo', 'Tun activà'),
+    'Sound off': ('Ton aus', 'Son coupé', 'Audio spento', 'Tun deactivà'),
     'This simulator has no trailers yet – update it.': ('Dieser Simulator kennt die Trailer noch nicht – bitte aktualisieren.',
                                                         'Ce simulateur ne connaît pas encore les bandes-annonces – mets-le à jour.',
                                                         'Questo simulatore non conosce ancora i trailer – aggiornalo.',
@@ -67844,6 +67888,12 @@ for _k, _v in _HX_TRL.items():
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
 _TRL_KEYS = list(_HX_TRL) + ["Full screen", "Back", "The valley is being prepared …", "The 3D simulator is not connected."]
+
+# the Vorführung (639m) gets the same: the button in its bar, the new sentences read aloud, silent on pause, screen awake
+VF_PAGE = VF_PAGE.replace('<button type="button" class="sec" onclick="vfFull()"', '<button type="button" class="sec spk-btn" onclick="spkToggle()">🔇</button>\n    <button type="button" class="sec" onclick="vfFull()"', 1)
+VF_PAGE = VF_PAGE.replace("/*VFDE*/\n", "/*VFDE*/\n" + SPK_JS, 1)
+VF_PAGE = VF_PAGE.replace("function vfPaint(j) {\n  S = j || {};", "function vfPaint(j) {\n  S = j || {};\n  spkTick(S, !!S.pause, !!S.laeuft);", 1)
+_VF_KEYS.extend(["Sound on", "Sound off"])
 _TRL_DE_JS = json.dumps({k: DE.get(k, k) for k in ("Trailer Grossvater", "Trailer Maggie", "Vorführung", "Developer")}, ensure_ascii=False)
 
 # Settings → Developer (web 530 devExtras): the two trailers on top of the list (the window 639c: see below)
@@ -67852,15 +67902,15 @@ WEB_PAGE = WEB_PAGE.replace('[["🧪", "Test bench and test run", "/sim#c-test"]
                             '["🧪", "Test bench and test run", "/sim#c-test"]', 1)
 WEB_PAGE = WEB_PAGE.replace("</body>", "<script>Object.assign(I18N.de, " + _TRL_DE_JS + ");</script></body>", 1)
 
-# the tab «Sim»: on top the card «🛠 Entwickler» (only the owner with the developer area: /api/ui_simple dev + /api/trailer not 403)
-TRL_SIM_CARD = """<details class="sc fold wide" id="c-devquick" hidden open>
-    <summary><h2><span>🛠</span><span data-i18n="Developer">Developer</span></h2></summary>
-    <div class="fb">
-      <a class="btn sec" href="/sim/trailer?id=grossvater" style="display:block;margin:4px 0;text-align:left">🎬 <span data-i18n="Trailer Grossvater">Trailer Grossvater</span> ›</a>
-      <a class="btn sec" href="/sim/trailer?id=maggie" style="display:block;margin:4px 0;text-align:left">🎬 <span data-i18n="Trailer Maggie">Trailer Maggie</span> ›</a>
-      <a class="btn sec" href="/sim/vorfuehrung" style="display:block;margin:4px 0;text-align:left">🎬 <span data-i18n="Vorführung">Vorführung</span> ›</a>
+# the tab «Sim»: on top the card «🛠 Entwickler» (no fold card: the links are always visible, also with «Nur Gruppen») (only the owner with the developer area: /api/ui_simple dev + /api/trailer not 403)
+TRL_SIM_CARD = """<div class="sc wide" id="c-devquick" hidden>
+    <h2 style="margin:0 0 8px"><span>🛠</span> <span data-i18n="Developer">Developer</span></h2>
+    <div class="row2" style="display:flex;gap:8px;flex-wrap:wrap">
+      <a class="btn sec" href="/sim/trailer?id=grossvater" style="flex:1 1 180px;text-align:left">🎬 <span data-i18n="Trailer Grossvater">Trailer Grossvater</span> ›</a>
+      <a class="btn sec" href="/sim/trailer?id=maggie" style="flex:1 1 180px;text-align:left">🎬 <span data-i18n="Trailer Maggie">Trailer Maggie</span> ›</a>
+      <a class="btn sec" href="/sim/vorfuehrung" style="flex:1 1 180px;text-align:left">🎬 <span data-i18n="Vorführung">Vorführung</span> ›</a>
     </div>
-  </details>
+  </div>
   """
 TRL_SIMJS = """<script>
 (function trlQuick() {
@@ -67876,7 +67926,7 @@ SIM_PAGE = SIM_PAGE.replace("</body>", TRL_SIMJS.replace("/*TRLDE*/{}", _TRL_DE_
 
 def trl_page():
     js = "Object.assign(I18N.de, " + json.dumps({k: DE.get(k, k) for k in _TRL_KEYS}, ensure_ascii=False) + ");"
-    return render_page(TRL_PAGE, "sim").replace("/*TLDE*/", js, 1)
+    return render_page(TRL_PAGE, "sim").replace("/*TLDE*/", js, 1).replace("/*SPKJS*/", SPK_JS, 1)
 
 
 _smalltv_routes_trl_base = smalltv_routes
@@ -67940,6 +67990,9 @@ def trl_selftest():
     assert 'id="c-devquick"' in SIM_PAGE and "/sim/trailer?id=maggie" in SIM_PAGE and "/sim/vorfuehrung" in SIM_PAGE
     assert SIM_PAGE.index('id="c-devquick"') < SIM_PAGE.index('id="c-conn"')
     assert "/sim/trailer?id=grossvater" in WEB_PAGE
+    assert "speechSynthesis" in html and "spkTick(S" in html and "wakeLock" in html
+    vh = vf_page()
+    assert "spkTick(S, !!S.pause" in vh and "spk-btn" in vh and "Ton an" in vh
     for L in ("fr", "it", "rm"):
         assert TRX[L].get("End the trailer"), L
     return "Trailer: page, owner only, commands to the simulator, card on top of «Sim», entries"

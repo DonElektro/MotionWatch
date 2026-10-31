@@ -1286,11 +1286,19 @@ func _stimme_ok() -> bool:
 	return stimme and Stimme.moeglich()
 
 
+var sprech_id := 0                      # the browser (MoveEye /sim/vorfuehrung) reads the same sentences aloud: info «sprechen»
+var sprech_text := ""
+var sprech_vorne := false
+
+
 func _sprich(text: String, vorne := false) -> void:
-	if not _stimme_ok():
-		return
 	var t := text.replace("«", "").replace("»", "").replace("\n", " ").strip_edges()
 	if t == "":
+		return
+	sprech_id += 1
+	sprech_text = t
+	sprech_vorne = vorne
+	if not _stimme_ok():
 		return
 	if vorne:
 		DisplayServer.tts_stop()
@@ -1508,7 +1516,8 @@ func info() -> Dictionary:
 			"autopilot": str(_ap.get("art", "")), "zeit": _min(_jetzt() - _t0) if laeuft or ergebnis != "" else "", "spielzeit": _min(_t_spiel),
 			"tempo": tempo, "stimme": stimme, "knoepfe": knoepfe, "stimme_moeglich": Stimme.moeglich(), "regionen": _regionen, "blockiert": blockaden.size(),
 			"blockaden": blockaden, "fehler": _fehler.keys(), "protokoll": _zeilen.slice(-14), "lite": _lite(),
-			"datei": ProjectSettings.globalize_path(PROTOKOLL)}
+			"datei": ProjectSettings.globalize_path(PROTOKOLL),
+			"sprechen": {"id": sprech_id, "text": sprech_text, "vorne": sprech_vorne, "lang": T.lang()}}
 	if story != null and story.running and story.demo:
 		out["fertig_regionen"] = story.S.get("done", [])
 		var tasks := []
