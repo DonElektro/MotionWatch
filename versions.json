@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 05:16",
+ "generated": "2026-10-31 05:31",
  "versions": [
   {
-   "version": "2.98.60",
-   "file": "webcam_bewegung_2_98_60.py",
+   "version": "2.98.61",
+   "file": "webcam_bewegung_2_98_61.py",
    "url": "",
-   "sha256": "c3da92e96d8e6d3cda4083addc1616f69033ff134898bd130ceed8a444a664db",
-   "date": "2026-10-31 05:16",
-   "notes": "Simulator 3D-4.29: Fenster «Neu in dieser Version» scrollt, OK immer sichtbar, Esc schliesst.",
-   "sig": "32ec862e315076b20d269f289fec763c251eeb42929419dca376e47b661c3083ef58b8b160788af1d9c6f3564aa65a8876b28d057721458a95d1d4e8aeeaf70d"
+   "sha256": "eeb9d5e24a1044f061ab2ee9cc548be7ed64a5bc4aa4ecdda29641aa9e637701",
+   "date": "2026-10-31 05:31",
+   "notes": "Simulator 3D-4.30: Erlebniswelt im «Ferienpark am See» – 19 kleine Szenen mit Tieren und Menschen im Entdeckungsbuch, «Verstecken mit MoveEye» (nur im Ferienpark).",
+   "sig": "1382ae3b8f0ac2f294a307559a9ac5600e99f0c33480761a1c8474ef06f4d558041f58fb3f4a8fc283225209c13e34d2d719b33d11650b3642a23fcb8749820d"
   },
   {
    "version": "2.97.1",
