@@ -1,7 +1,9 @@
 {
- "version": "3D-4.84",
+ "version": "3D-5.0.1",
+ "ver": "3.0.1",
+ "name": "MoveEye Sim 3.0.1",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 34972336,
- "sha256": "893531e9a64e4a95084e883197c5f97b5c755185d9aa319a67ac1d9472e95218",
- "notes": "Einstellungen beim Start in «Nur Gruppen», Schalter «Beim Start: Nur Gruppen» – wie in MoveEye."
+ "size": 35021276,
+ "sha256": "9ed57d46ebdca6056aa788de06b3c9b374c6fe456e96712beb494f8db9299a91",
+ "notes": "MoveEye Sim 3.0.1: Geschichten-Texte überarbeitet (Maggie, Die Karte des Grossvaters, Entdecken)."
 }

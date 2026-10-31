@@ -1,8 +1,34 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.84** · passende MoveEye-Version (früher Motion Watch) **2.98.115**
+Stand: 31.10.2026 · Version **3.0.1** · MoveEye **3.0.1** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.0.1 (MoveEye 3.0.1): Lektorat der Geschichten-Texte
+
+- Texte in `maggie_*.gd`, `bergtal_abenteuer*.gd`, `abenteuer_figuren_daten.gd`, `bergtal_erleben_b.gd`, `entdecken.gd`,
+  `spielbereich.gd` und `i18n/texte.json` überarbeitet; Titel überall «Die Karte des Grossvaters».
+
+## NEU in 3.0.0 (MoveEye 3.0.0): Gemeinsame Versionsnummer
+
+- MoveEye und MoveEye Sim haben ab jetzt dieselbe Nummer X.Y.Z (neue Funktion = Y+1, Fehlerkorrektur = Z+1). `version.json`
+  mit Brücke `"version": "3D-5.0.0"` + `"ver": "3.0.0"` (geschrieben mit `werkzeuge/versionen.py --sim-json`).
+
+## Versionsnummern (Paket «Versionierung 3.0.0», umgestellt mit dem Release 3.0.0)
+
+Ab **3.0.0** haben MoveEye und der Simulator **dieselbe Nummer** («MoveEye 3.0.0» / «MoveEye Sim 3.0.0») und werden immer
+zusammen veröffentlicht; `VERSION` in `scripts/main.gd` ist dann `"X.Y.Z"` (vorher `"3D-A.B"`). Vergleich und Anzeige nur
+über `scripts/versionen.gd` (`key`, `newer`, `label`, `legacy`). **Brücke:** alte Simulatoren (bis 3D-4.8x) lesen in
+`version.json` nur `version` – dort steht darum `3D-(X+2).Y.Z` (3.0.0 → `3D-5.0.0`), die echte Nummer in `ver`.
+`version.json` nur mit `python3 werkzeuge/versionen.py --sim-json X.Y.Z "Notiz"` schreiben, danach `--pruefen`.
+Regeln und Ablauf: CLAUDE.md, Abschnitt «Versionierung».
+
+## NEU in 3D-4.85 (MoveEye 2.98.116): Fenster «Spielen» mit Geschichten (`geschichten.gd`)
+
+- `geschichten.gd` (neu): Regal mit Geschichten-Karten (Die Karte des Grossvaters = Bergtal-Abenteuer, Maggie, Hospiz nur
+  Besitzer mit Schloss, Teil 2 gesperrt), gleicher Start (Spielstand → Figur → Schwierigkeit/Jahreszeit); `spielbereich.gd`
+  mit Kopfzeile Stufe/Spielstand/Weiterspielen und «Entdecken»; Abzeichen im Entdeckungsbuch (`entdecken.gd`).
+- MoveEye: Reiter «Spielen» gleich aufgebaut (639i, 139; Bild `/sim/story_pic`), `net.gd`/`schnittstelle.json` angepasst.
 
 ## NEU in 3D-4.84 (MoveEye 2.98.115): «Beim Start: Nur Gruppen» (MoveEye und Simulator)
 

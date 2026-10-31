@@ -835,7 +835,7 @@ func open_book() -> void:
 	var sc := ScrollContainer.new()
 	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	var rows := int(ceil(list().size() / 2.0))           # as high as needed, at most what the window allows
-	sc.custom_minimum_size = Vector2(580, clampf(rows * 120.0 + 70.0, 140.0, minf(460.0, get_viewport().get_visible_rect().size.y - 260.0)))
+	sc.custom_minimum_size = Vector2(580, clampf(rows * 120.0 + 240.0, 240.0, minf(460.0, get_viewport().get_visible_rect().size.y - 260.0)))
 	b.add_child(sc)
 	_book_list = VBoxContainer.new()
 	_book_list.add_theme_constant_override("separation", 8)
@@ -898,6 +898,16 @@ func _refresh_book() -> void:
 		var o := UI.small(" · ".join(others))
 		o.custom_minimum_size = Vector2(560, 0)
 		_book_list.add_child(o)
+	if main.spielbereich != null:                   # Geschichten-Menü: the badges live here now (not on «Spielen») - on top
+		var bh := UI.heading(T.t("Abzeichen"))
+		var bg: Control = main.spielbereich.badge_grid(560.0)
+		_book_list.add_child(bh)
+		_book_list.add_child(bg)
+		_book_list.move_child(bh, 0)
+		_book_list.move_child(bg, 1)
+		var lh := UI.heading(T.t("Entdeckungen"))
+		_book_list.add_child(lh)
+		_book_list.move_child(lh, 2)
 
 
 func _scene_name(s: String) -> String:
@@ -997,7 +1007,7 @@ func register_controls() -> void:
 	main.add_control("toggle", "disc_hints", "Blinki-Hinweise, wenn man lange nichts findet", func(): return hints_on, func(v): set_hints(bool(v)), "Spiel")
 	main.add_control("slider", "disc_hint_min", "Blinki-Hinweis nach (Minuten ohne Fund)", func(): return hint_min, func(v): set_hint_min(float(v)), "Spiel",
 			{"min": 1, "max": 30, "step": 1, "unit": "min"})
-	main.add_control("toggle", "disc_demo", "Demo-Entdeckungen im Camping-Platz", func(): return demo_on, func(v): set_demo(bool(v)), "Spiel")
+	main.add_control("toggle", "disc_demo", "Demo-Entdeckungen auf dem Camping-Platz", func(): return demo_on, func(v): set_demo(bool(v)), "Spiel")
 
 
 func set_demo(on: bool) -> void:
@@ -1017,7 +1027,8 @@ func info(lite := false) -> Dictionary:
 			e["icon"] = ""                            # no spoiler on MoveEye's page
 	return {"ok": true, "scene": main.scene, "scene_name": _scene_name(main.scene), "found": count(), "total": L.size(), "items": L,
 			"photo": photo_id != "", "photo_id": photo_id, "hint": hint_id, "hint_text": _hint_l.text if _hint_box.visible else "",
-			"hints_on": hints_on, "hint_min": hint_min, "book": book_open(), "check_us": roundi(check_us)}
+			"hints_on": hints_on, "hint_min": hint_min, "book": book_open(), "check_us": roundi(check_us),
+			"badges": main.spielbereich.badges() if main.spielbereich != null and not lite else []}
 
 
 func control(d: Dictionary) -> Dictionary:

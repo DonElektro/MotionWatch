@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_115.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_3_0_1.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,13 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 3.0.1: Geschichten-Texte überarbeitet: stimmiger, lebendiger, Tippfehler korrigiert (Maggie, Die Karte des Grossvaters,
+    Entdecken), Übersetzungen vereinheitlicht.
+  * 3.0.0: Neue gemeinsame Versionsnummer: MoveEye und MoveEye Sim haben ab jetzt immer dieselbe Nummer (3.0.0). Neue Funktion =
+    zweite Zahl, Fehlerkorrektur = dritte Zahl.
+  * 2.98.116: Reiter «Spielen» neu aufgebaut wie im Simulator (Stufe, Spielstand, Weiterspielen, Geschichten-Regal, Entdecken).
+    Simulator 3D-4.85: neues Fenster «Spielen» mit Geschichten als grosse Karten (Die Karte des Grossvaters, Maggie, Hospiz,
+    Teil 2), gleicher Start für alle Geschichten.
   * 2.98.115: Einstellungen öffnen beim Start in «Nur Gruppen»; neuer Schalter «Beim Start: Nur Gruppen» (ab Werk ein, aus =
     eigene Menüs zurück); Pi-Fenster: die drei Aufklapp-Knöpfe wie im Web. Simulator 3D-4.84: dasselbe im Simulator.
   * 2.98.114: Simulator 3D-4.83: «Auf Werkseinstellungen zurücksetzen» unter Mehr (nur Besitzer) wie bei MoveEye – erst eine
@@ -1131,10 +1138,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_98_115.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_3_0_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_98_115.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_98_115.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_3_0_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_3_0_1.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -1151,7 +1158,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.98.115"
+APP_VERSION = "3.0.1"
 
 
 def default_data_dir():
@@ -5155,8 +5162,6 @@ class Notifier:
         """Short information message (e.g. the new address of the page, the night report). Not limited by the alarm cooldown."""
         if not (self.configured() and CFG["notify_on"]):
             return False
-        if jpg is None and push_kind({"event": "info", "text": text, "info_title": title}).get("pic"):
-            jpg = push_frame_jpg(); fname = "info.jpg"     # 635b: «Protection off» with the current camera picture
         payload = {"event": "info", "persons": 0, "time": datetime.now().isoformat(timespec="seconds"), "text": text, "info_title": title,
                    "snapshot": None, "rain": False, "wind": "", "source": STATE["source_label"], "link": link}
         threading.Thread(target=self._dispatch, args=(payload, jpg, fname if jpg else ""), daemon=True).start()
@@ -5168,14 +5173,38 @@ class Notifier:
 
     @staticmethod
     def _title(p):
-        t_ = push_short(p)["title"]                       # 635b: short, with the symbol (2.96.4: the same symbols everywhere)
+        t_ = Notifier._title0(p)
+        if CFG.get("msg_icons", True):                    # 2.96.4: the same symbols everywhere (138_makeover_design)
+            ic = ev_icon("tamper" if Notifier._event(p) == "tamper" else Notifier._event(p))
+            t_ = (ic + " " + t_) if ic and not t_.startswith(ic) else t_
         t_ = ("[SIM] " + t_) if CFG.get("sim_on") else t_
         kw = msg_keyword(Notifier._event(p))
         return (kw + " · " + t_) if kw else t_
 
     @staticmethod
+    def _title0(p):
+        ev = Notifier._event(p)
+        if ev == "tamper":
+            return render_msg(p.get("info_title"), p)
+        if ev == "info":
+            return render_msg(p.get("info_title") or ("{name}: " + tr("network")), p)
+        if ev == "test":                                  # the test shows your own person message
+            return "[Test] " + render_msg(msg_template("person", 0), dict(p, persons=1))
+        return render_msg(msg_template(ev, 0), p)
+
+    @staticmethod
     def _text(p):
-        return push_short(p)["text"]                      # 635b: at most one line (distance, «+n», «late» included)
+        return Notifier._text0(p) + (" · " + p["dist"] if p.get("dist") else "") + (" " + trf("(+{n} more detections since the last message)", n=p["more"]) if p.get("more") else "") \
+            + (" · " + trf("late - from {t} (the message could not be sent then)", t=str(p.get("time", ""))[11:16]) if p.get("late") else "")
+
+    @staticmethod
+    def _text0(p):
+        ev = Notifier._event(p)
+        if ev in ("info", "tamper"):
+            return p.get("text", "")
+        if ev == "test":
+            return render_msg(msg_template("person", 1), dict(p, persons=1))
+        return render_msg(msg_template(ev, 1), p)
 
     def _dispatch(self, p, jpg, fname):
         if sim_net_down():                               # Simulator-Werte: «WLAN weg» / «Internet weg» test - nothing goes out (285)
@@ -5183,9 +5212,6 @@ class Notifier:
         if sandbox_active() or p.get("_test"):           # 2.96.6: simulator test inbox - nobody is disturbed (141); 2.97.0: per message
             sandbox_add(self._title(p), self._text(p), jpg, self._event(p) if self._event(p) != "tamper" else "tamper")
             msglog_add(self._title(p), self._text(p), self._event(p), jpg, "test", "Test-Postfach")    # 2.98.13: list «Nachrichten»
-            return
-        if push_sim_hold(p):                             # 635b: in the simulation only alarms to the phone (switch sim_info_push)
-            msglog_add(self._title(p), self._text(p), "info", jpg, "none", "🧪 Simulator")
             return
         if CFG["webpush_on"] and webpush_subs():
             threading.Thread(target=self._webpush, args=(p,), daemon=True).start()
@@ -5244,10 +5270,8 @@ class Notifier:
         if kind == "ntfy":
             return self._ntfy(p, jpg, fname), "ntfy " + _url_host(CFG["notify_url"])
         url = CFG["notify_url"].strip()
-        if push_url_is_ntfy(url):                        # 635b: an ntfy address in the webhook card - as ntfy, not as JSON
-            return self._ntfy(p, jpg, fname), "ntfy " + _url_host(url)
-        body_ = dict(p, title=self._title(p), text=self._text(p), info_title=self._title(p) if p.get("info_title") else "")
-        req = urllib.request.Request(url, data=json.dumps(body_, ensure_ascii=False).encode(),
+        body_ = dict(p, title=self._title(p), text=self._text(p))
+        req = urllib.request.Request(url, data=json.dumps(body_).encode(),
                                      headers={"Content-Type": "application/json", "Title": _hdr(self._title(p))})
         with urllib.request.urlopen(req, timeout=8) as r:
             return r.status, _url_host(url)
@@ -5347,8 +5371,6 @@ class Notifier:
         h = {"Title": _hdr(self._title(p)), "Tags": {"person": "warning,camera", "prealarm": "eyes,camera", "info": "signal_strength", "warm": "fire,camera",
                                    "noise": "loud_sound,ear", "tamper": "rotating_light,warning"}.get(ev, "camera"),
              "Priority": {"person": "high", "warm": "high", "noise": "high", "prealarm": "default", "tamper": "urgent"}.get(ev, "default")}
-        if CFG.get("msg_icons", True):                   # 635b: the symbol is in the title - no second emoji from the tags
-            h.pop("Tags")
         if p["link"]:
             h["Click"] = p["link"]
         try:
@@ -12001,7 +12023,7 @@ def sim_hub(force=False):
         d["rover_alarm"] = bool(CFG.get("rover_alarm"))
         try:                                                # Erlebniswelt 20–23 (simulator entdecken.gd): the Entdeckungsbuch of the scene
             dz = sim_control({"action": "entdecken"}) or {}
-            d["disc"] = {k: dz.get(k) for k in ("found", "total", "photo", "scene_name", "hint_text", "items")} if dz.get("ok") and "total" in dz else None
+            d["disc"] = {k: dz.get(k) for k in ("found", "total", "photo", "scene_name", "hint_text", "items", "badges")} if dz.get("ok") and "total" in dz else None
         except Exception:
             d["disc"] = None
     d["demo"] = {"busy": DEMO_RUN["busy"], "i": DEMO_RUN["i"], "n": DEMO_RUN["n"]}
@@ -12122,7 +12144,7 @@ SIMHUB_JS = r"""
     "Zones in 3D": "Zonen in 3D", "camera height": "Höhe der Kamera", "zones": "Zonen", "patrol points": "Patrouillen-Punkte", "Detection in 3D": "Erkennung in 3D", "The map opens at your place on the PC – confirm «Load this place»": "Am PC öffnet sich die Karte an deinem Ort – «Diesen Ort laden» bestätigen", "Visits and detection": "Besuche und Erkennung", "now": "jetzt"});
   Object.assign(DE, {"Discoveries": "Entdeckungen", "{f} of {n} discovered": "{f} von {n} entdeckt", "Photo for the discovery book": "Foto für Entdeckungsbuch",
     "Open in the simulator": "Im Simulator öffnen", "Blinki hint": "Blinki-Hinweis", "a place": "ein Ort", "a scene": "eine Szene", "an animal": "ein Tier", "a person": "ein Mensch",
-    "Found!": "Entdeckt!", "Something special is in the picture – take the photo now!": "Etwas Besonderes ist im Bild – jetzt fotografieren!",
+    "Found!": "Entdeckt!", "Badges": "Abzeichen", "not yet": "noch nicht", "Something special is in the picture – take the photo now!": "Etwas Besonderes ist im Bild – jetzt fotografieren!",
     "Come close enough in the 3D view to discover places, animals and funny scenes. 📷 = take a photo with MoveEye’s camera: aim the head, then «Photo for the discovery book». 🌙 🌧 🌅 = only at night, in the rain, in the morning.": "Wer in der 3D-Ansicht nahe genug kommt, entdeckt Orte, Tiere und lustige Szenen. 📷 = mit MoveEyes Kamera fotografieren: Kopf hinrichten, dann «Foto für Entdeckungsbuch». 🌙 🌧 🌅 = nur nachts, bei Regen, am Morgen.",
     "nothing special in the picture of the camera": "nichts Besonderes im Bild der Kamera", "nothing more to find here right now": "gerade gibt es hier nichts mehr zu finden"});   // Erlebniswelt 20–23
   const tt = k => (typeof t === "function" && t(k) !== k) ? t(k) : (L() === "en" ? k : (DE[k] || k));
@@ -12179,6 +12201,13 @@ SIMHUB_JS = r"""
         E("small", "", x.found ? (x.short || "") : tt(({ort: "a place", szene: "a scene", tier: "an animal", mensch: "a person"})[x.kind] || "a place") + (w.trim() ? " · " + w.trim() : "")));
       c.appendChild(tx); g.appendChild(c); });
     s.appendChild(g);
+    if ((D.badges || []).length) {                     // Geschichten-Menü (639i): the badges live in the discovery book now
+      s.appendChild(E("b", "", "🎖 " + tt("Badges")));
+      const bg = E("div", "dgrid");
+      D.badges.forEach(b => { const c = E("div", "dit" + (b.n > 0 ? "" : " no")); c.title = b.name + (b.n > 0 ? "" : " – " + tt("not yet"));
+        c.append(E("div", "dph", b.n > 0 ? b.sym : "?"), E("div", "dtx", b.name)); bg.appendChild(c); });
+      s.appendChild(bg);
+    }
     const r = E("div", "shrow"); r.style.cssText = "margin-top:8px;flex-wrap:wrap";
     r.append(B("📷 " + tt("Photo for the discovery book"), () => act("disc", "photo").then(x => x && x.ok && say("📷 " + tt("Found!"))), D.photo ? "" : "sec"),
       B("📖 " + tt("Open in the simulator"), () => act("disc", "open")), B("💡 " + tt("Blinki hint"), () => act("disc", "hint")));
@@ -25938,8 +25967,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-4.84", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 34972336,
-         "sha256": "893531e9a64e4a95084e883197c5f97b5c755185d9aa319a67ac1d9472e95218"}
+SIM3D = {"version": "3.0.1", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 35021276,
+         "sha256": "9ed57d46ebdca6056aa788de06b3c9b374c6fe456e96712beb494f8db9299a91"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -25964,7 +25993,8 @@ def sim_latest_check(force=False):
                 try:
                     with urllib.request.urlopen(_upd_request(base + path), timeout=15) as r:
                         d = json.loads(r.read(65536))
-                    SIMLATEST[key] = {"version": str(d.get("version") or "")[:20], "notes": str(d.get("notes") or "")[:400]}
+                    # Versionierung 3.0.0: «ver» = the new number (X.Y.Z), «version» = «3D-(X+2).Y.Z» for old simulators
+                    SIMLATEST[key] = {"version": str(d.get("ver") or d.get("version") or "")[:20], "notes": str(d.get("notes") or "")[:400]}
                     SIMLATEST["err"] = ""
                 except Exception as e:
                     SIMLATEST["err"] = _upd_error(e)[:120] if "_upd_error" in globals() else str(e)[:120]
@@ -25973,9 +26003,35 @@ def sim_latest_check(force=False):
     threading.Thread(target=work, daemon=True, name="simlatest").start()
 
 
-def _vnum(v):
-    m = re.search(r"(\d+)\.(\d+)(?:\.(\d+))?", str(v or ""))
+SIM_LEGACY_SHIFT = 2                # Versionierung 3.0.0: «3D-A.B[.C]» = (A-2).B.C - same rule as simulator3d/scripts/versionen.gd
+
+
+def sim_vkey(v):
+    """a simulator version to compare, both schemas: «3D-4.82» -> (2, 82, 0), «3D-5.0.0» -> (3, 0, 0) (the field for old
+    simulators in version.json), «3.0.0» / «MoveEye Sim 3.0.0» -> (3, 0, 0), «PY-1.2» -> (1, 2, 0); None = no number"""
+    s = str(v or "")
+    m = re.search(r"3D-(\d+)\.(\d+)(?:\.(\d+))?", s)
+    if m:
+        return (int(m.group(1)) - SIM_LEGACY_SHIFT, int(m.group(2)), int(m.group(3) or 0))
+    m = re.search(r"(\d+)\.(\d+)(?:\.(\d+))?", s)
     return tuple(int(x or 0) for x in m.groups()) if m else None
+
+
+def sim_vlegacy(v):
+    """the number old simulators (up to 3D-4.8x) read in version.json «version»: 3.0.0 -> «3D-5.0.0»"""
+    s = str(v or "").strip()
+    if "3D-" in s or not re.match(r"^\d+\.\d+\.\d+$", s):
+        return s
+    a, b, c = (int(x) for x in s.split("."))
+    return "3D-%d.%d.%d" % (a + SIM_LEGACY_SHIFT, b, c)
+
+
+def sim_vlabel(v):
+    """the name to show: «MoveEye Sim 3.0.0» (from 3.0.0), before «MoveEye Sim · 3D 3D-4.82»"""
+    s = str(v or "").strip()
+    return ("MoveEye Sim · 3D " if "3D-" in s else "MoveEye Sim ") + s
+
+
 
 
 SIM_AUTOUPD = {}                   # (address, newest version) -> time the update was started (once per version)
@@ -26008,9 +26064,11 @@ def sim_versions():
     info = SIM.get("info") or {}
     name = str(info.get("name") or "")
     cur, kind = "", ""
-    m = re.search(r"3D-\d+\.\d+", name)
+    m = re.search(r"3D-\d+\.\d+(?:\.\d+)?", name)
     if m:
         cur, kind = m.group(0), "3d"
+    elif re.match(r"^\d+\.\d+\.\d+$", str(info.get("version") or "")) and "Python" not in name:
+        cur, kind = str(info["version"]), "3d"            # Versionierung 3.0.0: «MoveEye Sim 3.0.0» sends «version» too
     else:
         u = sim_base().split("//")[-1]
         f = SIMFOUND.get(u) or SIMFOUND.get(u.replace("localhost", "127.0.0.1")) or {}
@@ -26018,10 +26076,10 @@ def sim_versions():
         if v.startswith("PY-") or "Python" in name:
             kind = "py"; cur = v if v.startswith("PY-") else ("PY-" + (re.search(r"\d+\.\d+", name) or [""])[0] if re.search(r"\d+\.\d+", name) else "")
     lat = SIMLATEST.get(kind) if kind else None
-    newer = bool(lat and cur and _vnum(lat["version"]) and _vnum(cur) and _vnum(lat["version"]) > _vnum(cur))
+    newer = bool(lat and cur and sim_vkey(lat["version"]) and sim_vkey(cur) and sim_vkey(lat["version"]) > sim_vkey(cur))
     return {"kind": kind, "current": cur, "latest": (lat or {}).get("version", ""), "notes": (lat or {}).get("notes", ""), "newer": newer,
             "checked": int(time.time() - SIMLATEST["t"]) if SIMLATEST["t"] else None, "err": SIMLATEST["err"]}
-SIM3D["stem"] = "MotionWatch3D_Simulator"; SIM3D["label"] = "MoveEye Sim · 3D"
+SIM3D["stem"] = "MotionWatch3D_Simulator"; SIM3D["label"] = "MoveEye Sim · 3D" if "3D-" in SIM3D["version"] else "MoveEye Sim"
 SIM3D_BASE = "https://raw.githubusercontent.com/DonElektro/MotionWatch/main/"
 
 
@@ -33053,7 +33111,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_115.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_3_0_1.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -33670,7 +33728,7 @@ def update_check():
             if sigs.get(it["file"]):
                 try:
                     with open(it["path"], "rb") as f:
-                        sha = hashlib.sha256(f.read(8 * 1024 * 1024 + 1)).hexdigest()
+                        sha = hashlib.sha256(f.read(UPD_MAX_BYTES + 1)).hexdigest()
                 except OSError:
                     pass
             cur.update(available=True, src_path=it["path"], url="", sha256=sha, signed=sig_ok(it["version"], it["file"], sha, sigs.get(it["file"])))
@@ -33686,9 +33744,14 @@ def update_check():
     return UPD["items"], msg
 
 
+# Versionierung 3.0.0: the program file is about 7.6 MB - older versions (up to 2.98.x) refuse files over 8 MiB, so 3.0.0
+# itself must stay below 8 MiB; from 3.0.0 on 32 MiB are allowed (room for the next versions).
+UPD_MAX_BYTES = 32 * 1024 * 1024
+
+
 def _verify_program(data, want_version, sha=""):
     import hashlib
-    if len(data) > 8 * 1024 * 1024 or len(data) < 10000:
+    if len(data) > UPD_MAX_BYTES or len(data) < 10000:
         return "the file does not look like MoveEye"
     if sha and hashlib.sha256(data).hexdigest() != sha:
         return "the file is damaged (checksum does not match) - try again"
@@ -33728,15 +33791,15 @@ def update_install(version):
                     except ValueError:
                         pass
                     parts, n = [], 0
-                    while n <= 8 * 1024 * 1024:
-                        b = r.read(min(65536, 8 * 1024 * 1024 + 1 - n))
+                    while n <= UPD_MAX_BYTES:
+                        b = r.read(min(65536, UPD_MAX_BYTES + 1 - n))
                         if not b:
                             break
                         parts.append(b); n += len(b); UPD_PROG["got"] = n
                     data = b"".join(parts)
             elif it.get("src_path"):
                 with open(it["src_path"], "rb") as f:
-                    data = f.read(8 * 1024 * 1024 + 1)
+                    data = f.read(UPD_MAX_BYTES + 1)
             else:
                 return False, "unknown version"
             UPD_PROG.update(phase="check", tp=time.time())
@@ -33751,7 +33814,7 @@ def update_install(version):
         else:
             UPD_PROG.update(phase="check", tp=time.time())
             with open(dst, "rb") as f:
-                err = _verify_program(f.read(8 * 1024 * 1024 + 1), version)
+                err = _verify_program(f.read(UPD_MAX_BYTES + 1), version)
             if err:
                 return False, err
         UPD_PROG.update(phase="restart", tp=time.time())
@@ -41303,7 +41366,10 @@ function paint() {
   $("#p-start").hidden = !S.basis_show || !!S.running; $("#p-stop").hidden = !S.running;
 }
 // ---- button «Update the simulator» (2.95.5): the simulator's own update (control «update_now»), newest version shown ----
-const vnum = v => (String(v || "").match(/(\d+)\.(\d+)/) || [0, 0, 0]).slice(1).map(Number);
+// Versionierung 3.0.0: «3D-A.B[.C]» = (A-2).B.C, «3.0.0» as it is - the same rule as sim_vkey (300) and versionen.gd
+const vnum = v => { const s = String(v || ""), m = s.match(/3D-(\d+)\.(\d+)(?:\.(\d+))?/), n = m || s.match(/(\d+)\.(\d+)(?:\.(\d+))?/);
+  return n ? [+n[1] - (m ? 2 : 0), +n[2], +(n[3] || 0)] : [0, 0, 0]; };
+const vnewer = (a, b) => { const A = vnum(a), B = vnum(b); for (let i = 0; i < 3; i++) if (A[i] !== B[i]) return A[i] > B[i]; return false; };
 function verPaint() {
   const V = S && S.on && S.versions, w = $("#s-supd");
   if (!V || !V.current) { $("#s-ver").textContent = ""; w.hidden = true; return; }
@@ -41316,8 +41382,8 @@ function verPaint() {
 function updPaint(r) {
   const b = $("#s-upd"), has = !!(r && r.ok && (r.controls || []).some(c => c.id === "update_now"));
   b.hidden = !(has && S && S.on); verPaint(); if (b.hidden) return;
-  const V = S.versions || {}, m = String(r.name || "").match(/3D-\d+\.\d+/), cur = V.current || (m ? m[0] : ""), nw = V.latest || (S.sim3d && S.sim3d.version);
-  const [a1, a2] = vnum(cur), [b1, b2] = vnum(nw), newer = cur && nw && (b1 > a1 || (b1 === a1 && b2 > a2));
+  const V = S.versions || {}, m = String(r.name || "").match(/3D-\d+\.\d+(?:\.\d+)?/), cur = V.current || r.version || (m ? m[0] : ""), nw = V.latest || (S.sim3d && S.sim3d.version);
+  const newer = !!(cur && nw && vnewer(nw, cur));
   b.className = newer ? "" : "sec";
   b.title = newer ? t("New version available") + ": " + nw : t("The simulator looks for a new version and installs it");
   b.lastChild.textContent = newer ? t("Update the simulator") + " → " + nw : t("Update the simulator");
@@ -54370,7 +54436,7 @@ details.px-adv>summary::before{content:"▸ ";}details.px-adv[open]>summary::bef
     kw.append(kl, ki); adv.appendChild(kw); X.kw = ki; xField(kw);
     hide(rowOf(d, "msg_keyword_on")); hide(rowOf(d, "msg_keyword_prefix"));
     ["webpush_on", "pushover_on", "email_on"].forEach(k => hide(rowOf(d, k)));     // = the switches of the cards
-    ["push_actions", "msg_icons", "public_url", "notify_network", "sim_info_push", "notify_remote"].forEach(k => { const r_ = rowOf(d, k); if (r_) adv.appendChild(r_); });
+    ["push_actions", "msg_icons", "public_url", "notify_network", "notify_remote"].forEach(k => { const r_ = rowOf(d, k); if (r_) adv.appendChild(r_); });
     const ba = rowOf(d, "browser_alarm"); if (ba) { hide(ba); adv.appendChild(ba); }      // moved to the bell 🔔 (below)
     X.msg = el("div", "px-msg"); adv.appendChild(X.msg);
     root.appendChild(adv);
@@ -58436,6 +58502,38 @@ def sim_owns_updates():
     return SIMUPD.get("mode") is not None
 
 # set_cfg (540) passes «sim_autoupd» changed on the web page to the simulator (_set_cfg_sim -> simupd_push)
+
+
+# ---- Versionierung 3.0.0 (Daniel 31.10.2026): MoveEye and the simulator share one number X.Y.Z from 3.0.0 («MoveEye 3.0.0» /
+# «MoveEye Sim 3.0.0»). simulator3d/version.json keeps «version» = «3D-(X+2).Y.Z» for old simulators (they only compare that
+# field: 3.0.0 would be older than 3D-4.82 for them) and has the real number in «ver». The self-test checks the order of the
+# numbers and - in the repository (GitHub) - that version.json, SIM3D and APP_VERSION fit together.
+def versionen_selftest():
+    order = ["2.98.113", "2.98.114", "3.0.0", "3.0.1", "3.1.0", "3.1.1", "3.10.0", "4.0.0"]
+    for a, b in zip(order, order[1:]):
+        assert _vkey(a) < _vkey(b), f"MoveEye {a} < {b}"
+        assert VFILE_RE.match("webcam_bewegung_%s.py" % b.replace(".", "_")) and VER_RE.match(b), f"file name / number {b}"
+    sims = ["3D-4.82", "3D-4.83", "3.0.0", "3.0.1", "3.1.0", "3.10.0", "4.0.0"]
+    for a, b in zip(sims, sims[1:]):
+        assert sim_vkey(a) < sim_vkey(b), f"simulator {a} < {b}"
+    assert sim_vkey("3D-5.0.0") == sim_vkey("3.0.0") == sim_vkey("MoveEye Sim 3.0.0") == (3, 0, 0), "bridge 3D-5.0.0 = 3.0.0"
+    assert sim_vlegacy("3.0.0") == "3D-5.0.0" and sim_vlegacy("3.10.2") == "3D-5.10.2" and sim_vlegacy("3D-4.82") == "3D-4.82"
+    p = os.path.join(HERE, "simulator3d", "version.json")
+    if not os.path.isfile(p):
+        return None                                               # on the Pi: no repository next to the program
+    with open(p, encoding="utf-8") as f:
+        d = json.load(f)
+    ver, old = str(d.get("ver") or ""), str(d.get("version") or "")
+    assert old.startswith("3D-"), f"version.json «version» must stay «3D-…» for old simulators (is {old!r})"
+    if ver:
+        assert old == sim_vlegacy(ver), f"version.json: «version» {old} must be {sim_vlegacy(ver)} (= {ver} for old simulators)"
+        assert SIM3D["version"] in (ver, old), f"SIM3D {SIM3D['version']} does not fit version.json {ver}"
+    if _vkey(APP_VERSION) >= (3, 0, 0):
+        assert ver == APP_VERSION == SIM3D["version"], f"from 3.0.0 one number: MoveEye {APP_VERSION}, SIM3D {SIM3D['version']}, version.json {ver or old}"
+    return f"simulator {ver or old} (old simulators read {old})"
+
+
+SELFTEST_EXTRA.append(("Version numbers: order, file names, bridge for old simulators (3.0.0)", versionen_selftest))
 # ----------------------------------------------------------------------------
 # Wish of Daniel (30.10.2026): the guards at MoveEye in «Team gegen MoveEye» (the shutter of part 539) may switch on help
 # of the AI for the running round, on the live page and in the «Controller-Ansicht» (538: L2 in a round):
@@ -68227,7 +68325,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.115")
+        self.root.title("MoveEye 3.0.1")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -68598,7 +68696,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 2.98.115 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 3.0.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -71583,7 +71681,7 @@ def _px_tk_panel(app, sbody):
     kx = tk.Label(kr, text="✕", bg=C["field"], fg=C["mut"], cursor="hand2", padx=6); kx.pack(side="right")
     kx.bind("<Button-1>", lambda e: (S["kw"].set(""), push_keyword_set(""), _px_tk_paint(app)))
     app._g2_q(kr, "msg_keyword_prefix")
-    for k in ("push_actions", "msg_icons", "notify_network", "sim_info_push", "notify_remote", "browser_alarm"):
+    for k in ("push_actions", "msg_icons", "notify_network", "notify_remote", "browser_alarm"):
         _px_tk_toggle(app, adv, k)
     _px_tk_field(app, adv, "public_url", err)
     tk.Label(adv, text="💬 " + tr("Message texts"), bg=C["panel"], fg=C["txt"], anchor="w").pack(fill="x", pady=(10, 2))
@@ -92725,446 +92823,6 @@ def spieltest_selftest():
 
 
 SELFTEST_EXTRA.append(("Play test messages of the 3D simulator (635a)", spieltest_selftest))
-# ----------------------------------------------------------------------------
-# Fehler (Screenshot Daniel, Simulator-Betrieb): Info-Meldungen («Tasten am Gerät», «Netzwerk») kamen mit dem rohen JSON als
-# Text aufs Handy ({"event": "info", … "info_title": "{name}: Tasten am Gerät" …}, ä sichtbar). Ursache: der Hauptkanal
-# stand auf «Webhook» mit einer ntfy-Adresse - der Webhook schickt den JSON-Körper (json.dumps, ASCII-Escapes, info_title roh)
-# und nur den Titel als Kopfzeile; ntfy zeigt den Körper als Nachricht. Jetzt:
-#   * 060 _send_main: eine ntfy-Adresse (Host mit «ntfy») in der Webhook-Karte geht als ntfy (push_url_is_ntfy); ein echter
-#     Webhook bekommt lesbares JSON (UTF-8, info_title ersetzt).
-#   * 060 _title / _text -> push_short(p): ein Aufbau für ALLE Meldungen: «[SIM] » + Symbol + kurzer Titel (ohne Gerätename),
-#     Text höchstens eine Zeile (PK_MAX Zeichen), nie {Platzhalter}. Alarme: Schnappschuss wie bisher; «Schutz aus» mit dem
-#     aktuellen Kamerabild (060 info -> push_frame_jpg); «Online» ohne Bild, Antippen öffnet die Seite (Click-Link wie bisher).
-#     Eigene Nachrichtentexte (msg_<art>_title / _text) gelten weiter. ntfy: keine Emoji-Tags mehr (das Symbol steht im Titel).
-#   * 060 _dispatch -> push_sim_hold(p): im Simulator-Betrieb gehen Info-Meldungen (Tasten, Netzwerk, Start, Akku, Updates …)
-#     nicht aufs Handy, nur in die Nachrichten (Status «none», «🧪 Simulator»); Alarme (auch Zonen-Meldungen, «Bist du's?»)
-#     und Berichte der Simulator-Tests (Nacht-Testlauf, Trainings-Nacht, Wochen-Check) weiter. Schalter sim_info_push
-#     (Push → Erweitert im Web 531a und Fenster 571a, Seite Simulator → «Einstellungen der Simulation»), ab Werk aus (636).
-#     Der Spieltest-Push (635a) schickt selbst über _send_main und hat seinen eigenen Schalter - davon unberührt.
-# Kein ntfy-Thema, keine Adresse, keine Zugangsdaten hier. Hier (nach 470 SIM_PAGE, 560–600 DE / TRX, 586 SET_HELP, vor 636
-# Werkseinstellungen), damit der Schalter in FACTORY_CFG ist; 060 ruft push_short / push_kind / push_sim_hold erst beim Senden.
-# ----------------------------------------------------------------------------
-CFG.setdefault("sim_info_push", False)
-DEFAULTS.setdefault("sim_info_push", False)
-TOGGLES.append(("Notifications", "sim_info_push", "In the simulator: info messages to the phone"))
-PK_HELP = ("While the simulation is on, only alarms (marked [SIM]) go to the phone. Info messages (buttons, network, start, battery, "
-           "updates …) stay in MoveEye under Messages. Switch on to get them on the phone too. The play test messages have their own switch.")
-PK_REC = "Off: during tests with the simulator the phone stays quiet except for alarms."
-SET_HELP["sim_info_push"] = (PK_HELP, PK_REC)
-PK_MAX = 80                                               # one line on the phone (ntfy, iPhone lock screen)
-
-# ---- the short forms -------------------------------------------------------------------------------------------------------
-# texts (the English key of the call site; a tuple = key + literal rest): (templates, symbol, title, text, class, picture)
-# class: info = not to the phone in the simulation (without the switch) · alarm / sim = always
-PK_TEXTS = [
-    (("Protection switched off at the device",), "🛡", "Protection off", "Switched off at the device", "info", True),
-    (("Siren stopped at the device",), "🔕", "Siren off", "Stopped at the device", "info", False),
-    (("Disarmed via MQTT / Home Assistant",), "🛡", "Protection off", "Via MQTT / Home Assistant", "info", True),
-    (("MoveEye is online in Wi-Fi {ssid}: {addr}",), "📶", "Online", "Wi-Fi {ssid} · open page", "info", False),
-    ((("Simulation switched on automatically (a simulator is online)", ": {who}"),), "🧪", "Simulation on", "{who}", "info", False),
-    ((("Fixed again", ": {k}"),), "✅", "Fixed again", "{k}", "info", False),
-    (("Power cut – running on the battery ({pct} %)",), "🔌", "Power cut", "Battery {pct} %", "info", False),
-    (("Power back – battery {pct} %",), "🔌", "Power back", "Battery {pct} %", "info", False),
-    (("Battery almost empty: about {pct} % ({hours:.1f} h) left – please charge or swap", "Battery almost empty: about {pct} % ({hours:.1f} h)"),
-     "🪫", "Battery {pct} %", "About {hours} h left · please charge", "info", False),
-    (("Battery empty – the Pi shuts down cleanly",), "🪫", "Battery empty", "The Pi shuts down", "info", False),
-    (("Under-voltage: power bank almost empty or cable too weak",), "⚡", "Under-voltage", "Power bank almost empty or cable too weak", "info", False),
-    (("Battery {pct} %: the battery saver is on - fewer pictures per second, the AI less often. Back to normal when charging.",),
-     "🔋", "Battery saver on", "Battery {pct} % · fewer pictures, AI less often", "info", False),
-    (("The battery will probably not last until sunrise ({sr}): about {have} h left, {need} h needed. Charge it or switch on power saving.",),
-     "🪫", "Battery until sunrise?", "{have} h left, {need} h needed", "info", False),
-    (("Memory card almost full: {free} MB free - the oldest recordings are deleted",), "💾", "Memory card almost full", "{free} MB free", "info", False),
-    (("Pi too hot: {temp:.0f} °C (limit {lim:.0f} °C) - check the cooling / ventilation",), "🌡", "Pi too hot", "{temp} °C (limit {lim} °C)", "info", False),
-    (("Temperature fine again: {t:.1f} °C",), "🌡", "Temperature OK", "{t} °C", "info", False),
-    (("Remote access: {who} is watching",), "👁", "Remote access", "{who} is watching", "info", False),
-    (("Automatic update to version {v} – the program restarts (about 20 s)",), "⬆", "Update {v}", "Restarts (about 20 s)", "info", False),
-    (("New version {v} available - tap «Update now» on the page",), "⬆", "New version {v}", "Tap to update", "info", False),
-    (("Person crossed the line «{zone}»",), "🚶", "Person at «{zone}»", "Line crossed", "alarm", False),
-    (("Person stays in «{zone}» for more than {secs} s",), "🚶", "Person at «{zone}»", "Stays longer than {secs} s", "alarm", False),
-    ((("Person on the public path (only reported, no alarm)", " · {where}"),), "🚶", "Person on the path", "{where} · only reported", "alarm", False),
-    (("The picture has been blurred for 15 minutes (sharpness {p} % of normal). Wipe the lens and look for dew or a spider web.",),
-     "📷", "Lens dirty?", "Wipe the lens · sharpness {p} %", "info", False),
-    (("Weekly check: score {a} instead of {b} – the recognition got worse. Details: tab Simulator.",), "📉", "Weekly check", "Score {a} instead of {b}", "sim", False),
-    (("Night test run: score {a} instead of {b} - the recognition got worse. Details: tab Simulator.",), "📉", "Night test run", "Score {a} instead of {b}", "sim", False),
-    (("Reference scan: {m} missing, {n} new, {c} changed - see the report",), "🔍", "Reference scan", "{m} missing, {n} new, {c} changed", "info", False),
-]
-# titles (the English key after «{name}: »): (symbol, short title, class, picture); the text is shortened to one line
-PK_TITLES = {
-    "Buttons on the device": ("🛡", "Buttons on the device", "info", False), "network": ("ℹ️", "Note", "info", False),
-    "power": ("🔌", "Power", "info", False), "battery": ("🔋", "Battery", "info", False), "Battery": ("🔋", "Battery", "info", False),
-    "battery saver": ("🔋", "Battery saver on", "info", False), "memory": ("💾", "Memory card", "info", False),
-    "temperature": ("🌡", "Temperature", "info", False), "Temperature": ("🌡", "Temperature", "info", False),
-    "TEMPERATURE ALARM": ("🌡", "Temperature alarm", "alarm", False), "Update": ("⬆", "Update", "info", False),
-    "night report": ("🌙", "Night report", "info", False), "remote access": ("👁", "Remote access", "info", False),
-    "Mode": ("⚙", "Mode", "info", False), "Servos": ("↔", "Servos", "info", False), "Self-healing": ("🩹", "Self-healing", "info", False),
-    "safe start": ("🩹", "Safe start", "info", False), "Back on": ("🔌", "Back on", "info", False),
-    "Training night": ("🧪", "Training night", "sim", False), "Night test run (simulation)": ("🌙", "Night test run", "sim", False),
-    "Weekly check": ("📉", "Weekly check", "sim", False), "Test run": ("📉", "Night test run", "sim", False),
-    "Weekly detection report": ("📊", "Weekly report", "info", False), "STORM WARNING": ("🌪", "Storm warning", "alarm", False),
-    "Missing things": ("🔍", "Missing things", "info", False), "Reference scan": ("🔍", "Reference scan", "info", False),
-    "Lens fogged or dirty": ("📷", "Lens dirty?", "info", False), "line": ("🚶", "Person detected", "alarm", False),
-    "dwell area": ("🚶", "Person detected", "alarm", False), "Only report": ("🚶", "Person on the path", "alarm", False),
-    "question from the product page": ("💬", "Question", "info", False), "Play test": ("🎮", "Play test", "sim", False),
-    "Is it you?": ("❓", "Is it you?", "alarm", False), "TAMPER ALARM": ("🛑", "Sabotage", "alarm", False),
-    "THEFT ALARM": ("🚨", "Theft alarm", "alarm", False), "Camera lost": ("📷", "Camera lost", "alarm", False),
-    "Wi-Fi jamming attack": ("📶", "Wi-Fi jamming", "alarm", False), "Wake-up alarm": ("⏰", "Wake-up alarm", "alarm", False),
-    "Quick look at the valuables": ("👀", "Valuables", "alarm", False), "new device in the network": ("📡", "New device", "alarm", False),
-    "unknown tracker nearby": ("📍", "Unknown tracker", "alarm", False), "Problem": ("⚠", "Problem", "alarm", False),
-}
-PK_EVENT = {"person": "Person detected", "prealarm": "Movement", "warm": "Warm body", "noise": "Noise"}
-_PK_PH = re.compile(r"\{(\w+)(?::[^}]*)?\}")
-_PK_SIM = re.compile(r"\s*\(🧪[^)]*\)|\s*🧪\s*")
-
-
-def push_url_is_ntfy(url):
-    """an ntfy server (ntfy.sh, ntfy-me.com, own «ntfy.…») - its messages must not get a JSON body"""
-    try:
-        from urllib.parse import urlsplit
-        host = urlsplit(str(url or "").strip()).hostname or ""
-    except ValueError:
-        return False
-    return "ntfy" in host.lower()
-
-
-def pk_line(s, n=None):
-    """one line: no line breaks, no control characters, at most n characters (cut at a word, «…»)"""
-    n = n or PK_MAX
-    s = " · ".join(x.strip() for x in str(s or "").splitlines() if x.strip())
-    s = " ".join(re.sub(r"[\x00-\x1f\x7f]", " ", s).split())
-    if len(s) <= n:
-        return s
-    cut = s[:n - 1]
-    sp = cut.rfind(" ")
-    return (cut[:sp] if sp > n * 0.6 else cut).rstrip(" ,;:-–·") + "…"
-
-
-def _pk_tpl(t):
-    """the template in the current language: a key, or (key, literal rest)"""
-    return (tr(t[0]) + t[1], t[0] + t[1]) if isinstance(t, tuple) else (tr(t), t)
-
-
-def _pk_match(tpl, text):
-    """the values of the placeholders when text was made from tpl (trailing words of a longer text allowed), else None"""
-    parts = _PK_PH.split(tpl)
-    rx = "^"
-    for i, s_ in enumerate(parts):
-        if i % 2 == 0:
-            rx += re.escape(s_)
-        else:
-            rx += "(?P<%s>.+)" % s_ if (i == len(parts) - 2 and parts[-1] == "") else "(?P<%s>.+?)" % s_
-    m = re.match(rx + ("" if parts[-1] == "" else ".*") + "$", text, re.S)
-    return m.groupdict() if m else None
-
-
-def _pk_fill(tpl, vals):
-    return re.sub(r"\{(\w+)\}", lambda m: str(vals.get(m.group(1), "")).strip(), tpl)
-
-
-def _pk_cut(text):
-    """text without a known form: the first line, the part before « - » / « – » / the first sentence (the advice behind it is on the page)"""
-    s = (str(text or "").strip().splitlines() or [""])[0]
-    for sep in (" - ", " – ", ". "):
-        i = s.find(sep)
-        if i >= 12:
-            s = s[:i]
-    return s
-
-
-def push_kind(p):
-    """the short form of an info / sabotage message: {ic, title, text, cls, pic}"""
-    ev = Notifier._event(p)
-    text = _PK_SIM.sub(" ", str(p.get("text") or "")).strip()
-    raw = re.sub(r"^\{name\}\s*:\s*", "", str(p.get("info_title") or "")).strip()
-    test = raw.startswith("[Test] ")
-    raw = re.sub(r"^\[Test\]\s*", "", raw)
-    raw = _PK_SIM.sub(" ", raw).strip()
-    out = None
-    for tpls, ic, ti, tx, cls, pic in PK_TEXTS:
-        for t_ in tpls:
-            for cand in dict.fromkeys(_pk_tpl(t_)):
-                v = _pk_match(cand, text)
-                if v is not None:
-                    out = {"ic": ic, "title": _pk_fill(tr(ti), v), "text": _pk_fill(tr(tx), v), "cls": cls, "pic": pic}
-                    break
-            if out:
-                break
-        if out:
-            break
-    if out is None:
-        for key, (ic, ti, cls, pic) in PK_TITLES.items():
-            for k_ in dict.fromkeys((tr(key), key)):
-                if raw == k_ or raw.startswith(k_ + " – "):
-                    out = {"ic": ic, "title": tr(ti) + raw[len(k_):], "text": _pk_cut(text), "cls": cls, "pic": pic}
-                    break
-            if out:
-                break
-    if out is None:                                       # unknown: own title, or «Title: rest» of the text, or «Note»
-        ti = render_msg(raw, p).strip()
-        tx = _pk_cut(text)
-        if not ti:
-            m = re.match(r"^([^:·\n]{3,30}):\s+(.+)$", tx)
-            ti, tx = (m.group(1), m.group(2)) if m else (tr("Note"), tx)
-        out = {"ic": ev_icon(ev), "title": ti, "text": tx, "cls": "alarm" if ev == "tamper" else "info", "pic": False}
-    m = re.match(r"^" + re.escape(out["title"]) + r"\s*:\s*", out["text"], re.I) if out["title"] else None
-    if m and out["text"][m.end():]:                       # «Safe start: …» under the title «Safe start»
-        rest = out["text"][m.end():]
-        out["text"] = (rest[:1].upper() + rest[1:]) if " " in rest else rest
-    if ev == "tamper":
-        out["cls"] = "alarm"
-    out["test"] = test
-    return out
-
-
-def push_short(p):
-    """the one form of every push message: {title, text} - title «symbol short title» (the Notifier adds [SIM] and the keyword),
-    text at most one line. Own message texts (msg_<kind>_title / _text) stay."""
-    ev = Notifier._event(p)
-    icons = CFG.get("msg_icons", True)
-    t_ = str(p.get("time") or "")
-    hm = t_[11:16]
-    if ev in ("info", "tamper"):
-        k = push_kind(p)
-        ic, title, parts = k["ic"], k["title"], [k["text"]]
-        title = ("[Test] " if k["test"] else "") + ((ic + " ") if icons and ic else "") + title
-    else:
-        kind = "person" if ev == "test" else ev
-        pp = dict(p, persons=max(1, int(p.get("persons") or 0))) if ev == "test" else p
-        own_t = str(CFG.get(f"msg_{kind}_title", "") or "").strip()
-        own_x = str(CFG.get(f"msg_{kind}_text", "") or "").strip()
-        n = int(pp.get("persons") or 0)
-        title = render_msg(own_t, pp) if own_t else (trf("{n} persons", n=n) if kind == "person" and n > 1 else tr(PK_EVENT.get(kind, "Note")))
-        ic = ev_icon(kind)
-        if icons and ic and not title.startswith(ic):
-            title = ic + " " + title
-        title = ("[Test] " + title) if ev == "test" else title
-        if own_x:
-            parts = [render_msg(own_x, pp)]
-        else:
-            parts = [hm]
-            if ev == "test":
-                parts.append(tr("Test message"))
-            elif kind == "person" and p.get("dist"):
-                d = str(p["dist"])
-                for h_ in (tr("Person") + ", ",):
-                    d = d[len(h_):] if d.startswith(h_) else d
-                parts.append(d)
-            elif kind == "prealarm":
-                parts.append(tr("pre-alarm"))
-            elif kind == "warm":
-                parts.append(tr("thermal camera"))
-            elif kind == "noise" and p.get("db") not in (None, ""):
-                parts.append(f"{p['db']} dB")
-        if own_x and p.get("dist"):
-            parts.append(str(p["dist"]))
-    if p.get("more"):
-        parts.append(trf("+{n} more", n=p["more"]))
-    if p.get("late"):
-        parts.append(trf("late, from {t}", t=hm))
-    title = pk_line(_PK_PH.sub("", render_msg(title, p)) if "{" in title else title, 60)
-    text = pk_line(" · ".join(x for x in parts if x))
-    return {"title": title, "text": text}
-
-
-def push_frame_jpg():
-    """the current camera picture for «Protection off» (small, about 640 px) - None without a picture"""
-    try:
-        w = WATCH_REF.get("w")
-        fr = getattr(w, "frame_out", None) if w is not None else None
-        if fr is None:
-            return None
-        h, w_ = fr.shape[:2]
-        if w_ > 640:
-            fr = cv2.resize(fr, (640, int(h * 640 / w_)), interpolation=cv2.INTER_AREA)
-        ok, buf = cv2.imencode(".jpg", fr, [cv2.IMWRITE_JPEG_QUALITY, 75])
-        return buf.tobytes() if ok else None
-    except Exception:
-        return None
-
-
-_PK_HELD = {"t": 0.0}
-
-
-def push_sim_hold(p):
-    """True = not to the phone: in the simulation only alarms (and the reports of simulator tests), unless sim_info_push"""
-    if not CFG.get("sim_on") or CFG.get("sim_info_push") or Notifier._event(p) != "info":
-        return False
-    if push_kind(p)["cls"] in ("alarm", "sim"):
-        return False
-    STATE["notify_status"] = "simulation: only alarms"
-    if time.time() - _PK_HELD["t"] > 60:
-        _PK_HELD["t"] = time.time()
-        log_event("web", "Info message not sent to the phone (simulation: only alarms, switch «In the simulator: info messages to the phone»)")
-    return True
-
-
-# ---- page Simulator: the same switch in «Settings of the simulation» (470 #simset-box, after the own switches) -----------------
-_PK_SIMJS = ('  try { const nx = await (await fetch("/api/schema?sec=Notifications&simple=0&lang=" + LANG)).json(); '
-             'const it = ((nx[0] || {}).toggles || []).find(x => x.key === "sim_info_push"); '
-             'if (it && !box.querySelector("[data-k=sim_info_push]")) { const l = el("label", "opt"), cb = document.createElement("input"); l.dataset.k = "sim_info_push"; '
-             'cb.type = "checkbox"; cb.className = "sw"; cb.checked = !!it.value; '
-             'cb.onchange = () => post("/api/set", {key: "sim_info_push", value: cb.checked}).then(r => { if (!r.ok) toast(r.error || t("not possible")); }); '
-             'l.append(el("span", "", it.label), cb); box.appendChild(l); } } catch (e) {}\n')
-_PK_ANCHOR = '  if (!box.children.length) box.appendChild(el("div", "mut", "–"));\n'
-if _PK_ANCHOR in SIM_PAGE:
-    SIM_PAGE = SIM_PAGE.replace(_PK_ANCHOR, _PK_SIMJS + _PK_ANCHOR, 1)
-
-# ---- texts (de, fr, it, rm) ------------------------------------------------------------------------------------------------
-_HX_PK = {
-    "In the simulator: info messages to the phone": ("Im Simulator: Info-Meldungen aufs Handy", "Dans le simulateur : infos sur le téléphone",
-                                                     "Nel simulatore: messaggi informativi sul telefono", "En il simulatur: infos sin il telefonin"),
-    PK_HELP: ("Während die Simulation läuft, kommen nur Alarme (mit [SIM]) aufs Handy. Info-Meldungen (Tasten, Netzwerk, Start, Akku, Updates …) bleiben in MoveEye unter Nachrichten. Einschalten, wenn du sie trotzdem auf dem Handy willst. Die Spieltest-Meldungen haben ihren eigenen Schalter.",
-              "Pendant la simulation, seules les alarmes (marquées [SIM]) arrivent sur le téléphone. Les messages d’info (boutons, réseau, démarrage, batterie, mises à jour …) restent dans MoveEye sous Messages. Active-le pour les recevoir quand même. Les messages du test de jeu ont leur propre interrupteur.",
-              "Durante la simulazione arrivano sul telefono solo gli allarmi (con [SIM]). I messaggi informativi (tasti, rete, avvio, batteria, aggiornamenti …) restano in MoveEye sotto Messaggi. Attivalo per riceverli comunque. I messaggi del test di gioco hanno il loro interruttore.",
-              "Durant la simulaziun vegnan mo ils alarms (cun [SIM]) sin il telefonin. Ils messadis d’info (buttuns, rait, start, accu, actualisaziuns …) restan en MoveEye sut Messadis. Activar, sche ti als vuls tuttina sin il telefonin. Ils messadis dal test da gieu han lur agen interruptur."),
-    PK_REC: ("Aus: bei Tests mit dem Simulator bleibt das Handy ruhig, ausser bei Alarmen.",
-             "Arrêt : pendant les tests avec le simulateur, le téléphone reste calme sauf pour les alarmes.",
-             "Spento: durante i test con il simulatore il telefono resta tranquillo, tranne per gli allarmi.",
-             "Stizzà: durant ils tests cun il simulatur resta il telefonin quiet, auter che per alarms."),
-    "Person detected": ("Person erkannt", "Personne détectée", "Persona rilevata", "Persuna identifitgada"),
-    "{n} persons": ("{n} Personen", "{n} personnes", "{n} persone", "{n} persunas"),
-    "Movement": ("Bewegung", "Mouvement", "Movimento", "Moviment"),
-    "Warm body": ("Wärme erkannt", "Corps chaud", "Corpo caldo", "Corp chaud"),
-    "Noise": ("Geräusch", "Bruit", "Rumore", "Canera"),
-    "Note": ("Hinweis", "Info", "Avviso", "Infurmaziun"),
-    "Test message": ("Testnachricht", "Message de test", "Messaggio di prova", "Messadi da test"),
-    "pre-alarm": ("Voralarm", "pré-alarme", "preallarme", "pre-alarm"),
-    "thermal camera": ("Wärmebild", "caméra thermique", "termocamera", "camera termica"),
-    "+{n} more": ("+{n} weitere", "+{n} autres", "+{n} altri", "+{n} ulteriurs"),
-    "late, from {t}": ("verspätet, von {t}", "en retard, de {t}", "in ritardo, delle {t}", "tard, da las {t}"),
-    "Protection off": ("Schutz aus", "Protection désactivée", "Protezione spenta", "Protecziun stizzada"),
-    "Switched off at the device": ("Am Gerät ausgeschaltet", "Désactivée sur l’appareil", "Spenta sul dispositivo", "Stizzada a l’apparat"),
-    "Siren off": ("Sirene aus", "Sirène arrêtée", "Sirena spenta", "Sirena stizzada"),
-    "Stopped at the device": ("Am Gerät gestoppt", "Arrêtée sur l’appareil", "Fermata sul dispositivo", "Fermada a l’apparat"),
-    "Via MQTT / Home Assistant": ("Über MQTT / Home Assistant", "Via MQTT / Home Assistant", "Tramite MQTT / Home Assistant", "Via MQTT / Home Assistant"),
-    "Online": ("Online", "En ligne", "Online", "Online"),
-    "Wi-Fi {ssid} · open page": ("WLAN {ssid} · Seite öffnen", "Wi-Fi {ssid} · ouvrir la page", "Wi-Fi {ssid} · apri la pagina", "WLAN {ssid} · avrir la pagina"),
-    "Simulation on": ("Simulation ein", "Simulation activée", "Simulazione attiva", "Simulaziun activada"),
-    "Fixed again": ("Wieder in Ordnung", "De nouveau en ordre", "Di nuovo a posto", "Puspè en urden"),
-    "Power cut": ("Stromausfall", "Coupure de courant", "Interruzione di corrente", "Interrupziun da current"),
-    "Power back": ("Strom wieder da", "Courant rétabli", "Corrente tornata", "Current puspè qua"),
-    "Battery {pct} %": ("Akku {pct} %", "Batterie {pct} %", "Batteria {pct} %", "Accu {pct} %"),
-    "About {hours} h left · please charge": ("Noch etwa {hours} h · bitte laden", "Encore environ {hours} h · à recharger",
-                                             "Ancora circa {hours} h · da ricaricare", "Anc var {hours} h · per plaschair chargiar"),
-    "Battery empty": ("Akku leer", "Batterie vide", "Batteria scarica", "Accu vid"),
-    "The Pi shuts down": ("Der Pi fährt herunter", "Le Pi s’éteint", "Il Pi si spegne", "Il Pi sa stizza"),
-    "Under-voltage": ("Unterspannung", "Sous-tension", "Sottotensione", "Tensiun memia bassa"),
-    "Power bank almost empty or cable too weak": ("Powerbank fast leer oder Kabel zu schwach", "Batterie externe presque vide ou câble trop faible",
-                                                  "Power bank quasi scarico o cavo troppo debole", "Powerbank bunamain vid u cabel memia flaivel"),
-    "Battery saver on": ("Akku-Sparen ein", "Économie de batterie activée", "Risparmio batteria attivo", "Spargnar accu activà"),
-    "Battery {pct} % · fewer pictures, AI less often": ("Akku {pct} % · weniger Bilder, KI seltener", "Batterie {pct} % · moins d’images, IA moins souvent",
-                                                        "Batteria {pct} % · meno immagini, IA meno spesso", "Accu {pct} % · main maletgs, IA pli darar"),
-    "Battery until sunrise?": ("Akku bis Sonnenaufgang?", "Batterie jusqu’au lever du soleil ?", "Batteria fino all’alba?", "Accu fin la levada dal sulegl?"),
-    "{have} h left, {need} h needed": ("Noch {have} h, nötig {need} h", "Reste {have} h, besoin {need} h", "Restano {have} h, servono {need} h", "Anc {have} h, basegn {need} h"),
-    "Memory card almost full": ("Speicherkarte fast voll", "Carte mémoire presque pleine", "Scheda di memoria quasi piena", "Carta da memoria bunamain plaina"),
-    "{free} MB free": ("{free} MB frei", "{free} Mo libres", "{free} MB liberi", "{free} MB liber"),
-    "Pi too hot": ("Pi zu heiss", "Pi trop chaud", "Pi troppo caldo", "Pi memia chaud"),
-    "{temp} °C (limit {lim} °C)": ("{temp} °C (Grenze {lim} °C)", "{temp} °C (limite {lim} °C)", "{temp} °C (limite {lim} °C)", "{temp} °C (limita {lim} °C)"),
-    "Temperature OK": ("Temperatur wieder gut", "Température OK", "Temperatura OK", "Temperatura OK"),
-    "Temperature alarm": ("Temperatur-Alarm", "Alarme de température", "Allarme temperatura", "Alarm da temperatura"),
-    "Remote access": ("Fernzugriff", "Accès à distance", "Accesso remoto", "Access a distanza"),
-    "{who} is watching": ("{who} schaut zu", "{who} regarde", "{who} sta guardando", "{who} guarda"),
-    "Update {v}": ("Update {v}", "Mise à jour {v}", "Aggiornamento {v}", "Actualisaziun {v}"),
-    "Restarts (about 20 s)": ("Startet neu (etwa 20 s)", "Redémarre (environ 20 s)", "Si riavvia (circa 20 s)", "Reaviescha (var 20 s)"),
-    "New version {v}": ("Neue Version {v}", "Nouvelle version {v}", "Nuova versione {v}", "Nova versiun {v}"),
-    "Tap to update": ("Antippen zum Aktualisieren", "Toucher pour mettre à jour", "Tocca per aggiornare", "Tutgar per actualisar"),
-    "Person at «{zone}»": ("Person bei «{zone}»", "Personne à «{zone}»", "Persona a «{zone}»", "Persuna tar «{zone}»"),
-    "Line crossed": ("Linie überquert", "Ligne franchie", "Linea attraversata", "Lingia traversada"),
-    "Stays longer than {secs} s": ("Bleibt länger als {secs} s", "Reste plus de {secs} s", "Resta più di {secs} s", "Resta pli ditg che {secs} s"),
-    "Person on the path": ("Person auf dem Weg", "Personne sur le chemin", "Persona sul sentiero", "Persuna sin la via"),
-    "{where} · only reported": ("{where} · nur gemeldet", "{where} · seulement signalé", "{where} · solo segnalato", "{where} · mo annunzià"),
-    "Lens dirty?": ("Linse schmutzig?", "Objectif sale ?", "Obiettivo sporco?", "Lentilla malnetta?"),
-    "Wipe the lens · sharpness {p} %": ("Linse abwischen · Schärfe {p} %", "Essuyer l’objectif · netteté {p} %", "Pulire l’obiettivo · nitidezza {p} %", "Nettegiar la lentilla · nitidezza {p} %"),
-    "Weekly check": ("Wochen-Check", "Contrôle hebdo", "Controllo settimanale", "Controlla d’emna"),
-    "Night test run": ("Nacht-Testlauf", "Test de nuit", "Test notturno", "Test da notg"),
-    "Score {a} instead of {b}": ("Note {a} statt {b}", "Note {a} au lieu de {b}", "Punteggio {a} invece di {b}", "Nota {a} empè da {b}"),
-    "Reference scan": ("Referenz-Scan", "Scan de référence", "Scansione di riferimento", "Scan da referenza"),
-    "{m} missing, {n} new, {c} changed": ("{m} fehlen, {n} neu, {c} geändert", "{m} manquants, {n} nouveaux, {c} modifiés",
-                                          "{m} mancanti, {n} nuovi, {c} cambiati", "{m} mancan, {n} novs, {c} midads"),
-    "Buttons on the device": ("Tasten am Gerät", "Boutons sur l’appareil", "Tasti sul dispositivo", "Buttuns sin l’apparat"),
-    "Power": ("Strom", "Courant", "Corrente", "Current"),
-    "Battery": ("Akku", "Batterie", "Batteria", "Accu"),
-    "Memory card": ("Speicherkarte", "Carte mémoire", "Scheda di memoria", "Carta da memoria"),
-    "Temperature": ("Temperatur", "Température", "Temperatura", "Temperatura"),
-    "Update": ("Update", "Mise à jour", "Aggiornamento", "Actualisaziun"),
-    "Night report": ("Nachtbericht", "Rapport de nuit", "Rapporto notturno", "Rapport da la notg"),
-    "Safe start": ("Sicherer Start", "Démarrage sûr", "Avvio sicuro", "Start segir"),
-    "Weekly report": ("Wochenbericht", "Rapport hebdomadaire", "Rapporto settimanale", "Rapport d’emna"),
-    "Storm warning": ("Sturmwarnung", "Alerte tempête", "Allerta tempesta", "Avertiment da stemprà"),
-    "Question": ("Frage", "Question", "Domanda", "Dumonda"),
-    "Sabotage": ("Sabotage", "Sabotage", "Sabotaggio", "Sabotascha"),
-    "Theft alarm": ("Diebstahl-Alarm", "Alarme de vol", "Allarme furto", "Alarm da ladrun"),
-    "Wi-Fi jamming": ("WLAN-Störung", "Brouillage Wi-Fi", "Disturbo Wi-Fi", "Disturbi WLAN"),
-    "Valuables": ("Wertsachen", "Objets de valeur", "Oggetti di valore", "Objects da valur"),
-    "New device": ("Neues Gerät", "Nouvel appareil", "Nuovo dispositivo", "Nov apparat"),
-    "Unknown tracker": ("Unbekannter Tracker", "Traceur inconnu", "Tracker sconosciuto", "Tracker nunenconuschent"),
-}
-for _k, _v in _HX_PK.items():
-    DE.setdefault(_k, _v[0])
-    for _i, _L in enumerate(("fr", "it", "rm")):
-        TRX[_L].setdefault(_k, _v[_i + 1])
-
-
-# ---- self-test: the form of every kind, never JSON / escapes / {name}, the simulation filter, the webhook with an ntfy address --
-def push_kurz_selftest():
-    keys = ("sim_on", "sim_info_push", "msg_icons", "msg_keyword_on", "lang", "device_name", "msg_person_title", "msg_person_text")
-    keep = {k: CFG.get(k) for k in keys}
-    try:
-        CFG.update(sim_on=False, sim_info_push=False, msg_icons=True, msg_keyword_on=False, lang="de", device_name="Zelt",
-                   msg_person_title="", msg_person_text="")
-        now = datetime(2026, 10, 31, 21, 7, 5).isoformat(timespec="seconds")
-        def P(**kw):
-            return dict({"event": "info", "persons": 0, "time": now, "snapshot": None, "rain": False, "wind": "", "source": "cam", "link": ""}, **kw)
-        def T(p):
-            return Notifier._title(p), Notifier._text(p)
-        bad = re.compile(r"[{}]|\\u|\"event\"|info_title")
-        cases = {
-            "off": P(text=tr("Protection switched off at the device") + " 🧪", info_title="{name}: " + tr("Buttons on the device")),
-            "online": P(text=trf("MoveEye is online in Wi-Fi {ssid}: {addr}", ssid="Camping", addr="http://192.0.2.5:5000/"), info_title="", link="http://192.0.2.5:5000/"),
-            "batt": P(text=trf("Battery almost empty: about {pct} % ({hours:.1f} h) left – please charge or swap", pct=12, hours=1.5), info_title="{name}: " + tr("battery")),
-            "person": P(event="person", persons=1, dist=tr("Person") + ", " + trf("about {m} m", m=12) + ", " + tr("coming closer")),
-            "night": P(text="Zeile 1\nZeile 2", info_title="{name}: " + tr("night report")),
-            "unknown": P(text="Etwas ganz Neues: " + "x " * 80, info_title=""),
-        }
-        out = {k: T(p) for k, p in cases.items()}
-        for k, (ti, tx) in out.items():
-            assert not bad.search(ti + tx), f"{k}: placeholder / JSON in «{ti}» «{tx}»"
-            assert "\n" not in tx and len(tx) <= PK_MAX and len(ti) <= 60, f"{k}: more than one line: «{tx}»"
-        assert out["off"] == ("🛡 Schutz aus", "Am Gerät ausgeschaltet"), out["off"]
-        assert out["online"] == ("📶 Online", "WLAN Camping · Seite öffnen"), out["online"]
-        assert out["batt"] == ("🪫 Akku 12 %", "Noch etwa 1.5 h · bitte laden"), out["batt"]
-        assert out["person"] == ("🚶 Person erkannt", "21:07 · ca. 12 m, kommt näher") or out["person"][0] == "🚶 Person erkannt", out["person"]
-        assert out["night"] == ("🌙 Nachtbericht", "Zeile 1"), out["night"]
-        assert push_kind(cases["off"])["pic"] and not push_kind(cases["online"])["pic"], "picture only for «Protection off»"
-        CFG["msg_person_title"] = "{name}: Achtung"
-        assert Notifier._title(cases["person"]) == "🚶 Zelt: Achtung", "own title with {name} replaced"
-        CFG["msg_person_title"] = ""
-        # the simulation: [SIM] in front, info messages held back (switch off), alarms and sim reports go out
-        CFG["sim_on"] = True
-        assert Notifier._title(cases["off"]).startswith("[SIM] 🛡 "), "[SIM] in front"
-        assert push_sim_hold(cases["off"]) and push_sim_hold(cases["online"]) and push_sim_hold(cases["batt"]), "info in the simulation"
-        assert not push_sim_hold(cases["person"]) and not push_sim_hold(P(event="tamper", text="x", info_title="{name}: " + tr("TAMPER ALARM")))
-        assert not push_sim_hold(P(text="x", info_title="{name}: 🧪 " + tr("Night test run (simulation)"))), "the report of a sim test goes out"
-        assert not push_sim_hold(P(text=trf("Person crossed the line «{zone}»", zone="Eingang"), info_title="{name}: " + tr("line"))), "zone = alarm"
-        assert Notifier._title(P(text=trf("Person crossed the line «{zone}»", zone="Eingang"), info_title="{name}: " + tr("line"))) == "[SIM] 🚶 Person bei «Eingang»"
-        CFG["sim_info_push"] = True
-        assert not push_sim_hold(cases["off"]), "the switch lets info messages through"
-        CFG["sim_on"] = False; CFG["sim_info_push"] = False
-        assert not push_sim_hold(cases["off"]), "outside the simulation everything as before"
-        assert globals().get("FACTORY_CFG", {}).get("sim_info_push") is False, "not in the factory settings (off)"
-        assert any(x[1] == "sim_info_push" and x[0] == "Notifications" for x in TOGGLES), "switch not in the push group"
-        assert "sim_info_push" in SIM_PAGE, "switch not on the page Simulator"
-        # an ntfy address in the webhook card goes as ntfy, a real webhook gets readable JSON
-        assert push_url_is_ntfy("https://ntfy.sh/x") and push_url_is_ntfy("https://ntfy-me.com/x") and not push_url_is_ntfy("https://ha.local/api/webhook/x")
-        for L in ("fr", "it", "rm", "en"):
-            CFG["lang"] = L
-            ti, tx = T(P(text=tr("Protection switched off at the device"), info_title="{name}: " + tr("Buttons on the device")))
-            assert ti.startswith("🛡 ") and tx and not bad.search(ti + tx), f"{L}: {ti} / {tx}"
-    finally:
-        CFG.update(keep)
-    return "one short form (title with symbol, one line), [SIM], only alarms in the simulation, webhook with an ntfy address"
-
-
-SELFTEST_EXTRA.append(("Short push messages, only alarms in the simulation (635b)", push_kurz_selftest))
 # All parts have added their settings now (CFG.setdefault in later parts), the start (640) loads the file only after this.
 import copy as _copy_g2
 FACTORY_CFG = _copy_g2.deepcopy(CFG)
@@ -94589,7 +94247,13 @@ def sim_status():                                         # + 639h: show «MoveE
 # {"action": "spielbereich", "do": "start", "id"} – the simulator has the hook for the later Bergtal adventure).
 # The state lives in the simulator (per PC: user://spiel/spielbereich.json); MoveEye keeps the last answer in
 # DATA_DIR/spielbereich.json so the tab shows it when the simulator is off. No ranking, no music, no animations besides
-# Blinki's blink. Here (after 639h, before 640) because NAV_ITEMS (470), render_page (510/584), blinki_js (589),
+# Blinki's blink.
+# Geschichten-Menü (Daniel 31.10.2026): the same cards as the simulator (geschichten.gd) - only to look at here: picture
+# (/sim/story_pic/<id>.jpg from the simulator, else a drawn placeholder), one sentence, duration, «from X years», progress
+# in %; on top «Continue: <story>, <chapter> (x %)» as information; the head line has level and Spielstand. «Adventures»
+# is now «Discover». The badges moved into the discovery book (139 sheet 📖). «Das Hospiz» only for the owner (nacht_may:
+# administrator, not in operator mode) - for everybody else the card and its picture do not exist.
+# Here (after 639h, before 640) because NAV_ITEMS (470), render_page (510/584), blinki_js (589),
 # smalltv_routes (552/599c), App (570) and the tables DE / TRX come before.
 # ----------------------------------------------------------------------------
 # 2.98.85 (Koordinator, bis Daniel entscheidet): «Spielen» steht unter «Mehr» (zweite Zeile nach «Übersicht») statt als 7. Reiter -
@@ -94615,7 +94279,7 @@ def play_state(force=False):
         try:
             r = sim_control({"action": "spielbereich", "do": "info"}) or {}
             if r.get("ok") and isinstance(r.get("chapters"), list):
-                d = {k: r.get(k) for k in ("chapters", "badges", "level", "blinki", "current", "scene")}
+                d = {k: r.get(k) for k in ("chapters", "badges", "level", "blinki", "current", "scene", "stories", "resume", "slot", "kids")}
                 d.update(ok=True, offline=False, t=now)
                 try:
                     with open(_play_file(), "w", encoding="utf-8") as f:
@@ -94636,6 +94300,29 @@ def play_state(force=False):
     return d
 
 
+def play_for(d, owner=True):
+    """the answer for one viewer: «Das Hospiz» only for the owner (administrator, not in operator mode)"""
+    if owner or not d:
+        return d
+    d = dict(d)
+    d["stories"] = [x for x in (d.get("stories") or []) if x.get("id") != "horror"]
+    if (d.get("resume") or {}).get("id") == "horror":
+        d["resume"] = {}
+    return d
+
+
+def play_story_pic(sid, owner=True):
+    """the picture of a story card from the simulator (JPEG bytes) or None"""
+    sid = str(sid or "")
+    if not CFG.get("sim_on") or not re.fullmatch(r"[a-z0-9]{1,16}", sid) or (sid == "horror" and not owner):
+        return None
+    try:
+        b_, _h = _sim_get(f"/story_pic/{sid}.jpg", 3.0)
+        return b_ or None
+    except Exception:
+        return None
+
+
 def play_do(action, cid=""):
     """«Start the adventure» (id) / open or close the start screen in the simulator / «seen» (Blinki's joy shown)"""
     if not CFG.get("sim_on"):
@@ -94649,7 +94336,7 @@ def play_do(action, cid=""):
         return {"ok": False, "error": str(e)[:80]}
     _PLAY["t"] = 0.0
     if not r.get("ok"):
-        return {"ok": False, "error": {"locked": tr("This adventure is still locked."), "soon": tr("This adventure comes with a next version.")}.get(r.get("error"), str(r.get("error") or ""))}
+        return {"ok": False, "error": {"locked": tr("This place is still locked."), "soon": tr("This place comes with a next version.")}.get(r.get("error"), str(r.get("error") or ""))}
     return {"ok": True, "state": play_state(True)}
 
 
@@ -94673,12 +94360,21 @@ main{padding:16px;max-width:720px;margin:0 auto}
 .pl-chip.done{border-color:var(--grn);color:var(--grn)}.pl-chip.mut{border-color:var(--line);color:var(--mut)}
 .pl-p{display:flex;gap:8px;align-items:center;margin-top:5px;font-size:13px}.pl-p .pl-bar{flex:0 0 110px;margin:0}
 .pl-ch button{flex:none}
-.pl-bd{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:8px}
-.pl-b{border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:8px 4px;text-align:center}
-.pl-b i{font-style:normal;font-size:22px;display:block;line-height:1.3}.pl-b small{display:block;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pl-b.got{border-color:var(--acc)}.pl-b:not(.got) i{opacity:.35;filter:grayscale(1)}.pl-b:not(.got) small{color:var(--mut)}
 .pl-btns{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 4px}
-@media(max-width:520px){.pl-ch{flex-wrap:wrap}.pl-ch button{width:100%}.pl-t{flex-basis:calc(100% - 44px)}}
+.pl-who{margin-left:auto;font-size:13px;color:var(--txt)}
+.pl-go{border:1px solid var(--acc);border-radius:14px;background:var(--glow);padding:12px 14px;margin:0 0 12px;font-weight:600}.pl-go small{display:block;font-weight:400;color:var(--mut);margin-top:2px}
+.pl-st{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pl-s{border:1px solid var(--line);border-radius:14px;background:var(--panel);overflow:hidden;display:flex;flex-direction:column}
+.pl-s.last{border-color:var(--acc)}.pl-s.off{opacity:.62}
+.pl-pic{height:120px;background:#223 center/cover no-repeat;display:flex;align-items:center;justify-content:center;font-size:44px}
+.pl-pic.grossvater{background-color:#a8946d;background-image:repeating-linear-gradient(90deg,transparent 0 24%,rgba(80,50,20,.2) 24% 25%)}
+.pl-pic.maggie{background-image:linear-gradient(#5c94db,#c7e0f7 55%,#52803f 56%)}
+.pl-pic.horror{background-image:linear-gradient(#05070c,#1a1e26 60%,#2a2f38)}
+.pl-pic.teil2{background-color:#8c7c5c;filter:grayscale(.4)}
+.pl-sb{padding:10px 12px 12px;display:flex;flex-direction:column;gap:4px}.pl-sb b{font-size:15px}.pl-sb .mut{font-size:12px}
+.pl-m{font-size:12px}.pl-sp{display:flex;gap:8px;align-items:center;font-size:12px}.pl-sp .pl-bar{flex:1;margin:0}
+body.kids .pl-sb b{font-size:18px}body.kids .pl-sb .mut,body.kids .pl-m,body.kids .pl-sp{font-size:15px}
+@media(max-width:520px){.pl-st{grid-template-columns:1fr}.pl-ch{flex-wrap:wrap}.pl-ch button{width:100%}.pl-t{flex-basis:calc(100% - 44px)}}
 </style></head><body>
 <header>
   <h1>MoveEye</h1>
@@ -94689,12 +94385,14 @@ main{padding:16px;max-width:720px;margin:0 auto}
   </span>
 </header>
 <main>
-  <div id="pl-bk"></div>
   <div class="pl-card" id="pl-lv" hidden></div>
-  <div class="pl-h" data-i18n="Adventures">Adventures</div>
+  <div id="pl-go"></div>
+  <div class="pl-h" data-i18n="Stories">Stories</div>
+  <div class="pl-st" id="pl-st"></div>
+  <p class="mut" style="font-size:12px;margin:6px 2px 0" data-i18n="Stories are played in the simulator – here you see the progress.">Stories are played in the simulator – here you see the progress.</p>
+  <div class="pl-h" data-i18n="Discover">Discover</div>
+  <div id="pl-bk"></div>
   <div id="pl-ch"></div>
-  <div class="pl-h" data-i18n="Badges">Badges</div>
-  <div class="pl-bd" id="pl-bd"></div>
   <div class="pl-btns">
     <a class="btn" href="/sim#gw">🎮 <span data-i18n="Game wizard">Game wizard</span></a>
     <a class="btn sec" href="/sim#c-disc">📖 <span data-i18n="Discovery book">Discovery book</span></a>
@@ -94717,7 +94415,7 @@ async function plLoad() {
 }
 function el(tag, cls, txt) { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
 function plPaint(j) {
-  const B = window.MWBlinki, bk = j.blinki || (j.offline ? {mood: "think", title: t("Hello, I am Blinki!"), text: t("The 3D simulator is not connected. Switch on the simulation (tab Simulator) – then you play the adventures here.")} : null);
+  const B = window.MWBlinki, bk = j.blinki || (j.offline ? {mood: "think", title: t("Hello, I am Blinki!"), text: t("The 3D simulator is not connected. Switch on the simulation (tab Simulator) – then you see your stories and places here.")} : null);
   if (j.offline && j.blinki) bk.text = t("The 3D simulator is not connected – this is the state of last time.");
   const key = bk ? bk.mood + bk.title + bk.text : "";
   if (key !== LASTB) {
@@ -94730,12 +94428,33 @@ function plPaint(j) {
   if (L) {
     lv.textContent = ""; const h = el("div", "pl-lv"); h.append(el("b", "", "⭐ " + t("Level") + " " + L.lv),
       el("small", "", t("{xp} points · {n} more to level {l}").replace("{xp}", L.xp).replace("{n}", L.to - L.xp).replace("{l}", L.lv + 1)));
+    if (j.slot) h.appendChild(el("span", "pl-who", "👤 " + (j.slot.name || t("Game state {n}").replace("{n}", j.slot.n))));
     h.title = (L.parts || []).map(p => p[0] + " " + p[1]).join(" · ");
     const b = el("div", "pl-bar"), i = el("i"); i.style.width = Math.max(0, Math.min(100, 100 * (L.xp - L.from) / Math.max(1, L.to - L.from))) + "%"; b.appendChild(i);
     lv.append(h, b);
   }
+  document.body.classList.toggle("kids", !!j.kids);
+  const go = document.getElementById("pl-go"), R = j.resume || {}; go.textContent = "";
+  if (R.id) { const g = el("div", "pl-go", "▶ " + (R.where ? t("Continue: {t}, {w} ({p} %)").replace("{w}", R.where) : t("Continue: {t} ({p} %)")).replace("{t}", R.title).replace("{p}", R.pct));
+    g.appendChild(el("small", "", t("The button «Continue» is in the simulator (window «Playing»).")));
+    go.appendChild(g); }
+  const sg = document.getElementById("pl-st"); sg.textContent = "";
+  if (!(j.stories || []).length) sg.appendChild(el("p", "mut", t("No stories yet – they come from the 3D simulator.")));
+  const EMO = {grossvater: "🗺", maggie: "🐕", horror: "🔒", teil2: "🔒"};
+  (j.stories || []).forEach(x => {
+    const c = el("div", "pl-s" + (x.last && x.started ? " last" : "") + (x.soon ? " off" : "")), pic = el("div", "pl-pic " + x.id);
+    if (x.pic && !j.offline && !x.locked) pic.style.backgroundImage = "url('/sim/story_pic/" + x.id + ".jpg?p=" + x.pct + "')";
+    else pic.textContent = x.locked || x.soon ? "🔒" : (EMO[x.id] || "📖");
+    const b = el("div", "pl-sb"), ti = el("b", "", x.title);
+    const chip = x.soon ? t("Coming soon") : x.locked ? t("🔒 Locked") : x.done ? t("✓ Done") : !x.started ? t("New") : "";
+    if (chip) ti.appendChild(el("span", "pl-chip" + (x.done ? " done" : x.soon || x.locked ? " mut" : ""), chip));
+    const p = el("div", "pl-sp"), br = el("div", "pl-bar"), i = el("i"); i.style.width = Math.max(0, Math.min(100, x.pct)) + "%"; br.appendChild(i);
+    p.append(br, el("span", "", x.pct + " %" + (x.where && !x.done ? " · " + x.where : "")));
+    b.append(ti, el("div", "mut", x.short || ""), el("div", "pl-m", "⏱ " + (x.dauer || "") + " · " + t("from {n} years").replace("{n}", x.age)), p);
+    c.append(pic, b); sg.appendChild(c);
+  });
   const ch = document.getElementById("pl-ch"); ch.textContent = "";
-  if (!(j.chapters || []).length) ch.appendChild(el("p", "mut", t("No adventures yet – they come from the 3D simulator.")));
+  if (!(j.chapters || []).length) ch.appendChild(el("p", "mut", t("No places yet – they come from the 3D simulator.")));
   (j.chapters || []).forEach(c => {
     const off = c.state === "locked" || c.state === "soon", r = el("div", "pl-ch st-" + c.state + (c.current ? " cur" : "") + (off ? " off" : ""));
     const tx = el("div", "pl-t"), ti = el("b", "", c.name); tx.appendChild(ti);
@@ -94744,19 +94463,16 @@ function plPaint(j) {
     if (c.current) tx.appendChild(el("span", "pl-chip", t("You are here")));
     tx.appendChild(el("div", "mut", c.short || ""));
     const p = el("div", "pl-p");
-    if (c.state === "soon") p.appendChild(el("span", "mut", t("This adventure comes with a next version.")));
-    else if (c.state === "locked") p.appendChild(el("span", "mut", t("Opens when half of the adventure before is discovered.")));
+    if (c.state === "soon") p.appendChild(el("span", "mut", t("This place comes with a next version.")));
+    else if (c.state === "locked") p.appendChild(el("span", "mut", t("Opens when half of the place before is discovered.")));
     else if (c.total > 0) { p.appendChild(el("span", "", t("{f} of {n} discovered").replace("{f}", c.found).replace("{n}", c.total)));
       const b = el("div", "pl-bar"), i = el("i"); i.style.width = (100 * c.found / c.total) + "%"; b.appendChild(i); p.appendChild(b); }
     else p.appendChild(el("span", "mut", c.visited ? t("Nothing to discover here (yet).") : t("Not visited yet – what there is to discover shows on the spot.")));
     tx.appendChild(p);
-    const n = el("div", "pl-n", String(c.n)), bt = el("button", off || c.current ? "sec" : "", off ? (c.state === "soon" ? t("Coming soon") : t("Locked")) : c.current ? t("Keep playing") : t("Start the adventure"));
+    const n = el("div", "pl-n", String(c.n)), bt = el("button", off || c.current ? "sec" : "", off ? (c.state === "soon" ? t("Coming soon") : t("Locked")) : c.current ? t("Keep discovering") : t("Travel there"));
     bt.type = "button"; bt.disabled = off || j.offline; if (!off) bt.onclick = () => plDo("start", c.id, bt);
     r.append(n, tx, bt); ch.appendChild(r);
   });
-  const bd = document.getElementById("pl-bd"); bd.textContent = "";
-  (j.badges || []).forEach(b => { const x = el("div", "pl-b" + (b.n > 0 ? " got" : "")); x.append(el("i", "", b.n > 0 ? b.sym : "?"), el("small", "", b.name));
-    x.title = b.name + (b.n > 1 && b.kind === "game" ? " × " + b.n : "") + (b.n > 0 ? "" : " – " + t("not yet")); bd.appendChild(x); });
   document.getElementById("pl-sim").disabled = !!j.offline;
   document.getElementById("pl-msg").textContent = j.offline && j.t ? t("Last state from the simulator") + ": " + new Date(j.t * 1000).toLocaleString() : "";
 }
@@ -94764,7 +94480,7 @@ async function plDo(a, id, b) {
   if (b) b.disabled = true;
   const r = await post("/api/play", {action: a, id: id || ""});
   if (r && r.ok && r.state) plPaint(r.state);
-  document.getElementById("pl-msg").textContent = r && !r.ok ? "⚠ " + (r.error || "") : (a === "start" && r && r.ok ? "✓ " + t("The adventure starts in the simulator.") : "");
+  document.getElementById("pl-msg").textContent = r && !r.ok ? "⚠ " + (r.error || "") : (a === "start" && r && r.ok ? "✓ " + t("The simulator travels there.") : "");
   if (b) b.disabled = false;
 }
 /*ALERTS*/
@@ -94775,7 +94491,6 @@ async function plDo(a, id, b) {
 _HX_PLAY = {
     'Play area': ('Spielen', 'Jouer', 'Giocare', 'Giugar'),
     'Playing': ('Spielen', 'Jouer', 'Giocare', 'Giugar'),
-    'Adventures': ('Abenteuer', 'Aventures', 'Avventure', 'Aventuras'),
     'Badges': ('Abzeichen', 'Badges', 'Distintivi', 'Insignas'),
     'Level': ('Stufe', 'Niveau', 'Livello', 'Stgalim'),
     '{xp} points · {n} more to level {l}': ('{xp} Punkte · noch {n} bis Stufe {l}', '{xp} points · encore {n} jusqu’au niveau {l}',
@@ -94786,40 +94501,55 @@ _HX_PLAY = {
     'Locked': ('Gesperrt', 'Verrouillé', 'Bloccato', 'Bloccà'),
     'Coming soon': ('Kommt bald', 'Bientôt', 'Presto', 'Vegn prest'),
     'You are here': ('Hier bist du', 'Tu es ici', 'Sei qui', 'Ti es qua'),
-    'Start the adventure': ('Abenteuer starten', 'Commencer l’aventure', 'Inizia l’avventura', 'Cumenzar l’aventura'),
     'Keep playing': ('Weiter spielen', 'Continuer à jouer', 'Continua a giocare', 'Giugar vinavant'),
-    'This adventure comes with a next version.': ('Dieses Abenteuer kommt mit einer nächsten Version.', 'Cette aventure arrive avec une prochaine version.',
-                                                  'Questa avventura arriva con una prossima versione.', 'Questa aventura vegn cun ina proxima versiun.'),
-    'This adventure is still locked.': ('Dieses Abenteuer ist noch gesperrt.', 'Cette aventure est encore verrouillée.', 'Questa avventura è ancora bloccata.',
-                                        'Questa aventura è anc bloccada.'),
-    'Opens when half of the adventure before is discovered.': ('Öffnet sich, wenn das Abenteuer davor zur Hälfte entdeckt ist.',
-                                                               'S’ouvre quand la moitié de l’aventure précédente est découverte.',
-                                                               'Si apre quando metà dell’avventura precedente è scoperta.',
-                                                               'S’avra, cura che la mesadad da l’aventura avant è scuvrida.'),
     'Nothing to discover here (yet).': ('Hier gibt es (noch) nichts zu entdecken.', 'Rien à découvrir ici (pour l’instant).', 'Qui non c’è (ancora) niente da scoprire.',
                                         'Qua na datti (anc) nagut da scuvrir.'),
     'Not visited yet – what there is to discover shows on the spot.': ('Noch nicht besucht – was es zu entdecken gibt, zeigt sich vor Ort.',
                                                                        'Pas encore visité – ce qu’il y a à découvrir se montre sur place.',
                                                                        'Non ancora visitato – cosa c’è da scoprire si vede sul posto.',
                                                                        'Anc betg visità – tge ch’i dat da scuvrir sa mussa al lieu.'),
+    'Stories': ('Geschichten', 'Histoires', 'Storie', 'Istorgias'),
+    'Discover': ('Entdecken', 'Découvrir', 'Scoprire', 'Scuvrir'),
+    'Travel there': ('Hinreisen', 'Y aller', 'Andarci', 'Ir là'),
+    'Keep discovering': ('Weiter entdecken', 'Continuer à découvrir', 'Continua a scoprire', 'Cuntinuar a scuvrir'),
+    'This place comes with a next version.': ('Dieser Ort kommt mit einer nächsten Version.', 'Ce lieu arrive avec une prochaine version.',
+                                              'Questo luogo arriva con una prossima versione.', 'Quest lieu vegn cun ina proxima versiun.'),
+    'This place is still locked.': ('Dieser Ort ist noch gesperrt.', 'Ce lieu est encore verrouillé.', 'Questo luogo è ancora bloccato.', 'Quest lieu è anc bloccà.'),
+    'Opens when half of the place before is discovered.': ('Öffnet sich, wenn der Ort davor zur Hälfte entdeckt ist.',
+                                                           'S’ouvre quand la moitié du lieu précédent est découverte.',
+                                                           'Si apre quando metà del luogo precedente è scoperta.',
+                                                           'S’avra, cura che la mesadad dal lieu avant è scuvrida.'),
+    'No places yet – they come from the 3D simulator.': ('Noch keine Orte – sie kommen vom 3D-Simulator.', 'Pas encore de lieux – ils viennent du simulateur 3D.',
+                                                         'Ancora nessun luogo – arrivano dal simulatore 3D.', 'Anc nagins lieus – els vegnan dal simulatur 3D.'),
+    'No stories yet – they come from the 3D simulator.': ('Noch keine Geschichten – sie kommen vom 3D-Simulator.', 'Pas encore d’histoires – elles viennent du simulateur 3D.',
+                                                          'Ancora nessuna storia – arrivano dal simulatore 3D.', 'Anc naginas istorgias – ellas vegnan dal simulatur 3D.'),
+    'The simulator travels there.': ('Der Simulator reist hin.', 'Le simulateur y va.', 'Il simulatore ci va.', 'Il simulatur va là.'),
+    'Continue: {t}, {w} ({p} %)': ('Weiterspielen: {t}, {w} ({p} %)', 'Continuer : {t}, {w} ({p} %)', 'Continua: {t}, {w} ({p} %)', 'Giugar vinavant: {t}, {w} ({p} %)'),
+    'Continue: {t} ({p} %)': ('Weiterspielen: {t} ({p} %)', 'Continuer : {t} ({p} %)', 'Continua: {t} ({p} %)', 'Giugar vinavant: {t} ({p} %)'),
+    'The button «Continue» is in the simulator (window «Playing»).': ('Den Knopf «Weiterspielen» gibt es im Simulator (Fenster «Spielen»).',
+                                                                     'Le bouton «Continuer» se trouve dans le simulateur (fenêtre «Jouer»).',
+                                                                     'Il pulsante «Continua» è nel simulatore (finestra «Giocare»).',
+                                                                     'Il buttun «Giugar vinavant» è en il simulatur (fanestra «Giugar»).'),
+    'from {n} years': ('ab {n} Jahren', 'dès {n} ans', 'da {n} anni', 'a partir da {n} onns'),
+    'Game state {n}': ('Spielstand {n}', 'Partie {n}', 'Partita {n}', 'Stadi dal gieu {n}'),
+    'Stories are played in the simulator – here you see the progress.': ('Gespielt wird im Simulator – hier siehst du den Fortschritt.',
+                                                                         'On joue dans le simulateur – ici tu vois la progression.',
+                                                                         'Si gioca nel simulatore – qui vedi i progressi.',
+                                                                         'I vegn giugà en il simulatur – qua vesas ti il progress.'),
     'not yet': ('noch nicht', 'pas encore', 'non ancora', 'anc betg'),
     'Discovery book': ('Entdeckungsbuch', 'Carnet de découvertes', 'Diario delle scoperte', 'Cudesch da scuvertas'),
-    'No adventures yet – they come from the 3D simulator.': ('Noch keine Abenteuer – sie kommen vom 3D-Simulator.', 'Pas encore d’aventures – elles viennent du simulateur 3D.',
-                                                            'Ancora nessuna avventura – arrivano dal simulatore 3D.', 'Anc naginas aventuras – ellas vegnan dal simulatur 3D.'),
     'The 3D simulator is not connected.': ('Der 3D-Simulator ist nicht verbunden.', 'Le simulateur 3D n’est pas connecté.', 'Il simulatore 3D non è collegato.',
                                            'Il simulatur 3D n’è betg collià.'),
-    'The 3D simulator is not connected. Switch on the simulation (tab Simulator) – then you play the adventures here.': (
-        'Der 3D-Simulator ist nicht verbunden. Schalte die Simulation ein (Reiter Simulator) – dann spielst du hier die Abenteuer.',
-        'Le simulateur 3D n’est pas connecté. Active la simulation (onglet Simulateur) – ensuite tu joues ici les aventures.',
-        'Il simulatore 3D non è collegato. Attiva la simulazione (scheda Simulatore) – poi qui giochi le avventure.',
-        'Il simulatur 3D n’è betg collià. Activescha la simulaziun (register Simulatur) – lura giogas ti qua las aventuras.'),
+    'The 3D simulator is not connected. Switch on the simulation (tab Simulator) – then you see your stories and places here.': (
+        'Der 3D-Simulator ist nicht verbunden. Schalte die Simulation ein (Reiter Simulator) – dann siehst du hier deine Geschichten und Orte.',
+        'Le simulateur 3D n’est pas connecté. Active la simulation (onglet Simulateur) – ensuite tu vois ici tes histoires et tes lieux.',
+        'Il simulatore 3D non è collegato. Attiva la simulazione (scheda Simulatore) – poi qui vedi le tue storie e i tuoi luoghi.',
+        'Il simulatur 3D n’è betg collià. Activescha la simulaziun (register Simulatur) – lura vesas ti qua tias istorgias e tes lieus.'),
     'The 3D simulator is not connected – this is the state of last time.': ('Der 3D-Simulator ist nicht verbunden – das ist der Stand vom letzten Mal.',
                                                                             'Le simulateur 3D n’est pas connecté – voici l’état de la dernière fois.',
                                                                             'Il simulatore 3D non è collegato – questo è lo stato dell’ultima volta.',
                                                                             'Il simulatur 3D n’è betg collià – quai è il stadi da l’ultima giada.'),
     'Last state from the simulator': ('Letzter Stand vom Simulator', 'Dernier état du simulateur', 'Ultimo stato dal simulatore', 'Ultim stadi dal simulatur'),
-    'The adventure starts in the simulator.': ('Das Abenteuer startet im Simulator.', 'L’aventure commence dans le simulateur.', 'L’avventura inizia nel simulatore.',
-                                               'L’aventura cumenza en il simulatur.'),
     'Refresh': ('Aktualisieren', 'Actualiser', 'Aggiorna', 'Actualisar'),
     'Game wizard (browser)': ('Spiel-Assistent (Browser)', 'Assistant de jeu (navigateur)', 'Assistente di gioco (browser)', 'Assistent da gieu (navigatur)'),
     'Discovery book (browser)': ('Entdeckungsbuch (Browser)', 'Carnet de découvertes (navigateur)', 'Diario delle scoperte (browser)', 'Cudesch da scuvertas (navigatur)'),
@@ -94858,12 +94588,24 @@ def smalltv_routes(app, reply, body):                     # + 639i: /play and /a
 
     @app.route("/api/play", methods=["GET", "POST"])
     def api_play():
+        own = nacht_may(_nacht_role())                    # «Das Hospiz»: only the owner (administrator, not operator mode)
         if request.method == "GET":
-            return reply(play_state())
+            return reply(play_for(play_state(), own))
         d = body(); a = str(d.get("action") or "")
         if a not in ("start", "open", "close", "seen"):
             return reply({"ok": False, "error": "unknown action"}, 400)
-        return reply(play_do(a, d.get("id") or ""))
+        r = play_do(a, d.get("id") or "")
+        if r.get("state"):
+            r["state"] = play_for(r["state"], own)
+        return reply(r)
+
+    @app.route("/sim/story_pic/<sid>.jpg")
+    def play_story_pic_(sid):
+        """Geschichten-Menü: the picture of a story card (a picture from the story itself, from the simulator)"""
+        b_ = play_story_pic(sid, nacht_may(_nacht_role()))
+        if not b_:
+            return Response("no picture", 404)
+        return Response(b_, mimetype="image/jpeg", headers={"Cache-Control": "max-age=120"})
 
 
 # ---- the window: the same tab «Spielen» --------------------------------------------------------------------------------
@@ -94882,7 +94624,7 @@ def _tk_play_tab(self, left):
                               ("📖 " + tr("Discovery book (browser)"), lambda: self._open_page("/sim#c-disc")),
                               ("🖥 " + tr("Open in the simulator"), lambda: self._play_act("open"))])
     bar.grid(row=1, column=0, sticky="ew", pady=(10, 0))
-    self._play_paint(play_state() if _PLAY["d"] is not None else {"ok": True, "offline": True, "chapters": [], "badges": []})
+    self._play_paint(play_state() if _PLAY["d"] is not None else {"ok": True, "offline": True, "chapters": [], "badges": [], "stories": []})
     self._play_poll()
 
 
@@ -94904,7 +94646,7 @@ def _tk_play_act(self, a, cid=""):
     def work():
         r = play_do(a, cid)
         try:
-            self.root.after(0, lambda: (self._status("Playing", ("✓ " + tr("The adventure starts in the simulator.")) if r.get("ok") and a == "start"
+            self.root.after(0, lambda: (self._status("Playing", ("✓ " + tr("The simulator travels there.")) if r.get("ok") and a == "start"
                                                      else ("⚠ " + str(r.get("error") or "")) if not r.get("ok") else tr("Open in the simulator")),
                                         r.get("ok") and self._play_paint(r["state"])))
         except Exception:
@@ -94916,7 +94658,8 @@ def _tk_play_paint(self, d):
     inner = getattr(self, "_play_inner", None)
     if inner is None or not inner.winfo_exists():
         return
-    sig = json.dumps([d.get(k) for k in ("chapters", "badges", "level", "blinki", "offline")], sort_keys=True, default=str)
+    d = play_for(d, nacht_may("admin"))                    # the window = the owner (unless operator mode)
+    sig = json.dumps([d.get(k) for k in ("chapters", "stories", "resume", "slot", "level", "blinki", "offline")], sort_keys=True, default=str)
     if sig == self._play_sig:
         return
     self._play_sig = sig
@@ -94926,7 +94669,7 @@ def _tk_play_paint(self, d):
     if d.get("offline"):
         bk = {"mood": "think", "title": (bk or {}).get("title") or tr("Hello, I am Blinki!"),
               "text": tr("The 3D simulator is not connected – this is the state of last time.") if bk else
-              tr("The 3D simulator is not connected. Switch on the simulation (tab Simulator) – then you play the adventures here.")}
+              tr("The 3D simulator is not connected. Switch on the simulation (tab Simulator) – then you see your stories and places here.")}
     if bk and not blinki_tk_say(inner, bk.get("mood") or "normal", bk.get("title") or "", bk.get("text") or "", C["bg"]):
         tk.Label(inner, text=bk.get("title") or "", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12, "bold"), anchor="w").pack(fill="x")
         tk.Label(inner, text=bk.get("text") or "", bg=C["bg"], fg=C["mut"], anchor="w", justify="left", wraplength=520).pack(fill="x")
@@ -94939,10 +94682,42 @@ def _tk_play_paint(self, d):
         tk.Label(hl, text="⭐ " + tr("Level") + " " + str(L["lv"]), bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 12, "bold")).pack(side="left")
         tk.Label(hl, text=tr("{xp} points · {n} more to level {l}").replace("{xp}", str(L["xp"])).replace("{n}", str(L["to"] - L["xp"])).replace("{l}", str(L["lv"] + 1)),
                  bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 9)).pack(side="left", padx=(10, 0))
+        sl = d.get("slot") or {}
+        if sl:
+            tk.Label(hl, text="👤 " + (sl.get("name") or tr("Game state {n}").replace("{n}", str(sl.get("n")))), bg=C["panel"], fg=C["txt"],
+                     font=("DejaVu Sans", 10)).pack(side="right")
         pb = ttk.Progressbar(lc, maximum=max(1, L["to"] - L["from"])); pb.pack(fill="x", pady=(6, 0)); pb["value"] = max(0, L["xp"] - L["from"])
-    ttk.Label(inner, text=tr("Adventures").upper(), style="Mut.TLabel").pack(anchor="w", pady=(12, 4))
+    R = d.get("resume") or {}
+    if R.get("id"):
+        txt = (tr("Continue: {t}, {w} ({p} %)").replace("{w}", str(R.get("where"))) if R.get("where") else tr("Continue: {t} ({p} %)"))
+        rf = tk.Frame(inner, bg=C["panel"], highlightthickness=1, highlightbackground=C["acc"], padx=10, pady=8); rf.pack(fill="x", pady=(8, 0))
+        tk.Label(rf, text="▶ " + txt.replace("{t}", str(R.get("title"))).replace("{p}", str(R.get("pct"))), bg=C["panel"], fg=C["txt"],
+                 font=("DejaVu Sans", 11, "bold"), anchor="w").pack(fill="x")
+        tk.Label(rf, text=tr("The button «Continue» is in the simulator (window «Playing»)."), bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 9),
+                 anchor="w").pack(fill="x")
+    ttk.Label(inner, text=tr("Stories").upper(), style="Mut.TLabel").pack(anchor="w", pady=(12, 4))
+    sg = tk.Frame(inner, bg=C["bg"]); sg.pack(fill="x")
+    if not d.get("stories"):
+        ttk.Label(sg, text=tr("No stories yet – they come from the 3D simulator."), style="Mut.TLabel").grid(row=0, column=0, sticky="w")
+    emo = {"grossvater": "🗺", "maggie": "🐕", "horror": "🔒", "teil2": "🔒"}
+    for i, x in enumerate(d.get("stories") or []):
+        off = bool(x.get("soon"))
+        f = tk.Frame(sg, bg=C["panel"], highlightthickness=1, highlightbackground=C["acc"] if x.get("last") and x.get("started") else C["line"], padx=10, pady=8)
+        f.grid(row=i // 2, column=i % 2, sticky="nsew", padx=(0, 8), pady=(0, 8)); sg.columnconfigure(i % 2, weight=1, uniform="st")
+        chip = tr("Coming soon") if off else tr("🔒 Locked") if x.get("locked") else tr("✓ Done") if x.get("done") else tr("New") if not x.get("started") else ""
+        tk.Label(f, text=("🔒" if x.get("locked") or off else emo.get(x.get("id"), "📖")) + "  " + str(x.get("title")) + ("   " + chip if chip else ""), bg=C["panel"],
+                 fg=C["mut"] if off else C["txt"], font=("DejaVu Sans", 11, "bold"), anchor="w", justify="left", wraplength=250).pack(fill="x")
+        tk.Label(f, text=str(x.get("short") or ""), bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 9), anchor="w", justify="left", wraplength=250).pack(fill="x")
+        tk.Label(f, text="⏱ " + str(x.get("dauer") or "") + " · " + tr("from {n} years").replace("{n}", str(x.get("age"))), bg=C["panel"], fg=C["txt"],
+                 font=("DejaVu Sans", 9), anchor="w").pack(fill="x", pady=(3, 0))
+        pr = tk.Frame(f, bg=C["panel"]); pr.pack(fill="x", pady=(3, 0))
+        pb = ttk.Progressbar(pr, maximum=100, length=120); pb.pack(side="left"); pb["value"] = int(x.get("pct") or 0)
+        tk.Label(pr, text=f"{int(x.get('pct') or 0)} %" + (" · " + str(x.get("where")) if x.get("where") and not x.get("done") else ""), bg=C["panel"], fg=C["txt"],
+                 font=("DejaVu Sans", 9)).pack(side="left", padx=(8, 0))
+    ttk.Label(inner, text=tr("Stories are played in the simulator – here you see the progress."), style="Mut.TLabel").pack(anchor="w")
+    ttk.Label(inner, text=tr("Discover").upper(), style="Mut.TLabel").pack(anchor="w", pady=(12, 4))
     if not d.get("chapters"):
-        ttk.Label(inner, text=tr("No adventures yet – they come from the 3D simulator."), style="Mut.TLabel").pack(anchor="w")
+        ttk.Label(inner, text=tr("No places yet – they come from the 3D simulator."), style="Mut.TLabel").pack(anchor="w")
     for c in d.get("chapters") or []:
         off = c.get("state") in ("locked", "soon")
         f = tk.Frame(inner, bg=C["panel"], highlightthickness=1, highlightbackground=C["acc"] if c.get("current") else C["line"], padx=10, pady=8)
@@ -94956,9 +94731,9 @@ def _tk_play_paint(self, d):
         tk.Label(tx, text=str(c.get("name")) + ("   " + st if st else ""), bg=C["panel"], fg=C["mut"] if off else C["txt"], font=("DejaVu Sans", 11, "bold"), anchor="w").pack(fill="x")
         tk.Label(tx, text=str(c.get("short") or ""), bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 9), anchor="w", justify="left", wraplength=420).pack(fill="x")
         if c.get("state") == "soon":
-            pt = tr("This adventure comes with a next version.")
+            pt = tr("This place comes with a next version.")
         elif c.get("state") == "locked":
-            pt = tr("Opens when half of the adventure before is discovered.")
+            pt = tr("Opens when half of the place before is discovered.")
         elif int(c.get("total") or 0) > 0:
             pt = tr("{f} of {n} discovered").replace("{f}", str(c.get("found"))).replace("{n}", str(c.get("total")))
         else:
@@ -94970,18 +94745,9 @@ def _tk_play_paint(self, d):
         if off:
             b = self._fbtn(f, tr("Coming soon") if c.get("state") == "soon" else tr("Locked"), lambda: None); b.config(fg=C["mut"], cursor="arrow")
         else:
-            b = self._fbtn(f, tr("Keep playing") if c.get("current") else tr("Start the adventure"), lambda i=c.get("id"): self._play_act("start", i),
+            b = self._fbtn(f, tr("Keep discovering") if c.get("current") else tr("Travel there"), lambda i=c.get("id"): self._play_act("start", i),
                            primary=not c.get("current"))
         b.pack(side="right")
-    ttk.Label(inner, text=tr("Badges").upper(), style="Mut.TLabel").pack(anchor="w", pady=(12, 4))
-    g = tk.Frame(inner, bg=C["bg"]); g.pack(fill="x")
-    for i, b in enumerate(d.get("badges") or []):
-        got = int(b.get("n") or 0) > 0
-        x = tk.Frame(g, bg=C["panel"], highlightthickness=1, highlightbackground=C["acc"] if got else C["line"], padx=4, pady=4)
-        x.grid(row=i // 7, column=i % 7, sticky="nsew", padx=(0, 6), pady=(0, 6)); g.columnconfigure(i % 7, weight=1)
-        tk.Label(x, text=b.get("sym") if got else "?", bg=C["panel"], fg=C["txt"] if got else C["mut"], font=("DejaVu Sans", 14)).pack()
-        tk.Label(x, text=str(b.get("name") or ""), bg=C["panel"], fg=C["txt"] if got else C["mut"], font=("DejaVu Sans", 8)).pack()
-        Tip(x, str(b.get("name") or "") + ("" if got else " – " + tr("not yet")))
     if d.get("offline") and d.get("t"):
         ttk.Label(inner, text=tr("Last state from the simulator") + ": " + datetime.fromtimestamp(float(d["t"])).strftime("%d.%m. %H:%M"),
                   style="Mut.TLabel").pack(anchor="w", pady=(8, 0))
@@ -95000,8 +94766,12 @@ def play_selftest():
         assert d["ok"] and d["offline"] and isinstance(d.get("chapters"), list)
         assert not play_do("start", "camping")["ok"]
         html = play_page()
-        assert 'href="/play"' in html and "/api/play" in html and "Abenteuer" in html and "MWBlinki" in html
-        assert tr("Start the adventure", "fr") != "Start the adventure" and tr("Adventures", "rm") == "Aventuras"
+        assert 'href="/play"' in html and "/api/play" in html and "Geschichten" in html and "Entdecken" in html and "MWBlinki" in html
+        assert 'id="pl-bd"' not in html and "/sim/story_pic/" in html             # Geschichten-Menü: badges in the discovery book
+        st = {"stories": [{"id": "horror"}, {"id": "maggie"}], "resume": {"id": "horror"}}
+        assert [x["id"] for x in play_for(st, False)["stories"]] == ["maggie"] and not play_for(st, False)["resume"]
+        assert len(play_for(st, True)["stories"]) == 2 and play_story_pic("horror", False) is None and play_story_pic("../x") is None
+        assert tr("Travel there", "fr") != "Travel there" and tr("Stories", "rm") == "Istorgias" and tr("Discover", "it") == "Scoprire"
         assert hasattr(App, "_tk_play_tab")
     finally:
         CFG["sim_on"] = keep[0]; _PLAY.clear(); _PLAY.update(keep[1])

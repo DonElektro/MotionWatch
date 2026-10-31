@@ -965,7 +965,7 @@ func phone_state() -> Dictionary:
 	var R: Dictionary = ab.R
 	var b = ab.bt()
 	var d := {"t": "abz", "on": not R.is_empty(), "step": T.t(str(STEPS[clampi(int(ab.step), 0, STEPS.size() - 1)])), "mode": mode, "names": names,
-			"title": T.t(str(ab.chapter()["title"])) if not R.is_empty() else T.t("Bergtal-Abenteuer"), "h": snappedf(main.hour(), 0.01)}
+			"title": T.t(str(ab.chapter()["title"])) if not R.is_empty() else T.t("Die Karte des Grossvaters"), "h": snappedf(main.hour(), 0.01)}
 	if R.is_empty():
 		return d
 	var pos: Vector2 = R.get("pos", Vector2.ZERO)

@@ -1,7 +1,7 @@
 extends Node
 ## Entwicklertool 3 · Kapitel-Sprung (Daniel 31.10.2026): Kapitel bzw. Schritt wählen und dorthin springen - zum Testen,
 ## ohne alles durchzuspielen.
-##   * Abenteuer «Die Karte des Bergführers» (bergtal_abenteuer.gd): Kapitel 1 … 5, Schritt Kapitel … Morgen. Ab «Unterwegs»
+##   * Geschichte «Die Karte des Grossvaters» (bergtal_abenteuer.gd): Kapitel 1 … 5, Schritt Kapitel … Morgen. Ab «Unterwegs»
 ##     startet die Tour (fester Seed), «Nachtlager» = am Ziel angekommen, «Nacht» = Lager steht, «Morgen» = schnelle Nacht.
 ##   * Spielbereich (spielbereich.gd): Kapitel 1 … 4 offen (die davor als besucht) und hinein.
 ##   * Horror-Modus «Das Hospiz» (bergtal_horror.gd): Nacht 1 … 3 - NUR wenn Horror im laufenden Programm schon mit dem
@@ -18,7 +18,7 @@ const UI = preload("res://scripts/ui_style.gd")
 const TEST_DIR := "user://dev_test"
 const AB_TEST := "user://dev_test/bergtal_abenteuer_fortschritt.json"
 const SB_TEST := "user://dev_test/spielbereich.json"
-const AREAS := [["abenteuer", "Abenteuer «Die Karte des Bergführers»"], ["spielbereich", "Spielbereich (Kapitel der Szenen)"],
+const AREAS := [["abenteuer", "Geschichte «Die Karte des Grossvaters»"], ["spielbereich", "Spielbereich (Kapitel der Szenen)"],
 		["horror", "Horror-Modus «Das Hospiz»"]]
 const SEED := 4242                       # the same tour every time (like «Situation speichern»)
 
@@ -174,7 +174,7 @@ func _jump_ab(n: int, s: int) -> Dictionary:
 	var D = ab.D
 	n = clampi(n, 1, D.CHAPTERS.size())
 	s = clampi(s, 0, ab.STEPS.size() - 1)
-	var b: String = main.busy_with("Bergtal-Abenteuer")
+	var b: String = main.busy_with("Die Karte des Grossvaters")
 	if b != "" and b != "Nacht-Testlauf":
 		return {"ok": false, "error": "busy", "busy": b}
 	_begin_test()

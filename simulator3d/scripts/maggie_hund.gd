@@ -253,7 +253,7 @@ func _stationen(r: String) -> Array:
 				{"id": "h_spur", "f": "riechen", "ding": "spur", "off": Vector2(-22, -14), "ziel": Vector2(-12, -24),
 					"hinweis": T.t("Im Nebel ist der Weg verschwunden. Maggie hält die Nase in die Luft."),
 					"hilfe": T.t("Lass Maggie riechen!"),
-					"ok": T.t("Maggie hat die Spur! Die Pfoten leuchten bis zu den Steinen im Bach."),
+					"ok": T.t("Maggie hat die Spur! Leuchtende Pfotenspuren führen bis zu den Steinen im Bach."),
 					"me": T.t("MoveEye würde jetzt die frischen Spuren am Boden bemerken und dir zeigen.")},
 				{"id": "h_laub", "f": "graben", "ding": "haufen", "off": Vector2(-4, -44), "item": "kartenstueck_herbst",
 					"hinweis": T.t("Unter dem gelben Lärchenlaub glitzert etwas."),
@@ -262,7 +262,7 @@ func _stationen(r: String) -> Array:
 					"me": T.t("MoveEye würde sich merken, wo etwas vergraben ist.")},
 				{"id": "h_gabel", "f": "warnen", "ding": "gabel", "off": Vector2(18, -62), "boese": -1,
 					"hinweis": T.t("Der Weg teilt sich. Hör auf Maggie!"),
-					"hilfe": T.t("Maggie knurrt zu einem Weg. Nimm den anderen."),
+					"hilfe": T.t("Maggie knurrt einen der Wege an. Nimm lieber den anderen!"),
 					"ok": T.t("Gut gemacht! Du hast auf Maggie gehört."),
 					"me": T.t("MoveEye würde jetzt merken, dass sich im Gebüsch etwas bewegt, und dir Bescheid geben.")},
 			]
@@ -280,8 +280,8 @@ func _stationen(r: String) -> Array:
 					"me": T.t("MoveEye würde das Eis knacken hören und dich warnen.")},
 				{"id": "w_gabel", "f": "warnen", "ding": "gabel", "off": Vector2(8, 58), "boese": 1,
 					"hinweis": T.t("Zwei Wege im Schnee. Maggie spitzt die Ohren."),
-					"hilfe": T.t("Maggie knurrt zu einem Weg. Nimm den anderen."),
-					"ok": T.t("Richtig! Auf dem anderen Weg waren Augen im Dunkeln."),
+					"hilfe": T.t("Maggie knurrt einen der Wege an. Nimm lieber den anderen!"),
+					"ok": T.t("Richtig! Auf dem anderen Weg leuchteten Augen im Dunkeln."),
 					"me": T.t("MoveEye würde auch im Dunkeln sehen, wo sich etwas Warmes versteckt.")},
 			]
 		"fruehling":
@@ -321,7 +321,7 @@ func _stationen(r: String) -> Array:
 					"me": T.t("MoveEye würde hören, wenn Steine rollen.")},
 				{"id": "s_gabel", "f": "warnen", "ding": "gabel", "off": Vector2(40, -78), "boese": -1,
 					"hinweis": T.t("Der Weg teilt sich im hohen Gras. Maggie schnuppert."),
-					"hilfe": T.t("Maggie knurrt zu einem Weg. Nimm den anderen."),
+					"hilfe": T.t("Maggie knurrt einen der Wege an. Nimm lieber den anderen!"),
 					"ok": T.t("Gut! Im Gras auf dem anderen Weg hat es geraschelt."),
 					"me": T.t("MoveEye würde merken, dass sich im Gras etwas bewegt, und dir Bescheid geben.")},
 			]
@@ -578,7 +578,7 @@ func befehl(f: String) -> Dictionary:
 			_aktion([{"t": "idle", "k": "sniff", "s": 1.6}, {"t": "call", "fn": func():
 				if not st_.is_empty():
 					_pfoten_legen(ppos(hund), st_["p"], 14.0)
-					_zeige(T.t("Maggie riecht etwas! Folge den leuchtenden Pfoten."))
+					_zeige(T.t("Maggie riecht etwas! Folge den leuchtenden Pfotenspuren."))
 				else:
 					_zeige(T.t("Maggie riecht nur Gras und Blumen."))}])
 		"graben":

@@ -1,5 +1,5 @@
 extends RefCounted
-## Bergtal-Abenteuer «Die Karte des Bergführers» - die Daten (Daniel, 31.10.2026, Abschnitt «Story / Abenteuer» im Plan):
+## Bergtal-Abenteuer «Die Karte des Grossvaters» - die Daten (Daniel, 31.10.2026, Abschnitt «Story / Abenteuer» im Plan):
 ## Stimmungen, Schwierigkeit, Ziele, Rucksack und Ausrüstung, die 5 Kapitel der Schatzkarte (Wege mit Gabelungen,
 ## Hinweise auf der Karte / im Gelände / bei Menschen), Begegnungen, Fundstücke, Stufen (Erfahrung).
 ## Die Abläufe stehen in bergtal_abenteuer.gd, die Karte in bergtal_abenteuer_karte.gd.
@@ -9,7 +9,7 @@ extends RefCounted
 # id -> [Name, Beschreibung, Wetter-Faktor, Begegnungs-Faktor, Nebel-Anteil am Wetter, lustige Dinge]
 const MOODS := {"geheimnisvoll": ["Geheimnisvoll", "Nebel zieht durchs Tal, alte Zeichen im Fels, leise Begegnungen.", 1.0, 0.8, 0.75, false],
 		"abenteuerlich": ["Abenteuerlich", "Steile Abkürzungen, Wetterumschwung, ein Tag, an dem man über sich hinauswächst.", 1.4, 1.0, 0.4, false],
-		"gemuetlich": ["Gemütlich", "Wenig Wetter, Bänke mit Aussicht, Käse beim Senner, Zeit zum Schauen.", 0.5, 1.2, 0.5, false],
+		"gemuetlich": ["Gemütlich", "Ruhiges Wetter, Bänke mit Aussicht, Käse beim Senner, Zeit zum Schauen.", 0.5, 1.2, 0.5, false],
 		"lustig": ["Lustig", "Neugierige Kühe, freche Dohlen, schräge Funde - das Tal nimmt sich nicht so ernst.", 0.8, 1.4, 0.5, true]}
 const MOOD_ORDER := ["geheimnisvoll", "abenteuerlich", "gemuetlich", "lustig"]
 # die 5. Stimmung ist ein eigenes Paket (Horror «Das Hospiz», passwortgeschützt) - hier nur der gesperrte Platz
@@ -34,9 +34,9 @@ const FLAVOR := {"geheimnisvoll": {"start": "Über dem Tal liegt ein dünner Sch
 			"morning": "Neben dem Lager liegt eine Socke, die dir nicht gehört."}}
 
 # ---- Schwierigkeit: [Name, Text, Kraft höchstens, Wetter-Faktor, Tier-Faktor, Orientierung (bergtal bt_orient)] ---------
-const LEVELS := {"leicht": ["Leicht", "Mehr Kraft, wenig Wetter, Standort auf der Karte. Rätsel: Pfeile zeigen den Weg.", 100.0, 0.6, 0.7, "leicht"],
+const LEVELS := {"leicht": ["Leicht", "Mehr Kraft, ruhiges Wetter, Standort auf der Karte. Rätsel: Pfeile zeigen den Weg.", 100.0, 0.6, 0.7, "leicht"],
 		"mittel": ["Mittel", "Normales Bergwetter, Tiere in der Nacht, nur Kompass. Rätsel: Tipp nach einer Weile.", 85.0, 1.0, 1.0, "mittel"],
-		"schwer": ["Schwer", "Weniger Kraft, mehr Wetter und Tiere, nur Wegweiser und die Sonne. Rätsel: keine Hilfe.", 70.0, 1.5, 1.4, "schwer"]}
+		"schwer": ["Schwer", "Weniger Kraft, öfter schlechtes Wetter, mehr Tiere, nur Wegweiser und die Sonne. Rätsel: keine Hilfe.", 70.0, 1.5, 1.4, "schwer"]}
 const LEVEL_ORDER := ["leicht", "mittel", "schwer"]
 
 # ---- Ziel ---------------------------------------------------------------------------------------------------------------
@@ -98,7 +98,7 @@ const MEET := {"wanderer": ["Ein Wanderer", "«Weiter oben gibt es einen Brunnen
 		"strahler": ["Ein Strahler am Fels", "Er klopft vorsichtig am Fels. «Kristalle findet man, wo Quarzbänder sind.»", "tip_find", []],
 		"bergsteiger": ["Zwei Bergsteiger mit Seil", "«Oben am Grat zieht es zu. Pass auf das Wetter auf.»", "tip_weather", ["abenteuerlich", "geheimnisvoll"]],
 		"trailrunner": ["Ein Trailrunner", "Er rennt vorbei, kommt zurück und fragt dich nach dem Weg.", "fun", ["lustig", "gemuetlich"]],
-		"kuehe": ["Kühe auf dem Weg", "Die ganze Herde steht auf dem Weg und denkt nicht ans Weitergehen. Warten.", "wait", ["lustig", "gemuetlich"]],
+		"kuehe": ["Kühe auf dem Weg", "Die ganze Herde steht auf dem Weg und denkt gar nicht daran weiterzugehen. Da hilft nur warten.", "wait", ["lustig", "gemuetlich"]],
 		"dohlen": ["Alpendohlen", "Drei Dohlen landen neben dir und schauen in deinen Rucksack.", "fun", ["lustig"]],
 		"grenzwache": ["Eine Grenzwächter-Patrouille", "«Schöner Abend. Übernachte nicht zu nah an der Passstrasse.»", "tip_spot", ["geheimnisvoll", "abenteuerlich"]]}
 
@@ -109,7 +109,7 @@ const MEET := {"wanderer": ["Ein Wanderer", "«Weiter oben gibt es einen Brunnen
 # «read» = Karte lesen: die drei Hinweise (Karte, Gelände, Mensch) zeigen auf den richtigen Ort; falsch = Umweg.
 const CHAPTERS := [
 	{"id": 1, "title": "Kapitel 1 - Der Brief",
-		"intro": "Ein Brief vom Grossvater, mit Wachs verschlossen. Darin nur ein Satz: «Die Karte gehört jetzt dir - lies sie mit der Sonne.» Und eine alte, vergilbte Karte des Bergtals, in fünf Stücke gefaltet. Das erste Stück zeigt eine Glocke über einem Brunnen.",
+		"intro": "Ein Brief vom Grossvater, mit Wachs verschlossen. Darin nur ein Satz: «Die Karte gehört jetzt dir - lies sie mit der Sonne.» Dazu ein Stück einer alten, vergilbten Karte des Bergtals - das erste von fünf. Es zeigt eine Glocke über einem Brunnen.",
 		"start": ["Postauto-Haltestelle bei der Kapelle St. Jodern", 205.0, -690.0], "season_hint": "",
 		"symbol": "glocke", "piece": 0,
 		"stages": [{"walk": [Vector2(205, -690), Vector2(200, -600), Vector2(190, -500)], "name": "Der Strasse entlang ins Tal"},
@@ -123,11 +123,11 @@ const CHAPTERS := [
 				"hint": "Glocke = Kuhglocke, nicht Kirchenglocke. Der Senner hat es gesagt.",
 				"detour": [Vector2(110, -20), Vector2(60, -110), Vector2(110, -20)]}},
 			{"walk": [Vector2(110, -20), Vector2(60, 0), Vector2(38, 18)], "name": "Zur Alp Tschuggen"}],
-		"person": ["Der Senner bei den Kühen", "Er lacht, als er die Karte sieht: «Eine Glocke? Hier bei uns hat jede Kuh eine. Und der einzige Brunnen weit und breit steht bei meinem Stall.»"],
+		"person": ["Der Senner bei den Kühen", "Er lacht, als er die Karte sieht: «Eine Glocke? Hier bei uns hat jede Kuh eine. Und hier oben bei den Weiden gibt es nur einen Brunnen - den bei meinem Stall.»"],
 		"found": "Unter dem Brunnentrog der Alp ist ein Zeichen eingemeisselt: zwei Wellen, eine über der anderen. Das zweite Kartenstück passt genau daneben - es zeigt einen Bach, der zweimal fällt.",
 		"camp": ["huette", 30.0, 22.0], "summit": "vp_kanzel", "summit_name": "Chanzle über dem Gumpisee", "start_h": 15.5},
 	{"id": 2, "title": "Kapitel 2 - Wo der Bach zweimal fällt",
-		"intro": "Das zweite Kartenstück: zwei Wellen übereinander, darunter ein Strich wie ein Steg. Daneben, ganz klein: ein Steinmann mit einer Kerbe.",
+		"intro": "Das zweite Kartenstück zeigt den Bach, der zweimal fällt: zwei Wellen übereinander, darunter ein Strich wie ein Steg. Daneben, ganz klein: ein Steinmann mit einer Kerbe.",
 		"start": ["Alp Tschuggen", 38.0, 18.0], "symbol": "wellen", "piece": 1,
 		"stages": [{"walk": [Vector2(38, 18), Vector2(60, 0), Vector2(70, -70)], "name": "Dem Bach entlang abwärts", "bach": true},
 			{"clue": "person"},
@@ -140,7 +140,7 @@ const CHAPTERS := [
 				"detour": [Vector2(-150, -230), Vector2(-260, -250), Vector2(-150, -230)]}},
 			{"walk": [Vector2(-150, -230), Vector2(-200, -330), Vector2(-142, -332)], "name": "Hinunter zum Gumpisee", "bach": true}],
 		"person": ["Ein alter Wanderer", "Er stützt sich auf den Stock: «Zweimal fällt der Bach - einmal beim Wasserfall, einmal in der Schlucht. Wer Steinmänner liest, findet den Weg auch im Nebel.»"],
-		"found": "Am Ufer liegt der Block aus der Karte. In seiner Seite steckt ein Eisenring, und darunter: das dritte Kartenstück, in Wachstuch gewickelt. Es zeigt eine Sonne über einem Stein.",
+		"found": "Am Ufer liegt der grosse Block, auf den der Steinmann gezeigt hat. In seiner Seite steckt ein Eisenring, und darunter: das dritte Kartenstück, in Wachstuch gewickelt. Es zeigt eine Sonne über einem Stein.",
 		"camp": ["seeufer", -142.0, -332.0], "summit": "vp_seeblick", "summit_name": "Seeblick Gumpisee", "start_h": 15.0},
 	{"id": 3, "title": "Kapitel 3 - Wo die Sonne am Morgen den Stein trifft",
 		"intro": "Das dritte Stück zeigt eine Sonne, die über zwei Zacken aufgeht, und einen Stein mit einem langen Schatten. Darunter steht: «Wo die Sonne am Morgen den Stein trifft.»",
@@ -150,7 +150,7 @@ const CHAPTERS := [
 			{"fork": [["Kurz: quer durchs Riedmoos (nasse Füsse)", [Vector2(-320, -300), Vector2(-470, -265), Vector2(-600, -255)], ["bach", "wet"]],
 				["Lang: am Moorrand entlang", [Vector2(-320, -300), Vector2(-420, -220), Vector2(-540, -200), Vector2(-600, -255)], ["bank"]]]},
 			{"clue": "person"},
-			{"read": {"q": "Die Sonne geht im Osten auf. Ihr Schatten fällt nach Westen. Wo steht der Stein, den die Sonne am Morgen zuerst trifft?",
+			{"read": {"q": "Die Sonne geht im Osten auf, die Schatten fallen dann nach Westen. Wo steht der Stein, den die Sonne am Morgen zuerst trifft?",
 				"options": [["Bei der Ruine Altstafel (oben im Westen, frei gegen Osten)", true], ["Im Schattwald (unten im Norden)", false], ["Am Schwarzseeli (in der Mulde)", false]],
 				"hint": "Den ersten Sonnenstrahl bekommt, was hoch steht und gegen Osten frei ist - nicht, was in einer Mulde liegt.",
 				"detour": [Vector2(-600, -255), Vector2(-640, -330), Vector2(-600, -255)]}},
@@ -167,7 +167,7 @@ const CHAPTERS := [
 				["Lang: über den alten Säumerweg", [Vector2(-700, -130), Vector2(-780, 0), Vector2(-770, 150), Vector2(-720, 300), Vector2(-650, 430)], ["bank", "bach"]]]},
 			{"clue": "terrain", "text": "Im Steimandli-Wald stehen Hunderte Steinmänner. Einer hat zwei dunkle Steine wie Augen - und er schaut genau zur Biwakschachtel."},
 			{"read": {"q": "Der Steinmann mit den Augen schaut zu einem Kästchen unter Felsblöcken. Was ist gemeint?",
-				"options": [["Die Biwakschachtel am Chüebodehorn", true], ["Der Bunker Fort Chrüzli", false], ["Die obere Stafelhütte", false]],
+				"options": [["Die Biwakschachtel am Chüebodehorn", true], ["Der Bunker Fort Chrüzli", false], ["Die Obri Stafelhütte", false]],
 				"hint": "Ein Kästchen unter Felsblöcken, hoch oben - das ist eine Biwakschachtel.",
 				"detour": [Vector2(-650, 430), Vector2(-700, 520), Vector2(-650, 430)]}},
 			{"walk": [Vector2(-650, 430), Vector2(-590, 500), Vector2(-512, 548)], "name": "Hinauf zum Biwak"}],

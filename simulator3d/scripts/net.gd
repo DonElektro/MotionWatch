@@ -41,7 +41,7 @@ func stop() -> void:
 
 func _send_beacon() -> void:
 	"""every 2 s into the network: "here is a simulator" - MoveEye finds it by itself (UDP port 8764)"""
-	var nm: String = main.beacon_name() if main.has_method("beacon_name") else "MoveEye Sim · 3D %s" % main.VERSION
+	var nm: String = main.beacon_name() if main.has_method("beacon_name") else preload("res://scripts/versionen.gd").label(main.VERSION)
 	var cp: Dictionary = main.cpu_now() if main.has_method("cpu_now") else {}
 	var msg := JSON.stringify({"mwsim": 1, "name": nm, "pc_cpu": cp.get("pc"), "sim_cpu": cp.get("sim"), "port": port, "version": main.VERSION, "host": main.host_name()}).to_utf8_buffer()
 	for dest in ["255.255.255.255", "127.0.0.1"]:
@@ -278,6 +278,13 @@ func _handle(c: Dictionary, method: String, path: String, query: Dictionary, bod
 					_json(c, {"ok": false, "error": "no picture"}, 404)
 				else:
 					_send(c, 200, dj, "image/jpeg")
+			if parts.size() == 2 and parts[0] == "story_pic":   # Geschichten-Menü: the picture of a story card (MoveEye 639i)
+				var sp: PackedByteArray = main.spielbereich.regal.pic_bytes(parts[1].get_basename()) if main.spielbereich != null and main.spielbereich.regal != null else PackedByteArray()
+				if sp.is_empty():
+					_json(c, {"ok": false, "error": "no picture"}, 404)
+				else:
+					_send(c, 200, sp, "image/jpeg")
+				return
 			if parts.size() == 2 and parts[0] == "horror_pic":  # Horror-Modus: the picture of a «recording» (MoveEye 539a -> Verlauf)
 				var hj: PackedByteArray = main.horror.pic(int(parts[1].get_basename())) if main.horror != null else PackedByteArray()
 				if hj.is_empty():
