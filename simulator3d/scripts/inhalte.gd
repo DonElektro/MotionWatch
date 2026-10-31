@@ -28,6 +28,12 @@ const DIR := "user://inhalte"
 const MODES := [["an", "An: Fotos für Boden, Wege, Zelt, Bäume und Himmel"], ["boden", "Nur Oberflächen (Himmel wie bisher)"],
 		["aus", "Aus (bisherige Code-Materialien)"]]
 const HDRI_MAX_W := 4096               # Startfix: breitere HDRIs werden beim Einlesen verkleinert (Grafikspeicher, ANGLE)
+# Fotos kleiner (Stabil-Start): in der .exe gibt es keine Kompression (siehe _can_compress) - darum dort Fotos höchstens 1024 px
+# (RGB8 + Mipmaps ~4 MB statt ~16 MB je Bild) und den Himmel höchstens 2048 × 1024 (RGBH ~16 MB statt ~64 MB).
+# Im Editor (Prüfstand, Entwicklung) bleibt es bei 2048 px komprimiert und HDRI_MAX_W.
+const TEX_MAX_EDITOR := 2048
+const TEX_MAX_EXE := 1024
+const HDRI_MAX_W_EXE := 2048
 const MARK := "user://inhalte_merker.json"   # Startfix: liegt da, solange Foto-Inhalte eingelesen / angewendet werden
 const RETRY_S := 86400.0              # nach einem Fehlschlag frühestens nach einem Tag wieder von selbst laden
 const SKY_DAY := "himmel_tag"
@@ -422,14 +428,18 @@ func _img_job(path: String, rolle: String, can_compress: bool) -> Image:
 	var img := Image.load_from_file(path)
 	if img == null or img.is_empty():
 		return null
+	var editor := OS.has_feature("editor")
 	if rolle == "hdri":
-		if img.get_width() > HDRI_MAX_W:                  # Startfix: ein sehr grosses HDRI (8k) vor dem Hochladen verkleinern
+		var hw := HDRI_MAX_W if editor else HDRI_MAX_W_EXE
+		if img.get_width() > hw:                          # Startfix: ein sehr grosses HDRI (8k) vor dem Hochladen verkleinern
 			if img.get_format() == Image.FORMAT_RGBE9995:
 				img.convert(Image.FORMAT_RGBH)
-			img.resize(HDRI_MAX_W, maxi(1, HDRI_MAX_W * img.get_height() / img.get_width()), Image.INTERPOLATE_BILINEAR)
-		return img
-	if img.get_width() > 2048:
-		img.resize(2048, 2048 * img.get_height() / img.get_width(), Image.INTERPOLATE_LANCZOS)
+			img.resize(hw, maxi(1, hw * img.get_height() / img.get_width()), Image.INTERPOLATE_BILINEAR)
+		return img                                        # Himmel: ohne Mipmaps (Panorama, Godot rechnet die Strahlung selbst)
+	var tw := TEX_MAX_EDITOR if editor and can_compress else TEX_MAX_EXE
+	if img.get_width() > tw or img.get_height() > tw:     # die längere Seite auf tw (auch hohe Bilder, z. B. Rinde)
+		var k := float(tw) / float(maxi(img.get_width(), img.get_height()))
+		img.resize(maxi(1, roundi(img.get_width() * k)), maxi(1, roundi(img.get_height() * k)), Image.INTERPOLATE_LANCZOS)
 	if rolle == "rough":
 		img.convert(Image.FORMAT_L8)
 		img.generate_mipmaps()

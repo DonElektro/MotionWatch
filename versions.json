@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 22:03",
+ "generated": "2026-10-31 22:11",
  "versions": [
+  {
+   "version": "3.17.0",
+   "file": "webcam_bewegung_3_17_0.py",
+   "url": "",
+   "sha256": "ced7b39c55410c8d04078e2a583ab7629cdc176339d38022a3203800da83adcc",
+   "date": "2026-10-31 22:11",
+   "notes": "Simulator-Ports: MoveEye findet auch die Ausweich-Ports 8775/8785/8795 (Portliste geprüft). Simulator 3.17.0: Notfall-Start.bat, Fehlerbericht sammeln.bat, Fotos mit weniger Grafikspeicher, zweiter Simulator auf Port 8768.",
+   "size": 4421540,
+   "sig": "7fba0fbcd890d7e528c64b5428fff1335eb8f7bdb2ec2e9e6e85208d8aa59e0010778629bf5d71e68d067be5387cc690b8ab154074d97ac783438884e1bf3c05",
+   "data": {
+    "file": "moveeye_daten_3_17_0.zip",
+    "url": "",
+    "sha256": "bf1a8dab4f2dafc5035517f68779ff8dcc3891e147d659e502d7e9c2c0168c62",
+    "size": 1613384,
+    "sig": "6e072e5365248ee8380168ae1cbcef061f566539ac928841acb068346895eeb9edd99d12da49f98c88587ea2d0949cc1fb24bac35631505e9ce21a4921671501"
+   }
+  },
   {
    "version": "3.16.0",
    "file": "webcam_bewegung_3_16_0.py",
    "url": "",
    "sha256": "ad0ae21700563d3e61e2b370f2438040e7006b0a78c4b3d02501479a9c7e4d9c",
-   "date": "2026-10-31 22:03",
+   "date": "2026-10-31 22:08",
    "notes": "Simulator 3.16.0: Bergtal wie auf Daniels Fotos – Kalkfels mit Grasbändern, gelbgrüne Weiden, dunkle Fichten, smaragdgrüner Bergsee mit Spiegelung, Dunst; in Hoch Karstweide, Felszähne, Legföhren, Alpenrosen, Quellwolken, Abendhimmel.",
    "size": 4417151,
    "sig": "ef583a7a32ad8fe4ba6da4f0233774ce7bfcbd725f014c34e5010b4047f796bbc84036930114f516d2a73299dd92ab28589a77c91d27c060b49403806f75c704",
@@ -24,7 +41,7 @@
    "file": "webcam_bewegung_3_15_2.py",
    "url": "",
    "sha256": "5f7608aaf472923fb93629887d8aab9e78b30500ae6a59737cfe2634bb4ad3c5",
-   "date": "2026-10-31 22:00",
+   "date": "2026-10-31 22:08",
    "notes": "Vollbild: in der Simulation auch ◎, ⇆, 🚜 und der Mover-Stick ausgeblendet; beim echten Live-Bild bleiben sie.",
    "size": 4417133,
    "sig": "e670d946407f3ef5a67d61f20acf4f80a1f42b7770721a2dd76e439c0fb2372f746393f8450298491cbb353a19aba3eda26214b95edd23ad444a86f61d5beb0d",
@@ -136,23 +153,6 @@
     "sha256": "6e159f0a6962cb216c0cb1bb9c2923616ede7f81f5276388a2050ed42e178bb7",
     "size": 1609632,
     "sig": "56898ff6da73eff5c08c24d8a96325abaaa4d21854579a5c3f1f9a26cd66978d623a313e4882b25959533e1c786fa39bfcf53c35755e2ff47bd261fb3191c60b"
-   }
-  },
-  {
-   "version": "3.8.0",
-   "file": "webcam_bewegung_3_8_0.py",
-   "url": "",
-   "sha256": "7c872ffb1e6dd0aa97a6e1c790de6999a9a8eabcbeb9dc76fff0d99b6b043884",
-   "date": "2026-10-31 18:16",
-   "notes": "MoveEye-Datei halb so gross: Webseiten, Bilder und alte Versionsgeschichte in einer Zusatzdatei (moveeye_daten), die beim Update mitkommt oder nachgeladen wird; ohne Zusatzdatei läuft der Schutz weiter; 3.0.2 bleibt als Brücke für sehr alte Geräte.",
-   "size": 4390179,
-   "sig": "0c4cf276d29b44a2107cc767336c80dfdbb4b8d75cf8b895ef66b7eca9e9c312caa9924b93f7015adb86bcae57c293c9f67b1d61498d66996633900e04aff704",
-   "data": {
-    "file": "moveeye_daten_3_8_0.zip",
-    "url": "",
-    "sha256": "ec52e39c76b86c5eddeef577e93ddb340fb18b1da79197cb9827c48c107f3d28",
-    "size": 1609387,
-    "sig": "76ab94a48a64be9e5661d1b487831a131c1303ffd05b6c7763ab1e0b1a2977ceccc097db48f69e58eb9bfd0cacb0dc6248a15484aae54ecb49ad4e052f159d03"
    }
   },
   {

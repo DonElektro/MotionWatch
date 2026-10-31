@@ -1,8 +1,23 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Version **3.16.0** · MoveEye **3.16.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 31.10.2026 · Version **3.17.0** · MoveEye **3.17.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.17.0 (MoveEye 3.17.0): Notfall-Start, Fehlerbericht, Fotos kleiner, Ports
+
+- **Beilagen der ZIP** neu im Repository: `simulator3d/beilagen/*.bat` (CRLF, nur ASCII, `.gdignore`). `simpack.sh` nimmt sie
+  von dort statt aus der alten ZIP. Neu: «Notfall-Start.bat» (ANGLE, `--grafik lite --no-inhalte --no-update --no-hoch`,
+  mit `MoveEyeSim3D.console.exe` im Fenster der .bat), «Fehlerbericht sammeln.bat» (cmd/PowerShell-Zwitter: logs\*.log,
+  Absturz-Merker und ausgewählte JSON ohne Codes/Passwörter → ZIP auf dem Desktop; nie `motionwatch_pc/`,
+  `pruefstand/schluessel.txt`, `bergtal_horror.json`), «Start auf Port 8768.bat» statt «… 8766» (`update.gd GONE_FILES`
+  löscht die alte nach dem Update).
+- `export_presets.cfg`: `debug/export_console_wrapper=2` (Windows) → `MoveEyeSim3D.console.exe`; simpack.sh packt sie mit.
+- `main.gd _grafik_keep`: `--grafik …` gilt nur für diesen Start (gespeichert bleibt die eigene Wahl).
+- `inhalte.gd _img_job`: in der .exe (ohne Kompression) Fotos höchstens 1024 px (`TEX_MAX_EXE`), HDRI höchstens 2048 breit
+  (`HDRI_MAX_W_EXE`); im Editor wie bisher 2048 px + S3TC und `HDRI_MAX_W`.
+- Ports: Tabelle `schnittstelle.json «_ports»`, geprüft in MoveEye 558 `ports_check` und `schnittstelle.gd _ports_cmp`.
+  `game.gd game_ports()`; MoveEye 300 `SIM_SCAN_PORTS` sucht auch 8775 / 8785 / 8795.
 
 ## NEU in 3.16.0 (MoveEye 3.16.0): Bergtal wie auf Daniels Fotos (`bergtal_landschaft.gd`)
 
@@ -1058,7 +1073,8 @@ Sichtkegel `cones` (Ebene 16), zufälliger Start/Ziel. Rangliste mit Wächter-Pu
 Schleicher nicht im Ziel). Test-Abfrage `game` liefert auch `cams` (pro Kamera Abstand, im Bild, Verdecker, Sicherheit), `items`.
 
 **3D-2.4 – Spiel «Unentdeckt ans Ziel»** (`scripts/game.gd`, `scripts/qr.gd`): bis 4 Handys. HTTP-Seite (`PAGE`, in game.gd
-eingebettet) auf Port `stream_port + 5` (8770), WebSocket auf `+ 6` (8771, `WebSocketPeer.accept_stream`). Nachrichten: Handy →
+eingebettet) auf Port 8770, WebSocket auf 8771 (`WebSocketPeer.accept_stream`; ab «Ports aufräumen» `game_ports()`: nur beim
+Port 8765 so, sonst 9770 + 2·(P − 8765) / +1). Nachrichten: Handy →
 `join {name, token}` (token in localStorage: gleicher Platz nach Neuladen), `in {mx, my, look, pitch, run, pos}` (alle 50 ms),
 `frame` (nächstes Bild, Flusskontrolle), `start`. Simulator → `hello`, `st` (5×/s: Entdeckt-Wert, Ziel-Richtung, Runde, Liste,
 Rangliste), `ev caught`, Bilder als binäre JPEG. Jeder Spieler hat eine eigene SubViewport-Kamera hinter seiner Figur

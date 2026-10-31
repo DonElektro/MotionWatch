@@ -70,7 +70,8 @@ TECH_RE = re.compile(r"^(Authorization|Accept|User-Agent|Content-Type|Content-Le
 # technical words that look like text (key names, Godot classes, device ids, file dialog filters …)
 TECH_WORDS = {"Backspace", "Enter", "Tab", "Escape", "Delete", "Hidden", "TRACE", "CONNECT", "COMPUTERNAME", "HOSTNAME",
               "Button", "Label", "VScrollBar", "DTM2", "COMB", "DTM25", "SmallTV-Ultra", "Ultra-V9.0.40", "MoveEye-Simulator",
-              "webcam_bewegung_*.py ; MoveEye", "*.py ; Python", "|sprint"}
+              "webcam_bewegung_*.py ; MoveEye", "*.py ; Python", "|sprint",
+              "Start auf Port 8766.bat"}
 ID_RE = re.compile(r"^[a-z0-9_.\-:/#+%]*$")
 CLASSNAME_RE = re.compile(r"^[A-Z][A-Za-z0-9]*(2D|3D|Container|Button|Label|Rect|Edit|Box|Panel|Slider|Instance|Mesh|Material|Texture|Light|Shape|Body|Player|Popup|Dialog|Timer|Tween|Node|Viewport|Camera)$")
 

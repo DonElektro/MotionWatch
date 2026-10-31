@@ -23,6 +23,37 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 3.17.0: Simulator-Ports: MoveEye findet auch die Ausweich-Ports 8775/8785/8795 (Portliste geprüft). Simulator 3.17.0:
+    Notfall-Start.bat, Fehlerbericht sammeln.bat, Fotos mit weniger Grafikspeicher, zweiter Simulator auf Port 8768.
+  * 3.16.0: Simulator 3.16.0: Bergtal wie auf Daniels Fotos – Kalkfels mit Grasbändern, gelbgrüne Weiden, dunkle Fichten,
+    smaragdgrüner Bergsee mit Spiegelung, Dunst; in Hoch Karstweide, Felszähne, Legföhren, Alpenrosen, Quellwolken, Abendhimmel.
+  * 3.15.2: Vollbild: in der Simulation auch ◎, ⇆, 🚜 und der Mover-Stick ausgeblendet; beim echten Live-Bild bleiben sie.
+  * 3.15.1: Live → Bedienung: in der Simulation sind Tempo, ⇆, 🚜, Mitte, Kalibrieren und Wegpunkte ausgeblendet (auch im
+    Pi-Fenster), beim echten Live-Bild sichtbar; das Simulations-Band erscheint sofort.
+  * 3.15.0: Simulator 3.15.0: Maggie sieht aus wie das echte Vorbild (weiss mit brauner Rückenplatte, brauner Kopf mit Blesse,
+    Kippohren, wedelnder Schwanz, hohe Beine), bei jedem Start gleich.
+  * 3.14.0: Simulator 3.14.0: Karte des Grossvaters – Geheimnisse (Steinmännchen mit Geheimwort, doppelter Boden, Licht auf der
+    Nachtaufnahme), Nacht mit Geräuschen und je ein Action-Teil pro Kapitel.
+  * 3.13.0: Simulator 3.13.0: zu zweit zehn Team-Bausteine in der Karte des Grossvaters und bei Maggie (geteiltes Wissen,
+    Räuberleiter, Rucksack teilen, Rücken an Rücken, Wer findet mehr, Fotowettbewerb, Lagerfeuer-Tagebuch, High-Five, Rollen,
+    Gummiband).
+  * 3.12.0: Blinki überall ohne den orangen Sichtfächer; bei einem Stimmungswechsel zeigt er das Zeichen kurz in einer kleinen
+    Sprechblase; Logo und Fensterkopf unverändert.
+  * 3.11.1: Karte (Standort, Aufnahmen) zeigt wieder die OpenStreetMap-Kacheln statt «Access blocked»: die Kachel-Bilder senden
+    den Ursprung als Referer (referrerPolicy origin), die Seiten bleiben no-referrer.
+  * 3.11.0: Simulator 3.11.0: «Maggie und der Bergkristall» zu zweit – 1 oder 2 Spieler, Rolle wählbar, Bildschirm geteilt oder
+    gemeinsam, je Region ein Teamrätsel, Partner kann retten.
+  * 3.10.1: Simulator 3.10.1: Vorführung mit Schalter «Spiel-Knöpfe zeigen» – die Knöpfe bleiben sichtbar und leuchten auf, wenn
+    der Autopilot sie drückt.
+  * 3.10.0: Vorführung im Browser: «Maggie und der Bergkristall» als Film zuschauen (Simulator → Entwickler → Vorführung), Pause
+    und Kapitel. Simulator 3.10.0: Vorführmodus – Maggie spielt sich selbst, ganz oder als Kurzfassung, mit Kamerawechsel,
+    Untertiteln und Erzählerstimme.
+  * 3.9.2: Simulator 3.9.2: Start-Absturz behoben (Foto-Inhalte wurden zu früh angewendet); nach einem Absturz beim Laden der
+    Fotos startet der Simulator ohne Fotos; neue Startoption --no-inhalte.
+  * 3.9.1: Diebstahl-Alarm: Kartenlink wieder vollständig in jeder Handy-Meldung (auch SMS), Sabotage-Meldungen mit letzter
+    GPS-Position; überall «Mover» (auch im Simulator: «Verstecken mit dem Mover»).
+  * 3.9.0: Simulator 3.9.0: Hospiz mit Knopf «Ohne Passwort starten» (nicht im Kinder-Modus); der Umweg über «Weiterspielen» per
+    Steuerbefehl ist geschlossen – überall Passwort oder Knopf am Simulator.
   * 3.8.0: MoveEye-Datei halb so gross: Webseiten, Bilder und alte Versionsgeschichte in einer Zusatzdatei (moveeye_daten), die
     beim Update mitkommt oder nachgeladen wird; ohne Zusatzdatei läuft der Schutz weiter; 3.0.2 bleibt als Brücke für sehr alte
     Geräte.
@@ -61,37 +92,6 @@ Features
   * 2.98.116: Reiter «Spielen» neu aufgebaut wie im Simulator (Stufe, Spielstand, Weiterspielen, Geschichten-Regal, Entdecken).
     Simulator 3D-4.85: neues Fenster «Spielen» mit Geschichten als grosse Karten (Die Karte des Grossvaters, Maggie, Hospiz,
     Teil 2), gleicher Start für alle Geschichten.
-  * 2.98.115: Einstellungen öffnen beim Start in «Nur Gruppen»; neuer Schalter «Beim Start: Nur Gruppen» (ab Werk ein, aus =
-    eigene Menüs zurück); Pi-Fenster: die drei Aufklapp-Knöpfe wie im Web. Simulator 3D-4.84: dasselbe im Simulator.
-  * 2.98.114: Simulator 3D-4.83: «Auf Werkseinstellungen zurücksetzen» unter Mehr (nur Besitzer) wie bei MoveEye – erst eine
-    Kopie, dann zurücksetzen und neu starten; Horror-Passwort, Sprache, Inhalte und Entwicklerdaten bleiben.
-  * 2.98.113: Simulator 3D-4.82: Bergtal-Abenteuer – Tagebuch wird vorgelesen, Kamerafahrt, Jahreszeit wählbar, 3 Spielstände
-    mit Weiterspielen, Blinki-Tipps, gemeinsames Level, Kinder-Modus, Ausblick auf Teil 2.
-  * 2.98.112: Simulator 3D-4.81: Figuren ziehen sich nach Jahreszeit an (Winter, Nacht, Berg, Regen lang mit Jacke; Sommer
-    gemischt), Paket-Figuren ohne durchscheinende Beine, im Wärmebild ist Haut wärmer als Kleidung.
-  * 2.98.111: Simulator 3D-4.80: nur noch ein «Entwickler» – Reiter «Schalter» im Fenster Mehr → Entwickler (Prüfstand,
-    Störungen, Diagnose-Paket), die Bedienfeld-Karte öffnet dieses Fenster, Spieltest-Schalter nur einmal.
-  * 2.98.110: Simulator 3D-4.79: neue Geschichte «Maggie und der Bergkristall» unter Spielen – vier Jahreszeiten-Täler, Rätsel,
-    böse und hilfreiche Tiere, etwa 2 Stunden, für Kinder ab ca. 10.
-  * 2.98.109: Simulator 3D-4.78: Entwickler-Fenster – Sprung und Kontaktbogen suchen eine freie Sicht (nicht im Hang, Wasser
-    oder hinter Bäumen), Aussichtspunkte in ihrer Richtung.
-  * 2.98.108: Spieltest-Meldungen: Push aufs Handy für den Spieltest-Assistenten des Simulators (Schalter in Entwickler,
-    Standard aus). Simulator 3D-4.77: Spieltest-Assistent beobachtet alle Spielmodi, fragt mit Smileys, macht Vorschläge, ZIP
-    für Claude.
-  * 2.98.107: Simulator 3D-4.76: Bergtal – Innenräume ohne Gras und Bäume, Sennerei mit Dach, keine Geländelöcher, Steinbrücke,
-    runde Tarnwiese, Arvenhain, Herbstblumen, Gletscherspalten und Felsen auf dem Boden.
-  * 2.98.106: Simulator 3D-4.75: Bergtal-Abenteuer – Bestenliste mit den Tieren und Wildkamera-Fotos von MoveEye, Tauschen nach
-    Wunschlisten, ein Feldstecher, je ein Fundort für Seil und Ersatzteil, Hilfe = Schwierigkeit.
-  * 2.98.105: Simulator 3D-4.74: Bergtal – Passstrasse sauber auf dem Gelände (runde Kehren), Bergdorf auf Strassenhöhe, ebene
-    Parkplätze; Pfadilager ohne Tanne vor MoveEye beim Standort Zelte.
-  * 2.98.104: Nacht-Testlauf: Ursachen der Bergtal-Nacht übersetzt (seltene Tiere, Licht am Berg, Gämse, Kuh, Hase, Hermelin,
-    Reh, Steinschlag, Gewitter). Simulator 3D-4.73: Bergtal-Abenteuer mit MoveEye – Lager bewachen oder Wildkamera, Fuchs am
-    Proviant, Hinweis-Aufnahme, Sammlung von 7 seltenen Tieren.
-  * 2.98.103: Simulator 3D-4.72: Ferienpark mit Leben nach Uhrzeit (Grillabend, WC-Gänge, Jogger, Bäcker) und 3 Aufgaben mit
-    MoveEye (Kind finden, Velo-Dieb, Zeltwache).
-  * 2.98.102: Simulator 3D-4.71: Schlafzimmer mit Hamster, Wellensittich und Hauswinkelspinne, die sich nachts vor die Linse
-    abseilt (Fehlalarm-Tests).
-  * 2.98.101: Simulator 3D-4.70: Bergtal-Abenteuer – Leute im Tal, Gespräche mit Antwortwahl und Gedächtnis, Nebenaufgaben.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -100,10 +100,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_3_8_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_3_17_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_3_8_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_3_8_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_3_17_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_3_17_0.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -120,7 +120,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "3.8.0"
+APP_VERSION = "3.17.0"
 
 
 def default_data_dir():
@@ -242,8 +242,8 @@ def prepare_settings_file():
 #     Part 397 fetches the zip over the same update source and restarts once (zusatz_start()).
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
-ZD_FILE = "moveeye_daten_3_8_0.zip"
-ZD_SHA256 = "ec52e39c76b86c5eddeef577e93ddb340fb18b1da79197cb9827c48c107f3d28"
+ZD_FILE = "moveeye_daten_3_17_0.zip"
+ZD_SHA256 = "bf1a8dab4f2dafc5035517f68779ff8dcc3891e147d659e502d7e9c2c0168c62"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -3520,6 +3520,13 @@ class TamperGuard:
         if not is_armed() or now - self.cool < 120:
             return
         self.cool = now
+        if what in ("moved", "knocked", "power"):           # the device itself moves: + its position, if the GPS has a fix (280)
+            try:
+                mp_ = gps_map_link()
+            except NameError:
+                mp_ = ""
+            if mp_:
+                full += " · " + tr("Position") + ": " + mp_   # 635b sends the map link complete (never cut)
         w = WATCH_REF["w"]
         if w is not None:
             w.notifier.tamper(full, w.frame_out)
@@ -4259,20 +4266,25 @@ class Notifier:
     def _text(p):
         return push_short(p)["text"]                      # 635b: at most one line (distance, «+n», «late» included)
 
+    @staticmethod
+    def _sms(p):
+        return push_sms_text(Notifier._title(p), Notifier._text(p), p)    # 635b: with the complete map link (theft, position)
+
     def _dispatch(self, p, jpg, fname):
         if sim_net_down():                               # Simulator-Werte: «WLAN weg» / «Internet weg» test - nothing goes out (285)
             return simnet_hold(self, p, jpg, fname)
         if sandbox_active() or p.get("_test"):           # 2.96.6: simulator test inbox - nobody is disturbed (141); 2.97.0: per message
-            sandbox_add(self._title(p), self._text(p), jpg, self._event(p) if self._event(p) != "tamper" else "tamper")
-            msglog_add(self._title(p), self._text(p), self._event(p), jpg, "test", "Test-Postfach")    # 2.98.13: list «Nachrichten»
+            sandbox_add(self._title(p), push_with_map(self._text(p), p), jpg, self._event(p) if self._event(p) != "tamper" else "tamper")
+            msglog_add(self._title(p), push_with_map(self._text(p), p, " · "), self._event(p), jpg, "test", "Test-Postfach")    # 2.98.13: list «Nachrichten»
             return
         if push_sim_hold(p):                             # 635b: in the simulation only alarms to the phone (switch sim_info_push)
-            msglog_add(self._title(p), self._text(p), "info", jpg, "none", "🧪 Simulator")
+            msglog_add(self._title(p), push_with_map(self._text(p), p, " · "), "info", jpg, "none", "🧪 Simulator")
             return
         if CFG["webpush_on"] and webpush_subs():
             threading.Thread(target=self._webpush, args=(p,), daemon=True).start()
         if CFG["users"]:                                 # 2.98.42: own ntfy topics of the users (041)
-            users_push_dispatch(self._title(p), self._text(p), push_cat("mw-" + self._event(p)))
+            mp_ = push_map(p)                            # 635b: the map - Click + a short line (like ntfy)
+            users_push_dispatch(self._title(p), self._text(p) + ("\n" + push_map_line() if mp_ else ""), push_cat("mw-" + self._event(p)), mp_)
         if pushover_ready():
             threading.Thread(target=self._pushover, args=(p, jpg, fname), daemon=True).start()
         ev = self._event(p)
@@ -4284,9 +4296,9 @@ class Notifier:
         if CFG["sms_on"] and ev in ("person", "tamper", "warm", "noise", "test") and sms_numbers():
             offline = STATE.get("net", {}).get("online") is False
             if not CFG["sms_only_offline"] or offline or not self.main_configured() or ev == "test":
-                threading.Thread(target=lambda: sms_send(self._title(p) + ": " + self._text(p), force=ev == "test"), daemon=True).start()
+                threading.Thread(target=lambda: sms_send(self._sms(p), force=ev == "test"), daemon=True).start()
         if not self.main_configured():
-            msglog_add(self._title(p), self._text(p), ev, jpg, "none", "")
+            msglog_add(self._title(p), push_with_map(self._text(p), p, " · "), ev, jpg, "none", "")
             return
         kind, secret = CFG["notify_type"], CFG["telegram_token"]
         alarm = ev in ("person", "tamper", "warm", "noise")
@@ -4296,7 +4308,7 @@ class Notifier:
                 code, where = self._send_main(p, jpg, fname)
                 STATE["notify_status"] = f"sent {datetime.now().strftime('%H:%M:%S')} (HTTP {code})"
                 log_event("web", f"Notification sent to {where} (HTTP {code})" + (f" - attempt {k_ + 1}" if k_ else ""))
-                msglog_add(self._title(p), self._text(p), ev, jpg, "sent", where.split(" ")[0])
+                msglog_add(self._title(p), push_with_map(self._text(p), p, " · "), ev, jpg, "sent", where.split(" ")[0])
                 return
             except Exception as e:
                 msg = str(e).replace(secret, "***") if secret else str(e)
@@ -4309,11 +4321,11 @@ class Notifier:
                     pass
                 if k_ + 1 < tries:
                     time.sleep(5 if k_ == 0 else 10)
-        msglog_add(self._title(p), self._text(p), ev, jpg, "failed", kind)
+        msglog_add(self._title(p), push_with_map(self._text(p), p, " · "), ev, jpg, "failed", kind)
         # all attempts failed: the SMS (if it was held back for "only when offline") goes out now
         if alarm and CFG["sms_on"] and CFG["sms_only_offline"] and sms_numbers() and STATE.get("net", {}).get("online") is not False:
             log_event("web", "Push message could not be sent - SMS instead")
-            sms_send(self._title(p) + ": " + self._text(p))
+            sms_send(self._sms(p))
         if alarm and not p.get("late"):
             outbox_add(p, jpg, fname)                    # 2.95.35: kept on the card and sent as soon as it works
 
@@ -4329,7 +4341,7 @@ class Notifier:
         if push_url_is_ntfy(url):                        # 635b: an ntfy address in the webhook card - as ntfy, not as JSON
             return self._ntfy(p, jpg, fname), "ntfy " + _url_host(url)
         body_ = dict(p, title=self._title(p), text=self._text(p), info_title=self._title(p) if p.get("info_title") else "",
-                     text_full=push_long(p))              # K2: the short form in «text», the complete text for own automations
+                     text_full=push_long(p), map=push_map(p))    # K2: the short form in «text», the complete text for own automations
         req = urllib.request.Request(url, data=json.dumps(body_, ensure_ascii=False).encode(),
                                      headers={"Content-Type": "application/json", "Title": _hdr(self._title(p))})
         with urllib.request.urlopen(req, timeout=8) as r:
@@ -4341,10 +4353,12 @@ class Notifier:
         alarm = ev in ("person", "warm", "noise", "tamper")
         prio = 2 if alarm and CFG["pushover_emergency"] else (1 if alarm or ev == "test" else (-1 if ev == "info" else 0))
         f = {"token": CFG["pushover_token"].strip(), "user": CFG["pushover_user"].strip(), "title": self._title(p)[:250],
-             "message": self._text(p)[:1000] or self._title(p), "priority": str(prio)}
+             "message": push_with_map(self._text(p), p)[:1000] or self._title(p), "priority": str(prio)}
         if prio == 2:
             f.update(retry="60", expire="1800")                 # every minute again, at most 30 minutes, until confirmed
-        if p.get("link"):
+        if push_map(p):                                         # 635b: the map is the link of a message with a position
+            f.update(url=push_map(p)[:500], url_title=push_map_line()[:100])
+        elif p.get("link"):
             f.update(url=p["link"][:500], url_title="MoveEye")
         b = uuid.uuid4().hex; parts = []
         for k, v in f.items():
@@ -4401,7 +4415,7 @@ class Notifier:
         if email_ready():
             run("E-Mail", lambda: email_send(self._title(p), push_long(p), jpg, "test.jpg"))
         if CFG["sms_on"] and sms_numbers():
-            run("SMS", lambda: sms_send(self._title(p) + ": " + self._text(p), force=True))
+            run("SMS", lambda: sms_send(self._sms(p), force=True))
         if CFG["webpush_on"] and webpush_subs():
             def wp_():
                 n = webpush_all(self._title(p), self._text(p), "/", tag="mw-test", urgent=True); return n > 0, f"{n} device(s)"
@@ -4419,7 +4433,7 @@ class Notifier:
     def _webpush(self, p):
         ev = self._event(p)
         try:
-            n = webpush_all(self._title(p), self._text(p), "/" if ev != "info" else (p.get("link") or "/"), tag="mw-" + ev,
+            n = webpush_all(self._title(p), push_with_map(self._text(p), p), push_map(p) or ("/" if ev != "info" else (p.get("link") or "/")), tag="mw-" + ev,
                             urgent=ev in ("person", "warm", "noise", "test", "tamper"))
             log_event("web", f"Web push sent to {n} device(s)")
         except Exception as e:
@@ -4432,8 +4446,9 @@ class Notifier:
              "Priority": {"person": "high", "warm": "high", "noise": "high", "prealarm": "default", "tamper": "urgent"}.get(ev, "default")}
         if CFG.get("msg_icons", True):                   # 635b: the symbol is in the title - no second emoji from the tags
             h.pop("Tags")
-        if p["link"]:
-            h["Click"] = p["link"]
+        mp_ = push_map(p)
+        if mp_ or p["link"]:
+            h["Click"] = mp_ or p["link"]                # 635b: a message with a position opens the map
         try:
             acts = alx_ntfy_actions(p)                   # 2.98.13: buttons «False alarm · Siren · Off» (066)
         except Exception:
@@ -4441,6 +4456,8 @@ class Notifier:
         if acts:
             h["Actions"] = _hdr(acts)
         text = self._text(p)
+        if mp_:                                          # 635b: + a short line «📍 Open map» (in the header: one line, « · »)
+            text += (" · " if jpg else "\n") + push_map_line()
         if jpg:
             h["Filename"] = fname; h["Message"] = _hdr(text); h["Content-Type"] = "image/jpeg"
             req = urllib.request.Request(CFG["notify_url"].strip(), data=jpg, headers=h, method="PUT")
@@ -4451,7 +4468,7 @@ class Notifier:
 
     def _telegram(self, p, jpg, fname):
         base = f"{TELEGRAM_API}/bot{CFG['telegram_token']}"
-        body_txt = self._text(p)
+        body_txt = push_with_map(self._text(p), p)        # 635b: the complete map link of a message with a position
         text = self._title(p) + "\n" + body_txt + (("\n" + p["link"]) if p["link"] and p["link"] not in body_txt else "")
         try:
             mk = None if p.get("_no_kb") else alx_telegram_markup(p)    # 2.98.13: link buttons (066)
@@ -10898,7 +10915,7 @@ MAKEOVER_ALL = [
     (6, "Einheitliche Ereignis-Symbole"), (7, "Simulator-Zentrale in MoveEye"), (8, "«Was wäre wenn …?» bei echten Alarmen"),
     (9, "Dein Platz (Ort, Winkel, Zonen, Patrouille)"), (10, "Zonen im Simulator sehen"), (11, "Erkennung live in der 3D-Ansicht"),
     (12, "Automatische Trainings-Nacht"), (13, "Einstellungs-Vergleich A/B"), (14, "Benachrichtigungen testen (Test-Kanal)"),
-    (15, "Akku-, Wetter- und WLAN-Ausfall üben"), (16, "Mehrere MoveEye-Geräte im Simulator"), (17, "Rover voll integriert"),
+    (15, "Akku-, Wetter- und WLAN-Ausfall üben"), (16, "Mehrere MoveEye-Geräte im Simulator"), (17, "Mover voll integriert"),
     (18, "Tagebuch-Statistik aus dem Simulator"), (19, "Versionen vergleichen (Kurve)"), (20, "Ein-Klick-Demo"),
     (21, "Fehlalarm-Lernen"), (22, "Karte der blinden Flecken"), (23, "Nacht-Generalprobe vor dem Einschalten des Schutzes"),
     (24, "Schwellen automatisch einstellen"), (25, "Erkennungs-Check jede Woche"),
@@ -10990,6 +11007,8 @@ def makeover_head():
           "if(on&&!b&&document.body){b=document.createElement('div');b.className='mwsimbar';b.title='MoveEye';const s=document.createElement('span');b.appendChild(s);document.body.prepend(b);}"
           "if(b){b.hidden=!on;b.firstChild.textContent='🧪 '+(TX[L()]||TX.en);}};"
           "document.addEventListener('DOMContentLoaded',paint);"
+          # 3.16: the main page knows sim_on from its state every few seconds -> the stripe follows at once (not only every 15 s)
+          "window.mwSimMark=v=>{v=!!v;if(v!==on){on=v;paint();}};"
           "setInterval(async()=>{try{const r=await (await fetch('/api/simbar')).json();if(r.on!==on){on=r.on;}paint();}catch(e){}},15000);setTimeout(paint,1500);"
           # 2.97.0: switch the simulation; armed -> ask «disarm and simulate?» first (sim_set needs confirm)
           "window.mwSimSet=async(v,lang)=>{const P=b=>fetch('/api/sim',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)}).then(x=>x.json()).catch(()=>({}));"
@@ -12136,7 +12155,7 @@ def rover_on_alarm(kind):
     def go():
         try:
             sim_control({"action": "rover", "do": "alarm"})
-            log_event("sys", "Rover drives to the alarm")
+            log_event("sys", "Mover drives to the alarm")
         except Exception:
             pass
     threading.Thread(target=go, daemon=True).start()
@@ -22920,6 +22939,15 @@ def osm_link(lat, lon):
     return f"https://www.openstreetmap.org/?mlat={lat:.5f}&mlon={lon:.5f}#map=17/{lat:.5f}/{lon:.5f}"
 
 
+def gps_map_link():
+    """the map link of the device's own position (GPS module or the simulator's GPS, a fix of the last 5 minutes) for the
+    sabotage alarms «device moved / knocked over / power cut» (060) - '' without a fresh fix (Paket «Diebstahl-Kartenlink»)"""
+    g = GPSMOD
+    if not CFG.get("gpsmod_on") or g.get("lat") is None or time.time() - float(g.get("t") or 0) > 300:
+        return ""
+    return osm_link(g["lat"], g["lon"])
+
+
 def gps_theft_check():
     """Armed: the first position is the anchor. Further away than gps_theft_m twice in a row = carried away."""
     g = GPSMOD; now = time.time()
@@ -23352,7 +23380,7 @@ def simnet_hold(nf, p, jpg, fname):
     why = sim_net_down()
     STATE["notify_status"] = "error: " + ("no Wi-Fi" if why == "wifi" else "no internet") + " (simulator)"
     log_event("web", f"Notification not sent - {'Wi-Fi' if why == 'wifi' else 'internet'} gone (simulator test)")
-    msglog_add(nf._title(p), nf._text(p), ev, jpg, "failed", "🧪 " + ("no Wi-Fi" if why == "wifi" else "no internet"))
+    msglog_add(nf._title(p), push_with_map(nf._text(p), p, " · "), ev, jpg, "failed", "🧪 " + ("no Wi-Fi" if why == "wifi" else "no internet"))
     if alarm and not p.get("late"):
         outbox_add(dict(p, sandbox=bool(sandbox_active() or p.get("_test"))), jpg, fname)
 
@@ -24526,8 +24554,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3.8.0", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 35098640,
-         "sha256": "64ae4c3d103eb59aba9e08cbf897b0c98f305d390a5c33628be73fb2f069e12e"}
+SIM3D = {"version": "3.17.0", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 35521369,
+         "sha256": "9d19893a617f5c61c843f1b550d0b62bd125c56869fa1399e610fc6533c468fd"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -24768,6 +24796,11 @@ class SimDiscovery:
 
 
 SIMSCAN = {"running": False, "t": 0.0, "hosts": 0, "found": 0, "secs": 0.0, "net": "", "done": 0}
+# Ports aufräumen (Stabil-Start): wo ein Simulator antworten kann - 8765 (Standard), 8766 (alte «Start auf Port 8766.bat»),
+# 8767 (Python-Simulator), 8768 (zweiter 3D-Simulator, «Start auf Port 8768.bat») und die Ausweich-Ports des
+# 3D-Simulators 8775 / 8785 / 8795 (main.gd ALT_PORTS: der Port war nach einem Update noch besetzt).
+# Eine Tabelle für beide Seiten: simulator3d/schnittstelle.json «_ports», geprüft im Selbsttest (Teil 558).
+SIM_SCAN_PORTS = (8765, 8766, 8767, 8768, 8775, 8785, 8795)
 SIMHOST = {}                       # ip -> computer name (from the simulator itself, or asked once from the router's name service)
 
 
@@ -24822,7 +24855,7 @@ def sim_scan():
     from concurrent.futures import ThreadPoolExecutor
     ip = _local_ipv4(); base = ".".join(ip.split(".")[:3])
     hosts = ["127.0.0.1"] + ([f"{base}.{i}" for i in range(1, 255)] if not ip.startswith("127.") else [])
-    ports = sorted({8765, 8766, 8767, 8768, int(urllib.parse.urlsplit(sim_base()).port or 8765)})   # 8767 / 8768: further simulators
+    ports = sorted(set(SIM_SCAN_PORTS) | {int(urllib.parse.urlsplit(sim_base()).port or 8765)})   # Stabil-Start: also the spare ports
     SIMSCAN.update(running=True, t=time.time(), hosts=len(hosts) * len(ports), found=0, secs=0.0, net=f"{base}.0/24", done=0)
 
     def probe(hp):
@@ -24848,7 +24881,7 @@ def sim_scan():
     def run():
         t0 = time.time()
         try:
-            with ThreadPoolExecutor(max_workers=64) as ex:
+            with ThreadPoolExecutor(max_workers=96) as ex:      # Stabil-Start: 7 ports instead of 4-5 - about as fast as before
                 list(ex.map(probe, [(h, p) for h in hosts for p in ports
                                     if not (p == TUN_PORT and CFG.get("tunnel_on") and h in ("127.0.0.1", ip))]))   # 2.95.66: not the own tunnel
         finally:
@@ -30535,7 +30568,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_3_8_0.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_3_17_0.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -38499,6 +38532,8 @@ self.addEventListener("push", e => {
 self.addEventListener("notificationclick", e => {
   e.notification.close();
   const url = (e.notification.data && e.notification.data.url) || "/";
+  let ext = false; try { ext = new URL(url, self.location.href).origin !== self.location.origin; } catch (x) {}
+  if (ext) { e.waitUntil(self.clients.openWindow(url)); return; }   // a message with a position: the map in a new window
   e.waitUntil(self.clients.matchAll({type: "window", includeUncontrolled: true}).then(cs => {
     for (const c of cs) { if ("focus" in c) { try { c.navigate(url); } catch (x) {} return c.focus(); } }
     return self.clients.openWindow(url);
@@ -40038,14 +40073,14 @@ for _a, _b in (('<section id="live" data-icon="📺"><h2>Die Live-Seite</h2>',
                 "<p><b>🧩 Sim-Kompakt (ab 2.98.46, Bild im Bild ab 2.98.53, daneben ab 2.98.56):</b> Ist der Simulator verbunden, zeigt die Live-Seite oben "
                 "das Simulator-Fenster gross und die Kamera von MoveEye daneben – auf einem schmalen Bildschirm (Handy hochkant) klein in seiner Ecke («● LIVE»). Das kleine Bild antippen = die "
                 "beiden Bilder tauschen (das Gerät merkt es sich); das grosse Bild antippen = gross, nochmals = zurück. Darunter links den Kopf-Stick "
-                "(mit ◎, Auslöser 🎯 und KI-Hilfe 🤖), rechts den Rover-Stick und dazwischen die Kacheln Szene, Tageszeit, Wetter, Besuch, "
+                "(mit ◎, Auslöser 🎯 und KI-Hilfe 🤖), rechts den Mover-Stick und dazwischen die Kacheln Szene, Tageszeit, Wetter, Besuch, "
                 "Spiel, Wildbeobachtung, Foto des Platzes, KI-Wächter, Ansicht und Folgen; «… mehr» öffnet die ganze Simulator-Steuerung, «?» "
                 "die Erklärung. Ein- und ausschalten (pro Gerät) und die Bildqualität des Simulators unter «◫ Ansicht».</p>"),
                ('<section id="live" data-icon="📺"><h2>The live page</h2>',
                 "<p><b>🧩 Sim compact (from 2.98.46, picture in picture from 2.98.53, side by side from 2.98.56):</b> while the simulator is connected the live page "
                 "shows the simulator window big at the top and MoveEye's camera beside it - on a narrow screen (phone upright) small in its corner («● LIVE»). Tap the small picture = "
                 "swap the two pictures (this device remembers it); tap the big picture = big, tap again = back. Below them the head stick on the "
-                "left (with ◎, shutter 🎯 and AI help 🤖), the rover stick on the right and the tiles in between: scene, time of day, "
+                "left (with ◎, shutter 🎯 and AI help 🤖), the mover stick on the right and the tiles in between: scene, time of day, "
                 "weather, visit, game, wildlife watching, photo of the place, AI guard, view and follow; «… more» opens the whole simulator "
                 "control, «?» the explanation. On / off (per device) and the picture quality of the simulator under «◫ View».</p>")):
     if _a in HELP_PAGE:
@@ -46454,6 +46489,77 @@ def iface_selftest():
 SELFTEST_EXTRA.append(("One field list MoveEye ↔ simulator (simulator3d/schnittstelle.json)", iface_selftest))
 
 
+def ports_check(base=None):
+    """Ports aufräumen (Stabil-Start): the port table «_ports» in schnittstelle.json against both sides - problems or None"""
+    base = base or os.path.dirname(os.path.abspath(__file__))
+    L = iface_list(base)
+    gdir = os.path.join(base, "simulator3d", "scripts")
+    if L is None or not os.path.isdir(gdir) or "_ports" not in L:
+        return None
+    P = L["_ports"]
+
+    def gd(fn):
+        with open(os.path.join(gdir, fn), encoding="utf-8") as f:
+            return f.read()
+    probs = []
+    m = re.search(r"const ALT_PORTS := \[([\d, ]+)\]", gd("main.gd"))
+    alt = [int(x) for x in re.findall(r"\d+", m.group(1))] if m else None
+    if alt != list(P["ausweich"]):
+        probs.append(f"main.gd ALT_PORTS {alt} != ausweich {P['ausweich']}")
+    m = re.search(r"const PORT := (\d+)", gd("tunnel.gd"))
+    if not m or int(m.group(1)) != P["tunnel"] or TUN_PORT != P["tunnel"]:
+        probs.append(f"tunnel port: tunnel.gd {m and m.group(1)}, TUN_PORT {TUN_PORT}, list {P['tunnel']}")
+    m = re.search(r"\nstatic func game_ports\(.*?(?=\n(?:static )?func |\Z)", gd("game.gd"), re.S)
+    g = m.group(0) if m else ""
+    m0 = re.search(r"return \[(\d+), (\d+)\]", g)
+    m1 = re.search(r"return \[(\d+) \+ 2 \* k, (\d+) \+ 2 \* k\]", g)
+    if not m0 or [int(m0.group(1)), int(m0.group(2))] != list(P["spiel"]):
+        probs.append(f"game.gd game_ports for {P['sim']} != spiel {P['spiel']}")
+    if not m1 or int(m1.group(1)) != P["spiel_andere"] or int(m1.group(2)) != P["spiel_andere"] + 1:
+        probs.append(f"game.gd game_ports for other ports != spiel_andere {P['spiel_andere']}")
+    if TUN_LOCAL.get(18770) != P["spiel"][0] or TUN_LOCAL.get(18771) != P["spiel"][1]:
+        probs.append(f"TUN_LOCAL (343) carries {TUN_LOCAL.get(18770)}/{TUN_LOCAL.get(18771)}, not the game {P['spiel']}")
+    if list(SIM_SCAN_PORTS) != list(P["suche"]):
+        probs.append(f"SIM_SCAN_PORTS (300) {list(SIM_SCAN_PORTS)} != suche {P['suche']}")
+    for k in ["sim", "sim_zweit", "python_sim"] + [f"ausweich {x}" for x in P["ausweich"]]:
+        v = P[k] if k in P else int(k.split()[1])
+        if v not in P["suche"]:
+            probs.append(f"MoveEye does not search {k} ({v})")
+
+    def game(p):
+        return list(P["spiel"]) if p == P["sim"] else [P["spiel_andere"] + 2 * (p - P["sim"]), P["spiel_andere"] + 1 + 2 * (p - P["sim"])]
+    sims = [P["sim"], P["sim_zweit"]] + list(P["ausweich"])
+    used = {}
+    for p in sims:                                       # two simulators on one PC: nothing may overlap
+        for q in [p] + game(p):
+            if q in used and used[q] != p:
+                probs.append(f"port {q} is used by the simulators on {used[q]} and {p}")
+            used[q] = p
+    for q in (P["tunnel"], P["python_sim"]):
+        if q in used:
+            probs.append(f"port {q} (tunnel / Python simulator) is also used by the simulator on {used[q]}")
+    bdir = os.path.join(base, "simulator3d", "beilagen")
+    if os.path.isdir(bdir):
+        for fn in sorted(os.listdir(bdir)):
+            if fn.endswith(".bat"):
+                with open(os.path.join(bdir, fn), encoding="ascii", errors="replace") as f:
+                    for q in re.findall(r"--port (\d+)", f.read()):
+                        if int(q) in (P["tunnel"], P["python_sim"]) or int(q) not in P["suche"]:
+                            probs.append(f"{fn}: --port {q} collides or is not searched")
+    return probs
+
+
+def ports_selftest():
+    r = ports_check()
+    if r is None:
+        return "simulator folder not here"
+    assert not r, f"{len(r)} problems: " + " | ".join(r[:8])
+    return "ports of MoveEye and the simulator fit together (schnittstelle.json «_ports»)"
+
+
+SELFTEST_EXTRA.append(("Ports MoveEye ↔ simulator (schnittstelle.json «_ports»)", ports_selftest))
+
+
 _sim_status_340 = sim_status
 
 
@@ -47953,7 +48059,7 @@ TOGGLES = [  # (section, key, label)
     ("Simulator", "sim_eco", "Simulator: fewer pictures (the simulator draws only what is fetched)"),
     ("Simulator", "notify_sandbox", "Simulation: messages into the test inbox instead of to the phone (nobody is disturbed)"),
     ("Simulator", "train_night_on", "Training night: every night test runs in several scenes, optimization, training pictures"),
-    ("Simulator", "rover_alarm", "Rover: at a person alarm drive there by itself (simulator)"),
+    ("Simulator", "rover_alarm", "Mover: at a person alarm drive there by itself (simulator)"),
     ("Simulator", "fa_learn_auto", "False alarm marked: re-enact it in the simulator and learn from it"),
     ("Simulator", "rehearsal_on_arm", "Night rehearsal by itself when arming in the simulation"),
     ("Simulator", "weekcheck_on", "Recognition check every week (Sunday night) with a warning when it got worse"),
@@ -48574,7 +48680,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 3.8.0")
+        self.root.title("MoveEye 3.17.0")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -48945,7 +49051,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 3.8.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 3.17.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -49285,6 +49391,7 @@ class App:
         wide = self._lay[2] and not side_col             # wide: stick | small things | quick switches in one row
         left_w = self._win_w() - self._lay[1] - 60
         tiny = side_col or (not wide and left_w < 520)   # very narrow: small things beside the stick, switches below both
+        self._ctl_sim = simh = bool(CFG.get("sim_on"))  # 3.16: simulation = no speed, ⇆, centre, calibrate, waypoints (like the web page)
         head = self._tk_head()                           # 2.98.26: joystick, centre, calibrate, waypoints only with a pan / tilt head (2.98.29: «Ansicht» → Joystick always / never)
         u = self._tk_ui()
         bar = tk.Frame(f, bg=C["panel"]); bar.pack(fill="x")
@@ -49344,14 +49451,17 @@ class App:
             for _, short, cmd, tip in btns:
                 self._fbtn(side, short, cmd, tip).pack(side="left", padx=(6, 0))
             swb(side).pack(side="left", padx=(6, 0))
-        if not head:
+        if not head or simh:
             side.grid_remove()
+        if not head and not simh:
             tk.Label(bar, text=tr("no pan / tilt head - joystick hidden (Settings → Camera / Servos → Servo driver)"), bg=C["panel"], fg=C["mut"],
                      font=("DejaVu Sans", 8), wraplength=360, justify="left").grid(row=3, column=0, columnspan=4, sticky="w")
-        self.l_ctl_status = tk.Label(side if wide else bar, text="", bg=C["panel"], fg=C["yel"], font=("DejaVu Sans", 8), wraplength=200 if wide else 400,
+        self.l_ctl_status = tk.Label(side if wide and not simh else bar, text="", bg=C["panel"], fg=C["yel"], font=("DejaVu Sans", 8), wraplength=200 if wide else 400,
                                      justify="left")
-        if wide:
+        if wide and not simh:
             self.l_ctl_status.pack(anchor="w", pady=(6, 0))
+        elif wide:
+            self.l_ctl_status.grid(row=1, column=0, columnspan=4, sticky="w")
         else:
             self.l_ctl_status.grid(row=2, column=0, columnspan=4, sticky="w")
         # 3) quick switches, the waypoints below
@@ -49361,7 +49471,7 @@ class App:
         elif tiny:
             qf.grid(row=1, column=0, columnspan=2, sticky="ew", pady=(8, 0)); bar.columnconfigure(c_sd, weight=1); cols = 5
         else:
-            qf.grid(row=1, column=c_sd, sticky="new", padx=(0, 14) if swap else (14, 0), pady=(8, 0)); bar.columnconfigure(c_sd, weight=1)
+            qf.grid(row=0 if simh else 1, rowspan=2 if simh else 1, column=c_sd, sticky="new", padx=(0, 14) if swap else (14, 0), pady=(8, 0)); bar.columnconfigure(c_sd, weight=1)
             cols = 5 if left_w - 170 >= 380 else 4
         grid = tk.Frame(qf, bg=C["panel"]); grid.pack(fill="x")
         for k in range(cols):
@@ -54181,7 +54291,7 @@ def push_test_one(w, ch):
         if ch == "email":
             return email_send(n._title(p), n._text(p), jpg, "test.jpg") if email_ready() else (False, tr("not set up"))
         if ch == "sms":
-            return sms_send(n._title(p) + ": " + n._text(p), force=True) if (CFG["sms_on"] and sms_numbers()) else (False, tr("not set up"))
+            return sms_send(n._sms(p), force=True) if (CFG["sms_on"] and sms_numbers()) else (False, tr("not set up"))
         if ch == "webpush":
             k = webpush_all(n._title(p), n._text(p), "/", tag="mw-test", urgent=True) if CFG["webpush_on"] else 0
             return k > 0, f"{k} device(s)"
@@ -56047,7 +56157,7 @@ App._refresh = _kr_tk_refresh
 #      bleibt für die kleine Überraschung) und «Über MoveEye» unten in Mehr. Geschichte, Entwickler «Daniel alias Elektro»,
 #      Zeitleiste, Zahlen (zur Laufzeit gezählt), aufklappbar «Für Technik-Interessierte». Texte: 622.
 # ----------------------------------------------------------------------------
-INFO_PARTS = 244                       # number of parts in quelle/ (written by werkzeuge/bauen.py --neue-version)
+INFO_PARTS = 245                       # number of parts in quelle/ (written by werkzeuge/bauen.py --neue-version)
 INFO_START = "2026-10-16"              # the first lines (a small webcam program for the Pi 5)
 FBX = {"shot": None, "shot_t": 0.0, "lines": 0}
 
@@ -58241,6 +58351,10 @@ SELFTEST_EXTRA.append(("Servo page and Not-Aus on the live page", servo_web_self
 # bottom (orange iris, dark pupil) is the face, the four detection corners float in the fan and show the mood.
 #   * blinks every few seconds (the name), looks left / right, hops when a step is done, «talks» when a new text comes
 #   * moods: normal · point (explains, looks at the text) · happy (eye smiles, heart) · think (looks up, three dots)
+# Daniel 31.10.2026: Blinki everywhere WITHOUT the orange fan - eye, rim, feet; the mood shows in the eye and the hop.
+#   The mood signs (corners, arrow, heart, dots) appear for ~2 s in a small speech bubble above / right of Blinki, only when
+#   the mood changes (MWBlinki.mood), then fade out; same bubble in the simulator (mehr_icons.gd blinki_bubble). Window: no
+#   bubble. viewBox now 26 59 48 52 (the old coordinates stay). The logo (144 / mw_logo.gd) is separate and keeps its fan.
 #   * prefers-reduced-motion: no animation; light / dark / Rotlicht (html.sxnight: dim colours)
 #   * setting «blinki_on» (Setup; also in the guide step «Tours and tips» and under More); off = the plain boxes as before
 # Web: window.MWBlinki (make / mood / hop / talk / row) is put in front of the script /g2/ui.js (516), which uses it in the
@@ -58253,24 +58367,28 @@ SET_HELP["blinki_on"] = ("Blinki is the little figure made of the MoveEye logo: 
                          "On - switch it off if you prefer plain text boxes.")
 BLINKI_TX = ["Hello, I am Blinki!", "I am the eye of MoveEye. I show you everything step by step - and when I blink, all is well.", "Show Blinki"]
 
-# the figure (viewBox 0 0 100 112): fan = body, eye at the bottom = face, corners in the fan = mood; __I__ = unique id
+# the figure (viewBox 26 59 48 52, coordinates of the old 100 x 112 figure): eye = face, feet; __I__ = unique id
 BLINKI_SVG = (
-    '<svg viewBox="0 0 100 112" class="bk-svg" focusable="false" aria-hidden="true"><defs>'
-    '<linearGradient id="bkg__I__" x1="0" y1="1" x2="0" y2="0"><stop offset="0" class="bk-s0"/><stop offset="1" class="bk-s1"/></linearGradient>'
+    '<svg viewBox="26 59 48 52" class="bk-svg" focusable="false" aria-hidden="true"><defs>'
     '<clipPath id="bkc__I__"><circle cx="50" cy="80" r="16.6"/></clipPath></defs>'
     '<g class="bk-all">'
     '<ellipse class="bk-ft" cx="39" cy="105.5" rx="7.5" ry="3.8"/><ellipse class="bk-ft" cx="61" cy="105.5" rx="7.5" ry="3.8"/>'
-    '<g class="bk-body"><path class="bk-fan" fill="url(#bkg__I__)" d="M50 80 L10.6 29.6 A64 64 0 0 1 89.4 29.6 Z"/>'
-    '<g class="bk-frm"><path class="bk-br" d="M37 33 V27 H43 M57 27 H63 V33 M63 45 V51 H57 M43 51 H37 V45"/>'
-    '<path class="bk-i bk-ip" d="M46 33.5 L54.5 39 L46 44.5"/>'
-    '<path class="bk-i bk-ih" d="M50 46 C42 40.5 42.5 33.5 46.5 33.5 C48.6 33.5 49.6 35 50 36.4 C50.4 35 51.4 33.5 53.5 33.5 C57.5 33.5 58 40.5 50 46 Z"/>'
-    '<g class="bk-i bk-it"><circle cx="43.5" cy="39" r="2.4"/><circle cx="50" cy="39" r="2.4"/><circle cx="56.5" cy="39" r="2.4"/></g></g></g>'
     '<g class="bk-eye"><circle class="bk-scl" cx="50" cy="80" r="17"/>'
     '<g clip-path="url(#bkc__I__)"><g class="bk-pup"><circle class="bk-iris" cx="50" cy="80" r="10.5"/><circle class="bk-pupil" cx="50" cy="80" r="5.2"/>'
     '<circle class="bk-hl" cx="53.2" cy="76.6" r="2"/></g>'
     '<path class="bk-hap" d="M40.5 83.5 Q50 71 59.5 83.5"/>'
     '<rect class="bk-lid" x="32" y="62" width="36" height="36"/></g>'
     '<circle class="bk-rim" cx="50" cy="80" r="17"/></g></g></svg>')
+
+# the mood bubble (own viewBox 28 19 44 47 with the old corner coordinates): put next to the figure by MWBlinki.make (not
+# part of BLINKI_SVG, so the status LED of 599c, which uses BLINKI_SVG, stays without it). Same shape as mehr_icons.gd.
+BLINKI_BUB = (
+    '<svg viewBox="28 19 44 47" class="bk-bub" focusable="false" aria-hidden="true">'
+    '<path class="bk-bb" d="M39 21 H61 A8 8 0 0 1 69 29 V49 A8 8 0 0 1 61 57 H47 L30 64 L39 57 A8 8 0 0 1 31 49 V29 A8 8 0 0 1 39 21 Z"/>'
+    '<path class="bk-br" d="M37 33 V27 H43 M57 27 H63 V33 M63 45 V51 H57 M43 51 H37 V45"/>'
+    '<path class="bk-i bk-ip" d="M46 33.5 L54.5 39 L46 44.5"/>'
+    '<path class="bk-i bk-ih" d="M50 46 C42 40.5 42.5 33.5 46.5 33.5 C48.6 33.5 49.6 35 50 36.4 C50.4 35 51.4 33.5 53.5 33.5 C57.5 33.5 58 40.5 50 46 Z"/>'
+    '<g class="bk-i bk-it"><circle cx="43.5" cy="39" r="2.4"/><circle cx="50" cy="39" r="2.4"/><circle cx="56.5" cy="39" r="2.4"/></g></svg>')
 
 BLINKI_CSS = _zd('589_blinki/BLINKI_CSS', "")
 
@@ -58283,10 +58401,11 @@ BLINKI_JS = r"""
   const t = k => (K.tx || {})[k] || k;
   function make(mood) {
     const w = document.createElement("div"); w.className = "bk"; w.dataset.m = mood || "normal"; w.setAttribute("aria-hidden", "true");
-    w.innerHTML = String(K.svg || "").split("__I__").join("x" + (++n) + "_" + Math.random().toString(36).slice(2, 7)); return w;
+    w.innerHTML = String(K.svg || "").split("__I__").join("x" + (++n) + "_" + Math.random().toString(36).slice(2, 7)) + String(K.bub || ""); return w;
   }
   const again = (el, cls, ms) => { if (!el) return; el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); clearTimeout(el["_" + cls]); el["_" + cls] = setTimeout(() => el.classList.remove(cls), ms); };
-  const mood = (el, m) => { if (el) el.dataset.m = m || "normal"; };
+  // a new mood shows its sign for ~2 s in the small bubble (class «say»); the same mood again = no bubble
+  const mood = (el, m) => { if (!el) return; m = m || "normal"; if (el.dataset.m === m) return; el.dataset.m = m; again(el, "say", 2000); };
   const hop = el => again(el, "hop", 800), talk = el => again(el, "talk", 1350);
   function happyHop(el, after) { mood(el, "happy"); hop(el); setTimeout(() => mood(el, after || "point"), 1100); }
   // a row: Blinki + a speech bubble with the title (b or h2) and the texts (strings or nodes)
@@ -58304,7 +58423,7 @@ BLINKI_JS = r"""
 
 
 def blinki_js(L):
-    data = {"on": bool(CFG.get("blinki_on", True)), "tx": {s: tr(s, L) for s in BLINKI_TX}, "svg": BLINKI_SVG, "css": BLINKI_CSS}
+    data = {"on": bool(CFG.get("blinki_on", True)), "tx": {s: tr(s, L) for s in BLINKI_TX}, "svg": BLINKI_SVG, "bub": BLINKI_BUB, "css": BLINKI_CSS}
     return "window.MW_BK=" + json.dumps(data, ensure_ascii=False).replace("</", "<\\/") + ";\n" + BLINKI_JS
 
 
@@ -58333,46 +58452,25 @@ def _bk_hex(c, d=(232, 238, 245)):
 
 
 def blinki_png(height=72, mood="normal", line="#e8eef5", red=False):
-    """Blinki as PNG bytes (RGBA, transparent background). mood: normal / point / happy / think"""
+    """Blinki as PNG bytes (RGBA, transparent background). mood: normal / point / happy / think (in the eye only: the
+    window shows no fan and no mood bubble). Old coordinates (100 x 112), cut out: x 26 ... 74, y 59 ... 111"""
     S = 8                                                    # draw 8 x bigger, then scale down (smooth edges)
-    W, H = 100, 112
+    X0, Y0, W, H = 26, 59, 48, 52
     k = height / float(H) * S
     w, h = max(8, int(round(W * k))), max(8, int(round(H * k)))
     O, O2, WH, DK = ((14, 22, 122), (10, 15, 90), (6, 6, 42), (0, 0, 0)) if red else ((67, 159, 255), (12, 89, 232), (255, 255, 255), (20, 14, 10))
-    LN = _bk_hex(line)
     rgb = np.zeros((h, w, 3), np.float32); a = np.zeros((h, w), np.float32)
 
     def P(x, y):
-        return [int(round(x * k)), int(round(y * k))]
+        return [int(round((x - X0) * k)), int(round((y - Y0) * k))]
 
     def put(mask, col, alpha=1.0):
         m = (mask > 0).astype(np.float32) * (alpha if np.isscalar(alpha) else alpha)
         for i in range(3):
             rgb[..., i] = rgb[..., i] * (1 - m) + col[i] * m
         a[:] = a * (1 - m) + m
-    tilt = {"point": 7.0, "think": -5.0}.get(mood, 0.0)
-    rot = lambda x, y: (50 + (x - 50) * math.cos(math.radians(tilt)) - (y - 80) * math.sin(math.radians(tilt)),
-                        80 + (x - 50) * math.sin(math.radians(tilt)) + (y - 80) * math.cos(math.radians(tilt)))
     for fx in (39, 61):                                      # feet
         m = np.zeros((h, w), np.uint8); cv2.ellipse(m, tuple(P(fx, 105.5)), (int(7.5 * k), int(3.8 * k)), 0, 0, 360, 255, -1); put(m, O2)
-    pts = [rot(50, 80)] + [rot(50 + 64 * math.cos(math.radians(g)), 80 + 64 * math.sin(math.radians(g))) for g in np.linspace(-128, -52, 24)]
-    m = np.zeros((h, w), np.uint8); cv2.fillPoly(m, [np.array([P(x, y) for x, y in pts], np.int32)], 255)
-    yy = np.linspace(0, H, h, dtype=np.float32)[:, None] * np.ones((1, w), np.float32)
-    put(m, O, np.clip(0.4 + 0.6 * (yy - 16) / 64.0, 0.4, 1.0))   # the fan: opaque at the eye, lighter at the top
-    dx = 3.0 if mood == "point" else 0.0
-    lw = max(1, int(3 * k))
-    for seg in (((37, 33), (37, 27), (43, 27)), ((57, 27), (63, 27), (63, 33)), ((63, 45), (63, 51), (57, 51)), ((43, 51), (37, 51), (37, 45))):
-        m = np.zeros((h, w), np.uint8)
-        cv2.polylines(m, [np.array([P(*rot(x + dx, y)) for x, y in seg], np.int32)], False, 255, lw, cv2.LINE_AA); put(m, LN)
-    if mood == "point":
-        m = np.zeros((h, w), np.uint8); cv2.polylines(m, [np.array([P(*rot(x + dx, y)) for x, y in ((46, 33.5), (54.5, 39), (46, 44.5))], np.int32)], False, 255, lw, cv2.LINE_AA); put(m, LN)
-    elif mood == "think":
-        for cx in (43.5, 50, 56.5):
-            m = np.zeros((h, w), np.uint8); cv2.circle(m, tuple(P(*rot(cx, 39))), int(2.4 * k), 255, -1); put(m, LN)
-    elif mood == "happy":
-        m = np.zeros((h, w), np.uint8)
-        cv2.circle(m, tuple(P(46.6, 37.6)), int(3.9 * k), 255, -1); cv2.circle(m, tuple(P(53.4, 37.6)), int(3.9 * k), 255, -1)
-        cv2.fillPoly(m, [np.array([P(43, 39.5), P(57, 39.5), P(50, 46.5)], np.int32)], 255); put(m, O2)
     m = np.zeros((h, w), np.uint8); cv2.circle(m, tuple(P(50, 80)), int(17 * k), 255, -1); put(m, WH)   # the eye
     if mood == "happy":
         m = np.zeros((h, w), np.uint8)
@@ -58427,9 +58525,11 @@ def blinki_selftest():
         png = blinki_png(64, md)
         assert png[:8] == b"\x89PNG\r\n\x1a\n" and len(png) > 300, "Blinki PNG " + md
         im = cv2.imdecode(np.frombuffer(png, np.uint8), cv2.IMREAD_UNCHANGED)
-        assert im is not None and im.shape[2] == 4 and im[0, 0, 3] == 0 and im[int(im.shape[0] * 0.71), im.shape[1] // 2, 3] > 200, "Blinki: transparent + eye"
+        assert im is not None and im.shape[2] == 4 and im[0, 0, 3] == 0 and im[int(im.shape[0] * 0.40), im.shape[1] // 2, 3] > 200, "Blinki: transparent + eye"
+        assert abs(im.shape[1] / float(im.shape[0]) - 48 / 52.0) < 0.05, "Blinki: the size without the fan"
     js = _g2_js_blinki("de")
     assert js.index("window.MWBlinki") < js.index("function g2()") and "Hallo, ich bin Blinki" in js and "__I__" in js
+    assert "bk-fan" not in BLINKI_SVG and "A64 64" not in BLINKI_SVG and "bk-bub" in js and '"say", 2000' in js, "Blinki: no fan, mood bubble"
     assert "MWBlinki" in G2_JS and "blinki_on" in DEFAULTS and tr("Show Blinki", "fr") != "Show Blinki"
     return True
 
@@ -58772,6 +58872,8 @@ WEB_PAGE = WEB_PAGE.replace("/*KIHDE*/{}", json.dumps({_k: _v[0] for _k, _v in _
 # are not used then. The web side is in 541 (servo_client_state "sim" → #srv-stop hidden); the setting servo_stop_btn stays for
 # the real hardware. Here the window: every «⏹ Stopp» made by App._fbtn with the command _srv_estop_btn (570, all three
 # layouts of the camera bar) is remembered and taken off / put back by App._refresh (it runs every few seconds).
+# 3.16 (Daniel 31.10.2026): in the simulation the whole small column (speed, ⇆, centre, calibrate, waypoints) is left out
+# (570 _build_controls, flag self._ctl_sim); _refresh builds the tab again when the simulation is switched.
 # ----------------------------------------------------------------------------
 
 _ss_fbtn_before = App._fbtn
@@ -58834,6 +58936,13 @@ def _ss_refresh(self, *a, **k):
         _ss_stop_show(self)
     except Exception:
         pass
+    try:                                                 # 3.16: simulation switched -> build the camera bar again (570 _build_controls)
+        if hasattr(self, "_ctl_sim") and self._ctl_sim != bool(CFG.get("sim_on")) and self.tab is not None:
+            self._ctl_sim = bool(CFG.get("sim_on"))
+            tid, self.tab = self.tab, None
+            self.root.after(10, lambda: self._tab(tid))
+    except Exception:
+        pass
     return r
 
 
@@ -58885,50 +58994,50 @@ _HX_simkompakt = {
     'On when connected': ('Ein, wenn verbunden', 'Actif si connecté', 'Attivo se collegato', 'Activ, sch’el è collià'),
     'Off': ('Aus', 'Désactivé', 'Spento', 'Deactivà'),
     'sk-note': ('Mit verbundenem Simulator: oben das Simulator-Bild gross, die Kamera von MoveEye daneben (schmaler Bildschirm: klein in '
-                'seiner Ecke; antippen = tauschen), darunter Kopf- und Rover-Stick am Rand, dazwischen die Kacheln des Simulators. Gilt nur für dieses Gerät.',
+                'seiner Ecke; antippen = tauschen), darunter Kopf- und Mover-Stick am Rand, dazwischen die Kacheln des Simulators. Gilt nur für dieses Gerät.',
                 'Avec le simulateur connecté : en haut l’image du simulateur en grand, la caméra de MoveEye à côté (écran étroit : '
-                'en petit dans son coin ; toucher = échanger), dessous le stick de la tête et celui du rover sur les bords, entre eux les tuiles du simulateur. '
+                'en petit dans son coin ; toucher = échanger), dessous le stick de la tête et celui du mover sur les bords, entre eux les tuiles du simulateur. '
                 'Seulement pour cet appareil.',
                 'Con il simulatore collegato: in alto l’immagine del simulatore grande, la telecamera di MoveEye accanto (schermo stretto: '
-                'piccola nel suo angolo; toccare = scambiare), sotto lo stick della testa e quello del rover ai bordi, in mezzo le piastrelle del simulatore. '
+                'piccola nel suo angolo; toccare = scambiare), sotto lo stick della testa e quello del mover ai bordi, in mezzo le piastrelle del simulatore. '
                 'Solo per questo apparecchio.',
                 'Cun il simulatur collià: sisum il maletg dal simulatur grond, la camera da MoveEye dasper (visur stretg: pitschna en ses '
-                'chantun; tutgar = barattar), sutvart il stick dal chau e quel dal rover a l’ur, tranter els las plattinas dal simulatur. Mo per quest apparat.'),
+                'chantun; tutgar = barattar), sutvart il stick dal chau e quel dal mover a l’ur, tranter els las plattinas dal simulatur. Mo per quest apparat.'),
     'sk-help': ('Sim-Kompakt: das kleine Bild daneben oder in der Ecke antippen = die beiden Bilder tauschen (dieses Gerät merkt es sich). Das grosse '
                 'Bild antippen = gross, nochmals = zurück; das grosse Simulator-Bild ist das Simulator-Fenster '
-                '(Maus und ✋ Finger steuern den Simulator, ✕ = zurück). Linker Stick = Kopf von MoveEye, rechter Stick = Rover '
-                '(in einer Spielrunde nur, wenn das Spiel den Rover fährt). Die Kacheln = was im Simulator passiert; «… mehr» = alle '
+                '(Maus und ✋ Finger steuern den Simulator, ✕ = zurück). Linker Stick = Kopf von MoveEye, rechter Stick = Mover '
+                '(in einer Spielrunde nur, wenn das Spiel den Mover fährt). Die Kacheln = was im Simulator passiert; «… mehr» = alle '
                 'Einstellungen des Simulators. Ein / aus und Bildqualität unter «◫ Ansicht».',
                 'Sim compact : toucher la petite image à côté ou dans le coin = échanger les deux images (cet appareil s’en souvient). Toucher la '
                 'grande image = en grand, encore une fois = retour ; la grande image du simulateur est la fenêtre du '
                 'simulateur (souris et doigt ✋ pilotent le simulateur, ✕ = retour). Stick gauche = tête de MoveEye, stick droit = '
-                'rover (pendant une partie seulement si le jeu utilise le rover). Les tuiles = ce qui se passe dans le simulateur ; '
+                'mover (pendant une partie seulement si le jeu utilise le mover). Les tuiles = ce qui se passe dans le simulateur ; '
                 '« … plus » = tous les réglages du simulateur. Activer / désactiver et qualité d’image sous « ◫ Affichage ».',
                 'Sim compatto: toccare l’immagine piccola accanto o nell’angolo = scambiare le due immagini (questo apparecchio lo ricorda). Toccare '
                 'l’immagine grande = grande, di nuovo = indietro; l’immagine grande del simulatore è la finestra del '
                 'simulatore (mouse e dito ✋ comandano il simulatore, ✕ = indietro). Stick sinistro = testa di MoveEye, stick destro = '
-                'rover (durante una partita solo se il gioco usa il rover). Le piastrelle = ciò che succede nel simulatore; «… altro» = '
+                'mover (durante una partita solo se il gioco usa il mover). Le piastrelle = ciò che succede nel simulatore; «… altro» = '
                 'tutte le impostazioni del simulatore. Attivare / disattivare e qualità dell’immagine sotto «◫ Vista».',
                 'Sim cumpact: tutgar il pitschen maletg dasper u en il chantun = barattar ils dus maletgs (quest apparat sa regorda). Tutgar il '
                 'grond maletg = grond, anc ina giada = enavos; il grond maletg dal simulatur è la fanestra dal '
-                'simulatur (mieur e det ✋ commondan il simulatur, ✕ = enavos). Stick sanester = chau da MoveEye, stick dretg = rover '
-                '(durant in gieu mo sch’il gieu dovra il rover). Las plattinas = quai che capita en il simulatur; «… dapli» = tut ils '
+                'simulatur (mieur e det ✋ commondan il simulatur, ✕ = enavos). Stick sanester = chau da MoveEye, stick dretg = mover '
+                '(durant in gieu mo sch’il gieu dovra il mover). Las plattinas = quai che capita en il simulatur; «… dapli» = tut ils '
                 'parameters dal simulatur. Activar / deactivar e qualitad dal maletg sut «◫ Vista».'),
     'Tap = swap pictures': ('Antippen = Bilder tauschen', 'Toucher = échanger les images', 'Toccare = scambiare le immagini',
                             'Tutgar = barattar ils maletgs'),
     'Visit': ('Besuch', 'Visite', 'Visita', 'Visita'),
     'Switch on': ('Einschalten', 'Activer', 'Accendere', 'Activar'),
     'Head': ('Kopf', 'Tête', 'Testa', 'Chau'),
-    'Rover': ('Rover', 'Rover', 'Rover', 'Rover'),
-    'Rover locked in this game round': ('Rover in dieser Spielrunde gesperrt', 'Rover bloqué pendant cette partie', 'Rover bloccato in questa partita',
-                                        'Rover bloccà en quest gieu'),
-    'Switch the rover on in the simulator': ('Rover im Simulator einschalten', 'Activer le rover dans le simulateur', 'Accendere il rover nel simulatore',
-                                             'Activar il rover en il simulatur'),
+    'Mover': ('Mover', 'Mover', 'Mover', 'Mover'),
+    'Mover locked in this game round': ('Mover in dieser Spielrunde gesperrt', 'Mover bloqué pendant cette partie', 'Mover bloccato in questa partita',
+                                        'Mover bloccà en quest gieu'),
+    'Switch the mover on in the simulator': ('Mover im Simulator einschalten', 'Activer le mover dans le simulateur', 'Accendere il mover nel simulatore',
+                                             'Activar il mover en il simulatur'),
     'AI guard': ('KI-Wächter', 'Gardien IA', 'Guardiano IA', 'Guardian IA'),
     'View': ('Ansicht', 'Affichage', 'Vista', 'Vista'),
     'Head camera': ('Kopfkamera', 'Caméra de la tête', 'Telecamera della testa', 'Camera dal chau'),
     'From above': ('Von oben', 'Vue d’en haut', 'Dall’alto', 'Da sura'),
-    'Behind the rover': ('Hinter dem Rover', 'Derrière le rover', 'Dietro il rover', 'Davos il rover'),
+    'Behind the mover': ('Hinter dem Mover', 'Derrière le mover', 'Dietro il mover', 'Davos il mover'),
     "Driver's view": ('Fahrersicht', 'Vue du conducteur', 'Vista del conducente', 'Vista dal manischunz'),
     'Free view': ('Freie Ansicht', 'Vue libre', 'Vista libera', 'Vista libra'),
     'Normal view': ('Normale Ansicht', 'Vue normale', 'Vista normale', 'Vista normala'),
@@ -61102,7 +61211,7 @@ for _k, _v in _HX114.items():
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
 _HX115 = {  # 2.96.7: makeover 16-20
-    'Rover: at a person alarm drive there by itself (simulator)': ('Rover: bei Personen-Alarm von selbst hinfahren (Simulator)', 'Rover : en cas d’alarme personne, y aller tout seul (simulateur)', 'Rover: in caso di allarme persona andarci da solo (simulatore)', 'Rover: tar alarm da persuna ir da sez (simulatur)'),
+    'Mover: at a person alarm drive there by itself (simulator)': ('Mover: bei Personen-Alarm von selbst hinfahren (Simulator)', 'Mover : en cas d’alarme personne, y aller tout seul (simulateur)', 'Mover: in caso di allarme persona andarci da solo (simulatore)', 'Mover: tar alarm da persuna ir da sez (simulatur)'),
     'Week report of the simulator diary as a push (Monday morning)': ('Wochenbericht des Simulator-Tagebuchs als Push (Montagmorgen)', 'Rapport hebdomadaire du journal du simulateur par push (lundi matin)', 'Rapporto settimanale del diario del simulatore via push (lunedì mattina)', 'Rapport d’emna dal diari dal simulatur sco push (glindesdi damaun)'),
     'Week in the simulator: {v} visits, persons recognised {r} % ({a} of {b}). Animals: {an}': ('Woche im Simulator: {v} Besuche, Personen erkannt {r} % ({a} von {b}). Tiere: {an}', 'Semaine dans le simulateur : {v} visites, personnes reconnues {r} % ({a} sur {b}). Animaux : {an}', 'Settimana nel simulatore: {v} visite, persone riconosciute {r} % ({a} su {b}). Animali: {an}', 'Emna en il simulatur: {v} visitas, persunas renconuschidas {r} % ({a} da {b}). Animals: {an}'),
     'One-click demo': ('Ein-Klick-Demo', 'Démo en un clic', 'Demo con un clic', 'Demo cun in clic'),
@@ -62895,7 +63004,7 @@ for _L, _li in _HELP_INFO.items():
         HELP_X[_L] = _d[:_j] + _li + _d[_j:]
 _HX_pad2 = {
     'Turn / tilt the head of MoveEye': ('Kopf von MoveEye drehen / neigen', 'Tourner / incliner la tête de MoveEye', 'Ruotare / inclinare la testa di MoveEye', 'Volver / sbassar il chau da MoveEye'),
-    'Drive the rover (without rover: move the view)': ('Rover fahren (ohne Rover: Ansicht bewegen)', 'Conduire le rover (sans rover : déplacer la vue)', 'Guidare il rover (senza rover: muovere la vista)', 'Manischar il rover (senza rover: muventar la vista)'),
+    'Drive the mover (without mover: move the view)': ('Mover fahren (ohne Mover: Ansicht bewegen)', 'Conduire le mover (sans mover : déplacer la vue)', 'Guidare il mover (senza mover: muovere la vista)', 'Manischar il mover (senza mover: muventar la vista)'),
     'Hold R1: turn the view': ('R1 halten: Ansicht drehen', 'Maintenir R1 : tourner la vue', 'Tenere R1: ruotare la vista', 'Tegnair R1: volver la vista'),
     'Shutter in a game round (otherwise zoom in)': ('Auslöser in einer Spielrunde (sonst hineinzoomen)', 'Déclencheur pendant une manche (sinon zoom avant)', 'Scatto in una manche (altrimenti zoom avanti)', 'Releschader en ina runda da gieu (uschiglio zoom enavant)'),
     'Zoom out': ('Herauszoomen', 'Zoom arrière', 'Zoom indietro', 'Zoom enavos'),
@@ -62927,7 +63036,7 @@ _HX_pad2 = {
     'Pause menu · start the round': ('Pause-Menü · Runde starten', 'Menu pause · lancer la manche', 'Menu pausa · avviare la manche', 'Menu da pausa · cumenzar la runda'),
     'Hold 1 s: leave the game': ('1 s halten: Spiel verlassen', 'Maintenir 1 s : quitter le jeu', 'Tenere 1 s: lasciare il gioco', 'Tegnair 1 s: bandunar il gieu'),
     'Head in steps · menus: choose': ('Kopf in Schritten · Menüs: wählen', 'Tête par pas · menus : choisir', 'Testa a passi · menu: scegliere', 'Chau en pass · menus: tscherner'),
-    'Drive the rover': ('Rover fahren', 'Conduire le rover', 'Guidare il rover', 'Manischar il rover'),
+    'Drive the mover': ('Mover fahren', 'Conduire le mover', 'Guidare il mover', 'Manischar il mover'),
     '«Found!»': ('«Gefunden!»', '« Trouvé ! »', '«Trovato!»', '«Chattà!»'),
     'Look around': ('Umschauen', 'Regarder autour', 'Guardarsi intorno', 'Guardar enturn'),
     'Walk': ('Gehen', 'Marcher', 'Camminare', 'Ir'),
@@ -62946,20 +63055,20 @@ _HX_pad2 = {
     'everything': ('alles', 'tout', 'tutto', 'tut'),
     'guard (head)': ('Wächter (Kopf)', 'gardien (tête)', 'guardiano (testa)', 'guardian (chau)'),
     'sneaker': ('Schleicher', 'furtif', 'furtivo', 'sfugider'),
-    'rover': ('Rover', 'rover', 'rover', 'rover'),
+    'mover': ('Mover', 'mover', 'mover', 'mover'),
     # 538 / 470 (Controller-Ansicht, simulator page)
     'Controllers': ('Controller', 'Manettes', 'Controller', 'Controllers'),
     'Head': ('Kopf', 'Tête', 'Testa', 'Chau'),
-    'Rover': ('Rover', 'Rover', 'Rover', 'Rover'),
+    'Mover': ('Mover', 'Mover', 'Mover', 'Mover'),
     'Settings': ('Einstellungen', 'Réglages', 'Impostazioni', 'Parameters'),
     'Dead zone': ('Totzone', 'Zone morte', 'Zona morta', 'Zona morta'),
     'Sensitivity': ('Empfindlichkeit', 'Sensibilité', 'Sensibilità', 'Sensibilitad'),
     'Invert Y (look)': ('Y umkehren (schauen)', 'Inverser Y (regard)', 'Invertire Y (sguardo)', 'Invertir Y (guardar)'),
     'Swap the sticks': ('Sticks tauschen', 'Échanger les sticks', 'Scambiare gli stick', 'Barattar ils sticks'),
     'Vibration': ('Vibration', 'Vibration', 'Vibrazione', 'Vibraziun'),
-    'Start = menu of the simulator, left stick = head, right stick = rover': (
-        'Start = Menü des Simulators, linker Stick = Kopf, rechter Stick = Rover', 'Start = menu du simulateur, stick gauche = tête, stick droit = rover',
-        'Start = menu del simulatore, stick sinistro = testa, stick destro = rover', 'Start = menu dal simulatur, stick sanester = chau, stick dretg = rover'),
+    'Start = menu of the simulator, left stick = head, right stick = mover': (
+        'Start = Menü des Simulators, linker Stick = Kopf, rechter Stick = Mover', 'Start = menu du simulateur, stick gauche = tête, stick droit = mover',
+        'Start = menu del simulatore, stick sinistro = testa, stick destro = mover', 'Start = menu dal simulatur, stick sanester = chau, stick dretg = mover'),
 }
 for _k, _v in _HX_pad2.items():
     DE.setdefault(_k, _v[0])
@@ -63473,8 +63582,8 @@ _HX_padview = {
         'La vista controller resta sut «Vista» (◫) e tar il 🎮 en il maletg'),
     'More buttons': ('Weitere Knöpfe', 'Autres boutons', 'Altri pulsanti', 'Ulteriurs buttuns'),
     'Head to the middle': ('Kopf in die Mitte', 'Tête au milieu', 'Testa al centro', 'Chau en il center'),
-    'Rover': ('Rover', 'Rover', 'Rover', 'Rover'),
-    'The rover in the simulator on / off': ('Rover im Simulator ein / aus', 'Rover dans le simulateur oui / non', 'Rover nel simulatore acceso / spento', 'Rover en il simulatur en / ora'),
+    'Mover': ('Mover', 'Mover', 'Mover', 'Mover'),
+    'The mover in the simulator on / off': ('Mover im Simulator ein / aus', 'Mover dans le simulateur oui / non', 'Mover nel simulatore acceso / spento', 'Mover en il simulatur en / ora'),
     'Swap': ('Tauschen', 'Échanger', 'Scambia', 'Barattar'),
     'Swap the pictures (long tap on a picture, Select)': ('Bilder tauschen (lange auf ein Bild tippen, Select)', 'Échanger les images (appui long sur une image, Select)',
                                                           'Scambiare le immagini (tocco lungo su un’immagine, Select)', 'Barattar ils maletgs (tutgar ditg in maletg, Select)'),
@@ -63489,19 +63598,19 @@ _HX_padview = {
                                                     'Stick sinistro: ruotare / inclinare la testa di MoveEye', 'Stick sanester: volver / sbassar il chau da MoveEye'),
     'Press the left stick: head to the middle': ('Linken Stick drücken: Kopf in die Mitte', 'Appuyer sur le stick gauche : tête au milieu',
                                                  'Premere lo stick sinistro: testa al centro', 'Smatgar il stick sanester: chau en il center'),
-    'Right stick: drive the rover (up = forward, sideways = steer) - the view follows behind it': (
-        'Rechter Stick: Rover fahren (hoch = vorwärts, seitlich = lenken) – die Ansicht fährt hinterher',
-        'Stick droit : conduire le rover (haut = avant, côté = diriger) – la vue suit derrière',
-        'Stick destro: guidare il rover (su = avanti, lato = sterzare) – la vista segue da dietro',
-        'Stick dretg: manar il rover (ensi = enavant, da la vart = dirigir) – la vista suonda davos'),
-    'Right stick: move the simulator view (no rover)': ('Rechter Stick: Simulator-Ansicht bewegen (kein Rover)', 'Stick droit : déplacer la vue du simulateur (pas de rover)',
-                                                        'Stick destro: muovere la vista del simulatore (nessun rover)', 'Stick dretg: mover la vista dal simulatur (nagin rover)'),
+    'Right stick: drive the mover (up = forward, sideways = steer) - the view follows behind it': (
+        'Rechter Stick: Mover fahren (hoch = vorwärts, seitlich = lenken) – die Ansicht fährt hinterher',
+        'Stick droit : conduire le mover (haut = avant, côté = diriger) – la vue suit derrière',
+        'Stick destro: guidare il mover (su = avanti, lato = sterzare) – la vista segue da dietro',
+        'Stick dretg: manar il mover (ensi = enavant, da la vart = dirigir) – la vista suonda davos'),
+    'Right stick: move the simulator view (no mover)': ('Rechter Stick: Simulator-Ansicht bewegen (kein Mover)', 'Stick droit : déplacer la vue du simulateur (pas de mover)',
+                                                        'Stick destro: muovere la vista del simulatore (nessun mover)', 'Stick dretg: mover la vista dal simulatur (nagin mover)'),
     'Hold R1 + right stick: turn the simulator view': ('R1 halten + rechter Stick: Simulator-Ansicht drehen', 'Maintenir R1 + stick droit : tourner la vue du simulateur',
                                                        'Tenere R1 + stick destro: ruotare la vista del simulatore', 'Tegnair R1 + stick dretg: volver la vista dal simulatur'),
     'Zoom out / in (L2 = zoom out too)': ('Verkleinern / vergrössern (L2 verkleinert auch)', 'Zoom arrière / avant (L2 aussi en arrière)', 'Zoom indietro / avanti (anche L2 indietro)', 'Zoom enavos / enavant (er L2 enavos)'),
-    'Press the right stick: next view (behind the rover, driver, from above)': ('Rechten Stick drücken: nächste Ansicht (hinter dem Rover, Fahrersicht, von oben)',
-        'Appuyer sur le stick droit : vue suivante (derrière le rover, conducteur, d’en haut)', 'Premere lo stick destro: vista successiva (dietro il rover, conducente, dall’alto)',
-        'Smatgar il stick dretg: proxima vista (davos il rover, manischunz, dad ensi)'),
+    'Press the right stick: next view (behind the mover, driver, from above)': ('Rechten Stick drücken: nächste Ansicht (hinter dem Mover, Fahrersicht, von oben)',
+        'Appuyer sur le stick droit : vue suivante (derrière le mover, conducteur, d’en haut)', 'Premere lo stick destro: vista successiva (dietro il mover, conducente, dall’alto)',
+        'Smatgar il stick dretg: proxima vista (davos il mover, manischunz, dad ensi)'),
     'A Photo · B Record · X Lamp · Y Follow': ('A Foto · B Aufnahme · X Licht · Y Folgen', 'A Photo · B Enregistrer · X Lampe · Y Suivre',
                                               'A Foto · B Registra · X Lampada · Y Segui', 'A Foto · B Registrar · X Lampa · Y Suandar'),
     'Choose a button of the bar, ↑ presses it, ↓ this help': ('Knopf der Leiste wählen, ↑ drückt ihn, ↓ diese Hilfe', 'Choisir un bouton de la barre, ↑ l’active, ↓ cette aide',
@@ -63513,7 +63622,7 @@ _HX_padview = {
         'Image du simulateur : un doigt = tourner, deux doigts = zoom, double appui = vue suivante, appui long = échanger les images',
         'Immagine del simulatore: un dito = ruotare, due dita = zoom, doppio tocco = vista successiva, tocco lungo = scambiare le immagini',
         'Maletg dal simulatur: in det = volver, dus dets = zoom, tutgar dubel = proxima vista, tutgar ditg = barattar ils maletgs'),
-    'Behind the rover': ('Hinter dem Rover', 'Derrière le rover', 'Dietro il rover', 'Davos il rover'),
+    'Behind the mover': ('Hinter dem Mover', 'Derrière le mover', 'Dietro il mover', 'Davos il mover'),
     "Driver's view": ('Fahrersicht', 'Vue du conducteur', 'Vista del conducente', 'Vista dal manischunz'),
     'From above': ('Von oben', 'D’en haut', 'Dall’alto', 'Dad ensi'),
     'Head camera': ('Kopfkamera', 'Caméra de la tête', 'Camera della testa', 'Camera dal chau'),
@@ -64480,11 +64589,11 @@ for _k, _v in _HX_BLINKI.items():
 
 # ---- the manual: one line in the chapter «Einrichtung, Rundgänge und Tipps» (633) ---------------------------------------
 _HELP_BLINKI = {
-    "de": '<li><b>Blinki</b> 👁: die kleine Figur aus dem Logo (Sichtfächer, Auge, Erkennungs-Ecken) spricht die Texte der Einrichtung und der Rundgänge – sie blinzelt, schaut umher und hüpft, wenn ein Schritt erledigt ist. Ausschalten: Einstellungen → Einrichtung → «Blinki zeigen» (oder unter Mehr).</li>',
-    "en": '<li><b>Blinki</b> 👁: the little figure made of the logo (field of view, eye, detection corners) speaks the texts of the setup and the tours – it blinks, looks around and hops when a step is done. Switch it off: Settings → Setup → «Show Blinki» (or under More).</li>',
-    "fr": '<li><b>Blinki</b> 👁 : le petit personnage fait du logo (champ de vision, œil, coins de détection) dit les textes de la configuration et des visites – il cligne de l’œil, regarde autour de lui et saute quand une étape est faite. Désactiver : Réglages → Configuration → «Afficher Blinki» (ou sous Plus).</li>',
-    "it": '<li><b>Blinki</b> 👁: la piccola figura fatta dal logo (campo visivo, occhio, angoli di rilevamento) dice i testi della configurazione e dei tour – sbatte l’occhio, si guarda intorno e salta quando un passo è fatto. Disattivare: Impostazioni → Configurazione → «Mostra Blinki» (o sotto Altro).</li>',
-    "rm": '<li><b>Blinki</b> 👁: la pitschna figura fatga dal logo (champ da vista, egl, chantuns da reconuschientscha) di ils texts da l’installaziun e dals girs – ella tschegna, guarda enturn e siglia, cura ch’in pass è fatg. Deactivar: Parameters → Installaziun → «Mussar Blinki» (u sut Dapli).</li>',
+    "de": '<li><b>Blinki</b> 👁: die kleine Figur aus dem Logo (das Auge mit Füssen; die Stimmung zeigt sie kurz in einer kleinen Sprechblase) spricht die Texte der Einrichtung und der Rundgänge – sie blinzelt, schaut umher und hüpft, wenn ein Schritt erledigt ist. Ausschalten: Einstellungen → Einrichtung → «Blinki zeigen» (oder unter Mehr).</li>',
+    "en": '<li><b>Blinki</b> 👁: the little figure made of the logo (the eye with feet; it shows its mood briefly in a small speech bubble) speaks the texts of the setup and the tours – it blinks, looks around and hops when a step is done. Switch it off: Settings → Setup → «Show Blinki» (or under More).</li>',
+    "fr": '<li><b>Blinki</b> 👁 : le petit personnage fait du logo (l’œil avec des pieds ; il montre brièvement son humeur dans une petite bulle) dit les textes de la configuration et des visites – il cligne de l’œil, regarde autour de lui et saute quand une étape est faite. Désactiver : Réglages → Configuration → «Afficher Blinki» (ou sous Plus).</li>',
+    "it": '<li><b>Blinki</b> 👁: la piccola figura fatta dal logo (l’occhio con i piedi; mostra brevemente il suo umore in un piccolo fumetto) dice i testi della configurazione e dei tour – sbatte l’occhio, si guarda intorno e salta quando un passo è fatto. Disattivare: Impostazioni → Configurazione → «Mostra Blinki» (o sotto Altro).</li>',
+    "rm": '<li><b>Blinki</b> 👁: la pitschna figura fatga dal logo (l’egl cun peis; ella mussa curt sia luna en ina pitschna bulla) di ils texts da l’installaziun e dals girs – ella tschegna, guarda enturn e siglia, cura ch’in pass è fatg. Deactivar: Parameters → Installaziun → «Mussar Blinki» (u sut Dapli).</li>',
 }
 
 
@@ -64846,6 +64955,54 @@ PK_TITLES = {
 PK_EVENT = {"person": "Person detected", "prealarm": "Movement", "warm": "Warm body", "noise": "Noise"}
 _PK_PH = re.compile(r"\{(\w+)(?::[^}]*)?\}")
 _PK_SIM = re.compile(r"\s*\(🧪[^)]*\)|\s*🧪\s*")
+# Paket «Diebstahl-Kartenlink» (H1 der Code-Prüfung, 31.10.2026): the map link of a message with a position (GPS theft
+# alarm and its follow-ups every 5 min, sabotage «device moved / knocked over / power cut» with a GPS fix) is never cut:
+# push_kind takes it out of the text (the short line stays short), push_short gives it as «map»; ntfy: Click = the map +
+# a short line «📍 Open map»; Telegram, Pushover, web push, SMS, the users' ntfy topics: the complete link (060 Notifier).
+_PK_MAP = re.compile(r"(?:https?://(?:www\.)?(?:openstreetmap\.org|osm\.org|maps\.google\.[a-z.]+|google\.[a-z.]+/maps|maps\.apple\.com)/\S*"
+                     r"|geo:-?\d[\d.,;=a-z-]*)", re.I)
+
+
+def push_map(p):
+    """the complete map link of a message with a position (own «map» or the first map address in the text), '' without"""
+    m = str(p.get("map") or "").strip()
+    if m:
+        return m
+    if Notifier._event(p) not in ("info", "tamper"):
+        return ""
+    x = _PK_MAP.search(str(p.get("text") or ""))
+    return x.group(0).rstrip(".,;") if x else ""
+
+
+def _pk_nomap(text):
+    """the text without its map link and the label in front of it («… (0.52 km). Position: <link>» → «… (0.52 km).»)"""
+    s = _PK_MAP.sub(" ", str(text or ""))
+    labs = "|".join(re.escape(x) for x in dict.fromkeys((tr("Position"), "Position")))
+    s = re.sub(r"(?:\s*[·,\-–]\s*|\s+)(?:" + labs + r")\s*:\s*$", "", s.rstrip())
+    return s.rstrip(" :·-–,.")
+
+
+def push_map_line():
+    """the short line under the text on ntfy (tapping the message opens the map)"""
+    return (("📍 " if CFG.get("msg_icons", True) else "") + pk_tr("Open map"))
+
+
+def push_with_map(text, p, sep="\n"):
+    """text + the complete map link (Telegram, Pushover, web push, the list «Messages»), unchanged without a position"""
+    m = push_map(p)
+    return (str(text or "") + sep + ("📍 " if CFG.get("msg_icons", True) else "") + m) if m else str(text or "")
+
+
+def push_sms_text(title, text, p):
+    """the SMS: «Title: text <map link>» - at most 300 characters (sms_send), the link is never cut (the text is)"""
+    m = push_map(p)
+    head = " ".join((str(title or "") + ": " + str(text or "")).split())
+    if not m:
+        return head
+    room = 300 - len(m) - 1
+    if len(head) > room:
+        head = head[:max(0, room - 1)].rstrip() + "…"
+    return (head + " " + m).strip()
 
 
 def push_url_is_ntfy(url):
@@ -64931,6 +65088,8 @@ def push_kind(p):
     """the short form of an info / sabotage message: {ic, title, text, cls, pic}"""
     ev = Notifier._event(p)
     text = _PK_SIM.sub(" ", str(p.get("text") or "")).strip()
+    if push_map(p):
+        text = _pk_nomap(text)                            # the map link goes separately and complete (never cut)
     raw = re.sub(r"^\{name\}\s*:\s*", "", str(p.get("info_title") or "")).strip()
     test = raw.startswith("[Test] ")
     raw = re.sub(r"^\[Test\]\s*", "", raw)
@@ -65068,7 +65227,7 @@ def push_short(p):
         parts.append(pk_trf("late, from {t}", t=hm))
     title = pk_line(_PK_PH.sub("", render_msg(title, p)) if "{" in title else title, 60)
     text = pk_line(" · ".join(x for x in parts if x))
-    return {"title": title, "text": text}
+    return {"title": title, "text": text, "map": push_map(p)}
 
 
 def push_frame_jpg():
@@ -65212,6 +65371,7 @@ _HX_PK = {
     "Valuables": ("Wertsachen", "Objets de valeur", "Oggetti di valore", "Objects da valur"),
     "New device": ("Neues Gerät", "Nouvel appareil", "Nuovo dispositivo", "Nov apparat"),
     "Unknown tracker": ("Unbekannter Tracker", "Traceur inconnu", "Tracker sconosciuto", "Tracker nunenconuschent"),
+    "Open map": ("Karte öffnen", "Ouvrir la carte", "Apri la mappa", "Avrir la charta"),
 }
 for _k, _v in _HX_PK.items():
     DE.setdefault(_k, _v[0])
@@ -65355,7 +65515,134 @@ def arm_once_selftest():
 
 
 SELFTEST_EXTRA.append(("Short push messages, only alarms in the simulation (635b)", push_kurz_selftest))
+def push_map_selftest():
+    """Paket «Diebstahl-Kartenlink» (H1): the map link of the theft alarm (first message, follow-ups) and of «device moved»
+    comes complete on every channel - ntfy (Click + «📍 Open map»), Telegram, Pushover, web push, SMS, the users' ntfy
+    topics, the webhook. Mock channels: nothing leaves the computer (urlopen / sms_send / webpush_all replaced)."""
+    import urllib.request as _ur
+    lat, lon = 46.94809, 7.44744                        # an example point (Bern, Bundesplatz) - no real data
+    link = osm_link(lat, lon)
+    keys = ("sim_on", "sim_info_push", "msg_icons", "msg_keyword_on", "lang", "fleet", "notify_type", "notify_url", "telegram_token",
+            "telegram_chat", "pushover_token", "pushover_user", "sms_on", "sms_numbers", "sms_only_offline", "webpush_on", "users",
+            "notify_on", "public_url", "email_on", "gpsmod_on", "gps_theft", "gps_theft_m", "push_pics", "main_push_on")
+    keep = {k: CFG.get(k) for k in keys}
+    names = ("sms_send", "webpush_all", "webpush_subs", "users_push_dispatch", "pushover_ready", "email_ready", "outbox_add",
+             "sandbox_active", "sim_net_down", "msglog_add", "siren_alarm", "log_event", "alx_ntfy_actions", "alx_telegram_markup")
+    keep_f = {n: globals().get(n) for n in names}
+    keep_open = _ur.urlopen
+    keep_g = dict(GPSMOD)
+    sent = []
+
+    class _R:
+        status = 200
+        def __enter__(self):
+            return self
+        def __exit__(self, *a):
+            return False
+        def read(self, *a):
+            return b"{}"
+
+    def _open(req, timeout=None):
+        sent.append(("http", req.full_url, dict(req.header_items()), req.data or b""))
+        return _R()
+    try:
+        CFG.update(sim_on=False, sim_info_push=False, msg_icons=True, msg_keyword_on=False, lang="de", fleet=[], notify_on=True,
+                   public_url="", gpsmod_on=True, gps_theft=True, gps_theft_m=150, push_pics="with", main_push_on=True)
+        globals().update(
+            sms_send=lambda text, force=False: (sent.append(("sms", text)), (True, ""))[1],
+            webpush_all=lambda title, text, url="/", tag="mw", urgent=True: (sent.append(("webpush", title, text, url)), 1)[1],
+            webpush_subs=lambda: [{"endpoint": "x"}], pushover_ready=lambda: True, email_ready=lambda: False,
+            users_push_dispatch=lambda title, text, cat, click="": sent.append(("user", title, text, click)),
+            outbox_add=lambda *a, **k: None, sandbox_active=lambda: False, sim_net_down=lambda: False,
+            msglog_add=lambda title, text, *a, **k: sent.append(("log", title, text)), siren_alarm=lambda *a, **k: None,
+            log_event=lambda *a, **k: None, alx_ntfy_actions=lambda p: "", alx_telegram_markup=lambda p: None)
+        _ur.urlopen = _open
+        n = Notifier.__new__(Notifier)
+        def P(**kw):
+            return dict({"event": "tamper", "persons": 0, "time": "2026-10-31T21:07:05", "snapshot": None, "rain": False,
+                         "wind": "", "source": "cam", "link": ""}, **kw)
+        first = P(text=tr("the device was carried away") + " (0.52 km). " + tr("Position") + ": " + link, info_title="{name}: " + tr("THEFT ALARM"))
+        follow = P(text=tr("Position now") + " (0.52 km): " + link, info_title="{name}: " + tr("THEFT ALARM") + " – " + tr("position"))
+        moved = P(text=tr("device moved") + " · " + tr("Position") + ": " + link, info_title="{name}: " + tr("TAMPER ALARM"))
+        for k_, p_ in (("first", first), ("follow", follow), ("moved", moved)):
+            sh = push_short(p_)
+            assert sh["map"] == link, (k_, sh)
+            assert "http" not in sh["text"] and "…" not in sh["text"] and len(sh["text"]) <= PK_MAX, (k_, sh["text"])
+            assert sh["text"] and not sh["text"].endswith((":", ".", "·")), (k_, sh["text"])
+            assert push_long(p_).endswith(link), (k_, "e-mail")
+            sms = n._sms(p_)
+            assert sms.endswith(" " + link) and len(sms) <= 300, (k_, sms)
+            assert push_with_map(sh["text"], p_).endswith("📍 " + link)
+        assert push_short(first)["text"] == "das Gerät wurde weggetragen (0.52 km)", push_short(first)
+        assert push_short(follow)["text"] == "Position jetzt (0.52 km)", push_short(follow)
+        assert Notifier._title(first) == "🚨 Diebstahl-Alarm", Notifier._title(first)
+        # a very long text: the SMS cuts the text, never the link
+        long_ = P(text=("x " * 200) + link, info_title="{name}: " + tr("THEFT ALARM"))
+        assert push_sms_text("🚨 Diebstahl-Alarm", "y" * 400, long_).endswith(" " + link)
+        # without a position: no map, no extra line
+        plain = P(text=tr("camera covered"), info_title="{name}: " + tr("TAMPER ALARM"))
+        assert push_map(plain) == "" and push_with_map("a", plain) == "a" and n._sms(plain) == Notifier._title(plain) + ": " + Notifier._text(plain)
+        assert push_map(P(event="person", text=link)) == "", "a person alarm has no position"
+        # every channel, the first theft alarm with a picture (ntfy: header), the follow-up without (ntfy: body)
+        for ch in ("ntfy", "telegram", "webhook"):
+            CFG.update(notify_type=ch, notify_url="https://push.example.invalid/x" if ch == "webhook" else "https://ntfy.example.invalid/topic",
+                       telegram_token="TOKEN" if ch == "telegram" else "", telegram_chat="1", pushover_token="T", pushover_user="U",
+                       sms_on=ch == "ntfy", sms_numbers="+41000000000", sms_only_offline=False, webpush_on=ch == "ntfy",
+                       users=[{"name": "u", "ntfy": "x"}] if ch == "ntfy" else [])
+            for p_, jpg in ((first, b"\xff\xd8jpg"), (follow, None)):
+                del sent[:]
+                n._dispatch(dict(p_), jpg, "alarm.jpg")
+                for _ in range(100):                     # the other channels run in threads
+                    if any(x[0] == "http" and "pushover" in x[1] for x in sent) and (ch != "ntfy" or (any(x[0] == "sms" for x in sent)
+                           and any(x[0] == "webpush" for x in sent) and any(x[0] == "user" for x in sent))):
+                        break
+                    time.sleep(0.02)
+                main = [x for x in sent if x[0] == "http" and "pushover" not in x[1]]
+                assert main, (ch, sent)
+                hd, body = main[-1][2], main[-1][3]
+                hd = {k.lower(): v for k, v in hd.items()}
+                if ch == "ntfy":
+                    assert hd.get("click") == link, (ch, hd)
+                    msg = hd.get("message", "") if jpg else body.decode()
+                    if msg.startswith("=?UTF-8?B?"):
+                        import base64 as _b
+                        msg = _b.b64decode(msg[10:-2]).decode()
+                    assert msg.endswith("📍 Karte öffnen") and "http" not in msg, (ch, msg)
+                    assert ("\n" in msg) == (jpg is None), (ch, msg)
+                    sm = [x for x in sent if x[0] == "sms"][-1][1]
+                    wp = [x for x in sent if x[0] == "webpush"][-1]
+                    us = [x for x in sent if x[0] == "user"][-1]
+                    assert sm.endswith(" " + link) and sm.startswith("🚨 Diebstahl-Alarm"), sm
+                    assert wp[2].endswith(link) and wp[3] == link, wp
+                    assert us[3] == link and us[2].endswith("📍 Karte öffnen"), us
+                elif ch == "telegram":
+                    raw = body.decode("utf-8", "replace")
+                    assert link in raw, (ch, raw[:300])
+                else:
+                    j = json.loads(body.decode())
+                    assert j["map"] == link and j["text_full"].endswith(link), j
+                po = [x for x in sent if x[0] == "http" and "pushover" in x[1]][-1][3].decode("utf-8", "replace")
+                assert link in po and "Karte öffnen" in po, po[:400]
+                lg = [x for x in sent if x[0] == "log"]
+                assert lg and lg[-1][2].endswith(link), lg
+        # «device moved» gets the position of the GPS (fix of the last 5 min), «camera covered» does not need it
+        GPSMOD.update(lat=lat, lon=lon, t=time.time())
+        assert gps_map_link() == link
+        GPSMOD.update(t=time.time() - 400)
+        assert gps_map_link() == "", "an old fix is no position"
+        for L in ("fr", "it", "rm", "en"):
+            CFG["lang"] = L
+            assert push_map_line().startswith("📍 ") and len(push_map_line()) > 4 and push_short(follow)["map"] == link, L
+    finally:
+        _ur.urlopen = keep_open
+        globals().update(keep_f)
+        CFG.update(keep)
+        GPSMOD.clear(); GPSMOD.update(keep_g)
+    return "the map link of the theft alarm complete on ntfy (Click + line), Telegram, Pushover, web push, SMS, webhook"
+
+
 SELFTEST_EXTRA.append(("«Protection on» only once (arm_tick from several threads, 130)", arm_once_selftest))
+SELFTEST_EXTRA.append(("Theft alarm: the map link complete on every channel (635b, H1)", push_map_selftest))
 # All parts have added their settings now (CFG.setdefault in later parts), the start (640) loads the file only after this.
 import copy as _copy_g2
 FACTORY_CFG = _copy_g2.deepcopy(CFG)
@@ -67281,6 +67568,200 @@ for _a, _b in (('<section id="detect" data-icon="🎯"><h2>Erkennung</h2>',
                 "movement, «Person?» or the thermal picture.</p>")):
     if _a in HELP_PAGE:
         HELP_PAGE = HELP_PAGE.replace(_a, _a + _b, 1)
+# ----------------------------------------------------------------------------
+# Der 3D-Simulator spielt die Geschichte selbst (simulator3d/scripts/maggie_vorfuehrung.gd, Autopilot + Film-Kamera,
+# eigener Vorführ-Spielstand). Hier nur das Zuschauen:
+#   * Seite /sim/vorfuehrung: das Bild des Simulators (/sim/view.jpg?bare=1 – ohne die Knöpfe des Simulator-Fensters, die
+#     Leiste der Vorführung blendet der Simulator dann auch aus), Bild für Bild geholt (nie eine wachsende Verzögerung);
+#     unten eine Leiste (verschwindet nach 4 s, Tippen zeigt sie wieder): Pause / Weiter, Kapitel zurück / Liste / weiter,
+#     Beenden, Vollbild. Ohne laufende Vorführung: Start «Kurzfassung» / «Ganze Geschichte».
+#   * /api/vorfuehrung: GET = Stand (Simulator /control vorfuehrung info), POST {do: start (len) | pause | weiter |
+#     kapitel (n) | stop}. Nur der Besitzer (nacht_may: Administrator, nicht im Bedienermodus) – neue Adressen sind
+#     ohnehin nur für den Administrator (040 VIEW_GET). Der Simulator nimmt die Befehle nur von diesem PC oder vom
+#     verbundenen MoveEye an (net.gd dangerous, wie werk reset).
+#   * Einstieg: Einstellungen → Entwickler (Web 530 devExtras, Fenster 639c) und die Karte «Entwickler» der
+#     Simulator-Seite (dort zusätzlich die Start-Knöpfe des Simulators, Gruppe Entwickler) – nur mit dem Entwickler-Bereich.
+# Hier (nach 639i, vor 640) weil render_page (510/584), sim_control (290), nacht_may (579b), SIM_PAGE (470), WEB_PAGE,
+# smalltv_routes (552 …) und die Tabellen DE / TRX vorher kommen.
+# ----------------------------------------------------------------------------
+VF_DO = ("start", "pause", "weiter", "kapitel", "stop")
+
+
+def vf_info():
+    """the state of the Vorführung in the simulator ({ok: False, error} without simulator)"""
+    if not CFG.get("sim_on"):
+        return {"ok": False, "error": tr("The 3D simulator is not connected."), "offline": True}
+    try:
+        r = sim_control({"action": "vorfuehrung", "do": "info"}) or {}
+    except Exception as e:
+        return {"ok": False, "error": str(e)[:80]}
+    if not r.get("ok") and "laeuft" not in r:
+        if "unknown" in str(r.get("error") or "").lower():     # an older simulator (before the Vorführung)
+            return {"ok": False, "error": tr("This simulator has no Vorführung yet – update it.")}
+        return {"ok": False, "error": str(r.get("error") or tr("The 3D simulator is not connected."))[:120]}
+    return r
+
+
+def vf_do(d, owner=True):
+    """start / pause / weiter / kapitel / stop – only the owner"""
+    if not owner:
+        log_event("web", "Vorführung refused (not the owner / operator mode)")
+        return {"ok": False, "error": tr("Only the owner can do this."), "code": 403}
+    w = str((d or {}).get("do") or "")
+    if w not in VF_DO:
+        return {"ok": False, "error": "do: " + " | ".join(VF_DO), "code": 400}
+    if not CFG.get("sim_on"):
+        return {"ok": False, "error": tr("The 3D simulator is not connected.")}
+    c = {"action": "vorfuehrung", "do": w}
+    if w == "start":
+        c["len"] = "ganz" if str(d.get("len") or "") == "ganz" else "kurz"
+    if w == "kapitel":
+        try:
+            c["n"] = max(0, min(5, int(d.get("n"))))
+        except (TypeError, ValueError):
+            return {"ok": False, "error": "n", "code": 400}
+    try:
+        r = sim_control(c) or {}
+    except Exception as e:
+        if w == "start" and "timed out" in str(e):          # building the Bergtal takes a moment
+            return {"ok": True, "loading": True}
+        return {"ok": False, "error": str(e)[:80]}
+    if r.get("error") == "nur_lokal":
+        return {"ok": False, "error": tr("The simulator only takes this from the connected MoveEye – switch on the simulation.")}
+    return r
+
+
+VF_PAGE = _zd('639m_vorfuehrung/VF_PAGE', ZD_PAGE)
+
+_HX_VF = {
+    'Maggie and the mountain crystal – as a film': ('Maggie und der Bergkristall – als Film', 'Maggie et le cristal de montagne – en film',
+                                                    'Maggie e il cristallo di montagna – come film', 'Maggie ed il cristal da muntogna – sco film'),
+    'vf-intro': ('Der Simulator spielt die Geschichte selbst, du schaust nur zu. Eigener Vorführ-Spielstand – deine Spielstände bleiben, wie sie sind.',
+                 'Le simulateur joue l’histoire tout seul, tu regardes. Partie de démonstration à part – tes parties restent intactes.',
+                 'Il simulatore gioca la storia da solo, tu guardi. Partita dimostrativa a parte – le tue partite restano come sono.',
+                 'Il simulatur giuga l’istorgia sez, ti guardas mo. Stadi da demonstraziun separà – tes stadis dal gieu restan sco ch’els èn.'),
+    'Short version (15–20 min)': ('Kurzfassung (15–20 Min.)', 'Version courte (15–20 min)', 'Versione breve (15–20 min)', 'Versiun curta (15–20 min.)'),
+    'Short version': ('Kurzfassung', 'Version courte', 'Versione breve', 'Versiun curta'),
+    'The whole story': ('Ganze Geschichte', 'Toute l’histoire', 'Tutta la storia', 'Tut l’istorgia'),
+    'Chapter back': ('Kapitel zurück', 'Chapitre précédent', 'Capitolo indietro', 'Chapitel enavos'),
+    'Next chapter': ('Nächstes Kapitel', 'Chapitre suivant', 'Capitolo successivo', 'Proxim chapitel'),
+    'Chapter': ('Kapitel', 'Chapitre', 'Capitolo', 'Chapitel'),
+    'Full screen': ('Vollbild', 'Plein écran', 'Schermo intero', 'Maletg entir'),
+    'End the show': ('Beenden', 'Terminer', 'Termina', 'Terminar'),
+    'Paused': ('Pause', 'En pause', 'In pausa', 'Pausa'),
+    'BLOCKED': ('BLOCKIERT', 'BLOQUÉ', 'BLOCCATO', 'BLOCCÀ'),
+    'Last run': ('Letzter Durchlauf', 'Dernier passage', 'Ultimo passaggio', 'Ultim passagi'),
+    'The valley is being prepared …': ('Das Tal wird vorbereitet …', 'La vallée se prépare …', 'La valle viene preparata …', 'La val vegn preparada …'),
+    'Watch «Maggie» as a film (demo)': ('Vorführung «Maggie» ansehen (als Film)', 'Regarder «Maggie» en film (démo)', 'Guardare «Maggie» come film (demo)',
+                                        'Guardar «Maggie» sco film (demonstraziun)'),
+    'Only the owner can do this.': ('Das darf nur der Besitzer.', 'Seul le propriétaire peut faire cela.', 'Solo il proprietario può farlo.',
+                                    'Quai po mo il possessur.'),
+    'This simulator has no Vorführung yet – update it.': ('Dieser Simulator kennt die Vorführung noch nicht – bitte aktualisieren.',
+                                                          'Ce simulateur ne connaît pas encore la démonstration – mets-le à jour.',
+                                                          'Questo simulatore non conosce ancora la dimostrazione – aggiornalo.',
+                                                          'Quest simulatur na conuscha anc betg la demonstraziun – actualisescha el.'),
+    'The simulator only takes this from the connected MoveEye – switch on the simulation.': (
+        'Der Simulator nimmt das nur vom verbundenen MoveEye an – schalte die Simulation ein.',
+        'Le simulateur n’accepte cela que du MoveEye connecté – active la simulation.',
+        'Il simulatore lo accetta solo dal MoveEye collegato – attiva la simulazione.',
+        'Il simulatur accepta quai mo dal MoveEye collià – activescha la simulaziun.'),
+}
+for _k, _v in _HX_VF.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_VF_KEYS = list(_HX_VF) + ["Pause", "Continue", "Back", "The 3D simulator is not connected."]
+
+# the way in: Settings → Developer (web 530 devExtras, window 639c has the same row there) and the card «Entwickler» of
+# the Simulator page (only shown with the developer area)
+WEB_PAGE = WEB_PAGE.replace('["🛠", "Developer area", "/dev"]]', '["🛠", "Developer area", "/dev"], ["🎬", "Watch «Maggie» as a film (demo)", "/sim/vorfuehrung"]]', 1)
+WEB_PAGE = WEB_PAGE.replace("</body>", "<script>Object.assign(I18N.de, " + json.dumps({"Watch «Maggie» as a film (demo)": DE["Watch «Maggie» as a film (demo)"]},
+                                                                                      ensure_ascii=False) + ");</script></body>", 1)
+VF_SIMJS = r"""<script>
+// 639m: the card «Entwickler» of the Simulator page: «Watch as a film» (the start buttons come from the simulator itself)
+(function vfLink() {
+  try { Object.assign(I18N.de, /*VFLDE*/{}); } catch (e) {}
+  setInterval(() => { document.querySelectorAll(".sc-card[data-dev] > .sc-bd").forEach(bd => {
+    if (bd.querySelector(".vf-link")) return;
+    const a = document.createElement("a"); a.className = "btn vf-link"; a.href = "/sim/vorfuehrung"; a.style.cssText = "display:block;margin:6px 0;text-align:left";
+    a.textContent = "🎬 " + t("Watch «Maggie» as a film (demo)") + " ›"; bd.insertBefore(a, bd.firstChild); }); }, 1500);
+})();
+</script>"""
+SIM_PAGE = SIM_PAGE.replace("</body>", VF_SIMJS.replace("/*VFLDE*/{}", json.dumps({"Watch «Maggie» as a film (demo)": DE["Watch «Maggie» as a film (demo)"]},
+                                                                                    ensure_ascii=False)) + "</body>", 1)
+
+
+def vf_page():
+    js = "Object.assign(I18N.de, " + json.dumps({k: DE.get(k, k) for k in _VF_KEYS}, ensure_ascii=False) + ");"
+    return render_page(VF_PAGE, "sim").replace("/*VFDE*/", js, 1)
+
+
+_smalltv_routes_vf_base = smalltv_routes
+
+
+def smalltv_routes(app, reply, body):                     # + 639m: /sim/vorfuehrung and /api/vorfuehrung (550 calls smalltv_routes once)
+    _smalltv_routes_vf_base(app, reply, body)
+    from flask import Response
+
+    @app.route("/sim/vorfuehrung")
+    def vf_page_():
+        if not nacht_may(_nacht_role()):
+            return Response(tr("Only the owner can do this."), 403)
+        return Response(vf_page(), mimetype="text/html")
+
+    @app.route("/api/vorfuehrung", methods=["GET", "POST"])
+    def api_vorfuehrung():
+        from flask import request
+        own = nacht_may(_nacht_role())
+        if request.method == "GET":
+            return reply(vf_info()) if own else reply({"ok": False, "error": tr("Only the owner can do this.")}, 403)
+        r = vf_do(body(), own)
+        code = r.pop("code", None)
+        return reply(r, code) if code else reply(r)
+
+
+if GUI_OK:                                                # the window: the same row in the developer part (639c)
+    _vf_tk_build_section_base = App._build_section
+
+    def _vf_tk_build_section(self, sec, sbody, settings_parent=None):
+        r = _vf_tk_build_section_base(self, sec, sbody, settings_parent)
+        if sec == "Developer":
+            ttk.Button(sbody, text="🎬 " + tr("Watch «Maggie» as a film (demo)") + " ›", command=lambda: self._open_page("/sim/vorfuehrung")).pack(fill="x", pady=(4, 0))
+        return r
+
+    # wraps: App._build_section (after 639d)
+    App._build_section = _vf_tk_build_section
+
+
+def vf_selftest():
+    keep = CFG.get("sim_on")
+    try:
+        CFG["sim_on"] = False
+        assert not vf_info()["ok"] and not vf_do({"do": "start"})["ok"]
+        r = vf_do({"do": "start"}, owner=False)
+        assert not r["ok"] and r.get("code") == 403, r
+        assert vf_do({"do": "rm -rf"}).get("code") == 400
+        CFG["sim_on"] = True
+        _sc = globals()["sim_control"]; asked = []
+        globals()["sim_control"] = lambda d_: (asked.append(d_), {"ok": True, "laeuft": True})[1]
+        try:
+            assert vf_do({"do": "start", "len": "ganz"})["ok"] and asked[-1] == {"action": "vorfuehrung", "do": "start", "len": "ganz"}
+            assert vf_do({"do": "start", "len": "x"})["ok"] and asked[-1]["len"] == "kurz"
+            assert vf_do({"do": "kapitel", "n": 9})["ok"] and asked[-1]["n"] == 5
+            n = len(asked); assert vf_do({"do": "stop"}, owner=False).get("code") == 403 and len(asked) == n
+        finally:
+            globals()["sim_control"] = _sc
+    finally:
+        CFG["sim_on"] = keep
+    html = vf_page()
+    assert "/sim/view.jpg?bare=1" in html and "/api/vorfuehrung" in html and "Kurzfassung" in html and "<!--NAV-->" not in html
+    assert "/sim/vorfuehrung" in SIM_PAGE and "/sim/vorfuehrung" in WEB_PAGE
+    for L in ("fr", "it", "rm"):
+        assert TRX[L].get("Watch «Maggie» as a film (demo)"), L
+    return "Vorführung: page, owner only, commands to the simulator, translations, entries"
+
+
+SELFTEST_EXTRA.append(("Vorführung «Maggie» (page /sim/vorfuehrung, owner only)", vf_selftest))
 # ----------------------------------------------------------------------------
 # real-erk-e3 (31.10.2026): die Push-Nachricht «Etwas Grosses am Boden» (Titel und Text) in de / fr / it / rm.
 # ----------------------------------------------------------------------------
