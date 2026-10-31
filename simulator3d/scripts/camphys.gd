@@ -171,7 +171,10 @@ func control(d: Dictionary) -> Dictionary:
 	for i in range(specs.size()):
 		cams.append({"t_exp": snappedf(t_exp[i], 0.0001), "gain": snappedf(a_gain[i], 0.01), "lux": snappedf(lux_m[i], 0.001),
 				"under_ev": snappedf(under[i], 0.01), "own_light": own[i], "expo_k": snappedf(ek[i], 0.001), "spec": spec(i)["name"]})
-	return {"ok": true, "active": active(), "lite": _lite(), "blur_k": blur_k, "noir_k": noir_k, "cams": cams, "status": status()}
+	var hc: Camera3D = main.cams[0]
+	var fw: Vector3 = -hc.global_transform.basis.z
+	return {"ok": true, "head": [snappedf(hc.global_position.x, 0.01), snappedf(hc.global_position.y, 0.01), snappedf(hc.global_position.z, 0.01)],
+			"fwd": [snappedf(fw.x, 0.001), snappedf(fw.y, 0.001), snappedf(fw.z, 0.001)], "active": active(), "lite": _lite(), "blur_k": blur_k, "noir_k": noir_k, "cams": cams, "status": status()}
 
 
 # ---- the light at the scene ---------------------------------------------------------------------------------------------
@@ -358,6 +361,9 @@ func apply(i: int, m: ShaderMaterial) -> void:
 	# the ISP's digital gain on top of the analogue gain amplifies the noise too
 	# (up to UNDER_OK EV - beyond that the picture gets darker instead, see ek)
 	var dg: float = pow(2.0, minf(under[i], UNDER_OK))
+	# the ISP's spatial denoise (libcamera rpi.sdn, stronger the more gain) takes off a good part of it: × 1 at gain 1,
+	# ≈ × 0.55 at full gain (noise std as MoveEye gets it at 16×: ~5 % of full scale in the dark parts)
+	nk *= lerpf(1.0, 0.55, clampf((g * dg - 1.0) / 30.0, 0.0, 1.0))
 	m.set_shader_parameter("sn_read", float(sp["read"]) * g * sqrt(dg) * nk)     # read noise × gain (in the picture: dark parts)
 	m.set_shader_parameter("sn_shot", float(sp["shot"]) * sqrt(g * dg) * nk)  # photon noise: grows with the square root
 	m.set_shader_parameter("sn_chroma", (0.0 if g < 2.0 else 0.55 * smoothstep(2.0, 12.0, g)) * nk)

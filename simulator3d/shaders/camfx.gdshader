@@ -157,6 +157,9 @@ void fragment() {
 		c += vec3(1.0, 0.97, 0.92) * hl / 8.0 * flare * 3.0;
 	}
 	if (sn_on > 0.5) {
+		// the noise is meant on the picture as MoveEye gets it (gamma-coded 8 bit): the scene here is linear, so add it
+		// in a gamma 2.2 space - in linear light a dark-part noise of a few % becomes salt and pepper after the sRGB step
+		c = pow(max(c, vec3(0.0)), vec3(1.0 / 2.2));
 		vec2 px3 = floor(uv * res);
 		float lum3 = clamp(dot(c, vec3(0.299, 0.587, 0.114)), 0.0, 1.0);
 		float sig = sqrt(sn_shot * sn_shot * lum3 + sn_read * sn_read);
@@ -190,6 +193,7 @@ void fragment() {
 				c += hc * hotpx * (0.4 + 0.6 * h21(px3 + 9.0));
 			}
 		}
+		c = pow(max(c, vec3(0.0)), vec3(2.2));
 	}
 	ALBEDO = clamp(c, 0.0, 1.0);
 	ALPHA = 1.0;
