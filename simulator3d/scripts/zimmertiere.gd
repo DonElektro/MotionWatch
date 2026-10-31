@@ -86,7 +86,7 @@ func add_controls() -> void:
 	main.add_control("toggle", "zt_spider", "Spinne im Schlafzimmer (krabbelt an Wand und Decke, seilt sich manchmal vor der Linse ab)",
 			func(): return spider_on, func(v): set_on(pets_on, bool(v)), "Wildbeobachtung")
 	main.add_control("button", "zt_spider_lens", "Spinne vor die Linse – jetzt (Fehlalarm-Test, Szene Schlafzimmer)", null,
-			func(): lens_now(), "Wildbeobachtung")
+			func(): lens_now(0.0, false, true), "Wildbeobachtung")
 
 
 func set_on(pets: bool, spider: bool) -> void:
@@ -335,14 +335,15 @@ func _lens_update() -> void:
 	spinne.set_near(near_any)
 
 
-func lens_now(dist := 0.0, hold := false) -> Dictionary:
+func lens_now(dist := 0.0, hold := false, quick := false) -> Dictionary:
+	"""quick (the button): it starts right above MoveEye and abseils at once (~20 s) instead of walking there first"""
 	if not valid():
 		return {"ok": false, "error": "nur in der Szene Schlafzimmer"}
 	if not spider_on:
 		spider_on = true
 		save()
 		_update_shown(true)
-	return spinne.start_lens(dist, hold)
+	return spinne.start_lens(dist, hold, quick)
 
 
 # =============================================================================================================================
@@ -939,7 +940,7 @@ class Spinne extends Tier:
 		var night: bool = zt.dark()
 		lens_next = zt.main.now() + (randf_range(300.0, 1200.0) if night else randf_range(1200.0, 3600.0))
 
-	func start_lens(dist := 0.0, hold_ := false) -> Dictionary:
+	func start_lens(dist := 0.0, hold_ := false, quick := false) -> Dictionary:
 		lens_want = true
 		lens_dist = dist
 		lens_hold = hold_
@@ -950,6 +951,11 @@ class Spinne extends Tier:
 			sid = "ceil"
 			_begin_drop(true)
 			return {"ok": true, "state": st, "dist": dist}
+		if quick:                                  # the button: from the ceiling right above the head camera
+			sid = "ceil"
+			sp.visible = true
+			_begin_drop(false)
+			return {"ok": true, "state": st}
 		go("to_lens")
 		return {"ok": true, "state": st}
 
@@ -1208,7 +1214,7 @@ func _register() -> void:
 func control(d: Dictionary) -> Dictionary:
 	match str(d.get("do", "info")):
 		"lens":
-			return lens_now(float(d.get("dist", 0.0)), bool(d.get("hold", false)))
+			return lens_now(float(d.get("dist", 0.0)), bool(d.get("hold", false)), bool(d.get("quick", false)))
 		"set":
 			set_on(bool(d.get("pets", pets_on)), bool(d.get("spider", spider_on)))
 			return {"ok": true, "pets": pets_on, "spider": spider_on}
