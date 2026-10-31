@@ -697,10 +697,10 @@
   "rm": " · spetga il Pi"
  },
  " · was läuft und was fehlt": {
-  "en": "",
-  "fr": "",
-  "it": "",
-  "rm": ""
+  "en": " · what runs and what is missing",
+  "fr": " · ce qui fonctionne et ce qui manque",
+  "it": " · cosa funziona e cosa manca",
+  "rm": " · tge funcziuna e tge manca"
  },
  " · Ziel: ": {
   "en": " · goal: ",
@@ -1098,6 +1098,18 @@
   "fr": "%d minutes",
   "it": "%d minuti",
   "rm": "%d minutas"
+ },
+ "%d Notizen exportiert.": {
+  "en": "%d notes exported.",
+  "fr": "%d notes exportées.",
+  "it": "%d note esportate.",
+  "rm": "%d notizias exportadas."
+ },
+ "%d Orte · Simulator %s · %s": {
+  "en": "%d places · simulator %s · %s",
+  "fr": "%d lieux · simulateur %s · %s",
+  "it": "%d luoghi · simulatore %s · %s",
+  "rm": "%d lieus · simulatur %s · %s"
  },
  "%d Probleme": {
   "en": "%d problems",
@@ -2269,6 +2281,18 @@
   "it": "Avventura «%s» – buon divertimento a scoprire!",
   "rm": "Aventura «%s» – bun divertiment cun scuvrir!"
  },
+ "Abenteuer «Die Karte des Bergführers»": {
+  "en": "Adventure «The mountain guide’s map»",
+  "fr": "Aventure «La carte du guide de montagne»",
+  "it": "Avventura «La mappa della guida alpina»",
+  "rm": "Aventura «La charta dal guid da muntogna»"
+ },
+ "Abenteuer: Kapitel %d · %s (Test-Spielstand)": {
+  "en": "Adventure: chapter %d · %s (test progress)",
+  "fr": "Aventure : chapitre %d · %s (progression de test)",
+  "it": "Avventura: capitolo %d · %s (progresso di prova)",
+  "rm": "Aventura: chapitel %d · %s (stadi da test)"
+ },
  "Abenteuerlich": {
   "en": "Adventurous",
   "fr": "Aventureux",
@@ -2287,6 +2311,12 @@
   "it": "annullato (gioco chiuso)",
   "rm": "interrut (gieu serrà)"
  },
+ "Abgebrochen nach %d von %d Orten": {
+  "en": "Cancelled after %d of %d places",
+  "fr": "Interrompu après %d lieux sur %d",
+  "it": "Interrotto dopo %d di %d luoghi",
+  "rm": "Interrut suenter %d da %d lieus"
+ },
  "Abgebrochen – kein Paket.": {
   "en": "Cancelled – no package.",
   "fr": "Annulé – pas de paquet.",
@@ -2304,6 +2334,12 @@
   "fr": "Ajustement réinitialisé",
   "it": "Allineamento azzerato",
   "rm": "Adattaziun reinizialisada"
+ },
+ "Abhaken": {
+  "en": "Tick off",
+  "fr": "Cocher",
+  "it": "Spuntare",
+  "rm": "Marcar sco fatg"
  },
  "Ablauf": {
   "en": "Run",
@@ -2623,6 +2659,18 @@
   "it": "Tutti a casa",
   "rm": "Tuts a chasa"
  },
+ "Alle Notizen exportieren": {
+  "en": "Export all notes",
+  "fr": "Exporter toutes les notes",
+  "it": "Esporta tutte le note",
+  "rm": "Exportar tut las notizias"
+ },
+ "Alle Orte fotografieren": {
+  "en": "Photograph all places",
+  "fr": "Photographier tous les lieux",
+  "it": "Fotografa tutti i luoghi",
+  "rm": "Fotografar tut ils lieus"
+ },
  "Alle schauen zum See – nur eine Person macht alles falsch herum und etwas zu spät.": {
   "en": "Everyone faces the lake – only one person does everything the wrong way round and a little late.",
   "fr": "Tout le monde regarde le lac – une seule personne fait tout à l’envers et un peu en retard.",
@@ -2664,6 +2712,12 @@
   "fr": "Renvoyer tout le monde",
   "it": "Mandare via tutti",
   "rm": "Trametter davent tuts"
+ },
+ "Alle Welten": {
+  "en": "All worlds",
+  "fr": "Tous les mondes",
+  "it": "Tutti i mondi",
+  "rm": "Tut ils munds"
  },
  "Alle zuklappen": {
   "en": "Collapse all",
@@ -3619,6 +3673,12 @@
   "it": "Qualcuno grida sul ponte sospeso sopra il Tüfelsschlund. Ascolta bene!",
   "rm": "Sin la punt pendenta sur il Tüfelsschlund clama insatgi. Tadla bain!"
  },
+ "Auf der Karte": {
+  "en": "On the map",
+  "fr": "Sur la carte",
+  "it": "Sulla mappa",
+  "rm": "Sin la charta"
+ },
  "Auf der Restaurant-Terrasse sollte man die Pommes nicht allein lassen.": {
   "en": "On the restaurant terrace you should not leave your fries alone.",
   "fr": "Sur la terrasse du restaurant, mieux vaut ne pas laisser ses frites seules.",
@@ -4447,6 +4507,12 @@
   "it": "Sotto la pioggia tre lumache fanno a gara sulla pietra – gli gnomi guardano.",
   "rm": "Sut la plievgia fan trais lindornas ina cursa sur il crap – ils nanins guardan tiers."
  },
+ "bei Tag (12 Uhr, klar)": {
+  "en": "by day (12 o’clock, clear)",
+  "fr": "de jour (12 h, dégagé)",
+  "it": "di giorno (ore 12, sereno)",
+  "rm": "di (12 uras, cler)"
+ },
  "Beim Bungalow (Bungalow-Reihe)": {
   "en": "At the bungalow (bungalow row)",
   "fr": "Au bungalow (rangée de bungalows)",
@@ -5070,6 +5136,12 @@
   "fr": "Merci de choisir d’abord le fichier (webcam_bewegung_X.py).",
   "it": "Per favore scegliere prima il file (webcam_bewegung_X.py).",
   "rm": "Per plaschair l’emprim tscherner la datoteca (webcam_bewegung_X.py)."
+ },
+ "Bitte zuerst einen Text schreiben.": {
+  "en": "Please write a text first.",
+  "fr": "Écris d’abord un texte.",
+  "it": "Scrivi prima un testo.",
+  "rm": "Scriva l’emprim in text."
  },
  "Biwak": {
   "en": "Bivouac",
@@ -5900,11 +5972,23 @@
   "it": "Tasso",
   "rm": "Tais"
  },
+ "Danach auf die Karte oben klicken": {
+  "en": "Then click on the map above",
+  "fr": "Puis clique sur la carte ci-dessus",
+  "it": "Poi clicca sulla mappa sopra",
+  "rm": "Lura cliccar sin la charta survart"
+ },
  "Danach den Bildschirm sperren": {
   "en": "Then lock the screen",
   "fr": "Ensuite verrouiller l’écran",
   "it": "Poi bloccare lo schermo",
   "rm": "Lura bloccar il visur"
+ },
+ "Danach in die 3D-Ansicht klicken (ausserhalb dieses Fensters)": {
+  "en": "Then click into the 3D view (outside this window)",
+  "fr": "Puis clique dans la vue 3D (hors de cette fenêtre)",
+  "it": "Poi clicca nella vista 3D (fuori da questa finestra)",
+  "rm": "Lura cliccar en la vista 3D (ordaifer questa fanestra)"
  },
  "Daneben": {
   "en": "Missed",
@@ -6247,6 +6331,12 @@
   "fr": "Le fichier ne contient aucun modèle 3D : ",
   "it": "Il file non contiene un modello 3D: ",
   "rm": "La datoteca na cuntegna nagin model 3D: "
+ },
+ "Datei hier: %s": {
+  "en": "File here: %s",
+  "fr": "Fichier ici : %s",
+  "it": "File qui: %s",
+  "rm": "Datoteca qua: %s"
  },
  "Datei im Paket kaputt: ": {
   "en": "File in the pack broken: ",
@@ -7310,6 +7400,12 @@
   "it": "La baracca militare",
   "rm": "La baracca militara"
  },
+ "Die Mitte der Ansicht jetzt": {
+  "en": "The middle of the view now",
+  "fr": "Le centre de la vue maintenant",
+  "it": "Il centro della vista ora",
+  "rm": "Il center da la vista ussa"
+ },
  "Die Mutter vorne, die Küken hinterher – und das letzte trödelt, rennt hinterher und purzelt.": {
   "en": "Mother in front, the ducklings behind – and the last one dawdles, runs after them and tumbles.",
   "fr": "La mère devant, les canetons derrière – et le dernier traîne, court pour rattraper et culbute.",
@@ -7640,6 +7736,12 @@
   "it": "Il tempo del cannocchiale è scaduto.",
   "rm": "Il temp dal telescop è passà."
  },
+ "Die ZIP-Datei kannst du im Chat anhängen.": {
+  "en": "You can attach the ZIP file in the chat.",
+  "fr": "Tu peux joindre le fichier ZIP dans le chat.",
+  "it": "Puoi allegare il file ZIP nella chat.",
+  "rm": "Ti pos agiuntar la datoteca ZIP en il chat."
+ },
  "Die ZIP-Datei lässt sich nicht öffnen.": {
   "en": "The ZIP file cannot be opened.",
   "fr": "Impossible d’ouvrir le fichier ZIP.",
@@ -7826,6 +7928,12 @@
   "fr": "Place du village",
   "it": "Piazza del paese",
   "rm": "Plazza dal vitg"
+ },
+ "Dort ist nichts zum Anklicken – nochmals versuchen.": {
+  "en": "There is nothing to click there – try again.",
+  "fr": "Rien à cliquer ici – réessaie.",
+  "it": "Lì non c’è niente da cliccare – riprova.",
+  "rm": "Là n’èsi nagut da cliccar – empruvar anc ina giada."
  },
  "Dort: Scheinwerfer, das Dreiklang-Horn des ersten Postautos. Geschafft.": {
   "en": "There: headlights, the three-tone horn of the first PostBus. You made it.",
@@ -9604,6 +9712,12 @@
   "it": "Esperto",
   "rm": "Expert"
  },
+ "Export ging nicht.": {
+  "en": "Export failed.",
+  "fr": "L’export a échoué.",
+  "it": "Esportazione non riuscita.",
+  "rm": "L’export n’è betg reussì."
+ },
  "Extras": {
   "en": "Extras",
   "fr": "Extras",
@@ -10132,6 +10246,12 @@
   "fr": "terminé : %d images · %s",
   "it": "fatto: %d immagini · %s",
   "rm": "finì: %d maletgs · %s"
+ },
+ "Fertig: %d Fotos von %d Orten (%.0f s)": {
+  "en": "Done: %d photos of %d places (%.0f s)",
+  "fr": "Terminé : %d photos de %d lieux (%.0f s)",
+  "it": "Fatto: %d foto di %d luoghi (%.0f s)",
+  "rm": "Fatg: %d fotos da %d lieus (%.0f s)"
  },
  "Fertige Bausätze (Stadt, Wald, Abenteuer) in einheitlichem Stil.": {
   "en": "Ready-made kits (town, forest, adventure) in a uniform style.",
@@ -11700,6 +11820,12 @@
   "it": "luogo scelto",
   "rm": "lieu tschernì"
  },
+ "Ging nicht: %s": {
+  "en": "Did not work: %s",
+  "fr": "Échec : %s",
+  "it": "Non riuscito: %s",
+  "rm": "N’è betg reussì: %s"
+ },
  "Gipfel": {
   "en": "Summits",
   "fr": "Sommets",
@@ -12019,22 +12145,22 @@
   "rm": "Grafica"
  },
  "Grafik auf «einfach (schnell)», «Schärfe der Ansicht» kleiner, andere Programme schliessen.": {
-  "en": "",
-  "fr": "",
-  "it": "",
-  "rm": ""
+  "en": "Graphics to «simple (fast)», «Sharpness of the view» lower, close other programs.",
+  "fr": "Graphismes sur «simple (rapide)», «Netteté de la vue» plus bas, fermer les autres programmes.",
+  "it": "Grafica su «semplice (veloce)», «Nitidezza della vista» più bassa, chiudi gli altri programmi.",
+  "rm": "Grafica sin «simpel (svelt)», «Nettezza da la vista» pli bassa, serrar auters programs."
  },
  "Grafik leichter stellen (System → Grafik) oder «Automatisch leichter» einschalten.": {
-  "en": "",
-  "fr": "",
-  "it": "",
-  "rm": ""
+  "en": "Make the graphics lighter (System → Graphics) or switch on «Automatically lighter».",
+  "fr": "Alléger les graphismes (Système → Graphismes) ou activer «Automatiquement plus léger».",
+  "it": "Alleggerisci la grafica (Sistema → Grafica) o attiva «Automaticamente più leggera».",
+  "rm": "Far la grafica pli levgera (Sistem → Grafica) u activar «Automaticamain pli levgera»."
  },
  "Grafik und Bilder pro Sekunde": {
-  "en": "",
-  "fr": "",
-  "it": "",
-  "rm": ""
+  "en": "Graphics and frames per second",
+  "fr": "Graphismes et images par seconde",
+  "it": "Grafica e fotogrammi al secondo",
+  "rm": "Grafica e maletgs per secunda"
  },
  "Grafik VideoCore (Raspberry Pi)": {
   "en": "VideoCore graphics (Raspberry Pi)",
@@ -12655,6 +12781,12 @@
   "it": "Oggi verso le %d qualcosa di grosso abbocca all’amo del pescatore. Scatta una foto con la telecamera di MoveEye dal pontile.",
   "rm": "Oz enturn las %d morda insatge grond tar il pestgader. Far ina foto cun la camera da MoveEye da la punt da bartga."
  },
+ "Hier (Kamera)": {
+  "en": "Here (camera)",
+  "fr": "Ici (caméra)",
+  "it": "Qui (camera)",
+  "rm": "Qua (camera)"
+ },
  "Hier am PC mitspielen": {
   "en": "Play here on the PC",
   "fr": "Jouer ici sur le PC",
@@ -12798,6 +12930,18 @@
   "fr": "Montée aux ruines d'Altstafel",
   "it": "Su alle rovine di Altstafel",
   "rm": "Ensi a la ruina Altstafel"
+ },
+ "Hinspringen": {
+  "en": "Jump there",
+  "fr": "Y aller",
+  "it": "Vai lì",
+  "rm": "Siglir là"
+ },
+ "Hinspringen (Test-Spielstand)": {
+  "en": "Jump there (test progress)",
+  "fr": "Y aller (progression de test)",
+  "it": "Vai lì (progresso di prova)",
+  "rm": "Siglir là (stadi da test)"
  },
  "Hinter dem Grat, nur über einen schmalen Pfad: ein kleiner stiller See. Am Morgen und am Abend springen Forellen, eine Steinbank wartet am Ufer.": {
   "en": "Behind the ridge, only by a narrow path: a small quiet lake. In the morning and evening trout rise, a stone bench waits on the shore.",
@@ -13069,11 +13213,23 @@
   "it": "Horror",
   "rm": "Horror"
  },
+ "Horror ist gesperrt – zuerst mit dem Passwort entsperren (Abenteuer → Stimmung → Horror).": {
+  "en": "Horror is locked – unlock it with the password first (Adventure → Mood → Horror).",
+  "fr": "L’horreur est verrouillée – déverrouille-la d’abord avec le mot de passe (Aventure → Ambiance → Horreur).",
+  "it": "L’horror è bloccato – sbloccalo prima con la password (Avventura → Atmosfera → Horror).",
+  "rm": "Horror è bloccà – l’emprim cun il pled-clav deblocar (Aventura → Atmosfera → Horror)."
+ },
  "Horror-Modus": {
   "en": "Horror mode",
   "fr": "Mode horreur",
   "it": "Modalità horror",
   "rm": "Modus da horror"
+ },
+ "Horror-Modus «Das Hospiz»": {
+  "en": "Horror mode «The hospice»",
+  "fr": "Mode horreur «L’hospice»",
+  "it": "Modalità horror «L’ospizio»",
+  "rm": "Modus horror «L’ospizi»"
  },
  "Horror-Modus «Das Hospiz» (Bergtal, mit Passwort)": {
   "en": "Horror mode «The Hospice» (mountain valley, with password)",
@@ -13104,6 +13260,12 @@
   "fr": "Horreur : cabane (porte, lumière)",
   "it": "Horror: capanna (porta, luce)",
   "rm": "Horror: chamona (porta, glisch)"
+ },
+ "Horror: Nacht %d (Test)": {
+  "en": "Horror: night %d (test)",
+  "fr": "Horreur : nuit %d (test)",
+  "it": "Horror: notte %d (prova)",
+  "rm": "Horror: notg %d (test)"
  },
  "Hospiz": {
   "en": "Hospice",
@@ -13447,6 +13609,12 @@
   "it": "Ho capito",
   "rm": "Jau hai chapì"
  },
+ "Idee": {
+  "en": "Idea",
+  "fr": "Idée",
+  "it": "Idea",
+  "rm": "Idea"
+ },
  "Igel": {
   "en": "Hedgehog",
   "fr": "Hérisson",
@@ -13752,6 +13920,12 @@
   "fr": "IMX708",
   "it": "IMX708",
   "rm": "IMX708"
+ },
+ "In 3D anklicken": {
+  "en": "Click in 3D",
+  "fr": "Cliquer en 3D",
+  "it": "Clicca in 3D",
+  "rm": "Cliccar en 3D"
  },
  "In den Furggakehren ist die Strasse manchmal ganz voll. Nicht mit Autos.": {
   "en": "In the Furgga bends the road is sometimes completely full. Not with cars.",
@@ -14209,6 +14383,18 @@
   "it": "Aggiornare ora",
   "rm": "Actualisar ussa"
  },
+ "Jetzt auf die Karte klicken.": {
+  "en": "Now click on the map.",
+  "fr": "Clique maintenant sur la carte.",
+  "it": "Ora clicca sulla mappa.",
+  "rm": "Ussa cliccar sin la charta."
+ },
+ "Jetzt in die 3D-Ansicht klicken.": {
+  "en": "Now click into the 3D view.",
+  "fr": "Clique maintenant dans la vue 3D.",
+  "it": "Ora clicca nella vista 3D.",
+  "rm": "Ussa cliccar en la vista 3D."
+ },
  "Jetzt installieren": {
   "en": "Install now",
   "fr": "Installer maintenant",
@@ -14575,6 +14761,12 @@
   "it": "Capitolo",
   "rm": "Chapitel"
  },
+ "Kapitel %d": {
+  "en": "Chapter %d",
+  "fr": "Chapitre %d",
+  "it": "Capitolo %d",
+  "rm": "Chapitel %d"
+ },
  "Kapitel %d · Seed %d · %s": {
   "en": "Chapter %d · seed %d · %s",
   "fr": "Chapitre %d · seed %d · %s",
@@ -14610,6 +14802,12 @@
   "fr": "Chapitre 5 - Derrière l'arête",
   "it": "Capitolo 5 - Dietro la cresta",
   "rm": "Chapitel 5 - Davos la creesta"
+ },
+ "Kapitel-Sprung": {
+  "en": "Chapter jump",
+  "fr": "Saut de chapitre",
+  "it": "Salto di capitolo",
+  "rm": "Sigl da chapitel"
  },
  "Karte": {
   "en": "Map",
@@ -14724,6 +14922,12 @@
   "fr": "Carton",
   "it": "Scatolone",
   "rm": "Cartun"
+ },
+ "Kategorie (freiwillig)": {
+  "en": "Category (optional)",
+  "fr": "Catégorie (facultatif)",
+  "it": "Categoria (facoltativa)",
+  "rm": "Categoria (facultativ)"
  },
  "Katze": {
   "en": "Cat",
@@ -15487,6 +15691,24 @@
   "fr": "Contact pour une réponse (facultatif)",
   "it": "Contatto per una risposta (facoltativo)",
   "rm": "Contact per ina resposta (facultativ)"
+ },
+ "Kontaktbogen": {
+  "en": "Contact sheet",
+  "fr": "Planche contact",
+  "it": "Provino",
+  "rm": "Fegl da contact"
+ },
+ "Kontaktbogen abgebrochen": {
+  "en": "Contact sheet cancelled",
+  "fr": "Planche contact interrompue",
+  "it": "Provino interrotto",
+  "rm": "Fegl da contact interrut"
+ },
+ "Kontaktbogen fertig: %d Fotos": {
+  "en": "Contact sheet done: %d photos",
+  "fr": "Planche contact terminée : %d photos",
+  "it": "Provino pronto: %d foto",
+  "rm": "Fegl da contact fatg: %d fotos"
  },
  "Kopf": {
   "en": "Head",
@@ -16683,6 +16905,12 @@
   "fr": "Cuillère",
   "it": "Cucchiaio",
   "rm": "Tschadun"
+ },
+ "Löschen": {
+  "en": "Delete",
+  "fr": "Supprimer",
+  "it": "Elimina",
+  "rm": "Stizzar"
  },
  "Löscht alle Trainingspakete ausser dem neuesten (Ordner und ZIP). Das KI-Modell bleibt.": {
   "en": "Deletes all training packages except the newest (folder and ZIP). The AI model stays.",
@@ -18221,6 +18449,12 @@
   "it": "Notte",
   "rm": "Notg"
  },
+ "Nacht %d": {
+  "en": "Night %d",
+  "fr": "Nuit %d",
+  "it": "Notte %d",
+  "rm": "Notg %d"
+ },
  "Nacht (dunkel, Infrarot, Tiere · etwa 4 Min.)": {
   "en": "Night (dark, infrared, animals · about 4 min)",
   "fr": "Nuit (sombre, infrarouge, animaux · environ 4 min)",
@@ -19259,6 +19493,30 @@
   "fr": "Note",
   "it": "Voto",
   "rm": "Nota"
+ },
+ "Notiz gespeichert (%d)": {
+  "en": "Note saved (%d)",
+  "fr": "Note enregistrée (%d)",
+  "it": "Nota salvata (%d)",
+  "rm": "Notizia memorisada (%d)"
+ },
+ "Notiz speichern": {
+  "en": "Save note",
+  "fr": "Enregistrer la note",
+  "it": "Salva nota",
+  "rm": "Memorisar la notizia"
+ },
+ "Notizen an Claude": {
+  "en": "Notes to Claude",
+  "fr": "Notes pour Claude",
+  "it": "Note per Claude",
+  "rm": "Notizias per Claude"
+ },
+ "Notizen aus dem MoveEye-Simulator (Entwickler → Notizen an Claude)\n%d Notizen, davon %d offen. Version %s.\n\n": {
+  "en": "Notes from the MoveEye simulator (Developer → Notes to Claude)\n%d notes, %d of them open. Version %s.\n\n",
+  "fr": "Notes du simulateur MoveEye (Développeur → Notes pour Claude)\n%d notes, dont %d ouvertes. Version %s.\n\n",
+  "it": "Note dal simulatore MoveEye (Sviluppatore → Note per Claude)\n%d note, di cui %d aperte. Versione %s.\n\n",
+  "rm": "Notizias dal simulatur MoveEye (Sviluppader → Notizias per Claude)\n%d notizias, da quellas %d avertas. Versiun %s.\n\n"
  },
  "Notruf 112 · Rega 1414\nBitte Biwak sauber verlassen": {
   "en": "Emergency 112 · Rega 1414\nPlease leave the bivouac clean",
@@ -23094,6 +23352,18 @@
   "it": "Tipo di gioco impostato su «Controllo zone» (invitare giocatori)",
   "rm": "Gener da gieu mess sin «Controlla da zonas» (envidar giugaders)"
  },
+ "Spielbereich (Kapitel der Szenen)": {
+  "en": "Play area (chapters of the scenes)",
+  "fr": "Espace de jeu (chapitres des scènes)",
+  "it": "Area di gioco (capitoli delle scene)",
+  "rm": "Spazi da gieu (chapitels da las scenas)"
+ },
+ "Spielbereich: Kapitel %d (Test-Spielstand)": {
+  "en": "Play area: chapter %d (test progress)",
+  "fr": "Espace de jeu : chapitre %d (progression de test)",
+  "it": "Area di gioco: capitolo %d (progresso di prova)",
+  "rm": "Spazi da gieu: chapitel %d (stadi da test)"
+ },
  "Spielbericht gespeichert: %d× sichtbar, %d verpasste Bilder, %d Schleichwege": {
   "en": "Game report saved: %d× visible, %d missed pictures, %d sneak paths",
   "fr": "Rapport de jeu enregistré : %d× visible, %d images manquées, %d chemins furtifs",
@@ -23202,6 +23472,12 @@
   "it": "Sport e bagagli",
   "rm": "Sport e bagascha"
  },
+ "Springen setzt einen Test-Spielstand (eigene Datei) – dein echter Spielstand bleibt unberührt.": {
+  "en": "Jumping sets a test progress (own file) – your real progress stays untouched.",
+  "fr": "Le saut crée une progression de test (fichier séparé) – ta vraie progression reste intacte.",
+  "it": "Il salto imposta un progresso di prova (file proprio) – il tuo vero progresso resta intatto.",
+  "rm": "Il sigl metta in stadi da test (atgna datoteca) – tes vair stadi resta intact."
+ },
  "Sprint (90 Sekunden)": {
   "en": "Sprint (90 seconds)",
   "fr": "Sprint (90 secondes)",
@@ -23219,6 +23495,12 @@
   "fr": "Sprint : 90 secondes, toujours le même parcours – bien pour les enfants et les manches courtes.",
   "it": "Sprint: 90 secondi, sempre lo stesso percorso – adatto a bambini e turni brevi.",
   "rm": "Sprint: 90 secundas, adina il medem parcurs – bun per uffants e rundas curtas."
+ },
+ "Sprung zur Notiz: %s": {
+  "en": "Jump to note: %s",
+  "fr": "Aller à la note : %s",
+  "it": "Salto alla nota: %s",
+  "rm": "Sigl tar la notizia: %s"
  },
  "Sprung: %s": {
   "en": "Jump: %s",
@@ -23539,6 +23821,30 @@
   "it": "Pericolo di caduta massi: parete sopra",
   "rm": "Privel da crudada da crappa: paraid da grippa survart"
  },
+ "Stelle": {
+  "en": "Spot",
+  "fr": "Endroit",
+  "it": "Punto",
+  "rm": "Lieu"
+ },
+ "Stelle markiert – jetzt den Text schreiben und speichern.": {
+  "en": "Spot marked – now write the text and save.",
+  "fr": "Endroit marqué – écris maintenant le texte et enregistre.",
+  "it": "Punto segnato – ora scrivi il testo e salva.",
+  "rm": "Lieu marcà – ussa scriver il text e memorisar."
+ },
+ "Stelle: %s": {
+  "en": "Spot: %s",
+  "fr": "Endroit : %s",
+  "it": "Punto: %s",
+  "rm": "Lieu: %s"
+ },
+ "Stelle: noch keine (sonst die Kamera)": {
+  "en": "Spot: none yet (otherwise the camera)",
+  "fr": "Endroit : aucun (sinon la caméra)",
+  "it": "Punto: ancora nessuno (altrimenti la camera)",
+  "rm": "Lieu: anc nagin (uschiglio la camera)"
+ },
  "Stellplatz": {
   "en": "Camper pitch",
   "fr": "Aire camping-car",
@@ -23762,10 +24068,10 @@
   "rm": "Stgalim %d: %s"
  },
  "Stufe «%s» · %d Bilder/s · %s": {
-  "en": "",
-  "fr": "",
-  "it": "",
-  "rm": ""
+  "en": "Level «%s» · %d frames/s · %s",
+  "fr": "Niveau «%s» · %d images/s · %s",
+  "it": "Livello «%s» · %d fotogrammi/s · %s",
+  "rm": "Nivel «%s» · %d maletgs/s · %s"
  },
  "Stufe «%s» · %s%s": {
   "en": "Level «%s» · %s%s",
@@ -24420,6 +24726,24 @@
   "fr": "Test",
   "it": "Test",
   "rm": "Test"
+ },
+ "Test beenden (echter Spielstand)": {
+  "en": "End test (real progress)",
+  "fr": "Terminer le test (vraie progression)",
+  "it": "Termina prova (progresso vero)",
+  "rm": "Terminar il test (vair stadi)"
+ },
+ "Test beendet – wieder dein echter Spielstand.": {
+  "en": "Test ended – your real progress again.",
+  "fr": "Test terminé – de nouveau ta vraie progression.",
+  "it": "Prova terminata – di nuovo il tuo progresso vero.",
+  "rm": "Test terminà – puspè tes vair stadi."
+ },
+ "Test-Spielstand aktiv – dein echter Spielstand bleibt unberührt (bis «Test beenden» oder Neustart).": {
+  "en": "Test progress active – your real progress stays untouched (until «End test» or a restart).",
+  "fr": "Progression de test active – ta vraie progression reste intacte (jusqu’à «Terminer le test» ou un redémarrage).",
+  "it": "Progresso di prova attivo – il tuo vero progresso resta intatto (fino a «Termina prova» o al riavvio).",
+  "rm": "Stadi da test activ – tes vair stadi resta intact (fin «Terminar il test» u in nov start)."
  },
  "Testen": {
   "en": "Testing",
@@ -26311,6 +26635,12 @@
   "fr": "Quel est le but ?",
   "it": "Qual è l’obiettivo?",
   "rm": "Tge è la finamira?"
+ },
+ "Was ist hier? Text an Claude …": {
+  "en": "What is here? Text to Claude …",
+  "fr": "Qu’y a-t-il ici ? Texte pour Claude …",
+  "it": "Cosa c’è qui? Testo per Claude …",
+  "rm": "Tge è qua? Text per Claude …"
  },
  "Was ist neu?": {
   "en": "What is new?",
@@ -28793,6 +29123,12 @@
   "it": "Panoramica · si comincia subito",
   "rm": "Survista · i cumenza immediat"
  },
+ "Übersicht öffnen (HTML)": {
+  "en": "Open overview (HTML)",
+  "fr": "Ouvrir l’aperçu (HTML)",
+  "it": "Apri panoramica (HTML)",
+  "rm": "Avrir la survista (HTML)"
+ },
  "Übersicht über das Spielfeld": {
   "en": "Overview of the playing field",
   "fr": "Vue d’ensemble du terrain de jeu",
@@ -28900,6 +29236,12 @@
   "fr": "– choisir un modèle –",
   "it": "– scegliere un modello –",
   "rm": "– tscherner in model –"
+ },
+ "— ohne —": {
+  "en": "— none —",
+  "fr": "— aucune —",
+  "it": "— nessuna —",
+  "rm": "— nagina —"
  },
  "‹ Zurück": {
   "en": "‹ Back",

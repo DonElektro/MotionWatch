@@ -1,8 +1,13 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.66** · passende MoveEye-Version (früher Motion Watch) **2.98.97**
+Stand: 31.10.2026 · Simulator-Version **3D-4.67** · passende MoveEye-Version (früher Motion Watch) **2.98.98**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.67 (MoveEye 2.98.98): Entwicklertool Teil 3 (`devtool_extra.gd`, `_notizen`, `_kontakt`, `_kapitel`)
+
+- Notizen an Claude (mit Bild, ZIP-Export), Kontaktbogen (alle Orte einer Welt), Kapitel-Sprung in einem Test-Spielstand.
+- `devtool.gd`: Teil 2 (`eb()`, Ebenen) und Teil 3 (`extra`) hängen nebeneinander in `_build`, `control` und `_draw`.
 
 ## NEU in 3D-4.66 (MoveEye 2.98.97): Abenteuer zu zweit (`abenteuer_zweit.gd`, `abenteuer_bestenliste.gd`)
 

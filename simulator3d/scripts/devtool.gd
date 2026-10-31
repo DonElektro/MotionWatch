@@ -30,6 +30,8 @@ extends Node
 ## Steuerbefehl /control {"action": "dev", "do": "places" (world, kind) | "goto" (id) | "fly" (on, speed) | "open" | "close"
 ##   | "info" | Teil 2: "layer" (name, on) | "set" (time, weather, season, quality) | "regler"} - damit Tests automatisch springen können. MoveEye nutzt ihn nicht (nicht in schnittstelle.json).
 ## Lite: _lite() (Quality.lite()) - die Karte ohne Landeskarten-Bild und ohne Wege, nur 2 × pro Sekunde neu gezeichnet.
+## Entwicklertool 3 (Notizen an Claude, Kontaktbogen, Kapitel-Sprung): eigene Dateien devtool_extra.gd (+ _notizen, _kontakt,
+## _kapitel); hier nur die Haken extra.build / extra.control / extra.map_click / extra.map_draw.
 
 const T = preload("res://scripts/i18n.gd")
 const UI = preload("res://scripts/ui_style.gd")
@@ -68,6 +70,14 @@ var _speed_opt: OptionButton
 var _all: Array = []                   # alle_orte() of the last refresh
 var _t := 0.0
 var ebenen = null                      # Entwicklertool 2 «Regler + Ebenen» (devtool_ebenen.gd): eb()
+var extra                              # devtool_extra.gd: Entwicklertool 3 (Notizen, Kontaktbogen, Kapitel-Sprung)
+
+
+func _ready() -> void:
+	extra = preload("res://scripts/devtool_extra.gd").new()
+	extra.dev = self
+	extra.main = main
+	add_child(extra)
 
 
 static func _lite() -> bool:
@@ -482,6 +492,7 @@ func _build() -> void:
 	_status.clip_text = true
 	bot.add_child(_status)
 	v.add_child(eb().section())                          # Teil 2: Schnellregler + Ebenen
+	extra.build(v)                                       # Teil 3: Notizen, Kontaktbogen, Kapitel-Sprung
 	if main.fenster != null:
 		main.fenster.add("dev", "Entwickler", panel, {"on": func(): return shown, "set_on": func(x): shown = bool(x),
 				"shown": func(): return shown, "list": false, "home": _home})
@@ -559,6 +570,9 @@ func _process(dt: float) -> void:
 # /control {"action": "dev", …}
 # =============================================================================================================================
 func control(d: Dictionary) -> Dictionary:
+	var xr = extra.control(d) if extra != null else null      # Entwicklertool 3: notes | contact … | chapters … (devtool_extra.gd)
+	if xr != null:
+		return xr
 	match str(d.get("do", "info")):
 		"places":
 			var L := alle_orte(main)
@@ -637,7 +651,9 @@ class DevMap extends Control:
 					_drag = false
 					if _moved < 5.0:
 						var e = _at(ev.position)
-						if e != null:
+						if dev.extra != null and dev.extra.map_click(Wd(ev.position)):
+							pass                         # Entwicklertool 3: a note's place / a note marker
+						elif e != null:
 							dev.goto(str(e["id"]))
 			accept_event()
 		elif ev is InputEventMouseMotion:
@@ -746,6 +762,8 @@ class DevMap extends Control:
 				var dir := (S(ca) - a).normalized() if S(ca).distance_to(a) > 0.01 else Vector2.UP
 				var sd := Vector2(-dir.y, dir.x)
 				draw_colored_polygon(PackedVector2Array([a + dir * 10.0, a - dir * 5.0 + sd * 6.0, a - dir * 5.0 - sd * 6.0]), Color("#ffcc33"))
+		if dev.extra != null:
+			dev.extra.map_draw(self)                         # Entwicklertool 3: the notes on the map
 		draw_rect(Rect2(Vector2.ZERO, size), Color(1, 1, 1, 0.15), false, 1.0)
 
 	func _draw_valley(lite: bool) -> void:

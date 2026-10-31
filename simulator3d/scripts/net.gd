@@ -215,6 +215,14 @@ func _handle(c: Dictionary, method: String, path: String, query: Dictionary, bod
 		else:
 			_send(c, 200, b, "image/jpeg")
 		return
+	if path.begins_with("/dev/"):                      # Entwicklertool 3: Kontaktbogen- und Notizen-Bilder (devtool_extra.gd http_get)
+		var dx = main.mehr.dev.extra if main.mehr != null and main.mehr.dev != null else null
+		var fr: Array = dx.http_get(path) if dx != null else []
+		if fr.is_empty():
+			_json(c, {"ok": false, "error": "not found"}, 404)
+		else:
+			_send(c, 200, fr[0], fr[1])
+		return
 	match path:
 		"/info":
 			_json(c, main.info())
