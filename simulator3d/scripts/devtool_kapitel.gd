@@ -96,7 +96,7 @@ func test_end() -> Dictionary:
 	var ab = main.abenteuer
 	if ab != null:
 		_ab_stop_run()
-		ab.save_file = ab.SAVE_FILE
+		ab.save_file = preload("res://scripts/spielstand.gd").path_ab()   # A6: back to the active Spielstand (place 1 = SAVE_FILE)
 		ab._load()
 		ab.step = 0
 		ab._changed()
@@ -105,7 +105,7 @@ func test_end() -> Dictionary:
 		main.set_scene(_scene0)          # (before the real file of the play area is used again)
 	var sb = main.spielbereich
 	if sb != null:
-		sb.save_path = sb.SAVE
+		sb.save_path = preload("res://scripts/spielstand.gd").path_sb()   # A6
 		sb.data = {"visited": [], "seen_lv": 1, "greeted": false, "done_seen": []}
 		sb._load()
 	test_on = false
