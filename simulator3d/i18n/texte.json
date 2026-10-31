@@ -3751,6 +3751,12 @@
   "it": "Scatto",
   "rm": "Sajet"
  },
+ "Auslöser (Erlebnisse, Abenteuer, PIR Zelt)": {
+  "en": "Triggers (experiences, adventure, PIR tent)",
+  "fr": "Déclencheurs (expériences, aventure, PIR tente)",
+  "it": "Attivatori (esperienze, avventura, PIR tenda)",
+  "rm": "Activaturs (experientschas, aventura, PIR tenda)"
+ },
  "Auslöser gesperrt – noch %d s (Fehlalarm)": {
   "en": "Shutter locked – %d s left (false alarm)",
   "fr": "Déclencheur bloqué – encore %d s (fausse alarme)",
@@ -7881,6 +7887,12 @@
   "it": "Monopattino elettrico (persona, veloce)",
   "rm": "E-trottinet (persuna, svelt)"
  },
+ "Ebenen in der Ansicht": {
+  "en": "Layers in the view",
+  "fr": "Calques dans la vue",
+  "it": "Livelli nella vista",
+  "rm": "Nivels en la vista"
+ },
  "Echo-Platz in der Schlucht": {
   "en": "Echo spot in the gorge",
   "fr": "Point d'écho dans la gorge",
@@ -11508,6 +11520,12 @@
   "it": "Presto sarà notte: la telecamera passa all’infrarosso.",
   "rm": "Bainprest è notg: la camera mida sin infracotschen."
  },
+ "Gleiche Regler wie im Bedienfeld (Szene · Zeit, Wetter, System · Grafik) – beide bleiben gleich.": {
+  "en": "Same controls as in the control panel (Scene · Time, Weather, System · Graphics) – both stay in step.",
+  "fr": "Mêmes réglages que dans le panneau (Scène · Heure, Météo, Système · Graphisme) – les deux restent identiques.",
+  "it": "Stesse regolazioni del pannello (Scena · Ora, Meteo, Sistema · Grafica) – entrambi restano uguali.",
+  "rm": "Ils medems reguladers sco en il panel (Scena · Temp, Aura, Sistem · Grafica) – omadus restan tuttina."
+ },
  "Gleiche Situation vorher (MoveEye %s): %d gemeldet, %d verpasst - jetzt (MoveEye %s): %d gemeldet, %d verpasst": {
   "en": "Same situation before (MoveEye %s): %d reported, %d missed - now (MoveEye %s): %d reported, %d missed",
   "fr": "Même situation avant (MoveEye %s) : %d signalés, %d manqués - maintenant (MoveEye %s) : %d signalés, %d manqués",
@@ -12733,6 +12751,18 @@
   "it": "Modalità horror: imposta una password",
   "rm": "Modus da horror: fixar in pled-clav"
  },
+ "Horror: Hospiz": {
+  "en": "Horror: Hospice",
+  "fr": "Horreur : Hospice",
+  "it": "Horror: Ospizio",
+  "rm": "Horror: Ospizi"
+ },
+ "Horror: Hütte (Tür, Licht)": {
+  "en": "Horror: hut (door, light)",
+  "fr": "Horreur : cabane (porte, lumière)",
+  "it": "Horror: capanna (porta, luce)",
+  "rm": "Horror: chamona (porta, glisch)"
+ },
  "Hospiz": {
   "en": "Hospice",
   "fr": "Hospice",
@@ -13836,6 +13866,42 @@
   "fr": "Le chasseur à MoveEye vise en touchant l’image en direct",
   "it": "Il cacciatore a MoveEye mira toccando l’immagine live",
   "rm": "Il chatschader tar MoveEye mira cun tutgar en il maletg live"
+ },
+ "K%d Begegnung": {
+  "en": "C%d encounter",
+  "fr": "C%d rencontre",
+  "it": "C%d incontro",
+  "rm": "C%d inscunter"
+ },
+ "K%d Gabelung": {
+  "en": "C%d fork",
+  "fr": "C%d bifurcation",
+  "it": "C%d bivio",
+  "rm": "C%d biforcaziun"
+ },
+ "K%d Hinweis": {
+  "en": "C%d clue",
+  "fr": "C%d indice",
+  "it": "C%d indizio",
+  "rm": "C%d indizi"
+ },
+ "K%d Karte lesen": {
+  "en": "C%d read the map",
+  "fr": "C%d lire la carte",
+  "it": "C%d leggere la carta",
+  "rm": "C%d leger la charta"
+ },
+ "K%d Lager": {
+  "en": "C%d camp",
+  "fr": "C%d campement",
+  "it": "C%d accampamento",
+  "rm": "C%d champ"
+ },
+ "K%d Start": {
+  "en": "C%d start",
+  "fr": "C%d départ",
+  "it": "C%d partenza",
+  "rm": "C%d partenza"
  },
  "Kachel leer: ": {
   "en": "Tile empty: ",
@@ -15788,6 +15854,12 @@
   "it": "Cono di luce di un’auto ora (di notte)",
   "rm": "Cun da glisch d’in auto ussa (da notg)"
  },
+ "Lichtquellen (Lampen mit Reichweite)": {
+  "en": "Light sources (lamps with range)",
+  "fr": "Sources lumineuses (lampes avec portée)",
+  "it": "Fonti di luce (lampade con portata)",
+  "rm": "Funtaunas da glisch (lampas cun distanza)"
+ },
  "Lichtverschmutzung (Himmel nachts, Sterne)": {
   "en": "Light pollution (night sky, stars)",
   "fr": "Pollution lumineuse (ciel nocturne, étoiles)",
@@ -16773,6 +16845,12 @@
   "fr": "Joueurs : scanner avec le téléphone (même Wi-Fi)\n%s\n%s",
   "it": "Giocatori: scansionare con il telefonino (stessa Wi-Fi)\n%s\n%s",
   "rm": "Giugaders: scannar cun il telefonin (medem WLAN)\n%s\n%s"
+ },
+ "Mittag": {
+  "en": "Noon",
+  "fr": "Midi",
+  "it": "Mezzogiorno",
+  "rm": "Mezdi"
  },
  "Mittag 13:00": {
   "en": "Noon 13:00",
@@ -18774,6 +18852,12 @@
   "it": "Aprire solo i gruppi",
   "rm": "Avrir mo las gruppas"
  },
+ "Nur im Fenster sichtbar, nie im Bild von MoveEye. Horror-Auslöser nur, wenn «Das Hospiz» entsperrt ist.": {
+  "en": "Only visible in the window, never in MoveEye's picture. Horror triggers only when «The Hospice» is unlocked.",
+  "fr": "Visible seulement dans la fenêtre, jamais dans l'image de MoveEye. Déclencheurs d'horreur seulement si «L'Hospice» est déverrouillé.",
+  "it": "Visibile solo nella finestra, mai nell'immagine di MoveEye. Attivatori horror solo se «L'Ospizio» è sbloccato.",
+  "rm": "Mo visibel en la fanestra, mai en il maletg da MoveEye. Activaturs da horror mo sche «L'Ospizi» è avert."
+ },
  "Nur Kuhglocken im Nebel, plötzlich eine Kuh": {
   "en": "Only cowbells in the fog, suddenly a cow",
   "fr": "Seulement des cloches dans le brouillard, soudain une vache",
@@ -19620,6 +19704,12 @@
   "it": "PIR tenda",
   "rm": "PIR tenda",
   "?": "Sensorname an MoveEye (/info) – nicht umhüllen"
+ },
+ "PIR Zelt (3 m)": {
+  "en": "PIR tent (3 m)",
+  "fr": "PIR tente (3 m)",
+  "it": "PIR tenda (3 m)",
+  "rm": "PIR tenda (3 m)"
  },
  "PIR Zelt auslösen": {
   "en": "Trigger PIR tent",
@@ -21344,6 +21434,12 @@
   "it": "Presto, presto! Passa un jogger.",
   "rm": "Svelt, svelt! In currider curra speravia."
  },
+ "Schnellregler": {
+  "en": "Quick controls",
+  "fr": "Réglages rapides",
+  "it": "Regolazioni rapide",
+  "rm": "Reguladers svelts"
+ },
  "Schnellreise im Bergtal (Ort wählen)": {
   "en": "Quick travel in the mountain valley (choose a place)",
   "fr": "Voyage rapide dans la vallée (choisir un lieu)",
@@ -21953,6 +22049,12 @@
   "fr": "Afficher le champ de vision des caméras (pour débutants)",
   "it": "Mostrare il campo visivo delle telecamere (per principianti)",
   "rm": "Mussar il champ da vista da las cameras (per principiants)"
+ },
+ "Sichtfeld von MoveEye (blau Kopfkamera, gelb Weitwinkel)": {
+  "en": "MoveEye field of view (blue head camera, yellow wide-angle)",
+  "fr": "Champ de vision de MoveEye (bleu caméra de tête, jaune grand-angle)",
+  "it": "Campo visivo di MoveEye (blu telecamera della testa, giallo grandangolo)",
+  "rm": "Champ da vista da MoveEye (blau camera dal chau, mellen gronda-angul)"
  },
  "Sichtweite im Nebel": {
   "en": "Visibility in fog",
@@ -22697,6 +22799,12 @@
   "fr": "Démarre avec le PC",
   "it": "Si avvia con il PC",
   "rm": "Cumenza cun il PC"
+ },
+ "Startpunkte von Figuren und Tieren": {
+  "en": "Start points of figures and animals",
+  "fr": "Points de départ des personnages et des animaux",
+  "it": "Punti di partenza di figure e animali",
+  "rm": "Puncts da partenza da figuras ed animals"
  },
  "Startschutz": {
   "en": "Start protection",
@@ -25772,6 +25880,12 @@
   "it": "Sentieri",
   "rm": "Sendas"
  },
+ "Wege und Gehwege der Figuren": {
+  "en": "Paths and walkways of the figures",
+  "fr": "Chemins et trajets des personnages",
+  "it": "Sentieri e percorsi delle figure",
+  "rm": "Sendas e vias da las figuras"
+ },
  "Weggabelung": {
   "en": "Fork in the path",
   "fr": "Bifurcation",
@@ -27820,6 +27934,12 @@
   "fr": "« Dormir ici » ne fonctionne que dans la scène Vallée de montagne.",
   "it": "«Dormire qui» funziona solo nella scena Valle alpina.",
   "rm": "«Durmir qua» va mo en la scena Val da muntogna."
+ },
+ "«Hoch» (und zurück von «Hoch») startet den Simulator neu. Automatisch, Lite und Normal wirken sofort.": {
+  "en": "«High» (and back from «High») restarts the simulator. Automatic, Lite and Normal take effect at once.",
+  "fr": "«Élevé» (et le retour depuis «Élevé») redémarre le simulateur. Automatique, Lite et Normal agissent tout de suite.",
+  "it": "«Alto» (e il ritorno da «Alto») riavvia il simulatore. Automatico, Lite e Normale hanno effetto subito.",
+  "rm": "«Aut» (e enavos da «Aut») reaviva il simulatur. Automatic, Lite e Normal agischan immediat."
  },
  "«Morgen früh kommt das Alpenglühen. Oben auf dem Grat ist es am schönsten.»": {
   "en": "«Tomorrow morning the alpenglow comes. It's most beautiful up on the ridge.»",
