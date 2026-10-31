@@ -396,7 +396,8 @@ func _tick() -> void:
 	for m in rounds:
 		var r: Dictionary = rounds[m]
 		var paused: bool = (str(m) in WALK and idle) or (str(m) == "horror" and main.horror != null and bool(main.horror.paused)) \
-				or (str(m) == "erlebniswelt" and rounds.has("ferienpark"))
+				or (str(m) == "erlebniswelt" and rounds.has("ferienpark")) \
+				or (str(m) == "abenteuer" and idle and main.abenteuer != null and not (main.abenteuer.R.get("pending", {}) as Dictionary).is_empty())
 		if paused:
 			r["pause_s"] = float(r["pause_s"]) + 1.0
 			continue
@@ -634,7 +635,7 @@ func _poll_walk() -> void:
 	if sc != _scene:
 		_scene_n += 1
 		if _scene_n >= 2:                         # the same scene for 2 s (set_scene may take a moment)
-			if rounds.has("spielbereich") and str(rounds["spielbereich"]["szene"]) != sc:
+			if rounds.has("spielbereich") and str(rounds["spielbereich"]["szene"]) != sc and bool(rounds["spielbereich"].get("_in", false)):
 				var r: Dictionary = rounds["spielbereich"]
 				var ent = main.entdecken
 				var half: bool = ent != null and int(ent.total(str(r["szene"]))) > 0 and int(ent.count(str(r["szene"]))) * 2 >= int(ent.total(str(r["szene"])))
@@ -647,6 +648,8 @@ func _poll_walk() -> void:
 			_scene_n = 0
 	else:
 		_scene_n = 0
+	if rounds.has("spielbereich") and str(rounds["spielbereich"]["szene"]) == sc:
+		rounds["spielbereich"]["_in"] = true          # (only a scene change after it was there ends the round)
 	var ew = main.scenes.data.get("erleben", null) if main.scenes != null else null
 	var in_park: bool = sc == "ferienpark" and ew != null and is_instance_valid(ew)
 	if in_park and not rounds.has("erlebniswelt") and not (rounds.has("spielbereich") and str(rounds["spielbereich"]["szene"]) == "ferienpark"):

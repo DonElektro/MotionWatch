@@ -11,6 +11,7 @@ extends Node
 
 const T = preload("res://scripts/i18n.gd")
 const UI = preload("res://scripts/ui_style.gd")
+const Sym = preload("res://scripts/symbole.gd")
 
 var x                                    # devtool_extra.gd
 var dev
@@ -134,7 +135,7 @@ func _paint_state() -> void:
 	_push_l.text = s.push_line()
 	if not s.push_log.is_empty():
 		var it: Dictionary = s.push_log[-1]
-		_push_l.text += "\n" + T.t("Letzte: «%s» – %s") % [str(it["text"]), T.t(str(it["status"]))]
+		_push_l.text += "\n" + T.t("Letzte: «%s» – %s") % [Sym.clean(str(it["text"])), T.t(str(it["status"]))]
 	_push_l.add_theme_color_override("font_color", UI.GRN if s.push_line().begins_with(T.t("Push über MoveEye ist an.")) else UI.ORG)
 
 
