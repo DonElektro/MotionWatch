@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-4.47"
+const VERSION := "3D-4.48"
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const Quality := preload("res://scripts/quality.gd")     # 3D-4.25: «Lite» for the Raspberry Pi 5 (Quality.lite(), Engine meta «lite»)
 const Kompakt := preload("res://scripts/kompakt.gd")    # 3D-4.x: the four compact scenes (Pfadilager, Hofladen, Bergdorf, Festival)
@@ -329,6 +329,7 @@ var menschen                          # menschen.gd (P10): people behave like re
 var tiere                             # tiere.gd (Paket «Tiere»): animals behave like real ones (flee, curl up, pounce …)
 var fahrzeuge                         # fahrzeuge.gd (Paket «Fahrzeuge»): speed, lights, glare, doors, parking, engine heat
 var licht                             # licht.gd («Licht & Nacht»): sun, twilight, moon, stars, light pollution, lamps, glare
+var jahreszeiten                      # jahreszeiten.gd («Jahreszeiten & Tageslauf»): season, bare trees, blossom, leaves, fog, snow, occupancy
 var colors                            # colors.gd (3D-3.97): natural colours, materials, seasons, blue hour
 var colors_on := true
 var tracks                            # tracks.gd (3D-3.98)
@@ -478,6 +479,9 @@ func _ready() -> void:
 	licht = preload("res://scripts/licht.gd").new()           # «Licht & Nacht»: sky and lights like real
 	licht.main = self
 	add_child(licht)
+	jahreszeiten = preload("res://scripts/jahreszeiten.gd").new()   # «Jahreszeiten & Tageslauf»: the season shared by all scenes
+	jahreszeiten.main = self
+	add_child(jahreszeiten)
 	fauna = preload("res://scripts/fauna.gd").new()          # 3D-3.95: birds and bats
 	fauna.main = self
 	add_child(fauna)
@@ -2301,6 +2305,12 @@ var _sun_cache := [-1.0, Vector2.ZERO]
 var _horizon := {}                    # real place: how high the hills are in a direction (2° steps) - mountain shadow
 
 
+func jahreszeit() -> String:
+	"""«Jahreszeiten & Tageslauf»: the season shared by all scenes - "fruehling" | "sommer" | "herbst" | "winter" (hook for
+	Bergtal and other parts: chosen in Szene → Zeit → Jahreszeit, else from the date / month of «Jahreszeit (Sonnenbahn)»)"""
+	return jahreszeiten.season() if jahreszeiten != null else "sommer"
+
+
 func day_of_year() -> int:
 	if season == "today":
 		var d := Time.get_date_dict_from_system()
@@ -2474,6 +2484,8 @@ func _update_sky() -> void:
 		colors.update()                                  # 3D-3.97: season, wet surfaces, blue hour, haze
 	if licht != null:
 		licht.update()                                   # «Licht & Nacht»: moon, stars, night brightness, lamps, low sun
+	if jahreszeiten != null:
+		jahreszeiten.update()                            # «Jahreszeiten»: bare trees, blossom, falling leaves, snow lying
 
 
 func _bg_for(read_value: float) -> Color:
@@ -3053,6 +3065,7 @@ func world_reply() -> Dictionary:
 	r["buttons"] = statusled.reply() if statusled != null else null   # die Tasten des Geräts wie ein GPIO (MoveEye 163a)
 	r["horror"] = horror.reply() if horror != null else null   # Horror-Modus: neue «Aufnahmen» -> MoveEye Verlauf (539a)
 	r["sky"] = licht.reply() if licht != null else null   # «Licht & Nacht»: lux am Gerät, Dämmerung, Sonne, Mond (MoveEye liest es noch nicht)
+	r["season"] = jahreszeiten.reply() if jahreszeiten != null else null   # «Jahreszeiten»: Jahreszeit, Sonnenauf-/untergang, Belegung (MoveEye liest es noch nicht)
 	if simwerte != null:
 		r.merge(simwerte.reply())                     # Simulator-Werte: battery, pi_temp, net, clock, place, forecast (power.gd)
 	return r
@@ -3476,9 +3489,10 @@ func _life() -> void:
 			var kk: String = life.pick(kinds) if daily_life else kinds[randi() % kinds.size()]
 			if menschen != null:
 				kk = menschen.pick_person(kk)             # P10: «Anteil Kinder», groups
-			if kk != "":
+			if kk != "" and (jahreszeiten == null or jahreszeiten.accept_visit(kk, PEOPLE_KINDS)):   # «Jahreszeiten»: campsite by season
 				visit(kk)
-		next_auto = t + randf_range(au[1], au[2]) / max(0.1, visit_rate)
+		var occ: float = maxf(1.0, jahreszeiten.visit_factor()) if jahreszeiten != null else 1.0   # high season: people more often
+		next_auto = t + randf_range(au[1], au[2]) / max(0.1, visit_rate * occ)
 	if cond["headlights"] and is_dark() and t > _next_headlight and busy_with() in ["", "Testlauf", "Prüfstand"]:     # condition «Scheinwerfer»: a car now and then
 		_next_headlight = t + randf_range(9.0, 15.0)
 		car()
@@ -3922,6 +3936,7 @@ func _register_controls() -> void:
 	tiere.add_controls()                                   # Paket «Tiere»: free dog, birds on the ground
 	fahrzeuge.add_controls()                               # Paket «Fahrzeuge»
 	licht.add_controls()                                   # «Licht & Nacht»: light pollution, place lamps, tents / windows
+	jahreszeiten.add_controls()                            # «Jahreszeiten & Tageslauf»: season, snow, fog, leaves, campsite occupancy
 	szenen.add_controls()                                  # 3D-4.x: the visitors of the new scenes (szenenplus.gd)
 	if statusled != null:
 		statusled.add_controls()                           # Licht & Ton → Status-LED & Tasten (Fenster «Gerät»)
@@ -4784,6 +4799,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return fahrzeuge.control(d)
 	elif a == "licht":                                 # «Licht & Nacht»: {do: info | set | sources (cam) | lux | attach | headlights | at}
 		return licht.control(d)
+	elif a == "jahreszeiten":                          # «Jahreszeiten»: {do: info | set (key, value) | sun (doy, lat, lon) | year}
+		return jahreszeiten.control(d)
 	elif a == "weit":                                  # 3D-4.17: wide camera {mount, tilt, tilt_follow, fisheye, pan_limit, do: info | probe | spawn}
 		return weit.control(d)
 	elif a == "nacht":                                 # Nacht-Testlauf: {do: info | start | stop | state | truth | plan} (nachtlauf.gd)

@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 07:54",
+ "generated": "2026-10-31 08:00",
  "versions": [
   {
-   "version": "2.98.78",
-   "file": "webcam_bewegung_2_98_78.py",
+   "version": "2.98.79",
+   "file": "webcam_bewegung_2_98_79.py",
    "url": "",
-   "sha256": "594d1b6f0551e279999eb9d73897a53a5a3e41ed01f6c725ea61c118ac17e76c",
-   "date": "2026-10-31 07:54",
-   "notes": "Simulator 3D-4.47: Licht & Nacht wie echt – Dämmerung, Mond mit Phase, Sterne nach Lichtverschmutzung, Platzlampen, leuchtende Zelte; Feld «sky» an MoveEye.",
-   "sig": "c9925ee8af7036f601f9b78c441994dc3fc714f0702aaa4ef7503fdb8a6a18e19e9e09ea8690792ab460f4367f29e95ac6f22a7098a2be9f7b979758b2f7d409"
+   "sha256": "fd09571075ff0bbe8053a0ac7e17ada4e188fadd76b54af2101c114d244d1c0a",
+   "date": "2026-10-31 08:00",
+   "notes": "Simulator 3D-4.48: Jahreszeiten wie echt – Laub, Blüten, fallende Blätter, Schnee, Bodennebel, Tageslänge, Belegung des Campingplatzes nach Saison; Feld «season» an MoveEye.",
+   "sig": "e9538465630bd099ae37ea27770e57591430e110ee4f80f52a1b537b77d5dc52a1bf20e97ead766ab8b7c5af5482b86e30b6569cb4a7a2f1536b3dbf87375f0c"
   },
   {
    "version": "2.97.1",

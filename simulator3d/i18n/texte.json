@@ -1435,6 +1435,12 @@
   "it": "%s · IA: %s · %s",
   "rm": "%s · IA: %s · %s"
  },
+ "%s · Sonnenaufgang %s · Sonnenuntergang %s · Tag %d h %02d min · Dämmerung %s–%s · Campingplatz zu %d %% belegt": {
+  "en": "%s · sunrise %s · sunset %s · day %d h %02d min · twilight %s–%s · campsite %d %% occupied",
+  "fr": "%s · lever du soleil %s · coucher %s · jour %d h %02d min · crépuscule %s–%s · camping occupé à %d %%",
+  "it": "%s · alba %s · tramonto %s · giorno %d h %02d min · crepuscolo %s–%s · campeggio occupato al %d %%",
+  "rm": "%s · levada dal sulegl %s · rendida %s · di %d h %02d min · crepuscul %s–%s · plazza da campar occupada %d %%"
+ },
  "%s · Zufall %d · Weitwinkel: %s%s": {
   "en": "%s · random %d · wide angle: %s%s",
   "fr": "%s · hasard %d · grand-angle : %s%s",
@@ -3763,11 +3769,23 @@
   "it": "Automatico (Lite su Raspberry Pi e PC molto lenti, altrimenti Normale)",
   "rm": "Automatic (Lite sin Raspberry Pi e PCs fitg plauns, uschiglio Normal)"
  },
+ "automatisch (nach Datum / Monat)": {
+  "en": "automatic (by date / month)",
+  "fr": "automatique (selon la date / le mois)",
+  "it": "automatica (secondo data / mese)",
+  "rm": "automatic (tenor la data / il mais)"
+ },
  "automatisch (nach Szene)": {
   "en": "automatic (by scene)",
   "fr": "automatique (selon la scène)",
   "it": "automatico (secondo la scena)",
   "rm": "automatic (tenor la scena)"
+ },
+ "automatisch (wenn kalt, bis 1 °C)": {
+  "en": "automatic (when cold, up to 1 °C)",
+  "fr": "automatique (par froid, jusqu'à 1 °C)",
+  "it": "automatica (se fa freddo, fino a 1 °C)",
+  "rm": "automatic (sch'i è fraid, fin 1 °C)"
  },
  "Automatisch leichter, wenn der PC zu langsam ist": {
   "en": "Automatically lighter if the PC is too slow",
@@ -5208,6 +5226,12 @@
   "fr": "Camping",
   "it": "Campeggio",
   "rm": "Plaz da campadi"
+ },
+ "Campingplatz nach Saison belegt (Hochsaison voll, Nebensaison leer)": {
+  "en": "Campsite occupancy by season (full in high season, empty off-season)",
+  "fr": "Camping occupé selon la saison (plein en haute saison, vide hors saison)",
+  "it": "Campeggio occupato secondo la stagione (pieno in alta stagione, vuoto in bassa)",
+  "rm": "Plazza da campar occupada tenor stagiun (plain en l'auta stagiun, vida en la bassa)"
  },
  "Campingstuhl": {
   "en": "Camping chair",
@@ -9893,6 +9917,12 @@
   "it": "Primavera",
   "rm": "Primavaira"
  },
+ "Frühling (frisches Grün, Blüten)": {
+  "en": "Spring (fresh green, blossoms)",
+  "fr": "Printemps (vert tendre, fleurs)",
+  "it": "Primavera (verde fresco, fiori)",
+  "rm": "Primavaira (verd frestg, flurs)"
+ },
  "Fuchs": {
   "en": "Fox",
   "fr": "Renard",
@@ -11503,11 +11533,35 @@
   "it": "Verde chiaro",
   "rm": "Verd cler"
  },
+ "Herbst": {
+  "en": "Autumn",
+  "fr": "Automne",
+  "it": "Autunno",
+  "rm": "Atun"
+ },
+ "Herbst (bunte Blätter, Nebel am Morgen)": {
+  "en": "Autumn (coloured leaves, morning fog)",
+  "fr": "Automne (feuilles colorées, brouillard matinal)",
+  "it": "Autunno (foglie colorate, nebbia al mattino)",
+  "rm": "Atun (feglia colurada, tschajera la damaun)"
+ },
  "Herbst (Lärchen gelb, Nebel)": {
   "en": "Autumn (yellow larches, fog)",
   "fr": "Automne (mélèzes jaunes, brouillard)",
   "it": "Autunno (larici gialli, nebbia)",
   "rm": "Atun (laresch mellens, tschajera)"
+ },
+ "Herbst: fallende Blätter (mehr bei Wind)": {
+  "en": "Autumn: falling leaves (more in wind)",
+  "fr": "Automne : feuilles qui tombent (plus avec le vent)",
+  "it": "Autunno: foglie che cadono (di più col vento)",
+  "rm": "Atun: feglia che croda (dapli cun vent)"
+ },
+ "Herbst: Nebel am Morgen (ruhige Tage)": {
+  "en": "Autumn: morning fog (calm days)",
+  "fr": "Automne : brouillard matinal (jours calmes)",
+  "it": "Autunno: nebbia al mattino (giorni calmi)",
+  "rm": "Atun: tschajera la damaun (dis quiets)"
  },
  "Hermelin": {
   "en": "Stoat",
@@ -12475,6 +12529,12 @@
   "it": "Sempre incluso: versione di MoveEye e del simulatore %s.",
   "rm": "Adina cun: versiun da MoveEye e dal simulatur %s."
  },
+ "immer im Winter": {
+  "en": "always in winter",
+  "fr": "toujours en hiver",
+  "it": "sempre d'inverno",
+  "rm": "adina d'enviern"
+ },
  "Immer wenn der Camper aufs Handy schaut, holt das Eichhörnchen eine Nuss vom Tisch und versteckt sie im Astloch. Der Haufen dort wächst.": {
   "en": "Whenever the camper looks at his phone, the squirrel takes a nut from the table and hides it in the knothole. The pile there grows.",
   "fr": "Chaque fois que le campeur regarde son téléphone, l’écureuil prend une noix sur la table et la cache dans le trou de l’arbre. Le tas grandit.",
@@ -12840,6 +12900,12 @@
   "fr": "Oui, dormir ici",
   "it": "Sì, dormire qui",
   "rm": "Gea, durmir qua"
+ },
+ "Jahreszeit (Pflanzen, Tageslänge, Belegung)": {
+  "en": "Season (plants, day length, occupancy)",
+  "fr": "Saison (plantes, durée du jour, occupation)",
+  "it": "Stagione (piante, durata del giorno, occupazione)",
+  "rm": "Stagiun (plantas, durada dal di, occupaziun)"
  },
  "Jahreszeit (Sonnenbahn)": {
   "en": "Season (sun path)",
@@ -20078,6 +20144,12 @@
   "it": "Neve",
   "rm": "Naiv"
  },
+ "Schnee liegt im Winter": {
+  "en": "Snow on the ground in winter",
+  "fr": "Neige au sol en hiver",
+  "it": "Neve al suolo d'inverno",
+  "rm": "Naiv sin il terren d'enviern"
+ },
  "Schneehase": {
   "en": "Mountain hare",
   "fr": "Lièvre variable",
@@ -20939,6 +21011,12 @@
   "fr": "Été",
   "it": "Estate",
   "rm": "Stad"
+ },
+ "Sommer (lange Tage, Hochsaison)": {
+  "en": "Summer (long days, high season)",
+  "fr": "Été (longues journées, haute saison)",
+  "it": "Estate (giornate lunghe, alta stagione)",
+  "rm": "Stad (dis lungs, auta stagiun)"
  },
  "Sommerschlafsack": {
   "en": "Summer sleeping bag",
@@ -22080,6 +22158,12 @@
   "fr": "Tâche du jour : aujourd’hui la même scène, la même arrivée, les mêmes points de départ pour tous",
   "it": "Compito del giorno: oggi per tutti la stessa scena, lo stesso traguardo, gli stessi punti di partenza",
   "rm": "Incumbensa dal di: oz per tuts la medema scena, la medema finala, ils medems puncts da start"
+ },
+ "Tageslauf heute (Sonnenaufgang, -untergang, Tageslänge)": {
+  "en": "Today's daylight (sunrise, sunset, day length)",
+  "fr": "Journée d'aujourd'hui (lever, coucher du soleil, durée du jour)",
+  "it": "Giornata di oggi (alba, tramonto, durata del giorno)",
+  "rm": "Il di oz (levada, rendida dal sulegl, durada dal di)"
  },
  "Tageszeit": {
   "en": "Time of day",
@@ -25119,6 +25203,18 @@
   "fr": "Rafale",
   "it": "Raffica",
   "rm": "Buf da vent"
+ },
+ "Winter": {
+  "en": "Winter",
+  "fr": "Hiver",
+  "it": "Inverno",
+  "rm": "Enviern"
+ },
+ "Winter (kahle Bäume, kurze Tage)": {
+  "en": "Winter (bare trees, short days)",
+  "fr": "Hiver (arbres nus, jours courts)",
+  "it": "Inverno (alberi spogli, giornate corte)",
+  "rm": "Enviern (plantas nidas, dis curts)"
  },
  "Winter (Schnee, Eis)": {
   "en": "Winter (snow, ice)",
