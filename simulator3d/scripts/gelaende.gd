@@ -25,7 +25,8 @@ extends Node
 ## pfad, gras_halme). Die Helligkeit am Kopf (main.cloud_shade) folgt dann demselben Fleck (cloud_here), damit Bild und
 ## Licht zusammenpassen. Nur in Szenen mit Gelände (relief), sonst wie bisher.
 ##
-## Test: /control {"action": "gelaende", "do": info | set (key, value) | height (x, z) | los (from [x,y,z], to [x,y,z]) | cloud (x, z)}
+## Test: /control {"action": "gelaende", "do": info | set (key, value) | height (x, z) | los (from [x,y,z], to [x,y,z]) | cloud (x, z)
+##        | walk (kind, from [x,z], to [x,z]) – ein Besucher, z. B. hinter der Hecke}
 
 const Quality = preload("res://scripts/quality.gd")
 const FILE := "user://gelaende.json"
@@ -468,6 +469,11 @@ func control(d: Dictionary) -> Dictionary:
 		var a := Vector3(float(f[0]), float(f[1]), float(f[2]))
 		var b := Vector3(float(t[0]), float(t[1]), float(t[2]))
 		return {"ok": true, "blocker": main.line_blocker(a, b), "hill": hill_blocks(a, b)}
+	elif op == "walk":                                 # test: a visitor from → to ([x, z]), e.g. behind a hedge
+		var fa: Array = d.get("from", [-22.0, -23.5])
+		var ta: Array = d.get("to", [-8.0, -23.5])
+		var v = main.spawn(str(d.get("kind", "person")), Vector3(float(fa[0]), 0, float(fa[1])), Vector3(float(ta[0]), 0, float(ta[1])))
+		return {"ok": v != null}
 	elif op == "cloud":
 		return {"ok": true, "shade": snappedf(cloud_here(float(d.get("x", 0.0)), float(d.get("z", 0.0))), 0.01), "amt": cloud_amt}
 	return {"ok": true, "info": info()}
