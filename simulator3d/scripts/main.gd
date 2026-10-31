@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-4.27"
+const VERSION := "3D-4.31"
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const Quality := preload("res://scripts/quality.gd")     # 3D-4.25: «Lite» for the Raspberry Pi 5 (Quality.lite(), Engine meta «lite»)
 const CAM_W := [960, 640]
@@ -50,6 +50,8 @@ var ort_cars := true
 var ort_forest := 1
 var ort_camp := 0
 var terrain := false                  # the scene has hills (ground_y), else the ground is flat at y = 0
+var ground_fn := Callable()            # 3D-4.x: a scene with its own ground (ferienpark.gd): height in world coordinates
+var fp_spot := "zelt"                  # 3D-4.x: where MoveEye stands in the «Ferienpark am See» (ferienpark.gd SPOTS)
 var ground_mats: Array = []           # ground materials of the place (snow, wet)
 var flat_nodes: Array = []            # flat meadow and the hills far away: hidden at a real place
 var geo_note := ""
@@ -297,6 +299,7 @@ var smalltv                           # smalltv.gd (3D-4.19): virtueller Zusatz-
 var fenster                           # fenster.gd (Paket «Fenster»): ein Rahmen für alle schwebenden Fenster (ziehen, Grösse, ✕, Liste «Fenster»)
 var statusled                         # statusled.gd: Status-LED auf dem Kopf + Fenster «Gerät» mit den Tasten (MoveEye 163a / 599c)
 var weit                              # weitwinkel.gd (3D-4.17): camera 1 = the wide camera with its mount (mast, base, head front / rear)
+var nacht                             # nachtlauf.gd (Paket «Nacht-Testlauf»): eine ganze Nacht mit Wahrheit, von MoveEye gestartet
 var parcours                          # parcours.gd (3D-4.18): «Verfolgungs-Parcours» - lessons, ground truth, game «Entkomme der Kamera»
 var zwilling                          # zwilling.gd (3D-4.4): «Dein Platz als Zwilling» - photo / panorama of the real place
 var fauna                             # fauna.gd (3D-3.95)
@@ -418,6 +421,9 @@ func _ready() -> void:
 	parcours = preload("res://scripts/parcours.gd").new()   # 3D-4.18: the tracking parcours (scene «parcours»)
 	parcours.main = self
 	add_child(parcours)
+	nacht = preload("res://scripts/nachtlauf.gd").new()     # Nacht-Testlauf: plan, truth (MoveEye starts it, part 579b)
+	nacht.main = self
+	add_child(nacht)
 	zwilling = preload("res://scripts/zwilling.gd").new()    # 3D-4.4: your place as a twin (photo behind the scene)
 	zwilling.main = self
 	add_child(zwilling)
@@ -978,6 +984,7 @@ func _build_scene() -> void:
 	anims.clear()
 	door_open = false
 	terrain = false
+	ground_fn = Callable()
 	_horizon.clear()
 	ground_mats.clear()
 	geo_note = ""
@@ -1058,7 +1065,9 @@ func open_map() -> void:
 
 
 func ground_y(x: float, z: float) -> float:
-	"""height of the ground (0 everywhere except at a real place)"""
+	"""height of the ground (0 everywhere except at a real place or a scene with its own ground)"""
+	if ground_fn.is_valid():
+		return ground_fn.call(x, z)
 	return geo.height(x, z) if terrain else 0.0
 
 
@@ -1111,8 +1120,30 @@ func set_scene(id: String) -> bool:
 	next_auto = now() + 8.0
 	_update_sky()
 	_update_temps()
+	_only_refresh()                                # 3D-4.28: settings shown only in one scene
 	_sync_ui()
 	return true
+
+
+func _fp_seek() -> void:
+	"""Erlebniswelt 12 (erlebniswelt.gd): the children of the Ferienpark hide near MoveEye - MoveEye must report them"""
+	if scene != "ferienpark":
+		set_scene("ferienpark")
+	var r: Dictionary = preload("res://scripts/ferienpark.gd").control(self, {"do": "verstecken"})
+	if entdecken != null and r.get("ok", false):
+		entdecken._say_small(preload("res://scripts/i18n.gd").t("Verstecken: vier Kinder verstecken sich bei MoveEye – findet MoveEye alle?"))
+
+
+func set_fp_spot(v: String) -> void:
+	"""3D-4.x: where MoveEye stands in the «Ferienpark am See»: the park is built again around this place"""
+	if not preload("res://scripts/ferienpark.gd").SPOTS.has(v):
+		return
+	fp_spot = v
+	_settings_dirty = true
+	if scene == "ferienpark":
+		set_scene("ferienpark")
+	else:
+		_sync_ui()
 
 
 func _build_head() -> void:
@@ -1879,6 +1910,8 @@ func busy_with(except_ := "") -> String:
 		w = "Testlauf"
 	elif pruef != null and pruef.running:
 		w = "Prüfstand"
+	elif nacht != null and nacht.running:
+		w = "Nacht-Testlauf"                          # Paket «Nacht-Testlauf»: the night has the world (clock, weather, visitors)
 	elif dataset != null and dataset.busy:
 		w = "Trainingsbilder"
 	elif blindmap != null and blindmap.busy:
@@ -3279,7 +3312,7 @@ const SIMPLE_GROUPS := ["Szene", "Wetter", "Besuch", "Testen", "Spiel"]
 # extra «wiz»: not in this panel and not in the Simulator control of MoveEye.
 const GAME_MAIN := ["game_wizard", "game_start", "game_stop"]
 # Erlebniswelt 20–23 (entdecken.gd): the part «Entdecken» stays on the card «Spiel» (not in the assistant); the first three in «Einfach»
-const DISC_IDS := ["disc_book", "disc_photo", "disc_hints", "disc_hint_min", "disc_demo"]
+const DISC_IDS := ["disc_book", "disc_photo", "disc_hints", "disc_hint_min", "disc_demo", "disc_seek"]
 const DISC_SIMPLE := ["disc_book", "disc_photo", "disc_hints"]
 # 3D-4.7: a fixed id per group for MoveEye (the visible names may change); sent as «gid» with every control
 const GROUP_IDS := {"Szene": "scene", "Wetter": "weather", "Besuch": "visit", "Kamerabild": "camera", "Sensoren": "sensors", "Mover": "mover", "Licht & Ton": "lightsound",
@@ -3365,6 +3398,9 @@ func _register_controls() -> void:
 	var ex := {"expert": true}
 	add_control("select", "scene", "Szene", func(): return scene, func(v): set_scene(v), "Szene", {"options": sc})
 	add_control("button", "home_edit", "Mein Zuhause bauen (Baukasten mit der Maus)", null, func(): home_editor.open(true), "Szene")
+	add_control("select", "fp_spot", "Standort im Ferienpark am See", func(): return fp_spot, func(v): set_fp_spot(str(v)), "Szene",
+			{"options": preload("res://scripts/ferienpark.gd").spot_options()})
+	controls[-1]["only"] = func(): return scene == "ferienpark"   # 3D-4.28: only shown in its scene (window and MoveEye)
 	add_control("map", "ort_map", "Ort auf der Karte wählen (Schweiz)", func(): return "%.6f, %.6f" % [ort_lat, ort_lon] if ort_lat != 0.0 else "",
 			func(v): set_place_text(str(v)), "Ort von der Karte")
 	add_control("text", "ort", "Ort (Name oder Koordinaten, z. B. «Zermatt» oder «46.0207, 7.7491»)", func(): return place_label(), func(v): set_place_text(str(v)), "Ort von der Karte")
@@ -3553,6 +3589,8 @@ func _register_controls() -> void:
 	add_control("button", "game_start", "▶ Start", null, func(): _game_card_start(), "Spiel")
 	add_control("button", "game_stop", "⏹ Stopp", null, func(): _game_card_stop(), "Spiel")
 	entdecken.register_controls()                       # Erlebniswelt 20–23: Spiel → Entdecken (Buch, Foto, Blinki-Hinweise)
+	add_control("button", "disc_seek", "🙈 Verstecken mit MoveEye", null, func(): _fp_seek(), "Spiel")   # Erlebniswelt 12
+	controls[-1]["only"] = func(): return scene == "ferienpark"   # 3D-4.30: only in the Ferienpark (like «Standort im Ferienpark»)
 	add_control("slider", "game_minutes", "Dauer einer Runde", func(): return game_minutes, func(v): game_minutes = v, "Spiel", {"min": 1, "max": 15, "step": 1, "unit": "min"})
 	add_control("select", "game_mode", "Spielart", func(): return game_mode, func(v): game_mode = v, "Spiel",
 			{"options": [["mw", "Gegen MoveEye (echte Erkennung)"], ["guard", "Wächter (ein Spieler oder der Bot-Wächter)"], ["seek", "Verstecken mit dem Rover (Fänger sieht nur die Kamera)"], ["free", "Zonen-Check – ohne Erwischen (zum Testen der Erkennung)"], ["jaeger", "Fehlalarm-Jäger – Tiere und Dinge täuschen MoveEye (nur mit MoveEye)"], ["camera", "ältere: Alle gegen die Kamera"], ["mwhand", "ältere: Team gegen MoveEye (Wächter steuern MoveEye)"], ["patrol", "ältere: Patrouille mit dem Mover"]]})
@@ -3926,6 +3964,8 @@ func _game_card_stop() -> void:
 func control_info() -> Dictionary:
 	var out := []
 	for c in controls:
+		if c.has("only") and not bool(c["only"].call()):
+			continue                                     # 3D-4.28: e.g. «Standort im Ferienpark» only in that scene
 		var d := {"type": c.type, "id": c.id, "label": c.label, "group": c.group}
 		d.merge(c.extra)
 		if c["get"] != null:
@@ -4300,6 +4340,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return {"ok": true, "rover": patrol.rover_info()}
 	elif a == "overlay":
 		return {"ok": true, "overlay": overlay.info()}
+	elif a == "ferienpark":                            # 3D-4.x: {do: info | spot (value) | kinds | perf} (ferienpark.gd)
+		return preload("res://scripts/ferienpark.gd").control(self, d)
 	elif a == "szenen":                                # 3D-4.x: the new scenes {do: info | spawn (kind) | restore}
 		return szenen.control(d)
 	elif a == "simreal":                               # 3D-4.4: {do: info | set (key, value) | sweep | bird | spawn (kind, from, to)}
@@ -4312,6 +4354,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return umgebung.control(d)
 	elif a == "weit":                                  # 3D-4.17: wide camera {mount, tilt, tilt_follow, fisheye, pan_limit, do: info | probe | spawn}
 		return weit.control(d)
+	elif a == "nacht":                                 # Nacht-Testlauf: {do: info | start | stop | state | truth | plan} (nachtlauf.gd)
+		return nacht.control(d)
 	elif a == "parcours":                              # 3D-4.18: {do: info | start (lessons, night, seed, prep_s) | stop | state | result | game | steer ...}
 		return parcours.control(d)
 	elif a == "zwilling":                              # 3D-4.4: {do: info | import (path) | set (key, value) | item (k, x, z, r) | clear | remove | on}
@@ -4556,7 +4600,7 @@ func status_text() -> String:
 	if schnitt != null:
 		mwc += schnitt.mw_extra()                 # Aufräumen 2: «Schutz an · Relais …» from MoveEye
 	var score := " · Treffer %d von %d Schüssen, %d Punkte" % [hits, shots, points] if rifle_on else ""
-	return "%s · %02d:%02d · %s · %s · %.1f °C · Besucher %d%s · %s" % [Scenes.name_of(scene), int(h), int(fmod(h, 1.0) * 60), "Nacht" if is_dark() else "Tag", {"clear": "klar", "cloudy": "bewölkt", "rain": "Regen", "fog": "Nebel", "snow": "Schnee"}.get(weather, weather), ambient, visitors.get_child_count(), score, mwc] + (" · Update: " + update_info if update_info != "" else "") + (" · " + start_info if start_info != "" else "") + (" · " + game.status() if game != null and game.status() != "" else "") + (" · " + testrun.status() if testrun != null and testrun.status() != "" else "") + (" · " + dev2.status() if dev2 != null and dev2.on else "") + (" · " + recorder.info if recorder != null and recorder.info != "" and (recorder.recording or recorder.playing) else "") + (" · " + life.info if life != null and life.info != "" and (real_weather or daily_life) else "") + (" · " + geo.info if geo != null and geo.busy else "") + (" · " + geo_note if geo_note != "" else "")
+	return "%s · %02d:%02d · %s · %s · %.1f °C · Besucher %d%s · %s" % [Scenes.name_of(scene), int(h), int(fmod(h, 1.0) * 60), "Nacht" if is_dark() else "Tag", {"clear": "klar", "cloudy": "bewölkt", "rain": "Regen", "fog": "Nebel", "snow": "Schnee"}.get(weather, weather), ambient, visitors.get_child_count(), score, mwc] + (" · Update: " + update_info if update_info != "" else "") + (" · " + start_info if start_info != "" else "") + (" · " + game.status() if game != null and game.status() != "" else "") + (" · " + testrun.status() if testrun != null and testrun.status() != "" else "") + (" · " + nacht.status() if nacht != null and nacht.running else "") + (" · " + dev2.status() if dev2 != null and dev2.on else "") + (" · " + recorder.info if recorder != null and recorder.info != "" and (recorder.recording or recorder.playing) else "") + (" · " + life.info if life != null and life.info != "" and (real_weather or daily_life) else "") + (" · " + geo.info if geo != null and geo.busy else "") + (" · " + geo_note if geo_note != "" else "")
 
 
 func scenarios() -> Array:
@@ -5137,6 +5181,7 @@ func _build_ui() -> void:
 	(subs.get("System/Updates", tl) as Control).add_child(update_btn)
 	if testen_measure != null:
 		testrun.add_info(testen_measure, UI)          # progress and result of the test run (card «Testen»)
+		nacht.add_info(testen_measure, UI)            # Nacht-Testlauf: progress, «abbrechen»
 	elif groups.has("Testen"):
 		testrun.add_info(groups["Testen"], UI)
 	if subs.has("Licht & Ton/Status-LED & Tasten") and statusled != null:   # 3D-4.22: the rules of the buttons are in MoveEye - hint + link
@@ -5213,8 +5258,24 @@ var dev_area := false                 # 3D-4.22: the developer switch of MoveEye
 
 
 func _dev_hidden(it: Array) -> bool:
-	"""3D-4.22: a setting of the card «Entwickler» while MoveEye's «Entwickler-Bereich» is off"""
-	return dev_body != null and it[3] == dev_body and not dev_area
+	"""3D-4.22: a setting of the card «Entwickler» while MoveEye's «Entwickler-Bereich» is off;
+	3D-4.28: or a setting with «only» (add_control … controls[-1]["only"]) that does not fit now (e.g. not in its scene)"""
+	if dev_body != null and it[3] == dev_body and not dev_area:
+		return true
+	for c in controls:
+		if c.has("only") and c.label == it[1]:
+			return not bool(c["only"].call())
+	return false
+
+
+func _only_refresh() -> void:
+	"""3D-4.28: after a change of the scene the settings with «only» appear / go (search field: its filter stays)"""
+	if ui_items.is_empty():
+		return
+	if search_in != null and search_in.text.strip_edges() != "":
+		_search(search_in.text)
+	else:
+		_apply_simple()
 
 
 func _diag_pack() -> void:
@@ -5488,6 +5549,8 @@ func _apply_simple() -> void:
 		var vis: bool = not (ui_simple and it[2])
 		if dev_body != null and it[3] == dev_body:
 			vis = dev_area                                 # 3D-4.22: «Entwickler» with MoveEye's switch, also in «Einfach»
+		elif vis and _dev_hidden(it):
+			vis = false                                    # 3D-4.28: «only» (e.g. «Standort im Ferienpark» only in that scene)
 		it[0].visible = vis
 		if vis:
 			counts[it[3]] = true
@@ -5769,7 +5832,7 @@ func restart_args() -> PackedStringArray:
 	return out
 
 
-const KEEP := ["pad_auto", "pad_sens", "pad_inv_y", "pad_swap", "pad_rumble", "colors_on", "seasons_on", "pad_dead", "pad_center", "show_laser", "game_max", "tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "dev_updates", "news_seen", "news_popup", "show_zones3d", "show_det3d", "fauna_on", "twin", "ui_simple", "auto_visitors", "daily_life", "real_weather", "real_time", "night_weather", "surprise_on", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
+const KEEP := ["pad_auto", "pad_sens", "pad_inv_y", "pad_swap", "pad_rumble", "colors_on", "seasons_on", "pad_dead", "pad_center", "show_laser", "game_max", "tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "fp_spot", "auto_update", "dev_updates", "news_seen", "news_popup", "show_zones3d", "show_det3d", "fauna_on", "twin", "ui_simple", "auto_visitors", "daily_life", "real_weather", "real_time", "night_weather", "surprise_on", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
 		"avoid_on", "grafik_mode", "quality", "view_scale", "win_fps", "auto_perf", "meadow_on", "season", "mover_on", "mover_max", "mast_h", "patrol_judge", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "moon_auto", "cam1_yaw", "stream_last", "game_bots", "game_tutorial", "game_daily", "game_ghost", "game_heart", "game_botguard", "kids_on", "kids_ask", "kids_thief", "kids_scary", "kids_laser", "kids_sound", "kids_stars", "dev_area"]
 var _settings_dirty := false
 
