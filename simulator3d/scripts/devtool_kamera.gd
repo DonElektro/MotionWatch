@@ -218,7 +218,8 @@ func pref_dir(e: Dictionary, frame) -> Vector3:
 				a = float(vp[6])
 	elif id.begins_with("bergtal.ort."):                    # a place on a viewpoint (Gratspitz): like the viewpoint
 		for vp in Bt.VIEWPOINTS:
-			if Bt.vp_xz(vp).distance_to(Vector2(float(e.get("x", 0.0)), float(e.get("z", 0.0)))) < 20.0:
+			var q := Vector2(float(e.get("x", 0.0)), float(e.get("z", 0.0)))
+			if Bt.vp_xz(vp).distance_to(q) < 20.0 or Vector2(float(vp[3]), float(vp[4])).distance_to(q) < 20.0:
 				a = float(vp[6])
 	elif id.begins_with("bergtal.schlafplatz."):
 		var sp = Bt.SPOTS.get(id.trim_prefix("bergtal.schlafplatz."))
@@ -352,6 +353,10 @@ func best_view(e: Dictionary, p: Vector3, d: float, prev_fwd: Vector3, frame = n
 	var aus := pref != Vector3.ZERO and (str(e.get("kind", "")) == "aussicht" or str(e.get("kind", "")) == "ort")
 	if aus:                                                  # a viewpoint: just behind it, looking out like its bench
 		dists = [7.0, 11.0, 16.0]
+	elif LOOK.has(str(e.get("id", ""))) and pref != Vector3.ZERO:   # a front (bunker): close, in front of it
+		tgt -= pref * 2.0
+		dists = [10.0, 14.0, 20.0]
+		elevs = [0.1, 0.25, 0.45]
 	pref_w = 60.0 if (aus or LOOK.has(str(e.get("id", "")))) else 25.0
 	var cands := []
 	var far := 0.0
