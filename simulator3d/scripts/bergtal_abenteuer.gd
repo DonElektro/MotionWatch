@@ -2297,6 +2297,20 @@ func _paint_level() -> void:
 	if not Stimme.moeglich():
 		gg.add_child(_lab(T.t("Auf diesem PC wurde keine Sprachausgabe gefunden - die Seiten stehen dann nur im Tagebuch."), 11, Color(0.6, 0.66, 0.74)))
 	_toggle_row(gg, T.t("Zwischenszene beim Start jedes Kapitels (kurze Kamerafahrt)"), bool(SS.setting("szenen", true)), func(x): op({"do": "szenen", "value": x}))
+	if main.get("statisten") != null:                    # Paket «Statisten»: wie viele Leute unterwegs und am Lager
+		var row3 := HBoxContainer.new()
+		gg.add_child(row3)
+		var l3 := _lab(T.t("Andere Wanderer (Statisten)"), 14)
+		l3.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row3.add_child(l3)
+		var ob3 := OptionButton.new()
+		var lv3 := ["aus", "wenig", "normal", "belebt"]
+		for i in range(lv3.size()):
+			ob3.add_item(T.t(["keine", "wenig", "normal", "belebt"][i]))
+			if lv3[i] == str(main.statisten.menge["abenteuer"]):
+				ob3.select(i)
+		ob3.item_selected.connect(func(i): main.statisten.set_menge("abenteuer", lv3[i]))
+		row3.add_child(ob3)
 	if raetsel != null:
 		raetsel.paint_level(gg)                          # A3: was die Schwierigkeit für die Rätsel-Hilfe heisst
 	if zweit != null:
