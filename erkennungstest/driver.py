@@ -28,7 +28,7 @@ PLAN = {
     "wald":       ("bergtal", ["tag", "daemmerung", "nacht", "nebel"]),
     "stellplatz": ("ferienpark", ["tag", "daemmerung", "nacht", "schnee"]),
     "garten":     ("daheim", ["tag", "daemmerung", "nacht", "nachtregen"]),
-    "festival":   ("festival", ["tag", "daemmerung", "nacht", "regen"]),
+    "festival":   ("festival", ["tag", "daemmerung", "nacht"]),
     "wild":       ("bergtal", ["tag", "daemmerung", "nacht", "schnee"]),
     "parkplatz":  ("ferienpark", ["tag", "daemmerung", "nacht", "nebel"]),
     "baustelle":  ("daheim", ["tag", "daemmerung", "nacht", "nachtregen"]),
@@ -350,6 +350,10 @@ if __name__ == "__main__":
     done = done_keys()
     n = 0
     for place in places:
+        if place == "schlafzimmer":
+            zimmer(done)
+            os.system("cd /tmp/claude-0/erk2 && python3 sync.py >> out/sync.log 2>&1")
+            continue
         if place not in PLAN:
             continue
         conds = PLAN[place][1]
@@ -366,8 +370,5 @@ if __name__ == "__main__":
                 n += 1
             if ck in ("tag", "nacht"):
                 blind(place, ck, done)
-        os.system("cd /tmp/claude-0/erk2 && python3 sync.py >> out/sync.log 2>&1")
-    if "schlafzimmer" in places:
-        zimmer(done)
         os.system("cd /tmp/claude-0/erk2 && python3 sync.py >> out/sync.log 2>&1")
     log("fertig")
