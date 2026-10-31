@@ -1048,6 +1048,7 @@ func _start_finale() -> void:
 		_hud.visible = true
 		_hud_title.text = T.t("Zum Gipfel")
 		_hud_tasks.text = ""
+		phase = "finale_walk"
 		_film([_shot_to(c + Vector3(0, 2, 0))], T.t("Der Kristall zeigt dir die Bergkapelle."), func():
 			_safe_until = main.now() + 2.0
 			moveeye_sagt(T.t("MoveEye würde jetzt den Weg nach oben im Auge behalten."))), true)
