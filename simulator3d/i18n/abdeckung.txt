@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 2989 (Stellen: 4274)
-Übersetzt: en 2758, fr 2758, it 2758, rm 2758
+Texte gesamt: 3001 (Stellen: 4302)
+Übersetzt: en 2770, fr 2770, it 2770, rm 2770
 Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 337 Stellen
 Nicht mehr im Code (noch in texte.json): 28
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 42 Stellen in wizpics.gd 16, wordmark.gd 10, testrun.gd 9, smalltv.gd 3, game.gd 2, dataset.gd 1, phone.gd 1
-Übersprungen (Grund: Anzahl): kennung 9352, schlüssel 6863, keine Wörter 5516, index 3770, technisch 1244, doc 840, einheit 114, englisch 58, pfad 55, log 53, html 42, klasse 21
+Übersprungen (Grund: Anzahl): kennung 9550, schlüssel 7031, keine Wörter 5584, index 3903, technisch 1263, doc 877, einheit 114, englisch 59, pfad 55, log 53, html 42, klasse 21
 
 Pro Datei (Texte / davon dynamische Stellen):
   main.gd                  612    29
@@ -61,6 +61,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   planner.gd                18     0
   gamelearn.gd              18     0
   szenenplus.gd             17     1
+  menschen.gd               16     0
   b3d.gd                    15     3
   home_editor.gd            14     3
   life.gd                   13     0
@@ -178,35 +179,35 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   karte.gd:503  'Dazu kommen: '
   karte.gd:511  'ja'
   karte.gd:511  'keine'
-  main.gd:1231  '  %.0f Mbit/s'
-  main.gd:1904  ' (von MoveEye)'
-  main.gd:1937  'Der Simulator ist belegt: '
-  main.gd:2738  'aus'
-  main.gd:2738  'ein'
-  main.gd:2815  'Sabotage-Test: '
-  main.gd:2815  'aus'
-  main.gd:2869  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
-  main.gd:2872  '\n🚨 Bewacht und weg: '
-  main.gd:3584  'keine'
-  main.gd:3610  'Wächter an MoveEye: '
-  main.gd:4320  'Dein Platz: '
-  main.gd:4545  ' · schaut nur zu: '
-  main.gd:4548  ' · Treffer %d von %d Schüssen, %d Punkte'
-  main.gd:4549  ' · Update: '
-  main.gd:4879  'Blinde Flecken: '
-  main.gd:5516  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
-  main.gd:5822  'Autostart: '
-  main.gd:5833  'Autologon: '
-  main.gd:5994  'Karte öffnen: '
-  main.gd:6140  'Echt-Abgleich: '
-  main.gd:6147  'Trainingspaket: '
-  main.gd:6156  ' · %d offen · %.1f MB'
-  main.gd:6156  'Ziel: %s:%d (Port von MoveEye) · '
-  main.gd:6165  'Verbindung · '
-  main.gd:6165  'aus'
-  main.gd:6169  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
-  main.gd:6169  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
-  main.gd:6172  ' – versucht es weiter (gleich auf einem freien Port)'
+  main.gd:1235  '  %.0f Mbit/s'
+  main.gd:1908  ' (von MoveEye)'
+  main.gd:1941  'Der Simulator ist belegt: '
+  main.gd:2742  'aus'
+  main.gd:2742  'ein'
+  main.gd:2819  'Sabotage-Test: '
+  main.gd:2819  'aus'
+  main.gd:2873  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
+  main.gd:2876  '\n🚨 Bewacht und weg: '
+  main.gd:3597  'keine'
+  main.gd:3623  'Wächter an MoveEye: '
+  main.gd:4335  'Dein Platz: '
+  main.gd:4560  ' · schaut nur zu: '
+  main.gd:4563  ' · Treffer %d von %d Schüssen, %d Punkte'
+  main.gd:4564  ' · Update: '
+  main.gd:4894  'Blinde Flecken: '
+  main.gd:5531  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
+  main.gd:5837  'Autostart: '
+  main.gd:5848  'Autologon: '
+  main.gd:6009  'Karte öffnen: '
+  main.gd:6155  'Echt-Abgleich: '
+  main.gd:6162  'Trainingspaket: '
+  main.gd:6171  ' · %d offen · %.1f MB'
+  main.gd:6171  'Ziel: %s:%d (Port von MoveEye) · '
+  main.gd:6180  'Verbindung · '
+  main.gd:6180  'aus'
+  main.gd:6184  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
+  main.gd:6184  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
+  main.gd:6187  ' – versucht es weiter (gleich auf einem freien Port)'
   explore.gd:446  ' (automatisch von oben)'
   explore.gd:446  ' · schnell'
   feedback.gd:266  ' · TESTMODUS: geht nur an '

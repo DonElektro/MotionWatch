@@ -130,7 +130,9 @@ func info() -> Dictionary:
 		g[gk] = int(g.get(gk, 0)) + 1
 		people.append({"id": int(id), "variant": v.variant, "gait": gk, "speed": snappedf(v.cur_speed, 0.01), "crouch": snappedf(v.crouch, 0.01),
 				"prone": snappedf(v.prone, 0.01), "h": snappedf(ActorS.BASE_H * v.body_root.scale.y, 0.01), "x": snappedf(v.position.x, 0.1),
-				"z": snappedf(v.position.z, 0.1), "busy": busy(v), "lamp": v.lamp != null and v.lamp.light_energy > 0.0, "idle": v.idle_kind if v.now_s() < v.idle_until else ""})
+				"z": snappedf(v.position.z, 0.1), "busy": busy(v), "lamp": v.lamp != null and v.lamp.light_energy > 0.0, "idle": v.idle_kind if v.now_s() < v.idle_until else "",
+				"job": str(e["cur"].get("do", "")), "queue": e["q"].size(), "tx": snappedf(v.target.x, 0.1), "tz": snappedf(v.target.z, 0.1),
+				"route": v.route.size(), "wait": snappedf(clampf(v.wait_until - v.now_s(), 0.0, 9999.0), 0.1)})
 	d["gaits"] = g
 	d["people"] = people
 	d["stats"] = stats
@@ -313,6 +315,10 @@ func _pace(v, g: String) -> void:
 	if g != "stand":
 		v.speed = s
 		e["base"] = s
+	if g in ["sneak", "crawl"]:
+		v.next_idle = v.now_s() + 1.0e5                     # no random «bend» / «phone» while sneaking (stop and go: _process)
+	elif v.next_idle - v.now_s() > 1.0e4 and e["cur"].is_empty():
+		v.next_idle = v.now_s() + randf_range(6.0, 15.0)
 	v.hold_post = int(GAITS[g][1]) if int(GAITS[g][1]) > 0 else -1
 	v._want_c = 1.0 if v.hold_post >= 1 else 0.0
 	v._want_p = 1.0 if v.hold_post >= 2 else 0.0
@@ -508,6 +514,7 @@ func _family(from, to) -> Node3D:
 		var e := _entry(k)
 		e["family"] = true
 		e["off0"] = o
+		e["fam_speed"] = k.speed
 	stats["groups"] += 1
 	return lead
 
@@ -641,8 +648,7 @@ func avoid_light(v, on := true) -> void:
 	stats["api"] += 1
 	var e := _entry(v)
 	e["avoid"] = on
-	if on:
-		_lamp(v, false)
+	_lamp(v, not on)
 
 
 func _queue(v, a: Dictionary) -> void:
@@ -752,6 +758,7 @@ func _points(v, a: Dictionary) -> Array:
 			var spot: Vector3 = main.free_spot(p2 + dirn * 0.8, 0.35, true)
 			spot = main.free_spot(spot, 0.35, true)
 			v.speed = randf_range(0.9, 1.15)
+			e3_gait(v, "walk")
 			out.append([spot, 0.0, 0.0])
 			out.append([spot, float(a.get("secs", 5.0)), 0.0, p2])
 			var e3 := _entry(v)
@@ -772,11 +779,17 @@ func _points(v, a: Dictionary) -> Array:
 			var away := _out_of_view(pos)
 			var c2: Vector3 = a["p"]
 			v.speed = randf_range(1.2, 1.5)
+			e3_gait(v, "walk")
 			out.append(away)
 			out.append([away, float(a.get("secs", 20.0)), 0.0])
 			out.append(main.free_spot(c2, 0.4, true))
 			v.hold_post = -1
 	return out
+
+
+func e3_gait(v, g: String) -> void:
+	var e := _entry(v)
+	e["gait"] = g
 
 
 func cover_spot(at: Vector3):
@@ -803,9 +816,10 @@ func cover_spot(at: Vector3):
 
 # ---- light ---------------------------------------------------------------------------------------------------------------
 func _lamp(v, on: bool) -> void:
+	"""switched off = hidden (set_night of actor.gd only sets the energy, so it stays off)"""
 	if v.lamp != null:
-		v.lamp.light_energy = 6.0 if on and main.is_dark() else 0.0
-		v.lamp_mat.emission_energy_multiplier = 16.0 if on and main.is_dark() else 0.0
+		v.lamp.visible = on
+		v.lamp_mat.emission_enabled = on
 	if v.torch != null:
 		v.torch.visible = on                                   # (actor.gd sets the energy of the thief's torch every frame)
 
@@ -900,6 +914,16 @@ func _job(e: Dictionary, t: float) -> void:
 	if e["cur"].is_empty():
 		return
 	var v = e["v"]
+	var dd := Vector2(v.target.x - v.position.x, v.target.z - v.position.z).length()
+	if t >= v.wait_until and t >= v.idle_until and dd > 0.3:                  # the point is not reachable (beside a tent, a car,
+		if not e.has("near_t") or dd < float(e["near_d"]) - 0.25:             # behind a fence): no closer for 3 s (near) / 8 s = skip it
+			e["near_t"] = t
+			e["near_d"] = dd
+		elif t - float(e["near_t"]) > (3.0 if dd < 1.3 else 8.0):
+			e.erase("near_t")
+			v._next_point(v.now_s())
+	else:
+		e.erase("near_t")
 	if v.wait_until - t > 1.0e5 and v.route.is_empty():
 		e["cur"] = {}
 		if e["pose"].get("kind", "") in ["loiter", "bend"]:
@@ -964,7 +988,7 @@ func _kid(e: Dictionary, t: float) -> void:
 	if t < float(e["next"]):
 		if e.has("sprint_end") and t > float(e["sprint_end"]):
 			e.erase("sprint_end")
-			v.speed = float(e["base"]) if not e.get("family", false) else v.speed / 2.0
+			v.speed = float(e.get("fam_speed", e["base"]))
 			if e.get("family", false):
 				v.follow_off = e["off0"]
 		return
@@ -974,7 +998,7 @@ func _kid(e: Dictionary, t: float) -> void:
 		e["sprint_end"] = t + randf_range(1.0, 2.5)
 		if e.get("family", false) and v.leader != null:
 			v.follow_off = Vector3(randf_range(-2.5, 2.5), 0, -randf_range(2.5, 5.0))   # runs ahead
-			v.speed = v.speed * 2.0
+			v.speed = minf(3.4, float(e["fam_speed"]) * 2.0)
 		else:
 			v.speed = randf_range(2.6, 3.5)
 	elif r < 0.6 and v.leader == null and v.target.distance_to(v.position) > 3.0:
@@ -992,6 +1016,9 @@ func _avoid(e: Dictionary, t: float) -> void:
 	"""avoid_light: lamp off, the next point out of the light of the lamps, MoveEye's white light -> crouched to the side"""
 	var v = e["v"]
 	_lamp(v, false)
+	if e.has("dodge_speed") and t < v.wait_until:          # in the dark again: back to the old pace
+		v.speed = float(e["dodge_speed"])
+		e.erase("dodge_speed")
 	if typeof(v.target) == TYPE_VECTOR3 and _lamp_reach(v.target) > 0.0:
 		v.target = _out_of_lamps(v.target)
 	if t < float(e.get("lit_t", 0.0)) or not lit_by_moveeye(v):
@@ -1011,6 +1038,7 @@ func _avoid(e: Dictionary, t: float) -> void:
 	v.route.push_front([dark, 0.0, 1.0])
 	v.target = v.position
 	v.wait_until = 0.0
+	e["dodge_speed"] = v.speed
 	v.speed = maxf(v.speed, 1.8)
 
 
