@@ -1,8 +1,15 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.58** · passende MoveEye-Version (früher Motion Watch) **2.98.89**
+Stand: 31.10.2026 · Simulator-Version **3D-4.59** · passende MoveEye-Version (früher Motion Watch) **2.98.90**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.59 (MoveEye 2.98.90): Schwachlicht-Hysterese in MoveEye, nur noch eine Exe im ZIP
+
+- Simulator-Code unverändert. MoveEye (Teil 410 `_lowlight_decide`): Helligkeit 10 s Median, Aus erst über Schwelle +
+  `lowlight_gap`, Wartezeit `lowlight_hold` (Regler in der Gruppe Schwachlicht).
+- ZIP ohne die Übergangs-Kopie `MotionWatch3D.exe` (simpack.sh TRANSITION=0 ist jetzt Vorgabe). `update.gd`
+  `old_name_forward` / `remove_old_name_files` bleiben für Installationen, die die alte Datei noch haben.
 
 ## NEU in 3D-4.58 (MoveEye 2.98.89): Foto-Modus (`fotomodus.gd`)
 
