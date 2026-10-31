@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 17:22",
+ "generated": "2026-10-31 17:29",
  "versions": [
   {
-   "version": "3.7.0",
-   "file": "webcam_bewegung_3_7_0.py",
+   "version": "3.7.1",
+   "file": "webcam_bewegung_3_7_1.py",
    "url": "",
-   "sha256": "f7c1590fcb2a8dcee6a1dfb6ac593787b0968c13eade76034674dc4a096c994f",
-   "date": "2026-10-31 17:22",
-   "notes": "Simulator-Seite angepasst an die aufgeräumten Simulator-Menüs. Simulator 3.7.0: «Einfach» 61 statt 101 Einträge, Besuch in Menschen und Tiere, doppelte Regler zusammengelegt, Prüfstand und Rückmeldung an einem Ort, einheitliche Namen und Symbole.",
-   "sig": "23d249d6d3cd4680b64a4f46ab336bb35f6ece22006ae463ad38a2c7e1fa0706c64fcc6eae3e5324b5c2af2106f9353db234529277b8cc0d9a253a9101d4800e"
+   "sha256": "c52aac149e7095b5fbfdd7e90a5a868aa8a79f553da78de5a19ea2a1891efb98",
+   "date": "2026-10-31 17:29",
+   "notes": "Simulator 3.7.1: Maggie – der Pfeil zeigt jetzt auf die Stationen, jede Jahreszeit etwa 25–28 Min. mit 3 Rastplätzen und 4 Rätseln, Rastplatz-Anzeige und Tipps korrigiert.",
+   "sig": "213fefae1ad69017233bcda545ad9199567b3edd2600ed87db0ef08dbf13966632b6790cdfd6c24c1faddb0cd534602e9fb17f7e5f6b4089b324a1fdec34ae01"
   },
   {
    "version": "3.6.2",

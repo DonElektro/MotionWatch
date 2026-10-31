@@ -2018,10 +2018,14 @@ func command(d: Dictionary) -> Dictionary:
 	var tiere := []
 	for t in _tiere:
 		if is_instance_valid(t["n"]):
-			tiere.append({"kind": t["kind"], "st": t["st"], "d": snappedf((t["n"] as Node3D).global_position.distance_to(_spieler()), 0.1)})
+			var tg: Vector3 = (t["n"] as Node3D).global_position
+			tiere.append({"kind": t["kind"], "st": t["st"], "d": snappedf(tg.distance_to(_spieler()), 0.1),
+					"pos": [snappedf(tg.x, 0.1), snappedf(tg.y, 0.1), snappedf(tg.z, 0.1)]})
 	var ng := naechste_gefahr()
 	return {"ok": true, "region": region, "story": "stub" if _st() is _Stub else "maggie_story", "tiere": tiere,
-			"schwarm": "" if _schwarm.is_empty() else str(_schwarm["st"]), "schutz": schutz, "wasser": wasser,
+			"schwarm": "" if _schwarm.is_empty() else str(_schwarm["st"]),
+			"schwarm_pos": [] if _schwarm.is_empty() else [snappedf((_schwarm["c"] as Vector3).x, 0.1), snappedf((_schwarm["c"] as Vector3).y, 0.1), snappedf((_schwarm["c"] as Vector3).z, 0.1)],
+			"schutz_ort": [snappedf(schutz_ort(region).x, 0.1), snappedf(schutz_ort(region).y, 0.1), snappedf(schutz_ort(region).z, 0.1)] if region != "" else [], "schutz": schutz, "wasser": wasser,
 			"fackel": snappedf(fackel_zeit, 0.1), "fackel_an": fackel_an, "stufe": _stufe, "grusel": snappedf(_grusel, 0.01),
 			"naechste": {"art": ng["art"], "dist": snappedf(float(ng["dist"]), 0.1)}, "wasser_dist": snappedf(_wasser_dist(_spieler()), 0.1),
 			"fog": snappedf(main.env.fog_density, 0.0001) if main.env != null else 0.0, "lite": _lite(), "paused": paused}

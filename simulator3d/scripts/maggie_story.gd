@@ -121,6 +121,7 @@ var _chapel: Node3D = null
 var _me_next := 0.0
 var _region_t0 := 0.0
 var _resume_phase := ""
+var _cam_fix = null                   # tests: Transform3D of a fixed view (/control maggie kamera), null = follow the figure
 # camera
 var cam_yaw := 0.0
 var cam_pitch := 0.42
@@ -245,7 +246,7 @@ func tor_pos() -> Vector3:
 
 
 func tipp(text: String) -> void:
-	if _tipp == null:
+	if _tipp == null or not running:                     # (Paket «Dauer»: nach dem Verlassen blieb ein Tipp im Bild stehen)
 		return
 	_tipp.text = text
 	_tipp.visible = true
@@ -253,7 +254,7 @@ func tipp(text: String) -> void:
 
 
 func moveeye_sagt(text: String) -> void:
-	if _me_lbl == null:
+	if _me_lbl == null or not running:
 		return
 	_me_lbl.text = text
 	_me_box.visible = true
@@ -470,6 +471,7 @@ func info() -> Dictionary:
 			"player": [snappedf(p.x, 0.1), snappedf(p.y, 0.1), snappedf(p.z, 0.1)], "rests": rs, "last_rest": _last_rest,
 			"tor": [snappedf(_tor_p.x, 0.1), snappedf(_tor_p.z, 0.1)], "tor_open": _tor_open, "tasks": tasks,
 			"zukunft_orte": _zk_orte.size(), "modules": _modules.size(), "geschuetzt": geschuetzt(), "scene": main.scene,
+			"ziel": _goal_info(),
 			"lite": Welt.lite()}
 
 
@@ -638,6 +640,7 @@ func _load_modules() -> void:
 
 func stop() -> void:
 	"""leave the story: everything back as before (the progress stays saved)"""
+	_cam_fix = null
 	if not running:
 		_close_cards()
 		return
@@ -670,6 +673,10 @@ func stop() -> void:
 	_close_cards()
 	if _hud != null:
 		_hud.visible = false
+	if _tipp != null:
+		_tipp.visible = false
+	if _me_box != null:
+		_me_box.visible = false
 	if _zk_fx != null:
 		_zk_fx.visible = false
 	if _credits != null:
@@ -1002,6 +1009,7 @@ func _region_tick() -> void:
 				_save()
 				if first:
 					Welt.rest_lit(e["node"], r["col"])
+					_paint_tasks()                          # (Paket «Dauer»: «Rastplätze: n von 3» blieb sonst stehen)
 					_play("rest")
 					tipp(T.t("Rastplatz %d erreicht – gespeichert. Wenn dich ein Tier erwischt, kommst du hierher zurück.", [i + 1]))
 					moveeye_sagt(T.t(_pick(Welt.MOVEEYE["rast"])))
@@ -1032,11 +1040,77 @@ func _next_goal() -> Array:
 		return [_chapel.to_global(Welt.ALTAR + Vector3(0, 0, 1.2)), T.t("Bergkapelle")]
 	if phase == "intro_walk":
 		return [_dig_p, T.t("Maggie")]
-	for i in range(_rests.size()):
-		if not bool(_rests[i]["reached"]):
-			return [_rests[i]["pos"], T.t("Rastplatz %d", [i + 1])]
+	if _tor != null and _tor_open:                       # the gate shines: straight there («Geh hindurch»)
+		return [_tor_p, T.t("Jahreszeiten-Tor")]
+	var wg := _weg_goal()
+	if not wg.is_empty():
+		return wg
+	if region == "" or not Welt.REG.has(region) or not Welt.REG[region].has("weg"):
+		for i in range(_rests.size()):
+			if not bool(_rests[i]["reached"]):
+				return [_rests[i]["pos"], T.t("Rastplatz %d", [i + 1])]
 	if _tor != null:
 		return [_tor_p, T.t("Jahreszeiten-Tor") if _tor_open else T.t("Jahreszeiten-Tor (noch zu)")]
+	return []
+
+
+func _goal_info() -> Array:
+	"""(tests) [name, distance m] of the goal the arrow shows"""
+	if not running or not (phase in WALK or phase == "pause"):
+		return []
+	var g := _next_goal()
+	if g.is_empty():
+		return []
+	var p := spieler_pos()
+	return [str(g[1]), snappedf(Vector2((g[0] as Vector3).x - p.x, (g[0] as Vector3).z - p.z).length(), 0.1)]
+
+
+func _weg_goal() -> Array:
+	"""Paket «Dauer» (31.10.2026): der Pfeil führt der Reihe nach durch die Region (Welt.REG[…]["weg"]: s = nächste Station
+	von Maggie, r = nächster Rastplatz, x = das Schutzding). Vorher zeigte er nur Rastplätze und Tor – die Stationen fand man
+	kaum, und das Tor blieb zu (Stelle, an der man nicht weiterkam). Übersprungene Rastplätze sind kein Ziel mehr.
+	[] = nichts mehr offen (dann das Tor)"""
+	if region == "" or not Welt.REG.has(region):
+		return []
+	var weg := str(Welt.REG[region].get("weg", ""))
+	var hund = null
+	var gef = null
+	for m in _modules:
+		if is_instance_valid(m) and m.has_method("aktuell") and m.get("stationen") is Array:
+			hund = m
+		if is_instance_valid(m) and m.has_method("schutz_ort"):
+			gef = m
+	var items := []                                      # [pos (Welt), name, done, kind]
+	var si := 0
+	var ri := 1
+	for k in weg:
+		match k:
+			"s":
+				if hund != null and si < (hund.stationen as Array).size():
+					var st_: Dictionary = hund.stationen[si]
+					var id := str(st_["id"])
+					if st_.has("p") and _tasks.has(id):
+						var p: Vector3 = st_["p"]
+						items.append([tal_punkt(p.x, p.z), str(_tasks[id]["text"]), bool(_tasks[id]["done"]), "s"])
+				si += 1
+			"r":
+				if ri < _rests.size():
+					items.append([_rests[ri]["pos"], T.t("Rastplatz %d", [ri + 1]), bool(_rests[ri]["reached"]), "r"])
+				ri += 1
+			"x":
+				var xid := "schutz_" + region
+				if gef != null and _tasks.has(xid):
+					items.append([gef.schutz_ort(region), str(_tasks[xid]["text"]), bool(_tasks[xid]["done"]), "x"])
+	var last := -1                                       # the furthest station / rest already done (the Schutzding: any time)
+	for i in range(items.size()):
+		if bool(items[i][2]) and str(items[i][3]) != "x":
+			last = i
+	for i in range(last + 1, items.size()):
+		if not bool(items[i][2]):
+			return [items[i][0], items[i][1]]
+	for it in items:                                     # a station or the Schutzding left behind
+		if not bool(it[2]) and str(it[3]) != "r":
+			return [it[0], it[1]]
 	return []
 
 
@@ -1436,6 +1510,9 @@ func _follow_xform() -> Transform3D:
 func _cam(dt: float) -> void:
 	var cam: Camera3D = main.view_cam
 	main.view_mode = 0
+	if _cam_fix != null:                                 # tests (/control maggie kamera): a fixed view for photos
+		cam.global_transform = _cam_fix
+		return
 	var want := _follow_xform()
 	cam.global_transform = cam.global_transform.interpolate_with(want, clampf(dt * 5.0, 0.0, 1.0))
 
@@ -1879,6 +1956,23 @@ func control(d: Dictionary) -> Dictionary:
 			var i := int(d.get("i", 0))
 			if i >= 0 and i < _rests.size():
 				_place_player(_rests[i]["pos"])
+		"kamera":                                       # tests / photos: {at: [x, y, z], look: [x, y, z]} (Welt) = fixed view;
+			# {yaw, pitch, dist} = follow view turned; {} = follow again (Paket «Dauer»)
+			_cam_fix = null
+			if d.has("at") and d.has("look"):
+				var at_: Array = d["at"]
+				var lk: Array = d["look"]
+				_cam_fix = Transform3D(Basis(), Vector3(float(at_[0]), float(at_[1]), float(at_[2]))).looking_at(
+						Vector3(float(lk[0]), float(lk[1]), float(lk[2])), Vector3.UP)
+			if d.has("yaw"):
+				cam_yaw = deg_to_rad(float(d["yaw"]))
+				_drag_t = main.now() + 3600.0
+			if d.has("pitch"):
+				cam_pitch = float(d["pitch"])
+			if d.has("dist"):
+				cam_dist = float(d["dist"])
+			if (d.has("yaw") or d.has("pitch") or d.has("dist")) and spieler() != null:
+				main.view_cam.global_transform = _follow_xform()
 		"gehe_tal":                                     # tests: to a point in valley coordinates (x, z)
 			_place_player(tal_punkt(float(d.get("x", 0.0)), float(d.get("z", 0.0))))
 		"gehe":
