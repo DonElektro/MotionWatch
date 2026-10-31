@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3.22.0"
+const VERSION := "3.23.0"
 const Versionen = preload("res://scripts/versionen.gd")   # Versionierung 3.0.0: from 3.0.0 VERSION = "X.Y.Z" like MoveEye (see there)
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const T := preload("res://scripts/i18n.gd")              # Menüs A: new texts of the panel in the language (Sprachen)
@@ -3423,6 +3423,7 @@ func info() -> Dictionary:
 						weit.cam_info()],          # 3D-4.17: the wide camera with its mount (weitwinkel.gd)
 			"thermal": simint.thermal_info() if simint != null else {"w": TH_W, "h": TH_H, "fps": th_fps, "fov_h": TH_FOV, "fov_v": 35.0, "unit": "C", "on_head": true},
 			"view": {"input": 1, "path": "/view.mjpg", "padview": 1},
+			"features": preload("res://scripts/ui_gemeinsam.gd").features(),   # P1: what this simulator can (menu1 = gids sys / extras …)
 			"sensors": [{"name": "Wohnwagen-Tür", "kind": "door"}, {"name": "PIR Zelt", "kind": "pir"}, {"name": "Gas Wohnwagen", "kind": "gas"}, {"name": "Velo", "kind": "tag"},
 						{"name": "PIR Gerät", "kind": "pir"}],     # real-pir-ton: AS312 at the front of the housing (pir.gd)
 			"helper": {"port": mwpc.HELPER_PORT, "code": str(mwpc.helper.get("code", "")), "accel": str(mwpc.helper.get("accel", ""))} if mwpc != null and mwpc.helper.has("code") else null}
@@ -3788,18 +3789,21 @@ const GROUPS := [["Szene", "globe", "🌍", ["", "Bergtal", "Ort von der Karte",
 		["Besuch", "person", "🚶", ["Vorlagen", "Besucher hinsetzen", "Menschen einzeln", "Gruppen und Alltag", "Mit Hund oder Pferd", "Schwierige Fälle (Tarnung, Diebe)",
 				"Wildtiere", "Haus- und Nutztiere", "Vögel und Kleintiere", "Fahrzeuge", "Abläufe", "Von selbst", "Verhalten"]],   # Menüs A: «Menschen / Tiere schicken» geteilt (VISIT_SUB)
 		["Kamerabild", "lens", "👁", ["", "Weitwinkel-Kamera", "Wärmebild", "Wie echt", "Schwierige Bedingungen", "Feineinstellungen"]],
-		["Sensoren", "bell", "🔔", ["", "Bewegungsmelder (PIR)", "Strom", "Netz", "Zusatz-Bildschirm (SmallTV)"]],
 		["Mover", "track", "🚜", ["", "Patrouille", "Controller"]],
-		["Licht & Ton", "sun", "💡", ["", "Status-LED & Tasten", "Lautsprecher", "Mikrofon", "Umgebungsgeräusche"]],      # 3D-4.22: «Lautsprecher» here like MoveEye (was «Sensoren»)
+		["Licht & Ton", "bulb", "💡", ["", "Status-LED & Tasten", "Lautsprecher", "Mikrofon", "Umgebungsgeräusche"]],      # 3D-4.22: «Lautsprecher» here like MoveEye (was «Sensoren»)
+		["Zusatzgeräte", "puzzle", "🔌", ["", "Bewegungsmelder (PIR)", "Strom", "Netz", "Zusatz-Bildschirm (SmallTV)"]],   # P1 ui_gemeinsam: «Sensoren» -> «Zusatzgeräte» (extras), nach Licht & Ton wie MoveEye
 		["Spiel", "pad", "🎮", ["", "Entdecken", "Assistent"]],        # Erlebniswelt 20–23: «Entdecken» (entdecken.gd) on the card
 		["Wildtier", "target", "🎯", [""]],
 		["Testen", "check", "✅", ["", "Verfolgungs-Parcours", "Störungen", "Einbruch-Abläufe"]],
-		["System", "gear", "⚙", ["Grafik", "Karte und Livebild", "Start mit dem PC", "Updates", "Sicherheit / Benutzer"]],   # Menüs A: «Ansicht» → «Karte und Livebild» (fehlte hier)
+		["System", "gear", "⚙", ["Grafik", "Karte und Livebild", "Start mit dem PC", "Updates", "Kinder-Modus"]],   # Menüs A: «Ansicht» → «Karte und Livebild» (fehlte hier)
 		["Entwickler", "tools", "🧪", ["", "Updates"]]]
 # 3D-4.21 (Menü 2, Daniel 30.10.2026): the same names as MoveEye - the controls keep their old group / part in add_control,
 # _order_controls renames them here (MoveEye reads the fixed «gid», not the name)
-const GROUP_RENAME := {"Testlauf": "Testen", "Wildbeobachtung": "Wildtier"}
-const SUB_RENAME := {"Akku und Strom": "Strom", "Netz-Ausfall testen": "Netz", "Zusatz-Bildschirm": "Zusatz-Bildschirm (SmallTV)", "Kinder-Modus": "Sicherheit / Benutzer"}
+# P1 ui_gemeinsam (Daniel 31.10.2026): ids, names, symbols and order of the groups as in res://ui_gemeinsam.json (checked by
+# werkzeuge/ui_gemeinsam_test.gd and at start, scripts/ui_gemeinsam.gd); «Sensoren» is «Zusatzgeräte» (extras), the part
+# «Kinder-Modus» has its own name again («Sicherheit» is the password / users group of MoveEye)
+const GROUP_RENAME := {"Testlauf": "Testen", "Wildbeobachtung": "Wildtier", "Sensoren": "Zusatzgeräte"}
+const SUB_RENAME := {"Akku und Strom": "Strom", "Netz-Ausfall testen": "Netz", "Zusatz-Bildschirm": "Zusatz-Bildschirm (SmallTV)"}
 # 3D-4.21: what only the developer needs (like the group «Entwickler» of MoveEye) - always «Experte»
 # Paket «Entwickler zusammenlegen» (Daniel 31.10.2026): «dev_open» is the only entry of the card in the panel (opens the window
 # «Mehr → Entwickler» on its tab «Schalter»); the others carry «devwin": drawn in that window, not in the panel - same ids,
@@ -3838,7 +3842,7 @@ const PLACE := {"patrol_on": ["Mover", "Patrouille"], "patrol_mode": ["Mover", "
 		"cond_shadows": ["Kamerabild", "Schwierige Bedingungen"], "cond_ir": ["Kamerabild", "Schwierige Bedingungen"],
 		"linse_tropfen": ["Kamerabild", ""], "scheinwerfer": ["Kamerabild", "Schwierige Bedingungen"], "fz_glare": ["Kamerabild", "Schwierige Bedingungen"],
 		"jahreszeit": ["Szene", "Zeit"], "tagesablauf": ["Besuch", "Von selbst"],
-		"autologon": ["System", "Start mit dem PC"], "kids_scary": ["System", "Sicherheit / Benutzer"], "kids_thief": ["System", "Sicherheit / Benutzer"], "kids_laser": ["System", "Sicherheit / Benutzer"], "kids_sound": ["System", "Sicherheit / Benutzer"], "kids_ask": ["System", "Sicherheit / Benutzer"], "auto_update": ["System", "Updates"], "update_mode": ["System", "Updates"], "dev_updates": ["Entwickler", "Updates"], "news_popup": ["System", "Updates"], "news_show": ["System", "Updates"], "update_now": ["System", "Updates"]}
+		"autologon": ["System", "Start mit dem PC"], "kids_scary": ["System", "Kinder-Modus"], "kids_thief": ["System", "Kinder-Modus"], "kids_laser": ["System", "Kinder-Modus"], "kids_sound": ["System", "Kinder-Modus"], "kids_ask": ["System", "Kinder-Modus"], "auto_update": ["System", "Updates"], "update_mode": ["System", "Updates"], "dev_updates": ["Entwickler", "Updates"], "news_popup": ["System", "Updates"], "news_show": ["System", "Updates"], "update_now": ["System", "Updates"]}
 
 
 const SIMPLE_GROUPS := ["Szene", "Wetter", "Besuch", "Testen", "Spiel"]
@@ -3850,8 +3854,8 @@ const GAME_MAIN := ["game_wizard", "game_start", "game_stop"]
 const DISC_IDS := ["disc_book", "disc_photo", "disc_hints", "disc_hint_min", "disc_demo", "disc_seek", "fp_task_kind", "fp_task_velo", "fp_task_zelt"]
 const DISC_SIMPLE := ["disc_book", "disc_photo", "disc_hints"]
 # 3D-4.7: a fixed id per group for MoveEye (the visible names may change); sent as «gid» with every control
-const GROUP_IDS := {"Szene": "scene", "Wetter": "weather", "Besuch": "visit", "Kamerabild": "camera", "Sensoren": "sensors", "Mover": "mover", "Licht & Ton": "lightsound",
-		"Spiel": "game", "Wildtier": "wildlife", "Testen": "testrun", "System": "system", "Entwickler": "dev"}
+const GROUP_IDS := {"Szene": "scene", "Wetter": "weather", "Besuch": "visit", "Kamerabild": "camera", "Zusatzgeräte": "extras", "Mover": "mover", "Licht & Ton": "lightsound",
+		"Spiel": "game", "Wildtier": "wildlife", "Testen": "testrun", "System": "sys", "Entwickler": "dev"}   # P1: «system» / «sensors» before (alias in ui_gemeinsam.json)
 # Paket «Menüs aufräumen A» (Daniel 31.10.2026): «Einfach» wirklich einfach - rund 60 statt 100 Einträge, eine feste Liste statt
 # «ganze Gruppe»: Szene, Zeit, Wetter, Besuch (Vorlagen, die wichtigsten Abläufe, von selbst), Testlauf, Aufnahme, Parcours und
 # Einbruch starten, je ein Hauptschalter von Kamerabild / Sensoren / Mover / Licht & Ton / Wildtier, System. Alles andere (Störungen,
@@ -4816,6 +4820,10 @@ func _control(d: Dictionary) -> Dictionary:
 		show_panel(true)
 		if d.has("y"):
 			_test_scroll(float(d["y"]))
+		elif d.has("open") and d.get("top", false):        # P1 ui_gemeinsam (tests, Bildschirmfotos): die geöffnete Karte nach oben
+			for b in fold_bodies:
+				if str(b.get_meta("title", "")) == str(d["open"]) and b.get_parent() != null:
+					_test_scroll_to(b.get_parent())
 		return {"ok": true, "max": (ui_box.get_parent() as ScrollContainer).get_v_scroll_bar().max_value}
 	elif a == "tunnel":                                # 3D-3.45: for tests / remote: {"host", "code", "on"}
 		if d.has("host"):
@@ -5976,12 +5984,12 @@ func _build_ui() -> void:
 		testrun.add_info(groups["Testen"], UI)
 	if subs.has("Licht & Ton/Status-LED & Tasten") and statusled != null:   # 3D-4.22: the rules of the buttons are in MoveEye - hint + link
 		statusled.add_info(subs["Licht & Ton/Status-LED & Tasten"], UI)
-	if subs.has("Sensoren/Bewegungsmelder (PIR)"):    # real-pir-ton: state, reach, triggers (pir.gd)
-		pir.add_info(subs["Sensoren/Bewegungsmelder (PIR)"], UI)
+	if subs.has("Zusatzgeräte/Bewegungsmelder (PIR)"):    # real-pir-ton: state, reach, triggers (pir.gd)
+		pir.add_info(subs["Zusatzgeräte/Bewegungsmelder (PIR)"], UI)
 	if subs.has("Licht & Ton/Mikrofon"):              # real-pir-ton: level, background, the loudest sources (mikrofon.gd)
 		mikro.add_info(subs["Licht & Ton/Mikrofon"], UI)
-	if subs.has("Sensoren/Strom"):                    # Simulator-Werte: what goes to MoveEye (power.gd)
-		simwerte.add_info(subs["Sensoren/Strom"], UI)
+	if subs.has("Zusatzgeräte/Strom"):                # Simulator-Werte: what goes to MoveEye (power.gd)
+		simwerte.add_info(subs["Zusatzgeräte/Strom"], UI)
 	if subs.has("Kamerabild/Wie echt"):              # 3D-3.94: what the real look adjustment does
 		real_label = UI.small("")
 		real_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -6766,7 +6774,7 @@ func _load_settings() -> void:
 				v = str(v)
 			set(k, v)
 	if typeof(d.get("fold_mem")) == TYPE_DICTIONARY:      # nurgruppen: the own open / closed state of the cards and parts
-		fold_mem = d["fold_mem"]
+		fold_mem = preload("res://scripts/ui_gemeinsam.gd").migrate_fold(d["fold_mem"])   # P1: «Sensoren» -> «Zusatzgeräte» …
 	grafik_mode = Quality.mode_id(grafik_mode)            # 3D-4.25: unknown / older names -> «Automatisch»
 	if game_mode == "teamguard":                          # Balance 30.10.2026: «Team gegen Team» is gone
 		game_mode = "guard"
@@ -7082,7 +7090,7 @@ func group_active(g: String) -> int:
 			return 1 if auto_visitors else 0
 		"Kamerabild":
 			return 2 if cond.values().has(true) else 0
-		"Sensoren":
+		"Zusatzgeräte":
 			return 2 if door_open or gas_on else 0
 		"Mover":
 			return 1 if mover_on else 0
@@ -9103,6 +9111,13 @@ func _test_scroll(y: float) -> void:
 	await get_tree().process_frame
 	await get_tree().process_frame
 	(ui_box.get_parent() as ScrollContainer).get_v_scroll_bar().value = y
+
+
+func _test_scroll_to(c: Control) -> void:
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var sc := ui_box.get_parent() as ScrollContainer
+	sc.get_v_scroll_bar().value += c.global_position.y - sc.global_position.y
 
 
 # ---- night flyers (from 3D-3.39): bats round the light, an owl gliding past - typical false alarms at night ---------------

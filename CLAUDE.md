@@ -68,6 +68,8 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
   Entscheid, nicht getestet; keine langen Aufzählungen.
 - **Kurz fürs Handy (Daniel, 31.10.2026 21:08):** Nachrichten so kurz halten, dass Daniel auf dem Handy nicht scrollen muss:
   wenige Zeilen, Tabellen oder kurze Listen, Details nur auf Nachfrage.
+- **Nichts entfernen ohne Nachfrage (Daniel, 01.11.2026 00:28):** Funktionen, Schalter, Menüpunkte, Dateien oder Inhalte
+  werden nur nach ausdrücklicher Zustimmung von Daniel entfernt. Vorher immer fragen.
 - **Pause für Realismus aufgehoben (Daniel, 31.10.2026 00:53):** bis die Hardware da ist, Realismus/Szenen in kleinen Paketen,
   je Paket eine Version mit «So testest du». Danach Pause und Hardware-Aufbau.
 

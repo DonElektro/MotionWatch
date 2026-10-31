@@ -22,7 +22,7 @@ _HX_MWB = {
     'Nothing to fold on this page': ('Auf dieser Seite gibt es nichts zum Klappen', 'Rien à replier sur cette page', 'Niente da comprimere in questa pagina',
                                      'Nagut da zuppentar sin questa pagina'),
     'Symbols coloured': ('Symbole farbig', 'Symboles en couleur', 'Simboli a colori', 'Simbols colurads'),
-    'plain': ('schlicht', 'sobres', 'semplici', 'simpels'),
+    'plain': ('schlicht', 'simples', 'semplici', 'simpels'),
 }
 for _k, _v in _HX_MWB.items():
     DE.setdefault(_k, _v[0])

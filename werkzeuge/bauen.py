@@ -115,6 +115,36 @@ def _namen(name, text):
     return out
 
 
+UIG_TEIL = "639p_ui_gemeinsam.py"                         # P1: die gemeinsame Menü-Datei, eingebettet als UI_GEMEINSAM
+UIG_JSON = os.path.join(REPO, "simulator3d", "ui_gemeinsam.json")
+UIG_RE = re.compile(r'(UI_GEMEINSAM = json\.loads\(r""")(.*?)("""\))', re.S)
+
+
+def ui_gemeinsam_einbetten(nur_pruefen=False):
+    """P1 (Daniel 31.10.2026): simulator3d/ui_gemeinsam.json als UI_GEMEINSAM in quelle/639p_ui_gemeinsam.py schreiben (eine
+    Quelle für MoveEye und den Simulator; die Signatur der Hauptdatei deckt sie mit ab). nur_pruefen: nur melden, ob es passt."""
+    if not os.path.isfile(os.path.join(QUELLE, UIG_TEIL)) or not os.path.isfile(UIG_JSON):
+        return True
+    with open(UIG_JSON, encoding="utf-8") as f:
+        neu = json.dumps(json.load(f), ensure_ascii=False, indent=1)
+    if '"""' in neu or neu.endswith("\\"):
+        print("FEHLER: simulator3d/ui_gemeinsam.json enthält \"\"\" – so nicht einbettbar")
+        return False
+    t = lesen(UIG_TEIL)
+    m = UIG_RE.search(t)
+    if not m:
+        print("FEHLER: %s ohne «UI_GEMEINSAM = json.loads(r\"\"\"…\"\"\")»" % UIG_TEIL)
+        return False
+    if m.group(2) == neu:
+        return True
+    if nur_pruefen:
+        print("UNTERSCHIED: quelle/%s passt nicht zu simulator3d/ui_gemeinsam.json – werkzeuge/bauen.py laufen lassen" % UIG_TEIL)
+        return False
+    schreiben(UIG_TEIL, t[:m.start(2)] + neu + t[m.end(2):])
+    print("eingebettet: simulator3d/ui_gemeinsam.json -> quelle/%s" % UIG_TEIL)
+    return True
+
+
 def doppelte():
     """2.98.18: every top-level function / class defined in more than one part (or twice in one part) - the later one silently
     replaces the earlier one (2.98.17: bt_scan of 300 replaced the loudspeaker search of 250). Allowed only for an intended
@@ -465,7 +495,7 @@ def main():
     if a.groessen:
         return groessen()
     if a.pruefen:
-        if not doppelte_melden():
+        if not doppelte_melden() or not ui_gemeinsam_einbetten(nur_pruefen=True):
             return 1
         v = version()
         f, zf = dateiname(v), zd_pfad(v)
@@ -498,7 +528,7 @@ def main():
             za = zd_pfad(alt)
             if os.path.isfile(za) and git("rm", "-q", os.path.basename(za)).returncode != 0:
                 os.remove(za)
-    if not doppelte_melden():
+    if not doppelte_melden() or not ui_gemeinsam_einbetten():
         return 1
     v = version()
     f, zf = dateiname(v), zd_pfad(v)
