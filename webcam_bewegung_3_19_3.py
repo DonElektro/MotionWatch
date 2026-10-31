@@ -241,7 +241,7 @@ def prepare_settings_file():
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
 ZD_FILE = "moveeye_daten_3_19_3.zip"
-ZD_SHA256 = "a90bee6a76f1689722375ae004ff5505d440298d4ac9ff49f3b94d55abec4abf"
+ZD_SHA256 = "c7f5689185ed3835d120890a7aa446b902b66ca0d40d2e3116c9792ee209452c"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -67769,7 +67769,9 @@ SELFTEST_EXTRA.append(("Vorführung «Maggie» (page /sim/vorfuehrung, owner onl
 #   * Ton auch im Browser (Fix 3.19.x, Daniel: «am iPad nichts»): grosser Knopf «🔊 Tippen für Ton» (iOS braucht ein Tippen
 #     vor Sprache und Audio; ein Tippen irgendwo genügt). Danach Erzähler (speechSynthesis, wie bisher) und Musik + Geräusche:
 #     /api/trailer?plan=1 holt den Ton-Plan des Simulators (trailer.gd ton_plan: Zeit, Klang, Lautstärke, Überblendung),
-#     /sim/trailer_ton/<klang>.wav die Klänge (trailer_ton.gd, mono 22 kHz, zusammen ≈ 3 MB); die Seite spielt sie mit
+#     /sim/trailer_ton/<klang>.wav die Klänge (ab 01.11.2026 echte Aufnahmen als MP3 aus simulator3d/klang/web/, ≈ 2.4 MB;
+#     ältere Simulatoren: WAV, mono 22 kHz; Schleifen mit Schleifenpunkten «schleifen» aus dem Plan, dazu ein Begrenzer wie der
+#     Bus «Trailer» im Simulator); die Seite spielt sie mit
 #     WebAudio im Takt von «t» aus /api/trailer (nachgeführt, wenn es mehr als 0.35 s abweicht). Ältere Simulatoren ohne
 #     Plan: nur der Erzähler. Der Ton läuft auf beiden Geräten (PC und iPad).
 #   * /api/trailer: GET = Stand (Simulator /control trailer info), POST {do: start (id) | stop}. Nur der Besitzer
@@ -67977,7 +67979,8 @@ def smalltv_routes(app, reply, body):                     # + 639n: /sim/trailer
             b_, _h = _sim_get("/trailer_ton/" + nm + ".wav", 8.0)
         except Exception:
             return Response("simulator not reachable", 502)
-        return Response(b_, mimetype="audio/wav", headers={"Cache-Control": "private, max-age=3600"})
+        mt_ = "audio/mpeg" if b_[:3] == b"ID3" or b_[:2] in (b"\xff\xfb", b"\xff\xf3", b"\xff\xf2") else "audio/wav"
+        return Response(b_, mimetype=mt_, headers={"Cache-Control": "private, max-age=3600"})
 
 
 if GUI_OK:                                                # the window: the two trailers in the developer part (639c)
@@ -68021,6 +68024,7 @@ def trl_selftest():
     assert "spk-tap" in html and "spkUnlock" in html and "taSync(S)" in html and "/sim/trailer_ton/" in html and "/api/trailer?plan=1" in html
     assert "bare ? \"bare=1&\"" in html                    # the browser picture without the PC's buttons only while the film runs
     assert TRL_TON_RE.match("pad_ruhig") and not TRL_TON_RE.match("../x")
+    assert "TA.schl[nm]" in html and "createDynamicsCompressor" in html and "x.loopStart" in html
     assert "voiceschanged" in html and "spk-vbtn" in html and "SPK_GOOD" in html and "!SPK.pop" in html and "Stimme" in html
     vh = vf_page()
     assert "spkTick(S, !!S.pause" in vh and "spk-btn" in vh and "Ton an" in vh and "!SPK.pop" in vh and "Premium" in vh
