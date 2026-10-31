@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 08:39",
+ "generated": "2026-10-31 08:45",
  "versions": [
   {
-   "version": "2.98.86",
-   "file": "webcam_bewegung_2_98_86.py",
+   "version": "2.98.87",
+   "file": "webcam_bewegung_2_98_87.py",
    "url": "",
-   "sha256": "1875d80d3a5558897e9e5c9af9d7e156c8192a229f25a51655bf85056daf0abb",
-   "date": "2026-10-31 08:39",
-   "notes": "Simulator 3D-4.55: neue Grafikstufe «Hoch» (Vulkan, weiche Schatten, Spiegelungen) und eine einzige Wahl «Grafik-Modus»: Automatisch / Lite / Normal / Hoch.",
-   "sig": "6d53d51c0affffc5a2bf3ad4c6579257edea6e6ad2722bb7234d8d920e534cc94680f479f05251b9ad499196d6c956ee653279ebb80cb28b3ab7e6c8065b680c"
+   "sha256": "2f2c279536bbce41f44e5fe45b5b9d2b12a1ad0cec1a843f281b4774b92915e7",
+   "date": "2026-10-31 08:45",
+   "notes": "Simulator 3D-4.56: echtere Menschen aus einem nachladbaren Figuren-Paket (Quaternius, CC0) und Wind in Gras, Büschen, Bäumen und Zelten; bekannt: kriechende Paket-Figuren werden schlechter erkannt.",
+   "sig": "603f963c4a4179074dcbb9bc8b1189b6b1d71e3b6ccea8f3762e7c212e73f71899f20debd91aefe086ecff34e10d4677da84a4c606f1b4a26e20083603f19003"
   },
   {
    "version": "2.97.1",

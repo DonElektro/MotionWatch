@@ -1,8 +1,15 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.55** · passende MoveEye-Version (früher Motion Watch) **2.98.86**
+Stand: 31.10.2026 · Simulator-Version **3D-4.56** · passende MoveEye-Version (früher Motion Watch) **2.98.87**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.56 (MoveEye 2.98.87): Figuren-Paket und Wind (`figur_paket.gd`, `wind_fx.gd`)
+
+- `figur_paket.gd` (gleiche Schnittstelle wie figur.gd; Paket `pakete/figuren_v1.zip` mit `.gdignore` → nicht im Export,
+  Download von raw.githubusercontent.com/…/main/simulator3d/pakete/figuren_v1.zip mit SHA-256), `werkzeuge/figuren_paket.py`.
+  Lizenz: LIZENZEN.md (Quaternius, CC0). `wind_fx.gd` + Shader grass_wind / tent_wind / foliage (`gust_amt`).
+- Bekannt: Kriechen mit Paket-Figuren 1/4 erkannt (Ringfiguren 4/4).
 
 ## NEU in 3D-4.55 (MoveEye 2.98.86): Grafikstufe «Hoch» (`grafik_hoch.gd`, `quality.gd`)
 
