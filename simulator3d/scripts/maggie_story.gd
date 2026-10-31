@@ -22,6 +22,11 @@ extends Node
 ##   zukunftsbild_ort(pos: Vector3, text: String)   ein Ort, den der Kristall als «Bild der Zukunft» zeigen darf (eine
 ##                                    Gefahr oder ein Weg; text z. B. T.t("Hinter den Felsen warten Wölfe.")) – gilt bis
 ##                                    zum Ende der Region
+##   aufgabe_anmelden(id: String, text: String)   eine Aufgabe der Region (Rätsel, Schutzding …) – nach region_gestartet
+##   aufgabe_erledigt(id: String)     die Aufgabe ist geschafft. Sind alle angemeldeten Aufgaben erledigt, leuchtet das
+##                                    Jahreszeiten-Tor am Ende der Region; wer hindurchgeht, hat die Region geschafft
+##                                    (ohne angemeldete Aufgaben ist das Tor gleich offen). region_fertig(id) geht auch direkt.
+##   tor_pos() -> Vector3             wo das Jahreszeiten-Tor der Region steht (Welt)
 ##   signal region_gestartet(id)      eine Region beginnt (Szene fertig gebaut, Figur am ersten Rastplatz)
 ##   signal region_beendet(id)        die Region ist vorbei (geschafft oder verlassen): eigene Knoten der Region entfernen
 ##   signal einstieg_graben(pos)      der Einstieg: Maggie soll bei pos graben (S2 lässt den Hund hinlaufen und graben)
@@ -40,7 +45,7 @@ signal geschichte_beendet()
 
 const REGIONEN := ["herbst", "winter", "fruehling", "sommer"]
 # the middle of every region (valley coordinates x, z of bergtal.gd)
-const MITTE := {"herbst": Vector2(-620, -230), "winter": Vector2(560, 380), "fruehling": Vector2(-40, -260), "sommer": Vector2(-390, 410)}
+const MITTE := {"herbst": Vector2(-640, -200), "winter": Vector2(590, 360), "fruehling": Vector2(-110, -330), "sommer": Vector2(-530, 480)}
 
 var main
 var running := false
@@ -108,6 +113,18 @@ func moveeye_sagt(text: String) -> void:
 
 func zukunftsbild_ort(pos: Vector3, text: String) -> void:
 	pass
+
+
+func aufgabe_anmelden(id: String, text: String) -> void:
+	pass
+
+
+func aufgabe_erledigt(id: String) -> void:
+	pass
+
+
+func tor_pos() -> Vector3:
+	return Vector3.ZERO
 
 
 func region_fertig(id: String) -> void:
