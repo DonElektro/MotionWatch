@@ -1,15 +1,15 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 6253 (Stellen: 8521)
-Übersetzt: en 6253, fr 6253, it 6253, rm 6253
+Texte gesamt: 6255 (Stellen: 8523)
+Übersetzt: en 6255, fr 6255, it 6255, rm 6255
 Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 429 Stellen
 Nicht mehr im Code (noch in texte.json): 96
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 68 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main.gd 1, phone.gd 1, spieltest.gd 1
-Übersprungen (Grund: Anzahl): kennung 21320, schlüssel 16055, keine Wörter 9980, index 8221, technisch 2709, doc 1749, einheit 246, englisch 110, log 79, pfad 74, html 68, klasse 26, shader 6
+Übersprungen (Grund: Anzahl): kennung 21335, schlüssel 16055, keine Wörter 9986, index 8223, technisch 2710, doc 1752, einheit 246, englisch 110, log 79, pfad 74, html 68, klasse 26, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
-  main.gd                  669    29
+  main.gd                  671    29
   bergtal_abenteuer.gd     271     5
   gamewiz.gd               252    15
   abenteuer_figuren_daten.gd   235     0
@@ -352,20 +352,20 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   main.gd:5228  ' · schaut nur zu: '
   main.gd:5231  ' · Treffer %d von %d Schüssen, %d Punkte'
   main.gd:5232  ' · Update: '
-  main.gd:5566  'Blinde Flecken: '
-  main.gd:6241  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
-  main.gd:6547  'Autostart: '
-  main.gd:6558  'Autologon: '
-  main.gd:6719  'Karte öffnen: '
-  main.gd:6865  'Echt-Abgleich: '
-  main.gd:6875  'Trainingspaket: '
-  main.gd:6884  ' · %d offen · %.1f MB'
-  main.gd:6884  'Ziel: %s:%d (Port von MoveEye) · '
-  main.gd:6893  'Verbindung · '
-  main.gd:6893  'aus'
-  main.gd:6897  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
-  main.gd:6897  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
-  main.gd:6900  ' – versucht es weiter (gleich auf einem freien Port)'
+  main.gd:5576  'Blinde Flecken: '
+  main.gd:6330  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
+  main.gd:6639  'Autostart: '
+  main.gd:6650  'Autologon: '
+  main.gd:6811  'Karte öffnen: '
+  main.gd:6957  'Echt-Abgleich: '
+  main.gd:6967  'Trainingspaket: '
+  main.gd:6976  ' · %d offen · %.1f MB'
+  main.gd:6976  'Ziel: %s:%d (Port von MoveEye) · '
+  main.gd:6985  'Verbindung · '
+  main.gd:6985  'aus'
+  main.gd:6989  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
+  main.gd:6989  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
+  main.gd:6992  ' – versucht es weiter (gleich auf einem freien Port)'
   explore.gd:581  ' (automatisch von oben)'
   explore.gd:581  ' · schnell'
   fahrzeuge.gd:90  'nie'
