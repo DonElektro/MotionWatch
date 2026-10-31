@@ -10413,6 +10413,12 @@
   "it": "do: start (id) | stop | info",
   "rm": "do: start (id) | stop | info"
  },
+ "do: start (id) | stop | info | plan": {
+  "en": "do: start (id) | stop | info | plan",
+  "fr": "do: start (id) | stop | info | plan",
+  "it": "do: start (id) | stop | info | plan",
+  "rm": "do: start (id) | stop | info | plan"
+ },
  "do: start (len) | pause | weiter | kapitel (n) | stop | info": {
   "en": "do: start (len) | pause | weiter | kapitel (n) | stop | info",
   "fr": "do: start (len) | pause | weiter | kapitel (n) | stop | info",

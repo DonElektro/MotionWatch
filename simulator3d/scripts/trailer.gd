@@ -18,7 +18,15 @@ extends Node
 ##     Im Movie-Maker-Modus spricht der Simulator nicht selbst (die Systemstimme käme nicht in die Datei); das Skript legt
 ##     die Sätze (espeak-ng, falls vorhanden) nach den Zeiten in der cues-Datei auf die Tonspur.
 ## Lite (Quality.lite()): keine Funken am Kristall, weniger Krähen; die Kamerafahrten bleiben (kosten nichts).
-## /control {"action": "trailer", "do": "start" (id, sprache, untertitel, ab) | "stop" | "info"}
+## /control {"action": "trailer", "do": "start" (id, sprache, untertitel, ab) | "stop" | "info" | "plan"}
+## Stopp von aussen (Fix 3.19.x, Daniel: «nach Stopp am iPad bleibt der PC schwarz»): beenden() bringt auch die Kamera
+## (Lage, Blickwinkel, Sichtweite) zurück und gibt die Knöpfe frei, auch wenn MoveEyes Browser-Bild (padview bare=1) sie
+## gerade ausblendet (padview gibt sie 3 s nach dem letzten Bild zurück). Dazu ein Wächter (normal()): 1.5 s und 3 s nach
+## dem Ende eines Trailers oder der Vorführung kommen Knöpfe, Kamera und Bild sicher zurück (kein schwarzer Film-Layer).
+## Rettung: oben rechts immer ein kleiner Knopf «✕ Zurück» (dazu Esc / Klick wie bisher).
+## Ton im Browser (MoveEye /sim/trailer, iPad): «plan» = alle Ton-Befehle mit ihrer Zeit im Film (Musik, Geräusche, Erzähler-
+## Ducking), GET /trailer_ton/<klang>.wav = die Klänge (trailer_ton.gd, mono 22 kHz) – die Seite spielt sie mit WebAudio
+## im Takt von «t» (info) nach.
 
 const T = preload("res://scripts/i18n.gd")
 const UI = preload("res://scripts/ui_style.gd")
@@ -83,6 +91,7 @@ var _titel: Control = null
 var _ende: Control = null
 var _ende_btns: Array = []
 var _hinweis: Label = null
+var _zurueck: Button = null             # the rescue: always a small «× Zurück» on top right
 var _prep: Label = null
 
 
@@ -106,6 +115,154 @@ static func busy(m) -> bool:
 	return tr != null and bool(tr.laeuft)
 
 
+# =======================================================================================================================
+# the normal view after a film (trailer or Vorführung), also when it was stopped from outside (MoveEye /control)
+# =======================================================================================================================
+static func ui_zeigen(m) -> void:
+	"""the buttons of the window back; while MoveEye's browser picture hides them (padview bare / dock) padview gives them
+	back 3 s after the last such picture - then with «visible» (not with what the film had hidden)"""
+	if m.ui_layer == null:
+		return
+	if m.get("tv") != null and bool(m.tv.get("on")):
+		return                                          # the TV mode hides them on purpose
+	var pv = m.get("padview")
+	if pv != null and (bool(pv.get("_hid")) or bool(pv.get("_dock_on"))):
+		pv.set("_ui_was", true)
+		return
+	m.ui_layer.visible = true
+
+
+static func waechter(m) -> void:
+	"""the watchdog: 1.5 s and 3 s after the end of a film the normal view is checked once more (normal())"""
+	for s in [1.5, 3.0]:
+		m.get_tree().create_timer(s, true, false, true).timeout.connect(func() -> void:
+			if is_instance_valid(m):
+				normal(m))
+
+
+static func normal(m) -> Dictionary:
+	"""no film runs (trailer, Vorführung): the film layers away, the buttons back, the camera not under the ground"""
+	var tr = inst(m, false)
+	if tr != null and tr.laeuft:
+		return {"ok": true, "skip": "trailer"}
+	var vf = load("res://scripts/maggie_vorfuehrung.gd").inst(m, false)
+	if vf != null and bool(vf.get("laeuft")):
+		return {"ok": true, "skip": "vorfuehrung"}
+	var fixed := []
+	if tr != null and tr._layer != null and tr._layer.visible:
+		tr._layer.visible = false
+		fixed.append("trailer_layer")
+	if tr != null and not tr._layers.is_empty():
+		tr._layers_zurueck()
+		fixed.append("layers")
+	if vf != null and vf.has_method("anzeige_weg") and vf.anzeige_weg():
+		fixed.append("vf_layer")
+	if Engine.time_scale < 0.01 and Engine.has_meta("vorfuehrung") == false:
+		Engine.time_scale = 1.0                         # (a pause of the Vorführung that was never lifted)
+		fixed.append("time_scale")
+	var pv = m.get("padview")
+	var hid: bool = pv != null and (bool(pv.get("_hid")) or bool(pv.get("_dock_on")))
+	if m.ui_layer != null and not m.ui_layer.visible and not hid and not (m.get("tv") != null and bool(m.tv.get("on"))):
+		m.ui_layer.visible = true
+		fixed.append("ui")
+	elif hid and not bool(pv.get("_ui_was")):
+		pv.set("_ui_was", true)
+		fixed.append("ui_bare")
+	var vc: Camera3D = m.view_cam
+	if vc != null and m.has_method("ground_y") and (m.explore == null or not m.explore.on):
+		var p := vc.global_position
+		if not p.is_finite() or p.y < float(m.ground_y(p.x, p.z)) - 1.0:
+			m._view_preset("")                          # under the ground (black picture): the normal view of the place
+			fixed.append("camera")
+	if not fixed.is_empty():
+		print("[Trailer] Wächter: Normalzustand hergestellt (%s)" % ", ".join(fixed))
+	return {"ok": true, "fixed": fixed}
+
+
+# =======================================================================================================================
+# the sound for the browser (MoveEye /sim/trailer on the iPad plays music and noises itself, in time with «t»)
+# =======================================================================================================================
+func ton_plan() -> Dictionary:
+	"""all sound commands of the film with their time: [t, "loop", name, dB, fade] | [t, "stop", name, fade] |
+	[t, "stille", fade] | [t, "one", name, dB] | [t, "say", seconds] (music ducked to 0.6) - like _bild_tick / _ton / _sag"""
+	var sh_list: Array = shots
+	if sh_list.is_empty():
+		if id == "":
+			return {"ok": false, "error": "no trailer"}
+		var b = Buehne.new()
+		sh_list = b.einstellungen(id)
+		b.free()
+	var ev: Array = []
+	var pending: Array = []                         # delayed one-shots: [t, name, dB]
+	var d := 0.0
+	for sh in sh_list:
+		var t0 := float(sh["t0"])
+		d = maxf(d, t0 + float(sh["d"]))
+		var cues: Array = []
+		for c in sh.get("ton", []):
+			cues.append([t0 + float(c[0]), 0, c])
+		for c in sh.get("say", []):
+			cues.append([t0 + float(c[0]), 1, c])
+		cues.sort_custom(func(a, b): return float(a[0]) < float(b[0]) or (float(a[0]) == float(b[0]) and int(a[1]) < int(b[1])))
+		for q in cues:
+			var tt := snappedf(float(q[0]), 0.01)
+			var c: Array = q[2]
+			if int(q[1]) == 1:
+				var tx := str(c[1])
+				ev.append([tt, "say", snappedf(0.6 + tx.length() * 0.068, 0.01)])
+				continue
+			match str(c[1]):
+				"loop":
+					ev.append([tt, "loop", str(c[2]), float(c[3]), float(c[4]) if c.size() > 4 else 1.0])
+				"stop":
+					ev.append([tt, "stop", str(c[2]), float(c[3]) if c.size() > 3 else 1.0])
+				"stille":
+					ev.append([tt, "stille", float(c[2]) if c.size() > 2 else 0.1])
+					pending = pending.filter(func(p): return float(p[0]) <= tt)
+				"one":
+					var dl := float(c[4]) if c.size() > 4 else 0.0
+					if dl > 0.0:
+						pending.append([snappedf(tt + dl, 0.01), str(c[2]), float(c[3])])
+					else:
+						ev.append([tt, "one", str(c[2]), float(c[3])])
+	for p in pending:
+		ev.append([float(p[0]), "one", str(p[1]), float(p[2])])
+	ev.append([snappedf(d, 0.01), "stille", 2.0])     # the end card: everything fades out (_process: _audio_ziel_alle(0, 2))
+	ev.sort_custom(func(a, b): return float(a[0]) < float(b[0]))
+	var used := {}
+	for e in ev:
+		if str(e[1]) in ["loop", "one"]:
+			used[str(e[2])] = true
+	return {"ok": true, "v": 1, "id": id, "dauer": d, "plan": ev, "klaenge": used.keys(), "musik": MUSIK, "sr": Ton.SR}
+
+
+static func wav_bytes(nm: String) -> PackedByteArray:
+	"""GET /trailer_ton/<name>.wav (net.gd): one sound of the trailers as a WAV file (mono, 16 bit)"""
+	if not nm in KLAENGE:
+		return PackedByteArray()
+	var w: AudioStreamWAV = Ton.get_snd(nm)
+	if w == null:
+		return PackedByteArray()
+	var pcm: PackedByteArray = w.data
+	var h := PackedByteArray()
+	h.resize(44)
+	h.encode_u32(0, 0x46464952)                      # "RIFF"
+	h.encode_u32(4, 36 + pcm.size())
+	h.encode_u32(8, 0x45564157)                      # "WAVE"
+	h.encode_u32(12, 0x20746d66)                     # "fmt "
+	h.encode_u32(16, 16)
+	h.encode_u16(20, 1)
+	h.encode_u16(22, 1)
+	h.encode_u32(24, w.mix_rate)
+	h.encode_u32(28, w.mix_rate * 2)
+	h.encode_u16(32, 2)
+	h.encode_u16(34, 16)
+	h.encode_u32(36, 0x61746164)                     # "data"
+	h.encode_u32(40, pcm.size())
+	h.append_array(pcm)
+	return h
+
+
 static func control(m, d: Dictionary) -> Dictionary:
 	var tr = inst(m)
 	match str(d.get("do", "info")):
@@ -122,11 +279,16 @@ static func control(m, d: Dictionary) -> Dictionary:
 					"ab": float(d.get("ab", 0.0)), "von": "steuerung"})
 			return {"ok": true, "loading": true, "id": tid}
 		"stop":
-			tr.beenden("abgebrochen")
+			if tr.laeuft:
+				tr.beenden("abgebrochen")
+			else:
+				normal(m)                                # (nothing runs: still bring the normal view back - e.g. a stuck black)
 		"info":
 			pass
+		"plan":
+			return tr.ton_plan()
 		_:
-			return {"ok": false, "error": "do: start (id) | stop | info"}
+			return {"ok": false, "error": "do: start (id) | stop | info | plan"}
 	return tr.info()
 
 
@@ -203,7 +365,10 @@ func starten(tid: String, o := {}) -> Dictionary:
 			"bt_season": main.bt_season, "bt_spot": main.bt_spot, "bt_free": (main.bt_free as Array).duplicate(), "bt_bed": main.bt_bed,
 			"scene": main.scene, "panel": main.ui_root.visible if main.ui_root != null else true, "sound": main.sound_on,
 			"thunder": main.thunder, "view_mode": main.view_mode, "season": main.season,
-			"cull": main.view_cam.cull_mask if main.view_cam != null else 0xFFFFF}
+			"cull": main.view_cam.cull_mask if main.view_cam != null else 0xFFFFF,
+			"cam": main.view_cam.global_transform if main.view_cam != null else Transform3D.IDENTITY,
+			"fov": main.view_cam.fov if main.view_cam != null else 70.0, "far": main.view_cam.far if main.view_cam != null else 4000.0,
+			"follow": main.follow}
 	_ui()
 	_layers_aus()
 	_prep.visible = true
@@ -331,6 +496,8 @@ func beenden(grund := "abgebrochen") -> void:
 	_layers_zurueck()
 	if _layer != null:
 		_layer.visible = false
+	ui_zeigen(main)                             # the buttons of the window (also when the browser picture hid them)
+	waechter(main)
 	if str(opts.get("von", "")) == "karte" and grund != "spielen" and main.spielbereich != null:
 		main.spielbereich.open()
 	elif str(opts.get("von", "")) == "dev" and grund != "spielen" and main.mehr != null and main.mehr.get("dev") != null:
@@ -356,6 +523,13 @@ func _welt_zurueck() -> void:
 	main._sun_cache = [-1.0, Vector2.ZERO]
 	if main.view_cam != null:
 		main.view_cam.cull_mask = int(_saved.get("cull", main.view_cam.cull_mask))
+		if main.fly_tw != null:
+			main.fly_tw.kill()
+		if _saved.has("cam"):                       # the camera of the window back where it was (the film flew it through the Bergtal)
+			main.view_cam.global_transform = _saved["cam"]
+			main.view_cam.fov = float(_saved.get("fov", 70.0))
+			main.view_cam.far = float(_saved.get("far", 4000.0))
+		main.follow = bool(_saved.get("follow", false))
 	main.set_hour(float(_saved.get("hour", 12.0)))
 	main._set_speed(float(_saved.get("speed", 1.0)))
 	var sc := str(_saved.get("scene", main.scene))
@@ -805,13 +979,26 @@ func _ui() -> void:
 	_hinweis = UI.small(T.t("Esc oder Klick = zurück"), Color(0.6, 0.64, 0.7))
 	_hinweis.anchor_left = 1.0
 	_hinweis.anchor_right = 1.0
-	_hinweis.offset_left = -260
-	_hinweis.offset_right = -14
+	_hinweis.offset_left = -380
+	_hinweis.offset_right = -134
 	_hinweis.offset_top = 8
 	_hinweis.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_hinweis.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_hinweis.visible = not _movie
 	_root.add_child(_hinweis)
+	_zurueck = Button.new()
+	_zurueck.text = "×  " + T.t("Zurück")
+	_zurueck.focus_mode = Control.FOCUS_NONE
+	_zurueck.anchor_left = 1.0
+	_zurueck.anchor_right = 1.0
+	_zurueck.offset_left = -124
+	_zurueck.offset_right = -10
+	_zurueck.offset_top = 6
+	_zurueck.offset_bottom = 38
+	_zurueck.add_theme_font_size_override("font_size", 14)
+	_zurueck.pressed.connect(func(): beenden("abgebrochen" if not _ende_halten else "fertig"))   # (a click ends anyway: _input)
+	_zurueck.visible = not _movie and not opts.has("bilder")
+	_root.add_child(_zurueck)
 	_prep = _full(_lbl(15.0, Color(0.6, 0.64, 0.7))) as Label
 	_prep.text = T.t("Trailer wird vorbereitet …")
 	_root.add_child(_prep)
@@ -931,6 +1118,8 @@ func _ui_tick(dt: float) -> void:
 	if _hinweis != null:
 		var bare: bool = main.padview != null and main.now() - float(main.padview.bare_t) < 3.0   # (MoveEye's browser view)
 		_hinweis.modulate.a = clampf(1.0 - (t - 4.0) / 2.0, 0.0, 1.0) if not _ende_halten and not bare else 0.0
+		if _zurueck != null:
+			_zurueck.modulate.a = 0.45 if bare else 0.85    # always there (the PC), quieter in the browser picture
 
 
 # =======================================================================================================================

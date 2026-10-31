@@ -242,7 +242,7 @@ def prepare_settings_file():
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
 ZD_FILE = "moveeye_daten_3_19_2.zip"
-ZD_SHA256 = "195819cdbfc7be68a038a06819984f4a38a02b30a5dcf94c021bc41608ccc37b"
+ZD_SHA256 = "53973d82fcaf69bdb204233e58ad8acea5745428ff1cb8260207ace6f554b946"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -67571,7 +67571,7 @@ for _a, _b in (('<section id="detect" data-icon="🎯"><h2>Erkennung</h2>',
 # Der 3D-Simulator spielt die Geschichte selbst (simulator3d/scripts/maggie_vorfuehrung.gd, Autopilot + Film-Kamera,
 # eigener Vorführ-Spielstand). Hier nur das Zuschauen:
 #   * Seite /sim/vorfuehrung: das Bild des Simulators (/sim/view.jpg?bare=1 – ohne die Knöpfe des Simulator-Fensters, die
-#     Leiste der Vorführung blendet der Simulator dann auch aus), Bild für Bild geholt (nie eine wachsende Verzögerung);
+#     Leiste der Vorführung blendet der Simulator dann auch aus; bare nur solange sie läuft, Fix 3.19.x), Bild für Bild geholt (nie eine wachsende Verzögerung);
 #     unten eine Leiste (verschwindet nach 4 s, Tippen zeigt sie wieder): Pause / Weiter, Kapitel zurück / Liste / weiter,
 #     Beenden, Vollbild. Ohne laufende Vorführung: Start «Kurzfassung» / «Ganze Geschichte».
 #   * /api/vorfuehrung: GET = Stand (Simulator /control vorfuehrung info), POST {do: start (len) | pause | weiter |
@@ -67753,7 +67753,7 @@ def vf_selftest():
     finally:
         CFG["sim_on"] = keep
     html = vf_page()
-    assert "/sim/view.jpg?bare=1" in html and "/api/vorfuehrung" in html and "Kurzfassung" in html and "<!--NAV-->" not in html
+    assert "/sim/view.jpg?" in html and "bare=1&" in html and "/api/vorfuehrung" in html and "Kurzfassung" in html and "<!--NAV-->" not in html
     assert "/sim/vorfuehrung" in SIM_PAGE and "/sim/vorfuehrung" in WEB_PAGE
     for L in ("fr", "it", "rm"):
         assert TRX[L].get("Watch «Maggie» as a film (demo)"), L
@@ -67765,8 +67765,14 @@ SELFTEST_EXTRA.append(("Vorführung «Maggie» (page /sim/vorfuehrung, owner onl
 # Der 3D-Simulator spielt den Trailer selbst (simulator3d/scripts/trailer.gd: Kamerafahrt im Bergtal, Musik, Texttafeln,
 # Erzähler). Hier nur das Starten und Zuschauen:
 #   * /sim/trailer?id=…: startet den Trailer (wenn nicht schon einer läuft) und zeigt das Bild des Simulators
-#     (/sim/view.jpg?bare=1), unten eine Leiste: Beenden, Nochmals, Vollbild, Zurück. Den Ton hört man am Simulator-PC
-#     (das Bild im Browser ist ohne Ton).
+#     (/sim/view.jpg?bare=1 – nur solange der Film läuft; danach ohne bare, sonst blieben die Knöpfe am PC versteckt),
+#     unten eine Leiste: Beenden, Nochmals, Ton, Stimme, Vollbild, Zurück.
+#   * Ton auch im Browser (Fix 3.19.x, Daniel: «am iPad nichts»): grosser Knopf «🔊 Tippen für Ton» (iOS braucht ein Tippen
+#     vor Sprache und Audio; ein Tippen irgendwo genügt). Danach Erzähler (speechSynthesis, wie bisher) und Musik + Geräusche:
+#     /api/trailer?plan=1 holt den Ton-Plan des Simulators (trailer.gd ton_plan: Zeit, Klang, Lautstärke, Überblendung),
+#     /sim/trailer_ton/<klang>.wav die Klänge (trailer_ton.gd, mono 22 kHz, zusammen ≈ 3 MB); die Seite spielt sie mit
+#     WebAudio im Takt von «t» aus /api/trailer (nachgeführt, wenn es mehr als 0.35 s abweicht). Ältere Simulatoren ohne
+#     Plan: nur der Erzähler. Der Ton läuft auf beiden Geräten (PC und iPad).
 #   * /api/trailer: GET = Stand (Simulator /control trailer info), POST {do: start (id) | stop}. Nur der Besitzer
 #     (nacht_may: Administrator, nicht im Bedienermodus), wie die Vorführung (639m).
 #   * Einstieg: Reiter «Sim» ganz oben die Karte «🛠 Entwickler» (nur mit dem Entwickler-Bereich und für den Besitzer) mit
@@ -67789,6 +67795,22 @@ def trl_info():
             return {"ok": False, "error": tr("This simulator has no trailers yet – update it.")}
         return {"ok": False, "error": str(r.get("error") or tr("The 3D simulator is not connected."))[:120]}
     return r
+
+
+def trl_plan():
+    """the sound plan of the running trailer (simulator trailer.gd ton_plan) – for music and noises in the browser"""
+    if not CFG.get("sim_on"):
+        return {"ok": False, "error": tr("The 3D simulator is not connected.")}
+    try:
+        r = sim_control({"action": "trailer", "do": "plan"}) or {}
+    except Exception as e:
+        return {"ok": False, "error": str(e)[:80]}
+    if not isinstance(r.get("plan"), list):
+        return {"ok": False, "error": str(r.get("error") or "no plan")[:120]}
+    return r
+
+
+TRL_TON_RE = re.compile(r"^[a-z_]{2,24}$")
 
 
 def trl_do(d, owner=True):
@@ -67835,6 +67857,13 @@ TRL_PAGE = _zd('639n_trailer/TRL_PAGE', ZD_PAGE)
 # Regler 0.8–1.1, Wahl pro Gerät (localStorage mw-film-stimme-<sprache>, mw-film-tempo); nur einfache Stimmen: Hinweis «Premium laden».
 SPK_JS = _zd('639n_trailer/SPK_JS', "")
 
+
+# Musik und Geräusche des Trailers im Browser (Fix 3.19.x): der Ton-Plan des Simulators (trailer.gd ton_plan) mit WebAudio
+# nachgespielt – Schleifen (Musikflächen, Wind, Wasser …) mit gleitender Lautstärke, Einzelklänge, Musik leiser während der
+# Erzähler spricht (0.6, wie trailer.gd _audio_tick), am Schluss 2 s ausblenden. Die Uhr: «t» aus /api/trailer (alle 1.5 s);
+# weicht sie mehr als 0.35 s ab, wird nachgeführt, bei mehr als 3 s (Sprung) neu aufgesetzt. Erst nach dem Tippen (iOS).
+TA_JS = _zd('639n_trailer/TA_JS', "")
+
 _HX_TRL = {
     'Trailer Grossvater': ('Trailer Grossvater', 'Bande-annonce Grand-père', 'Trailer Nonno', 'Trailer Tat'),
     'Trailer Maggie': ('Trailer Maggie', 'Bande-annonce Maggie', 'Trailer Maggie', 'Trailer Maggie'),
@@ -67846,6 +67875,7 @@ _HX_TRL = {
     'Over': ('Vorbei', 'Terminé', 'Finito', 'Terminà'),
     'Sound on': ('Ton an', 'Son activé', 'Audio attivo', 'Tun activà'),
     'Sound off': ('Ton aus', 'Son coupé', 'Audio spento', 'Tun deactivà'),
+    'Tap for sound': ('Tippen für Ton', 'Touchez pour le son', 'Tocca per l’audio', 'Tutgar per tun'),
     'This simulator has no trailers yet – update it.': ('Dieser Simulator kennt die Trailer noch nicht – bitte aktualisieren.',
                                                         'Ce simulateur ne connaît pas encore les bandes-annonces – mets-le à jour.',
                                                         'Questo simulatore non conosce ancora i trailer – aggiornalo.',
@@ -67868,7 +67898,7 @@ for _k, _v in _HX_TRL.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
-_SPK_KEYS = ['Voice', 'recommended', 'Automatic (recommended)', 'Listen', 'Speed', 'No voice for this language on this device.', 'Better voices: iPad → Settings → Accessibility → Spoken Content → Voices → English → download «Premium».']
+_SPK_KEYS = ['Tap for sound', 'Voice', 'recommended', 'Automatic (recommended)', 'Listen', 'Speed', 'No voice for this language on this device.', 'Better voices: iPad → Settings → Accessibility → Spoken Content → Voices → English → download «Premium».']
 _TRL_KEYS = list(_HX_TRL) + ["Full screen", "Back", "The valley is being prepared …", "The 3D simulator is not connected."]
 
 # the Vorführung (639m) gets the same: the button in its bar, the new sentences read aloud, silent on pause, screen awake
@@ -67910,7 +67940,7 @@ SIM_PAGE = SIM_PAGE.replace("</body>", TRL_SIMJS.replace("/*TRLDE*/{}", _TRL_DE_
 
 def trl_page():
     js = "Object.assign(I18N.de, " + json.dumps({k: DE.get(k, k) for k in _TRL_KEYS}, ensure_ascii=False) + ");"
-    return render_page(TRL_PAGE, "sim").replace("/*TLDE*/", js, 1).replace("/*SPKJS*/", SPK_JS, 1)
+    return render_page(TRL_PAGE, "sim").replace("/*TLDE*/", js, 1).replace("/*SPKJS*/", SPK_JS, 1).replace("/*TAJS*/", TA_JS, 1)
 
 
 _smalltv_routes_trl_base = smalltv_routes
@@ -67931,10 +67961,24 @@ def smalltv_routes(app, reply, body):                     # + 639n: /sim/trailer
         own = nacht_may(_nacht_role())
         from flask import request
         if request.method == "GET":
-            return reply(trl_info()) if own else reply({"ok": False, "error": tr("Only the owner can do this.")}, 403)
+            if not own:
+                return reply({"ok": False, "error": tr("Only the owner can do this.")}, 403)
+            return reply(trl_plan() if request.args.get("plan") == "1" else trl_info())
         r = trl_do(body(), own)
         code = r.pop("code", None)
         return reply(r, code) if code else reply(r)
+
+    @app.route("/sim/trailer_ton/<nm>.wav")
+    def trl_ton_(nm):                                      # one sound of the trailer (simulator /trailer_ton/<nm>.wav)
+        if not nacht_may(_nacht_role()):
+            return Response(tr("Only the owner can do this."), 403)
+        if not CFG.get("sim_on") or not TRL_TON_RE.match(nm or ""):
+            return Response("no", 404)
+        try:
+            b_, _h = _sim_get("/trailer_ton/" + nm + ".wav", 8.0)
+        except Exception:
+            return Response("simulator not reachable", 502)
+        return Response(b_, mimetype="audio/wav", headers={"Cache-Control": "private, max-age=3600"})
 
 
 if GUI_OK:                                                # the window: the two trailers in the developer part (639c)
@@ -67970,14 +68014,18 @@ def trl_selftest():
     finally:
         CFG["sim_on"] = keep
     html = trl_page()
-    assert "/sim/view.jpg?bare=1" in html and "/api/trailer" in html and "<!--NAV-->" not in html
+    assert "/sim/view.jpg?" in html and "bare=1&" in html and "/api/trailer" in html and "<!--NAV-->" not in html
     assert 'id="c-devquick"' in SIM_PAGE and "/sim/trailer?id=maggie" in SIM_PAGE and "/sim/vorfuehrung" in SIM_PAGE
     assert SIM_PAGE.index('id="c-devquick"') < SIM_PAGE.index('id="c-conn"')
     assert "/sim/trailer?id=grossvater" in WEB_PAGE
     assert "speechSynthesis" in html and "spkTick(S" in html and "wakeLock" in html
+    assert "spk-tap" in html and "spkUnlock" in html and "taSync(S)" in html and "/sim/trailer_ton/" in html and "/api/trailer?plan=1" in html
+    assert "bare ? \"bare=1&\"" in html                    # the browser picture without the PC's buttons only while the film runs
+    assert TRL_TON_RE.match("pad_ruhig") and not TRL_TON_RE.match("../x")
     assert "voiceschanged" in html and "spk-vbtn" in html and "SPK_GOOD" in html and "!SPK.pop" in html and "Stimme" in html
     vh = vf_page()
     assert "spkTick(S, !!S.pause" in vh and "spk-btn" in vh and "Ton an" in vh and "!SPK.pop" in vh and "Premium" in vh
+    assert "spk-tap" in vh and "Tippen für Ton" in vh and "S.laeuft ? \"bare=1&\"" in vh
     for L in ("fr", "it", "rm"):
         assert TRX[L].get("End the trailer"), L
     return "Trailer: page, owner only, commands to the simulator, card on top of «Sim», entries"
