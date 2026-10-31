@@ -215,28 +215,33 @@ func export_zip() -> String:
 	DirAccess.make_dir_recursive_absolute(EXPORT_DIR)
 	var dt := Time.get_datetime_dict_from_system()
 	var path := "%s/MoveEye_Notizen_%04d-%02d-%02d_%02d%02d.zip" % [EXPORT_DIR, dt.year, dt.month, dt.day, dt.hour, dt.minute]
-	var z := ZIPPacker.new()
-	if z.open(path) != OK:
-		return ""
-	z.start_file("notizen.json")
-	z.write_file(JSON.stringify({"v": 1, "app": "MoveEye 3D-Simulator", "version": str(main.VERSION), "n": notes.size(), "notes": notes}, " ").to_utf8_buffer())
-	z.close_file()
+	var entries := [["notizen.json", JSON.stringify({"v": 1, "app": "MoveEye 3D-Simulator", "version": str(main.VERSION), "n": notes.size(), "notes": notes}, " ").to_utf8_buffer()]]
 	var open_n := notes.filter(func(n): return not bool(n.get("done", false))).size()
 	var txt := "Notizen aus dem MoveEye-Simulator (Entwickler → Notizen an Claude)\n%d Notizen, davon %d offen. Version %s.\n\n" % [notes.size(), open_n, main.VERSION]
 	for n in notes:
 		txt += "[%s] %s%s · %s · %s %s · %s\n  %s\n\n" % ["x" if bool(n.get("done", false)) else " ", (str(n["cat"]).to_upper() + " · ") if str(n.get("cat", "")) != "" else "",
 				str(n.get("t", "")), str(n.get("scene", "")), str(n.get("clock", "")), str(n.get("weather", "")), str(n["id"]), str(n.get("text", "")).replace("\n", "\n  ")]
-	z.start_file("LIESMICH.txt")
-	z.write_file(txt.to_utf8_buffer())
-	z.close_file()
+	entries.append(["LIESMICH.txt", txt.to_utf8_buffer()])
 	for n in notes:
 		var jp := "%s/%s.jpg" % [DIR, n["id"]]
 		if FileAccess.file_exists(jp):
-			z.start_file("bilder/%s.jpg" % n["id"])
-			z.write_file(FileAccess.get_file_as_bytes(jp))
-			z.close_file()
-	z.close()
+			entries.append(["bilder/%s.jpg" % n["id"], FileAccess.get_file_as_bytes(jp)])
+	if not pack_zip(path, entries):
+		return ""
 	return path
+
+
+static func pack_zip(path: String, entries: Array) -> bool:
+	"""one ZIP from [[name in the ZIP, PackedByteArray], …] - also used by the play test (devtool_spieltest.gd «ZIP für Claude»)"""
+	var z := ZIPPacker.new()
+	if z.open(path) != OK:
+		return false
+	for e in entries:
+		z.start_file(str(e[0]))
+		z.write_file(e[1])
+		z.close_file()
+	z.close()
+	return true
 
 
 # =============================================================================================================================

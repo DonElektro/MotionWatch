@@ -488,7 +488,15 @@ func _hide_bar() -> void:
 		_bar.visible = false
 
 
+func _spieltest(art: String) -> void:
+	"""Spieltest-Assistent (spieltest.gd): a hint / a wrong code of this riddle - nothing while it is off"""
+	var st_ = _main().get("spieltest") if _main() != null else null
+	if st_ != null and st_.on:
+		preload("res://scripts/spieltest.gd").ereignis("horror", art, {"raetsel": st_.raetsel_key_horror()})
+
+
 func _hint() -> void:
+	_spieltest("tipp")
 	match active:
 		"k1":
 			if _beacon != null and is_instance_valid(_beacon) and not _beacon.visible:
@@ -604,7 +612,9 @@ func _try(k: String, s = null) -> bool:
 		_solved(k)
 		return true
 	_tries += 1
+	_spieltest("falsch")                                          # Spieltest-Assistent: falscher Code
 	if _tries == 2:
+		_spieltest("tipp")                                        # (the tip comes by itself now)
 		_card_code(k)                                             # with the tip now
 	if _msg != null and is_instance_valid(_msg):
 		_msg.text = T.t("Falsch – das Schloss bleibt zu.")
