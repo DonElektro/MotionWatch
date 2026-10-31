@@ -310,6 +310,6 @@ const QUESTS := {
 const QUEST_ORDER := ["q_ziege", "q_ersatzteil", "q_markieren", "q_kuh", "q_schaf", "q_brief", "q_kaese", "q_proviant",
 		"q_wild_murmeltier", "q_wild_schneehase", "q_wild_gaemse", "q_wild_steinbock", "q_wild_bartgeier", "q_wild_luchs"]
 # Tiere für «Tier zurückbringen»: Art in actor.gd, Farbe (Ziege braun), Wärmebild-Fell °C
-const TIERE := {"ziege": ["sheep", Color(0.55, 0.42, 0.3), 37.0, "Flocke"], "schaf": ["sheep", Color(0.1, 0.1, 0.1), 37.0, "das schwarze Schaf"],
-		"kuh": ["cow", Color(0.45, 0.3, 0.2), 36.0, "die Bless"]}
+const TIERE := {"ziege": ["sheep", Color(0.55, 0.42, 0.3), 37.0], "schaf": ["sheep", Color(0.1, 0.1, 0.1), 37.0],
+		"kuh": ["cow", Color(0.45, 0.3, 0.2), 36.0]}
 const ALP := Vector2(60, 0)

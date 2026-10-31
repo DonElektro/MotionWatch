@@ -20,7 +20,8 @@ extends Node
 ## Einhänge-Punkte in bergtal_abenteuer.gd (je eine Zeile): _ready, start_run (on_start), _post_leg (after_leg),
 ##   choose (Art "a2_…"), _paint_camp (paint_camp), _paint_chapter (paint_overview), op ("a2").
 ## Schnittstellen für die anderen Pakete:
-##   wuensche(figur_id) -> Array       A4: [{will, will_n, gibt, gibt_n, einmal}] («wanderer» / «bergsteiger» = die von heute)
+##   wuensche(figur_id) -> Dictionary  A4 (statisch): {name, will: [ids], gibt: [ids]} («wanderer» / «bergsteiger» = von heute)
+##   wunschliste(figur_id) -> Array    die festen Paare [{will, will_n, gibt, gibt_n, einmal}]
 ##   tausch_erledigt(figur_id, i)      A4: ein Tausch ist passiert (die Figur merkt es sich, «einmal»-Wünsche verschwinden)
 ##   foto_gemeldet(tier_id)            A1: MoveEye hat ein Tier aufgenommen (murmeltier, schneehase, gaemse, steinbock,
 ##                                     bartgeier, steinadler, luchs) - oder A1 bietet ab.a1.hat_foto(tier_id)
@@ -109,29 +110,41 @@ func heute() -> Dictionary:
 # =======================================================================================================================
 # things (A4 owns the inventory) and photos (A1 takes them)
 # =======================================================================================================================
-# TODO verbinden mit abenteuer_inventar.gd (A4 ist Besitzer): sobald es das Inventar gibt (ab.inventar mit hat / gib /
-# nimm), laufen diese Funktionen darüber. Bis dahin der Stub: Rucksack der Tour (ab.has) + was A2 selbst übergeben hat.
+# Das Inventar gehört A4 (abenteuer_inventar.gd: hat / gib / nimm / anzahl). Es wird zur Laufzeit geladen, damit dieser
+# Zweig auch ohne A4 läuft; nach dem Zusammenführen ist es immer da (dann ist der Ersatz unten nie aktiv).
+# Verbrauchsdinge (brief, kaese, ersatzteil, proviant) liegen im Rucksack der Tour - eine Botschaft, die man über
+# mehrere Touren trägt, packt on_start() wieder ein.
+const INV_PATH := "res://scripts/abenteuer_inventar.gd"
+const RUCK_PATH := "res://scripts/abenteuer_rucksack.gd"
+static var _inv_s = null
+static var _inv_tried := false
+
+
 func _inv():
-	var inv = ab.get("inventar")
-	return inv if inv != null and is_instance_valid(inv) else null
+	if not _inv_tried:
+		_inv_tried = true
+		if ResourceLoader.exists(INV_PATH):
+			_inv_s = load(INV_PATH)
+			if _inv_s != null and ab != null:
+				_inv_s.verbinde(ab)
+	return _inv_s
 
 
 func hat(id: String) -> bool:
-	var inv = _inv()
-	if inv != null and inv.has_method("hat"):
-		return bool(inv.hat(id))
 	if id == "hut" and bool(mem().get("test_hut", false)):
-		return true
-	if not ab.R.is_empty() and ab.has(id):
+		return true                                            # Test-Schalter (Übersicht im Kapitel)
+	var inv = _inv()
+	if inv != null:
+		return bool(inv.hat(id))
+	if not ab.R.is_empty() and ab.has(id):                     # Ersatz ohne A4
 		return true
 	return int((mem()["besitz"] as Dictionary).get(id, 0)) > 0
 
 
 func gib(id: String, n := 1) -> void:
 	var inv = _inv()
-	if inv != null and inv.has_method("gib"):
-		for k in range(n):
-			inv.gib(id)
+	if inv != null:
+		inv.gib(id, n)
 		return
 	var b: Dictionary = mem()["besitz"]
 	b[id] = int(b.get(id, 0)) + n
@@ -139,14 +152,25 @@ func gib(id: String, n := 1) -> void:
 
 func nimm(id: String, n := 1) -> void:
 	var inv = _inv()
-	if inv != null and inv.has_method("nimm"):
-		for k in range(n):
-			inv.nimm(id)
+	if inv != null:
+		inv.nimm(id, n)                                        # (false = nicht mehr da - die Aufgabe gilt trotzdem)
 		return
 	var b: Dictionary = mem()["besitz"]
 	b[id] = maxi(0, int(b.get(id, 0)) - n)
 	if int(b[id]) == 0:
 		b.erase(id)
+
+
+func _carry_again() -> void:
+	"""a delivery over several tours: the thing is in the backpack again (consumables belong to one tour)"""
+	for qid in FD.QUEST_ORDER:
+		var q: Dictionary = FD.QUESTS[qid]
+		if str(q["typ"]) != "bote":
+			continue
+		var st := _qst(qid)
+		var carried: bool = st == "geholt" or (st == "aktiv" and not q.has("hol"))
+		if carried and not hat(str(q["item"])):
+			gib(str(q["item"]))
 
 
 # A1 (MoveEye-Lager + Wildkamera) meldet Fotos: entweder ab.a1.hat_foto(tier) -> bool, oder A1 ruft foto_gemeldet(tier).
@@ -181,7 +205,34 @@ func wild_auftraege() -> Array:
 # =======================================================================================================================
 # trading (the mechanics: A4)
 # =======================================================================================================================
-func wuensche(fid: String) -> Array:
+static var _me = null                 # the running instance (for the static wuensche() that A4 calls)
+
+
+func _enter_tree() -> void:
+	_me = self
+
+
+static func wuensche(fid: String) -> Dictionary:
+	"""A4 (abenteuer_rucksack.gd) ruft das auf: {name, will: [ids], gibt: [ids]} - Format wie WUENSCHE_STUB.
+	«wanderer» / «bergsteiger» = die Figur von heute. Die genauen Paare (wie viele gegen wie viele): wunschliste()."""
+	if fid in ["wanderer", "bergsteiger"]:
+		if _me == null:
+			return {}
+		fid = str(_me.heute()[fid])
+	if not FD.WUENSCHE.has(fid):
+		return {}
+	var will := []
+	var gibt := []
+	for w in FD.WUENSCHE[fid]:
+		if not str(w["will"]) in will:
+			will.append(str(w["will"]))
+		if not str(w["gibt"]) in gibt:
+			gibt.append(str(w["gibt"]))
+	return {"name": T.t(str(FD.FIG[fid]["name"])), "will": will, "gibt": gibt, "figur": fid}
+
+
+func wunschliste(fid: String) -> Array:
+	"""die festen Paare je Figur: [{will, will_n, gibt, gibt_n, einmal, i, figur, erledigt}]"""
 	if fid in ["wanderer", "bergsteiger"]:
 		fid = heute()[fid]
 	var out := []
@@ -306,6 +357,7 @@ func on_start() -> void:
 			m[k] = z[k]
 	ab.choices.append([0, "a2_snap", JSON.stringify(m)])
 	ab.R["a2"] = {"mem": m, "plan": {}, "talk": {}, "met": {}, "essen": false}
+	_carry_again()
 	_planning = true
 	_plan()
 	_planning = false
@@ -588,16 +640,20 @@ func _effect(e: String, fid: String) -> String:
 	match e:
 		"tausch":
 			var lines := []
-			for w in wuensche(fid):
+			for w in wunschliste(fid):
 				if bool(w["erledigt"]):
 					continue
 				lines.append("• " + T.t("%s gegen %s") % [_item(str(w["will"]), int(w["will_n"])), _item(str(w["gibt"]), int(w["gibt_n"]))])
 			if lines.is_empty():
 				return T.t("Im Moment brauche ich nichts. Danke!")
 			var tx := T.t("Ich hätte gern etwas - und gebe dir etwas dafür:") + "\n" + "\n".join(lines)
-			var tm = ab.get("tausch")                      # A4: the trading (TODO verbinden mit dem Rucksack-Paket)
-			if tm != null and is_instance_valid(tm) and tm.has_method("oeffnen"):
-				tm.oeffnen(fid)
+			if ResourceLoader.exists(RUCK_PATH):               # A4: the trading window
+				var rk = load(RUCK_PATH)
+				if rk != null:
+					rk.tausch_oeffnen(ab, fid)
+					tx += "\n" + T.t("Das Tausch-Fenster ist offen.")
+				else:
+					tx += "\n" + T.t("(Tauschen geht über den Rucksack.)")
 			else:
 				tx += "\n" + T.t("(Tauschen geht über den Rucksack.)")
 			return tx
@@ -1021,7 +1077,7 @@ func op(d: Dictionary) -> Dictionary:
 		"foto":
 			foto_gemeldet(str(d.get("value", "")))
 		"wuensche":
-			return {"ok": true, "wuensche": wuensche(str(d.get("fid", "")))}
+			return {"ok": true, "wuensche": wuensche(str(d.get("fid", ""))), "paare": wunschliste(str(d.get("fid", "")))}
 		"tag":
 			mem()["tag"] = int(d.get("value", 0))
 			_persist()
