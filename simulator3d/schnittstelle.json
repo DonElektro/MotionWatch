@@ -32,7 +32,8 @@
     "forecast": "Boeen, Wetter (forecast.weather), Sturm, Tmax/Tmin -> 285 sim_forecast, Tagebuch-Wetter",
     "battery": "simulierter USV-HAT -> 285 sim_battery_tick, Uebung Akku (141/565)",
     "follower": "ein anderes MoveEye steuert, dieses schaut nur zu -> 350",
-    "leader": "Name des MoveEye, das steuert -> 350 Meldung «schaut nur zu»"
+    "leader": "Name des MoveEye, das steuert -> 350 Meldung «schaut nur zu»",
+    "sky": "Himmel und Licht der Szene (licht.gd): lux am Geraet (Himmel + Lampen), sky_lux, phase (tag / buergerlich / nautisch / astronomisch / nacht), sun_el, moon_el, moon_illum, lp (land / dorf / stadt) -> MoveEye liest es noch nicht (spaeter: Nacht-Umschaltung pruefen, Kamera-Paket Blendung)"
   },
   "state": {
     "v": "Version des Zustands",
@@ -112,7 +113,8 @@
   "_meta": {
     "world_reply": [
       "v",
-      "ok"
+      "ok",
+      "sky"
     ],
     "state": [
       "v",

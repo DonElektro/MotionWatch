@@ -2647,6 +2647,12 @@
   "it": "Ramo nel vento",
   "rm": "Rom en il vent"
  },
+ "Astronomische Dämmerung": {
+  "en": "Astronomical twilight",
+  "fr": "Crépuscule astronomique",
+  "it": "Crepuscolo astronomico",
+  "rm": "Crepuscul astronomic"
+ },
  "Auf dem Furggapass (beim Hospiz)": {
   "en": "On the Furggapass (at the hospice)",
   "fr": "Au col de la Furgga (près de l'hospice)",
@@ -2935,6 +2941,12 @@
   "it": "Autologon: ",
   "rm": "Autologon: "
  },
+ "automatisch (Dämmerung, teils Zeitschaltung)": {
+  "en": "automatic (dusk, some with a timer)",
+  "fr": "automatique (crépuscule, en partie avec minuterie)",
+  "it": "automatica (crepuscolo, in parte con timer)",
+  "rm": "automatic (crepuscul, per part cun urari)"
+ },
  "Automatisch (erkannt)": {
   "en": "Automatic (detected)",
   "fr": "Automatique (détecté)",
@@ -2946,6 +2958,12 @@
   "fr": "Automatique (Lite sur Raspberry Pi et PC très lents, sinon Normal)",
   "it": "Automatico (Lite su Raspberry Pi e PC molto lenti, altrimenti Normale)",
   "rm": "Automatic (Lite sin Raspberry Pi e PCs fitg plauns, uschiglio Normal)"
+ },
+ "automatisch (nach Szene)": {
+  "en": "automatic (by scene)",
+  "fr": "automatique (selon la scène)",
+  "it": "automatico (secondo la scena)",
+  "rm": "automatic (tenor la scena)"
  },
  "Automatisch leichter, wenn der PC zu langsam ist": {
   "en": "Automatically lighter if the PC is too slow",
@@ -4038,6 +4056,12 @@
   "fr": "Scène avec structure",
   "it": "Palco con americana",
   "rm": "Tribuna cun traversa"
+ },
+ "Bürgerliche Dämmerung": {
+  "en": "Civil twilight",
+  "fr": "Crépuscule civil",
+  "it": "Crepuscolo civile",
+  "rm": "Crepuscul civil"
  },
  "Camping": {
   "en": "Camping",
@@ -8413,6 +8437,18 @@
   "it": "",
   "rm": ""
  },
+ "Himmel jetzt (Dämmerung, Mond, Helligkeit in Lux)": {
+  "en": "Sky now (twilight, moon, brightness in lux)",
+  "fr": "Ciel maintenant (crépuscule, lune, luminosité en lux)",
+  "it": "Cielo adesso (crepuscolo, luna, luminosità in lux)",
+  "rm": "Tschiel ussa (crepuscul, glina, clerezza en lux)"
+ },
+ "Himmel: %s · Sonne %.1f° · %s · %s lx · Lichtverschmutzung %s": {
+  "en": "Sky: %s · sun %.1f° · %s · %s lx · light pollution %s",
+  "fr": "Ciel : %s · soleil %.1f° · %s · %s lx · pollution lumineuse %s",
+  "it": "Cielo: %s · sole %.1f° · %s · %s lx · inquinamento luminoso %s",
+  "rm": "Tschiel: %s · sulegl %.1f° · %s · %s lx · contaminaziun da la glisch %s"
+ },
  "Himmelblau": {
   "en": "Sky blue",
   "fr": "Bleu ciel",
@@ -8868,6 +8904,12 @@
   "fr": "Food truck",
   "it": "Furgone dello street food",
   "rm": "Char da snacks"
+ },
+ "immer an": {
+  "en": "always on",
+  "fr": "toujours allumé",
+  "it": "sempre accese",
+  "rm": "adina en funcziun"
  },
  "Immer dabei: 3D-Simulator %s · Seite «%s». Weg: direkt vom Simulator (kein MoveEye verbunden) – ohne Internet wartet sie und geht später.": {
   "en": "",
@@ -10430,6 +10472,18 @@
   "it": "Fascio di lampada",
   "rm": "Radi da lampa"
  },
+ "Land": {
+  "en": "Countryside",
+  "fr": "Campagne",
+  "it": "Campagna",
+  "rm": "Champagna"
+ },
+ "Land (dunkler Himmel)": {
+  "en": "Countryside (dark sky)",
+  "fr": "Campagne (ciel sombre)",
+  "it": "Campagna (cielo buio)",
+  "rm": "Champagna (tschiel stgir)"
+ },
  "Landeskarte": {
   "en": "National map",
   "fr": "Carte nationale",
@@ -10604,6 +10658,12 @@
   "it": "Luce ",
   "rm": "Glisch "
  },
+ "Licht & Nacht": {
+  "en": "Light & night",
+  "fr": "Lumière & nuit",
+  "it": "Luce & notte",
+  "rm": "Glisch & notg"
+ },
  "Licht & Ton": {
   "en": "Light & sound",
   "fr": "Lumière et son",
@@ -10633,6 +10693,12 @@
   "fr": "Cône de lumière d’une voiture maintenant (la nuit)",
   "it": "Cono di luce di un’auto ora (di notte)",
   "rm": "Cun da glisch d’in auto ussa (da notg)"
+ },
+ "Lichtverschmutzung (Himmel nachts, Sterne)": {
+  "en": "Light pollution (night sky, stars)",
+  "fr": "Pollution lumineuse (ciel nocturne, étoiles)",
+  "it": "Inquinamento luminoso (cielo notturno, stelle)",
+  "rm": "Contaminaziun da la glisch (tschiel da notg, stailas)"
  },
  "Lieferroboter (keine Person)": {
   "en": "Delivery robot (no person)",
@@ -11469,6 +11535,30 @@
   "fr": "Lune",
   "it": "Luna",
   "rm": "Glina"
+ },
+ "Mond %d° hoch, %d %% beleuchtet": {
+  "en": "moon %d° high, %d %% lit",
+  "fr": "lune à %d°, éclairée à %d %%",
+  "it": "luna alta %d°, illuminata al %d %%",
+  "rm": "glina %d° aut, %d %% illuminada"
+ },
+ "Mond unter dem Horizont": {
+  "en": "moon below the horizon",
+  "fr": "lune sous l’horizon",
+  "it": "luna sotto l’orizzonte",
+  "rm": "glina sut l’orizont"
+ },
+ "Mondphase automatisch (Ort, Form und Licht des Monds nach Datum und Uhrzeit)": {
+  "en": "Moon phase automatic (position, shape and light of the moon from date and time)",
+  "fr": "Phase de lune automatique (position, forme et lumière de la lune selon la date et l’heure)",
+  "it": "Fase lunare automatica (posizione, forma e luce della luna secondo data e ora)",
+  "rm": "Fasa da la glina automatica (posiziun, furma e glisch da la glina tenor data ed ura)"
+ },
+ "Mondphase fest: beleuchteter Teil (0 = Neumond, 1 = Vollmond)": {
+  "en": "Fixed moon phase: lit part (0 = new moon, 1 = full moon)",
+  "fr": "Phase de lune fixe : partie éclairée (0 = nouvelle lune, 1 = pleine lune)",
+  "it": "Fase lunare fissa: parte illuminata (0 = luna nuova, 1 = luna piena)",
+  "rm": "Fasa da la glina fixa: part illuminada (0 = glina nova, 1 = glina plaina)"
  },
  "Mondphase nach Datum (Licht und Form des Monds)": {
   "en": "Moon phase by date (light and shape of the moon)",
@@ -12396,6 +12486,12 @@
   "it": "Colori e materiali naturali (metallo, vetro, stoffa, bagnato con la pioggia) – effetto dopo il cambio di scena",
   "rm": "Colurs e materials natirals (metal, vaider, stoffa, bletsch cun plievgia) – fa effect suenter la midada da scena"
  },
+ "Nautische Dämmerung": {
+  "en": "Nautical twilight",
+  "fr": "Crépuscule nautique",
+  "it": "Crepuscolo nautico",
+  "rm": "Crepuscul nautic"
+ },
  "Nebel": {
   "en": "Fog",
   "fr": "Brouillard",
@@ -12617,6 +12713,12 @@
   "fr": "Prends la tenue de camouflage, le parapluie ou le carton (à choisir avant la manche) et rampe jusqu’à la tente. Ici la tenue de camouflage aide davantage – mais seulement le jour. MoveEye surveille.",
   "it": "Prendi abiti mimetici, ombrello o scatolone (da scegliere prima del turno) e striscia fino alla tenda. Qui gli abiti mimetici aiutano di più – ma solo di giorno. MoveEye sorveglia.",
   "rm": "Prenda vestgadira da camuflascha, parasol u cartun (tscherner avant la runda) e sa tira fin a la tenda. Qua gida la vestgadira da camuflascha dapli – ma mo dal di. MoveEye fa attenziun."
+ },
+ "no visitor %d": {
+  "en": "no visitor %d",
+  "fr": "pas de visiteur %d",
+  "it": "nessun visitatore %d",
+  "rm": "nagin visitader %d"
  },
  "no weather change (left) in this round": {
   "en": "no weather change (left) in this round",
@@ -13512,6 +13614,12 @@
   "fr": "Lieu : «%s»  ·  %s",
   "it": "Posto: «%s»  ·  %s",
   "rm": "Plaz: «%s»  ·  %s"
+ },
+ "Platzbeleuchtung (Strassen- und Platzlampen)": {
+  "en": "Site lighting (street and site lamps)",
+  "fr": "Éclairage du site (lampadaires)",
+  "it": "Illuminazione del posto (lampioni)",
+  "rm": "Illuminaziun dal plaz (lampas da via e da plaz)"
  },
  "Plitsch, platsch – es regnet!": {
   "en": "Pitter, patter – it is raining!",
@@ -19420,6 +19528,12 @@
   "fr": "Chaos du montage de tente (emplacement libre)",
   "it": "Caos del montaggio della tenda (piazzola libera)",
   "rm": "Caos cun montar la tenda (plaz liber)"
+ },
+ "Zelte und Fenster leuchten abends, bis die Leute schlafen": {
+  "en": "Tents and windows glow in the evening until people go to sleep",
+  "fr": "Les tentes et les fenêtres sont éclairées le soir jusqu’au coucher",
+  "it": "Tende e finestre illuminate la sera fino a quando la gente dorme",
+  "rm": "Tendas e fanestras glischan la saira, fin che la glieud dorma"
  },
  "Zeltplatz-Schleicher": {
   "en": "Campsite sneaker",
