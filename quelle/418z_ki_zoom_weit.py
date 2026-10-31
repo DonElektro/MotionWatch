@@ -123,7 +123,7 @@ def zoom_pick(track_hints, far_hints, boxes, now, k_max, far_ok):
     cand = []
     ZOOM["pend"] = [p for p in ZOOM["pend"] if now - p[0] <= ZOOM_CONFIRM_S]
     for p in ZOOM["pend"]:
-        cand.append((p[1], "far"))
+        cand.append((p[2], "far"))                        # the box of the open hit (its tile is made around it again)
     for hb in sorted(track_hints, key=lambda b: -b[2] * b[3]):
         cand.append((tuple(hb[:4]), "track"))
     if far_ok:

@@ -1067,7 +1067,10 @@ class MotionWatch:
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.42, col, 1, cv2.LINE_AA)
             warm_boxes = []
             th_pers = THERMAL is not None and not person_boxes and thermal_person_active()   # 2.98.13: persons in the thermal picture (232)
-            if (CFG["thermal_alarm"] or th_pers) and CFG["detection_on"] and THERMAL is not None:
+            # real-erk-e3: at night the crawling check needs the warm bodies also when a person box is there elsewhere (a fixed
+            # false «person» in the picture must not hide a crawling one, 418k)
+            th_crawl = THERMAL is not None and bool(person_boxes) and thermal_person_active() and _foot_night()
+            if (CFG["thermal_alarm"] or th_pers or th_crawl) and CFG["detection_on"] and THERMAL is not None:
                 warm_boxes = THERMAL.detect()                 # (x, y, w, h) 0..1 of the picture, already checked against the zones
             maybe_ = []
             if not person_boxes and CFG["detection_on"]:      # real-reh-fusspunkt: «Person?» - flat + weak AI + movement / warmth (232)
@@ -1075,7 +1078,7 @@ class MotionWatch:
                     maybe_ = weak_person_feed(self.ai, persons + candidates, warm_boxes, person_boxes, present, frame, pw, ph, W, H, t0)
                 except Exception as e:
                     log_event("sys", f"Person?: {e}"[:160])
-            if (CFG["thermal_alarm"] or th_pers) and CFG["detection_on"] and THERMAL is not None:
+            if (CFG["thermal_alarm"] or th_pers or th_crawl) and CFG["detection_on"] and THERMAL is not None:
                 if th_pers and warm_boxes and not maybe_:                 # a «Person?» is there: no animal under it (232)
                     warm_boxes = thermal_person_feed(warm_boxes, person_boxes, present, frame, pw, ph, W, H, t0, maybe_)
                 try:                                          # real-erk-e3: crawling at night - warm + moving + near (418k)

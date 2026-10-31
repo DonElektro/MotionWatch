@@ -35795,7 +35795,10 @@ class MotionWatch:
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.42, col, 1, cv2.LINE_AA)
             warm_boxes = []
             th_pers = THERMAL is not None and not person_boxes and thermal_person_active()   # 2.98.13: persons in the thermal picture (232)
-            if (CFG["thermal_alarm"] or th_pers) and CFG["detection_on"] and THERMAL is not None:
+            # real-erk-e3: at night the crawling check needs the warm bodies also when a person box is there elsewhere (a fixed
+            # false «person» in the picture must not hide a crawling one, 418k)
+            th_crawl = THERMAL is not None and bool(person_boxes) and thermal_person_active() and _foot_night()
+            if (CFG["thermal_alarm"] or th_pers or th_crawl) and CFG["detection_on"] and THERMAL is not None:
                 warm_boxes = THERMAL.detect()                 # (x, y, w, h) 0..1 of the picture, already checked against the zones
             maybe_ = []
             if not person_boxes and CFG["detection_on"]:      # real-reh-fusspunkt: «Person?» - flat + weak AI + movement / warmth (232)
@@ -35803,7 +35806,7 @@ class MotionWatch:
                     maybe_ = weak_person_feed(self.ai, persons + candidates, warm_boxes, person_boxes, present, frame, pw, ph, W, H, t0)
                 except Exception as e:
                     log_event("sys", f"Person?: {e}"[:160])
-            if (CFG["thermal_alarm"] or th_pers) and CFG["detection_on"] and THERMAL is not None:
+            if (CFG["thermal_alarm"] or th_pers or th_crawl) and CFG["detection_on"] and THERMAL is not None:
                 if th_pers and warm_boxes and not maybe_:                 # a «Person?» is there: no animal under it (232)
                     warm_boxes = thermal_person_feed(warm_boxes, person_boxes, present, frame, pw, ph, W, H, t0, maybe_)
                 try:                                          # real-erk-e3: crawling at night - warm + moving + near (418k)
@@ -37177,14 +37180,17 @@ def crawl_push(notifier, frame, d, ln):
 
 
 def crawl_feed(warm_boxes, tracks, animals, person_boxes, present, frame, pw, ph, W, H, t0, notifier=None):
-    """410, at night when nobody was found: warm bodies (0..1) at the same place as movement (tracks / candidates, working
+    """410, at night: warm bodies (0..1) that are not under a person box already at the same place as movement (tracks / candidates, working
     picture) -> Voralarm or «Person?» (person_boxes). Returns the boxes that became «Person?» (0..1)."""
     STATE["crawl"] = 0
-    if not warm_boxes or person_boxes:
+    if not warm_boxes:
         return []
     night = _foot_night()
     if not night:
         return []
+    if person_boxes:                                     # a person elsewhere (maybe a fixed false one): only the warm bodies beside it
+        pb = [(b[0] / pw, b[1] / ph, b[2] / pw, b[3] / ph) for b in person_boxes]
+        warm_boxes = [b for b in warm_boxes if not any(_ov(b, q) > 0.3 for q in pb)]
     mv = [(t.box[0] / pw, t.box[1] / ph, t.box[2] / pw, t.box[3] / ph) for t in tracks if getattr(t, "box", None) and not getattr(t, "lost", 0)]
     an = [(o[0] / pw, o[1] / ph, o[2] / pw, o[3] / ph) for o in animals or []]
     best = None
@@ -37422,7 +37428,7 @@ def zoom_pick(track_hints, far_hints, boxes, now, k_max, far_ok):
     cand = []
     ZOOM["pend"] = [p for p in ZOOM["pend"] if now - p[0] <= ZOOM_CONFIRM_S]
     for p in ZOOM["pend"]:
-        cand.append((p[1], "far"))
+        cand.append((p[2], "far"))                        # the box of the open hit (its tile is made around it again)
     for hb in sorted(track_hints, key=lambda b: -b[2] * b[3]):
         cand.append((tuple(hb[:4]), "track"))
     if far_ok:
@@ -95378,6 +95384,27 @@ for _k, _v in _HX_E3.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(("fr", "it", "rm")):
         TRX[_L].setdefault(_k, _v[_i + 1])
+
+# the manual (chapter «Platz einrichten», the camera height / foot point of 624): one sentence about crawling at night (418k)
+_HELP_E3 = {
+    "de": ("(Reh / Fuchs = Tier statt Person)", "(Reh / Fuchs = Tier statt Person; etwas Grosses, Warmes, das sich nachts nah am Boden "
+           "bewegt, gibt den Voralarm «Etwas Grosses am Boden» und nach 6 s «Person?» – eine kriechende Person)"),
+    "en": ("(roe deer / fox = animal instead of person)", "(roe deer / fox = animal instead of person; something big and warm that moves "
+           "near the ground at night gives the pre-alarm «Something big at the ground» and after 6 s «Person?» – a crawling person)"),
+    "fr": ("(chevreuil / renard = animal au lieu de personne)", "(chevreuil / renard = animal au lieu de personne ; quelque chose de grand et "
+           "chaud qui bouge la nuit près du sol donne la pré-alarme « Quelque chose de grand au sol » et après 6 s « Personne ? » – une "
+           "personne qui rampe)"),
+    "it": ("(capriolo / volpe = animale invece di persona)", "(capriolo / volpe = animale invece di persona; qualcosa di grande e caldo che "
+           "di notte si muove vicino a terra dà il preallarme «Qualcosa di grande a terra» e dopo 6 s «Persona?» – una persona che striscia)"),
+    "rm": ("(chavriel / vulp = animal empè da persuna)", "(chavriel / vulp = animal empè da persuna; insatge grond e chaud che sa mova la "
+           "notg datiers dal terren dat il preallarm «Insatge grond per terra» e suenter 6 s «Persuna?» – ina persuna che sa splattira)"),
+}
+_hp_en = HELP_PAGE.find('<div lang="en">')
+if _hp_en > 0:
+    HELP_PAGE = HELP_PAGE[:_hp_en].replace(*_HELP_E3["de"], 1) + HELP_PAGE[_hp_en:].replace(*_HELP_E3["en"], 1)
+for _L in ("fr", "it", "rm"):
+    if HELP_X.get(_L):
+        HELP_X[_L] = HELP_X[_L].replace(*_HELP_E3[_L], 1)
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--cam", type=int, default=None, help="USB camera number (same as --source usb:N)")

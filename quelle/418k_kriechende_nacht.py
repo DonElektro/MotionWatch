@@ -116,14 +116,17 @@ def crawl_push(notifier, frame, d, ln):
 
 
 def crawl_feed(warm_boxes, tracks, animals, person_boxes, present, frame, pw, ph, W, H, t0, notifier=None):
-    """410, at night when nobody was found: warm bodies (0..1) at the same place as movement (tracks / candidates, working
+    """410, at night: warm bodies (0..1) that are not under a person box already at the same place as movement (tracks / candidates, working
     picture) -> Voralarm or «Person?» (person_boxes). Returns the boxes that became «Person?» (0..1)."""
     STATE["crawl"] = 0
-    if not warm_boxes or person_boxes:
+    if not warm_boxes:
         return []
     night = _foot_night()
     if not night:
         return []
+    if person_boxes:                                     # a person elsewhere (maybe a fixed false one): only the warm bodies beside it
+        pb = [(b[0] / pw, b[1] / ph, b[2] / pw, b[3] / ph) for b in person_boxes]
+        warm_boxes = [b for b in warm_boxes if not any(_ov(b, q) > 0.3 for q in pb)]
     mv = [(t.box[0] / pw, t.box[1] / ph, t.box[2] / pw, t.box[3] / ph) for t in tracks if getattr(t, "box", None) and not getattr(t, "lost", 0)]
     an = [(o[0] / pw, o[1] / ph, o[2] / pw, o[3] / ph) for o in animals or []]
     best = None
