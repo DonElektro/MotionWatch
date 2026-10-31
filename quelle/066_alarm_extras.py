@@ -516,6 +516,8 @@ def alarm_gate(w, frame, persons, now):
         why = "the AI saw the person twice in a row"
     elif warm and not ai_on:
         why = "thermal camera (the AI is off)"
+    elif warm and STATE.get("fog"):
+        why = "thermal camera (fog: the camera sees little, 411)"
     if why:
         G["ok"] = True
         log_event("person", f"Double confirmation: {why} - alarm")

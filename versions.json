@@ -1,13 +1,31 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 16:40",
+ "generated": "2026-10-31 16:55",
  "versions": [
+  {
+   "version": "3.5.0",
+   "file": "webcam_bewegung_3_5_0.py",
+   "url": "",
+   "sha256": "2de1f83516566e66a38556fd6f815109de232902f9f03b83837c97ce96012a93",
+   "date": "2026-10-31 16:55",
+   "notes": "Kriechende nachts: Voralarm «⚠ Etwas Grosses am Boden», nach 6 s «Person? (kriecht)» mit Alarm; Fuchs und Igel lösen nichts aus; KI-Lupe schaut auch kleine, weite Bewegungen an (nicht bei starkem Wind).",
+   "sig": "f79f98014727f9778348be9f028d6d809a8a1b4ec5123d3ca292b5723908c90ffa671e98d47b3be7f8bfbf16325cc9861d72dde9e4d8aed4135f59904a050c03"
+  },
+  {
+   "version": "3.4.0",
+   "file": "webcam_bewegung_3_4_0.py",
+   "url": "",
+   "sha256": "0b7cdb82af8a0e0da5f087632fa68d82d270fc63b2b2ac6bec3d2a2ab9e992bd",
+   "date": "2026-10-31 16:54",
+   "notes": "Nebel-Modus: Nebel erkennen, Kontrast anheben, mehr Wärmebild, Hinweis «🌫 Nebel – Sicht eingeschränkt», kein falsches «Kamera verdreht» im Nebel; in Dämmerung und Wind 2–3 Treffer in Folge vor einer Personen-Meldung.",
+   "sig": "8130371892411ea77f99bab8ca5102080048285aa12deab4dfcc12943cd08431e6f2c0a54800f4815d894e4b4b64cc90a42e66be2b285f891cc1209e1554cd07"
+  },
   {
    "version": "3.3.0",
    "file": "webcam_bewegung_3_3_0.py",
    "url": "",
    "sha256": "c4fab0fb537df5f612bef02ae834aff6839e4df35b8027084131fc55b9fd04a0",
-   "date": "2026-10-31 16:40",
+   "date": "2026-10-31 16:54",
    "notes": "MoveEye Sim 3.3.0: Roter Faden – Die Karte des Grossvaters und Maggie kennen sich, neues Abzeichen «Beide Geschichten geschafft».",
    "sig": "664f602b7f58cf7317eaad4b188121a63ec0e8bd25be048f29cf228b4fb648458ff0276e34ea643862d0afacf5f0edc4020b4ac0da2856a2b3f5f42964c14e0d"
   },
@@ -16,7 +34,7 @@
    "file": "webcam_bewegung_3_2_0.py",
    "url": "",
    "sha256": "1f0f2eabaab921fa7d443e91be5c3012c5d033fcbeb11ed3945c75dabdc57955",
-   "date": "2026-10-31 16:37",
+   "date": "2026-10-31 16:48",
    "notes": "MoveEye Sim 3.2.0: Statisten im Hintergrund (Ziele, Tätigkeiten, Gruppen, grüssen, weichen aus, abends heim; Menge wenig / normal / belebt).",
    "sig": "a05bc44a78d6734ec551d28202bd4679eb818446d008e8894622308dc7c0a586391f1ec401d5e33de460db3de7989c9888a18713a19e9854eba4511fccfcd505"
   },
@@ -73,24 +91,6 @@
    "date": "2026-10-28 20:20",
    "notes": "Schutz: Stufen Aus / Wachsam / Voller Schutz, Schutz-Assistent, Ampel mit «Beheben», Diebstahlschutz-Zeile, bewachte Gegenstände, Sirene nach X s, PIN zum Ausschalten, «Schutz testen»; Begriffe «Schutz an / aus»; Bluetooth-Lautsprecher schnell erreichbar unter den Modi",
    "sig": "afa8a0d419eef51be7626c1643444247f45258766538a30292a8e5f46ab157f67f5b42b5efb921947c4ab6fe81d6c9ce7b4cef0dc1875b628b3cc8382b96050f"
-  },
-  {
-   "version": "2.94.5",
-   "file": "webcam_bewegung_2_94_5.py",
-   "url": "",
-   "sha256": "5d5654c7292552b05854b661c98fb550c720dd5d9316f60bb1e4d623e422678b",
-   "date": "2026-10-27 17:42",
-   "notes": "3D simulator 3D-3.16: after an update it starts again as it was (sending or not, small box / icon, size and place of the window). Simulator search: the number counts simulators (not addresses), also ports 8767 / 8768 (a second simulator), a hint when a simulator is missing.",
-   "sig": "a1e77da1584bcb1374b9bdc0cc365a7c08c6f76d03acfe7f3df3b1344d1b2308510bf6b83d4f2dd3636ecdded0819991adef13bd142d677b6a2fd38a8eaa4b08"
-  },
-  {
-   "version": "2.93.17",
-   "file": "webcam_bewegung_2_93_17.py",
-   "url": "",
-   "sha256": "70f36dcbc35e8c6ff18854dfada979bbb82fd5eaf3fda28e7927aea3de9c6ba0",
-   "date": "2026-10-27 04:47",
-   "notes": "3D simulator 3D-3.10: real 3D buildings of swisstopo at real places.",
-   "sig": "9722f91aa4a5a338477940378f3a3f22dca4636496c8e19a91c525460d7a9f84e75498e44eefbc4d0de74dd1cb60f10f8893eac2b4b8900576882e55571e3600"
   }
  ]
 }

@@ -779,7 +779,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 3.3.0")
+        self.root.title("MoveEye 3.5.0")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -1150,7 +1150,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 3.3.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 3.5.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -3413,7 +3413,7 @@ class App:
                  (f"{tr('Patrol')}: {tr(st['patrol_status'])}" if CFG["patrol"] else tr("Patrol off"))),
                  C["yel"] if manual else (C["acc"] if (st["tracking"] or CFG["patrol"]) else None))
         self._sb("b_auto", f"{tr('Auto')}: {st['auto_status']}", C["org"])
-        self._sb("b_light", tr("LOW LIGHT") if st["lowlight"] else tr("Light ok"), C["yel"] if st["lowlight"] else None)
+        self._sb("b_light", tr("Fog – view limited") if st.get("fog") else (tr("LOW LIGHT") if st["lowlight"] else tr("Light ok")), C["yel"] if (st["lowlight"] or st.get("fog")) else None)
         fps = float(st["fps"] or 0)
         self._sb("b_fps", ("💤 " if st.get("eco") == "saving" else "") + f"{fps:.0f} FPS",     # 2.95.64: real pictures per second
                  C["blu"] if st.get("eco") == "saving" else (C["grn"] if fps >= 12 else (C["yel"] if fps >= 6 else C["red"])))
@@ -3427,7 +3427,7 @@ class App:
         self._sb("b_wind", f"{tr('Wind')}: {tr(wl)}", C["yel"], show=wl not in ("calm", "off"))
         self._sb("b_rec", "● " + tr("REC"), C["red"], show=st["recording"])
         self._sb("b_relays", f"{tr('Relays')}: {on}/{len(RELAYS)} {tr('on')}", C["grn"], show=on > 0)
-        self._sb("b_light", "🌙 " + tr("LOW LIGHT"), C["yel"], show=st["lowlight"])
+        self._sb("b_light", ("🌫 " + tr("Fog – view limited")) if st.get("fog") else "🌙 " + tr("LOW LIGHT"), C["yel"], show=bool(st["lowlight"] or st.get("fog")))   # 411
         self._sb("b_auto", f"{tr('Auto')}: {st['auto_status']}", C["org"], show=str(st["auto_status"]).startswith("calibrat"))
         kt = kopf_text()                           # 2.98.30: automatic head movement (162): parked, quick look, saving, estimated position
         self._sb("b_patrol", tr("MANUAL") if manual else (tr("TRACKING") if st["tracking"] else (f"{tr('Patrol')}: {patrol_status_text(st['patrol_status'])}" if CFG["patrol"] or KOPF["round_on"] else "⟲ " + kt)),

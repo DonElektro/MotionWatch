@@ -1,9 +1,9 @@
 {
- "version": "3D-5.3.0",
- "ver": "3.3.0",
- "name": "MoveEye Sim 3.3.0",
+ "version": "3D-5.5.0",
+ "ver": "3.5.0",
+ "name": "MoveEye Sim 3.5.0",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 35078592,
- "sha256": "86e02266cd6892ca5849c8ab5114afab9bc136e35e8bd66971daaa7ae7b45fde",
- "notes": "MoveEye Sim 3.3.0: Roter Faden zwischen den Geschichten, Abzeichen «Beide Geschichten geschafft»."
+ "size": 35079067,
+ "sha256": "a33e40f22ca5ec22ef03d30f95e6f29e023c01549945817244358e4b7cb99840",
+ "notes": "MoveEye Sim 3.5.0: zusammen mit MoveEye 3.5.0 (Kriechende nachts, KI-Lupe weit); im Simulator selbst nichts geändert."
 }
