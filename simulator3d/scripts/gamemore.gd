@@ -725,7 +725,7 @@ func best_shot() -> Dictionary:
 	"""the catch with the most shutter points (100 + near + fast, gameshutter.fire) - with its film"""
 	var best := {}
 	for c in clips:
-		if int(c["pts"]) > 0 and (best.is_empty() or int(c["pts"]) > int(best["pts"])) and (c["fr"] as Array).size() >= 2:
+		if int(c["pts"]) > 0 and (best.is_empty() or int(c["pts"]) > int(best["pts"])) and not (c["fr"] as Array).is_empty():
 			best = c
 	return best
 
