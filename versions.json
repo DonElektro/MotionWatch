@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 07:00",
+ "generated": "2026-10-31 07:06",
  "versions": [
   {
-   "version": "2.98.70",
-   "file": "webcam_bewegung_2_98_70.py",
+   "version": "2.98.71",
+   "file": "webcam_bewegung_2_98_71.py",
    "url": "",
-   "sha256": "3526d14804a1ee60af7fe937d638d1100c6115716e2bfbb2c477e480917f569d",
-   "date": "2026-10-31 07:00",
-   "notes": "Simulator 3D-4.39: Bergtal-Abenteuer «Die Karte des Bergführers» – Rucksack packen, Schatzkarte, Nachtlager und Nacht mit MoveEye, am Morgen Sterne; Start im Spiel-Assistenten.",
-   "sig": "bb4ac697e159cd53d84d4df1d083dd8a8e8472495ae526a1c1303931c71c90b0a1f6351a9a6942ad84db7c2e211c1ccacd952de9d8ac3342597eae518eb24708"
+   "sha256": "90ecd8403517cb84dd4258589bc5cb1ae1fa5e797235a242b7a237262f15164a",
+   "date": "2026-10-31 07:06",
+   "notes": "Simulator 3D-4.40: Horror-Modus «Das Hospiz» im Bergtal (mit Passwort, im Kinder-Modus gesperrt) – Einstieg über die Stimmung «Horror» im Bergtal-Abenteuer; «Aufnahmen» erscheinen im Verlauf.",
+   "sig": "00a0d3c4467b9f96ba1eae3e259b8c1e4bcdabdd709343772e3cbebd4e6457e743e5160a6efa9dc8ed5d949ad9c7364afaf0906241b670e714c2f1f827395503"
   },
   {
    "version": "2.97.1",

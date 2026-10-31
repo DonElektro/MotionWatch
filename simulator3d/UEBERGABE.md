@@ -1,8 +1,15 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.39** · passende MoveEye-Version (früher Motion Watch) **2.98.70**
+Stand: 31.10.2026 · Simulator-Version **3D-4.40** · passende MoveEye-Version (früher Motion Watch) **2.98.71**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.40 (MoveEye 2.98.71): Horror-Modus «Das Hospiz» (`bergtal_horror.gd`)
+
+- `bergtal_horror.gd` (neu): Passwort nur als gesalzener Hash (PBKDF2) in `user://bergtal_horror.json`, nie im Repo/Log;
+  `{"action":"horror"}` (start nur entsperrt), Bilder `/horror_pic/<i>.jpg` (net.gd), Feld `horror` (schnittstelle.json),
+  MoveEye 539a (Verlauf), 350.
+- Einstieg nur über den 5. Platz der Stimmungswahl im Abenteuer (`mood_slot()` / `open_from_mood()`); Knopf unter «Szene» entfernt.
 
 ## NEU in 3D-4.39 (MoveEye 2.98.70): Bergtal-Abenteuer (`bergtal_abenteuer.gd`)
 

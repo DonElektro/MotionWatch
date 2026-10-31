@@ -32,7 +32,8 @@
     "forecast": "Boeen, Wetter (forecast.weather), Sturm, Tmax/Tmin -> 285 sim_forecast, Tagebuch-Wetter",
     "battery": "simulierter USV-HAT -> 285 sim_battery_tick, Uebung Akku (141/565)",
     "follower": "ein anderes MoveEye steuert, dieses schaut nur zu -> 350",
-    "leader": "Name des MoveEye, das steuert -> 350 Meldung «schaut nur zu»"
+    "leader": "Name des MoveEye, das steuert -> 350 Meldung «schaut nur zu»",
+    "horror": "Horror-Modus «Das Hospiz»: neue Aufnahmen (id, t, night, time, title, text; Bild /horror_pic/<id>.jpg) -> 539a horror_feed, Verlauf Nachrichten"
   },
   "state": {
     "v": "Version des Zustands",

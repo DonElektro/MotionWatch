@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-4.39"
+const VERSION := "3D-4.40"
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const Quality := preload("res://scripts/quality.gd")     # 3D-4.25: «Lite» for the Raspberry Pi 5 (Quality.lite(), Engine meta «lite»)
 const CAM_W := [960, 640]
@@ -536,6 +536,9 @@ func _ready() -> void:
 	testrun = TestRun.new()
 	testrun.main = self
 	add_child(testrun)
+	horror = preload("res://scripts/bergtal_horror.gd").new()   # Bergtal · Horror-Modus «Das Hospiz» (mit Passwort, bergtal_horror.gd)
+	horror.main = self
+	add_child(horror)
 	_register_controls()
 	_order_controls()
 	mwpc = Mwpc.new()
@@ -2037,6 +2040,8 @@ func busy_with(except_ := "") -> String:
 		w = "Verfolgungs-Parcours"                    # 3D-4.18 (the head follows - not «measuring»: MoveEye steers it)
 	elif recorder != null and recorder.playing:
 		w = "Wiedergabe"
+	elif horror != null and horror.running:
+		w = "Horror-Modus"                             # the nights of «Das Hospiz» (bergtal_horror.gd)
 	elif _mw_task() != "":                             # 3D-4.x: one lock with MoveEye (a drill, a protection test … there)
 		w = _mw_task()
 	return "" if w == except_ else w
@@ -2827,12 +2832,14 @@ func world_reply() -> Dictionary:
 			"wide": weit.state() if weit != null else null,   # 3D-4.17: the mount of the wide camera (MoveEye 163 at once)
 			"game_live": smalltv.game_live() if smalltv != null else null}   # 3D-4.19: Spiel-Anzeige auf dem SmallTV (MoveEye 552)
 	r["buttons"] = statusled.reply() if statusled != null else null   # die Tasten des Geräts wie ein GPIO (MoveEye 163a)
+	r["horror"] = horror.reply() if horror != null else null   # Horror-Modus: neue «Aufnahmen» -> MoveEye Verlauf (539a)
 	if simwerte != null:
 		r.merge(simwerte.reply())                     # Simulator-Werte: battery, pi_temp, net, clock, place, forecast (power.gd)
 	return r
 
 
 var schnitt = null                     # schnittstelle.gd (Aufräumen 2)
+var horror = null                      # bergtal_horror.gd: Bergtal · Horror-Modus (Hook für die Stimmungswahl: horror.mood_slot / open_from_mood)
 var mw_cmd := {}                       # 3D-3.71: a request to MoveEye (button here): {"id": unix ms, "op": refscan | refcompare | refstop}
 var bike_node: Node3D = null
 var refscan_label: Label
@@ -3543,6 +3550,7 @@ func _register_controls() -> void:
 			{"options": [["auto", "nach dem Monat (Jahreszeit)"], ["fruehling", "Frühling"], ["sommer", "Sommer"], ["herbst", "Herbst (Lärchen gelb, Nebel)"], ["winter", "Winter (Schnee, Eis)"]]})
 	add_control("button", "bt_ride", "Mit der Materialseilbahn fahren (Bergtal)", null, func(): _bt_do("ride"), "Szene", {"expert": true})
 	add_control("button", "bt_morning", "Wie gut war dein Platz? (Bergtal: Bewertung jetzt)", null, func(): _bt_do("morning"), "Szene", {"expert": true})
+	# 3D-4.40: Horror-Modus «Das Hospiz» opens from the 5th mood of the Bergtal adventure (bergtal_abenteuer.gd), no button here
 	add_control("toggle", "bt_events", "Bergtal: Ereignisse von selbst (Steinschlag, Fremder, Tier am Proviant, Wetterumschwung)", func(): return bt_events, func(v): bt_events = bool(v), "Besuch", {"sub": "Von selbst"})
 	add_control("button", "bt_ev_rockfall", "Steinschlag (Bergtal)", null, func(): _bt_do("rockfall"), "Besuch", {"sub": "Abläufe"})
 	add_control("button", "bt_ev_stranger", "Fremder am Rucksack (Bergtal)", null, func(): _bt_do("stranger"), "Besuch", {"sub": "Abläufe"})
@@ -4506,6 +4514,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return {"ok": true, "overlay": overlay.info()}
 	elif a == "bergtal":                               # 3D-4.x: {do: info | spot | bed | season | here | goto | event | ride | morning | rate | horn | perf} (bergtal.gd)
 		return preload("res://scripts/bergtal.gd").control(self, d)
+	elif a == "horror":                                # Bergtal · Horror-Modus: {do: info | open | unlock | start | skip | pause | stop …} (bergtal_horror.gd)
+		return horror.command(d) if horror != null else {"ok": false, "error": "no horror"}
 	elif a == "ferienpark":                            # 3D-4.x: {do: info | spot (value) | kinds | perf} (ferienpark.gd)
 		return preload("res://scripts/ferienpark.gd").control(self, d)
 	elif a == "szenen":                                # 3D-4.x: the new scenes {do: info | spawn (kind) | restore}

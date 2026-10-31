@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_70.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_71.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,8 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.98.71: Simulator 3D-4.40: Horror-Modus «Das Hospiz» im Bergtal (mit Passwort, im Kinder-Modus gesperrt) – Einstieg über
+    die Stimmung «Horror» im Bergtal-Abenteuer; «Aufnahmen» erscheinen im Verlauf.
   * 2.98.70: Simulator 3D-4.39: Bergtal-Abenteuer «Die Karte des Bergführers» – Rucksack packen, Schatzkarte, Nachtlager und
     Nacht mit MoveEye, am Morgen Sterne; Start im Spiel-Assistenten.
   * 2.98.69: Simulator 3D-4.38: Orte zum Erkunden im Bergtal – begehbare Alphütte, Biwak, Kapelle, Hospiz (geschlossen), Bunker,
@@ -1039,10 +1041,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_98_70.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_98_71.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_98_70.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_98_70.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_98_71.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_98_71.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -1059,7 +1061,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.98.70"
+APP_VERSION = "2.98.71"
 
 
 def default_data_dir():
@@ -25577,8 +25579,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-4.39", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 66737990,
-         "sha256": "01322d48cdb85b43873a4cd9442c4c6c8b8661f82727ab6b336c17b270b4a4ef"}
+SIM3D = {"version": "3D-4.40", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 66886163,
+         "sha256": "4c84b8b4b106433b1ce966fdc00c969599428c8f7fa5e8d4bea885f622d6076e"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -30892,6 +30894,7 @@ class SimLink:
                                      "3D-Simulator " + str(m.get("sim") or "")[:12], feedback_shot("sim") if m.get("shot") else None, "simulator"),
                                      daemon=True, name="simfeedback").start()
         shut_feed(rep_.get("shut"), first)               # 2.98.35: «Auslöser» hits -> alarm into the test inbox (539)
+        horror_feed(rep_.get("horror"), first)           # Bergtal · Horror-Modus: its «recordings» -> Verlauf / Nachrichten (539a)
         le = int(rep_.get("last_event") or 0)
         if le > SIM["seen_event"]:
             data, _ = _sim_get(f"/events?since={SIM['seen_event']}")
@@ -32688,7 +32691,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_70.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_71.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -55749,6 +55752,53 @@ SHUT_JS = r"""
 </script>
 """
 WEB_PAGE = WEB_PAGE.replace("</body>", SHUT_JS + "</body>", 1)
+# ----------------------------------------------------------------------------
+# Wunsch Daniel (31.10.2026): der Horror-Modus «Das Hospiz» des 3D-Simulators (simulator3d/scripts/bergtal_horror.gd) wird
+# über seltsame MoveEye-Aufnahmen erzählt, die man am Morgen in MoveEyes Verlauf findet. Der Simulator schickt die neuen
+# Aufnahmen in world_reply «horror» (Liste: id, t, night, time, title, text - schon in der Sprache des Simulators), das Bild
+# (links Kamerabild, rechts Wärmebild) holt MoveEye über /horror_pic/<id>.jpg. Jede Aufnahme wird ein Eintrag im Verlauf →
+# Nachrichten (msglog_add, Status «test», Ort «Simulator · Horror») - NIE ein echter Push, kein Alarm-Licht, keine Sirene.
+# Alte Aufnahmen von vor der Verbindung zählen nicht (wie shut_feed, 539).
+# ----------------------------------------------------------------------------
+
+HORROR = {"seen": 0, "n": 0}
+
+
+def horror_feed(lst, first=False):
+    """world_reply «horror» of the simulator: new recordings -> the message list (Verlauf), as test, never a real push"""
+    if not isinstance(lst, list):
+        return
+    for it in lst[-6:]:
+        if not isinstance(it, dict):
+            continue
+        try:
+            id_ = int(it.get("id") or 0)
+        except (TypeError, ValueError):
+            continue
+        if id_ <= HORROR["seen"]:
+            continue
+        HORROR["seen"] = id_
+        if not first:
+            threading.Thread(target=horror_rec, args=(dict(it),), daemon=True, name="simhorror").start()
+
+
+def horror_rec(it):
+    jpg = None
+    try:
+        jpg, _h = _sim_get(f"/horror_pic/{int(it.get('id') or 0)}.jpg", 3.0)
+        if not jpg or jpg[:2] != b"\xff\xd8":
+            jpg = None
+    except Exception:
+        jpg = None
+    title = ("[SIM] " if CFG.get("sim_on") else "") + "🎞 " + str(it.get("title") or "")[:120]
+    text = (str(it.get("time") or "")[:5] + " · " + str(it.get("text") or "")).strip(" ·")[:500]
+    try:
+        msglog_add(title, text, "alarm", jpg, "test", "Simulator · Horror")
+    except Exception as e:
+        log_event("sim", f"Horror mode: message list failed: {e}"[:160])
+        return
+    HORROR["n"] += 1
+    log_event("sim", f"Horror mode: recording {int(it.get('id') or 0)} (night {int(it.get('night') or 0)}) put into the message list")
 HELP_PAGE = r"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -67585,7 +67635,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.70")
+        self.root.title("MoveEye 2.98.71")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -67952,7 +68002,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 2.98.70 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.71 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -76711,7 +76761,7 @@ App._refresh = _kr_tk_refresh
 #      bleibt für die kleine Überraschung) und «Über MoveEye» unten in Mehr. Geschichte, Entwickler «Daniel alias Elektro»,
 #      Zeitleiste, Zahlen (zur Laufzeit gezählt), aufklappbar «Für Technik-Interessierte». Texte: 622.
 # ----------------------------------------------------------------------------
-INFO_PARTS = 228                       # number of parts in quelle/ (written by werkzeuge/bauen.py --neue-version)
+INFO_PARTS = 229                       # number of parts in quelle/ (written by werkzeuge/bauen.py --neue-version)
 INFO_START = "2026-10-16"              # the first lines (a small webcam program for the Pi 5)
 FBX = {"shot": None, "shot_t": 0.0, "lines": 0}
 
