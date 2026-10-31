@@ -88,3 +88,16 @@ Grundlage: Gehäuse v5.1 (parametrisches Python-Modell). Unverändert bleiben al
 | Tasten | 2 × 12-mm-Taster IP67 an der **Rückwand** (y 10,5 und 50,5, z 33), mit Dach und Seitenwangen gegen versehentliches Drücken; 12 mm Einbautiefe geprüft. GPIO noch festlegen (frei: nicht 4, 5, 22) |
 | Blindabdeckung | **12_Blindstopfen_Weitwinkel** (2 Rastzungen, 45°-Rastfläche, ohne Werkzeug lösbar) und **13_Stopfen_IR_LED** (geschlitzter Rastzapfen); STL + Generator `kleinteile52.py` (Parameter `BLIND_TOL` 0,2 mm, `BLIND_NOSE`) |
 | Offen | Linsenhöhe / Frontlinse der CM3 Wide, Taster-Masse und Kabelweg nachmessen; Helligkeit der RGB-LED am echten Board prüfen |
+
+## Simulator wie Gehäuse v5.2 (Paket P9 «Weitwinkel-Kamera wie Gehäuse v5.2», 31.10.2026)
+
+| Thema | Stand |
+|---|---|
+| Montage | neue Montage **«Im Gehäuse (v5.2)»** (`case`), Standard für neue Einrichtungen (gespeicherte Montagen bleiben): Stirnwand über dem PIR (Pan-0-Seite), fest, Linse 39,5 mm vor der Pan-Achse und 69,8 mm unter der Kippachse (Linse z 56 mm, Kippachse z 125,8 mm über der Bodenunterseite, aus `v52.py` / `v5.py` / `pantilt.py`), **12° nach unten** (fest, der Neigungs-Regler gilt hier nicht). Die anderen Montagen bleiben |
+| Kamera-Typ | **NoIR Wide** – so steht es oben in diesem Dokument und in `LIESMICH_Montage_v5-2.md` («NoIR Wide empfohlen, für Nacht mit IR»); MoveEye-Teil 163 nennt sie ebenfalls «Camera Module 3 Wide NoIR». Simulator: NoIR-Look am Tag (rosa), nachts Graubild mit IR |
+| Objektiv | **äquidistantes Fischauge** wie im Gehäuse-Prüfprotokoll (`check52.py fov_rays`): Winkel wächst linear mit dem Abstand von der Bildmitte, 51° bis zum Seitenrand, 33,5° bis oben/unten, Ecke ca. 61° (≈ 122° diagonal). Gerechnet als breiteres gerades Bild (121,8°, 1,5-fach überabgetastet, in Lite 1-fach), `camfx.gdshader` biegt es. Für MoveEye praktisch: `(cx − 0,5) × 102°` ist bei diesem Modell genau der Winkel |
+| Vignettierung | dunklere Ecken (−22 % in der Ecke; Schätzung: ISP gleicht die Helligkeit nur zur Hälfte aus, `luminance_strength` 0,5 in den libcamera-Tuning-Dateien) |
+| Fenster / Regendach | **nicht sichtbar**: laut Prüfprotokoll v5.2 frei bis 110 % des Sichtfelds (erst bei 114 % stossen 2 Strahlen ans Unterteil) – darum wird kein Fensterrand gezeichnet. Regentropfen auf der Linse viel seltener (Linse 3 mm tief hinter dem Fenster unter dem Regendach) |
+| IR-LED | eine **5-mm-LED 850 nm** (Kanal 4) 20 mm neben und 16 mm unter der Linse: leuchtet nur die Nähe aus (ca. 4 m brauchbar, bei 7 m fertig; 1/d²; Schätzung, nicht gemessen). Ein / aus wie bisher mit dem Infrarotlicht (`light_ir_wide`) |
+| Blindstopfen | Montage **«Nicht verbaut (Blindstopfen)»** (`none`): kein Bild (der Simulator rechnet die Kamera nicht, `/cam/1/…` antwortet 404 «not installed»), keine IR-LED; MoveEye meldet die Zusatzkamera als «wide camera not installed (blind cover)» statt «Simulator nicht erreichbar», «Übersicht lenkt den Kopf» wird (falls von selbst gesetzt) gelöscht |
+| Kamera-Physik | Anschluss für `camphys.gd` (Zweig real-kamera): `weit.sensor_info()` liefert Blende f/2.2 (≈ 0,67 × Licht der Kopfkamera), NoIR, eingebaut ja/nein – das Sensor-Nachbearbeiten (Belichtung, Verstärkung, Rauschen) kann so für Kamera 1 dieselbe Funktion nutzen; die Optik (Fischauge, Ecken) bleibt in `weitwinkel.gd` |

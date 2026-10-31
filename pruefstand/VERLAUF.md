@@ -17,6 +17,11 @@ Spalten nah / mittel / weit: Personen nach Grösse im Bild (Höhe ≥ 100 Bildpu
 
 | Datum | Motion Watch | Simulator | Testlauf | Pushes richtig / falsch | Personen erkannt | Wärmebild | nah / mittel / weit | Reaktion | Tiere gemeldet | Flackern | Bilder/s | KI | Rechner |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 2026-10-31 05:01 | 2.98.63 | 3D-4.32 | Kurz (Tag + Nacht) | **3** / **0** | 8 / 10 (**80 %**) | – | 7/8 / 0/1 / 1/1 | 4.4 s | 1 / 3 | 5 | 1.9 | mit KI | GitHub (ubuntu, 4 Kerne) · Intel(R) Xeon(R) Platinum 8370C CPU @ 2. |
+| 2026-10-31 04:47 | 2.98.61 | 3D-4.30 | Kurz (Tag + Nacht) | **1** / **3** | 10 / 10 (**100 %**) | – | 7/7 / 3/3 / – | 1.4 s | 3 / 3 | 10 | 2.0 | mit KI | GitHub (ubuntu, 4 Kerne) · AMD EPYC 7763 |
+| 2026-10-31 04:29 | 2.98.60 | 3D-4.29 | Kurz (Tag + Nacht) | **3** / **0** | 9 / 10 (**90 %**) | – | 6/7 / 3/3 / – | 4.1 s | 2 / 3 | 4 | 2.1 | mit KI | GitHub (ubuntu, 4 Kerne) · AMD EPYC 9V74 |
+| 2026-10-31 03:48 | 2.98.59 | 3D-4.28 | Kurz (Tag + Nacht) | **1** / **1** | 10 / 10 (**100 %**) | – | 7/7 / 2/2 / 1/1 | 1.1 s | 3 / 3 | 9 | 2.6 | mit KI | GitHub (ubuntu, 4 Kerne) · AMD EPYC 9V74 |
+| 2026-10-31 03:23 | 2.98.58 | 3D-4.27 | Kurz (Tag + Nacht) | **2** / **1** | 9 / 10 (**90 %**) | – | 6/7 / 2/2 / 1/1 | 2.0 s | 3 / 3 | 6 | 2.0 | mit KI | GitHub (ubuntu, 4 Kerne) · AMD EPYC 7763 |
 | 2026-10-31 03:01 | 2.98.57 | 3D-4.26 | Kurz (Tag + Nacht) | **3** / **0** | 9 / 10 (**90 %**) | 1 / 1 | 6/6 / 1/2 / 1/1 | 4.9 s | 2 / 3 | 2 | 2.0 | mit KI | GitHub (ubuntu, 4 Kerne) · AMD EPYC 7763 |
 | 2026-10-31 02:53 | 2.98.56 | 3D-4.25 | Kurz (Tag + Nacht) | **3** / **0** | 10 / 10 (**100 %**) | – | 7/7 / 3/3 / – | 1.0 s | 3 / 3 | 8 | 2.6 | mit KI | GitHub (ubuntu, 4 Kerne) · AMD EPYC 9V74 |
 | 2026-10-31 02:41 | 2.98.55 | 3D-4.25 | Kurz (Tag + Nacht) | **3** / **0** | 8 / 10 (**80 %**) | – | 6/8 / 1/1 / 1/1 | 1.6 s | 3 / 3 | 11 | 2.0 | mit KI | GitHub (ubuntu, 4 Kerne) · AMD EPYC 7763 |
@@ -109,10 +114,10 @@ Spalten nah / mittel / weit: Personen nach Grösse im Bild (Höhe ≥ 100 Bildpu
 
 ## Einzelheiten pro Phase (letzter Lauf)
 
-**Kurz (Tag + Nacht)** – 2026-10-31 03:01, Motion Watch 2.98.57
+**Kurz (Tag + Nacht)** – 2026-10-31 05:01, Motion Watch 2.98.63
 
 | Phase | Pushes richtig / falsch | Personen | Wärmebild | Reaktion | Tiere | Flackern | verpasst, weil … |
 |---|---|---|---|---|---|---|---|
-| Tag, Wind | 2 / 0 | 5 / 6 | – | 7.1 s | 1 / 2 | 1 | – |
-| Nacht mit Infrarot | 1 / 0 | 4 / 4 | 1 / 1 | 2.0 s | 1 / 1 | 1 | – |
+| Tag, Wind | 2 / 0 | 5 / 6 | – | 5.5 s | 1 / 2 | 0 | – |
+| Nacht mit Infrarot | 1 / 0 | 3 / 4 | – | 2.5 s | 0 / 1 | 5 | 1× zu dunkel |
 

@@ -101,12 +101,14 @@
     "rover": "Rover",
     "view_look": "Ansicht drehen",
     "netmap": "WLAN-Karte",
+    "nacht": "Nacht-Testlauf: Ablauf und Wahrheit, Abgleich in MoveEye (579b)",
     "parcours": "Verfolgungs-Parcours (416)",
     "sabotage": "Sabotage-Test",
     "templates": "Besuchs-Vorlagen",
     "twin": "Zwilling",
     "visits": "Besuche",
-    "weit": "Weitwinkel-Halterung (163)"
+    "weit": "Weitwinkel-Halterung (163)",
+    "entdecken": "Entdeckungsbuch, Foto fuer das Entdeckungsbuch, Blinki-Hinweise (139 Kachel Entdeckungen, Bilder /disc_pic/<i>.jpg)"
   },
   "_meta": {
     "world_reply": [
