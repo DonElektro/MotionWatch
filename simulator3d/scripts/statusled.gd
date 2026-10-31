@@ -12,6 +12,7 @@ var main
 var FILE := "user://statusled.json"
 var show_panel := true
 var tile: PanelContainer
+var _title: Label                                      # «GERÄT» (hidden when the window frame of fenster.gd shows it)
 var _dot: Panel
 var _dot_box: StyleBoxFlat
 var _txt: Label
@@ -217,6 +218,8 @@ func _process(_dt: float) -> void:
 		_txt.text = str(l.get("text", "LED"))
 	for k in _btn.keys():
 		(_btn[k] as Button).disabled = l.is_empty()
+	if tile.has_meta("fenster"):
+		return                                          # in a window frame (fenster.gd): the frame places it
 	var vp: Vector2 = main.get_viewport().get_visible_rect().size
 	tile.reset_size()
 	tile.position = Vector2(vp.x - tile.size.x - 14.0, 64.0)          # oben rechts unter dem Zurück-Knopf (unten sind die Kameras)
@@ -236,6 +239,7 @@ func make_tile(layer: Node) -> void:
 	title.add_theme_font_size_override("font_size", 11)
 	title.add_theme_color_override("font_color", main.UI.MUT)
 	v.add_child(title)
+	_title = title                                       # the window frame (fenster.gd) shows the title in its strip
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 8)
 	v.add_child(row)

@@ -1,8 +1,23 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.25** · passende MoveEye-Version (früher Motion Watch) **2.98.56** (2.98.56 ohne Simulator-Änderung)
+Stand: 31.10.2026 · Simulator-Version **3D-4.26** · passende MoveEye-Version (früher Motion Watch) **2.98.57**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.26 (MoveEye 2.98.57): Fenster im gemeinsamen Rahmen (`fenster.gd`)
+
+- `scripts/fenster.gd`: ein Rahmen für alle schwebenden Fenster (Kompass, Karte, Livebild, SmallTV, Gerät, Mover-Stick,
+  Kopf steuern, Kameras bei zugeklapptem Bedienfeld, CPU-Anzeige): Titelleiste ziehen (Doppelklick = Standardplatz),
+  Grösse über die Ecke (Bilder mit festem Seitenverhältnis; Kompass/CPU/Mover fest), ✕ blendet aus, Schnappen 12 px an
+  Rand (14 px), Bedienfeld, Leiste, «Bedienfeld zeigen» und andere Fenster (6 px oder bündig).
+- Dock-Knopf **«Fenster»** (zwischen «Ansicht» und «Menü»): Liste mit Häkchen + «Anordnung zurücksetzen». Fenster mit eigener
+  Taste/Einstellung schalten darüber (Karte = M, Livebild = L, Kameras = «Kamerabilder», SmallTV/Gerät = ihre Einstellung).
+- Gemerkt pro PC in `user://fenster.json` (Ort relativ zum freien Platz, Grösse, ausgeblendet). Nie verschobene Fenster bleiben
+  am alten Platz und rücken wie bisher mit.
+- **Für andere Pakete:** eigenes Panel mit einer Zeile anmelden: `main.fenster.add("id", "Titel", panel)` (Optionen im Kopf von
+  `fenster.gd`); Skripte, die sich selbst platzieren, prüfen `has_meta("fenster")`. Test-Aktion `/control {"action":"fenster",
+  "do": info|drag|resize|close|list|check|reset}`. `cam_fx`/`cam_fy` werden nicht mehr gelesen.
+- Lite: kostet nur ein paar Vergleiche pro Bild, keine eigene Lite-Abfrage nötig. Ungetestet: echter Touch, Windows, Controller in der Liste.
 
 ## NEU in 3D-4.25 (MoveEye 2.98.55): Grafik-Stufe «Lite» für den Raspberry Pi 5 (`quality.gd`)
 

@@ -12,6 +12,7 @@ var _hold_t := 0.0
 var _light := false
 var _drag := false
 var _acc := Vector2.ZERO
+var head_row: Control                 # title + ✕ (hidden in the window frame of fenster.gd)
 
 const UI = preload("res://scripts/ui_style.gd")
 
@@ -24,6 +25,7 @@ func _ready() -> void:
 	add_child(v)
 	var hd := HBoxContainer.new()
 	v.add_child(hd)
+	head_row = hd                                        # the window frame (fenster.gd) has title and ✕ itself
 	var t := UI.heading("Kopf steuern")
 	t.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	hd.add_child(t)
@@ -91,8 +93,9 @@ func _img_input(ev: InputEvent) -> void:
 func _process(dt: float) -> void:
 	if not visible:
 		return
-	var vs := get_viewport_rect().size
-	position = Vector2(14, vs.y - size.y - 110)
+	if not has_meta("fenster"):                          # in a window frame (fenster.gd) the frame places it
+		var vs := get_viewport_rect().size
+		position = Vector2(14, vs.y - size.y - 110)
 	img.texture = main.vps[0].get_texture()
 	var con: bool = main.now() - main.mw_t < 3.0
 	var own: String = main.head_owner()
