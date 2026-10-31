@@ -421,6 +421,11 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
+NEU IN 3D-4.61
+3D-4.61: Figuren aus dem Figuren-Paket: Kriechen und Liegen sehen jetzt richtig aus (Kopf und Füsse am Boden).
+So testest du: 1) Grafik auf «mittel» oder «hoch». 2) Bei Einbruch «kriechen» wählen. 3) Die Figur liegt flach.
+4) Winken / Handy: die Arme sehen normal aus.
+
 NEU IN 3D-4.60
 3D-4.60: Alle Simulator-Texte jetzt auch auf Englisch, Französisch, Italienisch, Rätoromanisch; Rätoromanisch bitte von
 jemandem prüfen lassen.
