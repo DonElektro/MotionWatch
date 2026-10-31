@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 5040 (Stellen: 7002)
-Übersetzt: en 5040, fr 5040, it 5040, rm 5040
+Texte gesamt: 5053 (Stellen: 7019)
+Übersetzt: en 5053, fr 5053, it 5053, rm 5053
 Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 380 Stellen
 Nicht mehr im Code (noch in texte.json): 52
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 56 Stellen in wizpics.gd 21, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, main.gd 1, phone.gd 1
-Übersprungen (Grund: Anzahl): kennung 18003, schlüssel 12774, keine Wörter 8231, index 6418, technisch 2337, doc 1473, einheit 198, englisch 90, log 78, pfad 66, html 56, klasse 23, shader 4
+Übersprungen (Grund: Anzahl): kennung 18139, schlüssel 12889, keine Wörter 8238, index 6429, technisch 2356, doc 1486, einheit 198, englisch 91, log 78, pfad 66, html 56, klasse 23, shader 4
 
 Pro Datei (Texte / davon dynamische Stellen):
   main.gd                  669    29
@@ -100,6 +100,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   gamesneak.gd              15     0
   grafik_hoch.gd            15     1
   home_editor.gd            14     3
+  zimmertiere.gd            14     0
   life.gd                   13     0
   fahrzeuge.gd              13     1
   gamekihilfe.gd            13     4
@@ -245,35 +246,35 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   karte.gd:503  'Dazu kommen: '
   karte.gd:511  'ja'
   karte.gd:511  'keine'
-  main.gd:1638  '  %.0f Mbit/s'
-  main.gd:2335  ' (von MoveEye)'
-  main.gd:2368  'Der Simulator ist belegt: '
-  main.gd:3226  'aus'
-  main.gd:3226  'ein'
-  main.gd:3303  'Sabotage-Test: '
-  main.gd:3303  'aus'
-  main.gd:3357  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
-  main.gd:3360  '\n🚨 Bewacht und weg: '
-  main.gd:4167  'keine'
-  main.gd:4193  'Wächter an MoveEye: '
-  main.gd:4954  'Dein Platz: '
-  main.gd:5191  ' · schaut nur zu: '
-  main.gd:5194  ' · Treffer %d von %d Schüssen, %d Punkte'
-  main.gd:5195  ' · Update: '
-  main.gd:5529  'Blinde Flecken: '
-  main.gd:6196  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
-  main.gd:6502  'Autostart: '
-  main.gd:6513  'Autologon: '
-  main.gd:6674  'Karte öffnen: '
-  main.gd:6820  'Echt-Abgleich: '
-  main.gd:6830  'Trainingspaket: '
-  main.gd:6839  ' · %d offen · %.1f MB'
-  main.gd:6839  'Ziel: %s:%d (Port von MoveEye) · '
-  main.gd:6848  'Verbindung · '
-  main.gd:6848  'aus'
-  main.gd:6852  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
-  main.gd:6852  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
-  main.gd:6855  ' – versucht es weiter (gleich auf einem freien Port)'
+  main.gd:1644  '  %.0f Mbit/s'
+  main.gd:2341  ' (von MoveEye)'
+  main.gd:2374  'Der Simulator ist belegt: '
+  main.gd:3232  'aus'
+  main.gd:3232  'ein'
+  main.gd:3309  'Sabotage-Test: '
+  main.gd:3309  'aus'
+  main.gd:3363  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
+  main.gd:3366  '\n🚨 Bewacht und weg: '
+  main.gd:4174  'keine'
+  main.gd:4200  'Wächter an MoveEye: '
+  main.gd:4961  'Dein Platz: '
+  main.gd:5200  ' · schaut nur zu: '
+  main.gd:5203  ' · Treffer %d von %d Schüssen, %d Punkte'
+  main.gd:5204  ' · Update: '
+  main.gd:5538  'Blinde Flecken: '
+  main.gd:6205  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
+  main.gd:6511  'Autostart: '
+  main.gd:6522  'Autologon: '
+  main.gd:6683  'Karte öffnen: '
+  main.gd:6829  'Echt-Abgleich: '
+  main.gd:6839  'Trainingspaket: '
+  main.gd:6848  ' · %d offen · %.1f MB'
+  main.gd:6848  'Ziel: %s:%d (Port von MoveEye) · '
+  main.gd:6857  'Verbindung · '
+  main.gd:6857  'aus'
+  main.gd:6861  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
+  main.gd:6861  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
+  main.gd:6864  ' – versucht es weiter (gleich auf einem freien Port)'
   explore.gd:581  ' (automatisch von oben)'
   explore.gd:581  ' · schnell'
   fahrzeuge.gd:90  'nie'

@@ -317,7 +317,7 @@ func _lens_update() -> void:
 		var fw: Vector3 = cb * spinne.fwd_g()
 		var nn: Vector3 = cb * spinne.up_g()
 		var sd := Vector2(fw.x, -fw.y)
-		var lit := dark() and (main.ir_on() or (main.white_light != null and main.white_light.light_energy > 0.01))
+		var lit: bool = dark() and (main.ir_on() or (main.white_light != null and main.white_light.light_energy > 0.01))
 		var vis := 1.0
 		if dark() and not lit:
 			vis = 0.06                                                   # dark room, no light of MoveEye: almost nothing
@@ -989,7 +989,7 @@ class Spinne extends Tier:
 		if heading.length() < 0.001:
 			heading = Vector3(1, 0, 0) if absf(n.x) < 0.9 else Vector3(0, 0, -1)
 		heading = heading.normalized()
-		var lt := zt.room.global_transform
+		var lt: Transform3D = zt.room.global_transform
 		var gp: Vector3 = lt * (p + n * 0.0005)
 		var gb: Basis = lt.basis * Basis.looking_at(heading, n)
 		sp.global_transform = Transform3D(gb, gp)
