@@ -58,7 +58,7 @@ static func draw(d: CanvasItem, kind: String, c: Vector2, col: Color, w := 1.8) 
 			d.draw_arc(c, 7.0, PI * 0.35, PI * 1.65, 20, col, w, true)
 			d.draw_arc(c + Vector2(3.5, 0), 5.2, PI * 0.62, PI * 1.38, 14, col, w, true)
 		"tour":                                       # a small Blinki
-			blinki(d, c + Vector2(-8.9, -10), 20.0, "normal", 0.0, 0.0, col)
+			blinki(d, c + Vector2(-blinki_width(20.0) / 2.0, -10), 20.0, "normal", 0.0, 0.0, col)
 		"bug":
 			d.draw_arc(c + Vector2(0, 1.5), 5.5, 0.0, TAU, 20, col, w, true)
 			d.draw_line(c + Vector2(0, -4), c + Vector2(0, 7), col, 1.4, true)
@@ -119,74 +119,64 @@ static func icon(kind: String, col: Color, size := 20.0) -> Control:
 	return d
 
 
-# ---- Blinki (quelle/589_blinki.py, viewBox 100 × 112): the fan = body, the eye at the bottom = face, the corners = mood ----
+# ---- Blinki (quelle/589_blinki.py): eye = face, feet; since Daniel 31.10.2026 WITHOUT the orange fan (the logo keeps it,
+# mw_logo.gd). Coordinates of the old 100 × 112 figure, cut out: x 26 … 74, y 59 … 111 (48 × 52). The mood signs (corners,
+# arrow, heart, dots) are drawn by blinki_bubble in a small speech bubble (like BLINKI_BUB of 589).
 const BK_O := Color("#ff9f43")
 const BK_O2 := Color("#e8590c")
 const BK_W := Color("#ffffff")
 const BK_D := Color("#0a0e14")
+const BK_X0 := 26.0
+const BK_Y0 := 59.0
+const BK_VW := 48.0
+const BK_VH := 52.0
+
+
+static func blinki_width(height: float) -> float:
+	return height * BK_VW / BK_VH
+
+
+static func blinki_fit(box: Vector2) -> Rect2:
+	"""the biggest Blinki that fits in box, centred (position = top-left corner, size.y = the height for blinki())"""
+	var h: float = minf(box.y, box.x * BK_VH / BK_VW)
+	var w := blinki_width(h)
+	return Rect2(Vector2((box.x - w) / 2.0, (box.y - h) / 2.0), Vector2(w, h))
 
 
 static func blinki(d: CanvasItem, pos: Vector2, height: float, mood := "normal", look := 0.0, lid := 0.0, line := Color("#e8eef5"),
 		hop := 0.0, talk := 0.0, red := false) -> void:
 	"""draws Blinki with its top-left corner at pos. look -1 … 1 (pupil left / right), lid 0 … 1 (blink), hop = jump in
-	px of the viewBox, talk = fan pulse 0 … 1; red: the dim colours of the red light view (like html.sxnight .bk)"""
+	units of the viewBox, talk = eye pulse 0 … 1; red: the dim colours of the red light view (like html.sxnight .bk).
+	line is not used any more (the corners are in blinki_bubble now)"""
 	var o: Color = Color("#7a160e") if red else BK_O
 	var o2: Color = Color("#5a0f0a") if red else BK_O2
 	var wh: Color = Color("#2a0606") if red else BK_W
 	var dk: Color = Color("#000000") if red else BK_D
-	if red:
-		line = Color("#7d1f1a")
-	var k := height / 112.0
-	var tilt: float = deg_to_rad({"point": 7.0, "think": -5.0}.get(mood, 0.0))
+	var k := height / BK_VH
 	var P := func(x: float, y: float) -> Vector2:
-		return pos + Vector2(x, y - hop) * k
-	var R := func(x: float, y: float) -> Vector2:          # rotated around the eye (50, 80)
-		var v := Vector2(x - 50.0, y - 80.0).rotated(tilt)
-		return pos + (Vector2(50, 80 - hop) + v) * k
+		return pos + Vector2(x - BK_X0, y - hop - BK_Y0) * k
 	for fx in [39.0, 61.0]:                                # feet
 		var fp := PackedVector2Array()
 		for i in range(16):
 			var a := TAU * i / 16.0
-			fp.append(pos + Vector2(fx + cos(a) * 7.5, 105.5 + sin(a) * 3.8) * k)
+			fp.append(pos + Vector2(fx + cos(a) * 7.5 - BK_X0, 105.5 + sin(a) * 3.8 - BK_Y0) * k)
 		d.draw_colored_polygon(fp, o2)
-	# the fan: opaque at the eye, lighter at the top; «talk» = a little pulse
-	var sc := 1.0 + 0.045 * talk
-	var pts := PackedVector2Array([R.call(50.0, 80.0)])
-	var cols := PackedColorArray([Color(o, 1.0)])
-	for i in range(25):
-		var g := deg_to_rad(-128.0 + 76.0 * i / 24.0)
-		var y := 80.0 + 64.0 * sin(g) * sc
-		pts.append(R.call(50.0 + 64.0 * cos(g) * sc, y))
-		cols.append(Color(o, clampf(0.4 + 0.6 * (y - 16.0) / 64.0, 0.4, 1.0)))
-	d.draw_polygon(pts, cols)
-	var lw: float = max(1.0, 3.0 * k)
-	var dx := 3.0 if mood == "point" else 0.0
-	for seg in [[37, 33, 37, 27, 43, 27], [57, 27, 63, 27, 63, 33], [63, 45, 63, 51, 57, 51], [43, 51, 37, 51, 37, 45]]:
-		d.draw_polyline(PackedVector2Array([R.call(seg[0] + dx, seg[1]), R.call(seg[2] + dx, seg[3]), R.call(seg[4] + dx, seg[5])]), line, lw, true)
-	if mood == "point":
-		d.draw_polyline(PackedVector2Array([R.call(46 + dx, 33.5), R.call(54.5 + dx, 39), R.call(46 + dx, 44.5)]), line, lw, true)
-	elif mood == "think":
-		for cx in [43.5, 50.0, 56.5]:
-			d.draw_circle(R.call(cx, 39.0), 2.4 * k, line)
-	elif mood == "happy":                                 # a heart in the frame
-		d.draw_circle(R.call(46.6, 37.6), 3.9 * k, o2)
-		d.draw_circle(R.call(53.4, 37.6), 3.9 * k, o2)
-		d.draw_colored_polygon(PackedVector2Array([R.call(43, 39.5), R.call(57, 39.5), R.call(50, 46.5)]), o2)
-	# the eye
+	# the eye («talk» = a little pulse of the eye, like .bk.talk .bk-eye)
 	var ec: Vector2 = P.call(50.0, 80.0)
-	d.draw_circle(ec, 17.0 * k, wh)
+	var ke := k * (1.0 + 0.05 * talk)
+	d.draw_circle(ec, 17.0 * ke, wh)
 	if mood == "happy":
 		var q := PackedVector2Array()
 		for i in range(17):
 			var t := i / 16.0
-			q.append(P.call(40.5 + 19.0 * t, 83.5 - 25.0 * t * (1.0 - t)))
-		d.draw_polyline(q, dk, max(1.0, 3.6 * k), true)
+			q.append(ec + Vector2(-9.5 + 19.0 * t, 3.5 - 25.0 * t * (1.0 - t)) * ke)
+		d.draw_polyline(q, dk, max(1.0, 3.6 * ke), true)
 	else:
 		var off: Vector2 = {"point": Vector2(5, -1), "think": Vector2(-4, -5)}.get(mood, Vector2(5.0 * clampf(look, -1.0, 1.0), 0.0))
-		d.draw_circle(ec + off * k, 10.5 * k, o)
-		d.draw_circle(ec + off * k, 5.2 * k, dk)
+		d.draw_circle(ec + off * ke, 10.5 * ke, o)
+		d.draw_circle(ec + off * ke, 5.2 * ke, dk)
 		if not red:
-			d.draw_circle(ec + (off + Vector2(3.2, -3.4)) * k, 2.0 * k, BK_W)
+			d.draw_circle(ec + (off + Vector2(3.2, -3.4)) * ke, 2.0 * ke, BK_W)
 		if lid > 0.02:                                     # the lid comes down from the top: the part of the eye above «cut»
 			var sn := clampf(-1.0 + 2.0 * clampf(lid, 0.0, 1.0), -1.0, 1.0)
 			var a0 := PI - asin(sn)
@@ -194,7 +184,59 @@ static func blinki(d: CanvasItem, pos: Vector2, height: float, mood := "normal",
 			var lp := PackedVector2Array()
 			for i in range(21):
 				var a := a0 + (a1 - a0) * i / 20.0
-				lp.append(ec + Vector2(cos(a), sin(a)) * 17.0 * k)
+				lp.append(ec + Vector2(cos(a), sin(a)) * 17.0 * ke)
 			if a1 - a0 > 0.05:
 				d.draw_colored_polygon(lp, o2)
-	d.draw_arc(ec, 17.0 * k, 0.0, TAU, 32, o2, max(1.0, 2.6 * k), true)
+	d.draw_arc(ec, 17.0 * ke, 0.0, TAU, 32, o2, max(1.0, 2.6 * ke), true)
+
+
+static func _bk_round(pts: PackedVector2Array, c: Vector2, r: float, a0: float) -> void:
+	for i in range(7):
+		var a := a0 + PI * 0.5 * i / 6.0
+		pts.append(c + Vector2(cos(a), sin(a)) * r)
+
+
+static func blinki_bubble(d: CanvasItem, pos: Vector2, height: float, mood: String, alpha: float, line := Color("#e8eef5"),
+		bg := Color("#0b1016"), edge := Color("#2a3646"), red := false) -> void:
+	"""the mood bubble of Blinki (pos / height like blinki()): above right of the eye, tail to the eye; alpha 0 … 1 (also
+	a small pop). Same place and shape as BLINKI_BUB / .bk-bub in 589 (bubble viewBox 28 19 44 47, scale 0.75)"""
+	if alpha <= 0.01:
+		return
+	if red:
+		line = Color("#7d1f1a")
+		bg = Color("#120202")
+		edge = Color("#5a0f0a")
+	var k := height / BK_VH
+	var s := 0.75 * (0.8 + 0.2 * clampf(alpha, 0.0, 1.0))
+	var B := func(x: float, y: float) -> Vector2:          # bubble coordinates -> screen (tail tip (30, 64) at (58, 63))
+		return pos + Vector2(58.0 + (x - 30.0) * s - BK_X0, 63.0 + (y - 64.0) * s - BK_Y0) * k
+	var a := clampf(alpha, 0.0, 1.0)
+	var lc := Color(line, line.a * a)
+	var o2: Color = Color("#5a0f0a") if red else BK_O2
+	# the outline: M39 21 H61 A8 69 29 V49 A8 61 57 H47 L30 64 L39 57 A8 31 49 V29 A8 39 21 Z
+	var pl := PackedVector2Array()
+	_bk_round(pl, Vector2(61, 29), 8.0, -PI * 0.5)
+	_bk_round(pl, Vector2(61, 49), 8.0, 0.0)
+	pl.append(Vector2(47, 57))
+	pl.append(Vector2(30, 64))
+	_bk_round(pl, Vector2(39, 49), 8.0, PI * 0.5)
+	_bk_round(pl, Vector2(39, 29), 8.0, PI)
+	var sp := PackedVector2Array()
+	for p in pl:
+		sp.append(B.call(p.x, p.y))
+	d.draw_colored_polygon(sp, Color(bg, bg.a * a))
+	sp.append(sp[0])
+	d.draw_polyline(sp, Color(edge, edge.a * a), max(1.0, 1.4 * s * k), true)
+	var lw: float = max(1.0, 3.0 * s * k)
+	for seg in [[37, 33, 37, 27, 43, 27], [57, 27, 63, 27, 63, 33], [63, 45, 63, 51, 57, 51], [43, 51, 37, 51, 37, 45]]:
+		d.draw_polyline(PackedVector2Array([B.call(seg[0], seg[1]), B.call(seg[2], seg[3]), B.call(seg[4], seg[5])]), lc, lw, true)
+	if mood == "point":
+		d.draw_polyline(PackedVector2Array([B.call(46, 33.5), B.call(54.5, 39), B.call(46, 44.5)]), lc, max(1.0, 3.2 * s * k), true)
+	elif mood == "think":
+		for cx in [43.5, 50.0, 56.5]:
+			d.draw_circle(B.call(cx, 39.0), 2.4 * s * k, lc)
+	elif mood == "happy":                                 # a heart
+		var hc := Color(o2, a)
+		d.draw_circle(B.call(46.6, 37.6), 3.9 * s * k, hc)
+		d.draw_circle(B.call(53.4, 37.6), 3.9 * s * k, hc)
+		d.draw_colored_polygon(PackedVector2Array([B.call(43, 39.5), B.call(57, 39.5), B.call(50, 46.5)]), hc)

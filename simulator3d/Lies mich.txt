@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.11.1 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.12.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -436,6 +436,12 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.12.0
+3.12.0: Blinki erscheint überall ohne den orangen Sichtfächer. Ändert sich seine Stimmung, zeigt er das Zeichen (Ecken, Pfeil,
+Herz, Punkte) kurz in einer kleinen Sprechblase. Logo und Fensterkopf bleiben unverändert.
+So testest du: 1) Simulator → Spielen → Entdecken: Blinki ohne Kegel. 2) Einen Rundgang starten und weiterklicken: beim
+Stimmungswechsel kommt die Blase für etwa 2 s. 3) Das Logo oben hat den Kegel noch.
 
 NEU IN 3.11.1
 3.11.1: Karte (Standort) zeigt wieder die OpenStreetMap-Kacheln statt «Access blocked».

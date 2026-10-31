@@ -287,6 +287,8 @@ func _style() -> void:
 			b.add_theme_color_override(k, fc)
 		b.add_theme_color_override("font_disabled_color", pal["mut"])
 	_bk.line = pal["txt"]
+	_bk.bub_bg = pal["bg"]
+	_bk.bub_line = pal["line"]
 	_bk.red = UI.theme_now == "red"
 
 
@@ -311,13 +313,23 @@ func state() -> Dictionary:
 
 
 # ---- Blinki: blinks, looks around, hops, «talks» (like the CSS animations of 589) ------------------------------------------
+# Daniel 31.10.2026: without the fan; a new mood shows its sign ~2 s in a small bubble (Icons.blinki_bubble, like .bk.say)
 class BlinkiView extends Control:
-	var mood := "normal"
+	const SAY_S := 2.0
+	var mood := "normal":
+		set(v):
+			if v != mood and _seen:
+				_say = 0.0                                 # only a CHANGE of the mood (not the first one) shows the bubble
+			mood = v
 	var line := Color("#e8eef5")
+	var bub_bg := Color("#0b1016")
+	var bub_line := Color("#2a3646")
 	var red := false
 	var t := 0.0
 	var _hop := 9.0
 	var _talk := 9.0
+	var _say := 9.0
+	var _seen := false
 
 	func hop() -> void:
 		_hop = 0.0
@@ -325,10 +337,15 @@ class BlinkiView extends Control:
 	func talk() -> void:
 		_talk = 0.0
 
+	func saying() -> bool:
+		return _say < SAY_S
+
 	func _process(dt: float) -> void:
 		t += dt
 		_hop += dt
 		_talk += dt
+		_say += dt
+		_seen = true
 		queue_redraw()
 
 	func _draw() -> void:
@@ -343,9 +360,12 @@ class BlinkiView extends Control:
 		var hp := 0.0
 		if _hop < 0.75:
 			var u := _hop / 0.75
-			hp = 13.0 * sin(PI * clampf((u - 0.15) / 0.47, 0.0, 1.0))
+			hp = 8.0 * sin(PI * clampf((u - 0.15) / 0.47, 0.0, 1.0))
 		var tk := 0.0
 		if _talk < 1.28:
 			tk = 0.5 - 0.5 * cos(TAU * _talk / 0.32)
-		var h := size.y
-		Icons.blinki(self, Vector2((size.x - h * 100.0 / 112.0) / 2.0, 0), h, mood, look, clampf(lid, 0.0, 1.0), line, hp, tk, red)
+		var r: Rect2 = Icons.blinki_fit(size)            # centred in the box (the figure is lower without the fan)
+		Icons.blinki(self, r.position, r.size.y, mood, look, clampf(lid, 0.0, 1.0), line, hp, tk, red)
+		if _say < SAY_S:                                 # fade in 0.2 s, stay, fade out 0.3 s
+			var al := minf(clampf(_say / 0.2, 0.0, 1.0), clampf((SAY_S - _say) / 0.3, 0.0, 1.0))
+			Icons.blinki_bubble(self, r.position, r.size.y, mood, al, line, bub_bg, bub_line, red)
