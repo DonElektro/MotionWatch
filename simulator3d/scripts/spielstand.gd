@@ -5,9 +5,12 @@ extends RefCounted
 ##       Abenteuer   user://bergtal_abenteuer/fortschritt.json
 ##       Spielbereich user://spiel/spielbereich.json
 ##       Entdecken   user://entdecken.json (nur «gefunden»; was es gibt («known») und die Hinweis-Einstellungen gelten für alle)
+##       Maggie      user://maggie/spielstand.json (Geschichten-Menü 31.10.2026: jetzt auch pro Platz)
+##       Hospiz      Fortschritt in user://bergtal_horror.json unter «progress» (Platz 2/3: «progress_2» / «progress_3»;
+##                   der Passwort-Hash bleibt einer für alle)
 ##     Platz 2 und 3: dieselben Dateien unter user://spielstand/<n>/.
 ##   * Ein Level für alles (pro Spielstand): Spielbereich (Entdeckungen, Abzeichen, Abenteuer geschafft / begonnen) +
-##     Erfahrung aus dem Bergtal-Abenteuer, eine Kurve (spielbereich.gd need(): 2 = 100, 3 = 300, 4 = 600 …).
+##     Erfahrung aus «Die Karte des Grossvaters» (Bergtal-Abenteuer), eine Kurve (spielbereich.gd need(): 2 = 100, 3 = 300, 4 = 600 …).
 ##   * Der laufende Lauf (Tour bis Nachtlager) wird an Hütten und am Lager in user://spielstand/<n>/lauf.txt gemerkt
 ##     (var_to_str, ohne Objekte) - «Weiterspielen» im ersten Schritt des Abenteuers.
 ## Alles statisch (wie abenteuer_inventar.gd), die Datei user://spielstand.json hält: aktiver Platz, Namen, letzte Stufe
@@ -18,6 +21,7 @@ const N := 3
 const AB_1 := "user://bergtal_abenteuer/fortschritt.json"     # (= bergtal_abenteuer.gd SAVE_FILE)
 const SB_1 := "user://spiel/spielbereich.json"                 # (= spielbereich.gd SAVE)
 const ENT_1 := "user://entdecken.json"                         # (= entdecken.gd SAVE)
+const MAG_1 := "user://maggie/spielstand.json"                 # (= maggie_story.gd SAVE_FILE)
 
 static var _d := {}
 static var _loaded := false
@@ -27,17 +31,17 @@ static func _load() -> void:
 	if _loaded:
 		return
 	_loaded = true
-	_d = {"slot": 1, "names": ["", "", ""], "lv": [0, 0, 0], "stimme": true, "szenen": true}
+	_d = {"slot": 1, "names": ["", "", ""], "lv": [0, 0, 0], "stimme": true, "szenen": true, "last": ["", "", ""]}
 	if FileAccess.file_exists(FILE):
 		var d = JSON.parse_string(FileAccess.get_file_as_string(FILE))
 		if d is Dictionary:
 			for k in d:
 				_d[k] = d[k]
 	_d["slot"] = clampi(int(_d.get("slot", 1)), 1, N)
-	for k in ["names", "lv"]:
+	for k in ["names", "lv", "last"]:
 		var a: Array = _d[k] if _d.get(k) is Array else []
 		while a.size() < N:
-			a.append("" if k == "names" else 0)
+			a.append(0 if k == "lv" else "")
 		_d[k] = a
 
 
@@ -83,6 +87,20 @@ static func remember_lv(lv: int) -> void:
 		save()
 
 
+static func last_story(n := -1) -> String:
+	"""Geschichten-Menü: the story played last on this place (geschichten.gd: grossvater | maggie | horror)"""
+	_load()
+	n = slot() if n < 1 else n
+	return str(_d["last"][clampi(n, 1, N) - 1])
+
+
+static func set_last_story(id: String) -> void:
+	_load()
+	if str(_d["last"][slot() - 1]) != id:
+		_d["last"][slot() - 1] = id
+		save()
+
+
 static func lv_of(n: int) -> int:
 	_load()
 	return int(_d["lv"][clampi(n, 1, N) - 1])
@@ -106,6 +124,17 @@ static func path_sb(n := -1) -> String:
 static func path_ent(n := -1) -> String:
 	n = slot() if n < 1 else n
 	return ENT_1 if n == 1 else dir_of(n) + "/entdecken.json"
+
+
+static func path_maggie(n := -1) -> String:
+	n = slot() if n < 1 else n
+	return MAG_1 if n == 1 else dir_of(n) + "/maggie.json"
+
+
+static func horror_key(n := -1) -> String:
+	"""the key of the Hospiz progress of place n in user://bergtal_horror.json (place 1 = the old «progress»)"""
+	n = slot() if n < 1 else n
+	return "progress" if n == 1 else "progress_%d" % n
 
 
 static func path_lauf(n := -1) -> String:
@@ -197,6 +226,10 @@ static func switch(main, n: int) -> Dictionary:
 		return {"ok": false, "error": "test"}                  # Entwicklertool «Kapitel-Sprung» runs on its own test file
 	if ab != null and not ab.R.is_empty() and int(ab.step) in [4, 5, 6]:
 		return {"ok": false, "error": "tour"}
+	var mg = main.get("maggie")
+	var ho = main.get("horror")
+	if (mg != null and bool(mg.running)) or (ho != null and bool(ho.running)):
+		return {"ok": false, "error": "geschichte"}             # Geschichten-Menü: not while a story has the world
 	if n == slot():
 		return {"ok": true, "slot": n}
 	if ab != null:
@@ -222,6 +255,8 @@ static func switch(main, n: int) -> Dictionary:
 		ab.W["items"] = ab.blinki_suggest()
 		ab.step = 0
 		ab._changed()
+	if mg != null and mg.has_method("_load"):
+		mg._load()                                                # Maggie reads the file of place n (SS.path_maggie)
 	return {"ok": true, "slot": n}
 
 
@@ -234,4 +269,4 @@ static func level(main) -> Dictionary:
 	var SB = preload("res://scripts/spielbereich.gd")
 	var xp: int = int(main.abenteuer.P.get("xp", 0)) if main != null and main.abenteuer != null else 0
 	var lv: int = SB.level_of(xp)
-	return {"lv": lv, "xp": xp, "from": SB.need(lv), "to": SB.need(lv + 1), "parts": [["Bergtal-Abenteuer", xp]]}
+	return {"lv": lv, "xp": xp, "from": SB.need(lv), "to": SB.need(lv + 1), "parts": [["Die Karte des Grossvaters", xp]]}

@@ -835,7 +835,7 @@ func open_book() -> void:
 	var sc := ScrollContainer.new()
 	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	var rows := int(ceil(list().size() / 2.0))           # as high as needed, at most what the window allows
-	sc.custom_minimum_size = Vector2(580, clampf(rows * 120.0 + 70.0, 140.0, minf(460.0, get_viewport().get_visible_rect().size.y - 260.0)))
+	sc.custom_minimum_size = Vector2(580, clampf(rows * 120.0 + 240.0, 240.0, minf(460.0, get_viewport().get_visible_rect().size.y - 260.0)))
 	b.add_child(sc)
 	_book_list = VBoxContainer.new()
 	_book_list.add_theme_constant_override("separation", 8)
@@ -898,6 +898,9 @@ func _refresh_book() -> void:
 		var o := UI.small(" · ".join(others))
 		o.custom_minimum_size = Vector2(560, 0)
 		_book_list.add_child(o)
+	if main.spielbereich != null:                   # Geschichten-Menü: the badges live here now (not on «Spielen»)
+		_book_list.add_child(UI.heading(T.t("Abzeichen")))
+		_book_list.add_child(main.spielbereich.badge_grid(560.0))
 
 
 func _scene_name(s: String) -> String:
@@ -1017,7 +1020,8 @@ func info(lite := false) -> Dictionary:
 			e["icon"] = ""                            # no spoiler on MoveEye's page
 	return {"ok": true, "scene": main.scene, "scene_name": _scene_name(main.scene), "found": count(), "total": L.size(), "items": L,
 			"photo": photo_id != "", "photo_id": photo_id, "hint": hint_id, "hint_text": _hint_l.text if _hint_box.visible else "",
-			"hints_on": hints_on, "hint_min": hint_min, "book": book_open(), "check_us": roundi(check_us)}
+			"hints_on": hints_on, "hint_min": hint_min, "book": book_open(), "check_us": roundi(check_us),
+			"badges": main.spielbereich.badges() if main.spielbereich != null and not lite else []}
 
 
 func control(d: Dictionary) -> Dictionary:

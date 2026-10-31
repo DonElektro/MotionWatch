@@ -52,7 +52,7 @@ const ASK_STUCK_S := 120.0               # eine Frage / ein Rätsel so lange off
 const IDLE_S := 180.0                    # so lange keine Eingabe: die Zeit zählt nicht (Simulator offen gelassen)
 const MAX_EV := 400                      # Ereignisse pro Runde (mehr wird nur gezählt)
 const MAX_ROUNDS := 400                  # so viele Runden liest die Auswertung (die neuesten)
-const MODI := {"abenteuer": "Bergtal-Abenteuer", "spielbereich": "Spielbereich", "horror": "Horror «Das Hospiz»",
+const MODI := {"abenteuer": "Die Karte des Grossvaters", "spielbereich": "Spielbereich", "horror": "Horror «Das Hospiz»",
 		"ferienpark": "Ferienpark-Aufgaben", "erlebniswelt": "Erlebniswelt", "spiel": "Spiel (Wächter, Rangliste)",
 		"maggie": "Maggie und der Bergkristall"}
 const KURZ := {"abenteuer": "Abenteuer", "spielbereich": "Spielbereich", "horror": "Horror", "ferienpark": "Ferienpark",
