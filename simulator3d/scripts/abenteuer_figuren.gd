@@ -484,6 +484,7 @@ func start_talk(fid: String, ctx: String, leg := -1) -> void:
 			if str(gr[0]) == "neuhut":
 				f["flags"]["hut_erkannt"] = true
 			break
+	g += preload("res://scripts/geschichten_faden.gd").gruss(self, fid, f)   # Roter Faden: Anna / Sepp / Ruedi kennen Maggie
 	if int(f["n"]) > 0:                                        # it remembers what you promised
 		for qid in FD.QUEST_ORDER:
 			var q: Dictionary = FD.QUESTS[qid]
