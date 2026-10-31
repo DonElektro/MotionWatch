@@ -74,6 +74,7 @@
   "info": {
     "v": "Version",
     "name": "Name und Version des Simulators -> 300, Meldungen",
+    "version": "Nummer des Simulators allein (ab Versionierung 3.0.0: X.Y.Z wie MoveEye, vorher 3D-A.B) -> 300 sim_versions",
     "host": "Rechnername -> 300 Simulatoren im Netz",
     "cameras": "Kameras mit Bildwinkel -> 290, 318, 163",
     "thermal": "Waermebild -> 230, 318",

@@ -276,6 +276,12 @@
   "it": " (la porta %d era occupata – invio sulla porta %d; MoveEye la trova da solo, anche il tunnel.)",
   "rm": " (il port %d era occupà – trametta sin il port %d; MoveEye al chatta da sez, er il tunnel.)"
  },
+ " (Port %d)": {
+  "en": " (port %d)",
+  "fr": " (port %d)",
+  "it": " (porta %d)",
+  "rm": " (port %d)"
+ },
  " (Port belegt!)": {
   "en": " (port in use!)",
   "fr": " (port occupé !)",
@@ -485,6 +491,12 @@
   "fr": " · fenêtre petite / cachée",
   "it": " · finestra piccola / nascosta",
   "rm": " · fanestra pitschna / zuppentada"
+ },
+ " · Gerät 2": {
+  "en": " · Device 2",
+  "fr": " · Appareil 2",
+  "it": " · Apparecchio 2",
+  "rm": " · Apparat 2"
  },
  " · getrennt": {
   "en": " · disconnected",
@@ -1674,6 +1686,12 @@
   "fr": "%s · IA : %s · %s",
   "it": "%s · IA: %s · %s",
   "rm": "%s · IA: %s · %s"
+ },
+ "%s · Live": {
+  "en": "%s · Live",
+  "fr": "%s · Live",
+  "it": "%s · Live",
+  "rm": "%s · Live"
  },
  "%s · Rätsel %s": {
   "en": "%s · puzzle %s",
@@ -22419,6 +22437,12 @@
   "fr": "MoveEye Sim  %s",
   "it": "MoveEye Sim  %s",
   "rm": "MoveEye Sim  %s"
+ },
+ "MoveEye Sim %s": {
+  "en": "MoveEye Sim %s",
+  "fr": "MoveEye Sim %s",
+  "it": "MoveEye Sim %s",
+  "rm": "MoveEye Sim %s"
  },
  "MOVEEYE SIM · ": {
   "en": "MOVEEYE SIM · ",

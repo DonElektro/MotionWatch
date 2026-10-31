@@ -408,7 +408,7 @@ func _export(n: int, scenes_too: bool, hi: bool) -> void:
 	if pc > 0:
 		counts["Parcours (bewegt / weit)"] = pc
 		made += pc
-	var yaml := "# Trainingsbilder aus dem MoveEye Sim · 3D (%s) - YOLO-Format\npath: .\ntrain: images/train\nval: images/val\nnames:\n" % main.VERSION
+	var yaml := "# Trainingsbilder aus dem %s - YOLO-Format\npath: .\ntrain: images/train\nval: images/val\nnames:\n" % preload("res://scripts/versionen.gd").label(main.VERSION)
 	for i in range(EXPORT_CLASSES.size()):
 		yaml += "  %d: %s\n" % [i, EXPORT_CLASSES[i]]
 	_write(export_dir.path_join("data.yaml"), yaml)
