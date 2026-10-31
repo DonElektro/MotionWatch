@@ -1,9 +1,9 @@
 {
- "version": "3D-5.11.0",
- "ver": "3.11.0",
- "name": "MoveEye Sim 3.11.0",
+ "version": "3D-5.11.1",
+ "ver": "3.11.1",
+ "name": "MoveEye Sim 3.11.1",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 35216442,
- "sha256": "8badae13cb1b3e641b6a24cd9dbcc2a1a7c39543c4c0e09f93662bb9ebccd458",
- "notes": "MoveEye Sim 3.11.0: Maggie zu zweit – Rollen, geteilter Bildschirm, Teamrätsel, retten."
+ "size": 35216524,
+ "sha256": "6c87697acd31c04f6b10ea1ffbbf7389dda20703f60a84eb7e04c189a32ed226",
+ "notes": "MoveEye Sim 3.11.1: zusammen mit MoveEye 3.11.1 (OSM-Kacheln); im Simulator selbst nichts geändert."
 }

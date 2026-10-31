@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.11.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.11.1 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -436,6 +436,10 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.11.1
+3.11.1: Karte (Standort) zeigt wieder die OpenStreetMap-Kacheln statt «Access blocked».
+So testest du: Einstellungen → Standort öffnen: die Karte erscheint normal.
 
 NEU IN 3.11.0
 3.11.0: Maggie und der Bergkristall zu zweit: 1 oder 2 Spieler, Rolle wählbar (zwei Wanderer oder Spieler 2 ist Maggie),
