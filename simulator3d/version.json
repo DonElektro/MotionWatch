@@ -1,7 +1,7 @@
 {
- "version": "3D-4.30",
+ "version": "3D-4.31",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 65181709,
- "sha256": "408f0081419b5317dbad997600c68a3aa8faa16c50fac4bb6e24e1a624f87f04",
- "notes": "Erlebniswelt im «Ferienpark am See»: 19 kleine Szenen mit Tieren und Menschen im Entdeckungsbuch, «Verstecken mit MoveEye» (nur im Ferienpark sichtbar)."
+ "size": 65220826,
+ "sha256": "ffcbe1af006abfb14247dbd0eb6d33f8752a56ead4d425c018426d718e56e311",
+ "notes": "Nacht-Testlauf: eine ganze Nacht im Simulator mit Wahrheit, MoveEye vergleicht und zeigt den Bericht /nacht; im Simulator Fortschritt und Abbrechen."
 }

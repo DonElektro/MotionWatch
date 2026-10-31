@@ -1,15 +1,15 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 3211 (Stellen: 4625)
-Übersetzt: en 2980, fr 2980, it 2980, rm 2980
+Texte gesamt: 3218 (Stellen: 4634)
+Übersetzt: en 2987, fr 2987, it 2987, rm 2987
 Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 337 Stellen
 Nicht mehr im Code (noch in texte.json): 29
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 42 Stellen in wizpics.gd 16, wordmark.gd 10, testrun.gd 9, smalltv.gd 3, game.gd 2, dataset.gd 1, phone.gd 1
-Übersprungen (Grund: Anzahl): kennung 11203, schlüssel 7641, keine Wörter 6022, index 3902, technisch 1353, doc 883, einheit 116, englisch 61, log 56, pfad 55, html 42, klasse 21
+Übersprungen (Grund: Anzahl): kennung 11319, schlüssel 7803, keine Wörter 6060, index 4006, technisch 1355, doc 888, einheit 116, englisch 63, log 56, pfad 56, html 42, klasse 21
 
 Pro Datei (Texte / davon dynamische Stellen):
-  main.gd                  615    29
+  main.gd                  616    29
   gamewiz.gd               213    14
   game.gd                  211    32
   bib_objekte.gd           108     0
@@ -81,6 +81,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   quality.gd                 8     0
   tunnel.gd                  7     2
   gamexp.gd                  7     0
+  nachtlauf.gd               7     0
   gamewatch.gd               6     0
   autostart.gd               5     0
   figur.gd                   5     0
@@ -181,35 +182,35 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   karte.gd:503  'Dazu kommen: '
   karte.gd:511  'ja'
   karte.gd:511  'keine'
-  main.gd:1258  '  %.0f Mbit/s'
-  main.gd:1931  ' (von MoveEye)'
-  main.gd:1964  'Der Simulator ist belegt: '
-  main.gd:2765  'aus'
-  main.gd:2765  'ein'
-  main.gd:2842  'Sabotage-Test: '
-  main.gd:2842  'aus'
-  main.gd:2896  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
-  main.gd:2899  '\n🚨 Bewacht und weg: '
-  main.gd:3616  'keine'
-  main.gd:3642  'Wächter an MoveEye: '
-  main.gd:4356  'Dein Platz: '
-  main.gd:4581  ' · schaut nur zu: '
-  main.gd:4584  ' · Treffer %d von %d Schüssen, %d Punkte'
-  main.gd:4585  ' · Update: '
-  main.gd:4915  'Blinde Flecken: '
-  main.gd:5570  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
-  main.gd:5876  'Autostart: '
-  main.gd:5887  'Autologon: '
-  main.gd:6048  'Karte öffnen: '
-  main.gd:6194  'Echt-Abgleich: '
-  main.gd:6201  'Trainingspaket: '
-  main.gd:6210  ' · %d offen · %.1f MB'
-  main.gd:6210  'Ziel: %s:%d (Port von MoveEye) · '
-  main.gd:6219  'Verbindung · '
-  main.gd:6219  'aus'
-  main.gd:6223  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
-  main.gd:6223  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
-  main.gd:6226  ' – versucht es weiter (gleich auf einem freien Port)'
+  main.gd:1262  '  %.0f Mbit/s'
+  main.gd:1937  ' (von MoveEye)'
+  main.gd:1970  'Der Simulator ist belegt: '
+  main.gd:2771  'aus'
+  main.gd:2771  'ein'
+  main.gd:2848  'Sabotage-Test: '
+  main.gd:2848  'aus'
+  main.gd:2902  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
+  main.gd:2905  '\n🚨 Bewacht und weg: '
+  main.gd:3622  'keine'
+  main.gd:3648  'Wächter an MoveEye: '
+  main.gd:4364  'Dein Platz: '
+  main.gd:4589  ' · schaut nur zu: '
+  main.gd:4592  ' · Treffer %d von %d Schüssen, %d Punkte'
+  main.gd:4593  ' · Update: '
+  main.gd:4923  'Blinde Flecken: '
+  main.gd:5579  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
+  main.gd:5885  'Autostart: '
+  main.gd:5896  'Autologon: '
+  main.gd:6057  'Karte öffnen: '
+  main.gd:6203  'Echt-Abgleich: '
+  main.gd:6210  'Trainingspaket: '
+  main.gd:6219  ' · %d offen · %.1f MB'
+  main.gd:6219  'Ziel: %s:%d (Port von MoveEye) · '
+  main.gd:6228  'Verbindung · '
+  main.gd:6228  'aus'
+  main.gd:6232  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
+  main.gd:6232  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
+  main.gd:6235  ' – versucht es weiter (gleich auf einem freien Port)'
   explore.gd:446  ' (automatisch von oben)'
   explore.gd:446  ' · schnell'
   feedback.gd:266  ' · TESTMODUS: geht nur an '

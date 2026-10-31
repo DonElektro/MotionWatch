@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-4.30"
+const VERSION := "3D-4.31"
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const Quality := preload("res://scripts/quality.gd")     # 3D-4.25: «Lite» for the Raspberry Pi 5 (Quality.lite(), Engine meta «lite»)
 const CAM_W := [960, 640]
@@ -298,6 +298,7 @@ var smalltv                           # smalltv.gd (3D-4.19): virtueller Zusatz-
 var fenster                           # fenster.gd (Paket «Fenster»): ein Rahmen für alle schwebenden Fenster (ziehen, Grösse, ✕, Liste «Fenster»)
 var statusled                         # statusled.gd: Status-LED auf dem Kopf + Fenster «Gerät» mit den Tasten (MoveEye 163a / 599c)
 var weit                              # weitwinkel.gd (3D-4.17): camera 1 = the wide camera with its mount (mast, base, head front / rear)
+var nacht                             # nachtlauf.gd (Paket «Nacht-Testlauf»): eine ganze Nacht mit Wahrheit, von MoveEye gestartet
 var parcours                          # parcours.gd (3D-4.18): «Verfolgungs-Parcours» - lessons, ground truth, game «Entkomme der Kamera»
 var zwilling                          # zwilling.gd (3D-4.4): «Dein Platz als Zwilling» - photo / panorama of the real place
 var fauna                             # fauna.gd (3D-3.95)
@@ -416,6 +417,9 @@ func _ready() -> void:
 	parcours = preload("res://scripts/parcours.gd").new()   # 3D-4.18: the tracking parcours (scene «parcours»)
 	parcours.main = self
 	add_child(parcours)
+	nacht = preload("res://scripts/nachtlauf.gd").new()     # Nacht-Testlauf: plan, truth (MoveEye starts it, part 579b)
+	nacht.main = self
+	add_child(nacht)
 	zwilling = preload("res://scripts/zwilling.gd").new()    # 3D-4.4: your place as a twin (photo behind the scene)
 	zwilling.main = self
 	add_child(zwilling)
@@ -1902,6 +1906,8 @@ func busy_with(except_ := "") -> String:
 		w = "Testlauf"
 	elif pruef != null and pruef.running:
 		w = "Prüfstand"
+	elif nacht != null and nacht.running:
+		w = "Nacht-Testlauf"                          # Paket «Nacht-Testlauf»: the night has the world (clock, weather, visitors)
 	elif dataset != null and dataset.busy:
 		w = "Trainingsbilder"
 	elif blindmap != null and blindmap.busy:
@@ -4338,6 +4344,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return umgebung.control(d)
 	elif a == "weit":                                  # 3D-4.17: wide camera {mount, tilt, tilt_follow, fisheye, pan_limit, do: info | probe | spawn}
 		return weit.control(d)
+	elif a == "nacht":                                 # Nacht-Testlauf: {do: info | start | stop | state | truth | plan} (nachtlauf.gd)
+		return nacht.control(d)
 	elif a == "parcours":                              # 3D-4.18: {do: info | start (lessons, night, seed, prep_s) | stop | state | result | game | steer ...}
 		return parcours.control(d)
 	elif a == "zwilling":                              # 3D-4.4: {do: info | import (path) | set (key, value) | item (k, x, z, r) | clear | remove | on}
@@ -4582,7 +4590,7 @@ func status_text() -> String:
 	if schnitt != null:
 		mwc += schnitt.mw_extra()                 # Aufräumen 2: «Schutz an · Relais …» from MoveEye
 	var score := " · Treffer %d von %d Schüssen, %d Punkte" % [hits, shots, points] if rifle_on else ""
-	return "%s · %02d:%02d · %s · %s · %.1f °C · Besucher %d%s · %s" % [Scenes.name_of(scene), int(h), int(fmod(h, 1.0) * 60), "Nacht" if is_dark() else "Tag", {"clear": "klar", "cloudy": "bewölkt", "rain": "Regen", "fog": "Nebel", "snow": "Schnee"}.get(weather, weather), ambient, visitors.get_child_count(), score, mwc] + (" · Update: " + update_info if update_info != "" else "") + (" · " + start_info if start_info != "" else "") + (" · " + game.status() if game != null and game.status() != "" else "") + (" · " + testrun.status() if testrun != null and testrun.status() != "" else "") + (" · " + dev2.status() if dev2 != null and dev2.on else "") + (" · " + recorder.info if recorder != null and recorder.info != "" and (recorder.recording or recorder.playing) else "") + (" · " + life.info if life != null and life.info != "" and (real_weather or daily_life) else "") + (" · " + geo.info if geo != null and geo.busy else "") + (" · " + geo_note if geo_note != "" else "")
+	return "%s · %02d:%02d · %s · %s · %.1f °C · Besucher %d%s · %s" % [Scenes.name_of(scene), int(h), int(fmod(h, 1.0) * 60), "Nacht" if is_dark() else "Tag", {"clear": "klar", "cloudy": "bewölkt", "rain": "Regen", "fog": "Nebel", "snow": "Schnee"}.get(weather, weather), ambient, visitors.get_child_count(), score, mwc] + (" · Update: " + update_info if update_info != "" else "") + (" · " + start_info if start_info != "" else "") + (" · " + game.status() if game != null and game.status() != "" else "") + (" · " + testrun.status() if testrun != null and testrun.status() != "" else "") + (" · " + nacht.status() if nacht != null and nacht.running else "") + (" · " + dev2.status() if dev2 != null and dev2.on else "") + (" · " + recorder.info if recorder != null and recorder.info != "" and (recorder.recording or recorder.playing) else "") + (" · " + life.info if life != null and life.info != "" and (real_weather or daily_life) else "") + (" · " + geo.info if geo != null and geo.busy else "") + (" · " + geo_note if geo_note != "" else "")
 
 
 func scenarios() -> Array:
@@ -5163,6 +5171,7 @@ func _build_ui() -> void:
 	(subs.get("System/Updates", tl) as Control).add_child(update_btn)
 	if testen_measure != null:
 		testrun.add_info(testen_measure, UI)          # progress and result of the test run (card «Testen»)
+		nacht.add_info(testen_measure, UI)            # Nacht-Testlauf: progress, «abbrechen»
 	elif groups.has("Testen"):
 		testrun.add_info(groups["Testen"], UI)
 	if subs.has("Licht & Ton/Status-LED & Tasten") and statusled != null:   # 3D-4.22: the rules of the buttons are in MoveEye - hint + link

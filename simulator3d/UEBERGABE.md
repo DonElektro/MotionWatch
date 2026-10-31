@@ -1,8 +1,16 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.30** · passende MoveEye-Version (früher Motion Watch) **2.98.61**
+Stand: 31.10.2026 · Simulator-Version **3D-4.31** · passende MoveEye-Version (früher Motion Watch) **2.98.62**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.31 (MoveEye 2.98.62): Nacht-Testlauf (`nachtlauf.gd`, MoveEye /nacht)
+
+- `nachtlauf.gd` (neu): Ablauf einer Nacht mit festem Zufall, schreibt die Wahrheit (Ereignisse, Abstand, Sichtbarkeit);
+  Steuerung `{"action":"nacht",…}` (schnittstelle.json), `busy_with` «Nacht-Testlauf». Eigene Arten:
+  `main.nacht.register_kind(kind, f, cat, cause)`. MoveEye: 579b (Abgleich, /nacht), 599d (Fenster), 599e (Texte).
+- Abbrechen im Simulator-Fenster bleibt erlaubt (Daniel 31.10.); Start nur in MoveEye durch den Besitzer.
+- MoveEye: «Trainings-Nacht» 🏋 und «Nacht-Generalprobe» 🎭 statt 🌙 (🌙 nur noch Nacht-Testlauf).
 
 ## NEU in 3D-4.30 (MoveEye 2.98.61): Erlebniswelt im Ferienpark (`erlebniswelt.gd`, 19 Vignetten)
 
