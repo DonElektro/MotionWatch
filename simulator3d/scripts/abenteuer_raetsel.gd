@@ -994,7 +994,10 @@ func draw_overlay(ov: Control) -> void:
 	var rp: Vector2 = km.to_px(k["ref"][1])
 	ov.draw_line(rp, rp + Vector2(0, -16), ink, 2.0)
 	ov.draw_colored_polygon(PackedVector2Array([rp + Vector2(0, -16), rp + Vector2(10, -12), rp + Vector2(0, -8)]), Color(0.72, 0.12, 0.08))
-	ov.draw_string(font, rp + Vector2(4, 12), T.t(str(k["ref"][0])), HORIZONTAL_ALIGNMENT_LEFT, -1, 10, ink)
+	var lab := T.t(str(k["ref"][0]))
+	var lw: float = font.get_string_size(lab, HORIZONTAL_ALIGNMENT_LEFT, -1, 10).x
+	var lx: float = rp.x + 4.0 if rp.x + 4.0 + lw < ov.size.x * 0.72 else rp.x - 4.0 - lw    # (not under the compass rose)
+	ov.draw_string(font, Vector2(lx, rp.y + 12), lab, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, ink)
 	var cands := _cands(ch)
 	var tip_now: bool = hilfe() == "leicht" or (hilfe() == "normal" and main.now() - float(RR().get("ask_t", 0.0)) >= TIP_S)
 	if tip_now:
