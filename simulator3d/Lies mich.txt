@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3D-3.94 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.0.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -17,6 +17,8 @@ STARTEN
    In der virtuellen Maschine muss die 3D-Beschleunigung eingeschaltet sein (VMware: Einstellungen -> Anzeige).
 
 UPDATES (ab 3D-1.7)
+- Versionsnummer: ab 3.0.0 heisst der Simulator "MoveEye Sim" und hat immer dieselbe Nummer wie MoveEye (z. B. MoveEye 3.0.0 und
+  MoveEye Sim 3.0.0). Ein Simulator bis 3D-4.8x zeigt das erste Update dorthin als "3D-5.0.0" an - das ist MoveEye Sim 3.0.0.
 - Beim Start schaut der Simulator auf GitHub nach, ob es eine neuere Version gibt. Wenn ja, erscheint zuerst ein Hinweis:
   "Jetzt aktualisieren" lädt die neue Version, prüft sie (Grösse und Prüfsumme), ersetzt das Programm und startet neu.
   "Ohne Update starten" startet die bisherige Version.
@@ -420,6 +422,10 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.0.0
+3.0.0: Neue gemeinsame Versionsnummer: MoveEye und MoveEye Sim haben ab jetzt immer dieselbe Nummer (3.0.0). Neue Funktion =
+zweite Zahl, Fehlerkorrektur = dritte Zahl.
 
 NEU IN 3D-4.85
 3D-4.85: Neues Fenster «Spielen»: oben Stufe, Spielstand und «Weiterspielen», darunter zwei Bereiche:

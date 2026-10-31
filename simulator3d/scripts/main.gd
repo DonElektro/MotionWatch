@@ -3,7 +3,8 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-4.85"
+const VERSION := "3.0.0"
+const Versionen = preload("res://scripts/versionen.gd")   # Versionierung 3.0.0: from 3.0.0 VERSION = "X.Y.Z" like MoveEye (see there)
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const Quality := preload("res://scripts/quality.gd")     # 3D-4.25: «Lite» for the Raspberry Pi 5 (Quality.lite(), Engine meta «lite»)
 const Kompakt := preload("res://scripts/kompakt.gd")    # 3D-4.x: the four compact scenes (Pfadilager, Hofladen, Bergdorf, Festival)
@@ -431,7 +432,7 @@ func _ready() -> void:
 	in_vm = _in_vm()
 	if in_vm and not "--quality" in args:
 		quality = "simple"                      # virtual machine: no real graphics card - the light graphics by default
-	DisplayServer.window_set_title("3D-Simulator Live · %s" % VERSION)
+	DisplayServer.window_set_title(("%s · Live" % Versionen.label(VERSION)) if Versionen.is_new(VERSION) else ("3D-Simulator Live · %s" % VERSION))
 	var ic := load("res://icon_sim3d.png")              # the window icon (3D-3.28; 3D-3.63: the orange MoveEye symbol)
 	if ic is Texture2D:
 		DisplayServer.set_icon((ic as Texture2D).get_image())
@@ -691,7 +692,7 @@ func _ready() -> void:
 			if i + 1 < args.size() and args[i + 1].begins_with("http"):
 				phone.addr.text = args[i + 1]
 			get_tree().create_timer(2.0).timeout.connect(func(): phone.open())
-	DisplayServer.window_set_title("3D-Simulator Live · %s (Port %d)" % [VERSION, port])
+	DisplayServer.window_set_title((("%s · Live" % Versionen.label(VERSION)) if Versionen.is_new(VERSION) else ("3D-Simulator Live · %s" % VERSION)) + " (Port %d)" % port)
 	_fps0 = Engine.max_fps
 	mini_box = preload("res://scripts/mini.gd").new()      # minimize = small box, the simulator keeps drawing
 	mini_box.main = self
@@ -3384,7 +3385,7 @@ func refscan_text() -> String:
 
 
 func info() -> Dictionary:
-	return {"v": 1, "name": "MoveEye Sim · 3D %s" % VERSION, "host": host_name(),
+	return {"v": 1, "name": Versionen.label(VERSION), "version": VERSION, "host": host_name(),   # «version»: Versionierung 3.0.0 (MoveEye 300 sim_versions)
 			"cameras": [{"id": 0, "name": "Head camera (NoIR)", "w": CAM_W[0], "h": CAM_H[0], "fps": CAM_FPS[0], "fov_h": CAM_FOV[0], "fov_v": 41.0, "on_head": true, "noir": true},
 						weit.cam_info()],          # 3D-4.17: the wide camera with its mount (weitwinkel.gd)
 			"thermal": simint.thermal_info() if simint != null else {"w": TH_W, "h": TH_H, "fps": th_fps, "fov_h": TH_FOV, "fov_v": 35.0, "unit": "C", "on_head": true},
@@ -4549,7 +4550,7 @@ func control_info() -> Dictionary:
 		if c.has("ro"):
 			d["ro"] = bool(c["ro"].call())            # Aufräumen 2: the page of MoveEye shows it read-only too
 		out.append(d)
-	return {"ok": true, "v": 1, "name": "MoveEye Sim · 3D %s" % VERSION,
+	return {"ok": true, "v": 1, "name": Versionen.label(VERSION), "version": VERSION,
 				"scenarios": scenarios(), "scenario": Worlds.world_of(scene), "place": scene if Worlds.is_place(scene) else "",
 			"controls": out, "status": status_text(), "upload": null, "groups_on": _groups_on(),
 			"game": {"open": game != null and game.open, "url": game.address() if game != null and game.open else "", "players": game.count() if game != null else 0}}

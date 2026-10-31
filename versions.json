@@ -1,13 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 15:42",
+ "generated": "2026-10-31 15:53",
  "versions": [
+  {
+   "version": "3.0.0",
+   "file": "webcam_bewegung_3_0_0.py",
+   "url": "",
+   "sha256": "25122585a1b8edd723acf8fd730cdc6723bff5ead62111c24dba8a84bf2532b1",
+   "date": "2026-10-31 15:53",
+   "notes": "Neue gemeinsame Versionsnummer: MoveEye und MoveEye Sim haben ab jetzt immer dieselbe Nummer (3.0.0). Neue Funktion = zweite Zahl, Fehlerkorrektur = dritte Zahl.",
+   "sig": "36a6defe027908d8b618d4aa58f0968be9e0badb4b986a40a23c59ee26e87a7506a85c2fa4f3dfab4dc6b1f0d1896d18781707a1edb748ed4d59ba5e0552e204"
+  },
   {
    "version": "2.98.116",
    "file": "webcam_bewegung_2_98_116.py",
    "url": "",
    "sha256": "6ce7d2dd9c4bfc96fdb99cd94efe06581590194492a7432c30f64e606e0fb7ca",
-   "date": "2026-10-31 15:42",
+   "date": "2026-10-31 15:52",
    "notes": "Reiter «Spielen» neu aufgebaut wie im Simulator (Stufe, Spielstand, Weiterspielen, Geschichten-Regal, Entdecken). Simulator 3D-4.85: neues Fenster «Spielen» mit Geschichten als grosse Karten (Die Karte des Grossvaters, Maggie, Hospiz, Teil 2), gleicher Start für alle Geschichten.",
    "sig": "e7b0d995cb7bbfa5421610dcd08daef5fe989fb5104b539ebbdc0be110f2333445df32ba35f1087399b385233f7648ffbb44cccb455d69494c74dcd7303e8004"
   },
@@ -82,15 +91,6 @@
    "date": "2026-10-26 18:26",
    "notes": "The download of the 3D simulator for Windows (ZIP) is now a button right under «Search now» in the simulator section (before hidden under Tools); the desktop window shows its address for the PC browser in the simulator line.",
    "sig": "6ec9afbf1255355f142377a9fdff4c7feae0730afe568207a656ded68bc36e3392f125e266cb5bb94014279f5e4f58a1af9b6b57975ecb6f05a9839aa6349007"
-  },
-  {
-   "version": "2.89.0",
-   "file": "webcam_bewegung_2_89_0.py",
-   "url": "",
-   "sha256": "47b3d89528bc35b03463b9139a1dbde2672085c1a0c8da5d4b6e8918f3229cd4",
-   "date": "2026-10-26 08:49",
-   "notes": "Tools: «Full power for the tools» - Motion Watch rests for 10 to 120 minutes (camera, detection, AI, extra cameras; a recording is finished first), the web page and the tools keep running; it comes back by itself or with «Resume now».",
-   "sig": "85db0606fc0a8c02329d6165176d8d453de8e1b3eafec2e560efb87e820bb5c8a9467bbe20e4d724f893b0760253c327e9260b370ee9d368887322bb502f220a"
   }
  ]
 }

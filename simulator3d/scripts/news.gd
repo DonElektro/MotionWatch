@@ -23,22 +23,13 @@ const DONE := [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19
 
 
 static func _vt(v: String) -> Array:
-	var out := []
-	for x in v.trim_prefix("3D-").split("."):
-		out.append(int(x))
-	return out
+	"""Versionierung 3.0.0: «3D-4.82» and «3.0.0» in one order (versionen.gd) - the last seen may still be «3D-4.8x»"""
+	return preload("res://scripts/versionen.gd").key(v)
 
 
 static func _newer(a: String, b: String) -> bool:
 	"""a > b"""
-	var x := _vt(a)
-	var y := _vt(b)
-	for i in range(maxi(x.size(), y.size())):
-		var p: int = x[i] if i < x.size() else 0
-		var q: int = y[i] if i < y.size() else 0
-		if p != q:
-			return p > q
-	return false
+	return preload("res://scripts/versionen.gd").newer(a, b)
 
 
 func entries(seen: String) -> Array:
