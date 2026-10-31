@@ -651,6 +651,8 @@ func _step_next(r: Dictionary) -> void:
 		return
 	var s: Dictionary = r["steps"][r["i"]]
 	r["t_step"] = now()
+	for k in ["near_d", "near_t", "near_i", "out_t"]:
+		r.erase(k)
 	_enter_sec(str(s.get("sec", "")))
 	var spd: float = float(s.get("spd", -1.0))
 	v.speed = spd if spd > 0.0 else float(r["spd"])
@@ -712,14 +714,38 @@ func _step_done(r: Dictionary) -> bool:
 	var v = r["v"]
 	match str(s["do"]):
 		"go":
-			return (v.route.is_empty() and _flat(v.position).distance_to(_flat(s["p"])) < 0.7) or now() > float(r["until"])
+			return (v.route.is_empty() and _flat(v.position).distance_to(_flat(s["p"])) < 0.7) or now() > float(r["until"]) or _stuck(r, s["p"])
 		"sync":
 			if flags.has(str(s["key"])):
 				return now() > float(flags[str(s["key"])]) + float(s.get("extra", 0.0))
 			return false
 		"leave":
-			return v.done or now() > float(r["until"])
+			return v.done or now() > float(r["until"]) or _gone_out(r)
 	return now() >= float(r["until"])
+
+
+func _stuck(r: Dictionary, p: Vector3) -> bool:
+	"""a point behind a tent / car / fence: no closer for 6 s (1.5 m away: 3 s) - take the next step from where it is"""
+	var d: float = _flat(r["v"].position).distance_to(_flat(p))
+	var t := now()
+	if not r.has("near_d") or d < float(r["near_d"]) - 0.25 or float(r.get("near_i", -1)) != float(r["i"]):
+		r["near_d"] = d
+		r["near_t"] = t
+		r["near_i"] = r["i"]
+		return false
+	return t - float(r["near_t"]) > (3.0 if d < 1.5 else 6.0)
+
+
+func _gone_out(r: Dictionary) -> bool:
+	"""leaving: once out of the picture (head + thermal camera) for 6 s and 14 m from the device, the run need not wait
+	until the figure reaches its far exit point (shorter runs, the same truth - nothing more to see)"""
+	var v = r["v"]
+	if main.testrun.visible(v) or main.testrun.thermal_visible(v) or _flat(v.position).distance_to(_flat(_hp())) < 14.0:
+		r["out_t"] = now()
+		return false
+	if not r.has("out_t"):
+		r["out_t"] = now()
+	return now() - float(r["out_t"]) > 6.0
 
 
 func _process(dt: float) -> void:
