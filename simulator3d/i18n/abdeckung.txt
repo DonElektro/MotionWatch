@@ -1,18 +1,18 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 6305 (Stellen: 8601)
-Übersetzt: en 6305, fr 6305, it 6305, rm 6305
+Texte gesamt: 6307 (Stellen: 8604)
+Übersetzt: en 6307, fr 6307, it 6307, rm 6307
 Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 429 Stellen
-Nicht mehr im Code (noch in texte.json): 124
+Nicht mehr im Code (noch in texte.json): 172
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 68 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main.gd 1, phone.gd 1, spieltest.gd 1
-Übersprungen (Grund: Anzahl): kennung 21565, schlüssel 16303, keine Wörter 10124, index 8349, technisch 2743, doc 1797, einheit 248, englisch 116, pfad 96, log 85, html 68, klasse 26, shader 6
+Übersprungen (Grund: Anzahl): kennung 21568, schlüssel 16307, keine Wörter 10124, index 8349, technisch 2743, doc 1798, einheit 248, englisch 116, pfad 96, log 85, html 68, klasse 26, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   main.gd                  671    29
   bergtal_abenteuer.gd     269     5
   gamewiz.gd               252    15
-  abenteuer_figuren_daten.gd   235     0
+  abenteuer_figuren_daten.gd   238     0
   game.gd                  211    32
   bergtal.gd               199     5
   bergtal_abenteuer_daten.gd   197     0
@@ -204,11 +204,11 @@ Unsicher:
   'Wide camera (NoIR Wide)': Kameraname an MoveEye (/info) – nicht umhüllen
 
 Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {name} machen:
-  abenteuer_figuren.gd:693  'fertig'
-  abenteuer_figuren.gd:778  'nein'
-  abenteuer_figuren.gd:788  'nein'
-  abenteuer_figuren.gd:801  'ja'
-  abenteuer_figuren.gd:801  'nein'
+  abenteuer_figuren.gd:697  'fertig'
+  abenteuer_figuren.gd:782  'nein'
+  abenteuer_figuren.gd:792  'nein'
+  abenteuer_figuren.gd:805  'ja'
+  abenteuer_figuren.gd:805  'nein'
   ferienpark_leben.gd:925  'fertig'
   ferienpark_leben.gd:992  'fertig'
   maggie_story.gd:397  'fertig'
@@ -355,19 +355,19 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   main.gd:5234  ' · Treffer %d von %d Schüssen, %d Punkte'
   main.gd:5235  ' · Update: '
   main.gd:5579  'Blinde Flecken: '
-  main.gd:6333  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
-  main.gd:6642  'Autostart: '
-  main.gd:6653  'Autologon: '
-  main.gd:6814  'Karte öffnen: '
-  main.gd:6960  'Echt-Abgleich: '
-  main.gd:6970  'Trainingspaket: '
-  main.gd:6979  ' · %d offen · %.1f MB'
-  main.gd:6979  'Ziel: %s:%d (Port von MoveEye) · '
-  main.gd:6988  'Verbindung · '
-  main.gd:6988  'aus'
-  main.gd:6992  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
-  main.gd:6992  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
-  main.gd:6995  ' – versucht es weiter (gleich auf einem freien Port)'
+  main.gd:6338  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
+  main.gd:6647  'Autostart: '
+  main.gd:6658  'Autologon: '
+  main.gd:6819  'Karte öffnen: '
+  main.gd:6965  'Echt-Abgleich: '
+  main.gd:6975  'Trainingspaket: '
+  main.gd:6984  ' · %d offen · %.1f MB'
+  main.gd:6984  'Ziel: %s:%d (Port von MoveEye) · '
+  main.gd:6993  'Verbindung · '
+  main.gd:6993  'aus'
+  main.gd:6997  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
+  main.gd:6997  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
+  main.gd:7000  ' – versucht es weiter (gleich auf einem freien Port)'
   explore.gd:581  ' (automatisch von oben)'
   explore.gd:581  ' · schnell'
   fahrzeuge.gd:90  'nie'

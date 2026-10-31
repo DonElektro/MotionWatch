@@ -20,7 +20,7 @@ const FIG := {
 		"gross": 1.82, "pack": false, "orte": [Vector2(60, 0)], "r": 240.0, "unterwegs": 0.15, "wo": "Alp Tschuggen"},
 	"sennerin": {"name": "Vreni, die Sennerin", "rolle": "sennerin", "kind": "person", "jacke": Color(0.72, 0.16, 0.14), "cap": false,
 		"gross": 1.66, "pack": false, "orte": [Vector2(60, 0)], "r": 240.0, "unterwegs": 0.1, "wo": "Alp Tschuggen"},
-	"huettenwartin": {"name": "Anna, die Hüttenwartin", "rolle": "huettenwartin", "kind": "person", "jacke": Color(0.22, 0.46, 0.32),
+	"huettenwartin": {"name": "Anna, die Betreuerin der Hütte", "rolle": "huettenwartin", "kind": "person", "jacke": Color(0.22, 0.46, 0.32),
 		"cap": false, "gross": 1.7, "pack": true, "orte": [Vector2(60, 0), Vector2(-520, 560)], "r": 220.0, "unterwegs": 0.1,
 		"wo": "Hütte und Biwak"},
 	"wildhueter": {"name": "Ruedi, der Wildhüter", "rolle": "wildhueter", "kind": "person", "jacke": Color(0.32, 0.34, 0.2), "cap": true,
@@ -112,6 +112,14 @@ const GRUSS := {
 	"b_urs": [["f:hilfe_bekommen", "Hoi! Der Fuss ist wieder gut - danke dir nochmals."],
 		["erst", "Hoi, ich bin Urs. Ich klettere am Gratspitz - der Fels ist dort richtig gut."],
 		["", "Hoi! Auch wieder am Berg?"]]}
+
+# Paket angleich (Daniel 31.10.2026): Sepps erster Gruss passt zur Jahreszeit der Runde (bergtal_abenteuer.gd SEASONS).
+# GRUSS_JZ[fid][Bedingung][Jahreszeit] ersetzt den Text aus GRUSS; fehlt die Jahreszeit, gilt GRUSS («sommer»).
+const GRUSS_JZ := {
+	"aelpler": {"erst": {
+		"fruehling": "Grüessech! Ich bin der Sepp, ich mache diesen Frühling die Alp parat für die Kühe. Was führt dich so weit hinauf?",
+		"herbst": "Grüessech! Ich bin der Sepp, ich schaue diesen Herbst zu den Kühen, bis wir mit ihnen ins Tal ziehen. Was führt dich so weit hinauf?",
+		"winter": "Grüessech! Ich bin der Sepp, ich schaue diesen Winter zur Alp und zu den Tieren im Stall. Was führt dich so weit hinauf?"}}}
 
 # ---- Themen ----------------------------------------------------------------------------------------------------------------
 # id, frage (was du sagst), cond, antwort (Text oder [[cond, Text], …]), merkt (Flag), effekt (siehe abenteuer_figuren.gd),
@@ -216,7 +224,7 @@ const GERUECHTE := ["Im Bunker beim Pass soll es nachts ein Büro für Murmeltie
 		"In der alten Sennerei liegt ein uralter Käse. Riechen kann man ihn bis zum Weg.",
 		"Im Gipfelbuch auf dem Tschingelspitz stehen sehr lustige Einträge.",
 		"Eine Gämse stand heute Morgen auf dem Dach vom Hospiz. Einfach so."]
-# Tipps der Hüttenwartin (je Tag einer)
+# Tipps von Anna, der Betreuerin der Hütte (je Tag einer)
 const TIPPS := ["Früh los, früh zurück: am Nachmittag kommen die Gewitter.",
 		"Trink, bevor du Durst hast. Am Bach kannst du auffüllen.",
 		"Die Stirnlampe gehört immer in den Rucksack - auch wenn du vor dem Dunkeln zurück sein willst.",
@@ -250,7 +258,7 @@ const QUESTS := {
 		"abgabe": "Ich habe einen Brief von Anna für dich.",
 		"dank": "Die Käse-Bestellung! Danke - richte Anna einen Gruss aus.",
 		"lohn": {"xp": 40, "v": 1, "gib": ""}},
-	"q_kaese": {"typ": "bote", "von": "sennerin", "cond": "q:q_brief", "item": "kaese", "an": "huettenwartin", "kurz": "Käse von Vreni zur Hüttenwartin Anna bringen",
+	"q_kaese": {"typ": "bote", "von": "sennerin", "cond": "q:q_brief", "item": "kaese", "an": "huettenwartin", "kurz": "Käse von Vreni zu Anna, der Betreuerin der Hütte, bringen",
 		"angebot": "Anna wartet auf einen Laib Käse für die Hütte. Nimmst du ihn mit, wenn du sie siehst?",
 		"abgabe": "Ich bringe dir den Käse von Vreni.",
 		"dank": "Wunderbar! Dann gibt es heute Abend Käseschnitten.",
@@ -277,7 +285,7 @@ const QUESTS := {
 		"dank": "Du hast die Markierungen aufgefrischt? Merci - die Wanderer werden es dir danken.",
 		"lohn": {"xp": 50, "v": 1, "gib": ""}},
 	# Hilfe am Berg: ein Wanderer oder Bergsteiger hat sich verletzt (kommt von selbst, kein Auftrag)
-	"q_verletzt": {"typ": "hilfe", "von": "", "kurz": "Verletzten Wanderer melden (Hüttenwartin oder Wildhüter)",
+	"q_verletzt": {"typ": "hilfe", "von": "", "kurz": "Verletzten Wanderer melden (Betreuerin der Hütte oder Wildhüter)",
 		"angebot": "%s sitzt am Weg und hält sich den Knöchel. «Umgeknickt. Ich komme kaum noch weiter.»",
 		"abgabe": "Am Weg sitzt jemand mit verstauchtem Fuss.",
 		"dank": "Danke, dass du Bescheid sagst. Ich schicke gleich jemanden hinauf.",
