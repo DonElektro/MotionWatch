@@ -25974,7 +25974,8 @@ def sim_latest_check(force=False):
                 try:
                     with urllib.request.urlopen(_upd_request(base + path), timeout=15) as r:
                         d = json.loads(r.read(65536))
-                    SIMLATEST[key] = {"version": str(d.get("version") or "")[:20], "notes": str(d.get("notes") or "")[:400]}
+                    # Versionierung 3.0.0: «ver» = the new number (X.Y.Z), «version» = «3D-(X+2).Y.Z» for old simulators
+                    SIMLATEST[key] = {"version": str(d.get("ver") or d.get("version") or "")[:20], "notes": str(d.get("notes") or "")[:400]}
                     SIMLATEST["err"] = ""
                 except Exception as e:
                     SIMLATEST["err"] = _upd_error(e)[:120] if "_upd_error" in globals() else str(e)[:120]
@@ -25983,9 +25984,35 @@ def sim_latest_check(force=False):
     threading.Thread(target=work, daemon=True, name="simlatest").start()
 
 
-def _vnum(v):
-    m = re.search(r"(\d+)\.(\d+)(?:\.(\d+))?", str(v or ""))
+SIM_LEGACY_SHIFT = 2                # Versionierung 3.0.0: «3D-A.B[.C]» = (A-2).B.C - same rule as simulator3d/scripts/versionen.gd
+
+
+def sim_vkey(v):
+    """a simulator version to compare, both schemas: «3D-4.82» -> (2, 82, 0), «3D-5.0.0» -> (3, 0, 0) (the field for old
+    simulators in version.json), «3.0.0» / «MoveEye Sim 3.0.0» -> (3, 0, 0), «PY-1.2» -> (1, 2, 0); None = no number"""
+    s = str(v or "")
+    m = re.search(r"3D-(\d+)\.(\d+)(?:\.(\d+))?", s)
+    if m:
+        return (int(m.group(1)) - SIM_LEGACY_SHIFT, int(m.group(2)), int(m.group(3) or 0))
+    m = re.search(r"(\d+)\.(\d+)(?:\.(\d+))?", s)
     return tuple(int(x or 0) for x in m.groups()) if m else None
+
+
+def sim_vlegacy(v):
+    """the number old simulators (up to 3D-4.8x) read in version.json «version»: 3.0.0 -> «3D-5.0.0»"""
+    s = str(v or "").strip()
+    if "3D-" in s or not re.match(r"^\d+\.\d+\.\d+$", s):
+        return s
+    a, b, c = (int(x) for x in s.split("."))
+    return "3D-%d.%d.%d" % (a + SIM_LEGACY_SHIFT, b, c)
+
+
+def sim_vlabel(v):
+    """the name to show: «MoveEye Sim 3.0.0» (from 3.0.0), before «MoveEye Sim · 3D 3D-4.82»"""
+    s = str(v or "").strip()
+    return ("MoveEye Sim · 3D " if "3D-" in s else "MoveEye Sim ") + s
+
+
 
 
 SIM_AUTOUPD = {}                   # (address, newest version) -> time the update was started (once per version)
@@ -26018,9 +26045,11 @@ def sim_versions():
     info = SIM.get("info") or {}
     name = str(info.get("name") or "")
     cur, kind = "", ""
-    m = re.search(r"3D-\d+\.\d+", name)
+    m = re.search(r"3D-\d+\.\d+(?:\.\d+)?", name)
     if m:
         cur, kind = m.group(0), "3d"
+    elif re.match(r"^\d+\.\d+\.\d+$", str(info.get("version") or "")) and "Python" not in name:
+        cur, kind = str(info["version"]), "3d"            # Versionierung 3.0.0: «MoveEye Sim 3.0.0» sends «version» too
     else:
         u = sim_base().split("//")[-1]
         f = SIMFOUND.get(u) or SIMFOUND.get(u.replace("localhost", "127.0.0.1")) or {}
@@ -26028,10 +26057,10 @@ def sim_versions():
         if v.startswith("PY-") or "Python" in name:
             kind = "py"; cur = v if v.startswith("PY-") else ("PY-" + (re.search(r"\d+\.\d+", name) or [""])[0] if re.search(r"\d+\.\d+", name) else "")
     lat = SIMLATEST.get(kind) if kind else None
-    newer = bool(lat and cur and _vnum(lat["version"]) and _vnum(cur) and _vnum(lat["version"]) > _vnum(cur))
+    newer = bool(lat and cur and sim_vkey(lat["version"]) and sim_vkey(cur) and sim_vkey(lat["version"]) > sim_vkey(cur))
     return {"kind": kind, "current": cur, "latest": (lat or {}).get("version", ""), "notes": (lat or {}).get("notes", ""), "newer": newer,
             "checked": int(time.time() - SIMLATEST["t"]) if SIMLATEST["t"] else None, "err": SIMLATEST["err"]}
-SIM3D["stem"] = "MotionWatch3D_Simulator"; SIM3D["label"] = "MoveEye Sim · 3D"
+SIM3D["stem"] = "MotionWatch3D_Simulator"; SIM3D["label"] = "MoveEye Sim · 3D" if "3D-" in SIM3D["version"] else "MoveEye Sim"
 SIM3D_BASE = "https://raw.githubusercontent.com/DonElektro/MotionWatch/main/"
 
 
@@ -33680,7 +33709,7 @@ def update_check():
             if sigs.get(it["file"]):
                 try:
                     with open(it["path"], "rb") as f:
-                        sha = hashlib.sha256(f.read(8 * 1024 * 1024 + 1)).hexdigest()
+                        sha = hashlib.sha256(f.read(UPD_MAX_BYTES + 1)).hexdigest()
                 except OSError:
                     pass
             cur.update(available=True, src_path=it["path"], url="", sha256=sha, signed=sig_ok(it["version"], it["file"], sha, sigs.get(it["file"])))
@@ -33696,9 +33725,14 @@ def update_check():
     return UPD["items"], msg
 
 
+# Versionierung 3.0.0: the program file is about 7.6 MB - older versions (up to 2.98.x) refuse files over 8 MiB, so 3.0.0
+# itself must stay below 8 MiB; from 3.0.0 on 32 MiB are allowed (room for the next versions).
+UPD_MAX_BYTES = 32 * 1024 * 1024
+
+
 def _verify_program(data, want_version, sha=""):
     import hashlib
-    if len(data) > 8 * 1024 * 1024 or len(data) < 10000:
+    if len(data) > UPD_MAX_BYTES or len(data) < 10000:
         return "the file does not look like MoveEye"
     if sha and hashlib.sha256(data).hexdigest() != sha:
         return "the file is damaged (checksum does not match) - try again"
@@ -33738,15 +33772,15 @@ def update_install(version):
                     except ValueError:
                         pass
                     parts, n = [], 0
-                    while n <= 8 * 1024 * 1024:
-                        b = r.read(min(65536, 8 * 1024 * 1024 + 1 - n))
+                    while n <= UPD_MAX_BYTES:
+                        b = r.read(min(65536, UPD_MAX_BYTES + 1 - n))
                         if not b:
                             break
                         parts.append(b); n += len(b); UPD_PROG["got"] = n
                     data = b"".join(parts)
             elif it.get("src_path"):
                 with open(it["src_path"], "rb") as f:
-                    data = f.read(8 * 1024 * 1024 + 1)
+                    data = f.read(UPD_MAX_BYTES + 1)
             else:
                 return False, "unknown version"
             UPD_PROG.update(phase="check", tp=time.time())
@@ -33761,7 +33795,7 @@ def update_install(version):
         else:
             UPD_PROG.update(phase="check", tp=time.time())
             with open(dst, "rb") as f:
-                err = _verify_program(f.read(8 * 1024 * 1024 + 1), version)
+                err = _verify_program(f.read(UPD_MAX_BYTES + 1), version)
             if err:
                 return False, err
         UPD_PROG.update(phase="restart", tp=time.time())
@@ -41311,7 +41345,10 @@ function paint() {
   $("#p-start").hidden = !S.basis_show || !!S.running; $("#p-stop").hidden = !S.running;
 }
 // ---- button «Update the simulator» (2.95.5): the simulator's own update (control «update_now»), newest version shown ----
-const vnum = v => (String(v || "").match(/(\d+)\.(\d+)/) || [0, 0, 0]).slice(1).map(Number);
+// Versionierung 3.0.0: «3D-A.B[.C]» = (A-2).B.C, «3.0.0» as it is - the same rule as sim_vkey (300) and versionen.gd
+const vnum = v => { const s = String(v || ""), m = s.match(/3D-(\d+)\.(\d+)(?:\.(\d+))?/), n = m || s.match(/(\d+)\.(\d+)(?:\.(\d+))?/);
+  return n ? [+n[1] - (m ? 2 : 0), +n[2], +(n[3] || 0)] : [0, 0, 0]; };
+const vnewer = (a, b) => { const A = vnum(a), B = vnum(b); for (let i = 0; i < 3; i++) if (A[i] !== B[i]) return A[i] > B[i]; return false; };
 function verPaint() {
   const V = S && S.on && S.versions, w = $("#s-supd");
   if (!V || !V.current) { $("#s-ver").textContent = ""; w.hidden = true; return; }
@@ -41324,8 +41361,8 @@ function verPaint() {
 function updPaint(r) {
   const b = $("#s-upd"), has = !!(r && r.ok && (r.controls || []).some(c => c.id === "update_now"));
   b.hidden = !(has && S && S.on); verPaint(); if (b.hidden) return;
-  const V = S.versions || {}, m = String(r.name || "").match(/3D-\d+\.\d+/), cur = V.current || (m ? m[0] : ""), nw = V.latest || (S.sim3d && S.sim3d.version);
-  const [a1, a2] = vnum(cur), [b1, b2] = vnum(nw), newer = cur && nw && (b1 > a1 || (b1 === a1 && b2 > a2));
+  const V = S.versions || {}, m = String(r.name || "").match(/3D-\d+\.\d+(?:\.\d+)?/), cur = V.current || r.version || (m ? m[0] : ""), nw = V.latest || (S.sim3d && S.sim3d.version);
+  const newer = !!(cur && nw && vnewer(nw, cur));
   b.className = newer ? "" : "sec";
   b.title = newer ? t("New version available") + ": " + nw : t("The simulator looks for a new version and installs it");
   b.lastChild.textContent = newer ? t("Update the simulator") + " → " + nw : t("Update the simulator");
@@ -58414,6 +58451,38 @@ def sim_owns_updates():
     return SIMUPD.get("mode") is not None
 
 # set_cfg (540) passes «sim_autoupd» changed on the web page to the simulator (_set_cfg_sim -> simupd_push)
+
+
+# ---- Versionierung 3.0.0 (Daniel 31.10.2026): MoveEye and the simulator share one number X.Y.Z from 3.0.0 («MoveEye 3.0.0» /
+# «MoveEye Sim 3.0.0»). simulator3d/version.json keeps «version» = «3D-(X+2).Y.Z» for old simulators (they only compare that
+# field: 3.0.0 would be older than 3D-4.82 for them) and has the real number in «ver». The self-test checks the order of the
+# numbers and - in the repository (GitHub) - that version.json, SIM3D and APP_VERSION fit together.
+def versionen_selftest():
+    order = ["2.98.113", "2.98.114", "3.0.0", "3.0.1", "3.1.0", "3.1.1", "3.10.0", "4.0.0"]
+    for a, b in zip(order, order[1:]):
+        assert _vkey(a) < _vkey(b), f"MoveEye {a} < {b}"
+        assert VFILE_RE.match("webcam_bewegung_%s.py" % b.replace(".", "_")) and VER_RE.match(b), f"file name / number {b}"
+    sims = ["3D-4.82", "3D-4.83", "3.0.0", "3.0.1", "3.1.0", "3.10.0", "4.0.0"]
+    for a, b in zip(sims, sims[1:]):
+        assert sim_vkey(a) < sim_vkey(b), f"simulator {a} < {b}"
+    assert sim_vkey("3D-5.0.0") == sim_vkey("3.0.0") == sim_vkey("MoveEye Sim 3.0.0") == (3, 0, 0), "bridge 3D-5.0.0 = 3.0.0"
+    assert sim_vlegacy("3.0.0") == "3D-5.0.0" and sim_vlegacy("3.10.2") == "3D-5.10.2" and sim_vlegacy("3D-4.82") == "3D-4.82"
+    p = os.path.join(HERE, "simulator3d", "version.json")
+    if not os.path.isfile(p):
+        return None                                               # on the Pi: no repository next to the program
+    with open(p, encoding="utf-8") as f:
+        d = json.load(f)
+    ver, old = str(d.get("ver") or ""), str(d.get("version") or "")
+    assert old.startswith("3D-"), f"version.json «version» must stay «3D-…» for old simulators (is {old!r})"
+    if ver:
+        assert old == sim_vlegacy(ver), f"version.json: «version» {old} must be {sim_vlegacy(ver)} (= {ver} for old simulators)"
+        assert SIM3D["version"] in (ver, old), f"SIM3D {SIM3D['version']} does not fit version.json {ver}"
+    if _vkey(APP_VERSION) >= (3, 0, 0):
+        assert ver == APP_VERSION == SIM3D["version"], f"from 3.0.0 one number: MoveEye {APP_VERSION}, SIM3D {SIM3D['version']}, version.json {ver or old}"
+    return f"simulator {ver or old} (old simulators read {old})"
+
+
+SELFTEST_EXTRA.append(("Version numbers: order, file names, bridge for old simulators (3.0.0)", versionen_selftest))
 # ----------------------------------------------------------------------------
 # Wish of Daniel (30.10.2026): the guards at MoveEye in «Team gegen MoveEye» (the shutter of part 539) may switch on help
 # of the AI for the running round, on the live page and in the «Controller-Ansicht» (538: L2 in a round):

@@ -404,7 +404,7 @@ def update_check():
             if sigs.get(it["file"]):
                 try:
                     with open(it["path"], "rb") as f:
-                        sha = hashlib.sha256(f.read(8 * 1024 * 1024 + 1)).hexdigest()
+                        sha = hashlib.sha256(f.read(UPD_MAX_BYTES + 1)).hexdigest()
                 except OSError:
                     pass
             cur.update(available=True, src_path=it["path"], url="", sha256=sha, signed=sig_ok(it["version"], it["file"], sha, sigs.get(it["file"])))
@@ -420,9 +420,14 @@ def update_check():
     return UPD["items"], msg
 
 
+# Versionierung 3.0.0: the program file is about 7.6 MB - older versions (up to 2.98.x) refuse files over 8 MiB, so 3.0.0
+# itself must stay below 8 MiB; from 3.0.0 on 32 MiB are allowed (room for the next versions).
+UPD_MAX_BYTES = 32 * 1024 * 1024
+
+
 def _verify_program(data, want_version, sha=""):
     import hashlib
-    if len(data) > 8 * 1024 * 1024 or len(data) < 10000:
+    if len(data) > UPD_MAX_BYTES or len(data) < 10000:
         return "the file does not look like MoveEye"
     if sha and hashlib.sha256(data).hexdigest() != sha:
         return "the file is damaged (checksum does not match) - try again"
@@ -462,15 +467,15 @@ def update_install(version):
                     except ValueError:
                         pass
                     parts, n = [], 0
-                    while n <= 8 * 1024 * 1024:
-                        b = r.read(min(65536, 8 * 1024 * 1024 + 1 - n))
+                    while n <= UPD_MAX_BYTES:
+                        b = r.read(min(65536, UPD_MAX_BYTES + 1 - n))
                         if not b:
                             break
                         parts.append(b); n += len(b); UPD_PROG["got"] = n
                     data = b"".join(parts)
             elif it.get("src_path"):
                 with open(it["src_path"], "rb") as f:
-                    data = f.read(8 * 1024 * 1024 + 1)
+                    data = f.read(UPD_MAX_BYTES + 1)
             else:
                 return False, "unknown version"
             UPD_PROG.update(phase="check", tp=time.time())
@@ -485,7 +490,7 @@ def update_install(version):
         else:
             UPD_PROG.update(phase="check", tp=time.time())
             with open(dst, "rb") as f:
-                err = _verify_program(f.read(8 * 1024 * 1024 + 1), version)
+                err = _verify_program(f.read(UPD_MAX_BYTES + 1), version)
             if err:
                 return False, err
         UPD_PROG.update(phase="restart", tp=time.time())

@@ -698,7 +698,8 @@ def sim_latest_check(force=False):
                 try:
                     with urllib.request.urlopen(_upd_request(base + path), timeout=15) as r:
                         d = json.loads(r.read(65536))
-                    SIMLATEST[key] = {"version": str(d.get("version") or "")[:20], "notes": str(d.get("notes") or "")[:400]}
+                    # Versionierung 3.0.0: «ver» = the new number (X.Y.Z), «version» = «3D-(X+2).Y.Z» for old simulators
+                    SIMLATEST[key] = {"version": str(d.get("ver") or d.get("version") or "")[:20], "notes": str(d.get("notes") or "")[:400]}
                     SIMLATEST["err"] = ""
                 except Exception as e:
                     SIMLATEST["err"] = _upd_error(e)[:120] if "_upd_error" in globals() else str(e)[:120]
@@ -707,9 +708,35 @@ def sim_latest_check(force=False):
     threading.Thread(target=work, daemon=True, name="simlatest").start()
 
 
-def _vnum(v):
-    m = re.search(r"(\d+)\.(\d+)(?:\.(\d+))?", str(v or ""))
+SIM_LEGACY_SHIFT = 2                # Versionierung 3.0.0: «3D-A.B[.C]» = (A-2).B.C - same rule as simulator3d/scripts/versionen.gd
+
+
+def sim_vkey(v):
+    """a simulator version to compare, both schemas: «3D-4.82» -> (2, 82, 0), «3D-5.0.0» -> (3, 0, 0) (the field for old
+    simulators in version.json), «3.0.0» / «MoveEye Sim 3.0.0» -> (3, 0, 0), «PY-1.2» -> (1, 2, 0); None = no number"""
+    s = str(v or "")
+    m = re.search(r"3D-(\d+)\.(\d+)(?:\.(\d+))?", s)
+    if m:
+        return (int(m.group(1)) - SIM_LEGACY_SHIFT, int(m.group(2)), int(m.group(3) or 0))
+    m = re.search(r"(\d+)\.(\d+)(?:\.(\d+))?", s)
     return tuple(int(x or 0) for x in m.groups()) if m else None
+
+
+def sim_vlegacy(v):
+    """the number old simulators (up to 3D-4.8x) read in version.json «version»: 3.0.0 -> «3D-5.0.0»"""
+    s = str(v or "").strip()
+    if "3D-" in s or not re.match(r"^\d+\.\d+\.\d+$", s):
+        return s
+    a, b, c = (int(x) for x in s.split("."))
+    return "3D-%d.%d.%d" % (a + SIM_LEGACY_SHIFT, b, c)
+
+
+def sim_vlabel(v):
+    """the name to show: «MoveEye Sim 3.0.0» (from 3.0.0), before «MoveEye Sim · 3D 3D-4.82»"""
+    s = str(v or "").strip()
+    return ("MoveEye Sim · 3D " if "3D-" in s else "MoveEye Sim ") + s
+
+
 
 
 SIM_AUTOUPD = {}                   # (address, newest version) -> time the update was started (once per version)
@@ -742,9 +769,11 @@ def sim_versions():
     info = SIM.get("info") or {}
     name = str(info.get("name") or "")
     cur, kind = "", ""
-    m = re.search(r"3D-\d+\.\d+", name)
+    m = re.search(r"3D-\d+\.\d+(?:\.\d+)?", name)
     if m:
         cur, kind = m.group(0), "3d"
+    elif re.match(r"^\d+\.\d+\.\d+$", str(info.get("version") or "")) and "Python" not in name:
+        cur, kind = str(info["version"]), "3d"            # Versionierung 3.0.0: «MoveEye Sim 3.0.0» sends «version» too
     else:
         u = sim_base().split("//")[-1]
         f = SIMFOUND.get(u) or SIMFOUND.get(u.replace("localhost", "127.0.0.1")) or {}
@@ -752,10 +781,10 @@ def sim_versions():
         if v.startswith("PY-") or "Python" in name:
             kind = "py"; cur = v if v.startswith("PY-") else ("PY-" + (re.search(r"\d+\.\d+", name) or [""])[0] if re.search(r"\d+\.\d+", name) else "")
     lat = SIMLATEST.get(kind) if kind else None
-    newer = bool(lat and cur and _vnum(lat["version"]) and _vnum(cur) and _vnum(lat["version"]) > _vnum(cur))
+    newer = bool(lat and cur and sim_vkey(lat["version"]) and sim_vkey(cur) and sim_vkey(lat["version"]) > sim_vkey(cur))
     return {"kind": kind, "current": cur, "latest": (lat or {}).get("version", ""), "notes": (lat or {}).get("notes", ""), "newer": newer,
             "checked": int(time.time() - SIMLATEST["t"]) if SIMLATEST["t"] else None, "err": SIMLATEST["err"]}
-SIM3D["stem"] = "MotionWatch3D_Simulator"; SIM3D["label"] = "MoveEye Sim · 3D"
+SIM3D["stem"] = "MotionWatch3D_Simulator"; SIM3D["label"] = "MoveEye Sim · 3D" if "3D-" in SIM3D["version"] else "MoveEye Sim"
 SIM3D_BASE = "https://raw.githubusercontent.com/DonElektro/MotionWatch/main/"
 
 
