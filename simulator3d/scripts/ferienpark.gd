@@ -1055,7 +1055,7 @@ func _signs() -> void:
 		l.outline_size = 10
 		l.outline_modulate = Color(0.1, 0.12, 0.1)
 		l.visibility_range_end = 120.0
-		l.layers = 16                                   # only the window camera of the simulator (not the camera of MoveEye)
+		l.layers = m.HELPER_LAYER                       # only the window camera of the simulator (not the camera of MoveEye)
 		park.add_child(l)
 
 
