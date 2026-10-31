@@ -2656,7 +2656,7 @@ function tidyHeader(s, c) {
   hb("#b-rec", !!s.recording);
   hb("#b-rain", !!s.rain_mode);
   hb("#b-wind", s.wind_level && s.wind_level !== "calm" && s.wind_level !== "off");
-  hb("#b-light", !!s.lowlight, "🌙 " + t("LOW LIGHT"), "yel");
+  hb("#b-light", !!(s.lowlight || s.fog), s.fog ? "🌫 " + t("Fog – view limited") : "🌙 " + t("LOW LIGHT"), "yel");   // 411: fog mode
   hb("#b-relay", (s.relay_states || []).some(Boolean));
   hb("#b-sched", (s.sched_active || []).length > 0);
   const srcOk = (s.source_status || "") === "connected"; hb("#b-src", !srcOk);
@@ -2692,7 +2692,7 @@ function compactHeader(s, c) {
   // short symbols instead of long words (the full text stays as tooltip)
   const m = /^next photo in (\d+) min$/.exec(s.timelapse || "");
   sh("#b-tl", "⏱" + (m ? " " + m[1] + "′" : ""));
-  sh("#b-light", "🌙"); sh("#b-camp", "⛺"); sh("#b-view", "👁 " + ((s.viewers || {}).n || 0), $("#b-view") && $("#b-view").title); sh("#b-eco", "🍃" + (s.eco === "saving" ? " " + c.eco_fps + " FPS" : ""));
+  sh("#b-light", s.fog ? "🌫" : "🌙"); sh("#b-camp", "⛺"); sh("#b-view", "👁 " + ((s.viewers || {}).n || 0), $("#b-view") && $("#b-view").title); sh("#b-eco", "🍃" + (s.eco === "saving" ? " " + c.eco_fps + " FPS" : ""));
   const L = s.lights || {}; sh("#b-lights", (L.white ? "💡" : "") + (L.ir ? " IR" : ""));
   sh("#b-pat", s.manual ? "✋" : (s.tracking ? "🎯" : "🔄"));
   const hs = s.hotspot || {}; sh("#b-hs", "📡" + (hs.clients ? " " + hs.clients : ""));
@@ -2940,6 +2940,7 @@ function sensPaint(c, s) {
   if (st) { const p = []; if (c.rf433_on) p.push("📻 433 MHz: " + t(S.rf || "off")); if (c.zigbee_on) p.push("🐝 Zigbee: " + t(S.zb || "off")); if (c.ble_on) p.push("🔵 Bluetooth: " + t(S.ble || "off"));
     if (!c.sens_on) p.unshift("⚠ " + t("Extra sensors are switched off")); st.textContent = p.join(" · "); }
 }
+Object.assign(I18N.de, {"Fog – view limited": "Nebel – Sicht eingeschränkt"});   // 411
 Object.assign(I18N.de, {"Storm warning": "Sturmwarnung", "Storm warning (push message)": "Sturmwarnung (Push-Nachricht)", "Also from the weather forecast: gusts in the next 12 hours (sends the location to Open-Meteo)": "Auch aus der Wetterprognose: Böen in den nächsten 12 Stunden (schickt den Standort an Open-Meteo)", "Warn when the air pressure falls by (hPa in 3 hours)": "Warnen, wenn der Luftdruck fällt um (hPa in 3 Stunden)", "Warn from wind / gusts of (km/h)": "Warnen ab Wind / Böen von (km/h)", "Wind meter: km/h per pulse per second": "Windmesser: km/h pro Impuls pro Sekunde", "Wind meter (anemometer) connected to": "Windmesser (Anemometer) angeschlossen an", "STORM WARNING": "STURMWARNUNG", "the air pressure falls fast": "der Luftdruck fällt schnell", "strong wind or a thunderstorm may come. Secure the awning and the tent.": "es kann starker Wind oder ein Gewitter kommen. Markise und Zelt sichern.", "strong wind measured": "starker Wind gemessen", "secure the awning and the tent.": "Markise und Zelt sichern.", "gusts expected in the next 12 hours": "Böen erwartet in den nächsten 12 Stunden", "secure the awning and the tent in time.": "Markise und Zelt rechtzeitig sichern.", "Air pressure from the BME280 temperature sensor. A wind meter: the two wires of the cup anemometer to a GPIO and GND.": "Luftdruck vom Temperaturfühler BME280. Windmesser: die zwei Drähte des Schalenanemometers an einen GPIO und GND.", "Air pressure": "Luftdruck", "trend after 1 hour": "Tendenz nach 1 Stunde", "no BME280 sensor": "kein BME280-Fühler", "Wind meter": "Windmesser", "gusts": "Böen", "Forecast, next 12 h": "Prognose, nächste 12 h", "no forecast yet": "noch keine Prognose", "Last warning": "Letzte Warnung"});
 // ---- storm warning ----
 function stormExtras(d) {
@@ -4322,7 +4323,7 @@ async function refresh() {
   badge("#b-rec", s.recording ? "● " + t("REC") : t("Idle"), s.recording ? "red" : "");
   const on = rs.filter(Boolean).length;
   badge("#b-relay", t("Relays") + ": " + on + "/" + rel.length, on ? "grn" : "");
-  badge("#b-light", s.lowlight ? t("LOW LIGHT") : t("Light ok") + " (" + s.brightness + ")", s.lowlight ? "yel" : "");
+  badge("#b-light", s.fog ? t("Fog – view limited") : s.lowlight ? t("LOW LIGHT") : t("Light ok") + " (" + s.brightness + ")", (s.lowlight || s.fog) ? "yel" : "");
   $("#sys-info").textContent = t("Settings") + ": " + (s.settings_status_txt || s.settings_status) + " · " + t("recordings") + ": " + s.rec_dir_mb + " MB · " + t("viewers") + ": " + s.web_viewers
       + (s.notify_status !== "off" ? " · " + t("notify") + ": " + s.notify_status : "");
   $("#v-pan").textContent = Math.round(c.pan); $("#v-tilt").textContent = Math.round(c.tilt);

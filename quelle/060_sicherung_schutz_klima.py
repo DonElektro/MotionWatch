@@ -224,18 +224,22 @@ class TamperGuard:
         covered = mean < 18 and std < 7 and self.ref_mean > 35 and self.ref_std > 8
         # 2.98.30: a cloth over the lens is not always black - the camera brightens it (auto exposure, the simulator too):
         # a flat picture without edges where there were many is covered as well
-        if not covered and std < 7 and self.ref_std > 12 and float(e.mean()) < 0.25 * max(1e-3, float(self.ref_e.mean())):
+        # (411: in fog the edges fade to ~25 % - then only a picture with almost no edges left (< 8 %) is a cloth)
+        fogq = fog_tamper_quiet(t0)
+        if not covered and std < 7 and self.ref_std > 12 and float(e.mean()) < (0.08 if fogq else 0.25) * max(1e-3, float(self.ref_e.mean())):
             covered = True
         a, b = e - e.mean(), self.ref_e - self.ref_e.mean()
         corr = float((a * b).sum() / (math.sqrt(float((a * a).sum()) * float((b * b).sum())) + 1e-6))
-        moved = (not covered) and self.ref_std > 10 and std > 8 and corr < 0.3 and not STATE.get("persons")
+        # 411: fog takes the edges away, so they no longer match the reference - no «camera turned» in fog (detection test,
+        # Schattwald: a false sabotage push). The reference stays as it was before the fog.
+        moved = (not covered) and not fogq and self.ref_std > 10 and std > 8 and corr < 0.3 and not STATE.get("persons")
         self.n_cov = self.n_cov + 1 if covered else 0
         self.n_mov = self.n_mov + 1 if moved else 0
         if self.n_cov >= 3:
             self.alarm("covered"); self.ref = None; self.n_cov = 0; self.settle = t0 + 10
         elif self.n_mov >= 5:
             self.alarm("turned"); self.ref = None; self.n_mov = 0; self.settle = t0 + 10
-        elif not covered and corr > 0.6:                      # slowly follow the light of the day
+        elif not covered and corr > 0.6 and not fogq:         # slowly follow the light of the day (not the fog, 411)
             self.ref = self.ref * 0.9 + g * 0.1; self.ref_e = self.ref_e * 0.9 + e * 0.1
             self.ref_mean = self.ref_mean * 0.9 + mean * 0.1; self.ref_std = self.ref_std * 0.9 + std * 0.1
 
@@ -369,6 +373,8 @@ class LensCheck:
         g = cv2.resize(cv2.cvtColor(small, cv2.COLOR_BGR2GRAY) if small.ndim == 3 else small, (160, 120), interpolation=cv2.INTER_AREA)
         if float(g.mean()) < 12:
             return                                        # black: covered (theft protection) or no light at all
+        if fog_on() and fog_weather():
+            return                                        # 411: the weather says fog too - the blur is the fog, not the lens
         sharp = float(cv2.Laplacian(g, cv2.CV_32F).var()); con = float(g.std())
         self.add(t0, sharp, con, bool(is_dark()))
 
