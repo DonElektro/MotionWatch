@@ -1,8 +1,33 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Version **3.9.1** · MoveEye **3.9.1** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 31.10.2026 · Version **3.11.0** · MoveEye **3.11.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.11.0 (MoveEye 3.11.0): Maggie zu zweit (`maggie_zwei.gd`, `zweit_bild.gd`)
+
+- `maggie_zwei.gd` (neu): 1 oder 2 Spieler, Rolle (zwei Wanderer / Spieler 2 ist Maggie), Teamrätsel je Region, Partner rettet;
+  `zweit_bild.gd` (neu): Bildschirm geteilt / gemeinsam; `maggie_story.gd`, `maggie_hund.gd`, `geschichten.gd`, `padmap.gd`
+  (Controller von maggie_zwei, ausserhalb des mit MoveEye 542 verglichenen JS-Blocks).
+- Konzept-Check: `abenteuer_zweit.gd` ohne die Emoji 🎮 / ⌨ (Text «Controller» / «Tastatur», wie maggie_zwei).
+
+## NEU in 3.10.1 (MoveEye 3.10.1): Vorführung – «Spiel-Knöpfe zeigen»
+
+- `maggie_vorfuehrung.gd`, `devtool_vorfuehrung.gd`: Schalter «Spiel-Knöpfe zeigen» (ab Werk aus), die Knöpfe bleiben sichtbar
+  und leuchten beim Druck des Autopiloten auf; `maggie_story.gd`, `schnittstelle.json`.
+
+## NEU in 3.10.0 (MoveEye 3.10.0): Vorführmodus «Maggie»
+
+- Simulator: Vorführung (Entwickler) – Maggie spielt sich selbst (ganz ≈ 2 h / Kurzfassung ≈ 15 Min.), Kamerawechsel,
+  Untertitel, Erzählerstimme, eigener Spielstand, Autopilot meldet Hänger; neue /control-Aktion (schnittstelle.json 34).
+  MoveEye: Teil `639m_vorfuehrung.py` (Vollbild /sim/vorfuehrung im Browser, Steuerung Pause/Kapitel).
+- Erste zweistellige Mittelzahl: 3.10.0 > 3.9.x überall numerisch geprüft (versionen.py/gd, sim_vkey, Web vnum, sort -V).
+
+## NEU in 3.9.2 (MoveEye 3.9.2): Start-Absturz behoben (Foto-Inhalte)
+
+- `inhalte.gd`: Foto-Inhalte erst anwenden, wenn die Welt steht (vorher während der Update-Suche → Absturz unter Windows);
+  Absturz-Schutz beim Einlesen (nächster Start ohne Fotos, Hinweis in der Statuszeile); `main.gd` Startoption `--no-inhalte`;
+  `fauna.gd`.
 
 ## NEU in 3.9.1 (MoveEye 3.9.1): Diebstahl-Kartenlink, überall «Mover»
 

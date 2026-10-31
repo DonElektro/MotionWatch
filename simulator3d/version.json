@@ -1,9 +1,9 @@
 {
- "version": "3D-5.9.1",
- "ver": "3.9.1",
- "name": "MoveEye Sim 3.9.1",
+ "version": "3D-5.11.0",
+ "ver": "3.11.0",
+ "name": "MoveEye Sim 3.11.0",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 35102499,
- "sha256": "418a9f818c3a897125d4b80631feb4e66d1fb1bc644b4d4d68754b8f5c3c9eaf",
- "notes": "MoveEye Sim 3.9.1: «Verstecken mit dem Mover» – überall «Mover» wie in MoveEye."
+ "size": 35216442,
+ "sha256": "8badae13cb1b3e641b6a24cd9dbcc2a1a7c39543c4c0e09f93662bb9ebccd458",
+ "notes": "MoveEye Sim 3.11.0: Maggie zu zweit – Rollen, geteilter Bildschirm, Teamrätsel, retten."
 }

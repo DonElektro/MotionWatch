@@ -56,6 +56,8 @@ extends Node
 ## Module: gibt es res://scripts/maggie_hund.gd oder maggie_gefahr.gd (maggie_helfer.gd legt der Hund selbst an), wird jedes beim Start der
 ## Geschichte angelegt (als Kind dieses Knotens, wenn es ein Node ist); vorher werden (wenn vorhanden) die Variablen
 ## `main` und `story` gesetzt. Beim Beenden werden sie wieder entfernt.
+## Vorführmodus (Daniel 31.10.2026, maggie_vorfuehrung.gd): `demo` = true -> eigener Spielstand user://maggie/vorfuehrung.json
+##   (Daniels Spielstände bleiben unberührt), der Autopilot `vf` lenkt die Figur (_steer), die Kamera (_cam) und die Tasten.
 ## Test / Fernsteuerung: /control {"action": "maggie", "do": "info" | "open" | "start" (name, look) | "region" (id) |
 ##   "aufgabe" (id, text) | "erledigt" (id) | "fertig" | "erwischt" (von) | "zukunft" | "finale" | "rast" (i) | "gehe" (x, z
 ##   = Welt) | "pause" | "weiter" | "stop" | "reset"}
@@ -77,7 +79,7 @@ const REGIONEN := ["herbst", "winter", "fruehling", "sommer"]
 # the middle of every region (valley coordinates x, z of bergtal.gd)
 const MITTE := {"herbst": Vector2(-640, -200), "winter": Vector2(590, 360), "fruehling": Vector2(-120, -250), "sommer": Vector2(-530, 480)}
 const SAVE_FILE := "user://maggie/spielstand.json"
-const MODULES := ["res://scripts/maggie_hund.gd", "res://scripts/maggie_gefahr.gd", "res://scripts/geschichten_faden.gd"]   # (maggie_helfer.gd baut maggie_hund.gd selbst)
+const MODULES := ["res://scripts/maggie_hund.gd", "res://scripts/maggie_gefahr.gd", "res://scripts/geschichten_faden.gd", "res://scripts/maggie_zwei.gd"]   # (maggie_helfer.gd baut maggie_hund.gd selbst)
 const COLS := ["red", "orange", "navy", "olive", "brown", "grey", "white", "black"]
 const COL_NAMES := {"red": "Rot", "orange": "Orange", "navy": "Dunkelblau", "olive": "Olivgrün", "brown": "Braun", "grey": "Grau",
 		"white": "Weiss", "black": "Schwarz"}
@@ -122,6 +124,9 @@ var _me_next := 0.0
 var _region_t0 := 0.0
 var _resume_phase := ""
 var _cam_fix = null                   # tests: Transform3D of a fixed view (/control maggie kamera), null = follow the figure
+var demo := false                     # Vorführmodus: own save file, the autopilot plays (maggie_vorfuehrung.gd)
+var vf = null                         # maggie_vorfuehrung.gd while a Vorführung runs
+const DEMO_FILE := "user://maggie/vorfuehrung.json"
 # camera
 var cam_yaw := 0.0
 var cam_pitch := 0.42
@@ -286,6 +291,9 @@ func aufgabe_erledigt(id: String) -> void:
 
 
 func erwischt(von: String) -> void:
+	var z = get_node_or_null("maggie_zwei")             # zwei Spieler: der andere kann retten (maggie_zwei.gd)
+	if z != null and z.faengt(von):
+		return
 	_schreck(von)                                  # (no await here: S3 calls this through callv)
 
 
@@ -432,6 +440,8 @@ func region_fertig(id: String) -> void:
 # state
 # =======================================================================================================================
 func _file() -> String:
+	if demo:
+		return DEMO_FILE                                   # Vorführung: never Daniel's Spielstände (spielstand.gd)
 	return preload("res://scripts/spielstand.gd").path_maggie()   # Geschichten-Menü: per Spielstand (place 1 = SAVE_FILE)
 
 
@@ -481,7 +491,14 @@ func info() -> Dictionary:
 # =======================================================================================================================
 # start: the common start of all stories (geschichten.gd: Spielstand → Figur), or go on
 # =======================================================================================================================
+func _demo_weg() -> void:
+	"""a real start from «Spielen» while a Vorführung runs: the Vorführung ends first"""
+	if demo and vf != null and is_instance_valid(vf):
+		vf.beenden("abgebrochen")
+
+
 func open() -> void:
+	_demo_weg()
 	_ensure_ui()
 	if main.mehr != null:
 		main.mehr.close_menu()
@@ -525,6 +542,7 @@ func _continue_card() -> void:
 
 func beginnen(nm: String, look: Dictionary) -> void:
 	"""the common start is done (geschichten.gd): a new story with this figure, from the very beginning"""
+	_demo_weg()
 	_load()
 	nm = nm.strip_edges().left(16)
 	S = {"name": nm if nm != "" else T.t("Du"), "look": look if not look.is_empty() else {"col": "red", "size": "", "build": "", "hat": "", "pack": true},
@@ -570,6 +588,7 @@ func fortschritt() -> Dictionary:
 
 func weiter() -> void:
 	"""«Weiterspielen» on the card: straight back into the story (running: the pause menu)"""
+	_demo_weg()
 	_ensure_ui()
 	if main.mehr != null:
 		main.mehr.close_menu()
@@ -632,6 +651,8 @@ func _load_modules() -> void:
 			m.main = main
 		if "story" in m:
 			m.story = self
+		if demo and "eigene_datei" in m:
+			m.eigene_datei = false                      # Vorführung: maggie_gefahr.gd writes no file of its own
 		if m is Node:
 			m.name = path.get_file().get_basename()           # S2 / S3 finden sich so (has_node("maggie_hund"))
 			add_child(m)
@@ -935,7 +956,8 @@ func _start_region(id: String, rest_i: int) -> void:
 	var sq := _seq
 	region = id
 	_region_t0 = main.now()
-	Spieltest.ereignis("maggie", "start", {"einheit": str(r["name"]), "id": id})     # Spieltest: Region gestartet
+	var zw = get_node_or_null("maggie_zwei")
+	Spieltest.ereignis("maggie", "start", {"einheit": str(r["name"]), "id": id, "spieler": zw.spieler_zahl() if zw != null else 1})     # Spieltest: Region gestartet
 	Spieltest.ereignis("maggie", "ort", {"name": str(r["name"])})
 	var col: Color = r["col"]
 	for i in range(rs.size()):
@@ -1463,6 +1485,9 @@ func _steer(dt: float) -> void:
 	if phase not in WALK or a.frozen:
 		a.ctl_move = Vector2.ZERO
 		return
+	if demo and vf != null:                 # Vorführung: the autopilot walks (maggie_vorfuehrung.gd)
+		vf.steuern(a, dt)
+		return
 	var k := Vector2.ZERO                   # (forward, right)
 	if not main.typing():
 		if Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_UP):
@@ -1475,6 +1500,8 @@ func _steer(dt: float) -> void:
 			k.y -= 1.0
 	var run := Input.is_key_pressed(KEY_SHIFT)
 	for j in Input.get_connected_joypads():
+		if _zwei_eigen(j):
+			continue                                      # der Controller von Spieler 2 (maggie_zwei.gd)
 		var lx := Input.get_joy_axis(j, JOY_AXIS_LEFT_X)
 		var ly := Input.get_joy_axis(j, JOY_AXIS_LEFT_Y)
 		if Vector2(lx, ly).length() > 0.2:
@@ -1499,6 +1526,11 @@ func _steer(dt: float) -> void:
 		cam_yaw = lerp_angle(cam_yaw, a.heading, clampf(dt * 0.9, 0.0, 1.0))
 
 
+func _zwei_eigen(j: int) -> bool:
+	var z = get_node_or_null("maggie_zwei")
+	return z != null and z.eigen(j)
+
+
 func _follow_xform() -> Transform3D:
 	var tp := spieler_pos() + Vector3(0, 1.35, 0)
 	var back := Vector3(sin(cam_yaw), 0, cos(cam_yaw))
@@ -1510,6 +1542,8 @@ func _follow_xform() -> Transform3D:
 func _cam(dt: float) -> void:
 	var cam: Camera3D = main.view_cam
 	main.view_mode = 0
+	if demo and vf != null and vf.kamera(cam, dt):     # Vorführung: the camera of the film
+		return
 	if _cam_fix != null:                                 # tests (/control maggie kamera): a fixed view for photos
 		cam.global_transform = _cam_fix
 		return
@@ -1550,7 +1584,8 @@ func _hud_tick() -> void:
 			_beam.visible = d > 6.0
 			_beam.position = gp + Vector3(0, 35, 0)
 	var left := maxf(0.0, _zk_ready_at - t)
-	_kbtn.visible = has_crystal and phase in WALK
+	_kbtn.visible = has_crystal and phase in WALK and (not demo or (vf != null and is_instance_valid(vf) and bool(vf.knoepfe)))
+	_help.visible = not demo
 	_kbtn.text = (T.t("K · Kristall") if left <= 0.0 else T.t("Kristall %d s", [int(ceil(left))]))
 	_kbtn.disabled = left > 0.0
 
@@ -1580,6 +1615,10 @@ func walking() -> bool:
 
 func _unhandled_input(ev: InputEvent) -> void:
 	if not running or phase in ["", "figur"]:
+		return
+	if demo and vf != null:                 # Vorführung: Esc = beenden, Leertaste = Pause … (maggie_vorfuehrung.gd)
+		if vf.taste(ev):
+			get_viewport().set_input_as_handled()
 		return
 	if ev is InputEventKey and ev.pressed and not ev.echo:
 		match ev.keycode:
@@ -1932,6 +1971,8 @@ func control(d: Dictionary) -> Dictionary:
 			has_crystal = true
 			S["intro"] = true
 			_start_region(id, int(d.get("rest", 0)))
+		"zwei":                                        # zwei Spieler (maggie_zwei.gd): {k: wahl | info | join | pad | p1 | hin | fest …}
+			return preload("res://scripts/maggie_zwei.gd").steuer(self, d)
 		"los":                                         # tests: press the primary button of the card
 			_press_primary()
 		"aufgabe":
