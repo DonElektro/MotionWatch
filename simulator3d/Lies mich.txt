@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.7.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.7.1 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -425,6 +425,14 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.7.1
+3.7.1: Maggie und der Bergkristall:
+- Behoben: Der Pfeil zeigte nie auf die Stationen, dadurch kam man nicht weiter.
+- Jede Jahreszeit dauert jetzt etwa 25–28 Min. (ganze Geschichte etwa 2 h), mit 3 Rastplätzen und 4 Rätseln pro Region.
+- Rastplatz-Anzeige aktualisiert sich richtig.
+- Tipps bleiben nicht mehr stehen.
+So testest du: 1) Maggie, Herbst: der Pfeil führt zur ersten Station. 2) Rastplatz erreichen: die Anzeige zählt hoch.
 
 NEU IN 3.7.0
 3.7.0: Simulator-Menüs aufgeräumt:

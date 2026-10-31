@@ -331,4 +331,15 @@ func tick(dt: float) -> void:
 func info() -> Dictionary:
 	return {"eule": eule != null and eule.visible, "eule_fliegt": _e["fliegt"], "fuchs": fuchs != null and is_instance_valid(fuchs) and fuchs.visible,
 		"murmel": murmel != null and is_instance_valid(murmel) and murmel.visible, "bock": bock != null and is_instance_valid(bock),
-		"szenen": szenen}
+		"szenen": szenen, "orte": _orte()}
+
+
+func _orte() -> Dictionary:
+	"""(tests / Fotos, Paket «Dauer») wo die lieben Tiere stehen: Welt [x, y, z]"""
+	var o := {}
+	for k in ["eule", "fuchs", "murmel", "bock"]:
+		var n = get(k)
+		if n != null and is_instance_valid(n) and n is Node3D and (n as Node3D).is_inside_tree():
+			var g: Vector3 = (n as Node3D).global_position
+			o[k] = [snappedf(g.x, 0.1), snappedf(g.y, 0.1), snappedf(g.z, 0.1)]
+	return o

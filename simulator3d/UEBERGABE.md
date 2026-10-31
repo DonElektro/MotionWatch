@@ -1,8 +1,13 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Version **3.7.0** · MoveEye **3.7.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 31.10.2026 · Version **3.7.1** · MoveEye **3.7.1** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.7.1 (MoveEye 3.7.1): Maggie – Pfeil und Dauer
+
+- `maggie_story.gd`, `maggie_hund.gd`, `maggie_welt.gd`, `maggie_helfer.gd`, `maggie_gefahr.gd`: Pfeil zeigt auf die Stationen,
+  pro Region 3 Rastplätze und 4 Rätsel (≈ 25–28 Min.), Rastplatz-Anzeige, Tipps verschwinden wieder. Spieltest-Haken erhalten.
 
 ## NEU in 3.7.0 (MoveEye 3.7.0): Simulator-Menüs aufgeräumt (Menü A)
 
