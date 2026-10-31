@@ -421,6 +421,13 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
+NEU IN 3D-4.31
+3D-4.31: Nacht-Testlauf – eine ganze Nacht im Simulator (WC-Gänge, Tiere, Auto, Regen, genau ein echter Vorfall) mit
+Wahrheit; MoveEye vergleicht und zeigt den Bericht auf /nacht. Starten nur in MoveEye (Besitzer), im Simulator unter
+«Testen» Fortschritt und Abbrechen.
+So testest du: 1) MoveEye: Sim → Testen → «🌙 Nacht-Testlauf», 23:00–23:30, schnell, starten. 2) Im Simulator unter
+«Testen» den Fortschritt ansehen. 3) Nach dem Push «📄 Bericht öffnen»: Vorfall erkannt?
+
 NEU IN 3D-4.30
 3D-4.30: Erlebniswelt im «Ferienpark am See»: 19 kleine Szenen mit Tieren und Menschen (Katze und Maus, Enten, Fuchs am
 Abfall, Schlafwandler, Yoga, Angler mit Riesenfisch, Schnecken-Rennen …), alle im Entdeckungsbuch («x von 26»). Neu
