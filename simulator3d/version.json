@@ -1,7 +1,7 @@
 {
- "version": "3D-4.36",
+ "version": "3D-4.37",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 66134442,
- "sha256": "66075cf38185f228363bd9bfb9d3a1c0e45b19fef11b6a142a54baa95a9e06a9",
- "notes": "Aussichtspunkte im Bergtal (Fernrohr, Panorama, Bergstimmungen, Karte aufdecken); Bergtal-Regler im eigenen Teil «Bergtal» der Karte Szene."
+ "size": 66249693,
+ "sha256": "fc5d912c2691fbb9fa0355700c4c2e29ba37661ae4bfbb6085538b0d995f7086",
+ "notes": "Weitere Erlebnisse im Bergtal (18–34) im Entdeckungsbuch."
 }

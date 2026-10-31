@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 06:33",
+ "generated": "2026-10-31 06:45",
  "versions": [
   {
-   "version": "2.98.67",
-   "file": "webcam_bewegung_2_98_67.py",
+   "version": "2.98.68",
+   "file": "webcam_bewegung_2_98_68.py",
    "url": "",
-   "sha256": "fdd8daa565a3e31ba2d953b4262ee7e8cb747a4eb8924db70d24013c53b31295",
-   "date": "2026-10-31 06:33",
-   "notes": "Simulator 3D-4.36: Aussichtspunkte im Bergtal (Fernrohr, Panoramafoto, Bergstimmungen, Karte aufdecken, Wetter von weitem); alle Bergtal-Regler im eigenen Teil «Bergtal» der Karte Szene, nur im Bergtal sichtbar.",
-   "sig": "38012c1de8eb1fcd003caad724dabddff1cf86f6be8a368f0ea1374bf2682ac8fbc53b433f4f7267afa087c5268d2a916a3c2cc6d317a2bd615756a2031ddb07"
+   "sha256": "7f0a9ffd00b4001ef79d60197ba63839566e04db68dbf80c2999ff1ed0eca277",
+   "date": "2026-10-31 06:45",
+   "notes": "Simulator 3D-4.37: weitere Erlebnisse im Bergtal (18–34: Schneehase, Hermelin, Salamander, Kuhglocken im Nebel, Gleitschirm, Postauto, Nordlicht …) im Entdeckungsbuch.",
+   "sig": "00e353cc9a9fe104804e12c966e9dfc286fba2300df9f920e11faa3ff12322d714292377dd9f791d6adcf3b6d5cdd9b2e264912d04c0f1eee29931e170a5e702"
   },
   {
    "version": "2.97.1",
