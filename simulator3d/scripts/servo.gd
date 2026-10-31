@@ -14,7 +14,7 @@ extends Node
 ##   - Kopfmasse 80-120 g (Kamera, Halter, Wärmebild; Weitwinkel-Kamera auf dem Kopf +25 g): schwerer = träger, tiefer federnd.
 ##   - Spannung: die 5-V-Schiene (simint.gd v5) sackt mit dem Strom der Servos ab (Innenwiderstand USV-HAT + Leitungen 0,22 Ω:
 ##     zwei Servos starten = 1,4 A = -0,3 V). Unterspannung bleibt wie bisher in simint (schwach, stottert, MoveEye meldet).
-##   - Schwaches Signal (Störung «Schwaches Servosignal», oder Schiene unter 4,75 V): der Puls zittert um ±4 µs (~±0,4°) -
+##   - Schwaches Signal (Störung «Schwaches Servosignal», oder Schiene unter 4,75 V): der Puls streut ~9 µs (~0,8°) -
 ##     der Kopf zuckt immer wieder (ruckelnde Bilder am Rand, mögliche Fehlalarme).
 ##  Ausgaben: main.pan_vel / main.tilt_vel (rad/s, die echte Kopfbewegung mit Überschwingen - Bewegungsunschärfe im
 ##   Kamera-Paket), rate() in °/s, current() in A, im world_reply servo_sim: i_a, head_dps.
@@ -40,7 +40,7 @@ const TAU_FREE := 0.03           # s: so schnell bremst die Lagerreibung den fre
 const R_SRC := 0.22              # Ω Innenwiderstand 5-V-Schiene (USV-HAT Boost + Leitungen)
 const DT := 0.001
 const PWM_T := 0.02              # 50 Hz
-const JIT_DEG := 0.4             # ± bei schwachem Signal (±4 µs)
+const JIT_DEG := 0.8             # ° Streuung des Pulses bei schwachem Signal (~9 µs, höchstens ±2°; zittern 1-2° typisch)
 
 var main
 var mass_g := 100.0
@@ -50,7 +50,7 @@ var weak_signal := false
 # state per axis: m = gear output (°), w = its speed (°/s), h = head (°), hv = head speed (°/s), tgt = target after the pulse
 var ax := {"pan": {}, "tilt": {}}
 var _i_avg := 0.0                # A both servos, mean of the last frame
-var _i_peak := 0.0               # A highest of the last 0.5 s
+var _i_peak := 0.0               # A highest instant of the last 0.5 s (both servos)
 var _peak_t := 0.0
 var _v := 5.1                    # rail used for speed / current (from simint, without our own drop: last frame)
 var _pwm_t := 0.0
@@ -120,13 +120,14 @@ func step(dt: float, want_pan: float, want_tilt: float, hold_pan := false, hold_
 			s = ax[k]
 		if not frozen:
 			s["cmd"] = rad_to_deg(float(nodes[k][2]))
-	var n := clampi(roundi(dt / DT), 1, 60)
-	var h_ := dt / float(n)
+	var n := clampi(ceili(dt / DT), 1, 250)          # 1 ms steps (the spring of the teeth needs them); a very slow frame
+	var h_ := minf(dt / float(n), DT)                # (> 0.25 s) is only simulated for 0.25 s - the head lags a little
 	var mg := load_g()
 	var tau := TAU0 + TAU_G * mg
 	var wn := TAU * F_HORN * sqrt(100.0 / mg)
 	var wmax := speed_dps()                      # the wide camera on the head: heavier (load_g), not slower by a factor
 	var i_sum := 0.0
+	var i_max := 0.0
 	for _i in range(n):
 		_pwm_t += h_
 		var pulse := _pwm_t >= PWM_T
@@ -136,8 +137,8 @@ func step(dt: float, want_pan: float, want_tilt: float, hold_pan := false, hold_
 		for k in ax:
 			var s: Dictionary = ax[k]
 			if pulse:                                    # a new pulse: the servo reads its target (with jitter on a weak signal)
-				var j := _rng.randfn(0.0, JIT_DEG * 0.6) if signal_weak() else 0.0
-				s["tgt"] = float(s["cmd"]) + clampf(j, -JIT_DEG * 1.5, JIT_DEG * 1.5)
+				var j := _rng.randfn(0.0, JIT_DEG) if signal_weak() else 0.0
+				s["tgt"] = float(s["cmd"]) + clampf(j, -2.0, 2.0)
 			var e: float = float(s["tgt"]) - float(s["h"])
 			var u := 0.0
 			if not off and not bool(hold[k]) and absf(e) > DEAD:
@@ -172,10 +173,11 @@ func step(dt: float, want_pan: float, want_tilt: float, hold_pan := false, hold_
 				s["h"] = float(s["h"]) + float(s["hv"]) * h_
 			i_now += float(s["i"])
 		i_sum += i_now
+		i_max = maxf(i_max, i_now)
 	_i_avg = I_IDLE * 2.0 + i_sum / float(n)
 	var t: float = main.now()
-	if _i_avg > _i_peak or t - _peak_t > 0.5:
-		_i_peak = _i_avg
+	if i_max > _i_peak or t - _peak_t > 0.5:
+		_i_peak = I_IDLE * 2.0 + i_max               # the highest instant (start peaks ~10-20 ms) of the last 0.5 s
 		_peak_t = t
 	main.head.rotation.y = deg_to_rad(float(ax["pan"]["h"]))
 	main.head_pitch.rotation.x = deg_to_rad(float(ax["tilt"]["h"]))
