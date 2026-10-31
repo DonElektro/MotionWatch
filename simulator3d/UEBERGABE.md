@@ -1,8 +1,13 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.28** · passende MoveEye-Version (früher Motion Watch) **2.98.59**
+Stand: 31.10.2026 · Simulator-Version **3D-4.29** · passende MoveEye-Version (früher Motion Watch) **2.98.60**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.29 (MoveEye 2.98.60): «Neu in dieser Version» scrollt, Esc schliesst (`news.gd`)
+
+- `news.gd`: Liste in einem `ScrollContainer` (`_scroll`/`_list`), Knöpfe ausserhalb – nie höher als der Bildschirm;
+  `_unhandled_input`: Esc = `close(false)`.
 
 ## NEU in 3D-4.28 (MoveEye 2.98.59): Szenen-Bibliothek `bib_objekte.gd` + Szene «Ferienpark am See» (`ferienpark.gd`)
 

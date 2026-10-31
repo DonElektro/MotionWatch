@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 04:32",
+ "generated": "2026-10-31 05:16",
  "versions": [
   {
-   "version": "2.98.59",
-   "file": "webcam_bewegung_2_98_59.py",
+   "version": "2.98.60",
+   "file": "webcam_bewegung_2_98_60.py",
    "url": "",
-   "sha256": "5b1227715413c89398f3cc4d3d5c13aa4f3b899109e15e8757ab4b2dc9a3ef08",
-   "date": "2026-10-31 04:32",
-   "notes": "Simulator 3D-4.28: neue Szene «Ferienpark am See» mit fünf MoveEye-Standorten (Zelt, Wohnmobil, Bungalow, Bootssteg, Rezeption); die Auswahl «Standort im Ferienpark am See» erscheint in der Simulator-Steuerung nur, wenn diese Szene gewählt ist. Szenen-Name in allen Sprachen.",
-   "sig": "eaaf0060ffcd7374adbecf08a1c2fd9ffabaf2dd1bf840420590fadb980d599f1ffc60f2e7c9b56958c6d1cf683a4dd8febea9b11140b93c0a6c2f3bbaaf6b0f"
+   "sha256": "c3da92e96d8e6d3cda4083addc1616f69033ff134898bd130ceed8a444a664db",
+   "date": "2026-10-31 05:16",
+   "notes": "Simulator 3D-4.29: Fenster «Neu in dieser Version» scrollt, OK immer sichtbar, Esc schliesst.",
+   "sig": "32ec862e315076b20d269f289fec763c251eeb42929419dca376e47b661c3083ef58b8b160788af1d9c6f3564aa65a8876b28d057721458a95d1d4e8aeeaf70d"
   },
   {
    "version": "2.97.1",
