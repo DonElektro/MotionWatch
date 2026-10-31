@@ -88,7 +88,7 @@ func _build() -> void:
 	# play
 	_title("Spielen")
 	var p := _grid()
-	_tile(p, "Rover fahren", C_PLAY, "", "rover", "Du fährst den Rover! Pfeiltasten, Maus oder Controller.", func(): main.explore.set_on(not main.explore.on))
+	_tile(p, "Mover fahren", C_PLAY, "", "rover", "Du fährst den Mover! Pfeiltasten, Maus oder Controller.", func(): main.explore.set_on(not main.explore.on))
 	_tile(p, "Versteckspiel", C_PLAY, "", "game", "Schleich ungesehen ans Ziel – zwei Computer-Kinder spielen mit!", func(): _kids_game())
 	_tile(p, "Andere Welt", Color("#2bb3a3"), "", "world", "", func(): _next_world())
 	_tile(p, "Was sieht die Kamera?", Color("#e0613f"), "", "camera", "So sieht MoveEye die Welt.", func(): main.set_live(not main.live_on))
@@ -96,8 +96,8 @@ func _build() -> void:
 	_title("Missionen  ⭐ %d" % main.kids_stars)
 	_mtitle = get_child(get_child_count() - 1)
 	var mg := _grid()
-	_tile(mg, "Finde den Fuchs", Color("#ff8a3d"), "fox", "", "Ein Fuchs hat sich versteckt! Fahr mit dem Rover zu ihm.", func(): _mission("fox"))
-	_tile(mg, "Rover zum Velo", Color("#2fa8ff"), "", "rover", "Fahr den Rover ganz nah ans Velo!", func(): _mission("bike"))
+	_tile(mg, "Finde den Fuchs", Color("#ff8a3d"), "fox", "", "Ein Fuchs hat sich versteckt! Fahr mit dem Mover zu ihm.", func(): _mission("fox"))
+	_tile(mg, "Mover zum Velo", Color("#2fa8ff"), "", "rover", "Fahr den Mover ganz nah ans Velo!", func(): _mission("bike"))
 	_tile(mg, "Tiere zählen", Color("#3fbf6b"), "", "star", "Wie viele Tiere siehst du? Schau gut hin!", func(): _mission("count"))
 	_count_row = HBoxContainer.new()
 	_count_row.add_theme_constant_override("separation", 6)
@@ -327,7 +327,7 @@ func _mission_check() -> void:
 	elif _m == "bike":
 		var bk: Vector3 = main.obj.get("bike", Vector3.ZERO)
 		if Vector2(rig.x - bk.x, rig.z - bk.z).length() < 3.0:
-			_won("Geschafft! Der Rover steht beim Velo.", self)
+			_won("Geschafft! Der Mover steht beim Velo.", self)
 
 
 func _won(text: String, at: Control) -> void:

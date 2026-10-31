@@ -153,7 +153,7 @@ func add_controls() -> void:
 	m.add_control("toggle", "w_cloth", "Zeltplanen beulen und flattern im Wind, Wäsche und Fahnen ohne Ruckeln", func(): return w_cloth, func(v): _put("w_cloth", bool(v)), "Wetter", {"sub": "Natur und Wind"})
 	m.add_control("toggle", "w_lens", "Tropfen und Beschlag physikalisch: Tropfen haften, fliessen zusammen und rinnen, Linse beschlägt unter dem Taupunkt",
 			func(): return w_lens, func(v): _put("w_lens", bool(v)), "Kamerabild")
-	m.add_control("toggle", "w_rain_cam", "Regen und Spritzer im Kamerabild für MoveEye", func(): return w_rain_cam, func(v): _put("w_rain_cam", bool(v)); _fix_particles(), "Kamerabild", {"expert": true})
+	m.add_control("toggle", "w_rain_cam", "Regenstreifen und Spritzer im Kamerabild (nicht auf der Linse – die Tropfen: «Tropfen auf der Linse»)", func(): return w_rain_cam, func(v): _put("w_rain_cam", bool(v)); _fix_particles(), "Kamerabild", {"expert": true})
 	var sb := {"sub": "Schwierige Bedingungen"}
 	m.add_control("button", "w_wipe", "Linse putzen (Tropfen und Beschlag weg)", null, func(): wipe(), "Kamerabild", sb)
 	m.add_control("button", "w_morning", "Morgen-Test: warme, feuchte Luft – die kalte Linse beschlägt", null, func(): morning(), "Kamerabild", sb)

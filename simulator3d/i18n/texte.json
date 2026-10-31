@@ -2485,6 +2485,12 @@
   "it": "di tanto in tanto visite spontanee",
   "rm": "da temp en temp visita da sasez"
  },
+ "ab und zu streift ein Lichtkegel über Wände und Zelt": {
+  "en": "now and then a beam of light sweeps over walls and tent",
+  "fr": "de temps en temps un faisceau de phares balaie les murs et la tente",
+  "it": "ogni tanto un fascio di luce passa sui muri e sulla tenda",
+  "rm": "da temp en temp passa in radi da glisch sur paraids e tenda"
+ },
  "Abbrechen": {
   "en": "Cancel",
   "fr": "Annuler",
@@ -3967,6 +3973,12 @@
   "it": "Principiante",
   "rm": "Principiant"
  },
+ "Angeglichene Figuren rot zeigen (Foto-Modus)": {
+  "en": "Show adjusted figures in red (photo mode)",
+  "fr": "Montrer en rouge les figures ajustées (mode photo)",
+  "it": "Mostrare in rosso le figure adattate (modalità foto)",
+  "rm": "Mussar cotschen las figuras adattadas (modus foto)"
+ },
  "Angekommen": {
   "en": "Arrived",
   "fr": "Arrivé",
@@ -4542,6 +4554,12 @@
   "fr": "désactivé",
   "it": "spento",
   "rm": "deactivà"
+ },
+ "aus (Besuch kommt zufällig)": {
+  "en": "off (visitors come at random)",
+  "fr": "désactivé (les visiteurs viennent au hasard)",
+  "it": "spento (le visite arrivano a caso)",
+  "rm": "ora (las visitas vegnan a l’aventura)"
  },
  "Aus (bisherige Code-Materialien)": {
   "en": "Off (previous code materials)",
@@ -5299,6 +5317,12 @@
   "it": "Con acqua bassa pare si possa andare dietro la cascata. Lì dietro qualcosa luccica.",
   "rm": "Cun aua bassa duai ins pudair ir davos la cascada. Davos glischa insatge."
  },
+ "bei Regen (einfach)": {
+  "en": "when it rains (simple)",
+  "fr": "quand il pleut (simple)",
+  "it": "quando piove (semplice)",
+  "rm": "cura ch’i plova (simpel)"
+ },
  "Bei Regen gibt es beim Zwergendorf ein ganz langsames Rennen.": {
   "en": "When it rains there is a very slow race at the gnome village.",
   "fr": "Quand il pleut, il y a une course très lente au village des nains.",
@@ -5310,6 +5334,12 @@
   "fr": "Sous la pluie, trois escargots font la course sur la pierre – les nains regardent.",
   "it": "Sotto la pioggia tre lumache fanno a gara sulla pietra – gli gnomi guardano.",
   "rm": "Sut la plievgia fan trais lindornas ina cursa sur il crap – ils nanins guardan tiers."
+ },
+ "bei Regen wie echt (Tropfen haften und rinnen, Linse beschlägt)": {
+  "en": "when it rains, like real (drops stick and run, the lens fogs up)",
+  "fr": "quand il pleut, comme en vrai (les gouttes collent et coulent, l’objectif s’embue)",
+  "it": "quando piove, come dal vero (le gocce aderiscono e colano, l’obiettivo si appanna)",
+  "rm": "cura ch’i plova, sco vair (las guttas tachan e cursan, la lentila s’appanna)"
  },
  "bei Tag (12 Uhr, klar)": {
   "en": "by day (12 o’clock, clear)",
@@ -5778,6 +5808,12 @@
   "fr": "Objets surveillés – enlever et voir si MoveEye le remarque (scan de référence ; vélo et glacière aussi but du jeu «Vol») :",
   "it": "Oggetti sorvegliati – togliere e vedere se MoveEye se ne accorge (scansione di riferimento; bici e borsa frigo anche obiettivo del gioco «Furto»):",
   "rm": "Objects survegliads – prender davent e guardar, sche MoveEye al remartga (scan da referenza; velo e chista da fraid er finamira dal gieu «Engul»):"
+ },
+ "Bewegen und Ansicht: Erkunden mit dem Mover, Patrouille, Folgen, Kopf drehen, Versetzen, Höhe der Kamera, Mitspieler, Ansicht, Bedienfeld ein / aus, Hell / Rotlicht / Dunkel und «?». Mit der Maus über ein Symbol: sein Name.": {
+  "en": "Moving and view: explore with the mover, patrol, follow, turn head, move, camera height, players, view, control panel on / off, light / red light / dark and «?». Mouse over a symbol: its name.",
+  "fr": "Bouger et vue : explorer avec le mover, patrouille, suivre, tourner la tête, déplacer, hauteur de la caméra, joueurs, vue, panneau oui / non, clair / lumière rouge / sombre et «?». Souris sur un symbole : son nom.",
+  "it": "Muoversi e vista: esplorare con il mover, pattuglia, seguire, girare la testa, spostare, altezza della telecamera, giocatori, vista, pannello sì / no, chiaro / luce rossa / scuro e «?». Mouse su un simbolo: il suo nome.",
+  "rm": "Muventar e vista: explorar cun il mover, patrulla, suandar, volver il chau, spustar, autezza da la camera, giugaders, vista, panela en / ora, cler / glisch cotschna / stgir e «?». Cun la mieur sur in simbol: ses num."
  },
  "Bewegen und Ansicht: Erkunden mit dem Rover, Rover-Route, Folgen, Kopf drehen, Versetzen, Höhe der Kamera, Mitspieler, Ansicht, Bedienfeld ein / aus, Hell / Rotlicht / Dunkel und «?». Mit der Maus über ein Symbol: sein Name.": {
   "en": "Moving and view: explore with the rover, rover route, follow, turn head, move, camera height, players, view, control panel on / off, light / red light / dark and «?». Mouse over a symbol: its name.",
@@ -7561,6 +7597,12 @@
   "fr": "Sac de couchage d'hiver en duvet",
   "it": "Sacco a pelo invernale in piuma",
   "rm": "Sac da durmir d'enviern da plimas"
+ },
+ "dazu der Alltag auf dem Campingplatz (morgens WC und Dusche, abends draussen sitzen)": {
+  "en": "plus everyday life at the campsite (toilet and shower in the morning, sitting outside in the evening)",
+  "fr": "et la vie du camping (WC et douche le matin, assis dehors le soir)",
+  "it": "in più la vita del campeggio (WC e doccia al mattino, seduti fuori la sera)",
+  "rm": "plus la vita dal plazza da campar (WC e duscha la damaun, seser ordaifer la saira)"
  },
  "Dazu die Erfahrung aus dem Bergtal-Abenteuer (%d) - ein Level für alles, pro Spielstand.": {
   "en": "Plus the experience from the Bergtal adventure (%d) - one level for everything, per save slot.",
@@ -9897,6 +9939,12 @@
   "it": "Hai %s - cammini più lentamente. Mangia, bevi o riempi la borraccia a una sorgente.",
   "rm": "Ti es %s - ti vas pli plaun. Mangiar, baiver u emplenir tar ina funtauna."
  },
+ "Du fährst den Mover! Pfeiltasten, Maus oder Controller.": {
+  "en": "You are driving the mover! Arrow keys, mouse or controller.",
+  "fr": "Tu conduis le mover ! Flèches, souris ou manette.",
+  "it": "Guidi tu il mover! Frecce, mouse o controller.",
+  "rm": "Ti manischeschas il mover! Tastas da frizza, mieur u controller."
+ },
  "Du fährst den Rover! Pfeiltasten, Maus oder Controller.": {
   "en": "You are driving the rover! Arrow keys, mouse or controller.",
   "fr": "Tu conduis le rover ! Flèches, souris ou manette.",
@@ -10490,6 +10538,12 @@
   "fr": "Un renard a reniflé au camp - les provisions étaient à l'abri.",
   "it": "Una volpe ha annusato al campo - le provviste erano al sicuro.",
   "rm": "Ina vulp ha nufà enturn il champ - la provianda era segirada."
+ },
+ "Ein Fuchs hat sich versteckt! Fahr mit dem Mover zu ihm.": {
+  "en": "A fox is hiding! Drive the mover to it.",
+  "fr": "Un renard s’est caché ! Va le trouver avec le mover.",
+  "it": "Una volpe si è nascosta! Raggiungila con il mover.",
+  "rm": "Ina vulp è sa zuppada! Va tar ella cun il mover."
  },
  "Ein Fuchs hat sich versteckt! Fahr mit dem Rover zu ihm.": {
   "en": "A fox has hidden! Drive the rover to it.",
@@ -12202,6 +12256,12 @@
   "it": "Pennone",
   "rm": "Pitga da bandiera"
  },
+ "Fahr den Mover ganz nah ans Velo!": {
+  "en": "Drive the mover right up to the bike!",
+  "fr": "Approche le mover tout près du vélo !",
+  "it": "Porta il mover vicinissimo alla bici!",
+  "rm": "Mana il mover fin tar il velo!"
+ },
  "Fahr den Rover ganz nah ans Velo!": {
   "en": "Drive the rover very close to the bike!",
   "fr": "Conduis le rover tout près du vélo !",
@@ -12334,11 +12394,23 @@
   "it": "Classifica di famiglia",
   "rm": "Glista dals megliers da la famiglia"
  },
+ "Farben des Bedienfelds wie in MoveEye: Hell → Rotlicht → Dunkel (Rotlicht für die Nacht im Zelt)": {
+  "en": "Colours of the panel like in MoveEye: light → red light → dark (red light for the night in the tent)",
+  "fr": "Couleurs du panneau comme dans MoveEye : clair → lumière rouge → sombre (lumière rouge pour la nuit sous la tente)",
+  "it": "Colori del pannello come in MoveEye: chiaro → luce rossa → scuro (luce rossa per la notte in tenda)",
+  "rm": "Colurs da la panela sco en MoveEye: cler → glisch cotschna → stgir (glisch cotschna per la notg en la tenda)"
+ },
  "Farben des Wärmebilds (nur die Anzeige hier – MoveEye bekommt die °C-Werte)": {
   "en": "Thermal picture colours (only the display here – MoveEye gets the °C values)",
   "fr": "Couleurs de l’image thermique (seulement l’affichage ici – MoveEye reçoit les valeurs en °C)",
   "it": "Colori dell’immagine termica (solo la visualizzazione qui – MoveEye riceve i valori in °C)",
   "rm": "Colurs dal maletg termic (mo la vista qua – MoveEye survegn las valurs en °C)"
+ },
+ "Farbstich des Fotos auf die Figuren (Foto-Modus)": {
+  "en": "Colour cast of the photo on the figures (photo mode)",
+  "fr": "Dominante de couleur de la photo sur les figures (mode photo)",
+  "it": "Dominante di colore della foto sulle figure (modalità foto)",
+  "rm": "Tinta da la foto sin las figuras (modus foto)"
  },
  "Fast voll: Programme schliessen (Browser-Tabs), den Simulator neu starten.": {
   "en": "Almost full: close programs (browser tabs), restart the simulator.",
@@ -12850,6 +12922,12 @@
   "fr": "Silhouettes des personnes (pour les nouveaux visiteurs ; Lite et «simple» : toujours simples)",
   "it": "Figure delle persone (per i nuovi visitatori; Lite e «semplice»: sempre figure semplici)",
   "rm": "Figuras da las persunas (per novs visitaders; Lite e «simpel»: adina figuras simplas)"
+ },
+ "Figuren neu angleichen (Foto-Modus: Helligkeit, Farbe und Rauschen neu vom Foto messen)": {
+  "en": "Adjust the figures again (photo mode: measure brightness, colour and noise of the photo again)",
+  "fr": "Réajuster les figures (mode photo : mesurer à nouveau luminosité, couleur et bruit de la photo)",
+  "it": "Adattare di nuovo le figure (modalità foto: misurare di nuovo luminosità, colore e rumore della foto)",
+  "rm": "Adattar danovamain las figuras (modus foto: mesirar danovamain clerezza, colur e canera da la foto)"
  },
  "Figuren-Paket da (%s)%s": {
   "en": "Figure pack present (%s)%s",
@@ -14172,6 +14250,12 @@
   "it": "Cancellati: %d pacchetti (%.0f MB) · %s",
   "rm": "Stizzà: %d pachets (%.0f MB) · %s"
  },
+ "Gemalte Bereiche immer ganz vorne (Foto-Modus; sonst Abstand vom untersten Punkt am Boden)": {
+  "en": "Painted areas always in front (photo mode; otherwise distance from the lowest point on the ground)",
+  "fr": "Zones peintes toujours devant (mode photo ; sinon distance depuis le point le plus bas au sol)",
+  "it": "Zone dipinte sempre davanti (modalità foto; altrimenti distanza dal punto più basso a terra)",
+  "rm": "Zonas pitturadas adina davantvart (modus foto; uschiglio distanza dal punct il pli bass al terren)"
+ },
  "Gemeinsam": {
   "en": "Together",
   "fr": "Ensemble",
@@ -14375,6 +14459,12 @@
   "fr": "Réussi !",
   "it": "Fatto!",
   "rm": "Fatg!"
+ },
+ "Geschafft! Der Mover steht beim Velo.": {
+  "en": "Done! The mover is at the bike.",
+  "fr": "Réussi ! Le mover est près du vélo.",
+  "it": "Fatto! Il mover è vicino alla bici.",
+  "rm": "Reussì! Il mover stat tar il velo."
  },
  "Geschafft! Der Rover steht beim Velo.": {
   "en": "Made it! The rover is at the bike.",
@@ -15222,6 +15312,12 @@
   "it": "Gruppo di quattro",
   "rm": "Gruppa da quatter"
  },
+ "Gruppen und Alltag": {
+  "en": "Groups and everyday life",
+  "fr": "Groupes et quotidien",
+  "it": "Gruppi e vita quotidiana",
+  "rm": "Gruppas e mintgadi"
+ },
  "Grösse": {
   "en": "Size",
   "fr": "Taille",
@@ -15329,6 +15425,12 @@
   "fr": "Vert : ce que voit la caméra de la tête (avec rotation) · bleu : la caméra grand-angle · rouge : angles morts dans la zone importante (cercle autour de la tente et de la caravane). Glisser le point de MoveEye sur la carte pour essayer d’autres places ; clic droit tourne la direction du regard.",
   "it": "Verde: ciò che vede la telecamera della testa (con rotazione) · blu: la telecamera grandangolare · rosso: punti ciechi nell’area importante (cerchio intorno a tenda e roulotte). Trascinare il punto di MoveEye sulla mappa per provare altri posti; il clic destro gira la direzione dello sguardo.",
   "rm": "Verd: quai che la camera dal chau vesa (cun volver) · blau: la camera da grond angul · cotschen: angul mort en il champ impurtant (rintg enturn tenda e rulotta). Trair il punct da MoveEye sin la charta per empruvar auters plazs; clic dretg volva la direcziun da la vista."
+ },
+ "Grünen Stick ziehen · rechte Taste = umschauen · Rad = Abstand · Strg+Klick = Mover hierhin · C Beobachter · Esc": {
+  "en": "Drag the green stick · right button = look around · wheel = distance · Ctrl+click = mover here · C observer · Esc",
+  "fr": "Tirer le stick vert · bouton droit = regarder autour · molette = distance · Ctrl+clic = mover ici · C observateur · Esc",
+  "it": "Trascina lo stick verde · tasto destro = guardarsi intorno · rotella = distanza · Ctrl+clic = mover qui · C osservatore · Esc",
+  "rm": "Trair il stick verd · tasta dretga = guardar enturn · rodella = distanza · Ctrl+clic = mover qua · C observatur · Esc"
  },
  "Grünen Stick ziehen · rechte Taste = umschauen · Rad = Abstand · Strg+Klick = Rover hierhin · C Beobachter · Esc": {
   "en": "Drag the green stick · right button = look around · wheel = distance · Ctrl+click = rover here · C observer · Esc",
@@ -15738,6 +15840,12 @@
   "it": "Casa, giardino e cantiere – sorvegliare a casa.",
   "rm": "Chasa, iert e plazza da construcziun – far attenziun a chasa."
  },
+ "Haus- und Nutztiere": {
+  "en": "Pets and farm animals",
+  "fr": "Animaux domestiques et de ferme",
+  "it": "Animali domestici e da reddito",
+  "rm": "Animals da chasa e da niz"
+ },
  "Haustiere im Schlafzimmer: Hamster (nachts im Laufrad) und Wellensittich (am Tag)": {
   "en": "Pets in the bedroom: hamster (in the wheel at night) and budgie (by day)",
   "fr": "Animaux dans la chambre : hamster (la nuit dans sa roue) et perruche (le jour)",
@@ -15780,6 +15888,18 @@
   "fr": "Clair",
   "it": "Chiaro",
   "rm": "Cler"
+ },
+ "Hell / Dunkel / Rotlicht": {
+  "en": "Light / dark / red light",
+  "fr": "Clair / sombre / lumière rouge",
+  "it": "Chiaro / scuro / luce rossa",
+  "rm": "Cler / stgir / glisch cotschna"
+ },
+ "Hell / Dunkel / Rotlicht: ": {
+  "en": "Light / dark / red light: ",
+  "fr": "Clair / sombre / lumière rouge : ",
+  "it": "Chiaro / scuro / luce rossa: ",
+  "rm": "Cler / stgir / glisch cotschna: "
  },
  "Hell / Rotlicht / Dunkel": {
   "en": "Light / red light / dark",
@@ -16104,6 +16224,12 @@
   "fr": "Dormir ici",
   "it": "Pernottare qui",
   "rm": "Pernottar qua"
+ },
+ "Hier übernachten (Bergtal: der Platz in der Bildmitte oder beim Mover)": {
+  "en": "Spend the night here (Bergtal: the spot in the middle of the picture or at the mover)",
+  "fr": "Passer la nuit ici (Bergtal : l’endroit au milieu de l’image ou près du mover)",
+  "it": "Pernottare qui (Bergtal: il posto al centro dell’immagine o vicino al mover)",
+  "rm": "Pernottar qua (Bergtal: il lieu en il center dal maletg u tar il mover)"
  },
  "Hier übernachten (Bergtal: der Platz in der Bildmitte oder beim Rover)": {
   "en": "Sleep here (mountain valley: the spot in the middle of the view or at the rover)",
@@ -17497,6 +17623,12 @@
   "it": "Furgone dello street food",
   "rm": "Char da snacks"
  },
+ "immer": {
+  "en": "always",
+  "fr": "toujours",
+  "it": "sempre",
+  "rm": "adina"
+ },
  "immer an": {
   "en": "always on",
   "fr": "toujours allumé",
@@ -17544,6 +17676,18 @@
   "fr": "Lire en boucle",
   "it": "Riprodurre di continuo",
   "rm": "Reproducir adina puspè"
+ },
+ "immer wieder fahren Autos vorbei": {
+  "en": "cars keep driving past",
+  "fr": "des voitures passent sans cesse",
+  "it": "passano spesso delle auto",
+  "rm": "adina puspè passan autos"
+ },
+ "immer, auch ohne Regen": {
+  "en": "always, even without rain",
+  "fr": "toujours, même sans pluie",
+  "it": "sempre, anche senza pioggia",
+  "rm": "adina, er senza plievgia"
  },
  "IMX708": {
   "en": "IMX708",
@@ -18049,6 +18193,12 @@
   "it": "Stagione (piante, durata del giorno, occupazione)",
   "rm": "Stagiun (plantas, durada dal di, occupaziun)"
  },
+ "Jahreszeit (Sonne, Tageslänge, Pflanzen, Belegung)": {
+  "en": "Season (sun, day length, plants, occupancy)",
+  "fr": "Saison (soleil, durée du jour, plantes, occupation)",
+  "it": "Stagione (sole, durata del giorno, piante, occupazione)",
+  "rm": "Stagiun (sulegl, lunghezza dal di, plantas, occupaziun)"
+ },
  "Jahreszeit (Sonnenbahn)": {
   "en": "Season (sun path)",
   "fr": "Saison (course du soleil)",
@@ -18138,6 +18288,12 @@
   "fr": "Tout le monde ici connaît le guide. S'il t'a donné sa carte, c'est qu'il te croit capable de trouver le chemin. Lis-la bien.",
   "it": "Qui tutti conoscono la guida alpina. Se ti ha dato la sua carta, ti crede capace di trovare la strada. Leggila bene.",
   "rm": "Mintgin qua enconuscha il guid da muntogna. Sch'el ta ha dà sia charta, ta fida el la via. Legia ella bain."
+ },
+ "jeder kommt zu seiner Zeit (Fuchs nachts, Reh in der Dämmerung, Briefträger um 10 Uhr)": {
+  "en": "everyone comes at their time (fox at night, deer at dusk, postman at 10 o’clock)",
+  "fr": "chacun vient à son heure (renard la nuit, chevreuil au crépuscule, facteur à 10 heures)",
+  "it": "ognuno arriva alla sua ora (volpe di notte, capriolo al crepuscolo, postino alle 10)",
+  "rm": "mintgin vegn a ses temp (vulp la notg, chavriel en il crepuscul, posttler a las 10)"
  },
  "Jeder Läufer ist ein eigenes 3D-Bild auf dem PC und ein eigenes Video übers Netz. Laptop: etwa 4, PC mit Grafikkarte: 6–8. Ab 5 Läufern werden die Bilder automatisch kleiner.": {
   "en": "Every runner is its own 3D picture on the PC and its own video over the network. Laptop: about 4, PC with graphics card: 6–8. From 5 runners the pictures automatically get smaller.",
@@ -18792,6 +18948,12 @@
   "fr": "Carte et boussole",
   "it": "Mappa e bussola",
   "rm": "Charta e cumpass"
+ },
+ "Karte und Livebild": {
+  "en": "Map and live picture",
+  "fr": "Carte et image en direct",
+  "it": "Mappa e immagine dal vivo",
+  "rm": "Charta e maletg live"
  },
  "Karte und Luftbild © swisstopo · Gebäude, Wald, Strassen © OpenStreetMap-Mitwirkende · Höhen © swisstopo / Terrarium": {
   "en": "Map and aerial picture © swisstopo · buildings, forest, roads © OpenStreetMap contributors · heights © swisstopo / Terrarium",
@@ -21544,6 +21706,12 @@
   "it": "Mouse e tasti · clic: tour, autodiagnosi, registro, feedback, info (Altro)",
   "rm": "Mieur e tastas · clic: gir, autodiagnosa, protocol, resposta, davart (Dapli)"
  },
+ "Maus und Tasten · Klick: Rundgang, Selbstdiagnose, Protokoll, Über (Mehr)": {
+  "en": "Mouse and keys · click: tour, self-diagnosis, log, about (More)",
+  "fr": "Souris et touches · clic : visite, autodiagnostic, journal, à propos (Plus)",
+  "it": "Mouse e tasti · clic: giro, autodiagnosi, protocollo, informazioni (Altro)",
+  "rm": "Mieur e tastas · clic: tura, autodiagnosa, protocol, davart (Dapli)"
+ },
  "Maus ziehen / Q E: umschauen · Bildmitte auf einen Spieler, dann Leertaste, Doppelklick oder runder Knopf: Auslöser · G Licht · V Sirene · N Scan · Z Zoom · W S: Kopf hoch / runter · Esc: Menü": {
   "en": "Drag mouse / Q E: look around · picture centre on a player, then space, double click or round button: shutter · G light · V siren · N scan · Z zoom · W S: head up / down · Esc: menu",
   "fr": "Glisser la souris / Q E : regarder autour · centre de l’image sur un joueur, puis espace, double-clic ou bouton rond : déclencheur · G lumière · V sirène · N scan · Z zoom · W S : tête haut / bas · Esc : menu",
@@ -21747,6 +21915,12 @@
   "fr": "Personnes & animaux",
   "it": "Persone & animali",
   "rm": "Persunas & animals"
+ },
+ "Menschen einzeln": {
+  "en": "People, one by one",
+  "fr": "Personnes seules",
+  "it": "Persone singole",
+  "rm": "Persunas singulas"
  },
  "Menschen kommen auch in Gruppen: Familien mit Kindern, Leute bleiben stehen und reden": {
   "en": "People also come in groups: families with children, people stop and talk",
@@ -22083,6 +22257,12 @@
   "fr": "Avec la vieille carte au trésor du grand-père, tu traverses la vallée en cinq chapitres – la nuit, MoveEye garde ton camp.",
   "it": "Con la vecchia mappa del tesoro del nonno attraversi la valle in cinque capitoli – di notte MoveEye sorveglia il tuo campo.",
   "rm": "Cun la veglia charta da stgazi dal tat viagias ti en tschintg chapitels tras la val – la notg survegli MoveEye tes champ."
+ },
+ "Mit Hund oder Pferd": {
+  "en": "With dog or horse",
+  "fr": "Avec chien ou cheval",
+  "it": "Con cane o cavallo",
+  "rm": "Cun chaun u chaval"
  },
  "Mit Kapuze / Regenumhang (Umriss ohne Kopf, kühl im Wärmebild)": {
   "en": "With hood / rain cape (outline without head, cool in the thermal image)",
@@ -23315,11 +23495,53 @@
   "it": "Guidare il mover: trascinare la sfera (su = avanti, giù = indietro, di lato = girare sul posto) o frecce",
   "rm": "Manischar il mover: trair la culla (si = enavant, giu = enavos, da la vart = volver sin il lieu) u tastas da frizza"
  },
+ "Mover fährt hin": {
+  "en": "Mover drives there",
+  "fr": "Le mover s’y rend",
+  "it": "Il mover ci va",
+  "rm": "Mover charra là"
+ },
+ "Mover fährt zum Alarm": {
+  "en": "Mover drives to the alarm",
+  "fr": "Le mover se rend à l’alarme",
+  "it": "Il mover va all’allarme",
+  "rm": "Mover charra tar l’alarm"
+ },
+ "Mover fährt zur Ladestation": {
+  "en": "Mover drives to the charger",
+  "fr": "Le mover va à la station de recharge",
+  "it": "Il mover va alla stazione di ricarica",
+  "rm": "Mover charra a la staziun da chargiar"
+ },
+ "Mover zum Velo": {
+  "en": "Mover to the bike",
+  "fr": "Mover vers le vélo",
+  "it": "Mover alla bici",
+  "rm": "Mover tar il velo"
+ },
  "Mover zurück an den Startplatz": {
   "en": "Mover back to the start place",
   "fr": "Mover retour à la place de départ",
   "it": "Mover di nuovo al posto di partenza",
   "rm": "Mover enavos al lieu da start"
+ },
+ "Mover zurück an der Ladestation": {
+  "en": "Mover back at the charger",
+  "fr": "Mover de retour à la station de recharge",
+  "it": "Mover di nuovo alla stazione di ricarica",
+  "rm": "Mover enavos a la staziun da chargiar"
+ },
+ "Mover-Ansicht (V)": {
+  "en": "Mover view (V)",
+  "fr": "Vue du mover (V)",
+  "it": "Vista del mover (V)",
+  "rm": "Vista dal mover (V)"
+ },
+ "Mover: weiter mit der Patrouille": {
+  "en": "Mover: patrol goes on",
+  "fr": "Mover : la patrouille continue",
+  "it": "Mover: la pattuglia continua",
+  "rm": "Mover: la patrulla cuntinuescha"
  },
  "Murmelboden": {
   "en": "Murmelboden",
@@ -24942,6 +25164,12 @@
   "it": "Solo immagini con riquadri, nessun dato cartografico. Addestrare p. es. con: yolo detect train data=data.yaml model=yolov8n.pt",
   "rm": "Mo datas da maletgs cun rom, naginas datas da chartas. Trenar p. ex. cun: yolo detect train data=data.yaml model=yolov8n.pt"
  },
+ "nur der Alltag auf dem Campingplatz": {
+  "en": "only everyday life at the campsite",
+  "fr": "seulement la vie du camping",
+  "it": "solo la vita del campeggio",
+  "rm": "mo la vita dal plazza da campar"
+ },
  "Nur der Wächter hat Werkzeuge.": {
   "en": "Only the guard has tools.",
   "fr": "Seul le gardien a des outils.",
@@ -25230,6 +25458,12 @@
   "it": "Oh no - la prossima volta lo mettiamo nello zaino.",
   "rm": "Oh dieu - la proxima giada pachettain nus quai."
  },
+ "ohne": {
+  "en": "without",
+  "fr": "sans",
+  "it": "senza",
+  "rm": "senza"
+ },
  "Ohne Anmelden: automatische Anmeldung von Windows einrichten …": {
   "en": "Without signing in: set up automatic Windows sign-in …",
   "fr": "Sans connexion : configurer la connexion automatique de Windows …",
@@ -25277,6 +25511,12 @@
   "fr": "Sans veste, tu as eu froid.",
   "it": "Senza giacca hai avuto freddo.",
   "rm": "Senza giacca has ti gì fraid."
+ },
+ "ohne Jahreszeit (Pflanzen immer wie im Sommer, Sonne wie heute)": {
+  "en": "no season (plants always like in summer, sun like today)",
+  "fr": "sans saison (plantes toujours comme en été, soleil comme aujourd’hui)",
+  "it": "senza stagione (piante sempre come in estate, sole come oggi)",
+  "rm": "senza stagiun (plantas adina sco la stad, sulegl sco oz)"
  },
  "Ohne Kompass im Nebel - du verlierst kurz den Weg.": {
   "en": "No compass in the fog - you lose the path for a while.",
@@ -25680,11 +25920,41 @@
   "it": "Pattuglia fermata (esplorazione)",
   "rm": "Patrulla fermada (explorar)"
  },
+ "Patrouille starten": {
+  "en": "Start patrol",
+  "fr": "Lancer la patrouille",
+  "it": "Avviare la pattuglia",
+  "rm": "Cumenzar la patrulla"
+ },
+ "Patrouille stoppen": {
+  "en": "Stop patrol",
+  "fr": "Arrêter la patrouille",
+  "it": "Fermare la pattuglia",
+  "rm": "Fermar la patrulla"
+ },
+ "Patrouille ▴": {
+  "en": "Patrol ▴",
+  "fr": "Patrouille ▴",
+  "it": "Pattuglia ▴",
+  "rm": "Patrulla ▴"
+ },
+ "Patrouille: ": {
+  "en": "Patrol: ",
+  "fr": "Patrouille : ",
+  "it": "Pattuglia: ",
+  "rm": "Patrulla: "
+ },
  "Patrouille: der Mover fährt MoveEye die Route ab": {
   "en": "Patrol: the mover drives MoveEye along the route",
   "fr": "Patrouille : le mover conduit MoveEye le long de l’itinéraire",
   "it": "Pattuglia: il mover porta MoveEye lungo il percorso",
   "rm": "Patrulla: il mover maina MoveEye lung la ruta"
+ },
+ "Patrouille: Punkte setzen, Bereich, Zufall – der Mover fährt MoveEye ab": {
+  "en": "Patrol: set points, area, random – the mover drives around for MoveEye",
+  "fr": "Patrouille : poser des points, zone, au hasard – le mover fait la ronde pour MoveEye",
+  "it": "Pattuglia: punti, zona, a caso – il mover fa il giro per MoveEye",
+  "rm": "Patrulla: metter puncts, regiun, a l’aventura – il mover fa la runda per MoveEye"
  },
  "Pause": {
   "en": "Pause",
@@ -26694,6 +26964,12 @@
   "fr": "Parapluie",
   "it": "Ombrello",
   "rm": "Parasol"
+ },
+ "Regenstreifen und Spritzer im Kamerabild (nicht auf der Linse – die Tropfen: «Tropfen auf der Linse»)": {
+  "en": "Rain streaks and splashes in the camera picture (not on the lens – the drops: «Drops on the lens»)",
+  "fr": "Traînées de pluie et éclaboussures dans l’image (pas sur l’objectif – les gouttes : «Gouttes sur l’objectif»)",
+  "it": "Strisce di pioggia e spruzzi nell’immagine (non sull’obiettivo – le gocce: «Gocce sull’obiettivo»)",
+  "rm": "Strivlas da plievgia e sbrinzs en il maletg (betg sin la lentila – las guttas: «Guttas sin la lentila»)"
  },
  "Regenstärke (gilt auch für Schnee)": {
   "en": "Rain intensity (also for snow)",
@@ -28277,6 +28553,12 @@
   "it": "Condizioni difficili (controluce, nebbia, neve, gocce, ragnatela, fari, ombre delle nuvole · circa 9 min)",
   "rm": "Cundiziuns difficilas (cuntraglisch, tschajera, naiv, daguts, taila d’arogn, cazzolas, umbrivas da nivels · circa 9 min.)"
  },
+ "Schwierige Fälle (Tarnung, Diebe)": {
+  "en": "Hard cases (camouflage, thieves)",
+  "fr": "Cas difficiles (camouflage, voleurs)",
+  "it": "Casi difficili (mimetizzazione, ladri)",
+  "rm": "Cas difficils (camuflascha, laders)"
+ },
  "Schwierige Personen kommen auch von selbst (Kapuze, Rucksack, Gruppe, telefoniert, schleicht am Rand)": {
   "en": "Difficult people also come by themselves (hood, backpack, group, phoning, sneaking at the edge)",
   "fr": "Les personnes difficiles viennent aussi d’elles-mêmes (capuche, sac à dos, groupe, téléphone, se faufile au bord)",
@@ -28973,6 +29255,24 @@
   "fr": "SmallTV (virtuel)",
   "it": "SmallTV (virtuale)",
   "rm": "SmallTV (virtual)"
+ },
+ "SmallTV mit Macken wie echt (Upload antwortet «400», Antworten 1,2 s später)": {
+  "en": "SmallTV with quirks like the real one (upload answers «400», answers 1.2 s later)",
+  "fr": "SmallTV avec ses bizarreries comme le vrai (l’envoi répond «400», réponses 1,2 s plus tard)",
+  "it": "SmallTV con i difetti di quello vero (il caricamento risponde «400», risposte 1,2 s dopo)",
+  "rm": "SmallTV cun capricis sco il vair (upload respunda «400», respostas 1,2 s pli tard)"
+ },
+ "SmallTV-Bilder löschen (und Zähler zurücksetzen)": {
+  "en": "Delete SmallTV pictures (and reset the counters)",
+  "fr": "Effacer les images du SmallTV (et remettre les compteurs à zéro)",
+  "it": "Cancellare le immagini dello SmallTV (e azzerare i contatori)",
+  "rm": "Stizzar ils maletgs dal SmallTV (e metter enavos ils dumbraders)"
+ },
+ "SmallTV-Kachel zeigen (virtuell: sobald MoveEye Bilder schickt, gleiche Schnittstelle wie der echte GeekMagic SmallTV Ultra)": {
+  "en": "Show the SmallTV tile (virtual: as soon as MoveEye sends pictures, same interface as the real GeekMagic SmallTV Ultra)",
+  "fr": "Afficher la tuile SmallTV (virtuel : dès que MoveEye envoie des images, même interface que le vrai GeekMagic SmallTV Ultra)",
+  "it": "Mostrare la casella SmallTV (virtuale: appena MoveEye manda immagini, stessa interfaccia del vero GeekMagic SmallTV Ultra)",
+  "rm": "Mussar la plattina SmallTV (virtual: uschespert che MoveEye trametta maletgs, la medema interfatscha sco il vair GeekMagic SmallTV Ultra)"
  },
  "Smithsonian 3D": {
   "en": "Smithsonian 3D",
@@ -29700,6 +30000,12 @@
   "it": "forte (25 mm/h)",
   "rm": "ferm (25 mm/h)"
  },
+ "Start (Controller) · mit dem Mover herumfahren – Tastatur, Maus, Touch oder Controller": {
+  "en": "Start (controller) · drive around with the mover – keyboard, mouse, touch or controller",
+  "fr": "Start (manette) · rouler avec le mover – clavier, souris, tactile ou manette",
+  "it": "Start (controller) · girare con il mover – tastiera, mouse, touch o controller",
+  "rm": "Start (controller) · charrar enturn cun il mover – tastatura, mieur, touch u controller"
+ },
  "Start (Controller) · mit dem Rover herumfahren – Tastatur, Maus, Touch oder Controller": {
   "en": "Start (controller) · drive around with the rover – keyboard, mouse, touch or controller",
   "fr": "Start (manette) · rouler avec le rover – clavier, souris, tactile ou manette",
@@ -30043,6 +30349,12 @@
   "it": "Non toccare gli stick – misuro 2 s …",
   "rm": "Betg tutgar ils sticks – mesirar 2 s …"
  },
+ "Sticks tauschen (links Mover / gehen, rechts Kopf / schauen)": {
+  "en": "Swap sticks (left mover / walk, right head / look)",
+  "fr": "Inverser les sticks (gauche mover / marcher, droite tête / regarder)",
+  "it": "Scambiare gli stick (sinistra mover / camminare, destra testa / guardare)",
+  "rm": "Sbarattar ils sticks (sanester mover / ir, dretg chau / guardar)"
+ },
  "Sticks tauschen (links Rover / gehen, rechts Kopf / schauen)": {
   "en": "Swap sticks (left rover / walk, right head / look)",
   "fr": "Échanger les sticks (gauche rover / marcher, droite tête / regarder)",
@@ -30138,6 +30450,12 @@
   "fr": "Dispute pour le sandwich",
   "it": "Lite per il panino",
   "rm": "Dispita pervia dal sandwich"
+ },
+ "Strg + Klick beim Erkunden · den Mover an eine andere Stelle setzen": {
+  "en": "Ctrl + click while exploring · put the mover somewhere else",
+  "fr": "Ctrl + clic en explorant · placer le mover ailleurs",
+  "it": "Ctrl + clic esplorando · mettere il mover in un altro posto",
+  "rm": "Ctrl + clic durant explorar · metter il mover in auter lieu"
  },
  "Strg + Klick beim Erkunden · den Rover an eine andere Stelle setzen": {
   "en": "Ctrl + click when exploring · put the rover somewhere else",
@@ -30601,6 +30919,12 @@
   "it": "Pagina di diario %d",
   "rm": "Pagina dal diari %d"
  },
+ "Tagesablauf (wer wann kommt)": {
+  "en": "Daily routine (who comes when)",
+  "fr": "Déroulement de la journée (qui vient quand)",
+  "it": "Andamento della giornata (chi arriva quando)",
+  "rm": "Andament dal di (tgi che vegn cura)"
+ },
  "Tagesablauf auf dem Campingplatz: morgens zu WC und Dusche, tagsüber spazieren, abends draussen sitzen, nachts fast leer – nur WC-Gänge mit Taschenlampe": {
   "en": "Daily routine on the campsite: toilet and shower in the morning, walks during the day, sitting outside in the evening, almost empty at night – only walks to the toilet with a torch",
   "fr": "Journée au camping : WC et douche le matin, promenades la journée, assis dehors le soir, presque vide la nuit – seulement des passages aux WC avec une lampe de poche",
@@ -31002,6 +31326,12 @@
   "fr": "Tester",
   "it": "Testare",
   "rm": "Testar"
+ },
+ "Testen → Prüfstand": {
+  "en": "Testing → test bench",
+  "fr": "Tester → banc d’essai",
+  "it": "Test → banco di prova",
+  "rm": "Testar → banc da prova"
  },
  "Testfälle für den Prüfstand (auf GitHub mit dem Schlüssel oben, sonst auf den Schreibtisch):": {
   "en": "Test cases for the test bench (on GitHub with the key above, otherwise on the desktop):",
@@ -32918,6 +33248,12 @@
   "it": "Uccelli di giorno, pipistrelli di notte (caldi nell’immagine termica, causa tipica di falsi allarmi)",
   "rm": "Utschels dal di, mez-mieurs da notg (chauds en il maletg termic, motiv tipic da fauss alarms)"
  },
+ "Vögel und Kleintiere": {
+  "en": "Birds and small animals",
+  "fr": "Oiseaux et petits animaux",
+  "it": "Uccelli e piccoli animali",
+  "rm": "Utschels e pitschens animals"
+ },
  "W A S D / Pfeile fahren · Shift schnell · V Ansicht · Bild ↑↓ Höhe der Kamera · C Beobachter · J Mitspieler · Esc": {
   "en": "W A S D / arrows drive · Shift fast · V view · Page ↑↓ camera height · C observer · J players · Esc",
   "fr": "W A S D / flèches conduire · Shift rapide · V vue · Page ↑↓ hauteur de la caméra · C observateur · J joueurs · Esc",
@@ -33397,6 +33733,12 @@
   "fr": "trajets aux WC reconnus %d sur %d",
   "it": "passaggi al WC riconosciuti %d su %d",
   "rm": "ir al WC renconuschì %d da %d"
+ },
+ "Wechselnde Kamera-Einstellungen von Mover und Spielern": {
+  "en": "Changing camera shots of mover and players",
+  "fr": "Plans de caméra changeants du mover et des joueurs",
+  "it": "Inquadrature alternate del mover e dei giocatori",
+  "rm": "Posiziuns da camera variantas dal mover e dals giugaders"
  },
  "Wechselnde Kamera-Einstellungen von Rover und Spielern": {
   "en": "Changing camera angles on rover and players",
@@ -34419,6 +34761,12 @@
   "fr": "Nuit des animaux – seulement des animaux, plus souvent",
   "it": "Notte degli animali – solo animali, più spesso",
   "rm": "Notg d’animals selvadis – mo animals, pli savens"
+ },
+ "Wildtiere": {
+  "en": "Wild animals",
+  "fr": "Animaux sauvages",
+  "it": "Animali selvatici",
+  "rm": "Animals selvadis"
  },
  "Wildtiere – Fuchs am Abfall, Wildschweine, Luchs": {
   "en": "Wildlife – fox at the rubbish, wild boars, lynx",
@@ -35518,6 +35866,12 @@
   "fr": "Terminer d’abord la manche en cours.",
   "it": "Prima terminare il turno in corso.",
   "rm": "L’emprim terminar la runda en cursa."
+ },
+ "Zuerst ein Foto des Platzes laden (Gegenstände → Foto des Platzes)": {
+  "en": "First load a photo of the place (Objects → Photo of the place)",
+  "fr": "D’abord charger une photo du lieu (Objets → Photo du lieu)",
+  "it": "Prima caricare una foto del posto (Oggetti → Foto del posto)",
+  "rm": "L’emprim chargiar ina foto dal lieu (Objects → Foto dal lieu)"
  },
  "Zuerst etwas aus «Lockt Tiere an» hinstellen (Futternapf, Abfallsack, offene Kühlbox, Obst).": {
   "en": "First put out something from «Attracts animals» (feeding bowl, rubbish bag, open cool box, fruit).",
@@ -37661,6 +38015,12 @@
   "it": "🎮 Testare il controller (mostra lo stick grezzo e dopo la correzione della deriva)",
   "rm": "🎮 Testar il controller (mussa il stick crud e suenter la correctura dal drift)"
  },
+ "🎮 Controller zuteilen (mehrere Controller: Wächter, Schleicher, Mover)": {
+  "en": "🎮 Assign controllers (several controllers: guard, sneaker, mover)",
+  "fr": "🎮 Attribuer les manettes (plusieurs manettes : gardien, rôdeur, mover)",
+  "it": "🎮 Assegnare i controller (più controller: guardiano, furtivo, mover)",
+  "rm": "🎮 Attribuir ils controllers (plirs controllers: guardian, sfurgnader, mover)"
+ },
  "🎮 Controller zuteilen (mehrere Controller: Wächter, Schleicher, Rover)": {
   "en": "🎮 Assign controllers (several controllers: guard, sneaker, rover)",
   "fr": "🎮 Attribuer les manettes (plusieurs manettes : gardien, furtif, rover)",
@@ -38194,6 +38554,12 @@
   "fr": "📍 Ici",
   "it": "📍 Qui",
   "rm": "📍 Qua"
+ },
+ "📍 Mover versetzen – danach in die Welt klicken (beim Erkunden: Strg + Klick)": {
+  "en": "📍 Move the mover – then click into the world (while exploring: Ctrl + click)",
+  "fr": "📍 Déplacer le mover – puis cliquer dans le monde (en explorant : Ctrl + clic)",
+  "it": "📍 Spostare il mover – poi cliccare nel mondo (esplorando: Ctrl + clic)",
+  "rm": "📍 Spustar il mover – lura cliccar en il mund (durant explorar: Ctrl + clic)"
  },
  "📍 Ort in der Welt anklicken": {
   "en": "📍 Click the place in the world",

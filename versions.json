@@ -1,13 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 17:16",
+ "generated": "2026-10-31 17:22",
  "versions": [
+  {
+   "version": "3.7.0",
+   "file": "webcam_bewegung_3_7_0.py",
+   "url": "",
+   "sha256": "f7c1590fcb2a8dcee6a1dfb6ac593787b0968c13eade76034674dc4a096c994f",
+   "date": "2026-10-31 17:22",
+   "notes": "Simulator-Seite angepasst an die aufgeräumten Simulator-Menüs. Simulator 3.7.0: «Einfach» 61 statt 101 Einträge, Besuch in Menschen und Tiere, doppelte Regler zusammengelegt, Prüfstand und Rückmeldung an einem Ort, einheitliche Namen und Symbole.",
+   "sig": "23d249d6d3cd4680b64a4f46ab336bb35f6ece22006ae463ad38a2c7e1fa0706c64fcc6eae3e5324b5c2af2106f9353db234529277b8cc0d9a253a9101d4800e"
+  },
   {
    "version": "3.6.2",
    "file": "webcam_bewegung_3_6_2.py",
    "url": "",
    "sha256": "ddac53d8de9771bd104389659da803a1f93541101cf565d5a02e891d57e366f0",
-   "date": "2026-10-31 17:16",
+   "date": "2026-10-31 17:20",
    "notes": "Fehlerkorrekturen: Spieltest-Push höchstens 1 pro Minute und nur von MoveEye einschaltbar; Schwachlicht nach einer Taschenlampe in höchstens 10 s wieder an; ohne KI wird ein warmer, flacher Körper «Person?»; Hospiz nur für den Besitzer; echte Pi-Warnungen auch im Simulator-Betrieb; Fragen der Produktseite ganz aufs Handy; «Schutz ein» nicht doppelt; Übersetzungen.",
    "sig": "1e5680ecc3043d0bd618a595a7a1498eada03f7c8f60bcedfdd0abfde2ca584f45dfd52700ca077a8f3c66a0d53f3f649f7fc228f7f460a58ffc86b842ab2601"
   },
@@ -16,7 +25,7 @@
    "file": "webcam_bewegung_3_5_0.py",
    "url": "",
    "sha256": "2de1f83516566e66a38556fd6f815109de232902f9f03b83837c97ce96012a93",
-   "date": "2026-10-31 17:15",
+   "date": "2026-10-31 17:20",
    "notes": "Kriechende nachts: Voralarm «⚠ Etwas Grosses am Boden», nach 6 s «Person? (kriecht)» mit Alarm; Fuchs und Igel lösen nichts aus; KI-Lupe schaut auch kleine, weite Bewegungen an (nicht bei starkem Wind).",
    "sig": "f79f98014727f9778348be9f028d6d809a8a1b4ec5123d3ca292b5723908c90ffa671e98d47b3be7f8bfbf16325cc9861d72dde9e4d8aed4135f59904a050c03"
   },
@@ -82,15 +91,6 @@
    "date": "2026-10-28 23:31",
    "notes": "Ordnung im Hintergrund: eine Sperre für alle Simulator-Aufgaben, Zeitplan schaltet über die Scharf-Logik, Modi stellen in jeder Reihenfolge richtig zurück, Optimierung fragt «auch echt übernehmen?», AutoTuner pausiert bei Tests, Anwesenheit aus beiden Quellen, Updates warten auf Tests",
    "sig": "84926a7055dfba236402aa19df4d3034272e1e097a836baf16f4afa634f1589bd9dff0461b1dd9d3cbd1049f2c86ff7f6db10256cbbe55899aec27ad6b689308"
-  },
-  {
-   "version": "2.96.13",
-   "file": "webcam_bewegung_2_96_13.py",
-   "url": "",
-   "sha256": "33b5eb317dd5693e3c03e03d8f9d5fcddbb4b7f6ad1185618034bbbf8aaa7093",
-   "date": "2026-10-28 23:06",
-   "notes": "Passt zum Simulator 3D-3.87 (Schriftzug MoveEye auch im Simulator)",
-   "sig": "470269de335765ab58b20e9becf236a6860692b0cf9a5dfdac1b9941cf56e86f1c7d537a13aa223e57090b070f9707488800c83b23f2326427565095b206010a"
   }
  ]
 }

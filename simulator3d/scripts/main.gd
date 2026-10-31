@@ -3,9 +3,10 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3.6.2"
+const VERSION := "3.7.0"
 const Versionen = preload("res://scripts/versionen.gd")   # Versionierung 3.0.0: from 3.0.0 VERSION = "X.Y.Z" like MoveEye (see there)
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
+const T := preload("res://scripts/i18n.gd")              # Menüs A: new texts of the panel in the language (Sprachen)
 const Quality := preload("res://scripts/quality.gd")     # 3D-4.25: «Lite» for the Raspberry Pi 5 (Quality.lite(), Engine meta «lite»)
 const Kompakt := preload("res://scripts/kompakt.gd")    # 3D-4.x: the four compact scenes (Pfadilager, Hofladen, Bergdorf, Festival)
 const Waerme := preload("res://scripts/waerme.gd")       # 3D-4.26: the heat table (people, animals, engines, fire, sun)
@@ -3756,7 +3757,8 @@ func add_control(type: String, id: String, label: String, getter, setter, group:
 # [group, symbol (window: drawn; page of MoveEye: emoji), parts in their order]
 const GROUPS := [["Szene", "globe", "🌍", ["", "Bergtal", "Ort von der Karte", "Foto des Platzes", "Zeit", "Licht & Nacht"]],
 		["Wetter", "cloud", "🌦", ["", "Mehr Wetter", "Natur und Wind"]],
-		["Besuch", "person", "🚶", ["Vorlagen", "Besucher hinsetzen", "Menschen schicken", "Tiere schicken", "Fahrzeuge", "Abläufe", "Von selbst", "Verhalten"]],
+		["Besuch", "person", "🚶", ["Vorlagen", "Besucher hinsetzen", "Menschen einzeln", "Gruppen und Alltag", "Mit Hund oder Pferd", "Schwierige Fälle (Tarnung, Diebe)",
+				"Wildtiere", "Haus- und Nutztiere", "Vögel und Kleintiere", "Fahrzeuge", "Abläufe", "Von selbst", "Verhalten"]],   # Menüs A: «Menschen / Tiere schicken» geteilt (VISIT_SUB)
 		["Kamerabild", "lens", "👁", ["", "Weitwinkel-Kamera", "Wärmebild", "Wie echt", "Schwierige Bedingungen", "Feineinstellungen"]],
 		["Sensoren", "bell", "🔔", ["", "Bewegungsmelder (PIR)", "Strom", "Netz", "Zusatz-Bildschirm (SmallTV)"]],
 		["Mover", "track", "🚜", ["", "Patrouille", "Controller"]],
@@ -3764,7 +3766,7 @@ const GROUPS := [["Szene", "globe", "🌍", ["", "Bergtal", "Ort von der Karte",
 		["Spiel", "pad", "🎮", ["", "Entdecken", "Assistent"]],        # Erlebniswelt 20–23: «Entdecken» (entdecken.gd) on the card
 		["Wildtier", "target", "🎯", [""]],
 		["Testen", "check", "✅", ["", "Verfolgungs-Parcours", "Störungen", "Einbruch-Abläufe"]],
-		["System", "gear", "⚙", ["Grafik", "Start mit dem PC", "Updates", "Sicherheit / Benutzer"]],
+		["System", "gear", "⚙", ["Grafik", "Karte und Livebild", "Start mit dem PC", "Updates", "Sicherheit / Benutzer"]],   # Menüs A: «Ansicht» → «Karte und Livebild» (fehlte hier)
 		["Entwickler", "tools", "🧪", ["", "Updates"]]]
 # 3D-4.21 (Menü 2, Daniel 30.10.2026): the same names as MoveEye - the controls keep their old group / part in add_control,
 # _order_controls renames them here (MoveEye reads the fixed «gid», not the name)
@@ -3793,7 +3795,7 @@ const PLACE := {"patrol_on": ["Mover", "Patrouille"], "patrol_mode": ["Mover", "
 		"visit_rate": ["Besuch", "Von selbst"], "daily_life": ["Besuch", "Von selbst"], "real_time": ["Szene", "Zeit"], "max_visitors": ["Besuch", "Von selbst"], "visitor_speed": ["Besuch", "Verhalten"],
 		"lamp_share": ["Besuch", "Verhalten"], "look_at_light": ["Besuch", "Verhalten"], "flee_light": ["Besuch", "Verhalten"],
 		"flee_sound": ["Besuch", "Verhalten"], "avoid_on": ["Besuch", "Verhalten"], "lens_vignette": ["Kamerabild", "Feineinstellungen"],
-		"sound_on": ["Kamerabild", "Feineinstellungen"], "game_open": ["Spiel", "Runde"], "game_start": ["Spiel", ""],
+		"sound_on": ["Licht & Ton", "Mikrofon"], "game_open": ["Spiel", "Runde"], "game_start": ["Spiel", ""],
 		"game_stop": ["Spiel", ""], "game_wizard": ["Spiel", ""], "tv_mode": ["Spiel", "Anzeige"], "game_minutes": ["Spiel", "Runde"], "game_mode": ["Spiel", "Runde"], "game_goal": ["Spiel", "Runde"],
 		"game_level": ["Spiel", "Regeln"], "game_glevel": ["Spiel", "Regeln"], "game_real": ["Spiel", "Regeln"], "game_lives": ["Spiel", "Regeln"], "game_items": ["Spiel", "Regeln"], "game_teams": ["Spiel", "Regeln"],
 		"game_rescue": ["Spiel", "Regeln"], "game_teamgoal": ["Spiel", "Regeln"], "game_stones": ["Spiel", "Regeln"], "game_powers": ["Spiel", "Regeln"], "game_spectate": ["Spiel", "Anzeige"], "game_photos": ["Spiel", "Extras"], "game_fx_laser": ["Spiel", "Treffer"], "game_fx_paint": ["Spiel", "Treffer"], "game_fx_flash": ["Spiel", "Treffer"], "game_tap": ["Spiel", "Treffer"],
@@ -3801,11 +3803,13 @@ const PLACE := {"patrol_on": ["Mover", "Patrouille"], "patrol_mode": ["Mover", "
 		"game_night": ["Spiel", "Extras"], "game_events": ["Spiel", "Extras"], "game_checkpoints": ["Spiel", "Extras"], "game_tasks": ["Spiel", "Extras"], "game_autohandicap": ["Spiel", "Extras"],
 		"game_board_reset": ["Spiel", "Extras"], "spectate_now": ["Spiel", "Anzeige"], "game_noise": ["Spiel", "Regeln"],
 		"game_random": ["Spiel", "Regeln"], "game_guard": ["Spiel", "Regeln"], "game_cones": ["Spiel", "Anzeige"], "game_quality": ["Spiel", "Anzeige"], "game_max": ["Spiel", "Runde"],
-		"grafik_mode": ["System", "Grafik"], "quality": ["System", "Grafik"], "grafik_dof": ["System", "Grafik"], "view_scale": ["System", "Grafik"], "win_fps": ["System", "Grafik"], "auto_perf": ["System", "Grafik"], "map_on": ["System", "Ansicht"], "live_on": ["System", "Ansicht"], "live_cam": ["System", "Ansicht"], "live_size": ["System", "Ansicht"], "eco_idle": ["System", "Grafik"], "autostart": ["System", "Start mit dem PC"],
+		"grafik_mode": ["System", "Grafik"], "quality": ["System", "Grafik"], "grafik_dof": ["System", "Grafik"], "view_scale": ["System", "Grafik"], "win_fps": ["System", "Grafik"], "auto_perf": ["System", "Grafik"], "map_on": ["System", "Karte und Livebild"], "live_on": ["System", "Karte und Livebild"], "live_cam": ["System", "Karte und Livebild"], "live_size": ["System", "Karte und Livebild"], "phone_sim": ["System", "Karte und Livebild"],"eco_idle": ["System", "Grafik"], "autostart": ["System", "Start mit dem PC"],
 		"autostart_min": ["System", "Start mit dem PC"], "autostart_mwpc": ["System", "Start mit dem PC"], "autostart_lock": ["System", "Start mit dem PC"],
 		"cond_glare": ["Kamerabild", "Schwierige Bedingungen"], "cond_drops": ["Kamerabild", "Schwierige Bedingungen"],
 		"cond_web": ["Kamerabild", "Schwierige Bedingungen"], "cond_headlights": ["Kamerabild", "Schwierige Bedingungen"],
 		"cond_shadows": ["Kamerabild", "Schwierige Bedingungen"], "cond_ir": ["Kamerabild", "Schwierige Bedingungen"],
+		"linse_tropfen": ["Kamerabild", ""], "scheinwerfer": ["Kamerabild", "Schwierige Bedingungen"], "fz_glare": ["Kamerabild", "Schwierige Bedingungen"],
+		"jahreszeit": ["Szene", "Zeit"], "tagesablauf": ["Besuch", "Von selbst"],
 		"autologon": ["System", "Start mit dem PC"], "kids_scary": ["System", "Sicherheit / Benutzer"], "kids_thief": ["System", "Sicherheit / Benutzer"], "kids_laser": ["System", "Sicherheit / Benutzer"], "kids_sound": ["System", "Sicherheit / Benutzer"], "kids_ask": ["System", "Sicherheit / Benutzer"], "auto_update": ["System", "Updates"], "update_mode": ["System", "Updates"], "dev_updates": ["Entwickler", "Updates"], "news_popup": ["System", "Updates"], "news_show": ["System", "Updates"], "update_now": ["System", "Updates"]}
 
 
@@ -3820,21 +3824,55 @@ const DISC_SIMPLE := ["disc_book", "disc_photo", "disc_hints"]
 # 3D-4.7: a fixed id per group for MoveEye (the visible names may change); sent as «gid» with every control
 const GROUP_IDS := {"Szene": "scene", "Wetter": "weather", "Besuch": "visit", "Kamerabild": "camera", "Sensoren": "sensors", "Mover": "mover", "Licht & Ton": "lightsound",
 		"Spiel": "game", "Wildtier": "wildlife", "Testen": "testrun", "System": "system", "Entwickler": "dev"}
-const SIMPLE_HIDE_SUBS := ["Besucher hinsetzen", "Menschen schicken", "Tiere schicken", "Fahrzeuge", "Verhalten", "Mehr Wetter", "Natur und Wind"]
+# Paket «Menüs aufräumen A» (Daniel 31.10.2026): «Einfach» wirklich einfach - rund 60 statt 100 Einträge, eine feste Liste statt
+# «ganze Gruppe»: Szene, Zeit, Wetter, Besuch (Vorlagen, die wichtigsten Abläufe, von selbst), Testlauf, Aufnahme, Parcours und
+# Einbruch starten, je ein Hauptschalter von Kamerabild / Sensoren / Mover / Licht & Ton / Wildtier, System. Alles andere (Störungen,
+# I2C, Pi-5-Werte, Seed, Fein-Regler) ist «Experte». Die Bergtal-, Welt- und Ferienpark-Regler zeigen sich nur in ihrer Szene.
+const SIMPLE_IDS := ["scene", "home_edit", "hour", "fp_spot", "bt_spot", "bt_bed", "bt_mount", "bt_wall", "bt_here", "bt_goto", "bt_season",
+		"ort_map", "ort", "twin_on", "twin_open", "twin_yaw", "twin_span", "jahreszeit", "real_time", "licht_lp", "licht_platz",
+		"weather", "wind", "ambient", "real_weather", "night_weather", "w_rain",
+		"visit_preset", "clear", "thief", "burglar", "sneaker", "homecoming", "parcel", "auto", "mix", "visit_rate", "tagesablauf", "night_lapse", "st_frei",
+		"show_laser", "door", "mast_h", "statusled_panel", "rifle",
+		"testrun_plan", "testrun_start", "testrun_stop", "testrun_open", "rec_start", "rec_stop", "rec_pick", "rec_play", "rec_stopplay",
+		"parcours_pick", "parcours_start", "parcours_stop", "einbruch_ablauf", "einbruch_start", "einbruch_stop",
+		"update_mode", "kids_ask", "grafik_mode"]
+# Menüs A, Punkt 1 + 2: «Menschen schicken» (23) und «Tiere schicken» (46, davon 13 Menschen) in Unterkarten mit höchstens 14 Knöpfen.
+# id -> Unterkarte; neue «spawn_*» ohne Eintrag: Mensch (PEOPLE_KINDS) -> «Menschen einzeln», sonst «Wildtiere»
+const VISIT_SUB := {
+		"spawn_person": "Menschen einzeln", "spawn_child": "Menschen einzeln", "spawn_jogger": "Menschen einzeln", "spawn_cyclist": "Menschen einzeln",
+		"spawn_stroller": "Menschen einzeln", "spawn_courier": "Menschen einzeln", "spawn_police": "Menschen einzeln", "spawn_drunk": "Menschen einzeln",
+		"spawn_elderly": "Menschen einzeln", "spawn_hooded": "Menschen einzeln", "spawn_backpacker": "Menschen einzeln", "spawn_phoner": "Menschen einzeln",
+		"couple": "Gruppen und Alltag", "spawn_group2": "Gruppen und Alltag", "spawn_group3": "Gruppen und Alltag", "spawn_group4": "Gruppen und Alltag",
+		"m_send_familie": "Gruppen und Alltag", "m_send_gespraech": "Gruppen und Alltag", "m_send_sitzen": "Gruppen und Alltag", "m_send_wc": "Gruppen und Alltag",
+		"m_send_spazieren": "Gruppen und Alltag", "m_send_eilig": "Gruppen und Alltag", "m_send_velo": "Gruppen und Alltag", "bench": "Gruppen und Alltag",
+		"garden_person": "Gruppen und Alltag", "m_send_gangarten": "Gruppen und Alltag",
+		"dogwalk": "Mit Hund oder Pferd", "horse_walk": "Mit Hund oder Pferd", "tiere_dog_free": "Mit Hund oder Pferd", "spawn_dog_leash": "Mit Hund oder Pferd",
+		"spawn_edge_sneak": "Schwierige Fälle (Tarnung, Diebe)", "spawn_platz_besuch": "Schwierige Fälle (Tarnung, Diebe)", "spawn_tarn_robben": "Schwierige Fälle (Tarnung, Diebe)",
+		"spawn_tarn_schirm": "Schwierige Fälle (Tarnung, Diebe)", "spawn_tarn_karton": "Schwierige Fälle (Tarnung, Diebe)", "spawn_velodieb": "Schwierige Fälle (Tarnung, Diebe)",
+		"spawn_fox": "Wildtiere", "spawn_deer": "Wildtiere", "spawn_boar": "Wildtiere", "spawn_badger": "Wildtiere", "spawn_wolf": "Wildtiere", "spawn_marten": "Wildtiere",
+		"spawn_chamois": "Wildtiere", "spawn_ibex": "Wildtiere", "spawn_lynx": "Wildtiere", "herd": "Wildtiere", "feed": "Wildtiere", "spawn_deer_bedded": "Wildtiere",
+		"spawn_boar_herd": "Wildtiere", "lure_now": "Wildtiere",
+		"spawn_cat": "Haus- und Nutztiere", "spawn_dog": "Haus- und Nutztiere", "spawn_cow": "Haus- und Nutztiere", "spawn_sheep": "Haus- und Nutztiere",
+		"spawn_horse": "Haus- und Nutztiere", "cows": "Haus- und Nutztiere", "sheep_flock": "Haus- und Nutztiere", "spawn_cat_roof": "Haus- und Nutztiere",
+		"u_send_cat_fence": "Haus- und Nutztiere", "u_send_chickens": "Haus- und Nutztiere", "zt_pets": "Haus- und Nutztiere",
+		"spawn_hare": "Vögel und Kleintiere", "spawn_hedgehog": "Vögel und Kleintiere", "spawn_squirrel": "Vögel und Kleintiere", "bats": "Vögel und Kleintiere",
+		"owl": "Vögel und Kleintiere", "tiere_crows": "Vögel und Kleintiere", "tiere_magpies": "Vögel und Kleintiere", "tiere_gulls": "Vögel und Kleintiere",
+		"u_send_hedgehog_bowl": "Vögel und Kleintiere", "zt_spider": "Vögel und Kleintiere", "zt_spider_lens": "Vögel und Kleintiere"}
+# Menüs A, Punkt 4 + 5: eine Sache an einem Ort - die alten ids bleiben als Alias (extra «alias» + «wiz»: nicht im Bedienfeld, nicht
+# auf der Simulator-Seite von MoveEye), /control set / press, Tests, Prüfstand und gespeicherte Einstellungen gehen weiter
+const ALIAS_IDS := {"lens_drops": "linse_tropfen", "w_lens": "linse_tropfen", "cond_drops": "linse_tropfen",
+		"cond_headlights": "scheinwerfer", "fa_sweep": "scheinwerfer", "season": "jahreszeit", "jz_mode": "jahreszeit", "seasons_on": "jahreszeit",
+		"daily_life": "tagesablauf", "m_plan": "tagesablauf", "pruef_open": "Testen → Prüfstand"}
+# Menüs A, Punkt 8: die Foto-Regler wirken nur mit einem geladenen Foto des Platzes - ohne Foto ausgegraut («ro»)
+const PHOTO_IDS := ["twin_yaw", "twin_span", "twin_dist", "twin_horizon", "fm_on", "fm_h", "fm_hz", "fm_roll", "fm_shk", "fm_bright", "fm_wb",
+		"fm_noise", "fm_front", "fm_measure"]
 
 
 func _simple_ok(c: Dictionary) -> bool:
-	"""3D-3.90: what «Einfach» shows - scene, time, weather, visitors (the inventory picks the single ones), the test run and
-	the game assistant; everything else is «Experte»"""
+	"""what «Einfach» shows (Menüs A: the list SIMPLE_IDS, about 60); everything else is «Experte»"""
 	if c.group == "Spiel":
 		return c.id in GAME_MAIN or c.id in DISC_SIMPLE
-	if c.id == "mast_h":
-		return true                                   # 3D-4.x: the height of the pole - easy to find (wish of Daniel)
-	if c.group == "System":
-		return c.id in ["update_mode", "kids_ask", "grafik_mode"]
-	if not c.group in SIMPLE_GROUPS:
-		return false
-	return not str(c.extra.get("sub", "")) in SIMPLE_HIDE_SUBS
+	return c.id in SIMPLE_IDS or str(c.id).begins_with("welt_ort_")
 
 
 func _order_controls() -> void:
@@ -3848,12 +3886,23 @@ func _order_controls() -> void:
 		c.extra = c.extra.duplicate()                     # several controls share one dictionary ({"expert": true})
 		var pl = PLACE.get(c.id, null)
 		if pl == null and str(c.id).begins_with("spawn_"):
-			pl = ["Besuch", "Menschen schicken" if str(c.id).trim_prefix("spawn_") in PEOPLE_KINDS else "Tiere schicken"]
+			pl = ["Besuch", "Menschen einzeln" if str(c.id).trim_prefix("spawn_") in PEOPLE_KINDS else "Wildtiere"]
+		if VISIT_SUB.has(c.id):
+			pl = ["Besuch", VISIT_SUB[c.id]]              # Menüs A: people out of «Tiere schicken», long lists split
+		elif pl == null and str(c.extra.get("sub", "")) in ["Menschen schicken", "Tiere schicken"]:
+			pl = [c.group, "Menschen einzeln" if str(c.extra["sub"]) == "Menschen schicken" else "Wildtiere"]   # a new button of another part
 		if VISIT_EMOJI.has(str(c.id).trim_prefix("spawn_")):
 			c.extra["emoji"] = VISIT_EMOJI[str(c.id).trim_prefix("spawn_")]      # a picture on the button of the page (3D-3.38)
 		if pl != null:
 			c.group = pl[0]
 			c.extra["sub"] = pl[1]
+		if ALIAS_IDS.has(c.id):                           # Menüs A: the old id of a merged control - only /control, tests, settings
+			c.extra["alias"] = ALIAS_IDS[c.id]
+			c.extra["wiz"] = true                          # «wiz»: not in the panel, not on the page of MoveEye (also older MoveEye)
+			c.extra.erase("devwin")                        # pruef_open: no second «Prüfstand» in the developer window
+		if c.id in PHOTO_IDS and zwilling != null and not c.has("ro"):
+			c["ro"] = func(): return zwilling.cur().is_empty()   # Menüs A: without a photo of the place these do nothing - greyed out
+			c.extra["ro_tip"] = "Zuerst ein Foto des Platzes laden (Gegenstände → Foto des Platzes)"   # tooltip on the page of MoveEye
 		c.group = GROUP_RENAME.get(c.group, c.group)       # 3D-4.21: names like MoveEye
 		if SUB_RENAME.has(str(c.extra.get("sub", ""))):
 			c.extra["sub"] = SUB_RENAME[str(c.extra.get("sub", ""))]
@@ -3875,7 +3924,7 @@ func _order_controls() -> void:
 		c.extra["icon"] = GROUPS[g][2] if g < GROUPS.size() else ""
 		c.extra["iconk"] = GROUPS[g][1] if g < GROUPS.size() else ""          # the drawn symbol (page of MoveEye from 2.93.16)
 		var si: int = (GROUPS[g][3] as Array).find(sub) if g < GROUPS.size() else 0
-		keyed.append([g * 1000 + max(si, 0) * 100, i, c])
+		keyed.append([g * 10000 + max(si, 0) * 100, i, c])   # Menüs A: Besuch has 13 parts now (1000 was too small)
 	keyed.sort_custom(func(a, b): return a[0] < b[0] or (a[0] == b[0] and a[1] < b[1]))
 	controls = keyed.map(func(k): return k[2])
 	# 3D-4.21 (Menü 2, like MoveEye): «Einfach» = the main switch of every group - a group without one gets its first switch
@@ -3923,7 +3972,7 @@ func _register_controls() -> void:
 	add_control("select", "bt_orient", "Orientierung im Bergtal", func(): return bt_orient, func(v): set_bt("bt_orient", str(v)), "Szene",
 			{"options": [["leicht", "leicht (Karte, Kompass, eigener Standort)"], ["mittel", "mittel (Karte und Kompass)"], ["schwer", "schwer (nur Wegweiser)"]], "expert": true})
 	add_control("text", "bt_mark", "Eigene Markierung auf der Karte (Name; wird in der Bildmitte gesetzt)", func(): return "", func(v): bt_mark(str(v)), "Szene", {"expert": true})
-	add_control("button", "bt_here", "Hier übernachten (Bergtal: der Platz in der Bildmitte oder beim Rover)", null, func(): bt_here(), "Szene")
+	add_control("button", "bt_here", "Hier übernachten (Bergtal: der Platz in der Bildmitte oder beim Mover)", null, func(): bt_here(), "Szene")
 	add_control("select", "bt_goto", "Schnellreise im Bergtal (Ort wählen)", func(): return "", func(v): bt_goto(str(v)), "Szene", {"options": Bt.place_options()})
 	add_control("select", "bt_season", "Jahreszeit im Bergtal", func(): return bt_season, func(v): set_bt("bt_season", str(v)), "Szene",
 			{"options": [["auto", "nach dem Monat (Jahreszeit)"], ["fruehling", "Frühling"], ["sommer", "Sommer"], ["herbst", "Herbst (Lärchen gelb, Nebel)"], ["winter", "Winter (Schnee, Eis)"]]})
@@ -4100,16 +4149,16 @@ func _register_controls() -> void:
 	add_control("toggle", "patrol_follow", "Kopf dreht zu Verdächtigem, der Mover fährt dann langsamer", func(): return patrol.follow if patrol != null else true, func(v): if patrol != null: patrol.follow = bool(v), "Mover")
 	add_control("select", "patrol_judge", "Spiel «Patrouille»: wer erwischt", func(): return patrol_judge, func(v): patrol_judge = str(v), "Mover",
 			{"options": [["mw", "die echte Erkennung von MoveEye"], ["sim", "der Wächter des Simulators (geht ohne Pi)"]]})
-	add_control("button", "rover_place", "📍 Rover versetzen – danach in die Welt klicken (beim Erkunden: Strg + Klick)", null, func(): place_kind = "rover", "Mover")
+	add_control("button", "rover_place", "📍 Mover versetzen – danach in die Welt klicken (beim Erkunden: Strg + Klick)", null, func(): place_kind = "rover", "Mover")
 	add_control("slider", "mast_h", "Höhe der Kamera (Stange; beim Erkunden Bild auf / ab oder Steuerkreuz)", func(): return mast_h, func(v): set_mast(float(v)), "Mover", {"min": MAST_MIN, "max": MAST_MAX, "step": 0.05, "unit": "m", "live": true})
-	add_control("button", "pad_roles", "🎮 Controller zuteilen (mehrere Controller: Wächter, Schleicher, Rover)", null, func(): padmap.open_roles(), "Mover", {"sub": "Controller"})
+	add_control("button", "pad_roles", "🎮 Controller zuteilen (mehrere Controller: Wächter, Schleicher, Mover)", null, func(): padmap.open_roles(), "Mover", {"sub": "Controller"})
 	add_control("button", "pad_test", "🎮 Controller testen (zeigt Stick roh und nach der Drift-Korrektur)", null, func(): _pad_test(), "Mover", {"sub": "Controller"})
 	add_control("toggle", "pad_auto", "Stick-Drift selbst lernen (ein Stick, der 3 s genau gleich steht, gilt als Ruhelage)", func(): return pad_auto, func(v): pad_auto = v; _settings_dirty = true, "Mover", {"sub": "Controller"})
 	add_control("button", "pad_cal", "🎮 Controller kalibrieren (gegen Stick-Drift: Sticks 2 s nicht berühren)", null, func(): start_info = explore.calibrate() if explore != null else "", "Mover", {"sub": "Controller"})
 	add_control("slider", "pad_dead", "Totzone der Sticks (höher = weniger Drift, aber träger)", func(): return pad_dead, func(v): pad_dead = v; _settings_dirty = true, "Mover", {"min": 0.02, "max": 0.5, "step": 0.01, "sub": "Controller"})
 	add_control("slider", "pad_sens", "Empfindlichkeit von Kopf und Ansicht (Stick)", func(): return pad_sens, func(v): pad_sens = float(v), "Mover", {"min": 0.3, "max": 2.5, "step": 0.1, "sub": "Controller"})
 	add_control("toggle", "pad_inv_y", "Y umkehren (Stick hoch = Kopf / Blick runter)", func(): return pad_inv_y, func(v): pad_inv_y = bool(v), "Mover", {"sub": "Controller"})
-	add_control("toggle", "pad_swap", "Sticks tauschen (links Rover / gehen, rechts Kopf / schauen)", func(): return pad_swap, func(v): pad_swap = bool(v), "Mover", {"sub": "Controller"})
+	add_control("toggle", "pad_swap", "Sticks tauschen (links Mover / gehen, rechts Kopf / schauen)", func(): return pad_swap, func(v): pad_swap = bool(v), "Mover", {"sub": "Controller"})
 	add_control("toggle", "pad_rumble", "Vibration (erwischt, Treffer, Alarm, die Kamera sieht dich)", func(): return pad_rumble, func(v): pad_rumble = bool(v), "Mover", {"sub": "Controller"})
 	add_control("slider", "explore_speed", "Tempo beim Erkunden (Shift / A = schneller)", func(): return explore.speed if explore != null else 1.6, func(v): if explore != null: explore.speed = v, "Mover", {"min": 0.5, "max": 6.0, "step": 0.1, "unit": "m/s"})
 	add_control("slider", "mover_max", "Höchstgeschwindigkeit des Movers", func(): return mover_max, func(v): mover_max = v, "Mover", {"min": 0.2, "max": 2.0, "step": 0.1, "unit": "m/s"})
@@ -4259,6 +4308,84 @@ func _register_controls() -> void:
 			{"options": [["0", "Kamera 1 (Kopf)"], ["1", "Kamera 2"], ["2", "Wärmebild"]]})
 	add_control("slider", "live_size", "Livebild: Breite", func(): return live_size, func(v): set_live(live_on, -1, float(v)), "Grafik",
 			{"min": 160, "max": 520, "step": 20, "unit": "px"})
+	# Menüs A, Punkt 5: was in «Testen → Mehr: Aufstellen, Erkunden, Handy-Simulator» - now where it belongs (planner = tile
+	# «Aufstellen», Erkunden = bar, feedback = «Mehr»); the phone view as a normal control next to map and live picture
+	add_control("button", "phone_sim", "Handy- / Tablet-Simulator (P)", null, func(): _toggle_phone(), "Grafik", {"expert": true})
+	_menu_merge()
+
+
+func _cget(id: String):
+	for c in controls:
+		if c.id == id and c["get"] != null:
+			return c["get"].call()
+	return null
+
+
+func _cset(id: String, v) -> void:
+	for c in controls:
+		if c.id == id and c["set"] != null:
+			c["set"].call(v)
+			return
+
+
+func _menu_merge() -> void:
+	"""Menüs A, Punkt 4 (Daniel 31.10.2026): one control instead of 2–4 with the same name. It only reads and sets the old
+	controls (ALIAS_IDS: they stay for /control, the test runs, the Prüfstand and the saved settings)"""
+	add_control("select", "linse_tropfen", "Tropfen auf der Linse",
+			func():
+				if bool(_cget("cond_drops")):
+					return "immer"
+				if not bool(_cget("lens_drops")):
+					return "aus"
+				return "echt" if bool(_cget("w_lens")) else "regen",
+			func(v):
+				_cset("cond_drops", str(v) == "immer")
+				_cset("lens_drops", str(v) != "aus")
+				if str(v) in ["regen", "echt"]:
+					_cset("w_lens", str(v) == "echt"),
+			"Kamerabild", {"options": [["aus", "aus"], ["regen", "bei Regen (einfach)"],
+					["echt", "bei Regen wie echt (Tropfen haften und rinnen, Linse beschlägt)"], ["immer", "immer, auch ohne Regen"]]})
+	add_control("select", "scheinwerfer", "Scheinwerfer in der Nacht",
+			func():
+				var a := bool(_cget("cond_headlights"))
+				var b := bool(_cget("fa_sweep"))
+				return "beides" if a and b else ("autos" if a else ("kegel" if b else "aus")),
+			func(v):
+				_cset("cond_headlights", str(v) in ["autos", "beides"])
+				_cset("fa_sweep", str(v) in ["kegel", "beides"]),
+			"Kamerabild", {"options": [["aus", "aus"], ["kegel", "ab und zu streift ein Lichtkegel über Wände und Zelt"],
+					["autos", "immer wieder fahren Autos vorbei"], ["beides", "beides"]]})
+	var months := [["today", "wie heute (echtes Datum)"]]
+	var mn := ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"]
+	var sn := ["Winter", "Winter", "Frühling", "Frühling", "Frühling", "Sommer", "Sommer", "Sommer", "Herbst", "Herbst", "Herbst", "Winter"]
+	for i in range(12):
+		months.append([str(i + 1), "%s (%s)" % [mn[i], sn[i]]])
+	months.append(["ohne", "ohne Jahreszeit (Pflanzen immer wie im Sommer, Sonne wie heute)"])
+	add_control("select", "jahreszeit", "Jahreszeit (Sonne, Tageslänge, Pflanzen, Belegung)",
+			func(): return "ohne" if not seasons_on else str(season),
+			func(v):
+				if str(v) == "ohne":
+					_cset("season", "today")
+					_cset("seasons_on", false)
+					return
+				if not seasons_on:
+					_cset("seasons_on", true)
+				if jahreszeiten != null:
+					jahreszeiten.mode = "auto"                 # the month decides (jz_mode would set the month again at the start)
+					jahreszeiten.save()
+				_cset("season", str(v)),
+			"Szene", {"options": months})
+	add_control("select", "tagesablauf", "Tagesablauf (wer wann kommt)",
+			func():
+				var a := bool(_cget("daily_life"))
+				var b := bool(_cget("m_plan"))
+				return "beides" if a and b else ("zeit" if a else ("platz" if b else "aus")),
+			func(v):
+				_cset("daily_life", str(v) in ["zeit", "beides"])
+				_cset("m_plan", str(v) in ["platz", "beides"]),
+			"Besuch", {"options": [["aus", "aus (Besuch kommt zufällig)"], ["zeit", "jeder kommt zu seiner Zeit (Fuchs nachts, Reh in der Dämmerung, Briefträger um 10 Uhr)"],
+					["beides", "dazu der Alltag auf dem Campingplatz (morgens WC und Dusche, abends draussen sitzen)"],
+					["platz", "nur der Alltag auf dem Campingplatz"]]})
 
 
 const VISITOR_KINDS_ALL := ["person", "child", "jogger", "fox", "deer", "boar", "cat", "dog", "badger", "hare", "hedgehog", "wolf", "marten", "squirrel",
@@ -5543,7 +5670,7 @@ func _build_ui() -> void:
 	prevt.custom_minimum_size = Vector2(146, 112)
 	row.add_child(prevt)
 	# tools: MoveEye on this PC, map, phone
-	var tl := UI.fold_card(box_, "Testen", true, "tools")      # 3D-3.90: everything that measures or tests MoveEye in one card
+	var tl := UI.fold_card(box_, "Testen", true, "check")      # 3D-3.90: everything that measures or tests MoveEye in one card; Menüs A: symbol «check» like the group (not the spanner of «Entwickler»)
 	fold_bodies.append(tl)
 	tools_body = tl
 	top_cards.append(tl.get_meta("card"))
@@ -5586,13 +5713,16 @@ func _build_ui() -> void:
 		if not bool(r2.get("ok", true)):
 			start_info = "Blinde Flecken: " + str(r2.get("error", "")))
 	tl.add_child(bmb)
-	var psb := Button.new()
+	var psb := Button.new()                          # Menüs A: the one place of the Prüfstand (no tile, not in the developer window)
 	psb.text = "Prüfstand: mehrere Testläufe, Ergebnis für GitHub"
 	psb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	psb.pressed.connect(func(): pruef.open(not pruef.visible))
 	tl.add_child(psb)
+	expert_cards.append(bmb)                         # Menüs A: «Einfach» = Testlauf, Aufnahme, Parcours, Einbruch - the rest «Experte»
+	expert_cards.append(psb)
 	tl = UI.sub_fold(tl_main, "Geräusche (Klatschschalter, Gesundheit, Lärm)", false)   # 3D-3.98
 	tl.set_meta("always", true)
+	tl.set_meta("expert_sub", true)                  # Menüs A: only «Experte» (_apply_simple)
 	sub_bodies.append(tl)
 	tl.add_child(UI.small("Das Geräusch kommt von der Person im Bett, sonst vom nächsten Besucher, sonst 2 m vor MoveEye. MoveEye braucht dafür «Klatschschalter» bzw. «Gesundheit» – beim klingelnden Wecker heisst Klatschen schlummern."))
 	var sgr := GridContainer.new()
@@ -5606,6 +5736,7 @@ func _build_ui() -> void:
 		sgr.add_child(snb)
 	testen_stoer = UI.sub_fold(tl_main, "Störungen (Servos, Unterspannung, I2C – reagiert MoveEye richtig?)", false)   # 30.10.2026 (simint.gd)
 	testen_stoer.set_meta("always", true)
+	testen_stoer.set_meta("expert_sub", true)        # Menüs A: servo faults, I2C, undervoltage - only «Experte»
 	sub_bodies.append(testen_stoer)
 	testen_stoer.add_child(UI.small("Wie bei echter Hardware: MoveEye stoppt die Servos, meldet die Störung im Fehlerspeicher (Servo-Diagnose) und braucht bei Treiber-Fehlern «Freigeben»."))
 	simint.add_info(testen_stoer, UI)
@@ -5615,6 +5746,7 @@ func _build_ui() -> void:
 	einbruch.add_info(testen_einbruch, UI)
 	tl = UI.sub_fold(tl_main, "Diebstahlschutz prüfen (Referenz-Scan, Sabotage, Überraschung)", false)
 	tl.set_meta("always", true)
+	tl.set_meta("expert_sub", true)                  # Menüs A: only «Experte»
 	sub_bodies.append(tl)
 	# 3D-3.71: the reference scan of MoveEye, started from here
 	var rsh := HBoxContainer.new()
@@ -5719,31 +5851,8 @@ func _build_ui() -> void:
 		kdl.text = "Gelöscht: %d Pakete (%.0f MB) · %s" % [int(r["deleted"]), float(r["freed_mb"]), KD.summary()])
 	kdr.add_child(kdb)
 	kdr.add_child(kdl)
-	tl = UI.sub_fold(tl_main, "Mehr: Aufstellen, Erkunden, Handy-Simulator", false)
-	tl.set_meta("always", true)
-	sub_bodies.append(tl)
-	var plb := Button.new()
-	plb.text = "Aufstell-Planer: Wo soll MoveEye hin?"
-	plb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	plb.pressed.connect(func(): planner.open(not planner.visible))
-	tl.add_child(plb)
-	var exb := Button.new()                         # 3D-3.55: explore with the rover
-	exb.text = "Erkunden mit dem Rover (Tastatur, Maus, Touch, Controller)"
-	exb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	exb.tooltip_text = "Mit dem Rover durch die Gegend fahren: W A S D / Pfeile, grüner Stick, oder ein Game-Controller (auch Bluetooth; Start = ein / aus). Esc beendet."
-	exb.pressed.connect(func(): explore.set_on(not explore.on))
-	tl.add_child(exb)
-	var pv := Button.new()
-	pv.text = "Handy- / Tablet-Simulator (P)"
-	pv.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	pv.pressed.connect(_toggle_phone)
-	tl.add_child(pv)
-	var fbb := Button.new()                         # MoveEye 2.98.33: feedback to the developer (feedback.gd)
-	fbb.text = "Rückmeldung an den Entwickler"
-	fbb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	fbb.tooltip_text = "Fehler, Wunsch, Lob oder Frage – geht über das verbundene MoveEye anonym an den Entwickler."
-	fbb.pressed.connect(_feedback_open)
-	tl.add_child(fbb)
+	# Menüs A, Punkt 5 (Daniel 31.10.2026): the part «Mehr: Aufstellen, Erkunden, Handy-Simulator» is gone - Aufstell-Planer =
+	# tile «Aufstellen», Erkunden = bar below, Handy-Simulator = System → Karte und Livebild (phone_sim), Rückmeldung = «Mehr»
 	# the settings of the simulator: one card per group (with a symbol), parts inside (the same list the page of Motion
 	# Watch shows, in the same order - GROUPS / PLACE)
 	var groups := {}
@@ -5798,7 +5907,7 @@ func _build_ui() -> void:
 		if sub != "":
 			var key: String = c.group + "/" + sub
 			if not subs.has(key):
-				subs[key] = UI.sub_fold(card_body, sub, sub in ["Vorlagen", "Menschen schicken", "Tiere schicken", "Runde"])
+				subs[key] = UI.sub_fold(card_body, sub, sub in ["Vorlagen", "Menschen einzeln", "Wildtiere"])
 				sub_bodies.append(subs[key])
 			target = subs[key]
 		# 3D-4.21 (Menü 2, same rule as MoveEye): «Einfach» shows the main switches, the rest sits in a closed «Feineinstellungen»
@@ -6170,6 +6279,8 @@ func _search(q: String) -> void:
 			any = true
 			if it.size() > 4 and it[4] != it[3]:
 				UI.set_sub_open(it[4], true)
+				if (it[4] as Control).has_meta("wrap"):
+					it[4].get_meta("wrap").visible = true        # Menüs A: a hit in a part that «Einfach» hides («expert_sub»)
 				if it[4].has_meta("outer"):
 					UI.set_sub_open(it[4].get_meta("outer"), true)
 	for b in setting_bodies:
@@ -6320,7 +6431,7 @@ func _apply_simple() -> void:
 			if (it[4] as Control).has_meta("outer"):          # 3D-4.22: a part with only «Feineinstellungen» stays visible
 				sub_counts[it[4].get_meta("outer")] = true
 	for sb in sub_bodies:
-		sb.get_meta("wrap").visible = sub_counts.has(sb) or sb.has_meta("always")
+		sb.get_meta("wrap").visible = (sub_counts.has(sb) or sb.has_meta("always")) and not (ui_simple and sb.has_meta("expert_sub"))   # Menüs A: «expert_sub» = whole part only «Experte»
 	for c in expert_cards:
 		c.visible = not ui_simple
 	for fb in fine_bodies:                             # 3D-4.21: closed in «Einfach», open in «Experte»
@@ -6775,6 +6886,8 @@ func _ui_control(parent: Control, c: Dictionary) -> void:
 			b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART   # long texts on two lines (never wider than the panel)
 			b.tooltip_text = c.label
 			flow.add_child(b)
+			if c.has("ro"):
+				ui_rows[c.id] = b                          # Menüs A: greyed out by _sync_ui
 			ui_items.append([b, c.label, c.extra.get("expert", false), parent])
 		"toggle":
 			var row := HBoxContainer.new()                   # text (wraps) + switch on the right, like on the page of MoveEye
@@ -6909,6 +7022,11 @@ func _sync_ui() -> void:
 			w.text = str(v)
 		if w is HSlider and c.has("ro"):              # Aufräumen 2: only readable now (e.g. the battery size «von MoveEye»)
 			w.editable = not bool(c["ro"].call())
+	for c in controls:                                # Menüs A: switches, choices and buttons greyed out too (e.g. «Foto-Modus» without a photo)
+		if c.has("ro") and ui_rows.has(c.id) and (ui_rows[c.id] is BaseButton):
+			var ro_: bool = bool(c["ro"].call())
+			ui_rows[c.id].disabled = ro_
+			ui_rows[c.id].tooltip_text = T.t("Zuerst ein Foto des Platzes laden (Gegenstände → Foto des Platzes)") if ro_ and c.id in PHOTO_IDS else ""
 	_syncing = false
 
 

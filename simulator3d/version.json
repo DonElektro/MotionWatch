@@ -1,9 +1,9 @@
 {
- "version": "3D-5.6.2",
- "ver": "3.6.2",
- "name": "MoveEye Sim 3.6.2",
+ "version": "3D-5.7.0",
+ "ver": "3.7.0",
+ "name": "MoveEye Sim 3.7.0",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 35084865,
- "sha256": "fe30b43a2b32ebac383e955914f72926a207150363ca4b30fd349d3470d76cdb",
- "notes": "MoveEye Sim 3.6.2: zusammen mit MoveEye 3.6.2 (Fehlerkorrekturen); im Simulator selbst nichts geändert."
+ "size": 35093494,
+ "sha256": "966c4069f9388870759323622b5419c3b1e8a20694425c3aaed4e3ebc5ff13a8",
+ "notes": "MoveEye Sim 3.7.0: Menüs aufgeräumt – «Einfach» 61 statt 101 Einträge, Besuch in Menschen und Tiere, keine doppelten Regler."
 }
