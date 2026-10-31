@@ -20,7 +20,7 @@ extends RefCounted
 ## Steuerbefehl: {"action": "abenteuer", "do": "zweit", "k": "zb", "was": … (zwei_bausteine.op) | ts_hier | funde_hier | lager}
 
 const T = preload("res://scripts/i18n.gd")
-const ZB = preload("res://scripts/zwei_bausteine.gd")
+const ZB = preload("res://scripts/zwei_bausteine.gd")      # (in abenteuer_zweit.gd heisst «ZB» zweit_bild.gd - hier die Bausteine)
 const Inv = preload("res://scripts/abenteuer_inventar.gd")
 const A1 = preload("res://scripts/abenteuer_moveeye.gd")
 const SS = preload("res://scripts/spielstand.gd")
@@ -207,10 +207,10 @@ func zb_neu_malen() -> void:
 func zb_info(i: int) -> String:
 	if zb.rolle(i).get("id", "") == "kompass":
 		var deg := int(round(fposmod(-rad_to_deg(zb_yaw(i)), 360.0)))        # 0 = north (-z), turning right = east
-		return "🧭 %s %d°" % [T.t(ab.dir_word(float(deg))), deg]
+		return "%s: %s %d°" % [T.t("Kompass"), T.t(ab.dir_word(float(deg))), deg]
 	if not ab.leg.is_empty():
 		var e: Vector2 = (ab.leg["pts"] as Array)[-1]
-		return "🏁 %s %d m" % [T.t("Etappenziel"), int(zb_pos(i).distance_to(e))]
+		return "%s %d m" % [T.t("Etappenziel"), int(zb_pos(i).distance_to(e))]
 	return ""
 
 
@@ -221,11 +221,11 @@ func zb_faehigkeit(i: int, id: String) -> String:
 			var f: Dictionary = zb.naechster_fund(q)
 			var said := ""
 			if not f.is_empty():
-				zb.pfeil(-1, f["pos"], "%s %d m" % [str(ZB.KAT_ICON.get(str(f["kat"]), "💎")), int(q.distance_to(f["pos"]))], 9.0)
+				zb.pfeil(-1, f["pos"], "%s %d m" % [str(f["text"]), int(q.distance_to(f["pos"]))], 9.0)
 				said = T.t("Auf der Karte: etwas %d m entfernt.") % int(q.distance_to(f["pos"]))
 			if not ab.leg.is_empty():
 				var e: Vector2 = (ab.leg["pts"] as Array)[-1]
-				zb.pfeil(-1, e, "🏁 %d m" % int(q.distance_to(e)), 9.0)
+				zb.pfeil(-1, e, "%s %d m" % [T.t("Etappenziel"), int(q.distance_to(e))], 9.0)
 				if said == "":
 					said = T.t("Das Etappenziel ist %d m entfernt.") % int(q.distance_to(e))
 			return said
@@ -233,7 +233,7 @@ func zb_faehigkeit(i: int, id: String) -> String:
 			var n: int = zb.spuren_zeigen(q, 50.0, 25.0)
 			var src: Vector2 = zb.ruecken_quelle()
 			if src != Vector2.INF:
-				zb.pfeil(i, src, "👂", 6.0)
+				zb.pfeil(i, src, T.t("Geräusch"), 6.0)
 				return T.t("Du hörst es genau: dort!")
 			return T.t("Spuren in der Nähe: %d") % n if n > 0 else T.t("Keine Spuren in der Nähe.")
 	return ""
@@ -530,7 +530,7 @@ func on_morning() -> void:
 		for k in range(0, fs.size(), step_n):
 			bilder.append(fs[k])
 	var ch: Dictionary = ab.chapter()
-	_last_day = zb.tag_speichern("%s %d · %s" % [T.t("Kapitel"), int(ab.R.get("chapter", 1)), T.t(str(ch.get("title", "")))], bilder)
+	_last_day = zb.tag_speichern(T.t(str(ch.get("title", ""))), bilder)
 
 
 var _last_day := {}

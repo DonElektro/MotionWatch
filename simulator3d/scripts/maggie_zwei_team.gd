@@ -7,7 +7,8 @@ extends Node
 ##            🐕 Hundeführer/in (Spieler 2 als Wanderer) bzw. 🐕 Maggie (Spieler 2 steuert Maggie): weiss, was Maggie riecht
 ##            (was die nächste Station braucht); ⬇ = Spürnase (Spuren sichtbar, Pfeil zur nächsten Station)
 ##   Controller: A B X Y gehören Maggie und den Teamrätseln - die Bausteine nehmen LB = Team (Räuberleiter, High-Five,
-##            Lagerfeuer «so!»), RB = weitergeben, ⬇ = Fähigkeit, ⬆ = Foto, ◀ ▶ = wählen. Tastatur Spieler 1: F G V R T.
+##            Lagerfeuer «so!»), RB = weitergeben, Steuerkreuz unten = Fähigkeit, oben = Foto, links / rechts = wählen.
+##            Tastatur Spieler 1: F G V R T (wie in der Karte des Grossvaters).
 ##   Geteiltes Wissen: Kristall-Wissen (story._zk_orte, die Zukunftsbild-Orte der Gefahren) nur bei Spieler 1, Maggies Nase
 ##            (maggie_hund.aktuell()) nur bei Spieler 2
 ##   Räuberleiter: eine Felsstufe pro Region auf dem Weg vom Rastplatz zum Tor (nur Spieler 2 als Wanderer); «oben» heisst
@@ -203,7 +204,7 @@ func zb_faehigkeit(i: int, id: String) -> String:
 			var st: Dictionary = h.aktuell() if h != null and h.has_method("aktuell") else {}
 			if not st.is_empty() and st.get("p") is Vector3:
 				var sp: Vector3 = st["p"]
-				zb.pfeil(i, Vector2(sp.x, sp.z), "🐕 %d m" % int(q.distance_to(Vector2(sp.x, sp.z))), 9.0)
+				zb.pfeil(i, Vector2(sp.x, sp.z), "Maggie %d m" % int(q.distance_to(Vector2(sp.x, sp.z))), 9.0)
 				return T.t("Maggie hat eine Spur! Spuren in der Nähe: %d") % n
 			return T.t("Spuren in der Nähe: %d") % n
 	return ""

@@ -165,6 +165,17 @@ func _lite() -> bool:
 	return Quality.lite()
 
 
+static func sauber(t: String) -> String:
+	"""without the colour emoji (the font of the simulator has none - they would be empty boxes in the big hints)"""
+	var o := ""
+	for k in range(t.length()):
+		var c := t.unicode_at(k)
+		if c >= 0x1F000 or (c >= 0x2300 and c <= 0x23FF) or c == 0xFE0F or c == 0x200D or (c >= 0x2B00 and c <= 0x2BFF) or (c >= 0x24B6 and c <= 0x24E9):
+			continue
+		o += t[k]
+	return o.replace("  ", " ").strip_edges()
+
+
 func _h(m: String, args: Array = [], def = null):
 	if host != null and host.has_method(m):
 		return host.callv(m, args)
@@ -501,7 +512,7 @@ func _ts_build(s: Dictionary) -> void:
 	rope.visible = false
 	n.add_child(rope)
 	var lb := Label3D.new()
-	lb.text = "🧗 " + str(s["text"])
+	lb.text = str(s["text"])
 	lb.font_size = 64
 	lb.pixel_size = 0.01
 	lb.position.y = float(s["h"]) + 1.3
@@ -1110,7 +1121,7 @@ func high_five(grund: String) -> void:
 func _jubel_show(txt: String) -> void:
 	if _jubel == null:
 		return
-	_jubel.text = txt
+	_jubel.text = sauber(txt) if sauber(txt) != "" else T.t("Super!")
 	_jubel.visible = true
 	_jubel.pivot_offset = _jubel.size / 2.0
 	_jubel.scale = Vector2(0.4, 0.4)
@@ -1176,10 +1187,10 @@ const KEYS := [{"team": KEY_F, "geben": KEY_G, "wahl": KEY_V, "faehig": KEY_R, "
 		{"team": KEY_N, "geben": KEY_M, "wahl": KEY_PERIOD, "faehig": KEY_P, "foto": KEY_COMMA}]
 const PAD := {"team": "a", "geben": "b", "faehig": "x", "foto": "y"}
 const KEY_TXT := [{"team": "F", "geben": "G", "wahl": "V", "faehig": "R", "foto": "T"}, {"team": "N", "geben": "M", "wahl": ".", "faehig": "P", "foto": ","}]
-const PAD_TXT := {"team": "Ⓐ", "geben": "Ⓑ", "wahl": "◀ ▶", "faehig": "Ⓧ", "foto": "Ⓨ"}
+const PAD_TXT := {"team": "[A]", "geben": "[B]", "wahl": "[← →]", "faehig": "[X]", "foto": "[Y]"}
 
 
-const PAD_NAME := {"a": "Ⓐ", "b": "Ⓑ", "x": "Ⓧ", "y": "Ⓨ", "l1": "LB", "r1": "RB", "up": "⬆", "down": "⬇", "left": "◀", "right": "▶"}
+const PAD_NAME := {"a": "[A]", "b": "[B]", "x": "[X]", "y": "[Y]", "l1": "[LB]", "r1": "[RB]", "up": "[↑]", "down": "[↓]", "left": "[←]", "right": "[→]"}
 
 
 func _pad() -> Dictionary:
@@ -1329,7 +1340,7 @@ func _ensure_ov() -> void:
 			var l := Label.new()
 			l.add_theme_font_size_override("font_size", {"prompt": 24, "wissen": 21, "info": 15}[k])
 			l.add_theme_color_override("font_color", Color.WHITE if k != "wissen" else Color("#ffe3a3"))
-			l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART if k != "info" else TextServer.AUTOWRAP_OFF
 			l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER if k == "prompt" else HORIZONTAL_ALIGNMENT_LEFT
 			pc.add_child(l)
 			_ov.add_child(pc)
@@ -1368,7 +1379,7 @@ func _hud() -> void:
 		var p: Dictionary = _prompt[i]
 		var pt := str(p.get("text", "")) if not p.is_empty() and t < float(p["until"]) else ""
 		var pl: Label = e["prompt_l"]
-		pl.text = pt
+		pl.text = sauber(pt)
 		var pp: PanelContainer = e["prompt"]
 		pp.visible = vis and pt != ""
 		var w := minf(r.size.x - 24.0, 560.0)
@@ -1377,14 +1388,14 @@ func _hud() -> void:
 		pp.position = Vector2(r.position.x + (r.size.x - w) / 2.0, r.position.y + 54.0)
 		var wt := _wissen_text(i)
 		var wl: Label = e["wissen_l"]
-		wl.text = wt
+		wl.text = sauber(wt)
 		var wp: PanelContainer = e["wissen"]
 		wp.visible = vis and wt != ""
 		wp.custom_minimum_size = Vector2(w, 0)
 		wp.size = Vector2(w, 0)
 		wp.position = Vector2(r.position.x + (r.size.x - w) / 2.0, r.position.y + r.size.y - 92.0 - wp.get_combined_minimum_size().y)
 		var il: Label = e["info_l"]
-		il.text = _info(i)
+		il.text = sauber(_info(i))
 		var ip: PanelContainer = e["info"]
 		ip.visible = vis and il.text != ""
 		ip.size = Vector2(0, 0)
@@ -1401,10 +1412,10 @@ func _info(i: int) -> String:
 		var cd := float(_cd[i]) - now()
 		tx += "  ·  %s %s%s" % [_k(i, "faehig"), T.t(str(r["faehigkeit"])), (" (%d s)" % int(ceil(cd))) if cd > 0.0 else ""]
 	var it := _sel_item(i)
-	tx += "\n🎒 %.1f kg" % last_kg(i)
+	tx += "\n" + T.t("Rucksack") + " %.1f kg" % last_kg(i)
 	if it != "":
 		tx += "  ▸ %s  (%s %s · %s)" % [str(_items[it][0]), _k(i, "geben"), T.t("geben"), _k(i, "wahl")]
-	tx += "   📸 %s" % _k(i, "foto")
+	tx += "   %s %s" % [T.t("Foto"), _k(i, "foto")]
 	var ex := str(_h("zb_info", [i], ""))
 	if ex != "":
 		tx += "\n" + ex
@@ -1435,7 +1446,7 @@ func _draw_ov() -> void:
 			var pts := PackedVector2Array([p + v * s, p + v.orthogonal() * s * 0.6 - v * s * 0.4, p - v.orthogonal() * s * 0.6 - v * s * 0.4])
 			draw_colored_polygon_ov(pts, Color(0, 0, 0, 0.7), 4.0)
 			_ov.draw_colored_polygon(pts, cc)
-			var txt := str(a["text"])
+			var txt := sauber(str(a["text"]))
 			var tw := font.get_string_size(txt, HORIZONTAL_ALIGNMENT_LEFT, -1, 18).x
 			var tp := p - v * 30.0 + Vector2(-tw / 2.0, 6.0)
 			_ov.draw_string_outline(font, tp, txt, HORIZONTAL_ALIGNMENT_LEFT, -1, 18, 6, Color(0, 0, 0, 0.9))
@@ -1668,7 +1679,9 @@ func _lf_paint() -> void:
 		for j in range(opts.size()):
 			var b := Button.new()
 			var oo := str(opts[j])
-			b.text = ("▶ " if int(_lf_sel[i]) % maxi(1, opts.size()) == j and a == "" else "") + ("● " if a == oo else "") + oo
+			b.text = ("> " if int(_lf_sel[i]) % maxi(1, opts.size()) == j and a == "" else "") + ("✓ " if a == oo else "") + oo
+			if int(_lf_sel[i]) % maxi(1, opts.size()) == j and a == "":
+				b.add_theme_color_override("font_color", col(i))
 			b.custom_minimum_size = Vector2(0, 38)
 			var ii := i
 			b.pressed.connect(func(): antwort(ii, oo); _lf_sig = "")
@@ -1686,7 +1699,7 @@ func _lf_paint() -> void:
 	hb.add_child(bz)
 	if not tagebuch().is_empty():
 		var bt := Button.new()
-		bt.text = T.t("📔 Reisetagebuch ansehen")
+		bt.text = sauber(T.t("📔 Reisetagebuch ansehen"))
 		bt.pressed.connect(tagebuch_oeffnen)
 		hb.add_child(bt)
 
@@ -1818,7 +1831,7 @@ func tagebuch_oeffnen() -> void:
 
 func _plain(text: String, sz: int, c: Color) -> Label:
 	var l := Label.new()
-	l.text = text
+	l.text = sauber(text)
 	l.add_theme_font_size_override("font_size", sz)
 	l.add_theme_color_override("font_color", c)
 	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART

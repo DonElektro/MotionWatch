@@ -186,6 +186,12 @@
   "it": "  · %.1f kg",
   "rm": "  · %.1f kg"
  },
+ " %.1f kg": {
+  "en": " %.1f kg",
+  "fr": " %.1f kg",
+  "it": " %.1f kg",
+  "rm": " %.1f kg"
+ },
  " (%d. Mal – zählt %d %%)": {
   "en": " (%d. time – counts %d %%)",
   "fr": " (%de fois – compte %d %%)",
@@ -2550,6 +2556,18 @@
   "fr": "? manqué",
   "it": "? mancato",
   "rm": "? surveis"
+ },
+ "[LB]": {
+  "en": "[LB]",
+  "fr": "[LB]",
+  "it": "[LB]",
+  "rm": "[LB]"
+ },
+ "[RB]": {
+  "en": "[RB]",
+  "fr": "[RB]",
+  "it": "[RB]",
+  "rm": "[RB]"
  },
  "A drücken = mitmachen": {
   "en": "Press A = join",
@@ -22246,6 +22264,12 @@
   "it": "Maggie",
   "rm": "Maggie"
  },
+ "Maggie %d m": {
+  "en": "Maggie %d m",
+  "fr": "Maggie %d m",
+  "it": "Maggie %d m",
+  "rm": "Maggie %d m"
+ },
  "Maggie bellt laut – die Tiere laufen weg! %s ist gerettet.": {
   "en": "Maggie barks loudly – the animals run away! %s is rescued.",
   "fr": "Maggie aboie fort – les animaux s'enfuient ! %s est sauvé·e.",
@@ -31896,6 +31920,12 @@
   "fr": "Bien joué !",
   "it": "Ben fatto!",
   "rm": "Fatg bain!"
+ },
+ "Super!": {
+  "en": "Great!",
+  "fr": "Super !",
+  "it": "Grande!",
+  "rm": "Super!"
  },
  "Super! Sie sind weg. Aber pass auf – vielleicht kommen sie wieder.": {
   "en": "Great! They’re gone. But watch out – they might come back.",
