@@ -423,10 +423,10 @@ const SIMPAD = {name: "", on: false};
     post("/api/sim", {action: "pad", ax: ax, bt: bt, name: SIMPAD.name}).then(r => { if (r && r.rumble && window.MWPad) MWPad.rumble(g, r.rumble); });   // 2.98.41: the simulator lets it vibrate (542)
   };
   setInterval(tick, 66);
-  addEventListener("gamepadconnected", e => { if (typeof window.mwPadAsk === "function" && window.mwPadAsk(e)) return; try { toast("🎮 " + t("Controller connected") + ": " + String(e.gamepad.id).replace(/\(.*?\)/g, "").trim().slice(0, 40) + " – " + t("Start = menu of the simulator, left stick = head, right stick = rover")); } catch (x) {} });
+  addEventListener("gamepadconnected", e => { if (typeof window.mwPadAsk === "function" && window.mwPadAsk(e)) return; try { toast("🎮 " + t("Controller connected") + ": " + String(e.gamepad.id).replace(/\(.*?\)/g, "").trim().slice(0, 40) + " – " + t("Start = menu of the simulator, left stick = head, right stick = mover")); } catch (x) {} });
 })();
 function simQBox(VP) {                             // «Bildqualität» under the picture of the simulator window
-  try { if (I18N && I18N.de) Object.assign(I18N.de, {"Controller connected": "Controller verbunden", "Start = menu of the simulator, left stick = head, right stick = rover": "Start = Menü des Simulators, linker Stick = Kopf, rechter Stick = Rover", "Picture quality": "Bildqualität", "automatic": "automatisch", "very high": "sehr hoch", "high": "hoch", "medium": "mittel", "low": "niedrig"}); } catch (e) {}
+  try { if (I18N && I18N.de) Object.assign(I18N.de, {"Controller connected": "Controller verbunden", "Start = menu of the simulator, left stick = head, right stick = mover": "Start = Menü des Simulators, linker Stick = Kopf, rechter Stick = Mover", "Picture quality": "Bildqualität", "automatic": "automatisch", "very high": "sehr hoch", "high": "hoch", "medium": "mittel", "low": "niedrig"}); } catch (e) {}
   if (!document.getElementById("simq-css")) { const c = document.createElement("style"); c.id = "simq-css";
     c.textContent = ".simq{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;margin-top:8px}.simq select{padding:4px 8px;font-size:13px;width:auto}"; document.head.appendChild(c); }
   const box = document.createElement("div"); box.className = "simq";
@@ -438,7 +438,7 @@ function simQBox(VP) {                             // «Bildqualität» under th
   const st = document.createElement("span"); st.className = "mut";
   box.append(lab, sel, st);
   setInterval(() => { const I = VP.info; st.textContent = (I.w ? I.w + " px · " + (I.fmt === "webp" ? "WebP" : "JPEG") + " " + I.q + " % · " + I.kb + " kB" + (I.mode === "auto" ? " · " + t(["low", "medium", "high", "very high"][I.lvl]) : "") : "")
-    + (SIMPAD.on ? " · 🎮 " + SIMPAD.name + " (" + t("Start = menu of the simulator, left stick = head, right stick = rover") + ")" : ""); }, 1000);
+    + (SIMPAD.on ? " · 🎮 " + SIMPAD.name + " (" + t("Start = menu of the simulator, left stick = head, right stick = mover") + ")" : ""); }, 1000);
   return box;
 }
 """
@@ -1040,7 +1040,7 @@ async function gwGo(d) {
 let SPEC = null, SPECON = true, SPECRES = "", specT = null;
 try { SPECON = localStorage.getItem("mw-sim-spec") !== "0"; } catch (e) {}
 const MODE_TXT = {camera: "Alle gegen die Kamera", guard: "Wächter", teamguard: "Team gegen Team", mw: "Gegen MoveEye", mwhand: "Team gegen MoveEye",
-  patrol: "Patrouille", seek: "Verstecken mit dem Rover", free: "Zonen-Check", jaeger: "Fehlalarm-Jäger", escape: "Entkomme der Kamera"};     // 2.98.0: all game types (2.98.18: Fehlalarm-Jäger)
+  patrol: "Patrouille", seek: "Verstecken mit dem Mover", free: "Zonen-Check", jaeger: "Fehlalarm-Jäger", escape: "Entkomme der Kamera"};     // 2.98.0: all game types (2.98.18: Fehlalarm-Jäger)
 const ST_IC = {play: "🏃", goal: "🎉", jail: "🔒", out: "👀", lobby: "⏳"};
 async function specPoll() {
   clearTimeout(specT);

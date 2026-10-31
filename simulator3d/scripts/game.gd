@@ -2951,7 +2951,7 @@ function paint(m) {
     h += lvlHtml(m.xp);
     if (m.sprint) h += '<p>⏱ <b>Sprint:</b> 90 Sekunden, immer derselbe Parcours. Durch Tor 1, 2 und 3 (der Pfeil zeigt das nächste), dann ins Ziel. Je schneller, desto mehr Punkte.</p>';
     if (m.goal_mode === "flag") h += '<p>🚩 <b>Fahne erobern</b>: hol die Fahne der anderen bei ihrer Basis und bring sie zu deiner Basis (+500). Berührst du jemanden, der eure Fahne trägt, geht sie zurück (+100). Die Kamera passt auf alle auf.</p>';
-    if (m.mode === "seek") h += '<p>🙈 <b>Verstecken mit dem Rover:</b> Alle starten bei der Basis. ' + (role === "guard" ? 'Du bist der <b>Fänger</b>: 30 s Augen zu, dann fährst du den Rover (Joystick links), drehst den Kopf (rechts wischen) und drückst «Erwischt!», wenn du jemanden im Bild hast.' : 'Du hast 30 s zum Verstecken. Der Fänger sieht nur die Kamera des Rovers. Berühre die Basis (Pfeil), ohne gefunden zu werden – dann gewinnen alle Verstecker!') + '</p><button class="sec' + (role === "runner" ? " on" : "") + '" id="r-run">🌳 Verstecker</button><button class="sec' + (role === "guard" ? " on" : "") + '" id="r-guard">🔎 Fänger</button>';
+    if (m.mode === "seek") h += '<p>🙈 <b>Verstecken mit dem Mover:</b> Alle starten bei der Basis. ' + (role === "guard" ? 'Du bist der <b>Fänger</b>: 30 s Augen zu, dann fährst du den Mover (Joystick links), drehst den Kopf (rechts wischen) und drückst «Erwischt!», wenn du jemanden im Bild hast.' : 'Du hast 30 s zum Verstecken. Der Fänger sieht nur die Kamera des Movers. Berühre die Basis (Pfeil), ohne gefunden zu werden – dann gewinnen alle Verstecker!') + '</p><button class="sec' + (role === "runner" ? " on" : "") + '" id="r-run">🌳 Verstecker</button><button class="sec' + (role === "guard" ? " on" : "") + '" id="r-guard">🔎 Fänger</button>';
     if (m.mode === "mwhand") h += '<p>🕹 <b>Team gegen MoveEye:</b> Die Wächter sitzen an MoveEye, drehen die echte Kamera mit dem Joystick, zielen mit der Bildmitte auf dich und drücken den Auslöser 🎯. Der Balken zeigt nur, wie gut man dich sieht.</p>';
     if (J) h += '<p>Du bist <b>kein Mensch</b>, sondern ein Tier oder ein Ding. Schaffst du es, dass MoveEye trotzdem <b>«Person!»</b> meldet? Jeder Fehlalarm gibt Punkte – und MoveEye lernt daraus. Der Pfeil zeigt zur Kamera 📷.</p>' +
       (J.mw ? '' : '<p>⚠ <b>MoveEye ist nicht verbunden</b> – ohne MoveEye zählt kein Fehlalarm.</p>') +
@@ -4086,7 +4086,7 @@ func _tut_tick(t: float) -> void:
 
 
 
-# ==== 3D-3.78: «Verstecken mit dem Rover» - all start at the base (the rover), 30 s to hide; the seeker sees only the
+# ==== 3D-3.78: «Verstecken mit dem Mover» - all start at the base (the rover), 30 s to hide; the seeker sees only the
 # cameras, drives the rover and calls «Gefunden!». Over when all are found (the seeker wins) or a hider touches the base.
 const SEEK_HIDE := 30.0
 var seek_base := Vector3.ZERO
@@ -4118,11 +4118,11 @@ func _seek_start() -> void:
 		if p["role"] == "runner":
 			_to_start(p)
 			p["actor"].frozen = false
-			_say(p, "🙈 Schnell verstecken! %d s – dann sucht der Fänger mit dem Rover." % int(SEEK_HIDE), 5.0)
+			_say(p, "🙈 Schnell verstecken! %d s – dann sucht der Fänger mit dem Mover." % int(SEEK_HIDE), 5.0)
 		else:
-			_say(p, "🙈 Augen zu! Die anderen verstecken sich (%d s). Dann: Rover fahren und suchen." % int(SEEK_HIDE), 5.0)
+			_say(p, "🙈 Augen zu! Die anderen verstecken sich (%d s). Dann: Mover fahren und suchen." % int(SEEK_HIDE), 5.0)
 	if guard_player() == null:
-		news("🕹 Fänger an MoveEye: Rover mit dem zweiten Stick fahren, «Erwischt!» = gefunden")
+		news("🕹 Fänger an MoveEye: Mover mit dem zweiten Stick fahren, «Erwischt!» = gefunden")
 
 
 func seek_hiding() -> bool:

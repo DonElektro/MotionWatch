@@ -12,6 +12,8 @@ self.addEventListener("push", e => {
 self.addEventListener("notificationclick", e => {
   e.notification.close();
   const url = (e.notification.data && e.notification.data.url) || "/";
+  let ext = false; try { ext = new URL(url, self.location.href).origin !== self.location.origin; } catch (x) {}
+  if (ext) { e.waitUntil(self.clients.openWindow(url)); return; }   // a message with a position: the map in a new window
   e.waitUntil(self.clients.matchAll({type: "window", includeUncontrolled: true}).then(cs => {
     for (const c of cs) { if ("focus" in c) { try { c.navigate(url); } catch (x) {} return c.focus(); } }
     return self.clients.openWindow(url);

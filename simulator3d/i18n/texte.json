@@ -966,6 +966,12 @@
   "it": " ⚠ MoveEye non è collegato al momento.",
   "rm": " ⚠ MoveEye n’è gist betg collià."
  },
+ " ⚠ Nur Simulator: braucht einen drehbaren Kopf oder den Mover.": {
+  "en": " ⚠ Simulator only: needs a turning head or the mover.",
+  "fr": " ⚠ Simulateur seulement : nécessite une tête rotative ou le mover.",
+  "it": " ⚠ Solo simulatore: richiede una testa girevole o il mover.",
+  "rm": " ⚠ Mo simulatur: dovra in chau che sa volva u il mover."
+ },
  " ⚠ Nur Simulator: braucht einen drehbaren Kopf, den Mover oder den Rover.": {
   "en": " ⚠ Simulator only: needs a turning head, the mover or the rover.",
   "fr": " ⚠ Simulateur seulement : nécessite une tête rotative, le mover ou le rover.",
@@ -3102,6 +3108,12 @@
   "fr": "toutes les parties sauvegardées (aventures 1–3, Maggie, aire de jeu, niveaux, badges, carnet de découvertes), les classements, les enregistrements et photos et tout le reste du dossier utilisateur",
   "it": "tutti i salvataggi (avventure 1–3, Maggie, area di gioco, livelli, distintivi, libro delle scoperte), le classifiche, le registrazioni e foto e tutto il resto nella cartella utente",
   "rm": "tut ils stadis da gieu (aventuras 1–3, Maggie, zona da gieu, nivels, insignas, cudesch da scuvertas), las ranglistas, las registraziuns e fotos e tut il rest en l’ordinatur da l’utilisader"
+ },
+ "Alle starten bei der Basis und verstecken sich 30 s lang. Der Fänger sieht nur die Kamera, fährt den Mover und drückt «Gefunden!». Wer die Basis berührt, rettet alle. Danach steht MoveEye wieder am alten Ort.": {
+  "en": "Everyone starts at the base and hides for 30 s. The seeker only sees the camera, drives the mover and presses «Found!». Whoever touches the base saves everyone. Afterwards MoveEye is back in its old place.",
+  "fr": "Tous partent de la base et se cachent pendant 30 s. Le chercheur ne voit que la caméra, conduit le mover et appuie sur «Trouvé !». Celui qui touche la base sauve tout le monde. Ensuite MoveEye retourne à son ancienne place.",
+  "it": "Tutti partono dalla base e si nascondono per 30 s. Il cercatore vede solo la telecamera, guida il mover e preme «Trovato!». Chi tocca la base salva tutti. Poi MoveEye torna al vecchio posto.",
+  "rm": "Tuts cumenzan tar la basa e sa zuppan durant 30 s. Il tschertgader vesa mo la camera, maniescha il mover e smatga «Chattà!». Tgi che tutga la basa, salva tuts. Suenter stat MoveEye puspè al vegl lieu."
  },
  "Alle starten bei der Basis und verstecken sich 30 s lang. Der Fänger sieht nur die Kamera, fährt den Rover und drückt «Gefunden!». Wer die Basis berührt, rettet alle. Danach steht MoveEye wieder am alten Ort.": {
   "en": "Everyone starts at the base and hides for 30 s. The seeker only sees the camera, drives the rover and presses «Found!». Whoever touches the base saves everyone. Afterwards MoveEye is back in its old place.",
@@ -8108,6 +8120,12 @@
   "it": "Lo sci di legno nel ghiacciaio",
   "rm": "Il skis da lain en il glatscher"
  },
+ "Der Horror-Modus ist gesperrt.": {
+  "en": "The horror mode is locked.",
+  "fr": "Le mode horreur est verrouillé.",
+  "it": "La modalità horror è bloccata.",
+  "rm": "Il modus da horror è bloccà."
+ },
  "Der Horror-Modus ist im Kinder-Modus gesperrt.": {
   "en": "The horror mode is locked in kids mode.",
   "fr": "Le mode horreur est bloqué en mode enfants.",
@@ -9734,6 +9752,12 @@
   "fr": "Choses",
   "it": "Cose",
   "rm": "Chaussas"
+ },
+ "do: info | open | set_password | unlock | ohne_passwort | sperren | start | go | skip | beat | choose | pause | resume | clips | clip | stop": {
+  "en": "do: info | open | set_password | unlock | ohne_passwort | sperren | start | go | skip | beat | choose | pause | resume | clips | clip | stop",
+  "fr": "do: info | open | set_password | unlock | ohne_passwort | sperren | start | go | skip | beat | choose | pause | resume | clips | clip | stop",
+  "it": "do: info | open | set_password | unlock | ohne_passwort | sperren | start | go | skip | beat | choose | pause | resume | clips | clip | stop",
+  "rm": "do: info | open | set_password | unlock | ohne_passwort | sperren | start | go | skip | beat | choose | pause | resume | clips | clip | stop"
  },
  "do: info | open | set_password | unlock | start | go | skip | beat | choose | pause | resume | clips | clip | stop": {
   "en": "do: info | open | set_password | unlock | start | go | skip | beat | choose | pause | resume | clips | clip | stop",
@@ -25206,6 +25230,12 @@
   "it": "Solo uno. Dove sarà l'altro?",
   "rm": "Mo in. Nua è bain l'auter?"
  },
+ "Nur für den Besitzer (nicht im Kinder-Modus). Das Passwort bleibt, die Warnung kommt trotzdem.": {
+  "en": "Only for the owner (not in kids mode). The password stays, the warning still comes.",
+  "fr": "Uniquement pour le propriétaire (pas en mode enfants). Le mot de passe reste, l'avertissement s'affiche quand même.",
+  "it": "Solo per il proprietario (non nella modalità bambini). La password resta, l'avviso appare comunque.",
+  "rm": "Mo per il possessur (betg en il modus d'uffants). Il pled-clav resta, l'avertiment vegn tuttina."
+ },
  "Nur für den Besitzer – nicht im Kinder-Modus.": {
   "en": "Only for the owner – not in the children’s mode.",
   "fr": "Seulement pour le propriétaire – pas en mode enfants.",
@@ -25541,6 +25571,12 @@
   "fr": "Sans MoveEye, la tête surveille toute seule",
   "it": "Senza MoveEye la testa sorveglia da sola",
   "rm": "Senza MoveEye surveglia il chau sez"
+ },
+ "Ohne Passwort starten": {
+  "en": "Start without password",
+  "fr": "Démarrer sans mot de passe",
+  "it": "Avvia senza password",
+  "rm": "Cumenzar senza pled-clav"
  },
  "Ohne Pi: MoveEye auf diesem PC starten": {
   "en": "Without Pi: start MoveEye on this PC",
@@ -32846,6 +32882,18 @@
   "it": "Nascondino dietro le siepi",
   "rm": "Zuppar davos las saivs"
  },
+ "Verstecken mit dem Mover": {
+  "en": "Hide and seek with the mover",
+  "fr": "Cache-cache avec le mover",
+  "it": "Nascondino con il mover",
+  "rm": "Giu da zuppar cun il mover"
+ },
+ "Verstecken mit dem Mover (Fänger sieht nur die Kamera)": {
+  "en": "Hide and seek with the mover (seeker only sees the camera)",
+  "fr": "Cache-cache avec le mover (le chercheur ne voit que la caméra)",
+  "it": "Nascondino con il mover (il cercatore vede solo la telecamera)",
+  "rm": "Giu da zuppar cun il mover (il tschertgader vesa mo la camera)"
+ },
  "Verstecken mit dem Rover": {
   "en": "Hide and seek with the rover",
   "fr": "Cache-cache avec le rover",
@@ -38951,6 +38999,12 @@
   "it": "🕵️ Miglior furtivo",
   "rm": "🕵️ Meglier sfugider"
  },
+ "🕹 Fänger an MoveEye: Mover mit dem zweiten Stick fahren, «Erwischt!» = gefunden": {
+  "en": "🕹 Seeker at MoveEye: drive the mover with the second stick, «Caught!» = found",
+  "fr": "🕹 Chercheur à MoveEye : conduire le mover avec le second stick, «Attrapé !» = trouvé",
+  "it": "🕹 Cercatore a MoveEye: guida il mover con il secondo stick, «Preso!» = trovato",
+  "rm": "🕹 Tschertgader tar MoveEye: manischar il mover cun il segund stick, «Tschiffà!» = chattà"
+ },
  "🕹 Fänger an MoveEye: Rover mit dem zweiten Stick fahren, «Erwischt!» = gefunden": {
   "en": "🕹 Seeker at MoveEye: drive the rover with the second stick, «Caught!» = found",
   "fr": "🕹 Chercheur à MoveEye : conduire le rover avec le second stick, «Attrapé !» = trouvé",
@@ -39029,6 +39083,12 @@
   "it": "🙈 %s trovato",
   "rm": "🙈 %s chattà"
  },
+ "🙈 Augen zu! Die anderen verstecken sich (%d s). Dann: Mover fahren und suchen.": {
+  "en": "🙈 Eyes closed! The others hide (%d s). Then: drive the mover and search.",
+  "fr": "🙈 Ferme les yeux ! Les autres se cachent (%d s). Ensuite : conduire le mover et chercher.",
+  "it": "🙈 Occhi chiusi! Gli altri si nascondono (%d s). Poi: guida il mover e cerca.",
+  "rm": "🙈 Egls serrads! Ils auters sa zuppan (%d s). Lura: manischar il mover e tschertgar."
+ },
  "🙈 Augen zu! Die anderen verstecken sich (%d s). Dann: Rover fahren und suchen.": {
   "en": "🙈 Eyes closed! The others hide (%d s). Then: drive the rover and search.",
   "fr": "🙈 Ferme les yeux ! Les autres se cachent (%d s). Ensuite : conduire le rover et chercher.",
@@ -39052,6 +39112,12 @@
   "fr": "🙈 Dans l’image – MoveEye ne te signale PAS",
   "it": "🙈 Nell’immagine – MoveEye NON ti segnala",
   "rm": "🙈 En il maletg – MoveEye N’annunzia BETG tai"
+ },
+ "🙈 Schnell verstecken! %d s – dann sucht der Fänger mit dem Mover.": {
+  "en": "🙈 Hide quickly! %d s – then the seeker searches with the mover.",
+  "fr": "🙈 Cache-toi vite ! %d s – puis le chercheur cherche avec le mover.",
+  "it": "🙈 Nasconditi in fretta! %d s – poi il cercatore cerca con il mover.",
+  "rm": "🙈 Zuppa svelt! %d s – lura tschertga il tschertgader cun il mover."
  },
  "🙈 Schnell verstecken! %d s – dann sucht der Fänger mit dem Rover.": {
   "en": "🙈 Hide quickly! %d s – then the seeker searches with the rover.",

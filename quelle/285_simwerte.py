@@ -149,7 +149,7 @@ def simnet_hold(nf, p, jpg, fname):
     why = sim_net_down()
     STATE["notify_status"] = "error: " + ("no Wi-Fi" if why == "wifi" else "no internet") + " (simulator)"
     log_event("web", f"Notification not sent - {'Wi-Fi' if why == 'wifi' else 'internet'} gone (simulator test)")
-    msglog_add(nf._title(p), nf._text(p), ev, jpg, "failed", "🧪 " + ("no Wi-Fi" if why == "wifi" else "no internet"))
+    msglog_add(nf._title(p), push_with_map(nf._text(p), p, " · "), ev, jpg, "failed", "🧪 " + ("no Wi-Fi" if why == "wifi" else "no internet"))
     if alarm and not p.get("late"):
         outbox_add(dict(p, sandbox=bool(sandbox_active() or p.get("_test"))), jpg, fname)
 

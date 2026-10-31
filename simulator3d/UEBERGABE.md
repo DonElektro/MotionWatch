@@ -1,8 +1,20 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Version **3.8.0** · MoveEye **3.8.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 31.10.2026 · Version **3.9.1** · MoveEye **3.9.1** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.9.1 (MoveEye 3.9.1): Diebstahl-Kartenlink, überall «Mover»
+
+- MoveEye: Kartenlink vollständig in jeder Diebstahl-Meldung, Sabotage mit letzter GPS-Position (635b, 579a), «Mover» in
+  Web/Fenster/Übersetzungen (538, 542, 549, 597, 600, 623, 628). Simulator: `padmap.gd`; Spielart «Verstecken mit dem Mover»
+  (`gamewiz.gd`, `main.gd`, `game.gd`, Übersetzungen) – interne Schlüssel (`seek`, `rover`) unverändert.
+
+## NEU in 3.9.0 (MoveEye 3.9.0): Hospiz – Knopf «Ohne Passwort starten», eine Regel für alle Wege
+
+- `bergtal_horror.gd`: eine Prüfung für Passwort / Knopf am Simulator (auch «Weiterspielen» über /control, Kapitel-Sprung),
+  Knopf «Ohne Passwort starten» (nicht im Kinder-Modus, Warnung und Widmung bleiben); `geschichten.gd`, `net.gd`,
+  `devtool_kapitel.gd`. Tests: `werkzeuge/hospiz_test.gd` (headless, in der Release-Kette), `werkzeuge/hospiz_test.py` (live).
 
 ## NEU in 3.8.0 (MoveEye 3.8.0): MoveEye-Datei verkleinert (Zusatzdatei)
 

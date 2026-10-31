@@ -1,22 +1,22 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 6366 (Stellen: 8834)
-Übersetzt: en 6365, fr 6365, it 6365, rm 6365
+Texte gesamt: 6368 (Stellen: 8840)
+Übersetzt: en 6368, fr 6368, it 6368, rm 6368
 Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 453 Stellen
-Nicht mehr im Code (noch in texte.json): 219
+Nicht mehr im Code (noch in texte.json): 228
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 68 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main.gd 1, phone.gd 1, spieltest.gd 1
-Übersprungen (Grund: Anzahl): kennung 22091, schlüssel 16644, keine Wörter 10243, index 8482, technisch 2864, doc 1848, einheit 250, englisch 119, pfad 98, log 91, html 68, klasse 26, shader 6
+Übersprungen (Grund: Anzahl): kennung 22103, schlüssel 16656, keine Wörter 10248, index 8484, technisch 2865, doc 1854, einheit 250, englisch 119, pfad 98, log 91, html 68, klasse 26, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
-  main.gd                  692    42
+  main.gd                  691    42
   bergtal_abenteuer.gd     272     7
   gamewiz.gd               252    15
   abenteuer_figuren_daten.gd   238     0
   game.gd                  211    32
   bergtal.gd               199     5
   bergtal_abenteuer_daten.gd   197     0
-  bergtal_horror.gd        156     3
+  bergtal_horror.gd        159     3
   abenteuer_raetsel.gd     145     2
   maggie_story.gd          113     2
   abenteuer_moveeye.gd     110    14
@@ -41,10 +41,10 @@ Pro Datei (Texte / davon dynamische Stellen):
   feedback.gd               66    17
   abenteuer_zweit.gd        64     0
   parcours.gd               63    10
+  geschichten.gd            62     0
   bergtal_erleben_a.gd      62     0
   erlebniswelt.gd           62     0
   bib_berg.gd               60     0
-  geschichten.gd            60     0
   abenteuer_figuren.gd      58     5
   spielbereich.gd           57     0
   entdecken.gd              57     0
@@ -255,7 +255,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   gamewiz.gd:63  ' (wird hingestellt)'
   gamewiz.gd:66  'keine'
   gamewiz.gd:71  'aus'
-  gamewiz.gd:471  ' ⚠ Nur Simulator: braucht einen drehbaren Kopf, den Mover oder den Rover.'
+  gamewiz.gd:471  ' ⚠ Nur Simulator: braucht einen drehbaren Kopf oder den Mover.'
   gamewiz.gd:473  ' ⚠ MoveEye ist gerade nicht verbunden.'
   gamewiz.gd:518  ' – 💡 Licht und 📢 Sirene'
   gamewiz.gd:548  'nein'
@@ -289,9 +289,9 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   abenteuer_moveeye.gd:1307  'offen'
   abenteuer_moveeye.gd:1308  'offen'
   abenteuer_moveeye.gd:1308  'offen'
-  bergtal_horror.gd:41  'offen'
-  bergtal_horror.gd:59  'offen'
-  bergtal_horror.gd:1177  'Fertig'
+  bergtal_horror.gd:50  'offen'
+  bergtal_horror.gd:69  'offen'
+  bergtal_horror.gd:1253  'Fertig'
   abenteuer_raetsel.gd:878  'Neu: '
   abenteuer_raetsel.gd:887  'Gegenstände: '
   abenteuer_rucksack.gd:218  'keine Wunschliste: '
@@ -597,7 +597,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   mwpc.gd:340  'Die Pakete liessen sich nicht installieren: '
   mwpc.gd:365  'Unerwartete Datei in versions.json: '
   symbole.gd:27  'Aus'
-  net.gd:390  '--%s\r\nContent-Type: image/jpeg\r\nContent-Length: %d\r\n\r\n'
+  net.gd:395  '--%s\r\nContent-Type: image/jpeg\r\nContent-Length: %d\r\n\r\n'
   news.gd:83  'MOVEEYE SIM · '
   padroles.gd:129  'Spiel am PC – '
   padtest.gd:44  '  roh %.2f / %.2f'

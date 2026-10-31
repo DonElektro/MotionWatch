@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 17:35",
+ "generated": "2026-10-31 18:19",
  "versions": [
+  {
+   "version": "3.9.1",
+   "file": "webcam_bewegung_3_9_1.py",
+   "url": "",
+   "sha256": "506ae9bab4d5dec008504fefcfaa4c3b365e9143e5b0dbb185d8940fe3007a45",
+   "date": "2026-10-31 18:19",
+   "notes": "Diebstahl-Alarm: Kartenlink wieder vollständig in jeder Handy-Meldung (auch SMS), Sabotage-Meldungen mit letzter GPS-Position; überall «Mover» (auch im Simulator: «Verstecken mit dem Mover»).",
+   "size": 4403927,
+   "sig": "22c1ccd1e885497bdec36d299d3726b13b16f4e61242261c1a6e4362acef8680a78c3b703730d635cf440c0dca42bf9f9a512fcafba9934482820e7b192a4901",
+   "data": {
+    "file": "moveeye_daten_3_9_1.zip",
+    "url": "",
+    "sha256": "c26b538ff3c5313370845679df549a5d295e00f3d8067d3d6ea1df0ecb292039",
+    "size": 1609543,
+    "sig": "52298f41c084a14229f637156c22393d919770766feef1f35777f7d1b3d29b10868e88eda2c217913e366ace1d954cfb721c16276311f4af0f69cb42bdf93a06"
+   }
+  },
   {
    "version": "3.8.0",
    "file": "webcam_bewegung_3_8_0.py",
    "url": "",
    "sha256": "7c872ffb1e6dd0aa97a6e1c790de6999a9a8eabcbeb9dc76fff0d99b6b043884",
-   "date": "2026-10-31 17:35",
+   "date": "2026-10-31 18:16",
    "notes": "MoveEye-Datei halb so gross: Webseiten, Bilder und alte Versionsgeschichte in einer Zusatzdatei (moveeye_daten), die beim Update mitkommt oder nachgeladen wird; ohne Zusatzdatei läuft der Schutz weiter; 3.0.2 bleibt als Brücke für sehr alte Geräte.",
    "size": 4390179,
    "sig": "0c4cf276d29b44a2107cc767336c80dfdbb4b8d75cf8b895ef66b7eca9e9c312caa9924b93f7015adb86bcae57c293c9f67b1d61498d66996633900e04aff704",
@@ -99,16 +116,6 @@
    "size": 7672293,
    "sig": "f88dc49ba510c1a8d70bf0d3bf12f431945591b66074181237bca78dc3fe2e704d52cb2dc5496931174a1fc1eac9a38cbdb2c73c48ac17de05696e6744b1e302",
    "bridge": true
-  },
-  {
-   "version": "2.98.116",
-   "file": "webcam_bewegung_2_98_116.py",
-   "url": "",
-   "sha256": "6ce7d2dd9c4bfc96fdb99cd94efe06581590194492a7432c30f64e606e0fb7ca",
-   "date": "2026-10-31 15:52",
-   "notes": "Reiter «Spielen» neu aufgebaut wie im Simulator (Stufe, Spielstand, Weiterspielen, Geschichten-Regal, Entdecken). Simulator 3D-4.85: neues Fenster «Spielen» mit Geschichten als grosse Karten (Die Karte des Grossvaters, Maggie, Hospiz, Teil 2), gleicher Start für alle Geschichten.",
-   "size": 7667336,
-   "sig": "e7b0d995cb7bbfa5421610dcd08daef5fe989fb5104b539ebbdc0be110f2333445df32ba35f1087399b385233f7648ffbb44cccb455d69494c74dcd7303e8004"
   }
  ]
 }

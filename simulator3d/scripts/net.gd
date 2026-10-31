@@ -7,6 +7,8 @@ extends Node
 ## des Kinder-Modus (devtool.is_owner). Fremde Geräte bekommen {"ok": false, "error": "nur_lokal"} bzw. 404.
 ## Für Testläufe von einem anderen Rechner: Startoption «--fernsteuerung-offen» oder Umgebungsvariable
 ## MWSIM_FERNSTEUERUNG_OFFEN=1 (dann gilt die Prüfung des Absenders nicht; Kinder-Modus bleibt gesperrt).
+## Hospiz «Ohne Passwort starten» (horror ohne_passwort, 31.10.2026): noch strenger - nur von diesem PC (127.0.0.1 / ::1), nie
+## im Kinder-Modus, auch nicht mit --fernsteuerung-offen oder vom verbundenen MoveEye (dort gilt Passwort bzw. Besitzer, 639i).
 
 const BOUNDARY := "mwsimframe"
 const MAX_BUFFER := 4 * 1024 * 1024        # a client that does not read its pictures: frames are skipped
@@ -237,6 +239,9 @@ func _handle(c: Dictionary, method: String, path: String, query: Dictionary, bod
 		if dangerous(dc) and not trusted(host):
 			_json(c, {"ok": false, "error": "nur_lokal", "msg": "only from this PC or the connected MoveEye (owner)"})
 			return
+		dc.erase("_von_lokal")                         # Hospiz «Ohne Passwort starten»: only this PC (not even the connected
+		if _local(host) and not bool(main.get("kids_on")):   # MoveEye or --fernsteuerung-offen) - bergtal_horror.gd command
+			dc["_von_lokal"] = true
 		_json(c, main.control(dc))
 		return
 	if method == "POST" and path == "/upload":
