@@ -421,6 +421,12 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
+NEU IN 3D-4.76
+3D-4.76: Bergtal: Innenräume ohne Gras oder Bäume (Infanteriewerk, Baracke, Höhle), alte Sennerei mit Dach, keine Löcher mehr
+im Gelände zwischen den Bergen, Steinbrücke aus Stein, Tarnwiese rund mit weichem Rand, Arvenhain am Steimandli, Herbstblumen
+auf der Bluemenmatte, Gletscherspalten und Felsen liegen auf dem Boden.
+So testest du: 1) Entwickler → Infanteriewerk (innen). 2) Tarnwiese. 3) Vom Tschingelspitz nach Osten schauen.
+
 NEU IN 3D-4.75
 3D-4.75: Bergtal-Abenteuer: Bestenliste zählt jetzt die Tiere und Wildkamera-Fotos von MoveEye. Wildhüter-Aufträge erkennen
 deine Fotos. Tauschen nach den Wunschlisten der Figuren. Nur noch ein Feldstecher (vom Grossvater). Seil und Ersatzteil haben

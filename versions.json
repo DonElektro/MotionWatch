@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 13:39",
+ "generated": "2026-10-31 13:47",
  "versions": [
   {
-   "version": "2.98.106",
-   "file": "webcam_bewegung_2_98_106.py",
+   "version": "2.98.107",
+   "file": "webcam_bewegung_2_98_107.py",
    "url": "",
-   "sha256": "0e82c4b3271304ca928ab17c550b8ff97939f3f94e5ecf73e4881dd1a806e4bd",
-   "date": "2026-10-31 13:39",
-   "notes": "Simulator 3D-4.75: Bergtal-Abenteuer – Bestenliste mit den Tieren und Wildkamera-Fotos von MoveEye, Tauschen nach Wunschlisten, ein Feldstecher, je ein Fundort für Seil und Ersatzteil, Hilfe = Schwierigkeit.",
-   "sig": "474077f524efd76acd55fe6720d42552f3413574b7551d84a1e20827a4c230d1153d4efcbdceaf1d3f8303f5f11be2c3a724bc57b046476981e3acd7454a1108"
+   "sha256": "b7401bfba8fba2cffe211fe44bb3e4ef281fe4965240284d64a6ce2c8b69a7e4",
+   "date": "2026-10-31 13:47",
+   "notes": "Simulator 3D-4.76: Bergtal – Innenräume ohne Gras und Bäume, Sennerei mit Dach, keine Geländelöcher, Steinbrücke, runde Tarnwiese, Arvenhain, Herbstblumen, Gletscherspalten und Felsen auf dem Boden.",
+   "sig": "dc4fa9a445ecf1dfd998c5bb7bbeb507037b3d99bdcf7e6c689120fbe29088a202adf7885c2658ba6ca2d5a057210b6a71d538f82169c10c308266d26d28760d"
   },
   {
    "version": "2.97.1",

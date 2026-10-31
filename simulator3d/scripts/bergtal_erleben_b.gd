@@ -695,6 +695,7 @@ class Trailrunner extends Vig:
 
 # ---- 25 · a guest of the self-catering hut sweeps the veranda - a gust blows it all back -------------------------------------
 class Fegen extends Vig:
+	var off := Vector2.ZERO          # K3: the hut of bergtal_orte.gd stands 8 m west / 3 m south of the old one (door there)
 	var gst
 	var bits: Array = []            # [mesh, start, now, from (gust), to (gust)]
 	var broom: Node3D
@@ -702,15 +703,20 @@ class Fegen extends Vig:
 	var rounds := 0
 	var with_wind := false
 
+	func _g(x: float, z: float, dy := 0.0) -> Vector3:
+		return ew.G(x + off.x, z + off.y, dy)
+
 	func build() -> void:
 		id = "huettenwart"
-		c = ew.G(61.5, -5.2)                                     # in front of the door (bib alp_hut: the door is on the north side)
+		if ew.bt.get("orte") != null and ew.bt.orte.replaces("alp_hut"):
+			off = Vector2(-8.3, 3.2)                              # (Kontaktbogen: he swept beside the hut, not at its door)
+		c = _g(61.5, -5.2)                                     # in front of the door (bib alp_hut: the door is on the north side)
 
 	func when_ok() -> bool:
 		return not ew.dark() and not ew.weather() in ["rain", "snow"]
 
 	func live() -> void:
-		edge = ew.G(65.8, -5.4)
+		edge = _g(65.8, -5.4)
 		var col := Color(0.82, 0.6, 0.16)                       # Herbst: Lärchennadeln
 		var tk = "tree"
 		match str(ew.season):
@@ -722,7 +728,7 @@ class Fegen extends Vig:
 				col = Color(0.95, 0.96, 0.98)                     # Schnee
 				tk = "snow"
 		for i in range(5 if ew.lite else 11):
-			var p: Vector3 = ew.G(60.0 + randf() * 3.5, -4.6 - randf() * 1.6, 0.02)
+			var p: Vector3 = _g(60.0 + randf() * 3.5, -4.6 - randf() * 1.6, 0.02)
 			var mi: MeshInstance3D = ew.part(vroot, ew.boxm(0.06 + randf() * 0.05, 0.012, 0.03 + randf() * 0.03), p, col, tk, Vector3(0, randf() * TAU, 0))
 			mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 			bits.append([mi, p, p, p, p])
@@ -741,7 +747,7 @@ class Fegen extends Vig:
 		match st:
 			"sweep":                                           # sweeps it all to the edge of the veranda
 				ew.idle(gst, "bend")
-				var tgt: Vector3 = ew.G(61.0 + minf(st_t * 0.35, 3.6), -5.2)
+				var tgt: Vector3 = _g(61.0 + minf(st_t * 0.35, 3.6), -5.2)
 				ew.walk(gst, tgt, 0.4, dt, null, 3.0)
 				ew.face(gst, edge - c)
 				ew.arm(gst, 1, 0.55 + 0.3 * sin(st_t * 3.2), 0.35)
@@ -761,7 +767,7 @@ class Fegen extends Vig:
 					else:
 						for b in bits:
 							b[3] = b[2]
-							b[4] = ew.G(60.0 + randf() * 3.6, -4.5 - randf() * 1.8, 0.02)
+							b[4] = _g(60.0 + randf() * 3.6, -4.5 - randf() * 1.8, 0.02)
 						ew.sound(edge + Vector3(0, 1.0, 0), "swish", [[0.0, 2.2, 200.0, 200.0, 1.0]], -8.0, -30.0)
 						go("gust")
 			"gust":                                            # the wind (west, up the valley) blows it back onto the boards
@@ -786,7 +792,7 @@ class Fegen extends Vig:
 					ew.place(gst, c)
 					with_wind = rounds >= 2                         # the third time: he sweeps the other way, with the wind
 					if with_wind:
-						edge = ew.G(59.0, -5.6)
+						edge = _g(59.0, -5.6)
 					go("sweep")
 			"done":                                            # clean: leans on the broom
 				ew.idle(gst, "look")
@@ -795,9 +801,9 @@ class Fegen extends Vig:
 				if st_t > 25.0 and ew.unseen(ew.W(c), 40.0):
 					rounds = 0
 					with_wind = false
-					edge = ew.G(65.8, -5.4)
+					edge = _g(65.8, -5.4)
 					for b in bits:
-						_put_bit(b, ew.G(60.0 + randf() * 3.5, -4.6 - randf() * 1.6, 0.02))
+						_put_bit(b, _g(60.0 + randf() * 3.5, -4.6 - randf() * 1.6, 0.02))
 					ew.place(gst, c)
 					go("sweep")
 

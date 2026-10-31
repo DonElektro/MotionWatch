@@ -14,6 +14,12 @@ uniform float snow_line = 900.0;      // season: above this height the ground is
 uniform float snow_cover = 0.0;       // season: 1 = everything white (winter), except steep rock
 uniform vec3 grass_tint = vec3(1.0);  // season: spring fresh, summer, autumn brown-yellow
 uniform float detail = 1.0;
+// K3 (31.10.2026): rooms in the hill (bunker, cave - bergtal_orte.gd): the ground is not drawn inside them. Only in a copy
+// of this shader with «#define CLIPS» (bergtal.gd clip_ground) on the few chunks with such a room (discard costs a little).
+// clip_a = (centre x, centre z, half x, half z), clip_b = (cos, sin of the turn, floor y, ceiling y), all in valley coordinates
+uniform int clip_n = 0;
+uniform vec4 clip_a[8];
+uniform vec4 clip_b[8];
 
 varying vec3 lpos;
 varying vec3 lnrm;
@@ -26,11 +32,28 @@ void vertex() {
 }
 
 void fragment() {
+#ifdef CLIPS
+	for (int k = 0; k < clip_n; k++) {
+		vec2 d = lpos.xz - clip_a[k].xy;
+		vec2 q = vec2(d.x * clip_b[k].x - d.y * clip_b[k].y, d.x * clip_b[k].y + d.y * clip_b[k].x);
+		if (abs(q.x) < clip_a[k].z && abs(q.y) < clip_a[k].w && lpos.y > clip_b[k].z && lpos.y < clip_b[k].w) {
+			discard;
+		}
+	}
+#endif
 	vec3 c = pow(COLOR.rgb, vec3(2.2));            // vertex colours are sRGB
 	float rockable = COLOR.a;
 	float slope = 1.0 - clamp(lnrm.y, 0.0, 1.0);
 	float fine = texture(noise_tex, lpos.xz * 0.7).r;
 	float mid = texture(noise_tex, lpos.xz * 0.06).r;
+	// K3: steep walls (gorge, cliffs) - the pattern along the wall instead of from above (no long streaks); Lite: off
+	if (detail > 0.5 && slope > 0.3) {
+		vec2 t = normalize(vec2(-lnrm.z, lnrm.x) + vec2(0.0001, 0.0));
+		vec2 wuv = vec2(dot(lpos.xz, t), lpos.y);
+		float ws = smoothstep(0.3, 0.55, slope);
+		fine = mix(fine, texture(noise_tex, wuv * 0.7).r, ws);
+		mid = mix(mid, texture(noise_tex, wuv * 0.06).r, ws);
+	}
 	float big = texture(noise_tex, lpos.xz * 0.0045).r;
 	// grass: the season
 	float green = smoothstep(0.0, 0.05, c.g - max(c.r, c.b) * 0.98);

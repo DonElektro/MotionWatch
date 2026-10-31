@@ -337,6 +337,11 @@ func _b_bunker(q: Dictionary) -> Dictionary:
 	var p := [S(4.5, 6.0, 0, 1.8, -2.5, cols[0], "stone"), S(3.0, 4.0, 3.5, 1.0, -1.5, cols[1], "stone"), S(3.2, 4.4, -3.6, 1.2, -1.8, cols[2], "stone"),
 			B(4.2, 3.0, 0.6, 0, 1.5, 1.6, "6e6a5a", 0, 0, 0, "stone"), B(1.0, 2.0, 0.08, -0.9, 1.0, 1.94, "4a4a3a", 0, 0, 0, "metal"),
 			B(0.9, 0.18, 0.08, 1.1, 2.0, 1.94, "0a0a0a"), B(1.2, 0.5, 0.62, 1.1, 2.9, 1.6, "5a6a4a"), B(1.4, 0.6, 0.62, -1.4, 0.4, 1.62, "5e5a48")]
+	# K3 (Kontaktbogen: «grey block half in the slope»): the front stands on a steep slope - the concrete goes down into the
+	# ground in front, a small concrete apron with two steps in front of the door, rock on both sides of the front
+	p.append_array([B(4.6, 2.4, 1.2, 0, -1.0, 1.75, "6e6a5a", 0, 0, 0, "stone"), B(1.8, 0.3, 1.4, -0.9, -0.15, 2.6, "7a766a", 0, 0, 0, "stone"),
+			B(1.8, 0.3, 0.5, -0.9, -0.45, 3.5, "7a766a", 0, 0, 0, "stone"), B(1.8, 0.3, 0.5, -0.9, -0.75, 3.9, "7a766a", 0, 0, 0, "stone"),
+			S(1.8, 2.6, 2.9, 0.6, 1.2, cols[1], "stone"), S(1.7, 2.4, -3.0, 0.5, 1.1, cols[2], "stone")])
 	return {"p": p, "t": "stone", "lod": "big", "ob": [["circ", 0, -2.0, 4.6, 6.0], ["box", 0, 1.6, 4.4, 0.8, 3.0]],
 			"door": [-0.9, 0.0, 1.95, 1.0, 2.0, "4a4a3a"]}
 
@@ -412,6 +417,8 @@ func _b_flowers(q: Dictionary) -> Dictionary:
 	var k := int(_q(q, "v", 0))
 	if k == 4:                                             # Krokusse (Frühling): violett und weiss
 		cols = ["9a6ad8", "f2f0f8", "8a5ac8", "b090e0", "f2f2ea"]
+	elif k == 5:                                           # K3: Herbst - Silberdistel, Herbstzeitlose, Feld-Enzian
+		cols = ["d8d4c4", "c8a8e0", "7a4ab0", "b89a50", "d0b8e8"]
 	var p := [S(0.22, 0.1, 0, 0.04, 0, "4a7a30", "tree")]
 	for i in range(5):
 		var a := i * 1.3 + k
