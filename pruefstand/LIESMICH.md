@@ -46,7 +46,8 @@ Der Prüfstand beantwortet bei jeder neuen Version die Frage: **Erkennt MoveEye 
 
 ## Übersicht → Kopf findet Ziel (Weitwinkel-Kamera, ab Simulator 3D-4.17)
 
-`--weitwinkel base,head_front,head_rear` (auch `scene` als Vergleich ohne Übersicht am Gerät) misst pro Montage der
+`--weitwinkel case,base,head_front,head_rear` (`case` = im Gehäuse v5.2, Standard ab P9; auch `scene` als Vergleich ohne
+Übersicht am Gerät) misst pro Montage der
 Weitwinkel-Kamera: ein Besucher kommt **ausserhalb des Bildes der Kopfkamera** ins Weitwinkel-Bild (vorne: 42° neben der Mitte,
 von 14 m auf 6 m auf das Gerät zu – im Weitwinkel-Bild ±51°, nicht im Kopfbild ±33°; hinten: quer hinter dem Kopf, 150° → 215°,
 9 m), langsam (0,3 m/s). Gemessen wird die Zeit, bis die **Kopfkamera ihn im

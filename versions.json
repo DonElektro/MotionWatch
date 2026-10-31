@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 05:53",
+ "generated": "2026-10-31 06:02",
  "versions": [
   {
-   "version": "2.98.63",
-   "file": "webcam_bewegung_2_98_63.py",
+   "version": "2.98.64",
+   "file": "webcam_bewegung_2_98_64.py",
    "url": "",
-   "sha256": "4d42d8bc06608ce7af5e5d543d385041926a2c9566f55b6a86487e464e8b58bd",
-   "date": "2026-10-31 05:53",
-   "notes": "Simulator 3D-4.32: Gameplay ausgefeilt – Probe-Runde mit Blinki, Wiederholung und Höhepunkte, Missionen, Nacht-Spiel, neue Werkzeuge, Turnier, Fairness, «MoveEye ins Schwitzen», KI-Turm (Rangliste auch in MoveEye), Abzeichen pro Szene.",
-   "sig": "41d84417e253259210825adab14ea49e440f0455380471a00f157443c3351b276e85694d3e23060a36a3bdf399190e39bb104e12b03711c494da126857195806"
+   "sha256": "42a682459562b37e05e2505a0843d39e8204ded3278a9e8fb792793df0449257",
+   "date": "2026-10-31 06:02",
+   "notes": "Simulator 3D-4.33: Weitwinkel-Kamera wie im Gehäuse v5.2 – Montage «Im Gehäuse (v5.2)» (Standard) und «Nicht verbaut (Blindstopfen)», Fischauge wie das echte Objektiv, kleine IR-LED; Kachel 🔭 mit den neuen Knöpfen.",
+   "sig": "3e2824f8474486aa6eb1aee3f911cbaf0e139567265661cef9dbf174dbc2e61e5434611dffa4670eb959590de353c7ed62fba73331e5efc707f43a50fe804503"
   },
   {
    "version": "2.97.1",

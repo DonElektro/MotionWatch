@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-4.32"
+const VERSION := "3D-4.33"
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const Quality := preload("res://scripts/quality.gd")     # 3D-4.25: «Lite» for the Raspberry Pi 5 (Quality.lite(), Engine meta «lite»)
 const CAM_W := [960, 640]
@@ -2366,6 +2366,8 @@ func _check_active() -> void:
 
 # ---- pictures for MoveEye -------------------------------------------------------------------------------------
 func _wanted_fps(i: int) -> float:
+	if i == 1 and weit != null and not weit.installed():
+		return 0.0                                       # P9: blind cover instead of the wide camera - nothing to render
 	var d: Dictionary = net.stream_demand() if net != null else {}
 	var f: float = float(d.get(i, 0.0))
 	if i < 2 and now() - snap_want[i] < 3.0:
