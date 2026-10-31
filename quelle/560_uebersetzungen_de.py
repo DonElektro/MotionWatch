@@ -23,7 +23,7 @@ DE = {
     "Vehicle aspect ratio": "Fahrzeug-Seitenverhältnis", "Vehicle speed (px/frame)": "Fahrzeug-Geschwindigkeit (px/Bild)",
     "Rain threshold": "Regen-Schwelle", "Wind threshold": "Wind-Schwelle", "Max trigger boost": "Max. Auslöse-Verstärkung",
     "Keep recording after (s)": "Nachlaufzeit Aufnahme (s)", "Max recordings folder (GB)": "Max. Aufnahmeordner (GB)",
-    "Low-light threshold (brightness)": "Schwachlicht-Schwelle (Helligkeit)", "Cooldown between alarms (s)": "Pause zwischen Alarmen (s)",
+    "Low light: wait before switching (s)": "Schwachlicht: warten vor dem Umschalten (s)", "Low-light threshold (brightness)": "Schwachlicht-Schwelle (Helligkeit)", "Cooldown between alarms (s)": "Pause zwischen Alarmen (s)",
     # toggles
     "Follow detected person (auto pan/tilt)": "Erkannter Person folgen (auto Schwenk/Neige)",
     "Invert pan direction": "Schwenkrichtung umkehren", "Invert tilt direction": "Neigerichtung umkehren",

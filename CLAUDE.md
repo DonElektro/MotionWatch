@@ -86,8 +86,6 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
   Schutz/Alarmübersicht, Push mit Gerätename (klein, ~30–80 m); 2) USB-WLAN mit externer Antenne (~100–200 m, braucht
   Antennen-Durchführung im Gehäuse); 3) Kette A↔B↔C mit Weiterleitung (mittel); 4) LoRa nur für Alarme (gross, neue Hardware).
   Empfehlung: mit Stufe 1 beginnen.
-- Vorgemerkt (Daniel 31.10.): **Simulator-ZIP:** übergangsweise doppelte Exe (MoveEyeSim3D.exe + MotionWatch3D.exe, 64,5 MB) –
-  in 3D-4.30 die alte Kopie weglassen (simpack.sh TRANSITION=0); Daniel vorher erinnern (31.10.).
 - Notiz: Live-Chips verdichtet in 2.98.54 (Handy: Status-Chips in einer Zeile zum Wischen, Sticks wieder 140 px).
 - Später: Prüfstand-Plan «funktionen» (Kurzproben Sabotage, Wecker, Klatschen, Diebstahl, Sensoren, Akku, Sirene – Daniel 30.10.: später); Prüfstand-Rückgang ab 2.98.23; KI-Training (Token Actions-Rechte, Trainingspaket); «Vertrauenswürdige Geräte» nur
   Admin; Controller-Einstellungen als MoveEye-Einstellung statt pro Browser; Produkt-Seite (Lizenzen, Datenschutz, Kundendoku);
