@@ -1,8 +1,26 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Version **3.2.0** · MoveEye **3.2.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 31.10.2026 · Version **3.5.0** · MoveEye **3.5.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.5.0 (MoveEye 3.5.0): Kriechende nachts, KI-Lupe weit (nur MoveEye)
+
+- Simulator-Code unverändert. MoveEye: neue Teile `418k_kriechende_nacht.py` (Voralarm «⚠ Etwas Grosses am Boden», nach 6 s
+  «Person? (kriecht)»; Fuchs/Igel nicht), `418z_ki_zoom_weit.py` (KI-Lupe auch für kleine, weite Bewegungen, nicht bei
+  starkem Wind), `639x_uebersetzungen_kriechende.py`; 180, 410.
+
+## NEU in 3.4.0 (MoveEye 3.4.0): Nebel-Modus und Dämmerung/Wind (nur MoveEye)
+
+- Simulator-Code unverändert. MoveEye: neuer Teil `411_nebel_daemmerung.py` (Nebel erkennen, Kontrast, mehr Wärmebild,
+  Hinweis «🌫 Nebel», kein «Kamera verdreht» im Nebel; Dämmerung/Wind: 2–3 Treffer in Folge), `639k_uebersetzungen_nebel.py`;
+  060, 066, 180, 232, 410, 530, 540, 570.
+
+## NEU in 3.3.0 (MoveEye 3.3.0): Roter Faden (`geschichten_faden.gd`)
+
+- `geschichten_faden.gd` (neu): die beiden Geschichten kennen sich (Ruedi, Anna, Sepp, Vrenis Käse, Wanderbuch im Finale,
+  Kapelle auf der alten Karte), Abzeichen «Beide Geschichten geschafft». Stand pro Spielstand in
+  `user://spielstand/<n>/faden.json`, dazu Maggies eigene Datei dieses Platzes (`spielstand.gd path_maggie`).
 
 ## NEU in 3.2.0 (MoveEye 3.2.0): Statisten (`statisten.gd`)
 

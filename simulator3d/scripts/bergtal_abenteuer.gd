@@ -2074,6 +2074,7 @@ func _karte_update() -> void:
 	karte.sun_az = sp.y if sp.x > -4.0 else -1.0
 	karte.sun_el = sp.x
 	karte.marks = main.bt_marks if bool(P.get("finale", false)) else []
+	preload("res://scripts/geschichten_faden.gd").karte(self)   # Roter Faden: Bergkapelle auf der Karte / im Tagebuch
 	karte.queue_redraw()
 
 
