@@ -1,8 +1,14 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.56** · passende MoveEye-Version (früher Motion Watch) **2.98.87**
+Stand: 31.10.2026 · Simulator-Version **3D-4.57** · passende MoveEye-Version (früher Motion Watch) **2.98.88**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.57 (MoveEye 2.98.88): Echte Oberflächen und Himmel (`inhalte.gd`, CC0-Paket)
+
+- `inhalte.gd` (neu): lädt `inhalte/katalog.json` (Paket `pakete/MoveEye_Inhalte_F2.zip` von raw.githubusercontent.com mit
+  SHA-256, sonst Einzeldateien) nach `user://inhalte/`; Shader grass/sky/flecken. Aus in Lite und im Prüfstand (`--quality`).
+  Quellen: `CREDITS.md`. Das Paket enthält 6 der 11 Inhalte; die übrigen lädt der Simulator einzeln von den Quellen.
 
 ## NEU in 3D-4.56 (MoveEye 2.98.87): Figuren-Paket und Wind (`figur_paket.gd`, `wind_fx.gd`)
 
