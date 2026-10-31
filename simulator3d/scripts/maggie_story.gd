@@ -39,6 +39,14 @@ extends Node
 ##   zukunftsbild_ort(pos: Vector3, text: String)   ein Ort, den der Kristall als «Bild der Zukunft» zeigen darf (eine
 ##                                    Gefahr oder ein Weg; text z. B. T.t("Hinter den Felsen warten Wölfe.")) – gilt bis
 ##                                    zum Ende der Region
+##   spieler_setzen(welt_pos: Vector3)  die Figur dorthin setzen (Steinbock trägt dich; Maggie setzt S2 selbst)
+##   speichern()                      sofort speichern (nach einem gelösten Rätsel); dabei auch zustand() der Module
+##   boese_ablenken(welt_pos, sekunden)   die bösen Tiere laufen dorthin (Fuchs, S2) -> ablenken(pos, secs) der Module (S3)
+## Module-Speicher: hat ein Modul zustand() -> Dictionary, wird das beim Autosave (Rastplatz, speichern()) mitgespeichert
+##   und beim Weiterspielen mit laden(d) bzw. lade(d) zurückgegeben; neu() (wenn vorhanden) beim Neubeginn.
+## Sperren: hat ein Modul sperren() -> [[welt_pos, radius], …], hält der Rahmen die Figur aus diesen Kreisen heraus.
+## Tasten: der Rahmen nimmt W A S D, Pfeile, Shift, K, Esc; die Module (Kinder dieses Knotens) bekommen jede Taste zuerst
+##   (S3: B = Schutzding benutzen); Maggies Knöpfe sind am Bildschirm.
 ##   signal szene_bereit(art)         das Bergtal ist (neu) gebaut und die Figur steht dort: art = "einstieg" | Region-id |
 ##                                    "finale" (S2: Maggie neben die Figur setzen)
 ##   signal region_gestartet(id)      eine Region beginnt (Szene fertig gebaut, Figur am ersten / letzten Rastplatz)
@@ -308,6 +316,77 @@ func erwischt(von: String) -> void:
 	moveeye_sagt(T.t(_pick(Welt.MOVEEYE["erwischt"])))
 
 
+func spieler_setzen(welt_pos: Vector3) -> void:
+	_place_player(welt_pos)
+
+
+func speichern() -> void:
+	_modules_save()
+	_save()
+
+
+func boese_ablenken(welt_pos: Vector3, sekunden: float) -> void:
+	for m in _modules:
+		if is_instance_valid(m) and m.has_method("ablenken"):
+			m.ablenken(welt_pos, sekunden)
+
+
+func _mod_key(m) -> String:
+	var sc = m.get_script()
+	return str(sc.resource_path.get_file().get_basename()) if sc != null else ""
+
+
+func _modules_save() -> void:
+	var d := {}
+	for m in _modules:
+		if is_instance_valid(m) and m.has_method("zustand"):
+			d[_mod_key(m)] = m.zustand()
+	S["module"] = d
+
+
+func _modules_load() -> void:
+	var d: Dictionary = S.get("module", {}) if S.get("module", {}) is Dictionary else {}
+	for m in _modules:
+		if not is_instance_valid(m):
+			continue
+		var k := _mod_key(m)
+		if not d.has(k):
+			if m.has_method("neu"):
+				m.neu()
+			elif m.has_method("laden"):
+				m.laden({})
+			elif m.has_method("lade"):
+				m.lade({})
+			continue
+		if m.has_method("laden"):
+			m.laden(d[k])
+		elif m.has_method("lade"):
+			m.lade(d[k])
+
+
+func _modules_pause(on: bool) -> void:
+	for m in _modules:
+		if is_instance_valid(m) and m.has_method("pause"):
+			m.pause(on)
+
+
+func _sperren() -> void:
+	var a = spieler()
+	if a == null:
+		return
+	for m in _modules:
+		if not is_instance_valid(m) or not m.has_method("sperren"):
+			continue
+		for e in m.sperren():
+			var c: Vector3 = e[0]
+			var r := float(e[1]) + 0.3
+			var dv := Vector2(a.position.x - c.x, a.position.z - c.z)
+			if dv.length() < r:
+				var n := dv.normalized() if dv.length() > 0.01 else Vector2(1, 0)
+				a.position.x = c.x + n.x * r
+				a.position.z = c.z + n.y * r
+
+
 func region_fertig(id: String) -> void:
 	if not running or id != region or region == "":
 		return
@@ -324,6 +403,7 @@ func region_fertig(id: String) -> void:
 	var times: Dictionary = S.get("minutes", {})
 	times[id] = int(times.get(id, 0)) + mins
 	S["minutes"] = times
+	_modules_save()
 	_save()
 	_play("fanfare")
 	region_beendet.emit(id)
@@ -592,6 +672,7 @@ func _start() -> void:
 	_proot.name = "MaggieFigur"
 	add_child(_proot)
 	_load_modules()
+	_modules_load()
 
 
 func _load_modules() -> void:
@@ -959,6 +1040,7 @@ func _start_region(id: String, rest_i: int) -> void:
 
 
 func _region_tick() -> void:
+	_sperren()
 	var p := spieler_pos()
 	var r: Dictionary = Welt.REG[region]
 	for i in range(_rests.size()):
@@ -970,6 +1052,7 @@ func _region_tick() -> void:
 				_last_rest = i
 				_rest = e["pos"] + Vector3(1.5, 0, 2.0)
 				S["rest"] = i
+				_modules_save()
 				_save()
 				if first:
 					Welt.rest_lit(e["node"], r["col"])
@@ -1520,12 +1603,14 @@ func _pause() -> void:
 	_resume_phase = phase
 	phase = "pause"
 	_freeze(true)
+	_modules_pause(true)
 	var v := _new_card(T.t("Pause"), Color(0.62, 0.85, 1.0), 520)
 	_text(v, T.t("%d von 4 Jahreszeiten geschafft. Gespeichert wird an jedem Rastplatz.", [done_count()]), 15)
 	var row := _row(v)
 	_button(row, T.t("Weiter"), _unpause, true)
 	if region != "":
 		_button(row, T.t("Zur Auswahl"), func():
+			_modules_pause(false)
 			region_beendet.emit(region)
 			region = ""
 			S["region"] = ""
@@ -1541,6 +1626,7 @@ func _unpause() -> void:
 	_clear_card()
 	phase = _resume_phase
 	_freeze(false)
+	_modules_pause(false)
 	_safe_until = maxf(_safe_until, main.now() + 2.0)
 
 

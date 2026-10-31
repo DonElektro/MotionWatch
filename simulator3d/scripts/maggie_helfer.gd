@@ -219,9 +219,12 @@ func _ablenken(von: Vector3, gefahr: Vector3, nah: Array) -> void:
 	_fq["q"] = [{"t": "face", "p": gefahr}, {"t": "call", "fn": func(): _jip(h.ppos(fuchs))}, {"t": "wait", "s": 0.8},
 		{"t": "call", "fn": func():
 			var wp: Vector3 = h.W(h.G(w2.x, w2.y))
-			for n in nah:
-				if is_instance_valid(n[0]) and n[0].has_method("ablenken"):
-					n[0].ablenken(wp, 8.0)},
+			if h.story != null and h.story.has_method("boese_ablenken"):
+				h.story.boese_ablenken(wp, 8.0)          # S1 gibt es an S3 weiter (maggie_gefahr.ablenken(pos, secs))
+			else:
+				for n in nah:
+					if is_instance_valid(n[0]) and n[0].has_method("ablenken"):
+						n[0].ablenken(wp, 8.0)},
 		{"t": "walk", "p": Vector3(w2.x, 0, w2.y), "spd": 6.0}, {"t": "call", "fn": func(): fuchs.visible = false}]
 
 

@@ -495,6 +495,8 @@ func _tier_neu(kind: String, at: Vector3) -> void:
 	v.setup(main, kind, p, p + Vector3(1, 0, 0), 1.0)
 	v.puppet = true
 	v.set_meta("maggie_gefahr", true)
+	v.set_meta("art", "wildschwein" if kind == "boar" else kind)   # S2 (maggie_hund.gd): Maggie warnt bei der Gruppe «maggie_boese»
+	v.add_to_group("maggie_boese")
 	v.set_night(main.is_dark())
 	_tiere.append({"n": v, "kind": kind, "st": "ruhe", "home": p, "ziel": p, "t": 0.0, "bis": 0.0, "laut": _now() + randf_range(4, 12)})
 
@@ -660,6 +662,8 @@ func _schwarm_neu(home: Vector3, n: int) -> void:
 	for i in range(n):
 		var b := _vogel()
 		_root().add_child(b)
+		b.set_meta("art", "kraehe")
+		b.add_to_group("maggie_boese")
 		var off := Vector3(randf_range(-1, 1), randf_range(-0.4, 0.4), randf_range(-1, 1)).normalized() * randf_range(1.5, 4.5)
 		b.position = home + Vector3(0, 14, 0) + off
 		birds.append({"n": b, "off": off, "ph": randf() * TAU, "w": randf_range(0.6, 1.2)})
@@ -789,6 +793,8 @@ func _schlange() -> Node3D:
 func _viper_neu(at: Vector3) -> void:
 	var n := _schlange()
 	_root().add_child(n)
+	n.set_meta("art", "viper")
+	n.add_to_group("maggie_boese")
 	n.position = _boden(at)
 	n.rotation.y = randf() * TAU
 	_tiere.append({"n": n, "kind": "viper", "st": "liegen", "home": n.position, "ziel": n.position, "t": randf() * 10.0, "bis": 0.0,
