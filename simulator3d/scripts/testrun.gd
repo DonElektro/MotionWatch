@@ -627,7 +627,7 @@ func _cause(animals_vis: Array) -> String:
 		return "Gegenlicht"
 	if "headlights" in conds:
 		return "Scheinwerfer"
-	if main.wetter != null and main.wetter.flash_recent(now(), 4.0):
+	if main.wetter != null and main.wetter.flash_recent(now(), 6.0):      # 6 s: MoveEye meldet bei wenig Bildern/s verspätet
 		return "Blitz"                                     # real-wetter: a flash lit the whole picture
 	if "drops" in conds:
 		return "Tropfen auf der Linse"
