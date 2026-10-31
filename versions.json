@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-31 07:47",
+ "generated": "2026-10-31 07:54",
  "versions": [
   {
-   "version": "2.98.77",
-   "file": "webcam_bewegung_2_98_77.py",
+   "version": "2.98.78",
+   "file": "webcam_bewegung_2_98_78.py",
    "url": "",
-   "sha256": "7098f6c962519fef32d6939065c3cbf8578490ae604122cbe842d6507daecf99",
-   "date": "2026-10-31 07:47",
-   "notes": "Simulator 3D-4.46: Fahrzeuge wie echt – Licht, Blinker, Türen, Parkieren, Blendung, Velos mit Licht; neuer Testlauf «Fahrzeuge in der Nacht».",
-   "sig": "f70fb45104ddfc4928153ec107a0b8f067964ce5e3408e87f169be4349e646aaf9fb8708a250b5686931215d30bb6054a4cf06982ec139eb864318e315f91a0e"
+   "sha256": "594d1b6f0551e279999eb9d73897a53a5a3e41ed01f6c725ea61c118ac17e76c",
+   "date": "2026-10-31 07:54",
+   "notes": "Simulator 3D-4.47: Licht & Nacht wie echt – Dämmerung, Mond mit Phase, Sterne nach Lichtverschmutzung, Platzlampen, leuchtende Zelte; Feld «sky» an MoveEye.",
+   "sig": "c9925ee8af7036f601f9b78c441994dc3fc714f0702aaa4ef7503fdb8a6a18e19e9e09ea8690792ab460f4367f29e95ac6f22a7098a2be9f7b979758b2f7d409"
   },
   {
    "version": "2.97.1",
