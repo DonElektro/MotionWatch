@@ -141,7 +141,7 @@ func _record(k: String) -> void:
 	match k:
 		"k1":
 			c = h._clip_now(T.t("Etwas fällt ins Gras"), T.t("Kamera: Nebel. Wärmebild: wo die Gestalt beim Zelt stand, liegt ein kleiner warmer Fleck im Gras (markiert)."))
-			_draw_mark(c, _key.global_position if _key != null and is_instance_valid(_key) else Vector3.ZERO, false)
+			_part("k1")["seen"] = _draw_mark(c, _key.global_position if _key != null and is_instance_valid(_key) else Vector3.ZERO, false)
 		"k2":
 			c = h._clip_now(T.t("Zahlen an der Wand"), T.t("Kamera: Nebel. Wärmebild (vergrössert): neben der Hüttentür vier warme Ziffern – wie mit einer warmen Hand an die Wand geschrieben."))
 			var hp: Vector3 = h._hut.global_position + h._hut.global_transform.basis * Vector3(-1.6, 1.4, 2.6) if h._hut != null else Vector3.ZERO
@@ -273,10 +273,11 @@ func _th_xy(p: Vector3):
 	return Vector2(322.0 + q.x / vp.x * 316.0, 2.0 + q.y / vp.y * 244.0)
 
 
-func _draw_mark(c: Dictionary, p: Vector3, square: bool) -> void:
+func _draw_mark(c: Dictionary, p: Vector3, square: bool) -> bool:
+	"""true = the place is in the thermal picture and marked"""
 	var xy = _th_xy(p)
 	if xy == null:
-		return
+		return false
 	var img := _img(c)
 	var col := Color(0.35, 0.75, 1.0)                             # MoveEye's blue
 	var r := 11.0
@@ -289,6 +290,7 @@ func _draw_mark(c: Dictionary, p: Vector3, square: bool) -> void:
 			var q: Vector2 = xy + d * (r + w)
 			_px(img, int(q.x), int(q.y), col)
 	_store_img(c, img)
+	return true
 
 
 func _px(img: Image, x: int, y: int, col: Color) -> void:
@@ -426,7 +428,10 @@ func _card_k1() -> void:
 	h._text(v, T.t("Die verlassene Hütte ist abgeschlossen. In der Nacht hat MoveEye beim Zelt etwas aufgenommen, das die Kamera nicht sieht."))
 	if not _clip_of("k1").is_empty():
 		_thumb(v, "k1")
-		h._text(v, T.t("Im Wärmebild (rechts) liegt etwas Kleines, Warmes im Gras. Geh hin – mit «Erkunden» oder mit der Ansicht – und such es."), 14, UI.TXT)
+		if bool(_part("k1").get("seen", true)):
+			h._text(v, T.t("Im Wärmebild (rechts) liegt etwas Kleines, Warmes im Gras. Geh hin – mit «Erkunden» oder mit der Ansicht – und such es."), 14, UI.TXT)
+		else:
+			h._text(v, T.t("Der warme Fleck liegt knapp ausserhalb des Wärmebilds – ein paar Schritte vor dem Zelteingang. Geh hin – mit «Erkunden» oder mit der Ansicht – und such es."), 14, UI.TXT)
 	else:
 		h._text(v, T.t("Die Aufnahme dazu fehlt (Nacht übersprungen). Etwas liegt ein paar Schritte vor dem Zelt im Gras – «Hinweis» zeigt, wo."), 14, UI.TXT)
 	var r: HBoxContainer = h._row(v)
