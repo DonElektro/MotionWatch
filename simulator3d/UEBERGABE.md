@@ -1,8 +1,15 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Simulator-Version **3D-4.83** · passende MoveEye-Version (früher Motion Watch) **2.98.114**
+Stand: 31.10.2026 · Simulator-Version **3D-4.84** · passende MoveEye-Version (früher Motion Watch) **2.98.115**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3D-4.84 (MoveEye 2.98.115): «Beim Start: Nur Gruppen» (MoveEye und Simulator)
+
+- `main.gd`: Einstellungen öffnen beim Start in «Nur Gruppen», Schalter «Beim Start: Nur Gruppen» (ab Werk ein); aus =
+  die eigenen auf-/zugeklappten Menüs kommen zurück.
+- MoveEye: Schalter `ui_start_groups` (020, 530, 470, 550, 570), neuer Teil `639j_nurgruppen.py` (Übersetzungen,
+  Anleitung); Pi-Fenster: drei Aufklapp-Knöpfe in Reihenfolge und Symbolen wie im Web.
 
 ## NEU in 3D-4.83 (MoveEye 2.98.114): Werkseinstellungen (`werk.gd`)
 

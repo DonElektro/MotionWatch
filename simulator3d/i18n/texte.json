@@ -5161,6 +5161,12 @@
   "it": "Al prato delle tende c’è odore di salsicce – e sempre più di fumo.",
   "rm": "Sper il prà da tendas savura quai da liongias – e adina dapli da fim."
  },
+ "Bei jedem Start zeigen die Einstellungen nur die Gruppen. Aus: Die Menüs sind auf- und zugeklappt, wie du sie verlassen hast.": {
+  "en": "On every start the settings show only the groups. Off: the menus open as you left them.",
+  "fr": "À chaque démarrage, les réglages n’affichent que les groupes. Désactivé : les menus restent ouverts ou fermés comme vous les avez laissés.",
+  "it": "A ogni avvio le impostazioni mostrano solo i gruppi. Spento: i menu restano aperti o chiusi come li hai lasciati.",
+  "rm": "A mintga start mussan ils parameters mo las gruppas. Deactivà: ils menus èn averts u serrads sco che ti als has laschads."
+ },
  "Bei Nebel bei der Alp Tschuggen übernachten und gut hinhören. Wenn sie vor MoveEye steht: ein Foto mit MoveEyes Kamera!": {
   "en": "Spend a foggy night at the Alp Tschuggen and listen carefully. When she stands in front of MoveEye: a photo with MoveEye’s camera!",
   "fr": "Passe une nuit de brouillard à l’Alp Tschuggen et écoute bien. Quand elle est devant MoveEye : une photo avec la caméra de MoveEye !",
@@ -5280,6 +5286,12 @@
   "fr": "Près de la cabane de la piscine, quelqu’un attend très patiemment devant un mur …",
   "it": "Vicino alla baracca della piscina qualcuno siede pazientissimo davanti a un muro …",
   "rm": "Sper la chamona da la piscina sesa insatgi fitg pazient davant in mir …"
+ },
+ "Beim Start: Nur Gruppen": {
+  "en": "On start: groups only",
+  "fr": "Au démarrage : seulement les groupes",
+  "it": "All’avvio: solo i gruppi",
+  "rm": "Al start: mo las gruppas"
  },
  "Beim Wegweiser am Gumpisee kommt ab und zu jemand angerannt, der es eilig hat.": {
   "en": "At the signpost by the Gumpisee now and then someone in a hurry comes running.",
