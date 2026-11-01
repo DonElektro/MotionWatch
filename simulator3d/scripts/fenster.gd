@@ -36,6 +36,19 @@ extends Node
 ##   list: false   nicht in der Liste «Fenster»
 ## Der Inhalt bekommt set_meta("fenster", id): Skripte, die sich bisher selbst platziert haben, lassen das dann.
 ## Tests: /control {"action": "fenster", "do": "info" | "drag" | "resize" | "close" | "list" | "check" | "reset" | "over"}
+##
+## Paket «Andocken» (Daniel 01.11.2026, wie die Karten in MoveEye):
+##   * Andockleisten links und rechts (Spalten, optional unten): die Fenster rasten ohne Überlappung ein, die Werkzeugleiste
+##     unten und der Knopf «Bedienfeld zeigen» bleiben frei (pack(): rein rechnerisch, Test werkzeuge/fenster_dock_test.gd)
+##   * passt sich an Fenstergrösse / Auflösung an: Bilder (Karte, Livebild, SmallTV, Kameras …) wachsen mit der Höhe der
+##     Ansicht und werden kleiner, bis alles in eine Spalte je Seite passt (schmal: 1 Spalte, ab 1700 px: 2)
+##   * «Neu anordnen» in der Liste «Fenster»; ziehen bleibt frei: loslassen am Rand = andocken (Reihenfolge nach der Höhe),
+##     anderswo = frei schwebend (wie bisher, mit Schnappen); Doppelklick = zurück in die Leiste. Alles in fenster.json.
+##   * Karte, Kompass, SmallTV und CPU in EINEM Seitenfenster mit Reitern (Fenster «tabs»); jedes bleibt als Reiter
+##     erreichbar und in der Liste; Schalter «… als Reiter» in der Liste (aus = einzelne Fenster wie bisher)
+##   * Optionen: top (immer zuoberst), fold (einklappbar zur schmalen Leiste), sizes (Knopf klein / mittel / gross),
+##     fit: false (zählt nicht beim Einpassen), auto: false (Grösse nie automatisch). Entwickler: alle vier.
+##   * /control {"action": "fenster", "do": "arrange" | "layout" | "tab" (id) | "fold" (id, on) | "dock" (on) | "tabs" (on)}
 
 const UI = preload("res://scripts/ui_style.gd")
 const T = preload("res://scripts/i18n.gd")
@@ -56,13 +69,42 @@ var _list_anchor: Control = null
 var _checks := {}                      # id -> CheckBox of the open list
 var _list_t := 0.0
 
+# ---- Paket «Andocken» -------------------------------------------------------------------------------------------------------
+## id -> [Leiste "L" | "R" | "B", Reihenfolge, unten in der Spalte]; nicht aufgeführte Fenster schweben wie bisher
+const DOCK_DEF := {"tabs": ["L", 0], "compass": ["L", 1], "map": ["L", 2], "smalltv": ["L", 3], "cpu": ["L", 4],
+		"live": ["L", 10], "kopf": ["L", 20], "blinki": ["L", 90, true],
+		"dev": ["R", -10], "kameras": ["R", 0], "geraet": ["R", 10], "mover": ["R", 90, true]}
+const GROUP := ["map", "compass", "smalltv", "cpu"]         # zusammen in einem Fenster mit Reitern
+const TAB_NAME := {"map": "Karte", "compass": "Kompass", "smalltv": "SmallTV", "cpu": "CPU"}
+const AUTO_BASE := {"map": 220.0, "live": 260.0, "kopf": 320.0, "kameras": 330.0}   # Breite bei Massstab 1 (sonst die erste Breite)
+const DOCK_ZONE := 48.0                # so nah am Rand losgelassen = andocken
+const TOP := 8.0                       # oberster Platz in einer Leiste
+const S_MIN := 0.55                    # kleinster Massstab der Bilder
+
+var dock_on := true                    # Fenster automatisch andocken (aus = wie vor dem Paket)
+var tabs_on := true                    # Karte, Kompass, SmallTV und CPU als Reiter
+var tab_active := "map"
+var tab_host: Win = null
+var _tab_btns := {}                    # id -> Button in der Reiterleiste
+var _tab_ph: Label = null              # «SmallTV: sobald MoveEye ein Bild schickt» im leeren Reiter
+var _auto_s := -1.0                    # Massstab der Bilder in den Leisten
+var _fit_t := 0.0
+var _grow_block := 0.0
+var _pack_pos := {}                    # id -> Platz aus pack()
+var _pack_ok := true
+
 
 func _ready() -> void:
+	process_priority = 100                               # Paket «Andocken»: nach den Fenstern - Grösse und Platz im selben Bild
 	_saved = {}
 	if FileAccess.file_exists(FILE):
 		var d = JSON.parse_string(FileAccess.get_file_as_string(FILE))
 		if typeof(d) == TYPE_DICTIONARY and typeof(d.get("win")) == TYPE_DICTIONARY:
 			_saved = d["win"]
+		if typeof(d) == TYPE_DICTIONARY:
+			dock_on = bool(d.get("dock", true))
+			tabs_on = bool(d.get("tabs", true))
+			tab_active = str(d.get("tab", "map")) if str(d.get("tab", "map")) in GROUP else "map"
 
 
 # ---- anmelden --------------------------------------------------------------------------------------------------------------
@@ -100,6 +142,12 @@ func add(id: String, title, content: Control, opts := {}) -> Control:
 		parent.move_child(w, idx)
 	var s: Dictionary = _saved.get(id, {}) if typeof(_saved.get(id, {})) == TYPE_DICTIONARY else {}
 	w.user_hidden = bool(s.get("hid", false)) and not opts.has("set_on")
+	_dock_default(w)
+	if s.has("d"):                                       # Paket «Andocken»: eigene Leiste / frei («F»)
+		w.dock = "" if str(s["d"]) == "F" else str(s["d"])
+		w.dock_i = float(s.get("di", w.dock_i))
+		w.dock_end = bool(s.get("de", w.dock_end))
+	w.folded = bool(s.get("fo", false)) and opts.get("fold", false)
 	wins[id] = w
 	order.append(id)
 	return w
@@ -156,16 +204,83 @@ func reset() -> void:
 		var w: Win = wins[k]
 		w.placed = false
 		w.user_hidden = false
-		if w.sized and w.opts.has("reset_size"):
-			(w.opts["reset_size"] as Callable).call(w)
-		elif w.sized and not w.opts.has("set_size"):
-			w.content.custom_minimum_size = w.def_cms
-			w.card.reset_size()
-		elif w.sized and w.def_w > 0.0:
-			w.apply_size(w.def_w, w.def_h)
-		w.sized = false
+		_reset_size(w)
+		_dock_default(w)
+		w.folded = false
 	_saved = {}
+	_auto_s = -1.0
 	changed()
+
+
+func _reset_size(w: Win) -> void:
+	if w.sized and w.opts.has("reset_size"):
+		(w.opts["reset_size"] as Callable).call(w)
+	elif w.sized and not w.opts.has("set_size"):
+		w.content.custom_minimum_size = w.def_cms
+		w.card.reset_size()
+	elif w.sized and w.def_w > 0.0:
+		w.apply_size(w.def_w, w.def_h)
+	w.sized = false
+
+
+func arrange() -> void:
+	"""«Neu anordnen» (Paket «Andocken»): alle Fenster zurück in ihre Leiste, Grösse wieder automatisch; ausgeblendete
+	bleiben aus, eingeklappte bleiben eingeklappt"""
+	dock_on = true
+	for k in wins:
+		var w: Win = wins[k]
+		w.placed = false
+		w.rel = Vector2(-1, -1)
+		if bool(w.opts.get("auto", true)):
+			_reset_size(w)
+		_dock_default(w)
+	_auto_s = -1.0
+	_fit_t = 0.0
+	changed()
+
+
+func set_fold(w: Win, on: bool) -> void:
+	"""einklappen zur schmalen Leiste (nur die Titelleiste bleibt) - opts.fold"""
+	if w == null or not w.opts.get("fold", false):
+		return
+	w.folded = on
+	w._title()
+	changed()
+
+
+func size_name(w: Win) -> String:
+	var i := size_index(w)
+	return [T.t("klein"), T.t("mittel"), T.t("gross")][i] if i >= 0 else "◱"
+
+
+func size_index(w: Win) -> int:
+	"""welche der drei Grössen (opts.sizes) gerade gilt; -1 = eigene (von Hand gezogen)"""
+	var ss: Array = w.opts.get("sizes", [])
+	var cur: Vector2 = Vector2(w.want_w, w.want_h) if w.sized else (ss[ss.size() - 1] if ss.size() > 0 else Vector2.ZERO)
+	for i in range(ss.size()):
+		if (ss[i] as Vector2).distance_to(cur) < 2.0:
+			return i
+	return -1
+
+
+func next_size(w: Win) -> void:
+	"""Knopf klein → mittel → gross → klein (die Grösse wird gemerkt)"""
+	var ss: Array = w.opts.get("sizes", [])
+	if ss.size() < 3:
+		return
+	var i := size_index(w)
+	var v: Vector2 = ss[(i + 1) % 3] if i >= 0 else ss[0]
+	w.apply_size(v.x, v.y)
+	w.sized = true
+	w._title()
+	changed()
+
+
+func _dock_default(w: Win) -> void:
+	var dd: Array = DOCK_DEF.get(w.id, ["", 0.0])
+	w.dock = str(dd[0])
+	w.dock_i = float(dd[1])
+	w.dock_end = dd.size() > 2 and bool(dd[2])
 
 
 func changed() -> void:
@@ -180,6 +295,8 @@ func _process(dt: float) -> void:
 			var w: Win = wins[k]
 			if w.placed and w.rel.x >= 0.0:
 				w.position = clamp_pos(w, w.rel * (vs - w.size))
+		_fit_t = 0.0
+	_dock_tick(dt)
 	if _save_t >= 0.0:
 		_save_t -= dt
 		if _save_t < 0.0:
@@ -216,6 +333,13 @@ func save() -> void:
 			e["h"] = roundf(w.want_h)
 		if w.user_hidden:
 			e["hid"] = true
+		var dd: Array = DOCK_DEF.get(k, ["", 0.0])            # Paket «Andocken»: nur was vom Standard abweicht
+		if w.dock != str(dd[0]) or not is_equal_approx(w.dock_i, float(dd[1])) or w.dock_end != (dd.size() > 2 and bool(dd[2])):
+			e["d"] = "F" if w.dock == "" else w.dock
+			e["di"] = snappedf(w.dock_i, 0.01)
+			e["de"] = w.dock_end
+		if w.folded:
+			e["fo"] = true
 		if e.is_empty():
 			out.erase(k)
 		else:
@@ -223,7 +347,7 @@ func save() -> void:
 	_saved = out
 	var f := FileAccess.open(FILE, FileAccess.WRITE)
 	if f != null:
-		f.store_string(JSON.stringify({"v": 1, "win": out}, " "))
+		f.store_string(JSON.stringify({"v": 1, "win": out, "dock": dock_on, "tabs": tabs_on, "tab": tab_active}, " "))
 
 
 # ---- Platz, Schnappen ---------------------------------------------------------------------------------------------------
@@ -413,6 +537,424 @@ func _hidden(w: Win) -> void:
 		(w.opts["on_hide"] as Callable).call()
 
 
+# ---- Paket «Andocken»: Leisten links / rechts / unten ------------------------------------------------------------------------
+func grouped(w: Win) -> bool:
+	"""steckt das Fenster gerade als Reiter im Seitenfenster?"""
+	return tabs_on and w.group != null
+
+
+func docked(w: Win) -> bool:
+	return dock_on and w.dock != "" and not grouped(w)
+
+
+func area() -> Dictionary:
+	"""der Platz für die Leisten: zwischen Handy-Simulator und Bedienfeld; was frei bleiben muss (Werkzeugleiste,
+	Knopf «Bedienfeld zeigen», Ansichtsleiste) als Hindernis"""
+	var lr := free_lr()
+	var obs := []
+	for c in [main.toolbar, main.show_btn, main.view_bar]:
+		if c != null and is_instance_valid(c) and (c as Control).is_visible_in_tree() and (c as Control).modulate.a > 0.01:
+			obs.append((c as Control).get_global_rect())
+	var vs := view_size()
+	return {"l": lr.x, "r": lr.y, "vs": vs, "obs": obs, "maxcols": 1 if vs.x < 1700.0 else 2}
+
+
+func _dock_items(for_fit: bool, k := 1.0) -> Array:
+	"""die angedockten, sichtbaren Fenster für pack(); k: Bilder um diesen Faktor grösser schätzen (passt es noch?)"""
+	var out := []
+	for id in order:
+		var w: Win = wins[id]
+		if not docked(w) or not w.visible or w._drag:
+			continue
+		if for_fit and w.opts.get("fit", true) == false:
+			continue
+		var sz: Vector2 = w.size
+		if k != 1.0:
+			var a: Win = w
+			if w == tab_host and wins.has(tab_active):
+				a = wins[tab_active]
+			if is_auto(a) and a.visible:
+				sz += a.content.size * (k - 1.0)
+		out.append({"id": id, "side": w.dock, "i": w.dock_i, "end": w.dock_end, "size": sz})
+	return out
+
+
+static func _vlim(ar: Dictionary, x0: float, x1: float) -> Vector2:
+	"""oberster und unterster Platz einer Spalte von x0 bis x1 (Hindernisse oben schieben nach unten und umgekehrt)"""
+	var vs: Vector2 = ar["vs"]
+	var top := TOP
+	var bot := vs.y - EDGE
+	for o in ar["obs"]:
+		var r: Rect2 = o
+		if r.end.x <= x0 or r.position.x >= x1:
+			continue
+		if r.get_center().y < vs.y * 0.5:
+			top = maxf(top, r.end.y + GAP)
+		else:
+			bot = minf(bot, r.position.y - GAP)
+	return Vector2(top, bot)
+
+
+static func _pack_side(items: Array, ar: Dictionary, right: bool, out: Dictionary) -> Dictionary:
+	var x: float = (float(ar["r"]) - EDGE) if right else (float(ar["l"]) + EDGE)   # Aussenkante der Spalte
+	var ends := []
+	var norm := []
+	for it in items:
+		(ends if it["end"] else norm).append(it)
+	var ok := true
+	var cols := 1
+	var col_w := 0.0
+	var end_top := INF
+	var yb := INF
+	for j in range(ends.size() - 1, -1, -1):              # unten in der ersten Spalte, das letzte zuunterst
+		var sz: Vector2 = ends[j]["size"]
+		var x0 := x - sz.x if right else x
+		var lim := _vlim(ar, x0, x0 + sz.x)
+		yb = minf(yb, lim.y) - sz.y
+		if yb < lim.x:
+			ok = false
+		out[ends[j]["id"]] = Vector2(x0, yb)
+		end_top = yb
+		yb -= GAP
+		col_w = maxf(col_w, sz.x)
+	var y := -1.0
+	for it in norm:
+		var sz: Vector2 = it["size"]
+		var x0 := x - sz.x if right else x
+		var lim := _vlim(ar, x0, x0 + sz.x)
+		if y < 0.0:
+			y = lim.x
+		var bot := lim.y
+		if cols == 1 and end_top < INF:
+			bot = minf(bot, end_top - GAP)
+		if y + sz.y > bot and y > lim.x + 0.5:             # die Spalte ist voll: eine neue weiter innen
+			x = x - col_w - GAP if right else x + col_w + GAP
+			col_w = 0.0
+			cols += 1
+			x0 = x - sz.x if right else x
+			lim = _vlim(ar, x0, x0 + sz.x)
+			y = lim.x
+			bot = lim.y
+		if y + sz.y > bot:
+			ok = false
+		out[it["id"]] = Vector2(x0, y)
+		y += sz.y + GAP
+		col_w = maxf(col_w, sz.x)
+	var inner := (x - col_w) if right else (x + col_w)
+	if items.is_empty():
+		inner = x + EDGE if right else x - EDGE
+	return {"ok": ok and cols <= int(ar["maxcols"]), "cols": cols if not items.is_empty() else 0, "inner": inner}
+
+
+static func pack(items: Array, ar: Dictionary) -> Dictionary:
+	"""die Plätze in den Leisten - rein rechnerisch (Test ohne Bild: werkzeuge/fenster_dock_test.gd).
+	items: [{id, side "L"|"R"|"B", i, end, size}], ar: area(). Ergebnis {pos: {id: Vector2}, ok, cols_l, cols_r}"""
+	var by := {"L": [], "R": [], "B": []}
+	for it in items:
+		if by.has(str(it["side"])):
+			by[str(it["side"])].append(it)
+	for s in by:
+		(by[s] as Array).sort_custom(func(a, b): return float(a["i"]) < float(b["i"]))
+	var pos := {}
+	var lres := _pack_side(by["L"], ar, false, pos)
+	var rres := _pack_side(by["R"], ar, true, pos)
+	var ok: bool = lres["ok"] and rres["ok"]
+	if not (by["L"] as Array).is_empty() and not (by["R"] as Array).is_empty() and float(lres["inner"]) + GAP > float(rres["inner"]):
+		ok = false                                           # die Leisten stossen zusammen
+	var b: Array = by["B"]
+	if not b.is_empty():                                     # unten: eine Reihe über der Werkzeugleiste, in der Mitte
+		var lx: float = float(lres["inner"]) + GAP
+		var rx: float = float(rres["inner"]) - GAP
+		var tw := -GAP
+		for it in b:
+			tw += (it["size"] as Vector2).x + GAP
+		var x := maxf(lx, (lx + rx - tw) * 0.5)
+		if x + tw > rx:
+			ok = false
+		for it in b:
+			var sz: Vector2 = it["size"]
+			var lim := _vlim(ar, x, x + sz.x)
+			pos[it["id"]] = Vector2(x, lim.y - sz.y)
+			if lim.y - sz.y < lim.x:
+				ok = false
+			x += sz.x + GAP
+	return {"pos": pos, "ok": ok, "cols_l": lres["cols"], "cols_r": rres["cols"]}
+
+
+func is_auto(w: Win) -> bool:
+	"""wächst und schrumpft das Fenster mit der Ansicht? (Bilder in einer Leiste, Grösse nie von Hand geändert)"""
+	return dock_on and (w.dock != "" or grouped(w)) and w.opts.get("resize", "none") != "none" and not w.sized \
+			and w._init_done and bool(w.opts.get("auto", true)) and (AUTO_BASE.has(w.id) or w.def_w > 0.0)
+
+
+func _target_s() -> float:
+	var vs := view_size()
+	return clampf(minf(vs.y / 900.0, vs.x / 1500.0), 0.7, 1.6)
+
+
+func _apply_auto() -> void:
+	for k in wins:
+		var w: Win = wins[k]
+		if not is_auto(w) or not w.visible:
+			continue
+		var mn: Vector2 = w.opts.get("min", Vector2(80, 60))
+		var mx: Vector2 = w.opts.get("max", Vector2(900, 700))
+		var want := roundf(clampf(float(AUTO_BASE.get(k, w.def_w)) * _auto_s, mn.x, mx.x))
+		if absf(want - w.want_w) > 1.0:
+			w.apply_size(want, w.def_h * _auto_s if w.opts.get("resize") == "wh" else 0.0)
+
+
+func _dock_tick(dt: float) -> void:
+	_tab_tick()
+	_keep_top()
+	if not dock_on:
+		_pack_pos = {}
+		return
+	var ar := area()
+	place_now(ar)
+	_grow_block -= dt
+	_fit_t -= dt
+	if _fit_t > 0.0:
+		return
+	_fit_t = 0.3
+	var tgt := _target_s()
+	if _auto_s < 0.0:
+		_auto_s = tgt
+		_apply_auto()
+		return
+	var fit := pack(_dock_items(true), ar)
+	_pack_ok = fit["ok"]
+	if not _pack_ok and _auto_s > S_MIN + 0.001:              # passt nicht: Bilder kleiner
+		_auto_s = maxf(S_MIN, _auto_s - 0.1)
+		_grow_block = 2.0
+		_apply_auto()
+	elif _auto_s > tgt + 0.001:
+		_auto_s = tgt
+		_apply_auto()
+	elif _auto_s < tgt - 0.001 and _grow_block <= 0.0:       # Platz frei: grösser, wenn es geschätzt noch passt
+		var s2 := minf(tgt, _auto_s + 0.1)
+		if pack(_dock_items(true, s2 / _auto_s * 1.05), ar)["ok"]:
+			_auto_s = s2
+			_apply_auto()
+		else:
+			_grow_block = 3.0
+	else:
+		_apply_auto()                                        # neu gezeigte Fenster
+
+
+func place_now(ar := {}) -> void:
+	"""die Plätze rechnen und gleich setzen (die Fenster haben ihre Grösse in diesem Bild schon)"""
+	if not dock_on:
+		return
+	for k in wins:                                           # Grösse wie in Win._process (Tests fragen vor den Fenstern)
+		var w: Win = wins[k]
+		if w.visible and w.size != w.card.get_combined_minimum_size():
+			w.card.size = w.card.get_combined_minimum_size()
+			w.size = w.card.size
+	_pack_pos = pack(_dock_items(false), ar if not ar.is_empty() else area())["pos"]
+	for id in _pack_pos:
+		var w: Win = wins[id]
+		w.position = clamp_pos(w, _pack_pos[id])
+	if tab_host != null and tab_host.visible and wins.has(tab_active) and grouped(wins[tab_active]):
+		(wins[tab_active] as Win).position = tab_host.content.global_position.floor()
+
+
+func dock_pos(w: Win) -> Vector2:
+	return _pack_pos.get(w.id, Vector2(-1, -1))
+
+
+func drop(w: Win) -> void:
+	"""Fenster losgelassen: am Rand = in diese Leiste (Reihenfolge nach der Höhe), sonst frei schwebend"""
+	var r := w.get_global_rect()
+	var lr := free_lr()
+	var vs := view_size()
+	var lim := _vlim(area(), r.position.x, r.end.x)
+	var side := ""
+	if r.position.x <= lr.x + EDGE + DOCK_ZONE:
+		side = "L"
+	elif r.end.x >= lr.y - EDGE - DOCK_ZONE:
+		side = "R"
+	elif r.end.y >= lim.y - DOCK_ZONE:
+		side = "B"
+	if side == "":
+		w.dock = ""
+		w.placed = true
+		var room: Vector2 = vs - w.size
+		w.rel = Vector2(clampf(w.position.x / maxf(1.0, room.x), 0.0, 1.0), clampf(w.position.y / maxf(1.0, room.y), 0.0, 1.0))
+		changed()
+		return
+	w.dock = side
+	w.placed = false
+	w.dock_end = side != "B" and r.get_center().y > vs.y * 0.62
+	var keyed := []                                          # neu nummerieren: sichtbare nach ihrem Platz
+	for k in order:
+		var o: Win = wins[k]
+		if o.dock != side or grouped(o):
+			continue
+		var c: Vector2 = r.get_center() if o == w else (o.get_global_rect().get_center() if o.visible else Vector2(o.dock_i * 1000.0, o.dock_i * 1000.0))
+		keyed.append([c.x if side == "B" else c.y, o])
+	keyed.sort_custom(func(a, b): return float(a[0]) < float(b[0]))
+	for j in range(keyed.size()):
+		(keyed[j][1] as Win).dock_i = float(j * 10)
+	changed()
+
+
+func _keep_top() -> void:
+	"""Fenster mit «top» (Entwickler) immer zuoberst - über den anderen Fenstern und dem Bedienfeld"""
+	for k in wins:
+		var w: Win = wins[k]
+		if not w.opts.get("top", false) or not w.visible:
+			continue
+		var p := w.get_parent()
+		if p == null:
+			continue
+		var last := p.get_child_count() - 1
+		if _list != null and _list.get_parent() == p and _list.visible:
+			last -= 1
+		if w.get_index() < last:
+			p.move_child(w, last)
+
+
+func check_layout() -> Dictionary:
+	"""für Tests: überlappen sich sichtbare Fenster, ragt eines aus dem Bild, deckt eines die Werkzeugleiste?"""
+	place_now()
+	var vs := view_size()
+	var bad := []
+	var rs := []
+	for k in order:
+		var w: Win = wins[k]
+		if w.visible:
+			rs.append([k, w.get_global_rect()])
+	for i in range(rs.size()):
+		var a: Rect2 = rs[i][1]
+		if a.position.x < -0.5 or a.position.y < -0.5 or a.end.x > vs.x + 0.5 or a.end.y > vs.y + 0.5:
+			bad.append("out:" + str(rs[i][0]))
+		for c in [main.toolbar, main.show_btn]:
+			if c != null and (c as Control).is_visible_in_tree() and a.grow(-1).intersects((c as Control).get_global_rect()):
+				bad.append("over:" + str(rs[i][0]) + ">" + str((c as Control).name))
+		for j in range(i + 1, rs.size()):
+			if a.grow(-1).intersects((rs[j][1] as Rect2).grow(-1)):
+				var ia: String = rs[i][0]
+				var ib: String = rs[j][0]
+				if (ia == "tabs" and (wins[ib] as Win).group == tab_host) or (ib == "tabs" and (wins[ia] as Win).group == tab_host):
+					continue                                   # der gezeigte Reiter liegt im Seitenfenster
+				bad.append("%s / %s" % [rs[i][0], rs[j][0]])
+	return {"ok": bad.is_empty(), "bad": bad, "scale": snappedf(_auto_s, 0.01), "fit": _pack_ok, "view": [vs.x, vs.y]}
+
+
+# ---- das Seitenfenster mit Reitern -----------------------------------------------------------------------------------------
+func _build_tabs() -> void:
+	var body := Control.new()                               # Platz für den gezeigten Reiter (sein Fenster liegt darüber)
+	body.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_tab_ph = Label.new()
+	_tab_ph.add_theme_font_size_override("font_size", 12)
+	_tab_ph.add_theme_color_override("font_color", UI.MUT)
+	_tab_ph.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_tab_ph.custom_minimum_size = Vector2(170, 0)
+	_tab_ph.position = Vector2(6, 6)
+	_tab_ph.visible = false
+	body.add_child(_tab_ph)
+	var bar := HBoxContainer.new()
+	bar.add_theme_constant_override("separation", 1)
+	bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	for id in GROUP:
+		if not wins.has(id):
+			continue
+		var b := Button.new()
+		b.text = T.t(str(TAB_NAME[id]))
+		b.tooltip_text = wins[id].title() + " · " + T.t("Reiter: Klick = zeigen")
+		b.flat = true
+		b.focus_mode = Control.FOCUS_NONE
+		b.add_theme_font_size_override("font_size", 11)
+		var e := StyleBoxFlat.new()
+		e.bg_color = Color(1, 1, 1, 0.0)
+		e.content_margin_left = 5
+		e.content_margin_right = 5
+		e.set_corner_radius_all(5)
+		var a := e.duplicate() as StyleBoxFlat
+		a.bg_color = Color(UI.ACC, 0.85)
+		b.set_meta("st", [e, a])
+		b.pressed.connect(func(): show_tab(id))
+		bar.add_child(b)
+		_tab_btns[id] = b
+	if _tab_btns.is_empty():
+		return
+	add("tabs", func(): return T.t("Reiter") + " · " + (wins[tab_active].title() if wins.has(tab_active) else ""), body,
+			{"tabs": bar, "list": false, "shown": func(): return tabs_on and _any_tab_on(),
+			"on": func(): return _any_tab_on(), "set_on": func(v): _all_tabs(bool(v))})
+	tab_host = wins["tabs"]
+	tab_host.card.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
+	tab_host.card.mouse_filter = Control.MOUSE_FILTER_IGNORE   # der gezeigte Reiter bekommt die Maus
+	for id in _tab_btns:
+		(wins[id] as Win).group = tab_host
+	_paint_tabs()
+
+
+func _any_tab_on() -> bool:
+	for id in _tab_btns:
+		if is_on(id):
+			return true
+	return false
+
+
+func _all_tabs(v: bool) -> void:
+	for id in _tab_btns:
+		set_on(id, v)
+
+
+func show_tab(id: String) -> void:
+	if not _tab_btns.has(id):
+		return
+	if not is_on(id):
+		set_on(id, true)
+	tab_active = id
+	_paint_tabs()
+	changed()
+
+
+func _paint_tabs() -> void:
+	for id in _tab_btns:
+		var b: Button = _tab_btns[id]
+		var st: Array = b.get_meta("st")
+		var act: bool = id == tab_active
+		for s in ["normal", "hover", "pressed", "hover_pressed", "focus"]:
+			b.add_theme_stylebox_override(s, st[1] if act else st[0])
+		var c := Color.WHITE if act else (Color(0.85, 0.88, 0.92) if is_on(id) else Color(1, 1, 1, 0.4))
+		b.add_theme_color_override("font_color", c)
+		b.add_theme_color_override("font_hover_color", Color.WHITE)
+
+
+var _tab_t := 0.0
+
+
+func _tab_tick() -> void:
+	if tab_host == null:
+		return
+	if tabs_on and not is_on(tab_active):                   # der gezeigte Reiter wurde ausgeschaltet (z. B. Taste M)
+		for id in _tab_btns:
+			if is_on(id):
+				tab_active = id
+				break
+	var a: Win = wins.get(tab_active)
+	var body: Control = tab_host.content
+	var want := Vector2(120, 40)
+	var ph := false
+	if a != null and a.wants():
+		want = a.card.get_combined_minimum_size()
+	else:
+		ph = true
+		_tab_ph.text = (a.title() + ": " + T.t(str(a.opts.get("hint", "ausgeschaltet")))) if a != null else ""
+		want = Vector2(182, _tab_ph.get_combined_minimum_size().y + 12.0)
+	if _tab_ph.visible != ph:
+		_tab_ph.visible = ph
+	if body.custom_minimum_size != want:
+		body.custom_minimum_size = want
+	_tab_t -= get_process_delta_time()
+	if _tab_t <= 0.0:
+		_tab_t = 0.25
+		_paint_tabs()
+
+
 # ---- die Liste «Fenster» (Knopf in der Leiste unten) ---------------------------------------------------------------------
 func list_open() -> bool:
 	return _list != null and _list.visible
@@ -440,6 +982,7 @@ func _build_list() -> void:
 	if _list != null:
 		_list.queue_free()
 	_checks = {}
+	_mode_checks = {}
 	_list = PanelContainer.new()
 	_list.add_theme_stylebox_override("panel", UI.box(Color(0.05, 0.07, 0.09, 0.95), Color(1, 1, 1, 0.14), 14, 10, 1))
 	_list.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -492,6 +1035,31 @@ func _build_list() -> void:
 	var sep := HSeparator.new()
 	sep.add_theme_constant_override("separation", 8)
 	v.add_child(sep)
+	for it in [["dock", T.t("Fenster automatisch andocken"), T.t("Leisten links und rechts, ohne Überlappung; die Grösse passt sich dem Bildschirm an")],
+			["tabs", T.t("Karte, Kompass, SmallTV und CPU als Reiter"), T.t("Ein Seitenfenster mit Reitern statt vier kleiner Fenster")]]:
+		var key: String = it[0]
+		var sw := CheckBox.new()
+		sw.text = str(it[1])
+		sw.tooltip_text = str(it[2])
+		sw.add_theme_font_size_override("font_size", 13)
+		sw.add_theme_color_override("font_color", Color(0.85, 0.88, 0.92))
+		sw.add_theme_color_override("font_pressed_color", Color.WHITE)
+		sw.add_theme_color_override("font_hover_color", Color.WHITE)
+		sw.add_theme_color_override("font_hover_pressed_color", Color.WHITE)
+		sw.add_theme_icon_override("checked", _box_icon(true))
+		sw.add_theme_icon_override("unchecked", _box_icon(false))
+		sw.button_pressed = dock_on if key == "dock" else tabs_on
+		sw.toggled.connect(func(on: bool): set_mode(key, on))
+		sw.set_meta("pad_back", func(): _list.visible = false)
+		v.add_child(sw)
+		_mode_checks[key] = sw
+	var ab := Button.new()
+	ab.text = T.t("Neu anordnen")
+	ab.tooltip_text = T.t("Alle Fenster zurück in die Leisten links und rechts, Grösse passend zum Bildschirm")
+	ab.add_theme_font_size_override("font_size", 13)
+	ab.pressed.connect(func(): arrange(); _paint_list())
+	ab.set_meta("pad_back", func(): _list.visible = false)
+	v.add_child(ab)
 	var rb := Button.new()
 	rb.text = T.t("Anordnung zurücksetzen")
 	rb.tooltip_text = T.t("Alle Fenster an ihren Standardplatz und in die Standardgrösse; mit ✕ ausgeblendete kommen zurück")
@@ -500,7 +1068,8 @@ func _build_list() -> void:
 	rb.set_meta("pad_back", func(): _list.visible = false)
 	v.add_child(rb)
 	var h2 := Label.new()
-	h2.text = T.t("Titelleiste ziehen = verschieben · Ecke unten rechts = Grösse · Doppelklick auf die Leiste = zurück an den Platz")
+	h2.text = T.t("Titelleiste ziehen = verschieben · Ecke unten rechts = Grösse · Doppelklick auf die Leiste = zurück an den Platz") \
+			+ "\n" + T.t("Am Rand loslassen = andocken, anderswo = frei schwebend")
 	h2.add_theme_font_size_override("font_size", 10)
 	h2.add_theme_color_override("font_color", UI.MUT)
 	h2.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -539,7 +1108,25 @@ func _box_icon(on: bool) -> Texture2D:
 	return t
 
 
+var _mode_checks := {}
+
+
+func set_mode(key: String, on: bool) -> void:
+	"""Schalter der Liste: «dock» (automatisch andocken) / «tabs» (als Reiter)"""
+	if key == "dock":
+		dock_on = on
+		_auto_s = -1.0
+	elif key == "tabs":
+		tabs_on = on
+	_fit_t = 0.0
+	changed()
+
+
 func _paint_list() -> void:
+	for key in _mode_checks:
+		var sw: CheckBox = _mode_checks[key]
+		if is_instance_valid(sw) and sw.button_pressed != (dock_on if key == "dock" else tabs_on):
+			sw.set_pressed_no_signal(dock_on if key == "dock" else tabs_on)
 	for id in _checks:
 		var cb: CheckBox = _checks[id]
 		var on := is_on(id)
@@ -631,6 +1218,7 @@ func setup_sim() -> void:
 		home_at(cf, Vector2(EDGE, 300))
 	if m.cpu_pill != null:
 		add("cpu", "CPU-Anzeige", m.cpu_pill, {"compact": true, "home": _home_cpu})
+	_build_tabs()                                         # Paket «Andocken»: Karte, Kompass, SmallTV, CPU als Reiter
 
 
 func _map_size(w: float, _h: float) -> void:
@@ -742,6 +1330,21 @@ func control(d: Dictionary) -> Dictionary:
 			reset()
 		"save":
 			save()
+		"arrange":                                       # Paket «Andocken»
+			arrange()
+		"layout":
+			return check_layout()
+		"tab":
+			show_tab(id)
+		"fold":
+			set_fold(w, bool(d.get("on", true)))
+		"size":                                          # Knopf klein / mittel / gross
+			if w != null:
+				next_size(w)
+		"dock", "tabs":
+			set_mode(dd, bool(d.get("on", true)))
+		"view":                                          # Tests: Fenstergrösse ändern
+			get_window().size = Vector2i(int(d.get("w", 1280)), int(d.get("h", 720)))
 		"over":
 			return {"ok": true, "hud": main._over_hud(Vector2(float(d.get("x", 0)), float(d.get("y", 0))))}
 	return info()
@@ -752,8 +1355,10 @@ func info() -> Dictionary:
 	for k in order:
 		var w: Win = wins[k]
 		o[k] = {"vis": w.visible, "on": is_on(k), "placed": w.placed, "sized": w.sized, "rect": [w.position.x, w.position.y, w.size.x, w.size.y],
-				"content": [w.content.size.x, w.content.size.y], "grip": w.grip.visible}
-	return {"ok": true, "busy": _busy > 0, "wins": o, "list": list_open(), "file": ProjectSettings.globalize_path(FILE), "saved": _saved, "view": [view_size().x, view_size().y]}
+				"content": [w.content.size.x, w.content.size.y], "grip": w.grip.visible, "dock": w.dock, "di": w.dock_i, "fold": w.folded,
+				"tab": grouped(w), "auto": is_auto(w)}
+	return {"ok": true, "busy": _busy > 0, "wins": o, "list": list_open(), "file": ProjectSettings.globalize_path(FILE), "saved": _saved, "view": [view_size().x, view_size().y],
+			"dock": dock_on, "tabs": tabs_on, "tab": tab_active, "scale": _auto_s}
 
 
 func _mouse_path(a: Vector2, b: Vector2, dbl := false) -> void:
@@ -827,6 +1432,13 @@ class Win extends Control:
 	var def_w := -1.0
 	var def_h := 0.0
 	var def_cms := Vector2.ZERO          # the minimum size of the content before any change (for «zurücksetzen»)
+	var dock := ""                       # Paket «Andocken»: "L" | "R" | "B" = in dieser Leiste, "" = frei
+	var dock_i := 0.0                    # Reihenfolge in der Leiste
+	var dock_end := false                # unten in der Spalte (Mover, Blinki)
+	var group: Win = null                # das Seitenfenster mit Reitern, in dem es steckt
+	var folded := false                  # eingeklappt zur schmalen Leiste (opts.fold)
+	var fold_b: Button = null
+	var size_b: Button = null
 	var _init_done := false
 	var _rel_frames := 0
 	var _was := false
@@ -843,6 +1455,13 @@ class Win extends Control:
 		if title_src is Callable:
 			return str((title_src as Callable).call())
 		return T.t(str(title_src))
+
+	func wants() -> bool:
+		"""will der Inhalt gezeigt werden (ohne Reiter-Regel)?"""
+		var want: bool = bool((opts["shown"] as Callable).call()) if opts.has("shown") else content.visible
+		if not opts.has("set_on"):
+			want = want and not user_hidden
+		return want and content.modulate.a > 0.01     # the rover stick: MoveEye shows the picture full screen
 
 	func build() -> void:
 		mouse_filter = Control.MOUSE_FILTER_IGNORE        # only the card catches the mouse, never the room around it
@@ -884,6 +1503,24 @@ class Win extends Control:
 		title_l.custom_minimum_size = Vector2(12, 0)
 		title_l.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		h.add_child(title_l)
+		if opts.has("tabs"):                               # Paket «Andocken»: die Reiter stehen in der Titelleiste
+			title_l.visible = false
+			h.add_child(opts["tabs"])
+			var sp := Control.new()
+			sp.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			sp.custom_minimum_size = Vector2(6, 0)
+			sp.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			h.add_child(sp)
+		if opts.has("sizes"):                              # Knopf klein / mittel / gross
+			size_b = mgr._flat_button("", T.t("Grösse: klein · mittel · gross (Klick = nächste)"))
+			size_b.add_theme_color_override("font_hover_color", Color.WHITE)
+			size_b.pressed.connect(func(): mgr.next_size(self))
+			h.add_child(size_b)
+		if opts.get("fold", false):                        # einklappen zur schmalen Leiste
+			fold_b = mgr._flat_button("▾", T.t("Einklappen / aufklappen"))
+			fold_b.add_theme_color_override("font_hover_color", Color.WHITE)
+			fold_b.pressed.connect(func(): mgr.set_fold(self, not folded))
+			h.add_child(fold_b)
 		close_b = mgr._flat_button("✕", T.t("Fenster ausblenden (zurück über «Fenster» in der Leiste unten)"))
 		close_b.pressed.connect(func(): mgr.set_on(id, false, true))
 		h.add_child(close_b)
@@ -902,6 +1539,11 @@ class Win extends Control:
 		var tx := title()
 		var compact: bool = opts.get("compact", false)
 		title_l.text = "" if compact else tx
+		if size_b != null:
+			size_b.text = mgr.size_name(self)
+		if fold_b != null:
+			fold_b.text = "▸" if folded else "▾"
+			title_l.custom_minimum_size.x = 110.0 if folded else 12.0
 		strip.tooltip_text = tx + " · " + T.t("Ziehen zum Verschieben · Doppelklick: zurück an den Platz")
 
 	func apply_size(w: float, h: float) -> void:
@@ -917,10 +1559,14 @@ class Win extends Control:
 		card.reset_size()
 
 	func _process(dt: float) -> void:
-		var want: bool = bool((opts["shown"] as Callable).call()) if opts.has("shown") else content.visible
-		if not opts.has("set_on"):
-			want = want and not user_hidden
-		var vis: bool = want and content.modulate.a > 0.01     # the rover stick: MoveEye shows the picture full screen
+		var grp: bool = mgr.grouped(self)
+		var vis: bool = wants()
+		if grp:                                           # als Reiter: nur der gezeigte, und nur mit dem Seitenfenster
+			vis = vis and group.visible and mgr.tab_active == id
+		if strip.visible == grp:
+			strip.visible = not grp
+		if opts.get("fold", false) and content.visible == folded:
+			content.visible = not folded
 		if vis != visible:
 			visible = vis
 		if vis != _was:
@@ -942,8 +1588,12 @@ class Win extends Control:
 		if _t <= 0.0:
 			_t = 0.25
 			_title()
-		if not (_drag or _res):
-			if placed:
+		if grp:
+			position = group.content.global_position.floor()
+		elif not (_drag or _res):
+			if mgr.docked(self) and mgr.dock_pos(self).x > -0.5:
+				position = mgr.clamp_pos(self, mgr.dock_pos(self))
+			elif placed and not mgr.docked(self):
 				if _rel_frames > 0:
 					_rel_frames -= 1
 					position = mgr.clamp_pos(self, rel * (mgr.view_size() - size))
@@ -963,6 +1613,7 @@ class Win extends Control:
 				_drag = false
 				placed = false
 				rel = Vector2(-1, -1)
+				mgr._dock_default(self)                      # Paket «Andocken»: zurück in die Leiste
 				mgr.changed()
 			elif ev.pressed:
 				_drag = true
@@ -983,6 +1634,9 @@ class Win extends Control:
 		_drag = false
 		if p.distance_to(_drag_from) < 3.0:
 			return                                       # only a click: stays where it is (and at its place)
+		if mgr.dock_on:                                  # Paket «Andocken»: am Rand = Leiste, sonst frei
+			mgr.drop(self)
+			return
 		placed = true
 		var room: Vector2 = mgr.view_size() - size
 		rel = Vector2(clampf(position.x / maxf(1.0, room.x), 0.0, 1.0), clampf(position.y / maxf(1.0, room.y), 0.0, 1.0))

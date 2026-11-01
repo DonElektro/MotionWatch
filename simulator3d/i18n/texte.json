@@ -3163,6 +3163,12 @@
   "it": "Tutte le finestre al loro posto e alla dimensione standard; quelle nascoste con ✕ ritornano",
   "rm": "Tut las fanestras a lur plazza e grondezza da standard; quellas zuppentadas cun ✕ returnan"
  },
+ "Alle Fenster zurück in die Leisten links und rechts, Grösse passend zum Bildschirm": {
+  "en": "Put all windows back into the side bars, sized to fit the screen",
+  "fr": "Remettre toutes les fenêtres dans les barres gauche et droite, taille adaptée à l’écran",
+  "it": "Rimetti tutte le finestre nelle barre a sinistra e a destra, dimensione adatta allo schermo",
+  "rm": "Tut las fanestras enavos en las trav-chantun da sanestra e dretga, grondezza tenor il visur"
+ },
  "Alle fünf Peilungen auf der Landeskarte gefunden.": {
   "en": "Found all five bearings on the national map.",
   "fr": "Les cinq relèvements trouvés sur la carte nationale.",
@@ -3870,6 +3876,12 @@
   "fr": "Au bord du Riedmoos",
   "it": "Al margine del Riedmoos",
   "rm": "A l'ur dal Riedmoos"
+ },
+ "Am Rand loslassen = andocken, anderswo = frei schwebend": {
+  "en": "Drop at the edge = dock, elsewhere = floating",
+  "fr": "Lâcher au bord = ancrer, ailleurs = flottante",
+  "it": "Rilascia al bordo = aggancia, altrove = libera",
+  "rm": "Laschar liber a l’ur = fixar, autrnua = liber"
  },
  "Am Rastplatz: Flasche und Fackel sind wieder voll.": {
   "en": "At the resting place: bottle and torch are full again.",
@@ -4884,6 +4896,12 @@
   "fr": "En fugue !",
   "it": "Scappata!",
   "rm": "Fugì!"
+ },
+ "ausgeschaltet": {
+  "en": "switched off",
+  "fr": "désactivé",
+  "it": "disattivato",
+  "rm": "deactivà"
  },
  "Ausgesetzt: viel Wind": {
   "en": "Exposed: lots of wind",
@@ -11763,6 +11781,12 @@
   "it": "Una bella immagine - si vede perfino la tana. Grazie!",
   "rm": "In bel maletg - ins vesa schizunt la tauna. Grazia!"
  },
+ "Ein Seitenfenster mit Reitern statt vier kleiner Fenster": {
+  "en": "One side window with tabs instead of four small windows",
+  "fr": "Une fenêtre latérale à onglets au lieu de quatre petites fenêtres",
+  "it": "Una finestra laterale a schede invece di quattro finestre piccole",
+  "rm": "Ina fanestra laterala cun registers empè da quatter fanestras pitschnas"
+ },
  "Ein Spalt im Fels": {
   "en": "A gap in the rock",
   "fr": "Une fente dans la roche",
@@ -12458,6 +12482,12 @@
   "fr": "Icônes d’événements uniformes",
   "it": "Icone degli eventi uniformi",
   "rm": "Simbols d’eveniments unitars"
+ },
+ "Einklappen / aufklappen": {
+  "en": "Collapse / expand",
+  "fr": "Replier / déplier",
+  "it": "Comprimi / espandi",
+  "rm": "Serrar / avrir"
  },
  "Einklappen: nur noch ein kleines Symbol": {
   "en": "Collapse: only a small icon",
@@ -13942,6 +13972,12 @@
   "fr": "Masquer la fenêtre (retour via «Fenêtres» dans la barre en bas)",
   "it": "Nascondi finestra (ritorno con «Finestre» nella barra in basso)",
   "rm": "Zuppentar la fanestra (enavos cun «Fanestras» en la trav giusut)"
+ },
+ "Fenster automatisch andocken": {
+  "en": "Dock windows automatically",
+  "fr": "Ancrer les fenêtres automatiquement",
+  "it": "Aggancia le finestre automaticamente",
+  "rm": "Fixar las fanestras automaticamain"
  },
  "Fenster mit Vorhang (Fernseher flackert)": {
   "en": "Window with curtain (TV flickers)",
@@ -16620,6 +16656,12 @@
   "it": "Salsicce alla griglia (piatto)",
   "rm": "Liongias grillidas (tagliet)"
  },
+ "gross": {
+  "en": "large",
+  "fr": "grande",
+  "it": "grande",
+  "rm": "gronda"
+ },
  "gross (braucht mehr Leistung)": {
   "en": "large (needs more power)",
   "fr": "grande (demande plus de puissance)",
@@ -16739,6 +16781,12 @@
   "fr": "La taille ne correspond pas",
   "it": "La dimensione non corrisponde",
   "rm": "La grondezza na correspunda betg"
+ },
+ "Grösse: klein · mittel · gross (Klick = nächste)": {
+  "en": "Size: small · medium · large (click = next)",
+  "fr": "Taille : petite · moyenne · grande (clic = suivante)",
+  "it": "Dimensione: piccola · media · grande (clic = successiva)",
+  "rm": "Grondezza: pitschna · mesauna · gronda (clic = proxima)"
  },
  "Grösser": {
   "en": "Bigger",
@@ -20551,6 +20599,12 @@
   "it": "Mappa, bussola, immagine live … on / off e «Ripristina disposizione»",
   "rm": "Charta, bussola, maletg live … en / ora e «Reinizialisar la disposiziun»"
  },
+ "Karte, Kompass, SmallTV und CPU als Reiter": {
+  "en": "Map, compass, SmallTV and CPU as tabs",
+  "fr": "Carte, boussole, SmallTV et CPU en onglets",
+  "it": "Mappa, bussola, SmallTV e CPU come schede",
+  "rm": "Charta, bussola, SmallTV e CPU sco registers"
+ },
  "Karte: ": {
   "en": "Map: ",
   "fr": "Carte : ",
@@ -21313,6 +21367,12 @@
   "fr": "Claquer 4×",
   "it": "Battere le mani 4×",
   "rm": "Clatschar 4×"
+ },
+ "klein": {
+  "en": "small",
+  "fr": "petite",
+  "it": "piccola",
+  "rm": "pitschna"
  },
  "klein (schnell)": {
   "en": "small (fast)",
@@ -22495,6 +22555,12 @@
   "fr": "doux et rare, pas de sursauts",
   "it": "piano e raro, nessuno spavento improvviso",
   "rm": "quiet e rar, nagins mumens da tschuffergna"
+ },
+ "Leisten links und rechts, ohne Überlappung; die Grösse passt sich dem Bildschirm an": {
+  "en": "Bars on the left and right, no overlap; the size adapts to the screen",
+  "fr": "Barres à gauche et à droite, sans chevauchement ; la taille s’adapte à l’écran",
+  "it": "Barre a sinistra e a destra, senza sovrapposizioni; la dimensione si adatta allo schermo",
+  "rm": "Trav-chantuns a sanestra ed a dretga, senza surposiziun; la grondezza s’adatta al visur"
  },
  "Leistung": {
   "en": "Performance",
@@ -24237,6 +24303,12 @@
   "fr": "Moyen",
   "it": "Medio",
   "rm": "Mesaun"
+ },
+ "mittel": {
+  "en": "medium",
+  "fr": "moyenne",
+  "it": "media",
+  "rm": "mesauna"
  },
  "mittel (10 m)": {
   "en": "medium (10 m)",
@@ -26345,6 +26417,12 @@
   "fr": "Nouveau",
   "it": "Nuovo",
   "rm": "Nov"
+ },
+ "Neu anordnen": {
+  "en": "Rearrange",
+  "fr": "Réorganiser",
+  "it": "Riordina",
+  "rm": "Reordinar"
  },
  "Neu auswerten": {
   "en": "Evaluate again",
@@ -29059,6 +29137,18 @@
   "it": "Diario di viaggio",
   "rm": "Diari da viadi"
  },
+ "Reiter": {
+  "en": "Tabs",
+  "fr": "Onglets",
+  "it": "Schede",
+  "rm": "Registers"
+ },
+ "Reiter: Klick = zeigen": {
+  "en": "Tab: click = show",
+  "fr": "Onglet : clic = afficher",
+  "it": "Scheda: clic = mostra",
+  "rm": "Register: clic = mussar"
+ },
  "Release «ki-daten» anlegen": {
   "en": "Create release «ki-daten»",
   "fr": "Créer la release «ki-daten»",
@@ -31421,6 +31511,12 @@
   "fr": "Skis (appuyés)",
   "it": "Sci (appoggiati)",
   "rm": "Skis (pusads)"
+ },
+ "SmallTV": {
+  "en": "SmallTV",
+  "fr": "SmallTV",
+  "it": "SmallTV",
+  "rm": "SmallTV"
  },
  "SmallTV (virtuell)": {
   "en": "SmallTV (virtual)",

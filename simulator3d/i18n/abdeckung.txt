@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 6863 (Stellen: 9539)
-Übersetzt: en 6863, fr 6863, it 6863, rm 6863
+Texte gesamt: 6874 (Stellen: 9553)
+Übersetzt: en 6874, fr 6874, it 6874, rm 6874
 Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 473 Stellen
-Nicht mehr im Code (noch in texte.json): 248
+Nicht mehr im Code (noch in texte.json): 253
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 68 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main.gd 1, phone.gd 1, spieltest.gd 1
-Übersprungen (Grund: Anzahl): kennung 24644, schlüssel 18349, keine Wörter 11560, index 9269, technisch 3187, doc 2084, einheit 294, log 154, englisch 126, pfad 102, stringname 102, html 68, klasse 27, shader 6
+Übersprungen (Grund: Anzahl): kennung 24729, schlüssel 18423, keine Wörter 11622, index 9298, technisch 3188, doc 2102, einheit 295, log 154, englisch 126, pfad 102, stringname 102, html 68, klasse 27, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   main.gd                  687    42
@@ -82,6 +82,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   geo.gd                    36     7
   gamemore.gd               36     1
   maggie_vorfuehrung.gd     35     7
+  fenster.gd                34     0
   gameziele.gd              34     0
   devtool_notizen.gd        34     1
   gametools.gd              33     2
@@ -104,7 +105,6 @@ Pro Datei (Texte / davon dynamische Stellen):
   licht.gd                  23     1
   wetter.gd                 23     0
   kompakt_festival.gd       23     0
-  fenster.gd                22     0
   dataset.gd                22     3
   mini.gd                   21     1
   phone.gd                  20     4
