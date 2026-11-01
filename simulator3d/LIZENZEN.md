@@ -1,6 +1,6 @@
 # Lizenzen der Inhalte im 3D-Simulator
 
-Stand: 3D-4.12 (Oktober 2026)
+Stand: 3.21 (November 2026)
 
 ## Figuren (Menschen) – `scripts/figur.gd`
 
@@ -27,6 +27,19 @@ Figuren von **Quaternius** gebaut (`werkzeuge/figuren_paket.py`). Lizenz **CC0 1
 <https://creativecommons.org/publicdomain/zero/1.0/>) – Nutzung und Weitergabe ohne Namensnennung erlaubt; wir nennen die
 Quelle trotzdem: Quaternius (<https://quaternius.com>) «Universal Base Characters», «Modular Outfits Fantasy»,
 «Universal Animation Library» 1 und 2.
+
+## Menschen-Paket (ab 3.21, «Figuren menschlicher») – `pakete/menschen_v1.zip`, `scripts/figur_mensch.gd`
+
+Nachladbar wie das Figuren-Paket (nicht im Simulator-ZIP). Gebaut mit `werkzeuge/menschen_paket.py` aus:
+
+| Teil | Quelle | Lizenz |
+|---|---|---|
+| Grundkörper `3dobjs/base.obj` (MakeHuman «hm08»), Makro-Formen `targets/macrodetails` (Geschlecht, Alter, Muskeln, Gewicht, Grösse, Herkunft), Skelett `rigs/standard/rig.game_engine.json` + Gewichte, Masken `textures/mpfb_*.jpg` | MakeHuman / MPFB2, <https://github.com/makehumancommunity/mpfb2> (Ordner `src/mpfb/data`, Datei `LICENSE.ASSETS.md`); Rechteinhaber vor der Freigabe: Data Collection AB, Joel Palmius, Jonas Hauquier | **CC0 1.0 Universal** |
+| Bewegungen `anim_1.glb`, `anim_2.glb` (aus `figuren_v1.zip` übernommen) | Quaternius «Universal Animation Library» 1 + 2, <https://quaternius.com> | **CC0 1.0 Universal** |
+| Haare, Kleider, Schuhe, Kapuze, Augen, Brauen, Stoff- und Haar-Struktur | aus den Körpern berechnet (MoveEye) | wie der übrige Programmcode |
+
+Der MPFB2-**Programmcode** (GPL) wird nicht verwendet, nur die freigegebenen Daten. Geprüft, aber von hier nicht
+erreichbar (01.11.2026): pip / npm (keine Namensauflösung), quaternius.com, polyhaven.org, ambientcg.com.
 
 ## Übrige Inhalte
 

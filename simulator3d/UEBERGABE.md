@@ -4,6 +4,22 @@ Stand: 31.10.2026 · Version **3.20.0** · MoveEye **3.20.0** (ab 3.0.0 eine gem
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
+## NEU (Zweig real-figuren-mensch, noch ohne Nummer): Figuren menschlicher
+
+- **A, mittel/hoch:** `figur_mensch.gd` (abgeleitet von `figur_paket.gd`): MakeHuman-Körper aus `pakete/menschen_v1.zip`
+  (~5 MB, nicht im Sim-ZIP; Knopf «Menschen-Paket laden», System → Grafik; Wahl «Figuren der Menschen»: auto = Menschen →
+  Quaternius → Ringe). Gebaut mit `werkzeuge/menschen_paket.py` aus MPFB2-Daten (CC0): 8 Körper (Mann/Frau schlank/kräftig,
+  Ältere, Kinder), Skelett mit Quaternius-Ruhe-Ausrichtung (Retarget beim Bauen, gleiche Clips), Teile Haut/Jacke/Ärmel/Hose/
+  Schuhe/Haare (kurz, lang, Dutt, Kranz)/Kapuze/Augen/Brauen/Wimpern, pro Figur zu einem Netz zusammengesetzt (geteilt),
+  Auto-LOD (`ImporterMesh.generate_lods`), ab 25 m Knochen nur jedes 2. Bild, ab 50 m jedes 4. Haut: Rim + Subsurface
+  (nur Forward+), Stoff-/Haar-Normalkarten im Code erzeugt. Hook `_nach_clip()` in figur_paket.gd (Becken-Höhe, gebeugte Ältere).
+- **B, einfach (Pi):** `actor.gd _shape_body` neu: Becken, Taille, Brustkorb, Brust/Büste, Schultern, Kragen, Säume,
+  Hände mit Daumen, Schuhe mit Kappe/Ferse/Sohle, Kopf mit Kinn, Kiefer, Wangen, Augenhöhlen, Lidern, Iris, Nase, Lippen,
+  Ohren; `_hair_and_hat`: Haare als Volumen (kurz, lang, Zopf, Kranz), Mütze, Hut, Cap. Gelenke/Felder unverändert.
+- **Vielfalt:** `menschen_stil.gd`: Kleidung wandern/freizeit/arbeit/regen nach Szene (Tabelle `SZENE`), Bau, Rucksack,
+  Kopfbedeckung, Wanderstöcke (`actor.add_poles`), Stirnlampe/Laterne (`add_lamp("lantern")`). Tests: `/control figuren`
+  op `stil` {value, bau}, op `mensch` {value: aus, lods}.
+
 ## NEU in 3.20.0 (MoveEye 3.20.0): Animationen (`anim_mensch.gd`, `anim_tier.gd`)
 
 - `anim_mensch.gd` / `anim_tier.gd`: Ergänzung **nach** der Grund-Animation von `actor.gd` (die Gelenke aus 3.18.0 bauen den

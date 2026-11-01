@@ -38,6 +38,7 @@ const KEEP := [
 	"bergtal_horror.json",               # Horror-Passwort (Hash)
 	"simulator_sprache.json",            # die gewählte Sprache (i18n.gd CHOICE_FILE) - MoveEye behält die Sprache auch
 	"figuren_v1.zip",                    # Figuren-Paket (heruntergeladen, figur_paket.gd PACK)
+	"menschen_v1.zip",                   # Menschen-Paket (heruntergeladen, figur_mensch.gd MPACK)
 	"inhalte/",                          # Fotos-Oberflächen, CC0-Texturen, Himmel (heruntergeladen, inhalte.gd)
 	"vorlagen/",                         # eigene 3D-Modelle (templates.gd)
 	"orte/cache/",                       # Karten-Daten der Orte (heruntergeladen, geo.gd)
