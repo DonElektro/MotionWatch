@@ -59,6 +59,16 @@ func _init() -> void:
 	for k in ["MoveEyeSim3D.x86_64", ".local/share", "xdg-user-dir DESKTOP", "metadata::trusted", "--entfernen"]:
 		eq("installieren.sh: " + k, sh.contains(k), true)
 	eq("installieren.sh ohne sudo", sh.contains("sudo "), false)
+	# Kiosk (01.11.2026): reine Simulator-Maschine mit Linux Mint, rückgängig machbar
+	var ke := FileAccess.get_file_as_string("res://beilagen_linux/kiosk_ein.sh")
+	for k in ["--trocken", "Fortfahren? (j/n)", ".moveeye_kiosk", "autologin-session=moveeye-kiosk", "kiosk_sitzung.sh", "8765/tcp", "8764/udp", "22/tcp"]:
+		eq("kiosk_ein.sh: " + k, ke.contains(k), true)
+	var ka := FileAccess.get_file_as_string("res://beilagen_linux/kiosk_aus.sh")
+	for k in ["--trocken", "Fortfahren? (j/n)", ".moveeye_kiosk", "SSH bleibt"]:
+		eq("kiosk_aus.sh: " + k, ka.contains(k), true)
+	var ks := FileAccess.get_file_as_string("res://beilagen_linux/kiosk_sitzung.sh")
+	for k in ["--fullscreen", "--stream", "openbox", "desktop", "cinnamon"]:
+		eq("kiosk_sitzung.sh: " + k, ks.contains(k), true)
 	if errs.is_empty():
 		print("Sparmodus-Test OK")
 		quit(0)
