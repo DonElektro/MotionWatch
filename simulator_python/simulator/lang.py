@@ -1,6 +1,6 @@
 """Names shown on Motion Watch's web page in its language (it sends "lang" / Accept-Language with /control).
 
-The maps and places are named in English inside the simulator, the remote controls in German (Daniel's Motion Watch
+The maps and places are named in English inside the simulator, the remote controls in German (the owner's Motion Watch
 is German). tr() turns either one into the language asked for; unknown words stay as they are."""
 
 DE = {   # English -> German: maps and places

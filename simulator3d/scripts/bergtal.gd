@@ -1,5 +1,5 @@
 extends RefCounted
-## 3D-4.x «Bergtal» (Daniel, 31.10.2026): ein einsames Schweizer Bergtal, rund 2 × 2 km - Haupttal von Norden (unten, Wald,
+## 3D-4.x «Bergtal» (Besitzer, 31.10.2026): ein einsames Schweizer Bergtal, rund 2 × 2 km - Haupttal von Norden (unten, Wald,
 ## Kapelle, Strasse) bis zur Passhöhe im Süden (Hospiz, Parkplatz, Bunker im Fels), dazwischen Bergsee mit Moränenwall, Schlucht
 ## mit Wasserfall und Holzbrücke, Alphütte mit Stall, Brunnen, Zäunen und Trockenmauern, Blumenwiese, Blockfeld unter der
 ## Felswand, Geröllhalde; Seitental West mit Moor (Wollgras), Moorsee und Ruine, Grat mit Gipfelkreuz; Seitental Ost mit
@@ -23,7 +23,7 @@ const Worlds = preload("res://scripts/worlds.gd")      # 3D-4.x Welten: the old 
 const Aussicht = preload("res://scripts/bergtal_aussicht.gd")   # «Bergtal · Aussichtspunkte»: what the viewpoints do
 const Orte = preload("res://scripts/bergtal_orte.gd")          # Orte zum Erkunden (Innenräume, Wasser, Grat, Geschichte)
 const Landschaft = preload("res://scripts/bergtal_landschaft.gd")   # «wie auf den Fotos»: Karst, Felszähne, See, Himmel (nicht Lite)
-const Texturen = preload("res://scripts/bergtal_texturen.gd")      # 3.30 Foto-Texturen (Daniels Fotos; Schalter foto_tex, nie Lite)
+const Texturen = preload("res://scripts/bergtal_texturen.gd")      # 3.30 Foto-Texturen (Fotos des Besitzers; Schalter foto_tex, nie Lite)
 const Waerme = preload("res://scripts/waerme.gd")              # Paket A1: Fell-/Federtemperaturen von Murmeltier, Adler, Geier
 const Ziele = preload("res://scripts/bergtal_ziele.gd")        # real-berg-orte: Tuffwasserfall, Chalchstock (Gipfel mit Antenne)
 const Wegweiser = preload("res://scripts/bergtal_wegweiser.gd") # real-berg-orte: gelbe Wegweiser, Zeiten aus dem Weg
@@ -55,7 +55,7 @@ const BUNKER := Vector2(250, 845)
 const GLACIER := Vector2(790, 470)
 const UPPER_HUT := Vector2(470, 300)
 const CLEARING := Vector2(-150, -800)
-# viewpoints (Aussichtspunkte, Daniel 31.10.2026): [id, name, kind (gipfel | grat | kanzel | see | gletscher), x, z, furnishing
+# viewpoints (Aussichtspunkte, Besitzer 31.10.2026): [id, name, kind (gipfel | grat | kanzel | see | gletscher), x, z, furnishing
 # (bank_kreuz | fernrohr | tafel | wild), looking (degrees, 0 = north)]. Each is a reserved place and a sleeping spot.
 const VIEWPOINTS := [["vp_horn", "Tschingelspitz (Gipfel West)", "gipfel", -790.0, 520.0, "bank_kreuz", 90.0],
 		["vp_grat", "Gratspitz über der Rüfi", "grat", -625.0, 125.0, "wild", 60.0],
@@ -119,8 +119,8 @@ const PLACES := [["Alp Tschuggen", 60.0, 0.0], ["Gumpisee", -60.0, -390.0], ["T�
 		["Gletscherseeli", 600.0, 430.0], ["Obri Stafelhütte (Seilbahn)", 470.0, 300.0], ["Bluemenmatte", -90.0, 170.0], ["Lärchenlichtung", -150.0, -800.0],
 		["Schattwald", -60.0, -650.0], ["Furggakehren", 160.0, 560.0], ["Klettersteig Gratspitz", -276.0, 200.0], ["Alte Sennerei Chäsgaden", -700.0, -130.0],
 		["Steimandli-Wald", -650.0, 430.0], ["Fondueplätzli", -175.0, -300.0]]
-# reserved places for the funny / hidden things (later package): [nr, id, name, x, z, free radius]. 1–16 approved by Daniel
-# (31.10.2026); 17+ = the varied zones (suggested, waiting for Daniel's choice).
+# reserved places for the funny / hidden things (later package): [nr, id, name, x, z, free radius]. 1–16 approved by the owner
+# (31.10.2026); 17+ = the varied zones (suggested, waiting for the owner's choice).
 const VIGNETTES := [[1, "murmeltier_zu_spaet", "Murmeltier kommt zu spät zum Bau", -80.0, 215.0, 4.0],
 		[2, "kuh_socke", "Kuh leckt am Zelt / klaut eine Socke", 0.0, 0.0, 0.0],
 		[3, "dohlen_sandwich", "Alpendohlen streiten um ein Sandwich", 66.0, 812.0, 4.0],
@@ -167,7 +167,7 @@ const VIGNETTES := [[1, "murmeltier_zu_spaet", "Murmeltier kommt zu spät zum Ba
 		[44, "holzski", "Holzski schmilzt aus dem Gletscher (Sommer)", 830.0, 485.0, 3.0],
 		[45, "nordlicht", "Nordlicht-Platz (seltene klare Winternächte)", 60.0, 850.0, 4.0],
 		[46, "geheimer_see", "Geheimer Bergsee hinter dem Grat (schmaler Pfad)", -880.0, 420.0, 6.0]]
-# Daniel's numbers 1–34 -> our list: 1–16 = 1–16, 17–34 = 29–46 (17–28 are the varied zones of the coordinator's list)
+# the owner's numbers 1–34 -> our list: 1–16 = 1–16, 17–34 = 29–46 (17–28 are the varied zones of the coordinator's list)
 
 static var _hm := PackedFloat32Array()       # the height map (valley coordinates), kept between rebuilds
 static var _col := PackedColorArray()        # ground colour per point (+ alpha: rock may show on steep ground)
@@ -1137,7 +1137,7 @@ func _build(sc) -> void:
 	rating = evaluate(spot_xz.x, spot_xz.y)
 	_publish()
 	aussicht.start()
-	s.data["bergtal_erleben_b"] = preload("res://scripts/bergtal_erleben_b.gd").new()   # vignettes 18–34 (Daniel's numbers)
+	s.data["bergtal_erleben_b"] = preload("res://scripts/bergtal_erleben_b.gd").new()   # vignettes 18–34 (the owner's numbers)
 	s.data["bergtal_erleben_b"].setup(self)
 	_need_residents = true                                # (at the start of the program the visitors node is not there yet)
 	m.anims.append(Callable(self, "_tick"))
@@ -1408,7 +1408,7 @@ func _water() -> void:
 			m.add_mesh(tal, _lake_mesh(lk, ice_e, 1.06, wl + 0.03), Vector3.ZERO, _water_mat(true), "stone")
 		lakes_info.append({"x": (lk[0] as Vector2).x, "z": (lk[0] as Vector2).y, "level_m": snappedf(wl + ALT0, 1.0), "ice_from": ice_e})
 		if season == "winter" and ice_e < 1.0:
-			ice.append([lk, ice_e, wl])                         # thick enough to walk on (Daniel: «begehbar, knackt»)
+			ice.append([lk, ice_e, wl])                         # thick enough to walk on (Besitzer: «begehbar, knackt»)
 		# people and animals do not walk into the lake (only where it is near the spot)
 		if (lk[0] as Vector2).distance_to(spot_xz) < 700.0:
 			var c: Vector2 = lk[0]
@@ -1908,7 +1908,7 @@ var lift := {}                                # the goods cable car: bottom, top
 
 
 func _hut_area() -> void:
-	# the self-catering hut (nobody there - Daniel: «Selbstversorger»): wood stove, a notice at the door, wood in the shed
+	# the self-catering hut (nobody there - Besitzer: «Selbstversorger»): wood stove, a notice at the door, wood in the shed
 	if not orte.replaces("alp_hut"):                       # (bergtal_orte.gd builds the hut with its inside)
 		bib.add("alp_hut", P(HUT.x, HUT.y), PI, {"text": "Selbstversorgerhütte Alp Tschuggen", "warm": false})
 		var nt := P(HUT.x + 3.6, HUT.y - 3.84, 1.55)
@@ -2018,7 +2018,7 @@ func _pass_area() -> void:
 	var dirv := (road_pts[mini(k + 3, road_pts.size() - 1)] - road_pts[k]).normalized()
 	var nrm := Vector2(-dirv.y, dirv.x)
 	var bp := road_pts[k] + nrm * 4.6
-	bib.add("postauto", P(bp.x, bp.y), atan2(dirv.x, dirv.y) - PI / 2.0)          # vignette 40 (Daniel 28): the horn is a hook
+	bib.add("postauto", P(bp.x, bp.y), atan2(dirv.x, dirv.y) - PI / 2.0)          # vignette 40 (Besitzer 28): the horn is a hook
 	postauto_pos = W(P(bp.x, bp.y, 2.0))
 	bib.add("hiking_sign", P(bp.x + nrm.x * 3.0, bp.y + nrm.y * 3.0), atan2(dirv.x, dirv.y), {"here": "Furggapass (Postauto)", "arms": [["Alp Tschuggen", _walk_time(PASS, HUT), 1]]})
 	bib.add("info_board", P(70.0, 815.0), PI, {"text": "Furggapass %d m ü. M." % int(H(PASS.x, PASS.y) + ALT0)})
@@ -2105,7 +2105,7 @@ func _lower_valley() -> void:
 func _side_valleys() -> void:
 	bib.add("ruin", P(RUIN.x, RUIN.y), 0.4)
 	bib.add("bench", P(LAKE2[0].x + 40.0, LAKE2[0].y + 40.0), PI * 1.2)
-	# the old dairy (Sennerei, vignette 43 / Daniel 31) with a very old cheese
+	# the old dairy (Sennerei, vignette 43 / Besitzer 31) with a very old cheese
 	if not orte.replaces("dairy"):                          # (bergtal_orte.gd: the dairy with its inside, the cheese on the shelf)
 		bib.add("stone_hut", P(-700.0, -130.0), 0.3, {"w": 7.0, "d": 5.0})
 		bib.add("cheese_wheel", P(-698.5, -127.0, 0.02), 0.0)
@@ -2251,7 +2251,7 @@ func _peaks_seen(c: Vector2, look: float) -> Array:
 
 func _vignette_pieces() -> void:
 	"""the static pieces of some approved vignettes (the animations come in the next package)"""
-	bib.add("tennis_ball", P(-58.0, 230.0, 0.0), 0.0)                              # 29 Murmeltier-Fussball (Daniel 17)
+	bib.add("tennis_ball", P(-58.0, 230.0, 0.0), 0.0)                              # 29 Murmeltier-Fussball (Besitzer 17)
 	bib.add("picnic_set", P(-10.0, -296.0), 0.4)                                   # 38 Picknick (26)
 	bib.add("fondue_pot", P(-175.0, -300.0), 1.0)                                  # 8 Fondue-Caquelon
 	if season in ["sommer", "herbst"]:
@@ -2338,7 +2338,7 @@ func _own_node(kind: String, wp: Vector3, rot: float, q := {}) -> Node3D:
 
 
 const BEDS := [["tent", "Kuppelzelt"], ["tent1", "Einmannzelt"], ["tarp", "Tarp mit Isomatte"], ["bivy", "Biwaksack + Isomatte"], ["mat", "Isomatte + Schlafsack (offen)"]]
-# MoveEye's mount at the spot (Daniel): height of the camera head and what it stands on
+# MoveEye's mount at the spot (Besitzer): height of the camera head and what it stands on
 const MOUNTS := {"stativ": ["Auf dem Stativ (Höhe frei, 1,5 m)", 1.5], "rucksack": ["Auf dem Rucksack (tief, nah)", 0.62], "stein": ["Auf einem Stein (erhöht)", 1.15],
 		"zelt": ["Am Zelt (beim Eingang)", 1.0], "baum": ["An einem Baum / Pfosten befestigt", 2.4]}
 
@@ -2609,7 +2609,7 @@ func _shelter_k() -> float:
 
 
 func exposure() -> Dictionary:
-	"""HOOK for weather / battery / camera (Daniel: «ungeschützt = mehr Wind, Regen, Kälte»): factors of the sleeping spot.
+	"""HOOK for weather / battery / camera (Besitzer: «ungeschützt = mehr Wind, Regen, Kälte»): factors of the sleeping spot.
 	wind_k 0 … 1 (× wind at the device), rain_k (× rain on the lens), cold_c (°C added to the air temperature at night),
 	lightning (ridge / summit), rockfall, animals, strangers. Also as Engine-free meta: main.get_meta("platz_exposure")."""
 	var r := rating
@@ -3023,7 +3023,7 @@ func _ptarmigan():
 
 
 func stranger():
-	"""a stranger at night: comes from the trail with a torch to the backpack, kneels, goes away (Daniel: Dieb / Fremder)"""
+	"""a stranger at night: comes from the trail with a torch to the backpack, kneels, goes away (Besitzer: Dieb / Fremder)"""
 	if _pack_node == null or not is_instance_valid(_pack_node):
 		return null
 	var pp := _pack_node.global_position
@@ -3322,7 +3322,7 @@ func _tick_thieves() -> void:
 
 
 func _tick_headlamp() -> void:
-	"""the headlamp of the player at night (exploring): own light cone (Daniel: «Stirnlampe nachts»)"""
+	"""the headlamp of the player at night (exploring): own light cone (Besitzer: «Stirnlampe nachts»)"""
 	var on: bool = m.is_dark() and m.explore != null and m.explore.on
 	if on and _headlamp == null:
 		_headlamp = SpotLight3D.new()
@@ -3371,7 +3371,7 @@ static func all_places() -> Array:
 
 
 func _tick_visited() -> void:
-	"""places you have been to (camera or rover within 70 m): only these can be reached by quick travel (Daniel)"""
+	"""places you have been to (camera or rover within 70 m): only these can be reached by quick travel (Besitzer)"""
 	_vis_t -= 0.25
 	if _vis_t > 0.0:
 		return
@@ -3495,7 +3495,7 @@ func morning() -> Dictionary:
 	ruhe = clampi(ruhe, 1, 5)
 	var st := func(n: int): return "★".repeat(n) + "☆".repeat(5 - n)
 	var txt := "%s  %s %s · %s %s · %s %s" % [T.t("Wie gut war dein Platz?"), T.t("Sicherheit"), st.call(sich), T.t("Aussicht"), st.call(aus), T.t("Ruhe"), st.call(ruhe)]
-	var total := snappedf((sich + aus + ruhe) / 3.0, 0.1)                 # Daniel: all three equal
+	var total := snappedf((sich + aus + ruhe) / 3.0, 0.1)                 # Besitzer: all three equal
 	txt += "  = %.1f" % total
 	var res := {"sicherheit": sich, "aussicht": aus, "ruhe": ruhe, "total": total, "night": lines, "text": txt, "spot": spot, "notes": rating.get("notes", [])}
 	res["ranking"] = _rank_add(res)

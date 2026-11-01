@@ -1,5 +1,5 @@
 extends Node
-## Spielton (Daniel 01.11.2026, Paket «Ton in den Spielen»): echte Geräusche, kurze Musik-Momente, Spannung, Überraschung,
+## Spielton (Besitzer 01.11.2026, Paket «Ton in den Spielen»): echte Geräusche, kurze Musik-Momente, Spannung, Überraschung,
 ## leise Begleitmusik und Menü-Klicks – NUR in Spielen und Geschichten (Maggie, Grossvater, Spielrunden, Entdecken im
 ## Ferienpark / Bergtal / …, Fenster «Spielen»). Überwachung, Testläufe, Prüfstand, MoveEye-Aufgaben bleiben wie bisher.
 ##   * Ein Knoten unter main («klang», main.klang). Aufrufe von überall: const Klang = preload("res://scripts/klang.gd")

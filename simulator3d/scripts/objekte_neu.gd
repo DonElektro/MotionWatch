@@ -1,5 +1,5 @@
 extends RefCounted
-## 3D-4.x «Gegenstände» (Wunsch Daniel, 30.10.2026): mehr Dinge für den Katalog - Obst & Essen, Wertsachen zum Stehlen,
+## 3D-4.x «Gegenstände» (Wunsch des Besitzers, 30.10.2026): mehr Dinge für den Katalog - Obst & Essen, Wertsachen zum Stehlen,
 ## Camping, Garten & Haus, Dinge, die Tiere anlocken, und typische Fehlalarm-Quellen. Gleiches Format wie objects.gd
 ## (Teil: [Form, a, b, c, x, y, z, Farbe, Drehung x, y, z (Grad), Rolle]); objects.gd baut sie (Obj.def / Obj.build).
 ## Zusätzlich:

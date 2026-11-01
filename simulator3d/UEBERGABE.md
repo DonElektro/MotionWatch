@@ -51,12 +51,12 @@ Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weite
   (Startmenü + Desktop, ohne sudo); Sparmodus in quality.gd (≤ 4 GB RAM / ältere Intel-Grafik → Lite), Test sparmodus_test.gd.
 - **Lade-LED** (real-lade-led, MoveEye Teil 639zi): state «charge_led», Fenster «Gerät» (statusled.gd) blinkt mit.
 - **Gehäuse v5.2** (real-gehaeuse-v52): Unterteil mit Weitwinkel-Fenster, IR-Modul 120°, Kabelkamm; bau.json «farben»;
-  Schrauben von v5.2 (von Daniel bestätigt). Daten neu mit `gehaeuse_bauen.py --sim`.
+  Schrauben von v5.2 (vom Besitzer bestätigt). Daten neu mit `gehaeuse_bauen.py --sim`.
 
 ## NEU in 3.41.1 (MoveEye 3.41.1): Hardware-Klärung (MoveEye Teil 639zh, Bau-Infos)
 
 - INA219 Solar 0x44 (0x41 = PCA9685), I2C-Konfliktprüfung (auch Wärmebild 0x40), Shunt 0,01 Ω; werkstatt_daten.gd und
-  bau.json nachgezogen (Freigabe Daniel).
+  bau.json nachgezogen (Freigabe des Besitzers).
 
 ## NEU in 3.41.0 (MoveEye 3.41.0): Links zu Neuerungen (`scripts/news.gd`, MoveEye Teil 639zc)
 
@@ -67,7 +67,7 @@ Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weite
 
 - Ein Eintrag «Bauen» (ui_gemeinsam.json «more»: build, alias case, order 20), /build in MoveEye (/case leitet weiter),
   3D im Browser (werkzeuge/three), 3MF je Teil in hardware/gehaeuse/Druckdateien, Prüfung `werkzeuge/bau_pruefen.py`,
-  Test `werkzeuge/bauen_test.gd`. Bau-Infos nachziehen nur nach Fragebogen an Daniel (CLAUDE.md).
+  Test `werkzeuge/bauen_test.gd`. Bau-Infos nachziehen nur nach Fragebogen an den Besitzer (CLAUDE.md).
 
 ## NEU in 3.39.2 (MoveEye 3.39.2): Push ohne WLAN-Namen (MoveEye Teil 635c)
 
@@ -92,7 +92,7 @@ Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weite
 
 ## NEU in 3.37.0 (MoveEye 3.37.0): Foto-Texturen im Bergtal (`scripts/bergtal_texturen.gd`, `texturen/`)
 
-- Daniels Fotos (nahtlos, `werkzeuge/texturen_bauen.py`, Quellen in `texturen/QUELLEN.txt`), Boden-Shader bergtal_boden /
+- Fotos des Besitzers (nahtlos, `werkzeuge/texturen_bauen.py`, Quellen in `texturen/QUELLEN.txt`), Boden-Shader bergtal_boden /
   bergsee; Schalter `foto_tex` (System › Grafik, Experte). `texturen/unbenutzt/` hat .gdignore (nicht im Export), Linux Pi
   schliesst `texturen/*` aus. LIZENZEN.md: eigene Fotos mit Erlaubnis.
 
@@ -181,7 +181,7 @@ Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weite
 
 ## NEU in 3.24.0 (MoveEye 3.24.0): Schalter aufgeräumt (Teil 639q)
 
-- MoveEye: Schalter notify_sandbox, sim_separate, login_https_only entfernt (Freigabe Daniel 01.11.2026) – die Funktionen
+- MoveEye: Schalter notify_sandbox, sim_separate, login_https_only entfernt (Freigabe des Besitzers 01.11.2026) – die Funktionen
   sind immer an; update_unsigned nur im Entwickler-Bereich, nach 24 h aus. Simulator: «Ton am PC» (`simint.gd`,
   `mikrofon.gd`) statt der zwei alten Schalter, `ui_style.gd`: Symbole farbig als Standard.
 
@@ -268,7 +268,7 @@ Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weite
 - Ports: Tabelle `schnittstelle.json «_ports»`, geprüft in MoveEye 558 `ports_check` und `schnittstelle.gd _ports_cmp`.
   `game.gd game_ports()`; MoveEye 300 `SIM_SCAN_PORTS` sucht auch 8775 / 8785 / 8795.
 
-## NEU in 3.16.0 (MoveEye 3.16.0): Bergtal wie auf Daniels Fotos (`bergtal_landschaft.gd`)
+## NEU in 3.16.0 (MoveEye 3.16.0): Bergtal wie auf den Fotos des Besitzers (`bergtal_landschaft.gd`)
 
 - `bergtal_landschaft.gd` (neu): Kalkfels mit Grasbändern und Schuttkegeln, Karstweide, Felszähne, Legföhren, Alpenrosen
   (Hoch); `bergtal.gd`, `bib_berg.gd`; Shader `bergsee.gdshader` (neu, Smaragd, Ufer, Spiegelung), `bergtal_boden.gdshader`,
@@ -284,7 +284,7 @@ Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weite
 - Simulator-Code unverändert. MoveEye 530 / 536 / 138 / 570 / 595: in der Simulation Tempo, ⇆, 🚜, Mitte, Kalibrieren und
   Wegpunkte ausgeblendet (Web und Pi-Fenster), beim echten Live-Bild sichtbar; Simulations-Band sofort.
 
-## NEU in 3.15.0 (MoveEye 3.15.0): Maggie sieht aus wie Daniels Hund
+## NEU in 3.15.0 (MoveEye 3.15.0): Maggie sieht aus wie der Hund des Besitzers
 
 - `maggie_hund.gd` `_maggie_koerper()`: baut Maggie nach der Grundform «dog» neu (andere Hunde unverändert): schlank,
   hochbeinig (Schulter ≈ 31 cm), Beine mit Gelenk (`legs[i][2]`), feste Kippohren, Schwanz aus 3 Teilen nach oben gebogen,
@@ -517,7 +517,7 @@ Regeln und Ablauf: CLAUDE.md, Abschnitt «Versionierung».
 
 - `abenteuer_bestenliste.gd` mit A1 verbunden (Wertung, Sammlung, Wildkamera – keine Stubs mehr), A4-Tausch nach den
   A2-Wunschlisten, Wildhüter-Aufträge erkennen A1-Fotos.
-- Entscheid Daniel: nur Grossvaters Feldstecher; Seil / Ersatzteil je ein Fundort (zweiter nur auf Leicht); Hilfe-Stufe (A3)
+- Entscheid des Besitzers: nur Grossvaters Feldstecher; Seil / Ersatzteil je ein Fundort (zweiter nur auf Leicht); Hilfe-Stufe (A3)
   = Schwierigkeit (eine Wahl), auf Mittel «Tipp jetzt».
 
 ## NEU in 3D-4.74 (MoveEye 2.98.105): Weltfehler Bergtal / Pfadilager (`bergtal.gd`, `kompakt_pfadi.gd`)
@@ -651,7 +651,7 @@ Regeln und Ablauf: CLAUDE.md, Abschnitt «Versionierung».
 ## NEU in 3D-4.54 (MoveEye 2.98.85): Spielbereich «Spielen» (`spielbereich.gd`, MoveEye 639i)
 
 - `spielbereich.gd` (neu): Startbildschirm «Spielen» (Kapitel, Entdeckungen, Abzeichen, Stufe, Blinki), Kachel ⭐ in `quick.gd`,
-  Steuerung `{"action":"spielbereich"}`. MoveEye 639i: Web `/play` unter Mehr (bis Daniel über einen 7. Reiter entscheidet),
+  Steuerung `{"action":"spielbereich"}`. MoveEye 639i: Web `/play` unter Mehr (bis der Besitzer über einen 7. Reiter entscheidet),
   im Fenster Knopf «⭐ Spielen» in der Leiste von Mehr (572).
 
 ## NEU in 3D-4.53 (MoveEye 2.98.84): Servo-Mechanik MG90S (`servo.gd`)
@@ -786,7 +786,7 @@ Regeln und Ablauf: CLAUDE.md, Abschnitt «Versionierung».
 
 - Neu: `gamemission.gd`, `gamenacht.gd`, `gamesneak.gd`, `gameschwitzen.gd`, `gameturm.gd`, `gameturnier.gd`, `gameziele.gd`,
   gemeinsamer Teil `gamemore.gd` (Probe, Wiederholung, Höhepunkte, Werkzeuge). Geändert: game.gd, gamewiz.gd, gamerules.gd,
-  gametools.gd, localplay.gd. MoveEye 548/596: Rangliste KI-Turm. Plan: `docs/Gameplay_Ausfeilen_Plan.md`.
+  gametools.gd, localplay.gd. MoveEye 548/596: Rangliste KI-Turm.
 - `gamemore._lite()` = `Quality.lite()` (keine Leucht-Materialien, kein Kies-Schmuck, Film 4 statt 8 Bilder).
 
 ## NEU in 3D-4.31 (MoveEye 2.98.62): Nacht-Testlauf (`nachtlauf.gd`, MoveEye /nacht)
@@ -794,7 +794,7 @@ Regeln und Ablauf: CLAUDE.md, Abschnitt «Versionierung».
 - `nachtlauf.gd` (neu): Ablauf einer Nacht mit festem Zufall, schreibt die Wahrheit (Ereignisse, Abstand, Sichtbarkeit);
   Steuerung `{"action":"nacht",…}` (schnittstelle.json), `busy_with` «Nacht-Testlauf». Eigene Arten:
   `main.nacht.register_kind(kind, f, cat, cause)`. MoveEye: 579b (Abgleich, /nacht), 599d (Fenster), 599e (Texte).
-- Abbrechen im Simulator-Fenster bleibt erlaubt (Daniel 31.10.); Start nur in MoveEye durch den Besitzer.
+- Abbrechen im Simulator-Fenster bleibt erlaubt (Besitzer 31.10.); Start nur in MoveEye durch den Besitzer.
 - MoveEye: «Trainings-Nacht» 🏋 und «Nacht-Generalprobe» 🎭 statt 🌙 (🌙 nur noch Nacht-Testlauf).
 
 ## NEU in 3D-4.30 (MoveEye 2.98.61): Erlebniswelt im Ferienpark (`erlebniswelt.gd`, 19 Vignetten)
@@ -891,7 +891,7 @@ Regeln und Ablauf: CLAUDE.md, Abschnitt «Versionierung».
 - **Neuer Dateiname:** export_presets `MoveEyeSim3D.exe` / `MoveEyeSim3D.x86_64` / `MoveEyeSim3D.arm64`, Datei-Eigenschaften
   «MoveEye Sim 3D» / Firma «MoveEye» (wirken erst mit `application/modify_resources=true` + rcedit – ist aus, also noch
   Godot-Standardangaben in der .exe). project.godot `config/name="MoveEye Sim 3D"` → **neuer Ordner der Benutzerdaten** (user://),
-  die alten Einstellungen bleiben unbenutzt liegen (Entscheid Daniel: frischer Start, keine Übernahme).
+  die alten Einstellungen bleiben unbenutzt liegen (Entscheid des Besitzers: frischer Start, keine Übernahme).
 - **Alte Installationen (bis 3D-4.23, MotionWatch3D.exe):** ihr Updater sucht im ZIP `MotionWatch3D.exe`. Darum enthält das
   ZIP (Ordner `MoveEyeSim3D/`) **übergangsweise dieselbe Datei zweimal**: `MoveEyeSim3D.exe` und `MotionWatch3D.exe`
   (ZIP ~64 MB statt ~32 MB; `simpack.sh` mit `TRANSITION=0` lässt die Kopie weg). Ablauf: alter Updater legt beide hin,
@@ -1044,7 +1044,7 @@ Rangliste, Aufgabe, Sieger, «als Nächstes». Kommentare zu Einfach/Experte (Mo
 
 ## NEU in 3D-4.17 (MoveEye 2.98.46): Balance-Paket 30.10.2026 + KI-Wächter, Stange-Regler, nacktes /sim-Bild
 
-Spiel-Balance nach dem Code-Review (von Daniel freigegeben, Punkte 1, 3–11 und 12 teilweise):
+Spiel-Balance nach dem Code-Review (vom Besitzer freigegeben, Punkte 1, 3–11 und 12 teilweise):
 - **Eine Punkte-Regel für alle Wächter** (`gameshutter.score_catch`, `game.guard_score`): jeder Fang zählt sofort so, wie er
   angezeigt wird (Auslöser 100–300, sonst 150), derselbe Schleicher nochmals in der Runde 50 % / 25 % / 0 %, jeder Fehlalarm
   einmal −50, am Schluss + 200 × Anteil «nicht im Ziel». Die Endzeile rechnet es vor («… = N Punkte»). Kein doppelter Abzug mehr.
@@ -1067,7 +1067,6 @@ Spiel-Balance nach dem Code-Review (von Daniel freigegeben, Punkte 1, 3–11 und
 
 ## Wer und wie
 
-- Daniel aus der Schweiz, kein Programmierer.
 - Immer **auf Deutsch** antworten, mit **«ss» statt «ß»**.
 - Kurz und verständlich bleiben. Ehrlich sagen, was **nicht getestet** ist.
 - Ausgeliefert wird eine **fertige Windows-.exe als ZIP**, kein Quellcode zum Selberbauen.
@@ -1092,7 +1091,7 @@ macht aus ganzen Zahlen Kommazahlen). Alles unter `user://motionwatch_pc`. Unter
 (`--mw-python`), `--mw-base http://…/` ersetzt GitHub (Test: `python3 -m http.server` im Repository).
 Grosse Downloads unter Windows mit **curl.exe** (Teil von Windows 10/11: Windows-Zertifikate und -Proxy, folgt der Weiterleitung von
 github.com zu release-assets.githubusercontent.com); Godots HTTPRequest ist nur Ersatz – in 3D-1.9 scheiterte damit der
-Python-Download bei Daniel («Fehler 0» = keine Verbindung). Fehlertexte nennen jetzt den Grund (`RESULTS`).
+Python-Download beim Besitzer («Fehler 0» = keine Verbindung). Fehlertexte nennen jetzt den Grund (`RESULTS`).
 `--mw-test-python` lädt und entpackt das Windows-Python auch unter Linux (mit curl über den Proxy getestet: Download,
 SHA-256 und tar gehen). Die Webseiten-Prüfung fragt mit HEAD (die Startseite ist ~400 KB), Wartezeit bis 5 Minuten.
 Nur `sim_on` reicht nicht: Motion Watch suchte dann weiter eine USB-Kamera («NO CAMERA FOUND», schwarzes Handy-Bild). `_settings()`
@@ -1115,7 +1114,7 @@ Gewehr geht beim Verlassen der Wildbeobachtung von selbst aus.
 Unter Linux getestet bis «verbunden mit Motion Watch» und Webseite auf 127.0.0.1:5000; **unter Windows nicht getestet**
 (Python-Download, tar, pip, Motion Watch selbst unter Windows).
 
-**Daniel testet in einer VMware-Maschine** (Log: «VMware, Inc. – SVGA3D», Mesa 24.1). Deren OpenGL lehnt die Godot-Shader ab
+**Der Besitzer testet in einer VMware-Maschine** (Log: «VMware, Inc. – SVGA3D», Mesa 24.1). Deren OpenGL lehnt die Godot-Shader ab
 («declarations for uniform `world_transform` have mismatching invariant qualifiers»), sichtbar ist nur der Himmel; Vulkan geht
 dort gar nicht. Ab 3D-1.8 erkennt `main._vm_needs_angle()` die virtuelle Grafik am Namen und startet einmal neu mit
 `--rendering-driver opengl3_angle` (Kennzeichen `--angle-tried`, abschalten mit `--no-angle`). Godot 4.3 gibt Grafik-Optionen
@@ -1394,7 +1393,7 @@ sofort aus. Neustart-Optionen aus `main.restart_args()`: bisherige Optionen plus
 (startet «Motion Watch auf diesem PC» wieder). Der Status zeigt «Update: …».
 Schutz nur über die Prüfsumme aus derselben Quelle (GitHub), **nicht signiert** wie Motion Watch.
 
-Seit 3D-1.6 startet der Simulator mit dem **Kompatibilitäts-Renderer (OpenGL)**: Auf Daniels PC schloss sich die .exe mit
+Seit 3D-1.6 startet der Simulator mit dem **Kompatibilitäts-Renderer (OpenGL)**: Auf dem PC des Besitzers schloss sich die .exe mit
 Forward+ (Vulkan) sofort wieder, mit OpenGL lief sie. Forward+ gibt es nur noch über «Start mit Vulkan-Grafik (schoener).bat».
 
 Seit 3D-1.5 gibt es **sechs Szenen** (Camping-Platz, Wald, Parkplatz, Garten/Haus, Lustiger Platz, Wildbeobachtung) und ein
@@ -1412,7 +1411,7 @@ Seit 3D-1.4 sendet der Simulator nach dem Start **nichts**. Erst der Schalter «
   - `scripts/actor.gd`: Besucher
   - `scripts/phone.gd`: Handy-/Tablet-Simulator
   - `shaders/`: Wärmebild, Gras, Laub, Boden
-- `simulator3d/Lies mich.txt`: Anleitung für Daniel, liegt im ZIP.
+- `simulator3d/Lies mich.txt`: Anleitung für den Besitzer, liegt im ZIP.
 - `simulator3d/MotionWatch3D_Simulator.zip`: die fertige Windows-Version. **Nicht löschen:** Motion Watch holt sie von hier und bietet sie unter `http://<Pi>:5000/sim/simulator3d.zip` an.
 - `simulator/Simulator_Schnittstelle.md`: das Protokoll zwischen Motion Watch und Simulator.
 - `simulator/motionwatch_sim_interface.py`: die Python-Vorlage des Protokolls.
@@ -1470,33 +1469,6 @@ Gebaut in 3D-1.5 (schnelle erste Fassung, vereinbart war «zuerst schnell, dann 
 
 Mögliche Ausbauten: Gelände mit Hügeln in der Nähe, schönere Tiere und Menschen (Modelle statt Grundformen), eigene Sensoren pro
 Szene (bräuchte eine Anpassung in Motion Watch), Wasser im Wald, mehr Witz im Lustigen Platz, Punkteliste für die Wildbeobachtung.
-
-## Fahrplan: Online-Dienst für Hersteller (Idee von Daniel, 26.10.2026)
-
-Ziel: Später online gehen, damit Hersteller von Überwachungssystemen ihre Systeme an dieser Simulation testen können.
-Noch nichts davon ist gebaut. Reihenfolge nach Wichtigkeit:
-
-1. **Standard-Schnittstellen** statt nur Motion-Watch-Protokoll: **RTSP** für die Kamerabilder, **ONVIF** (Erkennung,
-   Profil S, PTZ für den Schwenkkopf), **MQTT** / Webhooks für die Sensoren. Erst dann lässt sich ein fremdes System einfach
-   «an eine Kamera» anschliessen. Das bestehende Protokoll bleibt für Motion Watch.
-2. **Realistischere Bilder**: lizenzierte 3D-Modelle von Menschen und Tieren mit Animation statt Grundformen (KI-Erkenner
-   erkennen die heutigen Figuren kaum), Kamerafehler (Rauschen, Unschärfe, Kompression, Infrarot-Look, Blendung).
-3. **Wiederholbare Tests mit Ground Truth**: Der Simulator schreibt auf, wer wann wo im Bild war; Szenarien mit festem Zufall
-   (Seed) und Zeitplan, exakt wiederholbar; Bericht am Ende («18 von 20 Personen erkannt, 2 Fehlalarme, Reaktionszeit»).
-   Das ist der eigentliche Kern des Angebots.
-4. **Betrieb im Internet**: Server mit Grafikkarte, eine Instanz pro Kunde, Steuerung über eine Webseite statt Windows-Fenster
-   (das CONTROL-Protokoll ist ein guter Anfang), Kosten pro Stunde, Bildstrom mit wenig Verzögerung.
-5. **Sicherheit**: heute offene Ports ohne Passwort und ein unsigniertes Selbst-Update – für einen Dienst braucht es Konten,
-   HTTPS, Trennung der Kunden, signierte Updates. Das Repository ist öffentlich: für ein Produkt privat machen und eine Lizenz
-   wählen. **Den Signierschlüssel erneuern** (er stand am 26.10.2026 im Chat); danach brauchen alle Pis einmal eine Version
-   mit dem neuen öffentlichen Schlüssel (`UPDATE_PUBKEY`).
-6. **Rechtliches und Geschäftliches** (fachlich prüfen lassen): AGB, Haftung, Datenschutz (nDSG, bei EU-Kunden DSGVO),
-   Lizenzen aller Teile (Godot MIT; gekaufte 3D-Modelle oft eingeschränkt), Preismodell. Die Gewehr-Szene für ein
-   Profi-Produkt eher weglassen.
-
-**Vorgeschlagener erster Schritt:** zwei, drei mögliche Kunden fragen, was sie wirklich testen wollen. Technisch zuerst lokal:
-der Simulator erscheint auf dem PC als **RTSP- / ONVIF-Kamera** (z. B. Bilder per ffmpeg an MediaMTX, ein kleiner
-ONVIF-Dienst für Erkennung und PTZ) – ohne Server, mit einer gängigen Videoüberwachungs-Software testbar.
 
 ## Was in dieser Umgebung nicht getestet werden konnte
 

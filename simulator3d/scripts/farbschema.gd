@@ -1,5 +1,5 @@
 extends CanvasLayer
-## 3D-4.2x «Mehr» (Wunsch Daniel 30.10.2026): Hell / Rotlicht / Dunkel wie MoveEye (Reihenfolge Hell → Rotlicht → Dunkel,
+## 3D-4.2x «Mehr» (Wunsch des Besitzers 30.10.2026): Hell / Rotlicht / Dunkel wie MoveEye (Reihenfolge Hell → Rotlicht → Dunkel,
 ## Farben aus ui_style.palette). Die Bedienelemente sind dunkel gebaut (ui_style.gd); dieses Ebene legt über das Bedienfeld
 ## und die Fenster (nicht über die 3D-Ansicht) einen Farbfilter:
 ##   * Hell: die Helligkeit wird umgedreht, der Farbton bleibt (dunkles Blau-Grau -> fast Weiss, helle Schrift -> dunkel,

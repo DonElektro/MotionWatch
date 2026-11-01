@@ -1,5 +1,5 @@
 extends RefCounted
-## «Spielabend-Turnier» (Gameplay ausfeilen, Punkt 8, Daniel 31.10.2026): several people play one after the other on ONE
+## «Spielabend-Turnier» (Gameplay ausfeilen, Punkt 8, Besitzer 31.10.2026): several people play one after the other on ONE
 ## device (a phone or here at the PC). Before every round the device says who is next («Gerät weitergeben»); the player of
 ## that device plays under that name. After every round the points go into the table; after the last turn the winner screen
 ## (podium 1-2-3) on the device and in this window. The names are typed on the device (phone: lobby card; PC: defaults

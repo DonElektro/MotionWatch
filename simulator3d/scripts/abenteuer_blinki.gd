@@ -1,5 +1,5 @@
 extends RefCounted
-## Blinki als Helfer im Bergtal-Abenteuer (Paket A6, Daniel 31.10.2026). Blinki ist dieselbe Figur wie im Spielbereich
+## Blinki als Helfer im Bergtal-Abenteuer (Paket A6, Besitzer 31.10.2026). Blinki ist dieselbe Figur wie im Spielbereich
 ## (tour.gd BlinkiView, spielbereich.gd): gezeichnet, blinzelt, keine Musik.
 ##   * gibt die Tipps der Schwierigkeit: Leicht sofort, Mittel nach einer Weile oder auf Wunsch («Blinki um einen Tipp
 ##     bitten»), Schwer nie (die Tipps selbst kommen wie bisher aus abenteuer_raetsel.gd - Blinki sagt sie nur).

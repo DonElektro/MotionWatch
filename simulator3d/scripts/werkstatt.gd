@@ -16,7 +16,7 @@ extends Node
 ## /control {"action": "werkstatt", "do": open | close | info | explode (value) | xray (on) | inner (on) | v52 (on) |
 ##           pick (id) | step (n, 0 = frei) | next | prev | view (yaw, pitch, dist) | real_case (on) | tab (name) |
 ##           variant (gehaeuse | akku | mover, value) | done (id, on) | fertig (pkg) | order (pkg)}
-## «Fertig kaufen» (Daniel 01.11.2026): ein schmaler Hinweis oben im Fenster (wie MoveEye /build, Teil 639zj; Texte und
+## «Fertig kaufen» (Besitzer 01.11.2026): ein schmaler Hinweis oben im Fenster (wie MoveEye /build, Teil 639zj; Texte und
 ## Pakete aus ui_gemeinsam.json «fertig»): Paket Basis / Komplett / Autark wählen, «Fertig bestellen (Anfrage)» schliesst
 ## «Bauen» und öffnet die Rückmeldung (feedback.gd open_order) mit Art «Bestellung fertiges Gerät» und dem Paket.
 

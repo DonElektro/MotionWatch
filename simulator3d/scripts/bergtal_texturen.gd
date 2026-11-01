@@ -1,5 +1,5 @@
 extends RefCounted
-## Foto-Texturen im Bergtal (3.30): Texturen aus eigenen Fotos von Daniel Bärschi, mit seiner Erlaubnis (LIZENZEN.md).
+## Foto-Texturen im Bergtal (3.30): Texturen aus eigenen Fotos von DonElektro, mit seiner Erlaubnis (LIZENZEN.md).
 ## Dateien: res://texturen/*.jpg (Qualität 85, aus werkzeuge/texturen_bauen.py; Naht in der Mitte geglättet).
 ## Nicht benutzte Fotos liegen in texturen/unbenutzt/ (mit .gdignore: nicht importiert, nicht im Export).
 ##
@@ -12,7 +12,7 @@ extends RefCounted
 ## (prozedurale Farben und Rauschen; der alte Code bleibt unverändert der Rückfall).
 ## Lite (Raspberry Pi): nie - keine Textur wird geladen, die Shader lesen keine (photo = 0), Leistung wie bisher.
 ## Fehlt eine Datei (z. B. altes Paket), bleibt alles wie vorher.
-## Schnee: noch kein Foto (Daniel liefert später eines) - Schnee bleibt prozedural.
+## Schnee: noch kein Foto (Besitzer liefert später eines) - Schnee bleibt prozedural.
 
 const DIR := "res://texturen/"
 # Mittelwert jeder Textur (linear): Foto / Mittelwert gibt die Struktur ohne die Grundfarbe. Gebraucht für den Asphalt

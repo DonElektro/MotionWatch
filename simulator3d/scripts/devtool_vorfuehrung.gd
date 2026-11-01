@@ -1,5 +1,5 @@
 extends Node
-## Entwicklertool · Vorführung (Daniel 31.10.2026): der Teil «Vorführung» im Fenster «Mehr → Entwickler» (nur der Besitzer,
+## Entwicklertool · Vorführung (Besitzer 31.10.2026): der Teil «Vorführung» im Fenster «Mehr → Entwickler» (nur der Besitzer,
 ## devtool.gd). Startet den Vorführmodus «Maggie und der Bergkristall» (maggie_vorfuehrung.gd): Kurzfassung oder ganz,
 ## Erzählerstimme ein / aus, Kapitel wählen; zeigt den Stand und das Ergebnis des letzten Durchlaufs (ob der Autopilot
 ## überall weiterkam – BLOCKIERT steht hier und im Protokoll). Lite: nichts Eigenes (neu gezeichnet alle 2 s, wenn offen).

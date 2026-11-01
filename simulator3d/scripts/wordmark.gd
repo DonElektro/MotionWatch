@@ -1,7 +1,7 @@
 extends Control
 ## 3D-3.87: der Schriftzug W6 von MoveEye (wie in der Kopfzeile der Webseite): «Move» hell, «Eye» orange, das «o» ist das
 ## Auge mit Sichtfächer und erkannter Person. Buchstaben als Pfade (Liberation Sans Bold, SIL OFL).
-## 3D-4.23 (Daniel): bewegt wie im Web (MoveEye 2.98.52, quelle/144_logo_schriftzug.py): die rote Person geht hin und her
+## 3D-4.23 (Besitzer): bewegt wie im Web (MoveEye 2.98.52, quelle/144_logo_schriftzug.py): die rote Person geht hin und her
 ## (7 s, mit Schritten 0.7 s), der Sichtfächer schwenkt mit, die Pupille schaut zur Person, das Auge blinzelt ab und zu
 ## (23 s, nach 9.2 s und 22.1 s). 3D-4.24: echter Gang (Bein 1 mit Arm 2, Bein 2 mit Arm 1 einen halben Schritt später).
 ## Die Ebenen unten sind aus WORDMARK_W6 geschnitten (gleiche Masse wie im Web): sie werden

@@ -1,5 +1,5 @@
 extends RefCounted
-## Gemeinsame Menü-Datei MoveEye ↔ Simulator (P1 «totale Integration», Daniel 31.10.2026): res://ui_gemeinsam.json
+## Gemeinsame Menü-Datei MoveEye ↔ Simulator (P1 «totale Integration», Besitzer 31.10.2026): res://ui_gemeinsam.json
 ## (kommt mit in die .exe, export_presets.cfg). Eine Quelle für Gruppen-IDs, Namen, Symbole, Reihenfolge, die Texte der
 ## Bedienleiste (Paket P0 «real-layout-leiste» holt sie hier: UG.bar_text("close") -> «Alle zuklappen», dann T.t) und die Liste
 ## der geteilten Einstellungen. MoveEye bettet dieselbe Datei ein und prüft sich im Selbsttest dagegen (Teil 639p).
@@ -171,7 +171,7 @@ static func summary(main) -> String:
 	return "Menü-Datei: " + " | ".join(p)
 
 
-# ---- «Fertig kaufen» (Daniel 01.11.2026): Hinweis oben auf «Bauen», Anfrage über die Rückmeldung ----------------------------
+# ---- «Fertig kaufen» (Besitzer 01.11.2026): Hinweis oben auf «Bauen», Anfrage über die Rückmeldung ----------------------------
 static func fertig() -> Dictionary:
 	"""the block «fertig» of the file: kind, standard, texts, pakete (empty without the file)"""
 	var f = data().get("fertig", {})

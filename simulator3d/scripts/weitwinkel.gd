@@ -1,5 +1,5 @@
 extends Node
-## 3D-4.17 (Plan Daniel 30.10.2026, docs/Gehaeuse_Variante2_Weitwinkel.md «Simulator-Einbindung der Weitwinkel-Kamera"):
+## 3D-4.17 (Plan des Besitzers 30.10.2026, docs/Gehaeuse_Variante2_Weitwinkel.md «Simulator-Einbindung der Weitwinkel-Kamera"):
 ## the former «feste Kamera» (cams[1]) is now ONE wide-angle camera (Camera Module 3 Wide NoIR: 102° × 67°, 640×360, 8 fps,
 ## rendered only when somebody asks for it - main._wanted_fps / eco as before) with a mount:
 ##   case        P9 (31.10.2026): «Im Gehäuse (v5.2)» - exactly where case v5.2 holds it: front wall of the lower part (PIR

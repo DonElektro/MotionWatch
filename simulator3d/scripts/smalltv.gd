@@ -1,5 +1,5 @@
 extends Node
-## Virtueller Zusatz-Bildschirm «GeekMagic SmallTV Ultra» (Plan Daniel 30.10.2026, docs/SmallTV_Anzeige_Plan.md):
+## Virtueller Zusatz-Bildschirm «GeekMagic SmallTV Ultra» (Plan des Besitzers 30.10.2026, docs/SmallTV_Anzeige_Plan.md):
 ## dieselbe HTTP-Schnittstelle wie das echte Gerät (Firmware Ultra-V9.0.40) auf dem Port des Simulators –
 ##   POST /doUpload?dir=/image/   (multipart, Feld «file», JPEG 240×240)
 ##   GET  /set?theme=3 · /set?img=/image//name.jpg · /set?brt=0..100 · /set?autoplay=0
@@ -8,7 +8,7 @@ extends Node
 ## links im Fenster (Sensoren → Zusatz-Bildschirm → «Kachel zeigen»), gedimmt wie die eingestellte Helligkeit.
 ## «Macken wie das echte Gerät»: Upload antwortet HTTP 400, obwohl gespeichert, und jede Antwort kommt 1,2 s später.
 ## Für Tests / Prüfstand: CONTROL {"action": "smalltv"} (Zähler, letztes Bild, {"reset": true}), GET /smalltv.jpg.
-## MoveEye 553 (Daniel 30.10.2026 Abend): auch GIF (me_a.gif / me_b.gif, Alarm-Animation) – wie das Fotoalbum des
+## MoveEye 553 (Besitzer 30.10.2026 Abend): auch GIF (me_a.gif / me_b.gif, Alarm-Animation) – wie das Fotoalbum des
 ## echten Geräts spielt die Kachel es ab (eigener kleiner GIF-Leser unten: Godot 4.3 kann kein GIF laden).
 
 const FILE := "user://smalltv.json"

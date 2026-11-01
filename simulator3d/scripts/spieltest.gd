@@ -1,5 +1,5 @@
 extends Node
-## Spieltest-Assistent (Daniel 31.10.2026, Paket «Spieltest-Assistent»): beobachtet die Spielmodi, notiert, was passiert, und
+## Spieltest-Assistent (Besitzer 31.10.2026, Paket «Spieltest-Assistent»): beobachtet die Spielmodi, notiert, was passiert, und
 ## macht daraus Vorschläge (feste, verständliche Regeln) – im Fenster «Mehr → Entwickler → Spieltest» (devtool_spieltest.gd).
 ##   * Ein / aus im Entwickler-Fenster (nur der Besitzer, devtool.is_owner) oder auf der Simulator-Seite von MoveEye
 ##     (Karte «Entwickler» → «Spieltest-Assistent», Steuerelement spieltest_on - nicht mehr im Bedienfeld).
@@ -1348,7 +1348,7 @@ func clear_all() -> int:
 static func add_controls(m) -> void:
 	"""main._register_controls: the two switches of the group «Entwickler» (MoveEye has «Spieltest-Meldungen» in its group
 	«Entwickler» too - the same switch: the simulator only asks MoveEye to set it).
-	Paket «Entwickler zusammenlegen» (Daniel 31.10.2026): both «devwin» = not in the panel, drawn only in the window
+	Paket «Entwickler zusammenlegen» (Besitzer 31.10.2026): both «devwin» = not in the panel, drawn only in the window
 	«Mehr → Entwickler → Spieltest» (devtool_spieltest.gd). «spieltest_push» also «wiz»: MoveEye's Simulator page leaves it
 	out (it was there twice: MoveEye's own switch in Einstellungen → Entwickler + this mirror). /control set keeps working."""
 	m.add_control("toggle", "spieltest_on", "Spieltest-Assistent: beobachtet die Spiele und macht Vorschläge (Mehr → Entwickler → Spieltest)",

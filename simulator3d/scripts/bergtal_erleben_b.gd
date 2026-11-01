@@ -1,6 +1,6 @@
 extends "res://scripts/bergtal_erleben_base.gd"
-## 3D-4.x «Bergtal» – lustige und versteckte Ereignisse 18–34 (Daniel 31.10.2026, Stil «dezent», docs/Bergtal_Plan.md):
-## kleine Abläufe an den reservierten Plätzen von bergtal.gd (VIGNETTES 30–46 = Daniels Nummern 18–34). Humor durch Timing
+## 3D-4.x «Bergtal» – lustige und versteckte Ereignisse 18–34 (Besitzer 31.10.2026, Stil «dezent»):
+## kleine Abläufe an den reservierten Plätzen von bergtal.gd (VIGNETTES 30–46 = die Nummern des Besitzers 18–34). Humor durch Timing
 ## und Bewegung, keine Sprechblasen, glaubwürdig – man muss genau hinschauen.
 ##   18 weisser Schneehase im braunen Herbst      · 19 Hermelin schaut aus jedem Mauerloch (am Schluss der Schwanz)
 ##   20 Salamander-Prozession nach Regen (einer falsch rum) · 21 nur Kuhglocken im Nebel, plötzlich eine Kuh vor MoveEye

@@ -1,6 +1,6 @@
 extends Node
 ## «Maggie und der Bergkristall» · Paket S3: böse Tiere, Schutzdinge, Grusel-Stimmung und Jahreszeit-Tipps
-## (Daniel, 31.10.2026, Brief /tmp/claude-0/maggie_brief.md). Für Daniels Tochter (12): etwas gruselig, aber niemand wird
+## (Besitzer, 31.10.2026, Brief /tmp/claude-0/maggie_brief.md). Für Kinder ab etwa 12: etwas gruselig, aber niemand wird
 ## verletzt, kein Blut, keine harten Schreckmomente. Alles eigen erfunden (nur lose inspiriert, keine Namen/Figuren aus Filmen).
 ##
 ## Die bösen Tiere wollen den Kristall. Jede Region (= Jahreszeit) hat ihre Tiere, deren Schwäche und ein Schutzding:

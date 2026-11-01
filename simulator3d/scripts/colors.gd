@@ -1,5 +1,5 @@
 extends Node
-## 3D-3.97 (wish of Daniel: «mit Farben könnte man noch viel machen»): the colours and surfaces of the world like in a real
+## 3D-3.97 (wish of the owner: «mit Farben könnte man noch viel machen»): the colours and surfaces of the world like in a real
 ## camera picture.
 ##  - natural colours: every plain colour a little less saturated and never paper-white or toy-bright (natural())
 ##  - materials: metal (caravan, car), glass, cloth, stone/wood by the kind of surface; wet in the rain (shinier, darker)

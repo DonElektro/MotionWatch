@@ -4,14 +4,14 @@ extends PanelContainer
 ## Nachrichten mit «Jetzt senden»).
 ##   * MoveEye verbunden (MoveEye 2.98.33): die Nachricht geht als Anfrage (mw_cmd «feedback») an MoveEye, das sie wie alle
 ##     Rückmeldungen anonym weiterschickt (Teil 350 / 370; das Bildschirmfoto holt MoveEye selbst über /view.jpg).
-##   * 3D-4.2x (Wunsch Daniel 30.10.2026): ohne MoveEye schickt der Simulator selbst – genau wie MoveEye (370 feedback_send /
+##   * 3D-4.2x (Wunsch des Besitzers 30.10.2026): ohne MoveEye schickt der Simulator selbst – genau wie MoveEye (370 feedback_send /
 ##     feedback_flush): Text als ntfy-Nachricht an denselben öffentlichen Entwickler-Kanal auf beiden Servern (ntfy-me.com und
 ##     ntfy.sh, eine Annahme genügt), das Bild als zweite Nachricht mit Anhang (PUT), höchstens 350 KB, 5 Nachrichten pro
 ##     Stunde, ohne Internet wartet sie (user://feedback_outbox.json) und geht alle 10 Minuten wieder auf den Weg.
 ##     Anonym: kein Name, keine Adresse, ausser man schreibt sie hinein; Bild = das Fenster des Simulators (verkleinert).
 ##   * Tests: «fb_test» über /control lenkt die Nachrichten an eine Adresse auf diesem PC um (nur 127.0.0.1 / localhost);
 ##     «Was wird gesendet?» im Fenster zeigt den Text, wie er abgeht.
-##   * «Fertig kaufen» (Daniel 01.11.2026): open_order(paket) aus «Bauen» (werkstatt.gd) – Art «Bestellung fertiges Gerät»
+##   * «Fertig kaufen» (Besitzer 01.11.2026): open_order(paket) aus «Bauen» (werkstatt.gd) – Art «Bestellung fertiges Gerät»
 ##     (ui_gemeinsam.json «fertig», wie MoveEye Teil 639zj), Paket Basis / Komplett / Autark vorgewählt, Feld «Kontakt
 ##     (E-Mail/Telefon)» Pflicht; der Kontakt steht nur in der Nachricht, nie im Protokoll.
 

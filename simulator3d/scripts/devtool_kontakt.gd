@@ -1,5 +1,5 @@
 extends Node
-## Entwicklertool 3 · Kontaktbogen (Daniel 31.10.2026): «Alle Orte fotografieren» - für jeden Ort aus Dev.alle_orte (eine
+## Entwicklertool 3 · Kontaktbogen (Besitzer 31.10.2026): «Alle Orte fotografieren» - für jeden Ort aus Dev.alle_orte (eine
 ## Welt oder alle): hinspringen (devtool.goto, lädt nötigenfalls die Szene), warten bis sie steht, ein Foto 640 × 360 ohne
 ## Bedienelemente (devtool_extra.photo). Ablage: user://kontaktbogen/<welt>/<id>.jpg, dazu user://kontaktbogen/index.html
 ## (Raster mit Namen, pro Welt) und kontakt.json. Im Fenster: Fortschritt, Abbrechen, kleines Raster (Klick = hinspringen).

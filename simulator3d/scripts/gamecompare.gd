@@ -1,5 +1,5 @@
 extends Node
-## 3D-4.x «Mensch gegen KI vergleichen» (Wunsch Daniel, 30.10.2026): the same round is played twice.
+## 3D-4.x «Mensch gegen KI vergleichen» (Wunsch des Besitzers, 30.10.2026): the same round is played twice.
 ##   Round 1: a PERSON guards (spielart «Wächter»: phone / PC, the shutter of gameshutter.gd). Without a person the
 ##            Bot-Wächter stands in (then it runs without anybody - with bots as sneakers).
 ##   Round 2: the REAL detection of MoveEye guards (spielart «mw»). Same scene, same seed, and every sneaker walks

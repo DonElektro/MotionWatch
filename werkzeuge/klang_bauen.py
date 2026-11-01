@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Trailer-Klänge bauen (Daniel 01.11.2026: «Musik und Geräusche im Trailer klingen furchtbar»).
+"""Trailer-Klänge bauen (Besitzer 01.11.2026: «Musik und Geräusche im Trailer klingen furchtbar»).
 
 Baut aus freien Aufnahmen (CC0, siehe simulator3d/klang/LIZENZEN.txt) und eigener Synthese die Klänge der beiden Trailer
 (trailer_ton.gd) und legt sie ab:

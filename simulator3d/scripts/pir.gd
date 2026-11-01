@@ -1,7 +1,7 @@
 extends Node
 ## Paket «PIR, Mikrofon & Umgebungsgeräusche» (Zweig real-pir-ton, 31.10.2026): der Bewegungsmelder AM GERÄT wie echt.
 ##   AS312 Micro-PIR mit Linse Ø 12,2 an der Stirnseite des Gehäuses – «vorne» = Pan-0-Richtung (dreht nicht mit dem Kopf).
-##   Datenblatt (Senba AS312 / Angabe Daniel): Fächer ca. 100° waagrecht, Reichweite ~3–5 m bei 25 °C, Ausgang 2,3 s hoch
+##   Datenblatt (Senba AS312 / Angabe des Besitzers): Fächer ca. 100° waagrecht, Reichweite ~3–5 m bei 25 °C, Ausgang 2,3 s hoch
 ##   (TOH, bei weiterer Bewegung verlängert), danach 2,3 s gesperrt (TOL, nicht einstellbar). Angenommen (nicht im Datenblatt):
 ##   30 s Aufwärmen nach dem Einschalten, ~0,2 s bis das Signal reicht.
 ##   Modell pro Körper (10 × pro s): Signal = Temperaturunterschied × Grösse × Bewegung × (R0 / Abstand)²

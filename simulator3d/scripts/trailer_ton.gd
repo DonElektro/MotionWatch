@@ -1,5 +1,5 @@
 extends RefCounted
-## Trailer-Ton (Daniel 31.10.2026, trailer.gd): Musik und Geräusche der beiden Trailer, alles im Code erzeugt (keine Dateien),
+## Trailer-Ton (Besitzer 31.10.2026, trailer.gd): Musik und Geräusche der beiden Trailer, alles im Code erzeugt (keine Dateien),
 ## wie die übrige Ton-Synthese (maggie_welt.gd snd_*, maggie_hund.gd _synth, bergtal_erleben_base.gd _synth).
 ##   Musik: Streicherflächen (pad: ruhig / dunkel / hell – Schleifen, Wellentabelle statt vieler sin()), Puls (pulse, ein Takt
 ##   als Schleife), schneller Puls (ostinato), Paukenschlag (pauke), tiefer Kino-Schlag (boom), Anstieg (riser), Glasklang
@@ -8,7 +8,7 @@ extends RefCounted
 ##   Krähen, Zischen, Knacken, Rascheln, Kuhglocke, Papier, Murmeltier-Pfiff.
 ## Jeder Klang wird einmal erzeugt und bleibt im Speicher (_cache); alles mono, 22,05 kHz, 16 Bit.
 ## Schleifen sind nahtlos: Frequenzen auf Vielfache von 1/Länge gerundet (pad) oder Ende in den Anfang überblendet (Rauschen).
-## Neu (Daniel 01.11.2026: «Musik und Geräusche im Trailer klingen furchtbar»): die Klänge kommen jetzt als Dateien aus
+## Neu (Besitzer 01.11.2026: «Musik und Geräusche im Trailer klingen furchtbar»): die Klänge kommen jetzt als Dateien aus
 ## res://klang/ (Ogg Vorbis, 44.1 kHz, Stereo, mit Hall – gebaut von werkzeuge/klang_bauen.py aus freien CC0-Aufnahmen:
 ## echte Streicher, Pauken, Blech, Glockenspiel, Donner, Regen, Bach, Schritte; Quellen in klang/LIZENZEN.txt). Die
 ## Tierstimmen bleiben die bisherigen (wie im Spiel), nur in einen Raum gesetzt. Fehlt eine Datei, gilt die alte Synthese

@@ -1,5 +1,5 @@
 extends RefCounted
-## «Missionen mit Gegenständen» (Gameplay ausfeilen, Punkt 4, Daniel 31.10.2026): the game goal «🎒 Mission» with the things of
+## «Missionen mit Gegenständen» (Gameplay ausfeilen, Punkt 4, Besitzer 31.10.2026): the game goal «🎒 Mission» with the things of
 ## the catalogue (objekte_neu.gd / objects.gd - built with Obj.build, nothing new to draw):
 ##   wallet  👛 Portemonnaie vom Campingtisch holen und zum eigenen Start bringen (Tisch beim grünen Licht)
 ##   fruit   🍎 5 Früchte (Apfel, Orange, Birne, Banane) einsammeln und in den Brotkorb beim grünen Licht bringen

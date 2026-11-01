@@ -1,5 +1,5 @@
 extends Node
-## Entwicklertool 3 «Notizen, Kontaktbogen, Kapitel-Sprung» (Daniel 31.10.2026) - die Teile im Fenster «Mehr → Entwickler»
+## Entwicklertool 3 «Notizen, Kontaktbogen, Kapitel-Sprung» (Besitzer 31.10.2026) - die Teile im Fenster «Mehr → Entwickler»
 ## (devtool.gd) in eigenen Dateien, damit devtool.gd fast unverändert bleibt (parallel: Entwicklertool 2 «Regler + Ebenen»).
 ## devtool.gd ruft nur: extra.build(vbox) · extra.control(d) (null = nicht meins) · extra.map_click(world_xz) ·
 ## extra.map_draw(map); net.gd ruft extra.http_get(path) für GET /dev/… .

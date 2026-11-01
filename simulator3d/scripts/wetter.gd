@@ -1,5 +1,5 @@
 extends Node
-## Paket «Wetter physikalisch» (Zweig real-wetter, Wunsch Daniel 31.10.2026): das Wetter, das es schon gab (Regen, Nebel,
+## Paket «Wetter physikalisch» (Zweig real-wetter, Wunsch des Besitzers 31.10.2026): das Wetter, das es schon gab (Regen, Nebel,
 ## Schnee, Gewitter, Wind, Tropfen / Beschlag auf der Linse), näher an der Physik - und so, dass MoveEye es im Kamerabild
 ## wirklich sieht.
 ##  - Regenstärke (Niesel … Wolkenbruch, mm/h): Tropfengrösse und Fallgeschwindigkeit (Gunn-Kinzer), Menge, schräg im Wind,

@@ -108,7 +108,7 @@ var night_weather := false            # 3D-3.74: the weather runs through the ni
 var _nw := {"day": -1, "plan": [], "last": "", "fog_lens": false}
 var real_time := false                # the clock of the PC
 var game                              # game.gd: «Unentdeckt ans Ziel» with up to 12 phones (3D-3.95, before 4)
-var game_minutes := 3.0                # 3D-4.x: short rounds (Spielkonzept Daniel, before 5)
+var game_minutes := 3.0                # 3D-4.x: short rounds (Spielkonzept des Besitzers, before 5)
 var game_level := "normal"            # easy | normal | hard
 var game_quality := "mid"             # picture on the phone: small | mid | big
 var game_max := 6                     # 3D-3.95: runners at most (2..12); more players watch through the head camera
@@ -228,7 +228,7 @@ var view_scale := 1.0                 # 3D-3.75: sharpness of the big view on th
 var win_fps := 0                     # 3D-3.75: frames per second of the big view (0 = as fast as it goes)
 var auto_perf := true                 # 3D-3.75: too slow? the graphics get lighter by themselves
 var cam_wippen := true                 # anim_kamera.gd: die Ansicht wippt beim Gehen der Spielfigur (Maggie)
-var foto_tex := true                   # 3.30 bergtal_texturen.gd: Foto-Texturen im Bergtal (Daniels Fotos; nie in Lite)
+var foto_tex := true                   # 3.30 bergtal_texturen.gd: Foto-Texturen im Bergtal (Fotos des Besitzers; nie in Lite)
 var reduce_motion := "auto"            # 3.23 «Bewegung reduzieren»: auto (wie das Betriebssystem) | an | aus - Logo, Blinki, Wippen, Trailer sanfter
 var tour_auto := true                  # 3.23: «Rundgang mit Blinki beim ersten Start von selbst» (System → Gerät & Hilfe, wie MoveEye)
 var blinki_on := true                  # 3.23: «Blinki zeigen» (System → Gerät & Hilfe, wie MoveEye)
@@ -3658,15 +3658,15 @@ const GROUPS := [["Szene", "globe", "🌍", ["", "Bergtal", "Ort von der Karte",
 		["Testen", "check", "✅", ["", "Verfolgungs-Parcours", "Störungen", "Einbruch-Abläufe"]],
 		["System", "gear", "⚙", ["Grafik", "Karte und Livebild", "Start mit dem PC", "Updates", "Sicherung", "Kinder-Modus", "Gerät & Hilfe"]],   # Menüs A: «Ansicht» → «Karte und Livebild» (fehlte hier)
 		["Entwickler", "tools", "🧪", ["", "Updates"]]]
-# 3D-4.21 (Menü 2, Daniel 30.10.2026): the same names as MoveEye - the controls keep their old group / part in add_control,
+# 3D-4.21 (Menü 2, Besitzer 30.10.2026): the same names as MoveEye - the controls keep their old group / part in add_control,
 # _order_controls renames them here (MoveEye reads the fixed «gid», not the name)
-# P1 ui_gemeinsam (Daniel 31.10.2026): ids, names, symbols and order of the groups as in res://ui_gemeinsam.json (checked by
+# P1 ui_gemeinsam (Besitzer 31.10.2026): ids, names, symbols and order of the groups as in res://ui_gemeinsam.json (checked by
 # werkzeuge/ui_gemeinsam_test.gd and at start, scripts/ui_gemeinsam.gd); «Sensoren» is «Zusatzgeräte» (extras), the part
 # «Kinder-Modus» has its own name again («Sicherheit» is the password / users group of MoveEye)
 const GROUP_RENAME := {"Testlauf": "Testen", "Wildbeobachtung": "Wildtier", "Sensoren": "Zusatzgeräte"}
 const SUB_RENAME := {"Akku und Strom": "Strom", "Netz-Ausfall testen": "Netz", "Zusatz-Bildschirm": "Zusatz-Bildschirm (SmallTV)"}
 # 3D-4.21: what only the developer needs (like the group «Entwickler» of MoveEye) - always «Experte»
-# Paket «Entwickler zusammenlegen» (Daniel 31.10.2026): «dev_open» is the only entry of the card in the panel (opens the window
+# Paket «Entwickler zusammenlegen» (Besitzer 31.10.2026): «dev_open» is the only entry of the card in the panel (opens the window
 # «Mehr → Entwickler» on its tab «Schalter»); the others carry «devwin": drawn in that window, not in the panel - same ids,
 # same /control set / press, still sent to MoveEye (its Simulator page shows them in «Entwickler»)
 const DEV_IDS := ["dev_updates", "dev_open", "pruef_open", "simint_open"]
@@ -3707,7 +3707,7 @@ const PLACE := {"patrol_on": ["Mover", "Patrouille"], "patrol_mode": ["Mover", "
 
 
 const SIMPLE_GROUPS := ["Szene", "Wetter", "Besuch", "Testen", "Spiel"]
-# 3D-4.7 («Spiel-Karte schlank», Daniel): the card «Spiel» = Assistent öffnen, Start, Stopp and the state line; every other
+# 3D-4.7 («Spiel-Karte schlank», Besitzer): the card «Spiel» = Assistent öffnen, Start, Stopp and the state line; every other
 # setting of the game is only in the assistant (gamewiz.gd). Those controls stay (control API, saved settings) but get
 # extra «wiz»: not in this panel and not in the Simulator control of MoveEye.
 const GAME_MAIN := ["game_wizard", "game_start", "game_stop"]
@@ -3717,7 +3717,7 @@ const DISC_SIMPLE := ["disc_book", "disc_photo", "disc_hints"]
 # 3D-4.7: a fixed id per group for MoveEye (the visible names may change); sent as «gid» with every control
 const GROUP_IDS := {"Szene": "scene", "Wetter": "weather", "Besuch": "visit", "Kamerabild": "camera", "Zusatzgeräte": "extras", "Mover": "mover", "Licht & Ton": "lightsound",
 		"Spiel": "game", "Wildtier": "wildlife", "Testen": "testrun", "System": "sys", "Entwickler": "dev"}   # P1: «system» / «sensors» before (alias in ui_gemeinsam.json)
-# Paket «Menüs aufräumen A» (Daniel 31.10.2026): «Einfach» wirklich einfach - rund 60 statt 100 Einträge, eine feste Liste statt
+# Paket «Menüs aufräumen A» (Besitzer 31.10.2026): «Einfach» wirklich einfach - rund 60 statt 100 Einträge, eine feste Liste statt
 # «ganze Gruppe»: Szene, Zeit, Wetter, Besuch (Vorlagen, die wichtigsten Abläufe, von selbst), Testlauf, Aufnahme, Parcours und
 # Einbruch starten, je ein Hauptschalter von Kamerabild / Sensoren / Mover / Licht & Ton / Wildtier, System. Alles andere (Störungen,
 # I2C, Pi-5-Werte, Seed, Fein-Regler) ist «Experte». Die Bergtal-, Welt- und Ferienpark-Regler zeigen sich nur in ihrer Szene.
@@ -3836,7 +3836,7 @@ func _apply_quality() -> void:
 	_mod("start")._apply_quality()
 
 
-# ---- 3D-4.25 «Lite» (Wunsch Daniel 31.10.2026): the same simulator, lighter for the Raspberry Pi 5 ---------------------------
+# ---- 3D-4.25 «Lite» (Wunsch des Besitzers 31.10.2026): the same simulator, lighter for the Raspberry Pi 5 ---------------------------
 # «Grafik-Modus» Automatisch (Lite on a Pi / ARM computer or when the first seconds are very slow) / Lite / Normal. Lite: graphics
 # level «einfach» (no shadows, no glow, no SSAO / SSR / fog volumes), the big view 60 % sharp, at most 25 pictures per second,
 # rain / snow / smoke / fire with about a third of the particles, a third of the grass, small things far away not drawn, at
@@ -4106,11 +4106,11 @@ func _fold_all(how: String, _own := false) -> void:
 	_mod("menues")._fold_all(how, _own)
 
 
-# ---- Paket nurgruppen (Daniel, 31.10.2026): «Beim Start: Nur Gruppen» ------------------------------------------------------
+# ---- Paket nurgruppen (Besitzer, 31.10.2026): «Beim Start: Nur Gruppen» ------------------------------------------------------
 # Every start shows the settings as «Nur Gruppen» (_fold_all("groups"), not saved). What the user opens / closes himself is kept in
 # fold_mem (simulator_settings.json; before, the cards always started as built). Switch off: everything as the user left it.
 var start_groups := true              # the switch, factory: on (saved); 639r: taken over once into «Meine Ansicht» (mine_mig)
-var mine_on := true                   # 639r «Meine Ansicht» (Daniel 1.11.2026): on = every fold by the user is kept in fold_mem
+var mine_on := true                   # 639r «Meine Ansicht» (Besitzer 1.11.2026): on = every fold by the user is kept in fold_mem
 var mine_mig := false                 # 639r: «Beim Start: Nur Gruppen» taken over once (the first Meine Ansicht = «Nur Gruppen»), saved
 var fold_mem := {}                    # the own state: {"c:Karte": true, "s:Karte/Teil": false} (saved)
 var _fold_init := {}                  # how the panel was built (for cards the user never touched)

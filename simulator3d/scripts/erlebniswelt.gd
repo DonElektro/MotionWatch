@@ -1,5 +1,5 @@
 extends Node3D
-## 3D-4.x «Erlebniswelt Ferienpark am See» (Daniel 31.10.2026, Vignetten 1–19 + Schnecken-Rennen aus 22, Stil «dezent»):
+## 3D-4.x «Erlebniswelt Ferienpark am See» (Besitzer 31.10.2026, Vignetten 1–19 + Schnecken-Rennen aus 22, Stil «dezent»):
 ## kleine Abläufe an den reservierten Orten von ferienpark.gd (ERLEBNIS) - Humor durch Timing und Bewegung, keine
 ## Sprechblasen, man muss genau hinschauen.
 ##   A Tiere:   1 Katze vor den Mauslöchern · 2 Eichhörnchen klaut Nüsse · 3 Entenfamilie · 4 Igel · 5 Hund mit Ball ·

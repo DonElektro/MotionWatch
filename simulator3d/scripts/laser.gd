@@ -1,5 +1,5 @@
 extends Node3D
-## 3D-3.96: «Blickrichtung» for beginners (wish of Daniel): a red laser beam from the head of MoveEye in the direction the
+## 3D-3.96: «Blickrichtung» for beginners (wish of the owner): a red laser beam from the head of MoveEye in the direction the
 ## camera looks, a dot where it hits the ground, and two faint lines for the left and right edge of the picture.
 ## Only for the operator (HELPER_LAYER) - the cameras of MoveEye never see it. Switch: toolbar «Ansicht» → «Blickrichtung».
 

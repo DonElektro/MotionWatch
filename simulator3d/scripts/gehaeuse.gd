@@ -1,6 +1,6 @@
 extends Node
 ## Gehäuse v5.1 am Gerät (Paket «real-gehaeuse», 01.11.2026): statt des dunklen Kastens zeigt der Simulator die
-## vereinfachten echten Druckteile aus hardware/gehaeuse/ (Daniels Modell v5.py / pantilt.py, vereinfacht mit decimate.py
+## vereinfachten echten Druckteile aus hardware/gehaeuse/ (Modell des Besitzers: v5.py / pantilt.py, vereinfacht mit decimate.py
 ## von werkzeuge/gehaeuse_bauen.py): res://inhalte/gehaeuse/gehaeuse.glb (Lite: gehaeuse_lite.glb, gröber, nur die äusseren
 ## Teile) + modelle.json (Gruppe, Farbe, Explosion, Prüfsumme der Quelle).
 ##   base  Unterteil, Deckel, Füsse, Buchsen – dreht nicht (eigener Knoten im rig auf der Höhe von main.head)
@@ -111,7 +111,7 @@ func build() -> void:
 	petg.albedo_color = PETG
 	petg.roughness = 0.55
 	petg.cull_mode = BaseMaterial3D.CULL_DISABLED
-	var fb: Dictionary = man.get("farben", {})                 # Wunsch Daniel 01.11.2026: Kopfteil in MoveEye-Orange
+	var fb: Dictionary = man.get("farben", {})                 # Wunsch des Besitzers 01.11.2026: Kopfteil in MoveEye-Orange
 	var kopf: Array = fb.get("kopf_teile", [])
 	var orange := StandardMaterial3D.new()
 	orange.albedo_color = Color.from_string(str(fb.get("kopf", "#f59a4a")), Color("#f59a4a"))

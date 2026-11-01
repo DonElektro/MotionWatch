@@ -1,5 +1,5 @@
 extends Node
-## A2 «Figuren, Gespräche, Nebenaufgaben» im Bergtal-Abenteuer (Daniel, 31.10.2026 - Paket A2 des Abenteuer-Ausbaus).
+## A2 «Figuren, Gespräche, Nebenaufgaben» im Bergtal-Abenteuer (Besitzer, 31.10.2026 - Paket A2 des Abenteuer-Ausbaus).
 ##
 ## Figuren: Sepp (Älpler) und Vreni (Sennerin) auf der Alp Tschuggen, Anna (Betreuerin der Hütte, schaut zu Hütte und Biwak), Ruedi
 ##   (Wildhüter, überall im Tal), dazu jeden Tag (jede Tour) eine andere Wanderin / ein anderer Wanderer und eine andere
@@ -7,7 +7,7 @@ extends Node
 ##   es gibt keine neuen Figuren-Modelle. Im Gespräch steht die Figur im Tal vor dir (Puppe, zählt nicht für Tests).
 ## Gespräche: Gruss je nach Gedächtnis, dann 2–3 Antworten zur Wahl (Themen, Nebenaufgabe, «Tschüss»). Rückfragen der
 ##   Figuren merkt sie sich (Flags) und spricht sie beim nächsten Mal an. Mit dem Hut des Grossvaters (hat("hut"))
-##   erkennen die Figuren dich als Enkel: eigener Gruss und das Thema «Grossvater» - ohne neue Infos über ihn (Daniel).
+##   erkennen die Figuren dich als Enkel: eigener Gruss und das Thema «Grossvater» - ohne neue Infos über ihn (Besitzer).
 ## Nebenaufgaben: Tiere zurückbringen (Ziege, Schaf, Kuh zur Alp), Botendienste (Brief, Käse, Ersatzteil, Proviant -
 ##   Hütte, Alp, Postauto-Haltestelle, Biwak), Hilfe am Berg (verletzter Wanderer, Wegmarkierungen auffrischen),
 ##   Wildhüter-Aufträge (Auftrag und Abschluss; das Foto macht MoveEye - Paket A1, siehe foto_da()).

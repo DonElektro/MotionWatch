@@ -16,7 +16,7 @@ const TILES := [["scene", "globe", "Szene"], ["time", "clock", "Tageszeit"], ["w
 		["test", "check", "Testen"], ["learn", "lens", "Trainingsbilder"], ["game", "pad", "Spiel"],
 		["disc", "book", "Entdeckungen"], ["play", "star", "Spielen"]]   # Paket «Spielbereich»: the start screen (spielbereich.gd)                 # Erlebniswelt 20: the Entdeckungsbuch (entdecken.gd), like the tile 📖 of MoveEye 139
 # 3D-4.21 (Menü 2): the tiles under the same four headings as the simulator centre of MoveEye
-# Menüs A (Daniel 31.10.2026): the Prüfstand only once - in the card «Testen» (the tile «Testen» opens it), no tile of its own
+# Menüs A (Besitzer 31.10.2026): the Prüfstand only once - in the card «Testen» (the tile «Testen» opens it), no tile of its own
 const HEADS := [["Welt", ["scene", "time", "weather", "visit", "inventar", "map", "planner"]], ["Testen", ["test"]],
 		["Lernen", ["learn"]], ["Spielen", ["play", "game", "disc"]]]
 # 3D-4.0 (Gesamtrunde): «Patrouille» (Menüs A: one name, like MoveEye) and «Kopf steuern» only in the bar below - the bar moves, the tiles hold content

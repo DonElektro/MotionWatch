@@ -1,6 +1,6 @@
-# Zusatz-Bildschirm GeekMagic SmallTV Ultra (Entscheide Daniel, 30.10.2026 10:25) – umgesetzt (Branch wt-smalltv)
+# Zusatz-Bildschirm GeekMagic SmallTV Ultra (Entscheide des Besitzers, 30.10.2026 10:25) – umgesetzt (Branch wt-smalltv)
 
-Gerät: GeekMagic SmallTV Ultra, Firmware **Ultra-V9.0.40** (Daniel hat eines, läuft im Heimnetz). 1,5" IPS 240×240, ESP8266, WLAN 2,4 GHz,
+Gerät: GeekMagic SmallTV Ultra, Firmware **Ultra-V9.0.40** (der Besitzer hat eines, läuft im Heimnetz). 1,5" IPS 240×240, ESP8266, WLAN 2,4 GHz,
 5 V / 1 A, ca. 1 MB frei. HTTP ohne Passwort: `POST /doUpload?dir=/image/` (JPEG 240×240), `/set?theme=3` (Fotoalbum),
 `/set?img=/image//name.jpg`, `/set?brt=0..100`, `/filelist`, `/delete`, `/v.json`, `/app.json`, `/space.json`. Ein Bild ≈ 2–3 s,
 eine Anfrage nach der anderen (100–500 ms Pause), keine Selbst-Erkennung im Netz (Adresse eintragen), Flash schonen (nur bei Änderung
@@ -22,7 +22,7 @@ Blinki als Gesicht, Nachtbericht am Morgen.
 - Kein Passwort am Gerät → am besten im eigenen MoveEye-WLAN betreiben; im Konzept-Check erwähnen.
 - Einstellungen unter Einstellungen (Gruppe Meldungen / Geräte), Status in «Mehr» bzw. Geräte-Liste; Desktop-Fenster ebenfalls.
 
-Reihenfolge: **nach den neuen Szenen** (`docs/Neue_Szenen_Plan.md`).
+Reihenfolge: **nach den neuen Szenen**.
 
 ## Umgesetzt (30.10.2026, Branch wt-smalltv, auf MoveEye 2.98.47 / Simulator 3D-4.18)
 - MoveEye Teil `552_smalltv.py` (Logik, Bilder, Web), `599b_fenster_smalltv.py` (Einstellungen, Fenster, Selbsttest), `562_uebersetzungen_smalltv.py`
@@ -41,7 +41,7 @@ Reihenfolge: **nach den neuen Szenen** (`docs/Neue_Szenen_Plan.md`).
   (Sensoren → Zusatz-Bildschirm: Kachel zeigen, Macken wie das echte Gerät, Bilder löschen), CONTROL `smalltv` (Zähler, letztes Bild), GET
   `/smalltv.jpg`, `game_live` in der Antwort auf /state. Prüfstand schreibt die Zähler in sein Ergebnis (`smalltv`), Test `werkzeuge/smalltv_test.py`.
 
-## Ergänzung 30.10. Abend (Entscheide Daniel 19:20) – umgesetzt (Branch wt-stv2, auf MoveEye 2.98.48 / 3D-4.19)
+## Ergänzung 30.10. Abend (Entscheide des Besitzers 19:20) – umgesetzt (Branch wt-stv2, auf MoveEye 2.98.48 / 3D-4.19)
 - **Schalter «Live-Bild und Wechsel»** pro Bildschirm (Feld `rot` in `stv_list`, blauer Schalter wie die anderen, auch im Fenster mit
   kurzer Erklärung darunter). Schon eingetragene Bildschirme: **aus** (keine Überraschung), neu hinzugefügte: **ein**; der virtuelle
   SmallTV des Simulators: ein bei frischen Einstellungen, aus, wenn `stv_sim` schon gespeichert ist. Aus = genau wie bisher (Statusseite,

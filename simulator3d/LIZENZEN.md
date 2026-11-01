@@ -71,9 +71,9 @@ sie aus eigenen Grundformen (keine fremde Datei). Andere Hunde und Tiere sind un
 ## Foto-Texturen im Bergtal (ab 3.37) – `texturen/`, `scripts/bergtal_texturen.gd`
 
 Die Foto-Texturen (Wiese, Alpweide, Geröll, Alpenrosen, Kalkfels, Felsplatten, Wald von oben, Seegrund, Asphalt) sind aus
-**eigenen Fotos von Daniel Bärschi** gebaut (Ausschnitte, nahtlos gemacht; Quellfoto und Ausschnitt je Datei in
+**eigenen Fotos von DonElektro** gebaut (Ausschnitte, nahtlos gemacht; Quellfoto und Ausschnitt je Datei in
 `texturen/QUELLEN.txt`, aufbereitet mit `werkzeuge/texturen_bauen.py`). Verwendung im Simulator **mit seiner Erlaubnis** (01.11.2026).
-Keine fremde Lizenz. Weitergabe der Bilder ausserhalb von MoveEye nur mit Daniels Zustimmung.
+Keine fremde Lizenz. Weitergabe der Bilder ausserhalb von MoveEye nur mit Zustimmung von DonElektro.
 Nicht benutzte Fotos liegen in `texturen/unbenutzt/` (nicht im Export).
 
 ## Übrige Inhalte

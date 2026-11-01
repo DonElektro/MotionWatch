@@ -1,5 +1,5 @@
 extends RefCounted
-## «Bergtal · Wegweiser» (Daniel 31.10.2026, Paket real-berg-orte): die gelben Wegweiser der Schweizer Wanderwege an den
+## «Bergtal · Wegweiser» (Besitzer 31.10.2026, Paket real-berg-orte): die gelben Wegweiser der Schweizer Wanderwege an den
 ## Weggabelungen von bergtal.gd. Ersetzt die alte Liste in bergtal._signs_and_cairns (gleiche Standorte, dazu neue Gabelungen).
 ##   - Zeit aus dem Weg, nicht aus der Luftlinie: ein Netz aus allen Wanderwegen (TRAILS) und der Passstrasse, kürzester Weg
 ##     (Dijkstra), dann die Formel der Schweizer Wanderwege (4,2 km/h; 1 h pro 300 m auf, 500 m ab; der grössere Teil plus die

@@ -1,5 +1,5 @@
 extends Node
-## 3D-4.x «KI-Hilfe» (wish of Daniel): a PERSON is the guard with the shutter (gameshutter.gd: «Team gegen MoveEye» or
+## 3D-4.x «KI-Hilfe» (wish of the owner): a PERSON is the guard with the shutter (gameshutter.gd: «Team gegen MoveEye» or
 ## «Wächter» / «Team gegen Team» with a person as guard) and may switch on help of the AI, for this round, in its own picture:
 ##   · «KI-Rahmen»   the live detection boxes of MoveEye on the guard's picture (main.mw_det.boxes: persons green, uncertain
 ##                   = not confirmed by the AI dashed). Without MoveEye (or for the fixed camera) the simulator's own AI

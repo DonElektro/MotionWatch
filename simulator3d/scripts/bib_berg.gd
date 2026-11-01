@@ -1,5 +1,5 @@
 extends "res://scripts/bib_objekte.gd"
-## 3D-4.x «Bergtal» (Daniel, 31.10.2026): Dinge für die Berge - eine Erweiterung der Szenen-Bibliothek (bib_objekte.gd), gleiche
+## 3D-4.x «Bergtal» (Besitzer, 31.10.2026): Dinge für die Berge - eine Erweiterung der Szenen-Bibliothek (bib_objekte.gd), gleiche
 ## Technik (Teile pro Zelle in einem Netz, viele gleiche als MultiMesh, Wärme-Zwilling, Sichtweite, Lite), gleiche Benutzung:
 ## var bib = BibBerg.new(main, scenes, knoten, transform) · bib.add(art, pos, drehung, {parameter}) · bib.many(...) · bib.finish().
 ## Bäume: Lärche (im Herbst gelb, im Winter kahl - sie wirft die Nadeln ab), Arve, Legföhre, Fichte; Felsblöcke in drei
@@ -24,7 +24,7 @@ const BERG := {
 	"stepping_stone": ["Bachstein", "Berg"], "notice": ["Hinweiszettel (Selbstversorger)", "Berg"], "woodpile": ["Holzbeige", "Berg"],
 	"lift_cabin": ["Kiste der Materialseilbahn", "Berg"], "bed_tent1": ["Einmannzelt", "Berg"], "bed_tarp": ["Tarp mit Isomatte", "Berg"],
 	"bed_bivy": ["Biwaksack mit Isomatte", "Berg"], "stove": ["Kocher", "Berg"], "tripod": ["Stativ", "Berg"], "snow_cone": ["Lawinenkegel (Schneereste)", "Berg"],
-	# Orte zum Erkunden (bergtal_orte.gd, Daniel 31.10.2026)
+	# Orte zum Erkunden (bergtal_orte.gd, Besitzer 31.10.2026)
 	"pave_stone": ["Pflasterstein (Säumerweg)", "Berg"], "wire_post": ["Stacheldraht-Pfahl (alt)", "Berg"], "wire_coil": ["Stacheldraht-Rolle (rostig)", "Berg"],
 	"laeger_plant": ["Alpenampfer (Lägerflur)", "Berg"]}
 
@@ -104,7 +104,7 @@ func _b_pine_shrub(q: Dictionary) -> Dictionary:
 
 
 func _b_spruce(q: Dictionary) -> Dictionary:
-	# «Bergtal wie auf den Fotos» (Daniel, 31.10.2026): schlanke, dunkle, spitze Fichte (Stockhorn-Gebiet). Lite: gleich viele
+	# «Bergtal wie auf den Fotos» (Besitzer, 31.10.2026): schlanke, dunkle, spitze Fichte (Stockhorn-Gebiet). Lite: gleich viele
 	# Teile wie bisher (Stamm + 3 Kegel), nur schlanker und dunkler; sonst 5 Kegel übereinander (gestufter Umriss).
 	var col = _q(q, "col", "1e3524")
 	var p := []
@@ -149,7 +149,7 @@ func _b_boulder(q: Dictionary) -> Dictionary:
 	return {"p": p, "t": "stone", "lod": "rock", "low": true, "ob": [["circ", 0, 0, r * 0.9, r * 1.2]]}
 
 
-# ---- «Bergtal wie auf den Fotos» (Daniel, 31.10.2026; bergtal_landschaft.gd, nur ausserhalb von Lite) ---------------------
+# ---- «Bergtal wie auf den Fotos» (Besitzer, 31.10.2026; bergtal_landschaft.gd, nur ausserhalb von Lite) ---------------------
 const BERG_FOTO := {"karst": ["Kalkblock (Karstweide)", "Berg"], "rock_tooth": ["Felszahn (Kalk)", "Berg"],
 		"spruce_dead": ["Dürre Fichte", "Berg"], "dwarf_shrub": ["Zwergsträucher (Alpenrosen, Heidelbeeren)", "Berg"]}
 const KARST_COLS := [["8e8c85", "7f7d77", "9a9891", "6c6a64"], ["86837c", "77746e", "928f88", "625f59"]]   # hellgrau (Blöcke), verwittert (Felszähne)
@@ -389,7 +389,7 @@ func _b_hiking_sign(q: Dictionary) -> Dictionary:
 
 
 func _hiking_sign_dirs(q: Dictionary) -> Dictionary:
-	"""Schweizer Wegweiser wie auf dem Stockhorn (Daniels Bild 10): grauer Rohrpfosten, oben die weisse Standort-Tafel, darunter
+	"""Schweizer Wegweiser wie auf dem Stockhorn (Bild des Besitzers 10): grauer Rohrpfosten, oben die weisse Standort-Tafel, darunter
 	gelbe Pfeiltafeln in Wegrichtung, je Zeile «Ziel  Zeit»; Bergweg: Spitze weiss-rot-weiss. q.groups = [[yaw, Stufe, [[Ziel, Zeit]]]]"""
 	var groups: Array = q["groups"]
 	var here := str(_q(q, "here", ""))
@@ -599,7 +599,7 @@ func _b_food_bag(_q: Dictionary) -> Dictionary:
 	return {"p": [C(0.13, 0.32, 0, 0.16, 0, "d8c070", 0.15, 0, 0, 0, "tent"), C(0.05, 0.08, 0, 0.36, 0, "a89050", 0, 0, 0, 0, "tent")], "t": "tent", "lod": "small"}
 
 
-# ---- viewpoints (Aussichtspunkte, Daniel 31.10.2026) ----------------------------------------------------------------------
+# ---- viewpoints (Aussichtspunkte, Besitzer 31.10.2026) ----------------------------------------------------------------------
 func _b_coin_telescope(_q: Dictionary) -> Dictionary:
 	# Münzfernrohr (wie auf vielen Aussichtspunkten): Säule, Kopf mit zwei Okularen, Münzeinwurf
 	return {"p": [C(0.09, 1.1, 0, 0.55, 0, "3a5a8a", 0.14, 0, 0, 0, "metal"), B(0.42, 0.32, 0.6, 0, 1.3, 0, "3a5a8a", -8, 0, 0, "metal"),
@@ -713,7 +713,7 @@ func _b_lift_cabin(_q: Dictionary) -> Dictionary:
 			C(0.15, 0.1, 0, 0.0, 0, "3a3a3a", 0, 90, 0, 0, "metal")], "t": "metal", "lod": "mid"}
 
 
-# ---- equipment (Daniel 31.10.2026: Zelttypen, Biwak-Set, Kocher) ------------------------------------------------------------
+# ---- equipment (Besitzer 31.10.2026: Zelttypen, Biwak-Set, Kocher) ------------------------------------------------------------
 func _b_bed_tent1(q: Dictionary) -> Dictionary:
 	# Einmannzelt (Tunnel, 2,2 × 0,9 m, 0,8 m hoch)
 	var col = _q(q, "col", "3a7a3a")

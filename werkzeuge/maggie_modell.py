@@ -98,7 +98,7 @@ def achse(ax, ang):
 
 
 # ---- Proportionen: Skalierung (im Knochen-Raum: y = entlang des Knochens) und Drehung (lokal, Grad um x/z) ------------
-# x = seitlich, z = «Tiefe» des Knochens. Werte aus Daniels Fotos (Seitenansicht: Schulterhöhe ≈ Rumpflänge, schlank).
+# x = seitlich, z = «Tiefe» des Knochens. Werte aus den Fotos des Besitzers (Seitenansicht: Schulterhöhe ≈ Rumpflänge, schlank).
 FORM = {
     "Body": {"s": (0.84, 1.0, 0.92)},
     "Back": {"s": (0.82, 0.9, 0.92)},

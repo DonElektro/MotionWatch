@@ -611,7 +611,7 @@ static func small(text: String, col := MUT) -> Label:
 	return l
 
 
-# ---- 3D-4.2x «Mehr» (Wunsch Daniel 30.10.2026): the look of the panel like MoveEye – Hell → Rotlicht → Dunkel ----------------
+# ---- 3D-4.2x «Mehr» (Wunsch des Besitzers 30.10.2026): the look of the panel like MoveEye – Hell → Rotlicht → Dunkel ----------------
 # (the order of the button of MoveEye, 510 / 578). The colours below are those of MoveEye (450 :root / body.light /
 # html.sxnight); farbschema.gd applies them to the panel and the windows, the 3D view stays as it is.
 const THEMES := ["light", "red", "dark"]

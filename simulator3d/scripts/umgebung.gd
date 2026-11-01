@@ -1,5 +1,5 @@
 extends Node
-## 3D-4.x «Umgebung wie echt» (Wunsch Daniel, 30.10.2026): kleine Dinge der Umgebung, die echte Kameras stören - jedes
+## 3D-4.x «Umgebung wie echt» (Wunsch des Besitzers, 30.10.2026): kleine Dinge der Umgebung, die echte Kameras stören - jedes
 ## einzeln abschaltbar, bei Grafik «einfach» ohne die teuren Teile (Partikel, kleine Lichter).
 ##  Kamerabild · Schwierige Bedingungen
 ##   - Lampen gehen an: Lampe mit Bewegungsmelder beim Nachbarn und ein Fenster, hinter dem der Fernseher flackert

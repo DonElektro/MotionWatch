@@ -4,9 +4,9 @@ extends Node
 ## tent and the car placed by hand where they really stand. Everything per place (scene, at a real place also lat / lon)
 ## in user://zwilling.json, the pictures in user://zwilling/. Import: the window «Dein Platz» (inventar.gd, first tab; button
 ## or drag a .jpg / .png into the window), settings in «Szene · Dein Platz».
-## 3D-4.x (Aufräumen, Daniel 29.10.2026): one thing «Dein Platz» - the inventory window holds this tab, the tent and the car
+## 3D-4.x (Aufräumen, Besitzer 29.10.2026): one thing «Dein Platz» - the inventory window holds this tab, the tent and the car
 ## are tiles there; the Vorlagen window has no tab «Dein Platz» any more.
-## 3D-4.22 (Angleichen, Daniel 30.10.2026): «Dein Platz» is MoveEye's place (zones, patrol); here: «Foto des Platzes» (part of
+## 3D-4.22 (Angleichen, Besitzer 30.10.2026): «Dein Platz» is MoveEye's place (zones, patrol); here: «Foto des Platzes» (part of
 ## «Szene»), the window is «Gegenstände» (group «Platz & Umgebung»).
 
 var main

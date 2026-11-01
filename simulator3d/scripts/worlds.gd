@@ -1,5 +1,5 @@
 extends RefCounted
-## Welten (3D-4.x, Daniel 31.10.2026): die alten Szenen leben als **Orte** in wenigen grossen Welten.
+## Welten (3D-4.x, Besitzer 31.10.2026): die alten Szenen leben als **Orte** in wenigen grossen Welten.
 ##
 ## Welt «Bergtal» (bergtal.gd): Wald, Wildbeobachtung, Seeufer, Tarnen, Versteckspiel, Parcours, Bauernhof.
 ## Welt «Ferienpark am See» (ferienpark.gd): Voller Campingplatz, Lustiger Platz, Velodieb, Parkplatz, Stellplatz.

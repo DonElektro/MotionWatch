@@ -181,7 +181,7 @@ Statt der gezeichneten Welt kann der Simulator ein **Video** abspielen. Die Kame
 
 Damit lässt sich jeder Simulator von der Webseite von Motion Watch aus bedienen, auch ein späterer 3D-Simulator auf einem PC. Der Simulator **beschreibt sich selbst**: welche Szenarien er hat und welche Regler, Schalter und Knöpfe. Motion Watch zeichnet diese unter *System & Netz → 🧪 Simulator → 🎮 Simulator-Steuerung*, ohne sie vorher zu kennen. Für einen neuen Simulator muss man in Motion Watch also nichts ändern.
 
-**Auf dem PC:** In Motion Watch als Adresse die des PCs eintragen, zum Beispiel `http://192.168.1.50:8765`. Auf dem PC muss die Windows-Firewall den Port 8765 erlauben.
+**Auf dem PC:** In Motion Watch als Adresse die des PCs eintragen, zum Beispiel `http://<IP-des-PCs>:8765`. Auf dem PC muss die Windows-Firewall den Port 8765 erlauben.
 
 ### GET /control – was der Simulator anbietet
 

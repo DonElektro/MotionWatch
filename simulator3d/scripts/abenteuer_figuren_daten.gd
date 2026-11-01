@@ -1,8 +1,8 @@
 extends RefCounted
-## A2 «Figuren, Gespräche, Nebenaufgaben» - die Daten (Bergtal-Abenteuer, Daniel 31.10.2026).
+## A2 «Figuren, Gespräche, Nebenaufgaben» - die Daten (Bergtal-Abenteuer, Besitzer 31.10.2026).
 ## Die Abläufe stehen in abenteuer_figuren.gd. Tal-Koordinaten wie bergtal.gd (x = Osten, z = Süden).
 ## Die Figuren werden mit actor.gd / menschen.gd gebaut (Aussehen über menschen._next_look) - keine neuen Figuren.
-## Grossvater: die Figuren kennen ihn, erzählen aber nichts Neues über ihn (Daniel) - nur was die Geschichte schon sagt
+## Grossvater: die Figuren kennen ihn, erzählen aber nichts Neues über ihn (Besitzer) - nur was die Geschichte schon sagt
 ## (Bergführer, die Karte, der Brief «lies sie mit der Sonne»).
 ##
 ## Gespräche: GRUSS[fid] = [[Bedingung, Text], …] - der erste passende Gruss gilt. THEMEN[fid] = Themen, die man wählen
@@ -113,7 +113,7 @@ const GRUSS := {
 		["erst", "Hoi, ich bin Urs. Ich klettere am Gratspitz - der Fels ist dort richtig gut."],
 		["", "Hoi! Auch wieder am Berg?"]]}
 
-# Paket angleich (Daniel 31.10.2026): Sepps erster Gruss passt zur Jahreszeit der Runde (bergtal_abenteuer.gd SEASONS).
+# Paket angleich (Besitzer 31.10.2026): Sepps erster Gruss passt zur Jahreszeit der Runde (bergtal_abenteuer.gd SEASONS).
 # GRUSS_JZ[fid][Bedingung][Jahreszeit] ersetzt den Text aus GRUSS; fehlt die Jahreszeit, gilt GRUSS («sommer»).
 const GRUSS_JZ := {
 	"aelpler": {"erst": {

@@ -1,5 +1,5 @@
 extends RefCounted
-## «Bring MoveEye ins Schwitzen» (Gameplay ausfeilen, Punkt 8, Daniel 31.10.2026): the game goal «🥵». Nobody has to reach
+## «Bring MoveEye ins Schwitzen» (Gameplay ausfeilen, Punkt 8, Besitzer 31.10.2026): the game goal «🥵». Nobody has to reach
 ## the goal - the sneakers try to give MoveEye as much work and confusion as possible WITHOUT being caught. Measured with
 ## what MoveEye itself reports to the simulator every second (state «det» and «cpu», part 290 of MoveEye):
 ##   · every person box MoveEye reports           +BOX per second

@@ -1,5 +1,5 @@
 extends Node
-## Roter Faden zwischen den Geschichten (Daniel, 31.10.2026): kleine Querverweise zwischen «Die Karte des Grossvaters»
+## Roter Faden zwischen den Geschichten (Besitzer, 31.10.2026): kleine Querverweise zwischen «Die Karte des Grossvaters»
 ## (Bergtal-Abenteuer, bergtal_abenteuer.gd + abenteuer_figuren.gd) und «Maggie und der Bergkristall» (maggie_story.gd).
 ## Beide spielen im Bergtal. Das Hospiz (Horror-Geschichte) wird NICHT verbunden.
 ## Regeln: nur kleine, freiwillige Details (Grüsse, eine Kerze, eine Tagebuchzeile, ein Abzeichen) - jede Geschichte bleibt

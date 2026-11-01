@@ -75,7 +75,7 @@ func _init() -> void:
 		return
 	# a user folder like a real one
 	_put("simulator_settings.json", JSON.stringify({"ui_simple": true, "speed": 3}))
-	_put("spielstand.json", JSON.stringify({"slot": 2, "names": ["Daniel", "Lea", ""]}))
+	_put("spielstand.json", JSON.stringify({"slot": 2, "names": ["Anna", "Lea", ""]}))
 	_put("bergtal_abenteuer/fortschritt.json", "{\"etappe\": 4}")
 	_put("spielstand/2/fortschritt.json", "{\"etappe\": 1}")
 	_put("spielstand/3/lauf.txt", "lauf 3")
@@ -192,7 +192,7 @@ func _init() -> void:
 
 	# ---- 6. MoveEye: the ZIP is fetched once, only the one that is waiting; the guard of net.gd ----
 	ok("get ohne Auftrag", not bool(s.control({"do": "get", "name": zip.get_file()})["ok"]))
-	m.mw_addr = "192.168.1.56"
+	m.mw_addr = "192.0.2.56"
 	m.mw_t = m.now()
 	var sm: Dictionary = s.control({"do": "send"})
 	ok("an MoveEye: Auftrag mw_cmd", bool(sm.get("ok", false)) and str(m.mw_cmd.get("op", "")) == "sim_sicherung")

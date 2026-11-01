@@ -1,5 +1,5 @@
 extends CanvasLayer
-## 3D-4.2x «Mehr» → Rundgang mit Blinki (Wunsch Daniel 30.10.2026), wie die Rundgänge von MoveEye (516 / 586 / 589):
+## 3D-4.2x «Mehr» → Rundgang mit Blinki (Wunsch des Besitzers 30.10.2026), wie die Rundgänge von MoveEye (516 / 586 / 589):
 ## das Fenster wird abgedunkelt, nur das erklärte Teil bleibt hell (blauer Rahmen); daneben die Sprechblase mit Blinki
 ## (der kleinen Figur aus dem MoveEye-Logo), Punkte für die Schritte, «Später», «Überspringen», «Weiter ›» / «Fertig».
 ## Beim ersten Start einmal von selbst (nicht bei automatischen Läufen: --no-update / --no-tour, Kinder-Modus, Spiel,
@@ -314,7 +314,7 @@ func state() -> Dictionary:
 
 
 # ---- Blinki: blinks, looks around, hops, «talks» (like the CSS animations of 589) ------------------------------------------
-# Daniel 31.10.2026: without the fan; a new mood shows its sign ~2 s in a small bubble (Icons.blinki_bubble, like .bk.say)
+# Besitzer 31.10.2026: without the fan; a new mood shows its sign ~2 s in a small bubble (Icons.blinki_bubble, like .bk.say)
 class BlinkiView extends Control:
 	const SAY_S := 2.0
 	var mood := "normal":

@@ -1,5 +1,5 @@
 extends RefCounted
-## «Kleidung nach Jahreszeit» (Zweig real-kleidung, 31.10.2026, Entscheid Daniel): EINE Stelle, die sagt, was die Menschen
+## «Kleidung nach Jahreszeit» (Zweig real-kleidung, 31.10.2026, Entscheid des Besitzers): EINE Stelle, die sagt, was die Menschen
 ## im Simulator tragen - für alle Figuren (Figuren-Paket figur_paket.gd, Ring-Figuren figur.gd, einfache Formen actor.gd,
 ## Aussehen aus menschen.gd).
 ##   Winter, Nacht und Berg (Bergtal, Ort «Berge»)  -> lange Kleidung (Winter / kalt: dazu warme Jacke, Handschuhe, Mütze)

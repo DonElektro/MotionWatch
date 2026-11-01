@@ -1,5 +1,5 @@
 extends RefCounted
-## Paket A5 (Bergtal-Abenteuer, Daniel 31.10.2026): die Familien-Bestenliste.
+## Paket A5 (Bergtal-Abenteuer, Besitzer 31.10.2026): die Familien-Bestenliste.
 ## Zählt pro Person, was sie im Abenteuer gefunden hat (Tagebuchseiten, Tiere, Ausrüstung, Fundstücke), die Etappensiege
 ## im Wettrennen und behält die besten Wildkamera-Fotos (Bewertung foto_wertung(): Schärfe und Tier).
 ## Die bestehende Rangliste der Schlafplätze (bergtal.gd ranking(), user://bergtal_rangliste.json) bleibt, wie sie ist,

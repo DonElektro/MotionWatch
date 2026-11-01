@@ -1,8 +1,8 @@
 extends PanelContainer
-## 3D-3.82 (Wunsch Daniel, während dem grossen Makeover): nach jedem Update erscheint einmal eine kurze Info «Neu in dieser
+## 3D-3.82 (Wunsch des Besitzers, während dem grossen Makeover): nach jedem Update erscheint einmal eine kurze Info «Neu in dieser
 ## Version» - alle Versionen seit der zuletzt gesehenen (aus neu_data.gd, erzeugt aus «Lies mich.txt») und «Als Nächstes im
 ## Makeover» (NEXT_ALL ohne DONE, bei jeder Makeover-Version nachführen). main.news_seen / main.news_popup sind in KEEP.
-## Links zu Neuerungen (Daniel 01.11.2026, wie MoveEye Teil 137 / 639zc): bei jeder Neuerung ein kleiner Link zur Funktion -
+## Links zu Neuerungen (Besitzer 01.11.2026, wie MoveEye Teil 137 / 639zc): bei jeder Neuerung ein kleiner Link zur Funktion -
 ## Ziele aus res://ui_gemeinsam.json «neu_ziele» (sim_einstellung: Karte aufklappen und hervorheben, sim_menue «Gruppe/Teil»,
 ## sim_aktion: eine Aktion von main_steuerung). Nur in MoveEye: Hinweis «in MoveEye» (verbunden: öffnet die Seite im Browser).
 ## Schalter main.news_links (auto | on | off, Entwickler-Fenster, mit MoveEye geteilt); auto = Projektschalter
@@ -258,7 +258,7 @@ func show_news(es := []) -> void:
 	var tag := UI.small("MOVEEYE SIM · " + main.VERSION, UI.ORG)
 	_box.add_child(tag)
 	_box.add_child(UI.heading("✨ Neu in dieser Version"))
-	# 3D-4.x: the list scrolls - the window is never higher than the screen, OK always reachable (Daniel 31.10.)
+	# 3D-4.x: the list scrolls - the window is never higher than the screen, OK always reachable (Besitzer 31.10.)
 	_scroll = ScrollContainer.new()
 	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	_list = VBoxContainer.new()

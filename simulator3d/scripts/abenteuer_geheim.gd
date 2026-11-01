@@ -1,5 +1,5 @@
 extends Node
-## Paket «Die Karte des Grossvaters: Geheimnisse und Nacht» (Daniel 31.10.2026, bestätigt) - ein Kind von bergtal_abenteuer.gd
+## Paket «Die Karte des Grossvaters: Geheimnisse und Nacht» (Besitzer 31.10.2026, bestätigt) - ein Kind von bergtal_abenteuer.gd
 ## («ab»), dort nur kleine Einhänge-Punkte (Suche nach «geheim.»). Die Action-Teile (Steg, Kuhherde, Seilbahn, Schleuse,
 ## Spiegel) stehen in abenteuer_action.gd und hängen hier ein (act.*).
 ##
@@ -20,7 +20,7 @@ extends Node
 ##     es über main.add_sound). Ein Dachs schnüffelt am Rucksack; MoveEye nimmt ihn auf; am Morgen: wer war es?
 ## Keine neuen Fakten über den Grossvater: die Texte wiederholen nur, was Brief, Karte und Kapitel schon sagen.
 ##
-## EINHÄNGE-PUNKTE für spätere Teile (Daniel: «weitere Teile folgen»): ein neues Teil ist eine Datei wie abenteuer_action.gd
+## EINHÄNGE-PUNKTE für spätere Teile (Besitzer: «weitere Teile folgen»): ein neues Teil ist eine Datei wie abenteuer_action.gd
 ## mit denselben Funktionen (alle optional) und wird in TEILE eingetragen:
 ##   on_start() · build(root: Node3D, ch) · leg_stop(leg, f0, f) -> bool · on_ask(pe) · choose(pe, v) -> bool · tick(dt) ·
 ##   plan_extra(out, sp, speed) · register_kinds(n) · morning(res) · paint_hud(body) · paint_pending(g, pe) ·

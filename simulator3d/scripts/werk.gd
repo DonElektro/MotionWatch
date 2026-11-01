@@ -1,5 +1,5 @@
 extends Node
-## Paket «Werksrücksetzung im Simulator» (Daniel 31.10.2026): «⚠ Auf Werkseinstellungen zurücksetzen …» wie in MoveEye
+## Paket «Werksrücksetzung im Simulator» (Besitzer 31.10.2026): «⚠ Auf Werkseinstellungen zurücksetzen …» wie in MoveEye
 ## (quelle/586_guide2.py factory_reset, 516 g2Factory, 585 _g2_tk_factory, Texte 633). Ort: Karte «Mehr» (MoveEye: Mehr →
 ## System), nur für den Besitzer (devtool.is_owner: nicht im Kinder-Modus - dieselbe Prüfung wie das Entwickler-Fenster).
 ## Ablauf wie MoveEye: Fenster mit «Zurück auf die Werkseinstellungen / Das bleibt / Das wird gelöscht», zum Bestätigen
@@ -10,7 +10,7 @@ extends Node
 ##   3. Der neue Simulator löscht ganz am Anfang von main._ready (apply_pending), BEVOR ein Teil eine Datei liest - und erst
 ##      wenn der alte Simulator beendet ist (sonst schreibt er beim Beenden wieder Dateien). Danach startet er wie beim ersten
 ##      Start (Standardwerte, Rundgang mit Blinki von selbst, Neuigkeiten).
-## Was BLEIBT (Daniels Entscheid): KEEP unten - Horror-Passwort (nur Hash/Salz, der Fortschritt der Nacht geht), Sprache, heruntergeladene
+## Was BLEIBT (Entscheid des Besitzers): KEEP unten - Horror-Passwort (nur Hash/Salz, der Fortschritt der Nacht geht), Sprache, heruntergeladene
 ## Inhalte (Figuren-Paket, Fotos-Oberflächen/CC0/Texturen, Karten-Zwischenspeicher, MoveEye auf diesem PC), Entwickler-Notizen,
 ## Kontaktbogen, Spieltest- und Prüfdaten. Alles andere in user:// wird gelöscht. Eine «Kopie wiederherstellen» gibt es nicht
 ## (MoveEye hat auch keine - dort: Kopie herunterladen); das Fenster zeigt die Kopien und öffnet den Ordner.
@@ -45,7 +45,7 @@ const KEEP := [
 	"motionwatch_pc/",                   # MoveEye auf diesem PC (heruntergeladenes Programm, mwpc.gd)
 	"autologon/",                        # Autologon-Programm von Microsoft (heruntergeladen, autostart.gd)
 	"trainingsbilder/",                  # KI-Trainingsbilder (dataset.gd, kidaten.gd)
-	"parcours/lernbilder/",              # Parcours-Lernbilder (parcours.gd PICS_DIR) - Daniel 31.10.2026: bleiben
+	"parcours/lernbilder/",              # Parcours-Lernbilder (parcours.gd PICS_DIR) - Besitzer 31.10.2026: bleiben
 	"dev_notizen/",                      # Entwickler-Notizen
 	"dev_notizen_export/",               # Entwickler-Notizen (ZIP)
 	"kontaktbogen/",                     # Kontaktbogen

@@ -1,8 +1,8 @@
 #!/bin/bash
-# Paket Linux (Daniel 01.11.2026): packt den exportierten Linux-Simulator (Preset «Linux», x86_64) in die ZIP für Linux-PCs.
+# Paket Linux (Besitzer 01.11.2026): packt den exportierten Linux-Simulator (Preset «Linux», x86_64) in die ZIP für Linux-PCs.
 #   werkzeuge/linux_paket.sh <MoveEyeSim3D.x86_64> [ziel.zip]      (Standard: simulator3d/MoveEyeSim3D_Linux.zip)
 # Inhalt: MoveEyeSim3D/ mit MoveEyeSim3D.x86_64 (ausführbar), installieren.sh (Startmenü + Desktop, ohne sudo),
-# moveeye-sim.png (Symbol) und «Lies mich.txt»; dazu der Kiosk (Daniel 01.11.2026): kiosk_ein.sh / kiosk_aus.sh (reine
+# moveeye-sim.png (Symbol) und «Lies mich.txt»; dazu der Kiosk (Besitzer 01.11.2026): kiosk_ein.sh / kiosk_aus.sh (reine
 # Simulator-Maschine mit Linux Mint, rückgängig machbar) und kiosk_sitzung.sh (die Sitzung «MoveEye Kiosk»). Danach schreibt `versionen.py --sim-json` den Block «linux» in version.json
 # (der Linux-Simulator holt sein Update dort, update.gd linux_info). Gleich aufgebaut wie die Windows-ZIP (simpack.sh).
 set -e

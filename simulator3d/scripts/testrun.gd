@@ -4,7 +4,7 @@ extends Node
 ## compares it with what MoveEye reports (sim_state «det», from MoveEye 2.93.3): persons recognised, how fast,
 ## animals reported, false alarms and their probable cause, noise alarms. Report: in the window, on the web page of
 ## MoveEye (status), as JSON / HTML file in the user folder (testlauf/), and via CONTROL {"action": "test_report"}.
-## Prüfstand 2 (Wunsch Daniel, 29.10.2026):
+## Prüfstand 2 (Wunsch des Besitzers, 29.10.2026):
 ##  - the headline are the real PUSH messages of MoveEye (det.pushes, MoveEye part 068): each one is «richtig» (a person was
 ##    visible or in the picture just before) or «falsch»; the same visitor again within 10 s counts once. Every 0→>0 change
 ##    of the person count stays as «Flackern» (it was called «Fehlalarme» before).

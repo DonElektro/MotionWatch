@@ -1,5 +1,5 @@
 extends Node
-## «Animationen verbessern» 17 (Daniel 31.10.2026): Fussspuren im Schnee, Staub auf dem Kiesweg.
+## «Animationen verbessern» 17 (Besitzer 31.10.2026): Fussspuren im Schnee, Staub auf dem Kiesweg.
 ## Ein Knoten unter main («anim_spuren»), von anim_mensch.gd / anim_tier.gd bei jedem Schritt aufgerufen: tritt(main, …).
 ## Schnee: jahreszeiten.snow_now(), im Bergtal die Jahreszeit «winter», oder Wetter «snow» unter 1 °C.
 ## Kies: die Wege «kies» von gelaende.gd und die Kies-Flecken des Nacht-Spiels (gamenacht.on_gravel); nur trocken.

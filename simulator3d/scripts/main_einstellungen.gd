@@ -148,7 +148,7 @@ func _register_controls() -> void:
 				_c["only"] = func(): return main.scene == "bergtal"
 			if _c.group == "Szene":
 				_c.extra = _c.extra.duplicate()
-				_c.extra["sub"] = "Bergtal"            # 3D-4.36 (Daniel): own part «Bergtal» on the card Szene, only in the Bergtal
+				_c.extra["sub"] = "Bergtal"            # 3D-4.36 (Besitzer): own part «Bergtal» on the card Szene, only in the Bergtal
 	main.add_control("select", "szene_spot", "Standort an diesem Ort (Pfadilager, Hofladen, Bergdorf, Festival)", func(): return main.scene_spot(main.scene),
 			func(v): main.set_scene_spot(str(v)), "Szene", {"options": main._spot_options()})     # 3D-4.x: where MoveEye stands in a compact place (kompakt.gd)
 	main.controls[-1]["only"] = func(): return Kompakt.is_kompakt(main.scene)
@@ -322,7 +322,7 @@ func _register_controls() -> void:
 	main.add_control("button", "pir", "PIR Zelt auslösen", null, func(): main.add_event("PIR Zelt", "pir"), "Sensoren")
 	main.add_control("button", "bike", "Velo-Sensor auslösen (jemand rüttelt am Velo)", null, func(): main.add_event("Velo", "tag"), "Sensoren")
 	main.simint.add_controls()                              # 30.10.2026: Lautsprecher, Störungen, Wärmebild (simint.gd)
-	# 3.23 (Daniel 01.11.2026): ONE switch for the voice (narrator, demo, trailer) - like MoveEye (Licht & Ton → Lautsprecher)
+	# 3.23 (Besitzer 01.11.2026): ONE switch for the voice (narrator, demo, trailer) - like MoveEye (Licht & Ton → Lautsprecher)
 	main.add_control("select", "stimme_modus", "Stimme (Erzähler, Vorführung, Trailer)", func(): return Stimme.modus(), func(v): Stimme.set_modus(str(v)),
 			"Licht & Ton", {"sub": "Lautsprecher", "options": [["an", "an"], ["aus", "aus"], ["untertitel", "nur Untertitel"]]})
 	# 3.23: «Bewegung reduzieren» and tour / Blinki in ONE place - like MoveEye (System → Gerät & Hilfe)
@@ -470,7 +470,7 @@ func _register_controls() -> void:
 	main.add_control("toggle", "cam_wippen", "Ansicht wippt beim Gehen (Spielfigur)", func(): return main.cam_wippen, func(v): main.cam_wippen = bool(v), "Grafik",
 			{"expert": true, "tip": "Die Ansicht hinter der Spielfigur geht mit den Schritten leicht auf und ab. Aus, wenn dir davon schwindlig wird. Nur bei Grafik «schön» oder «ultra»."})
 	main.add_control("toggle", "foto_tex", "Foto-Texturen im Bergtal", func(): return main.foto_tex, func(v): main.set_foto_tex(bool(v)), "Grafik",
-			{"expert": true, "tip": "Wiese, Fels, Geröll, Alpenrosen, Wege und Seegrund aus echten Fotos (Daniel Bärschi). Aus = die gezeichneten Farben wie früher. In Lite immer aus."})
+			{"expert": true, "tip": "Wiese, Fels, Geröll, Alpenrosen, Wege und Seegrund aus echten Fotos (DonElektro). Aus = die gezeichneten Farben wie früher. In Lite immer aus."})
 	main.add_control("slider", "view_scale", "Schärfe der Ansicht im Fenster (weniger = schneller; die Bilder für MoveEye bleiben scharf)", func(): return main.view_scale, func(v): main.set_view_scale(float(v)), "Grafik", {"min": 0.4, "max": 1.0, "step": 0.05, "unit": "×"})
 	main.add_control("select", "win_fps", "Bilder pro Sekunde im Fenster", func(): return str(main.win_fps), func(v): main.win_fps = int(v); main._perf_orig.erase("win_fps"); main._settings_dirty = true, "Grafik",
 			{"options": [["0", "so viele wie möglich"], ["60", "60"], ["30", "30 (spart Strom)"], ["20", "20 (schwacher PC)"]]})
@@ -504,7 +504,7 @@ func _cset(id: String, v) -> void:
 
 
 func _menu_merge() -> void:
-	"""Menüs A, Punkt 4 (Daniel 31.10.2026): one control instead of 2–4 with the same name. It only reads and sets the old
+	"""Menüs A, Punkt 4 (Besitzer 31.10.2026): one control instead of 2–4 with the same name. It only reads and sets the old
 	controls (ALIAS_IDS: they stay for /control, the test runs, the Prüfstand and the saved settings)"""
 	main.add_control("select", "linse_tropfen", "Tropfen auf der Linse",
 			func():

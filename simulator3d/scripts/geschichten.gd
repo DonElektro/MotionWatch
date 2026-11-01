@@ -1,5 +1,5 @@
 extends Node
-## Geschichten-Menü (Daniel, 31.10.2026): das Regal «Geschichten» im Fenster «Spielen» (spielbereich.gd) und der gemeinsame
+## Geschichten-Menü (Besitzer, 31.10.2026): das Regal «Geschichten» im Fenster «Spielen» (spielbereich.gd) und der gemeinsame
 ## Start aller Geschichten.
 ##   * Geschichten = Storys mit Kapiteln, als grosse Karten (2 pro Zeile, wie Bücher im Regal): «Die Karte des Grossvaters»
 ##     (bergtal_abenteuer.gd), «Maggie und der Bergkristall» (maggie_story.gd), «Das Hospiz» (bergtal_horror.gd) und
@@ -193,7 +193,7 @@ func _process(dt: float) -> void:
 	var mg = main.get("maggie")
 	var ho = main.get("horror")
 	if mg != null and bool(mg.get("demo")):
-		return                                         # Vorführmodus: no picture, no «zuletzt gespielt» (Daniel's Spielstände stay)
+		return                                         # Vorführmodus: no picture, no «zuletzt gespielt» (the owner's Spielstände stay)
 	if mg != null and bool(mg.running):
 		SS.set_last_story("maggie")
 		if str(mg.phase) == "region" and str(mg.region) != "" and _mg_snap != str(mg.region):

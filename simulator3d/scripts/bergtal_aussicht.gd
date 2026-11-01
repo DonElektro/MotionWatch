@@ -1,5 +1,5 @@
 extends RefCounted
-## «Bergtal · Aussichtspunkte» (Daniel 31.10.2026 03:07/03:10, alles gewählt): was die 8 Aussichtspunkte des Bergtals
+## «Bergtal · Aussichtspunkte» (Besitzer 31.10.2026 03:07/03:10, alles gewählt): was die 8 Aussichtspunkte des Bergtals
 ## (bergtal.gd VIEWPOINTS: Bank + Gipfelkreuz, Münzfernrohr, Panoramatafel, wild mit Steinmann) bewirken.
 ##   * Ankommen (Ansicht, Rover oder Schlafplatz dort): zählt als Entdeckung «berg.aussicht.<id>» (main.entdecken) mit einem
 ##     Panoramafoto (Objektiv wie MoveEyes Kopfkamera, 66°), deckt auf der Karte auf, was man von dort sieht (Sichtfeld).
