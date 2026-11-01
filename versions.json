@@ -1,22 +1,39 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-01 11:31",
+ "generated": "2026-11-01 11:34",
  "versions": [
+  {
+   "version": "3.31.0",
+   "file": "webcam_bewegung_3_31_0.py",
+   "url": "",
+   "sha256": "56c35f98dba982c74ee960e23f453c28659d8fcc3305b41bae40b422641180c7",
+   "date": "2026-11-01 11:34",
+   "notes": "Ein gemeinsamer Kopf auf jeder Seite (Web, Pi-Fenster, Simulator): ? 🔔 ↻ DE ☰ ⛶ ▲ 🛠 immer gleich; Ein-/Ausblenden-Listen als Chips mit Symbolen und Gruppen.",
+   "size": 4523368,
+   "sig": "b1df9658dd92f934625296f11be3fee542ef1ffc3a4da28f55bf115a065bf65dec6c87b031ba18c5fa99b0c8953bd095e737fe94e8af5be91c9cbd325d82d902",
+   "data": {
+    "file": "moveeye_daten_3_31_0.zip",
+    "url": "",
+    "sha256": "d2697360f1fe47bab69ccc7fe66090b500c80666d6992302fcb0a1b0d4b1e0c5",
+    "size": 1566711,
+    "sig": "f1b4f5ca5d7e0e54279b851bd462f89350c6e33609e0c529797fb9303b6533e80e2bfd18556ee7c4458591a6b41320e0c60a82cc2f72ab30cd88ee22f3342309"
+   }
+  },
   {
    "version": "3.30.0",
    "file": "webcam_bewegung_3_30_0.py",
    "url": "",
-   "sha256": "49531327c60c83ff63ec3500737bc1c9fc032a9d0589105cf7fe4609e73198cf",
-   "date": "2026-11-01 11:31",
+   "sha256": "4de3df91e770a9233a99194e20cbe20aac049753afda3b87dc3d4e25023371c0",
+   "date": "2026-11-01 11:33",
    "notes": "Schneller zum Entwickler-Bereich: das MoveEye-Logo etwa 1 s gedrückt halten (Web, Pi-Fenster, Simulator); im Simulator zusätzlich ein Werkzeug-Knopf 🛠 oben rechts.",
-   "size": 4494989,
-   "sig": "04a951a31016c8c12c11c1948b32c0539a76bec6e65f4df94d811b748d4a745d7cb36b0dbc48ab8520a69b2e9ade4dc66598c4bb0f280b1b8b3c77b5e9bb3c0b",
+   "size": 4523481,
+   "sig": "5f36fe5bb255c0b7391a149b09e13645e5a886939b5e890a382e0f25af195c30c73d7346bd78624b39c6f32a903ea7c196c2c3b38d4997eace5fda557789ac06",
    "data": {
     "file": "moveeye_daten_3_30_0.zip",
     "url": "",
-    "sha256": "e6f33e142f3d52e476885af1fba7be55f27f27da15a11a450ceb7853d55635c0",
-    "size": 1559491,
-    "sig": "e0988d48cb0aec32768449acf666ccab2357d47a4b457acdafc52ba3440d6ebe881549fc7e695ed30e539468843744d4f591e77b5e8f15dff3324b804d14fd0f"
+    "sha256": "6edd516f3b91da63c9cb4524516b8f0322ef72c5982c63ac17d2b58c16787100",
+    "size": 1566651,
+    "sig": "0d89a2fd00e2d6be215b93498f7ef2cd72671c5feadb68c5f1d0096f4b866cfa218305009a66a458adc4c8b582c5159c347e47b4a5eda994591227317acfb707"
    }
   },
   {
@@ -41,7 +58,7 @@
    "file": "webcam_bewegung_3_28_1.py",
    "url": "",
    "sha256": "86d8ae4913f16f13f3dd6764e7ad50b10bc0838b97f27d295bf1d320263ccf9a",
-   "date": "2026-11-01 02:53",
+   "date": "2026-11-01 11:33",
    "notes": "Prüfungen laufen automatisch auf GitHub (MoveEye, Simulator-Tests, Export), schneller und ohne den eigenen Rechner zu belasten.",
    "size": 4481923,
    "sig": "ac71cd2ef089a788e539283ada706b62944bf99db637ff821818a64dbc692dd320e5393c1ba18b261842b2d4a9dc32d228cdf9fe3ec2b1f340fbcb4f73e68f06",
@@ -136,23 +153,6 @@
     "sha256": "6ad5625d19f7814116e8742afbcf3c4ebb6ae4623eb4fac617413f9f0201a464",
     "size": 1630179,
     "sig": "ee7beaae1528b9624116bbd89928df5fd819b4527ed3bd7cb24f34d85762de3f7cac467e519d04ade7903258f1ce8f5ce3b2eb339f364ee76fdaae1b0b2d0308"
-   }
-  },
-  {
-   "version": "3.22.0",
-   "file": "webcam_bewegung_3_22_0.py",
-   "url": "",
-   "sha256": "df45d7aa5e86816ac9c487a86acc07634259b7d4f2ae2925d6dafdd594cf4800",
-   "date": "2026-11-01 02:15",
-   "notes": "Reiter- und Statuszeile einzeln einklappbar (pro Gerät gemerkt, roter Punkt bei Warnungen); auf jeder Seite dieselbe Bedienleiste (Einfach/Experte, Symbole farbig/schlicht, Nur Gruppen, Alle zuklappen · Nur Gruppen · Alle aufklappen) – Web, Pi-Fenster und Simulator; Live: Gehtest ganz unten.",
-   "size": 4448328,
-   "sig": "486bd2fbe8f184c08e8d6e9681886afc4b231699e5454eaa7fbb8aa20a55e16ebea8a62d98771fb9104d7579057fc53ef721fb3e42bc786a156104eac790ef0f",
-   "data": {
-    "file": "moveeye_daten_3_22_0.zip",
-    "url": "",
-    "sha256": "bac55ca09b0b3fda58fb0ce920c8f158a7ce653ab34b56d186908726d03ac713",
-    "size": 1625230,
-    "sig": "330409f5be080c406122e92b34c09c8b4535c84506051f004a3a303f704598921bad33fbefd0305f9dc6657993f791c462f2ec5d6df35ee02f249506b3139b00"
    }
   },
   {

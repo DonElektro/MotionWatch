@@ -1,8 +1,13 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 01.11.2026 · Version **3.30.0** · MoveEye **3.30.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 01.11.2026 · Version **3.31.0** · MoveEye **3.31.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.31.0 (MoveEye 3.31.0): Ein gemeinsamer Kopf (`scripts/kopf.gd`, MoveEye Teil 639t)
+
+- ? 🔔 ↻ DE ☰ ⛶ ▲ 🛠 in fester Reihenfolge, Liste und Texte aus `ui_gemeinsam.json` («kopf», geprüft von ui_gemeinsam_test);
+  🛠 nur mit Entwickler-Bereich und Besitzer. devzugang.gd blendet seinen eigenen Werkzeug-Knopf aus, sobald `main.kopf` da ist.
 
 ## NEU in 3.30.0 (MoveEye 3.30.0): Entwickler-Zugang (`scripts/devzugang.gd`, MoveEye Teil 639s)
 
