@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 066: Alarm-Extras – Knöpfe in der Push-Nachricht, Akku-Prognose, Morgen-Push mit Bildstreifen, «Was war das?», doppelte Bestätigung, Ansage beim Einschalten, «Bist du's?». Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Wunsch Daniel (29.10.2026):
+# Wunsch Besitzer (29.10.2026):
 #  1  Knöpfe in der Push-Nachricht (ntfy «Actions», Telegram: Link-Knöpfe): «Fehlalarm», «Sirene», «Aus». Jede Nachricht hat
 #     ihren eigenen Schlüssel (zufällig, 1 h gültig, jeder Knopf nur einmal) – kein Passwort in der Adresse. Adresse /na/<schlüssel>/<knopf>.
 #  2  Akku-Prognose beim Einschalten («Akku reicht bis 06:40 bei Wachsam») – Schutz-Seite, Fenster, Antwort / Meldung beim Einschalten.

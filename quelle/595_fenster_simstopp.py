@@ -1,10 +1,10 @@
 #@ MoveEye – Teil 595: Fenster: der Knopf «⏹ Stopp» (Not-Aus der Servos) verschwindet in der Simulation (CFG sim_on) – dort werden die echten Servos nicht benutzt. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Wish of Daniel (30.10.2026): the emergency stop «⏹ Stopp» is hidden while MoveEye runs in simulation mode - the real servos
+# Wish of Besitzer (30.10.2026): the emergency stop «⏹ Stopp» is hidden while MoveEye runs in simulation mode - the real servos
 # are not used then. The web side is in 541 (servo_client_state "sim" → #srv-stop hidden); the setting servo_stop_btn stays for
 # the real hardware. Here the window: every «⏹ Stopp» made by App._fbtn with the command _srv_estop_btn (570, all three
 # layouts of the camera bar) is remembered and taken off / put back by App._refresh (it runs every few seconds).
-# 3.16 (Daniel 31.10.2026): in the simulation the whole small column (speed, ⇆, centre, calibrate, waypoints) is left out
+# 3.16 (Besitzer 31.10.2026): in the simulation the whole small column (speed, ⇆, centre, calibrate, waypoints) is left out
 # (570 _build_controls, flag self._ctl_sim); _refresh builds the tab again when the simulation is switched.
 # ----------------------------------------------------------------------------
 

@@ -7,7 +7,7 @@
 #    - it never walked there: no moving track (a person walking in) was at that place shortly before or when it appeared,
 #    - it stands still: middle within FIX_STILL of its height, height within FIX_SIZE (a few jumps of the AI box are allowed),
 #    - for FIX_LEARN_S (3 min) - or only FIX_LEARN_START_S when it was there already at the start (camera / scene new),
-#    - Entscheid Daniel (31.10.2026): only a THERMAL CAMERA that sees it NOT warm (FIX_COLD_N looks, never warm) makes it a
+#    - Entscheid Besitzer (31.10.2026): only a THERMAL CAMERA that sees it NOT warm (FIX_COLD_N looks, never warm) makes it a
 #      thing by itself. Without a thermal camera (or no clear reading) it only gets the card below and STAYS A PERSON (push,
 #      the head follows) until «Ignorieren» is tapped; warm like a body: nothing (a person).
 #    A learned spot: its AI box and a person track standing on it are no person (no push, the head does not follow, drawn
@@ -18,7 +18,7 @@
 #    class: no person from the movement (also not «sticky» from before), no «Person?» and no thermal person on it. A new track
 #    where an animal was a moment ago inherits it. Only the AI itself saying «person» over FIX_ANIMAL_AI_S (and no animal in
 #    that time) makes it a person again («im Zweifel Person» when the AI is sure).
-# Gegenprobe (Daniel): a person who walked in and then stands still for a long time is NEVER learnt (walked = for good).
+# Gegenprobe (Besitzer): a person who walked in and then stands still for a long time is NEVER learnt (walked = for good).
 # ----------------------------------------------------------------------------
 FIX_LEARN_S = 180.0         # «über Minuten»: 3 min without moving. A visitor standing that long in front of a camera without
                             # having walked there (the case «walked» is never learnt) is very rare; a tree stands for ever.
@@ -471,7 +471,7 @@ def fixp_selftest():
         j = 0.1 * (1 if i % 2 else -1)
         res.append(fixp_spot_step(s, (10.0 + j, 2.0, 4.0, 9.0 * (1 + j)), 100.0 + i, 100.0, False, False))
     assert "learned" in res and res.index("learned") + 1 == int(FIX_LEARN_START_S), res.index("learned") if "learned" in res else res
-    # 1b) Entscheid Daniel: the same spruce WITHOUT a thermal camera - only the card («suggest»), it stays a person
+    # 1b) Entscheid Besitzer: the same spruce WITHOUT a thermal camera - only the card («suggest»), it stays a person
     s1 = fixp_new_spot((10.0, 2.0, 4.0, 9.0), 100.0, 100.0)
     r1 = [fixp_spot_step(s1, (10.0, 2.0, 4.0, 9.0), 100.0 + i, 100.0, False, None) for i in range(1, 400)]
     assert r1.count("suggest") == 1 and "learned" not in r1 and not s1["learned"] and r1.index("suggest") + 1 == int(FIX_LEARN_START_S)

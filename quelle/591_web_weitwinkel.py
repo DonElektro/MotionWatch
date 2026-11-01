@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 591: Weitwinkel-Kamera des Simulators auf den Seiten (Kachel in der Simulator-Zentrale und in Sim-Kompakt, Bild antippen = gross, Montage wählen), Zustand an den Simulator (IR-Licht breit), Selbsttest von Teil 163. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Plan Daniel 30.10.2026: the wide picture as a tile on /sim (Simulator-Zentrale, 139) and in Sim-Kompakt (549). No new
+# Plan Besitzer 30.10.2026: the wide picture as a tile on /sim (Simulator-Zentrale, 139) and in Sim-Kompakt (549). No new
 # stream: the picture is the extra camera sim:1 that MoveEye already fetches (440), shown through /cam_feed/<n> only while
 # its sheet is open (the stream stops when the sheet closes). The tile sheet: the picture (tap = big, tap again / Esc =
 # back), the four mounts (simulator control wide_mount), whether it steers the head as overview (163).

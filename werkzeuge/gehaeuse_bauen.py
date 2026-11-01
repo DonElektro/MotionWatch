@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Gehäuse v5.1 – eine Quelle (hardware/gehaeuse/) für Druckdateien, Simulator-Modelle, Vorschaubilder und Texte.
 
-Quelle: hardware/gehaeuse/Quellcode/*.py (Daniels parametrisches Modell: v5.py, pantilt.py, csg.py, decimate.py …) und
+Quelle: hardware/gehaeuse/Quellcode/*.py (Besitzers parametrisches Modell: v5.py, pantilt.py, csg.py, decimate.py …) und
 hardware/gehaeuse/bau.json (Teile, Materialliste, Montageschritte, Texte in de/en/fr/it/rm). Daraus:
 
     python3 werkzeuge/gehaeuse_bauen.py --sim      # Simulator: simulator3d/inhalte/gehaeuse/gehaeuse.glb (alle Teile, Werkstatt)
@@ -21,7 +21,7 @@ hardware/gehaeuse/bau.json (Teile, Materialliste, Montageschritte, Texte in de/e
     python3 werkzeuge/gehaeuse_bauen.py --pruefen  # passen Simulator-Modelle und Daten zur Quelle? (Exit 1 sonst; auch im
                                                    #   Selbsttest von MoveEye, Teil 639w)
 
-Vereinfachen: das SDF-Modell wird grob abgetastet (export.mesh, Marching Cubes) und mit decimate.cluster_qem (Daniels
+Vereinfachen: das SDF-Modell wird grob abgetastet (export.mesh, Marching Cubes) und mit decimate.cluster_qem (Besitzers
 Vertex-Clustering) vereinfacht. Koordinaten im Simulator: Meter, Ursprung = Kippachse auf der Pan-Achse (main.head /
 main.head_pitch), Godot X = Modell y − AY, Y = Modell z − Kippachse, Z = Modell x − AX (vorne = PIR-Seite = −Z wie der Blick
 des Kopfes in Grundstellung, v5.placed(0, 180)). Gruppen: base (Unterteil, dreht nicht), pan (dreht mit main.head),
@@ -676,7 +676,7 @@ def schreibe_3mf_teil(pfad, name, tri, stueck=1):
         items.append('<item objectid="1" transform="1 0 0 0 1 0 0 0 1 %.2f %.2f %.2f"/>' % (cx, cy, -lo[2]))
     model = ('<?xml version="1.0" encoding="UTF-8"?>\n<model unit="millimeter" xml:lang="en-US" '
              'xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02"><metadata name="Title">MoveEye v5.1 %s</metadata>'
-             '<metadata name="Designer">Daniel (DonElektro)</metadata><resources><object id="1" name="%s" type="model"><mesh>'
+             '<metadata name="Designer">Elektro</metadata><resources><object id="1" name="%s" type="model"><mesh>'
              '<vertices>%s</vertices><triangles>%s</triangles></mesh></object></resources><build>%s</build></model>') % (
         name, name, vs, ts, "".join(items))
     zi = lambda n: zipfile.ZipInfo(n, (2026, 1, 1, 0, 0, 0))
@@ -712,7 +712,7 @@ def baue_3mf(src):
     print(f"3MF: {tot / 1e6:.2f} MB -> {dd}")
 
 
-# ---- Druckdateien und Bilder (langsam: ruft Daniels Skripte in einem Arbeitsordner auf) ------------------------------------
+# ---- Druckdateien und Bilder (langsam: ruft Besitzers Skripte in einem Arbeitsordner auf) ------------------------------------
 def arbeitsordner():
     w = tempfile.mkdtemp(prefix="gehaeuse_")
     for p in glob.glob(os.path.join(QUELL, "*.py")):

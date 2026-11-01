@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 105: Akku-Sparen automatisch (unter einer Schwelle weniger Bilder, die KI seltener). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# 2.98.13 (Wunsch Daniel): the battery gets low (below batt_save_pct, default 25 %) - MoveEye saves by itself:
+# 2.98.13 (Wunsch Besitzer): the battery gets low (below batt_save_pct, default 25 %) - MoveEye saves by itself:
 #   - the power saving (eco_on, part 410 _eco) is switched on, if it was off (and off again afterwards),
 #   - at most batt_save_fps pictures per second also while something moves (twice that while a person is seen),
 #   - the AI looks only half as often (ai_every x 2, the pause between two AI runs x 2).

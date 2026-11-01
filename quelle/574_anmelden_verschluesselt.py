@@ -1,18 +1,18 @@
 #@ MoveEye – Teil 574: «Anmelden nur verschlüsselt» – das Web-Passwort geht nie unverschlüsselt durchs Netz (Web und Fenster). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Wunsch Daniel (29.10.2026): the web password must not travel unencrypted over the network.
+# Wunsch Besitzer (29.10.2026): the web password must not travel unencrypted over the network.
 #   * A login (the browser's password question, the password of a program, setting a password) over plain http is only
 #     taken from this device itself (127.0.0.1, its own addresses) and from encrypted ways: the secure page (https,
 #     port + 1, self-signed certificate made once in the settings folder, part 420), Tailscale (WireGuard, 100.64.0.0/10)
 #     and «https over Tailscale» / a tunnel on this device (arrives as 127.0.0.1 with X-Forwarded-*).
 #   * From any other address the page answers with a short hint (certificate warning of the browser) and leads to the
 #     secure page - WITHOUT asking for the password over http (no «WWW-Authenticate»), so the browser never sends it.
-#   * Never lock Daniel out: if the secure page cannot run (no openssl / cryptography, port busy, «https_extra» off),
+#   * Never lock Besitzer out: if the secure page cannot run (no openssl / cryptography, port busy, «https_extra» off),
 #     the http login keeps working and a warning is shown (self-check, settings, window).
 #   * Unchanged: links with their own key (/na/ buttons in the push, /g/ guests, /x/ shares, /k/ kiosk, /tv/ ...), the
 #     public files, and a device that is already trusted (its cookie is no password).
 # ----------------------------------------------------------------------------
-# 3.23 (Daniel 01.11.2026): always on - the switch «login_https_only» is gone (an old saved value is ignored); from the device
+# 3.23 (Besitzer 01.11.2026): always on - the switch «login_https_only» is gone (an old saved value is ignored); from the device
 # itself (localhost) the login works without https as before, without a secure page the fallback below stays.
 # «Simple» shows the section only when something is wrong (no secure page, or switched off with a password); «Expert» always
 SIMPLE_IN_USE["Security"] = lambda: web_pw_active() and seclogin_mode() != "on"

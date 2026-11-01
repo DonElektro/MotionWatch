@@ -3,7 +3,7 @@ extends RefCounted
 ## hardware/gehaeuse/bau.json. NICHT VON HAND ÄNDERN (Texte dort ändern, dann «gehaeuse_bauen.py --texte»).
 ## Texte deutsch (T.t übersetzt sie, Übersetzungen kommen aus bau.json in i18n/texte.json).
 
-const QUELLE_SHA := "81709b43fce1455112e48a95811842311eeac19a42f43e3395c54739c3291a81"
+const QUELLE_SHA := "d5e568df0a5aad6c0c0f7b8892664c33a9cc11bc56e907dd08045051cd783345"
 const VERSION := "5.1"
 const KOPF_FARBE := "#f59a4a"   # Kopfteil (dreht / neigt) in MoveEye-Orange
 const KOPF_TEILE := ["turntable", "yoke", "arm2", "head", "side", "lamp1", "lamp2", "head52"]
@@ -917,7 +917,7 @@ const BAU := {
 				"code": "led_ch_rgb",
 				"wert": "5/6/7",
 				"wenn": "v52",
-				"unklar": "gilt nur mit 220 Ω auf dem PCA9685-Board (Adafruit 815 oder Klon?) – klärt Daniel"
+				"unklar": "gilt nur mit 220 Ω auf dem PCA9685-Board (Adafruit 815 oder Klon?) – klärt Elektro"
 			},
 			{
 				"id": "tasten",

@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 639zc: Links zu Neuerungen – im Fenster «Neu in …» bei jeder Neuerung ein kleiner Link zur Funktion (Seite, Reiter, Einstellung), Schalter «Links zu Neuerungen» im Entwickler-Bereich, Standard aus dem Projektschalter «projekt_veroeffentlicht». Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Wunsch Daniel (01.11.2026): nach einem Update zeigt MoveEye «Neu in …» - neu steht bei jeder Neuerung ein Link, der direkt
+# Wunsch Besitzer (01.11.2026): nach einem Update zeigt MoveEye «Neu in …» - neu steht bei jeder Neuerung ein Link, der direkt
 # zur neuen Funktion springt. Gilt genauso im Simulator (scripts/news.gd).
 #   * Die Ziele: simulator3d/ui_gemeinsam.json «neu_ziele» (Version -> Ziel, für beide Programme). Logik in Teil 137
 #     (news_links_on, news_href, news_link_item); Web 530 (newsGo, keyOpen: /settings?setting=<Einstellung> klappt die Karte

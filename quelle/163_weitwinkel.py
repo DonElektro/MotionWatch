@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 163: Weitwinkel-Kamera (Camera Module 3 Wide NoIR) als Übersicht – Montage aus dem Simulator (/info cameras[1]), «Übersicht lenkt den Kopf» von selbst, Kopf-Montage (Richtung = Kopf + Versatz, Eigenbewegung ausblenden), zweites IR-Licht breit auf PCA9685 Kanal 4. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Plan Daniel 30.10.2026 (docs/Gehaeuse_Variante2_Weitwinkel.md, «Simulator-Einbindung der Weitwinkel-Kamera»):
+# Plan Besitzer 30.10.2026 (docs/Gehaeuse_Variante2_Weitwinkel.md, «Simulator-Einbindung der Weitwinkel-Kamera»):
 #  - The simulator (3D-4.17, weitwinkel.gd) has ONE wide camera (sim:1, 102° x 67°) with a mount: scene (mast, as before),
 #    base (lower part of the device, fixed), head_front / head_rear (turns with the pan, rear = yaw offset 180°).
 #    /info cameras[1] and the reply to every POST /state («wide») tell the mount, tilt_deg, yaw_offset, pan_follow,

@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 375: Gesichter verpixeln beim Teilen (nur die geteilte Kopie, das Original bleibt). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# 2.98.14 (Wunsch Daniel): wenn ein Bild oder Video geteilt wird (Aufnahmen, Tagebuch – alles, was über share_jpg /
+# 2.98.14 (Wunsch Besitzer): wenn ein Bild oder Video geteilt wird (Aufnahmen, Tagebuch – alles, was über share_jpg /
 # share_video in 370 geht), werden Gesichter von selbst unkenntlich gemacht (verpixelt). Einstellung «Gesichter verpixeln
 # beim Teilen» (share_blur_faces, Standard ein). Nur die geteilte Kopie wird verändert, das Original bleibt wie es ist.
 # Erkennung, der Reihe nach:

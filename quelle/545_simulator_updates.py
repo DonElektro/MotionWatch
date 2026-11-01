@@ -64,7 +64,7 @@ def sim_owns_updates():
 # set_cfg (540) passes «sim_autoupd» changed on the web page to the simulator (_set_cfg_sim -> simupd_push)
 
 
-# ---- Versionierung 3.0.0 (Daniel 31.10.2026): MoveEye and the simulator share one number X.Y.Z from 3.0.0 («MoveEye 3.0.0» /
+# ---- Versionierung 3.0.0 (Besitzer 31.10.2026): MoveEye and the simulator share one number X.Y.Z from 3.0.0 («MoveEye 3.0.0» /
 # «MoveEye Sim 3.0.0»). simulator3d/version.json keeps «version» = «3D-(X+2).Y.Z» for old simulators (they only compare that
 # field: 3.0.0 would be older than 3D-4.82 for them) and has the real number in «ver». The self-test checks the order of the
 # numbers and - in the repository (GitHub) - that version.json, SIM3D and APP_VERSION fit together.

@@ -1,4 +1,4 @@
-#@ MoveEye – Teil 639c: Menü-Struktur 2 (Daniel 30.10.2026): Gruppen neu geteilt, Entwickler-Gruppe, Einfach = Hauptschalter + zugeklappte Feineinstellungen, kurze Beschriftungen mit «?». Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
+#@ MoveEye – Teil 639c: Menü-Struktur 2 (Besitzer 30.10.2026): Gruppen neu geteilt, Entwickler-Gruppe, Einfach = Hauptschalter + zugeklappte Feineinstellungen, kurze Beschriftungen mit «?». Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
 # Here (after all the parts that add settings, before 640) so it sees every TOGGLES / SLIDERS / TEXTS entry:
 #   * moves a few settings to new sections (no CFG key changes - only where they are shown):

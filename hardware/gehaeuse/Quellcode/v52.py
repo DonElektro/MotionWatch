@@ -61,7 +61,7 @@ FPC_DEPTH = 14.0                     # Rippen ragen so weit in den Innenraum (Ka
 FPC_Z0 = 44.0                        # 45°-Unterseite beginnt an der Wand hier (über dem Pi, unter dem Deckel)
 PI_CAM1_XY = (123.25, 11.0)          # NACHMESSEN: Lage der Buchse CAM/DISP 1 am Pi 5 im Modell (geschätzt)
 PI_CAM0_XY = (126.25, 11.0)          # NACHMESSEN: Lage der Buchse CAM/DISP 0 am Pi 5 im Modell (geschätzt)
-# --- Service-Fenster (01.11.2026, Entscheid Daniel): HDMI-Notfallfenster nach links bis über die USB-C-Buchse des Pi 5
+# --- Service-Fenster (01.11.2026, Entscheid Besitzer): HDMI-Notfallfenster nach links bis über die USB-C-Buchse des Pi 5
 #     verlängert (USB-C bei x = BAT_X0 + 1 + 11,2 = 85,2, z 42,7), ein Stopfen für beides (10_Stopfen_HDMI_USB_v52)
 SVC_X0, SVC_X1 = 78.0, 120.0         # Fenster x (HDMI 0/1 bei x 100 / 113,5, USB-C bei 85,2 – NACHMESSEN: Lage am Pi 5)
 # --- SD-Karte: die Karte steckt unter dem Pi mitten im Gehäuse (x 71–74, Akku darunter) – von aussen nicht erreichbar.
@@ -71,7 +71,7 @@ SD_X, SD_Z = 40.0, 57.0              # Schlitzmitte (über dem PCA9685, unter de
 SD_W, SD_H = 14.0, 3.0               # Schlitz (microSD 11 × 0,8 + Griff)
 SD_HOLES_DX, SD_HOLE_DZ = 18.0, 6.0  # NACHMESSEN: Lochabstand der Halter-Platine, Löcher 6 mm über der Schlitzmitte
 SD_STAND = 3.0                       # Dome: Platine 3 mm vor der Wand (Kartenhalter ca. 2 mm hoch)
-# --- Lampentreiber (unbekannt) und 2. Sicherung (B+ Akku) nahe beim Step-down (01.11.2026, Entscheid Daniel)
+# --- Lampentreiber (unbekannt) und 2. Sicherung (B+ Akku) nahe beim Step-down (01.11.2026, Entscheid Besitzer)
 DRV_Y0, DRV_Y1, DRV_Z0, DRV_Z1 = 5.0, 35.0, 2.5, 22.5   # Feld 30 × 20 an der Stirnwand innen, unter dem Step-down
 DRV_HOLES = [(8.5, 6.5), (31.5, 18.5)]   # PLATZHALTER: Löcher (y, z) M2,5 – nach dem Kauf des Treibers anpassen
 DRV_STAND = 3.0

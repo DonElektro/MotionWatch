@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 317: «Platz einrichten» – ein Assistent nach dem Hinstellen: Rundblick, Vorschläge, Zelt / Zugang / Wertsachen / Ignorieren, Platz-Datensatz (place_items / place_info). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# 2.98.30 (Wunsch Daniel, 29.10.2026): «MoveEye hinstellen → Platz einrichten». One assistant that only DRIVES the parts that
+# 2.98.30 (Wunsch Besitzer, 29.10.2026): «MoveEye hinstellen → Platz einrichten». One assistant that only DRIVES the parts that
 # exist already - it duplicates none of them:
 #   * the scan: the head drives its whole pan range in 2-3 tilt rows (the grid of the reference scan 315, its grab
 #     function), per direction a photo + ~10 s observation (what moves, what the AI sees) -> suggestions

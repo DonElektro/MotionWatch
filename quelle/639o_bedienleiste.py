@@ -1,5 +1,5 @@
 #@ MoveEye – Teil 639o: Bedienleiste und einklappbarer Kopf (ein gemeinsamer Baustein für jede Web-Seite mit Reitern): Kopf – Reiterzeile und Statuszeile einzeln einklappbar (Griff, roter Punkt bei Warnungen, pro Gerät gemerkt); Leiste unter den Reitern – Einfach / Experte · Symbole farbig / schlicht · Beim Start: Nur Gruppen · Alle zuklappen / Meine Ansicht (639r; lange drücken: Nur Gruppen) / Alle aufklappen. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
-# Daniel (31.10.2026, Screenshots iPad): «Kopfbereich einklappbar, beide Teile einzeln» und «eine einheitliche Bedienleiste oben auf jeder Seite»
+# Besitzer (31.10.2026, Screenshots iPad): «Kopfbereich einklappbar, beide Teile einzeln» und «eine einheitliche Bedienleiste oben auf jeder Seite»
 # (bisher nur in Einstellungen: Suche mit drei Knöpfen, darunter Einfach / Experte, Symbole, Beim Start). Der Baustein kommt über
 # render_page() auf JEDE Seite mit Reitern (nav.nav); die Seite kann ihn über window.MWB_PAGE anpassen:
 #   simplePage() -> Seitenschlüssel für /api/ui_simple ("" = auf dieser Seite gibt es nur eine Ansicht: Einfach / Experte grau)
@@ -195,7 +195,7 @@ MWB_JS = r"""<script>
   function paintIc() { const pl = lsg("mw-icons", "color") === "plain"; bC.classList.toggle("on", !pl); bP.classList.toggle("on", pl); B.classList.toggle("icplain", pl); }
   function setIcons(v) { lss("mw-icons", v === "plain" ? "plain" : "color"); paintIc(); }      // the ONE switch for the symbols: "color" | "plain"
   bC.onclick = () => setIcons("color"); bP.onclick = () => setIcons("plain");
-  // 3.23 (Daniel 01.11.2026): the switch «On start: groups only» is gone - the start is «My view»; «Groups only» = long press on the middle
+  // 3.23 (Elektro 01.11.2026): the switch «On start: groups only» is gone - the start is «My view»; «Groups only» = long press on the middle
   // ---- the three fold buttons: every fold card that can be seen on this page ----
   const EXTRA = [{sel: ".sc-card", head: ":scope > .sc-hd"}, {sel: ".sc-sub", head: ":scope > .sc-sh"}];   // simulator control (470): div cards
   const SKIP = "header,#mwbar,.pop,#viewmenu,#lv-menu,[role=dialog],.mwt-ov,#g2-tt,[data-mwb-skip]";   // help / status cards (Tipps & Tricks, Selbstdiagnose) are no groups
@@ -211,7 +211,7 @@ MWB_JS = r"""<script>
     out.forEach(o => { let id = idOf(o); if (seen[id]) id += "#" + (++seen[id]); else seen[id] = 1; o.id = id; });
     return out;
   }
-  // ---- 639r «My view» (Daniel 1.11.2026): the folds the user set himself - per user and page on the Pi (/api/ansicht), the same on
+  // ---- 639r «My view» (Elektro 1.11.2026): the folds the user set himself - per user and page on the Pi (/api/ansicht), the same on
   // every device; without the Pi (no connection / not allowed) in this browser («mwa:…», not shared through web_ui). Kept: only what the
   // user opens / closes himself while «My view» is on. «Collapse all» / «Expand all» / «Groups only»: off, the kept view stays.
   function idOf(o) {                         // a stable id: data-view (grp:… / sec:…, the same as the Pi window), id, data-k, data-g …

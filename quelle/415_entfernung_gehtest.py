@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 415: Entfernung und Richtung einer Person, Gehtest beim Einrichten. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# 2.98.13 (Wunsch Daniel)
+# 2.98.13 (Wunsch Besitzer)
 # 1. Distance: a person is about 1.7 m tall - from the height of its box and the vertical field of view of the camera
 #    (simulator: /info, otherwise the setting cam_vfov, Camera Module 3: 41°) MoveEye estimates how far away it is, and from
 #    the last seconds of the track whether it comes closer or goes away. Shown on the live picture, in the push text

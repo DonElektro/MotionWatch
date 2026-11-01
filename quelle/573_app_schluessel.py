@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 573: «App-Schlüssel» für andere Programme und «Sicherheit an einem Ort» (Passwort, Benutzer, App-Schlüssel, Sicherheits-Check unter Einstellungen → Sicherheit; Web und Fenster). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Wunsch Daniel (29.10.2026):
+# Wunsch Besitzer (29.10.2026):
 #  1  «App-Schlüssel» for other programs (Home Assistant, iPhone shortcuts, an older MoveEye in the device overview): since
 #     2.98.23 (574) the password is refused over plain http from other devices. A key is made with a name, shown ONCE in full,
 #     stored only as a hash in the settings folder (like the cookies of the trusted devices, 040 - same idea, for programs).

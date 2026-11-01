@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 531a: Web-Seite «Push-Nachrichten» als Karten (Kopf · Wohin · Was · Wann · Erweitert) – baut die Felder des Abschnitts Benachrichtigungen um (530 ruft pushPanel). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Wish of Daniel (30.10.2026): the push section like the slim cards of the simulator panel (card «Spiel»: name, state,
+# Wish of Besitzer (30.10.2026): the push section like the slim cards of the simulator panel (card «Spiel»: name, state,
 # the main buttons; details on demand). The generic rows of the section (530 build) are MOVED into the cards - their
 # handlers and the ctrl registry stay the same, nothing is built twice. Logic + /api/push: 579a; window: 571a; texts: 639a.
 #   Kopf       «Push senden», status line («2 Kanäle · Test ✓»), «Alle testen» (results below)

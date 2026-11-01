@@ -10,7 +10,7 @@ render_mode cull_back;
 uniform sampler2D noise_tex : repeat_enable, filter_linear_mipmap;
 uniform sampler2D horizon : repeat_enable, filter_linear;
 uniform float spring = 0.0;          // Schmelzwasser: etwas milchiger
-// Foto-Texturen (3.30, eigenes Foto von DonElektro, bergtal_texturen.gd): nur der Grund am flachen Ufer (Steine, Algen);
+// Foto-Texturen (3.30, eigenes Foto von Elektro, bergtal_texturen.gd): nur der Grund am flachen Ufer (Steine, Algen);
 // das Wasser selbst (Farbe, Spiegelung) bleibt wie in 3.16. photo = 0: wie vorher.
 uniform float photo = 0.0;
 uniform sampler2D t_grund : source_color, repeat_enable, filter_linear_mipmap_anisotropic;    // wasser_seegrund_flach_01

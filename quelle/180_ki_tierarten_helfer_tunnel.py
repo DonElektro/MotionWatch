@@ -583,7 +583,7 @@ def _tun_take():
 
 
 def _tun_instance_ok(inst, peer):
-    """2.98.26 (Daniel: «das Bild springt zwischen zwei Ansichten»): two simulator windows were open (an old one after an update,
+    """2.98.26 (Besitzer: «das Bild springt zwischen zwei Ansichten»): two simulator windows were open (an old one after an update,
     or started twice) and both sent their lines - MoveEye took lines of both, so the picture jumped between the two. Each
     simulator (3D-4.8) names itself «start time-process»: the newest one wins, the lines of the older one are refused."""
     try:

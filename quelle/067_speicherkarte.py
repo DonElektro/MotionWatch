@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 067: Speicherkarte schonen: Schreibmenge pro Tag, Dateisystem-Fehler, Schreibschutz (Overlay). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Memory card protection (Daniel, 29.10.2026): on camp sites the power goes off without warning and a memory card that is
+# Memory card protection (Besitzer, 29.10.2026): on camp sites the power goes off without warning and a memory card that is
 # written all day wears out. Here, without root rights and without extra writes worth mentioning:
 #  * how much is written to the card per day (sectors written from /sys/block/<card>/stat, all partitions together;
 #    the day totals go into <data>/sdcard_wear.json at most once an hour),

@@ -7,7 +7,7 @@
 #     auf eine freie Adresse gesetzt (0x44, sonst 0x45); mit «Solar ein» bleibt alles, wie der Bediener es eingestellt hat.
 #   - Die Konfliktprüfung (030) kennt jetzt auch die Wärmebildkamera (Thermal-90, fest 0x40) und lässt den UPS HAT (E) aus
 #     (eigener Chip auf 0x2D, die Adresse «ups_addr» gilt nur für den INA219 der UPS HATs A / B / C).
-#   - Entscheid Daniel 01.11.2026: Shunt ab Werk 0,01 Ohm (Gravity INA219, DFRobot SEN0291, Bastelgarage 421023; vorher 0,1 =
+#   - Entscheid Besitzer 01.11.2026: Shunt ab Werk 0,01 Ohm (Gravity INA219, DFRobot SEN0291, Bastelgarage 421023; vorher 0,1 =
 #     blaues Billig-Modul). Alte Einstellungen werden EINMAL umgestellt (Merker «solar_shunt_mig_done»), wenn noch der alte
 #     Standard 0,1 steht und Solar nie eingeschaltet wurde (= nie selbst eingerichtet). Mit Solar ein bleibt die eigene Wahl.
 # ----------------------------------------------------------------------------

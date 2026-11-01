@@ -219,7 +219,7 @@ class WebStream:
             return reply({"ok": False, "error": tr("not allowed for your user", lang)}, 403)
 
         @app.after_request
-        def gzip_text(resp):                        # 2.98.40 (Daniel: menus build up slowly): pages are ~800 KB - gzip makes
+        def gzip_text(resp):                        # 2.98.40 (Besitzer: menus build up slowly): pages are ~800 KB - gzip makes
             try:                                    # ~5× less over Wi-Fi / Tailscale; registered first = runs last
                 if (request.method == "GET" or request.method == "POST") and resp.status_code == 200 and not resp.direct_passthrough \
                         and not resp.is_streamed and "gzip" in (request.headers.get("Accept-Encoding") or "").lower() \

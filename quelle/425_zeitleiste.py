@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 425: Zeitleiste der Nacht – alles einer Nacht auf einer Zeitachse (Aufnahmen, Nachrichten, Tiere, Alarme, Akku, Temperatur, Wetter). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# 2.98.14 (Wunsch Daniel): Reiter Verlauf → «Zeitleiste». Eine Nacht (Standard: letzte Nacht 18:00–09:00, Tag wählbar) oder
+# 2.98.14 (Wunsch Besitzer): Reiter Verlauf → «Zeitleiste». Eine Nacht (Standard: letzte Nacht 18:00–09:00, Tag wählbar) oder
 # ein ganzer Tag, alles auf einer Zeitachse. Die Daten kommen aus den bestehenden Quellen – nichts wird doppelt gespeichert:
 #   Aufnahmen        list_recordings (430)            Nachrichten   msglog_list (065)
 #   Tierbesuche      SIGHT / Tagebuch (090)           Alarme, Log   Protokoll-Dateien (390, nur die wichtigen Zeilen)

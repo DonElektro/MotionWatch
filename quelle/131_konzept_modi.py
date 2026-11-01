@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 131: Konzept – Modi und Profile zusammengeführt: alte Einstellungen sicher übernehmen. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# 2.98.14 (Konzept, Wunsch Daniel): EIN Ort entscheidet, was das Gerät tut - der Modus (130). Der Einsatzzweck (use_case)
+# 2.98.14 (Konzept, Wunsch Besitzer): EIN Ort entscheidet, was das Gerät tut - der Modus (130). Der Einsatzzweck (use_case)
 # entscheidet nur, was angezeigt wird. Der Modus «Nachtwache» ist weg («Heute Nacht bewachen» macht das für eine Nacht),
 # das Camping-Profil ist der Modus «Camping». Hier werden Einstellungen älterer Versionen beim Laden umgestellt, ohne dass
 # sich am Verhalten des Geräts etwas ändert (Schutz bleibt, wie er ist; nichts wird ein- oder ausgeschaltet):

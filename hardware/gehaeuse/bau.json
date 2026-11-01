@@ -2471,11 +2471,11 @@
    "it": "Misurare prima: UPS HAT (E) con le batterie (ipotesi 90 × 80 × 26 mm) prima di stampare la parte inferiore.",
    "rm": "Mesirar l'emprim: UPS HAT (E) cun ils accus (supponì 90 × 80 × 26 mm) avant che stampar la part sut."
   },
-  "Own work of Daniel (DonElektro) – parametric Python model.": {
-   "de": "Eigenes Werk von Daniel (DonElektro) – parametrisches Python-Modell.",
-   "fr": "Œuvre propre de Daniel (DonElektro) – modèle Python paramétrique.",
-   "it": "Opera propria di Daniel (DonElektro) – modello Python parametrico.",
-   "rm": "Agen ovra da Daniel (DonElektro) – model Python parametric."
+  "Own work of Elektro – parametric Python model.": {
+   "de": "Eigenes Werk von Elektro – parametrisches Python-Modell.",
+   "fr": "Œuvre propre de Elektro – modèle Python paramétrique.",
+   "it": "Opera propria di Elektro – modello Python parametrico.",
+   "rm": "Agen ovra da Elektro – model Python parametric."
   },
   "Step": {
    "de": "Schritt",
@@ -3905,11 +3905,11 @@
     "wert": "5/6/7",
     "wenn": "v52",
     "unklar": {
-     "de": "gilt nur mit 220 Ω auf dem PCA9685-Board (Adafruit 815 oder Klon?) – klärt Daniel",
-     "en": "only with 220 Ω on the PCA9685 board (Adafruit 815 or clone?) – Daniel checks",
-     "fr": "seulement avec 220 Ω sur la carte PCA9685 (Adafruit 815 ou clone ?) – Daniel vérifie",
-     "it": "solo con 220 Ω sulla scheda PCA9685 (Adafruit 815 o clone?) – verifica Daniel",
-     "rm": "mo cun 220 Ω sin la plattina PCA9685 (Adafruit 815 u clon?) – Daniel scleresch"
+     "de": "gilt nur mit 220 Ω auf dem PCA9685-Board (Adafruit 815 oder Klon?) – klärt Elektro",
+     "en": "only with 220 Ω on the PCA9685 board (Adafruit 815 or clone?) – Elektro checks",
+     "fr": "seulement avec 220 Ω sur la carte PCA9685 (Adafruit 815 ou clone ?) – Elektro vérifie",
+     "it": "solo con 220 Ω sulla scheda PCA9685 (Adafruit 815 o clone?) – verifica Elektro",
+     "rm": "mo cun 220 Ω sin la plattina PCA9685 (Adafruit 815 u clon?) – Elektro scleresch"
     }
    },
    {
@@ -5591,7 +5591,7 @@
   }
  },
  "farben": {
-  "_hinweis": "Wunsch Daniel 01.11.2026: der ganze Kopfteil (alles, was sich dreht bzw. neigt) im Simulator in MoveEye-Orange (ui_style.gd ORG, Web #f59a4a) – Szene, Werkstatt und Browser-Werkstatt («Bauen») nehmen diese Farbe. Unterteil, Deckel, Zwischenboden, Füsse wie bisher. Dazu je Teil-id die Farbe (für die Browser-Werkstatt «Bauen», 639w: GB.farben[id]).",
+  "_hinweis": "Wunsch Elektro 01.11.2026: der ganze Kopfteil (alles, was sich dreht bzw. neigt) im Simulator in MoveEye-Orange (ui_style.gd ORG, Web #f59a4a) – Szene, Werkstatt und Browser-Werkstatt («Bauen») nehmen diese Farbe. Unterteil, Deckel, Zwischenboden, Füsse wie bisher. Dazu je Teil-id die Farbe (für die Browser-Werkstatt «Bauen», 639w: GB.farben[id]).",
   "kopf": "#f59a4a",
   "kopf_teile": [
    "turntable",
@@ -5613,7 +5613,7 @@
   "head52": "#f59a4a"
  },
  "pakete": {
-  "_hinweis": "Information (Entscheid Daniel 01.11.2026): drei Pakete. Die Seite «Bauen» bleibt bei den Varianten (gehaeuse / akku / mover); «variante» zeigt, welche Wahl dort passt. bom = Materialliste-IDs ohne optionale Extras, preis_chf = Summe der geschätzten bom-Preise (Zeilensumme, gerundet), extras = optionale bom-IDs (nicht in der Summe), stopfen = Druckteile nur für dieses Paket (dazu immer 17 für die Reserve-Öffnung). Solo und Mobil folgen später.",
+  "_hinweis": "Information (Entscheid Elektro 01.11.2026): drei Pakete. Die Seite «Bauen» bleibt bei den Varianten (gehaeuse / akku / mover); «variante» zeigt, welche Wahl dort passt. bom = Materialliste-IDs ohne optionale Extras, preis_chf = Summe der geschätzten bom-Preise (Zeilensumme, gerundet), extras = optionale bom-IDs (nicht in der Summe), stopfen = Druckteile nur für dieses Paket (dazu immer 17 für die Reserve-Öffnung). Solo und Mobil folgen später.",
   "stand": "01.11.2026",
   "liste": [
    {

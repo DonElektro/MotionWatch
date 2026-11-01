@@ -1,11 +1,11 @@
-#@ MoveEye – Teil 639n: Trailer der Geschichten (Daniel 31.10.2026) – live im Browser: /sim/trailer?id=grossvater|maggie (Bild des Simulators wie /sim/vorfuehrung, startet den Trailer im Simulator), /api/trailer; Einstieg nur im Entwickler-Bereich (Einstellungen → Entwickler, Karte «Entwickler» des Reiters «Sim»); nur der Besitzer. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
+#@ MoveEye – Teil 639n: Trailer der Geschichten (Besitzer 31.10.2026) – live im Browser: /sim/trailer?id=grossvater|maggie (Bild des Simulators wie /sim/vorfuehrung, startet den Trailer im Simulator), /api/trailer; Einstieg nur im Entwickler-Bereich (Einstellungen → Entwickler, Karte «Entwickler» des Reiters «Sim»); nur der Besitzer. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
 # Der 3D-Simulator spielt den Trailer selbst (simulator3d/scripts/trailer.gd: Kamerafahrt im Bergtal, Musik, Texttafeln,
 # Erzähler). Hier nur das Starten und Zuschauen:
 #   * /sim/trailer?id=…: startet den Trailer (wenn nicht schon einer läuft) und zeigt das Bild des Simulators
 #     (/sim/view.jpg?bare=1 – nur solange der Film läuft; danach ohne bare, sonst blieben die Knöpfe am PC versteckt),
 #     unten eine Leiste: Beenden, Nochmals, Ton, Stimme, Vollbild, Zurück.
-#   * Ton auch im Browser (Fix 3.19.x, Daniel: «am iPad nichts»): grosser Knopf «🔊 Tippen für Ton» (iOS braucht ein Tippen
+#   * Ton auch im Browser (Fix 3.19.x, Besitzer: «am iPad nichts»): grosser Knopf «🔊 Tippen für Ton» (iOS braucht ein Tippen
 #     vor Sprache und Audio; ein Tippen irgendwo genügt). Danach Erzähler (speechSynthesis, wie bisher) und Musik + Geräusche:
 #     /api/trailer?plan=1 holt den Ton-Plan des Simulators (trailer.gd ton_plan: Zeit, Klang, Lautstärke, Überblendung),
 #     /sim/trailer_ton/<klang>.wav die Klänge (ab 01.11.2026 echte Aufnahmen als MP3 aus simulator3d/klang/web/, ≈ 2.4 MB;
@@ -15,7 +15,7 @@
 #     Plan: nur der Erzähler. Der Ton läuft auf beiden Geräten (PC und iPad).
 #   * /api/trailer: GET = Stand (Simulator /control trailer info), POST {do: start (id) | stop}. Nur der Besitzer
 #     (nacht_may: Administrator, nicht im Bedienermodus), wie die Vorführung (639m).
-#   * Einstieg nur im Entwickler-Bereich (Daniel 01.11.2026: die Schnell-Karte «🛠 Entwickler» oben im Reiter «Sim» ist weg):
+#   * Einstieg nur im Entwickler-Bereich (Besitzer 01.11.2026: die Schnell-Karte «🛠 Entwickler» oben im Reiter «Sim» ist weg):
 #     Einstellungen → Entwickler (Web 530 devExtras, Fenster 639c) ganz oben die zwei Trailer (und die Vorführung, 639m);
 #     im Reiter «Sim» die Karte «Entwickler» (nur mit dem Entwickler-Bereich; Knöpfe vom Simulator). Im Simulator selbst:
 #     oben im Fenster «Entwickler» und auf den Story-Karten.
@@ -172,12 +172,12 @@ async function tlDo(d) {
 }
 </script></body></html>"""
 
-# Sprachausgabe im Browser (Daniel 31.10.2026, Vorführung und Trailer): der Simulator meldet in /control … info das Feld
+# Sprachausgabe im Browser (Besitzer 31.10.2026, Vorführung und Trailer): der Simulator meldet in /control … info das Feld
 # «sprechen» {id, text, lang} (Erzähler, Untertitel, Texttafeln); die Seite liest jeden neuen Satz mit speechSynthesis vor, in
 # der Sprache von MoveEye (rm: eine romanische Stimme, falls das Gerät eine hat, sonst Deutsch). iOS: Ton erst nach einem
 # Tippen («🔊 Ton an»), dabei wird speechSynthesis einmal angestossen; Pause = Stimme verstummt. Dazu hält navigator.wakeLock
 # den Bildschirm wach, solange der Film läuft (iPad). Die Texte bleiben unten als Untertitel im Bild (der Simulator zeigt sie).
-# Stimme (Daniel 31.10.2026, «klingt fürchterlich»): automatisch die beste Stimme der Sprache – 1. Name/voiceURI mit Premium,
+# Stimme (Besitzer 31.10.2026, «klingt fürchterlich»): automatisch die beste Stimme der Sprache – 1. Name/voiceURI mit Premium,
 # Enhanced, Erweitert, Natural, Neural, Online oder Google, 2. lokale Stimme der Region (de-CH vor de-DE vor de-AT), 3. die
 # Standardstimme; die Liste kommt auf iOS / Chrome verzögert (voiceschanged + Nachfragen). Tempo 0.92, Trailer 0.88, Tonhöhe 0.95,
 # lange Sätze an Satzzeichen geteilt. Knopf «🗣 Stimme» neben 🔊: Liste der Stimmen (beste «empfohlen», ▶ Hörprobe), Tempo-
@@ -577,7 +577,7 @@ def trl_selftest():
         CFG["sim_on"] = keep
     html = trl_page()
     assert "/sim/view.jpg?" in html and "bare=1&" in html and "/api/trailer" in html and "<!--NAV-->" not in html
-    assert 'id="c-devquick"' not in SIM_PAGE and "/sim/trailer?id=" not in SIM_PAGE   # Daniel 01.11.2026: no quick card on «Sim»
+    assert 'id="c-devquick"' not in SIM_PAGE and "/sim/trailer?id=" not in SIM_PAGE   # Besitzer 01.11.2026: no quick card on «Sim»
     assert "/sim/trailer?id=grossvater" in WEB_PAGE
     assert "speechSynthesis" in html and "spkTick(S" in html and "wakeLock" in html
     assert "spk-tap" in html and "spkUnlock" in html and "taSync(S)" in html and "/sim/trailer_ton/" in html and "/api/trailer?plan=1" in html

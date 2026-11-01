@@ -1,5 +1,5 @@
 #@ MoveEye – Teil 556: Online-Spiel über Tailscale Funnel – nur der Spiel-Pfad /game/ öffentlich im Internet (Freunde ohne Tailscale), eigene Tür nur für /game/, Sperre aller anderen Adressen bei Funnel-Anfragen, automatisch aus (letzte Einladung weg, Höchstzeit, Neustart), klare Fehler mit Abhilfe. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
-# Daniel 30.10.2026 («Tailscale-Tunnel einbauen»): friends WITHOUT Tailscale join the online game (343) from home.
+# Besitzer 30.10.2026 («Tailscale-Tunnel einbauen»): friends WITHOUT Tailscale join the online game (343) from home.
 #   Switch «Online-Spiel über Tailscale Funnel» next to the invitations (web 544, window 592). Only an administrator may switch
 #   it on (web: g.role == "admin" and no app key, else 403; window: not in operator mode).
 #   How it is built (three walls, each one alone keeps the rest of MoveEye private):
@@ -260,7 +260,7 @@ def funnel_on(hours=None, source="web"):
     with FUNNEL["lock"]:
         if CFG.get("lock_on"):
             return False, {"code": "locked", "msg": "Not possible in operator mode", "steps": [], "cmd": "", "links": [], "raw": ""}
-        if not funnel_pw_set():                           # 2.98.47 (Daniel): only with a web password - without one everybody is admin
+        if not funnel_pw_set():                           # 2.98.47 (Besitzer): only with a web password - without one everybody is admin
             return False, {"code": "nopw", "msg": "Set a web password first - without one everybody in the network is administrator",
                            "steps": ["Settings → 🔒 Password: set a web password, then switch the funnel on."], "cmd": "", "links": [], "raw": ""}
         h = float(hours if hours is not None else CFG.get("game_funnel_hours") or 6)

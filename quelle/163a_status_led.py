@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 163a: Status-LED (RGB auf PCA9685 Kanal 5/6/7) oben auf dem Kopf und zwei Tasten am Gerät («Schutz», «Alarm quittieren») – Farben pro Zustand, Alarm blinkt rot bis quittiert, Störung violett, Erkennung kurz, Blinki-Zwinkern als «alles ok», Nacht gedimmt; im Simulator LED und Tasten des Simulators. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Decisions Daniel 30.10.2026 21:55 (docs/Gehaeuse_Variante2_Weitwinkel.md, «Status-LED oben auf dem Kopf»):
+# Decisions Besitzer 30.10.2026 21:55 (docs/Gehaeuse_Variante2_Weitwinkel.md, «Status-LED oben auf dem Kopf»):
 #   * one RGB LED on the head, on the PCA9685 of the servos (channels 5 / 6 / 7 = red / green / blue; 0 / 1 servos,
 #     2 / 3 white / IR, 4 wide IR), common cathode or common anode, brightness by PWM (gamma corrected)
 #   * what it shows, the first that applies wins:
@@ -13,7 +13,7 @@
 #   * two buttons (GPIO, internal pull-up, to ground; debounce; long press 1.5 s):
 #       «Schutz»            short: Wachsam <-> Aus, long: Voll
 #       «Alarm quittieren»  stops the siren and the escalation, ends the red blinking
-#     every press is logged. 2.98.50 (Daniel 30.10.2026: «Die beiden Tasten dürfen alles, aber es soll in den jeweiligen
+#     every press is logged. 2.98.50 (Besitzer 30.10.2026: «Die beiden Tasten dürfen alles, aber es soll in den jeweiligen
 #     Menüs deaktivierbar sein»): the buttons may arm, disarm, stop the siren and acknowledge - also with a PIN for
 #     disarming; each of the four can be switched off (btn_allow_arm / _disarm / _siren / _ack). Every disarm and every
 #     siren stop at the device is in the log and goes out as a push message (btn_notify_off): «Schutz am Gerät

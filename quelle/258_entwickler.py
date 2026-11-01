@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 258: Entwickler-Bereich (2.98.7). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# A small area only for the developer (Daniel). It is HIDDEN until it is switched on, and protected with its own PIN.
+# A small area only for the developer (Besitzer). It is HIDDEN until it is switched on, and protected with its own PIN.
 # What it shows is only about THIS device and is read-only - never the traffic of other people:
 #   - the device's own open network connections (to where, which program, how much data) with a reverse-DNS name
 #   - the names the device itself looked up (its own DNS questions, from the connections it holds)

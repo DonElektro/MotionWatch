@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 578: «Sicher» – Aus in der Push nur mit PIN, Push nach Stromausfall, freundliche Fehlerseiten, Dunkle Ansicht, Bildschirmleser, Aufnahmen nach N Tagen löschen, Push ohne Bild. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Wunsch Daniel (29.10.2026):
+# Wunsch Besitzer (29.10.2026):
 #  1  «Aus» in der Push-Nachricht nur mit PIN: der Knopf öffnet eine kleine Seite mit dem PIN-Feld (Schutz-PIN; ohne PIN das
 #     Web-Passwort; ohne beides: «Bitte zuerst eine Schutz-PIN setzen», nichts wird ausgeschaltet). Falsche PINs: dieselbe Sperre
 #     wie beim Ausschalten im Web (5 in 10 Minuten, ab 3 Diebstahl-Alarm). «Fehlalarm» und «Sirene» bleiben ohne PIN. (066)

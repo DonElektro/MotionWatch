@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 579b: Nacht-Testlauf mit dem 3D-Simulator (eine ganze Nacht mit Wahrheit, Abgleich Treffer / verpasst / Fehlalarme mit Ursache, Bericht am Morgen mit Push, Verlauf der letzten 10 Läufe, JSON), Kachel 🌙 in der Simulator-Zentrale, Seite /nacht. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Paket «Nacht-Testlauf» (Daniel 31.10.2026). The simulator (nachtlauf.gd, control «nacht») plays a seeded night: toilet
+# Paket «Nacht-Testlauf» (Besitzer 31.10.2026). The simulator (nachtlauf.gd, control «nacht») plays a seeded night: toilet
 # trips (some with a torch), cat / fox / hedgehog, a late car, one hour of rain, wind, fog in the morning and EXACTLY ONE
 # real incident (somebody sneaks to the tent / bike / caravan). It writes down every event with start / end and place
 # («Wahrheit»). MoveEye logs what it did: its alarms (Notifier.person / prealarm, before the push rules: quiet hours and

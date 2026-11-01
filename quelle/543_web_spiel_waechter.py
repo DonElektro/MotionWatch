@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 543: «Wächter-Werkzeuge» der Wächter an MoveEye im Spiel des 3D-Simulators (Energie, Licht, Sirene, Scan, Zoom, Hinweis-Marken). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Spielkonzept of Daniel (30.10.2026), «Wächter-Werkzeuge mit Kosten»: in the game of the 3D simulator the guard has a budget
+# Spielkonzept of Besitzer (30.10.2026), «Wächter-Werkzeuge mit Kosten»: in the game of the 3D simulator the guard has a budget
 # of energy per round (by the difficulty) and every tool costs some and has a cooldown (simulator gametools.gd):
 # 💡 light, 📢 siren (whoever moves is noticed), 📡 scan (hint markers where runners are), 🔍 zoom of the head camera and
 # the 🎯 shutter (part 539). The guard at the phone and at the simulator PC have their own gauges (game.gd, localplay.gd).

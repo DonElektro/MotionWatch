@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 515: Guide – Erklärungen beim ersten Öffnen, Markierungen «neu / noch nie geöffnet» (2.98.9). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Wish of Daniel: a guide that leads the operator through the device from the start. Every page / tab / settings topic is
+# Wish of Besitzer: a guide that leads the operator through the device from the start. Every page / tab / settings topic is
 # explained shortly the first time it is opened; a small dot shows what was never opened, «NEU» what came with a recent
 # version. Levels (CFG tips_level): off · basic (only the most important) · normal · all (nearly every detail).
 # What was seen is kept in the browser storage key «mw-tips-seen», which MoveEye copies to the Pi (web_ui) - so it is the

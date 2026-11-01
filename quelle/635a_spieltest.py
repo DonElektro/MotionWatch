@@ -1,4 +1,4 @@
-#@ MoveEye – Teil 635a: Spieltest-Meldungen (Paket «Spieltest-Assistent», Daniel 31.10.2026) – der Spieltest-Assistent des 3D-Simulators meldet jede fertige Runde kurz, MoveEye schickt sie über seinen Push (nur mit dem Schalter «Spieltest-Meldungen», Gruppe Entwickler). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
+#@ MoveEye – Teil 635a: Spieltest-Meldungen (Paket «Spieltest-Assistent», Besitzer 31.10.2026) – der Spieltest-Assistent des 3D-Simulators meldet jede fertige Runde kurz, MoveEye schickt sie über seinen Push (nur mit dem Schalter «Spieltest-Meldungen», Gruppe Entwickler). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
 # Simulator: simulator3d/scripts/spieltest.gd (Mehr → Entwickler → Spieltest) beobachtet die Spielmodi und schreibt nach
 # jeder Runde eine kurze Meldung in world_reply «spieltest» (Liste: id, t, text - schon in der Sprache des Simulators), z. B.
@@ -10,7 +10,7 @@
 #     Meldung ist für den Besitzer, darum hat sie ihren eigenen Schalter. Ohne eingerichteten Push: nur in die Nachrichten.
 #   * Zustand «spieltest» an den Simulator (sim_state): on, seen (letzte id), st (sent / none / error / off / net), t - der
 #     Simulator zeigt damit im Entwickler-Fenster, ob es einen Push gibt; sein Schalter fragt über mw_cmd «spieltest_push».
-#   * Code-Prüfung (M1, Daniel 31.10.2026): der Simulator darf den Schalter nur AUSschalten - einschalten nur in MoveEye
+#   * Code-Prüfung (M1, Besitzer 31.10.2026): der Simulator darf den Schalter nur AUSschalten - einschalten nur in MoveEye
 #     (ein fremdes Gerät, das sich als Simulator meldet, könnte sonst Texte aufs Handy schicken). Gegen eine Flut: höchstens
 #     eine Push-Nachricht pro SPIELTEST_GAP_S Sekunden und SPIELTEST_MAX_H pro Stunde; was dazwischen kommt, wird gesammelt und
 #     mit der nächsten erlaubten Nachricht geschickt («+2 weitere»), über der Stundengrenze nur noch in die Nachrichten.

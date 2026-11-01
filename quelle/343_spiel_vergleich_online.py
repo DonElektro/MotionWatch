@@ -1,5 +1,5 @@
 #@ MoveEye – Teil 343: Spiel «Mensch gegen KI» (zwei Runden im 3D-Simulator, Ergebnis) und «Online über das WLAN hinaus»: Einladungslink mit Ablauf, Proxy /game/<token>/ zur Handy-Seite des Spiels (nur das Spiel), Ratenbremse, Spielerzahl, Protokoll. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
-# Daniel 30.10.2026:
+# Besitzer 30.10.2026:
 #   1. «Mensch gegen KI vergleichen»: the simulator (gamecompare.gd, control «game_compare») plays the same round twice -
 #      a person (or the Bot-Wächter) guards, then the real detection of MoveEye. Here: start / state / result for the page
 #      Simulator (543) and the window (592), GET / POST /api/game_compare.

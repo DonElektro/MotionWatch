@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 639u: Fehler-QR – neben jeder Fehlermeldung ein QR-Code bzw. Knopf «Beheben»: gemeinsamer Fehler-Katalog (simulator3d/fehler_katalog.json), Seite /hilfe/fehler/<KENNUNG>, «Jetzt beheben» nur für den Besitzer (POST + CSRF), QR im Fenster, im Bild «NO CAMERA», auf SmallTV und TV, Link in Push-Meldungen. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Wunsch Daniel (01.11.2026): neben jeder Fehlermeldung ein QR-Code bzw. Knopf, der das Problem löst.
+# Wunsch Besitzer (01.11.2026): neben jeder Fehlermeldung ein QR-Code bzw. Knopf, der das Problem löst.
 #   Katalog: simulator3d/fehler_katalog.json (eine Datei für MoveEye und den Simulator, Ergänzung zu ui_gemeinsam.json), beim
 #     Bauen hier als FEHLER_KATALOG eingebettet (werkzeuge/bauen.py fehler_katalog_einbetten; bleibt in der Hauptdatei, die Hilfe
 #     geht auch ohne Zusatzdaten). Pro Fehler: id, titel, text, schritte, optional aktion – in de / en / fr / it / rm.
@@ -30,7 +30,7 @@ import hmac as _fx_hmac
 
 FEHLER_KATALOG = json.loads(r"""{
  "v": 1,
- "_hinweis": "Gemeinsamer Fehler-Katalog MoveEye ↔ MoveEye Sim (Paket «Fehler-QR», Daniel 01.11.2026), Ergänzung zu ui_gemeinsam.json. Pro Fehler: Kennung, Titel, Erklärung, Schritte und optional eine Aktion, alles in de / en / fr / it / rm. MoveEye bettet die Datei beim Bauen ein (werkzeuge/bauen.py → quelle/639u_fehler_hilfe.py, FEHLER_KATALOG, bleibt in der Hauptdatei – Hilfe geht auch ohne Zusatzdaten); der Simulator liest sie aus res:// (scripts/fehler_hilfe.gd, export_presets.cfg). Neue Fehler: zuerst hier, dann bauen.",
+ "_hinweis": "Gemeinsamer Fehler-Katalog MoveEye ↔ MoveEye Sim (Paket «Fehler-QR», Elektro 01.11.2026), Ergänzung zu ui_gemeinsam.json. Pro Fehler: Kennung, Titel, Erklärung, Schritte und optional eine Aktion, alles in de / en / fr / it / rm. MoveEye bettet die Datei beim Bauen ein (werkzeuge/bauen.py → quelle/639u_fehler_hilfe.py, FEHLER_KATALOG, bleibt in der Hauptdatei – Hilfe geht auch ohne Zusatzdaten); der Simulator liest sie aus res:// (scripts/fehler_hilfe.gd, export_presets.cfg). Neue Fehler: zuerst hier, dann bauen.",
  "_felder": {
   "pfad": "Adresse der Hilfeseite in MoveEye: <MoveEye>/hilfe/fehler/<id>. Der QR-Code enthält nur diese Adresse (keine Passwörter, keine Schlüssel).",
   "fehler": "seite: mw | sim | beide. stufe: bad | warn. quelle.health: IDs der Selbstdiagnose von MoveEye (120 health_check), quelle.sim_diag: IDs der Selbstdiagnose des Simulators (diagnose.gd), quelle.meldung: englische Teile von Meldungen (Push, Bild «NO CAMERA FOUND»), quelle.wenn: Zusatzbedingung in MoveEye (639u). aktion: Schlüssel aus «aktionen». bau: Reiter der Seite «Bauen» mit der passenden Anleitung (real-bauen).",
@@ -1201,7 +1201,7 @@ FEHLER_KATALOG = json.loads(r"""{
     "de": [
      "Internet prüfen.",
      "Auf «Update erneut versuchen» tippen.",
-     "Meldet es «Signatur»: nur signierte Versionen installieren (Daniel signiert)."
+     "Meldet es «Signatur»: nur signierte Versionen installieren (Elektro signiert)."
     ],
     "en": [
      "Check the internet.",
@@ -2739,8 +2739,8 @@ def fx_check(base=None):
 def fx_selftest():
     probs, n = fx_check()
     assert not probs, f"{len(probs)} problems: " + " | ".join(probs[:10])
-    u = fx_url("CAM_NONE", "http://192.168.1.56:5000")
-    assert u == "http://192.168.1.56:5000/hilfe/fehler/CAM_NONE", u
+    u = fx_url("CAM_NONE", "http://192.0.2.56:5000")
+    assert u == "http://192.0.2.56:5000/hilfe/fehler/CAM_NONE", u
     for k in ("web_password", "notify_url", "hotspot_password", "tv_key"):     # never a secret in the QR text
         v = str(CFG.get(k) or "")
         assert len(v) < 6 or v not in u, k

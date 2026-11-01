@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 579a: Push-Nachrichten neu geordnet (Logik): Kanäle als Karten, Stufen «Nur Personen · Personen + Tiere · Alles», Ruhezeiten, Bilder mit / klein / ohne, Stichwort als ein Feld, kurze Beschriftungen, Übernahme alter Einstellungen, /api/push. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Wish of Daniel (30.10.2026, menu review «Push-Nachrichten»): the section was 31 settings one below the other. Now:
+# Wish of Besitzer (30.10.2026, menu review «Push-Nachrichten»): the section was 31 settings one below the other. Now:
 #   Kopf      «Push senden» (notify_on), a status line («2 Kanäle · Test ✓»), «Alle testen»
 #   Wohin     one card per channel: ntfy · Web-Push · Telegram · Pushover · E-Mail · Webhook · SMS. ntfy, Telegram and
 #             Webhook are the «main channel» (only one of them: CFG notify_type, they share the retries and the outbox);

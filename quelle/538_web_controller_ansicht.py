@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 538: Web: «Controller-Ansicht» der Live-Seite für Handy und Tablet (Live-Bild + Simulator-Bild, Game-Controller, Gesten). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Wish of Daniel (29.10.2026): a full-screen view for phones and tablets (web only - the Tk window has its own
+# Wish of Besitzer (29.10.2026): a full-screen view for phones and tablets (web only - the Tk window has its own
 # camera control) with a Bluetooth / USB game controller or the fingers:
 #   portrait = live picture on top, simulator picture below; landscape = live left, simulator right; swappable (long tap
 #   on a picture or Select); without the simulator only the live picture. The simulator picture is naked (view.jpg with
