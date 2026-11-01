@@ -13,11 +13,17 @@ extends Node
 ## Variante v5.2 (real-gehaeuse-v52, 01.11.2026): ist die Weitwinkel-Kamera «Im Gehäuse (v5.2)» oder «Unterteil vorne»
 ## montiert, zeigt die Szene das echte Unterteil v5.2 (Fenster, IR-Modul, Linse – modelle.json «variante» 5.2) statt v5.1;
 ## die Teile mit «ersetzt» blenden ihr Teil von v5.1 aus.
+## real-abgleich-v52 (Wunsch Daniel 01.11.2026): v5.2 bleibt v5.2 – die Szene zeigt immer das Unterteil v5.2. Ist die
+## Weitwinkel-Kamera am Kopf, am Mast (Szene) oder gar nicht montiert, sitzt der Blindstopfen 12 im Fenster (modelle.json
+## «ohne»: "wide"), Weitwinkel-Linse und IR-Modul sind dann nicht zu sehen. Farben aus bau.json «farben» (modelle.json):
+## Kopfteil orange, Unterteil, Deckel, Zwischenboden, Füsse und Stopfen grau («grau», «grau_teile»).
 
 const Quality := preload("res://scripts/quality.gd")
 const DIR := "res://inhalte/gehaeuse/"
 const FILE := "user://gehaeuse.json"
-const PETG := Color("#6d7074")                 # eSun PETG Grau (Bestellliste)
+const PETG := Color("#6d7074")                 # eSun PETG Grau (Bestellliste) – nur falls modelle.json «farben.grau» fehlt
+const GRAU_ALT := ["tub", "tub52", "lid", "plug", "feet"]   # graue Teile, falls modelle.json «farben.grau_teile» fehlt
+const MIT_WEIT := ["wide", "irled"]            # nur sichtbar, wenn die Weitwinkel-Kamera im Gehäuse sitzt
 const LED_POS := Vector3(-0.008, 0.0305, -0.003)   # v5.2: Status-LED auf dem Kopfdach (Kipp-Koordinaten x 3, y 8, Dach z 29 mm)
 const LED_SCALE := 0.2                         # Diffusor Ø 14 mm statt des grossen Auges auf dem Kasten
 
@@ -33,7 +39,10 @@ var _nodes: Array = []                         # [Node3D-Gruppenknoten] base / p
 var _led_keep = null                           # [position, scale] der Status-LED vorher
 var _v52: Array = []                           # Teile der Variante v5.2 (nur sichtbar, wenn v5.2 gewählt ist)
 var _v51: Array = []                           # Teile von v5.1, die v5.2 ersetzt
-var v52 := false                               # zeigt die Szene gerade v5.2?
+var v52 := true                                # zeigt die Szene v5.2? (immer, real-abgleich-v52)
+var weit := false                              # Weitwinkel-Kamera im Gehäuse (sonst Blindstopfen 12 im Fenster)
+var _mit_weit: Array = []                      # Linse + IR-Modul
+var _ohne_weit: Array = []                     # Blindstopfen 12
 
 
 func _ready() -> void:
@@ -107,12 +116,13 @@ func build() -> void:
 	tilt.name = "GehaeuseTilt"
 	main.head_pitch.add_child(tilt)
 	_nodes = [_base, pan, tilt]
+	var fb: Dictionary = man.get("farben", {})                 # Wunsch Daniel 01.11.2026: Kopfteil in MoveEye-Orange, Rest grau
 	var petg := StandardMaterial3D.new()
-	petg.albedo_color = PETG
+	petg.albedo_color = Color.from_string(str(fb.get("grau", "")), PETG) if str(fb.get("grau", "")) != "" else PETG
 	petg.roughness = 0.55
 	petg.cull_mode = BaseMaterial3D.CULL_DISABLED
-	var fb: Dictionary = man.get("farben", {})                 # Wunsch Daniel 01.11.2026: Kopfteil in MoveEye-Orange
 	var kopf: Array = fb.get("kopf_teile", [])
+	var grau: Array = fb.get("grau_teile", GRAU_ALT)
 	var orange := StandardMaterial3D.new()
 	orange.albedo_color = Color.from_string(str(fb.get("kopf", "#f59a4a")), Color("#f59a4a"))
 	orange.roughness = 0.55
@@ -120,6 +130,8 @@ func build() -> void:
 	tris = 0
 	_v52 = []
 	_v51 = []
+	_mit_weit = []
+	_ohne_weit = []
 	var repl := {}
 	for e in man.get("teile", []):
 		if str(e.get("ersetzt", "")) != "":
@@ -133,12 +145,16 @@ func build() -> void:
 		mi.layers = 1
 		if id in kopf:
 			mi.material_override = orange
-		elif id in ["tub", "tub52", "lid", "turntable", "yoke", "arm2", "lamp1", "lamp2", "head", "side", "plug", "feet"]:
+		elif id in grau:
 			mi.material_override = petg
 		var grp := str(e.get("gruppe", "base"))
 		var par: Node3D = pan if grp == "pan" else (tilt if grp == "tilt" else _base)
 		par.add_child(mi)
-		if str(e.get("variante", "")) == "5.2":
+		if id in MIT_WEIT:
+			_mit_weit.append(mi)
+		elif str(e.get("ohne", "")) == "wide":
+			_ohne_weit.append(mi)
+		elif str(e.get("variante", "")) == "5.2":
 			_v52.append(mi)
 		elif repl.has(id):
 			_v51.append(mi)
@@ -174,7 +190,14 @@ func apply() -> void:
 	for n in _nodes:
 		if is_instance_valid(n):
 			(n as Node3D).visible = real
-	v52 = wide_in_case(main)
+	v52 = true                                      # real-abgleich-v52: v5.2 bleibt v5.2
+	weit = wide_in_case(main)
+	for mi in _mit_weit:
+		if is_instance_valid(mi):
+			(mi as Node3D).visible = weit
+	for mi in _ohne_weit:
+		if is_instance_valid(mi):
+			(mi as Node3D).visible = not weit
 	for mi in _v52:
 		if is_instance_valid(mi):
 			(mi as Node3D).visible = v52
@@ -212,12 +235,12 @@ func _process(_dt: float) -> void:
 	var sl = main.get("statusled")
 	if _led_keep == null and sl != null and sl.get("_rig") != null and is_instance_valid(sl._rig):
 		apply()                                       # the LED is built later than the case
-	elif wide_in_case(main) != v52:
-		apply()                                       # v5.2: the mount of the wide camera changed
+	elif wide_in_case(main) != weit:
+		apply()                                       # v5.2: the mount of the wide camera changed (lens or plug 12)
 
 
 func info() -> Dictionary:
 	var hp: Vector3 = main.head.global_position if main.head != null and main.head.is_inside_tree() else Vector3.ZERO
-	return {"on": on, "ok": ok, "why": why, "lite": lite, "tris": tris, "version": str(man.get("version", "")), "v52": v52,
+	return {"on": on, "ok": ok, "why": why, "lite": lite, "tris": tris, "version": str(man.get("version", "")), "v52": v52, "weit": weit,
 			"head_pos": [snappedf(hp.x, 0.001), snappedf(hp.y, 0.001), snappedf(hp.z, 0.001)],
 			"quelle_sha256": str(man.get("quelle_sha256", "")).substr(0, 12)}

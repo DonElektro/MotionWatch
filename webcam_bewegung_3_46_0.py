@@ -241,7 +241,7 @@ def prepare_settings_file():
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
 ZD_FILE = "moveeye_daten_3_46_0.zip"
-ZD_SHA256 = "e4cd823f4d752c3ad51751cc6340fe267feea3ec0beb2fa2ec9e06611381b540"
+ZD_SHA256 = "9c634e185ec3f23cb6b363eb01ff8849e459fd1f35af0d0829d4b336576341ff"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -62994,7 +62994,7 @@ for _k, _v in _HX_SIMDOPP.items():
         TRX[_L].setdefault(_k, _v[_i + 1])
 # ---- the product page (2.95.52): the homepage of MoveEye (made as an artifact), packed here (gzip + base64) so the Pi
 # can show it without internet to guests in the same Wi-Fi at /info/. Questions from the form arrive as a push message. ----
-INFO_HTML_GZ = (  # 3.45: homepage as a finished product (based on the artifact of 30.10.): features, 3 packages with extras, request form with package; 2.98.9: FAQ, French and Italian, «a night in time-lapse»; 2.98.7: MoveEye name, wake-up alarm, «Spiele freigeben», ticker, join wall, more animation
+INFO_HTML_GZ = (  # real-abgleich-v52: battery UPS HAT (E) 4 × 21700, download button for the kit; 3.45: homepage as a finished product (based on the artifact of 30.10.): features, 3 packages with extras, request form with package; 2.98.9: FAQ, French and Italian, «a night in time-lapse»; 2.98.7: MoveEye name, wake-up alarm, «Spiele freigeben», ticker, join wall, more animation
     _zd('620_daten_produktseite/INFO_HTML_GZ', "")
 )
 
@@ -72515,7 +72515,7 @@ SELFTEST_EXTRA.append(("Error help with QR code (simulator3d/fehler_katalog.json
 # GEH_QUELLE_SHA: Prüfsumme der Quelle (hardware/gehaeuse/Quellcode/*.py, bau.json, werkzeuge/gehaeuse_bauen.py) – der
 # Selbsttest (639w) vergleicht sie im Repository mit der Quelle und mit simulator3d/inhalte/gehaeuse/modelle.json.
 # ----------------------------------------------------------------------------
-GEH_QUELLE_SHA = '81709b43fce1455112e48a95811842311eeac19a42f43e3395c54739c3291a81'
+GEH_QUELLE_SHA = '7d9b4427a13ffae3ea21bfe3d1c62b964942a2ecce7744d7966231454adf0b73'
 GEH_BAU = json.loads(_zd('639v_daten_gehaeuse/GEH_BAU', ""))
 GEH_UI_DE = {"Case & build": "Gehäuse & Bau", "Guide, parts list, print files – in 3D in the workshop of the simulator": "Anleitung, Materialliste, Druckdateien – in 3D in der Werkstatt des Simulators", "Case": "Gehäuse", "View in the simulator": "Im Simulator ansehen", "Opens the workshop in the 3D simulator: turn, explode, see through, click parts, assembly step by step.": "Öffnet die Werkstatt im 3D-Simulator: drehen, zerlegen, durchsichtig, Teile anklicken, Montage Schritt für Schritt.", "Simulator not connected – start it and connect it on the page Simulator.": "Simulator nicht verbunden – starte ihn und verbinde ihn auf der Seite «Simulator».", "Opened in the simulator.": "Im Simulator geöffnet.", "Print files": "Druckdateien", "3MF plates for the Bambu Lab X2D (PETG, no supports)": "3MF-Platten für den Bambu Lab X2D (PETG, ohne Stützen)", "Single STL files: in the hand-over package (ZIP, about 60 MB), not in the repository.": "Einzelne STL-Dateien: im Übergabe-Paket (ZIP, ca. 60 MB), nicht im Repository.", "Assembly step by step": "Montage Schritt für Schritt", "Show this step in the simulator": "Diesen Schritt im Simulator zeigen", "Parts list": "Materialliste", "Qty": "Menge", "Part number": "Teilenummer", "Guides and source (GitHub)": "Anleitungen und Quellcode (GitHub)", "Detailed guide v5.1": "Ausführliche Anleitung v5.1", "Full parts list with order list": "Ganze Materialliste mit Bestellliste", "Measure first: UPS HAT (E) with its cells (assumed 90 × 80 × 26 mm) before printing the lower part.": "Zuerst nachmessen: UPS HAT (E) mit Akkus (angenommen 90 × 80 × 26 mm), bevor das Unterteil gedruckt wird.", "Own work of Daniel (DonElektro) – parametric Python model.": "Eigenes Werk von Daniel (DonElektro) – parametrisches Python-Modell.", "Step": "Schritt"}
 GEH_UI_TRX = _zd('639v_daten_gehaeuse/GEH_UI_TRX', _ZDDict())
@@ -72526,7 +72526,7 @@ GEH_UI2_TRX = _zd('639v_daten_gehaeuse/GEH_UI2_TRX', _ZDDict())
 # BAU3D: Pfad -> [sha256 der Datei, gzip+base64]; BAU3D_GLB: [sha256, Grösse, gzip+base64]. Ausgeliefert von 639w (/bau3d/<pfad>,
 # /build/gehaeuse.glb) mit Content-Encoding gzip. Der Selbsttest vergleicht die Prüfsummen im Repository mit den Quellen.
 # ----------------------------------------------------------------------------
-BAU3D_QUELLE_SHA = '81709b43fce1455112e48a95811842311eeac19a42f43e3395c54739c3291a81'
+BAU3D_QUELLE_SHA = '7d9b4427a13ffae3ea21bfe3d1c62b964942a2ecce7744d7966231454adf0b73'
 BAU3D = _zd('639vb_daten_bau3d/BAU3D', _ZDDict())
 BAU3D_GLB = _zd('639vb_daten_bau3d/BAU3D_GLB', [])
 # aus simulator3d/inhalte/gehaeuse/modelle.json: Gruppe, aussen, Mitte und Explosion pro Teil (wie die Werkstatt im Simulator)
@@ -72600,6 +72600,7 @@ def geh_page():
     J = lambda o: json.dumps(o, ensure_ascii=False).replace("</", "<\\/")
     return (render_page(GEH_PAGE, "more").replace("/*GEHDE*/", js, 1).replace("/*GEHBAU*/null", J(GEH_BAU), 1)
             .replace("/*GEHFK*/null", J(geh_fk()), 1).replace("/*GEHM3*/null", J(BAU3D_MODELLE), 1)
+            .replace("/*GEHVER*/\"\"", json.dumps(APP_VERSION), 1)
             .replace("/*GEHSIM*/false", "true" if CFG.get("sim_on") else "false", 1)
             .replace("/*GEHTABS*/", J([list(x) for x in BAU_TABS])).replace("/*GEH3D*/", GEH_3D_JS, 1)
             .replace("/*GEHFERTIG*/", fertig_js(), 1))                       # «Fertig kaufen» (639zj): the hint at the top
@@ -72674,19 +72675,25 @@ def geh_druck_namen():
     return list(GEH_BAU.get("druckdateien") or []) + list(GEH_BAU.get("druckdateien_einzeln") or [])
 
 
-def geh_alle_zip():
-    """all print files that are here in one ZIP (3MF are compressed already: stored) - None without the repository"""
+def geh_alle_zip(v52=True):
+    """the print files of one case (v5.2: Druckdateien/v5-2/, v5.1: the others) that are here in one ZIP, named with the
+    version (real-abgleich-v52: MoveEye_v5-2_Druck_X.Y.Z) - 3MF are compressed already: stored. None without the repository"""
     import io
     import zipfile
     d = geh_druck_dir()
-    fs = [n for n in geh_druck_namen() if os.path.isfile(os.path.join(d, n))]
+    fs = [n for n in geh_druck_namen() if os.path.isfile(os.path.join(d, n)) and n.startswith("v5-2/") == v52]
     if not fs:
         return None
     b = io.BytesIO()
     with zipfile.ZipFile(b, "w", zipfile.ZIP_STORED) as z:
         for n in fs:
-            z.write(os.path.join(d, n), "MoveEye_Gehaeuse_v5-1/" + n)
+            z.write(os.path.join(d, n), geh_alle_name(v52) + "/" + n.split("/")[-1])
     return b.getvalue()
+
+
+def geh_alle_name(v52=True):
+    """the name of the print ZIP with the running version, e.g. MoveEye_v5-2_Druck_3.46.1 (the 3MF keep their names)"""
+    return ("MoveEye_v5-2_Druck_" if v52 else "MoveEye_v5-1_Druck_") + APP_VERSION
 
 
 _BAU3D_CACHE = {}
@@ -72754,10 +72761,11 @@ def smalltv_routes(app, reply, body):                     # + 639w: /build, /cas
 
     @app.route("/build/alle.zip")
     def geh_alle():
-        b_ = geh_alle_zip()
+        v52_ = request.args.get("v", "v52") != "v51"
+        b_ = geh_alle_zip(v52_)
         if b_ is None:
             return redirect(GEH_BAU.get("github", "") + "/tree/main/hardware/gehaeuse/Druckdateien", code=302)
-        return Response(b_, mimetype="application/zip", headers={"Content-Disposition": 'attachment; filename="MoveEye_Gehaeuse_v5-1_Druckdateien.zip"'})
+        return Response(b_, mimetype="application/zip", headers={"Content-Disposition": f'attachment; filename="{geh_alle_name(v52_)}.zip"'})
 
     @app.route("/api/bau", methods=["GET", "POST"])
     def api_bau():                                       # «Mein Bau»: variant and checklist per user (every device)

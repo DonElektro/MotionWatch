@@ -100,6 +100,7 @@ GEO = {
     "head52": ("tilt", 0.6, 2.2, "#38383f", True, 400, 0.0), "diff52": ("tilt", 0.3, 0.6, "#f2f2f2", True, 450, 0.0),
     "resplug": ("base", 0.3, 0.6, "#262626", True, 20, 1.6), "lampdrv": ("base", 0.5, 0.7, "#c8a2c8", False, 130, 1.2),
     "fuseh": ("base", 0.5, 0.8, "#e74c3c", False, 120, 0.8), "sockel": ("base", 0.6, 1.4, "#4d80cc", False, 90, 0.3),
+    "wplug": ("base", 0.3, 0.6, "#6d7074", True, 0, 1.5),     # 12 Blindstopfen im Weitwinkel-Fenster (Szene ohne Weitwinkel im Gehäuse)
 }
 AUSSEN_V52 = ("wide", "irled")      # in der Szene sichtbar, wenn v5.2 gewählt ist (Linse / IR-Modul im Fenster)
 LITE_K = 2.3                         # Lite: Zellen so viel grösser
@@ -177,7 +178,7 @@ def modell():
     P["cable_power"] = kabel([(v5.BAT_X0 + 2.0, 70.0, ZF + 14.0), (55.0, 70.0, ZF + 14.0), (8.0, 40.0, ZF + 22.0), (2.5, 22.0, ZF + 24.0)], 3.0)
     # Variante v5.2: echtes Unterteil und Kleinteile aus v52.py (Quellcode/), gleiche Koordinaten wie v5.py
     import v52
-    P2 = v52.placed(0.0, 180.0)
+    P2 = v52.placed(0.0, 180.0, blinds=True)
     P["tub52"] = P2["tub"]
     P["mosfet52"] = P2["mosfet"]
     P["wide"] = P2["wcam"]
@@ -190,6 +191,7 @@ def modell():
     P["diff52"] = P2["diff"]
     for k in ("resplug", "lampdrv", "fuseh", "sockel"):
         P[k] = P2[k]
+    P["wplug"] = P2["blind_w"]                            # 12 Blindstopfen Weitwinkel (eingesetzt)
     info52 = {"lens_mm": [round(float(x), 2) for x in v52.WL], "tilt_deg": v52.WC_TILT, "ir_typ": v52.IR_TYP,
               "ir_mm": [0.0, v52.IRW_Y, v52.IRW_Z] if v52.IR_TYP != "5mm" else [0.0, v52.IR_Y, v52.IR_Z]}
     P["buttons"] = U(*[cyl_x(y, 33.0, LX - 12.0, LX + WALL + 3.0, 12.0) for y in (10.5, 50.5)])
@@ -383,6 +385,8 @@ def baue_sim(nur=None):
             e["variante"] = "5.2"
         if rowd[i].get("ersetzt"):
             e["ersetzt"] = rowd[i]["ersetzt"]
+        if rowd[i].get("ohne"):                          # nur sichtbar ohne dieses Teil (12 Blindstopfen: ohne Weitwinkel)
+            e["ohne"] = rowd[i]["ohne"]
         if aussen:
             v2, f2 = prim_mesh(P[i], 10) if pm is not None else cluster_qem(v, f, c * LITE_K)
             lv, ln, lf = normalen(zu_godot(v2, org), f2)
@@ -417,7 +421,8 @@ def baue_sim(nur=None):
                    "ir_m": [round(float(x), 4) for x in zu_godot(np.array([info["v52"]["ir_mm"]]), org)[0]],
                    "teile": [e["id"] for e in meta if e.get("variante") == "5.2"],
                    "ersetzt": {e["id"]: e["ersetzt"] for e in meta if e.get("ersetzt")}},
-           "farben": {"kopf": farben.get("kopf", ""), "kopf_teile": farben.get("kopf_teile", [])},
+           "farben": {"kopf": farben.get("kopf", ""), "kopf_teile": farben.get("kopf_teile", []),
+                      "grau": farben.get("grau", ""), "grau_teile": farben.get("grau_teile", [])},
            "teile": meta}
     with open(os.path.join(SIMDIR, "modelle.json"), "w", encoding="utf-8") as fh:
         fh.write(json.dumps(man, ensure_ascii=False, indent=1) + "\n")
@@ -453,7 +458,9 @@ def baue_texte():
          "## Texte deutsch (T.t übersetzt sie, Übersetzungen kommen aus bau.json in i18n/texte.json).", "",
          f"const QUELLE_SHA := {gd_str(sha)}", f"const VERSION := {gd_str(bau['version'])}",
          f"const KOPF_FARBE := {gd_str((bau.get('farben') or {}).get('kopf', ''))}   # Kopfteil (dreht / neigt) in MoveEye-Orange",
-         f"const KOPF_TEILE := {gd_str((bau.get('farben') or {}).get('kopf_teile', []))}", f"const MASSE := {gd_str(de(bau['masse']))}",
+         f"const KOPF_TEILE := {gd_str((bau.get('farben') or {}).get('kopf_teile', []))}",
+         f"const GRAU := {gd_str((bau.get('farben') or {}).get('grau', ''))}   # Unterteil, Deckel, Zwischenboden, Füsse, Stopfen",
+         f"const GRAU_TEILE := {gd_str((bau.get('farben') or {}).get('grau_teile', []))}", f"const MASSE := {gd_str(de(bau['masse']))}",
          "# Materialliste: id -> [Menge, Bezeichnung, Teilenummer, Gruppe]", "const BOM := {"]
     for b in bau["bom"]:
         for k in (b["nr"], b["menge"]):                   # part numbers and quantities: the same in every language
@@ -467,9 +474,10 @@ def baue_texte():
             pairs[t["datei"]] = {Lg: t["datei"] for Lg in LANGS[1:]}
         nm = de(t["name"]) if t.get("name") else tx(bom[t["bom"]]["name"], "de")
         L.append(f"\t[{gd_str(t['id'])}, {gd_str(t['art'])}, {gd_str(nm)}, {gd_str(t.get('bom') or '')}, {int(t.get('schritt') or 0)}, {gd_str(t.get('datei', ''))}, {gd_str(t.get('ersetzt', ''))}],")
-    L += ["]", "# Montage v5.1: [Titel, Text]", "const SCHRITTE := ["]
+    L += ["]", "# Montage: [Titel v5.2, Text v5.2, Titel v5.1, Text v5.1] (v5.2 = Standard; v5.1 für die Auswahl v5.1)", "const SCHRITTE := ["]
     for s in bau["schritte"]:
-        L.append(f"\t[{gd_str(de(s['titel']))}, {gd_str(de(s['text']))}],")
+        v1 = s.get("v51") or {"titel": s["titel"], "text": s["text"]}
+        L.append(f"\t[{gd_str(de(s['titel']))}, {gd_str(de(s['text']))}, {gd_str(de(v1['titel']))}, {gd_str(de(v1['text']))}],")
     L.append("]")
     # real-bauen: alles für «Bauen» (Varianten, Einkauf, Drucken, Werkzeug, Sicherheit, Verkabeln, Software, Inbetriebnahme,
     # Fehlersuche, Wartung) als ein Wörterbuch, Texte deutsch (T.t übersetzt), Kennungen bleiben
@@ -530,7 +538,7 @@ def baue_texte():
     subprocess.run([sys.executable, os.path.join(HIER, "sim_texte.py")], check=True, stdout=subprocess.DEVNULL)   # sortiert, Bericht
     # MoveEye: die Daten (alle Sprachen) und die Texte der Seite /case (englischer Schlüssel -> de / fr / it / rm)
     mw = {"version": bau["version"], "stand": bau["stand"], "masse": bau["masse"], "bom_gruppen": bau["bom_gruppen"],
-          "bom": bau["bom"], "teile": [{k: t[k] for k in ("id", "art", "bom", "schritt", "name", "datei", "farbe", "ersetzt", "wenn") if k in t} for t in bau["teile"]],
+          "bom": bau["bom"], "teile": [{k: t[k] for k in ("id", "art", "bom", "schritt", "name", "datei", "farbe", "ersetzt", "wenn", "ohne") if k in t} for t in bau["teile"]],
           "schritte": bau["schritte"], "druckdateien": bau.get("druckdateien", []), "github": bau.get("github", ""),
           "gehaeuse_v52": bau.get("gehaeuse_v52", {}), "farben": bau.get("farben", {})}
     for k in BAU_KEYS:                                   # real-bauen: dazu alles für die Seite «Bauen»
@@ -585,7 +593,7 @@ def baue_web3d(sha):
     with open(os.path.join(SIMDIR, "modelle.json"), encoding="utf-8") as fh:
         man = json.load(fh)
     mod = {"kippachse_ueber_boden_m": man.get("kippachse_ueber_boden_m"), "fuesse_m": man.get("fuesse_m"),
-           "teile": [{k: e[k] for k in ("id", "gruppe", "aussen", "mitte", "explosion", "farbe") if k in e} for e in man.get("teile", [])]}
+           "teile": [{k: e[k] for k in ("id", "gruppe", "aussen", "mitte", "explosion", "farbe", "ohne") if k in e} for e in man.get("teile", [])]}
     out += ["}", f"BAU3D_GLB = [{hashlib.sha256(glb).hexdigest()!r}, {len(glb)}, {pk(glb)!r}]",
             "# aus simulator3d/inhalte/gehaeuse/modelle.json: Gruppe, aussen, Mitte und Explosion pro Teil (wie die Werkstatt im Simulator)",
             "BAU3D_MODELLE = json.loads(" + repr(json.dumps(mod, ensure_ascii=False, separators=(",", ":"))) + ")", ""]

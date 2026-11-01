@@ -1,14 +1,14 @@
 {
  "_hinweis": "Erzeugt von werkzeuge/gehaeuse_bauen.py aus hardware/gehaeuse/ – nicht von Hand ändern. Koordinaten: Meter, Ursprung Kippachse (main.head_pitch), Godot X = Modell y, Y = z, Z = x (vorne = −Z).",
  "version": "5.1",
- "quelle_sha256": "81709b43fce1455112e48a95811842311eeac19a42f43e3395c54739c3291a81",
+ "quelle_sha256": "7d9b4427a13ffae3ea21bfe3d1c62b964942a2ecce7744d7966231454adf0b73",
  "dateien": {
-  "gehaeuse.glb": "0488ae6094f140e0fabed2d986efa1f5eac2b0b72847f8dd8fe8a94b0d76ffe1",
-  "gehaeuse_lite.glb": "ceee55b37a35891a2a8746f76a0a18fcc5b0a3c4eafb278d7f4b0c15addba61f"
+  "gehaeuse.glb": "2db816c04be00c0c846505d584b670b895350ce155e8ebed5a4fa190a515d986",
+  "gehaeuse_lite.glb": "946fe1bb7e696068a8456ec934686bf4e301b32bd6601f2dee7dff8db2e6c792"
  },
- "dreiecke": 124458,
- "dreiecke_aussen": 100845,
- "dreiecke_lite": 16370,
+ "dreiecke": 133366,
+ "dreiecke_aussen": 109753,
+ "dreiecke_lite": 17902,
  "kippachse_ueber_boden_m": 0.1258,
  "fuesse_m": 0.006,
  "v52": {
@@ -43,6 +43,7 @@
    "sdplug",
    "head52",
    "diff52",
+   "wplug",
    "resplug",
    "lampdrv",
    "fuseh"
@@ -67,13 +68,27 @@
    "lamp1",
    "lamp2",
    "head52"
+  ],
+  "grau": "#6d7074",
+  "grau_teile": [
+   "tub",
+   "tub52",
+   "lid",
+   "shelf",
+   "feet",
+   "plug",
+   "plug52",
+   "sdplug",
+   "resplug",
+   "wplug",
+   "sockel"
   ]
  },
  "teile": [
   {
    "id": "tub",
    "gruppe": "base",
-   "farbe": "#3a73bf",
+   "farbe": "#6d7074",
    "aussen": true,
    "dreiecke": 12738,
    "mitte": [
@@ -96,7 +111,7 @@
   {
    "id": "feet",
    "gruppe": "base",
-   "farbe": "#333333",
+   "farbe": "#6d7074",
    "aussen": true,
    "dreiecke": 640,
    "mitte": [
@@ -317,7 +332,7 @@
   {
    "id": "shelf",
    "gruppe": "base",
-   "farbe": "#4d80cc",
+   "farbe": "#6d7074",
    "aussen": false,
    "dreiecke": 3343,
    "mitte": [
@@ -717,7 +732,7 @@
   {
    "id": "lid",
    "gruppe": "base",
-   "farbe": "#5999e6",
+   "farbe": "#6d7074",
    "aussen": true,
    "dreiecke": 7014,
    "mitte": [
@@ -1169,7 +1184,7 @@
   {
    "id": "plug",
    "gruppe": "base",
-   "farbe": "#262626",
+   "farbe": "#6d7074",
    "aussen": true,
    "dreiecke": 1646,
    "mitte": [
@@ -1286,7 +1301,7 @@
   {
    "id": "tub52",
    "gruppe": "base",
-   "farbe": "#3a73bf",
+   "farbe": "#6d7074",
    "aussen": true,
    "dreiecke": 25740,
    "mitte": [
@@ -1382,7 +1397,7 @@
   {
    "id": "plug52",
    "gruppe": "base",
-   "farbe": "#262626",
+   "farbe": "#6d7074",
    "aussen": true,
    "dreiecke": 2170,
    "mitte": [
@@ -1407,7 +1422,7 @@
   {
    "id": "sdplug",
    "gruppe": "base",
-   "farbe": "#262626",
+   "farbe": "#6d7074",
    "aussen": true,
    "dreiecke": 36,
    "mitte": [
@@ -1480,7 +1495,7 @@
   {
    "id": "sockel",
    "gruppe": "base",
-   "farbe": "#4d80cc",
+   "farbe": "#6d7074",
    "aussen": false,
    "dreiecke": 16006,
    "mitte": [
@@ -1501,9 +1516,34 @@
    ]
   },
   {
+   "id": "wplug",
+   "gruppe": "base",
+   "farbe": "#6d7074",
+   "aussen": true,
+   "dreiecke": 8908,
+   "mitte": [
+    -0.0,
+    -0.0723,
+    -0.0409
+   ],
+   "groesse": [
+    0.0298,
+    0.0196,
+    0.0055
+   ],
+   "variante": "5.2",
+   "ohne": "wide",
+   "dreiecke_lite": 1532,
+   "explosion": [
+    -0.0,
+    0.0,
+    -0.1419
+   ]
+  },
+  {
    "id": "resplug",
    "gruppe": "base",
-   "farbe": "#262626",
+   "farbe": "#6d7074",
    "aussen": true,
    "dreiecke": 4568,
    "mitte": [
