@@ -25,6 +25,7 @@
     "head_deg": "wo der simulierte Kopf wirklich steht -> 539 /api/servo",
     "wide": "Halterung der Weitwinkel-Kamera -> 163 weit_from_sim",
     "game_live": "das Spiel in wenigen Zahlen -> 552 SmallTV, 150 TV-Anzeige (559), Simulator tv.gd",
+    "busy": "Ruhebild: {what: update|scene, ver, pct, phase} solange ein Update kommt/laedt/installiert wird oder ein Ort laedt, sonst null -> 639y simvals_take (ruhiges Platzhalterbild), Simulator main.gd busy_reply / update.gd busy",
     "buttons": "Tasten am Geraet (Schutz, Alarm quittieren): down / held_ms / seq / last_ms wie ein GPIO -> 163a led_sim_buttons (599c simvals_take), Simulator statusled.gd",
     "pi_temp": "CPU-Temperatur des Pi im Gehaeuse -> 285",
     "net": "Test-Schalter WLAN weg / Internet weg -> 285 sim_net_down, 110, Uebung Netz (141/565)",
