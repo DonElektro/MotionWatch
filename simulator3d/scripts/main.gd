@@ -4396,6 +4396,11 @@ func _paint_palette() -> void:
 
 
 func _notification(what: int) -> void:
+	if what == NOTIFICATION_PREDELETE:          # the parts main_*.gd (Object): go with main.gd, also their waiting functions (await)
+		for m in _mods.values():
+			m.free()
+		_mods.clear()
+		return
 	if what == NOTIFICATION_DRAG_END and drag_kind != "":
 		var k := drag_kind
 		drag_kind = ""

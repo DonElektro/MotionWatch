@@ -1,4 +1,4 @@
-extends RefCounted
+extends Object
 ## Teil von main.gd (Vorschlag 24 «main.gd zerlegen»): die Kamera-Ausgabe: Linsen-Bild, Wärmebild-Abgleich, Bilder für MoveEye (JPEG), die Ansicht als Bild für die Fernbedienung.
 ## main.gd lädt diesen Teil erst beim ersten Aufruf (_mod) und leitet seine Funktionen weiter: main.xyz bleibt gleich.
 ## Hier steht «main.» vor allem, was zu main.gd gehört.

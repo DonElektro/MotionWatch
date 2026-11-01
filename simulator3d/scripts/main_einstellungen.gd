@@ -1,4 +1,4 @@
-extends RefCounted
+extends Object
 ## Teil von main.gd (Vorschlag 24 «main.gd zerlegen»): die Einstellungen (Controls): add_control, die Liste aller Regler und Schalter, Reihenfolge, Laden und Speichern.
 ## main.gd lädt diesen Teil erst beim ersten Aufruf (_mod) und leitet seine Funktionen weiter: main.xyz bleibt gleich.
 ## Hier steht «main.» vor allem, was zu main.gd gehört.
