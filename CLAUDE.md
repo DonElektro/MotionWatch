@@ -205,6 +205,12 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
 - `python3 webcam_bewegung_X_Y_Z.py --self-test .` (im Repository: prüft auch alle Signaturen in versions.json). Läuft zusätzlich
   automatisch auf GitHub (Actions → «Selbsttest») bei jedem Push.
 
+- **CI statt lokal rechnen** (Workflow `.github/workflows/ci.yml`, Name «CI»): bei Push auf `real-*` laufen parallel
+  `bauen.py --pruefen`, Selbsttest (ohne Signaturen), Web-Rauchtest mit Browser (`web_rauchtest.py --browser`, Playwright),
+  Godot-4.3-Parse-Check («Schnittstelle: OK»), jeder `werkzeuge/*_test.gd` und `sim_texte.py --pruefen`; auf `integration` /
+  `main` (oder von Hand) dazu der Export Linux + Windows ohne Signatur als Artefakt. Helfer und Integrator pushen und warten:
+  `werkzeuge/ci_status.sh [zweig|commit] --warten --fehler` (Exit 0 = grün; ohne `--warten` nur die letzten Läufe;
+  `--start` startet von Hand, geht erst wenn ci.yml auf main ist). Signieren bleibt lokal, der Schlüssel kommt nie ins CI.
 - `python3 -m py_compile` und JavaScript-Prüfung (`node --check` der gerenderten Seiten).
 - Programm mit simulierter Kamera starten (`open_source` ersetzen) und mit Playwright prüfen:
   Handy hoch (390 × 844) und quer, PC; keine JS-Fehler; Bildschirmfotos ansehen.
