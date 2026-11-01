@@ -10,7 +10,6 @@ JOBS = {  # name: (fn, h, rot, count)
     "06_Kamerakopf_v52": (v52.part_head, 0.2, [-90, 0, 0], 1),
     "10_Stopfen_HDMI_USB_v52": (v52.part_service_plug, 0.2, [0, 0, 0], 1),
     "12_Blindstopfen_Weitwinkel": (v52.blind_wide, 0.1, [0, -90, 0], 1),
-    "13_Stopfen_IR_LED": (v52.blind_ir, 0.08, [0, 0, 0], 1),
     "14_Diffusor_Status_LED": (v52.part_diffuser, 0.1, [0, 0, 0], 1),
     "15_Pupillenring": (v52.part_pupil, 0.06, [0, 0, 0], 1),
     "16_Stopfen_SD_v52": (v52.part_sd_plug, 0.1, [0, 0, 0], 1),
@@ -21,6 +20,10 @@ JOBS = {  # name: (fn, h, rot, count)
     "19_Stopfen_IR_Modul": (v52.stopfen_ir_modul, 0.1, [0, 0, 0], 1),
     "20_Stopfen_DS18B20": (v52.stopfen_ds18, 0.08, [0, 0, 0], 1),
     "21_Stopfen_Relais": (v52.stopfen_relais, 0.1, [0, 0, 0], 1),
+    # 01.11.2026: Stopfen IR-LED 5 mm neu als 22 (vorher 13_Stopfen_IR_LED; 13 bleibt der Entwicklungs-Sockel)
+    "22_Stopfen_IR_LED": (v52.blind_ir, 0.08, [0, 0, 0], 1),
+    "23_Stopfen_Mikrofon": (v52.stopfen_mikrofon, 0.05, [0, 0, 0], 1),
+    "24_Stopfen_Lichtleiter": (v52.stopfen_lichtleiter, 0.05, [0, 0, 0], 1),
 }
 if __name__ == "__main__":
     os.makedirs("out52", exist_ok=True)

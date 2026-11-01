@@ -15479,6 +15479,18 @@
   "it": "flangia in basso (solo testa senza termocamera)",
   "rm": "flansch sut (mo chau senza camera termica)"
  },
+ "Flansch unten (nur ohne Lade-LED; Presssitz mit Quetschrippen)": {
+  "en": "flange down (only without charge LED; press fit with crush ribs)",
+  "fr": "bride en bas (seulement sans LED de charge ; serrage par nervures)",
+  "it": "flangia in basso (solo senza LED di carica; a pressione con nervature)",
+  "rm": "flansch sut (mo senza LED da chargiar; pressiun cun costas)"
+ },
+ "Flansch unten (nur ohne Mikrofon; 5 Stifte im Presssitz)": {
+  "en": "flange down (only without microphone; 5 press-fit pins)",
+  "fr": "bride en bas (seulement sans micro ; 5 tiges serrées)",
+  "it": "flangia in basso (solo senza microfono; 5 perni a pressione)",
+  "rm": "flansch sut (mo senza microfon; 5 guttas en pressiun)"
+ },
  "Flansch unten (nur ohne Relais; gleiche Form wie 17)": {
   "en": "flange down (only without relay; same shape as 17)",
   "fr": "bride en bas (seulement sans relais ; même forme que 17)",
@@ -21187,6 +21199,12 @@
   "it": "La luce IR 850 nm è quasi invisibile ma forte: non guardare la lampada da vicino.",
   "rm": "La glisch IR 850 nm è quasi invisibla, ma ferma: betg guardar da datiers en la lampa."
  },
+ "IR-Modul 120°": {
+  "en": "IR module 120°",
+  "fr": "Module IR 120°",
+  "it": "Modulo IR 120°",
+  "rm": "Modul IR 120°"
+ },
  "IR-Modul: Ø 18,8 mm, Länge 14 mm, Linse vorne Ø 17 mm (IRW_MOD_D, IRW_MOD_L, IRW_LENS_D)": {
   "en": "IR module: Ø 18.8 mm, length 14 mm, front lens Ø 17 mm (IRW_MOD_D, IRW_MOD_L, IRW_LENS_D)",
   "fr": "Module IR : Ø 18,8 mm, longueur 14 mm, lentille avant Ø 17 mm (IRW_MOD_D, IRW_MOD_L, IRW_LENS_D)",
@@ -22002,6 +22020,12 @@
   "fr": "canal 4 → 3e module MOSFET (AOD4184, 1 canal) → 47 Ω / 0,5 W → LED IR 5 mm 850 nm («IR large», env. 70 mA)",
   "it": "canale 4 → 3° modulo MOSFET (AOD4184, 1 canale) → 47 Ω / 0,5 W → LED IR 5 mm 850 nm («IR ampio», ca. 70 mA)",
   "rm": "chanal 4 → 3. modul MOSFET (AOD4184, 1 chanal) → 47 Ω / 0,5 W → LED IR 5 mm 850 nm («glisch IR largia», ca. 70 mA)"
+ },
+ "Kanal 4 → 3. MOSFET-Modul (AOD4184, 1 Kanal) → 5 V über Vorwiderstand 2 W → IR-Modul 120° 850 nm («IR-Licht breit»); nur bei IR_TYP «5mm» (v52.py): 47 Ω / 0,5 W → IR-LED 5 mm (ca. 70 mA)": {
+  "en": "channel 4 → 3rd MOSFET module (AOD4184, 1 channel) → 5 V through a series resistor 2 W → IR module 120° 850 nm («wide IR light»); only with IR_TYP «5mm» (v52.py): 47 Ω / 0.5 W → IR LED 5 mm (approx. 70 mA)",
+  "fr": "canal 4 → 3e module MOSFET (AOD4184, 1 canal) → 5 V par une résistance série 2 W → module IR 120° 850 nm («IR large») ; seulement avec IR_TYP «5mm» (v52.py) : 47 Ω / 0,5 W → LED IR 5 mm (env. 70 mA)",
+  "it": "canale 4 → 3° modulo MOSFET (AOD4184, 1 canale) → 5 V tramite resistenza in serie 2 W → modulo IR 120° 850 nm («IR ampio»); solo con IR_TYP «5mm» (v52.py): 47 Ω / 0,5 W → LED IR 5 mm (ca. 70 mA)",
+  "rm": "chanal 4 → 3. modul MOSFET (AOD4184, 1 chanal) → 5 V tras ina resistenza en seria 2 W → modul IR 120° 850 nm («glisch IR largia»); mo cun IR_TYP «5mm» (v52.py): 47 Ω / 0,5 W → LED IR 5 mm (ca. 70 mA)"
  },
  "Kanal 4 → MOSFET → IR-LED 5 mm 850 nm («IR-Licht breit»)": {
   "en": "channel 4 → MOSFET → IR LED 5 mm 850 nm («wide IR light»)",
@@ -29771,6 +29795,12 @@
   "fr": "seulement pour IR_TYP = «5mm» dans v52.py – le standard est le module IR 120° (irmod), ne pas acheter les deux",
   "it": "solo per IR_TYP = «5mm» in v52.py – lo standard è il modulo IR 120° (irmod), non comprare entrambi",
   "rm": "mo per IR_TYP = «5mm» en v52.py – il standard è il modul IR 120° (irmod), betg cumprar omadus"
+ },
+ "nur für IR_TYP = «5mm» in v52.py – Standard ist das IR-Modul 120° (irmod), nicht zusätzlich kaufen (+ 47 Ω / 0,5 W)": {
+  "en": "only for IR_TYP = «5mm» in v52.py – the standard is the IR module 120° (irmod), do not buy both (+ 47 Ω / 0.5 W)",
+  "fr": "seulement pour IR_TYP = «5mm» dans v52.py – le standard est le module IR 120° (irmod), ne pas acheter les deux (+ 47 Ω / 0,5 W)",
+  "it": "solo per IR_TYP = «5mm» in v52.py – lo standard è il modulo IR 120° (irmod), non comprare entrambi (+ 47 Ω / 0,5 W)",
+  "rm": "mo per IR_TYP = «5mm» en v52.py – il standard è il modul IR 120° (irmod), betg cumprar omadus (+ 47 Ω / 0,5 W)"
  },
  "Nur Gruppen": {
   "en": "Groups only",
@@ -39710,6 +39740,12 @@
   "it": "Preallarme",
   "rm": "Preavertiment"
  },
+ "Vorwiderstand 2 W für das IR-Modul 120°": {
+  "en": "Series resistor 2 W for the IR module 120°",
+  "fr": "Résistance série 2 W pour le module IR 120°",
+  "it": "Resistenza in serie 2 W per il modulo IR 120°",
+  "rm": "Resistenza en seria 2 W per il modul IR 120°"
+ },
  "Vorwiderstand 2 W für die LEDs": {
   "en": "Series resistor 2 W for the LEDs",
   "fr": "Résistance série 2 W pour les LED",
@@ -40724,6 +40760,12 @@
   "it": "Telecamera grandangolare nella parete frontale (CAM1), modulo IR 120° accanto alla telecamera (grano M3), 2 pulsanti nella parete posteriore, LED di stato sopra la testa. File: Druckdateien/v5-2/. Se nel pacchetto manca un pezzo, montare il tappo corrispondente (12, 18–21).",
   "rm": "Camera grondangul en la paraid davant (CAM1), modul IR 120° sper la camera (sbarra M3), 2 buttuns en la paraid davos, LED da status sur il chau. Datotecas: Druckdateien/v5-2/. Sch'i manca ina part en il pachet, metter il tappun correspundent (12, 18–21)."
  },
+ "Weitwinkel-Kamera in die Stirnwand (CAM1), IR-Modul 120° rechts neben die Kamera (Madenschraube M3), 2 Tasten in die Rückwand, Status-LED oben in den Kopf. Druckdateien: Druckdateien/v5-2/. Fehlt ein Teil im Paket, kommt der passende Stopfen hinein (12, 18–24).": {
+  "en": "Wide-angle camera into the front wall (CAM1), IR module 120° next to the camera (M3 grub screw), 2 buttons into the back wall, status LED on top of the head. Print files: Druckdateien/v5-2/. If a part is missing in the package, fit the matching plug (12, 18–24).",
+  "fr": "Caméra grand-angle dans la paroi avant (CAM1), module IR 120° à côté de la caméra (vis sans tête M3), 2 boutons dans la paroi arrière, LED d'état sur la tête. Fichiers : Druckdateien/v5-2/. Si une pièce manque dans le paquet, poser le bouchon correspondant (12, 18–24).",
+  "it": "Telecamera grandangolare nella parete frontale (CAM1), modulo IR 120° accanto alla telecamera (grano M3), 2 pulsanti nella parete posteriore, LED di stato sopra la testa. File: Druckdateien/v5-2/. Se nel pacchetto manca un pezzo, montare il tappo corrispondente (12, 18–24).",
+  "rm": "Camera grondangul en la paraid davant (CAM1), modul IR 120° sper la camera (sbarra M3), 2 buttuns en la paraid davos, LED da status sur il chau. Datotecas: Druckdateien/v5-2/. Sch'i manca ina part en il pachet, metter il tappun correspundent (12, 18–24)."
+ },
  "Weitwinkel-Kamera: Linsenhöhe 11,4 mm ab Platine, Linsenmitte 9,5 mm unter der Platinen-Oberkante, Frontlinse Ø 6 mm (WC_LENS_H, WC_LENS_FROM_TOP, WC_R0)": {
   "en": "Wide camera: lens height 11.4 mm above the board, lens centre 9.5 mm below the top edge, front lens Ø 6 mm (WC_LENS_H, WC_LENS_FROM_TOP, WC_R0)",
   "fr": "Caméra grand angle : hauteur de l'objectif 11,4 mm, centre 9,5 mm sous le bord supérieur, lentille avant Ø 6 mm (WC_LENS_H, WC_LENS_FROM_TOP, WC_R0)",
@@ -41006,6 +41048,12 @@
   "fr": "valeur des résistances encore ouverte (selon la LED)",
   "it": "valore delle resistenze ancora aperto (dipende dal LED)",
   "rm": "valur da las resistenzas anc averta (tenor LED)"
+ },
+ "Wert des Vorwiderstands je nach Modul (wie bei den Scheinwerfern)": {
+  "en": "value of the series resistor depends on the module (as for the lamps)",
+  "fr": "valeur de la résistance selon le module (comme pour les lampes)",
+  "it": "valore della resistenza secondo il modulo (come per le lampade)",
+  "rm": "valur da la resistenza tenor il modul (sco tar las lampas)"
  },
  "Wertsachen": {
   "en": "Valuables",

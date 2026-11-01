@@ -3,7 +3,7 @@ und Sichtfeld-Test der Weitwinkel-Kamera (Strahlen gegen alle festen und bewegte
 python3 check52.py [koll] [fov] [wand] [abstand] [stopfen]   (ohne Angabe: alles; «statisch» = nur die festen Teile, schnell)
 01.11.2026: IR-Modul 120°, Trennsteg, Kabelkamm; «wand» = Stegbreiten in der Stirnwand zwischen den Öffnungen,
 «abstand» = Abstände der Kabelwege CAM0 / CAM1 und des IR-Moduls zu Lüfter, Lüftungsschlitzen und Lautsprecher.
-01.11.2026 (Pakete): «stopfen» = die Stopfen 18–21 eingesetzt gegen Unterteil / Kopf / Nachbarn (Kopf über alle Stellungen)
+01.11.2026 (Pakete): «stopfen» = die Stopfen 18–21, 23, 24 eingesetzt gegen Unterteil / Kopf / Nachbarn (Kopf über alle Stellungen)
 und wie dicht sie die Öffnung schliessen (offene Fläche = Spalt rundum)."""
 import sys, math, time, numpy as np
 import v52, csg
@@ -132,7 +132,9 @@ def abstand():
 STOPFEN_PAARE = {"st_therm": ("head", "side", "yoke", "arm2", "lid", "turntable", "lamp1", "lamp2", "servo2", "cam3", "horn2"),
                  "st_irmod": ("tub", "buck", "mosfet", "pir", "wcam", "speaker", "pca", "lampdrv", "lid"),
                  "st_ds18": ("tub", "feet", "fuseh", "speaker", "pca", "mosfet", "lampdrv", "tripod"),
-                 "st_relay": ("tub", "btn", "resplug", "resjack", "ups", "sockel", "shelf", "jacks", "fuseh")}
+                 "st_relay": ("tub", "btn", "resplug", "resjack", "ups", "sockel", "shelf", "jacks", "fuseh"),
+                 "st_mic": ("tub", "mic", "lid", "wcam", "pir", "hub"),
+                 "st_ll": ("tub", "btn", "jacks", "lid", "shelf", "charger", "resjack")}
 
 
 def stopfen(step=0.1):

@@ -13,6 +13,7 @@ Neu in v5.2:
   3. Status-RGB-LED (5 mm) oben auf dem Kamerakopf mit Sockel (Vertiefung) für einen Diffusor.
   4. Zwei Tasten (12 mm, IP67) an der Rückwand mit Regendach und Seitenwangen.
   5. Neue Kleinteile: Blindstopfen Weitwinkel-Fenster, Stopfen IR-LED (beide mit Rastnasen), Diffusor + Pupillenring.
+     (Stopfen IR-LED: Datei ab 01.11.2026 22_Stopfen_IR_LED, vorher 13_Stopfen_IR_LED – 13 ist der Entwicklungs-Sockel.)
   MOSFET-Modul: neuer Platz an der -y-Wand unter dem PCA9685 (vorne war es der Kamera im Weg).
 Koordinaten wie v5.py (Unterteil: x 0..LX innen, x = 0 Stirnwand innen; Kopf: Kipp-Koordinaten, Dach z = +29).
 """
@@ -536,6 +537,27 @@ def stopfen_relais():
     return part_res_plug()
 
 
+MIC_PIN_D = 1.7                           # 23: 5 Stifte in den Mikrofon-Löchern Ø 1,8 (Presssitz)
+LL_PIN_D, LL_FL_D = 3.1, 5.0              # 24: Zapfen im Lichtleiter-Loch Ø 3,3 (+ 3 Quetschrippen), Flansch Ø 5 (GX16-Wange ab y 59)
+
+
+def stopfen_mikrofon():
+    """23: Stopfen für die 5 Mikrofon-Löcher vorne (Ø 1,8, Kreuz ± 3 mm): Flansch Ø 10 aussen, 5 Stifte im Presssitz,
+    bündig mit der Wand-Innenseite. Lokal z = Tiefe ab Flansch-Unterseite. Druck: Flansch unten."""
+    F = 1.2
+    pins = [cyl_z(dy, dz, F - 0.01, F + WALL - 0.2, MIC_PIN_D, fn=24) for dy, dz in ((0, 0), (-3, 0), (3, 0), (0, 3), (0, -3))]
+    return U(cyl_z(0, 0, 0, 0.7, 10.0), cyl_z(0, 0, 0.7, F, 9.0), *pins)
+
+
+def stopfen_lichtleiter():
+    """24: Stopfen für das Lichtleiter-Loch der Lade-LED hinten (Ø 3,3): Flansch Ø 5 aussen, Zapfen Ø 3,1 mit 3 Quetschrippen
+    (Presssitz), bündig mit der Wand-Innenseite. Druck: Flansch unten."""
+    F = 1.0
+    pin = cyl_z(0, 0, F - 0.01, F + WALL - 0.2, LL_PIN_D, fn=32)
+    ribs = [R([0, 0, a], box(LL_PIN_D / 2 - 0.2, v5.LED_D / 2 + 0.05, -0.25, 0.25, F, F + WALL - 0.6)) for a in (0, 120, 240)]
+    return U(cyl_z(0, 0, 0, F, LL_FL_D, fn=48), pin, *ribs)
+
+
 def stopfen_placed(tilt=0.0, pan=180.0):
     """die 4 Stopfen eingesetzt (Welt-Koordinaten wie placed()) – für check52.py «stopfen»"""
     my, mz = pt.therm_pos(pt.THERM_MOD[0], pt.THERM_MOD[1])
@@ -544,7 +566,9 @@ def stopfen_placed(tilt=0.0, pan=180.0):
     return {"st_therm": th,
             "st_irmod": T([IRW_SLEEVE_L, IRW_Y, IRW_Z], R([0, -90, 0], stopfen_ir_modul())),
             "st_ds18": T([v5.TEMP_XY[0], v5.TEMP_XY[1], -1.0], stopfen_ds18()),
-            "st_relay": T([LX + WALL + 1.6, v5.RELAY_Y, v5.RELAY_ZC], R([0, -90, 0], stopfen_relais()))}
+            "st_relay": T([LX + WALL + 1.6, v5.RELAY_Y, v5.RELAY_ZC], R([0, -90, 0], stopfen_relais())),
+            "st_mic": T([-WALL - 1.2, v5.MIC_Y, ZF + v5.MIC_ZB], R([0, 90, 0], stopfen_mikrofon())),
+            "st_ll": T([LX + WALL + 1.0, v5.LED_Y, v5.LED_Z], R([0, -90, 0], stopfen_lichtleiter()))}
 
 
 def stopfen_loecher():
@@ -555,7 +579,9 @@ def stopfen_loecher():
     return {"st_therm": head_cut,
             "st_irmod": cyl_x(IRW_Y, IRW_Z, -WALL, 0.0, IRW_LENS_D),
             "st_ds18": cyl_z(*v5.TEMP_XY, 0.0, ZF, v5.TEMP_D),
-            "st_relay": cyl_x(v5.RELAY_Y, v5.RELAY_ZC, LX, LX + WALL, v5.RELAY_D)}
+            "st_relay": cyl_x(v5.RELAY_Y, v5.RELAY_ZC, LX, LX + WALL, v5.RELAY_D),
+            "st_mic": U(*[cyl_x(v5.MIC_Y + dy, ZF + v5.MIC_ZB + dz, -WALL, 0.0, 1.8) for dy, dz in ((0, 0), (-3, 0), (3, 0), (0, 3), (0, -3))]),
+            "st_ll": cyl_x(v5.LED_Y, v5.LED_Z, LX, LX + WALL, v5.LED_D)}
 
 
 

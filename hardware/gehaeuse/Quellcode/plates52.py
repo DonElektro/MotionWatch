@@ -4,7 +4,7 @@ Geänderte/neue Teile aus out52, unveränderte aus out51 – fehlt out51, kommen
 python3 plates52.py        -> Platte A (Unterteil v5.2, Zwischenboden, HDMI-Stopfen, Füsse, Blindstopfen)
 python3 plates52.py A B    -> auch Platte B (braucht out52/06_Kamerakopf_v52, 14, 15)
 python3 plates52.py A B C  -> dazu Platte C «Stopfen» (nur wenn Stopfen auf A / B keinen Platz haben)
-01.11.2026: Stopfen 19–21 auf Platte A, 18 auf Platte B (Pakete: Basis braucht 19–21, 18 ist für einen Kopf ohne Wärmebild).
+01.11.2026: Stopfen 19–21, 23, 24 auf Platte A, 18 auf Platte B (Pakete: Basis braucht 19–21, 18 ist für einen Kopf ohne Wärmebild).
 Fehlt ein Teil v5.2 in out52 (z. B. das Unterteil, Export ca. 30 min), kommt es aus der 3MF-Platte v5.2 im Repository."""
 import os, sys, re, zipfile, numpy as np
 from export import write_3mf
@@ -32,8 +32,9 @@ def from_3mf(name, quellen=None):
             return v, f
     raise FileNotFoundError(name)
 BW, BH, GAP = 224.0, 246.0, 5.0
-NEW = {"01_Unterteil_v52", "06_Kamerakopf_v52", "10_Stopfen_HDMI_USB_v52", "16_Stopfen_SD_v52", "13_Entwicklungs_Sockel", "17_Blindstopfen_Reserve", "12_Blindstopfen_Weitwinkel", "13_Stopfen_IR_LED", "14_Diffusor_Status_LED", "15_Pupillenring",
-       "18_Stopfen_Waermebild", "19_Stopfen_IR_Modul", "20_Stopfen_DS18B20", "21_Stopfen_Relais"}
+NEW = {"01_Unterteil_v52", "06_Kamerakopf_v52", "10_Stopfen_HDMI_USB_v52", "16_Stopfen_SD_v52", "13_Entwicklungs_Sockel", "17_Blindstopfen_Reserve", "12_Blindstopfen_Weitwinkel", "22_Stopfen_IR_LED", "14_Diffusor_Status_LED", "15_Pupillenring",
+       "18_Stopfen_Waermebild", "19_Stopfen_IR_Modul", "20_Stopfen_DS18B20", "21_Stopfen_Relais",
+       "23_Stopfen_Mikrofon", "24_Stopfen_Lichtleiter"}
 def load(n):
     p = f"{'out52' if n in NEW else 'out51'}/{n}.npz"
     if n not in NEW and not os.path.exists(p):
@@ -66,9 +67,9 @@ if __name__ == "__main__":
     plates = {}
     if "A" in sel:
         a = ["01_Unterteil_v52", "09_Zwischenboden", "10_Stopfen_HDMI_USB_v52", "11_Fuss_4x", "12_Blindstopfen_Weitwinkel", "16_Stopfen_SD_v52", "17_Blindstopfen_Reserve",
-             "19_Stopfen_IR_Modul", "20_Stopfen_DS18B20", "21_Stopfen_Relais"]
+             "19_Stopfen_IR_Modul", "20_Stopfen_DS18B20", "21_Stopfen_Relais", "23_Stopfen_Mikrofon", "24_Stopfen_Lichtleiter"]
         if v52.IR_TYP == "5mm":
-            a.append("13_Stopfen_IR_LED")
+            a.append("22_Stopfen_IR_LED")             # früher 13_Stopfen_IR_LED
         plates["A"] = ("out52/MotionWatch_v5-2_Platte_A_Unterteil.3mf", pack(expand(a)))
     if "B" in sel:
         plates["B"] = ("out52/MotionWatch_v5-2_Platte_B_Deckel_Kopf.3mf",
@@ -77,7 +78,7 @@ if __name__ == "__main__":
     if "C" in sel:                                       # Ausweich-Platte «Stopfen» (alle Stopfen 12, 17–21)
         plates["C"] = ("out52/MotionWatch_v5-2_Platte_C_Stopfen.3mf",
                        pack(expand(["12_Blindstopfen_Weitwinkel", "17_Blindstopfen_Reserve", "18_Stopfen_Waermebild", "19_Stopfen_IR_Modul",
-                                    "20_Stopfen_DS18B20", "21_Stopfen_Relais"])))
+                                    "20_Stopfen_DS18B20", "21_Stopfen_Relais", "23_Stopfen_Mikrofon", "24_Stopfen_Lichtleiter"])))
     for nm, (fn, P) in plates.items():
         write_3mf(fn, P)
         xs = []; ys = []

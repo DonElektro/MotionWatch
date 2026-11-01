@@ -950,11 +950,35 @@
    "wenn": "v52",
    "optional": true,
    "alt": {
-    "de": "nur für IR_TYP = «5mm» in v52.py – Standard ist das IR-Modul 120° (irmod), nicht zusätzlich kaufen",
-    "en": "only for IR_TYP = «5mm» in v52.py – the standard is the IR module 120° (irmod), do not buy both",
-    "fr": "seulement pour IR_TYP = «5mm» dans v52.py – le standard est le module IR 120° (irmod), ne pas acheter les deux",
-    "it": "solo per IR_TYP = «5mm» in v52.py – lo standard è il modulo IR 120° (irmod), non comprare entrambi",
-    "rm": "mo per IR_TYP = «5mm» en v52.py – il standard è il modul IR 120° (irmod), betg cumprar omadus"
+    "de": "nur für IR_TYP = «5mm» in v52.py – Standard ist das IR-Modul 120° (irmod), nicht zusätzlich kaufen (+ 47 Ω / 0,5 W)",
+    "en": "only for IR_TYP = «5mm» in v52.py – the standard is the IR module 120° (irmod), do not buy both (+ 47 Ω / 0.5 W)",
+    "fr": "seulement pour IR_TYP = «5mm» dans v52.py – le standard est le module IR 120° (irmod), ne pas acheter les deux (+ 47 Ω / 0,5 W)",
+    "it": "solo per IR_TYP = «5mm» in v52.py – lo standard è il modulo IR 120° (irmod), non comprare entrambi (+ 47 Ω / 0,5 W)",
+    "rm": "mo per IR_TYP = «5mm» en v52.py – il standard è il modul IR 120° (irmod), betg cumprar omadus (+ 47 Ω / 0,5 W)"
+   }
+  },
+  {
+   "id": "res_ir",
+   "gruppe": "v52",
+   "menge": "1×",
+   "name": {
+    "de": "Vorwiderstand 2 W für das IR-Modul 120°",
+    "en": "Series resistor 2 W for the IR module 120°",
+    "fr": "Résistance série 2 W pour le module IR 120°",
+    "it": "Resistenza in serie 2 W per il modulo IR 120°",
+    "rm": "Resistenza en seria 2 W per il modul IR 120°"
+   },
+   "nr": "",
+   "preis": 0.5,
+   "haendler": "bastelgarage",
+   "suche": "Widerstand 2W",
+   "wenn": "v52",
+   "unklar": {
+    "de": "Preis geschätzt, Wert je nach Modul",
+    "en": "price estimated, value depends on the module",
+    "fr": "prix estimé, valeur selon le module",
+    "it": "prezzo stimato, valore secondo il modulo",
+    "rm": "pretsch stimà, valur tenor il modul"
    }
   },
   {
@@ -3026,6 +3050,42 @@
      "it": "flangia in basso (solo senza relè; stessa forma di 17)",
      "rm": "flansch sut (mo senza relais; medema furma sco 17)"
     }
+   },
+   {
+    "datei": "23_Stopfen_Mikrofon",
+    "stueck": 1,
+    "fuellung": 100,
+    "waende": 2,
+    "stuetzen": false,
+    "schicht": "0.12",
+    "brim": 0,
+    "zeit_h": 0.1,
+    "wenn": "v52",
+    "liegt": {
+     "de": "Flansch unten (nur ohne Mikrofon; 5 Stifte im Presssitz)",
+     "en": "flange down (only without microphone; 5 press-fit pins)",
+     "fr": "bride en bas (seulement sans micro ; 5 tiges serrées)",
+     "it": "flangia in basso (solo senza microfono; 5 perni a pressione)",
+     "rm": "flansch sut (mo senza microfon; 5 guttas en pressiun)"
+    }
+   },
+   {
+    "datei": "24_Stopfen_Lichtleiter",
+    "stueck": 1,
+    "fuellung": 100,
+    "waende": 2,
+    "stuetzen": false,
+    "schicht": "0.12",
+    "brim": 0,
+    "zeit_h": 0.1,
+    "wenn": "v52",
+    "liegt": {
+     "de": "Flansch unten (nur ohne Lade-LED; Presssitz mit Quetschrippen)",
+     "en": "flange down (only without charge LED; press fit with crush ribs)",
+     "fr": "bride en bas (seulement sans LED de charge ; serrage par nervures)",
+     "it": "flangia in basso (solo senza LED di carica; a pressione con nervature)",
+     "rm": "flansch sut (mo senza LED da chargiar; pressiun cun costas)"
+    }
    }
   ],
   "hinweise": [
@@ -3473,11 +3533,11 @@
    },
    "irled": {
     "name": {
-     "de": "IR-LED 5 mm",
-     "en": "IR LED 5 mm",
-     "fr": "LED IR 5 mm",
-     "it": "LED IR 5 mm",
-     "rm": "LED IR 5 mm"
+     "de": "IR-Modul 120°",
+     "en": "IR module 120°",
+     "fr": "Module IR 120°",
+     "it": "Modulo IR 120°",
+     "rm": "Modul IR 120°"
     },
     "x": 96,
     "y": 72,
@@ -3809,15 +3869,22 @@
     "nach": "irled",
     "art": "pwm",
     "pins": {
-     "de": "Kanal 4 → 3. MOSFET-Modul (AOD4184, 1 Kanal) → 47 Ω / 0,5 W → IR-LED 5 mm 850 nm («IR-Licht breit», ca. 70 mA)",
-     "en": "channel 4 → 3rd MOSFET module (AOD4184, 1 channel) → 47 Ω / 0.5 W → IR LED 5 mm 850 nm («wide IR light», approx. 70 mA)",
-     "fr": "canal 4 → 3e module MOSFET (AOD4184, 1 canal) → 47 Ω / 0,5 W → LED IR 5 mm 850 nm («IR large», env. 70 mA)",
-     "it": "canale 4 → 3° modulo MOSFET (AOD4184, 1 canale) → 47 Ω / 0,5 W → LED IR 5 mm 850 nm («IR ampio», ca. 70 mA)",
-     "rm": "chanal 4 → 3. modul MOSFET (AOD4184, 1 chanal) → 47 Ω / 0,5 W → LED IR 5 mm 850 nm («glisch IR largia», ca. 70 mA)"
+     "de": "Kanal 4 → 3. MOSFET-Modul (AOD4184, 1 Kanal) → 5 V über Vorwiderstand 2 W → IR-Modul 120° 850 nm («IR-Licht breit»); nur bei IR_TYP «5mm» (v52.py): 47 Ω / 0,5 W → IR-LED 5 mm (ca. 70 mA)",
+     "en": "channel 4 → 3rd MOSFET module (AOD4184, 1 channel) → 5 V through a series resistor 2 W → IR module 120° 850 nm («wide IR light»); only with IR_TYP «5mm» (v52.py): 47 Ω / 0.5 W → IR LED 5 mm (approx. 70 mA)",
+     "fr": "canal 4 → 3e module MOSFET (AOD4184, 1 canal) → 5 V par une résistance série 2 W → module IR 120° 850 nm («IR large») ; seulement avec IR_TYP «5mm» (v52.py) : 47 Ω / 0,5 W → LED IR 5 mm (env. 70 mA)",
+     "it": "canale 4 → 3° modulo MOSFET (AOD4184, 1 canale) → 5 V tramite resistenza in serie 2 W → modulo IR 120° 850 nm («IR ampio»); solo con IR_TYP «5mm» (v52.py): 47 Ω / 0,5 W → LED IR 5 mm (ca. 70 mA)",
+     "rm": "chanal 4 → 3. modul MOSFET (AOD4184, 1 chanal) → 5 V tras ina resistenza en seria 2 W → modul IR 120° 850 nm («glisch IR largia»); mo cun IR_TYP «5mm» (v52.py): 47 Ω / 0,5 W → LED IR 5 mm (ca. 70 mA)"
     },
     "code": "weit_ir_ch",
     "wert": "4",
-    "wenn": "v52"
+    "wenn": "v52",
+    "unklar": {
+     "de": "Wert des Vorwiderstands je nach Modul (wie bei den Scheinwerfern)",
+     "en": "value of the series resistor depends on the module (as for the lamps)",
+     "fr": "valeur de la résistance selon le module (comme pour les lampes)",
+     "it": "valore della resistenza secondo il modulo (come per le lampade)",
+     "rm": "valur da la resistenza tenor il modul (sco tar las lampas)"
+    }
    },
    {
     "id": "led_rgb",
@@ -4644,11 +4711,11 @@
     "rm": "Variante v5.2"
    },
    "text": {
-    "de": "Weitwinkel-Kamera in die Stirnwand (CAM1), IR-Modul 120° rechts neben die Kamera (Madenschraube M3), 2 Tasten in die Rückwand, Status-LED oben in den Kopf. Druckdateien: Druckdateien/v5-2/. Fehlt ein Teil im Paket, kommt der passende Stopfen hinein (12, 18–21).",
-    "en": "Wide-angle camera into the front wall (CAM1), IR module 120° next to the camera (M3 grub screw), 2 buttons into the back wall, status LED on top of the head. Print files: Druckdateien/v5-2/. If a part is missing in the package, fit the matching plug (12, 18–21).",
-    "fr": "Caméra grand-angle dans la paroi avant (CAM1), module IR 120° à côté de la caméra (vis sans tête M3), 2 boutons dans la paroi arrière, LED d'état sur la tête. Fichiers : Druckdateien/v5-2/. Si une pièce manque dans le paquet, poser le bouchon correspondant (12, 18–21).",
-    "it": "Telecamera grandangolare nella parete frontale (CAM1), modulo IR 120° accanto alla telecamera (grano M3), 2 pulsanti nella parete posteriore, LED di stato sopra la testa. File: Druckdateien/v5-2/. Se nel pacchetto manca un pezzo, montare il tappo corrispondente (12, 18–21).",
-    "rm": "Camera grondangul en la paraid davant (CAM1), modul IR 120° sper la camera (sbarra M3), 2 buttuns en la paraid davos, LED da status sur il chau. Datotecas: Druckdateien/v5-2/. Sch'i manca ina part en il pachet, metter il tappun correspundent (12, 18–21)."
+    "de": "Weitwinkel-Kamera in die Stirnwand (CAM1), IR-Modul 120° rechts neben die Kamera (Madenschraube M3), 2 Tasten in die Rückwand, Status-LED oben in den Kopf. Druckdateien: Druckdateien/v5-2/. Fehlt ein Teil im Paket, kommt der passende Stopfen hinein (12, 18–24).",
+    "en": "Wide-angle camera into the front wall (CAM1), IR module 120° next to the camera (M3 grub screw), 2 buttons into the back wall, status LED on top of the head. Print files: Druckdateien/v5-2/. If a part is missing in the package, fit the matching plug (12, 18–24).",
+    "fr": "Caméra grand-angle dans la paroi avant (CAM1), module IR 120° à côté de la caméra (vis sans tête M3), 2 boutons dans la paroi arrière, LED d'état sur la tête. Fichiers : Druckdateien/v5-2/. Si une pièce manque dans le paquet, poser le bouchon correspondant (12, 18–24).",
+    "it": "Telecamera grandangolare nella parete frontale (CAM1), modulo IR 120° accanto alla telecamera (grano M3), 2 pulsanti nella parete posteriore, LED di stato sopra la testa. File: Druckdateien/v5-2/. Se nel pacchetto manca un pezzo, montare il tappo corrispondente (12, 18–24).",
+    "rm": "Camera grondangul en la paraid davant (CAM1), modul IR 120° sper la camera (sbarra M3), 2 buttuns en la paraid davos, LED da status sur il chau. Datotecas: Druckdateien/v5-2/. Sch'i manca ina part en il pachet, metter il tappun correspundent (12, 18–24)."
    },
    "unklar": {
     "de": "Masse «Nachmessen» vor dem Druck prüfen",
@@ -4709,11 +4776,11 @@
     "rm": "Carta SD (v5.2)"
    },
    "text": {
-    "de": "Weitwinkel-Kamera in die Stirnwand (CAM1), IR-Modul 120° rechts neben die Kamera (Madenschraube M3), 2 Tasten in die Rückwand, Status-LED oben in den Kopf. Druckdateien: Druckdateien/v5-2/. Fehlt ein Teil im Paket, kommt der passende Stopfen hinein (12, 18–21).",
-    "en": "Wide-angle camera into the front wall (CAM1), IR module 120° next to the camera (M3 grub screw), 2 buttons into the back wall, status LED on top of the head. Print files: Druckdateien/v5-2/. If a part is missing in the package, fit the matching plug (12, 18–21).",
-    "fr": "Caméra grand-angle dans la paroi avant (CAM1), module IR 120° à côté de la caméra (vis sans tête M3), 2 boutons dans la paroi arrière, LED d'état sur la tête. Fichiers : Druckdateien/v5-2/. Si une pièce manque dans le paquet, poser le bouchon correspondant (12, 18–21).",
-    "it": "Telecamera grandangolare nella parete frontale (CAM1), modulo IR 120° accanto alla telecamera (grano M3), 2 pulsanti nella parete posteriore, LED di stato sopra la testa. File: Druckdateien/v5-2/. Se nel pacchetto manca un pezzo, montare il tappo corrispondente (12, 18–21).",
-    "rm": "Camera grondangul en la paraid davant (CAM1), modul IR 120° sper la camera (sbarra M3), 2 buttuns en la paraid davos, LED da status sur il chau. Datotecas: Druckdateien/v5-2/. Sch'i manca ina part en il pachet, metter il tappun correspundent (12, 18–21)."
+    "de": "Weitwinkel-Kamera in die Stirnwand (CAM1), IR-Modul 120° rechts neben die Kamera (Madenschraube M3), 2 Tasten in die Rückwand, Status-LED oben in den Kopf. Druckdateien: Druckdateien/v5-2/. Fehlt ein Teil im Paket, kommt der passende Stopfen hinein (12, 18–24).",
+    "en": "Wide-angle camera into the front wall (CAM1), IR module 120° next to the camera (M3 grub screw), 2 buttons into the back wall, status LED on top of the head. Print files: Druckdateien/v5-2/. If a part is missing in the package, fit the matching plug (12, 18–24).",
+    "fr": "Caméra grand-angle dans la paroi avant (CAM1), module IR 120° à côté de la caméra (vis sans tête M3), 2 boutons dans la paroi arrière, LED d'état sur la tête. Fichiers : Druckdateien/v5-2/. Si une pièce manque dans le paquet, poser le bouchon correspondant (12, 18–24).",
+    "it": "Telecamera grandangolare nella parete frontale (CAM1), modulo IR 120° accanto alla telecamera (grano M3), 2 pulsanti nella parete posteriore, LED di stato sopra la testa. File: Druckdateien/v5-2/. Se nel pacchetto manca un pezzo, montare il tappo corrispondente (12, 18–24).",
+    "rm": "Camera grondangul en la paraid davant (CAM1), modul IR 120° sper la camera (sbarra M3), 2 buttuns en la paraid davos, LED da status sur il chau. Datotecas: Druckdateien/v5-2/. Sch'i manca ina part en il pachet, metter il tappun correspundent (12, 18–24)."
    },
    "unklar": {
     "de": "Masse «Nachmessen» vor dem Druck prüfen",
@@ -4756,7 +4823,9 @@
   "v5-2/MoveEye_v5-2_18_Stopfen_Waermebild.3mf",
   "v5-2/MoveEye_v5-2_19_Stopfen_IR_Modul.3mf",
   "v5-2/MoveEye_v5-2_20_Stopfen_DS18B20.3mf",
-  "v5-2/MoveEye_v5-2_21_Stopfen_Relais.3mf"
+  "v5-2/MoveEye_v5-2_21_Stopfen_Relais.3mf",
+  "v5-2/MoveEye_v5-2_23_Stopfen_Mikrofon.3mf",
+  "v5-2/MoveEye_v5-2_24_Stopfen_Lichtleiter.3mf"
  ],
  "ui_bauen": [
   {
@@ -5449,7 +5518,9 @@
    "18_Stopfen_Waermebild",
    "19_Stopfen_IR_Modul",
    "20_Stopfen_DS18B20",
-   "21_Stopfen_Relais"
+   "21_Stopfen_Relais",
+   "23_Stopfen_Mikrofon",
+   "24_Stopfen_Lichtleiter"
   ],
   "anleitung": "Dokumente/LIESMICH_Montage_v5-2.md",
   "hinweis": {
@@ -5602,7 +5673,9 @@
      "12_Blindstopfen_Weitwinkel",
      "19_Stopfen_IR_Modul",
      "20_Stopfen_DS18B20",
-     "21_Stopfen_Relais"
+     "21_Stopfen_Relais",
+     "23_Stopfen_Mikrofon",
+     "24_Stopfen_Lichtleiter"
     ],
     "preis_chf": 447.75
    },
@@ -5663,6 +5736,7 @@
      "m2",
      "irmod",
      "mosfet3",
+     "res_ir",
      "spk",
      "pam",
      "sound",
@@ -5679,7 +5753,7 @@
      "lte"
     ],
     "stopfen": [],
-    "preis_chf": 590.25
+    "preis_chf": 590.75
    },
    {
     "id": "autark",
@@ -5737,6 +5811,7 @@
      "m2",
      "irmod",
      "mosfet3",
+     "res_ir",
      "spk",
      "pam",
      "sound",
@@ -5761,7 +5836,7 @@
      "lte"
     ],
     "stopfen": [],
-    "preis_chf": 767.07
+    "preis_chf": 767.57
    }
   ],
   "spaeter": [

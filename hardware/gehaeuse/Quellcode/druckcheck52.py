@@ -1,6 +1,6 @@
 """v5.2 Druck-Check: kleinste Wandstärke je Druckteil (Mittelfläche des Materials, SDF-Raster) -> Tabelle.
 python3 druckcheck52.py [teil ...]   (Teile: tub52 lid turntable yoke arm2 head side lamp shelf plug feet blind
-st_therm st_irmod st_ds18 st_relay)
+st_therm st_irmod st_ds18 st_relay st_mic st_ll)
 Methode: Raster mit Schritt h, Abstand zur Oberfläche t = -sdf; Punkte der Mittelfläche = lokale Maxima von t;
 Wandstärke = 2 t dort. Genauigkeit ca. ± h. Gemeldet: kleinster Wert, 5-%-Wert, Fläche unter 1,2 mm (3 Linien à 0,4 mm)."""
 import sys, time, numpy as np
@@ -13,7 +13,7 @@ PARTS = {"tub52": (v52.part_tub, 0.45), "lid": (v5.part_lid, 0.4), "turntable": 
          "blind": (v52.blind_wide, 0.15),
          # 01.11.2026: Stopfen 18–21 für Pakete ohne das Teil
          "st_therm": (v52.stopfen_waermebild, 0.1), "st_irmod": (v52.stopfen_ir_modul, 0.15), "st_ds18": (v52.stopfen_ds18, 0.08),
-         "st_relay": (v52.stopfen_relais, 0.1)}
+         "st_relay": (v52.stopfen_relais, 0.1), "st_mic": (v52.stopfen_mikrofon, 0.05), "st_ll": (v52.stopfen_lichtleiter, 0.05)}
 
 
 def thickness(node, h):
