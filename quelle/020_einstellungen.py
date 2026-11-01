@@ -201,7 +201,9 @@ CFG = {
     "mover_mode": "auto", "mover_driver": "adafruit", "mover_addr": "0x60", "mover_speed": 70, "mover_turn": 50, "mover_ramp": 0.5,
     "mover_inv_l": False, "mover_inv_r": False, "mover_swap": False, "mover_sim_show": True,
     "storm_on": True, "storm_drop": 3.0, "storm_wind": 50, "storm_forecast": False, "wind_gpio": "", "wind_factor": 2.4,
-    "solar_on": False, "solar_addr": "0x41", "solar_shunt": 0.1, "night_warn": True,
+    "solar_on": False, "solar_addr": "0x44",   # 01.11.2026: was 0x41 = PCA9685 (servos); INA219 with the A1 bridge / DIP = 0x44
+    "solar_shunt": 0.01, "solar_shunt_mig_done": False,   # 01.11.2026: 0.01 = Gravity INA219 (DFRobot SEN0291, 10 mOhm); was 0.1
+    "night_warn": True,
     "species_on": False, "species_model": "", "species_norm": "imagenet", "species_size": 224, "species_conf": 0.5,
     "desktop_notice": True,
     "sim_on": False, "sim_url": "http://127.0.0.1:8765", "sim_eco": True, "sim_fps": 6, "sim_auto": True,

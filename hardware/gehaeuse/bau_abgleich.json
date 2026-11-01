@@ -30,6 +30,7 @@
   "m12",
   "mic",
   "mosfet",
+  "mosfet3",
   "motorhat",
   "mpu",
   "pam",
@@ -54,9 +55,9 @@
  ],
  "doku": {
   "hardware/gehaeuse/Dokumente/Uebergabe_Gehaeuse_v5.md": "e89e5299cc9e252211d5d9ec9335f718d0b6d178aabe8cf55d59aef3c4e38aab",
-  "hardware/gehaeuse/Dokumente/Materialliste.md": "0e9619d318806d19af05940db0bdbc295f7dc8fd287a341cb206d8c65eda31d2",
+  "hardware/gehaeuse/Dokumente/Materialliste.md": "510cfc3de1b23c2e26bf565b1861e193a3983dad5d3ce28df2bd18a2c92d8d2b",
   "hardware/gehaeuse/Dokumente/LIESMICH_Montage_v5-1.md": "96f2c0b3a2feb419c9f02f0c8a4f7454893bae8bf94a342424faafaa559c379b",
-  "docs/Einrichtung_Raspberry_Pi.md": "1fc9639722efc7de9c67df371ef8bf2f9b63f0b896b8ccc16fd475ccb3582dc2",
+  "docs/Einrichtung_Raspberry_Pi.md": "12c3556d950ab63a4adc87eca154ef2c1a0c2c0d4701d4aa2e5d8664a8d315b4",
   "docs/Gehaeuse_Variante2_Weitwinkel.md": "41c303342abd42abad57ffc9cbdfa6aa4ecaad736b1657abef33a1c44f8dae34"
  },
  "druckdateien": {
@@ -151,7 +152,7 @@
   "led_ch_rgb": "5/6/7",
   "btn_gpio": "16/26",
   "gpio_relay": "22",
-  "solar_addr": "0x41",
+  "solar_addr": "0x44",
   "mover_addr": "0x60",
   "ups_e_addr": "0x2D",
   "doku_licht_weiss": "2",

@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-01 14:14",
+ "generated": "2026-11-01 14:20",
  "versions": [
   {
-   "version": "3.41.0",
-   "file": "webcam_bewegung_3_41_0.py",
+   "version": "3.41.1",
+   "file": "webcam_bewegung_3_41_1.py",
    "url": "",
-   "sha256": "c664de10a460e28ce7583938e6415c2ba6ede6015a63bb0fad78c60bcfeac1af",
-   "date": "2026-11-01 14:14",
-   "notes": "Im Fenster «Neu in …» führt bei jeder Neuerung ein kleiner Link direkt zur Funktion (MoveEye und Simulator); Schalter «Links zu Neuerungen» im Entwickler-Bereich.",
-   "size": 4763130,
-   "sig": "4a621b14b4517b2443fcd0ec64c4aa0905d326e92488d90633d34bf12b47bd33a627a5cb4f09ea3e5753d6ed515ad2fa85206b970fc3a23a8d995ea487e1aa07",
+   "sha256": "3ba6cfea6ab5b65c161f23dac52d18457437338452f3fdd168f731c8dceba017",
+   "date": "2026-11-01 14:20",
+   "notes": "Fix: Solar-Strommesser (INA219) ab Werk auf 0x44 statt 0x41 (kollidierte mit dem Servo-Treiber), Shunt 0,01 Ω passend zum Gravity-Modul; Bau-Infos ergänzt (Step-Down ab Akku, 3. MOSFET, Schrauben, Lade-LED an GPIO 6).",
+   "size": 4770964,
+   "sig": "2371266998ffff8a256a40ffed8819f3821e030f6ba8e2adecf85a61de3f6bd4fd7e8350bd882aa6896e2b81b623d89046c3e729bdf93abdd1c88fe17d964b0d",
    "data": {
-    "file": "moveeye_daten_3_41_0.zip",
+    "file": "moveeye_daten_3_41_1.zip",
     "url": "",
-    "sha256": "a41f0f38609b02378ddbb123c8161d6ce300b6541e97b87ab205f455eb326120",
-    "size": 2518793,
-    "sig": "312790b183fc36ee83eece2adb8631312bdfe297b1047f88bec8672c7d52583bcb95362eb07f85e9e603acfd1b0546b26456153034adaa16994ee283e763ac0f"
+    "sha256": "35481ec303718326350767fcf763b207b2b1bf3887d49fecbd70789b76843c3c",
+    "size": 2520195,
+    "sig": "28beb3ee7fcb687f2070db00cd3ba6ecf8d96f80da9ec83ebc1b49b9659c81873370ecef9b869a2a1cec7c51c45cfa5b06d8eaf9568ed0a3680949b78ab0e809"
    }
   },
   {
@@ -24,7 +24,7 @@
    "file": "webcam_bewegung_3_40_0.py",
    "url": "",
    "sha256": "2772bcbf73217a50ec71d12948e68379810b23d975c8817a61fd7a31c05fb2f6",
-   "date": "2026-11-01 14:08",
+   "date": "2026-11-01 14:16",
    "notes": "Bauen: MoveEye komplett selbst bauen – ein Menüeintrag in MoveEye und Simulator, 10 Reiter, 3D im Browser auch ohne Simulator, Varianten, Einkaufsliste, alle Druckteile als 3MF, Verkabelungsplan, «Mein Bau».",
    "size": 4763116,
    "sig": "d63481e73d45d1a8f41a26e99ef0b120fd4d75d91f84c746d6c21d1e969ff871c0d22bea7728a295c3ff78e38fb49fbc876f740e33617365454e659773ef6908",

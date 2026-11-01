@@ -1,16 +1,16 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 7382 (Stellen: 10275)
-Übersetzt: en 7382, fr 7382, it 7382, rm 7382
+Texte gesamt: 7379 (Stellen: 10274)
+Übersetzt: en 7379, fr 7379, it 7379, rm 7379
 Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 505 Stellen
-Nicht mehr im Code (noch in texte.json): 285
+Nicht mehr im Code (noch in texte.json): 309
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 68 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1
-Übersprungen (Grund: Anzahl): kennung 26302, schlüssel 19971, keine Wörter 12391, index 9595, technisch 3422, doc 2215, einheit 315, log 171, englisch 143, pfad 125, stringname 102, html 68, klasse 28, shader 6
+Übersprungen (Grund: Anzahl): kennung 26308, schlüssel 19979, keine Wörter 12391, index 9595, technisch 3424, doc 2215, einheit 317, log 171, englisch 143, pfad 125, stringname 102, html 68, klasse 28, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   main_einstellungen.gd    399    25
-  werkstatt_daten.gd       376     3
+  werkstatt_daten.gd       373     3
   bergtal_abenteuer.gd     272     7
   gamewiz.gd               252    15
   abenteuer_figuren_daten.gd   238     0
@@ -344,9 +344,9 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   abenteuer_rucksack.gd:424  ' und '
   abenteuer_rucksack.gd:480  'Fertig'
   tour.gd:188  'Fertig'
-  werkstatt_daten.gd:134  'Fertig'
-  werkstatt_daten.gd:172  'ohne'
-  werkstatt_daten.gd:185  'ohne'
+  werkstatt_daten.gd:135  'Fertig'
+  werkstatt_daten.gd:173  'ohne'
+  werkstatt_daten.gd:186  'ohne'
   abenteuer_stimme.gd:32  'an'
   abenteuer_stimme.gd:32  'aus'
   abenteuer_stimme.gd:34  'an'

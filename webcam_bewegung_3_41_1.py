@@ -23,6 +23,8 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 3.41.1: Fix: Solar-Strommesser (INA219) ab Werk auf 0x44 statt 0x41 (kollidierte mit dem Servo-Treiber), Shunt 0,01 Ω
+    passend zum Gravity-Modul; Bau-Infos ergänzt (Step-Down ab Akku, 3. MOSFET, Schrauben, Lade-LED an GPIO 6).
   * 3.41.0: Im Fenster «Neu in …» führt bei jeder Neuerung ein kleiner Link direkt zur Funktion (MoveEye und Simulator);
     Schalter «Links zu Neuerungen» im Entwickler-Bereich.
   * 3.40.0: Bauen: MoveEye komplett selbst bauen – ein Menüeintrag in MoveEye und Simulator, 10 Reiter, 3D im Browser auch ohne
@@ -83,8 +85,6 @@ Features
     Hörprobe und Geschwindigkeit (pro Gerät gespeichert), Hinweis zu Premium-Stimmen.
   * 3.19.1: Vorführung und Trailer im Browser sprechen die Texte selbst vor (🔊 Ton an/aus in der Leiste, Sprache von MoveEye);
     das iPad bleibt während der Vorführung wach; Karte «🛠 Entwickler» im Reiter «Sim» offen.
-  * 3.19.0: Simulator 3.19.0: Trailer (ca. 3 Min.) zu «Die Karte des Grossvaters» und «Maggie und der Bergkristall»; Karte «🛠
-    Entwickler» oben im Reiter «Sim» mit Trailer Grossvater, Trailer Maggie und Vorführung (live im Browser).
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -93,10 +93,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_3_41_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_3_41_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_3_41_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_3_41_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_3_41_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_3_41_1.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -113,7 +113,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "3.41.0"
+APP_VERSION = "3.41.1"
 
 
 def default_data_dir():
@@ -235,8 +235,8 @@ def prepare_settings_file():
 #     Part 397 fetches the zip over the same update source and restarts once (zusatz_start()).
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
-ZD_FILE = "moveeye_daten_3_41_0.zip"
-ZD_SHA256 = "a41f0f38609b02378ddbb123c8161d6ce300b6541e97b87ab205f455eb326120"
+ZD_FILE = "moveeye_daten_3_41_1.zip"
+ZD_SHA256 = "35481ec303718326350767fcf763b207b2b1bf3887d49fecbd70789b76843c3c"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -532,7 +532,9 @@ CFG = {
     "mover_mode": "auto", "mover_driver": "adafruit", "mover_addr": "0x60", "mover_speed": 70, "mover_turn": 50, "mover_ramp": 0.5,
     "mover_inv_l": False, "mover_inv_r": False, "mover_swap": False, "mover_sim_show": True,
     "storm_on": True, "storm_drop": 3.0, "storm_wind": 50, "storm_forecast": False, "wind_gpio": "", "wind_factor": 2.4,
-    "solar_on": False, "solar_addr": "0x41", "solar_shunt": 0.1, "night_warn": True,
+    "solar_on": False, "solar_addr": "0x44",   # 01.11.2026: was 0x41 = PCA9685 (servos); INA219 with the A1 bridge / DIP = 0x44
+    "solar_shunt": 0.01, "solar_shunt_mig_done": False,   # 01.11.2026: 0.01 = Gravity INA219 (DFRobot SEN0291, 10 mOhm); was 0.1
+    "night_warn": True,
     "species_on": False, "species_model": "", "species_norm": "imagenet", "species_size": 224, "species_conf": 0.5,
     "desktop_notice": True,
     "sim_on": False, "sim_url": "http://127.0.0.1:8765", "sim_eco": True, "sim_fps": 6, "sim_auto": True,
@@ -1434,15 +1436,17 @@ def _http_ok(u):
     return True
 
 
-I2C_KEYS = {"pca_address": "servo board (PCA9685)", "solar_addr": "solar meter (INA219)", "mover_addr": "motor driver (mover)",
-            "ups_addr": "UPS HAT"}
+I2C_KEYS = {"_thermal": "thermal camera", "pca_address": "servo board (PCA9685)", "solar_addr": "solar meter (INA219)",
+            "mover_addr": "motor driver (mover)", "ups_addr": "UPS HAT"}
+I2C_FIXED = {"_thermal": "0x40"}                           # 01.11.2026: Thermal-90 (SenXor) is always on 0x40 (not a setting)
 
 
 def _i2c_active(key, cfg=None):
     c = cfg or CFG
     pca_on = c.get("servo_driver") == "pca9685" or (c.get("servo_driver") == "auto" and str(STATE.get("servo_backend", "")).startswith("pca9685"))
-    return {"pca_address": pca_on, "solar_addr": bool(c.get("solar_on")),
-            "mover_addr": c.get("mover_mode") != "off", "ups_addr": bool(c.get("ups_on"))}.get(key, False)
+    return {"_thermal": bool(c.get("thermal_on")) and str(c.get("thermal_source", "")).startswith("senxor"),
+            "pca_address": pca_on, "solar_addr": bool(c.get("solar_on")), "mover_addr": c.get("mover_mode") != "off",
+            "ups_addr": bool(c.get("ups_on")) and c.get("ups_model") != "e"}.get(key, False)   # UPS HAT (E): own chip on 0x2D
 
 
 def i2c_conflicts(cfg=None):
@@ -1451,7 +1455,7 @@ def i2c_conflicts(cfg=None):
     for k in I2C_KEYS:
         if not _i2c_active(k, c):
             continue
-        a = str(c.get(k, "")).lower()
+        a = I2C_FIXED.get(k) or str(c.get(k, "")).lower()
         if a in seen:
             out.append((seen[a], k, a))
         else:
@@ -23174,7 +23178,7 @@ GPSMODULE = None
 
 
 # ----------------------------------------------------------------------------
-# Solar panel: an INA219 module (the cheap blue board, shunt 0.1 Ohm, up to 26 V / 3.2 A) between the panel and the charger.
+# Solar panel: an INA219 module (Gravity INA219: shunt 0.01 Ohm = the standard; cheap blue board: 0.1 Ohm, up to 26 V / 3.2 A) between the panel and the charger.
 #   Watts, volts and the yield of the day. Night forecast: does the battery last until sunrise at the present consumption?
 # ----------------------------------------------------------------------------
 SOLAR = {"day": "", "wh": 0.0, "max": 0.0, "t": 0.0, "warned": ""}
@@ -23254,7 +23258,7 @@ class SolarMonitor:
             try:
                 addr = int(str(CFG["solar_addr"]), 16)
             except ValueError:
-                addr = 0x41
+                addr = 0x44                               # 0x41 is the PCA9685 (servos)
             try:
                 pca_ = int(str(CFG["pca_address"]), 16)
             except ValueError:
@@ -24573,8 +24577,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3.41.0", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 47995979,
-         "sha256": "859ec8d6f23c2faf9f74884d85a6a63c222f3349e9521aea0d227d903631b956"}
+SIM3D = {"version": "3.41.1", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 48000451,
+         "sha256": "1315f3b84c6a59cc216aea7c9736c87ffe48a1ad4f894685a08e6f3f68fc3f2a"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -30472,7 +30476,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_3_41_0.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_3_41_1.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -47875,7 +47879,7 @@ SLIDERS = [  # (section, key, label, min, max, step)
     ("Mover", "mover_turn", "Turning speed (%)", 10, 100, 5),
     ("Mover", "mover_ramp", "Gentle start and stop (seconds)", 0.0, 2.0, 0.1),
     ("AI detection", "species_conf", "Animal species: minimum certainty", 0.2, 0.95, 0.05),
-    ("Solar panel", "solar_shunt", "Current meter: shunt resistor (Ohm, usually 0.1)", 0.01, 0.1, 0.005),
+    ("Solar panel", "solar_shunt", "Current meter: shunt resistor (Ohm; Gravity INA219 0.01, blue modules 0.1)", 0.01, 0.1, 0.005),
     ("GPS module", "gps_theft_m", "Theft tracking: alarm from a distance of (m)", 50, 1000, 50),
     ("Storm warning", "storm_drop", "Warn when the air pressure falls by (hPa in 3 hours)", 1.0, 8.0, 0.5),
     ("Storm warning", "storm_wind", "Warn from wind / gusts of (km/h)", 20, 120, 5),
@@ -48618,7 +48622,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 3.41.0")
+        self.root.title("MoveEye 3.41.1")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -48996,7 +49000,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 3.41.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 3.41.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -56203,7 +56207,7 @@ App._refresh = _kr_tk_refresh
 #      bleibt für die kleine Überraschung) und «Über MoveEye» unten in Mehr. Geschichte, Entwickler «Daniel alias Elektro»,
 #      Zeitleiste, Zahlen (zur Laufzeit gezählt), aufklappbar «Für Technik-Interessierte». Texte: 622.
 # ----------------------------------------------------------------------------
-INFO_PARTS = 260                       # number of parts in quelle/ (written by werkzeuge/bauen.py --neue-version)
+INFO_PARTS = 261                       # number of parts in quelle/ (written by werkzeuge/bauen.py --neue-version)
 INFO_START = "2026-10-16"              # the first lines (a small webcam program for the Pi 5)
 FBX = {"shot": None, "shot_t": 0.0, "lines": 0}
 
@@ -60843,7 +60847,7 @@ for _k, _v in _HX29.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(("fr", "it", "rm")):
         TRX[_L].setdefault(_k, _v[_i + 1])
-_HX30 = {'Solar panel': ('Solarpanel', 'Panneau solaire', 'Pannello solare', 'Panel solar'), 'Solar panel with current meter (INA219 on I2C)': ('Solarpanel mit Strommesser (INA219 an I2C)', 'Panneau solaire avec mesureur de courant (INA219 sur I2C)', 'Pannello solare con misuratore di corrente (INA219 su I2C)', 'Panel solar cun mesirader da current (INA219 sin I2C)'), 'Push message in the evening when the battery will probably not last until sunrise': ('Push-Nachricht am Abend, wenn der Akku voraussichtlich nicht bis Sonnenaufgang reicht', "Message push le soir si la batterie ne tiendra probablement pas jusqu'au lever du soleil", "Messaggio push la sera se la batteria probabilmente non durerà fino all'alba", "Messadi push la saira, sch'il accu na tanscha probablamain betg fin l'alva"), 'Current meter: shunt resistor (Ohm, usually 0.1)': ('Strommesser: Shunt-Widerstand (Ohm, meist 0,1)', 'Mesureur : résistance shunt (ohm, souvent 0,1)', 'Misuratore: resistenza shunt (ohm, di solito 0,1)', 'Mesirader: resistenza shunt (ohm, savens 0,1)'), 'Current meter: address (I2C)': ('Strommesser: Adresse (I2C)', 'Mesureur : adresse (I2C)', 'Misuratore: indirizzo (I2C)', 'Mesirader: adressa (I2C)'), 'The battery will probably not last until sunrise ({sr}): about {have} h left, {need} h needed. Charge it or switch on power saving.': ('Der Akku reicht voraussichtlich nicht bis Sonnenaufgang ({sr}): noch etwa {have} h, nötig {need} h. Aufladen oder Stromsparen einschalten.', "La batterie ne tiendra probablement pas jusqu'au lever du soleil ({sr}) : environ {have} h restantes, {need} h nécessaires. Rechargez-la ou activez l'économie d'énergie.", "La batteria probabilmente non durerà fino all'alba ({sr}): circa {have} h rimanenti, {need} h necessarie. Ricaricala o attiva il risparmio energetico.", "L'accu na tanscha probablamain betg fin l'alva ({sr}): anc var {have} h, basegn {need} h. Chargiar u activar il spargnar current."), 'Battery': ('Akku', 'Batterie', 'Batteria', 'Accu'), 'lasts until sunrise ({sr})': ('reicht bis Sonnenaufgang ({sr})', "tient jusqu'au lever du soleil ({sr})", "dura fino all'alba ({sr})", "tanscha fin l'alva ({sr})"), 'too little until sunrise ({sr})': ('zu knapp bis Sonnenaufgang ({sr})', "trop juste jusqu'au lever du soleil ({sr})", "troppo poco fino all'alba ({sr})", "memia stretg fin l'alva ({sr})"), 'INA219 current meter between the panel and the charger (address 0x41 or 0x44 - 0x40 is often taken by the servo board).': ('INA219-Strommesser zwischen Panel und Laderegler (Adresse 0x41 oder 0x44 – 0x40 ist oft vom Servo-Board belegt).', 'Mesureur INA219 entre le panneau et le chargeur (adresse 0x41 ou 0x44 – 0x40 est souvent prise par la carte servo).', 'Misuratore INA219 tra il pannello e il caricatore (indirizzo 0x41 o 0x44 – 0x40 è spesso occupato dalla scheda servo).', 'Mesirader INA219 tranter il panel ed il chargiader (adressa 0x41 u 0x44 – 0x40 è savens occupada da la plattina dals servos).'), 'no current meter found at this address': ('kein Strommesser an dieser Adresse gefunden', 'aucun mesureur trouvé à cette adresse', 'nessun misuratore trovato a questo indirizzo', 'nagin mesirader chattà sin questa adressa'), 'today': ('heute', "aujourd'hui", 'oggi', 'oz'), 'max.': ('max.', 'max.', 'max.', 'max.'), 'Battery lasts until sunrise': ('Akku reicht bis Sonnenaufgang', "La batterie tient jusqu'au lever du soleil", "La batteria dura fino all'alba", "L'accu tanscha fin l'alva"), 'Battery probably too low until sunrise': ('Akku reicht voraussichtlich nicht bis Sonnenaufgang', "Batterie probablement insuffisante jusqu'au lever du soleil", "Batteria probabilmente insufficiente fino all'alba", "L'accu na tanscha probablamain betg fin l'alva"), 'Night forecast: needs a battery value (Settings → Battery)': ('Nacht-Prognose: braucht einen Akku-Wert (Einstellungen → Akku)', 'Prévision de nuit : nécessite une valeur de batterie (Réglages → Batterie)', 'Previsione notturna: serve un valore della batteria (Impostazioni → Batteria)', "Prognosa da notg: basegna ina valur da l'accu (Configuraziuns → Accu)")}
+_HX30 = {'Solar panel': ('Solarpanel', 'Panneau solaire', 'Pannello solare', 'Panel solar'), 'Solar panel with current meter (INA219 on I2C)': ('Solarpanel mit Strommesser (INA219 an I2C)', 'Panneau solaire avec mesureur de courant (INA219 sur I2C)', 'Pannello solare con misuratore di corrente (INA219 su I2C)', 'Panel solar cun mesirader da current (INA219 sin I2C)'), 'Push message in the evening when the battery will probably not last until sunrise': ('Push-Nachricht am Abend, wenn der Akku voraussichtlich nicht bis Sonnenaufgang reicht', "Message push le soir si la batterie ne tiendra probablement pas jusqu'au lever du soleil", "Messaggio push la sera se la batteria probabilmente non durerà fino all'alba", "Messadi push la saira, sch'il accu na tanscha probablamain betg fin l'alva"), 'Current meter: shunt resistor (Ohm; Gravity INA219 0.01, blue modules 0.1)': ('Strommesser: Shunt-Widerstand (Ohm; Gravity INA219 0,01, blaue Module 0,1)', 'Mesureur : résistance shunt (ohm ; Gravity INA219 0,01, modules bleus 0,1)', 'Misuratore: resistenza shunt (ohm; Gravity INA219 0,01, moduli blu 0,1)', 'Mesirader: resistenza shunt (ohm; Gravity INA219 0,01, moduls blaus 0,1)'), 'Current meter: address (I2C)': ('Strommesser: Adresse (I2C)', 'Mesureur : adresse (I2C)', 'Misuratore: indirizzo (I2C)', 'Mesirader: adressa (I2C)'), 'The battery will probably not last until sunrise ({sr}): about {have} h left, {need} h needed. Charge it or switch on power saving.': ('Der Akku reicht voraussichtlich nicht bis Sonnenaufgang ({sr}): noch etwa {have} h, nötig {need} h. Aufladen oder Stromsparen einschalten.', "La batterie ne tiendra probablement pas jusqu'au lever du soleil ({sr}) : environ {have} h restantes, {need} h nécessaires. Rechargez-la ou activez l'économie d'énergie.", "La batteria probabilmente non durerà fino all'alba ({sr}): circa {have} h rimanenti, {need} h necessarie. Ricaricala o attiva il risparmio energetico.", "L'accu na tanscha probablamain betg fin l'alva ({sr}): anc var {have} h, basegn {need} h. Chargiar u activar il spargnar current."), 'Battery': ('Akku', 'Batterie', 'Batteria', 'Accu'), 'lasts until sunrise ({sr})': ('reicht bis Sonnenaufgang ({sr})', "tient jusqu'au lever du soleil ({sr})", "dura fino all'alba ({sr})", "tanscha fin l'alva ({sr})"), 'too little until sunrise ({sr})': ('zu knapp bis Sonnenaufgang ({sr})', "trop juste jusqu'au lever du soleil ({sr})", "troppo poco fino all'alba ({sr})", "memia stretg fin l'alva ({sr})"), 'INA219 current meter between the panel and the charger (address 0x44 - 0x40 is the thermal camera, 0x41 the servo board; shunt 0.01 Ohm for the Gravity INA219).': ('INA219-Strommesser zwischen Panel und Laderegler (Adresse 0x44 – 0x40 ist die Wärmebildkamera, 0x41 das Servo-Board; Shunt 0,01 Ohm beim Gravity INA219).', 'Mesureur INA219 entre le panneau et le chargeur (adresse 0x44 – 0x40 est la caméra thermique, 0x41 la carte servo ; shunt 0,01 ohm pour le Gravity INA219).', 'Misuratore INA219 tra il pannello e il caricatore (indirizzo 0x44 – 0x40 è la termocamera, 0x41 la scheda servo; shunt 0,01 ohm per il Gravity INA219).', 'Mesirader INA219 tranter il panel ed il chargiader (adressa 0x44 – 0x40 è la camera termica, 0x41 la plattina dals servos; shunt 0,01 ohm per il Gravity INA219).'), 'no current meter found at this address': ('kein Strommesser an dieser Adresse gefunden', 'aucun mesureur trouvé à cette adresse', 'nessun misuratore trovato a questo indirizzo', 'nagin mesirader chattà sin questa adressa'), 'today': ('heute', "aujourd'hui", 'oggi', 'oz'), 'max.': ('max.', 'max.', 'max.', 'max.'), 'Battery lasts until sunrise': ('Akku reicht bis Sonnenaufgang', "La batterie tient jusqu'au lever du soleil", "La batteria dura fino all'alba", "L'accu tanscha fin l'alva"), 'Battery probably too low until sunrise': ('Akku reicht voraussichtlich nicht bis Sonnenaufgang', "Batterie probablement insuffisante jusqu'au lever du soleil", "Batteria probabilmente insufficiente fino all'alba", "L'accu na tanscha probablamain betg fin l'alva"), 'Night forecast: needs a battery value (Settings → Battery)': ('Nacht-Prognose: braucht einen Akku-Wert (Einstellungen → Akku)', 'Prévision de nuit : nécessite une valeur de batterie (Réglages → Batterie)', 'Previsione notturna: serve un valore della batteria (Impostazioni → Batteria)', "Prognosa da notg: basegna ina valur da l'accu (Configuraziuns → Accu)")}
 for _k, _v in _HX30.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(("fr", "it", "rm")):
@@ -66308,7 +66312,7 @@ MENU_SHORT = {
     'Emergency stop: brake, then drive slowly to the parking position (otherwise: hold where it stopped)': 'Emergency stop: park slowly',
     'Show the «⏹ Stop» button on the live page (only with a pan / tilt head)': '«⏹ Stop» on the live page',
     'Show MoveEye on extra displays (GeekMagic SmallTV)': 'Show MoveEye on extra displays',
-    'Current meter: shunt resistor (Ohm, usually 0.1)': 'Shunt resistor (Ohm)',
+    'Current meter: shunt resistor (Ohm; Gravity INA219 0.01, blue modules 0.1)': 'Shunt resistor (Ohm)',
     'Theft tracking: alarm from a distance of (m)': 'Theft tracking: alarm from (m)',
     'Warn when the air pressure falls by (hPa in 3 hours)': 'Air pressure falls by (hPa / 3 h)',
     'Bluetooth tag: alarm when not seen for (min)': 'Tag not seen for (min)',
@@ -72303,7 +72307,7 @@ SELFTEST_EXTRA.append(("Error help with QR code (simulator3d/fehler_katalog.json
 # GEH_QUELLE_SHA: Prüfsumme der Quelle (hardware/gehaeuse/Quellcode/*.py, bau.json, werkzeuge/gehaeuse_bauen.py) – der
 # Selbsttest (639w) vergleicht sie im Repository mit der Quelle und mit simulator3d/inhalte/gehaeuse/modelle.json.
 # ----------------------------------------------------------------------------
-GEH_QUELLE_SHA = 'e8900d6f3cdb8d80230e6987c9b578e4712dc7c7800aa9ec2d288c62f26160f3'
+GEH_QUELLE_SHA = '153b7c2217a6320c7dbb12e5ca8d86d9bb4a64c83669ed70225265fc00ecf605'
 GEH_BAU = json.loads(_zd('639v_daten_gehaeuse/GEH_BAU', ""))
 GEH_UI_DE = {"Case & build": "Gehäuse & Bau", "Guide, parts list, print files – in 3D in the workshop of the simulator": "Anleitung, Materialliste, Druckdateien – in 3D in der Werkstatt des Simulators", "Case": "Gehäuse", "View in the simulator": "Im Simulator ansehen", "Opens the workshop in the 3D simulator: turn, explode, see through, click parts, assembly step by step.": "Öffnet die Werkstatt im 3D-Simulator: drehen, zerlegen, durchsichtig, Teile anklicken, Montage Schritt für Schritt.", "Simulator not connected – start it and connect it on the page Simulator.": "Simulator nicht verbunden – starte ihn und verbinde ihn auf der Seite «Simulator».", "Opened in the simulator.": "Im Simulator geöffnet.", "Print files": "Druckdateien", "3MF plates for the Bambu Lab X2D (PETG, no supports)": "3MF-Platten für den Bambu Lab X2D (PETG, ohne Stützen)", "Single STL files: in the hand-over package (ZIP, about 60 MB), not in the repository.": "Einzelne STL-Dateien: im Übergabe-Paket (ZIP, ca. 60 MB), nicht im Repository.", "Assembly step by step": "Montage Schritt für Schritt", "Show this step in the simulator": "Diesen Schritt im Simulator zeigen", "Parts list": "Materialliste", "Qty": "Menge", "Part number": "Teilenummer", "Guides and source (GitHub)": "Anleitungen und Quellcode (GitHub)", "Detailed guide v5.1": "Ausführliche Anleitung v5.1", "Full parts list with order list": "Ganze Materialliste mit Bestellliste", "Measure first: UPS HAT (E) with its cells (assumed 90 × 80 × 26 mm) before printing the lower part.": "Zuerst nachmessen: UPS HAT (E) mit Akkus (angenommen 90 × 80 × 26 mm), bevor das Unterteil gedruckt wird.", "Own work of Daniel (DonElektro) – parametric Python model.": "Eigenes Werk von Daniel (DonElektro) – parametrisches Python-Modell.", "Step": "Schritt"}
 GEH_UI_TRX = _zd('639v_daten_gehaeuse/GEH_UI_TRX', _ZDDict())
@@ -72314,7 +72318,7 @@ GEH_UI2_TRX = _zd('639v_daten_gehaeuse/GEH_UI2_TRX', _ZDDict())
 # BAU3D: Pfad -> [sha256 der Datei, gzip+base64]; BAU3D_GLB: [sha256, Grösse, gzip+base64]. Ausgeliefert von 639w (/bau3d/<pfad>,
 # /build/gehaeuse.glb) mit Content-Encoding gzip. Der Selbsttest vergleicht die Prüfsummen im Repository mit den Quellen.
 # ----------------------------------------------------------------------------
-BAU3D_QUELLE_SHA = 'e8900d6f3cdb8d80230e6987c9b578e4712dc7c7800aa9ec2d288c62f26160f3'
+BAU3D_QUELLE_SHA = '153b7c2217a6320c7dbb12e5ca8d86d9bb4a64c83669ed70225265fc00ecf605'
 BAU3D = _zd('639vb_daten_bau3d/BAU3D', _ZDDict())
 BAU3D_GLB = _zd('639vb_daten_bau3d/BAU3D_GLB', [])
 # aus simulator3d/inhalte/gehaeuse/modelle.json: Gruppe, aussen, Mitte und Explosion pro Teil (wie die Werkstatt im Simulator)
@@ -74334,6 +74338,111 @@ def news_links_selftest():
 
 
 SELFTEST_EXTRA.append(("Links to what is new («Neu in …», ui_gemeinsam.json «neu_ziele», 639zc)", news_links_selftest))
+# ----------------------------------------------------------------------------
+# Hardware-Klärung 01.11.2026 (Paket «Bauen», Punkt 6):
+#   - Der Solar-Strommesser (INA219) stand ab Werk auf 0x41 = Adresse des PCA9685 (Servos, Lötbrücke A0). Beide zusammen
+#     lesen sich gegenseitig die Register. Doku, Materialliste und Gehäuse sagen 0x44 (INA219 mit Brücke A1 bzw. DIP 0x44).
+#     Neu: Standard 0x44 (020, 280). Alte Einstellungen mit «Solar aus» und derselben Adresse wie der PCA9685 werden einmal
+#     auf eine freie Adresse gesetzt (0x44, sonst 0x45); mit «Solar ein» bleibt alles, wie der Bediener es eingestellt hat.
+#   - Die Konfliktprüfung (030) kennt jetzt auch die Wärmebildkamera (Thermal-90, fest 0x40) und lässt den UPS HAT (E) aus
+#     (eigener Chip auf 0x2D, die Adresse «ups_addr» gilt nur für den INA219 der UPS HATs A / B / C).
+#   - Entscheid Daniel 01.11.2026: Shunt ab Werk 0,01 Ohm (Gravity INA219, DFRobot SEN0291, Bastelgarage 421023; vorher 0,1 =
+#     blaues Billig-Modul). Alte Einstellungen werden EINMAL umgestellt (Merker «solar_shunt_mig_done»), wenn noch der alte
+#     Standard 0,1 steht und Solar nie eingeschaltet wurde (= nie selbst eingerichtet). Mit Solar ein bleibt die eigene Wahl.
+# ----------------------------------------------------------------------------
+_settings_migrations_before_i2c = _settings_migrations
+
+
+def solar_addr_migrate(cfg=None):
+    """«Solar» off and on the address of the servo board: to the first free address of 0x44 / 0x45 (True = changed)"""
+    c = CFG if cfg is None else cfg
+    a = str(c.get("solar_addr", "")).lower()
+    if c.get("solar_on") or a != str(c.get("pca_address", "")).lower():
+        return False
+    used = {str(c.get(k, "")).lower() for k in ("pca_address", "mover_addr", "ups_addr")} | set(I2C_FIXED.values())
+    for cand in ("0x44", "0x45"):
+        if cand not in used:
+            c["solar_addr"] = cand
+            return True
+    return False
+
+
+def solar_shunt_migrate(cfg=None):
+    """once: the old standard 0.1 Ohm with «Solar» never switched on -> 0.01 Ohm (Gravity INA219); True = changed"""
+    c = CFG if cfg is None else cfg
+    if c.get("solar_shunt_mig_done"):
+        return False
+    c["solar_shunt_mig_done"] = True
+    try:
+        old = float(c.get("solar_shunt", 0.0))
+    except (TypeError, ValueError):
+        return False
+    if c.get("solar_on") or abs(old - 0.1) > 1e-9:
+        return False                                       # set up by the operator (or already another value): stays
+    c["solar_shunt"] = 0.01
+    return True
+
+
+def _settings_migrations(cfg_in):                         # + 639zh: solar meter away from the address of the PCA9685
+    _settings_migrations_before_i2c(cfg_in)
+    try:
+        old = CFG.get("solar_addr")
+        if solar_addr_migrate():
+            log_event("sys", f"Solar meter (INA219): address {old} is the servo board - set to {CFG['solar_addr']}")
+        if solar_shunt_migrate():
+            log_event("sys", "Solar meter (INA219): shunt set to the new standard 0.01 Ohm (Gravity INA219)")
+    except Exception as e:
+        log_event("sys", f"Settings migration (639zh): {e}"[:150])
+
+
+def i2c_adressen_selftest():
+    """standard addresses without a conflict; the thermal camera on 0x40 and the PCA9685 on 0x41 are seen; the migration"""
+    base = {"servo_driver": "pca9685", "pca_address": "0x41", "solar_on": True, "solar_addr": DEFAULTS["solar_addr"],
+            "mover_mode": "auto", "mover_addr": DEFAULTS["mover_addr"], "ups_on": True, "ups_model": "auto",
+            "ups_addr": DEFAULTS["ups_addr"], "thermal_on": True, "thermal_source": "senxor"}
+    assert DEFAULTS["solar_addr"] == "0x44", DEFAULTS["solar_addr"]
+    assert DEFAULTS["solar_addr"] != DEFAULTS["pca_address"], "solar meter on the address of the servo board"
+    assert i2c_conflicts(base) == [], i2c_conflicts(base)
+    cf = i2c_conflicts(dict(base, solar_addr="0x41"))
+    assert cf == [("pca_address", "solar_addr", "0x41")], cf
+    cf = i2c_conflicts(dict(base, solar_addr="0x40"))
+    assert cf == [("_thermal", "solar_addr", "0x40")], cf
+    assert i2c_conflicts(dict(base, solar_addr="0x40", thermal_on=False)) == []
+    assert i2c_conflicts(dict(base, solar_addr="0x42", ups_model="e")) == [], "UPS HAT (E) has no INA219 on 0x42"
+    assert i2c_conflicts(dict(base, solar_addr="0x42"))[0][2] == "0x42"
+    c = dict(base, solar_on=False, solar_addr="0x41")
+    assert solar_addr_migrate(c) and c["solar_addr"] == "0x44", c["solar_addr"]
+    c = dict(base, solar_on=False, solar_addr="0x44", pca_address="0x44")
+    assert solar_addr_migrate(c) and c["solar_addr"] == "0x45", c["solar_addr"]
+    c = dict(base, solar_on=True, solar_addr="0x41")
+    assert not solar_addr_migrate(c) and c["solar_addr"] == "0x41", "switched on: the operator's choice stays"
+    c = dict(base, solar_on=False, solar_addr="0x45")
+    assert not solar_addr_migrate(c)
+    return "thermal 0x40 · PCA9685 0x41 · solar INA219 0x44 · UPS INA219 0x42 / UPS HAT (E) 0x2D · mover 0x60: no conflict"
+
+
+def solar_shunt_selftest():
+    """standard 0.01 Ohm; the old standard is changed once (solar off), a value of the operator stays; the reading scales"""
+    assert DEFAULTS["solar_shunt"] == 0.01 and DEFAULTS["solar_shunt_mig_done"] is False, DEFAULTS["solar_shunt"]
+    sl = [x for x in SLIDERS if x[1] == "solar_shunt"]
+    assert sl and sl[0][3] <= 0.01 <= sl[0][4], sl
+    c = {"solar_on": False, "solar_shunt": 0.1}
+    assert solar_shunt_migrate(c) and c["solar_shunt"] == 0.01 and c["solar_shunt_mig_done"], c
+    c["solar_shunt"] = 0.1                                 # chosen again after the change: stays (only once)
+    assert not solar_shunt_migrate(c) and c["solar_shunt"] == 0.1
+    c = {"solar_on": True, "solar_shunt": 0.1}
+    assert not solar_shunt_migrate(c) and c["solar_shunt"] == 0.1, "set up by the operator: stays"
+    c = {"solar_on": False, "solar_shunt": 0.05}
+    assert not solar_shunt_migrate(c) and c["solar_shunt"] == 0.05
+    for k in ("Current meter: shunt resistor (Ohm; Gravity INA219 0.01, blue modules 0.1)",
+              "INA219 current meter between the panel and the charger (address 0x44 - 0x40 is the thermal camera, 0x41 the servo board; shunt 0.01 Ohm for the Gravity INA219)."):
+        assert DE.get(k) and all(TRX[L].get(k) for L in ("fr", "it", "rm")), k
+        assert "0,01" in DE[k] and all("0,01" in TRX[L][k] for L in ("fr", "it", "rm")), k
+    return "standard 0.01 Ohm (Gravity INA219); old 0.1 changed once when solar was never on; the operator's value stays; texts in 5 languages"
+
+
+SELFTEST_EXTRA.append(("I2C addresses: no conflict with the standard values (639zh)", i2c_adressen_selftest))
+SELFTEST_EXTRA.append(("Solar meter: shunt 0.01 Ohm, old standard taken over once (639zh)", solar_shunt_selftest))
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--cam", type=int, default=None, help="USB camera number (same as --source usb:N)")

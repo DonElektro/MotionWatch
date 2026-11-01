@@ -60,7 +60,8 @@ camera_auto_detect=1
 ```
 
 Speichern (Strg+O), schliessen (Strg+X), neu starten. Prüfen: `ls /dev/spidev* /dev/i2c*`, `sudo i2cdetect -y 1`
-(erwartet: 40 = Thermal-90, 41 = PCA9685 nach der Lötbrücke A0, 42 = UPS HAT) und `rpicam-hello --list-cameras`
+(erwartet: 40 = Thermal-90, 41 = PCA9685 nach der Lötbrücke A0, 2d = UPS HAT (E) – bzw. 42 bei den älteren UPS HATs
+A / B / C mit INA219; falls verbaut: 44 = INA219 Solar, 68 = MPU-6050, 76 oder 77 = BME280) und `rpicam-hello --list-cameras`
 (Camera Module 3 NoIR).
 
 ## 4. Berechtigungen und Autostart
