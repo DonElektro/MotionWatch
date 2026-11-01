@@ -782,7 +782,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 3.24.0")
+        self.root.title("MoveEye 3.25.0")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -796,6 +796,7 @@ class App:
             self.open_secs = {"grp:alarm"}
         # nurgruppen: what is shown now (open_secs = the own state, saved); «On start: groups only» on start / tab change
         self._shown = {}; self._fold_start = True
+        self._mine = not CFG.get("ui_start_groups", False); self._mine_job = None; self._fold_cvs = {}   # 639r «Meine Ansicht»
         self.step_var = tk.StringVar(value="3")
         self.tab = "live"; self.stick_speed = 30.0; self.relay_prev = {}
         self.left_f = self.stick = self.l_wp = None; self.qs_tiles = {}; self.tab_btns = {}
@@ -1153,7 +1154,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 3.24.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 3.25.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -1917,6 +1918,10 @@ class App:
         h, body, title = self.subs[k]
         closed = "subx:" + k[4:]
         self._shown[k] = bool(open_)                         # nurgruppen: shown now; the own state (open_secs) only by a click
+        if save and not getattr(self, "_mine", True):       # 639r: «Meine Ansicht» off - a click is not kept
+            save = False
+        elif save:
+            self._mine_change(k, open_)
         if save:
             if open_:
                 self.open_secs.add(k); self.open_secs.discard(closed)
@@ -2914,6 +2919,10 @@ class App:
     def _set_section(self, sec, open_, save=True):
         head, body = self.sections[sec]
         self._shown[sec] = bool(open_)
+        if save and not getattr(self, "_mine", True):       # 639r: «Meine Ansicht» off - a click is not kept
+            save = False
+        elif save:
+            self._mine_change(sec, open_)
         if save:
             (self.open_secs.add if open_ else self.open_secs.discard)(sec)
             if sorted(self.open_secs) != sorted(CFG["ui_open"]):
@@ -2974,8 +2983,10 @@ class App:
     def _toggle_section(self, sec):
         self._set_section(sec, not self._shown.get(sec, sec in self.open_secs))
 
-    def _groups_only(self, save=True):
-        """☰ every group open, the topics inside closed (save=False: the start view of «On start: groups only», not kept)"""
+    def _groups_only(self, save=False):
+        """☰ every group open, the topics inside closed (639r: never kept - «Meine Ansicht» goes off; long press / right click on
+        the middle button, or the start view of «On start: groups only»)"""
+        self._mine = False; self._mine_paint()
         for sec in self.sections:
             self._set_section(sec, True, save=save)
         for k in getattr(self, "subs", {}):
@@ -2992,8 +3003,10 @@ class App:
         """nurgruppen: after building a settings tab - start / tab change: «Groups only» (switch on); else as shown before"""
         if getattr(self, "_fold_start", True):
             self._fold_start = False
-            if CFG.get("ui_start_groups", True):
+            if CFG.get("ui_start_groups", False):
                 self._groups_only(save=False)
+            else:
+                self._mine_on()                              # 639r: the start = «Meine Ansicht»
             return
         for k, v in prev.items():
             if k in self.sections:
@@ -3003,11 +3016,90 @@ class App:
 
     def _set_start_groups(self, v):
         CFG["ui_start_groups"] = bool(v); save_settings()
-        self._groups_only(save=False) if v else self._own_view()
+        self._groups_only(save=False) if v else self._mine_on()
+
+    # ---- 639r «Meine Ansicht»: the folds the user set himself, kept for the owner («admin», the same as his web pages) per tab ----
+    @staticmethod
+    def _mine_id(k):
+        """window key -> the id of the web page: grp:<group> stays, sub:<part> = sec:<part> (data-view of 530)"""
+        return "sec:" + k[4:] if k.startswith("sub:") else k
+
+    def _mine_keys(self):
+        return list(self.sections) + list(getattr(self, "subs", {}))
+
+    def _mine_on(self):
+        """the middle button: back to the kept view (the first time: «Groups only» if the switch was on, else as the window had it)"""
+        self._mine = True
+        st = ansicht_get(ansicht_user(None), self.tab or "live")
+        want = {k: True for k in st["offen"]}; want.update({k: False for k in st["zu"]})
+        fresh = False
+        for k in self._mine_keys():
+            i = self._mine_id(k)
+            if i in want:
+                v = want[i]
+            elif not st["known"] and st["first_groups"]:
+                v = k in self.sections; fresh = True
+            else:
+                v = self._shown.get(k, k in self.open_secs); fresh = True
+            (self._set_section if k in self.sections else self._set_sub)(k, v, save=False)
+            closed = "subx:" + k[4:]
+            if v:
+                self.open_secs.add(k); self.open_secs.discard(closed)
+            else:
+                self.open_secs.discard(k)
+                if k.startswith("sub:"):
+                    self.open_secs.add(closed)
+        if sorted(self.open_secs) != sorted(CFG["ui_open"]):
+            CFG["ui_open"] = sorted(self.open_secs); save_settings()
+        if fresh:
+            self._mine_change("", None)
+        self._mine_paint()
+
+    def _mine_change(self, k, open_):
+        """the ONE function per change (P2 hangs in here): one group / topic opened or closed by the user - bundled, 1 s"""
+        if not getattr(self, "_mine", True):
+            return
+        if self._mine_job is not None:
+            try:
+                self.root.after_cancel(self._mine_job)
+            except Exception:
+                pass
+        self._mine_job = self.root.after(1000, self._mine_push)
+
+    def _mine_push(self):
+        self._mine_job = None
+        tab = self.tab or "live"
+        st = ansicht_get(ansicht_user(None), tab)
+        m = {x: True for x in st["offen"]}; m.update({x: False for x in st["zu"]})
+        for k in self._mine_keys():
+            m[self._mine_id(k)] = bool(self._shown.get(k, k in self.open_secs))
+        ansicht_set(ansicht_user(None), tab, [x for x, v in m.items() if v], [x for x, v in m.items() if not v])
+
+    def _mine_paint(self):
+        """the blue button of the fold state: the middle while «Meine Ansicht» is on"""
+        for kind, c in list(getattr(self, "_fold_cvs", {}).items()):
+            try:
+                on = kind == "mine" and getattr(self, "_mine", True)
+                c.config(bg=C["acc"] if on else C["panel"])
+                for it in c.find_all():
+                    c.itemconfig(it, **({"fill": "#ffffff" if on else C["txt"]} if c.type(it) in ("line", "text") else {"outline": "#ffffff" if on else C["txt"]}))
+            except tk.TclError:
+                pass
+
+    def _fold_all_btn(self, open_):
+        self._mine = False
+        if self._mine_job is not None:                       # what was clicked before still goes to the Pi
+            try:
+                self.root.after_cancel(self._mine_job)
+            except Exception:
+                pass
+            self._mine_push()
+        self._all_sections(open_)
+        self._mine_paint()
 
     def _mwbar(self, parent, tab):
         """639o: the bar of every web page in the window - Simple / Expert · Symbols coloured / plain · On start: groups only ·
-        Collapse all / Groups only / Expand all (same order, texts and symbols; a narrow window: two lines)"""
+        Collapse all / My view (639r; long press / right click: Groups only) / Expand all (same order, texts and symbols; a narrow window: two lines)"""
         f = tk.Frame(parent, bg=C["bg"]); small = self._lay[0]
         r1 = tk.Frame(f, bg=C["bg"]); r1.pack(fill="x")
         r2 = tk.Frame(f, bg=C["bg"]) if small else r1
@@ -3034,9 +3126,25 @@ class App:
             w_.config(bg=C["bg"])
         sg_.lbl.config(font=("DejaVu Sans", 9), wraplength=0); sg_.pack(side="left", padx=(0 if small else 10, 0)); self.start_groups_tg = sg_
         Tip(sg_.lbl, tr("On every start the settings show only the groups. Off: the menus open as you left them."))
-        self._fold_btn(r2, "open", lambda: self._all_sections(True), tr("Expand all")).pack(side="right")
-        self._fold_btn(r2, "groups", self._groups_only, tr("Groups only")).pack(side="right", padx=(0, 6))
-        self._fold_btn(r2, "close", lambda: self._all_sections(False), tr("Collapse all")).pack(side="right", padx=(0, 6))
+        self._fold_cvs = {}
+        self._fold_btn(r2, "open", lambda: self._fold_all_btn(True), tr("Expand all")).pack(side="right")
+        mb = self._fold_btn(r2, "mine", self._mine_on, tr("My view: the menus open and close the way you left them (kept for you on every device). Long press or right click: groups only."))
+        mb.pack(side="right", padx=(0, 6))
+        hold = {"job": None, "long": False}                 # 639r: «Groups only» stays - long press or right click on the middle
+
+        def _down(e):
+            hold["long"] = False
+            hold["job"] = self.root.after(600, lambda: (hold.update(long=True), self._groups_only(save=False)))
+
+        def _up(e):
+            if hold["job"] is not None:
+                self.root.after_cancel(hold["job"]); hold["job"] = None
+            if not hold["long"]:
+                self._mine_on()
+        mb.unbind("<Button-1>"); mb.bind("<ButtonPress-1>", _down); mb.bind("<ButtonRelease-1>", _up)
+        mb.bind("<Button-3>", lambda e: self._groups_only(save=False))
+        self._fold_btn(r2, "close", lambda: self._fold_all_btn(False), tr("Collapse all")).pack(side="right", padx=(0, 6))
+        self.root.after_idle(self._mine_paint)
         return f
 
     def _set_icons(self, v):
@@ -3053,9 +3161,13 @@ class App:
             c.create_line(*P((7, 4, 12, 9, 17, 4)), fill=C["txt"], width=2); c.create_line(*P((7, 20, 12, 15, 17, 20)), fill=C["txt"], width=2)
         elif kind == "open":
             c.create_line(*P((7, 9, 12, 4, 17, 9)), fill=C["txt"], width=2); c.create_line(*P((7, 15, 12, 20, 17, 15)), fill=C["txt"], width=2)
+        elif kind == "mine":                                 # 639r «Meine Ansicht»: two bars and a small star
+            c.create_rectangle(*P((5, 5, 19, 10)), outline=C["txt"], width=2); c.create_rectangle(*P((5, 14, 12, 19)), outline=C["txt"], width=2)
+            c.create_text(17.5 * f, 16.5 * f, text="★", fill=C["txt"], font=("DejaVu Sans", max(7, int(8 * f))))
         else:
             c.create_rectangle(*P((5, 5, 19, 10)), outline=C["txt"], width=2); c.create_rectangle(*P((5, 14, 19, 19)), outline=C["txt"], width=2)
         c.bind("<Button-1>", lambda e: cmd()); Tip(c, tip)
+        getattr(self, "_fold_cvs", {})[kind] = c
         return c
 
     def _all_sections(self, open_):

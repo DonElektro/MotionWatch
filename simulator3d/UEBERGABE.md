@@ -1,8 +1,14 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Version **3.24.0** · MoveEye **3.24.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 31.10.2026 · Version **3.25.0** · MoveEye **3.25.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.25.0 (MoveEye 3.25.0): «Meine Ansicht» (Teil 639r)
+
+- Mittlerer Knopf der Bedienleiste = «Meine Ansicht» (eigenes Auf-/Zuklappen pro Benutzer und Seite, `/api/ansicht`, auf allen
+  Geräten gleich); «Nur Gruppen» mit langem Druck / Rechtsklick. Simulator `bedienleiste.gd`, `main.gd` (`mine_on`, `mine_mig`
+  in KEEP), `ui_style.gd` (Symbol «mine»). Teil im Zweig als 639p geliefert, wegen 639p_ui_gemeinsam als 639r eingereiht.
 
 ## NEU in 3.24.0 (MoveEye 3.24.0): Schalter aufgeräumt (Teil 639q)
 
