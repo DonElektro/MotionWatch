@@ -88,7 +88,7 @@ Material PETG (vorher trocknen). Für Kopf, Gabel und Seitendeckel 5 mm Brim.
 
 **Deckel:** Laufring, Pan-Servo und Kabelkamin wie im Konzept.
 
-**Lampen:** Die Halter sind jetzt eigene Teile und werden aussen an die Arme geschraubt (je 2 × M3 × 8). In jeden Halter kommt ein Scheinwerfer-Modul Ø 18,8 × 14 mm, die Kabel gehen hinten durch das Loch.
+**Lampen:** Die Halter sind jetzt eigene Teile und werden aussen an die Arme geschraubt (je 2 × M3 × 8 mit Unterlegscheibe; Löcher ab 01.11.2026 hinter dem Becher bei x −6, damit der Schraubendreher hinkommt, Aussparung Ø 7 um den Kopf der Kippachse). In jeden Halter kommt ein Scheinwerfer-Modul Ø 18,8 × 14 mm, die Kabel gehen hinten durch das Loch.
 
 ## Montage (Kurzfassung)
 

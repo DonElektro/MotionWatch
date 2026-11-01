@@ -1,16 +1,63 @@
 {
  "_hinweis": "Erzeugt von werkzeuge/gehaeuse_bauen.py aus hardware/gehaeuse/ – nicht von Hand ändern. Koordinaten: Meter, Ursprung Kippachse (main.head_pitch), Godot X = Modell y, Y = z, Z = x (vorne = −Z).",
  "version": "5.1",
- "quelle_sha256": "153b7c2217a6320c7dbb12e5ca8d86d9bb4a64c83669ed70225265fc00ecf605",
+ "quelle_sha256": "a6d2adbb8c36071c3d64ae3b1e358630cb48fd4315c1965f1f65f0ce7d00defc",
  "dateien": {
-  "gehaeuse.glb": "9b8fbdcf1f9407dfd789115e3336c2c1edc6f36cc81aba398674c87186f401ac",
-  "gehaeuse_lite.glb": "2a3fc12b7e3b02bc76c829a0dbb7f429d9613f41974c58a97d2162c259ecbf96"
+  "gehaeuse.glb": "bcec74a7770b096ee0dfad3c5344da4ae6f077237eedb33514005d50ce250780",
+  "gehaeuse_lite.glb": "df9384ea23c5cac0b297dec208b6e19e807be19100e0cb59290e02bba41ac6e2"
  },
- "dreiecke": 57984,
- "dreiecke_aussen": 51002,
- "dreiecke_lite": 8373,
+ "dreiecke": 85822,
+ "dreiecke_aussen": 78696,
+ "dreiecke_lite": 12807,
  "kippachse_ueber_boden_m": 0.1258,
  "fuesse_m": 0.006,
+ "v52": {
+  "_hinweis": "Weitwinkel-Kamera und IR-LED im Unterteil v5.2 (v52.py): Linse / IR in Modell-mm (x 0 = Stirnwand innen, z 0 = Bodenunterseite), relativ zur Kippachse in m (Godot X, Y, Z)",
+  "linse_mm": [
+   0.5,
+   46.0,
+   56.0
+  ],
+  "neigung_grad": 12.0,
+  "ir_typ": "modul",
+  "linse_m": [
+   0.0,
+   -0.0698,
+   -0.0395
+  ],
+  "ir_m": [
+   -0.026,
+   -0.0768,
+   -0.04
+  ],
+  "teile": [
+   "wide",
+   "irled",
+   "buttons",
+   "sled",
+   "tub52",
+   "mosfet52",
+   "cable_cam1",
+   "cable_cam0_52"
+  ],
+  "ersetzt": {
+   "tub52": "tub",
+   "mosfet52": "mosfet",
+   "cable_cam0_52": "cable_cam"
+  }
+ },
+ "farben": {
+  "kopf": "#f59a4a",
+  "kopf_teile": [
+   "turntable",
+   "yoke",
+   "arm2",
+   "head",
+   "side",
+   "lamp1",
+   "lamp2"
+  ]
+ },
  "teile": [
   {
    "id": "tub",
@@ -748,9 +795,9 @@
   {
    "id": "turntable",
    "gruppe": "pan",
-   "farbe": "#f28c26",
+   "farbe": "#f59a4a",
    "aussen": true,
-   "dreiecke": 3589,
+   "dreiecke": 3608,
    "mitte": [
     0.0,
     -0.0431,
@@ -761,7 +808,7 @@
     0.0062,
     0.068
    ],
-   "dreiecke_lite": 643,
+   "dreiecke_lite": 637,
    "explosion": [
     0.0,
     0.29,
@@ -771,20 +818,20 @@
   {
    "id": "yoke",
    "gruppe": "pan",
-   "farbe": "#f28c26",
+   "farbe": "#f59a4a",
    "aussen": true,
-   "dreiecke": 4106,
+   "dreiecke": 4099,
    "mitte": [
     0.0005,
-    -0.0141,
+    -0.014,
     0.0045
    ],
    "groesse": [
     0.088,
-    0.052,
+    0.0519,
     0.039
    ],
-   "dreiecke_lite": 794,
+   "dreiecke_lite": 793,
    "explosion": [
     0.0,
     0.33,
@@ -884,7 +931,7 @@
   {
    "id": "head",
    "gruppe": "tilt",
-   "farbe": "#38383f",
+   "farbe": "#f59a4a",
    "aussen": true,
    "dreiecke": 10723,
    "mitte": [
@@ -907,7 +954,7 @@
   {
    "id": "side",
    "gruppe": "tilt",
-   "farbe": "#595961",
+   "farbe": "#f59a4a",
    "aussen": true,
    "dreiecke": 2222,
    "mitte": [
@@ -930,7 +977,7 @@
   {
    "id": "arm2",
    "gruppe": "pan",
-   "farbe": "#f28c26",
+   "farbe": "#f59a4a",
    "aussen": true,
    "dreiecke": 1938,
    "mitte": [
@@ -943,7 +990,7 @@
     0.0494,
     0.036
    ],
-   "dreiecke_lite": 316,
+   "dreiecke_lite": 322,
    "explosion": [
     0.045,
     0.335,
@@ -953,47 +1000,47 @@
   {
    "id": "lamp1",
    "gruppe": "pan",
-   "farbe": "#f28c26",
+   "farbe": "#f59a4a",
    "aussen": true,
-   "dreiecke": 2824,
+   "dreiecke": 3746,
    "mitte": [
     -0.0494,
     -0.016,
-    -0.008
+    -0.0045
    ],
    "groesse": [
     0.0278,
     0.028,
-    0.0201
+    0.0271
    ],
-   "dreiecke_lite": 530,
+   "dreiecke_lite": 623,
    "explosion": [
     -0.0692,
     0.335,
-    -0.0112
+    -0.0063
    ]
   },
   {
    "id": "lamp2",
    "gruppe": "pan",
-   "farbe": "#f28c26",
+   "farbe": "#f59a4a",
    "aussen": true,
-   "dreiecke": 2794,
+   "dreiecke": 3682,
    "mitte": [
     0.0494,
     -0.016,
-    -0.008
+    -0.0045
    ],
    "groesse": [
     0.0278,
     0.028,
-    0.0201
+    0.0271
    ],
-   "dreiecke_lite": 512,
+   "dreiecke_lite": 600,
    "explosion": [
     0.0692,
     0.335,
-    -0.0112
+    -0.0063
    ]
   },
   {
@@ -1135,44 +1182,48 @@
    "id": "wide",
    "gruppe": "base",
    "farbe": "#b33333",
-   "aussen": false,
-   "dreiecke": 92,
+   "aussen": true,
+   "dreiecke": 116,
    "mitte": [
     0.0,
     -0.0698,
-    -0.0324
+    -0.0311
    ],
    "groesse": [
     0.025,
     0.0237,
-    0.016
+    0.0184
    ],
+   "variante": "5.2",
+   "dreiecke_lite": 76,
    "explosion": [
     0.0,
     0.115,
-    -0.1291
+    -0.1272
    ]
   },
   {
    "id": "irled",
    "gruppe": "base",
    "farbe": "#7f1a1a",
-   "aussen": false,
-   "dreiecke": 160,
+   "aussen": true,
+   "dreiecke": 172,
    "mitte": [
-    -0.02,
-    -0.0858,
-    -0.0377
+    -0.026,
+    -0.0768,
+    -0.0307
    ],
    "groesse": [
-    0.0058,
-    0.0058,
-    0.0096
+    0.0188,
+    0.0188,
+    0.0215
    ],
+   "variante": "5.2",
+   "dreiecke_lite": 92,
    "explosion": [
-    -0.03,
+    -0.039,
     0.115,
-    -0.1371
+    -0.1266
    ]
   },
   {
@@ -1191,6 +1242,7 @@
     0.012,
     0.0175
    ],
+   "variante": "5.2",
    "explosion": [
     -0.0232,
     0.04,
@@ -1213,10 +1265,107 @@
     0.0093,
     0.014
    ],
+   "variante": "5.2",
    "explosion": [
     -0.0,
     0.45,
     -0.0
+   ]
+  },
+  {
+   "id": "tub52",
+   "gruppe": "base",
+   "farbe": "#3a73bf",
+   "aussen": true,
+   "dreiecke": 25584,
+   "mitte": [
+    -0.003,
+    -0.0915,
+    0.0511
+   ],
+   "groesse": [
+    0.1031,
+    0.0686,
+    0.1974
+   ],
+   "variante": "5.2",
+   "ersetzt": "tub",
+   "dreiecke_lite": 4086,
+   "explosion": [
+    -0.0,
+    0.0,
+    -0.0
+   ]
+  },
+  {
+   "id": "mosfet52",
+   "gruppe": "base",
+   "farbe": "#8c5933",
+   "aussen": false,
+   "dreiecke": 12,
+   "mitte": [
+    -0.0447,
+    -0.1128,
+    -0.016
+   ],
+   "groesse": [
+    0.0016,
+    0.02,
+    0.028
+   ],
+   "variante": "5.2",
+   "ersetzt": "mosfet",
+   "explosion": [
+    -0.0536,
+    0.135,
+    -0.0836
+   ]
+  },
+  {
+   "id": "cable_cam1",
+   "gruppe": "base",
+   "farbe": "#d9c27a",
+   "aussen": false,
+   "dreiecke": 216,
+   "mitte": [
+    -0.0192,
+    -0.0744,
+    0.0305
+   ],
+   "groesse": [
+    0.0415,
+    0.0199,
+    0.1086
+   ],
+   "variante": "5.2",
+   "explosion": [
+    -0.0096,
+    0.165,
+    -0.0116
+   ]
+  },
+  {
+   "id": "cable_cam0_52",
+   "gruppe": "base",
+   "farbe": "#d9c27a",
+   "aussen": false,
+   "dreiecke": 168,
+   "mitte": [
+    -0.0182,
+    -0.0698,
+    0.071
+   ],
+   "groesse": [
+    0.0395,
+    0.027,
+    0.033
+   ],
+   "variante": "5.2",
+   "ersetzt": "cable_cam",
+   "explosion": [
+    -0.0,
+    0.28,
+    0.0
    ]
   }
  ]

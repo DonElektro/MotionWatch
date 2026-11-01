@@ -38,9 +38,9 @@ Für Kopf, Gabel und Seitendeckel einen **Brim** (5 mm) einschalten. Material PE
 
 - ca. 28 Softair-Kugeln 6 mm + etwas Fett
 - Unterteil: 4× M3×10 (Deckel), 4× M2,5×6 (Pi), 4× M2,5×6 (PCA9685), 2× M2×8 + Muttern (Pan-Servo)
-- Gabel: 4× M3×10 (Gabel → Drehteller), 2× M3×10 (Arm 2 → Gabelboden)
+- Gabel: 4× **M3×8** (Gabel → Drehteller; länger stösst in den Laufring, Druck-Check 01.11.2026), 2× M3×10 (Arm 2 → Gabelboden)
 - Kippachse: 1× M3×12 + 1× M3-Mutter + **2–3 M3-Unterlegscheiben** (zwischen Seitendeckel und Arm 2)
-- Kopf: 4× M2×6 (Camera Module 3), 2× M2×6 (Thermal-90), **3× M3×10** (Seitendeckel)
+- Kopf: 4× **M2×4** (Camera Module 3; M2×6 sticht durch die Front), 2× M2×6 (Thermal-90), **3× M3×10 Linsenkopf ISO 7380** (Seitendeckel; Zylinderkopf stösst beim Kippen an Arm 2)
 - 2× Doppelarm-Horn mit Hornschrauben (liegen den Servos bei)
 - Kamerakabel Pi 5 22→15-polig, mind. 500 mm
 

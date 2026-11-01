@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-01 14:20",
+ "generated": "2026-11-01 17:41",
  "versions": [
+  {
+   "version": "3.42.0",
+   "file": "webcam_bewegung_3_42_0.py",
+   "url": "",
+   "sha256": "a35e79905ea6d6cd3279cbda6a69a08e7365a2c4ec4e34c185242a90894a04a2",
+   "date": "2026-11-01 17:41",
+   "notes": "Linux-Version mit eigenem Update-Paket, ./installieren.sh legt Menü- und Desktop-Eintrag an (ohne sudo). Sparmodus: bei ≤ 4 GB Arbeitsspeicher oder älterer Intel-Grafik wählt «Automatisch» Lite; eigene Wahl hat Vorrang. Lade-LED an GPIO 6: an beim Laden, langsam blinkend = voll, schnell = Akku fast leer (Schalter «Lade-LED»). Gehäuse v5.2: Unterteil mit Fenster für die Weitwinkel-Kamera, IR-Modul 120° mit Trennsteg und Kabelkamm; Druckkorrekturen an Drehteller, Gabel, Arm 2 und Lampenhalter; Kamerakopf im Simulator orange.",
+   "size": 4792691,
+   "sig": "81af4947cb4eeab02601f8529f2f104fefa8f85872862f5acd0f4f4fe398c923c77485a0e66619f7c25b00ddf85a00a910878e16bad3d4cb64dff10ab710f407",
+   "data": {
+    "file": "moveeye_daten_3_42_0.zip",
+    "url": "",
+    "sha256": "4db4f6f25ecedc0611c09a936fce795414983d56b84f190a8c5cf5da27b96f04",
+    "size": 2838319,
+    "sig": "8c69b18b1805d0dfbe87cf2b939d178208f91d74639b76ae97b80fc665bc589f3181a3036d8c2562a15673fd9396bdb76cc921d41715625636e8f5acfb830a03"
+   }
+  },
   {
    "version": "3.41.1",
    "file": "webcam_bewegung_3_41_1.py",
    "url": "",
    "sha256": "3ba6cfea6ab5b65c161f23dac52d18457437338452f3fdd168f731c8dceba017",
-   "date": "2026-11-01 14:20",
+   "date": "2026-11-01 17:38",
    "notes": "Fix: Solar-Strommesser (INA219) ab Werk auf 0x44 statt 0x41 (kollidierte mit dem Servo-Treiber), Shunt 0,01 Ω passend zum Gravity-Modul; Bau-Infos ergänzt (Step-Down ab Akku, 3. MOSFET, Schrauben, Lade-LED an GPIO 6).",
    "size": 4770964,
    "sig": "2371266998ffff8a256a40ffed8819f3821e030f6ba8e2adecf85a61de3f6bd4fd7e8350bd882aa6896e2b81b623d89046c3e729bdf93abdd1c88fe17d964b0d",
@@ -23,68 +40,68 @@
    "version": "3.40.0",
    "file": "webcam_bewegung_3_40_0.py",
    "url": "",
-   "sha256": "2772bcbf73217a50ec71d12948e68379810b23d975c8817a61fd7a31c05fb2f6",
-   "date": "2026-11-01 14:16",
+   "sha256": "aa6944616f3c5ac22c4dc3f86b806eea47c78d4db33b5885990e6e284084a32d",
+   "date": "2026-11-01 17:00",
    "notes": "Bauen: MoveEye komplett selbst bauen – ein Menüeintrag in MoveEye und Simulator, 10 Reiter, 3D im Browser auch ohne Simulator, Varianten, Einkaufsliste, alle Druckteile als 3MF, Verkabelungsplan, «Mein Bau».",
-   "size": 4763116,
-   "sig": "d63481e73d45d1a8f41a26e99ef0b120fd4d75d91f84c746d6c21d1e969ff871c0d22bea7728a295c3ff78e38fb49fbc876f740e33617365454e659773ef6908",
+   "size": 4751837,
+   "sig": "dcee75204e1b6dd5521502ed2ea7fc6790553ea6bdd300e7bcb3e195c4957a147396bca2c7fec109153cbb8d159f5af2c20625f12108065a3e7cf06561296e08",
    "data": {
     "file": "moveeye_daten_3_40_0.zip",
     "url": "",
-    "sha256": "7d4e3cfdbc6ee3c3c9dea9c681c420445d084519ac3d70f60ab08e1281cd4d76",
-    "size": 2518689,
-    "sig": "697c9822a3dcbbfcc7f9b01b163f9f52de8b80ce3e83a22cbb178a904de3530968efd15dd16175bfaec78f302feae4c31a58e2e9f5411703d576abb4cc56b905"
+    "sha256": "0881d6b89ec6446528e61c7e92ac48ddd8e072822a53b6c870cd976e7102c593",
+    "size": 2516444,
+    "sig": "138c0130c73f35d2cfb05929f4e8dee72b1d355214fd05e22275c3aeb7ca98d10c36283e58bb0ba7926975e85921e51cc140fe0302fc5879f36ea3264f7da806"
    }
   },
   {
    "version": "3.39.2",
    "file": "webcam_bewegung_3_39_2.py",
    "url": "",
-   "sha256": "70bc21235730a8e6b3087aafb6ce4a99ca2c74f2eca5c638aa2fac93218dc951",
-   "date": "2026-11-01 14:08",
+   "sha256": "94e0903a01d9a9f9443cc86ce1a5fb3d7b7360e3e17d56e5ba4ee21c9ad31ff5",
+   "date": "2026-11-01 17:00",
    "notes": "Datenschutz: Push- und E-Mail-Meldungen zeigen statt des WLAN-Namens nur noch «bekanntes WLAN».",
-   "size": 4751822,
-   "sig": "dda1ed74c09b2fe61c34e79ab3ab6c9e3bcdad376e5de3935b881dd72626c4f6e63c94c4f0133fa764fd55aba7d3448d028458ac9b90deac7b79cc3028e5780c",
+   "size": 4730304,
+   "sig": "38134f9ffa90897b59740239b6707b936dd0c6e5020c91159655ea2a7a0bcb8d63f973edb76063450f846ccd38fc91020bcac2b373d6e583718314b5d7100503",
    "data": {
     "file": "moveeye_daten_3_39_2.zip",
     "url": "",
-    "sha256": "0ad55718ee31f06f35cc2c5bd3f6e930fd4353abbe05099e4d3b11922edd789a",
-    "size": 2516344,
-    "sig": "2142c55524195f15dcd51ae2e836ac23fac35e376ec96dcc002143a4414406de98b569aa14d125935c58dd110d2f95625fbedf8ec30afd3a00cb2fd68163d809"
+    "sha256": "efc7a06b33c1dba0b394cbe92ad03e796ea8248be698da86f36d023ef358f73b",
+    "size": 1589561,
+    "sig": "5c66c080b39a742e94f4e3673614d59230d129157dd793074dd5c56e162e45b8afcfee54f665cb357ee9d67a7f5f4bceb5f8e8fdc8d703a294d4f7440d9f5101"
    }
   },
   {
    "version": "3.38.0",
    "file": "webcam_bewegung_3_38_0.py",
    "url": "",
-   "sha256": "7eb916f692a391503d07ef2e49360ba7895c7d65e151122e183bbcb764847d86",
-   "date": "2026-11-01 12:37",
+   "sha256": "f338a6e98d186945f09a11dcd4418a20fb39312907a4e3472ab67398dfb629f4",
+   "date": "2026-11-01 17:00",
    "notes": "Simulator: System → Sicherung – ZIP auf dem PC, in einen Ordner/USB oder in die MoveEye-Sicherung; Wiederherstellen im Simulator oder aus MoveEye (nur Besitzer), vorher wird automatisch der aktuelle Stand gesichert.",
-   "size": 4723421,
-   "sig": "dd18f11d5edc5839165f1c2c32fac61e5cdfafe7006888d7555a822cc776f85e16b6a061eede5d6f1cef284f3f4298eb8480a526897db3947cfd55c7baf57704",
+   "size": 4688595,
+   "sig": "b8b4b82bb0cae94fb89cb15fc3710c5f826f13371b36cf06292aac44656650c51303d19c6b36bc4a0fc3baa15b681062e23968e39108f2a88e33ab0646d00309",
    "data": {
     "file": "moveeye_daten_3_38_0.zip",
     "url": "",
-    "sha256": "94b593acfda8efd0df40f89ebaff7b6823c9de6dc1e51d5deb25c5636283af90",
-    "size": 1589447,
-    "sig": "baa4ddf0ce8262e3c823e26e7640755089a32c5fe4f510e6daeef88aa4c92d486876eeacde1a65035ea57fc01769bed942bbf872cb14ed4fbae4c5885b815c03"
+    "sha256": "e1bd303f3c954d98779dac7e65129d686f062a76870dafdfc7d9433cfa85e2f7",
+    "size": 1586833,
+    "sig": "0fb0d4b3c8ddaa277df70cac02762356c25ada1c90ced6454d65e5c85a771e26b4f887e0b34dd6404c5b545ced1ec3f2ba97bfff732c5fec4f8fcec7b841ab0e"
    }
   },
   {
    "version": "3.37.0",
    "file": "webcam_bewegung_3_37_0.py",
    "url": "",
-   "sha256": "4138426d4f2bf303d87ce86321420b397a58d7a28964bb6feb15c183c72dcab3",
-   "date": "2026-11-01 13:38",
+   "sha256": "d75e67987b13d5363383a623074b7f951024c7fe70984cdc0551e99dd02222d5",
+   "date": "2026-11-01 17:00",
    "notes": "Foto-Texturen aus Daniels Fotos im Bergtal: Wiese, Alpweide, Alpenrosen, Geröll, Fels, Strasse (abschaltbar; Lite unverändert).",
-   "size": 4688558,
-   "sig": "71b990d425a669f5898bdf598d00e8162990172e36363cf76f26ba0527a3963226a71641aa8e200ac842a6d0903240378952da7ff9583aed8a07eaf61a690300",
+   "size": 4670785,
+   "sig": "d3b708117ad801182e772e8a0af2ee52ff6748737a5ac6eb9e310cd81b6c659b74e7bcb2d6d9f5baae4b2f41d5c80a5a57f0604e6284648028ab155dd4f3c300",
    "data": {
     "file": "moveeye_daten_3_37_0.zip",
     "url": "",
-    "sha256": "218ebab86bab4a018a7dbf208799088ef1773b3e9706036efb37daaa2d38ab72",
-    "size": 1586761,
-    "sig": "f608889aaaef51ee6787048dfa13913dfd729bb5ea75ba174312bc76c63b858c8831648f99eb2b750ebf5cf471fd24916974f4dd0354cb2c479e56b7586b720f"
+    "sha256": "1b0b8f08b4d77026a87ed54badc4f665478a782910df017ffa4b3712180a05dc",
+    "size": 1585199,
+    "sig": "b050890b73ace4f2f4126ec9876b9302b74f5501243dff13780ff0978011f9f6319a00d9e19f10baf205e279356006bc339332d249619f5e4e78bec27b55b607"
    }
   },
   {
@@ -125,34 +142,17 @@
    "version": "3.34.0",
    "file": "webcam_bewegung_3_34_0.py",
    "url": "",
-   "sha256": "ac7d566f7aabab2eb20e15218ead93c5a2de0c5afc27cd69c099098d1175645e",
-   "date": "2026-11-01 12:30",
+   "sha256": "a8e252bd1db06981e81e366580890ebd9ebf11535f5cfbdb7d9691a05d3a550d",
+   "date": "2026-11-01 17:00",
    "notes": "Neue Seite «Gehäuse & Bau» (Mehr): Gehäuse v5.1 Schritt für Schritt, Materialliste, Druckdateien, Kapitel in der Anleitung (5 Sprachen); im Simulator die Werkstatt zum Drehen und Zerlegen, das echte Gehäuse am Gerät.",
-   "size": 4671016,
-   "sig": "fcb76cdf51c93f6dac1de01fffd0e3df01214409884d9e3facd378f9f6018c164b169b6f82942bf1f82dd31b6a763ea68b799350f17be0658f069eeaa7e4b206",
+   "size": 4665432,
+   "sig": "ca1325dbdeefe6f52f2d75321b7b8f89a998167f20d05fc9c6f9bd7e97508fc2e8d00ec5d4815f0a92841f1e7cce4f274d895a0798bcb98798a43eb77965510c",
    "data": {
     "file": "moveeye_daten_3_34_0.zip",
     "url": "",
-    "sha256": "1cea395f8893ecab2ff0d5a317ae6286994773d6e6443dddfcd40d6bd201d319",
-    "size": 1585134,
-    "sig": "36f4b2d09290488edc04cf2e48dee85c36065af807566a2d3697eaaa40b074c92df35f690b40e6fb4242f0c1f68325e63a0f2692d46286cc19b17a9aaeb77e00"
-   }
-  },
-  {
-   "version": "3.33.0",
-   "file": "webcam_bewegung_3_33_0.py",
-   "url": "",
-   "sha256": "a627a7f39687b4f687a84aeff59fc64f3b08743bddf589fc562bd8fe95e64a23",
-   "date": "2026-11-01 11:48",
-   "notes": "Hilfe zu jedem Fehler: Fehler-Katalog (27 Fehler, 5 Sprachen), Seite /hilfe/fehler, Knopf «Jetzt beheben» (nur Besitzer) und QR-Code in Selbstdiagnose, Fenster, SmallTV, TV und Push; im Simulator ebenso.",
-   "size": 4665408,
-   "sig": "26866acf44b9c22a96b38e0b4481e015b1f9feee096cbb18833203c9cee025aaeda36cb1dbdd25738d5b5b9bbee06a24e7d7a5b5f60a642fc8e756a49b7db101",
-   "data": {
-    "file": "moveeye_daten_3_33_0.zip",
-    "url": "",
-    "sha256": "95948289a9d5df6791d987888f95df4115745629e1110de6155c1e90eb854b6a",
-    "size": 1583339,
-    "sig": "0dfb2be5a9e06dc2756b71b031bd3e37e94ec7d76bc71fdf34ac43057f2a58af4dd69e8707f49f51a6d3414fb1f5faaa84113a66d734c192862507cf364d0208"
+    "sha256": "099817059724b9e2c22f8da0f80db42c0ec906daad7585f1fca491ffeea4299d",
+    "size": 1583449,
+    "sig": "f31622ff347976c18fa324e982049e086c8ae82a666eed0febb3236ca7086f2223cffc602f26185bf8ff3231b787deb8476d5b49cdbb3501d245846dec6a7705"
    }
   },
   {

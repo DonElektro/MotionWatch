@@ -75,6 +75,13 @@ func check(current: String, url := "") -> void:
 	if typeof(d) != TYPE_DICTIONARY or not d.has("version") or not d.has("sha256") or not d.has("size"):
 		await _note("Die Versions-Angabe auf GitHub ist nicht lesbar.")
 		return
+	if OS.get_name() == "Linux":                  # Paket Linux (Daniel 01.11.2026): eigenes Paket unter «linux» in version.json
+		if not has_linux(d):
+			print("update check: no Linux package in version.json")
+			result = "für Linux noch kein Update-Paket"
+			await _note("Für Linux gibt es auf GitHub noch kein Update-Paket.")
+			return
+		d = linux_info(d)
 	info = d
 	var latest := V.of_info(d)                    # Versionierung 3.0.0: «ver» (new number), «version» = for old simulators
 	info["version"] = V.plain(latest)             # (the progress text and the messages show the new number)
@@ -117,6 +124,24 @@ func check(current: String, url := "") -> void:
 		result = "Update auf %s abgebrochen" % info["version"]
 		return
 	await _update()
+
+
+static func has_linux(d: Dictionary) -> bool:
+	var lx = d.get("linux")
+	return typeof(lx) == TYPE_DICTIONARY and lx.has("file") and lx.has("sha256") and lx.has("size")
+
+
+static func linux_info(d: Dictionary) -> Dictionary:
+	"""version.json for Linux x86_64: file, size, sha256 (and «ver», when the Linux package has its own number) from «linux»;
+	the ZIP holds MoveEyeSim3D/MoveEyeSim3D.x86_64 (werkzeuge/linux_paket.sh), the Windows ZIP stays for Windows"""
+	var out := d.duplicate()
+	var lx: Dictionary = d.get("linux", {})
+	for k in ["file", "size", "sha256", "ver"]:
+		if lx.has(k):
+			out[k] = lx[k]
+	if lx.has("ver"):
+		out["version"] = V.legacy(str(lx["ver"]))
+	return out
 
 
 func _note(msg: String) -> void:
@@ -349,6 +374,9 @@ func _install(zip_path: String, exe: String) -> String:
 			DirAccess.remove_absolute(dir.path_join(g))
 	if OS.get_name() != "Windows":
 		OS.execute("chmod", ["+x", exe])
+		for f in DirAccess.get_files_at(dir):           # Paket Linux: installieren.sh (ZIPReader keeps no file modes)
+			if f.ends_with(".sh"):
+				OS.execute("chmod", ["+x", dir.path_join(f)])
 	return ""
 
 

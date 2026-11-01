@@ -1,6 +1,6 @@
 # MotionWatch – Materialliste (Stand 30.10.2026)
 
-Status aus der abhakbaren Liste: ✅ vorhanden · 🚚 bestellt · ☐ fehlt. Ohne Schrauben.
+Status aus der abhakbaren Liste: ✅ vorhanden · 🚚 bestellt · ☐ fehlt. Ohne Schrauben (Schrauben: bau.json «schrauben» bzw. Bauen; wichtig ab 01.11.2026: Gabel → Drehteller **M3 × 8**, Seitendeckel **M3 × 10 Linsenkopf ISO 7380**, Camera Module 3 **M2 × 4**, Lampenhalter M3 × 8 **mit Unterlegscheibe**).
 
 ## Rechner & Kameras
 

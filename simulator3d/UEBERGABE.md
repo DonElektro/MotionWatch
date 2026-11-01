@@ -1,8 +1,17 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 01.11.2026 · Version **3.41.1** · MoveEye **3.41.1** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 01.11.2026 · Version **3.42.0** · MoveEye **3.42.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.42.0 (MoveEye 3.42.0): Sammel-Release Linux · Lade-LED · Gehäuse v5.2
+
+- **Linux** (real-linux): eigenes Paket `MoveEyeSim3D_Linux.zip` (`werkzeuge/linux_paket.sh`, aus simpack.sh), Block «linux»
+  in version.json (`versionen.py --sim-json` / `--linux-json`, update.gd linux_info), `beilagen_linux/installieren.sh`
+  (Startmenü + Desktop, ohne sudo); Sparmodus in quality.gd (≤ 4 GB RAM / ältere Intel-Grafik → Lite), Test sparmodus_test.gd.
+- **Lade-LED** (real-lade-led, MoveEye Teil 639zi): state «charge_led», Fenster «Gerät» (statusled.gd) blinkt mit.
+- **Gehäuse v5.2** (real-gehaeuse-v52): Unterteil mit Weitwinkel-Fenster, IR-Modul 120°, Kabelkamm; bau.json «farben»;
+  Schrauben von v5.2 (von Daniel bestätigt). Daten neu mit `gehaeuse_bauen.py --sim`.
 
 ## NEU in 3.41.1 (MoveEye 3.41.1): Hardware-Klärung (MoveEye Teil 639zh, Bau-Infos)
 
