@@ -101,3 +101,17 @@ Grundlage: Gehäuse v5.1 (parametrisches Python-Modell). Unverändert bleiben al
 | IR-LED | eine **5-mm-LED 850 nm** (Kanal 4) 20 mm neben und 16 mm unter der Linse: leuchtet nur die Nähe aus (ca. 4 m brauchbar, bei 7 m fertig; 1/d²; Schätzung, nicht gemessen). Ein / aus wie bisher mit dem Infrarotlicht (`light_ir_wide`) |
 | Blindstopfen | Montage **«Nicht verbaut (Blindstopfen)»** (`none`): kein Bild (der Simulator rechnet die Kamera nicht, `/cam/1/…` antwortet 404 «not installed»), keine IR-LED; MoveEye meldet die Zusatzkamera als «wide camera not installed (blind cover)» statt «Simulator nicht erreichbar», «Übersicht lenkt den Kopf» wird (falls von selbst gesetzt) gelöscht |
 | Kamera-Physik | Anschluss für `camphys.gd` (Zweig real-kamera): `weit.sensor_info()` liefert Blende f/2.2 (≈ 0,67 × Licht der Kopfkamera), NoIR, eingebaut ja/nein – das Sensor-Nachbearbeiten (Belichtung, Verstärkung, Rauschen) kann so für Kamera 1 dieselbe Funktion nutzen; die Optik (Fischauge, Ecken) bleibt in `weitwinkel.gd` |
+
+## Echtes Unterteil v5.2 im Repository (Zweig real-gehaeuse-v52, 01.11.2026)
+
+Wunsch Daniel: im 3D-Modell fehlte die Aussparung, die Druckteile waren v5.1. Jetzt:
+
+| Thema | Stand |
+|---|---|
+| Quelle | `hardware/gehaeuse/Quellcode/v52.py` (Paket v5.2 vom 30.10. übernommen, importiert `v5.py`; v5.1 unverändert) |
+| Kamera | wie oben: Stirnwand, Linse z 56, 12° nach unten (`WC_TILT`), 4 × M2 an zwei Rippen, Fenster aus dem Sichtfeld, Regendach |
+| IR breit | jetzt **Modul 850 nm mit 120°-Linse** (Ø 18,8 geschätzt) in einer Hülse neben dem Fenster (y 20, z 49), Trennsteg aussen; 5 mm weiter als `IR_TYP = "5mm"` |
+| Kabel | **Kabelkamm** an der Lüftungswand für CAM0 + CAM1 (vor den Schlitzen, neben den Pi-Buchsen); Lüfter frei |
+| Druck | `Druckdateien/v5-2/MotionWatch_v5-2_Platte_A_Unterteil.3mf` (Platte B bleibt v5.1) |
+| Simulator | Werkstatt «Variante v5.2 zeigen» = echtes Unterteil; Szene zeigt v5.2 bei Montage «Im Gehäuse (v5.2)» und «Unterteil vorne» (diese sitzt jetzt im selben Fenster, Neigung per Regler); IR-Licht der Gehäuse-Montage = 120°-Modul |
+| Offen | NACHMESSEN-Liste in `hardware/gehaeuse/LIESMICH.md`; nicht gedruckt |

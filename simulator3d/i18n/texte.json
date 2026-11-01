@@ -2310,11 +2310,23 @@
   "it": "01 Parte inferiore",
   "rm": "01 Part sut"
  },
+ "01 Unterteil v5.2 (Fenster Weitwinkel, IR-Modul, Kabelkamm, Tasten)": {
+  "en": "01 Lower part v5.2 (wide window, IR module, cable comb, buttons)",
+  "fr": "01 Partie inférieure v5.2 (fenêtre grand angle, module IR, peigne à câbles, boutons)",
+  "it": "01 Parte inferiore v5.2 (finestra grandangolare, modulo IR, pettine cavi, pulsanti)",
+  "rm": "01 Part sut v5.2 (fanestra largangulara, modul IR, pettan da cabels, buttuns)"
+ },
  "01_Unterteil": {
   "en": "01_Unterteil",
   "fr": "01_Unterteil",
   "it": "01_Unterteil",
   "rm": "01_Unterteil"
+ },
+ "01_Unterteil_v52": {
+  "en": "01_Unterteil_v52",
+  "fr": "01_Unterteil_v52",
+  "it": "01_Unterteil_v52",
+  "rm": "01_Unterteil_v52"
  },
  "02 Deckel mit Laufring": {
   "en": "02 Lid with bearing ring",
@@ -2604,6 +2616,12 @@
   "it": "20 AWG",
   "rm": "20 AWG"
  },
+ "200 mm": {
+  "en": "200 mm",
+  "fr": "200 mm",
+  "it": "200 mm",
+  "rm": "200 mm"
+ },
  "21.8. Holz nachgefüllt, 15 Fr. in die Kasse. – Ruedi & Vreni\n\n2.9. Sternenhimmel wie noch nie. Grazie! – Luca": {
   "en": "21.8. Holz nachgefüllt, 15 Fr. in die Kasse. – Ruedi & Vreni\n\n2.9. Sternenhimmel wie noch nie. Grazie! – Luca",
   "fr": "21.8. Holz nachgefüllt, 15 Fr. in die Kasse. – Ruedi & Vreni\n\n2.9. Sternenhimmel wie noch nie. Grazie! – Luca",
@@ -2771,6 +2789,12 @@
   "fr": "8 minutes",
   "it": "8 minuti",
   "rm": "8 minutas"
+ },
+ "850 nm, 120°": {
+  "en": "850 nm, 120°",
+  "fr": "850 nm, 120°",
+  "it": "850 nm, 120°",
+  "rm": "850 nm, 120°"
  },
  ": in die Welt ziehen, oder anklicken und in die Welt klicken": {
   "en": ": drag into the world, or click and click into the world",
@@ -3054,6 +3078,18 @@
   "fr": "Détour : là où était la lumière sur l'image",
   "it": "Deviazione: dove c'era la luce sull'immagine",
   "rm": "Deviaziun: là, nua ch'era la glisch sin il maletg"
+ },
+ "Abstände: IR-Modul–Kamera-Fenster (Steg 3,2 mm, Trennsteg 2 mm vor der Wand), IR-Modul–Lautsprecher 11 mm, Kabel–Lüfter 4 mm / Ansaugung 8 mm, Kabel–Lüftungsschlitze 9 mm": {
+  "en": "Clearances: IR module–camera window (web 3.2 mm, divider 2 mm in front of the wall), IR module–speaker 11 mm, cables–fan 4 mm / intake 8 mm, cables–vents 9 mm",
+  "fr": "Distances : module IR–fenêtre caméra (pont 3,2 mm, séparateur 2 mm devant la paroi), module IR–haut-parleur 11 mm, câbles–ventilateur 4 mm / aspiration 8 mm, câbles–fentes 9 mm",
+  "it": "Distanze: modulo IR–finestra fotocamera (ponte 3,2 mm, separatore 2 mm davanti alla parete), modulo IR–altoparlante 11 mm, cavi–ventola 4 mm / aspirazione 8 mm, cavi–fessure 9 mm",
+  "rm": "Distanzas: modul IR–fanestra da la camera (punt 3,2 mm, separader 2 mm davant la paraid), modul IR–autpledader 11 mm, cabels–ventilatur 4 mm / aspiraziun 8 mm, cabels–fessas 9 mm"
+ },
+ "Abstände: IR-Modul–Kamera-Fenster (Steg 3,2 mm, Trennsteg 2,5 mm vor der Wand), IR-Modul–Lautsprecher 11 mm, Kabel–Lüfter 4 mm / Ansaugung 8 mm, Kabel–Lüftungsschlitze 9 mm": {
+  "en": "Clearances: IR module–camera window (web 3.2 mm, divider 2.5 mm in front of the wall), IR module–speaker 11 mm, cables–fan 4 mm / intake 8 mm, cables–vents 9 mm",
+  "fr": "Distances : module IR–fenêtre caméra (pont 3,2 mm, séparateur 2,5 mm devant la paroi), module IR–haut-parleur 11 mm, câbles–ventilateur 4 mm / aspiration 8 mm, câbles–fentes 9 mm",
+  "it": "Distanze: modulo IR–finestra fotocamera (ponte 3,2 mm, separatore 2,5 mm davanti alla parete), modulo IR–altoparlante 11 mm, cavi–ventola 4 mm / aspirazione 8 mm, cavi–fessure 9 mm",
+  "rm": "Distanzas: modul IR–fanestra da la camera (punt 3,2 mm, separader 2,5 mm davant la paraid), modul IR–autpledader 11 mm, cabels–ventilatur 4 mm / aspiraziun 8 mm, cabels–fessas 9 mm"
  },
  "Abzeichen": {
   "en": "Badge",
@@ -20191,11 +20227,29 @@
   "it": "LED IR 5 mm, 850 nm",
   "rm": "LED IR 5 mm, 850 nm"
  },
+ "IR-LED-Modul 120° (Stirnwand)": {
+  "en": "IR LED module 120° (front wall)",
+  "fr": "Module LED IR 120° (paroi avant)",
+  "it": "Modulo LED IR 120° (parete frontale)",
+  "rm": "Modul LED IR 120° (paraid davant)"
+ },
+ "IR-LED-Modul 850 nm mit 120°-Linse (Ø ca. 18,8 mm, nachmessen)": {
+  "en": "IR LED module 850 nm with 120° lens (approx. Ø 18.8 mm, measure)",
+  "fr": "Module LED IR 850 nm avec lentille 120° (env. Ø 18,8 mm, à mesurer)",
+  "it": "Modulo LED IR 850 nm con lente 120° (circa Ø 18,8 mm, da misurare)",
+  "rm": "Modul LED IR 850 nm cun lentilla 120° (ca. Ø 18,8 mm, mesirar)"
+ },
  "IR-Licht ": {
   "en": "IR light ",
   "fr": "Lumière IR ",
   "it": "Luce IR ",
   "rm": "Glisch IR "
+ },
+ "IR-Modul: Ø 18,8 mm, Länge 14 mm, Linse vorne Ø 17 mm (IRW_MOD_D, IRW_MOD_L, IRW_LENS_D)": {
+  "en": "IR module: Ø 18.8 mm, length 14 mm, front lens Ø 17 mm (IRW_MOD_D, IRW_MOD_L, IRW_LENS_D)",
+  "fr": "Module IR : Ø 18,8 mm, longueur 14 mm, lentille avant Ø 17 mm (IRW_MOD_D, IRW_MOD_L, IRW_LENS_D)",
+  "it": "Modulo IR: Ø 18,8 mm, lunghezza 14 mm, lente anteriore Ø 17 mm (IRW_MOD_D, IRW_MOD_L, IRW_LENS_D)",
+  "rm": "Modul IR: Ø 18,8 mm, lunghezza 14 mm, lentilla davant Ø 17 mm (IRW_MOD_D, IRW_MOD_L, IRW_LENS_D)"
  },
  "Irgendwo bimmelt eine Kuhglocke. Schläft hier eigentlich irgendwer?": {
   "en": "Somewhere a cowbell jingles. Does anyone actually sleep here?",
@@ -20874,6 +20928,24 @@
   "fr": "Câble caméra (nappe)",
   "it": "Cavo fotocamera (piatto)",
   "rm": "Cabel da camera (cabel plat)"
+ },
+ "Kamerakabel CAM0 (v5.2: Kamin → Kabelkamm → Pi)": {
+  "en": "Camera cable CAM0 (v5.2: chimney → cable comb → Pi)",
+  "fr": "Câble caméra CAM0 (v5.2 : cheminée → peigne → Pi)",
+  "it": "Cavo fotocamera CAM0 (v5.2: camino → pettine → Pi)",
+  "rm": "Cabel da camera CAM0 (v5.2: chamin → pettan → Pi)"
+ },
+ "Kamerakabel CAM1 (Weitwinkel → Kabelkamm → Pi)": {
+  "en": "Camera cable CAM1 (wide → cable comb → Pi)",
+  "fr": "Câble caméra CAM1 (grand angle → peigne → Pi)",
+  "it": "Cavo fotocamera CAM1 (grandangolare → pettine → Pi)",
+  "rm": "Cabel da camera CAM1 (largangulara → pettan → Pi)"
+ },
+ "Kamerakabel Pi 5, 200 mm (22→15-polig) für CAM1": {
+  "en": "Camera cable Pi 5, 200 mm (22→15 pin) for CAM1",
+  "fr": "Câble caméra Pi 5, 200 mm (22→15 broches) pour CAM1",
+  "it": "Cavo fotocamera Pi 5, 200 mm (22→15 poli) per CAM1",
+  "rm": "Cabel da camera Pi 5, 200 mm (22→15 pols) per CAM1"
  },
  "Kamerakabel Pi 5, 500 mm (22→15-polig)": {
   "en": "Pi 5 camera cable, 500 mm (22→15 pin)",
@@ -22826,6 +22898,12 @@
   "it": "Carica attuale",
   "rm": "Chargia ussa"
  },
+ "Lage der Buchsen CAM/DISP 0 und 1 am Pi 5 (Kabelkamm FPC_X0, PI_CAM0_XY, PI_CAM1_XY)": {
+  "en": "Position of the CAM/DISP 0 and 1 sockets on the Pi 5 (cable comb FPC_X0, PI_CAM0_XY, PI_CAM1_XY)",
+  "fr": "Position des prises CAM/DISP 0 et 1 du Pi 5 (peigne FPC_X0, PI_CAM0_XY, PI_CAM1_XY)",
+  "it": "Posizione delle prese CAM/DISP 0 e 1 del Pi 5 (pettine FPC_X0, PI_CAM0_XY, PI_CAM1_XY)",
+  "rm": "Posiziun da las bussolas CAM/DISP 0 e 1 dal Pi 5 (pettan FPC_X0, PI_CAM0_XY, PI_CAM1_XY)"
+ },
  "Lager": {
   "en": "Camp",
   "fr": "Campement",
@@ -23895,6 +23973,12 @@
   "fr": "Chercheur de failles",
   "it": "Trovabuchi",
   "rm": "Chattader da largias"
+ },
+ "M2 × 6": {
+  "en": "M2 × 6",
+  "fr": "M2 × 6",
+  "it": "M2 × 6",
+  "rm": "M2 × 6"
  },
  "Macht ein Trainingspaket, legt es auf GitHub (Release «ki-daten») und startet dort das Training. MoveEye holt das neue Modell danach selbst, wenn es nicht schlechter ist.": {
   "en": "Makes a training package, puts it on GitHub (release «ki-daten») and starts the training there. MoveEye fetches the new model itself afterwards if it is not worse.",
@@ -25269,6 +25353,18 @@
   "fr": "Aube",
   "it": "Alba",
   "rm": "Alva"
+ },
+ "MOSFET-Kanal für das IR-Modul (PCA9685 Kanal 4, wie AOD4184)": {
+  "en": "MOSFET channel for the IR module (PCA9685 channel 4, like AOD4184)",
+  "fr": "Canal MOSFET pour le module IR (PCA9685 canal 4, comme AOD4184)",
+  "it": "Canale MOSFET per il modulo IR (PCA9685 canale 4, come AOD4184)",
+  "rm": "Chanal MOSFET per il modul IR (PCA9685 chanal 4, sco AOD4184)"
+ },
+ "MOSFET-Modul (v5.2: Lüftungswand unter dem PCA9685)": {
+  "en": "MOSFET module (v5.2: vent wall below the PCA9685)",
+  "fr": "Module MOSFET (v5.2 : paroi d'aération sous le PCA9685)",
+  "it": "Modulo MOSFET (v5.2: parete di ventilazione sotto il PCA9685)",
+  "rm": "Modul MOSFET (v5.2: paraid da ventilaziun sut il PCA9685)"
  },
  "MOSFET-Modul 2-Kanal, Logic-Level": {
   "en": "MOSFET module 2-channel, logic level",
@@ -29281,6 +29377,12 @@
   "it": "Sacchetto di plastica al vento",
   "rm": "Satg da plastic en il vent"
  },
+ "Platte A v5.2 ersetzt Platte A v5.1 (Unterteil mit Weitwinkel-Fenster). Platte B bleibt v5.1. Vor dem Druck die Masse der Liste «Nachmessen» prüfen.": {
+  "en": "Plate A v5.2 replaces plate A v5.1 (lower part with wide window). Plate B stays v5.1. Check the «measure first» list before printing.",
+  "fr": "La plaque A v5.2 remplace la plaque A v5.1 (partie inférieure avec fenêtre grand angle). La plaque B reste v5.1. Vérifier la liste « à mesurer » avant l'impression.",
+  "it": "La piastra A v5.2 sostituisce la piastra A v5.1 (parte inferiore con finestra grandangolare). La piastra B resta v5.1. Prima di stampare controllare l'elenco «da misurare».",
+  "rm": "La platta A v5.2 remplazza la platta A v5.1 (part sut cun fanestra largangulara). La platta B resta v5.1. Avant la stampa controllar la glista «mesirar»."
+ },
  "Plattform mit Geländer, Antenne und Wegweiser – senkrecht unter dir die helle Kalkwand und die Obri Stafelhütte.": {
   "en": "A platform with railing, antenna and signpost – straight below you the light limestone face and the Obri Stafel hut.",
   "fr": "Plateforme avec garde-corps, antenne et panneau – sous tes pieds, la paroi calcaire claire et la cabane Obri Stafel.",
@@ -31647,6 +31749,12 @@
   "fr": "Barrière",
   "it": "Sbarra",
   "rm": "Barriera"
+ },
+ "Schraube M2 × 6, selbstschneidend (Weitwinkel-Kamera)": {
+  "en": "Screw M2 × 6, self-tapping (wide camera)",
+  "fr": "Vis M2 × 6, autotaraudeuse (caméra grand angle)",
+  "it": "Vite M2 × 6, autofilettante (fotocamera grandangolare)",
+  "rm": "Scrauva M2 × 6, autofilettanta (camera largangulara)"
  },
  "Schreck-Stärke": {
   "en": "Scare strength",
@@ -36320,6 +36428,12 @@
   "it": "UPS HAT (E) con 4 batterie 21700",
   "rm": "UPS HAT (E) cun 4 accus 21700"
  },
+ "UPS HAT (E) mit Akkus (wie v5.1: angenommen 90 × 80 × 26 mm)": {
+  "en": "UPS HAT (E) with cells (as v5.1: assumed 90 × 80 × 26 mm)",
+  "fr": "UPS HAT (E) avec accus (comme v5.1 : supposé 90 × 80 × 26 mm)",
+  "it": "UPS HAT (E) con batterie (come v5.1: ipotizzato 90 × 80 × 26 mm)",
+  "rm": "UPS HAT (E) cun accus (sco v5.1: supponì 90 × 80 × 26 mm)"
+ },
  "Urs, Kletterer": {
   "en": "Urs, climber",
   "fr": "Urs, grimpeur",
@@ -36386,6 +36500,12 @@
   "it": "Variante v5.2 (non ancora nel pacchetto v5.1)",
   "rm": "Variante v5.2 (anc betg en il pachet v5.1)"
  },
+ "Variante v5.2 (Weitwinkel-Kamera, eigenes Unterteil)": {
+  "en": "Variant v5.2 (wide camera, own lower part)",
+  "fr": "Variante v5.2 (caméra grand angle, propre partie inférieure)",
+  "it": "Variante v5.2 (fotocamera grandangolare, parte inferiore propria)",
+  "rm": "Variante v5.2 (camera largangulara, atgna part sut)"
+ },
  "Variante v5.2 zeigen (Weitwinkel, IR-LED, Tasten, Status-LED)": {
   "en": "Show variant v5.2 (wide angle, IR LED, buttons, status LED)",
   "fr": "Montrer la variante v5.2 (grand-angle, LED IR, boutons, LED d'état)",
@@ -36397,6 +36517,12 @@
   "fr": "Variante v5.2 – pas encore dans le montage v5.1",
   "it": "Variante v5.2 – non ancora nel montaggio v5.1",
   "rm": "Variante v5.2 – anc betg en il muntadi v5.1"
+ },
+ "Variante v5.2: Weitwinkel-Kamera im Unterteil": {
+  "en": "Variant v5.2: wide camera in the lower part",
+  "fr": "Variante v5.2 : caméra grand angle dans la partie inférieure",
+  "it": "Variante v5.2: fotocamera grandangolare nella parte inferiore",
+  "rm": "Variante v5.2: camera largangulara en la part sut"
  },
  "Vase": {
   "en": "Vase",
@@ -38287,6 +38413,18 @@
   "fr": "Caméra grand-angle (Camera Module 3 Wide NoIR, 102° × 67°, 120° en diagonale) : montage",
   "it": "Telecamera grandangolare (Camera Module 3 Wide NoIR, 102° × 67°, 120° in diagonale): montaggio",
   "rm": "Camera da grond angul (Camera Module 3 Wide NoIR, 102° × 67°, 120° en diagonala): montascha"
+ },
+ "Weitwinkel-Kamera (Stirnwand, 12° nach unten)": {
+  "en": "Wide camera (front wall, 12° down)",
+  "fr": "Caméra grand angle (paroi avant, 12° vers le bas)",
+  "it": "Fotocamera grandangolare (parete frontale, 12° verso il basso)",
+  "rm": "Camera largangulara (paraid davant, 12° engiu)"
+ },
+ "Weitwinkel-Kamera: Linsenhöhe 11,4 mm ab Platine, Linsenmitte 9,5 mm unter der Platinen-Oberkante, Frontlinse Ø 6 mm (WC_LENS_H, WC_LENS_FROM_TOP, WC_R0)": {
+  "en": "Wide camera: lens height 11.4 mm above the board, lens centre 9.5 mm below the top edge, front lens Ø 6 mm (WC_LENS_H, WC_LENS_FROM_TOP, WC_R0)",
+  "fr": "Caméra grand angle : hauteur de l'objectif 11,4 mm, centre 9,5 mm sous le bord supérieur, lentille avant Ø 6 mm (WC_LENS_H, WC_LENS_FROM_TOP, WC_R0)",
+  "it": "Fotocamera grandangolare: altezza obiettivo 11,4 mm, centro 9,5 mm sotto il bordo superiore, lente anteriore Ø 6 mm (WC_LENS_H, WC_LENS_FROM_TOP, WC_R0)",
+  "rm": "Camera largangulara: autezza da l'objectiv 11,4 mm, center 9,5 mm sut l'ur sura, lentilla davant Ø 6 mm (WC_LENS_H, WC_LENS_FROM_TOP, WC_R0)"
  },
  "Weitwinkel: Fischauge wie das Objektiv der Wide (gebogene Linien am Rand, dunklere Ecken)": {
   "en": "Wide camera: fisheye like the lens of the Wide (bent lines at the edges, darker corners)",
