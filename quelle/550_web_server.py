@@ -2362,8 +2362,8 @@ class WebStream:
             pg = str(request.args.get("page") or "")[:20]
             if request.method == "POST":
                 d = body(); pg = str(d.get("page") or pg)[:20]
-                if "start_groups" in d:                          # nurgruppen: switch «On start: groups only» (all devices, Pi window)
-                    CFG["ui_start_groups"] = bool(d.get("start_groups")); save_settings()
+                if "start_groups" in d:                          # 3.23: the switch «On start: groups only» is gone (old pages)
+                    pass
                 elif pg and re.fullmatch(r"[a-z]{2,20}", pg):     # 586: Simple / Expert of ONE page (the default stays)
                     m_ = page_modes(); m_[pg] = "simple" if d.get("on") else "expert"
                     if (m_[pg] == "simple") == bool(CFG["ui_simple"]):
@@ -2373,7 +2373,11 @@ class WebStream:
                     CFG["ui_simple"] = bool(d.get("on")); save_settings()      # the default (the Pi window follows by itself)
             return reply({"on": page_simple(pg) if pg else bool(CFG["ui_simple"]), "default": bool(CFG["ui_simple"]), "own": pg in page_modes(),
                           "dev": bool(CFG.get("dev_area")),         # 639d: the group «Entwickler» of the simulator control (470)
-                          "start_groups": bool(CFG.get("ui_start_groups", True))})
+                          })
+
+        @app.route("/api/ansicht", methods=["GET", "POST"])
+        def api_ansicht():                               # 639p «Meine Ansicht»: the own folds per user and page (every device)
+            return ansicht_api(request, reply, body, g)
 
         @app.route("/api/night", methods=["POST"])
         def api_night():

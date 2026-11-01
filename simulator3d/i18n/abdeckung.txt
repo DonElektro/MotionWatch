@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 6861 (Stellen: 9558)
-Übersetzt: en 6861, fr 6861, it 6861, rm 6861
+Texte gesamt: 6860 (Stellen: 9557)
+Übersetzt: en 6860, fr 6860, it 6860, rm 6860
 Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 486 Stellen
-Nicht mehr im Code (noch in texte.json): 249
+Nicht mehr im Code (noch in texte.json): 252
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 68 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main.gd 1, phone.gd 1, spieltest.gd 1
-Übersprungen (Grund: Anzahl): kennung 24644, schlüssel 18354, keine Wörter 11554, index 9268, technisch 3175, doc 2070, einheit 294, log 153, englisch 126, stringname 102, pfad 98, html 68, klasse 25, shader 6
+Übersprungen (Grund: Anzahl): kennung 24645, schlüssel 18357, keine Wörter 11556, index 9268, technisch 3176, doc 2074, einheit 294, log 153, englisch 126, stringname 102, pfad 98, html 68, klasse 25, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   main.gd                  698    50
@@ -140,7 +140,6 @@ Pro Datei (Texte / davon dynamische Stellen):
   gameturm.gd               13     0
   devtool_kontakt.gd        12     0
   geschichten_faden.gd      12     0
-  bedienleiste.gd           11     0
   replay.gd                 11     1
   bergtal_ziele.gd          11     0
   objekte_plus.gd           11     0
@@ -148,6 +147,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   gamenacht.gd              11     0
   recorder.gd               11     2
   schnittstelle.gd          10     7
+  bedienleiste.gd           10     0
   quality.gd                 9     0
   gameschwitzen.gd           9     0
   padroles.gd                9     1
@@ -388,19 +388,19 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   main.gd:5422  ' · Treffer %d von %d Schüssen, %d Punkte'
   main.gd:5423  ' · Update: '
   main.gd:5755  'Blinde Flecken: '
-  main.gd:6533  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
-  main.gd:6846  'Autostart: '
-  main.gd:6857  'Autologon: '
-  main.gd:7020  'Karte öffnen: '
-  main.gd:7171  'Echt-Abgleich: '
-  main.gd:7181  'Trainingspaket: '
-  main.gd:7190  ' · %d offen · %.1f MB'
-  main.gd:7190  'Ziel: %s:%d (Port von MoveEye) · '
-  main.gd:7199  'Verbindung · '
-  main.gd:7199  'aus'
-  main.gd:7203  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
-  main.gd:7203  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
-  main.gd:7206  ' – versucht es weiter (gleich auf einem freien Port)'
+  main.gd:6557  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
+  main.gd:6870  'Autostart: '
+  main.gd:6881  'Autologon: '
+  main.gd:7044  'Karte öffnen: '
+  main.gd:7195  'Echt-Abgleich: '
+  main.gd:7205  'Trainingspaket: '
+  main.gd:7214  ' · %d offen · %.1f MB'
+  main.gd:7214  'Ziel: %s:%d (Port von MoveEye) · '
+  main.gd:7223  'Verbindung · '
+  main.gd:7223  'aus'
+  main.gd:7227  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
+  main.gd:7227  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
+  main.gd:7230  ' – versucht es weiter (gleich auf einem freien Port)'
   mehr.gd:255  ' · Leistung: %d Bilder/s, Lite %s'
   mehr.gd:255  'an'
   mehr.gd:255  'aus'

@@ -4097,8 +4097,7 @@ async function nightGuard() {
 }
 // ---- Simple / Expert, symbols, «On start: groups only», the three fold buttons: the bar under the tabs (639o, #mwbar) ----
 // this page: Simple / Expert per tab (586; the Live tab has only one view), the own switch «On start: groups only»
-window.MWB_PAGE = {simplePage: () => { const tb = document.body.dataset.tab || "settings"; return tb === "live" ? "" : tb; },
-                   startGroups: v => startGroupsSet(v)};
+window.MWB_PAGE = {simplePage: () => { const tb = document.body.dataset.tab || "settings"; return tb === "live" ? "" : tb; }};
 // ---- self-check: one traffic light per part ----
 Object.assign(I18N.de, {"missed pictures from the game (hard cases)": "verpasste Bilder aus dem Spiel (schwierige Fälle)", "no missed pictures from the game yet - play a round with MoveEye first": "noch keine verpassten Bilder aus dem Spiel – zuerst eine Runde mit MoveEye spielen", "You are the guard: turn the camera and tap the players in the picture": "Du bist Jäger: Kamera drehen und die Spieler im Bild antippen", "Mover stick back in its place": "Mover-Stick wieder an seinem Platz", "Move (double tap: back to its place)": "Verschieben (doppelt tippen: zurück an den Platz)", "Mover stick shown": "Mover-Stick eingeblendet", "Mover stick hidden": "Mover-Stick ausgeblendet", "Show / hide the mover stick": "Mover-Stick ein- / ausblenden", "Coloured symbols": "Farbige Symbole", "Symbols coloured": "Symbole farbig", "plain": "schlicht", "Plain symbols": "Schlichte Symbole", "Symbols: green dot or green symbol = switched on": "Symbole: grüner Punkt bzw. grünes Symbol = eingeschaltet", "Download AI model": "KI-Modell herunterladen", "AI ready": "KI bereit", "downloading the AI model …": "KI-Modell wird geladen …", "🩺 Self-check": "🩺 Selbstdiagnose", "Check again": "Nochmals prüfen", "problems": "Probleme", "notes": "Hinweise"});
 async function healthLoad() {
@@ -4568,17 +4567,12 @@ function initSections() {
 // nurgruppen (Daniel, 31.10.2026): switch «On start: groups only» (CFG ui_start_groups, factory: on). On every start the settings
 // show «Groups only» WITHOUT saving it - the own open / closed state (mw-open:…, kept on the Pi through web_ui) stays as it was.
 // Switched off: every group and topic goes back to that own state.
-let START_GROUPS = window.MW_SG !== false;
+const START_GROUPS = false;                // 3.23: the switch «On start: groups only» is gone - the start is «My view»
 function foldSet(d, open, keep) { if (d.open === open) return; if (keep) d._mwSkip = true; d.open = open; }
 function foldOwn() {
   document.querySelectorAll("#settings details.grp, #settings details.sub:not(.inline), #settings details.adv").forEach(d => {
     let v = null; try { v = localStorage.getItem(secKey(d)); } catch (e) {}
     const o = v !== null ? v === "1" : d._mwDef; if (typeof o === "boolean") foldSet(d, o, true); });
-}
-function startGroupsSet(v) {
-  START_GROUPS = !!v; post("/api/ui_simple", {start_groups: START_GROUPS});
-  if (START_GROUPS) allGroups(true); else foldOwn();
-  toast((START_GROUPS ? "✓ " : "") + t("On start: groups only") + " – " + t(START_GROUPS ? "On" : "Off"));
 }
 // ---- setup assistant: first start (and System -> "Setup assistant"): language, name, push (ntfy with QR code), password, QR codes ----
 // the setup assistant is the one guide now (516 / 586): «quick or thorough?», resumable, place, walk test …

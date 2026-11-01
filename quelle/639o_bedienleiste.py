@@ -1,10 +1,10 @@
-#@ MoveEye – Teil 639o: Bedienleiste und einklappbarer Kopf (ein gemeinsamer Baustein für jede Web-Seite mit Reitern): Kopf – Reiterzeile und Statuszeile einzeln einklappbar (Griff, roter Punkt bei Warnungen, pro Gerät gemerkt); Leiste unter den Reitern – Einfach / Experte · Symbole farbig / schlicht · Beim Start: Nur Gruppen · Alle zuklappen / Nur Gruppen / Alle aufklappen. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
+#@ MoveEye – Teil 639o: Bedienleiste und einklappbarer Kopf (ein gemeinsamer Baustein für jede Web-Seite mit Reitern): Kopf – Reiterzeile und Statuszeile einzeln einklappbar (Griff, roter Punkt bei Warnungen, pro Gerät gemerkt); Leiste unter den Reitern – Einfach / Experte · Symbole farbig / schlicht · Beim Start: Nur Gruppen · Alle zuklappen / Meine Ansicht (639p; lange drücken: Nur Gruppen) / Alle aufklappen. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # Daniel (31.10.2026, Screenshots iPad): «Kopfbereich einklappbar, beide Teile einzeln» und «eine einheitliche Bedienleiste oben auf jeder Seite»
 # (bisher nur in Einstellungen: Suche mit drei Knöpfen, darunter Einfach / Experte, Symbole, Beim Start). Der Baustein kommt über
 # render_page() auf JEDE Seite mit Reitern (nav.nav); die Seite kann ihn über window.MWB_PAGE anpassen:
 #   simplePage() -> Seitenschlüssel für /api/ui_simple ("" = auf dieser Seite gibt es nur eine Ansicht: Einfach / Experte grau)
 #   simple(on)   -> eigene Umschaltung (sonst: speichern und neu laden)
-#   startGroups(on) -> eigener Schalter «Beim Start: Nur Gruppen» (sonst: speichern, bei «ein» sofort «Nur Gruppen»)
+#   (3.23: der Schalter «Beim Start: Nur Gruppen» ist entfernt - der Start ist «Meine Ansicht»)
 # Die drei Klapp-Knöpfe wirken auf alle sichtbaren Klappkarten der Seite (<details>, dazu die Karten der Simulator-Steuerung
 # .sc-card / .sc-sub; ohne Hilfe- und Statuskarten: #g2-tt, [data-mwb-skip]); «Nur Gruppen» = oberste Karten offen, die Themen darin zu. Keine Klappkarten: grau. Gleiche Ids wie früher
 # (#all-close, #all-groups, #all-open, #start-groups), damit Hilfe, Rundgang und Bildschirmleser sie weiter finden.
@@ -30,7 +30,7 @@ for _k, _v in _HX_MWB.items():
         TRX[_L].setdefault(_k, _v[_i + 1])
 
 MWB_KEYS = sorted(set(_HX_MWB) | {
-    "Simple", "Expert", "On start: groups only", "Collapse all", "Groups only", "Expand all",
+    "Simple", "Expert", "On start: groups only", "Collapse all", "Groups only", "Expand all", "My view",
     "Simple: only the important settings. «Expert» shows all of them.", "Symbols: green dot or green symbol = switched on",
     "On every start the settings show only the groups. Off: the menus open as you left them."})
 
@@ -161,14 +161,21 @@ MWB_JS = r"""<script>
     x.innerHTML = a; y.innerHTML = b; s.append(x, y); return [s, x, y]; };
   const [sm, bS, bE] = seg("mwb-mode", "", "");
   const [si, bC, bP] = seg("mwb-ic", '🎨 <span class="l"></span>', '◯ <span class="l"></span>');
-  const sg = E("label", "mwb-sg"), sgT = E("span"), sgC = E("input"); sgC.type = "checkbox"; sgC.className = "sw"; sgC.id = "start-groups"; sg.append(sgT, sgC);
   const fd = E("div", "mwb-fold");
-  const SV = {close: "M7 4l5 5 5-5M7 20l5-5 5 5", groups: "M4 5h16v5H4zM4 14h16v5H4z", open: "M7 15l5 5 5-5M7 9l5-5 5 5"};
+  // 639p: the middle is «My view» (two bars + a small star); «Groups only» stays: long press / right click on the middle
+  const SV = {close: "M7 4l5 5 5-5M7 20l5-5 5 5", mine: "M4 5h16v5H4zM4 14h8v5H4zM18 12.6l1.2 2.4 2.6.4-1.9 1.8.5 2.6-2.4-1.3-2.4 1.3.5-2.6-1.9-1.8 2.6-.4z",
+              open: "M7 15l5 5 5-5M7 9l5-5 5 5"};
   const FB = {};
-  [["close", "Collapse all"], ["groups", "Groups only"], ["open", "Expand all"]].forEach(([k, lb]) => {
+  [["close", "Collapse all"], ["mine", "My view"], ["open", "Expand all"]].forEach(([k, lb]) => {
     const b = E("button", "sec"); b.type = "button"; b.id = "all-" + k; b.dataset.k = lb;
-    b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + SV[k] + '"/></svg>'; b.onclick = () => fold(k); FB[k] = b; fd.appendChild(b); });
-  bar.append(sm, si, sg, fd);
+    b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + SV[k] + '"/></svg>'; b.onclick = () => { if (b._long) { b._long = false; return; } fold(k); };
+    FB[k] = b; fd.appendChild(b); });
+  (function () { const b = FB.mine; let tm = 0;                     // long press (touch / mouse) or right click: «Groups only»
+    const go = () => { b._long = true; fold("groups"); };
+    b.addEventListener("contextmenu", e => { e.preventDefault(); clearTimeout(tm); go(); setTimeout(() => { b._long = false; }, 400); });
+    b.addEventListener("pointerdown", e => { if (e.button) return; clearTimeout(tm); b._long = false; tm = setTimeout(go, 600); });
+    ["pointerup", "pointerleave", "pointercancel"].forEach(n => b.addEventListener(n, () => clearTimeout(tm))); })();
+  bar.append(sm, si, fd);
   H.after(bar);
   // Simple / Expert of this page (586: /api/ui_simple per page); a page without two views shows it grey
   let SIMPLE = true;
@@ -177,7 +184,7 @@ MWB_JS = r"""<script>
     sm.title = pageKey() ? tr("Simple: only the important settings. «Expert» shows all of them.") : tr("This page has only one view"); }
   async function loadSimple() { const k = pageKey();
     try { const j = await (await fetch("/api/ui_simple" + (k ? "?page=" + encodeURIComponent(k) : ""), {cache: "no-store"})).json();
-      SIMPLE = !!j.on; if (typeof j.start_groups === "boolean") { window.MW_SG = j.start_groups; sgC.checked = j.start_groups; } } catch (e) {}
+      SIMPLE = !!j.on; } catch (e) {}
     paintSimple(); }
   // the ONE switch Simple / Expert (true = "simple", false = "expert")
   function setSimple(v) { if (!pageKey() || v === SIMPLE) return; SIMPLE = v; paintSimple(); const p = P();
@@ -188,57 +195,117 @@ MWB_JS = r"""<script>
   function paintIc() { const pl = lsg("mw-icons", "color") === "plain"; bC.classList.toggle("on", !pl); bP.classList.toggle("on", pl); B.classList.toggle("icplain", pl); }
   function setIcons(v) { lss("mw-icons", v === "plain" ? "plain" : "color"); paintIc(); }      // the ONE switch for the symbols: "color" | "plain"
   bC.onclick = () => setIcons("color"); bP.onclick = () => setIcons("plain");
-  // «On start: groups only» (CFG ui_start_groups: all devices, the Pi window and the simulator page)
-  sgC.checked = window.MW_SG !== false;
-  function setStartGroups(v) { const p = P(); v = !!v; window.MW_SG = v; sgC.checked = v;       // the ONE switch «On start: groups only»
-    if (typeof p.startGroups === "function") return p.startGroups(v);
-    post("/api/ui_simple", {start_groups: v}); if (v) fold("groups"); }
-  sgC.onchange = () => setStartGroups(sgC.checked);
+  // 3.23 (Daniel 01.11.2026): the switch «On start: groups only» is gone - the start is «My view»; «Groups only» = long press on the middle
   // ---- the three fold buttons: every fold card that can be seen on this page ----
   const EXTRA = [{sel: ".sc-card", head: ":scope > .sc-hd"}, {sel: ".sc-sub", head: ":scope > .sc-sh"}];   // simulator control (470): div cards
   const SKIP = "header,#mwbar,.pop,#viewmenu,#lv-menu,[role=dialog],.mwt-ov,#g2-tt,[data-mwb-skip]";   // help / status cards (Tipps & Tricks, Selbstdiagnose) are no groups
   function shown(x) { for (let n = x; n && n !== B; n = n.parentElement) { if (n.hidden || getComputedStyle(n).display === "none") return false; } return true; }
   function items() {
-    const R = document.querySelector("main") || B, out = [];
+    const R = document.querySelector("main") || B, out = [], seen = {};
     R.querySelectorAll("details").forEach(d => { if (d.classList.contains("inline") || d.closest(SKIP) || !shown(d)) return;
       out.push({el: d, get: () => d.open, set: v => { if (d.open !== v) d.open = v; }}); });
     EXTRA.forEach(x => R.querySelectorAll(x.sel).forEach(n => { const h = n.querySelector(x.head); if (!h || n.closest(SKIP) || !shown(n)) return;
       out.push({el: n, get: () => n.classList.contains("open"), set: v => { if (n.classList.contains("open") !== v) h.click(); }}); }));
-    const S = new Set(out.map(o => o.el));
-    out.forEach(o => { o.top = true; for (let n = o.el.parentElement; n && n !== R; n = n.parentElement) if (S.has(n)) { o.top = false; break; } });
+    const S = new Map(out.map(o => [o.el, o]));
+    out.forEach(o => { o.top = true; for (let n = o.el.parentElement; n && n !== R; n = n.parentElement) if (S.has(n)) { o.top = false; o.par = S.get(n); break; } });
+    out.forEach(o => { let id = idOf(o); if (seen[id]) id += "#" + (++seen[id]); else seen[id] = 1; o.id = id; });
     return out;
   }
+  // ---- 639p «My view» (Daniel 1.11.2026): the folds the user set himself - per user and page on the Pi (/api/ansicht), the same on
+  // every device; without the Pi (no connection / not allowed) in this browser («mwa:…», not shared through web_ui). Kept: only what the
+  // user opens / closes himself while «My view» is on. «Collapse all» / «Expand all» / «Groups only»: off, the kept view stays.
+  function idOf(o) {                         // a stable id: data-view (grp:… / sec:…, the same as the Pi window), id, data-k, data-g …
+    if (o._id) return o._id;
+    const n = o.el, d = n.dataset || {};
+    let id = d.mwbId || d.view || n.id || (d.k ? "k:" + d.k : "") || (d.g ? "g:" + d.g : "") || (d.fold ? "f:" + d.fold : "");
+    if (!id) { const h = n.querySelector(":scope > summary, :scope > .sc-hd, :scope > .sc-sh"), i = h && (h.getAttribute("data-i18n") ? h : h.querySelector("[data-i18n]"));
+      const t = i ? i.getAttribute("data-i18n") : (h ? h.textContent : "");
+      id = "t:" + (o.par ? idOf(o.par) + "/" : "") + String(t || "").replace(/[▾▸▼▶]/g, "").replace(/\(\d+\)/g, "").replace(/\s+/g, " ").trim().slice(0, 60); }
+    return (o._id = id.slice(0, 120));
+  }
+  const pageId = () => String(B.dataset.tab || window.MWB_SEITE || location.pathname.replace(/^\/+|\/+$/g, "").replace(/[^a-z0-9_-]/gi, "-") || "live").toLowerCase().slice(0, 40);
+  const MINE = {on: true, page: "", map: {}, ready: false, done: new WeakSet(), first: false, local: false, timer: 0};
+  const LSK = p => "mwa:ansicht:" + p;
+  async function mineLoad() {
+    const p = pageId(); MINE.page = p; MINE.ready = false; MINE.done = new WeakSet(); MINE.touched = false;
+    let j = null;
+    try { const r = await fetch("/api/ansicht?seite=" + encodeURIComponent(p), {cache: "no-store"}); if (r.ok) j = await r.json(); } catch (e) {}
+    if (p !== MINE.page) return;
+    let m = null; MINE.local = !(j && j.ok);
+    if (!MINE.local) { if (j.known) { m = {}; (j.offen || []).forEach(k => { m[k] = true; }); (j.zu || []).forEach(k => { m[k] = false; }); } MINE.first = !!j.first_groups; }
+    else { try { const v = JSON.parse(lsg(LSK(p), "null")); if (v && typeof v === "object") m = v; } catch (e) {} }
+    MINE.map = m || {}; MINE.known = !!m; MINE.ready = true;
+    if (MINE.on) mineApply(true); state();
+  }
+  function mineApply(all) {                  // the kept view onto the cards (all = every card; else only cards that came later)
+    if (!MINE.ready) return;
+    if (!MINE.known) {                       // nothing kept yet: the first view is «Groups only» (switch was on) or as the page builds it -
+      if (MINE.first && !MINE.touched) items().forEach(o => o.set(o.top));   // kept with the first own click (the page has moved its cards by then)
+      return;
+    }
+    items().forEach(o => { if (!all && MINE.done.has(o.el)) return; MINE.done.add(o.el);
+      if (o.id in MINE.map) o.set(!!MINE.map[o.id]); });
+  }
+  // the ONE function per change (P2 can hang the simulator in here): one card opened / closed by the user
+  function ansichtMerken(id, open) {
+    if (!MINE.on || !MINE.ready || !id) return;
+    if (!MINE.known) { items().forEach(o => { if (!(o.id in MINE.map)) MINE.map[o.id] = o.get(); }); MINE.known = true; }   // the first own click: the whole page
+    MINE.map[id] = !!open; mineSave();
+    if (typeof window.MWB_ON_ANSICHT === "function") try { window.MWB_ON_ANSICHT(MINE.page, id, !!open); } catch (e) {}
+  }
+  function mineSave() { clearTimeout(MINE.timer); MINE.timer = setTimeout(mineFlush, 1000); }
+  function mineFlush() {
+    MINE.timer = 0; const p = MINE.page, o = [], z = [];
+    Object.keys(MINE.map).forEach(k => (MINE.map[k] ? o : z).push(k));
+    lss(LSK(p), JSON.stringify(MINE.map));
+    try { fetch("/api/ansicht", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({seite: p, offen: o, zu: z}), keepalive: true})
+      .then(r => { MINE.local = !r.ok; paintMine(); }).catch(() => { MINE.local = true; paintMine(); }); } catch (e) {}
+  }
+  addEventListener("pagehide", () => { if (MINE.timer) { clearTimeout(MINE.timer); mineFlush(); } });
+  const USR = new WeakMap();                 // a fold the user clicked himself (summary / card heading) - only these are kept
+  document.addEventListener("click", e => { const h = e.target.closest && e.target.closest("summary, .sc-hd, .sc-sh"); if (!h || h.closest(SKIP)) return;
+    const n = h.parentElement; USR.set(n, Date.now()); if (MINE.on) MINE.touched = true;   // from now on the user folds (no start view any more)
+    if (n.tagName !== "DETAILS") setTimeout(() => { const o = items().find(x => x.el === n); if (o) ansichtMerken(o.id, o.get()); }, 0); }, true);
+  document.addEventListener("toggle", e => { const n = e.target; if (n.tagName !== "DETAILS" || !(Date.now() - (USR.get(n) || 0) < 1500)) return;
+    USR.delete(n); const o = items().find(x => x.el === n); if (o) ansichtMerken(o.id, o.get()); }, true);
+  function paintMine() { const b = FB.mine; if (!b) return;
+    b.title = tr("My view: the menus open and close the way you left them (kept for you on every device). Long press or right click: groups only.")
+      + (MINE.local && MINE.ready ? "\n" + tr("My view – saved only on this device (no connection)") : ""); }
   function fold(k) {
+    if (k === "mine") { MINE.on = true; mineApply(true); state(); return; }
+    MINE.on = false; clearTimeout(MINE.timer); if (MINE.timer) mineFlush();
     const its = items();
     its.forEach(o => o.set(k === "open" || (k === "groups" && o.top)));
     state();
   }
   let stRaf = 0;
   function state() {
-    stRaf = 0; const its = items(), subs = its.filter(o => !o.top), tops = its.filter(o => o.top);
+    stRaf = 0; if (MINE.on) mineApply(false);
+    const its = items(), subs = its.filter(o => !o.top), tops = its.filter(o => o.top);
     const st = !its.length ? "" : its.every(o => o.get()) ? "open" : its.every(o => !o.get()) ? "close"
       : subs.length && tops.every(o => o.get()) && subs.every(o => !o.get()) ? "groups" : "";
-    Object.keys(FB).forEach(k => { const b = FB[k], cur = st === k; b.classList.toggle("cur", cur); b.setAttribute("aria-pressed", cur ? "true" : "false");
-      b.disabled = !its.length || (k === "groups" && !subs.length); b.title = its.length ? tr(b.dataset.k) : tr("Nothing to fold on this page");
+    Object.keys(FB).forEach(k => { const b = FB[k], cur = MINE.on ? k === "mine" : st === k; b.classList.toggle("cur", cur); b.setAttribute("aria-pressed", cur ? "true" : "false");
+      b.disabled = !its.length; b.title = its.length ? tr(b.dataset.k) : tr("Nothing to fold on this page");
       b.setAttribute("aria-label", tr(b.dataset.k)); });
+    if (its.length) paintMine();
   }
   const later = () => { if (!stRaf) stRaf = requestAnimationFrame(state); };
   document.addEventListener("toggle", e => { if (e.target.tagName === "DETAILS") later(); }, true);
   document.addEventListener("click", e => { if (e.target.closest && e.target.closest(".sc-hd,.sc-sh")) setTimeout(later, 0); }, true);
-  new MutationObserver(() => { later(); paintGrips(); paintSimple(); }).observe(B, {attributes: true, attributeFilter: ["data-tab"]});
+  new MutationObserver(() => { later(); paintGrips(); paintSimple(); if (pageId() !== MINE.page) mineLoad(); }).observe(B, {attributes: true, attributeFilter: ["data-tab"]});
   let keySeen = null;
   function labels() {
     if (pageKey() !== keySeen) { keySeen = pageKey(); loadSimple(); }   // the page told its key later (guide 516 loads its data first)
     bS.textContent = tr("Simple"); bE.textContent = tr("Expert");
     bC.querySelector(".l").textContent = tr("Symbols coloured"); bP.querySelector(".l").textContent = tr("plain");
     bC.title = tr("Symbols coloured"); bP.title = tr("plain"); si.setAttribute("aria-label", tr("Symbols: green dot or green symbol = switched on"));
-    sgT.textContent = tr("On start: groups only"); sg.title = tr("On every start the settings show only the groups. Off: the menus open as you left them.");
     paintGrips(); paintSimple(); state();
   }
-  paintIc(); labels();
+  paintIc(); labels(); mineLoad();
   [300, 1500, 4000].forEach(ms => setTimeout(labels, ms));            // after the page has built its cards and knows its language
-  // one function per change (review P0): setSimple, setIcons, setStartGroups, fold("close" | "groups" | "open"); the header folds stay per device
-  window.MWB = {setSimple: setSimple, setIcons: setIcons, setStartGroups: setStartGroups, fold: fold, state: later, setFold: setFold, refresh: labels};
+  // one function per change (review P0): setSimple, setIcons, setStartGroups, fold("close" | "mine" | "groups" | "open"), ansichtMerken; the header folds stay per device
+  window.MWB = {setSimple: setSimple, setIcons: setIcons, fold: fold, state: later, setFold: setFold, refresh: labels,
+                mine: () => fold("mine"), ansichtMerken: ansichtMerken, ansicht: () => ({on: MINE.on, page: MINE.page, map: Object.assign({}, MINE.map), local: MINE.local, ready: MINE.ready})};
 })();
 </script>"""
 
@@ -249,12 +316,12 @@ for _a, _b in (('<section id="tips" data-icon="🧭" class="tips"><h2>Tipps &amp
                 "▴ ein und mit dem Griff ▾ wieder aus. Jedes Gerät merkt sich das selbst. Ist die Statuszeile eingeklappt und gibt es einen "
                 "Alarm, einen Fehler oder zu wenige Bilder pro Sekunde, zeigt der Griff einen roten Punkt und eine Kurzinfo. Unter den Reitern "
                 "steht auf jeder Seite dieselbe Leiste: Einfach / Experte, Symbole farbig / schlicht, «Beim Start: Nur Gruppen» und die drei "
-                "Knöpfe Alle zuklappen · Nur Gruppen · Alle aufklappen. Was auf einer Seite nichts bewirkt, ist grau.</p>"),
+                "Knöpfe Alle zuklappen · Meine Ansicht · Alle aufklappen. Was auf einer Seite nichts bewirkt, ist grau.</p>"),
                ('<section id="tips" data-icon="🧭" class="tips"><h2>Tips &amp; tricks</h2>',
                 "<p><b>▴ Fold the header and the bar:</b> fold the tabs and the status line at the top one by one with the small arrow ▴ "
                 "and open them again with the grip ▾. Every device remembers it by itself. With the status line folded, an alarm, an error "
                 "or too few pictures per second show a red dot and a short note on the grip. Under the tabs every page has the same bar: "
-                "Simple / Expert, symbols coloured / plain, «On start: groups only» and the three buttons Collapse all · Groups only · "
+                "Simple / Expert, symbols coloured / plain, «On start: groups only» and the three buttons Collapse all · My view · "
                 "Expand all. What does nothing on a page is grey.</p>")):
     if _a in HELP_PAGE:
         HELP_PAGE = HELP_PAGE.replace(_a, _a + _b, 1)
@@ -271,7 +338,7 @@ def render_page(page, active):
         return out
     out = out.replace("</head>", MWB_CSS + "</head>", 1)
     i = out.rfind("</body>")
-    tag = ("<script>window.MWB_TX=" + json.dumps(mwb_tx(), ensure_ascii=False).replace("</", "<\\/") + ";</script>" + MWB_JS)
+    tag = ("<script>window.MWB_SEITE=" + json.dumps(re.sub(r"[^a-z0-9_-]", "-", str(active or "").lower())[:40]) + ";window.MWB_TX=" + json.dumps(mwb_tx(), ensure_ascii=False).replace("</", "<\\/") + ";</script>" + MWB_JS)
     return out[:i] + tag + out[i:] if i >= 0 else out + tag
 
 

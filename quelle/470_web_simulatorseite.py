@@ -196,7 +196,7 @@ function simCtlBuild(G, r, ctl, fmt) {
       let tgt = bd; const sub = !only && c.sub === "Feineinstellungen" ? "" : c.sub || "";   // 639d: one fold «Feineinstellungen» per card
       if (sub) {
         if (!subs[sub]) {
-          const key = g + "/" + sub, w = el("div", "sc-sub"); if (openS.has(key) || (only && sub === "Störungen" && location.hash === "#c-stoer")) w.classList.add("open");
+          const key = g + "/" + sub, w = el("div", "sc-sub"); w.dataset.mwbId = "s:" + key; if (openS.has(key) || (only && sub === "Störungen" && location.hash === "#c-stoer")) w.classList.add("open");
           const sh = document.createElement("button"); sh.type = "button"; sh.className = "sc-sh";
           const p = () => { sh.textContent = (w.classList.contains("open") ? "▾  " : "▸  ") + sub; };
           sh.onclick = () => { w.classList.toggle("open"); p(); w.classList.contains("open") ? openS.add(key) : openS.delete(key); ss("mw-sc-sub2", [...openS]); };
@@ -1552,7 +1552,7 @@ def ui_seed_script():
     sends every later layout change back to the Pi, where it is kept in the settings file."""
     data = json.dumps({k: v for k, v in CFG["web_ui"].items() if k not in WEB_UI_LOCAL}).replace("</", "<\\/")   # aufr: per-device keys stay on the device
     # nurgruppen: the switch «On start: groups only» for the page code (main page 530, simulator page 470) before it builds
-    return ("<script>window.MW_SG=" + ("true" if CFG.get("ui_start_groups", True) else "false") + ";"
+    return ("<script>window.MW_SG=false;"                    # 3.23: the switch «On start: groups only» is gone - the start is «My view»
             "(function(){var S=" + data + ";try{for(var k in S)localStorage.setItem(k,S[k]);}catch(e){}"
             "var P={},T=null,L=" + json.dumps(sorted(WEB_UI_LOCAL)) + ";"
             "function send(){var b=P;P={};T=null;try{fetch('/api/ui',{method:'POST',headers:{'Content-Type':'application/json'},"

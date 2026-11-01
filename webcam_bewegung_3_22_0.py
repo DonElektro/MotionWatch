@@ -243,7 +243,7 @@ def prepare_settings_file():
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
 ZD_FILE = "moveeye_daten_3_22_0.zip"
-ZD_SHA256 = "ee5281e9bf599b07ec1261cdf556bc2b302b284f00e57cd0633b49c36e043b3a"
+ZD_SHA256 = "6884058fb19b2f5ef3d3928f142a19b827de5ad46c768bbccd4ad2d06eafd52a"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -525,7 +525,7 @@ CFG = {
     "deter_seconds": 6, "deter_pause": 60, "deter_always": False,
     "share_logo": True,
     "ui_simple": True,                       # settings: only the important ones (Expert shows everything)
-    "ui_start_groups": True,                 # nurgruppen: settings open as «Groups only» on every start (off: as folded last time)
+    "ui_ansicht": {}, "ui_ansicht_mig": False, "ui_ansicht_sg0": False,   # 639p «Meine Ansicht»: per user and page; the take-over of «Groups only»
     "share_gps": False,                      # shared pictures / videos keep their GPS position (off: removed before sharing)
     "share_blur_faces": True,                # 2.98.14: faces pixelated in shared pictures / videos (375), the originals stay
     "weekrep_on": True, "weekrep_day": "Sunday", "weekrep_hour": 18, "weekrep_last": "",   # 2.98.14: weekly detection report (426)
@@ -30852,7 +30852,7 @@ def lock_pin_ok(pin):
 # not put back when unlocking: what the operator does (arm, move the camera), what the Pi measures itself, how a
 # device shows the page
 LOCK_KEEP = {"armed", "pan", "tilt", "hotspot_on", "lock_on", "lock_pin", "lock_snap", "web_ui", "ui_open", "ui_tab", "theme", "lang",
-             "fullscreen", "latitude", "longitude", "batt_full_t", "batt_warned", "setup_done", "autostart", "ui_simple", "ui_start_groups"}
+             "fullscreen", "latitude", "longitude", "batt_full_t", "batt_warned", "setup_done", "autostart", "ui_simple"}
 LOCK_LAST = {"restored": []}
 
 
@@ -38296,7 +38296,7 @@ def ui_seed_script():
     sends every later layout change back to the Pi, where it is kept in the settings file."""
     data = json.dumps({k: v for k, v in CFG["web_ui"].items() if k not in WEB_UI_LOCAL}).replace("</", "<\\/")   # aufr: per-device keys stay on the device
     # nurgruppen: the switch «On start: groups only» for the page code (main page 530, simulator page 470) before it builds
-    return ("<script>window.MW_SG=" + ("true" if CFG.get("ui_start_groups", True) else "false") + ";"
+    return ("<script>window.MW_SG=false;"                    # 3.23: the switch «On start: groups only» is gone - the start is «My view»
             "(function(){var S=" + data + ";try{for(var k in S)localStorage.setItem(k,S[k]);}catch(e){}"
             "var P={},T=null,L=" + json.dumps(sorted(WEB_UI_LOCAL)) + ";"
             "function send(){var b=P;P={};T=null;try{fetch('/api/ui',{method:'POST',headers:{'Content-Type':'application/json'},"
@@ -42325,8 +42325,8 @@ class WebStream:
             pg = str(request.args.get("page") or "")[:20]
             if request.method == "POST":
                 d = body(); pg = str(d.get("page") or pg)[:20]
-                if "start_groups" in d:                          # nurgruppen: switch «On start: groups only» (all devices, Pi window)
-                    CFG["ui_start_groups"] = bool(d.get("start_groups")); save_settings()
+                if "start_groups" in d:                          # 3.23: the switch «On start: groups only» is gone (old pages)
+                    pass
                 elif pg and re.fullmatch(r"[a-z]{2,20}", pg):     # 586: Simple / Expert of ONE page (the default stays)
                     m_ = page_modes(); m_[pg] = "simple" if d.get("on") else "expert"
                     if (m_[pg] == "simple") == bool(CFG["ui_simple"]):
@@ -42336,7 +42336,11 @@ class WebStream:
                     CFG["ui_simple"] = bool(d.get("on")); save_settings()      # the default (the Pi window follows by itself)
             return reply({"on": page_simple(pg) if pg else bool(CFG["ui_simple"]), "default": bool(CFG["ui_simple"]), "own": pg in page_modes(),
                           "dev": bool(CFG.get("dev_area")),         # 639d: the group «Entwickler» of the simulator control (470)
-                          "start_groups": bool(CFG.get("ui_start_groups", True))})
+                          })
+
+        @app.route("/api/ansicht", methods=["GET", "POST"])
+        def api_ansicht():                               # 639p «Meine Ansicht»: the own folds per user and page (every device)
+            return ansicht_api(request, reply, body, g)
 
         @app.route("/api/night", methods=["POST"])
         def api_night():
@@ -48555,6 +48559,7 @@ class App:
             self.open_secs = {"grp:alarm"}
         # nurgruppen: what is shown now (open_secs = the own state, saved); «On start: groups only» on start / tab change
         self._shown = {}; self._fold_start = True
+        self._mine = True; self._mine_job = None; self._fold_cvs = {}   # 639p «Meine Ansicht»
         self.step_var = tk.StringVar(value="3")
         self.tab = "live"; self.stick_speed = 30.0; self.relay_prev = {}
         self.left_f = self.stick = self.l_wp = None; self.qs_tiles = {}; self.tab_btns = {}
@@ -49676,6 +49681,10 @@ class App:
         h, body, title = self.subs[k]
         closed = "subx:" + k[4:]
         self._shown[k] = bool(open_)                         # nurgruppen: shown now; the own state (open_secs) only by a click
+        if save and not getattr(self, "_mine", True):       # 639p: «Meine Ansicht» off - a click is not kept
+            save = False
+        elif save:
+            self._mine_change(k, open_)
         if save:
             if open_:
                 self.open_secs.add(k); self.open_secs.discard(closed)
@@ -50662,6 +50671,10 @@ class App:
     def _set_section(self, sec, open_, save=True):
         head, body = self.sections[sec]
         self._shown[sec] = bool(open_)
+        if save and not getattr(self, "_mine", True):       # 639p: «Meine Ansicht» off - a click is not kept
+            save = False
+        elif save:
+            self._mine_change(sec, open_)
         if save:
             (self.open_secs.add if open_ else self.open_secs.discard)(sec)
             if sorted(self.open_secs) != sorted(CFG["ui_open"]):
@@ -50722,8 +50735,10 @@ class App:
     def _toggle_section(self, sec):
         self._set_section(sec, not self._shown.get(sec, sec in self.open_secs))
 
-    def _groups_only(self, save=True):
-        """☰ every group open, the topics inside closed (save=False: the start view of «On start: groups only», not kept)"""
+    def _groups_only(self, save=False):
+        """☰ every group open, the topics inside closed (639p: never kept - «Meine Ansicht» goes off; long press / right click on
+        the middle button, or the start view of «On start: groups only»)"""
+        self._mine = False; self._mine_paint()
         for sec in self.sections:
             self._set_section(sec, True, save=save)
         for k in getattr(self, "subs", {}):
@@ -50740,8 +50755,7 @@ class App:
         """nurgruppen: after building a settings tab - start / tab change: «Groups only» (switch on); else as shown before"""
         if getattr(self, "_fold_start", True):
             self._fold_start = False
-            if CFG.get("ui_start_groups", True):
-                self._groups_only(save=False)
+            self._mine_on()                                  # 639p: the start = «Meine Ansicht» (3.23: no switch «Nur Gruppen» any more)
             return
         for k, v in prev.items():
             if k in self.sections:
@@ -50749,13 +50763,88 @@ class App:
             elif k in getattr(self, "subs", {}):
                 self._set_sub(k, v, save=False)
 
-    def _set_start_groups(self, v):
-        CFG["ui_start_groups"] = bool(v); save_settings()
-        self._groups_only(save=False) if v else self._own_view()
+    # ---- 639p «Meine Ansicht»: the folds the user set himself, kept for the owner («admin», the same as his web pages) per tab ----
+    @staticmethod
+    def _mine_id(k):
+        """window key -> the id of the web page: grp:<group> stays, sub:<part> = sec:<part> (data-view of 530)"""
+        return "sec:" + k[4:] if k.startswith("sub:") else k
+
+    def _mine_keys(self):
+        return list(self.sections) + list(getattr(self, "subs", {}))
+
+    def _mine_on(self):
+        """the middle button: back to the kept view (the first time: «Groups only» if the switch was on, else as the window had it)"""
+        self._mine = True
+        st = ansicht_get(ansicht_user(None), self.tab or "live")
+        want = {k: True for k in st["offen"]}; want.update({k: False for k in st["zu"]})
+        fresh = False
+        for k in self._mine_keys():
+            i = self._mine_id(k)
+            if i in want:
+                v = want[i]
+            elif not st["known"] and st["first_groups"]:
+                v = k in self.sections; fresh = True
+            else:
+                v = self._shown.get(k, k in self.open_secs); fresh = True
+            (self._set_section if k in self.sections else self._set_sub)(k, v, save=False)
+            closed = "subx:" + k[4:]
+            if v:
+                self.open_secs.add(k); self.open_secs.discard(closed)
+            else:
+                self.open_secs.discard(k)
+                if k.startswith("sub:"):
+                    self.open_secs.add(closed)
+        if sorted(self.open_secs) != sorted(CFG["ui_open"]):
+            CFG["ui_open"] = sorted(self.open_secs); save_settings()
+        if fresh:
+            self._mine_change("", None)
+        self._mine_paint()
+
+    def _mine_change(self, k, open_):
+        """the ONE function per change (P2 hangs in here): one group / topic opened or closed by the user - bundled, 1 s"""
+        if not getattr(self, "_mine", True):
+            return
+        if self._mine_job is not None:
+            try:
+                self.root.after_cancel(self._mine_job)
+            except Exception:
+                pass
+        self._mine_job = self.root.after(1000, self._mine_push)
+
+    def _mine_push(self):
+        self._mine_job = None
+        tab = self.tab or "live"
+        st = ansicht_get(ansicht_user(None), tab)
+        m = {x: True for x in st["offen"]}; m.update({x: False for x in st["zu"]})
+        for k in self._mine_keys():
+            m[self._mine_id(k)] = bool(self._shown.get(k, k in self.open_secs))
+        ansicht_set(ansicht_user(None), tab, [x for x, v in m.items() if v], [x for x, v in m.items() if not v])
+
+    def _mine_paint(self):
+        """the blue button of the fold state: the middle while «Meine Ansicht» is on"""
+        for kind, c in list(getattr(self, "_fold_cvs", {}).items()):
+            try:
+                on = kind == "mine" and getattr(self, "_mine", True)
+                c.config(bg=C["acc"] if on else C["panel"])
+                for it in c.find_all():
+                    c.itemconfig(it, **({"fill": "#ffffff" if on else C["txt"]} if c.type(it) in ("line", "text") else {"outline": "#ffffff" if on else C["txt"]}))
+            except tk.TclError:
+                pass
+
+    def _fold_all_btn(self, open_):
+        self._mine = False
+        if self._mine_job is not None:                       # what was clicked before still goes to the Pi
+            try:
+                self.root.after_cancel(self._mine_job)
+            except Exception:
+                pass
+            self._mine_push()
+        self._all_sections(open_)
+        self._mine_paint()
 
     def _mwbar(self, parent, tab):
         """639o: the bar of every web page in the window - Simple / Expert · Symbols coloured / plain · On start: groups only ·
-        Collapse all / Groups only / Expand all (same order, texts and symbols; a narrow window: two lines)"""
+        Collapse all / My view (639p; long press / right click: Groups only) / Expand all (same order, texts and symbols; a narrow window: two lines)"""
         f = tk.Frame(parent, bg=C["bg"]); small = self._lay[0]
         r1 = tk.Frame(f, bg=C["bg"]); r1.pack(fill="x")
         r2 = tk.Frame(f, bg=C["bg"]) if small else r1
@@ -50777,14 +50866,25 @@ class App:
         m.pack(side="left"); Tip(m, tr("This page has only one view") if nosimple else tr("Simple: only the important settings. «Expert» shows all of them."))
         ic = seg(r1, (("color", "🎨 " + tr("Symbols coloured")), ("plain", "◯ " + tr("plain"))), tk_icons(), self._set_icons)
         ic.pack(side="left", padx=(8, 0)); Tip(ic, tr("Symbols: green dot or green symbol = switched on"))
-        sg_ = Toggle(r2, tr("On start: groups only"), CFG.get("ui_start_groups", True), self._set_start_groups)
-        for w_ in (sg_, sg_.cv, sg_.lbl):
-            w_.config(bg=C["bg"])
-        sg_.lbl.config(font=("DejaVu Sans", 9), wraplength=0); sg_.pack(side="left", padx=(0 if small else 10, 0)); self.start_groups_tg = sg_
-        Tip(sg_.lbl, tr("On every start the settings show only the groups. Off: the menus open as you left them."))
-        self._fold_btn(r2, "open", lambda: self._all_sections(True), tr("Expand all")).pack(side="right")
-        self._fold_btn(r2, "groups", self._groups_only, tr("Groups only")).pack(side="right", padx=(0, 6))
-        self._fold_btn(r2, "close", lambda: self._all_sections(False), tr("Collapse all")).pack(side="right", padx=(0, 6))
+        self._fold_cvs = {}
+        self._fold_btn(r2, "open", lambda: self._fold_all_btn(True), tr("Expand all")).pack(side="right")
+        mb = self._fold_btn(r2, "mine", self._mine_on, tr("My view: the menus open and close the way you left them (kept for you on every device). Long press or right click: groups only."))
+        mb.pack(side="right", padx=(0, 6))
+        hold = {"job": None, "long": False}                 # 639p: «Groups only» stays - long press or right click on the middle
+
+        def _down(e):
+            hold["long"] = False
+            hold["job"] = self.root.after(600, lambda: (hold.update(long=True), self._groups_only(save=False)))
+
+        def _up(e):
+            if hold["job"] is not None:
+                self.root.after_cancel(hold["job"]); hold["job"] = None
+            if not hold["long"]:
+                self._mine_on()
+        mb.unbind("<Button-1>"); mb.bind("<ButtonPress-1>", _down); mb.bind("<ButtonRelease-1>", _up)
+        mb.bind("<Button-3>", lambda e: self._groups_only(save=False))
+        self._fold_btn(r2, "close", lambda: self._fold_all_btn(False), tr("Collapse all")).pack(side="right", padx=(0, 6))
+        self.root.after_idle(self._mine_paint)
         return f
 
     def _set_icons(self, v):
@@ -50801,9 +50901,13 @@ class App:
             c.create_line(*P((7, 4, 12, 9, 17, 4)), fill=C["txt"], width=2); c.create_line(*P((7, 20, 12, 15, 17, 20)), fill=C["txt"], width=2)
         elif kind == "open":
             c.create_line(*P((7, 9, 12, 4, 17, 9)), fill=C["txt"], width=2); c.create_line(*P((7, 15, 12, 20, 17, 15)), fill=C["txt"], width=2)
+        elif kind == "mine":                                 # 639p «Meine Ansicht»: two bars and a small star
+            c.create_rectangle(*P((5, 5, 19, 10)), outline=C["txt"], width=2); c.create_rectangle(*P((5, 14, 12, 19)), outline=C["txt"], width=2)
+            c.create_text(17.5 * f, 16.5 * f, text="★", fill=C["txt"], font=("DejaVu Sans", max(7, int(8 * f))))
         else:
             c.create_rectangle(*P((5, 5, 19, 10)), outline=C["txt"], width=2); c.create_rectangle(*P((5, 14, 19, 19)), outline=C["txt"], width=2)
         c.bind("<Button-1>", lambda e: cmd()); Tip(c, tip)
+        getattr(self, "_fold_cvs", {})[kind] = c
         return c
 
     def _all_sections(self, open_):
@@ -67296,39 +67400,6 @@ def play_selftest():
 
 
 SELFTEST_EXTRA.append(("Play area: tab «Spielen» (web, window, simulator spielbereich.gd)", play_selftest))
-# nurgruppen (Daniel, 31.10.2026): on every start the settings show «Groups only» (web, phone, Pi window, simulator page); the
-# own open / closed state is kept (web: mw-open:… through web_ui, window: CFG ui_open) and comes back when the switch is off.
-# key = English text: (Deutsch, Français, Italiano, Rumantsch)
-_HX_NG = {
-    'On start: groups only': ('Beim Start: Nur Gruppen', 'Au démarrage : seulement les groupes', 'All’avvio: solo i gruppi', 'Al start: mo las gruppas'),
-    'On every start the settings show only the groups. Off: the menus open as you left them.':
-        ('Bei jedem Start zeigen die Einstellungen nur die Gruppen. Aus: Die Menüs sind auf- und zugeklappt, wie du sie verlassen hast.',
-         'À chaque démarrage, les réglages n’affichent que les groupes. Désactivé : les menus restent ouverts ou fermés comme vous les avez laissés.',
-         'A ogni avvio le impostazioni mostrano solo i gruppi. Spento: i menu restano aperti o chiusi come li hai lasciati.',
-         'A mintga start mussan ils parameters mo las gruppas. Deactivà: ils menus èn averts u serrads sco che ti als has laschads.'),
-}
-for _k, _v in _HX_NG.items():
-    DE.setdefault(_k, _v[0])
-    for _i, _L in enumerate(('fr', 'it', 'rm')):
-        TRX[_L].setdefault(_k, _v[_i + 1])
-# the main page has its own dictionary (German); fr / it / rm come through /i18n/<lang>.js (TRX)
-WEB_PAGE = WEB_PAGE.replace("</body>", "<script>Object.assign(I18N.de, " + json.dumps({_k: _v[0] for _k, _v in _HX_NG.items()}, ensure_ascii=False)
-                            + ");</script></body>", 1)
-
-# the manual (HELP_PAGE of 540): one paragraph in «Tipps & Tricks», German and English
-for _a, _b in (('<section id="tips" data-icon="🧭" class="tips"><h2>Tipps &amp; Tricks</h2>',
-                "<p><b>☰ Beim Start: Nur Gruppen:</b> Bei jedem Öffnen der Seite (Handy, PC, Pi-Fenster) stehen die Einstellungen in der "
-                "Ansicht «Nur Gruppen»: alle Gruppen offen, die Themen darin zu. Was du selbst auf- und zuklappst, merkt sich MoveEye trotzdem. "
-                "Schaltest du den Schalter «Beim Start: Nur Gruppen» (neben «Einfach / Experte») aus, sind alle Menüs sofort wieder so, wie du "
-                "sie zuletzt verlassen hast. Ab Werk: ein. Auf der Seite Simulator sind beim Start die Karten und die Gruppen der "
-                "Simulator-Steuerung zu (nur «Steuerung» bleibt offen).</p>"),
-               ('<section id="tips" data-icon="🧭" class="tips"><h2>Tips &amp; tricks</h2>',
-                "<p><b>☰ On start: groups only:</b> every time a page opens (phone, PC, Pi window) the settings show «Groups only»: "
-                "all groups open, the topics inside closed. MoveEye still remembers what you open and close yourself. Switch «On start: "
-                "groups only» (next to «Simple / Expert») off and every menu is back the way you left it. Factory setting: on. On the "
-                "page Simulator the cards and the groups of the simulator control start closed (only «Controls» stays open).</p>")):
-    if _a in HELP_PAGE:
-        HELP_PAGE = HELP_PAGE.replace(_a, _a + _b, 1)
 _HX_NEBEL = {
     'Fog – view limited': ('Nebel – Sicht eingeschränkt', 'Brouillard – visibilité réduite', 'Nebbia – visibilità ridotta', 'Tschajera – vista limitada'),
 }
@@ -67860,7 +67931,7 @@ SELFTEST_EXTRA.append(("Trailer der Geschichten (page /sim/trailer, owner only)"
 # render_page() auf JEDE Seite mit Reitern (nav.nav); die Seite kann ihn über window.MWB_PAGE anpassen:
 #   simplePage() -> Seitenschlüssel für /api/ui_simple ("" = auf dieser Seite gibt es nur eine Ansicht: Einfach / Experte grau)
 #   simple(on)   -> eigene Umschaltung (sonst: speichern und neu laden)
-#   startGroups(on) -> eigener Schalter «Beim Start: Nur Gruppen» (sonst: speichern, bei «ein» sofort «Nur Gruppen»)
+#   (3.23: der Schalter «Beim Start: Nur Gruppen» ist entfernt - der Start ist «Meine Ansicht»)
 # Die drei Klapp-Knöpfe wirken auf alle sichtbaren Klappkarten der Seite (<details>, dazu die Karten der Simulator-Steuerung
 # .sc-card / .sc-sub; ohne Hilfe- und Statuskarten: #g2-tt, [data-mwb-skip]); «Nur Gruppen» = oberste Karten offen, die Themen darin zu. Keine Klappkarten: grau. Gleiche Ids wie früher
 # (#all-close, #all-groups, #all-open, #start-groups), damit Hilfe, Rundgang und Bildschirmleser sie weiter finden.
@@ -67886,7 +67957,7 @@ for _k, _v in _HX_MWB.items():
         TRX[_L].setdefault(_k, _v[_i + 1])
 
 MWB_KEYS = sorted(set(_HX_MWB) | {
-    "Simple", "Expert", "On start: groups only", "Collapse all", "Groups only", "Expand all",
+    "Simple", "Expert", "On start: groups only", "Collapse all", "Groups only", "Expand all", "My view",
     "Simple: only the important settings. «Expert» shows all of them.", "Symbols: green dot or green symbol = switched on",
     "On every start the settings show only the groups. Off: the menus open as you left them."})
 
@@ -67911,12 +67982,12 @@ for _a, _b in (('<section id="tips" data-icon="🧭" class="tips"><h2>Tipps &amp
                 "▴ ein und mit dem Griff ▾ wieder aus. Jedes Gerät merkt sich das selbst. Ist die Statuszeile eingeklappt und gibt es einen "
                 "Alarm, einen Fehler oder zu wenige Bilder pro Sekunde, zeigt der Griff einen roten Punkt und eine Kurzinfo. Unter den Reitern "
                 "steht auf jeder Seite dieselbe Leiste: Einfach / Experte, Symbole farbig / schlicht, «Beim Start: Nur Gruppen» und die drei "
-                "Knöpfe Alle zuklappen · Nur Gruppen · Alle aufklappen. Was auf einer Seite nichts bewirkt, ist grau.</p>"),
+                "Knöpfe Alle zuklappen · Meine Ansicht · Alle aufklappen. Was auf einer Seite nichts bewirkt, ist grau.</p>"),
                ('<section id="tips" data-icon="🧭" class="tips"><h2>Tips &amp; tricks</h2>',
                 "<p><b>▴ Fold the header and the bar:</b> fold the tabs and the status line at the top one by one with the small arrow ▴ "
                 "and open them again with the grip ▾. Every device remembers it by itself. With the status line folded, an alarm, an error "
                 "or too few pictures per second show a red dot and a short note on the grip. Under the tabs every page has the same bar: "
-                "Simple / Expert, symbols coloured / plain, «On start: groups only» and the three buttons Collapse all · Groups only · "
+                "Simple / Expert, symbols coloured / plain, «On start: groups only» and the three buttons Collapse all · My view · "
                 "Expand all. What does nothing on a page is grey.</p>")):
     if _a in HELP_PAGE:
         HELP_PAGE = HELP_PAGE.replace(_a, _a + _b, 1)
@@ -67933,7 +68004,7 @@ def render_page(page, active):
         return out
     out = out.replace("</head>", MWB_CSS + "</head>", 1)
     i = out.rfind("</body>")
-    tag = ("<script>window.MWB_TX=" + json.dumps(mwb_tx(), ensure_ascii=False).replace("</", "<\\/") + ";</script>" + MWB_JS)
+    tag = ("<script>window.MWB_SEITE=" + json.dumps(re.sub(r"[^a-z0-9_-]", "-", str(active or "").lower())[:40]) + ";window.MWB_TX=" + json.dumps(mwb_tx(), ensure_ascii=False).replace("</", "<\\/") + ";</script>" + MWB_JS)
     return out[:i] + tag + out[i:] if i >= 0 else out + tag
 
 
@@ -67948,6 +68019,186 @@ def _mwb_selftest():
 
 
 SELFTEST_EXTRA.append(("Header folds and bar (639o)", _mwb_selftest))
+# Daniel (1.11.2026): «der mittlere der 3 Knöpfe wird Meine Ansicht».
+#   * aktiv: jedes Auf- / Zuklappen einer Gruppe / Karte durch den Benutzer wird gemerkt (die Seite schreibt gebündelt, 1 s).
+#   * «Alle zuklappen» / «Alle aufklappen»: Meine Ansicht ist aus, das Gemerkte bleibt; die Mitte stellt es wieder her.
+#   * beim Start ist Meine Ansicht der Standard. «Nur Gruppen» und der Schalter «Beim Start: Nur Gruppen» bleiben (Daniel:
+#     nichts entfernen ohne Zustimmung): «Nur Gruppen» = langer Druck / Rechtsklick auf die Mitte; ist der Schalter ein, startet
+#     die Seite wie bisher mit «Nur Gruppen» (Meine Ansicht aus). Übernahme einmal (ui_ansicht_mig): wer «Beim Start: Nur Gruppen»
+#     hatte, bekommt als erste Meine Ansicht «Nur Gruppen offen» und der Schalter geht aus (sonst wäre Meine Ansicht nie der Start).
+#   * pro Benutzer (der Besitzer ohne Benutzername = «admin», auch das Pi-Fenster) und pro Seite (der Reiter: live, protect,
+#     settings, sim, rec …). Ids = stabile Kennungen der Karten (data-view «grp:…» / «sec:…», id, data-k …), dieselben wie im Fenster
+#     (grp:<gruppe>, sec:<teil>) – passend zu den Gruppen-Ids von ui_gemeinsam (P1).
+#   * ohne Pi (keine Verbindung / kein Recht): die Seite merkt es sich im Browser (localStorage «mwa:…», nicht über web_ui geteilt).
+#   * Simulator: lokal (fold_mem, simulator_settings.json); der Abgleich Simulator ↔ MoveEye kommt mit P2 (eine Funktion pro Änderung:
+#     web ansichtMerken(id, offen), Fenster App._mine_change, Simulator _mine_change).
+
+ANSICHT_MAX_SEITEN = 40
+ANSICHT_MAX_IDS = 400
+_ANSICHT_SEITE = re.compile(r"^[a-z0-9_\-]{1,40}$")
+
+# key = English text: (Deutsch, Français, Italiano, Rumantsch)
+_HX_MINE = {
+    'My view': ('Meine Ansicht', 'Ma vue', 'La mia vista', 'Mia vista'),
+    'My view: the menus open and close the way you left them (kept for you on every device). Long press or right click: groups only.':
+        ('Meine Ansicht: Die Menüs sind auf- und zugeklappt, wie du sie selbst eingestellt hast (für dich auf allen Geräten gleich). '
+         'Lange drücken oder Rechtsklick: Nur Gruppen.',
+         'Ma vue : les menus s’ouvrent et se ferment comme tu les as laissés (pareil sur tous tes appareils). Appui long ou clic droit : '
+         'seulement les groupes.',
+         'La mia vista: i menu sono aperti e chiusi come li hai lasciati (uguale su tutti i tuoi dispositivi). Pressione lunga o clic '
+         'destro: solo i gruppi.',
+         'Mia vista: ils menus èn averts e serrads sco che ti als has laschads (uschia sin tut tes apparats). Smatgar ditg u clic dretg: '
+         'mo las gruppas.'),
+    'My view: the menus open and close the way you left them. Long press or right click: groups only.':   # the simulator (local until P2)
+        ('Meine Ansicht: Die Menüs sind auf- und zugeklappt, wie du sie selbst eingestellt hast. Lange drücken oder Rechtsklick: Nur Gruppen.',
+         'Ma vue : les menus s’ouvrent et se ferment comme tu les as laissés. Appui long ou clic droit : seulement les groupes.',
+         'La mia vista: i menu sono aperti e chiusi come li hai lasciati. Pressione lunga o clic destro: solo i gruppi.',
+         'Mia vista: ils menus èn averts e serrads sco che ti als has laschads. Smatgar ditg u clic dretg: mo las gruppas.'),
+    'My view – saved only on this device (no connection)': ('Meine Ansicht – nur auf diesem Gerät gemerkt (keine Verbindung)',
+        'Ma vue – gardée seulement sur cet appareil (pas de connexion)', 'La mia vista – salvata solo su questo dispositivo (nessuna connessione)',
+        'Mia vista – memorisada mo sin quest apparat (nagina connexiun)'),
+}
+for _k, _v in _HX_MINE.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+MWB_KEYS = sorted(set(MWB_KEYS) | set(_HX_MINE))
+
+VIEW_GET = VIEW_GET + ("/api/ansicht",)            # every user has his own view (also «Nur ansehen»)
+VIEW_POST.add("/api/ansicht")
+LOCK_KEEP.update({"ui_ansicht", "ui_ansicht_mig", "ui_ansicht_sg0"})   # operator mode: the own view is no setting of the device
+
+
+def ansicht_user(g_=None):
+    """the key of the user: the logged-in name; the owner (web password with any name, no password, app key, Pi window) = «admin»"""
+    if g_ is None or getattr(g_, "role", "admin") == "admin":   # the owner: the web password takes any user name, app keys too
+        return "admin"
+    return str(getattr(g_, "user", "") or "")[:60] or "admin"
+
+
+def _ansicht_ids(v):
+    return [x[:120] for x in v if isinstance(x, str) and x.strip()][:ANSICHT_MAX_IDS] if isinstance(v, list) else []
+
+
+def ansicht_clean(d):
+    """CFG ui_ansicht: {user: {seite: {"o": [ids open], "z": [ids closed], "t": time}}} - only sane values"""
+    out = {}
+    if not isinstance(d, dict):
+        return out
+    for u, pages in list(d.items())[:60]:
+        if not isinstance(u, str) or not isinstance(pages, dict):
+            continue
+        pp = {}
+        for s, v in pages.items():
+            if isinstance(s, str) and _ANSICHT_SEITE.match(s) and isinstance(v, dict):
+                pp[s] = {"o": _ansicht_ids(v.get("o")), "z": _ansicht_ids(v.get("z")), "t": int(v.get("t") or 0) if isinstance(v.get("t"), (int, float)) else 0}
+        if pp:
+            out[u[:60]] = dict(sorted(pp.items(), key=lambda kv: -kv[1]["t"])[:ANSICHT_MAX_SEITEN])
+    return out
+
+
+def ansicht_mig():
+    """once: «Beim Start: Nur Gruppen» -> the first «Meine Ansicht» is «Nur Gruppen offen» (ui_ansicht_sg0), the switch goes off
+    so that «Meine Ansicht» is the start (the switch stays and can be switched on again)"""
+    if CFG.get("ui_ansicht_mig"):
+        return False
+    CFG["ui_ansicht_sg0"] = True                         # 3.23: the switch «On start: groups only» is gone (factory was on)
+    CFG["ui_ansicht_mig"] = True
+    return True
+
+
+def ansicht_get(user, seite):
+    """{"known": bool, "offen": [...], "zu": [...], "start_groups": the switch, "first_groups": the first view = «Nur Gruppen»}"""
+    seite = str(seite or "")[:40]
+    e = (CFG.get("ui_ansicht") or {}).get(user, {}).get(seite) if _ANSICHT_SEITE.match(seite) else None
+    return {"known": e is not None, "offen": list(e["o"]) if e else [], "zu": list(e["z"]) if e else [],
+            "start_groups": False, "first_groups": bool(CFG.get("ui_ansicht_sg0", False))}
+
+
+def ansicht_set(user, seite, offen, zu):
+    """the whole view of ONE page of ONE user (the page sends it bundled); False = bad page key"""
+    seite = str(seite or "")[:40]
+    if not _ANSICHT_SEITE.match(seite):
+        return False
+    o, z = _ansicht_ids(offen), _ansicht_ids(zu)
+    zs = set(o)
+    z = [x for x in z if x not in zs]
+    allv = dict(CFG.get("ui_ansicht") or {})
+    pages = dict(allv.get(user) or {})
+    old = pages.get(seite)
+    if old and old["o"] == o and old["z"] == z:
+        return True
+    pages[seite] = {"o": o, "z": z, "t": int(time.time())}
+    allv[str(user)[:60]] = pages
+    CFG["ui_ansicht"] = ansicht_clean(allv)            # re-assign: DEFAULTS share the old dict
+    save_settings()
+    return True
+
+
+def ansicht_api(request, reply, body, g_):
+    """GET /api/ansicht?seite=settings · POST {seite, offen: [...], zu: [...]} (550)"""
+    user = ansicht_user(g_)
+    if request.method == "POST":
+        d = body()
+        ok = ansicht_set(user, d.get("seite"), d.get("offen"), d.get("zu"))
+        return reply({"ok": ok, "user": user}, 200 if ok else 400)
+    return reply(dict(ansicht_get(user, request.args.get("seite")), ok=True, user=user))
+
+
+_settings_migrations_before_ansicht = _settings_migrations
+
+
+def _settings_migrations(cfg_in):                         # + 639p: «Beim Start: Nur Gruppen» -> the first «Meine Ansicht»
+    _settings_migrations_before_ansicht(cfg_in)
+    try:
+        CFG["ui_ansicht"] = ansicht_clean(CFG.get("ui_ansicht"))
+        if ansicht_mig():
+            log_event("sys", "«My view» is the start view now (the folds you set yourself, on every device)")
+    except Exception as e:
+        log_event("sys", f"Settings migration (639p): {e}"[:150])
+
+
+# the manual (HELP_PAGE of 540): one paragraph in «Tipps & Tricks», German and English
+for _a, _b in (('<section id="tips" data-icon="🧭" class="tips"><h2>Tipps &amp; Tricks</h2>',
+                "<p><b>★ Meine Ansicht:</b> Der mittlere der drei Klapp-Knöpfe zeigt die Menüs so auf- und zugeklappt, wie du sie selbst "
+                "eingestellt hast. Solange er blau ist, merkt sich MoveEye jedes Auf- und Zuklappen – pro Seite und für deinen Benutzer, "
+                "auf Handy, iPad, PC und im Pi-Fenster gleich. «Alle zuklappen» oder «Alle aufklappen» schalten Meine Ansicht aus, ohne "
+                "das Gemerkte zu ändern; ein Druck auf die Mitte bringt es zurück. Lange drücken (oder Rechtsklick) auf die Mitte zeigt "
+                "«Nur Gruppen». Ist «Beim Start: Nur Gruppen» ein, startet jede Seite mit «Nur Gruppen».</p>"),
+               ('<section id="tips" data-icon="🧭" class="tips"><h2>Tips &amp; tricks</h2>',
+                "<p><b>★ My view:</b> the middle of the three fold buttons shows the menus open and closed the way you set them yourself. "
+                "While it is blue, MoveEye remembers every fold – per page and for your user, the same on phone, iPad, PC and the Pi "
+                "window. «Collapse all» or «Expand all» switch My view off without changing what was kept; press the middle to get it "
+                "back. A long press (or right click) on the middle shows «Groups only». With «On start: groups only» on, every page "
+                "starts with «Groups only».</p>")):
+    if _a in HELP_PAGE:
+        HELP_PAGE = HELP_PAGE.replace(_a, _a + _b, 1)
+
+
+def _ansicht_selftest():
+    keep = {k: CFG.get(k) for k in ("ui_ansicht", "ui_ansicht_mig", "ui_ansicht_sg0")}
+    _ss = globals()["save_settings"]
+    globals()["save_settings"] = lambda: None
+    try:
+        CFG["ui_ansicht"] = {}; CFG["ui_ansicht_mig"] = False
+        assert ansicht_mig() and CFG["ui_ansicht_sg0"] and "ui_start_groups" not in CFG and not ansicht_mig(), "639p: migration"
+        g0 = ansicht_get("admin", "settings")
+        assert not g0["known"] and g0["first_groups"], "639p: first view"
+        assert ansicht_set("anna", "settings", ["grp:alarm", "sec:push", 5], ["grp:alarm", "grp:sys"])
+        g1 = ansicht_get("anna", "settings")
+        assert g1["known"] and g1["offen"] == ["grp:alarm", "sec:push"] and g1["zu"] == ["grp:sys"], "639p: set / get"
+        assert not ansicht_get("admin", "settings")["known"], "639p: per user"
+        assert not ansicht_set("anna", "../x", [], []) and not ansicht_get("anna", "<b>")["known"], "639p: page key"
+        assert ansicht_user(None) == "admin" and "/api/ansicht" in VIEW_POST and role_allows("view", "/api/ansicht", "GET", {}), "639p: rights"
+        assert role_allows("kid", "/api/ansicht", "POST", {}), "639p: every user keeps his view"
+        tx = mwb_tx()
+        assert all(tx[L].get("My view") for L in ("de", "fr", "it", "rm")) and tx["de"]["My view"] == "Meine Ansicht", "639p: texts"
+    finally:
+        globals()["save_settings"] = _ss
+        CFG.update(keep)
+
+
+SELFTEST_EXTRA.append(("My view (639p)", _ansicht_selftest))
 # ----------------------------------------------------------------------------
 # Entfernt (nur diese Schalter, die Funktion bleibt immer an):
 #   * notify_sandbox  -> sandbox_active() (141) ist in der Simulation immer wahr; Info-Meldungen gehen mit sim_info_push
