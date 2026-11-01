@@ -9386,6 +9386,12 @@
   "it": "Il bunker Fort Chrüzli",
   "rm": "Il bunker Fort Chrüzli"
  },
+ "der D36V50F5 hat keine MPPT-Regelung: ohne Regler bricht die Spannung bei wenig Sonne ein": {
+  "en": "the D36V50F5 has no MPPT control: without a controller the voltage collapses in weak sun",
+  "fr": "le D36V50F5 n'a pas de régulation MPPT : sans régulateur la tension s'effondre par faible soleil",
+  "it": "il D36V50F5 non ha regolazione MPPT: senza regolatore la tensione crolla con poco sole",
+  "rm": "il D36V50F5 n'ha nagina regulaziun MPPT: senza regulatur croda la tensiun cun pauc sulegl"
+ },
  "Der Enkel des Bergführers! Schön, dass du wieder vorbeikommst.": {
   "en": "The mountain guide's grandson! Nice of you to drop by again.",
   "fr": "Le petit-fils du guide ! Content que tu repasses.",
@@ -15466,6 +15472,24 @@
   "fr": "bride en bas",
   "it": "flangia in basso",
   "rm": "flansch sut"
+ },
+ "Flansch unten (nur Kopf ohne Wärmebild)": {
+  "en": "flange down (only head without thermal camera)",
+  "fr": "bride en bas (seulement tête sans caméra thermique)",
+  "it": "flangia in basso (solo testa senza termocamera)",
+  "rm": "flansch sut (mo chau senza camera termica)"
+ },
+ "Flansch unten (nur ohne Relais; gleiche Form wie 17)": {
+  "en": "flange down (only without relay; same shape as 17)",
+  "fr": "bride en bas (seulement sans relais ; même forme que 17)",
+  "it": "flangia in basso (solo senza relè; stessa forma di 17)",
+  "rm": "flansch sut (mo senza relais; medema furma sco 17)"
+ },
+ "Flansch unten (nur ohne Temperaturfühler; Flansch aussen am Boden)": {
+  "en": "flange down (only without temperature probe; flange outside on the bottom)",
+  "fr": "bride en bas (seulement sans sonde de température ; bride dehors sous le fond)",
+  "it": "flangia in basso (solo senza sonda di temperatura; flangia fuori sul fondo)",
+  "rm": "flansch sut (mo senza sonda da temperatura; flansch dadora sin il fund)"
  },
  "Flansch unten (nur ohne Weitwinkel-Kamera)": {
   "en": "flange down (only without wide camera)",
@@ -23960,6 +23984,12 @@
   "it": "Caricamento non possibile: ",
   "rm": "Chargiar betg pussaivel: "
  },
+ "Ladequelle: Netzteil 12 V, mind. 3 A, mit GX16-Stecker verlötet (lädt die Akkus über den D36V50F5)": {
+  "en": "Charging source: power supply 12 V, at least 3 A, soldered to the GX16 plug (charges the cells via the D36V50F5)",
+  "fr": "Source de charge : alimentation 12 V, au moins 3 A, soudée à la fiche GX16 (charge les accus via le D36V50F5)",
+  "it": "Fonte di ricarica: alimentatore 12 V, almeno 3 A, saldato alla spina GX16 (carica le batterie tramite il D36V50F5)",
+  "rm": "Funtauna da chargiar: alimentaziun 12 V, almain 3 A, lotada vi dal stecker GX16 (chargia ils accus via il D36V50F5)"
+ },
  "Ladung jetzt": {
   "en": "Charge now",
   "fr": "Charge actuelle",
@@ -25539,6 +25569,12 @@
   "fr": "Effacer le masque",
   "it": "Cancella maschera",
   "rm": "Stizzar la mascra"
+ },
+ "Masse «Nachmessen» vor dem Druck prüfen": {
+  "en": "check the «measure first» dimensions before printing",
+  "fr": "vérifier les cotes «à mesurer» avant l'impression",
+  "it": "verificare le misure «da misurare» prima della stampa",
+  "rm": "controllar las mesiras «mesirar» avant la stampa"
  },
  "Mast (Szene) – 3 m neben dem Gerät": {
   "en": "Mast (scene) – 3 m beside the device",
@@ -27887,6 +27923,12 @@
   "it": "Mover: la pattuglia continua",
   "rm": "Mover: la patrulla cuntinuescha"
  },
+ "MPPT Solar Laderegler Modul": {
+  "en": "MPPT Solar Laderegler Modul",
+  "fr": "MPPT Solar Laderegler Modul",
+  "it": "MPPT Solar Laderegler Modul",
+  "rm": "MPPT Solar Laderegler Modul"
+ },
  "MPU-6050": {
   "en": "MPU-6050",
   "fr": "MPU-6050",
@@ -29724,6 +29766,12 @@
   "it": "Solo per il proprietario – non in modalità bambini.",
   "rm": "Mo per il possessur – betg en il modus d’uffants."
  },
+ "nur für IR_TYP = «5mm» in v52.py – Standard ist das IR-Modul 120° (irmod), nicht zusätzlich kaufen": {
+  "en": "only for IR_TYP = «5mm» in v52.py – the standard is the IR module 120° (irmod), do not buy both",
+  "fr": "seulement pour IR_TYP = «5mm» dans v52.py – le standard est le module IR 120° (irmod), ne pas acheter les deux",
+  "it": "solo per IR_TYP = «5mm» in v52.py – lo standard è il modulo IR 120° (irmod), non comprare entrambi",
+  "rm": "mo per IR_TYP = «5mm» en v52.py – il standard è il modul IR 120° (irmod), betg cumprar omadus"
+ },
  "Nur Gruppen": {
   "en": "Groups only",
   "fr": "Ouvrir seulement les groupes",
@@ -29993,6 +30041,12 @@
   "fr": "Ou ta propre réponse courte …",
   "it": "O una tua breve risposta …",
   "rm": "U ina atgna resposta curta …"
+ },
+ "oder Solar (solar + solarreg, optional); an der GX16 dürfen 12–40 V anliegen": {
+  "en": "or solar (solar + solarreg, optional); the GX16 takes 12–40 V",
+  "fr": "ou solaire (solar + solarreg, en option) ; la GX16 accepte 12–40 V",
+  "it": "oppure solare (solar + solarreg, opzionale); la GX16 accetta 12–40 V",
+  "rm": "u solar (solar + solarreg, opziunal); la GX16 accepta 12–40 V"
  },
  "offen": {
   "en": "open",
@@ -32630,6 +32684,12 @@
   "it": "lato posteriore",
   "rm": "vart davos"
  },
+ "Rückseite unten (nur ohne IR-Modul; die Madenschraube M3 hält ihn)": {
+  "en": "back side down (only without IR module; the M3 grub screw holds it)",
+  "fr": "face arrière en bas (seulement sans module IR ; la vis sans tête M3 le tient)",
+  "it": "lato posteriore in basso (solo senza modulo IR; il grano M3 lo tiene)",
+  "rm": "vart davos sut (mo senza modul IR; la sbarra M3 al tegna)"
+ },
  "Rüebli": {
   "en": "Carrot",
   "fr": "Carotte",
@@ -34746,6 +34806,12 @@
   "it": "Software",
   "rm": "Software"
  },
+ "Solar-Regler (MPPT) zwischen Panel und GX16: Eingang 18 V, Ausgang 12–24 V konstant, mind. 2 A": {
+  "en": "Solar controller (MPPT) between panel and GX16: input 18 V, constant output 12–24 V, at least 2 A",
+  "fr": "Régulateur solaire (MPPT) entre panneau et GX16 : entrée 18 V, sortie constante 12–24 V, au moins 2 A",
+  "it": "Regolatore solare (MPPT) tra pannello e GX16: ingresso 18 V, uscita costante 12–24 V, almeno 2 A",
+  "rm": "Regulatur solar (MPPT) tranter panel e GX16: entrada 18 V, sortida constanta 12–24 V, almain 2 A"
+ },
  "Solarleuchten (Gartenweg)": {
   "en": "Solar lights (garden path)",
   "fr": "Lampes solaires (allée du jardin)",
@@ -34757,6 +34823,18 @@
   "fr": "Panneau solaire",
   "it": "Pannello solare",
   "rm": "Panel solar"
+ },
+ "Solarpanel 30 W, 18 V (Leerlauf unter 25 V), Kabel an GX16-Stecker": {
+  "en": "Solar panel 30 W, 18 V (open circuit below 25 V), cable to the GX16 plug",
+  "fr": "Panneau solaire 30 W, 18 V (tension à vide sous 25 V), câble vers la fiche GX16",
+  "it": "Pannello solare 30 W, 18 V (a vuoto sotto 25 V), cavo alla spina GX16",
+  "rm": "Panel solar 30 W, 18 V (vid sut 25 V), cabel al stecker GX16"
+ },
+ "Solarpanel 30W 18V": {
+  "en": "Solarpanel 30W 18V",
+  "fr": "Solarpanel 30W 18V",
+  "it": "Solarpanel 30W 18V",
+  "rm": "Solarpanel 30W 18V"
  },
  "Soll ich dir einmal zeigen, wie man sichert?": {
   "en": "Shall I show you how to belay some time?",
@@ -36138,6 +36216,12 @@
   "fr": "Du courant pour MoveEye jusqu'au matin, même par le froid.",
   "it": "Corrente per MoveEye fino al mattino, anche al freddo.",
   "rm": "Current per MoveEye fin la damaun, er cun fradaira."
+ },
+ "Strom messen: INA219 (ina, 0x44)": {
+  "en": "measure the current: INA219 (ina, 0x44)",
+  "fr": "mesurer le courant : INA219 (ina, 0x44)",
+  "it": "misurare la corrente: INA219 (ina, 0x44)",
+  "rm": "mesirar il current: INA219 (ina, 0x44)"
  },
  "Stromausfall": {
   "en": "Power cut",
@@ -40633,6 +40717,12 @@
   "fr": "Caméra grand-angle dans la paroi avant (CAM1), LED IR 5 mm à gauche du PIR, 2 boutons dans la paroi arrière, LED d'état sur la tête. Les fichiers v5.2 ne sont pas encore dans le paquet.",
   "it": "Telecamera grandangolare nella parete frontale (CAM1), LED IR 5 mm a sinistra del PIR, 2 pulsanti nella parete posteriore, LED di stato sopra la testa. I file v5.2 non sono ancora nel pacchetto.",
   "rm": "Camera grondangul en la paraid davant (CAM1), LED IR 5 mm a sanestra dal PIR, 2 buttuns en la paraid davos, LED da status sur il chau. Las datotecas v5.2 n'èn anc betg en il pachet."
+ },
+ "Weitwinkel-Kamera in die Stirnwand (CAM1), IR-Modul 120° rechts neben die Kamera (Madenschraube M3), 2 Tasten in die Rückwand, Status-LED oben in den Kopf. Druckdateien: Druckdateien/v5-2/. Fehlt ein Teil im Paket, kommt der passende Stopfen hinein (12, 18–21).": {
+  "en": "Wide-angle camera into the front wall (CAM1), IR module 120° next to the camera (M3 grub screw), 2 buttons into the back wall, status LED on top of the head. Print files: Druckdateien/v5-2/. If a part is missing in the package, fit the matching plug (12, 18–21).",
+  "fr": "Caméra grand-angle dans la paroi avant (CAM1), module IR 120° à côté de la caméra (vis sans tête M3), 2 boutons dans la paroi arrière, LED d'état sur la tête. Fichiers : Druckdateien/v5-2/. Si une pièce manque dans le paquet, poser le bouchon correspondant (12, 18–21).",
+  "it": "Telecamera grandangolare nella parete frontale (CAM1), modulo IR 120° accanto alla telecamera (grano M3), 2 pulsanti nella parete posteriore, LED di stato sopra la testa. File: Druckdateien/v5-2/. Se nel pacchetto manca un pezzo, montare il tappo corrispondente (12, 18–21).",
+  "rm": "Camera grondangul en la paraid davant (CAM1), modul IR 120° sper la camera (sbarra M3), 2 buttuns en la paraid davos, LED da status sur il chau. Datotecas: Druckdateien/v5-2/. Sch'i manca ina part en il pachet, metter il tappun correspundent (12, 18–21)."
  },
  "Weitwinkel-Kamera: Linsenhöhe 11,4 mm ab Platine, Linsenmitte 9,5 mm unter der Platinen-Oberkante, Frontlinse Ø 6 mm (WC_LENS_H, WC_LENS_FROM_TOP, WC_R0)": {
   "en": "Wide camera: lens height 11.4 mm above the board, lens centre 9.5 mm below the top edge, front lens Ø 6 mm (WC_LENS_H, WC_LENS_FROM_TOP, WC_R0)",

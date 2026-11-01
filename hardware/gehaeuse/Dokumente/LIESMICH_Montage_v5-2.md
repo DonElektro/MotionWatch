@@ -125,6 +125,12 @@ Vorne ist der alte Platz jetzt von der Weitwinkel-Kamera belegt.
   - Der Flansch deckt das Fenster ganz ab und liegt unter dem Regendach.
   - Zum Lösen den Fingernagel unter den Flansch-Rand (Stufe) schieben und abziehen. Die Rastflächen sind 45° schräg, darum geht das ohne Werkzeug.
 - **13_Stopfen_IR_LED:** Geschlitzter Zapfen mit Rastnasen. Er rastet hinter dem Ende der LED-Hülse ein. Flansch Ø 9.
+- **Stopfen für Pakete ohne das Teil** (01.11.2026, Pakete Basis / Komplett / Autark in `bau.json` «pakete»):
+  - **18_Stopfen_Waermebild:** Rast-Stopfen (wie 12) für das Fenster der Thermal-90 vorne im Kopf, Flansch aussen.
+  - **19_Stopfen_IR_Modul:** sitzt wie das IR-Modul in der Hülse, der Zapfen füllt das Loch Ø 17 bündig; die Madenschraube M3 oben hält ihn.
+  - **20_Stopfen_DS18B20:** Flansch Ø 9 aussen unter dem Boden (zwischen den Füssen), Rastnasen über dem Innenboden.
+  - **21_Stopfen_Relais:** Relais-Buchse hinten, gleiche Form wie 17 (Ø 12,3 mit Nase in der Nut).
+  - Basis braucht 12, 17, 19, 20, 21; Komplett und Autark nur 17. 18 ist für einen Kopf ohne Wärmebild (Solo / Kopf, später).
 - **Spiel:** 0,2 mm pro Seite für PETG. Wenn es zu stramm oder zu locker ist, `BLIND_TOL` oder `BLIND_NOSE` in `v52.py` ändern und `python3 kleinteile52.py 12 13` laufen lassen.
 
 ## Druckteile v5.2 (Bambu Lab X2D, PETG, alle ohne Stützen)
@@ -137,6 +143,10 @@ Vorne ist der alte Platz jetzt von der Weitwinkel-Kamera belegt.
 | 13_Stopfen_IR_LED | 1 | A | **neu**, liegt auf dem Flansch, nur ohne IR-LED nötig |
 | 14_Diffusor_Status_LED | 1 | B | **neu**, PETG natur oder weiss (durchscheinend) |
 | 15_Pupillenring | 1 | B | **neu**, PETG schwarz |
+| 18_Stopfen_Waermebild | 1 | B | **neu** 01.11.2026, Flansch unten, nur Kopf ohne Wärmebild |
+| 19_Stopfen_IR_Modul | 1 | A | **neu** 01.11.2026, Rückseite unten, nur ohne IR-Modul |
+| 20_Stopfen_DS18B20 | 1 | A | **neu** 01.11.2026, Flansch unten, nur ohne Temperaturfühler |
+| 21_Stopfen_Relais | 1 | A | **neu** 01.11.2026, Flansch unten, nur ohne Relais |
 | alle anderen | | | wie v5.1 |
 
 **Platten:**

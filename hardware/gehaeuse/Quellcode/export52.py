@@ -16,6 +16,11 @@ JOBS = {  # name: (fn, h, rot, count)
     "16_Stopfen_SD_v52": (v52.part_sd_plug, 0.1, [0, 0, 0], 1),
     "13_Entwicklungs_Sockel": (v52.part_sockel, 0.3, [0, 0, 0], 1),
     "17_Blindstopfen_Reserve": (v52.part_res_plug, 0.1, [0, 0, 0], 1),
+    # 01.11.2026: Stopfen für Pakete ohne das Teil (Basis ohne IR-Modul / DS18B20 / Relais; Kopf ohne Wärmebild)
+    "18_Stopfen_Waermebild": (v52.stopfen_waermebild, 0.08, [0, -90, 0], 1),
+    "19_Stopfen_IR_Modul": (v52.stopfen_ir_modul, 0.1, [0, 0, 0], 1),
+    "20_Stopfen_DS18B20": (v52.stopfen_ds18, 0.08, [0, 0, 0], 1),
+    "21_Stopfen_Relais": (v52.stopfen_relais, 0.1, [0, 0, 0], 1),
 }
 if __name__ == "__main__":
     os.makedirs("out52", exist_ok=True)

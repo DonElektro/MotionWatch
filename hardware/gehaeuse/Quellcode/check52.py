@@ -1,8 +1,10 @@
 """v5.2: Kollisionen (wie check5.py, plus neue Teile) über alle verlangten Kopf-Stellungen
 und Sichtfeld-Test der Weitwinkel-Kamera (Strahlen gegen alle festen und bewegten Teile).
-python3 check52.py [koll] [fov] [wand] [abstand]   (ohne Angabe: alles; «statisch» = nur die festen Teile, schnell)
+python3 check52.py [koll] [fov] [wand] [abstand] [stopfen]   (ohne Angabe: alles; «statisch» = nur die festen Teile, schnell)
 01.11.2026: IR-Modul 120°, Trennsteg, Kabelkamm; «wand» = Stegbreiten in der Stirnwand zwischen den Öffnungen,
-«abstand» = Abstände der Kabelwege CAM0 / CAM1 und des IR-Moduls zu Lüfter, Lüftungsschlitzen und Lautsprecher."""
+«abstand» = Abstände der Kabelwege CAM0 / CAM1 und des IR-Moduls zu Lüfter, Lüftungsschlitzen und Lautsprecher.
+01.11.2026 (Pakete): «stopfen» = die Stopfen 18–21 eingesetzt gegen Unterteil / Kopf / Nachbarn (Kopf über alle Stellungen)
+und wie dicht sie die Öffnung schliessen (offene Fläche = Spalt rundum)."""
 import sys, math, time, numpy as np
 import v52, csg
 h = 0.4
@@ -127,13 +129,45 @@ def abstand():
     print(f"  IR-Modul -> Lüftungsschlitze: {louv.sdf(g).min():.1f} mm", flush=True)
 
 
+STOPFEN_PAARE = {"st_therm": ("head", "side", "yoke", "arm2", "lid", "turntable", "lamp1", "lamp2", "servo2", "cam3", "horn2"),
+                 "st_irmod": ("tub", "buck", "mosfet", "pir", "wcam", "speaker", "pca", "lampdrv", "lid"),
+                 "st_ds18": ("tub", "feet", "fuseh", "speaker", "pca", "mosfet", "lampdrv", "tripod"),
+                 "st_relay": ("tub", "btn", "resplug", "resjack", "ups", "sockel", "shelf", "jacks", "fuseh")}
+
+
+def stopfen(step=0.1):
+    """18–21: Kollisionen (eingesetzt) und offene Fläche der Öffnung (Spalt) – der Kopf-Stopfen in allen Stellungen"""
+    t0 = time.time()
+    P = v52.placed(0, 180); S = v52.stopfen_placed(0, 180)
+    for k, node in S.items():
+        out = [f"{b} {v:.2f}" for b in STOPFEN_PAARE[k] if b in P and (v := coll({k: node, b: P[b]}, k, b)) > 0]
+        print(f"{k:9s} eingesetzt: {', '.join(out) or 'frei'}", flush=True)
+    for k, hole in v52.stopfen_loecher().items():          # Durchblick: Strahlen entlang der Lochachse ohne Stopfen-Material
+        lo, hi = hole.bbox()
+        ax = int(np.argmin(hi - lo)); o = [i for i in range(3) if i != ax]
+        A, B = np.meshgrid(np.arange(lo[o[0]] + step / 2, hi[o[0]], step), np.arange(lo[o[1]] + step / 2, hi[o[1]], step), indexing="ij")
+        Q = np.zeros((A.size, 3)); Q[:, o[0]] = A.ravel(); Q[:, o[1]] = B.ravel(); Q[:, ax] = (lo[ax] + hi[ax]) / 2
+        Q = Q[hole.sdf(Q) < 0]
+        zu = np.zeros(len(Q), bool)
+        for a in np.arange(lo[ax] - 3.0, hi[ax] + 3.0, step):
+            Q[:, ax] = a; zu |= S[k].sdf(Q) < 0
+        print(f"{k:9s} Öffnung {len(Q) * step ** 2:6.1f} mm², Durchblick {(~zu).sum() * step ** 2:5.2f} mm² ({(~zu).mean() * 100:.1f} %)", flush=True)
+    for pan in PANS:
+        for tilt in TILTS:
+            P = v52.placed(tilt, pan); P["st_therm"] = v52.stopfen_placed(tilt, pan)["st_therm"]
+            out = [f"{b} {v:.1f}" for b in STOPFEN_PAARE["st_therm"] if b != "head" and (v := coll(P, "st_therm", b)) > 0]
+            print(f"st_therm tilt {tilt:4} pan {pan:4}: {', '.join(out) or 'frei'} ({time.time() - t0:.0f}s)", flush=True)
+
+
 if __name__ == "__main__":
-    what = sys.argv[1:] or ["koll", "fov", "wand", "abstand"]
+    what = sys.argv[1:] or ["koll", "fov", "wand", "abstand", "stopfen"]
     t0 = time.time()
     if "wand" in what:
         wand()
     if "abstand" in what:
         abstand()
+    if "stopfen" in what:
+        stopfen()
     if "koll" in what or "statisch" in what:
         P = v52.placed(0, 180, blinds=v52.IR_TYP == "5mm")
         st = [(a, b) for a, b in static if a in P and b in P]

@@ -947,7 +947,15 @@
    "preis": 1,
    "haendler": "bastelgarage",
    "suche": "IR LED 5mm 850nm",
-   "wenn": "v52"
+   "wenn": "v52",
+   "optional": true,
+   "alt": {
+    "de": "nur für IR_TYP = «5mm» in v52.py – Standard ist das IR-Modul 120° (irmod), nicht zusätzlich kaufen",
+    "en": "only for IR_TYP = «5mm» in v52.py – the standard is the IR module 120° (irmod), do not buy both",
+    "fr": "seulement pour IR_TYP = «5mm» dans v52.py – le standard est le module IR 120° (irmod), ne pas acheter les deux",
+    "it": "solo per IR_TYP = «5mm» in v52.py – lo standard è il modulo IR 120° (irmod), non comprare entrambi",
+    "rm": "mo per IR_TYP = «5mm» en v52.py – il standard è il modul IR 120° (irmod), betg cumprar omadus"
+   }
   },
   {
    "id": "taster",
@@ -1033,6 +1041,101 @@
    "haendler": "galaxus",
    "suche": "Netzteil 12V 3A",
    "wenn": "entwicklung"
+  },
+  {
+   "id": "lader12",
+   "gruppe": "strom",
+   "menge": "1×",
+   "name": {
+    "de": "Ladequelle: Netzteil 12 V, mind. 3 A, mit GX16-Stecker verlötet (lädt die Akkus über den D36V50F5)",
+    "en": "Charging source: power supply 12 V, at least 3 A, soldered to the GX16 plug (charges the cells via the D36V50F5)",
+    "fr": "Source de charge : alimentation 12 V, au moins 3 A, soudée à la fiche GX16 (charge les accus via le D36V50F5)",
+    "it": "Fonte di ricarica: alimentatore 12 V, almeno 3 A, saldato alla spina GX16 (carica le batterie tramite il D36V50F5)",
+    "rm": "Funtauna da chargiar: alimentaziun 12 V, almain 3 A, lotada vi dal stecker GX16 (chargia ils accus via il D36V50F5)"
+   },
+   "nr": "",
+   "preis": 20,
+   "haendler": "galaxus",
+   "suche": "Netzteil 12V 3A",
+   "wenn": "ups",
+   "alt": {
+    "de": "oder Solar (solar + solarreg, optional); an der GX16 dürfen 12–40 V anliegen",
+    "en": "or solar (solar + solarreg, optional); the GX16 takes 12–40 V",
+    "fr": "ou solaire (solar + solarreg, en option) ; la GX16 accepte 12–40 V",
+    "it": "oppure solare (solar + solarreg, opzionale); la GX16 accetta 12–40 V",
+    "rm": "u solar (solar + solarreg, opziunal); la GX16 accepta 12–40 V"
+   },
+   "unklar": {
+    "de": "Preis geschätzt",
+    "en": "price estimated",
+    "fr": "prix estimé",
+    "it": "prezzo stimato",
+    "rm": "pretsch stimà"
+   }
+  },
+  {
+   "id": "solar",
+   "gruppe": "strom",
+   "menge": "1×",
+   "optional": true,
+   "name": {
+    "de": "Solarpanel 30 W, 18 V (Leerlauf unter 25 V), Kabel an GX16-Stecker",
+    "en": "Solar panel 30 W, 18 V (open circuit below 25 V), cable to the GX16 plug",
+    "fr": "Panneau solaire 30 W, 18 V (tension à vide sous 25 V), câble vers la fiche GX16",
+    "it": "Pannello solare 30 W, 18 V (a vuoto sotto 25 V), cavo alla spina GX16",
+    "rm": "Panel solar 30 W, 18 V (vid sut 25 V), cabel al stecker GX16"
+   },
+   "nr": "",
+   "preis": 45,
+   "haendler": "galaxus",
+   "suche": "Solarpanel 30W 18V",
+   "wenn": "ups",
+   "alt": {
+    "de": "Strom messen: INA219 (ina, 0x44)",
+    "en": "measure the current: INA219 (ina, 0x44)",
+    "fr": "mesurer le courant : INA219 (ina, 0x44)",
+    "it": "misurare la corrente: INA219 (ina, 0x44)",
+    "rm": "mesirar il current: INA219 (ina, 0x44)"
+   },
+   "unklar": {
+    "de": "Preis geschätzt",
+    "en": "price estimated",
+    "fr": "prix estimé",
+    "it": "prezzo stimato",
+    "rm": "pretsch stimà"
+   }
+  },
+  {
+   "id": "solarreg",
+   "gruppe": "strom",
+   "menge": "1×",
+   "optional": true,
+   "name": {
+    "de": "Solar-Regler (MPPT) zwischen Panel und GX16: Eingang 18 V, Ausgang 12–24 V konstant, mind. 2 A",
+    "en": "Solar controller (MPPT) between panel and GX16: input 18 V, constant output 12–24 V, at least 2 A",
+    "fr": "Régulateur solaire (MPPT) entre panneau et GX16 : entrée 18 V, sortie constante 12–24 V, au moins 2 A",
+    "it": "Regolatore solare (MPPT) tra pannello e GX16: ingresso 18 V, uscita costante 12–24 V, almeno 2 A",
+    "rm": "Regulatur solar (MPPT) tranter panel e GX16: entrada 18 V, sortida constanta 12–24 V, almain 2 A"
+   },
+   "nr": "",
+   "preis": 15,
+   "haendler": "galaxus",
+   "suche": "MPPT Solar Laderegler Modul",
+   "wenn": "ups",
+   "alt": {
+    "de": "der D36V50F5 hat keine MPPT-Regelung: ohne Regler bricht die Spannung bei wenig Sonne ein",
+    "en": "the D36V50F5 has no MPPT control: without a controller the voltage collapses in weak sun",
+    "fr": "le D36V50F5 n'a pas de régulation MPPT : sans régulateur la tension s'effondre par faible soleil",
+    "it": "il D36V50F5 non ha regolazione MPPT: senza regolatore la tensione crolla con poco sole",
+    "rm": "il D36V50F5 n'ha nagina regulaziun MPPT: senza regulatur croda la tensiun cun pauc sulegl"
+   },
+   "unklar": {
+    "de": "Preis geschätzt, passendes Modul vor dem Kauf klären",
+    "en": "price estimated, check a suitable module before buying",
+    "fr": "prix estimé, vérifier un module adapté avant l'achat",
+    "it": "prezzo stimato, verificare un modulo adatto prima dell'acquisto",
+    "rm": "pretsch stimà, scleriar in modul adattà avant la cumpra"
+   }
   },
   {
    "id": "motorhat",
@@ -2851,6 +2954,78 @@
      "it": "flangia in basso",
      "rm": "flansch sut"
     }
+   },
+   {
+    "datei": "18_Stopfen_Waermebild",
+    "stueck": 1,
+    "fuellung": 100,
+    "waende": 2,
+    "stuetzen": false,
+    "schicht": "0.12",
+    "brim": 0,
+    "zeit_h": 0.3,
+    "wenn": "v52",
+    "liegt": {
+     "de": "Flansch unten (nur Kopf ohne Wärmebild)",
+     "en": "flange down (only head without thermal camera)",
+     "fr": "bride en bas (seulement tête sans caméra thermique)",
+     "it": "flangia in basso (solo testa senza termocamera)",
+     "rm": "flansch sut (mo chau senza camera termica)"
+    }
+   },
+   {
+    "datei": "19_Stopfen_IR_Modul",
+    "stueck": 1,
+    "fuellung": 20,
+    "waende": 2,
+    "stuetzen": false,
+    "schicht": "0.12",
+    "brim": 0,
+    "zeit_h": 0.4,
+    "wenn": "v52",
+    "liegt": {
+     "de": "Rückseite unten (nur ohne IR-Modul; die Madenschraube M3 hält ihn)",
+     "en": "back side down (only without IR module; the M3 grub screw holds it)",
+     "fr": "face arrière en bas (seulement sans module IR ; la vis sans tête M3 le tient)",
+     "it": "lato posteriore in basso (solo senza modulo IR; il grano M3 lo tiene)",
+     "rm": "vart davos sut (mo senza modul IR; la sbarra M3 al tegna)"
+    }
+   },
+   {
+    "datei": "20_Stopfen_DS18B20",
+    "stueck": 1,
+    "fuellung": 100,
+    "waende": 2,
+    "stuetzen": false,
+    "schicht": "0.12",
+    "brim": 0,
+    "zeit_h": 0.1,
+    "wenn": "v52",
+    "liegt": {
+     "de": "Flansch unten (nur ohne Temperaturfühler; Flansch aussen am Boden)",
+     "en": "flange down (only without temperature probe; flange outside on the bottom)",
+     "fr": "bride en bas (seulement sans sonde de température ; bride dehors sous le fond)",
+     "it": "flangia in basso (solo senza sonda di temperatura; flangia fuori sul fondo)",
+     "rm": "flansch sut (mo senza sonda da temperatura; flansch dadora sin il fund)"
+    }
+   },
+   {
+    "datei": "21_Stopfen_Relais",
+    "stueck": 1,
+    "fuellung": 100,
+    "waende": 2,
+    "stuetzen": false,
+    "schicht": "0.12",
+    "brim": 0,
+    "zeit_h": 0.2,
+    "wenn": "v52",
+    "liegt": {
+     "de": "Flansch unten (nur ohne Relais; gleiche Form wie 17)",
+     "en": "flange down (only without relay; same shape as 17)",
+     "fr": "bride en bas (seulement sans relais ; même forme que 17)",
+     "it": "flangia in basso (solo senza relè; stessa forma di 17)",
+     "rm": "flansch sut (mo senza relais; medema furma sco 17)"
+    }
    }
   ],
   "hinweise": [
@@ -4469,18 +4644,18 @@
     "rm": "Variante v5.2"
    },
    "text": {
-    "de": "Weitwinkel-Kamera in die Stirnwand (CAM1), IR-LED 5 mm links vom PIR, 2 Tasten in die Rückwand, Status-LED oben in den Kopf. Die Druckdateien v5.2 sind noch nicht im Paket.",
-    "en": "Wide-angle camera into the front wall (CAM1), IR LED 5 mm left of the PIR, 2 buttons into the back wall, status LED on top of the head. The print files v5.2 are not yet in the package.",
-    "fr": "Caméra grand-angle dans la paroi avant (CAM1), LED IR 5 mm à gauche du PIR, 2 boutons dans la paroi arrière, LED d'état sur la tête. Les fichiers v5.2 ne sont pas encore dans le paquet.",
-    "it": "Telecamera grandangolare nella parete frontale (CAM1), LED IR 5 mm a sinistra del PIR, 2 pulsanti nella parete posteriore, LED di stato sopra la testa. I file v5.2 non sono ancora nel pacchetto.",
-    "rm": "Camera grondangul en la paraid davant (CAM1), LED IR 5 mm a sanestra dal PIR, 2 buttuns en la paraid davos, LED da status sur il chau. Las datotecas v5.2 n'èn anc betg en il pachet."
+    "de": "Weitwinkel-Kamera in die Stirnwand (CAM1), IR-Modul 120° rechts neben die Kamera (Madenschraube M3), 2 Tasten in die Rückwand, Status-LED oben in den Kopf. Druckdateien: Druckdateien/v5-2/. Fehlt ein Teil im Paket, kommt der passende Stopfen hinein (12, 18–21).",
+    "en": "Wide-angle camera into the front wall (CAM1), IR module 120° next to the camera (M3 grub screw), 2 buttons into the back wall, status LED on top of the head. Print files: Druckdateien/v5-2/. If a part is missing in the package, fit the matching plug (12, 18–21).",
+    "fr": "Caméra grand-angle dans la paroi avant (CAM1), module IR 120° à côté de la caméra (vis sans tête M3), 2 boutons dans la paroi arrière, LED d'état sur la tête. Fichiers : Druckdateien/v5-2/. Si une pièce manque dans le paquet, poser le bouchon correspondant (12, 18–21).",
+    "it": "Telecamera grandangolare nella parete frontale (CAM1), modulo IR 120° accanto alla telecamera (grano M3), 2 pulsanti nella parete posteriore, LED di stato sopra la testa. File: Druckdateien/v5-2/. Se nel pacchetto manca un pezzo, montare il tappo corrispondente (12, 18–21).",
+    "rm": "Camera grondangul en la paraid davant (CAM1), modul IR 120° sper la camera (sbarra M3), 2 buttuns en la paraid davos, LED da status sur il chau. Datotecas: Druckdateien/v5-2/. Sch'i manca ina part en il pachet, metter il tappun correspundent (12, 18–21)."
    },
    "unklar": {
-    "de": "Druckdateien v5.2 fehlen",
-    "en": "print files v5.2 missing",
-    "fr": "fichiers v5.2 manquants",
-    "it": "mancano i file v5.2",
-    "rm": "datotecas v5.2 mancan"
+    "de": "Masse «Nachmessen» vor dem Druck prüfen",
+    "en": "check the «measure first» dimensions before printing",
+    "fr": "vérifier les cotes «à mesurer» avant l'impression",
+    "it": "verificare le misure «da misurare» prima della stampa",
+    "rm": "controllar las mesiras «mesirar» avant la stampa"
    }
   },
   {
@@ -4534,11 +4709,18 @@
     "rm": "Carta SD (v5.2)"
    },
    "text": {
-    "de": "Die microSD-Verlängerung (15 cm) in den Kartenslot des Pi stecken. Den Einbau-Kartenhalter (Platine ca. 22 × 15 mm, 2 Löcher M2,5 im Abstand 18 mm) mit 2 × M2,5 × 6 an die zwei Dome innen an der Lüftungswand über dem PCA9685 schrauben; der Kartenschlitz liegt hinter dem Wandschlitz 14 × 3 mm. Aussen den Stopfen 16 einsetzen. Masse der gekauften Platine vorher nachmessen.",
-    "en": "Plug the microSD extension (15 cm) into the card slot of the Pi. Screw the panel card holder (board approx. 22 × 15 mm, 2 holes M2.5, 18 mm apart) with 2 × M2.5 × 6 to the two bosses on the inside of the vent wall above the PCA9685; the card slot sits behind the 14 × 3 mm wall slot. Insert plug 16 from outside. Measure the board you bought first.",
-    "fr": "Brancher la rallonge microSD (15 cm) dans le lecteur du Pi. Visser le support encastrable (platine env. 22 × 15 mm, 2 trous M2,5 à 18 mm) avec 2 × M2,5 × 6 sur les deux dômes à l'intérieur de la paroi d'aération au-dessus du PCA9685 ; la fente de carte se trouve derrière la fente 14 × 3 mm. Mettre le bouchon 16 à l'extérieur. Mesurer d'abord la platine achetée.",
-    "it": "Inserire la prolunga microSD (15 cm) nello slot del Pi. Avvitare il portaschede (scheda circa 22 × 15 mm, 2 fori M2,5 a 18 mm) con 2 × M2,5 × 6 alle due torrette all'interno della parete di ventilazione sopra il PCA9685; la fessura della scheda è dietro la fessura 14 × 3 mm. Inserire il tappo 16 dall'esterno. Misurare prima la scheda acquistata.",
-    "rm": "Metter la prolungaziun microSD (15 cm) en il slot dal Pi. Fixar il purtader integrà (platina ca. 22 × 15 mm, 2 foras M2,5 en distanza da 18 mm) cun 2 × M2,5 × 6 vi dals dus cupels a l'intern da la paraid da ventilaziun sur il PCA9685; la fessa da la carta è davos la fessa 14 × 3 mm. Metter il zaffer 16 da l'exteriur. Mesirar avant la platina cumprada."
+    "de": "Weitwinkel-Kamera in die Stirnwand (CAM1), IR-Modul 120° rechts neben die Kamera (Madenschraube M3), 2 Tasten in die Rückwand, Status-LED oben in den Kopf. Druckdateien: Druckdateien/v5-2/. Fehlt ein Teil im Paket, kommt der passende Stopfen hinein (12, 18–21).",
+    "en": "Wide-angle camera into the front wall (CAM1), IR module 120° next to the camera (M3 grub screw), 2 buttons into the back wall, status LED on top of the head. Print files: Druckdateien/v5-2/. If a part is missing in the package, fit the matching plug (12, 18–21).",
+    "fr": "Caméra grand-angle dans la paroi avant (CAM1), module IR 120° à côté de la caméra (vis sans tête M3), 2 boutons dans la paroi arrière, LED d'état sur la tête. Fichiers : Druckdateien/v5-2/. Si une pièce manque dans le paquet, poser le bouchon correspondant (12, 18–21).",
+    "it": "Telecamera grandangolare nella parete frontale (CAM1), modulo IR 120° accanto alla telecamera (grano M3), 2 pulsanti nella parete posteriore, LED di stato sopra la testa. File: Druckdateien/v5-2/. Se nel pacchetto manca un pezzo, montare il tappo corrispondente (12, 18–21).",
+    "rm": "Camera grondangul en la paraid davant (CAM1), modul IR 120° sper la camera (sbarra M3), 2 buttuns en la paraid davos, LED da status sur il chau. Datotecas: Druckdateien/v5-2/. Sch'i manca ina part en il pachet, metter il tappun correspundent (12, 18–21)."
+   },
+   "unklar": {
+    "de": "Masse «Nachmessen» vor dem Druck prüfen",
+    "en": "check the «measure first» dimensions before printing",
+    "fr": "vérifier les cotes «à mesurer» avant l'impression",
+    "it": "verificare le misure «da misurare» prima della stampa",
+    "rm": "controllar las mesiras «mesirar» avant la stampa"
    }
   }
  ],
@@ -4570,7 +4752,11 @@
   "v5-2/MoveEye_v5-2_14_Diffusor_Status_LED.3mf",
   "v5-2/MoveEye_v5-2_15_Pupillenring.3mf",
   "v5-2/MoveEye_v5-2_16_Stopfen_SD_v52.3mf",
-  "v5-2/MoveEye_v5-2_17_Blindstopfen_Reserve.3mf"
+  "v5-2/MoveEye_v5-2_17_Blindstopfen_Reserve.3mf",
+  "v5-2/MoveEye_v5-2_18_Stopfen_Waermebild.3mf",
+  "v5-2/MoveEye_v5-2_19_Stopfen_IR_Modul.3mf",
+  "v5-2/MoveEye_v5-2_20_Stopfen_DS18B20.3mf",
+  "v5-2/MoveEye_v5-2_21_Stopfen_Relais.3mf"
  ],
  "ui_bauen": [
   {
@@ -5259,7 +5445,11 @@
    "15_Pupillenring",
    "16_Stopfen_SD_v52",
    "13_Entwicklungs_Sockel",
-   "17_Blindstopfen_Reserve"
+   "17_Blindstopfen_Reserve",
+   "18_Stopfen_Waermebild",
+   "19_Stopfen_IR_Modul",
+   "20_Stopfen_DS18B20",
+   "21_Stopfen_Relais"
   ],
   "anleitung": "Dokumente/LIESMICH_Montage_v5-2.md",
   "hinweis": {
@@ -5347,5 +5537,254 @@
   "lamp1": "#f59a4a",
   "lamp2": "#f59a4a",
   "head52": "#f59a4a"
+ },
+ "pakete": {
+  "_hinweis": "Information (Entscheid Daniel 01.11.2026): drei Pakete. Die Seite «Bauen» bleibt bei den Varianten (gehaeuse / akku / mover); «variante» zeigt, welche Wahl dort passt. bom = Materialliste-IDs ohne optionale Extras, preis_chf = Summe der geschätzten bom-Preise (Zeilensumme, gerundet), extras = optionale bom-IDs (nicht in der Summe), stopfen = Druckteile nur für dieses Paket (dazu immer 17 für die Reserve-Öffnung). Solo und Mobil folgen später.",
+  "stand": "01.11.2026",
+  "liste": [
+   {
+    "id": "basis",
+    "name": {
+     "de": "Basis",
+     "en": "Basic",
+     "fr": "Base",
+     "it": "Base",
+     "rm": "Basa"
+    },
+    "text": {
+     "de": "Kopf + Wärmebild: Pi 5, Kopfkamera NoIR, Thermal-90, Schwenk-/Neigekopf, Licht weiss + IR, PIR, Lagesensor, Tasten, Status-LED; Unterteil v5.2 mit Stopfen, 12-V-Netzteil",
+     "en": "Head + thermal: Pi 5, head camera NoIR, Thermal-90, pan/tilt head, white + IR light, PIR, motion sensor, buttons, status LED; lower part v5.2 with plugs, 12 V power supply",
+     "fr": "Tête + thermique : Pi 5, caméra NoIR de la tête, Thermal-90, tête pan/tilt, lumière blanche + IR, PIR, capteur de position, boutons, LED d'état ; partie inférieure v5.2 avec bouchons, alimentation 12 V",
+     "it": "Testa + termocamera: Pi 5, telecamera NoIR della testa, Thermal-90, testa pan/tilt, luce bianca + IR, PIR, sensore di posizione, pulsanti, LED di stato; parte inferiore v5.2 con tappi, alimentatore 12 V",
+     "rm": "Chau + camera termica: Pi 5, camera NoIR dal chau, Thermal-90, chau pan/tilt, glisch alva + IR, PIR, sensur da posiziun, buttuns, LED da status; part sut v5.2 cun tappuns, alimentaziun 12 V"
+    },
+    "variante": {
+     "gehaeuse": "v52",
+     "akku": "netz",
+     "mover": "ohne"
+    },
+    "bom": [
+     "pi5",
+     "cooler",
+     "sd",
+     "cam",
+     "camcable",
+     "therm",
+     "servo",
+     "pca",
+     "elko",
+     "bbs",
+     "fett",
+     "charger",
+     "buck",
+     "gx16",
+     "fuse",
+     "usbc",
+     "psu12",
+     "ledw",
+     "ledir",
+     "mosfet",
+     "res",
+     "pir",
+     "mpu",
+     "petg",
+     "litze",
+     "hdmi",
+     "schrauben",
+     "sdext",
+     "taster",
+     "sled"
+    ],
+    "extras": [
+     "lte"
+    ],
+    "stopfen": [
+     "12_Blindstopfen_Weitwinkel",
+     "19_Stopfen_IR_Modul",
+     "20_Stopfen_DS18B20",
+     "21_Stopfen_Relais"
+    ],
+    "preis_chf": 447.75
+   },
+   {
+    "id": "komplett",
+    "name": {
+     "de": "Komplett",
+     "en": "Complete",
+     "fr": "Complet",
+     "it": "Completo",
+     "rm": "Cumplet"
+    },
+    "text": {
+     "de": "v5.2 mit Weitwinkel-Kamera und IR-Modul 120°, Ton (Lautsprecher, Mikrofon), Sensoren (DS18B20, BME280), Relais; 12-V-Netzteil",
+     "en": "v5.2 with wide-angle camera and IR module 120°, sound (speaker, microphone), sensors (DS18B20, BME280), relay; 12 V power supply",
+     "fr": "v5.2 avec caméra grand-angle et module IR 120°, son (haut-parleur, micro), capteurs (DS18B20, BME280), relais ; alimentation 12 V",
+     "it": "v5.2 con telecamera grandangolare e modulo IR 120°, audio (altoparlante, microfono), sensori (DS18B20, BME280), relè; alimentatore 12 V",
+     "rm": "v5.2 cun camera grondangul e modul IR 120°, tun (autpledader, microfon), sensors (DS18B20, BME280), relais; alimentaziun 12 V"
+    },
+    "variante": {
+     "gehaeuse": "v52",
+     "akku": "netz",
+     "mover": "ohne"
+    },
+    "bom": [
+     "pi5",
+     "cooler",
+     "sd",
+     "cam",
+     "camcable",
+     "therm",
+     "servo",
+     "pca",
+     "elko",
+     "bbs",
+     "fett",
+     "charger",
+     "buck",
+     "gx16",
+     "fuse",
+     "usbc",
+     "psu12",
+     "ledw",
+     "ledir",
+     "mosfet",
+     "res",
+     "pir",
+     "mpu",
+     "petg",
+     "litze",
+     "hdmi",
+     "schrauben",
+     "sdext",
+     "taster",
+     "sled",
+     "camwide",
+     "camcable2",
+     "m2",
+     "irmod",
+     "mosfet3",
+     "spk",
+     "pam",
+     "sound",
+     "mic",
+     "usbext",
+     "foam",
+     "hub",
+     "ds18",
+     "bme",
+     "relay",
+     "m12"
+    ],
+    "extras": [
+     "lte"
+    ],
+    "stopfen": [],
+    "preis_chf": 590.25
+   },
+   {
+    "id": "autark",
+    "name": {
+     "de": "Autark",
+     "en": "Autonomous",
+     "fr": "Autonome",
+     "it": "Autonomo",
+     "rm": "Autarc"
+    },
+    "text": {
+     "de": "Komplett mit Akku (UPS HAT (E), 4 × 21700) und Ladequelle (12-V-Netzteil an der GX16; Solar als Extra)",
+     "en": "Complete with battery (UPS HAT (E), 4 × 21700) and charging source (12 V power supply at the GX16; solar as an extra)",
+     "fr": "Complet avec batterie (UPS HAT (E), 4 × 21700) et source de charge (alimentation 12 V sur la GX16 ; solaire en option)",
+     "it": "Completo con batteria (UPS HAT (E), 4 × 21700) e fonte di ricarica (alimentatore 12 V alla GX16; solare come extra)",
+     "rm": "Cumplet cun accu (UPS HAT (E), 4 × 21700) e funtauna da chargiar (alimentaziun 12 V a la GX16; solar sco extra)"
+    },
+    "variante": {
+     "gehaeuse": "v52",
+     "akku": "ups",
+     "mover": "ohne"
+    },
+    "bom": [
+     "pi5",
+     "cooler",
+     "sd",
+     "cam",
+     "camcable",
+     "therm",
+     "servo",
+     "pca",
+     "elko",
+     "bbs",
+     "fett",
+     "charger",
+     "buck",
+     "gx16",
+     "fuse",
+     "usbc",
+     "ledw",
+     "ledir",
+     "mosfet",
+     "res",
+     "pir",
+     "mpu",
+     "petg",
+     "litze",
+     "hdmi",
+     "schrauben",
+     "sdext",
+     "taster",
+     "sled",
+     "camwide",
+     "camcable2",
+     "m2",
+     "irmod",
+     "mosfet3",
+     "spk",
+     "pam",
+     "sound",
+     "mic",
+     "usbext",
+     "foam",
+     "hub",
+     "ds18",
+     "bme",
+     "relay",
+     "m12",
+     "ups",
+     "cells",
+     "fuse2",
+     "chled",
+     "lader12"
+    ],
+    "extras": [
+     "ina",
+     "solar",
+     "solarreg",
+     "lte"
+    ],
+    "stopfen": [],
+    "preis_chf": 767.07
+   }
+  ],
+  "spaeter": [
+   {
+    "id": "solo",
+    "name": {
+     "de": "Solo",
+     "en": "Solo",
+     "fr": "Solo",
+     "it": "Solo",
+     "rm": "Solo"
+    }
+   },
+   {
+    "id": "mobil",
+    "name": {
+     "de": "Mobil",
+     "en": "Mobile",
+     "fr": "Mobile",
+     "it": "Mobile",
+     "rm": "Mobil"
+    }
+   }
+  ]
  }
 }

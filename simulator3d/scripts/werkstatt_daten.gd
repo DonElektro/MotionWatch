@@ -3,7 +3,7 @@ extends RefCounted
 ## hardware/gehaeuse/bau.json. NICHT VON HAND ÄNDERN (Texte dort ändern, dann «gehaeuse_bauen.py --texte»).
 ## Texte deutsch (T.t übersetzt sie, Übersetzungen kommen aus bau.json in i18n/texte.json).
 
-const QUELLE_SHA := "c36d9bda42ce868a54add9b5841c81f41095aa9ff124d703f14955dc56549ec5"
+const QUELLE_SHA := "01bcf1cff6e8abfd90122dda59820d3beccdc5f4422aa7272ff1925dba07b592"
 const VERSION := "5.1"
 const KOPF_FARBE := "#f59a4a"   # Kopfteil (dreht / neigt) in MoveEye-Orange
 const KOPF_TEILE := ["turntable", "yoke", "arm2", "head", "side", "lamp1", "lamp2", "head52"]
@@ -63,6 +63,9 @@ const BOM := {
 	"camcable2": ["1×", "Kamerakabel Pi 5, 200 mm (CAM1)", "SC1129", "Variante v5.2 (Weitwinkel-Kamera, eigenes Unterteil)"],
 	"psu12": ["1×", "Netzteil 12 V, mind. 3 A, mit GX16-Stecker verlötet", "", "Strom"],
 	"psu12_dev": ["1×", "Netzteil 12 V, mind. 3 A, mit GX16-Stecker verlötet – Entwicklung", "", "Strom"],
+	"lader12": ["1×", "Ladequelle: Netzteil 12 V, mind. 3 A, mit GX16-Stecker verlötet (lädt die Akkus über den D36V50F5)", "", "Strom"],
+	"solar": ["1×", "Solarpanel 30 W, 18 V (Leerlauf unter 25 V), Kabel an GX16-Stecker", "", "Strom"],
+	"solarreg": ["1×", "Solar-Regler (MPPT) zwischen Panel und GX16: Eingang 18 V, Ausgang 12–24 V konstant, mind. 2 A", "", "Strom"],
 	"motorhat": ["1×", "Motor-HAT (Adafruit DC & Stepper Motor HAT, I2C 0x60)", "Adafruit 2348", "Mover"],
 	"chassis": ["1×", "Kettenfahrwerk mit 2 DC-Motoren", "", "Mover"],
 	"schrauben": ["1 Set", "Schraubensatz M2 / M2,5 / M3 mit Muttern und Scheiben", "", "Kabel, Druck, Notfall"],
@@ -462,6 +465,54 @@ const BAU := {
 				"zeit_h": 0.2,
 				"wenn": "v52",
 				"liegt": "Flansch unten"
+			},
+			{
+				"datei": "18_Stopfen_Waermebild",
+				"stueck": 1,
+				"fuellung": 100,
+				"waende": 2,
+				"stuetzen": false,
+				"schicht": "0.12",
+				"brim": 0,
+				"zeit_h": 0.3,
+				"wenn": "v52",
+				"liegt": "Flansch unten (nur Kopf ohne Wärmebild)"
+			},
+			{
+				"datei": "19_Stopfen_IR_Modul",
+				"stueck": 1,
+				"fuellung": 20,
+				"waende": 2,
+				"stuetzen": false,
+				"schicht": "0.12",
+				"brim": 0,
+				"zeit_h": 0.4,
+				"wenn": "v52",
+				"liegt": "Rückseite unten (nur ohne IR-Modul; die Madenschraube M3 hält ihn)"
+			},
+			{
+				"datei": "20_Stopfen_DS18B20",
+				"stueck": 1,
+				"fuellung": 100,
+				"waende": 2,
+				"stuetzen": false,
+				"schicht": "0.12",
+				"brim": 0,
+				"zeit_h": 0.1,
+				"wenn": "v52",
+				"liegt": "Flansch unten (nur ohne Temperaturfühler; Flansch aussen am Boden)"
+			},
+			{
+				"datei": "21_Stopfen_Relais",
+				"stueck": 1,
+				"fuellung": 100,
+				"waende": 2,
+				"stuetzen": false,
+				"schicht": "0.12",
+				"brim": 0,
+				"zeit_h": 0.2,
+				"wenn": "v52",
+				"liegt": "Flansch unten (nur ohne Relais; gleiche Form wie 17)"
 			}
 		],
 		"hinweise": [
@@ -1160,8 +1211,8 @@ const BAU := {
 		{
 			"wenn": "v52",
 			"titel": "Variante v5.2",
-			"text": "Weitwinkel-Kamera in die Stirnwand (CAM1), IR-LED 5 mm links vom PIR, 2 Tasten in die Rückwand, Status-LED oben in den Kopf. Die Druckdateien v5.2 sind noch nicht im Paket.",
-			"unklar": "Druckdateien v5.2 fehlen"
+			"text": "Weitwinkel-Kamera in die Stirnwand (CAM1), IR-Modul 120° rechts neben die Kamera (Madenschraube M3), 2 Tasten in die Rückwand, Status-LED oben in den Kopf. Druckdateien: Druckdateien/v5-2/. Fehlt ein Teil im Paket, kommt der passende Stopfen hinein (12, 18–21).",
+			"unklar": "Masse «Nachmessen» vor dem Druck prüfen"
 		},
 		{
 			"wenn": "mover",
@@ -1177,7 +1228,8 @@ const BAU := {
 		{
 			"wenn": "v52",
 			"titel": "SD-Karte (v5.2)",
-			"text": "Die microSD-Verlängerung (15 cm) in den Kartenslot des Pi stecken. Den Einbau-Kartenhalter (Platine ca. 22 × 15 mm, 2 Löcher M2,5 im Abstand 18 mm) mit 2 × M2,5 × 6 an die zwei Dome innen an der Lüftungswand über dem PCA9685 schrauben; der Kartenschlitz liegt hinter dem Wandschlitz 14 × 3 mm. Aussen den Stopfen 16 einsetzen. Masse der gekauften Platine vorher nachmessen."
+			"text": "Weitwinkel-Kamera in die Stirnwand (CAM1), IR-Modul 120° rechts neben die Kamera (Madenschraube M3), 2 Tasten in die Rückwand, Status-LED oben in den Kopf. Druckdateien: Druckdateien/v5-2/. Fehlt ein Teil im Paket, kommt der passende Stopfen hinein (12, 18–21).",
+			"unklar": "Masse «Nachmessen» vor dem Druck prüfen"
 		}
 	],
 	"druckdateien_einzeln": [
@@ -1208,7 +1260,11 @@ const BAU := {
 		"v5-2/MoveEye_v5-2_14_Diffusor_Status_LED.3mf",
 		"v5-2/MoveEye_v5-2_15_Pupillenring.3mf",
 		"v5-2/MoveEye_v5-2_16_Stopfen_SD_v52.3mf",
-		"v5-2/MoveEye_v5-2_17_Blindstopfen_Reserve.3mf"
+		"v5-2/MoveEye_v5-2_17_Blindstopfen_Reserve.3mf",
+		"v5-2/MoveEye_v5-2_18_Stopfen_Waermebild.3mf",
+		"v5-2/MoveEye_v5-2_19_Stopfen_IR_Modul.3mf",
+		"v5-2/MoveEye_v5-2_20_Stopfen_DS18B20.3mf",
+		"v5-2/MoveEye_v5-2_21_Stopfen_Relais.3mf"
 	],
 	"farben": {
 		"kopf": "#f59a4a",
@@ -1546,7 +1602,9 @@ const BAU := {
 			"preis": 1,
 			"haendler": "bastelgarage",
 			"suche": "IR LED 5mm 850nm",
+			"alt": "nur für IR_TYP = «5mm» in v52.py – Standard ist das IR-Modul 120° (irmod), nicht zusätzlich kaufen",
 			"wenn": "v52",
+			"optional": true,
 			"gruppe": "v52"
 		},
 		"taster": {
@@ -1582,6 +1640,32 @@ const BAU := {
 			"haendler": "galaxus",
 			"suche": "Netzteil 12V 3A",
 			"wenn": "entwicklung",
+			"gruppe": "strom"
+		},
+		"lader12": {
+			"preis": 20,
+			"haendler": "galaxus",
+			"suche": "Netzteil 12V 3A",
+			"alt": "oder Solar (solar + solarreg, optional); an der GX16 dürfen 12–40 V anliegen",
+			"wenn": "ups",
+			"gruppe": "strom"
+		},
+		"solar": {
+			"preis": 45,
+			"haendler": "galaxus",
+			"suche": "Solarpanel 30W 18V",
+			"alt": "Strom messen: INA219 (ina, 0x44)",
+			"wenn": "ups",
+			"optional": true,
+			"gruppe": "strom"
+		},
+		"solarreg": {
+			"preis": 15,
+			"haendler": "galaxus",
+			"suche": "MPPT Solar Laderegler Modul",
+			"alt": "der D36V50F5 hat keine MPPT-Regelung: ohne Regler bricht die Spannung bei wenig Sonne ein",
+			"wenn": "ups",
+			"optional": true,
 			"gruppe": "strom"
 		},
 		"motorhat": {

@@ -110,6 +110,11 @@ denselben Reitern: Übersicht · Teile · Einkauf · Drucken · Montage · Verka
   Akkus (Pi in gleicher Lage und Höhe, Variante «Entwicklung» in Bauen). **Alle Druckdateien v5.2** (Platten A und B und
   jedes Teil einzeln, auch die unveränderten): [Druckdateien/v5-2/](Druckdateien/v5-2/).
 
+  **Pakete (01.11.2026, Entscheid Daniel):** Basis (Kopf + Wärmebild), Komplett (v5.2 mit Weitwinkel, Ton, Sensoren, Relais),
+  Autark (Komplett + Akku + Ladequelle) – Liste der bom-IDs und Preissumme in `bau.json` «pakete». Neue Stopfen für fehlende
+  Teile: 18 Wärmebild-Fenster (Platte B), 19 IR-Modul-Loch, 20 DS18B20-Durchführung, 21 Relais-Buchse (Platte A); Prüfung
+  `python3 check52.py stopfen`, `python3 printcheck52.py G H J K`.
+
   **NACHMESSEN vor dem Druck v5.2** (Parameter oben in `Quellcode/v52.py`, alle geschätzt):
 
   | Was | Parameter | Annahme |
