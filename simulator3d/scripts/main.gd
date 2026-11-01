@@ -965,82 +965,7 @@ func _th_read(img: Image, x: int, y: int) -> float:
 
 
 func _calibrate_thermal() -> void:
-	"""3D-4.26: measure how the renderer stores colours (a ramp 128 … 255 in a 16 × 8 picture: linear, sRGB, squeezed?) and
-	build th_inv; then check with a surface of exactly 20 °C"""
-	var vp := SubViewport.new()
-	vp.size = Vector2i(16, 16)
-	vp.render_target_update_mode = SubViewport.UPDATE_ONCE
-	add_child(vp)
-	var cam := Camera3D.new()
-	cam.cull_mask = 8
-	cam.environment = th_env
-	vp.add_child(cam)
-	cam.global_transform = Transform3D(Basis(), Vector3(0, -500, 3))
-	var rq := MeshInstance3D.new()                       # the ramp: pixel x + 16 y shows 128 + that (written like the code)
-	rq.mesh = box(40, 40, 0.1)
-	var rs := Shader.new()
-	rs.code = "shader_type spatial;\nrender_mode unshaded, cull_disabled, shadows_disabled, fog_disabled;\nuniform float srgb = 0.0;\n" + \
-			"void fragment() { vec3 c = vec3(min(255.0, 128.0 + floor(FRAGCOORD.x) + 16.0 * floor(FRAGCOORD.y)) / 255.0);\n" + \
-			"if (srgb > 0.5) { c = mix(c / 12.92, pow((c + vec3(0.055)) / 1.055, vec3(2.4)), step(vec3(0.04045), c)); }\nALBEDO = c; }"
-	var rm := ShaderMaterial.new()
-	rm.shader = rs
-	rq.material_override = rm
-	rq.layers = 8
-	add_child(rq)
-	rq.global_position = Vector3(0, -500, 0)
-	var bg_was := th_env.background_color
-	_make_lut(false)
-	var ok := false
-	for srgb in [false, true]:
-		rm.set_shader_parameter("srgb", 1.0 if srgb else 0.0)
-		vp.render_target_update_mode = SubViewport.UPDATE_ONCE
-		await RenderingServer.frame_post_draw
-		await RenderingServer.frame_post_draw
-		var ri := vp.get_texture().get_image()
-		if ri == null or ri.is_empty():
-			break
-		var inv := PackedInt32Array()
-		inv.resize(256)
-		inv.fill(-1)
-		var distinct := true
-		for k in range(128):
-			var st := roundi(ri.get_pixel(k % 16, k / 16).r * 255.0)
-			if inv[st] >= 0:
-				distinct = false
-			inv[st] = 128 + k
-		if distinct:
-			var last := 128
-			for b2 in range(256):                         # bytes the ramp never gave: the nearest below (or 128)
-				if inv[b2] >= 0:
-					last = inv[b2]
-				else:
-					inv[b2] = last
-			th_inv = inv
-			_make_lut(srgb)
-			ok = true
-			break
-	rq.queue_free()
-	var q := MeshInstance3D.new()                        # the check: 20 °C in the middle, background in the corners
-	q.mesh = box(4, 4, 0.1)
-	q.material_override = tmat_fixed(20.0)
-	q.layers = 8
-	add_child(q)
-	q.global_position = Vector3(0, -500, 0)
-	q.scale = Vector3(0.5, 0.5, 1)
-	th_env.background_color = Color(0.25, 0.25, 0.25)
-	vp.render_target_update_mode = SubViewport.UPDATE_ONCE
-	await RenderingServer.frame_post_draw
-	await RenderingServer.frame_post_draw
-	var img := vp.get_texture().get_image()
-	if img != null and not img.is_empty():
-		var rb := img.get_pixel(0, 0).r                 # background colour 0.25 comes back as ...
-		th_bg_raw = abs(rb - 0.25) < 0.04
-		var got := _th_read(img, 8, 8)
-		print("thermal calibration: 20.00 °C -> %.2f °C (%s%s), background %.3f -> %s" % [got, "sRGB" if th_srgb else "linear",
-				"" if ok else ", ramp not clean", rb, "raw" if th_bg_raw else "converted"])
-	th_env.background_color = bg_was
-	q.queue_free()
-	vp.queue_free()
+	await _mod("kamera")._calibrate_thermal()
 
 
 func now() -> float:
@@ -2002,84 +1927,7 @@ func set_smoke(on: bool) -> void:
 
 
 func _build_lens() -> void:
-	"""a quad right in front of camera 0 and 1 (own layer 32 / 64): grain, dark corners, raindrops (shaders/lens.gdshader).
-	Insects round the head at night when a light is on (CPU particles, only the normal cameras see them, not the thermal one)."""
-	var sh: Shader = load("res://shaders/lens.gdshader")
-	for i in range(2):
-		var cam: Camera3D = cams[i]
-		var lay := 32 if i == 0 else 64
-		cam.cull_mask = 1 | lay
-		var dist := 0.12
-		var w := 2.0 * dist * tan(deg_to_rad(CAM_FOV[i]) / 2.0) * 1.04
-		var hgt := w * float(CAM_H[i]) / float(CAM_W[i]) * 1.04
-		var q := MeshInstance3D.new()
-		var qm := QuadMesh.new()
-		qm.size = Vector2(w, hgt)
-		q.mesh = qm
-		q.position = Vector3(0, 0, -dist)
-		q.layers = lay
-		q.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		var m := ShaderMaterial.new()
-		m.shader = sh
-		m.set_shader_parameter("res", Vector2(CAM_W[i], CAM_H[i]))
-		q.material_override = m
-		cam.add_child(q)
-		lens_mats.append(m)
-		var eq := MeshInstance3D.new()                       # exposure: a bit behind the lens quad, so it is drawn first
-		var eqm := QuadMesh.new()
-		eqm.size = Vector2(w, hgt) * 1.05
-		eq.mesh = eqm
-		eq.position = Vector3(0, 0, -dist * 1.05)
-		eq.layers = lay
-		eq.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		var em := ShaderMaterial.new()
-		em.shader = load("res://shaders/expo.gdshader")
-		eq.material_override = em
-		cam.add_child(eq)
-		expo_mats.append(em)
-		var fq := MeshInstance3D.new()                       # 3D-3.94: the camera effects - between exposure and lens (drawn in that order)
-		var fqm := QuadMesh.new()
-		fqm.size = Vector2(w, hgt) * 1.02
-		fq.mesh = fqm
-		fq.position = Vector3(0, 0, -dist * 1.02)
-		fq.layers = lay
-		fq.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		var fm := ShaderMaterial.new()
-		fm.shader = load("res://shaders/camfx.gdshader")
-		fm.set_shader_parameter("res", Vector2(CAM_W[i], CAM_H[i]))
-		fq.material_override = fm
-		cam.add_child(fq)
-		camfx_mats.append(fm)
-	insects = CPUParticles3D.new()
-	insects.amount = 28
-	insects.lifetime = 2.5
-	insects.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
-	insects.emission_sphere_radius = 0.7
-	insects.direction = Vector3(0, 0, -1)
-	insects.spread = 180.0
-	insects.gravity = Vector3.ZERO
-	insects.initial_velocity_min = 0.3
-	insects.initial_velocity_max = 1.4
-	insects.orbit_velocity_min = -1.5
-	insects.orbit_velocity_max = 1.5
-	insects.damping_min = 0.0
-	insects.damping_max = 0.8
-	insects.angular_velocity_min = -200.0
-	insects.angular_velocity_max = 200.0
-	var im := SphereMesh.new()
-	im.radius = 0.012
-	im.height = 0.02
-	im.radial_segments = 4
-	im.rings = 2
-	var imm := StandardMaterial3D.new()
-	imm.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	imm.albedo_color = Color(0.95, 0.93, 0.85)
-	im.material = imm
-	insects.mesh = im
-	insects.position = Vector3(0, 0.2, -0.9)          # in front of the head, in its light
-	insects.emitting = false
-	insects.layers = 1
-	head_pitch.add_child(insects)
+	_mod("kamera")._build_lens()
 
 
 # ---- sounds of the world (for the microphone of MoveEye) --------------------------------------------------------
@@ -2920,63 +2768,7 @@ func _capture_next() -> void:
 
 
 func _capture(i: int) -> void:
-	capturing = true
-	last_cap[i] = now()
-	var L: Dictionary = mw.get("lights", {})
-	var dark := is_dark()
-	ir_light.spot_range = ir_range
-	ir_light.light_energy = 9.0 if (i == 0 and ir_on()) else 0.0   # infrared: only the NoIR camera sees it
-	if i == 0:
-		var grey: bool = ir_on() and dark and not white_light.light_energy > 0.0   # infrared picture: black and white
-		cams[0].environment = (night_envs[0] if grey else night_envs[1]) if dark and night_envs[0] != null else null
-	if i == 1:
-		cams[1].environment = night_envs[1] if dark and night_envs[1] != null else null    # little light: little colour
-	if i < 2 and expo_mats.size() > i:
-		var ex: float = NIGHT_SCALE * gain[i] if dark else 1.0
-		if i == 0 and dark and ir_on() and not white_light.light_energy > 0.0:
-			ex = ir_ex                           # 3D-4.1: the infrared picture has its own exposure (before: fixed 0.85 - almost white)
-		expo_mats[i].set_shader_parameter("expo", ex)
-		lens_mats[i].set_shader_parameter("expo", ex)
-	if i < 2:
-		cam_attr[i].exposure_multiplier = gain[i] if not dark else 1.0   # at night the lens shader does the exposure
-		if realism != null:
-			realism.before_capture(i)
-		if simreal != null:
-			simreal.before_capture(i)            # 3D-4.4: lens, rolling shutter, noise, infrared, reflectors
-		weit.before_capture(i)                   # 3D-4.17: NoIR Wide - infrared picture, fisheye, the wide infrared light
-		if zwilling != null and zwilling.fm != null:
-			zwilling.fm.before_capture(i)        # 3D-4.27: Foto-Modus - the camera sees the real photo, the figures are fitted to it
-		if wetter != null:
-			wetter.before_capture(i)             # real-wetter: drops and fog on the lens, ground fog
-		if camphys != null:
-			camphys.before_capture(i)            # 3D-4.x P1: last - exposure time, gain, sensor noise, NoIR colours
-	vps[i].render_target_update_mode = SubViewport.UPDATE_ONCE
-	await RenderingServer.frame_post_draw
-	var img: Image = vps[i].get_texture().get_image()
-	ir_light.light_energy = 0.0
-	weit.after_capture(i, img)
-	if img != null and not img.is_empty():
-		if i < 2:
-			_auto_exposure(i, img)
-			if realism != null:
-				realism.after_capture(i, img)
-			var hold := false
-			if cond["net"] and i == 0:                   # 3D-3.74: bad Wi-Fi - pictures get lost, sometimes it stands still
-				if now() < _net_hold:
-					hold = true
-				elif randf() < 0.05:
-					_net_hold = now() + randf_range(0.8, 2.5)
-					hold = true
-				elif randf() < 0.3:
-					hold = true
-			if not hold:
-				jpgs[i] = img.save_jpg_to_buffer(realism.jpg_q if realism != null and realism.fx_on else 0.8)
-				frame_no[i] += 1
-				if simreal != null:
-					simreal.on_jpg(i, jpgs[i])           # 3D-4.4: «Wie ein echter Pi 5» - the picture comes late
-		else:
-			_decode_thermal(img)
-	capturing = false
+	await _mod("kamera")._capture(i)
 
 
 var cloud_shadows := true             # clouds pass the sun: the light changes (from 3D-2.6; realistic cause of false alarms)
@@ -6065,134 +5857,22 @@ var view_mjpg_t := -100.0              # a stream (/view.mjpg) is open: it needs
 
 
 func view_request(q: Dictionary) -> void:
-	if q.has("w") and str(q["w"]).is_valid_int():
-		view_w = clampi(int(q["w"]), 320, 2560)
-	if q.has("q") and str(q["q"]).is_valid_float():
-		view_q = clampf(float(q["q"]) / 100.0, 0.3, 0.95)
-	if Quality.lite():                          # 3D-4.25: Lite - a smaller picture of the window (the cameras for MoveEye stay)
-		view_w = mini(view_w, Quality.VIEW_W)
-		view_q = minf(view_q, Quality.VIEW_Q)
-	if q.has("fmt"):
-		view_webp = str(q["fmt"]) == "webp"
-	if str(q.get("clean", "")) == "1":
-		view_clean_t = now()                    # 3D-3.67: MoveEye shows the picture in full screen: no rover stick
-	if str(q.get("bare", "")) == "1" and padview != null:
-		padview.bare_t = now()                  # «Controller-Ansicht»: the picture without the buttons of the window
-	if str(q.get("dock", "")) == "1" and padview != null:
-		padview.dock_t = now()                  # 3D-4.x: MoveEye's simulator page: only the 3D view and the dock (padview.gd)
+	_mod("kamera").view_request(q)
 const VIEW_KEYS := {"ArrowUp": KEY_UP, "ArrowDown": KEY_DOWN, "ArrowLeft": KEY_LEFT, "ArrowRight": KEY_RIGHT, "w": KEY_W, "a": KEY_A,
 		"s": KEY_S, "d": KEY_D, "q": KEY_Q, "e": KEY_E, "r": KEY_R, "f": KEY_F, "PageUp": KEY_PAGEUP, "PageDown": KEY_PAGEDOWN,
 		"0": KEY_0, "1": KEY_1, "2": KEY_2, "3": KEY_3, "4": KEY_4, "5": KEY_5, "+": KEY_PLUS, "-": KEY_MINUS, "Shift": KEY_SHIFT, "p": KEY_P}
 
 
 func view_rect() -> Rect2:
-	"""the part of the window with the 3D world (without the panel on the right)"""
-	var vs: Vector2 = Vector2(remote_vp.size) if remote_vp != null else get_viewport().get_visible_rect().size
-	var w := vs.x
-	if ui_root != null and ui_root.visible:
-		w = min(w, ui_root.get_global_rect().position.x)
-	return Rect2(0, 0, max(64.0, w), vs.y)
+	return _mod("kamera").view_rect()
 
 
 func _view_capture() -> void:
-	var t := now()
-	for kc in _rkeys.keys():
-		if t > float(_rkeys[kc]):
-			_rkeys.erase(kc)
-			var ku := InputEventKey.new()
-			ku.keycode = kc
-			ku.physical_keycode = kc
-			ku.pressed = false
-			Input.parse_input_event(ku)
-	# the window is the small box (or minimized): the view for MoveEye is drawn in a picture of its own (3D-3.19)
-	_remote_set(t - view_want_t < (10.0 if remote_vp != null else 3.0) and not win_open)
-	if t - view_want_t > 3.0 or t - _view_t < 1.0 / max(1.0, minf(view_fps, Quality.VIEW_FPS) if Quality.lite() else view_fps):
-		return
-	_view_t = t
-	var img := (remote_vp.get_texture() if remote_vp != null else get_viewport().get_texture()).get_image()
-	if img == null or img.is_empty():
-		return
-	var vs: Vector2 = Vector2(remote_vp.size) if remote_vp != null else get_viewport().get_visible_rect().size
-	var k: float = float(img.get_width()) / maxf(1.0, vs.x)
-	if padview != null and padview.dock_compose():      # 3D-4.x: MoveEye's simulator page: only the 3D view and the dock
-		img = padview.compose(img, k)
-		if img == null:
-			return
-	var r := view_rect()
-	var rr := Rect2i(int(r.position.x * k), int(r.position.y * k), int(r.size.x * k), int(r.size.y * k)).intersection(Rect2i(Vector2i.ZERO, img.get_size()))
-	if rr.size.x < 16 or rr.size.y < 16:
-		return
-	var sub := img.get_region(rr)
-	if sub.get_width() > view_w:
-		sub.resize(view_w, int(sub.get_height() * float(view_w) / sub.get_width()), Image.INTERPOLATE_BILINEAR)
-	if view_webp and t - view_mjpg_t > 3.0:            # 3D-3.58: WebP - the same sharpness with about a third less data
-		view_jpg = sub.save_webp_to_buffer(true, view_q)
-		view_mime = "image/webp"
-	else:
-		view_jpg = sub.save_jpg_to_buffer(view_q)
-		view_mime = "image/jpeg"
-	view_no += 1
+	_mod("kamera")._view_capture()
 
 
 func view_input(evs: Array) -> int:
-	"""events from MoveEye: x / y 0 … 1 in the picture of /view.mjpg -> the same as mouse / keys here"""
-	var r := view_rect()
-	var n := 0
-	for e in evs.slice(0, 60):
-		if not (e is Dictionary):
-			continue
-		var t := str(e.get("t", ""))
-		var p := r.position + Vector2(clampf(float(e.get("x", 0.5)), 0.0, 1.0) * r.size.x, clampf(float(e.get("y", 0.5)), 0.0, 1.0) * r.size.y)
-		if t == "move":
-			var m := InputEventMouseMotion.new()
-			m.position = p
-			m.global_position = p
-			m.relative = p - _in_pos
-			m.velocity = m.relative * 30.0
-			m.button_mask = _in_mask
-			_view_send(m)
-		elif t in ["down", "up", "dbl"]:
-			var b := clampi(int(e.get("b", 1)), 1, 3)
-			var mb := InputEventMouseButton.new()
-			mb.button_index = b
-			mb.pressed = t != "up"
-			mb.double_click = t == "dbl"
-			mb.alt_pressed = bool(e.get("alt", false))
-			mb.shift_pressed = bool(e.get("shift", false))
-			mb.position = p
-			mb.global_position = p
-			var bit := 1 << (b - 1)
-			_in_mask = (_in_mask | bit) if mb.pressed else (_in_mask & ~bit)
-			mb.button_mask = _in_mask
-			_view_send(mb)
-		elif t == "wheel":
-			for pr in [true, false]:
-				var w := InputEventMouseButton.new()
-				w.button_index = MOUSE_BUTTON_WHEEL_UP if float(e.get("d", 1)) > 0 else MOUSE_BUTTON_WHEEL_DOWN
-				w.pressed = pr
-				w.factor = 1.0
-				w.position = p
-				w.global_position = p
-				_view_send(w)
-		elif t == "key":
-			var kc = VIEW_KEYS.get(str(e.get("k", "")))
-			if kc == null:
-				continue
-			var ke := InputEventKey.new()
-			ke.keycode = kc
-			ke.physical_keycode = kc
-			ke.pressed = bool(e.get("down", true))
-			Input.parse_input_event(ke)
-			if ke.pressed:
-				_rkeys[kc] = now() + 1.2                 # held from MoveEye: let go by itself if no news comes (lost connection)
-			else:
-				_rkeys.erase(kc)
-		else:
-			continue
-		if t != "key":
-			_in_pos = p
-		n += 1
-	return n
+	return _mod("kamera").view_input(evs)
 
 
 var ui_layer: CanvasLayer
@@ -6202,47 +5882,11 @@ var _remote_back := []                 # [node, parent, index] to put back
 
 
 func _remote_set(on: bool) -> void:
-	"""small box / minimized while MoveEye looks at the window: the window (3D view, map, compass, buttons, panel)
-	is drawn into an invisible picture of the normal window size; back into the window as soon as it is big again"""
-	if on == (remote_vp != null) or ui_layer == null or view_cam == null:
-		return
-	if on:
-		var sz := Vector2i(1440, 860)
-		if mini_box != null and mini_box.mini:
-			sz = mini_box.saved.get("size", sz)
-		remote_vp = SubViewport.new()
-		remote_vp.size = Vector2i(clampi(sz.x, 640, 2560), clampi(sz.y, 400, 1600))
-		remote_vp.render_target_update_mode = SubViewport.UPDATE_ALWAYS
-		remote_vp.msaa_3d = Viewport.MSAA_2X
-		add_child(remote_vp)
-		_remote_back = []
-		for n in [ui_layer, view_cam]:
-			_remote_back.append([n, n.get_parent(), n.get_index()])
-			n.reparent(remote_vp)
-		view_cam.current = true
-		print("view for MoveEye: drawn on its own (window small)")
-	else:
-		for e in _remote_back:
-			var n: Node = e[0]
-			if is_instance_valid(n):
-				n.reparent(e[1])
-				(e[1] as Node).move_child(n, mini(int(e[2]), (e[1] as Node).get_child_count() - 1))
-		_remote_back = []
-		view_cam.current = true
-		remote_vp.queue_free()
-		remote_vp = null
-		print("view for MoveEye: back in the window")
+	_mod("kamera")._remote_set(on)
 
 
 func _view_send(ev: InputEvent) -> void:
-	"""a mouse event from MoveEye: into the window, or into the picture of its own (then the 3D view gets what the
-	panel, the map and the buttons do not take)"""
-	if remote_vp == null:
-		Input.parse_input_event(ev)
-		return
-	remote_vp.push_input(ev, true)
-	if not remote_vp.is_input_handled():
-		_unhandled_input(ev)
+	_mod("kamera")._view_send(ev)
 
 
 
