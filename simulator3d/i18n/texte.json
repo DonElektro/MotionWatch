@@ -5485,6 +5485,12 @@
   "it": "Inizia da:",
   "rm": "Cumenzar tar:"
  },
+ "Begleitmusik in Spielen und Geschichten (Tests und Überwachung bleiben still)": {
+  "en": "Background music in games and stories (tests and surveillance stay silent)",
+  "fr": "Musique d’accompagnement dans les jeux et les histoires (les tests et la surveillance restent silencieux)",
+  "it": "Musica di sottofondo nei giochi e nelle storie (test e sorveglianza restano silenziosi)",
+  "rm": "Musica d’accumpagnament en gieus ed istorgias (tests e survegliaziun restan quiets)"
+ },
  "Behalten": {
   "en": "Keep it",
   "fr": "La garder",
@@ -11222,6 +11228,12 @@
   "fr": "Météo réelle : %s, %.0f °C, vent %.0f km/h",
   "it": "Meteo reale: %s, %.0f °C, vento %.0f km/h",
   "rm": "Aura vaira: %s, %.0f °C, vent %.0f km/h"
+ },
+ "Effekte": {
+  "en": "Effects",
+  "fr": "Effets",
+  "it": "Effetti",
+  "rm": "Effects"
  },
  "Ehrlich gesagt nicht so.": {
   "en": "Honestly, not really.",
@@ -22442,6 +22454,30 @@
   "it": "Volume sul PC",
   "rm": "Volumen sin il PC"
  },
+ "Lautstärke Effekte (Fund, Fanfare, Spannung, Tusch)": {
+  "en": "Volume of effects (find, fanfare, suspense, flourish)",
+  "fr": "Volume des effets (trouvaille, fanfare, suspense, coup de cymbale)",
+  "it": "Volume degli effetti (ritrovamento, fanfara, suspense, colpo di piatti)",
+  "rm": "Volumen dals effects (chat, fanfara, tensiun, tusch)"
+ },
+ "Lautstärke Menü-Klicks": {
+  "en": "Volume of menu clicks",
+  "fr": "Volume des clics du menu",
+  "it": "Volume dei clic del menu",
+  "rm": "Volumen dals clics dal menu"
+ },
+ "Lautstärke Musik": {
+  "en": "Volume of music",
+  "fr": "Volume de la musique",
+  "it": "Volume della musica",
+  "rm": "Volumen da la musica"
+ },
+ "Lautstärke Umgebung im Spiel (Wind, Regen, Bach, Feuer, Schritte, Tiere)": {
+  "en": "Volume of surroundings in games (wind, rain, stream, fire, steps, animals)",
+  "fr": "Volume de l’ambiance en jeu (vent, pluie, ruisseau, feu, pas, animaux)",
+  "it": "Volume dell’ambiente in gioco (vento, pioggia, ruscello, fuoco, passi, animali)",
+  "rm": "Volumen dals conturns en il gieu (vent, plievgia, ual, fieu, pass, animals)"
+ },
  "Lawinenkegel (Schneereste)": {
   "en": "Avalanche cone (old snow)",
   "fr": "Cône d'avalanche (reste de neige)",
@@ -23493,6 +23529,12 @@
   "fr": "Mât (scène) – comme avant, à 3 m de l’appareil",
   "it": "Palo (scena) – come prima, a 3 m dall’apparecchio",
   "rm": "Pal (scena) – sco fin ussa, 3 m sper l’apparat"
+ },
+ "Master": {
+  "en": "Master",
+  "fr": "Master",
+  "it": "Master",
+  "rm": "Master"
  },
  "Materialseilbahn (Talstation)": {
   "en": "Goods cable car (bottom station)",
@@ -25522,6 +25564,12 @@
   "fr": "Des marmottes partout, des chamois sur les rochers et parfois des bouquetins. Ruedi - le garde-faune - en sait bien plus. Il cherche toujours des gens qui filment les animaux avec MoveEye.",
   "it": "Marmotte ovunque, camosci sulle rocce e a volte stambecchi. Ruedi - il guardiacaccia - ne sa molto di più. Cerca sempre persone che riprendono animali con MoveEye.",
   "rm": "Muntanellas dapertut, al grip chamutschs e mintgatant capricorns. Il Ruedi - il guardiaselvaschina - sa bler dapli. El tschertga adina glieud che registrescha bestgas cun MoveEye."
+ },
+ "Musik": {
+  "en": "Music",
+  "fr": "Musique",
+  "it": "Musica",
+  "rm": "Musica"
  },
  "Muuuh! Eine Kuh.": {
   "en": "Mooo! A cow.",
@@ -31806,6 +31854,12 @@
   "it": "Mostra i pulsanti del gioco",
   "rm": "Mussar ils buttuns dal gieu"
  },
+ "Spiel-Ton": {
+  "en": "Game sound",
+  "fr": "Son du jeu",
+  "it": "Audio di gioco",
+  "rm": "Tun dal gieu"
+ },
  "Spiel: ": {
   "en": "Game: ",
   "fr": "Jeu : ",
@@ -34645,6 +34699,12 @@
   "fr": "Heure",
   "it": "Ora",
   "rm": "Ura"
+ },
+ "UI": {
+  "en": "UI",
+  "fr": "Interface",
+  "it": "Interfaccia",
+  "rm": "Interfatscha"
  },
  "Ui, dieser Hut! Den kennt hier jeder - du bist der Enkel vom Bergführer. Komm, setz dich kurz.": {
   "en": "Oh, that hat! Everyone here knows it - you're the mountain guide's grandson. Come, sit down for a moment.",

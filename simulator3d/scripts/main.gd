@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3.27.0"
+const VERSION := "3.28.0"
 const Versionen = preload("res://scripts/versionen.gd")   # Versionierung 3.0.0: from 3.0.0 VERSION = "X.Y.Z" like MoveEye (see there)
 const Stimme = preload("res://scripts/abenteuer_stimme.gd")   # 3.23: the one switch «Stimme» (an | aus | untertitel)
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
@@ -621,6 +621,9 @@ func _ready() -> void:
 	mikro = preload("res://scripts/mikrofon.gd").new()      # real-pir-ton: microphone (1/r, direction, ground) + sounds of the surroundings
 	mikro.main = self
 	add_child(mikro)
+	klang = preload("res://scripts/klang.gd").new()         # Spielton: buses, music, moments - only in games and stories (klang.gd)
+	klang.main = self
+	add_child(klang)
 	servo = preload("res://scripts/servo.gd").new()        # «Servo-Mechanik»: MG90S model of the head (with «Servos wie echt»)
 	servo.main = self
 	add_child(servo)
@@ -1922,7 +1925,9 @@ func lightning_strike() -> void:
 		_flash_seq += [[t0 + 0.4, e * 0.5, 0.6], [t0 + 0.47, 0.0, 0.0]]
 	var dist := randf_range(800.0, 4000.0)                # thunder: later and quieter the farther away
 	var dir := Vector3(randf_range(-1, 1), 0, randf_range(-1, 1)).normalized()
-	get_tree().create_timer(dist / 340.0).timeout.connect(func(): add_sound(30.0, dir * dist, 2.5))
+	get_tree().create_timer(dist / 340.0).timeout.connect(func():
+		add_sound(30.0, dir * dist, 2.5)
+		preload("res://scripts/klang.gd").donner(dist))      # Spielton: the thunder on the PC (only in games and stories)
 	if wetter != null:
 		wetter.on_strike(dist, dir)
 
@@ -3229,6 +3234,7 @@ var schnitt = null                     # schnittstelle.gd (Aufräumen 2)
 var maggie = null                      # maggie_story.gd: «Maggie und der Bergkristall» (API für maggie_hund / maggie_gefahr)
 var horror = null                      # bergtal_horror.gd: Bergtal · Horror-Modus (Hook für die Stimmungswahl: horror.mood_slot / open_from_mood)
 var spieltest = null                   # spieltest.gd: Spieltest-Assistent (Haken für Spiele: Spieltest.ereignis(modus, art, daten))
+var klang = null                       # klang.gd: Spielton (Musik, Effekte, Umgebung, Klicks - nur in Spielen und Geschichten)
 var mw_cmd := {}                       # 3D-3.71: a request to MoveEye (button here): {"id": unix ms, "op": refscan | refcompare | refstop}
 var bike_node: Node3D = null
 var refscan_label: Label
@@ -3795,7 +3801,7 @@ const GROUPS := [["Szene", "globe", "🌍", ["", "Bergtal", "Ort von der Karte",
 				"Wildtiere", "Haus- und Nutztiere", "Vögel und Kleintiere", "Fahrzeuge", "Abläufe", "Von selbst", "Verhalten"]],   # Menüs A: «Menschen / Tiere schicken» geteilt (VISIT_SUB)
 		["Kamerabild", "lens", "👁", ["", "Weitwinkel-Kamera", "Wärmebild", "Wie echt", "Schwierige Bedingungen", "Feineinstellungen"]],
 		["Mover", "track", "🚜", ["", "Patrouille", "Controller"]],
-		["Licht & Ton", "bulb", "💡", ["", "Status-LED & Tasten", "Lautsprecher", "Mikrofon", "Umgebungsgeräusche"]],      # 3D-4.22: «Lautsprecher» here like MoveEye (was «Sensoren»)
+		["Licht & Ton", "bulb", "💡", ["", "Status-LED & Tasten", "Lautsprecher", "Mikrofon", "Umgebungsgeräusche", "Spiel-Ton"]],      # 3D-4.22: «Lautsprecher» here like MoveEye (was «Sensoren»)
 		["Zusatzgeräte", "puzzle", "🔌", ["", "Bewegungsmelder (PIR)", "Strom", "Netz", "Zusatz-Bildschirm (SmallTV)"]],   # P1 ui_gemeinsam: «Sensoren» -> «Zusatzgeräte» (extras), nach Licht & Ton wie MoveEye
 		["Spiel", "pad", "🎮", ["", "Entdecken", "Assistent"]],        # Erlebniswelt 20–23: «Entdecken» (entdecken.gd) on the card
 		["Wildtier", "target", "🎯", [""]],
@@ -4217,6 +4223,8 @@ func _register_controls() -> void:
 	thermsensor.add_controls()                         # 3D-4.26: Kamerabild → Wärmebild (palette, sensor, tent, warm car)
 	pir.add_controls()                                 # real-pir-ton: Sensoren → Bewegungsmelder (PIR)
 	mikro.add_controls()                               # real-pir-ton: Licht & Ton → Mikrofon, Umgebungsgeräusche
+	if klang != null:
+		klang.add_controls()                           # Spielton: Licht & Ton → Spiel-Ton (Musik an/aus, vier Regler)
 	simwerte.add_controls()                            # Simulator-Werte: Akku und Strom, Netz-Ausfall testen (power.gd)
 	add_control("toggle", "rifle", "Gewehr (unblutig, nur Tiere)", func(): return rifle_on, func(v): rifle_on = v, "Wildbeobachtung")
 	add_control("button", "shoot_head", "Schuss aus der Kopfkamera", null, func(): shoot_head(), "Wildbeobachtung")
@@ -5234,6 +5242,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return {"ok": true, "surprise": surprise.info()}
 	elif a == "entdecken":                             # Erlebniswelt 20–23: {do: info | open | close | photo | mark (id) | reset | hint | set | where (id)}
 		return entdecken.control(d) if entdecken != null else {"ok": false, "error": "no entdecken"}
+	elif a == "spielton":                              # Spielton (klang.gd): {do: info | test (art) | erleben (id) | gefahr (quelle, stufe, dauer)}
+		return klang.control(d) if klang != null else {"ok": false, "error": "no klang"}
 	elif a == "spielbereich":                          # Paket «Spielbereich»: {do: info | open | close | start (id) | seen | reset}
 		return spielbereich.control(d) if spielbereich != null else {"ok": false, "error": "no spielbereich"}
 	elif a == "dev":                                   # Entwicklertool 1 (devtool.gd): {do: places | goto (id) | fly (on, speed) | open | close | info}

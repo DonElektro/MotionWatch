@@ -54,3 +54,48 @@ papier      ein alter Brief wird aufgefaltet ...................................
 
 Geprüft und nicht verwendet: Oculus Audio Pack 1 (in facebookincubator/Meta-open-sound) – CC BY 4.0 (Namensnennung nötig).
 Nicht frei gefunden (darum [SYN]): Wind, Krähen, Feuer-Knistern (Feuer kommt im Trailer nicht vor).
+
+
+Spielton – Klänge in Spielen und Geschichten (klang/sp_*.ogg, scripts/klang.gd)
+================================================================================
+Stand: 01.11.2026. Gebaut mit werkzeuge/spielton_bauen.py (braucht klang_bauen.py) aus den Aufnahmen unten und eigener
+Synthese; nur Ogg Vorbis für den Simulator (kein MP3). Pegel und Schleifen: klang/spielton.json. Alle fremden Aufnahmen
+CC0 1.0 (gemeinfrei, auch im verkauften Produkt ohne Namensnennung erlaubt) – Quellen trotzdem genannt.
+Zusätzlich gebraucht aus den Trailer-Klängen oben: donner, regen, wind, wasser, pauke (unverändert).
+
+Zusätzliche Quellen
+-------------------
+[VCSL]  Versilian Community Sample Library (Sam Gossner / Versilian Studios), CC0 1.0
+        https://github.com/sgossner/VCSL @ c1ea7bcc3c7309650ab0da9d15c9cd1fbc4a4c7e (Datei LICENSE: CC0 1.0 Universal)
+[VSCO]  wie oben, @ 440300901dfe9275fd84e0b7763af1f8443ae62e – dazu Strings/Harp, Woodwinds/Flute/susvib, Percussion/Marimba,
+        Brass/Trumpet/stac + sus
+[KEN]   Kenney «Impact Sounds» und «Interface Sounds» (www.kenney.nl), CC0 1.0 (License.txt im Paket), gespiegelt in
+        https://github.com/lavenderdotpet/CC0-Public-Domain-Sounds @ f2b6264f9ab89fabc266914c3654685d68c5a39b
+        (kenney_impactsounds, kenney_interfacesounds); Kenney «RPG Audio» wie oben (Boyquotes … @ 22eb79bb…)
+[RD]    «rubberduck» 100 CC0 wood/metal SFX (wood_cracking_*), CC0 1.0, im selben Repository wie [KEN]
+[BB]    Ben Burnes (Abstraction) Micro Pack «Record Fuzzies», CC0 1.0 (laut _README.txt: «These sounds are public domain
+        (Creative Commons 0)»), im selben Repository wie [KEN]
+[SYN]   eigene Synthese in werkzeuge/spielton_bauen.py / klang_bauen.py (Hall, Rauschen, Sinus)
+
+Datei je Klang
+--------------
+sp_fund            Fund: Glockenspiel G5 C6 E6 G6 C7, kurzer Hall ............................ [VSCO] Percussion/Glock
+sp_fanfare         Rätsel gelöst: kleine Fanfare, zwei Trompeten (G G G C), Pauke C2 .......... [VSCO] Trumpet stac/sus, Timpani
+sp_kapitel         Kapitel geschafft: Harfen-Glissando, Streicher B-Dur → F-Dur ................ [VSCO] Harp, Strings susvib
+sp_tusch           Überraschung: Trommelwirbel (wird lauter), Becken, Blech-Akkord, Grosse Tr. . [VCSL] Snare Drum Modern 1 roll,
+                                                                                               Clash Cymbals 1; [VSCO] Trumpet,
+                                                                                               F Horn, Tenor Trombone, BDrum
+sp_wirbel          Spannung: leiser Trommelwirbel, 4-s-Schleife .............................. [VCSL] Snare2_rollSN_v2
+sp_puls            Spannung: Herzschlag-Puls (Grosse Trommel, weiche Pauke), 72/min, Schleife .. [VSCO] BDrumNewhit, Timpani
+sp_musik_fruehling Begleitmusik Frühling: Harfe, Flöte, Streicher (F-Dur), Schleife 27 s ...... [VSCO] Harp, Flute, Strings
+sp_musik_sommer    Begleitmusik Sommer: Marimba, Flöte, Streicher, Harfe (C-Dur), 24 s ........ [VSCO] Marimba, Flute, Strings, Harp
+sp_musik_herbst    Begleitmusik Herbst: Harfe, Celli, Bratschen (a-Moll), 29 s ................ [VSCO] Harp, Strings
+sp_musik_winter    Begleitmusik Winter: Glockenspiel, hohe Streicher, Harfe (D-Dur), 32 s ..... [VSCO] Glock, Strings, Harp
+sp_musik_see       Begleitmusik Ferienpark am See: Marimba, Harfe, Flöte (G-Dur), 23 s ........ [VSCO] Marimba, Harp, Flute, Strings
+sp_schritt_gras    4 Schritte auf Gras (je 0.5 s) ............................................. [KEN] Impact footstep_grass_*
+sp_schritt_kies    4 Schritte auf Kies ........................................................ [KEN] RPG footstep_*
+sp_schritt_schnee  4 Schritte im Schnee ....................................................... [KEN] Impact footstep_snow_*
+sp_feuer           Lagerfeuer knistert, 9-s-Schleife: Brausen (Synthese), Knistern, Holz knackt . [SYN] + [BB] Big Crackle
+                                                                                               + [RD] wood_cracking_*
+sp_ui_klick        Menü-Klick: kurzer weicher Sinus wie MoveEye, ein Hauch Klick .............. [SYN] + [KEN] Interface click_002
+sp_ui_auf, sp_ui_zu  Schalter an / aus: zwei kurze Sinustöne hinauf / hinab .................. [SYN]

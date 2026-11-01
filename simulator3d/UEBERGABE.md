@@ -1,8 +1,14 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 01.11.2026 · Version **3.27.0** · MoveEye **3.27.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 01.11.2026 · Version **3.28.0** · MoveEye **3.28.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.28.0 (MoveEye 3.28.0): Spielton (`scripts/klang.gd`)
+
+- Busse Musik / Effekte / Umgebung / UI mit Begrenzer, Regler unter Licht & Ton → Spiel-Ton, Aktion `spielton`.
+- 18 Klänge `klang/sp_*.ogg` (CC0, erzeugt mit `werkzeuge/spielton_bauen.py`), nur in Spielen und Geschichten
+  (still bei Tests, Prüfstand, MoveEye-Aufgaben). Test: `werkzeuge/spielton_test.gd` (in der Release-Kette).
 
 ## NEU in 3.27.0 (MoveEye 3.27.0): Weniger Schalter (Teil 639q, Schritt 2)
 

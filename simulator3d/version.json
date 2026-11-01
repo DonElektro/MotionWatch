@@ -1,9 +1,9 @@
 {
- "version": "3D-5.27.0",
- "ver": "3.27.0",
- "name": "MoveEye Sim 3.27.0",
+ "version": "3D-5.28.0",
+ "ver": "3.28.0",
+ "name": "MoveEye Sim 3.28.0",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 40219240,
- "sha256": "9d561c7b5f9caa36ba90714ad1044877d73558f5dadf5ea239b556d74d561bb5",
- "notes": "Weniger Schalter: Bewegung reduzieren, Stimme, Rundgang/Blinki an einem Ort"
+ "size": 41318225,
+ "sha256": "3fd2ec87f2317e7329b86fb592150657fb983a8830e52ab075edfeb6f8fd3898",
+ "notes": "Spielton: Musik, Effekte, Umgebung, Klicks in Spielen und Geschichten"
 }

@@ -28,6 +28,13 @@ Blech und Glockenspiel aus **VSCO-2 Community Edition** (Versilian Studios, CC0)
 von **Ben Burnes** (CC0); dazu eigene Synthese. Alles CC0 bzw. gemeinfrei, keine Namensnennung nötig. Datei für Datei mit
 Repository und Commit: `klang/LIZENZEN.txt`.
 
+## Spielton (ab 01.11.2026) – `klang/sp_*.ogg`, `scripts/klang.gd`
+
+Klänge in Spielen und Geschichten (`werkzeuge/spielton_bauen.py`): Glockenspiel, Trompeten, Harfe, Flöte, Marimba, Streicher
+und Pauke aus **VSCO-2 Community Edition** (CC0), Kleine Trommel und Becken aus der **Versilian Community Sample Library**
+(VCSL, CC0), Schritte und Klick von **Kenney** (CC0), Knistern von **Ben Burnes** (CC0), Holz von **rubberduck** (CC0);
+dazu eigene Synthese. Alles CC0, keine Namensnennung nötig. Datei für Datei: `klang/LIZENZEN.txt`, Abschnitt «Spielton».
+
 ## Figuren-Paket (ab 3D-4.56) – `pakete/figuren_v1.zip`, `scripts/figur_paket.gd`
 
 Das nachladbare Figuren-Paket (nicht im Simulator-ZIP; Download aus dem Repository oder neben die .exe legen) ist aus
