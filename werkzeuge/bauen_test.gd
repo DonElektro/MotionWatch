@@ -133,6 +133,48 @@ func _process(_dt: float) -> bool:
 	var np: int = W.parts.size()
 	if np < 40:
 		errs.append("3D: nur %d Teile geladen" % np)
+	# real-einzelteil-vorschau: only this part, as printed, «Wo es hingehört», the print plates (same as MoveEye 639wc)
+	W.set_meta("no_shell", true)                        # downloads: only remember the address
+	W.control({"do": "variant", "group": "gehaeuse", "value": "v52"})
+	W.select("head52")
+	eq("Einzelteil: Knopf sichtbar", (W._w["solo_btn"] as Button).visible, true)
+	var ei: Dictionary = W.control({"do": "solo", "id": "head52"}).get("einzel", {})
+	eq("Einzelteil: Modus", ei.get("mode", ""), "teil")
+	eq("Einzelteil: nur dieses Teil", ei.get("visible", []), ["head52"])
+	eq("Einzelteil: Wo es hingehört", ei.get("inset", false), true)
+	if str(ei.get("where", "")).find("10") < 0:
+		errs.append("Einzelteil: Schritt fehlt: " + str(ei.get("where", "")))
+	eq("Einzelteil: Daten", ei.get("data", false), true)
+	if W.einzel.dims("head52") == "" or W.einzel.print_lines("06_Kamerakopf_v52").size() < 5:
+		errs.append("Einzelteil: Grösse / Druck-Infos fehlen")
+	ei = W.control({"do": "solo", "id": "tub52", "flat": true}).get("einzel", {})
+	eq("Liegend: flach", ei.get("flat", false), true)
+	var tb: Transform3D = (W.parts["tub52"]["mi"] as MeshInstance3D).transform
+	if tb.basis.is_equal_approx(Basis.IDENTITY) or absf(tb.origin.y) > 0.2:
+		errs.append("Liegend: Unterteil nicht gedreht / nicht auf der Platte: " + str(tb))
+	eq("Liegend: Platte sichtbar", W.einzel._plate_root.visible, true)
+	ei = W.control({"do": "plates", "n": 1}).get("einzel", {})
+	eq("Platten: Modus", ei.get("mode", ""), "platten")
+	eq("Platten: zwei Platten v5.2", ei.get("plates", 0), 2)
+	if (ei.get("visible", []) as Array).size() < 8 or not ("lid" in ei.get("visible", [])):
+		errs.append("Platte B: Teile fehlen: " + str(ei.get("visible", [])))
+	if int(ei.get("boxes", 0)) < 1:
+		errs.append("Platte B: Stopfen als Quader fehlen")
+	W.control({"do": "plates", "n": 0})
+	ei = W.control({"do": "plate_tap", "id": "", "datei": "21_Stopfen_Relais"}).get("einzel", {})
+	eq("Platte: Stopfen nur Infos", ei.get("pdatei", ""), "21_Stopfen_Relais")
+	W.einzel.open_url("/build/datei/x", "v5-2/MotionWatch_v5-2_Platte_A_Unterteil.3mf")
+	if not str(W.einzel.last_url).ends_with("Druckdateien/v5-2/MotionWatch_v5-2_Platte_A_Unterteil.3mf"):
+		errs.append("Download ohne MoveEye: GitHub erwartet, " + str(W.einzel.last_url))
+	ei = W.control({"do": "plate_tap", "id": "lid", "datei": "02_Deckel_mit_Laufring"}).get("einzel", {})
+	eq("Platte: Teil antippen -> Einzelteil liegend", [ei.get("mode", ""), ei.get("solo", ""), ei.get("flat", false)], ["teil", "lid", true])
+	W.control({"do": "where"})
+	eq("Wo es hingehört: Montage", [W.tab, W.step, W.einzel.mode], ["montage", 8, ""])
+	if not (W.parts["lid"]["mi"] as MeshInstance3D).transform.basis.is_equal_approx(Basis.IDENTITY):
+		errs.append("Zurück: Deckel noch gedreht")
+	W.control({"do": "whole"})
+	eq("Zurück zum ganzen Modell", W.info().get("einzel", {}).get("mode", "?"), "")
+	W.control({"do": "step", "n": 4, "done": true})
 	# «Fertig kaufen»: the hint at the top, the order goes into the feedback (kind «order», package), no contact = not sent
 	var UGf = load("res://scripts/ui_gemeinsam.gd")
 	var lg: String = load("res://scripts/i18n.gd").lang()          # the texts follow the language of the simulator
