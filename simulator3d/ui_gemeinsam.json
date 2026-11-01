@@ -65,6 +65,8 @@
  "parts": {
   "sys/kids": {"sim": "Kinder-Modus", "old": ["Sicherheit / Benutzer"], "names": {"de": "Kinder-Modus", "en": "Kids mode", "fr": "Mode enfants", "it": "Modalità bambini", "rm": "Modus d’uffants"},
                "note": "eindeutiger Name: «Sicherheit» ist in MoveEye die Gruppe Passwort / Benutzer (security)"},
+  "sys/sicherung": {"sim": "Sicherung", "mw_sec": "Backup", "names": {"de": "Sicherung", "en": "Backup", "fr": "Sauvegarde", "it": "Backup", "rm": "Copia da segirezza"},
+                    "note": "gleicher Name wie MoveEye «Sicherung» (Abschnitt Backup, Gruppe Schutz): dort erscheint die Simulator-Sicherung als Eintrag «Simulator» (Teil 060b). Abweichung: im Simulator unter System (Entscheid Daniel 01.11.2026)"},
   "extras/power": {"sim": "Strom", "same_as": "power", "note": "Akku / Solar simulieren - in MoveEye eigene Gruppe «Stromversorgung»"},
   "extras/net": {"sim": "Netz", "same_as": "net", "note": "Netz-Ausfall simulieren - in MoveEye eigene Gruppe «Netz & Zugang»"}
  },

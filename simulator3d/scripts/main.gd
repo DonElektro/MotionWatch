@@ -336,6 +336,7 @@ var spielbereich                      # spielbereich.gd (Paket «Spielbereich»)
 var objplus                           # objekte_plus.gd (3D-4.x «Gegenstände»): wind, light, lures, valuables of the catalogue
 var gelaende                          # gelaende.gd (3D-4.x real-gelaende): hills and hollows, paths, cloud shadows (vegetation.gd: plants)
 var inhalte                           # inhalte.gd (F2): Foto-Texturen und HDRI-Himmel (CC0), nachgeladen, nicht in Lite
+var sicherung                         # sicherung.gd: System → Sicherung (ZIP auf dem PC / USB-Stick / in MoveEye, wiederherstellen)
 var umgebung                          # umgebung.gd (3D-4.x): lamps, puddles, smoke, insects, plants, tracks, robots, pets
 var statisten                         # statisten.gd: background people - goals, things to do, groups, react to the player, keep away from the games
 var menschen                          # menschen.gd (P10): people behave like real ones - gaits, groups, the day of a campsite, API for scenarios
@@ -402,6 +403,7 @@ func _ready() -> void:
 		get_tree().quit()
 		return
 	preload("res://scripts/werk.gd").apply_pending()    # Werksrücksetzung: right after the restart, before anything reads user://
+	preload("res://scripts/sicherung.gd").apply_pending(VERSION)   # System → Sicherung: a restore waits for this start (sicherung.gd)
 	randomize()
 	_no_pad_ui_nav()
 	colors = preload("res://scripts/colors.gd").new()        # 3D-3.97: natural colours, materials, seasons (before the world is built)
@@ -500,6 +502,9 @@ func _ready() -> void:
 	inhalte = preload("res://scripts/inhalte.gd").new()       # F2: real photo surfaces and sky (downloaded once, fallback = code)
 	inhalte.main = self
 	add_child(inhalte)
+	sicherung = preload("res://scripts/sicherung.gd").new()   # System → Sicherung: ZIP auf dem PC / USB-Stick / in MoveEye, wiederherstellen
+	sicherung.main = self
+	add_child(sicherung)
 	umgebung = preload("res://scripts/umgebung.gd").new()     # 3D-4.x: the surroundings like real (every part can be switched off)
 	umgebung.main = self
 	add_child(umgebung)
@@ -3795,7 +3800,7 @@ const GROUPS := [["Szene", "globe", "🌍", ["", "Bergtal", "Ort von der Karte",
 		["Spiel", "pad", "🎮", ["", "Entdecken", "Assistent"]],        # Erlebniswelt 20–23: «Entdecken» (entdecken.gd) on the card
 		["Wildtier", "target", "🎯", [""]],
 		["Testen", "check", "✅", ["", "Verfolgungs-Parcours", "Störungen", "Einbruch-Abläufe"]],
-		["System", "gear", "⚙", ["Grafik", "Karte und Livebild", "Start mit dem PC", "Updates", "Kinder-Modus"]],   # Menüs A: «Ansicht» → «Karte und Livebild» (fehlte hier)
+		["System", "gear", "⚙", ["Grafik", "Karte und Livebild", "Start mit dem PC", "Updates", "Sicherung", "Kinder-Modus"]],   # Menüs A: «Ansicht» → «Karte und Livebild» (fehlte hier)
 		["Entwickler", "tools", "🧪", ["", "Updates"]]]
 # 3D-4.21 (Menü 2, Daniel 30.10.2026): the same names as MoveEye - the controls keep their old group / part in add_control,
 # _order_controls renames them here (MoveEye reads the fixed «gid», not the name)
@@ -4143,6 +4148,7 @@ func _register_controls() -> void:
 	simreal.add_controls()                                 # 3D-4.4: closer to the real device
 	objplus.add_controls()                                 # 3D-4.x «Gegenstände»: lures
 	inhalte.add_controls()                                 # F2: System → Grafik «Echte Oberflächen und Himmel»
+	sicherung.add_controls()                               # System → Sicherung (sicherung.gd)
 	umgebung.add_controls()                                # 3D-4.x: surroundings like real
 	statisten.add_controls()                               # Paket «Statisten»: Besuch → Von selbst (wie viele, pro Spielmodus)
 	menschen.add_controls()                                # P10: people like real (Besuch → Verhalten / Von selbst / Menschen schicken)
@@ -5224,6 +5230,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return spielbereich.control(d) if spielbereich != null else {"ok": false, "error": "no spielbereich"}
 	elif a == "dev":                                   # Entwicklertool 1 (devtool.gd): {do: places | goto (id) | fly (on, speed) | open | close | info}
 		return mehr.dev.control(d) if mehr != null and mehr.dev != null else {"ok": false, "error": "not ready"}
+	elif a == "sicherung":                             # System → Sicherung (sicherung.gd): {do: info | make | send | get | ack | check | restore}
+		return sicherung.control(d) if sicherung != null else {"ok": false, "error": "not ready"}
 	elif a == "werk":                                  # Werksrücksetzung (werk.gd): {do: info | open | close | reset (confirm: true)}
 		return mehr.werk.control(d) if mehr != null and mehr.werk != null else {"ok": false, "error": "not ready"}
 	elif a == "mehr":                                  # 3D-4.2x: «Mehr» (tests): {"do": open | theme | tour | diag | log | fb_* | shot}

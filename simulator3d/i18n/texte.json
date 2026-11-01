@@ -2140,6 +2140,12 @@
   "it": "*.jpg, *.jpeg, *.png, *.webp ; foto o panorama",
   "rm": "*.jpg, *.jpeg, *.png, *.webp ; foto u panorama"
  },
+ "*.zip ; ": {
+  "en": "*.zip ; ",
+  "fr": "*.zip ; ",
+  "it": "*.zip ; ",
+  "rm": "*.zip ; "
+ },
  "+ Bot": {
   "en": "+ Bot",
   "fr": "+ Bot",
@@ -6319,6 +6325,12 @@
   "it": "Fino a %d giocatori si avvicinano di soppiatto al traguardo con il telefonino (%s). «Start» apre il gioco – oppure aprire l’assistente.",
   "rm": "Fin a %d giugaders sa stulan cun il telefonin betg vis a la finala (%s). «Start» avra il gieu – u avrir l’assistent."
  },
+ "Bitte den Simulator neu starten – das Wiederherstellen geschieht beim nächsten Start.": {
+  "en": "Please restart the simulator – the restore happens at the next start.",
+  "fr": "Veuillez redémarrer le simulateur – la restauration se fera au prochain démarrage.",
+  "it": "Riavvia il simulatore – il ripristino avverrà al prossimo avvio.",
+  "rm": "Per plaschair aviar da nov il simulatur – la restauraziun capita al proxim start."
+ },
  "Bitte den Simulator neu starten – das Zurücksetzen geschieht beim nächsten Start.": {
   "en": "Please restart the simulator – the reset happens at the next start.",
   "fr": "Merci de redémarrer le simulateur – la réinitialisation a lieu au prochain démarrage.",
@@ -7628,6 +7640,12 @@
   "it": "È la cosa più bella dell'escursionismo.",
   "rm": "Quai è il pli bel vid viandar."
  },
+ "Das ist keine Sicherung des Simulators (manifest.json fehlt) – nichts geändert.": {
+  "en": "This is not a backup of the simulator (manifest.json missing) – nothing changed.",
+  "fr": "Ce n’est pas une sauvegarde du simulateur (manifest.json manquant) – rien n’a été modifié.",
+  "it": "Questo non è un backup del simulatore (manca manifest.json) – nulla è stato modificato.",
+  "rm": "Quai n’è nagina copia da segirezza dal simulatur (manifest.json manca) – nagut midà."
+ },
  "Das Jahreszeiten-Tor leuchtet! Geh hindurch.": {
   "en": "The season gate is glowing! Walk through it.",
   "fr": "La porte des saisons brille ! Passe à travers.",
@@ -7993,6 +8011,12 @@
   "fr": "Impossible d’écrire le fichier",
   "it": "Impossibile scrivere il file",
   "rm": "La datoteca na po betg vegnir scritta"
+ },
+ "Datei nicht gefunden.": {
+  "en": "File not found.",
+  "fr": "Fichier introuvable.",
+  "it": "File non trovato.",
+  "rm": "Datoteca betg chattada."
  },
  "Datei nicht lesbar: ": {
   "en": "File not readable: ",
@@ -9950,6 +9974,24 @@
   "it": "La casara",
   "rm": "La signuna"
  },
+ "Die Sicherung ist beschädigt ({f}) – nichts geändert.": {
+  "en": "The backup is damaged ({f}) – nothing changed.",
+  "fr": "La sauvegarde est endommagée ({f}) – rien n’a été modifié.",
+  "it": "Il backup è danneggiato ({f}) – nulla è stato modificato.",
+  "rm": "La copia da segirezza è donnegiada ({f}) – nagut midà."
+ },
+ "Die Sicherung konnte nicht ganz geschrieben werden.": {
+  "en": "The backup could not be written completely.",
+  "fr": "La sauvegarde n’a pas pu être écrite entièrement.",
+  "it": "Il backup non ha potuto essere scritto completamente.",
+  "rm": "La copia da segirezza n’ha betg pudì vegnir scritta cumplettamain."
+ },
+ "Die Sicherung lässt sich hier nicht schreiben: {p}": {
+  "en": "The backup cannot be written here: {p}",
+  "fr": "Impossible d’écrire la sauvegarde ici : {p}",
+  "it": "Impossibile scrivere il backup qui: {p}",
+  "rm": "La copia da segirezza na po betg vegnir scritta qua: {p}"
+ },
  "Die Sockendiebin": {
   "en": "The sock thief",
   "fr": "La voleuse de chaussettes",
@@ -10387,6 +10429,12 @@
   "fr": "Celle-ci commence par une lettre.",
   "it": "Questa comincia con una lettera.",
   "rm": "Quella cumenza cun ina brev."
+ },
+ "Diese Sicherung stammt aus einer neueren Version ({v}). Sie wird trotzdem geladen – Neues kennt dieser Simulator vielleicht nicht.": {
+  "en": "This backup comes from a newer version ({v}). It is loaded anyway – this simulator may not know everything new in it.",
+  "fr": "Cette sauvegarde provient d’une version plus récente ({v}). Elle est quand même chargée – ce simulateur ne connaît peut-être pas les nouveautés.",
+  "it": "Questo backup proviene da una versione più recente ({v}). Viene comunque caricato – questo simulatore forse non conosce le novità.",
+  "rm": "Questa copia da segirezza deriva d’ina versiun pli nova ({v}). Ella vegn tuttina chargiada – quest simulatur na enconuscha forsa betg las novitads."
  },
  "Dieselbe Runde zweimal: zuerst bewacht ein Mensch (Wächter mit Auslöser – oder der Bot-Wächter), dann die echte Erkennung von MoveEye – mit genau denselben Wegen der Schleicher und denselben Kamerabildern. Am Schluss: Wer hat mehr erwischt? Was der Mensch sah und MoveEye verpasste, wird ein Lernbild und ein Prüfstand-Weg.": {
   "en": "The same round twice: first a human guards (guard with shutter – or the bot guard), then the real detection of MoveEye – with exactly the same paths of the sneakers and the same camera pictures. At the end: who caught more? What the human saw and MoveEye missed becomes a learning picture and a test bench path.",
@@ -15900,6 +15948,12 @@
   "it": "inviato",
   "rm": "tramess"
  },
+ "Gesichert: {n} Dateien in {p}": {
+  "en": "Backed up: {n} files in {p}",
+  "fr": "Sauvegardé : {n} fichiers dans {p}",
+  "it": "Salvato: {n} file in {p}",
+  "rm": "Segirà: {n} datotecas en {p}"
+ },
  "Gespeichert als Prüfstand-Fall (läuft hier im Testlauf «Echte Nächte» mit): %s – für GitHub den Schlüssel oben eintragen und nochmals drücken.": {
   "en": "Saved as a test bench case (runs here in the test run «Real nights»): %s – for GitHub enter the key above and press again.",
   "fr": "Enregistré comme cas du banc d’essai (tourne ici dans le test «Vraies nuits») : %s – pour GitHub, saisir la clé ci-dessus et appuyer encore.",
@@ -19267,6 +19321,12 @@
   "it": "Nel muro delle rovine c'è una pietra con un'iscrizione: una freccia verso sud e accanto un ometto con due punti - come occhi. Dietro la pietra c'è il quarto pezzo di mappa.",
   "rm": "En il mir da la ruina è in crap cun ina inscripziun: ina frizza vers sid e sperasvi in um da crap cun dus puncts - sco egls. Davos il crap è il quart toc da charta."
  },
+ "In der MoveEye-Sicherung: {z}": {
+  "en": "In the MoveEye backup: {z}",
+  "fr": "Dans la sauvegarde MoveEye : {z}",
+  "it": "Nel backup di MoveEye: {z}",
+  "rm": "En la copia da segirezza da MoveEye: {z}"
+ },
  "In der Nacht den Polarstern gefunden - er zeigt immer nach Norden.": {
   "en": "Found the pole star at night - it always points north.",
   "fr": "Trouvé l'étoile Polaire dans la nuit - elle indique toujours le nord.",
@@ -19932,6 +19992,12 @@
   "fr": "Joue maintenant.",
   "it": "Gioca ora.",
   "rm": "Giugar ussa."
+ },
+ "Jetzt wiederherstellen": {
+  "en": "Restore now",
+  "fr": "Restaurer maintenant",
+  "it": "Ripristina ora",
+  "rm": "Restaurar ussa"
  },
  "Jetzt zurücksetzen": {
   "en": "Reset now",
@@ -20736,6 +20802,12 @@
   "fr": "Aucune partie enregistrée.",
   "it": "Nessuna partita salvata.",
   "rm": "Nagina partida memorisada."
+ },
+ "Kein gültiges ZIP oder beschädigt – nichts geändert.": {
+  "en": "Not a valid ZIP or damaged – nothing changed.",
+  "fr": "ZIP non valide ou endommagé – rien n’a été modifié.",
+  "it": "ZIP non valido o danneggiato – nulla è stato modificato.",
+  "rm": "Nagin ZIP valaivel u donnegià – nagut midà."
  },
  "kein Hund": {
   "en": "no dog",
@@ -24544,6 +24616,12 @@
   "it": "MoveEye ti ha riconosciuto nonostante %s %s!",
   "rm": "MoveEye ha identifitgà tai malgrà %s %s!"
  },
+ "MoveEye hat die Sicherung nicht abgeholt (MoveEye zu alt oder nicht mehr verbunden).": {
+  "en": "MoveEye did not fetch the backup (MoveEye too old or no longer connected).",
+  "fr": "MoveEye n’a pas récupéré la sauvegarde (MoveEye trop ancien ou plus connecté).",
+  "it": "MoveEye non ha prelevato il backup (MoveEye troppo vecchio o non più connesso).",
+  "rm": "MoveEye n’ha betg prendì la copia da segirezza (MoveEye memia vegl u betg pli collià)."
+ },
  "MoveEye hat die Verbindung verloren – Nacht-Testlauf abgebrochen.": {
   "en": "MoveEye lost the connection – night test run aborted.",
   "fr": "MoveEye a perdu la connexion – test de nuit interrompu.",
@@ -24724,6 +24802,12 @@
   "it": "MoveEye non passa – forse il firewall blocca",
   "rm": "MoveEye na passa betg – forsa blochescha il firewall"
  },
+ "MoveEye konnte die Sicherung nicht ablegen:": {
+  "en": "MoveEye could not store the backup:",
+  "fr": "MoveEye n’a pas pu enregistrer la sauvegarde :",
+  "it": "MoveEye non ha potuto salvare il backup:",
+  "rm": "MoveEye n’ha betg pudì arcunar la copia da segirezza:"
+ },
  "MoveEye liess sich nicht finden (GitHub nicht erreichbar: %s).": {
   "en": "MoveEye could not be found (GitHub not reachable: %s).",
   "fr": "MoveEye introuvable (GitHub inaccessible : %s).",
@@ -24808,6 +24892,12 @@
   "it": "MoveEye non vede il simulatore",
   "rm": "MoveEye na vesa betg il simulatur"
  },
+ "MoveEye Sim": {
+  "en": "MoveEye Sim",
+  "fr": "MoveEye Sim",
+  "it": "MoveEye Sim",
+  "rm": "MoveEye Sim"
+ },
  "MoveEye Sim  %s": {
   "en": "MoveEye Sim  %s",
   "fr": "MoveEye Sim  %s",
@@ -24819,6 +24909,12 @@
   "fr": "MoveEye Sim %s",
   "it": "MoveEye Sim %s",
   "rm": "MoveEye Sim %s"
+ },
+ "MoveEye Sim Sicherung": {
+  "en": "MoveEye Sim Sicherung",
+  "fr": "MoveEye Sim Sicherung",
+  "it": "MoveEye Sim Sicherung",
+  "rm": "MoveEye Sim Sicherung"
  },
  "MoveEye Sim zeigt": {
   "en": "MoveEye Sim presents",
@@ -27564,6 +27660,18 @@
   "it": "Apri la cartella dei contenuti foto",
   "rm": "Avrir l'ordinatur dals cuntegns da fotos"
  },
+ "Ordner der Sicherungen öffnen": {
+  "en": "Open the backup folder",
+  "fr": "Ouvrir le dossier des sauvegardes",
+  "it": "Apri la cartella dei backup",
+  "rm": "Avrir l’ordinatur da las copias da segirezza"
+ },
+ "Ordner oder USB-Stick für die Sicherung wählen": {
+  "en": "Choose a folder or USB stick for the backup",
+  "fr": "Choisir un dossier ou une clé USB pour la sauvegarde",
+  "it": "Scegli una cartella o una chiavetta USB per il backup",
+  "rm": "Tscherner in ordinatur u in stick USB per la copia da segirezza"
+ },
  "Ordner öffnen": {
   "en": "Open folder",
   "fr": "Ouvrir le dossier",
@@ -29672,6 +29780,12 @@
   "it": "Schiena contro schiena!",
   "rm": "Dies vi dies!"
  },
+ "Rückgängig: {v}": {
+  "en": "Undo: {v}",
+  "fr": "Annuler : {v}",
+  "it": "Annulla: {v}",
+  "rm": "Revocar: {v}"
+ },
  "Rückmeldung an den Entwickler": {
   "en": "Feedback to the developer",
   "fr": "Retour au développeur",
@@ -31152,6 +31266,36 @@
   "it": "Sicurezza / utenti",
   "rm": "Segirezza / utilisaders"
  },
+ "Sicherung": {
+  "en": "Backup",
+  "fr": "Sauvegarde",
+  "it": "Backup",
+  "rm": "Copia da segirezza"
+ },
+ "Sicherung (ZIP)": {
+  "en": "Backup (ZIP)",
+  "fr": "Sauvegarde (ZIP)",
+  "it": "Backup (ZIP)",
+  "rm": "Copia da segirezza (ZIP)"
+ },
+ "Sicherung (ZIP) zum Wiederherstellen wählen": {
+  "en": "Choose a backup (ZIP) to restore",
+  "fr": "Choisir une sauvegarde (ZIP) à restaurer",
+  "it": "Scegli un backup (ZIP) da ripristinare",
+  "rm": "Tscherner ina copia da segirezza (ZIP) per restaurar"
+ },
+ "Sicherung bereit – MoveEye holt sie ab …": {
+  "en": "Backup ready – MoveEye fetches it …",
+  "fr": "Sauvegarde prête – MoveEye la récupère …",
+  "it": "Backup pronto – MoveEye lo preleva …",
+  "rm": "Copia da segirezza pronta – MoveEye la prenda …"
+ },
+ "Sicherung: {z}": {
+  "en": "Backup: {z}",
+  "fr": "Sauvegarde : {z}",
+  "it": "Backup: {z}",
+  "rm": "Copia da segirezza: {z}"
+ },
  "Sicht": {
   "en": "View",
   "fr": "Vue",
@@ -31295,6 +31439,12 @@
   "fr": "Mettre le simulateur et MoveEye à la dernière version (mises à jour).",
   "it": "Portare simulatore e MoveEye all’ultima versione (aggiornamenti).",
   "rm": "Actualisar il simulatur e MoveEye a la versiun la pli nova (actualisaziuns)."
+ },
+ "Simulator wiederherstellen": {
+  "en": "Restore the simulator",
+  "fr": "Restaurer le simulateur",
+  "it": "Ripristina il simulatore",
+  "rm": "Restaurar il simulatur"
  },
  "Simulator-Prüfstand": {
   "en": "Simulator test bench",
@@ -31889,6 +32039,12 @@
   "fr": "Partie : %s",
   "it": "Partita: %s",
   "rm": "Stadi dal gieu: %s"
+ },
+ "Spielstände, Einstellungen, Entdeckungsbuch, Fotos und Tagebücher werden durch die aus der Sicherung ersetzt. Vorher wird automatisch der jetzige Stand gesichert (…_vorher.zip) – damit kannst du es rückgängig machen. Danach startet der Simulator neu.": {
+  "en": "Saved games, settings, discovery book, photos and diaries are replaced by those from the backup. First the present state is backed up automatically (…_vorher.zip) – with it you can undo it. Then the simulator restarts.",
+  "fr": "Les parties, réglages, carnet de découvertes, photos et journaux sont remplacés par ceux de la sauvegarde. Avant, l’état actuel est sauvegardé automatiquement (…_vorher.zip) – pour pouvoir annuler. Ensuite, le simulateur redémarre.",
+  "it": "Partite salvate, impostazioni, libro delle scoperte, foto e diari vengono sostituiti da quelli del backup. Prima lo stato attuale viene salvato automaticamente (…_vorher.zip) – così puoi annullare. Poi il simulatore si riavvia.",
+  "rm": "Ils stadis dal gieu, las configuraziuns, il cudesch da scuvertas, las fotos ed ils diaris vegnan remplazzads tras quels da la copia da segirezza. Avant vegn il stadi actual segirà automaticamain (…_vorher.zip) – uschia pos ti revocar. Lura s’avia il simulatur da nov."
  },
  "Spieltest": {
   "en": "Play test",
@@ -35660,6 +35816,12 @@
   "it": "Dall'inizio",
   "rm": "Da l'entschatta"
  },
+ "Von: {d} · Version {v} · {n} Dateien": {
+  "en": "From: {d} · version {v} · {n} files",
+  "fr": "Du : {d} · version {v} · {n} fichiers",
+  "it": "Del: {d} · versione {v} · {n} file",
+  "rm": "Da: {d} · versiun {v} · {n} datotecas"
+ },
  "Vor dem Zelt steht eine alte Sturmlaterne. Sie ist noch warm. Eingeritzt: «B. 1936 · Hospiz». Der Proviantsack liegt am Zelteingang.": {
   "en": "In front of the tent stands an old storm lantern. It is still warm. Scratched into it: «B. 1936 · Hospiz». The food bag lies at the tent entrance.",
   "fr": "Devant la tente se trouve une vieille lanterne-tempête. Elle est encore chaude. Gravé dessus : «B. 1936 · Hospiz». Le sac de provisions est à l'entrée de la tente.",
@@ -35767,6 +35929,12 @@
   "fr": "d’abord une copie des anciens réglages – seulement pour le propriétaire",
   "it": "prima una copia delle vecchie impostazioni – solo per il proprietario",
   "rm": "avant ina copia dals vegls parameters – mo per il possessur"
+ },
+ "Vorher-Sicherung ging nicht – nichts geändert.": {
+  "en": "The backup of the present state failed – nothing changed.",
+  "fr": "La sauvegarde de l’état actuel a échoué – rien n’a été modifié.",
+  "it": "Il backup dello stato attuale non è riuscito – nulla è stato modificato.",
+  "rm": "La copia da segirezza dal stadi actual n’è betg reussida – nagut midà."
  },
  "Vorlage für den Besuch (stellt «Von selbst» passend ein)": {
   "en": "Template for the visitors (sets «By themselves» to match)",
@@ -37306,6 +37474,12 @@
   "it": "Riproduzione: %s",
   "rm": "Reproducziun: %s"
  },
+ "Wiederhergestellt: {n} Dateien aus {z}.": {
+  "en": "Restored: {n} files from {z}.",
+  "fr": "Restauré : {n} fichiers de {z}.",
+  "it": "Ripristinato: {n} file da {z}.",
+  "rm": "Restaurà: {n} datotecas da {z}."
+ },
  "Wiederholung (R)": {
   "en": "Replay (R)",
   "fr": "Reprise (R)",
@@ -38518,6 +38692,12 @@
   "fr": "Fermer",
   "it": "Chiudi",
   "rm": "Serrar"
+ },
+ "Zu gross für MoveEye (höchstens 100 MB) – bitte auf dem PC oder einem USB-Stick sichern.": {
+  "en": "Too big for MoveEye (at most 100 MB) – please back up on the PC or a USB stick.",
+  "fr": "Trop grand pour MoveEye (100 Mo au maximum) – veuillez sauvegarder sur le PC ou une clé USB.",
+  "it": "Troppo grande per MoveEye (al massimo 100 MB) – salva sul PC o su una chiavetta USB.",
+  "rm": "Memia grond per MoveEye (maximalmain 100 MB) – per plaschair segirar sin il PC u sin in stick USB."
  },
  "zu kalt für den Sommerschlafsack: Winterschlafsack, Zelt und Windschutzmauer!": {
   "en": "too cold for the summer sleeping bag: winter bag, tent and wind wall!",
@@ -40175,6 +40355,12 @@
   "it": "⚠ Non applicato: ",
   "rm": "⚠ Betg surpiglià: "
  },
+ "⚠ Wiederherstellen aus einer Sicherung (ZIP) …": {
+  "en": "⚠ Restore from a backup (ZIP) …",
+  "fr": "⚠ Restaurer depuis une sauvegarde (ZIP) …",
+  "it": "⚠ Ripristina da un backup (ZIP) …",
+  "rm": "⚠ Restaurar ord ina copia da segirezza (ZIP) …"
+ },
  "⚠ «Fehlalarm-Jäger»: MoveEye ist nicht verbunden – ohne MoveEye zählt kein Fehlalarm.": {
   "en": "⚠ «False alarm hunter»: MoveEye is not connected – without MoveEye no false alarm counts.",
   "fr": "⚠ «Chasseur de fausses alarmes» : MoveEye n’est pas connecté – sans MoveEye, aucune fausse alarme ne compte.",
@@ -41543,6 +41729,12 @@
   "it": "📡 Il guardiano scansiona – sa più o meno dove sei!",
   "rm": "📡 Il guardian scannescha – el sa pressapauc nua che ti es!"
  },
+ "📡 In die MoveEye-Sicherung senden (Eintrag «Simulator»)": {
+  "en": "📡 Send to the MoveEye backup (entry «Simulator»)",
+  "fr": "📡 Envoyer dans la sauvegarde MoveEye (entrée « Simulateur »)",
+  "it": "📡 Invia al backup di MoveEye (voce «Simulatore»)",
+  "rm": "📡 Trametter en la copia da segirezza da MoveEye (inscripziun «Simulatur»)"
+ },
  "📡 Scan": {
   "en": "📡 Scan",
   "fr": "📡 Scan",
@@ -41572,6 +41764,18 @@
   "fr": "📢 Sirène ! Celui qui bouge maintenant se fait remarquer – ne bouge plus !",
   "it": "📢 Sirena! Chi si muove ora si fa notare – stai fermo!",
   "rm": "📢 Sirena! Tgi che sa mova ussa dat en egl – star quiet!"
+ },
+ "📦 In einen Ordner oder auf einen USB-Stick sichern …": {
+  "en": "📦 Back up to a folder or USB stick …",
+  "fr": "📦 Sauvegarder dans un dossier ou sur une clé USB …",
+  "it": "📦 Salva in una cartella o su una chiavetta USB …",
+  "rm": "📦 Segirar en in ordinatur u sin in stick USB …"
+ },
+ "📦 Jetzt sichern (ZIP in Dokumente → MoveEye Sim Sicherung)": {
+  "en": "📦 Back up now (ZIP in Documents → MoveEye Sim Sicherung)",
+  "fr": "📦 Sauvegarder maintenant (ZIP dans Documents → MoveEye Sim Sicherung)",
+  "it": "📦 Salva ora (ZIP in Documenti → MoveEye Sim Sicherung)",
+  "rm": "📦 Segirar ussa (ZIP en Documents → MoveEye Sim Sicherung)"
  },
  "📦 Mission: Paket holen (Pfeil)": {
   "en": "📦 Mission: fetch the parcel (arrow)",

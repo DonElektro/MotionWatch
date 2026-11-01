@@ -115,6 +115,8 @@ class SimLink:
                     light_set("white", "on" if mc_.get("on") else "auto")
                 elif op_ == "ir":                           # 2.98.41: B of the controller in the simulator (one mapping, 542)
                     light_set("ir", "on" if mc_.get("on") else "auto")
+                elif op_ == "sim_sicherung":                # Sicherung im Simulator: «In die MoveEye-Sicherung senden» -> holen, ablegen (639q)
+                    threading.Thread(target=simsich_fetch, args=(dict(mc_),), daemon=True, name="simsich").start()
                 elif op_ == "spieltest_push":               # Spieltest-Assistent: the switch «Spieltest-Meldungen» from the simulator (635a)
                     spieltest_set(bool(mc_.get("on")))
                 elif op_ == "feedback":                     # 2.98.33: «Rückmeldung an den Entwickler» in the simulator (584)

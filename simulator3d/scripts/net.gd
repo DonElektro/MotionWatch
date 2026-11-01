@@ -2,7 +2,7 @@ extends Node
 ## The connection to MoveEye: a small HTTP server with the same protocol as motionwatch_sim_interface.py
 ## (POST /state, GET /info, /events, /cam/<n>/video.mjpg, /cam/<n>/snapshot.jpg, /thermal.bin, GET+POST /control).
 ## Code-Prüfung M4/K2 (31.10.2026): der Server hört im ganzen WLAN. Darum nehmen die zerstörenden Befehle (werk reset,
-## dev spieltest clear, horror set_password) und die Entwickler-Seiten /dev/… (Notizen, Kontaktbogen) nur Anfragen von
+## dev spieltest clear, horror set_password, sicherung ausser info) und die Entwickler-Seiten /dev/… (Notizen, Kontaktbogen) nur Anfragen von
 ## diesem PC (127.0.0.1 / ::1) oder vom verbundenen MoveEye an (der Leiter aus POST /state, letzte 10 s), und nur ausserhalb
 ## des Kinder-Modus (devtool.is_owner). Fremde Geräte bekommen {"ok": false, "error": "nur_lokal"} bzw. 404.
 ## Für Testläufe von einem anderen Rechner: Startoption «--fernsteuerung-offen» oder Umgebungsvariable
@@ -213,7 +213,9 @@ static func dangerous(d: Dictionary) -> bool:
 	return (a == "werk" and w == "reset") or (a == "dev" and w == "spieltest" and str(d.get("what", "")) == "clear") \
 			or (a == "horror" and w == "set_password") \
 			or (a == "vorfuehrung" and w != "info") \
-			or (a in ["press", "set"] and str(d.get("id", "")).begins_with("vorfuehrung_"))   # Vorführmodus: only this PC / MoveEye
+			or (a in ["press", "set"] and str(d.get("id", "")).begins_with("vorfuehrung_")) \
+			or (a == "sicherung" and str(d.get("do", "info")) != "info") \
+			or (a in ["press", "set"] and str(d.get("id", "")).begins_with("sicherung_"))   # Sicherung: ZIP with the horror hash, restore
 
 
 func _handle(c: Dictionary, method: String, path: String, query: Dictionary, body: PackedByteArray, host: String) -> void:

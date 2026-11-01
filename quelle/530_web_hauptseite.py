@@ -1012,6 +1012,7 @@ let LANG = "", THEME = "", videoOnly = false, TRIG = [], sigQ = "", sigE = "";
 let HIDDEN = new Set();
 try { LANG = localStorage.getItem("mw-lang") || ""; THEME = localStorage.getItem("mw-theme") || "";
       HIDDEN = new Set(JSON.parse(localStorage.getItem("mw-hidden") || "[]")); } catch (e) {}
+Object.assign(I18N.de, {"Simulator": "Simulator", "Backups of the simulator: in the simulator System → Backup → «Send to the MoveEye backup». Restore = the simulator first backs up its present state (entry «before»), then it restarts.": "Sicherungen des Simulators: im Simulator System → Sicherung → «In die MoveEye-Sicherung senden». Wiederherstellen = der Simulator sichert zuerst seinen jetzigen Stand (Eintrag «vorher»), dann startet er neu.", "No backup of the simulator yet.": "Noch keine Sicherung des Simulators.", "Restore simulator": "Simulator wiederherstellen", "before": "vorher", "Restore the simulator from this backup? Its present state is backed up first (you can undo it), then the simulator restarts.": "Den Simulator aus dieser Sicherung wiederherstellen? Sein jetziger Stand wird vorher gesichert (rückgängig machen geht), dann startet der Simulator neu.", "Delete this backup of the simulator?": "Diese Sicherung des Simulators löschen?", "Simulator restored - it restarts": "Simulator wiederhergestellt – er startet neu", "simulator not connected - switch the simulation on first": "Simulator nicht verbunden – zuerst die Simulation einschalten", "Also copied to the backup above (folder / WebDAV).": "Wird auch in die Sicherung oben kopiert (Ordner / WebDAV)."});  // Sicherung → «Simulator» (639q)
 Object.assign(I18N.de, {"Person alarms at the campfire (off: only animals - the people at the fire are not burglars)": "Personen-Alarm am Lagerfeuer (aus: nur Tiere – die Leute am Feuer sind keine Einbrecher)"});  // 2.97.0
 Object.assign(I18N.de, {"Protection": "Schutz", "History": "Verlauf", "Message list": "Nachrichten", "Settings": "Einstellungen", "Sett.": "Einst.", "More": "Mehr", "Overview": "Übersicht", "Log": "Protokoll", "Sim": "Sim", "Recordings": "Aufnahmen", "Diary": "Tagebuch", "Zones": "Zonen", "Cameras": "Kameras", "Manual": "Anleitung", "Game corner": "Spielecke", "Tools": "Werkzeuge"});  // 2.98.0: the six tabs
 Object.assign(I18N.de, /*AUFRDE*/{}); Object.assign(I18N.en, /*AUFREN*/{});   // aufr (part 632): the texts of the clean-up round
@@ -3165,6 +3166,33 @@ function bkExtras(d) {
   b.onclick = async () => { b.disabled = true; st.textContent = "…"; const r = await post("/api/backup", {action: "test", lang: LANG});
     st.textContent = r.ok ? "✓ " + t("Test file copied - the settings work.") : "⚠ " + (r.error || "error"); b.disabled = false; };
   bt.appendChild(b); box.append(bt, st); d.appendChild(box);
+  simsichBox(d);
+}
+// ---- Sicherung → entry «Simulator» (639q): backups the simulator sent, download, «Restore simulator» (only the owner) ----
+async function simsichBox(d) {
+  let j; try { j = await (await fetch("/api/sim/sicherung?lang=" + LANG, {cache: "no-store"})).json(); } catch (e) { return; }
+  if (!j || j.ok === false) return;                       // not the owner: no entry
+  let box = d.querySelector("#simsich"); if (box) box.textContent = ""; else { box = el("div", "auxbox"); box.id = "simsich"; d.appendChild(box); }
+  box.appendChild(el("b", "", "🖥 " + t("Simulator")));
+  box.appendChild(el("div", "mut", t("Backups of the simulator: in the simulator System → Backup → «Send to the MoveEye backup». Restore = the simulator first backs up its present state (entry «before»), then it restarts.")));
+  if (j.copy) box.appendChild(el("div", "mut", t("Also copied to the backup above (folder / WebDAV).")));
+  const st = el("div", "mut", j.status || ""); st.id = "simsich-st";
+  if (!(j.list || []).length) box.appendChild(el("div", "mut", t("No backup of the simulator yet.")));
+  (j.list || []).forEach(x => {
+    const row = el("div", "simsich-row"); row.style.cssText = "display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0";
+    row.appendChild(el("span", "", x.when + " · " + x.ver + (x.vorher ? " · " + t("before") : "") + " (" + x.kb + " kB)"));
+    const a = el("a", "btn sec", "⬇"); a.href = "/api/sim/sicherung/" + encodeURIComponent(x.name); a.download = x.name; a.title = x.name;
+    const r = el("button", "sec", "♻ " + t("Restore simulator")); r.type = "button"; r.disabled = !j.sim || j.busy;
+    if (!j.sim) r.title = t("simulator not connected - switch the simulation on first");
+    r.onclick = async () => { if (!confirm(t("Restore the simulator from this backup? Its present state is backed up first (you can undo it), then the simulator restarts."))) return;
+      r.disabled = true; st.textContent = "…"; const q = await post("/api/sim/sicherung", {action: "restore", name: x.name, confirm: true, lang: LANG});
+      st.textContent = q.ok ? "✓ " + t("Simulator restored - it restarts") : "⚠ " + (q.error || "error"); setTimeout(() => simsichBox(d), 1500); };
+    const del = el("button", "sec", "🗑"); del.type = "button"; del.title = t("Delete");
+    del.onclick = async () => { if (!confirm(t("Delete this backup of the simulator?"))) return;
+      const q = await post("/api/sim/sicherung", {action: "delete", name: x.name, lang: LANG}); if (!q.ok) st.textContent = "⚠ " + (q.error || "error"); simsichBox(d); };
+    row.append(a, r, del); box.appendChild(row);
+  });
+  box.appendChild(st);
 }
 function updExtras(d) {
   const box = el("div", "auxbox");
