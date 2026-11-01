@@ -1,22 +1,39 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-01 13:48",
+ "generated": "2026-11-01 14:14",
  "versions": [
+  {
+   "version": "3.41.0",
+   "file": "webcam_bewegung_3_41_0.py",
+   "url": "",
+   "sha256": "c664de10a460e28ce7583938e6415c2ba6ede6015a63bb0fad78c60bcfeac1af",
+   "date": "2026-11-01 14:14",
+   "notes": "Im Fenster «Neu in …» führt bei jeder Neuerung ein kleiner Link direkt zur Funktion (MoveEye und Simulator); Schalter «Links zu Neuerungen» im Entwickler-Bereich.",
+   "size": 4763130,
+   "sig": "4a621b14b4517b2443fcd0ec64c4aa0905d326e92488d90633d34bf12b47bd33a627a5cb4f09ea3e5753d6ed515ad2fa85206b970fc3a23a8d995ea487e1aa07",
+   "data": {
+    "file": "moveeye_daten_3_41_0.zip",
+    "url": "",
+    "sha256": "a41f0f38609b02378ddbb123c8161d6ce300b6541e97b87ab205f455eb326120",
+    "size": 2518793,
+    "sig": "312790b183fc36ee83eece2adb8631312bdfe297b1047f88bec8672c7d52583bcb95362eb07f85e9e603acfd1b0546b26456153034adaa16994ee283e763ac0f"
+   }
+  },
   {
    "version": "3.40.0",
    "file": "webcam_bewegung_3_40_0.py",
    "url": "",
-   "sha256": "aa6944616f3c5ac22c4dc3f86b806eea47c78d4db33b5885990e6e284084a32d",
-   "date": "2026-11-01 13:48",
+   "sha256": "2772bcbf73217a50ec71d12948e68379810b23d975c8817a61fd7a31c05fb2f6",
+   "date": "2026-11-01 14:08",
    "notes": "Bauen: MoveEye komplett selbst bauen – ein Menüeintrag in MoveEye und Simulator, 10 Reiter, 3D im Browser auch ohne Simulator, Varianten, Einkaufsliste, alle Druckteile als 3MF, Verkabelungsplan, «Mein Bau».",
-   "size": 4751837,
-   "sig": "dcee75204e1b6dd5521502ed2ea7fc6790553ea6bdd300e7bcb3e195c4957a147396bca2c7fec109153cbb8d159f5af2c20625f12108065a3e7cf06561296e08",
+   "size": 4763116,
+   "sig": "d63481e73d45d1a8f41a26e99ef0b120fd4d75d91f84c746d6c21d1e969ff871c0d22bea7728a295c3ff78e38fb49fbc876f740e33617365454e659773ef6908",
    "data": {
     "file": "moveeye_daten_3_40_0.zip",
     "url": "",
-    "sha256": "0881d6b89ec6446528e61c7e92ac48ddd8e072822a53b6c870cd976e7102c593",
-    "size": 2516444,
-    "sig": "138c0130c73f35d2cfb05929f4e8dee72b1d355214fd05e22275c3aeb7ca98d10c36283e58bb0ba7926975e85921e51cc140fe0302fc5879f36ea3264f7da806"
+    "sha256": "7d4e3cfdbc6ee3c3c9dea9c681c420445d084519ac3d70f60ab08e1281cd4d76",
+    "size": 2518689,
+    "sig": "697c9822a3dcbbfcc7f9b01b163f9f52de8b80ce3e83a22cbb178a904de3530968efd15dd16175bfaec78f302feae4c31a58e2e9f5411703d576abb4cc56b905"
    }
   },
   {
@@ -24,7 +41,7 @@
    "file": "webcam_bewegung_3_39_2.py",
    "url": "",
    "sha256": "70bc21235730a8e6b3087aafb6ce4a99ca2c74f2eca5c638aa2fac93218dc951",
-   "date": "2026-11-01 13:38",
+   "date": "2026-11-01 14:08",
    "notes": "Datenschutz: Push- und E-Mail-Meldungen zeigen statt des WLAN-Namens nur noch «bekanntes WLAN».",
    "size": 4751822,
    "sig": "dda1ed74c09b2fe61c34e79ab3ab6c9e3bcdad376e5de3935b881dd72626c4f6e63c94c4f0133fa764fd55aba7d3448d028458ac9b90deac7b79cc3028e5780c",
@@ -136,23 +153,6 @@
     "sha256": "95948289a9d5df6791d987888f95df4115745629e1110de6155c1e90eb854b6a",
     "size": 1583339,
     "sig": "0dfb2be5a9e06dc2756b71b031bd3e37e94ec7d76bc71fdf34ac43057f2a58af4dd69e8707f49f51a6d3414fb1f5faaa84113a66d734c192862507cf364d0208"
-   }
-  },
-  {
-   "version": "3.32.0",
-   "file": "webcam_bewegung_3_32_0.py",
-   "url": "",
-   "sha256": "ac35fd81c625f0700a54206014dc66a3d32cdc4bfd1c83386454e07b55a44b98",
-   "date": "2026-11-01 11:44",
-   "notes": "Ruhiges Bild statt Schwarz, wenn der Simulator startet, sich aktualisiert, einen Ort lädt oder nicht erreichbar ist (mit Blinki, nach 3 Min. ein Hinweis); echte Kamera: klarere Fehlermeldung.",
-   "size": 4647212,
-   "sig": "8e9f6092742278895b8bb9e59144413eecc7e9bec8b3fa3889d98ace49e3c50b9e7fe2dbf4b8989e5c72e95efde606bdce4e7cd3c79cc6b883560fb38d1a3609",
-   "data": {
-    "file": "moveeye_daten_3_32_0.zip",
-    "url": "",
-    "sha256": "d03eba7055bff2176a7dd9a51cbcfb5904df3b4a69e40a45c0316d39473c15e4",
-    "size": 1567077,
-    "sig": "a8d42a036a386c247b3afc41af2feac0cb5d40a6382f1e54e17fe7f39ecf560d2def518175c394952606d11bb6b2ab16fbe5b7ff5107c6ca5e7aadc6d161f00a"
    }
   },
   {

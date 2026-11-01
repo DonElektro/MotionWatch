@@ -456,9 +456,11 @@ func _control(d: Dictionary) -> Dictionary:
 			main.start_info = "Dein Platz: MoveEye kennt seinen Ort nicht (GPS oder Ort in den Einstellungen) – Zonen und Patrouille kommen trotzdem"
 		main._settings_dirty = true
 		return {"ok": true, "twin": main.twin_info(), "map": d.has("lat")}
-	elif a == "news":                                  # 3D-3.82: {do: info | show | close}
+	elif a == "news":                                  # 3D-3.82: {do: info | show | close | go (v: Version, Links zu Neuerungen)}
 		if str(d.get("do", "")) == "show":
-			main.news.show_news()
+			main.news.show_news(main.news.pick(d.get("vs", [])))   # vs: these versions (tests), otherwise the new ones
+		elif str(d.get("do", "")) == "go":
+			return {"ok": true, "go": main.news.go(str(d.get("v", ""))), "news": main.news.info()}
 		elif str(d.get("do", "")) == "close":
 			main.news.close(bool(d.get("off", false)))
 		return {"ok": true, "news": main.news.info()}

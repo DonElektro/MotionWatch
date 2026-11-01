@@ -2,6 +2,7 @@ extends RefCounted
 ## generated from «Lies mich.txt» by neugen.py - the NEU IN blocks for the popup «Neu in dieser Version» (news.gd)
 
 const LOG := [
+	["3.41.0", "Im Fenster «Neu in …» führt bei jeder Neuerung ein kleiner Link «Zur Funktion ›» direkt dorthin (wie in MoveEye); Schalter «Links zu Neuerungen» im Entwickler-Bereich. So testest du: nach dem Update im Fenster «Neu in …» auf «Zur Funktion ›» tippen."],
 	["3.40.0", "Bauen (Mehr › Bauen, früher «Werkstatt»): MoveEye komplett selbst bauen – 10 Reiter mit 3D, Teilen, Varianten, Einkaufsliste, Drucken (alle Druckteile als 3MF), Montage, Verkabelungsplan und «Mein Bau»; in MoveEye gleich, dort auch als 3D im Browser ohne Simulator. So testest du: Simulator aus, dann MoveEye › Mehr › Bauen; ein Teil antippen; unter Einkauf die CSV holen."],
 	["3.39.2", "Datenschutz (MoveEye): Push- und E-Mail-Meldungen zeigen statt des WLAN-Namens nur noch «bekanntes WLAN». Am Simulator ändert sich nichts. So testest du: eine Test-Push auslösen, z. B. WLAN kurz trennen und wieder verbinden; statt des Namens steht «bekanntes WLAN»."],
 	["3.39.1", "Simulator intern aufgeräumt, schnellerer Start. So testest du: den Simulator normal starten und benutzen, es sollte sich nichts ändern."],
@@ -16,5 +17,4 @@ const LOG := [
 	["3.31.0", "Ein gemeinsamer Kopf wie in MoveEye: ? Hilfe · 🔔 Ton · ↻ neu laden · DE Sprache · ☰ Menü · ⛶ Vollbild · ▲ einklappen · 🛠 Entwickler, immer in derselben Reihenfolge; schmal ab «Sprache» im ☰-Menü. Listen zum Ein-/Ausblenden als Chips mit Symbolen. So testest du: oben die Knöpfe der Reihe nach antippen; das Fenster schmal ziehen, dann ☰ öffnen."],
 	["3.30.0", "Schneller zum Entwickler-Bereich: den Schriftzug MoveEye Sim etwa 1 s gedrückt halten öffnet das Entwickler-Fenster; dazu ein Werkzeug-Knopf 🛠 oben rechts (nur mit eingeschaltetem Entwickler-Bereich). In MoveEye (Web, Pi-Fenster) gleich: Logo halten. So testest du: Entwickler-Bereich einschalten (System › Gerät & Hilfe), dann das Logo 1 s halten oder 🛠 tippen."],
 	["3.29.0", "Fenster docken automatisch in Leisten links/rechts an (ohne Überlappung, passt sich der Bildschirmgrösse an, «Neu anordnen»); Karte, Kompass, SmallTV und CPU als Reiter in einem Fenster; Entwickler immer vorne, klein/mittel/gross und einklappbar. So testest du: Fenstergrösse ändern, dann «Fenster» › «Neu anordnen». Den Entwickler öffnen und auf «gross» stellen."],
-	["3.28.1", "Prüfungen laufen automatisch auf GitHub (MoveEye, Simulator-Tests, Export), schneller und ohne den eigenen Rechner zu belasten. Am Simulator selbst ändert sich nichts. So testest du: auf GitHub unter Actions «CI» anschauen."],
 ]

@@ -1,7 +1,7 @@
 extends Node
 ## P2 «totale Integration» (MoveEye Teil 639zb): die Ansicht mit dem verbundenen MoveEye abgleichen, ohne eigenen Schalter.
 ## Geteilt (res://ui_gemeinsam.json «shared» / «sync»): Einfach/Experte, Symbole farbig/schlicht, Sprache, Bewegung reduzieren,
-## Stimme, Rundgang, Blinki, «Neu in …». Hell/Dunkel/Rotlicht bleibt pro Gerät.
+## Stimme, Rundgang, Blinki, «Neu in …», «Links zu Neuerungen». Hell/Dunkel/Rotlicht bleibt pro Gerät.
 ##   * MoveEye schickt im Zustand «ui» = {rev, took, v}. Eine eigene Änderung geht in der Antwort als «ui» = {n, base, set}
 ##     mit (reply()), bis MoveEye sie mit «took» >= n bestätigt; danach gelten wieder die Werte von MoveEye.
 ##   * Letzte Änderung gewinnt (MoveEye zählt), im selben Takt gewinnt MoveEye. Nach dem Neuverbinden (Pause > 3 s, anderer
@@ -20,7 +20,8 @@ const UI = preload("res://scripts/ui_style.gd")
 const T = preload("res://scripts/i18n.gd")
 const UG = preload("res://scripts/ui_gemeinsam.gd")
 const Stimme = preload("res://scripts/abenteuer_stimme.gd")
-const KEYS := ["simple", "icons", "lang", "motion", "voice", "tours", "blinki", "news"]
+const KEYS := ["simple", "icons", "lang", "motion", "voice", "tours", "blinki", "news", "news_links"]
+const LINKS := ["auto", "on", "off"]   # «Links zu Neuerungen» (news.gd)
 const GAP := 3.0                      # seconds without a packet = a new connection (MoveEye leads again)
 const MOTION_TO := {"auto": "auto", "on": "an", "off": "aus"}
 const VOICE_TO := {"on": "an", "off": "aus", "subtitles": "untertitel"}
@@ -88,6 +89,8 @@ static func norm(k: String, v):
 			return str(v) if MOTION_TO.has(str(v)) else null
 		"voice":
 			return str(v) if VOICE_TO.has(str(v)) else null
+		"news_links":
+			return str(v) if str(v) in LINKS else null
 	return null
 
 
@@ -98,7 +101,8 @@ func values() -> Dictionary:
 	return {"simple": _keep_simple if _lock_on else bool(main.ui_simple), "icons": "plain" if str(main.ui_icons) == "plain" else "color",
 			"lang": T.lang(), "motion": "on" if rm == "an" else ("off" if rm == "aus" else "auto"),
 			"voice": {"an": "on", "aus": "off", "untertitel": "subtitles"}.get(vm, "on"),
-			"tours": bool(main.tour_auto), "blinki": bool(main.blinki_on), "news": bool(main.news_popup)}
+			"tours": bool(main.tour_auto), "blinki": bool(main.blinki_on), "news": bool(main.news_popup),
+			"news_links": str(main.get("news_links")) if str(main.get("news_links")) in LINKS else "auto"}
 
 
 func apply(v: Dictionary) -> Array:
@@ -136,6 +140,8 @@ func apply(v: Dictionary) -> Array:
 				main.blinki_on = bool(x)
 			"news":
 				main.news_popup = bool(x)
+			"news_links":
+				main.news_links = str(x)
 	if not ch.is_empty():
 		main._settings_dirty = true
 		if main.has_method("_sync_ui"):

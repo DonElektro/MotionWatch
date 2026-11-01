@@ -24356,6 +24356,12 @@
   "it": "Trascinare a sinistra: spostare · trascinare a destra: girare · rotella: zoom · doppio clic: volare lì",
   "rm": "Trair a sanestra: spustar · trair a dretga: volver · roda: zoom · dubel clic: svolar là"
  },
+ "Links zu Neuerungen": {
+  "en": "Links to what is new",
+  "fr": "Liens vers les nouveautés",
+  "it": "Link alle novità",
+  "rm": "Links a las novitads"
+ },
  "Links!": {
   "en": "Left!",
   "fr": "À gauche !",
@@ -34865,6 +34871,12 @@
   "fr": "Frapper (B)",
   "it": "Batti (B)",
   "rm": "Pitgar (B)"
+ },
+ "Standard (an, bis das Projekt veröffentlicht ist)": {
+  "en": "default (on until the project is published)",
+  "fr": "par défaut (activé tant que le projet n’est pas publié)",
+  "it": "predefinito (attivo finché il progetto non è pubblicato)",
+  "rm": "standard (activà fin ch’il project è publitgà)"
  },
  "Standard (Tag, Wind, Nacht, Regen · etwa 5 Min.)": {
   "en": "Standard (day, wind, night, rain · about 5 min)",
