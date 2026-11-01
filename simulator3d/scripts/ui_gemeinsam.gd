@@ -169,3 +169,45 @@ static func summary(main) -> String:
 		return "Menü-Datei: OK (%d Gruppen, %d Texte der Leiste wie ui_gemeinsam.json)" % [sim_groups().size(),
 				((data().get("bar", {}) as Dictionary).get("texts", {}) as Dictionary).size()]
 	return "Menü-Datei: " + " | ".join(p)
+
+
+# ---- «Fertig kaufen» (Daniel 01.11.2026): Hinweis oben auf «Bauen», Anfrage über die Rückmeldung ----------------------------
+static func fertig() -> Dictionary:
+	"""the block «fertig» of the file: kind, standard, texts, pakete (empty without the file)"""
+	var f = data().get("fertig", {})
+	return f if typeof(f) == TYPE_DICTIONARY else {}
+
+
+static func _l5(d, lang: String) -> String:
+	"""a text in de / en / fr / it / rm with the same fallback as i18n.gd (rm -> de, fr / it -> en -> de, en -> de)"""
+	if typeof(d) != TYPE_DICTIONARY:
+		return str(d) if d != null else ""
+	var chain: Array = [lang]
+	chain.append_array(({"en": ["de"], "fr": ["en", "de"], "it": ["en", "de"], "rm": ["de"]} as Dictionary).get(lang, []))
+	for c in chain:
+		if str(d.get(c, "")) != "":
+			return str(d[c])
+	return str(d.get("de", ""))
+
+
+static func fertig_text(k: String, lang: String) -> String:
+	"""hint, button, topic, price, package, contact, contact_note, contact_needed, text (with {paket})"""
+	return _l5((fertig().get("texts", {}) as Dictionary).get(k, {}), lang)
+
+
+static func fertig_pakete() -> Array:
+	var p = fertig().get("pakete", [])
+	return p if typeof(p) == TYPE_ARRAY else []
+
+
+static func fertig_paket(id: String, lang: String) -> Dictionary:
+	"""{id, name, desc} of a package (an unknown id -> the standard one)"""
+	var std := str(fertig().get("standard", "komplett"))
+	var hit := {}
+	for want in [id, std]:
+		for p in fertig_pakete():
+			if hit.is_empty() and typeof(p) == TYPE_DICTIONARY and str(p.get("id", "")) == want:
+				hit = p
+	if hit.is_empty():
+		return {}
+	return {"id": str(hit["id"]), "name": _l5(hit.get("names", {}), lang), "desc": _l5(hit.get("desc", {}), lang)}
