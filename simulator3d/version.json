@@ -3,13 +3,13 @@
  "ver": "3.44.0",
  "name": "MoveEye Sim 3.44.0",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 48932008,
- "sha256": "50adc94e7b76622c4052df053ace8bdaabe27a3be075efe731b0a8e1b7f2bff1",
- "notes": "Tastatur statt Scrollrad",
+ "size": 48933062,
+ "sha256": "d1c1cc92d1d0295181bd43fdab8d9d5943071a96e69a39113f4b3c0d7854f29f",
+ "notes": "Tastatur, Linux-Kiosk",
  "linux": {
   "file": "simulator3d/MoveEyeSim3D_Linux.zip",
   "ver": "3.44.0",
-  "size": 42895879,
-  "sha256": "a864f0563333f4363c1218ebf758378bd9ced5716e7d0d9f4b0a429504e7e19e"
+  "size": 42908200,
+  "sha256": "96e8bc34d88bd9111d68255efd5032309a07c435a7dedfd59f9b488194e58952"
  }
 }

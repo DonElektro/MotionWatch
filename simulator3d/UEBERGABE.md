@@ -8,6 +8,9 @@ Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weite
 
 - + / − Zoom, Bild↑/↓ Listen, Pfeile Ansicht, F1 Tasten-Hilfe, Shift+Bild↑/↓ Mast; Scrollbalken sichtbar (ui_style.gd).
   Test `werkzeuge/tasten_test.gd`.
+- Linux-Kiosk (real-linux-kiosk): `beilagen_linux/kiosk_ein.sh` / `kiosk_aus.sh` / `kiosk_sitzung.sh` (Openbox-Sitzung, Schleife
+  mit Neustart nach Absturz, wartet nach einem Update auf den neu gestarteten Simulator); kommen über linux_paket.sh ins
+  Linux-Paket und mit dem Update neben die Programmdatei. Die Kopie in /usr/local/lib/moveeye-kiosk/ erneuert nur kiosk_ein.sh.
 
 ## NEU in 3.43.1 (MoveEye 3.43.1): Linux-Download auf /sim (MoveEye Teil 300 SIM3D_LINUX, 470, 550)
 

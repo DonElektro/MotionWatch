@@ -23,8 +23,10 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
-  * 3.44.0: Simulator: Tastatur statt Scrollrad: + / − zoomt überall, Bild↑/↓ blättert Listen, Pfeile drehen die Ansicht, F1
-    zeigt die Tasten-Hilfe, Scrollbalken sind sichtbar und ziehbar, Shift+Bild↑/↓ bewegt den Mast.
+  * 3.44.0: Simulator: Tastatur statt Scrollrad: + / − zoomt überall, Bild↑/↓ blättert Listen, Pfeile drehen die Ansicht,
+    F1 zeigt die Tasten-Hilfe, Scrollbalken sind sichtbar und ziehbar, Shift+Bild↑/↓ bewegt den Mast. Linux-Kiosk:
+    ./kiosk_ein.sh macht den PC zur reinen Simulator-Maschine (Vollbild, sendet an MoveEye, Neustart nach Absturz, SSH);
+    Ctrl+Alt+D = normales Mint, ./kiosk_aus.sh stellt alles zurück.
   * 3.43.1: MoveEye bietet unter /sim jetzt auch den Simulator für Linux zum Herunterladen an.
   * 3.43.0: Gehäuse v5.2b: SD-Schlitz für eine Verlängerung und USB-C-Öffnung (je mit Stopfen), Kopf 06 mit Status-LED, Rippen
     und Trennsteg ≥ 1,5 mm, Sicherung 5 A, 13 Entwicklungs-Sockel (12 V an der GX16), Lochraster im Zwischenboden, Platz für
@@ -238,7 +240,7 @@ def prepare_settings_file():
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
 ZD_FILE = "moveeye_daten_3_44_0.zip"
-ZD_SHA256 = "07eebbb5424e953a82555a2aa381b0b0145655a33bd08988d3dfb0b6a927f1c6"
+ZD_SHA256 = "06ff9da1bd4d958e7ee89c48fc41a043b95925ffec88f6012579d9decced4c36"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -24581,13 +24583,13 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3.44.0", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 48932008,
-         "sha256": "50adc94e7b76622c4052df053ace8bdaabe27a3be075efe731b0a8e1b7f2bff1"}
+SIM3D = {"version": "3.44.0", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 48933062,
+         "sha256": "d1c1cc92d1d0295181bd43fdab8d9d5943071a96e69a39113f4b3c0d7854f29f"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # 3.43.x: the same 3D simulator for Linux (x86_64), offered at /sim/simulator3d_linux.zip - fetched, checked and kept the same way
 # (simulator3d/MoveEyeSim3D_Linux.zip, block «linux» in simulator3d/version.json; bauen.py --neue-version takes it over).
-SIM3D_LINUX = {"version": "3.44.0", "file": "simulator3d/MoveEyeSim3D_Linux.zip", "size": 42895879,
-               "sha256": "a864f0563333f4363c1218ebf758378bd9ced5716e7d0d9f4b0a429504e7e19e", "stem": "MoveEyeSim3D_Linux",
+SIM3D_LINUX = {"version": "3.44.0", "file": "simulator3d/MoveEyeSim3D_Linux.zip", "size": 42908200,
+               "sha256": "96e8bc34d88bd9111d68255efd5032309a07c435a7dedfd59f9b488194e58952", "stem": "MoveEyeSim3D_Linux",
                "label": "MoveEye Sim (Linux)"}
 SIM3D_LINUX_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.

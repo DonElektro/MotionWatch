@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-01 18:27",
+ "generated": "2026-11-01 18:30",
  "versions": [
   {
    "version": "3.44.0",
    "file": "webcam_bewegung_3_44_0.py",
    "url": "",
-   "sha256": "ee2642e7cfe8f6bf85f5ea0ae249984ecb0a0572a64b3dbcf0e7acb5df4a5348",
-   "date": "2026-11-01 18:27",
-   "notes": "Simulator: Tastatur statt Scrollrad: + / − zoomt überall, Bild↑/↓ blättert Listen, Pfeile drehen die Ansicht, F1 zeigt die Tasten-Hilfe, Scrollbalken sind sichtbar und ziehbar, Shift+Bild↑/↓ bewegt den Mast.",
-   "size": 4796143,
-   "sig": "d993e64f05cf92ffa10398440a5c093c807e47085be17114d461c2f56cdd56e7f1b6e17d4fce4caecf8cef01e1e04579980c0b68742f1f4827ef98c991c1b00e",
+   "sha256": "9b1d59a6f35303a72eb402ac1254023d3b1aab2336ccde81e90e69761639a755",
+   "date": "2026-11-01 18:30",
+   "notes": "Simulator: Tastatur statt Scrollrad: + / − zoomt überall, Bild↑/↓ blättert Listen, Pfeile drehen die Ansicht, F1 zeigt die Tasten-Hilfe, Scrollbalken sind sichtbar und ziehbar, Shift+Bild↑/↓ bewegt den Mast. Linux-Kiosk: ./kiosk_ein.sh macht den PC zur reinen Simulator-Maschine (Vollbild, sendet an MoveEye, Neustart nach Absturz, SSH); Ctrl+Alt+D = normales Mint, ./kiosk_aus.sh stellt alles zurück.",
+   "size": 4796346,
+   "sig": "ff5cce456539a0c59f1d93c3074a39bfd541f5231be613def6328a096ebf9f093d4ecd163b11c360767889155b632f7a0c76e39f8bacca9d7a1f89de3c43630a",
    "data": {
     "file": "moveeye_daten_3_44_0.zip",
     "url": "",
-    "sha256": "07eebbb5424e953a82555a2aa381b0b0145655a33bd08988d3dfb0b6a927f1c6",
-    "size": 3279194,
-    "sig": "0b273c0a6143f727ab0a571db5ddc968fae7ae43e4786d982f7859c73bae26083d894fede6d149d000b262b082d4e86c559faa0624d5d195c7071387cc4f240a"
+    "sha256": "06ff9da1bd4d958e7ee89c48fc41a043b95925ffec88f6012579d9decced4c36",
+    "size": 3279507,
+    "sig": "c11dd969f3698d670ba3bd2ff0d72cdc16d94e2c1193c284f9368b9f697fbec3f9941eb01669837b8030adf4c1361f30e650a3302278234e2c80ce23540fcb0d"
    }
   },
   {

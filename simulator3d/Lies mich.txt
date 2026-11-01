@@ -490,8 +490,10 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 
 NEU IN 3.44.0
 3.44.0: Tastatur statt Scrollrad: + / − zoomt überall, Bild↑/↓ blättert Listen, Pfeile drehen die Ansicht, F1 zeigt die
-Tasten-Hilfe, Scrollbalken sind sichtbar und ziehbar, Shift+Bild↑/↓ bewegt den Mast.
-So testest du: F1 drücken; in der Ansicht + / − und die Pfeile; in einer langen Liste Bild↑/↓ oder den Scrollbalken ziehen.
+Tasten-Hilfe, Scrollbalken sind sichtbar und ziehbar, Shift+Bild↑/↓ bewegt den Mast. Linux-Kiosk: ./kiosk_ein.sh macht den
+PC zur reinen Simulator-Maschine (Vollbild, sendet an MoveEye, Neustart nach Absturz, SSH); Ctrl+Alt+D = normales Mint,
+./kiosk_aus.sh stellt alles zurück (siehe Abschnitt KIOSK oben).
+So testest du: F1 drücken; + / − und die Pfeile in der Ansicht; in einer Liste Bild↑/↓. Linux: ./kiosk_ein.sh --trocken.
 
 NEU IN 3.43.1
 3.43.1: MoveEye bietet unter /sim jetzt auch den Simulator für Linux zum Herunterladen an (MoveEyeSim3D_Linux.zip).
