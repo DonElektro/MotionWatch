@@ -238,7 +238,7 @@ def prepare_settings_file():
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
 ZD_FILE = "moveeye_daten_3_44_2.zip"
-ZD_SHA256 = "d4d849bd95805abea0b4cc3bd41f27a4436443a86d1ca5bd24268c5ad90c31b0"
+ZD_SHA256 = "ff41ae33a26a9959258c4bd5caa1d6e224f61ecafd9fe7dc72e41b8f285f54cd"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -62829,7 +62829,7 @@ for _k, _v in _HX_SIMDOPP.items():
         TRX[_L].setdefault(_k, _v[_i + 1])
 # ---- the product page (2.95.52): the homepage of MoveEye (made as an artifact), packed here (gzip + base64) so the Pi
 # can show it without internet to guests in the same Wi-Fi at /info/. Questions from the form arrive as a push message. ----
-INFO_HTML_GZ = (  # 3.45: homepage from the artifact again - new since 3.27, build or buy (3 packages), feedback form with order topic and package; 2.98.9: FAQ, French and Italian, «a night in time-lapse»; 2.98.7: MoveEye name, wake-up alarm, «Spiele freigeben», ticker, join wall, more animation
+INFO_HTML_GZ = (  # 3.45: homepage as a finished product (based on the artifact of 30.10.): features, 3 packages with extras, request form with package; 2.98.9: FAQ, French and Italian, «a night in time-lapse»; 2.98.7: MoveEye name, wake-up alarm, «Spiele freigeben», ticker, join wall, more animation
     _zd('620_daten_produktseite/INFO_HTML_GZ', "")
 )
 
