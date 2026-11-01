@@ -160,9 +160,27 @@ func _process(_dt: float) -> bool:
 		errs.append("Platte B: Teile fehlen: " + str(ei.get("visible", [])))
 	if int(ei.get("boxes", 0)) < 1:
 		errs.append("Platte B: Stopfen als Quader fehlen")
-	W.control({"do": "plates", "n": 0})
-	ei = W.control({"do": "plate_tap", "id": "", "datei": "21_Stopfen_Relais"}).get("einzel", {})
-	eq("Platte: Stopfen nur Infos", ei.get("pdatei", ""), "21_Stopfen_Relais")
+	ei = W.control({"do": "plates", "n": 0}).get("einzel", {})
+	# real-einzelteil-2: feet and plugs are real models now (no boxes on plate A), the card is below the picture with symbols
+	eq("Platte A: keine Quader mehr", ei.get("boxes", -1), 0)
+	for fid in ["feet", "feet2", "feet3", "feet4", "rlplug", "micplug", "dsplug", "llplug"]:
+		if not (fid in ei.get("visible", [])):
+			errs.append("Platte A: %s fehlt" % fid)
+	if W.einzel.lage("feet").get("unsicher", false):
+		errs.append("Fuss: Lage noch geschätzt")
+	var card: Control = W.einzel._ui["card"]
+	if card.get_parent() != (W._w["body3d"] as Control).get_child(0):
+		errs.append("Einzelteil-Karte nicht unter dem 3D-Bild")
+	eq("Symbol Druckplatten", (W._w["plates_btn"] as Button).get_meta("icon", ""), "printer")
+	eq("Symbol Nur dieses Teil", (W._w["solo_btn"] as Button).get_meta("icon", ""), "search")
+	var tub_col: Color = (W.parts["tub52"]["mat"] as StandardMaterial3D).albedo_color
+	if not tub_col.is_equal_approx(Color("#9a9ea3")):
+		errs.append("Farbe Unterteil nicht #9a9ea3: " + str(tub_col))
+	ei = W.control({"do": "plate_tap", "id": "rlplug", "datei": "21_Stopfen_Relais"}).get("einzel", {})
+	eq("Platte: Stopfen 21 als Einzelteil", [ei.get("mode", ""), ei.get("solo", "")], ["teil", "rlplug"])
+	W.control({"do": "plates", "n": 1})
+	ei = W.control({"do": "plate_tap", "id": "", "datei": "15_Pupillenring"}).get("einzel", {})
+	eq("Platte: Teil ohne Modell nur Infos", ei.get("pdatei", ""), "15_Pupillenring")
 	W.einzel.open_url("/build/datei/x", "v5-2/MotionWatch_v5-2_Platte_A_Unterteil.3mf")
 	if not str(W.einzel.last_url).ends_with("Druckdateien/v5-2/MotionWatch_v5-2_Platte_A_Unterteil.3mf"):
 		errs.append("Download ohne MoveEye: GitHub erwartet, " + str(W.einzel.last_url))

@@ -102,6 +102,13 @@ GEO = {
     "fuseh": ("base", 0.5, 0.8, "#e74c3c", False, 120, 0.8), "sockel": ("base", 0.6, 1.4, "#4d80cc", False, 90, 0.3),
     "wplug": ("base", 0.3, 0.6, "#9a9ea3", True, 0, 1.5),     # 12 Blindstopfen im Weitwinkel-Fenster (Szene ohne Weitwinkel im Gehäuse)
     "irplug": ("base", 0.3, 0.6, "#9a9ea3", True, 0, 1.5),    # 19 Stopfen im IR-Modul-Loch (Szene ohne IR-Modul / Weitwinkel)
+    # real-einzelteil-2 (01.11.2026): die 4 Füsse einzeln (wie auf der Druckplatte) und die übrigen Stopfen aus v52.py
+    # (eingesetzt, nur Werkstatt / Druckplatten: «ohne» = nur ohne dieses Teil, darum nicht «aussen» – die Szene bleibt gleich)
+    "feet2": ("base", 0.6, 2.0, "#333333", True, -35, 0.3), "feet3": ("base", 0.6, 2.0, "#333333", True, -35, 0.3),
+    "feet4": ("base", 0.6, 2.0, "#333333", True, -35, 0.3),
+    "thplug": ("tilt", 0.2, 0.4, "#9a9ea3", False, 400, 3.0), "dsplug": ("base", 0.15, 0.3, "#9a9ea3", False, -60, 0.0),
+    "rlplug": ("base", 0.2, 0.4, "#9a9ea3", False, 20, 1.6), "micplug": ("base", 0.12, 0.25, "#9a9ea3", False, 120, 1.0),
+    "llplug": ("base", 0.12, 0.25, "#9a9ea3", False, 30, 1.6),
 }
 AUSSEN_V52 = ("wide", "irled")      # in der Szene sichtbar, wenn v5.2 gewählt ist (Linse / IR-Modul im Fenster)
 LITE_K = 2.3                         # Lite: Zellen so viel grösser
@@ -164,6 +171,10 @@ def modell():
     def kabel(pts, d):
         return U(*[seg(pts[i], pts[i + 1], d) for i in range(len(pts) - 1)])
 
+    # real-einzelteil-2: die 4 Füsse einzeln (v5.placed: d["feet"] = alle 4) – gleiche Lage wie v5.py
+    fp = ((10, 8), (LX - 10, 8), (10, LY - 8), (LX - 10, LY - 8))
+    for k, (fx, fy) in zip(("feet", "feet2", "feet3", "feet4"), fp):
+        P[k] = T([fx, fy, -6.0], v5.part_feet())
     tx_, ty_ = v5.TRIPOD_XY
     P["tripod"] = D(cyl_z(tx_, ty_, ZF + 0.3, ZF + 5.8, 11.0, fn=6), cyl_z(tx_, ty_, ZF, ZF + 7, 6.4))
     P["elko"] = cyl_z(60.0, 10.0, ZF + 8.0, ZF + 20.0, 8.0)
@@ -196,6 +207,9 @@ def modell():
     # 19 Stopfen IR-Modul (v52.stopfen_ir_modul eingesetzt): Körper in der Hülse (x 0 … Hülse), Zapfen bündig im Wandloch
     P["irplug"] = U(cyl_x(v52.IRW_Y, v52.IRW_Z, 0.0, v52.IRW_SLEEVE_L, v52.IRW_MOD_D),
                     cyl_x(v52.IRW_Y, v52.IRW_Z, -WALL, 0.01, v52.IRW_LENS_D - 0.3))
+    SP = v52.stopfen_placed(0.0, 180.0)                   # real-einzelteil-2: 18, 20, 21, 23, 24 eingesetzt
+    for k, n in (("thplug", "st_therm"), ("dsplug", "st_ds18"), ("rlplug", "st_relay"), ("micplug", "st_mic"), ("llplug", "st_ll")):
+        P[k] = SP[n]
     info52 = {"lens_mm": [round(float(x), 2) for x in v52.WL], "tilt_deg": v52.WC_TILT, "ir_typ": v52.IR_TYP,
               "ir_mm": [0.0, v52.IRW_Y, v52.IRW_Z] if v52.IR_TYP != "5mm" else [0.0, v52.IR_Y, v52.IR_Z]}
     P["buttons"] = U(*[cyl_x(y, 33.0, LX - 12.0, LX + WALL + 3.0, 12.0) for y in (10.5, 50.5)])

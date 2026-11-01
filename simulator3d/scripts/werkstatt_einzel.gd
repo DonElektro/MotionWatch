@@ -13,6 +13,7 @@ const UI = preload("res://scripts/ui_style.gd")
 const T = preload("res://scripts/i18n.gd")
 const DATA = preload("res://scripts/werkstatt_daten.gd")
 const FH = preload("res://scripts/fehler_hilfe.gd")
+const Icons = preload("res://scripts/mehr_icons.gd")
 const PFAD := "res://inhalte/gehaeuse/druck_lage.json"
 const RAW := "https://github.com/DonElektro/MotionWatch/raw/main/hardware/gehaeuse/Druckdateien/"
 const BAUSATZ := "https://github.com/DonElektro/MotionWatch/releases/latest/download/MoveEye_Bausatz.zip"
@@ -65,18 +66,48 @@ func plates() -> Array:
 	return (dl.get("platten", {}) as Dictionary).get("v52" if w.v52 else "v51", [])
 
 
-# ---- the side card (built by werkstatt.gd _build_ui) ------------------------------------------------------------------------
-func build_ui(v: VBoxContainer) -> void:
+# ---- the card of the part, below the 3D picture (like MoveEye: under the picture, not in the side panel) --------------------
+func build_ui(col: VBoxContainer) -> void:
+	"""real-einzelteil-2: under the picture – left the infos, right the buttons (MoveEye #v3d-info)"""
+	var sc := ScrollContainer.new()
+	sc.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	sc.visible = false
+	col.add_child(sc)
+	_ui["card"] = sc
 	var pc := PanelContainer.new()
 	pc.add_theme_stylebox_override("panel", UI.box(UI.FIELD, UI.ACC, 12, 10, 1))
-	pc.visible = false
-	v.add_child(pc)
-	v.move_child(pc, 0)                              # at the top of the side panel: seen at once
-	_ui["card"] = pc
+	pc.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	sc.add_child(pc)
+	var hb := HBoxContainer.new()
+	hb.add_theme_constant_override("separation", 14)
+	pc.add_child(hb)
 	var iv := VBoxContainer.new()
-	iv.add_theme_constant_override("separation", 5)
-	pc.add_child(iv)
+	iv.add_theme_constant_override("separation", 4)
+	iv.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hb.add_child(iv)
 	_ui["box"] = iv
+	var bv := VBoxContainer.new()
+	bv.add_theme_constant_override("separation", 6)
+	bv.custom_minimum_size = Vector2(300, 0)
+	hb.add_child(bv)
+	_ui["btns"] = bv
+
+
+static func icon_button(text: String, kind: String) -> Button:
+	"""a button with a drawn symbol on the left (🔍 📍 🖨 of MoveEye – the font of Godot has no emoji)"""
+	var b := Button.new()
+	b.text = "      " + text
+	b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	var ic := Icons.icon(kind, UI.TXT, 18.0)
+	ic.set_anchors_preset(Control.PRESET_CENTER_LEFT)
+	ic.offset_left = 9.0
+	ic.offset_top = -9.0
+	ic.offset_right = 27.0
+	ic.offset_bottom = 9.0
+	b.add_child(ic)
+	b.set_meta("icon", kind)
+	return b
 
 
 func build_view(holder: Control) -> void:
@@ -103,14 +134,21 @@ func build_view(holder: Control) -> void:
 	cap.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	cap.add_theme_font_size_override("font_size", 11)
 	cap.add_theme_color_override("font_color", Color("#e6edf5"))
-	cap.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	cap.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	cap.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
-	cap.offset_top = -34.0
+	cap.offset_top = -22.0
 	cap.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = Color("#1b2430", 0.8)
 	cap.add_theme_stylebox_override("normal", sb)
 	_inset_vpc.add_child(cap)
+	var pin := Icons.icon("pin", Color("#e6edf5"), 14.0)   # 📍 like MoveEye
+	pin.set_anchors_preset(Control.PRESET_CENTER_LEFT)
+	pin.offset_left = 6.0
+	pin.offset_top = -7.0
+	pin.offset_right = 20.0
+	pin.offset_bottom = 7.0
+	cap.add_child(pin)
 	_ui["cap"] = cap
 
 
@@ -369,7 +407,8 @@ func _inset() -> void:
 			mi.material_override = _lit if id == solo else _ghost
 			mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		w.step = s0
-	(_ui["cap"] as Label).text = _step_text()
+	var r = w.rows.get(solo)                         # short like MoveEye: «📍 Schritt 10 von 14»
+	(_ui["cap"] as Label).text = ("       " + T.t("Schritt %d von %d") % [int(r[4]), DATA.SCHRITTE.size()]) if r != null and int(r[4]) > 0 else ""
 
 
 # ---- the side card ------------------------------------------------------------------------------------------------------
@@ -425,10 +464,13 @@ func print_lines(datei: String) -> Array:
 	return out
 
 
-func _btn(parent: Control, text: String, cb: Callable, primary := false) -> Button:
-	var b := Button.new()
-	b.text = text
-	b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+func _btn(parent: Control, text: String, cb: Callable, primary := false, kind := "") -> Button:
+	var b: Button = icon_button(text, kind) if kind != "" else Button.new()
+	if kind == "":
+		b.text = text
+	b.clip_text = true                               # one line (autowrap made the first button very tall in a fresh column)
+	b.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	b.tooltip_text = text
 	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	if primary:
 		UI.primary(b)
@@ -447,6 +489,23 @@ func _lbl(parent: Control, text: String, col := UI.TXT, big := false) -> void:
 		l.add_theme_font_override("font", UI.heading_font())
 		l.add_theme_font_size_override("font_size", 15)
 	parent.add_child(l)
+
+
+func _title(text: String, kind := "search") -> Control:
+	"""the heading of the card with its symbol (🔍 / 🖨 in MoveEye)"""
+	var hb := HBoxContainer.new()
+	hb.add_theme_constant_override("separation", 6)
+	var ic := Icons.icon(kind, UI.TXT, 18.0)
+	ic.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	hb.add_child(ic)
+	var l := Label.new()
+	l.text = text
+	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	l.add_theme_font_override("font", UI.heading_font())
+	l.add_theme_font_size_override("font_size", 15)
+	hb.add_child(l)
+	return hb
 
 
 func open_url(path: String, raw_name := "") -> void:
@@ -483,12 +542,13 @@ func _side() -> void:
 	if mode == "":
 		return
 	var v: VBoxContainer = _ui["box"]
-	for c in v.get_children():
+	var bv: VBoxContainer = _ui["btns"]
+	for c in v.get_children() + bv.get_children():
 		c.queue_free()
 	if mode == "teil":
 		var r = w.rows.get(solo, [solo, "", solo, "", 0, ""])
 		var b = DATA.BOM.get(str(r[3]))
-		_lbl(v, T.t("Einzelteil") + ": " + T.t(str(r[2]) if str(r[2]) != "" else (str(b[1]) if b != null else solo)), UI.TXT, true)
+		v.add_child(_title(T.t("Einzelteil") + ": " + T.t(str(r[2]) if str(r[2]) != "" else (str(b[1]) if b != null else solo))))
 		var sz := dims(solo)
 		var L := lage(solo)
 		if sz != "":
@@ -503,7 +563,7 @@ func _side() -> void:
 			for ln in print_lines(datei):
 				_lbl(v, ln, UI.MUT)
 			var f := pfile(datei)
-			_btn(v, "↓ " + T.t("Druckdatei 3MF (dieses Teil)"), func(): open_url("/build/datei/" + f.uri_encode().replace("%2F", "/"), f))
+			_btn(bv, "⬇ " + T.t("Druckdatei 3MF (dieses Teil)"), func(): open_url("/build/datei/" + f.uri_encode().replace("%2F", "/"), f))
 			if not L.is_empty():
 				var ck := CheckButton.new()
 				ck.text = T.t("Liegend wie gedruckt (Druckplatte 256 × 256 mm)")
@@ -511,7 +571,7 @@ func _side() -> void:
 				ck.custom_minimum_size = Vector2(300, 0)
 				ck.button_pressed = flat
 				ck.toggled.connect(func(on): set_mode("teil", solo, on))
-				v.add_child(ck)
+				bv.add_child(ck)
 				if bool(L.get("unsicher", false)) and flat:
 					_lbl(v, T.t("wie eingebaut (Lage geschätzt)"), UI.MUT)
 		elif b != null:
@@ -531,15 +591,17 @@ func _side() -> void:
 					last_url = u
 					if not w.has_meta("no_shell"):
 						OS.shell_open(u))
-				v.add_child(lb)
+				bv.add_child(lb)
 		else:
 			_lbl(v, T.t("nicht in der Materialliste"), UI.MUT)
 		var st := _step_text()
-		if st != "":
-			_btn(v, st, where)
-		_btn(v, "← " + T.t("Zurück zum ganzen Modell"), func(): set_mode(""), true)
+		if st != "":                                 # the button short (one line with its symbol), the full step as a line on the left
+			var rr = w.rows.get(solo)
+			_lbl(v, st, UI.MUT)
+			_btn(bv, T.t("Wo es hingehört") + " · " + T.t("Schritt %d von %d") % [int(rr[4]), DATA.SCHRITTE.size()], where, false, "pin")
+		_btn(bv, "↩ " + T.t("Zurück zum ganzen Modell"), func(): set_mode(""), true)
 	else:
-		_lbl(v, T.t("Druckplatten") + " · " + T.t("Gehäuse") + " v" + ("5.2" if w.v52 else "5.1"), UI.TXT, true)
+		v.add_child(_title(T.t("Druckplatten") + " · " + T.t("Gehäuse") + " v" + ("5.2" if w.v52 else "5.1"), "printer"))
 		var hb := HBoxContainer.new()
 		hb.add_theme_constant_override("separation", 6)
 		v.add_child(hb)
@@ -565,7 +627,7 @@ func _side() -> void:
 			for ln in print_lines(pdatei):
 				_lbl(v, ln, UI.MUT)
 			var f2 := pfile(pdatei)
-			_btn(v, "↓ " + T.t("Druckdatei 3MF (dieses Teil)"), func(): open_url("/build/datei/" + f2.uri_encode().replace("%2F", "/"), f2))
+			_btn(bv, "⬇ " + T.t("Druckdatei 3MF (dieses Teil)"), func(): open_url("/build/datei/" + f2.uri_encode().replace("%2F", "/"), f2))
 		var seen := []
 		for it in pl["teile"]:
 			var dt := str(it["datei"])
@@ -582,10 +644,10 @@ func _side() -> void:
 			lb2.pressed.connect(func(): plate_tap(iid, dt))
 			v.add_child(lb2)
 		var pf := str(pl["datei"])
-		_btn(v, "↓ " + T.t("Platte herunterladen (3MF)"), func(): open_url("/build/datei/" + pf.uri_encode().replace("%2F", "/"), pf))
-		_btn(v, "↓ " + T.t("Alle Platten (ZIP mit Kurzanleitung)"), func(): open_url("/build/platten.zip?v=" + ("v52" if w.v52 else "v51") + "&lang=" + T.lang()))
+		_btn(bv, "⬇ " + T.t("Platte herunterladen (3MF)"), func(): open_url("/build/datei/" + pf.uri_encode().replace("%2F", "/"), pf))
+		_btn(bv, "⬇ " + T.t("Alle Platten (ZIP mit Kurzanleitung)"), func(): open_url("/build/platten.zip?v=" + ("v52" if w.v52 else "v51") + "&lang=" + T.lang()))
 		_lbl(v, T.t("3MF in Bambu Studio öffnen (Datei → Öffnen): die Teile liegen schon richtig, ohne Stützen."), UI.MUT)
-		_btn(v, "← " + T.t("Zurück zum ganzen Modell"), func(): set_mode(""), true)
+		_btn(bv, "↩ " + T.t("Zurück zum ganzen Modell"), func(): set_mode(""), true)
 
 
 func after_paint() -> void:
