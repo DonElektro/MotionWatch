@@ -1,17 +1,17 @@
 extends Node
-## Bergtal · Horror-Modus «Das Hospiz» (Daniel, 31.10.2026 05:38 / 05:44): früher die 5. Stimmung des Bergtal-Abenteuers, ab dem
+## Bergtal · Horror-Modus «Das Hospiz» (Besitzer, 31.10.2026 05:38 / 05:44): früher die 5. Stimmung des Bergtal-Abenteuers, ab dem
 ## Geschichten-Menü eine eigene Karte im Regal «Geschichten» (nur für den Besitzer, nie im Kinder-Modus, mit Schloss); ein eigener,
 ## in sich geschlossener Modus. Oben am Pass steht das alte Hospiz: im Winter 1936 verschwand dort die Hospizwartin – Licht im
 ## Fenster, Tür offen, die Glocke läutete, das Haus war leer. Nie geklärt. Drei Nächte (3 Kapitel, steigende Spannung) bewacht
 ## MoveEye das Lager im Bergtal; erzählt wird über seltsame MoveEye-Aufnahmen, die man am Morgen in MoveEyes Verlauf findet.
 ##
 ## Schutz:
-##   * Passwort: beim ersten Mal legt Daniel es hier im Simulator selbst fest. Gespeichert wird NUR ein gesalzener Hash
+##   * Passwort: beim ersten Mal legt der Besitzer es hier im Simulator selbst fest. Gespeichert wird NUR ein gesalzener Hash
 ##     (PBKDF2-HMAC-SHA256, 12 000 Runden, 16 Byte Salz) in user://bergtal_horror.json – nie im Repository, nie im Log.
 ##     Danach: Passwort eingeben = entsperrt bis zum Neustart des Simulators. 5 Fehlversuche = 30 s Pause.
 ##     Vergessen: die Datei user://bergtal_horror.json löschen (dann wird es beim nächsten Mal neu festgelegt).
 ##   * Nicht im Kinder-Modus (main.kids_on). Warnhinweis vor dem Start. Esc = Pause jederzeit (heller, leiser, Zeit steht).
-##   * Knopf «Ohne Passwort starten» (Daniel, 31.10.2026, Paket «Hospiz: Knopf ohne Passwort»): im Passwort-Dialog und auf der
+##   * Knopf «Ohne Passwort starten» (Besitzer, 31.10.2026, Paket «Hospiz: Knopf ohne Passwort»): im Passwort-Dialog und auf der
 ##     gesperrten Karte «Das Hospiz». Nur für den Besitzer = nicht im Kinder-Modus (devtool.is_owner, gleiche Prüfung wie das
 ##     Entwickler-Fenster). Er entsperrt bis zum Neustart wie das Passwort (unlock_via = "knopf"); Passwort, Hash und Widmung
 ##     bleiben unverändert, die Warnung kommt trotzdem. Über /control nur von diesem PC ({"do": "ohne_passwort"}: net.gd setzt

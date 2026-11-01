@@ -1,5 +1,5 @@
 extends RefCounted
-## Abenteuer A4 «Rucksack» (Daniel, 31.10.2026): Essen und Trinken (mild), Ausrüstung finden, Tauschen, Rucksack-Anzeige.
+## Abenteuer A4 «Rucksack» (Besitzer, 31.10.2026): Essen und Trinken (mild), Ausrüstung finden, Tauschen, Rucksack-Anzeige.
 ## Eigene Datei; bergtal_abenteuer.gd ruft sie nur an kleinen Einhänge-Punkten auf («# A4»). Das Inventar selbst steht in
 ## abenteuer_inventar.gd (hat / gib / nimm / anzahl / gewicht - auch für die anderen Pakete).
 ##
@@ -7,7 +7,7 @@ extends RefCounted
 ##   Auf der Hilfe-Stufe «Leicht» (Paket A3) ist es ganz aus: kein Verbrauch, keine Balken. Quellen und Brunnen am Weg füllen
 ##   die Flasche auf, in der Hütte (Alp Tschuggen, Holzofen; im Biwak mit eigenem Kocher) wird gekocht.
 ## Ausrüstung finden: an festen Fundorten der Kapitel liegen Kompass, Stirnlampe und Seil (den Feldstecher gibt es nur als
-##   Grossvaters Feldstecher von A3, Daniel 31.10.2026); einmal gefunden
+##   Grossvaters Feldstecher von A3, Besitzer 31.10.2026); einmal gefunden
 ##   bleiben sie für alle weiteren Kapitel (abenteuer_inventar.gd finde()). Die Stirnlampe ist ein echtes Licht (licht.gd
 ##   attach_lamp): im Dunkeln leuchtet sie vor dem Wanderer und am Lager - bis zum Schlafen (dann bewacht MoveEye im Dunkeln).
 ## Tauschen: jede Figur hat eine feste Wunschliste (was sie sucht / was sie dafür gibt) - kein Geld, feste Paare.

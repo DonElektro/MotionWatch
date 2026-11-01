@@ -1,5 +1,5 @@
 extends Node
-## Schnittstelle zu MoveEye (Aufräumen 2, Daniel 30.10.2026): eine Feldliste für beide Seiten (res://schnittstelle.json).
+## Schnittstelle zu MoveEye (Aufräumen 2, Besitzer 30.10.2026): eine Feldliste für beide Seiten (res://schnittstelle.json).
 ##   * check(): kurz nach dem Start vergleicht der Simulator seine Antwort an MoveEye (world_reply), /info und die
 ##     /control-Aktionen mit der Liste und schreibt eine Zeile ins Log: «Schnittstelle: OK …» oder
 ##     «SCRIPT ERROR: Schnittstelle: …» (damit die Prüfung beim Parse-Schritt auffällt). Ohne Liste (z. B. in der .exe) nichts.

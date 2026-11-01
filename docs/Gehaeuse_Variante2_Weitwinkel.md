@@ -1,6 +1,6 @@
-# Gehäuse Variante 2: mit zweiter Weitwinkel-Kamera (Entscheidungen Daniel, 29.10.2026)
+# Gehäuse Variante 2: mit zweiter Weitwinkel-Kamera (Entscheidungen des Besitzers, 29.10.2026)
 
-Grundlage: Modell v4 (`docs/Projektstand_PanTilt_Kamera.md`) bzw. die neuere Version, die Daniel hochlädt. Variante 1 bleibt unverändert.
+Grundlage: Modell v4 bzw. die neuere Version (`hardware/gehaeuse/`), die der Besitzer hochlädt. Variante 1 bleibt unverändert.
 
 | Thema | Entscheidung |
 |---|---|
@@ -14,7 +14,7 @@ Grundlage: Modell v4 (`docs/Projektstand_PanTilt_Kamera.md`) bzw. die neuere Ver
 
 Offen: Masse der 120°-Linse / des Halters nachmessen; Lage gegenüber der Lüftung und dem Lautsprecher prüfen; Neigung als Parameter.
 
-## Simulator-Einbindung der Weitwinkel-Kamera (Entscheide Daniel, 30.10.2026 09:35)
+## Simulator-Einbindung der Weitwinkel-Kamera (Entscheide des Besitzers, 30.10.2026 09:35)
 
 Ziel: die Montage-Varianten im Simulator vergleichen, bevor gedruckt wird.
 
@@ -46,7 +46,7 @@ Umsetzung: nach dem Zusammenführen von Sim-Kompakt und Spiel-Balance (gleiche D
 | Seiten / Spiel | **Seiten umgesetzt** – Kachel 🔭 «Weitwinkel-Kamera» in der Simulator-Zentrale (/sim) und in Sim-Kompakt: Bild (über die vorhandene Zusatzkamera, /cam_feed – kein neuer Strom vom Simulator), antippen = gross, Montage-Knöpfe. **Spiel:** die zweite Wächter-Sicht nutzt cams[1] weiter (jetzt mit der gewählten Montage); Texte «feste Kamera» im Spiel nicht angepasst (Spiel-Dateien gehören der Runde «balance») |
 
 
-## Status-LED oben auf dem Kopf (Wunsch Daniel, 30.10.2026 21:49)
+## Status-LED oben auf dem Kopf (Wunsch des Besitzers, 30.10.2026 21:49)
 
 Aussparung oben auf dem Kopf für eine **Farb-LED** (RGB), die den Schutzzustand zeigt (grün / orange / rot, Zuordnung zu
 Aus / Wachsam / Voll noch festlegen). Lichtleiter/Diffusor einplanen, Kabel durch die Pan-Achse (zählt zur Drehgrenze /
@@ -64,15 +64,15 @@ und «Alarm quittieren» – Platz und Kabel (GPIO 16 / Pin 36 und GPIO 26 / Pin
 | Farben / Vorrang | **umgesetzt** – Aus grün, Wachsam orange, Voll rot (einstellbar: grün, orange, rot, gelb, blau, türkis, violett, weiss, aus); Countdown = Farbe «atmet». Vorrang: LED-Test > Alarm (rot blinkend bis quittiert; Schutz aus quittiert auch) > Störung (violett pulsierend: Akku schwach, Unterspannung, Kamera weg, Servo-Störung) > Erkennung (kurz weiss, Standard aus) > Zustand > Blinki-Zwinkern |
 | Nacht | **umgesetzt** – dunkel (im Simulator dessen Nacht): gedimmt (Standard 8 %), aus oder wie am Tag; Alarm bleibt hell; kein Zwinkern nachts |
 | Blinki-Zwinkern | **umgesetzt** – alle 5 Minuten (einstellbar) kurz zweimal dunkel = «alles ok» (nicht nach einer Störung); Blinki (Mini-Figur mit LED-farbiger Iris) in der Kopfzeile der Webseite zwinkert im selben Moment |
-| Tasten | **umgesetzt** – GPIO 16 «Schutz» (Pin 36), GPIO 26 «Alarm quittieren» (Pin 37) – einstellbar; GPIO 5 ist der PIR (Gehäuse-Übergabe). Interner Pull-up, Taste gegen Masse, Entprellen 50 ms, lang = 1,5 s (feuert beim Halten). Schutz kurz Wachsam ↔ Aus, lang Voll; Quittieren stoppt Sirene + Eskalation + rotes Blinken (dasselbe wie «Alarm quittieren» im Alarmfenster). Jeder Druck im Protokoll. **Ab 2.98.50 (Daniel): die Tasten dürfen alles**, auch mit PIN zum Ausschalten; einzeln abschaltbar: «Taste darf Schutz einschalten / ausschalten / Sirene stoppen / Alarm quittieren»; jedes Ausschalten und Sirene-Stoppen am Gerät steht im Protokoll und kommt als Push («Schutz am Gerät ausgeschaltet» / «Sirene am Gerät gestoppt», Schalter «Meldung bei Ausschalten am Gerät»). Standard «Tasten am Gerät» aus, bis sie verdrahtet sind. **Nicht mit echtem GPIO getestet** |
+| Tasten | **umgesetzt** – GPIO 16 «Schutz» (Pin 36), GPIO 26 «Alarm quittieren» (Pin 37) – einstellbar; GPIO 5 ist der PIR (Gehäuse-Übergabe). Interner Pull-up, Taste gegen Masse, Entprellen 50 ms, lang = 1,5 s (feuert beim Halten). Schutz kurz Wachsam ↔ Aus, lang Voll; Quittieren stoppt Sirene + Eskalation + rotes Blinken (dasselbe wie «Alarm quittieren» im Alarmfenster). Jeder Druck im Protokoll. **Ab 2.98.50 (Besitzer): die Tasten dürfen alles**, auch mit PIN zum Ausschalten; einzeln abschaltbar: «Taste darf Schutz einschalten / ausschalten / Sirene stoppen / Alarm quittieren»; jedes Ausschalten und Sirene-Stoppen am Gerät steht im Protokoll und kommt als Push («Schutz am Gerät ausgeschaltet» / «Sirene am Gerät gestoppt», Schalter «Meldung bei Ausschalten am Gerät»). Standard «Tasten am Gerät» aus, bis sie verdrahtet sind. **Nicht mit echtem GPIO getestet** |
 | Simulator | **umgesetzt** – LED als leuchtende Kuppel in Blinkis Augen-Ring oben auf dem Kopf (state `led`), Fenster «Gerät» unten rechts mit LED-Punkt, Statuszeile und den Knöpfen «Schutz» / «Alarm quittieren» (world_reply `buttons`, wie ein GPIO: gedrückt / Dauer / Zähler); MoveEye nimmt dann diese statt GPIO / PCA (🧪). Einstellung im Simulator: Licht & Ton → «Status-LED & Tasten» (ab 3D-4.21) |
 | Seiten | **umgesetzt** – Einstellungen → Licht & Ton → «Status-LED & Tasten» (Web und Fenster), Statuszeile «LED: Wachsam (orange)», «LED testen», «Alarm quittieren», letzte Tastendrucke; Anleitung DE / EN; Sprachen DE / FR / IT / RM / EN |
 
-## Blindabdeckung für die Weitwinkel-Öffnung (Wunsch Daniel, 30.10.2026 22:05)
+## Blindabdeckung für die Weitwinkel-Öffnung (Wunsch des Besitzers, 30.10.2026 22:05)
 
 Solange die Weitwinkel-Kamera nicht eingebaut ist: **einrastender Stopfen** (kleine Rastnasen, ohne Werkzeug lösbar) für die
 Kamera-Öffnung und ein zweiter kleiner Stopfen für das Loch der breiten IR-LED. Lieferung: **STL + parametrisches Python-Skript**.
-Wartet auf Daniels Gehäuse-Modell (Upload), damit die Masse der Öffnung stimmen.
+Wartet auf das Gehäuse-Modell des Besitzers (Upload), damit die Masse der Öffnung stimmen.
 
 ## Umgesetzt in v5.2 (Gehäuse-Modell, 30.10.2026)
 
@@ -104,7 +104,7 @@ Grundlage: Gehäuse v5.1 (parametrisches Python-Modell). Unverändert bleiben al
 
 ## Echtes Unterteil v5.2 im Repository (Zweig real-gehaeuse-v52, 01.11.2026)
 
-Wunsch Daniel: im 3D-Modell fehlte die Aussparung, die Druckteile waren v5.1. Jetzt:
+Wunsch des Besitzers: im 3D-Modell fehlte die Aussparung, die Druckteile waren v5.1. Jetzt:
 
 | Thema | Stand |
 |---|---|

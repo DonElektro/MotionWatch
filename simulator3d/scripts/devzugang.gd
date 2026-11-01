@@ -1,5 +1,5 @@
 extends Node
-## Schneller Zugang zum Entwickler-Fenster (Daniel 1.11.2026, Wahl 2 und 4; Gegenstück zu MoveEye Teil 639s):
+## Schneller Zugang zum Entwickler-Fenster (Besitzer 1.11.2026, Wahl 2 und 4; Gegenstück zu MoveEye Teil 639s):
 ##   * langer Druck (0,8 s) auf den Schriftzug bzw. den Titel «Simulator» oben im Bedienfeld öffnet das Entwickler-Fenster
 ##     (devtool.gd, sonst «Mehr → Entwickler»); bei ausgeblendetem Bedienfeld wirkt der Knopf «Bedienfeld zeigen» gleich.
 ##     Rückmeldung: das Logo pulsiert (grösser / heller), beim Auslösen kurz aufblitzen.

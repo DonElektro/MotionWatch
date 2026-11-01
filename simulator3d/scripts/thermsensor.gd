@@ -1,5 +1,5 @@
 extends Node
-## «Wärmebild wie echt» – das Wärmebild-Modul wie das echte (Paket P2, 31.10.2026, Daniel).
+## «Wärmebild wie echt» – das Wärmebild-Modul wie das echte (Paket P2, 31.10.2026, Besitzer).
 ## Echtes Gerät: Waveshare Thermal-90 (SKU 31941), Meridian MI48 «SenXor»: 80 × 62 Pixel, 90° × 67°, 8–14 µm, bis 25 Bilder/s
 ## (der Treiber von MoveEye stellt 15 ein, Teil 080), NETD 125 mK RMS bei 1 Hz, −40 … +400 °C, Genauigkeit ±1.5 °C
 ## (10 … 70 °C), Temperatur-Stabilität −0.21 °C pro °C Modul-Temperatur, OHNE Verschluss («shutterless»: kein Einfrieren,

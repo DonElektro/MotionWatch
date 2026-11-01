@@ -402,7 +402,7 @@ func _raw_axis(a: int) -> float:
 
 
 func _axis(a: int) -> float:
-	"""3D-3.97: stick drift cleaned properly (wish of Daniel - the per-axis dead zone of 3D-3.96 was not enough):
+	"""3D-3.97: stick drift cleaned properly (wish of the owner - the per-axis dead zone of 3D-3.96 was not enough):
 	  1. the rest position of each stick is taken off (measured with «Controller kalibrieren», and learnt by itself while a
 	     stick rests: a value that stays the same for 3 s with nothing pressed is drift, not a hand)
 	  2. a ROUND dead zone per stick (x and y together) - no more creeping along one axis when the other drifts

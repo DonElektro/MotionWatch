@@ -16,7 +16,7 @@ func _init() -> void:
 	var Q = load("res://scripts/quality.gd")
 	var U = load("res://scripts/update.gd")
 	var GB := 1073741824
-	# Daniels HP EliteDesk 800 G1 DM: i5-4590T, HD 4600 (Mesa crocus), 4 GB (meldet ~3.7 GiB)
+	# PC des Besitzers: HP EliteDesk 800 G1 DM: i5-4590T, HD 4600 (Mesa crocus), 4 GB (meldet ~3.7 GiB)
 	var w: String = Q.weak_pc("Mesa Intel(R) HD Graphics 4600 (HSW GT2)", int(3.7 * GB))
 	eq("EliteDesk: Speicher erkannt", w.contains("Arbeitsspeicher"), true)
 	eq("EliteDesk: Grafik erkannt", w.contains("Intel"), true)

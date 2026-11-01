@@ -48,7 +48,7 @@ Mit `?fps=6` fragt Motion Watch nach weniger Bildern pro Sekunde. Bitte beachten
 ### `GET /info` – Beispiel
 
 ```json
-{"v": 1, "name": "Simulator von Max 1.0",
+{"v": 1, "name": "Mein Simulator 1.0",
  "cameras": [{"id": 0, "name": "Kopf", "w": 960, "h": 540, "fps": 15, "fov_h": 66, "fov_v": 41, "on_head": true, "noir": true},
              {"id": 1, "name": "Fest", "w": 640, "h": 360, "fps": 10, "fov_h": 70, "fov_v": 40, "on_head": false, "noir": false}],
  "thermal": {"w": 80, "h": 62, "fps": 8, "fov_h": 45, "fov_v": 35, "unit": "C", "on_head": true},
@@ -91,7 +91,7 @@ Mit `?fps=6` fragt Motion Watch nach weniger Bildern pro Sekunde. Bitte beachten
 ## 3. Gefunden werden
 
 - Alle **2 Sekunden** eine UDP-Nachricht an **Port 8764**, an `255.255.255.255` (und `127.0.0.1`):
-  `{"mwsim": 1, "name": "Simulator von Max 1.0", "port": 8765, "version": "M-1.0"}`
+  `{"mwsim": 1, "name": "Mein Simulator 1.0", "port": 8765, "version": "M-1.0"}`
 - Motion Watch zeigt ihn dann im Reiter **«Simulator» → «Simulatoren im Netz»** an. Mit «Verwenden» wird er genommen.
 - **Wichtig:** Ein **eindeutiger Name** (nicht «Motion Watch 3D-Simulator»), damit man die Simulatoren unterscheiden kann.
 - **Laufen zwei Simulatoren auf demselben PC**, braucht jeder einen eigenen Port. Der 3D-Simulator hat 8765, also deiner zum
@@ -109,7 +109,7 @@ Dein Simulator **beschreibt seine Bedienelemente selbst**. Motion Watch zeichnet
 `GET /control` antwortet zum Beispiel so:
 
 ```json
-{"ok": true, "v": 1, "name": "Simulator von Max 1.0",
+{"ok": true, "v": 1, "name": "Mein Simulator 1.0",
  "scenarios": [{"id": "stadt", "name": "Stadt bei Nacht", "kind": "world", "deletable": false}],
  "scenario": "stadt",
  "status": "22:10 · Nacht · 3 Personen unterwegs",
@@ -151,22 +151,22 @@ dabei einmal Änderungen verloren gegangen. Darum:
 
 - **Am besten ein eigenes Repository** für deinen Simulator, zum Beispiel `DonElektro/MotionWatch-Sim2`. Dann kann
   niemand aus Versehen deine Dateien überschreiben, und du keine von Motion Watch.
-- Falls doch im selben Projekt: nur in **deinem eigenen Ordner** arbeiten, zum Beispiel `simulator_max/`.
+- Falls doch im selben Projekt: nur in **deinem eigenen Ordner** arbeiten, zum Beispiel `simulator_eigen/`.
 - **Nie ändern:** `webcam_bewegung_*.py`, `versions.json`, `simulator3d/`, `simulator/`. Wünsche an Motion Watch bitte
-  über Daniel (Papa) an den Motion-Watch-Chat.
+  über den Besitzer des Projekts (Issue auf GitHub).
 - **Vor jedem Hochladen** `git pull`. **Nach** `git push` prüfen, dass es geklappt hat (`git status -sb` darf kein «ahead»
   zeigen). **Nie** `git push --force`.
 - **Keine Passwörter, Schlüssel oder privaten Daten** ins Repository. Der Signier-Schlüssel von Motion Watch gehört
-  nur Daniel.
+  nur dem Besitzer.
 - **Eigene Versionsnummern** mit Vorsilbe, damit sie sich nicht mit den anderen Simulatoren verwechseln lassen, zum
   Beispiel `M-1.0`, `M-1.1` …
 
 ### Wenn Motion Watch deinen Simulator später zum Herunterladen anbieten soll
 
 Das kann Motion Watch, wie beim 3D-Simulator (`/sim/simulator3d.zip`). Dafür braucht es von dir:
-- ein fertiges ZIP an einer festen Stelle, zum Beispiel `simulator_max/MeinSimulator.zip`,
+- ein fertiges ZIP an einer festen Stelle, zum Beispiel `simulator_eigen/MeinSimulator.zip`,
 - eine Datei daneben mit Version, Grösse und Prüfsumme:
-  `{"version": "M-1.0", "file": "simulator_max/MeinSimulator.zip", "size": 12345678, "sha256": "…"}`.
+  `{"version": "M-1.0", "file": "simulator_eigen/MeinSimulator.zip", "size": 12345678, "sha256": "…"}`.
 
 Den Knopf in Motion Watch baut dann der Motion-Watch-Chat ein.
 

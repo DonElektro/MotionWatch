@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Versionsnummern von MoveEye und dem 3D-Simulator (Versionierung 3.0.0, Entscheid Daniel 31.10.2026).
+"""Versionsnummern von MoveEye und dem 3D-Simulator (Versionierung 3.0.0, Entscheid des Besitzers 31.10.2026).
 
 Ab 3.0.0 haben beide dieselbe Nummer X.Y.Z («MoveEye 3.0.0» / «MoveEye Sim 3.0.0») und werden zusammen veröffentlicht.
 Brücke: alte Simulatoren (bis 3D-4.8x) lesen in simulator3d/version.json nur «version» und vergleichen «3D-A.B» als Zahlen.
@@ -13,7 +13,7 @@ simulator3d/scripts/versionen.gd und sim_vkey() in quelle/300_werkzeuge_simulato
   python3 werkzeuge/versionen.py --neu-data                   # scripts/neu_data.gd aus «Lies mich.txt» (NEU IN …, beide Schemas)
   python3 werkzeuge/versionen.py --aufraeumen [--nur-zeigen]  # höchstens 10 Hauptversionen X.Y behalten, die Brücke nie löschen
 
-Brücke (Entscheid Daniel 31.10.2026): BRUECKE (3.0.2, eine Datei unter 8 MiB, braucht keine Zusatzdatei) bleibt für immer in
+Brücke (Entscheid des Besitzers 31.10.2026): BRUECKE (3.0.2, eine Datei unter 8 MiB, braucht keine Zusatzdatei) bleibt für immer in
 versions.json und im Repository. Geräte bis 2.98.x nehmen nur Dateien bis 8 MiB an. Die neueste Hauptdatei bleibt darum
 auch unter 8 MiB (grosse Teile in moveeye_daten_X_Y_Z.zip, bauen.py) - dann gehen alte Geräte direkt auf die neueste.
 Wäre eine Datei je grösser, schreibt --make-manifest «needs»: "3.0.0" in ihren Eintrag; Geräte ab dem Verkleinern-Paket

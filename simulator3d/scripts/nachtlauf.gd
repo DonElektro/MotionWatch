@@ -1,5 +1,5 @@
 extends Node
-## Nacht-Testlauf (Paket «Nacht-Testlauf», Daniel 31.10.2026): MoveEye (Seite «Sim», nur der Besitzer) startet eine ganze
+## Nacht-Testlauf (Paket «Nacht-Testlauf», Besitzer 31.10.2026): MoveEye (Seite «Sim», nur der Besitzer) startet eine ganze
 ## Nacht im Simulator; hier läuft ein Ablauf mit festem Zufall («seed») und hier wird die «Wahrheit» aufgeschrieben:
 ##   * jedes Ereignis mit Beginn / Ende (Sekunden ab Start, echte Zeit), Simulator-Uhr, Ort (Start, nächster Punkt zum
 ##     Gerät, ein paar Wegpunkte), wie lange es für die Kopf- oder Wärmebildkamera sichtbar war (testrun.visible /

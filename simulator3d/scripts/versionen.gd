@@ -1,5 +1,5 @@
 extends RefCounted
-## Versionsnummern (Versionierung 3.0.0, Entscheid Daniel 31.10.2026): ab 3.0.0 haben MoveEye und der Simulator immer
+## Versionsnummern (Versionierung 3.0.0, Entscheid des Besitzers 31.10.2026): ab 3.0.0 haben MoveEye und der Simulator immer
 ## dieselbe Nummer X.Y.Z («MoveEye 3.0.0» / «MoveEye Sim 3.0.0»). Bis dahin hiess der Simulator «3D-A.B» (bis 3D-4.8x).
 ##
 ## Brücke für alte Simulatoren: sie lesen in simulator3d/version.json nur «version», nehmen «3D-» weg und vergleichen die

@@ -1,5 +1,5 @@
 extends RefCounted
-## 3D-4.x «Ferienpark am See» (Daniel, 31.10.2026, Variante A): ein grosser terrassierter Campingplatz am Seeufer, rund
+## 3D-4.x «Ferienpark am See» (Besitzer, 31.10.2026, Variante A): ein grosser terrassierter Campingplatz am Seeufer, rund
 ## 500 × 500 m. Unten der See mit Strand, Steg und Booten, darüber sechs Terrassen (Restaurant, Laden, Schwimmbad, Spielplatz,
 ## Festwiese · Zeltwiese, Minigolf, Rezeption mit Schranke und Parkplatz · Wohnmobile · Bungalows · Chalets und Streichelzoo ·
 ## Pfadi-Lager), oben der Wald mit Weg zum Aussichtspunkt, Hängebrücke und Seilbahn; westlich ein kleines Dorf mit Kirche.
@@ -37,7 +37,7 @@ const RAMPS := [-96.0, -52.0, -8.0, 36.0, 80.0]     # where the ground goes up 3
 const FOREST_PATH := [Vector2(0, 112), Vector2(30, 140), Vector2(-10, 165), Vector2(40, 190), Vector2(90, 205), Vector2(110, 226)]
 const BRIDGE_PATH := [Vector2(110, 236), Vector2(160, 240), Vector2(171, 241), Vector2(191, 242), Vector2(212, 250)]
 const NEAR := 320.0
-# Erlebniswelt (Daniel 31.10.2026, Vignetten 1–19, Stil «dezent»): reservierte Orte [Nr, id, Name, x, z, frei-Radius].
+# Erlebniswelt (Besitzer 31.10.2026, Vignetten 1–19, Stil «dezent»): reservierte Orte [Nr, id, Name, x, z, frei-Radius].
 # Die festen Dinge stehen schon (Baumhütte, Höhle, Mauslöcher, Zwerge, Flaschenpost, Kiste, Angel, versunkenes Boot,
 # verlassener Wohnwagen, Baum mit Astloch); die Abläufe (Tiere, Menschen) baut ein späteres Paket an diesen Orten.
 const ERLEBNIS := [[1, "katze_maus", "Katze vor den Mauslöchern", -118.0, -104.5, 3.0],

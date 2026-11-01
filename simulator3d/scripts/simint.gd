@@ -1,5 +1,5 @@
 extends Node
-## Simulator «wie echt» für MoveEye (Entwurf 30.10.2026, Wunsch Daniel) – vier Dinge, die bisher fehlten:
+## Simulator «wie echt» für MoveEye (Entwurf 30.10.2026, Wunsch des Besitzers) – vier Dinge, die bisher fehlten:
 ##   1. Lautsprecher: was MoveEye abspielt (Sirene, Wecker-Melodie, Stimme – mw.sound, auch im Test-Postfach-Betrieb) hört man
 ##      hier am PC (einfache erzeugte Töne, Lautstärke, Stummschalter) UND das simulierte Mikrofon am Gerät hört es (sound_db,
 ##      Pieps-/Knall-Töne zusätzlich als kurze Geräusche wie Klatschen): so lässt sich prüfen, dass MoveEye nicht auf seine eigene
@@ -457,7 +457,7 @@ func add_controls() -> void:
 	var S := {"sub": "Lautsprecher"}
 	main.add_control("slider", "spk_vol", "♪ Lautsprecher von MoveEye am PC (Sirene, Wecker, Stimme)", func(): return spk_vol,
 			func(v): spk_vol = clampf(float(v), 0.0, 100.0); save(), g, {"sub": "Lautsprecher", "min": 0, "max": 100, "step": 5, "unit": "%"})
-	# 3.23 (Daniel 01.11.2026): ONE switch «Ton am PC» instead of «Am PC stumm» (spk_mute) and «Am PC hören» (mikrofon.gd pc_on);
+	# 3.23 (Besitzer 01.11.2026): ONE switch «Ton am PC» instead of «Am PC stumm» (spk_mute) and «Am PC hören» (mikrofon.gd pc_on);
 	# old saved values: on, unless both were off; the simulated microphone of MoveEye hears it either way
 	if main.mikro != null:
 		var on0: bool = (not spk_mute) or bool(main.mikro.pc_on)

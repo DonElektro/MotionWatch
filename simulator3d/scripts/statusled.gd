@@ -1,5 +1,5 @@
 extends Node
-## Status-LED und Tasten des Geräts (Entscheide Daniel 30.10.2026 21:55, MoveEye Teil 163a / 599c):
+## Status-LED und Tasten des Geräts (Entscheide des Besitzers 30.10.2026 21:55, MoveEye Teil 163a / 599c):
 ##   * die Farb-LED oben auf dem Kopf (Diffusor in der Form von Blinkis Auge: oranger Ring, leuchtende Kuppel) zeigt, was
 ##     MoveEye schickt (state «led»: rgb, br, layer, hb) - Zustand, Alarm (blinkt rot), Störung (violett), Blinki-Zwinkern
 ##   * das kleine Fenster «Gerät»: die LED als Punkt, die Zeile von MoveEye («LED: Wachsam (orange)») und die zwei Tasten

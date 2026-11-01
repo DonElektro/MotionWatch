@@ -1,5 +1,5 @@
 extends Node
-## 3D-4.x «Wächter-Werkzeuge mit Kosten» (Spielkonzept Daniel, 30.10.2026): the guard has a budget of energy per round
+## 3D-4.x «Wächter-Werkzeuge mit Kosten» (Spielkonzept des Besitzers, 30.10.2026): the guard has a budget of energy per round
 ## (by the difficulty: easy 70, normal 100, hard 130 - the fairness of gamerules.gd may change it) and every tool has a
 ## price and a cooldown:
 ##   💡 Licht   20 ⚡, 20 s   the light of the head for 6 s (the former «Licht» button with its 20 s)

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Trailer der Geschichten als Videodatei (MP4, H.264) aufnehmen – Daniel 31.10.2026, Simulator: scripts/trailer.gd.
+# Trailer der Geschichten als Videodatei (MP4, H.264) aufnehmen – Besitzer 31.10.2026, Simulator: scripts/trailer.gd.
 #
 #   bash werkzeuge/trailer_aufnehmen.sh                       # beide Trailer, Deutsch, 1080p, 25 fps
 #   bash werkzeuge/trailer_aufnehmen.sh --id maggie --sprache fr --hoehe 720

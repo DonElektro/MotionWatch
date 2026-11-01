@@ -1,5 +1,5 @@
 extends Node
-## Entwicklertool 2 «Regler + Ebenen» (Daniel 31.10.2026): zwei Abschnitte im Fenster «Mehr → Entwickler» (devtool.gd).
+## Entwicklertool 2 «Regler + Ebenen» (Besitzer 31.10.2026): zwei Abschnitte im Fenster «Mehr → Entwickler» (devtool.gd).
 ## Eigene Datei, damit devtool.gd (Teil 1, Teil 3 «Notizen») nur zwei Einhänge-Zeilen braucht.
 ##
 ## Schnellregler: Uhrzeit, Wetter, Jahreszeit, Grafik-Modus. KEINE zweite Logik: jeder Regler ist ein Spiegel des normalen

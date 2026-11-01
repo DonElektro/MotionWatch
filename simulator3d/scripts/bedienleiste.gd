@@ -1,5 +1,5 @@
 extends HFlowContainer
-## Bedienleiste (Paket real-layout-leiste, Daniel 31.10.2026): dieselbe Leiste wie oben auf jeder Seite von MoveEye
+## Bedienleiste (Paket real-layout-leiste, Besitzer 31.10.2026): dieselbe Leiste wie oben auf jeder Seite von MoveEye
 ## (Web 639o #mwbar, Pi-Fenster App._mwbar): «Einfach | Experte» · «Symbole farbig | schlicht» ·
 ## «Alle zuklappen · Meine Ansicht · Alle aufklappen» (639r: die Mitte = Meine Ansicht, lange drücken / Rechtsklick = «Nur Gruppen»).
 ## Ein Baustein für jedes Menü-Fenster des Simulators: build(main) mit
@@ -34,7 +34,7 @@ func build(h: Object, fold := true) -> void:
 	icons_seg.custom_minimum_size = Vector2(230, 0)
 	icons_seg.tooltip_text = T.t("Symbole: grüner Punkt oder grünes Symbol = eingeschaltet")
 	add_child(icons_seg)
-	# 3.23 (Daniel 01.11.2026): the switch «Beim Start: Nur Gruppen» is gone - the start is «Meine Ansicht»; «Nur Gruppen» = long press on the middle
+	# 3.23 (Besitzer 01.11.2026): the switch «Beim Start: Nur Gruppen» is gone - the start is «Meine Ansicht»; «Nur Gruppen» = long press on the middle
 	var fb := HBoxContainer.new()
 	fb.add_theme_constant_override("separation", 6)
 	for k in ["close", "mine", "open"]:
@@ -67,7 +67,7 @@ var _hold_long := false
 
 
 func _mine_button(b: Button, h: Object) -> void:
-	"""639r: a click = «Meine Ansicht»; a long press (0.6 s) or a right click = «Nur Gruppen» (it stays, Daniel: nothing removed)"""
+	"""639r: a click = «Meine Ansicht»; a long press (0.6 s) or a right click = «Nur Gruppen» (it stays, Besitzer: nothing removed)"""
 	b.button_down.connect(func():
 		_hold_long = false
 		_hold_t = Time.get_ticks_msec() / 1000.0

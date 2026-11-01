@@ -1,5 +1,5 @@
 extends Node
-## Entwicklertool 1 «Karte, Sprung, Kamera» (Daniel 31.10.2026): alle Szenen und Orte ansehen, ohne hinzulaufen.
+## Entwicklertool 1 «Karte, Sprung, Kamera» (Besitzer 31.10.2026): alle Szenen und Orte ansehen, ohne hinzulaufen.
 ## Nur im Simulator (gewollt: MoveEye braucht es nicht). Fenster «Entwickler» unter «Mehr → Entwickler», nur für den
 ## Besitzer (is_owner(): wie der Nacht-Testlauf in MoveEye 579b nacht_may - dort «Rolle admin, nicht im Bedienermodus»; der
 ## Simulator kennt keine Rollen, sein Gegenstück zum Bedienermodus ist der Kinder-Modus: nur «Erwachsene» sehen es).
@@ -487,7 +487,7 @@ func _build() -> void:
 	var v := VBoxContainer.new()
 	v.add_theme_constant_override("separation", 8)
 	panel.add_child(v)
-	# ganz oben (Daniel 31.10.2026): die Trailer der Geschichten schnell ansehen (trailer.gd) – Esc / Klick = zurück
+	# ganz oben (Besitzer 31.10.2026): die Trailer der Geschichten schnell ansehen (trailer.gd) – Esc / Klick = zurück
 	var tr_row := HBoxContainer.new()
 	tr_row.add_theme_constant_override("separation", 8)
 	v.add_child(tr_row)
@@ -560,7 +560,7 @@ func _build() -> void:
 	v.add_child(eb().section())                          # Teil 2: Schnellregler + Ebenen
 	extra.build(v)                                       # Teil 3: Notizen, Kontaktbogen, Kapitel-Sprung
 	if main.fenster != null:
-		# Paket «Andocken» (Daniel 01.11.2026): immer zuoberst, einklappbar, Grösse klein / mittel / gross oder Ecke ziehen,
+		# Paket «Andocken» (Besitzer 01.11.2026): immer zuoberst, einklappbar, Grösse klein / mittel / gross oder Ecke ziehen,
 		# in die Leiste rechts integrierbar (zählt aber nicht beim Einpassen der anderen Fenster)
 		main.fenster.add("dev", "Entwickler", panel, {"on": func(): return shown, "set_on": func(x): shown = bool(x),
 				"shown": func(): return shown, "list": false, "home": _home, "top": true, "fold": true, "fit": false, "auto": false,

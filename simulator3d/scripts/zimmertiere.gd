@@ -1,5 +1,5 @@
 extends Node
-## Paket «Erlebniswelt: mehr Tiere drinnen» (Daniel 31.10.2026): Tiere im Innenraum - in der Szene «Schlafzimmer» (der
+## Paket «Erlebniswelt: mehr Tiere drinnen» (Besitzer 31.10.2026): Tiere im Innenraum - in der Szene «Schlafzimmer» (der
 ## einzige Raum, in dem MoveEye drinnen steht; die Erlebniswelt erlebniswelt.gd ist draussen im Ferienpark). Drei
 ## glaubwürdige Fehlalarm-Fälle für MoveEye in der Wohnung, gebaut wie die Vignetten der Erlebniswelt (kleine
 ## Zustandsmaschinen, Grundformen mit Wärme-Zwilling):

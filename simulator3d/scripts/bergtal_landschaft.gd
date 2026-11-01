@@ -1,5 +1,5 @@
 extends RefCounted
-## «Bergtal wie auf den Fotos» (Daniel, 31.10.2026, Vorlage: Fotos vom Stockhorn-Gebiet, Hinter-/Oberstockensee, Grat mit
+## «Bergtal wie auf den Fotos» (Besitzer, 31.10.2026, Vorlage: Fotos vom Stockhorn-Gebiet, Hinter-/Oberstockensee, Grat mit
 ## Legföhren, Vierwaldstättersee von oben). Nur Aussehen und Verteilung der Landschaft - keine Wege, Orte oder Höhen neu.
 ##
 ## Was hier gebaut wird (NUR ausserhalb von Lite, bergtal.gd fragt bt.lite):

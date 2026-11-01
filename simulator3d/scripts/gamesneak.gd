@@ -1,5 +1,5 @@
 extends RefCounted
-## «Neue Werkzeuge» für die Schleicher (Gameplay ausfeilen, Punkt 7, Daniel 31.10.2026) - with energy, ONE rule like the guard
+## «Neue Werkzeuge» für die Schleicher (Gameplay ausfeilen, Punkt 7, Besitzer 31.10.2026) - with energy, ONE rule like the guard
 ## (gametools.gd): every tool has a price ⚡ and a cooldown, the energy comes back slowly.
 ##   🐾 Lockmittel  30 ⚡, 25 s   a food bowl lands ~6 m ahead, an animal (cat / hedgehog by day, fox / marten at night)
 ##                                comes to it (objekte_plus.gd send_lure) - the automatic head and the Bot-Wächter look

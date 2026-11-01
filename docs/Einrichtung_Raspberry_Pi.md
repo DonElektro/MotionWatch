@@ -124,4 +124,4 @@ oben «🌐 Fern: Gerät», solange jemand von aussen zuschaut. Als App-Symbol s
 ## 9. Noch nicht auf echter Hardware geprüft
 
 Das Skript ist auf einem PC im Trockenlauf geprüft (`bash -n`, `--trocken`), noch nicht auf einem echten Pi 5. Ebenso
-noch offen: Thermal-90 (pysenxor), Servos, Lautsprecher, Licht, Mikrofon, Akku-Anzeige – siehe `docs/Testabend_Checkliste.md`.
+noch offen: Thermal-90 (pysenxor), Servos, Lautsprecher, Licht, Mikrofon, Akku-Anzeige.

@@ -1,5 +1,5 @@
 extends RefCounted
-## 3D-4.x «Bergtal · Orte zum Erkunden» (Daniel, 31.10.2026, alles gewählt): begehbare Gebäude mit gestaltetem Innenraum und
+## 3D-4.x «Bergtal · Orte zum Erkunden» (Besitzer, 31.10.2026, alles gewählt): begehbare Gebäude mit gestaltetem Innenraum und
 ## besondere Orte im Bergtal (bergtal.gd). Eigene Datei, von bergtal.gd aufgerufen (Orte.new(self) · build() · publish()).
 ##
 ##   Gebäude (innen gestaltet, Türen offen, Wände sind Hindernisse mit Lücke an der Tür, Boden als «deck» begehbar):

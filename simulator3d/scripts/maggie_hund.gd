@@ -1,7 +1,7 @@
 extends "res://scripts/bergtal_erleben_base.gd"
-## «Maggie und der Bergkristall» (Daniel 31.10.2026, Paket S2 «Maggie + liebe Tiere»): Maggie, der Familienhund.
+## «Maggie und der Bergkristall» (Besitzer 31.10.2026, Paket S2 «Maggie + liebe Tiere»): Maggie, der Familienhund.
 ## Ein kleiner heller Terrier (Jack-Russell-artig: weiss mit hellbraunen Flecken, Schulterhöhe ≈ 31 cm – Rassestandard
-## FCI 345: 25–30 cm; Aussehen nach Daniels Fotos, _maggie_koerper(): ab Grafik «mittel» Modell mit Skelett
+## FCI 345: 25–30 cm; Aussehen nach den Fotos des Besitzers, _maggie_koerper(): ab Grafik «mittel» Modell mit Skelett
 ## (maggie_modell.gd, Quaternius CC0), sonst weiche Grundformen (maggie_einfach.gd)), folgt der Spielfigur und hat vier Fähigkeiten:
 ##   * Riechen      – findet versteckte Spuren und Wege (leuchtende Pfotenspuren), ohne Rätsel in der Nähe: Spur zum nächsten
 ##   * Warnen       – knurrt / bellt von selbst, wenn böse Tiere nah sind (Knoten der Gruppe «maggie_boese», Paket S3) und an
@@ -43,7 +43,7 @@ const NAH_R := 7.0                   # m: so nah an einer Station = «du bist do
 const WARN_R := 26.0                 # m: so nah ein böses Tier = Maggie warnt
 const WEIT_R := 45.0                 # m: weiter weg = Maggie kommt nachgelaufen (springt hin, wenn man es nicht sieht)
 const HILFE_S := 25.0                # s an einer Station ohne Lösung: der richtige Knopf leuchtet
-# Maggie wie Daniels echter Hund (Fotos 31.10.2026): Jack-Russell-artig, Schulterhöhe ≈ 31 cm, schlank und hochbeinig.
+# Maggie wie der echte Hund (Fotos 31.10.2026): Jack-Russell-artig, Schulterhöhe ≈ 31 cm, schlank und hochbeinig.
 # Farben (alle über m.mat() geteilt, 6 Materialien + 1 Augen-Leuchten für die Nacht):
 #   WEISS  #F2EEE4  Grundfell, Brust, Beine, Bauch, Schnauze/Maul, Blesse, Schwanz innen und Spitze
 #   BRAUN  #B5703B  Kopf, Kippohren, grosse Platte Rücken/Flanke, Kruppe/Hinterteil, Schwanzwurzel und -aussenseite

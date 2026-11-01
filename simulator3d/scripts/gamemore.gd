@@ -1,5 +1,5 @@
 extends Node
-## «Gameplay ausfeilen» (Plan docs/Gameplay_Ausfeilen_Plan.md, alle Punkte gewählt von Daniel am 31.10.2026 01:58).
+## «Gameplay ausfeilen» (alle Punkte gewählt vom Besitzer am 31.10.2026 01:58).
 ## The hub of the new game rules - here so game.gd stays as it is (game.gd only calls the hooks below):
 ##   1  Probe-Runde mit Blinki (30 s before the real round): duck, hide, take cover (runners) · turn and 🎯 (the guard).
 ##      Nobody is caught, it can be skipped (phone button, PC: Enter, wizard: off / first round / always).

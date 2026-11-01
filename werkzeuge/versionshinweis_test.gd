@@ -24,7 +24,7 @@ func check_spot(A, name: String, sz: Vector2, vs: Vector2, right: float, obs: Ar
 func _init() -> void:
 	var A = load("res://scripts/abgleich.gd")
 	var vs := Vector2(1920, 1080)
-	var right := 1920.0 - 555.0                                     # Seitenmenü offen (555 px wie bei Daniel)
+	var right := 1920.0 - 555.0                                     # Seitenmenü offen (555 px wie beim Besitzer)
 	var sz := Vector2(330, 34)
 	var bar := Rect2((right - 568.0) / 2.0, vs.y - 66.0, 568.0, 54.0)   # Leiste unten in der Mitte
 	var geraet := Rect2(right - 300.0, 8.0, 292.0, 124.0)            # Gerät (LED und Tasten), oben rechts

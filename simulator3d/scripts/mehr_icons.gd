@@ -1,5 +1,5 @@
 extends RefCounted
-## 3D-4.2x «Mehr» (Wunsch Daniel 30.10.2026): gezeichnete Symbole für «Mehr», Rückmeldung, Selbstdiagnose, Protokoll,
+## 3D-4.2x «Mehr» (Wunsch des Besitzers 30.10.2026): gezeichnete Symbole für «Mehr», Rückmeldung, Selbstdiagnose, Protokoll,
 ## Ansicht – keine Emoji (die Schrift von Godot kann die meisten nicht). Gezeichnet in einem Feld 20 × 20 um c (wie
 ## ui_style.gd _draw_group_icon, das unbekannte Symbole hierher weitergibt). Keine Abhängigkeit zu ui_style.gd (kein
 ## Kreis beim Laden). Dazu Blinki, die kleine Figur aus dem MoveEye-Logo (wie quelle/589_blinki.py).
@@ -128,7 +128,7 @@ static func icon(kind: String, col: Color, size := 20.0) -> Control:
 	return d
 
 
-# ---- Blinki (quelle/589_blinki.py): eye = face, feet; since Daniel 31.10.2026 WITHOUT the orange fan (the logo keeps it,
+# ---- Blinki (quelle/589_blinki.py): eye = face, feet; since the owner 31.10.2026 WITHOUT the orange fan (the logo keeps it,
 # mw_logo.gd). Coordinates of the old 100 × 112 figure, cut out: x 26 … 74, y 59 … 111 (48 × 52). The mood signs (corners,
 # arrow, heart, dots) are drawn by blinki_bubble in a small speech bubble (like BLINKI_BUB of 589).
 const BK_O := Color("#ff9f43")

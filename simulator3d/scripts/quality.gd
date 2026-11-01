@@ -1,5 +1,5 @@
 extends RefCounted
-## 3D-4.25 «Lite» (Wunsch Daniel 31.10.2026): die leichte Grafik-Stufe desselben Simulators, damit er auf einem Raspberry Pi 5
+## 3D-4.25 «Lite» (Wunsch des Besitzers 31.10.2026): die leichte Grafik-Stufe desselben Simulators, damit er auf einem Raspberry Pi 5
 ## sauber läuft. Gleiche Menüs, gleiches Aussehen – nur weniger Aufwand (main.gd lite_update / _lite_apply).
 ##
 ## Zentrale Abfrage für alle Teile (auch Pakete, die parallel entstehen):
@@ -89,7 +89,7 @@ static func weak_reason() -> String:
 	return weak_pc(RenderingServer.get_video_adapter_name(), int(mi.get("physical", -1)))
 
 
-## Sparmodus (Paket Linux, Daniel 01.11.2026): schwache PCs wie der HP EliteDesk 800 G1 (i5-4590T, HD 4600, 4 GB) bekommen
+## Sparmodus (Paket Linux, Besitzer 01.11.2026): schwache PCs wie der HP EliteDesk 800 G1 (i5-4590T, HD 4600, 4 GB) bekommen
 ## bei «Automatisch» Lite (und als erste Qualität «einfach»). Eine eigene Wahl (Grafik-Modus Normal / Lite / Hoch, Qualität)
 ## bleibt gespeichert und gilt immer vor dieser Erkennung. Ohne Abfragen testbar (werkzeuge/sparmodus_test.gd).
 const WEAK_RAM := 4.25 * 1024.0 * 1024.0 * 1024.0   # 4-GB-PCs melden etwas weniger als 4 GiB (Grafik, Firmware)

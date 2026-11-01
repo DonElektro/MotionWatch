@@ -1,5 +1,5 @@
 extends Node
-## Action-Teile im Bergtal-Abenteuer (Daniel 31.10.2026, bestätigt) - ein Teil von abenteuer_geheim.gd («hub», TEILE), das
+## Action-Teile im Bergtal-Abenteuer (Besitzer 31.10.2026, bestätigt) - ein Teil von abenteuer_geheim.gd («hub», TEILE), das
 ## die Einhänge-Punkte dort weitergibt. Nicht geheim: Pfeile (Leicht) und Blinki-Tipps (Mittel, wie A3) helfen.
 ## Je Kapitel ein Teil (etwa +3–5 Minuten):
 ##   Kapitel 1  J Kuhherde: auf dem Weg zu den Weiden steht eine unruhige Herde (Kühe aus actor.gd). Ruhig mit Abstand im

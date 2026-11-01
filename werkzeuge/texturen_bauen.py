@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Foto-Texturen für den 3D-Simulator (Bergtal) aufbereiten – Texturen aus eigenen Fotos von Daniel Bärschi.
+"""Foto-Texturen für den 3D-Simulator (Bergtal) aufbereiten – Texturen aus eigenen Fotos von DonElektro.
 
 Liest die PNG (1024 × 1024, nahtlos kachelbar, nur Farbe) aus einem Ordner und schreibt sie als JPG (Qualität 85) nach
 simulator3d/texturen/ (benutzte) bzw. simulator3d/texturen/unbenutzt/ (nicht benutzte; dort mit .gdignore, damit Godot

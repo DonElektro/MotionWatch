@@ -1,4 +1,4 @@
-// Maggies Fell (maggie_modell.gd, Daniel 01.11.2026): Muster aus den Vertex-Farben (werkzeuge/maggie_modell.py),
+// Maggies Fell (maggie_modell.gd, Besitzer 01.11.2026): Muster aus den Vertex-Farben (werkzeuge/maggie_modell.py),
 // kurze Haare als feines, in Strichrichtung gestrecktes Rauschen (Farbe und Normale), leichtes Randlicht (Gegenlicht im
 // Fell). Die Ruhelage jedes Punkts steht in UV / UV2.x: die Struktur klebt am Fell und wandert nicht mit der Bewegung.
 shader_type spatial;

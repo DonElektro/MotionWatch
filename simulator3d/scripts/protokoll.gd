@@ -1,5 +1,5 @@
 extends Node
-## 3D-4.2x «Mehr» → Protokoll (Wunsch Daniel 30.10.2026): die letzten Ereignisse und Fehler des Simulators – Start,
+## 3D-4.2x «Mehr» → Protokoll (Wunsch des Besitzers 30.10.2026): die letzten Ereignisse und Fehler des Simulators – Start,
 ## Verbindung zu MoveEye, Szene, Testlauf, Spiel, Update, Grafik, Rückmeldung und die Fehler / Warnungen von Godot (aus
 ## dem Log user://logs/godot.log, wenn es geschrieben wird). Ein Ringspeicher (400 Einträge, nur im Speicher), Filter,
 ## Kopieren. Die Ereignisse werden zweimal pro Sekunde aus dem Zustand von main.gd gelesen – main.gd muss nichts melden.

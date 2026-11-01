@@ -1,4 +1,4 @@
-# Simulator-Szene «Verfolgungs-Parcours» (Entscheide Daniel, 30.10.2026 09:50)
+# Simulator-Szene «Verfolgungs-Parcours» (Entscheide des Besitzers, 30.10.2026 09:50)
 
 Zweck: den Verfolgungsmodus des Kopfs (Folgen) trainieren, einstellen und überwachen. Die echten Positionen der Figuren sind im Simulator bekannt → genaue Messung.
 Umsetzung: **nach der Weitwinkel-Runde** (`docs/Gehaeuse_Variante2_Weitwinkel.md`), baut auf dem neuen Kamera-Modell auf.

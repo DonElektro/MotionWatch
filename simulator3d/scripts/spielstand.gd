@@ -1,5 +1,5 @@
 extends RefCounted
-## Spielstand (Paket A6, Daniel 31.10.2026): drei Spielstand-Plätze für die Familie, ein Level für alles, automatisches
+## Spielstand (Paket A6, Besitzer 31.10.2026): drei Spielstand-Plätze für die Familie, ein Level für alles, automatisches
 ## Speichern des laufenden Abenteuers an Hütte und Lager, Einstellungen Erzählerstimme / Zwischenszenen.
 ##   * Platz 1 = der bisherige Spielstand (die alten Dateien werden einfach weiter benutzt - nichts wird verschoben):
 ##       Abenteuer   user://bergtal_abenteuer/fortschritt.json

@@ -1,5 +1,5 @@
 extends RefCounted
-## Abenteuer-Inventar (Paket A4 «Rucksack», Besitzer dieser Datei; Daniel 31.10.2026).
+## Abenteuer-Inventar (Paket A4 «Rucksack», Besitzer dieser Datei; Besitzer 31.10.2026).
 ## Gemeinsame Schnittstelle für alle Abenteuer-Pakete (A1–A5): Gegenstände abfragen, geben und nehmen.
 ##
 ##   const Inv = preload("res://scripts/abenteuer_inventar.gd")
@@ -28,7 +28,7 @@ const IDS := ["seil", "stirnlampe", "feldstecher", "kompass", "pickel", "hut", "
 		"tagebuchseite_6", "tagebuchseite_7", "tagebuchseite_8", "tagebuchseite_9", "tagebuchseite_10"]
 # neue ID -> ID in der bestehenden Packliste (D.ITEMS)
 const ALIAS := {"proviant": "essen", "feldstecher": "fernglas"}   # «fernglas» = nur noch der Speicher-Schlüssel (alte Spielstände);
-                                                                  # das Fernglas der Packliste gibt es nicht mehr (Daniel 31.10.2026)
+                                                                  # das Fernglas der Packliste gibt es nicht mehr (Besitzer 31.10.2026)
 # bleibt über alle Kapitel (Fundstücke / Belohnungen); Tagebuchseiten zusätzlich über das Präfix
 const BLEIBEND := ["seil", "kompass", "pickel", "hut", "taschenuhr"]
 # kg pro Stück für IDs, die nicht in D.ITEMS stehen (gerundete Katalogwerte):

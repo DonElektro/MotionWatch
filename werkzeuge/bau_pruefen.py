@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Bau-Infos prüfen (real-bauen, Daniels Regel 01.11.2026): passen die Infos zum Selberbauen (hardware/gehaeuse/bau.json →
+"""Bau-Infos prüfen (real-bauen, Regel des Besitzers 01.11.2026): passen die Infos zum Selberbauen (hardware/gehaeuse/bau.json →
 MoveEye «Bauen» und Simulator «Bauen») noch zum Projektstand? Es wird NICHTS automatisch nachgezogen – nur gewarnt:
 «Bau-Infos veraltet: … – nachziehen?».
 

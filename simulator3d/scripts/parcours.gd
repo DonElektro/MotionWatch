@@ -1,5 +1,5 @@
 extends Node
-## 3D-4.18 (Entwurf; Plan Daniel 30.10.2026, docs/Verfolgungs_Parcours.md): «Verfolgungs-Parcours» - the following mode of
+## 3D-4.18 (Entwurf; Plan des Besitzers 30.10.2026, docs/Verfolgungs_Parcours.md): «Verfolgungs-Parcours» - the following mode of
 ## MoveEye (Folgen, head of 410) is trained, tuned and measured. The simulator knows where every figure really is: exact
 ## ground truth.
 ##   * Scene «parcours» (scenes.gd calls build_scene): open meadow, distance marks 5 / 10 / 20 / 40 m, obstacles (bush, tent,

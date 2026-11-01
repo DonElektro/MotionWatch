@@ -1,5 +1,5 @@
 extends Node
-## Fotorealismus F2 «echte Inhalte» (Daniel 31.10.2026): freie Foto-Inhalte (CC0) für Boden, Wege, Zelt, Bäume und Himmel.
+## Fotorealismus F2 «echte Inhalte» (Besitzer 31.10.2026): freie Foto-Inhalte (CC0) für Boden, Wege, Zelt, Bäume und Himmel.
 ## Quellen: Poly Haven (HDRI-Himmel, Texturen), ambientCG (PBR-Texturen) – Liste mit Lizenz in simulator3d/CREDITS.md.
 ##
 ## Die Dateien liegen NICHT im Repository und nicht im Simulator-ZIP (GitHub-Grenze, ZIP schon ~62 MB). Sie werden beim ersten

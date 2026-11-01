@@ -1,5 +1,5 @@
 extends Node
-## Paket «Sicherung im Simulator» (Daniel 01.11.2026): System → Sicherung, bedient wie die Sicherung von MoveEye
+## Paket «Sicherung im Simulator» (Besitzer 01.11.2026): System → Sicherung, bedient wie die Sicherung von MoveEye
 ## (quelle/060 backup_copy: «Sicherung» der Aufnahmen auf WebDAV / Ordner (USB-Stick) / Telegram, «Sicherung testen»;
 ## quelle/586 factory_reset: Kopie vor dem Zurücksetzen). Nur von Hand, keine automatische Sicherung.
 ##

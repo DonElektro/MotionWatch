@@ -6,7 +6,7 @@ extends Node
 ##  - «Echt-Abgleich»: MoveEye 2.98.6 sends the look of its real pictures (brightness, contrast, colour, sharpness, grain -
 ##    day and night, from the diary and the alarm pictures); the simulator measures its own picture the same way every
 ##    few seconds and moves its settings towards it. Stored in user://echt_abgleich.json.
-## Only picture data, no map data (rule of Daniel).
+## Only picture data, no map data (rule of the owner).
 
 var main
 var fx_on := true                  # camera effects (blur, colours, NoIR)

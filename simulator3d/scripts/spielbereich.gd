@@ -1,6 +1,6 @@
 extends Node
-## Spielbereich (Daniel 31.10.2026, Paket «Spielbereich»): ein eigener Startbildschirm «Spielen» – wie der Reiter «Spielen»
-## von MoveEye (Teil 639i, gleicher Aufbau). Geschichten-Menü (Daniel 31.10.2026): Kopfzeile (Stufe, Spielstand, «Spielstand
+## Spielbereich (Besitzer 31.10.2026, Paket «Spielbereich»): ein eigener Startbildschirm «Spielen» – wie der Reiter «Spielen»
+## von MoveEye (Teil 639i, gleicher Aufbau). Geschichten-Menü (Besitzer 31.10.2026): Kopfzeile (Stufe, Spielstand, «Spielstand
 ## wechseln»), ganz oben «Weiterspielen: <Geschichte>, <Kapitel/Region> (x %)», dann zwei Bereiche:
 ##   * «Geschichten» = Storys mit Kapiteln als grosse Karten (geschichten.gd: Regal, gemeinsamer Start, Bilder).
 ##   * «Entdecken» = die Orte der Reihe nach (früher «Abenteuer»): Camping-Platz → Ferienpark → Bergtal → Zuhause.
@@ -192,7 +192,7 @@ func level() -> Dictionary:
 	var nb := 0
 	for b in badges():
 		nb += 1 if int(b.n) > 0 else 0
-	# A6 «Ein Level für alles» (Daniel 31.10.2026): the experience of the Bergtal adventure counts too (same Spielstand)
+	# A6 «Ein Level für alles» (Besitzer 31.10.2026): the experience of the Bergtal adventure counts too (same Spielstand)
 	var ab_xp: int = int(main.abenteuer.P.get("xp", 0)) if main != null and main.abenteuer != null else 0
 	var xp := disc * XP_DISC + nb * XP_BADGE + done * XP_DONE + vis * XP_VISIT + ab_xp
 	var lv := level_of(xp)

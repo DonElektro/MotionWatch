@@ -1,5 +1,5 @@
 extends RefCounted
-## «KI-Daten aufräumen» (Wunsch Daniel, 29.10.2026): die Trainingspakete (dataset.gd) brauchen viel Platz – jedes liegt als
+## «KI-Daten aufräumen» (Wunsch des Besitzers, 29.10.2026): die Trainingspakete (dataset.gd) brauchen viel Platz – jedes liegt als
 ## Ordner user://trainingsbilder/<Zeit>[_hoch] und als ZIP «MoveEye-Trainingsbilder_<Zeit>.zip» (Schreibtisch oder daneben;
 ## bis 3D-4.21 hiessen sie «MW-Trainingsbilder_<Zeit>.zip» – beide Namen werden erkannt).
 ##   aufraeumen(false): nach jedem neuen Paket von selbst – die neuesten 3 bleiben, nichts älter als 30 Tage.

@@ -1,9 +1,9 @@
-# Selbstbau-Paket als GitHub-Release (Wunsch Daniel, 01.11.2026)
+# Selbstbau-Paket als GitHub-Release (Wunsch des Besitzers, 01.11.2026)
 # Bei jedem Push auf main, der eine neue *signierte* Version bringt (versions.json), baut werkzeuge/bausatz.py das Paket
 # MoveEye_Bausatz_X.Y.Z.zip und legt es als Release «vX.Y.Z» ab – zusätzlich unter dem festen Namen MoveEye_Bausatz.zip.
 # Damit geht immer: https://github.com/DonElektro/MotionWatch/releases/latest/download/MoveEye_Bausatz.zip
 #  - Gibt es den Release vX.Y.Z schon, passiert nichts (von Hand: Actions -> Bausatz -> Run workflow, «neu» = ersetzen).
-#  - Nicht signiert (Daniel signiert später): kein Release; nach dem Signieren-Push läuft es von selbst.
+#  - Nicht signiert (der Besitzer signiert später): kein Release; nach dem Signieren-Push läuft es von selbst.
 #  - Die KI-Releases (ki-modell*, ki-daten) bleiben «--latest=false» und stören «latest» nicht.
 # Keine Geheimnisse: nur GITHUB_TOKEN (contents: write); der Signierschlüssel bleibt lokal, das Paket enthält nur Repo-Dateien.
 name: Bausatz

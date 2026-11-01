@@ -1,5 +1,5 @@
 extends RefCounted
-## Gameplay ausfeilen, Punkte 5 / 6 / 8 (Daniel 31.10.2026 01:58) - three rules of the referee, kept by gamemore.gd:
+## Gameplay ausfeilen, Punkte 5 / 6 / 8 (Besitzer 31.10.2026 01:58) - three rules of the referee, kept by gamemore.gd:
 ##   5 «Nacht-Spiel» (game_nightrule): the round is at night and the cameras of the guard see ONLY what lies in the cone of
 ##     the infrared light of the head (or what the white light / the 💡 tool lights up, or a player's own torch). The
 ##     thermal camera sees warm bodies as before - in the dark it is the guard's best friend. The fixed camera has no

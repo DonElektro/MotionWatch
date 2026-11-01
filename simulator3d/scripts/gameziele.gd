@@ -1,5 +1,5 @@
 extends RefCounted
-## «Abzeichen pro Szene» (Gameplay ausfeilen, Punkt 10, Daniel 31.10.2026): small goals per scene («Unsichtbar im vollen
+## «Abzeichen pro Szene» (Gameplay ausfeilen, Punkt 10, Besitzer 31.10.2026): small goals per scene («Unsichtbar im vollen
 ## Campingplatz», «Velodieb-Profi» …) plus a few that go in every scene. Checked at the end of a round for every person
 ## (not the bots), kept PER DEVICE in user://spiel/szenen_ziele.json (scene -> goal -> how often, first time, by whom) and
 ## shown in the summary of the round (result line, winner screen, end card of the phone: «3 von 4 Zielen dieser Szene»).

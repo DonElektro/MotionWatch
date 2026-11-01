@@ -1,5 +1,5 @@
 extends Node
-## «Maggie und der Bergkristall» (Daniel, 31.10.2026) – eine Geschichte für Kinder (ca. 12) im Bergtal. Paket S1 «Rahmen».
+## «Maggie und der Bergkristall» (Besitzer, 31.10.2026) – eine Geschichte für Kinder (ca. 12) im Bergtal. Paket S1 «Rahmen».
 ## Eine Karte im Regal «Geschichten» unter «Spielen» (geschichten.gd). Alles selbst erfunden (nur lose Inspiration: vier Reiche = vier
 ## Jahreszeiten). Ablauf:
 ##   Figur wählen (Name + Aussehen) → Einstieg: Spaziergang auf der Alp, Maggie gräbt einen leuchtenden Bergkristall aus,
@@ -56,8 +56,8 @@ extends Node
 ## Module: gibt es res://scripts/maggie_hund.gd oder maggie_gefahr.gd (maggie_helfer.gd legt der Hund selbst an), wird jedes beim Start der
 ## Geschichte angelegt (als Kind dieses Knotens, wenn es ein Node ist); vorher werden (wenn vorhanden) die Variablen
 ## `main` und `story` gesetzt. Beim Beenden werden sie wieder entfernt.
-## Vorführmodus (Daniel 31.10.2026, maggie_vorfuehrung.gd): `demo` = true -> eigener Spielstand user://maggie/vorfuehrung.json
-##   (Daniels Spielstände bleiben unberührt), der Autopilot `vf` lenkt die Figur (_steer), die Kamera (_cam) und die Tasten.
+## Vorführmodus (Besitzer 31.10.2026, maggie_vorfuehrung.gd): `demo` = true -> eigener Spielstand user://maggie/vorfuehrung.json
+##   (die Spielstände des Besitzers bleiben unberührt), der Autopilot `vf` lenkt die Figur (_steer), die Kamera (_cam) und die Tasten.
 ## Test / Fernsteuerung: /control {"action": "maggie", "do": "info" | "open" | "start" (name, look) | "region" (id) |
 ##   "aufgabe" (id, text) | "erledigt" (id) | "fertig" | "erwischt" (von) | "zukunft" | "finale" | "rast" (i) | "gehe" (x, z
 ##   = Welt) | "pause" | "weiter" | "stop" | "reset"}
@@ -442,7 +442,7 @@ func region_fertig(id: String) -> void:
 # =======================================================================================================================
 func _file() -> String:
 	if demo:
-		return DEMO_FILE                                   # Vorführung: never Daniel's Spielstände (spielstand.gd)
+		return DEMO_FILE                                   # Vorführung: never the owner's Spielstände (spielstand.gd)
 	return preload("res://scripts/spielstand.gd").path_maggie()   # Geschichten-Menü: per Spielstand (place 1 = SAVE_FILE)
 
 
@@ -515,7 +515,7 @@ func open() -> void:
 
 
 func _common_start() -> void:
-	"""Geschichten-Menü (Daniel 31.10.2026): the same start for every story - Spielstand, then the figure (geschichten.gd)"""
+	"""Geschichten-Menü (Besitzer 31.10.2026): the same start for every story - Spielstand, then the figure (geschichten.gd)"""
 	_close_cards()
 	var rg = main.spielbereich.regal if main.spielbereich != null else null
 	if rg != null:

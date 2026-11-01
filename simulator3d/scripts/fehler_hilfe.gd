@@ -1,5 +1,5 @@
 extends RefCounted
-## Fehler-QR (Wunsch Daniel 01.11.2026): neben jeder Fehlermeldung des Simulators ein Knopf bzw. QR-Code, der das Problem löst.
+## Fehler-QR (Wunsch des Besitzers 01.11.2026): neben jeder Fehlermeldung des Simulators ein Knopf bzw. QR-Code, der das Problem löst.
 ## Liest den gemeinsamen Fehler-Katalog res://fehler_katalog.json (dieselbe Datei bettet MoveEye ein, Teil 639u): pro Fehler
 ## Kennung, Titel, Erklärung, Schritte und optional eine Aktion, in de / en / fr / it / rm (Sprache wie i18n.gd).
 ##   · Selbstdiagnose (diagnose.gd): unter jedem Problem mit Katalog-Eintrag «Hilfe & Beheben» -> Fenster «fehler:<ID>» (mehr.gd).

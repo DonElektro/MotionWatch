@@ -16,7 +16,7 @@ Der Prüfstand beantwortet bei jeder neuen Version die Frage: **Erkennt MoveEye 
    15 Prozentpunkte weniger Personen oder **ein falscher Push mehr pro Lauf** = «SCHLECHTER» (bei alten Läufen ohne Pushes:
    ein Flackern mehr pro Lauf) – Personen erst, wenn beide Läufe mindestens 8 Personen hatten.
 
-## Prüfstand 2 (Wunsch Daniel, 29.10.2026)
+## Prüfstand 2 (Wunsch des Besitzers, 29.10.2026)
 
 - **Pushes statt Flackern.** Früher zählte jedes Aufflackern der Personen-Erkennung (0 → 1 Person) als Fehlalarm – ein Dachs
   gab so 3–5 «Fehlalarme» in Sekunden. Jetzt zählt, was auf dem Handy ankäme: MoveEye läuft im Prüfstand mit dem
@@ -34,7 +34,7 @@ Der Prüfstand beantwortet bei jeder neuen Version die Frage: **Erkennt MoveEye 
 - **Ganze Nacht** (`nacht`): 20–6 Uhr im Zeitraffer in etwa 11 Minuten (die Uhr des Simulators läuft schneller), etwa
   20 Tiere, Windböen, ein Regenschauer, ruhige Abschnitte ohne Besuch und 2 Personen. Hauptzahl: **Pushes pro Nacht**
   (richtig / falsch). `--mal` vervielfacht diese Nacht nicht (realistische Zahlen).
-  **Später (Daniel 31.10.2026):** «Ganze Nacht» auf den Nacht-Ablauf `simulator3d/scripts/nachtlauf.gd` des
+  **Später (Besitzer 31.10.2026):** «Ganze Nacht» auf den Nacht-Ablauf `simulator3d/scripts/nachtlauf.gd` des
   Nacht-Testlaufs (MoveEye 579b, Seite /nacht) umstellen – ein Nacht-Ablauf für beide.
 - **Zufallsstarts** (`--seeds 3`): Zufall 1 = die festen Besucher von früher (4711), 2, 3 … dieselben Besucher auf anderen
   Wegen. In `VERLAUF.md` steht dann die Streuung (kleinster–grösster Wert pro Lauf). Mehr Personen: `--mal 1` … `--mal 5`.
@@ -106,7 +106,7 @@ bei MoveEye und einem KI-Modell (ohne Modell folgt MoveEye nur der Bewegung).
 ### Neue Szenen (Simulator 3D-4.x, `szenenplus.gd`)
 
 Die drei Pläne `camping_voll`, `tarnen`, `velodieb` laden ihre **eigene Szene** (`--szene` gilt für sie nicht) und stellen
-danach die alte wieder her. Sie sind **nicht** im kurzen Lauf «quick» (Wunsch Daniel: Prüfstand sparsam) – sie laufen
+danach die alte wieder her. Sie sind **nicht** im kurzen Lauf «quick» (Wunsch des Besitzers: Prüfstand sparsam) – sie laufen
 sonntags mit den grossen Läufen oder von Hand: `--plaene camping_voll,tarnen,velodieb`. Feste Zufallszahlen wie alle Pläne.
 Hauptzahlen sind die echten **Pushes richtig / falsch** und die Reaktionszeit; dazu im Bericht `szene`:
 - `camping_voll`: wie viele Fremde an deinen Platz kamen, mit / ohne Push, **Reaktion ab Betreten des Platzes**, und
@@ -187,5 +187,5 @@ Format einer Datei in `simulator3d/pruefnaechte/` (JSON):
 - `hour` / `weather` / `wind`: wie es in der Nacht war (ohne Angabe: klar, Wind 10).
 - `variants` (freiwillig): andere Bedingungen statt der drei Standard-Varianten; `cond` wie in den anderen Testläufen
   (`ir`, `glare`, `drops`, `web`, `headlights`, `shadows`).
-- Kartengebunden (Wunsch Daniel): die Wege gelten nur von MoveEye aus gesehen; Hindernisse der Szene können anders stehen
+- Kartengebunden (Wunsch des Besitzers): die Wege gelten nur von MoveEye aus gesehen; Hindernisse der Szene können anders stehen
   als in der echten Nacht.
