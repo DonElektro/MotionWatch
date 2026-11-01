@@ -238,7 +238,7 @@ def prepare_settings_file():
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
 ZD_FILE = "moveeye_daten_3_44_2.zip"
-ZD_SHA256 = "eabc6bb5085dd846c85b30ea392d7469ed420976c1fb73de5350acf8cdb69e40"
+ZD_SHA256 = "d4d849bd95805abea0b4cc3bd41f27a4436443a86d1ca5bd24268c5ad90c31b0"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -62829,7 +62829,7 @@ for _k, _v in _HX_SIMDOPP.items():
         TRX[_L].setdefault(_k, _v[_i + 1])
 # ---- the product page (2.95.52): the homepage of MoveEye (made as an artifact), packed here (gzip + base64) so the Pi
 # can show it without internet to guests in the same Wi-Fi at /info/. Questions from the form arrive as a push message. ----
-INFO_HTML_GZ = (  # 2.98.9: FAQ, French and Italian, «a night in time-lapse»; 2.98.7: MoveEye name, wake-up alarm, «Spiele freigeben», ticker, join wall, more animation
+INFO_HTML_GZ = (  # 3.45: homepage from the artifact again - new since 3.27, build or buy (3 packages), feedback form with order topic and package; 2.98.9: FAQ, French and Italian, «a night in time-lapse»; 2.98.7: MoveEye name, wake-up alarm, «Spiele freigeben», ticker, join wall, more animation
     _zd('620_daten_produktseite/INFO_HTML_GZ', "")
 )
 
@@ -62854,7 +62854,7 @@ INFO_INJECT = r"""<script>
              it: {go: "Invia", ok: "✓ Grazie! Il messaggio è arrivato.", err: "Invio non riuscito - riprova più tardi.", many: "Troppi messaggi - riprova più tardi."}};
   const L = () => T[document.documentElement.lang] || T.en;
   const addr = document.querySelector(".addr");
-  if (M) { const c = document.getElementById("mail"); if (c) c.textContent = M;
+  if (M) { const c = document.getElementById("mail"); if (c) c.textContent = M; if (addr) addr.hidden = false;
     document.addEventListener("click", ev => { if (!ev.target.closest || !ev.target.closest("#copy")) return; ev.stopPropagation(); try { navigator.clipboard.writeText(M); note.textContent = "✓"; } catch (e) {} }, true); }
   else if (addr) addr.hidden = true;
   const btn = f && f.querySelector("button[type=submit]");
@@ -62865,7 +62865,9 @@ INFO_INJECT = r"""<script>
     ev.preventDefault(); ev.stopPropagation();
     const msg = document.getElementById("f-msg").value.trim(); if (!msg) { document.getElementById("f-msg").focus(); return; }
     const sel = document.getElementById("f-topic");
-    const d = {name: document.getElementById("f-name").value.trim(), topic: sel.selectedOptions[0].textContent, msg: msg};
+    const pk = document.getElementById("f-pack"), pr = document.getElementById("f-pack-row");
+    const pack = pk && pr && !pr.hidden ? pk.selectedOptions[0].textContent : "";   // 3.45: package chosen for an order
+    const d = {name: document.getElementById("f-name").value.trim(), topic: sel.selectedOptions[0].textContent, msg: (pack ? "[" + pack + "] " : "") + msg};
     if (btn) btn.disabled = true;
     try { const r = await fetch("/info/ask", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(d)});
       note.textContent = r.ok ? L().ok : (r.status === 429 ? L().many : L().err); if (r.ok) document.getElementById("f-msg").value = ""; }
