@@ -1,5 +1,5 @@
 extends SceneTree
-## Test Fehler-QR im Simulator (ohne Bild): res://fehler_katalog.json (20–30 Fehler, 5 Sprachen, Aktionen), die Zuordnung zur
+## Test Fehler-QR im Simulator (ohne Bild): res://fehler_katalog.json (20–40 Fehler, real-bauen: + Hardware, 5 Sprachen, Aktionen), die Zuordnung zur
 ## Selbstdiagnose, die Adresse im QR-Code (nur <MoveEye>/hilfe/fehler/<ID>), der eigene QR-Encoder (fehler_hilfe.gd) Bit für
 ## Bit gleich wie qr_matrix von MoveEye (Teil 110, Referenz unten) und der Notfall-Start (--grafik lite).
 ##   cd simulator3d && <godot> --headless --path . -s "$PWD/../werkzeuge/fehler_qr_test.gd"   (absoluter Pfad nötig)
@@ -20,8 +20,8 @@ func eq(what: String, got, want) -> void:
 func _init() -> void:
 	var FH = load("res://scripts/fehler_hilfe.gd")
 	var es: Array = FH.entries()
-	if es.size() < 20 or es.size() > 30:
-		errs.append("%d Fehler (20–30)" % es.size())
+	if es.size() < 20 or es.size() > 40:
+		errs.append("%d Fehler (20–40)" % es.size())
 	var acts: Dictionary = FH.katalog().get("aktionen", {})
 	for e in es:
 		for k in ["titel", "text", "schritte"]:
