@@ -372,7 +372,8 @@ func starten(tid: String, o := {}) -> Dictionary:
 	opts = o
 	id = tid
 	ergebnis = ""
-	_movie = "--write-movie" in OS.get_cmdline_args() or "--write-movie" in OS.get_cmdline_user_args()
+	# (Fix 3.40.x: Godot takes --write-movie for itself – it is not in get_cmdline_args(), the «× Zurück» was in the film)
+	_movie = Engine.get_write_movie_path() != "" or "--write-movie" in OS.get_cmdline_args() or "--write-movie" in OS.get_cmdline_user_args()
 	_lang_vorher = T.choice()
 	var sp := str(o.get("sprache", ""))
 	if sp != "" and sp in T.codes():
