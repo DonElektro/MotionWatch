@@ -238,7 +238,7 @@ def prepare_settings_file():
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
 ZD_FILE = "moveeye_daten_3_28_0.zip"
-ZD_SHA256 = "d4812b41d8670af84fd37490860c2925ab15239dd2e51afa971b53da64f97d4a"
+ZD_SHA256 = "d1829df5a3c7cfc682465cb21e8ce16a6dec2ea1675fc9ee138c38d9aa8c27c7"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -48932,22 +48932,10 @@ class App:
             self.tab_btns[tid] = b
         self._paint_tabs()
         if show("hdr_buttons"):
-            ctl = tk.Frame(top, bg=C["bg"]); ctl.pack(side="right")
-            lb = self._ibtn(ctl, cur_lang().upper(), lambda: None, tr("Language") + " (Ctrl+L)")
-            lb.bind("<Button-1>", lambda e: self.toggle_lang(lb.winfo_rootx(), lb.winfo_rooty() + lb.winfo_height()))
-            lb.config(width=3, font=("DejaVu Sans", 9, "bold")); lb.pack(side="right")
-            self._ibtn(ctl, "◐", self.toggle_theme, tk_theme_tip(), on=bool(CFG.get("tk_night"))).pack(side="right", padx=(0, 6))   # Hell → Dunkel → Rotlicht (578)
-            self._ibtn(ctl, "✉", self._messages_win, tr("Message list")).pack(side="right", padx=(0, 6))     # 2.98.13
-            # 2.98.50 (Daniel): no 💬 in the header any more - feedback under System (see _feedback button below) and «About»
-            self._ibtn(ctl, "◷", lambda: tk_timeline_win(self), tr("Night timeline")).pack(side="right", padx=(0, 6))   # 2.98.14 (575)
-            self._ibtn(ctl, "?", lambda: self._g2_tour(self.tab, True), tr("Tour of this page")).pack(side="right", padx=(0, 6))   # 584
-            self.b_fs = self._ibtn(ctl, "⇱", self.toggle_fullscreen, tr("Fullscreen (F11)"), on=self.is_fullscreen)
-            self.b_fs.pack(side="right", padx=(0, 6))
-            vb = self._ibtn(ctl, "☰", lambda: None, tr("View") + " – " + tr("show / hide fields"))
-            vb.bind("<Button-1>", lambda e: self._view_menu(vb.winfo_rootx(), vb.winfo_rooty() + vb.winfo_height()))
-            vb.pack(side="right", padx=(0, 6))
-            self._ibtn(ctl, "?", self._open_help, tr("Manual") + "\n\n" + tr("Double-click video: video only · F11: fullscreen · Esc: back · Ctrl+B: settings panel · right-click video: show / hide fields")).pack(side="right", padx=(0, 6))
-        keys = [k for k in badge_keys if show(k)]
+            # 639t (Daniel 01.11.2026): the one header - ? · ♪ · ↻ · DE · ☰ · ⇱ · ▲ · ⚒ in this order like on every web page and in
+            # the simulator; ✉ messages, ◷ timeline, ? manual and ◐ light / dark / red light are in ☰ (nothing gone)
+            self._kopf_tk(top)
+        keys = [k for k in badge_keys if show(k)] if not getattr(self, "_kopf_folded", False) else []   # 639t: ▲ folded = one line
         if keys:
             self.badge_f = tk.Frame(head, bg=C["bg"], height=30); self.badge_f.pack(fill="x", pady=(8, 0))
             texts = {"b_person": tr("No person"), "b_count": f"{tr('Persons total')}: 0", "b_objects": f"0 {tr('objects')}",
@@ -48962,7 +48950,9 @@ class App:
                 self.badges["b_update"].bind("<Button-1>", lambda e: self._upd_new())
             self.badge_f.bind("<Configure>", self._flow)
             self.root.after(50, self._flow)
-        if small_:                                        # 2.98.14: on a small screen the 6 tabs get a row of their own
+        if getattr(self, "_kopf_folded", False):          # 639t: header folded - the tabs only behind ▼
+            pass
+        elif small_:                                      # 2.98.14: on a small screen the 6 tabs get a row of their own
             tabs.pack(fill="x", pady=(8, 0), before=self.badge_f if self.badge_f is not None else None)
         else:
             tabs.pack(side="left", padx=(18, 0), after=tl if show("title") else None)
@@ -68655,6 +68645,452 @@ def _ansicht_selftest():
 
 
 SELFTEST_EXTRA.append(("My view (639r)", _ansicht_selftest))
+# Daniel (01.11.2026, Screenshot): «oben rechts im Kopf stehen je nach Reiter andere Knöpfe in anderer Reihenfolge» -> Entscheid: ein
+# gemeinsamer Kopf, überall gleich. Die Liste der Knöpfe steht in simulator3d/ui_gemeinsam.json («kopf», eingebettet als UI_GEMEINSAM, 639p):
+#   ? Hilfe (Rundgang der Seite 516, sonst die Anleitung) · 🔔 Ton (Alarmton 510) · ↻ zuerst Live, dann neu laden (510, jetzt immer da)
+#   · DE Sprache · ☰ Menü · ⛶ Vollbild · ▲ Kopf einklappen (510) · 🛠 Entwickler (nur Entwickler-Bereich an UND Besitzer, wie 639s)
+# Gleiche Grösse (38 × 34 px, Handy 34 × 30), gleicher Abstand, gleiche gezeichnete Symbole. Schmal (bis 760 px): ab «Sprache» wandern die
+# Knöpfe ins ☰-Menü, in derselben Reihenfolge (Abschnitt «Kopf»). Alles andere, was eine Seite in ihren Kopf legt (🖨 Drucken, ◉ Hell /
+# Dunkel / Rotlicht, 💬 Rückmeldung, …), kommt ins ☰-Menü: «Diese Seite» bzw. «Allgemein» - es geht nichts verloren, die Knöpfe bleiben
+# mit ihrer Id auf der Seite (nur unsichtbar), ihre Funktionen laufen unverändert.
+# Die Häkchen-Listen (☰ «Kopfzeile / Bereiche / Einstellungen», «◫ Ansicht der Live-Seite → Karten», Pi-Fenster ☰) zeigt derselbe Baustein:
+# MWK.toggles(box, gruppen) - Gruppen mit Symbol und Überschrift, pro Gruppe «alle an / aus», Chips mit Symbol und Namen, zwei Spalten
+# auf breiten Bildschirmen, eine auf dem Handy (Daniel 01.11.2026, zweiter Screenshot).
+# Pi-Fenster: App._kopf_tk() (Knöpfe) und App._view_menu() (Liste) unten; Simulator: simulator3d/scripts/kopf.gd.
+
+MWK_KOPF = UI_GEMEINSAM["kopf"]
+KOPF_IDS = [b["id"] for b in MWK_KOPF["knoepfe"]]
+
+# the chips of the status line: id -> (symbol of the chip, group of the list) - the same table for web (b-…) and Pi window (b_…)
+KOPF_CHIPS = {
+    "title": ("🏷", "other"), "hdr_buttons": ("🔘", "other"),
+    "b-arm": ("🛡", "protect"), "b-person": ("🧍", "protect"), "b-count": ("🔢", "protect"), "b-obj": ("📦", "protect"),
+    "b-pres": ("🏠", "protect"), "b-sched": ("🗓", "protect"), "b-lock": ("🔐", "protect"), "b-sec": ("⚠", "protect"),
+    "b-mode": ("🎛", "protect"), "b-camp": ("⛺", "protect"),
+    "b-rec": ("⏺", "camera"), "b-tl": ("⏱", "camera"), "b-src": ("🎞", "camera"), "b-therm": ("🌡", "camera"), "b-pat": ("🔄", "camera"),
+    "b-audio": ("🎤", "camera"), "b-fps": ("🎬", "camera"), "b-auto": ("🎚", "camera"),
+    "b-batt": ("🔋", "power"), "b-eco": ("🍃", "power"), "b-turbo": ("🚀", "power"), "b-pwr": ("⚡", "power"), "b-cpu": ("🖥", "power"),
+    "b-lights": ("💡", "env"), "b-env": ("🌡", "env"), "b-rain": ("🌧", "env"), "b-wind": ("💨", "env"), "b-light": ("☀", "env"),
+    "b-hs": ("📡", "net"), "b-remote": ("🌐", "net"), "b-conn": ("🔗", "net"), "b-wifi": ("📶", "net"), "b-view": ("👁", "net"),
+    "b-relay": ("🔌", "other"), "b-health": ("🩺", "other"), "b-update": ("⬆", "other"),
+}
+KOPF_CHIP_ALIAS = {"b_objects": "b-obj", "b_patrol": "b-pat", "b_relays": "b-relay"}   # Pi window keys that differ
+KOPF_PANELS = {      # the cards / panels (☰ «Bereiche», ◫ Ansicht → Karten, Pi window «Panels»)
+    "controls": "🎮", "simctl": "🧪", "sidebar": "⚙", "protect": "⛺", "tune": "🎯", "health": "🩺", "system": "🖥", "log": "📜",
+    "wifi": "📶", "source": "🎞", "schedule": "🗓", "relayset": "🔌", "report": "🌙", "guest": "👋", "batt": "🔋", "walktest": "🚶",
+    "lvsetup": "🧰", "whatwas": "❓", "simtile": "🧪", "weather": "🌦", "cpu": "🖥", "settings_line": "⚙",
+}
+
+
+def kopf_chip(key):
+    """(symbol, group) of a chip; the Pi window writes b_arm, the web b-arm"""
+    k = KOPF_CHIP_ALIAS.get(key, key)
+    return KOPF_CHIPS.get(k) or KOPF_CHIPS.get(k.replace("_", "-")) or ("•", "other")
+
+
+# key = English text: (Deutsch, Français, Italiano, Rumantsch) - the names in the lists (before: «Armed / disarmed» English in German)
+_HX_KOPF = {
+    "Title": ("Titel", "Titre", "Titolo", "Titel"),
+    "Armed / disarmed": ("Schutz-Zustand", "État de la protection", "Stato della protezione", "Stadi da la protecziun"),
+    "Persons": ("Personen", "Personnes", "Persone", "Persunas"),
+    "Persons total": ("Personen gesamt", "Personnes au total", "Persone in totale", "Persunas en total"),
+    "Objects": ("Objekte", "Objets", "Oggetti", "Objects"),
+    "Recording": ("Aufnahme", "Enregistrement", "Registrazione", "Registraziun"),
+    "Camping profile": ("Camping-Profil", "Profil camping", "Profilo campeggio", "Profil da camping"),
+    "Power saving": ("Stromsparmodus", "Économie d’énergie", "Risparmio energetico", "Spargnar energia"),
+    "Mode": ("Modus", "Mode", "Modalità", "Modus"),
+    "Power mode": ("Powermodus", "Mode puissance", "Modalità potenza", "Modus da forza"),
+    "Battery": ("Akku", "Batterie", "Batteria", "Accu"),
+    "Operator mode": ("Bedienmodus", "Mode opérateur", "Modalità operatore", "Modus d’operatur"),
+    "Timelapse": ("Zeitraffer", "Accéléré", "Timelapse", "Accelerà"),
+    "Lights": ("Licht", "Éclairage", "Luci", "Glisch"),
+    "Outside temperature": ("Aussentemperatur", "Température extérieure", "Temperatura esterna", "Temperatura dadora"),
+    "Self-check": ("Selbstcheck", "Autodiagnostic", "Autodiagnosi", "Autocontroll"),
+    "Thermal camera": ("Wärmebild", "Caméra thermique", "Termocamera", "Camera termica"),
+    "Patrol / tracking": ("Patrouille / Verfolgen", "Patrouille / suivi", "Pattuglia / inseguimento", "Patrulla / persequitar"),
+    "Patrol": ("Patrouille", "Patrouille", "Pattuglia", "Patrulla"),
+    "Own Wi-Fi (hotspot)": ("Eigenes WLAN (Hotspot)", "Wi-Fi propre (hotspot)", "Wi-Fi proprio (hotspot)", "Agen WLAN (hotspot)"),
+    "Remote access": ("Fernzugriff", "Accès à distance", "Accesso remoto", "Access a distanza"),
+    "Schedule": ("Zeitplan", "Horaire", "Orario", "Urari"),
+    "Relays": ("Relais", "Relais", "Relè", "Relais"),
+    "Microphone": ("Mikrofon", "Microphone", "Microfono", "Microfon"),
+    "Rain": ("Regen", "Pluie", "Pioggia", "Plievgia"),
+    "Wind": ("Wind", "Vent", "Vento", "Vent"),
+    "Light level": ("Helligkeit", "Luminosité", "Luminosità", "Clerezza"),
+    "Presence": ("Anwesenheit", "Présence", "Presenza", "Preschientscha"),
+    "Security warning": ("Sicherheitswarnung", "Avertissement de sécurité", "Avviso di sicurezza", "Avertiment da segirezza"),
+    "Power supply / memory": ("Stromversorgung / Speicher", "Alimentation / mémoire", "Alimentazione / memoria", "Alimentaziun / memoria"),
+    "Video source": ("Videoquelle", "Source vidéo", "Sorgente video", "Funtauna da video"),
+    "Connection": ("Verbindung", "Connexion", "Connessione", "Connexiun"),
+    "Wi-Fi": ("WLAN", "Wi-Fi", "Wi-Fi", "WLAN"),
+    "Viewers": ("Zuschauer", "Spectateurs", "Spettatori", "Aspectaturs"),
+    "CPU": ("CPU", "CPU", "CPU", "CPU"),
+    "FPS": ("Bilder/s", "Images/s", "Fotogrammi/s", "Maletgs/s"),
+    "New version": ("Neue Version", "Nouvelle version", "Nuova versione", "Nova versiun"),
+    "Auto-tune": ("Auto-Abgleich", "Réglage automatique", "Regolazione automatica", "Adattaziun automatica"),
+    "Header buttons": ("Kopf-Knöpfe", "Boutons de l’en-tête", "Pulsanti dell’intestazione", "Buttuns dal chau"),
+    "Header": ("Kopfzeile", "En-tête", "Intestazione", "Lingia dal chau"),
+    "Panels": ("Bereiche", "Panneaux", "Pannelli", "Secziuns"),
+    "Settings": ("Einstellungen", "Réglages", "Impostazioni", "Parameters"),
+    "Settings sections": ("Einstellungs-Abschnitte", "Sections des réglages", "Sezioni delle impostazioni", "Secziuns dals parameters"),
+    "Controls": ("Steuerung", "Commandes", "Comandi", "Commonds"),
+    "Simulator control": ("Simulator-Steuerung", "Commande du simulateur", "Controllo del simulatore", "Commond dal simulatur"),
+    "Settings panel": ("Einstellungsbereich", "Panneau des réglages", "Pannello impostazioni", "Secziun dals parameters"),
+    "Camping / protection": ("Camping / Schutz", "Camping / protection", "Campeggio / protezione", "Camping / protecziun"),
+    "Improve detection": ("Erkennung verbessern", "Améliorer la détection", "Migliorare il rilevamento", "Meglierar l’identificaziun"),
+    "System": ("System", "Système", "Sistema", "Sistem"),
+    "Event log": ("Ereignisprotokoll", "Journal des événements", "Registro eventi", "Protocol dals eveniments"),
+    "Wi-Fi / hotspot": ("WLAN / Hotspot", "Wi-Fi / hotspot", "Wi-Fi / hotspot", "WLAN / hotspot"),
+    "Relay settings": ("Relais-Einstellungen", "Réglages des relais", "Impostazioni relè", "Parameters dals relais"),
+    "Night report": ("Nachtbericht", "Rapport de nuit", "Rapporto notturno", "Rapport da notg"),
+    "Guest access": ("Gastzugang", "Accès invité", "Accesso ospite", "Access per giasts"),
+    "Walk test": ("Gehtest", "Test de marche", "Test di camminata", "Test da chaminar"),
+    "Set up": ("Einrichten", "Configurer", "Configurare", "Configurar"),
+    "What was that?": ("Was war das?", "C’était quoi ?", "Cos’era?", "Tge era quai?"),
+    "Simulator tile": ("Simulator-Kachel", "Tuile du simulateur", "Riquadro del simulatore", "Plattina dal simulatur"),
+    "Weather": ("Wetter", "Météo", "Meteo", "Aura"),
+    "System · CPU": ("System · CPU", "Système · CPU", "Sistema · CPU", "Sistem · CPU"),
+    "Settings status": ("Einstellungs-Status", "État des réglages", "Stato delle impostazioni", "Stadi dals parameters"),
+    "Cards": ("Karten", "Cartes", "Schede", "Cartas"),
+    "Full screen is not possible in this browser – tip: add MoveEye to the home screen.":
+        ("Vollbild geht in diesem Browser nicht – Tipp: MoveEye zum Home-Bildschirm hinzufügen.",
+         "Le plein écran n’est pas possible dans ce navigateur – astuce : ajoute MoveEye à l’écran d’accueil.",
+         "Lo schermo intero non è possibile in questo browser – suggerimento: aggiungi MoveEye alla schermata Home.",
+         "Maletg entir n’è betg pussaivel en quest navigatur – tip: agiuntar MoveEye al visur da partenza."),
+    "Show the header": ("Kopf ausklappen", "Afficher l’en-tête", "Mostra l’intestazione", "Mussar il chau"),
+    "Light / dark / red light": ("Hell / Dunkel / Rotlicht", "Clair / sombre / lumière rouge", "Chiaro / scuro / luce rossa", "Cler / stgir / glisch cotschna"),
+    "Feedback to the developer": ("Rückmeldung an den Entwickler", "Retour au développeur", "Feedback allo sviluppatore", "Resposta al sviluppader"),
+    "Print": ("Drucken", "Imprimer", "Stampa", "Stampar"),
+}
+for _b in MWK_KOPF["knoepfe"] + MWK_KOPF["listen"]:
+    _x = _b["texts"]
+    _HX_KOPF.setdefault(_x["en"], (_x["de"], _x["fr"], _x["it"], _x["rm"]))
+for _k, _x in list(MWK_KOPF["menue"].items()) + list(MWK_KOPF["alle"].items()):
+    _HX_KOPF.setdefault(_x["en"], (_x["de"], _x["fr"], _x["it"], _x["rm"]))
+for _k, _v in _HX_KOPF.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+# the main page has its own German dictionary (I18N.de): the names of the lists there too (only what it does not know yet)
+WEB_PAGE = WEB_PAGE.replace("</body>", "<script>(function(){var X=" + json.dumps({_k: _v[0] for _k, _v in _HX_KOPF.items()}, ensure_ascii=False)
+                            + ";for(var k in X)if(!(k in I18N.de))I18N.de[k]=X[k];})();</script></body>", 1)
+
+
+# the manual (HELP_PAGE of 540): one paragraph in «Tipps & Tricks», German and English
+for _a, _b in (('<section id="tips" data-icon="🧭" class="tips"><h2>Tipps &amp; Tricks</h2>',
+                "<p><b>Der Kopf ist überall gleich:</b> Oben rechts stehen auf jeder Seite dieselben Knöpfe in derselben Reihenfolge: "
+                "? Hilfe · 🔔 Ton · ↻ zurück zu Live und neu laden · DE Sprache · ☰ Menü · ⛶ Vollbild · ▲ Kopf einklappen · 🛠 Entwickler "
+                "(nur für den Besitzer mit eingeschaltetem Entwickler-Bereich). Auf dem Handy stehen die Knöpfe ab «Sprache» im ☰-Menü. "
+                "Was nur eine Seite hat (z. B. 🖨 Drucken) und Hell / Dunkel / Rotlicht findest du im ☰-Menü unter «Diese Seite» bzw. "
+                "«Allgemein». Ein- und Ausblenden: Chips mit Symbol, nach Gruppen geordnet, pro Gruppe «alle an / aus».</p>"),
+               ('<section id="tips" data-icon="🧭" class="tips"><h2>Tips &amp; tricks</h2>',
+                "<p><b>The header is the same everywhere:</b> at the top right every page has the same buttons in the same order: "
+                "? help · 🔔 sound · ↻ back to Live and reload · DE language · ☰ menu · ⛶ full screen · ▲ fold the header · 🛠 developer "
+                "(only for the owner with the developer area on). On a phone the buttons from «language» on are in the ☰ menu. "
+                "What only one page has (e.g. 🖨 print) and light / dark / red light are in the ☰ menu under «This page» or «General». "
+                "Show and hide: chips with a symbol, sorted in groups, «all on / off» per group.</p>")):
+    if _a in HELP_PAGE:
+        HELP_PAGE = HELP_PAGE.replace(_a, _a + _b, 1)
+
+
+def kopf_dev_ok(role=None):
+    """🛠 only with the developer area on and for the owner (admin, not in operator mode) - the same rule as the long press (639s)"""
+    try:
+        return bool(dev_available()) and nacht_may(_nacht_role() if role is None else role)
+    except Exception:
+        return False
+
+
+def kopf_tx():
+    """texts of the header and the lists in de / fr / it / rm (English = the key)"""
+    keys = set(_HX_KOPF)
+    out = {"de": {k: DE.get(k, k) for k in keys}}
+    for L in ("fr", "it", "rm"):
+        out[L] = {k: TRX[L].get(k) or (DE.get(k, k) if L == "rm" else k) for k in keys}
+    return out
+
+
+def kopf_web_data():
+    gems = {g["id"]: g.get("emoji", "") for g in UI_GEMEINSAM.get("groups", [])}
+    return {"ids": KOPF_IDS, "texts": {b["id"]: b["texts"]["en"] for b in MWK_KOPF["knoepfe"]}, "px": MWK_KOPF.get("schmal_px", 760),
+            "menu": {k: v["en"] for k, v in MWK_KOPF["menue"].items()}, "all": {k: v["en"] for k, v in MWK_KOPF["alle"].items()},
+            "lists": [[b["id"], b["sym"], b["texts"]["en"]] for b in MWK_KOPF["listen"]],
+            "chips": {k: list(v) for k, v in KOPF_CHIPS.items()}, "panels": KOPF_PANELS, "groups": gems}
+
+
+# the drawn symbols (same stroke as the other header buttons of 450: 24 × 24, stroke 2)
+_KSVG = lambda d: '<svg viewBox="0 0 24 24" aria-hidden="true">' + d + '</svg>'
+KOPF_SVG = {
+    "menu": _KSVG('<path d="M4 7h16M4 12h16M4 17h16"/>'),
+    "fs": _KSVG('<path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/>'),
+    "dev": _KSVG('<path d="M14.5 6.5a4 4 0 0 0 5 5L21 13l-8 8-3-3 8-8z" transform="translate(-2 -2)"/><path d="M4 20l6-6"/>'),
+}
+
+KOPF_CSS = _zd('639t_kopf/KOPF_CSS', "")
+
+KOPF_JS = _zd('639t_kopf/KOPF_JS', "")
+
+
+def _kopf_ctl(inner, active):
+    """the inside of <span class="hdr-ctl">: the page's buttons stay (the script sorts them), plus ?, ☰, ⛶ and 🛠 where missing"""
+    tx = {b["id"]: b["texts"]["en"] for b in MWK_KOPF["knoepfe"]}
+    inner = inner.replace('id="btn-view"', 'id="btn-view" data-mwk="menu"', 1)
+    out = '<button class="sec ic" type="button" id="mwk-help" title="' + tx["help"] + '">?</button>' + inner
+    if 'id="btn-view"' not in inner:
+        out += '<button class="sec ic" type="button" id="mwk-menu-btn" title="' + tx["menu"] + '">' + KOPF_SVG["menu"] + '</button>'
+    if 'id="btn-fs"' not in inner:
+        out += '<button class="sec ic" type="button" id="mwk-fs" title="' + tx["fs"] + '">' + KOPF_SVG["fs"] + '</button>'
+    if kopf_dev_ok():
+        out += '<a class="btn sec ic" id="mwk-dev" href="/settings?open=grp:dev" title="' + tx["dev"] + '">' + KOPF_SVG["dev"] + '</a>'
+    return out
+
+
+_KOPF_RE = re.compile(r'(<header\b.*?<span class="hdr-ctl)(">)(.*?)(</span>\s*</header>)', re.S)
+_KOPF_BADGES = re.compile(r'(?:\s*<span class="badge[^"]*"[^>]*>[^<]*</span>)+')
+_render_page_before_kopf = render_page
+
+
+# wraps: render_page
+def render_page(page, active):
+    """+ 639t: the one header (fixed buttons, ☰ with the page's own buttons, the lists as chips) on every page with a header"""
+    out = _render_page_before_kopf(page, active)
+    m = _KOPF_RE.search(out)
+    if not m:
+        return out
+    head = m.group(1)
+    if 'class="chips"' not in head:          # a page with its own badges (Aufnahmen: count, memory, ● REC): into the status line like Live,
+        head = _KOPF_BADGES.sub(lambda b: '<span class="chips mwk-chips">' + b.group(0) + '</span>', head, count=1)   # the buttons stay in line 1
+    out = out[:m.start()] + head + ' mwk' + m.group(2) + _kopf_ctl(m.group(3), active) + m.group(4) + out[m.end():]
+    out = out.replace("</head>", KOPF_CSS + "</head>", 1)
+    tag = ("<script>window.MWK_DATA=" + json.dumps(kopf_web_data(), ensure_ascii=False).replace("</", "<\\/")
+           + ";window.MWK_TX=" + json.dumps(kopf_tx(), ensure_ascii=False).replace("</", "<\\/") + ";</script>" + KOPF_JS)
+    i = out.rfind("</body>")
+    return out[:i] + tag + out[i:] if i >= 0 else out + tag
+
+
+# ---- Pi window (Tkinter): the same buttons in the same order, the lists as chips ---------------------------------------------
+def _kopf_tk(self, top):
+    """the buttons on the right of the header: ? · ♪ · ↻ · DE · ☰ · ⇱ · ▲ · ⚒ (left to right, «tk» of ui_gemeinsam.json); the buttons
+    of the page (✉ messages, ◷ timeline, ? manual, ◐ light / dark / red light) are in ☰"""
+    tx = {b["id"]: tr(b["texts"]["en"]) for b in MWK_KOPF["knoepfe"]}
+    sy = {b["id"]: b.get("tk", b["sym"]) for b in MWK_KOPF["knoepfe"]}
+    ctl = tk.Frame(top, bg=C["bg"]); ctl.pack(side="right")
+    self._kopf_ctl = ctl
+    small = bool(self._lay[0]) and self._win_w() < MWK_KOPF.get("schmal_px", 760)
+    row = []
+    row.append(("help", self._ibtn(ctl, sy["help"], lambda: self._g2_tour(self.tab, True), tx["help"] + " – " + tr("Tour of this page"))))
+    snd = CFG.get("siren_on") not in (False, "off", None)
+    row.append(("sound", self._ibtn(ctl, sy["sound"], self._kopf_sound, tx["sound"] + " – " + tr("Loudspeaker"), on=snd)))
+    row.append(("reload", self._ibtn(ctl, sy["reload"], self._kopf_reload, tx["reload"])))
+    if not small:
+        lb = self._ibtn(ctl, cur_lang().upper(), lambda: None, tx["lang"] + " (Ctrl+L)")
+        lb.bind("<Button-1>", lambda e: self.toggle_lang(lb.winfo_rootx(), lb.winfo_rooty() + lb.winfo_height()))
+        lb.config(font=("DejaVu Sans", 9, "bold")); row.append(("lang", lb))
+    vb = self._ibtn(ctl, sy["menu"], lambda: None, tx["menu"])
+    vb.bind("<Button-1>", lambda e: self._view_menu(vb.winfo_rootx(), vb.winfo_rooty() + vb.winfo_height()))
+    row.append(("menu", vb))
+    if not small:
+        self.b_fs = self._ibtn(ctl, sy["fs"], self.toggle_fullscreen, tx["fs"] + " (F11)", on=self.is_fullscreen); row.append(("fs", self.b_fs))
+        row.append(("fold", self._ibtn(ctl, "▼" if getattr(self, "_kopf_folded", False) else sy["fold"], self._kopf_fold, tx["fold"])))
+        if kopf_dev_ok("admin"):
+            row.append(("dev", self._ibtn(ctl, sy["dev"], self._kopf_dev, tx["dev"])))
+    for i, (_k, b) in enumerate(row):              # left to right in the order of ui_gemeinsam.json, all the same size
+        b.config(width=3); b.pack(side="left", padx=(0 if i == 0 else 6, 0))
+    self._kopf_row = [k for k, _b in row]
+    return ctl
+
+
+def _kopf_open(self, secs):
+    """Settings tab with these groups / parts open (like the long press on the logo, 639s)"""
+    self.open_secs.update(secs)
+    if self.tab != "settings":
+        self._tab("settings")
+    else:
+        self._rebuild()
+
+
+def _kopf_sound(self):
+    """♪ sound: the window has no own alarm sound - it opens Settings → Light & sound (loudspeaker, siren), no switch changes"""
+    self._kopf_open({"grp:lightsound", "sub:Loudspeaker"})
+
+
+def _kopf_reload(self):
+    """↻ first the tab Live, then build the window anew (like the web: Live first, then reload)"""
+    self.tab = "live"
+    self._rebuild()
+
+
+def _kopf_fold(self):
+    """▲ fold the header: tabs and status line away (one line); ▼ opens it again"""
+    self._kopf_folded = not getattr(self, "_kopf_folded", False)
+    self._rebuild()
+
+
+def _kopf_dev(self):
+    """⚒ Settings → Developer (same target as the long press on the logo, 639s)"""
+    self._kopf_open({"grp:dev", "sub:Developer"})
+
+
+def _kopf_overflow(self):
+    """the fixed buttons that went into ☰ on a small window (from «Language» on, same order)"""
+    have = set(getattr(self, "_kopf_row", []))
+    tx = {b["id"]: tr(b["texts"]["en"]) for b in MWK_KOPF["knoepfe"]}
+    out = []
+    if "lang" not in have:
+        out.append((cur_lang().upper(), tx["lang"], lambda: self.toggle_lang()))
+    if "fs" not in have:
+        out.append(("⇱", tx["fs"], self.toggle_fullscreen))
+    if "fold" not in have:
+        out.append(("▲", tx["fold"], self._kopf_fold))
+    if "dev" not in have and kopf_dev_ok("admin"):
+        out.append(("⚒", tx["dev"], self._kopf_dev))
+    return out
+
+
+def _kopf_view_menu(self, x=None, y=None):
+    """☰ of the window: header buttons that did not fit, this page's buttons, general - and the lists to show / hide as chips
+    in groups with symbol and «all on / off» (the same look as the web page)"""
+    old = getattr(self, "_kopf_pop", None)
+    if old is not None:
+        try:
+            old.destroy()
+        except Exception:
+            pass
+        self._kopf_pop = None
+        return
+    w = tk.Toplevel(self.root); w.wm_overrideredirect(True); w.configure(bg=C["line"]); self._kopf_pop = w
+    outer = tk.Frame(w, bg=C["panel"]); outer.pack(fill="both", expand=True, padx=1, pady=1)
+    cv = tk.Canvas(outer, bg=C["panel"], highlightthickness=0, width=600)
+    sb = ttk.Scrollbar(outer, orient="vertical", command=cv.yview); cv.configure(yscrollcommand=sb.set)
+    sb.pack(side="right", fill="y"); cv.pack(side="left", fill="both", expand=True)
+    body = tk.Frame(cv, bg=C["panel"], padx=12, pady=8); cv.create_window(0, 0, window=body, anchor="nw")
+
+    def close(_e=None):
+        try:
+            w.destroy()
+        except Exception:
+            pass
+        self._kopf_pop = None
+
+    def h3(txt):
+        tk.Label(body, text=txt.upper(), bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 8, "bold")).pack(anchor="w", pady=(8, 4))
+
+    def rows(items):
+        f = tk.Frame(body, bg=C["panel"]); f.pack(fill="x")
+        for i, (ic, lab, fn) in enumerate(items):
+            b = tk.Label(f, text=f"{ic}  {lab}", bg=C["field"], fg=C["txt"], font=("DejaVu Sans", 10), anchor="w", padx=10, pady=6,
+                         cursor="hand2", highlightthickness=1, highlightbackground=C["line"])
+            b.grid(row=i // 2, column=i % 2, sticky="ew", padx=(0, 6), pady=(0, 6)); f.columnconfigure(i % 2, weight=1)
+            b.bind("<Button-1>", lambda e, c=fn: (close(), c()))
+    mn = {k: tr(v["en"]) for k, v in MWK_KOPF["menue"].items()}
+    ov = self._kopf_overflow()
+    if ov:
+        h3(mn["head"]); rows(ov)
+    page = [("✉", tr("Message list"), self._messages_win), ("◷", tr("Night timeline"), lambda: tk_timeline_win(self)),
+            ("?", tr("Manual"), self._open_help), ("⚙", tr("Settings") + "   (Ctrl+B)", self.toggle_sidebar)]
+    if self.tab == "live":
+        page.append(("◫", tr("View of the live page …"), self._tkv_dialog))
+    h3(mn["page"]); rows(page)
+    h3(mn["general"]); rows([("◐", tr("Light / dark / red light"), self.toggle_theme), ("◉", tr("Show all"), self.show_all)])
+    # the lists: the chips of the header in groups, then the panels, then the settings sections
+    lists = {lid: (sym, tr(en)) for lid, sym, en in ((b["id"], b["sym"], b["texts"]["en"]) for b in MWK_KOPF["listen"])}
+    grp = {lid: [] for lid in lists}
+    for g, key, label in VIEW_ITEMS:
+        if g == "Header":
+            ic, gid = kopf_chip(key)
+            grp.setdefault(gid, []).append((ic, key, label))
+    blocks = [(lists[g][0], lists[g][1], grp[g]) for g in lists if grp.get(g)]
+    blocks.append(("▦", tr("Panels"), [(KOPF_PANELS.get(k, "▦"), k, l) for g, k, l in VIEW_ITEMS if g == "Panels"]))
+    blocks.append(("⚙", tr("Settings sections"), [("⚙", k, l) for g, k, l in VIEW_ITEMS if g == "Settings sections"]))
+    h3(tr("Header") + " · " + tr("Panels") + " · " + tr("Settings"))
+    grid = tk.Frame(body, bg=C["panel"]); grid.pack(fill="x")
+    for n, (gic, gtitle, items) in enumerate(blocks):
+        box = tk.Frame(grid, bg=C["field"], highlightthickness=1, highlightbackground=C["line"], padx=8, pady=6)
+        box.grid(row=n // 2, column=n % 2, sticky="nsew", padx=(0, 8), pady=(0, 8)); grid.columnconfigure(n % 2, weight=1, uniform="k")
+        hd = tk.Frame(box, bg=C["field"]); hd.pack(fill="x")
+        tk.Label(hd, text=gic, bg=C["field"], fg=C["txt"], font=("DejaVu Sans", 12)).pack(side="left")
+        tk.Label(hd, text=gtitle, bg=C["field"], fg=C["txt"], font=("DejaVu Sans", 9, "bold")).pack(side="left", padx=(6, 0))
+        allb = tk.Label(hd, bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 8), padx=8, pady=2, cursor="hand2",
+                        highlightthickness=1, highlightbackground=C["line"]); allb.pack(side="right")
+        cs = tk.Frame(box, bg=C["field"]); cs.pack(fill="x", pady=(6, 0))
+        chips = []
+
+        def paint(chips=chips, allb=allb):
+            for c, k in chips:
+                on = self.is_shown(k)
+                c.config(bg=C["acc"] if on else C["panel"], fg="#ffffff" if on else C["mut"])
+            allon = all(self.is_shown(k) for _c, k in chips)
+            allb.config(text=tr(MWK_KOPF["alle"]["off" if allon else "on"]["en"]))
+        for i, (ic, k, lab) in enumerate(items):
+            c = tk.Label(cs, text=f"{ic} {tr(lab)}", font=("DejaVu Sans", 9, "bold"), padx=8, pady=3, cursor="hand2",
+                         highlightthickness=1, highlightbackground=C["line"])
+            c.grid(row=i // 2, column=i % 2, sticky="w", padx=(0, 5), pady=(0, 5))
+            c.bind("<Button-1>", lambda e, k=k, p=paint: (self.set_hidden(k, self.is_shown(k)), p()))
+            chips.append((c, k))
+
+        def all_(_e=None, chips=chips, paint=paint):
+            v = not all(self.is_shown(k) for _c, k in chips)
+            for _c, k in chips:
+                if self.is_shown(k) != v:
+                    self.set_hidden(k, not v)
+            paint()
+        allb.bind("<Button-1>", all_)
+        paint()
+    body.update_idletasks()
+    hh = min(body.winfo_reqheight(), max(240, self.root.winfo_height() - 80))
+    cv.configure(height=hh, scrollregion=(0, 0, body.winfo_reqwidth(), body.winfo_reqheight()), width=body.winfo_reqwidth())
+    if x is None:
+        x, y = self.root.winfo_pointerx(), self.root.winfo_pointery()
+    wx = max(0, min(int(x) - body.winfo_reqwidth() + 40, self.root.winfo_rootx() + self.root.winfo_width() - body.winfo_reqwidth() - 20))
+    w.geometry(f"+{wx}+{int(y) + 4}")
+    cv.bind_all("<MouseWheel>", lambda e: cv.yview_scroll(-1 if e.delta > 0 else 1, "units") if w.winfo_exists() else None)
+    w.bind("<Escape>", close); w.focus_set()
+    w.bind("<FocusOut>", lambda e: w.after(150, lambda: close() if w.winfo_exists() and w.focus_get() is None else None))
+
+
+App._kopf_tk = _kopf_tk
+App._kopf_sound = _kopf_sound
+App._kopf_reload = _kopf_reload
+App._kopf_fold = _kopf_fold
+App._kopf_dev = _kopf_dev
+App._kopf_open = _kopf_open
+App._kopf_overflow = _kopf_overflow
+App._view_menu_alt = App._view_menu              # the old cascade menu (570) - everything of it is in the new ☰ too
+# wraps: App._view_menu
+App._view_menu = _kopf_view_menu
+
+
+def _kopf_selftest():
+    ids = [b["id"] for b in MWK_KOPF["knoepfe"]]
+    assert ids == ["help", "sound", "reload", "lang", "menu", "fs", "fold", "dev"], "639t: order of the header buttons"
+    assert MWK_KOPF["schmal_ab"] in ids, "639t: schmal_ab"
+    for b in MWK_KOPF["knoepfe"] + MWK_KOPF["listen"]:
+        assert all(b["texts"].get(L) for L in ("en", "de", "fr", "it", "rm")), "639t: text missing " + b["id"]
+    pg = "<html><head></head><body><header><h1>MoveEye</h1><!--NAV--><span class=\"hdr-ctl\">\n<button class=\"sec\" onclick=\"window.print()\" title=\"Print\">🖨</button>\n" \
+         "<button class=\"sec\" id=\"btn-theme\">x</button><button class=\"sec\" id=\"btn-lang\">DE</button>\n</span>\n</header><main></main></body></html>"
+    p = render_page(pg, "rec")
+    assert 'class="hdr-ctl mwk"' in p and 'id="mwk-help"' in p and 'id="mwk-menu-btn"' in p and 'id="mwk-fs"' in p, "639t: fixed buttons missing"
+    assert p.count('id="mwk-css"') == 1 and "window.MWK_DATA=" in p and "🖨" in p, "639t: page button lost"
+    m = render_page(WEB_PAGE, "live")
+    assert 'id="mwk-menu-btn"' not in m and 'id="btn-view"' in m and 'id="mwk-fs"' not in m, "639t: main page keeps its ☰ and ⛶"
+    assert "mwbar" in p, "639t: the bar of 639o stays"
+    for k, (de, fr, it, rm) in _HX_KOPF.items():
+        assert DE.get(k) and TRX["fr"].get(k) and TRX["it"].get(k) and TRX["rm"].get(k), "639t: text missing: " + k
+    keep = {k: CFG.get(k) for k in ("dev_area", "lock_on")}
+    try:
+        CFG["dev_area"] = False
+        assert 'id="mwk-dev"' not in render_page(pg, "rec"), "639t: 🛠 without the developer area"
+        CFG["dev_area"] = True; CFG["lock_on"] = False
+        assert 'id="mwk-dev"' in render_page(pg, "rec") and not kopf_dev_ok("view"), "639t: 🛠 only for the owner"
+    finally:
+        CFG.update(keep)
+    for g, k, _l in VIEW_ITEMS:
+        if g == "Header":
+            assert kopf_chip(k)[0] != "•", "639t: no symbol for " + k
+    return "%d buttons, %d list groups" % (len(ids), len(MWK_KOPF["listen"]))
+
+
+SELFTEST_EXTRA.append(("One header (639t)", _kopf_selftest))
 # ----------------------------------------------------------------------------
 # real-erk-e3 (31.10.2026): die Push-Nachricht «Etwas Grosses am Boden» (Titel und Text) in de / fr / it / rm.
 # ----------------------------------------------------------------------------

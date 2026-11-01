@@ -590,6 +590,12 @@ body.lv #vcard>:not(.vwrap){zoom:var(--lv-ui,1)}
     MN.appendChild(E("h3", "", T("Cards")));
     const sw = document.getElementById("lv-sim");
     const list = cards().filter(c => !c.classList.contains("lvdup")).concat(sw && !document.getElementById("lv-simw").hidden ? [sw] : []);
+    if (window.MWK && MWK.toggles) {     // 639t: the same chips as in ☰ (symbol of the card, «all on / off», 2 columns when wide)
+      MN.classList.add("mwk-wide");
+      const icOf = c => ((window.MWK_DATA || {}).panels || {})[keyOf(c)] || (((c.querySelector("summary, h2, h3") || {}).textContent || "").match(/^\s*((?:\p{Extended_Pictographic}|[☀-➿])\uFE0F?)/u) || [])[1] || "▦";
+      MWK.toggles(MN, [{icon: "▦", title: T("Cards"), items: list.map(c => { const k = keyOf(c); return {icon: icOf(c), label: labelOf(c), on: () => !isHid(k),
+        set: v => { setHidden(k, !v); V.preset = ""; save(); fit(); }}; })}]);
+    } else
     list.forEach(c => { const k = keyOf(c); const row = E("label", "lvrow"), cb = E("input"); cb.type = "checkbox";
       cb.checked = !isHid(k);
       cb.onchange = () => { setHidden(k, !cb.checked); V.preset = ""; save(); fit(); menuBuild(); };

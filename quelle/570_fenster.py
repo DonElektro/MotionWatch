@@ -1169,22 +1169,10 @@ class App:
             self.tab_btns[tid] = b
         self._paint_tabs()
         if show("hdr_buttons"):
-            ctl = tk.Frame(top, bg=C["bg"]); ctl.pack(side="right")
-            lb = self._ibtn(ctl, cur_lang().upper(), lambda: None, tr("Language") + " (Ctrl+L)")
-            lb.bind("<Button-1>", lambda e: self.toggle_lang(lb.winfo_rootx(), lb.winfo_rooty() + lb.winfo_height()))
-            lb.config(width=3, font=("DejaVu Sans", 9, "bold")); lb.pack(side="right")
-            self._ibtn(ctl, "◐", self.toggle_theme, tk_theme_tip(), on=bool(CFG.get("tk_night"))).pack(side="right", padx=(0, 6))   # Hell → Dunkel → Rotlicht (578)
-            self._ibtn(ctl, "✉", self._messages_win, tr("Message list")).pack(side="right", padx=(0, 6))     # 2.98.13
-            # 2.98.50 (Daniel): no 💬 in the header any more - feedback under System (see _feedback button below) and «About»
-            self._ibtn(ctl, "◷", lambda: tk_timeline_win(self), tr("Night timeline")).pack(side="right", padx=(0, 6))   # 2.98.14 (575)
-            self._ibtn(ctl, "?", lambda: self._g2_tour(self.tab, True), tr("Tour of this page")).pack(side="right", padx=(0, 6))   # 584
-            self.b_fs = self._ibtn(ctl, "⇱", self.toggle_fullscreen, tr("Fullscreen (F11)"), on=self.is_fullscreen)
-            self.b_fs.pack(side="right", padx=(0, 6))
-            vb = self._ibtn(ctl, "☰", lambda: None, tr("View") + " – " + tr("show / hide fields"))
-            vb.bind("<Button-1>", lambda e: self._view_menu(vb.winfo_rootx(), vb.winfo_rooty() + vb.winfo_height()))
-            vb.pack(side="right", padx=(0, 6))
-            self._ibtn(ctl, "?", self._open_help, tr("Manual") + "\n\n" + tr("Double-click video: video only · F11: fullscreen · Esc: back · Ctrl+B: settings panel · right-click video: show / hide fields")).pack(side="right", padx=(0, 6))
-        keys = [k for k in badge_keys if show(k)]
+            # 639t (Daniel 01.11.2026): the one header - ? · ♪ · ↻ · DE · ☰ · ⇱ · ▲ · ⚒ in this order like on every web page and in
+            # the simulator; ✉ messages, ◷ timeline, ? manual and ◐ light / dark / red light are in ☰ (nothing gone)
+            self._kopf_tk(top)
+        keys = [k for k in badge_keys if show(k)] if not getattr(self, "_kopf_folded", False) else []   # 639t: ▲ folded = one line
         if keys:
             self.badge_f = tk.Frame(head, bg=C["bg"], height=30); self.badge_f.pack(fill="x", pady=(8, 0))
             texts = {"b_person": tr("No person"), "b_count": f"{tr('Persons total')}: 0", "b_objects": f"0 {tr('objects')}",
@@ -1199,7 +1187,9 @@ class App:
                 self.badges["b_update"].bind("<Button-1>", lambda e: self._upd_new())
             self.badge_f.bind("<Configure>", self._flow)
             self.root.after(50, self._flow)
-        if small_:                                        # 2.98.14: on a small screen the 6 tabs get a row of their own
+        if getattr(self, "_kopf_folded", False):          # 639t: header folded - the tabs only behind ▼
+            pass
+        elif small_:                                      # 2.98.14: on a small screen the 6 tabs get a row of their own
             tabs.pack(fill="x", pady=(8, 0), before=self.badge_f if self.badge_f is not None else None)
         else:
             tabs.pack(side="left", padx=(18, 0), after=tl if show("title") else None)

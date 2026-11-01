@@ -84,7 +84,7 @@ body.videoonly #set-foot{display:none!important}
 @keyframes apulse{50%{box-shadow:0 0 0 6px rgba(255,59,59,.25)}}
 header .badge.q{display:none}
 header.hx .badge.q:not([hidden]):not(.vh){display:inline-flex}
-#btn-side,#btn-theme,#btn-lang,#btn-hdr{display:none}
+#btn-side,#btn-theme{display:none}   /* 639t: DE and ▲ are fixed header buttons again (☰ → «Allgemein»: ◉ Hell / Dunkel / Rotlicht) */
 header{transition:padding .2s}
 @media(max-width:760px){header h1{order:-2}header .hdr-ctl{order:-1}}
 /* 2.98.54: phone / narrow (same breakpoint as the header layout, wider screens already have one row): the status chips in ONE
@@ -1363,16 +1363,21 @@ function buildViewMenu() {
   const m = $("#viewmenu"); m.textContent = ""; const groups = {};
   const q = el("div", "vmq");
   const qb = (txt, fn) => { const b = el("button", "sec", txt); b.type = "button"; b.onclick = e => { e.stopPropagation(); fn(); buildViewMenu(); }; q.appendChild(b); };
-  qb({light: "☾ " + t("Dark theme"), dark: "◉ " + t("Red light view"), red: "☀ " + t("Light theme")}[themeStep()], toggleTheme);
-  qb("🌐 " + (LANGN[LANG] || "English") + " …", () => setTimeout(() => langMenu($("#btn-lang")), 0));
+  if (!window.MWK || !MWK.fill) {      // 639t: with the one header these three are its buttons (DE, ▲) and ☰ → «Allgemein» (◉)
+    qb({light: "☾ " + t("Dark theme"), dark: "◉ " + t("Red light view"), red: "☀ " + t("Light theme")}[themeStep()], toggleTheme);
+    qb("🌐 " + (LANGN[LANG] || "English") + " …", () => setTimeout(() => langMenu($("#btn-lang")), 0)); }
   qb((HIDDEN.has("sidebar") ? "◀ " : "▶ ") + t("Settings panel"), () => toggleHidden("sidebar"));
-  qb("▴ " + t("Hide header"), () => { const b = $("#btn-hdr"); if (b) b.click(); $("#viewmenu").hidden = true; });
+  if (!window.MWK || !MWK.fill) qb("▴ " + t("Hide header"), () => { const b = $("#btn-hdr"); if (b) b.click(); $("#viewmenu").hidden = true; });
   if (window.lvMenu) qb("◫ " + t("View of the live page …"), () => { $("#viewmenu").hidden = true; setTimeout(window.lvMenu, 0); });   // 2.98.26: live cards per device (536)
+  if (window.MWK && MWK.fill) { m.classList.add("mwk-wide"); MWK.fill(m); }   // 639t: the sections of the one header (narrow: DE ⛶ ▲ 🛠, this page, general)
   m.append(el("h3", "", t("Quick")), q);
   const vn = el("div", "mut", t("vm-device")); vn.style.cssText = "font-size:12px;margin:8px 0 0"; m.appendChild(vn);   // aufr: per device, like ◫ View (536)
   document.querySelectorAll("[data-view]").forEach(e => { if (window.lvMenu && e.closest("#lv-side,#lv-main")) return;
     (groups[e.dataset.vgroup] = groups[e.dataset.vgroup] || []).push(e); });
-  ["Header", "Panels", "Settings"].forEach(g => {
+  if (window.MWK && MWK.menuLists) {    // 639t (Daniel 01.11.2026): chips with the symbol of the chip, in groups with «all on / off», 2 columns
+    MWK.menuLists(m, ["Header", "Panels", "Settings"].reduce((a, g) => a.concat(groups[g] || []), []), k => !HIDDEN.has(k),
+      (k, v) => { if (v === HIDDEN.has(k)) toggleHidden(k); });
+  } else ["Header", "Panels", "Settings"].forEach(g => {
     if (!groups[g]) return;
     m.appendChild(el("h3", "", t(g)));
     groups[g].forEach(e => {

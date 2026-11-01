@@ -283,7 +283,8 @@ HEADER_JS = r"""
   const H = document.querySelector("header"); if (!H) return;
   const TX = {"Hide header": "Kopfzeile ausblenden", "Show header": "Kopfzeile einblenden"};
   const tx = s => (LANG === "de" && TX[s]) || (window.LX ? LX(s) : "") || (LANG === "rm" && TX[s]) || s;
-  const hb = el("button", "sec", "▴"); hb.type = "button"; hb.id = "btn-hdr";
+  const hb = el("button", "sec ic"); hb.type = "button"; hb.id = "btn-hdr";   // 639t: the drawn ▲ like the other header buttons
+  hb.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg>';
   const ctl = H.querySelector(".hdr-ctl"); (ctl || H).appendChild(hb);
   const sh = el("button", "sec", "▾"); sh.type = "button"; sh.id = "hdr-show"; document.body.appendChild(sh);
   function set(hidden, store) {
@@ -304,7 +305,7 @@ HEADER_JS = r"""
   const tx = s => (LANG === "de" && TX[s]) || (window.LX ? LX(s) : "") || (LANG === "rm" && TX[s]) || s;
   const app = (window.matchMedia && matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true;
   document.body.classList.toggle("appmode", app);
-  if (app) {
+  {                                   // 639t (Daniel 01.11.2026): ↻ is one of the fixed header buttons - on every page, not only in app mode
     const b = el("button", "sec ic"); b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg>'; b.type = "button"; b.id = "btn-reload";
     // reload: first ask the Pi to look for a new version (max. 8 s), then open Live and load it again - the update bar shows it
     b.onclick = async () => {

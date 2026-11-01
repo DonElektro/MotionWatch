@@ -4765,6 +4765,12 @@ func _control(d: Dictionary) -> Dictionary:
 		return Worlds.info(self)
 	elif a == "delete":
 		return {"ok": false, "error": "cannot be deleted"}
+	elif a == "kopf":                                  # 639t: the one header - state, or {"press": id} like a click
+		if kopf == null:
+			return {"ok": false, "error": "no header"}
+		if d.has("press"):
+			kopf.press(str(d["press"]), kopf.btns.get(str(d["press"]), kopf.btns.get("menu")))
+		return {"ok": true, "kopf": kopf.state()}
 	elif a == "lang":                                  # Sprachen (i18n.gd): switch / translate, for tests
 		return preload("res://scripts/i18n.gd").control(d)
 	elif a == "ui_width":                              # for tests: is the content of the panel wider than the panel?
@@ -5584,6 +5590,9 @@ func _build_ui() -> void:
 	ver.autowrap_mode = TextServer.AUTOWRAP_OFF
 	ver.size_flags_vertical = Control.SIZE_SHRINK_END
 	hdr.add_child(ver)
+	kopf = preload("res://scripts/kopf.gd").new()       # 639t (Daniel 01.11.2026): the one header - ? 🔔 ↻ DE ☰ ⛶ ▲ 🛠 like MoveEye
+	kopf.build(self)                                      # (list and texts: ui_gemeinsam.json «kopf»; narrow panel: from DE on in ☰)
+	hdr.add_child(kopf)
 	# Paket real-layout-leiste (Daniel 31.10.2026): the bar under the header like on every page of MoveEye (639o) -
 	# Einfach | Experte · Symbole farbig | schlicht · Beim Start: Nur Gruppen · Alle zuklappen / Nur Gruppen / Alle aufklappen
 	UI.icons_plain = ui_icons == "plain"
@@ -6069,6 +6078,7 @@ var kids: Control
 var kids_seg: Control
 var _mode_row: HBoxContainer
 var simple_seg: Control
+var kopf = null                        # kopf.gd: the one header (MoveEye 639t), buttons in the order of ui_gemeinsam.json
 var leiste: Node                       # real-layout-leiste: the bar (bedienleiste.gd), the same as on every page of MoveEye
 var ui_icons := "color"                # «Symbole farbig | schlicht» ("color" | "plain", saved); 3.23: «farbig» is the standard (like MoveEye)
 var ui_icons_pick := false             # 3.23: true once somebody chose with the switch (then the saved choice counts)

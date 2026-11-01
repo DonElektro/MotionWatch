@@ -53,6 +53,25 @@ func _init() -> void:
 		eq("Leiste Gruppen", UG.bar_text("groups"), "Nur Gruppen")
 		eq("Leiste aufklappen", UG.bar_text("open"), "Alle aufklappen")
 		eq("Leiste Einfach", UG.bar_text("simple"), "Einfach")
+		# 639t: the one header - the list of buttons, their order, texts in 5 languages and kopf.gd reads them from here
+		var K = load("res://scripts/kopf.gd")
+		var ks: Array = K.knoepfe().map(func(b): return str(b.get("id")))
+		eq("Kopf: Reihenfolge", ",".join(ks), "help,sound,reload,lang,menu,fs,fold,dev")
+		eq("Kopf: schmal ab", str((d.get("kopf", {}) as Dictionary).get("schmal_ab")), "lang")
+		for b in K.knoepfe():
+			for L in ["de", "en", "fr", "it", "rm"]:
+				if str((b.get("texts", {}) as Dictionary).get(L, "")) == "":
+					errs.append("Kopf: Text %s fehlt für %s" % [L, b.get("id")])
+			if str(b.get("draw", "")) == "" or str(b.get("tk", "")) == "":
+				errs.append("Kopf: Symbol (draw / tk) fehlt für %s" % b.get("id"))
+		var TT = load("res://scripts/i18n.gd")                # the texts in the language of the simulator (saved choice of this PC)
+		eq("Kopf: Text Hilfe", K.text("help"), {"de": "Hilfe", "en": "Help", "fr": "Aide", "it": "Aiuto", "rm": "Agid"}.get(TT.lang(), "Hilfe"))
+		eq("Kopf: Text Einklappen", K.text("fold"), str(((K.knoepfe()[6] as Dictionary).get("texts", {}) as Dictionary).get(TT.lang(), "Kopf einklappen")))
+		for g in ["head", "page", "general"]:
+			if K.menu_text(g) == g:
+				errs.append("Kopf: Menü-Abschnitt %s ohne Text" % g)
+		var kl: Array = (d.get("kopf", {}) as Dictionary).get("listen", [])
+		eq("Kopf: Listen-Gruppen", ",".join(kl.map(func(x): return str(x.get("id")))), "protect,camera,power,env,net,other")
 		# the file goes into the .exe
 		var ep := FileAccess.get_file_as_string("res://export_presets.cfg")
 		if ep != "":
