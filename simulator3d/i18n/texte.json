@@ -186,6 +186,12 @@
   "it": "  ·  %dx più veloce",
   "rm": "  ·  %dx pli svelt"
  },
+ "  ·  Brim: ": {
+  "en": "  ·  Brim: ",
+  "fr": "  ·  Brim: ",
+  "it": "  ·  Brim: ",
+  "rm": "  ·  Brim: "
+ },
  "  · %.1f kg": {
   "en": "  · %.1f kg",
   "fr": "  · %.1f kg",
@@ -1303,6 +1309,12 @@
   "it": "%d giocatori",
   "rm": "%d giugaders"
  },
+ "%d Teile auf dieser Platte": {
+  "en": "%d parts on this plate",
+  "fr": "%d pièces sur ce plateau",
+  "it": "%d pezzi su questo piatto",
+  "rm": "%d parts sin questa platta"
+ },
  "%d Treffer – bitte einen auswählen.": {
   "en": "%d results – please pick one.",
   "fr": "%d résultats – merci d’en choisir un.",
@@ -1958,6 +1970,12 @@
   "it": "%s: «%s» viene inviato ma non è in schnittstelle.json",
   "rm": "%s: «%s» vegn tramess, ma n’è betg en schnittstelle.json",
   "?": "Entwickler-Meldung (Log) – nicht umhüllen"
+ },
+ "&lang=": {
+  "en": "&lang=",
+  "fr": "&lang=",
+  "it": "&lang=",
+  "rm": "&lang="
  },
  "&vo=1": {
   "en": "&vo=1",
@@ -2910,6 +2928,12 @@
   "it": "Simulatore 3D live · %s (porta %d)",
   "rm": "Simulatur 3D live · %s (port %d)"
  },
+ "3MF in Bambu Studio öffnen (Datei → Öffnen): die Teile liegen schon richtig, ohne Stützen.": {
+  "en": "Open the 3MF in Bambu Studio (File → Open): the parts already lie right, without supports.",
+  "fr": "Ouvrir le 3MF dans Bambu Studio (Fichier → Ouvrir) : les pièces sont déjà bien posées, sans supports.",
+  "it": "Aprire il 3MF in Bambu Studio (File → Apri): i pezzi sono già orientati, senza supporti.",
+  "rm": "Avrir il 3MF en Bambu Studio (Datoteca → Avrir): las parts èn gia posiziunadas endretg, senza sustegns."
+ },
  "4 GB (SC1111) reicht auch": {
   "en": "4 GB (SC1111) is enough too",
   "fr": "4 Go (SC1111) suffit aussi",
@@ -3023,6 +3047,12 @@
   "fr": ": glisser dans le monde, ou cliquer puis cliquer dans le monde",
   "it": ": trascinare nel mondo, o cliccare e cliccare nel mondo",
   "rm": ": trair en il mund, u cliccar e cliccar en il mund"
+ },
+ ": PETG": {
+  "en": ": PETG",
+  "fr": ": PETG",
+  "it": ": PETG",
+  "rm": ": PETG"
  },
  "<%d Bytes %s>": {
   "en": "<%d Bytes %s>",
@@ -3781,6 +3811,12 @@
   "it": "Fotografa tutti i luoghi",
   "rm": "Fotografar tut ils lieus"
  },
+ "Alle Platten (ZIP mit Kurzanleitung)": {
+  "en": "All plates (ZIP with short guide)",
+  "fr": "Tous les plateaux (ZIP avec notice courte)",
+  "it": "Tutti i piatti (ZIP con breve guida)",
+  "rm": "Tut las plattas (ZIP cun curt manual)"
+ },
  "Alle Rätsel dieser Jahreszeit gelöst!": {
   "en": "All puzzles of this season solved!",
   "fr": "Toutes les énigmes de cette saison sont résolues !",
@@ -4098,6 +4134,12 @@
   "fr": "Alpages et pierriers",
   "it": "Pascoli alpini e pietraie",
   "rm": "Pastgiras e champs da crappa"
+ },
+ "als Quader gezeigt (kein eigenes 3D-Modell)": {
+  "en": "shown as a box (no own 3D model)",
+  "fr": "montrée en bloc (pas de modèle 3D propre)",
+  "it": "mostrato come blocco (nessun modello 3D proprio)",
+  "rm": "mussà sco bloc (nagin agen model 3D)"
  },
  "Alte KI-Daten löschen": {
   "en": "Delete old AI data",
@@ -5245,6 +5287,12 @@
   "it": "Sull'immagine notturna di MoveEye brilla una luce debolissima - a %s, dove nessuna carta indica nulla.",
   "rm": "Sin il maletg da notg da MoveEye glischa ina glisch fitg flaivla - en il %s, nua che nagina charta n'inditgescha insatge."
  },
+ "auf der Platte %s mm": {
+  "en": "on the plate %s mm",
+  "fr": "sur le plateau %s mm",
+  "it": "sul piatto %s mm",
+  "rm": "sin la platta %s mm"
+ },
  "Auf der Restaurant-Terrasse sollte man die Pommes nicht allein lassen.": {
   "en": "On the restaurant terrace you should not leave your fries alone.",
   "fr": "Sur la terrasse du restaurant, mieux vaut ne pas laisser ses frites seules.",
@@ -5604,6 +5652,12 @@
   "fr": "Déclenchements : %d réels · %d faux",
   "it": "Attivazioni: %d vere · %d false",
   "rm": "Activaziuns: %d veras · %d falsas"
+ },
+ "Ausrichtung": {
+  "en": "Orientation",
+  "fr": "Orientation",
+  "it": "Orientamento",
+  "rm": "Orientaziun"
  },
  "Ausruhen": {
   "en": "Rest",
@@ -6769,6 +6823,12 @@
   "it": "Migliori foto della fototrappola (nitidezza e animale)",
   "rm": "Meglras fotos da la camera da selvaschina (nettezza ed animal)"
  },
+ "Bestellnummer": {
+  "en": "Order number",
+  "fr": "Numéro de commande",
+  "it": "Numero d'ordine",
+  "rm": "Numer d'empustaziun"
+ },
  "Bestellung fertiges Gerät": {
   "en": "Order a ready-made device",
   "fr": "Commande d’un appareil prêt",
@@ -7819,11 +7879,23 @@
   "it": "C-Media CM108",
   "rm": "C-Media CM108"
  },
+ "ca. %s g (geschätzt)": {
+  "en": "about %s g (estimated)",
+  "fr": "env. %s g (estimé)",
+  "it": "circa %s g (stimato)",
+  "rm": "circa %s g (stimà)"
+ },
  "ca. %s h": {
   "en": "about %s h",
   "fr": "env. %s h",
   "it": "circa %s h",
   "rm": "ca. %s h"
+ },
+ "ca. %s h (geschätzt)": {
+  "en": "about %s h (estimated)",
+  "fr": "env. %s h (estimé)",
+  "it": "circa %s h (stimato)",
+  "rm": "circa %s h (stimà)"
  },
  "CAFFÈ": {
   "en": "CAFFÈ",
@@ -11709,6 +11781,12 @@
   "it": "Drone",
   "rm": "Drona"
  },
+ "Druckdatei 3MF (dieses Teil)": {
+  "en": "Print file 3MF (this part)",
+  "fr": "Fichier d'impression 3MF (cette pièce)",
+  "it": "File di stampa 3MF (questo pezzo)",
+  "rm": "Datoteca da stampa 3MF (questa part)"
+ },
  "Druckdatei: %s": {
   "en": "Print file: %s",
   "fr": "Fichier d'impression : %s",
@@ -11726,6 +11804,18 @@
   "fr": "Impression",
   "it": "Stampa",
   "rm": "Stampar"
+ },
+ "Druckplatten": {
+  "en": "Print plates",
+  "fr": "Plateaux d'impression",
+  "it": "Piatti di stampa",
+  "rm": "Plattas da stampa"
+ },
+ "Druckteil": {
+  "en": "Print part",
+  "fr": "Pièce imprimée",
+  "it": "Pezzo stampato",
+  "rm": "Part stampada"
  },
  "Druckzeit": {
   "en": "Print time",
@@ -13701,6 +13791,12 @@
   "it": "Inizio: Maggie trova il cristallo",
   "rm": "Entschatta: Maggie chatta il cristal"
  },
+ "Einzelteil": {
+  "en": "Single part",
+  "fr": "Pièce seule",
+  "it": "Pezzo singolo",
+  "rm": "Part singula"
+ },
  "Eisenbahnwagen": {
   "en": "Railway wagon",
   "fr": "Wagon de chemin de fer",
@@ -14793,6 +14889,12 @@
   "fr": "connecteur FAN du Pi 5 (JST 4 broches)",
   "it": "connettore FAN del Pi 5 (JST 4 pin)",
   "rm": "attach FAN dal Pi 5 (JST 4 pols)"
+ },
+ "Farbe": {
+  "en": "Colour",
+  "fr": "Couleur",
+  "it": "Colore",
+  "rm": "Colur"
  },
  "Farben des Bedienfelds wie in MoveEye: Hell → Rotlicht → Dunkel (Rotlicht für die Nacht im Zelt)": {
   "en": "Colours of the panel like in MoveEye: light → red light → dark (red light for the night in the tent)",
@@ -18203,6 +18305,12 @@
   "fr": "Taille",
   "it": "Altezza",
   "rm": "Grondezza"
+ },
+ "Grösse (Bounding Box): %s mm": {
+  "en": "Size (bounding box): %s mm",
+  "fr": "Taille (boîte englobante) : %s mm",
+  "it": "Dimensioni (ingombro): %s mm",
+  "rm": "Grondezza (bounding box): %s mm"
  },
  "Grösse prüfen": {
   "en": "Check size",
@@ -24854,6 +24962,12 @@
   "it": "Lasciarlo",
   "rm": "Laschar giaschair"
  },
+ "Liegend wie gedruckt (Druckplatte 256 × 256 mm)": {
+  "en": "Lying as printed (plate 256 × 256 mm)",
+  "fr": "Couchée comme imprimée (plateau 256 × 256 mm)",
+  "it": "Disteso come stampato (piatto 256 × 256 mm)",
+  "rm": "Giaschend sco stampà (platta 256 × 256 mm)"
+ },
  "Liegestuhl": {
   "en": "Sun lounger",
   "fr": "Transat",
@@ -25725,6 +25839,12 @@
   "fr": "Master",
   "it": "Master",
   "rm": "Master"
+ },
+ "Material": {
+  "en": "Material",
+  "fr": "Matériau",
+  "it": "Materiale",
+  "rm": "Material"
  },
  "Material PETG (z. B. Bambu PETG HF), vorher 6–8 h bei 65 °C trocknen.": {
   "en": "Material PETG (e.g. Bambu PETG HF), dry it first for 6–8 h at 65 °C.",
@@ -28764,6 +28884,12 @@
   "it": "Bagnato fino alle ossa. In cresta sarebbe pericoloso - i fulmini colpiscono prima i punti alti.",
   "rm": "Bletsch fin sin la pel. Sin la creesta fiss quai privlus - il chametg tutga l'emprim ils puncts auts."
  },
+ "natur / weiss": {
+  "en": "natural / white",
+  "fr": "naturel / blanc",
+  "it": "naturale / bianco",
+  "rm": "natira / alv"
+ },
  "Natur und Wind": {
   "en": "Nature and wind",
   "fr": "Nature et vent",
@@ -29873,6 +29999,12 @@
   "fr": "Seulement ce PC. Pas de mots de passe, pas de noms de joueurs, pas de réglages. Temps = temps actif.\n\n",
   "it": "Solo questo PC. Nessuna password, nessun nome di giocatore, nessuna impostazione. Tempi = tempo attivo.\n\n",
   "rm": "Mo quest PC. Nagins pleds-clav, nagins nums da giugaders, nagins parameters. Temps = temp activ.\n\n"
+ },
+ "Nur dieses Teil zeigen": {
+  "en": "Show only this part",
+  "fr": "Afficher seulement cette pièce",
+  "it": "Mostra solo questo pezzo",
+  "rm": "Mussar mo questa part"
  },
  "Nur durchs Münzfernrohr zu sehen.": {
   "en": "Only visible through the coin telescope.",
@@ -31159,6 +31291,12 @@
   "it": "Sacchetto di plastica al vento",
   "rm": "Satg da plastic en il vent"
  },
+ "Platte %s": {
+  "en": "Plate %s",
+  "fr": "Plateau %s",
+  "it": "Piatto %s",
+  "rm": "Platta %s"
+ },
  "Platte A und B v5.2 ersetzen die Platten v5.1 (Unterteil mit Weitwinkel-Fenster, Service-Fenster HDMI/USB-C, SD-Schlitz; Kopf mit Status-LED). Vor dem Druck die Liste «Nachmessen» prüfen.": {
   "en": "Plates A and B v5.2 replace the v5.1 plates (lower part with wide window, service window HDMI/USB-C, SD slot; head with status LED). Check the «measure first» list before printing.",
   "fr": "Les plaques A et B v5.2 remplacent les plaques v5.1 (partie inférieure avec fenêtre grand angle, fenêtre de service HDMI/USB-C, fente SD ; tête avec LED d'état). Vérifier la liste « à mesurer » avant l'impression.",
@@ -31170,6 +31308,12 @@
   "fr": "La plaque A v5.2 remplace la plaque A v5.1 (partie inférieure avec fenêtre grand angle). La plaque B reste v5.1. Vérifier la liste « à mesurer » avant l'impression.",
   "it": "La piastra A v5.2 sostituisce la piastra A v5.1 (parte inferiore con finestra grandangolare). La piastra B resta v5.1. Prima di stampare controllare l'elenco «da misurare».",
   "rm": "La platta A v5.2 remplazza la platta A v5.1 (part sut cun fanestra largangulara). La platta B resta v5.1. Avant la stampa controllar la glista «mesirar»."
+ },
+ "Platte herunterladen (3MF)": {
+  "en": "Download plate (3MF)",
+  "fr": "Télécharger le plateau (3MF)",
+  "it": "Scarica il piatto (3MF)",
+  "rm": "Telechargiar la platta (3MF)"
  },
  "Plattform mit Geländer, Antenne und Wegweiser – senkrecht unter dir die helle Kalkwand und die Obri Stafelhütte.": {
   "en": "A platform with railing, antenna and signpost – straight below you the light limestone face and the Obri Stafel hut.",
@@ -33723,6 +33867,12 @@
   "fr": "Étape %d sur %d",
   "it": "Passo %d di %d",
   "rm": "Pass %d da %d"
+ },
+ "Schritt %d – %s": {
+  "en": "Step %d – %s",
+  "fr": "Étape %d – %s",
+  "it": "Passo %d – %s",
+  "rm": "Pass %d – %s"
  },
  "Schritt 1 von 3 · Ort wählen (Schweiz)": {
   "en": "Step 1 of 3 · choose place (Switzerland)",
@@ -37290,6 +37440,12 @@
   "fr": "Cliquer une pièce – ou choisir une étape du montage.",
   "it": "Clicca un pezzo – o scegli un passo del montaggio.",
   "rm": "Cliccar ina part – u tscherner in pass dal muntadi."
+ },
+ "Teil auf der Platte antippen: Einzelteil-Vorschau.": {
+  "en": "Tap a part on the plate: single-part view.",
+  "fr": "Toucher une pièce du plateau : vue de la pièce seule.",
+  "it": "Tocca un pezzo sul piatto: vista del pezzo singolo.",
+  "rm": "Tutgar ina part sin la platta: vista da la part singula."
  },
  "Teil im 3D zeigen": {
   "en": "Show the part in 3D",
@@ -41386,6 +41542,12 @@
   "it": "Come un vero Pi 5: telecamera della testa solo tanti fotogrammi al secondo quanti il Pi riesce con l’IA, ogni immagine un po’ in ritardo (test e giochi come sull’apparecchio)",
   "rm": "Sco in Pi 5 vair: camera dal chau mo uschè blers maletgs per secunda sco ch’il Pi fa cun l’IA, mintga maletg in pau pli tard (tests e gieus sco sin l’apparat)"
  },
+ "wie eingebaut (Lage geschätzt)": {
+  "en": "as built (orientation estimated)",
+  "fr": "comme montée (position estimée)",
+  "it": "come montato (posizione stimata)",
+  "rm": "sco muntà (posiziun stimada)"
+ },
  "Wie gut war dein Platz?": {
   "en": "How good was your spot?",
   "fr": "Ton emplacement était-il bon ?",
@@ -41895,6 +42057,12 @@
   "fr": "le branchement de la LED de charge n'est pas décrit",
   "it": "dove si collega il LED di ricarica non è descritto",
   "rm": "nua che la LED da chargiar vegn attaccada n'è betg descrit"
+ },
+ "Wo es hingehört": {
+  "en": "Where it goes",
+  "fr": "Où elle va",
+  "it": "Dove va",
+  "rm": "Nua ch'ella va"
  },
  "Wo ist der Korkenzieher?": {
   "en": "Where is the corkscrew?",
@@ -43031,6 +43199,12 @@
   "it": "A casa (casa, giardino, cantiere)",
   "rm": "A chasa (chasa, curtin, plazza da construcziun)"
  },
+ "Zukaufteil": {
+  "en": "Bought part",
+  "fr": "Pièce achetée",
+  "it": "Pezzo acquistato",
+  "rm": "Part cumprada"
+ },
  "Zuletzt gesetztes Zelt / Auto um 15° drehen": {
   "en": "Turn the last placed tent / car by 15°",
   "fr": "Tourner de 15° la dernière tente / voiture placée",
@@ -43174,6 +43348,12 @@
   "fr": "Retour à «Jouer»",
   "it": "Torna a «Giocare»",
   "rm": "Enavos a «Giugar»"
+ },
+ "Zurück zum ganzen Modell": {
+  "en": "Back to the whole model",
+  "fr": "Retour au modèle complet",
+  "it": "Torna al modello completo",
+  "rm": "Enavos al model entir"
  },
  "Zurück zur Auswahl": {
   "en": "Back to the choice",

@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-01 23:29",
+ "generated": "2026-11-01 23:38",
  "versions": [
+  {
+   "version": "3.48.0",
+   "file": "webcam_bewegung_3_48_0.py",
+   "url": "",
+   "sha256": "03580e920a1796999d8f591b40989ccc75e202a058758d52c61789b760d58659",
+   "date": "2026-11-01 23:38",
+   "notes": "Werkstatt: Teil antippen → «Nur dieses Teil zeigen» mit Grösse, Druck-/Zukauf-Infos, 3MF-Download, «Liegend wie gedruckt», «Wo es hingehört» (Sprung zum Montageschritt); neue Ansicht «Druckplatten» A/B mit Download je Platte und allen Platten als ZIP; MoveEye und Simulator.",
+   "size": 4865237,
+   "sig": "a9744dd7ee26163269c24e007610a32f3d526a945c18ef453171a068e30b2c0d39eab4ede727116fe057d8934a6ee07fc330b0f08b9e208977e3e424a85c9c00",
+   "data": {
+    "file": "moveeye_daten_3_48_0.zip",
+    "url": "",
+    "sha256": "1c6db2da31b37a76877ff2ee3f746c3e3379cd5f4ace370cb4d97050f03287ca",
+    "size": 3324397,
+    "sig": "4fea57698c67525c3268d34308462d5a80c1ff88801c49043dbf9a0bce3e8d1dae928a6e5f4b1993074b3e0f0fab06f5934dbd3f57c4ae26283fdf537f125304"
+   }
+  },
   {
    "version": "3.47.1",
    "file": "webcam_bewegung_3_47_1.py",
    "url": "",
    "sha256": "7be8bc1fdcf6093f33de24e3311b8436149f9b82b0b1ae7751f80e12f6fb1726",
-   "date": "2026-11-01 23:29",
+   "date": "2026-11-01 23:36",
    "notes": "Druckdateien herunterladen klappt auch auf dem Pi ohne Projektordner (Pi holt die Datei selbst, sauberer Dateiname); «Alle als ZIP» nur für die gewählte Variante, mit Kurzanleitung.",
    "size": 4852981,
    "sig": "35a600a5bf64499662b618c27af7ac5b249b5a76f798a784692896436f8ee14db79fb073993d7cef5d0a77f75034427765d09522220466f1a62e17141649590b",
@@ -136,23 +153,6 @@
     "sha256": "0881d6b89ec6446528e61c7e92ac48ddd8e072822a53b6c870cd976e7102c593",
     "size": 2516444,
     "sig": "138c0130c73f35d2cfb05929f4e8dee72b1d355214fd05e22275c3aeb7ca98d10c36283e58bb0ba7926975e85921e51cc140fe0302fc5879f36ea3264f7da806"
-   }
-  },
-  {
-   "version": "3.39.2",
-   "file": "webcam_bewegung_3_39_2.py",
-   "url": "",
-   "sha256": "94e0903a01d9a9f9443cc86ce1a5fb3d7b7360e3e17d56e5ba4ee21c9ad31ff5",
-   "date": "2026-11-01 17:42",
-   "notes": "Datenschutz: Push- und E-Mail-Meldungen zeigen statt des WLAN-Namens nur noch «bekanntes WLAN».",
-   "size": 4730304,
-   "sig": "38134f9ffa90897b59740239b6707b936dd0c6e5020c91159655ea2a7a0bcb8d63f973edb76063450f846ccd38fc91020bcac2b373d6e583718314b5d7100503",
-   "data": {
-    "file": "moveeye_daten_3_39_2.zip",
-    "url": "",
-    "sha256": "efc7a06b33c1dba0b394cbe92ad03e796ea8248be698da86f36d023ef358f73b",
-    "size": 1589561,
-    "sig": "5c66c080b39a742e94f4e3673614d59230d129157dd793074dd5c56e162e45b8afcfee54f665cb357ee9d67a7f5f4bceb5f8e8fdc8d703a294d4f7440d9f5101"
    }
   },
   {

@@ -26,6 +26,7 @@ const DATA = preload("res://scripts/werkstatt_daten.gd")
 const GH = preload("res://scripts/gehaeuse.gd")
 const DRUCK_ALPHA := 0.16
 const FH = preload("res://scripts/fehler_hilfe.gd")
+const EINZEL = preload("res://scripts/werkstatt_einzel.gd")   # Einzelteil-Vorschau, Druckplatten (real-einzelteil-vorschau)
 const TABS := [["uebersicht", "Übersicht"], ["teile", "Teile"], ["einkauf", "Einkauf"], ["drucken", "Drucken"], ["montage", "Montage"],
 		["verkabeln", "Verkabeln"], ["software", "Software"], ["inbetrieb", "Inbetriebnahme"], ["fehler", "Fehlersuche"], ["wartung", "Wartung"]]
 const MEIN_PFAD := "user://bau_mein.json"
@@ -65,6 +66,8 @@ var mein := {"var": {}, "done": []}  # «Mein Bau»: variant + checklist (user:/
 var node_sel := ""                 # Verkabeln: the module that is lit
 var fertig_pkg := ""               # «Fertig kaufen»: the package chosen in the hint ("" = the standard one)
 var last_order := {}               # tests: what «Fertig bestellen (Anfrage)» handed to the feedback
+var einzel = null                  # werkstatt_einzel.gd: single part view, print plates
+var min_dist := 0.12               # zoom limit (smaller for a single small part)
 
 
 func _ready() -> void:
@@ -76,6 +79,7 @@ func _ready() -> void:
 		if r.size() > 6 and str(r[6]) != "":
 			repl[str(r[6])] = str(r[0])
 	_mein_load()
+	einzel = EINZEL.new(self)
 
 
 func is_open() -> bool:
@@ -100,6 +104,9 @@ func close() -> void:
 	win = null
 	parts = {}
 	sel = ""
+	if einzel != null:
+		einzel.closed()
+	min_dist = 0.12
 
 
 # ---- the window ----------------------------------------------------------------------------------------------------------
@@ -174,12 +181,19 @@ func _build_ui() -> void:
 	vpc.custom_minimum_size = Vector2(320, 240)
 	vpc.gui_input.connect(_on_input)
 	vpc.set_meta("rad_zoom", "werkstatt")              # tasten.gd: + / − = the wheel of the 3D view
-	h.add_child(vpc)
+	var holder := Control.new()                         # real-einzelteil-vorschau: 3D picture + «Wo es hingehört» bottom right
+	holder.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	holder.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	holder.custom_minimum_size = Vector2(320, 240)
+	h.add_child(holder)
+	vpc.set_anchors_preset(Control.PRESET_FULL_RECT)
+	holder.add_child(vpc)
 	vp = SubViewport.new()
 	vp.own_world_3d = true
 	vp.msaa_3d = Viewport.MSAA_2X if not GH.Quality.lite() else Viewport.MSAA_DISABLED
 	vp.render_target_update_mode = SubViewport.UPDATE_WHEN_VISIBLE
 	vpc.add_child(vp)
+	einzel.build_view(holder)
 	var side := ScrollContainer.new()
 	side.custom_minimum_size = Vector2(350, 0)
 	side.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -234,8 +248,18 @@ func _build_ui() -> void:
 	_w["real"] = _check(v, T.t("Echtes Gehäuse am Gerät in der Szene"), func(on): set_real_case(on))
 	var rb := Button.new()
 	rb.text = T.t("Ansicht zurücksetzen")
-	rb.pressed.connect(func(): set_view(145.0, 24.0, 0.62))
+	rb.pressed.connect(func():
+		if einzel.mode != "":
+			einzel.frame()
+		else:
+			set_view(145.0, 24.0, 0.62))
 	v.add_child(rb)
+	var plb := Button.new()                              # real-einzelteil-vorschau: the plates of the variant as in the 3MF
+	plb.text = T.t("Druckplatten")
+	plb.toggle_mode = true
+	plb.pressed.connect(func(): einzel.set_mode("platten" if einzel.mode != "platten" else "", "", false, einzel.plate))
+	v.add_child(plb)
+	_w["plates_btn"] = plb
 	# the part
 	v.add_child(UI.heading(T.t("Teil")))
 	var ip := PanelContainer.new()
@@ -266,6 +290,13 @@ func _build_ui() -> void:
 			set_step(int(r[4])))
 	iv.add_child(gs)
 	_w["gostep"] = gs
+	var so := Button.new()                               # real-einzelteil-vorschau
+	so.text = T.t("Nur dieses Teil zeigen")
+	so.visible = false
+	so.pressed.connect(func(): einzel.set_mode("teil", sel))
+	iv.add_child(so)
+	_w["solo_btn"] = so
+	einzel.build_ui(v)
 	# assembly
 	v.add_child(UI.heading(T.t("Montage Schritt für Schritt")))
 	var mp := PanelContainer.new()
@@ -489,6 +520,7 @@ func _build_world() -> void:
 		l.position = Vector2(20, 20)
 		vpc.add_child(l)
 	_place_cam()
+	einzel.build_world()
 
 
 func _place_cam() -> void:
@@ -502,7 +534,7 @@ func _place_cam() -> void:
 func set_view(y: float, p: float, d: float) -> void:
 	yaw = y
 	pitch = clampf(p, -80.0, 85.0)
-	dist = clampf(d, 0.12, 2.0)
+	dist = clampf(d, min_dist, 2.0)
 	target = Vector3(0, -0.06, 0.04)
 	_place_cam()
 
@@ -511,10 +543,10 @@ func _on_input(ev: InputEvent) -> void:
 	if ev is InputEventMouseButton:
 		var mb := ev as InputEventMouseButton
 		if mb.button_index == MOUSE_BUTTON_WHEEL_UP and mb.pressed:
-			dist = clampf(dist * 0.9, 0.12, 2.0)
+			dist = clampf(dist * 0.9, min_dist, 2.0)
 			_place_cam()
 		elif mb.button_index == MOUSE_BUTTON_WHEEL_DOWN and mb.pressed:
-			dist = clampf(dist / 0.9, 0.12, 2.0)
+			dist = clampf(dist / 0.9, min_dist, 2.0)
 			_place_cam()
 		elif mb.pressed:
 			_btn = mb.button_index
@@ -522,8 +554,11 @@ func _on_input(ev: InputEvent) -> void:
 			_drag = mb.position
 		else:
 			if _btn == MOUSE_BUTTON_LEFT and mb.position.distance_to(_down) < 5.0:
-				var id := pick_at(mb.position)
-				select(id)
+				if einzel.mode == "platten":
+					einzel.tap(mb.position)
+				elif einzel.mode == "":
+					var id := pick_at(mb.position)
+					select(id)
 			_btn = 0
 	elif ev is InputEventMouseMotion and _btn != 0:
 		var mm := ev as InputEventMouseMotion
@@ -537,7 +572,7 @@ func _on_input(ev: InputEvent) -> void:
 			target += (-b.x * dd.x + b.y * dd.y) * dist * 0.0016
 		_place_cam()
 	elif ev is InputEventMagnifyGesture:
-		dist = clampf(dist / (ev as InputEventMagnifyGesture).factor, 0.12, 2.0)
+		dist = clampf(dist / (ev as InputEventMagnifyGesture).factor, min_dist, 2.0)
 		_place_cam()
 
 
@@ -587,6 +622,8 @@ func pick_at(pos: Vector2) -> String:
 
 
 func select(id: String) -> void:
+	if einzel != null and einzel.mode != "":
+		einzel.set_mode("")
 	sel = id if parts.has(id) else ""
 	_paint()
 
@@ -652,6 +689,8 @@ func set_real_case(on: bool) -> void:
 
 
 func set_step(n: int) -> void:
+	if einzel != null and einzel.mode != "" and is_open():
+		einzel.set_mode("")
 	step = clampi(n, 0, DATA.SCHRITTE.size())
 	_anim = 0.0 if step > 1 else 1.0
 	if step > 0:
@@ -794,6 +833,7 @@ func _paint() -> void:
 	for td in TABS:
 		(_w["tab_" + str(td[0])] as Button).set_pressed_no_signal(str(td[0]) == tab)
 	_prog()
+	einzel.after_paint()
 
 
 static func _ease(t: float) -> float:
@@ -1256,6 +1296,16 @@ func control(d: Dictionary) -> Dictionary:
 			set_v52(bool(d.get("on", true)))
 		"pick":
 			select(str(d.get("id", "")))
+		"solo":                                      # real-einzelteil-vorschau: only this part (flat = as printed)
+			einzel.set_mode("teil", str(d.get("id", sel)), bool(d.get("flat", false)))
+		"plates":                                    # the print plates of the variant (n = 0, 1 …)
+			einzel.set_mode("platten", "", false, int(d.get("n", 0)))
+		"whole":
+			einzel.set_mode("")
+		"plate_tap":                                 # tests: a part of the plate (id or only the print file)
+			einzel.plate_tap(str(d.get("id", "")), str(d.get("datei", "")))
+		"where":
+			einzel.where()
 		"click":                                      # tests: a click at x / y (0..1 of the 3D picture) - like the mouse
 			var sz: Vector2 = Vector2(vp.size) if vp != null else Vector2.ONE
 			select(pick_at(Vector2(float(d.get("x", 0.5)) * sz.x, float(d.get("y", 0.5)) * sz.y)))
@@ -1300,4 +1350,4 @@ func info() -> Dictionary:
 			"fertig": {"shown": is_open() and _w.has("fertig") and is_instance_valid(_w["fertig"]), "pkg": fertig_pkg,
 				"text": str((_w["fertig_text"] as Label).text) if is_open() and _w.has("fertig_text") and is_instance_valid(_w["fertig_text"]) else "",
 				"button": str((_w["fertig_btn"] as Button).text) if is_open() and _w.has("fertig_btn") and is_instance_valid(_w["fertig_btn"]) else ""},
-			"last_order": last_order}
+			"last_order": last_order, "einzel": einzel.info() if einzel != null else {}}

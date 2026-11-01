@@ -495,6 +495,7 @@ import {OrbitControls} from "three/addons/controls/OrbitControls.js";
 const box = document.getElementById("v3d"), msg = document.getElementById("v3d-msg"), M = window.M3 || M3, B = window.BV;
 const E = {}; (M.teile || []).forEach(e => E[e.id] = e);
 const T0 = new THREE.Vector3(0, -0.06, 0.04), DRUCK_ALPHA = 0.16;
+const X = {};                                          // 639wc: single part / print plates (paint, after, tap, reset)
 msg.textContent = t("Loading 3D …");
 let renderer;
 try { renderer = new THREE.WebGLRenderer({antialias: true}); } catch (e) { renderer = null; msg.textContent = t("3D does not work here (no WebGL) – the lists still work."); }
@@ -517,7 +518,7 @@ function view(yaw, pitch, d, tg) {
   cam.position.set(ctl.target.x + d * Math.cos(p) * Math.sin(y), ctl.target.y + d * Math.sin(p), ctl.target.z + d * Math.cos(p) * Math.cos(y));
   ctl.update(); render();
 }
-function render() { renderer.render(scene, cam); }
+function render() { renderer.render(scene, cam); if (X.after) X.after(); }
 function size() { const w = box.clientWidth || 300, h = box.clientHeight || 260; renderer.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix(); render(); }
 new ResizeObserver(size).observe(box);
 ctl.addEventListener("change", render);
@@ -538,6 +539,8 @@ function shown(id) {
 }
 const ease = x => 1 - Math.pow(1 - Math.max(0, Math.min(1, x)), 3);
 function paint() {
+  if (B.mode && X.paint) { X.paint(); return; }           // 639wc: a single part or a print plate
+  if (X.reset) X.reset();
   for (const id in parts) {
     const p = parts[id], r = row(id), m = p.mesh, ex = (E[id] || {}).explosion || [0, 0, 0];
     m.visible = shown(id);
@@ -573,7 +576,8 @@ function pick(ev) {
 let down = null;
 renderer.domElement.addEventListener("pointerdown", e => { down = [e.clientX, e.clientY]; });
 renderer.domElement.addEventListener("pointerup", e => {
-  if (down && Math.hypot(e.clientX - down[0], e.clientY - down[1]) < 6) { B.sel = pick(e); B.onSelect && B.onSelect(B.sel); paint(); }
+  if (down && Math.hypot(e.clientX - down[0], e.clientY - down[1]) < 6) {
+    if (B.mode) { if (X.tap) X.tap(e); } else { B.sel = pick(e); B.onSelect && B.onSelect(B.sel); paint(); } }
   down = null;
 });
 new GLTFLoader().load("/build/gehaeuse.glb", g => {
@@ -584,6 +588,7 @@ new GLTFLoader().load("/build/gehaeuse.glb", g => {
   window.BV_READY = Object.keys(parts).length;
 }, undefined, e => { msg.textContent = "3D: " + (e && e.message || e); });
 B.api = {paint, step, resize: size, select: id => { B.sel = id; B.onSelect && B.onSelect(id); paint(); }, reset: () => { B.explode = 0; document.getElementById("v-exp").value = 0; view(145, 24, 0.5); paint(); }};
+/*GEHEINZEL3D*/
 size(); view(145, 24, 0.5);
 }
 """

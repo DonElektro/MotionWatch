@@ -1,8 +1,13 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 01.11.2026 · Version **3.47.1** · MoveEye **3.47.1** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 01.11.2026 · Version **3.48.0** · MoveEye **3.48.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.48.0 (MoveEye 3.48.0): Einzelteil-Vorschau und Druckplatten (`scripts/werkstatt_einzel.gd`, MoveEye Teile 639wb / 639wc)
+
+- Lage auf der Platte aus den 3MF (`werkzeuge/druck_lage.py` -> inhalte/gehaeuse/druck_lage.json, 639wb); /build/platten.zip
+  holt die Platten auf dem Pi wie /build/alle.zip selbst (geh_druck_holen, Cache, Basisnamen), keine Weiterleitung zu GitHub.
 
 ## NEU in 3.47.1 (MoveEye 3.47.1): Download-Fix Druckdateien (MoveEye Teil 639w)
 
