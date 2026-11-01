@@ -777,7 +777,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 3.29.0")
+        self.root.title("MoveEye 3.30.0")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -1137,19 +1137,19 @@ class App:
         head = tk.Frame(self.root, bg=C["bg"]); head.pack(fill="x", padx=16, pady=(10, 0))
         top = tk.Frame(head, bg=C["bg"]); top.pack(fill="x")
         if show("title"):
-            tl = tk.Frame(top, bg=C["bg"]); tl.pack(side="left")
+            tl = tk.Frame(top, bg=C["bg"]); tl.pack(side="left"); self._title_box = tl     # 639s: long press = developer area
             try:                                         # the app icon (orange camera head), like the web page
                 import base64
                 self._logo = tk.PhotoImage(data=base64.b64encode(app_icon_png(26 if self._lay[0] else 30)).decode())
-                tk.Label(tl, image=self._logo, bg=C["bg"], bd=0).pack(side="left")
+                self._logo_lbl = tk.Label(tl, image=self._logo, bg=C["bg"], bd=0); self._logo_lbl.pack(side="left")
             except Exception:
-                tk.Label(tl, text="●", bg=C["bg"], fg=C["acc"], font=("DejaVu Sans", 12)).pack(side="left")
+                self._logo_lbl = tk.Label(tl, text="●", bg=C["bg"], fg=C["acc"], font=("DejaVu Sans", 12)); self._logo_lbl.pack(side="left")
             small = self._lay[0]
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 3.29.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 3.30.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")

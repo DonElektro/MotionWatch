@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-01 03:09",
+ "generated": "2026-11-01 11:31",
  "versions": [
+  {
+   "version": "3.30.0",
+   "file": "webcam_bewegung_3_30_0.py",
+   "url": "",
+   "sha256": "49531327c60c83ff63ec3500737bc1c9fc032a9d0589105cf7fe4609e73198cf",
+   "date": "2026-11-01 11:31",
+   "notes": "Schneller zum Entwickler-Bereich: das MoveEye-Logo etwa 1 s gedrückt halten (Web, Pi-Fenster, Simulator); im Simulator zusätzlich ein Werkzeug-Knopf 🛠 oben rechts.",
+   "size": 4494989,
+   "sig": "04a951a31016c8c12c11c1948b32c0539a76bec6e65f4df94d811b748d4a745d7cb36b0dbc48ab8520a69b2e9ade4dc66598c4bb0f280b1b8b3c77b5e9bb3c0b",
+   "data": {
+    "file": "moveeye_daten_3_30_0.zip",
+    "url": "",
+    "sha256": "e6f33e142f3d52e476885af1fba7be55f27f27da15a11a450ceb7853d55635c0",
+    "size": 1559491,
+    "sig": "e0988d48cb0aec32768449acf666ccab2357d47a4b457acdafc52ba3440d6ebe881549fc7e695ed30e539468843744d4f591e77b5e8f15dff3324b804d14fd0f"
+   }
+  },
   {
    "version": "3.29.0",
    "file": "webcam_bewegung_3_29_0.py",
    "url": "",
    "sha256": "62f00005d536c7a2111d73c627c911d2dfff478d9675468952ad5ed5b7f9ed48",
-   "date": "2026-11-01 03:09",
+   "date": "2026-11-01 11:29",
    "notes": "Simulator: Fenster docken automatisch in Leisten links/rechts an (ohne Überlappung, passt sich der Bildschirmgrösse an, «Neu anordnen»); Karte, Kompass, SmallTV und CPU als Reiter in einem Fenster; Entwickler immer vorne, klein/mittel/gross und einklappbar.",
    "size": 4481992,
    "sig": "cc70cbf48db570a684b681b77ed28d3721e94de0d3d0e262f4d74b94fdf8c05c79ad0325dfa4c386c6ae2887184a977ab9149a3d729cd8e16b39df2ccd954405",
@@ -136,23 +153,6 @@
     "sha256": "bac55ca09b0b3fda58fb0ce920c8f158a7ce653ab34b56d186908726d03ac713",
     "size": 1625230,
     "sig": "330409f5be080c406122e92b34c09c8b4535c84506051f004a3a303f704598921bad33fbefd0305f9dc6657993f791c462f2ec5d6df35ee02f249506b3139b00"
-   }
-  },
-  {
-   "version": "3.21.0",
-   "file": "webcam_bewegung_3_21_0.py",
-   "url": "",
-   "sha256": "5a0865e3889c5fe81b062bac8511200a4980db39b99bfa96a0dd6c9841e9884e",
-   "date": "2026-10-31 23:59",
-   "notes": "Simulator 3.21.0: Bergtal mit Tuffwasserfall im Schattwald, Kalkgipfel Chalchstock mit Antenne und Aussichtsplattform, Drahtseil-Schlussstück, gelbe Wegweiser mit Wegzeiten aus dem Wegnetz.",
-   "size": 4440142,
-   "sig": "4104c8006224dc1472ab0e3ed8904363442b24cd91639ca146cb1dc3023b1caa2379d1e7f0051a64778888af09d01e4dc9502460e34af3652ed60ecadf76a404",
-   "data": {
-    "file": "moveeye_daten_3_21_0.zip",
-    "url": "",
-    "sha256": "3c74fd99c36f37414888136f81596beaf2c105d80d1ad5b835b720610b5dcbe5",
-    "size": 1621446,
-    "sig": "ebcc5c7da6a9d46ea1cdc24dc6500993062627aef4789146e6209288865c344431d20fe196f0f5fc749f2b7c1ebfa164adbf0e5dbbb6bf8db6c254f2dff78800"
    }
   },
   {

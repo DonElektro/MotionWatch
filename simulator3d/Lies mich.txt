@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.29.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.30.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -446,6 +446,11 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.30.0
+3.30.0: Schneller zum Entwickler-Bereich: den Schriftzug MoveEye Sim etwa 1 s gedrückt halten öffnet das Entwickler-Fenster;
+dazu ein Werkzeug-Knopf 🛠 oben rechts (nur mit eingeschaltetem Entwickler-Bereich). In MoveEye (Web, Pi-Fenster) gleich: Logo halten.
+So testest du: Entwickler-Bereich einschalten (System › Gerät & Hilfe), dann das Logo 1 s halten oder 🛠 tippen.
 
 NEU IN 3.29.0
 3.29.0: Fenster docken automatisch in Leisten links/rechts an (ohne Überlappung, passt sich der Bildschirmgrösse

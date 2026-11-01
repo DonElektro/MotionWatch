@@ -1,9 +1,9 @@
 {
- "version": "3D-5.29.0",
- "ver": "3.29.0",
- "name": "MoveEye Sim 3.29.0",
+ "version": "3D-5.30.0",
+ "ver": "3.30.0",
+ "name": "MoveEye Sim 3.30.0",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 41336549,
- "sha256": "a4e6384d2d4ab4b2e51c7f01cb88808305ac0bced41944778fb3b2d77e2999cc",
- "notes": "Fenster andocken, Reiter, Entwickler zuoberst"
+ "size": 41339277,
+ "sha256": "fd90adb83d8e62717681f0d24ff3ac71d0a8f5aea61b05747c3f3eff185b7a81",
+ "notes": "Entwickler-Zugang: Logo halten, Werkzeug-Knopf"
 }
