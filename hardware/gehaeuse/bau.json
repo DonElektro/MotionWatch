@@ -3418,13 +3418,8 @@
      "it": "GPIO 6 (pin 31) → 330 Ω → LED di carica 3 mm verde → GND (pin 34); guida luce dietro. MoveEye la accende secondo lo stato di carica dell'UPS HAT (E)",
      "rm": "GPIO 6 (pin 31) → 330 Ω → LED da chargiar 3 mm verda → GND (pin 34); conductur da glisch davos. MoveEye la stizza tenor il stadi da chargiar dal UPS HAT (E)"
     },
-    "unklar": {
-     "de": "die Software steuert die Lade-LED noch nicht (folgt)",
-     "en": "the software does not drive the charge LED yet (to follow)",
-     "fr": "le logiciel ne commande pas encore la LED de charge (à venir)",
-     "it": "il software non comanda ancora il LED di carica (segue)",
-     "rm": "la software na stizza anc betg la LED da chargiar (suonda)"
-    }
+    "code": "charge_led_gpio",
+    "wert": "6"
    },
    {
     "id": "mover",

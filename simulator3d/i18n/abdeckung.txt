@@ -1,16 +1,16 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 7379 (Stellen: 10274)
-Übersetzt: en 7379, fr 7379, it 7379, rm 7379
+Texte gesamt: 7381 (Stellen: 10277)
+Übersetzt: en 7381, fr 7381, it 7381, rm 7381
 Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 505 Stellen
-Nicht mehr im Code (noch in texte.json): 309
+Nicht mehr im Code (noch in texte.json): 310
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 68 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1
-Übersprungen (Grund: Anzahl): kennung 26308, schlüssel 19979, keine Wörter 12391, index 9595, technisch 3424, doc 2215, einheit 317, log 171, englisch 143, pfad 125, stringname 102, html 68, klasse 28, shader 6
+Übersprungen (Grund: Anzahl): kennung 26322, schlüssel 19980, keine Wörter 12393, index 9595, technisch 3425, doc 2216, einheit 317, log 171, englisch 143, pfad 125, stringname 102, html 68, klasse 28, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   main_einstellungen.gd    399    25
-  werkstatt_daten.gd       373     3
+  werkstatt_daten.gd       372     3
   bergtal_abenteuer.gd     272     7
   gamewiz.gd               252    15
   abenteuer_figuren_daten.gd   238     0
@@ -113,6 +113,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   wetter.gd                 23     0
   kompakt_festival.gd       23     0
   dataset.gd                22     3
+  statusled.gd              22     0
   mini.gd                   21     1
   phone.gd                  20     4
   klang.gd                  20     0
@@ -120,7 +121,6 @@ Pro Datei (Texte / davon dynamische Stellen):
   trailer.gd                19     7
   devtool.gd                19     0
   tv.gd                     19     8
-  statusled.gd              19     0
   surprise.gd               19     1
   kompakt_dorf.gd           18     0
   devtool_vorfuehrung.gd    18     0

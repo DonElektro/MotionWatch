@@ -67,6 +67,7 @@ def werte():
         "solar_addr": adr(suche(r'"solar_addr":\s*"(0x[0-9a-fA-F]+)"', q)),
         "mover_addr": adr(suche(r'"mover_addr":\s*"(0x[0-9a-fA-F]+)"', q)),
         "ups_e_addr": adr(suche(r"def ups_read_e\(addr=(0x[0-9a-fA-F]+)", q)),
+        "charge_led_gpio": suche(r"\bCHARGE_LED_GPIO\s*=\s*(\d+)", q),
         "doku_licht_weiss": suche(r"Kanal 0 Pan, 1 Tilt, (\d+) Licht weiss", ue),
         "doku_licht_ir": suche(r"Licht weiss, (\d+) Licht IR", ue),
         "doku_pir": suche(r"PIR AS312[^|]*\|[^|]*Ausgang GPIO (\d+)", ue),

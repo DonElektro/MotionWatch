@@ -155,6 +155,7 @@
   "solar_addr": "0x44",
   "mover_addr": "0x60",
   "ups_e_addr": "0x2D",
+  "charge_led_gpio": "6",
   "doku_licht_weiss": "2",
   "doku_licht_ir": "3",
   "doku_pir": "5",

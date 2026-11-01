@@ -23630,6 +23630,12 @@
   "it": "Carico Python (solo la prima volta)",
   "rm": "Chargiar Python (mo l’emprima giada)"
  },
+ "Lade-LED": {
+  "en": "Charge LED",
+  "fr": "LED de charge",
+  "it": "LED di carica",
+  "rm": "LED da chargiar"
+ },
  "Lade-LED 3 mm + 330 Ω + Lichtleiter": {
   "en": "Charging LED 3 mm + 330 Ω + light guide",
   "fr": "LED de charge 3 mm + 330 Ω + guide de lumière",
@@ -23647,6 +23653,18 @@
   "fr": "LED de charge 3 mm avec résistance, guide de lumière derrière",
   "it": "LED di ricarica 3 mm con resistenza, guida luce dietro",
   "rm": "LED da chargiar 3 mm cun resistenza, guida da glisch davos"
+ },
+ "Lade-LED hinten am Gerät: leuchtet beim Laden, blinkt langsam = voll, schnell = Akku fast leer": {
+  "en": "Charge LED at the back of the device: on while charging, blinks slowly = full, fast = battery almost empty",
+  "fr": "LED de charge à l'arrière de l'appareil : allumée pendant la charge, clignote lentement = pleine, vite = batterie presque vide",
+  "it": "LED di carica sul retro del dispositivo: acceso durante la carica, lampeggia lentamente = piena, velocemente = batteria quasi scarica",
+  "rm": "LED da chargiar davos sin l'apparat: glischa durant chargiar, cliegna plaunsieu = plain, svelt = accu bunamain vid"
+ },
+ "Lade-LED: wartet auf MoveEye": {
+  "en": "Charge LED: waiting for MoveEye",
+  "fr": "LED de charge : attend MoveEye",
+  "it": "LED di carica: attende MoveEye",
+  "rm": "LED da chargiar: spetga MoveEye"
  },
  "Ladebuchse GX16": {
   "en": "Charging socket GX16",

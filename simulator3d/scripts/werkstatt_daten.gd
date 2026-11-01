@@ -3,7 +3,7 @@ extends RefCounted
 ## hardware/gehaeuse/bau.json. NICHT VON HAND ÄNDERN (Texte dort ändern, dann «gehaeuse_bauen.py --texte»).
 ## Texte deutsch (T.t übersetzt sie, Übersetzungen kommen aus bau.json in i18n/texte.json).
 
-const QUELLE_SHA := "153b7c2217a6320c7dbb12e5ca8d86d9bb4a64c83669ed70225265fc00ecf605"
+const QUELLE_SHA := "8767fcc1ae609afacb4c2fc8445381cea974126a4aba98611c34b21dad329f39"
 const VERSION := "5.1"
 const MASSE := "Unterteil 183 × 97 × 71,5 mm (mit Füssen 77,5 mm), Gesamthöhe ca. 161 mm, Kopf 58 × 58 mm"
 # Materialliste: id -> [Menge, Bezeichnung, Teilenummer, Gruppe]
@@ -851,7 +851,8 @@ const BAU := {
 				"nach": "gx16",
 				"art": "gpio",
 				"pins": "GPIO 6 (Pin 31) → 330 Ω → Lade-LED 3 mm grün → GND (Pin 34); Lichtleiter hinten. MoveEye schaltet sie nach dem Lade-Zustand des UPS HAT (E)",
-				"unklar": "die Software steuert die Lade-LED noch nicht (folgt)"
+				"code": "charge_led_gpio",
+				"wert": "6"
 			},
 			{
 				"id": "mover",
