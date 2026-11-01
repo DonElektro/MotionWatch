@@ -3,6 +3,8 @@
 # UPS HAT (Waveshare, 2 x 18650 in series = 2S, 6.0 ... 8.4 V): an INA219 on I2C (0x42) measures the battery voltage and
 # the current (shunt 0.1 ohm). Only reads - nothing is written to the chip. Negative current = the battery delivers.
 # ----------------------------------------------------------------------------
+# «Battery almost empty» (log line, push; the charge LED blinks fast from here on, 639zi): UPS HAT on the battery / powerbank estimate
+BATT_LOW_PCT_UPS, BATT_LOW_PCT_BANK = 20, 15
 _CELL_CURVE = [(3.00, 0), (3.30, 5), (3.50, 15), (3.60, 28), (3.70, 45), (3.80, 60), (3.90, 72), (4.00, 83), (4.10, 93), (4.20, 100)]
 
 
@@ -181,7 +183,7 @@ class BatteryMonitor:
                 push("Power back – battery {pct} %", pct=pct)
                 CFG["batt_warned"] = False
         self._on_batt = on_batt
-        if on_batt and pct <= 20 and not CFG["batt_warned"]:
+        if on_batt and pct <= BATT_LOW_PCT_UPS and not CFG["batt_warned"]:
             CFG["batt_warned"] = True; save_settings()
             log_event("sys", f"Battery almost empty (about {pct} %, {hours or 0:.1f} h left)")
             push("Battery almost empty: about {pct} % ({hours:.1f} h)", pct=pct, hours=hours or 0)
@@ -224,7 +226,7 @@ class BatteryMonitor:
                             "hours": None if hours is None else round(hours, 1), "since": CFG["batt_full_t"], "cap_wh": round(cap_wh, 1)}
         if now - self._save_t > 300:
             self._save_t = now; save_settings()
-        if pct is not None and pct <= 15 and not CFG["batt_warned"]:
+        if pct is not None and pct <= BATT_LOW_PCT_BANK and not CFG["batt_warned"]:
             CFG["batt_warned"] = True; save_settings()
             log_event("sys", f"Battery almost empty (about {pct} %, {hours:.1f} h left)")
             w = WATCH_REF["w"]
