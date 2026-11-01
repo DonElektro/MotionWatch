@@ -65,18 +65,22 @@ jobs:
           cache: pip
           cache-dependency-path: .github/workflows/ci.yml
       - name: Pakete
-        run: pip install -q opencv-python-headless numpy flask pillow cryptography playwright==1.48.0
+        run: pip install -q opencv-python-headless numpy flask pillow cryptography playwright==1.55.0
       - name: Chromium (Cache)
         id: pwcache
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-1.48.0-chromium
+          key: playwright-1.55.0-chromium
       - name: Chromium installieren
+        timeout-minutes: 10
+        env:
+          DEBIAN_FRONTEND: noninteractive
         run: |
           if [ "${{ steps.pwcache.outputs.cache-hit }}" = "true" ]; then python3 -m playwright install-deps chromium
           else python3 -m playwright install --with-deps chromium; fi
       - name: Web-Rauchtest (alle Adressen ohne / mit Anmeldung, jede Seite im Browser)
+        timeout-minutes: 15
         run: python3 werkzeuge/web_rauchtest.py --browser
 
   # ---------------------------------------------------------------- Simulator
@@ -137,14 +141,14 @@ jobs:
           restore-keys: godot-import-
       - name: Projekt importieren
         run: |
-          export HOME="$RUNNER_TEMP/home_import"; mkdir -p "$HOME"
-          timeout 900 "$GODOT_BIN" --headless --editor --path simulator3d --quit > "$RUNNER_TEMP/import.log" 2>&1 || true
+          export HOME="/tmp/ci_home_import"; mkdir -p "$HOME"
+          timeout 900 "$GODOT_BIN" --headless --import --path simulator3d > "$RUNNER_TEMP/import.log" 2>&1 || true
           tail -5 "$RUNNER_TEMP/import.log"
       - name: Test ${{ matrix.test }}
         env:
           TEST: ${{ matrix.test }}
         run: |
-          export HOME="$RUNNER_TEMP/home_$TEST"; mkdir -p "$HOME"       # own test HOME (user://), never a real one
+          export HOME="/tmp/ci_home_$TEST"; mkdir -p "$HOME"       # own test HOME under /tmp (hospiz_test insists), never a real one
           log="$RUNNER_TEMP/$TEST.log"
           cd simulator3d
           if [ "$TEST" = "parse" ]; then
@@ -230,7 +234,7 @@ jobs:
           key: godot-import-${{ hashFiles('simulator3d/**/*.png', 'simulator3d/**/*.glb', 'simulator3d/**/*.ogg', 'simulator3d/**/*.wav', 'simulator3d/**/*.mp3', 'simulator3d/**/*.jpg', 'simulator3d/**/*.gdshader', 'simulator3d/project.godot') }}
           restore-keys: godot-import-
       - name: Projekt importieren
-        run: timeout 900 "$GODOT_BIN" --headless --editor --path simulator3d --quit > "$RUNNER_TEMP/import.log" 2>&1 || true
+        run: timeout 900 "$GODOT_BIN" --headless --import --path simulator3d > "$RUNNER_TEMP/import.log" 2>&1 || true
       - name: Exportieren (ohne Signatur)
         env:
           PRESET: ${{ matrix.preset }}
