@@ -3,10 +3,10 @@ extends RefCounted
 ## hardware/gehaeuse/bau.json. NICHT VON HAND ÄNDERN (Texte dort ändern, dann «gehaeuse_bauen.py --texte»).
 ## Texte deutsch (T.t übersetzt sie, Übersetzungen kommen aus bau.json in i18n/texte.json).
 
-const QUELLE_SHA := "a6d2adbb8c36071c3d64ae3b1e358630cb48fd4315c1965f1f65f0ce7d00defc"
+const QUELLE_SHA := "c36d9bda42ce868a54add9b5841c81f41095aa9ff124d703f14955dc56549ec5"
 const VERSION := "5.1"
 const KOPF_FARBE := "#f59a4a"   # Kopfteil (dreht / neigt) in MoveEye-Orange
-const KOPF_TEILE := ["turntable", "yoke", "arm2", "head", "side", "lamp1", "lamp2"]
+const KOPF_TEILE := ["turntable", "yoke", "arm2", "head", "side", "lamp1", "lamp2", "head52"]
 const MASSE := "Unterteil 183 × 97 × 71,5 mm (mit Füssen 77,5 mm), Gesamthöhe ca. 161 mm, Kopf 58 × 58 mm"
 # Materialliste: id -> [Menge, Bezeichnung, Teilenummer, Gruppe]
 const BOM := {
@@ -27,6 +27,7 @@ const BOM := {
 	"buck": ["1×", "Step-Down 6–36 V → 5 V 4 A (Servos, Licht, Verstärker)", "Bastelgarage 424274", "Strom"],
 	"gx16": ["1×", "GX16 4-polig: Einbaubuchse + Stecker (Ladebuchse)", "Bastelgarage 420241", "Strom"],
 	"fuse": ["1×", "Sicherungshalter fliegend + Sicherung 5 A", "Mini-Kfz (ATM) 5 A", "Strom"],
+	"fuse2": ["1×", "Flachsicherung 5 A mit Halter (Akku-Leitung B+ → Step-Down)", "Mini-Kfz (ATM) 5 A", "Strom"],
 	"usbc": ["1×", "USB-C-Stecker zum Anlöten (D36V50F5 → UPS HAT)", "USB-C Plug Breakout", "Strom"],
 	"chled": ["1×", "Lade-LED 3 mm + 330 Ω + Lichtleiter", "LED 3 mm grün, 330 Ω, PMMA 3 mm", "Strom"],
 	"ledw": ["1×", "Scheinwerfer-Modul weiss, Ø 18,8 × 14 mm", "Ø 18,8 mm", "Licht an der Gabel"],
@@ -54,15 +55,18 @@ const BOM := {
 	"camwide": ["1×", "Camera Module 3 Wide NoIR", "SC0874", "Variante v5.2 (Weitwinkel-Kamera, eigenes Unterteil)"],
 	"irmod": ["1×", "IR-LED-Modul 850 nm mit 120°-Linse (Ø ca. 18,8 mm, nachmessen)", "850 nm, 120°", "Variante v5.2 (Weitwinkel-Kamera, eigenes Unterteil)"],
 	"m2": ["4×", "Schraube M2 × 6, selbstschneidend (Weitwinkel-Kamera)", "M2 × 6", "Variante v5.2 (Weitwinkel-Kamera, eigenes Unterteil)"],
-	"mosfet3": ["1×", "MOSFET-Kanal für das IR-Modul (PCA9685 Kanal 4, wie AOD4184)", "Bastelgarage 420985 (AOD4184)", "Variante v5.2 (Weitwinkel-Kamera, eigenes Unterteil)"],
+	"sdext": ["1×", "microSD-Verlängerung 15 cm mit Einbau-Kartenhalter (Platine ca. 22 × 15 mm, 2 Löcher M2,5 im Abstand 18 mm)", "15 cm", "Variante v5.2 (Weitwinkel-Kamera, eigenes Unterteil)"],
+	"mosfet3": ["1×", "3. MOSFET-Modul (AOD4184) für das IR-Modul 120° (bzw. die IR-LED 5 mm), Kanal 4", "Bastelgarage 420985", "Variante v5.2 (Weitwinkel-Kamera, eigenes Unterteil)"],
 	"irled5": ["1×", "IR-LED 5 mm, 850 nm", "", "Variante v5.2 (Weitwinkel-Kamera, eigenes Unterteil)"],
 	"taster": ["2×", "Taster 12 mm, IP67", "", "Variante v5.2 (Weitwinkel-Kamera, eigenes Unterteil)"],
 	"sled": ["1×", "RGB-LED 5 mm mit Diffusor «Blinki-Auge»", "", "Variante v5.2 (Weitwinkel-Kamera, eigenes Unterteil)"],
 	"camcable2": ["1×", "Kamerakabel Pi 5, 200 mm (CAM1)", "SC1129", "Variante v5.2 (Weitwinkel-Kamera, eigenes Unterteil)"],
 	"psu12": ["1×", "Netzteil 12 V, mind. 3 A, mit GX16-Stecker verlötet", "", "Strom"],
+	"psu12_dev": ["1×", "Netzteil 12 V, mind. 3 A, mit GX16-Stecker verlötet – Entwicklung", "", "Strom"],
 	"motorhat": ["1×", "Motor-HAT (Adafruit DC & Stepper Motor HAT, I2C 0x60)", "Adafruit 2348", "Mover"],
 	"chassis": ["1×", "Kettenfahrwerk mit 2 DC-Motoren", "", "Mover"],
 	"schrauben": ["1 Set", "Schraubensatz M2 / M2,5 / M3 mit Muttern und Scheiben", "", "Kabel, Druck, Notfall"],
+	"psu_pi": ["1×", "Raspberry Pi 27-W-USB-C-Netzteil (Entwicklung)", "SC1153", "Strom"],
 }
 # Teile: [id, Art (druck | teil | kabel | v52), Name, Materialliste-id, Montageschritt (0 = keiner), Druckdatei,
 #         ersetzt (v5.2: dieses Teil von v5.1, sonst "")]
@@ -125,6 +129,14 @@ const TEILE := [
 	["mosfet52", "v52", "MOSFET-Modul (v5.2: Lüftungswand unter dem PCA9685)", "mosfet", 0, "", "mosfet"],
 	["cable_cam1", "v52", "Kamerakabel CAM1 (Weitwinkel → Kabelkamm → Pi)", "camcable2", 0, "", ""],
 	["cable_cam0_52", "v52", "Kamerakabel CAM0 (v5.2: Kamin → Kabelkamm → Pi)", "camcable", 0, "", "cable_cam"],
+	["plug52", "v52", "10 Stopfen Service-Fenster v5.2 (HDMI + USB-C)", "petg", 0, "10_Stopfen_HDMI_USB_v52", "plug"],
+	["sdplug", "v52", "16 Stopfen SD-Schlitz v5.2", "petg", 0, "16_Stopfen_SD_v52", ""],
+	["head52", "v52", "06 Kamerakopf v5.2 (Status-LED oben)", "petg", 0, "06_Kamerakopf_v52", "head"],
+	["diff52", "v52", "14 Diffusor «Blinki-Auge» + 15 Pupillenring", "sled", 0, "14_Diffusor_Status_LED", ""],
+	["sockel", "dev", "13 Entwicklungs-Sockel (statt UPS HAT + Akkus)", "petg", 0, "13_Entwicklungs_Sockel", "ups"],
+	["resplug", "v52", "17 Blindstopfen Reserve-Öffnung hinten (GX12)", "petg", 0, "17_Blindstopfen_Reserve", ""],
+	["lampdrv", "v52", "PLATZHALTER Lampentreiber (Feld 30 × 20, 2 × M2,5)", "", 0, "", ""],
+	["fuseh", "v52", "Sicherungshalter 5 A (Akku B+) in der Klammer am Boden", "fuse2", 0, "", ""],
 ]
 # Montage v5.1: [Titel, Text]
 const SCHRITTE := [
@@ -171,6 +183,10 @@ const BAU := {
 				{
 					"id": "netz",
 					"name": "ohne Akku (12-V-Netzteil)"
+				},
+				{
+					"id": "entwicklung",
+					"name": "Entwicklung: Sockel statt Akku, Pi-Netzteil"
 				}
 			]
 		},
@@ -362,6 +378,90 @@ const BAU := {
 				"zeit_h": 0.3,
 				"wenn": "v52",
 				"liegt": "Flansch unten (nur ohne Weitwinkel-Kamera)"
+			},
+			{
+				"stueck": 1,
+				"fuellung": 100,
+				"waende": 2,
+				"stuetzen": false,
+				"schicht": "0.12",
+				"brim": 0,
+				"wenn": "v52",
+				"datei": "10_Stopfen_HDMI_USB_v52",
+				"zeit_h": 0.4,
+				"liegt": "Flansch unten"
+			},
+			{
+				"stueck": 1,
+				"fuellung": 100,
+				"waende": 2,
+				"stuetzen": false,
+				"schicht": "0.12",
+				"brim": 0,
+				"wenn": "v52",
+				"datei": "16_Stopfen_SD_v52",
+				"zeit_h": 0.2,
+				"liegt": "Flansch unten"
+			},
+			{
+				"stueck": 1,
+				"fuellung": 100,
+				"waende": 2,
+				"stuetzen": false,
+				"schicht": "0.12",
+				"brim": 0,
+				"wenn": "v52",
+				"datei": "14_Diffusor_Status_LED",
+				"zeit_h": 0.3,
+				"liegt": "Zapfen unten, PETG natur/weiss"
+			},
+			{
+				"stueck": 1,
+				"fuellung": 100,
+				"waende": 2,
+				"stuetzen": false,
+				"schicht": "0.12",
+				"brim": 0,
+				"wenn": "v52",
+				"datei": "15_Pupillenring",
+				"zeit_h": 0.1,
+				"liegt": "flach, PETG schwarz"
+			},
+			{
+				"datei": "06_Kamerakopf_v52",
+				"stueck": 1,
+				"fuellung": 20,
+				"waende": 3,
+				"stuetzen": false,
+				"schicht": "0.20",
+				"brim": 5,
+				"zeit_h": 2.8,
+				"liegt": "rechte Seitenwand",
+				"wenn": "v52"
+			},
+			{
+				"datei": "13_Entwicklungs_Sockel",
+				"stueck": 1,
+				"fuellung": 15,
+				"waende": 3,
+				"stuetzen": false,
+				"schicht": "0.20",
+				"brim": 0,
+				"zeit_h": 2.0,
+				"wenn": "entwicklung",
+				"liegt": "Rahmen unten (Bolzen oben)"
+			},
+			{
+				"datei": "17_Blindstopfen_Reserve",
+				"stueck": 1,
+				"fuellung": 100,
+				"waende": 2,
+				"stuetzen": false,
+				"schicht": "0.12",
+				"brim": 0,
+				"zeit_h": 0.2,
+				"wenn": "v52",
+				"liegt": "Flansch unten"
 			}
 		],
 		"hinweise": [
@@ -429,6 +529,12 @@ const BAU := {
 			"menge": "6×",
 			"was": "M3 × 10",
 			"schritt": 13
+		},
+		{
+			"menge": "4×",
+			"was": "M2,5 × 6 (Pi auf Sockel 13)",
+			"schritt": 4,
+			"wenn": "entwicklung"
 		}
 	],
 	"sicherheit": [
@@ -610,6 +716,12 @@ const BAU := {
 				"x": 58,
 				"y": 70,
 				"wenn": "mover"
+			},
+			"fuse2": {
+				"name": "Sicherung 5 A (Akku)",
+				"x": 14,
+				"y": 78,
+				"wenn": "ups"
 			}
 		},
 		"verbindungen": [
@@ -643,10 +755,18 @@ const BAU := {
 			{
 				"id": "akku_buck",
 				"von": "ups",
+				"nach": "fuse2",
+				"art": "strom",
+				"pins": "Akku-Lötpunkte B+ / B− des UPS HAT (E) (12–16,8 V) → Flachsicherung 5 A in B+ (fliegender Halter, nahe am HAT). Ersatz: USB-A-5-V-Buchse des HAT",
+				"wenn": "ups"
+			},
+			{
+				"id": "akku_buck2",
+				"von": "fuse2",
 				"nach": "buck",
 				"art": "strom",
-				"pins": "Akku-Lötpunkte B+ / B− des UPS HAT (E) (12–16,8 V) → eigener Step-Down 6–36 V → 5 V (VIN / GND). Ersatz: USB-A-5-V-Buchse des HAT",
-				"wenn": "ups"
+				"wenn": "ups",
+				"pins": "nach der Sicherung → eigener Step-Down 6–36 V → 5 V (VIN / GND)"
 			},
 			{
 				"id": "servo_strom",
@@ -1048,6 +1168,16 @@ const BAU := {
 			"titel": "Mover",
 			"text": "Motor-HAT auf den Pi bzw. an I2C (0x60), Motoren M1 links und M2 rechts, das Gehäuse mit der Stativmutter 1/4\" auf das Fahrwerk schrauben. In MoveEye erscheint der zweite Stick von selbst.",
 			"unklar": "folgt später: Fahrwerk, Motorstrom und Befestigung (Stativmutter 1/4\")"
+		},
+		{
+			"wenn": "entwicklung",
+			"titel": "Entwicklungs-Variante ohne Akku",
+			"text": "Statt UPS HAT (E) und Akkus den Sockel 13 in den Akku-Zaun drücken (Klemmrippen), den Pi mit 4 × M2,5 × 6 auf die Bolzen schrauben – gleiche Lage und Höhe wie mit Akku, HDMI-/USB-C-Fenster und Kamerakabel passen. Der Pi bekommt Strom über sein eigenes USB-C-Netzteil (5,1 V / 5 A) durch das Service-Fenster. Servos, Lampen und Verstärker: das 12-V-Netzteil (mind. 3 A) an die GX16-Ladebuchse (Pins wie beim Laden: 2 Kontakte +, 2 Kontakte −); die 5-A-Sicherung bleibt in der Leitung, dahinter auf den Eingang des Step-down (6–36 V → 5 V). Nur 12 V verwenden, Polung prüfen – es gibt keinen Verpolungsschutz. In dieser Variante zeigen Akku-%, INA219 und Lade-LED nichts."
+		},
+		{
+			"wenn": "v52",
+			"titel": "SD-Karte (v5.2)",
+			"text": "Die microSD-Verlängerung (15 cm) in den Kartenslot des Pi stecken. Den Einbau-Kartenhalter (Platine ca. 22 × 15 mm, 2 Löcher M2,5 im Abstand 18 mm) mit 2 × M2,5 × 6 an die zwei Dome innen an der Lüftungswand über dem PCA9685 schrauben; der Kartenschlitz liegt hinter dem Wandschlitz 14 × 3 mm. Aussen den Stopfen 16 einsetzen. Masse der gekauften Platine vorher nachmessen."
 		}
 	],
 	"druckdateien_einzeln": [
@@ -1062,8 +1192,23 @@ const BAU := {
 		"MoveEye_v5-1_09_Zwischenboden.3mf",
 		"MoveEye_v5-1_10_HDMI_Stopfen.3mf",
 		"MoveEye_v5-1_11_Fuss_4x.3mf",
-		"MoveEye_v5-2_01_Unterteil_v52.3mf",
-		"MoveEye_v5-2_12_Blindstopfen_Weitwinkel.3mf"
+		"v5-2/MoveEye_v5-2_01_Unterteil_v52.3mf",
+		"v5-2/MoveEye_v5-2_02_Deckel_mit_Laufring.3mf",
+		"v5-2/MoveEye_v5-2_03_Drehteller.3mf",
+		"v5-2/MoveEye_v5-2_04_Gabel_mit_Arm1.3mf",
+		"v5-2/MoveEye_v5-2_05_Arm2_Lagerseite.3mf",
+		"v5-2/MoveEye_v5-2_06_Kamerakopf_v52.3mf",
+		"v5-2/MoveEye_v5-2_07_Seitendeckel.3mf",
+		"v5-2/MoveEye_v5-2_08_Lampenhalter_2x.3mf",
+		"v5-2/MoveEye_v5-2_09_Zwischenboden.3mf",
+		"v5-2/MoveEye_v5-2_10_Stopfen_HDMI_USB_v52.3mf",
+		"v5-2/MoveEye_v5-2_11_Fuss_4x.3mf",
+		"v5-2/MoveEye_v5-2_12_Blindstopfen_Weitwinkel.3mf",
+		"v5-2/MoveEye_v5-2_13_Entwicklungs_Sockel.3mf",
+		"v5-2/MoveEye_v5-2_14_Diffusor_Status_LED.3mf",
+		"v5-2/MoveEye_v5-2_15_Pupillenring.3mf",
+		"v5-2/MoveEye_v5-2_16_Stopfen_SD_v52.3mf",
+		"v5-2/MoveEye_v5-2_17_Blindstopfen_Reserve.3mf"
 	],
 	"farben": {
 		"kopf": "#f59a4a",
@@ -1074,7 +1219,8 @@ const BAU := {
 			"head",
 			"side",
 			"lamp1",
-			"lamp2"
+			"lamp2",
+			"head52"
 		],
 		"turntable": "#f59a4a",
 		"yoke": "#f59a4a",
@@ -1082,7 +1228,8 @@ const BAU := {
 		"head": "#f59a4a",
 		"side": "#f59a4a",
 		"lamp1": "#f59a4a",
-		"lamp2": "#f59a4a"
+		"lamp2": "#f59a4a",
+		"head52": "#f59a4a"
 	},
 	"bom_extra": {
 		"pi5": {
@@ -1197,6 +1344,13 @@ const BAU := {
 			"preis": 5,
 			"haendler": "galaxus",
 			"suche": "Sicherungshalter fliegend ATM",
+			"gruppe": "strom"
+		},
+		"fuse2": {
+			"preis": 5,
+			"haendler": "galaxus",
+			"suche": "Sicherungshalter fliegend ATM",
+			"wenn": "ups",
 			"gruppe": "strom"
 		},
 		"usbc": {
@@ -1373,10 +1527,17 @@ const BAU := {
 			"wenn": "v52",
 			"gruppe": "v52"
 		},
+		"sdext": {
+			"preis": 8,
+			"haendler": "galaxus",
+			"suche": "microSD Verlängerungskabel 15cm Einbau",
+			"wenn": "v52",
+			"gruppe": "v52"
+		},
 		"mosfet3": {
 			"preis": 4.9,
 			"haendler": "bastelgarage",
-			"suche": "MOSFET Modul AOD4184",
+			"suche": "MOSFET AOD4184",
 			"alt": "dazu Vorwiderstand 47 Ω / 0,5 W; oder ein kleiner Logic-Level-MOSFET (AO3400)",
 			"wenn": "v52",
 			"gruppe": "v52"
@@ -1416,6 +1577,13 @@ const BAU := {
 			"wenn": "netz",
 			"gruppe": "strom"
 		},
+		"psu12_dev": {
+			"preis": 20,
+			"haendler": "galaxus",
+			"suche": "Netzteil 12V 3A",
+			"wenn": "entwicklung",
+			"gruppe": "strom"
+		},
 		"motorhat": {
 			"preis": 25,
 			"haendler": "pishop",
@@ -1436,10 +1604,17 @@ const BAU := {
 			"haendler": "galaxus",
 			"suche": "Schraubensortiment M2 M2.5 M3",
 			"gruppe": "kabel"
+		},
+		"psu_pi": {
+			"preis": 15,
+			"haendler": "pishop",
+			"suche": "Raspberry Pi 27W USB-C Netzteil",
+			"wenn": "entwicklung",
+			"gruppe": "strom"
 		}
 	}
 }
 # Gehäuse-Varianten: id -> {name, teile, ersetzt, druckdateien, anleitung, hinweis, nachmessen (deutsch, T.t übersetzt)}
 const GEHAEUSE_VARIANTEN := {
-	"v52": {"name": "Variante v5.2: Weitwinkel-Kamera im Unterteil", "teile": ["tub52", "wide", "irled", "mosfet52", "cable_cam1", "cable_cam0_52", "buttons", "sled"], "ersetzt": {"tub52": "tub", "mosfet52": "mosfet", "cable_cam0_52": "cable_cam"}, "druckdateien": ["v5-2/MotionWatch_v5-2_Platte_A_Unterteil.3mf"], "anleitung": "Dokumente/LIESMICH_Montage_v5-2.md", "hinweis": "Platte A v5.2 ersetzt Platte A v5.1 (Unterteil mit Weitwinkel-Fenster). Platte B bleibt v5.1. Vor dem Druck die Masse der Liste «Nachmessen» prüfen.", "nachmessen": ["IR-Modul: Ø 18,8 mm, Länge 14 mm, Linse vorne Ø 17 mm (IRW_MOD_D, IRW_MOD_L, IRW_LENS_D)", "Weitwinkel-Kamera: Linsenhöhe 11,4 mm ab Platine, Linsenmitte 9,5 mm unter der Platinen-Oberkante, Frontlinse Ø 6 mm (WC_LENS_H, WC_LENS_FROM_TOP, WC_R0)", "Lage der Buchsen CAM/DISP 0 und 1 am Pi 5 (Kabelkamm FPC_X0, PI_CAM0_XY, PI_CAM1_XY)", "Abstände: IR-Modul–Kamera-Fenster (Steg 3,2 mm, Trennsteg 2 mm vor der Wand), IR-Modul–Lautsprecher 11 mm, Kabel–Lüfter 4 mm / Ansaugung 8 mm, Kabel–Lüftungsschlitze 9 mm", "UPS HAT (E) mit Akkus (wie v5.1: angenommen 90 × 80 × 26 mm)"]},
+	"v52": {"name": "Variante v5.2: Weitwinkel-Kamera im Unterteil", "teile": ["tub52", "wide", "irled", "mosfet52", "cable_cam1", "cable_cam0_52", "buttons", "sled", "plug52", "sdplug", "head52", "diff52", "resplug", "lampdrv", "fuseh"], "ersetzt": {"tub52": "tub", "mosfet52": "mosfet", "cable_cam0_52": "cable_cam", "plug52": "plug", "head52": "head"}, "druckdateien": ["v5-2/MotionWatch_v5-2_Platte_A_Unterteil.3mf", "v5-2/MotionWatch_v5-2_Platte_B_Deckel_Kopf.3mf"], "anleitung": "Dokumente/LIESMICH_Montage_v5-2.md", "hinweis": "Platte A und B v5.2 ersetzen die Platten v5.1 (Unterteil mit Weitwinkel-Fenster, Service-Fenster HDMI/USB-C, SD-Schlitz; Kopf mit Status-LED). Vor dem Druck die Liste «Nachmessen» prüfen.", "nachmessen": ["IR-Modul: Ø 18,8 mm, Länge 14 mm, Linse vorne Ø 17 mm (IRW_MOD_D, IRW_MOD_L, IRW_LENS_D)", "Weitwinkel-Kamera: Linsenhöhe 11,4 mm ab Platine, Linsenmitte 9,5 mm unter der Platinen-Oberkante, Frontlinse Ø 6 mm (WC_LENS_H, WC_LENS_FROM_TOP, WC_R0)", "Lage der Buchsen CAM/DISP 0 und 1 am Pi 5 (Kabelkamm FPC_X0, PI_CAM0_XY, PI_CAM1_XY)", "Abstände: IR-Modul–Kamera-Fenster (Steg 3,2 mm, Trennsteg 2 mm vor der Wand), IR-Modul–Lautsprecher 11 mm, Kabel–Lüfter 4 mm / Ansaugung 8 mm, Kabel–Lüftungsschlitze 9 mm", "UPS HAT (E) mit Akkus (wie v5.1: angenommen 90 × 80 × 26 mm)", "Service-Fenster: Lage USB-C (x 85) und HDMI am Pi 5; SD: microSD-Verlängerung mit Einbau-Kartenhalter (Lochabstand 18 mm, Platine ca. 22 × 15 mm)", "Lampentreiber: noch unbekannt – Feld 30 × 20 mit 2 Domen M2,5 ist ein Platzhalter (DRV_HOLES); Sicherungshalter 30 × 13 × 10 (FUSE_*)"]},
 }

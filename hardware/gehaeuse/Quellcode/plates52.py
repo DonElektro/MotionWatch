@@ -25,7 +25,7 @@ def from_3mf(name):
             return v, f
     raise FileNotFoundError(name)
 BW, BH, GAP = 224.0, 246.0, 5.0
-NEW = {"01_Unterteil_v52", "06_Kamerakopf_v52", "12_Blindstopfen_Weitwinkel", "13_Stopfen_IR_LED", "14_Diffusor_Status_LED", "15_Pupillenring"}
+NEW = {"01_Unterteil_v52", "06_Kamerakopf_v52", "10_Stopfen_HDMI_USB_v52", "16_Stopfen_SD_v52", "13_Entwicklungs_Sockel", "17_Blindstopfen_Reserve", "12_Blindstopfen_Weitwinkel", "13_Stopfen_IR_LED", "14_Diffusor_Status_LED", "15_Pupillenring"}
 def load(n):
     p = f"{'out52' if n in NEW else 'out51'}/{n}.npz"
     if n not in NEW and not os.path.exists(p):
@@ -55,7 +55,7 @@ if __name__ == "__main__":
     sel = sys.argv[1:] or ["A"]
     plates = {}
     if "A" in sel:
-        a = ["01_Unterteil_v52", "09_Zwischenboden", "10_HDMI_Stopfen", "11_Fuss_4x", "12_Blindstopfen_Weitwinkel"]
+        a = ["01_Unterteil_v52", "09_Zwischenboden", "10_Stopfen_HDMI_USB_v52", "11_Fuss_4x", "12_Blindstopfen_Weitwinkel", "16_Stopfen_SD_v52", "17_Blindstopfen_Reserve"]
         if v52.IR_TYP == "5mm":
             a.append("13_Stopfen_IR_LED")
         plates["A"] = ("out52/MotionWatch_v5-2_Platte_A_Unterteil.3mf", pack(expand(a)))

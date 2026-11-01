@@ -202,7 +202,28 @@ def part_shelf():
            box(SHELF_X0 - 1, SHELF_X0 + 14, SHELF_Y0 - 1, SHELF_Y0 + 8, -1, SHELF_T + 1)]     # Kabelecke
     for i in range(3):                                                                     # Kabelbinder-Schlitze
         cut.append(box(SHELF_X0 + 18 + i * 10, SHELF_X0 + 21 + i * 10, SHELF_Y0 + 4, SHELF_Y0 + 8, -1, SHELF_T + 1))
+    cut += shelf_grid(plate, cut)
     return D(plate, *cut)
+
+
+SHELF_GRID = 5.0                         # 01.11.2026 (Daniel): Lochraster ca. 5 mm für M2,5 / M3 selbstschneidend
+SHELF_GRID_D = 2.4                       # Kernloch: M2,5 fest, M3 schneidet sich ein (PETG)
+SHELF_GRID_KEEP = 2.0                    # Rand zu Plattenkante, Schlitzen, Löchern und Kabelecke (Stabilität)
+
+
+def shelf_grid(plate, cut):
+    """Rasterlöcher nur dort, wo um das Loch noch SHELF_GRID_KEEP Material bis zu jeder Kante / Öffnung bleibt"""
+    if not SHELF_GRID:
+        return []
+    solid = D(plate, *cut) if cut else plate
+    r = SHELF_GRID_D / 2 + SHELF_GRID_KEEP
+    out = []
+    for x in np.arange(SHELF_X0 + 5.0, LX - TOL - 2.0, SHELF_GRID):
+        for y in np.arange(SHELF_Y0 + 5.0, LY - TOL - 2.0, SHELF_GRID):
+            ring = [(x + r * math.cos(a), y + r * math.sin(a), SHELF_T / 2) for a in np.linspace(0, 2 * math.pi, 12, endpoint=False)]
+            if np.all(solid.sdf(np.array(ring + [(x, y, SHELF_T / 2)])) < 0):
+                out.append(cyl_z(x, y, -1, SHELF_T + 1, SHELF_GRID_D))
+    return out
 
 
 def part_hdmi_plug():

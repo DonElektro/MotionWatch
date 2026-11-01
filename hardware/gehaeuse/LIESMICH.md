@@ -101,6 +101,15 @@ denselben Reitern: Übersicht · Teile · Einkauf · Drucken · Montage · Verka
   Löchern hinter dem Becher (x −5,5, M3 × 8 + Scheibe), Aussparung um den Kippachsen-Kopf und Schürze für den Druck.
   Neu erzeugt: 03, 04, 05, 08 und Platte B.
 
+  **Runde v5.2b (01.11.2026, Entscheide Daniel):** Service-Fenster hinten links (HDMI + USB-C, x 78–120) mit Stopfen 10 v5.2;
+  SD-Schlitz in der Lüftungswand für eine microSD-Verlängerung mit Einbau-Kartenhalter (die Karte selbst steckt unter dem
+  Pi mitten im Gehäuse) mit Stopfen 16; Kamerakopf 06 v5.2 mit Status-LED, Diffusor 14 und Pupillenring 15; Kamera-Rippen
+  und Trennsteg ≥ 1,5 mm; Zwischenboden 09 mit Lochraster 5 mm (Ø 2,4 für M2,5 / M3); Feld für den Lampentreiber
+  (PLATZHALTER 30 × 20, 2 Dome M2,5) an der Stirnwand unter dem Step-down und Klammer für den Sicherungshalter (Akku B+, 5 A)
+  am Boden; Reserve-Öffnung hinten (GX12, Nut, Regendach) mit Blindstopfen 17; **13_Entwicklungs_Sockel** statt UPS HAT +
+  Akkus (Pi in gleicher Lage und Höhe, Variante «Entwicklung» in Bauen). **Alle Druckdateien v5.2** (Platten A und B und
+  jedes Teil einzeln, auch die unveränderten): [Druckdateien/v5-2/](Druckdateien/v5-2/).
+
   **NACHMESSEN vor dem Druck v5.2** (Parameter oben in `Quellcode/v52.py`, alle geschätzt):
 
   | Was | Parameter | Annahme |
@@ -111,6 +120,10 @@ denselben Reitern: Übersicht · Teile · Einkauf · Drucken · Montage · Verka
   | Trennsteg IR ↔ Fenster reicht? | `TRENN_Y`, `TRENN_L` | Steg in der Wand 3,2 mm, aussen 2 mm |
   | Abstand IR-Modul ↔ Lautsprecher, Kabel ↔ Lüfter / Lüftungsschlitze | (check52.py abstand) | 11 mm; 4 mm Gehäuse, 8 mm Ansaugung; 9 mm |
   | UPS HAT (E) mit Akkus (wie v5.1) | `v5.BAT_L/W/H` | 90 × 80 × 26 mm |
+  | Lage USB-C / HDMI am Pi 5 (Service-Fenster) | `SVC_X0/X1` | USB-C x 85, HDMI x 100 / 113,5 |
+  | microSD-Verlängerung: Halter-Platine, Lochabstand | `SD_*` | 22 × 15 mm, 18 mm |
+  | Lampentreiber (unbekannt) | `DRV_*` | PLATZHALTER 30 × 20, Löcher diagonal |
+  | Sicherungshalter Inline 5 A | `FUSE_*` | 30 × 13 × 10 mm |
 
 - **Archiv «PanTilt v6» (22.10.2026):** `PanTilt_v6_X2D_alle_Teile.3mf`, 7 Teile mit der alten Nummerierung
   (1_Gehaeuse_Unterteil … 7_Rueckdeckel), Unterteil 122 × 87 × 48 mm. Das ist die **ältere** PanTilt-Linie (v4, geschlossener

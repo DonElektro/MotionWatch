@@ -1,15 +1,15 @@
 {
- "version": "3D-5.42.0",
- "ver": "3.42.0",
- "name": "MoveEye Sim 3.42.0",
+ "version": "3D-5.43.0",
+ "ver": "3.43.0",
+ "name": "MoveEye Sim 3.43.0",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 48405308,
- "sha256": "47ff4b548794aa5301e2c90d40c9c1a3d7b67dbeebe2b5d69367d1e559892ab2",
- "notes": "Linux, Lade-LED, Gehäuse v5.2",
+ "size": 48917957,
+ "sha256": "d13009896b4ee4e6a83fd1b993492516482456b17c1ef6dfa50ea5f496a2cdaf",
+ "notes": "Gehäuse v5.2b",
  "linux": {
   "file": "simulator3d/MoveEyeSim3D_Linux.zip",
-  "ver": "3.42.0",
-  "size": 42370214,
-  "sha256": "d68fcbdbe1de205498a166304e61ad48f2420a8976a0e368fd87092544bdddaa"
+  "ver": "3.43.0",
+  "size": 42883943,
+  "sha256": "b9f8a61d142fa3eb80f2caddfa3f1224da0a9bc86b64e18f3022fd36a5322d0c"
  }
 }
