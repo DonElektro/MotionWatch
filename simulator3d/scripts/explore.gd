@@ -324,11 +324,10 @@ func _input(ev: InputEvent) -> void:
 			KEY_HOME:
 				orbit = 0.0
 				get_viewport().set_input_as_handled()
-			KEY_PAGEUP:
-				main.set_mast(main.mast_h + 0.1)
-				get_viewport().set_input_as_handled()
-			KEY_PAGEDOWN:
-				main.set_mast(main.mast_h - 0.1)
+			KEY_PAGEUP, KEY_PAGEDOWN:                    # the mast; tasten.gd: a list under the mouse scrolls (Shift = always the mast)
+				var dn: int = 1 if ev.keycode == KEY_PAGEDOWN else -1
+				if ev.shift_pressed or main.typing() or main.tasten == null or not main.tasten.scroll_page(dn, false):
+					main.set_mast(main.mast_h - 0.1 * dn)
 				get_viewport().set_input_as_handled()
 
 

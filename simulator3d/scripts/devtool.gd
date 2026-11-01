@@ -727,6 +727,7 @@ class DevMap extends Control:
 	func _init() -> void:
 		clip_contents = true
 		mouse_filter = Control.MOUSE_FILTER_STOP
+		set_meta("rad_zoom", "devtool")                # tasten.gd: + / − = the wheel of the map
 
 	func fit() -> void:
 		var b: Array = BOUNDS.get(dev.world, [-50.0, -50.0, 50.0, 50.0])

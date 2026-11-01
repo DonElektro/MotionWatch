@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-01 18:05",
+ "generated": "2026-11-01 18:30",
  "versions": [
+  {
+   "version": "3.44.0",
+   "file": "webcam_bewegung_3_44_0.py",
+   "url": "",
+   "sha256": "9b1d59a6f35303a72eb402ac1254023d3b1aab2336ccde81e90e69761639a755",
+   "date": "2026-11-01 18:30",
+   "notes": "Simulator: Tastatur statt Scrollrad: + / − zoomt überall, Bild↑/↓ blättert Listen, Pfeile drehen die Ansicht, F1 zeigt die Tasten-Hilfe, Scrollbalken sind sichtbar und ziehbar, Shift+Bild↑/↓ bewegt den Mast. Linux-Kiosk: ./kiosk_ein.sh macht den PC zur reinen Simulator-Maschine (Vollbild, sendet an MoveEye, Neustart nach Absturz, SSH); Ctrl+Alt+D = normales Mint, ./kiosk_aus.sh stellt alles zurück.",
+   "size": 4796346,
+   "sig": "ff5cce456539a0c59f1d93c3074a39bfd541f5231be613def6328a096ebf9f093d4ecd163b11c360767889155b632f7a0c76e39f8bacca9d7a1f89de3c43630a",
+   "data": {
+    "file": "moveeye_daten_3_44_0.zip",
+    "url": "",
+    "sha256": "06ff9da1bd4d958e7ee89c48fc41a043b95925ffec88f6012579d9decced4c36",
+    "size": 3279507,
+    "sig": "c11dd969f3698d670ba3bd2ff0d72cdc16d94e2c1193c284f9368b9f697fbec3f9941eb01669837b8030adf4c1361f30e650a3302278234e2c80ce23540fcb0d"
+   }
+  },
   {
    "version": "3.43.1",
    "file": "webcam_bewegung_3_43_1.py",
    "url": "",
    "sha256": "00c28106c8bc5d798def77b1501e7cfb615c266d8c60fd5754dbe4bb38f54716",
-   "date": "2026-11-01 18:05",
+   "date": "2026-11-01 18:06",
    "notes": "MoveEye bietet unter /sim jetzt auch den Simulator für Linux zum Herunterladen an.",
    "size": 4796181,
    "sig": "bdfdc67338426bf528951d2a1481f30e52eefc6503115fce23f1e0330dfb60ddceffe35bdc6e3cabc714172ec569f2104d8c5ab0a34acad5e56636ad28f0a605",
@@ -136,23 +153,6 @@
     "sha256": "0a770b3b7028cda21568dbff9d76af4c7689c78716e4629a18b09fd9af31fa5b",
     "size": 1585160,
     "sig": "cdea2923e026abdaaadb47f9d219f69dd51c7063307013ca4ca834905dd3094fa7f006bd45dda564def18ada708228f3cab02fb0f330256c8b1db9949df1320c"
-   }
-  },
-  {
-   "version": "3.35.0",
-   "file": "webcam_bewegung_3_35_0.py",
-   "url": "",
-   "sha256": "b540c28d05aeaf97f7245b15093b1e40f2cd8c879ac599c144e248266800ca95",
-   "date": "2026-11-01 11:52",
-   "notes": "Bergtal: ein neues Geheimnis.",
-   "size": 4670877,
-   "sig": "ae30852a59d0b8c4bbeb7eb4cdddd6fc6a3f5dbca3780447b386354210c95b830e838b78aee84d6b49f02ab62c78ca21ae73c5064ff2bb4a8bcc032f257b5606",
-   "data": {
-    "file": "moveeye_daten_3_35_0.zip",
-    "url": "",
-    "sha256": "b264f086bf4c0f27574fe49865e934b4a8006b5e0ccce7e30a89e3270352d6fc",
-    "size": 1585078,
-    "sig": "7d418e56c540a46be4ab525a974b055272da18d9915b2e6c068e7a091870e02764fcfdee84d068c3e60e3810a7fe306288da15dd170f71ee705f3b699f1e6e08"
    }
   },
   {

@@ -16,6 +16,7 @@ const PERSON := ["person", "child", "jogger"]
 
 
 func _ready() -> void:
+	set_meta("rad_zoom", "minimap")                    # tasten.gd: + / − over the map = its wheel
 	position = Vector2(14, 92)
 	clip_contents = true
 	mouse_filter = Control.MOUSE_FILTER_STOP

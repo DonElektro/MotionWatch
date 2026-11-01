@@ -2218,6 +2218,12 @@
   "it": "*.zip ; ",
   "rm": "*.zip ; "
  },
+ "+ / − zoomen · Bild ↑ / ↓ blättern · Pfeile drehen und neigen": {
+  "en": "+ / − zoom · Page ↑ / ↓ scroll · arrows turn and tilt",
+  "fr": "+ / − zoom · Page ↑ / ↓ défiler · flèches tourner et incliner",
+  "it": "+ / − zoom · Pag ↑ / ↓ scorrere · frecce ruotare e inclinare",
+  "rm": "+ / − zoom · Pagina ↑ / ↓ sfegliar · frizzas volver e inclinar"
+ },
  "+ Bot": {
   "en": "+ Bot",
   "fr": "+ Bot",
@@ -4861,6 +4867,12 @@
   "it": "Vista del pannello come in MoveEye: chiaro → luce rossa → scuro (luce rossa per la notte in tenda)",
   "rm": "Vista da la panela sco en MoveEye: cler → glisch cotschna → stgir (glisch cotschna per la notg en la tenda)"
  },
+ "Ansicht drehen und neigen (fährt der Mover, steuern die Pfeile ihn)": {
+  "en": "turn and tilt the view (while the mover drives, the arrows steer it)",
+  "fr": "tourner et incliner la vue (si le mover roule, les flèches le dirigent)",
+  "it": "ruotare e inclinare la vista (se il mover si muove, le frecce lo guidano)",
+  "rm": "volver ed inclinar la vista (sch'il mover charra, manischan las frizzas el)"
+ },
  "Ansicht mit der Maus: links ziehen = verschieben · rechts ziehen = drehen · Rad = zoomen · Doppelklick = hinfliegen\nTasten: 0 frei · 1 / 2 Kameras · 3 Wärmebild · M Karte · L Livebild · H Bedienfeld · Esc Punkte fertig": {
   "en": "View with the mouse: drag left = move · drag right = turn · wheel = zoom · double click = fly there\nKeys: 0 free · 1 / 2 cameras · 3 thermal image · M map · L live picture · H control panel · Esc points done",
   "fr": "Vue à la souris : glisser à gauche = déplacer · glisser à droite = tourner · molette = zoomer · double-clic = y voler\nTouches : 0 libre · 1 / 2 caméras · 3 image thermique · M carte · L image en direct · H panneau · Esc points terminés",
@@ -6121,6 +6133,12 @@
   "it": "Nascondere il pannello (H)",
   "rm": "Zuppar la panela (H)"
  },
+ "Bedienfeld ein / aus": {
+  "en": "control panel on / off",
+  "fr": "panneau de commande on / off",
+  "it": "pannello di comando on / off",
+  "rm": "panel da cumond en / ora"
+ },
  "Bedienfeld zeigen (H)": {
   "en": "Show control panel (H)",
   "fr": "Afficher le panneau (H)",
@@ -6967,6 +6985,12 @@
   "it": "Immagine non leggibile: %s",
   "rm": "Maletg betg legibel: %s"
  },
+ "Bild ↑ / Bild ↓": {
+  "en": "Page ↑ / Page ↓",
+  "fr": "Page ↑ / Page ↓",
+  "it": "Pag ↑ / Pag ↓",
+  "rm": "Pagina ↑ / Pagina ↓"
+ },
  "Bild ↑ / ↓ beim Erkunden · Höhe der Kamera über dem Boden (Stange)": {
   "en": "Page ↑ / ↓ when exploring · height of the camera above the ground (pole)",
   "fr": "Page ↑ / ↓ en exploration · hauteur de la caméra au-dessus du sol (mât)",
@@ -7344,6 +7368,12 @@
   "fr": "Prairie fleurie",
   "it": "Prato fiorito",
   "rm": "Prà cun flurs"
+ },
+ "blättert die Liste unter der Maus, sonst das Seitenmenü": {
+  "en": "scrolls the list under the mouse, else the side menu",
+  "fr": "fait défiler la liste sous la souris, sinon le menu latéral",
+  "it": "scorre l'elenco sotto il mouse, altrimenti il menu laterale",
+  "rm": "sfeglia la glista sut la mieur, uschiglio il menu da la vart"
  },
  "Boden": {
   "en": "bottom",
@@ -14494,6 +14524,12 @@
   "it": "Extra – turno di esercizio, compito del giorno, fantasma, battito, corridori al massimo, immagine sul telefonino",
   "rm": "Extras – runda d’exercizi, incumbensa dal di, spiert, battacor, curriders il pli bler, maletg sin il telefonin"
  },
+ "F1, Esc oder Klick: schliessen": {
+  "en": "F1, Esc or click: close",
+  "fr": "F1, Échap ou clic : fermer",
+  "it": "F1, Esc o clic: chiudere",
+  "rm": "F1, Esc u clic: serrar"
+ },
  "Fackel": {
   "en": "Torch",
   "fr": "Torche",
@@ -15479,6 +15515,12 @@
   "it": "Pipistrelli alla luce (di notte)",
   "rm": "Mez-mieurs a la glisch (da notg)"
  },
+ "fliegen · Shift schneller": {
+  "en": "fly · Shift faster",
+  "fr": "voler · Maj plus vite",
+  "it": "volare · Maiusc più veloce",
+  "rm": "sgolar · Shift pli spert"
+ },
  "Flocke! Da bist du ja, du Ausreisserin. Danke vielmals - ohne dich hätte ich den ganzen Tag gesucht.": {
   "en": "Flocke! There you are, you runaway. Thank you so much - without you I'd have searched all day.",
   "fr": "Flocke ! Te voilà, petite fugueuse. Merci beaucoup - sans toi, j'aurais cherché toute la journée.",
@@ -15958,6 +16000,12 @@
   "fr": "Modèles 3D gratuits à télécharger. Choisir le format .glb (ou .gltf), puis le charger dans «Fichier propre» ou le glisser dans la fenêtre. CC0 = sans conditions ; CC-BY = citer l’auteur.",
   "it": "Modelli 3D gratuiti da scaricare. Scegliere il formato .glb (o .gltf), poi caricarlo in «File proprio» o trascinarlo nella finestra. CC0 = senza condizioni; CC-BY = citare l’autore.",
   "rm": "Models 3D gratuits da telechargiar. Tscherner il format .glb (u .gltf), lura chargiar en «Atgna datoteca» u trair en la fanestra. CC0 = senza cundiziuns; CC-BY = numnar l’autur."
+ },
+ "freie Ansicht · Kamera 1 · Kamera 2 · Wärmebild": {
+  "en": "free view · camera 1 · camera 2 · thermal image",
+  "fr": "vue libre · caméra 1 · caméra 2 · image thermique",
+  "it": "vista libera · camera 1 · camera 2 · immagine termica",
+  "rm": "vista libra · camera 1 · camera 2 · maletg termic"
  },
  "Freie Wahl (ausgelost)": {
   "en": "Free choice (drawn by lot)",
@@ -25492,6 +25540,12 @@
   "it": "Palo (scena) – come prima, a 3 m dall’apparecchio",
   "rm": "Pal (scena) – sco fin ussa, 3 m sper l’apparat"
  },
+ "Mast höher / tiefer (beim Erkunden auch ohne Shift)": {
+  "en": "mast up / down (when exploring also without Shift)",
+  "fr": "mât plus haut / plus bas (en exploration aussi sans Maj)",
+  "it": "palo più alto / più basso (esplorando anche senza Maiusc)",
+  "rm": "pitga pli aut / pli bass (cun explorar er senza Shift)"
+ },
  "Master": {
   "en": "Master",
   "fr": "Master",
@@ -31663,6 +31717,12 @@
   "it": "stick destro volare · stick sinistro guardarsi intorno · R2 / L2 su / giù · ✚ ↑↓ velocità · tenere Start = indietro",
   "rm": "stick dretg sgular · stick sanester guardar enturn · R2 / L2 ensi / engiu · ✚ ↑↓ tempo · tegnair Start = enavos"
  },
+ "rechts an jeder Liste: mit der Maus ziehen": {
+  "en": "on the right of every list: drag with the mouse",
+  "fr": "à droite de chaque liste : glisser avec la souris",
+  "it": "a destra di ogni elenco: trascinare con il mouse",
+  "rm": "a dretga da mintga glista: trair cun la mieur"
+ },
  "rechts von dir": {
   "en": "to your right",
   "fr": "à ta droite",
@@ -33768,6 +33828,12 @@
   "it": "Ciotola",
   "rm": "Scadiola"
  },
+ "Scrollbalken": {
+  "en": "Scroll bar",
+  "fr": "Barre de défilement",
+  "it": "Barra di scorrimento",
+  "rm": "Trav da sfegliar"
+ },
  "SD-Karte (v5.2)": {
   "en": "SD card (v5.2)",
   "fr": "Carte SD (v5.2)",
@@ -34211,6 +34277,12 @@
   "fr": "Placer : %s – cliquer dans le monde, Esc = annuler",
   "it": "Posare: %s – cliccare nel mondo, Esc = annulla",
   "rm": "Metter: %s – cliccar en il mund, Esc = interrumper"
+ },
+ "Shift + Bild ↑ / ↓": {
+  "en": "Shift + Page ↑ / ↓",
+  "fr": "Maj + Page ↑ / ↓",
+  "it": "Maiusc + Pag ↑ / ↓",
+  "rm": "Shift + Pagina ↑ / ↓"
  },
  "Sicher (2 Min.).": {
   "en": "Safe (2 min).",
@@ -36816,6 +36888,18 @@
   "fr": "Touches",
   "it": "Tasti",
   "rm": "Tastas"
+ },
+ "Tasten ohne Mausrad": {
+  "en": "Keys without mouse wheel",
+  "fr": "Touches sans molette",
+  "it": "Tasti senza rotellina",
+  "rm": "Tastas senza rodella"
+ },
+ "Tasten ohne Mausrad (F1)": {
+  "en": "Keys without mouse wheel (F1)",
+  "fr": "Touches sans molette (F1)",
+  "it": "Tasti senza rotellina (F1)",
+  "rm": "Tastas senza rodella (F1)"
  },
  "Taster 12 mm, IP67": {
   "en": "Push button 12 mm, IP67",
@@ -42436,6 +42520,12 @@
   "fr": "Zoom",
   "it": "Zoom",
   "rm": "Zoom"
+ },
+ "zoomen (auch Ziffernblock) – Ansicht, Kamera, Karte, Werkstatt": {
+  "en": "zoom (also number pad) – view, camera, map, workshop",
+  "fr": "zoomer (aussi pavé numérique) – vue, caméra, carte, atelier",
+  "it": "zoom (anche tastierino numerico) – vista, camera, mappa, officina",
+  "rm": "zoomar (er tastatura numerica) – vista, camera, charta, ufficina"
  },
  "Zu": {
   "en": "Close",
