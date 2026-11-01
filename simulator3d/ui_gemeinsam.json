@@ -9,9 +9,12 @@
   "shared": "Einstellungen, die beide Seiten gleich haben (Abgleich kommt mit P2; Entscheide Daniel 31.10.2026: E1 eine Einfach/Experte-Wahl, E2 eine Sprache, E3 Auf-/Zuklappen nicht teilen, E4 Sensoren -> Zusatzgeräte).",
   "local": "bleibt pro Gerät / Programm, wird nie geteilt",
   "kopf": "Der gemeinsame Kopf (Daniel 01.11.2026: «ein Kopf, überall gleich»): feste Knöpfe in dieser Reihenfolge auf jeder Web-Seite (Teil 639t), im Pi-Fenster (App._kopf_tk) und im Simulator (scripts/kopf.gd). «sym» = Zeichen im Web, «tk» = Zeichen im Pi-Fenster (DejaVu-Schrift), «draw» = gezeichnetes Symbol im Simulator, «texts» = Tooltip in de / en / fr / it / rm (en = Schlüssel in MoveEye, de = Schlüssel im Simulator). «schmal_ab»: auf schmalen Bildschirmen wandern dieser Knopf und alle danach ins ☰-Menü (gleiche Reihenfolge). «nur_besitzer»: nur mit Entwickler-Bereich und für den Besitzer. Seiteneigene Knöpfe kommen ins ☰-Menü (Abschnitt «Diese Seite»). «listen»: Gruppen der Ein-/Ausblenden-Listen (Chips mit Symbol, «alle an/aus»).",
-  "features": "Feld «features» in /info des Simulators: was er kann (MoveEye richtet sich danach, ältere Simulatoren senden es nicht)"
+  "features": "Feld «features» in /info des Simulators: was er kann (MoveEye richtet sich danach, ältere Simulatoren senden es nicht). MoveEye schickt seine eigenen im Zustand («state.features»). ui1 = Abgleich «ui», level1 = Zustand Aus / Wachsam / Voll, push1 = Push-Vorschau, diag1 = Diagnose gegenseitig, lock1 = Bedienermodus, ver1 = Versions-Paar.",
+  "sync": "P2 (Teil 639zb / scripts/abgleich.gd): wie «shared» abgeglichen wird - Revision bei MoveEye, letzte Änderung gewinnt (Ankunft bei MoveEye), im selben Takt und nach dem Neuverbinden führt MoveEye; nur der Leiter; ohne Verbindung arbeitet jede Seite selbst.",
+  "level": "★1: der Zustand in beiden Programmen gleich (Wörter wie MoveEye protect_label, Farben wie die Status-LED; MoveEye schickt die Farbe der eigenen LED-Einstellung mit).",
+  "hint": "Kleine Hinweise / Chips in beiden Programmen (keine neuen Karten): Push-Vorschau, Versions-Paar, Bedienermodus, Ansicht übernommen."
  },
- "features": ["menu1"],
+ "features": ["menu1", "ui1", "level1", "push1", "diag1", "lock1", "ver1"],
  "alias": {"system": "sys", "sensors": "extras"},
  "groups": [
   {"id": "alarm", "order": 10, "emoji": "🛡", "tk": "🛡",
@@ -67,6 +70,8 @@
  "parts": {
   "sys/kids": {"sim": "Kinder-Modus", "old": ["Sicherheit / Benutzer"], "names": {"de": "Kinder-Modus", "en": "Kids mode", "fr": "Mode enfants", "it": "Modalità bambini", "rm": "Modus d’uffants"},
                "note": "eindeutiger Name: «Sicherheit» ist in MoveEye die Gruppe Passwort / Benutzer (security)"},
+  "sys/sicherung": {"sim": "Sicherung", "mw_sec": "Backup", "names": {"de": "Sicherung", "en": "Backup", "fr": "Sauvegarde", "it": "Backup", "rm": "Copia da segirezza"},
+                    "note": "gleicher Name wie MoveEye «Sicherung» (Abschnitt Backup, Gruppe Schutz): dort erscheint die Simulator-Sicherung als Eintrag «Simulator» (Teil 639za). Abweichung: im Simulator unter System (Entscheid Daniel 01.11.2026)"},
   "extras/power": {"sim": "Strom", "same_as": "power", "note": "Akku / Solar simulieren - in MoveEye eigene Gruppe «Stromversorgung»"},
   "extras/net": {"sim": "Netz", "same_as": "net", "note": "Netz-Ausfall simulieren - in MoveEye eigene Gruppe «Netz & Zugang»"}
  },
@@ -108,13 +113,45 @@
   "alle": {"on": {"en": "all on", "de": "alle an", "fr": "tout activer", "it": "tutti attivi", "rm": "tut en"}, "off": {"en": "all off", "de": "alle aus", "fr": "tout désactiver", "it": "tutti spenti", "rm": "tut ora"}}
  },
  "more": [
-  {"id": "case", "emoji": "📐", "draw": "wrench", "mw": {"key": "Case & build", "href": "/case", "names": {"de": "Gehäuse & Bau", "en": "Case & build", "fr": "Boîtier et construction", "it": "Custodia e costruzione", "rm": "Chascha e construcziun"}}, "sim": {"key": "Werkstatt", "row": "werkstatt", "names": {"de": "Werkstatt", "en": "Workshop", "fr": "Atelier", "it": "Officina", "rm": "Ufficina"}}, "abweichung": "Name bewusst verschieden: MoveEye zeigt Anleitung, Materialliste und Druckdateien («Gehäuse & Bau»), der Simulator das 3D-Modell zum Drehen und Zerlegen («Werkstatt»); beide verweisen aufeinander (Knopf «Im Simulator ansehen»)."}
+  {"id": "case", "order": 20, "emoji": "📐", "draw": "wrench", "mw": {"key": "Case & build", "href": "/case", "names": {"de": "Gehäuse & Bau", "en": "Case & build", "fr": "Boîtier et construction", "it": "Custodia e costruzione", "rm": "Chascha e construcziun"}}, "sim": {"key": "Werkstatt", "row": "werkstatt", "names": {"de": "Werkstatt", "en": "Workshop", "fr": "Atelier", "it": "Officina", "rm": "Ufficina"}}, "abweichung": "Name bewusst verschieden: MoveEye zeigt Anleitung, Materialliste und Druckdateien («Gehäuse & Bau»), der Simulator das 3D-Modell zum Drehen und Zerlegen («Werkstatt»); beide verweisen aufeinander (Knopf «Im Simulator ansehen»)."},
+  {"id": "help", "order": 10, "emoji": "📖", "draw": "help", "mw": {"key": "Manual", "href": "/help", "names": {"de": "Anleitung", "en": "Manual", "fr": "Mode d'emploi", "it": "Istruzioni", "rm": "Instrucziuns"}}, "sim": {"key": "Anleitung", "row": "help", "names": {"de": "Anleitung", "en": "Manual", "fr": "Mode d'emploi", "it": "Istruzioni", "rm": "Instrucziuns"}}},
+  {"id": "feedback", "order": 30, "emoji": "💬", "draw": "chat", "mw": {"key": "Feedback to the developer", "href": "#m-fb", "names": {"de": "Rückmeldung an den Entwickler", "en": "Feedback to the developer", "fr": "Retour au développeur", "it": "Feedback allo sviluppatore", "rm": "Resposta al sviluppader"}}, "sim": {"key": "Rückmeldung an den Entwickler", "row": "feedback", "names": {"de": "Rückmeldung an den Entwickler", "en": "Feedback to the developer", "fr": "Retour au développeur", "it": "Feedback allo sviluppatore", "rm": "Resposta al sviluppader"}}},
+  {"id": "about", "order": 40, "emoji": "ℹ", "draw": "info", "mw": {"key": "About MoveEye", "href": "#m-about", "names": {"de": "Über MoveEye", "en": "About MoveEye", "fr": "À propos de MoveEye", "it": "Informazioni su MoveEye", "rm": "Davart MoveEye"}}, "sim": {"key": "Über den Simulator", "row": "about", "names": {"de": "Über den Simulator", "en": "About the simulator", "fr": "À propos du simulateur", "it": "Informazioni sul simulatore", "rm": "Davart il simulatur"}}, "abweichung": "nennt das eigene Programm (Muster «Über …» gleich); beide zeigen dort das Versions-Paar"},
+  {"id": "werk", "order": 50, "emoji": "⚠", "draw": "trash", "mw": {"key": "⚠ Reset to factory settings …", "href": "#g2-sys", "names": {"de": "⚠ Auf Werkseinstellungen zurücksetzen …", "en": "⚠ Reset to factory settings …", "fr": "⚠ Rétablir les réglages d’usine …", "it": "⚠ Ripristinare le impostazioni di fabbrica …", "rm": "⚠ Restaurar ils parameters da fabrica …"}}, "sim": {"key": "⚠ Auf Werkseinstellungen zurücksetzen …", "row": "werk", "names": {"de": "⚠ Auf Werkseinstellungen zurücksetzen …", "en": "⚠ Reset to factory settings …", "fr": "⚠ Rétablir les réglages d’usine …", "it": "⚠ Ripristinare le impostazioni di fabbrica …", "rm": "⚠ Restaurar ils parameters da fabrica …"}}}
  ],
+ "more_order": ["help", "case", "feedback", "about", "werk"],
  "shared": {
   "simple": {"mw": "CFG ui_simple", "sim": "ui_simple", "values": [true, false], "note": "E1: eine Einfach/Experte-Wahl für alles (MoveEye-Standard, Seiten und Simulator)"},
   "icons": {"mw": "mw-icons (web_ui)", "sim": "ui_icons", "values": ["color", "plain"]},
   "lang": {"mw": "CFG lang", "sim": "i18n.gd Wahl", "values": ["auto", "de", "fr", "it", "rm", "en"], "note": "E2: eine Sprache (mw-lang folgt CFG lang)"},
-  "dev_area": {"mw": "CFG dev_area", "sim": "dev_area", "values": [true, false], "dir": "mw->sim", "note": "nur der Besitzer schaltet in MoveEye"}
+  "motion": {"mw": "CFG reduce_motion", "sim": "reduce_motion", "values": ["auto", "on", "off"], "sim_values": {"auto": "auto", "on": "an", "off": "aus"}, "note": "«Bewegung reduzieren»"},
+  "voice": {"mw": "CFG voice_mode", "sim": "Stimme.modus()", "values": ["on", "off", "subtitles"], "sim_values": {"on": "an", "off": "aus", "subtitles": "untertitel"}, "note": "«Stimme»"},
+  "tours": {"mw": "CFG tours_auto", "sim": "tour_auto", "values": [true, false], "note": "Rundgang beim ersten Besuch von selbst"},
+  "blinki": {"mw": "CFG blinki_on", "sim": "blinki_on", "values": [true, false], "note": "Blinki zeigen"},
+  "news": {"mw": "CFG news_popup", "sim": "news_popup", "values": [true, false], "note": "«Neu in …» nach einem Update zeigen"},
+  "dev_area": {"mw": "CFG dev_area", "sim": "dev_area", "values": [true, false], "dir": "mw->sim", "note": "nur der Besitzer schaltet in MoveEye; das Entwickler-Fenster im Simulator nur damit (und nicht im Kinder- oder Bedienermodus)"}
  },
- "local": ["open", "hdr", "panel", "search", "kids", "windows", "theme"]
+ "sync": {"field": "ui", "feature": "ui1", "keys": ["simple", "icons", "lang", "motion", "voice", "tours", "blinki", "news"], "rule": "last_wins", "tie": "mw", "reconnect": "mw", "lead_only": true, "gap_s": 3},
+ "level": {
+  "off": {"col": "#2fd35a", "names": {"de": "Aus", "en": "Off", "fr": "Désactivé", "it": "Spento", "rm": "Deactivà"}},
+  "watch": {"col": "#ff8a1f", "names": {"de": "Wachsam", "en": "Watchful", "fr": "Vigilant", "it": "Vigile", "rm": "Vigilant"}},
+  "full": {"col": "#ff2a2a", "names": {"de": "Voll", "en": "Full protection", "fr": "Protection complète", "it": "Protezione completa", "rm": "Protecziun cumpletta"}},
+  "walktest": {"col": "#3b7bff", "names": {"de": "Gehtest", "en": "Walk test", "fr": "Test de passage", "it": "Test di passaggio", "rm": "Test da passar"}},
+  "arming": {"names": {"de": "in", "en": "in", "fr": "dans", "it": "tra", "rm": "en"}}
+ },
+ "hint": {
+  "push": {"de": "Push (Test-Postfach)", "en": "Push (test inbox)", "fr": "Push (boîte de test)", "it": "Push (casella di prova)", "rm": "Push (chascha da test)"},
+  "push_real": {"de": "Push", "en": "Push", "fr": "Push", "it": "Push", "rm": "Push"},
+  "same": {"de": "gleiche Nummer", "en": "same number", "fr": "même numéro", "it": "stesso numero", "rm": "medem numer"},
+  "sim_older": {"de": "Simulator älter", "en": "Simulator older", "fr": "Simulateur plus ancien", "it": "Simulatore più vecchio", "rm": "Simulatur pli vegl"},
+  "mw_older": {"de": "MoveEye älter", "en": "MoveEye older", "fr": "MoveEye plus ancien", "it": "MoveEye più vecchio", "rm": "MoveEye pli vegl"},
+  "update_sim": {"de": "Simulator aktualisieren", "en": "Update the simulator", "fr": "Mettre à jour le simulateur", "it": "Aggiorna il simulatore", "rm": "Actualisar il simulatur"},
+  "update_mw": {"de": "MoveEye aktualisieren", "en": "Update MoveEye", "fr": "Mettre à jour MoveEye", "it": "Aggiorna MoveEye", "rm": "Actualisar MoveEye"},
+  "locked": {"de": "MoveEye ist gesperrt (Bedienermodus): nur die Hauptschalter", "en": "MoveEye is locked (operator mode): only the main switches", "fr": "MoveEye est verrouillé (mode opérateur) : seulement les interrupteurs principaux", "it": "MoveEye è bloccato (modalità operatore): solo gli interruttori principali", "rm": "MoveEye è bloccà (modus d’operatur): mo ils interruptures principals"},
+  "unlock": {"de": "Entsperren (PIN von MoveEye)", "en": "Unlock (PIN of MoveEye)", "fr": "Déverrouiller (PIN de MoveEye)", "it": "Sblocca (PIN di MoveEye)", "rm": "Debloccar (PIN da MoveEye)"},
+  "wrong_pin": {"de": "falsche PIN", "en": "wrong PIN", "fr": "PIN erroné", "it": "PIN errato", "rm": "PIN sbaglià"},
+  "taken": {"de": "Ansicht von MoveEye übernommen", "en": "View taken over from MoveEye", "fr": "Vue reprise de MoveEye", "it": "Vista ripresa da MoveEye", "rm": "Vista surpigliada da MoveEye"}
+ },
+ "local": ["open", "hdr", "panel", "search", "kids", "windows", "theme"],
+ "_local_hinweis": "theme (Hell / Dunkel / Rotlicht) bleibt pro Gerät (Entscheid Daniel 01.11.2026)"
 }

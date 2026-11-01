@@ -264,6 +264,7 @@ func _register_controls() -> void:
 	main.simreal.add_controls()                                 # 3D-4.4: closer to the real device
 	main.objplus.add_controls()                                 # 3D-4.x «Gegenstände»: lures
 	main.inhalte.add_controls()                                 # F2: System → Grafik «Echte Oberflächen und Himmel»
+	main.sicherung.add_controls()                               # System → Sicherung (sicherung.gd)
 	main.umgebung.add_controls()                                # 3D-4.x: surroundings like real
 	main.statisten.add_controls()                               # Paket «Statisten»: Besuch → Von selbst (wie viele, pro Spielmodus)
 	main.menschen.add_controls()                                # P10: people like real (Besuch → Verhalten / Von selbst / Menschen schicken)
@@ -464,6 +465,8 @@ func _register_controls() -> void:
 	main.add_control("toggle", "grafik_dof", "Hoch: Tiefenschärfe in der freien Ansicht (die Kamerabilder für MoveEye bleiben scharf)", func(): return main.hoch.dof_free, func(v): main.hoch.set_dof(bool(v)), "Grafik", ex)
 	main.add_control("toggle", "cam_wippen", "Ansicht wippt beim Gehen (Spielfigur)", func(): return main.cam_wippen, func(v): main.cam_wippen = bool(v), "Grafik",
 			{"expert": true, "tip": "Die Ansicht hinter der Spielfigur geht mit den Schritten leicht auf und ab. Aus, wenn dir davon schwindlig wird. Nur bei Grafik «schön» oder «ultra»."})
+	main.add_control("toggle", "foto_tex", "Foto-Texturen im Bergtal", func(): return main.foto_tex, func(v): main.set_foto_tex(bool(v)), "Grafik",
+			{"expert": true, "tip": "Wiese, Fels, Geröll, Alpenrosen, Wege und Seegrund aus echten Fotos (Daniel Bärschi). Aus = die gezeichneten Farben wie früher. In Lite immer aus."})
 	main.add_control("slider", "view_scale", "Schärfe der Ansicht im Fenster (weniger = schneller; die Bilder für MoveEye bleiben scharf)", func(): return main.view_scale, func(v): main.set_view_scale(float(v)), "Grafik", {"min": 0.4, "max": 1.0, "step": 0.05, "unit": "×"})
 	main.add_control("select", "win_fps", "Bilder pro Sekunde im Fenster", func(): return str(main.win_fps), func(v): main.win_fps = int(v); main._perf_orig.erase("win_fps"); main._settings_dirty = true, "Grafik",
 			{"options": [["0", "so viele wie möglich"], ["60", "60"], ["30", "30 (spart Strom)"], ["20", "20 (schwacher PC)"]]})

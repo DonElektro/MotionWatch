@@ -514,6 +514,10 @@ func _control(d: Dictionary) -> Dictionary:
 		return main.mehr.werk.control(d) if main.mehr != null and main.mehr.werk != null else {"ok": false, "error": "not ready"}
 	elif a == "werkstatt":                             # real-gehaeuse: {do: open | close | info | explode | xray | inner | v52 | pick | step | next | prev | view | real_case}
 		return main.werkstatt.control(d) if main.werkstatt != null else {"ok": false, "error": "not ready"}
+	elif a == "egg":                                   # Entwickler-Test (bergtal_ei.gd)
+		return main.bt_ei.control(d) if main.bt_ei != null and is_instance_valid(main.bt_ei) else {"ok": false, "error": "only in the Bergtal"}
+	elif a == "sicherung":                             # System → Sicherung (sicherung.gd): {do: info | make | send | get | ack | check | restore}
+		return main.sicherung.control(d) if main.sicherung != null else {"ok": false, "error": "not ready"}
 	elif a == "mehr":                                  # 3D-4.2x: «Mehr» (tests): {"do": open | theme | tour | diag | log | fb_* | shot}
 		return main.mehr.control(d) if main.mehr != null else {"ok": false, "error": "not ready"}
 	elif a == "feedback":                              # MoveEye 2.98.33: the dialog «Rückmeldung» (tests: {text, kind, stars, shot})

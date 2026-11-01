@@ -1,9 +1,9 @@
 {
- "version": "3D-5.34.0",
- "ver": "3.34.0",
- "name": "MoveEye Sim 3.34.0",
+ "version": "3D-5.39.0",
+ "ver": "3.39.0",
+ "name": "MoveEye Sim 3.39.0",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 42392010,
- "sha256": "4c22369cf78863725bd0ec8bb1ab90ca31de293dbc82d4b4a087dbfdc82c7371",
- "notes": "Gehäuse v5.1 und Werkstatt"
+ "size": 47913447,
+ "sha256": "d8b9f9e66049642c1016539e1a2a853b0f148ce7e69cf9bae644d33c69f05036",
+ "notes": "Abgleich MoveEye und Simulator"
 }

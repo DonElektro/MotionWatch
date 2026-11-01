@@ -479,6 +479,7 @@ func lake_material(lk: Array) -> ShaderMaterial:
 	mt.set_shader_parameter("noise_tex", m.noise_tex)
 	mt.set_shader_parameter("horizon", _horizon(lk, wl))
 	mt.set_shader_parameter("spring", 1.0 if bt.season == "fruehling" else 0.0)
+	preload("res://scripts/bergtal_texturen.gd").lake(m, mt)   # 3.30 Foto-Texturen: Seegrund am Ufer (aus/Lite: wie vorher)
 	return mt
 
 

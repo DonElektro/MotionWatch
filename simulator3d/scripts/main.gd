@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3.34.0"
+const VERSION := "3.39.0"
 const Versionen = preload("res://scripts/versionen.gd")   # Versionierung 3.0.0: from 3.0.0 VERSION = "X.Y.Z" like MoveEye (see there)
 const Stimme = preload("res://scripts/abenteuer_stimme.gd")   # 3.23: the one switch «Stimme» (an | aus | untertitel)
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
@@ -227,6 +227,7 @@ var view_scale := 1.0                 # 3D-3.75: sharpness of the big view on th
 var win_fps := 0                     # 3D-3.75: frames per second of the big view (0 = as fast as it goes)
 var auto_perf := true                 # 3D-3.75: too slow? the graphics get lighter by themselves
 var cam_wippen := true                 # anim_kamera.gd: die Ansicht wippt beim Gehen der Spielfigur (Maggie)
+var foto_tex := true                   # 3.30 bergtal_texturen.gd: Foto-Texturen im Bergtal (Daniels Fotos; nie in Lite)
 var reduce_motion := "auto"            # 3.23 «Bewegung reduzieren»: auto (wie das Betriebssystem) | an | aus - Logo, Blinki, Wippen, Trailer sanfter
 var tour_auto := true                  # 3.23: «Rundgang mit Blinki beim ersten Start von selbst» (System → Gerät & Hilfe, wie MoveEye)
 var blinki_on := true                  # 3.23: «Blinki zeigen» (System → Gerät & Hilfe, wie MoveEye)
@@ -350,6 +351,7 @@ var spielbereich                      # spielbereich.gd (Paket «Spielbereich»)
 var objplus                           # objekte_plus.gd (3D-4.x «Gegenstände»): wind, light, lures, valuables of the catalogue
 var gelaende                          # gelaende.gd (3D-4.x real-gelaende): hills and hollows, paths, cloud shadows (vegetation.gd: plants)
 var inhalte                           # inhalte.gd (F2): Foto-Texturen und HDRI-Himmel (CC0), nachgeladen, nicht in Lite
+var sicherung                         # sicherung.gd: System → Sicherung (ZIP auf dem PC / USB-Stick / in MoveEye, wiederherstellen)
 var umgebung                          # umgebung.gd (3D-4.x): lamps, puddles, smoke, insects, plants, tracks, robots, pets
 var statisten                         # statisten.gd: background people - goals, things to do, groups, react to the player, keep away from the games
 var menschen                          # menschen.gd (P10): people behave like real ones - gaits, groups, the day of a campsite, API for scenarios
@@ -427,6 +429,7 @@ func _ready() -> void:
 		get_tree().quit()
 		return
 	preload("res://scripts/werk.gd").apply_pending()    # Werksrücksetzung: right after the restart, before anything reads user://
+	preload("res://scripts/sicherung.gd").apply_pending(VERSION)   # System → Sicherung: a restore waits for this start (sicherung.gd)
 	randomize()
 	_no_pad_ui_nav()
 	colors = preload("res://scripts/colors.gd").new()        # 3D-3.97: natural colours, materials, seasons (before the world is built)
@@ -525,6 +528,9 @@ func _ready() -> void:
 	inhalte = preload("res://scripts/inhalte.gd").new()       # F2: real photo surfaces and sky (downloaded once, fallback = code)
 	inhalte.main = self
 	add_child(inhalte)
+	sicherung = preload("res://scripts/sicherung.gd").new()   # System → Sicherung: ZIP auf dem PC / USB-Stick / in MoveEye, wiederherstellen
+	sicherung.main = self
+	add_child(sicherung)
 	umgebung = preload("res://scripts/umgebung.gd").new()     # 3D-4.x: the surroundings like real (every part can be switched off)
 	umgebung.main = self
 	add_child(umgebung)
@@ -2665,7 +2671,7 @@ func _process(dt: float) -> void:
 		_cover_mesh.global_transform = head_pitch.global_transform.translated_local(Vector3(0.05, 0.0, -0.36))   # beyond the near plane of the cameras (0.1 m)
 	weit.place()                                         # 3D-4.17: camera 1 = the wide camera (mast / base / head front / head rear)
 	var L: Dictionary = mw.get("lights", {})
-	var wl_on: bool = L.get("white", false) or (game != null and game.now() < game.flash_until)
+	var wl_on: bool = L.get("white", false) or (game != null and game.now() < game.flash_until) or (own_light and now() - mw_t >= 3.0)
 	if wl_on and white_light.light_energy == 0.0 and look_at_light:
 		for v in visitors.get_children():               # the light goes on: people stop and look at it for a moment
 			if v.get("kind") == "person" and v.position.length() < 25.0 and not v.get("controlled"):
@@ -3003,6 +3009,9 @@ func on_state(d: Dictionary, host: String) -> bool:
 			_apply_simple.call_deferred()
 	mw = d
 	mw_t = now()
+	if bt_ei != null and is_instance_valid(bt_ei):
+		var L_ = d.get("lights", {})
+		bt_ei.on_light(bool(L_.get("white", false)) if typeof(L_) == TYPE_DICTIONARY else false, "mw")
 	var dt_ = d.get("det", null)
 	if typeof(dt_) == TYPE_DICTIONARY:
 		mw_det = dt_
@@ -3058,6 +3067,7 @@ func world_reply() -> Dictionary:
 	r["spieltest"] = spieltest.reply() if spieltest != null else null   # Spieltest-Assistent: Meldung nach jeder Runde -> MoveEye 635a (Push)
 	r["sky"] = licht.reply() if licht != null else null   # «Licht & Nacht»: lux am Gerät, Dämmerung, Sonne, Mond (MoveEye liest es noch nicht)
 	r["season"] = jahreszeiten.reply() if jahreszeiten != null else null   # «Jahreszeiten»: Jahreszeit, Sonnenauf-/untergang, Belegung (MoveEye liest es noch nicht)
+	r["egg"] = bt_ei.reply() if bt_ei != null and is_instance_valid(bt_ei) else null   # Bergtal-Geheimnis (nur wenn es etwas zu zeichnen gibt) -> MoveEye 639z
 	if simwerte != null:
 		r.merge(simwerte.reply())                     # Simulator-Werte: battery, pi_temp, net, clock, place, forecast (power.gd)
 	return r
@@ -3067,6 +3077,8 @@ var schnitt = null                     # schnittstelle.gd (Aufräumen 2)
 var maggie = null                      # maggie_story.gd: «Maggie und der Bergkristall» (API für maggie_hund / maggie_gefahr)
 var horror = null                      # bergtal_horror.gd: Bergtal · Horror-Modus (Hook für die Stimmungswahl: horror.mood_slot / open_from_mood)
 var spieltest = null                   # spieltest.gd: Spieltest-Assistent (Haken für Spiele: Spieltest.ereignis(modus, art, daten))
+var bt_ei = null                       # bergtal_ei.gd (Bergtal): reads the white light, answers {"action": "egg"}, world_reply «egg»
+var own_light := false                 # the light button here while no MoveEye is connected (bergtal_ei.gd hears it too)
 var klang = null                       # klang.gd: Spielton (Musik, Effekte, Umgebung, Klicks - nur in Spielen und Geschichten)
 var mw_cmd := {}                       # 3D-3.71: a request to MoveEye (button here): {"id": unix ms, "op": refscan | refcompare | refstop}
 var bike_node: Node3D = null
@@ -3107,6 +3119,10 @@ func mw_look(dir: String, step := 3.0) -> void:
 
 
 func mw_light(on: bool) -> void:
+	if now() - mw_t >= 3.0:                            # no MoveEye: the light of the simulator itself
+		own_light = on
+		if bt_ei != null and is_instance_valid(bt_ei):
+			bt_ei.on_light(on, "sim")
 	mw_cmd = {"id": max(int(Time.get_unix_time_from_system() * 1000.0), int(mw_cmd.get("id", 0)) + 1), "op": "light", "on": on}
 
 
@@ -3634,7 +3650,7 @@ const GROUPS := [["Szene", "globe", "🌍", ["", "Bergtal", "Ort von der Karte",
 		["Spiel", "pad", "🎮", ["", "Entdecken", "Assistent"]],        # Erlebniswelt 20–23: «Entdecken» (entdecken.gd) on the card
 		["Wildtier", "target", "🎯", [""]],
 		["Testen", "check", "✅", ["", "Verfolgungs-Parcours", "Störungen", "Einbruch-Abläufe"]],
-		["System", "gear", "⚙", ["Grafik", "Karte und Livebild", "Start mit dem PC", "Updates", "Kinder-Modus", "Gerät & Hilfe"]],   # Menüs A: «Ansicht» → «Karte und Livebild» (fehlte hier)
+		["System", "gear", "⚙", ["Grafik", "Karte und Livebild", "Start mit dem PC", "Updates", "Sicherung", "Kinder-Modus", "Gerät & Hilfe"]],   # Menüs A: «Ansicht» → «Karte und Livebild» (fehlte hier)
 		["Entwickler", "tools", "🧪", ["", "Updates"]]]
 # 3D-4.21 (Menü 2, Daniel 30.10.2026): the same names as MoveEye - the controls keep their old group / part in add_control,
 # _order_controls renames them here (MoveEye reads the fixed «gid», not the name)
@@ -3674,7 +3690,7 @@ const PLACE := {"patrol_on": ["Mover", "Patrouille"], "patrol_mode": ["Mover", "
 		"game_night": ["Spiel", "Extras"], "game_events": ["Spiel", "Extras"], "game_checkpoints": ["Spiel", "Extras"], "game_tasks": ["Spiel", "Extras"], "game_autohandicap": ["Spiel", "Extras"],
 		"game_board_reset": ["Spiel", "Extras"], "spectate_now": ["Spiel", "Anzeige"], "game_noise": ["Spiel", "Regeln"],
 		"game_random": ["Spiel", "Regeln"], "game_guard": ["Spiel", "Regeln"], "game_cones": ["Spiel", "Anzeige"], "game_quality": ["Spiel", "Anzeige"], "game_max": ["Spiel", "Runde"],
-		"grafik_mode": ["System", "Grafik"], "quality": ["System", "Grafik"], "grafik_dof": ["System", "Grafik"], "cam_wippen": ["System", "Grafik"], "view_scale": ["System", "Grafik"], "win_fps": ["System", "Grafik"], "auto_perf": ["System", "Grafik"], "map_on": ["System", "Karte und Livebild"], "live_on": ["System", "Karte und Livebild"], "live_cam": ["System", "Karte und Livebild"], "live_size": ["System", "Karte und Livebild"], "phone_sim": ["System", "Karte und Livebild"],"eco_idle": ["System", "Grafik"], "autostart": ["System", "Start mit dem PC"],
+		"grafik_mode": ["System", "Grafik"], "quality": ["System", "Grafik"], "grafik_dof": ["System", "Grafik"], "cam_wippen": ["System", "Grafik"], "foto_tex": ["System", "Grafik"], "view_scale": ["System", "Grafik"], "win_fps": ["System", "Grafik"], "auto_perf": ["System", "Grafik"], "map_on": ["System", "Karte und Livebild"], "live_on": ["System", "Karte und Livebild"], "live_cam": ["System", "Karte und Livebild"], "live_size": ["System", "Karte und Livebild"], "phone_sim": ["System", "Karte und Livebild"],"eco_idle": ["System", "Grafik"], "autostart": ["System", "Start mit dem PC"],
 		"autostart_min": ["System", "Start mit dem PC"], "autostart_mwpc": ["System", "Start mit dem PC"], "autostart_lock": ["System", "Start mit dem PC"],
 		"cond_glare": ["Kamerabild", "Schwierige Bedingungen"], "cond_drops": ["Kamerabild", "Schwierige Bedingungen"],
 		"cond_web": ["Kamerabild", "Schwierige Bedingungen"], "cond_headlights": ["Kamerabild", "Schwierige Bedingungen"],
@@ -3827,6 +3843,16 @@ func set_grafik_mode(v: String) -> void:
 	_mod("start").set_grafik_mode(v)
 
 
+func set_foto_tex(v: bool) -> void:
+	"""3.30 Schalter «Foto-Texturen im Bergtal» (bergtal_texturen.gd): das Bergtal neu aufbauen, wenn es gerade geladen ist"""
+	if v == foto_tex:
+		return
+	foto_tex = v
+	_settings_dirty = true
+	if scene == "bergtal":
+		set_scene("bergtal")
+
+
 func lite_update() -> void:
 	_mod("start").lite_update()
 
@@ -3884,7 +3910,8 @@ func _control(d: Dictionary) -> Dictionary:
 	#   a in ["set", "scenario", "busy", "tv", "fehler", "game_info", "gamewiz", "game_compare", "game_handicap",
 	#     "game_shut", "game_mwcatch", "shoot", "replay", "planner", "blindmap", "dataset", "farecreate", "whatif",
 	#     "input", "pad", "padview", "press", "rover", "view_look", "netmap", "nacht", "parcours", "sabotage",
-	#     "templates", "twin", "visits", "weit", "entdecken", "werkstatt", "trailer", "vorfuehrung", "spielbereich"]
+	#     "templates", "twin", "visits", "weit", "entdecken", "werkstatt", "trailer", "vorfuehrung", "spielbereich",
+	#     "egg", "sicherung", "mehr"]
 	return _mod("steuerung")._control(d)
 
 
@@ -4282,7 +4309,7 @@ func restart_args() -> PackedStringArray:
 
 
 const KEEP := ["pad_auto", "pad_sens", "pad_inv_y", "pad_swap", "pad_rumble", "colors_on", "seasons_on", "pad_dead", "pad_center", "show_laser", "game_max", "tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "fp_spot", "szene_spot", "bt_spot", "bt_bed", "bt_season", "bt_free", "bt_events", "bt_mount", "bt_bag", "bt_stove", "bt_wall", "bt_orient", "bt_marks", "bt_visited", "auto_update", "dev_updates", "news_seen", "news_popup", "show_zones3d", "show_det3d", "fauna_on", "twin", "ui_simple", "ui_icons", "ui_icons_pick", "start_groups", "mine_mig", "auto_visitors", "daily_life", "real_weather", "real_time", "night_weather", "surprise_on", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
-		"avoid_on", "grafik_mode", "cam_wippen", "reduce_motion", "tour_auto", "blinki_on", "quality", "view_scale", "win_fps", "auto_perf", "meadow_on", "season", "mover_on", "mover_max", "mast_h", "patrol_judge", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "moon_auto", "cam1_yaw", "stream_last", "game_bots", "game_tutorial", "game_daily", "game_ghost", "game_heart", "game_botguard", "kids_on", "kids_ask", "kids_thief", "kids_scary", "kids_laser", "kids_sound", "kids_stars", "dev_area"]
+		"avoid_on", "grafik_mode", "cam_wippen", "foto_tex", "reduce_motion", "tour_auto", "blinki_on", "quality", "view_scale", "win_fps", "auto_perf", "meadow_on", "season", "mover_on", "mover_max", "mast_h", "patrol_judge", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "moon_auto", "cam1_yaw", "stream_last", "game_bots", "game_tutorial", "game_daily", "game_ghost", "game_heart", "game_botguard", "kids_on", "kids_ask", "kids_thief", "kids_scary", "kids_laser", "kids_sound", "kids_stars", "dev_area"]
 var _settings_dirty := false
 
 

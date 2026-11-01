@@ -152,6 +152,8 @@ var _snd: AudioStreamPlayer3D
 var _snd_pos := Vector3.ZERO      # valley
 var _slow := 0.0
 var _rng := RandomNumberGenerator.new()
+var antenna_top := Vector3.ZERO    # the red light on the antenna (valley coordinates)
+var ei = null                      # bergtal_ei.gd
 static var _water_wav: AudioStreamWAV
 
 
@@ -172,6 +174,9 @@ func build() -> void:
 	_summit()
 	_bank()
 	_register()
+	ei = load("res://scripts/bergtal_ei.gd").new(bt)          # (load: bergtal_ei.gd preloads this file)
+	bt.tal.add_child(ei)
+	ei.build(antenna_top)
 	m.anims.append(Callable(self, "_tick"))
 	info.merge({"ms": Time.get_ticks_msec() - t0, "lite": lite, "pool_level": snappedf(pool_level, 0.01), "peak_alt_m": int(peak_y + 1500.0),
 			"places": PLACES.size(), "discoveries": ENT.size()}, true)
@@ -210,6 +215,15 @@ func _moss_k(u: float, v: float) -> float:
 	for th in _threads():
 		k = maxf(k, 0.7 * (1.0 - smoothstep(0.4, 1.6, absf(u - float(th[0])))) * smoothstep(-0.3, 0.2, _wn.get_noise_2d(u * 2.0, v * 2.0 + 50.0)))
 	return clampf(k, 0.0, 1.0)
+
+
+func cave_back() -> float:
+	"""the rock dome at the foot of the main thread (bergtal_ei.gd) stands in front of every bulge of the wall there"""
+	var w := -INF
+	for iu in range(7):
+		for iv in range(5):
+			w = maxf(w, _wall_z(1.4 - 1.3 + iu * 2.6 / 6.0, iv * 0.35))
+	return w + 0.1
 
 
 func _threads() -> Array:
@@ -338,10 +352,9 @@ func _spray(xf: Transform3D) -> void:
 	pm.albedo_texture = _puff_tex
 	pm.albedo_color = Color(1, 1, 1, 0.55)
 	pm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	pm.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	pm.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+	pm.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED     # (lit, not unshaded: at night the spray does not glow)
 	pm.cull_mode = BaseMaterial3D.CULL_DISABLED
-	var foot := Vector3(1.4, 0.0, _wall_z(1.4, 0.3) + 0.7)
+	var foot := Vector3(1.4, 0.0, cave_back() + 1.9)        # in front of the rock dome at the foot of the main thread (bergtal_ei.gd)
 	for i in range(2 if lite else 6):
 		var qm := QuadMesh.new()
 		var sz := 1.2 + 0.35 * (i % 3)
@@ -359,10 +372,9 @@ func _spray(xf: Transform3D) -> void:
 	fm.albedo_texture = _puff_tex
 	fm.albedo_color = Color(1, 1, 1, 0.7)
 	fm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	fm.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	var fq := QuadMesh.new()
 	fq.size = Vector2(3.4, 3.4)
-	var fp := xf * Vector3(1.4, 0.03, _wall_z(1.4, 0.0) + 1.3)
+	var fp := xf * Vector3(1.4, 0.03, cave_back() + 2.6)
 	var foam: MeshInstance3D = m.add_mesh(bt.tal, fq, fp, fm, "pond", Vector3(-PI / 2.0, 0, 0))
 	foam.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	foam.visibility_range_end = 120.0
@@ -641,7 +653,7 @@ func _antenna(base: Vector3, ck: String) -> void:
 			bib._part(Bib.C(0.55, 0.2, base.x + 0.7, base.y + dy, base.z, "e8eaec", 0.3, 0, 0, 90, "metal"), Transform3D.IDENTITY, "metal", "mid", ck)
 		bib._part(Bib.B(0.5, 1.6, 0.08, base.x - 0.5, base.y + 19.0, base.z + 0.3, "dcdee0", 0, 30, 0, "metal"), Transform3D.IDENTITY, "metal", "mid", ck)
 	bib._part(Bib.C(0.05, 4.0, base.x, base.y + h + 2.0, base.z, "c8ccd0", 0, 0, 0, 0, "metal"), Transform3D.IDENTITY, "metal", "far", ck)
-	bib._part(Bib.S(0.14, 0.2, base.x, base.y + h + 4.1, base.z, "*ff3020", "metal"), Transform3D.IDENTITY, "metal", "far", ck)
+	antenna_top = Vector3(base.x, base.y + h + 4.1, base.z)   # the red light itself: bergtal_ei.gd (it blinks)
 	m.add_obstacle(bt.W(base), 1.0)
 	m.set_obstacle_height(h)
 

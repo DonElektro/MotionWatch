@@ -708,6 +708,30 @@ static func op(main, d: Dictionary) -> Dictionary:
 		if bool(d.get("reload", false)):
 			FP.reset()
 		return {"ok": true, "paket": FP.info(), "status": FP.status_text()}
+	if o == "mensch":                                         # «Figuren menschlicher»: Menschen-Paket (figur_mensch.gd) aus | "" , LOD
+		var FM = load("res://scripts/figur_mensch.gd")
+		if d.has("value"):
+			FM.mensch_mode = str(d["value"])
+		if d.has("lods"):
+			FM.lods = bool(d["lods"])
+		if bool(d.get("reload", false)):
+			FM.mreset()
+		var per := []
+		for v in main.visitors.get_children():
+			if v.get("kind") == "person" and v.get("fig") != null and v.fig.get("body_key") != null:
+				per.append({"variant": v.variant, "body": v.fig.body_key, "hair": v.fig.hair_key, "stil": v.stil.get("stil", "")})
+		return {"ok": true, "mensch": FM.minfo(), "mode": FM.mensch_mode, "persons": per}
+	if o == "stil":                                           # «Figuren menschlicher»: Vielfalt pro Szene (menschen_stil.gd)
+		var MS = load("res://scripts/menschen_stil.gd")
+		if d.has("value"):
+			MS.force = str(d["value"])
+		if d.has("bau"):
+			MS.force_bau = str(d["bau"])
+		var per2 := []
+		for v in main.visitors.get_children():
+			if v.get("kind") == "person" and v.get("stil") != null:
+				per2.append({"variant": v.variant, "sex": v.sex, "stil": v.stil})
+		return {"ok": true, "stil": MS.info(main), "persons": per2}
 	if o == "kleidung":                                       # «Kleidung nach Jahreszeit» (kleidung.gd): info | force (warm | lang | gemischt | "")
 		var KL = load("res://scripts/kleidung.gd")
 		if d.has("value"):

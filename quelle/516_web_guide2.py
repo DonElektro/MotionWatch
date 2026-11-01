@@ -208,12 +208,11 @@ details.g2-tt ul{margin:0 0 12px;padding-left:20px}details.g2-tt li{margin:4px 0
   const sw = (on, fn) => { const c = E("input"); c.type = "checkbox"; c.className = "sw"; c.checked = !!on; c.onchange = () => fn(c.checked); return c; };
 
   // ---------------------------------------------------------------- Simple / Expert per page
-  const modes = () => { try { const m = JSON.parse(LSget("mw-page-mode", "{}")); return m && typeof m === "object" ? m : {}; } catch (e) { return {}; } };
-  const simpleHere = () => { const v = modes()[PG]; return v === "simple" ? true : v === "expert" ? false : !!B.simple; };
-  async function setSimple(on) { await P("/api/ui_simple", {on: on, page: PG}); const m = modes(); m[PG] = on ? "simple" : "expert";
-    if (on === !!B.simple) delete m[PG]; LSset("mw-page-mode", JSON.stringify(m)); paintTT(); paintMode(); }
+  // 639zb (P3, E1): ONE Simple / Expert for every page, the Pi window and the simulator (before: per page, «mw-page-mode»)
+  const simpleHere = () => !!B.simple;
+  async function setSimple(on) { await P("/api/ui_simple", {on: on, page: PG}); B.simple = !!on; paintTT(); paintMode(); }
   function modeBar() {
-    const w = E("div", "g2-modebar"); w.id = "g2-modebar"; w.appendChild(E("span", "", T("View of this page:")));
+    const w = E("div", "g2-modebar"); w.id = "g2-modebar"; w.appendChild(E("span", "", T("Simple or Expert") + ":"));
     const s = E("span", "g2-seg"), a = BT(T("Simple"), simpleHere() ? "on" : "", () => setSimple(true)), b = BT(T("Expert"), simpleHere() ? "" : "on", () => setSimple(false));
     s.append(a, b); w.appendChild(s); return w;
   }

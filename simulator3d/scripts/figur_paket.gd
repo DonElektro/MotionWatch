@@ -146,6 +146,44 @@ static func ensure_loaded() -> bool:
 		n.free()
 		scenes[f] = ps
 	# animations: the tracks onto «Skeleton3D:bone», the way of the pelvis to the height of each body (man / woman)
+	var libs := _libs_from(zr, man)
+	zr.close()
+	_st = {"man": man, "scenes": scenes, "libs": libs, "path": p}
+	print("Figuren-Paket: %s geladen (%d Teile, %d Bewegungen, %d ms)" % [p, scenes.size(), (libs.get("m", AnimationLibrary.new()) as AnimationLibrary).get_animation_list().size(), Time.get_ticks_msec() - t0])
+	last_error = ""
+	return true
+
+
+static var _clips := {}                  # «Figuren menschlicher»: the clips only (from menschen_v1.zip, figur_mensch.gd)
+
+
+static func clip_libs() -> Dictionary:
+	"""the animation libraries (sex -> AnimationLibrary): from this pack, else from the Menschen-Paket"""
+	if not _st.is_empty():
+		return _st["libs"]
+	return _clips.get("libs", {})
+
+
+static func load_clips(p: String, manifest: String) -> bool:
+	"""only the clips (anim_*.glb) of a ZIP with the same «anims» table (figur_mensch.gd: menschen_v1.zip)"""
+	if not _st.is_empty() or not _clips.is_empty():
+		return true
+	var zr := ZIPReader.new()
+	if zr.open(p) != OK:
+		return false
+	var man = JSON.parse_string(zr.read_file(manifest).get_string_from_utf8())
+	if typeof(man) != TYPE_DICTIONARY or not man.has("anims"):
+		zr.close()
+		return false
+	var libs := _libs_from(zr, man)
+	zr.close()
+	if libs.is_empty():
+		return false
+	_clips = {"libs": libs, "path": p}
+	return true
+
+
+static func _libs_from(zr: ZIPReader, man: Dictionary) -> Dictionary:
 	var base := AnimationLibrary.new()
 	var done := {}
 	for nm in man["anims"]:
@@ -169,8 +207,9 @@ static func ensure_loaded() -> bool:
 					A.track_set_path(t, NodePath("Skeleton3D:" + bone))
 				base.add_animation(n2, A)
 		an.free()
-	zr.close()
 	var libs := {}
+	if base.get_animation_list().is_empty():
+		return libs
 	for sx in ["m", "f"]:
 		var hp := 0.9491 if sx == "m" else 0.9318              # rest height of the pelvis of the bodies of the pack
 		var lib := AnimationLibrary.new()
@@ -184,10 +223,7 @@ static func ensure_loaded() -> bool:
 				A2.loop_mode = Animation.LOOP_LINEAR
 			lib.add_animation(n3, A2)
 		libs[sx] = lib
-	_st = {"man": man, "scenes": scenes, "libs": libs, "path": p}
-	print("Figuren-Paket: %s geladen (%d Teile, %d Bewegungen, %d ms)" % [p, scenes.size(), base.get_animation_list().size(), Time.get_ticks_msec() - t0])
-	last_error = ""
-	return true
+	return libs
 
 
 static func _gen(bytes: PackedByteArray) -> Node:
@@ -637,6 +673,7 @@ func sync(dt: float) -> void:
 	_w_arm[1] = move_toward(_w_arm[1], ch[3][1], kk * 1.5)
 	_play(ch[0], 0.3, ch[1])
 	ap.advance(dt)
+	_nach_clip()
 	# body_root: actor.gd lowers / tilts it for its own crouch, bob and crawl - the clip does that itself
 	var br: Node3D = a.body_root
 	var wf := _w_full
@@ -651,6 +688,11 @@ func sync(dt: float) -> void:
 		_attach()
 	cost_us += Time.get_ticks_usec() - t0
 	cost_n += 1
+
+
+func _nach_clip() -> void:
+	"""figur_mensch.gd: after the clip (pelvis height of the body, bent back of the older ones)"""
+	pass
 
 
 func _joint_q(b: String) -> Variant:
@@ -855,12 +897,12 @@ static func load_setting() -> void:
 	var f := FileAccess.open(SAVE, FileAccess.READ)
 	if f != null:
 		var d = JSON.parse_string(f.get_as_text())
-		if typeof(d) == TYPE_DICTIONARY and str(d.get("setting", "auto")) in ["auto", "eigen"]:
+		if typeof(d) == TYPE_DICTIONARY and str(d.get("setting", "auto")) in ["auto", "quaternius", "eigen"]:
 			setting = str(d.get("setting", "auto"))
 
 
 static func set_setting(v: String) -> void:
-	setting = v if v in ["auto", "eigen"] else "auto"
+	setting = v if v in ["auto", "quaternius", "eigen"] else "auto"
 	var f := FileAccess.open(SAVE, FileAccess.WRITE)
 	if f != null:
 		f.store_string(JSON.stringify({"setting": setting}))
@@ -869,6 +911,9 @@ static func set_setting(v: String) -> void:
 static func status_text() -> String:
 	if setting == "eigen":
 		return T.t("Figuren: eigene (aus Ringen)")
+	var FM = load("res://scripts/figur_mensch.gd")
+	if setting == "auto" and FM.mpack_path() != "":
+		return T.t("Menschen-Paket da (%s)%s", [FM.mpack_path().get_file(), "" if FM.mlast_error == "" else T.t(" – Fehler: ") + FM.mlast_error])
 	var p := pack_path()
 	if p == "":
 		return T.t("Figuren-Paket fehlt – «Figuren-Paket laden» holt es (%.1f MB)", [PACK_SIZE / 1048576.0])
@@ -877,28 +922,36 @@ static func status_text() -> String:
 
 static func add_controls(main) -> void:
 	load_setting()
-	var G := {"sub": "Grafik", "options": [["auto", "aus dem Paket (Quaternius, echte Bewegungen) – sonst eigene"], ["eigen", "eigene (aus Ringen, ohne Paket)"]]}
+	var G := {"sub": "Grafik", "options": [["auto", "echte Menschen (Menschen-Paket, MakeHuman) – sonst Quaternius, sonst eigene"],
+			["quaternius", "aus dem Figuren-Paket (Quaternius, echte Bewegungen) – sonst eigene"], ["eigen", "eigene (aus Ringen, ohne Paket)"]]}
 	main.add_control("select", "fig_pack", "Figuren der Menschen (gilt für neue Besucher; Lite und «einfach»: immer einfache Figuren)",
 			func(): return setting, func(v): set_setting(str(v)); main.start_info = status_text(), "System", G)
+	var FM = load("res://scripts/figur_mensch.gd")
+	main.add_control("button", "fig_mensch_load", "Menschen-Paket laden (%.1f MB, einmalig)" % (FM.MPACK_SIZE / 1048576.0), null,
+			func(): fetch(main, FM.MPACK, FM.MPACK_URL, FM.MPACK_SIZE, FM.MPACK_SHA, "Menschen-Paket", func(): FM.mreset()), "System", {"sub": "Grafik"})
 	main.add_control("button", "fig_pack_load", "Figuren-Paket laden (%.1f MB, einmalig)" % (PACK_SIZE / 1048576.0), null,
 			func(): download(main), "System", {"sub": "Grafik"})
 
 
 static func download(main) -> void:
-	"""the pack from GitHub into user:// (curl.exe on Windows like update.gd, else HTTPRequest), checked with SHA-256"""
+	fetch(main, PACK, PACK_URL, PACK_SIZE, PACK_SHA, "Figuren-Paket", func(): reset())
+
+
+static func fetch(main, file: String, url: String, size: int, sha: String, what: String, done: Callable) -> void:
+	"""a pack from GitHub into user:// (curl.exe on Windows like update.gd, else HTTPRequest), checked with SHA-256"""
 	if _busy:
 		return
-	var have := pack_path()
-	if have != "" and _sha_ok(have):
-		main.start_info = T.t("Figuren-Paket ist schon da: ") + have
+	var have := ProjectSettings.globalize_path("user://" + file)
+	if FileAccess.file_exists(have) and _sha_ok(have, size, sha):
+		main.start_info = T.t("%s ist schon da: ", [T.t(what)]) + have
 		return
 	_busy = true
-	main.start_info = T.t("Figuren-Paket wird geladen …")
-	var to := ProjectSettings.globalize_path("user://" + PACK + ".part")
+	main.start_info = T.t("%s wird geladen …", [T.t(what)])
+	var to := ProjectSettings.globalize_path("user://" + file + ".part")
 	var ok := false
 	if OS.get_name() == "Windows":
 		var th := Thread.new()
-		th.start(func(): return OS.execute("curl.exe", ["-L", "--fail", "-s", "-S", "--retry", "2", "-o", to, PACK_URL], [], true, false))
+		th.start(func(): return OS.execute("curl.exe", ["-L", "--fail", "-s", "-S", "--retry", "2", "-o", to, url], [], true, false))
 		while th.is_alive():
 			await main.get_tree().create_timer(0.3).timeout
 		ok = int(th.wait_to_finish()) == 0
@@ -906,30 +959,30 @@ static func download(main) -> void:
 		var http := HTTPRequest.new()
 		main.add_child(http)
 		http.download_file = to
-		http.body_size_limit = PACK_SIZE + 4096
-		if http.request(PACK_URL) == OK:
+		http.body_size_limit = size + 4096
+		if http.request(url) == OK:
 			var r: Array = await http.request_completed
 			ok = r[0] == HTTPRequest.RESULT_SUCCESS and r[1] == 200
 		http.queue_free()
 	_busy = false
-	if not ok or not _sha_ok(to):
+	if not ok or not _sha_ok(to, size, sha):
 		DirAccess.remove_absolute(to)
-		main.start_info = T.t("Figuren-Paket: Download fehlgeschlagen oder Prüfsumme falsch – nichts geändert.")
+		main.start_info = T.t("%s: Download fehlgeschlagen oder Prüfsumme falsch – nichts geändert.", [T.t(what)])
 		return
-	var dst := ProjectSettings.globalize_path("user://" + PACK)
+	var dst := ProjectSettings.globalize_path("user://" + file)
 	DirAccess.remove_absolute(dst)
 	DirAccess.rename_absolute(to, dst)
-	reset()
-	main.start_info = T.t("Figuren-Paket geladen – neue Besucher kommen mit den neuen Figuren.")
+	done.call()
+	main.start_info = T.t("%s geladen – neue Besucher kommen mit den neuen Figuren.", [T.t(what)])
 
 
-static func _sha_ok(p: String) -> bool:
+static func _sha_ok(p: String, size := PACK_SIZE, sha := PACK_SHA) -> bool:
 	var f := FileAccess.open(p, FileAccess.READ)
-	if f == null or f.get_length() != PACK_SIZE:
+	if f == null or f.get_length() != size:
 		return false
 	var h := HashingContext.new()
 	h.start(HashingContext.HASH_SHA256)
 	while not f.eof_reached():
 		h.update(f.get_buffer(1 << 20))
 	f.close()
-	return h.finish().hex_encode() == PACK_SHA
+	return h.finish().hex_encode() == sha

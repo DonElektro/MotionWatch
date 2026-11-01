@@ -1262,6 +1262,7 @@ class WebStream:
         place_routes(app, watch, reply, body)              # 2.98.30: «Platz einrichten» /place, field of view per camera (537)
         fixp_routes(app, reply, body)                      # real-erk-e1: still «person» = thing, card «ignorieren?» /api/fixp (418)
         g2_routes(app, watch, reply, body)                 # guide 2: tours, tip of the day, factory reset (586)
+        simsich_routes(app, reply, body)                   # Sicherung → «Simulator»: backups of the simulator, restore (639za)
         qr_routes(app, reply, body)                        # QR codes: POST /api/qr, gallery /qr, print page, no-store for secrets (587)
         servo_routes(app, reply, body)                     # 2.98.35: servos - Not-Aus, taught points, diagnosis /servo, /api/servo (539)
         users_routes(app, reply, body)                     # 2.98.42: link a phone /l/<token>, page shows only the own rights (041)
@@ -2384,13 +2385,8 @@ class WebStream:
                 d = body(); pg = str(d.get("page") or pg)[:20]
                 if "start_groups" in d:                          # 3.23: the switch «On start: groups only» is gone (old pages)
                     pass
-                elif pg and re.fullmatch(r"[a-z]{2,20}", pg):     # 586: Simple / Expert of ONE page (the default stays)
-                    m_ = page_modes(); m_[pg] = "simple" if d.get("on") else "expert"
-                    if (m_[pg] == "simple") == bool(CFG["ui_simple"]):
-                        m_.pop(pg)
-                    web_ui_update({"mw-page-mode": json.dumps(m_)})
-                else:
-                    CFG["ui_simple"] = bool(d.get("on")); save_settings()      # the default (the Pi window follows by itself)
+                else:                                            # 639zb (P3, E1): ONE Simple / Expert for every page, the window and the simulator
+                    CFG["ui_simple"] = bool(d.get("on")); save_settings()      # (the Pi window follows by itself, the simulator over «ui»)
             return reply({"on": page_simple(pg) if pg else bool(CFG["ui_simple"]), "default": bool(CFG["ui_simple"]), "own": pg in page_modes(),
                           "dev": bool(CFG.get("dev_area")),         # 639d: the group «Entwickler» of the simulator control (470)
                           })

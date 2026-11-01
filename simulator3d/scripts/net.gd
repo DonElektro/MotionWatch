@@ -2,7 +2,7 @@ extends Node
 ## The connection to MoveEye: a small HTTP server with the same protocol as motionwatch_sim_interface.py
 ## (POST /state, GET /info, /events, /cam/<n>/video.mjpg, /cam/<n>/snapshot.jpg, /thermal.bin, GET+POST /control).
 ## Code-Prüfung M4/K2 (31.10.2026): der Server hört im ganzen WLAN. Darum nehmen die zerstörenden Befehle (werk reset,
-## dev spieltest clear, horror set_password) und die Entwickler-Seiten /dev/… (Notizen, Kontaktbogen) nur Anfragen von
+## dev spieltest clear, horror set_password, sicherung ausser info) und die Entwickler-Seiten /dev/… (Notizen, Kontaktbogen) nur Anfragen von
 ## diesem PC (127.0.0.1 / ::1) oder vom verbundenen MoveEye an (der Leiter aus POST /state, letzte 10 s), und nur ausserhalb
 ## des Kinder-Modus (devtool.is_owner). Fremde Geräte bekommen {"ok": false, "error": "nur_lokal"} bzw. 404.
 ## Für Testläufe von einem anderen Rechner: Startoption «--fernsteuerung-offen» oder Umgebungsvariable
@@ -19,6 +19,19 @@ var clients: Array = []                    # {peer, buf, out, stream_cam, fps, l
 var port := 8765
 var listening := false
 var error_text := ""
+
+
+var abgleich = null                       # P2 (abgleich.gd): the view shared with the leading MoveEye + the small hints
+
+
+func ui_sync():
+	"""abgleich.gd, made on the first use (a child of main: it draws the hints)"""
+	if abgleich == null and main != null:
+		abgleich = preload("res://scripts/abgleich.gd").new()
+		abgleich.name = "Abgleich"
+		abgleich.main = main
+		main.add_child.call_deferred(abgleich)
+	return abgleich
 
 
 var beacon := PacketPeerUDP.new()
@@ -213,7 +226,9 @@ static func dangerous(d: Dictionary) -> bool:
 	return (a == "werk" and w == "reset") or (a == "fehler" and w == "fix") or (a == "dev" and w == "spieltest" and str(d.get("what", "")) == "clear") \
 			or (a == "horror" and w == "set_password") \
 			or (a == "vorfuehrung" and w != "info") \
-			or (a in ["press", "set"] and str(d.get("id", "")).begins_with("vorfuehrung_"))   # Vorführmodus: only this PC / MoveEye
+			or (a in ["press", "set"] and str(d.get("id", "")).begins_with("vorfuehrung_")) \
+			or (a == "sicherung" and str(d.get("do", "info")) != "info") \
+			or (a in ["press", "set"] and str(d.get("id", "")).begins_with("sicherung_"))   # Sicherung: ZIP with the horror hash, restore
 
 
 func _handle(c: Dictionary, method: String, path: String, query: Dictionary, body: PackedByteArray, host: String) -> void:
@@ -226,6 +241,9 @@ func _handle(c: Dictionary, method: String, path: String, query: Dictionary, bod
 			_json(c, {"ok": false, "error": "bad state"}, 400)
 			return
 		var lead: bool = main.on_state(d, host)
+		var ab = ui_sync()
+		if ab != null:
+			ab.on_state(d, lead)                       # P2: the view of MoveEye (only the leader), level, lock, push, diag
 		var rep: Dictionary = main.world_reply()
 		if main.get("simint") != null:
 			rep.merge(main.simint.reply(), true)       # 30.10.2026: servo faults, 5 V, thermal model, warm hand (simint.gd)
@@ -233,6 +251,10 @@ func _handle(c: Dictionary, method: String, path: String, query: Dictionary, bod
 			rep["follower"] = true
 			rep["leader"] = main.mw_owner_name
 			rep["mw_cmd"] = null
+		elif ab != null:
+			var u: Dictionary = ab.reply()
+			if not u.is_empty():
+				rep["ui"] = u                          # P2: own view changes, the PIN of the operator mode, «update MoveEye»
 		_json(c, rep)
 		return
 	if method == "POST" and path == "/control":

@@ -1,8 +1,49 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 01.11.2026 · Version **3.34.0** · MoveEye **3.34.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 01.11.2026 · Version **3.39.0** · MoveEye **3.39.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.39.0 (MoveEye 3.39.0): Abgleich der Ansicht (`scripts/abgleich.gd`, MoveEye Teil 639zb) + main.gd zerlegt (Teilstand real-maingd)
+
+- Feld `ui` mit Revision (letzte Änderung gewinnt, Gleichstand: MoveEye), level / push / diag, Versions-Paar, Bedienermodus.
+- main.gd leitet weiter an main_steuerung / main_einstellungen / main_menues / main_kamera / main_status / main_start.gd.
+  Neue /control-Aktionen in main_steuerung.gd und zusätzlich in der Liste in main.gd «func _control» (schnittstelle.gd prüft sie).
+  Im Zweig Teil 639z, umbenannt in 639zb (639z = Bergtal-Geheimnis).
+
+## NEU in 3.38.0 (MoveEye 3.38.0): Sicherung (`scripts/sicherung.gd`, MoveEye Teil 639za)
+
+- ZIP mit manifest.json (Prüfsummen), Ziele PC / Ordner / MoveEye (mw_cmd «sim_sicherung», /control sicherung), vor dem
+  Wiederherstellen automatisch eine Sicherung. Test `werkzeuge/sicherung_test.gd`. Im Zweig 639s, wegen 639s_dev_zugang umbenannt.
+
+## NEU in 3.37.0 (MoveEye 3.37.0): Foto-Texturen im Bergtal (`scripts/bergtal_texturen.gd`, `texturen/`)
+
+- Daniels Fotos (nahtlos, `werkzeuge/texturen_bauen.py`, Quellen in `texturen/QUELLEN.txt`), Boden-Shader bergtal_boden /
+  bergsee; Schalter `foto_tex` (System › Grafik, Experte). `texturen/unbenutzt/` hat .gdignore (nicht im Export), Linux Pi
+  schliesst `texturen/*` aus. LIZENZEN.md: eigene Fotos mit Erlaubnis.
+
+## NEU in 3.36.0 (MoveEye 3.36.0): Figuren menschlicher
+
+- **A, mittel/hoch:** `figur_mensch.gd` (abgeleitet von `figur_paket.gd`): MakeHuman-Körper aus `pakete/menschen_v1.zip`
+  (~5 MB, nicht im Sim-ZIP; Knopf «Menschen-Paket laden», System → Grafik; Wahl «Figuren der Menschen»: auto = Menschen →
+  Quaternius → Ringe). Gebaut mit `werkzeuge/menschen_paket.py` aus MPFB2-Daten (CC0): 8 Körper (Mann/Frau schlank/kräftig,
+  Ältere, Kinder), Skelett mit Quaternius-Ruhe-Ausrichtung (Retarget beim Bauen, gleiche Clips), Teile Haut/Jacke/Ärmel/Hose/
+  Schuhe/Haare (kurz, lang, Dutt, Kranz)/Kapuze/Augen/Brauen/Wimpern, pro Figur zu einem Netz zusammengesetzt (geteilt),
+  Auto-LOD (`ImporterMesh.generate_lods`), ab 25 m Knochen nur jedes 2. Bild, ab 50 m jedes 4. Haut: Rim + Subsurface
+  (nur Forward+), Stoff-/Haar-Normalkarten im Code erzeugt. Hook `_nach_clip()` in figur_paket.gd (Becken-Höhe, gebeugte Ältere).
+- **B, einfach (Pi):** `actor.gd _shape_body` neu: Becken, Taille, Brustkorb, Brust/Büste, Schultern, Kragen, Säume,
+  Hände mit Daumen, Schuhe mit Kappe/Ferse/Sohle, Kopf mit Kinn, Kiefer, Wangen, Augenhöhlen, Lidern, Iris, Nase, Lippen,
+  Ohren; `_hair_and_hat`: Haare als Volumen (kurz, lang, Zopf, Kranz), Mütze, Hut, Cap. Gelenke/Felder unverändert.
+- **Vielfalt:** `menschen_stil.gd`: Kleidung wandern/freizeit/arbeit/regen nach Szene (Tabelle `SZENE`), Bau, Rucksack,
+  Kopfbedeckung, Wanderstöcke (`actor.add_poles`), Stirnlampe/Laterne (`add_lamp("lantern")`). Tests: `/control figuren`
+  op `stil` {value, bau}, op `mensch` {value: aus, lods}.
+- Kapuze (01.11. nachgebessert): ovale Gesichtsöffnung, hängt bis zum Kragen, Gewichte der nächsten Haut (vorher
+  wirkte sie wie verrutschte Haare). `MPACK_SIZE`/`MPACK_SHA` in figur_mensch.gd nach jedem Neubau des ZIP nachführen.
+
+## NEU in 3.35.0 (MoveEye 3.35.0): Bergtal-Geheimnis (`scripts/bergtal_ei.gd`, MoveEye Teil 639z)
+
+- Ablauf und Entwickler-Notiz in bergtal_ei.gd (nicht in sichtbare Texte schreiben); Test `werkzeuge/ei_test.gd` (auch Lite).
+  Im Zweig Teil 639s, wegen 639s_dev_zugang in 639z umbenannt.
 
 ## NEU in 3.34.0 (MoveEye 3.34.0): Gehäuse & Werkstatt (`scripts/gehaeuse.gd`, `scripts/werkstatt.gd`, MoveEye Teile 639v / 639w)
 

@@ -23,6 +23,15 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 3.35.0: Bergtal: ein neues Geheimnis.
+  * 3.34.0: Neue Seite «Gehäuse & Bau» (Mehr): Gehäuse v5.1 Schritt für Schritt, Materialliste, Druckdateien, Kapitel in der
+    Anleitung (5 Sprachen); im Simulator die Werkstatt zum Drehen und Zerlegen, das echte Gehäuse am Gerät.
+  * 3.33.0: Hilfe zu jedem Fehler: Fehler-Katalog (27 Fehler, 5 Sprachen), Seite /hilfe/fehler, Knopf «Jetzt beheben» (nur
+    Besitzer) und QR-Code in Selbstdiagnose, Fenster, SmallTV, TV und Push; im Simulator ebenso.
+  * 3.32.0: Ruhiges Bild statt Schwarz, wenn der Simulator startet, sich aktualisiert, einen Ort lädt oder nicht erreichbar ist
+    (mit Blinki, nach 3 Min. ein Hinweis); echte Kamera: klarere Fehlermeldung.
+  * 3.31.0: Ein gemeinsamer Kopf auf jeder Seite (Web, Pi-Fenster, Simulator): ? 🔔 ↻ DE ☰ ⛶ ▲ 🛠 immer gleich;
+    Ein-/Ausblenden-Listen als Chips mit Symbolen und Gruppen.
   * 3.30.0: Schneller zum Entwickler-Bereich: das MoveEye-Logo etwa 1 s gedrückt halten (Web, Pi-Fenster, Simulator); im
     Simulator zusätzlich ein Werkzeug-Knopf 🛠 oben rechts.
   * 3.29.0: Simulator: Fenster docken automatisch in Leisten links/rechts an (ohne Überlappung, passt sich der Bildschirmgrösse
@@ -77,17 +86,6 @@ Features
   * 3.13.0: Simulator 3.13.0: zu zweit zehn Team-Bausteine in der Karte des Grossvaters und bei Maggie (geteiltes Wissen,
     Räuberleiter, Rucksack teilen, Rücken an Rücken, Wer findet mehr, Fotowettbewerb, Lagerfeuer-Tagebuch, High-Five, Rollen,
     Gummiband).
-  * 3.12.0: Blinki überall ohne den orangen Sichtfächer; bei einem Stimmungswechsel zeigt er das Zeichen kurz in einer kleinen
-    Sprechblase; Logo und Fensterkopf unverändert.
-  * 3.11.1: Karte (Standort, Aufnahmen) zeigt wieder die OpenStreetMap-Kacheln statt «Access blocked»: die Kachel-Bilder senden
-    den Ursprung als Referer (referrerPolicy origin), die Seiten bleiben no-referrer.
-  * 3.11.0: Simulator 3.11.0: «Maggie und der Bergkristall» zu zweit – 1 oder 2 Spieler, Rolle wählbar, Bildschirm geteilt oder
-    gemeinsam, je Region ein Teamrätsel, Partner kann retten.
-  * 3.10.1: Simulator 3.10.1: Vorführung mit Schalter «Spiel-Knöpfe zeigen» – die Knöpfe bleiben sichtbar und leuchten auf, wenn
-    der Autopilot sie drückt.
-  * 3.10.0: Vorführung im Browser: «Maggie und der Bergkristall» als Film zuschauen (Simulator → Entwickler → Vorführung), Pause
-    und Kapitel. Simulator 3.10.0: Vorführmodus – Maggie spielt sich selbst, ganz oder als Kurzfassung, mit Kamerawechsel,
-    Untertiteln und Erzählerstimme.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -96,10 +94,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_3_30_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_3_35_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_3_30_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_3_30_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_3_35_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_3_35_0.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -116,7 +114,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "3.30.0"
+APP_VERSION = "3.35.0"
 
 
 def default_data_dir():
@@ -238,8 +236,8 @@ def prepare_settings_file():
 #     Part 397 fetches the zip over the same update source and restarts once (zusatz_start()).
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
-ZD_FILE = "moveeye_daten_3_30_0.zip"
-ZD_SHA256 = "6edd516f3b91da63c9cb4524516b8f0322ef72c5982c63ac17d2b58c16787100"
+ZD_FILE = "moveeye_daten_3_35_0.zip"
+ZD_SHA256 = "b264f086bf4c0f27574fe49865e934b4a8006b5e0ccce7e30a89e3270352d6fc"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -24521,8 +24519,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3.30.0", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 41339277,
-         "sha256": "fd90adb83d8e62717681f0d24ff3ac71d0a8f5aea61b05747c3f3eff185b7a81"}
+SIM3D = {"version": "3.35.0", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 42430258,
+         "sha256": "4efe4fe9c1a170d689ad3a3d513066aa967b889ff73bc338fc2f805c5f8c9c20"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -30418,7 +30416,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_3_30_0.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_3_35_0.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -32550,6 +32548,12 @@ class MotionWatch:
         self.read_failures = 0
 
     def no_camera_frame(self):
+        try:                                               # 639y: the calm picture (simulator) / a friendlier error picture
+            img = calm_frame() if "calm_frame" in globals() else None
+            if img is not None:
+                return img
+        except Exception:
+            pass
         img = np.zeros((360, 640, 3), np.uint8)
         busy = STATE["source_status"].startswith(("connecting", "connection lost"))
         ascii_ = lambda s: str(s).encode("ascii", "replace").decode()
@@ -41108,6 +41112,9 @@ class WebStream:
             try:
                 b_, h_ = _sim_get("/view.jpg" + ("?" + "&".join(q_) if q_ else ""), 3.0)
             except Exception:
+                cj_ = simwait_jpeg(request.args.get("w") or 960) if "simwait_jpeg" in globals() else None
+                if cj_:                                      # 639y: a calm picture instead of an error (Vorführung, Trailer, window)
+                    return Response(cj_, mimetype="image/jpeg", headers={"Cache-Control": "no-store", "X-MW-Wait": "1"})
                 return Response("simulator not reachable", 502)
             if not b_:
                 return Response("no picture yet", 503, {"Retry-After": "1"})
@@ -41126,13 +41133,29 @@ class WebStream:
             try:
                 up_ = _SIM_OPENER.open(urllib.request.Request(sim_base() + f"/view.mjpg?fps={fps_}" + ("&dock=1" if request.args.get("dock") == "1" else ""), headers={"User-Agent": "MotionWatch"}), timeout=5)
             except Exception:
-                return Response("simulator not reachable", 502)
-            ctype_ = up_.headers.get("Content-Type") or "multipart/x-mixed-replace; boundary=mwsimframe"
+                if "simwait_jpeg" not in globals() or not simwait_jpeg(960):
+                    return Response("simulator not reachable", 502)
+                up_ = None                                   # 639y: calm pictures until the simulator answers again
+            ctype_ = (up_.headers.get("Content-Type") if up_ is not None else "") or "multipart/x-mixed-replace; boundary=mwsimframe"
+            dock_ = request.args.get("dock") == "1"
 
             def gen():
+                up = up_
+                while up is None and CFG["sim_on"]:          # 639y: the same boundary as the simulator (net.gd BOUNDARY)
+                    cj_ = simwait_jpeg(960)
+                    if cj_:
+                        yield b"--mwsimframe\r\nContent-Type: image/jpeg\r\nContent-Length: " + str(len(cj_)).encode() + b"\r\n\r\n" + cj_ + b"\r\n"
+                    time.sleep(1.0)
+                    if int(time.time()) % 3 == 0:
+                        try:
+                            up = _SIM_OPENER.open(urllib.request.Request(sim_base() + f"/view.mjpg?fps={fps_}" + ("&dock=1" if dock_ else ""), headers={"User-Agent": "MotionWatch"}), timeout=5)
+                        except Exception:
+                            up = None
+                if up is None:
+                    return
                 try:
                     while CFG["sim_on"]:
-                        b_ = up_.read1(65536) if hasattr(up_, "read1") else up_.read(65536)
+                        b_ = up.read1(65536) if hasattr(up, "read1") else up.read(65536)
                         if not b_:
                             break
                         yield b_
@@ -41140,7 +41163,7 @@ class WebStream:
                     pass
                 finally:
                     try:
-                        up_.close()
+                        up.close()
                     except Exception:
                         pass
             return Response(gen(), mimetype=None, content_type=ctype_, headers={"Cache-Control": "no-store", "X-Accel-Buffering": "no"})
@@ -41514,6 +41537,7 @@ class WebStream:
                 if CFG["sim_on"]:                          # the simulation has its own lamps
                     st["light_cfg"]["white_out"] = st["light_cfg"]["white_out"] or "sim"; st["light_cfg"]["ir_out"] = st["light_cfg"]["ir_out"] or "sim"
                 st["sim"] = sim_status()
+                st["simwait"] = simwait_info(lang_) if "simwait_info" in globals() else None   # 639y: calm picture over the live view
                 st["turbo"] = turbo_state()
                 st["mode"] = mode_state()
                 st["tv"] = tv_state()
@@ -48541,7 +48565,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 3.30.0")
+        self.root.title("MoveEye 3.35.0")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -48913,7 +48937,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 3.30.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 3.35.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -56109,7 +56133,7 @@ App._refresh = _kr_tk_refresh
 #      bleibt für die kleine Überraschung) und «Über MoveEye» unten in Mehr. Geschichte, Entwickler «Daniel alias Elektro»,
 #      Zeitleiste, Zahlen (zur Laufzeit gezählt), aufklappbar «Für Technik-Interessierte». Texte: 622.
 # ----------------------------------------------------------------------------
-INFO_PARTS = 249                       # number of parts in quelle/ (written by werkzeuge/bauen.py --neue-version)
+INFO_PARTS = 255                       # number of parts in quelle/ (written by werkzeuge/bauen.py --neue-version)
 INFO_START = "2026-10-16"              # the first lines (a small webcam program for the Pi 5)
 FBX = {"shot": None, "shot_t": 0.0, "lines": 0}
 
@@ -59535,6 +59559,9 @@ def smalltv_selftest():
     import io
     keep = {k: CFG.get(k) for k in STV_CFG}
     keep_a, keep_g = STV["alarm"], STV["game"]
+    fx_ = globals().get("FX")                                  # 639u: an active error (QR page every other 20 s) must not change the plan here
+    if isinstance(fx_, dict):
+        fx_["stv_pause"] = True
     srv = None
     try:
         assert stv_norm_addr("192.168.1.77") == "http://192.168.1.77" and stv_norm_addr("http://tv.local:8080/") == "http://tv.local:8080"
@@ -59596,6 +59623,8 @@ def smalltv_selftest():
         CFG.update(keep)
         STV["alarm"], STV["game"] = keep_a, keep_g
         STV["renders"].clear()
+        if isinstance(fx_, dict):
+            fx_["stv_pause"] = False
 
 
 SELFTEST_EXTRA.append(("Extra display SmallTV: pictures, plan, device with firmware quirks (552)", smalltv_selftest))
@@ -59610,6 +59639,9 @@ def smalltv_rot_selftest():
     keep = {k: CFG.get(k) for k in STV_CFG}
     keep_a, keep_g, keep_b = STV["alarm"], STV["game"], STATE.get("battery")
     keep_dark = G["is_dark"]
+    fx_ = G.get("FX")                                    # 639u: the error page (QR) of this computer does not take part in the test
+    if isinstance(fx_, dict):
+        fx_["stv_pause"] = True
     srv = None
     try:
         CFG.update(stv_night=True, stv_alarm_s=60, stv_alarm_keep_min=5, stv_bright_s=20, stv_clock_min=10)
@@ -59697,6 +59729,8 @@ def smalltv_rot_selftest():
         STV["alarm"], STV["game"] = keep_a, keep_g
         STATE["battery"] = keep_b
         STV["renders"].clear()
+        if isinstance(fx_, dict):
+            fx_["stv_pause"] = False
 
 
 SELFTEST_EXTRA.append(("SmallTV live picture and rotation, alarm GIF, pictures a day (553)", smalltv_rot_selftest))
@@ -69329,6 +69363,2744 @@ def _kopf_selftest():
 
 SELFTEST_EXTRA.append(("One header (639t)", _kopf_selftest))
 # ----------------------------------------------------------------------------
+# Wunsch Daniel (01.11.2026): neben jeder Fehlermeldung ein QR-Code bzw. Knopf, der das Problem löst.
+#   Katalog: simulator3d/fehler_katalog.json (eine Datei für MoveEye und den Simulator, Ergänzung zu ui_gemeinsam.json), beim
+#     Bauen hier als FEHLER_KATALOG eingebettet (werkzeuge/bauen.py fehler_katalog_einbetten; bleibt in der Hauptdatei, die Hilfe
+#     geht auch ohne Zusatzdaten). Pro Fehler: id, titel, text, schritte, optional aktion – in de / en / fr / it / rm.
+#   Zuordnung: Selbstdiagnose (health_check, 120) -> jedes Teil mit «bad» (bzw. «warn», wenn der Fehler «warn» ist) bekommt
+#     «fehler»: {id, path, url, fix, tok}. Neu in der Selbstdiagnose (nur ergänzt): «Simulator» (Simulation an, aber keine
+#     Bilder), «Update» (letztes Update fehlgeschlagen), «Zusatzdaten» (Datei fehlt).
+#   Seite /hilfe/fehler/<ID>: Erklärung, Schritte, «Jetzt beheben» (Formular, POST /hilfe/fehler/<ID>/beheben mit CSRF-Schlüssel)
+#     oder – ohne automatische Lösung – «folge den Schritten». /hilfe/fehler/ = alle Fehler (die aktiven zuerst).
+#   Beheben: nur der Besitzer (Rolle admin, kein App-Schlüssel) nach Anmeldung (Passwort gesetzt; ohne Passwort nur am Pi
+#     selbst), immer POST, CSRF-Schlüssel = HMAC(Geheimnis dieses Laufs, Benutzer + Kennung), dazu prüft 550 «Origin».
+#     JSON: POST /api/fehler/fix {id, csrf}; GET /api/fehler = aktive Fehler (den Schlüssel bekommt nur der Besitzer).
+#   Aktionen (bestehende Funktionen): kamera_neu (Kamera neu öffnen wie sim_auto_adopt), dienst_neu (selfheal_restart, 145 –
+#     mit Bremse), ki_laden (ai_model_download), speicher (cleanup_recordings, tl_cleanup, rec_clean_tmp, zusatz_aufraeumen),
+#     update (update_check + update_install), zusatzdaten (zusatz_holen + zusatz_restart, 397), wlan (wifi_scan + wifi_connect
+#     zum stärksten gespeicherten Netz), push_test (push_test_one), sim_verbinden (sim_scan + sim_auto_adopt + Kamera neu),
+#     sim_neustart / sim_notfall (an den Simulator: /control {"action": "fehler", "do": "fix"}).
+#   QR-Inhalt: nur <Adresse von MoveEye>/hilfe/fehler/<ID> – keine Passwörter, keine Schlüssel (fx_url). Erzeugt mit qr_svg /
+#     qr_png / qr_matrix (110, wie 587).
+#   Anzeige: Web-Selbstdiagnose (530 healthLoad ruft fxDeco: Handy/Touch = Knopf «Beheben», PC = Knopf + kleiner QR-Knopf),
+#     Fenster (Selbstdiagnose: «🛠 Hilfe & QR» öffnet fx_tk_dialog mit QR und «Jetzt beheben»), Bild «NO CAMERA FOUND» (QR oben
+#     links, auch Web-Live und TV), SmallTV (bei einem aktiven Fehler alle 20 s abwechselnd mit der Statusseite), TV-Seite
+#     (/tv/…: Kasten mit QR), Push (Link-Zeile in «Kamera weg», «Erkennung gestört», Selbstheilung …).
+#   Simulator: scripts/fehler_hilfe.gd liest dieselbe Datei, zeichnet den QR selbst (eigener Encoder, gleiche Regeln) und zeigt
+#     ohne Verbindung die Anleitung ohne QR.
+# ----------------------------------------------------------------------------
+import hmac as _fx_hmac
+
+FEHLER_KATALOG = json.loads(r"""{
+ "v": 1,
+ "_hinweis": "Gemeinsamer Fehler-Katalog MoveEye ↔ MoveEye Sim (Paket «Fehler-QR», Daniel 01.11.2026), Ergänzung zu ui_gemeinsam.json. Pro Fehler: Kennung, Titel, Erklärung, Schritte und optional eine Aktion, alles in de / en / fr / it / rm. MoveEye bettet die Datei beim Bauen ein (werkzeuge/bauen.py → quelle/639u_fehler_hilfe.py, FEHLER_KATALOG, bleibt in der Hauptdatei – Hilfe geht auch ohne Zusatzdaten); der Simulator liest sie aus res:// (scripts/fehler_hilfe.gd, export_presets.cfg). Neue Fehler: zuerst hier, dann bauen.",
+ "_felder": {
+  "pfad": "Adresse der Hilfeseite in MoveEye: <MoveEye>/hilfe/fehler/<id>. Der QR-Code enthält nur diese Adresse (keine Passwörter, keine Schlüssel).",
+  "fehler": "seite: mw | sim | beide. stufe: bad | warn. quelle.health: IDs der Selbstdiagnose von MoveEye (120 health_check), quelle.sim_diag: IDs der Selbstdiagnose des Simulators (diagnose.gd), quelle.meldung: englische Teile von Meldungen (Push, Bild «NO CAMERA FOUND»), quelle.wenn: Zusatzbedingung in MoveEye (639u). aktion: Schlüssel aus «aktionen».",
+  "aktionen": "Was «Jetzt beheben» tut. MoveEye-Aktionen laufen nur als POST des Besitzers (angemeldet, CSRF-Schlüssel); sim_* laufen im Simulator selbst (Knopf im Simulator) oder über /control von MoveEye.",
+  "ui": "Texte der Hilfeseite, der Knöpfe und des Fensters im Simulator."
+ },
+ "pfad": "/hilfe/fehler/",
+ "sprachen": [
+  "de",
+  "en",
+  "fr",
+  "it",
+  "rm"
+ ],
+ "ui": {
+  "error": {
+   "de": "Fehler",
+   "en": "Error",
+   "fr": "Erreur",
+   "it": "Errore",
+   "rm": "Errur"
+  },
+  "what": {
+   "de": "Was ist los?",
+   "en": "What is wrong?",
+   "fr": "Que se passe-t-il ?",
+   "it": "Che cosa succede?",
+   "rm": "Tge è capità?"
+  },
+  "steps": {
+   "de": "So behebst du es",
+   "en": "How to fix it",
+   "fr": "Comment corriger",
+   "it": "Come risolvere",
+   "rm": "Uschia sligias ti il problem"
+  },
+  "fix": {
+   "de": "Beheben",
+   "en": "Fix",
+   "fr": "Corriger",
+   "it": "Risolvi",
+   "rm": "Reparar"
+  },
+  "fix_now": {
+   "de": "Jetzt beheben",
+   "en": "Fix now",
+   "fr": "Corriger maintenant",
+   "it": "Risolvi ora",
+   "rm": "Reparar ussa"
+  },
+  "help": {
+   "de": "Hilfe",
+   "en": "Help",
+   "fr": "Aide",
+   "it": "Aiuto",
+   "rm": "Agid"
+  },
+  "owner": {
+   "de": "Nur der Besitzer kann das beheben – bitte anmelden.",
+   "en": "Only the owner can fix this – please log in.",
+   "fr": "Seul le propriétaire peut corriger – veuillez vous connecter.",
+   "it": "Solo il proprietario può risolvere – accedi.",
+   "rm": "Mo il possessur po reparar quai – s'annunzia per plaschair."
+  },
+  "pw_first": {
+   "de": "Zuerst ein Passwort setzen (Einstellungen → Sicherheit) – sonst könnte jeder im Netz das auslösen.",
+   "en": "Set a password first (Settings → Security) – otherwise anybody in the network could do this.",
+   "fr": "Définissez d'abord un mot de passe (Réglages → Sécurité) – sinon n'importe qui sur le réseau pourrait le faire.",
+   "it": "Imposta prima una password (Impostazioni → Sicurezza) – altrimenti chiunque nella rete potrebbe farlo.",
+   "rm": "Fixescha l'emprim in pled-clav (Parameters → Segirezza) – uschiglio pudess mintgin en la rait far quai."
+  },
+  "done": {
+   "de": "Erledigt",
+   "en": "Done",
+   "fr": "Fait",
+   "it": "Fatto",
+   "rm": "Fatg"
+  },
+  "failed": {
+   "de": "Hat nicht geklappt",
+   "en": "Did not work",
+   "fr": "N'a pas fonctionné",
+   "it": "Non ha funzionato",
+   "rm": "N'ha betg funcziunà"
+  },
+  "manual": {
+   "de": "Dafür gibt es keine automatische Lösung – folge den Schritten oben.",
+   "en": "There is no automatic fix for this – follow the steps above.",
+   "fr": "Il n'y a pas de correction automatique – suivez les étapes ci-dessus.",
+   "it": "Non c'è una soluzione automatica – segui i passi qui sopra.",
+   "rm": "Per quai na datti nagina soluziun automatica – suonda ils pass survart."
+  },
+  "scan": {
+   "de": "Mit dem Handy scannen: Hilfe und «Beheben» dort",
+   "en": "Scan with the phone: help and «Fix» there",
+   "fr": "Scanner avec le téléphone : aide et « Corriger »",
+   "it": "Scansiona con il telefono: aiuto e «Risolvi»",
+   "rm": "Scannar cun il telefonin: agid e «Reparar» là"
+  },
+  "back": {
+   "de": "Zurück zu MoveEye",
+   "en": "Back to MoveEye",
+   "fr": "Retour à MoveEye",
+   "it": "Torna a MoveEye",
+   "rm": "Enavos tar MoveEye"
+  },
+  "unknown": {
+   "de": "Unbekannte Fehler-Kennung",
+   "en": "Unknown error code",
+   "fr": "Code d'erreur inconnu",
+   "it": "Codice di errore sconosciuto",
+   "rm": "Code d'errur nunenconuschent"
+  },
+  "code": {
+   "de": "Kennung",
+   "en": "Code",
+   "fr": "Code",
+   "it": "Codice",
+   "rm": "Code"
+  },
+  "all": {
+   "de": "Alle Fehler",
+   "en": "All errors",
+   "fr": "Toutes les erreurs",
+   "it": "Tutti gli errori",
+   "rm": "Tut las errurs"
+  },
+  "active": {
+   "de": "Jetzt aktiv",
+   "en": "Active now",
+   "fr": "Actif maintenant",
+   "it": "Attivo ora",
+   "rm": "Activ ussa"
+  },
+  "offline": {
+   "de": "Keine Verbindung zu MoveEye – die Anleitung kommt aus dem Simulator (ohne QR-Code).",
+   "en": "No connection to MoveEye – the steps come from the simulator (no QR code).",
+   "fr": "Pas de connexion à MoveEye – les étapes viennent du simulateur (sans code QR).",
+   "it": "Nessuna connessione a MoveEye – i passi vengono dal simulatore (senza codice QR).",
+   "rm": "Nagina colliaziun cun MoveEye – ils pass vegnan dal simulatur (senza code QR)."
+  },
+  "close": {
+   "de": "Schliessen",
+   "en": "Close",
+   "fr": "Fermer",
+   "it": "Chiudi",
+   "rm": "Serrar"
+  },
+  "busy": {
+   "de": "Läuft …",
+   "en": "Running …",
+   "fr": "En cours …",
+   "it": "In corso …",
+   "rm": "En lavur …"
+  }
+ },
+ "aktionen": {
+  "kamera_neu": {
+   "de": "Kamera neu verbinden",
+   "en": "Reconnect the camera",
+   "fr": "Reconnecter la caméra",
+   "it": "Ricollega la telecamera",
+   "rm": "Colliar danovamain la camera"
+  },
+  "dienst_neu": {
+   "de": "MoveEye neu starten (Selbstheilung)",
+   "en": "Restart MoveEye (self-healing)",
+   "fr": "Redémarrer MoveEye (auto-réparation)",
+   "it": "Riavvia MoveEye (autoriparazione)",
+   "rm": "Reaviar MoveEye (autoguariziun)"
+  },
+  "ki_laden": {
+   "de": "KI-Modell herunterladen",
+   "en": "Download the AI model",
+   "fr": "Télécharger le modèle IA",
+   "it": "Scarica il modello IA",
+   "rm": "Telechargiar il model IA"
+  },
+  "speicher": {
+   "de": "Speicher aufräumen",
+   "en": "Free up storage",
+   "fr": "Libérer de l'espace",
+   "it": "Libera spazio",
+   "rm": "Far plazza en la memoria"
+  },
+  "update": {
+   "de": "Update erneut versuchen",
+   "en": "Try the update again",
+   "fr": "Réessayer la mise à jour",
+   "it": "Riprova l'aggiornamento",
+   "rm": "Empruvar danovamain l'actualisaziun"
+  },
+  "zusatzdaten": {
+   "de": "Zusatzdaten neu holen",
+   "en": "Fetch the data file again",
+   "fr": "Récupérer à nouveau les données",
+   "it": "Scarica di nuovo i dati",
+   "rm": "Prender danovamain las datas supplementaras"
+  },
+  "wlan": {
+   "de": "WLAN suchen und neu verbinden",
+   "en": "Search Wi-Fi and reconnect",
+   "fr": "Chercher le Wi-Fi et reconnecter",
+   "it": "Cerca il Wi-Fi e ricollega",
+   "rm": "Tschertgar WLAN e colliar danovamain"
+  },
+  "push_test": {
+   "de": "Testnachricht senden",
+   "en": "Send a test message",
+   "fr": "Envoyer un message test",
+   "it": "Invia un messaggio di prova",
+   "rm": "Trametter in messadi da test"
+  },
+  "sim_verbinden": {
+   "de": "Simulator neu verbinden",
+   "en": "Reconnect the simulator",
+   "fr": "Reconnecter le simulateur",
+   "it": "Ricollega il simulatore",
+   "rm": "Colliar danovamain il simulatur"
+  },
+  "sim_neustart": {
+   "de": "Simulator neu starten",
+   "en": "Restart the simulator",
+   "fr": "Redémarrer le simulateur",
+   "it": "Riavvia il simulatore",
+   "rm": "Reaviar il simulatur"
+  },
+  "sim_notfall": {
+   "de": "Notfall-Start (Grafik Lite)",
+   "en": "Emergency start (graphics Lite)",
+   "fr": "Démarrage d'urgence (graphisme Lite)",
+   "it": "Avvio d'emergenza (grafica Lite)",
+   "rm": "Start d'urgenza (grafica Lite)"
+  }
+ },
+ "fehler": [
+  {
+   "id": "CAM_NONE",
+   "seite": "mw",
+   "stufe": "bad",
+   "quelle": {
+    "health": [
+     "cam"
+    ],
+    "meldung": [
+     "NO CAMERA FOUND",
+     "Camera lost"
+    ]
+   },
+   "titel": {
+    "de": "Kein Kamerabild",
+    "en": "No camera picture",
+    "fr": "Pas d'image de la caméra",
+    "it": "Nessuna immagine della telecamera",
+    "rm": "Nagin maletg da la camera"
+   },
+   "text": {
+    "de": "MoveEye bekommt von der Kamera keine Bilder – es wird nichts überwacht.",
+    "en": "MoveEye gets no pictures from the camera – nothing is being watched.",
+    "fr": "MoveEye ne reçoit aucune image de la caméra – rien n'est surveillé.",
+    "it": "MoveEye non riceve immagini dalla telecamera – niente è sorvegliato.",
+    "rm": "MoveEye na survegn nagins maletgs da la camera – nagut na vegn surveglià."
+   },
+   "schritte": {
+    "de": [
+     "Auf «Kamera neu verbinden» tippen.",
+     "Kabel der Kamera prüfen (Flachbandkabel richtig herum, fest eingesteckt).",
+     "Unter Einstellungen → Videoquelle die richtige Kamera wählen.",
+     "Hilft nichts: den Pi neu starten."
+    ],
+    "en": [
+     "Tap «Reconnect the camera».",
+     "Check the camera cable (ribbon the right way round, firmly in).",
+     "Choose the right camera under Settings → Video source.",
+     "Nothing helps: restart the Pi."
+    ],
+    "fr": [
+     "Touchez « Reconnecter la caméra ».",
+     "Vérifiez le câble (nappe dans le bon sens, bien enfoncée).",
+     "Choisissez la bonne caméra dans Réglages → Source vidéo.",
+     "Rien n'y fait : redémarrez le Pi."
+    ],
+    "it": [
+     "Tocca «Ricollega la telecamera».",
+     "Controlla il cavo (piatto nel verso giusto, ben inserito).",
+     "Scegli la telecamera giusta in Impostazioni → Sorgente video.",
+     "Non serve: riavvia il Pi."
+    ],
+    "rm": [
+     "Smatga «Colliar danovamain la camera».",
+     "Controllescha il cabel (cabel plat en la dretga direcziun, bain enfilà).",
+     "Tscherna la dretga camera sut Parameters → Funtauna video.",
+     "Na gida nagut: reaviar il Pi."
+    ]
+   },
+   "aktion": "kamera_neu"
+  },
+  {
+   "id": "CAM_LOOP",
+   "seite": "mw",
+   "stufe": "bad",
+   "quelle": {
+    "health": [
+     "loop"
+    ],
+    "meldung": [
+     "Camera loop disturbed"
+    ]
+   },
+   "titel": {
+    "de": "Erkennung gestört",
+    "en": "Detection disturbed",
+    "fr": "Détection perturbée",
+    "it": "Rilevamento disturbato",
+    "rm": "Identificaziun disturbada"
+   },
+   "text": {
+    "de": "Die Erkennungs-Schleife hängt oder startet immer wieder neu.",
+    "en": "The detection loop hangs or keeps restarting.",
+    "fr": "La boucle de détection est bloquée ou redémarre sans cesse.",
+    "it": "Il ciclo di rilevamento è bloccato o si riavvia di continuo.",
+    "rm": "La sleppa d'identificaziun è bloccada u reaviescha adina puspè."
+   },
+   "schritte": {
+    "de": [
+     "Auf «MoveEye neu starten» tippen (die Selbstheilung startet MoveEye sauber neu).",
+     "Kommt es wieder: Diagnose-Paket schicken (Mehr → Hilfe)."
+    ],
+    "en": [
+     "Tap «Restart MoveEye» (self-healing restarts it cleanly).",
+     "If it comes back: send the diagnosis package (More → Help)."
+    ],
+    "fr": [
+     "Touchez « Redémarrer MoveEye » (l'auto-réparation redémarre proprement).",
+     "Si cela revient : envoyez le paquet de diagnostic (Plus → Aide)."
+    ],
+    "it": [
+     "Tocca «Riavvia MoveEye» (l'autoriparazione riavvia in modo pulito).",
+     "Se si ripete: invia il pacchetto di diagnosi (Altro → Aiuto)."
+    ],
+    "rm": [
+     "Smatga «Reaviar MoveEye» (l'autoguariziun reaviescha MoveEye en urden).",
+     "Sch'i turna: trametter il pachet da diagnosa (Dapli → Agid)."
+    ]
+   },
+   "aktion": "dienst_neu"
+  },
+  {
+   "id": "AI_MODEL",
+   "seite": "mw",
+   "stufe": "bad",
+   "quelle": {
+    "health": [
+     "ai"
+    ]
+   },
+   "titel": {
+    "de": "KI-Modell fehlt",
+    "en": "AI model missing",
+    "fr": "Modèle IA manquant",
+    "it": "Modello IA mancante",
+    "rm": "Il model IA manca"
+   },
+   "text": {
+    "de": "Die Personen-Erkennung (KI) kann nicht laufen, weil das Modell fehlt oder der Download fehlschlug.",
+    "en": "Person detection (AI) cannot run because the model is missing or the download failed.",
+    "fr": "La détection de personnes (IA) ne peut pas fonctionner : le modèle manque ou le téléchargement a échoué.",
+    "it": "Il rilevamento persone (IA) non può funzionare: il modello manca o il download è fallito.",
+    "rm": "L'identificaziun da persunas (IA) na po betg funcziunar: il model manca u il telechargiament n'ha betg funcziunà."
+   },
+   "schritte": {
+    "de": [
+     "Internet prüfen (ca. 70 MB werden geladen).",
+     "Auf «KI-Modell herunterladen» tippen und warten."
+    ],
+    "en": [
+     "Check the internet (about 70 MB are downloaded).",
+     "Tap «Download the AI model» and wait."
+    ],
+    "fr": [
+     "Vérifiez Internet (environ 70 Mo).",
+     "Touchez « Télécharger le modèle IA » et patientez."
+    ],
+    "it": [
+     "Controlla Internet (circa 70 MB).",
+     "Tocca «Scarica il modello IA» e attendi."
+    ],
+    "rm": [
+     "Controllar l'internet (var 70 MB vegnan telechargiads).",
+     "Smatga «Telechargiar il model IA» e spetga."
+    ]
+   },
+   "aktion": "ki_laden"
+  },
+  {
+   "id": "SERVO_NONE",
+   "seite": "mw",
+   "stufe": "warn",
+   "quelle": {
+    "health": [
+     "servo"
+    ]
+   },
+   "titel": {
+    "de": "Servos nicht gefunden",
+    "en": "Servos not found",
+    "fr": "Servos introuvables",
+    "it": "Servo non trovati",
+    "rm": "Servos betg chattads"
+   },
+   "text": {
+    "de": "Der Schwenk-/Neigekopf antwortet nicht – die Kamera bewegt sich nicht.",
+    "en": "The pan/tilt head does not answer – the camera does not move.",
+    "fr": "La tête panoramique ne répond pas – la caméra ne bouge pas.",
+    "it": "La testa pan/tilt non risponde – la telecamera non si muove.",
+    "rm": "Il chau da girar/stortar na respunda betg – la camera na sa mova betg."
+   },
+   "schritte": {
+    "de": [
+     "Strom und Kabel der Servos prüfen (PCA9685, Adresse 0x41).",
+     "I2C einschalten: sudo raspi-config → Interface → I2C.",
+     "Danach MoveEye neu starten."
+    ],
+    "en": [
+     "Check power and wiring of the servos (PCA9685, address 0x41).",
+     "Switch on I2C: sudo raspi-config → Interface → I2C.",
+     "Then restart MoveEye."
+    ],
+    "fr": [
+     "Vérifiez l'alimentation et le câblage des servos (PCA9685, adresse 0x41).",
+     "Activez I2C : sudo raspi-config → Interface → I2C.",
+     "Puis redémarrez MoveEye."
+    ],
+    "it": [
+     "Controlla alimentazione e cavi dei servo (PCA9685, indirizzo 0x41).",
+     "Attiva I2C: sudo raspi-config → Interface → I2C.",
+     "Poi riavvia MoveEye."
+    ],
+    "rm": [
+     "Controllar current e cablaschi dals servos (PCA9685, adressa 0x41).",
+     "Activar I2C: sudo raspi-config → Interface → I2C.",
+     "Lura reaviar MoveEye."
+    ]
+   }
+  },
+  {
+   "id": "THERMAL",
+   "seite": "mw",
+   "stufe": "warn",
+   "quelle": {
+    "health": [
+     "thermal"
+    ]
+   },
+   "titel": {
+    "de": "Wärmebild-Kamera stört",
+    "en": "Thermal camera problem",
+    "fr": "Problème de caméra thermique",
+    "it": "Problema termocamera",
+    "rm": "Problem cun la camera termica"
+   },
+   "text": {
+    "de": "Die Wärmebild-Kamera liefert keine Werte.",
+    "en": "The thermal camera delivers no values.",
+    "fr": "La caméra thermique ne fournit aucune valeur.",
+    "it": "La termocamera non fornisce valori.",
+    "rm": "La camera termica na furnescha nagina valur."
+   },
+   "schritte": {
+    "de": [
+     "Kabel und Stecker der Wärmebild-Kamera prüfen.",
+     "SPI und I2C eingeschaltet? (raspi-config)",
+     "MoveEye neu starten."
+    ],
+    "en": [
+     "Check cable and plug of the thermal camera.",
+     "SPI and I2C switched on? (raspi-config)",
+     "Restart MoveEye."
+    ],
+    "fr": [
+     "Vérifiez câble et connecteur de la caméra thermique.",
+     "SPI et I2C activés ? (raspi-config)",
+     "Redémarrez MoveEye."
+    ],
+    "it": [
+     "Controlla cavo e connettore della termocamera.",
+     "SPI e I2C attivi? (raspi-config)",
+     "Riavvia MoveEye."
+    ],
+    "rm": [
+     "Controllar cabel e plug da la camera termica.",
+     "SPI ed I2C activads? (raspi-config)",
+     "Reaviar MoveEye."
+    ]
+   },
+   "aktion": "dienst_neu"
+  },
+  {
+   "id": "MIC",
+   "seite": "mw",
+   "stufe": "warn",
+   "quelle": {
+    "health": [
+     "mic"
+    ]
+   },
+   "titel": {
+    "de": "Mikrofon stört",
+    "en": "Microphone problem",
+    "fr": "Problème de micro",
+    "it": "Problema microfono",
+    "rm": "Problem cun il microfon"
+   },
+   "text": {
+    "de": "Das Mikrofon hört nichts oder meldet einen Fehler.",
+    "en": "The microphone hears nothing or reports an error.",
+    "fr": "Le micro n'entend rien ou signale une erreur.",
+    "it": "Il microfono non sente nulla o segnala un errore.",
+    "rm": "Il microfon na auda nagut u annunzia ina errur."
+   },
+   "schritte": {
+    "de": [
+     "USB-Mikrofon aus- und wieder einstecken.",
+     "Einstellungen → Mikrofon → «Geräte suchen» und neu wählen."
+    ],
+    "en": [
+     "Unplug the USB microphone and plug it in again.",
+     "Settings → Microphone → «Search devices» and choose again."
+    ],
+    "fr": [
+     "Débranchez puis rebranchez le micro USB.",
+     "Réglages → Micro → « Chercher les appareils » et rechoisir."
+    ],
+    "it": [
+     "Scollega e ricollega il microfono USB.",
+     "Impostazioni → Microfono → «Cerca dispositivi» e riscegli."
+    ],
+    "rm": [
+     "Trair or e tschentar puspè en il microfon USB.",
+     "Parameters → Microfon → «Tschertgar apparats» e tscherner danovamain."
+    ]
+   }
+  },
+  {
+   "id": "NET_OFFLINE",
+   "seite": "mw",
+   "stufe": "warn",
+   "quelle": {
+    "health": [
+     "net"
+    ]
+   },
+   "titel": {
+    "de": "Kein Internet",
+    "en": "No internet",
+    "fr": "Pas d'Internet",
+    "it": "Nessuna connessione Internet",
+    "rm": "Nagin internet"
+   },
+   "text": {
+    "de": "MoveEye ist offline. Alarme warten im Postausgang und gehen raus, sobald das Netz wieder da ist.",
+    "en": "MoveEye is offline. Alarms wait in the outbox and go out as soon as the network is back.",
+    "fr": "MoveEye est hors ligne. Les alarmes attendent et partent dès que le réseau revient.",
+    "it": "MoveEye è offline. Gli allarmi attendono e partono appena torna la rete.",
+    "rm": "MoveEye è offline. Ils alarms spetgan e partan uschespert che la rait è puspè avant maun."
+   },
+   "schritte": {
+    "de": [
+     "Handy-Hotspot bzw. WLAN-Router eingeschaltet?",
+     "Auf «WLAN suchen und neu verbinden» tippen.",
+     "Sonst: Einstellungen → Netzwerk → anderes WLAN wählen."
+    ],
+    "en": [
+     "Phone hotspot or Wi-Fi router switched on?",
+     "Tap «Search Wi-Fi and reconnect».",
+     "Otherwise: Settings → Network → choose another Wi-Fi."
+    ],
+    "fr": [
+     "Point d'accès du téléphone ou routeur allumé ?",
+     "Touchez « Chercher le Wi-Fi et reconnecter ».",
+     "Sinon : Réglages → Réseau → choisir un autre Wi-Fi."
+    ],
+    "it": [
+     "Hotspot del telefono o router acceso?",
+     "Tocca «Cerca il Wi-Fi e ricollega».",
+     "Altrimenti: Impostazioni → Rete → scegli un altro Wi-Fi."
+    ],
+    "rm": [
+     "Hotspot dal telefonin u router WLAN activà?",
+     "Smatga «Tschertgar WLAN e colliar danovamain».",
+     "Uschiglio: Parameters → Rait → tscherner in auter WLAN."
+    ]
+   },
+   "aktion": "wlan"
+  },
+  {
+   "id": "PUSH_NONE",
+   "seite": "mw",
+   "stufe": "bad",
+   "quelle": {
+    "health": [
+     "push"
+    ],
+    "wenn": "push_fehlt"
+   },
+   "titel": {
+    "de": "Push-Meldungen nicht eingerichtet",
+    "en": "Push messages not set up",
+    "fr": "Notifications non configurées",
+    "it": "Notifiche non configurate",
+    "rm": "Messadis push betg installads"
+   },
+   "text": {
+    "de": "Bei einem Alarm bekommst du keine Nachricht aufs Handy.",
+    "en": "On an alarm you get no message on the phone.",
+    "fr": "En cas d'alarme, vous ne recevez aucun message.",
+    "it": "In caso di allarme non ricevi alcun messaggio.",
+    "rm": "Tar in alarm na survegns ti nagin messadi."
+   },
+   "schritte": {
+    "de": [
+     "App «ntfy» aufs Handy laden.",
+     "Einstellungen → Benachrichtigungen: ntfy einrichten (QR-Code scannen).",
+     "«Test» senden."
+    ],
+    "en": [
+     "Install the app «ntfy» on the phone.",
+     "Settings → Notifications: set up ntfy (scan the QR code).",
+     "Send «Test»."
+    ],
+    "fr": [
+     "Installez l'application « ntfy ».",
+     "Réglages → Notifications : configurer ntfy (scanner le code QR).",
+     "Envoyer « Test »."
+    ],
+    "it": [
+     "Installa l'app «ntfy».",
+     "Impostazioni → Notifiche: configura ntfy (scansiona il QR).",
+     "Invia «Test»."
+    ],
+    "rm": [
+     "Installar l'app «ntfy» sin il telefonin.",
+     "Parameters → Avis: installar ntfy (scannar il code QR).",
+     "Trametter «Test»."
+    ]
+   }
+  },
+  {
+   "id": "PUSH_ERROR",
+   "seite": "mw",
+   "stufe": "bad",
+   "quelle": {
+    "health": [
+     "push"
+    ],
+    "wenn": "push_fehler"
+   },
+   "titel": {
+    "de": "Push-Meldung fehlgeschlagen",
+    "en": "Push message failed",
+    "fr": "Échec de la notification",
+    "it": "Notifica non riuscita",
+    "rm": "Il messadi push n'è betg reussì"
+   },
+   "text": {
+    "de": "Die letzte Nachricht kam nicht an. Alarme warten im Postausgang.",
+    "en": "The last message did not arrive. Alarms wait in the outbox.",
+    "fr": "Le dernier message n'est pas arrivé. Les alarmes attendent.",
+    "it": "L'ultimo messaggio non è arrivato. Gli allarmi attendono.",
+    "rm": "L'ultim messadi n'è betg arrivà. Ils alarms spetgan."
+   },
+   "schritte": {
+    "de": [
+     "Internet prüfen.",
+     "Auf «Testnachricht senden» tippen.",
+     "Kommt nichts: Adresse / Thema unter Einstellungen → Benachrichtigungen prüfen."
+    ],
+    "en": [
+     "Check the internet.",
+     "Tap «Send a test message».",
+     "Nothing comes: check address / topic under Settings → Notifications."
+    ],
+    "fr": [
+     "Vérifiez Internet.",
+     "Touchez « Envoyer un message test ».",
+     "Rien n'arrive : vérifiez l'adresse / le sujet dans Réglages → Notifications."
+    ],
+    "it": [
+     "Controlla Internet.",
+     "Tocca «Invia un messaggio di prova».",
+     "Non arriva nulla: controlla indirizzo / argomento in Impostazioni → Notifiche."
+    ],
+    "rm": [
+     "Controllar l'internet.",
+     "Smatga «Trametter in messadi da test».",
+     "Na vegn nagut: controllar l'adressa / il tema sut Parameters → Avis."
+    ]
+   },
+   "aktion": "push_test"
+  },
+  {
+   "id": "DISK_LOW",
+   "seite": "mw",
+   "stufe": "bad",
+   "quelle": {
+    "health": [
+     "disk"
+    ]
+   },
+   "titel": {
+    "de": "Speicher fast voll",
+    "en": "Storage almost full",
+    "fr": "Stockage presque plein",
+    "it": "Memoria quasi piena",
+    "rm": "Memoria bunamain plaina"
+   },
+   "text": {
+    "de": "Auf der Speicherkarte ist wenig Platz – bald können keine Aufnahmen mehr gespeichert werden.",
+    "en": "There is little room on the memory card – soon no recordings can be saved.",
+    "fr": "Il reste peu de place sur la carte – bientôt plus d'enregistrements possibles.",
+    "it": "C'è poco spazio sulla scheda – presto non si potranno più salvare registrazioni.",
+    "rm": "I dat pauca plazza sin la carta da memoria – bainprest na pon nagins registraziuns pli vegnir memorisadas."
+   },
+   "schritte": {
+    "de": [
+     "Auf «Speicher aufräumen» tippen (löscht die ältesten Aufnahmen, Favoriten bleiben).",
+     "«Max. Grösse der Aufnahmen» kleiner stellen (Einstellungen → Aufnahme).",
+     "Besser: SSD oder USB-Stick für die Aufnahmen."
+    ],
+    "en": [
+     "Tap «Free up storage» (deletes the oldest recordings, favourites stay).",
+     "Lower «max. size of the recordings» (Settings → Recording).",
+     "Better: an SSD or USB drive for the recordings."
+    ],
+    "fr": [
+     "Touchez « Libérer de l'espace » (supprime les plus anciens, les favoris restent).",
+     "Réduisez « taille max. des enregistrements » (Réglages → Enregistrement).",
+     "Mieux : un SSD ou une clé USB."
+    ],
+    "it": [
+     "Tocca «Libera spazio» (cancella le registrazioni più vecchie, i preferiti restano).",
+     "Riduci «dimensione max. registrazioni» (Impostazioni → Registrazione).",
+     "Meglio: un SSD o una chiavetta USB."
+    ],
+    "rm": [
+     "Smatga «Far plazza» (stizza las registraziuns las pli veglias, ils favurits restan).",
+     "Reducir «grondezza max. da las registraziuns» (Parameters → Registraziun).",
+     "Meglier: in SSD u in stick USB."
+    ]
+   },
+   "aktion": "speicher"
+  },
+  {
+   "id": "SDCARD",
+   "seite": "mw",
+   "stufe": "bad",
+   "quelle": {
+    "health": [
+     "sdwear"
+    ]
+   },
+   "titel": {
+    "de": "Speicherkarte meldet Fehler",
+    "en": "Memory card reports errors",
+    "fr": "La carte mémoire signale des erreurs",
+    "it": "La scheda di memoria segnala errori",
+    "rm": "La carta da memoria annunzia errurs"
+   },
+   "text": {
+    "de": "Das Dateisystem hat Fehler oder ist schreibgeschützt geworden.",
+    "en": "The file system has errors or became read-only.",
+    "fr": "Le système de fichiers a des erreurs ou est passé en lecture seule.",
+    "it": "Il file system ha errori o è diventato di sola lettura.",
+    "rm": "Il sistem da datotecas ha errurs u è daventà mo legibel."
+   },
+   "schritte": {
+    "de": [
+     "Sicherung machen (Einstellungen → Sicherung).",
+     "Pi sauber herunterfahren, Karte am PC prüfen oder ersetzen."
+    ],
+    "en": [
+     "Make a backup (Settings → Backup).",
+     "Shut the Pi down cleanly, check or replace the card on a PC."
+    ],
+    "fr": [
+     "Faites une sauvegarde (Réglages → Sauvegarde).",
+     "Arrêtez proprement le Pi, vérifiez ou remplacez la carte."
+    ],
+    "it": [
+     "Fai un backup (Impostazioni → Backup).",
+     "Spegni il Pi correttamente, controlla o sostituisci la scheda."
+    ],
+    "rm": [
+     "Far ina copia da segirezza (Parameters → Segirezza).",
+     "Stizzar il Pi en urden, controllar u remplazzar la carta."
+    ]
+   }
+  },
+  {
+   "id": "CPU_HOT",
+   "seite": "mw",
+   "stufe": "warn",
+   "quelle": {
+    "health": [
+     "temp"
+    ]
+   },
+   "titel": {
+    "de": "Pi zu heiss",
+    "en": "Pi too hot",
+    "fr": "Pi trop chaud",
+    "it": "Pi troppo caldo",
+    "rm": "Pi memia chaud"
+   },
+   "text": {
+    "de": "Der Prozessor ist über 70 °C – er wird langsamer und kann abstürzen.",
+    "en": "The processor is above 70 °C – it slows down and may crash.",
+    "fr": "Le processeur dépasse 70 °C – il ralentit et peut planter.",
+    "it": "Il processore supera i 70 °C – rallenta e può bloccarsi.",
+    "rm": "Il processer è sur 70 °C – el daventa plaun e po crudar."
+   },
+   "schritte": {
+    "de": [
+     "Gehäuse in den Schatten stellen.",
+     "Kühlkörper / Lüfter prüfen.",
+     "Nachtsicht oder Wärmebild vorübergehend ausschalten."
+    ],
+    "en": [
+     "Put the housing in the shade.",
+     "Check heat sink / fan.",
+     "Switch night vision or thermal off for a while."
+    ],
+    "fr": [
+     "Mettez le boîtier à l'ombre.",
+     "Vérifiez dissipateur / ventilateur.",
+     "Désactivez un moment la vision nocturne ou thermique."
+    ],
+    "it": [
+     "Metti l'involucro all'ombra.",
+     "Controlla dissipatore / ventola.",
+     "Spegni per un po' la visione notturna o termica."
+    ],
+    "rm": [
+     "Metter la chaschetta en la sumbriva.",
+     "Controllar refrigerader / ventilatur.",
+     "Deactivar ina giada la vista da notg u la camera termica."
+    ]
+   }
+  },
+  {
+   "id": "POWER_LOW",
+   "seite": "mw",
+   "stufe": "bad",
+   "quelle": {
+    "health": [
+     "power"
+    ]
+   },
+   "titel": {
+    "de": "Unterspannung",
+    "en": "Under-voltage",
+    "fr": "Sous-tension",
+    "it": "Sottotensione",
+    "rm": "Tensiun memia bassa"
+   },
+   "text": {
+    "de": "Das Netzteil liefert zu wenig Strom – der Pi kann abstürzen und die Karte beschädigen.",
+    "en": "The power supply delivers too little – the Pi may crash and damage the card.",
+    "fr": "L'alimentation est trop faible – le Pi peut planter et abîmer la carte.",
+    "it": "L'alimentatore è troppo debole – il Pi può bloccarsi e danneggiare la scheda.",
+    "rm": "L'alimentaziun furnescha memia pauc – il Pi po crudar e donnegiar la carta."
+   },
+   "schritte": {
+    "de": [
+     "Netzteil / Powerbank mit 5 V / 5 A verwenden.",
+     "Kurzes, dickes USB-C-Kabel nehmen."
+    ],
+    "en": [
+     "Use a 5 V / 5 A power supply / powerbank.",
+     "Use a short, thick USB-C cable."
+    ],
+    "fr": [
+     "Utilisez une alimentation 5 V / 5 A.",
+     "Prenez un câble USB-C court et épais."
+    ],
+    "it": [
+     "Usa un alimentatore 5 V / 5 A.",
+     "Usa un cavo USB-C corto e spesso."
+    ],
+    "rm": [
+     "Duvrar ina alimentaziun 5 V / 5 A.",
+     "Duvrar in curt e gross cabel USB-C."
+    ]
+   }
+  },
+  {
+   "id": "BATT_LOW",
+   "seite": "mw",
+   "stufe": "warn",
+   "quelle": {
+    "health": [
+     "batt"
+    ]
+   },
+   "titel": {
+    "de": "Akku schwach",
+    "en": "Battery low",
+    "fr": "Batterie faible",
+    "it": "Batteria scarica",
+    "rm": "Accu flaivel"
+   },
+   "text": {
+    "de": "Der Akku reicht vielleicht nicht bis zum Morgen.",
+    "en": "The battery may not last until the morning.",
+    "fr": "La batterie risque de ne pas tenir jusqu'au matin.",
+    "it": "La batteria potrebbe non durare fino al mattino.",
+    "rm": "L'accu na tanscha forsa betg fin la damaun."
+   },
+   "schritte": {
+    "de": [
+     "Powerbank bald laden oder tauschen.",
+     "Akku sparen einschalten (Einstellungen → Akku)."
+    ],
+    "en": [
+     "Charge or swap the powerbank soon.",
+     "Switch on battery saving (Settings → Battery)."
+    ],
+    "fr": [
+     "Rechargez ou changez bientôt la batterie.",
+     "Activez l'économie (Réglages → Batterie)."
+    ],
+    "it": [
+     "Ricarica o sostituisci presto la powerbank.",
+     "Attiva il risparmio (Impostazioni → Batteria)."
+    ],
+    "rm": [
+     "Chargiar u barattar bainprest la powerbank.",
+     "Activar spargnar accu (Parameters → Accu)."
+    ]
+   }
+  },
+  {
+   "id": "CLOCK",
+   "seite": "mw",
+   "stufe": "warn",
+   "quelle": {
+    "health": [
+     "clock"
+    ]
+   },
+   "titel": {
+    "de": "Uhrzeit unbekannt",
+    "en": "Time unknown",
+    "fr": "Heure inconnue",
+    "it": "Ora sconosciuta",
+    "rm": "Ura nunenconuschenta"
+   },
+   "text": {
+    "de": "Der Pi kennt die Uhrzeit nicht – Zeitpläne und Aufnahmen haben falsche Zeiten.",
+    "en": "The Pi does not know the time – schedules and recordings get wrong times.",
+    "fr": "Le Pi ne connaît pas l'heure – horaires et enregistrements sont faux.",
+    "it": "Il Pi non conosce l'ora – orari e registrazioni sono sbagliati.",
+    "rm": "Il Pi na enconuscha betg l'ura – ils plans e las registraziuns han uras faussas."
+   },
+   "schritte": {
+    "de": [
+     "Die MoveEye-Seite einmal auf dem Handy öffnen – der Pi übernimmt die Zeit.",
+     "Oder Internet verbinden."
+    ],
+    "en": [
+     "Open the MoveEye page on the phone once – the Pi takes the time from it.",
+     "Or connect to the internet."
+    ],
+    "fr": [
+     "Ouvrez une fois la page MoveEye sur le téléphone – le Pi reprend l'heure.",
+     "Ou connectez Internet."
+    ],
+    "it": [
+     "Apri una volta la pagina MoveEye sul telefono – il Pi prende l'ora.",
+     "Oppure collega Internet."
+    ],
+    "rm": [
+     "Avrir ina giada la pagina MoveEye sin il telefonin – il Pi prenda l'ura.",
+     "U colliar l'internet."
+    ]
+   }
+  },
+  {
+   "id": "PW_NONE",
+   "seite": "mw",
+   "stufe": "bad",
+   "quelle": {
+    "health": [
+     "pw"
+    ]
+   },
+   "titel": {
+    "de": "Kein Passwort",
+    "en": "No password",
+    "fr": "Pas de mot de passe",
+    "it": "Nessuna password",
+    "rm": "Nagin pled-clav"
+   },
+   "text": {
+    "de": "Ohne Passwort kann jeder im selben Netz alles sehen und steuern.",
+    "en": "Without a password everyone in the same network can watch and control everything.",
+    "fr": "Sans mot de passe, tout le monde sur le réseau peut tout voir et commander.",
+    "it": "Senza password chiunque nella rete può vedere e comandare tutto.",
+    "rm": "Senza pled-clav po mintgin en la medema rait vesair e controllar tut."
+   },
+   "schritte": {
+    "de": [
+     "Einstellungen → Sicherheit → Passwort setzen.",
+     "Danach neu anmelden."
+    ],
+    "en": [
+     "Settings → Security → set a password.",
+     "Then log in again."
+    ],
+    "fr": [
+     "Réglages → Sécurité → définir un mot de passe.",
+     "Puis reconnectez-vous."
+    ],
+    "it": [
+     "Impostazioni → Sicurezza → imposta una password.",
+     "Poi accedi di nuovo."
+    ],
+    "rm": [
+     "Parameters → Segirezza → fixar in pled-clav.",
+     "Lura s'annunziar danovamain."
+    ]
+   }
+  },
+  {
+   "id": "LASTRUN_CRASH",
+   "seite": "mw",
+   "stufe": "bad",
+   "quelle": {
+    "health": [
+     "lastrun"
+    ],
+    "meldung": [
+     "ended unexpectedly"
+    ]
+   },
+   "titel": {
+    "de": "Absturz beim letzten Lauf",
+    "en": "Crash in the last run",
+    "fr": "Plantage lors de la dernière exécution",
+    "it": "Arresto anomalo nell'ultima esecuzione",
+    "rm": "Crudada durant l'ultima giada"
+   },
+   "text": {
+    "de": "MoveEye ist unerwartet beendet worden (Strom, Hitze oder zu schwaches Netzteil). Nach mehreren Abstürzen startet es im sicheren Modus.",
+    "en": "MoveEye ended unexpectedly (power, heat or a weak power supply). After several crashes it starts in safe mode.",
+    "fr": "MoveEye s'est arrêté de façon inattendue (courant, chaleur, alimentation faible). Après plusieurs plantages, il démarre en mode sûr.",
+    "it": "MoveEye si è chiuso inaspettatamente (corrente, calore o alimentatore debole). Dopo più arresti parte in modalità sicura.",
+    "rm": "MoveEye è vegnì terminà nunspetgadamain (current, chalur u alimentaziun flaivla). Suenter pliras crudadas startà el en il modus segir."
+   },
+   "schritte": {
+    "de": [
+     "Netzteil 5 V / 5 A und Kühlung prüfen.",
+     "Im sicheren Modus: KI, Wärmebild, Nachtsicht einzeln wieder einschalten.",
+     "Kommt es wieder: Diagnose-Paket schicken."
+    ],
+    "en": [
+     "Check the 5 V / 5 A power supply and cooling.",
+     "In safe mode: switch AI, thermal, night vision on again one by one.",
+     "If it happens again: send the diagnosis package."
+    ],
+    "fr": [
+     "Vérifiez l'alimentation 5 V / 5 A et le refroidissement.",
+     "En mode sûr : réactivez IA, thermique, vision nocturne un par un.",
+     "Si cela se reproduit : envoyez le diagnostic."
+    ],
+    "it": [
+     "Controlla alimentatore 5 V / 5 A e raffreddamento.",
+     "In modalità sicura: riattiva IA, termica, visione notturna uno alla volta.",
+     "Se si ripete: invia il pacchetto di diagnosi."
+    ],
+    "rm": [
+     "Controllar l'alimentaziun 5 V / 5 A e la refrigeraziun.",
+     "En il modus segir: activar danovamain IA, termica, vista da notg ina suenter l'autra.",
+     "Sch'i capita puspè: trametter il pachet da diagnosa."
+    ]
+   }
+  },
+  {
+   "id": "SELFHEAL_HELD",
+   "seite": "mw",
+   "stufe": "bad",
+   "quelle": {
+    "health": [
+     "selfheal"
+    ],
+    "meldung": [
+     "MoveEye did not restart again (limit reached). Please look at it."
+    ]
+   },
+   "titel": {
+    "de": "Selbstheilung angehalten",
+    "en": "Self-healing held back",
+    "fr": "Auto-réparation suspendue",
+    "it": "Autoriparazione sospesa",
+    "rm": "Autoguariziun fermada"
+   },
+   "text": {
+    "de": "Ein Teil hing mehrmals; MoveEye hat sich schon oft neu gestartet und wartet jetzt (Bremse).",
+    "en": "A part hung several times; MoveEye already restarted often and now waits (brake).",
+    "fr": "Une partie s'est bloquée plusieurs fois ; MoveEye a déjà souvent redémarré et attend (frein).",
+    "it": "Una parte si è bloccata più volte; MoveEye si è già riavviato spesso e ora attende (freno).",
+    "rm": "Ina part è sa bloccada pliras giadas; MoveEye è gia reaviada savens ed spetga ussa (fren)."
+   },
+   "schritte": {
+    "de": [
+     "Auf «MoveEye neu starten» tippen, wenn die Bremse es erlaubt.",
+     "Protokoll ansehen (Mehr → Protokoll) und Diagnose-Paket schicken."
+    ],
+    "en": [
+     "Tap «Restart MoveEye» when the brake allows it.",
+     "Look at the log (More → Log) and send the diagnosis package."
+    ],
+    "fr": [
+     "Touchez « Redémarrer MoveEye » si le frein le permet.",
+     "Consultez le journal (Plus → Journal) et envoyez le diagnostic."
+    ],
+    "it": [
+     "Tocca «Riavvia MoveEye» se il freno lo consente.",
+     "Guarda il registro (Altro → Registro) e invia la diagnosi."
+    ],
+    "rm": [
+     "Smatga «Reaviar MoveEye» sch'il fren lubescha quai.",
+     "Guardar il protocol (Dapli → Protocol) e trametter il pachet da diagnosa."
+    ]
+   },
+   "aktion": "dienst_neu"
+  },
+  {
+   "id": "UPDATE_FAIL",
+   "seite": "mw",
+   "stufe": "warn",
+   "quelle": {
+    "health": [
+     "update"
+    ],
+    "meldung": [
+     "update failed",
+     "download failed",
+     "restart failed",
+     "signature"
+    ]
+   },
+   "titel": {
+    "de": "Update fehlgeschlagen",
+    "en": "Update failed",
+    "fr": "Échec de la mise à jour",
+    "it": "Aggiornamento non riuscito",
+    "rm": "L'actualisaziun n'è betg reussida"
+   },
+   "text": {
+    "de": "Die neue Version liess sich nicht laden oder installieren. Die bisherige Version läuft weiter.",
+    "en": "The new version could not be downloaded or installed. The current version keeps running.",
+    "fr": "La nouvelle version n'a pas pu être téléchargée ou installée. L'ancienne continue.",
+    "it": "La nuova versione non è stata scaricata o installata. Quella attuale continua.",
+    "rm": "La nova versiun n'ha betg pudì vegnir telechargiada u installada. La versiun actuala cuntinuescha."
+   },
+   "schritte": {
+    "de": [
+     "Internet prüfen.",
+     "Auf «Update erneut versuchen» tippen.",
+     "Meldet es «Signatur»: nur signierte Versionen installieren (Daniel signiert)."
+    ],
+    "en": [
+     "Check the internet.",
+     "Tap «Try the update again».",
+     "If it says «signature»: only signed versions install (signed later)."
+    ],
+    "fr": [
+     "Vérifiez Internet.",
+     "Touchez « Réessayer la mise à jour ».",
+     "Si « signature » : seules les versions signées s'installent."
+    ],
+    "it": [
+     "Controlla Internet.",
+     "Tocca «Riprova l'aggiornamento».",
+     "Se dice «firma»: si installano solo versioni firmate."
+    ],
+    "rm": [
+     "Controllar l'internet.",
+     "Smatga «Empruvar danovamain l'actualisaziun».",
+     "Sch'i stat «signatura»: mo versiuns signadas vegnan installadas."
+    ]
+   },
+   "aktion": "update"
+  },
+  {
+   "id": "DATA_MISSING",
+   "seite": "mw",
+   "stufe": "bad",
+   "quelle": {
+    "health": [
+     "zusatz"
+    ],
+    "meldung": [
+     "Additional data missing",
+     "Zusatzdaten fehlen"
+    ]
+   },
+   "titel": {
+    "de": "Zusatzdaten fehlen",
+    "en": "Data file missing",
+    "fr": "Fichier de données manquant",
+    "it": "File dati mancante",
+    "rm": "Las datas supplementaras mancan"
+   },
+   "text": {
+    "de": "Die Datei moveeye_daten_*.zip fehlt. MoveEye schützt weiter (Kern), aber Web-Seiten, Bilder und Übersetzungen fehlen.",
+    "en": "The file moveeye_daten_*.zip is missing. MoveEye keeps protecting (core), but web pages, pictures and translations are missing.",
+    "fr": "Le fichier moveeye_daten_*.zip manque. MoveEye protège toujours, mais pages, images et traductions manquent.",
+    "it": "Manca il file moveeye_daten_*.zip. MoveEye protegge ancora, ma mancano pagine, immagini e traduzioni.",
+    "rm": "La datoteca moveeye_daten_*.zip manca. MoveEye protegia vinavant, ma paginas, maletgs e translaziuns mancan."
+   },
+   "schritte": {
+    "de": [
+     "Auf «Zusatzdaten neu holen» tippen (braucht Internet).",
+     "MoveEye startet danach einmal neu."
+    ],
+    "en": [
+     "Tap «Fetch the data file again» (needs internet).",
+     "MoveEye then restarts once."
+    ],
+    "fr": [
+     "Touchez « Récupérer à nouveau les données » (Internet requis).",
+     "MoveEye redémarre ensuite une fois."
+    ],
+    "it": [
+     "Tocca «Scarica di nuovo i dati» (serve Internet).",
+     "MoveEye poi si riavvia una volta."
+    ],
+    "rm": [
+     "Smatga «Prender danovamain las datas» (basegna internet).",
+     "MoveEye reaviescha lura ina giada."
+    ]
+   },
+   "aktion": "zusatzdaten"
+  },
+  {
+   "id": "SIM_UNREACHABLE",
+   "seite": "beide",
+   "stufe": "bad",
+   "quelle": {
+    "health": [
+     "sim"
+    ],
+    "sim_diag": [
+     "tunnel"
+    ],
+    "meldung": [
+     "simulator not reachable"
+    ]
+   },
+   "titel": {
+    "de": "Simulator nicht erreichbar",
+    "en": "Simulator not reachable",
+    "fr": "Simulateur injoignable",
+    "it": "Simulatore non raggiungibile",
+    "rm": "Simulatur betg cuntanschibel"
+   },
+   "text": {
+    "de": "Die Simulation ist eingeschaltet, aber vom Simulator kommen keine Bilder.",
+    "en": "The simulation is on, but no pictures come from the simulator.",
+    "fr": "La simulation est active, mais aucune image ne vient du simulateur.",
+    "it": "La simulazione è attiva, ma dal simulatore non arrivano immagini.",
+    "rm": "La simulaziun è activa, ma dal simulatur na vegnan nagins maletgs."
+   },
+   "schritte": {
+    "de": [
+     "Läuft der Simulator auf dem PC?",
+     "Auf «Simulator neu verbinden» tippen.",
+     "Hängt er: «Simulator neu starten» oder Notfall-Start."
+    ],
+    "en": [
+     "Is the simulator running on the PC?",
+     "Tap «Reconnect the simulator».",
+     "If it hangs: «Restart the simulator» or emergency start."
+    ],
+    "fr": [
+     "Le simulateur tourne-t-il sur le PC ?",
+     "Touchez « Reconnecter le simulateur ».",
+     "S'il est bloqué : « Redémarrer le simulateur » ou démarrage d'urgence."
+    ],
+    "it": [
+     "Il simulatore è in esecuzione sul PC?",
+     "Tocca «Ricollega il simulatore».",
+     "Se è bloccato: «Riavvia il simulatore» o avvio d'emergenza."
+    ],
+    "rm": [
+     "Gira il simulatur sin il PC?",
+     "Smatga «Colliar danovamain il simulatur».",
+     "Sch'el è bloccà: «Reaviar il simulatur» u start d'urgenza."
+    ]
+   },
+   "aktion": "sim_verbinden"
+  },
+  {
+   "id": "SIM_NO_MW",
+   "seite": "sim",
+   "stufe": "warn",
+   "quelle": {
+    "sim_diag": [
+     "mw",
+     "fw"
+    ]
+   },
+   "titel": {
+    "de": "MoveEye nicht verbunden",
+    "en": "MoveEye not connected",
+    "fr": "MoveEye non connecté",
+    "it": "MoveEye non collegato",
+    "rm": "MoveEye betg collià"
+   },
+   "text": {
+    "de": "Der Simulator sendet, aber MoveEye holt keine Bilder ab.",
+    "en": "The simulator is sending, but MoveEye does not fetch the pictures.",
+    "fr": "Le simulateur envoie, mais MoveEye ne récupère pas les images.",
+    "it": "Il simulatore invia, ma MoveEye non preleva le immagini.",
+    "rm": "Il simulatur trametta, ma MoveEye na prenda betg ils maletgs."
+   },
+   "schritte": {
+    "de": [
+     "In MoveEye: Reiter Simulator → Verbindung: Adresse dieses PCs eintragen (gleiches Netz).",
+     "Auf «Simulator neu verbinden» tippen (Senden aus und wieder ein).",
+     "Firewall: den Simulator für private Netzwerke zulassen (TCP-Port 8765)."
+    ],
+    "en": [
+     "In MoveEye: tab Simulator → Connection: enter the address of this PC (same network).",
+     "Tap «Reconnect the simulator» (sending off and on again).",
+     "Firewall: allow the simulator for private networks (TCP port 8765)."
+    ],
+    "fr": [
+     "Dans MoveEye : onglet Simulateur → Connexion : saisir l'adresse de ce PC (même réseau).",
+     "Touchez « Reconnecter le simulateur » (envoi arrêté puis relancé).",
+     "Pare-feu : autorisez le simulateur pour les réseaux privés (port TCP 8765)."
+    ],
+    "it": [
+     "In MoveEye: scheda Simulatore → Connessione: inserisci l'indirizzo di questo PC (stessa rete).",
+     "Tocca «Ricollega il simulatore» (invio spento e riacceso).",
+     "Firewall: consenti il simulatore per le reti private (porta TCP 8765)."
+    ],
+    "rm": [
+     "En MoveEye: register Simulatur → Colliaziun: endatar l'adressa da quest PC (medema rait).",
+     "Smatga «Colliar danovamain il simulatur» (trametter or ed en).",
+     "Firewall: lubir il simulatur per raits privatas (port TCP 8765)."
+    ]
+   },
+   "aktion": "sim_verbinden"
+  },
+  {
+   "id": "SIM_SLOW",
+   "seite": "sim",
+   "stufe": "bad",
+   "quelle": {
+    "sim_diag": [
+     "gfx"
+    ]
+   },
+   "titel": {
+    "de": "Simulator zu langsam",
+    "en": "Simulator too slow",
+    "fr": "Simulateur trop lent",
+    "it": "Simulatore troppo lento",
+    "rm": "Simulatur memia plaun"
+   },
+   "text": {
+    "de": "Der Simulator schafft zu wenige Bilder pro Sekunde – MoveEye erkennt dann kaum etwas.",
+    "en": "The simulator makes too few pictures per second – MoveEye then hardly detects anything.",
+    "fr": "Le simulateur produit trop peu d'images par seconde – MoveEye ne détecte presque rien.",
+    "it": "Il simulatore produce troppe poche immagini al secondo – MoveEye rileva poco.",
+    "rm": "Il simulatur fa memia paucs maletgs per secunda – MoveEye na identifitgescha lura strusch nagut."
+   },
+   "schritte": {
+    "de": [
+     "Andere Programme schliessen.",
+     "Auf «Notfall-Start (Grafik Lite)» tippen – nur für diesen Start, die eigene Wahl bleibt gespeichert.",
+     "Dauerhaft: System → Grafik → «Lite»."
+    ],
+    "en": [
+     "Close other programs.",
+     "Tap «Emergency start (graphics Lite)» – only for this start, your own choice stays saved.",
+     "Permanently: System → Graphics → «Lite»."
+    ],
+    "fr": [
+     "Fermez les autres programmes.",
+     "Touchez « Démarrage d'urgence (Lite) » – seulement pour ce démarrage.",
+     "Durablement : Système → Graphisme → « Lite »."
+    ],
+    "it": [
+     "Chiudi gli altri programmi.",
+     "Tocca «Avvio d'emergenza (Lite)» – solo per questo avvio.",
+     "Stabilmente: Sistema → Grafica → «Lite»."
+    ],
+    "rm": [
+     "Serrar autras applicaziuns.",
+     "Smatga «Start d'urgenza (Lite)» – mo per quest start.",
+     "Permanent: Sistem → Grafica → «Lite»."
+    ]
+   },
+   "aktion": "sim_notfall"
+  },
+  {
+   "id": "SIM_RAM",
+   "seite": "sim",
+   "stufe": "bad",
+   "quelle": {
+    "sim_diag": [
+     "ram",
+     "cpu"
+    ]
+   },
+   "titel": {
+    "de": "PC ausgelastet",
+    "en": "PC overloaded",
+    "fr": "PC surchargé",
+    "it": "PC sovraccarico",
+    "rm": "PC surchargià"
+   },
+   "text": {
+    "de": "Arbeitsspeicher oder Prozessor des PCs sind fast voll.",
+    "en": "Memory or processor of the PC are almost full.",
+    "fr": "La mémoire ou le processeur du PC sont presque saturés.",
+    "it": "Memoria o processore del PC sono quasi pieni.",
+    "rm": "La memoria u il processer dal PC èn bunamain plains."
+   },
+   "schritte": {
+    "de": [
+     "Browser-Tabs und andere Programme schliessen.",
+     "Auf «Simulator neu starten» tippen."
+    ],
+    "en": [
+     "Close browser tabs and other programs.",
+     "Tap «Restart the simulator»."
+    ],
+    "fr": [
+     "Fermez onglets et programmes.",
+     "Touchez « Redémarrer le simulateur »."
+    ],
+    "it": [
+     "Chiudi schede e programmi.",
+     "Tocca «Riavvia il simulatore»."
+    ],
+    "rm": [
+     "Serrar tabs dal navigatur ed autras applicaziuns.",
+     "Smatga «Reaviar il simulatur»."
+    ]
+   },
+   "aktion": "sim_neustart"
+  },
+  {
+   "id": "SIM_DISK",
+   "seite": "sim",
+   "stufe": "warn",
+   "quelle": {
+    "sim_diag": [
+     "disk"
+    ]
+   },
+   "titel": {
+    "de": "Wenig Platz auf dem PC",
+    "en": "Little room on the PC",
+    "fr": "Peu d'espace sur le PC",
+    "it": "Poco spazio sul PC",
+    "rm": "Pauca plazza sin il PC"
+   },
+   "text": {
+    "de": "Für Aufnahmen und Trainingsbilder ist bald kein Platz mehr.",
+    "en": "Soon there is no room for recordings and training pictures.",
+    "fr": "Bientôt plus de place pour enregistrements et images d'entraînement.",
+    "it": "Presto non ci sarà spazio per registrazioni e immagini di addestramento.",
+    "rm": "Bainprest na datti nagina plazza pli per registraziuns e maletgs da trenament."
+   },
+   "schritte": {
+    "de": [
+     "Karte Testen → «Alte KI-Daten löschen».",
+     "Alte Aufnahmen im Simulator-Ordner löschen."
+    ],
+    "en": [
+     "Card Testing → «Delete old AI data».",
+     "Delete old recordings in the simulator folder."
+    ],
+    "fr": [
+     "Carte Tester → « Supprimer les anciennes données IA ».",
+     "Supprimez les anciens enregistrements."
+    ],
+    "it": [
+     "Scheda Test → «Elimina vecchi dati IA».",
+     "Elimina le vecchie registrazioni."
+    ],
+    "rm": [
+     "Carta Testar → «Stizzar veglias datas IA».",
+     "Stizzar veglias registraziuns en l'ordinatur dal simulatur."
+    ]
+   }
+  },
+  {
+   "id": "SIM_API",
+   "seite": "beide",
+   "stufe": "bad",
+   "quelle": {
+    "sim_diag": [
+     "api",
+     "upd",
+     "godot"
+    ]
+   },
+   "titel": {
+    "de": "Simulator und MoveEye passen nicht zusammen",
+    "en": "Simulator and MoveEye do not match",
+    "fr": "Simulateur et MoveEye incompatibles",
+    "it": "Simulatore e MoveEye non compatibili",
+    "rm": "Simulatur e MoveEye na correspundan betg"
+   },
+   "text": {
+    "de": "Die Schnittstelle zwischen Simulator und MoveEye stimmt nicht (unterschiedliche Versionen).",
+    "en": "The interface between simulator and MoveEye does not match (different versions).",
+    "fr": "L'interface entre simulateur et MoveEye ne correspond pas (versions différentes).",
+    "it": "L'interfaccia tra simulatore e MoveEye non corrisponde (versioni diverse).",
+    "rm": "L'interfatscha tranter simulatur e MoveEye na correspunda betg (versiuns differentas)."
+   },
+   "schritte": {
+    "de": [
+     "Beide auf die neueste Version bringen: MoveEye → Mehr → Updates, Simulator → Mehr → Updates.",
+     "Die fertige Fassung (ZIP) verwenden – sie ist für Godot 4.3 gebaut."
+    ],
+    "en": [
+     "Update both: MoveEye → More → Updates, simulator → More → Updates.",
+     "Use the finished version (ZIP) – it is built for Godot 4.3."
+    ],
+    "fr": [
+     "Mettez les deux à jour : MoveEye → Plus → Mises à jour, simulateur → Plus → Mises à jour.",
+     "Utilisez la version prête (ZIP) – construite pour Godot 4.3."
+    ],
+    "it": [
+     "Aggiorna entrambi: MoveEye → Altro → Aggiornamenti, simulatore → Altro → Aggiornamenti.",
+     "Usa la versione pronta (ZIP) – fatta per Godot 4.3."
+    ],
+    "rm": [
+     "Actualisar omadus: MoveEye → Dapli → Actualisaziuns, simulatur → Dapli → Actualisaziuns.",
+     "Duvrar la versiun finida (ZIP) – ella è fatga per Godot 4.3."
+    ]
+   }
+  },
+  {
+   "id": "SIM_GODOT_ERR",
+   "seite": "sim",
+   "stufe": "warn",
+   "quelle": {
+    "sim_diag": [
+     "err"
+    ]
+   },
+   "titel": {
+    "de": "Fehler im Simulator",
+    "en": "Errors in the simulator",
+    "fr": "Erreurs dans le simulateur",
+    "it": "Errori nel simulatore",
+    "rm": "Errurs en il simulatur"
+   },
+   "text": {
+    "de": "Godot hat seit dem Start Fehler gemeldet.",
+    "en": "Godot reported errors since the start.",
+    "fr": "Godot a signalé des erreurs depuis le démarrage.",
+    "it": "Godot ha segnalato errori dall'avvio.",
+    "rm": "Godot ha annunzià errurs dapi il start."
+   },
+   "schritte": {
+    "de": [
+     "Mehr → Protokoll → «Fehler» ansehen.",
+     "Kopieren und mit einer Rückmeldung schicken.",
+     "Hängt etwas: «Simulator neu starten»."
+    ],
+    "en": [
+     "More → Log → look at «Errors».",
+     "Copy and send with a feedback.",
+     "If something hangs: «Restart the simulator»."
+    ],
+    "fr": [
+     "Plus → Journal → « Erreurs ».",
+     "Copiez et envoyez avec un retour.",
+     "Si quelque chose bloque : « Redémarrer le simulateur »."
+    ],
+    "it": [
+     "Altro → Registro → «Errori».",
+     "Copia e invia con un feedback.",
+     "Se qualcosa si blocca: «Riavvia il simulatore»."
+    ],
+    "rm": [
+     "Dapli → Protocol → guardar «Errurs».",
+     "Copiar e trametter cun ina resposta.",
+     "Sch'insatge è bloccà: «Reaviar il simulatur»."
+    ]
+   },
+   "aktion": "sim_neustart"
+  }
+ ]
+}""")
+FX = {"secret": secrets.token_bytes(32), "cache": (0.0, None, None), "upd_err": None, "last": {}}
+FX_LANGS = ("de", "en", "fr", "it", "rm")
+
+
+def fx_entries():
+    return [e for e in (FEHLER_KATALOG.get("fehler") or []) if isinstance(e, dict) and e.get("id")]
+
+
+def fx_entry(fid):
+    fid = str(fid or "").strip().upper()
+    return next((e for e in fx_entries() if e["id"] == fid), None)
+
+
+def _fx_l(lang):
+    L = norm_lang(lang) if lang else cur_lang()
+    return L if L in FX_LANGS else "en"
+
+
+def fx_t(d, lang=None):
+    """a {de, en, fr, it, rm} value of the catalogue in the language (fallback: rm -> de, others -> en)"""
+    if not isinstance(d, dict):
+        return d if d is not None else ""
+    L = _fx_l(lang)
+    return d.get(L) or d.get("de" if L == "rm" else "en") or d.get("de") or ""
+
+
+def fx_ui(key, lang=None):
+    return fx_t((FEHLER_KATALOG.get("ui") or {}).get(key) or {"en": key}, lang)
+
+
+def fx_act_name(act, lang=None):
+    return fx_t((FEHLER_KATALOG.get("aktionen") or {}).get(act) or {"en": act}, lang)
+
+
+def fx_base():
+    """the address a phone in the same network opens (the QR code points there); public_url when it is set"""
+    pu = str(CFG.get("public_url") or "").strip().rstrip("/")
+    if pu.startswith(("http://", "https://")):
+        return pu
+    try:
+        pa = page_address().rstrip("/")
+    except Exception:
+        pa = ""
+    if pa:
+        return pa
+    try:
+        a = setup_addresses()
+        if a:
+            return a[0]["url"].rstrip("/")
+    except Exception:
+        pass
+    try:                                                    # no network address known: the address the browser uses now
+        from flask import has_request_context, request
+        if has_request_context():
+            return request.host_url.rstrip("/")
+    except Exception:
+        pass
+    return ""
+
+
+def fx_path(fid):
+    return str(FEHLER_KATALOG.get("pfad") or "/hilfe/fehler/") + str(fid)
+
+
+def fx_url(fid, base=None):
+    """the text of the QR code: only the address of the help page (no password, no key, no token)"""
+    b = (fx_base() if base is None else str(base)).rstrip("/")
+    return (b + fx_path(fid)) if b else ""
+
+
+# ---- which errors are there now -------------------------------------------------------------------------------------------
+def _fx_cond(cond):
+    try:
+        if cond == "push_fehlt":
+            return not Notifier.configured()
+        if cond == "push_fehler":
+            return Notifier.configured()
+    except Exception:
+        return False
+    return True
+
+
+def fx_for_health(item):
+    """the catalogue entry of one line of the self-check (or None)"""
+    lv = item.get("level")
+    if lv not in ("bad", "warn"):
+        return None
+    for e in fx_entries():
+        q = e.get("quelle") or {}
+        if item.get("id") in (q.get("health") or []) and e.get("seite") in ("mw", "beide") and _fx_cond(q.get("wenn")):
+            if lv == "bad" or e.get("stufe") == "warn":
+                return e
+    return None
+
+
+def fx_update_failed():
+    """the last update failed (update_install / the source) - within a day and as long as no newer version runs"""
+    u = FX.get("upd_err")
+    if u and time.time() - u[0] < 86400 and u[2] == APP_VERSION:
+        return u[1]
+    m = str(UPD.get("msg") or "")
+    if m.startswith(("update source not reachable", "restart failed")) and time.time() - float(UPD.get("time") or 0) < 86400:
+        return m
+    return ""
+
+
+def _fx_extra_items(L):
+    """three more lines of the self-check (only added; the rest stays as it is)"""
+    T = lambda x: tr(x, L)
+    out = []
+    try:
+        if CFG.get("sim_on") and time.time() - RUNGUARD["t0"] > 60:
+            gone = (not SIM.get("ok")) or time.time() - float(SIM.get("t") or 0) > 15
+            out.append({"id": "sim", "icon": "🧪", "title": T("Simulator"), "level": "bad" if gone else "ok",
+                        "text": tr_err(str(SIM.get("msg") or "simulator not reachable"), L) if gone else T("connected"), "tip": ""})
+    except Exception:
+        pass
+    um = fx_update_failed()
+    if um:
+        out.append({"id": "update", "icon": "⬆", "title": T("Updates"), "level": "warn", "text": tr_err(um, L)[:160], "tip": ""})
+    try:
+        if not ZD["ok"]:
+            out.append({"id": "zusatz", "icon": "📦", "title": fx_t(fx_entry("DATA_MISSING")["titel"], L), "level": "bad",
+                        "text": str(ZD_FILE or "moveeye_daten_*.zip") + (" · " + str(ZD.get("err") or "")[:80] if ZD.get("err") else ""), "tip": ""})
+    except Exception:
+        pass
+    return out
+
+
+_health_check_before_fx = health_check
+
+
+# wraps: health_check
+def health_check(lang=None):
+    """+ 639u: every problem with a catalogue entry gets «fehler» (help page, QR address, fix) - the lines stay as they are"""
+    h = _health_check_before_fx(lang)
+    try:
+        L = _fx_l(lang)
+        extra = _fx_extra_items(L)
+        if extra and isinstance(h, dict) and isinstance(h.get("items"), list):
+            h["items"].extend(extra)
+            try:
+                h["items"].sort(key=lambda x: HEALTH_ORDER.index(x["level"]))
+                h["count"] = {k: sum(1 for x in h["items"] if x["level"] == k) for k in HEALTH_ORDER}
+            except (ValueError, KeyError, NameError):
+                pass
+        user = None
+        try:                                                # a page of the owner asks: the button «Fix» gets its CSRF key
+            from flask import has_request_context, request, g as g_
+            if has_request_context():
+                user = fx_owner(request, g_)[0]
+        except Exception:
+            user = None
+        for x in h.get("items") or []:
+            e = fx_for_health(x)
+            if e is not None:
+                x["fehler"] = fx_info(e, L, user)
+    except Exception as ex:
+        log_event("sys", f"Fehler-QR: {ex}"[:160])
+    return h
+
+
+def fx_info(e, L, user=None):
+    """what a page / window needs for one error (the CSRF key only when fx_owner gives a user)"""
+    d = {"id": e["id"], "path": fx_path(e["id"]), "url": fx_url(e["id"]), "title": fx_t(e.get("titel"), L), "stufe": e.get("stufe", "bad"),
+         "fix": fx_act_name(e["aktion"], L) if e.get("aktion") else "", "help": fx_ui("help", L), "fix_word": fx_ui("fix", L)}
+    if user is not None and e.get("aktion"):
+        d["tok"] = fx_token(user, e["id"])
+    return d
+
+
+def fx_active(lang=None, only_bad=True):
+    """[(item of the self-check, entry)] of now - cached 10 s (SmallTV, TV, window ask often)"""
+    now = time.time()
+    t0, L0, res = FX["cache"]
+    L = _fx_l(lang)
+    if res is None or now - t0 > 10 or L0 != L:
+        res = []
+        try:
+            for x in health_check(L).get("items") or []:
+                if x.get("fehler"):
+                    e = fx_entry(x["fehler"]["id"])
+                    if e is not None:
+                        res.append((x, e))
+        except Exception:
+            res = []
+        FX["cache"] = (now, L, res)
+    return [r for r in res if r[0].get("level") == "bad"] if only_bad else list(res)
+
+
+# ---- who may fix: the owner, logged in; CSRF key ----------------------------------------------------------------------------
+def fx_token(user, fid):
+    return _fx_hmac.new(FX["secret"], ("%s|%s" % (user or "", fid)).encode("utf-8"), "sha256").hexdigest()[:40]
+
+
+def fx_token_ok(user, fid, tok):
+    return bool(tok) and _fx_hmac.compare_digest(fx_token(user, fid), str(tok)[:80])
+
+
+def _fx_local(request):
+    return (request.remote_addr or "") in ("127.0.0.1", "::1") and not (request.headers.get("X-Forwarded-For") or request.headers.get("Forwarded")
+                                                                      or request.headers.get("X-Forwarded-Host"))
+
+
+def fx_owner(request, g_):
+    """(user, error key) - user is None when this request may not fix anything"""
+    if getattr(g_, "role", "admin") != "admin" or getattr(g_, "appkey", None):
+        return None, "owner"
+    if not web_pw_active() and not _fx_local(request):
+        return None, "pw_first"
+    return str(getattr(g_, "user", "") or ""), ""
+
+
+# ---- the actions (existing functions only) ----------------------------------------------------------------------------------
+def _fx_watch():
+    return WATCH_REF.get("w")
+
+
+def _fx_cam_reopen():
+    w = _fx_watch()
+    if w is None:
+        return False, "MoveEye is not running"
+    w._open_gen += 1
+    w._start_opener(CFG["source"])
+    return True, "connecting…"
+
+
+def _fx_bg(name, fn):
+    def work():
+        try:
+            fn()
+        except Exception as ex:
+            log_event("sys", f"Fehler-QR {name}: {ex}"[:160])
+    threading.Thread(target=work, daemon=True, name="fx-" + name).start()
+
+
+def fx_run(act, who="web"):
+    """run one action -> (ok, message in English: tr_err() translates it)"""
+    log_event("sys", f"Fix «{act}» by {who}")
+    if act == "kamera_neu":
+        return _fx_cam_reopen()
+    if act == "dienst_neu":
+        ok, reason = selfheal_allowed()
+        if not ok:
+            return False, "limit reached: " + str(reason)
+        return (True, "MoveEye restarts …") if selfheal_restart("manual", "Restart by the owner (fix)") else (False, "a restart is already running")
+    if act == "ki_laden":
+        return ai_model_download()
+    if act == "speicher":
+        before = (STATE.get("disk") or {}).get("free_mb")
+        w = _fx_watch()
+        if w is not None:
+            w.cleanup_recordings()
+        for f in ("tl_cleanup", "rec_clean_tmp", "zusatz_aufraeumen", "log_purge"):
+            try:
+                globals()[f]()
+            except Exception:
+                pass
+        try:
+            free = int(shutil.disk_usage(CFG["record_dir"]).free / 1024 ** 2)
+            STATE.setdefault("disk", {})["free_mb"] = free
+        except (OSError, KeyError, TypeError):
+            free = None
+        FX["cache"] = (0.0, None, None)
+        return True, ("%.1f GB free" % (free / 1024)) if free is not None else "cleaned up"
+    if act == "update":
+        if UPD.get("busy"):
+            return False, "an update is already running"
+        items, err = update_check()
+        if err:
+            return False, err
+        new = sorted((x for x in items if x.get("available") and _installable(x) and _vkey(x["version"]) > _vkey(APP_VERSION)),
+                     key=lambda x: _vkey(x["version"]))
+        if not new:
+            FX["upd_err"] = None
+            return True, "this version is already running"
+        return update_install(new[-1]["version"])
+    if act == "zusatzdaten":
+        if ZD["ok"]:
+            return True, "the data file is there"
+        err = zusatz_holen()
+        if err:
+            return False, err
+        zusatz_restart()
+        return True, "MoveEye restarts …"
+    if act == "wlan":
+        ok, err = wifi_scan()
+        if not ok:
+            return False, err
+        st = wifi_status()
+        if st.get("connected") and (STATE.get("net") or {}).get("online") is not False:
+            return True, "connected"
+        cand = [n for n in st.get("scan") or [] if n.get("saved") and not n.get("active")]
+        if not cand:
+            return False, "no saved network in range"
+        return wifi_connect(cand[0]["ssid"], "", True)
+    if act == "push_test":
+        w = _fx_watch()
+        if w is None:
+            return False, "MoveEye is not running"
+        res = push_test_one(w, "all") or []
+        n_ok = sum(1 for r in res if r.get("ok"))
+        return (n_ok > 0 or not res), "%d / %d" % (n_ok, len(res))
+    if act == "sim_verbinden":
+        def go():
+            sim_scan()
+            sim_auto_adopt()
+            if CFG.get("sim_on") and str(CFG.get("source") or "").startswith("sim:"):
+                _fx_cam_reopen()
+        _fx_bg("sim", go)
+        return True, "connecting…"
+    if act in ("sim_neustart", "sim_notfall"):
+        try:
+            r = sim_control({"action": "fehler", "do": "fix", "aktion": act})
+        except Exception:
+            return False, "simulator not reachable"
+        if not isinstance(r, dict) or not r.get("ok"):
+            return False, str((r or {}).get("error") or "not supported - update the simulator")
+        return True, "the simulator restarts …"
+    return False, "unknown action"
+
+
+_update_install_before_fx = update_install
+
+
+# wraps: update_install
+def update_install(version):
+    """+ 639u: a failed update is remembered for the self-check line «Updates» (help page UPDATE_FAIL)"""
+    ok, err = _update_install_before_fx(version)
+    if not ok and err and "already running" not in err:
+        FX["upd_err"] = (time.time(), err, APP_VERSION)
+    elif ok:
+        FX["upd_err"] = None
+    return ok, err
+
+
+# ---- the help page (self-contained: works without the data file, too) ------------------------------------------------------
+_FX_CSS = ("body{margin:0;background:#0b0f14;color:#e8eef5;font:16px/1.5 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}"
+           "@media(prefers-color-scheme:light){body{background:#f4f6f9;color:#111}.box{background:#fff!important;border-color:#d8dee6!important}.mut{color:#5b6878!important}}"
+           "main{max-width:720px;margin:0 auto;padding:16px}a{color:#3b8cff}.top{display:flex;align-items:center;gap:10px;margin-bottom:10px}"
+           ".top img{width:36px;height:36px;border-radius:9px}.top b{font-size:18px}.mut{color:#8a9bb0;font-size:13px}"
+           ".box{background:#111822;border:1px solid #1f2b3a;border-radius:14px;padding:14px 16px;margin:10px 0}"
+           "h1{font-size:22px;margin:4px 0 8px}h2{font-size:16px;margin:0 0 6px}ol{margin:0;padding-left:22px}li{margin:4px 0}"
+           ".lv{display:inline-block;border-radius:99px;padding:1px 10px;font-size:12px;font-weight:700;color:#fff;background:#e5484d}.lv.warn{background:#f2a33a}"
+           "button{font:700 16px system-ui;padding:12px 18px;border-radius:12px;border:0;background:#3b8cff;color:#fff;cursor:pointer;width:100%}"
+           ".ok{border-color:#3fcf6b!important}.bad{border-color:#e5484d!important}.qr{display:flex;gap:14px;align-items:center}"
+           ".qr .q{background:#fff;border-radius:10px;padding:6px;width:132px;height:132px;flex:none}.qr .q svg{width:100%;height:100%}"
+           ".code{font-family:ui-monospace,Menlo,monospace;font-size:12px}.list a{display:block;padding:6px 0;border-bottom:1px solid #1f2b3a;text-decoration:none}"
+           "@media(pointer:coarse){.qr{display:none}}")
+
+
+def _fx_head(title, L):
+    return ('<!doctype html><html lang="' + L + '"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+            '<meta name="referrer" content="no-referrer"><title>MoveEye – ' + html_escape(title) + '</title><style>' + _FX_CSS + '</style></head><body><main>'
+            '<div class="top"><img src="/icon-192.png" alt=""><div><b>MoveEye</b><div class="mut">' + html_escape(fx_ui("help", L)) + ' · ' + html_escape(fx_ui("error", L))
+            + '</div></div></div>')
+
+
+def fx_page(fid, lang=None, user=None, why="", result=None):
+    """the page /hilfe/fehler/<ID>. user: the owner (fix button with CSRF key); why: why not («owner» / «pw_first»)"""
+    L = _fx_l(lang)
+    e = fx_entry(fid)
+    if e is None:
+        return (_fx_head(fx_ui("unknown", L), L) + '<div class="box bad"><h1>' + html_escape(fx_ui("unknown", L)) + '</h1><p class="code">'
+                + html_escape(str(fid)[:40]) + '</p><a href="' + fx_path("") + '">' + html_escape(fx_ui("all", L)) + '</a></div></main></body></html>'), 404
+    tl = fx_t(e.get("titel"), L)
+    act = [x for x, _e in fx_active(L, only_bad=False) if _e["id"] == e["id"]]
+    h = _fx_head(tl, L) + '<div class="box ' + ("bad" if e.get("stufe") == "bad" else "") + '">'
+    h += ('<span class="lv ' + html_escape(e.get("stufe", "bad")) + '">' + html_escape(fx_ui("active", L) if act else fx_ui("error", L)) + '</span> '
+          '<span class="mut code">' + html_escape(fx_ui("code", L)) + ': ' + html_escape(e["id"]) + '</span>')
+    h += '<h1>' + html_escape(tl) + '</h1>'
+    if act and act[0].get("text"):
+        h += '<p class="mut">' + html_escape(str(act[0].get("text"))[:200]) + '</p>'
+    h += '<h2>' + html_escape(fx_ui("what", L)) + '</h2><p>' + html_escape(fx_t(e.get("text"), L)) + '</p></div>'
+    h += '<div class="box"><h2>' + html_escape(fx_ui("steps", L)) + '</h2><ol>' + "".join(
+        '<li>' + html_escape(s) + '</li>' for s in (fx_t(e.get("schritte"), L) or [])) + '</ol></div>'
+    if result is not None:
+        ok_, msg_ = result
+        h += ('<div class="box ' + ("ok" if ok_ else "bad") + '"><b>' + ("✓ " + html_escape(fx_ui("done", L)) if ok_ else "⚠ " + html_escape(fx_ui("failed", L)))
+              + '</b>' + ((' – ' + html_escape(tr_err(str(msg_), L))) if msg_ else "") + '</div>')
+    if e.get("aktion"):
+        h += '<div class="box">'
+        if user is not None:
+            h += ('<form method="post" action="' + fx_path(e["id"]) + '/beheben">'
+                  '<input type="hidden" name="csrf" value="' + fx_token(user, e["id"]) + '"><input type="hidden" name="lang" value="' + L + '">'
+                  '<button type="submit">🛠 ' + html_escape(fx_ui("fix_now", L)) + ': ' + html_escape(fx_act_name(e["aktion"], L)) + '</button></form>')
+        else:
+            h += '<p>🔒 ' + html_escape(fx_ui("pw_first" if why == "pw_first" else "owner", L)) + '</p>'
+        h += '</div>'
+    else:
+        h += '<p class="mut">' + html_escape(fx_ui("manual", L)) + '</p>'
+    u = fx_url(e["id"])
+    if u:
+        try:
+            h += ('<div class="box qr"><div class="q">' + qr_svg(u) + '</div><div><div class="mut">' + html_escape(fx_ui("scan", L))
+                  + '</div><div class="code">' + html_escape(u) + '</div></div></div>')
+        except ValueError:
+            pass
+    h += '<p><a href="/">← ' + html_escape(fx_ui("back", L)) + '</a> · <a href="' + fx_path("") + '?lang=' + L + '">' + html_escape(fx_ui("all", L)) + '</a></p></main></body></html>'
+    return h, 200
+
+
+def fx_list_page(lang=None):
+    L = _fx_l(lang)
+    act = {e["id"] for _x, e in fx_active(L, only_bad=False)}
+    rows = sorted(fx_entries(), key=lambda e: (e["id"] not in act, e.get("seite") == "sim", e["id"]))
+    h = _fx_head(fx_ui("all", L), L) + '<div class="box list"><h1>' + html_escape(fx_ui("all", L)) + '</h1>'
+    for e in rows:
+        h += ('<a href="' + fx_path(e["id"]) + '?lang=' + L + '">' + ("⚠ " if e["id"] in act else "") + html_escape(fx_t(e.get("titel"), L))
+              + ' <span class="mut code">' + html_escape(e["id"]) + ('' if not e.get("aktion") else ' · 🛠') + '</span></a>')
+    return h + '</div><p><a href="/">← ' + html_escape(fx_ui("back", L)) + '</a></p></main></body></html>'
+
+
+def _fx_lang_of(request):
+    return _fx_l(request.values.get("lang") or (request.accept_languages.best_match(FX_LANGS) if request.accept_languages else None) or CFG.get("lang"))
+
+
+_qr_routes_before_fx = qr_routes
+
+
+# wraps: qr_routes
+def qr_routes(app, reply, body):
+    """+ 639u: /hilfe/fehler/, /hilfe/fehler/<ID>, POST …/beheben, GET /api/fehler, POST /api/fehler/fix (550 calls qr_routes once)"""
+    _qr_routes_before_fx(app, reply, body)
+    from flask import request, Response, g as g_
+    hdr = {"Cache-Control": "no-store"}
+
+    @app.route("/hilfe/fehler/")
+    def fx_list_route():
+        return Response(fx_list_page(_fx_lang_of(request)), mimetype="text/html", headers=hdr)
+
+    @app.route("/hilfe/fehler/<fid>")
+    def fx_page_route(fid):
+        user, why = fx_owner(request, g_)
+        h, code = fx_page(fid, _fx_lang_of(request), user, why)
+        return Response(h, code, mimetype="text/html", headers=hdr)
+
+    @app.route("/hilfe/fehler/<fid>/beheben", methods=["POST"])
+    def fx_fix_route(fid):
+        L = _fx_lang_of(request)
+        e = fx_entry(fid)
+        user, why = fx_owner(request, g_)
+        if e is None or not e.get("aktion"):
+            h, code = fx_page(fid, L, user, why)
+            return Response(h, 404 if e is None else 400, mimetype="text/html", headers=hdr)
+        if user is None:
+            h, _c = fx_page(fid, L, None, why)
+            return Response(h, 403, mimetype="text/html", headers=hdr)
+        if not fx_token_ok(user, e["id"], request.form.get("csrf")):
+            log_event("web", f"Fix {e['id']} refused: wrong CSRF key from {request.remote_addr}")
+            h, _c = fx_page(fid, L, user, why, (False, "refused"))
+            return Response(h, 403, mimetype="text/html", headers=hdr)
+        res = fx_run(e["aktion"], "web " + (request.remote_addr or "?"))
+        FX["last"][e["id"]] = (time.time(), bool(res[0]))
+        FX["cache"] = (0.0, None, None)
+        h, _c = fx_page(fid, L, user, why, res)
+        return Response(h, 200 if res[0] else 409, mimetype="text/html", headers=hdr)
+
+    @app.route("/api/fehler")
+    def fx_api_list():
+        L = _fx_l(request.args.get("lang"))
+        user, _why = fx_owner(request, g_)
+        return reply({"ok": True, "items": [dict(fx_info(e, L, user), text=str(x.get("text") or "")[:160], level=x.get("level"))
+                                            for x, e in fx_active(L, only_bad=False)], "owner": user is not None})
+
+    @app.route("/api/fehler/fix", methods=["POST"])
+    def fx_api_fix():
+        d = body()
+        L = _fx_l(d.get("lang"))
+        e = fx_entry(d.get("id"))
+        user, why = fx_owner(request, g_)
+        if e is None or not e.get("aktion"):
+            return reply({"ok": False, "error": fx_ui("manual", L)}, 400)
+        if user is None:
+            return reply({"ok": False, "error": fx_ui("pw_first" if why == "pw_first" else "owner", L)}, 403)
+        if not fx_token_ok(user, e["id"], d.get("csrf")):
+            return reply({"ok": False, "error": "refused (CSRF)"}, 403)
+        ok, msg = fx_run(e["aktion"], "web " + (request.remote_addr or "?"))
+        FX["last"][e["id"]] = (time.time(), bool(ok))
+        FX["cache"] = (0.0, None, None)
+        return reply({"ok": bool(ok), "msg": tr_err(str(msg), L) if msg else "", "error": None if ok else tr_err(str(msg), L)}, 200 if ok else 409)
+
+
+# ---- web: the button / QR next to every problem of the self-check (530 healthLoad calls fxDeco) -----------------------------
+FX_JS = r"""<script>
+window.fxDeco = function (b, f) {
+  if (!f || !b) return;
+  const touch = window.matchMedia && matchMedia("(pointer: coarse)").matches;
+  const row = document.createElement("div"); row.className = "fx-row"; row.style.cssText = "display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px";
+  if (f.fix && f.tok) {
+    const k = document.createElement("button"); k.type = "button"; k.textContent = "🛠 " + f.fix_word + ": " + f.fix; k.title = f.fix;
+    k.onclick = async () => { k.disabled = true;
+      let r = {}; try { r = await (await fetch("/api/fehler/fix", {method: "POST", headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({id: f.id, csrf: f.tok, lang: (typeof LANG !== "undefined" ? LANG : "")})})).json(); } catch (e) { r = {ok: false, error: String(e)}; }
+      if (typeof toast === "function") toast((r.ok ? "✓ " : "⚠ ") + (r.msg || r.error || "")); k.disabled = false;
+      if (typeof healthLoad === "function") setTimeout(healthLoad, 1500); };
+    row.appendChild(k);
+  }
+  const a = document.createElement("a"); a.href = f.path + "?lang=" + (typeof LANG !== "undefined" ? LANG : ""); a.textContent = "ℹ " + f.help; a.style.cssText = "font-size:13px;color:var(--acc,#3b8cff);font-weight:600";
+  row.appendChild(a);
+  if (!touch && f.url && typeof qrBtn === "function") { try { row.appendChild(qrBtn(f.url, f.title, {note: f.id})); } catch (e) {} }
+  b.appendChild(row);
+};
+</script>"""
+
+_render_page_before_fx = render_page
+
+
+# wraps: render_page
+def render_page(page, active):
+    """+ 639u: fxDeco (button «Fix» / QR next to the problems of the self-check) on every page"""
+    out = _render_page_before_fx(page, active)
+    return out.replace("</head>", FX_JS + "</head>", 1) if "</head>" in out else out
+
+
+# ---- picture «NO CAMERA FOUND»: the QR code at the top left (window, web live picture, TV) ----------------------------------
+def fx_qr_gray(text, scale=3):
+    """QR as a grey picture (numpy, white quiet zone of 4 modules)"""
+    M = qr_matrix(text)
+    n = len(M); q = 4
+    a = np.full((n + 2 * q, n + 2 * q), 255, np.uint8)
+    a[q:q + n, q:q + n][np.array(M, bool)] = 0
+    return cv2.resize(a, ((n + 2 * q) * scale,) * 2, interpolation=cv2.INTER_NEAREST)
+
+
+_no_camera_frame_before_fx = MotionWatch.no_camera_frame
+
+
+def _fx_no_camera_frame(self):
+    img = _no_camera_frame_before_fx(self)
+    try:
+        busy = str(STATE.get("source_status") or "").startswith(("connecting", "connection lost"))
+        u = fx_url("SIM_UNREACHABLE" if str(CFG.get("source") or "").startswith("sim:") else "CAM_NONE")
+        if u and not busy:
+            g = fx_qr_gray(u, 3)
+            s = g.shape[0]
+            if s + 12 <= img.shape[0] and s + 12 < 150:
+                img[8:8 + s, 8:8 + s] = cv2.cvtColor(g, cv2.COLOR_GRAY2BGR)
+                cv2.putText(img, "SCAN: HELP / FIX", (8, 8 + s + 16), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (230, 230, 230), 1)
+    except Exception:
+        pass
+    return img
+
+
+# wraps: MotionWatch.no_camera_frame
+MotionWatch.no_camera_frame = _fx_no_camera_frame
+
+
+# ---- push messages: a link to the help page ---------------------------------------------------------------------------------
+def fx_for_text(*texts):
+    """the catalogue entry whose «meldung» (English, or in the language of the device) is in one of the texts"""
+    s = " ".join(str(t or "") for t in texts).lower()
+    if not s.strip():
+        return None
+    for e in fx_entries():
+        for m in (e.get("quelle") or {}).get("meldung") or []:
+            for v in {m, tr(m)}:
+                if v and v.lower() in s:
+                    return e
+    return None
+
+
+def fx_push_line(e):
+    """the base for a push: public_url (from outside) or the address in the own network"""
+    u = fx_url(e["id"])
+    return ("\n🛠 " + fx_ui("help", None) + ": " + u) if u else ""
+
+
+_alert_before_fx = Notifier.alert
+_info_before_fx = Notifier.info
+
+
+def _fx_alert(self, title, text, frame=None):
+    try:
+        e = fx_for_text(title, text)
+        if e is not None:
+            text = str(text or "") + fx_push_line(e)
+    except Exception:
+        pass
+    return _alert_before_fx(self, title, text, frame)
+
+
+def _fx_info(self, text, link="", title="", jpg=None, fname="info.jpg"):
+    try:
+        e = fx_for_text(title, text)
+        if e is not None:
+            text = str(text or "") + fx_push_line(e)
+            link = link or fx_url(e["id"])
+    except Exception:
+        pass
+    return _info_before_fx(self, text, link, title, jpg, fname)
+
+
+# wraps: Notifier.alert
+Notifier.alert = _fx_alert
+# wraps: Notifier.info
+Notifier.info = _fx_info
+
+
+# ---- SmallTV: a page with the QR code (every other 20 s while an error is there) -------------------------------------------
+def stv_render_fehler(x, e, lang=None, red=False):
+    from PIL import Image
+    im, d = _stv_canvas()
+    _stv_head(im, d, "⚠")
+    L = _fx_l(lang)
+    d.rounded_rectangle((6, 34, STV_SIZE - 6, 62), radius=8, fill=(200, 50, 55) if e.get("stufe") == "bad" else (190, 130, 30))
+    f = _font(17)
+    d.text((12, 39), _stv_fit(d, _stv_txt(fx_t(e.get("titel"), L)), f, STV_SIZE - 24), font=f, fill=(255, 255, 255))
+    u = fx_url(e["id"])
+    if u:
+        try:
+            g = fx_qr_gray(u, 4)
+            if g.shape[0] > 168:
+                g = cv2.resize(g, (168, 168), interpolation=cv2.INTER_NEAREST)
+            q = Image.fromarray(g).convert("RGB")
+            im.paste(q, ((STV_SIZE - q.width) // 2, 66))
+        except Exception:
+            pass
+    else:
+        for i, ln in enumerate(_stv_wrap(d, _stv_txt(fx_t(e.get("text"), L)), _font(15, False), STV_SIZE - 20, 6)):
+            d.text((10, 72 + i * 20), ln, font=_font(15, False), fill=(200, 210, 222))
+    d.text((10, STV_SIZE - 20), _stv_fit(d, _stv_txt(fx_ui("scan", L)), _font(12, False), STV_SIZE - 20), font=_font(12, False), fill=(150, 165, 185))
+    return _stv_jpg(im, red)
+
+
+_stv_plan_before_fx = stv_plan
+
+
+# wraps: stv_plan
+def stv_plan(e, now=None):
+    """+ 639u: an active error (bad) every other 20 s instead of the status page; alarm and game stay first"""
+    r = _stv_plan_before_fx(e, now)
+    try:
+        if r[0] in ("gif", "alarm", "game") or FX.get("stv_pause"):
+            return r
+        now = now or time.time()
+        if int(now // 20) % 2 == 1:
+            act = fx_active(CFG.get("lang"))
+            if act:
+                x, en = act[0]
+                lang = CFG.get("lang"); red = stv_night()
+                key = ("fehler", en["id"], fx_url(en["id"]), red, lang)
+                return "fehler", key, lambda: stv_render_fehler(x, en, lang, red), r[3], False
+    except Exception:
+        pass
+    return r
+
+
+# ---- TV page (/tv/…): a box with the QR code ----------------------------------------------------------------------------
+_tv_data_before_fx = tv_data
+
+
+# wraps: tv_data
+def tv_data():
+    d = _tv_data_before_fx()
+    try:
+        act = fx_active(CFG.get("lang"))
+        if act:
+            x, e = act[0]
+            L = _fx_l(CFG.get("lang"))
+            u = fx_url(e["id"])
+            d["fehler"] = {"id": e["id"], "title": fx_t(e.get("titel"), L), "text": fx_t(e.get("text"), L), "url": u,
+                           "qr": qr_svg(u) if u else "", "t_scan": fx_ui("scan", L), "n": len(act)}
+    except Exception:
+        pass
+    return d
+
+
+# ---- window (Tkinter): «🛠 Hilfe & QR» in the self-check, the dialog with QR and «Jetzt beheben» ----------------------------
+def fx_tk_dialog(parent, fid):
+    import base64
+    e = fx_entry(fid)
+    if e is None:
+        return None
+    L = _fx_l(None)
+    w = tk.Toplevel(parent); w.title("MoveEye – " + fx_ui("help", L) + " · " + e["id"]); w.configure(bg=C["panel"])
+    try:
+        w.transient(parent)
+    except tk.TclError:
+        pass
+    tk.Label(w, text="⚠ " + fx_t(e.get("titel"), L), bg=C["panel"], fg=C["red"] if e.get("stufe") == "bad" else C["yel"],
+             font=("DejaVu Sans", 13, "bold"), wraplength=440, justify="left").pack(anchor="w", padx=14, pady=(12, 2))
+    tk.Label(w, text=fx_t(e.get("text"), L), bg=C["panel"], fg=C["txt"], wraplength=440, justify="left").pack(anchor="w", padx=14)
+    tk.Label(w, text=fx_ui("steps", L), bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 10, "bold")).pack(anchor="w", padx=14, pady=(8, 0))
+    tk.Label(w, text="\n".join("%d. %s" % (i + 1, s) for i, s in enumerate(fx_t(e.get("schritte"), L) or [])), bg=C["panel"], fg=C["txt"],
+             wraplength=440, justify="left").pack(anchor="w", padx=14)
+    u = fx_url(e["id"])
+    if u:
+        row = tk.Frame(w, bg=C["panel"]); row.pack(fill="x", padx=14, pady=8)
+        try:
+            img = tk.PhotoImage(data=base64.b64encode(qr_png(u, 4)).decode())
+            pic = tk.Label(row, image=img, bg="#ffffff"); pic.image = img; pic.pack(side="left")
+        except Exception:
+            pass
+        tk.Label(row, text=fx_ui("scan", L) + "\n" + u, bg=C["panel"], fg=C["mut"], wraplength=260, justify="left").pack(side="left", padx=10)
+    st = tk.Label(w, text="", bg=C["panel"], fg=C["mut"], wraplength=440, justify="left"); st.pack(anchor="w", padx=14)
+    bf = tk.Frame(w, bg=C["panel"]); bf.pack(fill="x", padx=14, pady=(6, 12))
+    if e.get("aktion") and not CFG.get("lock_on"):          # operator mode (390): nothing is changed from the window
+        def go():
+            st.configure(text=fx_ui("busy", L)); w.update_idletasks()
+            ok, msg = fx_run(e["aktion"], "window")
+            FX["cache"] = (0.0, None, None)
+            st.configure(text=("✓ " + fx_ui("done", L) if ok else "⚠ " + fx_ui("failed", L)) + ((" – " + tr_err(str(msg), L)) if msg else ""))
+        ttk.Button(bf, text="🛠 " + fx_ui("fix_now", L) + ": " + fx_act_name(e["aktion"], L), command=go).pack(side="left", expand=True, fill="x", padx=(0, 4))
+    elif not e.get("aktion"):
+        tk.Label(w, text=fx_ui("manual", L), bg=C["panel"], fg=C["mut"], wraplength=440, justify="left").pack(anchor="w", padx=14)
+    ttk.Button(bf, text=fx_ui("close", L), command=w.destroy).pack(side="left", expand=True, fill="x")
+    return w
+
+
+def _fx_tk_update_health(self):
+    """the self-check of the window (as before) + «🛠 Hilfe & QR» under every problem with a catalogue entry"""
+    try:
+        if not self.h_text.winfo_exists():
+            self.h_text = None; return
+        h = health_check()
+    except tk.TclError:
+        self.h_text = None; return
+    sig = json.dumps(h["items"], sort_keys=True, default=str)
+    if sig == self._h_sig:
+        return
+    self._h_sig = sig; y = self.h_text.yview()[0]
+    tx = self.h_text; tx.config(state="normal"); tx.delete("1.0", "end")
+    try:
+        tx.tag_configure("fx", foreground=C.get("acc", "#3b8cff"), underline=True, lmargin1=26, lmargin2=26, font=("DejaVu Sans", 9, "bold"))
+    except tk.TclError:
+        pass
+    for x in h["items"]:
+        tx.insert("end", "●" if x["level"] != "off" else "○", x["level"])
+        tx.insert("end", "  " + x["title"], "t"); tx.insert("end", ("  " + x["text"]) if x["text"] else "", "m")
+        if x["tip"] and x["level"] != "ok":
+            tx.insert("end", "\n→ " + x["tip"], "tip")
+        f = x.get("fehler")
+        if f:
+            tg = "fx_" + f["id"]
+            tx.insert("end", "\n🛠 " + f["help"] + " & QR" + ((" · " + f["fix"]) if f.get("fix") else ""), ("fx", tg))
+            tx.tag_bind(tg, "<Button-1>", lambda _ev, i=f["id"]: fx_tk_dialog(self.root, i))
+            tx.tag_bind(tg, "<Enter>", lambda _ev: tx.config(cursor="hand2"))
+            tx.tag_bind(tg, "<Leave>", lambda _ev: tx.config(cursor="arrow"))
+        tx.insert("end", "\n")
+    tx.config(state="disabled"); tx.yview_moveto(y)
+
+
+# wraps: App._update_health
+App._update_health = _fx_tk_update_health
+
+
+# ---- the simulator: the address for its QR codes (127.0.0.1 would not work on the phone) ---------------------------------
+_sim_state_639u = sim_state
+
+
+def sim_state():                                          # + 639u: «help_base» - only the address, never a key (fehler_hilfe.gd)
+    d = _sim_state_639u()
+    now = time.time()
+    hb = FX.get("hb")
+    if not hb or now - hb[0] > 30:
+        try:
+            hb = (now, fx_base())
+        except Exception:
+            hb = (now, "")
+        FX["hb"] = hb
+    d["help_base"] = hb[1]
+    return d
+
+
+# ---- self-test ----------------------------------------------------------------------------------------------------------------
+def fx_check(base=None):
+    """problems of the catalogue (and of the simulator side, when its folder is here) -> (list, numbers)"""
+    probs = []
+    es = fx_entries()
+    acts = FEHLER_KATALOG.get("aktionen") or {}
+    if not 20 <= len(es) <= 30:
+        probs.append(f"{len(es)} errors (20 - 30 wanted)")
+    ids = [e["id"] for e in es]
+    if len(set(ids)) != len(ids):
+        probs.append("an id twice")
+    for e in es:
+        if not re.fullmatch(r"[A-Z][A-Z0-9_]{2,31}", e["id"]):
+            probs.append(f"{e['id']}: id")
+        for k in ("titel", "text", "schritte"):
+            v = e.get(k) or {}
+            miss = [lg for lg in FX_LANGS if not v.get(lg)]
+            if miss:
+                probs.append(f"{e['id']}.{k}: no {','.join(miss)}")
+        if len({len(v) for v in (e.get("schritte") or {}).values()}) > 1:
+            probs.append(f"{e['id']}: not the same number of steps in every language")
+        if e.get("aktion") and e["aktion"] not in acts:
+            probs.append(f"{e['id']}: unknown action {e['aktion']}")
+        if e.get("seite") not in ("mw", "sim", "beide"):
+            probs.append(f"{e['id']}: seite")
+    for k, v in (FEHLER_KATALOG.get("ui") or {}).items():
+        if any(not v.get(lg) for lg in FX_LANGS):
+            probs.append(f"ui.{k}: a language is missing")
+    for k, v in acts.items():
+        if any(not v.get(lg) for lg in FX_LANGS):
+            probs.append(f"action {k}: a language is missing")
+    n = {"err": len(es), "fix": sum(1 for e in es if e.get("aktion")), "sim": False}
+    base = base or os.path.dirname(os.path.abspath(__file__))
+    p = os.path.join(base, "simulator3d", "fehler_katalog.json")
+    if os.path.exists(p):
+        n["sim"] = True
+        with open(p, encoding="utf-8") as f:
+            if json.load(f) != FEHLER_KATALOG:
+                probs.append("simulator3d/fehler_katalog.json differs from the embedded catalogue (werkzeuge/bauen.py)")
+        ep = os.path.join(base, "simulator3d", "export_presets.cfg")
+        if os.path.exists(ep):
+            with open(ep, encoding="utf-8") as f:
+                for line in f:
+                    if line.startswith("include_filter=") and "fehler_katalog.json" not in line:
+                        probs.append("simulator export_presets.cfg: fehler_katalog.json is not in the .exe")
+    return probs, n
+
+
+def fx_selftest():
+    probs, n = fx_check()
+    assert not probs, f"{len(probs)} problems: " + " | ".join(probs[:10])
+    u = fx_url("CAM_NONE", "http://192.168.1.56:5000")
+    assert u == "http://192.168.1.56:5000/hilfe/fehler/CAM_NONE", u
+    for k in ("web_password", "notify_url", "hotspot_password", "tv_key"):     # never a secret in the QR text
+        v = str(CFG.get(k) or "")
+        assert len(v) < 6 or v not in u, k
+    assert fx_token("a", "CAM_NONE") != fx_token("b", "CAM_NONE") and fx_token_ok("a", "CAM_NONE", fx_token("a", "CAM_NONE"))
+    assert not fx_token_ok("a", "CAM_NONE", "") and not fx_token_ok("a", "DISK_LOW", fx_token("a", "CAM_NONE")), "CSRF key"
+    assert fx_for_health({"id": "cam", "level": "bad"})["id"] == "CAM_NONE"
+    assert fx_for_health({"id": "cam", "level": "ok"}) is None
+    assert fx_for_text("MoveEye: Camera lost", "")["id"] == "CAM_NONE"
+    M = qr_matrix(u)
+    assert len(M) in (29, 33, 37), "QR size"
+    h, code = fx_page("CAM_NONE", "de", None, "owner")
+    assert code == 200 and "Kein Kamerabild" in h and "csrf" not in h, "page without owner: no fix form"
+    h2, _c = fx_page("CAM_NONE", "fr", "admin", "")
+    assert 'name="csrf"' in h2 and "Reconnecter la caméra" in h2, "page of the owner"
+    assert fx_page("NOPE", "en")[1] == 404
+    return (f"{n['err']} errors, {n['fix']} with «Fix now», 5 languages" + ("" if n["sim"] else " (simulator folder not here)"))
+
+
+SELFTEST_EXTRA.append(("Error help with QR code (simulator3d/fehler_katalog.json, /hilfe/fehler/<ID>)", fx_selftest))
+# ----------------------------------------------------------------------------
+# GEH_QUELLE_SHA: Prüfsumme der Quelle (hardware/gehaeuse/Quellcode/*.py, bau.json, werkzeuge/gehaeuse_bauen.py) – der
+# Selbsttest (639w) vergleicht sie im Repository mit der Quelle und mit simulator3d/inhalte/gehaeuse/modelle.json.
+# ----------------------------------------------------------------------------
+GEH_QUELLE_SHA = 'e828e1d476b1dd0b4d38a1c9306aaa3545b9c0b1363350aa8f5fb8c8f4021c0a'
+GEH_BAU = json.loads(_zd('639v_daten_gehaeuse/GEH_BAU', ""))
+GEH_UI_DE = {"Case & build": "Gehäuse & Bau", "Guide, parts list, print files – in 3D in the workshop of the simulator": "Anleitung, Materialliste, Druckdateien – in 3D in der Werkstatt des Simulators", "Case": "Gehäuse", "View in the simulator": "Im Simulator ansehen", "Opens the workshop in the 3D simulator: turn, explode, see through, click parts, assembly step by step.": "Öffnet die Werkstatt im 3D-Simulator: drehen, zerlegen, durchsichtig, Teile anklicken, Montage Schritt für Schritt.", "Simulator not connected – start it and connect it on the page Simulator.": "Simulator nicht verbunden – starte ihn und verbinde ihn auf der Seite «Simulator».", "Opened in the simulator.": "Im Simulator geöffnet.", "Print files": "Druckdateien", "3MF plates for the Bambu Lab X2D (PETG, no supports)": "3MF-Platten für den Bambu Lab X2D (PETG, ohne Stützen)", "Single STL files: in the hand-over package (ZIP, about 60 MB), not in the repository.": "Einzelne STL-Dateien: im Übergabe-Paket (ZIP, ca. 60 MB), nicht im Repository.", "Assembly step by step": "Montage Schritt für Schritt", "Show this step in the simulator": "Diesen Schritt im Simulator zeigen", "Parts list": "Materialliste", "Qty": "Menge", "Part number": "Teilenummer", "Guides and source (GitHub)": "Anleitungen und Quellcode (GitHub)", "Detailed guide v5.1": "Ausführliche Anleitung v5.1", "Full parts list with order list": "Ganze Materialliste mit Bestellliste", "Measure first: UPS HAT (E) with its cells (assumed 90 × 80 × 26 mm) before printing the lower part.": "Zuerst nachmessen: UPS HAT (E) mit Akkus (angenommen 90 × 80 × 26 mm), bevor das Unterteil gedruckt wird.", "Own work of Daniel (DonElektro) – parametric Python model.": "Eigenes Werk von Daniel (DonElektro) – parametrisches Python-Modell.", "Step": "Schritt"}
+GEH_UI_TRX = _zd('639v_daten_gehaeuse/GEH_UI_TRX', _ZDDict())
+# ----------------------------------------------------------------------------
+# Paket «real-gehaeuse» (01.11.2026). Eine Quelle: hardware/gehaeuse/ (Daniels parametrisches Modell v5.1 + bau.json mit den
+# Texten in 5 Sprachen). werkzeuge/gehaeuse_bauen.py macht daraus die Simulator-Modelle (simulator3d/inhalte/gehaeuse/), die
+# Texte des Simulators (werkstatt_daten.gd, i18n/texte.json) und die Daten hier (639v: GEH_BAU, GEH_UI_*, GEH_QUELLE_SHA).
+#   * /case: Seite (Reiter Mehr) – Masse, «Im Simulator ansehen», Montage (14 Schritte, je «im Simulator zeigen»),
+#     Materialliste nach Gruppen (Menge, Bezeichnung, Teilenummer), Druckdateien (3MF-Platten auf GitHub), Anleitungen.
+#     Inhalte in der Sprache der Seite (LANG; rm -> de, fr / it -> en wie sonst).
+#   * /api/case: GET = Daten + ob der Simulator verbunden ist; POST {do: "sim", step?} -> Simulator /control
+#     {"action": "werkstatt", "do": "open"} (bzw. "step", n). Ältere Simulatoren ohne Werkstatt antworten mit Fehler.
+#   * Mehr (525) und das Fenster (572 _tk_more_bar): ein Eintrag «Gehäuse & Bau». Gemeinsame Menü-Datei: «more» -> case
+#     (simulator3d/ui_gemeinsam.json; im Simulator heisst derselbe Eintrag «Werkstatt», mehr.gd).
+# Hier (nach 639p) weil render_page, sim_control, MORE_PAGE, smalltv_routes (639n), UI_GEMEINSAM (639p) vorher kommen.
+# ----------------------------------------------------------------------------
+DE.update(GEH_UI_DE)
+for _L in ("fr", "it", "rm"):
+    TRX.setdefault(_L, {}).update(GEH_UI_TRX.get(_L, {}))
+
+GEH_MORE_ROW = ('  <a class="mi" href="/case" id="m-case"><i>📐</i><span><b data-i18n="Case &amp; build">Case &amp; build</b><small data-i18n="Guide, parts list, print files – in 3D in the workshop of the simulator">'
+                'Guide, parts list, print files – in 3D in the workshop of the simulator</small></span><span class="ar">›</span></a>\n')
+_geh_anchor = '  <a class="mi" href="/info" id="m-info">'
+if 'href="/case"' not in MORE_PAGE and _geh_anchor in MORE_PAGE:
+    MORE_PAGE = MORE_PAGE.replace(_geh_anchor, GEH_MORE_ROW + _geh_anchor, 1)
+
+GEH_PAGE = _zd('639w_gehaeuse/GEH_PAGE', ZD_PAGE)
+GEH_KEYS = list(GEH_UI_DE)
+
+
+def geh_page():
+    js = "Object.assign(I18N.de, " + json.dumps({k: DE.get(k, k) for k in GEH_KEYS}, ensure_ascii=False) + ");"
+    data = json.dumps(GEH_BAU, ensure_ascii=False).replace("</", "<\\/")
+    return render_page(GEH_PAGE, "more").replace("/*GEHDE*/", js, 1).replace("/*GEHBAU*/null", data, 1)
+
+
+def geh_do(d):
+    """POST /api/case: {do: sim, step}"""
+    if str(d.get("do", "")) != "sim":
+        return {"ok": False, "error": "unknown action", "code": 400}
+    if not CFG.get("sim_on"):
+        return {"ok": False, "offline": True, "error": tr("Simulator not connected – start it and connect it on the page Simulator.")}
+    try:
+        n = int(d.get("step") or 0)
+    except (TypeError, ValueError):
+        n = 0
+    n = max(0, min(n, len(GEH_BAU.get("schritte") or [])))
+    try:
+        r = sim_control({"action": "werkstatt", "do": "step", "n": n} if n else {"action": "werkstatt", "do": "open"}) or {}
+    except Exception:
+        return {"ok": False, "offline": True, "error": tr("Simulator not connected – start it and connect it on the page Simulator.")}
+    if not r.get("ok") or not r.get("open"):
+        return {"ok": False, "error": str(r.get("error") or "the simulator has no workshop yet (update the simulator)")}
+    return {"ok": True, "step": r.get("step", 0), "steps": r.get("steps")}
+
+
+def geh_preview():
+    """the preview picture (Bilder/Vorschau_v5-1.png) - only where the repository is (PC), else 404"""
+    p = os.path.join(os.path.dirname(os.path.abspath(__file__)), "hardware", "gehaeuse", "Bilder", "Vorschau_v5-1.png")
+    if not os.path.isfile(p):
+        return None
+    with open(p, "rb") as f:
+        return f.read()
+
+
+_smalltv_routes_geh_base = smalltv_routes
+
+
+def smalltv_routes(app, reply, body):                     # + 639w: /case, /case/preview.png and /api/case
+    _smalltv_routes_geh_base(app, reply, body)
+    from flask import Response
+
+    @app.route("/case")
+    def geh_page_():
+        return Response(geh_page(), mimetype="text/html")
+
+    @app.route("/case/preview.png")
+    def geh_prev_():
+        b_ = geh_preview()
+        return Response(b_, mimetype="image/png", headers={"Cache-Control": "private, max-age=3600"}) if b_ else Response("no", 404)
+
+    @app.route("/api/case", methods=["GET", "POST"])
+    def api_case():
+        from flask import request
+        if request.method == "GET":
+            return reply({"ok": True, "version": GEH_BAU.get("version"), "sim": bool(CFG.get("sim_on")), "steps": len(GEH_BAU.get("schritte") or [])})
+        r = geh_do(body())
+        code = r.pop("code", None)
+        return reply(r, code) if code else reply(r)
+
+
+# the manual (HELP_PAGE 540 + HELP_X): a short chapter «Gehäuse & Bau» before «Einrichtung», in all 5 languages
+_HELP_GEH = {
+    "de": ('<section id="case" data-icon="📐"><h2>Gehäuse &amp; Bau</h2><p>Das Gehäuse v5.1 (Daniels parametrisches Python-Modell, '
+           'PETG, 2 Druckplatten ohne Stützen) steht unter Mehr → <a href="/case"><b>Gehäuse &amp; Bau</b></a>: Montage in 14 Schritten, '
+           'Materialliste nach Gruppen, Links zu den Druckdateien (3MF) und zur ausführlichen Anleitung. <b>«Im Simulator ansehen»</b> öffnet die '
+           '<b>Werkstatt</b> im 3D-Simulator (Mehr → Werkstatt): drehen, zoomen, Explosion, durchsichtig, Teil anklicken (Materialliste und '
+           'Montageschritt), Montage animiert Schritt für Schritt. Vor dem Druck des Unterteils die Masse des UPS HAT (E) mit Akkus nachmessen.</p></section>\n'),
+    "en": ('<section id="case" data-icon="📐"><h2>Case &amp; build</h2><p>The case v5.1 (Daniel\'s parametric Python model, PETG, '
+           '2 print plates without supports) is under More → <a href="/case"><b>Case &amp; build</b></a>: assembly in 14 steps, parts list by '
+           'group, links to the print files (3MF) and to the detailed guide. <b>«View in the simulator»</b> opens the <b>workshop</b> in the 3D '
+           'simulator (More → Workshop): turn, zoom, explode, see through, click a part (parts list and assembly step), animated assembly step by '
+           'step. Before printing the lower part, measure the UPS HAT (E) with its cells.</p></section>\n'),
+    "fr": ('<section id="case" data-icon="📐"><h2>Boîtier et construction</h2><p>Le boîtier v5.1 (modèle Python paramétrique de Daniel, '
+           'PETG, 2 plateaux sans supports) se trouve sous Plus → <a href="/case"><b>Boîtier et construction</b></a> : montage en 14 étapes, '
+           'liste du matériel par groupe, liens vers les fichiers d\'impression (3MF) et le guide détaillé. <b>«Voir dans le simulateur»</b> '
+           'ouvre l\'<b>atelier</b> du simulateur 3D (Plus → Atelier) : tourner, zoomer, vue éclatée, transparent, cliquer une pièce, montage '
+           'animé étape par étape. Avant d\'imprimer la partie inférieure, mesurer l\'UPS HAT (E) avec ses accus.</p></section>\n'),
+    "it": ('<section id="case" data-icon="📐"><h2>Custodia e costruzione</h2><p>La custodia v5.1 (modello Python parametrico di Daniel, '
+           'PETG, 2 piatti senza supporti) si trova in Altro → <a href="/case"><b>Custodia e costruzione</b></a>: montaggio in 14 passi, '
+           'distinta dei materiali per gruppo, link ai file di stampa (3MF) e alla guida dettagliata. <b>«Vedere nel simulatore»</b> apre '
+           'l\'<b>officina</b> del simulatore 3D (Altro → Officina): ruotare, zoomare, esploso, trasparente, cliccare un pezzo, montaggio '
+           'animato passo per passo. Prima di stampare la parte inferiore misurare l\'UPS HAT (E) con le batterie.</p></section>\n'),
+    "rm": ('<section id="case" data-icon="📐"><h2>Chascha e construcziun</h2><p>La chascha v5.1 (model Python parametric da Daniel, '
+           'PETG, 2 plattas senza sustegns) è sut Dapli → <a href="/case"><b>Chascha e construcziun</b></a>: muntascha en 14 pass, '
+           'glista dal material tenor gruppas, colliaziuns a las datotecas da stampa (3MF) ed a l\'instrucziun detagliada. '
+           '<b>«Guardar en il simulatur»</b> avra l\'<b>ufficina</b> dal simulatur 3D (Dapli → Ufficina): volver, zoomar, explosiun, transparent, '
+           'cliccar ina part, muntascha animada pass per pass. Avant che stampar la part sut mesirar l\'UPS HAT (E) cun ils accus.</p></section>\n'),
+}
+
+
+def _help_geh(doc, lang):
+    if 'id="case"' in doc:
+        return doc
+    i = doc.find('<section id="setup"')
+    return doc[:i] + _HELP_GEH[lang] + doc[i:] if i >= 0 else doc
+
+
+_hp_en_geh = HELP_PAGE.find('<div lang="en">')
+if _hp_en_geh > 0:
+    HELP_PAGE = _help_geh(HELP_PAGE[:_hp_en_geh], "de") + _help_geh(HELP_PAGE[_hp_en_geh:], "en")
+for _L in ("fr", "it", "rm"):
+    if HELP_X.get(_L):
+        HELP_X[_L] = _help_geh(HELP_X[_L], _L)
+
+
+if GUI_OK:                                                # the window: «Gehäuse & Bau» in the tab «Mehr» (572)
+    _geh_tk_more_base = App._tk_more_bar
+
+    def _geh_tk_more_bar(self, parent):
+        f = _geh_tk_more_base(self, parent)
+        i = len(f.grid_slaves())
+        self._fbtn(f, "📐 " + tr("Case & build"), lambda: self._open_page("/case")).grid(row=i // 3, column=i % 3, sticky="ew", padx=(0, 6), pady=(0, 6))
+        return f
+
+    # wraps: App._tk_more_bar (572)
+    App._tk_more_bar = _geh_tk_more_bar
+
+
+def geh_quelle_sha(base):
+    """the same checksum as werkzeuge/gehaeuse_bauen.py quelle_sha() (Quellcode/*.py, bau.json, the tool)"""
+    import hashlib
+    q = os.path.join(base, "hardware", "gehaeuse", "Quellcode")
+    fs = sorted(os.path.join(q, n) for n in os.listdir(q) if n.endswith(".py")) + [
+        os.path.join(base, "hardware", "gehaeuse", "bau.json"), os.path.join(base, "werkzeuge", "gehaeuse_bauen.py")]
+    h = hashlib.sha256()
+    for p in fs:
+        h.update(os.path.relpath(p, base).replace(os.sep, "/").encode() + b"\0")
+        with open(p, "rb") as f_:
+            h.update(f_.read())
+        h.update(b"\0")
+    return h.hexdigest()
+
+
+def geh_check(base=None):
+    """problems: the simulator models / texts against the source (only in the repository; the Pi has no hardware/)"""
+    import hashlib
+    base = base or os.path.dirname(os.path.abspath(__file__))
+    probs = []
+    if not os.path.isfile(os.path.join(base, "hardware", "gehaeuse", "bau.json")):
+        return probs
+    sha = geh_quelle_sha(base)
+    if sha != GEH_QUELLE_SHA:
+        probs.append("quelle/639v is older than hardware/gehaeuse - run werkzeuge/gehaeuse_bauen.py --sim")
+    with open(os.path.join(base, "hardware", "gehaeuse", "bau.json"), encoding="utf-8") as f_:
+        bau = json.load(f_)
+    for k in ("version", "bom", "schritte", "druckdateien"):
+        if bau.get(k) != GEH_BAU.get(k):
+            probs.append(f"GEH_BAU[{k}] differs from bau.json - run werkzeuge/gehaeuse_bauen.py --texte")
+    sd = os.path.join(base, "simulator3d", "inhalte", "gehaeuse")
+    mp = os.path.join(sd, "modelle.json")
+    if os.path.isfile(mp):
+        with open(mp, encoding="utf-8") as f_:
+            man = json.load(f_)
+        if man.get("quelle_sha256") != sha:
+            probs.append("simulator models do not fit the source (checksum) - run werkzeuge/gehaeuse_bauen.py --sim")
+        for fn, h_ in (man.get("dateien") or {}).items():
+            p = os.path.join(sd, fn)
+            if not os.path.isfile(p):
+                probs.append(fn + " missing")
+                continue
+            with open(p, "rb") as f_:
+                if hashlib.sha256(f_.read()).hexdigest() != h_:
+                    probs.append(fn + " changed after the build")
+        if {t["id"] for t in man.get("teile", [])} != {t["id"] for t in bau.get("teile", [])}:
+            probs.append("modelle.json and bau.json have different parts")
+    elif os.path.isdir(os.path.join(base, "simulator3d")):
+        probs.append("simulator3d/inhalte/gehaeuse/modelle.json missing")
+    gd = os.path.join(base, "simulator3d", "scripts", "werkstatt_daten.gd")
+    if os.path.isfile(gd):
+        with open(gd, encoding="utf-8") as f_:
+            if f'const QUELLE_SHA := "{sha}"' not in f_.read():
+                probs.append("simulator3d/scripts/werkstatt_daten.gd is older than the source - gehaeuse_bauen.py --texte")
+    ep = os.path.join(base, "simulator3d", "export_presets.cfg")
+    if os.path.isfile(ep):
+        with open(ep, encoding="utf-8") as f_:
+            if "inhalte/gehaeuse/*" not in f_.read():
+                probs.append("export_presets.cfg: inhalte/gehaeuse/* is not in the .exe")
+    return probs
+
+
+def geh_selftest():
+    B = GEH_BAU
+    assert B.get("version") == "5.1" and len(B.get("schritte") or []) == 14, "data"
+    bom = {b["id"] for b in B["bom"]}
+    for t_ in B["teile"]:
+        assert not t_.get("bom") or t_["bom"] in bom, t_["id"]
+        assert not t_.get("schritt") or 1 <= t_["schritt"] <= 14, t_["id"]
+    for k in GEH_KEYS:
+        assert DE.get(k), k
+        for L in ("fr", "it", "rm"):
+            assert TRX[L].get(k), (L, k)
+    assert 'href="/case"' in MORE_PAGE and MORE_PAGE.index('href="/case"') < MORE_PAGE.index('id="m-info"'), "Mehr"
+    html = geh_page()
+    assert "/api/case" in html and '"schritte"' in html and "<!--NAV-->" not in html and "/*GEHBAU*/" not in html
+    assert "Raspberry Pi 5" in html and "MotionWatch_v5-1_Platte_A_Unterteil.3mf" in html
+    assert HELP_PAGE.count('<section id="case"') == 2 and all('href="/case"' in (HELP_X.get(L) or "href=\"/case\"") for L in ("fr", "it", "rm")), "manual"
+    keep = CFG.get("sim_on")
+    _sc = globals()["sim_control"]
+    asked = []
+    try:
+        CFG["sim_on"] = False
+        r = geh_do({"do": "sim"})
+        assert not r["ok"] and r.get("offline"), r
+        assert geh_do({"do": "x"}).get("code") == 400
+        CFG["sim_on"] = True
+        globals()["sim_control"] = lambda d_: (asked.append(d_), {"ok": True, "open": True, "step": int(d_.get("n", 0)), "steps": 14})[1]
+        assert geh_do({"do": "sim"})["ok"] and asked[-1] == {"action": "werkstatt", "do": "open"}
+        assert geh_do({"do": "sim", "step": 4})["ok"] and asked[-1] == {"action": "werkstatt", "do": "step", "n": 4}
+        globals()["sim_control"] = lambda d_: {"ok": False, "error": "unknown action"}
+        assert not geh_do({"do": "sim"})["ok"]                       # an older simulator without the workshop
+    finally:
+        globals()["sim_control"] = _sc
+        CFG["sim_on"] = keep
+    more = (UI_GEMEINSAM.get("more") or [])
+    case = next((m for m in more if m.get("id") == "case"), None)
+    assert case and case["mw"]["href"] == "/case" and case["mw"]["key"] == "Case & build", "ui_gemeinsam.json more/case"
+    for L in ("de", "fr", "it", "rm"):
+        assert ui_gem_tr("Case & build", L) == case["mw"]["names"][L], ("name", L)
+    mg = os.path.join(os.path.dirname(os.path.abspath(__file__)), "simulator3d", "scripts", "mehr.gd")
+    if os.path.isfile(mg):
+        with open(mg, encoding="utf-8") as f_:
+            assert '["%s", "wrench", "%s"' % (case["sim"]["row"], case["sim"]["key"]) in f_.read(), "simulator mehr.gd row"
+    probs = geh_check()
+    assert not probs, " | ".join(probs)
+    return "Case & build: page /case, Mehr, simulator workshop command, models fit the source"
+
+
+SELFTEST_EXTRA.append(("Case & build (page /case, workshop in the simulator, models = source)", geh_selftest))
+# ----------------------------------------------------------------------------
 # real-erk-e3 (31.10.2026): die Push-Nachricht «Etwas Grosses am Boden» (Titel und Text) in de / fr / it / rm.
 # ----------------------------------------------------------------------------
 _HX_E3 = {
@@ -69365,6 +72137,555 @@ if _hp_en > 0:
 for _L in ("fr", "it", "rm"):
     if HELP_X.get(_L):
         HELP_X[_L] = HELP_X[_L].replace(*_HELP_E3[_L], 1)
+# ----------------------------------------------------------------------------
+# Wunsch Daniel (01.11.2026): nach dem Aktualisieren war das Live-Bild schwarz, weil der Simulator gerade sein Update lud und
+# neu startete (Chip «SIMULATION · PC 1 % · ⟳ Update 3.25.0»). Jetzt:
+#   * simwait_reason(): warum gerade keine Bilder vom Simulator kommen - «update» (Simulator meldet busy.what = update, oder
+#     MoveEye hat das Update angestossen / kennt eine neuere Version und die Verbindung ist eben abgerissen), «scene» (Szene /
+#     Ort lädt: busy.what = scene, oder MoveEye hat eben eine Szene gewählt), «start» (antwortet, aber noch kein Bild), sonst
+#     «connect». Nur wenn die Bildquelle der Simulator ist (CFG sim_on + source sim:…); sonst None.
+#   * calm_frame(): das gerenderte Bild (dunkler Verlauf, Bergsilhouette, Blinki ohne Kegel bzw. das Logo, Text je nach
+#     Grund, Dauer seit Beginn, Fortschritt, nach 3 Min. der Hinweis «Dauert länger als üblich …»). Statisch (keine Bewegung
+#     im Bild), nur die Sekunden zählen. 410 no_camera_frame nimmt es -> /video_feed, Gast-Links, Vorschau, Pi-Fenster.
+#     Ohne Simulation: dieselbe ruhige Art, aber klar als Fehler (rot, «Keine Kamera gefunden»). Ohne PIL: das alte Bild.
+#   * simwait_jpeg(): dasselbe als JPEG für /sim/view.jpg und /sim/view.mjpg (550: Vorführung, Trailer, Simulator-Fenster).
+#   * Web (530): eine Ebene über dem Live-Bild (#simwait, Live und Vollbild) mit Blinki, das leicht atmet
+#     (prefers-reduced-motion: still), Text aus /api/state «simwait», Links «Reiter Simulator» und «Anleitung».
+#   * Simulator (main.gd busy_reply, update.gd busy): «busy» in der Antwort auf /state (schnittstelle.json).
+# ----------------------------------------------------------------------------
+SIMWAIT = {"why": None, "t0": 0.0, "busy": None, "busy_t": 0.0, "scene_t": 0.0, "vers": None, "vers_t": 0.0, "cache": {}}
+SIMWAIT_LONG = 180.0                                       # after 3 minutes: «takes longer than usual»
+
+_HX_RUHE = {
+    "The simulator is being updated{v} … back in a moment": (
+        "Der Simulator wird aktualisiert{v} … gleich wieder da", "Le simulateur se met à jour{v} … de retour dans un instant",
+        "Il simulatore si sta aggiornando{v} … torna subito", "Il simulatur vegn actualisà{v} … immediat puspè qua"),
+    "The simulator is starting …": ("Der Simulator startet …", "Le simulateur démarre …", "Il simulatore si avvia …",
+                                    "Il simulatur starta …"),
+    "Connecting to the simulator …": ("Verbinde mit dem Simulator …", "Connexion au simulateur …", "Connessione al simulatore …",
+                                      "Colliaziun cun il simulatur …"),
+    "The simulator is loading a scene …": ("Der Simulator lädt eine Szene …", "Le simulateur charge une scène …",
+                                           "Il simulatore carica una scena …", "Il simulatur chargia ina scena …"),
+    "for {t}": ("seit {t}", "depuis {t}", "da {t}", "dapi {t}"),
+    "The picture comes back by itself.": ("Das Bild kommt von selbst zurück.", "L’image revient toute seule.",
+                                          "L’immagine torna da sola.", "Il maletg turna da sez."),
+    "This takes longer than usual – is the simulator running on the PC?": (
+        "Dauert länger als üblich – läuft der Simulator am PC?",
+        "Cela prend plus de temps que d’habitude – le simulateur tourne-t-il sur le PC ?",
+        "Ci vuole più del solito – il simulatore è in esecuzione sul PC?",
+        "Quai dura pli ditg che usità – funcziuna il simulatur sin il PC?"),
+    "If its window closes at once: «Notfall-Start.bat» next to the .exe": (
+        "Schliesst sich sein Fenster gleich wieder: «Notfall-Start.bat» neben der .exe",
+        "Si sa fenêtre se ferme aussitôt : «Notfall-Start.bat» à côté du .exe",
+        "Se la sua finestra si chiude subito: «Notfall-Start.bat» accanto al .exe",
+        "Sche sia fanestra sa serra immediat: «Notfall-Start.bat» sper il .exe"),
+    "Open the Simulator tab": ("Reiter Simulator öffnen", "Ouvrir l’onglet Simulateur", "Apri la scheda Simulatore",
+                               "Avrir il register Simulatur"),
+    "Help": ("Anleitung", "Aide", "Aiuto", "Agid"),
+    "No camera found": ("Keine Kamera gefunden", "Aucune caméra trouvée", "Nessuna telecamera trovata", "Nagina camera chattada"),
+    "Connecting to the camera …": ("Verbinde mit der Kamera …", "Connexion à la caméra …", "Connessione alla telecamera …",
+                                   "Colliaziun cun la camera …"),
+    "Check the camera and the cable or network – MoveEye keeps trying by itself.": (
+        "Kamera und Kabel bzw. Netz prüfen – MoveEye versucht es selbst weiter.",
+        "Vérifie la caméra et le câble ou le réseau – MoveEye réessaie tout seul.",
+        "Controlla la telecamera e il cavo o la rete – MoveEye riprova da solo.",
+        "Controllar la camera ed il cabel u la rait – MoveEye emprova vinavant sez."),
+}
+for _k, _v in _HX_RUHE.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_RUHE_TITLE = {"update": "The simulator is being updated{v} … back in a moment", "start": "The simulator is starting …",
+               "connect": "Connecting to the simulator …", "scene": "The simulator is loading a scene …"}
+
+
+# wraps: simvals_take
+_simvals_take_639y = simvals_take
+
+
+def simvals_take(rep):                                    # + 639y: «busy» of the simulator (update / scene / start)
+    _simvals_take_639y(rep)
+    try:
+        b = rep.get("busy")
+        b = b if isinstance(b, dict) and str(b.get("what") or "") in ("update", "scene", "start") else None
+        SIMWAIT["busy"] = {"what": str(b["what"]), "ver": str(b.get("ver") or "")[:20],
+                           "pct": max(0, min(100, int(b["pct"]))) if isinstance(b.get("pct"), (int, float)) else None} if b else None
+        SIMWAIT["busy_t"] = time.time()
+        if time.time() - SIMWAIT["vers_t"] > 20:              # the newest known version (no network here: 300 caches it)
+            SIMWAIT["vers_t"] = time.time()
+            v = sim_versions()
+            SIMWAIT["vers"] = (bool(v.get("newer")), str(v.get("latest") or ""))
+    except Exception:
+        pass
+
+
+# wraps: sim_control
+_sim_control_639y = sim_control
+
+
+def sim_control(d=None):                                   # + 639y: a scene / place chosen from MoveEye -> «loads a scene»
+    if isinstance(d, dict) and (d.get("action") == "scenario" or (d.get("action") == "set" and str(d.get("id") or "") in ("scene", "ort", "place"))):
+        SIMWAIT["scene_t"] = time.time()
+    return _sim_control_639y(d)
+
+
+def _simwait_picture_ok():
+    w = WATCH_REF.get("w")
+    if w is None or getattr(w, "cap", None) is None:
+        return False
+    if not str(STATE.get("source_id") or "").startswith("sim:"):
+        return True                                        # another camera stands in (switch failed, 410): its picture is shown
+    return sim_picture_ok()
+
+
+def simwait_reason(now=None):
+    """why no pictures come from the simulator right now: {"why": update|start|connect|scene, "ver", "pct", "s"} or None
+    (no simulation, or its pictures arrive)."""
+    now = time.time() if now is None else now
+    if not CFG.get("sim_on") or not str(CFG.get("source") or "").startswith("sim:") or _simwait_picture_ok():
+        SIMWAIT["why"] = None
+        return None
+    ok = bool(SIM.get("ok")) and now - float(SIM.get("t") or 0.0) < 5.0
+    lost = now - float(SIM.get("t") or 0.0) if SIM.get("t") else 1e9      # seconds since the last answer
+    b = SIMWAIT["busy"] if now - SIMWAIT["busy_t"] < 600 else None
+    vers = SIMWAIT["vers"] or (False, "")
+    upd_mw = any(now - float(t_) < 600 for t_ in SIM_AUTOUPD.values()) if "SIM_AUTOUPD" in globals() else False
+    why, ver, pct = "connect", "", None
+    if b and b["what"] == "update" and (ok or lost < 600):
+        why, ver, pct = "update", b["ver"], (b["pct"] if ok else None)
+    elif b and b["what"] == "scene" and (ok or lost < 120):
+        why = "scene"
+    elif now - SIMWAIT["scene_t"] < 90:
+        why = "scene"
+    elif not ok and lost < 600 and (upd_mw or vers[0]):
+        why, ver = "update", vers[1]                       # older simulators say nothing: the update MoveEye knows of
+    elif ok or (b and b["what"] == "start"):
+        why = "start"                                      # it answers, but no picture yet
+    if SIMWAIT["why"] is None:
+        SIMWAIT["t0"] = now                                # the time counts from the first moment without a picture
+    SIMWAIT["why"] = why
+    return {"why": why, "ver": ver, "pct": pct, "s": int(max(0.0, now - SIMWAIT["t0"]))}
+
+
+def _mmss(s):
+    s = int(s)
+    return f"{s // 3600}:{s // 60 % 60:02d}:{s % 60:02d}" if s >= 3600 else f"{s // 60}:{s % 60:02d}"
+
+
+def simwait_texts(r, lang=None):
+    """the texts of the calm picture (for the picture, the web layer and the window)"""
+    L = norm_lang(lang) if lang else cur_lang()
+    title = tr(_RUHE_TITLE[r["why"]], L).replace("{v}", f" ({r['ver']})" if r.get("ver") else "")
+    sub = tr("for {t}", L).replace("{t}", _mmss(r["s"])) + (f" · {r['pct']} %" if r.get("pct") is not None else "") \
+        + " · " + tr("The picture comes back by itself.", L)
+    long_ = r["s"] >= SIMWAIT_LONG
+    return {"title": title, "sub": sub, "hint": tr("This takes longer than usual – is the simulator running on the PC?", L) if long_ else "",
+            "hint2": tr("If its window closes at once: «Notfall-Start.bat» next to the .exe", L) if long_ else "",
+            "link": tr("Open the Simulator tab", L), "help": tr("Help", L)}
+
+
+def simwait_info(lang=None):
+    """for /api/state «simwait» (web layer over the live picture): None or reason + texts"""
+    try:
+        r = simwait_reason()
+    except Exception:
+        return None
+    if r is None:
+        return None
+    return dict(r, **simwait_texts(r, lang))
+
+
+# ---- the picture (numpy + PIL, the background is made once per size) ---------------------------------------------------
+def _ruhe_bg(w, h, red=False, mood="normal"):
+    key = ("bg", w, h, red, mood, bool(CFG.get("blinki_on", True)))
+    c = SIMWAIT["cache"]
+    if key in c:
+        return c[key]
+    y = np.linspace(0.0, 1.0, h, dtype=np.float32)[:, None, None]
+    top = np.array((32, 18, 11) if not red else (22, 14, 20), np.float32)          # BGR #0b1220
+    bot = np.array((44, 30, 20) if not red else (26, 18, 30), np.float32)          # BGR #141e2c
+    img = np.broadcast_to(top * (1 - y) + bot * y, (h, w, 3)).copy()
+    yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)                                 # a soft glow behind the figure
+    g = np.exp(-(((xx - w * 0.5) / (w * 0.30)) ** 2 + ((yy - h * 0.36) / (h * 0.34)) ** 2))
+    glow = np.array((60, 44, 30) if not red else (40, 30, 60), np.float32)
+    img += g[..., None] * glow * 0.55
+    xs = np.arange(w, dtype=np.float32) / w
+    for base, amp, col, ph in ((0.70, 0.10, (54, 40, 29), 0.0), (0.80, 0.07, (40, 30, 22), 1.7)):   # two mountain ridges
+        ridge = h * (base - amp * (0.55 * np.sin(xs * 6.1 + ph) + 0.30 * np.sin(xs * 13.7 + ph * 2.0) + 0.15 * np.sin(xs * 29.0 + ph)))
+        m = yy >= ridge[None, :]
+        img[m] = img[m] * 0.25 + np.array(col, np.float32) * 0.75
+    rng = np.random.default_rng(7)                                                 # a few faint stars
+    for _ in range(int(w * h / 9000)):
+        sx, sy = int(rng.integers(0, w)), int(rng.integers(0, int(h * 0.55)))
+        cv2.circle(img, (sx, sy), 1, (150, 140, 130), -1, cv2.LINE_AA)
+    img = np.clip(img, 0, 255).astype(np.uint8)
+    fig = None                                                                     # Blinki (without the fan) or the logo
+    try:
+        png = blinki_png(int(h * 0.22), mood, red=red) if CFG.get("blinki_on", True) else app_icon_png(int(h * 0.20))
+        fig = cv2.imdecode(np.frombuffer(png, np.uint8), cv2.IMREAD_UNCHANGED)
+    except Exception:
+        fig = None
+    if fig is not None:
+        fh, fw = fig.shape[:2]
+        x0, y0 = (w - fw) // 2, int(h * 0.36 - fh / 2)
+        if 0 <= x0 and 0 <= y0 and x0 + fw <= w and y0 + fh <= h:
+            roi = img[y0:y0 + fh, x0:x0 + fw].astype(np.float32)
+            if fig.shape[2] == 4:
+                a = fig[:, :, 3:4].astype(np.float32) / 255.0
+                roi = roi * (1 - a) + fig[:, :, :3].astype(np.float32) * a
+            else:
+                roi = fig[:, :, :3].astype(np.float32)
+            img[y0:y0 + fh, x0:x0 + fw] = roi.astype(np.uint8)
+    for k_ in [k_ for k_ in c if k_[0] == "bg"][8:]:
+        c.pop(k_, None)
+    c[key] = img
+    return img
+
+
+def _ruhe_draw(w, h, lines, red=False, mood="normal"):
+    """lines: [(text, size, colour RGB, bold)] from the middle down. None without PIL."""
+    try:
+        from PIL import Image, ImageDraw
+    except ImportError:
+        return None
+    key = ("draw", w, h, red, mood, tuple(lines))               # the same texts (within one second): the same picture
+    c = SIMWAIT["cache"]
+    if key in c:
+        return c[key].copy()
+    for k_ in [k_ for k_ in c if k_[0] == "draw"]:
+        c.pop(k_, None)
+    c[key] = out = _ruhe_draw_new(w, h, lines, red, mood, Image, ImageDraw)
+    return out.copy()
+
+
+def _ruhe_draw_new(w, h, lines, red, mood, Image, ImageDraw):
+    im = Image.fromarray(cv2.cvtColor(_ruhe_bg(w, h, red, mood), cv2.COLOR_BGR2RGB))
+    d = ImageDraw.Draw(im)
+    y = int(h * 0.56)
+    for txt, size, col, bold in lines:
+        if not txt:
+            continue
+        if txt == "<bar>":                                 # the progress (size = percent)
+            bw = int(w * 0.36); x0 = (w - bw) // 2
+            d.rounded_rectangle((x0, y + 2, x0 + bw, y + 8), radius=3, fill=(40, 52, 68))
+            d.rounded_rectangle((x0, y + 2, x0 + max(6, int(bw * size / 100.0)), y + 8), radius=3, fill=(88, 150, 255))
+            y += 20; continue
+        fs = max(10, int(h * size))
+        f = _font(fs, bold)
+        while getattr(f, "size", None) and d.textlength(txt, font=f) > w * 0.92 and fs > 10:
+            fs -= 1; f = _font(fs, bold)                   # (without DejaVu: the default font of PIL, it has no size)
+        tw = d.textlength(txt, font=f)
+        d.text(((w - tw) / 2, y), txt, font=f, fill=col)
+        y += int(fs * 1.45)
+    return cv2.cvtColor(np.array(im), cv2.COLOR_RGB2BGR)
+
+
+def _calm_lines_draw(r, w, h, lang=None):
+    tx = simwait_texts(r, lang)
+    lines = [(tx["title"], 0.052, (232, 238, 245), True)]
+    if r.get("pct") is not None:
+        lines.append(("<bar>", r["pct"], None, False))
+    lines += [(tx["sub"], 0.033, (139, 155, 176), False), (tx["hint"], 0.032, (255, 176, 112), False),
+              (tx["hint2"], 0.028, (200, 170, 140), False), ("MoveEye · " + tr("Simulation", lang), 0.026, (90, 104, 124), False)]
+    return _ruhe_draw(w, h, lines)
+
+
+def calm_frame(w=960, h=540, lang=None):
+    """the picture while there is no camera picture: calm for the simulator, a clear (but friendly) error for a real
+    camera; None without PIL (410 draws the old picture then)"""
+    r = simwait_reason()
+    if r is not None:
+        return _calm_lines_draw(r, w, h, lang)
+    # a real camera: the same calm look, but clearly an error (red title); the old cv2 picture without PIL
+    busy = str(STATE.get("source_status") or "").startswith(("connecting", "connection lost"))
+    lines = [(("⏳ " + tr("Connecting to the camera …", lang)) if busy else ("⚠ " + tr("No camera found", lang)), 0.052,
+              (255, 196, 90) if busy else (255, 107, 107), True),
+             (str(source_label(CFG["source"]))[:60], 0.034, (232, 238, 245), False),
+             (str(STATE.get("source_status") or "")[:90], 0.028, (170, 180, 195), False),
+             (tr("Check the camera and the cable or network – MoveEye keeps trying by itself.", lang), 0.028, (139, 155, 176), False),
+             ("ls /dev/video*", 0.024, (90, 104, 124), False)]
+    return _ruhe_draw(w, h, lines, mood="think")      # Blinki thinks: clearly not «all is well»
+
+
+def simwait_jpeg(w=960, q=80):
+    """the calm picture as JPEG for /sim/view.jpg and /sim/view.mjpg (550); None = no reason (show the error as before)"""
+    if not CFG.get("sim_on"):
+        return None
+    try:
+        w = max(320, min(1600, int(w or 960)))
+    except (TypeError, ValueError):
+        w = 960
+    h = int(w * 9 / 16)
+    r = simwait_reason_view()
+    key = ("jpg", w, q, r["why"], r["ver"], r["pct"], r["s"], cur_lang())
+    c = SIMWAIT["cache"]
+    if key in c:
+        return c[key]
+    img = _calm_lines_draw(r, w, h)
+    if img is None:
+        return None
+    ok, buf = cv2.imencode(".jpg", img, [cv2.IMWRITE_JPEG_QUALITY, int(q)])
+    if not ok:
+        return None
+    for k_ in [k_ for k_ in c if k_[0] == "jpg"]:
+        c.pop(k_, None)
+    c[key] = buf.tobytes()
+    return c[key]
+
+
+def simwait_reason_view():
+    """/sim/view.*: the simulator window does not answer - its reason, also while the live picture (410) is still fine
+    (then only from the busy note / the connection, the time counts from now)"""
+    r = simwait_reason()
+    if r is not None:
+        return r
+    now = time.time()
+    ok = bool(SIM.get("ok")) and now - float(SIM.get("t") or 0.0) < 5.0
+    b = SIMWAIT["busy"] if now - SIMWAIT["busy_t"] < 600 else None
+    if b and b["what"] in ("update", "scene"):
+        return {"why": b["what"], "ver": b["ver"] if b["what"] == "update" else "", "pct": b["pct"] if ok else None, "s": 0}
+    return {"why": "start" if ok else "connect", "ver": "", "pct": None, "s": 0}
+
+
+# ---- web: a layer over the live picture (Live and full screen; the small preview shows the picture of the server) -------
+SIMWAIT_CSS = r"""
+#simwait{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+ padding:14px 16px;text-align:center;color:#e8eef5;overflow:hidden;
+ background:radial-gradient(ellipse 60% 55% at 50% 38%,rgba(42,64,96,.55),transparent 70%),linear-gradient(#0b1220,#141e2c)}
+#simwait[hidden]{display:none}
+#simwait .sw-mt{position:absolute;left:0;right:0;bottom:0;width:100%;height:42%;pointer-events:none}
+#simwait .sw-mt path:first-child{fill:#1d2836}#simwait .sw-mt path:last-child{fill:#16202c}
+#simwait .sw-fig{position:relative;width:min(84px,18%);line-height:0;animation:sw-breath 4.5s ease-in-out infinite}
+#simwait .sw-fig svg{display:block;width:100%;height:auto;overflow:visible}
+#simwait .bk-ft{fill:#e8590c}#simwait .bk-scl{fill:#fff}#simwait .bk-rim{fill:none;stroke:#e8590c;stroke-width:2.6}
+#simwait .bk-iris{fill:#ff9f43}#simwait .bk-pupil{fill:#0a0e14}#simwait .bk-hl{fill:#fff}#simwait .bk-hap{display:none}
+#simwait .bk-lid{fill:#e8590c;transform-box:fill-box;transform-origin:50% 0;transform:scaleY(0);animation:sw-blink 6s infinite}
+#simwait .sw-t{position:relative;font-weight:600;font-size:clamp(15px,2.6vw,22px);max-width:34em}
+#simwait .sw-s{position:relative;color:#8b9bb0;font-size:clamp(12px,1.7vw,15px)}
+#simwait .sw-bar{position:relative;width:min(280px,60%);height:6px;border-radius:3px;background:#283444;overflow:hidden}
+#simwait .sw-bar i{display:block;height:100%;background:#5896ff;transition:width .6s ease}
+#simwait .sw-h{position:relative;color:#ffb070;font-size:clamp(12px,1.7vw,15px);max-width:36em}
+#simwait .sw-h small{display:block;color:#c8aa8c;margin-top:2px}
+#simwait .sw-l{position:relative;display:flex;gap:14px;flex-wrap:wrap;justify-content:center;font-size:13px}
+#simwait .sw-l a{color:#8fb8ff}
+@keyframes sw-breath{0%,100%{transform:scale(1);opacity:.92}50%{transform:scale(1.045);opacity:1}}
+@keyframes sw-blink{0%,92%,100%{transform:scaleY(0)}95%,96.5%{transform:scaleY(1)}}
+@media (prefers-reduced-motion:reduce){#simwait .sw-fig,#simwait .bk-lid{animation:none!important}#simwait .sw-bar i{transition:none}}
+body.videoonly #simwait{border-radius:0}
+.vwrap.vlost:has(#simwait:not([hidden]))::after,.vwrap.vlost:has(#simwait:not([hidden]))::before{display:none}
+@media (max-width:520px){#simwait{gap:4px;padding:8px 12px}#simwait .sw-fig{width:min(54px,15%)}#simwait .sw-l{font-size:12px}#simwait.long .sw-fig{display:none}}
+@media (max-height:260px){#simwait .sw-fig{display:none}}
+"""
+
+SIMWAIT_HTML = ('<div id="simwait" hidden role="status" aria-live="polite">'
+                '<svg class="sw-mt" viewBox="0 0 100 40" preserveAspectRatio="none" aria-hidden="true">'
+                '<path d="M0 22 C10 14 18 18 26 12 C34 6 40 14 50 10 C60 6 68 16 78 11 C86 7 94 13 100 10 V40 H0Z"/>'
+                '<path d="M0 30 C12 24 20 28 32 22 C44 17 52 26 64 21 C76 16 86 25 100 20 V40 H0Z"/></svg>'
+                '<div class="sw-fig">' + BLINKI_SVG.replace("__I__", "sw") + '</div>'
+                '<div class="sw-t"></div><div class="sw-bar" hidden><i></i></div><div class="sw-s"></div>'
+                '<div class="sw-h" hidden></div><div class="sw-l"><a href="/sim" class="sw-a"></a><a href="/help#ruhebild" class="sw-b"></a></div></div>')
+
+SIMWAIT_JS = r"""
+(function () {
+  const base = window.simPaint;
+  if (typeof base !== "function") return;
+  const q = s => document.querySelector(s);
+  function paint(st) {
+    const B = q("#simwait"); if (!B) return;
+    const W = st && st.simwait;
+    if (!W) { B.hidden = true; return; }
+    B.hidden = false;
+    q("#simwait .sw-t").textContent = W.title;
+    q("#simwait .sw-s").textContent = W.sub;
+    const bar = q("#simwait .sw-bar"); bar.hidden = W.pct == null; if (W.pct != null) bar.firstChild.style.width = W.pct + "%";
+    B.classList.toggle("long", !!W.hint);
+    const h = q("#simwait .sw-h"); h.hidden = !W.hint; h.textContent = W.hint || "";
+    if (W.hint2) { const sm = document.createElement("small"); sm.textContent = W.hint2; h.appendChild(sm); }
+    q("#simwait .sw-a").textContent = W.link; q("#simwait .sw-b").textContent = W.help;
+  }
+  window.simPaint = function (s) { base(s); try { paint(s); } catch (e) {} };
+})();
+"""
+
+if '<img id="video" src="/video_feed" alt="">' in WEB_PAGE:
+    WEB_PAGE = WEB_PAGE.replace('<img id="video" src="/video_feed" alt="">', '<img id="video" src="/video_feed" alt="">' + SIMWAIT_HTML, 1)
+    WEB_PAGE = WEB_PAGE.replace("</script></body></html>", "</script><style>" + SIMWAIT_CSS + "</style><script>" + SIMWAIT_JS + "</script></body></html>", 1)
+
+
+def ruhebild_selftest():
+    keep_cfg = {k: CFG.get(k) for k in ("sim_on", "source")}
+    keep_sim = {k: SIM.get(k) for k in ("ok", "t")}
+    keep_w = dict(SIMWAIT); keep_ref = WATCH_REF.get("w")
+    try:
+        WATCH_REF["w"] = None
+        CFG["sim_on"] = False
+        assert simwait_reason() is None, "a reason without the simulation"
+        CFG.update(sim_on=True, source="sim:0")
+        SIMWAIT.update(why=None, busy={"what": "update", "ver": "3.25.0", "pct": 40}, busy_t=time.time(), scene_t=0.0, vers=None)
+        SIM.update(ok=False, t=time.time() - 20)
+        r = simwait_reason()
+        assert r and r["why"] == "update" and r["ver"] == "3.25.0", f"update not seen: {r}"
+        tx = simwait_texts(r, "de")
+        assert tx["title"] == "Der Simulator wird aktualisiert (3.25.0) … gleich wieder da" and not tx["hint"], tx
+        SIMWAIT.update(busy=None, vers=(True, "3.26.0"))
+        assert simwait_reason()["why"] == "update" and simwait_reason()["ver"] == "3.26.0", "the known newer version"
+        SIMWAIT.update(vers=(False, ""), why=None)
+        SIM.update(t=time.time() - 3600)
+        r = simwait_reason()
+        assert r["why"] == "connect", r
+        SIMWAIT["t0"] = time.time() - 200
+        tx = simwait_texts(simwait_reason(), "fr")
+        assert tx["hint"].startswith("Cela prend") and "Notfall-Start.bat" in tx["hint2"], "the hint after 3 minutes"
+        SIM.update(ok=True, t=time.time())
+        assert simwait_reason()["why"] == "start", "answers, but no picture"
+        SIMWAIT["scene_t"] = time.time()
+        assert simwait_reason()["why"] == "scene", "scene"
+        for L in ("de", "fr", "it", "rm", "en"):
+            for k in list(_RUHE_TITLE.values()) + ["for {t}", "No camera found"]:
+                assert tr(k, L), (k, L)
+        try:
+            import PIL  # noqa: F401
+            img = calm_frame(640, 360)
+            assert img is not None and img.shape == (360, 640, 3) and 8 < float(img.mean()) < 120, "calm picture"
+            j = simwait_jpeg(640)
+            assert j and j[:2] == b"\xff\xd8", "calm JPEG"
+            CFG["sim_on"] = False
+            img = calm_frame(640, 360)
+            assert img is not None and img.shape == (360, 640, 3), "error picture of a real camera"
+        except ImportError:
+            pass
+        assert HELP_PAGE.count('id="ruhebild"') == 2, "the manual (DE + EN)"
+        assert 'id="simwait"' in WEB_PAGE and "window.simPaint = function" in WEB_PAGE, "web layer missing"
+    finally:
+        CFG.update(keep_cfg); SIM.update(keep_sim); SIMWAIT.clear(); SIMWAIT.update(keep_w); WATCH_REF["w"] = keep_ref
+
+
+# the manual (HELP_PAGE of 540, «Probleme lösen» / «Troubleshooting»): what the calm picture means - the link of the hint
+for _a, _b in (('<section id="faq" data-icon="🛠"><h2>Probleme lösen</h2>',
+                '<p id="ruhebild"><b>🏔 Ruhiges Bild statt Live-Bild (Simulator):</b> Startet der Simulator, aktualisiert er sich, lädt er '
+                'eine Szene oder ist er nicht erreichbar, zeigt MoveEye ein ruhiges Bild mit Blinki und dem Grund (z. B. «Der Simulator '
+                'wird aktualisiert (3.29.0) … gleich wieder da»). Das Live-Bild kommt von selbst zurück. Dauert es länger als 3 Minuten: '
+                'am PC nachsehen, ob der Simulator läuft (Fenster «MoveEye Sim»); schliesst sich sein Fenster gleich wieder, '
+                '«Notfall-Start.bat» neben der .exe starten. Im Reiter Simulator stehen Adresse und Verbindung. Bei einer echten Kamera '
+                'erscheint stattdessen die Fehlermeldung «Keine Kamera gefunden»: Kamera, Kabel bzw. Netz prüfen.</p>'),
+               ('<section id="faq" data-icon="🛠"><h2>Troubleshooting</h2>',
+                '<p id="ruhebild"><b>🏔 A calm picture instead of the live picture (simulator):</b> while the simulator starts, updates, '
+                'loads a scene or cannot be reached, MoveEye shows a calm picture with Blinki and the reason (e.g. «The simulator is '
+                'being updated (3.29.0) … back in a moment»). The live picture comes back by itself. If it takes longer than 3 minutes: '
+                'check on the PC that the simulator is running (window «MoveEye Sim»); if its window closes at once, start '
+                '«Notfall-Start.bat» next to the .exe. The Simulator tab shows its address and the connection. With a real camera the '
+                'error «No camera found» appears instead: check the camera and the cable or network.</p>')):
+    if _a in HELP_PAGE:
+        HELP_PAGE = HELP_PAGE.replace(_a, _a + _b, 1)
+
+
+SELFTEST_EXTRA.append(("Calm picture while the simulator starts / updates / is not reachable (639y)", ruhebild_selftest))
+# ----------------------------------------------------------------------------
+# NICHTS davon in Hilfe, Anleitung oder Blinki – keine sichtbaren Texte. (Spoiler, nur für Entwickler: simulator3d/scripts/
+# bergtal_ei.gd beschreibt den ganzen Ablauf.) Hier nur das Ende in MoveEye:
+#   * Der Simulator meldet in seiner Antwort (world_reply «egg») nur dann etwas, wenn man ein Herz zeichnen kann und das
+#     Murmeltier im Bild der Kopfkamera ist: {"st": "heart", "x", "y", "r"} (0 … 1 im Bild). simvals_take legt es in SIM["egg"].
+#   * Die Live-Ansicht (WEB_PAGE, Bild #video) fragt /api/simegg alle 2.5 s (nur sichtbar, nur mit Simulation). Steht dort ein
+#     Murmeltier, beginnt ein Strich, der nahe beim Murmeltier anfängt, eine Herz-Zeichnung (sonst bleibt alles wie immer);
+#     mwHeart (510, dieselben Regeln wie ccw_heart in 230) prüft im Browser, POST /api/simegg prüft es hier noch einmal und
+#     schickt die Mitte (0 … 1 im Bild) an den Simulator: sim_control {"action": "egg", "do": "heart", "x", "y"}. Der Simulator
+#     entscheidet, ob es auf dem Murmeltier ist. Danach Herzchen und ein leiser Pfiff im Browser.
+#   * Das MoveEye-Fenster (Tk) zeigt das Simulator-Bild auch, kann hier aber (noch) nicht zeichnen.
+# Hier (nach 639n) weil sim_control, ccw_heart (230), smalltv_routes, WEB_PAGE, SIM vorher kommen.
+# ----------------------------------------------------------------------------
+_simvals_take_egg = simvals_take
+
+
+def simvals_take(rep):                                    # + 639z: where the marmot is (only while a heart can be drawn)
+    _simvals_take_egg(rep)
+    try:
+        e = rep.get("egg")
+        SIM["egg"] = dict(e, t=time.time()) if isinstance(e, dict) and e.get("st") == "heart" else None
+    except Exception:
+        SIM["egg"] = None
+
+
+def egg_state():
+    e = SIM.get("egg") if CFG.get("sim_on") and SIM.get("ok") else None
+    if not isinstance(e, dict) or time.time() - float(e.get("t") or 0) > 4.0:
+        return {"ok": True, "egg": None}
+    return {"ok": True, "egg": {k: e.get(k) for k in ("st", "x", "y", "r")}}
+
+
+def egg_post(d):
+    """a stroke over the live picture: {pts: [[x, y] …] (screen px), rect: [left, top, width, height] of the picture}"""
+    d = d if isinstance(d, dict) else {}
+    try:
+        pts = [(float(p[0]), float(p[1])) for p in (d.get("pts") or [])[:3000]]
+        l_, t_, w_, h_ = (float(v) for v in (d.get("rect") or [])[:4])
+    except (TypeError, ValueError, IndexError):
+        return {"ok": False, "error": "bad stroke", "code": 400}
+    if w_ < 40 or h_ < 30 or not ccw_heart(pts):
+        return {"ok": False, "error": "no heart"}
+    if not CFG.get("sim_on"):
+        return {"ok": False, "error": "no simulator"}
+    xs = [p[0] for p in pts]; ys = [p[1] for p in pts]
+    x = ((min(xs) + max(xs)) / 2 - l_) / w_; y = ((min(ys) + max(ys)) / 2 - t_) / h_
+    try:
+        r = sim_control({"action": "egg", "do": "heart", "x": round(x, 4), "y": round(y, 4), "src": "mw"}) or {}
+    except Exception as e:
+        return {"ok": False, "error": str(e)[:80]}
+    if r.get("ok"):
+        SIM["egg"] = None
+    return {"ok": bool(r.get("ok")), "error": r.get("error")}
+
+
+_smalltv_routes_egg_base = smalltv_routes
+
+
+def smalltv_routes(app, reply, body):                     # + 639z: /api/simegg (550 calls smalltv_routes once)
+    _smalltv_routes_egg_base(app, reply, body)
+
+    @app.route("/api/simegg", methods=["GET", "POST"])
+    def api_simegg():
+        from flask import request
+        if request.method == "GET":
+            return reply(egg_state())
+        r = egg_post(body())
+        code = r.pop("code", None)
+        return reply(r, code) if code else reply(r)
+
+
+EGG_JS = _zd('639z_sim_ei/EGG_JS', "")
+WEB_PAGE = WEB_PAGE.replace("</body>", EGG_JS + "</body>", 1)
+
+
+def egg_selftest():
+    hp = heart_points(400, 300, 120)
+    assert ccw_heart(list(reversed(hp))) and not ccw_heart(hp)
+    keep = (CFG.get("sim_on"), dict(SIM))
+    _sc = globals()["sim_control"]; asked = []
+    try:
+        CFG["sim_on"] = True
+        SIM.update(ok=True)
+        simvals_take({"egg": {"st": "heart", "x": 0.5, "y": 0.6, "r": 0.05}})
+        assert egg_state()["egg"] == {"st": "heart", "x": 0.5, "y": 0.6, "r": 0.05}
+        simvals_take({})
+        assert egg_state()["egg"] is None
+        globals()["sim_control"] = lambda d_: (asked.append(d_), {"ok": True})[1]
+        assert not egg_post({"pts": hp, "rect": [100, 100, 600, 400]})["ok"] and not asked      # clockwise: no heart
+        assert egg_post({"pts": "x"}).get("code") == 400
+        r = egg_post({"pts": list(reversed(hp)), "rect": [100, 100, 600, 400]})
+        assert r["ok"] and asked[-1]["action"] == "egg" and asked[-1]["do"] == "heart", (r, asked)
+        assert abs(asked[-1]["x"] - 0.5) < 0.02 and 0.3 < asked[-1]["y"] < 0.6, asked[-1]
+    finally:
+        globals()["sim_control"] = _sc
+        CFG["sim_on"] = keep[0]
+        SIM.clear(); SIM.update(keep[1])
+    assert "/api/simegg" in WEB_PAGE and "mwHeart" in WEB_PAGE
+    gd = os.path.join(os.path.dirname(os.path.abspath(__file__)), "simulator3d", "scripts", "bergtal_ei.gd")
+    if os.path.exists(gd):                                # the simulator shows the same pattern as the marmot of MoveEye
+        with open(gd, encoding="utf-8") as f:
+            assert 'const BELLY := "' + _BELLY + '"' in f.read(), "bergtal_ei.gd BELLY differs from _BELLY (230)"
+    return "heart over the live picture: rules, forwarding to the simulator, same belly pattern"
+
+
+SELFTEST_EXTRA.append(("A secret of the simulator (heart over the live picture)", egg_selftest))
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--cam", type=int, default=None, help="USB camera number (same as --source usb:N)")
