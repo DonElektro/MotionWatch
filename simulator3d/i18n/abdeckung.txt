@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 7442 (Stellen: 10349)
-Übersetzt: en 7442, fr 7442, it 7442, rm 7442
+Texte gesamt: 7457 (Stellen: 10364)
+Übersetzt: en 7457, fr 7457, it 7457, rm 7457
 Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 506 Stellen
 Nicht mehr im Code (noch in texte.json): 324
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 68 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1
-Übersprungen (Grund: Anzahl): kennung 26456, schlüssel 20156, keine Wörter 12518, index 9598, technisch 3468, doc 2220, einheit 317, log 172, englisch 143, pfad 125, stringname 102, html 68, klasse 28, shader 6
+Übersprungen (Grund: Anzahl): kennung 26494, schlüssel 20161, keine Wörter 12523, index 9598, technisch 3471, doc 2232, einheit 319, log 172, englisch 143, pfad 125, stringname 102, html 68, klasse 28, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   werkstatt_daten.gd       424     3
@@ -25,7 +25,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   abenteuer_moveeye.gd     110    14
   bergtal_orte.gd          108     0
   bib_objekte.gd           108     0
-  main_menues.gd           104     2
+  main_menues.gd           106     2
   spieltest.gd              99    20
   bergtal_aussicht.gd       94     4
   testrun.gd                94     3
@@ -147,6 +147,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   fahrzeuge.gd              13     1
   gamekihilfe.gd            13     4
   gameturm.gd               13     0
+  tasten.gd                 13     0
   devtool_kontakt.gd        12     0
   maggie_modell.gd          12     3
   geschichten_faden.gd      12     0
@@ -313,14 +314,14 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   gamewiz.gd:776  '⚠ Nicht übernommen: '
   gamewiz.gd:1093  'Wie letztes Mal: '
   gamewiz.gd:1192  ' Regeln (%d)'
-  karte.gd:249  ' – ist der PC mit dem Internet verbunden?'
-  karte.gd:249  'Karte: '
-  karte.gd:334  'Nichts gefunden'
-  karte.gd:402  ' (beim ersten Mal etwa eine Minute, danach ist der Ort gespeichert)'
-  karte.gd:479  '3D-Gebäude von swisstopo: '
-  karte.gd:503  'Dazu kommen: '
-  karte.gd:511  'ja'
-  karte.gd:511  'keine'
+  karte.gd:250  ' – ist der PC mit dem Internet verbunden?'
+  karte.gd:250  'Karte: '
+  karte.gd:335  'Nichts gefunden'
+  karte.gd:403  ' (beim ersten Mal etwa eine Minute, danach ist der Ort gespeichert)'
+  karte.gd:480  '3D-Gebäude von swisstopo: '
+  karte.gd:504  'Dazu kommen: '
+  karte.gd:512  'ja'
+  karte.gd:512  'keine'
   abenteuer_moveeye.gd:136  'offen'
   abenteuer_moveeye.gd:142  'offen'
   abenteuer_moveeye.gd:251  'offen'
@@ -433,16 +434,16 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   gamekiwaechter.gd:147  '🤖 MoveEye als KI-Wächter: '
   gamemore.gd:23  'aus'
   licht.gd:42  'aus'
-  main.gd:745  ' (Port %d)'
-  main.gd:1648  '  %.0f Mbit/s'
-  main.gd:2276  ' (von MoveEye)'
-  main.gd:2309  'Der Simulator ist belegt: '
-  main.gd:3143  'aus'
-  main.gd:3143  'ein'
-  main.gd:3220  'Sabotage-Test: '
-  main.gd:3220  'aus'
-  main.gd:3274  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
-  main.gd:3277  '\n🚨 Bewacht und weg: '
+  main.gd:750  ' (Port %d)'
+  main.gd:1653  '  %.0f Mbit/s'
+  main.gd:2281  ' (von MoveEye)'
+  main.gd:2314  'Der Simulator ist belegt: '
+  main.gd:3148  'aus'
+  main.gd:3148  'ein'
+  main.gd:3225  'Sabotage-Test: '
+  main.gd:3225  'aus'
+  main.gd:3279  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
+  main.gd:3282  '\n🚨 Bewacht und weg: '
   main_status.gd:14  'Echt-Abgleich: '
   main_status.gd:24  'Trainingspaket: '
   main_status.gd:33  ' · %d offen · %.1f MB'
@@ -504,7 +505,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   diagnose.gd:146  ' · Version '
   diagnose.gd:158  'MoveEye: '
   diagnose.gd:217  ' · QR'
-  werkstatt.gd:944  'keine'
+  werkstatt.gd:945  'keine'
   bergtal_aussicht.gd:357  'von'
   bergtal_aussicht.gd:536  'von'
   bergtal_aussicht.gd:1159  'Abzeichen: '
@@ -516,8 +517,8 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   device.gd:91  ' (Port belegt!)'
   device.gd:260  ' · Gerät 2'
   devtool_notizen.gd:220  'Notizen aus dem MoveEye-Simulator (Entwickler → Notizen an Claude)\n%d Notizen, davon %d offen. Version %s.\n\n'
-  explore.gd:581  ' (automatisch von oben)'
-  explore.gd:581  ' · schnell'
+  explore.gd:580  ' (automatisch von oben)'
+  explore.gd:580  ' · schnell'
   fahrzeuge.gd:90  'nie'
   jahreszeiten.gd:51  'nie'
   feedback.gd:266  ' · TESTMODUS: geht nur an '
@@ -660,8 +661,8 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   maggie_modell.gd:48  'Modell fehlt: '
   maggie_modell.gd:165  'BackUpperLeg.'
   maggie_modell.gd:166  'BackLowerLeg.'
-  main_menues.gd:323  'Blinde Flecken: '
-  main_menues.gd:845  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
+  main_menues.gd:324  'Blinde Flecken: '
+  main_menues.gd:851  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
   main_start.gd:364  'Autostart: '
   main_start.gd:375  'Autologon: '
   main_steuerung.gd:452  'Dein Platz: '
@@ -692,10 +693,10 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   parcours.gd:1115  ' · Kabel ±%.0f°'
   parcours.gd:1138  ' (Bot)'
   parcours.gd:1177  'Verfolgungs-Parcours: '
-  phone.gd:188  'Browser liess sich nicht starten: '
-  phone.gd:313  ' · Vollbild'
-  phone.gd:339  'lädt '
-  phone.gd:380  ' · Vollbild'
+  phone.gd:189  'Browser liess sich nicht starten: '
+  phone.gd:314  ' · Vollbild'
+  phone.gd:340  'lädt '
+  phone.gd:381  ' · Vollbild'
   power.gd:183  '🔋 USV-Akku: %d %% · %.2f V · '
   power.gd:185  '⚡ Akkubetrieb · ca. %s übrig · %.1f W'
   power.gd:188  ' · ☀ Solar %.1f W'

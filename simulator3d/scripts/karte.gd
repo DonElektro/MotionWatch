@@ -97,6 +97,7 @@ func _ready() -> void:
 	view.mouse_default_cursor_shape = Control.CURSOR_CROSS
 	view.draw.connect(_draw_map)
 	view.gui_input.connect(_map_input)
+	view.set_meta("rad_zoom", "karte")                 # tasten.gd: + / − = the wheel of the map
 	view.resized.connect(func(): view.queue_redraw())
 	v.add_child(view)
 	wiz = ScrollContainer.new()

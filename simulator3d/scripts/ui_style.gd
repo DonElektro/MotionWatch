@@ -92,12 +92,28 @@ static func theme() -> Theme:
 	t.set_color("font_color", "PopupMenu", TXT)
 	t.set_color("font_hover_color", "PopupMenu", Color.WHITE)
 	t.set_stylebox("panel", "PanelContainer", box(PANEL2, LINE, 14, 12))
-	var sb := box(Color(0, 0, 0, 0), Color(0, 0, 0, 0), 4, 0, 0)
-	t.set_stylebox("scroll", "VScrollBar", sb)
-	t.set_stylebox("grabber", "VScrollBar", box(LINE, LINE, 4, 0, 0))
-	t.set_stylebox("grabber_highlight", "VScrollBar", box(LINE.lightened(0.2), LINE, 4, 0, 0))
-	t.set_stylebox("grabber_pressed", "VScrollBar", box(ACC, ACC, 4, 0, 0))
+	# tasten.gd (Touchpad ohne Mausrad): the scroll bars are visible and wide enough to drag with the mouse (were 4 px, #1f2b3a
+	# on #111822 - hardly to see): a faint track 10 px wide, a grey grabber, lighter on hover, blue while dragged
+	for kind in ["VScrollBar", "HScrollBar"]:
+		t.set_stylebox("scroll", kind, scroll_box(Color(1, 1, 1, 0.05), kind == "VScrollBar"))
+		t.set_stylebox("scroll_focus", kind, scroll_box(Color(1, 1, 1, 0.05), kind == "VScrollBar"))
+		t.set_stylebox("grabber", kind, scroll_box(MUT.darkened(0.3), kind == "VScrollBar"))
+		t.set_stylebox("grabber_highlight", kind, scroll_box(MUT, kind == "VScrollBar"))
+		t.set_stylebox("grabber_pressed", kind, scroll_box(ACC, kind == "VScrollBar"))
 	return t
+
+
+static func scroll_box(col: Color, vertical: bool) -> StyleBoxFlat:
+	"""a scroll bar part: 10 px thick, round ends (ui_style theme, tasten.gd)"""
+	var s := StyleBoxFlat.new()
+	s.bg_color = col
+	s.set_corner_radius_all(5)
+	s.anti_aliasing = true
+	s.content_margin_left = 5.0 if vertical else 4.0
+	s.content_margin_right = 5.0 if vertical else 4.0
+	s.content_margin_top = 4.0 if vertical else 5.0
+	s.content_margin_bottom = 4.0 if vertical else 5.0
+	return s
 
 
 static func switch_tex(on: bool, alpha := 1.0) -> ImageTexture:

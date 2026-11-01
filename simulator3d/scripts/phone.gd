@@ -92,6 +92,7 @@ func _ready() -> void:
 	screen.mouse_filter = Control.MOUSE_FILTER_STOP
 	screen.focus_mode = Control.FOCUS_CLICK
 	screen.gui_input.connect(_on_screen_input)
+	screen.set_meta("rad_scroll", "phone")             # tasten.gd: Bild ↑ / ↓ over the phone = its wheel
 	frame.add_child(screen)
 	var hint := Label.new()
 	hint.text = "Klicken und ziehen = Finger · Mausrad = scrollen · Tippen geht, wenn das Bild angeklickt ist"
