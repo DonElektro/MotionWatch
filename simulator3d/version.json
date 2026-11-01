@@ -1,9 +1,9 @@
 {
- "version": "3D-5.23.1",
- "ver": "3.23.1",
- "name": "MoveEye Sim 3.23.1",
+ "version": "3D-5.24.0",
+ "ver": "3.24.0",
+ "name": "MoveEye Sim 3.24.0",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 39987563,
- "sha256": "1c9e8d93558e273d380d90e8652a1dd7a0f1fa2581f4df5b24fde96a88059b0c",
- "notes": "MoveEye Sim 3.23.1: Trailer mit echten Klängen (CC0-Aufnahmen), Lautstärken ausgeglichen."
+ "size": 39988537,
+ "sha256": "f6e88c502850a36179502cf634e7efb82e0bf1f975a5c97997e3ffabd44ea6ee",
+ "notes": "MoveEye Sim 3.24.0: ein Schalter «Ton am PC», Symbole farbig als Standard."
 }

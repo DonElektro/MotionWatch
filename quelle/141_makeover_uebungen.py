@@ -91,12 +91,24 @@ def event_origin():
 
 
 def sandbox_active():
-    """the test inbox instead of the phone: drills / demo (force), simulation with the switch, and always while a game runs"""
+    """the test inbox instead of the phone: drills / demo (force) and always in the simulation (3.23: no switch any more,
+    the old notify_sandbox is ignored; info messages may still go out with sim_info_push - sandbox_lets_through, 060)"""
     if SANDBOX["force"] > 0:
         return True
-    if not CFG.get("sim_on"):
+    return bool(CFG.get("sim_on"))
+
+
+def sandbox_lets_through(p):
+    """3.23: in the simulation an info message still goes to the phone when «In the simulator: info messages to the phone»
+    (sim_info_push) is on or the real Pi warns (battery, heat, power - 635b push_sim_hold); never alarms, games, drills, tests"""
+    try:
+        if SANDBOX["force"] > 0 or sim_game_running() or not CFG.get("sim_on") or Notifier._event(p) != "info":
+            return False
+        if push_kind(p)["cls"] in ("alarm", "sim"):
+            return False
+        return not push_sim_hold(p)
+    except Exception:
         return False
-    return bool(CFG.get("notify_sandbox")) or sim_game_running()
 
 
 def sandbox_add(title, text, jpg=None, ev=""):
@@ -429,7 +441,7 @@ def _ab_thread(preset, plan):
 
 
 def lab_state():
-    return {"sandbox": bool(CFG.get("notify_sandbox")), "inbox": SANDBOX["items"][:12], "drill": {"kind": DRILL["kind"], "busy": DRILL["busy"],
+    return {"sandbox": bool(sandbox_active()), "inbox": SANDBOX["items"][:12], "drill": {"kind": DRILL["kind"], "busy": DRILL["busy"],
             "left": max(0, int(DRILL["until"] - time.time())) if DRILL["busy"] else 0, "last": DRILL["last"]},
             "train": {"on": bool(CFG.get("train_night_on")), "hour": int(CFG.get("train_hour", 1)), "busy": TRAIN["busy"], "step": TRAIN["step"],
                       "last": TRAIN["last"]}, "ab": {"busy": ABT["busy"], "step": ABT["step"], "last": ABT["last"],

@@ -109,12 +109,12 @@ def soundev_state():                                      # + 554: how often the
 def sim_sound_selftest():
     """virtual loudspeaker: plays only in the simulator in test-inbox mode, the state goes to the simulator, the own sound
     mutes the noise alarm and the claps of the simulator"""
-    keep = {k: CFG.get(k) for k in ("sim_on", "audio_out", "notify_sandbox")}
+    keep = {k: CFG.get(k) for k in ("sim_on", "audio_out")}
     keep_sim = {k: SIM.get(k) for k in ("ok", "t")}
     G = globals(); keep_log = G["log_event"]
     try:
         G["log_event"] = lambda *a, **k: None
-        CFG.update(sim_on=True, audio_out="", notify_sandbox=True); SIM.update(ok=True, t=time.time())
+        CFG.update(sim_on=True, audio_out=""); SIM.update(ok=True, t=time.time())
         assert sim_speaker() and speaker_ok() and sim_speaker_only("person alarm")
         ok, _ = sound_play("two-tone", 0.6, 50, reason="selftest")
         assert ok and SOUND["playing"] and SOUND["virt"] and SOUND["kind"] == "two-tone"

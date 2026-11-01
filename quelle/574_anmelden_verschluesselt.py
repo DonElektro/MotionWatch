@@ -12,16 +12,10 @@
 #   * Unchanged: links with their own key (/na/ buttons in the push, /g/ guests, /x/ shares, /k/ kiosk, /tv/ ...), the
 #     public files, and a device that is already trusted (its cookie is no password).
 # ----------------------------------------------------------------------------
-_SECLOGIN_CFG = {"login_https_only": True}
-for _k, _v in _SECLOGIN_CFG.items():
-    CFG.setdefault(_k, _v)
-    DEFAULTS.setdefault(_k, _v)
-TOGGLES.extend([
-    ("Security", "login_https_only", "Log in only encrypted (https): from other devices the password is only accepted over the secure page"),
-])
+# 3.23 (Daniel 01.11.2026): always on - the switch «login_https_only» is gone (an old saved value is ignored); from the device
+# itself (localhost) the login works without https as before, without a secure page the fallback below stays.
 # «Simple» shows the section only when something is wrong (no secure page, or switched off with a password); «Expert» always
 SIMPLE_IN_USE["Security"] = lambda: web_pw_active() and seclogin_mode() != "on"
-SIMPLE_KEYS.add("login_https_only")
 SECLOGIN = {"own": (0.0, frozenset()), "logged": {}, "fallback_logged": False}
 SECLOGIN_NOTE = ("The password is only accepted over the secure page (https://…:port + 1) or from this device itself. Over plain http "
                  "everybody in the same Wi-Fi (camping!) could read it. The browser warns once about the certificate (it is made by MoveEye "
@@ -102,9 +96,7 @@ def seclogin_secure(req):
 
 
 def seclogin_mode():
-    """"off" (setting off), "fallback" (setting on, but no secure page: http login allowed with a warning), "on" """
-    if not CFG.get("login_https_only", True):
-        return "off"
+    """"fallback" (no secure page: http login allowed with a warning), "on" (3.23: always on, no switch)"""
     if not seclogin_https_port():
         if not SECLOGIN["fallback_logged"] and time.time() - START > 60:
             SECLOGIN["fallback_logged"] = True
@@ -183,7 +175,7 @@ def seclogin_info(req=None, lang=None):
     """for the page (Settings → Security), /api/state and the window"""
     m = seclogin_mode()
     port = seclogin_https_port()
-    i = {"on": bool(CFG.get("login_https_only", True)), "mode": m, "port": port, "pw": web_pw_active(),
+    i = {"on": True, "mode": m, "port": port, "pw": web_pw_active(),
          "note": tr(SECLOGIN_NOTE, lang), "warn": ""}
     if req is not None:
         i["secure"] = seclogin_secure(req)
@@ -219,18 +211,17 @@ def seclogin_selftest():
     assert seclogin_secure(_R("127.0.0.1", h={"X-Forwarded-For": "1.2.3.4", "X-Forwarded-Proto": "https"}))
     assert not seclogin_secure(_R("127.0.0.1", h={"X-Forwarded-For": "1.2.3.4", "X-Forwarded-Proto": "http"}))
     assert not seclogin_secure(_R("192.0.2.77"))                       # TEST-NET: never an own address
-    keep = STATE.get("https_port"), CFG.get("login_https_only")
+    keep = STATE.get("https_port")
     try:
-        STATE["https_port"] = 5001; CFG["login_https_only"] = True
+        STATE["https_port"] = 5001
         assert seclogin_url(_R("192.0.2.77", path="/zones")) == "https://192.168.1.5:5001/zones"
         assert seclogin_url(_R("192.0.2.77", host="[fe80::1]:5000")) == "https://[fe80::1]:5001/"
         assert seclogin_mode() == "on" and seclogin_plain(_R("192.0.2.77")) and not seclogin_plain(_R("100.64.0.5"))
         STATE["https_port"] = None
         assert seclogin_mode() == "fallback" and not seclogin_plain(_R("192.0.2.77"))   # no secure page: never locked out
-        STATE["https_port"] = 5001; CFG["login_https_only"] = False
-        assert not seclogin_plain(_R("192.0.2.77"))
+        assert "login_https_only" not in CFG, "3.23: always on, no switch"
     finally:
-        STATE["https_port"], CFG["login_https_only"] = keep
+        STATE["https_port"] = keep
     return True
 
 
