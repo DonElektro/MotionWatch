@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.40.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.41.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -446,6 +446,11 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.41.0
+3.41.0: Im Fenster «Neu in …» führt bei jeder Neuerung ein kleiner Link «Zur Funktion ›» direkt dorthin (wie in MoveEye);
+Schalter «Links zu Neuerungen» im Entwickler-Bereich.
+So testest du: nach dem Update im Fenster «Neu in …» auf «Zur Funktion ›» tippen.
 
 NEU IN 3.40.0
 3.40.0: Bauen (Mehr › Bauen, früher «Werkstatt»): MoveEye komplett selbst bauen – 10 Reiter mit 3D, Teilen, Varianten,

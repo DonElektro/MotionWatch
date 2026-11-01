@@ -343,6 +343,10 @@ func _register_controls() -> void:
 	main.zimmertiere.add_controls()                         # Erlebniswelt «mehr Tiere drinnen»: Wildtier → Hamster, Vogel, Spinne
 	main.add_control("toggle", "news_popup", "Nach einem Update kurz zeigen, was neu ist (und was als Nächstes kommt)", func(): return main.news_popup, func(v): main.news_popup = v; main._settings_dirty = true, "Updates")
 	main.add_control("button", "news_show", "Was ist neu?", null, func(): main.news.show_news(), "Updates")
+	# «Links zu Neuerungen» (wie MoveEye, nur im Entwickler-Bereich): auto = Projektschalter projekt_veroeffentlicht (ui_gemeinsam.json)
+	main.add_control("select", "news_links", "Links zu Neuerungen", func(): return main.news_links,
+			func(v): main.news_links = str(v) if str(v) in ["auto", "on", "off"] else "auto"; main._settings_dirty = true, "Entwickler",
+			{"expert": true, "devwin": true, "options": [["auto", "Standard (an, bis das Projekt veröffentlicht ist)"], ["on", "an"], ["off", "aus"]]})
 	# 3D-3.90: one choice instead of two switches (the old ids stay for MoveEye, hidden in the window)
 	main.add_control("select", "update_mode", "Neue Versionen", func(): return "dev" if main.dev_updates else ("auto" if main.auto_update else "off"),
 			func(v): main.dev_updates = str(v) == "dev"; main.set_auto_update(str(v) != "off"), "Updates",

@@ -16,6 +16,7 @@
 # ---- UI_GEMEINSAM (von werkzeuge/bauen.py aus simulator3d/ui_gemeinsam.json – nicht von Hand ändern) ----
 UI_GEMEINSAM = json.loads(r"""{
  "v": 1,
+ "projekt_veroeffentlicht": false,
  "_hinweis": "Gemeinsame Menü-Datei MoveEye ↔ MoveEye Sim (P1 «totale Integration», Daniel 31.10.2026). Eine Quelle für Gruppen-IDs, Namen, Symbole, Reihenfolge, die Texte der Bedienleiste und die geteilten Einstellungen. MoveEye bettet sie beim Bauen ein (werkzeuge/bauen.py → quelle/639p_ui_gemeinsam.py, UI_GEMEINSAM); der Simulator liest sie aus res:// (kommt mit in die .exe, export_presets.cfg) über scripts/ui_gemeinsam.gd. Geprüft: Selbsttest von MoveEye («One menu file …») und werkzeuge/ui_gemeinsam_test.gd (Simulator, ohne Bild); beim Start schreibt der Simulator «Menü-Datei: OK …» ins Log. Neue gemeinsame Gruppe oder Umbenennung: zuerst hier, dann beide Seiten.",
  "_felder": {
   "groups": "Reihenfolge nach «order» (beide Seiten zeigen ihre Gruppen in dieser Reihenfolge). «mw» / «sim»: gibt es auf dieser Seite, «key» = Übersetzungs-Schlüssel der Seite (MoveEye: englischer Text, Simulator: deutscher Text), «names» = Anzeige in de / en / fr / it / rm. «emoji» = Web und Seite «Simulator» von MoveEye, «draw» = gezeichnetes Symbol im Simulator (ui_style.gd / mehr_icons.gd, keine Emoji-Schrift) und SC_ICON auf der Seite «Simulator», «tk» = Zeichen im Pi-Fenster. «sim.emoji» / «sim.draw»: bewusste Abweichung (mit «abweichung»). «alias»: alte IDs, gelten weiter (ältere Simulatoren, gespeicherte Werte). «sim.old»: alte Namen im Simulator (gespeicherter Klappzustand wird übernommen).",
@@ -28,6 +29,8 @@ UI_GEMEINSAM = json.loads(r"""{
   "features": "Feld «features» in /info des Simulators: was er kann (MoveEye richtet sich danach, ältere Simulatoren senden es nicht). MoveEye schickt seine eigenen im Zustand («state.features»). ui1 = Abgleich «ui», level1 = Zustand Aus / Wachsam / Voll, push1 = Push-Vorschau, diag1 = Diagnose gegenseitig, lock1 = Bedienermodus, ver1 = Versions-Paar.",
   "sync": "P2 (Teil 639zb / scripts/abgleich.gd): wie «shared» abgeglichen wird - Revision bei MoveEye, letzte Änderung gewinnt (Ankunft bei MoveEye), im selben Takt und nach dem Neuverbinden führt MoveEye; nur der Leiter; ohne Verbindung arbeitet jede Seite selbst.",
   "level": "★1: der Zustand in beiden Programmen gleich (Wörter wie MoveEye protect_label, Farben wie die Status-LED; MoveEye schickt die Farbe der eigenen LED-Einstellung mit).",
+  "projekt_veroeffentlicht": "Projektschalter (Daniel 01.11.2026): beim Veröffentlichen des Projekts auf true setzen (CLAUDE.md, Release). false = Entwicklung: die Links zu Neuerungen im Fenster «Neu in …» sind standardmässig an; true = standardmässig aus. Eine eigene Wahl im Entwickler-Bereich («Links zu Neuerungen», shared «news_links») überschreibt den Standard. Gilt für MoveEye (eingebettet) und den Simulator (res://).",
+  "neu_ziele": "Links im Fenster «Neu in …» (MoveEye Teil 137, Simulator scripts/news.gd): Version -> Ziel. MoveEye: «seite» (Pfad, Standard /settings), «anker» (grp:<gid> / sec:<Abschnitt> = Gruppe bzw. Abschnitt der Einstellungen aufklappen, sonst #anker), «einstellung» (CFG-Schlüssel: Karte aufklappen und hervorheben). Simulator: «sim_einstellung» (Kennung von add_control: Karte aufklappen und hervorheben), «sim_menue» («Gruppe/Teil» aufklappen), «sim_aktion» (Aktion von main_steuerung, z. B. {\"action\": \"werkstatt\", \"do\": \"open\"}). Fehlt der Teil einer Seite, zeigt sie «in MoveEye» bzw. «im Simulator»; fehlt ein Ziel, gibt es keinen Link.",
   "hint": "Kleine Hinweise / Chips in beiden Programmen (keine neuen Karten): Push-Vorschau, Versions-Paar, Bedienermodus, Ansicht übernommen."
  },
  "features": [
@@ -1023,6 +1026,16 @@ UI_GEMEINSAM = json.loads(r"""{
    ],
    "note": "«Neu in …» nach einem Update zeigen"
   },
+  "news_links": {
+   "mw": "CFG news_links",
+   "sim": "news_links",
+   "values": [
+    "auto",
+    "on",
+    "off"
+   ],
+   "note": "«Links zu Neuerungen» (Entwickler-Bereich): auto = Standard aus «projekt_veroeffentlicht» (false: an, true: aus)"
+  },
   "dev_area": {
    "mw": "CFG dev_area",
    "sim": "dev_area",
@@ -1045,7 +1058,8 @@ UI_GEMEINSAM = json.loads(r"""{
    "voice",
    "tours",
    "blinki",
-   "news"
+   "news",
+   "news_links"
   ],
   "rule": "last_wins",
   "tie": "mw",
@@ -1181,6 +1195,79 @@ UI_GEMEINSAM = json.loads(r"""{
    "fr": "Vue reprise de MoveEye",
    "it": "Vista ripresa da MoveEye",
    "rm": "Vista surpigliada da MoveEye"
+  },
+  "neu_link": {
+   "de": "Zur Funktion ›",
+   "en": "Go there ›",
+   "fr": "Y aller ›",
+   "it": "Vai lì ›",
+   "rm": "Ir là ›"
+  },
+  "neu_in_mw": {
+   "de": "in MoveEye",
+   "en": "in MoveEye",
+   "fr": "dans MoveEye",
+   "it": "in MoveEye",
+   "rm": "en MoveEye"
+  },
+  "neu_in_sim": {
+   "de": "im Simulator",
+   "en": "in the simulator",
+   "fr": "dans le simulateur",
+   "it": "nel simulatore",
+   "rm": "en il simulatur"
+  },
+  "neu_links": {
+   "de": "Links zu Neuerungen",
+   "en": "Links to what is new",
+   "fr": "Liens vers les nouveautés",
+   "it": "Link alle novità",
+   "rm": "Links a las novitads"
+  }
+ },
+ "neu_ziele": {
+  "3.40.0": {
+   "seite": "/build",
+   "sim_aktion": {
+    "action": "werkstatt",
+    "do": "open"
+   }
+  },
+  "3.39.0": {
+   "anker": "sec:Device & help",
+   "sim_menue": "System/Gerät & Hilfe"
+  },
+  "3.38.0": {
+   "einstellung": "backup_type",
+   "sim_menue": "System/Sicherung"
+  },
+  "3.37.0": {
+   "sim_einstellung": "foto_tex"
+  },
+  "3.36.0": {
+   "sim_einstellung": "fig_mensch_load"
+  },
+  "3.34.0": {
+   "seite": "/case",
+   "sim_aktion": {
+    "action": "werkstatt",
+    "do": "open"
+   }
+  },
+  "3.33.0": {
+   "seite": "/hilfe/fehler",
+   "sim_aktion": {
+    "action": "mehr",
+    "do": "open",
+    "id": "diag"
+   }
+  },
+  "3.30.0": {
+   "einstellung": "dev_area"
+  },
+  "3.27.0": {
+   "einstellung": "update_mode",
+   "sim_einstellung": "update_mode"
   }
  },
  "local": [

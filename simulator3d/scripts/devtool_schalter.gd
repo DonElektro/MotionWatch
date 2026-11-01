@@ -60,6 +60,24 @@ func build(v: VBoxContainer) -> void:
 			t.toggled.connect(func(on): cc2["set"].call(on))
 			t.set_meta("ctl", c)
 			fl.add_child(t)
+		elif c.type == "select":                       # e.g. «Links zu Neuerungen» (auto | on | off)
+			var hb := HBoxContainer.new()
+			hb.add_theme_constant_override("separation", 6)
+			var lb := Label.new()
+			lb.text = T.t(str(c.label))
+			hb.add_child(lb)
+			var ob := OptionButton.new()
+			var opts: Array = c.extra.get("options", [])
+			var cur := str(c["get"].call()) if c["get"] != null else ""
+			for i in opts.size():
+				ob.add_item(T.t(str(opts[i][1])), i)
+				if str(opts[i][0]) == cur:
+					ob.select(i)
+			var cc3: Dictionary = c
+			ob.item_selected.connect(func(i): cc3["set"].call(str(opts[i][0])))
+			ob.set_meta("ctl", c)
+			hb.add_child(ob)
+			fl.add_child(hb)
 	var dg := Button.new()
 	dg.text = T.t("Diagnose-Paket (MoveEye)")
 	dg.tooltip_text = T.t("MoveEye packt Protokoll, Einstellungen ohne Passwörter und Systemwerte in ein ZIP (öffnet den Browser). Braucht ein verbundenes MoveEye.")

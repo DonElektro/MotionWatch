@@ -1981,7 +1981,9 @@ function tabOpen(v) {
   const d = document.querySelector('#settings [data-view="' + v + '"]'); if (!d) return;
   const g = d.closest(".grp") || d, tab = g.dataset.tabOf || "settings";
   if (tab !== document.body.dataset.tab) { location.href = "/" + tab + "?open=" + encodeURIComponent(v); return; }
-  d.open = true; g.open = true; for (let p = d.parentElement; p; p = p.parentElement) if (p.tagName === "DETAILS") p.open = true;   // 639c: also inside «Feineinstellungen»
+  const fold = []; for (let p = d; p; p = p.parentElement) if (p.tagName === "DETAILS") fold.unshift(p);   // 639c: also inside «Feineinstellungen»
+  fold.forEach(p => { if (p.open) return; const sm = p.querySelector(":scope > summary"); if (sm) sm.click(); else p.open = true; });   // like a click: «My view» (639o) keeps it
+  g.open = true;
   setTimeout(() => d.scrollIntoView({behavior: "smooth", block: "start"}), 50);
 }
 setTimeout(() => { const v = new URLSearchParams(location.search).get("open"); if (v) tabOpen(v); }, 1500);
@@ -3803,7 +3805,8 @@ function modePaint(s) {
       + ".prt-what{margin-top:6px}.prt-amp{margin-top:10px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.04)}.prt-amp.green{border-left:4px solid #3fcf6b}.prt-amp.orange{border-left:4px solid #f2a33a}.prt-amp.red{border-left:4px solid #e5484d}.prt-it{margin-top:6px;gap:8px;font-size:13px}"
       + ".prt-dev{margin-top:8px;font-size:13px}.prt-things{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.prt-th{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:12px;max-width:92px}.prt-th.miss span{color:#ff6b6b;font-weight:700}"
       + ".prt-img{width:84px;height:60px;border-radius:8px;background:#222 no-repeat;border:2px solid #3fcf6b}.prt-th.miss .prt-img{border-color:#e5484d}.prt-test{margin-top:8px;font-size:13px;line-height:1.6}"
-      + ".prt-wiz{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:16px}.prt-card{background:var(--card,#161b22);border-radius:16px;padding:18px;width:min(420px,100%);display:flex;flex-direction:column;gap:8px;animation:prtin .2s ease-out}.nws-card{width:min(520px,100%);max-height:86vh;overflow:auto}.nws-tag{font-size:12px;color:#f59a4a;letter-spacing:.08em;text-transform:uppercase}.nws-list{display:flex;flex-direction:column;gap:8px}.nws-it{display:flex;gap:10px;font-size:14px;line-height:1.35}.nws-it b{flex:0 0 auto;color:#3b8cff}.nws-next{font-size:13px;opacity:.85;display:flex;flex-direction:column;gap:3px}.nws-card h4{margin:6px 0 0}"
+      + ".prt-wiz{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:16px}.prt-card{background:var(--card,#161b22);border-radius:16px;padding:18px;width:min(420px,100%);display:flex;flex-direction:column;gap:8px;animation:prtin .2s ease-out}.nws-card{width:min(520px,100%);max-height:86vh;overflow:auto}.nws-tag{font-size:12px;color:#f59a4a;letter-spacing:.08em;text-transform:uppercase}.nws-list{display:flex;flex-direction:column;gap:8px}.nws-it{display:flex;gap:10px;font-size:14px;line-height:1.35}.nws-it b{flex:0 0 auto;color:#3b8cff}.nws-next{font-size:13px;opacity:.85;display:flex;flex-direction:column;gap:3px}.nws-card h4{margin:6px 0 0}.nws-it span a.nws-go{margin-left:6px;font-size:12px;white-space:nowrap;color:#3b8cff;text-decoration:none}.nws-it span em.nws-where{margin-left:6px;font-size:12px;opacity:.7;white-space:nowrap}"
+      + "@keyframes mwhl{0%,100%{box-shadow:0 0 0 0 rgba(59,140,255,0)}50%{box-shadow:0 0 0 3px rgba(59,140,255,.85)}}.mw-hl{animation:mwhl 1s ease-in-out 3;border-radius:8px;background:rgba(59,140,255,.12)}"
       + ".prt-opt{display:flex;align-items:center;gap:12px;padding:12px;font-size:15px;text-align:left}.prt-opt .ic{font-size:22px}.prt-opt.on{outline:2px solid var(--acc,#3b8cff)}@keyframes prtin{from{transform:scale(.95);opacity:0}to{transform:none;opacity:1}}";
     document.head.appendChild(c); }
   const all = M.list.concat([{id: "", icon: "⚙", name: "Own settings", info: M.own_info}]);
@@ -3930,12 +3933,16 @@ async function protectPin(has) {
   toast(r.ok ? "✓ " + (nw ? t("PIN saved") : t("PIN removed")) : "⚠ " + (r.error || t("error"))); PRT.key = "";
 }
 async function newsCheck(force) {                    // 2.96.3: after an update - what is new, what comes next
-  let r; try { r = await (await fetch("/api/news")).json(); } catch (e) { return; }
+  let r; try { r = await (await fetch("/api/news?lang=" + LANG)).json(); } catch (e) { return; }
   if (!r || !(r.show || force) || document.querySelector(".nws")) return;
   const ov = el("div", "prt-wiz nws"), c = el("div", "prt-card nws-card"); ov.appendChild(c); document.body.appendChild(ov);
   c.append(el("div", "nws-tag", "MoveEye " + r.version), el("h3", "", "✨ " + t("New in this version")));
   const its = r.items.length ? r.items : [{v: r.version, t: t("No changes noted.")}];
-  const ul = el("div", "nws-list"); its.forEach(x => { const d = el("div", "nws-it"); d.append(el("b", "", x.v), el("span", "", x.t)); ul.appendChild(d); }); c.appendChild(ul);
+  const lt = r.lt || {};
+  const ul = el("div", "nws-list"); its.forEach(x => { const d = el("div", "nws-it"), sp = el("span", "", x.t);
+    if (x.href) { const a = el("a", "nws-go", lt.go || "›"); a.href = x.href; a.onclick = e => { e.preventDefault(); close(false); newsGo(x.href); }; sp.append(" ", a); }   // Links zu Neuerungen (137)
+    else if (x.where === "sim") sp.append(" ", el("em", "nws-where", "(" + (lt.sim || "") + ")"));
+    d.append(el("b", "", x.v), sp); ul.appendChild(d); }); c.appendChild(ul);
   if (r.next && r.next.length) { c.append(el("h4", "", "🔜 " + t("Next in the makeover") + " (" + r.done + "/" + r.total + ")"));
     const nx = el("div", "nws-next"); r.next.forEach(x => nx.appendChild(el("div", "", x.n + ". " + x.t))); c.appendChild(nx); }
   const ok = el("button", "", t("OK")); ok.type = "button"; ok.style.width = "100%";
@@ -3945,6 +3952,33 @@ async function newsCheck(force) {                    // 2.96.3: after an update 
   c.append(ok, off);
 }
 setTimeout(newsCheck, 2500);
+// Links zu Neuerungen: the same page = open in place (tab, group / topic, setting marked), otherwise go there
+function newsGo(href) {
+  const u = new URL(href, location.href), here = u.pathname === location.pathname || (u.pathname === "/settings" && document.body.dataset.tab === "settings");
+  const k = u.searchParams.get("setting"), o = u.searchParams.get("open");
+  if (here && k && keyOpen(k)) return;
+  if (here && o && document.querySelector('#settings [data-view="' + o + '"]')) { tabOpen(o); return; }
+  location.href = href;
+}
+// ?setting=<setting>: open its card (also inside «Feineinstellungen»), scroll there and mark it shortly (another tab: go there)
+function keyOpen(k, again) {
+  const r = document.querySelector('#settings [data-key="' + CSS.escape(k) + '"]:not(select):not(input)') || document.querySelector('#settings [data-key="' + CSS.escape(k) + '"]');
+  if (!r) return false;
+  const row = r.closest(".row, .sl, label") || r, g = row.closest(".grp"), tab = (g && g.dataset.tabOf) || "settings";
+  if (tab !== document.body.dataset.tab) { location.href = "/" + tab + "?setting=" + encodeURIComponent(k); return true; }
+  const outer = []; for (let p = row.parentElement; p; p = p.parentElement) if (p.tagName === "DETAILS") outer.unshift(p);
+  outer.forEach(p => { if (p.open) return; const sm = p.querySelector(":scope > summary");   // like a click of the user: «My view» (639o) keeps it
+    if (sm) sm.click(); else p.open = true; });
+  row.hidden = false;
+  if (!again) { row.classList.remove("mw-hl"); void row.offsetWidth; row.classList.add("mw-hl"); }
+  setTimeout(() => row.scrollIntoView({behavior: again ? "auto" : "smooth", block: "center"}), 60);
+  if (!again) [700, 1600].forEach(ms => setTimeout(() => keyOpen(k, true), ms));   // the page may fold its parts once more while loading
+  return true;
+}
+(function () { const k = new URLSearchParams(location.search).get("setting"); if (!k) return; let n = 0;
+  const go = () => { if (keyOpen(k)) return; ++n;
+    if (n === 8 && window.MWB && document.querySelector("#settings [data-key]")) MWB.setSimple(false);   // only shown in «Experte»: switch, then mark it
+    if (n < 24) setTimeout(go, 400); }; setTimeout(go, 900); })();
 async function demoGo() {                             // 2.96.7: makeover 20
   const r = await post("/api/demo", {lang: LANG}); if (r.ok) location.href = "/kino"; else toast("⚠ " + (r.error || t("error")));
 }

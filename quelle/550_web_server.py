@@ -1838,7 +1838,8 @@ class WebStream:
                 if d.get("off"):
                     CFG["news_popup"] = False
                 news_seen(who)
-            return reply(dict(news_state(who), ok=True))
+            lg = str(request.args.get("lang") or "")[:3]
+            return reply(dict(news_state(who, lg if lg in LANGS else None), ok=True))
 
         @app.route("/api/sim_diary")
         def api_sim_diary():                                 # 2.96.1: the diary of the simulator

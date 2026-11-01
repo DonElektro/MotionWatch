@@ -107,6 +107,7 @@ func _init() -> void:
 		eq("Mehr: Reihenfolge wie MoveEye (%s)" % ",".join(order), seen, sorted_)
 		eq("Mehr: alle gemeinsamen Zeilen da", seen.has(-1), false)
 		_abgleich()
+		_neu_links(d, M)
 	if errs.is_empty():
 		print("Menütest OK (%d Gruppen im Simulator, %d gemeinsam mit MoveEye)" % [UG.sim_groups().size(), 6])
 		quit(0)
@@ -124,6 +125,7 @@ var reduce_motion := "auto"
 var tour_auto := true
 var blinki_on := true
 var news_popup := true
+var news_links := "auto"
 var start_groups := false
 var _settings_dirty := false
 var mw := {}
@@ -169,7 +171,7 @@ func _abgleich() -> void:
 	var n = load("res://scripts/net.gd").new()
 	n.abgleich = ab
 	fm.net = n
-	var mwv := {"simple": false, "icons": "plain", "lang": "fr", "motion": "on", "voice": "off", "tours": false, "blinki": false, "news": false}
+	var mwv := {"simple": false, "icons": "plain", "lang": "fr", "motion": "on", "voice": "off", "tours": false, "blinki": false, "news": false, "news_links": "off"}
 	var st := func(rev: int, took: int, v: Dictionary, extra := {}) -> Dictionary:
 		var d := {"uid": "A", "device": "MoveEye", "mw_version": str(M.VERSION), "ui": {"rev": rev, "took": took, "v": v.duplicate()}}
 		d.merge(extra, true)
@@ -184,6 +186,7 @@ func _abgleich() -> void:
 	eq("Abgleich MW->Sim Bewegung", fm.reduce_motion, "an")
 	eq("Abgleich MW->Sim Stimme", St.modus(), "aus")
 	eq("Abgleich MW->Sim Rundgang/Blinki/Neu", [fm.tour_auto, fm.blinki_on, fm.news_popup], [false, false, false])
+	eq("Abgleich MW->Sim Links zu Neuerungen", fm.news_links, "off")
 	eq("Abgleich: nichts zu senden", ab.reply().is_empty(), true)
 	eq("Zustand Wachsam", ab.level_text(), str((UG.data()["level"]["watch"]["names"] as Dictionary).get("fr")))
 	eq("Versions-Paar gleich", ab.pair()["same"], true)
@@ -248,3 +251,50 @@ func _abgleich() -> void:
 	ab.free()
 	n.free()
 	fm.free()
+
+
+# ---- Links zu Neuerungen (news.gd, ui_gemeinsam.json «neu_ziele» / «projekt_veroeffentlicht») - no picture -----------------
+func _neu_links(d: Dictionary, M) -> void:
+	var N = load("res://scripts/news.gd")
+	if typeof(d.get("projekt_veroeffentlicht")) != TYPE_BOOL:
+		errs.append("Links: «projekt_veroeffentlicht» fehlt (true / false)")
+	var zs = d.get("neu_ziele", {})
+	if typeof(zs) != TYPE_DICTIONARY or zs.is_empty():
+		errs.append("Links: «neu_ziele» fehlt")
+		return
+	var steu := FileAccess.get_file_as_string("res://scripts/main_steuerung.gd")
+	var parts := {}
+	for g in M.GROUPS:
+		parts[g[0]] = g[3]
+	for v in zs:
+		var z: Dictionary = zs[v]
+		var sm := str(z.get("sim_menue", ""))
+		if sm != "":
+			var p := sm.split("/")
+			if not parts.has(p[0]) or (p.size() > 1 and not (p[1] in parts[p[0]])):
+				errs.append("Links %s: Menü «%s» gibt es nicht (main.gd GROUPS)" % [v, sm])
+		if typeof(z.get("sim_aktion")) == TYPE_DICTIONARY:
+			if not steu.contains('a == "%s"' % str(z["sim_aktion"].get("action", ""))):
+				errs.append("Links %s: Aktion «%s» fehlt in main_steuerung.gd" % [v, z["sim_aktion"].get("action", "")])
+		var se := str(z.get("sim_einstellung", ""))
+		if se != "":
+			var found := false
+			for f in DirAccess.get_files_at("res://scripts"):
+				if f.ends_with(".gd") and FileAccess.get_file_as_string("res://scripts/" + f).contains('"%s"' % se):
+					found = true
+					break
+			if not found:
+				errs.append("Links %s: Einstellung «%s» unbekannt" % [v, se])
+	var pub: bool = bool(d.get("projekt_veroeffentlicht", false))
+	var gs := GDScript.new()
+	gs.source_code = "extends RefCounted\nvar news_links := \"auto\"\n"
+	gs.reload()
+	var m = gs.new()
+	eq("Links Standard (Projektschalter)", N.links_on(m), not pub)
+	m.news_links = "on"
+	eq("Links eigene Wahl an", N.links_on(m), true)
+	m.news_links = "off"
+	eq("Links eigene Wahl aus", N.links_on(m), false)
+	eq("Links MoveEye-Seite", N.mw_href({"einstellung": "dev_area"}), "/settings?setting=dev_area")
+	eq("Links MoveEye-Abschnitt", N.mw_href({"anker": "sec:Backup"}), "/settings?open=sec%3ABackup")
+	eq("Links MoveEye-Seite fest", N.mw_href({"seite": "/case"}), "/case")
