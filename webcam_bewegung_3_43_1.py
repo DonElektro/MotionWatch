@@ -239,7 +239,7 @@ def prepare_settings_file():
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
 ZD_FILE = "moveeye_daten_3_43_1.zip"
-ZD_SHA256 = "17c1a6c2815c909e05167114dc2a77a5b7ab7554d2100c21f49047aa3e9b675f"
+ZD_SHA256 = "1fa48631dee186f63b988c1379124756d0b5d9236bb28c860d6a0b265386ecc3"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
