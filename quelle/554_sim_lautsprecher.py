@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 554: Lautsprecher im Simulator – Sirene, Wecker-Melodie und Stimme gehen auch im Test-Postfach-Betrieb an den 3D-Simulator (der echte Lautsprecher bleibt still), eigene Töne zählen nicht für Lärm-Alarm und Klatschschalter. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Wish of Daniel (30.10.2026, «Sirene im Test-Postfach»): siren_quiet() (250) held the siren back whenever the test inbox
+# Wish of Besitzer (30.10.2026, «Sirene im Test-Postfach»): siren_quiet() (250) held the siren back whenever the test inbox
 #   takes the messages (simulation with the switch, game round, drill, demo) - so the simulator never got «sound» and its
 #   visitors never fled from the siren (help 540 promises «Licht und Sirene im Simulator»). And without a loudspeaker on the
 #   PC (out_selected() False) nothing played at all. Now:

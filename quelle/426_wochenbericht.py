@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 426: Wochenbericht der Erkennung – einmal pro Woche ein Push mit dem Trend und einem Tipp. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# 2.98.14 (Wunsch Daniel): einmal pro Woche (Einstellung Tag + Stunde, Standard Sonntag 18:00) eine Push-Nachricht: wie gut
+# 2.98.14 (Wunsch Besitzer): einmal pro Woche (Einstellung Tag + Stunde, Standard Sonntag 18:00) eine Push-Nachricht: wie gut
 # erkennt MoveEye – mit dem, was MoveEye selber hat (pruefstand/VERLAUF.md gibt es nur im Repository, nicht auf dem Pi):
 #   · die eigenen Testläufe im Simulator (310, TESTOPT["runs"]): Punkte, gefundene Personen, Fehlalarme – diese / letzte Woche
 #   · die echten Aufnahmen: wie viele, wie viele als «Fehlalarm» markiert (mit Ursache) – diese / letzte Woche

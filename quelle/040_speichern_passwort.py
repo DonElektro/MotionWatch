@@ -41,7 +41,7 @@ def pw_check(pw, stored=None):
     return ok
 
 
-# 2.98.42 (Daniel): roles = presets of rights; «custom» = own choice of rights. Old roles: «operate» → «family», «view» stays.
+# 2.98.42 (Besitzer): roles = presets of rights; «custom» = own choice of rights. Old roles: «operate» → «family», «view» stays.
 USER_ROLES = ("kid", "friend", "family", "view", "custom")
 USER_PERMS = ("live", "rec", "arm", "light", "siren", "games", "talk", "head", "settings")
 ROLE_PERMS = {"kid": ("live", "games"), "friend": ("live", "games", "talk", "light"),
@@ -456,14 +456,14 @@ def apply_settings(data):
     CFG["ui_open"] = [k for k in CFG["ui_open"] if isinstance(k, str)][:100]
     CFG["qs_layout"] = qs_layout_clean(CFG["qs_layout"])   # 2.98.29: also favourites and cards (290)
     CFG["web_ui"] = clean_web_ui(CFG["web_ui"])
-    if not CFG.get("dev_phase_done"):                  # 2.96.2: Daniel is in the development phase - fast updates on (once)
+    if not CFG.get("dev_phase_done"):                  # 2.96.2: Besitzer is in the development phase - fast updates on (once)
         CFG["dev_phase_done"] = True
         CFG["update_mode"] = "dev"                    # 3.23: was update_fast (639q)
     if not CFG.get("app_icon_moveeye_done"):          # 2.96.0: the new name MoveEye and its symbol for everybody (once)
         CFG["app_icon_moveeye_done"] = True
         CFG["app_icon_orange_done"] = True
         CFG["app_icon"] = "moveeye"
-    if not CFG.get("app_icon_orange_done"):            # 2.95.100: Daniel wants the orange MoveEye symbol everywhere (once)
+    if not CFG.get("app_icon_orange_done"):            # 2.95.100: Besitzer wants the orange MoveEye symbol everywhere (once)
         CFG["app_icon_orange_done"] = True
         if CFG.get("app_icon") in ("radar", "", None):
             CFG["app_icon"] = "classic"

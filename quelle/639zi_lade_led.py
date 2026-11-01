@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 639zi: Lade-LED an GPIO 6 (Pin 31, 330 Ω, Lichtleiter hinten): leuchtet beim Laden, blinkt langsam = Akku voll und Strom da, schnell = Akku fast leer, sonst aus; nachts / beim Akku-Sparen gedimmt oder aus wie die Status-LED; Schalter «Lade-LED» unter Strom → Akku (Experte); im Simulator im Fenster «Gerät»; Selbsttest. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Auftrag Daniel (01.11.2026), Bau-Infos hardware/gehaeuse/bau.json «ladeled»: GPIO 6 (pin 31) -> 330 Ω -> green 3 mm LED -> GND.
+# Auftrag Besitzer (01.11.2026), Bau-Infos hardware/gehaeuse/bau.json «ladeled»: GPIO 6 (pin 31) -> 330 Ω -> green 3 mm LED -> GND.
 #   * what it shows (the first that applies wins), from STATE["battery"] (100: UPS HAT (E) / INA219, 285: the simulated HAT):
 #       on    the battery charges (UPS HAT (E): state bit «charging», INA219: current into the battery)
 #       fast  the battery is almost empty - the same limit as the warning «Battery almost empty» (100: BATT_LOW_PCT_UPS on the

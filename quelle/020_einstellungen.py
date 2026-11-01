@@ -312,7 +312,7 @@ FREE_GPIOS = (23, 24, 25, 5, 6, 12, 13, 16, 26, 4, 22, 18, 19, 20, 21)
 
 def default_relays():
     """Relay 1 = the original alarm relay on GPIO 22 (switches while a person is detected, once switched to «auto»).
-    3.44.3 (variants without a relay, Daniel 01.11.2026): off from the factory - a fresh device never switches GPIO 22 into the
+    3.44.3 (variants without a relay, Besitzer 01.11.2026): off from the factory - a fresh device never switches GPIO 22 into the
     void (or into whatever else hangs there). Who has a warning lamp on it switches it to «auto» once (Settings → Relays)."""
     return [{"name": "Relay 1", "gpio": GPIO_RELAY, "mode": "off", "trigger": "person", "hold": 5.0, "active_low": False}]
 

@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 539a: Bergtal · Horror-Modus des 3D-Simulators – seine «Aufnahmen» kommen in den Verlauf (Nachrichten, als Test). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Wunsch Daniel (31.10.2026): der Horror-Modus «Das Hospiz» des 3D-Simulators (simulator3d/scripts/bergtal_horror.gd) wird
+# Wunsch Besitzer (31.10.2026): der Horror-Modus «Das Hospiz» des 3D-Simulators (simulator3d/scripts/bergtal_horror.gd) wird
 # über seltsame MoveEye-Aufnahmen erzählt, die man am Morgen in MoveEyes Verlauf findet. Der Simulator schickt die neuen
 # Aufnahmen in world_reply «horror» (Liste: id, t, night, time, title, text - schon in der Sprache des Simulators), das Bild
 # (links Kamerabild, rechts Wärmebild) holt MoveEye über /horror_pic/<id>.jpg. Jede Aufnahme wird ein Eintrag im Verlauf →

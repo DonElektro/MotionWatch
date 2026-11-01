@@ -16,7 +16,7 @@
 #      greift oft schon früher - dann ist es sofort eine Person.
 # Kurzer Push-Text: Notifier.info mit Titel «{name}: Something big at the ground»; im Push-Format von 3.1.0 (635b push_short)
 # steht der Titel in PK_TITLES (eingetragen in 639x): «⚠ Etwas Grosses am Boden», eine Zeile «ca. 5 m, ca. 1.2 m lang – …», Bild.
-# Abgrenzung zu Tieren (Daniel: Igel und Fuchs sind kleiner und wärmer):
+# Abgrenzung zu Tieren (Besitzer: Igel und Fuchs sind kleiner und wärmer):
 #   - KLEINER ist das sichere Merkmal, darum die Länge: Igel 0.2-0.3 m, Katze ~0.45 m, Marder ~0.5 m, Feldhase ~0.55 m,
 #     Dachs ~0.75 m, Fuchs Kopf-Rumpf 0.6-0.9 m (Wildtier Schweiz; Körperlängen auch in simulator3d/scripts/waerme.gd ANIMALS);
 #     eine kriechende / robbende Person ist 1.2 m (auf Knien) bis 1.9 m (flach mit Armen vorne) lang -> CRAWL_MIN_LEN_M 1.0.
@@ -29,7 +29,7 @@
 #   - Reh / Wildschwein (0.95-1.35 m) sind so lang wie eine kriechende Person: sie bekommen den Voralarm («im Zweifel
 #     Person», es ist nur eine Info), aber KEIN «Person?»: ein stehendes Reh ist mit Kopf 0.9-1.1 m hoch, ein Wildschwein
 #     0.8-0.95 m (Schulter 0.55-1.0 m) - über CRAWL_ESC_TOP_M 0.85; eine robbende Person ist 0.3-0.5 m hoch, auf Knien ~0.75 m.
-#     Rest-Risiko: ein äsendes Reh (Kopf unten, Rücken ~0.75 m) 6 s nahe am Zelt - dann «Person?» (Daniel: im Zweifel Person).
+#     Rest-Risiko: ein äsendes Reh (Kopf unten, Rücken ~0.75 m) 6 s nahe am Zelt - dann «Person?» (Besitzer: im Zweifel Person).
 #   - sieht die KI dort ein Tier (dog, sheep, cat, horse, cow, bird, animal), gibt es kein «Person?» (nur den Voralarm).
 # Gegenprobe Wind (leerer Wald): ohne warmen Körper nichts (Äste sind im Wärmebild Lufttemperatur) - ohne Wärmebild-Kamera
 # ist die Regel aus. Tags gilt sie nicht (Tags sieht die KI liegende Menschen besser, und Sonne wärmt den Boden).

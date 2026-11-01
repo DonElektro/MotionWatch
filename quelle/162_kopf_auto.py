@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 162: Automatische Kopfbewegung (wer bewegt den Kopf: Hand > Alarm/Folgen > Gehtest > Wertsachen-Blick > Runde > Parken), kluge Runde, zum Alarm drehen, Parken bei «Aus», Wertsachen-Blick, sparsam bei Akku / tiefer Nacht, Wildtier-Modus, Abdeckung / Verdrehen prüfen, 360°-Servos. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# 2.98.30 (Wunsch Daniel): the pan / tilt head moves by itself - but always only ONE mover at a time. Who may move it:
+# 2.98.30 (Wunsch Besitzer): the pan / tilt head moves by itself - but always only ONE mover at a time. Who may move it:
 #   1. by hand (joystick, buttons, reference scan, timelapse, wake-up alarm - servo_hold())
 #   2. alarm / follow (410 follows a person or movement; «turn to the alarm» in Voll; the sabotage look-around)
 #   3. walk test (the head follows the walker, 415)
@@ -161,7 +161,7 @@ def light_alarm():                                   # wildlife: the light stays
 
 
 def kopf_game_hand():
-    """aufr (decision Daniel): a round of «Team gegen MoveEye» runs in the simulator (countdown / play) - the players at
+    """aufr (decision Besitzer): a round of «Team gegen MoveEye» runs in the simulator (countdown / play) - the players at
     MoveEye steer the head, so MoveEye does not follow and moves the head by itself only after the round (nothing is
     switched off: «Folgen» is on again by itself afterwards). From the game state of the simulator (SIMGAME, 340)."""
     if not CFG.get("sim_on"):
@@ -243,7 +243,7 @@ def kopf_move(pan, tilt, who, speed=None, stop=None):
 # ---- the round (called by the patrol, part 160) ----------------------------------------------------------------------
 def kopf_patrol_plan():
     """(stops, why): what the patrol drives now. [] = it does not run (why = the status).
-    aufr (decision Daniel): the round runs only when «Patrouille» is on - «kluge Runde» (kopf_round) only chooses the stops
+    aufr (decision Besitzer): the round runs only when «Patrouille» is on - «kluge Runde» (kopf_round) only chooses the stops
     (places of «Platz einrichten», longer at the tent); without «Patrouille» the head stays at its home position."""
     if not CFG["patrol"]:
         return [], "off"

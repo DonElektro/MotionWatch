@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 395: Code-Pflege im Selbsttest – fehlende Übersetzungen (fr / it / rm), alte Einstellungen nur zum Übernehmen (MIGRATE_ONLY). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# 2.98.18 (Wunsch Daniel, Code-Pflege):
+# 2.98.18 (Wunsch Besitzer, Code-Pflege):
 #   - Übersetzungen: welche sichtbaren Texte (tr() / trf() im Programm, t() und data-i18n in den Webseiten, die Beschriftungen
 #     der Einstellungen) haben auf Französisch / Italienisch / Romanisch noch keine Übersetzung? Nur eine Warnung im Selbsttest
 #     (Anzahl + die ersten 20), kein Fehler: es erscheint dann Englisch (fr / it) bzw. Deutsch (rm).

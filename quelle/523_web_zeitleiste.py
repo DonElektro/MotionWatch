@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 523: Web-Seite «Zeitleiste» (Reiter Verlauf) – eine Nacht auf einer Zeitachse, dazu der Wochenbericht. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# 2.98.14 (Wunsch Daniel): «Zeitleiste der Nacht». Handy zuerst (390 px): oben Tag wählen (◀ ▶, Kalender, Nacht / Tag),
+# 2.98.14 (Wunsch Besitzer): «Zeitleiste der Nacht». Handy zuerst (390 px): oben Tag wählen (◀ ▶, Kalender, Nacht / Tag),
 # Zusammenfassung, ein Streifen mit Akku-, Temperatur- und Regenkurve und allen Ereignissen als Striche (antippen = dorthin
 # springen), darunter die Liste nach Stunden. Ein Eintrag antippen öffnet ihn (Video / Bild / Tagebuch-Bild / Nachricht),
 # mit Knopf zur ausführlichen Seite. Unten die Karte «Wochenbericht» (426). Daten: /api/timeline (425), /api/weekreport.

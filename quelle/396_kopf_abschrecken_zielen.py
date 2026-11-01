@@ -113,7 +113,7 @@ def kopf_deter_selftest():
             assert not kopf_deter_aim("test"), "at most once in 20 s"
         STATE["tracking"] = True; KOPF["aim_t"] = 0.0
         assert not kopf_deter_aim("test"), "following holds the person already"
-        # aufr (decision Daniel): a round «Team gegen MoveEye» - no following, no automatic move; afterwards everything again
+        # aufr (decision Besitzer): a round «Team gegen MoveEye» - no following, no automatic move; afterwards everything again
         sg, sim0, gw = globals()["sim_game"], CFG.get("sim_on"), KOPF.get("game_was", False)
         try:
             CFG["sim_on"] = True

@@ -1,7 +1,7 @@
 {
  "_hinweis": "Erzeugt von werkzeuge/gehaeuse_bauen.py aus hardware/gehaeuse/ – nicht von Hand ändern. Koordinaten: Meter, Ursprung Kippachse (main.head_pitch), Godot X = Modell y, Y = z, Z = x (vorne = −Z).",
  "version": "5.1",
- "quelle_sha256": "81709b43fce1455112e48a95811842311eeac19a42f43e3395c54739c3291a81",
+ "quelle_sha256": "d5e568df0a5aad6c0c0f7b8892664c33a9cc11bc56e907dd08045051cd783345",
  "dateien": {
   "gehaeuse.glb": "0488ae6094f140e0fabed2d986efa1f5eac2b0b72847f8dd8fe8a94b0d76ffe1",
   "gehaeuse_lite.glb": "ceee55b37a35891a2a8746f76a0a18fcc5b0a3c4eafb278d7f4b0c15addba61f"

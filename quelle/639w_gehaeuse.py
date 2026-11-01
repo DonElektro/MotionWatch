@@ -1,10 +1,10 @@
 #@ MoveEye – Teil 639w: Seite «Bauen» (/build, Mehr → Bauen; früher «Gehäuse & Bau» /case, leitet weiter): MoveEye komplett selbst bauen – 10 Reiter Übersicht · Teile · Einkauf · Drucken · Montage · Verkabeln · Software · Inbetriebnahme · Fehlersuche · Wartung, 3D-Werkstatt im Browser (three.js lokal, ohne Simulator), Varianten, «Mein Bau» pro Benutzer (/api/bau), Druckdateien (/build/datei, alle als ZIP), Knopf «Im Simulator ansehen» nur mit verbundenem Simulator; Eintrag im Fenster (Reiter Mehr); Selbsttest: Modelle = Quelle, Bau-Infos aktuell (Warnung). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Paket «real-gehaeuse» (01.11.2026), ausgebaut im Paket «real-bauen» (01.11.2026, Daniel: «ein Bediener kann MoveEye komplett
+# Paket «real-gehaeuse» (01.11.2026), ausgebaut im Paket «real-bauen» (01.11.2026, Besitzer: «ein Bediener kann MoveEye komplett
 # selbst bauen»). Eine Quelle: hardware/gehaeuse/bau.json (Teile, Materialliste mit Preis-Schätzung und Händler-Suche, Montage,
 # Drucken, Werkzeug, Sicherheit, Verkabeln, Software, Inbetriebnahme, Fehlersuche, Wartung, Varianten – 5 Sprachen).
 # werkzeuge/gehaeuse_bauen.py --texte macht daraus 639v (GEH_BAU, Texte), 639vb (three.js r160 + gehaeuse.glb, gepackt) und die
-# Daten des Simulators (werkstatt_daten.gd). Daniel (01.11.2026): die 3D-Werkstatt in MoveEye geht OHNE Simulator – MoveEye
+# Daten des Simulators (werkstatt_daten.gd). Besitzer (01.11.2026): die 3D-Werkstatt in MoveEye geht OHNE Simulator – MoveEye
 # liefert three.js, das Modell und die Daten selbst aus (auch offline); «Im Simulator ansehen» ist nur ein Zusatz.
 #   * /build: Seite (Reiter Mehr «Bauen»), Reiter über #uebersicht … #wartung; /case leitet auf /build weiter (alte Links).
 #   * /bau3d/<pfad>: three.js (gzip), /build/gehaeuse.glb: das Modell (gzip), /build/qr.svg: QR-Code zu dieser MoveEye-Seite.
@@ -15,7 +15,7 @@
 #   * /api/case: GET = ob der Simulator verbunden ist; POST {do: "sim", step?} -> Simulator /control werkstatt (wie bisher).
 #   * Mehr (525) und das Fenster (572 _tk_more_bar): ein Eintrag «Bauen». Gemeinsame Menü-Datei: «more» -> build
 #     (simulator3d/ui_gemeinsam.json; im Simulator heisst derselbe Eintrag «Bauen», mehr.gd, Fenster werkstatt.gd mit denselben Reitern).
-#   * «Fertig kaufen» (Daniel 01.11.2026, Teil 639zj): schmaler Hinweis ganz oben (#g-fertig), Paket wählen, «Fertig bestellen
+#   * «Fertig kaufen» (Besitzer 01.11.2026, Teil 639zj): schmaler Hinweis ganz oben (#g-fertig), Paket wählen, «Fertig bestellen
 #     (Anfrage)» öffnet die Rückmeldung (584 mwOrder) mit Art «Bestellung fertiges Gerät» und dem Paket.
 # Hier (nach 639p) weil render_page, sim_control, MORE_PAGE, smalltv_routes (639n), UI_GEMEINSAM (639p) vorher kommen.
 # ----------------------------------------------------------------------------
@@ -130,7 +130,7 @@ details summary{cursor:pointer;font-weight:600;padding:6px 0}
       <div class="noprint" id="g-simbox" style="display:none;margin-top:8px"><button type="button" class="sec" onclick="gSim(0)">🧊 <span data-i18n="View in the simulator">View in the simulator</span></button><div id="g-msg" class="mut"></div></div></div>
     <div class="gc"><div class="sum" id="g-sum"></div></div>
     <div class="gc warn"><b>⚠ <span data-i18n="Measure first: UPS HAT (E) with its cells (assumed 90 × 80 × 26 mm) before printing the lower part.">Measure first: UPS HAT (E) with its cells (assumed 90 × 80 × 26 mm) before printing the lower part.</span></b></div>
-    <div class="gc mut" data-i18n="Own work of Daniel (DonElektro) – parametric Python model.">Own work of Daniel (DonElektro) – parametric Python model.</div>
+    <div class="gc mut" data-i18n="Own work of Elektro – parametric Python model.">Own work of Elektro – parametric Python model.</div>
   </section>
   <section class="pane" id="p-teile"><div class="gc"><h2 data-i18n="Parts list">Parts list</h2><table class="gb" id="g-bom"></table></div></section>
   <section class="pane" id="p-einkauf"><div class="gc">

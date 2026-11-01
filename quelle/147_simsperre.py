@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 147: Eine Sperre für Simulator-Aufgaben mit dem Simulator zusammen; blinde Flecken, die im Simulator gestartet wurden. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# 2.98.13 (Daniel, 29.10.2026): MoveEye had simtask_busy (141), the simulator busy_with (main.gd). Now they know each other:
+# 2.98.13 (Besitzer, 29.10.2026): MoveEye had simtask_busy (141), the simulator busy_with (main.gd). Now they know each other:
 #  * MoveEye asks the simulator every 3 s ({"action": "busy"} -> busy_with("")). A test run, the test bench, training
 #    pictures, blind spots … started in the simulator window lock MoveEye's own starts with the same message
 #    «The simulator is busy: …» (simtask_busy in 141 asks sim_busy_remote()).

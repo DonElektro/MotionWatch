@@ -996,7 +996,7 @@ class App:
         return tk.Frame(parent, bg=C["panel"], highlightthickness=1, highlightbackground=C["line"], padx=12, pady=10)
 
     def _tk_live_land(self, w=None, h=None):
-        """2.98.26: wide, low window (like Daniel's PC): the controls go right of the live picture instead of under it."""
+        """2.98.26: wide, low window (like the owner's PC): the controls go right of the live picture instead of under it."""
         try:
             w = w or self.root.winfo_width(); h = h or self.root.winfo_height()
             if w < 50 or h < 50:
@@ -1175,7 +1175,7 @@ class App:
             self.tab_btns[tid] = b
         self._paint_tabs()
         if show("hdr_buttons"):
-            # 639t (Daniel 01.11.2026): the one header - ? · ♪ · ↻ · DE · ☰ · ⇱ · ▲ · ⚒ in this order like on every web page and in
+            # 639t (Besitzer 01.11.2026): the one header - ? · ♪ · ↻ · DE · ☰ · ⇱ · ▲ · ⚒ in this order like on every web page and in
             # the simulator; ✉ messages, ◷ timeline, ? manual and ◐ light / dark / red light are in ☰ (nothing gone)
             self._kopf_tk(top)
         keys = [k for k in badge_keys if show(k)] if not getattr(self, "_kopf_folded", False) else []   # 639t: ▲ folded = one line

@@ -1,6 +1,6 @@
-#@ MoveEye – Teil 635b: Kurze Push-Nachrichten (Paket «Handy-Mitteilungen kurz», Daniel 31.10.2026): ein Aufbau für alle Meldungen (Titel kurz mit Symbol, höchstens eine Zeile Text, Bild wo sinnvoll, nie JSON), im Simulator-Betrieb nur Alarme aufs Handy (Schalter «Im Simulator: Info-Meldungen aufs Handy», ab Werk aus), ntfy-Adresse in der Webhook-Karte geht als ntfy. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
+#@ MoveEye – Teil 635b: Kurze Push-Nachrichten (Paket «Handy-Mitteilungen kurz», Besitzer 31.10.2026): ein Aufbau für alle Meldungen (Titel kurz mit Symbol, höchstens eine Zeile Text, Bild wo sinnvoll, nie JSON), im Simulator-Betrieb nur Alarme aufs Handy (Schalter «Im Simulator: Info-Meldungen aufs Handy», ab Werk aus), ntfy-Adresse in der Webhook-Karte geht als ntfy. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Fehler (Screenshot Daniel, Simulator-Betrieb): Info-Meldungen («Tasten am Gerät», «Netzwerk») kamen mit dem rohen JSON als
+# Fehler (Screenshot Besitzer, Simulator-Betrieb): Info-Meldungen («Tasten am Gerät», «Netzwerk») kamen mit dem rohen JSON als
 # Text aufs Handy ({"event": "info", … "info_title": "{name}: Tasten am Gerät" …}, ä sichtbar). Ursache: der Hauptkanal
 # stand auf «Webhook» mit einer ntfy-Adresse - der Webhook schickt den JSON-Körper (json.dumps, ASCII-Escapes, info_title roh)
 # und nur den Titel als Kopfzeile; ntfy zeigt den Körper als Nachricht. Jetzt:
@@ -286,7 +286,7 @@ def push_show_name():
 
 
 def push_long(p):
-    """the full text for the e-mail (Daniel 31.10.2026: e-mail complete, the phone channels short): the text of the call
+    """the full text for the e-mail (Besitzer 31.10.2026: e-mail complete, the phone channels short): the text of the call
     site / the message text with time and camera, the distance, «+n», «late»"""
     ev = Notifier._event(p)
     if ev in ("info", "tamper"):

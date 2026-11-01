@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 074: Servo-Selbstdiagnose wie bei einer Robotersteuerung: Fehlerspeicher, Betriebsstunden, gefahrene Grad und Bewegungen pro Achse, Wartungshinweise, Export. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# 2.98.35 (Wunsch Daniel): the planner (072) counts per axis: degrees travelled, seconds moving, number of moves; the servo
+# 2.98.35 (Wunsch Besitzer): the planner (072) counts per axis: degrees travelled, seconds moving, number of moves; the servo
 #   loop counts the operating time. Real servos («hw») and the simulation («sim») are counted apart - the maintenance
 #   hints only use the real ones. Fault memory (Fehlerspeicher): I2C errors, the PCA9685 lost its settings (brown-out),
 #   no driver, limit hits, under-voltage, temperature, throttling, watchdog, Not-Aus / release - the same code within

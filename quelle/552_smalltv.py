@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 552: Zusatz-Bildschirm GeekMagic SmallTV Ultra (Status, Alarmbild, Spiel-Anzeige, Nacht dunkel + rot, mehrere Bildschirme, Suche im Netz, virtueller SmallTV des Simulators). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Plan Daniel 30.10.2026 (docs/SmallTV_Anzeige_Plan.md). Gerät: GeekMagic SmallTV Ultra, Firmware Ultra-V9.0.40, 240×240,
+# Plan Besitzer 30.10.2026 (docs/SmallTV_Anzeige_Plan.md). Gerät: GeekMagic SmallTV Ultra, Firmware Ultra-V9.0.40, 240×240,
 # ESP8266, HTTP ohne Passwort. Was MoveEye zeigt (pro Bildschirm wählbar):
 #   status  Zustand Aus / Wachsam / Voll, Akku (auch der 🧪 simulierte), letzte Meldung, «Stand» (Uhrzeit)
 #   alarm   Bildausschnitt mit «Fuchs · 91 % · 6 m» (Tiere); Personen: Standard nur Symbol + Text, Schalter «Bild auch bei
@@ -18,7 +18,7 @@
 STV_CFG = {"stv_on": True, "stv_list": [], "stv_sim": {"on": True, "status": True, "alarm": True, "game": True, "brt": 60, "rot": True},
            "stv_person_pic": False, "stv_animals": True, "stv_night": True, "stv_night_brt": 10, "stv_alarm_s": 60,
            "stv_bright_s": 20, "stv_gap_s": 5, "stv_clock_min": 10, "stv_alarm_keep_min": 5}
-# 30.10.2026 Abend (Daniel): per display «Live-Bild und Wechsel» («rot»): by day live picture <-> battery page every 30 s,
+# 30.10.2026 Abend (Besitzer): per display «Live-Bild und Wechsel» («rot»): by day live picture <-> battery page every 30 s,
 # alarm as animated GIF (me_a.gif / me_b.gif) 60 s, then the still picture 5 min (553). Off = the status page as before.
 # Saved displays without «rot» stay off (no surprise), a newly added display has it on (stv_edit «add»).
 for _k, _v in STV_CFG.items():
@@ -625,7 +625,7 @@ def stv_level_name(lang=None):
 
 
 def _stv_simtimes(text, now):
-    """2.98.48 (Daniel): with the simulator the times in a message text are shown in the simulator's time too («erkannt um 13:04:40»)"""
+    """2.98.48 (Besitzer): with the simulator the times in a message text are shown in the simulator's time too («erkannt um 13:04:40»)"""
     if not (CFG.get("sim_on") and simval_live()):
         return text
     delta = now - datetime.now()
@@ -846,7 +846,7 @@ def stv_plan(e, now=None):
     g = STV["game"]
     playing = bool(e.get("game") and g and now - STV["game_t"] < 10 and g.get("round") in ("countdown", "play"))
     if e.get("alarm") and alarm_on and not playing:        # in a round the players are the persons: the game shows «Erwischt!»
-        if now - a["t"] < gif_s:                           # 553: first the animation (GIF) - on every display (Daniel 30.10.), with rotation then the still picture
+        if now - a["t"] < gif_s:                           # 553: first the animation (GIF) - on every display (Besitzer 30.10.), with rotation then the still picture
             key = ("alarmgif", a["t"], red, lang)
             return "gif", key, lambda: stv_render_alarm_gif(a, lang, red), brt, True
         key = ("alarm", a["t"], red, lang, rot)

@@ -1134,7 +1134,7 @@ def self_test(folder=""):
                 bad.append("bridge " + UPD_BRIDGE + " missing")
             assert not bad, f"bad checksum / signature: {bad}"
             return f"{len(m.get('versions', []))} versions signed and checked"
-        if os.environ.get("MW_SELFTEST_NO_SIG"):         # 2.98.50 (Daniel): work branches are not signed yet - GitHub checks it only on main
+        if os.environ.get("MW_SELFTEST_NO_SIG"):         # 2.98.50 (Besitzer): work branches are not signed yet - GitHub checks it only on main
             chk("versions.json signatures", lambda: "skipped (MW_SELFTEST_NO_SIG: work branch, signed only at the release)")
         else:
             chk("versions.json signatures", manifest)

@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 285: Simulator-Werte (Akku, Uhrzeit, Ort, Wetter, Pi-Wärme, Netz-Ausfall) aus dem 3D-Simulator statt vom Pi. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Wish of Daniel (30.10.2026): while MoveEye is connected to the 3D simulator, the «hardware» readings come from the
+# Wish of Besitzer (30.10.2026): while MoveEye is connected to the 3D simulator, the «hardware» readings come from the
 # simulated world, not from the Pi. Before (kept): solar panel, GPS (+ theft), outside temperature / pressure / wind (storm),
 # sound, thermal camera, head position, door / PIR / gas / bike sensors, darkness. New here (the simulator sends them in its
 # answer to /state, simulator3d/scripts/power.gd -> SIM, taken in 350 SimLink.tick -> simvals_take):

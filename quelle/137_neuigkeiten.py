@@ -1,11 +1,11 @@
 #@ MoveEye – Teil 137: «Neu in dieser Version» – kurze Info nach jedem Update (Webseite und Fenster). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# 2.96.3 (Wunsch Daniel, während dem grossen Makeover): nach jedem Update erscheint am PC einmal eine kurze Info - was neu ist
+# 2.96.3 (Wunsch Besitzer, während dem grossen Makeover): nach jedem Update erscheint am PC einmal eine kurze Info - was neu ist
 # (aus der Änderungsliste am Dateianfang, alle Versionen seit der zuletzt gesehenen) und was als Nächstes kommt
 # (MAKEOVER_NEXT, wird bei jeder Makeover-Version nachgeführt). Web und Fenster merken sich getrennt, was gesehen wurde
 # (news_seen_web / news_seen_tk). Abschaltbar mit «news_popup».
 # ----------------------------------------------------------------------------
-# the makeover list (Daniel, 28.10.2026): number, title - what is still to come (done ones are taken out)
+# the makeover list (Besitzer, 28.10.2026): number, title - what is still to come (done ones are taken out)
 MAKEOVER_ALL = [
     (1, "Ein gemeinsames Erscheinungsbild (Web, Fenster, Simulator)"), (2, "Simulations-Modus sichtbar (oranger Streifen «SIMULATION»)"),
     (3, "Startseite mit Simulator-Kachel"), (4, "Kachel-Steuerung des Simulators auf dem Handy"), (5, "Kino-Modus (Vollbild für TV / Beamer)"),
@@ -46,7 +46,7 @@ def news_next(n=5):
     return [{"n": k, "t": t} for k, t in MAKEOVER_ALL if k not in MAKEOVER_DONE][:n]
 
 
-# ---- Links zu Neuerungen (Wunsch Daniel, 01.11.2026) ------------------------------------------------------------------------
+# ---- Links zu Neuerungen (Wunsch Besitzer, 01.11.2026) ------------------------------------------------------------------------
 # Bei jeder Neuerung ein kleiner Link, der direkt zur Funktion springt. Die Ziele stehen für beide Programme in
 # simulator3d/ui_gemeinsam.json «neu_ziele» (Version -> {seite, anker, einstellung, sim_einstellung, sim_menue, sim_aktion}).
 # Schalter «Links zu Neuerungen» (news_links auto | on | off, Entwickler-Bereich, Teil 639zc, mit dem Simulator geteilt);

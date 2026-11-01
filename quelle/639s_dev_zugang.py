@@ -1,5 +1,5 @@
 #@ MoveEye – Teil 639s: schneller Zugang zum Entwickler-Bereich – langer Druck (etwa 0,8 s) aufs MoveEye-Logo. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
-# Daniel (1.11.2026, Wahl 2): «schneller Zugriff auf die Entwickler-Werkzeuge, von möglichst überall».
+# Besitzer (1.11.2026, Wahl 2): «schneller Zugriff auf die Entwickler-Werkzeuge, von möglichst überall».
 #   * Web: auf jeder Seite mit Kopfzeile (über render_page) - langer Druck aufs Logo (header h1) öffnet Einstellungen → Entwickler
 #     (/settings?open=grp:dev, auf der Hauptseite direkt tabOpen). Ist die ganze Kopfzeile ausgeblendet (▴), wirkt der Griff ▾
 #     (#hdr-show) gleich. Rückmeldung: das Logo pulsiert während des Haltens, kurzes Vibrieren (navigator.vibrate) beim Auslösen.

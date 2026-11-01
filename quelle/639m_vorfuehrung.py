@@ -1,4 +1,4 @@
-#@ MoveEye – Teil 639m: Vorführung «Maggie und der Bergkristall» (Daniel 31.10.2026) – live im Browser: Vollbild-Ansicht /sim/vorfuehrung ohne Bedienelemente (Bild des Simulators, Pause / Weiter / Kapitel / Beenden, am Handy tauglich), Start Kurzfassung / ganz; nur der Besitzer; Einstieg über Entwickler (Web, Fenster) und die Karte «Entwickler» der Simulator-Seite. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
+#@ MoveEye – Teil 639m: Vorführung «Maggie und der Bergkristall» (Besitzer 31.10.2026) – live im Browser: Vollbild-Ansicht /sim/vorfuehrung ohne Bedienelemente (Bild des Simulators, Pause / Weiter / Kapitel / Beenden, am Handy tauglich), Start Kurzfassung / ganz; nur der Besitzer; Einstieg über Entwickler (Web, Fenster) und die Karte «Entwickler» der Simulator-Seite. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
 # Der 3D-Simulator spielt die Geschichte selbst (simulator3d/scripts/maggie_vorfuehrung.gd, Autopilot + Film-Kamera,
 # eigener Vorführ-Spielstand). Hier nur das Zuschauen:

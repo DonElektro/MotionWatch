@@ -1,4 +1,4 @@
-#@ MoveEye – Teil 558: eine Feldliste MoveEye ↔ 3D-Simulator (simulator3d/schnittstelle.json) und ihre Prüfung im Selbsttest (Aufräumen 2, Daniel 30.10.2026). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
+#@ MoveEye – Teil 558: eine Feldliste MoveEye ↔ 3D-Simulator (simulator3d/schnittstelle.json) und ihre Prüfung im Selbsttest (Aufräumen 2, Besitzer 30.10.2026). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
 # Die Liste simulator3d/schnittstelle.json nennt jedes Feld, das die beiden austauschen: die Antwort des Simulators auf
 # /state («world_reply», main.gd + power.gd + net.gd), den Zustand von MoveEye («state», sim_state 290 + Hüllen), /info

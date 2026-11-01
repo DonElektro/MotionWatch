@@ -1,4 +1,4 @@
-#@ MoveEye – Teil 559: «In 3D nachspielen» (Alarm-Rückblick im 3D-Simulator) auch aus der Zeitleiste und den Aufnahmen, ein Knopf-Aussehen überall (Aufräumen 2, Daniel 30.10.2026). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
+#@ MoveEye – Teil 559: «In 3D nachspielen» (Alarm-Rückblick im 3D-Simulator) auch aus der Zeitleiste und den Aufnahmen, ein Knopf-Aussehen überall (Aufräumen 2, Besitzer 30.10.2026). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
 # Bisher gab es den Alarm-Rückblick in 3D (180 ALARM_TRACKS, /api/sim «replay», 550) nur auf der Simulator-Seite /sim (Reiter
 # Simulator → Werkzeuge: Auswahl der letzten Alarme). Jetzt zeigt jede Aufnahme und jeder Alarm der Zeitleiste, zu dem

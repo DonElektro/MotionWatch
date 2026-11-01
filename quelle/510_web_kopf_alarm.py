@@ -305,7 +305,7 @@ HEADER_JS = r"""
   const tx = s => (LANG === "de" && TX[s]) || (window.LX ? LX(s) : "") || (LANG === "rm" && TX[s]) || s;
   const app = (window.matchMedia && matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true;
   document.body.classList.toggle("appmode", app);
-  {                                   // 639t (Daniel 01.11.2026): ↻ is one of the fixed header buttons - on every page, not only in app mode
+  {                                   // 639t (Elektro 01.11.2026): ↻ is one of the fixed header buttons - on every page, not only in app mode
     const b = el("button", "sec ic"); b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg>'; b.type = "button"; b.id = "btn-reload";
     // reload: first ask the Pi to look for a new version (max. 8 s), then open Live and load it again - the update bar shows it
     b.onclick = async () => {
@@ -314,7 +314,7 @@ HEADER_JS = r"""
       try { await fetch("/api/update", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({action: "check", lang: LANG}),
                                        signal: ac ? ac.signal : undefined, cache: "no-store"}); } catch (e) {}
       clearTimeout(to);
-      // Daniel (1.11.2026): ↻ goes to the page Live first, then loads it again - on every page
+      // Elektro (1.11.2026): ↻ goes to the page Live first, then loads it again - on every page
       if (location.pathname === "/" && !location.search && !location.hash) location.reload(); else location.assign("/");
     };
     const ctl = H.querySelector(".hdr-ctl"); (ctl || H).insertBefore(b, ctl ? ctl.firstChild : null);

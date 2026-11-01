@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 586: Guide 2 – ein System für Einrichtung (schnell / ausgiebig), Rundgänge, Einfach/Experte pro Seite, Tipps & Tricks, «?» bei Einstellungen, Tipp des Tages und «Auf Werkseinstellungen zurücksetzen». Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Wish of Daniel (29.10.2026, Konzept-Check «one system»): the setup assistant (/api/setup, before: 4 steps), the first-open
+# Wish of Besitzer (29.10.2026, Konzept-Check «one system»): the setup assistant (/api/setup, before: 4 steps), the first-open
 # explanations (515), Simple / Expert, «Platz einrichten» (317), the walk test (415), the protection assistant (135) and
 # the push test are ONE guide now:
 #   * guide after (re)install: «Quick (about 5 min) or thorough?» - quick = basics, push, camera + place, protection +
@@ -365,7 +365,7 @@ FACTORY_KEEP = {
     # paths, the language of the page and internal markers (otherwise old migrations / news would run again)
     "record_dir", "storage_path", "lang", "sim_autostart_v2", "dev_phase_done", "app_icon_moveeye_done", "app_icon_orange_done",
     "news_seen_web", "news_seen_tk", "weekcheck_last", "weekrep_last", "report_last_day",
-    # updates (Daniel, development phase: the fast test updates must keep working after a reset)
+    # updates (Besitzer, development phase: the fast test updates must keep working after a reset)
     "update_mode", "update_url", "update_token", "update_unsigned", "update_unsigned_t", "update_hour", "update_push", "update_notified",
 }
 FACTORY_WORD = "ZURÜCKSETZEN"

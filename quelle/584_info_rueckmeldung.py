@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 584: Rückmeldung von überall (💬 auf jeder Seite, Fenster, Simulator; Art, Sterne, Bildschirmfoto) und «Über MoveEye» (Geschichte, Entwickler, Zeitleiste, Zahlen). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# 2.98.33 (Wunsch Daniel):
+# 2.98.33 (Wunsch Besitzer):
 #   A) Rückmeldung an den Entwickler von überall: ein dezentes 💬 im Kopf jeder Webseite (ein Dialog für alle Seiten, hier
 #      im Skript /fbx/ui.js), im Fenster (💬 im Kopf, Reiter Mehr, Einstellungen) und im 3D-Simulator (Knopf → mw_cmd
 #      «feedback», 350). Art Fehler / Wunsch / Lob / Frage, «Wie zufrieden?» 1–5 Sterne, Version und Seite immer dabei,
@@ -9,7 +9,7 @@
 #      FB_SHOT_MAX. Gesendet wird wie bisher von feedback_send / feedback_flush (370): Text als ntfy-Nachricht, das Bild als
 #      zweite Nachricht mit Anhang (PUT, wie die Alarm-Pushes mit Bild).
 #   B) «Über MoveEye»: Antippen der Versionsnummer neben dem Logo (Web und Fenster; ein einzelnes Tippen – 7× schnell
-#      bleibt für die kleine Überraschung) und «Über MoveEye» unten in Mehr. Geschichte, Entwickler «Daniel alias Elektro»,
+#      bleibt für die kleine Überraschung) und «Über MoveEye» unten in Mehr. Geschichte, Entwickler «Elektro»,
 #      Zeitleiste, Zahlen (zur Laufzeit gezählt), aufklappbar «Für Technik-Interessierte». Texte: 622.
 # ----------------------------------------------------------------------------
 INFO_PARTS = 264                       # number of parts in quelle/ (written by werkzeuge/bauen.py --neue-version)
@@ -37,7 +37,7 @@ INFO_TIMELINE = [
 ]
 INFO_STORY = [
     "MoveEye was born while camping, from a simple question: who keeps an eye on the tent while we sleep or are away? Instead of an expensive alarm system Elektro wanted something of his own - a small camera on a pan / tilt head that recognises wild animals and persons and quietly reports to the phone.",
-    "The developer is Elektro (alias Daniel) from Switzerland. Elektro is a robotics developer by profession - but MoveEye was honestly built together with Claude, an AI by Anthropic. Elektro brings the ideas, the wishes and the tests on the real device, Claude writes and explains the code. Out of the joy of tinkering a small webcam script quickly became a whole system - with web page, window, 3D simulator and games for the campfire.",
+    "The developer is Elektro from Switzerland. Elektro is a robotics developer by profession - but MoveEye was honestly built together with Claude, an AI by Anthropic. Elektro brings the ideas, the wishes and the tests on the real device, Claude writes and explains the code. Out of the joy of tinkering a small webcam script quickly became a whole system - with web page, window, 3D simulator and games for the campfire.",
     "Do you like MoveEye, or does something not work? With 💬 your message reaches Elektro directly - anonymously.",
 ]
 INFO_TECH = [
@@ -79,7 +79,7 @@ def about_info(lang=None):
     L = cur_lang(lang); N = info_numbers()
     fmt = {k: _fbx_n(v) for k, v in N.items()}
     return {"ok": True, "lang": L, "title": tr("About MoveEye", L), "version": APP_VERSION,
-            "dev": tr("Elektro (alias Daniel)", L), "dev_where": tr("Switzerland", L),
+            "dev": tr("Elektro", L), "dev_where": tr("Switzerland", L),
             "story": [tr(x, L) for x in INFO_STORY],
             "tech_title": tr("For the technically interested", L),
             "tech": [trf(x, L, **fmt) for x in INFO_TECH],
@@ -327,7 +327,7 @@ FBX_JS = r"""
   }
   window.mwOrder = pkg => mwFeedback({kind: "order", pkg: pkg});   // «Fertig bestellen (Anfrage)» (639zj, /build)
   const byHash = () => { if (location.hash === "#feedback") mwFeedback(); else if (location.hash === "#about") mwAbout(); else if (location.hash === "#order") mwOrder(); };
-  const go = () => { verTap(); byHash(); };     // 2.98.50 (Daniel): no 💬 in the header any more - feedback under «Mehr» and «Version und Status»
+  const go = () => { verTap(); byHash(); };     // 2.98.50 (Elektro): no 💬 in the header any more - feedback under «Mehr» and «Version und Status»
   addEventListener("hashchange", byHash);
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", go); else go();
 })();

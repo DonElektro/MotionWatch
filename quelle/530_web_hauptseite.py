@@ -359,7 +359,7 @@ body.videoonly.moveravail #vo-mv{display:flex;position:absolute;top:max(10px,env
   width:44px;height:44px;align-items:center;justify-content:center;border-radius:50%;border:1px solid rgba(255,255,255,.35);
   background:rgba(0,0,0,.55);color:#fff;font-size:20px;padding:0;cursor:pointer}
 body.videoonly.moveravail.mover #vo-mv{background:rgba(63,207,107,.55);border-color:var(--grn)}
-/* 3.15.x (Daniel 31.10.2026): simulation (body.sim-on = CFG sim_on, like the stripe) - full screen without ◎, ⇆ and 🚜 (the mover stick is off, moverPaint) */
+/* 3.15.x (Elektro 31.10.2026): simulation (body.sim-on = CFG sim_on, like the stripe) - full screen without ◎, ⇆ and 🚜 (the mover stick is off, moverPaint) */
 body.sim-on #vo-mv,body.sim-on #vo-center,body.sim-on #vo-side{display:none!important}
 #vo-exit{display:none}
 body.videoonly #vo-exit{display:flex;position:absolute;top:max(10px,env(safe-area-inset-top));right:max(10px,env(safe-area-inset-right));z-index:60;
@@ -756,7 +756,7 @@ function keepStream(img) {
   img.addEventListener("load", () => { tries = 0; lost(false); });
   document.addEventListener("visibilitychange", vis);
   addEventListener("pageshow", e => { if (e.persisted) restart(); });
-  // 2.98.38 (Daniel: sometimes black after swiping through the tabs): the picture was hidden (other tab / menu) and the
+  // 2.98.38 (Elektro: sometimes black after swiping through the tabs): the picture was hidden (other tab / menu) and the
   // browser (Safari) let the stream die - when it is visible again, it gets a fresh stream; a tap on ⏳ also restarts
   let shown = true;
   try { new IntersectionObserver(es => { const v = es.some(e => e.isIntersecting); if (v && !shown) restart(); shown = v; }).observe(img); } catch (e) {}
@@ -1375,7 +1375,7 @@ function buildViewMenu() {
   const vn = el("div", "mut", t("vm-device")); vn.style.cssText = "font-size:12px;margin:8px 0 0"; m.appendChild(vn);   // aufr: per device, like ◫ View (536)
   document.querySelectorAll("[data-view]").forEach(e => { if (window.lvMenu && e.closest("#lv-side,#lv-main")) return;
     (groups[e.dataset.vgroup] = groups[e.dataset.vgroup] || []).push(e); });
-  if (window.MWK && MWK.menuLists) {    // 639t (Daniel 01.11.2026): chips with the symbol of the chip, in groups with «all on / off», 2 columns
+  if (window.MWK && MWK.menuLists) {    // 639t (Elektro 01.11.2026): chips with the symbol of the chip, in groups with «all on / off», 2 columns
     MWK.menuLists(m, ["Header", "Panels", "Settings"].reduce((a, g) => a.concat(groups[g] || []), []), k => !HIDDEN.has(k),
       (k, v) => { if (v === HIDDEN.has(k)) toggleHidden(k); });
   } else ["Header", "Panels", "Settings"].forEach(g => {
@@ -4632,7 +4632,7 @@ function initSections() {
       try { localStorage.setItem(secKey(d), d.open ? "1" : "0"); } catch (e) {} });
   });
 }
-// nurgruppen (Daniel, 31.10.2026): switch «On start: groups only» (CFG ui_start_groups, factory: on). On every start the settings
+// nurgruppen (Elektro, 31.10.2026): switch «On start: groups only» (CFG ui_start_groups, factory: on). On every start the settings
 // show «Groups only» WITHOUT saving it - the own open / closed state (mw-open:…, kept on the Pi through web_ui) stays as it was.
 // Switched off: every group and topic goes back to that own state.
 const START_GROUPS = false;                // 3.23: the switch «On start: groups only» is gone - the start is «My view»

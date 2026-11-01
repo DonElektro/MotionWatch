@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 145: Selbstheilung: Wächter für Kamera-Schleife, KI und Webseite, Neustart mit Bremse; Ampeln Speicherkarte und Selbstheilung. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Self-healing (Daniel, 29.10.2026). A watchdog thread looks every 15 s:
+# Self-healing (Besitzer, 29.10.2026). A watchdog thread looks every 15 s:
 #  * camera loop: no sign of life (HEART) for 90 s - the loop hangs inside a camera call. Or the source says «connected»,
 #    the loop runs, but no new frame came for 150 s. The reconnect of the camera loop (410: read_failures / _good_t) acts
 #    after ~6 s; the watchdog only steps in when that did not help for minutes, so the two never fight.

@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 599a: Verfolgungs-Parcours im Fenster (Regler «Vorausschauen» bei Kamera / Servos, Karte im Reiter Simulator mit dem letzten Lauf, Start, Vorschlag des Auto-Tunings übernehmen). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Plan Daniel 30.10.2026 (docs/Verfolgungs_Parcours.md). Here (not in 416) because SLIDERS (570) and the tab Simulator of the
+# Plan Besitzer 30.10.2026 (docs/Verfolgungs_Parcours.md). Here (not in 416) because SLIDERS (570) and the tab Simulator of the
 # window (572 / 592) come after 416. The full tile (A/B side by side, auto-tuning, game) is the web page; the window shows
 # the short form and opens the tile in the browser (like the other single tools of the Simulator centre).
 # ----------------------------------------------------------------------------

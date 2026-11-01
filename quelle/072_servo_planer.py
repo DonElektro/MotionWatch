@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 072: Servo-Bewegung wie bei einem Industrieroboter: ein Bewegungsplaner (Rampen, beide Achsen gemeinsam), sichere Zustände (Not-Aus, Freigeben, Grenzen ganz unten, Störung, Unterspannung) und Watchdog. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# 2.98.35 (Wunsch Daniel, «industriell»): ONE motion planner for pan / tilt. Everybody (joystick, buttons, coordinator 162,
+# 2.98.35 (Wunsch Besitzer, «industriell»): ONE motion planner for pan / tilt. Everybody (joystick, buttons, coordinator 162,
 #   patrol 160, reference scan 315, place scan 317, timelapse, wake-up alarm, tracking 410 …) still writes the WANTED
 #   position into CFG["pan"] / CFG["tilt"] (0..100 %). The servo loop (Hardware.loop, part 080, 50 Hz) calls servo_plan_tick():
 #   it drives the REAL position SRV["pos"] there with a trapezoid profile per axis (max. speed and acceleration in °/s and
@@ -345,7 +345,7 @@ def servo_outputs_off():
 
 
 # ---- who steers the head (several «panels»: phones, PCs, the window, the controller, the simulator) --------------------
-# Lesson from robotics (Daniel): never start the wrong robot from the wrong panel. Every manual command notes its panel;
+# Lesson from robotics (Besitzer): never start the wrong robot from the wrong panel. Every manual command notes its panel;
 # all clients show «the head is steered by …» and a short notice when another panel takes it (state polling, no extra
 # connection). key = an anonymous short id of the panel (address + browser), label = what people read.
 def servo_driver_note(who, what=""):
@@ -548,7 +548,7 @@ def servo_state(lang=None):
             "target": [round(float(CFG["pan"]), 2), round(float(CFG["tilt"]), 2)], "moving": SRV["moving"],
             "blocked": servo_blocked(), "text": servo_blocked_text(lang), "estop": bool(CFG.get("servo_estop")),
             "estop_by": CFG.get("servo_estop_by") or "", "fault": SRV["fault"], "inhibit": SRV["inhibit"],
-            # 2.98.43 (Daniel): «⏹ Stopp» on the live page only with a head and when not switched off
+            # 2.98.43 (Besitzer): «⏹ Stopp» on the live page only with a head and when not switched off
             "stop_btn": bool(CFG.get("servo_stop_btn", True)) and bool(globals().get("live_has_head", lambda: True)()),
             "limits": [[round(plo, 1), round(phi, 1)], [round(tlo, 1), round(thi, 1)]],
             "limits_deg": [float(CFG["pan_limit"]), float(CFG["tilt_limit"])],

@@ -1,5 +1,5 @@
 extends Node
-## 3D-4.13 «Ein Controller-Konzept» (wish of Daniel 30.10.2026): ONE mapping of the game controller for the whole simulator
+## 3D-4.13 «Ein Controller-Konzept» (wish of Elektro 30.10.2026): ONE mapping of the game controller for the whole simulator
 ## (window, «Erkunden», game at the PC) and MoveEye (Controller-Ansicht 538, the phone game page of game.gd):
 ##   left stick = head (pan / tilt) · right stick = rover / view (R1 held = turn the view) · R2 = shutter ·
 ##   A / B / X / Y = light / IR / photo / follow (in a game round: the tools of the guard / the moves of the sneaker, always
@@ -779,7 +779,7 @@ func command(d: Dictionary) -> Dictionary:
 # <padmap-js>
 const JS := r"""window.MWPad = window.MWPad || (function () {
   "use strict";
-  // ONE mapping of the game controller for MoveEye and its simulator (3D-4.13 / MoveEye 2.98.38, wish of Daniel 30.10.2026).
+  // ONE mapping of the game controller for MoveEye and its simulator (3D-4.13 / MoveEye 2.98.38, wish of Elektro 30.10.2026).
   // The same text is in simulator3d/scripts/padmap.gd (JS) and in MoveEye part 542 (PADMAP_JS) - the self-test compares them.
   // modes: [key, action, English, Deutsch]; the simulator acts on the action, the help overlays are made from the texts.
   const MAP = /*MAP*/{

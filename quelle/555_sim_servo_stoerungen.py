@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 555: Servo-Störungen aus dem 3D-Simulator – Unterspannung vom simulierten Akku, PCA9685-Reset, I2C-Fehler und blockierter Servo (Kopf folgt nicht) wie bei echter Hardware erkennen. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Wish of Daniel (30.10.2026, «Servo-Störungen»): in the simulation MoveEye ignored the under-voltage (072 servo_release /
+# Wish of Besitzer (30.10.2026, «Servo-Störungen»): in the simulation MoveEye ignored the under-voltage (072 servo_release /
 #   servo_safety_tick: «and not sim_on» - the PC has no vcgencmd), the simulator only had play / overshoot («Servos wie
 #   echt»). Now the simulator (simint.gd) sends with every answer «servo_sim»:
 #     v5 / uv     the 5 V rail of the simulated UPS HAT (sags with a weak battery and the servo current, or «Unterspannung
@@ -15,7 +15,7 @@
 #                 then the servo diagnosis compares: MoveEye drives > 6° but the head (head_deg, 350 SIM["head"]) moves < 1°
 #                 within 2-4 s = «blocked» (stuck at the end stop) -> fault (needs «Freigeben»). Real MG90S have no position
 #                 feedback - on the real device this needs the picture (servo test «steps without a change of the picture»).
-# 2.98.53 (Daniel: «Servo blockiert» all the time on 2.98.52 - false alarm): the check compared the range of the planned angle
+# 2.98.53 (Besitzer: «Servo blockiert» all the time on 2.98.52 - false alarm): the check compared the range of the planned angle
 #   with the range of the head over the last 2-4 s. After 2 s at rest, the first move of a new command (e.g. 7° in 0.3 s) was
 #   already «> 6°», while the head angle came from the reply BEFORE (simvals_take runs before 350 stores head_deg, and the
 #   simulator answers at most every few 100 ms, slower with «Sparen» / low FPS) -> «blocked» within about one second of any

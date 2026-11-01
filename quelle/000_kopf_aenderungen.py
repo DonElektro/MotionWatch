@@ -686,7 +686,7 @@ Features
     Bedienermodus mit MoveEye-PIN; Diagnose gegenseitig.
   * 3.38.0: Simulator: System → Sicherung – ZIP auf dem PC, in einen Ordner/USB oder in die MoveEye-Sicherung; Wiederherstellen
     im Simulator oder aus MoveEye (nur Besitzer), vorher wird automatisch der aktuelle Stand gesichert.
-  * 3.37.0: Foto-Texturen aus Daniels Fotos im Bergtal: Wiese, Alpweide, Alpenrosen, Geröll, Fels, Strasse (abschaltbar; Lite
+  * 3.37.0: Foto-Texturen aus Besitzers Fotos im Bergtal: Wiese, Alpweide, Alpenrosen, Geröll, Fels, Strasse (abschaltbar; Lite
     unverändert).
   * 3.36.0: Simulator: menschlichere Figuren – ab Grafik mittel MakeHuman-Körper aus dem nachladbaren Menschen-Paket (~5 MB),
     einfach (Pi) mit feinerem Körper und Gesicht; Kleidung, Rucksack, Stöcke und Lampen passend zur Szene.
@@ -741,7 +741,7 @@ Features
     natürlicherem Gang, Füsse bleiben am Boden.
   * 3.17.0: Simulator-Ports: MoveEye findet auch die Ausweich-Ports 8775/8785/8795 (Portliste geprüft). Simulator 3.17.0:
     Notfall-Start.bat, Fehlerbericht sammeln.bat, Fotos mit weniger Grafikspeicher, zweiter Simulator auf Port 8768.
-  * 3.16.0: Simulator 3.16.0: Bergtal wie auf Daniels Fotos – Kalkfels mit Grasbändern, gelbgrüne Weiden, dunkle Fichten,
+  * 3.16.0: Simulator 3.16.0: Bergtal wie auf Besitzers Fotos – Kalkfels mit Grasbändern, gelbgrüne Weiden, dunkle Fichten,
     smaragdgrüner Bergsee mit Spiegelung, Dunst; in Hoch Karstweide, Felszähne, Legföhren, Alpenrosen, Quellwolken, Abendhimmel.
   * 3.15.2: Vollbild: in der Simulation auch ◎, ⇆, 🚜 und der Mover-Stick ausgeblendet; beim echten Live-Bild bleiben sie.
   * 3.15.1: Live → Bedienung: in der Simulation sind Tempo, ⇆, 🚜, Mitte, Kalibrieren und Wegpunkte ausgeblendet (auch im

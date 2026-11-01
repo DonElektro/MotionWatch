@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 522: Web-Seite «Nachrichten» (Reiter Verlauf) – die Push-Nachrichten in einer Liste. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# 2.98.13 (Wunsch Daniel): eigenes Menü für die ntfy-Nachrichten. Zwei Quellen: «Von MoveEye» (was dieses Gerät geschickt hat,
+# 2.98.13 (Wunsch Besitzer): eigenes Menü für die ntfy-Nachrichten. Zwei Quellen: «Von MoveEye» (was dieses Gerät geschickt hat,
 # mit Bild und ob es ankam, 065_nachrichten.py) und «ntfy-Server» (alle Nachrichten des Themas der letzten 24 h / 7 Tage).
 # ----------------------------------------------------------------------------
 MSG_PAGE = r"""<!doctype html>

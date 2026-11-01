@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 585: QR-Codes überall, wo ein Link fürs Handy steht (Web und Fenster), «QR-Galerie» und Druckseite. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Wish of Daniel (30.10.2026): a small QR icon next to every link that a phone should open; the link and «Copy» stay.
+# Wish of Besitzer (30.10.2026): a small QR icon next to every link that a phone should open; the link and «Copy» stay.
 #   Web: one shared helper for every page (rendered into <head> by render_page below, so the main page has it too):
 #     qrBtn(url, title, opts) -> a small QR button;  qrShow(url, title, opts) -> big overlay (QR, link, Copy, Print, Close)
 #     opts: {secret: true} (a warning, never cached), {alt: [{label, url, note}]} (choice, e.g. ntfy Android / iPhone),

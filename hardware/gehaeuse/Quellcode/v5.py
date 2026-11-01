@@ -206,7 +206,7 @@ def part_shelf():
     return D(plate, *cut)
 
 
-SHELF_GRID = 5.0                         # 01.11.2026 (Daniel): Lochraster ca. 5 mm für M2,5 / M3 selbstschneidend
+SHELF_GRID = 5.0                         # 01.11.2026 (Besitzer): Lochraster ca. 5 mm für M2,5 / M3 selbstschneidend
 SHELF_GRID_D = 2.4                       # Kernloch: M2,5 fest, M3 schneidet sich ein (PETG)
 SHELF_GRID_KEEP = 2.0                    # Rand zu Plattenkante, Schlitzen, Löchern und Kabelecke (Stabilität)
 

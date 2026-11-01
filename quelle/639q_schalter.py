@@ -1,4 +1,4 @@
-#@ MoveEye – Teil 639q: Schalter aufräumen (Daniel 01.11.2026, review_schalter): Test-Postfach in der Simulation immer an, Simulation immer mit eigenen Einstellungen, Anmelden immer verschlüsselt (vom Gerät selbst weiter ohne https), «Auch nicht signierte Versionen annehmen» nur im Entwickler-Bereich und nach 24 h von selbst aus. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
+#@ MoveEye – Teil 639q: Schalter aufräumen (Besitzer 01.11.2026, review_schalter): Test-Postfach in der Simulation immer an, Simulation immer mit eigenen Einstellungen, Anmelden immer verschlüsselt (vom Gerät selbst weiter ohne https), «Auch nicht signierte Versionen annehmen» nur im Entwickler-Bereich und nach 24 h von selbst aus. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
 # Entfernt (nur diese Schalter, die Funktion bleibt immer an):
 #   * notify_sandbox  -> sandbox_active() (141) ist in der Simulation immer wahr; Info-Meldungen gehen mit sim_info_push
@@ -31,7 +31,7 @@ SET_HELP["update_unsigned"] = ("Only for your own builds: MoveEye also installs 
 
 
 # ---- 3.23 Schritt 2 -------------------------------------------------------------------------------------------------------
-# * Updates (Daniel: «4 Schalter werden zu einer Auswahl wie im Simulator»): update_mode off | auto | dev statt update_auto /
+# * Updates (Besitzer: «4 Schalter werden zu einer Auswahl wie im Simulator»): update_mode off | auto | dev statt update_auto /
 #   update_install / update_fast / update_install_armed (MIGRATE_ONLY, 020). Alte Dateien: update_fast -> dev, update_install -> auto,
 #   sonst off. «auto» installiert nur bei «Aus» (das alte «auch bei Schutz an» = update_install_armed fällt weg; dev tut es immer).
 # * «Bewegung reduzieren» (reduce_motion auto | on | off, Gerät & Hilfe): Logo, Radar-Symbol, Blinki, Status-LED-Blinki im Web;

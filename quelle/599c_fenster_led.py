@@ -12,7 +12,7 @@ TOGGLES.extend([
     (_LEDS, "led_heartbeat", "Blinki blink: a short double blink every few minutes = all is well (not at night)"),
     (_LEDS, "btn_on", "Buttons on the device (GPIO): «Protection» and «Acknowledge alarm»"),
     (_LEDS, "btn_allow_arm", "Button may switch the protection on"),           # 2.98.50: the buttons may do everything,
-    (_LEDS, "btn_allow_disarm", "Button may switch the protection off"),       # each action can be switched off (Daniel)
+    (_LEDS, "btn_allow_disarm", "Button may switch the protection off"),       # each action can be switched off (Besitzer)
     (_LEDS, "btn_allow_siren", "Button may stop the siren"),
     (_LEDS, "btn_allow_ack", "Button may acknowledge the alarm"),
     (_LEDS, "btn_notify_off", "Message when switched off at the device"),
@@ -315,7 +315,7 @@ WEB_PAGE = WEB_PAGE.replace("</body>", LED_JS.replace("/*LEDDE*/{}", "/*LEDDE*/"
                             .replace('/*LEDSVG*/""', json.dumps(BLINKI_SVG), 1).replace('/*LEDCSS*/""', json.dumps(LED_CSS), 1) + "</body>", 1)
 
 
-# 2.98.50 (Daniel): «Alarm quittieren» also in the alarm card of the tab «Schutz» («Was passiert bei einem Alarm?», 530) - the
+# 2.98.50 (Besitzer): «Alarm quittieren» also in the alarm card of the tab «Schutz» («Was passiert bei einem Alarm?», 530) - the
 # same function as the button of the card «Status-LED & Tasten» (led_ack: red blinking, siren, escalation)
 _LED_CHAIN_KEY_OLD = 'c.escalate_on, c.escalate_siren_s, LANG].join("|");'
 _LED_CHAIN_KEY_NEW = 'c.escalate_on, c.escalate_siren_s, LANG, !!(s.led && s.led.alarm)].join("|");'
@@ -567,7 +567,7 @@ def led_selftest():
             assert ("set", "watch") in calls and any("Button «Protection» short" in str(c[1]) for c in calls if c[0] == "log"), calls
             calls.clear()
             led_button_event("protect", "short", "GPIO 16")
-            assert ("set", "off") in calls, "PIN set: the button still switches off (Daniel 30.10.2026)"
+            assert ("set", "off") in calls, "PIN set: the button still switches off (Elektro 30.10.2026)"
             assert ("push", tr("Protection switched off at the device")) in calls, calls
             assert any("Protection switched off at the device" in str(c[1]) for c in calls if c[0] == "log"), "disarm at the device in the log"
             calls.clear(); CFG["armed"] = True; SOUND["playing"] = True

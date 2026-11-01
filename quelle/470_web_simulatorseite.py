@@ -153,7 +153,7 @@ function scOn(G, r) {                               // 2.95.51: the symbol of a 
 // (simulator 3D-4.7: «Spiel-Karte schlank», those controls come with «wiz»; for older simulators the list below decides)
 const SC_GAME_MAIN = ["game_wizard", "game_start", "game_stop"];
 // 2.98.24: the groups by their fixed id «gid» (simulator 3D-4.7), the visible name only for older simulators
-// P1 ui_gemeinsam (Daniel 31.10.2026): old ids of older simulators -> the ids of simulator3d/ui_gemeinsam.json («alias»; the self-test
+// P1 ui_gemeinsam (Elektro 31.10.2026): old ids of older simulators -> the ids of simulator3d/ui_gemeinsam.json («alias»; the self-test
 // compares this table with the file). A simulator with /info «features» "menu1" already sends the new ids.
 const SC_GID_ALIAS = {"system": "sys", "sensors": "extras"};
 const scGid = c => { const g = c.gid || ({"Spiel": "game", "Game": "game", "Testlauf": "testrun", "Test run": "testrun"})[c.group] || "";
@@ -164,7 +164,7 @@ function scWizOnly(c) { return !!c.wiz || (!("gid" in c) && scGid(c) === "game" 
 // tile «Tests»); there it is built with data-only="testrun" (#tr-sim, recordings of the sneak paths, Pi 5 settings)
 const SC_TEST_DUP = ["testrun_plan", "testrun_start", "testrun_stop"];   // the same as «Testlauf starten» of MoveEye right above (/api/simtest)
 try { Object.assign(I18N.de, {"from MoveEye (setting of MoveEye, only shown here)": "von MoveEye (Einstellung von MoveEye, hier nur angezeigt)", "Fine-tuning": "Feineinstellungen"}); } catch (e) {}   // Aufräumen 2
-// 639d (Angleichen, Daniel 30.10.2026): «Einfach» like everywhere - the Experte settings sit in a closed «Feineinstellungen (n)» of
+// 639d (Angleichen, Elektro 30.10.2026): «Einfach» like everywhere - the Experte settings sit in a closed «Feineinstellungen (n)» of
 // their part / card (not hidden); the group «Entwickler» (gid dev) only with MoveEye's «Entwickler-Bereich» (dev_area, also sent to
 // the simulator, which shows its group the same way)
 const scDev = c => scGid(c) === "dev";
@@ -1180,7 +1180,7 @@ const SIM_TILE_KEYS = ["train_night_on", "rover_alarm", "fa_learn_auto", "rehear
 async function simsetLoad() {
   const box = $("#simset-box"); if (!box || box.contains(document.activeElement)) return;
   let sch; try { sch = await (await fetch("/api/schema?sec=Simulator&lang=" + LANG)).json(); } catch (e) { return; }
-  // 2.98.24 («Sim-Schalter nur einmal», Daniel): the switches of the tiles of the Simulator centre (Test-Postfach, Trainings-Nacht,
+  // 2.98.24 («Sim-Schalter nur einmal», Elektro): the switches of the tiles of the Simulator centre (Test-Postfach, Trainings-Nacht,
   // Rover, Fehlalarm-Lernen, Generalprobe, Wochen-Check) are only in their tile sheet (139), not here a second time
   const S = sch[0] || {toggles: [], sliders: [], texts: []}, own = k => !!document.getElementById("k-" + k) || k === "sim_url" || SIM_TILE_KEYS.indexOf(k) >= 0;
   box.textContent = "";
@@ -1537,7 +1537,7 @@ function paint3d() { const D = S && S.sim3d; if (D) $("#d-3dn").textContent = D.
   const P = S && S.simpy; if (P) $("#d-pyn").textContent = P.version + " · " + t("second simulator, needs Python on the PC") + (P.ready ? "" : " · " + t("prepared on the first download")); }
 $("#d-py").href = "/sim/simulator_py.zip?lang=" + (LANG || "");
 $("#d-link").textContent = t("Link for the PC browser") + ": " + location.origin + "/sim/simulator3d.zip · " + location.origin + "/sim/simulator3d_linux.zip";
-// nurgruppen (Daniel, 31.10.2026): «On start: groups only» (window.MW_SG, from ui_seed_script) - the cards of this page are one level,
+// nurgruppen (Elektro, 31.10.2026): «On start: groups only» (window.MW_SG, from ui_seed_script) - the cards of this page are one level,
 // so they start closed; only «Simulator control» stays open (its groups start closed, simCtlBuild / SC_SHOWN). Not saved: the own
 // state (mw-sim-fold) stays and is used again with the switch off. A toggle saves only its own card (before: all cards).
 (function () { let o = null; try { o = JSON.parse(localStorage.getItem("mw-sim-fold") || "null"); } catch (e) {}

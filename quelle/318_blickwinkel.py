@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 318: «Blickwinkel der Kamera» pro Kamera (Hauptkamera und jede Zusatzkamera): Liste der Kamera-Module, eigener Wert, automatisch erkannt (picamera2 / Simulator). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# 2.98.30 (Wunsch Daniel, 29.10.2026 - a second, wide-angle camera comes later: Pi 5 CAM1 -> «pi:1», Camera Module 3 Wide NoIR)
+# 2.98.30 (Wunsch Besitzer, 29.10.2026 - a second, wide-angle camera comes later: Pi 5 CAM1 -> «pi:1», Camera Module 3 Wide NoIR)
 #   CFG["cam_fov"] = {spec: {"model": "auto"|"m3"|"m3wide"|"m2"|"own", "deg": horizontal degrees for "own"}}
 #   CFG["cam_head"] = {spec: True} - an extra camera that sits on the head (turns with it) - «Platz einrichten» may use it
 #   cam_fov_h(spec=None) -> horizontal degrees (main camera when None) - other parts call it via globals().get("cam_fov_h")

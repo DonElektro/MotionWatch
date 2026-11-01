@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 416: Verfolgungs-Parcours des Simulators (Lektionen starten, Läufe speichern, A/B-Vergleich, Auto-Tuning nur als Vorschlag, mit / ohne Weitwinkel-Übergabe, Spiel «Entkomme der Kamera»), Vorausschauen beim Folgen, Kachel 🎯 in der Simulator-Zentrale. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Plan Daniel 30.10.2026 (docs/Verfolgungs_Parcours.md). The simulator (3D-4.18, parcours.gd) knows where the figures really
+# Plan Besitzer 30.10.2026 (docs/Verfolgungs_Parcours.md). The simulator (3D-4.18, parcours.gd) knows where the figures really
 # are and measures: aim error, time in the picture, losses, swinging, servo travel, identity switches -> grade. MoveEye
 # only starts the lessons (sim control «parcours»), keeps the runs with the values of the following that were used, and
 # compares them. Nothing is changed by itself: the auto-tuning only PROPOSES a set (button «übernehmen»).

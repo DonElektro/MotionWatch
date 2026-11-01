@@ -38,7 +38,7 @@ TEXTS.extend([
 ])
 for _k in ("kopf_wild", "kopf_ov", "servo_kind"):
     TEXT_SPECS[_k] = ("enum", _k)
-# 2.98.41 (Daniel): «kluge Runde» is a sub-switch directly under «Patrouille» (same CFG key kopf_round), shown only when
+# 2.98.41 (Besitzer): «kluge Runde» is a sub-switch directly under «Patrouille» (same CFG key kopf_round), shown only when
 # «Patrouille» is on - web (530: row class «subtg», hidden in the refresh) and window (_kr_tk_refresh below).
 _kr_i = next((i for i, t_ in enumerate(TOGGLES) if t_[1] == "patrol"), len(TOGGLES) - 1)
 TOGGLES.insert(_kr_i + 1, ("Patrol", "kopf_round", "smart: look longer at the important directions"))

@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 548: Web: «🤖 MoveEye als KI-Wächter» in der Karte «Spiel» der Seite Simulator (Schalter, Liste «gegen die KI») und das Simulator-Fenster ohne Einblendungen. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Wishes of Daniel (30.10.2026):
+# Wishes of Besitzer (30.10.2026):
 #  · «MoveEye überwacht automatisch» (for his tests in online games): a switch on the game card of the page Simulator. When it is
 #    on and a round with a guard role runs (Wächter / Wächter-Duell, Team gegen Team, Team gegen MoveEye, online rounds), the
 #    simulator lets MoveEye be the guard (simulator gamekiwaechter.gd): every player sneaks, the round runs as «Team gegen

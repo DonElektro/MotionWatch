@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 581: Fenster – «Ansicht» des Reiters Live wie auf der Webseite (Vorlagen, Anordnung, Bildgrösse, Grösse, Lieblingsknöpfe, Karten, Joystick). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# 2.98.29 (Wunsch Daniel «Fenster nachziehen»): the window gets the same «Ansicht» as the live page of the web (536):
+# 2.98.29 (Wunsch Besitzer «Fenster nachziehen»): the window gets the same «Ansicht» as the live page of the web (536):
 #   presets Nur schauen / Bedienen / Einrichten, layout automatic / portrait / landscape, picture size, «Grösse» (UI scale,
 #   Tk scaling: all fonts + joystick + tiles), favourites (max. 8) + «… mehr», order and hidden quick switches, cards
 #   (Bedienung, Einrichten), joystick only with a pan / tilt head (option always / never). Stored in the settings of the

@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 639zj: «Fertig kaufen» – Hinweis oben auf «Bauen» (/build, auch für die 3D-Werkstatt im Browser): «Keine Lust zu basteln? MoveEye gibt es auch fixfertig – Basis, Komplett oder Autark», Knopf «Fertig bestellen (Anfrage)» öffnet die Rückmeldung (584) mit Art «Bestellung fertiges Gerät» (370 FB_KINDS «order») und dem Paket; Kontakt Pflicht, nur in der Nachricht, nie im Protokoll; Preise auf Anfrage; Texte und Pakete aus ui_gemeinsam.json «fertig» (5 Sprachen, gleich im Simulator werkstatt.gd / feedback.gd); Selbsttest. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Wunsch Daniel (01.11.2026): auf der Bastel- bzw. Werkstatt-Seite soll jeder sehen, dass man MoveEye auch fixfertig kaufen kann.
+# Wunsch Besitzer (01.11.2026): auf der Bastel- bzw. Werkstatt-Seite soll jeder sehen, dass man MoveEye auch fixfertig kaufen kann.
 #   * Eine Quelle: simulator3d/ui_gemeinsam.json «fertig» (kind, emoji, draw, standard, texts {hint, button, topic, price,
 #     package, contact, contact_note, contact_needed, text}, pakete [{id, names, desc}]) - MoveEye (eingebettet als
 #     UI_GEMEINSAM, 639p) und der Simulator (scripts/ui_gemeinsam.gd fertig_*) zeigen dieselben Texte.
@@ -8,7 +8,7 @@
 #     auf Anfrage», Knopf -> mwOrder(paket) (584); ohne Rückmeldungs-Skript: #order.
 #   * Rückmeldung (584 mwFeedback {kind: "order", pkg}): fünfte Art nur in diesem Fall, Paket umschaltbar, Text vorausgefüllt,
 #     Feld «Kontakt (E-Mail/Telefon)» Pflicht (auch feedback_send prüft das), keine technischen Angaben / kein Bild als Standard.
-#   * Pi-Fenster (Daniel 01.11.2026): Reiter Mehr zeigt unter den Knöpfen denselben Hinweis mit «Fertig bestellen (Anfrage)»
+#   * Pi-Fenster (Besitzer 01.11.2026): Reiter Mehr zeigt unter den Knöpfen denselben Hinweis mit «Fertig bestellen (Anfrage)»
 #     -> App._feedback("order", paket) (584: fünfte Art, Paket-Wahl, Text vorausgefüllt, Kontakt Pflicht).
 #   * feedback_send (370): «Paket: … (…) · Preis auf Anfrage» in der Nachricht; der Kontakt steht nur in der Nachricht (Ausgang
 #     bis gesendet), log_event schreibt ihn nie.

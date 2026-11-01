@@ -292,7 +292,7 @@ def smalltv_selftest():
         assert k_ == "game" and brt == 40, (k_, brt)         # during a round the players are the persons: the game stays
         STV["game"] = {"round": "end", "players": []}; STV["end_t"] = time.time()
         k_, _s, _f, brt, now_ = stv_plan(e)
-        assert k_ == "gif" and brt == 100 and now_, k_          # Daniel 30.10.: the alarm animation on every display
+        assert k_ == "gif" and brt == 100 and now_, k_          # Besitzer 30.10.: the alarm animation on every display
         assert stv_plan(dict(e, alarm=False))[0] == "game"
         STV["end_t"] = time.time() - 61
         assert stv_plan(dict(e, alarm=False))[0] == "status"      # the end screen only 60 s
@@ -357,7 +357,7 @@ def smalltv_rot_selftest():
         t0 = 30.0 * 100000                                   # an even slot: the live picture
         ks = [stv_plan(e, t0 + dt)[0] for dt in (0, 29, 30, 59, 60, 90)]
         assert ks == ["live", "live", "batt", "batt", "live", "batt"], ks
-        assert stv_plan(e, t0)[1] == stv_plan(e, t0 + 60)[1], "the live picture is new only at every second live slot (Daniel 30.10.)"
+        assert stv_plan(e, t0)[1] == stv_plan(e, t0 + 60)[1], "the live picture is new only at every second live slot (Elektro 30.10.)"
         assert stv_plan(e, t0)[1] != stv_plan(e, t0 + 120)[1], "a new live picture after 2 min"
         assert stv_plan(e, t0 + 30)[1] == stv_plan(e, t0 + 90)[1], "the battery page unchanged -> same picture (only shown again)"
         assert stv_plan(e, t0)[1] == stv_plan(e, t0 + 29)[1], "one picture per 30 s at most"
@@ -384,7 +384,7 @@ def smalltv_rot_selftest():
         STV["alarm"] = None
         assert stv_plan(e, t0 + 101)[0] == "game" and stv_plan(e, t0 + 112)[0] in ("live", "batt")   # 10 s without news: the game is over
         STV["game"] = None
-        # the live picture: the pure camera picture (410 frame_clean), not the page picture with HUD / marks (Daniel 30.10.)
+        # the live picture: the pure camera picture (410 frame_clean), not the page picture with HUD / marks (Besitzer 30.10.)
         class _W: pass
         w_ = _W(); w_.frame_out = np.full((240, 320, 3), 200, np.uint8); w_.frame_clean = np.zeros((240, 320, 3), np.uint8); w_.frame_clean_t = time.time()
         keep_w = WATCH_REF.get("w"); WATCH_REF["w"] = w_

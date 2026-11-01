@@ -3,7 +3,7 @@
 # Thermal camera: a second camera with the same view. Its picture is coloured and laid over the normal picture
 # (blend, or "hot mode": only the warmest areas are shown). Detection always works on the normal picture.
 # ----------------------------------------------------------------------------
-# 3.44.3 (variants without a thermal camera, Daniel 01.11.2026): «not found» (nothing answers - maybe it is not built in) and
+# 3.44.3 (variants without a thermal camera, Besitzer 01.11.2026): «not found» (nothing answers - maybe it is not built in) and
 #   «found, but an error» are two things; the self-check (120) gives the tip that fits (no «USB cable» for the Thermal-90 on SPI / I2C).
 THERMAL_NOT_FOUND = "not found: "
 THERMAL_TIPS = {

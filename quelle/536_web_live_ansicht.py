@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 536: Live-Seite neu angeordnet: Hoch- / Querformat, Bild immer ganz sichtbar, «Ansicht» (Vorlagen, Bildgrösse, Lieblingsknöpfe, Karten, Bearbeiten). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# 2.98.26 (Wunsch Daniel): the tab Live arranges itself by the window format
+# 2.98.26 (Wunsch Besitzer): the tab Live arranges itself by the window format
 #   portrait  = picture on top (max. height = «Picture size»), simulator, walk test, controls and the other cards below
 #   landscape = picture left (as large as the height allows, never cropped: object-fit contain), the cards in a sidebar
 #               on the right that scrolls on its own; the simulator directly under the picture (left column)
@@ -11,7 +11,7 @@
 # aufr: «mw-hidden» (the ☰ menu of the other tabs) is per device now as well (WEB_UI_LOCAL) - the same rule and wording; the
 # live cards are only in «◫ Ansicht» (the ☰ menu leaves them out), so no card has two «hide» switches.
 # 530 stays as it is except the phone placement (not on the Live tab any more). Translations: part 626.
-# 2.98.29 (Wunsch Daniel): ONE edit mode for the arrangement (the separate «✏️ Anpassen» of the quick switches is gone):
+# 2.98.29 (Wunsch Besitzer): ONE edit mode for the arrangement (the separate «✏️ Anpassen» of the quick switches is gone):
 #   favourites ★, order ▲ ▼ and hidden ✕ of the quick switches and of the cards, per device; «Für alle Geräte übernehmen»
 #   stores it on MoveEye (CFG qs_layout: order, hidden, favs, cards, chide) as the default for devices without an own one -
 #   the earlier «Anpassen» arrangement (order / hidden) is that default. The small simulator tile only when the
@@ -102,7 +102,7 @@ body.swapside #lv-joy{right:auto;left:12px;flex-direction:row-reverse}
 body.lv-nohead #stick,body.lv-nohead .ctl-stick,body.lv-nohead #qs-track,body.lv-nohead #qs-patrol,body.lv-nohead #patrol-st,body.lv-nohead #vo-center,body.lv-nohead #lv-joy{display:none!important}
 body.lv-nohead:not(.moveravail) #ctl-side{display:none!important}
 body.lv-nohead.moveravail #ctl-side>:not(.spd),body.lv-nohead.moveravail #ctl-side .spd>:not(#mv-tog){display:none!important}
-/* 3.16 (Daniel 31.10.2026): simulation (body.sim-on = CFG sim_on, the source of the stripe) - no speed, ⇆, 🚜, centre, calibrate, waypoints */
+/* 3.16 (Elektro 31.10.2026): simulation (body.sim-on = CFG sim_on, the source of the stripe) - no speed, ⇆, 🚜, centre, calibrate, waypoints */
 body.sim-on #ctl-side{display:none!important}
 /* the controls card: wraps instead of overlapping (the old fixed columns pushed «Mittel» under the switches) */
 body.lv #ctl-left{display:flex!important;flex-wrap:wrap;align-items:flex-start;justify-content:center;gap:12px 18px;padding:0 2px;grid-template-areas:none!important}
@@ -198,8 +198,8 @@ body.lv #vcard>:not(.vwrap){zoom:var(--lv-ui,1)}
   // «for all devices» on MoveEye (cfg.qs_layout), else the standard. ui = «Grösse» ("auto" or 60 … 160 %)
   const DEF = {layout: "auto", size: 60, ui: "auto", joy: "auto", ov: "auto", favs: null, qorder: null, qhide: null, order: null, more: false, preset: "", hide: null};
   const DEFFAV = ["rec", "photo", "track", "patrol", "white", "ir", "listen", "therm"];
-  const DEFORDER = ["controls", "whatwas", "simtile", "lvsetup"];   // Daniel: picture → simulator → controls (with «Einstellungen») → the rest
-  const DEFLAST = ["walktest"];                        // 639o (Daniel 31.10.2026): the walk test at the very bottom of the column
+  const DEFORDER = ["controls", "whatwas", "simtile", "lvsetup"];   // Elektro: picture → simulator → controls (with «Einstellungen») → the rest
+  const DEFLAST = ["walktest"];                        // 639o (Elektro 31.10.2026): the walk test at the very bottom of the column
   let V = Object.assign({}, DEF);
   try { Object.assign(V, JSON.parse(localStorage.getItem(KEY) || "{}")); } catch (e) {}
   ["hide", "favs", "qorder", "qhide", "order"].forEach(k => { V[k] = Array.isArray(V[k]) ? V[k].filter(x => typeof x === "string") : null; });
