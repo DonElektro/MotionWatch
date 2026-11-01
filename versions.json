@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-01 02:32",
+ "generated": "2026-11-01 02:53",
  "versions": [
   {
-   "version": "3.28.0",
-   "file": "webcam_bewegung_3_28_0.py",
+   "version": "3.28.1",
+   "file": "webcam_bewegung_3_28_1.py",
    "url": "",
-   "sha256": "fb4bcf57a1733a9d68712d91e6d85e74d8a9244cb2cbd7d007e2467b46694e2b",
-   "date": "2026-11-01 02:32",
-   "notes": "Ton in den Spielen: Glockenspiel, Fanfare, Streicher, Spannung mit Puls und Trommelwirbel, Pauke, Tusch, leise Begleitmusik (abschaltbar, eigene Regler), echte Umgebungsgeräusche, sanfte Klicks – nur in Spielen und Geschichten.",
-   "size": 4481992,
-   "sig": "38acac2a18685c04a85ee1648c7f61f3ffd823930e81fa199911ab13c38e39baf5dea47892349d447671c575aebcca8db91bac5e5dd692e7911043ce4d228c04",
+   "sha256": "86d8ae4913f16f13f3dd6764e7ad50b10bc0838b97f27d295bf1d320263ccf9a",
+   "date": "2026-11-01 02:53",
+   "notes": "Prüfungen laufen automatisch auf GitHub (MoveEye, Simulator-Tests, Export), schneller und ohne den eigenen Rechner zu belasten.",
+   "size": 4481923,
+   "sig": "ac71cd2ef089a788e539283ada706b62944bf99db637ff821818a64dbc692dd320e5393c1ba18b261842b2d4a9dc32d228cdf9fe3ec2b1f340fbcb4f73e68f06",
    "data": {
-    "file": "moveeye_daten_3_28_0.zip",
+    "file": "moveeye_daten_3_28_1.zip",
     "url": "",
-    "sha256": "d4812b41d8670af84fd37490860c2925ab15239dd2e51afa971b53da64f97d4a",
-    "size": 1559261,
-    "sig": "fda908e9ac1fd8a7a7a2aa19b465e759138dbf4c7336a99ec50de0ebc2d74b59f3024ac3f495d0f72592d4dd6a4d776538ebbbdcd6338b1f80d82dff0180320a"
+    "sha256": "d3041cc52dcf2010a33cca8e9dd661c81096baa7719264eca46f9b807448c267",
+    "size": 1559270,
+    "sig": "aa1ac77c7102a907aeef75e16a7cb49cd3bedb64f40e68daa9a4df0297a704efcf2c0befc5b5985f9f44f667d4115d6c36353464b44984b7e911578c83e3c40b"
    }
   },
   {
