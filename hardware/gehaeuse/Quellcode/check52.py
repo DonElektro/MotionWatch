@@ -25,6 +25,11 @@ static = [("tub", k) for k in ("ups", "pi", "cooler", "pca", "speaker", "charger
          [("irled", k) for k in ("buck", "mosfet", "pir", "speaker", "pca", "lid", "hub", "soundcard", "servo1")] + \
          [("btn", k) for k in ("pi", "cooler", "ups", "shelf", "jacks", "relayjack", "charger", "pam", "ina")] + \
          [("mosfet", k) for k in ("pca", "speaker", "probe", "buck", "hub", "soundcard")] + \
+         [("sdext", k) for k in ("pca", "servo1", "lid", "pi", "hub", "mosfet", "irled", "wcam")] + [("tub", "sdext"), ("tub", "sdplug"), ("plug", "pi")] + \
+         [("sockel", k) for k in ("pi", "shelf", "pca", "hub", "charger", "pam", "ina", "jacks", "relayjack", "speaker", "soundcard", "cam1", "cam0", "mosfet", "probe")] + \
+         [("lampdrv", k) for k in ("tub", "buck", "pca", "speaker", "mosfet", "pir", "irled", "probe", "fuseh")] + \
+         [("fuseh", k) for k in ("tub", "speaker", "probe", "mosfet", "pca", "ups", "sockel")] + \
+         [("resjack", k) for k in ("pi", "ups", "sockel", "shelf", "jacks", "relayjack", "btn", "charger", "lid")] + [("tub", "resplug"), ("tub", "resjack")] + \
          [("blind_w", "tub"), ("blind_ir", "tub"), ("blind_w", "blind_ir")]
 
 

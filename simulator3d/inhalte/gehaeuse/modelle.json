@@ -1,14 +1,14 @@
 {
  "_hinweis": "Erzeugt von werkzeuge/gehaeuse_bauen.py aus hardware/gehaeuse/ – nicht von Hand ändern. Koordinaten: Meter, Ursprung Kippachse (main.head_pitch), Godot X = Modell y, Y = z, Z = x (vorne = −Z).",
  "version": "5.1",
- "quelle_sha256": "a6d2adbb8c36071c3d64ae3b1e358630cb48fd4315c1965f1f65f0ce7d00defc",
+ "quelle_sha256": "c36d9bda42ce868a54add9b5841c81f41095aa9ff124d703f14955dc56549ec5",
  "dateien": {
-  "gehaeuse.glb": "bcec74a7770b096ee0dfad3c5344da4ae6f077237eedb33514005d50ce250780",
-  "gehaeuse_lite.glb": "df9384ea23c5cac0b297dec208b6e19e807be19100e0cb59290e02bba41ac6e2"
+  "gehaeuse.glb": "0488ae6094f140e0fabed2d986efa1f5eac2b0b72847f8dd8fe8a94b0d76ffe1",
+  "gehaeuse_lite.glb": "ceee55b37a35891a2a8746f76a0a18fcc5b0a3c4eafb278d7f4b0c15addba61f"
  },
- "dreiecke": 85822,
- "dreiecke_aussen": 78696,
- "dreiecke_lite": 12807,
+ "dreiecke": 124458,
+ "dreiecke_aussen": 100845,
+ "dreiecke_lite": 16370,
  "kippachse_ueber_boden_m": 0.1258,
  "fuesse_m": 0.006,
  "v52": {
@@ -38,12 +38,22 @@
    "tub52",
    "mosfet52",
    "cable_cam1",
-   "cable_cam0_52"
+   "cable_cam0_52",
+   "plug52",
+   "sdplug",
+   "head52",
+   "diff52",
+   "resplug",
+   "lampdrv",
+   "fuseh"
   ],
   "ersetzt": {
    "tub52": "tub",
    "mosfet52": "mosfet",
-   "cable_cam0_52": "cable_cam"
+   "cable_cam0_52": "cable_cam",
+   "plug52": "plug",
+   "head52": "head",
+   "sockel": "ups"
   }
  },
  "farben": {
@@ -55,7 +65,8 @@
    "head",
    "side",
    "lamp1",
-   "lamp2"
+   "lamp2",
+   "head52"
   ]
  },
  "teile": [
@@ -308,7 +319,7 @@
    "gruppe": "base",
    "farbe": "#4d80cc",
    "aussen": false,
-   "dreiecke": 2886,
+   "dreiecke": 3343,
    "mitte": [
     0.0299,
     -0.0931,
@@ -1277,7 +1288,7 @@
    "gruppe": "base",
    "farbe": "#3a73bf",
    "aussen": true,
-   "dreiecke": 25584,
+   "dreiecke": 25740,
    "mitte": [
     -0.003,
     -0.0915,
@@ -1290,7 +1301,7 @@
    ],
    "variante": "5.2",
    "ersetzt": "tub",
-   "dreiecke_lite": 4086,
+   "dreiecke_lite": 4124,
    "explosion": [
     -0.0,
     0.0,
@@ -1366,6 +1377,197 @@
     -0.0,
     0.28,
     0.0
+   ]
+  },
+  {
+   "id": "plug52",
+   "gruppe": "base",
+   "farbe": "#262626",
+   "aussen": true,
+   "dreiecke": 2170,
+   "mitte": [
+    -0.0481,
+    -0.0803,
+    0.059
+   ],
+   "groesse": [
+    0.0038,
+    0.026,
+    0.048
+   ],
+   "variante": "5.2",
+   "ersetzt": "plug",
+   "dreiecke_lite": 404,
+   "explosion": [
+    -0.0721,
+    0.0,
+    0.0079
+   ]
+  },
+  {
+   "id": "sdplug",
+   "gruppe": "base",
+   "farbe": "#262626",
+   "aussen": true,
+   "dreiecke": 36,
+   "mitte": [
+    -0.0482,
+    -0.0673,
+    0.0
+   ],
+   "groesse": [
+    0.0038,
+    0.012,
+    0.02
+   ],
+   "variante": "5.2",
+   "dreiecke_lite": 36,
+   "explosion": [
+    -0.0723,
+    0.0,
+    -0.0805
+   ]
+  },
+  {
+   "id": "head52",
+   "gruppe": "tilt",
+   "farbe": "#f59a4a",
+   "aussen": true,
+   "dreiecke": 10711,
+   "mitte": [
+    -0.0011,
+    0.0,
+    -0.0138
+   ],
+   "groesse": [
+    0.0558,
+    0.058,
+    0.0476
+   ],
+   "variante": "5.2",
+   "ersetzt": "head",
+   "dreiecke_lite": 1320,
+   "explosion": [
+    -0.0,
+    0.4,
+    -0.0
+   ]
+  },
+  {
+   "id": "diff52",
+   "gruppe": "tilt",
+   "farbe": "#f2f2f2",
+   "aussen": true,
+   "dreiecke": 4508,
+   "mitte": [
+    -0.008,
+    0.0323,
+    -0.003
+   ],
+   "groesse": [
+    0.014,
+    0.0089,
+    0.0147
+   ],
+   "variante": "5.2",
+   "dreiecke_lite": 901,
+   "explosion": [
+    -0.0,
+    0.45,
+    -0.0
+   ]
+  },
+  {
+   "id": "sockel",
+   "gruppe": "base",
+   "farbe": "#4d80cc",
+   "aussen": false,
+   "dreiecke": 16006,
+   "mitte": [
+    -0.0058,
+    -0.1048,
+    0.078
+   ],
+   "groesse": [
+    0.0792,
+    0.0371,
+    0.0922
+   ],
+   "ersetzt": "ups",
+   "explosion": [
+    -0.0017,
+    0.1,
+    0.0073
+   ]
+  },
+  {
+   "id": "resplug",
+   "gruppe": "base",
+   "farbe": "#262626",
+   "aussen": true,
+   "dreiecke": 4568,
+   "mitte": [
+    -0.016,
+    -0.0758,
+    0.1395
+   ],
+   "groesse": [
+    0.018,
+    0.018,
+    0.0051
+   ],
+   "variante": "5.2",
+   "dreiecke_lite": 864,
+   "explosion": [
+    -0.0256,
+    0.02,
+    0.1373
+   ]
+  },
+  {
+   "id": "lampdrv",
+   "gruppe": "base",
+   "farbe": "#c8a2c8",
+   "aussen": false,
+   "dreiecke": 12,
+   "mitte": [
+    -0.026,
+    -0.1133,
+    -0.0362
+   ],
+   "groesse": [
+    0.03,
+    0.02,
+    0.0016
+   ],
+   "variante": "5.2",
+   "explosion": [
+    -0.0312,
+    0.13,
+    -0.1079
+   ]
+  },
+  {
+   "id": "fuseh",
+   "gruppe": "base",
+   "farbe": "#e74c3c",
+   "aussen": false,
+   "dreiecke": 12,
+   "mitte": [
+    -0.0335,
+    -0.1183,
+    0.003
+   ],
+   "groesse": [
+    0.013,
+    0.01,
+    0.03
+   ],
+   "variante": "5.2",
+   "explosion": [
+    -0.0268,
+    0.12,
+    -0.0406
    ]
   }
  ]

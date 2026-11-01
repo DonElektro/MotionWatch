@@ -392,6 +392,23 @@
    "suche": "Sicherungshalter fliegend ATM"
   },
   {
+   "id": "fuse2",
+   "gruppe": "strom",
+   "menge": "1×",
+   "wenn": "ups",
+   "name": {
+    "de": "Flachsicherung 5 A mit Halter (Akku-Leitung B+ → Step-Down)",
+    "en": "Blade fuse 5 A with holder (battery line B+ → step-down)",
+    "fr": "Fusible plat 5 A avec support (ligne batterie B+ → abaisseur)",
+    "it": "Fusibile lamellare 5 A con portafusibile (linea batteria B+ → step-down)",
+    "rm": "Segirezza plata 5 A cun purtader (lingia d'accu B+ → step-down)"
+   },
+   "nr": "Mini-Kfz (ATM) 5 A",
+   "preis": 5,
+   "haendler": "galaxus",
+   "suche": "Sicherungshalter fliegend ATM"
+  },
+  {
    "id": "usbc",
    "gruppe": "strom",
    "menge": "1×",
@@ -868,28 +885,52 @@
    }
   },
   {
+   "id": "sdext",
+   "gruppe": "v52",
+   "menge": "1×",
+   "wenn": "v52",
+   "name": {
+    "de": "microSD-Verlängerung 15 cm mit Einbau-Kartenhalter (Platine ca. 22 × 15 mm, 2 Löcher M2,5 im Abstand 18 mm)",
+    "en": "microSD extension 15 cm with panel card holder (board approx. 22 × 15 mm, 2 holes M2.5, 18 mm apart)",
+    "fr": "Rallonge microSD 15 cm avec support encastrable (platine env. 22 × 15 mm, 2 trous M2,5 à 18 mm)",
+    "it": "Prolunga microSD 15 cm con portaschede da incasso (scheda circa 22 × 15 mm, 2 fori M2,5 a 18 mm)",
+    "rm": "Prolungaziun microSD 15 cm cun purtader integrà (platina ca. 22 × 15 mm, 2 foras M2,5 en distanza da 18 mm)"
+   },
+   "nr": "15 cm",
+   "preis": 8,
+   "haendler": "galaxus",
+   "suche": "microSD Verlängerungskabel 15cm Einbau",
+   "unklar": {
+    "de": "Masse der Platine vor dem Druck nachmessen (Dome im Unterteil: Lochabstand 18 mm), Preis geschätzt",
+    "en": "measure the board before printing (bosses in the lower part: holes 18 mm apart), price estimated",
+    "fr": "mesurer la platine avant l'impression (dômes : entraxe 18 mm), prix estimé",
+    "it": "misurare la scheda prima di stampare (torrette: interasse 18 mm), prezzo stimato",
+    "rm": "mesirar la platina avant la stampa (cupels: distanza 18 mm), pretsch stimà"
+   }
+  },
+  {
    "id": "mosfet3",
    "gruppe": "v52",
    "menge": "1×",
    "name": {
-    "de": "MOSFET-Kanal für das IR-Modul (PCA9685 Kanal 4, wie AOD4184)",
-    "en": "MOSFET channel for the IR module (PCA9685 channel 4, like AOD4184)",
-    "fr": "Canal MOSFET pour le module IR (PCA9685 canal 4, comme AOD4184)",
-    "it": "Canale MOSFET per il modulo IR (PCA9685 canale 4, come AOD4184)",
-    "rm": "Chanal MOSFET per il modul IR (PCA9685 chanal 4, sco AOD4184)"
+    "de": "3. MOSFET-Modul (AOD4184) für das IR-Modul 120° (bzw. die IR-LED 5 mm), Kanal 4",
+    "en": "3rd MOSFET module (AOD4184) for the IR module 120° (or the IR LED 5 mm), channel 4",
+    "fr": "3e module MOSFET (AOD4184) pour la LED IR 5 mm, canal 4",
+    "it": "3° modulo MOSFET (AOD4184) per il LED IR 5 mm, canale 4",
+    "rm": "3. modul MOSFET (AOD4184) per la LED IR 5 mm, chanal 4"
    },
-   "nr": "Bastelgarage 420985 (AOD4184)",
-   "wenn": "v52",
+   "nr": "Bastelgarage 420985",
    "preis": 4.9,
    "haendler": "bastelgarage",
-   "suche": "MOSFET Modul AOD4184",
+   "suche": "MOSFET AOD4184",
    "alt": {
     "de": "dazu Vorwiderstand 47 Ω / 0,5 W; oder ein kleiner Logic-Level-MOSFET (AO3400)",
     "en": "plus a series resistor 47 Ω / 0.5 W; or a small logic-level MOSFET (AO3400)",
     "fr": "plus une résistance 47 Ω / 0,5 W ; ou un petit MOSFET niveau logique (AO3400)",
     "it": "più una resistenza 47 Ω / 0,5 W; oppure un piccolo MOSFET a livello logico (AO3400)",
     "rm": "plus ina resistenza 47 Ω / 0,5 W; u in pitschen MOSFET nivel logic (AO3400)"
-   }
+   },
+   "wenn": "v52"
   },
   {
    "id": "irled5",
@@ -977,6 +1018,23 @@
    "wenn": "netz"
   },
   {
+   "id": "psu12_dev",
+   "gruppe": "strom",
+   "menge": "1×",
+   "name": {
+    "de": "Netzteil 12 V, mind. 3 A, mit GX16-Stecker verlötet – Entwicklung",
+    "en": "Power supply 12 V, at least 3 A, soldered to the GX16 plug – development",
+    "fr": "Alimentation 12 V, au moins 3 A, soudée à la fiche GX16 – développement",
+    "it": "Alimentatore 12 V, almeno 3 A, saldato alla spina GX16 – sviluppo",
+    "rm": "Alimentaziun 12 V, almain 3 A, lotada vi dal stecker GX16 – svilup"
+   },
+   "nr": "",
+   "preis": 20,
+   "haendler": "galaxus",
+   "suche": "Netzteil 12V 3A",
+   "wenn": "entwicklung"
+  },
+  {
    "id": "motorhat",
    "gruppe": "mover",
    "menge": "1×",
@@ -1026,6 +1084,23 @@
    "preis": 12,
    "haendler": "galaxus",
    "suche": "Schraubensortiment M2 M2.5 M3"
+  },
+  {
+   "id": "psu_pi",
+   "gruppe": "strom",
+   "menge": "1×",
+   "wenn": "entwicklung",
+   "name": {
+    "de": "Raspberry Pi 27-W-USB-C-Netzteil (Entwicklung)",
+    "en": "Raspberry Pi 27 W USB-C power supply (development)",
+    "fr": "Alimentation USB-C 27 W Raspberry Pi (développement)",
+    "it": "Alimentatore USB-C 27 W Raspberry Pi (sviluppo)",
+    "rm": "Alimentader USB-C 27 W Raspberry Pi (svilup)"
+   },
+   "nr": "SC1153",
+   "preis": 15,
+   "haendler": "pishop",
+   "suche": "Raspberry Pi 27W USB-C Netzteil"
   }
  ],
  "teile": [
@@ -1603,6 +1678,127 @@
     "rm": "Cabel da camera CAM0 (v5.2: chamin → pettan → Pi)"
    },
    "wenn": "v52"
+  },
+  {
+   "id": "plug52",
+   "art": "v52",
+   "bom": "petg",
+   "schritt": null,
+   "ersetzt": "plug",
+   "datei": "10_Stopfen_HDMI_USB_v52",
+   "wenn": "v52",
+   "name": {
+    "de": "10 Stopfen Service-Fenster v5.2 (HDMI + USB-C)",
+    "en": "10 Plug service window v5.2 (HDMI + USB-C)",
+    "fr": "10 Bouchon fenêtre de service v5.2 (HDMI + USB-C)",
+    "it": "10 Tappo finestra di servizio v5.2 (HDMI + USB-C)",
+    "rm": "10 Zaffer fanestra da servetsch v5.2 (HDMI + USB-C)"
+   }
+  },
+  {
+   "id": "sdplug",
+   "art": "v52",
+   "bom": "petg",
+   "schritt": null,
+   "datei": "16_Stopfen_SD_v52",
+   "wenn": "v52",
+   "name": {
+    "de": "16 Stopfen SD-Schlitz v5.2",
+    "en": "16 Plug SD slot v5.2",
+    "fr": "16 Bouchon fente SD v5.2",
+    "it": "16 Tappo fessura SD v5.2",
+    "rm": "16 Zaffer fessa SD v5.2"
+   }
+  },
+  {
+   "id": "head52",
+   "art": "v52",
+   "bom": "petg",
+   "schritt": null,
+   "ersetzt": "head",
+   "datei": "06_Kamerakopf_v52",
+   "wenn": "v52",
+   "name": {
+    "de": "06 Kamerakopf v5.2 (Status-LED oben)",
+    "en": "06 Camera head v5.2 (status LED on top)",
+    "fr": "06 Tête de caméra v5.2 (LED d'état en haut)",
+    "it": "06 Testa della fotocamera v5.2 (LED di stato in alto)",
+    "rm": "06 Chau da la camera v5.2 (LED da status sura)"
+   }
+  },
+  {
+   "id": "diff52",
+   "art": "v52",
+   "bom": "sled",
+   "schritt": null,
+   "datei": "14_Diffusor_Status_LED",
+   "wenn": "v52",
+   "name": {
+    "de": "14 Diffusor «Blinki-Auge» + 15 Pupillenring",
+    "en": "14 Diffuser «Blinki eye» + 15 pupil ring",
+    "fr": "14 Diffuseur «œil de Blinki» + 15 anneau pupille",
+    "it": "14 Diffusore «occhio di Blinki» + 15 anello pupilla",
+    "rm": "14 Diffusur «egl da Blinki» + 15 anè da pupilla"
+   }
+  },
+  {
+   "id": "sockel",
+   "art": "dev",
+   "bom": "petg",
+   "schritt": null,
+   "ersetzt": "ups",
+   "datei": "13_Entwicklungs_Sockel",
+   "wenn": "entwicklung",
+   "name": {
+    "de": "13 Entwicklungs-Sockel (statt UPS HAT + Akkus)",
+    "en": "13 Development socket (instead of UPS HAT + cells)",
+    "fr": "13 Socle de développement (au lieu de l'UPS HAT + accus)",
+    "it": "13 Zoccolo di sviluppo (al posto di UPS HAT + batterie)",
+    "rm": "13 Zocla da svilup (empè da l'UPS HAT + accus)"
+   }
+  },
+  {
+   "id": "resplug",
+   "art": "v52",
+   "bom": "petg",
+   "schritt": null,
+   "datei": "17_Blindstopfen_Reserve",
+   "wenn": "v52",
+   "name": {
+    "de": "17 Blindstopfen Reserve-Öffnung hinten (GX12)",
+    "en": "17 Blind plug reserve opening rear (GX12)",
+    "fr": "17 Bouchon ouverture de réserve arrière (GX12)",
+    "it": "17 Tappo apertura di riserva posteriore (GX12)",
+    "rm": "17 Zaffer avertura da reserva davos (GX12)"
+   }
+  },
+  {
+   "id": "lampdrv",
+   "art": "v52",
+   "bom": null,
+   "schritt": null,
+   "wenn": "v52",
+   "name": {
+    "de": "PLATZHALTER Lampentreiber (Feld 30 × 20, 2 × M2,5)",
+    "en": "PLACEHOLDER lamp driver (area 30 × 20, 2 × M2.5)",
+    "fr": "EMPLACEMENT pilote de lampe (30 × 20, 2 × M2,5)",
+    "it": "SEGNAPOSTO driver lampade (30 × 20, 2 × M2,5)",
+    "rm": "PLAZZA driver da lampas (30 × 20, 2 × M2,5)"
+   }
+  },
+  {
+   "id": "fuseh",
+   "art": "v52",
+   "bom": "fuse2",
+   "schritt": null,
+   "wenn": "v52",
+   "name": {
+    "de": "Sicherungshalter 5 A (Akku B+) in der Klammer am Boden",
+    "en": "Fuse holder 5 A (battery B+) in the floor clip",
+    "fr": "Porte-fusible 5 A (batterie B+) dans le clip au fond",
+    "it": "Portafusibile 5 A (batteria B+) nella clip sul fondo",
+    "rm": "Purtader da segirezza 5 A (accu B+) en la clip sin il fund"
+   }
   }
  ],
  "schritte": [
@@ -2164,7 +2360,8 @@
  "druckdateien": [
   "MotionWatch_v5-1_Platte_A_Unterteil.3mf",
   "MotionWatch_v5-1_Platte_B_Deckel_Kopf.3mf",
-  "v5-2/MotionWatch_v5-2_Platte_A_Unterteil.3mf"
+  "v5-2/MotionWatch_v5-2_Platte_A_Unterteil.3mf",
+  "v5-2/MotionWatch_v5-2_Platte_B_Deckel_Kopf.3mf"
  ],
  "github": "https://github.com/DonElektro/MotionWatch",
  "_hinweis_bauen": "real-bauen (01.11.2026): dazu für MoveEye → Mehr → «Bauen» und den Simulator (Mehr → «Bauen»): Varianten, Einkauf (Preise geschätzt, Händler-Suchlinks), Drucken (pro Teil), Werkzeug, Sicherheit, Verkabeln (Pins und Kanäle aus dem Code, «code» = Prüfwert für werkzeuge/bau_pruefen.py), Software, Inbetriebnahme, Fehlersuche (Kennungen aus simulator3d/fehler_katalog.json), Wartung. «wenn»: nur in dieser Variante (v52 | ups | netz | mover). «unklar»: offen, nicht geprüft – bitte klären.",
@@ -2229,6 +2426,16 @@
       "fr": "sans batterie (alimentation 12 V)",
       "it": "senza batteria (alimentatore 12 V)",
       "rm": "senza accu (alimentaziun 12 V)"
+     }
+    },
+    {
+     "id": "entwicklung",
+     "name": {
+      "de": "Entwicklung: Sockel statt Akku, Pi-Netzteil",
+      "en": "Development: socket instead of battery, Pi power supply",
+      "fr": "Développement : socle au lieu de la batterie, alim. du Pi",
+      "it": "Sviluppo: zoccolo al posto della batteria, alimentatore del Pi",
+      "rm": "Svilup: zocla empè da l'accu, alimentaziun dal Pi"
      }
     }
    ]
@@ -2518,6 +2725,132 @@
      "it": "flangia in basso (solo senza fotocamera grandangolare)",
      "rm": "flansch sut (mo senza camera largangulara)"
     }
+   },
+   {
+    "stueck": 1,
+    "fuellung": 100,
+    "waende": 2,
+    "stuetzen": false,
+    "schicht": "0.12",
+    "brim": 0,
+    "wenn": "v52",
+    "datei": "10_Stopfen_HDMI_USB_v52",
+    "zeit_h": 0.4,
+    "liegt": {
+     "de": "Flansch unten",
+     "en": "flange down",
+     "fr": "bride en bas",
+     "it": "flangia in basso",
+     "rm": "flansch sut"
+    }
+   },
+   {
+    "stueck": 1,
+    "fuellung": 100,
+    "waende": 2,
+    "stuetzen": false,
+    "schicht": "0.12",
+    "brim": 0,
+    "wenn": "v52",
+    "datei": "16_Stopfen_SD_v52",
+    "zeit_h": 0.2,
+    "liegt": {
+     "de": "Flansch unten",
+     "en": "flange down",
+     "fr": "bride en bas",
+     "it": "flangia in basso",
+     "rm": "flansch sut"
+    }
+   },
+   {
+    "stueck": 1,
+    "fuellung": 100,
+    "waende": 2,
+    "stuetzen": false,
+    "schicht": "0.12",
+    "brim": 0,
+    "wenn": "v52",
+    "datei": "14_Diffusor_Status_LED",
+    "zeit_h": 0.3,
+    "liegt": {
+     "de": "Zapfen unten, PETG natur/weiss",
+     "en": "peg down, PETG natural/white",
+     "fr": "tenon en bas, PETG naturel/blanc",
+     "it": "perno in basso, PETG naturale/bianco",
+     "rm": "pivel sut, PETG natira/alv"
+    }
+   },
+   {
+    "stueck": 1,
+    "fuellung": 100,
+    "waende": 2,
+    "stuetzen": false,
+    "schicht": "0.12",
+    "brim": 0,
+    "wenn": "v52",
+    "datei": "15_Pupillenring",
+    "zeit_h": 0.1,
+    "liegt": {
+     "de": "flach, PETG schwarz",
+     "en": "flat, PETG black",
+     "fr": "à plat, PETG noir",
+     "it": "piatto, PETG nero",
+     "rm": "plat, PETG nair"
+    }
+   },
+   {
+    "datei": "06_Kamerakopf_v52",
+    "stueck": 1,
+    "fuellung": 20,
+    "waende": 3,
+    "stuetzen": false,
+    "schicht": "0.20",
+    "brim": 5,
+    "zeit_h": 2.8,
+    "liegt": {
+     "de": "rechte Seitenwand",
+     "en": "right side wall",
+     "fr": "paroi latérale droite",
+     "it": "parete laterale destra",
+     "rm": "paraid laterala dretga"
+    },
+    "wenn": "v52"
+   },
+   {
+    "datei": "13_Entwicklungs_Sockel",
+    "stueck": 1,
+    "fuellung": 15,
+    "waende": 3,
+    "stuetzen": false,
+    "schicht": "0.20",
+    "brim": 0,
+    "zeit_h": 2.0,
+    "wenn": "entwicklung",
+    "liegt": {
+     "de": "Rahmen unten (Bolzen oben)",
+     "en": "frame down (posts up)",
+     "fr": "cadre en bas (colonnes en haut)",
+     "it": "telaio in basso (colonnine in alto)",
+     "rm": "rom sut (pivels sura)"
+    }
+   },
+   {
+    "datei": "17_Blindstopfen_Reserve",
+    "stueck": 1,
+    "fuellung": 100,
+    "waende": 2,
+    "stuetzen": false,
+    "schicht": "0.12",
+    "brim": 0,
+    "zeit_h": 0.2,
+    "wenn": "v52",
+    "liegt": {
+     "de": "Flansch unten",
+     "en": "flange down",
+     "fr": "bride en bas",
+     "it": "flangia in basso",
+     "rm": "flansch sut"
+    }
    }
   ],
   "hinweise": [
@@ -2705,6 +3038,18 @@
    "menge": "6×",
    "was": "M3 × 10",
    "schritt": 13
+  },
+  {
+   "menge": "4×",
+   "was": {
+    "de": "M2,5 × 6 (Pi auf Sockel 13)",
+    "en": "M2.5 × 6 (Pi on socket 13)",
+    "fr": "M2,5 × 6 (Pi sur socle 13)",
+    "it": "M2,5 × 6 (Pi su zoccolo 13)",
+    "rm": "M2,5 × 6 (Pi sin zocla 13)"
+   },
+   "schritt": 4,
+   "wenn": "entwicklung"
   }
  ],
  "sicherheit": [
@@ -3097,6 +3442,18 @@
     "x": 58,
     "y": 70,
     "wenn": "mover"
+   },
+   "fuse2": {
+    "name": {
+     "de": "Sicherung 5 A (Akku)",
+     "en": "Fuse 5 A (battery)",
+     "fr": "Fusible 5 A (batterie)",
+     "it": "Fusibile 5 A (batteria)",
+     "rm": "Segirezza 5 A (accu)"
+    },
+    "x": 14,
+    "y": 78,
+    "wenn": "ups"
    }
   },
   "verbindungen": [
@@ -3148,16 +3505,30 @@
    {
     "id": "akku_buck",
     "von": "ups",
-    "nach": "buck",
+    "nach": "fuse2",
     "art": "strom",
     "pins": {
-     "de": "Akku-Lötpunkte B+ / B− des UPS HAT (E) (12–16,8 V) → eigener Step-Down 6–36 V → 5 V (VIN / GND). Ersatz: USB-A-5-V-Buchse des HAT",
-     "en": "battery solder pads B+ / B− of the UPS HAT (E) (12–16.8 V) → own step-down 6–36 V → 5 V (VIN / GND). Fallback: USB-A 5 V socket of the HAT",
-     "fr": "pastilles B+ / B− de la batterie du UPS HAT (E) (12–16,8 V) → propre abaisseur 6–36 V → 5 V (VIN / GND). Secours : prise USB-A 5 V du HAT",
-     "it": "piazzole B+ / B− della batteria dell'UPS HAT (E) (12–16,8 V) → step-down proprio 6–36 V → 5 V (VIN / GND). Riserva: presa USB-A 5 V dell'HAT",
-     "rm": "puncts da lotar B+ / B− da l'accu dal UPS HAT (E) (12–16,8 V) → agen step-down 6–36 V → 5 V (VIN / GND). Remplazzament: bischla USB-A 5 V dal HAT"
+     "de": "Akku-Lötpunkte B+ / B− des UPS HAT (E) (12–16,8 V) → Flachsicherung 5 A in B+ (fliegender Halter, nahe am HAT). Ersatz: USB-A-5-V-Buchse des HAT",
+     "en": "battery solder pads B+ / B− of the UPS HAT (E) (12–16.8 V) → blade fuse 5 A in B+ (inline holder, close to the HAT). Fallback: USB-A 5 V socket of the HAT",
+     "fr": "pastilles B+ / B− de la batterie de la UPS HAT (E) (12–16,8 V) → fusible plat 5 A sur B+ (support volant, près du HAT). Secours : prise USB-A 5 V du HAT",
+     "it": "piazzole B+ / B− della batteria della UPS HAT (E) (12–16,8 V) → fusibile lamellare 5 A su B+ (portafusibile volante, vicino all'HAT). Riserva: presa USB-A 5 V dell'HAT",
+     "rm": "puncts da lotar B+ / B− da l'accu da l'UPS HAT (E) (12–16,8 V) → segirezza plata 5 A en B+ (purtader liber, datiers da l'HAT). Remplazzament: bischla USB-A 5 V da l'HAT"
     },
     "wenn": "ups"
+   },
+   {
+    "id": "akku_buck2",
+    "von": "fuse2",
+    "nach": "buck",
+    "art": "strom",
+    "wenn": "ups",
+    "pins": {
+     "de": "nach der Sicherung → eigener Step-Down 6–36 V → 5 V (VIN / GND)",
+     "en": "after the fuse → own step-down 6–36 V → 5 V (VIN / GND)",
+     "fr": "après le fusible → abaisseur 6–36 V → 5 V (VIN / GND)",
+     "it": "dopo il fusibile → step-down 6–36 V → 5 V (VIN / GND)",
+     "rm": "suenter la segirezza → step-down 6–36 V → 5 V (VIN / GND)"
+    }
    },
    {
     "id": "servo_strom",
@@ -4135,6 +4506,40 @@
     "it": "seguirà più tardi: telaio, corrente motore e fissaggio (dado treppiede 1/4\")",
     "rm": "suonda pli tard: chassis, current dal motor e fixaziun (mutter da stativ 1/4\")"
    }
+  },
+  {
+   "wenn": "entwicklung",
+   "titel": {
+    "de": "Entwicklungs-Variante ohne Akku",
+    "en": "Development variant without battery",
+    "fr": "Variante de développement sans batterie",
+    "it": "Variante di sviluppo senza batteria",
+    "rm": "Variante da svilup senza accu"
+   },
+   "text": {
+    "de": "Statt UPS HAT (E) und Akkus den Sockel 13 in den Akku-Zaun drücken (Klemmrippen), den Pi mit 4 × M2,5 × 6 auf die Bolzen schrauben – gleiche Lage und Höhe wie mit Akku, HDMI-/USB-C-Fenster und Kamerakabel passen. Der Pi bekommt Strom über sein eigenes USB-C-Netzteil (5,1 V / 5 A) durch das Service-Fenster. Servos, Lampen und Verstärker: das 12-V-Netzteil (mind. 3 A) an die GX16-Ladebuchse (Pins wie beim Laden: 2 Kontakte +, 2 Kontakte −); die 5-A-Sicherung bleibt in der Leitung, dahinter auf den Eingang des Step-down (6–36 V → 5 V). Nur 12 V verwenden, Polung prüfen – es gibt keinen Verpolungsschutz. In dieser Variante zeigen Akku-%, INA219 und Lade-LED nichts.",
+    "en": "Instead of the UPS HAT (E) and cells press socket 13 into the battery fence (clamp ribs) and screw the Pi onto the posts with 4 × M2.5 × 6 – same position and height as with the battery, HDMI/USB-C window and camera cables fit. The Pi gets power from its own USB-C power supply (5.1 V / 5 A) through the service window. Servos, lamps and amplifier: the 12 V power supply (at least 3 A) to the GX16 charging socket (pins as for charging: 2 contacts +, 2 contacts −); the 5 A fuse stays in the line, then to the input of the step-down (6–36 V → 5 V). Use 12 V only and check the polarity – there is no reverse-polarity protection. In this variant battery %, INA219 and the charging LED show nothing.",
+    "fr": "Au lieu de l'UPS HAT (E) et des accus, enfoncer le socle 13 dans l'enclos (nervures de serrage) et visser le Pi sur les colonnes avec 4 × M2,5 × 6 – même position et hauteur qu'avec la batterie. Le Pi est alimenté par son propre bloc USB-C (5,1 V / 5 A) par la fenêtre de service. Servos, lampes et ampli : l'alimentation 12 V (au moins 3 A) sur la prise GX16 (broches comme pour la charge : 2 +, 2 −) ; le fusible 5 A reste dans la ligne, puis l'entrée de l'abaisseur (6–36 V → 5 V). Uniquement 12 V, vérifier la polarité – pas de protection. Dans cette variante, % batterie, INA219 et LED de charge n'affichent rien.",
+    "it": "Al posto dell'UPS HAT (E) e delle batterie premere lo zoccolo 13 nel recinto (nervature di bloccaggio) e avvitare il Pi sulle colonnine con 4 × M2,5 × 6 – stessa posizione e altezza che con la batteria. Il Pi è alimentato dal suo alimentatore USB-C (5,1 V / 5 A) attraverso la finestra di servizio. Servo, lampade e amplificatore: l'alimentatore 12 V (almeno 3 A) alla presa GX16 (pin come per la carica: 2 +, 2 −); il fusibile 5 A resta nella linea, poi all'ingresso dello step-down (6–36 V → 5 V). Solo 12 V, controllare la polarità – non c'è protezione. In questa variante % batteria, INA219 e LED di carica non mostrano nulla.",
+    "rm": "Empè da l'UPS HAT (E) e dals accus smatgar la zocla 13 en il chasté (costas da serrar) e fixar il Pi cun 4 × M2,5 × 6 – medema posiziun ed autezza sco cun l'accu. Il Pi survegn current da ses agen alimentader USB-C (5,1 V / 5 A) tras la fanestra da servetsch. Servos, lampas ed amplificatur: l'alimentaziun da 12 V (almain 3 A) a la bischla GX16 (pins sco per chargiar: 2 +, 2 −); la segirezza da 5 A resta en la lingia, lura a l'entrada dal step-down (6–36 V → 5 V). Mo 12 V, controllar la polaritad – i na dat nagina protecziun. En questa variante mussan % d'accu, INA219 e LED da chargiar nagut."
+   }
+  },
+  {
+   "wenn": "v52",
+   "titel": {
+    "de": "SD-Karte (v5.2)",
+    "en": "SD card (v5.2)",
+    "fr": "Carte SD (v5.2)",
+    "it": "Scheda SD (v5.2)",
+    "rm": "Carta SD (v5.2)"
+   },
+   "text": {
+    "de": "Die microSD-Verlängerung (15 cm) in den Kartenslot des Pi stecken. Den Einbau-Kartenhalter (Platine ca. 22 × 15 mm, 2 Löcher M2,5 im Abstand 18 mm) mit 2 × M2,5 × 6 an die zwei Dome innen an der Lüftungswand über dem PCA9685 schrauben; der Kartenschlitz liegt hinter dem Wandschlitz 14 × 3 mm. Aussen den Stopfen 16 einsetzen. Masse der gekauften Platine vorher nachmessen.",
+    "en": "Plug the microSD extension (15 cm) into the card slot of the Pi. Screw the panel card holder (board approx. 22 × 15 mm, 2 holes M2.5, 18 mm apart) with 2 × M2.5 × 6 to the two bosses on the inside of the vent wall above the PCA9685; the card slot sits behind the 14 × 3 mm wall slot. Insert plug 16 from outside. Measure the board you bought first.",
+    "fr": "Brancher la rallonge microSD (15 cm) dans le lecteur du Pi. Visser le support encastrable (platine env. 22 × 15 mm, 2 trous M2,5 à 18 mm) avec 2 × M2,5 × 6 sur les deux dômes à l'intérieur de la paroi d'aération au-dessus du PCA9685 ; la fente de carte se trouve derrière la fente 14 × 3 mm. Mettre le bouchon 16 à l'extérieur. Mesurer d'abord la platine achetée.",
+    "it": "Inserire la prolunga microSD (15 cm) nello slot del Pi. Avvitare il portaschede (scheda circa 22 × 15 mm, 2 fori M2,5 a 18 mm) con 2 × M2,5 × 6 alle due torrette all'interno della parete di ventilazione sopra il PCA9685; la fessura della scheda è dietro la fessura 14 × 3 mm. Inserire il tappo 16 dall'esterno. Misurare prima la scheda acquistata.",
+    "rm": "Metter la prolungaziun microSD (15 cm) en il slot dal Pi. Fixar il purtader integrà (platina ca. 22 × 15 mm, 2 foras M2,5 en distanza da 18 mm) cun 2 × M2,5 × 6 vi dals dus cupels a l'intern da la paraid da ventilaziun sur il PCA9685; la fessa da la carta è davos la fessa 14 × 3 mm. Metter il zaffer 16 da l'exteriur. Mesirar avant la platina cumprada."
+   }
   }
  ],
  "druckdateien_einzeln": [
@@ -4149,8 +4554,23 @@
   "MoveEye_v5-1_09_Zwischenboden.3mf",
   "MoveEye_v5-1_10_HDMI_Stopfen.3mf",
   "MoveEye_v5-1_11_Fuss_4x.3mf",
-  "MoveEye_v5-2_01_Unterteil_v52.3mf",
-  "MoveEye_v5-2_12_Blindstopfen_Weitwinkel.3mf"
+  "v5-2/MoveEye_v5-2_01_Unterteil_v52.3mf",
+  "v5-2/MoveEye_v5-2_02_Deckel_mit_Laufring.3mf",
+  "v5-2/MoveEye_v5-2_03_Drehteller.3mf",
+  "v5-2/MoveEye_v5-2_04_Gabel_mit_Arm1.3mf",
+  "v5-2/MoveEye_v5-2_05_Arm2_Lagerseite.3mf",
+  "v5-2/MoveEye_v5-2_06_Kamerakopf_v52.3mf",
+  "v5-2/MoveEye_v5-2_07_Seitendeckel.3mf",
+  "v5-2/MoveEye_v5-2_08_Lampenhalter_2x.3mf",
+  "v5-2/MoveEye_v5-2_09_Zwischenboden.3mf",
+  "v5-2/MoveEye_v5-2_10_Stopfen_HDMI_USB_v52.3mf",
+  "v5-2/MoveEye_v5-2_11_Fuss_4x.3mf",
+  "v5-2/MoveEye_v5-2_12_Blindstopfen_Weitwinkel.3mf",
+  "v5-2/MoveEye_v5-2_13_Entwicklungs_Sockel.3mf",
+  "v5-2/MoveEye_v5-2_14_Diffusor_Status_LED.3mf",
+  "v5-2/MoveEye_v5-2_15_Pupillenring.3mf",
+  "v5-2/MoveEye_v5-2_16_Stopfen_SD_v52.3mf",
+  "v5-2/MoveEye_v5-2_17_Blindstopfen_Reserve.3mf"
  ],
  "ui_bauen": [
   {
@@ -4809,28 +5229,45 @@
    "cable_cam1",
    "cable_cam0_52",
    "buttons",
-   "sled"
+   "sled",
+   "plug52",
+   "sdplug",
+   "head52",
+   "diff52",
+   "resplug",
+   "lampdrv",
+   "fuseh"
   ],
   "ersetzt": {
    "tub52": "tub",
    "mosfet52": "mosfet",
-   "cable_cam0_52": "cable_cam"
+   "cable_cam0_52": "cable_cam",
+   "plug52": "plug",
+   "head52": "head"
   },
   "bom_gruppe": "v52",
   "druckdateien": [
-   "v5-2/MotionWatch_v5-2_Platte_A_Unterteil.3mf"
+   "v5-2/MotionWatch_v5-2_Platte_A_Unterteil.3mf",
+   "v5-2/MotionWatch_v5-2_Platte_B_Deckel_Kopf.3mf"
   ],
   "druckteile_neu": [
    "01_Unterteil_v52",
-   "12_Blindstopfen_Weitwinkel"
+   "06_Kamerakopf_v52",
+   "10_Stopfen_HDMI_USB_v52",
+   "12_Blindstopfen_Weitwinkel",
+   "14_Diffusor_Status_LED",
+   "15_Pupillenring",
+   "16_Stopfen_SD_v52",
+   "13_Entwicklungs_Sockel",
+   "17_Blindstopfen_Reserve"
   ],
   "anleitung": "Dokumente/LIESMICH_Montage_v5-2.md",
   "hinweis": {
-   "de": "Platte A v5.2 ersetzt Platte A v5.1 (Unterteil mit Weitwinkel-Fenster). Platte B bleibt v5.1. Vor dem Druck die Masse der Liste «Nachmessen» prüfen.",
-   "en": "Plate A v5.2 replaces plate A v5.1 (lower part with wide window). Plate B stays v5.1. Check the «measure first» list before printing.",
-   "fr": "La plaque A v5.2 remplace la plaque A v5.1 (partie inférieure avec fenêtre grand angle). La plaque B reste v5.1. Vérifier la liste « à mesurer » avant l'impression.",
-   "it": "La piastra A v5.2 sostituisce la piastra A v5.1 (parte inferiore con finestra grandangolare). La piastra B resta v5.1. Prima di stampare controllare l'elenco «da misurare».",
-   "rm": "La platta A v5.2 remplazza la platta A v5.1 (part sut cun fanestra largangulara). La platta B resta v5.1. Avant la stampa controllar la glista «mesirar»."
+   "de": "Platte A und B v5.2 ersetzen die Platten v5.1 (Unterteil mit Weitwinkel-Fenster, Service-Fenster HDMI/USB-C, SD-Schlitz; Kopf mit Status-LED). Vor dem Druck die Liste «Nachmessen» prüfen.",
+   "en": "Plates A and B v5.2 replace the v5.1 plates (lower part with wide window, service window HDMI/USB-C, SD slot; head with status LED). Check the «measure first» list before printing.",
+   "fr": "Les plaques A et B v5.2 remplacent les plaques v5.1 (partie inférieure avec fenêtre grand angle, fenêtre de service HDMI/USB-C, fente SD ; tête avec LED d'état). Vérifier la liste « à mesurer » avant l'impression.",
+   "it": "Le piastre A e B v5.2 sostituiscono le piastre v5.1 (parte inferiore con finestra grandangolare, finestra di servizio HDMI/USB-C, fessura SD; testa con LED di stato). Prima di stampare controllare l'elenco «da misurare».",
+   "rm": "Las plattas A e B v5.2 remplazzan las plattas v5.1 (part sut cun fanestra largangulara, fanestra da servetsch HDMI/USB-C, fessa SD; chau cun LED da status). Avant la stampa controllar la glista «mesirar»."
   },
   "nachmessen": [
    {
@@ -4867,11 +5304,26 @@
     "fr": "UPS HAT (E) avec accus (comme v5.1 : supposé 90 × 80 × 26 mm)",
     "it": "UPS HAT (E) con batterie (come v5.1: ipotizzato 90 × 80 × 26 mm)",
     "rm": "UPS HAT (E) cun accus (sco v5.1: supponì 90 × 80 × 26 mm)"
+   },
+   {
+    "de": "Service-Fenster: Lage USB-C (x 85) und HDMI am Pi 5; SD: microSD-Verlängerung mit Einbau-Kartenhalter (Lochabstand 18 mm, Platine ca. 22 × 15 mm)",
+    "en": "Service window: position of USB-C (x 85) and HDMI on the Pi 5; SD: microSD extension with panel card holder (hole spacing 18 mm, board approx. 22 × 15 mm)",
+    "fr": "Fenêtre de service : position USB-C (x 85) et HDMI du Pi 5 ; SD : rallonge microSD avec support encastrable (entraxe 18 mm, platine env. 22 × 15 mm)",
+    "it": "Finestra di servizio: posizione USB-C (x 85) e HDMI del Pi 5; SD: prolunga microSD con portaschede da incasso (interasse 18 mm, scheda circa 22 × 15 mm)",
+    "rm": "Fanestra da servetsch: posiziun USB-C (x 85) e HDMI dal Pi 5; SD: prolungaziun microSD cun purtader integrà (distanza 18 mm, platina ca. 22 × 15 mm)"
+   },
+   {
+    "de": "Lampentreiber: noch unbekannt – Feld 30 × 20 mit 2 Domen M2,5 ist ein Platzhalter (DRV_HOLES); Sicherungshalter 30 × 13 × 10 (FUSE_*)",
+    "en": "Lamp driver: still unknown – the 30 × 20 area with 2 M2.5 bosses is a placeholder (DRV_HOLES); fuse holder 30 × 13 × 10 (FUSE_*)",
+    "fr": "Pilote de lampe : encore inconnu – la zone 30 × 20 avec 2 dômes M2,5 est provisoire (DRV_HOLES) ; porte-fusible 30 × 13 × 10 (FUSE_*)",
+    "it": "Driver lampade: ancora sconosciuto – il campo 30 × 20 con 2 torrette M2,5 è provvisorio (DRV_HOLES); portafusibile 30 × 13 × 10 (FUSE_*)",
+    "rm": "Driver da lampas: anc nunenconuschent – il champ 30 × 20 cun 2 cupels M2,5 è provisoric (DRV_HOLES); purtader da segirezza 30 × 13 × 10 (FUSE_*)"
    }
   ],
   "_hinweis": "Variante «gehaeuse» = v52 (Wahl im Bau-Bereich, real-bauen: varianten / «wenn»: v52): echtes Unterteil v5.2 aus Quellcode/v52.py. teile = Teile mit art v52 (modelle.json «variante» 5.2), ersetzt = Teil v5.2 -> Teil v5.1, das in dieser Variante wegfällt; druckdateien ersetzen die Platte A v5.1; nachmessen = vor dem Druck prüfen.",
   "ersetzt_druckdateien": {
-   "v5-2/MotionWatch_v5-2_Platte_A_Unterteil.3mf": "MotionWatch_v5-1_Platte_A_Unterteil.3mf"
+   "v5-2/MotionWatch_v5-2_Platte_A_Unterteil.3mf": "MotionWatch_v5-1_Platte_A_Unterteil.3mf",
+   "v5-2/MotionWatch_v5-2_Platte_B_Deckel_Kopf.3mf": "MotionWatch_v5-1_Platte_B_Deckel_Kopf.3mf"
   }
  },
  "farben": {
@@ -4884,7 +5336,8 @@
    "head",
    "side",
    "lamp1",
-   "lamp2"
+   "lamp2",
+   "head52"
   ],
   "turntable": "#f59a4a",
   "yoke": "#f59a4a",
@@ -4892,6 +5345,7 @@
   "head": "#f59a4a",
   "side": "#f59a4a",
   "lamp1": "#f59a4a",
-  "lamp2": "#f59a4a"
+  "lamp2": "#f59a4a",
+  "head52": "#f59a4a"
  }
 }

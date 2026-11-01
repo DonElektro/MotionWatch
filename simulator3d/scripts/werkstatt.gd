@@ -564,6 +564,10 @@ func _focus_step() -> void:
 	_place_cam()
 
 
+func _dev() -> bool:
+	return str(_vars().get("akku", "")) == "entwicklung"
+
+
 func _is_print(id: String) -> bool:
 	"""a printed part (v5.1 «druck» or a part of a variant with its own print file, e.g. 01_Unterteil_v52)"""
 	var r = rows.get(id)
@@ -577,8 +581,12 @@ func _shown(id: String) -> bool:
 	var art := str(r[1])
 	if art == "v52":
 		return v52 and step == 0 and (inner or _is_print(id) or bool(parts[id]["e"].get("aussen", false)))
-	if v52 and step == 0 and repl.has(id) and parts.has(repl[id]):
-		return false                                  # v5.2: replaced by the real part of the variant (lower part, ...)
+	if art == "dev":                                  # Entwicklungs-Variante ohne Akku (Sockel 13 statt UPS HAT + Akkus)
+		return _dev() and step == 0 and inner
+	if step == 0 and repl.has(id) and parts.has(repl[id]):
+		var ra := str((rows.get(repl[id], ["", ""]) as Array)[1])
+		if (ra == "v52" and v52) or (ra == "dev" and _dev()):
+			return false                              # replaced by the part of the variant (lower part v5.2, socket ...)
 	if step == 1:
 		return art == "druck"
 	if step > 1 and int(r[4]) > step:
@@ -757,6 +765,8 @@ func set_variant(g: String, v: String) -> void:
 	_mein_save()
 	if g == "gehaeuse":
 		set_v52(v == "v52")
+	elif g == "akku":
+		_paint()
 	if is_open():
 		set_tab(tab)
 

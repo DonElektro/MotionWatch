@@ -33,6 +33,7 @@ Status aus der abhakbaren Liste: ✅ vorhanden · 🚚 bestellt · ☐ fehlt. Oh
 | ☐ | 1× | Step-Down 6–36 V → 5 V 4 A (Akku → Servos, Licht, Verstärker) | Bastelgarage 424274, oder Pololu #3782 | Akku liefert 12–16,8 V, passt. |
 | ☐ | 1 Paar | GX16 4-polig: Einbaubuchse + Kabelstecker | Bastelgarage 420241 | Ladebuchse hinten (je 2 Kontakte parallel für Plus und Minus). |
 | ☐ | 1× | Sicherungshalter fliegend + Sicherung 5 A | Mini-Kfz (ATM) 5 A | Direkt hinter der GX12-Buchse. |
+| ☐ | 1× | Flachsicherung 5 A mit Halter (2. Sicherung) | Mini-Kfz (ATM) 5 A | In der Akku-Leitung B+ des UPS HAT (E) zum Step-Down (Servos, Licht, Verstärker), nahe am HAT. Neu 01.11.2026. |
 | ☐ | 1× | USB-C-Stecker (male) zum Anlöten | USB-C Plug Breakout | Verbindet den D36V50F5 mit dem UPS HAT. Eine Variante mit 56-kΩ-Widerstand auf CC nehmen. |
 | ☐ | 1× | Lade-LED 3 mm + Vorwiderstand + Lichtleiter | LED 3 mm grün, PMMA-Rundstab 3 mm | Lichtleiter hinten neben der Ladebuchse. |
 

@@ -32,7 +32,9 @@ WC_LENS_H = 11.4                     # NACHMESSEN: Platinen-Vorderseite -> Linse
 WC_BOARD = (25.0, 24.0, 1.0)         # Breite (y), Höhe, Dicke
 WC_LENS_FROM_TOP = 9.5               # NACHMESSEN: Linsenmitte unter Platinen-Oberkante (wie CM3, bei der Wide prüfen)
 WC_HOLES = [(dy, dv) for dy in (-10.5, 10.5) for dv in (9.5 - 2.0, 9.5 - 14.5)]   # 21 x 12,5 mm, M2
-WC_PAD = 1.0                         # Auflage-Polster (Platine liegt nur an den Löchern auf)
+WC_PAD = 1.6                         # Auflage-Polster (Platine liegt nur an den Löchern auf)
+WC_RIB_W = 6.5                       # Rippenbreite (y); 01.11.2026: 5 -> 6,5, damit um das M2-Loch >= 1,5 mm bleiben
+WC_PAD_D = 6.0                       # Polster-Ø (vorher 5)
 WC_PILOT = 1.7                       # Kernloch M2 selbstschneidend
 WC_FOV_H, WC_FOV_V = 58.5, 46.7      # halbe Fenster-Winkel (tan-Mass): Ecken 56,5° / 44,7° + 2° Reserve
 WC_R0 = 3.0                          # NACHMESSEN: halbe Öffnung der Frontlinse (geschätzt, Ø6) – Fenster-Startquerschnitt
@@ -47,9 +49,10 @@ IRW_LENS_D = 17.0                    # NACHMESSEN: Ø der Linse vorne = Loch in 
 IRW_TOL = 0.4                        # Spiel Modul in der Hülse (Ø)
 IRW_SLEEVE_T = 2.0                   # Hülsenwand
 IRW_SLEEVE_L = 7.0                   # Hülsenlänge ab Wand innen (länger -> 45°-Stütze trifft den Wandler)
-IRW_CHAMFER = 2.0                    # Fase 45° aussen am Loch (120°-Lichtkegel)
+IRW_CHAMFER = 0.0                    # Fase 45° aussen am Loch (120°-Lichtkegel); 01.11.2026: 2 -> 1, sonst schneidet sie den Trennsteg-Fuss an
 # --- Trennsteg aussen zwischen IR-Modul und Kamera-Fenster (gegen Streulicht, Regen von der Seite)
-TRENN_Y, TRENN_T, TRENN_L = 29.6, 1.4, 2.0   # Lage (y), Dicke, Tiefe vor der Wand (tiefer ragt ins Sichtfeld: Reserve 6 %) – NACHMESSEN: Abstand reicht?
+TRENN_Y, TRENN_T, TRENN_L = 28.6, 1.8, 1.5   # Lage (y), Dicke, Tiefe vor der Wand – ganz ausserhalb des Fenster-Keils (sonst
+                                             # bleiben dünne Reste); 01.11.2026: 1,8 dick (>= 1,5) – NACHMESSEN: Abstand reicht?
 # --- Führung für die zwei Flachkabel (CAM0 vom Kopf, CAM1 von der Weitwinkel-Kamera)
 FPC_X0 = 121.0                       # erste Rippe (nach dem HDMI-Fenster x 90..120, vor den Lüftungsschlitzen ab x 129)
 FPC_FIN, FPC_SLOT = 1.5, 1.5         # Rippendicke, Schlitzbreite (Flachkabel 0,3 mm; Platz zum Einlegen)
@@ -57,6 +60,28 @@ FPC_DEPTH = 14.0                     # Rippen ragen so weit in den Innenraum (Ka
 FPC_Z0 = 44.0                        # 45°-Unterseite beginnt an der Wand hier (über dem Pi, unter dem Deckel)
 PI_CAM1_XY = (123.25, 11.0)          # NACHMESSEN: Lage der Buchse CAM/DISP 1 am Pi 5 im Modell (geschätzt)
 PI_CAM0_XY = (126.25, 11.0)          # NACHMESSEN: Lage der Buchse CAM/DISP 0 am Pi 5 im Modell (geschätzt)
+# --- Service-Fenster (01.11.2026, Entscheid Daniel): HDMI-Notfallfenster nach links bis über die USB-C-Buchse des Pi 5
+#     verlängert (USB-C bei x = BAT_X0 + 1 + 11,2 = 85,2, z 42,7), ein Stopfen für beides (10_Stopfen_HDMI_USB_v52)
+SVC_X0, SVC_X1 = 78.0, 120.0         # Fenster x (HDMI 0/1 bei x 100 / 113,5, USB-C bei 85,2 – NACHMESSEN: Lage am Pi 5)
+# --- SD-Karte: die Karte steckt unter dem Pi mitten im Gehäuse (x 71–74, Akku darunter) – von aussen nicht erreichbar.
+#     Darum: microSD-Verlängerung mit Einbau-Kartenhalter (kleine Platine mit 2 Löchern) innen an der Lüftungswand, Schlitz
+#     in der Wand mit eigenem Stopfen (15_Stopfen_SD_v52). NACHMESSEN: Masse des Halters.
+SD_X, SD_Z = 40.0, 57.0              # Schlitzmitte (über dem PCA9685, unter dem Deckelrand)
+SD_W, SD_H = 14.0, 3.0               # Schlitz (microSD 11 × 0,8 + Griff)
+SD_HOLES_DX, SD_HOLE_DZ = 18.0, 6.0  # NACHMESSEN: Lochabstand der Halter-Platine, Löcher 6 mm über der Schlitzmitte
+SD_STAND = 3.0                       # Dome: Platine 3 mm vor der Wand (Kartenhalter ca. 2 mm hoch)
+# --- Lampentreiber (unbekannt) und 2. Sicherung (B+ Akku) nahe beim Step-down (01.11.2026, Entscheid Daniel)
+DRV_Y0, DRV_Y1, DRV_Z0, DRV_Z1 = 5.0, 35.0, 2.5, 22.5   # Feld 30 × 20 an der Stirnwand innen, unter dem Step-down
+DRV_HOLES = [(8.5, 6.5), (31.5, 18.5)]   # PLATZHALTER: Löcher (y, z) M2,5 – nach dem Kauf des Treibers anpassen
+DRV_STAND = 3.0
+FUSE_X0, FUSE_Y = 28.0, 12.5             # Flachsicherungs-Halter (Inline, 5 A) liegt auf dem Boden, Achse entlang x
+FUSE_L, FUSE_W, FUSE_H = 30.0, 13.0, 10.0   # NACHMESSEN: Körper des Halters (geschätzt)
+# --- Reserve-Öffnung hinten (+x) in GX12-Grösse mit Nut, Regendach und Blindstopfen 17
+RES_Y, RES_ZC, RES_D = 30.0, 50.0, 12.3   # zwischen den Tasten-Dächern, über dem Relais-Dach, unter dem Deckelrand
+# --- Entwicklungs-Sockel 13 (statt UPS HAT (E) + Akkus im Akku-Zaun): Pi in gleicher Lage und Höhe
+SOCK_T = 2.5                             # Wände / Rahmen
+PI_HOLES = [(3.5, 3.5), (61.5, 3.5), (3.5, 52.5), (61.5, 52.5)]   # Pi 5: 58 × 49 mm, 3,5 mm vom Rand
+SOCK_CLAMP = 0.6                         # Klemmrippe: so viel breiter als der Zaun innen (federt)
 # --- 5-mm-LED (nur IR_TYP = "5mm")
 IR_Y, IR_Z, IR_D = 26.0, 40.0, 5.2
 IR_SLEEVE_END = 5.1                  # Hülse bis x = 5,1 -> LED-Spitze bündig mit der Aussenwand (LED 8,6 lang)
@@ -142,14 +167,15 @@ def wc_mount():
     add = []
     for dy in (-10.5, 10.5):
         top = wc_hole_world(dy, 7.5); bot = wc_hole_world(dy, -5.0)
-        y0, y1 = AY + dy - 2.5, AY + dy + 2.5
-        z0 = (bot[2] - 2.5) - bot[0]                    # 45°-Unterseite: z >= z0 + x
-        z1 = top[2] + 2.5
+        y0, y1 = AY + dy - WC_RIB_W / 2, AY + dy + WC_RIB_W / 2
+        z0 = (bot[2] - 3.5) - bot[0]                    # 45°-Unterseite: z >= z0 + x (01.11.: 1 mm länger, Polster liegt ganz auf)
+        z1 = top[2] + 3.5
         end = Plane(-WA, (-WA) @ WB - WC_PAD)          # endet WC_PAD vor der Platine
         add.append(I(bracket(-0.5, bot[0] + 3, y0, y1, z0, z1, "x", 0.0), end))
     for dy, dv in WC_HOLES:
-        add.append(wc_local(cyl_x(dy, dv, -WC_PAD, 0.0, 5.0)))   # lokales x = s
-    return add
+        add.append(wc_local(cyl_x(dy, dv, -WC_PAD, 0.0, WC_PAD_D)))   # lokales x = s
+    lim = box(-10, 40, 0, LY, -1, TOPZ - 0.2)                          # nicht über den Wannenrand (Deckel liegt auf)
+    return [I(a, lim) for a in add]
 
 
 def wc_mount_cuts():
@@ -210,14 +236,17 @@ def irw_cuts():
     c = IRW_CHAMFER
     return [teardrop_x(IRW_Y, IRW_Z, 0.0, IRW_SLEEVE_L + 1, IRW_BORE),            # Modul (von innen eingeschoben)
             cyl_x(IRW_Y, IRW_Z, w0 - 1, 0.5, IRW_LENS_D),                         # Linse (Modul liegt am Lochrand an)
-            T([w0 - 0.01, IRW_Y, IRW_Z], R([0, 90, 0], Cyl(c, r1=IRW_LENS_D / 2 + c, r2=IRW_LENS_D / 2))),   # Fase 45°
+            T([w0 - 0.01, IRW_Y, IRW_Z], R([0, 90, 0], Cyl(max(c, 0.01), r1=IRW_LENS_D / 2 + c, r2=IRW_LENS_D / 2))),   # Fase 45° (0 = keine)
             cyl_z(IRW_SLEEVE_L / 2, IRW_Y, IRW_Z, IRW_Z + IRW_OD, 2.6)]            # Madenschraube M3 oben
 
 
 def trennsteg():
     """Steg aussen zwischen IR-Modul und Kamera-Fenster (45°-Unterseite, bis unter das Regendach)."""
     w0 = -WALL
-    return bracket(w0 - TRENN_L, w0 + 0.5, TRENN_Y, TRENN_Y + TRENN_T, IRW_Z - IRW_LENS_D / 2 - 2.0, VIS_Z0, "-x", w0)
+    z0 = IRW_Z - IRW_LENS_D / 2 - 2.0
+    fin = bracket(w0 - TRENN_L, w0 + 0.5, TRENN_Y, TRENN_Y + TRENN_T, z0, VIS_Z0, "-x", w0)
+    fin = I(fin, box(w0 - TRENN_L - 1, w0 + 1, TRENN_Y - 1, TRENN_Y + TRENN_T + 1, z0 + 1.6, VIS_Z0 + 1))   # keine Messerkante unten
+    return fin
 
 
 def fpc_guide():
@@ -228,6 +257,123 @@ def fpc_guide():
         x0 = FPC_X0 + i * (FPC_FIN + FPC_SLOT)
         out.append(bracket(x0, x0 + FPC_FIN, -0.5, FPC_DEPTH, FPC_Z0, TOPZ - 0.5, "y", 0.0))
     return out
+
+
+def svc_cut():
+    hz = v5.PI_Z + 4
+    w = SVC_X1 - SVC_X0
+    return T([(SVC_X0 + SVC_X1) / 2, -WALL / 2, hz - v5.HDMI_H / 2], RBox(w, WALL + 2, v5.HDMI_H, 2))
+
+
+def part_service_plug():
+    """Stopfen für das Service-Fenster (HDMI + USB-C), wie der HDMI-Stopfen v5.1, nur länger. Druck: Flansch unten."""
+    W, H, tol = SVC_X1 - SVC_X0, v5.HDMI_H, 0.2                  # Spiel 0,2 (v5.1: 0,3 = kein Halt)
+    core = RBox(W - 2 * tol, H - 2 * tol, 1.5 + WALL - 0.3, 2 - tol)
+    flange = RBox(W + 6, H + 6, 1.5, 3)
+    grip = box(-6, 6, -(H + 6) / 2 - 4, -(H + 6) / 2 + 0.5, 0, 1.5)
+    return D(U(flange, core, grip), T([0, 0, 1.5], RBox(W - 2 * tol - 3, H - 2 * tol - 3, 5, 1)))
+
+
+def sd_mount():
+    out = []
+    for dx in (-SD_HOLES_DX / 2, SD_HOLES_DX / 2):
+        out.append(v5.teardrop_y(SD_X + dx, SD_Z + SD_HOLE_DZ, -0.5, SD_STAND, 5.5))
+    return out
+
+
+def sd_cuts():
+    out = [T([SD_X, -WALL / 2, SD_Z - SD_H / 2], RBox(SD_W, WALL + 2, SD_H, 0.8))]
+    for dx in (-SD_HOLES_DX / 2, SD_HOLES_DX / 2):
+        out.append(cyl_y(SD_X + dx, SD_Z + SD_HOLE_DZ, -0.2, SD_STAND + 1, 2.2))       # M2,5 selbstschneidend
+    return out
+
+
+def part_sd_plug():
+    """Stopfen für den SD-Schlitz: Flansch 1,2 + Kern im Schlitz (Spiel 0,15) + Griffnase. Druck: Flansch unten."""
+    tol = 0.15
+    core = RBox(SD_W - 2 * tol, SD_H - 2 * tol, 1.6 + WALL - 0.3, 0.6)
+    flange = RBox(SD_W + 6, SD_H + 6, 1.6, 2)
+    grip = box(-3, 3, -(SD_H + 6) / 2 - 3, -(SD_H + 6) / 2 + 0.5, 0, 1.6)
+    return U(flange, core, grip)
+
+
+def teardrop_x_down(y, z, x0, x1, d):
+    """Dom entlang x an einer senkrechten Wand mit 45°-Spitze unten (ohne Stützen)"""
+    r = d / 2
+    tip = T([0, y, z], R([45, 0, 0], box(x0, x1, -r, r, -r, r)))
+    return U(cyl_x(y, z, x0, x1, d), I(tip, box(x0, x1, y - r, y + r, z - r * 1.42, z)))
+
+
+def drv_mount():
+    return [teardrop_x_down(y, z, -0.5, DRV_STAND, 5.5) for y, z in DRV_HOLES]
+
+
+def drv_cuts():
+    return [cyl_x(y, z, -0.2, DRV_STAND + 1, 2.2) for y, z in DRV_HOLES]
+
+
+def fuse_clip():
+    """2 Klammern auf dem Boden für den Sicherungshalter: je 2 Stege mit Rastnase oben (eindrücken, ohne Werkzeug lösbar)"""
+    out = []
+    w = FUSE_W + 0.4
+    for x in (FUSE_X0 + 5.0, FUSE_X0 + FUSE_L - 9.0):
+        for sgn in (-1, 1):
+            y0 = FUSE_Y + sgn * w / 2
+            out.append(box(x, x + 4.0, min(y0, y0 + sgn * 1.6), max(y0, y0 + sgn * 1.6), ZF - 0.5, ZF + FUSE_H * 0.7 + 1.0))
+            nose = I(box(x, x + 4.0, min(y0, y0 - sgn * 0.8), max(y0, y0 - sgn * 0.8), ZF + FUSE_H * 0.7, ZF + FUSE_H * 0.7 + 1.0),
+                     Plane([0, -sgn, -1], -sgn * y0 - (ZF + FUSE_H * 0.7)))   # 45° Rastschräge unten
+            out.append(nose)
+    return out
+
+
+def res_add():
+    xo = LX + WALL
+    add = [bracket(xo - 0.5, xo + 8, RES_Y - 12, RES_Y + 12, RES_ZC + 9, RES_ZC + 17, "x", xo)]
+    for yy in (RES_Y - 12, RES_Y + 10):
+        add.append(bracket(xo - 0.5, xo + 8, yy, yy + 2, RES_ZC - 14, RES_ZC + 17, "x", xo))
+    return add
+
+
+def res_cuts():
+    return [cyl_x(RES_Y, RES_ZC, LX - 1, LX + WALL + 1, RES_D),
+            box(LX - 1, LX + WALL + 1, RES_Y - 1, RES_Y + 1, RES_ZC + 5.5, RES_ZC + 7.2)]    # Nut gegen Verdrehen
+
+
+def part_res_plug():
+    """17 Blindstopfen Reserve: Zapfen Ø RES_D - 0,3 mit Nase in der Nut, Flansch Ø 18. Druck: Flansch unten."""
+    rp = (RES_D - 0.3) / 2
+    L = WALL + 1.0
+    F = 1.6                                                                       # Flansch und Wand >= 1,5 mm
+    body = U(cyl_z(0, 0, 0, F, 18.0), cyl_z(0, 0, F, F + L, 2 * rp),
+             box(rp - 0.2, rp + 1.0, -0.85, 0.85, F, F + L))                       # Nase in die Nut (eingebaut oben)
+    return D(body, cyl_z(0, 0, F + 0.6, F + L + 1, 2 * rp - 3.2))                 # hohl (spart Material)
+
+
+def part_sockel():
+    """13 Entwicklungs-Sockel: steht im Akku-Zaun statt UPS HAT + Akkus; der Pi sitzt in gleicher Lage und Höhe auf 4 Bolzen
+    M2,5. Rahmen + 2 Wände mit Fenstern (Kabel), Klemmrippen gegen den Zaun. Koordinaten wie das Unterteil."""
+    x0, x1 = v5.BAT_X0 + 0.2, v5.BAT_X0 + v5.BAT_L - 0.2           # 0,2 + 0,5 Zaun-Spiel = ca. 0,7 mm pro Seite
+    y0, y1 = 0.6, v5.BAT_W - 0.2
+    zb, zt = ZF, v5.PI_Z                                              # Unterseite / Pi-Unterseite
+    t = SOCK_T
+    px = v5.BAT_X0 + 1
+    hx = [px + a for a, b in PI_HOLES]; hy = [3.0 + b for a, b in PI_HOLES]
+    frame = D(box(x0, x1, y0, y1, zb, zb + 4.0), box(x0 + t, x1 - t, y0 + t, y1 - t, zb - 1, zb + 5))
+    walls = []
+    for x in sorted(set(hx)):                                         # 2 Wände quer (y) unter den Bolzen-Reihen
+        walls.append(box(x - t / 2, x + t / 2, y0, hy[-1] + 3.5, zb, zt - 3.0))
+    beams = [box(x0, x1, y, y + t, zb, zb + 4.0) for y in (hy[0] - t / 2, hy[-1] - t / 2)]
+    posts = [cyl_z(x, y, zb, zt, 7.0) for x, y in zip(hx, hy)]
+    clamps = []                                                       # Klemmrippen aussen an den Stirnseiten
+    for xc, sgn in ((x0, -1), (x1, 1)):
+        for yc in (20.0, 60.0):
+            clamps.append(box(min(xc, xc + sgn * (0.7 + SOCK_CLAMP)), max(xc, xc + sgn * (0.7 + SOCK_CLAMP)), yc - 2.0, yc + 2.0, zb, zb + 3.5))
+    body = U(frame, *walls, *beams, *posts, *clamps)
+    cut = [cyl_z(x, y, zt - 8.0, zt + 1, 2.2) for x, y in zip(hx, hy)]  # M2,5 selbstschneidend, 8 tief
+    for x in sorted(set(hx)):                                         # Fenster in den Wänden: Kabel, Material (Brücke 8 mm)
+        for yc in np.arange(hy[0] + 12.0, hy[-1] - 11.0, 11.0):      # nicht in die Bolzen schneiden
+            cut.append(box(x - 2, x + 2, yc - 4.0, yc + 4.0, zb + 6.0, zt - 8.0))
+    return D(body, *cut)
 
 
 def fpc_slots():
@@ -244,7 +390,8 @@ def part_tub():
     else:
         add += [irw_sleeve(), trennsteg()]
         cut += irw_cuts()
-    add += fpc_guide()
+    add += fpc_guide() + sd_mount() + drv_mount() + fuse_clip() + res_add()
+    cut += [svc_cut()] + sd_cuts() + drv_cuts() + res_cuts()
     body = U(v5.part_tub(), *add)
     for y, z in BTN:
         cut.append(cyl_x(y, z, LX - 1, LX + WALL + 1, BTN_D))
@@ -417,6 +564,14 @@ def placed(tilt=0.0, pan=180.0, blinds=False):
     P["irled"] = ir_led_dummy()
     P["btn"] = btn_dummy()
     P["mosfet"] = box(10.0, 38.0, 0.5, 2.1, ZF + 0.5, ZF + 20.5)      # neu: -y-Wand unter dem PCA9685
+    P["plug"] = T([(SVC_X0 + SVC_X1) / 2, -WALL - 1.5, v5.PI_Z + 4], R([-90, 0, 0], part_service_plug()))
+    P["sdplug"] = T([SD_X, -WALL - 1.6, SD_Z], R([-90, 0, 0], part_sd_plug()))
+    P["sdext"] = box(SD_X - 11, SD_X + 11, SD_STAND, SD_STAND + 1.6, SD_Z - 5, SD_Z + 10)    # Halter-Platine (Annahme 22 × 15)
+    P["lampdrv"] = box(DRV_STAND, DRV_STAND + 1.6, DRV_Y0, DRV_Y1, DRV_Z0, DRV_Z1)        # PLATZHALTER Lampentreiber
+    P["fuseh"] = box(FUSE_X0, FUSE_X0 + FUSE_L, FUSE_Y - FUSE_W / 2, FUSE_Y + FUSE_W / 2, ZF, ZF + FUSE_H)
+    P["resplug"] = T([LX + WALL + 1.6, RES_Y, RES_ZC], R([0, -90, 0], part_res_plug()))
+    P["sockel"] = part_sockel()
+    P["resjack"] = cyl_x(RES_Y, RES_ZC, LX - 13, LX + WALL + 6, 12)                          # GX12-Buchse (falls belegt)
     P["cam1"] = kabel(cable_cam1_pts())
     P["cam0"] = kabel(cable_cam0_pts())
     if blinds:
