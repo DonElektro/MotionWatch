@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-01 11:50",
+ "generated": "2026-11-01 11:54",
  "versions": [
+  {
+   "version": "3.36.0",
+   "file": "webcam_bewegung_3_36_0.py",
+   "url": "",
+   "sha256": "50889009c7f3eb9a13d24ab1d9c9ea2d815ca79aa09de41ecc42c628bb56da3a",
+   "date": "2026-11-01 11:54",
+   "notes": "Simulator: menschlichere Figuren – ab Grafik mittel MakeHuman-Körper aus dem nachladbaren Menschen-Paket (~5 MB), einfach (Pi) mit feinerem Körper und Gesicht; Kleidung, Rucksack, Stöcke und Lampen passend zur Szene.",
+   "size": 4670848,
+   "sig": "cde3dcdfafe9e8efa55658afba9c5d651c0cf06e2028e7f3d2690f5ed6bce7625ddf1821b2bd447e536813d8295f73ba09e5b8df0feda1565d41bc74d79d0106",
+   "data": {
+    "file": "moveeye_daten_3_36_0.zip",
+    "url": "",
+    "sha256": "0a770b3b7028cda21568dbff9d76af4c7689c78716e4629a18b09fd9af31fa5b",
+    "size": 1585160,
+    "sig": "cdea2923e026abdaaadb47f9d219f69dd51c7063307013ca4ca834905dd3094fa7f006bd45dda564def18ada708228f3cab02fb0f330256c8b1db9949df1320c"
+   }
+  },
   {
    "version": "3.35.0",
    "file": "webcam_bewegung_3_35_0.py",
    "url": "",
    "sha256": "b540c28d05aeaf97f7245b15093b1e40f2cd8c879ac599c144e248266800ca95",
-   "date": "2026-11-01 11:50",
+   "date": "2026-11-01 11:52",
    "notes": "Bergtal: ein neues Geheimnis.",
    "size": 4670877,
    "sig": "ae30852a59d0b8c4bbeb7eb4cdddd6fc6a3f5dbca3780447b386354210c95b830e838b78aee84d6b49f02ab62c78ca21ae73c5064ff2bb4a8bcc032f257b5606",
@@ -24,7 +41,7 @@
    "file": "webcam_bewegung_3_34_0.py",
    "url": "",
    "sha256": "ac7d566f7aabab2eb20e15218ead93c5a2de0c5afc27cd69c099098d1175645e",
-   "date": "2026-11-01 11:49",
+   "date": "2026-11-01 11:52",
    "notes": "Neue Seite «Gehäuse & Bau» (Mehr): Gehäuse v5.1 Schritt für Schritt, Materialliste, Druckdateien, Kapitel in der Anleitung (5 Sprachen); im Simulator die Werkstatt zum Drehen und Zerlegen, das echte Gehäuse am Gerät.",
    "size": 4671016,
    "sig": "fcb76cdf51c93f6dac1de01fffd0e3df01214409884d9e3facd378f9f6018c164b169b6f82942bf1f82dd31b6a763ea68b799350f17be0658f069eeaa7e4b206",
@@ -136,23 +153,6 @@
     "sha256": "d3041cc52dcf2010a33cca8e9dd661c81096baa7719264eca46f9b807448c267",
     "size": 1559270,
     "sig": "aa1ac77c7102a907aeef75e16a7cb49cd3bedb64f40e68daa9a4df0297a704efcf2c0befc5b5985f9f44f667d4115d6c36353464b44984b7e911578c83e3c40b"
-   }
-  },
-  {
-   "version": "3.27.0",
-   "file": "webcam_bewegung_3_27_0.py",
-   "url": "",
-   "sha256": "b580e782d8fbb2780cb6c5fe625e7344900f6d8770f360d475b31c68e59be2bd",
-   "date": "2026-11-01 02:30",
-   "notes": "Weniger Schalter: Updates mit einer Auswahl, neu «Bewegung reduzieren» und «Stimme» (an · aus · nur Untertitel) in MoveEye und Simulator, Rundgang/Blinki an einem Ort, Symbole farbig, «Beim Start: Nur Gruppen» entfällt (langer Druck bleibt), alter Python-Basis-Simulator entfernt.",
-   "size": 4482017,
-   "sig": "b6200ca512174a0ce28ddfdf81a3c2d94878c97c42c94d526fd47d6ba69ea8164666c3fad273e45ee2da31722beacc3265cc23e6bdde534d5adbaa134246ba0f",
-   "data": {
-    "file": "moveeye_daten_3_27_0.zip",
-    "url": "",
-    "sha256": "8a73a7f18c50d3ef245e8d4167a133adf385c48c2b2063ed32039b9d15462dfa",
-    "size": 1559129,
-    "sig": "7a58dbb7d114a976b16e6d8a00368d2e061c0ab95117adf5d674bd89f985b77eb1db76517526bf83f616349ac7783b300f0fe1509dd6f94686c0c0592e202a0b"
    }
   },
   {

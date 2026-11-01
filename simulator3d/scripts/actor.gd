@@ -117,6 +117,8 @@ var _lie_k := 0.0             # 3D-4.4: 0 standing … 1 lying (deer bedded down
 # ---- 3D-4.12 «Figuren»: a real figure with a skeleton (figur.gd) on «mittel» and better, the old one on «einfach» ----
 const Figur = preload("res://scripts/figur.gd")
 const FigurPaket = preload("res://scripts/figur_paket.gd")
+const FigurMensch = preload("res://scripts/figur_mensch.gd")   # «Figuren menschlicher»: MakeHuman-Körper (Menschen-Paket)
+const MenschStil = preload("res://scripts/menschen_stil.gd")   # «Figuren menschlicher»: Vielfalt pro Szene
 const Kleidung = preload("res://scripts/kleidung.gd")   # «Kleidung nach Jahreszeit» (31.10.2026)
 const Quality = preload("res://scripts/quality.gd")
 var fig = null                # the figure with a skeleton (null = built from shapes)
@@ -136,6 +138,8 @@ var _jacket_c := Color(0.3, 0.3, 0.3)
 var _cloth_t := 26.0
 var _short_sl := false            # kleidung.gd: short sleeves (summer)
 var _kleid_stufe := ""            # kleidung.gd: warm | lang | gemischt
+var stil := {}                    # menschen_stil.gd: {stil, bau, rucksack, kopf, stoecke, licht} («Figuren menschlicher»)
+var sex := ""                     # «Figuren menschlicher»: m | f (Form der Figur; "" = Kind / nicht gewählt)
 # «Animationen verbessern» (31.10.2026): eine Ergänzung nach der Grund-Animation - anim_mensch.gd / anim_tier.gd
 const AnimMensch = preload("res://scripts/anim_mensch.gd")
 const AnimTier = preload("res://scripts/anim_tier.gd")
@@ -318,8 +322,14 @@ func _build_person() -> void:
 		jacket = [Color(0.85, 0.15, 0.1), Color(0.95, 0.55, 0.1), Color(0.1, 0.55, 0.3)][randi() % 3]
 	elif variant == "cyclist":
 		jacket = _pick("sport")
+	var styled: bool = not controlled and not camo and variant in ["", "elderly", "child", "stroller", "drunk"]
+	if styled:                                                  # «Figuren menschlicher»: Kleidung, Bau, Zubehör pro Szene
+		stil = MenschStil.wahl(main, variant, variant == "child", variant == "elderly")
+		jacket = stil["jacke"]
 	var shirt: Color = [Color(0.9, 0.9, 0.88), Color(0.2, 0.25, 0.35), Color(0.6, 0.15, 0.15), Color(0.85, 0.75, 0.4)][randi() % 4]
 	var trousers: Color = Color(0.3, 0.3, 0.2) if camo else (Color(0.1, 0.1, 0.12) if jog or variant == "burglar" else _pick("trousers"))
+	if styled:
+		trousers = stil["hose"]
 	var skin := _pick("skin")
 	var hair := _pick("hair")
 	var shoe: Color = Color(0.95, 0.95, 0.95) if jog else [Color(0.12, 0.1, 0.09), Color(0.35, 0.22, 0.12), Color(0.2, 0.2, 0.22)][randi() % 3]
@@ -334,6 +344,9 @@ func _build_person() -> void:
 	if old_:
 		hair = Color(0.78, 0.78, 0.76) if randf() < 0.7 else Color(0.55, 0.55, 0.53)
 	var wide := randf_range(0.9, 1.15) if not kid else 1.0                  # build: slim … sturdy
+	if styled and not kid:                                                 # menschen_stil.gd: schlank / normal / kräftig
+		wide = {"schlank": randf_range(0.9, 0.97), "normal": randf_range(0.97, 1.05), "kraeftig": randf_range(1.07, 1.15)}[str(stil["bau"])]
+	sex = "f" if randf() < (0.5 if kid else (0.45 if not variant in ["police", "burglar", "courier"] else 0.25)) else "m"
 	var tall := randf_range(0.93, 1.07)
 	if controlled and not look.is_empty():                                 # 3D-4.12: the own look of a player
 		var lc := str(look.get("col", ""))
@@ -359,7 +372,7 @@ func _build_person() -> void:
 	if Figur.wanted(main):
 		_figure_body(jacket, shirt, trousers, skin, hair, shoe, hand_c, cloth_t, shorts, open_jacket, cold, jog, kid, old_, wide)
 	else:
-		_shape_body(jacket, shirt, trousers, skin, hair, shoe, hand_c, cloth_t, shorts, open_jacket, cold, jog)
+		_shape_body(jacket, shirt, trousers, skin, hair, shoe, hand_c, cloth_t, shorts, open_jacket, cold, jog, kid, old_)
 	if coat:                                                               # 3D-3.95: a long coat down to the knees
 		_part(hips, _cyl(0.2, 0.27, 0.62, 12), Vector3(0, -0.25, 0), jacket.darkened(0.15), cloth_t - 1.0)
 	if camo:                                                               # camouflage: darker and brown patches
@@ -368,12 +381,16 @@ func _build_person() -> void:
 			var a2 := randf() * TAU
 			_part(torso, _sph(0.07, 0.05), Vector3(cos(a2) * 0.16, randf_range(0.05, 0.45), sin(a2) * 0.12), pc, cloth_t, Vector3(0, a2, 0), Vector3(1.4, 1.0, 0.4))
 	var pack: bool = (controlled and bool(look.get("pack", false))) or (not jog and not kid and not controlled and randf() < 0.35)
+	if styled:
+		pack = bool(stil["rucksack"])
 	if nl.has("pack"):
 		pack = bool(nl["pack"])
 	if pack:   # backpack
 		add_backpack(jacket)
 	var style := randi() % 5
-	var hooded: bool = ((cold or wet) and not jog and randf() < 0.45) or variant == "burglar"
+	var hooded: bool = ((cold or wet) and not jog and randf() < (0.7 if str(stil.get("stil", "")) == "regen" else 0.45)) or variant == "burglar"
+	if styled and not hooded and not kid:                                   # menschen_stil.gd: Hut, Mütze, Cap
+		style = {"muetze": 3, "hut": 4, "cap": 5}.get(str(stil["kopf"]), style if style < 3 else 0)
 	if nl.has("hood"):
 		hooded = bool(nl["hood"]) or variant == "burglar"
 	if bool(nl.get("cap", false)) and not hooded:
@@ -383,32 +400,25 @@ func _build_person() -> void:
 		style = 3 if look.get("hat", "") == "cap" else 0
 	if hooded:                                                             # hood up
 		add_hood(jacket)
-	elif style == 0 or kid:
-		_part(head, _sph(0.112, 0.15), Vector3(0, 0.21, 0.012), hair, 30.0)                                # short hair
-	elif style == 1:
-		_part(head, _sph(0.116, 0.17), Vector3(0, 0.21, 0.015), hair, 30.0)
-		_part(head, _caps(0.07, 0.26), Vector3(0, 0.08, 0.085), hair, 30.0)                                # long hair
-	elif style == 2:
-		_part(head, _sph(0.114, 0.15), Vector3(0, 0.21, 0.012), hair, 30.0)
-		_part(head, _caps(0.035, 0.16), Vector3(0, 0.12, 0.12), hair, 30.0, Vector3(0.4, 0, 0))            # ponytail
-	elif style == 3 or (cold and not jog and not controlled):
-		_part(head, _sph(0.118, 0.14), Vector3(0, 0.23, 0.0), jacket.lightened(0.3), 28.0)                 # cap
-		_part(head, _sph(0.03), Vector3(0, 0.31, 0.0), Color(0.95, 0.95, 0.95), 26.0)
 	else:
-		_part(head, _cyl(0.115, 0.115, 0.05, 16), Vector3(0, 0.245, 0), Color(0.3, 0.25, 0.2), 27.0)       # hat
-		_part(head, _cyl(0.16, 0.16, 0.012, 18), Vector3(0, 0.22, 0), Color(0.3, 0.25, 0.2), 27.0)
+		_hair_and_hat(style, hair, jacket, cold and not jog and not controlled, kid, old_)
 	body_h = 0.9 * body_root.scale.y
 	_person_extras(jacket, cloth_t)
 	if bool(nl.get("umbrella", wet and not kid and not jog and variant in ["", "elderly"] and not controlled and randf() < 0.55)):   # 3D-3.95: umbrella in the rain
 		add_umbrella()
-	if old_:                                                              # walking stick
+	if styled and bool(stil["stoecke"]):                                 # menschen_stil.gd: two trekking poles
+		add_poles()
+	elif old_:                                                            # walking stick
 		_part(arms[1][2], _cyl(0.014, 0.014, 0.9, 6), Vector3(0.02, -0.75, -0.1), Color(0.3, 0.2, 0.12), main.ambient)
 	# at night some people carry a light: a headlamp or the light of the phone (MoveEye sees it)
 	var want_lamp: bool = main.is_dark() and not kid and not controlled and not preview and randf() < main.lamp_share
 	if nl.has("lamp"):
 		want_lamp = str(nl["lamp"]) != "" and not preview
 	if want_lamp:
-		add_lamp(str(nl.get("lamp", "")) if nl.has("lamp") else ("head" if randf() < 0.5 else "phone"))
+		var how := "head" if randf() < 0.5 else "phone"
+		if styled and str(stil.get("licht", "")) != "":                  # menschen_stil.gd: Stirnlampe / Laterne
+			how = "head" if str(stil["licht"]) == "stirn" else "lantern"
+		add_lamp(str(nl.get("lamp", "")) if nl.has("lamp") else how)
 
 
 func add_lamp(how := "head") -> void:
@@ -443,6 +453,18 @@ func add_lamp(how := "head") -> void:
 			bulb.position = Vector3(0, -0.36, -0.05)
 			arms[1][2].add_child(bulb)
 			phone_out = true
+			if how == "lantern":                                           # «Figuren menschlicher»: a lantern - warm, wide, low
+				phone_out = false
+				lamp.spot_range = 7.0
+				lamp.spot_angle = 75.0
+				lamp.light_color = Color(1.0, 0.82, 0.55)
+				lamp.position = Vector3(0, -0.42, -0.02)
+				lamp.rotation = Vector3(-1.57, 0, 0)
+				bulb.position = Vector3(0, -0.44, -0.02)
+				lamp_mat.albedo_color = Color(1.0, 0.85, 0.6)
+				lamp_mat.emission = Color(1.0, 0.8, 0.5)
+				_part(arms[1][2], _cyl(0.045, 0.05, 0.13, 8), Vector3(0, -0.44, -0.02), Color(0.12, 0.12, 0.12), main.ambient + 8.0)
+				_part(arms[1][2], _cyl(0.035, 0.035, 0.02, 8), Vector3(0, -0.37, -0.02), Color(0.12, 0.12, 0.12), main.ambient + 4.0)
 			if how == "torch":                                             # P10: a torch - brighter, wider, a black body
 				lamp.spot_range = 14.0
 				lamp.spot_angle = 30.0
@@ -453,70 +475,172 @@ func add_lamp(how := "head") -> void:
 
 
 func _shape_body(jacket: Color, shirt: Color, trousers: Color, skin: Color, hair: Color, shoe: Color, hand_c: Color, cloth_t: float,
-		shorts: bool, open_jacket: bool, cold: bool, jog: bool) -> void:
-	"""the old figure from shapes (Grafik «einfach», the Pi): joints with boxes, capsules and spheres.
-	«Gelenke» (31.10.2026): balls in the joints (hip, knee, ankle, shoulder, elbow, wrist) close the gaps when they bend,
-	the limbs get thinner towards the hand and the foot, one pelvis instead of a block, soft shoulders, a shorter neck,
-	the foot on its own ankle (stays flat on the ground). Same joints, places, size and width as before."""
-	var lt := Quality.lite()                                               # Lite: no ankle / wrist balls, no calf
+		shorts: bool, open_jacket: bool, cold: bool, jog: bool, kid := false, old_ := false) -> void:
+	"""the figure from shapes (Grafik «einfach», the Pi): joints with boxes, capsules and spheres.
+	«Gelenke» (31.10.2026): balls in the joints close the gaps when they bend, limbs thinner towards hand and foot, the foot
+	on its own ankle. «Figuren menschlicher» (01.11.2026): a real trunk (pelvis, waist, ribcage, chest / bust, shoulders,
+	collar), neck, hands with a thumb (mitten), shoes with toe cap, heel and sole, a head with chin, jaw, cheekbones, nose,
+	lips, ears and eye sockets, hems on sleeves, jacket and trousers. Same joints, places, size and width as before (the
+	parts the other scripts look for keep their kind and place: eyes, brows, mouth, first part of hips / torso)."""
+	var lt := Quality.lite()                                               # Lite: fewer small parts
+	var fem := sex == "f" and not kid
 	var leg_c: Color = skin if shorts else trousers
 	var leg_t: float = Waerme.skin("leg", main.ambient) if shorts else cloth_t - 1.5
+	var hem_j: Color = jacket.darkened(0.28)
+	var hem_t: Color = trousers.darkened(0.3)
 	# ---- hips and legs ----
 	hips = _pivot(body_root, Vector3(0, 0.95, 0))
-	_part(hips, _sph(0.17, 0.25), Vector3(0, 0.0, 0), trousers, cloth_t, Vector3.ZERO, Vector3(1.08, 1.0, 0.78))   # pelvis (first: vielfalt.gd)
+	_part(hips, _sph(0.17, 0.25), Vector3(0, 0.0, 0.005), trousers, cloth_t, Vector3.ZERO, Vector3(1.16 if fem else 1.06, 1.0, 0.8))   # pelvis (first: vielfalt.gd)
 	_part(hips, _ball(0.06), Vector3(0, -0.085, 0.0), trousers, cloth_t - 1.0, Vector3.ZERO, Vector3(1.0, 0.8, 1.15))  # crotch
+	if not lt:
+		_part(hips, _sph(0.075, 0.12), Vector3(0, -0.02, 0.085), trousers, cloth_t, Vector3.ZERO, Vector3(1.7 if fem else 1.5, 1.0, 0.7))   # seat
+		_part(hips, _cyl(0.172, 0.172, 0.03, 14), Vector3(0, 0.085, 0.005), hem_t, cloth_t, Vector3.ZERO, Vector3(1.0 if not fem else 1.06, 1.0, 0.8))   # waistband
 	ankles.clear()
 	for s in [-1, 1]:
 		var hip := _pivot(hips, Vector3(0.1 * s, -0.03, 0))
 		_part(hip, _ball(0.087), Vector3.ZERO, trousers, cloth_t - 1.0)                                      # hip joint
-		_limb(hip, Vector3(0, -0.02, 0), Vector3(0, -0.445, 0), 0.087, 0.061, trousers, cloth_t - 1.0)        # thigh
+		_limb(hip, Vector3(0, -0.02, 0), Vector3(0, -0.445, 0), 0.09 if fem else 0.087, 0.06, trousers, cloth_t - 1.0)   # thigh
 		var knee := _pivot(hip, Vector3(0, -0.46, 0))
 		_part(knee, _ball(0.063), Vector3.ZERO, leg_c, leg_t)                                                # knee
-		_limb(knee, Vector3(0, -0.01, 0), Vector3(0, -0.385 if not lt else -0.405, 0), 0.06, 0.045, leg_c, leg_t)   # shin (bare with shorts)
+		_limb(knee, Vector3(0, -0.01, 0), Vector3(0, -0.385 if not lt else -0.405, 0), 0.06, 0.042, leg_c, leg_t)   # shin (bare with shorts)
 		if not lt:
-			_part(knee, _sph(0.054, 0.2), Vector3(0, -0.13, 0.014), leg_c, leg_t)                            # calf
+			_part(knee, _sph(0.056, 0.2), Vector3(0, -0.13, 0.016), leg_c, leg_t)                            # calf
+		if shorts:
+			_part(hip, _cyl(0.067, 0.064, 0.03, 10), Vector3(0, -0.4, 0), hem_t, cloth_t)                     # hem of the shorts
+		elif not lt:
+			_part(knee, _cyl(0.05, 0.052, 0.035, 10), Vector3(0, -0.355, 0), hem_t, cloth_t - 2.0)              # hem of the trousers
 		var ank := _pivot(knee, Vector3(0, -0.4, 0))
 		if not lt:
 			_part(ank, _ball(0.042), Vector3.ZERO, leg_c, leg_t)                                              # ankle
-		_part(ank, _box(0.11, 0.06, 0.27), Vector3(0, -0.018, -0.06), shoe, cloth_t - 4.0)                    # shoe
-		_part(ank, _box(0.115, 0.02, 0.28), Vector3(0, -0.05, -0.06), shoe.darkened(0.5), cloth_t - 5.0)      # sole (bottom on the ground)
+		# shoe: upper with a round toe cap and a heel, the sole below (its bottom on the ground, as before)
+		_part(ank, _caps(0.054, 0.28), Vector3(0, -0.022, -0.065), shoe, cloth_t - 4.0, Vector3(PI / 2, 0, 0), Vector3(1.0, 1.0, 0.62))
+		_part(ank, _box(0.112, 0.022, 0.285), Vector3(0, -0.049, -0.062), shoe.darkened(0.55), cloth_t - 5.0)   # sole (bottom on the ground)
+		if not lt:
+			_part(ank, _sph(0.05, 0.08), Vector3(0, -0.015, 0.045), shoe, cloth_t - 4.0, Vector3.ZERO, Vector3(1.05, 1.0, 0.9))   # heel
+			_part(ank, _box(0.05, 0.012, 0.09), Vector3(0, 0.012, -0.1), shoe.lightened(0.25), cloth_t - 4.0, Vector3(-0.35, 0, 0))   # laces
 		legs.append([hip, s, knee])
 		ankles.append(ank)
 	# ---- upper body ----
 	torso = _pivot(body_root, Vector3(0, 0.98, 0))
-	_part(torso, _caps(0.172, 0.36), Vector3(0, 0.13, 0), jacket, cloth_t, Vector3.ZERO, Vector3(1.06, 1.0, 0.7))     # belly (no waist crease)
-	_part(torso, _caps(0.19, 0.42), Vector3(0, 0.33, 0), jacket, cloth_t, Vector3.ZERO, Vector3(1.12, 1.0, 0.7))      # chest
-	_part(torso, _sph(0.2, 0.12), Vector3(0, 0.475, 0.005), jacket, cloth_t, Vector3.ZERO, Vector3(1.1, 1.0, 0.52))   # shoulder line (soft)
+	_part(torso, _caps(0.155, 0.32), Vector3(0, 0.11, 0), jacket, cloth_t, Vector3.ZERO, Vector3(1.04 if fem else 1.0, 1.0, 0.7))   # waist (first: vielfalt.gd)
+	_part(torso, _caps(0.185, 0.4), Vector3(0, 0.32, 0), jacket, cloth_t, Vector3.ZERO, Vector3(1.0 if fem else 1.12, 1.0, 0.72))   # ribcage
+	_part(torso, _sph(0.2, 0.12), Vector3(0, 0.475, 0.005), jacket.lightened(0.04), cloth_t, Vector3.ZERO, Vector3(1.0 if fem else 1.1, 1.0, 0.52))   # shoulder line (soft)
 	_part(torso, _sph(0.1, 0.12), Vector3(0, 0.53, 0.012), jacket, cloth_t, Vector3.ZERO, Vector3(1.25, 1.0, 0.85))   # trapezius: up to the neck
+	if fem:
+		for s2 in [-1, 1]:                                                 # bust
+			_part(torso, _sph(0.072, 0.13), Vector3(0.07 * s2, 0.34, -0.1), jacket, cloth_t, Vector3.ZERO, Vector3(1.0, 0.9, 0.75))
+	elif not lt and not kid:
+		_part(torso, _sph(0.16, 0.12), Vector3(0, 0.38, -0.055), jacket, cloth_t, Vector3.ZERO, Vector3(1.0, 1.0, 0.55))   # chest
+	if str(stil.get("bau", "")) == "kraeftig" and not kid:
+		_part(torso, _sph(0.15, 0.24), Vector3(0, 0.13, -0.035), jacket, cloth_t, Vector3.ZERO, Vector3(1.0, 1.0, 0.85))   # belly
+	if not lt:
+		_part(torso, _cyl(0.158, 0.162, 0.03, 14), Vector3(0, -0.03, 0), hem_j, cloth_t, Vector3.ZERO, Vector3(1.06 if fem else 1.02, 1.0, 0.72))   # hem of the jacket
+		_part(torso, _cyl(0.062, 0.07, 0.045, 12), Vector3(0, 0.565, 0.01), hem_j, cloth_t, Vector3.ZERO, Vector3(1.0, 1.0, 0.9))   # collar
 	if open_jacket:                                                        # open jacket: the shirt shows in front
-		_part(torso, _box(0.13, 0.42, 0.02), Vector3(0, 0.27, -0.142), shirt, cloth_t + 2.0)
+		_part(torso, _caps(0.17, 0.42), Vector3(0, 0.28, -0.006), shirt, cloth_t + 2.0, Vector3.ZERO, Vector3(0.42, 1.0, 0.8))
 	else:
-		_part(torso, _box(0.012, 0.42, 0.012), Vector3(0, 0.27, -0.142), jacket.darkened(0.45), cloth_t)               # zip
+		_part(torso, _box(0.012, 0.44, 0.012), Vector3(0, 0.26, -0.136), jacket.darkened(0.45), cloth_t)               # zip
 	var arm_c: Color = skin if _short_sl else jacket
 	var arm_t: float = Waerme.skin("arm", main.ambient) if _short_sl else cloth_t
+	var hand_t: float = 31.5 if not cold else 22.0
 	for s in [-1, 1]:
 		var sh := _pivot(torso, Vector3(0.245 * s, 0.48, 0))
-		_part(sh, _ball(0.06), Vector3(0, -0.03, 0), jacket, cloth_t)                                         # shoulder (inside the slope)
-		_limb(sh, Vector3(0, -0.01, 0), Vector3(0, -0.29, 0), 0.058, 0.047, jacket, cloth_t)                  # upper arm
+		_part(sh, _ball(0.06 if not fem else 0.054), Vector3(0, -0.03, 0), jacket, cloth_t)                # shoulder (deltoid)
+		_limb(sh, Vector3(0, -0.01, 0), Vector3(0, -0.29, 0), 0.058 if not fem else 0.052, 0.046, jacket, cloth_t)   # upper arm
+		if _short_sl:
+			_part(sh, _cyl(0.05, 0.05, 0.03, 10), Vector3(0, -0.2, 0), hem_j, cloth_t)                        # hem of the short sleeve
+			_limb(sh, Vector3(0, -0.21, 0), Vector3(0, -0.29, 0), 0.047, 0.045, skin, arm_t)                  # bare arm below it
 		var el := _pivot(sh, Vector3(0, -0.3, 0))
-		_part(el, _ball(0.048), Vector3.ZERO, arm_c, arm_t)                                                   # elbow
-		_limb(el, Vector3(0, -0.005, 0), Vector3(0, -0.255 if not lt else -0.275, 0), 0.046, 0.033, arm_c, arm_t)   # forearm, thinner to the wrist
+		_part(el, _ball(0.047), Vector3.ZERO, arm_c, arm_t)                                                   # elbow
+		_limb(el, Vector3(0, -0.005, 0), Vector3(0, -0.255 if not lt else -0.275, 0), 0.046, 0.031, arm_c, arm_t)   # forearm, thinner to the wrist
+		if not _short_sl and not lt:
+			_part(el, _cyl(0.037, 0.039, 0.03, 10), Vector3(0, -0.235, 0), hem_j, cloth_t)                     # cuff
 		if not lt:
-			_part(el, _ball(0.033), Vector3(0, -0.268, -0.004), hand_c, 31.5 if not cold else 22.0)          # wrist
-		_part(el, _caps(0.045, 0.11), Vector3(0, -0.32, -0.01), hand_c, 31.5 if not cold else 22.0, Vector3.ZERO, Vector3(1.0, 1.0, 0.7))  # hand
+			_part(el, _ball(0.031), Vector3(0, -0.268, -0.004), hand_c, hand_t)                               # wrist
+		# hand: palm and fingers like a mitten, the thumb in front (palm to the thigh)
+		_part(el, _caps(0.041, 0.1), Vector3(0, -0.31, -0.004), hand_c, hand_t, Vector3.ZERO, Vector3(0.62, 1.0, 1.0))   # palm
+		if not lt:
+			_part(el, _caps(0.035, 0.085), Vector3(0, -0.37, -0.012), hand_c, hand_t, Vector3(-0.25, 0, 0), Vector3(0.55, 1.0, 0.95))   # fingers, a little bent
+		_part(el, _caps(0.0135, 0.06), Vector3(-0.008 * s, -0.305, -0.036), hand_c, hand_t, Vector3(-0.55, 0, 0.25 * s))   # thumb
 		arms.append([sh, s, el])
 	# ---- head ----
 	head = _pivot(torso, Vector3(0, 0.6, 0))
-	_part(head, _caps(0.056, 0.15), Vector3(0, 0.0, 0.005), skin, 33.0)                                # neck (shorter, a little thicker)
-	_part(head, _sph(0.105, 0.25), Vector3(0, 0.16, 0), skin, 34.0, Vector3.ZERO, Vector3(1.0, 1.0, 1.08))   # head
-	_part(head, _sph(0.06, 0.07), Vector3(0, 0.085, -0.035), skin, 34.0, Vector3.ZERO, Vector3(1.2, 1.0, 1.1))  # chin / jaw
-	_part(head, _caps(0.016, 0.05), Vector3(0, 0.15, -0.115), skin.darkened(0.06), 34.0, Vector3(0.3, 0, 0))     # nose
+	var face_c: Color = skin
+	_part(head, _caps(0.054 if fem or kid else 0.06, 0.15), Vector3(0, 0.0, 0.008), skin, 33.0)          # neck
+	_part(head, _sph(0.105, 0.25), Vector3(0, 0.16, 0), face_c, 34.0, Vector3.ZERO, Vector3(0.98, 1.0, 1.08))   # head
+	_part(head, _sph(0.096, 0.19), Vector3(0, 0.185, 0.028), face_c, 34.0)                                 # back of the skull
+	_part(head, _sph(0.062, 0.08), Vector3(0, 0.09, -0.03), face_c, 34.0, Vector3.ZERO, Vector3(1.18 if not fem else 1.05, 1.0, 1.15))   # jaw
+	_part(head, _sph(0.022), Vector3(0, 0.074, -0.08), face_c, 34.0, Vector3.ZERO, Vector3(1.3, 0.9, 0.9))   # chin
+	if not lt:
+		for s3 in [-1, 1]:
+			_part(head, _caps(0.018, 0.055), Vector3(0.055 * s3, 0.148, -0.066), face_c, 34.0, Vector3(0, 0, PI / 2), Vector3(1.0, 1.0, 0.7))   # cheekbone
+			_part(head, _cyl(0.024, 0.024, 0.01, 10), Vector3(0.042 * s3, 0.178, -0.089), skin.darkened(0.16), 34.0, Vector3(PI / 2, 0, 0), Vector3(1.25, 1.0, 0.9))   # eye socket
+		_part(head, _caps(0.016, 0.11), Vector3(0, 0.201, -0.092), face_c, 34.0, Vector3(0, 0, PI / 2), Vector3(1.0, 1.0, 0.8))   # brow ridge
+	_part(head, _caps(0.012, 0.05), Vector3(0, 0.15, -0.112), skin.darkened(0.04), 34.0, Vector3(0.38, 0, 0))   # nose bridge
+	_part(head, _sph(0.0135), Vector3(0, 0.13, -0.121), skin.darkened(0.05), 34.0, Vector3.ZERO, Vector3(1.15, 0.95, 1.0))   # tip of the nose
+	if not lt:
+		for s4 in [-1, 1]:
+			_part(head, _sph(0.0085), Vector3(0.012 * s4, 0.126, -0.113), skin.darkened(0.08), 34.0)       # nostril wing
+	var lip_c: Color = skin.lerp(Color(0.62, 0.25, 0.25), 0.4 if fem else 0.25)
+	_part(head, _caps(0.0075, 0.05), Vector3(0, 0.113, -0.104), lip_c, 34.0, Vector3(0, 0, PI / 2))        # upper lip
+	_part(head, _caps(0.0085, 0.044), Vector3(0, 0.1, -0.101), lip_c, 34.0, Vector3(0, 0, PI / 2))         # lower lip
+	var iris: Color = [Color(0.3, 0.2, 0.1), Color(0.25, 0.4, 0.6), Color(0.3, 0.42, 0.28), Color(0.4, 0.28, 0.15)][randi() % 4]
 	for s3 in [-1, 1]:
-		_part(head, _sph(0.022), Vector3(0.042 * s3, 0.178, -0.093), Color(0.95, 0.95, 0.93), 35.0)            # eye white
-		_part(head, _sph(0.012), Vector3(0.042 * s3, 0.178, -0.11), Color(0.08, 0.07, 0.06), 35.0)             # pupil
+		_part(head, _sph(0.018), Vector3(0.04 * s3, 0.178, -0.094), Color(0.92, 0.9, 0.87), 35.0, Vector3.ZERO, Vector3(1.0, 1.0, 0.8))   # eye white
+		_part(head, _sph(0.0095), Vector3(0.04 * s3, 0.178, -0.1035), iris, 35.0, Vector3.ZERO, Vector3(1.0, 1.0, 0.5))   # iris
+		_part(head, _sph(0.0048), Vector3(0.04 * s3, 0.178, -0.1072), Color(0.03, 0.03, 0.03), 35.0, Vector3.ZERO, Vector3(1.0, 1.0, 0.5))   # pupil
+		_part(head, _caps(0.0085, 0.044), Vector3(0.04 * s3, 0.1885, -0.096), face_c.darkened(0.04), 34.0, Vector3(0.25, 0, PI / 2), Vector3(1.0, 1.0, 1.0))   # upper lid
+		if not lt:
+			_part(head, _caps(0.007, 0.04), Vector3(0.04 * s3, 0.1665, -0.096), face_c, 34.0, Vector3(-0.2, 0, PI / 2))   # lower lid
 		_part(head, _box(0.045, 0.01, 0.012), Vector3(0.044 * s3, 0.21, -0.1), hair.darkened(0.2), 34.0, Vector3(0, 0, -0.12 * s3))   # eyebrow
-		_part(head, _sph(0.025, 0.05), Vector3(0.107 * s3, 0.16, 0.0), skin.darkened(0.05), 33.5, Vector3.ZERO, Vector3(0.5, 1.0, 0.8))   # ear
-	_part(head, _box(0.05, 0.008, 0.01), Vector3(0, 0.11, -0.108), Color(0.45, 0.2, 0.18), 34.0)           # mouth
+		_part(head, _sph(0.026, 0.055), Vector3(0.104 * s3, 0.158, 0.004), skin.darkened(0.05), 33.5, Vector3(0, 0, 0), Vector3(0.45, 1.0, 0.75))   # ear
+		if not lt:
+			_part(head, _sph(0.014, 0.03), Vector3(0.112 * s3, 0.156, 0.0), skin.darkened(0.2), 33.5, Vector3.ZERO, Vector3(0.4, 1.0, 0.7))   # inside of the ear
+	_part(head, _box(0.04, 0.006, 0.01), Vector3(0, 0.107, -0.106), Color(0.38, 0.17, 0.15), 34.0)          # mouth (anim_mensch.gd)
+
+
+func _hair_and_hat(style: int, hair: Color, jacket: Color, cold_cap: bool, kid: bool, old_: bool) -> void:
+	"""hair as a volume (crown, back of the head, temples) - and a cap, a hat or a beanie on top.
+	style 0 short, 1 long, 2 ponytail, 3 beanie, 4 hat, 5 cap (menschen_stil.gd). All hair in the colour `hair`
+	(figur_paket.gd hides it on the figures with a skeleton)."""
+	var lt := Quality.lite()
+	var long_ := style == 1 or (style == 0 and sex == "f" and randf() < 0.6)
+	var tail := style == 2
+	var bald: bool = old_ and sex == "m" and randf() < 0.55
+	if style >= 3 or (cold_cap and style < 3 and not kid):
+		if style == 4:
+			_part(head, _cyl(0.112, 0.118, 0.07, 16), Vector3(0, 0.255, 0.004), Color(0.3, 0.25, 0.2), 27.0)    # hat
+			_part(head, _cyl(0.17, 0.17, 0.012, 18), Vector3(0, 0.222, 0.004), Color(0.27, 0.22, 0.18), 27.0)
+			_part(head, _cyl(0.114, 0.114, 0.018, 16), Vector3(0, 0.236, 0.004), Color(0.12, 0.1, 0.08), 27.0)     # band
+		elif style == 5:
+			var cc: Color = jacket.lightened(0.2)
+			_part(head, _sph(0.112, 0.13), Vector3(0, 0.235, 0.008), cc, 28.0)                                     # cap
+			_part(head, _box(0.15, 0.01, 0.09), Vector3(0, 0.21, -0.13), cc.darkened(0.2), 28.0, Vector3(-0.12, 0, 0))   # visor
+		else:
+			_part(head, _sph(0.118, 0.15), Vector3(0, 0.23, 0.004), jacket.lightened(0.3), 28.0)                 # beanie
+			_part(head, _cyl(0.118, 0.118, 0.03, 16), Vector3(0, 0.185, 0.004), jacket.lightened(0.15), 28.0)    # its rim
+			_part(head, _sph(0.03), Vector3(0, 0.31, 0.0), Color(0.95, 0.95, 0.95), 26.0)
+		_part(head, _sph(0.098, 0.12), Vector3(0, 0.16, 0.045), hair, 30.0, Vector3.ZERO, Vector3(1.05, 1.0, 0.9))   # hair below it at the back
+		if long_ or tail:
+			_part(head, _caps(0.065, 0.24), Vector3(0, 0.07, 0.085), hair, 30.0)                                 # long hair
+		return
+	if bald:                                                          # older man: a ring of hair, the crown bare
+		_part(head, _sph(0.1, 0.12), Vector3(0, 0.155, 0.04), hair, 30.0, Vector3.ZERO, Vector3(1.06, 1.0, 0.85))
+		return
+	_part(head, _sph(0.112 if not long_ else 0.115, 0.16), Vector3(0, 0.213, 0.012), hair, 30.0)                # crown
+	_part(head, _sph(0.1, 0.15), Vector3(0, 0.165, 0.042), hair, 30.0, Vector3.ZERO, Vector3(1.06, 1.0, 0.92))  # back of the head
+	if not lt:
+		_part(head, _sph(0.055, 0.05), Vector3(0, 0.25, -0.072), hair, 30.0, Vector3.ZERO, Vector3(1.6, 0.6, 0.8))   # fringe / front
+		for s in [-1, 1]:
+			_part(head, _sph(0.026, 0.07), Vector3(0.098 * s, 0.19, -0.03), hair, 30.0, Vector3.ZERO, Vector3(0.5, 1.0, 1.2))   # temples
+	if long_:
+		_part(head, _caps(0.07, 0.26), Vector3(0, 0.08, 0.085), hair, 30.0)                                       # long hair (anim_mensch.gd: in the wind)
+		if not lt:
+			for s in [-1, 1]:
+				_part(head, _caps(0.032, 0.2), Vector3(0.09 * s, 0.1, 0.035), hair, 30.0, Vector3(0, 0, 0.08 * s))   # strands at the side
+	elif tail:
+		_part(head, _caps(0.035, 0.16), Vector3(0, 0.12, 0.12), hair, 30.0, Vector3(0.4, 0, 0))            # ponytail
+		_part(head, _sph(0.022), Vector3(0, 0.175, 0.105), hair.darkened(0.3), 30.0)                       # hair tie
 
 
 func _figure_body(jacket: Color, shirt: Color, trousers: Color, skin: Color, hair: Color, shoe: Color, hand_c: Color, cloth_t: float,
@@ -542,7 +666,15 @@ func _figure_body(jacket: Color, shirt: Color, trousers: Color, skin: Color, hai
 			"bl": 0.0 if kid or jog else (randf_range(0.012, 0.045) if randf() < (0.5 if old_ or strong else 0.25) else 0.0),
 			"ch": 0.0 if kid else (randf_range(0.012, 0.03) if randf() < 0.4 else 0.0),
 			"lt": randf_range(0.93, 1.08) * (1.06 if strong else 1.0)}
-	fig = FigurPaket.new() if FigurPaket.wanted(main) else Figur.new()   # F5: figure from the pack (Quaternius, figur_paket.gd)
+	p["wide"] = wide
+	p["sex"] = sex
+	p["bau"] = str(stil.get("bau", ""))
+	p["alter"] = "kind" if kid else ("alt" if old_ else "erw")
+	p["stil"] = str(stil.get("stil", ""))
+	if FigurMensch.wanted(main):                                          # «Figuren menschlicher»: MakeHuman (figur_mensch.gd)
+		fig = FigurMensch.new()
+	else:
+		fig = FigurPaket.new() if FigurPaket.wanted(main) else Figur.new()   # F5: figure from the pack (Quaternius, figur_paket.gd)
 	body_root.add_child(fig)
 	fig.build(self, p)
 
@@ -558,8 +690,20 @@ func add_backpack(col: Color) -> void:
 
 
 func add_hood(col: Color) -> void:
-	_part(head, _sph(0.13, 0.27), Vector3(0, 0.18, 0.02), col.darkened(0.1), _cloth_t - 2.0, Vector3.ZERO, Vector3(1.0, 1.0, 1.05))
+	if fig != null and fig.has_method("hood"):                             # figur_mensch.gd: the hood of the jacket itself
+		fig.hood(true)
+		return
+	_part(head, _sph(0.13, 0.28), Vector3(0, 0.19, 0.055), col.darkened(0.1), _cloth_t - 2.0, Vector3.ZERO, Vector3(1.0, 1.0, 1.05))   # open in front: the face shows
+	_part(head, _caps(0.022, 0.22), Vector3(0, 0.235, -0.07), col.darkened(0.25), _cloth_t - 2.0, Vector3(0, 0, PI / 2), Vector3(1.0, 1.0, 0.8))   # rim over the forehead
 	_part(torso, _sph(0.11, 0.12), Vector3(0, 0.55, 0.12), col.darkened(0.1), _cloth_t)
+
+
+func add_poles() -> void:
+	"""«Figuren menschlicher»: two trekking poles, one in each hand (they swing with the arms)"""
+	for k in range(mini(2, arms.size())):
+		var el: Node3D = arms[k][2]
+		_part(el, _cyl(0.009, 0.009, 1.12, 6), Vector3(0, -0.72, -0.12), Color(0.55, 0.57, 0.6), main.ambient, Vector3(-0.18, 0, 0))
+		_part(el, _cyl(0.017, 0.017, 0.12, 6), Vector3(0, -0.29, -0.05), Color(0.1, 0.1, 0.11), main.ambient + 2.0, Vector3(-0.18, 0, 0))
 
 
 func add_umbrella() -> void:
@@ -1586,7 +1730,7 @@ func _animate_person(dt: float, spd: float, now: float, sw: float, amp: float, k
 		hips.rotation.y = sin(phase) * amp * 0.2 * (1.0 - pr)
 		hips.rotation.z = sin(phase) * 0.05 * amp + still * 0.03 * sin(now * 0.45 + seed_t)
 		torso.rotation.y = -sin(phase) * amp * 0.25 * (1.0 - pr) + sin(phase) * 0.15 * pr
-		var lean := -0.62 * c - 0.28 * run_f - (0.1 if jog and spd > 0.5 else 0.0) - (0.14 if variant == "elderly" else 0.0) - lean_acc * (1.0 - pr) + still * 0.02 * sin(now * 1.6 + seed_t)
+		var lean := -0.62 * c - 0.28 * run_f - (0.1 if jog and spd > 0.5 else 0.0) - (0.22 if variant == "elderly" else 0.0) - lean_acc * (1.0 - pr) + still * 0.02 * sin(now * 1.6 + seed_t)
 		if idle == "bend":
 			lean = -1.05
 		elif idle == "tie":

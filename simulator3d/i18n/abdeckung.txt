@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 7054 (Stellen: 9869)
-Übersetzt: en 7054, fr 7054, it 7054, rm 7054
+Texte gesamt: 7059 (Stellen: 9877)
+Übersetzt: en 7059, fr 7059, it 7059, rm 7059
 Unsicher markiert: 31
-Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 493 Stellen
-Nicht mehr im Code (noch in texte.json): 275
+Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 494 Stellen
+Nicht mehr im Code (noch in texte.json): 280
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 68 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main.gd 1, phone.gd 1, spieltest.gd 1
-Übersprungen (Grund: Anzahl): kennung 25336, schlüssel 18754, keine Wörter 11867, index 9370, technisch 3250, doc 2158, einheit 298, log 154, englisch 132, pfad 110, stringname 102, html 68, klasse 27, shader 6
+Übersprungen (Grund: Anzahl): kennung 25507, schlüssel 18868, keine Wörter 11931, index 9427, technisch 3270, doc 2174, einheit 299, log 155, englisch 135, pfad 110, stringname 102, html 68, klasse 28, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   main.gd                  699    50
@@ -102,6 +102,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   umgebung.gd               25     0
   gameshutter.gd            25     5
   werk.gd                   24     0
+  figur_paket.gd            24     6
   worlds.gd                 23     0
   licht.gd                  23     1
   devtool_ebenen.gd         23     0
@@ -114,7 +115,6 @@ Pro Datei (Texte / davon dynamische Stellen):
   patrol.gd                 20     0
   trailer.gd                19     7
   devtool.gd                19     0
-  figur_paket.gd            19     5
   tv.gd                     19     8
   statusled.gd              19     0
   surprise.gd               19     1
@@ -530,9 +530,10 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   smalltv.gd:360  'SmallTV (virtuell)'
   figur_paket.gd:123  'Paket lässt sich nicht öffnen: '
   figur_paket.gd:141  'Datei im Paket kaputt: '
-  figur_paket.gd:169  'Skeleton3D:'
-  figur_paket.gd:875  ' – Fehler: '
-  figur_paket.gd:893  'Figuren-Paket ist schon da: '
+  figur_paket.gd:207  'Skeleton3D:'
+  figur_paket.gd:916  ' – Fehler: '
+  figur_paket.gd:920  ' – Fehler: '
+  figur_paket.gd:946  '%s ist schon da: '
   game.gd:1462  ' · 🏆 alle gefunden'
   game.gd:1466  'Wächter · '
   game.gd:1492  ' · 🦆 %d s beobachtet'
