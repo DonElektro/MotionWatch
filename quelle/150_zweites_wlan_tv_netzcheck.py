@@ -802,7 +802,7 @@ class UplinkWatch:
         elif online and DUAL["offline_since"] is not None:
             gone = now - DUAL["offline_since"]; DUAL["offline_since"] = None
             if gone > 120:
-                dual_log(trf("Internet was gone for {min} min - it is back ({ssid})", min=int(gone / 60 + 0.5), ssid=w.get("ssid") or "?"), push=True)
+                dual_log(trf("Internet was gone for {min} min - it is back ({net})", min=int(gone / 60 + 0.5), net=push_net_label()), push=True)   # 635c: no Wi-Fi name
         conn = bool(w.get("connected")) and not w.get("ap")
         if self.was_conn and not conn:
             DUAL["drops"] = [t_ for t_ in DUAL["drops"] if now - t_ < 600] + [now]
