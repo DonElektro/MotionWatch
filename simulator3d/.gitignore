@@ -2,3 +2,6 @@
 *.import
 !klang/*.import
 !klang/web/*.import
+
+# 3.26 Foto-Texturen (Import-Einstellungen: VRAM-Kompression, Mipmaps)
+!texturen/*.import

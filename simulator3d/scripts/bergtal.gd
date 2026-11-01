@@ -23,6 +23,7 @@ const Worlds = preload("res://scripts/worlds.gd")      # 3D-4.x Welten: the old 
 const Aussicht = preload("res://scripts/bergtal_aussicht.gd")   # «Bergtal · Aussichtspunkte»: what the viewpoints do
 const Orte = preload("res://scripts/bergtal_orte.gd")          # Orte zum Erkunden (Innenräume, Wasser, Grat, Geschichte)
 const Landschaft = preload("res://scripts/bergtal_landschaft.gd")   # «wie auf den Fotos»: Karst, Felszähne, See, Himmel (nicht Lite)
+const Texturen = preload("res://scripts/bergtal_texturen.gd")      # 3.26 Foto-Texturen (Daniels Fotos; Schalter foto_tex, nie Lite)
 const Waerme = preload("res://scripts/waerme.gd")              # Paket A1: Fell-/Federtemperaturen von Murmeltier, Adler, Geier
 const Ziele = preload("res://scripts/bergtal_ziele.gd")        # real-berg-orte: Tuffwasserfall, Chalchstock (Gipfel mit Antenne)
 const Wegweiser = preload("res://scripts/bergtal_wegweiser.gd") # real-berg-orte: gelbe Wegweiser, Zeiten aus dem Weg
@@ -1184,6 +1185,7 @@ func _ground() -> void:
 	_gm.shader = load("res://shaders/bergtal_boden.gdshader")
 	_gm.set_shader_parameter("noise_tex", m.noise_tex)
 	_gm.set_shader_parameter("detail", 0.0 if lite else 1.0)
+	info["photo"] = Texturen.ground(m, _gm)              # 3.26: Foto-Texturen (aus: photo = 0, wie vorher)
 	_season_params(_gm)
 	m.ground_mats = [_gm]
 	_chunk_mi.clear()
@@ -1528,6 +1530,8 @@ func _ribbon(pts: PackedVector2Array, hs: PackedFloat32Array, w: float, col: Col
 	var mt := StandardMaterial3D.new()
 	mt.albedo_color = col
 	mt.roughness = 0.95
+	if season != "winter" and tk == "road" and w >= 0.3:  # 3.26 Foto-Texturen: Strasse Asphalt, Wege Kies (nicht die Randlinien)
+		Texturen.way(m, mt, "asphalt" if w >= 4.0 else "kies", 3.0 if w >= 4.0 else 1.4)
 	var pieces := {}
 	for i in range(pts.size() - 1):
 		var a := pts[i]
@@ -1612,6 +1616,8 @@ func _roads_and_trails() -> void:
 					st.add_vertex(q[k])
 		var mt := StandardMaterial3D.new()
 		mt.albedo_color = Color(0.3, 0.3, 0.31) if season != "winter" else Color(0.6, 0.62, 0.64)
+		if season != "winter":
+			Texturen.way(m, mt, "asphalt", 3.0)              # 3.26 Foto-Texturen
 		m.add_mesh(tal, st.commit(), Vector3.ZERO, mt, "road")
 
 

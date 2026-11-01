@@ -10,6 +10,11 @@ render_mode cull_back;
 uniform sampler2D noise_tex : repeat_enable, filter_linear_mipmap;
 uniform sampler2D horizon : repeat_enable, filter_linear;
 uniform float spring = 0.0;          // Schmelzwasser: etwas milchiger
+// Foto-Texturen (3.26, eigenes Foto von Daniel Bärschi, bergtal_texturen.gd): nur der Grund am flachen Ufer (Steine, Algen);
+// das Wasser selbst (Farbe, Spiegelung) bleibt wie in 3.16. photo = 0: wie vorher.
+uniform float photo = 0.0;
+uniform sampler2D t_grund : source_color, repeat_enable, filter_linear_mipmap_anisotropic;    // wasser_seegrund_flach_01
+uniform vec3 avg_grund = vec3(0.5);
 
 varying vec3 lpos;
 varying vec3 lcam;
@@ -40,6 +45,10 @@ void fragment() {
 	float bt2 = texture(noise_tex, lpos.xz * 0.9).r;
 	vec3 bed = mix(vec3(0.16, 0.17, 0.11), vec3(0.42, 0.41, 0.32), smoothstep(0.42, 0.68, bt));        // stones, sand, mud
 	bed *= 0.8 + 0.4 * bt2;
+	if (photo > 0.5) {                                     // the photo of a shallow lake bed: stones, algae (no extra noise)
+		vec3 gr = texture(t_grund, lpos.xz / 3.5 + vec2(bt * 0.6, 0.0)).rgb;
+		bed = mix(bed, bed * gr / max(avg_grund, vec3(0.01)) * 0.7 + gr * 0.45, 0.8);
+	}
 	vec3 deep = vec3(0.004, 0.06, 0.055);
 	vec3 turq = vec3(0.01, 0.2, 0.17);
 	vec3 body = mix(deep, turq, smoothstep(0.35, 0.85, e));

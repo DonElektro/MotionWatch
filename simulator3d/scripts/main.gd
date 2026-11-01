@@ -226,6 +226,7 @@ var view_scale := 1.0                 # 3D-3.75: sharpness of the big view on th
 var win_fps := 0                     # 3D-3.75: frames per second of the big view (0 = as fast as it goes)
 var auto_perf := true                 # 3D-3.75: too slow? the graphics get lighter by themselves
 var cam_wippen := true                 # anim_kamera.gd: die Ansicht wippt beim Gehen der Spielfigur (Maggie)
+var foto_tex := true                   # 3.26 bergtal_texturen.gd: Foto-Texturen im Bergtal (Daniels Fotos; nie in Lite)
 var grafik_mode := "auto"             # 3D-4.25: «Grafik-Modus» auto | lite | normal (quality.gd; later «hoch»)
 var _grafik_keep := ""                 # Notfall-Start (Stabil-Start): --grafik gilt nur für diesen Start - das wird gespeichert
 var lite_why := ""                    # why Lite is on («Raspberry Pi 5 …», «von Hand», «wenige Bilder/s») - for «Leistung»
@@ -3835,7 +3836,7 @@ const PLACE := {"patrol_on": ["Mover", "Patrouille"], "patrol_mode": ["Mover", "
 		"game_night": ["Spiel", "Extras"], "game_events": ["Spiel", "Extras"], "game_checkpoints": ["Spiel", "Extras"], "game_tasks": ["Spiel", "Extras"], "game_autohandicap": ["Spiel", "Extras"],
 		"game_board_reset": ["Spiel", "Extras"], "spectate_now": ["Spiel", "Anzeige"], "game_noise": ["Spiel", "Regeln"],
 		"game_random": ["Spiel", "Regeln"], "game_guard": ["Spiel", "Regeln"], "game_cones": ["Spiel", "Anzeige"], "game_quality": ["Spiel", "Anzeige"], "game_max": ["Spiel", "Runde"],
-		"grafik_mode": ["System", "Grafik"], "quality": ["System", "Grafik"], "grafik_dof": ["System", "Grafik"], "cam_wippen": ["System", "Grafik"], "view_scale": ["System", "Grafik"], "win_fps": ["System", "Grafik"], "auto_perf": ["System", "Grafik"], "map_on": ["System", "Karte und Livebild"], "live_on": ["System", "Karte und Livebild"], "live_cam": ["System", "Karte und Livebild"], "live_size": ["System", "Karte und Livebild"], "phone_sim": ["System", "Karte und Livebild"],"eco_idle": ["System", "Grafik"], "autostart": ["System", "Start mit dem PC"],
+		"grafik_mode": ["System", "Grafik"], "quality": ["System", "Grafik"], "grafik_dof": ["System", "Grafik"], "cam_wippen": ["System", "Grafik"], "foto_tex": ["System", "Grafik"], "view_scale": ["System", "Grafik"], "win_fps": ["System", "Grafik"], "auto_perf": ["System", "Grafik"], "map_on": ["System", "Karte und Livebild"], "live_on": ["System", "Karte und Livebild"], "live_cam": ["System", "Karte und Livebild"], "live_size": ["System", "Karte und Livebild"], "phone_sim": ["System", "Karte und Livebild"],"eco_idle": ["System", "Grafik"], "autostart": ["System", "Start mit dem PC"],
 		"autostart_min": ["System", "Start mit dem PC"], "autostart_mwpc": ["System", "Start mit dem PC"], "autostart_lock": ["System", "Start mit dem PC"],
 		"cond_glare": ["Kamerabild", "Schwierige Bedingungen"], "cond_drops": ["Kamerabild", "Schwierige Bedingungen"],
 		"cond_web": ["Kamerabild", "Schwierige Bedingungen"], "cond_headlights": ["Kamerabild", "Schwierige Bedingungen"],
@@ -4332,6 +4333,8 @@ func _register_controls() -> void:
 	add_control("toggle", "grafik_dof", "Hoch: Tiefenschärfe in der freien Ansicht (die Kamerabilder für MoveEye bleiben scharf)", func(): return hoch.dof_free, func(v): hoch.set_dof(bool(v)), "Grafik", ex)
 	add_control("toggle", "cam_wippen", "Ansicht wippt beim Gehen (Spielfigur)", func(): return cam_wippen, func(v): cam_wippen = bool(v), "Grafik",
 			{"expert": true, "tip": "Die Ansicht hinter der Spielfigur geht mit den Schritten leicht auf und ab. Aus, wenn dir davon schwindlig wird. Nur bei Grafik «schön» oder «ultra»."})
+	add_control("toggle", "foto_tex", "Foto-Texturen im Bergtal", func(): return foto_tex, func(v): set_foto_tex(bool(v)), "Grafik",
+			{"expert": true, "tip": "Wiese, Fels, Geröll, Alpenrosen, Wege und Seegrund aus echten Fotos (Daniel Bärschi). Aus = die gezeichneten Farben wie früher. In Lite immer aus."})
 	add_control("slider", "view_scale", "Schärfe der Ansicht im Fenster (weniger = schneller; die Bilder für MoveEye bleiben scharf)", func(): return view_scale, func(v): set_view_scale(float(v)), "Grafik", {"min": 0.4, "max": 1.0, "step": 0.05, "unit": "×"})
 	add_control("select", "win_fps", "Bilder pro Sekunde im Fenster", func(): return str(win_fps), func(v): win_fps = int(v); _perf_orig.erase("win_fps"); _settings_dirty = true, "Grafik",
 			{"options": [["0", "so viele wie möglich"], ["60", "60"], ["30", "30 (spart Strom)"], ["20", "20 (schwacher PC)"]]})
@@ -4575,6 +4578,16 @@ func set_grafik_mode(v: String) -> void:
 	if hoch != null and (grafik_mode == "hoch") != (hoch.stufe == "hoch"):
 		hoch.set_stufe(grafik_mode)                       # F1: Hoch = Neustart mit Forward+; jede andere Wahl = wieder normal
 	_settings_dirty = true
+
+
+func set_foto_tex(v: bool) -> void:
+	"""3.26 Schalter «Foto-Texturen im Bergtal» (bergtal_texturen.gd): das Bergtal neu aufbauen, wenn es gerade geladen ist"""
+	if v == foto_tex:
+		return
+	foto_tex = v
+	_settings_dirty = true
+	if scene == "bergtal":
+		set_scene("bergtal")
 
 
 func lite_update() -> void:
@@ -6780,7 +6793,7 @@ func restart_args() -> PackedStringArray:
 
 
 const KEEP := ["pad_auto", "pad_sens", "pad_inv_y", "pad_swap", "pad_rumble", "colors_on", "seasons_on", "pad_dead", "pad_center", "show_laser", "game_max", "tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "fp_spot", "szene_spot", "bt_spot", "bt_bed", "bt_season", "bt_free", "bt_events", "bt_mount", "bt_bag", "bt_stove", "bt_wall", "bt_orient", "bt_marks", "bt_visited", "auto_update", "dev_updates", "news_seen", "news_popup", "show_zones3d", "show_det3d", "fauna_on", "twin", "ui_simple", "ui_icons", "ui_icons_pick", "mine_mig", "start_groups", "auto_visitors", "daily_life", "real_weather", "real_time", "night_weather", "surprise_on", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
-		"avoid_on", "grafik_mode", "cam_wippen", "quality", "view_scale", "win_fps", "auto_perf", "meadow_on", "season", "mover_on", "mover_max", "mast_h", "patrol_judge", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "moon_auto", "cam1_yaw", "stream_last", "game_bots", "game_tutorial", "game_daily", "game_ghost", "game_heart", "game_botguard", "kids_on", "kids_ask", "kids_thief", "kids_scary", "kids_laser", "kids_sound", "kids_stars", "dev_area"]
+		"avoid_on", "grafik_mode", "cam_wippen", "foto_tex", "quality", "view_scale", "win_fps", "auto_perf", "meadow_on", "season", "mover_on", "mover_max", "mast_h", "patrol_judge", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "moon_auto", "cam1_yaw", "stream_last", "game_bots", "game_tutorial", "game_daily", "game_ghost", "game_heart", "game_botguard", "kids_on", "kids_ask", "kids_thief", "kids_scary", "kids_laser", "kids_sound", "kids_stars", "dev_area"]
 var _settings_dirty := false
 
 
