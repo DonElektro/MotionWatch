@@ -159,6 +159,7 @@
   "hub",
   "ina",
   "irled",
+  "irplug",
   "jacks",
   "lamp1",
   "lamp2",
@@ -197,6 +198,7 @@
   "turntable",
   "ups",
   "wide",
+  "wplug",
   "yoke"
  ],
  "werte": {

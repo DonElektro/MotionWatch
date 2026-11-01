@@ -120,7 +120,7 @@ func _build_ui() -> void:
 	hd.add_theme_constant_override("separation", 10)
 	root.add_child(hd)
 	var tl := Label.new()
-	tl.text = T.t("Bauen – Gehäuse v%s") % DATA.VERSION
+	tl.text = _title_text()
 	_w["title"] = tl
 	tl.add_theme_font_override("font", UI.heading_font())
 	tl.add_theme_font_size_override("font_size", 17)
@@ -602,7 +602,7 @@ func part_info(id: String) -> Dictionary:
 	var s := int(r[4])
 	if s > 0:
 		out["step"] = s
-		out["step_title"] = T.t(str(DATA.SCHRITTE[s - 1][0]))
+		out["step_title"] = T.t(str(_schritt(s)[0]))
 	return out
 
 
@@ -628,8 +628,21 @@ func set_inner(on: bool) -> void:
 func set_v52(on: bool) -> void:
 	v52 = on
 	if _w.has("title") and is_instance_valid(_w["title"]):
-		(_w["title"] as Label).text = T.t("Bauen – Gehäuse v%s") % ("5.2" if v52 else DATA.VERSION)
+		(_w["title"] as Label).text = _title_text()
 	_paint()
+
+
+func _title_text() -> String:
+	"""Modellname (v5.1 / v5.2) und automatisch «Stand MoveEye X.Y.Z» aus der laufenden Version (main.VERSION, Wunsch des Besitzers)"""
+	var t := T.t("Bauen – Gehäuse v%s") % ("5.2" if v52 else DATA.VERSION)
+	var ver := str(main.get("VERSION")) if main != null and main.get("VERSION") != null else ""
+	return t + ("  ·  " + T.t("Stand MoveEye %s") % ver if ver != "" else "")
+
+
+func _schritt(n: int) -> Array:
+	"""[Titel, Text] von Schritt n (1…): v5.2 (Standard) oder die Texte von v5.1, wenn v5.1 gewählt ist (bau.json «v51»)"""
+	var s: Array = DATA.SCHRITTE[n - 1]
+	return [s[0], s[1]] if v52 or s.size() < 4 else [s[2], s[3]]
 
 
 func set_real_case(on: bool) -> void:
@@ -690,6 +703,8 @@ func _shown(id: String) -> bool:
 		return false
 	if art == "dev" and not _dev():                   # Entwicklungs-Variante ohne Akku (Sockel 13 statt UPS HAT + Akkus)
 		return false
+	if parts.has(id) and str(parts[id]["e"].get("ohne", "")) != "":
+		return false                                  # 12 Blindstopfen: nur in der Szene (Gerät ohne Weitwinkel), der Bau zeigt die Kamera
 	if repl.has(id) and parts.has(repl[id]):
 		var ra := str((rows.get(repl[id], ["", ""]) as Array)[1])
 		if (ra == "v52" and v52) or (ra == "dev" and _dev()):
@@ -760,7 +775,7 @@ func _paint() -> void:
 		(_w["stext"] as Label).text = T.t("«Weiter» zeigt Schritt 1. Die Teile jedes Schritts fliegen an ihren Platz.")
 		(_w["next"] as Button).text = T.t("Montage starten") + " ▶"
 	else:
-		var s: Array = DATA.SCHRITTE[step - 1]
+		var s: Array = _schritt(step)
 		(_w["snr"] as Label).text = T.t("Schritt %d von %d") % [step, n]
 		(_w["stitle"] as Label).text = T.t(str(s[0]))
 		(_w["stext"] as Label).text = T.t(str(s[1]))
@@ -1158,7 +1173,7 @@ func _csv() -> String:
 	"""the shopping list as CSV (also to the clipboard and into user://MoveEye_Einkauf.csv)"""
 	var H: Dictionary = DATA.BAU.get("haendler", {})
 	var q := func(s): return "\"" + str(s).replace("\"", "\"\"") + "\""
-	var lines := [";".join([q.call(T.t("erledigt")), q.call(T.t("Menge")), q.call(T.t("Bezeichnung")), q.call(T.t("Teilenummer")), q.call(T.t("Preis")), q.call(T.t("Alternative")), q.call(T.t("Händler")), q.call(T.t("Suchlink")), q.call(T.t("optional"))])]
+	var lines := [q.call(_title_text()), ";".join([q.call(T.t("erledigt")), q.call(T.t("Menge")), q.call(T.t("Bezeichnung")), q.call(T.t("Teilenummer")), q.call(T.t("Preis")), q.call(T.t("Alternative")), q.call(T.t("Händler")), q.call(T.t("Suchlink")), q.call(T.t("optional"))])]
 	for id in DATA.BOM:
 		var b: Array = DATA.BOM[id]
 		var e: Dictionary = DATA.BAU["bom_extra"].get(id, {})
@@ -1278,7 +1293,7 @@ func info() -> Dictionary:
 		if (parts[id]["mi"] as MeshInstance3D).visible:
 			vis += 1
 	return {"ok": true, "open": is_open(), "version": DATA.VERSION, "step": step, "steps": DATA.SCHRITTE.size(),
-			"step_title": T.t(str(DATA.SCHRITTE[step - 1][0])) if step > 0 else "", "sel": sel, "part": part_info(sel),
+			"step_title": T.t(str(_schritt(step)[0])) if step > 0 else "", "sel": sel, "part": part_info(sel),
 			"explode": explode, "xray": xray, "inner": inner, "v52": v52, "parts": parts.size(), "visible": vis,
 			"real_case": main.gehaeuse.info() if main.gehaeuse != null else {}, "source_sha": DATA.QUELLE_SHA.substr(0, 12),
 			"tab": tab, "variant": _vars(), "done": (mein["done"] as Array).size(), "todo": all_ids().size(),

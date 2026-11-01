@@ -1,7 +1,8 @@
 extends Node
 ## Simulator-Werte (30.10.2026, Wunsch des Besitzers): what MoveEye would measure on the real device, simulated here and sent with
 ## every answer to MoveEye (main.gd world_reply):
-##   battery  the Waveshare UPS HAT (2 x 18650 in series = 2S): charge from the consumption (Pi, servos, lights, siren,
+##   battery  the Waveshare UPS HAT (E) with 4 x 21700 in series (4S, 14.4 V; real-abgleich-v52, Entscheid Besitzer 01.11.2026 -
+##            the old UPS HAT with INA219 and 2 x 18650 only while MoveEye is set to it, ups_model «ina»): charge from the consumption (Pi, servos, lights, siren,
 ##            CPU load of MoveEye) and the charge of the simulated solar panel (or a mains adapter); cold lowers the usable
 ##            capacity. Empty = «MoveEye wäre jetzt aus».
 ##   pi_temp  the CPU temperature in the case: outside temperature + own heat (load) + sun on the case.
@@ -13,7 +14,7 @@ extends Node
 
 var main
 var batt_on := true                  # the UPS HAT is simulated (off = MoveEye uses its own values)
-var cell_mah := 3450.0               # one cell; 2S: 7.4 V nominal
+var cell_mah := 5000.0               # one 21700 cell (Samsung INR21700-50E, bau.json «cells»); 4S: 14.4 V nominal
 var mains := false                   # a mains adapter at the HAT (camping: usually not)
 var soc := 0.8                       # state of charge 0 … 1 (at 20 °C)
 var temp_c := 40.0                   # CPU of the Pi
@@ -55,9 +56,20 @@ func save() -> void:
 	_dirty = false
 
 
+func mw_ina() -> bool:
+	"""MoveEye is set to the old UPS HAT with INA219 (2 x 18650) - only then its «ups_mah» counts (the HAT (E) reports itself)"""
+	return main.now() - main.mw_t <= 10.0 and str(main.mw.get("ups_model", "")) == "ina"
+
+
+func series() -> int:
+	"""cells in series: UPS HAT (E) 4 x 21700 = 4S, the old UPS HAT 2 x 18650 = 2S"""
+	return 2 if mw_ina() else 4
+
+
 func mw_mah() -> float:
-	"""Aufräumen 2: the battery size of MoveEye (its setting «ups_mah», sim_state) while it is connected, else -1 (own slider)"""
-	if main.now() - main.mw_t > 10.0 or main.mw.get("ups_mah", null) == null:
+	"""Aufräumen 2: the battery size of MoveEye (its setting «ups_mah», sim_state) while it is connected and set to the old
+	UPS HAT (ups_model «ina»), else -1 (own slider: the UPS HAT (E) has no such setting in MoveEye)"""
+	if not mw_ina() or main.mw.get("ups_mah", null) == null:
 		return -1.0
 	return clampf(float(main.mw.get("ups_mah", cell_mah)), 500.0, 6000.0)
 
@@ -75,7 +87,7 @@ func _set_mah(v) -> void:
 
 
 func cap_wh() -> float:
-	return cell() / 1000.0 * 7.4 * 0.9
+	return cell() / 1000.0 * (3.7 if series() == 2 else 3.6) * float(series()) * 0.9
 
 
 func batt_temp() -> float:
@@ -163,7 +175,7 @@ func _process(delta: float) -> void:
 	if empty and not was_empty:
 		main.start_info = "Akku leer: MoveEye wäre jetzt aus (der Simulator lädt mit der Sonne oder dem Netzteil wieder)"
 	var p: float = clampf(soc * 100.0, 0.0, 100.0)
-	volts = 2.0 * _cell_v(p) + (0.12 if net_w > 0.05 else -0.04 * load_w / 5.0)
+	volts = float(series()) * _cell_v(p) + (0.12 if net_w > 0.05 else -0.04 * load_w / 5.0)
 	amps = net_w / maxf(5.5, volts)
 	if main.now() - _save_t > 30.0:
 		_save_t = main.now()
@@ -188,6 +200,8 @@ func status_text() -> String:
 		t += "\n" + line + " · ☀ Solar %.1f W" % solar_w
 		if mw_mah() > 0.0:
 			t += "\n2 × %d mAh (von MoveEye)" % int(mw_mah())
+		else:
+			t += "\n4 × %d mAh" % int(cell())
 		if cold_k() < 0.99:
 			t += " · ❄ Kälte: nur %d %% nutzbar" % int(round(cold_k() * 100.0))
 		if empty:
@@ -204,12 +218,12 @@ func add_controls() -> void:
 	"""the controls (card «Sensoren»; also in the Simulator control of MoveEye)"""
 	var g := "Sensoren"
 	var A := {"sub": "Akku und Strom"}
-	main.add_control("toggle", "batt_on", "🔋 Akku simulieren (USV-HAT, 2 × 18650)", func(): return batt_on, func(v): batt_on = bool(v); save(), g, A)
+	main.add_control("toggle", "batt_on", "🔋 Akku simulieren (UPS HAT (E), 4 × 21700)", func(): return batt_on, func(v): batt_on = bool(v); save(), g, A)
 	main.add_control("slider", "batt_level", "Ladung jetzt", func(): return snappedf(soc * 100.0, 1.0), func(v): soc = clampf(float(v) / 100.0, 0.0, 1.0); empty = false; save(), g,
 			{"sub": "Akku und Strom", "min": 0, "max": 100, "step": 1, "unit": "%"})
 	# one source (Aufräumen 2): while MoveEye is connected its setting «ups_mah» counts - the slider only shows it («von MoveEye»)
 	main.add_control("slider", "batt_mah", "Kapazität einer Zelle (verbunden: von MoveEye)", func(): return cell(), _set_mah, g,
-			{"sub": "Akku und Strom", "min": 1000, "max": 5000, "step": 50, "unit": "mAh"})
+			{"sub": "Akku und Strom", "min": 1000, "max": 6000, "step": 50, "unit": "mAh"})
 	main.controls[-1]["ro"] = func(): return mw_mah() > 0.0
 	main.add_control("toggle", "batt_mains", "🔌 Netzteil angeschlossen (lädt mit etwa 2 A)", func(): return mains, func(v): mains = bool(v); save(), g, A)
 	main.add_control("slider", "solar_wp", "☀ Solarpanel (Watt bei voller Sonne)", func(): return main.solar_wp, func(v): main.solar_wp = clampf(float(v), 0.0, 200.0); save(), g,

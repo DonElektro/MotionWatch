@@ -1,8 +1,15 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 01.11.2026 · Version **3.46.0** · MoveEye **3.46.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 01.11.2026 · Version **3.47.0** · MoveEye **3.47.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.47.0 (MoveEye 3.47.0): Abgleich v5.2 · Trailer-Knöpfe weg · Name «Elektro»
+
+- real-abgleich-v52: Montage-Texte, Szene immer v5.2 (Stopfen 12/19), Farben aus bau.json «farben» (Grau #9a9ea3, Kopf
+  orange), «Stand MoveEye X.Y.Z», Versionsnamen im Bausatz, power.gd UPS HAT (E) 4 × 21700, Bausatz-Link auf /info/.
+- real-trailer-knoepfe-weg: Schnell-Karte mit den Trailer-Knöpfen im Sim-Reiter entfernt (Teil 639n).
+- real-name-ip: Person «Besitzer» in Kommentaren, als Autor «Elektro»; IP-Platzhalter 192.0.2.56; 3MF-Designer «Elektro».
 
 ## NEU in 3.46.0 (MoveEye 3.46.0): Sammel-Release v5.2 Standard · Bausatz · USB-Installer
 
@@ -1022,7 +1029,7 @@ Rangliste, Aufgabe, Sieger, «als Nächstes». Kommentare zu Einfach/Experte (Mo
 
 ## NEU in 3D-4.18 (MoveEye 2.98.47): Simulator-Werte für MoveEye (power.gd, Branch wt-simwerte)
 
-- `scripts/power.gd` (Knoten `simwerte` in main.gd): simulierter USV-HAT (2 × 18650, Kapazität pro Zelle, Ladung jetzt,
+- `scripts/power.gd` (Knoten `simwerte` in main.gd): simulierter UPS HAT (E) (4 × 21700 in Serie, 14,4 V; nur bei MoveEye «ups_model» ina das alte HAT mit 2 × 18650; Kapazität pro Zelle, Ladung jetzt,
   Netzteil, Solarpanel-Watt; Verbrauch aus Pi + CPU von MoveEye + Servos + Licht + Ton, Laden mit `solar_reading()`, Kälte senkt
   die nutzbare Kapazität), Pi-Temperatur im Gehäuse (Aussentemperatur + Last + Sonne, Test «Lüftung blockiert»), Test
   «WLAN weg» / «Internet weg», Tageszähler über Mitternacht (Zeitraffer). Einstellungen in `user://simwerte.json`.

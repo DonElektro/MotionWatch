@@ -8,10 +8,10 @@
     python3 werkzeuge/bausatz.py --fest                # zusätzlich MoveEye_Bausatz.zip (fester Name für GitHub-Releases)
     python3 werkzeuge/bausatz.py --unsigniert          # auch ohne Signatur in versions.json (nur zum Testen)
 
-Ergebnis: MoveEye_Bausatz_X.Y.Z.zip mit
-  1_Anleitung/     Bauanleitung als PDF (de = Schweizer Deutsch; dazu fr / it / rm / en aus bau.json)
-  2_Druckdateien/  3MF v5.2 (Platten A/B, alle Einzelteile mit Stopfen) + LIESMICH_Druck.txt
-  3_Bestellliste/  CSV je Paket (Basis / Komplett / Autark), Preise geschätzt
+Ergebnis: MoveEye_Bausatz_X.Y.Z.zip mit (alle Namen mit der laufenden Version, real-abgleich-v52)
+  1_Anleitung/     MoveEye_Bauanleitung_X.Y.Z_de.pdf (Schweizer Deutsch; dazu fr / it / rm / en aus bau.json)
+  2_MoveEye_v5-2_Druck_X.Y.Z/  3MF v5.2 (Platten A/B, alle Einzelteile mit Stopfen, Namen wie im Repository) + LIESMICH_Druck.txt
+  3_Bestellliste/  MoveEye_Bestellliste_<Paket>_X.Y.Z.csv (Basis / Komplett / Autark), Preise geschätzt
   4_Software/      webcam_bewegung_X_Y_Z.py + moveeye_daten_X_Y_Z.zip + versions.json (signiert) + werkzeuge/einrichten.sh,
                    INSTALLATION.txt, Einrichtung_Raspberry_Pi.md
   LIESMICH.txt
@@ -86,6 +86,7 @@ TX = {
     "keine weiteren": {"en": "no others", "fr": "aucun autre", "it": "nessun altro", "rm": "nagins auters"},
     "Vor dem Druck nachmessen": {"en": "Measure before printing", "fr": "Mesurer avant l'impression", "it": "Misurare prima della stampa", "rm": "Mesirar avant la stampa"},
     "Ergänzungen": {"en": "Additions", "fr": "Compléments", "it": "Aggiunte", "rm": "Cumplements"},
+    "Stand MoveEye %s": {"en": "as of MoveEye %s", "fr": "état MoveEye %s", "it": "stato MoveEye %s", "rm": "stadi MoveEye %s"},
     "für Basis und Komplett (ohne Akku)": {"en": "for Basic and Complete (without battery)", "fr": "pour Base et Complet (sans batterie)", "it": "per Base e Completo (senza batteria)", "rm": "per Basa e Cumplet (senza accu)"},
     "nur mit Akku (Autark)": {"en": "only with battery (Autonomous)", "fr": "seulement avec batterie (Autonome)", "it": "solo con batteria (Autonomo)", "rm": "mo cun accu (Autarc)"},
     "nur ohne Akku (Basis, Komplett)": {"en": "only without battery (Basic, Complete)", "fr": "seulement sans batterie (Base, Complet)", "it": "solo senza batteria (Base, Completo)", "rm": "mo senza accu (Basa, Cumplet)"},
@@ -289,15 +290,17 @@ def bild_specs(B, M):
     dev_ers = {k: v for k, v in ers.items() if k == "sockel"}
     ers = {k: v for k, v in ers.items() if k != "sockel"}
     alt_weg = set(ers.values())
-    kopf = set((B.get("farben") or {}).get("kopf_teile") or [])
+    F = B.get("farben") or {}
+    kopf = set(F.get("kopf_teile") or [])
+    grau = F.get("grau") or "#9a9ea3"                    # ein Grau für alle (bau.json «farben»), wie Szene und Werkstatt
     farbe = {}
     for i, t in T.items():
         if t.get("datei") or t.get("art") == "druck":
-            farbe[i] = "#f59a4a" if i in kopf else ("#f4f1ea" if i == "diff52" else "#9aa3ad")
-    farbe["sockel"] = "#9aa3ad"
+            farbe[i] = (F.get("kopf") or "#f59a4a") if i in kopf else ("#f4f1ea" if i == "diff52" else grau)
+    farbe["sockel"] = grau
     schritt, druck = {}, set()
     for i, t in T.items():
-        if i in alt_weg or t.get("art") == "dev" or i not in E:
+        if i in alt_weg or t.get("art") == "dev" or i not in E or t.get("ohne"):   # «ohne»: 12 Blindstopfen (nur ohne Weitwinkel)
             continue
         if i in ers:
             s = (T.get(ers[i]) or {}).get("schritt")
@@ -392,9 +395,11 @@ def paket_zeilen(B, p):
     return [BOM[i] for i in p.get("bom") or [] if i in BOM], [BOM[i] for i in p.get("extras") or [] if i in BOM]
 
 
-def csv_paket(B, p, L="de"):
+def csv_paket(B, p, L="de", ver=""):
     s = io.StringIO()
     w = csv.writer(s, delimiter=";", quoting=csv.QUOTE_MINIMAL, lineterminator="\r\n")
+    if ver:
+        w.writerow(["MoveEye – Bestellliste %s · Gehäuse v5.2 · Stand MoveEye %s" % (lx(p["name"], L), ver)])
     w.writerow(["Paket", "Gruppe", "Teil", "Menge", "Artikel-Nr.", "Händler", "Suchbegriff", "Link (Suche)", "Preis CHF (geschätzt)", "optional", "Alternative"])
     zeilen, extras = paket_zeilen(B, p)
     G = B.get("bom_gruppen") or {}
@@ -507,8 +512,8 @@ def anleitung_html(B, K, ver, bilder, L, signiert, py_name, zd_name):
            ("montage", U("Assembly")), ("verkabeln", U("Wiring")), ("software", U("Software")), ("inbetrieb", U("Commissioning")),
            ("fehler", U("Troubleshooting")), ("wartung", U("Maintenance")), ("anhang", T("Anhang: Entwicklungs-Variante ohne Akku"))]
     # -- Titel
-    a('<section class="first titel"><h1>%s</h1><div class="ver">%s · MoveEye %s · %s · %s %s</div>' % (
-        T("MoveEye – Bauanleitung"), T("Selbstbau-Paket"), esc(ver), T("Gehäuse v5.2 (Standard)"), T("Stand"), datum))
+    a('<section class="first titel"><h1>%s</h1><div class="ver">%s · %s · %s · %s %s</div>' % (
+        T("MoveEye – Bauanleitung"), T("Selbstbau-Paket"), T("Gehäuse v5.2 (Standard)"), esc(T("Stand MoveEye %s") % ver), T("Stand"), datum))
     if "gesamt" in bilder:
         a('<img class="gross" src="%s" alt="">' % bilder["gesamt"])
     a('<h3>%s</h3><ol class="inhalt">%s</ol>' % (T("Inhalt"), "".join('<li><a href="#%s">%s</a></li>' % (i, n) for i, n in kap)))
@@ -586,11 +591,13 @@ def anleitung_html(B, K, ver, bilder, L, signiert, py_name, zd_name):
         a('<div class="schritt"><div class="nr">%d</div><div><b>%s</b><div>%s</div>%s%s%s</div></div>' % (
             s["nr"], X(s.get("titel")), X(s.get("text")), '<div class="tag u">%s</div>' % X(s["unklar"]) if s.get("unklar") else "",
             '<div class="sc">%s: %s</div>' % (U("Screws"), esc(sc)) if sc else "", img(bilder, "s%d" % s["nr"])))
-    a("<h3>%s: v5.2</h3>" % T("Ergänzungen"))
+    a("<h3>%s</h3>" % T("Ergänzungen"))
     gesehen = set()
     for s in B.get("extra_schritte") or []:
         w = s.get("wenn")
         if w not in ("v52", "netz"):
+            continue
+        if w == "v52" and lx(s.get("titel"), "de") == "Variante v5.2":   # Überblick v5.1 -> v5.2: steht hier schon in den Schritten
             continue
         txt = lx(s.get("text"), L)
         if txt in gesehen:   # gleicher Text zweimal in bau.json (z. B. «SD-Karte (v5.2)»): nur einmal zeigen
@@ -688,7 +695,7 @@ def pdf_aus_html(pw_browser, htm, ziel, fuss):
 # ---- Texte im Paket (Deutsch) -----------------------------------------------------------------------------------------------
 def druck_liesmich(B, ver):
     L = "de"
-    z = ["MoveEye – Druckdateien Gehäuse v5.2 (MoveEye %s)" % ver, "=" * 60, "",
+    z = ["MoveEye – Druckdateien Gehäuse v5.2 · Stand MoveEye %s" % ver, "=" * 60, "",
          "Drucker: Bambu Lab X2D (andere Drucker gehen auch), 0,4-mm-Düse, Material PETG.",
          "Keine Stützen: alle Teile liegen schon richtig auf der Platte.",
          "Brim 5 mm nur bei Kopf (06), Gabel (04) und Seitendeckel (07).",
@@ -740,11 +747,16 @@ def installation_txt(B, ver, py_name, zd_name, signiert):
     return "\r\n".join(clean(x) if x else "" for x in z)
 
 
+def druck_ordner(ver):
+    """der Druckordner im Bausatz mit Version (Wunsch des Besitzers 01.11.2026), z. B. 2_MoveEye_v5-2_Druck_3.46.1"""
+    return "2_MoveEye_v5-2_Druck_%s" % ver
+
+
 def liesmich(ver, sprachen, signiert):
     return "\r\n".join([
         "MoveEye %s – Selbstbau-Paket" % ver, "",
-        "1_Anleitung      Bauanleitung (PDF): MoveEye_Bauanleitung_de.pdf" + ("; dazu " + ", ".join(s for s in sprachen if s != "de") if len(sprachen) > 1 else ""),
-        "2_Druckdateien   3D-Druck Gehäuse v5.2 (3MF), Kurzanleitung LIESMICH_Druck.txt",
+        "1_Anleitung      Bauanleitung (PDF): MoveEye_Bauanleitung_%s_de.pdf" % ver + ("; dazu " + ", ".join(s for s in sprachen if s != "de") if len(sprachen) > 1 else ""),
+        "%s   3D-Druck Gehäuse v5.2 (3MF), Kurzanleitung LIESMICH_Druck.txt" % druck_ordner(ver),
         "3_Bestellliste   Teile je Paket (Basis / Komplett / Autark) als CSV, Preise geschätzt",
         "4_Software       MoveEye für den Raspberry Pi 5 (%s), Anleitung INSTALLATION.txt" % ("signiert" if signiert else "NICHT signiert, Testpaket"),
         "", "Anfangen: Anleitung lesen, Paket wählen, Teile bestellen, drucken, bauen, Software einrichten.",
@@ -774,7 +786,7 @@ def main():
         bilder = {} if a.ohne_bilder else bilder_rendern(B, M, br)
         print("  Bilder: %d (%.0f s)" % (len(bilder), time.time() - t0))
         for L in sprachen:
-            ziel = os.path.join(a.aus, "MoveEye_Bauanleitung_%s.pdf" % L)
+            ziel = os.path.join(a.aus, "MoveEye_Bauanleitung_%s_%s.pdf" % (ver, L))
             htm = anleitung_html(B, K, ver, bilder, L, signiert, os.path.basename(py), os.path.basename(zd))
             pdf_aus_html(br, htm, ziel, "MoveEye %s – %s" % (ver, tx("MoveEye – Bauanleitung", L).split("– ")[-1]))
             pdfs[L] = ziel
@@ -787,13 +799,14 @@ def main():
         for L, p in pdfs.items():
             z.write(p, name + "/1_Anleitung/" + os.path.basename(p), compress_type=zipfile.ZIP_STORED)
         druck = (B.get("druckdateien") or []) + (B.get("druckdateien_einzeln") or [])
+        dd = druck_ordner(ver)                          # Ordner mit Version, die 3MF behalten ihre Namen
         for f in druck:
             if f.startswith("v5-2/") and os.path.isfile(os.path.join(GEH, "Druckdateien", f)):
-                z.write(os.path.join(GEH, "Druckdateien", f), name + "/2_Druckdateien/" + f[5:], compress_type=zipfile.ZIP_STORED)
-        w("2_Druckdateien/LIESMICH_Druck.txt", druck_liesmich(B, ver))
+                z.write(os.path.join(GEH, "Druckdateien", f), name + "/" + dd + "/" + f[5:], compress_type=zipfile.ZIP_STORED)
+        w(dd + "/LIESMICH_Druck.txt", druck_liesmich(B, ver))
         for p in (B.get("pakete") or {}).get("liste") or []:
-            c, _s = csv_paket(B, p)
-            w("3_Bestellliste/MoveEye_Bestellliste_%s.csv" % lx(p["name"], "de"), c)
+            c, _s = csv_paket(B, p, ver=ver)
+            w("3_Bestellliste/MoveEye_Bestellliste_%s_%s.csv" % (lx(p["name"], "de"), ver), c)
         sw = name + "/4_Software/"
         z.write(py, sw + os.path.basename(py))
         z.write(zd, sw + os.path.basename(zd), compress_type=zipfile.ZIP_STORED)
