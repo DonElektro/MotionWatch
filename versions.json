@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-01 18:30",
+ "generated": "2026-11-01 18:39",
  "versions": [
   {
-   "version": "3.44.0",
-   "file": "webcam_bewegung_3_44_0.py",
+   "version": "3.44.1",
+   "file": "webcam_bewegung_3_44_1.py",
    "url": "",
-   "sha256": "9b1d59a6f35303a72eb402ac1254023d3b1aab2336ccde81e90e69761639a755",
-   "date": "2026-11-01 18:30",
-   "notes": "Simulator: Tastatur statt Scrollrad: + / − zoomt überall, Bild↑/↓ blättert Listen, Pfeile drehen die Ansicht, F1 zeigt die Tasten-Hilfe, Scrollbalken sind sichtbar und ziehbar, Shift+Bild↑/↓ bewegt den Mast. Linux-Kiosk: ./kiosk_ein.sh macht den PC zur reinen Simulator-Maschine (Vollbild, sendet an MoveEye, Neustart nach Absturz, SSH); Ctrl+Alt+D = normales Mint, ./kiosk_aus.sh stellt alles zurück.",
-   "size": 4796346,
-   "sig": "ff5cce456539a0c59f1d93c3074a39bfd541f5231be613def6328a096ebf9f093d4ecd163b11c360767889155b632f7a0c76e39f8bacca9d7a1f89de3c43630a",
+   "sha256": "17dd5f9253cf3e11c5a99dd3f25911a468e97e9cb302203bb7820d117586b56e",
+   "date": "2026-11-01 18:39",
+   "notes": "Simulator-Fenster und Kamerabild passen in die Bildschirmhöhe (zentriert, unverzerrt); Klicks treffen trotz Rändern genau.",
+   "size": 4796280,
+   "sig": "31c4acf073f47e17ea455707a5d42dda0b568209226c8f6b59bbbdf4c29ec5f3c07f3af9dba4e0c2674e70eae48af5dde35c230914d5e59814095dd5c5bcde01",
    "data": {
-    "file": "moveeye_daten_3_44_0.zip",
+    "file": "moveeye_daten_3_44_1.zip",
     "url": "",
-    "sha256": "06ff9da1bd4d958e7ee89c48fc41a043b95925ffec88f6012579d9decced4c36",
-    "size": 3279507,
-    "sig": "c11dd969f3698d670ba3bd2ff0d72cdc16d94e2c1193c284f9368b9f697fbec3f9941eb01669837b8030adf4c1361f30e650a3302278234e2c80ce23540fcb0d"
+    "sha256": "7dd10acddc4e4159f2bf8b0e617ceaf61469a245ff84e5edd2c35a3db7073d37",
+    "size": 3280585,
+    "sig": "ddd133cef79df4ecd1cf4c15ede8bd00d0a46aee7c6b184b661e19e636cd0038813c497fd95252d1054119823190d43950ba9501c0da3a86478d197148e2a006"
    }
   },
   {
@@ -24,7 +24,7 @@
    "file": "webcam_bewegung_3_43_1.py",
    "url": "",
    "sha256": "00c28106c8bc5d798def77b1501e7cfb615c266d8c60fd5754dbe4bb38f54716",
-   "date": "2026-11-01 18:06",
+   "date": "2026-11-01 18:38",
    "notes": "MoveEye bietet unter /sim jetzt auch den Simulator für Linux zum Herunterladen an.",
    "size": 4796181,
    "sig": "bdfdc67338426bf528951d2a1481f30e52eefc6503115fce23f1e0330dfb60ddceffe35bdc6e3cabc714172ec569f2104d8c5ab0a34acad5e56636ad28f0a605",

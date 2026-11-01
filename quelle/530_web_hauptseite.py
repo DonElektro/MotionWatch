@@ -537,7 +537,7 @@ body[data-tab] #srch{padding-left:0!important}body[data-tab] #srch .ic{left:12px
     <div id="lv-simw" hidden>
       <style>
         .lv-vbox{position:relative;border-radius:10px;overflow:hidden;background:#000;user-select:none;-webkit-user-select:none}
-        .lv-vbox img{display:block;width:100%;height:auto;cursor:grab;outline:none}.lv-vbox img:active{cursor:grabbing}
+        .lv-vbox img{display:block;width:100%;height:auto;cursor:grab;outline:none;object-fit:contain;max-height:calc(100vh - var(--hdr-h,64px) - 24px);max-height:calc(100dvh - var(--hdr-h,64px) - 24px)}   /* 3.43.2: never higher than the screen */.lv-vbox img:active{cursor:grabbing}
         .lv-vbox img:focus-visible{box-shadow:inset 0 0 0 2px var(--acc,#3b8cff)}
         .lv-vbtn{position:absolute;right:8px;top:8px;display:flex;flex-direction:column;gap:6px}
         .lv-vbtn button{width:38px;height:38px;padding:0;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:rgba(10,14,20,.65);color:#fff;font-size:18px;cursor:pointer}
