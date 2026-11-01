@@ -210,6 +210,12 @@ class MotionWatch:
         self.read_failures = 0
 
     def no_camera_frame(self):
+        try:                                               # 639y: the calm picture (simulator) / a friendlier error picture
+            img = calm_frame() if "calm_frame" in globals() else None
+            if img is not None:
+                return img
+        except Exception:
+            pass
         img = np.zeros((360, 640, 3), np.uint8)
         busy = STATE["source_status"].startswith(("connecting", "connection lost"))
         ascii_ = lambda s: str(s).encode("ascii", "replace").decode()

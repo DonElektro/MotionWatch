@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.31.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.32.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -446,6 +446,11 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.32.0
+3.32.0: Ruhiges Bild statt Schwarz: beim Start (Startbild), während eines Updates und beim Laden eines Orts zeigt der Simulator
+ein ruhiges Platzhalterbild; MoveEye zeigt es ebenso, solange der Simulator nicht erreichbar ist.
+So testest du: den Simulator starten oder einen anderen Ort laden und in MoveEye auf «Live» schauen; den Simulator schliessen.
 
 NEU IN 3.31.0
 3.31.0: Ein gemeinsamer Kopf wie in MoveEye: ? Hilfe · 🔔 Ton · ↻ neu laden · DE Sprache · ☰ Menü · ⛶ Vollbild · ▲ einklappen

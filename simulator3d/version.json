@@ -1,9 +1,9 @@
 {
- "version": "3D-5.31.0",
- "ver": "3.31.0",
- "name": "MoveEye Sim 3.31.0",
+ "version": "3D-5.32.0",
+ "ver": "3.32.0",
+ "name": "MoveEye Sim 3.32.0",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 41353036,
- "sha256": "45bf54c814d19c27614f64883ff16775b1f13e55f3c6b9da6ef89e36cc767c85",
- "notes": "Gemeinsamer Kopf, Listen als Chips"
+ "size": 41468504,
+ "sha256": "479b97388335488b099d784b9e28bc0276b929cf1777dad52fcf9b8ff8512d72",
+ "notes": "Ruhebild statt Schwarz"
 }

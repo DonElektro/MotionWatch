@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3.31.0"
+const VERSION := "3.32.0"
 const Versionen = preload("res://scripts/versionen.gd")   # Versionierung 3.0.0: from 3.0.0 VERSION = "X.Y.Z" like MoveEye (see there)
 const Stimme = preload("res://scripts/abenteuer_stimme.gd")   # 3.23: the one switch «Stimme» (an | aus | untertitel)
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
@@ -3199,6 +3199,21 @@ func on_state(d: Dictionary, host: String) -> bool:
 	return true
 
 
+var update_node = null                # Ruhebild: the running updater (update.gd), for busy_reply()
+
+
+func busy_reply():
+	"""Ruhebild (MoveEye 639y): what keeps the simulator busy right now - {"what": "update", "ver", "pct", "phase"} while an
+	update comes / loads / is installed, {"what": "scene"} while a place is loading; null otherwise"""
+	if update_node != null and is_instance_valid(update_node):
+		var b: Dictionary = update_node.busy()
+		if not b.is_empty():
+			return b
+	if geo != null and geo.busy:
+		return {"what": "scene"}
+	return null
+
+
 func world_reply() -> Dictionary:
 	var press := pressure
 	if storm_t > 0.0:
@@ -3220,6 +3235,7 @@ func world_reply() -> Dictionary:
 			"head_deg": [snappedf(-rad_to_deg(head.rotation.y), 0.01), snappedf(rad_to_deg(head_pitch.rotation.x) + 6.0, 0.01)] if head != null else null,   # MoveEye 2.98.35: where the head really is (servo diagnosis)
 			"wide": weit.state() if weit != null else null,   # 3D-4.17: the mount of the wide camera (MoveEye 163 at once)
 			"game_live": smalltv.game_live() if smalltv != null else null}   # 3D-4.19: Spiel-Anzeige auf dem SmallTV (MoveEye 552)
+	r["busy"] = busy_reply()                        # Ruhebild (MoveEye 639y): update / place loading -> calm picture there
 	r["buttons"] = statusled.reply() if statusled != null else null   # die Tasten des Geräts wie ein GPIO (MoveEye 163a)
 	r["horror"] = horror.reply() if horror != null else null   # Horror-Modus: neue «Aufnahmen» -> MoveEye Verlauf (539a)
 	r["spieltest"] = spieltest.reply() if spieltest != null else null   # Spieltest-Assistent: Meldung nach jeder Runde -> MoveEye 635a (Push)
@@ -6760,8 +6776,10 @@ func run_update(automatic: bool, by_hand: bool) -> void:
 	up.quiet = not by_hand
 	up.auto = automatic
 	add_child(up)
+	update_node = up                              # Ruhebild: busy_reply() tells MoveEye about the update
 	await up.check(VERSION, update_url)
 	update_info = up.result
+	update_node = null
 	up.queue_free()
 	update_busy = false
 	if update_btn != null:

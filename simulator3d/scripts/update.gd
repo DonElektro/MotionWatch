@@ -31,6 +31,7 @@ var auto := false             # install without asking (setting «Neue Versionen
 							  # 15 seconds to cancel, then it installs by itself
 var result := ""              # what came out (for the window and the web page of MoveEye)
 var choice := -1              # -1 not decided, 0 later / OK, 1 update
+var phase := ""               # Ruhebild (MoveEye 639y): "" | soon (15 s to cancel) | download | install | restart
 
 
 const V = preload("res://scripts/versionen.gd")   # Versionierung 3.0.0: both schemas («3D-4.82» and «3.0.0»), see there
@@ -102,6 +103,7 @@ func check(current: String, url := "") -> void:
 		b_skip.text = "Abbrechen"
 		var base_text := text.text
 		choice = -1
+		phase = "soon"
 		for i in range(15, 0, -1):
 			text.text = base_text + "\n\nWird in %d s automatisch installiert, danach startet der Simulator neu." % i
 			await get_tree().create_timer(1.0).timeout
@@ -111,6 +113,7 @@ func check(current: String, url := "") -> void:
 	else:
 		up = await chosen
 	if not up:
+		phase = ""
 		result = "Update auf %s abgebrochen" % info["version"]
 		return
 	await _update()
@@ -129,8 +132,7 @@ func _note(msg: String) -> void:
 
 func _build_ui() -> void:
 	layer = 100
-	var bg := ColorRect.new()
-	bg.color = Color(0.06, 0.07, 0.09)
+	var bg: Control = preload("res://scripts/ruhebild.gd").new()   # Ruhebild (MoveEye 639y): calm, like the picture of MoveEye
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(bg)
 	var cc := CenterContainer.new()
@@ -138,7 +140,7 @@ func _build_ui() -> void:
 	add_child(cc)
 	var pc := PanelContainer.new()
 	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color(0.12, 0.14, 0.18)
+	sb.bg_color = Color(0.12, 0.14, 0.18, 0.94)
 	sb.set_corner_radius_all(10)
 	sb.set_content_margin_all(22)
 	pc.add_theme_stylebox_override("panel", sb)
@@ -188,8 +190,17 @@ func _process(_dt: float) -> void:
 		text.text = "Lade %s … %.1f von %.1f MB" % [info["version"], got / 1048576.0, size / 1048576.0]
 
 
+func busy() -> Dictionary:
+	"""Ruhebild (MoveEye 639y, world_reply «busy»): an update is coming / loading / being installed - MoveEye shows a calm
+	picture with this version and the percent instead of a black live picture while the simulator starts again"""
+	if phase == "":
+		return {}
+	return {"what": "update", "ver": str(info.get("version", "")), "pct": int(bar.value) if bar != null and phase == "download" else (100 if phase != "soon" else 0), "phase": phase}
+
+
 func _fail(msg: String) -> void:
 	"""something went wrong: say what, and start the old version"""
+	phase = ""
 	downloading = false
 	bar.visible = false
 	text.text = "Das Update hat nicht geklappt: %s\n\nDie bisherige Version startet. Du kannst den Simulator auch von Hand neu herunterladen." % msg
@@ -210,6 +221,7 @@ func _fail(msg: String) -> void:
 
 func _update() -> void:
 	var exe := real_exe()                           # remember it now: after the renaming it may point to the .old file
+	phase = "download"
 	b_upd.visible = false
 	b_skip.visible = false
 	bar.visible = true
@@ -234,6 +246,7 @@ func _update() -> void:
 			await _fail(why)
 			return
 	text.text = "Packe aus …"
+	phase = "install"
 	await get_tree().process_frame
 	var err := _install(zip_path, exe)
 	DirAccess.remove_absolute(zip_path)
@@ -241,6 +254,7 @@ func _update() -> void:
 		await _fail(err)
 		return
 	text.text = "Fertig. Der Simulator startet neu …"
+	phase = "restart"
 	await get_tree().create_timer(0.8).timeout
 	var args := OS.get_cmdline_args()
 	var user: PackedStringArray = get_parent().restart_args() if get_parent().has_method("restart_args") else OS.get_cmdline_user_args()

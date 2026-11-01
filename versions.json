@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-01 11:34",
+ "generated": "2026-11-01 11:37",
  "versions": [
+  {
+   "version": "3.32.0",
+   "file": "webcam_bewegung_3_32_0.py",
+   "url": "",
+   "sha256": "fd26670b55526749475f00fa04a12d4c368c41c9ffca2f187beabf9c231bc06b",
+   "date": "2026-11-01 11:37",
+   "notes": "Ruhiges Bild statt Schwarz, wenn der Simulator startet, sich aktualisiert, einen Ort lädt oder nicht erreichbar ist (mit Blinki, nach 3 Min. ein Hinweis); echte Kamera: klarere Fehlermeldung.",
+   "size": 4552494,
+   "sig": "5a35733467bd79a0ab1c0f3d5d6f393398434ed10bceda7eac8fa275593e32f97322000b781c80ecf1586e696946256ffbdd63b4afc3c911148a87f72014c60e",
+   "data": {
+    "file": "moveeye_daten_3_32_0.zip",
+    "url": "",
+    "sha256": "4534f67bd914b13671ebb831a419a4bb13a436f8b0f6dfdc9e30a3e20b07ebc8",
+    "size": 1566883,
+    "sig": "53ba347a8c4afce5245003c343b03fca2f90c29e9cd81f6481046ab010e78cabc989ad5b61e4968e8eb13f6ded5f81948d0e33de765fc868dbcbb0b12230be0a"
+   }
+  },
   {
    "version": "3.31.0",
    "file": "webcam_bewegung_3_31_0.py",
    "url": "",
    "sha256": "56c35f98dba982c74ee960e23f453c28659d8fcc3305b41bae40b422641180c7",
-   "date": "2026-11-01 11:34",
+   "date": "2026-11-01 11:35",
    "notes": "Ein gemeinsamer Kopf auf jeder Seite (Web, Pi-Fenster, Simulator): ? 🔔 ↻ DE ☰ ⛶ ▲ 🛠 immer gleich; Ein-/Ausblenden-Listen als Chips mit Symbolen und Gruppen.",
    "size": 4523368,
    "sig": "b1df9658dd92f934625296f11be3fee542ef1ffc3a4da28f55bf115a065bf65dec6c87b031ba18c5fa99b0c8953bd095e737fe94e8af5be91c9cbd325d82d902",
@@ -24,7 +41,7 @@
    "file": "webcam_bewegung_3_30_0.py",
    "url": "",
    "sha256": "4de3df91e770a9233a99194e20cbe20aac049753afda3b87dc3d4e25023371c0",
-   "date": "2026-11-01 11:33",
+   "date": "2026-11-01 11:35",
    "notes": "Schneller zum Entwickler-Bereich: das MoveEye-Logo etwa 1 s gedrückt halten (Web, Pi-Fenster, Simulator); im Simulator zusätzlich ein Werkzeug-Knopf 🛠 oben rechts.",
    "size": 4523481,
    "sig": "5f36fe5bb255c0b7391a149b09e13645e5a886939b5e890a382e0f25af195c30c73d7346bd78624b39c6f32a903ea7c196c2c3b38d4997eace5fda557789ac06",
@@ -41,7 +58,7 @@
    "file": "webcam_bewegung_3_29_0.py",
    "url": "",
    "sha256": "62f00005d536c7a2111d73c627c911d2dfff478d9675468952ad5ed5b7f9ed48",
-   "date": "2026-11-01 11:29",
+   "date": "2026-11-01 11:36",
    "notes": "Simulator: Fenster docken automatisch in Leisten links/rechts an (ohne Überlappung, passt sich der Bildschirmgrösse an, «Neu anordnen»); Karte, Kompass, SmallTV und CPU als Reiter in einem Fenster; Entwickler immer vorne, klein/mittel/gross und einklappbar.",
    "size": 4481992,
    "sig": "cc70cbf48db570a684b681b77ed28d3721e94de0d3d0e262f4d74b94fdf8c05c79ad0325dfa4c386c6ae2887184a977ab9149a3d729cd8e16b39df2ccd954405",
@@ -136,23 +153,6 @@
     "sha256": "eb9abc8d988c09b9bcdad2ff08753c8aa699db85ba0ad7af4ed9681390110c9c",
     "size": 1630180,
     "sig": "631a057b1603c1a3b78980ce521b1611f10b0ad6b27b0283589c6c79612a68c11342359639493473932fb785cbb1ea7fc7854db2382813c1cef139a8f1d17e0e"
-   }
-  },
-  {
-   "version": "3.23.1",
-   "file": "webcam_bewegung_3_23_1.py",
-   "url": "",
-   "sha256": "e3c93a2f45b37ed31d1f3e04be811c1766702020f145a8c86293bbc2555bcaff",
-   "date": "2026-11-01 01:08",
-   "notes": "Trailer: echte Musik und Geräusche (Streicher, Pauken, Donner, Regen, Schritte; freie CC0-Aufnahmen), Lautstärken ausgeglichen; am iPad gleich wie am PC.",
-   "size": 4460518,
-   "sig": "ab5a87504fc69d3a7d614ea925767a2eca56a032791724281a510782d36bea3bfca1cf7e523ba2b2f71e77c1dc5265df26a74c29664654e012d171d203e0f30d",
-   "data": {
-    "file": "moveeye_daten_3_23_1.zip",
-    "url": "",
-    "sha256": "6ad5625d19f7814116e8742afbcf3c4ebb6ae4623eb4fac617413f9f0201a464",
-    "size": 1630179,
-    "sig": "ee7beaae1528b9624116bbd89928df5fd819b4527ed3bd7cb24f34d85762de3f7cac467e519d04ade7903258f1ce8f5ce3b2eb339f364ee76fdaae1b0b2d0308"
    }
   },
   {
