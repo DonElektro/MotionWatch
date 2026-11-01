@@ -461,6 +461,7 @@ func open() -> void:
 	shown = true
 	if main.fenster != null:
 		main.fenster.changed()
+		main.fenster.set_fold(main.fenster.win("dev"), false)   # Paket «Andocken»: geöffnet = aufgeklappt
 	panel.visible = true
 
 
@@ -524,6 +525,7 @@ func _build() -> void:
 	var leg := UI.small(T.t("Blau Szene · Weiss Ort · Gelb Aussicht · Grün Schlaf- / Standort · Rosa Vignette · Braun Raum · ▲ Ansicht · ● MoveEye — Klick = hinspringen, Rad = zoomen, ziehen = verschieben"))
 	leg.custom_minimum_size = Vector2(598, 0)
 	v.add_child(leg)
+	_leg = leg
 	var bot := HBoxContainer.new()
 	bot.add_theme_constant_override("separation", 10)
 	v.add_child(bot)
@@ -549,14 +551,51 @@ func _build() -> void:
 	v.add_child(eb().section())                          # Teil 2: Schnellregler + Ebenen
 	extra.build(v)                                       # Teil 3: Notizen, Kontaktbogen, Kapitel-Sprung
 	if main.fenster != null:
+		# Paket «Andocken» (Daniel 01.11.2026): immer zuoberst, einklappbar, Grösse klein / mittel / gross oder Ecke ziehen,
+		# in die Leiste rechts integrierbar (zählt aber nicht beim Einpassen der anderen Fenster)
 		main.fenster.add("dev", "Entwickler", panel, {"on": func(): return shown, "set_on": func(x): shown = bool(x),
-				"shown": func(): return shown, "list": false, "home": _home})
+				"shown": func(): return shown, "list": false, "home": _home, "top": true, "fold": true, "fit": false, "auto": false,
+				"resize": "wh", "min": Vector2(440, 300), "max": Vector2(1100, 1100), "set_size": set_dims,
+				"reset_size": func(_w): set_dims(0.0, 0.0),
+				"sizes": [Vector2(470, 430), Vector2(540, 560), Vector2(620, 700)]})
 	else:
 		main.ui_layer.add_child(panel)
 	var mh = get_parent()
 	if mh != null and mh.get("farben") != null:
 		mh.farben.register(panel, "all")                     # Hell / Rotlicht / Dunkel like the other windows of «Mehr»
 	_paint()
+
+
+var _leg: Label
+var user_w := 0.0                                        # Paket «Andocken»: Grösse von Hand / klein-mittel-gross (0 = Standard)
+var user_h := 0.0
+
+
+func set_dims(w: float, h: float) -> void:
+	"""die Grösse des Fensters (Inhalt): Liste und Karte teilen sich die Breite, die Höhe nimmt die Karte"""
+	user_w = w
+	user_h = h
+	if _list == null or _map == null:
+		return
+	var cw := w if w > 0.0 else 618.0
+	var lw := clampf(cw * 0.37, 150.0, 230.0)
+	var mw := maxf(170.0, cw - lw - 28.0)
+	_list.custom_minimum_size.x = lw
+	_map.custom_minimum_size.x = mw
+	var bw := 598.0 if w <= 0.0 else lw + mw + 8.0
+	if _leg != null:
+		_leg.custom_minimum_size.x = bw
+	if extra != null and extra.has_method("body_width"):
+		extra.body_width(bw)
+	if extra != null and extra.has_method("_fit"):
+		extra._fit()
+	if panel != null:
+		panel.reset_size()
+
+
+func map_h(rest: float) -> float:
+	"""Höhe von Karte und Liste bei der gewählten Grösse (rest = alles andere im Fenster)"""
+	return 380.0 if user_h <= 0.0 else clampf(user_h - rest, 120.0, 380.0)
 
 
 func _home(w) -> Vector2:

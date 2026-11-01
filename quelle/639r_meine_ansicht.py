@@ -82,8 +82,7 @@ def ansicht_mig():
     so that «Meine Ansicht» is the start (the switch stays and can be switched on again)"""
     if CFG.get("ui_ansicht_mig"):
         return False
-    CFG["ui_ansicht_sg0"] = bool(CFG.get("ui_start_groups", True))
-    CFG["ui_start_groups"] = False
+    CFG["ui_ansicht_sg0"] = True                         # 3.23: the switch «On start: groups only» is gone (factory was on)
     CFG["ui_ansicht_mig"] = True
     return True
 
@@ -93,7 +92,7 @@ def ansicht_get(user, seite):
     seite = str(seite or "")[:40]
     e = (CFG.get("ui_ansicht") or {}).get(user, {}).get(seite) if _ANSICHT_SEITE.match(seite) else None
     return {"known": e is not None, "offen": list(e["o"]) if e else [], "zu": list(e["z"]) if e else [],
-            "start_groups": bool(CFG.get("ui_start_groups", False)), "first_groups": bool(CFG.get("ui_ansicht_sg0", False))}
+            "start_groups": False, "first_groups": bool(CFG.get("ui_ansicht_sg0", False))}
 
 
 def ansicht_set(user, seite, offen, zu):
@@ -157,12 +156,12 @@ for _a, _b in (('<section id="tips" data-icon="🧭" class="tips"><h2>Tipps &amp
 
 
 def _ansicht_selftest():
-    keep = {k: CFG.get(k) for k in ("ui_ansicht", "ui_ansicht_mig", "ui_ansicht_sg0", "ui_start_groups")}
+    keep = {k: CFG.get(k) for k in ("ui_ansicht", "ui_ansicht_mig", "ui_ansicht_sg0")}
     _ss = globals()["save_settings"]
     globals()["save_settings"] = lambda: None
     try:
-        CFG["ui_ansicht"] = {}; CFG["ui_ansicht_mig"] = False; CFG["ui_start_groups"] = True
-        assert ansicht_mig() and CFG["ui_ansicht_sg0"] and not CFG["ui_start_groups"] and not ansicht_mig(), "639r: migration"
+        CFG["ui_ansicht"] = {}; CFG["ui_ansicht_mig"] = False
+        assert ansicht_mig() and CFG["ui_ansicht_sg0"] and "ui_start_groups" not in CFG and not ansicht_mig(), "639r: migration"
         g0 = ansicht_get("admin", "settings")
         assert not g0["known"] and g0["first_groups"], "639r: first view"
         assert ansicht_set("anna", "settings", ["grp:alarm", "sec:push", 5], ["grp:alarm", "grp:sys"])

@@ -21,11 +21,12 @@ uniform int clip_n = 0;
 uniform vec4 clip_a[8];
 uniform vec4 clip_b[8];
 
-// Foto-Texturen (3.26, Texturen aus eigenen Fotos von Daniel Bärschi; bergtal_texturen.gd): Schalter «Foto-Texturen»
+// Foto-Texturen (3.30, Texturen aus eigenen Fotos von Daniel Bärschi; bergtal_texturen.gd): Schalter «Foto-Texturen»
 // (main.foto_tex), nie in Lite (photo = 0: alles wie vorher, es wird keine Textur gelesen). Die Fotos geben nur die Struktur
 // und einen Teil der Farbe: Farbe der Zone (Vertex-Farbe) × Foto / Mittelwert des Fotos (avg_*) - so bleiben Zonen,
-// Jahreszeit und die Farben der anderen Teile stimmig. Gegen sichtbare Wiederholung: zwei Kacheln mit Versatz je Fleck
-// (Index aus dem Rauschen, weich überblendet) und Makro-Flecken (zwei Wiesen gemischt, grosses Rauschen).
+// Jahreszeit und die Farben der anderen Teile stimmig. Gegen sichtbare Wiederholung: zwei Kacheln mit Versatz und Hash-Drehung je Fleck
+// (Index aus dem Rauschen, weich überblendet), ein zweiter, grosser Massstab desselben Fotos (big_scale) und Makro-Flecken
+// (zwei Wiesen gemischt, grosses Rauschen). Fels: ohne Drehung (die Schichten bleiben waagrecht), zweiter Massstab 31 m.
 uniform float photo = 0.0;
 uniform sampler2D t_wiese : source_color, repeat_enable, filter_linear_mipmap_anisotropic;      // wiese_alp_01 (scharf)
 uniform sampler2D t_wiese2 : source_color, repeat_enable, filter_linear_mipmap_anisotropic;     // wiese_hellgruen_01
@@ -51,15 +52,37 @@ varying vec3 wpos;
 // one photo without visible repetition: two copies with an offset per patch (index from the noise), blended softly
 // (I. Quilez «texture repetition» 3). textureGrad with the derivatives of the plain uv: no seams at the patch borders.
 // dx, dy: the derivatives of uv - taken outside the branches (no derivatives in non-uniform control flow)
-vec3 tex_var(sampler2D t, vec2 uv, vec2 dx, vec2 dy, float k) {
+// rot = 1: each patch also turned by a hash angle (grass, scree from above); rot = 0: no turn (rock layers stay level)
+vec2 rot_h(vec2 v, float h) {
+	float a = fract(sin(h * 12.9898) * 43758.5453) * 6.2831;
+	float cs = cos(a);
+	float sn = sin(a);
+	return vec2(cs * v.x - sn * v.y, sn * v.x + cs * v.y);
+}
+
+// the mean colour of a photo, read from its smallest mip level (1 × 1): in the same colour space as the samples, so
+// photo / mean is 1 on average in every renderer (the avg_* uniforms from bergtal_texturen.gd are only a fallback note)
+vec3 mean_of(sampler2D t) {
+	return max(textureLod(t, vec2(0.5), 12.0).rgb, vec3(0.01));
+}
+
+vec3 tex_var(sampler2D t, vec2 uv, vec2 dx, vec2 dy, float k, float rot) {
 	float l = k * 8.0;
 	float ia = floor(l);
 	float f = fract(l);
 	vec2 oa = sin(vec2(3.0, 7.0) * ia);
 	vec2 ob = sin(vec2(3.0, 7.0) * (ia + 1.0));
-	vec3 ca = textureGrad(t, uv + oa, dx, dy).rgb;
-	vec3 cb = textureGrad(t, uv + ob, dx, dy).rgb;
+	float ha = (ia + 0.37) * rot;
+	float hb = (ia + 1.37) * rot;
+	vec3 ca = textureGrad(t, rot_h(uv, ha) + oa, rot_h(dx, ha), rot_h(dy, ha)).rgb;
+	vec3 cb = textureGrad(t, rot_h(uv, hb) + ob, rot_h(dx, hb), rot_h(dy, hb)).rgb;
 	return mix(ca, cb, smoothstep(0.2, 0.8, f - 0.1 * dot(ca - cb, vec3(1.0))));
+}
+
+// second scale: the same photo about 4.3× bigger, only as a soft brightness pattern (breaks the grid seen from afar)
+vec3 big_scale(sampler2D t, vec2 uv, vec2 dx, vec2 dy, vec3 avg, float s) {
+	vec3 b = textureGrad(t, rot_h(uv, 5.1) / 4.3 + 0.41, rot_h(dx, 5.1) / 4.3, rot_h(dy, 5.1) / 4.3).rgb;
+	return mix(vec3(1.0), b / max(avg, vec3(0.01)), s);
 }
 
 // the structure of a photo on the colour of the zone: c × (photo / its mean), plus a part of the photo's own colour
@@ -118,33 +141,35 @@ void fragment() {
 		float near = 1.0 - smoothstep(250.0, 700.0, dist);           // far away: only the colour of the zone
 		vec3 g = c;
 		if (grassy > 0.01) {
-			vec3 wa = tex_var(t_wiese, lpos.xz / 3.2, gx / 3.2, gy / 3.2, k1);
-			vec3 wb = tex_var(t_wiese2, lpos.xz / 6.5 + 0.21, gx / 6.5, gy / 6.5, k2 * 1.7);
+			vec3 wa = tex_var(t_wiese, lpos.xz / 3.2, gx / 3.2, gy / 3.2, k1, 1.0)
+					* big_scale(t_wiese, lpos.xz / 3.2, gx / 3.2, gy / 3.2, mean_of(t_wiese), 0.45);
+			vec3 wb = tex_var(t_wiese2, lpos.xz / 6.5 + 0.21, gx / 6.5, gy / 6.5, k2 * 1.7, 1.0);
 			float lush = smoothstep(0.38, 0.62, k2 + 0.25 * (mid - 0.5));
-			vec3 gm = mix(on_photo(c, wa, avg_wiese, 0.9, 0.25), on_photo(c, wb, avg_wiese2, 0.85, 0.2), lush * 0.6);
+			vec3 gm = mix(on_photo(c, wa, mean_of(t_wiese), 0.9, 0.25), on_photo(c, wb, mean_of(t_wiese2), 0.85, 0.2), lush * 0.6);
 			// high up: the stony alpine meadow
 			float hi = smoothstep(300.0, 560.0, lpos.y + 90.0 * (big - 0.5));
 			if (hi > 0.01) {
-				vec3 al = tex_var(t_alp, lpos.xz / 3.6 + 0.5, gx / 3.6, gy / 3.6, k1 * 1.3);
-				gm = mix(gm, on_photo(c, al, avg_alp, 0.9, 0.25), hi);
+				vec3 al = tex_var(t_alp, lpos.xz / 3.6 + 0.5, gx / 3.6, gy / 3.6, k1 * 1.3, 1.0);
+				gm = mix(gm, on_photo(c, al, mean_of(t_alp), 0.9, 0.25), hi);
 			}
 			// dwarf shrubs (alpine roses, bilberries) in patches on the ridges, not on steep rock
 			float rose = smoothstep(330.0, 420.0, lpos.y) * (1.0 - smoothstep(640.0, 720.0, lpos.y))
 					* smoothstep(0.55, 0.68, rn + 0.2 * (mid - 0.5))
 					* (1.0 - smoothstep(0.25, 0.4, slope));
 			if (rose > 0.01) {
-				vec3 ro = tex_var(t_rose, lpos.xz / 3.0 + 0.13, gx / 3.0, gy / 3.0, k1 * 0.7);
-				gm = mix(gm, on_photo(c, ro, avg_rose, 1.0, 0.6) * mix(vec3(1.0), grass_tint, 0.5), rose);
+				vec3 ro = tex_var(t_rose, lpos.xz / 3.0 + 0.13, gx / 3.0, gy / 3.0, k1 * 0.7, 1.0);
+				gm = mix(gm, on_photo(c, ro, mean_of(t_rose), 1.0, 0.6) * mix(vec3(1.0), grass_tint, 0.5), rose);
 			}
 			g = mix(g, gm, grassy);
 		}
 		if (stony > 0.01) {
-			vec3 st = tex_var(t_geroell, lpos.xz / 4.2 + 0.77, gx / 4.2, gy / 4.2, k1 * 1.1);
-			g = mix(g, on_photo(c, st, avg_geroell, 0.95, 0.2), stony);
+			vec3 st = tex_var(t_geroell, lpos.xz / 4.2 + 0.77, gx / 4.2, gy / 4.2, k1 * 1.1, 1.0)
+					* big_scale(t_geroell, lpos.xz / 4.2, gx / 4.2, gy / 4.2, mean_of(t_geroell), 0.4);
+			g = mix(g, on_photo(c, st, mean_of(t_geroell), 0.95, 0.2), stony);
 		}
 		if (forest > 0.01) {                              // the forest seen from far (above): crowns, gaps
 			vec3 fw = textureGrad(t_wald, lpos.xz / 95.0, gx / 95.0, gy / 95.0).rgb;
-			g = mix(g, on_photo(c, fw, avg_wald, 0.8, 0.3), forest * smoothstep(40.0, 160.0, dist));
+			g = mix(g, on_photo(c, fw, mean_of(t_wald), 0.8, 0.3), forest * smoothstep(40.0, 160.0, dist));
 		}
 		pk = near * max(grassy, max(stony, forest * 0.5));
 		c = mix(c, g, near);
@@ -171,19 +196,21 @@ void fragment() {
 	if (photo > 0.5) {                              // (uniform: in Lite nothing of this runs)
 		// Foto-Texturen: limestone wall along the wall (like the noise above), light slabs high up; the colours of the
 		// procedural rock (bands, rust, serpentine) stay as the colour, the photo gives cracks, ledges and shadows
-		vec2 t3 = normalize(vec2(-lnrm.z, lnrm.x) + vec2(0.0001, 0.0));
-		vec2 ruv = vec2(dot(lpos.xz, t3), lpos.y);
+		// projected onto the slope itself (level tangent T, down-slope B): no stretching on half-steep ground
+		vec3 t3 = normalize(vec3(-lnrm.z, 0.0, lnrm.x) + vec3(0.0001, 0.0, 0.0));
+		vec3 b3 = normalize(cross(normalize(lnrm), t3));
+		vec2 ruv = vec2(dot(lpos, t3), dot(lpos, b3));
 		vec2 rx = dFdx(ruv);
 		vec2 ry = dFdy(ruv);
 		float k3 = texture(noise_tex, ruv * 0.013 + 0.5).r;
 		if (rk > 0.01) {
-			vec3 fa = tex_var(t_fels, ruv / 9.0, rx / 9.0, ry / 9.0, k3);
+			vec3 fa = tex_var(t_fels, ruv / 9.0, rx / 9.0, ry / 9.0, k3, 0.0);
 			vec3 fb = textureGrad(t_fels, ruv / 31.0 + 0.3, rx / 31.0, ry / 31.0).rgb;   // second scale: big structure
-			vec3 fr = on_photo(rock, fa, avg_fels, 0.85, 0.15) * mix(vec3(1.0), fb / max(avg_fels, vec3(0.01)), 0.35);
+			vec3 fr = on_photo(rock, fa, mean_of(t_fels), 0.85, 0.05) * mix(vec3(1.0), fb / max(mean_of(t_fels), vec3(0.01)), 0.35);
 			float hl = smoothstep(480.0, 720.0, lpos.y + 100.0 * (big - 0.5)) * 0.8;
 			if (hl > 0.01) {
-				vec3 fp = tex_var(t_fels2, ruv / 6.0 + 0.6, rx / 6.0, ry / 6.0, k3 * 1.4);
-				fr = mix(fr, on_photo(rock, fp, avg_fels2, 0.9, 0.3), hl);
+				vec3 fp = tex_var(t_fels2, ruv / 6.0 + 0.6, rx / 6.0, ry / 6.0, k3 * 1.4, 0.0);
+				fr = mix(fr, on_photo(rock, fp, mean_of(t_fels2), 0.9, 0.3), hl);
 			}
 			rock = mix(rock, fr, 1.0 - smoothstep(350.0, 900.0, length(wpos - CAMERA_POSITION_WORLD)) * 0.6);
 			pk = max(pk, rk);

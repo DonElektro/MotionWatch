@@ -1,0 +1,29 @@
+Texturen Berglandschaft Schweiz – Godot
+
+Alle PNG: 1024x1024, nahtlos kachelbar, nur Farbe (Albedo).
+Godot: Import-Dock -> Repeat: Enabled -> Reimport; im Material UV1 Scale ca. 4-8.
+
+Datei | Quellfoto | Ausschnitt (x1,y1,x2,y2)
+fels_kalk_grau_01.png | IMG_1527.jpeg | (540, 320, 960, 740)
+fels_kalk_schatten_01.png | IMG_2205.jpeg | (2050, 450, 2500, 900)
+fels_platte_hell_01.png | IMG_2253.jpeg | (620, 1400, 1170, 1950)
+fels_wand_gras_01.png | IMG_2655.jpeg | (900, 1000, 1400, 1500)
+geroell_gras_01.png | IMG_2658.jpeg | (1150, 1050, 1600, 1500)
+geroell_gras_02.png | IMG_2658.jpeg | (0, 1050, 440, 1490)
+wald_von_oben_01.png | IMG_2280.jpeg | (2050, 430, 2250, 630)
+wald_von_oben_02.png | IMG_2280.jpeg | (1540, 680, 1700, 840)
+wasser_see_tuerkis_01.png | IMG_2402.jpeg | (560, 530, 680, 650)
+wasser_seegrund_flach_01.png | IMG_2629.jpeg | (350, 1190, 670, 1510)
+weg_asphalt_01.png | IMG_2203.jpeg | (300, 1340, 470, 1510)
+weg_kies_01.png | IMG_2381.jpeg | (1975, 720, 2115, 860)
+wiese_alp_01.png | IMG_2660.jpeg | (1450, 1000, 1960, 1510)
+wiese_alp_steinig_01.png | IMG_2665.jpeg | (1900, 430, 2188, 718)
+wiese_ampfer_01.png | IMG_2381.jpeg | (1100, 640, 1320, 860)
+wiese_hellgruen_01.png | IMG_2205.jpeg | (760, 1140, 1070, 1450)
+wiese_steil_schatten_01.png | IMG_2213.jpeg | (1950, 900, 2450, 1400)
+zwergstrauch_alpenrose_01.png | IMG_2266.jpeg | (100, 850, 700, 1450)
+
+Hinweise:
+- Ordner vorschau_2x2: Kontrollbilder (Textur 2x2 gekachelt).
+- wasser_*, wald_*, weg_kies, wiese_ampfer: aus kleinen Bildausschnitten hochskaliert, eher unscharf.
+- Schnee fehlt (kein brauchbares Foto).

@@ -19,6 +19,7 @@ extends Node
 
 var main
 const T = preload("res://scripts/i18n.gd")
+const Klang = preload("res://scripts/klang.gd")      # Spielton: real recordings in games (echt())
 const FILE := "user://mikrofon.json"
 const SAVE := ["real_on", "amb_on", "f_wetter", "f_wasser", "f_tiere", "f_menschen", "water", "pc_on", "pc_vol"]
 var real_on := true                # Mikrofon wie echt (sonst die alte einfache Formel)
@@ -345,7 +346,19 @@ func _pc_update() -> void:
 			add_child(pl)
 			pl.stream = _cache[k]
 			_players[k] = pl
-		pl.volume_db = clampf(0.75 * (float(want[k]) + 20.0) + linear_to_db(maxf(0.001, pc_vol / 100.0)) - 2.0, -80.0, 6.0)
+		# Spielton (klang.gd): in a game or story wind / rain / water are real recordings and everything goes to the bus
+		# «Umgebung» (its own volume); outside ([]) the generated sounds on Master as before
+		var ec: Array = Klang.echt(main, k)
+		var ws: AudioStream = _cache[k] if ec.is_empty() or ec[0] == null else ec[0]
+		var wb: String = "Master" if ec.is_empty() else str(ec[2])
+		if pl.stream != ws or str(pl.bus) != wb:
+			var was := pl.playing
+			pl.stream = ws
+			pl.bus = wb
+			if was and not k in ONESHOT:
+				pl.play(_rng.randf() * minf(0.5, ws.get_length() * 0.5))
+		pl.volume_db = clampf(0.75 * (float(want[k]) + 20.0) + linear_to_db(maxf(0.001, pc_vol / 100.0)) - 2.0
+				+ (0.0 if ec.is_empty() else float(ec[1])), -80.0, 6.0)
 		if k in ONESHOT:
 			var st: Dictionary = _st.get(k, {})
 			if float(st.get("t0", 0.0)) != float(pl.get_meta("t0", -1.0)):

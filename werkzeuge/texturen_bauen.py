@@ -22,7 +22,7 @@ ZIEL = os.path.join(HIER, "..", "simulator3d", "texturen")
 
 # benutzt im Bergtal (bergtal_boden.gdshader, bergsee.gdshader, bergtal.gd _ribbon)
 BENUTZT = ["wiese_alp_01", "wiese_hellgruen_01", "wiese_alp_steinig_01", "geroell_gras_02", "fels_kalk_grau_01",
-           "fels_platte_hell_01", "zwergstrauch_alpenrose_01", "wald_von_oben_02", "weg_kies_01", "weg_asphalt_01",
+           "fels_platte_hell_01", "zwergstrauch_alpenrose_01", "wald_von_oben_02", "weg_asphalt_01",
            "wasser_seegrund_flach_01"]
 RAMP = 24
 QUALITAET = 85

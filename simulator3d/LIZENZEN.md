@@ -28,6 +28,13 @@ Blech und Glockenspiel aus **VSCO-2 Community Edition** (Versilian Studios, CC0)
 von **Ben Burnes** (CC0); dazu eigene Synthese. Alles CC0 bzw. gemeinfrei, keine Namensnennung nötig. Datei für Datei mit
 Repository und Commit: `klang/LIZENZEN.txt`.
 
+## Spielton (ab 01.11.2026) – `klang/sp_*.ogg`, `scripts/klang.gd`
+
+Klänge in Spielen und Geschichten (`werkzeuge/spielton_bauen.py`): Glockenspiel, Trompeten, Harfe, Flöte, Marimba, Streicher
+und Pauke aus **VSCO-2 Community Edition** (CC0), Kleine Trommel und Becken aus der **Versilian Community Sample Library**
+(VCSL, CC0), Schritte und Klick von **Kenney** (CC0), Knistern von **Ben Burnes** (CC0), Holz von **rubberduck** (CC0);
+dazu eigene Synthese. Alles CC0, keine Namensnennung nötig. Datei für Datei: `klang/LIZENZEN.txt`, Abschnitt «Spielton».
+
 ## Figuren-Paket (ab 3D-4.56) – `pakete/figuren_v1.zip`, `scripts/figur_paket.gd`
 
 Das nachladbare Figuren-Paket (nicht im Simulator-ZIP; Download aus dem Repository oder neben die .exe legen) ist aus
@@ -36,8 +43,28 @@ Figuren von **Quaternius** gebaut (`werkzeuge/figuren_paket.py`). Lizenz **CC0 1
 Quelle trotzdem: Quaternius (<https://quaternius.com>) «Universal Base Characters», «Modular Outfits Fantasy»,
 «Universal Animation Library» 1 und 2.
 
+## Maggie (Hund der Geschichte «Maggie und der Bergkristall») – `modelle/maggie_hund_glb.bin`, `scripts/maggie_modell.gd`
+
+Ab Grafik «mittel» ist Maggie ein Modell mit Skelett. Grundlage: **Quaternius «Ultimate Animated Animals»** (Juli 2021),
+Modell «ShibaInu» (`glTF/ShibaInu.gltf`, SHA-256 `3236979b…0f6b`), Lizenz **CC0 1.0 Universal** (gemeinfrei,
+<https://creativecommons.org/publicdomain/zero/1.0/>) – Nutzung, Änderung und Weitergabe ohne Namensnennung erlaubt; wir
+nennen die Quelle trotzdem: Quaternius (<https://quaternius.com>). Bezogen am 01.11.2026 aus einer öffentlichen
+GitHub-Kopie des Pakets (laoniutoushx/TD-demo-2024-04-03; Prüfsumme gleich wie die Git-LFS-Datei in anderen Kopien, die
+Lizenzdatei des Pakets liegt z. B. in francisb1996/brave-chicken-assets). Angepasst mit `werkzeuge/maggie_modell.py`
+(Proportionen eines Jack Russell, Kippohren, Schwanz, Glätten, Maggies Muster, ohne Animationen). Fellstruktur und
+Randlicht: `shaders/maggie_fell.gdshader` (selbst geschrieben). Mit Grafik «einfach» (Lite) baut `scripts/maggie_einfach.gd`
+sie aus eigenen Grundformen (keine fremde Datei). Andere Hunde und Tiere sind unverändert.
+
+## Foto-Texturen im Bergtal (ab 3.30) – `texturen/`, `scripts/bergtal_texturen.gd`
+
+Die Foto-Texturen (Wiese, Alpweide, Geröll, Alpenrosen, Kalkfels, Felsplatten, Wald von oben, Seegrund, Asphalt) sind aus
+**eigenen Fotos von Daniel Bärschi** gebaut (Ausschnitte, nahtlos gemacht; Quellfoto und Ausschnitt je Datei in
+`texturen/QUELLEN.txt`, aufbereitet mit `werkzeuge/texturen_bauen.py`). Verwendung im Simulator **mit seiner Erlaubnis** (01.11.2026).
+Keine fremde Lizenz. Weitergabe der Bilder ausserhalb von MoveEye nur mit Daniels Zustimmung.
+Nicht benutzte Fotos liegen in `texturen/unbenutzt/` (nicht im Export).
+
 ## Übrige Inhalte
 
-Gelände, Pflanzen, Gebäude, Tiere, Himmel, Töne und Texturen entstehen ebenfalls im Code (Formen, Rauschen,
+Gelände, Pflanzen, Gebäude, Tiere, Himmel, Töne und Texturen (ausser den Foto-Texturen oben) entstehen ebenfalls im Code (Formen, Rauschen,
 Shader in `shaders/`). Kartendaten eines echten Orts kommen beim Laden von swisstopo / OpenStreetMap
 (Nachweis in der Karte des Simulators).

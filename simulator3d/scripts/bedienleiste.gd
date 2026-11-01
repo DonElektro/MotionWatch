@@ -1,12 +1,11 @@
 extends HFlowContainer
 ## Bedienleiste (Paket real-layout-leiste, Daniel 31.10.2026): dieselbe Leiste wie oben auf jeder Seite von MoveEye
-## (Web 639o #mwbar, Pi-Fenster App._mwbar): «Einfach | Experte» · «Symbole farbig | schlicht» · «Beim Start: Nur Gruppen» ·
+## (Web 639o #mwbar, Pi-Fenster App._mwbar): «Einfach | Experte» · «Symbole farbig | schlicht» ·
 ## «Alle zuklappen · Meine Ansicht · Alle aufklappen» (639r: die Mitte = Meine Ansicht, lange drücken / Rechtsklick = «Nur Gruppen»).
 ## Ein Baustein für jedes Menü-Fenster des Simulators: build(main) mit
 ## einem Objekt, das die drei Wechsel kennt (je EINE Funktion, Review P0):
 ##   set_simple(on: bool)        ui_simple   (true = einfach)
 ##   set_icons(v: String)        ui_icons    ("color" | "plain")
-##   set_start_groups(on: bool)  start_groups
 ##   _fold_all(how, true)        how = "close" | "mine" | "groups" | "open" (mine: set_mine; jede Änderung: _mine_change)
 ## HFlowContainer: wird das Fenster schmal, bricht die Leiste um (kein seitliches Scrollen).
 
@@ -35,14 +34,7 @@ func build(h: Object, fold := true) -> void:
 	icons_seg.custom_minimum_size = Vector2(230, 0)
 	icons_seg.tooltip_text = T.t("Symbole: grüner Punkt oder grünes Symbol = eingeschaltet")
 	add_child(icons_seg)
-	sg_cb = CheckButton.new()
-	sg_cb.text = T.t("Beim Start: Nur Gruppen")
-	sg_cb.tooltip_text = T.t("Bei jedem Start zeigen die Einstellungen nur die Gruppen. Aus: Die Menüs sind auf- und zugeklappt, wie du sie verlassen hast.")
-	sg_cb.add_theme_font_size_override("font_size", 13)
-	sg_cb.focus_mode = Control.FOCUS_NONE
-	sg_cb.button_pressed = bool(h.get("start_groups"))
-	sg_cb.toggled.connect(func(on): h.set_start_groups(on))
-	add_child(sg_cb)
+	# 3.23 (Daniel 01.11.2026): the switch «Beim Start: Nur Gruppen» is gone - the start is «Meine Ansicht»; «Nur Gruppen» = long press on the middle
 	var fb := HBoxContainer.new()
 	fb.add_theme_constant_override("separation", 6)
 	for k in ["close", "mine", "open"]:

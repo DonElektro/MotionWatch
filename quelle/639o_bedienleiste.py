@@ -4,7 +4,7 @@
 # render_page() auf JEDE Seite mit Reitern (nav.nav); die Seite kann ihn über window.MWB_PAGE anpassen:
 #   simplePage() -> Seitenschlüssel für /api/ui_simple ("" = auf dieser Seite gibt es nur eine Ansicht: Einfach / Experte grau)
 #   simple(on)   -> eigene Umschaltung (sonst: speichern und neu laden)
-#   startGroups(on) -> eigener Schalter «Beim Start: Nur Gruppen» (sonst: speichern, bei «ein» sofort «Nur Gruppen»)
+#   (3.23: der Schalter «Beim Start: Nur Gruppen» ist entfernt - der Start ist «Meine Ansicht»)
 # Die drei Klapp-Knöpfe wirken auf alle sichtbaren Klappkarten der Seite (<details>, dazu die Karten der Simulator-Steuerung
 # .sc-card / .sc-sub; ohne Hilfe- und Statuskarten: #g2-tt, [data-mwb-skip]); «Nur Gruppen» = oberste Karten offen, die Themen darin zu. Keine Klappkarten: grau. Gleiche Ids wie früher
 # (#all-close, #all-groups, #all-open, #start-groups), damit Hilfe, Rundgang und Bildschirmleser sie weiter finden.
@@ -161,7 +161,6 @@ MWB_JS = r"""<script>
     x.innerHTML = a; y.innerHTML = b; s.append(x, y); return [s, x, y]; };
   const [sm, bS, bE] = seg("mwb-mode", "", "");
   const [si, bC, bP] = seg("mwb-ic", '🎨 <span class="l"></span>', '◯ <span class="l"></span>');
-  const sg = E("label", "mwb-sg"), sgT = E("span"), sgC = E("input"); sgC.type = "checkbox"; sgC.className = "sw"; sgC.id = "start-groups"; sg.append(sgT, sgC);
   const fd = E("div", "mwb-fold");
   // 639r: the middle is «My view» (two bars + a small star); «Groups only» stays: long press / right click on the middle
   const SV = {close: "M7 4l5 5 5-5M7 20l5-5 5 5", mine: "M4 5h16v5H4zM4 14h8v5H4zM18 12.6l1.2 2.4 2.6.4-1.9 1.8.5 2.6-2.4-1.3-2.4 1.3.5-2.6-1.9-1.8 2.6-.4z",
@@ -176,7 +175,7 @@ MWB_JS = r"""<script>
     b.addEventListener("contextmenu", e => { e.preventDefault(); clearTimeout(tm); go(); setTimeout(() => { b._long = false; }, 400); });
     b.addEventListener("pointerdown", e => { if (e.button) return; clearTimeout(tm); b._long = false; tm = setTimeout(go, 600); });
     ["pointerup", "pointerleave", "pointercancel"].forEach(n => b.addEventListener(n, () => clearTimeout(tm))); })();
-  bar.append(sm, si, sg, fd);
+  bar.append(sm, si, fd);
   H.after(bar);
   // Simple / Expert of this page (586: /api/ui_simple per page); a page without two views shows it grey
   let SIMPLE = true;
@@ -185,7 +184,7 @@ MWB_JS = r"""<script>
     sm.title = pageKey() ? tr("Simple: only the important settings. «Expert» shows all of them.") : tr("This page has only one view"); }
   async function loadSimple() { const k = pageKey();
     try { const j = await (await fetch("/api/ui_simple" + (k ? "?page=" + encodeURIComponent(k) : ""), {cache: "no-store"})).json();
-      SIMPLE = !!j.on; if (typeof j.start_groups === "boolean") { window.MW_SG = j.start_groups; sgC.checked = j.start_groups; } } catch (e) {}
+      SIMPLE = !!j.on; } catch (e) {}
     paintSimple(); }
   // the ONE switch Simple / Expert (true = "simple", false = "expert")
   function setSimple(v) { if (!pageKey() || v === SIMPLE) return; SIMPLE = v; paintSimple(); const p = P();
@@ -196,13 +195,7 @@ MWB_JS = r"""<script>
   function paintIc() { const pl = lsg("mw-icons", "color") === "plain"; bC.classList.toggle("on", !pl); bP.classList.toggle("on", pl); B.classList.toggle("icplain", pl); }
   function setIcons(v) { lss("mw-icons", v === "plain" ? "plain" : "color"); paintIc(); }      // the ONE switch for the symbols: "color" | "plain"
   bC.onclick = () => setIcons("color"); bP.onclick = () => setIcons("plain");
-  // «On start: groups only» (CFG ui_start_groups: all devices, the Pi window and the simulator page)
-  sgC.checked = window.MW_SG !== false;
-  function setStartGroups(v) { const p = P(); v = !!v; window.MW_SG = v; sgC.checked = v;       // the ONE switch «On start: groups only»
-    MINE.on = !v;                                                    // 639r: off = back to «My view»
-    if (typeof p.startGroups === "function") { p.startGroups(v); if (!v) fold("mine"); return; }
-    post("/api/ui_simple", {start_groups: v}); fold(v ? "groups" : "mine"); }
-  sgC.onchange = () => setStartGroups(sgC.checked);
+  // 3.23 (Daniel 01.11.2026): the switch «On start: groups only» is gone - the start is «My view»; «Groups only» = long press on the middle
   // ---- the three fold buttons: every fold card that can be seen on this page ----
   const EXTRA = [{sel: ".sc-card", head: ":scope > .sc-hd"}, {sel: ".sc-sub", head: ":scope > .sc-sh"}];   // simulator control (470): div cards
   const SKIP = "header,#mwbar,.pop,#viewmenu,#lv-menu,[role=dialog],.mwt-ov,#g2-tt,[data-mwb-skip]";   // help / status cards (Tipps & Tricks, Selbstdiagnose) are no groups
@@ -231,7 +224,7 @@ MWB_JS = r"""<script>
     return (o._id = id.slice(0, 120));
   }
   const pageId = () => String(B.dataset.tab || window.MWB_SEITE || location.pathname.replace(/^\/+|\/+$/g, "").replace(/[^a-z0-9_-]/gi, "-") || "live").toLowerCase().slice(0, 40);
-  const MINE = {on: window.MW_SG !== true, page: "", map: {}, ready: false, done: new WeakSet(), first: false, local: false, timer: 0};
+  const MINE = {on: true, page: "", map: {}, ready: false, done: new WeakSet(), first: false, local: false, timer: 0};
   const LSK = p => "mwa:ansicht:" + p;
   async function mineLoad() {
     const p = pageId(); MINE.page = p; MINE.ready = false; MINE.done = new WeakSet(); MINE.touched = false;
@@ -306,13 +299,12 @@ MWB_JS = r"""<script>
     bS.textContent = tr("Simple"); bE.textContent = tr("Expert");
     bC.querySelector(".l").textContent = tr("Symbols coloured"); bP.querySelector(".l").textContent = tr("plain");
     bC.title = tr("Symbols coloured"); bP.title = tr("plain"); si.setAttribute("aria-label", tr("Symbols: green dot or green symbol = switched on"));
-    sgT.textContent = tr("On start: groups only"); sg.title = tr("On every start the settings show only the groups. Off: the menus open as you left them.");
     paintGrips(); paintSimple(); state();
   }
   paintIc(); labels(); mineLoad();
   [300, 1500, 4000].forEach(ms => setTimeout(labels, ms));            // after the page has built its cards and knows its language
   // one function per change (review P0): setSimple, setIcons, setStartGroups, fold("close" | "mine" | "groups" | "open"), ansichtMerken; the header folds stay per device
-  window.MWB = {setSimple: setSimple, setIcons: setIcons, setStartGroups: setStartGroups, fold: fold, state: later, setFold: setFold, refresh: labels,
+  window.MWB = {setSimple: setSimple, setIcons: setIcons, fold: fold, state: later, setFold: setFold, refresh: labels,
                 mine: () => fold("mine"), ansichtMerken: ansichtMerken, ansicht: () => ({on: MINE.on, page: MINE.page, map: Object.assign({}, MINE.map), local: MINE.local, ready: MINE.ready})};
 })();
 </script>"""
