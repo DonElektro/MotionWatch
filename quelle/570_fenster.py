@@ -156,7 +156,6 @@ TOGGLES = [  # (section, key, label)
     ("Mover", "mover_swap", "Left and right tracks swapped"),
     ("Mover", "mover_sim_show", "Simulation: show the stick even without a mover or motor driver (to try it out)"),
     ("Simulator", "sim_eco", "Simulator: fewer pictures (the simulator draws only what is fetched)"),
-    ("Simulator", "notify_sandbox", "Simulation: messages into the test inbox instead of to the phone (nobody is disturbed)"),
     ("Simulator", "train_night_on", "Training night: every night test runs in several scenes, optimization, training pictures"),
     ("Simulator", "rover_alarm", "Mover: at a person alarm drive there by itself (simulator)"),
     ("Simulator", "fa_learn_auto", "False alarm marked: re-enact it in the simulator and learn from it"),
@@ -165,8 +164,6 @@ TOGGLES = [  # (section, key, label)
     ("Simulator", "sim_auto", "Find the simulator in the network by itself (and take over its address)"),
     ("Simulator", "sim_autostart", "Switch the simulation on by itself as soon as a simulator is online (and off again when none is left)"),
     ("Simulator", "sim_autoupd", "Update the simulator by itself (the setting «Neue Versionen» of the simulator)"),
-    ("Simulator", "sim_separate", "The simulation has its own settings (when switching back: ask which changes to take over)"),
-    ("Simulator", "sim_basis_show", "Show the basic simulator (MoveEye Sim · Basis, the old Python simulator)"),
     ("AI detection", "species_on", "Recognise the animal species (second AI model - see the guide)"),
     ("Setup", "desktop_notice", "Small message on the Pi's desktop when MoveEye starts in the background"),
     ("Solar panel", "solar_on", "Solar panel with current meter (INA219 on I2C)"),
@@ -252,11 +249,7 @@ TOGGLES = [  # (section, key, label)
     ("Notifications", "msg_keyword_on", "Keyword at the start of every message (MoveEye-ALARM, MoveEye-WAERME …: for iPhone shortcuts)"),
     ("Notifications", "email_on", "E-mail: messages also by e-mail (the iPhone can start a shortcut from it)"),
     ("Notifications", "pushover_emergency", "Pushover: alarms as emergency (critical alert, repeats until confirmed)"),
-    ("Updates", "update_auto", "Look for new versions by itself (every 3 hours)"),
-    ("Updates", "update_install", "Install new versions automatically"),
-    ("Updates", "update_fast", "Test mode: get new versions at once (looks on GitHub every minute and installs right away, also while armed; while on, the other update switches do not count)"),
     ("Updates", "news_popup", "After an update: show briefly what is new and what comes next"),
-    ("Updates", "update_install_armed", "Automatic update also while armed (otherwise only when disarmed)"),
     ("Updates", "update_unsigned", "Also accept unsigned versions (not recommended - only for own builds)"),
     ("Battery", "ups_on", "UPS HAT (battery pack on the Pi): use it when found"),
     ("Battery", "ups_push", "UPS HAT: push message at a power cut / when power is back"),
@@ -331,7 +324,7 @@ DE.update({    # window in the look of the web page (2.25.0)
     "show / hide fields": "Felder ein-/ausblenden", "All quiet – I'm keeping watch!": "Alles ruhig – ich halte Wache!",
     "Happy Swiss National Day!": "Schöne Bundesfeier!", "Swap stick and buttons (left- / right-handed)": "Stick und Knöpfe tauschen (Links- / Rechtshänder)", "moving to waypoint": "fährt zu Wegpunkt", "waiting at": "wartet bei",
     "need 2+ waypoints": "mindestens 2 Wegpunkte nötig", "paused (tracking person)": "Pause (verfolgt Person)",
-    "paused (manual control)": "Pause (Handsteuerung)", "System": "System", "Log": "Protokoll", "Expand all": "Alle öffnen", "Collapse all": "Alle schliessen",
+    "paused (manual control)": "Pause (Handsteuerung)", "System": "System", "Log": "Protokoll", "Expand all": "Alle aufklappen", "Collapse all": "Alle zuklappen",
 })
 DE.update({    # texts that were written twice in the code (German / English) - now one English text + translations
     "not possible in the demo": "In der Demo nicht möglich",
@@ -484,7 +477,7 @@ def tk_main_on(sec):
             "Solar panel": lambda: g("solar_on"), "Lights": lambda: g("light_white", "off") != "off" or g("light_ir", "off") != "off",
             "Microphone": lambda: g("audio_in"), "Loudspeaker": lambda: g("siren_on") and g("siren_on") != "off", "Recording": lambda: g("record"),
             "Timelapse": lambda: g("timelapse_on"), "Backup": lambda: g("backup_type") and g("backup_type") != "off", "Relays": lambda: g("relays_on"),
-            "Web stream": lambda: g("web_stream"), "MQTT / Home Assistant": lambda: g("mqtt_on"), "Updates": lambda: g("update_auto") or g("update_fast"),
+            "Web stream": lambda: g("web_stream"), "MQTT / Home Assistant": lambda: g("mqtt_on"), "Updates": lambda: g("update_mode") in ("auto", "dev"),
             "Simulator": lambda: sim_live(), "Mover": lambda: g("mover_on"), "Guest access": lambda: g("guest_on"),
             "Reference scan": lambda: bool(refscan_meta())}.get(sec, lambda: False)())
     except Exception:
@@ -523,6 +516,11 @@ TK_AI_MODEL_KEYS = ("ai_model", "ai_own_url", "ai_own_auto")   # 2.98.23 (Konzep
 TK_SPECIES_KEYS = ("species_on", "species_model", "species_norm", "species_conf")   # aufr (Konzept): the group «Tierart» (like «KI-Modell»)
 SECTIONS = ["Wake-up alarm", "Reference scan", "Mover", "Simulator", "Extra sensors", "Storm warning", "GPS module", "Solar panel", "Night report", "Battery", "Guest access", "Messages", "Microphone", "Loudspeaker", "Clap switch", "Bless you", "Lights", "Servo driver", "Power saving", "Updates", "Camping / protection", "Camera / Servos", "Video source", "Wi-Fi / hotspot", "Schedule", "Relays", "Timelapse", "Thermal camera", "Patrol", "AI detection", "Notifications", "Web stream", "Auto-tune",
             "Detection", "Low light", "Walking recognition", "Vehicle filter", "Rain", "Wind", "Recording", "Backup", "Theft protection", "Deterrence", "MQTT / Home Assistant", "SMS (LTE stick)", "Setup", "Security"]
+
+
+def tk_icons():
+    """639o: symbols «color» or «plain» (web_ui mw-icons, the switch of the web pages)"""
+    return "plain" if str(CFG.get("web_ui", {}).get("mw-icons", "")) == "plain" else "color"
 
 
 class Toggle(tk.Frame):
@@ -779,7 +777,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 3.20.0")
+        self.root.title("MoveEye 3.29.0")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -793,6 +791,7 @@ class App:
             self.open_secs = {"grp:alarm"}
         # nurgruppen: what is shown now (open_secs = the own state, saved); «On start: groups only» on start / tab change
         self._shown = {}; self._fold_start = True
+        self._mine = True; self._mine_job = None; self._fold_cvs = {}   # 639r «Meine Ansicht»
         self.step_var = tk.StringVar(value="3")
         self.tab = "live"; self.stick_speed = 30.0; self.relay_prev = {}
         self.left_f = self.stick = self.l_wp = None; self.qs_tiles = {}; self.tab_btns = {}
@@ -1150,7 +1149,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 3.20.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 3.29.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -1788,11 +1787,8 @@ class App:
         inner = ttk.Frame(canvas, style="Bg.TFrame"); win = canvas.create_window((0, 0), window=inner, anchor="nw")
         inner.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
         canvas.bind("<Configure>", lambda e: canvas.itemconfigure(win, width=min(e.width, 860)))     # readable lines on a wide screen
+        lb = self._mwbar(right, tab); lb.pack(side="top", fill="x", pady=(0, 8), before=sb)    # 639o: the bar like on every web page
         bar = tk.Frame(right, bg=C["bg"]); bar.pack(side="top", fill="x", pady=(0, 10), before=sb)   # stays at the top while scrolling
-        # like the web page: search field, then «Collapse all · Groups only · Expand all» with the same drawn symbols (nurgruppen)
-        self._fold_btn(bar, "open", lambda: self._all_sections(True), tr("Expand all")).pack(side="right")
-        self._fold_btn(bar, "groups", self._groups_only, tr("Groups only")).pack(side="right", padx=(0, 6))
-        self._fold_btn(bar, "close", lambda: self._all_sections(False), tr("Collapse all")).pack(side="right", padx=(0, 6))
         sf = tk.Frame(bar, bg=C["panel"], highlightthickness=1, highlightbackground=C["line"]); sf.pack(side="left", fill="x", expand=True, padx=(0, 8))
         tk.Label(sf, text="⚲", bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 11)).pack(side="left", padx=(8, 0))
         self.search_var = tk.StringVar()
@@ -1805,27 +1801,11 @@ class App:
         self.search_var.trace_add("write", lambda *a: self._search())
         if tab == "sim":                                   # 2.98.14: tab Simulator - status, the assistant, the simulator settings
             self._tk_sim_head(inner)
-        # Simple / Expert (like the web page)
-        mrow = tk.Frame(inner, bg=C["line"], padx=1, pady=1)
-        if tab != "sim":
-            mrow.pack(fill="x", pady=(0, 10))
         self._simple_seen = bool(CFG["ui_simple"])
         _G2_SIMPLE.v = page_simple(tab)                    # 586: Simple / Expert of this tab (simple_hidden in the window thread)
-        for i, (val, lab) in enumerate(((True, tr("Simple")), (False, tr("Expert")))):
-            on = page_simple(tab) == val
-            l = tk.Label(mrow, text=lab, font=("DejaVu Sans", 9, "bold"), pady=4, cursor="hand2",
-                         bg=C["acc"] if on else C["field"], fg="#ffffff" if on else C["mut"])
-            l.pack(side="left", fill="x", expand=True, padx=(0 if i == 0 else 1, 0))
-            l.bind("<Button-1>", lambda e, v=val: self._set_simple(v))
         if page_simple(tab) and tab != "sim":
             tk.Label(inner, text=tr("Simple: only the important settings. «Expert» shows all of them."), bg=C["bg"], fg=C["mut"],
                      font=("DejaVu Sans", 8), anchor="w", justify="left", wraplength=330).pack(fill="x", pady=(0, 8))
-        # nurgruppen: «On start: groups only» next to Simple / Expert (same switch as on the web page, CFG ui_start_groups)
-        sg_ = Toggle(inner, tr("On start: groups only"), CFG.get("ui_start_groups", True), self._set_start_groups)
-        for w_ in (sg_, sg_.cv, sg_.lbl):
-            w_.config(bg=C["bg"])
-        sg_.lbl.config(font=("DejaVu Sans", 9)); sg_.pack(fill="x", pady=(0, 10)); self.start_groups_tg = sg_
-        Tip(sg_.lbl, tr("On every start the settings show only the groups. Off: the menus open as you left them."))
         self.grp_meta = {}; self._open_before = None
         self.no_match = tk.Label(inner, text=tr("No match"), bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 9))
         # 9 groups (same as the web page). Inside a group every topic opens / closes the same way (the first one is open);
@@ -1922,8 +1902,9 @@ class App:
             if m[0].cget("fg") != col:
                 m[0].config(fg=col)
             ic_ = getattr(self, "grp_icons", {}).get(key)
-            if ic_ is not None and ic_.cget("fg") != (C["grn"] if on else C["txt"]):
-                ic_.config(fg=C["grn"] if on else C["txt"])
+            icol = C["grn"] if on else (C["mut"] if tk_icons() == "plain" else C["txt"])     # 639o: «schlicht» = grey until on
+            if ic_ is not None and ic_.cget("fg") != icol:
+                ic_.config(fg=icol)
 
     def _sub_open(self, k):
         return self._shown.get(k, k in self.open_secs)
@@ -1932,6 +1913,10 @@ class App:
         h, body, title = self.subs[k]
         closed = "subx:" + k[4:]
         self._shown[k] = bool(open_)                         # nurgruppen: shown now; the own state (open_secs) only by a click
+        if save and not getattr(self, "_mine", True):       # 639r: «Meine Ansicht» off - a click is not kept
+            save = False
+        elif save:
+            self._mine_change(k, open_)
         if save:
             if open_:
                 self.open_secs.add(k); self.open_secs.discard(closed)
@@ -2100,17 +2085,6 @@ class App:
             self.status_labels["Simulator"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
             self.status_labels["Simulator"].pack(anchor="w", pady=(4, 0))
             ttk.Button(sbody, text=tr("Simulation on / off") + "  (F9)", command=lambda: self._sim_toggle("window")).pack(fill="x", pady=(6, 0))
-            sf = ttk.Frame(sbody); sf.pack(fill="x", pady=(4, 0))
-            def sim_do(fn, done):
-                def run():
-                    ok, m = fn()
-                    self._status("Simulator", ("✓ " + tr(done)) if ok else "⚠ " + tr_err(m))
-                threading.Thread(target=run, daemon=True).start()
-            if CFG.get("sim_basis_show"):                 # 2.98.55: «MoveEye Sim · Basis» only with «Basis-Simulator anzeigen» (639h)
-                ttk.Button(sf, text=tr("Install"), command=lambda: sim_do(sim_install, "Simulator installed")).pack(side="left", expand=True, fill="x", padx=(0, 4))
-                ttk.Button(sf, text=tr("Start"), command=lambda: sim_do(sim_start, "Simulator started")).pack(side="left", expand=True, fill="x", padx=(0, 4))
-            if CFG.get("sim_basis_show") or sim_running():    # a running one can always be stopped
-                ttk.Button(sf, text=tr("Stop"), command=lambda: sim_do(sim_stop, "Simulator stopped")).pack(side="left", expand=True, fill="x")
             kidata_tk_build(self, sbody)                  # training pack with «Vielfalt», «Delete old AI data» (197)
             falearn_tk_build(self, sbody)                 # 2.98.38: «Lernbilder prüfen» (148)
         if sec == "Security":                             # «Log in only encrypted» (574)
@@ -2575,7 +2549,7 @@ class App:
                 "Microphone": lambda: bool(CFG["audio_in"]), "Loudspeaker": lambda: CFG["siren_on"] != "off", "Recording": lambda: CFG["record"],
                 "Timelapse": lambda: CFG["timelapse_on"], "Backup": lambda: CFG["backup_type"] != "off", "Relays": lambda: CFG["relays_on"],
                 "Schedule": lambda: any(x.get("enabled") for x in SCHEDULES), "Wi-Fi / hotspot": lambda: CFG["hotspot_on"],
-                "Web stream": lambda: CFG["web_stream"], "MQTT / Home Assistant": lambda: CFG["mqtt_on"], "Updates": lambda: CFG["update_auto"],
+                "Web stream": lambda: CFG["web_stream"], "MQTT / Home Assistant": lambda: CFG["mqtt_on"], "Updates": lambda: CFG.get("update_mode") in ("auto", "dev"),
                 "Extra sensors": lambda: CFG["sens_on"] and bool(CFG["sensors"]), "Storm warning": lambda: CFG["storm_on"], "GPS module": lambda: CFG["gpsmod_on"], "Mover": lambda: MOVER["avail"], "Simulator": lambda: sim_live(), "Solar panel": lambda: CFG["solar_on"]}
         for key, (arr, secs, _c, _w) in list(getattr(self, "grp_meta", {}).items()):
             try:
@@ -2929,6 +2903,10 @@ class App:
     def _set_section(self, sec, open_, save=True):
         head, body = self.sections[sec]
         self._shown[sec] = bool(open_)
+        if save and not getattr(self, "_mine", True):       # 639r: «Meine Ansicht» off - a click is not kept
+            save = False
+        elif save:
+            self._mine_change(sec, open_)
         if save:
             (self.open_secs.add if open_ else self.open_secs.discard)(sec)
             if sorted(self.open_secs) != sorted(CFG["ui_open"]):
@@ -2989,8 +2967,10 @@ class App:
     def _toggle_section(self, sec):
         self._set_section(sec, not self._shown.get(sec, sec in self.open_secs))
 
-    def _groups_only(self, save=True):
-        """☰ every group open, the topics inside closed (save=False: the start view of «On start: groups only», not kept)"""
+    def _groups_only(self, save=False):
+        """☰ every group open, the topics inside closed (639r: never kept - «Meine Ansicht» goes off; long press / right click on
+        the middle button, or the start view of «On start: groups only»)"""
+        self._mine = False; self._mine_paint()
         for sec in self.sections:
             self._set_section(sec, True, save=save)
         for k in getattr(self, "subs", {}):
@@ -3007,8 +2987,7 @@ class App:
         """nurgruppen: after building a settings tab - start / tab change: «Groups only» (switch on); else as shown before"""
         if getattr(self, "_fold_start", True):
             self._fold_start = False
-            if CFG.get("ui_start_groups", True):
-                self._groups_only(save=False)
+            self._mine_on()                                  # 639r: the start = «Meine Ansicht» (3.23: no switch «Nur Gruppen» any more)
             return
         for k, v in prev.items():
             if k in self.sections:
@@ -3016,9 +2995,134 @@ class App:
             elif k in getattr(self, "subs", {}):
                 self._set_sub(k, v, save=False)
 
-    def _set_start_groups(self, v):
-        CFG["ui_start_groups"] = bool(v); save_settings()
-        self._groups_only(save=False) if v else self._own_view()
+    # ---- 639r «Meine Ansicht»: the folds the user set himself, kept for the owner («admin», the same as his web pages) per tab ----
+    @staticmethod
+    def _mine_id(k):
+        """window key -> the id of the web page: grp:<group> stays, sub:<part> = sec:<part> (data-view of 530)"""
+        return "sec:" + k[4:] if k.startswith("sub:") else k
+
+    def _mine_keys(self):
+        return list(self.sections) + list(getattr(self, "subs", {}))
+
+    def _mine_on(self):
+        """the middle button: back to the kept view (the first time: «Groups only» if the switch was on, else as the window had it)"""
+        self._mine = True
+        st = ansicht_get(ansicht_user(None), self.tab or "live")
+        want = {k: True for k in st["offen"]}; want.update({k: False for k in st["zu"]})
+        fresh = False
+        for k in self._mine_keys():
+            i = self._mine_id(k)
+            if i in want:
+                v = want[i]
+            elif not st["known"] and st["first_groups"]:
+                v = k in self.sections; fresh = True
+            else:
+                v = self._shown.get(k, k in self.open_secs); fresh = True
+            (self._set_section if k in self.sections else self._set_sub)(k, v, save=False)
+            closed = "subx:" + k[4:]
+            if v:
+                self.open_secs.add(k); self.open_secs.discard(closed)
+            else:
+                self.open_secs.discard(k)
+                if k.startswith("sub:"):
+                    self.open_secs.add(closed)
+        if sorted(self.open_secs) != sorted(CFG["ui_open"]):
+            CFG["ui_open"] = sorted(self.open_secs); save_settings()
+        if fresh:
+            self._mine_change("", None)
+        self._mine_paint()
+
+    def _mine_change(self, k, open_):
+        """the ONE function per change (P2 hangs in here): one group / topic opened or closed by the user - bundled, 1 s"""
+        if not getattr(self, "_mine", True):
+            return
+        if self._mine_job is not None:
+            try:
+                self.root.after_cancel(self._mine_job)
+            except Exception:
+                pass
+        self._mine_job = self.root.after(1000, self._mine_push)
+
+    def _mine_push(self):
+        self._mine_job = None
+        tab = self.tab or "live"
+        st = ansicht_get(ansicht_user(None), tab)
+        m = {x: True for x in st["offen"]}; m.update({x: False for x in st["zu"]})
+        for k in self._mine_keys():
+            m[self._mine_id(k)] = bool(self._shown.get(k, k in self.open_secs))
+        ansicht_set(ansicht_user(None), tab, [x for x, v in m.items() if v], [x for x, v in m.items() if not v])
+
+    def _mine_paint(self):
+        """the blue button of the fold state: the middle while «Meine Ansicht» is on"""
+        for kind, c in list(getattr(self, "_fold_cvs", {}).items()):
+            try:
+                on = kind == "mine" and getattr(self, "_mine", True)
+                c.config(bg=C["acc"] if on else C["panel"])
+                for it in c.find_all():
+                    c.itemconfig(it, **({"fill": "#ffffff" if on else C["txt"]} if c.type(it) in ("line", "text") else {"outline": "#ffffff" if on else C["txt"]}))
+            except tk.TclError:
+                pass
+
+    def _fold_all_btn(self, open_):
+        self._mine = False
+        if self._mine_job is not None:                       # what was clicked before still goes to the Pi
+            try:
+                self.root.after_cancel(self._mine_job)
+            except Exception:
+                pass
+            self._mine_push()
+        self._all_sections(open_)
+        self._mine_paint()
+
+    def _mwbar(self, parent, tab):
+        """639o: the bar of every web page in the window - Simple / Expert · Symbols coloured / plain · On start: groups only ·
+        Collapse all / My view (639r; long press / right click: Groups only) / Expand all (same order, texts and symbols; a narrow window: two lines)"""
+        f = tk.Frame(parent, bg=C["bg"]); small = self._lay[0]
+        r1 = tk.Frame(f, bg=C["bg"]); r1.pack(fill="x")
+        r2 = tk.Frame(f, bg=C["bg"]) if small else r1
+        if small:
+            r2.pack(fill="x", pady=(6, 0))
+
+        def seg(host, items, cur, cmd, dis=False):
+            w = tk.Frame(host, bg=C["line"], padx=1, pady=1)
+            for i, (val, lab) in enumerate(items):
+                on = cur == val
+                l = tk.Label(w, text=lab, font=("DejaVu Sans", 9, "bold"), pady=3, padx=8, cursor="" if dis else "hand2",
+                             bg=C["acc"] if on and not dis else C["field"], fg="#ffffff" if on and not dis else C["mut"])
+                l.pack(side="left", padx=(0 if i == 0 else 1, 0))
+                if not dis:
+                    l.bind("<Button-1>", lambda e, v=val: cmd(v))
+            return w
+        nosimple = tab == "sim"                             # the tab Simulator has only one view (the window shows all its groups)
+        m = seg(r1, ((True, tr("Simple")), (False, tr("Expert"))), page_simple(tab), self._set_simple, nosimple)
+        m.pack(side="left"); Tip(m, tr("This page has only one view") if nosimple else tr("Simple: only the important settings. «Expert» shows all of them."))
+        ic = seg(r1, (("color", "🎨 " + tr("Symbols coloured")), ("plain", "◯ " + tr("plain"))), tk_icons(), self._set_icons)
+        ic.pack(side="left", padx=(8, 0)); Tip(ic, tr("Symbols: green dot or green symbol = switched on"))
+        self._fold_cvs = {}
+        self._fold_btn(r2, "open", lambda: self._fold_all_btn(True), tr("Expand all")).pack(side="right")
+        mb = self._fold_btn(r2, "mine", self._mine_on, tr("My view: the menus open and close the way you left them (kept for you on every device). Long press or right click: groups only."))
+        mb.pack(side="right", padx=(0, 6))
+        hold = {"job": None, "long": False}                 # 639r: «Groups only» stays - long press or right click on the middle
+
+        def _down(e):
+            hold["long"] = False
+            hold["job"] = self.root.after(600, lambda: (hold.update(long=True), self._groups_only(save=False)))
+
+        def _up(e):
+            if hold["job"] is not None:
+                self.root.after_cancel(hold["job"]); hold["job"] = None
+            if not hold["long"]:
+                self._mine_on()
+        mb.unbind("<Button-1>"); mb.bind("<ButtonPress-1>", _down); mb.bind("<ButtonRelease-1>", _up)
+        mb.bind("<Button-3>", lambda e: self._groups_only(save=False))
+        self._fold_btn(r2, "close", lambda: self._fold_all_btn(False), tr("Collapse all")).pack(side="right", padx=(0, 6))
+        self.root.after_idle(self._mine_paint)
+        return f
+
+    def _set_icons(self, v):
+        """639o: symbols «color» | «plain» - the same value as the web pages (web_ui mw-icons, so every device and the window agree)"""
+        if v != tk_icons():
+            web_ui_update({"mw-icons": "plain" if v == "plain" else "color"}); self.root.after(30, self._rebuild)
 
     def _fold_btn(self, parent, kind, cmd, tip):
         """the three fold buttons with the drawn symbols of the web page (530: arrows in · two bars · arrows out)"""
@@ -3029,9 +3133,13 @@ class App:
             c.create_line(*P((7, 4, 12, 9, 17, 4)), fill=C["txt"], width=2); c.create_line(*P((7, 20, 12, 15, 17, 20)), fill=C["txt"], width=2)
         elif kind == "open":
             c.create_line(*P((7, 9, 12, 4, 17, 9)), fill=C["txt"], width=2); c.create_line(*P((7, 15, 12, 20, 17, 15)), fill=C["txt"], width=2)
+        elif kind == "mine":                                 # 639r «Meine Ansicht»: two bars and a small star
+            c.create_rectangle(*P((5, 5, 19, 10)), outline=C["txt"], width=2); c.create_rectangle(*P((5, 14, 12, 19)), outline=C["txt"], width=2)
+            c.create_text(17.5 * f, 16.5 * f, text="★", fill=C["txt"], font=("DejaVu Sans", max(7, int(8 * f))))
         else:
             c.create_rectangle(*P((5, 5, 19, 10)), outline=C["txt"], width=2); c.create_rectangle(*P((5, 14, 19, 19)), outline=C["txt"], width=2)
         c.bind("<Button-1>", lambda e: cmd()); Tip(c, tip)
+        getattr(self, "_fold_cvs", {})[kind] = c
         return c
 
     def _all_sections(self, open_):

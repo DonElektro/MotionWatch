@@ -27,6 +27,11 @@ extends Node
 ## Ton im Browser (MoveEye /sim/trailer, iPad): «plan» = alle Ton-Befehle mit ihrer Zeit im Film (Musik, Geräusche, Erzähler-
 ## Ducking), GET /trailer_ton/<klang>.wav = die Klänge (trailer_ton.gd, mono 22 kHz) – die Seite spielt sie mit WebAudio
 ## im Takt von «t» (info) nach.
+## Klang (Daniel 01.11.2026): echte Aufnahmen statt Synthese (trailer_ton.gd, res://klang/). Jeder Klang hat einen Ausgleich
+## der Lautheit (Ton.db, klang/klaenge.json), der zum dB des Plans kommt – im Simulator und im Plan für den Browser. Alles
+## läuft über einen eigenen Bus «Trailer» (+BUS_DB, danach ein Begrenzer bei -1 dBFS: keine Übersteuerung). Der Browser
+## bekommt die Klänge als MP3 (/trailer_ton/<klang>.wav liefert dann audio/mpeg) und für Schleifen die Schleifenpunkte
+## («schleifen»: [Anfang, Ende] in s – die MP3-Dateien haben vorn und hinten 0.1 s Umlauf).
 
 const T = preload("res://scripts/i18n.gd")
 const UI = preload("res://scripts/ui_style.gd")
@@ -38,6 +43,8 @@ const Welt = preload("res://scripts/maggie_welt.gd")
 const Spieltest = preload("res://scripts/spieltest.gd")
 
 const IDS := ["grossvater", "maggie"]
+const BUS := "Trailer"
+const BUS_DB := 4.0                    # music and noises together about -18 LUFS (without the narrator), peaks limited
 const MUSIK := ["pad_ruhig", "pad_dunkel", "pad_hell", "pulse", "ostinato"]
 const KLAENGE := ["pad_ruhig", "pad_dunkel", "pad_hell", "pulse", "ostinato", "pauke", "boom", "riser", "chime", "whoosh", "wind",
 		"wasser", "regen", "donner", "schritte", "rennen", "knurren", "bellen", "heulen", "grunzen", "kraehen", "zischen", "knacken",
@@ -213,7 +220,7 @@ func ton_plan() -> Dictionary:
 				continue
 			match str(c[1]):
 				"loop":
-					ev.append([tt, "loop", str(c[2]), float(c[3]), float(c[4]) if c.size() > 4 else 1.0])
+					ev.append([tt, "loop", str(c[2]), snappedf(float(c[3]) + Ton.db(str(c[2])), 0.1), float(c[4]) if c.size() > 4 else 1.0])
 				"stop":
 					ev.append([tt, "stop", str(c[2]), float(c[3]) if c.size() > 3 else 1.0])
 				"stille":
@@ -221,10 +228,11 @@ func ton_plan() -> Dictionary:
 					pending = pending.filter(func(p): return float(p[0]) <= tt)
 				"one":
 					var dl := float(c[4]) if c.size() > 4 else 0.0
+					var vdb := snappedf(float(c[3]) + Ton.db(str(c[2])), 0.1)
 					if dl > 0.0:
-						pending.append([snappedf(tt + dl, 0.01), str(c[2]), float(c[3])])
+						pending.append([snappedf(tt + dl, 0.01), str(c[2]), vdb])
 					else:
-						ev.append([tt, "one", str(c[2]), float(c[3])])
+						ev.append([tt, "one", str(c[2]), vdb])
 	for p in pending:
 		ev.append([float(p[0]), "one", str(p[1]), float(p[2])])
 	ev.append([snappedf(d, 0.01), "stille", 2.0])     # the end card: everything fades out (_process: _audio_ziel_alle(0, 2))
@@ -233,14 +241,24 @@ func ton_plan() -> Dictionary:
 	for e in ev:
 		if str(e[1]) in ["loop", "one"]:
 			used[str(e[2])] = true
-	return {"ok": true, "v": 1, "id": id, "dauer": d, "plan": ev, "klaenge": used.keys(), "musik": MUSIK, "sr": Ton.SR}
+	var schl := {}                                     # loops as MP3: where the loop is in the file (0.1 s wrap at both ends)
+	for nm in used:
+		var w: AudioStream = Ton.get_snd(nm)
+		if w is AudioStreamOggVorbis and (w as AudioStreamOggVorbis).loop and not Ton.web_bytes(nm).is_empty():
+			schl[nm] = [0.1, snappedf(0.1 + w.get_length(), 0.0001)]
+	return {"ok": true, "v": 2, "id": id, "dauer": d, "plan": ev, "klaenge": used.keys(), "musik": MUSIK, "sr": Ton.SR,
+			"schleifen": schl, "bus_db": BUS_DB}
 
 
 static func wav_bytes(nm: String) -> PackedByteArray:
-	"""GET /trailer_ton/<name>.wav (net.gd): one sound of the trailers as a WAV file (mono, 16 bit)"""
+	"""GET /trailer_ton/<name>.wav (net.gd): one sound of the trailers for the browser – the MP3 from klang/web/ (starts with
+	«ID3» or a frame sync; net.gd sends it as audio/mpeg), else the old synthesized sound as a WAV file (mono, 16 bit)"""
 	if not nm in KLAENGE:
 		return PackedByteArray()
-	var w: AudioStreamWAV = Ton.get_snd(nm)
+	var mp := Ton.web_bytes(nm)
+	if not mp.is_empty():
+		return mp
+	var w: AudioStreamWAV = Ton.synth(nm)
 	if w == null:
 		return PackedByteArray()
 	var pcm: PackedByteArray = w.data
@@ -436,7 +454,7 @@ func starten(tid: String, o := {}) -> Dictionary:
 		dauer = maxf(dauer, float(sh["t0"]) + float(sh["d"]))
 	_stimme = _stimme_da() and str(o.get("stimme", "an")) != "aus" and not _movie
 	var ut := str(o.get("untertitel", "auto"))
-	_untertitel = ut == "an" or (ut != "aus" and not _stimme)
+	_untertitel = ut == "an" or Stimme.untertitel() or (ut != "aus" and not _stimme)   # 3.23: «nur Untertitel»
 	_cues = []
 	_vorlauf = _movie_zeit()
 	_prep.visible = false
@@ -614,6 +632,8 @@ func _bild_tick(dt: float) -> void:
 	stage.tick(sh, rel, dt)
 	var u := clampf(rel / maxf(0.01, float(sh["d"])), 0.0, 1.0)
 	u = u * u * (3.0 - 2.0 * u) * 0.6 + u * 0.4               # soft, but the camera never stands still
+	if main.has_method("motion_reduced") and main.motion_reduced():
+		u = 0.25 + 0.5 * u                                     # 3.23 «Bewegung reduzieren»: only the middle half of the move (gentler)
 	var cam: Dictionary = sh.get("cam", {})
 	if bool(cam.get("kopf", false)) and main.head != null:
 		cam = cam.duplicate()
@@ -686,8 +706,25 @@ func _vorspulen(bis: float) -> void:
 func _player(snd: String) -> AudioStreamPlayer:
 	var p := AudioStreamPlayer.new()
 	p.stream = Ton.get_snd(snd)
+	p.bus = bus()
 	add_child(p)
 	return p
+
+
+static func bus() -> String:
+	"""the bus of the trailer: +BUS_DB, then a limiter at -1 dBFS (several loud sounds at once do not clip)"""
+	var i := AudioServer.get_bus_index(BUS)
+	if i < 0:
+		AudioServer.add_bus()
+		i = AudioServer.bus_count - 1
+		AudioServer.set_bus_name(i, BUS)
+		AudioServer.set_bus_send(i, AudioServer.get_bus_name(0))
+		var lim := AudioEffectHardLimiter.new()        # (the bus volume comes after the effects: the gain is the limiter's)
+		lim.pre_gain_db = BUS_DB
+		lim.ceiling_db = -1.0
+		lim.release = 0.12
+		AudioServer.add_bus_effect(i, lim)
+	return BUS
 
 
 func _ton(c: Array, sofort := false) -> void:
@@ -700,7 +737,7 @@ func _ton(c: Array, sofort := false) -> void:
 				p.play()
 				_loops[nm] = {"p": p, "g": 0.0, "ziel": 0.0, "rate": 1.0}
 			var L: Dictionary = _loops[nm]
-			L["ziel"] = db_to_linear(float(c[3]))
+			L["ziel"] = db_to_linear(float(c[3]) + Ton.db(nm))
 			var f := float(c[4]) if c.size() > 4 else 1.0
 			L["rate"] = 1.0 / maxf(0.05, f)
 			if sofort:
@@ -732,7 +769,7 @@ func _ton(c: Array, sofort := false) -> void:
 
 func _eins(nm: String, vol: float) -> void:
 	var p := _player(nm)
-	p.volume_db = vol
+	p.volume_db = vol + Ton.db(nm)
 	p.play()
 	_ones.append([p, t + p.stream.get_length() + 0.2])
 

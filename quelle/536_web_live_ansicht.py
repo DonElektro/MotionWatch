@@ -198,7 +198,8 @@ body.lv #vcard>:not(.vwrap){zoom:var(--lv-ui,1)}
   // «for all devices» on MoveEye (cfg.qs_layout), else the standard. ui = «Grösse» ("auto" or 60 … 160 %)
   const DEF = {layout: "auto", size: 60, ui: "auto", joy: "auto", ov: "auto", favs: null, qorder: null, qhide: null, order: null, more: false, preset: "", hide: null};
   const DEFFAV = ["rec", "photo", "track", "patrol", "white", "ir", "listen", "therm"];
-  const DEFORDER = ["walktest", "controls", "whatwas", "simtile", "lvsetup"];   // Daniel: picture → simulator → walk test → the rest
+  const DEFORDER = ["controls", "whatwas", "simtile", "lvsetup"];   // Daniel: picture → simulator → controls (with «Einstellungen») → the rest
+  const DEFLAST = ["walktest"];                        // 639o (Daniel 31.10.2026): the walk test at the very bottom of the column
   let V = Object.assign({}, DEF);
   try { Object.assign(V, JSON.parse(localStorage.getItem(KEY) || "{}")); } catch (e) {}
   ["hide", "favs", "qorder", "qhide", "order"].forEach(k => { V[k] = Array.isArray(V[k]) ? V[k].filter(x => typeof x === "string") : null; });
@@ -298,7 +299,7 @@ body.lv #vcard>:not(.vwrap){zoom:var(--lv-ui,1)}
         .filter(x => x !== vc && x !== sw && x.tagName !== "STYLE" && x.tagName !== "SCRIPT");
       const co = corder() || [], ord = co.concat(DEFORDER.filter(k => !co.includes(k)));
       const dom = new Map(items.map((x, i) => [x, i]));
-      const rank = x => { const i = ord.indexOf(keyOf(x)); return i >= 0 ? i : 100 + dom.get(x); };
+      const rank = x => { const k = keyOf(x), i = ord.indexOf(k); return i >= 0 ? i : DEFLAST.includes(k) ? 10000 + DEFLAST.indexOf(k) : 100 + dom.get(x); };
       const want = items.slice().sort((a, b) => rank(a) - rank(b));
       const now = [...S.children];
       if (want.length !== now.length || want.some((x, i) => now[i] !== x)) want.forEach(x => S.appendChild(x));

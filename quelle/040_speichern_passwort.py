@@ -7,7 +7,7 @@ _save_timer = None
 
 
 WEB_UI_KEY = re.compile(r"^mw-[A-Za-z0-9_:\-./ ]{1,90}$")
-WEB_UI_LOCAL = {"mw-sound", "mw-hdr", "mw-listen-vol"}                      # per device on purpose (sound on the phone, not on the PC)
+WEB_UI_LOCAL = {"mw-sound", "mw-hdr", "mw-listen-vol", "mw-hdr-tabs", "mw-hdr-chips"}   # per device on purpose (sound on the phone, not on the PC; 639o: header folds)
 
 
 # ---- web password set on the page / in the window: stored as a salted PBKDF2 hash; checked passwords are remembered
@@ -458,7 +458,7 @@ def apply_settings(data):
     CFG["web_ui"] = clean_web_ui(CFG["web_ui"])
     if not CFG.get("dev_phase_done"):                  # 2.96.2: Daniel is in the development phase - fast updates on (once)
         CFG["dev_phase_done"] = True
-        CFG["update_fast"] = True
+        CFG["update_mode"] = "dev"                    # 3.23: was update_fast (639q)
     if not CFG.get("app_icon_moveeye_done"):          # 2.96.0: the new name MoveEye and its symbol for everybody (once)
         CFG["app_icon_moveeye_done"] = True
         CFG["app_icon_orange_done"] = True

@@ -64,6 +64,17 @@ func _ready() -> void:
 	add_child(_player)
 
 
+func set_pc_sound(on: bool) -> void:
+	"""3.23: «Ton am PC» - the loudspeaker of MoveEye and the sounds of the surroundings together"""
+	spk_mute = not on
+	save()
+	if main.mikro != null:
+		main.mikro.pc_on = on
+		main.mikro.save()
+		if not on:
+			main.mikro.stop_all()
+
+
 func save() -> void:
 	var f := FileAccess.open(FILE, FileAccess.WRITE)
 	if f != null:
@@ -446,8 +457,14 @@ func add_controls() -> void:
 	var S := {"sub": "Lautsprecher"}
 	main.add_control("slider", "spk_vol", "♪ Lautsprecher von MoveEye am PC (Sirene, Wecker, Stimme)", func(): return spk_vol,
 			func(v): spk_vol = clampf(float(v), 0.0, 100.0); save(), g, {"sub": "Lautsprecher", "min": 0, "max": 100, "step": 5, "unit": "%"})
-	main.add_control("toggle", "spk_mute", "Am PC stumm (das simulierte Mikrofon hört es trotzdem)", func(): return spk_mute,
-			func(v): spk_mute = bool(v); save(), g, S)
+	# 3.23 (Daniel 01.11.2026): ONE switch «Ton am PC» instead of «Am PC stumm» (spk_mute) and «Am PC hören» (mikrofon.gd pc_on);
+	# old saved values: on, unless both were off; the simulated microphone of MoveEye hears it either way
+	if main.mikro != null:
+		var on0: bool = (not spk_mute) or bool(main.mikro.pc_on)
+		if spk_mute == on0 or bool(main.mikro.pc_on) != on0:
+			set_pc_sound(on0)
+	main.add_control("toggle", "pc_ton", "Ton am PC (Lautsprecher von MoveEye und Umgebungsgeräusche; das simulierte Mikrofon hört es trotzdem)",
+			func(): return not spk_mute, func(v): set_pc_sound(bool(v)), g, S)
 	var T := {"sub": "Störungen"}                      # card «Testen» → «Störungen» (main.gd), and the Simulator control of MoveEye
 	main.add_control("toggle", "stoer_uv", "⚡ Unterspannung erzwingen (5 V sackt ab, Servos schwach)", func(): return uv_force,
 			func(v): uv_force = bool(v), "Testlauf", T)

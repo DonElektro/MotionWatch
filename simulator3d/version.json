@@ -1,9 +1,9 @@
 {
- "version": "3D-5.20.0",
- "ver": "3.20.0",
- "name": "MoveEye Sim 3.20.0",
+ "version": "3D-5.29.0",
+ "ver": "3.29.0",
+ "name": "MoveEye Sim 3.29.0",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 35675710,
- "sha256": "4649f896449fc04f14353eb40dd6d81e292ca51c1505865068e3dd86a53ff6ce",
- "notes": "MoveEye Sim 3.20.0: Figuren leben mehr – Menschen, Tiere und Maggie mit neuen Bewegungen, Spuren im Schnee."
+ "size": 41336549,
+ "sha256": "a4e6384d2d4ab4b2e51c7f01cb88808305ac0bced41944778fb3b2d77e2999cc",
+ "notes": "Fenster andocken, Reiter, Entwickler zuoberst"
 }

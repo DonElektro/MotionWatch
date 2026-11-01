@@ -16,6 +16,13 @@ const FIELD := Color("#0c121a")
 const BTN2 := Color("#1a2433")
 
 
+# real-layout-leiste: «Symbole farbig | schlicht» like MoveEye. schlicht (true): grey, green while on (the look up to 3.19);
+# farbig: every symbol in its own colour, a green dot while on (orange: something to watch)
+static var motion_still := false             # 3.23 «Bewegung reduzieren» (main.gd motion_reduced): Logo, Blinki, Wippen still
+static var icons_plain := false              # 3.23: «Symbole farbig» is the standard
+const ICON_COL := {"link": Color("#3b8cff"), "keys": Color("#b38cff")}
+
+
 static func box(bg: Color, border := LINE, r := 10, pad := 8, bw := 1) -> StyleBoxFlat:
 	var s := StyleBoxFlat.new()
 	s.bg_color = bg
@@ -307,6 +314,10 @@ static func group_icon(kind: String) -> Control:
 static func _draw_group_icon(d: Control, kind: String) -> void:
 	var c := Vector2(10, 10)
 	var col: Color = d.get_meta("col", ACC)             # a symbol can change its colour (connection: green)
+	if not icons_plain:                                 # «farbig»: own colour, the state as a dot in the corner
+		if col == GRN or col == ORG:
+			d.draw_circle(Vector2(18, 3), 3.0, col)
+		col = ICON_COL.get(kind, Color.from_hsv(float(absi(hash(kind)) % 360) / 360.0, 0.55, 0.95))
 	var w := 1.8
 	var P := func(pts: Array) -> PackedVector2Array:
 		var out := PackedVector2Array()
@@ -479,6 +490,15 @@ static func _draw_icon(d: Control, kind: String) -> void:
 	elif kind == "groups":
 		d.draw_rect(Rect2(c + Vector2(-8, -7), Vector2(16, 5)), col, false, w)
 		d.draw_rect(Rect2(c + Vector2(-8, 2), Vector2(16, 5)), col, false, w)
+	elif kind == "mine":                                  # 639r «Meine Ansicht»: two bars and a small star
+		d.draw_rect(Rect2(c + Vector2(-8, -7), Vector2(16, 5)), col, false, w)
+		d.draw_rect(Rect2(c + Vector2(-8, 2), Vector2(8, 5)), col, false, w)
+		var st := PackedVector2Array()
+		for i in 10:
+			var r := 4.0 if i % 2 == 0 else 1.8
+			var a := -PI / 2.0 + i * PI / 5.0
+			st.append(c + Vector2(5, 4.5) + Vector2(cos(a), sin(a)) * r)
+		d.draw_colored_polygon(st, col)
 	elif kind == "open":
 		d.draw_polyline(PackedVector2Array([c + Vector2(-5, -3), c + Vector2(0, -8), c + Vector2(5, -3)]), col, w, true)
 		d.draw_polyline(PackedVector2Array([c + Vector2(-5, 3), c + Vector2(0, 8), c + Vector2(5, 3)]), col, w, true)
