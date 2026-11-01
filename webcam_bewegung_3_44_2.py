@@ -238,7 +238,7 @@ def prepare_settings_file():
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
 ZD_FILE = "moveeye_daten_3_44_2.zip"
-ZD_SHA256 = "eabc6bb5085dd846c85b30ea392d7469ed420976c1fb73de5350acf8cdb69e40"
+ZD_SHA256 = "b0a640630212ae9bf55e88fe97bd721645f228c7a3bdd79fb9eb09dc12a0a40c"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -434,6 +434,7 @@ CFG = {
     "presence_hosts": [], "away_after": 10.0,
     "extra_cams": [],            # more cameras (motion recording only): list of source ids
     "relays_on": True,           # Auto relays may switch (On / Off relays are not affected)
+    "relay1_off_done": True,     # 3.44.3: «Relay 1» is off from the factory; settings files without this key are older (040 migrates once)
     # timelapse: park the camera at a chosen position, take a photo every N minutes (an alarm always has priority)
     "timelapse_on": False, "timelapse_interval": 10.0,      # minutes
     "timelapse_pan": 50.0, "timelapse_tilt": 50.0,          # the position the photo is taken from (percent)
@@ -643,8 +644,13 @@ FREE_GPIOS = (23, 24, 25, 5, 6, 12, 13, 16, 26, 4, 22, 18, 19, 20, 21)
 
 
 def default_relays():
-    """Relay 1 = the original alarm relay on GPIO 22 (switches while a person is detected)."""
-    return [{"name": "Relay 1", "gpio": GPIO_RELAY, "mode": "auto", "trigger": "person", "hold": 5.0, "active_low": False}]
+    """Relay 1 = the original alarm relay on GPIO 22 (switches while a person is detected, once switched to «auto»).
+    3.44.3 (variants without a relay, Daniel 01.11.2026): off from the factory - a fresh device never switches GPIO 22 into the
+    void (or into whatever else hangs there). Who has a warning lamp on it switches it to «auto» once (Settings → Relays)."""
+    return [{"name": "Relay 1", "gpio": GPIO_RELAY, "mode": "off", "trigger": "person", "hold": 5.0, "active_low": False}]
+
+
+RELAY1_OLD_DEFAULT = {"name": "Relay 1", "gpio": GPIO_RELAY, "mode": "auto", "trigger": "person", "hold": 5.0, "active_low": False}
 
 
 RELAYS = default_relays()          # edited in the desktop window and on the web page, saved in the settings file
@@ -2346,11 +2352,11 @@ def apply_settings(data):
         RELAYS[:] = out
     else:                                    # settings file from 1.2.2 -> migrate the single relay
         old = data.get("cfg", {}); r0 = default_relays()[0]
-        if old.get("relay_on_person") is False:
-            r0["mode"] = "off"
+        r0["mode"] = "off" if old.get("relay_on_person") is False else "auto"     # 1.2.2 knew only «on person» (3.44.3 below)
         if isinstance(old.get("relay_hold"), (int, float)) and not isinstance(old.get("relay_hold"), bool):
             r0["hold"] = max(0.5, min(600.0, float(old["relay_hold"])))
         RELAYS[:] = [r0]
+    relay1_migrate(cfg_in)
     sc = data.get("schedules")
     if isinstance(sc, list):
         out = []
@@ -2376,6 +2382,20 @@ def apply_settings(data):
     STATE["settings_status"] = f"loaded {n} settings, {len(WAYPOINTS)} waypoints, {len(RELAYS)} relays, {len(SCHEDULES)} schedules"
     log_event("sys", f"Settings loaded from {SETTINGS_FILE} ({n} values, {len(WAYPOINTS)} waypoints, {len(RELAYS)} relays, {len(SCHEDULES)} schedules)")
     _settings_migrations(data.get("cfg"))
+
+
+def relay1_migrate(cfg_in):
+    """3.44.3: «Relay 1» is off from the factory (020 default_relays). An older settings file (no «relay1_off_done») whose
+    relays were never touched - exactly the one old factory relay (GPIO 22, auto, person, 5 s) - gets it switched off once.
+    Anything changed by hand (mode, GPIO, name, hold, a second relay) stays exactly as it is."""
+    if not isinstance(cfg_in, dict) or "relay1_off_done" in cfg_in:
+        return False
+    CFG["relay1_off_done"] = True
+    if len(RELAYS) == 1 and dict(RELAYS[0]) == RELAY1_OLD_DEFAULT:
+        RELAYS[0]["mode"] = "off"
+        log_event("sys", "Relay 1 (GPIO 22) switched off: factory setting, never changed - switch it to «auto» under Relays if a lamp hangs on it")
+        return True
+    return False
 
 
 def _settings_migrations(cfg_in):
@@ -3382,7 +3402,7 @@ class TamperGuard:
     def __init__(self):
         self.ref = None; self.ref_mean = 0.0; self.t_last = 0.0; self.settle = time.time() + 15
         self.pos = None; self.n_cov = 0; self.n_mov = 0; self.cool = 0.0
-        self.acc = None; self.base = None; self.n_tilt = 0; self.armed_was = None
+        self.acc = None; self.base = None; self.n_tilt = 0; self.armed_was = None; self.own_drive = False
         STATE["tamper"] = {"sensor": False, "last": "", "state": "learning"}
         threading.Thread(target=self.sensor_loop, daemon=True, name="tamper").start()
 
@@ -3392,7 +3412,8 @@ class TamperGuard:
             return
         self.t_last = t0
         pos = (round(CFG["pan"], 1), round(CFG["tilt"], 1))
-        if pos != self.pos or manual_active() or STATE.get("tracking") or STATE.get("patrol_moving") or TL_HOLD.get("on"):
+        if (pos != self.pos or manual_active() or STATE.get("tracking") or STATE.get("patrol_moving") or TL_HOLD.get("on")
+                or mover_own_motion()):                     # 3.44.3: the mover drives itself (070) - the picture changes on purpose
             self.pos = pos; self.settle = t0 + 8; self.ref = None; self.n_cov = self.n_mov = 0
             STATE["tamper"]["state"] = "learning"; return
         if t0 < self.settle:
@@ -3492,6 +3513,19 @@ class TamperGuard:
         cos = sum(x / n * y for x, y in zip(a, self.base))
         ang = math.degrees(math.acos(max(-1.0, min(1.0, cos))))
         shake = abs(n - 1.0) > 0.45
+        if mover_own_motion():                              # 3.44.3: own drive of the mover (070) - not «device moved»
+            if not self.own_drive:
+                self.own_drive = True; self.n_tilt = 0
+                log_event("sys", "Motion sensor: own drive of the mover - not counted as «device moved»")
+            # only falling over still counts: > 60° against the position before the drive, several readings in a row
+            self.n_tilt = self.n_tilt + 1 if ang > 60 else 0
+            if self.n_tilt >= 4:
+                self.alarm("knocked"); self.n_tilt = 0
+                self.base = [x / n for x in a]
+            return
+        if self.own_drive:                                  # the quiet time after the drive is over: the new resting position
+            self.own_drive = False; self.n_tilt = 0
+            self.base = [x / n for x in a]; return
         self.n_tilt = self.n_tilt + 1 if (ang > float(CFG["tamper_tilt"]) or shake) else 0
         if self.n_tilt >= 2:
             self.alarm("knocked" if ang > 60 else "moved"); self.n_tilt = 0
@@ -5715,7 +5749,21 @@ def pca_present(addr, bus=1):
 #   In the simulation the 3D simulator says whether it has a mover («Mover simulieren»); the tracks are driven there.
 #   Safety: without a new command for 0.6 s (page closed, Wi-Fi gone) both tracks stop; starting and stopping are gentle.
 # ----------------------------------------------------------------------------
-MOVER = {"test": False, "avail": False, "hw": False, "sim": False, "v": 0.0, "w": 0.0, "l": 0.0, "r": 0.0, "cmd_t": 0.0, "by": "", "msg": "off"}
+MOVER = {"test": False, "avail": False, "hw": False, "sim": False, "v": 0.0, "w": 0.0, "l": 0.0, "r": 0.0, "cmd_t": 0.0, "by": "", "msg": "off",
+         "move_t": 0.0}
+# 3.44.3: the own drive of the mover moves the whole device - the motion sensor (MPU-6050) and the picture check (060) count it as
+#   «own drive» while the tracks run and MOVER_QUIET_S after they stopped (then they learn the new resting position anew).
+#   Moving it by hand (no drive command, tracks standing) is reported as before.
+MOVER_QUIET_S = 3.0
+MOVER_RUN_MIN = 0.02                                       # |track| above this = the track runs (also while ramping down)
+
+
+def mover_own_motion(now=None):
+    """True while the mover drives by its own command, and MOVER_QUIET_S after it has stopped"""
+    now = time.time() if now is None else now
+    if abs(float(MOVER.get("l") or 0.0)) > MOVER_RUN_MIN or abs(float(MOVER.get("r") or 0.0)) > MOVER_RUN_MIN:
+        return True
+    return now - float(MOVER.get("move_t") or 0.0) < MOVER_QUIET_S
 MOVER_MAP = {"adafruit": ((8, 10, 9), (13, 11, 12)),      # (PWM, IN1, IN2) of the left and the right motor (M1, M2)
              "waveshare": ((0, 1, 2), (5, 3, 4))}          # (PWMA, AIN1, AIN2), (PWMB, BIN1, BIN2)
 MOVERCTL = None
@@ -5733,6 +5781,7 @@ def mover_drive(v, w, who="web"):
         return False
     MOVER.update(v=v, w=w, cmd_t=time.monotonic(), by=who)
     if abs(v) > 0.05 or abs(w) > 0.05:
+        MOVER["move_t"] = time.time()                             # 3.44.3: own drive (060 motion sensor / picture check)
         MANUAL["until"] = time.time() + CFG["manual_hold"]          # driving pauses tracking and patrol like the camera stick
         mover_sim_wake()
     return True
@@ -5886,6 +5935,8 @@ class MoverControl:
             l = MOVER["l"] + max(-k2, min(k2, tl - MOVER["l"]))
             r = MOVER["r"] + max(-k2, min(k2, trr - MOVER["r"]))
             MOVER["l"], MOVER["r"] = round(l, 3), round(r, 3)
+            if abs(l) > MOVER_RUN_MIN or abs(r) > MOVER_RUN_MIN:
+                MOVER["move_t"] = time.time()                       # 3.44.3: the tracks run - the quiet time starts when they stand
             if self.pca is not None and not sim:
                 ml, mr = l, r
                 if CFG["mover_swap"]:
@@ -6585,7 +6636,8 @@ def servo_state(lang=None):
             "limits": [[round(plo, 1), round(phi, 1)], [round(tlo, 1), round(thi, 1)]],
             "limits_deg": [float(CFG["pan_limit"]), float(CFG["tilt_limit"])],
             "vmax": [float(CFG["servo_vmax_pan"]), float(CFG["servo_vmax_tilt"])], "acc": [float(CFG["servo_acc_pan"]), float(CFG["servo_acc_tilt"])],
-            "backend": str(STATE.get("servo_backend") or ""), "driver": servo_driver(lang)}
+            "backend": str(STATE.get("servo_backend") or ""), "driver": servo_driver(lang),
+            "backend_note": tr(SERVO_GPIO_FALLBACK_TEXT, lang) if servo_gpio_fallback() else ""}     # 3.44.3 (080)
 
 
 def servo_planner_selftest():
@@ -7169,6 +7221,19 @@ class SenxorSource:
 
 
 HW_REINIT = {"want": False}
+# 3.44.3 (variants without a head, Daniel 01.11.2026): «automatic» without a PCA9685 falls back to servos on GPIO 17/27. A
+#   hobby servo gives no feedback - nobody can tell whether one hangs there. The self-check says so honestly (a hint, not a
+#   green tick: a housing v5.x has a PCA9685, so it is missing or not answering); chosen «GPIO» by hand stays «ok».
+SERVO_GPIO_FALLBACK_TEXT = "no servo driver found - GPIO fallback (17 / 27) without feedback"
+SERVO_GPIO_FALLBACK_TIP = ("Housing v5.x: the PCA9685 (0x41) does not answer - check its power and I2C, then restart. No head built in: "
+                           "nothing to do. Servos really on GPIO 17 / 27: choose the servo driver «GPIO».")
+
+
+def servo_gpio_fallback(backend=None, driver=None):
+    """True: the servos run on GPIO 17/27 only because «automatic» found no PCA9685 (no feedback, maybe nothing connected)"""
+    b = str(STATE.get("servo_backend") or "") if backend is None else str(backend)
+    d = str(CFG.get("servo_driver") or "auto") if driver is None else str(driver)
+    return d == "auto" and b.startswith(("gpiozero", "pigpio"))
 
 
 class Hardware:
@@ -9670,6 +9735,9 @@ def health_check(lang=None):
             "Check wiring and power of the servos; for the PCA9685 switch on I2C (raspi-config).")
     elif servo_blocked():                                  # 2.98.35: Not-Aus / fault / lock (072)
         add("servo", "🎯", "Servos (pan / tilt)", "bad" if servo_blocked() == "fault" else "warn", servo_blocked_text(L))
+    elif servo_gpio_fallback():                            # 3.44.3: «automatic» found no PCA9685 - GPIO 17/27 is only a guess
+        add("servo", "🎯", "Servos (pan / tilt)", "warn", T(SERVO_GPIO_FALLBACK_TEXT) + f" ({sb.split(' ')[0]})", SERVO_GPIO_FALLBACK_TIP)
+        out[-1]["kind"] = "gpio_fallback"
     else:
         add("servo", "🎯", "Servos (pan / tilt)", "ok", sb)
     th = str(STATE.get("thermal") or "off")
@@ -9677,8 +9745,12 @@ def health_check(lang=None):
         add("thermal", "♨", "Thermal camera", "ok", T("connected") + (f" · {STATE['thermal_res']}" if STATE.get("thermal_res") else ""))
     elif th.startswith(("off", "no thermal camera", "same camera")):
         add("thermal", "♨", "Thermal camera", "off", tl_status_text(th))
-    else:
-        add("thermal", "♨", "Thermal camera", "warn", tl_status_text(th), "Check the USB cable of the thermal camera.")
+    elif th.startswith(THERMAL_NOT_FOUND):                 # 3.44.3: nothing answers - maybe not built in (230 thermal_absent)
+        add("thermal", "♨", "Thermal camera", "warn", T("not found - maybe not built in") + " · " + th[len(THERMAL_NOT_FOUND):].strip()[:80],
+            THERMAL_TIPS["missing"])
+        out[-1]["kind"] = "not_found"
+    else:                                                  # found (or chosen), but an error: the tip fits the kind of source
+        add("thermal", "♨", "Thermal camera", "warn", tl_status_text(th), THERMAL_TIPS[thermal_tip_kind(th)])
     au = (STATE.get("audio") or {}).get("status") or "off"
     if au == "listening":
         add("mic", "🎤", "Microphone", "ok", T("listening"))
@@ -19036,11 +19108,49 @@ def timelapse_render(day="", fps=None):
 # Thermal camera: a second camera with the same view. Its picture is coloured and laid over the normal picture
 # (blend, or "hot mode": only the warmest areas are shown). Detection always works on the normal picture.
 # ----------------------------------------------------------------------------
+# 3.44.3 (variants without a thermal camera, Daniel 01.11.2026): «not found» (nothing answers - maybe it is not built in) and
+#   «found, but an error» are two things; the self-check (120) gives the tip that fits (no «USB cable» for the Thermal-90 on SPI / I2C).
+THERMAL_NOT_FOUND = "not found: "
+THERMAL_TIPS = {
+    "missing": "Not built in: switch the thermal camera off (Settings → Thermal camera). Built in: check the flat cable (SPI / I2C) "
+               "and switch on SPI and I2C (raspi-config), then restart MoveEye.",
+    "senxor": "Found, but it reports an error: check the flat cable of the Thermal-90 (SPI / I2C) and restart MoveEye.",
+    "driver": "The Waveshare driver (pysenxor) is missing - see More → Build → Software.",
+    "usb": "Check the USB cable of the thermal camera.",
+    "sim": "Start the simulator (or choose another thermal source).",
+}
+_THERMAL_ABSENT_SENXOR = ("errno 121", "remote i/o", "errno 6]", "no such device", "errno 2]", "no such file", "errno 110", "timed out")
+
+
+def thermal_absent(spec, msg):
+    """True: nothing answers - the thermal camera is probably not there at all (not: there, but an error)"""
+    kind, _, arg = str(spec or "").partition(":")
+    m = str(msg or "").lower()
+    if kind == "senxor":
+        return "driver missing" not in m and any(k in m for k in _THERMAL_ABSENT_SENXOR)
+    if kind == "usb" and arg.isdigit() and sys.platform.startswith("linux") and os.path.isdir("/dev"):
+        return not os.path.exists(f"/dev/video{arg}")
+    return False
+
+
+def thermal_tip_kind(status=None, spec=None):
+    """which tip fits a thermal camera that is there (or chosen) but does not deliver: senxor / driver / usb / sim"""
+    st = str(STATE.get("thermal") or "") if status is None else str(status)
+    sp = str(CFG.get("thermal_source") or "") if spec is None else str(spec)
+    if "driver missing" in st.lower():
+        return "driver"
+    if sp.startswith("senxor"):
+        return "senxor"
+    if sp.startswith("sim"):
+        return "sim"
+    return "usb"
+
+
 class ThermalCam:
     """Keeps the chosen thermal source open in the background and always holds its newest picture."""
     def __init__(self):
         self.src = None; self.spec = ""; self.frame = None; self.t = 0.0; self.fails = 0
-        self.retry_at = 0.0; self.opening = False; self.cache = (None, None)
+        self.retry_at = 0.0; self.opening = False; self.cache = (None, None); self.last_err = None
         self.bgsub = None; self.bg_shape = None; self.hits = deque(maxlen=5); self.det_t = 0.0; self.boxes = []; self.lo = self.hi = None
         threading.Thread(target=self.loop, daemon=True).start()
 
@@ -19061,13 +19171,16 @@ class ThermalCam:
         try:
             res = open_source(spec, thermal=True)
             if res[0] is None:
-                STATE["thermal"] = "no picture: " + res[3]
-                log_event("sys", f"Thermal camera '{res[2]}' not available: {res[3]}")
+                gone = thermal_absent(spec, res[3])        # 3.44.3: «not found (maybe not built in)» or «found, but an error»
+                STATE["thermal"] = (THERMAL_NOT_FOUND if gone else "no picture: ") + res[3]
+                if (spec, res[3]) != self.last_err:        # 3.44.3: the same failure every 5 s only once in the log
+                    self.last_err = (spec, res[3])
+                    log_event("sys", f"Thermal camera '{res[2]}' " + ("not found (maybe not built in)" if gone else "not available") + f": {res[3]}")
                 self.retry_at = time.time() + 5.0
             elif self.wanted() != spec:
                 res[0].release()
             else:
-                self.src = res[0]; self.spec = spec; self.fails = 0
+                self.src = res[0]; self.spec = spec; self.fails = 0; self.last_err = None
                 size = getattr(res[0], "size", None)
                 STATE["thermal_res"] = f"{size[0]}x{size[1]}" if size else ""
                 log_event("sys", f"Thermal camera: {res[2]}" + (f" ({STATE['thermal_res']})" if size else ""))
@@ -51542,7 +51655,8 @@ class App:
         self._status("Lights", (tr("night") if lt.get("dark") else tr("day")) + " · "
                      + " · ".join(f"{tr(LIGHT_NAMES[n])}: {tr('ON') if lt.get(n) else tr('off')}" + ("" if CFG[f'light_{n}_out'] else f" ({tr('not connected')})")
                                   for n in ("white", "ir")))
-        self._status("Servo driver", f"{tr('backend')}: {st['servo_backend']}")
+        self._status("Servo driver", f"{tr('backend')}: {st['servo_backend']}"
+                     + (" · ⚠ " + tr(SERVO_GPIO_FALLBACK_TEXT) if servo_gpio_fallback() else ""))      # 3.44.3 (080)
         self._status("Timelapse", tl_status_text(st["timelapse"]) + (" · " + tl_status_text(st["timelapse_render"]) if st["timelapse_render"] else ""))
         self._status("Thermal camera", tl_status_text(st["thermal"]) + (f" · {st['thermal_res']}" if st["thermal"] == "connected" and st["thermal_res"] else "")
                      + (f" · max {st['thermal_max']:.1f} °C" if st["thermal"] == "connected" and st.get("thermal_max") is not None else ""))
@@ -74842,6 +74956,187 @@ def charge_led_selftest():
 
 
 SELFTEST_EXTRA.append(("Charge LED on GPIO 6: charging / full / almost empty, night, simulator (639zi)", charge_led_selftest))
+# ----------------------------------------------------------------------------
+# Paket «real-varianten-sw» (01.11.2026, aus dem Bericht «Ausbauvarianten im Check»). Die Logik steht dort, wo sie hingehört:
+#   * 080 servo_gpio_fallback / SERVO_GPIO_FALLBACK_TEXT, 120 health_check «servo»: «automatisch» ohne PCA9685 = Hinweis (warn,
+#     kind «gpio_fallback»), kein grüner Haken; von Hand «GPIO» gewählt bleibt ok. Auch Servo-Seite (072 servo_state
+#     «backend_note», 541) und Fenster-Status «Servo driver» (570).
+#   * 230 thermal_absent / THERMAL_NOT_FOUND / THERMAL_TIPS, 120 health_check «thermal»: nichts antwortet (I2C Errno 121, kein
+#     /dev/video<N> …) = «nicht gefunden – vielleicht nicht eingebaut» (kind «not_found»); gefunden, aber Fehler = Tipp je Quelle
+#     (Thermal-90: Flachkabel SPI / I2C, Treiber fehlt, USB: Kabel, Simulator). Dieselbe Meldung nur einmal im Log statt alle 5 s.
+#   * 020 default_relays: «Relay 1» (GPIO 22) ab Werk «aus»; 040 relay1_migrate: ältere Einstellungen (ohne «relay1_off_done»)
+#     nur dann, wenn das Relais nie verändert wurde (genau das alte Werks-Relais), einmal auf «aus». Begründung: ohne Relais
+#     schaltet GPIO 22 ins Leere oder in etwas anderes, das dort hängt; bisher gibt es kein ausgeliefertes Gerät mit Relais.
+#   * 070 mover_own_motion, 060 TamperGuard: während eigener Fahrbefehle des Movers und MOVER_QUIET_S (3 s) danach zählt der
+#     Bewegungssensor nicht «Gerät bewegt» (nur Umfallen > 60° gegenüber vorher), danach lernt er die neue Ruhelage; das Bild
+#     lernt ebenfalls neu. Bewegen von Hand (keine Fahrt) meldet wie bisher.
+# Hier nur: Übersetzungen, Hilfe-Satz, Selbsttest.
+# ----------------------------------------------------------------------------
+_HX_VARSW = {
+    SERVO_GPIO_FALLBACK_TEXT: (
+        "kein Servo-Treiber gefunden – GPIO-Ausweich (17 / 27) ohne Rückmeldung",
+        "aucun pilote de servo trouvé – repli GPIO (17 / 27) sans retour",
+        "nessun driver servo trovato – ripiego GPIO (17 / 27) senza riscontro",
+        "nagin driver da servos chattà – remplazzament GPIO (17 / 27) senza resposta"),
+    SERVO_GPIO_FALLBACK_TIP: (
+        "Gehäuse v5.x: der PCA9685 (0x41) antwortet nicht – Strom und I2C prüfen, dann neu starten. Kein Kopf eingebaut: nichts zu "
+        "tun. Servos wirklich an GPIO 17 / 27: Servo-Treiber «GPIO» wählen.",
+        "Boîtier v5.x : le PCA9685 (0x41) ne répond pas – vérifiez son alimentation et l’I2C, puis redémarrez. Pas de tête montée : "
+        "rien à faire. Servos vraiment sur GPIO 17 / 27 : choisissez le pilote de servo «GPIO».",
+        "Custodia v5.x: il PCA9685 (0x41) non risponde – controlla alimentazione e I2C, poi riavvia. Nessuna testa montata: niente "
+        "da fare. Servo davvero su GPIO 17 / 27: scegli il driver servo «GPIO».",
+        "Chascha v5.x: il PCA9685 (0x41) na respunda betg – controllar current ed I2C, lura reaviar. Nagin chau montà: nagut da "
+        "far. Servos propi vi da GPIO 17 / 27: tscherner il driver da servos «GPIO»."),
+    "not found - maybe not built in": (
+        "nicht gefunden – vielleicht nicht eingebaut", "introuvable – peut-être pas montée", "non trovata – forse non montata",
+        "betg chattà – forsa betg montà"),
+    THERMAL_TIPS["missing"]: (
+        "Nicht eingebaut: Wärmebild ausschalten (Einstellungen → Wärmebild). Eingebaut: Flachkabel (SPI / I2C) prüfen und SPI und "
+        "I2C einschalten (raspi-config), dann MoveEye neu starten.",
+        "Pas montée : désactivez la caméra thermique (Réglages → Caméra thermique). Montée : vérifiez le câble plat (SPI / I2C) et "
+        "activez SPI et I2C (raspi-config), puis redémarrez MoveEye.",
+        "Non montata: spegni la termocamera (Impostazioni → Termocamera). Montata: controlla il cavo piatto (SPI / I2C) e attiva "
+        "SPI e I2C (raspi-config), poi riavvia MoveEye.",
+        "Betg montada: stizzar la camera termica (Parameters → Camera termica). Montada: controllar il cabel plat (SPI / I2C) ed "
+        "activar SPI ed I2C (raspi-config), lura reaviar MoveEye."),
+    THERMAL_TIPS["senxor"]: (
+        "Gefunden, meldet aber einen Fehler: Flachkabel der Thermal-90 (SPI / I2C) prüfen und MoveEye neu starten.",
+        "Trouvée, mais elle signale une erreur : vérifiez le câble plat de la Thermal-90 (SPI / I2C) et redémarrez MoveEye.",
+        "Trovata, ma segnala un errore: controlla il cavo piatto della Thermal-90 (SPI / I2C) e riavvia MoveEye.",
+        "Chattada, ma ella annunzia ina errur: controllar il cabel plat da la Thermal-90 (SPI / I2C) e reaviar MoveEye."),
+    THERMAL_TIPS["driver"]: (
+        "Der Waveshare-Treiber (pysenxor) fehlt – siehe Mehr → Bauen → Software.",
+        "Le pilote Waveshare (pysenxor) manque – voir Plus → Construire → Logiciel.",
+        "Manca il driver Waveshare (pysenxor) – vedi Altro → Costruire → Software.",
+        "Il driver da Waveshare (pysenxor) manca – guarda Dapli → Construir → Software."),
+    THERMAL_TIPS["sim"]: (
+        "Simulator starten (oder eine andere Wärmebild-Quelle wählen).",
+        "Démarrez le simulateur (ou choisissez une autre source thermique).",
+        "Avvia il simulatore (o scegli un’altra sorgente termica).",
+        "Aviar il simulatur (u tscherner in’autra funtauna termica)."),
+}
+for _k, _v in _HX_VARSW.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX.setdefault(_L, {}).setdefault(_k, _v[_i + 1])
+
+_VARSW_HELP = (
+    ("<li><b>Relais:</b> Aus / Ein / Auto.",
+     "<li><b>Relay 1 (GPIO 22) ab Werk aus</b> (ab 3.44.3): ohne Relais schaltet MoveEye nichts ins Leere. Mit Warnlampe am Relais "
+     "einmal auf Auto stellen. Ältere Einstellungen bleiben, wie sie sind – nur ein nie verändertes Werks-Relais wurde einmal "
+     "ausgeschaltet.</li>"),
+    ("<li><b>Relays:</b> Off / On / Auto.",
+     "<li><b>Relay 1 (GPIO 22) is off from the factory</b> (from 3.44.3): without a relay MoveEye switches nothing into the void. "
+     "With a warning lamp on the relay set it to Auto once. Older settings stay as they are – only a never changed factory relay "
+     "was switched off once.</li>"),
+)
+for _a, _b in _VARSW_HELP:
+    if _a in HELP_PAGE and _b not in HELP_PAGE:
+        HELP_PAGE = HELP_PAGE.replace(_a, _b + _a, 1)
+
+
+# ---- self-test ----------------------------------------------------------------------------------------------------------------
+def _varsw_item(key, lang="en"):
+    return next((x for x in health_check(lang)["items"] if x["id"] == key), None)
+
+
+def varianten_sw_selftest():
+    keep_state = {k: STATE.get(k) for k in ("servo_backend", "thermal")}
+    keep_cfg = {k: CFG.get(k) for k in ("servo_driver", "thermal_source", "relay1_off_done", "tamper_tilt")}
+    keep_relays = [dict(r) for r in RELAYS]
+    keep_mover = dict(MOVER)
+    keep_armed = globals()["is_armed"]
+    notes = []
+    try:
+        # 1. servos: «automatic» without a PCA9685 -> a hint, not ok; GPIO chosen by hand / PCA9685 -> ok
+        assert servo_gpio_fallback("gpiozero", "auto") and servo_gpio_fallback("pigpio", "auto"), "auto + GPIO = fallback"
+        assert not servo_gpio_fallback("gpiozero", "gpio") and not servo_gpio_fallback("pca9685", "auto"), "chosen / PCA9685"
+        assert not servo_gpio_fallback("simulation", "auto"), "simulation is «not found», not a fallback"
+        if not servo_blocked():
+            CFG["servo_driver"] = "auto"; STATE["servo_backend"] = "gpiozero"
+            it = _varsw_item("servo")
+            assert it and it["level"] == "warn" and it.get("kind") == "gpio_fallback" and "GPIO" in it["text"], it
+            de = _varsw_item("servo", "de")
+            assert "kein Servo-Treiber gefunden" in de["text"] and "PCA9685" in de["tip"], de
+            CFG["servo_driver"] = "gpio"
+            assert _varsw_item("servo")["level"] == "ok", "GPIO by hand: ok"
+            CFG["servo_driver"] = "auto"; STATE["servo_backend"] = "pca9685"
+            assert _varsw_item("servo")["level"] == "ok", "PCA9685: ok"
+            STATE["servo_backend"] = "gpiozero"
+            assert servo_state("de")["backend_note"].startswith("kein Servo-Treiber"), "servo page note"
+            notes.append("servos")
+        # 2. thermal camera: not found (maybe not built in) / found, but an error - never «USB cable» for the Thermal-90
+        assert thermal_absent("senxor:0", "[Errno 121] Remote I/O error"), "nothing on I2C 0x40"
+        assert thermal_absent("senxor:0", "[Errno 2] No such file or directory: '/dev/spidev0.0'"), "SPI off / nothing there"
+        assert not thermal_absent("senxor:0", "Waveshare driver missing: Thermal_Camera_Hat.zip ..."), "driver = software"
+        assert not thermal_absent("senxor:0", "MI48 reports a CRC error"), "found, but an error"
+        assert not thermal_absent("sim:thermal", "simulator not reachable")
+        if sys.platform.startswith("linux") and os.path.isdir("/dev"):
+            assert thermal_absent("usb:63", "no picture from /dev/video63") == (not os.path.exists("/dev/video63"))
+        CFG["thermal_source"] = "senxor:0"
+        STATE["thermal"] = THERMAL_NOT_FOUND + "[Errno 121] Remote I/O error"
+        it = _varsw_item("thermal")
+        assert it["level"] == "warn" and it.get("kind") == "not_found" and "USB" not in it["tip"] and "maybe not built in" in it["text"], it
+        assert "nicht eingebaut" in _varsw_item("thermal", "de")["text"]
+        STATE["thermal"] = "no picture: MI48 reports a CRC error"
+        it = _varsw_item("thermal")
+        assert it["level"] == "warn" and not it.get("kind") and "USB" not in it["tip"] and "Found" in it["tip"], it
+        STATE["thermal"] = "no picture: Waveshare driver missing: Thermal_Camera_Hat.zip"
+        assert "pysenxor" in _varsw_item("thermal")["tip"]
+        CFG["thermal_source"] = "usb:1"; STATE["thermal"] = "connection lost - reconnecting"
+        assert "USB" in _varsw_item("thermal")["tip"], "a USB thermal camera keeps the USB tip"
+        # 3. «Relay 1»: off from the factory; old settings only when never changed, once
+        assert default_relays()[0]["mode"] == "off" and default_relays()[0]["gpio"] == GPIO_RELAY
+        assert DEFAULTS.get("relay1_off_done") is True
+        RELAYS[:] = [dict(RELAY1_OLD_DEFAULT)]
+        assert relay1_migrate({"lang": "de"}) and RELAYS[0]["mode"] == "off", "never changed -> off"
+        RELAYS[:] = [dict(RELAY1_OLD_DEFAULT, hold=10.0)]
+        assert not relay1_migrate({}) and RELAYS[0]["mode"] == "auto", "changed by hand -> stays"
+        RELAYS[:] = [dict(RELAY1_OLD_DEFAULT), dict(RELAY1_OLD_DEFAULT, name="Relay 2", gpio=23)]
+        assert not relay1_migrate({}) and RELAYS[0]["mode"] == "auto", "two relays -> stays"
+        RELAYS[:] = [dict(RELAY1_OLD_DEFAULT)]
+        assert not relay1_migrate({"relay1_off_done": True}) and RELAYS[0]["mode"] == "auto", "already migrated (or new) -> stays"
+        # 4. mover: own drive is not «device moved», moving it by hand is
+        hits = []
+        g = TamperGuard.__new__(TamperGuard)
+        g.base = [0.0, 0.0, 1.0]; g.armed_was = True; g.n_tilt = 0; g.own_drive = False; g.cool = 0.0
+        g.alarm = lambda what, looked=None: hits.append(what)
+        globals()["is_armed"] = lambda: True
+        CFG["tamper_tilt"] = 12.0
+        tilt = lambda deg: [math.sin(math.radians(deg)), 0.0, math.cos(math.radians(deg))]
+        MOVER.update(l=0.5, r=0.5, move_t=time.time())
+        for _ in range(5):
+            g.check_motion(tilt(30)); g.check_motion([0.0, 0.3, 1.4])      # slope and bumps while driving
+        assert hits == [] and g.own_drive, f"own drive counted: {hits}"
+        MOVER.update(l=0.0, r=0.0, move_t=time.time() - 1.0)
+        assert mover_own_motion(), "quiet time after the stop"
+        g.check_motion(tilt(30)); g.check_motion(tilt(30))
+        assert hits == [], "within 3 s after the stop"
+        MOVER.update(move_t=time.time() - MOVER_QUIET_S - 1.0)
+        assert not mover_own_motion()
+        g.check_motion(tilt(30))                                        # quiet time over: learns the new resting position
+        assert hits == [] and not g.own_drive and abs(g.base[0] - math.sin(math.radians(30))) < 1e-6, "new resting position"
+        g.check_motion(tilt(60)); g.check_motion(tilt(60))              # somebody lifts it (no drive command)
+        assert hits == ["moved"], f"moved by hand must be reported: {hits}"
+        hits.clear(); g.base = [0.0, 0.0, 1.0]
+        MOVER.update(l=0.4, r=-0.4, move_t=time.time())
+        for _ in range(4):
+            g.check_motion(tilt(95))                                    # falls over while driving
+        assert hits == ["knocked"], f"falling over while driving: {hits}"
+        notes += ["thermal", "relay 1", "mover"]
+    finally:
+        globals()["is_armed"] = keep_armed
+        STATE.update(keep_state); CFG.update(keep_cfg); RELAYS[:] = keep_relays
+        MOVER.clear(); MOVER.update(keep_mover)
+    for k in _HX_VARSW:
+        for L in ("fr", "it", "rm"):
+            assert TRX[L].get(k), f"{L}: {k[:40]}"
+        assert DE.get(k), k[:40]
+    return ", ".join(notes) + ", 5 languages"
+
+
+SELFTEST_EXTRA.append(("Variants without all parts: servo fallback, thermal not found, relay 1 off, mover own drive (639zs)",
+                       varianten_sw_selftest))
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--cam", type=int, default=None, help="USB camera number (same as --source usb:N)")

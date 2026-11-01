@@ -350,6 +350,9 @@ def health_check(lang=None):
             "Check wiring and power of the servos; for the PCA9685 switch on I2C (raspi-config).")
     elif servo_blocked():                                  # 2.98.35: Not-Aus / fault / lock (072)
         add("servo", "🎯", "Servos (pan / tilt)", "bad" if servo_blocked() == "fault" else "warn", servo_blocked_text(L))
+    elif servo_gpio_fallback():                            # 3.44.3: «automatic» found no PCA9685 - GPIO 17/27 is only a guess
+        add("servo", "🎯", "Servos (pan / tilt)", "warn", T(SERVO_GPIO_FALLBACK_TEXT) + f" ({sb.split(' ')[0]})", SERVO_GPIO_FALLBACK_TIP)
+        out[-1]["kind"] = "gpio_fallback"
     else:
         add("servo", "🎯", "Servos (pan / tilt)", "ok", sb)
     th = str(STATE.get("thermal") or "off")
@@ -357,8 +360,12 @@ def health_check(lang=None):
         add("thermal", "♨", "Thermal camera", "ok", T("connected") + (f" · {STATE['thermal_res']}" if STATE.get("thermal_res") else ""))
     elif th.startswith(("off", "no thermal camera", "same camera")):
         add("thermal", "♨", "Thermal camera", "off", tl_status_text(th))
-    else:
-        add("thermal", "♨", "Thermal camera", "warn", tl_status_text(th), "Check the USB cable of the thermal camera.")
+    elif th.startswith(THERMAL_NOT_FOUND):                 # 3.44.3: nothing answers - maybe not built in (230 thermal_absent)
+        add("thermal", "♨", "Thermal camera", "warn", T("not found - maybe not built in") + " · " + th[len(THERMAL_NOT_FOUND):].strip()[:80],
+            THERMAL_TIPS["missing"])
+        out[-1]["kind"] = "not_found"
+    else:                                                  # found (or chosen), but an error: the tip fits the kind of source
+        add("thermal", "♨", "Thermal camera", "warn", tl_status_text(th), THERMAL_TIPS[thermal_tip_kind(th)])
     au = (STATE.get("audio") or {}).get("status") or "off"
     if au == "listening":
         add("mic", "🎤", "Microphone", "ok", T("listening"))

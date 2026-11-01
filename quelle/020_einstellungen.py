@@ -101,6 +101,7 @@ CFG = {
     "presence_hosts": [], "away_after": 10.0,
     "extra_cams": [],            # more cameras (motion recording only): list of source ids
     "relays_on": True,           # Auto relays may switch (On / Off relays are not affected)
+    "relay1_off_done": True,     # 3.44.3: «Relay 1» is off from the factory; settings files without this key are older (040 migrates once)
     # timelapse: park the camera at a chosen position, take a photo every N minutes (an alarm always has priority)
     "timelapse_on": False, "timelapse_interval": 10.0,      # minutes
     "timelapse_pan": 50.0, "timelapse_tilt": 50.0,          # the position the photo is taken from (percent)
@@ -310,8 +311,13 @@ FREE_GPIOS = (23, 24, 25, 5, 6, 12, 13, 16, 26, 4, 22, 18, 19, 20, 21)
 
 
 def default_relays():
-    """Relay 1 = the original alarm relay on GPIO 22 (switches while a person is detected)."""
-    return [{"name": "Relay 1", "gpio": GPIO_RELAY, "mode": "auto", "trigger": "person", "hold": 5.0, "active_low": False}]
+    """Relay 1 = the original alarm relay on GPIO 22 (switches while a person is detected, once switched to «auto»).
+    3.44.3 (variants without a relay, Daniel 01.11.2026): off from the factory - a fresh device never switches GPIO 22 into the
+    void (or into whatever else hangs there). Who has a warning lamp on it switches it to «auto» once (Settings → Relays)."""
+    return [{"name": "Relay 1", "gpio": GPIO_RELAY, "mode": "off", "trigger": "person", "hold": 5.0, "active_low": False}]
+
+
+RELAY1_OLD_DEFAULT = {"name": "Relay 1", "gpio": GPIO_RELAY, "mode": "auto", "trigger": "person", "hold": 5.0, "active_low": False}
 
 
 RELAYS = default_relays()          # edited in the desktop window and on the web page, saved in the settings file
