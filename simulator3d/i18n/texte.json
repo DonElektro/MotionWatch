@@ -4459,6 +4459,12 @@
   "it": "Cliccare: riquadro di nuovo grande · trascinare: spostare",
   "rm": "Cliccar: stgatletta puspè gronda · trair: spustar"
  },
+ "Anleitung": {
+  "en": "Manual",
+  "fr": "Mode d'emploi",
+  "it": "Istruzioni",
+  "rm": "Instrucziuns"
+ },
  "Anleitung von MoveEye": {
   "en": "MoveEye manual",
   "fr": "Mode d’emploi de MoveEye",
@@ -5988,6 +5994,12 @@
   "fr": "Les deux histoires réussies",
   "it": "Entrambe le storie completate",
   "rm": "Omaduas istorgias fatgas"
+ },
+ "Beide Programme sollten dieselbe Nummer haben – die ältere Seite aktualisieren (Knopf unten links).": {
+  "en": "Both programs should have the same number – update the older one (button at the bottom left).",
+  "fr": "Les deux programmes devraient avoir le même numéro – mettre à jour le plus ancien (bouton en bas à gauche).",
+  "it": "I due programmi dovrebbero avere lo stesso numero – aggiornare il più vecchio (pulsante in basso a sinistra).",
+  "rm": "Omadus programs duessan avair il medem numer – actualisar il pli vegl (buttun giu a sanestra)."
  },
  "Beide Schieber sind unten. Das Wasser staut sich in der alten Fassung, und in der Furt bleiben nur nasse Steine. Trockenen Fusses hinüber.": {
   "en": "Both gates are down. The water backs up in the old intake, and only wet stones are left in the ford. Across with dry feet.",
@@ -25300,6 +25312,12 @@
   "it": "MoveEye %s · %s\n\nIn totale: push giusti %d / sbagliati %d · persone %d di %d rilevate (%d %%) · sfarfallio %d · durata %d min.\n\n%s",
   "rm": "MoveEye %s · %s\n\nEn total: pushs gists %d / fallads %d · persunas %d da %d identifitgadas (%d %%) · sbrigliar %d · durada %d min.\n\n%s"
  },
+ "MoveEye %s · Sim %s": {
+  "en": "MoveEye %s · Sim %s",
+  "fr": "MoveEye %s · Sim %s",
+  "it": "MoveEye %s · Sim %s",
+  "rm": "MoveEye %s · Sim %s"
+ },
  "MoveEye %s: Richtung %d von %d …": {
   "en": "MoveEye %s: direction %d of %d …",
   "fr": "MoveEye %s : direction %d sur %d …",
@@ -26159,6 +26177,12 @@
   "it": "Mostrare la portata di MoveEye sul paesaggio (valle alpina)",
   "rm": "Mussar la tanschida da MoveEye sin la cuntrada (val da muntogna)"
  },
+ "MoveEye: ": {
+  "en": "MoveEye: ",
+  "fr": "MoveEye : ",
+  "it": "MoveEye: ",
+  "rm": "MoveEye: "
+ },
  "MoveEye: Alarm – PIR Zelt. Im Kamerabild: niemand.": {
   "en": "MoveEye: alarm – PIR tent. In the camera picture: nobody.",
   "fr": "MoveEye : alarme – PIR tente. Dans l'image de la caméra : personne.",
@@ -26404,6 +26428,12 @@
   "fr": "Meuh ! Une vache.",
   "it": "Muuu! Una mucca.",
   "rm": "Muuu! Ina vatga."
+ },
+ "mw:?": {
+  "en": "mw:?",
+  "fr": "mw:?",
+  "it": "mw:?",
+  "rm": "mw:?"
  },
  "Mäh! Ein Schaf.": {
   "en": "Baa! A sheep.",
@@ -36578,6 +36608,12 @@
   "it": "Collegato a «%s» (MoveEye %s) da %s",
   "rm": "Collià cun «%s» (MoveEye %s) da %s"
  },
+ "verbunden mit «%s» · %s · %s": {
+  "en": "connected to «%s» · %s · %s",
+  "fr": "connecté à «%s» · %s · %s",
+  "it": "collegato a «%s» · %s · %s",
+  "rm": "collià cun «%s» · %s · %s"
+ },
  "verbunden mit «%s» · MoveEye %s · %s": {
   "en": "connected to «%s» · MoveEye %s · %s",
   "fr": "connecté à «%s» · MoveEye %s · %s",
@@ -36811,6 +36847,12 @@
   "fr": "Version et état, historique, développeur",
   "it": "Versione e stato, storia, sviluppatore",
   "rm": "Versiun e status, istorgia, sviluppader"
+ },
+ "Versionen": {
+  "en": "Versions",
+  "fr": "Versions",
+  "it": "Versioni",
+  "rm": "Versiuns"
  },
  "Versionen vergleichen (Kurve)": {
   "en": "Compare versions (curve)",

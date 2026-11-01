@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3.38.0"
+const VERSION := "3.39.0"
 const Versionen = preload("res://scripts/versionen.gd")   # Versionierung 3.0.0: from 3.0.0 VERSION = "X.Y.Z" like MoveEye (see there)
 const Stimme = preload("res://scripts/abenteuer_stimme.gd")   # 3.23: the one switch «Stimme» (an | aus | untertitel)
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
@@ -405,6 +405,17 @@ var visitor_speed := 1.0
 var mix := "mixed"                    # mixed | more_animals | more_people | animals | people
 var flee_light := true                # animals flee from the white light at night
 var flee_sound := true                # ... and from the siren
+# ---- parts of main.gd in their own files (Vorschlag 24): main_*.gd, loaded at their first use ----
+var _mods := {}                       # "steuerung" -> main_steuerung.gd … (load, not preload: parsed only when needed)
+
+
+func _mod(n: String):
+	var m = _mods.get(n)
+	if m == null:
+		m = load("res://scripts/main_%s.gd" % n).new()
+		m.main = self
+		_mods[n] = m
+	return m
 
 
 func _ready() -> void:
@@ -960,82 +971,7 @@ func _th_read(img: Image, x: int, y: int) -> float:
 
 
 func _calibrate_thermal() -> void:
-	"""3D-4.26: measure how the renderer stores colours (a ramp 128 … 255 in a 16 × 8 picture: linear, sRGB, squeezed?) and
-	build th_inv; then check with a surface of exactly 20 °C"""
-	var vp := SubViewport.new()
-	vp.size = Vector2i(16, 16)
-	vp.render_target_update_mode = SubViewport.UPDATE_ONCE
-	add_child(vp)
-	var cam := Camera3D.new()
-	cam.cull_mask = 8
-	cam.environment = th_env
-	vp.add_child(cam)
-	cam.global_transform = Transform3D(Basis(), Vector3(0, -500, 3))
-	var rq := MeshInstance3D.new()                       # the ramp: pixel x + 16 y shows 128 + that (written like the code)
-	rq.mesh = box(40, 40, 0.1)
-	var rs := Shader.new()
-	rs.code = "shader_type spatial;\nrender_mode unshaded, cull_disabled, shadows_disabled, fog_disabled;\nuniform float srgb = 0.0;\n" + \
-			"void fragment() { vec3 c = vec3(min(255.0, 128.0 + floor(FRAGCOORD.x) + 16.0 * floor(FRAGCOORD.y)) / 255.0);\n" + \
-			"if (srgb > 0.5) { c = mix(c / 12.92, pow((c + vec3(0.055)) / 1.055, vec3(2.4)), step(vec3(0.04045), c)); }\nALBEDO = c; }"
-	var rm := ShaderMaterial.new()
-	rm.shader = rs
-	rq.material_override = rm
-	rq.layers = 8
-	add_child(rq)
-	rq.global_position = Vector3(0, -500, 0)
-	var bg_was := th_env.background_color
-	_make_lut(false)
-	var ok := false
-	for srgb in [false, true]:
-		rm.set_shader_parameter("srgb", 1.0 if srgb else 0.0)
-		vp.render_target_update_mode = SubViewport.UPDATE_ONCE
-		await RenderingServer.frame_post_draw
-		await RenderingServer.frame_post_draw
-		var ri := vp.get_texture().get_image()
-		if ri == null or ri.is_empty():
-			break
-		var inv := PackedInt32Array()
-		inv.resize(256)
-		inv.fill(-1)
-		var distinct := true
-		for k in range(128):
-			var st := roundi(ri.get_pixel(k % 16, k / 16).r * 255.0)
-			if inv[st] >= 0:
-				distinct = false
-			inv[st] = 128 + k
-		if distinct:
-			var last := 128
-			for b2 in range(256):                         # bytes the ramp never gave: the nearest below (or 128)
-				if inv[b2] >= 0:
-					last = inv[b2]
-				else:
-					inv[b2] = last
-			th_inv = inv
-			_make_lut(srgb)
-			ok = true
-			break
-	rq.queue_free()
-	var q := MeshInstance3D.new()                        # the check: 20 °C in the middle, background in the corners
-	q.mesh = box(4, 4, 0.1)
-	q.material_override = tmat_fixed(20.0)
-	q.layers = 8
-	add_child(q)
-	q.global_position = Vector3(0, -500, 0)
-	q.scale = Vector3(0.5, 0.5, 1)
-	th_env.background_color = Color(0.25, 0.25, 0.25)
-	vp.render_target_update_mode = SubViewport.UPDATE_ONCE
-	await RenderingServer.frame_post_draw
-	await RenderingServer.frame_post_draw
-	var img := vp.get_texture().get_image()
-	if img != null and not img.is_empty():
-		var rb := img.get_pixel(0, 0).r                 # background colour 0.25 comes back as ...
-		th_bg_raw = abs(rb - 0.25) < 0.04
-		var got := _th_read(img, 8, 8)
-		print("thermal calibration: 20.00 °C -> %.2f °C (%s%s), background %.3f -> %s" % [got, "sRGB" if th_srgb else "linear",
-				"" if ok else ", ramp not clean", rb, "raw" if th_bg_raw else "converted"])
-	th_env.background_color = bg_was
-	q.queue_free()
-	vp.queue_free()
+	await _mod("kamera")._calibrate_thermal()
 
 
 func now() -> float:
@@ -1997,84 +1933,7 @@ func set_smoke(on: bool) -> void:
 
 
 func _build_lens() -> void:
-	"""a quad right in front of camera 0 and 1 (own layer 32 / 64): grain, dark corners, raindrops (shaders/lens.gdshader).
-	Insects round the head at night when a light is on (CPU particles, only the normal cameras see them, not the thermal one)."""
-	var sh: Shader = load("res://shaders/lens.gdshader")
-	for i in range(2):
-		var cam: Camera3D = cams[i]
-		var lay := 32 if i == 0 else 64
-		cam.cull_mask = 1 | lay
-		var dist := 0.12
-		var w := 2.0 * dist * tan(deg_to_rad(CAM_FOV[i]) / 2.0) * 1.04
-		var hgt := w * float(CAM_H[i]) / float(CAM_W[i]) * 1.04
-		var q := MeshInstance3D.new()
-		var qm := QuadMesh.new()
-		qm.size = Vector2(w, hgt)
-		q.mesh = qm
-		q.position = Vector3(0, 0, -dist)
-		q.layers = lay
-		q.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		var m := ShaderMaterial.new()
-		m.shader = sh
-		m.set_shader_parameter("res", Vector2(CAM_W[i], CAM_H[i]))
-		q.material_override = m
-		cam.add_child(q)
-		lens_mats.append(m)
-		var eq := MeshInstance3D.new()                       # exposure: a bit behind the lens quad, so it is drawn first
-		var eqm := QuadMesh.new()
-		eqm.size = Vector2(w, hgt) * 1.05
-		eq.mesh = eqm
-		eq.position = Vector3(0, 0, -dist * 1.05)
-		eq.layers = lay
-		eq.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		var em := ShaderMaterial.new()
-		em.shader = load("res://shaders/expo.gdshader")
-		eq.material_override = em
-		cam.add_child(eq)
-		expo_mats.append(em)
-		var fq := MeshInstance3D.new()                       # 3D-3.94: the camera effects - between exposure and lens (drawn in that order)
-		var fqm := QuadMesh.new()
-		fqm.size = Vector2(w, hgt) * 1.02
-		fq.mesh = fqm
-		fq.position = Vector3(0, 0, -dist * 1.02)
-		fq.layers = lay
-		fq.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		var fm := ShaderMaterial.new()
-		fm.shader = load("res://shaders/camfx.gdshader")
-		fm.set_shader_parameter("res", Vector2(CAM_W[i], CAM_H[i]))
-		fq.material_override = fm
-		cam.add_child(fq)
-		camfx_mats.append(fm)
-	insects = CPUParticles3D.new()
-	insects.amount = 28
-	insects.lifetime = 2.5
-	insects.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
-	insects.emission_sphere_radius = 0.7
-	insects.direction = Vector3(0, 0, -1)
-	insects.spread = 180.0
-	insects.gravity = Vector3.ZERO
-	insects.initial_velocity_min = 0.3
-	insects.initial_velocity_max = 1.4
-	insects.orbit_velocity_min = -1.5
-	insects.orbit_velocity_max = 1.5
-	insects.damping_min = 0.0
-	insects.damping_max = 0.8
-	insects.angular_velocity_min = -200.0
-	insects.angular_velocity_max = 200.0
-	var im := SphereMesh.new()
-	im.radius = 0.012
-	im.height = 0.02
-	im.radial_segments = 4
-	im.rings = 2
-	var imm := StandardMaterial3D.new()
-	imm.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	imm.albedo_color = Color(0.95, 0.93, 0.85)
-	im.material = imm
-	insects.mesh = im
-	insects.position = Vector3(0, 0.2, -0.9)          # in front of the head, in its light
-	insects.emitting = false
-	insects.layers = 1
-	head_pitch.add_child(insects)
+	_mod("kamera")._build_lens()
 
 
 # ---- sounds of the world (for the microphone of MoveEye) --------------------------------------------------------
@@ -2915,63 +2774,7 @@ func _capture_next() -> void:
 
 
 func _capture(i: int) -> void:
-	capturing = true
-	last_cap[i] = now()
-	var L: Dictionary = mw.get("lights", {})
-	var dark := is_dark()
-	ir_light.spot_range = ir_range
-	ir_light.light_energy = 9.0 if (i == 0 and ir_on()) else 0.0   # infrared: only the NoIR camera sees it
-	if i == 0:
-		var grey: bool = ir_on() and dark and not white_light.light_energy > 0.0   # infrared picture: black and white
-		cams[0].environment = (night_envs[0] if grey else night_envs[1]) if dark and night_envs[0] != null else null
-	if i == 1:
-		cams[1].environment = night_envs[1] if dark and night_envs[1] != null else null    # little light: little colour
-	if i < 2 and expo_mats.size() > i:
-		var ex: float = NIGHT_SCALE * gain[i] if dark else 1.0
-		if i == 0 and dark and ir_on() and not white_light.light_energy > 0.0:
-			ex = ir_ex                           # 3D-4.1: the infrared picture has its own exposure (before: fixed 0.85 - almost white)
-		expo_mats[i].set_shader_parameter("expo", ex)
-		lens_mats[i].set_shader_parameter("expo", ex)
-	if i < 2:
-		cam_attr[i].exposure_multiplier = gain[i] if not dark else 1.0   # at night the lens shader does the exposure
-		if realism != null:
-			realism.before_capture(i)
-		if simreal != null:
-			simreal.before_capture(i)            # 3D-4.4: lens, rolling shutter, noise, infrared, reflectors
-		weit.before_capture(i)                   # 3D-4.17: NoIR Wide - infrared picture, fisheye, the wide infrared light
-		if zwilling != null and zwilling.fm != null:
-			zwilling.fm.before_capture(i)        # 3D-4.27: Foto-Modus - the camera sees the real photo, the figures are fitted to it
-		if wetter != null:
-			wetter.before_capture(i)             # real-wetter: drops and fog on the lens, ground fog
-		if camphys != null:
-			camphys.before_capture(i)            # 3D-4.x P1: last - exposure time, gain, sensor noise, NoIR colours
-	vps[i].render_target_update_mode = SubViewport.UPDATE_ONCE
-	await RenderingServer.frame_post_draw
-	var img: Image = vps[i].get_texture().get_image()
-	ir_light.light_energy = 0.0
-	weit.after_capture(i, img)
-	if img != null and not img.is_empty():
-		if i < 2:
-			_auto_exposure(i, img)
-			if realism != null:
-				realism.after_capture(i, img)
-			var hold := false
-			if cond["net"] and i == 0:                   # 3D-3.74: bad Wi-Fi - pictures get lost, sometimes it stands still
-				if now() < _net_hold:
-					hold = true
-				elif randf() < 0.05:
-					_net_hold = now() + randf_range(0.8, 2.5)
-					hold = true
-				elif randf() < 0.3:
-					hold = true
-			if not hold:
-				jpgs[i] = img.save_jpg_to_buffer(realism.jpg_q if realism != null and realism.fx_on else 0.8)
-				frame_no[i] += 1
-				if simreal != null:
-					simreal.on_jpg(i, jpgs[i])           # 3D-4.4: «Wie ein echter Pi 5» - the picture comes late
-		else:
-			_decode_thermal(img)
-	capturing = false
+	await _mod("kamera")._capture(i)
 
 
 var cloud_shadows := true             # clouds pass the sun: the light changes (from 3D-2.6; realistic cause of false alarms)
@@ -3827,12 +3630,7 @@ func set_gas(o: bool) -> void:
 
 # ---- controls (window and web page) ----------------------------------------------------------------------------------
 func add_control(type: String, id: String, label: String, getter, setter, group: String, extra := {}) -> void:
-	var st = setter
-	if setter != null and type != "button":
-		st = func(v):                                 # a changed setting is saved (a few seconds later)
-			setter.call(v)
-			_settings_dirty = true
-	controls.append({"type": type, "id": id, "label": label, "group": group, "get": getter, "set": st, "extra": extra})
+	_mod("einstellungen").add_control(type, id, label, getter, setter, group, extra)
 
 
 # ---- order of the settings: groups with a symbol, parts inside (from 3D-3.5) ------------------------------------------------
@@ -3954,541 +3752,27 @@ const PHOTO_IDS := ["twin_yaw", "twin_span", "twin_dist", "twin_horizon", "fm_on
 
 
 func _simple_ok(c: Dictionary) -> bool:
-	"""what «Einfach» shows (Menüs A: the list SIMPLE_IDS, about 60); everything else is «Experte»"""
-	if c.group == "Spiel":
-		return c.id in GAME_MAIN or c.id in DISC_SIMPLE
-	return c.id in SIMPLE_IDS or str(c.id).begins_with("welt_ort_")
+	return _mod("einstellungen")._simple_ok(c)
 
 
 func _order_controls() -> void:
-	"""every setting into its group and part, sorted like GROUPS (the window and the page of MoveEye show this order)"""
-	var gi := {}
-	for i in range(GROUPS.size()):
-		gi[GROUPS[i][0]] = i
-	var keyed := []
-	for i in range(controls.size()):
-		var c: Dictionary = controls[i]
-		c.extra = c.extra.duplicate()                     # several controls share one dictionary ({"expert": true})
-		var pl = PLACE.get(c.id, null)
-		if pl == null and str(c.id).begins_with("spawn_"):
-			pl = ["Besuch", "Menschen einzeln" if str(c.id).trim_prefix("spawn_") in PEOPLE_KINDS else "Wildtiere"]
-		if VISIT_SUB.has(c.id):
-			pl = ["Besuch", VISIT_SUB[c.id]]              # Menüs A: people out of «Tiere schicken», long lists split
-		elif pl == null and str(c.extra.get("sub", "")) in ["Menschen schicken", "Tiere schicken"]:
-			pl = [c.group, "Menschen einzeln" if str(c.extra["sub"]) == "Menschen schicken" else "Wildtiere"]   # a new button of another part
-		if VISIT_EMOJI.has(str(c.id).trim_prefix("spawn_")):
-			c.extra["emoji"] = VISIT_EMOJI[str(c.id).trim_prefix("spawn_")]      # a picture on the button of the page (3D-3.38)
-		if pl != null:
-			c.group = pl[0]
-			c.extra["sub"] = pl[1]
-		if ALIAS_IDS.has(c.id):                           # Menüs A: the old id of a merged control - only /control, tests, settings
-			c.extra["alias"] = ALIAS_IDS[c.id]
-			c.extra["wiz"] = true                          # «wiz»: not in the panel, not on the page of MoveEye (also older MoveEye)
-			c.extra.erase("devwin")                        # pruef_open: no second «Prüfstand» in the developer window
-		if c.id in PHOTO_IDS and zwilling != null and not c.has("ro"):
-			c["ro"] = func(): return zwilling.cur().is_empty()   # Menüs A: without a photo of the place these do nothing - greyed out
-			c.extra["ro_tip"] = "Zuerst ein Foto des Platzes laden (Gegenstände → Foto des Platzes)"   # tooltip on the page of MoveEye
-		c.group = GROUP_RENAME.get(c.group, c.group)       # 3D-4.21: names like MoveEye
-		if SUB_RENAME.has(str(c.extra.get("sub", ""))):
-			c.extra["sub"] = SUB_RENAME[str(c.extra.get("sub", ""))]
-		if c.id in DEV_IDS:
-			c.extra["sub"] = "Updates" if c.id == "dev_updates" else ""
-		if c.group == "Spiel":                            # 3D-4.7: only open / start / stop on the card, the rest in the assistant
-			if c.id in DISC_IDS:
-				c.extra["sub"] = "Entdecken"           # Erlebniswelt 20–23: its own part on the card
-			elif c.id in GAME_MAIN:
-				c.extra["sub"] = ""                    # straight on the card (no part «Runde» any more)
-			else:
-				c.extra["wiz"] = true
-				c.extra["sub"] = "Assistent"
-		c.extra["gid"] = GROUP_IDS.get(c.group, str(c.group).to_lower())
-		if not _simple_ok(c):
-			c.extra["expert"] = true                      # 3D-3.90: «Einfach» = about 60 settings (the page of MoveEye has the same switch, stored in MoveEye «sim»)
-		var g: int = gi.get(c.group, GROUPS.size())
-		var sub := str(c.extra.get("sub", ""))
-		c.extra["icon"] = GROUPS[g][2] if g < GROUPS.size() else ""
-		c.extra["iconk"] = GROUPS[g][1] if g < GROUPS.size() else ""          # the drawn symbol (page of MoveEye from 2.93.16)
-		var si: int = (GROUPS[g][3] as Array).find(sub) if g < GROUPS.size() else 0
-		keyed.append([g * 10000 + max(si, 0) * 100, i, c])   # Menüs A: Besuch has 13 parts now (1000 was too small)
-	keyed.sort_custom(func(a, b): return a[0] < b[0] or (a[0] == b[0] and a[1] < b[1]))
-	controls = keyed.map(func(k): return k[2])
-	# 3D-4.21 (Menü 2, like MoveEye): «Einfach» = the main switch of every group - a group without one gets its first switch
-	var has_main := {}
-	for c in controls:
-		if not c.extra.get("expert", false) and not c.extra.get("hide", false) and not c.extra.get("wiz", false):
-			has_main[c.group] = true
-	for c in controls:
-		if has_main.has(c.group) or c.group in ["Entwickler", "Spiel"] or c.extra.get("hide", false) or c.extra.get("wiz", false):
-			continue
-		if c.type in ["toggle", "select", "button"]:
-			c.extra.erase("expert")
-			has_main[c.group] = true
+	_mod("einstellungen")._order_controls()
 
 
 func _register_controls() -> void:
-	"""every setting of the simulator - for the window and for the web page of MoveEye (CONTROL protocol).
-	extra "expert": true = only shown with «Experte» - in the window and on the page of MoveEye (its switch Einfach / Experte
-	is stored in the settings of MoveEye, page «sim», like on its main page)."""
-	var sc := []
-	for s in Worlds.SHOWN:                        # 3D-4.x Welten: only the worlds and the tools (the old scenes are places in them)
-		sc.append([s, Scenes.name_of(s)])
-	var ex := {"expert": true}
-	add_control("select", "scene", "Szene", func(): return Worlds.world_of(scene), func(v): set_scene(v), "Szene", {"options": sc})
-	for w in Worlds.WORLDS:                       # «Ort in dieser Welt»: the old scenes of this world (one select per world)
-		add_control("select", "welt_ort_" + w, "Ort in dieser Welt", func(): return scene if Worlds.is_place(scene) else "",
-				func(v): set_scene(str(v) if str(v) != "" else w), "Szene", {"options": Worlds.place_options(w)})
-		controls[-1]["only"] = func(): return Worlds.world_of(scene) == w
-	add_control("toggle", "welt_solo", "Alte Szenen allein laden (ohne Welt drumherum – für Prüfstand-Vergleiche)", func(): return welt_solo,
-			func(v): welt_solo = bool(v); set_scene(scene), "Szene", {"expert": true})
-	add_control("button", "home_edit", "Mein Zuhause bauen (Baukasten mit der Maus)", null, func(): home_editor.open(true), "Szene")
-	add_control("select", "fp_spot", "Standort im Ferienpark am See", func(): return fp_spot, func(v): set_fp_spot(str(v)), "Szene",
-			{"options": preload("res://scripts/ferienpark.gd").spot_options()})
-	controls[-1]["only"] = func(): return scene == "ferienpark"   # 3D-4.28: only shown in its scene (window and MoveEye; not in a place of the park)
-	var Bt = preload("res://scripts/bergtal.gd")
-	add_control("select", "bt_spot", "Schlafplatz im Bergtal", func(): return bt_spot, func(v): set_bt("bt_spot", str(v)), "Szene", {"options": Bt.spot_options()})
-	add_control("select", "bt_bed", "Übernachten im Bergtal", func(): return bt_bed, func(v): set_bt("bt_bed", str(v)), "Szene", {"options": Bt.BEDS})
-	var mo := []
-	for k in Bt.MOUNTS:
-		mo.append([k, Bt.MOUNTS[k][0]])
-	add_control("select", "bt_mount", "MoveEye-Halterung am Schlafplatz (Bergtal)", func(): return bt_mount, func(v): set_bt("bt_mount", str(v)), "Szene", {"options": mo})
-	add_control("select", "bt_bag", "Schlafsack (Bergtal)", func(): return bt_bag, func(v): set_bt("bt_bag", str(v)), "Szene", {"options": [["sommer", "Sommerschlafsack"], ["winter", "Winterschlafsack"]], "expert": true})
-	add_control("toggle", "bt_stove", "Kocher am Schlafplatz (Bergtal)", func(): return bt_stove, func(v): set_bt("bt_stove", bool(v)), "Szene", {"expert": true})
-	add_control("toggle", "bt_wall", "Windschutzmauer aus Steinen bauen (Bergtal)", func(): return bt_wall, func(v): set_bt("bt_wall", bool(v)), "Szene")
-	add_control("select", "bt_orient", "Orientierung im Bergtal", func(): return bt_orient, func(v): set_bt("bt_orient", str(v)), "Szene",
-			{"options": [["leicht", "leicht (Karte, Kompass, eigener Standort)"], ["mittel", "mittel (Karte und Kompass)"], ["schwer", "schwer (nur Wegweiser)"]], "expert": true})
-	add_control("text", "bt_mark", "Eigene Markierung auf der Karte (Name; wird in der Bildmitte gesetzt)", func(): return "", func(v): bt_mark(str(v)), "Szene", {"expert": true})
-	add_control("button", "bt_here", "Hier übernachten (Bergtal: der Platz in der Bildmitte oder beim Mover)", null, func(): bt_here(), "Szene")
-	add_control("select", "bt_goto", "Schnellreise im Bergtal (Ort wählen)", func(): return "", func(v): bt_goto(str(v)), "Szene", {"options": Bt.place_options()})
-	add_control("select", "bt_season", "Jahreszeit im Bergtal", func(): return bt_season, func(v): set_bt("bt_season", str(v)), "Szene",
-			{"options": [["auto", "nach dem Monat (Jahreszeit)"], ["fruehling", "Frühling"], ["sommer", "Sommer"], ["herbst", "Herbst (Lärchen gelb, Nebel)"], ["winter", "Winter (Schnee, Eis)"]]})
-	add_control("button", "bt_ride", "Mit der Materialseilbahn fahren (Bergtal)", null, func(): _bt_do("ride"), "Szene", {"expert": true})
-	add_control("button", "bt_morning", "Wie gut war dein Platz? (Bergtal: Bewertung jetzt)", null, func(): _bt_do("morning"), "Szene", {"expert": true})
-	# 3D-4.40: Horror-Modus «Das Hospiz» opens from the 5th mood of the Bergtal adventure (bergtal_abenteuer.gd), no button here
-	add_control("toggle", "bt_events", "Bergtal: Ereignisse von selbst (Steinschlag, Fremder, Tier am Proviant, Wetterumschwung)", func(): return bt_events, func(v): bt_events = bool(v), "Besuch", {"sub": "Von selbst"})
-	add_control("button", "bt_ev_rockfall", "Steinschlag (Bergtal)", null, func(): _bt_do("rockfall"), "Besuch", {"sub": "Abläufe"})
-	add_control("button", "bt_ev_stranger", "Fremder am Rucksack (Bergtal)", null, func(): _bt_do("stranger"), "Besuch", {"sub": "Abläufe"})
-	add_control("button", "bt_ev_food", "Tier am Proviant (Bergtal)", null, func(): _bt_do("fox_food"), "Besuch", {"sub": "Abläufe"})
-	add_control("button", "bt_ev_storm", "Gewitter zieht auf (Bergtal)", null, func(): _bt_do("storm"), "Wetter", {"sub": "Mehr Wetter"})
-	add_control("button", "bt_ev_fog", "Nebel kommt schnell (Bergtal)", null, func(): _bt_do("fog"), "Wetter", {"sub": "Mehr Wetter"})
-	add_control("button", "bt_ev_fogsea", "Nebelmeer (Bergtal: das Tal im Nebel, oben Sonne)", null, func(): _bt_do("fogsea"), "Wetter", {"sub": "Mehr Wetter"})
-	preload("res://scripts/bergtal_aussicht.gd").add_controls(self)     # «Bergtal · Aussichtspunkte»: Fernrohr, Panorama, Reichweite …
-	for _c in controls:   # Bergtal-only controls: only shown in its scene (like fp_spot); season, quick travel, events also in its places
-		if str(_c.id).begins_with("bt_"):
-			if str(_c.id) in ["bt_season", "bt_goto", "bt_events", "bt_orient", "bt_mark"] or str(_c.id).begins_with("bt_ev_"):
-				_c["only"] = func(): return Worlds.world_of(scene) == "bergtal"
-			else:
-				_c["only"] = func(): return scene == "bergtal"
-			if _c.group == "Szene":
-				_c.extra = _c.extra.duplicate()
-				_c.extra["sub"] = "Bergtal"            # 3D-4.36 (Daniel): own part «Bergtal» on the card Szene, only in the Bergtal
-	add_control("select", "szene_spot", "Standort an diesem Ort (Pfadilager, Hofladen, Bergdorf, Festival)", func(): return scene_spot(scene),
-			func(v): set_scene_spot(str(v)), "Szene", {"options": _spot_options()})     # 3D-4.x: where MoveEye stands in a compact place (kompakt.gd)
-	controls[-1]["only"] = func(): return Kompakt.is_kompakt(scene)
-	add_control("map", "ort_map", "Ort auf der Karte wählen (Schweiz)", func(): return "%.6f, %.6f" % [ort_lat, ort_lon] if ort_lat != 0.0 else "",
-			func(v): set_place_text(str(v)), "Ort von der Karte")
-	add_control("text", "ort", "Ort (Name oder Koordinaten, z. B. «Zermatt» oder «46.0207, 7.7491»)", func(): return place_label(), func(v): set_place_text(str(v)), "Ort von der Karte")
-	add_control("slider", "hour", "Uhrzeit", func(): return snappedf(hour(), 0.01), func(v): set_hour(v), "Szene", {"min": 0, "max": 23.75, "step": 0.25, "unit": "h"})
-	add_control("select", "season", "Jahreszeit (Sonnenbahn)", func(): return season, func(v): season = str(v); _sun_cache = [-1.0, Vector2.ZERO]; _update_sky(), "Szene",
-			{"options": [["today", "wie heute (echtes Datum)"], ["1", "Januar"], ["2", "Februar"], ["3", "März"], ["4", "April"], ["5", "Mai"], ["6", "Juni"],
-			["7", "Juli"], ["8", "August"], ["9", "September"], ["10", "Oktober"], ["11", "November"], ["12", "Dezember"]]})
-	add_control("slider", "speed", "Zeit läuft x-fach", func(): return speed, func(v): _set_speed(v), "Szene", {"min": 1, "max": 120, "step": 1, "unit": "×", "expert": true})
-	add_control("toggle", "moon_auto", "Mondphase automatisch (Ort, Form und Licht des Monds nach Datum und Uhrzeit)", func(): return moon_auto, func(v): moon_auto = v, "Szene", {"expert": true})
-	add_control("slider", "moon", "Mondphase fest: beleuchteter Teil (0 = Neumond, 1 = Vollmond)", func(): return moon, func(v):
-		moon = v
-		moon_auto = false, "Szene", {"min": 0, "max": 1, "step": 0.1, "expert": true})
-	add_control("slider", "cam1_yaw", "Weitwinkel am Mast: Richtung", func(): return cam1_yaw, func(v): cam1_yaw = v, "Szene", {"min": -90, "max": 90, "step": 1, "unit": "°", "expert": true})
-	add_control("select", "weather", "Wetter", func(): return weather, func(v): weather = v, "Wetter",
-			{"options": [["clear", "klar"], ["cloudy", "bewölkt"], ["rain", "Regen"], ["fog", "Nebel"], ["snow", "Schnee"]]})
-	add_control("toggle", "world_cloth", "Fahnen und Wäsche im Wind", func(): return world_cloth, func(v): set_cloth(v), "Wetter", ex)
-	add_control("toggle", "world_smoke", "Rauch aus Kaminen", func(): return world_smoke, func(v): set_smoke(v), "Wetter", ex)
-	add_control("toggle", "world_fireflies", "Glühwürmchen in warmen Nächten", func(): return world_fireflies, func(v): world_fireflies = v, "Wetter", ex)
-	add_control("toggle", "fauna_on", "Vögel am Tag (fliegen vorbei, Krähen, Elstern und Möwen am Boden), Fledermäuse in der Nacht (warm im Wärmebild, typische Fehlalarm-Ursache)", func(): return fauna_on, func(v): fauna_on = bool(v); fauna.on = fauna_on, "Wetter", {"sub": "Natur und Wind"})
-	add_control("toggle", "gusts", "Wind in Böen", func(): return gusts, func(v): gusts = v, "Wetter", ex)
-	add_control("toggle", "cloud_shadows", "Wolkenschatten (die Helligkeit wechselt)", func(): return cloud_shadows, func(v): cloud_shadows = v, "Wetter", ex)
-	add_control("slider", "lamp_share", "Nachts mit Stirnlampe oder Handylicht", func(): return lamp_share, func(v): lamp_share = v, "Besuch", {"min": 0, "max": 1, "step": 0.05, "expert": true})
-	add_control("toggle", "look_at_light", "Menschen schauen zum Licht, wenn es angeht", func(): return look_at_light, func(v): look_at_light = v, "Besuch", ex)
-	add_control("slider", "wind", "Wind", func(): return wind, func(v): wind = v, "Wetter", {"min": 0, "max": 120, "step": 1, "unit": "km/h"})
-	add_control("toggle", "real_weather", "Echtes Wetter vom Ort (alle 10 Minuten, braucht Internet)", func(): return real_weather, func(v): real_weather = v; life._wx_t = -10000.0, "Wetter")
-	add_control("toggle", "surprise_on", "Überraschungsnacht: nachts ab und zu Stromausfall, Nebelbank, Ablenkung, Scheinwerfer, ein Tier steht still – am Morgen die Bewertung von MoveEye", func(): return surprise_on, func(v): surprise.set_on(bool(v)), "Wetter")
-	add_control("toggle", "night_weather", "Wetterverlauf über die Nacht (Dämmerung, Regenschauer, Tau auf der Linse, Morgennebel)", func(): return night_weather, func(v): night_weather = v; _nw["day"] = -1, "Wetter")
-	add_control("toggle", "real_time", "Echte Uhrzeit (die Uhr des PCs)", func(): return real_time, func(v): real_time = v, "Szene")
-	add_control("slider", "ambient", "Temperatur", func(): return ambient, func(v): ambient = v, "Wetter", {"min": -15, "max": 40, "step": 0.5, "unit": "°C"})
-	add_control("slider", "humidity", "Luftfeuchtigkeit", func(): return humidity, func(v): humidity = v, "Wetter", {"min": 10, "max": 100, "step": 1, "unit": "%", "expert": true})
-	add_control("slider", "pressure", "Luftdruck", func(): return pressure, func(v): pressure = v, "Wetter", {"min": 960, "max": 1040, "step": 0.5, "unit": "hPa", "expert": true})
-	add_control("button", "storm", "Sturm zieht auf", null, func(): storm_t = now(), "Wetter", ex)
-	add_control("toggle", "thunder", "Gewitter mit Blitzen (bei Regen; die Blitze sind auch eine typische Fehlalarm-Ursache)", func(): return thunder, func(v): thunder = v, "Wetter")
-	# visitors: one button each (the window has the pictures to drag, the web page these buttons)
-	for k in VISITOR_LIST:
-		add_control("button", "spawn_" + k[0], k[1], null, func(): visit(k[0]), "Besuch")
-	add_control("button", "car", "Auto", null, func(): car(), "Besuch")
-	add_control("button", "thief", "Dieb (Velo, Tür)", null, func(): thief(), "Besuch")
-	add_control("button", "dogwalk", "Spaziergang mit Hund", null, func(): visit("dogwalk"), "Besuch")
-	add_control("button", "herd", "Rehrudel", null, func(): visit("herd"), "Besuch")
-	# 3D-3.39: more visitors (single people and animals are in VISITOR_LIST; these come in groups or do something)
-	add_control("button", "couple", "Paar (zu zweit)", null, func(): visit("couple"), "Besuch")
-	add_control("button", "horse_walk", "Mit dem Pferd unterwegs", null, func(): visit("horse_walk"), "Besuch")
-	add_control("button", "cows", "Kühe auf der Weide", null, func(): visit("cows"), "Besuch")
-	add_control("button", "sheep_flock", "Schafherde", null, func(): visit("sheep_flock"), "Besuch")
-	add_control("button", "bats", "Fledermäuse am Licht (nachts)", null, func(): visit("bats"), "Besuch")
-	add_control("button", "owl", "Eule fliegt vorbei", null, func(): visit("owl"), "Besuch")
-	add_control("button", "burglar", "Einbruchsversuch (schleicht, prüft die Tür – flieht vor Licht und Sirene)", null, func(): visit("burglar"), "Besuch")
-	add_control("button", "sneaker", "Vorsichtiger Schleicher (von Deckung zu Deckung, kriecht, erstarrt bei Licht, Lampe aus)", null, func(): visit("sneaker"), "Besuch")
-	add_control("button", "bbq", "Grillabend (Grill, Rauch, Freunde kommen)", null, func(): visit("bbq"), "Besuch")
-	add_control("button", "homecoming", "Spät heimkommen (Auto hält, Tür auf und zu)", null, func(): visit("homecoming"), "Besuch")
-	add_control("button", "parcel", "Paket wird gebracht", null, func(): visit("parcel"), "Besuch")
-	add_control("button", "fox_trash", "Fuchs am Abfalleimer", null, func(): visit("fox_trash"), "Besuch")
-	add_control("button", "boar_group", "Wildschweine mit Jungen", null, func(): visit("boar_group"), "Besuch")
-	add_control("button", "kids_tag", "Kinder spielen Fangen", null, func(): visit("kids_tag"), "Besuch")
-	add_control("button", "mowing", "Bauer mäht mit dem Traktor", null, func(): visit("mowing"), "Besuch")
-	add_control("button", "night_lapse", "Ganze Nacht im Zeitraffer (20 → 6 Uhr, 60-fach, etwa 10 Minuten)", null, func(): stories.night_lapse(), "Besuch")
-	add_control("toggle", "calendar", "Kalender: am Wochenende mehr Leute, im Winter weniger", func(): return calendar_on, func(v): calendar_on = v, "Besuch")
-	add_control("button", "tractor", "Traktor", null, func(): visit("tractor"), "Besuch")
-	add_control("button", "moto", "Töff", null, func(): visit("moto"), "Besuch")
-	add_control("button", "van", "Lieferwagen", null, func(): visit("van"), "Besuch")
-	add_control("button", "car_park", "Auto kommt an und parkiert (Leute steigen aus)", null, func(): visit("car_park"), "Besuch", ex)
-	add_control("button", "bench", "Besuch setzt sich auf die Bank (Lustiger Platz)", null, func(): visit("bench"), "Besuch", ex)
-	add_control("button", "feed", "Reh kommt zur Futterstelle (Wildbeobachtung)", null, func(): visit("feed_deer"), "Besuch", ex)
-	add_control("button", "garden_person", "Besuch kommt durchs Gartentor (Garten)", null, func(): visit("garden_person"), "Besuch", ex)
-	var pre_opts := [["", "– Vorlage wählen –"]]
-	for vp in VISIT_PRESETS:
-		pre_opts.append([vp[0], vp[1]])
-	add_control("select", "visit_preset", "Vorlage für den Besuch (stellt «Von selbst» passend ein)", func(): return visit_preset, func(v): apply_visit_preset(str(v)), "Besuch",
-			{"options": pre_opts})
-	add_control("button", "clear", "Alle Besucher weg", null, func(): clear_visitors(), "Besuch")
-	add_control("toggle", "auto", "ab und zu Besuch von selbst", func(): return auto_visitors, func(v): auto_visitors = v, "Besuch")
-	add_control("toggle", "daily_life", "Tagesablauf: jeder kommt zu seiner Zeit (Fuchs nachts, Reh in der Dämmerung, Briefträger um 10 Uhr …)", func(): return daily_life, func(v): daily_life = v, "Besuch")
-	add_control("select", "mix", "Wer kommt", func(): return mix, func(v): mix = v, "Besuch",
-			{"options": [["mixed", "Tiere und Menschen"], ["more_animals", "mehr Tiere"], ["more_people", "mehr Menschen"], ["animals", "nur Tiere"], ["people", "nur Menschen"]]})
-	add_control("slider", "visit_rate", "Wie oft Besuch kommt", func(): return visit_rate, func(v): visit_rate = v, "Besuch", {"min": 0.25, "max": 4.0, "step": 0.25, "unit": "×"})
-	add_control("slider", "max_visitors", "Höchstens gleichzeitig", func(): return max_visitors, func(v): max_visitors = int(v); _perf_orig.erase("max_visitors"), "Besuch", {"min": 1, "max": 30, "step": 1, "expert": true})
-	add_control("slider", "visitor_speed", "Tempo der Besucher", func(): return visitor_speed, func(v): visitor_speed = v, "Besuch", {"min": 0.25, "max": 2.5, "step": 0.05, "unit": "×", "expert": true})
-	add_control("toggle", "flee_light", "Tiere flüchten nachts vor dem weissen Licht", func(): return flee_light, func(v): flee_light = v, "Besuch", ex)
-	add_control("toggle", "flee_sound", "Tiere flüchten vor der Sirene", func(): return flee_sound, func(v): flee_sound = v, "Besuch", ex)
-	add_control("toggle", "avoid_on", "Um Bäume, Häuser und Fahrzeuge herumgehen", func(): return avoid_on, func(v): avoid_on = v, "Besuch", ex)
-	# 3D-4.x P1: the noise slider is also the one of «Kamera wie echt» (camphys.gd: noise from the gain of the sensor) - no second one
-	add_control("slider", "lens_noise", "Rauschen (wie der Sensor: mehr Verstärkung = mehr Rauschen, am Tag sauber)", func(): return lens_noise, func(v): lens_noise = v, "Kamerabild", {"sub": "Wie echt", "min": 0, "max": 1, "step": 0.05, "expert": true})
-	add_control("slider", "night_gain", "Nachtverstärkung der Kameras (höchstens)", func(): return night_gain, func(v): night_gain = v, "Kamerabild", {"min": 1, "max": 8, "step": 0.5, "unit": "×"})
-	add_control("slider", "ir_range", "Reichweite des Infrarot-Lichts", func(): return ir_range, func(v): ir_range = v, "Kamerabild", {"min": 4, "max": 30, "step": 1, "unit": "m"})
-	add_control("slider", "lens_vignette", "Dunkle Bildecken", func(): return lens_vignette, func(v): lens_vignette = v, "Kamerabild", {"min": 0, "max": 1, "step": 0.05, "expert": true})
-	# 3D-3.94: the camera like a real one - and like the real one of MoveEye
-	add_control("toggle", "real_fx", "Kamera wie echt (Camera Module 3 NoIR): Belichtung und Verstärkung mit echten Grenzen, Rauschen bei wenig Licht, Bewegungsunschärfe, NoIR-Farben, Blendung nachts", func(): return realism.fx_on, func(v): realism.fx_on = bool(v); realism.save(), "Kamerabild", {"sub": "Wie echt"})
-	add_control("toggle", "real_look", "Echt-Abgleich: Helligkeit, Farbe, Schärfe und Rauschen an die echten Bilder von MoveEye angleichen", func(): return realism.real_on, func(v): realism.real_on = bool(v); realism.save(), "Kamerabild", {"sub": "Wie echt"})
-	add_control("toggle", "real_servo", "Servos wie echt: MG90S-Tempo nach Spannung, Getriebespiel, Nachschwingen, Anlaufstrom", func(): return realism.servo_real, func(v): realism.servo_real = bool(v); realism.save(), "Kamerabild", {"sub": "Wie echt"})
-	if servo != null:
-		servo.add_controls()                           # «Servo-Mechanik»: head weight, gear play; Störung «Schwaches Servosignal»
-	add_control("button", "real_reset", "Echt-Abgleich zurücksetzen", null, func(): realism.reset(), "Kamerabild", {"sub": "Wie echt", "expert": true})
-	camphys.add_controls()                                 # 3D-4.x P1: «Bewegungsunschärfe», «NoIR-Farben»
-	add_control("toggle", "colors_on", "Natürliche Farben und Materialien (Metall, Glas, Stoff, nass bei Regen) – wirkt nach dem Szenenwechsel", func(): return colors_on, func(v): colors_on = v; colors.on = v; _settings_dirty = true, "Kamerabild", {"sub": "Wie echt"})
-	add_control("toggle", "seasons_on", "Jahreszeiten: Gras und Laub nach dem Monat (Frühling, Sommer, Herbst, Winter)", func(): return seasons_on, func(v): seasons_on = v; colors.seasons_on = v; colors._month = -1; _update_sky(); _settings_dirty = true, "Szene", {"sub": "Zeit"})
-	add_control("toggle", "show_laser", "Blickrichtung: roter Strahl aus dem Kopf und Bildränder am Boden (nur für dich sichtbar)", func(): return show_laser, func(v): show_laser = v; _settings_dirty = true, "Kamerabild")
-	add_control("toggle", "show_zones3d", "Zonen von MoveEye in der 3D-Ansicht (nur für dich sichtbar)", func(): return show_zones3d, func(v): show_zones3d = v; _settings_dirty = true, "Kamerabild")
-	add_control("toggle", "show_det3d", "Erkennung live in 3D: Rahmen von MoveEye über den Figuren (grün erkannt, rot Fehlalarm, orange übersehen)", func(): return show_det3d, func(v): show_det3d = v; _settings_dirty = true, "Kamerabild")
-	add_control("toggle", "lens_drops", "Regentropfen auf der Linse", func(): return lens_drops, func(v): lens_drops = v, "Kamerabild")
-	add_control("toggle", "sound_on", "Geräusche der Welt ans Mikrofon von MoveEye", func(): return sound_on, func(v): sound_on = v, "Kamerabild", ex)
-	add_control("toggle", "insects", "Insekten am Licht (nachts, lösen wie echt Bewegung aus)", func(): return insects_on, func(v): insects_on = v, "Kamerabild")
-	for cd in [["glare", "Gegenlicht (tiefe Sonne in der Linse, Äste lassen sie flackern)"], ["drops", "Tropfen auf der Linse (auch ohne Regen)"],
-			["web", "Spinnennetz vor der Kopfkamera (nachts im Licht hell)"], ["headlights", "Scheinwerfer: nachts fahren immer wieder Autos vorbei"],
-			["shadows", "Wolkenschatten: schnelle, tiefe Schatten"], ["ir", "Infrarot-Licht immer an (auch ohne MoveEye)"],
-			["fogged", "Beschlagene Linse (Tau am Morgen, milchiger Schleier)"], ["dirt", "Schmutz und Pollen auf der Linse"],
-			["shake", "Kamera wackelt im Wind (Mast, Stange)"], ["net", "Schlechtes WLAN: das Bild ruckelt und bleibt hängen"]]:
-		var key: String = cd[0]
-		add_control("toggle", "cond_" + key, cd[1], func(): return cond[key], func(v): cond[key] = bool(v), "Kamerabild")
-	simreal.add_controls()                                 # 3D-4.4: closer to the real device
-	objplus.add_controls()                                 # 3D-4.x «Gegenstände»: lures
-	inhalte.add_controls()                                 # F2: System → Grafik «Echte Oberflächen und Himmel»
-	sicherung.add_controls()                               # System → Sicherung (sicherung.gd)
-	umgebung.add_controls()                                # 3D-4.x: surroundings like real
-	statisten.add_controls()                               # Paket «Statisten»: Besuch → Von selbst (wie viele, pro Spielmodus)
-	menschen.add_controls()                                # P10: people like real (Besuch → Verhalten / Von selbst / Menschen schicken)
-	tiere.add_controls()                                   # Paket «Tiere»: free dog, birds on the ground
-	fahrzeuge.add_controls()                               # Paket «Fahrzeuge»
-	licht.add_controls()                                   # «Licht & Nacht»: light pollution, place lamps, tents / windows
-	jahreszeiten.add_controls()                            # «Jahreszeiten & Tageslauf»: season, snow, fog, leaves, campsite occupancy
-	gelaende.add_controls()                                # 3D-4.x: hills and more plants (Szene)
-	wetter.add_controls()                                  # real-wetter: rain strength, visibility, ground fog, snow, lens, lightning
-	wind_fx.add_controls()                                 # F6: wind in the plants and tents (Wetter → Natur und Wind)
-	preload("res://scripts/figur_paket.gd").add_controls(self)   # F5: figures from the pack (System → Grafik)
-	szenen.add_controls()                                  # 3D-4.x: the visitors of the new scenes (szenenplus.gd)
-	if statusled != null:
-		statusled.add_controls()                           # Licht & Ton → Status-LED & Tasten (Fenster «Gerät»)
-	if smalltv != null:
-		smalltv.add_controls()                             # 3D-4.19: Sensoren → Zusatz-Bildschirm (virtueller SmallTV)
-	weit.add_controls()                                    # 3D-4.17: the wide camera (card «Kamerabild», part «Weitwinkel-Kamera»)
-	parcours.add_controls()                                # 3D-4.18: card «Testlauf», part «Verfolgungs-Parcours»
-	einbruch.add_controls()                                # card «Testen», part «Einbruch-Abläufe» (einbruch.gd)
-	zwilling.add_controls()
-	add_control("toggle", "dev2_on", "Zweites MoveEye-Gerät in der Welt (eigene Adresse: Port des Simulators + 20, meist 8785)", func(): return dev2.on, func(v): dev2.set_on(v), "Mover")
-	add_control("select", "dev2_place", "Platz des zweiten Geräts", func(): return dev2.place, func(v): dev2.set_place(str(v)), "Mover",
-			{"options": [["opposite", "gegenüber (30 m)"], ["left", "links"], ["right", "rechts"], ["door", "bewacht Zelt / Tür"], ["bike", "bewacht das Velo"], ["car", "bewacht das Auto (Strasse)"]]})
-	add_control("toggle", "mover_on", "Mover (Kettenfahrzeug) simulieren – fahren mit dem grünen Stick unten rechts, den Pfeiltasten oder dem zweiten Stick in MoveEye", func(): return mover_on, func(v): set_mover(v), "Mover")
-	# 3D-3.61: «Patrouille»
-	add_control("toggle", "patrol_on", "Patrouille: der Mover fährt MoveEye die Route ab", func(): return patrol != null and patrol.active, func(v): if patrol != null: patrol.set_active(bool(v)), "Mover")
-	add_control("select", "patrol_mode", "Route", func(): return patrol.mode if patrol != null else "points", func(v): if patrol != null: patrol.mode = str(v); patrol._dirty = true, "Mover",
-			{"options": [["points", "feste Punkte (mit der Maus gesetzt)"], ["area", "zufällig im Bereich"]]})
-	add_control("button", "patrol_points", "Punkte setzen: in die Welt klicken (Rechtsklick = Punkt weg)", null, func(): patrol.edit = "points"; patrol.mode = "points", "Mover")
-	add_control("button", "patrol_area", "Bereich aufziehen (mit gedrückter Maustaste)", null, func(): patrol.edit = "area", "Mover")
-	add_control("button", "patrol_random", "Zufällige Route rund um MoveEye", null, func(): patrol.random_route(), "Mover")
-	add_control("button", "patrol_clear", "Route löschen", null, func(): patrol.clear_route(), "Mover")
-	add_control("slider", "patrol_speed", "Tempo der Patrouille", func(): return patrol.speed if patrol != null else 0.9, func(v): if patrol != null: patrol.speed = float(v), "Mover", {"min": 0.3, "max": 3.0, "step": 0.1, "unit": "m/s"})
-	add_control("slider", "patrol_dwell", "An jedem Punkt umschauen", func(): return patrol.dwell if patrol != null else 5.0, func(v): if patrol != null: patrol.dwell = float(v), "Mover", {"min": 1.0, "max": 20.0, "step": 1.0, "unit": "s"})
-	add_control("slider", "patrol_sweep", "Kopf schwenkt beim Fahren", func(): return patrol.sweep if patrol != null else 70.0, func(v): if patrol != null: patrol.sweep = float(v), "Mover", {"min": 0.0, "max": 160.0, "step": 10.0, "unit": "°"})
-	add_control("toggle", "patrol_follow", "Kopf dreht zu Verdächtigem, der Mover fährt dann langsamer", func(): return patrol.follow if patrol != null else true, func(v): if patrol != null: patrol.follow = bool(v), "Mover")
-	add_control("select", "patrol_judge", "Spiel «Patrouille»: wer erwischt", func(): return patrol_judge, func(v): patrol_judge = str(v), "Mover",
-			{"options": [["mw", "die echte Erkennung von MoveEye"], ["sim", "der Wächter des Simulators (geht ohne Pi)"]]})
-	add_control("button", "rover_place", "📍 Mover versetzen – danach in die Welt klicken (beim Erkunden: Strg + Klick)", null, func(): place_kind = "rover", "Mover")
-	add_control("slider", "mast_h", "Höhe der Kamera (Stange; beim Erkunden Bild auf / ab oder Steuerkreuz)", func(): return mast_h, func(v): set_mast(float(v)), "Mover", {"min": MAST_MIN, "max": MAST_MAX, "step": 0.05, "unit": "m", "live": true})
-	add_control("button", "pad_roles", "🎮 Controller zuteilen (mehrere Controller: Wächter, Schleicher, Mover)", null, func(): padmap.open_roles(), "Mover", {"sub": "Controller"})
-	add_control("button", "pad_test", "🎮 Controller testen (zeigt Stick roh und nach der Drift-Korrektur)", null, func(): _pad_test(), "Mover", {"sub": "Controller"})
-	add_control("toggle", "pad_auto", "Stick-Drift selbst lernen (ein Stick, der 3 s genau gleich steht, gilt als Ruhelage)", func(): return pad_auto, func(v): pad_auto = v; _settings_dirty = true, "Mover", {"sub": "Controller"})
-	add_control("button", "pad_cal", "🎮 Controller kalibrieren (gegen Stick-Drift: Sticks 2 s nicht berühren)", null, func(): start_info = explore.calibrate() if explore != null else "", "Mover", {"sub": "Controller"})
-	add_control("slider", "pad_dead", "Totzone der Sticks (höher = weniger Drift, aber träger)", func(): return pad_dead, func(v): pad_dead = v; _settings_dirty = true, "Mover", {"min": 0.02, "max": 0.5, "step": 0.01, "sub": "Controller"})
-	add_control("slider", "pad_sens", "Empfindlichkeit von Kopf und Ansicht (Stick)", func(): return pad_sens, func(v): pad_sens = float(v), "Mover", {"min": 0.3, "max": 2.5, "step": 0.1, "sub": "Controller"})
-	add_control("toggle", "pad_inv_y", "Y umkehren (Stick hoch = Kopf / Blick runter)", func(): return pad_inv_y, func(v): pad_inv_y = bool(v), "Mover", {"sub": "Controller"})
-	add_control("toggle", "pad_swap", "Sticks tauschen (links Mover / gehen, rechts Kopf / schauen)", func(): return pad_swap, func(v): pad_swap = bool(v), "Mover", {"sub": "Controller"})
-	add_control("toggle", "pad_rumble", "Vibration (erwischt, Treffer, Alarm, die Kamera sieht dich)", func(): return pad_rumble, func(v): pad_rumble = bool(v), "Mover", {"sub": "Controller"})
-	add_control("slider", "explore_speed", "Tempo beim Erkunden (Shift / A = schneller)", func(): return explore.speed if explore != null else 1.6, func(v): if explore != null: explore.speed = v, "Mover", {"min": 0.5, "max": 6.0, "step": 0.1, "unit": "m/s"})
-	add_control("slider", "mover_max", "Höchstgeschwindigkeit des Movers", func(): return mover_max, func(v): mover_max = v, "Mover", {"min": 0.2, "max": 2.0, "step": 0.1, "unit": "m/s"})
-	add_control("button", "mover_home", "Mover zurück an den Startplatz", null, func(): mover_home(), "Mover")
-	add_control("toggle", "door", "Wohnwagentür offen", func(): return door_open, func(v): set_door(v), "Sensoren")
-	add_control("toggle", "gas", "Gas / Rauch", func(): return gas_on, func(v): set_gas(v), "Sensoren")
-	add_control("button", "pir", "PIR Zelt auslösen", null, func(): add_event("PIR Zelt", "pir"), "Sensoren")
-	add_control("button", "bike", "Velo-Sensor auslösen (jemand rüttelt am Velo)", null, func(): add_event("Velo", "tag"), "Sensoren")
-	simint.add_controls()                              # 30.10.2026: Lautsprecher, Störungen, Wärmebild (simint.gd)
-	# 3.23 (Daniel 01.11.2026): ONE switch for the voice (narrator, demo, trailer) - like MoveEye (Licht & Ton → Lautsprecher)
-	add_control("select", "stimme_modus", "Stimme (Erzähler, Vorführung, Trailer)", func(): return Stimme.modus(), func(v): Stimme.set_modus(str(v)),
-			"Licht & Ton", {"sub": "Lautsprecher", "options": [["an", "an"], ["aus", "aus"], ["untertitel", "nur Untertitel"]]})
-	# 3.23: «Bewegung reduzieren» and tour / Blinki in ONE place - like MoveEye (System → Gerät & Hilfe)
-	add_control("select", "reduce_motion", "Bewegung reduzieren (Logo, Blinki, Wippen, Trailer sanfter)", func(): return reduce_motion,
-			func(v): reduce_motion = str(v) if str(v) in ["auto", "an", "aus"] else "auto"; UI.motion_still = motion_reduced(), "System",
-			{"sub": "Gerät & Hilfe", "options": [["auto", "wie das Betriebssystem"], ["an", "an: ruhige Bilder"], ["aus", "aus: alles bewegt sich"]]})
-	add_control("toggle", "tour_auto", "Rundgang mit Blinki beim ersten Start von selbst", func(): return tour_auto, func(v): tour_auto = bool(v), "System", {"sub": "Gerät & Hilfe"})
-	add_control("toggle", "blinki_on", "Blinki zeigen (die kleine Figur im Rundgang)", func(): return blinki_on, func(v): blinki_on = bool(v), "System", {"sub": "Gerät & Hilfe"})
-	thermsensor.add_controls()                         # 3D-4.26: Kamerabild → Wärmebild (palette, sensor, tent, warm car)
-	pir.add_controls()                                 # real-pir-ton: Sensoren → Bewegungsmelder (PIR)
-	mikro.add_controls()                               # real-pir-ton: Licht & Ton → Mikrofon, Umgebungsgeräusche
-	if klang != null:
-		klang.add_controls()                           # Spielton: Licht & Ton → Spiel-Ton (Musik an/aus, vier Regler)
-	simwerte.add_controls()                            # Simulator-Werte: Akku und Strom, Netz-Ausfall testen (power.gd)
-	add_control("toggle", "rifle", "Gewehr (unblutig, nur Tiere)", func(): return rifle_on, func(v): rifle_on = v, "Wildbeobachtung")
-	add_control("button", "shoot_head", "Schuss aus der Kopfkamera", null, func(): shoot_head(), "Wildbeobachtung")
-	add_control("button", "score0", "Punkte auf 0", null, func(): reset_score(), "Wildbeobachtung")
-	zimmertiere.add_controls()                         # Erlebniswelt «mehr Tiere drinnen»: Wildtier → Hamster, Vogel, Spinne
-	add_control("toggle", "news_popup", "Nach einem Update kurz zeigen, was neu ist (und was als Nächstes kommt)", func(): return news_popup, func(v): news_popup = v; _settings_dirty = true, "Updates")
-	add_control("button", "news_show", "Was ist neu?", null, func(): news.show_news(), "Updates")
-	# 3D-3.90: one choice instead of two switches (the old ids stay for MoveEye, hidden in the window)
-	add_control("select", "update_mode", "Neue Versionen", func(): return "dev" if dev_updates else ("auto" if auto_update else "off"),
-			func(v): dev_updates = str(v) == "dev"; set_auto_update(str(v) != "off"), "Updates",
-			{"options": [["off", "nur von Hand (Knopf oben)"], ["auto", "automatisch installieren"], ["dev", "Entwicklungsphase: jede Minute, sofort"]]})
-	# 3D-4.21: group «Entwickler» (like MoveEye, only «Experte»): test bench and faults - the same buttons as in «Testen»
-	# Paket «Entwickler zusammenlegen»: in the panel only «Entwickler-Fenster öffnen»; the rest («devwin») in the window, tab «Schalter»
-	add_control("button", "dev_open", "Entwickler-Fenster öffnen", null, func(): dev_window("schalter"), "Entwickler", {"expert": true})
-	add_control("button", "pruef_open", "Prüfstand öffnen", null, func(): pruef.open(not pruef.visible), "Entwickler", {"expert": true, "devwin": true})
-	add_control("button", "simint_open", "Störungen testen", null, func(): _open_stoer(), "Entwickler", {"expert": true, "devwin": true})
-	preload("res://scripts/spieltest.gd").add_controls(self)   # Spieltest-Assistent + «Spieltest-Meldungen» (wie MoveEye Entwickler)
-	preload("res://scripts/maggie_vorfuehrung.gd").add_controls(self)   # Vorführmodus «Maggie» (Entwickler, Reiter «Vorführung»)
-	preload("res://scripts/trailer.gd").add_controls(self)   # Trailer der Geschichten (Entwickler; dazu oben im Entwickler-Fenster)
-	add_control("toggle", "dev_updates", "Entwicklungsphase: jede Minute nach neuen Versionen schauen und sofort installieren", func(): return dev_updates, func(v): dev_updates = v; _settings_dirty = true, "Updates", {"expert": true, "hide": true})
-	add_control("toggle", "auto_update", "Neue Versionen automatisch installieren", func(): return auto_update, func(v): set_auto_update(v), "Updates", {"expert": true, "hide": true})
-	add_control("button", "update_now", "Jetzt nach Updates suchen und installieren", null, func(): run_update(true, false), "Updates", {"expert": true, "hide": true})
-	add_control("select", "testrun_plan", "Welcher Testlauf", func(): return testrun.plan, func(v): testrun.plan = v, "Testlauf",
-			{"options": testrun.plan_options()})
-	add_control("button", "testrun_start", "Testlauf starten (MoveEye muss verbunden sein)", null, func(): testrun.start(), "Testlauf")
-	add_control("button", "testrun_stop", "Testlauf abbrechen", null, func(): testrun.stop(false), "Testlauf")
-	add_control("button", "rec_start", "● Aufnahme starten (wer wo geht, Zeit, Wetter – höchstens 5 Minuten)", null, func(): recorder.start_rec(), "Testlauf")
-	add_control("button", "rec_stop", "■ Aufnahme beenden und speichern", null, func(): recorder.stop_rec(), "Testlauf")
-	add_control("select", "rec_pick", "Aufnahme", func(): return recorder.pick, func(v): recorder.pick = str(v), "Testlauf", {"options": recorder.options()})
-	add_control("button", "rec_play", "▶ Aufnahme abspielen (genau gleich wie aufgenommen)", null, func(): recorder.play(), "Testlauf")
-	add_control("toggle", "rec_loop", "Immer wieder abspielen", func(): return recorder.loop, func(v): recorder.loop = v, "Testlauf")
-	add_control("button", "rec_stopplay", "Wiedergabe beenden", null, func(): recorder.stop_play(), "Testlauf")
-	add_control("button", "testrun_open", "Letzten Bericht öffnen", null, func(): testrun.open_report(), "Testlauf")
-	add_control("button", "tv_mode", "📺 TV-Modus für den Spielabend (Taste T, ganzer Bildschirm)", null, func(): tv.set_on(not tv.on), "Spiel")
-	add_control("button", "game_wizard", "🎮 Assistent öffnen: Spiel einrichten und starten", null, func(): gamewiz.open_wiz(), "Spiel")
-	# 3D-4.39: the Bergtal adventure starts from the game wizard (quick start card «Bergtal-Abenteuer», gamewiz.gd)
-	add_control("toggle", "game_open", "Spiel öffnen (Handys können mitspielen)", func(): return game.open, func(v): game.set_open(v), "Spiel")
-	add_control("button", "game_start", "▶ Start", null, func(): _game_card_start(), "Spiel")
-	add_control("button", "game_stop", "⏹ Stopp", null, func(): _game_card_stop(), "Spiel")
-	entdecken.register_controls()                       # Erlebniswelt 20–23: Spiel → Entdecken (Buch, Foto, Blinki-Hinweise)
-	add_control("button", "disc_seek", "🙈 Verstecken mit MoveEye", null, func(): _fp_seek(), "Spiel")   # Erlebniswelt 12
-	controls[-1]["only"] = func(): return scene == "ferienpark"   # 3D-4.30: only in the Ferienpark (like «Standort im Ferienpark»)
-	preload("res://scripts/ferienpark_leben.gd").add_controls(self)   # Ferienpark-Leben: 3 tasks (Spiel → Entdecken) + «Leben nach Uhrzeit» (Besuch → Von selbst)
-	add_control("slider", "game_minutes", "Dauer einer Runde", func(): return game_minutes, func(v): game_minutes = v, "Spiel", {"min": 1, "max": 15, "step": 1, "unit": "min"})
-	add_control("select", "game_mode", "Spielart", func(): return game_mode, func(v): game_mode = v, "Spiel",
-			{"options": [["mw", "Gegen MoveEye (echte Erkennung)"], ["guard", "Wächter (ein Spieler oder der Bot-Wächter)"], ["seek", "Verstecken mit dem Mover (Fänger sieht nur die Kamera)"], ["free", "Zonen-Check – ohne Erwischen (zum Testen der Erkennung)"], ["jaeger", "Fehlalarm-Jäger – Tiere und Dinge täuschen MoveEye (nur mit MoveEye)"], ["camera", "ältere: Alle gegen die Kamera"], ["mwhand", "ältere: Team gegen MoveEye (Wächter steuern MoveEye)"], ["patrol", "ältere: Patrouille mit dem Mover"]]})
-	# Balance 30.10.2026: two levels, ONE text (gamerules.gd LEVEL_TXT / GLEVEL_TXT - the same as in the wizard)
-	add_control("select", "game_level", "Schleicher-Stufe (wie schnell die Kamera / MoveEye dich bemerkt)", func(): return game_level, func(v): game_level = v, "Spiel",
-			{"options": preload("res://scripts/gamerules.gd").level_options()})
-	add_control("select", "game_glevel", "Wächter-Stufe (Treffer-Kreis und Energie)", func(): return game.rules.guard_level, func(v): game.rules.cfg_set({"game_glevel": str(v)}), "Spiel",
-			{"options": preload("res://scripts/gamerules.gd").glevel_options()})
-	add_control("toggle", "game_real", preload("res://scripts/gamerules.gd").REAL_TXT, func(): return game.rules.real_hw, func(v): game.rules.cfg_set({"game_real": bool(v)}), "Spiel")
-	add_control("select", "game_lives", "Leben", func(): return str(game_lives), func(v): game_lives = int(v), "Spiel",
-			{"options": [["0", "unbegrenzt"], ["3", "3 Leben"], ["1", "1 Leben"]]})
-	add_control("slider", "game_items", "Kristalle zum Sammeln", func(): return game_items, func(v): game_items = int(v), "Spiel", {"min": 0, "max": 6, "step": 1})
-	# 3D-4.x (Aufräumen): no toggle «Zwei Teams» any more - teams only with the goal «Fahne erobern» (game.sync_teams)
-	add_control("toggle", "game_rescue", "Befreien: Erwischte kommen in die Zelle, ein Teamkollege befreit sie", func(): return game_rescue, func(v): game_rescue = v, "Spiel")
-	add_control("toggle", "game_teamgoal", "Team-Ziel: das Ziel öffnet erst, wenn alle Kristalle gefunden sind", func(): return game_teamgoal, func(v): game_teamgoal = v, "Spiel", ex)
-	add_control("select", "game_goal", "Spielziel", func(): return game_goal, func(v): game_goal = v, "Spiel",
-			{"options": [["reach", "Zum Ziel schleichen"], ["return", "Beute holen und zurückbringen"], ["flag", "Fahne erobern (zwei Teams)"], ["sprint", "Sprint: 90 s, fester Parcours"], ["theft", "Diebstahl: Velo oder Kühlbox zum Ausgang tragen"],
-				["mission", "Mission mit Gegenständen (Portemonnaie, Früchte, Paket)"], ["sweat", "Bring MoveEye ins Schwitzen"]]})
-	add_control("toggle", "game_stones", "Steine werfen zum Ablenken", func(): return game_stones, func(v): game_stones = v, "Spiel")
-	add_control("toggle", "game_powers", "Power-ups: Unsichtbar-Trank (lila) und Turbo (gelb)", func(): return game_powers, func(v): game_powers = v, "Spiel")
-	add_control("toggle", "game_photos", "Erwischt-Fotos (Bild der Kamera beim Erwischen, Galerie am Schluss)", func(): return game_photos, func(v): game_photos = v, "Spiel")
-	# 3D-3.52: the hit sequence (each on its own) and what the game teaches MoveEye
-	add_control("toggle", "game_fx_laser", "Treffer: roter Laser vom Kamerakopf (Handy: Fadenkreuz)", func(): return game_fx_laser, func(v): game_fx_laser = v, "Spiel")
-	add_control("toggle", "game_fx_paint", "Treffer: Farbklecks (Handy: Klecks auf dem Bildschirm)", func(): return game_fx_paint, func(v): game_fx_paint = v, "Spiel")
-	add_control("toggle", "game_fx_flash", "Treffer: Blitz wie ein Radarfoto (Handy: weisser Blitz)", func(): return game_fx_flash, func(v): game_fx_flash = v, "Spiel")
-	add_control("toggle", "game_tap", "Jäger an MoveEye zielt durch Antippen im Livebild", func(): return game_tap, func(v): game_tap = v, "Spiel")
-	add_control("toggle", "game_learn_miss", "Erkennung lernen: Bilder von Spielern, die MoveEye nicht gemeldet hat", func(): return game_learn_miss, func(v): game_learn_miss = v, "Spiel")
-	add_control("toggle", "game_learn_report", "Erkennung lernen: Spielbericht (wie schnell gemeldet, Abstand, Haltung, Licht)", func(): return game_learn_report, func(v): game_learn_report = v, "Spiel")
-	add_control("toggle", "game_learn_paths", "Erkennung lernen: unerkannte Schleichwege als Testlauf speichern", func(): return game_learn_paths, func(v): game_learn_paths = v, "Spiel")
-	add_control("toggle", "game_blind_bonus", "Bonus für blinde Flecken (+20 Punkte pro Sekunde sichtbar, aber nicht gemeldet)", func(): return game_blind_bonus, func(v): game_blind_bonus = v, "Spiel")
-	add_control("button", "game_report_send", "📊 Spielberichte senden (GitHub-Schlüssel vom Prüfstand, sonst Schreibtisch)", null, func(): _game_report_send(), "Spiel")
-	add_control("slider", "game_hides", "Verstecke (Büsche: 8 s unsichtbar)", func(): return game_hides, func(v): game_hides = int(v), "Spiel", {"min": 0, "max": 6, "step": 1})
-	add_control("toggle", "game_decoy", "Lockvogel erlaubt (lockt die Kamera weg, Teampunkte)", func(): return game_decoy, func(v): game_decoy = v, "Spiel")
-	add_control("toggle", "game_night", "Nacht-Runde mit Taschenlampen", func(): return game_night, func(v): game_night = v, "Spiel")
-	add_control("toggle", "game_events", "Zufallsereignisse (Gewitter, Hund, Auto)", func(): return game_events, func(v): game_events = v, "Spiel")
-	add_control("slider", "game_checkpoints", "Checkpoints (+150 Punkte)", func(): return game_checkpoints, func(v): game_checkpoints = int(v), "Spiel", {"min": 0, "max": 3, "step": 1})
-	add_control("select", "game_bots", "Computer-Spieler (Bots), die mitschleichen", func(): return str(game_bots), func(v): game_bots = int(v); game.set_bots(game_bots), "Spiel",
-			{"options": [["0", "keine"], ["1", "1 Bot"], ["2", "2 Bots"], ["3", "3 Bots"]]})
-	add_control("toggle", "game_tutorial", "Übungsrunde: Schritt für Schritt erklärt, niemand wird erwischt", func(): return game_tutorial, func(v): game_tutorial = v, "Spiel")
-	add_control("toggle", "game_daily", "Tagesaufgabe: heute für alle dieselbe Szene, dasselbe Ziel und dieselben Startpunkte", func(): return game_daily, func(v): game_daily = v, "Spiel")
-	add_control("toggle", "game_ghost", "Geisterläufer: der eigene beste Weg läuft als Geist mit (nur die Spieler sehen ihn)", func(): return game_ghost, func(v): game_ghost = v, "Spiel")
-	add_control("toggle", "game_heart", "Herzschlag, wenn die Kamera dich gleich sieht (Handy vibriert)", func(): return game_heart, func(v): game_heart = v, "Spiel")
-	add_control("toggle", "game_botguard", "Bot-Wächter, wenn niemand Wächter sein will (Spielart «Wächter»)", func(): return game_botguard, func(v): game_botguard = v, "Spiel")
-	add_control("toggle", "game_kiguard", "🤖 MoveEye als KI-Wächter (Runden mit Wächter: MoveEye bewacht selbst – echte Erkennung, Kopf folgt, Auslöser-Autopilot; braucht MoveEye)",
-			func(): return game_kiguard, func(v): game_kiguard = bool(v), "Spiel")
-	add_control("button", "game_kig_reset", "Liste «gegen die KI» zurücksetzen", null, func(): if game != null: game.kig.command({"op": "reset"}), "Spiel")
-	add_control("button", "game_local", "Hier am PC mitspielen (Tastatur, Maus oder Controller)", null, func(): localplay.start("runner"), "Spiel")
-	add_control("button", "game_local_guard", "Hier am PC Wächter sein (Kopf drehen, «Erwischt!»)", null, func(): localplay.start("guard"), "Spiel")
-	add_control("toggle", "game_tasks", "Aufgabe für jede Runde (z. B. nur kriechend ins Ziel, Bonus)", func(): return game_tasks, func(v): game_tasks = v, "Spiel")
-	add_control("toggle", "game_autohandicap", "Handicap für den Ersten der Rangliste", func(): return game_autohandicap, func(v): game_autohandicap = v, "Spiel")
-	add_control("button", "game_board_reset", "Rangliste des Abends zurücksetzen", null, func(): game.board_reset(), "Spiel")
-	add_control("toggle", "game_spectate", "Zuschauer-Kamera: fliegt bei Spielstart selbst übers Spielfeld", func(): return game_spectate, func(v): game_spectate = v, "Spiel")
-	add_control("toggle", "spectate_now", "Zuschauer-Kamera jetzt", func(): return spectate, func(v): spectate_start() if v else spectate_stop(), "Spiel")
-	add_control("toggle", "game_noise", "Mikrofon hört laute Schritte", func(): return game_noise, func(v): game_noise = v, "Spiel", ex)
-	add_control("toggle", "game_cones", "Sichtfeld der Kameras zeigen (für Anfänger)", func(): return game_cones, func(v): game_cones = v, "Spiel")
-	add_control("toggle", "game_random", "Start und Ziel zufällig", func(): return game_random, func(v): game_random = v, "Spiel", ex)
-	add_control("select", "game_quality", "Bild auf dem Handy", func(): return game_quality, func(v): game_quality = v, "Spiel",
-			{"options": [["small", "klein (schnell)"], ["mid", "mittel"], ["big", "gross (braucht mehr Leistung)"]], "expert": true})
-	add_control("slider", "game_max", "Läufer höchstens (mehr Spieler schauen zu)", func(): return game_max, func(v): game_max = int(v), "Spiel",
-			{"min": 2, "max": 12, "step": 1, "tip": "Jeder Läufer ist ein eigenes 3D-Bild auf dem PC und ein eigenes Video übers Netz. Laptop: etwa 4, PC mit Grafikkarte: 6–8. Ab 5 Läufern werden die Bilder automatisch kleiner."})
-	add_control("toggle", "game_guard", "Ohne MoveEye bewacht der Kopf selbst", func(): return game_guard, func(v): game_guard = v, "Spiel", ex)
-	for tl in [["light", "💡 Licht"], ["siren", "📢 Sirene"], ["scan", "📡 Scan"], ["zoom", "🔍 Zoom"]]:   # 3D-4.x: tools of the guards at MoveEye (gametools.gd, part 543)
-		var tid: String = tl[0]
-		add_control("button", "game_tool_" + tid, "Wächter an MoveEye: " + tl[1], null, func(): game.tools.use(null, tid, "MoveEye"), "Spiel")
-	add_control("toggle", "autostart", "Mit dem PC starten (sendet gleich an MoveEye)", func(): return autostart_on, func(v): set_autostart(v), "Start mit dem PC")
-	add_control("toggle", "autostart_min", "Dabei klein (nur das Kästchen in der Ecke)", func(): return autostart_min, func(v): autostart_min = v, "Start mit dem PC")
-	add_control("toggle", "autostart_mwpc", "Dabei auch MoveEye auf diesem PC starten (ohne Pi)", func(): return autostart_mwpc, func(v): autostart_mwpc = v, "Start mit dem PC")
-	if OS.get_name() == "Windows":
-		add_control("toggle", "autostart_lock", "Danach den Bildschirm sperren", func(): return autostart_lock, func(v): autostart_lock = v, "Start mit dem PC")
-		add_control("button", "autologon", "Ohne Anmelden: automatische Anmeldung von Windows einrichten …", null, func(): setup_autologon(), "Start mit dem PC", {"expert": true})
-	# 3D-3.69: what the «Kinder» mode shows (only the adults can change it - in the Kinder mode these settings are hidden)
-	add_control("toggle", "kids_scary", "Kinder-Modus: Wildschwein, Wolf und Luchs", func(): return kids_scary, func(v): kids_scary = v, "Kinder-Modus")
-	add_control("toggle", "kids_thief", "Kinder-Modus: Schleicher (Dieb) und Einbrecher", func(): return kids_thief, func(v): kids_thief = v, "Kinder-Modus")
-	add_control("toggle", "kids_laser", "Kinder-Modus: Laser-Treffer im Spiel", func(): return kids_laser, func(v): kids_laser = v, "Kinder-Modus")
-	add_control("toggle", "kids_sound", "Kinder-Modus: Töne bei den Knöpfen", func(): return kids_sound, func(v): kids_sound = v, "Kinder-Modus")
-	add_control("toggle", "kids_ask", "Kinder-Modus: zum Verlassen eine Rechenaufgabe stellen (aus = ein Klick auf «Erwachsene» genügt)", func(): return kids_ask, func(v): kids_ask = bool(v), "Kinder-Modus")
-	# F1 (Konzept-Wunsch): EINE Wahl «Grafik-Modus» Automatisch / Lite / Normal / Hoch; die Feinheiten (Grafik-Details,
-	# «Automatisch leichter», Tiefenschärfe) nur unter «Experte»
-	add_control("select", "grafik_mode", "Grafik-Modus", func(): return grafik_mode, func(v): set_grafik_mode(str(v)), "Grafik",
-			{"options": Quality.MODES, "tip": "Hoch: Licht prallt von Flächen ab, Dunst, weiche Schatten, Spiegelungen auf Wasser und nassen Flächen, bessere Oberflächen. Braucht eine gute Grafikkarte (Vulkan); der Simulator startet dafür einmal neu."})
-	add_control("select", "quality", "Grafik-Details (Schatten, Leuchten, Wolken)", func(): return quality, func(v): _set_quality(v), "Grafik",
-			{"expert": true, "options": [["simple", "einfach (schnell)"], ["medium", "mittel"], ["nice", "schön (Schatten, Leuchten, Wolken)"],
-						 ["ultra", "ultra (für starke Grafikkarten; mit Vulkan noch mehr Effekte)"]]})
-	add_control("toggle", "grafik_dof", "Hoch: Tiefenschärfe in der freien Ansicht (die Kamerabilder für MoveEye bleiben scharf)", func(): return hoch.dof_free, func(v): hoch.set_dof(bool(v)), "Grafik", ex)
-	add_control("toggle", "cam_wippen", "Ansicht wippt beim Gehen (Spielfigur)", func(): return cam_wippen, func(v): cam_wippen = bool(v), "Grafik",
-			{"expert": true, "tip": "Die Ansicht hinter der Spielfigur geht mit den Schritten leicht auf und ab. Aus, wenn dir davon schwindlig wird. Nur bei Grafik «schön» oder «ultra»."})
-	add_control("toggle", "foto_tex", "Foto-Texturen im Bergtal", func(): return foto_tex, func(v): set_foto_tex(bool(v)), "Grafik",
-			{"expert": true, "tip": "Wiese, Fels, Geröll, Alpenrosen, Wege und Seegrund aus echten Fotos (Daniel Bärschi). Aus = die gezeichneten Farben wie früher. In Lite immer aus."})
-	add_control("slider", "view_scale", "Schärfe der Ansicht im Fenster (weniger = schneller; die Bilder für MoveEye bleiben scharf)", func(): return view_scale, func(v): set_view_scale(float(v)), "Grafik", {"min": 0.4, "max": 1.0, "step": 0.05, "unit": "×"})
-	add_control("select", "win_fps", "Bilder pro Sekunde im Fenster", func(): return str(win_fps), func(v): win_fps = int(v); _perf_orig.erase("win_fps"); _settings_dirty = true, "Grafik",
-			{"options": [["0", "so viele wie möglich"], ["60", "60"], ["30", "30 (spart Strom)"], ["20", "20 (schwacher PC)"]]})
-	add_control("toggle", "auto_perf", "Automatisch leichter, wenn der PC zu langsam ist", func(): return auto_perf, func(v): auto_perf = v; _slow_n = 0, "Grafik", ex)
-	add_control("toggle", "eco_idle", "Simulator ruht, wenn niemand zuschaut (rechnet nur, wenn das Fenster offen oder MoveEye verbunden ist)", func(): return eco_idle, func(v): eco_idle = v, "Grafik", ex)
-	add_control("toggle", "meadow", "Gras und Blumen auf der Wiese", func(): return meadow_on, func(v): set_meadow(v), "Grafik", ex)
-	add_control("toggle", "map_on", "Übersichtskarte oben links (M)", func(): return map_on, func(v): set_map(v), "Grafik")
-	add_control("toggle", "live_on", "Livebild unter der Karte (L)", func(): return live_on, func(v): set_live(v), "Grafik")
-	add_control("select", "live_cam", "Livebild: welche Kamera", func(): return str(live_cam), func(v): set_live(live_on, int(v)), "Grafik",
-			{"options": [["0", "Kamera 1 (Kopf)"], ["1", "Kamera 2"], ["2", "Wärmebild"]]})
-	add_control("slider", "live_size", "Livebild: Breite", func(): return live_size, func(v): set_live(live_on, -1, float(v)), "Grafik",
-			{"min": 160, "max": 520, "step": 20, "unit": "px"})
-	# Menüs A, Punkt 5: was in «Testen → Mehr: Aufstellen, Erkunden, Handy-Simulator» - now where it belongs (planner = tile
-	# «Aufstellen», Erkunden = bar, feedback = «Mehr»); the phone view as a normal control next to map and live picture
-	add_control("button", "phone_sim", "Handy- / Tablet-Simulator (P)", null, func(): _toggle_phone(), "Grafik", {"expert": true})
-	_menu_merge()
+	_mod("einstellungen")._register_controls()
 
 
 func _cget(id: String):
-	for c in controls:
-		if c.id == id and c["get"] != null:
-			return c["get"].call()
-	return null
+	return _mod("einstellungen")._cget(id)
 
 
 func _cset(id: String, v) -> void:
-	for c in controls:
-		if c.id == id and c["set"] != null:
-			c["set"].call(v)
-			return
+	_mod("einstellungen")._cset(id, v)
 
 
 func _menu_merge() -> void:
-	"""Menüs A, Punkt 4 (Daniel 31.10.2026): one control instead of 2–4 with the same name. It only reads and sets the old
-	controls (ALIAS_IDS: they stay for /control, the test runs, the Prüfstand and the saved settings)"""
-	add_control("select", "linse_tropfen", "Tropfen auf der Linse",
-			func():
-				if bool(_cget("cond_drops")):
-					return "immer"
-				if not bool(_cget("lens_drops")):
-					return "aus"
-				return "echt" if bool(_cget("w_lens")) else "regen",
-			func(v):
-				_cset("cond_drops", str(v) == "immer")
-				_cset("lens_drops", str(v) != "aus")
-				if str(v) in ["regen", "echt"]:
-					_cset("w_lens", str(v) == "echt"),
-			"Kamerabild", {"options": [["aus", "aus"], ["regen", "bei Regen (einfach)"],
-					["echt", "bei Regen wie echt (Tropfen haften und rinnen, Linse beschlägt)"], ["immer", "immer, auch ohne Regen"]]})
-	add_control("select", "scheinwerfer", "Scheinwerfer in der Nacht",
-			func():
-				var a := bool(_cget("cond_headlights"))
-				var b := bool(_cget("fa_sweep"))
-				return "beides" if a and b else ("autos" if a else ("kegel" if b else "aus")),
-			func(v):
-				_cset("cond_headlights", str(v) in ["autos", "beides"])
-				_cset("fa_sweep", str(v) in ["kegel", "beides"]),
-			"Kamerabild", {"options": [["aus", "aus"], ["kegel", "ab und zu streift ein Lichtkegel über Wände und Zelt"],
-					["autos", "immer wieder fahren Autos vorbei"], ["beides", "beides"]]})
-	var months := [["today", "wie heute (echtes Datum)"]]
-	var mn := ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"]
-	var sn := ["Winter", "Winter", "Frühling", "Frühling", "Frühling", "Sommer", "Sommer", "Sommer", "Herbst", "Herbst", "Herbst", "Winter"]
-	for i in range(12):
-		months.append([str(i + 1), "%s (%s)" % [mn[i], sn[i]]])
-	months.append(["ohne", "ohne Jahreszeit (Pflanzen immer wie im Sommer, Sonne wie heute)"])
-	add_control("select", "jahreszeit", "Jahreszeit (Sonne, Tageslänge, Pflanzen, Belegung)",
-			func(): return "ohne" if not seasons_on else str(season),
-			func(v):
-				if str(v) == "ohne":
-					_cset("season", "today")
-					_cset("seasons_on", false)
-					return
-				if not seasons_on:
-					_cset("seasons_on", true)
-				if jahreszeiten != null:
-					jahreszeiten.mode = "auto"                 # the month decides (jz_mode would set the month again at the start)
-					jahreszeiten.save()
-				_cset("season", str(v)),
-			"Szene", {"options": months})
-	add_control("select", "tagesablauf", "Tagesablauf (wer wann kommt)",
-			func():
-				var a := bool(_cget("daily_life"))
-				var b := bool(_cget("m_plan"))
-				return "beides" if a and b else ("zeit" if a else ("platz" if b else "aus")),
-			func(v):
-				_cset("daily_life", str(v) in ["zeit", "beides"])
-				_cset("m_plan", str(v) in ["platz", "beides"]),
-			"Besuch", {"options": [["aus", "aus (Besuch kommt zufällig)"], ["zeit", "jeder kommt zu seiner Zeit (Fuchs nachts, Reh in der Dämmerung, Briefträger um 10 Uhr)"],
-					["beides", "dazu der Alltag auf dem Campingplatz (morgens WC und Dusche, abends draussen sitzen)"],
-					["platz", "nur der Alltag auf dem Campingplatz"]]})
+	_mod("einstellungen")._menu_merge()
 
 
 const VISITOR_KINDS_ALL := ["person", "child", "jogger", "fox", "deer", "boar", "cat", "dog", "badger", "hare", "hedgehog", "wolf", "marten", "squirrel",
@@ -4523,107 +3807,23 @@ func _set_speed(v: float) -> void:
 
 
 func set_view_scale(v: float) -> void:
-	if not _perf_auto:
-		_perf_orig.erase("view_scale")
-	view_scale = clampf(v, 0.4, 1.0)
-	get_viewport().scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR
-	get_viewport().scaling_3d_scale = view_scale
-	_settings_dirty = true
+	_mod("start").set_view_scale(v)
 
 
 func _perf_tick() -> void:
-	"""3D-3.75: the window draws fewer than 14 pictures per second for 20 s: one step lighter (quality, then sharpness of the
-	view, then the grass). The pictures for MoveEye are not touched."""
-	if not auto_perf or not win_open or not sim_active or now() - _perf_t < 30.0 or busy_with() != "":
-		_slow_n = 0 if not auto_perf else _slow_n
-		return
-	var lim: int = win_fps if win_fps > 0 else 60
-	if Engine.get_frames_per_second() < min(14.0, lim * 0.7):
-		_slow_n += 1
-	else:
-		_slow_n = max(0, _slow_n - 2)
-	if _slow_n < 40:
-		return
-	_slow_n = 0
-	_perf_t = now()
-	for k_ in ["quality", "view_scale", "meadow_on"]:     # 3D-3.88: only for this session - the own choice stays saved
-		if not _perf_orig.has(k_):
-			_perf_orig[k_] = get(k_)
-	_perf_auto = true
-	var lvl: int = ["simple", "medium", "nice", "ultra"].find(quality)
-	var what := ""
-	if lvl > 0:
-		_set_quality(["simple", "medium", "nice", "ultra"][lvl - 1])
-		what = "Grafik «%s»" % ["einfach", "mittel", "schön"][lvl - 1]
-	elif view_scale > 0.75:
-		set_view_scale(0.75)
-		what = "Ansicht 75 % scharf"
-	elif meadow_on:
-		set_meadow(false)
-		what = "ohne Gras und Blumen"
-	elif view_scale > 0.55:
-		set_view_scale(0.55)
-		what = "Ansicht 55 % scharf"
-	else:
-		_perf_auto = false
-		return
-	_perf_auto = false
-	start_info = "Der PC ist langsam – leichter gemacht: %s (nur bis zum Neustart; Bilder für MoveEye unverändert)" % what
-	print("auto graphics: " + what)
+	_mod("start")._perf_tick()
 
 
 func _set_quality(v: String) -> void:
-	if not _perf_auto:
-		_perf_orig.erase("quality")
-	quality = v
-	_apply_quality()
+	_mod("start")._set_quality(v)
 
 
 func auto_quality() -> String:
-	"""3D-3.33: first start - the graphics level from the graphics card (later the own choice is kept)"""
-	var a := RenderingServer.get_video_adapter_name().to_lower() + " " + RenderingServer.get_video_adapter_vendor().to_lower()
-	if Engine.get_architecture_name() in ["arm64", "arm32"] or a.contains("v3d") or a.contains("videocore"):
-		return "simple"                                   # 3D-3.43: Raspberry Pi - the light graphics
-	if in_vm or a.contains("llvmpipe") or a.contains("swiftshader") or a.contains("basic render") or a.contains("software"):
-		return "simple"
-	if a.contains("nvidia") or a.contains("geforce") or a.contains("radeon") or a.contains("amd") or a.contains("arc"):
-		return "nice"
-	return "medium"                                       # Intel and other built-in graphics
+	return _mod("start").auto_quality()
 
 
 func _apply_quality() -> void:
-	if not quality in ["simple", "medium", "nice", "ultra"]:
-		quality = "nice"
-	var lvl: int = ["simple", "medium", "nice", "ultra"].find(quality)
-	var nice := lvl >= 2
-	sun.shadow_enabled = lvl >= 1
-	sun.directional_shadow_max_distance = [40.0, 60.0, 80.0, 120.0][lvl]
-	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS if lvl <= 1 else DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS
-	white_light.shadow_enabled = lvl >= 1
-	env.glow_enabled = lvl >= 1
-	env.glow_intensity = 0.5 if lvl == 1 else 0.7
-	env.glow_bloom = 0.0 if lvl < 2 else 0.06
-	RenderingServer.directional_shadow_atlas_set_size(2048 if lvl <= 1 else 4096, true)
-	var aa: Viewport.MSAA = [Viewport.MSAA_DISABLED, Viewport.MSAA_2X, Viewport.MSAA_2X, Viewport.MSAA_4X][lvl]
-	for i in range(2):
-		vps[i].msaa_3d = aa
-	get_viewport().msaa_3d = aa
-	sky_mat.set_shader_parameter("detail", 1.0 if lvl >= 1 else 0.0)
-	for m in mats.values():
-		_mat_detail(m, lvl >= 1)
-	# Forward+ (Vulkan) only: light bouncing off surfaces, shadows in corners, reflections, light shafts in the fog
-	var fwd: bool = RenderingServer.get_rendering_device() != null       # Vulkan / Forward+ (not the OpenGL renderer)
-	env.ssao_enabled = fwd and lvl >= 2
-	env.ssao_intensity = 1.6
-	env.ssil_enabled = fwd and lvl >= 3
-	env.ssr_enabled = fwd and lvl >= 3
-	env.sdfgi_enabled = fwd and lvl >= 3
-	env.volumetric_fog_enabled = fwd and lvl >= 3
-	env.volumetric_fog_density = 0.008
-	env.volumetric_fog_length = 80.0
-	get_viewport().use_taa = fwd and lvl >= 3
-	if hoch != null:
-		hoch.after_quality()                       # F1: «Hoch» on top of the chosen level (or away again)
+	_mod("start")._apply_quality()
 
 
 # ---- 3D-4.25 «Lite» (Wunsch Daniel 31.10.2026): the same simulator, lighter for the Raspberry Pi 5 ---------------------------
@@ -4636,12 +3836,7 @@ const LITE_KEYS := ["quality", "view_scale", "win_fps", "max_visitors"]
 
 
 func set_grafik_mode(v: String) -> void:
-	grafik_mode = Quality.mode_id(v)
-	_grafik_keep = ""                                     # von Hand gewählt: das gilt (auch nach --grafik)
-	lite_update()
-	if hoch != null and (grafik_mode == "hoch") != (hoch.stufe == "hoch"):
-		hoch.set_stufe(grafik_mode)                       # F1: Hoch = Neustart mit Forward+; jede andere Wahl = wieder normal
-	_settings_dirty = true
+	_mod("start").set_grafik_mode(v)
 
 
 func set_foto_tex(v: bool) -> void:
@@ -4655,112 +3850,23 @@ func set_foto_tex(v: bool) -> void:
 
 
 func lite_update() -> void:
-	"""Lite on or off - from «Grafik-Modus» and the hardware (quality.gd)"""
-	var why := ""
-	if grafik_mode == "lite":
-		why = "von Hand"
-	elif grafik_mode == "auto":
-		var w := Quality.weak_reason()
-		if w != "":
-			why = "automatisch: " + w
-		elif _lite_slow:
-			why = "automatisch: wenige Bilder pro Sekunde beim Start"
-	lite_why = why
-	var on := why != ""
-	if Engine.has_meta("lite") and on == Quality.lite():
-		return
-	Quality.set_lite(on)
-	_lite_apply(on)
-	print("graphics mode %s -> Lite %s%s" % [grafik_mode, "on" if on else "off", (" (" + why + ")") if on else ""])
+	_mod("start").lite_update()
 
 
 func _lite_apply(on: bool) -> void:
-	if on:
-		for k_ in LITE_KEYS:
-			if not _perf_orig.has(k_):
-				_perf_orig[k_] = get(k_)
-		_perf_auto = true                                  # not the own choice: the setters keep _perf_orig
-		_set_quality("simple")
-		set_view_scale(minf(view_scale, Quality.SCALE))
-		if win_fps <= 0 or win_fps > Quality.FPS:
-			win_fps = Quality.FPS
-		max_visitors = mini(max_visitors, Quality.VISITORS)
-		_perf_auto = false
-		view_w = mini(view_w, Quality.VIEW_W)
-		view_q = minf(view_q, Quality.VIEW_Q)
-	else:
-		for k_ in LITE_KEYS:
-			if _perf_orig.has(k_):
-				var v = _perf_orig[k_]
-				_perf_orig.erase(k_)
-				if k_ == "quality":
-					quality = str(v)
-					_apply_quality()
-				elif k_ == "view_scale":
-					set_view_scale(float(v))
-				else:
-					set(k_, int(v))
-	for pa in [[rain, 2500], [snow, 3000], [splashes, 700]]:
-		if pa[0] != null:
-			pa[0].amount = Quality.n(pa[1])
-	_lite_scene(on)
-	_settings_dirty = true
+	_mod("start")._lite_apply(on)
 
 
 func _lite_scene(on: bool) -> void:
-	"""the things of the scene: fewer particles, thinner grass, small things far away not drawn (visibility range)"""
-	if scene_parent == null:
-		return
-	var todo: Array = [scene_parent]
-	while not todo.is_empty():
-		var n = todo.pop_back()
-		todo.append_array(n.get_children())
-		if n is CPUParticles3D or n is GPUParticles3D:
-			if not n.has_meta("full_n"):
-				n.set_meta("full_n", n.amount)
-			n.amount = maxi(1, roundi(int(n.get_meta("full_n")) * Quality.KEEP)) if on else int(n.get_meta("full_n"))
-		elif n is MultiMeshInstance3D and n.is_in_group("meadow"):
-			if n.multimesh != null:
-				n.multimesh.visible_instance_count = roundi(n.multimesh.instance_count * Quality.KEEP) if on else -1
-		elif n is GeometryInstance3D:
-			if on:
-				var sz: Vector3 = n.get_aabb().size * n.global_transform.basis.get_scale()
-				if maxf(sz.x, maxf(sz.y, sz.z)) < 1.5 and n.visibility_range_end == 0.0:
-					n.visibility_range_end = Quality.FAR
-					n.set_meta("lite_far", true)
-			elif n.has_meta("lite_far"):
-				n.visibility_range_end = 0.0
-				n.remove_meta("lite_far")
+	_mod("start")._lite_scene(on)
 
 
 func _lite_tick() -> void:
-	"""«Automatisch» on a normal PC: are the first seconds very slow (under 12 pictures per second)? Then Lite for this session"""
-	if grafik_mode != "auto" or Quality.lite() or _lite_slow or not _lite_auto_ok:
-		return
-	var age := now() - _lite_t0
-	if age < 6.0 or age > 40.0 or not win_open or not sim_active or busy_with() != "":
-		return
-	_lite_fps.append(Engine.get_frames_per_second())
-	if _lite_fps.size() < 16:
-		return
-	var avg := 0.0
-	for f in _lite_fps:
-		avg += float(f) / _lite_fps.size()
-	_lite_fps.clear()
-	_lite_t0 = -1000.0                                   # decided once per start
-	if avg < 12.0:
-		_lite_slow = true
-		lite_update()
-		start_info = "Der Rechner ist langsam (%d Bilder/s) – «Grafik-Modus: Automatisch» hat Lite eingeschaltet (System → Grafik)." % roundi(avg)
+	_mod("start")._lite_tick()
 
 
 func perf_info() -> Dictionary:
-	"""for «Leistung» in the self-diagnosis and «Über»: frames per second, renderer, Lite, resolution"""
-	var vs: Vector2 = get_viewport().get_visible_rect().size
-	var k: float = get_viewport().scaling_3d_scale
-	return {"fps": Engine.get_frames_per_second(), "renderer": Quality.renderer(), "lite": Quality.lite(), "why": lite_why,
-			"mode": grafik_mode, "res": "%d × %d" % [roundi(vs.x * k), roundi(vs.y * k)], "scale": roundi(k * 100.0),
-			"cams": "%d × %d" % [CAM_W[0], CAM_H[0]], "max_fps": Engine.max_fps}
+	return _mod("start").perf_info()
 
 
 func _game_card_start() -> void:
@@ -4784,22 +3890,7 @@ func _game_card_stop() -> void:
 
 
 func control_info() -> Dictionary:
-	var out := []
-	for c in controls:
-		if c.has("only") and not bool(c["only"].call()):
-			continue                                     # 3D-4.28: e.g. «Standort im Ferienpark» only in that scene
-		var d := {"type": c.type, "id": c.id, "label": c.label, "group": c.group}
-		d.merge(c.extra)
-		if c["get"] != null:
-			var v = c["get"].call()
-			d["value"] = snappedf(v, 0.001) if typeof(v) == TYPE_FLOAT else v
-		if c.has("ro"):
-			d["ro"] = bool(c["ro"].call())            # Aufräumen 2: the page of MoveEye shows it read-only too
-		out.append(d)
-	return {"ok": true, "v": 1, "name": Versionen.label(VERSION), "version": VERSION,
-				"scenarios": scenarios(), "scenario": Worlds.world_of(scene), "place": scene if Worlds.is_place(scene) else "",
-			"controls": out, "status": status_text(), "upload": null, "groups_on": _groups_on(),
-			"game": {"open": game != null and game.open, "url": game.address() if game != null and game.open else "", "players": game.count() if game != null else 0}}
+	return _mod("status").control_info()
 
 
 func control(d: Dictionary) -> Dictionary:
@@ -4810,704 +3901,18 @@ func control(d: Dictionary) -> Dictionary:
 
 
 func _control(d: Dictionary) -> Dictionary:
-	var a := str(d.get("action", "get"))
-	var cid := str(d.get("id", ""))
-	if a == "scenario":
-		solo_scene = cid if bool(d.get("solo", false)) else ""   # 3D-4.x: this scene alone, without its world (training night)
-		if not set_scene(cid):
-			return {"ok": false, "error": "unknown scenario"}
-	elif a == "welt":                                  # 3D-4.x Welten: the worlds, their places and what is loaded (worlds.gd)
-		return Worlds.info(self)
-	elif a == "delete":
-		return {"ok": false, "error": "cannot be deleted"}
-	elif a == "kopf":                                  # 639t: the one header - state, or {"press": id} like a click
-		if kopf == null:
-			return {"ok": false, "error": "no header"}
-		if d.has("press"):
-			kopf.press(str(d["press"]), kopf.btns.get(str(d["press"]), kopf.btns.get("menu")))
-		return {"ok": true, "kopf": kopf.state()}
-	elif a == "lang":                                  # Sprachen (i18n.gd): switch / translate, for tests
-		return preload("res://scripts/i18n.gd").control(d)
-	elif a == "ui_width":                              # for tests: is the content of the panel wider than the panel?
-		_fold_all("open")
-		var sim_was := ui_simple
-		set_simple(false)
-		var w := ui_box.get_combined_minimum_size().x
-		set_simple(sim_was)
-		var wide := []
-		var stack: Array = [ui_box]
-		while not stack.is_empty():
-			var n: Node = stack.pop_back()
-			for ch in n.get_children():
-				if ch is Control and ch.visible:
-					var mw_: float = ch.get_combined_minimum_size().x
-					if mw_ > 330.0:
-						wide.append("%s %s %d" % [ch.get_class(), str(ch.get("text")).left(30), int(mw_)])
-					stack.append(ch)
-		return {"ok": true, "content_min": w, "panel": ui_root.size.x, "scroll_space": ui_box.get_parent().size.x, "wide": wide}
-	elif a == "world":                                 # for tests: life in the world
-		var sm := []
-		for n in get_tree().get_nodes_in_group("smoke"):
-			sm.append([n.emitting, n.global_position, n.visible, n.is_visible_in_tree()])
-		return {"ok": true, "smoke": str(sm), "fireflies": [fireflies.emitting, fireflies.is_visible_in_tree()], "cloth": get_tree().get_nodes_in_group("cloth").size()}
-	elif a == "busy":                                  # one lock with MoveEye: who has the world right now ('' = free)
-		if bool(d.get("with_mw", false)):              # for tests / display: also what MoveEye itself does
-			_ctl_frame = -1
-		return {"ok": true, "busy": busy_with(str(d.get("except", "")))}
-	elif a == "test_report":                           # the test run: progress and the last report
-		return testrun.state()
-	elif a == "test_start":                            # MoveEye starts a test run (3D-3.27): {"plan": "standard" | "quick" | "hard" | "night"}
-		var err: String = testrun.start(str(d.get("plan", testrun.plan)), d.get("cams", []) if typeof(d.get("cams", [])) == TYPE_ARRAY else [], int(d.get("mult", 1)), int(d.get("seed", 1)))
-		var st: Dictionary = testrun.state()
-		st["ok"] = err == ""
-		if err != "":
-			st["error"] = err
-		return st
-	elif a == "test_stop":
-		testrun.stop(false)
-		return testrun.state()
-	elif a == "game":                                  # for tests: the game (players, meter, round)
-		var ps := []
-		for p in game.players:
-			if p != null:
-				ps.append({"slot": p["slot"], "name": p["name"], "x": snappedf(p["actor"].position.x, 0.01), "z": snappedf(p["actor"].position.z, 0.01),
-						"susp": snappedf(p["susp"], 0.1), "seen": p["seen"], "state": p["state"], "caught": p["caught"], "posture": p["actor"].ctl_posture,
-						"online": p["sock"] != null, "vis": snappedf(game.visibility(p), 0.01), "cams": game.vis_debug(p)})
-		return {"ok": true, "open": game.open, "round": game.round_state, "players": ps, "guard": game.guard_auto, "guard_yaw": snappedf(game.guard_yaw, 0.01),
-				"goal": [snappedf(game.goal.x, 0.01), snappedf(game.goal.z, 0.01)], "address": game.address(),
-				"items": game.items.map(func(it): return [snappedf(it["pos"].x, 0.1), snappedf(it["pos"].z, 0.1), it["by"], snappedf(it["pos"].y, 0.01), snappedf(ground_y(it["pos"].x, it["pos"].z), 0.01)]),
-				"goal_y": [snappedf(game.goal.y, 0.01), snappedf(ground_y(game.goal.x, game.goal.z), 0.01)], "insects": insects.emitting,
-				"powers": game.powers.map(func(w): return [w["kind"], snappedf(w["pos"].x, 0.1), snappedf(w["pos"].z, 0.1), float(w["back"]) > 0.0]),
-				"last_minute": game.last_minute,
-				"hides": game.hides.map(func(h): return [snappedf(h["pos"].x, 0.1), snappedf(h["pos"].z, 0.1)]),
-				"cps": game.checkpoints.map(func(h): return [snappedf(h["pos"].x, 0.1), snappedf(h["pos"].z, 0.1)]),
-				"ev": game.ev_kind, "gallery": game.gallery.size(), "board": game.board_list(), "hour": snappedf(hour(), 0.1)}
-	elif a == "game_put":                              # for tests: put a player somewhere
-		var p2 = game.players[clampi(int(d.get("slot", 0)), 0, 3)]
-		if p2 == null:
-			return {"ok": false, "error": "no such player"}
-		p2["actor"].position = free_spot(Vector3(float(d.get("x", 0.0)), 0, float(d.get("z", 0.0))), 0.4, true)
-		return {"ok": true}
-	elif a == "ui_scroll":                             # for tests: fold the cards (open / close / groups) and scroll the panel
-		if d.has("fold"):
-			_fold_all(str(d["fold"]))
-		if d.has("simple"):
-			set_simple(bool(d["simple"]))
-		if d.has("open"):                                  # one card open, with all its parts
-			for b in fold_bodies:
-				if str(b.get_meta("title", "")) == str(d["open"]):
-					UI.set_open(b, true)
-					for sb in sub_bodies:
-						if b.is_ancestor_of(sb):
-							UI.set_sub_open(sb, true)
-		show_panel(true)
-		if d.has("y"):
-			_test_scroll(float(d["y"]))
-		elif d.has("open") and d.get("top", false):        # P1 ui_gemeinsam (tests, Bildschirmfotos): die geöffnete Karte nach oben
-			for b in fold_bodies:
-				if str(b.get_meta("title", "")) == str(d["open"]) and b.get_parent() != null:
-					_test_scroll_to(b.get_parent())
-		return {"ok": true, "max": (ui_box.get_parent() as ScrollContainer).get_v_scroll_bar().max_value}
-	elif a == "tunnel":                                # 3D-3.45: for tests / remote: {"host", "code", "on"}
-		if d.has("host"):
-			tunnel_host = str(d["host"])
-			tunnel.host = tunnel_host
-		if d.has("code"):
-			tunnel_code = str(d["code"])
-			tunnel.code = tunnel_code
-		if d.has("on"):
-			tunnel_on = bool(d["on"])
-			tunnel.set_on(false)
-			tunnel.set_on(tunnel_on)
-		var tst: Dictionary = tunnel.state()
-		tst["ok"] = true
-		return tst
-	elif a == "dataset":                               # Trainingsbilder (3D-3.44)
-		var op2 := str(d.get("op", "get"))
-		if op2 == "start":
-			return dataset.start(int(d.get("n", 40)), d.get("conds", []) if typeof(d.get("conds", [])) == TYPE_ARRAY else [])
-		if op2 == "game":                                # 3D-3.53: the «missed» pictures of the game
-			return dataset.load_game()
-		if op2 == "export":                              # 3D-3.74: a training set (YOLO) for an own AI model
-			return dataset.export_pack(int(d.get("n", 500)), bool(d.get("scenes", true)), str(d.get("vielfalt", "")))
-		if op2 == "stop":
-			dataset.stop()
-		if op2 == "packs" or op2 == "clean":            # «KI-Daten aufräumen» (kidaten.gd)
-			var KD = preload("res://scripts/kidaten.gd")
-			if op2 == "packs":
-				return KD.state()
-			if dataset.busy or kitrain.running:
-				return KD.state({"ok": false, "error": "busy"})
-			return KD.state(KD.aufraeumen(true, str(dataset.last_pack.get("dir", "")).get_file()))
-		var st2: Dictionary = dataset.state()
-		if op2 == "list":
-			st2["items"] = dataset.list()
-		return st2
-	elif a == "kitrain":                               # «KI trainieren»: get / start {n, vielfalt, dry} / upload {dry}
-		var op3 := str(d.get("op", "get"))
-		if op3 == "start":
-			return kitrain.start(int(d.get("n", 200)), str(d.get("vielfalt", dataset.vielfalt)), bool(d.get("dry", false)))
-		if op3 == "upload":
-			return kitrain.upload_last(bool(d.get("dry", false)))
-		return kitrain.state()
-	elif a == "netmap":                                # Empfangskarte (3D-3.44): measured spots as patches on the ground
-		return {"ok": true, "n": show_netmap(d.get("points", []))}
-	elif a == "replay":                                # Alarm-Rückblick in 3D (3D-3.44)
-		if bool(d.get("stop", false)):
-			replay.stop()
-			return {"ok": true}
-		if typeof(d.get("track")) != TYPE_DICTIONARY:
-			return {"ok": false, "error": "track missing"}
-		return replay.start(d["track"])
-	elif a == "pruefstand":                            # Prüfstand (3D-3.49): get / open / start (for tests)
-		var w_: String = str(d.get("do", "get"))
-		if w_ == "open":
-			pruef.open(true)
-		elif w_ == "start":
-			pruef.open(true)
-			for k_ in pruef.plan_cbs:
-				pruef.plan_cbs[k_].button_pressed = k_ in (d.get("plans", ["quick"]) as Array)
-			pruef.reps.value = int(d.get("reps", 1))
-			pruef.start()
-		elif w_ == "send":
-			pruef.send()
-		elif w_ == "auto":                             # 3D-3.75: {on} - automatically after every update of MoveEye
-			pruef.set_auto(bool(d.get("on", true)))
-			if d.has("last"):
-				var ad: Dictionary = pruef._auto_data()
-				ad["last"] = str(d["last"])
-				pruef._auto_save(ad)
-			if d.has("touch_ago"):
-				pruef._touch_t = now() - float(d["touch_ago"])
-		return pruef.state()
-	elif a == "planner":                               # Aufstell-Planer (3D-3.44): get / open / close / best / put
-		var op := str(d.get("op", "get"))
-		if op == "open":
-			planner.open(true)
-		elif op == "close":
-			planner.open(false)
-		elif op == "best":
-			if not planner.visible:
-				planner.open(true)
-			planner.search_best()                    # runs on over a few frames; "busy" in the answer
-		elif op == "put":
-			planner.place_here()
-		elif op == "home":
-			set_home(Vector3.ZERO, 0.0)
-		return planner.state()
-	elif a == "tv":                                    # TV mode (3D-3.44): {"on": true/false, "info_url": "...", "fullscreen": true}
-		if d.has("info_url"):
-			tv.info_url = str(d["info_url"]).substr(0, 200)
-		if d.has("on"):
-			tv.set_on(bool(d["on"]), bool(d.get("fullscreen", true)))
-		return {"ok": true, "tv": tv.state()}
-	elif a == "ui_wide":                               # for tests: which parts of the panel are wider than it (3D-3.43)
-		var lim := float(d.get("w", 360.0))
-		var out := []
-		var stack: Array = [ui_root]
-		while stack.size() > 0:
-			var n = stack.pop_back()
-			if n is Control:
-				var w: float = (n as Control).get_combined_minimum_size().x
-				if w > lim and (n as Control).is_visible_in_tree():
-					var t := ""
-					if n is Label or n is Button:
-						t = str(n.text).substr(0, 40)
-					out.append([n.get_class(), int(w), t, str(n.get_path()).right(80)])
-			for ch in n.get_children():
-				stack.append(ch)
-		return {"ok": true, "panel": [int(ui_root.size.x), int(ui_root.position.x)], "win": get_viewport().get_visible_rect().size, "wide": out.slice(0, 60), "float": [cam_float.position, cam_float.size, cam_float.visible] if cam_float != null else []}
-	elif a == "geo":                                   # for tests: the place (loading, what was built)
-		return {"ok": true, "busy": geo.busy, "loaded": geo.loaded, "info": geo.info, "counts": geo.counts, "terrain": terrain,
-				"h0": geo.h0, "src": geo.dem_source, "note": geo_note, "y": ground_y(float(d.get("x", 0.0)), float(d.get("z", 0.0))),
-				"map": karte.visible, "map_info": karte.status_text(), "dark": is_dark(), "anims": anims.size(), "b3d_night": geo.b3d_mat.get_shader_parameter("night") if geo.b3d_mat != null else -1, "sun": [snappedf(sun_pos().x, 0.1), snappedf(sun_pos().y, 0.1),
-				snappedf(horizon_el(sun_pos().y), 0.1), sun_behind_hills(), snappedf(sun.light_energy, 0.01)]}
-	elif a == "map":                                   # for tests: open the map at a place, zoom
-		show_panel(false)
-		karte.open(float(d.get("lat", 46.95)), float(d.get("lon", 7.44)), int(d.get("zoom", 0)))
-		return {"ok": true}
-	elif a == "wizard":                                # for tests: the place wizard (karte.gd) step by step
-		var op := str(d.get("op", ""))
-		if op == "pick":
-			karte.sel = Vector2(float(d.get("lat", 46.95)), float(d.get("lon", 7.45)))
-			karte.sel_name = str(d.get("name", ""))
-			karte._show_step(1)
-		elif op == "next":
-			karte._next()
-		elif op == "set":
-			karte.set("w_" + str(d.get("key", "")), d.get("value"))
-			karte._show_step(karte.step)
-		return {"ok": true, "step": karte.step, "env": geo.env, "why": geo.env_why, "info": karte.info.text, "waiting": karte.waiting,
-				"counts": geo.counts, "ort_env": ort_env, "visible": karte.visible}
-	elif a == "input":                                 # the simulator window seen in MoveEye: mouse / finger / keys from there
-		var ev = d.get("ev", [])
-		return {"ok": true, "n": view_input(ev if ev is Array else [])}
-	elif a == "game_handicap":                         # MoveEye: handicap for a player (0 … 2)
-		game.set_handicap(int(d.get("slot", -1)), int(d.get("level", 0)))
-		return {"ok": true}
-	elif a == "view_look":                             # the phone as a window (3D-3.27): turn the phone = look round in the free view
-		_to_free_view()
-		if d.get("start", false) or _look_base.is_empty():
-			_look_base = [view_cam.rotation.y, view_cam.rotation.x]
-		var yw := float(_look_base[0]) + deg_to_rad(clampf(float(d.get("yaw", 0.0)), -360.0, 360.0))
-		var pt := clampf(float(_look_base[1]) + deg_to_rad(float(d.get("pitch", 0.0))), deg_to_rad(-85.0), deg_to_rad(60.0))
-		view_cam.rotation = Vector3(pt, yw, 0)
-		view_want_t = now()
-		return {"ok": true}
-	elif a == "game_compare":                          # 3D-4.x: «Mensch gegen KI» (gamecompare.gd) - state / start / stop
-		return game.cmp.command(d) if game != null and game.cmp != null else {"ok": false, "error": "not supported"}
-	elif a == "game_kig":                              # 3D-4.x: «MoveEye als KI-Wächter» (gamekiwaechter.gd): info / set / reset
-		return game.kig.command(d) if game != null and game.kig != null else {"ok": false, "error": "no game"}
-	elif a == "game_shut":                             # 3D-4.x: «Auslöser» (gameshutter.gd) - info / aim / fire, for tests
-		return game.shut.command(d) if game != null and game.shut != null else {"ok": false, "error": "no game"}
-	elif a == "game_more":                             # «Gameplay ausfeilen» (gamemore.gd): info / set / probe … (tests, MoveEye)
-		return game.more.command(d) if game != null and game.more != null else {"ok": false, "error": "no game"}
-	elif a == "game_tool":                             # 3D-4.x: a tool of the guard (gametools.gd): {tool, slot} or {op: "info"}
-		return game.tools.command(d) if game != null and game.tools != null else {"ok": false, "error": "no game"}
-	elif a == "game_rules":                            # 3D-4.x: for tests - fairness, next guard, winner (gamerules.gd)
-		var grd: Dictionary = game.rules.debug() if game != null and game.rules != null else {}
-		grd["ok"] = not grd.is_empty()
-		return grd
-	elif a == "game_test":                             # 3D-3.52: for tests - where a player is in the head camera / move him there
-		if game == null or not d.has("slot") or int(d["slot"]) < 0 or int(d["slot"]) >= game.players.size() or game.players[int(d["slot"])] == null:
-			return {"ok": false, "error": "no player"}
-		var gp: Dictionary = game.players[int(d["slot"])]
-		if d.has("x") and d.has("z"):
-			gp["actor"].position = Vector3(float(d["x"]), ground_y(float(d["x"]), float(d["z"])), float(d["z"]))
-		if d.get("hit", false):
-			game._caught(gp, null)
-		var hp: Vector3 = cams[0].global_position
-		var ap: Vector3 = gp["actor"].position
-		return {"ok": true, "box": game.learn.box(gp), "sees": game.cam_sees(gp, 0), "state": gp["state"], "fx": game.fx_nodes.size(),
-				"head": [hp.x, hp.y, hp.z], "pos": [ap.x, ap.y, ap.z], "goal": [game.goal.x, game.goal.z], "report": game.learn.report_dict() if d.get("report", false) else {}}
-	elif a == "padview":                               # the «Controller-Ansicht» of MoveEye (padview.gd)
-		return padview.command(d) if padview != null else {"ok": false, "error": "no padview"}
-	elif a == "pad":                                   # 3D-3.59: a game controller at the browser (MoveEye page): axes and buttons
-		if explore == null:
-			return {"ok": false, "error": "no explore"}
-		explore.remote_pad(d.get("ax", []), d.get("bt", []), str(d.get("name", "")))
-		if d.has("hold"):                              # for tests on a slow PC: the values stay valid for «hold» s
-			explore.rp_t = now() + clampf(float(d["hold"]), 0.0, 30.0)
-		return {"ok": true, "on": explore.on, "view": explore.view, "rumble": padmap.take_web_rumble() if padmap != null else ""}
-	elif a == "padmap":                                # 3D-4.13: the controller mapping (tests): state, act, menu, roles, help, rumble
-		return padmap.command(d) if padmap != null else {"ok": false, "error": "no padmap"}
-	elif a == "patrol":                                # 3D-3.61: «Patrouille» (for tests and remote): {on, points: [[x, z], …], area: [x, z, w, d], mode}
-		if patrol == null:
-			return {"ok": false, "error": "no patrol"}
-		if d.has("points"):
-			patrol.points = []
-			for q in d["points"]:
-				patrol.points.append(Vector2(float(q[0]), float(q[1])))
-			patrol.mode = "points"
-			patrol._dirty = true
-		if d.has("area"):
-			var ar: Array = d["area"]
-			patrol.area = Rect2(float(ar[0]), float(ar[1]), float(ar[2]), float(ar[3]))
-			patrol.mode = "area"
-			patrol._dirty = true
-		if d.has("mode"):
-			patrol.mode = str(d["mode"])
-		if d.has("guard"):                             # 3D-3.76: {guard: [x, z, radius, name]} - plan the route round it and start
-			var gd: Array = d["guard"]
-			patrol.guard_start(Vector2(float(gd[0]), float(gd[1])), float(gd[2]) if gd.size() > 2 else 10.0, str(gd[3]) if gd.size() > 3 else "Ort")
-		if d.has("ask"):
-			patrol.ask()
-		if d.has("on"):
-			patrol.set_active(bool(d["on"]))
-		return patrol.state_dict()
-	elif a == "explore":                               # 3D-3.55: explore with the rover (for tests and remote)
-		if explore == null:
-			return {"ok": false, "error": "no explore"}
-		if d.has("on"):
-			explore.set_on(bool(d["on"]))
-		if d.has("view") and str(d["view"]) in explore.VIEWS:
-			explore.view = str(d["view"])
-		if d.has("invite"):
-			explore.set_invite(bool(d["invite"]))
-		if d.has("spectate"):
-			explore.spectator(bool(d["spectate"]))
-		if d.has("place"):                               # [x, z]: the rover there (3D-3.60)
-			var pl: Array = d["place"]
-			if mover_on:
-				rig.position = Vector3(float(pl[0]), ground_y(float(pl[0]), float(pl[1])), float(pl[1]))
-			else:
-				home_pos = Vector3(float(pl[0]), 0, float(pl[1]))
-				mover_home()
-		if d.has("drive"):                             # [forward, turn, seconds] for a test drive
-			var dv: Array = d["drive"]
-			explore.test_drive = Vector2(float(dv[0]), float(dv[1]))
-			explore.test_until = explore.main.now() + (float(dv[2]) if dv.size() > 2 else 2.0)
-		return explore.state()
-	elif a == "inventar":                              # 3D-3.86: {do: info | open | close | add (kind, x, z, r) | clear}
-		var iv := str(d.get("do", "info"))
-		if iv == "open":
-			inventar.open()
-			if d.has("tab"):
-				inventar.tabs.current_tab = int(d["tab"])
-		elif iv == "close":
-			inventar.close()
-		elif iv == "add":
-			inventar.add_object(str(d.get("kind", "")), Vector3(float(d.get("x", 0)), 0, float(d.get("z", -8))), float(d.get("r", 0)))
-		elif iv == "clear":
-			inventar.clear_scene()
-		return {"ok": true, "inventar": inventar.info()}
-	elif a == "blindmap":                              # 3D-3.85: makeover 22 / 23 {do: start (az, dist, hour, walk) | info | stop}
-		var bd := str(d.get("do", "info"))
-		if bd == "game":                               # 3D-3.90: the blind spots the players found (az°, m), for MoveEye's map
-			return {"ok": true, "pts": game.learn.blind_pts if game != null and game.learn != null else [],
-					"badges": game.badges_all() if game != null else {}}                       # 3D-3.92: the badges of the players
-		if bd == "start":
-			return blindmap.start(d)
-		if bd == "stop":
-			blindmap.stop()
-		return blindmap.info()
-	elif a == "farecreate":                            # 3D-3.85: makeover 21 - re-enact the cause of a false alarm
-		return farecreate(d)
-	elif a == "rover":                                 # 3D-3.84: makeover 17 {do: info | patrol (on) | alarm | dock | goto (x, z)}
-		var rd := str(d.get("do", "info"))
-		if rd == "patrol":
-			patrol.set_active(bool(d.get("on", true)))
-		elif rd == "alarm":
-			var ap = patrol.alarm_point()
-			patrol.goto_point(ap, "alarm")
-		elif rd == "dock":
-			patrol.goto_point(Vector2(home_pos.x, home_pos.z), "dock")
-		elif rd == "goto":
-			patrol.goto_point(Vector2(float(d.get("x", 0)), float(d.get("z", -8))), "goto")
-		return {"ok": true, "rover": patrol.rover_info()}
-	elif a == "overlay":
-		return {"ok": true, "overlay": overlay.info()}
-	elif a == "kompakt":                               # 3D-4.x: the four compact scenes {do: info | spot (value) | perf} (kompakt.gd)
-		return Kompakt.control(self, d)
-	elif a == "egg":                                   # Entwickler-Test (bergtal_ei.gd)
-		return bt_ei.control(d) if bt_ei != null and is_instance_valid(bt_ei) else {"ok": false, "error": "only in the Bergtal"}
-	elif a == "bergtal":                               # 3D-4.x: {do: info | spot | bed | season | here | goto | event | ride | morning | rate | horn | perf} (bergtal.gd)
-		return preload("res://scripts/bergtal.gd").control(self, d)
-	elif a == "vorfuehrung":                           # Vorführmodus «Maggie» (maggie_vorfuehrung.gd): {do: start (len) | pause | weiter | kapitel (n) | stop | info}
-		return preload("res://scripts/maggie_vorfuehrung.gd").control(self, d)
-	elif a == "trailer":                               # Trailer der Geschichten (trailer.gd): {do: start (id, sprache, untertitel, ab) | stop | info}
-		return preload("res://scripts/trailer.gd").control(self, d)
-	elif a == "maggie":                                # «Maggie und der Bergkristall» (maggie_story.gd): {do: info | open | start | region …}
-		return maggie.control(d) if maggie != null else {"ok": false, "error": "no maggie"}
-	elif a == "horror":                                # Bergtal · Horror-Modus: {do: info | open | unlock | start | skip | pause | stop …} (bergtal_horror.gd)
-		return horror.command(d) if horror != null else {"ok": false, "error": "no horror"}
-	elif a == "ferienpark":                            # 3D-4.x: {do: info | spot (value) | kinds | perf} (ferienpark.gd)
-		return preload("res://scripts/ferienpark.gd").control(self, d)
-	elif a == "szenen":                                # 3D-4.x: the new scenes {do: info | spawn (kind) | restore}
-		return szenen.control(d)
-	elif a == "simreal":                               # 3D-4.4: {do: info | set (key, value) | sweep | bird | spawn (kind, from, to)}
-		return simreal.control(d)
-	elif a == "camphys":                               # 3D-4.x P1: {do: info | set (key: blur_k | noir_k, value)} - exposure, gain, light
-		return camphys.control(d)
-	elif a == "objekte":                               # 3D-4.x «Gegenstände»: {do: info | lure | test_place | test_clear | set}
-		return objplus.control(d)
-	elif a == "wind_fx":                               # F6: {do: info | set (on)}
-		return wind_fx.control(d)
-	elif a == "inhalte":                               # F2: {do: info | set (value) | laden | anwenden | zuruecksetzen}
-		return inhalte.control(d)
-	elif a == "umgebung":                              # 3D-4.x: {do: info | set (key, value) | spawn (kind) | snow_puff | clear_tracks}
-		return umgebung.control(d)
-	elif a == "statisten":                             # Paket «Statisten»: {do: info | set (mode, value) | spawn (n, group) | clear}
-		return statisten.control(d)
-	elif a == "menschen":                              # P10: {do: info | set (key, value) | spawn (kind) | api (id, fn, args) | probe (gait, dist, dark)}
-		return menschen.control(d)
-	elif a == "tiere":                                 # Paket «Tiere»: {do: info | spawn (kind, from, to) | threat (x, z, secs) | curl | pounce | car}
-		return tiere.control(d)
-	elif a == "fahrzeuge":                             # Paket «Fahrzeuge»: {do: info | set | spawn | arrive | toward | leave | reset}
-		return fahrzeuge.control(d)
-	elif a == "maggie_gefahr":                         # «Maggie und der Bergkristall» S3: böse Tiere, Schutzdinge (maggie_gefahr.gd)
-		return load("res://scripts/maggie_gefahr.gd").control(self, d)
-	elif a == "maggie_hund":                           # «Maggie und der Bergkristall», Paket S2: {do: info | start (region) | befehl (f) | spieler | loesen | stop}
-		return preload("res://scripts/maggie_hund.gd").control(self, d)
-	elif a == "licht":                                 # «Licht & Nacht»: {do: info | set | sources (cam) | lux | attach | headlights | at}
-		return licht.control(d)
-	elif a == "jahreszeiten":                          # «Jahreszeiten»: {do: info | set (key, value) | sun (doy, lat, lon) | year}
-		return jahreszeiten.control(d)
-	elif a == "gelaende":                              # 3D-4.x: {do: info | set (key, value) | height (x, z) | los (from, to) | cloud (x, z)}
-		return gelaende.control(d)
-	elif a == "wetter":                                # real-wetter: {do: info | set | flash | wipe | splash | fog | snow | morning}
-		return wetter.control(d)
-	elif a == "weit":                                  # 3D-4.17: wide camera {mount, tilt, tilt_follow, fisheye, pan_limit, do: info | probe | spawn}
-		return weit.control(d)
-	elif a == "nacht":                                 # Nacht-Testlauf: {do: info | start | stop | state | truth | plan} (nachtlauf.gd)
-		return nacht.control(d)
-	elif a == "abenteuer":                             # Bergtal-Abenteuer: {do: state | open | start | pick | next | choose | night | save | replay | report …}
-		return abenteuer.op(d)
-	elif a == "parcours":                              # 3D-4.18: {do: info | start (lessons, night, seed, prep_s) | stop | state | result | game | steer ...}
-		return parcours.control(d)
-	elif a == "einbruch":                              # {do: info | start (ablauf, seed, zeit) | serie | stop | state | result}
-		return einbruch.control(d)
-	elif a == "zwilling":                              # 3D-4.4: {do: info | import (path) | set (key, value) | item (k, x, z, r) | clear | remove | on}
-		return zwilling.control(d)
-	elif a == "fotomodus":                             # 3D-4.27: {do: info | on | set | mask_rect | mask_clear | more | measure | size | debug}
-		return zwilling.fm.control(d)
-	elif a == "whatif":                                # 3D-3.83: makeover 8 - MoveEye re-enacts a real recording
-		return whatif(d)
-	elif a == "twin":                                  # 3D-3.83: makeover 9 - the twin of the real place
-		if str(d.get("op", "")) == "info":
-			return {"ok": true, "twin": twin_info()}
-		twin = {"name": str(d.get("name", "")), "t": Time.get_datetime_string_from_system()}
-		if d.has("lat") and d.has("lon"):
-			twin["lat"] = float(d["lat"])
-			twin["lon"] = float(d["lon"])
-			karte.open(twin["lat"], twin["lon"], 17)
-			karte.sel = Vector2(twin["lat"], twin["lon"])
-			karte.sel_name = "Dein Platz: " + twin["name"]
-			karte._show_step(1)
-			start_info = "Dein Platz («%s»): Karte an diesem Ort – «Diesen Ort laden» bestätigen" % twin["name"]
-		else:
-			start_info = "Dein Platz: MoveEye kennt seinen Ort nicht (GPS oder Ort in den Einstellungen) – Zonen und Patrouille kommen trotzdem"
-		_settings_dirty = true
-		return {"ok": true, "twin": twin_info(), "map": d.has("lat")}
-	elif a == "news":                                  # 3D-3.82: {do: info | show | close}
-		if str(d.get("do", "")) == "show":
-			news.show_news()
-		elif str(d.get("do", "")) == "close":
-			news.close(bool(d.get("off", false)))
-		return {"ok": true, "news": news.info()}
-	elif a == "templates":                             # 3D-3.82: {do: info|open|import|remove|adjust, path, i, key, d, tab}
-		var dd := str(d.get("do", "info"))
-		if dd == "open":
-			templates.toggle(int(d.get("tab", 0)))
-		elif dd == "close":
-			templates.visible = false
-		elif dd == "import":
-			return {"ok": templates.import_file(str(d.get("path", "")), bool(d.get("show", true))), "info": templates.info(), "msg": templates._msg.text}
-		elif dd == "drop":
-			templates._on_drop(PackedStringArray([str(d.get("path", ""))]))
-		elif dd == "remove":
-			templates.remove(int(d.get("i", 0)))
-		elif dd == "adjust":
-			templates._adjust(int(d.get("i", 0)), str(d.get("key", "x")), float(d.get("d", 1.0)))
-		return {"ok": true, "info": templates.info(), "obstacles": obstacles.size(), "scene": scene}
-	elif a == "visits":                                # 3D-3.80: finished visits for the diary of MoveEye {since: id}
-		return {"ok": true, "visits": visitlog.since(int(d.get("since", 0))), "seq": visitlog.seq, "live": visitlog.live.size(), "sim": VERSION}
-	elif a == "localplay":                             # 3D-3.77: play here at the PC (tests): {do: start | stop | get, role}
-		var dl := str(d.get("do", "get"))
-		if dl == "start":
-			localplay.start(str(d.get("role", "runner")))
-		elif dl == "stop":
-			localplay.stop()
-		elif dl == "key":
-			var ke := InputEventKey.new()
-			ke.keycode = int(d.get("key", KEY_ENTER))
-			ke.pressed = true
-			localplay._input(ke)
-		return localplay.debug()
-	elif a == "surprise":                              # 3D-3.75: {op: get | on | off | start (kind) | morning}
-		var op_ := str(d.get("op", "get"))
-		if op_ == "on" or op_ == "off":
-			surprise.set_on(op_ == "on")
-		elif op_ == "start":
-			surprise.start(str(d.get("kind", "power")))
-		elif op_ == "morning":
-			surprise.morning()
-		return {"ok": true, "surprise": surprise.info()}
-	elif a == "entdecken":                             # Erlebniswelt 20–23: {do: info | open | close | photo | mark (id) | reset | hint | set | where (id)}
-		return entdecken.control(d) if entdecken != null else {"ok": false, "error": "no entdecken"}
-	elif a == "spielton":                              # Spielton (klang.gd): {do: info | test (art) | erleben (id) | gefahr (quelle, stufe, dauer)}
-		return klang.control(d) if klang != null else {"ok": false, "error": "no klang"}
-	elif a == "spielbereich":                          # Paket «Spielbereich»: {do: info | open | close | start (id) | seen | reset}
-		return spielbereich.control(d) if spielbereich != null else {"ok": false, "error": "no spielbereich"}
-	elif a == "dev":                                   # Entwicklertool 1 (devtool.gd): {do: places | goto (id) | fly (on, speed) | open | close | info}
-		return mehr.dev.control(d) if mehr != null and mehr.dev != null else {"ok": false, "error": "not ready"}
-	elif a == "fehler":                                # Fehler-QR (fehler_hilfe.gd): {do: info | zeige (id) | fix (aktion: sim_verbinden | sim_neustart | sim_notfall)}
-		return preload("res://scripts/fehler_hilfe.gd").control(self, mehr, d)
-	elif a == "sicherung":                             # System → Sicherung (sicherung.gd): {do: info | make | send | get | ack | check | restore}
-		return sicherung.control(d) if sicherung != null else {"ok": false, "error": "not ready"}
-	elif a == "werk":                                  # Werksrücksetzung (werk.gd): {do: info | open | close | reset (confirm: true)}
-		return mehr.werk.control(d) if mehr != null and mehr.werk != null else {"ok": false, "error": "not ready"}
-	elif a == "werkstatt":                             # real-gehaeuse: {do: open | close | info | explode | xray | inner | v52 | pick | step | next | prev | view | real_case}
-		return werkstatt.control(d) if werkstatt != null else {"ok": false, "error": "not ready"}
-	elif a == "mehr":                                  # 3D-4.2x: «Mehr» (tests): {"do": open | theme | tour | diag | log | fb_* | shot}
-		return mehr.control(d) if mehr != null else {"ok": false, "error": "not ready"}
-	elif a == "feedback":                              # MoveEye 2.98.33: the dialog «Rückmeldung» (tests: {text, kind, stars, shot})
-		_feedback_open()
-		if feedback_dlg != null and str(d.get("text", "")) != "" and feedback_dlg.visible:
-			feedback_dlg.fill_and_send(d)
-		return {"ok": true, "open": feedback_dlg != null and feedback_dlg.visible, "connected": feedback_dlg != null and feedback_dlg.connected()}
-	elif a == "mw_request":                            # 3D-3.71: like the buttons «Referenz-Scan» / «Vergleichen» (tests, remote)
-		mw_request(str(d.get("op", "")))
-		return {"ok": true, "cmd": mw_cmd}
-	elif a == "bike":
-		set_bike(bool(d.get("on", true)))
-		return {"ok": true}
-	elif a == "prop":                                  # 3D-3.72: test aids {name: Velo | Zelt | Tisch | Kühlboxen | Grill, on}
-		set_prop(str(d.get("name", "")), bool(d.get("on", true)))
-		return {"ok": true, "props": test_props.keys()}
-	elif a == "sabotage":                              # {cover: bool, turn: degrees}
-		set_sabotage(d.get("cover", null), d.get("turn", null))
-		return {"ok": true, "cover": sabotage_cover, "turn": rad_to_deg(sabotage_turn)}
-	elif a == "ref_night_test":
-		ref_night_test()
-		return {"ok": true}
-	elif a == "home":                                  # 3D-3.73: «Mein Zuhause» {op: get | set (items) | edit (on)}
-		var op := str(d.get("op", "get"))
-		if op == "set" and d.get("items") is Array:
-			home_items = (d["items"] as Array).filter(func(x): return typeof(x) == TYPE_DICTIONARY).slice(0, 400)
-			home_save()
-			home_rebuild()
-		elif op == "edit":
-			home_editor.open(bool(d.get("on", true)))
-		return {"ok": true, "items": home_items, "kinds": Scenes.HOME_KINDS, "scene": scene}
-	elif a == "shoot":                                 # 3D-3.70: a shot / trigger from MoveEye at a spot of the head camera picture
-		if bool(d.get("shutter", false)) and game != null and game.shut.human_mode() == "mw":   # 3D-4.x: «Auslöser» (gameshutter.gd)
-			return game.shut.fire(null, str(d.get("who", "")).left(30))
-		return mw_shot(float(d.get("x", 0.5)), float(d.get("y", 0.5)), str(d.get("who", "")).left(30))
-	elif a == "game_mwcatch":                          # «Team gegen MoveEye»: «Erwischt!» pressed at MoveEye (3D-3.27)
-		if game == null:
-			return {"ok": false, "error": "no game"}
-		return game.mw_catch(str(d.get("who", "")).left(30), float(d.get("x", -1.0)), float(d.get("y", -1.0)))
-	elif a == "gps":                                   # 3D-3.98: {steal: true | false} - the device is carried away
-		if d.has("steal"):
-			return gps_steal(bool(d["steal"]))
-		var gr := gps_reading()
-		gr["ok"] = true
-		gr["steal"] = gps_steal_t > 0.0
-		gr["solar"] = solar_reading()
-		return gr
-	elif a == "pir":                                   # real-pir-ton: {do: info | fire | set (key, value) | reset} (pir.gd)
-		return pir.op(d)
-	elif a == "mikro":                                 # real-pir-ton: {do: info | set (key, value) | probe (kind, db1m, x, z)} (mikrofon.gd)
-		return mikro.op(d)
-	elif a == "servo":                                 # «Servo-Mechanik»: {do: info | set (key, value) | sim (deg, mass, play, v)} (servo.gd)
-		return servo.control(d)
-	elif a == "simint":                                # 30.10.2026: {do: info | uv | pca | i2c | block (axis) | off | model (m) | hand (on)} (simint.gd)
-		return simint.op(d)
-	elif a == "sound":                                 # 3D-3.98: {kind: clap | sneeze | voice | shout, n, x, z}
-		var sp = null
-		if d.has("x") and d.has("z"):
-			sp = Vector3(float(d["x"]), ground_y(float(d["x"]), float(d["z"])) + 1.5, float(d["z"]))
-		return emit_sound(str(d.get("kind", "clap")), int(d.get("n", 2)), sp)
-	elif a == "zimmertiere":                           # Erlebniswelt «mehr Tiere drinnen»: {do: info | lens (dist, hold) | set (pets, spider) | state (who, state)}
-		return zimmertiere.control(d) if zimmertiere != null else {"ok": false, "error": "no zimmertiere"}
-	elif a == "sleeper":                               # 3D-3.96: the person in the bed (bedroom scene)
-		if sleeper == null:
-			return {"ok": false, "error": "no sleeper"}
-		return sleeper.command(d)
-	elif a == "fenster":                               # Paket «Fenster» (fenster.gd): info / drag / resize / close / list / check / reset
-		return fenster.control(d) if fenster != null else {"ok": false, "error": "no fenster"}
-	elif a == "smalltv":                               # 3D-4.19: virtueller SmallTV - Zähler, letztes Bild (Tests, Prüfstand)
-		return smalltv.control(d) if smalltv != null else {"ok": false, "error": "no smalltv"}
-	elif a == "game_info":                             # the spectators in MoveEye: the game in numbers (3D-3.22)
-		if game == null:
-			return {"ok": false, "error": "no game"}
-		var gi: Dictionary = game.spectator_info()
-		gi["ok"] = true
-		return gi
-	elif a == "mover":                                 # for tests: where the mover is
-		return {"ok": true, "pad": [pad_drive.x, pad_drive.y, now() - pad_t, _pad_l, _pad_r, rover_pad.dragging, sim_active, now() - _drive_t], "on": mover_on, "x": snappedf(rig.position.x, 0.01), "z": snappedf(rig.position.z, 0.01),
-				"yaw": snappedf(rad_to_deg(rig.rotation.y), 0.1), "drive": mw.get("drive", {}),
-				"near": _ob_near(Vector2(rig.position.x, rig.position.z - 0.3)).map(func(o): return [o["c"], _ob_closest(o, Vector2(rig.position.x, rig.position.z))[1]])}
-	elif a == "grafik":                                # F1 «Grafikstufe Hoch» (tests, measuring): {do: info | set (value) | dof | off_session | on_session}
-		return hoch.op(d)
-	elif a == "view":                                  # for tests: the free view from a point to a point, panel away
-		var vp_: Array = d.get("pos", [0, 3, 6])
-		var la_: Array = d.get("look", [0, 1, 0])
-		view_mode = 0
-		view_cam.position = Vector3(float(vp_[0]), float(vp_[1]), float(vp_[2]))
-		view_cam.look_at(Vector3(float(la_[0]), float(la_[1]), float(la_[2])))
-		show_panel(bool(d.get("panel", false)))
-		return {"ok": true}
-	elif a == "window":                                # for tests: minimized? (2 = minimized) and how many frames were drawn
-		return {"ok": true, "mode": DisplayServer.window_get_mode(), "frames": Engine.get_frames_drawn(), "autostart": autostart_on}
-	elif a == "visitors":                              # for tests: where every visitor is, and whether it is inside an object
-		var out := []
-		for v in visitors.get_children():
-			var p2 := Vector2(v.position.x, v.position.z)
-			var deepest := 99.0
-			for o in _ob_near(p2):
-				if o["po"] and v.kind != "person":
-					continue
-				deepest = min(deepest, float(_ob_closest(o, p2)[1]))
-			var sp := view_cam.unproject_position(v.global_position + Vector3(0, 0.6, 0))
-			out.append({"kind": v.kind, "x": snappedf(v.position.x, 0.01), "z": snappedf(v.position.z, 0.01), "gap": snappedf(deepest, 0.01), "variant": v.variant, "route": v.route.size(), "wait": snappedf(max(0.0, v.wait_until - v.now_s()), 0.1), "tx": snappedf(v.target.x, 0.1), "tz": snappedf(v.target.z, 0.1), "spd": snappedf(v.cur_speed, 0.01), "r": v.radius,
-					"y": snappedf(v.position.y, 0.01), "sx": int(sp.x), "sy": int(sp.y), "selected": v == selected})
-		return {"ok": true, "visitors": out}
-	elif a == "wheel_probe":                           # for tests (3D-3.35): a mouse wheel at a point, through the whole input path
-		var e := InputEventMouseButton.new()
-		e.button_index = MOUSE_BUTTON_WHEEL_UP if int(d.get("dir", 1)) > 0 else MOUSE_BUTTON_WHEEL_DOWN
-		e.pressed = true
-		e.position = Vector2(float(d.get("x", 0)), float(d.get("y", 0)))
-		e.global_position = e.position
-		var cam_before := view_cam.global_position
-		get_viewport().push_input(e)
-		var e2 := e.duplicate()
-		e2.pressed = false
-		get_viewport().push_input(e2)
-		return {"ok": true, "moved": snappedf(view_cam.global_position.distance_to(cam_before), 0.001), "over": _over_hud(e.position)}
-	elif a == "pose_probe":                            # for tests: a person standing still in a given pose (joints in radians)
-		var px := float(d.get("x", 0.0))
-		var pz := float(d.get("z", -10.0))
-		var pv = spawn("person", Vector3(px, 0, pz), Vector3(px, 0, pz - 5.0))
-		pv.preview = true
-		pv.heading = float(d.get("heading", 0.0))
-		pv.rotation.y = pv.heading
-		var jt: Dictionary = d.get("j", {})
-		for i in range(2):
-			pv.legs[i][0].rotation = Vector3(float(jt.get("hip%d" % i, 0.0)), 0, float(jt.get("hipz%d" % i, 0.0)))
-			pv.legs[i][2].rotation.x = float(jt.get("knee%d" % i, 0.0))
-			pv.arms[i][0].rotation = Vector3(float(jt.get("sh%d" % i, 0.0)), 0, float(jt.get("shz%d" % i, 0.0)))
-			pv.arms[i][2].rotation.x = float(jt.get("el%d" % i, 0.0))
-		pv.torso.rotation.x = float(jt.get("torso", 0.0))
-		pv.head.rotation.x = float(jt.get("head", 0.0))
-		pv.body_root.rotation.x = float(jt.get("body", 0.0))
-		pv.body_root.position = Vector3(0, float(jt.get("by", 0.0)), float(jt.get("bz", 0.0)))
-		return {"ok": true}
-	elif a == "anim":                                  # «Animationen verbessern» (tests): anim_mensch.op
-		return preload("res://scripts/anim_mensch.gd").op(self, d)
-	elif a == "spawn_at":                              # for tests: a visitor from one point to another
-		var f: Array = d.get("from", [0, 0])
-		var t: Array = d.get("to", [10, 0])
-		var sv = spawn(str(d.get("kind", "person")), Vector3(float(f[0]), 0, float(f[1])), Vector3(float(t[0]), 0, float(t[1])))
-		if d.has("wait"):                              # stand there for a while, looking at the head camera
-			sv.route = [[Vector3(float(t[0]), 0, float(t[1])), float(d["wait"]), 0.0, Vector3(0, 0, 0)], Vector3(float(t[0]) + 40.0, 0, float(t[1]))]
-			sv.next_idle = now() + 999.0
-		return {"ok": true}
-	elif a == "gamewiz":                               # the game wizard, worked from the page of MoveEye (3D-3.41)
-		return gamewiz.op(d)
-	elif a == "game_debug":                            # 3D-4.x: for tests - results, duel, levels, bots, votes
-		return game.debug_info()
-	elif a == "gameplus":                              # 3D-4.x: weather change, camouflage things, theft (gameplus.gd, tests)
-		return game.plus.op(d)
-	elif a == "figuren":                               # 3D-4.12: for tests - figures in a row, a picture, frames per second (figur.gd)
-		return preload("res://scripts/figur.gd").op(self, d)
-	elif a == "set" or a == "press":
-		var c = null
-		for x in controls:
-			if x.id == cid:
-				c = x
-		if c == null or c["set"] == null:
-			return {"ok": false, "error": "unknown control"}
-		_ctl_frame = -1                                 # a button / switch pressed from the page counts like one in the window (one lock)
-		if a == "press":
-			c["set"].call()
-		else:
-			var v = d.get("value")
-			match c.type:
-				"slider":
-					v = clamp(float(v), float(c.extra.get("min", -1e9)), float(c.extra.get("max", 1e9)))
-				"toggle":
-					v = bool(v)
-				_:
-					v = str(v)
-			c["set"].call(v)
-		_sync_ui()
-	elif a != "get":
-		return {"ok": false, "error": "unknown action"}
-	return control_info()
+	# All actions are in main_steuerung.gd (Vorschlag 24). The actions MoveEye sends (schnittstelle.json) stay listed here,
+	# because part 558 of MoveEye and schnittstelle.gd read them from main.gd «func _control»:
+	#   a in ["set", "scenario", "busy", "tv", "fehler", "game_info", "gamewiz", "game_compare", "game_handicap",
+	#     "game_shut", "game_mwcatch", "shoot", "replay", "planner", "blindmap", "dataset", "farecreate", "whatif",
+	#     "input", "pad", "padview", "press", "rover", "view_look", "netmap", "nacht", "parcours", "sabotage",
+	#     "templates", "twin", "visits", "weit", "entdecken", "werkstatt", "trailer", "vorfuehrung", "spielbereich",
+	#     "egg", "sicherung", "mehr"]
+	return _mod("steuerung")._control(d)
 
 
 func status_text() -> String:
-	var h := hour()
-	var mwc := "verbunden mit %s" % str(mw.get("device", "MoveEye")) if now() - mw_t < 3.0 else ("MoveEye nicht verbunden" if stream_on else "Senden aus")
-	var mww := mw_watchers()
-	if not mww.is_empty():                     # 3D-4.9: a second MoveEye only watches (does not steer the head)
-		mwc += " · schaut nur zu: " + ", ".join(mww)
-	if schnitt != null:
-		mwc += schnitt.mw_extra()                 # Aufräumen 2: «Schutz an · Relais …» from MoveEye
-	var score := " · Treffer %d von %d Schüssen, %d Punkte" % [hits, shots, points] if rifle_on else ""
-	return "%s · %02d:%02d · %s · %s · %.1f °C · Besucher %d%s · %s" % [Worlds.full_name(scene) if Worlds.is_place(scene) and not Worlds.solo(self, scene) else Scenes.name_of(scene), int(h), int(fmod(h, 1.0) * 60), "Nacht" if is_dark() else "Tag", {"clear": "klar", "cloudy": "bewölkt", "rain": "Regen", "fog": "Nebel", "snow": "Schnee"}.get(weather, weather), ambient, visitors.get_child_count(), score, mwc] + (" · Update: " + update_info if update_info != "" else "") + (" · " + start_info if start_info != "" else "") + (" · " + game.status() if game != null and game.status() != "" else "") + (" · " + testrun.status() if testrun != null and testrun.status() != "" else "") + (" · " + nacht.status() if nacht != null and nacht.running else "") + (" · " + dev2.status() if dev2 != null and dev2.on else "") + (" · " + recorder.info if recorder != null and recorder.info != "" and (recorder.recording or recorder.playing) else "") + (" · " + life.info if life != null and life.info != "" and (real_weather or daily_life) else "") + (" · " + geo.info if geo != null and geo.busy else "") + (" · " + geo_note if geo_note != "" else "")
+	return _mod("status").status_text()
 
 
 func scenarios() -> Array:
@@ -5534,598 +3939,7 @@ var real_label: Label
 
 
 func _build_ui() -> void:
-	"""the window: phone on the left, on the right the panel in the look of the web page of MoveEye (ui_style.gd):
-	toolbar (hide, search, groups only, expand all, collapse all), cards, at the bottom «Einfach | Experte»"""
-	var layer := CanvasLayer.new()
-	add_child(layer)
-	ui_layer = layer
-	var th: Theme = UI.theme()
-	phone = Phone.new()
-	phone.main = self
-	phone.position = Vector2(0, 0)
-	phone.theme = th
-	layer.add_child(phone)
-	_build_crosshair(layer)
-	_build_view_bar(layer, th)
-	_build_cpu_pill(layer)
-	karte = Karte.new()
-	karte.main = self
-	karte.theme = th
-	karte.visible = false
-	layer.add_child(karte)
-	dataset = preload("res://scripts/dataset.gd").new()      # Trainingsbilder (3D-3.44)
-	dataset.main = self
-	add_child(dataset)
-	kitrain = preload("res://scripts/kitrain.gd").new()      # «KI trainieren»: pack -> GitHub release «ki-daten» -> workflow
-	kitrain.main = self
-	add_child(kitrain)
-	replay = preload("res://scripts/replay.gd").new()        # Alarm-Rückblick (3D-3.44)
-	replay.main = self
-	add_child(replay)
-	replay.setup(layer)
-	planner = preload("res://scripts/planner.gd").new()      # Aufstell-Planer (3D-3.44)
-	planner.main = self
-	planner.theme = th
-	layer.add_child(planner)
-	pruef = preload("res://scripts/pruefstand.gd").new()    # Prüfstand (3D-3.49)
-	pruef.main = self
-	pruef.theme = th
-	layer.add_child(pruef)
-	var tvl := CanvasLayer.new()                            # the TV mode lies over everything (3D-3.44)
-	tvl.layer = 5
-	add_child(tvl)
-	tv = preload("res://scripts/tv.gd").new()
-	tv.main = self
-	tv.theme = th
-	tvl.add_child(tv)
-	gamewiz = preload("res://scripts/gamewiz.gd").new()     # the game wizard (3D-3.41)
-	gamewiz.main = self
-	gamewiz.theme = th
-	layer.add_child(gamewiz)
-	abenteuer = preload("res://scripts/bergtal_abenteuer.gd").new()   # Bergtal-Abenteuer (same look as the wizard)
-	abenteuer.main = self
-	abenteuer.theme = th
-	layer.add_child(abenteuer)
-	var panel := PanelContainer.new()
-	panel.theme = th
-	panel.anchor_left = 1.0
-	panel.anchor_right = 1.0
-	panel.anchor_bottom = 1.0
-	panel.offset_left = -392
-	panel.grow_horizontal = Control.GROW_DIRECTION_BEGIN   # 3D-3.43: if something is too wide it grows to the left, never off the window
-	var sb := UI.box(Color(UI.BG, 0.97), UI.LINE, 0, 8, 0)
-	sb.border_width_left = 1
-	sb.content_margin_left = 10
-	sb.content_margin_right = 6
-	sb.content_margin_top = 10
-	sb.content_margin_bottom = 6
-	panel.add_theme_stylebox_override("panel", sb)
-	layer.add_child(panel)
-	ui_root = panel
-	show_btn = UI.icon_button("show", "Bedienfeld zeigen (H)")
-	show_btn.theme = th
-	show_btn.anchor_left = 1.0
-	show_btn.anchor_right = 1.0
-	show_btn.offset_left = -48
-	show_btn.offset_top = 10
-	show_btn.offset_right = -10
-	show_btn.offset_bottom = 48
-	show_btn.visible = false
-	show_btn.pressed.connect(func(): show_panel(true))
-	layer.add_child(show_btn)
-	var outer := VBoxContainer.new()                      # from 3D-3.7: name, toolbar and the camera pictures stay at the top,
-	outer.add_theme_constant_override("separation", 10)  # only the rest scrolls
-	panel.add_child(outer)
-	var top_box := VBoxContainer.new()
-	top_box.add_theme_constant_override("separation", 10)
-	top_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	outer.add_child(top_box)
-	var scroll := ScrollContainer.new()
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	outer.add_child(scroll)
-	var box_ := VBoxContainer.new()
-	ui_box = box_
-	box_.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	box_.add_theme_constant_override("separation", 10)
-	scroll.add_child(box_)
-	# header: logo, name, version (like the top bar of the page)
-	var hdr := HBoxContainer.new()
-	hdr.add_theme_constant_override("separation", 8)
-	top_box.add_child(hdr)
-	var wm = preload("res://scripts/wordmark.gd").new()   # 3D-3.87: the wordmark W6 like on the web page
-	if wm.build(44.0):                                   # 3D-4.23: moving like on the web (person, cone, pupil, blink)
-		hdr.add_child(wm)
-	else:
-		wm.free()
-		var logo: Control = load("res://scripts/mw_logo.gd").new()  # (fallback) the orange MoveEye symbol
-		logo.custom_minimum_size = Vector2(30, 30)
-		hdr.add_child(logo)
-	var title := Label.new()
-	title.text = "Simulator"
-	title.add_theme_font_override("font", UI.heading_font())
-	title.add_theme_font_size_override("font_size", 14)
-	title.add_theme_color_override("font_color", UI.MUT)
-	title.size_flags_vertical = Control.SIZE_SHRINK_END
-	hdr.add_child(title)
-	var ver := UI.small(VERSION)
-	ver.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	ver.autowrap_mode = TextServer.AUTOWRAP_OFF
-	ver.size_flags_vertical = Control.SIZE_SHRINK_END
-	hdr.add_child(ver)
-	kopf = preload("res://scripts/kopf.gd").new()       # 639t (Daniel 01.11.2026): the one header - ? 🔔 ↻ DE ☰ ⛶ ▲ 🛠 like MoveEye
-	kopf.build(self)                                      # (list and texts: ui_gemeinsam.json «kopf»; narrow panel: from DE on in ☰)
-	hdr.add_child(kopf)
-	devzugang = preload("res://scripts/devzugang.gd").new()   # 3.26 (MoveEye 639s): long press on wordmark / title = developer window,
-	devzugang.name = "DevZugang"                               # and the drawn tool button at the top right (developer area + owner)
-	add_child(devzugang)
-	devzugang.setup(self, hdr, [hdr.get_child(0), title, show_btn])
-	# Paket real-layout-leiste (Daniel 31.10.2026): the bar under the header like on every page of MoveEye (639o) -
-	# Einfach | Experte · Symbole farbig | schlicht · Beim Start: Nur Gruppen · Alle zuklappen / Nur Gruppen / Alle aufklappen
-	UI.icons_plain = ui_icons == "plain"
-	UI.motion_still = motion_reduced()                # 3.23 «Bewegung reduzieren»
-	leiste = preload("res://scripts/bedienleiste.gd").new()
-	leiste.build(self)
-	top_box.add_child(leiste)
-	simple_seg = leiste.simple_seg
-	_sg_cb = leiste.sg_cb
-	_fold_btns = leiste.fold_btns
-	# toolbar like above the settings of MoveEye: hide and search (the fold buttons are in the bar)
-	var tb := HBoxContainer.new()
-	ui_tb = tb
-	tb.add_theme_constant_override("separation", 6)
-	top_box.add_child(tb)
-	var hide_b := UI.icon_button("hide", "Bedienfeld ausblenden (H)")
-	hide_b.pressed.connect(func(): show_panel(false))
-	tb.add_child(hide_b)
-	search_in = UI.search_field("Einstellung suchen …")
-	search_in.text_changed.connect(_search)
-	tb.add_child(search_in)
-	search_none = UI.small("Kein Treffer")
-	search_none.visible = false
-	box_.add_child(search_none)
-	_mode_row = HBoxContainer.new()                 # 3D-3.94: one small line; Kinder | Erwachsene (Einfach | Experte is in the bar, real-layout-leiste)
-	_mode_row.add_theme_constant_override("separation", 6)
-	box_.add_child(_mode_row)
-	top_cards.append(_mode_row)
-	quick = preload("res://scripts/quick.gd").new()            # 3D-3.86: the quick tiles, at the very top
-	quick.main = self
-	box_.add_child(quick)
-	top_cards.append(quick)
-	# connection to MoveEye
-	var cn := UI.fold_card(box_, "Verbindung", true, "link")     # from 3D-3.37 it folds; the symbol is green when connected
-	fold_bodies.append(cn)
-	top_cards.append(cn.get_meta("card"))
-	conn_body = cn
-	stream_cb = CheckButton.new()
-	stream_cb.text = "An MoveEye senden (Port %d)" % stream_port
-	stream_cb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	stream_cb.add_theme_font_size_override("font_size", 15)
-	stream_cb.button_pressed = stream_on
-	stream_cb.toggled.connect(func(on): set_stream(on, true); stream_last = on; _settings_dirty = true)   # 3D-3.75: busy -> spare port
-	cn.add_child(stream_cb)
-	stream_note = UI.small("")
-	cn.add_child(stream_note)
-	status_label = UI.small("", UI.TXT)
-	status_label.add_theme_font_size_override("font_size", 13)
-	cn.add_child(status_label)
-	# 3D-3.45: tunnel - when the firewall of this PC lets nothing in (no admin rights)
-	if OS.get_name() == "Windows":                 # 3D-3.92: the real fix for «MoveEye findet den Simulator nicht»: one firewall rule
-		var fwb := Button.new()
-		fwb.text = "Windows-Firewall: Simulator freigeben (einmal, fragt nach Adminrechten)"
-		fwb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		fwb.tooltip_text = "Erlaubt dem Simulator eingehende Verbindungen im privaten Netz. Danach braucht es keinen Tunnel und keinen Code mehr."
-		fwb.pressed.connect(_firewall_allow)
-		cn.add_child(fwb)
-	var tn := UI.sub_fold(cn, "Tunnel zu MoveEye (Firewall ohne Adminrechte)", tunnel_on)
-	tn.set_meta("always", true)                     # 3D-3.46: it has no settings of the list - without this it was always hidden
-	sub_bodies.append(tn)
-	var tnote := UI.small("Lässt die Firewall dieses PCs MoveEye nicht herein, verbindet sich der Simulator selbst zu MoveEye. Adresse und Code stehen auf der Seite von MoveEye unter Simulator → «Simulator hinter einer Firewall».")
-	tnote.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	tn.add_child(tnote)
-	var th_ := LineEdit.new()
-	th_.placeholder_text = "Adresse von MoveEye, z. B. 192.168.1.20"
-	th_.text = tunnel_host
-	tn.add_child(th_)
-	var tc_ := LineEdit.new()
-	tc_.placeholder_text = "Code (6 Ziffern)"
-	tc_.max_length = 6
-	tc_.text = tunnel_code
-	tn.add_child(tc_)
-	var tcb := CheckButton.new()
-	tcb.text = "Tunnel verwenden"
-	tcb.button_pressed = tunnel_on
-	tn.add_child(tcb)
-	tunnel_label = UI.small("")
-	tunnel_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	tn.add_child(tunnel_label)
-	var apply_t := func():
-		tunnel_host = th_.text.strip_edges().trim_prefix("http://").trim_prefix("https://").get_slice("/", 0).get_slice(":", 0)
-		tunnel_code = tc_.text.strip_edges()
-		tunnel_on = tcb.button_pressed
-		tunnel.host = tunnel_host
-		tunnel.code = tunnel_code
-		tunnel.set_on(false)
-		tunnel.set_on(tunnel_on)
-		_settings_dirty = true
-	th_.text_submitted.connect(func(_t): apply_t.call())
-	th_.focus_exited.connect(apply_t)
-	tc_.text_submitted.connect(func(_t): apply_t.call())
-	tc_.focus_exited.connect(apply_t)
-	# 3D-3.92: saved at once while typing (an update a minute later restarted the simulator before the field was left)
-	var keep_t := func(_t):
-		tunnel_host = th_.text.strip_edges().trim_prefix("http://").trim_prefix("https://").get_slice("/", 0).get_slice(":", 0)
-		tunnel_code = tc_.text.strip_edges()
-		_save_settings()
-	th_.text_changed.connect(keep_t)
-	tc_.text_changed.connect(keep_t)
-	tcb.toggled.connect(func(_v): apply_t.call())
-	# camera pictures
-	# 3D-3.50: order by logic - first the connection, then the cameras (still visible while searching: not in top_cards)
-	var cm := UI.fold_card(box_, "Kameras", true, "camera")
-	fold_bodies.append(cm)
-	cam_body = cm
-	cam_card = cm.get_meta("card")
-	box_.move_child(cam_card, conn_body.get_meta("card").get_index() + 1)
-	cam_float = VBoxContainer.new()
-	cam_float.theme = th
-	cam_float.visible = false
-	cam_float.add_theme_constant_override("separation", 0)
-	cam_float.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var grip := PanelContainer.new()
-	grip.add_theme_stylebox_override("panel", UI.box(Color(UI.BG, 0.92), UI.LINE, 8, 4, 1))
-	grip.mouse_default_cursor_shape = Control.CURSOR_MOVE
-	grip.tooltip_text = "Kamerabilder verschieben: hier ziehen"
-	var gl := UI.small("✥ Ziehen zum Verschieben · H = Bedienfeld")
-	gl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	gl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	grip.add_child(gl)
-	grip.gui_input.connect(_cam_float_input)
-	cam_float.add_child(grip)
-	layer.add_child(cam_float)
-	prev0 = TextureRect.new()
-	prev0.texture = vps[0].get_texture()
-	prev0.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	prev0.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT
-	prev0.custom_minimum_size = Vector2(300, 169)
-	cm.add_child(prev0)
-	var row := HBoxContainer.new()
-	cm.add_child(row)
-	prev1 = TextureRect.new()
-	prev1.texture = vps[1].get_texture()
-	prev1.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	prev1.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT
-	prev1.custom_minimum_size = Vector2(146, 82)
-	row.add_child(prev1)
-	prevt = TextureRect.new()
-	prevt.texture = th_preview
-	prevt.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	prevt.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT
-	prevt.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
-	prevt.custom_minimum_size = Vector2(146, 112)
-	row.add_child(prevt)
-	# tools: MoveEye on this PC, map, phone
-	var tl := UI.fold_card(box_, "Testen", true, "check")      # 3D-3.90: everything that measures or tests MoveEye in one card; Menüs A: symbol «check» like the group (not the spanner of «Entwickler»)
-	fold_bodies.append(tl)
-	tools_body = tl
-	top_cards.append(tl.get_meta("card"))
-	mwpc_btn = Button.new()
-	mwpc_btn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	mwpc_btn.pressed.connect(func(): mwpc.toggle())
-	UI.primary(mwpc_btn)
-	tl.add_child(mwpc_btn)
-	mwpc_label = UI.small("")
-	tl.add_child(mwpc_label)
-	var tl_main := tl                                # 3D-3.86: the rest in folds - tests for MoveEye, training pictures, more
-	tl = UI.sub_fold(tl_main, "Erkennung messen (Testlauf, Prüfstand, blinde Flecken)", true)
-	tl.set_meta("always", true)
-	sub_bodies.append(tl)
-	testen_measure = tl                              # 3D-4.x: the group «Testlauf» lives here now (one place for testing)
-	testen_rec = UI.sub_fold(tl_main, "Aufnahme: Besuch aufnehmen und genau gleich abspielen", false)
-	testen_rec.set_meta("always", true)
-	sub_bodies.append(testen_rec)
-	var trh := HBoxContainer.new()
-	trh.add_theme_constant_override("separation", 6)
-	tl.add_child(trh)
-	var trp := OptionButton.new()
-	for p_ in ["quick", "standard", "night", "hard", "wetter"]:      # real-wetter: + «Wetter physikalisch»
-		trp.add_item(str(TestrunS.PLANS[p_]["name"]).get_slice(" (", 0) + " · " + str(int(round(TestrunS.DAUER[p_] / 30.0)) / 2.0).trim_suffix(".0") + " Min.")
-	trp.select(0)
-	trh.add_child(trp)
-	var trb := Button.new()
-	trb.text = "Testlauf starten"
-	trb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	trb.pressed.connect(func():
-		var r_: String = testrun.start(["quick", "standard", "night", "hard", "wetter"][trp.selected])
-		if r_ != "":
-			start_info = r_)
-	trh.add_child(trb)
-	var bmb := Button.new()
-	bmb.text = "Blinde Flecken: Person rund um MoveEye aufstellen"
-	bmb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	bmb.pressed.connect(func():
-		var r2: Dictionary = blindmap.start({})
-		if not bool(r2.get("ok", true)):
-			start_info = "Blinde Flecken: " + str(r2.get("error", "")))
-	tl.add_child(bmb)
-	var psb := Button.new()                          # Menüs A: the one place of the Prüfstand (no tile, not in the developer window)
-	psb.text = "Prüfstand: mehrere Testläufe, Ergebnis für GitHub"
-	psb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	psb.pressed.connect(func(): pruef.open(not pruef.visible))
-	tl.add_child(psb)
-	expert_cards.append(bmb)                         # Menüs A: «Einfach» = Testlauf, Aufnahme, Parcours, Einbruch - the rest «Experte»
-	expert_cards.append(psb)
-	tl = UI.sub_fold(tl_main, "Geräusche (Klatschschalter, Gesundheit, Lärm)", false)   # 3D-3.98
-	tl.set_meta("always", true)
-	tl.set_meta("expert_sub", true)                  # Menüs A: only «Experte» (_apply_simple)
-	sub_bodies.append(tl)
-	tl.add_child(UI.small("Das Geräusch kommt von der Person im Bett, sonst vom nächsten Besucher, sonst 2 m vor MoveEye. MoveEye braucht dafür «Klatschschalter» bzw. «Gesundheit» – beim klingelnden Wecker heisst Klatschen schlummern."))
-	var sgr := GridContainer.new()
-	sgr.columns = 3
-	tl.add_child(sgr)
-	for b_ in [["Klatschen 2×", "clap", 2], ["Klatschen 3×", "clap", 3], ["Klatschen 4×", "clap", 4], ["Niesen", "sneeze", 1], ["Reden", "voice", 1], ["Rufen", "shout", 1]]:
-		var snb := Button.new()
-		snb.text = b_[0]
-		snb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		snb.pressed.connect(func(): emit_sound(b_[1], b_[2]))
-		sgr.add_child(snb)
-	testen_stoer = UI.sub_fold(tl_main, "Störungen (Servos, Unterspannung, I2C – reagiert MoveEye richtig?)", false)   # 30.10.2026 (simint.gd)
-	testen_stoer.set_meta("always", true)
-	testen_stoer.set_meta("expert_sub", true)        # Menüs A: servo faults, I2C, undervoltage - only «Experte»
-	sub_bodies.append(testen_stoer)
-	testen_stoer.add_child(UI.small("Wie bei echter Hardware: MoveEye stoppt die Servos, meldet die Störung im Fehlerspeicher (Servo-Diagnose) und braucht bei Treiber-Fehlern «Freigeben»."))
-	simint.add_info(testen_stoer, UI)
-	testen_einbruch = UI.sub_fold(tl_main, "Einbruch-Abläufe (auskundschaften, ablenken, stehlen – wann warnt MoveEye?)", false)
-	testen_einbruch.set_meta("always", true)
-	sub_bodies.append(testen_einbruch)
-	einbruch.add_info(testen_einbruch, UI)
-	tl = UI.sub_fold(tl_main, "Diebstahlschutz prüfen (Referenz-Scan, Sabotage, Überraschung)", false)
-	tl.set_meta("always", true)
-	tl.set_meta("expert_sub", true)                  # Menüs A: only «Experte»
-	sub_bodies.append(tl)
-	# 3D-3.71: the reference scan of MoveEye, started from here
-	var rsh := HBoxContainer.new()
-	rsh.add_theme_constant_override("separation", 6)
-	tl.add_child(rsh)
-	for b_ in [["MoveEye: Referenz-Scan", "refscan"], ["Mit Referenz vergleichen", "refcompare"]]:
-		var rb := Button.new()
-		rb.text = b_[0]
-		rb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		rb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		rb.tooltip_text = "MoveEye fährt mit dem Kopf alle Richtungen ab: Referenz-Fotos aufnehmen bzw. vergleichen (Bericht in MoveEye unter Werkzeuge → Referenz-Scan)"
-		rb.pressed.connect(mw_request.bind(b_[1]))
-		rsh.add_child(rb)
-	var ntb := Button.new()                          # 3D-3.72
-	ntb.text = "Referenz-Scan: am Tag aufnehmen, in der Nacht vergleichen"
-	ntb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	ntb.pressed.connect(ref_night_test)
-	tl.add_child(ntb)
-	var gsb := Button.new()                          # 3D-3.98: theft with the GPS module
-	gsb.text = "GPS: MoveEye wird weggetragen"
-	gsb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	gsb.tooltip_text = "Die GPS-Position wandert mit 1.6 m/s weg (wie zu Fuss). MoveEye braucht «GPS-Modul» und «Diebstahl-Alarm» und muss scharf sein. Nochmals drücken = zurückstellen."
-	gsb.pressed.connect(func():
-		gps_steal(gps_steal_t <= 0.0)
-		gsb.text = "GPS: zurückstellen" if gps_steal_t > 0.0 else "GPS: MoveEye wird weggetragen")
-	tl.add_child(gsb)
-	# 3D-4.7 («Dinge wegnehmen zusammenlegen»): ONE list of the things to take away - «Bewachte Sachen» in «Gegenstände»
-	var pgb := Button.new()
-	pgb.text = "→ Bewachte Sachen: Velo, Zelt, Tisch, Kühlbox, Grill wegnehmen – merkt MoveEye, dass etwas fehlt?"
-	pgb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	pgb.pressed.connect(func(): inventar.open_sec("guard"))   # 3D-4.22: window «Gegenstände», part «Bewachte Sachen»
-	tl.add_child(pgb)
-	tl.add_child(UI.small("Sabotage-Test für den Diebstahlschutz von MoveEye (scharf schalten):"))
-	var sg := HBoxContainer.new()
-	sg.add_theme_constant_override("separation", 6)
-	tl.add_child(sg)
-	for b2 in [["Kamera abdecken", "cover"], ["Kopf wegdrehen", "turn"], ["Alles normal", "off"]]:
-		var sb_ := Button.new()
-		sb_.text = b2[0]
-		sb_.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		sb_.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		sb_.pressed.connect(_sabotage_btn.bind(str(b2[1])))
-		sg.add_child(sb_)
-	refscan_label = UI.small("")
-	tl.add_child(refscan_label)
-	tl.add_child(UI.small("Überraschung jetzt auslösen (bewertet MoveEye; nachts von selbst: Wetter → Überraschungsnacht):"))
-	var sug := GridContainer.new()                   # 3D-3.75
-	sug.columns = 3
-	sug.add_theme_constant_override("h_separation", 6)
-	sug.add_theme_constant_override("v_separation", 6)
-	tl.add_child(sug)
-	for kk in surprise.KINDS + [["morning", "Bewertung jetzt"]]:
-		var ub := Button.new()
-		ub.text = kk[1]
-		ub.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		ub.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		var key_: String = kk[0]
-		ub.pressed.connect(func(): surprise.morning() if key_ == "morning" else surprise.start(key_))
-		sug.add_child(ub)
-	surprise_label = UI.small("")
-	tl.add_child(surprise_label)
-	tl = UI.sub_fold(tl_main, "Trainingsbilder für eine eigene KI", false)
-	testen_train = tl
-	tl.set_meta("always", true)
-	sub_bodies.append(tl)
-	var dsr := HBoxContainer.new()                   # 3D-3.74: a training set for an own AI model
-	dsr.add_theme_constant_override("separation", 6)
-	tl.add_child(dsr)
-	var dsn := OptionButton.new()
-	for n_ in [200, 500, 1000, 2000]:
-		dsn.add_item("%d Bilder" % n_)
-	dsn.select(1)
-	dsr.add_child(dsn)
-	var dsb := Button.new()
-	dsb.text = "Trainingspaket (YOLO) machen"
-	dsb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	dsb.tooltip_text = "Bilder mit Rahmen für ein eigenes KI-Modell: viele Szenen, Tag, Nacht, Regen, Nebel, Schnee, Menschen und Tiere. ZIP auf den Schreibtisch."
-	dsb.pressed.connect(func():
-		if dataset.busy:
-			dataset.stop()
-		else:
-			dataset.export_pack([200, 500, 1000, 2000][dsn.selected], true))
-	dsr.add_child(dsb)
-	ds_label = UI.small("")
-	tl.add_child(ds_label)
-	kitrain.build(tl, dsn)                           # Vielfalt normal / hoch, «KI trainieren» (kitrain.gd)
-	var kdr := HBoxContainer.new()                   # «KI-Daten aufräumen» (kidaten.gd)
-	kdr.add_theme_constant_override("separation", 6)
-	tl.add_child(kdr)
-	var kdl := UI.small(preload("res://scripts/kidaten.gd").summary())
-	kdl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	kdl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var kdb := Button.new()
-	kdb.text = "Alte KI-Daten löschen"
-	kdb.tooltip_text = "Löscht alle Trainingspakete ausser dem neuesten (Ordner und ZIP). Das KI-Modell bleibt."
-	kdb.pressed.connect(func():
-		if dataset.busy or kitrain.running:
-			kdl.text = "Gerade beschäftigt – später nochmals."
-			return
-		var KD = preload("res://scripts/kidaten.gd")
-		var r: Dictionary = KD.aufraeumen(true, str(dataset.last_pack.get("dir", "")).get_file())
-		kdl.text = "Gelöscht: %d Pakete (%.0f MB) · %s" % [int(r["deleted"]), float(r["freed_mb"]), KD.summary()])
-	kdr.add_child(kdb)
-	kdr.add_child(kdl)
-	# Menüs A, Punkt 5 (Daniel 31.10.2026): the part «Mehr: Aufstellen, Erkunden, Handy-Simulator» is gone - Aufstell-Planer =
-	# tile «Aufstellen», Erkunden = bar below, Handy-Simulator = System → Karte und Livebild (phone_sim), Rückmeldung = «Mehr»
-	# the settings of the simulator: one card per group (with a symbol), parts inside (the same list the page of Motion
-	# Watch shows, in the same order - GROUPS / PLACE)
-	var groups := {}
-	var subs := {}
-	var fine_folds := {}
-	for c in controls:
-		if c.extra.get("hide", false) or c.extra.get("wiz", false) or c.extra.get("devwin", false):
-			continue                                     # 3D-3.90: only for MoveEye (the web page), not in the window; 3D-4.7: «wiz» = only in the game assistant; «devwin»: in the window «Mehr → Entwickler» (tab «Schalter» / «Spieltest»)
-		if c.group == "Testen" and testen_measure != null:   # 3D-4.x: into the card «Testen» (no own card «Testlauf» any more)
-			if c.id in ["testrun_plan", "testrun_start"]:
-				continue                                 # the card has its own row «plan + Testlauf starten»
-			var tgt: VBoxContainer = testen_rec if c.id.begins_with("rec_") else (testen_stoer if c.id.begins_with("stoer_") and testen_stoer != null else testen_measure)
-			if c.id.begins_with("einbruch_") and testen_einbruch != null:
-				tgt = testen_einbruch
-
-			var k0 := ui_items.size()
-			_ui_control(tgt, c)
-			for i in range(k0, ui_items.size()):
-				ui_items[i][3] = tools_body
-				ui_items[i].append(tgt)
-			continue
-		if not groups.has(c.group):
-			var ic := ""
-			for g in GROUPS:
-				if g[0] == c.group:
-					ic = g[1]
-			groups[c.group] = UI.fold_card(box_, c.group, c.group in ["Szene", "Besuch"], ic)
-			group_bodies[c.group] = groups[c.group]
-			fold_bodies.append(groups[c.group])
-			setting_bodies.append(groups[c.group])
-		if c.group == "Besuch" and str(c.extra.get("sub", "")) != "Vorlagen" and not subs.has("Besuch/Besucher hinsetzen"):
-			# after «Vorlagen»: the pictures of the visitors, people and animals apart (3D-3.38)
-			var vs := UI.sub_fold(groups[c.group], "Besucher hinsetzen", true)
-			vs.set_meta("always", true)
-			sub_bodies.append(vs)
-			subs["Besuch/Besucher hinsetzen"] = vs
-			var ivb := Button.new()                  # 3D-3.86: all people, animals and things in the inventory
-			ivb.text = "«Gegenstände» öffnen"
-			ivb.tooltip_text = "Zelt, Auto, bewachte Sachen, Menschen, Tiere und alle 80 Dinge der KI"
-			ivb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-			UI.primary(ivb)
-			ivb.pressed.connect(func(): inventar.toggle())
-			vs.add_child(ivb)
-			vs.add_child(UI.small("Bild in die Welt ziehen – oder anklicken und dann in die Welt klicken. Die Knöpfe weiter unten schicken Besuch, der von selbst daherkommt."))
-		var card_body: VBoxContainer = groups[c.group]
-		var target: VBoxContainer = card_body
-		var sub := str(c.extra.get("sub", ""))
-		var to_fine: bool = c.extra.get("expert", false) and c.group != "Entwickler"
-		if sub == "Feineinstellungen":                    # 3D-4.22: a part named «Feineinstellungen» = the one fold of the card (not two)
-			sub = ""
-			to_fine = true
-		if sub != "":
-			var key: String = c.group + "/" + sub
-			if not subs.has(key):
-				subs[key] = UI.sub_fold(card_body, sub, sub in ["Vorlagen", "Menschen einzeln", "Wildtiere"])
-				sub_bodies.append(subs[key])
-			target = subs[key]
-		# 3D-4.21 (Menü 2, same rule as MoveEye): «Einfach» shows the main switches, the rest sits in a closed «Feineinstellungen»
-		var folded := false
-		if to_fine:
-			var fk := str(target.get_instance_id())
-			if not fine_folds.has(fk):
-				var fb := UI.sub_fold(target, "Feineinstellungen", false)
-				if target != card_body:
-					fb.set_meta("outer", target)
-				fine_folds[fk] = fb
-				sub_bodies.append(fb)
-				fine_bodies.append(fb)
-			target = fine_folds[fk]
-			folded = true
-		var n0 := ui_items.size()
-		_ui_control(target, c)
-		for i in range(n0, ui_items.size()):
-			ui_items[i][3] = card_body
-			ui_items[i].append(target)
-			if folded:
-				ui_items[i][2] = false                     # not hidden in «Einfach» - folded
-	for fb in fine_folds.values():                     # «Feineinstellungen» last in its part / card
-		var w: Control = fb.get_meta("wrap")
-		w.get_parent().move_child(w, -1)
-	if groups.has("Entwickler"):
-		# 3D-4.22 (Angleichen, Daniel 30.10.2026): «Entwickler» like MoveEye - shown when MoveEye's «Entwickler-Bereich» is on
-		# (dev_area, sent by MoveEye), no longer tied to «Experte». Paket «Entwickler zusammenlegen»: the card has only the
-		# button «Entwickler-Fenster öffnen» (dev_open); «Diagnose-Paket» is in the window (devtool_schalter.gd); only the owner
-		dev_body = groups["Entwickler"]
-	update_btn = Button.new()
-	update_btn.text = "Nach Updates suchen (jetzt %s)" % VERSION
-	update_btn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	update_btn.pressed.connect(check_updates)
-	(subs.get("System/Updates", tl) as Control).add_child(update_btn)
-	if testen_measure != null:
-		testrun.add_info(testen_measure, UI)          # progress and result of the test run (card «Testen»)
-		nacht.add_info(testen_measure, UI)            # Nacht-Testlauf: progress, «abbrechen»
-	elif groups.has("Testen"):
-		testrun.add_info(groups["Testen"], UI)
-	if subs.has("Licht & Ton/Status-LED & Tasten") and statusled != null:   # 3D-4.22: the rules of the buttons are in MoveEye - hint + link
-		statusled.add_info(subs["Licht & Ton/Status-LED & Tasten"], UI)
-	if subs.has("Zusatzgeräte/Bewegungsmelder (PIR)"):    # real-pir-ton: state, reach, triggers (pir.gd)
-		pir.add_info(subs["Zusatzgeräte/Bewegungsmelder (PIR)"], UI)
-	if subs.has("Licht & Ton/Mikrofon"):              # real-pir-ton: level, background, the loudest sources (mikrofon.gd)
-		mikro.add_info(subs["Licht & Ton/Mikrofon"], UI)
-	if subs.has("Zusatzgeräte/Strom"):                # Simulator-Werte: what goes to MoveEye (power.gd)
-		simwerte.add_info(subs["Zusatzgeräte/Strom"], UI)
-	if subs.has("Kamerabild/Wie echt"):              # 3D-3.94: what the real look adjustment does
-		real_label = UI.small("")
-		real_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		subs["Kamerabild/Wie echt"].add_child(real_label)
-	if subs.has("Spiel/Runde"):
-		game.add_info(subs["Spiel/Runde"], UI)        # address, QR code and players of the game
-	elif groups.has("Spiel"):
-		game.add_info(groups["Spiel"], UI)
-	var keys := UI.fold_card(box_, "Tasten", false, "keys")
-	fold_bodies.append(keys)
-	info_label = UI.small("Maus: links ziehen = verschieben · rechts ziehen = drehen · Rad = zoomen (Shift + Rad: Tempo von W A S D) · mittlere Taste oder Alt + rechts = umschauen · Doppelklick = hinfliegen · Besucher anklicken = auswählen, ziehen = tragen.  Tasten: W A S D Q E fliegen (Shift schneller) · 1 / 2 Kamera · 3 Wärmebild · 0 frei · F folgen · Entf entfernen · Esc abwählen · H Bedienfeld · P Handy / Tablet · K Karte · G Gewehr (Linksklick = Schuss)")
-	keys.add_child(info_label)
-	expert_cards.append(keys.get_meta("card"))
-	top_cards.append(keys.get_meta("card"))
-	mehr = preload("res://scripts/mehr.gd").new()      # 3D-4.2x: card «Mehr» like MoveEye (Hilfe, Rundgang, Diagnose, Protokoll, Ansicht, Rückmeldung, Über)
-	mehr.main = self
-	add_child(mehr)
-	mehr.build(box_)
-	# Kinder | Erwachsene: on top (3D-3.90); Einfach | Experte is in the bar (leiste)
-	var se: Control = simple_seg
-	kids_seg = UI.segment("Kinder", "Erwachsene", not kids_on, func(adult): _kids_switch(adult), true)   # 3D-3.69
-	kids_seg.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_mode_row.add_child(kids_seg)
-	se.tooltip_text = "Einfach: das Wichtigste (Szene, Zeit, Wetter, Besuch, Testen, Spiel-Assistent). «Experte» zeigt alle."
-	simple_note = UI.small("")                      # 3D-3.94: the explanation as a tooltip, no line of its own
-	simple_note.visible = false
-	_apply_simple()
-	_sync_ui()
-	_fold_setup()                                      # nurgruppen: the own open / closed state, then «Nur Gruppen» on start
-	await _make_thumbs()
-	kids = preload("res://scripts/kids.gd").new()       # 3D-3.69: the panel of the «Kinder» mode (after the pictures)
-	kids.main = self
-	box_.add_child(kids)
-	box_.move_child(kids, 0)
-	_apply_kids()
+	await _mod("menues")._build_ui()
 
 
 # ---- toolbar, search, Simple / Expert --------------------------------------------------------------------------------
@@ -6267,67 +4081,19 @@ var _fold_t := 0.0
 
 
 func _fold_state() -> String:
-	"""which of the three fold buttons matches what is open now ("" = mixed)"""
-	var all_open := true
-	var all_closed := true
-	var groups := true
-	for b in fold_bodies:
-		if not is_instance_valid(b) or not b.get_parent().visible:
-			continue
-		var o: bool = b.visible
-		all_open = all_open and o
-		all_closed = all_closed and not o
-		groups = groups and o == _fold_group_open(b)
-	for sb in sub_bodies:
-		if not is_instance_valid(sb) or not sb.has_meta("fold"):
-			continue
-		var so: bool = (sb.get_meta("fold") as Control).visible
-		all_open = all_open and so
-		all_closed = all_closed and not so
-		groups = groups and not so
-	if mine_on:                                        # 639r «Meine Ansicht»: the middle is blue while it is on
-		return "mine"
-	if all_closed:
-		return "close"
-	if all_open:
-		return "open"
-	return "groups" if groups else ""
+	return _mod("menues")._fold_state()
 
 
 func _fold_paint() -> void:
-	"""light the button of the current fold state (called a few times a second, repaints only on a change)"""
-	if _fold_btns.is_empty():
-		return
-	var st := _fold_state()
-	if st == _fold_lit:
-		return
-	_fold_lit = st
-	for k in _fold_btns:
-		var b: Button = _fold_btns[k]
-		for n in ["normal", "hover", "pressed"]:
-			if k == st:
-				b.add_theme_stylebox_override(n, UI.box(UI.ACC, UI.ACC, 10))
-			else:
-				b.remove_theme_stylebox_override(n)
+	_mod("menues")._fold_paint()
 
 
 func _fold_group_open(b: Control) -> bool:
-	"""«Nur Gruppen» like MoveEye (Paket angleich, Daniel 31.10.2026): the groups open, their parts (Themen) closed.
-	3D-4.12 (Daniel): «Verbindung» stays closed; «Tasten» is a help card, no group"""
-	return not str(b.get_meta("title", "")) in ["Verbindung", "Tasten"]
+	return _mod("menues")._fold_group_open(b)
 
 
 func _fold_all(how: String, _own := false) -> void:
-	"""639r: «mine» = Meine Ansicht (the own state); «close» / «open» / «groups»: Meine Ansicht off, the own state stays as kept"""
-	_fold_lit = "-"
-	if how == "mine":
-		set_mine()
-		return
-	mine_on = false
-	for b in fold_bodies:
-		UI.set_open(b, how == "open" or (how == "groups" and _fold_group_open(b)))
-	for sb in sub_bodies:
-		UI.set_sub_open(sb, how == "open")
+	_mod("menues")._fold_all(how, _own)
 
 
 # ---- Paket nurgruppen (Daniel, 31.10.2026): «Beim Start: Nur Gruppen» ------------------------------------------------------
@@ -6342,229 +4108,58 @@ var _sg_cb: CheckButton
 
 
 func _fold_key(b: Control) -> String:
-	if b.has_meta("fold"):                             # a part (sub_fold): its card in front, the names are not unique
-		var w: Node = b.get_meta("wrap")
-		var par: Node = w.get_parent() if w != null else null
-		return "s:%s/%s" % [str(par.get_meta("title", "")) if par != null else "", str(b.get_meta("title", ""))]
-	return "c:" + str(b.get_meta("title", ""))
+	return _mod("menues")._fold_key(b)
 
 
 func _fold_is_open(b: Control) -> bool:
-	return (b.get_meta("fold") as Control).visible if b.has_meta("fold") else b.visible
+	return _mod("menues")._fold_is_open(b)
 
 
 func _fold_put(b: Control, open: bool) -> void:
-	if b.has_meta("fold"):
-		UI.set_sub_open(b, open)
-	else:
-		UI.set_open(b, open)
+	_mod("menues")._fold_put(b, open)
 
 
 func _fold_keep(b: Control) -> void:
-	if is_instance_valid(b) and mine_on:
-		_mine_change(_fold_key(b), _fold_is_open(b))
+	_mod("menues")._fold_keep(b)
 
 
 func _mine_change(key: String, open: bool) -> void:
-	"""639r: the ONE function per change of «Meine Ansicht» (saved locally; P2 hangs the sync with MoveEye in here)"""
-	if not mine_on or key == "":
-		return
-	fold_mem[key] = open
-	_settings_dirty = true
+	_mod("menues")._mine_change(key, open)
 
 
 func set_mine() -> void:
-	"""639r: the middle button «Meine Ansicht» - every card and part as the user left them"""
-	mine_on = true
-	_fold_own()
+	_mod("menues").set_mine()
 
 
 func _fold_setup() -> void:
-	"""after building the panel: remember how it was built, follow the clicks on the headings, own state, then the start view"""
-	for b in fold_bodies + sub_bodies:
-		if not is_instance_valid(b):
-			continue
-		_fold_init[_fold_key(b)] = _fold_is_open(b)
-		var hdr: Node = null
-		if b.has_meta("fold"):
-			var w: Node = b.get_meta("wrap")
-			hdr = w.get_child(1) if w != null and w.get_child_count() > 1 else null
-		elif b.get_parent() != null:
-			hdr = b.get_parent().get_child(0)
-		if hdr is Button:
-			(hdr as Button).pressed.connect(func(): _fold_keep(b))   # after the heading's own handler: the new state
-	if not mine_mig:                                   # 639r: once - who had «Beim Start: Nur Gruppen» gets it as the first Meine Ansicht
-		mine_mig = true
-		_settings_dirty = true
-		if start_groups:
-			start_groups = false
-			if _sg_cb != null:
-				_sg_cb.set_pressed_no_signal(false)
-			_fold_all("groups")
-			mine_on = true
-			for b in fold_bodies + sub_bodies:
-				_fold_keep(b)
-	start_groups = false                              # 3.23: the switch is gone - an old saved value is ignored, the start is «Meine Ansicht»
-	_fold_own()
-	mine_on = true
+	_mod("menues")._fold_setup()
 
 
 func _fold_own() -> void:
-	"""every card and part as the user left it (cards he never touched: as built)"""
-	_fold_lit = "-"
-	for b in fold_bodies + sub_bodies:
-		if is_instance_valid(b):
-			var k := _fold_key(b)
-			if fold_mem.has(k) or _fold_init.has(k):
-				_fold_put(b, bool(fold_mem.get(k, _fold_init.get(k))))
+	_mod("menues")._fold_own()
 
 
 func set_start_groups(_on: bool) -> void:
-	"""3.23: the switch «Beim Start: Nur Gruppen» is gone (an old call only goes back to «Meine Ansicht»)"""
-	start_groups = false
-	set_mine()
+	_mod("menues").set_start_groups(_on)
 
 
 func _search(q: String) -> void:
-	"""type into the search field: only the matching settings stay, their cards open; empty = everything as before"""
-	q = q.strip_edges().to_lower()
-	var any := false
-	for c in top_cards:
-		c.visible = q == "" and not (c in expert_cards and ui_simple)
-	var hit_bodies := {}
-	for it in ui_items:
-		var show_it: bool = (q == "" or str(it[1]).to_lower().contains(q)) and not (ui_simple and it[2] and q == "") and not _dev_hidden(it)
-		it[0].visible = show_it
-		if q != "" and show_it:
-			hit_bodies[it[3]] = true
-			any = true
-			if it.size() > 4 and it[4] != it[3]:
-				UI.set_sub_open(it[4], true)
-				if (it[4] as Control).has_meta("wrap"):
-					it[4].get_meta("wrap").visible = true        # Menüs A: a hit in a part that «Einfach» hides («expert_sub»)
-				if it[4].has_meta("outer"):
-					UI.set_sub_open(it[4].get_meta("outer"), true)
-	for b in setting_bodies:
-		b.get_meta("card").visible = q == "" or hit_bodies.has(b)
-		if q != "":
-			UI.set_open(b, hit_bodies.has(b))
-	search_none.visible = q != "" and not any
-	if q == "":
-		_apply_simple()
+	_mod("menues")._search(q)
 
 
 func _kids_switch(adult: bool) -> void:
-	"""the switch «Kinder | Erwachsene»: to the children at once, back to the adults only with a little sum"""
-	if not adult:
-		kids_on = true
-		_settings_dirty = true
-		_apply_kids()
-		return
-	if not kids_on:
-		return
-	ask_adult(func(ok):
-		if ok:
-			kids_on = false
-			_settings_dirty = true
-			_apply_kids()
-		else:
-			kids_seg.get_meta("paint").call(false))
+	_mod("menues")._kids_switch(adult)
 
 
 func _apply_kids() -> void:
-	"""Kinder: only the panel with the picture buttons and the switch; no search, no tool bar. Erwachsene: as before."""
-	if ui_box == null or kids == null:
-		return
-	if kids_on:
-		for c in ui_box.get_children():
-			c.visible = c == kids or c == kids_seg or c == _mode_row
-		if simple_seg != null:
-			simple_seg.visible = false
-		kids._build()
-		var sc := ui_box.get_parent()
-		if sc is ScrollContainer:
-			(sc as ScrollContainer).scroll_vertical = 0      # start at the top with the marmot
-	else:
-		kids.visible = false
-		for c in ui_box.get_children():
-			if c != kids and c != search_none:
-				c.visible = true
-		if simple_seg != null:
-			simple_seg.visible = true
-		var keep := kids_on
-		kids_on = false
-		_apply_simple()
-		kids_on = keep
-	if ui_tb != null:
-		ui_tb.visible = not kids_on
-	if leiste != null:
-		leiste.visible = not kids_on
-	if toolbar != null:
-		toolbar.visible = not kids_on
-	if kids_seg != null and kids_seg.has_meta("paint"):
-		kids_seg.get_meta("paint").call(not kids_on)
+	_mod("menues")._apply_kids()
 
 
 var _adult_box: Control = null
 
 
 func ask_adult(done: Callable) -> void:
-	"""a little sum for the adults (7 × 8 = ?) before leaving the «Kinder» mode (3D-3.95: can be switched off)"""
-	if not kids_ask:
-		done.call(true)
-		return
-	if _adult_box != null and is_instance_valid(_adult_box):
-		_adult_box.queue_free()
-	var a := randi_range(6, 9)
-	var b := randi_range(6, 9)
-	var pc := PanelContainer.new()
-	pc.theme = ui_root.theme
-	pc.add_theme_stylebox_override("panel", UI.box(UI.PANEL, UI.ACC, 14, 16, 2))
-	ui_layer.add_child(pc)
-	_adult_box = pc
-	var v := VBoxContainer.new()
-	v.add_theme_constant_override("separation", 10)
-	pc.add_child(v)
-	v.add_child(UI.heading("Frage für Erwachsene"))
-	var q := Label.new()
-	q.text = "Wie viel ist %d × %d?" % [a, b]
-	q.add_theme_font_size_override("font_size", 22)
-	v.add_child(q)
-	var le := LineEdit.new()
-	le.placeholder_text = "Antwort"
-	le.virtual_keyboard_type = LineEdit.KEYBOARD_TYPE_NUMBER
-	v.add_child(le)
-	var msg := UI.small("")
-	v.add_child(msg)
-	var h := HBoxContainer.new()
-	h.add_theme_constant_override("separation", 8)
-	v.add_child(h)
-	var ok_b := Button.new()
-	ok_b.text = "Weiter"
-	UI.primary(ok_b)
-	var no_b := Button.new()
-	no_b.text = "Abbrechen"
-	for x in [ok_b, no_b]:
-		x.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		x.custom_minimum_size = Vector2(0, 40)
-		h.add_child(x)
-	var check := func(_t = null):
-		if le.text.strip_edges() == str(a * b):
-			pc.queue_free()
-			done.call(true)
-		else:
-			msg.text = "Leider falsch – noch einmal."
-			le.text = ""
-	ok_b.pressed.connect(check)
-	le.text_submitted.connect(check)
-	no_b.pressed.connect(func():
-		pc.queue_free()
-		done.call(false))
-	pc.custom_minimum_size = Vector2(320, 0)
-	await get_tree().process_frame
-	var vs := get_viewport().get_visible_rect().size
-	pc.position = (vs - pc.size) / 2.0
-	le.grab_focus()
+	await _mod("menues").ask_adult(done)
 
 
 func motion_reduced() -> bool:
@@ -6607,36 +4202,7 @@ func set_simple(on: bool) -> void:
 
 
 func _apply_simple() -> void:
-	"""Simple: settings marked "expert" are hidden (and cards that would be empty)"""
-	var counts := {}
-	for it in ui_items:
-		var vis: bool = not (ui_simple and it[2])
-		if dev_body != null and it[3] == dev_body:
-			vis = _dev_card_ok()                           # 3D-4.22: «Entwickler» with MoveEye's switch, also in «Einfach» (+ only the owner)
-		elif vis and _dev_hidden(it):
-			vis = false                                    # 3D-4.28: «only» (e.g. «Standort im Ferienpark» only in that scene)
-		it[0].visible = vis
-		if vis:
-			counts[it[3]] = true
-	for b in setting_bodies:
-		b.get_meta("card").visible = counts.has(b)
-	var sub_counts := {}
-	for it in ui_items:
-		if it.size() > 4 and it[0].visible:
-			sub_counts[it[4]] = true
-			if (it[4] as Control).has_meta("outer"):          # 3D-4.22: a part with only «Feineinstellungen» stays visible
-				sub_counts[it[4].get_meta("outer")] = true
-	for sb in sub_bodies:
-		sb.get_meta("wrap").visible = (sub_counts.has(sb) or sb.has_meta("always")) and not (ui_simple and sb.has_meta("expert_sub"))   # Menüs A: «expert_sub» = whole part only «Experte»
-	for c in expert_cards:
-		c.visible = not ui_simple
-	for fb in fine_bodies:                             # 3D-4.21: closed in «Einfach», open in «Experte»
-		if is_instance_valid(fb):
-			UI.set_sub_open(fb, not ui_simple)
-	if simple_note != null:
-		simple_note.visible = false                    # 3D-3.94: tooltip of the switch instead
-	if kids_on and kids != null:
-		_apply_kids()
+	_mod("menues")._apply_simple()
 
 
 # ---- the pictures of the visitors: click to choose, drag into the world ------------------------------------------------
@@ -6648,56 +4214,19 @@ var drag_kind := ""
 
 
 func _palette_item(kind: String, name_: String) -> Control:
-	var pc := PanelContainer.new()
-	pc.custom_minimum_size = Vector2(72, 88)
-	pc.tooltip_text = name_ + ": in die Welt ziehen, oder anklicken und in die Welt klicken"
-	pc.mouse_default_cursor_shape = Control.CURSOR_DRAG
-	var v := VBoxContainer.new()
-	v.add_theme_constant_override("separation", 2)
-	v.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	pc.add_child(v)
-	var tr := TextureRect.new()
-	tr.custom_minimum_size = Vector2(60, 54)
-	tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	tr.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	v.add_child(tr)
-	var l := Label.new()
-	l.text = name_
-	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	l.add_theme_font_size_override("font_size", 11)
-	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART     # 3D-3.43: long names wrap - before they pushed the panel over the right edge
-	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	v.add_child(l)
-	thumb_rects[kind] = tr
-	palette_items[kind] = pc
-	pc.gui_input.connect(func(ev):
-		if ev is InputEventMouseButton and ev.button_index == MOUSE_BUTTON_LEFT and not ev.pressed and drag_kind == "":
-			place_kind = "" if place_kind == kind else kind
-			_paint_palette())
-	var drag_fn := func(_pos):
-		drag_kind = kind
-		var pv := TextureRect.new()
-		pv.texture = thumbs.get(kind)
-		pv.custom_minimum_size = Vector2(72, 66)
-		pv.size = Vector2(72, 66)
-		pv.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		pv.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		pv.modulate = Color(1, 1, 1, 0.85)
-		pc.set_drag_preview(pv)
-		return {"visitor": kind}
-	pc.set_drag_forwarding(drag_fn, func(_p, _d): return false, func(_p, _d): pass)
-	_paint_palette.call_deferred()
-	return pc
+	return _mod("menues")._palette_item(kind, name_)
 
 
 func _paint_palette() -> void:
-	for k in palette_items:
-		var on: bool = k == place_kind
-		palette_items[k].add_theme_stylebox_override("panel", UI.box(UI.PANEL if not on else UI.ACC.darkened(0.55), UI.ACC if on else UI.LINE, 10, 4, 2 if on else 1))
+	_mod("menues")._paint_palette()
 
 
 func _notification(what: int) -> void:
+	if what == NOTIFICATION_PREDELETE:          # the parts main_*.gd (Object): go with main.gd, also their waiting functions (await)
+		for m in _mods.values():
+			m.free()
+		_mods.clear()
+		return
 	if what == NOTIFICATION_DRAG_END and drag_kind != "":
 		var k := drag_kind
 		drag_kind = ""
@@ -6708,52 +4237,7 @@ func _notification(what: int) -> void:
 
 
 func _make_thumbs() -> void:
-	"""a little moving picture of every visitor (3D-3.24): each walks on the spot in a small world of its own; only
-	the pictures that can be seen are drawn again, about 12 times a second"""
-	var sizes := {"person": 1.9, "child": 1.3, "jogger": 1.9, "deer": 1.7, "boar": 1.1, "fox": 0.8, "dog": 0.9, "cat": 0.6, "badger": 0.6, "hare": 0.65, "hedgehog": 0.32,
-			"wolf": 1.1, "marten": 0.38, "squirrel": 0.3, "cyclist": 1.9, "stroller": 1.9, "courier": 1.9, "police": 1.9, "drunk": 1.9,
-			"cow": 1.7, "sheep": 0.9, "horse": 2.0, "chamois": 1.1, "ibex": 1.3, "lynx": 0.9}
-	for k in VISITOR_LIST:
-		var vp := SubViewport.new()
-		vp.size = Vector2i(128, 116)
-		vp.transparent_bg = true
-		vp.own_world_3d = true
-		vp.msaa_3d = Viewport.MSAA_2X
-		vp.render_target_update_mode = SubViewport.UPDATE_ONCE
-		add_child(vp)
-		var cam := Camera3D.new()
-		cam.cull_mask = 1
-		cam.fov = 30
-		var e := Environment.new()
-		e.background_mode = Environment.BG_CLEAR_COLOR
-		e.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-		e.ambient_light_color = Color(0.75, 0.78, 0.85)
-		e.ambient_light_energy = 0.7
-		cam.environment = e
-		vp.add_child(cam)
-		var sun_ := DirectionalLight3D.new()
-		sun_.rotation = Vector3(deg_to_rad(-45), deg_to_rad(-35), 0)
-		sun_.light_energy = 1.3
-		vp.add_child(sun_)
-		var a = Actor.new()
-		a.preview = true
-		vp.add_child(a)
-		a.setup(self, k[0], Vector3.ZERO, Vector3(-0.8, 0, 1.0), 0.0)
-		a.speed = THUMB_SPEED.get(k[0], 1.0)
-		var h: float = sizes.get(k[0], 1.0)
-		var wide: bool = k[0] in ["fox", "deer", "boar", "dog", "cat", "badger", "hare", "hedgehog", "wolf", "marten", "squirrel", "cow", "sheep", "horse",
-				"chamois", "ibex", "lynx", "cyclist", "stroller"]
-		cam.position = Vector3(h * 1.1, h * 0.62, h * 1.75) * (1.15 if wide else 0.78)
-		cam.look_at(Vector3(0, h * 0.48, 0), Vector3.UP)
-		thumb_vps[k[0]] = [vp, a]
-		var t: Texture2D = vp.get_texture()
-		thumbs[k[0]] = t
-		if thumb_rects.has(k[0]):
-			thumb_rects[k[0]].texture = t
-		for tb in thumb_btns:
-			if tb[1] == k[0] and is_instance_valid(tb[0]):
-				tb[0].icon = t
-		await get_tree().process_frame
+	await _mod("menues")._make_thumbs()
 
 
 const THUMB_SPEED := {"cyclist": 3.0, "stroller": 1.1, "courier": 1.6, "police": 1.2, "drunk": 0.8, "cow": 0.8, "sheep": 0.9, "horse": 1.3,
@@ -6805,97 +4289,19 @@ func _on_mwpc() -> void:
 
 
 func check_updates() -> void:
-	"""button «Nach Updates suchen» in the window: asks before installing and also says when there is nothing new"""
-	run_update(false, true)
+	_mod("start").check_updates()
 
 
 func run_update(automatic: bool, by_hand: bool) -> void:
-	"""check GitHub for a newer simulator. automatic: install by itself after 15 s (can be cancelled) - for the setting
-	«Neue Versionen automatisch installieren» and for the button on the web page of MoveEye (from far away)."""
-	if update_busy:
-		return
-	update_busy = true
-	if update_btn != null:
-		update_btn.disabled = true
-	update_info = "suche …"
-	var up = Updater.new()
-	up.manual = by_hand
-	up.quiet = not by_hand
-	up.auto = automatic
-	add_child(up)
-	update_node = up                              # Ruhebild: busy_reply() tells MoveEye about the update
-	await up.check(VERSION, update_url)
-	update_info = up.result
-	update_node = null
-	up.queue_free()
-	update_busy = false
-	if update_btn != null:
-		update_btn.disabled = false
-	_sync_update_ui()
+	await _mod("start").run_update(automatic, by_hand)
 
 
 func _restore_window(args: PackedStringArray) -> void:
-	"""after an update (or from the options): the window comes back as it was - size and place, full screen, or the
-	small box / icon in the corner"""
-	var w := get_window()
-	var i := args.find("--win")
-	if i >= 0 and i + 1 < args.size():
-		var p := args[i + 1].split(",")
-		if p.size() == 4:
-			w.size = Vector2i(maxi(400, int(p[2])), maxi(300, int(p[3])))
-			w.position = Vector2i(int(p[0]), int(p[1]))
-	if "--maximized" in args:
-		w.mode = Window.MODE_MAXIMIZED
-	if "--mini" in args or "--mini-tiny" in args:
-		var tiny := "--mini-tiny" in args
-		get_tree().create_timer(1.0).timeout.connect(func():
-			if not mini_box.mini:
-				mini_box.enter()
-			if tiny:
-				mini_box.set_tiny(true))
+	_mod("start")._restore_window(args)
 
 
 func restart_args() -> PackedStringArray:
-	"""options for the start after an update: as before, plus what is on now (sending, scene, MoveEye on this PC,
-	the window: size and place, full screen, or the small box)"""
-	var a := OS.get_cmdline_user_args()
-	var out := PackedStringArray()
-	var skip := false
-	var early := net == null                     # the update check right at the start: nothing is switched on yet - keep what was asked for
-	for x in a:
-		if skip:
-			skip = false
-			continue
-		if x in ["--stream", "--updated", "--mwpc"] or (not early and x in ["--mini", "--mini-tiny", "--maximized"]):
-			continue
-		if x == "--scene" or x == "--old-pid" or (x == "--win" and not early):
-			skip = true
-			continue
-		out.append(x)
-	if stream_on or (early and "--stream" in a):
-		out.append("--stream")
-	if not early:
-		var w := get_window()
-		if mini_box != null and mini_box.mini:
-			out.append("--mini-tiny" if mini_box.tiny else "--mini")
-			var sz: Vector2i = mini_box.saved.get("size", Vector2i(1440, 860))
-			var ps: Vector2i = mini_box.saved.get("pos", Vector2i(60, 60))
-			out.append("--win")
-			out.append("%d,%d,%d,%d" % [ps.x, ps.y, sz.x, sz.y])
-		elif w.mode == Window.MODE_MAXIMIZED or w.mode == Window.MODE_FULLSCREEN:
-			out.append("--maximized")
-		elif w.mode == Window.MODE_MINIMIZED:
-			out.append("--mini")
-		else:
-			out.append("--win")
-			out.append("%d,%d,%d,%d" % [w.position.x, w.position.y, w.size.x, w.size.y])
-	out.append("--scene")
-	out.append(scene)
-	out.append("--old-pid")                       # 3D-3.75: the new simulator may stop this one if it still holds the port
-	out.append(str(OS.get_process_id()))
-	if mwpc != null and mwpc.state == "running":
-		out.append("--mwpc")
-	return out
+	return _mod("start").restart_args()
 
 
 const KEEP := ["pad_auto", "pad_sens", "pad_inv_y", "pad_swap", "pad_rumble", "colors_on", "seasons_on", "pad_dead", "pad_center", "show_laser", "game_max", "tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "fp_spot", "szene_spot", "bt_spot", "bt_bed", "bt_season", "bt_free", "bt_events", "bt_mount", "bt_bag", "bt_stove", "bt_wall", "bt_orient", "bt_marks", "bt_visited", "auto_update", "dev_updates", "news_seen", "news_popup", "show_zones3d", "show_det3d", "fauna_on", "twin", "ui_simple", "ui_icons", "ui_icons_pick", "start_groups", "mine_mig", "auto_visitors", "daily_life", "real_weather", "real_time", "night_weather", "surprise_on", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
@@ -6904,128 +4310,34 @@ var _settings_dirty := false
 
 
 func _load_settings() -> void:
-	"""the settings of the last time (simulator_settings.json in the user folder)"""
-	if not FileAccess.file_exists(SETTINGS_FILE):
-		return
-	var d = JSON.parse_string(FileAccess.get_file_as_string(SETTINGS_FILE))
-	if typeof(d) != TYPE_DICTIONARY:
-		return
-	quality_set = d.has("quality")
-	for k in KEEP:
-		if d.has(k):
-			var v = d[k]
-			var old = get(k)
-			if typeof(old) == TYPE_INT:
-				v = int(v)
-			elif typeof(old) == TYPE_BOOL:
-				v = bool(v)
-			elif typeof(old) == TYPE_FLOAT:
-				v = float(v)
-			else:
-				v = str(v)
-			set(k, v)
-	if not bool(d.get("ui_icons_pick", false)) and str(d.get("ui_icons", "")) != "color":
-		ui_icons = "color"                                # 3.23: files up to 3.22 saved the old standard «schlicht» - now «farbig»
-	if typeof(d.get("fold_mem")) == TYPE_DICTIONARY:      # nurgruppen: the own open / closed state of the cards and parts
-		fold_mem = preload("res://scripts/ui_gemeinsam.gd").migrate_fold(d["fold_mem"])   # P1: «Sensoren» -> «Zusatzgeräte» …
-	grafik_mode = Quality.mode_id(grafik_mode)            # 3D-4.25: unknown / older names -> «Automatisch»
-	if game_mode == "teamguard":                          # Balance 30.10.2026: «Team gegen Team» is gone
-		game_mode = "guard"
-	if d.has("hour_now") and not "--hour" in OS.get_cmdline_user_args() and not "--hour" in OS.get_cmdline_args() and not real_time:
-		# 3D-3.76: the time as it was set; a short break (update, restart) - the clock went on meanwhile, like outside
-		speed = clampf(float(d.get("speed_now", 1.0)), 1.0, 120.0)
-		var gap: float = Time.get_unix_time_from_system() - float(d.get("hour_at", 0))
-		set_hour(float(d["hour_now"]) + (gap * speed / 3600.0 if gap >= 0.0 and gap < 1800.0 else 0.0))
+	_mod("einstellungen")._load_settings()
 
 
 var _hour_saved_t := 0.0
 
 
 func _save_settings() -> void:
-	var d := {}
-	for k in KEEP:
-		d[k] = get(k)
-	for k in _perf_orig:                                   # 3D-3.88: «automatisch leichter» is not saved
-		d[k] = _perf_orig[k]
-	if _grafik_keep != "":
-		d["grafik_mode"] = _grafik_keep
-	d["hour_now"] = snappedf(hour(), 0.001)               # 3D-3.76: the time of the scene stays after a restart
-	d["hour_at"] = int(Time.get_unix_time_from_system())
-	d["speed_now"] = speed
-	d["fold_mem"] = fold_mem                              # nurgruppen
-	if mehr != null:
-		d.merge(mehr.keep(), true)                        # 3D-4.2x: look (Hell / Rotlicht / Dunkel) and the tour
-	_hour_saved_t = now()
-	var f := FileAccess.open(SETTINGS_FILE, FileAccess.WRITE)
-	if f != null:
-		f.store_string(JSON.stringify(d, " "))
-	_settings_dirty = false
+	_mod("einstellungen")._save_settings()
 
 
 func set_autostart(on: bool) -> void:
-	var err: String = Autostart.set_on(on)
-	autostart_on = Autostart.is_on()
-	start_info = "Autostart: " + err if err != "" else ("Startet mit dem PC" if autostart_on else "")
-	_sync_ui()
+	_mod("start").set_autostart(on)
 
 
 func setup_autologon() -> void:
-	"""without signing in: Windows signs in by itself (Autologon of Microsoft), the simulator starts and locks the screen"""
-	start_info = "Autologon wird geladen …"
-	_update_status()
-	await get_tree().process_frame
-	var err: String = Autostart.get_autologon()
-	if err != "":
-		start_info = "Autologon: " + err
-		return
-	if not autostart_on:
-		set_autostart(true)
-	autostart_lock = true
-	_settings_dirty = true
-	start_info = "Im Fenster «Autologon» das Windows-Passwort eingeben und «Enable» drücken"
-	_sync_ui()
+	await _mod("start").setup_autologon()
 
 
 func _dev_check() -> void:
-	"""3D-3.81: the development phase - has simulator3d/version.json a new commit on GitHub? The answer «unchanged» (304
-	with the ETag) does not count against GitHub's limit of 60 questions per hour. New commit -> update at once."""
-	_dev["busy"] = true
-	_dev["t"] = now()
-	var h := HTTPRequest.new()
-	h.timeout = 8.0
-	add_child(h)
-	var hd := ["User-Agent: MoveEye-Sim", "Accept: application/vnd.github+json"]
-	if str(_dev["etag"]) != "":
-		hd.append("If-None-Match: " + str(_dev["etag"]))
-	var err := h.request("https://api.github.com/repos/DonElektro/MotionWatch/commits?path=simulator3d/version.json&per_page=1", hd)
-	if err == OK:
-		var r: Array = await h.request_completed
-		if r[0] == HTTPRequest.RESULT_SUCCESS and r[1] == 200:
-			for x in r[2]:
-				if str(x).to_lower().begins_with("etag:"):
-					_dev["etag"] = str(x).substr(5).strip_edges()
-			var j = JSON.parse_string((r[3] as PackedByteArray).get_string_from_utf8())
-			var sha: String = str(j[0].get("sha", "")) if typeof(j) == TYPE_ARRAY and j.size() > 0 else ""
-			if sha != "" and sha != str(_dev["sha"]):
-				var first: bool = str(_dev["sha"]) == ""
-				_dev["sha"] = sha
-				if not first:                               # (the first answer only notes the state)
-					print("development phase: new simulator commit - looking for the update")
-					run_update(true, false)
-	h.queue_free()
-	_dev["busy"] = false
+	await _mod("start")._dev_check()
 
 
 func set_auto_update(on: bool) -> void:
-	auto_update = on
-	_save_settings()
-	next_update_check = now() + 5.0 if on else now() + UPDATE_EVERY   # switched on: look soon
-	_sync_update_ui()
+	_mod("start").set_auto_update(on)
 
 
 func _sync_update_ui() -> void:
-	if update_btn != null:
-		update_btn.text = "Nach Updates suchen (jetzt %s)" % VERSION
+	_mod("status")._sync_update_ui()
 
 
 func _toggle_phone() -> void:
@@ -7060,200 +4372,22 @@ func _open_preview() -> void:
 
 
 func _ui_control(parent: Control, c: Dictionary) -> void:
-	match c.type:
-		"button":
-			var b := Button.new()
-			b.text = UI.short(no_emoji(c.label))[0]     # 3D-3.98: the window has no emoji font (the page of MoveEye keeps them); 3D-4.21: short, the rest in the tooltip
-			b.pressed.connect(func(): c["set"].call())
-			var tk: String = {"dogwalk": "dog", "herd": "deer", "feed": "deer", "garden_person": "person", "bench": "person", "thief": "person"}.get(
-					str(c.id), str(c.id).trim_prefix("spawn_"))
-			if not tk in VISITOR_KINDS_ALL and Sym.lead(c.label)[0] != "":
-				b.icon = Sym.tex(Sym.lead(c.label)[0])      # 3D-4.22: the drawn symbol instead of the emoji
-			if tk in VISITOR_KINDS_ALL:                    # the small picture of the visitor on its button (3D-3.38)
-				b.add_theme_constant_override("icon_max_width", 26)
-				b.alignment = HORIZONTAL_ALIGNMENT_LEFT
-				thumb_btns.append([b, tk])
-				if thumbs.has(tk):
-					b.icon = thumbs[tk]
-			b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-			var flow: HFlowContainer = null                # buttons side by side, wrapping (like the tiles on the page)
-			if parent.get_child_count() > 0 and parent.get_child(parent.get_child_count() - 1) is HFlowContainer:
-				flow = parent.get_child(parent.get_child_count() - 1)
-			else:
-				flow = HFlowContainer.new()
-				flow.add_theme_constant_override("h_separation", 6)
-				flow.add_theme_constant_override("v_separation", 6)
-				parent.add_child(flow)
-			b.custom_minimum_size = Vector2(150 if b.text.length() < 22 else 300, 0)
-			b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART   # long texts on two lines (never wider than the panel)
-			b.tooltip_text = c.label
-			flow.add_child(b)
-			if c.has("ro"):
-				ui_rows[c.id] = b                          # Menüs A: greyed out by _sync_ui
-			ui_items.append([b, c.label, c.extra.get("expert", false), parent])
-		"toggle":
-			var row := HBoxContainer.new()                   # text (wraps) + switch on the right, like on the page of MoveEye
-			var tl := Label.new()
-			var sh: Array = UI.short(no_emoji(c.label))          # 3D-4.21: at most ~40 characters, the rest in the tooltip
-			if Sym.lead(c.label)[0] != "":
-				row.add_child(Sym.icon_rect(Sym.lead(c.label)[0]))   # 3D-4.22: the drawn symbol in front
-			tl.text = sh[0]
-			tl.tooltip_text = sh[1]
-			tl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-			tl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-			tl.custom_minimum_size = Vector2(60, 0)
-			tl.mouse_filter = Control.MOUSE_FILTER_STOP
-			row.add_child(tl)
-			var cb := CheckButton.new()
-			cb.toggled.connect(func(on): c["set"].call(on))
-			cb.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-			row.add_child(cb)
-			tl.gui_input.connect(func(ev):
-				if ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_LEFT:
-					cb.button_pressed = not cb.button_pressed)
-			parent.add_child(row)
-			ui_rows[c.id] = cb
-			ui_items.append([row, c.label, c.extra.get("expert", false), parent])
-		"select":
-			var hb := VBoxContainer.new()                    # label above the choice: long choices never widen the panel
-			hb.add_theme_constant_override("separation", 2)
-			var l := Label.new()
-			var shs: Array = UI.short(no_emoji(c.label))
-			l.text = shs[0]
-			l.tooltip_text = shs[1]
-			l.mouse_filter = Control.MOUSE_FILTER_PASS
-			l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-			hb.add_child(l)
-			var ob := OptionButton.new()
-			ob.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-			ob.fit_to_longest_item = false
-			ob.clip_text = true
-			ob.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-			for o in c.extra.options:
-				ob.add_item(o[1])
-				ob.set_item_metadata(ob.item_count - 1, o[0])
-			ob.item_selected.connect(func(idx): c["set"].call(ob.get_item_metadata(idx)))
-			hb.add_child(ob)
-			parent.add_child(hb)
-			ui_rows[c.id] = ob
-			ui_items.append([hb, c.label, c.extra.get("expert", false), parent])
-		"map":                                            # in the window: a button that opens the map (karte.gd)
-			var mb := Button.new()
-			mb.text = "Karte öffnen: " + c.label + " (K)"
-			mb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-			mb.pressed.connect(open_map)
-			parent.add_child(mb)
-			ui_items.append([mb, c.label, c.extra.get("expert", false), parent])
-		"text":
-			var tb := VBoxContainer.new()
-			tb.add_theme_constant_override("separation", 2)
-			var tl2 := Label.new()
-			var sht: Array = UI.short(no_emoji(c.label))
-			tl2.text = sht[0]
-			tl2.tooltip_text = sht[1]
-			tl2.mouse_filter = Control.MOUSE_FILTER_PASS
-			tl2.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-			tb.add_child(tl2)
-			var le := LineEdit.new()
-			le.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-			le.text_submitted.connect(func(t): c["set"].call(t))
-			tb.add_child(le)
-			parent.add_child(tb)
-			ui_rows[c.id] = le
-			ui_items.append([tb, c.label, c.extra.get("expert", false), parent])
-		"slider":
-			var vb := VBoxContainer.new()
-			var hb2 := HBoxContainer.new()
-			var l2 := Label.new()
-			var shl: Array = UI.short(no_emoji(c.label))
-			if Sym.lead(c.label)[0] != "":
-				hb2.add_child(Sym.icon_rect(Sym.lead(c.label)[0]))   # 3D-4.22: the drawn symbol in front
-			l2.text = shl[0]
-			l2.tooltip_text = shl[1]
-			l2.mouse_filter = Control.MOUSE_FILTER_PASS
-			l2.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-			l2.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-			var val := Label.new()
-			hb2.add_child(l2)
-			hb2.add_child(val)
-			vb.add_child(hb2)
-			var hs := HSlider.new()
-			hs.min_value = c.extra["min"]
-			hs.max_value = c.extra["max"]
-			hs.step = c.extra.get("step", 1)
-			hs.value_changed.connect(func(v):
-				val.text = "%s %s" % [str(snappedf(v, 0.01)), c.extra.get("unit", "")]
-				if not _syncing:
-					c["set"].call(v))
-			vb.add_child(hs)
-			if c.extra.has("tip"):                       # 3D-3.95: explanation when the mouse is over it
-				vb.tooltip_text = str(c.extra["tip"])
-				hs.tooltip_text = str(c.extra["tip"])
-			parent.add_child(vb)
-			ui_rows[c.id] = hs
-			ui_items.append([vb, c.label, c.extra.get("expert", false), parent])
+	_mod("einstellungen")._ui_control(parent, c)
 
 
 var _syncing := false
 
 
 func refresh_controls() -> void:
-	"""the list of recordings changed: new options for the select (the page of MoveEye shows them at once)"""
-	for c in controls:
-		if c.id == "rec_pick":
-			c.extra["options"] = recorder.options()
-	_sync_ui()
+	_mod("status").refresh_controls()
 
 
 func _sync_ui() -> void:
-	_syncing = true
-	for c in controls:
-		if not ui_rows.has(c.id) or c["get"] == null:
-			continue
-		var w = ui_rows[c.id]
-		var v = c["get"].call()
-		if w is CheckBox or w is CheckButton:
-			w.set_pressed_no_signal(bool(v))
-		elif w is OptionButton:
-			for i in range(w.item_count):
-				if str(w.get_item_metadata(i)) == str(v):
-					w.select(i)
-		elif w is HSlider and not w.has_focus():
-			w.value = float(v)
-		elif w is LineEdit and not w.has_focus():
-			w.text = str(v)
-		if w is HSlider and c.has("ro"):              # Aufräumen 2: only readable now (e.g. the battery size «von MoveEye»)
-			w.editable = not bool(c["ro"].call())
-	for c in controls:                                # Menüs A: switches, choices and buttons greyed out too (e.g. «Foto-Modus» without a photo)
-		if c.has("ro") and ui_rows.has(c.id) and (ui_rows[c.id] is BaseButton):
-			var ro_: bool = bool(c["ro"].call())
-			ui_rows[c.id].disabled = ro_
-			ui_rows[c.id].tooltip_text = T.t("Zuerst ein Foto des Platzes laden (Gegenstände → Foto des Platzes)") if ro_ and c.id in PHOTO_IDS else ""
-	_syncing = false
+	_mod("status")._sync_ui()
 
 
 func group_active(g: String) -> int:
-	"""3D-3.43: is something of this group switched on? 0 = no, 1 = on (green), 2 = something to watch (orange)"""
-	match g:
-		"Szene":
-			return 1 if geo != null and geo.loaded and scene == "ort" else 0
-		"Wetter":
-			return 1 if real_weather else 0
-		"Besuch":
-			return 1 if auto_visitors else 0
-		"Kamerabild":
-			return 2 if cond.values().has(true) else 0
-		"Zusatzgeräte":
-			return 2 if door_open or gas_on else 0
-		"Mover":
-			return 1 if mover_on else 0
-		"Spiel":
-			return 1 if game != null and game.open else 0
-		"Wildtier":
-			return 1 if rifle_on else 0
-		"Testen":
-			return 1 if testrun != null and testrun.running else 0
-	return 0
+	return _mod("status").group_active(g)
 
 
 func _game_report_send() -> void:
@@ -7265,73 +4399,15 @@ func _game_report_send() -> void:
 
 
 func _groups_on() -> Dictionary:
-	var o := {}
-	for g in group_bodies:
-		var v := group_active(g)
-		if v > 0:
-			o[g] = v
-	o["Verbindung"] = 1 if connected() else 0
-	return o
+	return _mod("status")._groups_on()
 
 
 func _paint_groups() -> void:
-	"""the symbol of a group card turns green when it is on (like «Verbindung»), orange when something is to be watched"""
-	for g in group_bodies:
-		var st := group_active(g)
-		if _group_state.get(g, -1) == st:
-			continue
-		_group_state[g] = st
-		UI.fold_active(group_bodies[g], st)              # 3D-3.50: symbol and arrow green / orange, the name stays white
-	if cam_body != null:
-		UI.fold_active(cam_body, 1 if connected() else 0)
-	if tools_body != null:
-		UI.fold_active(tools_body, 1 if (mwpc != null and mwpc.state == "running") or (pruef != null and pruef.running) or (dataset != null and dataset.busy) or (testrun != null and testrun.running) or (blindmap != null and blindmap.busy) else 0)
+	_mod("status")._paint_groups()
 
 
 func _update_status() -> void:
-	if real_label != null and realism != null:
-		real_label.text = "Echt-Abgleich: " + realism.info
-		var cps: String = camphys.status() if camphys != null else ""
-		if cps != "":
-			real_label.text += "\n" + cps                 # 3D-4.x P1: exposure and gain of the head camera right now
-	_night_test_tick()
-	if refscan_label != null:
-		refscan_label.text = refscan_text()
-	if surprise_label != null:
-		surprise_label.text = surprise.status_text()
-	if ds_label != null and dataset != null:
-		ds_label.text = ("Trainingspaket: " + dataset.msg) if dataset.msg != "" else ""
-	if not mw_cmd.is_empty() and start_info.begins_with("MoveEye: "):
-		var r_ = mw.get("refscan", null)
-		if typeof(r_) == TYPE_DICTIONARY and int(r_.get("cmd_seen", 0)) >= int(mw_cmd["id"]):
-			start_info = ""                                  # MoveEye took the request
-	if status_label != null:
-		status_label.text = Sym.clean(status_text())     # 3D-4.22: no empty boxes (MoveEye gets the text with its emoji)
-	if tunnel_label != null and tunnel != null:
-		var ts: Dictionary = tunnel.state()
-		tunnel_label.text = ("Ziel: %s:%d (Port von MoveEye) · " % [tunnel_host if tunnel_host != "" else "?", tunnel.PORT]) + str(ts["msg"]) + ((" · %d offen · %.1f MB" % [int(ts["pipes"]), float(ts["mb"])]) if ts["on"] else "")
-		tunnel_label.add_theme_color_override("font_color", UI.GRN if ts["ok"] else (UI.ORG if ts["on"] else UI.MUT))
-	if conn_body != null:                                  # symbol: green = MoveEye connected, orange = sending, grey = off
-		var st := 2 if connected() else (1 if stream_on else 0)
-		if st != _conn_state:
-			_conn_state = st
-			UI.fold_active(conn_body, [0, 2, 1][st])          # 3D-3.50: symbol and arrow; the name stays white
-			var hd: Label = conn_body.get_meta("head", null)
-			if hd != null:
-				hd.text = ("Verbindung · " + ["aus", "wartet auf MoveEye", "verbunden"][st]).to_upper()
-	_paint_groups()
-	if stream_note != null:
-		if stream_on:
-			stream_note.text = "Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder." + ("" if net.port == stream_port else " (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)" % [stream_port, net.port])
-			stream_note.add_theme_color_override("font_color", UI.GRN)
-		elif net != null and net.error_text != "":
-			stream_note.text = "⚠ " + net.error_text + (" – versucht es weiter (gleich auf einem freien Port)" if (stream_last or tunnel_on) else "")
-			stream_note.add_theme_color_override("font_color", UI.ORG)
-		else:
-			stream_note.text = "Senden aus – zum Ausprobieren. MoveEye sieht den Simulator erst, wenn der Schalter eingeschaltet ist."
-			stream_note.add_theme_color_override("font_color", UI.MUT)
-	if Engine.get_process_frames() % 4 == 0:
-		_sync_ui()
+	_mod("status")._update_status()
 
 
 # ---- flying through the world, placing visitors ---------------------------------------------------------------------------
@@ -7693,240 +4769,7 @@ func _view_preset(which: String) -> void:
 
 
 func _build_view_bar(layer: CanvasLayer, th: Theme) -> void:
-	"""buttons at the bottom of the view, a compass at the top left, the box of the chosen visitor"""
-	thermal_full = TextureRect.new()
-	thermal_full.texture = th_preview
-	thermal_full.set_anchors_preset(Control.PRESET_FULL_RECT)
-	thermal_full.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	thermal_full.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	thermal_full.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
-	thermal_full.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	thermal_full.visible = false
-	layer.add_child(thermal_full)
-	layer.move_child(thermal_full, 0)
-	view_bar = HBoxContainer.new()
-	view_bar.theme = th
-	view_bar.add_theme_constant_override("separation", 6)
-	view_bar.anchor_top = 1.0
-	view_bar.anchor_bottom = 1.0
-	view_bar.offset_left = 12
-	view_bar.offset_top = -50
-	view_bar.offset_bottom = -12
-	view_bar.grow_vertical = Control.GROW_DIRECTION_BEGIN
-	view_bar.anchor_right = 1.0
-	view_bar.offset_right = -404                          # not under the panel
-	layer.add_child(view_bar)
-	for k in [[0, "Frei", "Frei herumfliegen (0)"], [1, "Kamera 1", "Durch die Kopfkamera schauen (1)"], [2, "Kamera 2", "Durch die zweite Kamera schauen (2)"],
-			[3, "Wärmebild", "Das Wärmebild gross (3)"]]:
-		var b := Button.new()
-		b.text = k[1]
-		b.tooltip_text = k[2]
-		b.toggle_mode = true
-		b.focus_mode = Control.FOCUS_NONE
-		var m: int = k[0]
-		b.pressed.connect(func(): set_view(m))
-		view_bar.add_child(b)
-		view_btns[m] = b
-	map_btn = Button.new()
-	map_btn.text = "Karte"
-	map_btn.tooltip_text = "Übersichtskarte ein / aus (M)"
-	map_btn.toggle_mode = true
-	map_btn.focus_mode = Control.FOCUS_NONE
-	map_btn.button_pressed = map_on
-	map_btn.toggled.connect(func(on): set_map(on))
-	view_bar.add_child(map_btn)
-	live_btn = Button.new()
-	live_btn.text = "Livebild"
-	live_btn.tooltip_text = "Livebild einer Kamera unter der Karte ein / aus (L)"
-	live_btn.toggle_mode = true
-	live_btn.focus_mode = Control.FOCUS_NONE
-	live_btn.button_pressed = live_on
-	live_btn.toggled.connect(func(on): set_live(on))
-	view_bar.add_child(live_btn)
-	for k in [["head", "Zum Kopf", "Zurück zu MoveEye"], ["top", "Von oben", "Von oben auf den Platz schauen"]]:
-		var b := Button.new()
-		b.text = k[1]
-		b.tooltip_text = k[2]
-		b.focus_mode = Control.FOCUS_NONE
-		var w: String = k[0]
-		b.pressed.connect(func(): _view_preset(w))
-		view_bar.add_child(b)
-	set_view(view_mode)
-	var help := UI.small("Links ziehen: verschieben · Rechts ziehen: drehen · Rad: zoomen · Doppelklick: hinfliegen")
-	view_help = help
-	help.add_theme_color_override("font_color", Color(1, 1, 1, 0.75))
-	help.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
-	help.add_theme_constant_override("shadow_offset_x", 1)
-	help.add_theme_constant_override("shadow_offset_y", 1)
-	help.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	help.autowrap_mode = TextServer.AUTOWRAP_OFF
-	help.clip_text = true
-	help.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	help.custom_minimum_size = Vector2(10, 0)
-	help.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	view_bar.add_child(help)
-	# compass: the red needle shows north; a click turns the view to the north
-	compass = Control.new()
-	compass.position = Vector2(14, 26)
-	compass.size = Vector2(54, 54)
-	compass.tooltip_text = "Norden – anklicken: nach Norden schauen"
-	compass.draw.connect(func():
-		var c := compass.size / 2.0                        # Paket «Fenster»: in the middle of its frame (room for the «N»)
-		compass.draw_circle(c, 25, Color(0.05, 0.07, 0.1, 0.75))
-		compass.draw_arc(c, 25, 0, TAU, 32, Color(1, 1, 1, 0.35), 1.5, true)
-		var fwd := -view_cam.global_transform.basis.z
-		var a := atan2(fwd.x, -fwd.z)                      # 0 = looking north
-		var n := Vector2(sin(-a), -cos(-a))
-		compass.draw_colored_polygon(PackedVector2Array([c + n * 19, c + n.orthogonal() * 5, c - n.orthogonal() * 5]), Color(0.95, 0.3, 0.25))
-		compass.draw_colored_polygon(PackedVector2Array([c - n * 19, c + n.orthogonal() * 5, c - n.orthogonal() * 5]), Color(0.85, 0.87, 0.9))
-		compass.draw_string(ThemeDB.fallback_font, c + n * 33 + Vector2(-4, 4), "N", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color(1, 1, 1, 0.95)))
-	compass.gui_input.connect(func(ev):
-		if ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_LEFT:
-			set_view(0)
-			var p := view_cam.global_position
-			var fwd := -view_cam.global_transform.basis.z
-			var tilt := asin(clampf(fwd.y, -1.0, 1.0))
-			var start := view_cam.global_transform
-			var end := Transform3D(Basis.from_euler(Vector3(tilt, 0.0, 0.0)), p)
-			if fly_tw != null:
-				fly_tw.kill()
-			fly_tw = create_tween()
-			fly_tw.tween_method(func(f: float): view_cam.global_transform = start.interpolate_with(end, f), 0.0, 1.0, 0.5))
-	layer.add_child(compass)
-	sel_ring = Control.new()                              # a ring round the chosen visitor
-	sel_ring.set_anchors_preset(Control.PRESET_FULL_RECT)
-	sel_ring.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	sel_ring.draw.connect(func():
-		if selected == null or not is_instance_valid(selected) or view_mode != 0:
-			return
-		var w: Vector3 = selected.global_position
-		if view_cam.is_position_behind(w):
-			return
-		var pts := PackedVector2Array()
-		for i in range(33):
-			var a := TAU * i / 32.0
-			pts.append(view_cam.unproject_position(w + Vector3(cos(a), 0.05, sin(a)) * (selected.radius + 0.35)))
-		sel_ring.draw_polyline(pts, Color(1.0, 0.75, 0.2, 0.95), 2.5, true))
-	layer.add_child(sel_ring)
-	layer.move_child(sel_ring, 1)
-	minimap = preload("res://scripts/minimap.gd").new()
-	minimap.main = self
-	minimap.size_px = map_size
-	minimap.span = map_span
-	minimap.visible = map_on
-	layer.add_child(minimap)
-	liveview = preload("res://scripts/liveview.gd").new()
-	liveview.main = self
-	liveview.cam = live_cam
-	liveview.width_px = live_size
-	liveview.visible = live_on
-	layer.add_child(liveview)
-	if statusled != null:
-		statusled.make_tile(layer)                         # das Fenster «Gerät» (LED + Tasten)
-	if smalltv != null:
-		smalltv.make_tile(layer)                           # 3D-4.19: das Bild des virtuellen SmallTV, unter Karte / Livebild
-	rover_pad = preload("res://scripts/rover_pad.gd").new()
-	rover_pad.main = self
-	layer.add_child(rover_pad)
-	explore = preload("res://scripts/explore.gd").new()       # 3D-3.55: explore with the rover
-	explore.main = self
-	layer.add_child(explore)
-	padview = preload("res://scripts/padview.gd").new()       # the «Controller-Ansicht» of MoveEye: views, turning, zoom, picture without buttons
-	padview.main = self
-	add_child(padview)
-	padmap = preload("res://scripts/padmap.gd").new()         # 3D-4.13: ONE controller mapping (window, explore, game, MoveEye)
-	padmap.main = self
-	add_child(padmap)
-	padhud = preload("res://scripts/padhud.gd").new()         # 3D-4.13: chips, direction, focus ring of the controller
-	padhud.main = self
-	padhud.pm = padmap
-	var phl := CanvasLayer.new()                              # above the control panel (the focus ring), below the game at the PC
-	phl.layer = 25
-	add_child(phl)
-	phl.add_child(padhud)
-	padmap.hud = padhud
-	patrol = preload("res://scripts/patrol.gd").new()         # 3D-3.61: the mover drives MoveEye round a route
-	patrol.main = self
-	add_child(patrol)
-	patrol.load_route()
-	toolbar = preload("res://scripts/toolbar.gd").new()       # 3D-3.61: everything with the mouse
-	toolbar.main = self
-	layer.add_child(toolbar)
-	headpad = preload("res://scripts/headpad.gd").new()       # 3D-3.77: steer the head of MoveEye
-	headpad.main = self
-	headpad.theme = th
-	layer.add_child(headpad)
-	templates = preload("res://scripts/templates.gd").new()   # 3D-3.82: «Vorlagen»
-	templates.main = self
-	templates.theme = th
-	layer.add_child(templates)
-	if scene == "vorlage":
-		set_scene("vorlage")                                   # built before the window existed: once more with the files
-	inventar = preload("res://scripts/inventar.gd").new()     # 3D-3.86: the inventory (all 80 things of the AI)
-	inventar.main = self
-	inventar.theme = th
-	layer.add_child(inventar)
-	inventar.rebuild()
-	blindmap = preload("res://scripts/blindmap.gd").new()     # 3D-3.85: blind spots / night rehearsal
-	blindmap.main = self
-	add_child(blindmap)
-	overlay = preload("res://scripts/overlay3d.gd").new()     # 3D-3.83: zones and detections of MoveEye in 3D
-	overlay.main = self
-	add_child(overlay)
-	news = preload("res://scripts/news.gd").new()             # 3D-3.82: «Neu in dieser Version» after an update
-	news.main = self
-	news.theme = th
-	layer.add_child(news)
-	get_tree().create_timer(3.0).timeout.connect(func(): news.check())
-	localplay = preload("res://scripts/localplay.gd").new()   # 3D-3.77: play here at the PC
-	localplay.main = self
-	localplay.theme = th
-	var lp_layer := CanvasLayer.new()                         # above everything of the window
-	lp_layer.layer = 30
-	add_child(lp_layer)
-	lp_layer.add_child(localplay)
-	home_editor = preload("res://scripts/home_editor.gd").new()   # 3D-3.73: «Mein Zuhause bauen»
-	home_editor.main = self
-	home_editor.theme = th
-	home_editor.position = Vector2(10, 345)
-	layer.add_child(home_editor)
-	# the chosen visitor
-	sel_box = PanelContainer.new()
-	sel_box.theme = th
-	sel_box.add_theme_stylebox_override("panel", UI.box(Color(UI.PANEL, 0.95), UI.LINE, 10, 8))
-	sel_box.anchor_top = 1.0
-	sel_box.anchor_bottom = 1.0
-	sel_box.offset_left = 12
-	sel_box.offset_top = -104
-	sel_box.offset_bottom = -58
-	sel_box.grow_vertical = Control.GROW_DIRECTION_BEGIN
-	sel_box.visible = false
-	layer.add_child(sel_box)
-	var hb := HBoxContainer.new()
-	hb.add_theme_constant_override("separation", 6)
-	sel_box.add_child(hb)
-	sel_label = Label.new()
-	sel_label.custom_minimum_size = Vector2(90, 0)
-	sel_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	hb.add_child(sel_label)
-	follow_btn = Button.new()
-	follow_btn.focus_mode = Control.FOCUS_NONE
-	follow_btn.pressed.connect(func():
-		follow = not follow
-		_paint_sel())
-	hb.add_child(follow_btn)
-	for k in [["scare", "Erschrecken"], ["away", "Wegschicken"], ["del", "Entfernen (Entf)"]]:
-		var b := Button.new()
-		b.text = k[1]
-		b.focus_mode = Control.FOCUS_NONE
-		var w: String = k[0]
-		b.pressed.connect(_sel_action.bind(w))
-		hb.add_child(b)
-	var x := Button.new()
-	x.text = "×"
-	x.focus_mode = Control.FOCUS_NONE
-	x.pressed.connect(func(): select_visitor(null))
-	hb.add_child(x)
+	_mod("menues")._build_view_bar(layer, th)
 
 
 func _sel_action(w: String) -> void:
@@ -8063,29 +4906,7 @@ const POINTS := {"chamois": 30, "ibex": 35, "lynx": 50, "fox": 10, "deer": 15, "
 
 
 func _build_crosshair(layer: CanvasLayer) -> void:
-	crosshair = Control.new()
-	crosshair.set_anchors_preset(Control.PRESET_FULL_RECT)
-	crosshair.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	crosshair.visible = false
-	crosshair.draw.connect(func():
-		var p: Vector2 = crosshair.size / 2.0 if look else crosshair.get_local_mouse_position()
-		var c := Color(1.0, 0.25, 0.2, 0.95)
-		crosshair.draw_arc(p, 18.0, 0.0, TAU, 40, c, 2.0)
-		for d in [Vector2(1, 0), Vector2(-1, 0), Vector2(0, 1), Vector2(0, -1)]:
-			crosshair.draw_line(p + d * 8.0, p + d * 30.0, c, 2.0)
-		crosshair.draw_circle(p, 1.5, c)
-		var f := ThemeDB.fallback_font
-		var txt := "Gewehr (unblutig): Treffer %d von %d Schüssen · %d Punkte · G: Gewehr aus" % [hits, shots, points]
-		crosshair.draw_string(f, Vector2(18, 34), txt, HORIZONTAL_ALIGNMENT_LEFT, -1, 20, Color(1, 1, 1))
-		if now() - shot_msg_t < 2.5:
-			crosshair.draw_string(f, Vector2(18, 64), shot_msg, HORIZONTAL_ALIGNMENT_LEFT, -1, 24, Color(1.0, 0.85, 0.3)))
-	layer.add_child(crosshair)
-	shot_sound = AudioStreamPlayer.new()
-	shot_sound.stream = _make_sound("shot")
-	add_child(shot_sound)
-	hit_sound = AudioStreamPlayer.new()
-	hit_sound.stream = _make_sound("boing")
-	add_child(hit_sound)
+	_mod("menues")._build_crosshair(layer)
 
 
 func _make_sound(kind: String) -> AudioStreamWAV:
@@ -8608,15 +5429,7 @@ func _birds() -> void:
 
 
 func host_name() -> String:
-	## the name of this computer (MoveEye shows it next to the simulator in its list)
-	for k in ["COMPUTERNAME", "HOSTNAME"]:
-		var h := OS.get_environment(k).strip_edges()
-		if h != "":
-			return h.substr(0, 40)
-	var f := FileAccess.open("/etc/hostname", FileAccess.READ)
-	if f != null:
-		return f.get_as_text().strip_edges().substr(0, 40)
-	return ""
+	return _mod("status").host_name()
 
 
 # ---- the simulator window in MoveEye (3D-3.18): its picture as a stream, and mouse / finger / keys back -------------
@@ -8638,134 +5451,22 @@ var view_mjpg_t := -100.0              # a stream (/view.mjpg) is open: it needs
 
 
 func view_request(q: Dictionary) -> void:
-	if q.has("w") and str(q["w"]).is_valid_int():
-		view_w = clampi(int(q["w"]), 320, 2560)
-	if q.has("q") and str(q["q"]).is_valid_float():
-		view_q = clampf(float(q["q"]) / 100.0, 0.3, 0.95)
-	if Quality.lite():                          # 3D-4.25: Lite - a smaller picture of the window (the cameras for MoveEye stay)
-		view_w = mini(view_w, Quality.VIEW_W)
-		view_q = minf(view_q, Quality.VIEW_Q)
-	if q.has("fmt"):
-		view_webp = str(q["fmt"]) == "webp"
-	if str(q.get("clean", "")) == "1":
-		view_clean_t = now()                    # 3D-3.67: MoveEye shows the picture in full screen: no rover stick
-	if str(q.get("bare", "")) == "1" and padview != null:
-		padview.bare_t = now()                  # «Controller-Ansicht»: the picture without the buttons of the window
-	if str(q.get("dock", "")) == "1" and padview != null:
-		padview.dock_t = now()                  # 3D-4.x: MoveEye's simulator page: only the 3D view and the dock (padview.gd)
+	_mod("kamera").view_request(q)
 const VIEW_KEYS := {"ArrowUp": KEY_UP, "ArrowDown": KEY_DOWN, "ArrowLeft": KEY_LEFT, "ArrowRight": KEY_RIGHT, "w": KEY_W, "a": KEY_A,
 		"s": KEY_S, "d": KEY_D, "q": KEY_Q, "e": KEY_E, "r": KEY_R, "f": KEY_F, "PageUp": KEY_PAGEUP, "PageDown": KEY_PAGEDOWN,
 		"0": KEY_0, "1": KEY_1, "2": KEY_2, "3": KEY_3, "4": KEY_4, "5": KEY_5, "+": KEY_PLUS, "-": KEY_MINUS, "Shift": KEY_SHIFT, "p": KEY_P}
 
 
 func view_rect() -> Rect2:
-	"""the part of the window with the 3D world (without the panel on the right)"""
-	var vs: Vector2 = Vector2(remote_vp.size) if remote_vp != null else get_viewport().get_visible_rect().size
-	var w := vs.x
-	if ui_root != null and ui_root.visible:
-		w = min(w, ui_root.get_global_rect().position.x)
-	return Rect2(0, 0, max(64.0, w), vs.y)
+	return _mod("kamera").view_rect()
 
 
 func _view_capture() -> void:
-	var t := now()
-	for kc in _rkeys.keys():
-		if t > float(_rkeys[kc]):
-			_rkeys.erase(kc)
-			var ku := InputEventKey.new()
-			ku.keycode = kc
-			ku.physical_keycode = kc
-			ku.pressed = false
-			Input.parse_input_event(ku)
-	# the window is the small box (or minimized): the view for MoveEye is drawn in a picture of its own (3D-3.19)
-	_remote_set(t - view_want_t < (10.0 if remote_vp != null else 3.0) and not win_open)
-	if t - view_want_t > 3.0 or t - _view_t < 1.0 / max(1.0, minf(view_fps, Quality.VIEW_FPS) if Quality.lite() else view_fps):
-		return
-	_view_t = t
-	var img := (remote_vp.get_texture() if remote_vp != null else get_viewport().get_texture()).get_image()
-	if img == null or img.is_empty():
-		return
-	var vs: Vector2 = Vector2(remote_vp.size) if remote_vp != null else get_viewport().get_visible_rect().size
-	var k: float = float(img.get_width()) / maxf(1.0, vs.x)
-	if padview != null and padview.dock_compose():      # 3D-4.x: MoveEye's simulator page: only the 3D view and the dock
-		img = padview.compose(img, k)
-		if img == null:
-			return
-	var r := view_rect()
-	var rr := Rect2i(int(r.position.x * k), int(r.position.y * k), int(r.size.x * k), int(r.size.y * k)).intersection(Rect2i(Vector2i.ZERO, img.get_size()))
-	if rr.size.x < 16 or rr.size.y < 16:
-		return
-	var sub := img.get_region(rr)
-	if sub.get_width() > view_w:
-		sub.resize(view_w, int(sub.get_height() * float(view_w) / sub.get_width()), Image.INTERPOLATE_BILINEAR)
-	if view_webp and t - view_mjpg_t > 3.0:            # 3D-3.58: WebP - the same sharpness with about a third less data
-		view_jpg = sub.save_webp_to_buffer(true, view_q)
-		view_mime = "image/webp"
-	else:
-		view_jpg = sub.save_jpg_to_buffer(view_q)
-		view_mime = "image/jpeg"
-	view_no += 1
+	_mod("kamera")._view_capture()
 
 
 func view_input(evs: Array) -> int:
-	"""events from MoveEye: x / y 0 … 1 in the picture of /view.mjpg -> the same as mouse / keys here"""
-	var r := view_rect()
-	var n := 0
-	for e in evs.slice(0, 60):
-		if not (e is Dictionary):
-			continue
-		var t := str(e.get("t", ""))
-		var p := r.position + Vector2(clampf(float(e.get("x", 0.5)), 0.0, 1.0) * r.size.x, clampf(float(e.get("y", 0.5)), 0.0, 1.0) * r.size.y)
-		if t == "move":
-			var m := InputEventMouseMotion.new()
-			m.position = p
-			m.global_position = p
-			m.relative = p - _in_pos
-			m.velocity = m.relative * 30.0
-			m.button_mask = _in_mask
-			_view_send(m)
-		elif t in ["down", "up", "dbl"]:
-			var b := clampi(int(e.get("b", 1)), 1, 3)
-			var mb := InputEventMouseButton.new()
-			mb.button_index = b
-			mb.pressed = t != "up"
-			mb.double_click = t == "dbl"
-			mb.alt_pressed = bool(e.get("alt", false))
-			mb.shift_pressed = bool(e.get("shift", false))
-			mb.position = p
-			mb.global_position = p
-			var bit := 1 << (b - 1)
-			_in_mask = (_in_mask | bit) if mb.pressed else (_in_mask & ~bit)
-			mb.button_mask = _in_mask
-			_view_send(mb)
-		elif t == "wheel":
-			for pr in [true, false]:
-				var w := InputEventMouseButton.new()
-				w.button_index = MOUSE_BUTTON_WHEEL_UP if float(e.get("d", 1)) > 0 else MOUSE_BUTTON_WHEEL_DOWN
-				w.pressed = pr
-				w.factor = 1.0
-				w.position = p
-				w.global_position = p
-				_view_send(w)
-		elif t == "key":
-			var kc = VIEW_KEYS.get(str(e.get("k", "")))
-			if kc == null:
-				continue
-			var ke := InputEventKey.new()
-			ke.keycode = kc
-			ke.physical_keycode = kc
-			ke.pressed = bool(e.get("down", true))
-			Input.parse_input_event(ke)
-			if ke.pressed:
-				_rkeys[kc] = now() + 1.2                 # held from MoveEye: let go by itself if no news comes (lost connection)
-			else:
-				_rkeys.erase(kc)
-		else:
-			continue
-		if t != "key":
-			_in_pos = p
-		n += 1
-	return n
+	return _mod("kamera").view_input(evs)
 
 
 var ui_layer: CanvasLayer
@@ -8775,47 +5476,11 @@ var _remote_back := []                 # [node, parent, index] to put back
 
 
 func _remote_set(on: bool) -> void:
-	"""small box / minimized while MoveEye looks at the window: the window (3D view, map, compass, buttons, panel)
-	is drawn into an invisible picture of the normal window size; back into the window as soon as it is big again"""
-	if on == (remote_vp != null) or ui_layer == null or view_cam == null:
-		return
-	if on:
-		var sz := Vector2i(1440, 860)
-		if mini_box != null and mini_box.mini:
-			sz = mini_box.saved.get("size", sz)
-		remote_vp = SubViewport.new()
-		remote_vp.size = Vector2i(clampi(sz.x, 640, 2560), clampi(sz.y, 400, 1600))
-		remote_vp.render_target_update_mode = SubViewport.UPDATE_ALWAYS
-		remote_vp.msaa_3d = Viewport.MSAA_2X
-		add_child(remote_vp)
-		_remote_back = []
-		for n in [ui_layer, view_cam]:
-			_remote_back.append([n, n.get_parent(), n.get_index()])
-			n.reparent(remote_vp)
-		view_cam.current = true
-		print("view for MoveEye: drawn on its own (window small)")
-	else:
-		for e in _remote_back:
-			var n: Node = e[0]
-			if is_instance_valid(n):
-				n.reparent(e[1])
-				(e[1] as Node).move_child(n, mini(int(e[2]), (e[1] as Node).get_child_count() - 1))
-		_remote_back = []
-		view_cam.current = true
-		remote_vp.queue_free()
-		remote_vp = null
-		print("view for MoveEye: back in the window")
+	_mod("kamera")._remote_set(on)
 
 
 func _view_send(ev: InputEvent) -> void:
-	"""a mouse event from MoveEye: into the window, or into the picture of its own (then the 3D view gets what the
-	panel, the map and the buttons do not take)"""
-	if remote_vp == null:
-		Input.parse_input_event(ev)
-		return
-	remote_vp.push_input(ev, true)
-	if not remote_vp.is_input_handled():
-		_unhandled_input(ev)
+	_mod("kamera")._view_send(ev)
 
 
 
@@ -9149,20 +5814,7 @@ var _cpu_t := 0.0
 
 
 func _build_cpu_pill(layer: CanvasLayer) -> void:
-	"""always to see: CPU of this PC and of the simulator (3D-3.26), like in the small box"""
-	cpu_pill = Label.new()
-	cpu_pill.add_theme_font_size_override("font_size", 13)
-	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color(0.05, 0.07, 0.1, 0.72)
-	sb.set_corner_radius_all(9)
-	sb.content_margin_left = 10
-	sb.content_margin_right = 10
-	sb.content_margin_top = 3
-	sb.content_margin_bottom = 3
-	cpu_pill.add_theme_stylebox_override("normal", sb)
-	cpu_pill.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	cpu_pill.text = "CPU …"
-	layer.add_child(cpu_pill)
+	_mod("menues")._build_cpu_pill(layer)
 
 
 func _cpu_pill_tick(dt: float) -> void:
@@ -9187,46 +5839,7 @@ func _cpu_pill_tick(dt: float) -> void:
 
 
 func _hud_layout() -> void:
-	if compass == null or view_bar == null or phone == null:
-		return
-	var vw: float = get_viewport().get_visible_rect().size.x
-	var right: float = ui_root.get_global_rect().position.x if ui_root != null and ui_root.visible else vw
-	var ph: bool = phone.visible
-	var left: float = phone.get_global_rect().end.x + 10.0 if ph else 0.0
-	var key := "%s|%d|%d|%d" % [ph, int(left), int(right), int(minimap.size.x) if minimap != null else 0]
-	if key == _hud_key:
-		return
-	_hud_key = key
-	if ph:
-		if fenster == null:                              # Paket «Fenster»: the frames place compass and map (fenster.gd)
-			compass.position = Vector2(right - 68.0, 26.0)
-			if minimap != null:
-				minimap.position = Vector2(right - minimap.size.x - 14.0, 92.0)
-		view_bar.offset_left = left + 12.0
-		view_bar.offset_right = -(vw - right) - 12.0
-		view_bar.alignment = BoxContainer.ALIGNMENT_CENTER
-		if view_help != null:
-			view_help.visible = false                   # not enough room next to the phone
-		var room: float = right - left - 24.0
-		var fs: int = 14 if room > 640.0 else (12 if room > 520.0 else 11)
-		view_bar.add_theme_constant_override("separation", 6 if room > 640.0 else 3)
-		for b in view_bar.get_children():
-			if b is Button:
-				b.add_theme_font_size_override("font_size", fs)
-	else:
-		if fenster == null:
-			compass.position = Vector2(14, 26)
-			if minimap != null:
-				minimap.position = Vector2(14, 92)
-		view_bar.offset_left = 12.0
-		view_bar.offset_right = -404.0
-		view_bar.alignment = BoxContainer.ALIGNMENT_BEGIN
-		if view_help != null:
-			view_help.visible = true
-		view_bar.add_theme_constant_override("separation", 6)
-		for b in view_bar.get_children():
-			if b is Button:
-				b.remove_theme_font_size_override("font_size")
+	_mod("menues")._hud_layout()
 
 
 # ---- presets for the visitors (from 3D-3.38) ------------------------------------------------------------------------------
@@ -9346,24 +5959,7 @@ func sph_mesh(r: float, h: float) -> SphereMesh:
 
 
 func control_set(id: String, v) -> Dictionary:
-	"""one setting by its id (the game wizard; like the CONTROL action «set»)"""
-	for c in controls:
-		if c.id == id and c["set"] != null:
-			match c.type:
-				"slider":
-					v = clamp(float(v), float(c.extra.get("min", -1e9)), float(c.extra.get("max", 1e9)))
-				"toggle":
-					v = bool(v)
-				"button":
-					c["set"].call()
-					return {"ok": true}
-				_:
-					v = str(v)
-			c["set"].call(v)
-			_settings_dirty = true
-			_sync_ui()
-			return {"ok": true}
-	return {"ok": false}
+	return _mod("einstellungen").control_set(id, v)
 
 
 
