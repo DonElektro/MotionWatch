@@ -85,7 +85,30 @@ static func weak_reason() -> String:
 	var a := RenderingServer.get_video_adapter_name().to_lower()
 	if a.contains("v3d") or a.contains("videocore"):
 		return "Grafik VideoCore (Raspberry Pi)"
-	return ""
+	var mi := OS.get_memory_info()
+	return weak_pc(RenderingServer.get_video_adapter_name(), int(mi.get("physical", -1)))
+
+
+## Sparmodus (Paket Linux, Daniel 01.11.2026): schwache PCs wie der HP EliteDesk 800 G1 (i5-4590T, HD 4600, 4 GB) bekommen
+## bei «Automatisch» Lite (und als erste Qualität «einfach»). Eine eigene Wahl (Grafik-Modus Normal / Lite / Hoch, Qualität)
+## bleibt gespeichert und gilt immer vor dieser Erkennung. Ohne Abfragen testbar (werkzeuge/sparmodus_test.gd).
+const WEAK_RAM := 4.25 * 1024.0 * 1024.0 * 1024.0   # 4-GB-PCs melden etwas weniger als 4 GiB (Grafik, Firmware)
+const OLD_INTEL := ["hd graphics 4", "hd graphics 3", "hd graphics 2", "(hsw", "(ivb", "(snb", "(byt",
+		"haswell", "ivybridge", "ivy bridge", "sandybridge", "sandy bridge", "baytrail", "bay trail"]
+
+
+static func weak_pc(adapter: String, physical: int) -> String:
+	"""warum dieser PC schwach ist (leer = nicht schwach): Arbeitsspeicher bis 4 GB oder Intel-Grafik der Haswell-Zeit
+	(Mesa: «Mesa Intel(R) HD Graphics 4600 (HSW GT2)», Windows: «Intel(R) HD Graphics 4600»)"""
+	var a := adapter.to_lower()
+	var why := []
+	if physical > 0 and physical <= WEAK_RAM:
+		why.append("%.1f GB Arbeitsspeicher" % (physical / 1073741824.0))
+	for k in OLD_INTEL:
+		if a.contains(k):
+			why.append("ältere Intel-Grafik (%s)" % adapter.strip_edges())
+			break
+	return " und ".join(why)
 
 
 static func renderer() -> String:

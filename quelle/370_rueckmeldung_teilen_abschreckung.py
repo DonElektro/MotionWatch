@@ -12,13 +12,15 @@ def _fb_file():
     return os.path.join(DATA_DIR, "feedback_outbox.json")
 
 
-FB_KINDS = {"bug": "Fehler", "idea": "Wunsch", "praise": "Lob", "question": "Frage", "other": "Feedback"}   # 2.98.33: + «Frage»
+FB_KINDS = {"bug": "Fehler", "idea": "Wunsch", "praise": "Lob", "question": "Frage", "order": "Bestellung fertiges Gerät", "other": "Feedback"}   # 2.98.33: + «Frage»; «Fertig kaufen» (639zj): + «order»
 FB_SHOT_MAX = 350 * 1024               # 2.98.33: a screenshot as ntfy attachment (the ntfy servers allow several MB; small = quick on mobile)
 
 
-def feedback_send(kind, text, contact="", diag=False, stars=0, page="", shot=None, src="web"):
+def feedback_send(kind, text, contact="", diag=False, stars=0, page="", shot=None, src="web", pkg=""):
     """2.98.33 (584): + satisfaction 1-5 stars, the page / place it was written on, the version (always) and an optional
-    screenshot (JPEG bytes, faces pixelated by feedback_shot). Anonymous as before: no address, no name unless written."""
+    screenshot (JPEG bytes, faces pixelated by feedback_shot). Anonymous as before: no address, no name unless written.
+    «Fertig kaufen» (639zj): kind «order» + pkg (basis / komplett / autark, ui_gemeinsam.json «fertig») - the contact is
+    needed then; it is only in the message (outbox until sent), never in the log."""
     text = str(text or "").strip()[:3000]
     if len(text) < 3:
         return False, "please write a few words"
@@ -27,13 +29,19 @@ def feedback_send(kind, text, contact="", diag=False, stars=0, page="", shot=Non
     if len(FEEDBACK["sent"]) >= 5:
         return False, "at most 5 messages per hour"
     kind = kind if kind in FB_KINDS else "other"
+    if kind == "order" and len(str(contact or "").strip()) < 3:
+        return False, "please enter a contact (e-mail or phone)"
     try:
         stars = max(0, min(5, int(stars or 0)))
     except (TypeError, ValueError):
         stars = 0
     page = re.sub(r"[^\w ./#:+\-]", "", str(page or ""))[:40]
     src = src if src in ("web", "window", "simulator") else "web"
-    body_ = text + (("\n\nKontakt: " + str(contact)[:120]) if contact else "")
+    body_ = text
+    if kind == "order":
+        pk = fertig_paket(pkg, "de")
+        body_ += f"\n\nPaket: {pk.get('name', '?')} ({pk.get('desc', '')}) · Preis auf Anfrage"
+    body_ += ("\n\nKontakt: " + str(contact)[:120]) if contact else ""
     if stars:
         body_ += "\n\nZufriedenheit: " + "★" * stars + "☆" * (5 - stars) + f" ({stars}/5)"
     where = {"web": "Web", "window": "Fenster", "simulator": "3D-Simulator"}[src]
@@ -131,7 +139,7 @@ def feedback_flush():
         left = []
         for m in box:
             title = "MoveEye – " + FB_KINDS.get(m.get("kind"), "Feedback") + ((" " + "★" * int(m["stars"])) if m.get("stars") else "")
-            tags = {"bug": "bug", "idea": "bulb", "praise": "star", "question": "question"}.get(m.get("kind"), "speech_balloon")
+            tags = {"bug": "bug", "idea": "bulb", "praise": "star", "question": "question", "order": "shopping_cart"}.get(m.get("kind"), "speech_balloon")
             if not m.get("text_sent"):
                 oks = [i for i, u in enumerate(urls) if _fb_req(u, m["body"].encode(), {"Title": _hdr(title), "Tags": tags}, "POST")]
                 if not oks:

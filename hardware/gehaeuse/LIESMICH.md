@@ -18,7 +18,7 @@ Thermal-90, UPS HAT (E) mit 4 × 21700, Lampen weiss + IR, Lautsprecher, PIR, Mi
 | Materialliste mit Bestellliste | [Dokumente/Materialliste.md](Dokumente/Materialliste.md) |
 | Übergabe an die Software (Strom, Anschlüsse, Adressen) | [Dokumente/Uebergabe_Gehaeuse_v5.md](Dokumente/Uebergabe_Gehaeuse_v5.md) |
 | Übergabe-Paket (Stand, offene Punkte, Entscheidungen) | [Dokumente/Uebergabe_Paket_v5-1.md](Dokumente/Uebergabe_Paket_v5-1.md) |
-| Druckdateien (2 Platten + 11 einzelne Teile, 3MF) | [Druckdateien/](Druckdateien/) |
+| Druckdateien (2 Platten + 11 einzelne Teile, 3MF; Variante v5.2 in `v5-2/`) | [Druckdateien/](Druckdateien/) |
 | Parametrisches Modell (Python) | [Quellcode/](Quellcode/) |
 | Teile, Materialliste, Montage, dazu Varianten, Einkauf (Preis-Schätzung, Händler-Suche), Drucken, Werkzeug, Sicherheit, Verkabeln, Software, Inbetriebnahme, Fehlersuche, Wartung – 5 Sprachen, eine Quelle für MoveEye und Simulator «Bauen» | [bau.json](bau.json) |
 | Festgehaltener Stand für den Abgleich (`werkzeuge/bau_pruefen.py`) | [bau_abgleich.json](bau_abgleich.json) |
@@ -87,9 +87,50 @@ denselben Reitern: Übersicht · Teile · Einkauf · Drucken · Montage · Verka
 
 ## Variante v5.2 und älteres Material
 
-- **v5.2** (Weitwinkel-Kamera in der Stirnwand, 5-mm-IR-LED, Status-LED auf dem Kopf, 2 Tasten hinten, Blindstopfen) ist
-  in `docs/Gehaeuse_Variante2_Weitwinkel.md` beschrieben. Das Paket v5.2 ist hier **noch nicht** eingebaut; die Werkstatt
-  zeigt diese Teile nur als Variante (Lage aus `v52.py`).
+- **v5.2** (Weitwinkel-Kamera in der Stirnwand, IR-Modul 120°, Kabelkamm für CAM0/CAM1, 2 Tasten hinten): **echtes Unterteil
+  im Repository** (01.11.2026). Quelle `Quellcode/v52.py` (importiert `v5.py`, v5.1 bleibt unverändert erzeugbar), Druck
+  [Druckdateien/v5-2/MotionWatch_v5-2_Platte_A_Unterteil.3mf](Druckdateien/v5-2/MotionWatch_v5-2_Platte_A_Unterteil.3mf)
+  (ersetzt Platte A; Platte B bleibt v5.1), Anleitung [Dokumente/LIESMICH_Montage_v5-2.md](Dokumente/LIESMICH_Montage_v5-2.md),
+  Hintergrund `docs/Gehaeuse_Variante2_Weitwinkel.md`. Neu bauen: `python3 werkzeuge/gehaeuse_bauen.py --druck52` (ca. 30 min),
+  prüfen: im Ordner `Quellcode/` `python3 check52.py` (Kollisionen, Sichtfeld, Stegbreiten, Abstände), Bilder `python3 prev52.py`.
+  Werkstatt: «Variante v5.2 zeigen» zeigt das echte Unterteil v5.2; die Szene zeigt es, wenn die Weitwinkel-Kamera «Im Gehäuse
+  (v5.2)» oder «Unterteil vorne» montiert ist. In `bau.json` stehen die Teile mit `art` v52, `ersetzt` und unter `varianten.v52`.
+
+  **Korrekturen nach dem Druck-Check (01.11.2026, gelten auch für v5.1):** Schrauben Gabel ↔ Drehteller bei (±8, ±19) und
+  M3 × 8 (3 mm Wand zur Kugelrille), Seitendeckel M3 × 10 Linsenkopf ISO 7380, Camera Module 3 M2 × 4, Lampenhalter mit
+  Löchern hinter dem Becher (x −5,5, M3 × 8 + Scheibe), Aussparung um den Kippachsen-Kopf und Schürze für den Druck.
+  Neu erzeugt: 03, 04, 05, 08 und Platte B.
+
+  **Runde v5.2b (01.11.2026, Entscheide Daniel):** Service-Fenster hinten links (HDMI + USB-C, x 78–120) mit Stopfen 10 v5.2;
+  SD-Schlitz in der Lüftungswand für eine microSD-Verlängerung mit Einbau-Kartenhalter (die Karte selbst steckt unter dem
+  Pi mitten im Gehäuse) mit Stopfen 16; Kamerakopf 06 v5.2 mit Status-LED, Diffusor 14 und Pupillenring 15; Kamera-Rippen
+  und Trennsteg ≥ 1,5 mm; Zwischenboden 09 mit Lochraster 5 mm (Ø 2,4 für M2,5 / M3); Feld für den Lampentreiber
+  (PLATZHALTER 30 × 20, 2 Dome M2,5) an der Stirnwand unter dem Step-down und Klammer für den Sicherungshalter (Akku B+, 5 A)
+  am Boden; Reserve-Öffnung hinten (GX12, Nut, Regendach) mit Blindstopfen 17; **13_Entwicklungs_Sockel** statt UPS HAT +
+  Akkus (Pi in gleicher Lage und Höhe, Variante «Entwicklung» in Bauen). **Alle Druckdateien v5.2** (Platten A und B und
+  jedes Teil einzeln, auch die unveränderten): [Druckdateien/v5-2/](Druckdateien/v5-2/).
+
+  **Pakete (01.11.2026, Entscheid Daniel):** Basis (Kopf + Wärmebild), Komplett (v5.2 mit Weitwinkel, Ton, Sensoren, Relais),
+  Autark (Komplett + Akku + Ladequelle) – Liste der bom-IDs und Preissumme in `bau.json` «pakete». Neue Stopfen für fehlende
+  Teile: 18 Wärmebild-Fenster (Platte B), 19 IR-Modul-Loch, 20 DS18B20-Durchführung, 21 Relais-Buchse, 23 Mikrofon, 24 Lade-LED-Lichtleiter (Platte A); der Stopfen der
+  5-mm-IR-LED heisst neu 22_Stopfen_IR_LED (vorher 13, das bleibt der Entwicklungs-Sockel). Prüfung
+  `python3 check52.py stopfen`, `python3 printcheck52.py D G H J K M N`.
+
+  **NACHMESSEN vor dem Druck v5.2** (Parameter oben in `Quellcode/v52.py`, alle geschätzt):
+
+  | Was | Parameter | Annahme |
+  |---|---|---|
+  | IR-Modul 850 nm / 120°: Durchmesser, Länge, Linse vorne | `IRW_MOD_D`, `IRW_MOD_L`, `IRW_LENS_D` | Ø 18,8 (wie Scheinwerfer), 14 mm, Ø 17 |
+  | Camera Module 3 Wide: Linsenhöhe ab Platine, Linsenmitte unter Oberkante, Frontlinse | `WC_LENS_H`, `WC_LENS_FROM_TOP`, `WC_R0` | 11,4 / 9,5 / Ø 6 mm |
+  | Lage der Buchsen CAM/DISP 0 und 1 am Pi 5 (Kabelkamm) | `PI_CAM0_XY`, `PI_CAM1_XY`, `FPC_X0` | x 123–126, 11 mm vom Rand |
+  | Trennsteg IR ↔ Fenster reicht? | `TRENN_Y`, `TRENN_L` | Steg in der Wand 3,2 mm, aussen 2 mm |
+  | Abstand IR-Modul ↔ Lautsprecher, Kabel ↔ Lüfter / Lüftungsschlitze | (check52.py abstand) | 11 mm; 4 mm Gehäuse, 8 mm Ansaugung; 9 mm |
+  | UPS HAT (E) mit Akkus (wie v5.1) | `v5.BAT_L/W/H` | 90 × 80 × 26 mm |
+  | Lage USB-C / HDMI am Pi 5 (Service-Fenster) | `SVC_X0/X1` | USB-C x 85, HDMI x 100 / 113,5 |
+  | microSD-Verlängerung: Halter-Platine, Lochabstand | `SD_*` | 22 × 15 mm, 18 mm |
+  | Lampentreiber (unbekannt) | `DRV_*` | PLATZHALTER 30 × 20, Löcher diagonal |
+  | Sicherungshalter Inline 5 A | `FUSE_*` | 30 × 13 × 10 mm |
+
 - **Archiv «PanTilt v6» (22.10.2026):** `PanTilt_v6_X2D_alle_Teile.3mf`, 7 Teile mit der alten Nummerierung
   (1_Gehaeuse_Unterteil … 7_Rueckdeckel), Unterteil 122 × 87 × 48 mm. Das ist die **ältere** PanTilt-Linie (v4, geschlossener
   Kopf mit Rückdeckel – der gescheiterte Druck), nicht neuer als v5.1. Nicht im Repository (6,8 MB), nur als Archiv abgelegt.

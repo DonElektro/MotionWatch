@@ -7,14 +7,18 @@ extends Node
 ##   · ziehen = drehen, rechts / mittlere Taste ziehen = verschieben, Rad = zoomen, Teil anklicken = Name, Eintrag aus der
 ##     Materialliste (Menge, Bezeichnung, Teilenummer) und der passende Montageschritt
 ##   · Regler «Explosion», «Durchsichtig» (Druckteile fast durchsichtig, Klicks treffen zuerst das Innenleben),
-##     «Innenleben», «Variante v5.2» (Weitwinkel-Kamera, IR-LED 5 mm, Tasten, Status-LED – Lage aus v52.py)
+##     «Innenleben», «Variante v5.2» (real-gehaeuse-v52: das echte Unterteil v5.2 mit Fenster, Weitwinkel-Kamera, IR-Modul
+##     120°, Kabelkamm, Tasten, Status-LED – aus hardware/gehaeuse/Quellcode/v52.py; ersetzte Teile von v5.1 werden ausgeblendet)
 ##   · «Montage Schritt für Schritt»: die 14 Schritte der Montageanleitung v5.1 (LIESMICH_Montage_v5-1.md + v4.1 Kopf), die
 ##     Teile des Schritts fliegen an ihren Platz, Weiter / Zurück
 ## Modelle: res://inhalte/gehaeuse/gehaeuse.glb (alle Teile, gehaeuse.gd lädt es), Texte: werkstatt_daten.gd (erzeugt aus
 ## hardware/gehaeuse/bau.json). Die Welt rechnet nur, solange das Fenster offen ist.
 ## /control {"action": "werkstatt", "do": open | close | info | explode (value) | xray (on) | inner (on) | v52 (on) |
 ##           pick (id) | step (n, 0 = frei) | next | prev | view (yaw, pitch, dist) | real_case (on) | tab (name) |
-##           variant (gehaeuse | akku | mover, value) | done (id, on)}
+##           variant (gehaeuse | akku | mover, value) | done (id, on) | fertig (pkg) | order (pkg)}
+## «Fertig kaufen» (Daniel 01.11.2026): ein schmaler Hinweis oben im Fenster (wie MoveEye /build, Teil 639zj; Texte und
+## Pakete aus ui_gemeinsam.json «fertig»): Paket Basis / Komplett / Autark wählen, «Fertig bestellen (Anfrage)» schliesst
+## «Bauen» und öffnet die Rückmeldung (feedback.gd open_order) mit Art «Bestellung fertiges Gerät» und dem Paket.
 
 const UI = preload("res://scripts/ui_style.gd")
 const T = preload("res://scripts/i18n.gd")
@@ -25,6 +29,8 @@ const FH = preload("res://scripts/fehler_hilfe.gd")
 const TABS := [["uebersicht", "Übersicht"], ["teile", "Teile"], ["einkauf", "Einkauf"], ["drucken", "Drucken"], ["montage", "Montage"],
 		["verkabeln", "Verkabeln"], ["software", "Software"], ["inbetrieb", "Inbetriebnahme"], ["fehler", "Fehlersuche"], ["wartung", "Wartung"]]
 const MEIN_PFAD := "user://bau_mein.json"
+const UG = preload("res://scripts/ui_gemeinsam.gd")
+const Icons = preload("res://scripts/mehr_icons.gd")
 const ART_COL := {"i2c": Color("#3b82f6"), "pwm": Color("#f59e0b"), "gpio": Color("#10b981"), "strom": Color("#ef4444"),
 		"usb": Color("#8b5cf6"), "csi": Color("#ec4899"), "spi": Color("#14b8a6"), "audio": Color("#a3a3a3")}
 
@@ -37,7 +43,8 @@ var vp: SubViewport
 var cam: Camera3D
 var world: Node3D
 var parts := {}                    # id -> {mi, e (modelle.json), mat, row (TEILE)}
-var rows := {}                     # id -> [id, art, name, bom, schritt, datei]
+var rows := {}                     # id -> [id, art, name, bom, schritt, datei, ersetzt]
+var repl := {}                     # v5.2: Teil von v5.1 -> das Teil der Variante, das es ersetzt
 var yaw := 145.0                  # from the front (PIR side), a little from the left
 var pitch := 24.0
 var dist := 0.62
@@ -56,6 +63,8 @@ var _w := {}                       # widgets
 var tab := "uebersicht"            # real-bauen: the tab (the same ids as MoveEye /build)
 var mein := {"var": {}, "done": []}  # «Mein Bau»: variant + checklist (user://bau_mein.json)
 var node_sel := ""                 # Verkabeln: the module that is lit
+var fertig_pkg := ""               # «Fertig kaufen»: the package chosen in the hint ("" = the standard one)
+var last_order := {}               # tests: what «Fertig bestellen (Anfrage)» handed to the feedback
 
 
 func _ready() -> void:
@@ -64,6 +73,8 @@ func _ready() -> void:
 	add_child(layer)
 	for r in DATA.TEILE:
 		rows[str(r[0])] = r
+		if r.size() > 6 and str(r[6]) != "":
+			repl[str(r[6])] = str(r[0])
 	_mein_load()
 
 
@@ -123,6 +134,7 @@ func _build_ui() -> void:
 	x.tooltip_text = T.t("Schliessen (Esc)")
 	x.pressed.connect(close)
 	hd.add_child(x)
+	_fertig_bar(root)
 	var tsc := ScrollContainer.new()
 	tsc.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	tsc.custom_minimum_size = Vector2(0, 42)
@@ -160,6 +172,7 @@ func _build_ui() -> void:
 	vpc.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	vpc.custom_minimum_size = Vector2(320, 240)
 	vpc.gui_input.connect(_on_input)
+	vpc.set_meta("rad_zoom", "werkstatt")              # tasten.gd: + / − = the wheel of the 3D view
 	h.add_child(vpc)
 	vp = SubViewport.new()
 	vp.own_world_3d = true
@@ -310,6 +323,100 @@ func _build_ui() -> void:
 		(_w[k] as Label).text = ""
 
 
+# ---- «Fertig kaufen»: the hint at the top (the same as MoveEye /build) ---------------------------------------------------------
+func _fertig_bar(parent: Control) -> void:
+	if UG.fertig().is_empty():
+		return
+	var L := T.lang()
+	if fertig_pkg == "":
+		fertig_pkg = str(UG.fertig_paket("", L).get("id", ""))
+	var pc := PanelContainer.new()
+	var st := UI.box(Color(UI.ACC, 0.08), Color(UI.ACC, 0.45), 10, 8, 1)
+	st.border_width_left = 4
+	st.border_color = Color(UI.ACC, 0.45)
+	pc.add_theme_stylebox_override("panel", st)
+	parent.add_child(pc)
+	_w["fertig"] = pc
+	var h := HFlowContainer.new()
+	h.add_theme_constant_override("h_separation", 8)
+	h.add_theme_constant_override("v_separation", 6)
+	pc.add_child(h)
+	var ic := Icons.icon("cart", UI.ACC, 18.0)
+	ic.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	h.add_child(ic)
+	var tx := Label.new()
+	tx.text = UG.fertig_text("hint", L)
+	tx.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	tx.custom_minimum_size = Vector2(320, 0)
+	tx.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	tx.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	h.add_child(tx)
+	_w["fertig_text"] = tx
+	var seg := HBoxContainer.new()
+	seg.add_theme_constant_override("separation", 0)
+	seg.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	h.add_child(seg)
+	for p in UG.fertig_pakete():
+		var pid := str(p.get("id", ""))
+		var pk := UG.fertig_paket(pid, L)
+		var b := Button.new()
+		b.text = str(pk.get("name", pid))
+		b.tooltip_text = str(pk.get("desc", "")) + " · " + UG.fertig_text("price", L)
+		b.toggle_mode = true
+		b.focus_mode = Control.FOCUS_NONE
+		b.add_theme_font_size_override("font_size", 13)
+		b.pressed.connect(func(): set_fertig(pid))
+		seg.add_child(b)
+		_w["fertig_" + pid] = b
+	var pr := UI.small("")
+	pr.autowrap_mode = TextServer.AUTOWRAP_OFF
+	pr.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	h.add_child(pr)
+	_w["fertig_desc"] = pr
+	var ob := Button.new()
+	ob.text = UG.fertig_text("button", L)
+	ob.size_flags_vertical = Control.SIZE_SHRINK_CENTER         # a normal button (dezent), like MoveEye class «sec»
+	ob.pressed.connect(func(): order())
+	h.add_child(ob)
+	_w["fertig_btn"] = ob
+	_paint_fertig()
+
+
+func _paint_fertig() -> void:
+	"""the chosen package blue (like MoveEye .seg .on), next to it its short description · «Preise auf Anfrage»"""
+	var L := T.lang()
+	var dl = _w.get("fertig_desc")
+	if dl != null and is_instance_valid(dl):
+		(dl as Label).text = str(UG.fertig_paket(fertig_pkg, L).get("desc", "")) + " · " + UG.fertig_text("price", L)
+	for p in UG.fertig_pakete():
+		var b = _w.get("fertig_" + str(p.get("id", "")))
+		if b != null and is_instance_valid(b):
+			var on: bool = str(p.get("id", "")) == fertig_pkg
+			(b as Button).button_pressed = on
+			var st := UI.box(UI.ACC if on else UI.BTN2, UI.ACC if on else UI.LINE, 8, 6, 1)
+			for s_ in ["normal", "hover", "pressed", "focus"]:
+				(b as Button).add_theme_stylebox_override(s_, st)
+
+
+func set_fertig(pid: String) -> void:
+	fertig_pkg = str(UG.fertig_paket(pid, T.lang()).get("id", fertig_pkg))
+	if is_open():
+		_paint_fertig()
+
+
+func order(pid := "") -> Dictionary:
+	"""«Fertig bestellen (Anfrage)»: close «Bauen», open the feedback with kind «order» and the package (feedback.gd)"""
+	if pid != "":
+		set_fertig(pid)
+	var fb = mehr.feedback if mehr != null and "feedback" in mehr else (main.feedback_dlg if "feedback_dlg" in main else null)
+	last_order = {"pkg": fertig_pkg, "kind": str(UG.fertig().get("kind", "order")), "dialog": fb != null}
+	if fb == null or not fb.has_method("open_order"):
+		return {"ok": false, "error": "no feedback dialog", "pkg": fertig_pkg}
+	close()
+	fb.open_order(fertig_pkg, "Bauen")
+	return {"ok": true, "pkg": fertig_pkg, "kind": last_order["kind"]}
+
+
 func _check(parent: Control, text: String, cb: Callable) -> CheckButton:
 	var c := CheckButton.new()
 	c.text = text
@@ -454,7 +561,7 @@ func pick_at(pos: Vector2) -> String:
 			var mi: MeshInstance3D = p["mi"]
 			if not mi.visible:
 				continue
-			var druck := str((rows.get(id, ["", ""]) as Array)[1]) == "druck"
+			var druck := _is_print(id)
 			if xray and pass_ == 0 and druck:
 				continue
 			var inv := mi.global_transform.affine_inverse()
@@ -560,13 +667,29 @@ func _focus_step() -> void:
 	_place_cam()
 
 
+func _dev() -> bool:
+	return str(_vars().get("akku", "")) == "entwicklung"
+
+
+func _is_print(id: String) -> bool:
+	"""a printed part (v5.1 «druck» or a part of a variant with its own print file, e.g. 01_Unterteil_v52)"""
+	var r = rows.get(id)
+	return r != null and (str(r[1]) == "druck" or (r.size() > 5 and str(r[5]) != ""))
+
+
 func _shown(id: String) -> bool:
 	var r = rows.get(id)
 	if r == null:
 		return false
 	var art := str(r[1])
 	if art == "v52":
-		return v52 and step == 0
+		return v52 and step == 0 and (inner or _is_print(id) or bool(parts[id]["e"].get("aussen", false)))
+	if art == "dev":                                  # Entwicklungs-Variante ohne Akku (Sockel 13 statt UPS HAT + Akkus)
+		return _dev() and step == 0 and inner
+	if step == 0 and repl.has(id) and parts.has(repl[id]):
+		var ra := str((rows.get(repl[id], ["", ""]) as Array)[1])
+		if (ra == "v52" and v52) or (ra == "dev" and _dev()):
+			return false                              # replaced by the part of the variant (lower part v5.2, socket ...)
 	if step == 1:
 		return art == "druck"
 	if step > 1 and int(r[4]) > step:
@@ -596,7 +719,7 @@ func _paint() -> void:
 		mi.position = off
 		var m: StandardMaterial3D = p["mat"]
 		var col: Color = p["base"]
-		var see := xray and str(r[1]) == "druck"
+		var see := xray and _is_print(id)
 		m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA if see else BaseMaterial3D.TRANSPARENCY_DISABLED
 		m.albedo_color = Color(col, DRUCK_ALPHA if see else 1.0)
 		m.no_depth_test = false
@@ -745,6 +868,8 @@ func set_variant(g: String, v: String) -> void:
 	_mein_save()
 	if g == "gehaeuse":
 		set_v52(v == "v52")
+	elif g == "akku":
+		_paint()
 	if is_open():
 		set_tab(tab)
 
@@ -1093,7 +1218,9 @@ func _plan() -> Control:
 # ---- /control ------------------------------------------------------------------------------------------------------------
 func control(d: Dictionary) -> Dictionary:
 	var dd := str(d.get("do", "info"))
-	if dd != "info" and dd != "close" and dd != "real_case" and dd != "done" and dd != "variant" and not is_open():
+	if dd == "order":                              # «Fertig bestellen (Anfrage)» (tests and the phone page)
+		return order(str(d.get("pkg", "")))
+	if dd != "info" and dd != "close" and dd != "real_case" and dd != "done" and dd != "variant" and dd != "fertig" and not is_open():
 		open()
 	match dd:
 		"open":
@@ -1132,6 +1259,8 @@ func control(d: Dictionary) -> Dictionary:
 			set_tab(str(d.get("name", "uebersicht")))
 		"variant":
 			set_variant(str(d.get("group", "gehaeuse")), str(d.get("value", "")))
+		"fertig":
+			set_fertig(str(d.get("pkg", "")))
 		"done":
 			set_done(str(d.get("id", "")), bool(d.get("on", true)))
 			if is_open() and not (tab == "uebersicht" or tab == "montage"):
@@ -1148,4 +1277,8 @@ func info() -> Dictionary:
 			"step_title": T.t(str(DATA.SCHRITTE[step - 1][0])) if step > 0 else "", "sel": sel, "part": part_info(sel),
 			"explode": explode, "xray": xray, "inner": inner, "v52": v52, "parts": parts.size(), "visible": vis,
 			"real_case": main.gehaeuse.info() if main.gehaeuse != null else {}, "source_sha": DATA.QUELLE_SHA.substr(0, 12),
-			"tab": tab, "variant": _vars(), "done": (mein["done"] as Array).size(), "todo": all_ids().size()}
+			"tab": tab, "variant": _vars(), "done": (mein["done"] as Array).size(), "todo": all_ids().size(),
+			"fertig": {"shown": is_open() and _w.has("fertig") and is_instance_valid(_w["fertig"]), "pkg": fertig_pkg,
+				"text": str((_w["fertig_text"] as Label).text) if is_open() and _w.has("fertig_text") and is_instance_valid(_w["fertig_text"]) else "",
+				"button": str((_w["fertig_btn"] as Button).text) if is_open() and _w.has("fertig_btn") and is_instance_valid(_w["fertig_btn"]) else ""},
+			"last_order": last_order}

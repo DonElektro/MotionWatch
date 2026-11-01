@@ -121,7 +121,8 @@ class SimLink:
                     spieltest_set(bool(mc_.get("on")))
                 elif op_ == "feedback":                     # 2.98.33: «Rückmeldung an den Entwickler» in the simulator (584)
                     threading.Thread(target=lambda m=dict(mc_): feedback_send(m.get("kind"), m.get("text"), str(m.get("contact") or "")[:120], True, m.get("stars"),
-                                     "3D-Simulator " + str(m.get("sim") or "")[:12], feedback_shot("sim") if m.get("shot") else None, "simulator"),
+                                     "3D-Simulator " + str(m.get("sim") or "")[:12], feedback_shot("sim") if m.get("shot") else None, "simulator",
+                                     str(m.get("pkg") or "")),
                                      daemon=True, name="simfeedback").start()
         shut_feed(rep_.get("shut"), first)               # 2.98.35: «Auslöser» hits -> alarm into the test inbox (539)
         horror_feed(rep_.get("horror"), first)           # Bergtal · Horror-Modus: its «recordings» -> Verlauf / Nachrichten (539a)

@@ -1,8 +1,50 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 01.11.2026 · Version **3.41.1** · MoveEye **3.41.1** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 01.11.2026 · Version **3.45.0** · MoveEye **3.45.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.45.0 (MoveEye 3.45.0): Sammel-Release Varianten (MoveEye Teile 639zs, 639zj, 620)
+
+- real-varianten-sw (639zs): Servo-Hinweis ohne PCA9685, Wärmebild-Meldung, Relay 1 ab Werk aus, Mover-Fahrt ohne Alarm.
+- real-varianten-hw: Stopfen 18–24 (3MF in Druckdateien/v5-2), Kanal 4 → IR-Modul, Ladequelle, Pakete Basis/Komplett/Autark.
+- real-fertig-kaufen (639zj): Hinweis «fixfertig kaufen» in Bauen, Werkstatt (werkstatt.gd) und Pi-Fenster, Bestell-Rückmeldung.
+- real-homepage: /info/ als Produktseite (Teil 620, auf Basis der Fassung vom 30.10.).
+
+## NEU in 3.44.2 (MoveEye 3.44.2): Versionshinweis als kleine Zeile (`scripts/abgleich.gd`)
+
+- Versions-Paar unten rechts mit Knopf und ✕ statt Balken; Test `werkzeuge/versionshinweis_test.gd`.
+
+## NEU in 3.44.1 (MoveEye 3.44.1): Simulator-Fenster in der Bildschirmhöhe (MoveEye Teile 470, 530)
+
+- Bild zentriert und unverzerrt in der Höhe, Klick-Koordinaten rechnen die Ränder heraus. Nur MoveEye.
+
+## NEU in 3.44.0 (MoveEye 3.44.0): Tastatur statt Scrollrad (`scripts/tasten.gd`)
+
+- + / − Zoom, Bild↑/↓ Listen, Pfeile Ansicht, F1 Tasten-Hilfe, Shift+Bild↑/↓ Mast; Scrollbalken sichtbar (ui_style.gd).
+  Test `werkzeuge/tasten_test.gd`.
+- Linux-Kiosk (real-linux-kiosk): `beilagen_linux/kiosk_ein.sh` / `kiosk_aus.sh` / `kiosk_sitzung.sh` (Openbox-Sitzung, Schleife
+  mit Neustart nach Absturz, wartet nach einem Update auf den neu gestarteten Simulator); kommen über linux_paket.sh ins
+  Linux-Paket und mit dem Update neben die Programmdatei. Die Kopie in /usr/local/lib/moveeye-kiosk/ erneuert nur kiosk_ein.sh.
+
+## NEU in 3.43.1 (MoveEye 3.43.1): Linux-Download auf /sim (MoveEye Teil 300 SIM3D_LINUX, 470, 550)
+
+- /sim/simulator3d_linux.zip, Prüfsumme aus version.json «linux» (bauen.py --neue-version, versionen.py --pruefen prüft sie).
+
+## NEU in 3.43.0 (MoveEye 3.43.0): Gehäuse v5.2b (`hardware/gehaeuse/Quellcode/v52.py`, 3MF in `Druckdateien/v5-2/`)
+
+- SD-Schlitz + USB-C mit Stopfen, Kopf 06 mit Status-LED, Rippen/Trennsteg ≥ 1,5 mm, Sicherung 5 A, Entwicklungs-Sockel 13
+  (12 V an der GX16), Lochraster im Zwischenboden, Lampentreiber-Feld, Reserve-Öffnung GX12; 3MF nach `Druckdateien/v5-2/`
+  verschoben. Daten neu mit `gehaeuse_bauen.py --sim` (nach dem Merge mit 3.42.0).
+
+## NEU in 3.42.0 (MoveEye 3.42.0): Sammel-Release Linux · Lade-LED · Gehäuse v5.2
+
+- **Linux** (real-linux): eigenes Paket `MoveEyeSim3D_Linux.zip` (`werkzeuge/linux_paket.sh`, aus simpack.sh), Block «linux»
+  in version.json (`versionen.py --sim-json` / `--linux-json`, update.gd linux_info), `beilagen_linux/installieren.sh`
+  (Startmenü + Desktop, ohne sudo); Sparmodus in quality.gd (≤ 4 GB RAM / ältere Intel-Grafik → Lite), Test sparmodus_test.gd.
+- **Lade-LED** (real-lade-led, MoveEye Teil 639zi): state «charge_led», Fenster «Gerät» (statusled.gd) blinkt mit.
+- **Gehäuse v5.2** (real-gehaeuse-v52): Unterteil mit Weitwinkel-Fenster, IR-Modul 120°, Kabelkamm; bau.json «farben»;
+  Schrauben von v5.2 (von Daniel bestätigt). Daten neu mit `gehaeuse_bauen.py --sim`.
 
 ## NEU in 3.41.1 (MoveEye 3.41.1): Hardware-Klärung (MoveEye Teil 639zh, Bau-Infos)
 

@@ -6,6 +6,7 @@ extends Node
 ##               side = pan 0), fixed, lens 56 mm above the bottom of the case, 12° down; the head turns above it (default)
 ##   scene       on the mast 3 m beside the device (the old «feste Kamera»)
 ##   base        on the lower part of the device, under the head near the pan axis, looks ahead, tilted down (does not turn)
+##               real-gehaeuse-v52 (01.11.2026): same window as «case» (the real lower part v5.2), but the tilt slider counts
 ##   head_front  on the head, looks where the head camera looks (turns with the pan; tilt optional)
 ##   head_rear   on the head, looks back (yaw offset 180°)
 ##   none        P9: not built in - blind cover (part 12_Blindstopfen_Weitwinkel): no picture at all, /cam/1 answers 404
@@ -14,8 +15,9 @@ extends Node
 ## grows linearly with the distance in the picture, 51° to the side edge, 33.5° to the top edge, ~61° = 122° diagonal in the
 ## corner). The camera renders a wider straight (rectilinear) picture, camfx.gdshader bends it (fe_*), a bit oversampled
 ## (OVERSAMPLE, not in Lite) so the middle stays sharp; + the dark corners the ISP leaves (fe_vig). Off = straight 102°.
-## Second infrared LED (PCA9685 channel 4 at MoveEye, lights.ir_wide) as an IR spot at the mount: in the case a single
-## 5 mm 850 nm LED (lights only the near field, ~4 m), at the other mounts the 120° module of the first plan (16 m).
+## Second infrared LED (PCA9685 channel 4 at MoveEye, lights.ir_wide) as an IR spot at the mount. real-gehaeuse-v52
+## (01.11.2026): the lower part v5.2 holds the 120° module (850 nm, Ø 18.8 estimated) beside the camera window (CASE_IR,
+## v52.py IRW_Y / IRW_Z), like the other mounts (16 m); the 5 mm LED of the first case package stays as CASE_IR_5MM.
 ## Head mounts: a pan limit (second flat cable; 360° servos would need a slip ring) and a slightly heavier head.
 ## /info cameras[1] and the reply to POST /state («wide») tell MoveEye the mount (part 163 sets «Übersicht lenkt den Kopf»).
 ## Hook for the camera physics (camphys.gd, branch real-kamera): sensor_info() - aperture, NoIR, installed - so the same
@@ -39,7 +41,11 @@ const CASE_DOWN := 0.0698
 const CASE_TILT := -12.0          # WC_TILT = 12° down
 # 5 mm IR LED: IR_Y 26 / IR_Z 40 - 20 mm beside the lens (left of the PIR seen from the device), 16 mm below it, tip flush
 # with the outside of the wall (2.5 mm wall + 0.5 mm) - separated by the wall, it does not shine into the window.
-const CASE_IR := Vector3(-0.020, -0.016, -0.003)
+const CASE_IR_5MM := Vector3(-0.020, -0.016, -0.003)
+# real-gehaeuse-v52: 120° IR module IRW_Y 20 / IRW_Z 49 (v52.py), lens front 1.5 mm inside the wall: 26 mm beside and 7 mm
+# below the camera lens (0.5 / 46 / 56), 2 mm further out; outside a divider (TRENN_Y) keeps it from shining into the window.
+const CASE_IR := Vector3(-0.026, -0.007, -0.002)
+const CASE_IR_MODULE := true      # false = the 5 mm LED (CASE_IR_5MM, CASE_IR_RANGE, CASE_IR_ENERGY)
 # Lens: Camera Module 3 Wide product brief (Raspberry Pi Ltd, 2023): IMX708, f/2.2, 120° diagonal / 102° × 67°.
 # Equidistant model as in the case report (check52.py): half angles 51° (to the side edge) and 33.5° (top / bottom edge).
 const F_NUMBER := 2.2
@@ -140,8 +146,9 @@ func place() -> void:
 		var pc: Vector3 = main.head.global_position + rc * Vector3(0, -CASE_DOWN, -CASE_FWD)
 		cam.global_transform = Transform3D(rc * Basis.from_euler(Vector3(deg_to_rad(CASE_TILT), 0, 0)), pc)
 	elif mount == "base":
+		# real-gehaeuse-v52: the window of the real lower part v5.2 (like «case»), tilted by the slider (10-15° down planned)
 		var rb: Basis = main.rig.global_transform.basis.orthonormalized()
-		var p: Vector3 = main.head.global_position + Vector3(0, -0.24, 0) + rb * Vector3(0, 0, -0.07)
+		var p: Vector3 = main.head.global_position + rb * Vector3(0, -CASE_DOWN, -CASE_FWD)
 		cam.global_transform = Transform3D(rb * Basis.from_euler(Vector3(deg_to_rad(tilt), 0, 0)), p)
 	else:
 		var hb: Basis = (main.head_pitch.global_transform.basis if tilt_follow else main.head.global_transform.basis).orthonormalized()
@@ -157,11 +164,11 @@ func place() -> void:
 		ir_spot.spot_attenuation = 1.4
 		ir_spot.light_energy = 0.0
 		main.add_child(ir_spot)
-	if mount == "case" or mount == "none":
+	if mount in ["case", "none", "base"]:
 		var rl: Basis = main.rig.global_transform.basis.orthonormalized()     # the LED sits straight in the wall (not tilted)
-		ir_spot.global_transform = Transform3D(rl, cam.global_position + rl * CASE_IR)
-		ir_spot.spot_range = CASE_IR_RANGE
-		ir_spot.spot_attenuation = 2.0         # inverse square law
+		ir_spot.global_transform = Transform3D(rl, cam.global_position + rl * (CASE_IR if CASE_IR_MODULE else CASE_IR_5MM))
+		ir_spot.spot_range = 16.0 if CASE_IR_MODULE else CASE_IR_RANGE
+		ir_spot.spot_attenuation = 1.4 if CASE_IR_MODULE else 2.0         # 5 mm LED: inverse square law
 	else:
 		ir_spot.global_transform = cam.global_transform.translated_local(Vector3(0, -0.03, 0))
 		ir_spot.spot_range = 16.0
@@ -241,7 +248,7 @@ func servo_k() -> float:
 
 func ir_wide_on() -> bool:
 	if not installed():
-		return false                       # P9: blind cover - the LED hole has its stopper too (13_Stopfen_IR_LED)
+		return false                       # P9: blind cover - the LED hole has its stopper too (22_Stopfen_IR_LED, formerly 13)
 	var L: Dictionary = main.mw.get("lights", {})
 	return bool(L.get("ir_wide", false)) or (bool(main.cond.get("ir", false)) and on_device())
 
@@ -257,7 +264,7 @@ func grey(i: int) -> bool:
 func before_capture(i: int) -> void:
 	"""main._capture after realism / simreal: both NoIR cameras see both infrared lights; camera 1 its own look"""
 	if ir_spot != null:
-		var e := CASE_IR_ENERGY if mount == "case" else 6.0
+		var e := CASE_IR_ENERGY if (mount == "case" and not CASE_IR_MODULE) else 6.0
 		ir_spot.light_energy = e if (i < 2 and ir_wide_on() and installed()) else 0.0   # the head camera (NoIR) sees the wide light too
 	if i != 1:
 		return

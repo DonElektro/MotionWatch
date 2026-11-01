@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.41.1 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.45.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -15,6 +15,47 @@ STARTEN
    Simulator das und startet sich selbst einmal neu mit ANGLE (Grafik über Direct3D 11). Das Fenster geht dabei kurz zu
    und wieder auf. Geht das nicht von selbst: "Start in virtueller Maschine (ANGLE).bat" benutzen.
    In der virtuellen Maschine muss die 3D-Beschleunigung eingeschaltet sein (VMware: Einstellungen -> Anzeige).
+
+LINUX (Linux Mint, Ubuntu; PC mit x86_64)
+- Datei "MoveEyeSim3D_Linux.zip" herunterladen, z. B. in den Ordner "Dokumente" entpacken (Rechtsklick › Hier entpacken).
+- Im Ordner MoveEyeSim3D ein Terminal öffnen (Rechtsklick › Im Terminal öffnen) und ./installieren.sh eingeben:
+  legt "MoveEye Sim" im Startmenü (Bildung) und auf dem Desktop an, mit dem MoveEye-Symbol. Braucht kein sudo.
+  Fragt Mint beim ersten Doppelklick aufs Desktop-Symbol nach: "Vertrauen und starten" wählen.
+- Rechtsklick auf den Eintrag im Startmenü: "Notfall-Start" (Lite, ohne Foto-Inhalte, ohne Update-Suche).
+- Updates wie unter Windows (eigenes Paket für Linux); der Eintrag im Startmenü bleibt dabei gültig.
+  Ordner verschoben: ./installieren.sh im neuen Ordner noch einmal. Wegnehmen: ./installieren.sh --entfernen
+- Schwache PCs (bis 4 GB Arbeitsspeicher oder ältere Intel-Grafik wie HD 4600): "Grafik-Modus: Automatisch" nimmt
+  von selbst Lite (Sparmodus, gilt auch unter Windows). Eine eigene Wahl unter System › Grafik gilt immer vor.
+- Protokoll: ~/.local/share/godot/app_userdata/MoveEye Sim 3D/logs/godot.log
+
+KIOSK (Linux Mint: der PC zeigt nur noch den Simulator)
+- Wozu: ein PC (z. B. HP EliteDesk) startet direkt in den Simulator im Vollbild, sendet an MoveEye und startet ihn
+  nach einem Absturz von selbst neu. Nichts wird deinstalliert oder gelöscht, alles lässt sich zurückstellen.
+- Was es macht: automatisch anmelden (LightDM) in die eigene, schlanke Sitzung «MoveEye Kiosk» (Openbox statt
+  Cinnamon: weniger Arbeitsspeicher, kein Bildschirmschoner, keine Sperre, keine Hinweis-Fenster über dem Simulator),
+  Energiesparen und Suspend aus, Drucker-Dienst (cups), ModemManager und Fehlerberichte deaktiviert (nicht entfernt),
+  SSH-Server ein, Firewall nur für SSH (22) und den Simulator (8765 TCP, ausgehend 8764 UDP).
+  Vorher sichert es den alten Zustand nach .moveeye_kiosk/sicherung im persönlichen Ordner, dort liegt auch das
+  Protokoll. Eigene Dateien werden nicht verändert.
+- Einschalten (Benutzer don, mit der Tastatur):
+  1. Ctrl+Alt+T drücken (Terminal öffnet sich im persönlichen Ordner).
+  2. cd Dokumente/MoveEyeSim3D   tippen, Enter (der Ordner, in den die ZIP entpackt wurde).
+  3. ./kiosk_ein.sh --trocken   tippen, Enter: zeigt nur, was passieren würde (ändert nichts).
+  4. ./kiosk_ein.sh   tippen, Enter. Bei «Fortfahren? (j/n)» j und Enter, dann das Passwort von don (für sudo).
+  5. sudo reboot   tippen, Enter. Nach dem Neustart läuft der Simulator im Vollbild.
+- Im Kiosk:
+  Ctrl+Alt+D   Kiosk beenden, das normale Mint (Cinnamon) startet, ohne Passwort.
+  Ctrl+Alt+R   nur den Simulator neu starten.
+  Zurück in den Kiosk: im normalen Mint Menü › Abmelden (oder Neustart).
+- Aus der Ferne (anderer PC oder Handy im gleichen Netz): ssh don@<IP>   (mit dem Passwort von don).
+  Die IP zeigt das Terminal am Ende von kiosk_ein.sh, sonst im Terminal: hostname -I
+  Den Simulator von dort neu starten: /usr/local/lib/moveeye-kiosk/kiosk_sitzung.sh neustart
+- Ausschalten (alles wie vorher): Ctrl+Alt+D, Ctrl+Alt+T, dann  cd Dokumente/MoveEyeSim3D  und  ./kiosk_aus.sh
+  (auch --trocken), j, Passwort, danach  sudo reboot . SSH bleibt eingeschaltet (das Skript sagt, wie man es ausschaltet);
+  openbox, openssh-server und ufw bleiben installiert.
+- Beide Skripte dürfen mehrmals laufen. Wird der Ordner des Simulators verschoben: ./kiosk_ein.sh im neuen Ordner
+  noch einmal. Protokolle des Kiosks: .moveeye_kiosk/sitzung.log und sim.log im persönlichen Ordner.
+- Hinweis: auf einem echten Mint mit Cinnamon und LightDM noch nicht getestet (nur Trockenlauf unter Ubuntu 24.04).
 
 SCHLIESST SICH DAS FENSTER GLEICH NACH DEM START?
 - "Notfall-Start.bat" doppelklicken (liegt neben der .exe). Er startet einmal mit der einfachsten Grafik: ANGLE
@@ -446,6 +487,49 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.45.0
+3.45.0: Varianten: Bau-Infos mit Stopfen 18–24, Kanal 4 auf das IR-Modul, Ladequelle und 3 Paketen (Basis / Komplett /
+Autark); in der Werkstatt (Mehr › Bauen) der Hinweis «fixfertig kaufen» mit Anfrage. In MoveEye: ehrliche Selbstdiagnose
+ohne Servo-Treiber und ohne Wärmebild, Relais ab Werk aus, eine Mover-Fahrt löst keinen «Gerät bewegt»-Alarm mehr aus;
+/info/ als Produktseite.
+So testest du: Mehr › Bauen: Paket wählen, Stopfen 18–24 und Hinweis «fixfertig kaufen» ansehen; in MoveEye /info/ öffnen;
+mit dem Mover fahren (kein Alarm «Gerät bewegt»); Selbstdiagnose ohne Kopf zeigt den Servo-Hinweis statt Haken.
+
+NEU IN 3.44.2
+3.44.2: Versionshinweis: eine kleine Zeile unten rechts mit Knopf und ✕ statt eines bildschirmhohen Balkens.
+So testest du: Simulator und MoveEye mit verschiedenen Versionen verbinden; unten rechts erscheint die Zeile, ✕ blendet sie aus.
+
+NEU IN 3.44.1
+3.44.1: In MoveEye passen das Simulator-Fenster und das Kamerabild in die Bildschirmhöhe (zentriert, unverzerrt); Klicks
+treffen trotz Rändern genau. Am Simulator selbst ändert sich nichts.
+So testest du: in MoveEye die Simulator-Seite auf einem breiten, niedrigen Fenster öffnen und ins Bild klicken.
+
+NEU IN 3.44.0
+3.44.0: Tastatur statt Scrollrad: + / − zoomt überall, Bild↑/↓ blättert Listen, Pfeile drehen die Ansicht, F1 zeigt die
+Tasten-Hilfe, Scrollbalken sind sichtbar und ziehbar, Shift+Bild↑/↓ bewegt den Mast. Linux-Kiosk: ./kiosk_ein.sh macht den
+PC zur reinen Simulator-Maschine (Vollbild, sendet an MoveEye, Neustart nach Absturz, SSH); Ctrl+Alt+D = normales Mint,
+./kiosk_aus.sh stellt alles zurück (siehe Abschnitt KIOSK oben).
+So testest du: F1 drücken; + / − und die Pfeile in der Ansicht; in einer Liste Bild↑/↓. Linux: ./kiosk_ein.sh --trocken.
+
+NEU IN 3.43.1
+3.43.1: MoveEye bietet unter /sim jetzt auch den Simulator für Linux zum Herunterladen an (MoveEyeSim3D_Linux.zip).
+So testest du: in MoveEye die Seite /sim öffnen und «Simulator für Linux» herunterladen.
+
+NEU IN 3.43.0
+3.43.0: Gehäuse v5.2b: SD-Schlitz für eine Verlängerung und USB-C-Öffnung (je mit Stopfen), Kopf 06 mit Status-LED, Rippen
+und Trennsteg ≥ 1,5 mm, Sicherung 5 A, 13 Entwicklungs-Sockel (12 V an der GX16), Lochraster im Zwischenboden, Platz für
+Lampentreiber und Sicherung, Reserve-Öffnung mit Stopfen; microSD-Verlängerung in der Teileliste.
+So testest du: Mehr › Bauen › Gehäuse v5.2: Unterteil drehen (SD-Schlitz, USB-C, Reserve-Öffnung), Teil 13 und Teileliste ansehen.
+
+NEU IN 3.42.0
+3.42.0: Linux-Version mit eigenem Update-Paket (MoveEyeSim3D_Linux.zip), ./installieren.sh legt Menü- und Desktop-Eintrag
+an (ohne sudo). Sparmodus: bei ≤ 4 GB Arbeitsspeicher oder älterer Intel-Grafik wählt «Automatisch» Lite; eigene Wahl hat
+Vorrang. Lade-LED im Fenster «Gerät» (an beim Laden, langsam blinkend = voll, schnell = Akku fast leer). Gehäuse v5.2:
+Unterteil mit Fenster für die Weitwinkel-Kamera, IR-Modul 120° mit Trennsteg und Kabelkamm; Druckkorrekturen an Drehteller,
+Gabel, Arm 2 und Lampenhalter; der Kamerakopf ist orange.
+So testest du: Linux: ZIP entpacken, ./installieren.sh, «MoveEye Sim» aus dem Startmenü starten; Update › «Jetzt suchen».
+Dann Fenster «Gerät»: Lade-LED; Mehr › Bauen › Gehäuse v5.2; Weitwinkel-Montage «Im Gehäuse (v5.2)» wählen.
 
 NEU IN 3.41.1
 3.41.1: Fix (MoveEye): Solar-Strommesser (INA219) ab Werk auf 0x44 statt 0x41 (kollidierte mit dem Servo-Treiber), Shunt

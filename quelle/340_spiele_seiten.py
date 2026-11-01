@@ -632,6 +632,7 @@ def sim_live():
 def sim_status():
     return {"game": sim_game(), "found": sim_found(), "auto": bool(CFG.get("sim_auto")), "autostart": bool(CFG.get("sim_autostart")), "auto_on": bool(CFG.get("sim_auto_on")), "autoupd": bool(CFG.get("sim_autoupd", True)), "stats": sim_stats(), "eco": bool(CFG.get("sim_eco")), "fps": int(CFG.get("sim_fps") or 6),
             "sim3d": {"version": SIM3D["version"], "size_mb": round(SIM3D["size"] / 1e6), "ready": sim3d_ready()},
+            "sim3d_linux": {"version": SIM3D_LINUX["version"], "size_mb": round(SIM3D_LINUX["size"] / 1e6), "ready": sim3d_ready(SIM3D_LINUX)},
             "simpy": {"version": SIMPY["version"], "size_kb": round(SIMPY["size"] / 1e3), "ready": sim3d_ready(SIMPY)},
             "view": bool(((SIM.get("info") or {}).get("view") or {}).get("input")) if CFG["sim_on"] else False,
             "versions": sim_versions() if CFG["sim_on"] and SIM["ok"] else None,

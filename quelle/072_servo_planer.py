@@ -553,7 +553,8 @@ def servo_state(lang=None):
             "limits": [[round(plo, 1), round(phi, 1)], [round(tlo, 1), round(thi, 1)]],
             "limits_deg": [float(CFG["pan_limit"]), float(CFG["tilt_limit"])],
             "vmax": [float(CFG["servo_vmax_pan"]), float(CFG["servo_vmax_tilt"])], "acc": [float(CFG["servo_acc_pan"]), float(CFG["servo_acc_tilt"])],
-            "backend": str(STATE.get("servo_backend") or ""), "driver": servo_driver(lang)}
+            "backend": str(STATE.get("servo_backend") or ""), "driver": servo_driver(lang),
+            "backend_note": tr(SERVO_GPIO_FALLBACK_TEXT, lang) if servo_gpio_fallback() else ""}     # 3.44.3 (080)
 
 
 def servo_planner_selftest():

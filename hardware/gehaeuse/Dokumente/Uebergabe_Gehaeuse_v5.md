@@ -19,7 +19,7 @@
 |---|---|
 | Akku | Waveshare **UPS HAT (E)**, 4 × 21700 in Serie, 5 V / 6 A über Pogo-Pins an den Pi, **I2C 0x2D** (ab 2.68.0 unterstützt) |
 | Laden | GX16-4P hinten (je 2 Kontakte parallel), **12–40 V**, Sicherung 5 A → Pololu D36V50F5 (5 V / 5,5 A) → USB-C des UPS HAT. Kein Verpolungsschutz |
-| Servos, Licht, Verstärker | Step-Down 6–36 V → 5 V / 4 A (oder Pololu D36V28F5) aus dem Akkupaket |
+| Servos, Licht, Verstärker | Step-Down 6–36 V → 5 V / 4 A (oder Pololu D36V28F5) aus dem Akkupaket: B+ / B− des UPS HAT (E) → **Flachsicherung 5 A mit Halter in B+** (ab 01.11.2026) → Step-Down |
 | Solar (optional) | Panel an dieselbe GX16-Ladebuchse. **INA219 auf 0x44** (0x40 Thermal, 0x41 PCA9685). Nur mit 12-V-Panel, der INA219 misst bis 26 V |
 
 ## Anschlüsse und Adressen

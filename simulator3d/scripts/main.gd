@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3.41.1"
+const VERSION := "3.45.0"
 const Versionen = preload("res://scripts/versionen.gd")   # Versionierung 3.0.0: from 3.0.0 VERSION = "X.Y.Z" like MoveEye (see there)
 const Stimme = preload("res://scripts/abenteuer_stimme.gd")   # 3.23: the one switch «Stimme» (an | aus | untertitel)
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
@@ -341,6 +341,8 @@ var werkstatt = null:                 # werkstatt.gd (real-gehaeuse): Mehr → W
 			add_child(werkstatt)
 		return werkstatt
 var head_box: MeshInstance3D          # the dark box of the head (hidden while the real case is shown, gehaeuse.gd)
+var tasten                            # tasten.gd: + / − zoomen, Bild ↑ / ↓ blättern, Pfeile drehen, F1 Tasten-Hilfe (ohne Mausrad)
+var view_zoom := 1.0                  # tasten.gd: + / − in the camera views 1 / 2 (only the picture on the screen)
 var statusled                         # statusled.gd: Status-LED auf dem Kopf + Fenster «Gerät» mit den Tasten (MoveEye 163a / 599c)
 var weit                              # weitwinkel.gd (3D-4.17): camera 1 = the wide camera with its mount (mast, base, head front / rear)
 var nacht                             # nachtlauf.gd (Paket «Nacht-Testlauf»): eine ganze Nacht mit Wahrheit, von MoveEye gestartet
@@ -502,6 +504,9 @@ func _ready() -> void:
 	weit = preload("res://scripts/weitwinkel.gd").new()      # 3D-4.17: the wide camera (camera 1) and its mount
 	weit.main = self
 	add_child(weit)
+	tasten = preload("res://scripts/tasten.gd").new()        # Tasten statt Mausrad (Touchpad ohne Scrollfunktion)
+	tasten.main = self
+	add_child(tasten)
 	statusled = preload("res://scripts/statusled.gd").new()   # Status-LED auf dem Kopf, Tasten «Schutz» / «Alarm quittieren»
 	statusled.main = self
 	add_child(statusled)
@@ -4724,6 +4729,8 @@ func _paint_sel() -> void:
 
 
 func set_view(m: int) -> void:
+	if m != view_mode:
+		view_zoom = 1.0                                # tasten.gd: a new view starts without zoom
 	view_mode = m
 	if thermal_full != null:
 		thermal_full.visible = m == 3
@@ -4817,11 +4824,11 @@ func _view_overlays() -> void:
 func _fly(dt: float) -> void:
 	if view_mode == 1:
 		view_cam.global_transform = cams[0].global_transform
-		view_cam.fov = 41
+		view_cam.fov = 41.0 / view_zoom
 		return
 	if view_mode == 2:
 		view_cam.global_transform = cams[1].global_transform
-		view_cam.fov = 62
+		view_cam.fov = 62.0 / view_zoom
 		return
 	view_cam.fov = 70
 	view_cam.far = 7000.0 if terrain else 2000.0

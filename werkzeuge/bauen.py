@@ -469,6 +469,11 @@ def neue_version(text_aenderung, ziel="", stufe="fehler"):
                 d = json.load(open(os.path.join(REPO, "simulator3d", "version.json")))
                 sv = d.get("ver") or d["version"]               # Versionierung 3.0.0: «ver» = X.Y.Z, «version» = for old simulators
                 t2 = re.sub(r'SIM3D = \{"version": "(?:3D-)?[0-9.]+".*?"\}', lambda m: 'SIM3D = {"version": "%s", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": %d,\n         "sha256": "%s"}' % (sv, d["size"], d["sha256"]), t2, count=1, flags=re.S)
+                lx = d.get("linux")                              # the Linux package (versionen.py --linux-json) - same way
+                if isinstance(lx, dict) and lx.get("sha256"):
+                    t2 = re.sub(r'(SIM3D_LINUX = \{"version": )"[0-9.]+"(, "file": "[^"]+", "size": )\d+(,\s*"sha256": )"[0-9a-f]+"',
+                                lambda m: '%s"%s"%s%d%s"%s"' % (m.group(1), lx.get("ver") or sv, m.group(2), lx["size"], m.group(3), lx["sha256"]),
+                                t2, count=1)
             except (OSError, ValueError, KeyError):
                 pass
         t2 = re.sub(r"^INFO_PARTS = \d+", "INFO_PARTS = %d" % len(teile()), t2, count=1, flags=re.M)   # «About MoveEye» (584)

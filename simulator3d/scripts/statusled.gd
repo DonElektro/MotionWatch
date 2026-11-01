@@ -6,7 +6,9 @@ extends Node
 ##     «Schutz» (kurz Wachsam <-> Aus, lang 1,5 s Voll) und «Alarm quittieren». Die Tasten gehen wie ein GPIO an MoveEye:
 ##     world_reply «buttons» = {"protect"|"ack": {"down", "held_ms", "seq", "last_ms"}} - entprellt und kurz / lang
 ##     unterscheidet MoveEye selbst (wie am echten Gerät).
-## Feldliste: schnittstelle.json («led» im Zustand, «buttons» in der Antwort).
+##   * darunter die Lade-LED (GPIO 6, hinten am Gerät, MoveEye Teil 639zi): state «charge_led» = {mode on / slow / fast /
+##     off, br, text} - leuchtet beim Laden, blinkt langsam = voll, schnell = Akku fast leer; geblinkt wird hier selbst.
+## Feldliste: schnittstelle.json («led» und «charge_led» im Zustand, «buttons» in der Antwort).
 
 var main
 var FILE := "user://statusled.json"
@@ -24,6 +26,11 @@ var _dome_mat: StandardMaterial3D
 var _glow: OmniLight3D
 var _hb_seen := -1
 var _hb_t := -10.0
+var _cdot: Panel                                        # Lade-LED (GPIO 6) im Fenster «Gerät»
+var _cdot_box: StyleBoxFlat
+var _ctxt: Label
+var _cmode := ""
+var _ct0 := 0.0
 var _rules_btn: Button                                     # 3D-4.22: «Regeln der Tasten → in MoveEye» (only while MoveEye is connected)
 
 
@@ -218,11 +225,36 @@ func _process(_dt: float) -> void:
 		_txt.text = str(l.get("text", "LED"))
 	for k in _btn.keys():
 		(_btn[k] as Button).disabled = l.is_empty()
+	_charge_led()
 	if tile.has_meta("fenster"):
 		return                                          # in a window frame (fenster.gd): the frame places it
 	var vp: Vector2 = main.get_viewport().get_visible_rect().size
 	tile.reset_size()
 	tile.position = Vector2(vp.x - tile.size.x - 14.0, 64.0)          # oben rechts unter dem Zurück-Knopf (unten sind die Kameras)
+
+
+func _charge_led() -> void:
+	"""the charge LED (GPIO 6) as a small green dot - on / slow (1 s on, 1 s off) / fast (4 × a second) / off"""
+	if _cdot_box == null:
+		return
+	var c = main.mw.get("charge_led", null) if main.now() - main.mw_t <= 3.0 else null
+	if typeof(c) != TYPE_DICTIONARY:
+		_cdot_box.bg_color = Color(0.16, 0.19, 0.23)
+		_cdot_box.shadow_size = 0
+		_ctxt.text = "Lade-LED: wartet auf MoveEye"
+		return
+	var mode := str(c.get("mode", "off"))
+	if mode != _cmode:
+		_cmode = mode
+		_ct0 = main.now()
+	var br := clampf(float(c.get("br", 0.0)), 0.0, 1.0)
+	var hz := 0.5 if mode == "slow" else (4.0 if mode == "fast" else 0.0)
+	var lit := bool(c.get("on", true)) and br > 0.001 and (mode == "on" or (hz > 0.0 and fmod((main.now() - _ct0) * hz, 1.0) < 0.5))
+	var g := Color("#2fd35a")
+	_cdot_box.bg_color = g.lerp(Color(0.16, 0.19, 0.23), clampf(0.55 - br, 0.0, 0.5)) if lit else Color(0.16, 0.19, 0.23)
+	_cdot_box.shadow_color = Color(g.r, g.g, g.b, 0.7) if lit else Color(0, 0, 0, 0)
+	_cdot_box.shadow_size = int(2 + 4 * br) if lit else 0
+	_ctxt.text = str(c.get("text", "Lade-LED"))
 
 
 # ---- the window «Gerät» ----------------------------------------------------------------------------------------------------
@@ -261,6 +293,28 @@ func make_tile(layer: Node) -> void:
 	_txt.custom_minimum_size = Vector2(210, 0)
 	_txt.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	row.add_child(_txt)
+	var crow := HBoxContainer.new()                       # Lade-LED (GPIO 6) hinten am Gerät
+	crow.add_theme_constant_override("separation", 8)
+	v.add_child(crow)
+	_cdot = Panel.new()
+	_cdot.custom_minimum_size = Vector2(10, 10)
+	_cdot.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_cdot_box = StyleBoxFlat.new()
+	_cdot_box.set_corner_radius_all(5)
+	_cdot_box.bg_color = Color(0.16, 0.19, 0.23)
+	_cdot_box.border_color = Color(0.35, 0.38, 0.42)
+	_cdot_box.set_border_width_all(1)
+	_cdot_box.anti_aliasing = true
+	_cdot.add_theme_stylebox_override("panel", _cdot_box)
+	_cdot.tooltip_text = "Lade-LED hinten am Gerät: leuchtet beim Laden, blinkt langsam = voll, schnell = Akku fast leer"
+	crow.add_child(_cdot)
+	_ctxt = Label.new()
+	_ctxt.add_theme_font_size_override("font_size", 11)
+	_ctxt.add_theme_color_override("font_color", main.UI.MUT)
+	_ctxt.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_ctxt.custom_minimum_size = Vector2(210, 0)
+	_ctxt.text = "Lade-LED: wartet auf MoveEye"
+	crow.add_child(_ctxt)
 	var bb := HBoxContainer.new()
 	bb.add_theme_constant_override("separation", 6)
 	v.add_child(bb)

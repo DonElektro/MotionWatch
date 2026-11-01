@@ -74,11 +74,11 @@
    "rm": "Pli tard"
   },
   "v52": {
-   "de": "Variante v5.2 (noch nicht im Paket v5.1)",
-   "en": "Variant v5.2 (not yet in the v5.1 package)",
-   "fr": "Variante v5.2 (pas encore dans le paquet v5.1)",
-   "it": "Variante v5.2 (non ancora nel pacchetto v5.1)",
-   "rm": "Variante v5.2 (anc betg en il pachet v5.1)"
+   "de": "Variante v5.2 (Weitwinkel-Kamera, eigenes Unterteil)",
+   "en": "Variant v5.2 (wide camera, own lower part)",
+   "fr": "Variante v5.2 (caméra grand angle, propre partie inférieure)",
+   "it": "Variante v5.2 (fotocamera grandangolare, parte inferiore propria)",
+   "rm": "Variante v5.2 (camera largangulara, atgna part sut)"
   },
   "mover": {
    "de": "Mover",
@@ -385,6 +385,23 @@
     "fr": "Porte-fusible volant + fusible 5 A",
     "it": "Portafusibile volante + fusibile 5 A",
     "rm": "Purtader da segirezza + segirezza 5 A"
+   },
+   "nr": "Mini-Kfz (ATM) 5 A",
+   "preis": 5,
+   "haendler": "galaxus",
+   "suche": "Sicherungshalter fliegend ATM"
+  },
+  {
+   "id": "fuse2",
+   "gruppe": "strom",
+   "menge": "1×",
+   "wenn": "ups",
+   "name": {
+    "de": "Flachsicherung 5 A mit Halter (Akku-Leitung B+ → Step-Down)",
+    "en": "Blade fuse 5 A with holder (battery line B+ → step-down)",
+    "fr": "Fusible plat 5 A avec support (ligne batterie B+ → abaisseur)",
+    "it": "Fusibile lamellare 5 A con portafusibile (linea batteria B+ → step-down)",
+    "rm": "Segirezza plata 5 A cun purtader (lingia d'accu B+ → step-down)"
    },
    "nr": "Mini-Kfz (ATM) 5 A",
    "preis": 5,
@@ -820,29 +837,84 @@
    "wenn": "v52"
   },
   {
-   "id": "irled5",
+   "id": "irmod",
    "gruppe": "v52",
    "menge": "1×",
    "name": {
-    "de": "IR-LED 5 mm, 850 nm",
-    "en": "IR LED 5 mm, 850 nm",
-    "fr": "LED IR 5 mm, 850 nm",
-    "it": "LED IR 5 mm, 850 nm",
-    "rm": "LED IR 5 mm, 850 nm"
+    "de": "IR-LED-Modul 850 nm mit 120°-Linse (Ø ca. 18,8 mm, nachmessen)",
+    "en": "IR LED module 850 nm with 120° lens (approx. Ø 18.8 mm, measure)",
+    "fr": "Module LED IR 850 nm avec lentille 120° (env. Ø 18,8 mm, à mesurer)",
+    "it": "Modulo LED IR 850 nm con lente 120° (circa Ø 18,8 mm, da misurare)",
+    "rm": "Modul LED IR 850 nm cun lentilla 120° (ca. Ø 18,8 mm, mesirar)"
    },
-   "nr": "",
-   "preis": 1,
+   "nr": "850 nm, 120°",
+   "wenn": "v52",
+   "preis": 8,
    "haendler": "bastelgarage",
-   "suche": "IR LED 5mm 850nm",
-   "wenn": "v52"
+   "suche": "IR LED 850nm 3W Linse 120",
+   "unklar": {
+    "de": "Preis geschätzt",
+    "en": "price estimated",
+    "fr": "prix estimé",
+    "it": "prezzo stimato",
+    "rm": "pretsch stimà"
+   }
+  },
+  {
+   "id": "m2",
+   "gruppe": "v52",
+   "menge": "4×",
+   "name": {
+    "de": "Schraube M2 × 6, selbstschneidend (Weitwinkel-Kamera)",
+    "en": "Screw M2 × 6, self-tapping (wide camera)",
+    "fr": "Vis M2 × 6, autotaraudeuse (caméra grand angle)",
+    "it": "Vite M2 × 6, autofilettante (fotocamera grandangolare)",
+    "rm": "Scrauva M2 × 6, autofilettanta (camera largangulara)"
+   },
+   "nr": "M2 × 6",
+   "wenn": "v52",
+   "preis": 3,
+   "haendler": "bastelgarage",
+   "suche": "Schraube M2x6 Kunststoff selbstschneidend",
+   "unklar": {
+    "de": "Preis geschätzt",
+    "en": "price estimated",
+    "fr": "prix estimé",
+    "it": "prezzo stimato",
+    "rm": "pretsch stimà"
+   }
+  },
+  {
+   "id": "sdext",
+   "gruppe": "v52",
+   "menge": "1×",
+   "wenn": "v52",
+   "name": {
+    "de": "microSD-Verlängerung 15 cm mit Einbau-Kartenhalter (Platine ca. 22 × 15 mm, 2 Löcher M2,5 im Abstand 18 mm)",
+    "en": "microSD extension 15 cm with panel card holder (board approx. 22 × 15 mm, 2 holes M2.5, 18 mm apart)",
+    "fr": "Rallonge microSD 15 cm avec support encastrable (platine env. 22 × 15 mm, 2 trous M2,5 à 18 mm)",
+    "it": "Prolunga microSD 15 cm con portaschede da incasso (scheda circa 22 × 15 mm, 2 fori M2,5 a 18 mm)",
+    "rm": "Prolungaziun microSD 15 cm cun purtader integrà (platina ca. 22 × 15 mm, 2 foras M2,5 en distanza da 18 mm)"
+   },
+   "nr": "15 cm",
+   "preis": 8,
+   "haendler": "galaxus",
+   "suche": "microSD Verlängerungskabel 15cm Einbau",
+   "unklar": {
+    "de": "Masse der Platine vor dem Druck nachmessen (Dome im Unterteil: Lochabstand 18 mm), Preis geschätzt",
+    "en": "measure the board before printing (bosses in the lower part: holes 18 mm apart), price estimated",
+    "fr": "mesurer la platine avant l'impression (dômes : entraxe 18 mm), prix estimé",
+    "it": "misurare la scheda prima di stampare (torrette: interasse 18 mm), prezzo stimato",
+    "rm": "mesirar la platina avant la stampa (cupels: distanza 18 mm), pretsch stimà"
+   }
   },
   {
    "id": "mosfet3",
    "gruppe": "v52",
    "menge": "1×",
    "name": {
-    "de": "3. MOSFET-Modul (AOD4184) für die IR-LED 5 mm, Kanal 4",
-    "en": "3rd MOSFET module (AOD4184) for the IR LED 5 mm, channel 4",
+    "de": "3. MOSFET-Modul (AOD4184) für das IR-Modul 120° (bzw. die IR-LED 5 mm), Kanal 4",
+    "en": "3rd MOSFET module (AOD4184) for the IR module 120° (or the IR LED 5 mm), channel 4",
     "fr": "3e module MOSFET (AOD4184) pour la LED IR 5 mm, canal 4",
     "it": "3° modulo MOSFET (AOD4184) per il LED IR 5 mm, canale 4",
     "rm": "3. modul MOSFET (AOD4184) per la LED IR 5 mm, chanal 4"
@@ -859,6 +931,55 @@
     "rm": "plus ina resistenza 47 Ω / 0,5 W; u in pitschen MOSFET nivel logic (AO3400)"
    },
    "wenn": "v52"
+  },
+  {
+   "id": "irled5",
+   "gruppe": "v52",
+   "menge": "1×",
+   "name": {
+    "de": "IR-LED 5 mm, 850 nm",
+    "en": "IR LED 5 mm, 850 nm",
+    "fr": "LED IR 5 mm, 850 nm",
+    "it": "LED IR 5 mm, 850 nm",
+    "rm": "LED IR 5 mm, 850 nm"
+   },
+   "nr": "",
+   "preis": 1,
+   "haendler": "bastelgarage",
+   "suche": "IR LED 5mm 850nm",
+   "wenn": "v52",
+   "optional": true,
+   "alt": {
+    "de": "nur für IR_TYP = «5mm» in v52.py – Standard ist das IR-Modul 120° (irmod), nicht zusätzlich kaufen (+ 47 Ω / 0,5 W)",
+    "en": "only for IR_TYP = «5mm» in v52.py – the standard is the IR module 120° (irmod), do not buy both (+ 47 Ω / 0.5 W)",
+    "fr": "seulement pour IR_TYP = «5mm» dans v52.py – le standard est le module IR 120° (irmod), ne pas acheter les deux (+ 47 Ω / 0,5 W)",
+    "it": "solo per IR_TYP = «5mm» in v52.py – lo standard è il modulo IR 120° (irmod), non comprare entrambi (+ 47 Ω / 0,5 W)",
+    "rm": "mo per IR_TYP = «5mm» en v52.py – il standard è il modul IR 120° (irmod), betg cumprar omadus (+ 47 Ω / 0,5 W)"
+   }
+  },
+  {
+   "id": "res_ir",
+   "gruppe": "v52",
+   "menge": "1×",
+   "name": {
+    "de": "Vorwiderstand 2 W für das IR-Modul 120°",
+    "en": "Series resistor 2 W for the IR module 120°",
+    "fr": "Résistance série 2 W pour le module IR 120°",
+    "it": "Resistenza in serie 2 W per il modulo IR 120°",
+    "rm": "Resistenza en seria 2 W per il modul IR 120°"
+   },
+   "nr": "",
+   "preis": 0.5,
+   "haendler": "bastelgarage",
+   "suche": "Widerstand 2W",
+   "wenn": "v52",
+   "unklar": {
+    "de": "Preis geschätzt, Wert je nach Modul",
+    "en": "price estimated, value depends on the module",
+    "fr": "prix estimé, valeur selon le module",
+    "it": "prezzo stimato, valore secondo il modulo",
+    "rm": "pretsch stimà, valur tenor il modul"
+   }
   },
   {
    "id": "taster",
@@ -929,6 +1050,118 @@
    "wenn": "netz"
   },
   {
+   "id": "psu12_dev",
+   "gruppe": "strom",
+   "menge": "1×",
+   "name": {
+    "de": "Netzteil 12 V, mind. 3 A, mit GX16-Stecker verlötet – Entwicklung",
+    "en": "Power supply 12 V, at least 3 A, soldered to the GX16 plug – development",
+    "fr": "Alimentation 12 V, au moins 3 A, soudée à la fiche GX16 – développement",
+    "it": "Alimentatore 12 V, almeno 3 A, saldato alla spina GX16 – sviluppo",
+    "rm": "Alimentaziun 12 V, almain 3 A, lotada vi dal stecker GX16 – svilup"
+   },
+   "nr": "",
+   "preis": 20,
+   "haendler": "galaxus",
+   "suche": "Netzteil 12V 3A",
+   "wenn": "entwicklung"
+  },
+  {
+   "id": "lader12",
+   "gruppe": "strom",
+   "menge": "1×",
+   "name": {
+    "de": "Ladequelle: Netzteil 12 V, mind. 3 A, mit GX16-Stecker verlötet (lädt die Akkus über den D36V50F5)",
+    "en": "Charging source: power supply 12 V, at least 3 A, soldered to the GX16 plug (charges the cells via the D36V50F5)",
+    "fr": "Source de charge : alimentation 12 V, au moins 3 A, soudée à la fiche GX16 (charge les accus via le D36V50F5)",
+    "it": "Fonte di ricarica: alimentatore 12 V, almeno 3 A, saldato alla spina GX16 (carica le batterie tramite il D36V50F5)",
+    "rm": "Funtauna da chargiar: alimentaziun 12 V, almain 3 A, lotada vi dal stecker GX16 (chargia ils accus via il D36V50F5)"
+   },
+   "nr": "",
+   "preis": 20,
+   "haendler": "galaxus",
+   "suche": "Netzteil 12V 3A",
+   "wenn": "ups",
+   "alt": {
+    "de": "oder Solar (solar + solarreg, optional); an der GX16 dürfen 12–40 V anliegen",
+    "en": "or solar (solar + solarreg, optional); the GX16 takes 12–40 V",
+    "fr": "ou solaire (solar + solarreg, en option) ; la GX16 accepte 12–40 V",
+    "it": "oppure solare (solar + solarreg, opzionale); la GX16 accetta 12–40 V",
+    "rm": "u solar (solar + solarreg, opziunal); la GX16 accepta 12–40 V"
+   },
+   "unklar": {
+    "de": "Preis geschätzt",
+    "en": "price estimated",
+    "fr": "prix estimé",
+    "it": "prezzo stimato",
+    "rm": "pretsch stimà"
+   }
+  },
+  {
+   "id": "solar",
+   "gruppe": "strom",
+   "menge": "1×",
+   "optional": true,
+   "name": {
+    "de": "Solarpanel 30 W, 18 V (Leerlauf unter 25 V), Kabel an GX16-Stecker",
+    "en": "Solar panel 30 W, 18 V (open circuit below 25 V), cable to the GX16 plug",
+    "fr": "Panneau solaire 30 W, 18 V (tension à vide sous 25 V), câble vers la fiche GX16",
+    "it": "Pannello solare 30 W, 18 V (a vuoto sotto 25 V), cavo alla spina GX16",
+    "rm": "Panel solar 30 W, 18 V (vid sut 25 V), cabel al stecker GX16"
+   },
+   "nr": "",
+   "preis": 45,
+   "haendler": "galaxus",
+   "suche": "Solarpanel 30W 18V",
+   "wenn": "ups",
+   "alt": {
+    "de": "Strom messen: INA219 (ina, 0x44)",
+    "en": "measure the current: INA219 (ina, 0x44)",
+    "fr": "mesurer le courant : INA219 (ina, 0x44)",
+    "it": "misurare la corrente: INA219 (ina, 0x44)",
+    "rm": "mesirar il current: INA219 (ina, 0x44)"
+   },
+   "unklar": {
+    "de": "Preis geschätzt",
+    "en": "price estimated",
+    "fr": "prix estimé",
+    "it": "prezzo stimato",
+    "rm": "pretsch stimà"
+   }
+  },
+  {
+   "id": "solarreg",
+   "gruppe": "strom",
+   "menge": "1×",
+   "optional": true,
+   "name": {
+    "de": "Solar-Regler (MPPT) zwischen Panel und GX16: Eingang 18 V, Ausgang 12–24 V konstant, mind. 2 A",
+    "en": "Solar controller (MPPT) between panel and GX16: input 18 V, constant output 12–24 V, at least 2 A",
+    "fr": "Régulateur solaire (MPPT) entre panneau et GX16 : entrée 18 V, sortie constante 12–24 V, au moins 2 A",
+    "it": "Regolatore solare (MPPT) tra pannello e GX16: ingresso 18 V, uscita costante 12–24 V, almeno 2 A",
+    "rm": "Regulatur solar (MPPT) tranter panel e GX16: entrada 18 V, sortida constanta 12–24 V, almain 2 A"
+   },
+   "nr": "",
+   "preis": 15,
+   "haendler": "galaxus",
+   "suche": "MPPT Solar Laderegler Modul",
+   "wenn": "ups",
+   "alt": {
+    "de": "der D36V50F5 hat keine MPPT-Regelung: ohne Regler bricht die Spannung bei wenig Sonne ein",
+    "en": "the D36V50F5 has no MPPT control: without a controller the voltage collapses in weak sun",
+    "fr": "le D36V50F5 n'a pas de régulation MPPT : sans régulateur la tension s'effondre par faible soleil",
+    "it": "il D36V50F5 non ha regolazione MPPT: senza regolatore la tensione crolla con poco sole",
+    "rm": "il D36V50F5 n'ha nagina regulaziun MPPT: senza regulatur croda la tensiun cun pauc sulegl"
+   },
+   "unklar": {
+    "de": "Preis geschätzt, passendes Modul vor dem Kauf klären",
+    "en": "price estimated, check a suitable module before buying",
+    "fr": "prix estimé, vérifier un module adapté avant l'achat",
+    "it": "prezzo stimato, verificare un modulo adatto prima dell'acquisto",
+    "rm": "pretsch stimà, scleriar in modul adattà avant la cumpra"
+   }
+  },
+  {
    "id": "motorhat",
    "gruppe": "mover",
    "menge": "1×",
@@ -978,6 +1211,23 @@
    "preis": 12,
    "haendler": "galaxus",
    "suche": "Schraubensortiment M2 M2.5 M3"
+  },
+  {
+   "id": "psu_pi",
+   "gruppe": "strom",
+   "menge": "1×",
+   "wenn": "entwicklung",
+   "name": {
+    "de": "Raspberry Pi 27-W-USB-C-Netzteil (Entwicklung)",
+    "en": "Raspberry Pi 27 W USB-C power supply (development)",
+    "fr": "Alimentation USB-C 27 W Raspberry Pi (développement)",
+    "it": "Alimentatore USB-C 27 W Raspberry Pi (sviluppo)",
+    "rm": "Alimentader USB-C 27 W Raspberry Pi (svilup)"
+   },
+   "nr": "SC1153",
+   "preis": 15,
+   "haendler": "pishop",
+   "suche": "Raspberry Pi 27W USB-C Netzteil"
   }
  ],
  "teile": [
@@ -1458,25 +1708,224 @@
    "id": "wide",
    "art": "v52",
    "bom": "camwide",
-   "schritt": null
+   "schritt": null,
+   "name": {
+    "de": "Weitwinkel-Kamera (Stirnwand, 12° nach unten)",
+    "en": "Wide camera (front wall, 12° down)",
+    "fr": "Caméra grand angle (paroi avant, 12° vers le bas)",
+    "it": "Fotocamera grandangolare (parete frontale, 12° verso il basso)",
+    "rm": "Camera largangulara (paraid davant, 12° engiu)"
+   },
+   "wenn": "v52"
   },
   {
    "id": "irled",
    "art": "v52",
-   "bom": "irled5",
-   "schritt": null
+   "bom": "irmod",
+   "schritt": null,
+   "name": {
+    "de": "IR-LED-Modul 120° (Stirnwand)",
+    "en": "IR LED module 120° (front wall)",
+    "fr": "Module LED IR 120° (paroi avant)",
+    "it": "Modulo LED IR 120° (parete frontale)",
+    "rm": "Modul LED IR 120° (paraid davant)"
+   },
+   "wenn": "v52"
   },
   {
    "id": "buttons",
    "art": "v52",
    "bom": "taster",
-   "schritt": null
+   "schritt": null,
+   "wenn": "v52"
   },
   {
    "id": "sled",
    "art": "v52",
    "bom": "sled",
-   "schritt": null
+   "schritt": null,
+   "wenn": "v52"
+  },
+  {
+   "id": "tub52",
+   "art": "v52",
+   "bom": "petg",
+   "schritt": null,
+   "ersetzt": "tub",
+   "datei": "01_Unterteil_v52",
+   "name": {
+    "de": "01 Unterteil v5.2 (Fenster Weitwinkel, IR-Modul, Kabelkamm, Tasten)",
+    "en": "01 Lower part v5.2 (wide window, IR module, cable comb, buttons)",
+    "fr": "01 Partie inférieure v5.2 (fenêtre grand angle, module IR, peigne à câbles, boutons)",
+    "it": "01 Parte inferiore v5.2 (finestra grandangolare, modulo IR, pettine cavi, pulsanti)",
+    "rm": "01 Part sut v5.2 (fanestra largangulara, modul IR, pettan da cabels, buttuns)"
+   },
+   "wenn": "v52"
+  },
+  {
+   "id": "mosfet52",
+   "art": "v52",
+   "bom": "mosfet",
+   "schritt": null,
+   "ersetzt": "mosfet",
+   "name": {
+    "de": "MOSFET-Modul (v5.2: Lüftungswand unter dem PCA9685)",
+    "en": "MOSFET module (v5.2: vent wall below the PCA9685)",
+    "fr": "Module MOSFET (v5.2 : paroi d'aération sous le PCA9685)",
+    "it": "Modulo MOSFET (v5.2: parete di ventilazione sotto il PCA9685)",
+    "rm": "Modul MOSFET (v5.2: paraid da ventilaziun sut il PCA9685)"
+   },
+   "wenn": "v52"
+  },
+  {
+   "id": "cable_cam1",
+   "art": "v52",
+   "bom": "camcable2",
+   "schritt": null,
+   "name": {
+    "de": "Kamerakabel CAM1 (Weitwinkel → Kabelkamm → Pi)",
+    "en": "Camera cable CAM1 (wide → cable comb → Pi)",
+    "fr": "Câble caméra CAM1 (grand angle → peigne → Pi)",
+    "it": "Cavo fotocamera CAM1 (grandangolare → pettine → Pi)",
+    "rm": "Cabel da camera CAM1 (largangulara → pettan → Pi)"
+   },
+   "wenn": "v52"
+  },
+  {
+   "id": "cable_cam0_52",
+   "art": "v52",
+   "bom": "camcable",
+   "schritt": null,
+   "ersetzt": "cable_cam",
+   "name": {
+    "de": "Kamerakabel CAM0 (v5.2: Kamin → Kabelkamm → Pi)",
+    "en": "Camera cable CAM0 (v5.2: chimney → cable comb → Pi)",
+    "fr": "Câble caméra CAM0 (v5.2 : cheminée → peigne → Pi)",
+    "it": "Cavo fotocamera CAM0 (v5.2: camino → pettine → Pi)",
+    "rm": "Cabel da camera CAM0 (v5.2: chamin → pettan → Pi)"
+   },
+   "wenn": "v52"
+  },
+  {
+   "id": "plug52",
+   "art": "v52",
+   "bom": "petg",
+   "schritt": null,
+   "ersetzt": "plug",
+   "datei": "10_Stopfen_HDMI_USB_v52",
+   "wenn": "v52",
+   "name": {
+    "de": "10 Stopfen Service-Fenster v5.2 (HDMI + USB-C)",
+    "en": "10 Plug service window v5.2 (HDMI + USB-C)",
+    "fr": "10 Bouchon fenêtre de service v5.2 (HDMI + USB-C)",
+    "it": "10 Tappo finestra di servizio v5.2 (HDMI + USB-C)",
+    "rm": "10 Zaffer fanestra da servetsch v5.2 (HDMI + USB-C)"
+   }
+  },
+  {
+   "id": "sdplug",
+   "art": "v52",
+   "bom": "petg",
+   "schritt": null,
+   "datei": "16_Stopfen_SD_v52",
+   "wenn": "v52",
+   "name": {
+    "de": "16 Stopfen SD-Schlitz v5.2",
+    "en": "16 Plug SD slot v5.2",
+    "fr": "16 Bouchon fente SD v5.2",
+    "it": "16 Tappo fessura SD v5.2",
+    "rm": "16 Zaffer fessa SD v5.2"
+   }
+  },
+  {
+   "id": "head52",
+   "art": "v52",
+   "bom": "petg",
+   "schritt": null,
+   "ersetzt": "head",
+   "datei": "06_Kamerakopf_v52",
+   "wenn": "v52",
+   "name": {
+    "de": "06 Kamerakopf v5.2 (Status-LED oben)",
+    "en": "06 Camera head v5.2 (status LED on top)",
+    "fr": "06 Tête de caméra v5.2 (LED d'état en haut)",
+    "it": "06 Testa della fotocamera v5.2 (LED di stato in alto)",
+    "rm": "06 Chau da la camera v5.2 (LED da status sura)"
+   }
+  },
+  {
+   "id": "diff52",
+   "art": "v52",
+   "bom": "sled",
+   "schritt": null,
+   "datei": "14_Diffusor_Status_LED",
+   "wenn": "v52",
+   "name": {
+    "de": "14 Diffusor «Blinki-Auge» + 15 Pupillenring",
+    "en": "14 Diffuser «Blinki eye» + 15 pupil ring",
+    "fr": "14 Diffuseur «œil de Blinki» + 15 anneau pupille",
+    "it": "14 Diffusore «occhio di Blinki» + 15 anello pupilla",
+    "rm": "14 Diffusur «egl da Blinki» + 15 anè da pupilla"
+   }
+  },
+  {
+   "id": "sockel",
+   "art": "dev",
+   "bom": "petg",
+   "schritt": null,
+   "ersetzt": "ups",
+   "datei": "13_Entwicklungs_Sockel",
+   "wenn": "entwicklung",
+   "name": {
+    "de": "13 Entwicklungs-Sockel (statt UPS HAT + Akkus)",
+    "en": "13 Development socket (instead of UPS HAT + cells)",
+    "fr": "13 Socle de développement (au lieu de l'UPS HAT + accus)",
+    "it": "13 Zoccolo di sviluppo (al posto di UPS HAT + batterie)",
+    "rm": "13 Zocla da svilup (empè da l'UPS HAT + accus)"
+   }
+  },
+  {
+   "id": "resplug",
+   "art": "v52",
+   "bom": "petg",
+   "schritt": null,
+   "datei": "17_Blindstopfen_Reserve",
+   "wenn": "v52",
+   "name": {
+    "de": "17 Blindstopfen Reserve-Öffnung hinten (GX12)",
+    "en": "17 Blind plug reserve opening rear (GX12)",
+    "fr": "17 Bouchon ouverture de réserve arrière (GX12)",
+    "it": "17 Tappo apertura di riserva posteriore (GX12)",
+    "rm": "17 Zaffer avertura da reserva davos (GX12)"
+   }
+  },
+  {
+   "id": "lampdrv",
+   "art": "v52",
+   "bom": null,
+   "schritt": null,
+   "wenn": "v52",
+   "name": {
+    "de": "PLATZHALTER Lampentreiber (Feld 30 × 20, 2 × M2,5)",
+    "en": "PLACEHOLDER lamp driver (area 30 × 20, 2 × M2.5)",
+    "fr": "EMPLACEMENT pilote de lampe (30 × 20, 2 × M2,5)",
+    "it": "SEGNAPOSTO driver lampade (30 × 20, 2 × M2,5)",
+    "rm": "PLAZZA driver da lampas (30 × 20, 2 × M2,5)"
+   }
+  },
+  {
+   "id": "fuseh",
+   "art": "v52",
+   "bom": "fuse2",
+   "schritt": null,
+   "wenn": "v52",
+   "name": {
+    "de": "Sicherungshalter 5 A (Akku B+) in der Klammer am Boden",
+    "en": "Fuse holder 5 A (battery B+) in the floor clip",
+    "fr": "Porte-fusible 5 A (batterie B+) dans le clip au fond",
+    "it": "Portafusibile 5 A (batteria B+) nella clip sul fondo",
+    "rm": "Purtader da segirezza 5 A (accu B+) en la clip sin il fund"
+   }
   }
  ],
  "schritte": [
@@ -1626,11 +2075,11 @@
     "rm": "Montar la furtga"
    },
    "text": {
-    "de": "Die Gabel mit 4 × M3 auf den Drehteller schrauben. Das Tilt-Horn senkrecht in die Vertiefung innen in Arm 1 legen und festschrauben.",
-    "en": "Screw the yoke onto the turntable with 4 × M3. Lay the tilt horn vertically into the recess on the inside of arm 1 and screw it tight.",
-    "fr": "Visser la fourche sur le plateau avec 4 × M3. Poser le palonnier tilt verticalement dans le creux à l'intérieur du bras 1 et le visser.",
-    "it": "Avvitare la forcella sul piatto con 4 × M3. Mettere la squadretta tilt in verticale nell'incavo all'interno del braccio 1 e avvitarla.",
-    "rm": "Fixar la furtga cun 4 × M3 sin la platta rotanta. Metter il corn tilt vertical en l'enfossadira da l'intern dal bratsch 1 e fixar."
+    "de": "Die Gabel mit 4 × M3 × 8 (nicht länger: die Spitze darf nicht in den Laufring ragen) auf den Drehteller schrauben. Das Tilt-Horn senkrecht in die Vertiefung innen in Arm 1 legen und festschrauben.",
+    "en": "Screw the yoke onto the turntable with 4 × M3 × 8 (not longer: the tip must not reach the bearing ring). Lay the tilt horn vertically into the recess on the inside of arm 1 and screw it tight.",
+    "fr": "Visser la fourche sur le plateau avec 4 × M3 × 8 (pas plus long : la pointe ne doit pas toucher la bague). Poser le palonnier tilt verticalement dans le creux à l'intérieur du bras 1 et le visser.",
+    "it": "Avvitare la forcella sul piatto con 4 × M3 × 8 (non più lunghe: la punta non deve toccare l'anello). Mettere la squadretta tilt in verticale nell'incavo all'interno del braccio 1 e avvitarla.",
+    "rm": "Fixar la furtga cun 4 × M3 × 8 (betg pli lungas: la piz na dastga betg tutgar l'anè) sin la platta rotanta. Metter il corn tilt vertical en l'enfossadira da l'intern dal bratsch 1 e fixar."
    }
   },
   {
@@ -1643,11 +2092,11 @@
     "rm": "Chau da la camera"
    },
    "text": {
-    "de": "Thermal-90 (Linse links) und Camera Module 3 durch die offene Seite einschrauben (M2). Tilt-Servo auf Mitte einsetzen, Kabel durch den Schlitz hinten, Seitendeckel mit 3 × M3 zuschrauben.",
-    "en": "Screw in the Thermal-90 (lens on the left) and the Camera Module 3 through the open side (M2). Insert the tilt servo at centre, cables through the slot at the back, close the side cover with 3 × M3.",
-    "fr": "Visser la Thermal-90 (objectif à gauche) et la Camera Module 3 par le côté ouvert (M2). Mettre le servo tilt au centre, câbles par la fente arrière, fermer le couvercle latéral avec 3 × M3.",
-    "it": "Avvitare la Thermal-90 (obiettivo a sinistra) e la Camera Module 3 dal lato aperto (M2). Inserire il servo tilt al centro, cavi nella fessura dietro, chiudere il coperchio laterale con 3 × M3.",
-    "rm": "Fixar la Thermal-90 (lentilla a sanestra) e la Camera Module 3 tras la vart averta (M2). Metter il servo tilt en il center, cabels tras la fessa davos, serrar il viertgel lateral cun 3 × M3."
+    "de": "Thermal-90 (Linse links) und Camera Module 3 durch die offene Seite einschrauben (Camera Module 3: 4 × M2 × 4, Thermal-90: 2 × M2 × 6). Tilt-Servo auf Mitte einsetzen, Kabel durch den Schlitz hinten, Seitendeckel mit 3 × M3 × 10 Linsenkopf ISO 7380 zuschrauben (kein Zylinderkopf: der stösst beim Kippen an Arm 2).",
+    "en": "Screw in the Thermal-90 (lens on the left) and the Camera Module 3 through the open side (Camera Module 3: 4 × M2 × 4, Thermal-90: 2 × M2 × 6). Insert the tilt servo at centre, cables through the slot at the back, close the side cover with 3 × M3 × 10 button head ISO 7380 (no socket cap head: it hits arm 2 when tilting).",
+    "fr": "Visser la Thermal-90 (objectif à gauche) et la Camera Module 3 par le côté ouvert (Camera Module 3 : 4 × M2 × 4, Thermal-90 : 2 × M2 × 6). Mettre le servo tilt au centre, câbles par la fente arrière, fermer le couvercle latéral avec 3 × M3 × 10 ISO 7380.",
+    "it": "Avvitare la Thermal-90 (obiettivo a sinistra) e la Camera Module 3 dal lato aperto (Camera Module 3: 4 × M2 × 4, Thermal-90: 2 × M2 × 6). Inserire il servo tilt al centro, cavi nella fessura dietro, chiudere il coperchio laterale con 3 × M3 × 10 ISO 7380.",
+    "rm": "Fixar la Thermal-90 (lentilla a sanestra) e la Camera Module 3 tras la vart averta (Camera Module 3: 4 × M2 × 4, Thermal-90: 2 × M2 × 6). Metter il servo tilt en il center, cabels tras la fessa davos, serrar il viertgel lateral cun 3 × M3 × 10 ISO 7380."
    }
   },
   {
@@ -1677,11 +2126,11 @@
     "rm": "Lampas"
    },
    "text": {
-    "de": "Die zwei Lampenhalter mit je 2 × M3 × 8 aussen an die Arme schrauben: weiss an Arm 1, IR 850 nm an Arm 2. Module einsetzen und mit Heisskleber oder Madenschraube sichern.",
-    "en": "Screw the two lamp holders to the outside of the arms with 2 × M3 × 8 each: white on arm 1, IR 850 nm on arm 2. Insert the modules and secure them with hot glue or a grub screw.",
-    "fr": "Visser les deux supports de lampe à l'extérieur des bras avec 2 × M3 × 8 chacun : blanc au bras 1, IR 850 nm au bras 2. Insérer les modules et les bloquer avec de la colle chaude ou une vis sans tête.",
-    "it": "Avvitare i due portalampada all'esterno dei bracci con 2 × M3 × 8 ciascuno: bianco sul braccio 1, IR 850 nm sul braccio 2. Inserire i moduli e fissarli con colla a caldo o un grano.",
-    "rm": "Fixar ils dus tegnalampas cun mintgamai 2 × M3 × 8 dador vi dals bratschs: alv vi dal bratsch 1, IR 850 nm vi dal bratsch 2. Metter ils moduls e segirar cun cola chauda u cun ina sitga senza chau."
+    "de": "Die zwei Lampenhalter mit je 2 × M3 × 8 mit Unterlegscheibe aussen an die Arme schrauben: weiss an Arm 1, IR 850 nm an Arm 2. Module einsetzen und mit Heisskleber oder Madenschraube sichern.",
+    "en": "Screw the two lamp holders to the outside of the arms with 2 × M3 × 8 with washer each: white on arm 1, IR 850 nm on arm 2. Insert the modules and secure them with hot glue or a grub screw.",
+    "fr": "Visser les deux supports de lampe à l'extérieur des bras avec 2 × M3 × 8 avec rondelle chacun : blanc au bras 1, IR 850 nm au bras 2. Insérer les modules et les bloquer avec de la colle chaude ou une vis sans tête.",
+    "it": "Avvitare i due portalampada all'esterno dei bracci con 2 × M3 × 8 con rondella ciascuno: bianco sul braccio 1, IR 850 nm sul braccio 2. Inserire i moduli e fissarli con colla a caldo o un grano.",
+    "rm": "Fixar ils dus tegnalampas cun mintgamai 2 × M3 × 8 cun rundella dador vi dals bratschs: alv vi dal bratsch 1, IR 850 nm vi dal bratsch 2. Metter ils moduls e segirar cun cola chauda u cun ina sitga senza chau."
    }
   },
   {
@@ -2037,7 +2486,9 @@
  },
  "druckdateien": [
   "MotionWatch_v5-1_Platte_A_Unterteil.3mf",
-  "MotionWatch_v5-1_Platte_B_Deckel_Kopf.3mf"
+  "MotionWatch_v5-1_Platte_B_Deckel_Kopf.3mf",
+  "v5-2/MotionWatch_v5-2_Platte_A_Unterteil.3mf",
+  "v5-2/MotionWatch_v5-2_Platte_B_Deckel_Kopf.3mf"
  ],
  "github": "https://github.com/DonElektro/MotionWatch",
  "_hinweis_bauen": "real-bauen (01.11.2026): dazu für MoveEye → Mehr → «Bauen» und den Simulator (Mehr → «Bauen»): Varianten, Einkauf (Preise geschätzt, Händler-Suchlinks), Drucken (pro Teil), Werkzeug, Sicherheit, Verkabeln (Pins und Kanäle aus dem Code, «code» = Prüfwert für werkzeuge/bau_pruefen.py), Software, Inbetriebnahme, Fehlersuche (Kennungen aus simulator3d/fehler_katalog.json), Wartung. «wenn»: nur in dieser Variante (v52 | ups | netz | mover). «unklar»: offen, nicht geprüft – bitte klären.",
@@ -2102,6 +2553,16 @@
       "fr": "sans batterie (alimentation 12 V)",
       "it": "senza batteria (alimentatore 12 V)",
       "rm": "senza accu (alimentaziun 12 V)"
+     }
+    },
+    {
+     "id": "entwicklung",
+     "name": {
+      "de": "Entwicklung: Sockel statt Akku, Pi-Netzteil",
+      "en": "Development: socket instead of battery, Pi power supply",
+      "fr": "Développement : socle au lieu de la batterie, alim. du Pi",
+      "it": "Sviluppo: zoccolo al posto della batteria, alimentatore del Pi",
+      "rm": "Svilup: zocla empè da l'accu, alimentaziun dal Pi"
      }
     }
    ]
@@ -2185,6 +2646,24 @@
      "it": "fondo",
      "rm": "fund"
     }
+   },
+   {
+    "datei": "01_Unterteil_v52",
+    "stueck": 1,
+    "fuellung": 15,
+    "waende": 4,
+    "stuetzen": false,
+    "schicht": "0.20",
+    "brim": 0,
+    "zeit_h": 8.5,
+    "liegt": {
+     "de": "Boden – Kamera-Rippen und Kabelkamm mit 45°-Unterseiten, ohne Stützen",
+     "en": "bottom – camera ribs and cable comb with 45° undersides, no supports",
+     "fr": "fond – nervures caméra et peigne à 45°, sans supports",
+     "it": "fondo – nervature fotocamera e pettine a 45°, senza supporti",
+     "rm": "fund – costas da camera e pettan cun 45°, senza sustegns"
+    },
+    "wenn": "v52"
    },
    {
     "datei": "02_Deckel_mit_Laufring",
@@ -2355,6 +2834,258 @@
      "it": "piede, perno in alto",
      "rm": "pe, tschep ensi"
     }
+   },
+   {
+    "datei": "12_Blindstopfen_Weitwinkel",
+    "stueck": 1,
+    "fuellung": 100,
+    "waende": 2,
+    "stuetzen": false,
+    "schicht": "0.12",
+    "brim": 0,
+    "zeit_h": 0.3,
+    "wenn": "v52",
+    "liegt": {
+     "de": "Flansch unten (nur ohne Weitwinkel-Kamera)",
+     "en": "flange down (only without wide camera)",
+     "fr": "bride en bas (seulement sans caméra grand angle)",
+     "it": "flangia in basso (solo senza fotocamera grandangolare)",
+     "rm": "flansch sut (mo senza camera largangulara)"
+    }
+   },
+   {
+    "stueck": 1,
+    "fuellung": 100,
+    "waende": 2,
+    "stuetzen": false,
+    "schicht": "0.12",
+    "brim": 0,
+    "wenn": "v52",
+    "datei": "10_Stopfen_HDMI_USB_v52",
+    "zeit_h": 0.4,
+    "liegt": {
+     "de": "Flansch unten",
+     "en": "flange down",
+     "fr": "bride en bas",
+     "it": "flangia in basso",
+     "rm": "flansch sut"
+    }
+   },
+   {
+    "stueck": 1,
+    "fuellung": 100,
+    "waende": 2,
+    "stuetzen": false,
+    "schicht": "0.12",
+    "brim": 0,
+    "wenn": "v52",
+    "datei": "16_Stopfen_SD_v52",
+    "zeit_h": 0.2,
+    "liegt": {
+     "de": "Flansch unten",
+     "en": "flange down",
+     "fr": "bride en bas",
+     "it": "flangia in basso",
+     "rm": "flansch sut"
+    }
+   },
+   {
+    "stueck": 1,
+    "fuellung": 100,
+    "waende": 2,
+    "stuetzen": false,
+    "schicht": "0.12",
+    "brim": 0,
+    "wenn": "v52",
+    "datei": "14_Diffusor_Status_LED",
+    "zeit_h": 0.3,
+    "liegt": {
+     "de": "Zapfen unten, PETG natur/weiss",
+     "en": "peg down, PETG natural/white",
+     "fr": "tenon en bas, PETG naturel/blanc",
+     "it": "perno in basso, PETG naturale/bianco",
+     "rm": "pivel sut, PETG natira/alv"
+    }
+   },
+   {
+    "stueck": 1,
+    "fuellung": 100,
+    "waende": 2,
+    "stuetzen": false,
+    "schicht": "0.12",
+    "brim": 0,
+    "wenn": "v52",
+    "datei": "15_Pupillenring",
+    "zeit_h": 0.1,
+    "liegt": {
+     "de": "flach, PETG schwarz",
+     "en": "flat, PETG black",
+     "fr": "à plat, PETG noir",
+     "it": "piatto, PETG nero",
+     "rm": "plat, PETG nair"
+    }
+   },
+   {
+    "datei": "06_Kamerakopf_v52",
+    "stueck": 1,
+    "fuellung": 20,
+    "waende": 3,
+    "stuetzen": false,
+    "schicht": "0.20",
+    "brim": 5,
+    "zeit_h": 2.8,
+    "liegt": {
+     "de": "rechte Seitenwand",
+     "en": "right side wall",
+     "fr": "paroi latérale droite",
+     "it": "parete laterale destra",
+     "rm": "paraid laterala dretga"
+    },
+    "wenn": "v52"
+   },
+   {
+    "datei": "13_Entwicklungs_Sockel",
+    "stueck": 1,
+    "fuellung": 15,
+    "waende": 3,
+    "stuetzen": false,
+    "schicht": "0.20",
+    "brim": 0,
+    "zeit_h": 2.0,
+    "wenn": "entwicklung",
+    "liegt": {
+     "de": "Rahmen unten (Bolzen oben)",
+     "en": "frame down (posts up)",
+     "fr": "cadre en bas (colonnes en haut)",
+     "it": "telaio in basso (colonnine in alto)",
+     "rm": "rom sut (pivels sura)"
+    }
+   },
+   {
+    "datei": "17_Blindstopfen_Reserve",
+    "stueck": 1,
+    "fuellung": 100,
+    "waende": 2,
+    "stuetzen": false,
+    "schicht": "0.12",
+    "brim": 0,
+    "zeit_h": 0.2,
+    "wenn": "v52",
+    "liegt": {
+     "de": "Flansch unten",
+     "en": "flange down",
+     "fr": "bride en bas",
+     "it": "flangia in basso",
+     "rm": "flansch sut"
+    }
+   },
+   {
+    "datei": "18_Stopfen_Waermebild",
+    "stueck": 1,
+    "fuellung": 100,
+    "waende": 2,
+    "stuetzen": false,
+    "schicht": "0.12",
+    "brim": 0,
+    "zeit_h": 0.3,
+    "wenn": "v52",
+    "liegt": {
+     "de": "Flansch unten (nur Kopf ohne Wärmebild)",
+     "en": "flange down (only head without thermal camera)",
+     "fr": "bride en bas (seulement tête sans caméra thermique)",
+     "it": "flangia in basso (solo testa senza termocamera)",
+     "rm": "flansch sut (mo chau senza camera termica)"
+    }
+   },
+   {
+    "datei": "19_Stopfen_IR_Modul",
+    "stueck": 1,
+    "fuellung": 20,
+    "waende": 2,
+    "stuetzen": false,
+    "schicht": "0.12",
+    "brim": 0,
+    "zeit_h": 0.4,
+    "wenn": "v52",
+    "liegt": {
+     "de": "Rückseite unten (nur ohne IR-Modul; die Madenschraube M3 hält ihn)",
+     "en": "back side down (only without IR module; the M3 grub screw holds it)",
+     "fr": "face arrière en bas (seulement sans module IR ; la vis sans tête M3 le tient)",
+     "it": "lato posteriore in basso (solo senza modulo IR; il grano M3 lo tiene)",
+     "rm": "vart davos sut (mo senza modul IR; la sbarra M3 al tegna)"
+    }
+   },
+   {
+    "datei": "20_Stopfen_DS18B20",
+    "stueck": 1,
+    "fuellung": 100,
+    "waende": 2,
+    "stuetzen": false,
+    "schicht": "0.12",
+    "brim": 0,
+    "zeit_h": 0.1,
+    "wenn": "v52",
+    "liegt": {
+     "de": "Flansch unten (nur ohne Temperaturfühler; Flansch aussen am Boden)",
+     "en": "flange down (only without temperature probe; flange outside on the bottom)",
+     "fr": "bride en bas (seulement sans sonde de température ; bride dehors sous le fond)",
+     "it": "flangia in basso (solo senza sonda di temperatura; flangia fuori sul fondo)",
+     "rm": "flansch sut (mo senza sonda da temperatura; flansch dadora sin il fund)"
+    }
+   },
+   {
+    "datei": "21_Stopfen_Relais",
+    "stueck": 1,
+    "fuellung": 100,
+    "waende": 2,
+    "stuetzen": false,
+    "schicht": "0.12",
+    "brim": 0,
+    "zeit_h": 0.2,
+    "wenn": "v52",
+    "liegt": {
+     "de": "Flansch unten (nur ohne Relais; gleiche Form wie 17)",
+     "en": "flange down (only without relay; same shape as 17)",
+     "fr": "bride en bas (seulement sans relais ; même forme que 17)",
+     "it": "flangia in basso (solo senza relè; stessa forma di 17)",
+     "rm": "flansch sut (mo senza relais; medema furma sco 17)"
+    }
+   },
+   {
+    "datei": "23_Stopfen_Mikrofon",
+    "stueck": 1,
+    "fuellung": 100,
+    "waende": 2,
+    "stuetzen": false,
+    "schicht": "0.12",
+    "brim": 0,
+    "zeit_h": 0.1,
+    "wenn": "v52",
+    "liegt": {
+     "de": "Flansch unten (nur ohne Mikrofon; 5 Stifte im Presssitz)",
+     "en": "flange down (only without microphone; 5 press-fit pins)",
+     "fr": "bride en bas (seulement sans micro ; 5 tiges serrées)",
+     "it": "flangia in basso (solo senza microfono; 5 perni a pressione)",
+     "rm": "flansch sut (mo senza microfon; 5 guttas en pressiun)"
+    }
+   },
+   {
+    "datei": "24_Stopfen_Lichtleiter",
+    "stueck": 1,
+    "fuellung": 100,
+    "waende": 2,
+    "stuetzen": false,
+    "schicht": "0.12",
+    "brim": 0,
+    "zeit_h": 0.1,
+    "wenn": "v52",
+    "liegt": {
+     "de": "Flansch unten (nur ohne Lade-LED; Presssitz mit Quetschrippen)",
+     "en": "flange down (only without charge LED; press fit with crush ribs)",
+     "fr": "bride en bas (seulement sans LED de charge ; serrage par nervures)",
+     "it": "flangia in basso (solo senza LED di carica; a pressione con nervature)",
+     "rm": "flansch sut (mo senza LED da chargiar; pressiun cun costas)"
+    }
    }
   ],
   "hinweise": [
@@ -2485,23 +3216,35 @@
   },
   {
    "menge": "4×",
-   "was": "M3 × 10",
+   "was": {
+    "de": "M3 × 8 (Gabel → Drehteller)",
+    "en": "M3 × 8 (yoke → turntable)",
+    "fr": "M3 × 8 (fourche → plateau)",
+    "it": "M3 × 8 (forcella → piatto)",
+    "rm": "M3 × 8 (furtga → platta)"
+   },
    "schritt": 9
   },
   {
-   "menge": "6×",
+   "menge": "4× + 2×",
    "was": {
-    "de": "M2 × 6 (4× Camera Module 3, 2× Thermal-90)",
-    "en": "M2 × 6 (4× Camera Module 3, 2× Thermal-90)",
-    "fr": "M2 × 6 (4× Camera Module 3, 2× Thermal-90)",
-    "it": "M2 × 6 (4× Camera Module 3, 2× Thermal-90)",
-    "rm": "M2 × 6 (4× Camera Module 3, 2× Thermal-90)"
+    "de": "M2 × 4 (Camera Module 3) + M2 × 6 (Thermal-90)",
+    "en": "M2 × 4 (Camera Module 3) + M2 × 6 (Thermal-90)",
+    "fr": "M2 × 4 (Camera Module 3) + M2 × 6 (Thermal-90)",
+    "it": "M2 × 4 (Camera Module 3) + M2 × 6 (Thermal-90)",
+    "rm": "M2 × 4 (Camera Module 3) + M2 × 6 (Thermal-90)"
    },
    "schritt": 10
   },
   {
    "menge": "3×",
-   "was": "M3 × 10",
+   "was": {
+    "de": "M3 × 10 Linsenkopf ISO 7380 (Seitendeckel)",
+    "en": "M3 × 10 button head ISO 7380 (side cover)",
+    "fr": "M3 × 10 tête bombée ISO 7380 (couvercle latéral)",
+    "it": "M3 × 10 testa bombata ISO 7380 (coperchio laterale)",
+    "rm": "M3 × 10 chau bombà ISO 7380 (viertgel lateral)"
+   },
    "schritt": 10
   },
   {
@@ -2517,13 +3260,31 @@
   },
   {
    "menge": "4×",
-   "was": "M3 × 8",
+   "was": {
+    "de": "M3 × 8 + Unterlegscheibe M3 (Lampenhalter)",
+    "en": "M3 × 8 + washer M3 (lamp holders)",
+    "fr": "M3 × 8 + rondelle M3 (supports de lampe)",
+    "it": "M3 × 8 + rondella M3 (portalampade)",
+    "rm": "M3 × 8 + rundella M3 (tegnalampas)"
+   },
    "schritt": 12
   },
   {
    "menge": "6×",
    "was": "M3 × 10",
    "schritt": 13
+  },
+  {
+   "menge": "4×",
+   "was": {
+    "de": "M2,5 × 6 (Pi auf Sockel 13)",
+    "en": "M2.5 × 6 (Pi on socket 13)",
+    "fr": "M2,5 × 6 (Pi sur socle 13)",
+    "it": "M2,5 × 6 (Pi su zoccolo 13)",
+    "rm": "M2,5 × 6 (Pi sin zocla 13)"
+   },
+   "schritt": 4,
+   "wenn": "entwicklung"
   }
  ],
  "sicherheit": [
@@ -2772,11 +3533,11 @@
    },
    "irled": {
     "name": {
-     "de": "IR-LED 5 mm",
-     "en": "IR LED 5 mm",
-     "fr": "LED IR 5 mm",
-     "it": "LED IR 5 mm",
-     "rm": "LED IR 5 mm"
+     "de": "IR-Modul 120°",
+     "en": "IR module 120°",
+     "fr": "Module IR 120°",
+     "it": "Modulo IR 120°",
+     "rm": "Modul IR 120°"
     },
     "x": 96,
     "y": 72,
@@ -2916,6 +3677,18 @@
     "x": 58,
     "y": 70,
     "wenn": "mover"
+   },
+   "fuse2": {
+    "name": {
+     "de": "Sicherung 5 A (Akku)",
+     "en": "Fuse 5 A (battery)",
+     "fr": "Fusible 5 A (batterie)",
+     "it": "Fusibile 5 A (batteria)",
+     "rm": "Segirezza 5 A (accu)"
+    },
+    "x": 14,
+    "y": 78,
+    "wenn": "ups"
    }
   },
   "verbindungen": [
@@ -2967,16 +3740,30 @@
    {
     "id": "akku_buck",
     "von": "ups",
-    "nach": "buck",
+    "nach": "fuse2",
     "art": "strom",
     "pins": {
-     "de": "Akku-Lötpunkte B+ / B− des UPS HAT (E) (12–16,8 V) → eigener Step-Down 6–36 V → 5 V (VIN / GND). Ersatz: USB-A-5-V-Buchse des HAT",
-     "en": "battery solder pads B+ / B− of the UPS HAT (E) (12–16.8 V) → own step-down 6–36 V → 5 V (VIN / GND). Fallback: USB-A 5 V socket of the HAT",
-     "fr": "pastilles B+ / B− de la batterie du UPS HAT (E) (12–16,8 V) → propre abaisseur 6–36 V → 5 V (VIN / GND). Secours : prise USB-A 5 V du HAT",
-     "it": "piazzole B+ / B− della batteria dell'UPS HAT (E) (12–16,8 V) → step-down proprio 6–36 V → 5 V (VIN / GND). Riserva: presa USB-A 5 V dell'HAT",
-     "rm": "puncts da lotar B+ / B− da l'accu dal UPS HAT (E) (12–16,8 V) → agen step-down 6–36 V → 5 V (VIN / GND). Remplazzament: bischla USB-A 5 V dal HAT"
+     "de": "Akku-Lötpunkte B+ / B− des UPS HAT (E) (12–16,8 V) → Flachsicherung 5 A in B+ (fliegender Halter, nahe am HAT). Ersatz: USB-A-5-V-Buchse des HAT",
+     "en": "battery solder pads B+ / B− of the UPS HAT (E) (12–16.8 V) → blade fuse 5 A in B+ (inline holder, close to the HAT). Fallback: USB-A 5 V socket of the HAT",
+     "fr": "pastilles B+ / B− de la batterie de la UPS HAT (E) (12–16,8 V) → fusible plat 5 A sur B+ (support volant, près du HAT). Secours : prise USB-A 5 V du HAT",
+     "it": "piazzole B+ / B− della batteria della UPS HAT (E) (12–16,8 V) → fusibile lamellare 5 A su B+ (portafusibile volante, vicino all'HAT). Riserva: presa USB-A 5 V dell'HAT",
+     "rm": "puncts da lotar B+ / B− da l'accu da l'UPS HAT (E) (12–16,8 V) → segirezza plata 5 A en B+ (purtader liber, datiers da l'HAT). Remplazzament: bischla USB-A 5 V da l'HAT"
     },
     "wenn": "ups"
+   },
+   {
+    "id": "akku_buck2",
+    "von": "fuse2",
+    "nach": "buck",
+    "art": "strom",
+    "wenn": "ups",
+    "pins": {
+     "de": "nach der Sicherung → eigener Step-Down 6–36 V → 5 V (VIN / GND)",
+     "en": "after the fuse → own step-down 6–36 V → 5 V (VIN / GND)",
+     "fr": "après le fusible → abaisseur 6–36 V → 5 V (VIN / GND)",
+     "it": "dopo il fusibile → step-down 6–36 V → 5 V (VIN / GND)",
+     "rm": "suenter la segirezza → step-down 6–36 V → 5 V (VIN / GND)"
+    }
    },
    {
     "id": "servo_strom",
@@ -3082,15 +3869,22 @@
     "nach": "irled",
     "art": "pwm",
     "pins": {
-     "de": "Kanal 4 → 3. MOSFET-Modul (AOD4184, 1 Kanal) → 47 Ω / 0,5 W → IR-LED 5 mm 850 nm («IR-Licht breit», ca. 70 mA)",
-     "en": "channel 4 → 3rd MOSFET module (AOD4184, 1 channel) → 47 Ω / 0.5 W → IR LED 5 mm 850 nm («wide IR light», approx. 70 mA)",
-     "fr": "canal 4 → 3e module MOSFET (AOD4184, 1 canal) → 47 Ω / 0,5 W → LED IR 5 mm 850 nm («IR large», env. 70 mA)",
-     "it": "canale 4 → 3° modulo MOSFET (AOD4184, 1 canale) → 47 Ω / 0,5 W → LED IR 5 mm 850 nm («IR ampio», ca. 70 mA)",
-     "rm": "chanal 4 → 3. modul MOSFET (AOD4184, 1 chanal) → 47 Ω / 0,5 W → LED IR 5 mm 850 nm («glisch IR largia», ca. 70 mA)"
+     "de": "Kanal 4 → 3. MOSFET-Modul (AOD4184, 1 Kanal) → 5 V über Vorwiderstand 2 W → IR-Modul 120° 850 nm («IR-Licht breit»); nur bei IR_TYP «5mm» (v52.py): 47 Ω / 0,5 W → IR-LED 5 mm (ca. 70 mA)",
+     "en": "channel 4 → 3rd MOSFET module (AOD4184, 1 channel) → 5 V through a series resistor 2 W → IR module 120° 850 nm («wide IR light»); only with IR_TYP «5mm» (v52.py): 47 Ω / 0.5 W → IR LED 5 mm (approx. 70 mA)",
+     "fr": "canal 4 → 3e module MOSFET (AOD4184, 1 canal) → 5 V par une résistance série 2 W → module IR 120° 850 nm («IR large») ; seulement avec IR_TYP «5mm» (v52.py) : 47 Ω / 0,5 W → LED IR 5 mm (env. 70 mA)",
+     "it": "canale 4 → 3° modulo MOSFET (AOD4184, 1 canale) → 5 V tramite resistenza in serie 2 W → modulo IR 120° 850 nm («IR ampio»); solo con IR_TYP «5mm» (v52.py): 47 Ω / 0,5 W → LED IR 5 mm (ca. 70 mA)",
+     "rm": "chanal 4 → 3. modul MOSFET (AOD4184, 1 chanal) → 5 V tras ina resistenza en seria 2 W → modul IR 120° 850 nm («glisch IR largia»); mo cun IR_TYP «5mm» (v52.py): 47 Ω / 0,5 W → LED IR 5 mm (ca. 70 mA)"
     },
     "code": "weit_ir_ch",
     "wert": "4",
-    "wenn": "v52"
+    "wenn": "v52",
+    "unklar": {
+     "de": "Wert des Vorwiderstands je nach Modul (wie bei den Scheinwerfern)",
+     "en": "value of the series resistor depends on the module (as for the lamps)",
+     "fr": "valeur de la résistance selon le module (comme pour les lampes)",
+     "it": "valore della resistenza secondo il modulo (come per le lampade)",
+     "rm": "valur da la resistenza tenor il modul (sco tar las lampas)"
+    }
    },
    {
     "id": "led_rgb",
@@ -3418,13 +4212,8 @@
      "it": "GPIO 6 (pin 31) → 330 Ω → LED di carica 3 mm verde → GND (pin 34); guida luce dietro. MoveEye la accende secondo lo stato di carica dell'UPS HAT (E)",
      "rm": "GPIO 6 (pin 31) → 330 Ω → LED da chargiar 3 mm verda → GND (pin 34); conductur da glisch davos. MoveEye la stizza tenor il stadi da chargiar dal UPS HAT (E)"
     },
-    "unklar": {
-     "de": "die Software steuert die Lade-LED noch nicht (folgt)",
-     "en": "the software does not drive the charge LED yet (to follow)",
-     "fr": "le logiciel ne commande pas encore la LED de charge (à venir)",
-     "it": "il software non comanda ancora il LED di carica (segue)",
-     "rm": "la software na stizza anc betg la LED da chargiar (suonda)"
-    }
+    "code": "charge_led_gpio",
+    "wert": "6"
    },
    {
     "id": "mover",
@@ -3922,18 +4711,18 @@
     "rm": "Variante v5.2"
    },
    "text": {
-    "de": "Weitwinkel-Kamera in die Stirnwand (CAM1), IR-LED 5 mm links vom PIR, 2 Tasten in die Rückwand, Status-LED oben in den Kopf. Die Druckdateien v5.2 sind noch nicht im Paket.",
-    "en": "Wide-angle camera into the front wall (CAM1), IR LED 5 mm left of the PIR, 2 buttons into the back wall, status LED on top of the head. The print files v5.2 are not yet in the package.",
-    "fr": "Caméra grand-angle dans la paroi avant (CAM1), LED IR 5 mm à gauche du PIR, 2 boutons dans la paroi arrière, LED d'état sur la tête. Les fichiers v5.2 ne sont pas encore dans le paquet.",
-    "it": "Telecamera grandangolare nella parete frontale (CAM1), LED IR 5 mm a sinistra del PIR, 2 pulsanti nella parete posteriore, LED di stato sopra la testa. I file v5.2 non sono ancora nel pacchetto.",
-    "rm": "Camera grondangul en la paraid davant (CAM1), LED IR 5 mm a sanestra dal PIR, 2 buttuns en la paraid davos, LED da status sur il chau. Las datotecas v5.2 n'èn anc betg en il pachet."
+    "de": "Weitwinkel-Kamera in die Stirnwand (CAM1), IR-Modul 120° rechts neben die Kamera (Madenschraube M3), 2 Tasten in die Rückwand, Status-LED oben in den Kopf. Druckdateien: Druckdateien/v5-2/. Fehlt ein Teil im Paket, kommt der passende Stopfen hinein (12, 18–24).",
+    "en": "Wide-angle camera into the front wall (CAM1), IR module 120° next to the camera (M3 grub screw), 2 buttons into the back wall, status LED on top of the head. Print files: Druckdateien/v5-2/. If a part is missing in the package, fit the matching plug (12, 18–24).",
+    "fr": "Caméra grand-angle dans la paroi avant (CAM1), module IR 120° à côté de la caméra (vis sans tête M3), 2 boutons dans la paroi arrière, LED d'état sur la tête. Fichiers : Druckdateien/v5-2/. Si une pièce manque dans le paquet, poser le bouchon correspondant (12, 18–24).",
+    "it": "Telecamera grandangolare nella parete frontale (CAM1), modulo IR 120° accanto alla telecamera (grano M3), 2 pulsanti nella parete posteriore, LED di stato sopra la testa. File: Druckdateien/v5-2/. Se nel pacchetto manca un pezzo, montare il tappo corrispondente (12, 18–24).",
+    "rm": "Camera grondangul en la paraid davant (CAM1), modul IR 120° sper la camera (sbarra M3), 2 buttuns en la paraid davos, LED da status sur il chau. Datotecas: Druckdateien/v5-2/. Sch'i manca ina part en il pachet, metter il tappun correspundent (12, 18–24)."
    },
    "unklar": {
-    "de": "Druckdateien v5.2 fehlen",
-    "en": "print files v5.2 missing",
-    "fr": "fichiers v5.2 manquants",
-    "it": "mancano i file v5.2",
-    "rm": "datotecas v5.2 mancan"
+    "de": "Masse «Nachmessen» vor dem Druck prüfen",
+    "en": "check the «measure first» dimensions before printing",
+    "fr": "vérifier les cotes «à mesurer» avant l'impression",
+    "it": "verificare le misure «da misurare» prima della stampa",
+    "rm": "controllar las mesiras «mesirar» avant la stampa"
    }
   },
   {
@@ -3959,6 +4748,47 @@
     "it": "seguirà più tardi: telaio, corrente motore e fissaggio (dado treppiede 1/4\")",
     "rm": "suonda pli tard: chassis, current dal motor e fixaziun (mutter da stativ 1/4\")"
    }
+  },
+  {
+   "wenn": "entwicklung",
+   "titel": {
+    "de": "Entwicklungs-Variante ohne Akku",
+    "en": "Development variant without battery",
+    "fr": "Variante de développement sans batterie",
+    "it": "Variante di sviluppo senza batteria",
+    "rm": "Variante da svilup senza accu"
+   },
+   "text": {
+    "de": "Statt UPS HAT (E) und Akkus den Sockel 13 in den Akku-Zaun drücken (Klemmrippen), den Pi mit 4 × M2,5 × 6 auf die Bolzen schrauben – gleiche Lage und Höhe wie mit Akku, HDMI-/USB-C-Fenster und Kamerakabel passen. Der Pi bekommt Strom über sein eigenes USB-C-Netzteil (5,1 V / 5 A) durch das Service-Fenster. Servos, Lampen und Verstärker: das 12-V-Netzteil (mind. 3 A) an die GX16-Ladebuchse (Pins wie beim Laden: 2 Kontakte +, 2 Kontakte −); die 5-A-Sicherung bleibt in der Leitung, dahinter auf den Eingang des Step-down (6–36 V → 5 V). Nur 12 V verwenden, Polung prüfen – es gibt keinen Verpolungsschutz. In dieser Variante zeigen Akku-%, INA219 und Lade-LED nichts.",
+    "en": "Instead of the UPS HAT (E) and cells press socket 13 into the battery fence (clamp ribs) and screw the Pi onto the posts with 4 × M2.5 × 6 – same position and height as with the battery, HDMI/USB-C window and camera cables fit. The Pi gets power from its own USB-C power supply (5.1 V / 5 A) through the service window. Servos, lamps and amplifier: the 12 V power supply (at least 3 A) to the GX16 charging socket (pins as for charging: 2 contacts +, 2 contacts −); the 5 A fuse stays in the line, then to the input of the step-down (6–36 V → 5 V). Use 12 V only and check the polarity – there is no reverse-polarity protection. In this variant battery %, INA219 and the charging LED show nothing.",
+    "fr": "Au lieu de l'UPS HAT (E) et des accus, enfoncer le socle 13 dans l'enclos (nervures de serrage) et visser le Pi sur les colonnes avec 4 × M2,5 × 6 – même position et hauteur qu'avec la batterie. Le Pi est alimenté par son propre bloc USB-C (5,1 V / 5 A) par la fenêtre de service. Servos, lampes et ampli : l'alimentation 12 V (au moins 3 A) sur la prise GX16 (broches comme pour la charge : 2 +, 2 −) ; le fusible 5 A reste dans la ligne, puis l'entrée de l'abaisseur (6–36 V → 5 V). Uniquement 12 V, vérifier la polarité – pas de protection. Dans cette variante, % batterie, INA219 et LED de charge n'affichent rien.",
+    "it": "Al posto dell'UPS HAT (E) e delle batterie premere lo zoccolo 13 nel recinto (nervature di bloccaggio) e avvitare il Pi sulle colonnine con 4 × M2,5 × 6 – stessa posizione e altezza che con la batteria. Il Pi è alimentato dal suo alimentatore USB-C (5,1 V / 5 A) attraverso la finestra di servizio. Servo, lampade e amplificatore: l'alimentatore 12 V (almeno 3 A) alla presa GX16 (pin come per la carica: 2 +, 2 −); il fusibile 5 A resta nella linea, poi all'ingresso dello step-down (6–36 V → 5 V). Solo 12 V, controllare la polarità – non c'è protezione. In questa variante % batteria, INA219 e LED di carica non mostrano nulla.",
+    "rm": "Empè da l'UPS HAT (E) e dals accus smatgar la zocla 13 en il chasté (costas da serrar) e fixar il Pi cun 4 × M2,5 × 6 – medema posiziun ed autezza sco cun l'accu. Il Pi survegn current da ses agen alimentader USB-C (5,1 V / 5 A) tras la fanestra da servetsch. Servos, lampas ed amplificatur: l'alimentaziun da 12 V (almain 3 A) a la bischla GX16 (pins sco per chargiar: 2 +, 2 −); la segirezza da 5 A resta en la lingia, lura a l'entrada dal step-down (6–36 V → 5 V). Mo 12 V, controllar la polaritad – i na dat nagina protecziun. En questa variante mussan % d'accu, INA219 e LED da chargiar nagut."
+   }
+  },
+  {
+   "wenn": "v52",
+   "titel": {
+    "de": "SD-Karte (v5.2)",
+    "en": "SD card (v5.2)",
+    "fr": "Carte SD (v5.2)",
+    "it": "Scheda SD (v5.2)",
+    "rm": "Carta SD (v5.2)"
+   },
+   "text": {
+    "de": "Weitwinkel-Kamera in die Stirnwand (CAM1), IR-Modul 120° rechts neben die Kamera (Madenschraube M3), 2 Tasten in die Rückwand, Status-LED oben in den Kopf. Druckdateien: Druckdateien/v5-2/. Fehlt ein Teil im Paket, kommt der passende Stopfen hinein (12, 18–24).",
+    "en": "Wide-angle camera into the front wall (CAM1), IR module 120° next to the camera (M3 grub screw), 2 buttons into the back wall, status LED on top of the head. Print files: Druckdateien/v5-2/. If a part is missing in the package, fit the matching plug (12, 18–24).",
+    "fr": "Caméra grand-angle dans la paroi avant (CAM1), module IR 120° à côté de la caméra (vis sans tête M3), 2 boutons dans la paroi arrière, LED d'état sur la tête. Fichiers : Druckdateien/v5-2/. Si une pièce manque dans le paquet, poser le bouchon correspondant (12, 18–24).",
+    "it": "Telecamera grandangolare nella parete frontale (CAM1), modulo IR 120° accanto alla telecamera (grano M3), 2 pulsanti nella parete posteriore, LED di stato sopra la testa. File: Druckdateien/v5-2/. Se nel pacchetto manca un pezzo, montare il tappo corrispondente (12, 18–24).",
+    "rm": "Camera grondangul en la paraid davant (CAM1), modul IR 120° sper la camera (sbarra M3), 2 buttuns en la paraid davos, LED da status sur il chau. Datotecas: Druckdateien/v5-2/. Sch'i manca ina part en il pachet, metter il tappun correspundent (12, 18–24)."
+   },
+   "unklar": {
+    "de": "Masse «Nachmessen» vor dem Druck prüfen",
+    "en": "check the «measure first» dimensions before printing",
+    "fr": "vérifier les cotes «à mesurer» avant l'impression",
+    "it": "verificare le misure «da misurare» prima della stampa",
+    "rm": "controllar las mesiras «mesirar» avant la stampa"
+   }
   }
  ],
  "druckdateien_einzeln": [
@@ -3972,7 +4802,30 @@
   "MoveEye_v5-1_08_Lampenhalter_2x.3mf",
   "MoveEye_v5-1_09_Zwischenboden.3mf",
   "MoveEye_v5-1_10_HDMI_Stopfen.3mf",
-  "MoveEye_v5-1_11_Fuss_4x.3mf"
+  "MoveEye_v5-1_11_Fuss_4x.3mf",
+  "v5-2/MoveEye_v5-2_01_Unterteil_v52.3mf",
+  "v5-2/MoveEye_v5-2_02_Deckel_mit_Laufring.3mf",
+  "v5-2/MoveEye_v5-2_03_Drehteller.3mf",
+  "v5-2/MoveEye_v5-2_04_Gabel_mit_Arm1.3mf",
+  "v5-2/MoveEye_v5-2_05_Arm2_Lagerseite.3mf",
+  "v5-2/MoveEye_v5-2_06_Kamerakopf_v52.3mf",
+  "v5-2/MoveEye_v5-2_07_Seitendeckel.3mf",
+  "v5-2/MoveEye_v5-2_08_Lampenhalter_2x.3mf",
+  "v5-2/MoveEye_v5-2_09_Zwischenboden.3mf",
+  "v5-2/MoveEye_v5-2_10_Stopfen_HDMI_USB_v52.3mf",
+  "v5-2/MoveEye_v5-2_11_Fuss_4x.3mf",
+  "v5-2/MoveEye_v5-2_12_Blindstopfen_Weitwinkel.3mf",
+  "v5-2/MoveEye_v5-2_13_Entwicklungs_Sockel.3mf",
+  "v5-2/MoveEye_v5-2_14_Diffusor_Status_LED.3mf",
+  "v5-2/MoveEye_v5-2_15_Pupillenring.3mf",
+  "v5-2/MoveEye_v5-2_16_Stopfen_SD_v52.3mf",
+  "v5-2/MoveEye_v5-2_17_Blindstopfen_Reserve.3mf",
+  "v5-2/MoveEye_v5-2_18_Stopfen_Waermebild.3mf",
+  "v5-2/MoveEye_v5-2_19_Stopfen_IR_Modul.3mf",
+  "v5-2/MoveEye_v5-2_20_Stopfen_DS18B20.3mf",
+  "v5-2/MoveEye_v5-2_21_Stopfen_Relais.3mf",
+  "v5-2/MoveEye_v5-2_23_Stopfen_Mikrofon.3mf",
+  "v5-2/MoveEye_v5-2_24_Stopfen_Lichtleiter.3mf"
  ],
  "ui_bauen": [
   {
@@ -4612,5 +5465,401 @@
    "it": "Pezzo",
    "rm": "Part"
   }
- ]
+ ],
+ "gehaeuse_v52": {
+  "name": {
+   "de": "Variante v5.2: Weitwinkel-Kamera im Unterteil",
+   "en": "Variant v5.2: wide camera in the lower part",
+   "fr": "Variante v5.2 : caméra grand angle dans la partie inférieure",
+   "it": "Variante v5.2: fotocamera grandangolare nella parte inferiore",
+   "rm": "Variante v5.2: camera largangulara en la part sut"
+  },
+  "stand": "01.11.2026",
+  "quelle": "Quellcode/v52.py",
+  "teile": [
+   "tub52",
+   "wide",
+   "irled",
+   "mosfet52",
+   "cable_cam1",
+   "cable_cam0_52",
+   "buttons",
+   "sled",
+   "plug52",
+   "sdplug",
+   "head52",
+   "diff52",
+   "resplug",
+   "lampdrv",
+   "fuseh"
+  ],
+  "ersetzt": {
+   "tub52": "tub",
+   "mosfet52": "mosfet",
+   "cable_cam0_52": "cable_cam",
+   "plug52": "plug",
+   "head52": "head"
+  },
+  "bom_gruppe": "v52",
+  "druckdateien": [
+   "v5-2/MotionWatch_v5-2_Platte_A_Unterteil.3mf",
+   "v5-2/MotionWatch_v5-2_Platte_B_Deckel_Kopf.3mf"
+  ],
+  "druckteile_neu": [
+   "01_Unterteil_v52",
+   "06_Kamerakopf_v52",
+   "10_Stopfen_HDMI_USB_v52",
+   "12_Blindstopfen_Weitwinkel",
+   "14_Diffusor_Status_LED",
+   "15_Pupillenring",
+   "16_Stopfen_SD_v52",
+   "13_Entwicklungs_Sockel",
+   "17_Blindstopfen_Reserve",
+   "18_Stopfen_Waermebild",
+   "19_Stopfen_IR_Modul",
+   "20_Stopfen_DS18B20",
+   "21_Stopfen_Relais",
+   "23_Stopfen_Mikrofon",
+   "24_Stopfen_Lichtleiter"
+  ],
+  "anleitung": "Dokumente/LIESMICH_Montage_v5-2.md",
+  "hinweis": {
+   "de": "Platte A und B v5.2 ersetzen die Platten v5.1 (Unterteil mit Weitwinkel-Fenster, Service-Fenster HDMI/USB-C, SD-Schlitz; Kopf mit Status-LED). Vor dem Druck die Liste «Nachmessen» prüfen.",
+   "en": "Plates A and B v5.2 replace the v5.1 plates (lower part with wide window, service window HDMI/USB-C, SD slot; head with status LED). Check the «measure first» list before printing.",
+   "fr": "Les plaques A et B v5.2 remplacent les plaques v5.1 (partie inférieure avec fenêtre grand angle, fenêtre de service HDMI/USB-C, fente SD ; tête avec LED d'état). Vérifier la liste « à mesurer » avant l'impression.",
+   "it": "Le piastre A e B v5.2 sostituiscono le piastre v5.1 (parte inferiore con finestra grandangolare, finestra di servizio HDMI/USB-C, fessura SD; testa con LED di stato). Prima di stampare controllare l'elenco «da misurare».",
+   "rm": "Las plattas A e B v5.2 remplazzan las plattas v5.1 (part sut cun fanestra largangulara, fanestra da servetsch HDMI/USB-C, fessa SD; chau cun LED da status). Avant la stampa controllar la glista «mesirar»."
+  },
+  "nachmessen": [
+   {
+    "de": "IR-Modul: Ø 18,8 mm, Länge 14 mm, Linse vorne Ø 17 mm (IRW_MOD_D, IRW_MOD_L, IRW_LENS_D)",
+    "en": "IR module: Ø 18.8 mm, length 14 mm, front lens Ø 17 mm (IRW_MOD_D, IRW_MOD_L, IRW_LENS_D)",
+    "fr": "Module IR : Ø 18,8 mm, longueur 14 mm, lentille avant Ø 17 mm (IRW_MOD_D, IRW_MOD_L, IRW_LENS_D)",
+    "it": "Modulo IR: Ø 18,8 mm, lunghezza 14 mm, lente anteriore Ø 17 mm (IRW_MOD_D, IRW_MOD_L, IRW_LENS_D)",
+    "rm": "Modul IR: Ø 18,8 mm, lunghezza 14 mm, lentilla davant Ø 17 mm (IRW_MOD_D, IRW_MOD_L, IRW_LENS_D)"
+   },
+   {
+    "de": "Weitwinkel-Kamera: Linsenhöhe 11,4 mm ab Platine, Linsenmitte 9,5 mm unter der Platinen-Oberkante, Frontlinse Ø 6 mm (WC_LENS_H, WC_LENS_FROM_TOP, WC_R0)",
+    "en": "Wide camera: lens height 11.4 mm above the board, lens centre 9.5 mm below the top edge, front lens Ø 6 mm (WC_LENS_H, WC_LENS_FROM_TOP, WC_R0)",
+    "fr": "Caméra grand angle : hauteur de l'objectif 11,4 mm, centre 9,5 mm sous le bord supérieur, lentille avant Ø 6 mm (WC_LENS_H, WC_LENS_FROM_TOP, WC_R0)",
+    "it": "Fotocamera grandangolare: altezza obiettivo 11,4 mm, centro 9,5 mm sotto il bordo superiore, lente anteriore Ø 6 mm (WC_LENS_H, WC_LENS_FROM_TOP, WC_R0)",
+    "rm": "Camera largangulara: autezza da l'objectiv 11,4 mm, center 9,5 mm sut l'ur sura, lentilla davant Ø 6 mm (WC_LENS_H, WC_LENS_FROM_TOP, WC_R0)"
+   },
+   {
+    "de": "Lage der Buchsen CAM/DISP 0 und 1 am Pi 5 (Kabelkamm FPC_X0, PI_CAM0_XY, PI_CAM1_XY)",
+    "en": "Position of the CAM/DISP 0 and 1 sockets on the Pi 5 (cable comb FPC_X0, PI_CAM0_XY, PI_CAM1_XY)",
+    "fr": "Position des prises CAM/DISP 0 et 1 du Pi 5 (peigne FPC_X0, PI_CAM0_XY, PI_CAM1_XY)",
+    "it": "Posizione delle prese CAM/DISP 0 e 1 del Pi 5 (pettine FPC_X0, PI_CAM0_XY, PI_CAM1_XY)",
+    "rm": "Posiziun da las bussolas CAM/DISP 0 e 1 dal Pi 5 (pettan FPC_X0, PI_CAM0_XY, PI_CAM1_XY)"
+   },
+   {
+    "de": "Abstände: IR-Modul–Kamera-Fenster (Steg 3,2 mm, Trennsteg 2 mm vor der Wand), IR-Modul–Lautsprecher 11 mm, Kabel–Lüfter 4 mm / Ansaugung 8 mm, Kabel–Lüftungsschlitze 9 mm",
+    "en": "Clearances: IR module–camera window (web 3.2 mm, divider 2 mm in front of the wall), IR module–speaker 11 mm, cables–fan 4 mm / intake 8 mm, cables–vents 9 mm",
+    "fr": "Distances : module IR–fenêtre caméra (pont 3,2 mm, séparateur 2 mm devant la paroi), module IR–haut-parleur 11 mm, câbles–ventilateur 4 mm / aspiration 8 mm, câbles–fentes 9 mm",
+    "it": "Distanze: modulo IR–finestra fotocamera (ponte 3,2 mm, separatore 2 mm davanti alla parete), modulo IR–altoparlante 11 mm, cavi–ventola 4 mm / aspirazione 8 mm, cavi–fessure 9 mm",
+    "rm": "Distanzas: modul IR–fanestra da la camera (punt 3,2 mm, separader 2 mm davant la paraid), modul IR–autpledader 11 mm, cabels–ventilatur 4 mm / aspiraziun 8 mm, cabels–fessas 9 mm"
+   },
+   {
+    "de": "UPS HAT (E) mit Akkus (wie v5.1: angenommen 90 × 80 × 26 mm)",
+    "en": "UPS HAT (E) with cells (as v5.1: assumed 90 × 80 × 26 mm)",
+    "fr": "UPS HAT (E) avec accus (comme v5.1 : supposé 90 × 80 × 26 mm)",
+    "it": "UPS HAT (E) con batterie (come v5.1: ipotizzato 90 × 80 × 26 mm)",
+    "rm": "UPS HAT (E) cun accus (sco v5.1: supponì 90 × 80 × 26 mm)"
+   },
+   {
+    "de": "Service-Fenster: Lage USB-C (x 85) und HDMI am Pi 5; SD: microSD-Verlängerung mit Einbau-Kartenhalter (Lochabstand 18 mm, Platine ca. 22 × 15 mm)",
+    "en": "Service window: position of USB-C (x 85) and HDMI on the Pi 5; SD: microSD extension with panel card holder (hole spacing 18 mm, board approx. 22 × 15 mm)",
+    "fr": "Fenêtre de service : position USB-C (x 85) et HDMI du Pi 5 ; SD : rallonge microSD avec support encastrable (entraxe 18 mm, platine env. 22 × 15 mm)",
+    "it": "Finestra di servizio: posizione USB-C (x 85) e HDMI del Pi 5; SD: prolunga microSD con portaschede da incasso (interasse 18 mm, scheda circa 22 × 15 mm)",
+    "rm": "Fanestra da servetsch: posiziun USB-C (x 85) e HDMI dal Pi 5; SD: prolungaziun microSD cun purtader integrà (distanza 18 mm, platina ca. 22 × 15 mm)"
+   },
+   {
+    "de": "Lampentreiber: noch unbekannt – Feld 30 × 20 mit 2 Domen M2,5 ist ein Platzhalter (DRV_HOLES); Sicherungshalter 30 × 13 × 10 (FUSE_*)",
+    "en": "Lamp driver: still unknown – the 30 × 20 area with 2 M2.5 bosses is a placeholder (DRV_HOLES); fuse holder 30 × 13 × 10 (FUSE_*)",
+    "fr": "Pilote de lampe : encore inconnu – la zone 30 × 20 avec 2 dômes M2,5 est provisoire (DRV_HOLES) ; porte-fusible 30 × 13 × 10 (FUSE_*)",
+    "it": "Driver lampade: ancora sconosciuto – il campo 30 × 20 con 2 torrette M2,5 è provvisorio (DRV_HOLES); portafusibile 30 × 13 × 10 (FUSE_*)",
+    "rm": "Driver da lampas: anc nunenconuschent – il champ 30 × 20 cun 2 cupels M2,5 è provisoric (DRV_HOLES); purtader da segirezza 30 × 13 × 10 (FUSE_*)"
+   }
+  ],
+  "_hinweis": "Variante «gehaeuse» = v52 (Wahl im Bau-Bereich, real-bauen: varianten / «wenn»: v52): echtes Unterteil v5.2 aus Quellcode/v52.py. teile = Teile mit art v52 (modelle.json «variante» 5.2), ersetzt = Teil v5.2 -> Teil v5.1, das in dieser Variante wegfällt; druckdateien ersetzen die Platte A v5.1; nachmessen = vor dem Druck prüfen.",
+  "ersetzt_druckdateien": {
+   "v5-2/MotionWatch_v5-2_Platte_A_Unterteil.3mf": "MotionWatch_v5-1_Platte_A_Unterteil.3mf",
+   "v5-2/MotionWatch_v5-2_Platte_B_Deckel_Kopf.3mf": "MotionWatch_v5-1_Platte_B_Deckel_Kopf.3mf"
+  }
+ },
+ "farben": {
+  "_hinweis": "Wunsch Daniel 01.11.2026: der ganze Kopfteil (alles, was sich dreht bzw. neigt) im Simulator in MoveEye-Orange (ui_style.gd ORG, Web #f59a4a) – Szene, Werkstatt und Browser-Werkstatt («Bauen») nehmen diese Farbe. Unterteil, Deckel, Zwischenboden, Füsse wie bisher. Dazu je Teil-id die Farbe (für die Browser-Werkstatt «Bauen», 639w: GB.farben[id]).",
+  "kopf": "#f59a4a",
+  "kopf_teile": [
+   "turntable",
+   "yoke",
+   "arm2",
+   "head",
+   "side",
+   "lamp1",
+   "lamp2",
+   "head52"
+  ],
+  "turntable": "#f59a4a",
+  "yoke": "#f59a4a",
+  "arm2": "#f59a4a",
+  "head": "#f59a4a",
+  "side": "#f59a4a",
+  "lamp1": "#f59a4a",
+  "lamp2": "#f59a4a",
+  "head52": "#f59a4a"
+ },
+ "pakete": {
+  "_hinweis": "Information (Entscheid Daniel 01.11.2026): drei Pakete. Die Seite «Bauen» bleibt bei den Varianten (gehaeuse / akku / mover); «variante» zeigt, welche Wahl dort passt. bom = Materialliste-IDs ohne optionale Extras, preis_chf = Summe der geschätzten bom-Preise (Zeilensumme, gerundet), extras = optionale bom-IDs (nicht in der Summe), stopfen = Druckteile nur für dieses Paket (dazu immer 17 für die Reserve-Öffnung). Solo und Mobil folgen später.",
+  "stand": "01.11.2026",
+  "liste": [
+   {
+    "id": "basis",
+    "name": {
+     "de": "Basis",
+     "en": "Basic",
+     "fr": "Base",
+     "it": "Base",
+     "rm": "Basa"
+    },
+    "text": {
+     "de": "Kopf + Wärmebild: Pi 5, Kopfkamera NoIR, Thermal-90, Schwenk-/Neigekopf, Licht weiss + IR, PIR, Lagesensor, Tasten, Status-LED; Unterteil v5.2 mit Stopfen, 12-V-Netzteil",
+     "en": "Head + thermal: Pi 5, head camera NoIR, Thermal-90, pan/tilt head, white + IR light, PIR, motion sensor, buttons, status LED; lower part v5.2 with plugs, 12 V power supply",
+     "fr": "Tête + thermique : Pi 5, caméra NoIR de la tête, Thermal-90, tête pan/tilt, lumière blanche + IR, PIR, capteur de position, boutons, LED d'état ; partie inférieure v5.2 avec bouchons, alimentation 12 V",
+     "it": "Testa + termocamera: Pi 5, telecamera NoIR della testa, Thermal-90, testa pan/tilt, luce bianca + IR, PIR, sensore di posizione, pulsanti, LED di stato; parte inferiore v5.2 con tappi, alimentatore 12 V",
+     "rm": "Chau + camera termica: Pi 5, camera NoIR dal chau, Thermal-90, chau pan/tilt, glisch alva + IR, PIR, sensur da posiziun, buttuns, LED da status; part sut v5.2 cun tappuns, alimentaziun 12 V"
+    },
+    "variante": {
+     "gehaeuse": "v52",
+     "akku": "netz",
+     "mover": "ohne"
+    },
+    "bom": [
+     "pi5",
+     "cooler",
+     "sd",
+     "cam",
+     "camcable",
+     "therm",
+     "servo",
+     "pca",
+     "elko",
+     "bbs",
+     "fett",
+     "charger",
+     "buck",
+     "gx16",
+     "fuse",
+     "usbc",
+     "psu12",
+     "ledw",
+     "ledir",
+     "mosfet",
+     "res",
+     "pir",
+     "mpu",
+     "petg",
+     "litze",
+     "hdmi",
+     "schrauben",
+     "sdext",
+     "taster",
+     "sled"
+    ],
+    "extras": [
+     "lte"
+    ],
+    "stopfen": [
+     "12_Blindstopfen_Weitwinkel",
+     "19_Stopfen_IR_Modul",
+     "20_Stopfen_DS18B20",
+     "21_Stopfen_Relais",
+     "23_Stopfen_Mikrofon",
+     "24_Stopfen_Lichtleiter"
+    ],
+    "preis_chf": 447.75
+   },
+   {
+    "id": "komplett",
+    "name": {
+     "de": "Komplett",
+     "en": "Complete",
+     "fr": "Complet",
+     "it": "Completo",
+     "rm": "Cumplet"
+    },
+    "text": {
+     "de": "v5.2 mit Weitwinkel-Kamera und IR-Modul 120°, Ton (Lautsprecher, Mikrofon), Sensoren (DS18B20, BME280), Relais; 12-V-Netzteil",
+     "en": "v5.2 with wide-angle camera and IR module 120°, sound (speaker, microphone), sensors (DS18B20, BME280), relay; 12 V power supply",
+     "fr": "v5.2 avec caméra grand-angle et module IR 120°, son (haut-parleur, micro), capteurs (DS18B20, BME280), relais ; alimentation 12 V",
+     "it": "v5.2 con telecamera grandangolare e modulo IR 120°, audio (altoparlante, microfono), sensori (DS18B20, BME280), relè; alimentatore 12 V",
+     "rm": "v5.2 cun camera grondangul e modul IR 120°, tun (autpledader, microfon), sensors (DS18B20, BME280), relais; alimentaziun 12 V"
+    },
+    "variante": {
+     "gehaeuse": "v52",
+     "akku": "netz",
+     "mover": "ohne"
+    },
+    "bom": [
+     "pi5",
+     "cooler",
+     "sd",
+     "cam",
+     "camcable",
+     "therm",
+     "servo",
+     "pca",
+     "elko",
+     "bbs",
+     "fett",
+     "charger",
+     "buck",
+     "gx16",
+     "fuse",
+     "usbc",
+     "psu12",
+     "ledw",
+     "ledir",
+     "mosfet",
+     "res",
+     "pir",
+     "mpu",
+     "petg",
+     "litze",
+     "hdmi",
+     "schrauben",
+     "sdext",
+     "taster",
+     "sled",
+     "camwide",
+     "camcable2",
+     "m2",
+     "irmod",
+     "mosfet3",
+     "res_ir",
+     "spk",
+     "pam",
+     "sound",
+     "mic",
+     "usbext",
+     "foam",
+     "hub",
+     "ds18",
+     "bme",
+     "relay",
+     "m12"
+    ],
+    "extras": [
+     "lte"
+    ],
+    "stopfen": [],
+    "preis_chf": 590.75
+   },
+   {
+    "id": "autark",
+    "name": {
+     "de": "Autark",
+     "en": "Autonomous",
+     "fr": "Autonome",
+     "it": "Autonomo",
+     "rm": "Autarc"
+    },
+    "text": {
+     "de": "Komplett mit Akku (UPS HAT (E), 4 × 21700) und Ladequelle (12-V-Netzteil an der GX16; Solar als Extra)",
+     "en": "Complete with battery (UPS HAT (E), 4 × 21700) and charging source (12 V power supply at the GX16; solar as an extra)",
+     "fr": "Complet avec batterie (UPS HAT (E), 4 × 21700) et source de charge (alimentation 12 V sur la GX16 ; solaire en option)",
+     "it": "Completo con batteria (UPS HAT (E), 4 × 21700) e fonte di ricarica (alimentatore 12 V alla GX16; solare come extra)",
+     "rm": "Cumplet cun accu (UPS HAT (E), 4 × 21700) e funtauna da chargiar (alimentaziun 12 V a la GX16; solar sco extra)"
+    },
+    "variante": {
+     "gehaeuse": "v52",
+     "akku": "ups",
+     "mover": "ohne"
+    },
+    "bom": [
+     "pi5",
+     "cooler",
+     "sd",
+     "cam",
+     "camcable",
+     "therm",
+     "servo",
+     "pca",
+     "elko",
+     "bbs",
+     "fett",
+     "charger",
+     "buck",
+     "gx16",
+     "fuse",
+     "usbc",
+     "ledw",
+     "ledir",
+     "mosfet",
+     "res",
+     "pir",
+     "mpu",
+     "petg",
+     "litze",
+     "hdmi",
+     "schrauben",
+     "sdext",
+     "taster",
+     "sled",
+     "camwide",
+     "camcable2",
+     "m2",
+     "irmod",
+     "mosfet3",
+     "res_ir",
+     "spk",
+     "pam",
+     "sound",
+     "mic",
+     "usbext",
+     "foam",
+     "hub",
+     "ds18",
+     "bme",
+     "relay",
+     "m12",
+     "ups",
+     "cells",
+     "fuse2",
+     "chled",
+     "lader12"
+    ],
+    "extras": [
+     "ina",
+     "solar",
+     "solarreg",
+     "lte"
+    ],
+    "stopfen": [],
+    "preis_chf": 767.57
+   }
+  ],
+  "spaeter": [
+   {
+    "id": "solo",
+    "name": {
+     "de": "Solo",
+     "en": "Solo",
+     "fr": "Solo",
+     "it": "Solo",
+     "rm": "Solo"
+    }
+   },
+   {
+    "id": "mobil",
+    "name": {
+     "de": "Mobil",
+     "en": "Mobile",
+     "fr": "Mobile",
+     "it": "Mobile",
+     "rm": "Mobil"
+    }
+   }
+  ]
+ }
 }

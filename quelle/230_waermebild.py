@@ -3,11 +3,49 @@
 # Thermal camera: a second camera with the same view. Its picture is coloured and laid over the normal picture
 # (blend, or "hot mode": only the warmest areas are shown). Detection always works on the normal picture.
 # ----------------------------------------------------------------------------
+# 3.44.3 (variants without a thermal camera, Daniel 01.11.2026): «not found» (nothing answers - maybe it is not built in) and
+#   «found, but an error» are two things; the self-check (120) gives the tip that fits (no «USB cable» for the Thermal-90 on SPI / I2C).
+THERMAL_NOT_FOUND = "not found: "
+THERMAL_TIPS = {
+    "missing": "Not built in: switch the thermal camera off (Settings → Thermal camera). Built in: check the flat cable (SPI / I2C) "
+               "and switch on SPI and I2C (raspi-config), then restart MoveEye.",
+    "senxor": "Found, but it reports an error: check the flat cable of the Thermal-90 (SPI / I2C) and restart MoveEye.",
+    "driver": "The Waveshare driver (pysenxor) is missing - see More → Build → Software.",
+    "usb": "Check the USB cable of the thermal camera.",
+    "sim": "Start the simulator (or choose another thermal source).",
+}
+_THERMAL_ABSENT_SENXOR = ("errno 121", "remote i/o", "errno 6]", "no such device", "errno 2]", "no such file", "errno 110", "timed out")
+
+
+def thermal_absent(spec, msg):
+    """True: nothing answers - the thermal camera is probably not there at all (not: there, but an error)"""
+    kind, _, arg = str(spec or "").partition(":")
+    m = str(msg or "").lower()
+    if kind == "senxor":
+        return "driver missing" not in m and any(k in m for k in _THERMAL_ABSENT_SENXOR)
+    if kind == "usb" and arg.isdigit() and sys.platform.startswith("linux") and os.path.isdir("/dev"):
+        return not os.path.exists(f"/dev/video{arg}")
+    return False
+
+
+def thermal_tip_kind(status=None, spec=None):
+    """which tip fits a thermal camera that is there (or chosen) but does not deliver: senxor / driver / usb / sim"""
+    st = str(STATE.get("thermal") or "") if status is None else str(status)
+    sp = str(CFG.get("thermal_source") or "") if spec is None else str(spec)
+    if "driver missing" in st.lower():
+        return "driver"
+    if sp.startswith("senxor"):
+        return "senxor"
+    if sp.startswith("sim"):
+        return "sim"
+    return "usb"
+
+
 class ThermalCam:
     """Keeps the chosen thermal source open in the background and always holds its newest picture."""
     def __init__(self):
         self.src = None; self.spec = ""; self.frame = None; self.t = 0.0; self.fails = 0
-        self.retry_at = 0.0; self.opening = False; self.cache = (None, None)
+        self.retry_at = 0.0; self.opening = False; self.cache = (None, None); self.last_err = None
         self.bgsub = None; self.bg_shape = None; self.hits = deque(maxlen=5); self.det_t = 0.0; self.boxes = []; self.lo = self.hi = None
         threading.Thread(target=self.loop, daemon=True).start()
 
@@ -28,13 +66,16 @@ class ThermalCam:
         try:
             res = open_source(spec, thermal=True)
             if res[0] is None:
-                STATE["thermal"] = "no picture: " + res[3]
-                log_event("sys", f"Thermal camera '{res[2]}' not available: {res[3]}")
+                gone = thermal_absent(spec, res[3])        # 3.44.3: «not found (maybe not built in)» or «found, but an error»
+                STATE["thermal"] = (THERMAL_NOT_FOUND if gone else "no picture: ") + res[3]
+                if (spec, res[3]) != self.last_err:        # 3.44.3: the same failure every 5 s only once in the log
+                    self.last_err = (spec, res[3])
+                    log_event("sys", f"Thermal camera '{res[2]}' " + ("not found (maybe not built in)" if gone else "not available") + f": {res[3]}")
                 self.retry_at = time.time() + 5.0
             elif self.wanted() != spec:
                 res[0].release()
             else:
-                self.src = res[0]; self.spec = spec; self.fails = 0
+                self.src = res[0]; self.spec = spec; self.fails = 0; self.last_err = None
                 size = getattr(res[0], "size", None)
                 STATE["thermal_res"] = f"{size[0]}x{size[1]}" if size else ""
                 log_event("sys", f"Thermal camera: {res[2]}" + (f" ({STATE['thermal_res']})" if size else ""))

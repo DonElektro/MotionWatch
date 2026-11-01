@@ -87,7 +87,21 @@ def pca_present(addr, bus=1):
 #   In the simulation the 3D simulator says whether it has a mover («Mover simulieren»); the tracks are driven there.
 #   Safety: without a new command for 0.6 s (page closed, Wi-Fi gone) both tracks stop; starting and stopping are gentle.
 # ----------------------------------------------------------------------------
-MOVER = {"test": False, "avail": False, "hw": False, "sim": False, "v": 0.0, "w": 0.0, "l": 0.0, "r": 0.0, "cmd_t": 0.0, "by": "", "msg": "off"}
+MOVER = {"test": False, "avail": False, "hw": False, "sim": False, "v": 0.0, "w": 0.0, "l": 0.0, "r": 0.0, "cmd_t": 0.0, "by": "", "msg": "off",
+         "move_t": 0.0}
+# 3.44.3: the own drive of the mover moves the whole device - the motion sensor (MPU-6050) and the picture check (060) count it as
+#   «own drive» while the tracks run and MOVER_QUIET_S after they stopped (then they learn the new resting position anew).
+#   Moving it by hand (no drive command, tracks standing) is reported as before.
+MOVER_QUIET_S = 3.0
+MOVER_RUN_MIN = 0.02                                       # |track| above this = the track runs (also while ramping down)
+
+
+def mover_own_motion(now=None):
+    """True while the mover drives by its own command, and MOVER_QUIET_S after it has stopped"""
+    now = time.time() if now is None else now
+    if abs(float(MOVER.get("l") or 0.0)) > MOVER_RUN_MIN or abs(float(MOVER.get("r") or 0.0)) > MOVER_RUN_MIN:
+        return True
+    return now - float(MOVER.get("move_t") or 0.0) < MOVER_QUIET_S
 MOVER_MAP = {"adafruit": ((8, 10, 9), (13, 11, 12)),      # (PWM, IN1, IN2) of the left and the right motor (M1, M2)
              "waveshare": ((0, 1, 2), (5, 3, 4))}          # (PWMA, AIN1, AIN2), (PWMB, BIN1, BIN2)
 MOVERCTL = None
@@ -105,6 +119,7 @@ def mover_drive(v, w, who="web"):
         return False
     MOVER.update(v=v, w=w, cmd_t=time.monotonic(), by=who)
     if abs(v) > 0.05 or abs(w) > 0.05:
+        MOVER["move_t"] = time.time()                             # 3.44.3: own drive (060 motion sensor / picture check)
         MANUAL["until"] = time.time() + CFG["manual_hold"]          # driving pauses tracking and patrol like the camera stick
         mover_sim_wake()
     return True
@@ -258,6 +273,8 @@ class MoverControl:
             l = MOVER["l"] + max(-k2, min(k2, tl - MOVER["l"]))
             r = MOVER["r"] + max(-k2, min(k2, trr - MOVER["r"]))
             MOVER["l"], MOVER["r"] = round(l, 3), round(r, 3)
+            if abs(l) > MOVER_RUN_MIN or abs(r) > MOVER_RUN_MIN:
+                MOVER["move_t"] = time.time()                       # 3.44.3: the tracks run - the quiet time starts when they stand
             if self.pca is not None and not sim:
                 ml, mr = l, r
                 if CFG["mover_swap"]:

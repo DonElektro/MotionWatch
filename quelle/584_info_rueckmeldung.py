@@ -12,7 +12,7 @@
 #      bleibt für die kleine Überraschung) und «Über MoveEye» unten in Mehr. Geschichte, Entwickler «Daniel alias Elektro»,
 #      Zeitleiste, Zahlen (zur Laufzeit gezählt), aufklappbar «Für Technik-Interessierte». Texte: 622.
 # ----------------------------------------------------------------------------
-INFO_PARTS = 261                       # number of parts in quelle/ (written by werkzeuge/bauen.py --neue-version)
+INFO_PARTS = 264                       # number of parts in quelle/ (written by werkzeuge/bauen.py --neue-version)
 INFO_START = "2026-10-16"              # the first lines (a small webcam program for the Pi 5)
 FBX = {"shot": None, "shot_t": 0.0, "lines": 0}
 
@@ -176,7 +176,8 @@ def fbx_tx():
 
 
 def fbx_ui_js():
-    return FBX_JS.replace("/*FX*/{}", json.dumps(fbx_tx(), ensure_ascii=False)).replace("__VER__", APP_VERSION).replace("</", "<\\/")
+    return (FBX_JS.replace("/*FX*/{}", json.dumps(fbx_tx(), ensure_ascii=False)).replace("__VER__", APP_VERSION)
+            .replace("/*FERTIG*/null", json.dumps(UI_GEMEINSAM.get("fertig") or {}, ensure_ascii=False)).replace("</", "<\\/"))   # «Fertig kaufen» (639zj)
 
 
 FBX_JS = r"""
@@ -184,6 +185,10 @@ FBX_JS = r"""
 (function fbx() {
   if (window._fbx) return; window._fbx = true;
   const FX = /*FX*/{};
+  const FK = /*FERTIG*/null;                    // «Fertig kaufen» (639zj): ui_gemeinsam.json «fertig» (texts in 5 languages, packages)
+  const L5 = d => { if (!d || typeof d !== "object") return d || ""; const l = L(); for (const c of [l].concat({en: ["de"], fr: ["en", "de"], it: ["en", "de"], rm: ["de"]}[l] || [])) if (d[c]) return d[c]; return d.de || ""; };
+  const FT = k => L5(((FK || {}).texts || {})[k]);
+  const PK = id => { const ps = (FK || {}).pakete || []; return ps.find(p => p.id === id) || ps.find(p => p.id === (FK || {}).standard) || ps[0] || {id: ""}; };
   const me = document.currentScript, PAGE = (me && me.dataset.page) || location.pathname;
   const L = () => { try { return (typeof LANG !== "undefined" && LANG) || localStorage.getItem("mw-lang") || "de"; } catch (e) { return "de"; } };
   const T = k => ((FX[L()] || {})[k]) || k;
@@ -212,35 +217,48 @@ FBX_JS = r"""
   window.mwFeedback = function (opt) {
     opt = opt || {};
     const [ov, c] = overlay("fbx-ov");
-    let kind = opt.kind || "idea", stars = 0;
+    const ord = opt.kind === "order" && FK && FK.texts;
+    let kind = opt.kind === "order" && !ord ? "idea" : (opt.kind || "idea"), stars = 0, pkg = PK(opt.pkg).id;
     c.append(E("h3", "margin:0 0 4px", "💬 " + T("Feedback to the developer")),
              E("div", MUT, T("Errors, wishes, praise, questions - everything helps. The message is sent anonymously: no name, no address, unless you write one.")));
-    c.appendChild(seg([["bug", "🐞 " + T("Error")], ["idea", "💡 " + T("Wish")], ["praise", "⭐ " + T("Praise")], ["question", "❓ " + T("Question")]], kind, v => kind = v));
+    const kinds = [["bug", "🐞 " + T("Error")], ["idea", "💡 " + T("Wish")], ["praise", "⭐ " + T("Praise")], ["question", "❓ " + T("Question")]];
+    if (ord) kinds.push(["order", (FK.emoji || "🛒") + " " + FT("topic")]);   // only when opened from «Fertig bestellen (Anfrage)»
+    c.appendChild(seg(kinds, kind, v => { kind = v; paintOrd(); }));
+    const ob = E("div", "display:none"); ob.id = "fbx-order";             // the package and «Preise auf Anfrage»
+    const otext = () => FT("text").replace("{paket}", L5(PK(pkg).names));
+    if (ord) { ob.append(E("div", MUT + ";margin-top:6px", FT("package") + " · " + FT("price")),
+      seg(((FK.pakete) || []).map(p => [p.id, L5(p.names) + " – " + L5(p.desc)]), pkg, v => { const was = otext(); pkg = v; if (!tx.value.trim() || tx.value === was) tx.value = otext(); })); c.appendChild(ob); }
     const sr = E("div", "display:flex;align-items:center;gap:4px;margin:8px 0;flex-wrap:wrap"); sr.appendChild(E("span", MUT + ";margin-right:6px", T("How happy are you?") + " (" + T("optional") + ")"));
     const sb = [], sw = E("span", "display:inline-flex;white-space:nowrap"); sr.appendChild(sw);
     for (let i = 1; i <= 5; i++) { const b = E("button", "background:none;border:0;padding:2px 3px;font-size:24px;line-height:1;cursor:pointer;color:var(--yel,#f5c542);min-height:0", "☆"); b.type = "button";
       b.setAttribute("aria-label", i + " / 5"); b.onclick = () => { stars = stars === i ? 0 : i; sb.forEach((x, j) => x.textContent = j < stars ? "★" : "☆"); }; sb.push(b); sw.appendChild(b); }
     c.appendChild(sr);
     const tx = E("textarea", FIELD); tx.rows = 5; tx.maxLength = 3000; tx.placeholder = T("Your message …");
-    const ct = E("input", FIELD + ";margin-top:8px;padding:8px 10px"); ct.type = "text"; ct.maxLength = 120; ct.placeholder = T("Contact for an answer (optional)");
+    const ct = E("input", FIELD + ";margin-top:8px;padding:8px 10px"); ct.type = "text"; ct.maxLength = 120; ct.placeholder = T("Contact for an answer (optional)"); ct.id = "fbx-ct"; ct.autocomplete = "off";
+    const cn = E("div", MUT + ";font-size:12px;margin-top:4px;display:none", ord ? FT("contact_note") : "");
+    function paintOrd() { const o = kind === "order"; ob.style.display = o ? "block" : "none"; cn.style.display = o ? "block" : "none";
+      ct.placeholder = o ? FT("contact") : T("Contact for an answer (optional)"); }
+    if (ord) tx.value = otext();
     const chk = (label, on) => { const l = E("label", "display:flex;gap:8px;align-items:flex-start;margin-top:10px;cursor:pointer"); const i = E("input", "margin-top:3px"); i.type = "checkbox"; i.checked = on;
       l.append(i, E("span", MUT, label)); return [l, i]; };
     const [sl, si] = chk(T("Send a screenshot") + " – " + T("the current live picture (faces pixelated). A picture of the page itself is not possible in the browser."), !!opt.shot);
     const pv = E("img", "display:none;max-width:100%;max-height:160px;border-radius:8px;margin-top:6px;border:1px solid var(--line,#1f2b3a)"); pv.alt = "";
     const pvShow = () => { if (si.checked) { pv.src = "/api/fbx/shot.jpg?t=" + Date.now(); pv.style.display = "block"; pv.onerror = () => { pv.style.display = "none"; }; } else pv.style.display = "none"; };
     si.onchange = pvShow;
-    const [dl, di] = chk(T("Add technical details (version, device, last important events - no pictures, no passwords)"), true);
+    const [dl, di] = chk(T("Add technical details (version, device, last important events - no pictures, no passwords)"), !ord);
     const info = E("div", MUT + ";font-size:12px;margin-top:8px", T("Always included") + ": MoveEye __VER__ · " + T("page") + " «" + PAGE + "»");
     const st = E("div", "color:var(--red,#ff6b6b);font-size:13px;margin-top:6px"), bt = E("div", "display:flex;gap:8px;justify-content:flex-end;margin-top:12px;flex-wrap:wrap");
     const cancel = E("button", "", T("Cancel")), send = E("button", "", T("Send")); cancel.type = send.type = "button"; cancel.className = "sec";
     cancel.onclick = () => ov.remove();
-    send.onclick = async () => { send.disabled = true; st.textContent = "";
-      const r = await POST("/api/feedback", {kind: kind, stars: stars, text: tx.value, contact: ct.value, diag: di.checked, shot: si.checked, page: PAGE, lang: L()});
+    send.onclick = async () => { st.textContent = "";
+      if (kind === "order" && ct.value.trim().length < 3) { st.textContent = "⚠ " + FT("contact_needed"); ct.focus(); return; }
+      send.disabled = true;
+      const r = await POST("/api/feedback", {kind: kind, stars: stars, text: tx.value, contact: ct.value, diag: di.checked, shot: si.checked, page: PAGE, lang: L(), pkg: kind === "order" ? pkg : ""});
       send.disabled = false; if (!r || !r.ok) { st.textContent = "⚠ " + ((r && r.error) || "error"); return; }
       ov.remove(); const m = "✓ " + T("Thank you! The message is on its way.");
       if (typeof toast === "function") toast(m); else { const d = E("div", "position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:330;background:var(--panel,#111822);color:var(--txt,#e8eef5);border:1px solid var(--grn,#3ecf8e);border-radius:12px;padding:10px 16px", m); document.body.appendChild(d); setTimeout(() => d.remove(), 3500); } };
     const wq = E("div", MUT + ";font-size:12px;margin-top:8px;display:none");
-    bt.append(cancel, send); c.append(tx, ct, sl, pv, dl, info, wq, st, bt); pvShow(); tx.focus();
+    bt.append(cancel, send); c.append(tx, ct, cn, sl, pv, dl, info, wq, st, bt); pvShow(); paintOrd(); if (ord) ct.focus(); else tx.focus();
     fbWaiting(wq);
   };
   // 2.98.33: messages that could not be sent yet - how many, the last refusal, «Send now»
@@ -307,7 +325,8 @@ FBX_JS = r"""
       if (e.target.closest && e.target.closest(".ver") && !quick) tm = setTimeout(() => { if (Date.now() - last >= 600) mwAbout(); }, 650); });
     v.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); mwAbout(); } });
   }
-  const byHash = () => { if (location.hash === "#feedback") mwFeedback(); else if (location.hash === "#about") mwAbout(); };
+  window.mwOrder = pkg => mwFeedback({kind: "order", pkg: pkg});   // «Fertig bestellen (Anfrage)» (639zj, /build)
+  const byHash = () => { if (location.hash === "#feedback") mwFeedback(); else if (location.hash === "#about") mwAbout(); else if (location.hash === "#order") mwOrder(); };
   const go = () => { verTap(); byHash(); };     // 2.98.50 (Daniel): no 💬 in the header any more - feedback under «Mehr» and «Version und Status»
   addEventListener("hashchange", byHash);
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", go); else go();
@@ -353,16 +372,30 @@ def fbx_routes(app, watch, reply, body):
 
 
 # ---- the window (Tkinter): the same dialog and the info window --------------------------------------------------------
-def _fbx_tk_feedback(self, kind="idea"):
+def _fbx_tk_feedback(self, kind="idea", pkg=""):
+    """the window's feedback; kind «order» + pkg = «Fertig bestellen (Anfrage)» (639zj, like the web page): package, prefilled
+    text, contact needed (only in the message, never in the log), no technical details by default"""
     from tkinter import messagebox
+    fl = norm_lang(CFG.get("lang"))
+    ord_ = kind == "order" and bool((UI_GEMEINSAM.get("fertig") or {}).get("texts"))
+    kind = kind if ord_ or kind != "order" else "idea"
     w = tk.Toplevel(self.root); w.title("MoveEye – " + tr("Feedback to the developer")); w.configure(bg=C["bg"])
     ttk.Label(w, text=tr("Errors, wishes, praise, questions - everything helps. The message is sent anonymously: no name, no address, unless you write one."),
               style="Mut.TLabel", wraplength=440, justify="left").pack(padx=14, pady=(12, 6), anchor="w")
     kinds = [("bug", "🐞 " + tr("Error")), ("idea", "💡 " + tr("Wish")), ("praise", "⭐ " + tr("Praise")), ("question", "❓ " + tr("Question"))]
+    if ord_:
+        kinds.append(("order", "🛒 " + fertig_text("topic", fl)))
     kv = tk.StringVar(value=kind)
     kf = tk.Frame(w, bg=C["bg"]); kf.pack(fill="x", padx=14)
     for k, lb in kinds:
         ttk.Radiobutton(kf, text=lb, value=k, variable=kv).pack(side="left", padx=(0, 10))
+    pv_ = tk.StringVar(value=fertig_paket(pkg, fl).get("id", "") if ord_ else "")
+    if ord_:                                             # 639zj: the package and «Preise auf Anfrage»
+        pf = tk.Frame(w, bg=C["bg"]); pf.pack(fill="x", padx=14, pady=(6, 0))
+        ttk.Label(pf, text=fertig_text("package", fl) + " · " + fertig_text("price", fl), style="Mut.TLabel").pack(anchor="w")
+        for p_ in (UI_GEMEINSAM.get("fertig") or {}).get("pakete") or []:
+            pk_ = fertig_paket(p_["id"], fl)
+            ttk.Radiobutton(pf, text=pk_["name"] + " – " + pk_["desc"], value=pk_["id"], variable=pv_).pack(anchor="w")
     sf = tk.Frame(w, bg=C["bg"]); sf.pack(fill="x", padx=14, pady=(8, 0))
     ttk.Label(sf, text=tr("How happy are you?") + " (" + tr("optional") + ")", style="Mut.TLabel").pack(side="left", padx=(0, 6))
     stars = {"n": 0}; sbs = []
@@ -376,10 +409,30 @@ def _fbx_tk_feedback(self, kind="idea"):
         b.bind("<Button-1>", lambda e, i=i: star(i)); b.pack(side="left"); sbs.append(b)
     txt = tk.Text(w, height=7, width=54, bg=C.get("field", C["panel"]), fg=C["txt"], insertbackground=C["txt"], relief="flat")
     txt.pack(fill="both", expand=True, padx=14, pady=8)
+    otext = lambda: fertig_text("text", fl).replace("{paket}", fertig_paket(pv_.get(), fl).get("name", ""))
+    if ord_:
+        txt.insert("1.0", otext()); last_t = {"t": otext()}
+
+        def pkg_changed(*_a):                            # an untouched prefilled text follows the package
+            cur = txt.get("1.0", "end-1c")
+            if not cur.strip() or cur == last_t["t"]:
+                txt.delete("1.0", "end"); txt.insert("1.0", otext())
+            last_t["t"] = otext()
+        pv_.trace_add("write", pkg_changed)
     cf = tk.Frame(w, bg=C["bg"]); cf.pack(fill="x", padx=14)
-    ttk.Label(cf, text=tr("Contact for an answer (optional)"), style="Mut.TLabel").pack(side="left")
+    cl = ttk.Label(cf, text=tr("Contact for an answer (optional)"), style="Mut.TLabel"); cl.pack(side="left")
     ct = ttk.Entry(cf); ct.pack(side="left", fill="x", expand=True, padx=(8, 0))
-    shot = tk.BooleanVar(value=False); diag = tk.BooleanVar(value=True)
+    cn = ttk.Label(w, text=fertig_text("contact_note", fl) if ord_ else "", style="Mut.TLabel", wraplength=440, justify="left")
+
+    def kind_changed(*_a):
+        o = kv.get() == "order"
+        cl.config(text=fertig_text("contact", fl) if o else tr("Contact for an answer (optional)"))
+        if o:
+            cn.pack(anchor="w", padx=14, pady=(2, 0), after=cf)
+        else:
+            cn.pack_forget()
+    kv.trace_add("write", kind_changed); kind_changed()
+    shot = tk.BooleanVar(value=False); diag = tk.BooleanVar(value=not ord_)
     ttk.Checkbutton(w, text=tr("Send a screenshot") + " (" + tr("the window, faces pixelated") + ")", variable=shot).pack(anchor="w", padx=14, pady=(8, 0))
     ttk.Checkbutton(w, text=tr("Add technical details (version, device, last important events - no pictures, no passwords)"), variable=diag).pack(anchor="w", padx=14)
     ttk.Label(w, text=tr("Always included") + f": MoveEye {APP_VERSION} · " + tr("page") + " «" + tr("Window") + "»", style="Mut.TLabel").pack(anchor="w", padx=14, pady=(6, 0))
@@ -397,6 +450,8 @@ def _fbx_tk_feedback(self, kind="idea"):
     bf = ttk.Frame(w); bf.pack(fill="x", padx=14, pady=10)
 
     def send():
+        if kv.get() == "order" and len(ct.get().strip()) < 3:
+            messagebox.showerror("MoveEye", fertig_text("contact_needed", fl), parent=w); ct.focus_set(); return
         img = None
         if shot.get():
             w.withdraw(); self.root.update(); time.sleep(0.15)       # the picture without this little window
@@ -405,14 +460,15 @@ def _fbx_tk_feedback(self, kind="idea"):
             finally:
                 w.deiconify()
         page = "Fenster/" + str(getattr(self, "tab", "") or "")
-        ok, err = feedback_send(kv.get(), txt.get("1.0", "end"), ct.get().strip(), diag.get(), stars["n"], page, img, "window")
+        ok, err = feedback_send(kv.get(), txt.get("1.0", "end"), ct.get().strip(), diag.get(), stars["n"], page, img, "window",
+                                pv_.get() if kv.get() == "order" else "")
         if ok:
             messagebox.showinfo("MoveEye", tr("Thank you! The message is on its way."), parent=w); w.destroy()
         else:
             messagebox.showerror("MoveEye", tr_err(err), parent=w)
     ttk.Button(bf, text=tr("Send"), command=send).pack(side="right")
     ttk.Button(bf, text=tr("Cancel"), command=w.destroy).pack(side="right", padx=(0, 6))
-    txt.focus_set()
+    (ct if ord_ else txt).focus_set()
 
 
 def _fbx_tk_about(self):

@@ -478,11 +478,11 @@ def apply_settings(data):
         RELAYS[:] = out
     else:                                    # settings file from 1.2.2 -> migrate the single relay
         old = data.get("cfg", {}); r0 = default_relays()[0]
-        if old.get("relay_on_person") is False:
-            r0["mode"] = "off"
+        r0["mode"] = "off" if old.get("relay_on_person") is False else "auto"     # 1.2.2 knew only «on person» (3.44.3 below)
         if isinstance(old.get("relay_hold"), (int, float)) and not isinstance(old.get("relay_hold"), bool):
             r0["hold"] = max(0.5, min(600.0, float(old["relay_hold"])))
         RELAYS[:] = [r0]
+    relay1_migrate(cfg_in)
     sc = data.get("schedules")
     if isinstance(sc, list):
         out = []
@@ -508,6 +508,20 @@ def apply_settings(data):
     STATE["settings_status"] = f"loaded {n} settings, {len(WAYPOINTS)} waypoints, {len(RELAYS)} relays, {len(SCHEDULES)} schedules"
     log_event("sys", f"Settings loaded from {SETTINGS_FILE} ({n} values, {len(WAYPOINTS)} waypoints, {len(RELAYS)} relays, {len(SCHEDULES)} schedules)")
     _settings_migrations(data.get("cfg"))
+
+
+def relay1_migrate(cfg_in):
+    """3.44.3: «Relay 1» is off from the factory (020 default_relays). An older settings file (no «relay1_off_done») whose
+    relays were never touched - exactly the one old factory relay (GPIO 22, auto, person, 5 s) - gets it switched off once.
+    Anything changed by hand (mode, GPIO, name, hold, a second relay) stays exactly as it is."""
+    if not isinstance(cfg_in, dict) or "relay1_off_done" in cfg_in:
+        return False
+    CFG["relay1_off_done"] = True
+    if len(RELAYS) == 1 and dict(RELAYS[0]) == RELAY1_OLD_DEFAULT:
+        RELAYS[0]["mode"] = "off"
+        log_event("sys", "Relay 1 (GPIO 22) switched off: factory setting, never changed - switch it to «auto» under Relays if a lamp hangs on it")
+        return True
+    return False
 
 
 def _settings_migrations(cfg_in):

@@ -12,6 +12,10 @@ extends Node
 ##   * Zustand «Aus / Wachsam / Voll / Gehtest» mit der Farbe der Status-LED von MoveEye («level», auch in der Statuszeile)
 ##   * Push-Vorschau «Push (Test-Postfach): … · 22:14» (Feld «push», 10 s sichtbar, Antippen öffnet den Verlauf von MoveEye)
 ##   * Versions-Paar «MoveEye 3.x · Sim 3.x ✓», sonst ⚠ mit Knopf zum Aktualisieren der älteren Seite (pair())
+##     3.44.2: eigener kleiner Hinweis unten rechts im 3D-Bild (links vom Seitenmenü, weicht Leiste, Mover-Feld und Fenstern
+##     aus), eine Zeile «⚠ MoveEye 3.43.1 älter» + Knopf + ✕; feste Breite 240–460 px (vorher brach der Text nach jedem
+##     Buchstaben um: UI.small() hat Autowrap, reset_size() schrumpfte den Kasten auf die kleinste Breite). ✕ blendet ihn
+##     für dieses Versions-Paar aus (user://versionshinweis.json); ändert sich eine Nummer, erscheint er wieder.
 ##   * Bedienermodus: MoveEye gesperrt («lock») -> nur die Hauptschalter (Einfach, ohne Feineinstellungen, ohne Entwickler
 ##     und Werkseinstellungen); Entsperren mit der PIN von MoveEye (geprüft nur in MoveEye, Antwort «ui.unlock»)
 ## Test ohne Bild: werkzeuge/ui_gemeinsam_test.gd (Wert auf der einen Seite ändern -> erscheint auf der anderen).
@@ -58,6 +62,12 @@ var _push_row: Button = null
 var _ver_row: HBoxContainer = null
 var _ver_l: Label = null
 var _ver_b: Button = null
+var _ver_box: PanelContainer = null   # 3.44.2: the version hint, on its own (bottom right of the 3D view)
+var _ver_x: Button = null
+var ver_hidden := ""                  # «mw|sim» of the pair the user closed with ✕ (shown again after a change)
+const VER_MIN := 240.0
+const VER_MAX := 460.0
+const VER_FILE := "user://versionshinweis.json"
 var _lock_row: VBoxContainer = null
 var _lock_l: Label = null
 var _lock_pin: LineEdit = null
@@ -274,6 +284,35 @@ func pair() -> Dictionary:
 	return o
 
 
+func ver_short(p: Dictionary) -> String:
+	"""one short line: «⚠ MoveEye 3.43.1 älter» / «⚠ Simulator 3.44.1 älter» (the whole pair is the tooltip)"""
+	if p["older"] == "mw":
+		return T.t("⚠ MoveEye %s älter", [str(p["mw"])])
+	if p["older"] == "sim":
+		return T.t("⚠ Simulator %s älter", [str(p["sim"])])
+	return "⚠ MoveEye %s · Sim %s" % [str(p["mw"]) if str(p["mw"]) != "" else "?", str(p["sim"])]
+
+
+func ver_key(p: Dictionary) -> String:
+	return "%s|%s" % [str(p["mw"]), str(p["sim"])]
+
+
+func ver_close() -> void:
+	"""✕: hide the hint for this pair of versions (a new number shows it again)"""
+	ver_hidden = ver_key(pair())
+	var f := FileAccess.open(VER_FILE, FileAccess.WRITE)
+	if f != null:
+		f.store_string(JSON.stringify({"hidden": ver_hidden}))
+
+
+func _ver_load() -> void:
+	if not FileAccess.file_exists(VER_FILE):
+		return
+	var d = JSON.parse_string(FileAccess.get_file_as_string(VER_FILE))
+	if typeof(d) == TYPE_DICTIONARY:
+		ver_hidden = str(d.get("hidden", ""))
+
+
 func update_older() -> void:
 	var p := pair()
 	if p["older"] == "sim":
@@ -346,13 +385,33 @@ func _ready() -> void:
 	_push_row.pressed.connect(_open_history)
 	_push_row.visible = false
 	_box.add_child(_push_row)
-	_ver_row = _chip()
+	_ver_box = PanelContainer.new()                     # 3.44.2: on its own, one line, fixed min / max width
+	_ver_box.name = "Versionshinweis"
+	_ver_box.add_theme_stylebox_override("panel", UI.box(Color(UI.PANEL, 0.94), UI.LINE, 99, 6))
+	_ver_box.visible = false
+	_layer.add_child(_ver_box)
+	_ver_row = HBoxContainer.new()
+	_ver_row.add_theme_constant_override("separation", 6)
+	_ver_box.add_child(_ver_row)
 	_ver_l = UI.small("", UI.TXT)
+	_ver_l.autowrap_mode = TextServer.AUTOWRAP_OFF          # never one letter per line
+	_ver_l.clip_text = true
+	_ver_l.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	_ver_l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_ver_l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_ver_l.mouse_filter = Control.MOUSE_FILTER_PASS
 	_ver_row.add_child(_ver_l)
 	_ver_b = Button.new()
 	_ver_b.add_theme_font_size_override("font_size", 12)
 	_ver_b.pressed.connect(update_older)
 	_ver_row.add_child(_ver_b)
+	_ver_x = Button.new()
+	_ver_x.text = "✕"
+	_ver_x.flat = true
+	_ver_x.add_theme_font_size_override("font_size", 12)
+	_ver_x.pressed.connect(ver_close)
+	_ver_row.add_child(_ver_x)
+	_ver_load()
 	_lock_row = VBoxContainer.new()
 	_lock_row.visible = false
 	_box.add_child(_lock_row)
@@ -421,10 +480,12 @@ func _process(dt: float) -> void:
 	_push_row.visible = on and pt != "" and main.now() - _push_t < 10.0
 	_push_row.text = pt
 	var p := pair()
-	_ver_row.get_parent().visible = on and str(p["mw"]) != "" and not bool(p["same"])
-	_ver_l.text = str(p["text"])
+	_ver_box.visible = on and str(p["mw"]) != "" and not bool(p["same"]) and ver_key(p) != ver_hidden
+	_ver_l.text = ver_short(p)
+	_ver_l.tooltip_text = str(p["text"])
 	_ver_b.visible = p["older"] != "" and not _lock_on and not bool(main.get("kids_on"))
 	_ver_b.text = txt("update_sim" if p["older"] == "sim" else "update_mw")
+	_ver_x.tooltip_text = T.t("Hinweis ausblenden (erscheint wieder, wenn sich eine Version ändert)")
 	_lock_row.visible = _lock_on
 	_lock_l.text = txt("locked")
 	var ub := _lock_row.find_child("Unlock", true, false) as Button
@@ -434,6 +495,67 @@ func _process(dt: float) -> void:
 	var right: float = vs.x - (main.ui_root.size.x if main.get("ui_root") != null and main.ui_root.visible else 0.0)
 	_box.reset_size()
 	_box.position = Vector2(maxf(8.0, right - _box.size.x - 12.0), vs.y - _box.size.y - 120.0)
+	if _ver_box.visible:
+		_ver_place(vs, right)
+
+
+func _ver_place(vs: Vector2, right: float) -> void:
+	"""3.44.2: one line between VER_MIN and VER_MAX wide, bottom right of the 3D view (left of the side menu), out of the way
+	of the tool bar, the mover pad, the other hints and the windows (Gerät, Kameras …)"""
+	var f: Font = _ver_l.get_theme_font("font")
+	var fs: int = _ver_l.get_theme_font_size("font_size")
+	var tw: float = f.get_string_size(_ver_l.text, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x + 4.0 if f != null else 200.0
+	var sep := 6.0
+	var other: float = 2.0 * 12.0 + _ver_x.get_combined_minimum_size().x + sep
+	if _ver_b.visible:
+		other += _ver_b.get_combined_minimum_size().x + sep
+	var w := clampf(tw + other, VER_MIN, VER_MAX)
+	_ver_l.custom_minimum_size = Vector2(maxf(40.0, w - other), 0)
+	_ver_box.reset_size()
+	_ver_box.size.x = w
+	var sz: Vector2 = _ver_box.size
+	_ver_box.position = ver_spot(sz, vs, right, _ver_obstacles())
+
+
+func _ver_obstacles() -> Array:
+	var out := []
+	for c in [main.get("toolbar"), main.get("view_bar"), main.get("rover_pad")]:
+		if c is Control and (c as Control).is_visible_in_tree() and (c as Control).modulate.a > 0.01:
+			out.append((c as Control).get_global_rect().grow(6.0))
+	var fe = main.get("fenster")
+	if fe != null and typeof(fe.get("wins")) == TYPE_DICTIONARY:
+		for k in fe.wins:
+			var wn = fe.wins[k]
+			if wn is Control and (wn as Control).visible and wn.get("card") is Control:
+				out.append((wn.card as Control).get_global_rect().grow(6.0))
+	for c in _box.get_children():
+		if (c as Control).visible:
+			out.append(_box.get_global_rect().grow(6.0))
+			break
+	return out
+
+
+static func ver_spot(sz: Vector2, vs: Vector2, right: float, obs: Array) -> Vector2:
+	"""bottom right, then left of whatever is at the right (mover pad, windows), above whatever is in the middle (tool bar)"""
+	var x_r := right - 12.0
+	var bottom := vs.y - 12.0
+	for _i in range(12):
+		var r := Rect2(x_r - sz.x, bottom - sz.y, sz.x, sz.y)
+		var hit = null
+		for o in obs:
+			if (o as Rect2).intersects(r):
+				hit = o
+				break
+		if hit == null:
+			return r.position
+		var o2: Rect2 = hit
+		if o2.get_center().x > r.get_center().x and o2.position.x - 8.0 - sz.x >= 8.0:
+			x_r = o2.position.x - 8.0                      # something at the right (mover pad, a window): go left of it
+		else:
+			bottom = o2.position.y - 8.0                    # the tool bar (in the middle): go above it
+		if bottom - sz.y < vs.y * 0.4:
+			break
+	return Vector2(maxf(8.0, right - 12.0 - sz.x), vs.y - 76.0 - sz.y)
 
 
 func _lock_apply() -> void:

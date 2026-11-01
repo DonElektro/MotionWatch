@@ -9,6 +9,7 @@ simulator3d/scripts/versionen.gd und sim_vkey() in quelle/300_werkzeuge_simulato
   python3 werkzeuge/versionen.py --test                       # Reihenfolge der Nummern prüfen (ohne Dateien)
   python3 werkzeuge/versionen.py --pruefen                    # passen main.gd, version.json, SIM3D, APP_VERSION zusammen?
   python3 werkzeuge/versionen.py --sim-json 3.0.0 "Notiz"     # simulator3d/version.json aus der ZIP schreiben (beide Felder)
+  python3 werkzeuge/versionen.py --linux-json                 # nur den Block «linux» (MoveEyeSim3D_Linux.zip) in version.json
   python3 werkzeuge/versionen.py --neu-data                   # scripts/neu_data.gd aus «Lies mich.txt» (NEU IN …, beide Schemas)
   python3 werkzeuge/versionen.py --aufraeumen [--nur-zeigen]  # höchstens 10 Hauptversionen X.Y behalten, die Brücke nie löschen
 
@@ -29,6 +30,7 @@ HIER = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HIER)
 SIM = os.path.join(REPO, "simulator3d")
 ZIP_REL = "simulator3d/MotionWatch3D_Simulator.zip"
+LINUX_REL = "simulator3d/MoveEyeSim3D_Linux.zip"   # Paket Linux (werkzeuge/linux_paket.sh, update.gd linux_info)
 SHIFT = 2
 BRUECKE = "3.0.2"                   # = UPD_BRIDGE in quelle/397_zusatzdaten_nachladen.py
 MAX_ALT = 8 * 1024 * 1024           # Grenze der Geräte bis 2.98.x
@@ -134,6 +136,7 @@ def pruefen():
     if "NEU IN %s\n" % gd not in lesen(os.path.join(SIM, "Lies mich.txt")):
         probleme.append("«Lies mich.txt» hat keinen Block «NEU IN %s»" % gd)
     probleme += groesse_bruecke(app)
+    probleme += linux_pruefen(vj)
     for p in probleme:
         print("PROBLEM: " + p)
     print("ok" if not probleme else "%d Probleme" % len(probleme))
@@ -195,6 +198,68 @@ def aufraeumen(nur_zeigen=False):
     return 0
 
 
+def linux_block(v):
+    """Block «linux» für version.json - nur wenn die Linux-ZIP da ist und zu Nummer v passt (sonst None: lieber kein
+    Update für Linux als eine alte Datei, die der Simulator jedes Mal von Neuem anbietet)"""
+    import zipfile
+    p = os.path.join(REPO, LINUX_REL)
+    if not os.path.isfile(p):
+        print("Hinweis: %s fehlt - version.json ohne Linux-Paket" % LINUX_REL)
+        return None
+    try:
+        with zipfile.ZipFile(p) as z:
+            names = z.namelist()
+            lies = z.read("MoveEyeSim3D/Lies mich.txt").decode("utf-8", "replace")
+            mode = (z.getinfo("MoveEyeSim3D/MoveEyeSim3D.x86_64").external_attr >> 16) & 0o777
+    except (KeyError, zipfile.BadZipFile, OSError) as e:
+        print("PROBLEM: %s ist kein Linux-Paket (%s) - version.json ohne Linux-Paket" % (LINUX_REL, e))
+        return None
+    if "NEU IN %s\n" % v not in lies or "MoveEyeSim3D/installieren.sh" not in names or not mode & 0o100:
+        print("PROBLEM: %s passt nicht zu %s (Lies mich, installieren.sh, ausführbar?) - erst neu packen" % (LINUX_REL, v))
+        return None
+    with open(p, "rb") as f:
+        data = f.read()
+    return {"file": LINUX_REL, "ver": v, "size": len(data), "sha256": hashlib.sha256(data).hexdigest()}
+
+
+def linux_json():
+    p = os.path.join(SIM, "version.json")
+    d = json.load(open(p, encoding="utf-8"))
+    lx = linux_block(str(d.get("ver") or ""))
+    if lx is None:
+        return 1
+    d["linux"] = lx
+    with open(p, "w", encoding="utf-8") as f:
+        json.dump(d, f, indent=1, ensure_ascii=False)
+    print("version.json: linux %s, %d Bytes" % (lx["ver"], lx["size"]))
+    return 0
+
+
+def linux_pruefen(vj):
+    lx = vj.get("linux")
+    if not isinstance(lx, dict):
+        print("Hinweis: version.json ohne Linux-Paket")
+        return []
+    out = []
+    p = os.path.join(REPO, str(lx.get("file", "")))
+    if not os.path.isfile(p):
+        return ["Linux-Paket %s fehlt" % lx.get("file")]
+    with open(p, "rb") as f:
+        data = f.read()
+    if len(data) != lx.get("size") or hashlib.sha256(data).hexdigest() != lx.get("sha256"):
+        out.append("Linux-Paket %s passt nicht zu version.json (Grösse/Prüfsumme) - versionen.py --linux-json" % lx.get("file"))
+    try:                                                         # MoveEye offers it at /sim/simulator3d_linux.zip (Teil 300)
+        q300 = open(os.path.join(REPO, "quelle", "300_werkzeuge_simulator3d.py"), encoding="utf-8").read()
+        m = re.search(r'^SIM3D_LINUX = \{"version": "([^"]+)", "file": "[^"]+", "size": (\d+),\s*"sha256": "([0-9a-f]+)"', q300, re.M)
+        if m and (int(m.group(2)) != lx.get("size") or m.group(3) != lx.get("sha256")):
+            out.append("SIM3D_LINUX (300) passt nicht zum Linux-Paket in version.json - bauen.py --neue-version übernimmt es")
+    except OSError:
+        pass
+    if str(lx.get("ver")) != str(vj.get("ver")):
+        out.append("Linux-Paket ist %s, version.json ver %s - Linux neu exportieren und packen" % (lx.get("ver"), vj.get("ver")))
+    return out
+
+
 def sim_json(v, notes, zip_path=""):
     if not re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}$", v):
         sys.exit("Nummer %s passt nicht zum Schema X.Y.Z" % v)
@@ -203,6 +268,9 @@ def sim_json(v, notes, zip_path=""):
         data = f.read()
     d = {"version": legacy(v), "ver": v, "name": "MoveEye Sim " + v, "file": ZIP_REL, "size": len(data),
          "sha256": hashlib.sha256(data).hexdigest(), "notes": notes}
+    lx = linux_block(v)
+    if lx is not None:
+        d["linux"] = lx
     with open(os.path.join(SIM, "version.json"), "w", encoding="utf-8") as f:
         json.dump(d, f, indent=1, ensure_ascii=False)
     print("version.json: ver %s (alte Simulatoren lesen %s), %d Bytes" % (v, d["version"], d["size"]))
@@ -235,6 +303,7 @@ def main():
     ap.add_argument("--pruefen", action="store_true")
     ap.add_argument("--sim-json", nargs=2, metavar=("X.Y.Z", "NOTIZ"))
     ap.add_argument("--zip", default="", help="mit --sim-json: diese ZIP statt simulator3d/MotionWatch3D_Simulator.zip")
+    ap.add_argument("--linux-json", action="store_true", help="nur den Block «linux» in version.json (Linux-ZIP)")
     ap.add_argument("--neu-data", action="store_true")
     ap.add_argument("--aufraeumen", action="store_true", help="höchstens 10 Hauptversionen, die Brücke bleibt")
     ap.add_argument("--nur-zeigen", action="store_true", help="mit --aufraeumen: nur anzeigen")
@@ -247,6 +316,8 @@ def main():
         return pruefen()
     if a.sim_json:
         return sim_json(a.sim_json[0], a.sim_json[1], a.zip)
+    if a.linux_json:
+        return linux_json()
     if a.neu_data:
         return neu_data()
     ap.print_help()
