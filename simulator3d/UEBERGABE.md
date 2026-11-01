@@ -1,8 +1,13 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 01.11.2026 · Version **3.29.0** · MoveEye **3.29.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 01.11.2026 · Version **3.30.0** · MoveEye **3.30.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.30.0 (MoveEye 3.30.0): Entwickler-Zugang (`scripts/devzugang.gd`, MoveEye Teil 639s)
+
+- Langer Druck (0,8 s) auf Schriftzug / Titel öffnet das Entwickler-Fenster (`mehr.act("dev")`, prüft `main._dev_card_ok()`);
+  eigener Werkzeug-Knopf 🛠 nur, solange der gemeinsame Kopf (kopf.gd) keinen hat. CI: Godot-Tests bis zu 3 Versuche.
 
 ## NEU in 3.29.0 (MoveEye 3.29.0): Fenster andocken (`scripts/fenster.gd`)
 

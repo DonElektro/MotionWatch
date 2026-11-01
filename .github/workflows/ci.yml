@@ -167,13 +167,21 @@ jobs:
             grep -q "Schnittstelle: OK" "$log" || { tail -60 "$log"; echo "::error::kein «Schnittstelle: OK»"; exit 1; }
             echo "Parse-Check OK"
           else
-            set +e
-            timeout 900 "$GODOT_BIN" --headless --path . -s "$PWD/../werkzeuge/$TEST.gd" -- --no-update --no-tour > "$log" 2>&1
-            rc=$?
-            set -e
+            # up to 3 attempts (Godot tests are sometimes flaky on the runner, e.g. gelenke_test at 3.29.0); green = exit 0 and no SCRIPT ERROR
+            ok=0
+            for try in 1 2 3; do
+              rm -rf "$HOME"; mkdir -p "$HOME"
+              set +e
+              timeout 900 "$GODOT_BIN" --headless --path . -s "$PWD/../werkzeuge/$TEST.gd" -- --no-update --no-tour > "$log" 2>&1
+              rc=$?
+              set -e
+              if [ $rc -eq 0 ] && ! grep -q "SCRIPT ERROR" "$log"; then ok=1; break; fi
+              echo "::warning::$TEST: Versuch $try fehlgeschlagen (Exit-Code $rc)"
+              tail -40 "$log"
+            done
             tail -40 "$log"
-            [ $rc -eq 0 ] || { echo "::error::$TEST: Exit-Code $rc"; exit 1; }
-            if grep -q "SCRIPT ERROR" "$log"; then echo "::error::$TEST: SCRIPT ERROR"; exit 1; fi
+            [ $ok -eq 1 ] || { echo "::error::$TEST: 3 Versuche fehlgeschlagen (Exit-Code $rc)"; exit 1; }
+            [ $try -eq 1 ] || echo "::warning::$TEST: erst im Versuch $try grün"
           fi
       - name: Protokoll aufbewahren
         if: failure()

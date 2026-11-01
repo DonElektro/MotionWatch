@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3.29.0"
+const VERSION := "3.30.0"
 const Versionen = preload("res://scripts/versionen.gd")   # Versionierung 3.0.0: from 3.0.0 VERSION = "X.Y.Z" like MoveEye (see there)
 const Stimme = preload("res://scripts/abenteuer_stimme.gd")   # 3.23: the one switch «Stimme» (an | aus | untertitel)
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
@@ -5584,6 +5584,10 @@ func _build_ui() -> void:
 	ver.autowrap_mode = TextServer.AUTOWRAP_OFF
 	ver.size_flags_vertical = Control.SIZE_SHRINK_END
 	hdr.add_child(ver)
+	devzugang = preload("res://scripts/devzugang.gd").new()   # 3.26 (MoveEye 639s): long press on wordmark / title = developer window,
+	devzugang.name = "DevZugang"                               # and the drawn tool button at the top right (developer area + owner)
+	add_child(devzugang)
+	devzugang.setup(self, hdr, [hdr.get_child(0), title, show_btn])
 	# Paket real-layout-leiste (Daniel 31.10.2026): the bar under the header like on every page of MoveEye (639o) -
 	# Einfach | Experte · Symbole farbig | schlicht · Beim Start: Nur Gruppen · Alle zuklappen / Nur Gruppen / Alle aufklappen
 	UI.icons_plain = ui_icons == "plain"
@@ -6069,6 +6073,7 @@ var kids: Control
 var kids_seg: Control
 var _mode_row: HBoxContainer
 var simple_seg: Control
+var devzugang = null                   # devzugang.gd: long press on the logo / tool button = developer window (MoveEye 639s)
 var leiste: Node                       # real-layout-leiste: the bar (bedienleiste.gd), the same as on every page of MoveEye
 var ui_icons := "color"                # «Symbole farbig | schlicht» ("color" | "plain", saved); 3.23: «farbig» is the standard (like MoveEye)
 var ui_icons_pick := false             # 3.23: true once somebody chose with the switch (then the saved choice counts)
