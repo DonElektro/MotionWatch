@@ -1,8 +1,14 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 01.11.2026 · Version **3.36.0** · MoveEye **3.36.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 01.11.2026 · Version **3.37.0** · MoveEye **3.37.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.37.0 (MoveEye 3.37.0): Foto-Texturen im Bergtal (`scripts/bergtal_texturen.gd`, `texturen/`)
+
+- Daniels Fotos (nahtlos, `werkzeuge/texturen_bauen.py`, Quellen in `texturen/QUELLEN.txt`), Boden-Shader bergtal_boden /
+  bergsee; Schalter `foto_tex` (System › Grafik, Experte). `texturen/unbenutzt/` hat .gdignore (nicht im Export), Linux Pi
+  schliesst `texturen/*` aus. LIZENZEN.md: eigene Fotos mit Erlaubnis.
 
 ## NEU in 3.36.0 (MoveEye 3.36.0): Figuren menschlicher
 

@@ -2,6 +2,7 @@ extends RefCounted
 ## generated from «Lies mich.txt» by neugen.py - the NEU IN blocks for the popup «Neu in dieser Version» (news.gd)
 
 const LOG := [
+	["3.37.0", "Foto-Texturen aus Daniels Fotos im Bergtal: Wiese, Alpweide, Alpenrosen, Geröll, Fels, Strasse (abschaltbar; Lite unverändert). So testest du: System › Grafik › «Foto-Texturen im Bergtal» aus- und einschalten."],
 	["3.36.0", "Menschlichere Figuren: ab Grafik «mittel» Körper aus dem Menschen-Paket (MakeHuman, ~5 MB, wird nachgeladen: System › Grafik › «Menschen-Paket laden»); in «einfach» feinerer Körper und Gesicht. Kleidung, Rucksack, Wanderstöcke und Lampen passen zur Szene. So testest du: System › Grafik › «Menschen-Paket laden», Grafik auf «mittel» oder «hoch», dann Besucher im Bergtal ansehen."],
 	["3.35.0", "Bergtal: ein neues Geheimnis. So testest du: im Bergtal aufmerksam sein (mehr wird nicht verraten)."],
 	["3.34.0", "Werkstatt (Mehr › Werkstatt): das Gehäuse v5.1 drehen, zerlegen (Explosion), durchleuchten und Schritt für Schritt montieren; am Gerät in der Szene sitzt jetzt das echte Gehäuse. In MoveEye dazu die Seite «Gehäuse & Bau» (Mehr). So testest du: Mehr › Werkstatt öffnen, zerlegen und die Montage-Schritte durchgehen; in MoveEye Mehr › Gehäuse & Bau › «Im Simulator ansehen»."],
@@ -16,5 +17,4 @@ const LOG := [
 	["3.26.0", "Maggie sieht realistischer aus: ab Grafik «mittel» ein Modell mit Skelett und Fell, in «einfach» weiche Formen mit ihrem Muster. So testest du: Grafik «hoch» einstellen, Maggie starten, laufen, stehen bleiben und «Graben» drücken."],
 	["3.25.0", "Mittlerer Klapp-Knopf «Meine Ansicht»: merkt sich dein Auf- und Zuklappen pro Seite, auf allen deinen MoveEye-Geräten gleich; «Nur Gruppen» weiter mit langem Druck. ↻ springt zuerst auf Live und lädt dann neu. So testest du: Auf dem PC Gruppen klappen und auf dem Handy neu laden: Die Gruppen sind gleich geklappt. «Alle zuklappen» drücken, dann die Mitte: Der eigene Zustand ist zurück."],
 	["3.24.0", "Sicherheit: Test-Postfach, eigene Sim-Einstellungen und Anmelden nur über https sind immer an; unsignierte Versionen nur noch im Entwickler-Bereich (24 h). Simulator: ein Schalter «Ton am PC», Symbole farbig als Standard. So testest du: Einstellungen öffnen: Die drei Schalter sind weg, im Simulator steht «Ton am PC»."],
-	["3.23.1", "Trailer: echte Musik und Geräusche (Streicher, Pauken, Donner, Regen, Schritte; freie CC0-Aufnahmen), Lautstärken ausgeglichen; am iPad gleich wie am PC. So testest du: iPad → Sim → Trailer Grossvater, einmal tippen."],
 ]

@@ -15113,6 +15113,12 @@
   "it": "Modalità foto: mostrare cosa viene adattato come figura (rosso)",
   "rm": "Modus foto: mussar tge che vegn adattà sco figura (cotschen)"
  },
+ "Foto-Texturen im Bergtal": {
+  "en": "Photo textures in the mountain valley",
+  "fr": "Textures photo dans la vallée alpine",
+  "it": "Texture fotografiche nella valle alpina",
+  "rm": "Texturas da fotografias en la val da muntogna"
+ },
  "Foto: Bildwinkel (Handyfoto etwa 65°, Panorama bis 360°)": {
   "en": "Photo: field of view (phone photo about 65°, panorama up to 360°)",
   "fr": "Photo : angle de champ (photo de téléphone env. 65°, panorama jusqu’à 360°)",
@@ -38727,6 +38733,12 @@
   "fr": "Pré avec repères de distance, buisson, tente, voiture, arbre – s’exercer au suivi",
   "it": "Prato con segni di distanza, cespuglio, tenda, auto, albero – esercitare l’inseguimento",
   "rm": "Prà cun marcas da distanza, chaglia, tenda, auto, planta – exercitar il suandar"
+ },
+ "Wiese, Fels, Geröll, Alpenrosen, Wege und Seegrund aus echten Fotos (Daniel Bärschi). Aus = die gezeichneten Farben wie früher. In Lite immer aus.": {
+  "en": "Meadow, rock, scree, alpine roses, paths and lake bed from real photos (Daniel Bärschi). Off = the drawn colours as before. Always off in Lite.",
+  "fr": "Prairie, roche, éboulis, rhododendrons, chemins et fond du lac à partir de vraies photos (Daniel Bärschi). Désactivé = les couleurs dessinées comme avant. Toujours désactivé en Lite.",
+  "it": "Prato, roccia, ghiaione, rododendri, sentieri e fondale del lago da foto vere (Daniel Bärschi). Spento = i colori disegnati come prima. Sempre spento in Lite.",
+  "rm": "Prà, grip, ruina, rosas alpinas, sendas e fund dal lai da fotografias veritablas (Daniel Bärschi). Deactivà = las colurs dissegnadas sco pli baud. En Lite adina deactivà."
  },
  "Wildbeobachtung": {
   "en": "Wildlife watching",
