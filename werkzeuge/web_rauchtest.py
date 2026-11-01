@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Rauchtest der Webseite (2.98.18, läuft auch auf GitHub im «Selbsttest»):
+"""Rauchtest der Webseite (2.98.18, läuft auch auf GitHub im «CI»):
 
   1. sammelt ALLE Adressen (@app.route) aus der Flask-Tabelle (url_map) der gebauten Datei - ohne Server, ohne Kamera,
   2. startet MoveEye ohne Fenster (--headless) mit frischen Einstellungen und einem Web-Passwort,
@@ -8,6 +8,7 @@
 
   python3 werkzeuge/web_rauchtest.py                         # neuste webcam_bewegung_*.py, Port 5099
   python3 werkzeuge/web_rauchtest.py --datei X.py --port 5103 --zeigen
+  python3 werkzeuge/web_rauchtest.py --browser               # dazu jede Seite in Chromium (Playwright): keine JS-Fehler
 
 Die gewollt öffentlichen Adressen stehen unten in OEFFENTLICH (Gäste-Seiten mit eigenem Schlüssel, Teilen-Links, Knöpfe in
 der Push-Nachricht, Übersetzungen, App-Symbole, Manifest, Service-Worker …). Wird eine neue Adresse öffentlich, muss sie
@@ -49,7 +50,7 @@ OEFFENTLICH_GENAU = {
     "/i18n/fr.js": "Übersetzung", "/i18n/it.js": "Übersetzung", "/i18n/rm.js": "Übersetzung",
     "/manifest.webmanifest": "App-Manifest", "/icon-192.png": "App-Symbol", "/icon-512.png": "App-Symbol",
     "/apple-touch-icon.png": "App-Symbol", "/apple-touch-icon-precomposed.png": "App-Symbol", "/favicon.ico": "App-Symbol",
-    "/sw.js": "Service-Worker (Push)", "/sim/simulator.zip": "Simulator-Programm (öffentlich, ohne Geheimnisse)",
+    "/sw.js": "Service-Worker (Push)",
     "/static/<path:filename>": "Flask-Standard (kein Ordner)",
 }
 LANGSAM = ("/video", "/cam_feed", "/stream", "/mjpeg", "_feed")       # Bildströme: nur der Anfang wird gelesen
@@ -117,11 +118,60 @@ def holen(url, auth=None, timeout=25):
         return -1, e.__class__.__name__
 
 
+DATEI_ENDUNG = (".js", ".json", ".png", ".ico", ".zip", ".jpg", ".jpeg", ".mp4", ".webm", ".wav", ".mp3", ".ogg", ".txt",
+                ".csv", ".pdf", ".svg", ".webmanifest", ".bin", ".onnx")
+
+
+def browser_pruefen(base, rs, fehler, warn, zeigen):
+    """CI (Ende 2026): jede Seite (GET, ohne Platzhalter, keine /api, keine Ströme, keine Dateien) im Browser öffnen –
+    eine JavaScript-Ausnahme (pageerror) ist ein Fehler, console.error nur eine Warnung."""
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        fehler.append("--browser: Playwright fehlt (pip install playwright && python3 -m playwright install chromium)")
+        return
+    seiten = sorted({r["rule"] for r in rs if "GET" in r["methods"] and "<" not in r["rule"]
+                     and not r["rule"].startswith(("/api", "/static", "/na/", "/sim/"))
+                     and not any(x in r["rule"] for x in LANGSAM) and not r["rule"].lower().endswith(DATEI_ENDUNG)})
+    print("Browser: %d Seiten, je Handy und PC" % len(seiten), flush=True)
+    with sync_playwright() as pw:
+        br = pw.chromium.launch()
+        for name, vp, mobil in (("Handy", {"width": 390, "height": 844}, True), ("PC", {"width": 1366, "height": 900}, False)):
+            ctx = br.new_context(viewport=vp, is_mobile=mobil, has_touch=mobil,
+                                 http_credentials={"username": "admin", "password": PASSWORT})
+            for rule in seiten:
+                pg = ctx.new_page()
+                fe, ce = [], []
+                pg.on("pageerror", lambda e, fe=fe: fe.append(str(e)[:300]))
+                pg.on("console", lambda m, ce=ce: ce.append(m.text[:200]) if m.type == "error" else None)
+                code = "-"
+                try:
+                    r = pg.goto(base + rule, wait_until="domcontentloaded", timeout=30000)
+                    code = r.status if r else "-"
+                    ctype = (r.headers.get("content-type", "") if r else "")
+                    if "html" in ctype:
+                        pg.wait_for_timeout(1500)                    # scripts that run after the load
+                except Exception as e:                              # pages with endless polling: only a warning
+                    warn.append("Browser %s %s: %s" % (name, rule, e.__class__.__name__))
+                for x in fe:
+                    fehler.append("Browser %s %s: JavaScript-Fehler: %s" % (name, rule, x))
+                for x in ce[:3]:
+                    if "Failed to load resource" not in x:
+                        warn.append("Browser %s %s: console.error: %s" % (name, rule, x))
+                if zeigen:
+                    print("  %-6s %-48s %4s  %d Fehler" % (name, rule, code, len(fe)), flush=True)
+                pg.close()
+            ctx.close()
+        br.close()
+
+
 def main():
     ap = argparse.ArgumentParser(description="Rauchtest aller Web-Adressen von MoveEye")
     ap.add_argument("--datei", default="", help="gebaute Datei (Standard: neuste webcam_bewegung_*.py im Repository)")
     ap.add_argument("--port", type=int, default=5099)
     ap.add_argument("--zeigen", action="store_true", help="jede Adresse mit Antwort ausgeben")
+    ap.add_argument("--browser", action="store_true",
+                    help="zusätzlich jede Seite mit Playwright (Chromium) öffnen: keine JavaScript-Fehler (Handy 390 × 844 und PC)")
     a = ap.parse_args()
     datei = a.datei or sorted(glob.glob(os.path.join(REPO, "webcam_bewegung_*.py")),
                               key=lambda p: [int(x) for x in re.findall(r"\d+", os.path.basename(p))])[-1]
@@ -137,7 +187,7 @@ def main():
     cfg = os.path.join(tmp, "mw")
     os.makedirs(cfg)
     st = {"source": "sim:0", "sim_on": False, "sim_url": "http://127.0.0.1:9", "sim_auto": False, "sim_autostart": False,
-          "sim_autostart_v2": False, "sim_autoupd": False, "update_auto": False, "lang": "de", "desktop_notice": False,
+          "sim_autostart_v2": False, "sim_autoupd": False, "update_url": "", "lang": "de", "desktop_notice": False,
           "setup_done": True, "https_extra": False}
     with open(os.path.join(cfg, "motionwatch_settings.json"), "w") as f:
         json.dump({"cfg": st}, f)
@@ -188,6 +238,8 @@ def main():
                 warn.append("langsam: %s (%.0f s)" % (r["rule"], dt))
             if a.zeigen:
                 print("  %-48s ohne %4s  mit %4s  %5.1f s  %s" % (r["rule"], c1, c2, dt, ("öffentlich: " + why) if why else ""), flush=True)
+        if a.browser:
+            browser_pruefen(base, rs, fehler, warn, a.zeigen)
         if p.poll() is not None:
             fehler.append("MoveEye ist während des Tests abgestürzt")
         print("%d geschützte Adressen, %d gewollt öffentliche" % (n_zu, n_pub))

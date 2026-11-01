@@ -75,8 +75,8 @@ if __name__ == "__main__":
     if a.notify_url is not None:
         CFG["notify_url"] = a.notify_url
     if DEMO["on"]:
-        CFG.update(source="demo", setup_done=True, record_dir=os.path.join(DATA_DIR, "recordings"), notify_on=False, update_auto=False,
-                   update_install=False, update_fast=False, dev_phase_done=True, hotspot_on=False, mqtt_on=False, backup_type="off", fleet=[], ai_enabled=True, diary_on=True,
+        CFG.update(source="demo", setup_done=True, record_dir=os.path.join(DATA_DIR, "recordings"), notify_on=False, update_mode="off",
+                   update_url="", dev_phase_done=True, hotspot_on=False, mqtt_on=False, backup_type="off", fleet=[], ai_enabled=True, diary_on=True,
                    device_name=CFG["device_name"] or "Demo")
         a.source = None; a.cam = None
         print("DEMO MODE - settings in " + DATA_DIR)

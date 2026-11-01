@@ -14,7 +14,7 @@ var main
 var _open := false
 var _t := 0.0
 var _state: Label
-var _stimme: CheckButton
+var _stimme: Label
 var _knoepfe: CheckButton
 var _kap: OptionButton
 var _stop: Button
@@ -42,13 +42,8 @@ func build(v: VBoxContainer) -> void:
 	var r2 := HBoxContainer.new()
 	r2.add_theme_constant_override("separation", 8)
 	v.add_child(r2)
-	_stimme = CheckButton.new()
-	_stimme.text = T.t("Erzählerstimme")
-	_stimme.tooltip_text = T.t("Liest die Texte der Geschichte vor (Sprachausgabe von Windows). Ohne Stimme: nur Untertitel.")
-	_stimme.toggled.connect(func(b):
-		var vf = Vf.inst(main)
-		if vf != null:
-			vf.set_stimme(b))
+	_stimme = Label.new()                          # 3.23: the voice has ONE switch (Einstellungen → Licht & Ton → Lautsprecher)
+	_stimme.text = T.t("Stimme: Einstellungen → Licht & Ton → Lautsprecher")
 	r2.add_child(_stimme)
 	_knoepfe = CheckButton.new()
 	_knoepfe.text = T.t("Spiel-Knöpfe zeigen")
@@ -112,11 +107,8 @@ func paint() -> void:
 	if vf == null or _state == null:
 		return
 	var d: Dictionary = vf.info()
-	_stimme.set_pressed_no_signal(bool(d.get("stimme", true)))
 	_knoepfe.set_pressed_no_signal(bool(d.get("knoepfe", false)))
-	_stimme.disabled = not bool(d.get("stimme_moeglich", false))
-	if _stimme.disabled:
-		_stimme.tooltip_text = T.t("Auf diesem PC gibt es keine Sprachausgabe – nur Untertitel.")
+	_stimme.tooltip_text = "" if bool(d.get("stimme_moeglich", false)) else T.t("Auf diesem PC gibt es keine Sprachausgabe – nur Untertitel.")
 	_stop.disabled = not bool(d.get("laeuft", false))
 	if bool(d.get("laeuft", false)):
 		_state.text = T.t("Läuft: %s · %s · %s", [T.t("Kurzfassung") if str(d["laenge"]) == "kurz" else T.t("ganze Geschichte"), str(d.get("kapitel_name", "")), str(d.get("zeit", ""))]) \

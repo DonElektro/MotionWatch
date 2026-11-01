@@ -1696,6 +1696,8 @@ func _laut(kind: String, pos: Vector3, db1m: float) -> void:
 func _ui_play(kind: String, db: float) -> void:
 	if _ui_snd == null or not _snd.has(kind):
 		return
+	if preload("res://scripts/klang.gd").ersetze(kind):
+		return                                         # Spielton: the find as a real glockenspiel (klang.gd); else as before
 	_ui_snd.stream = _snd[kind]
 	_ui_snd.volume_db = db
 	_ui_snd.play()

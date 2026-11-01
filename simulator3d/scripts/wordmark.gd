@@ -127,6 +127,8 @@ func _draw() -> void:
 	if tex.is_empty():
 		return
 	var t: float = Time.get_ticks_msec() / 1000.0 - t0
+	if preload("res://scripts/ui_style.gd").motion_still:
+		t = 1.75                                      # 3.23 «Bewegung reduzieren»: the person stands in the middle, no blink
 	var s: float = swing(t, 7.0)                    # the walk: person, cone and pupil on the same curve
 	# steps (wms: 18 deg at 0 %, -18 at 50 %). A real gait like the web page (3D-4.24): leg 1 with arm 2, leg 2 with arm 1
 	# half a step later (animation-delay -0.35 s of the 0.7 s step there = here 0.35 s ahead)

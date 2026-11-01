@@ -72,7 +72,6 @@ class MotionWatch:
             SIMLINK = SimLink()
             SimDiscovery()
             ToolsWatch(); UplinkWatch(); WifiGuard()
-            threading.Thread(target=sim_autoupdate, daemon=True, name="simupdate").start()
         if AUDIO is None:
             AUDIO = AudioMonitor()
             SOUNDEV_OBJ["o"] = SoundEvents()
