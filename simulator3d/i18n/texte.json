@@ -38738,11 +38738,23 @@
   "it": "USV HAT (E) 21700",
   "rm": "USV HAT (E) 21700"
  },
+ "v5.1 (ohne Weitwinkel)": {
+  "en": "v5.1 (without wide angle)",
+  "fr": "v5.1 (sans grand-angle)",
+  "it": "v5.1 (senza grandangolo)",
+  "rm": "v5.1 (senza grondangul)"
+ },
  "v5.1 (Standard)": {
   "en": "v5.1 (standard)",
   "fr": "v5.1 (standard)",
   "it": "v5.1 (standard)",
   "rm": "v5.1 (standard)"
+ },
+ "v5.2 (Standard): + Weitwinkel, IR-LED, Tasten, Status-LED": {
+  "en": "v5.2 (standard): + wide angle, IR LED, buttons, status LED",
+  "fr": "v5.2 (standard) : + grand-angle, LED IR, boutons, LED d'état",
+  "it": "v5.2 (standard): + grandangolo, LED IR, pulsanti, LED di stato",
+  "rm": "v5.2 (standard): + grondangul, LED IR, buttuns, LED da status"
  },
  "v5.2: + Weitwinkel, IR-LED, Tasten, Status-LED": {
   "en": "v5.2: + wide angle, IR LED, buttons, status LED",

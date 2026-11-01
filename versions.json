@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-01 20:38",
+ "generated": "2026-11-01 21:38",
  "versions": [
+  {
+   "version": "3.46.0",
+   "file": "webcam_bewegung_3_46_0.py",
+   "url": "",
+   "sha256": "26f7451d86fe31fdb3974a0d63bdb75af284237b18c352ec2c7dd9be0add4709",
+   "date": "2026-11-01 21:38",
+   "notes": "Gehäuse v5.2 ist jetzt überall Standard (v5.1 bleibt wählbar); Selbstbau-Paket MoveEye_Bausatz.zip (Anleitung als PDF in 5 Sprachen, Druckdateien, Bestelllisten, signierte Software) als GitHub-Release; USB-Installer für den Simulator-PC (Ubuntu 24.04, Kiosk).",
+   "size": 4833768,
+   "sig": "784467f3c28c384ac3b1469dec319dccdf3ddc94a55d63f50de51a1f7d4e7d12bdb3046f005ac1705ad727aa55ca7a3da3b20a8db4944a1bea960f30f2581b04",
+   "data": {
+    "file": "moveeye_daten_3_46_0.zip",
+    "url": "",
+    "sha256": "e4cd823f4d752c3ad51751cc6340fe267feea3ec0beb2fa2ec9e06611381b540",
+    "size": 3228828,
+    "sig": "bb44155a740fd1b95c0244f0273bb83182f48c60d3a69bfcd8f1129385b9479875476363a60e741c4179caf35904fb02147c6ea935889aaaec436efc5c89f00a"
+   }
+  },
   {
    "version": "3.45.0",
    "file": "webcam_bewegung_3_45_0.py",
    "url": "",
    "sha256": "b77d51b19b7daaceb3fd7438d451055ace336cd7ee29e03869e299b372caa5c1",
-   "date": "2026-11-01 20:38",
+   "date": "2026-11-01 21:36",
    "notes": "Varianten: ehrliche Selbstdiagnose ohne Servo-Treiber (PCA9685) und ohne Wärmebild, Relais ab Werk aus, eine Mover-Fahrt löst keinen «Gerät bewegt»-Alarm mehr aus; Bau-Infos: Stopfen 18–24, Kanal 4 auf das IR-Modul, Ladequelle, 3 Pakete (Basis/Komplett/Autark); Hinweis «fixfertig kaufen» in Bauen, Simulator-Werkstatt und Pi-Fenster; /info/ als Produktseite.",
    "size": 4833020,
    "sig": "ac29bc21a5a9ea75136ccb80a15829d45582f41ff047d8f4ad01ff69fc634c9000abd135a02a3f33ae17eca4759b64d35b21832f8a6767315b23725b29754d0b",
@@ -136,23 +153,6 @@
     "sha256": "e1bd303f3c954d98779dac7e65129d686f062a76870dafdfc7d9433cfa85e2f7",
     "size": 1586833,
     "sig": "0fb0d4b3c8ddaa277df70cac02762356c25ada1c90ced6454d65e5c85a771e26b4f887e0b34dd6404c5b545ced1ec3f2ba97bfff732c5fec4f8fcec7b841ab0e"
-   }
-  },
-  {
-   "version": "3.37.0",
-   "file": "webcam_bewegung_3_37_0.py",
-   "url": "",
-   "sha256": "d75e67987b13d5363383a623074b7f951024c7fe70984cdc0551e99dd02222d5",
-   "date": "2026-11-01 17:42",
-   "notes": "Foto-Texturen aus Daniels Fotos im Bergtal: Wiese, Alpweide, Alpenrosen, Geröll, Fels, Strasse (abschaltbar; Lite unverändert).",
-   "size": 4670785,
-   "sig": "d3b708117ad801182e772e8a0af2ee52ff6748737a5ac6eb9e310cd81b6c659b74e7bcb2d6d9f5baae4b2f41d5c80a5a57f0604e6284648028ab155dd4f3c300",
-   "data": {
-    "file": "moveeye_daten_3_37_0.zip",
-    "url": "",
-    "sha256": "1b0b8f08b4d77026a87ed54badc4f665478a782910df017ffa4b3712180a05dc",
-    "size": 1585199,
-    "sig": "b050890b73ace4f2f4126ec9876b9302b74f5501243dff13780ff0978011f9f6319a00d9e19f10baf205e279356006bc339332d249619f5e4e78bec27b55b607"
    }
   },
   {

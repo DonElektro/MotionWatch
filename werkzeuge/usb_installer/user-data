@@ -1,0 +1,64 @@
+#cloud-config
+# MoveEye USB-Installer: Ubuntu 24.04 LTS Server, unbeaufsichtigt (Subiquity autoinstall über cloud-init NoCloud).
+# Ziel: HP EliteDesk 800 G1 DM als reine Simulator-Maschine (Kiosk mit MoveEye Sim).
+# VORLAGE - nicht direkt verwenden: stick_erstellen.sh ersetzt die Platzhalter @@...@@ (Passwort-Hash, Tastatur,
+# erster Start) und schreibt das Ergebnis NUR auf den Stick. Kein Passwort und kein Hash ins Repository.
+# ACHTUNG: «storage» löscht die ganze (grösste) interne Platte ohne Rückfrage.
+autoinstall:
+  version: 1
+  interactive-sections: []
+  refresh-installer:
+    update: false
+  locale: de_CH.UTF-8
+  keyboard:
+    layout: "@@TASTATUR@@"
+    variant: ""
+  timezone: Europe/Zurich
+  identity:
+    hostname: moveeye-sim
+    realname: Don
+    username: don
+    password: "@@PASSWORT_HASH@@"
+  ssh:
+    install-server: true
+    allow-pw: true
+    authorized-keys: []
+  network:
+    version: 2
+    ethernets:
+      lan:
+        match:
+          name: "en*"
+        dhcp4: true
+        optional: true
+    #@@WLAN@@
+  storage:
+    layout:
+      name: direct
+      match:
+        size: largest
+  updates: security
+  drivers:
+    install: false
+  packages:
+    - xorg
+    - openbox
+    - lightdm
+    - lightdm-gtk-greeter
+    - x11-xserver-utils
+    - libgl1-mesa-dri
+    - libglx-mesa0
+    - mesa-vulkan-drivers
+    - mesa-utils
+    - alsa-utils
+    - openssh-server
+    - ufw
+    - unattended-upgrades
+    - curl
+    - unzip
+    - wpasupplicant
+  late-commands:
+    - echo '@@ERSTSTART_B64@@' | base64 -d > /target/usr/local/sbin/moveeye-erststart
+    - chmod 755 /target/usr/local/sbin/moveeye-erststart
+    - curtin in-target -- /usr/local/sbin/moveeye-erststart --einrichten
+  shutdown: poweroff
