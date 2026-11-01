@@ -164,6 +164,7 @@ func _build_ui() -> void:
 	vpc.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	vpc.custom_minimum_size = Vector2(320, 240)
 	vpc.gui_input.connect(_on_input)
+	vpc.set_meta("rad_zoom", "werkstatt")              # tasten.gd: + / − = the wheel of the 3D view
 	h.add_child(vpc)
 	vp = SubViewport.new()
 	vp.own_world_3d = true

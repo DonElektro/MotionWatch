@@ -5,6 +5,7 @@ extends Object
 
 var main                              # main.gd
 const TestrunS := preload("res://scripts/testrun.gd")
+const T := preload("res://scripts/i18n.gd")
 
 
 func _build_ui() -> void:
@@ -577,6 +578,11 @@ func _build_ui() -> void:
 	main.fold_bodies.append(keys)
 	main.info_label = main.UI.small("Maus: links ziehen = verschieben · rechts ziehen = drehen · Rad = zoomen (Shift + Rad: Tempo von W A S D) · mittlere Taste oder Alt + rechts = umschauen · Doppelklick = hinfliegen · Besucher anklicken = auswählen, ziehen = tragen.  Tasten: W A S D Q E fliegen (Shift schneller) · 1 / 2 Kamera · 3 Wärmebild · 0 frei · F folgen · Entf entfernen · Esc abwählen · H Bedienfeld · P Handy / Tablet · K Karte · G Gewehr (Linksklick = Schuss)")
 	keys.add_child(main.info_label)
+	var kb := Button.new()                                  # tasten.gd: keys instead of the mouse wheel (touchpad without scrolling)
+	kb.text = T.t("Tasten ohne Mausrad (F1)")
+	kb.tooltip_text = T.t("+ / − zoomen · Bild ↑ / ↓ blättern · Pfeile drehen und neigen")
+	kb.pressed.connect(func(): main.tasten.show_help(true))
+	keys.add_child(kb)
 	main.expert_cards.append(keys.get_meta("card"))
 	main.top_cards.append(keys.get_meta("card"))
 	main.mehr = preload("res://scripts/mehr.gd").new()      # 3D-4.2x: card «Mehr» like MoveEye (Hilfe, Rundgang, Diagnose, Protokoll, Ansicht, Rückmeldung, Über)

@@ -1,15 +1,15 @@
 {
- "version": "3D-5.43.1",
- "ver": "3.43.1",
- "name": "MoveEye Sim 3.43.1",
+ "version": "3D-5.44.0",
+ "ver": "3.44.0",
+ "name": "MoveEye Sim 3.44.0",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 48916532,
- "sha256": "4b2bc90cd665f0e6a037d55b52eb8085a4ab66e241b239612e7e7b4b2a1721b6",
- "notes": "Linux-Download auf /sim",
+ "size": 48932008,
+ "sha256": "50adc94e7b76622c4052df053ace8bdaabe27a3be075efe731b0a8e1b7f2bff1",
+ "notes": "Tastatur statt Scrollrad",
  "linux": {
   "file": "simulator3d/MoveEyeSim3D_Linux.zip",
-  "ver": "3.43.1",
-  "size": 42883398,
-  "sha256": "42303428dadf4bcca543452846dfa48b470b075c91b15f8cd8efb3f9b4a23540"
+  "ver": "3.44.0",
+  "size": 42895879,
+  "sha256": "a864f0563333f4363c1218ebf758378bd9ced5716e7d0d9f4b0a429504e7e19e"
  }
 }

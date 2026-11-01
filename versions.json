@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-01 18:05",
+ "generated": "2026-11-01 18:27",
  "versions": [
+  {
+   "version": "3.44.0",
+   "file": "webcam_bewegung_3_44_0.py",
+   "url": "",
+   "sha256": "ee2642e7cfe8f6bf85f5ea0ae249984ecb0a0572a64b3dbcf0e7acb5df4a5348",
+   "date": "2026-11-01 18:27",
+   "notes": "Simulator: Tastatur statt Scrollrad: + / − zoomt überall, Bild↑/↓ blättert Listen, Pfeile drehen die Ansicht, F1 zeigt die Tasten-Hilfe, Scrollbalken sind sichtbar und ziehbar, Shift+Bild↑/↓ bewegt den Mast.",
+   "size": 4796143,
+   "sig": "d993e64f05cf92ffa10398440a5c093c807e47085be17114d461c2f56cdd56e7f1b6e17d4fce4caecf8cef01e1e04579980c0b68742f1f4827ef98c991c1b00e",
+   "data": {
+    "file": "moveeye_daten_3_44_0.zip",
+    "url": "",
+    "sha256": "07eebbb5424e953a82555a2aa381b0b0145655a33bd08988d3dfb0b6a927f1c6",
+    "size": 3279194,
+    "sig": "0b273c0a6143f727ab0a571db5ddc968fae7ae43e4786d982f7859c73bae26083d894fede6d149d000b262b082d4e86c559faa0624d5d195c7071387cc4f240a"
+   }
+  },
   {
    "version": "3.43.1",
    "file": "webcam_bewegung_3_43_1.py",
    "url": "",
    "sha256": "00c28106c8bc5d798def77b1501e7cfb615c266d8c60fd5754dbe4bb38f54716",
-   "date": "2026-11-01 18:05",
+   "date": "2026-11-01 18:06",
    "notes": "MoveEye bietet unter /sim jetzt auch den Simulator für Linux zum Herunterladen an.",
    "size": 4796181,
    "sig": "bdfdc67338426bf528951d2a1481f30e52eefc6503115fce23f1e0330dfb60ddceffe35bdc6e3cabc714172ec569f2104d8c5ab0a34acad5e56636ad28f0a605",
@@ -136,23 +153,6 @@
     "sha256": "0a770b3b7028cda21568dbff9d76af4c7689c78716e4629a18b09fd9af31fa5b",
     "size": 1585160,
     "sig": "cdea2923e026abdaaadb47f9d219f69dd51c7063307013ca4ca834905dd3094fa7f006bd45dda564def18ada708228f3cab02fb0f330256c8b1db9949df1320c"
-   }
-  },
-  {
-   "version": "3.35.0",
-   "file": "webcam_bewegung_3_35_0.py",
-   "url": "",
-   "sha256": "b540c28d05aeaf97f7245b15093b1e40f2cd8c879ac599c144e248266800ca95",
-   "date": "2026-11-01 11:52",
-   "notes": "Bergtal: ein neues Geheimnis.",
-   "size": 4670877,
-   "sig": "ae30852a59d0b8c4bbeb7eb4cdddd6fc6a3f5dbca3780447b386354210c95b830e838b78aee84d6b49f02ab62c78ca21ae73c5064ff2bb4a8bcc032f257b5606",
-   "data": {
-    "file": "moveeye_daten_3_35_0.zip",
-    "url": "",
-    "sha256": "b264f086bf4c0f27574fe49865e934b4a8006b5e0ccce7e30a89e3270352d6fc",
-    "size": 1585078,
-    "sig": "7d418e56c540a46be4ab525a974b055272da18d9915b2e6c068e7a091870e02764fcfdee84d068c3e60e3810a7fe306288da15dd170f71ee705f3b699f1e6e08"
    }
   },
   {
