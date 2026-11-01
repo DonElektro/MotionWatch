@@ -68073,9 +68073,10 @@ SELFTEST_EXTRA.append(("Vorführung «Maggie» (page /sim/vorfuehrung, owner onl
 #     Plan: nur der Erzähler. Der Ton läuft auf beiden Geräten (PC und iPad).
 #   * /api/trailer: GET = Stand (Simulator /control trailer info), POST {do: start (id) | stop}. Nur der Besitzer
 #     (nacht_may: Administrator, nicht im Bedienermodus), wie die Vorführung (639m).
-#   * Einstieg: Reiter «Sim» ganz oben die Karte «🛠 Entwickler» (nur mit dem Entwickler-Bereich und für den Besitzer) mit
-#     «🎬 Trailer Grossvater», «🎬 Trailer Maggie», «🎬 Vorführung»; dazu Einstellungen → Entwickler (Web 530 devExtras,
-#     Fenster 639c) ganz oben die zwei Trailer. Im Simulator selbst: oben im Fenster «Entwickler» und auf den Story-Karten.
+#   * Einstieg nur im Entwickler-Bereich (Daniel 01.11.2026: die Schnell-Karte «🛠 Entwickler» oben im Reiter «Sim» ist weg):
+#     Einstellungen → Entwickler (Web 530 devExtras, Fenster 639c) ganz oben die zwei Trailer (und die Vorführung, 639m);
+#     im Reiter «Sim» die Karte «Entwickler» (nur mit dem Entwickler-Bereich; Knöpfe vom Simulator). Im Simulator selbst:
+#     oben im Fenster «Entwickler» und auf den Story-Karten.
 # Hier (nach 639m) weil VF-Teile (639m), render_page, sim_control, nacht_may, SIM_PAGE, WEB_PAGE vorher kommen.
 # ----------------------------------------------------------------------------
 TRL_IDS = ("grossvater", "maggie")
@@ -68165,7 +68166,6 @@ TA_JS = _zd('639n_trailer/TA_JS', "")
 _HX_TRL = {
     'Trailer Grossvater': ('Trailer Grossvater', 'Bande-annonce Grand-père', 'Trailer Nonno', 'Trailer Tat'),
     'Trailer Maggie': ('Trailer Maggie', 'Bande-annonce Maggie', 'Trailer Maggie', 'Trailer Maggie'),
-    'Vorführung': ('Vorführung', 'Démonstration', 'Dimostrazione', 'Demonstraziun'),
     'Developer': ('Entwickler', 'Développeur', 'Sviluppatore', 'Sviluppader'),
     'End the trailer': ('Trailer beenden', 'Arrêter la bande-annonce', 'Termina il trailer', 'Terminar il trailer'),
     'Watch again': ('Nochmals ansehen', 'Revoir', 'Guarda di nuovo', 'Guardar anc ina giada'),
@@ -68206,35 +68206,13 @@ VF_PAGE = VF_PAGE.replace('HIDE_T = setTimeout(() => { if (!S.pause) b.classList
                           'HIDE_T = setTimeout(() => { if (!S.pause && !SPK.pop) b.classList.add("off"); }, 4000); }', 1)
 VF_PAGE = VF_PAGE.replace("function vfPaint(j) {\n  S = j || {};", "function vfPaint(j) {\n  S = j || {};\n  spkTick(S, !!S.pause, !!S.laeuft);", 1)
 _VF_KEYS.extend(["Sound on", "Sound off"] + _SPK_KEYS)
-_TRL_DE_JS = json.dumps({k: DE.get(k, k) for k in ("Trailer Grossvater", "Trailer Maggie", "Vorführung", "Developer")}, ensure_ascii=False)
+_TRL_DE_JS = json.dumps({k: DE.get(k, k) for k in ("Trailer Grossvater", "Trailer Maggie", "Developer")}, ensure_ascii=False)
 
 # Settings → Developer (web 530 devExtras): the two trailers on top of the list (the window 639c: see below)
 WEB_PAGE = WEB_PAGE.replace('[["🧪", "Test bench and test run", "/sim#c-test"]',
                             '[["🎬", "Trailer Grossvater", "/sim/trailer?id=grossvater"], ["🎬", "Trailer Maggie", "/sim/trailer?id=maggie"], '
                             '["🧪", "Test bench and test run", "/sim#c-test"]', 1)
 WEB_PAGE = WEB_PAGE.replace("</body>", "<script>Object.assign(I18N.de, " + _TRL_DE_JS + ");</script></body>", 1)
-
-# the tab «Sim»: on top the card «🛠 Entwickler» (no fold card: the links are always visible, also with «Nur Gruppen») (only the owner with the developer area: /api/ui_simple dev + /api/trailer not 403)
-TRL_SIM_CARD = """<div class="sc wide" id="c-devquick" hidden>
-    <h2 style="margin:0 0 8px"><span>🛠</span> <span data-i18n="Developer">Developer</span></h2>
-    <div class="row2" style="display:flex;gap:8px;flex-wrap:wrap">
-      <a class="btn sec" href="/sim/trailer?id=grossvater" style="flex:1 1 180px;text-align:left">🎬 <span data-i18n="Trailer Grossvater">Trailer Grossvater</span> ›</a>
-      <a class="btn sec" href="/sim/trailer?id=maggie" style="flex:1 1 180px;text-align:left">🎬 <span data-i18n="Trailer Maggie">Trailer Maggie</span> ›</a>
-      <a class="btn sec" href="/sim/vorfuehrung" style="flex:1 1 180px;text-align:left">🎬 <span data-i18n="Vorführung">Vorführung</span> ›</a>
-    </div>
-  </div>
-  """
-TRL_SIMJS = """<script>
-(function trlQuick() {
-  try { Object.assign(I18N.de, /*TRLDE*/{}); } catch (e) {}
-  const c = document.getElementById("c-devquick"); if (!c) return;
-  Promise.all([fetch("/api/ui_simple?page=sim").then(x => x.json()).catch(() => ({})), fetch("/api/trailer", {cache: "no-store"}).then(x => x.status).catch(() => 403)])
-    .then(([u, st]) => { c.hidden = !(u && u.dev) || st === 403; if (!c.hidden) try { applyI18n(); } catch (e) {} });
-})();
-</script>"""
-SIM_PAGE = SIM_PAGE.replace('<main class="simp">\n', '<main class="simp">\n  ' + TRL_SIM_CARD, 1)
-SIM_PAGE = SIM_PAGE.replace("</body>", TRL_SIMJS.replace("/*TRLDE*/{}", _TRL_DE_JS) + "</body>", 1)
-
 
 def trl_page():
     js = "Object.assign(I18N.de, " + json.dumps({k: DE.get(k, k) for k in _TRL_KEYS}, ensure_ascii=False) + ");"
@@ -68314,8 +68292,7 @@ def trl_selftest():
         CFG["sim_on"] = keep
     html = trl_page()
     assert "/sim/view.jpg?" in html and "bare=1&" in html and "/api/trailer" in html and "<!--NAV-->" not in html
-    assert 'id="c-devquick"' in SIM_PAGE and "/sim/trailer?id=maggie" in SIM_PAGE and "/sim/vorfuehrung" in SIM_PAGE
-    assert SIM_PAGE.index('id="c-devquick"') < SIM_PAGE.index('id="c-conn"')
+    assert 'id="c-devquick"' not in SIM_PAGE and "/sim/trailer?id=" not in SIM_PAGE   # Daniel 01.11.2026: no quick card on «Sim»
     assert "/sim/trailer?id=grossvater" in WEB_PAGE
     assert "speechSynthesis" in html and "spkTick(S" in html and "wakeLock" in html
     assert "spk-tap" in html and "spkUnlock" in html and "taSync(S)" in html and "/sim/trailer_ton/" in html and "/api/trailer?plan=1" in html
@@ -68328,7 +68305,7 @@ def trl_selftest():
     assert "spk-tap" in vh and "Tippen für Ton" in vh and "S.laeuft ? \"bare=1&\"" in vh
     for L in ("fr", "it", "rm"):
         assert TRX[L].get("End the trailer"), L
-    return "Trailer: page, owner only, commands to the simulator, card on top of «Sim», entries"
+    return "Trailer: page, owner only, commands to the simulator, entries in the developer area"
 
 
 SELFTEST_EXTRA.append(("Trailer der Geschichten (page /sim/trailer, owner only)", trl_selftest))
