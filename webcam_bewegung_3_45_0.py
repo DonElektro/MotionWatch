@@ -32955,6 +32955,9 @@ class MotionWatch:
             walking = False                                 # needs AI confirmation
         elif t.is_person and CFG["person_sticky"] and sp <= CFG["walk_max_speed"] * k and not animal and not getattr(t, "fixp", False):
             walking = True                                  # keep flag while tracked (may stand still)
+        if walking and not t.ai_confirmed and not t.is_person and getattr(t, "was_vehicle", False):
+            walking = False                                 # real-erkennung-fix: once vehicle-like, movement alone never makes it a
+                                                            # person (a car turning / half hidden looked «person-like» for a moment)
         if walking and not t.is_person and veh_light_veto(t, getattr(self, "_veh_t", 0.0), now_):
             walking = False                                 # real-erkennung-fix: the light of a car at night is no person
         walking = strict_gate(self, t, walking, time.time())   # 411: at dusk / in wind a new person only after 2-3 hits in a row
