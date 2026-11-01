@@ -1,8 +1,15 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Version **3.26.0** · MoveEye **3.26.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 01.11.2026 · Version **3.27.0** · MoveEye **3.27.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.27.0 (MoveEye 3.27.0): Weniger Schalter (Teil 639q, Schritt 2)
+
+- Updates: eine Auswahl `update_mode` (von Hand / automatisch / Entwicklungsphase), alte Schalter übernommen.
+- Neu «Bewegung reduzieren» (`reduce_motion`, `UI.motion_still`) und «Stimme» (`stimme_modus`: an · aus · nur Untertitel),
+  Rundgang/Blinki nur unter System → Gerät & Hilfe (`tour_auto`, `blinki_on`); «Beim Start: Nur Gruppen» entfernt.
+- Alter Python-Basis-Simulator (`SIM_ZIP_B64`, Teil 639h) entfernt.
 
 ## NEU in 3.26.0 (MoveEye 3.26.0): Maggie realistischer (`maggie_modell.gd`, `maggie_einfach.gd`)
 

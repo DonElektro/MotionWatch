@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.26.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.27.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -446,6 +446,13 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.27.0
+3.27.0: Weniger Schalter: Updates mit einer Auswahl, neu «Bewegung reduzieren» und «Stimme» (an · aus · nur
+Untertitel) in MoveEye und Simulator, Rundgang/Blinki an einem Ort, Symbole farbig, «Beim Start: Nur Gruppen» entfällt
+(langer Druck bleibt), alter Python-Basis-Simulator entfernt.
+So testest du: System › Gerät & Hilfe: «Bewegung reduzieren: an» – das Logo steht still. «Stimme: aus» – der Trailer spricht
+nicht. In MoveEye: Einstellungen › Updates hat eine Auswahl mit 3 Werten.
 
 NEU IN 3.26.0
 3.26.0: Maggie sieht realistischer aus: ab Grafik «mittel» ein Modell mit Skelett und Fell, in «einfach» weiche Formen mit

@@ -54,7 +54,7 @@ static func sim_groups() -> Array:
 
 
 static func bar_text(k: String) -> String:
-	"""the German text (key of T.t) of a bar element: simple, expert, color, plain, start_groups, close, groups, open"""
+	"""the German text (key of T.t) of a bar element: simple, expert, color, plain, close, groups, open"""
 	var t = ((data().get("bar", {}) as Dictionary).get("texts", {}) as Dictionary).get(k, {})
 	return str(t.get("de", k)) if typeof(t) == TYPE_DICTIONARY else k
 

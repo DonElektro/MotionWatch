@@ -23,6 +23,35 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 3.27.0: Weniger Schalter: Updates mit einer Auswahl, neu «Bewegung reduzieren» und «Stimme» (an · aus · nur Untertitel) in
+    MoveEye und Simulator, Rundgang/Blinki an einem Ort, Symbole farbig, «Beim Start: Nur Gruppen» entfällt (langer Druck
+    bleibt), alter Python-Basis-Simulator entfernt.
+  * 3.26.0: Simulator 3.26.0: Maggie sieht realistischer aus – ab Grafik «mittel» ein Modell mit Skelett und Fell, in «einfach»
+    weiche Formen mit ihrem Muster.
+  * 3.25.0: Mittlerer Klapp-Knopf «Meine Ansicht»: merkt sich dein Auf- und Zuklappen pro Seite, auf allen deinen
+    MoveEye-Geräten gleich; «Nur Gruppen» weiter mit langem Druck; ↻ springt zuerst auf Live und lädt dann neu.
+  * 3.24.0: Sicherheit: Test-Postfach, eigene Sim-Einstellungen und Anmelden nur über https immer an (Schalter entfernt);
+    unsignierte Versionen nur noch im Entwickler-Bereich (24 h).
+  * 3.23.1: Trailer: echte Musik und Geräusche (Streicher, Pauken, Donner, Regen, Schritte; freie CC0-Aufnahmen), Lautstärken
+    ausgeglichen; am iPad gleich wie am PC.
+  * 3.23.0: Gemeinsame Menü-Datei für MoveEye und Simulator (Gruppen, Namen, Reihenfolge); der Selbsttest prüft beide Seiten.
+    Behoben: auf der Simulator-Seite fehlten Karten nach der ersten.
+  * 3.22.0: Reiter- und Statuszeile einzeln einklappbar (pro Gerät gemerkt, roter Punkt bei Warnungen); auf jeder Seite dieselbe
+    Bedienleiste (Einfach/Experte, Symbole farbig/schlicht, Nur Gruppen, Alle zuklappen · Nur Gruppen · Alle aufklappen) – Web,
+    Pi-Fenster und Simulator; Live: Gehtest ganz unten.
+  * 3.21.0: Simulator 3.21.0: Bergtal mit Tuffwasserfall im Schattwald, Kalkgipfel Chalchstock mit Antenne und
+    Aussichtsplattform, Drahtseil-Schlussstück, gelbe Wegweiser mit Wegzeiten aus dem Wegnetz.
+  * 3.20.0: Simulator 3.20.0: Figuren leben mehr (Atmen, Blick zu Geräuschen und Tieren, Blinzeln, Sprechen, Zittern, High-Five,
+    Klettern, Aufheben; Tiere äsen und kauen; Maggie gräbt und schüttelt sich), Spuren im Schnee, Schalter «Ansicht wippt beim
+    Gehen».
+  * 3.19.3: Trailer/Vorführung: Stopp am iPad lässt den Simulator nicht mehr schwarz (Kamera und Knöpfe kommen zurück, Knopf «×
+    Zurück», Esc); am iPad Ton mit einem Tippen (Erzähler, Musik, Geräusche).
+  * 3.19.2: Vorführung und Trailer wählen automatisch die beste Stimme und sprechen ruhiger; Knopf «🗣 Stimme» mit Liste,
+    Hörprobe und Geschwindigkeit (pro Gerät gespeichert), Hinweis zu Premium-Stimmen.
+  * 3.19.1: Vorführung und Trailer im Browser sprechen die Texte selbst vor (🔊 Ton an/aus in der Leiste, Sprache von MoveEye);
+    das iPad bleibt während der Vorführung wach; Karte «🛠 Entwickler» im Reiter «Sim» offen.
+  * 3.19.0: Simulator 3.19.0: Trailer (ca. 3 Min.) zu «Die Karte des Grossvaters» und «Maggie und der Bergkristall»; Karte «🛠
+    Entwickler» oben im Reiter «Sim» mit Trailer Grossvater, Trailer Maggie und Vorführung (live im Browser).
   * 3.18.0: Simulator 3.18.0: Figuren und Tiere mit echten Gelenken (Knie, Ellbogen, Schultern, Hüfte, Sprunggelenk) und
     natürlicherem Gang, Füsse bleiben am Boden.
   * 3.17.0: Simulator-Ports: MoveEye findet auch die Ausweich-Ports 8775/8785/8795 (Portliste geprüft). Simulator 3.17.0:
@@ -59,38 +88,6 @@ Features
   * 3.8.0: MoveEye-Datei halb so gross: Webseiten, Bilder und alte Versionsgeschichte in einer Zusatzdatei (moveeye_daten), die
     beim Update mitkommt oder nachgeladen wird; ohne Zusatzdatei läuft der Schutz weiter; 3.0.2 bleibt als Brücke für sehr alte
     Geräte.
-  * 3.7.1: Simulator 3.7.1: Maggie – der Pfeil zeigt jetzt auf die Stationen, jede Jahreszeit etwa 25–28 Min. mit 3 Rastplätzen
-    und 4 Rätseln, Rastplatz-Anzeige und Tipps korrigiert.
-  * 3.7.0: Simulator-Seite angepasst an die aufgeräumten Simulator-Menüs. Simulator 3.7.0: «Einfach» 61 statt 101 Einträge,
-    Besuch in Menschen und Tiere, doppelte Regler zusammengelegt, Prüfstand und Rückmeldung an einem Ort, einheitliche Namen und
-    Symbole.
-  * 3.6.2: Fehlerkorrekturen: Spieltest-Push höchstens 1 pro Minute und nur von MoveEye einschaltbar; Schwachlicht nach einer
-    Taschenlampe in höchstens 10 s wieder an; ohne KI wird ein warmer, flacher Körper «Person?»; Hospiz nur für den Besitzer;
-    echte Pi-Warnungen auch im Simulator-Betrieb; Fragen der Produktseite ganz aufs Handy; «Schutz ein» nicht doppelt;
-    Übersetzungen.
-  * 3.6.1: Simulator sicherer: gefährliche Steuerbefehle nur von diesem PC oder vom verbundenen MoveEye; Hospiz-Rätsel und
-    Maggie-Bild pro Spielstand; Kapitel-Sprung-Test ohne echten Spielstand; Werksrücksetzung mit sicherem Neustart, 3 Kopien,
-    Parcours-Lernbilder bleiben.
-  * 3.6.0: Weniger Fehlalarme: Dinge, die wie eine Person aussehen (z. B. eine Fichte), lösen die Frage «ignorieren?» aus, der
-    Kopf folgt ignorierten Dingen nicht; warme Motoren sind keine «Person (Wärmebild)»; ein von der KI erkanntes Tier bleibt ein
-    Tier.
-  * 3.5.0: Kriechende nachts: Voralarm «⚠ Etwas Grosses am Boden», nach 6 s «Person? (kriecht)» mit Alarm; Fuchs und Igel lösen
-    nichts aus; KI-Lupe schaut auch kleine, weite Bewegungen an (nicht bei starkem Wind).
-  * 3.4.0: Nebel-Modus: Nebel erkennen, Kontrast anheben, mehr Wärmebild, Hinweis «🌫 Nebel – Sicht eingeschränkt», kein falsches
-    «Kamera verdreht» im Nebel; in Dämmerung und Wind 2–3 Treffer in Folge vor einer Personen-Meldung.
-  * 3.3.0: MoveEye Sim 3.3.0: Roter Faden – Die Karte des Grossvaters und Maggie kennen sich, neues Abzeichen «Beide Geschichten
-    geschafft».
-  * 3.2.0: MoveEye Sim 3.2.0: Statisten im Hintergrund (Ziele, Tätigkeiten, Gruppen, grüssen, weichen aus, abends heim; Menge
-    wenig / normal / belebt).
-  * 3.1.0: Handy-Mitteilungen kurz und klar: Titel mit Symbol, eine Zeile Text, Bild wo sinnvoll, nie roher Code; «🛡 Schutz ein»
-    mit Bild; im Simulator nur Alarme (Info per Schalter); E-Mail mit ganzem Text; Gerätename nur bei mehreren MoveEye;
-    ntfy-Adresse in der Webhook-Karte behoben.
-  * 3.0.2: Simulator: «Nur Gruppen» wie in MoveEye (Gruppen offen, Themen zu); Anna ist die Betreuerin der Hütte; Sepp spricht
-    passend zur Jahreszeit.
-  * 3.0.1: Geschichten-Texte überarbeitet: stimmiger, lebendiger, Tippfehler korrigiert (Maggie, Die Karte des Grossvaters,
-    Entdecken), Übersetzungen vereinheitlicht.
-  * 3.0.0: Neue gemeinsame Versionsnummer: MoveEye und MoveEye Sim haben ab jetzt immer dieselbe Nummer (3.0.0). Neue Funktion =
-    zweite Zahl, Fehlerkorrektur = dritte Zahl.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -99,10 +96,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_3_18_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_3_27_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_3_18_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_3_18_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_3_27_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_3_27_0.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -119,7 +116,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "3.18.0"
+APP_VERSION = "3.27.0"
 
 
 def default_data_dir():
@@ -241,8 +238,8 @@ def prepare_settings_file():
 #     Part 397 fetches the zip over the same update source and restarts once (zusatz_start()).
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
-ZD_FILE = "moveeye_daten_3_18_0.zip"
-ZD_SHA256 = "9b0ac6b9c0a94cc51a86f5c0e83c27ff69aa3ac8ea9f4569b7633a248e21ad11"
+ZD_FILE = "moveeye_daten_3_27_0.zip"
+ZD_SHA256 = "8a73a7f18c50d3ef245e8d4167a133adf385c48c2b2063ed32039b9d15462dfa"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -524,7 +521,7 @@ CFG = {
     "deter_seconds": 6, "deter_pause": 60, "deter_always": False,
     "share_logo": True,
     "ui_simple": True,                       # settings: only the important ones (Expert shows everything)
-    "ui_start_groups": True,                 # nurgruppen: settings open as «Groups only» on every start (off: as folded last time)
+    "ui_ansicht": {}, "ui_ansicht_mig": False, "ui_ansicht_sg0": False,   # 639r «Meine Ansicht»: per user and page; the take-over of «Groups only»
     "share_gps": False,                      # shared pictures / videos keep their GPS position (off: removed before sharing)
     "share_blur_faces": True,                # 2.98.14: faces pixelated in shared pictures / videos (375), the originals stay
     "weekrep_on": True, "weekrep_day": "Sunday", "weekrep_hour": 18, "weekrep_last": "",   # 2.98.14: weekly detection report (426)
@@ -545,7 +542,7 @@ CFG = {
     "sim_autostart": True, "sim_autostart_v2": False,   # v2 (2.95.26): on a Raspberry Pi off by default (it guards the real place)
     # 2.95.25: a simulator announces itself -> the simulation goes on by itself (and off again when it is gone)
     "sim_auto_on": False,        # ... it was switched on by that (only then it is switched off again by itself)
-    "sim_autoupd": True, "sim_separate": True, "sim_basis_show": False, "net_watch": False, "net_known": {}, "presence_macs": [], "presence_auto": False, "presence_gone_min": 10.0,
+    "sim_autoupd": True, "net_watch": False, "net_known": {}, "presence_macs": [], "presence_auto": False, "presence_gone_min": 10.0,
     "bt_tracker_warn": False, "bt_tracker_min": 30.0, "presence_bt": [], "wifi_repeater": False, "clap_on": False, "clap_sens": 5, "clap_beep": True, "clap_volume": 60, "clap_2": "relay:0",
     "clap_3": "light_white", "clap_4": "none", "clap_disarmed": True, "clap_practice": False, "sneeze_on": False, "sneeze_sens": 5,
     "sneeze_volume": 70, "sneeze_reply": "tts", "sneeze_texts": "Gesundheit!|Gsundheit!|Zum Wohl!", "sneeze_night": True,
@@ -571,13 +568,16 @@ CFG = {
     "backup_url": "", "backup_user": "", "backup_password": "", "backup_folder": "",
     "backup_all": False,         # copy every recording (otherwise only alarm recordings: armed or with a person)          # alarm messages also as web push to browsers that switched it on (no extra app)         # first start: the setup assistant shows on the web page (and the QR code in the window)
     "update_unsigned": False,    # also install versions without a valid signature (own builds) - not recommended
+    "update_unsigned_t": 0.0,    # 3.23: when it was switched on - after 24 h it switches itself off (update_unsigned_ok, 380)
     "update_url": "",            # where new versions come from: https://.../versions.json or a folder (USB stick)
-    "update_auto": True,         # look for a new version every 3 hours (and 2 minutes after the start)
-    "update_install": False,     # install a new version by itself ...
-    "update_fast": False, "dev_phase_done": False, "news_popup": True, "msg_icons": True, "notify_sandbox": False, "train_night_on": False, "train_hour": 1, "train_optimize": True, "train_pics": True, "train_day": "", "rover_alarm": False, "fa_learn_auto": True, "rehearsal_on_arm": False, "weekcheck_on": True, "weekcheck_last": "", "simprof_ignore": [], "simprof_opt": {}, "me_points": {"total": 0, "log": [], "week": ""}, "header_wordmark": True, "news_seen_web": "", "news_seen_tk": "",   # 2.96.3: «Neu in dieser Version»
+    # 3.23: one choice like the simulator instead of update_auto / update_install / update_fast / update_install_armed (639q):
+    #   "off" = look every 3 hours and report, install by hand · "auto" = install by itself in the update hour when disarmed ·
+    #   "dev" = development phase: look every minute, install at once (also while armed)
+    "reduce_motion": "auto",     # 3.23 «Bewegung reduzieren»: auto = like the operating system (prefers-reduced-motion) | on | off (639q)
+    "voice_mode": "on",          # 3.23 «Stimme»: on | off | subtitles - narrator, demo, trailer and the voice in the browser (639q)
+    "update_mode": "off", "dev_phase_done": False, "news_popup": True, "msg_icons": True, "train_night_on": False, "train_hour": 1, "train_optimize": True, "train_pics": True, "train_day": "", "rover_alarm": False, "fa_learn_auto": True, "rehearsal_on_arm": False, "weekcheck_on": True, "weekcheck_last": "", "simprof_ignore": [], "simprof_opt": {}, "me_points": {"total": 0, "log": [], "week": ""}, "header_wordmark": True, "news_seen_web": "", "news_seen_tk": "",   # 2.96.3: «Neu in dieser Version»
            # 2.95.71: test mode - look on GitHub every minute, install a new version at once
     "update_hour": 12,           # ... in this hour of the day
-    "update_install_armed": False,   # ... also while armed (otherwise only when disarmed)
     "update_push": True,         # push message when a new version is there (once per version)
     "update_notified": "",
     "update_token": "",          # GitHub key (read-only token) for a private repository - only ever sent to GitHub
@@ -619,7 +619,9 @@ DEFAULTS = dict(CFG)
 # 2.98.18: old keys that are only READ from settings files of older versions (the migration takes them over) - never in CFG,
 # so they are not shown, saved or exported anywhere. key -> what took its place.
 MIGRATE_ONLY = {"simweek_on": "weekrep_sim (577, 2.98.15)", "back_ask": "presence_back (577, 2.98.15)",
-                "shortcut_token": "an app key with scope «shortcut» (573, aufr)"}
+                "shortcut_token": "an app key with scope «shortcut» (573, aufr)",
+                "update_auto": "update_mode (639q, 3.23)", "update_install": "update_mode (639q, 3.23)",
+                "update_fast": "update_mode (639q, 3.23)", "update_install_armed": "update_mode (639q, 3.23)"}
 WAYPOINTS = []          # [pan, tilt] positions in percent
 
 
@@ -1870,7 +1872,7 @@ _save_timer = None
 
 
 WEB_UI_KEY = re.compile(r"^mw-[A-Za-z0-9_:\-./ ]{1,90}$")
-WEB_UI_LOCAL = {"mw-sound", "mw-hdr", "mw-listen-vol"}                      # per device on purpose (sound on the phone, not on the PC)
+WEB_UI_LOCAL = {"mw-sound", "mw-hdr", "mw-listen-vol", "mw-hdr-tabs", "mw-hdr-chips"}   # per device on purpose (sound on the phone, not on the PC; 639o: header folds)
 
 
 # ---- web password set on the page / in the window: stored as a salted PBKDF2 hash; checked passwords are remembered
@@ -2321,7 +2323,7 @@ def apply_settings(data):
     CFG["web_ui"] = clean_web_ui(CFG["web_ui"])
     if not CFG.get("dev_phase_done"):                  # 2.96.2: Daniel is in the development phase - fast updates on (once)
         CFG["dev_phase_done"] = True
-        CFG["update_fast"] = True
+        CFG["update_mode"] = "dev"                    # 3.23: was update_fast (639q)
     if not CFG.get("app_icon_moveeye_done"):          # 2.96.0: the new name MoveEye and its symbol for everybody (once)
         CFG["app_icon_moveeye_done"] = True
         CFG["app_icon_orange_done"] = True
@@ -4272,7 +4274,7 @@ class Notifier:
     def _dispatch(self, p, jpg, fname):
         if sim_net_down():                               # Simulator-Werte: «WLAN weg» / «Internet weg» test - nothing goes out (285)
             return simnet_hold(self, p, jpg, fname)
-        if sandbox_active() or p.get("_test"):           # 2.96.6: simulator test inbox - nobody is disturbed (141); 2.97.0: per message
+        if (sandbox_active() and not sandbox_lets_through(p)) or p.get("_test"):   # 2.96.6: test inbox (141), 3.23: always in the simulation
             sandbox_add(self._title(p), push_with_map(self._text(p), p), jpg, self._event(p) if self._event(p) != "tamper" else "tamper")
             msglog_add(self._title(p), push_with_map(self._text(p), p, " · "), self._event(p), jpg, "test", "Test-Postfach")    # 2.98.13: list «Nachrichten»
             return
@@ -10149,7 +10151,7 @@ SIMPLE_KEYS = {"tips_level", "use_case", "wake_on", "wake_time", "wake_days", "w
                "pushover_on", "pushover_user", "pushover_token", "pushover_emergency", "msg_keyword_on", "email_on", "email_to",
                "arm_delay", "net_mode", "hotspot_ssid", "hotspot_password", "thermal_on", "thermal_alarm", "noise_alarm", "audio_in",
                "audio_out", "siren_on", "siren_volume", "siren_sound", "light_white_auto", "light_ir_auto", "report_on", "report_hour",
-               "diary_on", "weather_on", "batt_mah", "eco_on", "device_name", "update_auto", "loop_on", "loop_hours",
+               "diary_on", "weather_on", "batt_mah", "eco_on", "device_name", "update_mode", "loop_on", "loop_hours",
                "cam_rotate", "cam_mirror", "sens_on", "rf433_on", "zigbee_on", "ble_on", "tag_missing", "eco_pir", "storm_on", "storm_drop", "storm_wind", "mover_mode", "mover_speed", "gpsmod_on", "gps_theft", "lens_check", "temp_alarm_on", "temp_hot", "temp_cold", "solar_on", "night_warn",
                "tamper_on", "tamper_motion", "tamper_power", "backup_type", "deter_person_act", "deter_person_sound", "clap_on", "sneeze_on",
                "weekrep_sim", "mode_fire_min_pct", "presence_back", "presence_auto"}
@@ -11783,12 +11785,24 @@ def event_origin():
 
 
 def sandbox_active():
-    """the test inbox instead of the phone: drills / demo (force), simulation with the switch, and always while a game runs"""
+    """the test inbox instead of the phone: drills / demo (force) and always in the simulation (3.23: no switch any more,
+    the old notify_sandbox is ignored; info messages may still go out with sim_info_push - sandbox_lets_through, 060)"""
     if SANDBOX["force"] > 0:
         return True
-    if not CFG.get("sim_on"):
+    return bool(CFG.get("sim_on"))
+
+
+def sandbox_lets_through(p):
+    """3.23: in the simulation an info message still goes to the phone when «In the simulator: info messages to the phone»
+    (sim_info_push) is on or the real Pi warns (battery, heat, power - 635b push_sim_hold); never alarms, games, drills, tests"""
+    try:
+        if SANDBOX["force"] > 0 or sim_game_running() or not CFG.get("sim_on") or Notifier._event(p) != "info":
+            return False
+        if push_kind(p)["cls"] in ("alarm", "sim"):
+            return False
+        return not push_sim_hold(p)
+    except Exception:
         return False
-    return bool(CFG.get("notify_sandbox")) or sim_game_running()
 
 
 def sandbox_add(title, text, jpg=None, ev=""):
@@ -12121,7 +12135,7 @@ def _ab_thread(preset, plan):
 
 
 def lab_state():
-    return {"sandbox": bool(CFG.get("notify_sandbox")), "inbox": SANDBOX["items"][:12], "drill": {"kind": DRILL["kind"], "busy": DRILL["busy"],
+    return {"sandbox": bool(sandbox_active()), "inbox": SANDBOX["items"][:12], "drill": {"kind": DRILL["kind"], "busy": DRILL["busy"],
             "left": max(0, int(DRILL["until"] - time.time())) if DRILL["busy"] else 0, "last": DRILL["last"]},
             "train": {"on": bool(CFG.get("train_night_on")), "hour": int(CFG.get("train_hour", 1)), "busy": TRAIN["busy"], "step": TRAIN["step"],
                       "last": TRAIN["last"]}, "ab": {"busy": ABT["busy"], "step": ABT["step"], "last": ABT["last"],
@@ -23589,9 +23603,8 @@ def sim_state():
             "sound": (CFG["siren_sound"] or "siren") if SOUND["playing"] else ("talk" if TALK["proc"] is not None else ""),
             "simtask_de": tr(stk_, "de") if (stk_ := _simtask_now()) else "",   # 2.98.13: one lock (147)
             "eco": STATE.get("eco") or "off",     # power saving of MoveEye: «saving» = quiet - the simulator may calculate slower (3D-3.30)
-            # automatic update: the simulator compares these checksums with its own files and fetches /sim/simulator.zip
-            # (only the Python simulator updates itself with them - the 3D simulator (/info «view») gets an empty list)
-            "sim_files": {} if (SIM.get("info") or {}).get("view") else sim_files(), "mw_scheme": "https" if WEB_OPTS.get("https") else "http", "mw_port": int(CFG["web_port"]),
+            # 3.23: always empty - the old Python simulator that updated itself with these checksums is removed (360)
+            "sim_files": {}, "mw_scheme": "https" if WEB_OPTS.get("https") else "http", "mw_port": int(CFG["web_port"]),
             # CPU in % of the whole computer: total, MoveEye, simulator (None = not on this computer / unknown)
             "cpu": {"total": STATE.get("cpu"), "mw": STATE.get("cpu_mw"), "sim": STATE.get("cpu_sim")},
             # what MoveEye detects right now: the simulator compares it with the truth (test run, game «MoveEye decides»)
@@ -23609,7 +23622,6 @@ def sim_state():
                           if isinstance(w, (list, tuple)) and len(w) >= 2]}
 
 
-_SIMFILES = {}
 
 
 VIEWERS = {}                       # web page / guest page -> time of its last poll; the Pi screen counts as one more
@@ -23827,50 +23839,6 @@ def sim_cam_fps(cam):
     if CFG.get("eco_on") and STATE.get("eco") == "saving":      # quiet: few pictures; something moves: full speed again
         f = max(2, min(f, int(CFG.get("eco_fps") or 3)))
     return f if str(cam) == "0" else max(2, f // 2)
-
-
-def sim_files():
-    """sha256 of the simulator program files this MoveEye carries (name -> checksum)."""
-    if not _SIMFILES:
-        import base64, hashlib, io
-        try:
-            with zipfile.ZipFile(io.BytesIO(base64.b64decode("".join(SIM_ZIP_B64.split())))) as z:
-                for n in z.namelist():
-                    if n.endswith(".py"):
-                        _SIMFILES[n] = hashlib.sha256(z.read(n)).hexdigest()
-        except Exception:
-            pass
-    return dict(_SIMFILES)
-
-
-def sim_autoupdate():
-    """The simulator on this Pi is older than the one inside MoveEye -> install the new one (and restart it if it runs)."""
-    import hashlib
-    d = sim_dir()
-    if not os.path.isfile(os.path.join(d, "motionwatch_simulator.py")):
-        return False
-    old = []
-    for n, h in sim_files().items():
-        try:
-            with open(os.path.join(d, n), "rb") as f:
-                if hashlib.sha256(f.read()).hexdigest() == h:
-                    continue
-        except OSError:
-            pass
-        old.append(n)
-    if not old:
-        return False
-    was = sim_running()
-    if was:
-        sim_stop()
-    try:
-        sim_install()
-    except Exception as e:
-        log_event("sys", f"Simulator update failed: {e}"[:200]); return False
-    log_event("sys", "Simulator updated automatically to the version inside MoveEye " + APP_VERSION)
-    if was:
-        sim_start()
-    return True
 
 
 _sim_state_290_292 = sim_state
@@ -24553,8 +24521,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3.18.0", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 35526200,
-         "sha256": "cd1173ea38171c90dac65357451544e38e98d5864d4caebc1346617d5c239789"}
+SIM3D = {"version": "3.27.0", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 40220418,
+         "sha256": "72cb6975bfe9a48b15682403047ec91c32e8ab68c953eb878a133a2a82097e27"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -28660,7 +28628,7 @@ def sim_status():
             "simpy": {"version": SIMPY["version"], "size_kb": round(SIMPY["size"] / 1e3), "ready": sim3d_ready(SIMPY)},
             "view": bool(((SIM.get("info") or {}).get("view") or {}).get("input")) if CFG["sim_on"] else False,
             "versions": sim_versions() if CFG["sim_on"] and SIM["ok"] else None,
-            "scan": {k: v for k, v in SIMSCAN.items()}, "installed": os.path.isfile(os.path.join(sim_dir(), "motionwatch_simulator.py")), "running": sim_running(), "on": bool(CFG["sim_on"]), "tunnel": {"active": tunnel_active()}, "ok": SIM["ok"] and time.time() - SIM["t"] < 5, "pic": sim_picture_ok(), "msg": SIM["msg"], "url": sim_base(),
+            "scan": {k: v for k, v in SIMSCAN.items()}, "on": bool(CFG["sim_on"]), "tunnel": {"active": tunnel_active()}, "ok": SIM["ok"] and time.time() - SIM["t"] < 5, "pic": sim_picture_ok(), "msg": SIM["msg"], "url": sim_base(),
             "dark": SIM["dark"], "ambient": SIM["ambient"], "sent": SIM["sent"]}
 
 
@@ -28710,9 +28678,7 @@ def _simprof_load(which):
 
 
 def simprof_on():
-    """simulation on: the real settings aside, the ones of the last simulation back"""
-    if not CFG.get("sim_separate", True):
-        return
+    """simulation on: the real settings aside, the ones of the last simulation back (3.23: always - the switch sim_separate is gone)"""
     keys = simprof_keys()
     _simprof_save("real", {k: CFG[k] for k in keys})
     SIMPROF["q"] = None
@@ -28725,8 +28691,6 @@ def simprof_on():
 
 def simprof_off():
     """simulation off: remember its settings, the real ones back, the question which changes to take over"""
-    if not CFG.get("sim_separate", True):
-        return
     keys = simprof_keys()
     real = _simprof_load("real")
     if not real:
@@ -29536,123 +29500,10 @@ def simdiary_days():
     except OSError:
         pass
     return d
-SIM_ZIP_B64 = _zd('360_daten_simulator_python/SIM_ZIP_B64', "")
-SIMPROC = {"p": None}
-
-
+# 3.23 (Daniel 01.11.2026): «MoveEye Sim · Basis» (the old Python simulator, SIM_ZIP_B64, install / start / stop on the Pi) is
+# removed - MoveEye Sim · 3D is the simulator. An old installation in sim_dir() stays on the disk (nothing is deleted).
 def sim_dir():
     return os.path.join(DATA_DIR, "simulator")
-
-
-def _desktop_user():
-    """(uid, gid, home, name) of the person at the desktop (the service often runs as root) - or of this program."""
-    import pwd
-    for d in sorted(glob.glob("/run/user/*")):
-        try:
-            uid = int(os.path.basename(d))
-        except ValueError:
-            continue
-        if uid >= 1000 and (glob.glob(os.path.join(d, "wayland-*")) or os.path.exists(os.path.join(d, "bus"))):
-            try:
-                p = pwd.getpwuid(uid); return uid, p.pw_gid, p.pw_dir, p.pw_name
-            except KeyError:
-                continue
-    p = pwd.getpwuid(os.getuid())
-    return p.pw_uid, p.pw_gid, p.pw_dir, p.pw_name
-
-
-def sim_install():
-    """Unpack the simulator into <data>/simulator, add a menu entry and a desktop icon for the person at the Pi."""
-    import base64, io
-    d = sim_dir(); os.makedirs(d, exist_ok=True)
-    with zipfile.ZipFile(io.BytesIO(base64.b64decode("".join(SIM_ZIP_B64.split())))) as z:
-        for n in z.namelist():
-            if re.fullmatch(r"[A-Za-z0-9_.]+", n):
-                with open(os.path.join(d, n), "wb") as f:
-                    f.write(z.read(n))
-    os.chmod(os.path.join(d, "motionwatch_simulator.py"), 0o755)
-    icon = os.path.join(d, "simulator.png")
-    try:
-        import base64
-        with open(icon, "wb") as f:
-            f.write(base64.b64decode("".join(SIM_ICONS_PNG["simbasis"])))      # MoveEye Sim · Basis: the radar eye with the grey badge
-    except Exception:
-        pass
-    entry = ("[Desktop Entry]\nType=Application\nName=MoveEye Sim · Basis\nComment=Test MoveEye without hardware\n"
-             f"Exec={sys.executable} {os.path.join(d, 'motionwatch_simulator.py')}\nPath={d}\nIcon={icon}\nTerminal=false\nCategories=Utility;\n")
-    uid, gid, home, name = _desktop_user()
-    made = []
-    for folder in (os.path.join(home, ".local", "share", "applications"), os.path.join(home, "Desktop"), os.path.join(home, "Schreibtisch")):
-        if folder.endswith(("Desktop", "Schreibtisch")) and not os.path.isdir(folder):
-            continue
-        try:
-            os.makedirs(folder, exist_ok=True)
-            p = os.path.join(folder, "motionwatch-simulator.desktop")
-            with open(p, "w") as f:
-                f.write(entry)
-            os.chmod(p, 0o755)
-            if os.getuid() == 0:
-                os.chown(p, uid, gid)
-            made.append(p)
-        except OSError:
-            continue
-    if os.getuid() == 0:
-        for root_, _ds, fs in os.walk(d):
-            for x in fs + [""]:
-                try:
-                    os.chown(os.path.join(root_, x) if x else root_, uid, gid)
-                except OSError:
-                    pass
-    log_event("sys", f"Simulator installed in {d}" + (f" (menu / desktop icon for {name})" if made else ""))
-    return True, d
-
-
-def sim_running():
-    p = SIMPROC["p"]
-    return p is not None and p.poll() is None
-
-
-def sim_start():
-    """Start the simulator on this Pi: with its window on the desktop when somebody is logged in, otherwise without window."""
-    if sim_running():
-        return True, ""
-    exe = os.path.join(sim_dir(), "motionwatch_simulator.py")
-    if not os.path.isfile(exe):
-        ok, _ = sim_install()
-    else:
-        sim_autoupdate()
-    uid, gid, home, name = _desktop_user()
-    env = dict(os.environ)
-    run = f"/run/user/{uid}"
-    way = sorted(glob.glob(os.path.join(run, "wayland-*")))
-    window = bool(way) or os.path.exists("/tmp/.X11-unix/X0") or bool(os.environ.get("DISPLAY"))
-    if window:
-        env.update(XDG_RUNTIME_DIR=run, HOME=home, USER=name)
-        if way:
-            env["WAYLAND_DISPLAY"] = os.path.basename([w for w in way if not w.endswith(".lock")][0]) if [w for w in way if not w.endswith(".lock")] else "wayland-0"
-        env.setdefault("DISPLAY", ":0")
-    cmd = [sys.executable, exe] + ([] if window else ["--no-window"])
-    kw = {"user": uid, "group": gid} if os.getuid() == 0 and uid != 0 else {}
-    try:
-        SIMPROC["p"] = subprocess.Popen(cmd, cwd=sim_dir(), env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-                                        start_new_session=True, **kw)
-    except (OSError, ValueError) as e:
-        return False, str(e)[:120]
-    CFG["sim_url"] = "http://127.0.0.1:8765"; save_settings()
-    log_event("sys", "Simulator started on this device" + (" (with window)" if window else " (without window)"))
-    return True, ""
-
-
-def sim_stop():
-    p = SIMPROC["p"]
-    if p is not None and p.poll() is None:
-        try:
-            os.killpg(p.pid, signal.SIGTERM)
-        except OSError:
-            p.terminate()
-        log_event("sys", "Simulator stopped")
-    SIMPROC["p"] = None
-    return True, ""
 
 
 def sens_has_pir():
@@ -30567,7 +30418,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_3_18_0.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_3_27_0.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -30727,7 +30578,28 @@ def sig_ok(version, fname, sha, sig, pub=None):
 
 def _installable(it):
     """May this list entry be installed? (already on the Pi, or signed, or unsigned ones are allowed)"""
-    return bool(it.get("installed") or it.get("signed") or CFG["update_unsigned"])
+    return bool(it.get("installed") or it.get("signed") or update_unsigned_ok())
+
+
+UNSIGNED_HOURS = 24
+
+
+def update_unsigned_ok():
+    """3.23: «Also accept unsigned versions» (developer area only) lasts 24 hours, then it switches itself off. The time
+    starts when it is first seen on (switch, old settings file); the update watcher (390) looks every minute."""
+    if not CFG.get("update_unsigned"):
+        if CFG.get("update_unsigned_t"):
+            CFG["update_unsigned_t"] = 0.0
+        return False
+    now = time.time(); t0 = float(CFG.get("update_unsigned_t") or 0.0)
+    if t0 <= 0 or t0 > now + 60:
+        CFG["update_unsigned_t"] = now; save_settings()
+        return True
+    if now - t0 >= UNSIGNED_HOURS * 3600:
+        CFG["update_unsigned"] = False; CFG["update_unsigned_t"] = 0.0; save_settings()
+        log_event("sys", "Unsigned versions: switched off by itself after 24 hours")
+        return False
+    return True
 
 VFILE_RE = re.compile(r"^webcam_bewegung_(\d{1,3})_(\d{1,3})_(\d{1,3})\.py$")
 VER_RE = re.compile(r"^\d{1,3}\.\d{1,3}\.\d{1,3}$")
@@ -30976,7 +30848,7 @@ def lock_pin_ok(pin):
 # not put back when unlocking: what the operator does (arm, move the camera), what the Pi measures itself, how a
 # device shows the page
 LOCK_KEEP = {"armed", "pan", "tilt", "hotspot_on", "lock_on", "lock_pin", "lock_snap", "web_ui", "ui_open", "ui_tab", "theme", "lang",
-             "fullscreen", "latitude", "longitude", "batt_full_t", "batt_warned", "setup_done", "autostart", "ui_simple", "ui_start_groups"}
+             "fullscreen", "latitude", "longitude", "batt_full_t", "batt_warned", "setup_done", "autostart", "ui_simple"}
 LOCK_LAST = {"restored": []}
 
 
@@ -31150,7 +31022,7 @@ def update_check():
             src_ = src
             fs_ = UPD.get("fast_sha") or ""                 # 2.95.71 test mode: the list of exactly this commit (never an old copy)
             mg_ = re.match(r"(https://raw\.githubusercontent\.com/[^/]+/[^/]+/)[^/]+(/.+)$", src)
-            if fs_ and mg_ and CFG.get("update_fast"):
+            if fs_ and mg_ and CFG.get("update_mode") == "dev":
                 src_ = mg_.group(1) + fs_ + mg_.group(2)
             req = _upd_request(src_ + ("&" if "?" in src_ else "?") + "t=" + str(int(time.time())), {"Cache-Control": "no-cache"})
             with urllib.request.urlopen(req, timeout=15) as r:
@@ -31683,6 +31555,7 @@ class UpdateWatcher:
                 if time.time() - last > 3 * 3600 or UPD.get("recheck") or self.fast_changed():
                     UPD["recheck"] = False; last = time.time()
                     self.tick()
+                update_unsigned_ok()                     # 3.23: unsigned versions switch themselves off after 24 h (380)
                 self.auto_install()
             except Exception as e:
                 print(f"Update watcher: {e}")
@@ -31691,7 +31564,7 @@ class UpdateWatcher:
     def fast_changed(self):
         """2.95.71 test mode: every minute ask GitHub whether versions.json has a new commit. The answer «unchanged» (304 with
         the ETag) does not count against GitHub's limit of 60 questions per hour; a new commit -> look for versions now."""
-        if not CFG.get("update_fast") or not CFG["update_url"].strip():
+        if CFG.get("update_mode") != "dev" or not CFG["update_url"].strip():
             return False
         m = re.match(r"https://raw\.githubusercontent\.com/([^/]+)/([^/]+)/([^/]+)/(.+)$", CFG["update_url"].strip())
         if not m:
@@ -31726,15 +31599,15 @@ class UpdateWatcher:
     def auto_install(self):
         """Automatic update: in the chosen hour, when nothing is going on (disarmed unless allowed, no recording, no person),
         install the newest version. If the new version does not start, the start guard goes back to the old one.
-        2.95.71 test mode (update_fast): at once, at any hour, also while armed - but never during a recording or a person."""
-        fast = bool(CFG.get("update_fast"))
-        if not (CFG["update_install"] or fast) or RESTART["pending"] or UPD["busy"] or POWER.get("pending"):
+        2.95.71 test mode (3.23: update_mode «dev»): at once, at any hour, also while armed - but never during a recording or a person."""
+        fast = CFG.get("update_mode") == "dev"
+        if CFG.get("update_mode") not in ("auto", "dev") or RESTART["pending"] or UPD["busy"] or POWER.get("pending"):
             return
         u = STATE.get("update_new") or {}
         v = u.get("version")
         if not v or (not fast and datetime.now().hour != int(CFG["update_hour"]) % 24):
             return
-        if (is_armed() and not CFG["update_install_armed"] and not fast) or STATE.get("recording") or STATE.get("persons") or STATE.get("arm_state") == "arming":
+        if (is_armed() and not fast) or STATE.get("recording") or STATE.get("persons") or STATE.get("arm_state") == "arming":
             return
         try:
             if simtask_busy():                            # 2.97.0: not in the middle of a test run, a training night or a game
@@ -31760,7 +31633,7 @@ class UpdateWatcher:
             log_event("sys", f"Automatic update failed: {err}")
 
     def tick(self):
-        if not (CFG["update_auto"] or CFG.get("update_fast")) or not CFG["update_url"].strip() or RESTART["pending"]:
+        if not CFG["update_url"].strip() or RESTART["pending"]:     # 3.23: every update_mode looks (and reports)
             return
         items, err = update_check()
         new = sorted((x for x in items if x.get("available") and _installable(x) and _vkey(x["version"]) > _vkey(APP_VERSION)), key=lambda x: _vkey(x["version"]))
@@ -32539,7 +32412,6 @@ class MotionWatch:
             SIMLINK = SimLink()
             SimDiscovery()
             ToolsWatch(); UplinkWatch(); WifiGuard()
-            threading.Thread(target=sim_autoupdate, daemon=True, name="simupdate").start()
         if AUDIO is None:
             AUDIO = AudioMonitor()
             SOUNDEV_OBJ["o"] = SoundEvents()
@@ -38420,7 +38292,7 @@ def ui_seed_script():
     sends every later layout change back to the Pi, where it is kept in the settings file."""
     data = json.dumps({k: v for k, v in CFG["web_ui"].items() if k not in WEB_UI_LOCAL}).replace("</", "<\\/")   # aufr: per-device keys stay on the device
     # nurgruppen: the switch «On start: groups only» for the page code (main page 530, simulator page 470) before it builds
-    return ("<script>window.MW_SG=" + ("true" if CFG.get("ui_start_groups", True) else "false") + ";"
+    return ("<script>window.MW_SG=false;"                    # 3.23: the switch «On start: groups only» is gone - the start is «My view»
             "(function(){var S=" + data + ";try{for(var k in S)localStorage.setItem(k,S[k]);}catch(e){}"
             "var P={},T=null,L=" + json.dumps(sorted(WEB_UI_LOCAL)) + ";"
             "function send(){var b=P;P={};T=null;try{fetch('/api/ui',{method:'POST',headers:{'Content-Type':'application/json'},"
@@ -38765,7 +38637,7 @@ G2_TOURS = {
                 ("#btn-fav", "Favourites", "⭐ keeps a recording for ever; the others are deleted when the memory is full."),
                 ("nav.subnav", "More history", "Night timeline, animal diary, message list and log.")],
     "settings": [("#srch", "Search", "Type a word - every setting is found, sorted by topic."),
-                 ("#simplebar", "Simple or Expert", "«Simple» shows only the important settings - for this page. «Expert» shows all."),
+                 ("#mwbar .mwb-mode", "Simple or Expert", "«Simple» shows only the important settings - for this page. «Expert» shows all."),
                  ("#settings", "Topics", "Open a topic to change it. Changes are saved at once."),
                  ("#settings .g2-q", "The «?»", "Next to a setting: what it does and what we recommend."),
                  ("nav.subnav a[href='/cams']", "Cameras", "Choose the camera, add a second one, check the thermal picture.")],
@@ -39406,6 +39278,8 @@ def set_cfg(key, value):
         return False, "unknown setting"
     if spec["type"] == "bool":
         CFG[key] = bool(value)
+        if key == "update_unsigned":                     # 3.23: the 24 hours start now (380 update_unsigned_ok)
+            CFG["update_unsigned_t"] = time.time() if CFG[key] else 0.0
         sched_user_changed(key)
         save_settings()
         if key == "patrol":
@@ -40176,8 +40050,7 @@ class WebStream:
         fails = {}                                  # ip -> times of wrong passwords (lock-out after 8 in 5 minutes)
 
         public = {"/i18n/fr.js", "/i18n/it.js", "/i18n/rm.js", "/manifest.webmanifest", "/icon-192.png", "/icon-512.png", "/apple-touch-icon.png",
-                  "/apple-touch-icon-precomposed.png", "/favicon.ico", "/sw.js",
-                  "/sim/simulator.zip"}                # the simulator fetches its updates here (public program, no secrets)
+                  "/apple-touch-icon-precomposed.png", "/favicon.ico", "/sw.js"}
 
         def local_req():
             """really from this computer - not through Tailscale serve / a tunnel (those also arrive as 127.0.0.1)"""
@@ -40612,15 +40485,8 @@ class WebStream:
                     log_event("sys", f"Simulator address set to {CFG['sim_url']} (web)")
                     if CFG["sim_on"] and WATCH_REF.get("w") is not None and str(CFG["source"]).startswith("sim:"):
                         w_ = WATCH_REF["w"]; w_._open_gen += 1; w_._start_opener(CFG["source"])
-                if act_ in ("install", "start") and not CFG.get("sim_basis_show"):   # 2.98.55: «Basis-Simulator anzeigen» off (639h)
-                    return reply({"ok": False, "error": tr_err("Switch on «Show the basic simulator» first (Simulator, Expert)", lang)}, 400)
-                if act_ in ("install", "start", "stop"):
-                    try:
-                        ok, msg = {"install": sim_install, "start": sim_start, "stop": sim_stop}[act_]()
-                    except Exception as e:
-                        ok, msg = False, str(e)[:120]
-                    if not ok:
-                        return reply({"ok": False, "error": tr_err(msg, lang)}, 400)
+                if act_ in ("install", "start", "stop"):          # 3.23: the old Python simulator on the Pi is removed (360)
+                    return reply({"ok": False, "error": tr_err("not possible", lang)}, 400)
             return reply(dict(sim_status(), ok=True, connected=sim_status()["ok"]))
 
         @app.route("/api/qs", methods=["POST"])
@@ -41291,12 +41157,6 @@ class WebStream:
                 sim3d_fetch(SIMPY, SIMPY_DL)
             return Response(sim3d_wait_page(lang, SIMPY, SIMPY_DL, "/sim/simulator_py.zip"), mimetype="text/html", headers={"Cache-Control": "no-store"})
 
-        @app.route("/sim/simulator.zip")
-        def sim_zip():
-            import base64
-            return Response(base64.b64decode("".join(SIM_ZIP_B64.split())), mimetype="application/zip",
-                            headers={"Content-Disposition": 'attachment; filename="MoveEye_Simulator.zip"'})
-
         @app.route("/api/hwcheck", methods=["POST"])
         def api_hwcheck():
             d = body(); res = d.get("results") if isinstance(d.get("results"), dict) else {}
@@ -41822,7 +41682,7 @@ class WebStream:
             d = body(); lang = norm_lang(d.get("lang")); a = str(d.get("do") or "")
             ok, err, extra = True, "", {}
             if a == "sandbox":
-                CFG["notify_sandbox"] = bool(d.get("on")); save_settings()
+                pass                                         # 3.23: the test inbox is always on in the simulation (old pages)
             elif a == "clear":
                 SANDBOX["items"].clear()
             elif a == "chain":
@@ -42063,7 +41923,7 @@ class WebStream:
             return reply({"ok": True, "error": tr_err(err, lang) if err else None, "current": APP_VERSION, "source": CFG["update_url"],
                           "items": items, "newer": [x["version"] for x in items if _vkey(x["version"]) > _vkey(APP_VERSION)],
                           "pending": RESTART["pending"], "checked": datetime.fromtimestamp(UPD["time"]).strftime("%H:%M:%S") if UPD["time"] else "",
-                          "list_time": UPD["list_time"], "unsigned_ok": bool(CFG["update_unsigned"])})
+                          "list_time": UPD["list_time"], "unsigned_ok": bool(update_unsigned_ok())})
 
         @app.route("/api/light", methods=["POST"])
         def api_light():
@@ -42461,8 +42321,8 @@ class WebStream:
             pg = str(request.args.get("page") or "")[:20]
             if request.method == "POST":
                 d = body(); pg = str(d.get("page") or pg)[:20]
-                if "start_groups" in d:                          # nurgruppen: switch «On start: groups only» (all devices, Pi window)
-                    CFG["ui_start_groups"] = bool(d.get("start_groups")); save_settings()
+                if "start_groups" in d:                          # 3.23: the switch «On start: groups only» is gone (old pages)
+                    pass
                 elif pg and re.fullmatch(r"[a-z]{2,20}", pg):     # 586: Simple / Expert of ONE page (the default stays)
                     m_ = page_modes(); m_[pg] = "simple" if d.get("on") else "expert"
                     if (m_[pg] == "simple") == bool(CFG["ui_simple"]):
@@ -42472,7 +42332,11 @@ class WebStream:
                     CFG["ui_simple"] = bool(d.get("on")); save_settings()      # the default (the Pi window follows by itself)
             return reply({"on": page_simple(pg) if pg else bool(CFG["ui_simple"]), "default": bool(CFG["ui_simple"]), "own": pg in page_modes(),
                           "dev": bool(CFG.get("dev_area")),         # 639d: the group «Entwickler» of the simulator control (470)
-                          "start_groups": bool(CFG.get("ui_start_groups", True))})
+                          })
+
+        @app.route("/api/ansicht", methods=["GET", "POST"])
+        def api_ansicht():                               # 639r «Meine Ansicht»: the own folds per user and page (every device)
+            return ansicht_api(request, reply, body, g)
 
         @app.route("/api/night", methods=["POST"])
         def api_night():
@@ -44742,12 +44606,12 @@ def soundev_state():                                      # + 554: how often the
 def sim_sound_selftest():
     """virtual loudspeaker: plays only in the simulator in test-inbox mode, the state goes to the simulator, the own sound
     mutes the noise alarm and the claps of the simulator"""
-    keep = {k: CFG.get(k) for k in ("sim_on", "audio_out", "notify_sandbox")}
+    keep = {k: CFG.get(k) for k in ("sim_on", "audio_out")}
     keep_sim = {k: SIM.get(k) for k in ("ok", "t")}
     G = globals(); keep_log = G["log_event"]
     try:
         G["log_event"] = lambda *a, **k: None
-        CFG.update(sim_on=True, audio_out="", notify_sandbox=True); SIM.update(ok=True, t=time.time())
+        CFG.update(sim_on=True, audio_out=""); SIM.update(ok=True, t=time.time())
         assert sim_speaker() and speaker_ok() and sim_speaker_only("person alarm")
         ok, _ = sound_play("two-tone", 0.6, 50, reason="selftest")
         assert ok and SOUND["playing"] and SOUND["virt"] and SOUND["kind"] == "two-tone"
@@ -46820,7 +46684,7 @@ DE = {
     "FPS": "FPS", "PERSONS NOW": "PERSONEN JETZT", "DETECTIONS": "ERKENNUNGEN", "VEHICLES IGNORED": "FAHRZEUGE IGNORIERT",
     "SHADOW % REMOVED": "SCHATTEN % ENTFERNT", "SYSTEM · CPU": "SYSTEM · CPU", "WEATHER": "WETTER",
     "Rain score": "Regen-Wert", "Wind score": "Wind-Wert", "Trigger multiplier (wind)": "Auslöse-Faktor (Wind)",
-    "EVENT LOG": "EREIGNISPROTOKOLL", "important": "Wichtiges", "Expand all": "Alle öffnen", "Collapse all": "Alle schliessen",
+    "EVENT LOG": "EREIGNISPROTOKOLL", "important": "Wichtiges", "Expand all": "Alle aufklappen", "Collapse all": "Alle zuklappen",
     "Centre camera": "Kamera zentrieren", "Snapshot": "Schnappschuss", "Add current pan as waypoint": "Aktuelle Position als Wegpunkt",
     "Clear": "Löschen", "Recalibrate (scene empty)": "Neu kalibrieren (Szene leer)", "Reset all settings": "Alle Einstellungen zurücksetzen",
     "Test notification": "Test-Benachrichtigung", "Test all channels": "Alle Kanäle testen", "testing …": "teste …", "No channel set up.": "Kein Kanal eingerichtet.", "Webhook URL (POST JSON on person; e.g. https://ntfy.sh/my-topic)":
@@ -48056,7 +47920,6 @@ TOGGLES = [  # (section, key, label)
     ("Mover", "mover_swap", "Left and right tracks swapped"),
     ("Mover", "mover_sim_show", "Simulation: show the stick even without a mover or motor driver (to try it out)"),
     ("Simulator", "sim_eco", "Simulator: fewer pictures (the simulator draws only what is fetched)"),
-    ("Simulator", "notify_sandbox", "Simulation: messages into the test inbox instead of to the phone (nobody is disturbed)"),
     ("Simulator", "train_night_on", "Training night: every night test runs in several scenes, optimization, training pictures"),
     ("Simulator", "rover_alarm", "Mover: at a person alarm drive there by itself (simulator)"),
     ("Simulator", "fa_learn_auto", "False alarm marked: re-enact it in the simulator and learn from it"),
@@ -48065,8 +47928,6 @@ TOGGLES = [  # (section, key, label)
     ("Simulator", "sim_auto", "Find the simulator in the network by itself (and take over its address)"),
     ("Simulator", "sim_autostart", "Switch the simulation on by itself as soon as a simulator is online (and off again when none is left)"),
     ("Simulator", "sim_autoupd", "Update the simulator by itself (the setting «Neue Versionen» of the simulator)"),
-    ("Simulator", "sim_separate", "The simulation has its own settings (when switching back: ask which changes to take over)"),
-    ("Simulator", "sim_basis_show", "Show the basic simulator (MoveEye Sim · Basis, the old Python simulator)"),
     ("AI detection", "species_on", "Recognise the animal species (second AI model - see the guide)"),
     ("Setup", "desktop_notice", "Small message on the Pi's desktop when MoveEye starts in the background"),
     ("Solar panel", "solar_on", "Solar panel with current meter (INA219 on I2C)"),
@@ -48152,11 +48013,7 @@ TOGGLES = [  # (section, key, label)
     ("Notifications", "msg_keyword_on", "Keyword at the start of every message (MoveEye-ALARM, MoveEye-WAERME …: for iPhone shortcuts)"),
     ("Notifications", "email_on", "E-mail: messages also by e-mail (the iPhone can start a shortcut from it)"),
     ("Notifications", "pushover_emergency", "Pushover: alarms as emergency (critical alert, repeats until confirmed)"),
-    ("Updates", "update_auto", "Look for new versions by itself (every 3 hours)"),
-    ("Updates", "update_install", "Install new versions automatically"),
-    ("Updates", "update_fast", "Test mode: get new versions at once (looks on GitHub every minute and installs right away, also while armed; while on, the other update switches do not count)"),
     ("Updates", "news_popup", "After an update: show briefly what is new and what comes next"),
-    ("Updates", "update_install_armed", "Automatic update also while armed (otherwise only when disarmed)"),
     ("Updates", "update_unsigned", "Also accept unsigned versions (not recommended - only for own builds)"),
     ("Battery", "ups_on", "UPS HAT (battery pack on the Pi): use it when found"),
     ("Battery", "ups_push", "UPS HAT: push message at a power cut / when power is back"),
@@ -48231,7 +48088,7 @@ DE.update({    # window in the look of the web page (2.25.0)
     "show / hide fields": "Felder ein-/ausblenden", "All quiet – I'm keeping watch!": "Alles ruhig – ich halte Wache!",
     "Happy Swiss National Day!": "Schöne Bundesfeier!", "Swap stick and buttons (left- / right-handed)": "Stick und Knöpfe tauschen (Links- / Rechtshänder)", "moving to waypoint": "fährt zu Wegpunkt", "waiting at": "wartet bei",
     "need 2+ waypoints": "mindestens 2 Wegpunkte nötig", "paused (tracking person)": "Pause (verfolgt Person)",
-    "paused (manual control)": "Pause (Handsteuerung)", "System": "System", "Log": "Protokoll", "Expand all": "Alle öffnen", "Collapse all": "Alle schliessen",
+    "paused (manual control)": "Pause (Handsteuerung)", "System": "System", "Log": "Protokoll", "Expand all": "Alle aufklappen", "Collapse all": "Alle zuklappen",
 })
 DE.update({    # texts that were written twice in the code (German / English) - now one English text + translations
     "not possible in the demo": "In der Demo nicht möglich",
@@ -48384,7 +48241,7 @@ def tk_main_on(sec):
             "Solar panel": lambda: g("solar_on"), "Lights": lambda: g("light_white", "off") != "off" or g("light_ir", "off") != "off",
             "Microphone": lambda: g("audio_in"), "Loudspeaker": lambda: g("siren_on") and g("siren_on") != "off", "Recording": lambda: g("record"),
             "Timelapse": lambda: g("timelapse_on"), "Backup": lambda: g("backup_type") and g("backup_type") != "off", "Relays": lambda: g("relays_on"),
-            "Web stream": lambda: g("web_stream"), "MQTT / Home Assistant": lambda: g("mqtt_on"), "Updates": lambda: g("update_auto") or g("update_fast"),
+            "Web stream": lambda: g("web_stream"), "MQTT / Home Assistant": lambda: g("mqtt_on"), "Updates": lambda: g("update_mode") in ("auto", "dev"),
             "Simulator": lambda: sim_live(), "Mover": lambda: g("mover_on"), "Guest access": lambda: g("guest_on"),
             "Reference scan": lambda: bool(refscan_meta())}.get(sec, lambda: False)())
     except Exception:
@@ -48423,6 +48280,11 @@ TK_AI_MODEL_KEYS = ("ai_model", "ai_own_url", "ai_own_auto")   # 2.98.23 (Konzep
 TK_SPECIES_KEYS = ("species_on", "species_model", "species_norm", "species_conf")   # aufr (Konzept): the group «Tierart» (like «KI-Modell»)
 SECTIONS = ["Wake-up alarm", "Reference scan", "Mover", "Simulator", "Extra sensors", "Storm warning", "GPS module", "Solar panel", "Night report", "Battery", "Guest access", "Messages", "Microphone", "Loudspeaker", "Clap switch", "Bless you", "Lights", "Servo driver", "Power saving", "Updates", "Camping / protection", "Camera / Servos", "Video source", "Wi-Fi / hotspot", "Schedule", "Relays", "Timelapse", "Thermal camera", "Patrol", "AI detection", "Notifications", "Web stream", "Auto-tune",
             "Detection", "Low light", "Walking recognition", "Vehicle filter", "Rain", "Wind", "Recording", "Backup", "Theft protection", "Deterrence", "MQTT / Home Assistant", "SMS (LTE stick)", "Setup", "Security"]
+
+
+def tk_icons():
+    """639o: symbols «color» or «plain» (web_ui mw-icons, the switch of the web pages)"""
+    return "plain" if str(CFG.get("web_ui", {}).get("mw-icons", "")) == "plain" else "color"
 
 
 class Toggle(tk.Frame):
@@ -48679,7 +48541,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 3.18.0")
+        self.root.title("MoveEye 3.27.0")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -48693,6 +48555,7 @@ class App:
             self.open_secs = {"grp:alarm"}
         # nurgruppen: what is shown now (open_secs = the own state, saved); «On start: groups only» on start / tab change
         self._shown = {}; self._fold_start = True
+        self._mine = True; self._mine_job = None; self._fold_cvs = {}   # 639r «Meine Ansicht»
         self.step_var = tk.StringVar(value="3")
         self.tab = "live"; self.stick_speed = 30.0; self.relay_prev = {}
         self.left_f = self.stick = self.l_wp = None; self.qs_tiles = {}; self.tab_btns = {}
@@ -49050,7 +48913,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 3.18.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 3.27.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -49688,11 +49551,8 @@ class App:
         inner = ttk.Frame(canvas, style="Bg.TFrame"); win = canvas.create_window((0, 0), window=inner, anchor="nw")
         inner.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
         canvas.bind("<Configure>", lambda e: canvas.itemconfigure(win, width=min(e.width, 860)))     # readable lines on a wide screen
+        lb = self._mwbar(right, tab); lb.pack(side="top", fill="x", pady=(0, 8), before=sb)    # 639o: the bar like on every web page
         bar = tk.Frame(right, bg=C["bg"]); bar.pack(side="top", fill="x", pady=(0, 10), before=sb)   # stays at the top while scrolling
-        # like the web page: search field, then «Collapse all · Groups only · Expand all» with the same drawn symbols (nurgruppen)
-        self._fold_btn(bar, "open", lambda: self._all_sections(True), tr("Expand all")).pack(side="right")
-        self._fold_btn(bar, "groups", self._groups_only, tr("Groups only")).pack(side="right", padx=(0, 6))
-        self._fold_btn(bar, "close", lambda: self._all_sections(False), tr("Collapse all")).pack(side="right", padx=(0, 6))
         sf = tk.Frame(bar, bg=C["panel"], highlightthickness=1, highlightbackground=C["line"]); sf.pack(side="left", fill="x", expand=True, padx=(0, 8))
         tk.Label(sf, text="⚲", bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 11)).pack(side="left", padx=(8, 0))
         self.search_var = tk.StringVar()
@@ -49705,27 +49565,11 @@ class App:
         self.search_var.trace_add("write", lambda *a: self._search())
         if tab == "sim":                                   # 2.98.14: tab Simulator - status, the assistant, the simulator settings
             self._tk_sim_head(inner)
-        # Simple / Expert (like the web page)
-        mrow = tk.Frame(inner, bg=C["line"], padx=1, pady=1)
-        if tab != "sim":
-            mrow.pack(fill="x", pady=(0, 10))
         self._simple_seen = bool(CFG["ui_simple"])
         _G2_SIMPLE.v = page_simple(tab)                    # 586: Simple / Expert of this tab (simple_hidden in the window thread)
-        for i, (val, lab) in enumerate(((True, tr("Simple")), (False, tr("Expert")))):
-            on = page_simple(tab) == val
-            l = tk.Label(mrow, text=lab, font=("DejaVu Sans", 9, "bold"), pady=4, cursor="hand2",
-                         bg=C["acc"] if on else C["field"], fg="#ffffff" if on else C["mut"])
-            l.pack(side="left", fill="x", expand=True, padx=(0 if i == 0 else 1, 0))
-            l.bind("<Button-1>", lambda e, v=val: self._set_simple(v))
         if page_simple(tab) and tab != "sim":
             tk.Label(inner, text=tr("Simple: only the important settings. «Expert» shows all of them."), bg=C["bg"], fg=C["mut"],
                      font=("DejaVu Sans", 8), anchor="w", justify="left", wraplength=330).pack(fill="x", pady=(0, 8))
-        # nurgruppen: «On start: groups only» next to Simple / Expert (same switch as on the web page, CFG ui_start_groups)
-        sg_ = Toggle(inner, tr("On start: groups only"), CFG.get("ui_start_groups", True), self._set_start_groups)
-        for w_ in (sg_, sg_.cv, sg_.lbl):
-            w_.config(bg=C["bg"])
-        sg_.lbl.config(font=("DejaVu Sans", 9)); sg_.pack(fill="x", pady=(0, 10)); self.start_groups_tg = sg_
-        Tip(sg_.lbl, tr("On every start the settings show only the groups. Off: the menus open as you left them."))
         self.grp_meta = {}; self._open_before = None
         self.no_match = tk.Label(inner, text=tr("No match"), bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 9))
         # 9 groups (same as the web page). Inside a group every topic opens / closes the same way (the first one is open);
@@ -49822,8 +49666,9 @@ class App:
             if m[0].cget("fg") != col:
                 m[0].config(fg=col)
             ic_ = getattr(self, "grp_icons", {}).get(key)
-            if ic_ is not None and ic_.cget("fg") != (C["grn"] if on else C["txt"]):
-                ic_.config(fg=C["grn"] if on else C["txt"])
+            icol = C["grn"] if on else (C["mut"] if tk_icons() == "plain" else C["txt"])     # 639o: «schlicht» = grey until on
+            if ic_ is not None and ic_.cget("fg") != icol:
+                ic_.config(fg=icol)
 
     def _sub_open(self, k):
         return self._shown.get(k, k in self.open_secs)
@@ -49832,6 +49677,10 @@ class App:
         h, body, title = self.subs[k]
         closed = "subx:" + k[4:]
         self._shown[k] = bool(open_)                         # nurgruppen: shown now; the own state (open_secs) only by a click
+        if save and not getattr(self, "_mine", True):       # 639r: «Meine Ansicht» off - a click is not kept
+            save = False
+        elif save:
+            self._mine_change(k, open_)
         if save:
             if open_:
                 self.open_secs.add(k); self.open_secs.discard(closed)
@@ -50000,17 +49849,6 @@ class App:
             self.status_labels["Simulator"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
             self.status_labels["Simulator"].pack(anchor="w", pady=(4, 0))
             ttk.Button(sbody, text=tr("Simulation on / off") + "  (F9)", command=lambda: self._sim_toggle("window")).pack(fill="x", pady=(6, 0))
-            sf = ttk.Frame(sbody); sf.pack(fill="x", pady=(4, 0))
-            def sim_do(fn, done):
-                def run():
-                    ok, m = fn()
-                    self._status("Simulator", ("✓ " + tr(done)) if ok else "⚠ " + tr_err(m))
-                threading.Thread(target=run, daemon=True).start()
-            if CFG.get("sim_basis_show"):                 # 2.98.55: «MoveEye Sim · Basis» only with «Basis-Simulator anzeigen» (639h)
-                ttk.Button(sf, text=tr("Install"), command=lambda: sim_do(sim_install, "Simulator installed")).pack(side="left", expand=True, fill="x", padx=(0, 4))
-                ttk.Button(sf, text=tr("Start"), command=lambda: sim_do(sim_start, "Simulator started")).pack(side="left", expand=True, fill="x", padx=(0, 4))
-            if CFG.get("sim_basis_show") or sim_running():    # a running one can always be stopped
-                ttk.Button(sf, text=tr("Stop"), command=lambda: sim_do(sim_stop, "Simulator stopped")).pack(side="left", expand=True, fill="x")
             kidata_tk_build(self, sbody)                  # training pack with «Vielfalt», «Delete old AI data» (197)
             falearn_tk_build(self, sbody)                 # 2.98.38: «Lernbilder prüfen» (148)
         if sec == "Security":                             # «Log in only encrypted» (574)
@@ -50475,7 +50313,7 @@ class App:
                 "Microphone": lambda: bool(CFG["audio_in"]), "Loudspeaker": lambda: CFG["siren_on"] != "off", "Recording": lambda: CFG["record"],
                 "Timelapse": lambda: CFG["timelapse_on"], "Backup": lambda: CFG["backup_type"] != "off", "Relays": lambda: CFG["relays_on"],
                 "Schedule": lambda: any(x.get("enabled") for x in SCHEDULES), "Wi-Fi / hotspot": lambda: CFG["hotspot_on"],
-                "Web stream": lambda: CFG["web_stream"], "MQTT / Home Assistant": lambda: CFG["mqtt_on"], "Updates": lambda: CFG["update_auto"],
+                "Web stream": lambda: CFG["web_stream"], "MQTT / Home Assistant": lambda: CFG["mqtt_on"], "Updates": lambda: CFG.get("update_mode") in ("auto", "dev"),
                 "Extra sensors": lambda: CFG["sens_on"] and bool(CFG["sensors"]), "Storm warning": lambda: CFG["storm_on"], "GPS module": lambda: CFG["gpsmod_on"], "Mover": lambda: MOVER["avail"], "Simulator": lambda: sim_live(), "Solar panel": lambda: CFG["solar_on"]}
         for key, (arr, secs, _c, _w) in list(getattr(self, "grp_meta", {}).items()):
             try:
@@ -50829,6 +50667,10 @@ class App:
     def _set_section(self, sec, open_, save=True):
         head, body = self.sections[sec]
         self._shown[sec] = bool(open_)
+        if save and not getattr(self, "_mine", True):       # 639r: «Meine Ansicht» off - a click is not kept
+            save = False
+        elif save:
+            self._mine_change(sec, open_)
         if save:
             (self.open_secs.add if open_ else self.open_secs.discard)(sec)
             if sorted(self.open_secs) != sorted(CFG["ui_open"]):
@@ -50889,8 +50731,10 @@ class App:
     def _toggle_section(self, sec):
         self._set_section(sec, not self._shown.get(sec, sec in self.open_secs))
 
-    def _groups_only(self, save=True):
-        """☰ every group open, the topics inside closed (save=False: the start view of «On start: groups only», not kept)"""
+    def _groups_only(self, save=False):
+        """☰ every group open, the topics inside closed (639r: never kept - «Meine Ansicht» goes off; long press / right click on
+        the middle button, or the start view of «On start: groups only»)"""
+        self._mine = False; self._mine_paint()
         for sec in self.sections:
             self._set_section(sec, True, save=save)
         for k in getattr(self, "subs", {}):
@@ -50907,8 +50751,7 @@ class App:
         """nurgruppen: after building a settings tab - start / tab change: «Groups only» (switch on); else as shown before"""
         if getattr(self, "_fold_start", True):
             self._fold_start = False
-            if CFG.get("ui_start_groups", True):
-                self._groups_only(save=False)
+            self._mine_on()                                  # 639r: the start = «Meine Ansicht» (3.23: no switch «Nur Gruppen» any more)
             return
         for k, v in prev.items():
             if k in self.sections:
@@ -50916,9 +50759,134 @@ class App:
             elif k in getattr(self, "subs", {}):
                 self._set_sub(k, v, save=False)
 
-    def _set_start_groups(self, v):
-        CFG["ui_start_groups"] = bool(v); save_settings()
-        self._groups_only(save=False) if v else self._own_view()
+    # ---- 639r «Meine Ansicht»: the folds the user set himself, kept for the owner («admin», the same as his web pages) per tab ----
+    @staticmethod
+    def _mine_id(k):
+        """window key -> the id of the web page: grp:<group> stays, sub:<part> = sec:<part> (data-view of 530)"""
+        return "sec:" + k[4:] if k.startswith("sub:") else k
+
+    def _mine_keys(self):
+        return list(self.sections) + list(getattr(self, "subs", {}))
+
+    def _mine_on(self):
+        """the middle button: back to the kept view (the first time: «Groups only» if the switch was on, else as the window had it)"""
+        self._mine = True
+        st = ansicht_get(ansicht_user(None), self.tab or "live")
+        want = {k: True for k in st["offen"]}; want.update({k: False for k in st["zu"]})
+        fresh = False
+        for k in self._mine_keys():
+            i = self._mine_id(k)
+            if i in want:
+                v = want[i]
+            elif not st["known"] and st["first_groups"]:
+                v = k in self.sections; fresh = True
+            else:
+                v = self._shown.get(k, k in self.open_secs); fresh = True
+            (self._set_section if k in self.sections else self._set_sub)(k, v, save=False)
+            closed = "subx:" + k[4:]
+            if v:
+                self.open_secs.add(k); self.open_secs.discard(closed)
+            else:
+                self.open_secs.discard(k)
+                if k.startswith("sub:"):
+                    self.open_secs.add(closed)
+        if sorted(self.open_secs) != sorted(CFG["ui_open"]):
+            CFG["ui_open"] = sorted(self.open_secs); save_settings()
+        if fresh:
+            self._mine_change("", None)
+        self._mine_paint()
+
+    def _mine_change(self, k, open_):
+        """the ONE function per change (P2 hangs in here): one group / topic opened or closed by the user - bundled, 1 s"""
+        if not getattr(self, "_mine", True):
+            return
+        if self._mine_job is not None:
+            try:
+                self.root.after_cancel(self._mine_job)
+            except Exception:
+                pass
+        self._mine_job = self.root.after(1000, self._mine_push)
+
+    def _mine_push(self):
+        self._mine_job = None
+        tab = self.tab or "live"
+        st = ansicht_get(ansicht_user(None), tab)
+        m = {x: True for x in st["offen"]}; m.update({x: False for x in st["zu"]})
+        for k in self._mine_keys():
+            m[self._mine_id(k)] = bool(self._shown.get(k, k in self.open_secs))
+        ansicht_set(ansicht_user(None), tab, [x for x, v in m.items() if v], [x for x, v in m.items() if not v])
+
+    def _mine_paint(self):
+        """the blue button of the fold state: the middle while «Meine Ansicht» is on"""
+        for kind, c in list(getattr(self, "_fold_cvs", {}).items()):
+            try:
+                on = kind == "mine" and getattr(self, "_mine", True)
+                c.config(bg=C["acc"] if on else C["panel"])
+                for it in c.find_all():
+                    c.itemconfig(it, **({"fill": "#ffffff" if on else C["txt"]} if c.type(it) in ("line", "text") else {"outline": "#ffffff" if on else C["txt"]}))
+            except tk.TclError:
+                pass
+
+    def _fold_all_btn(self, open_):
+        self._mine = False
+        if self._mine_job is not None:                       # what was clicked before still goes to the Pi
+            try:
+                self.root.after_cancel(self._mine_job)
+            except Exception:
+                pass
+            self._mine_push()
+        self._all_sections(open_)
+        self._mine_paint()
+
+    def _mwbar(self, parent, tab):
+        """639o: the bar of every web page in the window - Simple / Expert · Symbols coloured / plain · On start: groups only ·
+        Collapse all / My view (639r; long press / right click: Groups only) / Expand all (same order, texts and symbols; a narrow window: two lines)"""
+        f = tk.Frame(parent, bg=C["bg"]); small = self._lay[0]
+        r1 = tk.Frame(f, bg=C["bg"]); r1.pack(fill="x")
+        r2 = tk.Frame(f, bg=C["bg"]) if small else r1
+        if small:
+            r2.pack(fill="x", pady=(6, 0))
+
+        def seg(host, items, cur, cmd, dis=False):
+            w = tk.Frame(host, bg=C["line"], padx=1, pady=1)
+            for i, (val, lab) in enumerate(items):
+                on = cur == val
+                l = tk.Label(w, text=lab, font=("DejaVu Sans", 9, "bold"), pady=3, padx=8, cursor="" if dis else "hand2",
+                             bg=C["acc"] if on and not dis else C["field"], fg="#ffffff" if on and not dis else C["mut"])
+                l.pack(side="left", padx=(0 if i == 0 else 1, 0))
+                if not dis:
+                    l.bind("<Button-1>", lambda e, v=val: cmd(v))
+            return w
+        nosimple = tab == "sim"                             # the tab Simulator has only one view (the window shows all its groups)
+        m = seg(r1, ((True, tr("Simple")), (False, tr("Expert"))), page_simple(tab), self._set_simple, nosimple)
+        m.pack(side="left"); Tip(m, tr("This page has only one view") if nosimple else tr("Simple: only the important settings. «Expert» shows all of them."))
+        ic = seg(r1, (("color", "🎨 " + tr("Symbols coloured")), ("plain", "◯ " + tr("plain"))), tk_icons(), self._set_icons)
+        ic.pack(side="left", padx=(8, 0)); Tip(ic, tr("Symbols: green dot or green symbol = switched on"))
+        self._fold_cvs = {}
+        self._fold_btn(r2, "open", lambda: self._fold_all_btn(True), tr("Expand all")).pack(side="right")
+        mb = self._fold_btn(r2, "mine", self._mine_on, tr("My view: the menus open and close the way you left them (kept for you on every device). Long press or right click: groups only."))
+        mb.pack(side="right", padx=(0, 6))
+        hold = {"job": None, "long": False}                 # 639r: «Groups only» stays - long press or right click on the middle
+
+        def _down(e):
+            hold["long"] = False
+            hold["job"] = self.root.after(600, lambda: (hold.update(long=True), self._groups_only(save=False)))
+
+        def _up(e):
+            if hold["job"] is not None:
+                self.root.after_cancel(hold["job"]); hold["job"] = None
+            if not hold["long"]:
+                self._mine_on()
+        mb.unbind("<Button-1>"); mb.bind("<ButtonPress-1>", _down); mb.bind("<ButtonRelease-1>", _up)
+        mb.bind("<Button-3>", lambda e: self._groups_only(save=False))
+        self._fold_btn(r2, "close", lambda: self._fold_all_btn(False), tr("Collapse all")).pack(side="right", padx=(0, 6))
+        self.root.after_idle(self._mine_paint)
+        return f
+
+    def _set_icons(self, v):
+        """639o: symbols «color» | «plain» - the same value as the web pages (web_ui mw-icons, so every device and the window agree)"""
+        if v != tk_icons():
+            web_ui_update({"mw-icons": "plain" if v == "plain" else "color"}); self.root.after(30, self._rebuild)
 
     def _fold_btn(self, parent, kind, cmd, tip):
         """the three fold buttons with the drawn symbols of the web page (530: arrows in · two bars · arrows out)"""
@@ -50929,9 +50897,13 @@ class App:
             c.create_line(*P((7, 4, 12, 9, 17, 4)), fill=C["txt"], width=2); c.create_line(*P((7, 20, 12, 15, 17, 20)), fill=C["txt"], width=2)
         elif kind == "open":
             c.create_line(*P((7, 9, 12, 4, 17, 9)), fill=C["txt"], width=2); c.create_line(*P((7, 15, 12, 20, 17, 15)), fill=C["txt"], width=2)
+        elif kind == "mine":                                 # 639r «Meine Ansicht»: two bars and a small star
+            c.create_rectangle(*P((5, 5, 19, 10)), outline=C["txt"], width=2); c.create_rectangle(*P((5, 14, 12, 19)), outline=C["txt"], width=2)
+            c.create_text(17.5 * f, 16.5 * f, text="★", fill=C["txt"], font=("DejaVu Sans", max(7, int(8 * f))))
         else:
             c.create_rectangle(*P((5, 5, 19, 10)), outline=C["txt"], width=2); c.create_rectangle(*P((5, 14, 19, 19)), outline=C["txt"], width=2)
         c.bind("<Button-1>", lambda e: cmd()); Tip(c, tip)
+        getattr(self, "_fold_cvs", {})[kind] = c
         return c
 
     def _all_sections(self, open_):
@@ -52742,16 +52714,10 @@ SELFTEST_EXTRA.append(("App keys (hash only, no security changes)", appkey_selft
 #   * Unchanged: links with their own key (/na/ buttons in the push, /g/ guests, /x/ shares, /k/ kiosk, /tv/ ...), the
 #     public files, and a device that is already trusted (its cookie is no password).
 # ----------------------------------------------------------------------------
-_SECLOGIN_CFG = {"login_https_only": True}
-for _k, _v in _SECLOGIN_CFG.items():
-    CFG.setdefault(_k, _v)
-    DEFAULTS.setdefault(_k, _v)
-TOGGLES.extend([
-    ("Security", "login_https_only", "Log in only encrypted (https): from other devices the password is only accepted over the secure page"),
-])
+# 3.23 (Daniel 01.11.2026): always on - the switch «login_https_only» is gone (an old saved value is ignored); from the device
+# itself (localhost) the login works without https as before, without a secure page the fallback below stays.
 # «Simple» shows the section only when something is wrong (no secure page, or switched off with a password); «Expert» always
 SIMPLE_IN_USE["Security"] = lambda: web_pw_active() and seclogin_mode() != "on"
-SIMPLE_KEYS.add("login_https_only")
 SECLOGIN = {"own": (0.0, frozenset()), "logged": {}, "fallback_logged": False}
 SECLOGIN_NOTE = ("The password is only accepted over the secure page (https://…:port + 1) or from this device itself. Over plain http "
                  "everybody in the same Wi-Fi (camping!) could read it. The browser warns once about the certificate (it is made by MoveEye "
@@ -52832,9 +52798,7 @@ def seclogin_secure(req):
 
 
 def seclogin_mode():
-    """"off" (setting off), "fallback" (setting on, but no secure page: http login allowed with a warning), "on" """
-    if not CFG.get("login_https_only", True):
-        return "off"
+    """"fallback" (no secure page: http login allowed with a warning), "on" (3.23: always on, no switch)"""
     if not seclogin_https_port():
         if not SECLOGIN["fallback_logged"] and time.time() - START > 60:
             SECLOGIN["fallback_logged"] = True
@@ -52913,7 +52877,7 @@ def seclogin_info(req=None, lang=None):
     """for the page (Settings → Security), /api/state and the window"""
     m = seclogin_mode()
     port = seclogin_https_port()
-    i = {"on": bool(CFG.get("login_https_only", True)), "mode": m, "port": port, "pw": web_pw_active(),
+    i = {"on": True, "mode": m, "port": port, "pw": web_pw_active(),
          "note": tr(SECLOGIN_NOTE, lang), "warn": ""}
     if req is not None:
         i["secure"] = seclogin_secure(req)
@@ -52949,18 +52913,17 @@ def seclogin_selftest():
     assert seclogin_secure(_R("127.0.0.1", h={"X-Forwarded-For": "1.2.3.4", "X-Forwarded-Proto": "https"}))
     assert not seclogin_secure(_R("127.0.0.1", h={"X-Forwarded-For": "1.2.3.4", "X-Forwarded-Proto": "http"}))
     assert not seclogin_secure(_R("192.0.2.77"))                       # TEST-NET: never an own address
-    keep = STATE.get("https_port"), CFG.get("login_https_only")
+    keep = STATE.get("https_port")
     try:
-        STATE["https_port"] = 5001; CFG["login_https_only"] = True
+        STATE["https_port"] = 5001
         assert seclogin_url(_R("192.0.2.77", path="/zones")) == "https://192.168.1.5:5001/zones"
         assert seclogin_url(_R("192.0.2.77", host="[fe80::1]:5000")) == "https://[fe80::1]:5001/"
         assert seclogin_mode() == "on" and seclogin_plain(_R("192.0.2.77")) and not seclogin_plain(_R("100.64.0.5"))
         STATE["https_port"] = None
         assert seclogin_mode() == "fallback" and not seclogin_plain(_R("192.0.2.77"))   # no secure page: never locked out
-        STATE["https_port"] = 5001; CFG["login_https_only"] = False
-        assert not seclogin_plain(_R("192.0.2.77"))
+        assert "login_https_only" not in CFG, "3.23: always on, no switch"
     finally:
-        STATE["https_port"], CFG["login_https_only"] = keep
+        STATE["https_port"] = keep
     return True
 
 
@@ -56156,7 +56119,7 @@ App._refresh = _kr_tk_refresh
 #      bleibt für die kleine Überraschung) und «Über MoveEye» unten in Mehr. Geschichte, Entwickler «Daniel alias Elektro»,
 #      Zeitleiste, Zahlen (zur Laufzeit gezählt), aufklappbar «Für Technik-Interessierte». Texte: 622.
 # ----------------------------------------------------------------------------
-INFO_PARTS = 245                       # number of parts in quelle/ (written by werkzeuge/bauen.py --neue-version)
+INFO_PARTS = 248                       # number of parts in quelle/ (written by werkzeuge/bauen.py --neue-version)
 INFO_START = "2026-10-16"              # the first lines (a small webcam program for the Pi 5)
 FBX = {"shot": None, "shot_t": 0.0, "lines": 0}
 
@@ -56797,7 +56760,9 @@ def _g2_tk_wizard(self, force=False):
             nm = entry(tr("Name of this device (optional)"), CFG.get("device_name") or "")
             lab(tr("Time on MoveEye") + ": " + datetime.now().strftime("%d.%m.%Y %H:%M"))
             la = entry(tr("Latitude"), CFG.get("latitude")); lo = entry(tr("Longitude"), CFG.get("longitude"))
-            toggle("⚡ " + tr("Fast updates (development)"), "update_fast")
+            f_ = tk.Frame(body, bg=C["panel"], padx=8, pady=4); f_.pack(fill="x", pady=2)      # 3.23: update_mode (639q)
+            Toggle(f_, "⚡ " + tr("Fast updates (development)"), CFG.get("update_mode") == "dev",
+                   lambda v: set_text("update_mode", "dev" if v else "off")).pack(fill="x")
             lab("🔒 " + tr("Password for this page"), False)
             lab(tr("Without a password everybody in the same network (and with the link) can watch and switch everything."))
             p1 = entry(tr("Password (6-64 characters)"), "", "•"); p2 = entry(tr("Repeat password"), "", "•")
@@ -56953,7 +56918,7 @@ def _g2_tk_wizard(self, force=False):
                 res.config(text=("✓ " + tr("Connecting …")) if ok else "⚠ " + tr_err(err))
             r = row(); self._fbtn(r, tr("🔌 Connect"), conn).pack(side="left")
         elif c == "tours":
-            toggle(tr("Tour of a page on its first visit"), "tours_auto"); toggle(tr("Tip of the day"), "tip_of_day"); toggle(tr("Show Blinki"), "blinki_on")
+            lab(tr("⚙ Tour, tip of the day, Blinki: Settings → System → Device & help"))      # 3.23: set only there
             r = row(); self._fbtn(r, tr("↺ Reset all tours"), lambda: g2_action({"action": "tours_reset"}, "window")).pack(side="left")
 
         def go_next():
@@ -56985,7 +56950,8 @@ def _g2_tk_tip(self):
     bf = tk.Frame(w, bg=C["bg"]); bf.pack(fill="x", padx=14, pady=(0, 12))
     self._fbtn(bf, tr("Show me") + " ›", lambda: (w.destroy(), self._open_page(x["href"])), primary=True).pack(side="left")
     self._fbtn(bf, tr("Not now"), w.destroy).pack(side="left", padx=(6, 0))
-    self._fbtn(bf, tr("Tip of the day off"), lambda: (self._set("tip_of_day", False), w.destroy())).pack(side="left", padx=(6, 0))
+    tk.Label(w, text=tr("⚙ Tour, tip of the day, Blinki: Settings → System → Device & help"), bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8),
+             wraplength=380, justify="left", anchor="w").pack(fill="x", padx=14, pady=(0, 10))      # 3.23: set only there
 
 
 _g2_tab_before = App._tab
@@ -57091,7 +57057,7 @@ def g2_state(lang=None):
     steps = g2_steps(g.get("mode") or "quick", lang)
     ids = [s["id"] for s in steps]
     left = [i for i in ids if i not in g["done"] and i not in g["skipped"] and not next(s for s in steps if s["id"] == i)["auto_skip"]]
-    return dict(g, steps=steps, hw=g2_hw(), left=left, setup_done=bool(CFG["setup_done"]), update_fast=bool(CFG.get("update_fast")),
+    return dict(g, steps=steps, hw=g2_hw(), left=left, setup_done=bool(CFG["setup_done"]), update_fast=CFG.get("update_mode") == "dev",
                 open=bool(g.get("mode")) and not g.get("finished"), default_simple=bool(CFG.get("ui_simple")),
                 use_case=CFG.get("use_case") or "", tours_auto=bool(CFG.get("tours_auto", True)), tip_of_day=bool(CFG.get("tip_of_day", True)))
 
@@ -57218,7 +57184,6 @@ SET_HELP = {
     "report_hour": ("The end of the night time: the report comes then, «Guard tonight» ends then.", "The time you usually get up."),
     "diary_on": ("Collects the best picture of every animal visit by itself.", "On - it costs little memory."),
     "eco_on": ("Fewer pictures while all is quiet: the battery lasts longer, the reaction is a little slower.", "On with a battery, off with a power supply."),
-    "update_auto": ("New versions are installed by themselves (only signed ones).", "On."),
     "thermal_on": ("The thermal camera finds warm bodies, also in the dark and behind grass.", "On if a thermal camera is connected."),
     "thermal_alarm": ("An alarm from the thermal picture alone (warm body without movement in the normal picture).", "On at night without light."),
     "noise_alarm": ("An alarm when it is loud (the microphone).", "Off at a busy campsite."),
@@ -57235,7 +57200,6 @@ SET_HELP = {
     "rec_keep_days": ("Recordings older than this are deleted by themselves (0 = keep until the memory is full).", "14 to 30 days."),
     "push_pics": ("A picture in the push message.", "On - you see at once what it is."),
     "batt_save_on": ("Below a battery level MoveEye saves power by itself (fewer pictures, the AI less often).", "On with a battery."),
-    "login_https_only": ("The password is only accepted over a secure connection (https, the device itself or Tailscale).", "On when you use MoveEye from outside."),
     "lens_check": ("Warns when the lens is dirty, wet or covered.", "On."),
     "weather_on": ("Weather forecast and warnings for the place (needs the location).", "On."),
     "gps_tag": ("Writes the location into the photos.", "Off if you share pictures."),
@@ -57380,8 +57344,7 @@ FACTORY_KEEP = {
     "record_dir", "storage_path", "lang", "sim_autostart_v2", "dev_phase_done", "app_icon_moveeye_done", "app_icon_orange_done",
     "news_seen_web", "news_seen_tk", "weekcheck_last", "weekrep_last", "report_last_day",
     # updates (Daniel, development phase: the fast test updates must keep working after a reset)
-    "update_fast", "update_auto", "update_url", "update_token", "update_unsigned", "update_hour", "update_install",
-    "update_install_armed", "update_push", "update_notified",
+    "update_mode", "update_url", "update_token", "update_unsigned", "update_unsigned_t", "update_hour", "update_push", "update_notified",
 }
 FACTORY_WORD = "ZURÜCKSETZEN"
 FACTORY_WORDS = {"ZURÜCKSETZEN", "ZURUECKSETZEN", "RESET", "RÉINITIALISER", "REINITIALISER", "RIPRISTINA", "RESETTAR"}
@@ -60722,7 +60685,7 @@ for _k, _v in _HX17.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(("fr", "it", "rm")):
         TRX[_L].setdefault(_k, _v[_i + 1])
-_HX18 = {'Groups only': ('Nur Gruppen öffnen', 'Ouvrir seulement les groupes', 'Aprire solo i gruppi', 'Avrir mo las gruppas')}
+_HX18 = {'Groups only': ('Nur Gruppen', 'Ouvrir seulement les groupes', 'Aprire solo i gruppi', 'Avrir mo las gruppas')}
 for _k, _v in _HX18.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(("fr", "it", "rm")):
@@ -66451,7 +66414,7 @@ _MENU_MOVES = {
     "Setup": ("time_from_browser",),
     "Device warnings": ("temp_alarm_on", "env_on", "temp_hot", "temp_cold", "env_offset", "temp_warn", "disk_warn_mb"),
     "Device & help": ("device_name", "use_case", "tips_level", "tours_auto", "tip_of_day", "blinki_on", "desktop_notice", "log_keep_days", "dev_area"),
-    "Developer": ("log_status_min",),
+    "Developer": ("log_status_min", "update_unsigned"),       # 3.23: unsigned versions only in the developer area (24 h)
 }
 for _ms, _mk in _MENU_MOVES.items():
     for _lst in (TOGGLES, SLIDERS, TEXTS):
@@ -67018,46 +66981,6 @@ for _k, _v in _HX_DISC.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
-# Ohne den Schalter: kein Download-Link, keine Knöpfe «Simulator auf dem Pi installieren / hier starten» (Web 470, Fenster 570).
-# Der Code bleibt; /sim/simulator.zip bleibt erreichbar (bestehende Basis-Simulatoren holen dort ihre Updates); eine
-# bestehende Installation auf dem Pi bleibt unberührt (nichts wird gelöscht), ein laufender lässt sich weiter stoppen.
-_HX_BASIS = {
-    'Show the basic simulator (MoveEye Sim · Basis, the old Python simulator)':
-        ('Basis-Simulator anzeigen (MoveEye Sim · Basis, der alte Python-Simulator)',
-         'Afficher le simulateur de base (MoveEye Sim · Basis, l’ancien simulateur Python)',
-         'Mostra il simulatore di base (MoveEye Sim · Basis, il vecchio simulatore Python)',
-         'Mussar il simulatur da basa (MoveEye Sim · Basis, il vegl simulatur Python)'),
-    'Shows the download of the old Python simulator and the buttons to install and start it on the Pi (page Simulator → Programs and downloads, window → Simulator). An installation on the Pi stays as it is, also when this is off.':
-        ('Zeigt den Download des alten Python-Simulators und die Knöpfe zum Installieren und Starten auf dem Pi (Seite Simulator → Programme und Downloads, Fenster → Simulator). Eine Installation auf dem Pi bleibt, wie sie ist, auch wenn dies aus ist.',
-         'Affiche le téléchargement de l’ancien simulateur Python et les boutons pour l’installer et le démarrer sur le Pi (page Simulateur → Programmes et téléchargements, fenêtre → Simulateur). Une installation sur le Pi reste telle quelle, même si c’est désactivé.',
-         'Mostra il download del vecchio simulatore Python e i pulsanti per installarlo e avviarlo sul Pi (pagina Simulatore → Programmi e download, finestra → Simulatore). Un’installazione sul Pi resta com’è, anche se questo è spento.',
-         'Mussa la telechargiada dal vegl simulatur Python ed ils buttuns per l’installar e aviar sin il Pi (pagina Simulatur → Programs e telechargiadas, fanestra → Simulatur). Ina installaziun sin il Pi resta sco ch’ella è, er sche quai è stizzà.'),
-    'Switch on «Show the basic simulator» first (Simulator, Expert)':
-        ('Zuerst «Basis-Simulator anzeigen» einschalten (Simulator, Experte)',
-         'Activez d’abord «Afficher le simulateur de base» (Simulateur, Expert)',
-         'Prima attiva «Mostra il simulatore di base» (Simulatore, Esperto)',
-         'Avant enconuschent «Mussar il simulatur da basa» (Simulatur, Expert)'),
-    'Off: MoveEye Sim · 3D is the simulator.': ('Aus: MoveEye Sim · 3D ist der Simulator.', 'Désactivé : MoveEye Sim · 3D est le simulateur.',
-                                                'Spento: MoveEye Sim · 3D è il simulatore.', 'Stizzà: MoveEye Sim · 3D è il simulatur.'),
-}
-for _k, _v in _HX_BASIS.items():
-    DE.setdefault(_k, _v[0])
-    for _i, _L in enumerate(('fr', 'it', 'rm')):
-        TRX[_L].setdefault(_k, _v[_i + 1])
-
-SET_HELP["sim_basis_show"] = ("Shows the download of the old Python simulator and the buttons to install and start it on the Pi (page Simulator → "
-                              "Programs and downloads, window → Simulator). An installation on the Pi stays as it is, also when this is off.",
-                              "Off: MoveEye Sim · 3D is the simulator.")
-
-
-_sim_status_558 = sim_status
-
-
-# wraps: sim_status
-def sim_status():                                         # + 639h: show «MoveEye Sim · Basis» (download, install / start on the Pi)?
-    r = _sim_status_558()
-    r["basis_show"] = bool(CFG.get("sim_basis_show"))
-    return r
 # ----------------------------------------------------------------------------
 # Same structure as the start screen «Spielen» of the simulator (simulator3d/scripts/spielbereich.gd): Blinki on top
 # (greets, a tip, happy about a new level / a finished adventure), the level with its bar, the adventures (Camping-Platz →
@@ -67473,39 +67396,6 @@ def play_selftest():
 
 
 SELFTEST_EXTRA.append(("Play area: tab «Spielen» (web, window, simulator spielbereich.gd)", play_selftest))
-# nurgruppen (Daniel, 31.10.2026): on every start the settings show «Groups only» (web, phone, Pi window, simulator page); the
-# own open / closed state is kept (web: mw-open:… through web_ui, window: CFG ui_open) and comes back when the switch is off.
-# key = English text: (Deutsch, Français, Italiano, Rumantsch)
-_HX_NG = {
-    'On start: groups only': ('Beim Start: Nur Gruppen', 'Au démarrage : seulement les groupes', 'All’avvio: solo i gruppi', 'Al start: mo las gruppas'),
-    'On every start the settings show only the groups. Off: the menus open as you left them.':
-        ('Bei jedem Start zeigen die Einstellungen nur die Gruppen. Aus: Die Menüs sind auf- und zugeklappt, wie du sie verlassen hast.',
-         'À chaque démarrage, les réglages n’affichent que les groupes. Désactivé : les menus restent ouverts ou fermés comme vous les avez laissés.',
-         'A ogni avvio le impostazioni mostrano solo i gruppi. Spento: i menu restano aperti o chiusi come li hai lasciati.',
-         'A mintga start mussan ils parameters mo las gruppas. Deactivà: ils menus èn averts u serrads sco che ti als has laschads.'),
-}
-for _k, _v in _HX_NG.items():
-    DE.setdefault(_k, _v[0])
-    for _i, _L in enumerate(('fr', 'it', 'rm')):
-        TRX[_L].setdefault(_k, _v[_i + 1])
-# the main page has its own dictionary (German); fr / it / rm come through /i18n/<lang>.js (TRX)
-WEB_PAGE = WEB_PAGE.replace("</body>", "<script>Object.assign(I18N.de, " + json.dumps({_k: _v[0] for _k, _v in _HX_NG.items()}, ensure_ascii=False)
-                            + ");</script></body>", 1)
-
-# the manual (HELP_PAGE of 540): one paragraph in «Tipps & Tricks», German and English
-for _a, _b in (('<section id="tips" data-icon="🧭" class="tips"><h2>Tipps &amp; Tricks</h2>',
-                "<p><b>☰ Beim Start: Nur Gruppen:</b> Bei jedem Öffnen der Seite (Handy, PC, Pi-Fenster) stehen die Einstellungen in der "
-                "Ansicht «Nur Gruppen»: alle Gruppen offen, die Themen darin zu. Was du selbst auf- und zuklappst, merkt sich MoveEye trotzdem. "
-                "Schaltest du den Schalter «Beim Start: Nur Gruppen» (neben «Einfach / Experte») aus, sind alle Menüs sofort wieder so, wie du "
-                "sie zuletzt verlassen hast. Ab Werk: ein. Auf der Seite Simulator sind beim Start die Karten und die Gruppen der "
-                "Simulator-Steuerung zu (nur «Steuerung» bleibt offen).</p>"),
-               ('<section id="tips" data-icon="🧭" class="tips"><h2>Tips &amp; tricks</h2>',
-                "<p><b>☰ On start: groups only:</b> every time a page opens (phone, PC, Pi window) the settings show «Groups only»: "
-                "all groups open, the topics inside closed. MoveEye still remembers what you open and close yourself. Switch «On start: "
-                "groups only» (next to «Simple / Expert») off and every menu is back the way you left it. Factory setting: on. On the "
-                "page Simulator the cards and the groups of the simulator control start closed (only «Controls» stays open).</p>")):
-    if _a in HELP_PAGE:
-        HELP_PAGE = HELP_PAGE.replace(_a, _a + _b, 1)
 _HX_NEBEL = {
     'Fog – view limited': ('Nebel – Sicht eingeschränkt', 'Brouillard – visibilité réduite', 'Nebbia – visibilità ridotta', 'Tschajera – vista limitada'),
 }
@@ -67571,7 +67461,7 @@ for _a, _b in (('<section id="detect" data-icon="🎯"><h2>Erkennung</h2>',
 # Der 3D-Simulator spielt die Geschichte selbst (simulator3d/scripts/maggie_vorfuehrung.gd, Autopilot + Film-Kamera,
 # eigener Vorführ-Spielstand). Hier nur das Zuschauen:
 #   * Seite /sim/vorfuehrung: das Bild des Simulators (/sim/view.jpg?bare=1 – ohne die Knöpfe des Simulator-Fensters, die
-#     Leiste der Vorführung blendet der Simulator dann auch aus), Bild für Bild geholt (nie eine wachsende Verzögerung);
+#     Leiste der Vorführung blendet der Simulator dann auch aus; bare nur solange sie läuft, Fix 3.19.x), Bild für Bild geholt (nie eine wachsende Verzögerung);
 #     unten eine Leiste (verschwindet nach 4 s, Tippen zeigt sie wieder): Pause / Weiter, Kapitel zurück / Liste / weiter,
 #     Beenden, Vollbild. Ohne laufende Vorführung: Start «Kurzfassung» / «Ganze Geschichte».
 #   * /api/vorfuehrung: GET = Stand (Simulator /control vorfuehrung info), POST {do: start (len) | pause | weiter |
@@ -67753,7 +67643,7 @@ def vf_selftest():
     finally:
         CFG["sim_on"] = keep
     html = vf_page()
-    assert "/sim/view.jpg?bare=1" in html and "/api/vorfuehrung" in html and "Kurzfassung" in html and "<!--NAV-->" not in html
+    assert "/sim/view.jpg?" in html and "bare=1&" in html and "/api/vorfuehrung" in html and "Kurzfassung" in html and "<!--NAV-->" not in html
     assert "/sim/vorfuehrung" in SIM_PAGE and "/sim/vorfuehrung" in WEB_PAGE
     for L in ("fr", "it", "rm"):
         assert TRX[L].get("Watch «Maggie» as a film (demo)"), L
@@ -67761,6 +67651,1011 @@ def vf_selftest():
 
 
 SELFTEST_EXTRA.append(("Vorführung «Maggie» (page /sim/vorfuehrung, owner only)", vf_selftest))
+# ----------------------------------------------------------------------------
+# Der 3D-Simulator spielt den Trailer selbst (simulator3d/scripts/trailer.gd: Kamerafahrt im Bergtal, Musik, Texttafeln,
+# Erzähler). Hier nur das Starten und Zuschauen:
+#   * /sim/trailer?id=…: startet den Trailer (wenn nicht schon einer läuft) und zeigt das Bild des Simulators
+#     (/sim/view.jpg?bare=1 – nur solange der Film läuft; danach ohne bare, sonst blieben die Knöpfe am PC versteckt),
+#     unten eine Leiste: Beenden, Nochmals, Ton, Stimme, Vollbild, Zurück.
+#   * Ton auch im Browser (Fix 3.19.x, Daniel: «am iPad nichts»): grosser Knopf «🔊 Tippen für Ton» (iOS braucht ein Tippen
+#     vor Sprache und Audio; ein Tippen irgendwo genügt). Danach Erzähler (speechSynthesis, wie bisher) und Musik + Geräusche:
+#     /api/trailer?plan=1 holt den Ton-Plan des Simulators (trailer.gd ton_plan: Zeit, Klang, Lautstärke, Überblendung),
+#     /sim/trailer_ton/<klang>.wav die Klänge (ab 01.11.2026 echte Aufnahmen als MP3 aus simulator3d/klang/web/, ≈ 2.4 MB;
+#     ältere Simulatoren: WAV, mono 22 kHz; Schleifen mit Schleifenpunkten «schleifen» aus dem Plan, dazu ein Begrenzer wie der
+#     Bus «Trailer» im Simulator); die Seite spielt sie mit
+#     WebAudio im Takt von «t» aus /api/trailer (nachgeführt, wenn es mehr als 0.35 s abweicht). Ältere Simulatoren ohne
+#     Plan: nur der Erzähler. Der Ton läuft auf beiden Geräten (PC und iPad).
+#   * /api/trailer: GET = Stand (Simulator /control trailer info), POST {do: start (id) | stop}. Nur der Besitzer
+#     (nacht_may: Administrator, nicht im Bedienermodus), wie die Vorführung (639m).
+#   * Einstieg: Reiter «Sim» ganz oben die Karte «🛠 Entwickler» (nur mit dem Entwickler-Bereich und für den Besitzer) mit
+#     «🎬 Trailer Grossvater», «🎬 Trailer Maggie», «🎬 Vorführung»; dazu Einstellungen → Entwickler (Web 530 devExtras,
+#     Fenster 639c) ganz oben die zwei Trailer. Im Simulator selbst: oben im Fenster «Entwickler» und auf den Story-Karten.
+# Hier (nach 639m) weil VF-Teile (639m), render_page, sim_control, nacht_may, SIM_PAGE, WEB_PAGE vorher kommen.
+# ----------------------------------------------------------------------------
+TRL_IDS = ("grossvater", "maggie")
+
+
+def trl_info():
+    if not CFG.get("sim_on"):
+        return {"ok": False, "error": tr("The 3D simulator is not connected."), "offline": True}
+    try:
+        r = sim_control({"action": "trailer", "do": "info"}) or {}
+    except Exception as e:
+        return {"ok": False, "error": str(e)[:80]}
+    if not r.get("ok") and "laeuft" not in r:
+        if "unknown" in str(r.get("error") or "").lower():
+            return {"ok": False, "error": tr("This simulator has no trailers yet – update it.")}
+        return {"ok": False, "error": str(r.get("error") or tr("The 3D simulator is not connected."))[:120]}
+    return r
+
+
+def trl_plan():
+    """the sound plan of the running trailer (simulator trailer.gd ton_plan) – for music and noises in the browser"""
+    if not CFG.get("sim_on"):
+        return {"ok": False, "error": tr("The 3D simulator is not connected.")}
+    try:
+        r = sim_control({"action": "trailer", "do": "plan"}) or {}
+    except Exception as e:
+        return {"ok": False, "error": str(e)[:80]}
+    if not isinstance(r.get("plan"), list):
+        return {"ok": False, "error": str(r.get("error") or "no plan")[:120]}
+    return r
+
+
+TRL_TON_RE = re.compile(r"^[a-z_]{2,24}$")
+
+
+def trl_do(d, owner=True):
+    """start (id) / stop – only the owner"""
+    if not owner:
+        log_event("web", "Trailer refused (not the owner / operator mode)")
+        return {"ok": False, "error": tr("Only the owner can do this."), "code": 403}
+    w = str((d or {}).get("do") or "")
+    if w not in ("start", "stop"):
+        return {"ok": False, "error": "do: start | stop", "code": 400}
+    if not CFG.get("sim_on"):
+        return {"ok": False, "error": tr("The 3D simulator is not connected.")}
+    c = {"action": "trailer", "do": w}
+    if w == "start":
+        tid = str(d.get("id") or "")
+        if tid not in TRL_IDS:
+            return {"ok": False, "error": "id: " + " | ".join(TRL_IDS), "code": 400}
+        c["id"] = tid
+        lg = str(CFG.get("lang") or "")
+        if lg in ("de", "fr", "it", "rm", "en"):
+            c["sprache"] = lg
+    try:
+        r = sim_control(c) or {}
+    except Exception as e:
+        if w == "start" and "timed out" in str(e):           # building the Bergtal takes a moment
+            return {"ok": True, "loading": True}
+        return {"ok": False, "error": str(e)[:80]}
+    if str(r.get("error") or "").startswith("busy: "):
+        return {"ok": False, "error": tr("The simulator is busy: {w}").replace("{w}", str(r["error"])[6:])}
+    return r
+
+
+TRL_PAGE = _zd('639n_trailer/TRL_PAGE', ZD_PAGE)
+
+# Sprachausgabe im Browser (Daniel 31.10.2026, Vorführung und Trailer): der Simulator meldet in /control … info das Feld
+# «sprechen» {id, text, lang} (Erzähler, Untertitel, Texttafeln); die Seite liest jeden neuen Satz mit speechSynthesis vor, in
+# der Sprache von MoveEye (rm: eine romanische Stimme, falls das Gerät eine hat, sonst Deutsch). iOS: Ton erst nach einem
+# Tippen («🔊 Ton an»), dabei wird speechSynthesis einmal angestossen; Pause = Stimme verstummt. Dazu hält navigator.wakeLock
+# den Bildschirm wach, solange der Film läuft (iPad). Die Texte bleiben unten als Untertitel im Bild (der Simulator zeigt sie).
+# Stimme (Daniel 31.10.2026, «klingt fürchterlich»): automatisch die beste Stimme der Sprache – 1. Name/voiceURI mit Premium,
+# Enhanced, Erweitert, Natural, Neural, Online oder Google, 2. lokale Stimme der Region (de-CH vor de-DE vor de-AT), 3. die
+# Standardstimme; die Liste kommt auf iOS / Chrome verzögert (voiceschanged + Nachfragen). Tempo 0.92, Trailer 0.88, Tonhöhe 0.95,
+# lange Sätze an Satzzeichen geteilt. Knopf «🗣 Stimme» neben 🔊: Liste der Stimmen (beste «empfohlen», ▶ Hörprobe), Tempo-
+# Regler 0.8–1.1, Wahl pro Gerät (localStorage mw-film-stimme-<sprache>, mw-film-tempo); nur einfache Stimmen: Hinweis «Premium laden».
+SPK_JS = _zd('639n_trailer/SPK_JS', "")
+
+
+# Musik und Geräusche des Trailers im Browser (Fix 3.19.x): der Ton-Plan des Simulators (trailer.gd ton_plan) mit WebAudio
+# nachgespielt – Schleifen (Musikflächen, Wind, Wasser …) mit gleitender Lautstärke, Einzelklänge, Musik leiser während der
+# Erzähler spricht (0.6, wie trailer.gd _audio_tick), am Schluss 2 s ausblenden. Die Uhr: «t» aus /api/trailer (alle 1.5 s);
+# weicht sie mehr als 0.35 s ab, wird nachgeführt, bei mehr als 3 s (Sprung) neu aufgesetzt. Erst nach dem Tippen (iOS).
+TA_JS = _zd('639n_trailer/TA_JS', "")
+
+_HX_TRL = {
+    'Trailer Grossvater': ('Trailer Grossvater', 'Bande-annonce Grand-père', 'Trailer Nonno', 'Trailer Tat'),
+    'Trailer Maggie': ('Trailer Maggie', 'Bande-annonce Maggie', 'Trailer Maggie', 'Trailer Maggie'),
+    'Vorführung': ('Vorführung', 'Démonstration', 'Dimostrazione', 'Demonstraziun'),
+    'Developer': ('Entwickler', 'Développeur', 'Sviluppatore', 'Sviluppader'),
+    'End the trailer': ('Trailer beenden', 'Arrêter la bande-annonce', 'Termina il trailer', 'Terminar il trailer'),
+    'Watch again': ('Nochmals ansehen', 'Revoir', 'Guarda di nuovo', 'Guardar anc ina giada'),
+    'The end': ('Ende', 'Fin', 'Fine', 'Fin'),
+    'Over': ('Vorbei', 'Terminé', 'Finito', 'Terminà'),
+    'Sound on': ('Ton an', 'Son activé', 'Audio attivo', 'Tun activà'),
+    'Sound off': ('Ton aus', 'Son coupé', 'Audio spento', 'Tun deactivà'),
+    'Tap for sound': ('Tippen für Ton', 'Touchez pour le son', 'Tocca per l’audio', 'Tutgar per tun'),
+    'This simulator has no trailers yet – update it.': ('Dieser Simulator kennt die Trailer noch nicht – bitte aktualisieren.',
+                                                        'Ce simulateur ne connaît pas encore les bandes-annonces – mets-le à jour.',
+                                                        'Questo simulatore non conosce ancora i trailer – aggiornalo.',
+                                                        'Quest simulatur na conuscha anc betg ils trailers – actualisescha el.'),
+    'The simulator is busy: {w}': ('Der Simulator ist beschäftigt: {w}', 'Le simulateur est occupé : {w}', 'Il simulatore è occupato: {w}',
+                                   'Il simulatur è occupà: {w}'),
+    'Voice': ('Stimme', 'Voix', 'Voce', 'Vusch'),
+    'recommended': ('empfohlen', 'recommandée', 'consigliata', 'recumandada'),
+    'Automatic (recommended)': ('Automatisch (empfohlen)', 'Automatique (recommandée)', 'Automatica (consigliata)', 'Automatic (recumandà)'),
+    'Listen': ('Anhören', 'Écouter', 'Ascolta', 'Tadlar'),
+    'Speed': ('Tempo', 'Vitesse', 'Velocità', 'Tempo'),
+    'No voice for this language on this device.': ('Dieses Gerät hat keine Stimme für diese Sprache.', 'Cet appareil n’a pas de voix pour cette langue.',
+                                                    'Questo dispositivo non ha una voce per questa lingua.', 'Quest apparat n’ha nagina vusch per quest linguatg.'),
+    'Better voices: iPad → Settings → Accessibility → Spoken Content → Voices → English → download «Premium».': ('Bessere Stimmen: iPad → Einstellungen → Bedienungshilfen → Gesprochene Inhalte → Stimmen → Deutsch → «Premium» laden.',
+                          'Meilleures voix : iPad → Réglages → Accessibilité → Contenu énoncé → Voix → Français → télécharger « Premium ».',
+                          'Voci migliori: iPad → Impostazioni → Accessibilità → Contenuto letto ad alta voce → Voci → Italiano → scarica «Premium».',
+                          'Meglras vuschs: iPad → Einstellungen → Bedienungshilfen → Gesprochene Inhalte → Stimmen → Deutsch → chargiar «Premium».'),
+}
+for _k, _v in _HX_TRL.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_SPK_KEYS = ['Tap for sound', 'Voice', 'recommended', 'Automatic (recommended)', 'Listen', 'Speed', 'No voice for this language on this device.', 'Better voices: iPad → Settings → Accessibility → Spoken Content → Voices → English → download «Premium».']
+_TRL_KEYS = list(_HX_TRL) + ["Full screen", "Back", "The valley is being prepared …", "The 3D simulator is not connected."]
+
+# the Vorführung (639m) gets the same: the button in its bar, the new sentences read aloud, silent on pause, screen awake
+VF_PAGE = VF_PAGE.replace('<button type="button" class="sec" onclick="vfFull()"', '<button type="button" class="sec spk-btn" onclick="spkToggle()">🔇</button>\n    <button type="button" class="sec" onclick="vfFull()"', 1)
+VF_PAGE = VF_PAGE.replace("/*VFDE*/\n", "/*VFDE*/\n" + SPK_JS, 1)
+VF_PAGE = VF_PAGE.replace('HIDE_T = setTimeout(() => { if (!S.pause) b.classList.add("off"); }, 4000); }',
+                          'HIDE_T = setTimeout(() => { if (!S.pause && !SPK.pop) b.classList.add("off"); }, 4000); }', 1)
+VF_PAGE = VF_PAGE.replace("function vfPaint(j) {\n  S = j || {};", "function vfPaint(j) {\n  S = j || {};\n  spkTick(S, !!S.pause, !!S.laeuft);", 1)
+_VF_KEYS.extend(["Sound on", "Sound off"] + _SPK_KEYS)
+_TRL_DE_JS = json.dumps({k: DE.get(k, k) for k in ("Trailer Grossvater", "Trailer Maggie", "Vorführung", "Developer")}, ensure_ascii=False)
+
+# Settings → Developer (web 530 devExtras): the two trailers on top of the list (the window 639c: see below)
+WEB_PAGE = WEB_PAGE.replace('[["🧪", "Test bench and test run", "/sim#c-test"]',
+                            '[["🎬", "Trailer Grossvater", "/sim/trailer?id=grossvater"], ["🎬", "Trailer Maggie", "/sim/trailer?id=maggie"], '
+                            '["🧪", "Test bench and test run", "/sim#c-test"]', 1)
+WEB_PAGE = WEB_PAGE.replace("</body>", "<script>Object.assign(I18N.de, " + _TRL_DE_JS + ");</script></body>", 1)
+
+# the tab «Sim»: on top the card «🛠 Entwickler» (no fold card: the links are always visible, also with «Nur Gruppen») (only the owner with the developer area: /api/ui_simple dev + /api/trailer not 403)
+TRL_SIM_CARD = """<div class="sc wide" id="c-devquick" hidden>
+    <h2 style="margin:0 0 8px"><span>🛠</span> <span data-i18n="Developer">Developer</span></h2>
+    <div class="row2" style="display:flex;gap:8px;flex-wrap:wrap">
+      <a class="btn sec" href="/sim/trailer?id=grossvater" style="flex:1 1 180px;text-align:left">🎬 <span data-i18n="Trailer Grossvater">Trailer Grossvater</span> ›</a>
+      <a class="btn sec" href="/sim/trailer?id=maggie" style="flex:1 1 180px;text-align:left">🎬 <span data-i18n="Trailer Maggie">Trailer Maggie</span> ›</a>
+      <a class="btn sec" href="/sim/vorfuehrung" style="flex:1 1 180px;text-align:left">🎬 <span data-i18n="Vorführung">Vorführung</span> ›</a>
+    </div>
+  </div>
+  """
+TRL_SIMJS = """<script>
+(function trlQuick() {
+  try { Object.assign(I18N.de, /*TRLDE*/{}); } catch (e) {}
+  const c = document.getElementById("c-devquick"); if (!c) return;
+  Promise.all([fetch("/api/ui_simple?page=sim").then(x => x.json()).catch(() => ({})), fetch("/api/trailer", {cache: "no-store"}).then(x => x.status).catch(() => 403)])
+    .then(([u, st]) => { c.hidden = !(u && u.dev) || st === 403; if (!c.hidden) try { applyI18n(); } catch (e) {} });
+})();
+</script>"""
+SIM_PAGE = SIM_PAGE.replace('<main class="simp">\n', '<main class="simp">\n  ' + TRL_SIM_CARD, 1)
+SIM_PAGE = SIM_PAGE.replace("</body>", TRL_SIMJS.replace("/*TRLDE*/{}", _TRL_DE_JS) + "</body>", 1)
+
+
+def trl_page():
+    js = "Object.assign(I18N.de, " + json.dumps({k: DE.get(k, k) for k in _TRL_KEYS}, ensure_ascii=False) + ");"
+    return render_page(TRL_PAGE, "sim").replace("/*TLDE*/", js, 1).replace("/*SPKJS*/", SPK_JS, 1).replace("/*TAJS*/", TA_JS, 1)
+
+
+_smalltv_routes_trl_base = smalltv_routes
+
+
+def smalltv_routes(app, reply, body):                     # + 639n: /sim/trailer and /api/trailer (550 calls smalltv_routes once)
+    _smalltv_routes_trl_base(app, reply, body)
+    from flask import Response
+
+    @app.route("/sim/trailer")
+    def trl_page_():
+        if not nacht_may(_nacht_role()):
+            return Response(tr("Only the owner can do this."), 403)
+        return Response(trl_page(), mimetype="text/html")
+
+    @app.route("/api/trailer", methods=["GET", "POST"])
+    def api_trailer():
+        own = nacht_may(_nacht_role())
+        from flask import request
+        if request.method == "GET":
+            if not own:
+                return reply({"ok": False, "error": tr("Only the owner can do this.")}, 403)
+            return reply(trl_plan() if request.args.get("plan") == "1" else trl_info())
+        r = trl_do(body(), own)
+        code = r.pop("code", None)
+        return reply(r, code) if code else reply(r)
+
+    @app.route("/sim/trailer_ton/<nm>.wav")
+    def trl_ton_(nm):                                      # one sound of the trailer (simulator /trailer_ton/<nm>.wav)
+        if not nacht_may(_nacht_role()):
+            return Response(tr("Only the owner can do this."), 403)
+        if not CFG.get("sim_on") or not TRL_TON_RE.match(nm or ""):
+            return Response("no", 404)
+        try:
+            b_, _h = _sim_get("/trailer_ton/" + nm + ".wav", 8.0)
+        except Exception:
+            return Response("simulator not reachable", 502)
+        mt_ = "audio/mpeg" if b_[:3] == b"ID3" or b_[:2] in (b"\xff\xfb", b"\xff\xf3", b"\xff\xf2") else "audio/wav"
+        return Response(b_, mimetype=mt_, headers={"Cache-Control": "private, max-age=3600"})
+
+
+if GUI_OK:                                                # the window: the two trailers in the developer part (639c)
+    _trl_tk_build_section_base = App._build_section
+
+    def _trl_tk_build_section(self, sec, sbody, settings_parent=None):
+        r = _trl_tk_build_section_base(self, sec, sbody, settings_parent)
+        if sec == "Developer":
+            for tid, nm in (("grossvater", "Trailer Grossvater"), ("maggie", "Trailer Maggie")):
+                ttk.Button(sbody, text="🎬 " + tr(nm) + " ›", command=lambda u="/sim/trailer?id=" + tid: self._open_page(u)).pack(fill="x", pady=(4, 0))
+        return r
+
+    # wraps: App._build_section (after 639m)
+    App._build_section = _trl_tk_build_section
+
+
+def trl_selftest():
+    keep = CFG.get("sim_on")
+    try:
+        CFG["sim_on"] = False
+        assert not trl_info()["ok"] and not trl_do({"do": "start", "id": "maggie"})["ok"]
+        assert trl_do({"do": "start", "id": "maggie"}, owner=False).get("code") == 403
+        assert trl_do({"do": "rm"}).get("code") == 400
+        CFG["sim_on"] = True
+        assert trl_do({"do": "start", "id": "x"}).get("code") == 400
+        _sc = globals()["sim_control"]; asked = []
+        globals()["sim_control"] = lambda d_: (asked.append(d_), {"ok": True, "loading": True})[1]
+        try:
+            assert trl_do({"do": "start", "id": "maggie"})["ok"] and asked[-1]["action"] == "trailer" and asked[-1]["id"] == "maggie"
+            assert trl_do({"do": "stop"})["ok"] and asked[-1] == {"action": "trailer", "do": "stop"}
+        finally:
+            globals()["sim_control"] = _sc
+    finally:
+        CFG["sim_on"] = keep
+    html = trl_page()
+    assert "/sim/view.jpg?" in html and "bare=1&" in html and "/api/trailer" in html and "<!--NAV-->" not in html
+    assert 'id="c-devquick"' in SIM_PAGE and "/sim/trailer?id=maggie" in SIM_PAGE and "/sim/vorfuehrung" in SIM_PAGE
+    assert SIM_PAGE.index('id="c-devquick"') < SIM_PAGE.index('id="c-conn"')
+    assert "/sim/trailer?id=grossvater" in WEB_PAGE
+    assert "speechSynthesis" in html and "spkTick(S" in html and "wakeLock" in html
+    assert "spk-tap" in html and "spkUnlock" in html and "taSync(S)" in html and "/sim/trailer_ton/" in html and "/api/trailer?plan=1" in html
+    assert "bare ? \"bare=1&\"" in html                    # the browser picture without the PC's buttons only while the film runs
+    assert TRL_TON_RE.match("pad_ruhig") and not TRL_TON_RE.match("../x")
+    assert "TA.schl[nm]" in html and "createDynamicsCompressor" in html and "x.loopStart" in html
+    assert "voiceschanged" in html and "spk-vbtn" in html and "SPK_GOOD" in html and "!SPK.pop" in html and "Stimme" in html
+    vh = vf_page()
+    assert "spkTick(S, !!S.pause" in vh and "spk-btn" in vh and "Ton an" in vh and "!SPK.pop" in vh and "Premium" in vh
+    assert "spk-tap" in vh and "Tippen für Ton" in vh and "S.laeuft ? \"bare=1&\"" in vh
+    for L in ("fr", "it", "rm"):
+        assert TRX[L].get("End the trailer"), L
+    return "Trailer: page, owner only, commands to the simulator, card on top of «Sim», entries"
+
+
+SELFTEST_EXTRA.append(("Trailer der Geschichten (page /sim/trailer, owner only)", trl_selftest))
+# Daniel (31.10.2026, Screenshots iPad): «Kopfbereich einklappbar, beide Teile einzeln» und «eine einheitliche Bedienleiste oben auf jeder Seite»
+# (bisher nur in Einstellungen: Suche mit drei Knöpfen, darunter Einfach / Experte, Symbole, Beim Start). Der Baustein kommt über
+# render_page() auf JEDE Seite mit Reitern (nav.nav); die Seite kann ihn über window.MWB_PAGE anpassen:
+#   simplePage() -> Seitenschlüssel für /api/ui_simple ("" = auf dieser Seite gibt es nur eine Ansicht: Einfach / Experte grau)
+#   simple(on)   -> eigene Umschaltung (sonst: speichern und neu laden)
+#   (3.23: der Schalter «Beim Start: Nur Gruppen» ist entfernt - der Start ist «Meine Ansicht»)
+# Die drei Klapp-Knöpfe wirken auf alle sichtbaren Klappkarten der Seite (<details>, dazu die Karten der Simulator-Steuerung
+# .sc-card / .sc-sub; ohne Hilfe- und Statuskarten: #g2-tt, [data-mwb-skip]); «Nur Gruppen» = oberste Karten offen, die Themen darin zu. Keine Klappkarten: grau. Gleiche Ids wie früher
+# (#all-close, #all-groups, #all-open, #start-groups), damit Hilfe, Rundgang und Bildschirmleser sie weiter finden.
+# Simulator (Godot): derselbe Baustein in scripts/bedienleiste.gd; Pi-Fenster: App._mwbar() in 570.
+
+# key = English text: (Deutsch, Français, Italiano, Rumantsch)
+_HX_MWB = {
+    'Hide the tabs': ('Reiter einklappen', 'Replier les onglets', 'Comprimi le schede', 'Zuppentar ils registers'),
+    'Show the tabs': ('Reiter ausklappen', 'Afficher les onglets', 'Mostra le schede', 'Mussar ils registers'),
+    'Hide the status line': ('Statuszeile einklappen', 'Replier la ligne d’état', 'Comprimi la riga di stato', 'Zuppentar la lingia da status'),
+    'Show the status line': ('Statuszeile ausklappen', 'Afficher la ligne d’état', 'Mostra la riga di stato', 'Mussar la lingia da status'),
+    'Status': ('Status', 'État', 'Stato', 'Status'),
+    'This page has only one view': ('Diese Seite hat nur eine Ansicht', 'Cette page n’a qu’une seule vue', 'Questa pagina ha una sola vista',
+                                    'Questa pagina ha mo ina vista'),
+    'Nothing to fold on this page': ('Auf dieser Seite gibt es nichts zum Klappen', 'Rien à replier sur cette page', 'Niente da comprimere in questa pagina',
+                                     'Nagut da zuppentar sin questa pagina'),
+    'Symbols coloured': ('Symbole farbig', 'Symboles en couleur', 'Simboli a colori', 'Simbols colurads'),
+    'plain': ('schlicht', 'simples', 'semplici', 'simpels'),
+}
+for _k, _v in _HX_MWB.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+
+MWB_KEYS = sorted(set(_HX_MWB) | {
+    "Simple", "Expert", "On start: groups only", "Collapse all", "Groups only", "Expand all", "My view",
+    "Simple: only the important settings. «Expert» shows all of them.", "Symbols: green dot or green symbol = switched on",
+    "On every start the settings show only the groups. Off: the menus open as you left them."})
+
+
+def mwb_tx():
+    """the texts of the bar in de / fr / it / rm (English = the key)"""
+    out = {"de": {k: DE.get(k, k) for k in MWB_KEYS}}
+    for L in ("fr", "it", "rm"):
+        out[L] = {k: TRX[L].get(k) or (DE.get(k, k) if L == "rm" else k) for k in MWB_KEYS}
+    return out
+
+
+MWB_CSS = _zd('639o_bedienleiste/MWB_CSS', "")
+
+
+MWB_JS = _zd('639o_bedienleiste/MWB_JS', "")
+
+
+# the manual (HELP_PAGE of 540): one paragraph in «Tipps & Tricks», German and English
+for _a, _b in (('<section id="tips" data-icon="🧭" class="tips"><h2>Tipps &amp; Tricks</h2>',
+                "<p><b>▴ Kopf einklappen und Bedienleiste:</b> Die Reiterzeile und die Statuszeile oben klappst du je mit dem kleinen Pfeil "
+                "▴ ein und mit dem Griff ▾ wieder aus. Jedes Gerät merkt sich das selbst. Ist die Statuszeile eingeklappt und gibt es einen "
+                "Alarm, einen Fehler oder zu wenige Bilder pro Sekunde, zeigt der Griff einen roten Punkt und eine Kurzinfo. Unter den Reitern "
+                "steht auf jeder Seite dieselbe Leiste: Einfach / Experte, Symbole farbig / schlicht, «Beim Start: Nur Gruppen» und die drei "
+                "Knöpfe Alle zuklappen · Meine Ansicht · Alle aufklappen. Was auf einer Seite nichts bewirkt, ist grau.</p>"),
+               ('<section id="tips" data-icon="🧭" class="tips"><h2>Tips &amp; tricks</h2>',
+                "<p><b>▴ Fold the header and the bar:</b> fold the tabs and the status line at the top one by one with the small arrow ▴ "
+                "and open them again with the grip ▾. Every device remembers it by itself. With the status line folded, an alarm, an error "
+                "or too few pictures per second show a red dot and a short note on the grip. Under the tabs every page has the same bar: "
+                "Simple / Expert, symbols coloured / plain, «On start: groups only» and the three buttons Collapse all · My view · "
+                "Expand all. What does nothing on a page is grey.</p>")):
+    if _a in HELP_PAGE:
+        HELP_PAGE = HELP_PAGE.replace(_a, _a + _b, 1)
+
+
+_render_page_before_mwb = render_page
+
+
+# wraps: render_page
+def render_page(page, active):
+    """+ 639o: the header folds and the bar under the tabs on every page with tabs (not on guest / kiosk pages)"""
+    out = _render_page_before_mwb(page, active)
+    if '<nav class="nav">' not in out or "<header" not in out:
+        return out
+    out = out.replace("</head>", MWB_CSS + "</head>", 1)
+    i = out.rfind("</body>")
+    tag = ("<script>window.MWB_SEITE=" + json.dumps(re.sub(r"[^a-z0-9_-]", "-", str(active or "").lower())[:40]) + ";window.MWB_TX=" + json.dumps(mwb_tx(), ensure_ascii=False).replace("</", "<\\/") + ";</script>" + MWB_JS)
+    return out[:i] + tag + out[i:] if i >= 0 else out + tag
+
+
+def _mwb_selftest():
+    p = render_page("<html><head></head><body><header><h1>MoveEye</h1><!--NAV--></header><main></main></body></html>", "live")
+    assert p.count('id="mwb-css"') == 1 and "window.MWB_TX=" in p and p.count("window.MWB)") == 1, "639o: bar missing / twice"
+    assert "mwbar" not in render_page("<html><head></head><body><main></main></body></html>", "guest"), "639o: bar on a page without tabs"
+    tx = mwb_tx()
+    for L in ("de", "fr", "it", "rm"):
+        assert all(tx[L].get(k) for k in _HX_MWB), "639o: text missing in " + L
+    assert {"mw-hdr-tabs", "mw-hdr-chips"} <= WEB_UI_LOCAL, "639o: header folds must stay per device"
+
+
+SELFTEST_EXTRA.append(("Header folds and bar (639o)", _mwb_selftest))
+# ----------------------------------------------------------------------------
+# Eine Quelle für beide Programme. Entscheide Daniel (31.10.2026): eine Einfach/Experte-Wahl, eine Sprache, Auf-/Zuklappen
+# wird nicht geteilt, «Sensoren» im Simulator heisst «Zusatzgeräte» (extras, Strom und Netz bleiben darin).
+#   * UI_GEMEINSAM: die Datei, beim Bauen eingebettet (werkzeuge/bauen.py schreibt den Block unten neu, --pruefen meldet
+#     einen alten Stand) - die Signatur der Hauptdatei deckt sie mit ab. Nicht von Hand ändern: die JSON-Datei ändern, bauen.
+#   * ui_gem_text("close", "fr") -> Text der Bedienleiste (Komponente aus Paket P0, 639o) - en ist der Schlüssel in DE / TRX.
+#   * ui_gem_gid("system") -> "sys": alte Gruppen-IDs älterer Simulatoren (dieselbe Tabelle steht als SC_GID_ALIAS in 470).
+#   * sim_features(): was der verbundene Simulator kann (/info «features», z. B. "menu1"); ältere senden nichts.
+#   * Selbsttest «One menu file …»: Web-Gruppen (GROUPS 530), Fenster-Gruppen (TK_GROUPS / TK_GROUP_ICONS 639c),
+#     Übersetzungen, Texte der Leiste, Alias und Symbole der Seite «Simulator» (470) - und, wenn der Ordner simulator3d da
+#     ist, die Gruppen des Simulators (main.gd GROUPS / GROUP_IDS / GROUP_RENAME, i18n/texte.json, export_presets.cfg).
+#     Der Simulator prüft dasselbe ohne Bild (werkzeuge/ui_gemeinsam_test.gd) und beim Start (Log «Menü-Datei: OK»).
+# ----------------------------------------------------------------------------
+
+# ---- UI_GEMEINSAM (von werkzeuge/bauen.py aus simulator3d/ui_gemeinsam.json – nicht von Hand ändern) ----
+UI_GEMEINSAM = json.loads(_zd('639p_ui_gemeinsam/UI_GEMEINSAM', ""))
+# ---- Ende UI_GEMEINSAM ----
+
+UI_GEM_LANGS = ("de", "en", "fr", "it", "rm")
+
+
+def ui_gem_tr(key, lang):
+    """the text of a MoveEye key (English) in a language - the same rule as the web page / window (DE, TRX, else English)"""
+    if lang == "en":
+        return key
+    if lang == "de":
+        return DE.get(key, key)
+    return (TRX.get(lang) or {}).get(key) or key
+
+
+def ui_gem_text(k, lang="de"):
+    """a text of the bar: simple, expert, color, plain, close, groups, open"""
+    t = ((UI_GEMEINSAM.get("bar") or {}).get("texts") or {}).get(k) or {}
+    return t.get(lang) or t.get("en") or k
+
+
+def ui_gem_gid(gid):
+    """an old group id (older simulators) -> the id of today"""
+    return (UI_GEMEINSAM.get("alias") or {}).get(gid, gid)
+
+
+def ui_gem_groups(side):
+    """the groups of one side («mw» / «sim») in their order"""
+    return sorted((g for g in UI_GEMEINSAM.get("groups") or [] if side in g), key=lambda g: g.get("order", 0))
+
+
+def sim_features():
+    """/info «features» of the connected simulator (P1: "menu1" = gids sys / extras, part «Kinder-Modus"); [] = older one"""
+    f = (SIM.get("info") or {}).get("features") or []
+    return [str(x) for x in f] if isinstance(f, list) else []
+
+
+_sim_status_639p_base = sim_status
+
+
+def sim_status():                                         # + 639p: the page «Simulator» knows what the simulator can
+    r = _sim_status_639p_base()
+    r["features"] = sim_features()
+    return r
+
+
+def ui_gem_check(base=None):
+    """(problems, counts) - MoveEye (and the simulator sources, if there) against simulator3d/ui_gemeinsam.json"""
+    base = base or os.path.dirname(os.path.abspath(__file__))
+    U, probs = UI_GEMEINSAM, []
+    p = os.path.join(base, "simulator3d", "ui_gemeinsam.json")
+    if os.path.exists(p):
+        with open(p, encoding="utf-8") as f:
+            if json.load(f) != U:
+                probs.append("UI_GEMEINSAM is older than simulator3d/ui_gemeinsam.json - run werkzeuge/bauen.py")
+    if not U.get("groups"):
+        return ["UI_GEMEINSAM is empty (werkzeuge/bauen.py embeds simulator3d/ui_gemeinsam.json)"], {}
+    ids = [g["id"] for g in U["groups"]]
+    if len(set(ids)) != len(ids):
+        probs.append("a group id twice in the file")
+    for old, new in (U.get("alias") or {}).items():
+        if new not in ids or old in ids:
+            probs.append(f"alias {old} -> {new}: the new id must exist, the old one not")
+    mw = ui_gem_groups("mw")
+    src = zd_source()
+    # 1. the web page (GROUPS in 530): ids in this order, symbol and name
+    m = re.search(r"const GROUPS = \[(.*?)\n\];", src, re.S)
+    web = re.findall(r'\{id: "(\w+)", tab: "\w+", icon: "([^"]*)", name: "([^"]*)"', m.group(1)) if m else []
+    if [w[0] for w in web] != [g["id"] for g in mw]:
+        probs.append("web GROUPS (530): " + ", ".join(w[0] for w in web) + " instead of " + ", ".join(g["id"] for g in mw))
+    for gid_, icon, name in web:
+        g = next((x for x in mw if x["id"] == gid_), None)
+        if g and (icon != g.get("emoji") or name != g["mw"]["key"]):
+            probs.append(f"web GROUPS {gid_}: «{icon} {name}» instead of «{g.get('emoji')} {g['mw']['key']}»")
+    # 2. the window (TK_GROUPS, TK_GROUP_ICONS)
+    if [t[0] for t in TK_GROUPS] != [g["id"] for g in mw]:
+        probs.append("window TK_GROUPS: " + ", ".join(t[0] for t in TK_GROUPS) + " instead of " + ", ".join(g["id"] for g in mw))
+    for t in TK_GROUPS:
+        g = next((x for x in mw if x["id"] == t[0]), None)
+        if g and t[1] != g["mw"]["key"]:
+            probs.append(f"window TK_GROUPS {t[0]}: «{t[1]}» instead of «{g['mw']['key']}»")
+        if g and g.get("tk") and TK_GROUP_ICONS.get(t[0]) != g["tk"]:
+            probs.append(f"window symbol {t[0]}: «{TK_GROUP_ICONS.get(t[0])}» instead of «{g['tk']}»")
+    # 3. names and texts of the bar in every language (as the web page / window shows them)
+    for g in mw:
+        for lg in UI_GEM_LANGS:
+            want = (g["mw"].get("names") or {}).get(lg)
+            if want and ui_gem_tr(g["mw"]["key"], lg) != want:
+                probs.append(f"name {g['id']} ({lg}): «{ui_gem_tr(g['mw']['key'], lg)}» instead of «{want}»")
+    bar = (U.get("bar") or {}).get("texts") or {}
+    for k, t in bar.items():
+        for lg in UI_GEM_LANGS:
+            if ui_gem_tr(t["en"], lg) != t.get(lg):
+                probs.append(f"bar text {k} ({lg}): «{ui_gem_tr(t['en'], lg)}» instead of «{t.get(lg)}»")
+    # 4. the page «Simulator» (470): alias table and the drawn symbols of the simulator groups
+    m = re.search(r"const SC_GID_ALIAS = (\{[^}]*\});", src)
+    if not m or json.loads(m.group(1)) != (U.get("alias") or {}):
+        probs.append("470 SC_GID_ALIAS is not the alias table of the file")
+    m = re.search(r"const SC_ICON = \{(.*?)\};", src, re.S)
+    sc = set(re.findall(r"\n  (\w+): '", m.group(1))) if m else set()
+    for g in ui_gem_groups("sim"):
+        dr = g["sim"].get("draw", g.get("draw"))
+        if dr and dr not in sc:
+            probs.append(f"470 SC_ICON: the symbol «{dr}» of the simulator group {g['id']} is missing")
+    n = {"mw": len(mw), "sim": len(ui_gem_groups("sim")), "both": len([g for g in U["groups"] if "mw" in g and "sim" in g]),
+         "bar": len(bar), "simsrc": False}
+    # 5. the simulator (sources, if the folder is there - GitHub has no Godot)
+    gdir = os.path.join(base, "simulator3d", "scripts")
+    if os.path.isfile(os.path.join(gdir, "main.gd")):
+        with open(os.path.join(gdir, "main.gd"), encoding="utf-8") as f:
+            gd = f.read()
+        n["simsrc"] = True
+        m = re.search(r"\nconst GROUPS := \[(.*?)\]\]\n", gd, re.S)
+        rows = re.findall(r'\[\s*"([^"]+)", "(\w*)", "([^"]*)", \[([^\]]*)\]', m.group(1) + "]]") if m else []
+        sim = ui_gem_groups("sim")
+        if [r[0] for r in rows] != [g["sim"]["key"] for g in sim]:
+            probs.append("simulator GROUPS (main.gd): " + ", ".join(r[0] for r in rows) + " instead of " + ", ".join(g["sim"]["key"] for g in sim))
+        m = re.search(r"\nconst GROUP_IDS := \{(.*?)\}", gd, re.S)
+        gids = dict(re.findall(r'"([^"]+)": "(\w+)"', m.group(1))) if m else {}
+        m = re.search(r"\nconst GROUP_RENAME := \{(.*?)\}", gd, re.S)
+        ren = dict(re.findall(r'"([^"]+)": "([^"]+)"', m.group(1))) if m else {}
+        for g in sim:
+            r = next((x for x in rows if x[0] == g["sim"]["key"]), None)
+            if gids.get(g["sim"]["key"]) != g["id"]:
+                probs.append(f"simulator GROUP_IDS {g['sim']['key']}: «{gids.get(g['sim']['key'])}» instead of «{g['id']}»")
+            if r and (r[1] != g["sim"].get("draw", g.get("draw")) or r[2] != g["sim"].get("emoji", g.get("emoji"))):
+                probs.append(f"simulator symbol {g['id']}: «{r[1]} {r[2]}» instead of «{g['sim'].get('draw', g.get('draw'))} {g['sim'].get('emoji', g.get('emoji'))}»")
+            for o in g["sim"].get("old") or []:
+                if ren.get(o) != g["sim"]["key"]:
+                    probs.append(f"simulator GROUP_RENAME: old name «{o}» -> «{g['sim']['key']}» missing")
+        for pid, pt in (U.get("parts") or {}).items():
+            g = next((x for x in sim if x["id"] == pid.split("/")[0]), None)
+            r = next((x for x in rows if g and x[0] == g["sim"]["key"]), None)
+            if not r or f'"{pt["sim"]}"' not in r[3]:
+                probs.append(f"simulator part {pid}: «{pt['sim']}» missing in main.gd GROUPS")
+            for o in pt.get("old") or []:
+                if f'"{o}"' in gd:
+                    probs.append(f"simulator part {pid}: the old name «{o}» is still in main.gd")
+        for g in U["groups"]:
+            for rv in g.get("reserved") or []:
+                for r in rows:
+                    for nm in [r[0]] + re.findall(r'"([^"]*)"', r[3]):
+                        if nm == rv or nm.startswith(rv + " ") or nm.startswith(rv + "/"):
+                            probs.append(f"simulator «{nm}»: the name belongs to the group {g['id']} of MoveEye")
+        tp = os.path.join(base, "simulator3d", "i18n", "texte.json")
+        if os.path.exists(tp):
+            with open(tp, encoding="utf-8") as f:
+                tx = json.load(f)
+            for g in sim:
+                for lg in ("en", "fr", "it", "rm"):
+                    w = (g["sim"].get("names") or {}).get(lg)
+                    if w and (tx.get(g["sim"]["key"]) or {}).get(lg) != w:
+                        probs.append(f"simulator name {g['id']} ({lg}): «{(tx.get(g['sim']['key']) or {}).get(lg)}» instead of «{w}» (i18n/texte.json)")
+            for k, t in bar.items():
+                for lg in ("en", "fr", "it", "rm"):
+                    if (tx.get(t["de"]) or {}).get(lg) != t.get(lg):
+                        probs.append(f"simulator bar text {k} ({lg}): «{(tx.get(t['de']) or {}).get(lg)}» instead of «{t.get(lg)}» (i18n/texte.json)")
+        ep = os.path.join(base, "simulator3d", "export_presets.cfg")
+        if os.path.exists(ep):
+            with open(ep, encoding="utf-8") as f:
+                for line in f:
+                    if line.startswith("include_filter=") and "ui_gemeinsam.json" not in line:
+                        probs.append("simulator export_presets.cfg: ui_gemeinsam.json is not in the .exe")
+    return probs, n
+
+
+def ui_gem_selftest():
+    probs, n = ui_gem_check()
+    assert not probs, f"{len(probs)} problems: " + " | ".join(probs[:12])
+    assert ui_gem_gid("system") == "sys" and ui_gem_gid("sensors") == "extras" and ui_gem_gid("dev") == "dev", "alias"
+    keep = SIM.get("info")
+    try:
+        SIM["info"] = {"features": ["menu1"]}
+        assert "menu1" in sim_features() and sim_status().get("features") == ["menu1"], "features of the simulator"
+        SIM["info"] = {"v": 1}
+        assert sim_features() == [], "older simulator without features"
+    finally:
+        SIM["info"] = keep
+    return (f"{n['mw']} groups MoveEye, {n['sim']} simulator, {n['both']} on both sides, {n['bar']} texts of the bar - same as the file"
+            + ("" if n["simsrc"] else " (simulator folder not here)"))
+
+
+SELFTEST_EXTRA.append(("One menu file MoveEye ↔ simulator (simulator3d/ui_gemeinsam.json: groups, symbols, texts)", ui_gem_selftest))
+# ----------------------------------------------------------------------------
+# Entfernt (nur diese Schalter, die Funktion bleibt immer an):
+#   * notify_sandbox  -> sandbox_active() (141) ist in der Simulation immer wahr; Info-Meldungen gehen mit sim_info_push
+#                        oder bei echten Pi-Warnungen weiter aufs Handy (sandbox_lets_through, 141 / 060)
+#   * sim_separate    -> simprof_on / simprof_off (340) immer
+#   * login_https_only-> seclogin_mode (574) immer «on» (oder «fallback» ohne https-Seite, nie ausgesperrt)
+# Ein gespeicherter alter Wert dieser Schlüssel wird beim Laden still übergangen (apply_settings kennt sie nicht mehr).
+# update_unsigned: Abschnitt «Developer» (639c _MENU_MOVES), Ablauf in update_unsigned_ok (380), Zeit update_unsigned_t (020).
+# ----------------------------------------------------------------------------
+_HX_SCHALTER = {
+    "Only for your own builds: MoveEye also installs versions without the developer's signature. Switches itself off after 24 hours.":
+        ("Nur für eigene Fassungen: MoveEye installiert auch Versionen ohne die Signatur des Entwicklers. Schaltet sich nach 24 Stunden selbst aus.",
+         "Uniquement pour vos propres versions : MoveEye installe aussi des versions sans la signature du développeur. Se désactive tout seul après 24 heures.",
+         "Solo per versioni proprie: MoveEye installa anche versioni senza la firma dello sviluppatore. Si spegne da solo dopo 24 ore.",
+         "Mo per atgnas versiuns: MoveEye installescha er versiuns senza la signatura dal sviluppader. Sa stizza sez suenter 24 uras."),
+    "Off.": ("Aus.", "Désactivé.", "Spento.", "Stizzà."),
+    "Unsigned versions: switched off by itself after 24 hours":
+        ("Nicht signierte Versionen: nach 24 Stunden von selbst ausgeschaltet",
+         "Versions non signées : désactivé tout seul après 24 heures",
+         "Versioni non firmate: spento da solo dopo 24 ore",
+         "Versiuns betg signadas: stizzà sez suenter 24 uras"),
+}
+for _k, _v in _HX_SCHALTER.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+
+SET_HELP["update_unsigned"] = ("Only for your own builds: MoveEye also installs versions without the developer's signature. Switches itself off after 24 hours.",
+                               "Off.")
+
+
+# ---- 3.23 Schritt 2 -------------------------------------------------------------------------------------------------------
+# * Updates (Daniel: «4 Schalter werden zu einer Auswahl wie im Simulator»): update_mode off | auto | dev statt update_auto /
+#   update_install / update_fast / update_install_armed (MIGRATE_ONLY, 020). Alte Dateien: update_fast -> dev, update_install -> auto,
+#   sonst off. «auto» installiert nur bei «Aus» (das alte «auch bei Schutz an» = update_install_armed fällt weg; dev tut es immer).
+# * «Bewegung reduzieren» (reduce_motion auto | on | off, Gerät & Hilfe): Logo, Radar-Symbol, Blinki, Status-LED-Blinki im Web;
+#   auto folgt dem Betriebssystem (prefers-reduced-motion), on / off überschreiben es (render_page unten, html.mwrm / html.mwrm0).
+# * «Stimme» (voice_mode on | off | subtitles, Licht & Ton → Lautsprecher): die Stimme im Browser (Trailer, Vorführung,
+#   Almanach, Spiele). Die Ansage beim Einschalten und «Gesundheit!» sind Lautsprecher-Funktionen und bleiben eigene Schalter.
+# * Rundgang, Tipp des Tages, Blinki: nur noch unter Einstellungen → System → Gerät & Hilfe; Einrichtung, Hilfe-Karte, Tipp-
+#   Fenster (Web 516, Fenster 585) zeigen einen Link dorthin.
+TEXTS.extend([
+    ("Updates", "update_mode", "New versions", "enum", "update_modes"),
+    ("Device & help", "reduce_motion", "Reduce motion (logo, radar, Blinki)", "enum", "reduce_motion"),
+    ("Loudspeaker", "voice_mode", "Voice (narrator, demo, trailer, browser)", "enum", "voice_modes"),
+])
+TEXT_SPECS.update({k: (kind, extra) for s, k, l, kind, extra in TEXTS if k in ("update_mode", "reduce_motion", "voice_mode")})
+SIMPLE_KEYS.update({"update_mode", "reduce_motion", "voice_mode"})
+UPDATE_MODES = (("off", "only by hand: look and report, install with the button"),
+                ("auto", "install automatically (in the update hour, when the protection is off)"),
+                ("dev", "development phase: every minute, at once (also while protected)"))
+REDUCE_MOTION = (("auto", "like the operating system"), ("on", "on: still pictures"), ("off", "off: everything moves"))
+VOICE_MODES = (("on", "on"), ("off", "off"), ("subtitles", "only subtitles"))
+SET_HELP.update({
+    "update_mode": ("«Only by hand»: MoveEye looks every 3 hours and reports a new version; you install it with «Update now». «Automatically»: "
+                    "in the update hour, only while the protection is off. «Development phase»: looks every minute and installs at once. Like the simulator.",
+                    "Automatically."),
+    "reduce_motion": ("Less movement on the pages: the walking person of the logo, the radar symbol and Blinki stand still. «Like the operating "
+                      "system» follows the setting of the phone or PC (reduce motion / animations).", "Like the operating system."),
+    "voice_mode": ("One switch for the voice: the narrator of the trailers and the demo, the almanac and the games in the browser. «Only "
+                   "subtitles» shows the text without speaking.", "On."),
+})
+_HX_SCHALTER2 = {
+    "New versions": ("Neue Versionen", "Nouvelles versions", "Nuove versioni", "Novas versiuns"),
+    "only by hand: look and report, install with the button":
+        ("nur von Hand: nachschauen und melden, installieren mit dem Knopf", "seulement à la main : chercher et signaler, installer avec le bouton",
+         "solo a mano: cercare e segnalare, installare con il pulsante", "mo a maun: tschertgar ed annunziar, installar cun il buttun"),
+    "install automatically (in the update hour, when the protection is off)":
+        ("automatisch installieren (in der Update-Stunde, wenn der Schutz aus ist)", "installer automatiquement (à l’heure des mises à jour, protection désactivée)",
+         "installare automaticamente (nell’ora degli aggiornamenti, con la protezione spenta)", "installar automaticamain (en l’ura d’actualisaziun, cura che la protecziun è stizzada)"),
+    "development phase: every minute, at once (also while protected)":
+        ("Entwicklungsphase: jede Minute, sofort (auch bei Schutz an)", "phase de développement : chaque minute, tout de suite (aussi sous protection)",
+         "fase di sviluppo: ogni minuto, subito (anche con la protezione attiva)", "fasa da svilup: mintga minuta, immediat (er cun protecziun)"),
+    "Reduce motion (logo, radar, Blinki)": ("Bewegung reduzieren (Logo, Radar, Blinki)", "Réduire les animations (logo, radar, Blinki)",
+                                            "Ridurre il movimento (logo, radar, Blinki)", "Reducir il moviment (logo, radar, Blinki)"),
+    "like the operating system": ("wie das Betriebssystem", "comme le système", "come il sistema operativo", "sco il sistem operativ"),
+    "on: still pictures": ("an: ruhige Bilder", "activé : images fixes", "attivo: immagini ferme", "activà: maletgs quiets"),
+    "off: everything moves": ("aus: alles bewegt sich", "désactivé : tout bouge", "spento: tutto si muove", "stizzà: tut sa mova"),
+    "Voice (narrator, demo, trailer, browser)": ("Stimme (Erzähler, Vorführung, Trailer, Browser)", "Voix (narrateur, démonstration, bande-annonce, navigateur)",
+                                                 "Voce (narratore, dimostrazione, trailer, browser)", "Vusch (narratur, preschentaziun, trailer, navigatur)"),
+    "only subtitles": ("nur Untertitel", "seulement les sous-titres", "solo sottotitoli", "mo sutitels"),
+    "⚙ Tour, tip of the day, Blinki: Settings → System → Device & help":
+        ("⚙ Rundgang, Tipp des Tages, Blinki: Einstellungen → System → Gerät & Hilfe", "⚙ Visite, astuce du jour, Blinki : Réglages → Système → Appareil et aide",
+         "⚙ Tour, consiglio del giorno, Blinki: Impostazioni → Sistema → Dispositivo e aiuto", "⚙ Gir, cussegl dal di, Blinki: Parameters → Sistem → Apparat & agid"),
+    SET_HELP["update_mode"][0]:
+        ("«Nur von Hand»: MoveEye schaut alle 3 Stunden nach und meldet eine neue Version; installiert wird mit «Jetzt aktualisieren». «Automatisch»: "
+         "in der Update-Stunde, nur wenn der Schutz aus ist. «Entwicklungsphase»: schaut jede Minute nach und installiert sofort. Wie im Simulator.",
+         "«Seulement à la main» : MoveEye cherche toutes les 3 heures et signale une nouvelle version ; vous l’installez avec «Mettre à jour». «Automatiquement» : "
+         "à l’heure des mises à jour, seulement protection désactivée. «Phase de développement» : cherche chaque minute et installe tout de suite. Comme le simulateur.",
+         "«Solo a mano»: MoveEye controlla ogni 3 ore e segnala una nuova versione; la installi con «Aggiorna ora». «Automaticamente»: "
+         "nell’ora degli aggiornamenti, solo con la protezione spenta. «Fase di sviluppo»: controlla ogni minuto e installa subito. Come il simulatore.",
+         "«Mo a maun»: MoveEye tschertga mintga 3 uras ed annunzia ina nova versiun; ti l’installeschas cun «Actualisar ussa». «Automaticamain»: "
+         "en l’ura d’actualisaziun, mo cura che la protecziun è stizzada. «Fasa da svilup»: tschertga mintga minuta ed installescha immediat. Sco il simulatur."),
+    "Automatically.": ("Automatisch.", "Automatiquement.", "Automaticamente.", "Automaticamain."),
+    SET_HELP["reduce_motion"][0]:
+        ("Weniger Bewegung auf den Seiten: die gehende Person im Logo, das Radar-Symbol und Blinki stehen still. «Wie das Betriebssystem» "
+         "folgt der Einstellung des Handys oder PCs (Bewegung / Animationen reduzieren).",
+         "Moins de mouvement sur les pages : la personne qui marche du logo, le symbole radar et Blinki restent immobiles. «Comme le système» "
+         "suit le réglage du téléphone ou du PC (réduire les animations).",
+         "Meno movimento nelle pagine: la persona che cammina nel logo, il simbolo radar e Blinki stanno fermi. «Come il sistema operativo» "
+         "segue l’impostazione del telefono o del PC (ridurre il movimento / le animazioni).",
+         "Main moviment sin las paginas: la persuna che chamina en il logo, il simbol radar e Blinki stattan quiet. «Sco il sistem operativ» "
+         "suonda il parameter dal telefonin u dal PC (reducir moviment / animaziuns)."),
+    "Like the operating system.": ("Wie das Betriebssystem.", "Comme le système.", "Come il sistema operativo.", "Sco il sistem operativ."),
+    SET_HELP["voice_mode"][0]:
+        ("Ein Schalter für die Stimme: der Erzähler der Trailer und der Vorführung, der Almanach und die Spiele im Browser. «Nur Untertitel» "
+         "zeigt den Text, ohne zu sprechen.",
+         "Un seul réglage pour la voix : le narrateur des bandes-annonces et de la démonstration, l’almanach et les jeux dans le navigateur. «Seulement les sous-titres» "
+         "affiche le texte sans parler.",
+         "Un solo interruttore per la voce: il narratore dei trailer e della dimostrazione, l’almanacco e i giochi nel browser. «Solo sottotitoli» "
+         "mostra il testo senza parlare.",
+         "In sulet interruptur per la vusch: il narratur dals trailers e da la preschentaziun, l’almanac ed ils gieus en il navigatur. «Mo sutitels» "
+         "mussa il text senza discurrer."),
+    "On.": ("An.", "Activé.", "Attivo.", "Activà."),
+}
+for _k, _v in _HX_SCHALTER2.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+G2_UI.append("⚙ Tour, tip of the day, Blinki: Settings → System → Device & help")
+
+_text_choice_pairs_639q = text_choice_pairs
+
+
+# wraps: text_choice_pairs
+def text_choice_pairs(key):                               # + 639q: updates, reduce motion, voice
+    extra = (TEXT_SPECS.get(key) or (None, None))[1]
+    if extra == "update_modes":
+        return [(k, tr(l)) for k, l in UPDATE_MODES]
+    if extra == "reduce_motion":
+        return [(k, tr(l)) for k, l in REDUCE_MOTION]
+    if extra == "voice_modes":
+        return [(k, tr(l)) for k, l in VOICE_MODES]
+    return _text_choice_pairs_639q(key)
+
+
+def update_mode_migrate(cfg_in):
+    """an older file with the four update switches -> update_mode (only when the file has no update_mode yet)"""
+    for k in ("update_auto", "update_install", "update_fast", "update_install_armed"):
+        CFG.pop(k, None)
+    if not isinstance(cfg_in, dict) or "update_mode" in cfg_in:
+        return ""
+    if not any(k in cfg_in for k in ("update_auto", "update_install", "update_fast", "update_install_armed")):
+        return ""
+    m = "dev" if cfg_in.get("update_fast") is True else "auto" if cfg_in.get("update_install") is True else "off"
+    CFG["update_mode"] = m
+    return m
+
+
+_settings_migrations_before_639q = _settings_migrations
+
+
+# wraps: _settings_migrations
+def _settings_migrations(cfg_in):                         # + 639q (3.23): the four update switches -> update_mode
+    _settings_migrations_before_639q(cfg_in)
+    try:
+        m = update_mode_migrate(cfg_in)
+        if m:
+            log_event("sys", f"Settings of an older version taken over: updates «{m}»")
+    except Exception as e:
+        log_event("sys", f"Settings migration (639q): {e}"[:150])
+
+
+# ---- web: reduce motion and the voice on every page ------------------------------------------------------------------------
+_RM_BLOCK = re.compile(r"@media \(prefers-reduced-motion:\s*reduce\)\s*\{((?:[^{}]*\{[^{}]*\})*)\s*\}")
+
+
+def rm_css(css):
+    """every «@media (prefers-reduced-motion:reduce){…}»: only when not switched off (html.mwrm0), and the same rules with
+    html.mwrm (switched on, or «auto» and the system says so - set by the script in the head)"""
+    def one(m):
+        body = m.group(1)
+        if "mwrm" in body:
+            return m.group(0)
+        rules = re.findall(r"([^{}]+)\{([^{}]*)\}", body)
+        pre = lambda p: ",".join(p + " " + x.strip() for x in sel.split(",") if x.strip())
+        a, b = [], []
+        for sel, decl in rules:
+            a.append(pre("html:not(.mwrm0)") + "{" + decl + "}")
+            b.append(pre("html.mwrm") + "{" + decl + "}")
+        return "@media (prefers-reduced-motion:reduce){" + "".join(a) + "}" + "".join(b)
+    return _RM_BLOCK.sub(one, css)
+
+
+try:
+    BLINKI_CSS = rm_css(BLINKI_CSS)                       # 589: Blinki comes with /g2/ui.js, not in the page
+except NameError:
+    pass
+
+
+def motion_head():
+    m = str(CFG.get("reduce_motion") or "auto")
+    m = m if m in ("auto", "on", "off") else "auto"
+    v = str(CFG.get("voice_mode") or "on")
+    v = v if v in ("on", "off", "subtitles") else "on"
+    js = ("(function(){var m=%s,d=document.documentElement,r=m==='on';try{if(m==='auto')r=matchMedia('(prefers-reduced-motion: reduce)').matches;}catch(e){}"
+          "d.classList.toggle('mwrm',r);d.classList.toggle('mwrm0',m==='off');window.MW_MOTION=r?'reduce':'full';window.MW_VOICE=%s;})();") % (json.dumps(m), json.dumps(v))
+    css = ("html.mwrm header h1::before{background-image:url(/icon-192.png?i=%s)!important}"
+           "html.mwrm header h1.wm *{animation:none!important}html.mwrm header h1.wm .wmp{transform:none!important}") % app_icon_id()
+    return "<script>" + js + "</script><style>" + css + "</style>"
+
+
+_render_page_before_639q = render_page
+
+
+# wraps: render_page
+def render_page(page, active):
+    """+ 639q: «Reduce motion» (class on <html> before anything is drawn) and the voice setting for the speaking pages"""
+    out = _render_page_before_639q(page, active)
+    if "prefers-reduced-motion" in out:
+        out = rm_css(out)
+    return out.replace("<head>", "<head>" + motion_head(), 1) if "<head>" in out else motion_head() + out
+
+
+def voice_say_ok():
+    """the browser may speak (voice_mode «on»)"""
+    return str(CFG.get("voice_mode") or "on") == "on"
+
+
+def schalter_selftest():
+    """the removed switches stay removed, the functions are always on, unsigned versions expire after 24 hours"""
+    lists = {x[1] for x in TOGGLES + SLIDERS + TEXTS}
+    for k in ("notify_sandbox", "sim_separate", "login_https_only"):
+        assert k not in CFG and k not in lists, f"{k} is back"
+    assert any(x[1] == "update_unsigned" and x[0] == "Developer" for x in TOGGLES), "update_unsigned not in the developer section"
+    keep = {k: CFG.get(k) for k in ("sim_on", "update_unsigned", "update_unsigned_t")}
+    G = globals(); keep_save = G["save_settings"]; keep_log = G["log_event"]
+    try:
+        G["save_settings"] = lambda *a, **k: None; G["log_event"] = lambda *a, **k: None
+        CFG["sim_on"] = True
+        assert sandbox_active(), "test inbox not on in the simulation"
+        CFG.update(update_unsigned=True, update_unsigned_t=0.0)
+        assert update_unsigned_ok() and CFG["update_unsigned_t"] > 0, "time not started"
+        CFG["update_unsigned_t"] = time.time() - 25 * 3600
+        assert not update_unsigned_ok() and not CFG["update_unsigned"], "not switched off after 24 h"
+    finally:
+        G["save_settings"] = keep_save; G["log_event"] = keep_log
+        CFG.update(keep)
+    for k in ("update_auto", "update_install", "update_fast", "update_install_armed", "sim_basis_show"):
+        assert k not in CFG and k not in lists, f"{k} is back"
+    keep2 = CFG.get("update_mode")
+    try:
+        assert update_mode_migrate({"update_auto": True, "update_install": True}) == "auto" and CFG["update_mode"] == "auto"
+        assert update_mode_migrate({"update_fast": True, "update_install": True}) == "dev"
+        assert update_mode_migrate({"update_auto": False}) == "off"
+        assert update_mode_migrate({"update_mode": "auto", "update_fast": True}) == "" and CFG["update_mode"] == "off"
+    finally:
+        CFG["update_mode"] = keep2
+    assert [c for c, _ in text_choice_pairs("update_mode")] == ["off", "auto", "dev"]
+    css = rm_css("@media (prefers-reduced-motion:reduce){.bk *,.bk.hop .bk-all{animation:none}#x{transition:none}}")
+    assert "html:not(.mwrm0) .bk *" in css and "html.mwrm .bk.hop .bk-all{animation:none}" in css and "html.mwrm #x" in css, css
+    assert rm_css(css) == css, "not twice"
+    pg = render_page("<html><head></head><body><header><h1>MoveEye</h1></header></body></html>", "live")
+    assert "mwrm" in pg and "MW_VOICE" in pg and "SIM_ZIP_B64" not in globals()
+    return ("test inbox always on in the simulation, login always encrypted, unsigned versions 24 h, updates one choice, "
+            "reduce motion + voice on the pages, no basic simulator")
+
+
+SELFTEST_EXTRA.append(("Switches tidied up (639q)", schalter_selftest))
+# Daniel (1.11.2026): «der mittlere der 3 Knöpfe wird Meine Ansicht».
+#   * aktiv: jedes Auf- / Zuklappen einer Gruppe / Karte durch den Benutzer wird gemerkt (die Seite schreibt gebündelt, 1 s).
+#   * «Alle zuklappen» / «Alle aufklappen»: Meine Ansicht ist aus, das Gemerkte bleibt; die Mitte stellt es wieder her.
+#   * beim Start ist Meine Ansicht der Standard. «Nur Gruppen» und der Schalter «Beim Start: Nur Gruppen» bleiben (Daniel:
+#     nichts entfernen ohne Zustimmung): «Nur Gruppen» = langer Druck / Rechtsklick auf die Mitte; ist der Schalter ein, startet
+#     die Seite wie bisher mit «Nur Gruppen» (Meine Ansicht aus). Übernahme einmal (ui_ansicht_mig): wer «Beim Start: Nur Gruppen»
+#     hatte, bekommt als erste Meine Ansicht «Nur Gruppen offen» und der Schalter geht aus (sonst wäre Meine Ansicht nie der Start).
+#   * pro Benutzer (der Besitzer ohne Benutzername = «admin», auch das Pi-Fenster) und pro Seite (der Reiter: live, protect,
+#     settings, sim, rec …). Ids = stabile Kennungen der Karten (data-view «grp:…» / «sec:…», id, data-k …), dieselben wie im Fenster
+#     (grp:<gruppe>, sec:<teil>) – passend zu den Gruppen-Ids von ui_gemeinsam (P1).
+#   * ohne Pi (keine Verbindung / kein Recht): die Seite merkt es sich im Browser (localStorage «mwa:…», nicht über web_ui geteilt).
+#   * Simulator: lokal (fold_mem, simulator_settings.json); der Abgleich Simulator ↔ MoveEye kommt mit P2 (eine Funktion pro Änderung:
+#     web ansichtMerken(id, offen), Fenster App._mine_change, Simulator _mine_change).
+
+ANSICHT_MAX_SEITEN = 40
+ANSICHT_MAX_IDS = 400
+_ANSICHT_SEITE = re.compile(r"^[a-z0-9_\-]{1,40}$")
+
+# key = English text: (Deutsch, Français, Italiano, Rumantsch)
+_HX_MINE = {
+    'My view': ('Meine Ansicht', 'Ma vue', 'La mia vista', 'Mia vista'),
+    'My view: the menus open and close the way you left them (kept for you on every device). Long press or right click: groups only.':
+        ('Meine Ansicht: Die Menüs sind auf- und zugeklappt, wie du sie selbst eingestellt hast (für dich auf allen Geräten gleich). '
+         'Lange drücken oder Rechtsklick: Nur Gruppen.',
+         'Ma vue : les menus s’ouvrent et se ferment comme tu les as laissés (pareil sur tous tes appareils). Appui long ou clic droit : '
+         'seulement les groupes.',
+         'La mia vista: i menu sono aperti e chiusi come li hai lasciati (uguale su tutti i tuoi dispositivi). Pressione lunga o clic '
+         'destro: solo i gruppi.',
+         'Mia vista: ils menus èn averts e serrads sco che ti als has laschads (uschia sin tut tes apparats). Smatgar ditg u clic dretg: '
+         'mo las gruppas.'),
+    'My view: the menus open and close the way you left them. Long press or right click: groups only.':   # the simulator (local until P2)
+        ('Meine Ansicht: Die Menüs sind auf- und zugeklappt, wie du sie selbst eingestellt hast. Lange drücken oder Rechtsklick: Nur Gruppen.',
+         'Ma vue : les menus s’ouvrent et se ferment comme tu les as laissés. Appui long ou clic droit : seulement les groupes.',
+         'La mia vista: i menu sono aperti e chiusi come li hai lasciati. Pressione lunga o clic destro: solo i gruppi.',
+         'Mia vista: ils menus èn averts e serrads sco che ti als has laschads. Smatgar ditg u clic dretg: mo las gruppas.'),
+    'My view – saved only on this device (no connection)': ('Meine Ansicht – nur auf diesem Gerät gemerkt (keine Verbindung)',
+        'Ma vue – gardée seulement sur cet appareil (pas de connexion)', 'La mia vista – salvata solo su questo dispositivo (nessuna connessione)',
+        'Mia vista – memorisada mo sin quest apparat (nagina connexiun)'),
+}
+for _k, _v in _HX_MINE.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+MWB_KEYS = sorted(set(MWB_KEYS) | set(_HX_MINE))
+
+VIEW_GET = VIEW_GET + ("/api/ansicht",)            # every user has his own view (also «Nur ansehen»)
+VIEW_POST.add("/api/ansicht")
+LOCK_KEEP.update({"ui_ansicht", "ui_ansicht_mig", "ui_ansicht_sg0"})   # operator mode: the own view is no setting of the device
+
+
+def ansicht_user(g_=None):
+    """the key of the user: the logged-in name; the owner (web password with any name, no password, app key, Pi window) = «admin»"""
+    if g_ is None or getattr(g_, "role", "admin") == "admin":   # the owner: the web password takes any user name, app keys too
+        return "admin"
+    return str(getattr(g_, "user", "") or "")[:60] or "admin"
+
+
+def _ansicht_ids(v):
+    return [x[:120] for x in v if isinstance(x, str) and x.strip()][:ANSICHT_MAX_IDS] if isinstance(v, list) else []
+
+
+def ansicht_clean(d):
+    """CFG ui_ansicht: {user: {seite: {"o": [ids open], "z": [ids closed], "t": time}}} - only sane values"""
+    out = {}
+    if not isinstance(d, dict):
+        return out
+    for u, pages in list(d.items())[:60]:
+        if not isinstance(u, str) or not isinstance(pages, dict):
+            continue
+        pp = {}
+        for s, v in pages.items():
+            if isinstance(s, str) and _ANSICHT_SEITE.match(s) and isinstance(v, dict):
+                pp[s] = {"o": _ansicht_ids(v.get("o")), "z": _ansicht_ids(v.get("z")), "t": int(v.get("t") or 0) if isinstance(v.get("t"), (int, float)) else 0}
+        if pp:
+            out[u[:60]] = dict(sorted(pp.items(), key=lambda kv: -kv[1]["t"])[:ANSICHT_MAX_SEITEN])
+    return out
+
+
+def ansicht_mig():
+    """once: «Beim Start: Nur Gruppen» -> the first «Meine Ansicht» is «Nur Gruppen offen» (ui_ansicht_sg0), the switch goes off
+    so that «Meine Ansicht» is the start (the switch stays and can be switched on again)"""
+    if CFG.get("ui_ansicht_mig"):
+        return False
+    CFG["ui_ansicht_sg0"] = True                         # 3.23: the switch «On start: groups only» is gone (factory was on)
+    CFG["ui_ansicht_mig"] = True
+    return True
+
+
+def ansicht_get(user, seite):
+    """{"known": bool, "offen": [...], "zu": [...], "start_groups": the switch, "first_groups": the first view = «Nur Gruppen»}"""
+    seite = str(seite or "")[:40]
+    e = (CFG.get("ui_ansicht") or {}).get(user, {}).get(seite) if _ANSICHT_SEITE.match(seite) else None
+    return {"known": e is not None, "offen": list(e["o"]) if e else [], "zu": list(e["z"]) if e else [],
+            "start_groups": False, "first_groups": bool(CFG.get("ui_ansicht_sg0", False))}
+
+
+def ansicht_set(user, seite, offen, zu):
+    """the whole view of ONE page of ONE user (the page sends it bundled); False = bad page key"""
+    seite = str(seite or "")[:40]
+    if not _ANSICHT_SEITE.match(seite):
+        return False
+    o, z = _ansicht_ids(offen), _ansicht_ids(zu)
+    zs = set(o)
+    z = [x for x in z if x not in zs]
+    allv = dict(CFG.get("ui_ansicht") or {})
+    pages = dict(allv.get(user) or {})
+    old = pages.get(seite)
+    if old and old["o"] == o and old["z"] == z:
+        return True
+    pages[seite] = {"o": o, "z": z, "t": int(time.time())}
+    allv[str(user)[:60]] = pages
+    CFG["ui_ansicht"] = ansicht_clean(allv)            # re-assign: DEFAULTS share the old dict
+    save_settings()
+    return True
+
+
+def ansicht_api(request, reply, body, g_):
+    """GET /api/ansicht?seite=settings · POST {seite, offen: [...], zu: [...]} (550)"""
+    user = ansicht_user(g_)
+    if request.method == "POST":
+        d = body()
+        ok = ansicht_set(user, d.get("seite"), d.get("offen"), d.get("zu"))
+        return reply({"ok": ok, "user": user}, 200 if ok else 400)
+    return reply(dict(ansicht_get(user, request.args.get("seite")), ok=True, user=user))
+
+
+_settings_migrations_before_ansicht = _settings_migrations
+
+
+def _settings_migrations(cfg_in):                         # + 639r: «Beim Start: Nur Gruppen» -> the first «Meine Ansicht»
+    _settings_migrations_before_ansicht(cfg_in)
+    try:
+        CFG["ui_ansicht"] = ansicht_clean(CFG.get("ui_ansicht"))
+        if ansicht_mig():
+            log_event("sys", "«My view» is the start view now (the folds you set yourself, on every device)")
+    except Exception as e:
+        log_event("sys", f"Settings migration (639r): {e}"[:150])
+
+
+# the manual (HELP_PAGE of 540): one paragraph in «Tipps & Tricks», German and English
+for _a, _b in (('<section id="tips" data-icon="🧭" class="tips"><h2>Tipps &amp; Tricks</h2>',
+                "<p><b>★ Meine Ansicht:</b> Der mittlere der drei Klapp-Knöpfe zeigt die Menüs so auf- und zugeklappt, wie du sie selbst "
+                "eingestellt hast. Solange er blau ist, merkt sich MoveEye jedes Auf- und Zuklappen – pro Seite und für deinen Benutzer, "
+                "auf Handy, iPad, PC und im Pi-Fenster gleich. «Alle zuklappen» oder «Alle aufklappen» schalten Meine Ansicht aus, ohne "
+                "das Gemerkte zu ändern; ein Druck auf die Mitte bringt es zurück. Lange drücken (oder Rechtsklick) auf die Mitte zeigt "
+                "«Nur Gruppen». Ist «Beim Start: Nur Gruppen» ein, startet jede Seite mit «Nur Gruppen».</p>"),
+               ('<section id="tips" data-icon="🧭" class="tips"><h2>Tips &amp; tricks</h2>',
+                "<p><b>★ My view:</b> the middle of the three fold buttons shows the menus open and closed the way you set them yourself. "
+                "While it is blue, MoveEye remembers every fold – per page and for your user, the same on phone, iPad, PC and the Pi "
+                "window. «Collapse all» or «Expand all» switch My view off without changing what was kept; press the middle to get it "
+                "back. A long press (or right click) on the middle shows «Groups only». With «On start: groups only» on, every page "
+                "starts with «Groups only».</p>")):
+    if _a in HELP_PAGE:
+        HELP_PAGE = HELP_PAGE.replace(_a, _a + _b, 1)
+
+
+def _ansicht_selftest():
+    keep = {k: CFG.get(k) for k in ("ui_ansicht", "ui_ansicht_mig", "ui_ansicht_sg0")}
+    _ss = globals()["save_settings"]
+    globals()["save_settings"] = lambda: None
+    try:
+        CFG["ui_ansicht"] = {}; CFG["ui_ansicht_mig"] = False
+        assert ansicht_mig() and CFG["ui_ansicht_sg0"] and "ui_start_groups" not in CFG and not ansicht_mig(), "639r: migration"
+        g0 = ansicht_get("admin", "settings")
+        assert not g0["known"] and g0["first_groups"], "639r: first view"
+        assert ansicht_set("anna", "settings", ["grp:alarm", "sec:push", 5], ["grp:alarm", "grp:sys"])
+        g1 = ansicht_get("anna", "settings")
+        assert g1["known"] and g1["offen"] == ["grp:alarm", "sec:push"] and g1["zu"] == ["grp:sys"], "639r: set / get"
+        assert not ansicht_get("admin", "settings")["known"], "639r: per user"
+        assert not ansicht_set("anna", "../x", [], []) and not ansicht_get("anna", "<b>")["known"], "639r: page key"
+        assert ansicht_user(None) == "admin" and "/api/ansicht" in VIEW_POST and role_allows("view", "/api/ansicht", "GET", {}), "639r: rights"
+        assert role_allows("kid", "/api/ansicht", "POST", {}), "639r: every user keeps his view"
+        tx = mwb_tx()
+        assert all(tx[L].get("My view") for L in ("de", "fr", "it", "rm")) and tx["de"]["My view"] == "Meine Ansicht", "639r: texts"
+    finally:
+        globals()["save_settings"] = _ss
+        CFG.update(keep)
+
+
+SELFTEST_EXTRA.append(("My view (639r)", _ansicht_selftest))
 # ----------------------------------------------------------------------------
 # real-erk-e3 (31.10.2026): die Push-Nachricht «Etwas Grosses am Boden» (Titel und Text) in de / fr / it / rm.
 # ----------------------------------------------------------------------------
@@ -67874,8 +68769,8 @@ if __name__ == "__main__":
     if a.notify_url is not None:
         CFG["notify_url"] = a.notify_url
     if DEMO["on"]:
-        CFG.update(source="demo", setup_done=True, record_dir=os.path.join(DATA_DIR, "recordings"), notify_on=False, update_auto=False,
-                   update_install=False, update_fast=False, dev_phase_done=True, hotspot_on=False, mqtt_on=False, backup_type="off", fleet=[], ai_enabled=True, diary_on=True,
+        CFG.update(source="demo", setup_done=True, record_dir=os.path.join(DATA_DIR, "recordings"), notify_on=False, update_mode="off",
+                   update_url="", dev_phase_done=True, hotspot_on=False, mqtt_on=False, backup_type="off", fleet=[], ai_enabled=True, diary_on=True,
                    device_name=CFG["device_name"] or "Demo")
         a.source = None; a.cam = None
         print("DEMO MODE - settings in " + DATA_DIR)

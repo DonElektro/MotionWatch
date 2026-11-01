@@ -454,7 +454,7 @@ func starten(tid: String, o := {}) -> Dictionary:
 		dauer = maxf(dauer, float(sh["t0"]) + float(sh["d"]))
 	_stimme = _stimme_da() and str(o.get("stimme", "an")) != "aus" and not _movie
 	var ut := str(o.get("untertitel", "auto"))
-	_untertitel = ut == "an" or (ut != "aus" and not _stimme)
+	_untertitel = ut == "an" or Stimme.untertitel() or (ut != "aus" and not _stimme)   # 3.23: «nur Untertitel»
 	_cues = []
 	_vorlauf = _movie_zeit()
 	_prep.visible = false
@@ -632,6 +632,8 @@ func _bild_tick(dt: float) -> void:
 	stage.tick(sh, rel, dt)
 	var u := clampf(rel / maxf(0.01, float(sh["d"])), 0.0, 1.0)
 	u = u * u * (3.0 - 2.0 * u) * 0.6 + u * 0.4               # soft, but the camera never stands still
+	if main.has_method("motion_reduced") and main.motion_reduced():
+		u = 0.25 + 0.5 * u                                     # 3.23 «Bewegung reduzieren»: only the middle half of the move (gentler)
 	var cam: Dictionary = sh.get("cam", {})
 	if bool(cam.get("kopf", false)) and main.head != null:
 		cam = cam.duplicate()

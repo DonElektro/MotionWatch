@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-01 01:45",
+ "generated": "2026-11-01 02:21",
  "versions": [
+  {
+   "version": "3.27.0",
+   "file": "webcam_bewegung_3_27_0.py",
+   "url": "",
+   "sha256": "b580e782d8fbb2780cb6c5fe625e7344900f6d8770f360d475b31c68e59be2bd",
+   "date": "2026-11-01 02:21",
+   "notes": "Weniger Schalter: Updates mit einer Auswahl, neu «Bewegung reduzieren» und «Stimme» (an · aus · nur Untertitel) in MoveEye und Simulator, Rundgang/Blinki an einem Ort, Symbole farbig, «Beim Start: Nur Gruppen» entfällt (langer Druck bleibt), alter Python-Basis-Simulator entfernt.",
+   "size": 4482017,
+   "sig": "b6200ca512174a0ce28ddfdf81a3c2d94878c97c42c94d526fd47d6ba69ea8164666c3fad273e45ee2da31722beacc3265cc23e6bdde534d5adbaa134246ba0f",
+   "data": {
+    "file": "moveeye_daten_3_27_0.zip",
+    "url": "",
+    "sha256": "8a73a7f18c50d3ef245e8d4167a133adf385c48c2b2063ed32039b9d15462dfa",
+    "size": 1559129,
+    "sig": "7a58dbb7d114a976b16e6d8a00368d2e061c0ab95117adf5d674bd89f985b77eb1db76517526bf83f616349ac7783b300f0fe1509dd6f94686c0c0592e202a0b"
+   }
+  },
   {
    "version": "3.26.0",
    "file": "webcam_bewegung_3_26_0.py",
    "url": "",
    "sha256": "42e8667dae2f3f5979a3c892e876df327a41a8b09698a8f0138668466107d675",
-   "date": "2026-11-01 01:45",
+   "date": "2026-11-01 01:58",
    "notes": "Simulator 3.26.0: Maggie sieht realistischer aus – ab Grafik «mittel» ein Modell mit Skelett und Fell, in «einfach» weiche Formen mit ihrem Muster.",
    "size": 4482682,
    "sig": "f5f8f957aaf2ccee2f7c5e2ca1066f3bc651d2c85612bead324f5ae01e91a3565bb0bba7623d030ee00382f6e8c622a6432312bacdb77ca8ab9ec2cbe65e9c06",
@@ -75,7 +92,7 @@
    "file": "webcam_bewegung_3_22_0.py",
    "url": "",
    "sha256": "df45d7aa5e86816ac9c487a86acc07634259b7d4f2ae2925d6dafdd594cf4800",
-   "date": "2026-11-01 01:24",
+   "date": "2026-11-01 02:15",
    "notes": "Reiter- und Statuszeile einzeln einklappbar (pro Gerät gemerkt, roter Punkt bei Warnungen); auf jeder Seite dieselbe Bedienleiste (Einfach/Experte, Symbole farbig/schlicht, Nur Gruppen, Alle zuklappen · Nur Gruppen · Alle aufklappen) – Web, Pi-Fenster und Simulator; Live: Gehtest ganz unten.",
    "size": 4448328,
    "sig": "486bd2fbe8f184c08e8d6e9681886afc4b231699e5454eaa7fbb8aa20a55e16ebea8a62d98771fb9104d7579057fc53ef721fb3e42bc786a156104eac790ef0f",
@@ -136,23 +153,6 @@
     "sha256": "a90bee6a76f1689722375ae004ff5505d440298d4ac9ff49f3b94d55abec4abf",
     "size": 1621011,
     "sig": "f9a58eebc707213245adbdc64e13b2165f67e46daf307619806751b0b08a758026198fbdc12b2d618ff4f3aaab4f322907bcd7e835d1a1707c55af781fc4e704"
-   }
-  },
-  {
-   "version": "3.18.0",
-   "file": "webcam_bewegung_3_18_0.py",
-   "url": "",
-   "sha256": "c7529050a3d1a2c698585cc0a99ce436a05583e1997fc5be9aeb267e07857bdd",
-   "date": "2026-10-31 22:23",
-   "notes": "Simulator 3.18.0: Figuren und Tiere mit echten Gelenken (Knie, Ellbogen, Schultern, Hüfte, Sprunggelenk) und natürlicherem Gang, Füsse bleiben am Boden.",
-   "size": 4421404,
-   "sig": "006fb23f3e3f9ecd4c4472925d55cd0e9649ff415398954c8540e6263b07f74b21fe2c07e2292b12099dc05252fad31921574cfb33db2e7b3724d93433c8dc0c",
-   "data": {
-    "file": "moveeye_daten_3_18_0.zip",
-    "url": "",
-    "sha256": "9b0ac6b9c0a94cc51a86f5c0e83c27ff69aa3ac8ea9f4569b7633a248e21ad11",
-    "size": 1613431,
-    "sig": "32f424fc51c77dcbbc29231a199213e82ad244873bc30768a83c8e48cd4c3841fd54d84d02a8908e2f9379ec858449e1408f35394adbed18d523c43053cb350e"
    }
   },
   {

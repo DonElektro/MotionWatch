@@ -505,13 +505,6 @@ UI_GEMEINSAM = json.loads(r"""{
     "it": "semplici",
     "rm": "simpels"
    },
-   "start_groups": {
-    "en": "On start: groups only",
-    "de": "Beim Start: Nur Gruppen",
-    "fr": "Au démarrage : seulement les groupes",
-    "it": "All’avvio: solo i gruppi",
-    "rm": "Al start: mo las gruppas"
-   },
    "close": {
     "en": "Collapse all",
     "de": "Alle zuklappen",
@@ -544,14 +537,6 @@ UI_GEMEINSAM = json.loads(r"""{
     false
    ],
    "note": "E1: eine Einfach/Experte-Wahl für alles (MoveEye-Standard, Seiten und Simulator)"
-  },
-  "start_groups": {
-   "mw": "CFG ui_start_groups",
-   "sim": "start_groups",
-   "values": [
-    true,
-    false
-   ]
   },
   "icons": {
    "mw": "mw-icons (web_ui)",
@@ -610,7 +595,7 @@ def ui_gem_tr(key, lang):
 
 
 def ui_gem_text(k, lang="de"):
-    """a text of the bar: simple, expert, color, plain, start_groups, close, groups, open"""
+    """a text of the bar: simple, expert, color, plain, close, groups, open"""
     t = ((UI_GEMEINSAM.get("bar") or {}).get("texts") or {}).get(k) or {}
     return t.get(lang) or t.get("en") or k
 

@@ -449,6 +449,16 @@ func _help(b: VBoxContainer) -> void:
 	t.text = "Rundgang mit Blinki"
 	t.pressed.connect(func(): act("tour"))
 	bt.add_child(t)
+	var st := Button.new()                           # 3.23: tour and Blinki are set in ONE place (System → Gerät & Hilfe)
+	st.text = "⚙ Rundgang und Blinki einstellen"
+	st.tooltip_text = "Einstellungen → System → Gerät & Hilfe"
+	st.pressed.connect(func():
+		close_window()
+		main.show_panel(true)
+		if main.search_in != null:
+			main.search_in.text = "Blinki"
+			main._search("Blinki"))
+	bt.add_child(st)
 	var mw := Button.new()
 	mw.text = "Anleitung von MoveEye"
 	mw.tooltip_text = "Öffnet die Anleitung im Browser (MoveEye muss verbunden sein)"
@@ -662,7 +672,7 @@ func _process(dt: float) -> void:
 	if _auto_t > 0.0:                                 # the tour by itself: once, a little after the start, when nothing else runs
 		_auto_t -= dt
 		if _auto_t <= 0.0:
-			if tour_state in ["new", "later"] and main.win_open and not main.kids_on and not (main.game != null and main.game.open) \
+			if tour_state in ["new", "later"] and bool(main.tour_auto) and main.win_open and not main.kids_on and not (main.game != null and main.game.open) \
 					and not (main.testrun != null and main.testrun.running) and not (main.gamewiz != null and main.gamewiz.visible) \
 					and not (main.news != null and main.news.visible):
 				tour.start(tour_step if tour_state == "later" else 0)
