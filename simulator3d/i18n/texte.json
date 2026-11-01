@@ -2322,12 +2322,6 @@
   "it": "01 Parte inferiore",
   "rm": "01 Part sut"
  },
- "01 Unterteil v5.2 (Fenster Weitwinkel, IR-Modul, Kabelkamm, Tasten)": {
-  "en": "01 Lower part v5.2 (wide window, IR module, cable comb, buttons)",
-  "fr": "01 Partie inférieure v5.2 (fenêtre grand angle, module IR, peigne à câbles, boutons)",
-  "it": "01 Parte inferiore v5.2 (finestra grandangolare, modulo IR, pettine cavi, pulsanti)",
-  "rm": "01 Part sut v5.2 (fanestra largangulara, modul IR, pettan da cabels, buttuns)"
- },
  "01_Unterteil": {
   "en": "01_Unterteil",
   "fr": "01_Unterteil",
@@ -2712,6 +2706,12 @@
   "it": "3,3 V · GND · dati GPIO 4 (pin 7) + 4,7 kΩ a 3,3 V; config.txt: dtoverlay=w1-gpio",
   "rm": "3,3 V · GND · datas GPIO 4 (pin 7) + 4,7 kΩ a 3,3 V; config.txt: dtoverlay=w1-gpio"
  },
+ "3. MOSFET-Modul (AOD4184) für die IR-LED 5 mm, Kanal 4": {
+  "en": "3rd MOSFET module (AOD4184) for the IR LED 5 mm, channel 4",
+  "fr": "3e module MOSFET (AOD4184) pour la LED IR 5 mm, canal 4",
+  "it": "3° modulo MOSFET (AOD4184) per il LED IR 5 mm, canale 4",
+  "rm": "3. modul MOSFET (AOD4184) per la LED IR 5 mm, chanal 4"
+ },
  "3. Versuch – diesmal der richtige Gipfel. – Hans": {
   "en": "3rd attempt – the right summit this time. – Hans",
   "fr": "3e essai – cette fois le bon sommet. – Hans",
@@ -2886,6 +2886,12 @@
   "it": "5 V → USB-C del Pi 5 direttamente",
   "rm": "5 V → USB-C dal Pi 5 directamain"
  },
+ "5 V → USB-C des Pi 5 direkt; im EEPROM PSU_MAX_CURRENT=5000 setzen (Schritt «Netzteil-Grenze»), sonst USB nur 600 mA": {
+  "en": "5 V → USB-C of the Pi 5 directly; set PSU_MAX_CURRENT=5000 in the EEPROM (step «Power supply limit»), otherwise USB only 600 mA",
+  "fr": "5 V → USB-C du Pi 5 directement ; régler PSU_MAX_CURRENT=5000 dans l'EEPROM (étape «Limite d'alimentation»), sinon USB 600 mA",
+  "it": "5 V → USB-C del Pi 5 direttamente; impostare PSU_MAX_CURRENT=5000 nell'EEPROM (passo «Limite alimentatore»), altrimenti USB solo 600 mA",
+  "rm": "5 V → USB-C dal Pi 5 directamain; definir PSU_MAX_CURRENT=5000 en l'EEPROM (pass «Limita da l'alimentaziun»), uschiglio USB mo 600 mA"
+ },
  "5 V → USB-C-Stecker (56 kΩ auf CC) → USB-C des UPS HAT (E)": {
   "en": "5 V → USB-C plug (56 kΩ on CC) → USB-C of the UPS HAT (E)",
   "fr": "5 V → fiche USB-C (56 kΩ sur CC) → USB-C de la UPS HAT (E)",
@@ -2903,12 +2909,6 @@
   "fr": "850 nm au lieu de 940 nm (NoIR le voit mieux)",
   "it": "850 nm invece di 940 nm (NoIR lo vede meglio)",
   "rm": "850 nm empè da 940 nm (NoIR vesa meglier)"
- },
- "850 nm, 120°": {
-  "en": "850 nm, 120°",
-  "fr": "850 nm, 120°",
-  "it": "850 nm, 120°",
-  "rm": "850 nm, 120°"
  },
  ": in die Welt ziehen, oder anklicken und in die Welt klicken": {
   "en": ": drag into the world, or click and click into the world",
@@ -3205,12 +3205,6 @@
   "it": "Deviazione: dove c'era la luce sull'immagine",
   "rm": "Deviaziun: là, nua ch'era la glisch sin il maletg"
  },
- "Abstände: IR-Modul–Kamera-Fenster (Steg 3,2 mm, Trennsteg 2 mm vor der Wand), IR-Modul–Lautsprecher 11 mm, Kabel–Lüfter 4 mm / Ansaugung 8 mm, Kabel–Lüftungsschlitze 9 mm": {
-  "en": "Clearances: IR module–camera window (web 3.2 mm, divider 2 mm in front of the wall), IR module–speaker 11 mm, cables–fan 4 mm / intake 8 mm, cables–vents 9 mm",
-  "fr": "Distances : module IR–fenêtre caméra (pont 3,2 mm, séparateur 2 mm devant la paroi), module IR–haut-parleur 11 mm, câbles–ventilateur 4 mm / aspiration 8 mm, câbles–fentes 9 mm",
-  "it": "Distanze: modulo IR–finestra fotocamera (ponte 3,2 mm, separatore 2 mm davanti alla parete), modulo IR–altoparlante 11 mm, cavi–ventola 4 mm / aspirazione 8 mm, cavi–fessure 9 mm",
-  "rm": "Distanzas: modul IR–fanestra da la camera (punt 3,2 mm, separader 2 mm davant la paraid), modul IR–autpledader 11 mm, cabels–ventilatur 4 mm / aspiraziun 8 mm, cabels–fessas 9 mm"
- },
  "Abzeichen": {
   "en": "Badge",
   "fr": "Badge",
@@ -3426,6 +3420,12 @@
   "fr": "S’exercer aux pannes de batterie, météo et Wi-Fi",
   "it": "Esercitarsi con guasti di batteria, meteo e Wi-Fi",
   "rm": "Exercitar panna d’accu, aura e WLAN"
+ },
+ "Akku-Lötpunkte B+ / B− des UPS HAT (E) (12–16,8 V) → eigener Step-Down 6–36 V → 5 V (VIN / GND). Ersatz: USB-A-5-V-Buchse des HAT": {
+  "en": "battery solder pads B+ / B− of the UPS HAT (E) (12–16.8 V) → own step-down 6–36 V → 5 V (VIN / GND). Fallback: USB-A 5 V socket of the HAT",
+  "fr": "pastilles B+ / B− de la batterie du UPS HAT (E) (12–16,8 V) → propre abaisseur 6–36 V → 5 V (VIN / GND). Secours : prise USB-A 5 V du HAT",
+  "it": "piazzole B+ / B− della batteria dell'UPS HAT (E) (12–16,8 V) → step-down proprio 6–36 V → 5 V (VIN / GND). Riserva: presa USB-A 5 V dell'HAT",
+  "rm": "puncts da lotar B+ / B− da l'accu dal UPS HAT (E) (12–16,8 V) → agen step-down 6–36 V → 5 V (VIN / GND). Remplazzament: bischla USB-A 5 V dal HAT"
  },
  "Akkus 21700": {
   "en": "21700 cells",
@@ -5881,6 +5881,12 @@
   "it": "Bastelgarage 420448",
   "rm": "Bastelgarage 420448"
  },
+ "Bastelgarage 420985": {
+  "en": "Bastelgarage 420985",
+  "fr": "Bastelgarage 420985",
+  "it": "Bastelgarage 420985",
+  "rm": "Bastelgarage 420985"
+ },
  "Bastelgarage 424274": {
   "en": "Bastelgarage 424274",
   "fr": "Bastelgarage 424274",
@@ -7254,12 +7260,6 @@
   "fr": "Sol trop raide (%d°, au plus %d° pour %s).",
   "it": "Terreno troppo ripido (%d°, al massimo %d° per %s).",
   "rm": "Terren memia stip (%d°, al pli %d° per %s)."
- },
- "Boden – Kamera-Rippen und Kabelkamm mit 45°-Unterseiten, ohne Stützen": {
-  "en": "bottom – camera ribs and cable comb with 45° undersides, no supports",
-  "fr": "fond – nervures caméra et peigne à 45°, sans supports",
-  "it": "fondo – nervature fotocamera e pettine a 45°, senza supporti",
-  "rm": "fund – costas da camera e pettan cun 45°, senza sustegns"
  },
  "Bodennebel: dichter über dem Boden, fleckig (im Kamerabild für MoveEye)": {
   "en": "Ground fog: denser near the ground, patchy (in the camera image for MoveEye)",
@@ -8798,6 +8798,12 @@
   "it": "Si aggiungono: ",
   "rm": "Vegnan latiers: "
  },
+ "dazu Vorwiderstand 47 Ω / 0,5 W; oder ein kleiner Logic-Level-MOSFET (AO3400)": {
+  "en": "plus a series resistor 47 Ω / 0.5 W; or a small logic-level MOSFET (AO3400)",
+  "fr": "plus une résistance 47 Ω / 0,5 W ; ou un petit MOSFET niveau logique (AO3400)",
+  "it": "più una resistenza 47 Ω / 0,5 W; oppure un piccolo MOSFET a livello logico (AO3400)",
+  "rm": "plus ina resistenza 47 Ω / 0,5 W; u in pitschen MOSFET nivel logic (AO3400)"
+ },
  "Deckel und Drehlager": {
   "en": "Lid and pan bearing",
   "fr": "Couvercle et palier pan",
@@ -9818,6 +9824,12 @@
   "it": "La cascata di tufo",
   "rm": "La cascada da tuf"
  },
+ "Der UPS HAT (E) und der 5-V-Wandler melden kein USB-PD. Ohne diese Zeile drosselt der Pi 5 USB auf 600 mA und meldet «schwaches Netzteil». Im Editor die Zeile PSU_MAX_CURRENT=5000 ergänzen, speichern, neu starten (schaltet auch usb_max_current_enable ein).": {
+  "en": "The UPS HAT (E) and the 5 V converter do not offer USB PD. Without this line the Pi 5 limits USB to 600 mA and reports a «weak power supply». Add the line PSU_MAX_CURRENT=5000 in the editor, save, restart (also switches on usb_max_current_enable).",
+  "fr": "Le UPS HAT (E) et le convertisseur 5 V n'ont pas d'USB PD. Sans cette ligne, le Pi 5 limite l'USB à 600 mA et signale une «alimentation faible». Ajouter la ligne PSU_MAX_CURRENT=5000 dans l'éditeur, enregistrer, redémarrer (active aussi usb_max_current_enable).",
+  "it": "L'UPS HAT (E) e il convertitore 5 V non offrono USB PD. Senza questa riga il Pi 5 limita l'USB a 600 mA e segnala «alimentatore debole». Aggiungere la riga PSU_MAX_CURRENT=5000 nell'editor, salvare, riavviare (attiva anche usb_max_current_enable).",
+  "rm": "Il UPS HAT (E) ed il convertider 5 V n'han nagin USB PD. Senza questa lingia limitescha il Pi 5 l'USB sin 600 mA ed annunzia «alimentaziun flaivla». Agiuntar la lingia PSU_MAX_CURRENT=5000 en l'editur, memorisar, reaviar (activescha er usb_max_current_enable)."
+ },
  "Der Vergleich läuft schon.": {
   "en": "The comparison is already running.",
   "fr": "La comparaison est déjà en cours.",
@@ -10219,12 +10231,6 @@
   "fr": "Visser la fourche sur le plateau avec 4 × M3. Poser le palonnier tilt verticalement dans le creux à l'intérieur du bras 1 et le visser.",
   "it": "Avvitare la forcella sul piatto con 4 × M3. Mettere la squadretta tilt in verticale nell'incavo all'interno del braccio 1 e avvitarla.",
   "rm": "Fixar la furtga cun 4 × M3 sin la platta rotanta. Metter il corn tilt vertical en l'enfossadira da l'intern dal bratsch 1 e fixar."
- },
- "Die Gabel mit 4 × M3 × 8 (nicht länger: die Spitze darf nicht in den Laufring ragen) auf den Drehteller schrauben. Das Tilt-Horn senkrecht in die Vertiefung innen in Arm 1 legen und festschrauben.": {
-  "en": "Screw the yoke onto the turntable with 4 × M3 × 8 (not longer: the tip must not reach the bearing ring). Lay the tilt horn vertically into the recess on the inside of arm 1 and screw it tight.",
-  "fr": "Visser la fourche sur le plateau avec 4 × M3 × 8 (pas plus long : la pointe ne doit pas toucher la bague). Poser le palonnier tilt verticalement dans le creux à l'intérieur du bras 1 et le visser.",
-  "it": "Avvitare la forcella sul piatto con 4 × M3 × 8 (non più lunghe: la punta non deve toccare l'anello). Mettere la squadretta tilt in verticale nell'incavo all'interno del braccio 1 e avvitarla.",
-  "rm": "Fixar la furtga cun 4 × M3 × 8 (betg pli lungas: la piz na dastga betg tutgar l'anè) sin la platta rotanta. Metter il corn tilt vertical en l'enfossadira da l'intern dal bratsch 1 e fixar."
  },
  "Die ganze Herde steht auf dem Weg und denkt gar nicht daran weiterzugehen. Da hilft nur warten.": {
   "en": "The whole herd is standing on the path and has no intention of moving. Nothing to do but wait.",
@@ -10754,6 +10760,12 @@
   "it": "La ladra di calzini",
   "rm": "La laderna da stgaffas"
  },
+ "die Software steuert die Lade-LED noch nicht (folgt)": {
+  "en": "the software does not drive the charge LED yet (to follow)",
+  "fr": "le logiciel ne commande pas encore la LED de charge (à venir)",
+  "it": "il software non comanda ancora il LED di carica (segue)",
+  "rm": "la software na stizza anc betg la LED da chargiar (suonda)"
+ },
  "die Sonne": {
   "en": "the sun",
   "fr": "le soleil",
@@ -11095,12 +11107,6 @@
   "fr": "Visser les deux supports de lampe à l'extérieur des bras avec 2 × M3 × 8 chacun : blanc au bras 1, IR 850 nm au bras 2. Insérer les modules et les bloquer avec de la colle chaude ou une vis sans tête.",
   "it": "Avvitare i due portalampada all'esterno dei bracci con 2 × M3 × 8 ciascuno: bianco sul braccio 1, IR 850 nm sul braccio 2. Inserire i moduli e fissarli con colla a caldo o un grano.",
   "rm": "Fixar ils dus tegnalampas cun mintgamai 2 × M3 × 8 dador vi dals bratschs: alv vi dal bratsch 1, IR 850 nm vi dal bratsch 2. Metter ils moduls e segirar cun cola chauda u cun ina sitga senza chau."
- },
- "Die zwei Lampenhalter mit je 2 × M3 × 8 mit Unterlegscheibe aussen an die Arme schrauben: weiss an Arm 1, IR 850 nm an Arm 2. Module einsetzen und mit Heisskleber oder Madenschraube sichern.": {
-  "en": "Screw the two lamp holders to the outside of the arms with 2 × M3 × 8 with washer each: white on arm 1, IR 850 nm on arm 2. Insert the modules and secure them with hot glue or a grub screw.",
-  "fr": "Visser les deux supports de lampe à l'extérieur des bras avec 2 × M3 × 8 avec rondelle chacun : blanc au bras 1, IR 850 nm au bras 2. Insérer les modules et les bloquer avec de la colle chaude ou une vis sans tête.",
-  "it": "Avvitare i due portalampada all'esterno dei bracci con 2 × M3 × 8 con rondella ciascuno: bianco sul braccio 1, IR 850 nm sul braccio 2. Inserire i moduli e fissarli con colla a caldo o un grano.",
-  "rm": "Fixar ils dus tegnalampas cun mintgamai 2 × M3 × 8 cun rundella dador vi dals bratschs: alv vi dal bratsch 1, IR 850 nm vi dal bratsch 2. Metter ils moduls e segirar cun cola chauda u cun ina sitga senza chau."
  },
  "Die zwei Zaubersteine": {
   "en": "The two magic stones",
@@ -15263,12 +15269,6 @@
   "it": "flangia",
   "rm": "flansch"
  },
- "Flansch unten (nur ohne Weitwinkel-Kamera)": {
-  "en": "flange down (only without wide camera)",
-  "fr": "bride en bas (seulement sans caméra grand angle)",
-  "it": "flangia in basso (solo senza fotocamera grandangolare)",
-  "rm": "flansch sut (mo senza camera largangulara)"
- },
  "Flasche": {
   "en": "Bottle",
   "fr": "Bouteille",
@@ -15406,6 +15406,12 @@
   "fr": "Suivre nécessite MoveEye – connecter d’abord (d’ici là, seule la patrouille se tourne vers ce qui est suspect)",
   "it": "Seguire richiede MoveEye – prima collegare (fino ad allora solo la pattuglia si gira verso cose sospette)",
   "rm": "Suandar dovra MoveEye – l’emprim colliar (fin lura sa volva mo la patrulla vers chaussas suspectas)"
+ },
+ "folgt später: Fahrwerk, Motorstrom und Befestigung (Stativmutter 1/4\")": {
+  "en": "to follow later: chassis, motor current and mounting (tripod nut 1/4\")",
+  "fr": "suivra plus tard : châssis, courant moteur et fixation (écrou de trépied 1/4\")",
+  "it": "seguirà più tardi: telaio, corrente motore e fissaggio (dado treppiede 1/4\")",
+  "rm": "suonda pli tard: chassis, current dal motor e fixaziun (mutter da stativ 1/4\")"
  },
  "Fondue-Caquelon": {
   "en": "Fondue pot",
@@ -17202,6 +17208,12 @@
   "it": "Ci sono molti animali qui?",
   "rm": "Datti qua bleras bestgas?"
  },
+ "gilt nur mit 220 Ω auf dem PCA9685-Board (Adafruit 815 oder Klon?) – klärt Daniel": {
+  "en": "only with 220 Ω on the PCA9685 board (Adafruit 815 or clone?) – Daniel checks",
+  "fr": "seulement avec 220 Ω sur la carte PCA9685 (Adafruit 815 ou clone ?) – Daniel vérifie",
+  "it": "solo con 220 Ω sulla scheda PCA9685 (Adafruit 815 o clone?) – verifica Daniel",
+  "rm": "mo cun 220 Ω sin la plattina PCA9685 (Adafruit 815 u clon?) – Daniel scleresch"
+ },
  "Ging nicht: %s": {
   "en": "Did not work: %s",
   "fr": "Échec : %s",
@@ -17525,6 +17537,12 @@
   "fr": "Bâtiments Google Earth (Blender «Maps Models Importer»)",
   "it": "Edifici di Google Earth (Blender «Maps Models Importer»)",
   "rm": "Edifizis da Google Earth (Blender «Maps Models Importer»)"
+ },
+ "GPIO 6 (Pin 31) → 330 Ω → Lade-LED 3 mm grün → GND (Pin 34); Lichtleiter hinten. MoveEye schaltet sie nach dem Lade-Zustand des UPS HAT (E)": {
+  "en": "GPIO 6 (pin 31) → 330 Ω → charge LED 3 mm green → GND (pin 34); light guide at the back. MoveEye switches it from the charge state of the UPS HAT (E)",
+  "fr": "GPIO 6 (broche 31) → 330 Ω → LED de charge 3 mm verte → GND (broche 34) ; guide de lumière à l'arrière. MoveEye l'allume selon l'état de charge du UPS HAT (E)",
+  "it": "GPIO 6 (pin 31) → 330 Ω → LED di carica 3 mm verde → GND (pin 34); guida luce dietro. MoveEye la accende secondo lo stato di carica dell'UPS HAT (E)",
+  "rm": "GPIO 6 (pin 31) → 330 Ω → LED da chargiar 3 mm verda → GND (pin 34); conductur da glisch davos. MoveEye la stizza tenor il stadi da chargiar dal UPS HAT (E)"
  },
  "GPS: MoveEye wird weggetragen": {
   "en": "GPS: MoveEye is carried away",
@@ -20863,12 +20881,6 @@
   "it": "IR LED 5mm 850nm",
   "rm": "IR LED 5mm 850nm"
  },
- "IR LED 850nm 3W Linse 120": {
-  "en": "IR LED 850nm 3W Linse 120",
-  "fr": "IR LED 850nm 3W Linse 120",
-  "it": "IR LED 850nm 3W Linse 120",
-  "rm": "IR LED 850nm 3W Linse 120"
- },
  "IR LED Modul 850nm": {
   "en": "IR LED Modul 850nm",
   "fr": "IR LED Modul 850nm",
@@ -20887,18 +20899,6 @@
   "it": "LED IR 5 mm, 850 nm",
   "rm": "LED IR 5 mm, 850 nm"
  },
- "IR-LED-Modul 120° (Stirnwand)": {
-  "en": "IR LED module 120° (front wall)",
-  "fr": "Module LED IR 120° (paroi avant)",
-  "it": "Modulo LED IR 120° (parete frontale)",
-  "rm": "Modul LED IR 120° (paraid davant)"
- },
- "IR-LED-Modul 850 nm mit 120°-Linse (Ø ca. 18,8 mm, nachmessen)": {
-  "en": "IR LED module 850 nm with 120° lens (approx. Ø 18.8 mm, measure)",
-  "fr": "Module LED IR 850 nm avec lentille 120° (env. Ø 18,8 mm, à mesurer)",
-  "it": "Modulo LED IR 850 nm con lente 120° (circa Ø 18,8 mm, da misurare)",
-  "rm": "Modul LED IR 850 nm cun lentilla 120° (ca. Ø 18,8 mm, mesirar)"
- },
  "IR-Licht ": {
   "en": "IR light ",
   "fr": "Lumière IR ",
@@ -20910,12 +20910,6 @@
   "fr": "La lumière IR 850 nm est presque invisible mais forte : ne pas regarder la lampe de près.",
   "it": "La luce IR 850 nm è quasi invisibile ma forte: non guardare la lampada da vicino.",
   "rm": "La glisch IR 850 nm è quasi invisibla, ma ferma: betg guardar da datiers en la lampa."
- },
- "IR-Modul: Ø 18,8 mm, Länge 14 mm, Linse vorne Ø 17 mm (IRW_MOD_D, IRW_MOD_L, IRW_LENS_D)": {
-  "en": "IR module: Ø 18.8 mm, length 14 mm, front lens Ø 17 mm (IRW_MOD_D, IRW_MOD_L, IRW_LENS_D)",
-  "fr": "Module IR : Ø 18,8 mm, longueur 14 mm, lentille avant Ø 17 mm (IRW_MOD_D, IRW_MOD_L, IRW_LENS_D)",
-  "it": "Modulo IR: Ø 18,8 mm, lunghezza 14 mm, lente anteriore Ø 17 mm (IRW_MOD_D, IRW_MOD_L, IRW_LENS_D)",
-  "rm": "Modul IR: Ø 18,8 mm, lunghezza 14 mm, lentilla davant Ø 17 mm (IRW_MOD_D, IRW_MOD_L, IRW_LENS_D)"
  },
  "Irgendwo bimmelt eine Kuhglocke. Schläft hier eigentlich irgendwer?": {
   "en": "Somewhere a cowbell jingles. Does anyone actually sleep here?",
@@ -21096,6 +21090,12 @@
   "fr": "Janvier",
   "it": "Gennaio",
   "rm": "Schaner"
+ },
+ "je ein Modul für weiss (Kanal 2) und IR (Kanal 3); kein IRF520": {
+  "en": "one module each for white (channel 2) and IR (channel 3); no IRF520",
+  "fr": "un module pour le blanc (canal 2) et un pour l'IR (canal 3) ; pas d'IRF520",
+  "it": "un modulo per il bianco (canale 2) e uno per l'IR (canale 3); niente IRF520",
+  "rm": "in modul per l'alv (chanal 2) ed in per l'IR (chanal 3); betg IRF520"
  },
  "Je Jahreszeit die Höhepunkte: eine Station mit Maggie, das Schutzding und das böse Tier, das Tor – dazwischen Schnitte. Dann das Finale.": {
   "en": "The highlights of each season: a station with Maggie, the protective item and the bad animal, the gate – cuts in between. Then the finale.",
@@ -21631,18 +21631,6 @@
   "it": "Cavo fotocamera (piatto)",
   "rm": "Cabel da camera (cabel plat)"
  },
- "Kamerakabel CAM0 (v5.2: Kamin → Kabelkamm → Pi)": {
-  "en": "Camera cable CAM0 (v5.2: chimney → cable comb → Pi)",
-  "fr": "Câble caméra CAM0 (v5.2 : cheminée → peigne → Pi)",
-  "it": "Cavo fotocamera CAM0 (v5.2: camino → pettine → Pi)",
-  "rm": "Cabel da camera CAM0 (v5.2: chamin → pettan → Pi)"
- },
- "Kamerakabel CAM1 (Weitwinkel → Kabelkamm → Pi)": {
-  "en": "Camera cable CAM1 (wide → cable comb → Pi)",
-  "fr": "Câble caméra CAM1 (grand angle → peigne → Pi)",
-  "it": "Cavo fotocamera CAM1 (grandangolare → pettine → Pi)",
-  "rm": "Cabel da camera CAM1 (largangulara → pettan → Pi)"
- },
  "Kamerakabel Pi 5, 200 mm (CAM1)": {
   "en": "Pi 5 camera cable, 200 mm (CAM1)",
   "fr": "Câble caméra Pi 5, 200 mm (CAM1)",
@@ -21715,6 +21703,12 @@
   "it": "canale 3 → MOSFET 2 → lampada IR 850 nm (impostazione «Infrarosso: PCA9685 canale 3»)",
   "rm": "chanal 3 → MOSFET 2 → lampa IR 850 nm (endrizzaziun «Infracotschen: PCA9685 chanal 3»)"
  },
+ "Kanal 4 → 3. MOSFET-Modul (AOD4184, 1 Kanal) → 47 Ω / 0,5 W → IR-LED 5 mm 850 nm («IR-Licht breit», ca. 70 mA)": {
+  "en": "channel 4 → 3rd MOSFET module (AOD4184, 1 channel) → 47 Ω / 0.5 W → IR LED 5 mm 850 nm («wide IR light», approx. 70 mA)",
+  "fr": "canal 4 → 3e module MOSFET (AOD4184, 1 canal) → 47 Ω / 0,5 W → LED IR 5 mm 850 nm («IR large», env. 70 mA)",
+  "it": "canale 4 → 3° modulo MOSFET (AOD4184, 1 canale) → 47 Ω / 0,5 W → LED IR 5 mm 850 nm («IR ampio», ca. 70 mA)",
+  "rm": "chanal 4 → 3. modul MOSFET (AOD4184, 1 chanal) → 47 Ω / 0,5 W → LED IR 5 mm 850 nm («glisch IR largia», ca. 70 mA)"
+ },
  "Kanal 4 → MOSFET → IR-LED 5 mm 850 nm («IR-Licht breit»)": {
   "en": "channel 4 → MOSFET → IR LED 5 mm 850 nm («wide IR light»)",
   "fr": "canal 4 → MOSFET → LED IR 5 mm 850 nm («IR large»)",
@@ -21726,6 +21720,12 @@
   "fr": "canal 5 rouge · 6 vert · 7 bleu, cathode commune (réglage «Type de LED»)",
   "it": "canale 5 rosso · 6 verde · 7 blu, catodo comune (impostazione «Tipo di LED»)",
   "rm": "chanal 5 cotschen · 6 verd · 7 blau, catoda cuminaivla (endrizzaziun «Tip da LED»)"
+ },
+ "Kanal 5 rot · 6 grün · 7 blau, gemeinsame Kathode (Einstellung «LED-Typ»); keine eigenen Vorwiderstände: 220 Ω sind auf dem PCA9685-Board": {
+  "en": "channel 5 red · 6 green · 7 blue, common cathode (setting «LED type»); no own series resistors: 220 Ω are on the PCA9685 board",
+  "fr": "canal 5 rouge · 6 vert · 7 bleu, cathode commune (réglage «Type de LED») ; pas de résistances en plus : 220 Ω sont sur la carte PCA9685",
+  "it": "canale 5 rosso · 6 verde · 7 blu, catodo comune (impostazione «Tipo di LED»); niente resistenze aggiuntive: 220 Ω sono sulla scheda PCA9685",
+  "rm": "chanal 5 cotschen · 6 verd · 7 blau, catoda cuminaivla (endrizzaziun «Tip da LED»); naginas resistenzas supplementaras: 220 Ω èn sin la plattina PCA9685"
  },
  "kann %s nicht schreiben": {
   "en": "cannot write %s",
@@ -23630,6 +23630,12 @@
   "it": "Carico Python (solo la prima volta)",
   "rm": "Chargiar Python (mo l’emprima giada)"
  },
+ "Lade-LED 3 mm + 330 Ω + Lichtleiter": {
+  "en": "Charging LED 3 mm + 330 Ω + light guide",
+  "fr": "LED de charge 3 mm + 330 Ω + guide de lumière",
+  "it": "LED di ricarica 3 mm + 330 Ω + guida luce",
+  "rm": "LED da chargiar 3 mm + 330 Ω + guida da glisch"
+ },
  "Lade-LED 3 mm + Lichtleiter": {
   "en": "Charging LED 3 mm + light guide",
   "fr": "LED de charge 3 mm + guide de lumière",
@@ -23671,12 +23677,6 @@
   "fr": "Charge actuelle",
   "it": "Carica attuale",
   "rm": "Chargia ussa"
- },
- "Lage der Buchsen CAM/DISP 0 und 1 am Pi 5 (Kabelkamm FPC_X0, PI_CAM0_XY, PI_CAM1_XY)": {
-  "en": "Position of the CAM/DISP 0 and 1 sockets on the Pi 5 (cable comb FPC_X0, PI_CAM0_XY, PI_CAM1_XY)",
-  "fr": "Position des prises CAM/DISP 0 et 1 du Pi 5 (peigne FPC_X0, PI_CAM0_XY, PI_CAM1_XY)",
-  "it": "Posizione delle prese CAM/DISP 0 e 1 del Pi 5 (pettine FPC_X0, PI_CAM0_XY, PI_CAM1_XY)",
-  "rm": "Posiziun da las bussolas CAM/DISP 0 e 1 dal Pi 5 (pettan FPC_X0, PI_CAM0_XY, PI_CAM1_XY)"
  },
  "Lager": {
   "en": "Camp",
@@ -24031,6 +24031,12 @@
   "fr": "LED",
   "it": "LED",
   "rm": "LED"
+ },
+ "LED 3 mm grün, 330 Ω, PMMA 3 mm": {
+  "en": "LED 3 mm grün, 330 Ω, PMMA 3 mm",
+  "fr": "LED 3 mm grün, 330 Ω, PMMA 3 mm",
+  "it": "LED 3 mm grün, 330 Ω, PMMA 3 mm",
+  "rm": "LED 3 mm grün, 330 Ω, PMMA 3 mm"
  },
  "LED 3 mm, PMMA 3 mm": {
   "en": "LED 3 mm, PMMA 3 mm",
@@ -24440,6 +24446,12 @@
   "it": "Trascinare a sinistra: spostare · trascinare a destra: girare · rotella: zoom · doppio clic: volare lì",
   "rm": "Trair a sanestra: spustar · trair a dretga: volver · roda: zoom · dubel clic: svolar là"
  },
+ "Links zu Neuerungen": {
+  "en": "Links to what is new",
+  "fr": "Liens vers les nouveautés",
+  "it": "Link alle novità",
+  "rm": "Links a las novitads"
+ },
  "Links!": {
   "en": "Left!",
   "fr": "À gauche !",
@@ -24724,6 +24736,12 @@
   "it": "lunghezza non indicata (stimata)",
   "rm": "lunghezza betg indicada (stimada)"
  },
+ "Länge nicht angegeben (Vorschlag M3 × 8)": {
+  "en": "length not given (suggestion M3 × 8)",
+  "fr": "longueur non indiquée (proposition M3 × 8)",
+  "it": "lunghezza non indicata (proposta M3 × 8)",
+  "rm": "lunghezza betg indicada (proposta M3 × 8)"
+ },
  "Lärche": {
   "en": "Larch",
   "fr": "Mélèze",
@@ -24856,11 +24874,11 @@
   "it": "M2 (fotocamere)",
   "rm": "M2 (cameras)"
  },
- "M2 × 4 (Camera Module 3) + M2 × 6 (Thermal-90)": {
-  "en": "M2 × 4 (Camera Module 3) + M2 × 6 (Thermal-90)",
-  "fr": "M2 × 4 (Camera Module 3) + M2 × 6 (Thermal-90)",
-  "it": "M2 × 4 (Camera Module 3) + M2 × 6 (Thermal-90)",
-  "rm": "M2 × 4 (Camera Module 3) + M2 × 6 (Thermal-90)"
+ "M2 × 6 (4× Camera Module 3, 2× Thermal-90)": {
+  "en": "M2 × 6 (4× Camera Module 3, 2× Thermal-90)",
+  "fr": "M2 × 6 (4× Camera Module 3, 2× Thermal-90)",
+  "it": "M2 × 6 (4× Camera Module 3, 2× Thermal-90)",
+  "rm": "M2 × 6 (4× Camera Module 3, 2× Thermal-90)"
  },
  "M3 + Mutter, M3 × 12 (Achse), 2–3 Scheiben": {
   "en": "M3 + nut, M3 × 12 (axle), 2–3 washers",
@@ -24868,23 +24886,11 @@
   "it": "M3 + dado, M3 × 12 (asse), 2–3 rondelle",
   "rm": "M3 + mutter, M3 × 12 (axa), 2–3 rundellas"
  },
- "M3 × 10 Linsenkopf ISO 7380 (Seitendeckel)": {
-  "en": "M3 × 10 button head ISO 7380 (side cover)",
-  "fr": "M3 × 10 tête bombée ISO 7380 (couvercle latéral)",
-  "it": "M3 × 10 testa bombata ISO 7380 (coperchio laterale)",
-  "rm": "M3 × 10 chau bombà ISO 7380 (viertgel lateral)"
- },
- "M3 × 8 (Gabel → Drehteller)": {
-  "en": "M3 × 8 (yoke → turntable)",
-  "fr": "M3 × 8 (fourche → plateau)",
-  "it": "M3 × 8 (forcella → piatto)",
-  "rm": "M3 × 8 (furtga → platta)"
- },
- "M3 × 8 + Unterlegscheibe M3 (Lampenhalter)": {
-  "en": "M3 × 8 + washer M3 (lamp holders)",
-  "fr": "M3 × 8 + rondelle M3 (supports de lampe)",
-  "it": "M3 × 8 + rondella M3 (portalampade)",
-  "rm": "M3 × 8 + rundella M3 (tegnalampas)"
+ "M3 × 10 + Mutter, M3 × 12 (Achse), 2–3 Scheiben": {
+  "en": "M3 × 10 + nut, M3 × 12 (axle), 2–3 washers",
+  "fr": "M3 × 10 + écrou, M3 × 12 (axe), 2–3 rondelles",
+  "it": "M3 × 10 + dado, M3 × 12 (asse), 2–3 rondelle",
+  "rm": "M3 × 10 + mutter, M3 × 12 (axa), 2–3 rundellas"
  },
  "Macht ein Trainingspaket, legt es auf GitHub (Release «ki-daten») und startet dort das Training. MoveEye holt das neue Modell danach selbst, wenn es nicht schlechter ist.": {
   "en": "Makes a training package, puts it on GitHub (release «ki-daten») and starts the training there. MoveEye fetches the new model itself afterwards if it is not worse.",
@@ -26026,6 +26032,12 @@
   "it": "con mover (veicolo cingolato)",
   "rm": "cun mover (vehichel cun chadainas)"
  },
+ "mit Mover (Kettenfahrzeug) – folgt später": {
+  "en": "with mover (tracked vehicle) – to follow later",
+  "fr": "avec mover (véhicule à chenilles) – suivra plus tard",
+  "it": "con mover (veicolo cingolato) – seguirà più tardi",
+  "rm": "cun mover (vehichel cun chadainas) – suonda pli tard"
+ },
  "Mit Pflaster und Binde geht es wieder. «Danke, das vergesse ich dir nicht!»": {
   "en": "With a plaster and a bandage it works again. «Thanks, I won't forget that!»",
   "fr": "Avec un pansement et une bande, ça repart. «Merci, je ne l'oublierai pas !»",
@@ -26362,29 +26374,17 @@
   "it": "MOSFET AOD4184",
   "rm": "MOSFET AOD4184"
  },
- "MOSFET Modul AOD4184": {
-  "en": "MOSFET Modul AOD4184",
-  "fr": "MOSFET Modul AOD4184",
-  "it": "MOSFET Modul AOD4184",
-  "rm": "MOSFET Modul AOD4184"
- },
- "MOSFET-Kanal für das IR-Modul (PCA9685 Kanal 4, wie AOD4184)": {
-  "en": "MOSFET channel for the IR module (PCA9685 channel 4, like AOD4184)",
-  "fr": "Canal MOSFET pour le module IR (PCA9685 canal 4, comme AOD4184)",
-  "it": "Canale MOSFET per il modulo IR (PCA9685 canale 4, come AOD4184)",
-  "rm": "Chanal MOSFET per il modul IR (PCA9685 chanal 4, sco AOD4184)"
- },
  "MOSFET-Modul": {
   "en": "MOSFET module",
   "fr": "Module MOSFET",
   "it": "Modulo MOSFET",
   "rm": "Modul MOSFET"
  },
- "MOSFET-Modul (v5.2: Lüftungswand unter dem PCA9685)": {
-  "en": "MOSFET module (v5.2: vent wall below the PCA9685)",
-  "fr": "Module MOSFET (v5.2 : paroi d'aération sous le PCA9685)",
-  "it": "Modulo MOSFET (v5.2: parete di ventilazione sotto il PCA9685)",
-  "rm": "Modul MOSFET (v5.2: paraid da ventilaziun sut il PCA9685)"
+ "MOSFET-Modul 1-Kanal (2 × AOD4184 parallel), Logic-Level": {
+  "en": "MOSFET module 1-channel (2 × AOD4184 in parallel), logic level",
+  "fr": "Module MOSFET 1 canal (2 × AOD4184 en parallèle), niveau logique",
+  "it": "Modulo MOSFET 1 canale (2 × AOD4184 in parallelo), livello logico",
+  "rm": "Modul MOSFET 1 chanal (2 × AOD4184 en parallel), nivel logic"
  },
  "MOSFET-Modul 2-Kanal, Logic-Level": {
   "en": "MOSFET module 2-channel, logic level",
@@ -28463,6 +28463,12 @@
   "fr": "Netzteil 12V 3A",
   "it": "Netzteil 12V 3A",
   "rm": "Netzteil 12V 3A"
+ },
+ "Netzteil-Grenze des Pi 5": {
+  "en": "Power supply limit of the Pi 5",
+  "fr": "Limite d'alimentation du Pi 5",
+  "it": "Limite alimentatore del Pi 5",
+  "rm": "Limita da l'alimentaziun dal Pi 5"
  },
  "Neu": {
   "en": "New",
@@ -30564,12 +30570,6 @@
   "fr": "Sac en plastique au vent",
   "it": "Sacchetto di plastica al vento",
   "rm": "Satg da plastic en il vent"
- },
- "Platte A v5.2 ersetzt Platte A v5.1 (Unterteil mit Weitwinkel-Fenster). Platte B bleibt v5.1. Vor dem Druck die Masse der Liste «Nachmessen» prüfen.": {
-  "en": "Plate A v5.2 replaces plate A v5.1 (lower part with wide window). Plate B stays v5.1. Check the «measure first» list before printing.",
-  "fr": "La plaque A v5.2 remplace la plaque A v5.1 (partie inférieure avec fenêtre grand angle). La plaque B reste v5.1. Vérifier la liste « à mesurer » avant l'impression.",
-  "it": "La piastra A v5.2 sostituisce la piastra A v5.1 (parte inferiore con finestra grandangolare). La piastra B resta v5.1. Prima di stampare controllare l'elenco «da misurare».",
-  "rm": "La platta A v5.2 remplazza la platta A v5.1 (part sut cun fanestra largangulara). La platta B resta v5.1. Avant la stampa controllar la glista «mesirar»."
  },
  "Plattform mit Geländer, Antenne und Wegweiser – senkrecht unter dir die helle Kalkwand und die Obri Stafelhütte.": {
   "en": "A platform with railing, antenna and signpost – straight below you the light limestone face and the Obri Stafel hut.",
@@ -33034,18 +33034,6 @@
   "it": "Sbarra",
   "rm": "Barriera"
  },
- "Schraube M2 × 6, selbstschneidend (Weitwinkel-Kamera)": {
-  "en": "Screw M2 × 6, self-tapping (wide camera)",
-  "fr": "Vis M2 × 6, autotaraudeuse (caméra grand angle)",
-  "it": "Vite M2 × 6, autofilettante (fotocamera grandangolare)",
-  "rm": "Scrauva M2 × 6, autofilettanta (camera largangulara)"
- },
- "Schraube M2x6 Kunststoff selbstschneidend": {
-  "en": "Schraube M2x6 Kunststoff selbstschneidend",
-  "fr": "Schraube M2x6 Kunststoff selbstschneidend",
-  "it": "Schraube M2x6 Kunststoff selbstschneidend",
-  "rm": "Schraube M2x6 Kunststoff selbstschneidend"
- },
  "Schrauben und Kabel": {
   "en": "Screws and cables",
   "fr": "Vis et câbles",
@@ -35010,6 +34998,12 @@
   "it": "Batti (B)",
   "rm": "Pitgar (B)"
  },
+ "Standard (an, bis das Projekt veröffentlicht ist)": {
+  "en": "default (on until the project is published)",
+  "fr": "par défaut (activé tant que le projet n’est pas publié)",
+  "it": "predefinito (attivo finché il progetto non è pubblicato)",
+  "rm": "standard (activà fin ch’il project è publitgà)"
+ },
  "Standard (Tag, Wind, Nacht, Regen · etwa 5 Min.)": {
   "en": "Standard (day, wind, night, rain · about 5 min)",
   "fr": "Standard (jour, vent, nuit, pluie · environ 5 min)",
@@ -36805,12 +36799,6 @@
   "it": "Thermal-90",
   "rm": "Thermal-90"
  },
- "Thermal-90 (Linse links) und Camera Module 3 durch die offene Seite einschrauben (Camera Module 3: 4 × M2 × 4, Thermal-90: 2 × M2 × 6). Tilt-Servo auf Mitte einsetzen, Kabel durch den Schlitz hinten, Seitendeckel mit 3 × M3 × 10 Linsenkopf ISO 7380 zuschrauben (kein Zylinderkopf: der stösst beim Kippen an Arm 2).": {
-  "en": "Screw in the Thermal-90 (lens on the left) and the Camera Module 3 through the open side (Camera Module 3: 4 × M2 × 4, Thermal-90: 2 × M2 × 6). Insert the tilt servo at centre, cables through the slot at the back, close the side cover with 3 × M3 × 10 button head ISO 7380 (no socket cap head: it hits arm 2 when tilting).",
-  "fr": "Visser la Thermal-90 (objectif à gauche) et la Camera Module 3 par le côté ouvert (Camera Module 3 : 4 × M2 × 4, Thermal-90 : 2 × M2 × 6). Mettre le servo tilt au centre, câbles par la fente arrière, fermer le couvercle latéral avec 3 × M3 × 10 ISO 7380.",
-  "it": "Avvitare la Thermal-90 (obiettivo a sinistra) e la Camera Module 3 dal lato aperto (Camera Module 3: 4 × M2 × 4, Thermal-90: 2 × M2 × 6). Inserire il servo tilt al centro, cavi nella fessura dietro, chiudere il coperchio laterale con 3 × M3 × 10 ISO 7380.",
-  "rm": "Fixar la Thermal-90 (lentilla a sanestra) e la Camera Module 3 tras la vart averta (Camera Module 3: 4 × M2 × 4, Thermal-90: 2 × M2 × 6). Metter il servo tilt en il center, cabels tras la fessa davos, serrar il viertgel lateral cun 3 × M3 × 10 ISO 7380."
- },
  "Thermal-90 (Linse links) und Camera Module 3 durch die offene Seite einschrauben (M2). Tilt-Servo auf Mitte einsetzen, Kabel durch den Schlitz hinten, Seitendeckel mit 3 × M3 zuschrauben.": {
   "en": "Screw in the Thermal-90 (lens on the left) and the Camera Module 3 through the open side (M2). Insert the tilt servo at centre, cables through the slot at the back, close the side cover with 3 × M3.",
   "fr": "Visser la Thermal-90 (objectif à gauche) et la Camera Module 3 par le côté ouvert (M2). Mettre le servo tilt au centre, câbles par la fente arrière, fermer le couvercle latéral avec 3 × M3.",
@@ -37964,12 +37952,6 @@
   "it": "UPS HAT (E) con 4 batterie 21700",
   "rm": "UPS HAT (E) cun 4 accus 21700"
  },
- "UPS HAT (E) mit Akkus (wie v5.1: angenommen 90 × 80 × 26 mm)": {
-  "en": "UPS HAT (E) with cells (as v5.1: assumed 90 × 80 × 26 mm)",
-  "fr": "UPS HAT (E) avec accus (comme v5.1 : supposé 90 × 80 × 26 mm)",
-  "it": "UPS HAT (E) con batterie (come v5.1: ipotizzato 90 × 80 × 26 mm)",
-  "rm": "UPS HAT (E) cun accus (sco v5.1: supponì 90 × 80 × 26 mm)"
- },
  "Urs, Kletterer": {
   "en": "Urs, climber",
   "fr": "Urs, grimpeur",
@@ -38132,12 +38114,6 @@
   "it": "Variante v5.2 (non ancora nel pacchetto v5.1)",
   "rm": "Variante v5.2 (anc betg en il pachet v5.1)"
  },
- "Variante v5.2 (Weitwinkel-Kamera, eigenes Unterteil)": {
-  "en": "Variant v5.2 (wide camera, own lower part)",
-  "fr": "Variante v5.2 (caméra grand angle, propre partie inférieure)",
-  "it": "Variante v5.2 (fotocamera grandangolare, parte inferiore propria)",
-  "rm": "Variante v5.2 (camera largangulara, atgna part sut)"
- },
  "Variante v5.2 zeigen (Weitwinkel, IR-LED, Tasten, Status-LED)": {
   "en": "Show variant v5.2 (wide angle, IR LED, buttons, status LED)",
   "fr": "Montrer la variante v5.2 (grand-angle, LED IR, boutons, LED d'état)",
@@ -38149,12 +38125,6 @@
   "fr": "Variante v5.2 – pas encore dans le montage v5.1",
   "it": "Variante v5.2 – non ancora nel montaggio v5.1",
   "rm": "Variante v5.2 – anc betg en il muntadi v5.1"
- },
- "Variante v5.2: Weitwinkel-Kamera im Unterteil": {
-  "en": "Variant v5.2: wide camera in the lower part",
-  "fr": "Variante v5.2 : caméra grand angle dans la partie inférieure",
-  "it": "Variante v5.2: fotocamera grandangolare nella parte inferiore",
-  "rm": "Variante v5.2: camera largangulara en la part sut"
  },
  "Vase": {
   "en": "Vase",
@@ -40112,23 +40082,11 @@
   "it": "Telecamera grandangolare (Camera Module 3 Wide NoIR, 102° × 67°, 120° in diagonale): montaggio",
   "rm": "Camera da grond angul (Camera Module 3 Wide NoIR, 102° × 67°, 120° en diagonala): montascha"
  },
- "Weitwinkel-Kamera (Stirnwand, 12° nach unten)": {
-  "en": "Wide camera (front wall, 12° down)",
-  "fr": "Caméra grand angle (paroi avant, 12° vers le bas)",
-  "it": "Fotocamera grandangolare (parete frontale, 12° verso il basso)",
-  "rm": "Camera largangulara (paraid davant, 12° engiu)"
- },
  "Weitwinkel-Kamera in die Stirnwand (CAM1), IR-LED 5 mm links vom PIR, 2 Tasten in die Rückwand, Status-LED oben in den Kopf. Die Druckdateien v5.2 sind noch nicht im Paket.": {
   "en": "Wide-angle camera into the front wall (CAM1), IR LED 5 mm left of the PIR, 2 buttons into the back wall, status LED on top of the head. The print files v5.2 are not yet in the package.",
   "fr": "Caméra grand-angle dans la paroi avant (CAM1), LED IR 5 mm à gauche du PIR, 2 boutons dans la paroi arrière, LED d'état sur la tête. Les fichiers v5.2 ne sont pas encore dans le paquet.",
   "it": "Telecamera grandangolare nella parete frontale (CAM1), LED IR 5 mm a sinistra del PIR, 2 pulsanti nella parete posteriore, LED di stato sopra la testa. I file v5.2 non sono ancora nel pacchetto.",
   "rm": "Camera grondangul en la paraid davant (CAM1), LED IR 5 mm a sanestra dal PIR, 2 buttuns en la paraid davos, LED da status sur il chau. Las datotecas v5.2 n'èn anc betg en il pachet."
- },
- "Weitwinkel-Kamera: Linsenhöhe 11,4 mm ab Platine, Linsenmitte 9,5 mm unter der Platinen-Oberkante, Frontlinse Ø 6 mm (WC_LENS_H, WC_LENS_FROM_TOP, WC_R0)": {
-  "en": "Wide camera: lens height 11.4 mm above the board, lens centre 9.5 mm below the top edge, front lens Ø 6 mm (WC_LENS_H, WC_LENS_FROM_TOP, WC_R0)",
-  "fr": "Caméra grand angle : hauteur de l'objectif 11,4 mm, centre 9,5 mm sous le bord supérieur, lentille avant Ø 6 mm (WC_LENS_H, WC_LENS_FROM_TOP, WC_R0)",
-  "it": "Fotocamera grandangolare: altezza obiettivo 11,4 mm, centro 9,5 mm sotto il bordo superiore, lente anteriore Ø 6 mm (WC_LENS_H, WC_LENS_FROM_TOP, WC_R0)",
-  "rm": "Camera largangulara: autezza da l'objectiv 11,4 mm, center 9,5 mm sut l'ur sura, lentilla davant Ø 6 mm (WC_LENS_H, WC_LENS_FROM_TOP, WC_R0)"
  },
  "Weitwinkel: Fischauge wie das Objektiv der Wide (gebogene Linien am Rand, dunklere Ecken)": {
   "en": "Wide camera: fisheye like the lens of the Wide (bent lines at the edges, darker corners)",

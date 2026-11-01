@@ -34,7 +34,7 @@ SLIDERS = [  # (section, key, label, min, max, step)
     ("Mover", "mover_turn", "Turning speed (%)", 10, 100, 5),
     ("Mover", "mover_ramp", "Gentle start and stop (seconds)", 0.0, 2.0, 0.1),
     ("AI detection", "species_conf", "Animal species: minimum certainty", 0.2, 0.95, 0.05),
-    ("Solar panel", "solar_shunt", "Current meter: shunt resistor (Ohm, usually 0.1)", 0.01, 0.1, 0.005),
+    ("Solar panel", "solar_shunt", "Current meter: shunt resistor (Ohm; Gravity INA219 0.01, blue modules 0.1)", 0.01, 0.1, 0.005),
     ("GPS module", "gps_theft_m", "Theft tracking: alarm from a distance of (m)", 50, 1000, 50),
     ("Storm warning", "storm_drop", "Warn when the air pressure falls by (hPa in 3 hours)", 1.0, 8.0, 0.5),
     ("Storm warning", "storm_wind", "Warn from wind / gusts of (km/h)", 20, 120, 5),
@@ -777,7 +777,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 3.40.0")
+        self.root.title("MoveEye 3.41.1")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -824,6 +824,12 @@ class App:
             tk.Label(top, text="✨ " + tr("New in this version"), bg=C["panel"], fg=C["fg"], font=("TkDefaultFont", 13, "bold")).pack(anchor="w", padx=16, pady=(14, 6))
             for it in st["items"] or [{"v": st["version"], "t": tr("No changes noted.")}]:
                 tk.Label(top, text=it["v"] + "  " + it["t"], bg=C["panel"], fg=C["fg"], wraplength=520, justify="left").pack(anchor="w", padx=16, pady=2)
+                if it.get("href"):                         # Links zu Neuerungen (137): opens the page in the browser
+                    ln = tk.Label(top, text=st["lt"]["go"], bg=C["panel"], fg=C.get("acc", "#3b8cff"), cursor="hand2")
+                    ln.pack(anchor="w", padx=72)
+                    ln.bind("<Button-1>", lambda _e, h=it["href"]: (news_seen("tk"), top.destroy(), self._open_page(h)))
+                elif it.get("where") == "sim":
+                    tk.Label(top, text="(" + st["lt"]["sim"] + ")", bg=C["panel"], fg=C.get("mut", C["fg"])).pack(anchor="w", padx=72)
             if st["next"]:
                 tk.Label(top, text="🔜 %s (%d/%d)" % (tr("Next in the makeover"), st["done"], st["total"]), bg=C["panel"], fg=C["fg"],
                          font=("TkDefaultFont", 11, "bold")).pack(anchor="w", padx=16, pady=(10, 2))
@@ -1149,7 +1155,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 3.40.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 3.41.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")

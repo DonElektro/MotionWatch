@@ -42,7 +42,7 @@ Status aus der abhakbaren Liste: ✅ vorhanden · 🚚 bestellt · ☐ fehlt. Oh
 |---|---|---|---|---|
 | ☐ | 1× | Scheinwerfer-Modul weiss, Ø 18,8 × 14 mm | Modul Ø18,8 mm | Masse von dir gemessen; der Lampenhalter v5.1 ist darauf ausgelegt (Bohrung 19,2 mm). |
 | ☐ | 1× | Scheinwerfer-Modul Infrarot 850 nm, gleiche Grösse | Modul Ø18,8 mm, 850 nm | 850 nm (leichtes Rotglimmen), sieht die NoIR-Kamera viel besser als 940 nm. |
-| ☐ | 1× | MOSFET-Modul 2-Kanal, Logic-Level (3,3 V) | Dual MOSFET D4184 / AOD4184 | Schaltet weiss und IR über PCA9685 Kanal 2/3. IRF520-Module schalten bei 3,3 V nicht sauber. |
+| ☐ | 2× | MOSFET-Modul 1-Kanal (2 × AOD4184 parallel), Logic-Level (3,3 V) | Bastelgarage 420985 («Dual MOSFET D4184») | Je ein Modul für weiss und IR (PCA9685 Kanal 2/3). Variante v5.2: ein drittes Modul für die IR-LED 5 mm an Kanal 4 (+ 47 Ω / 0,5 W). IRF520-Module schalten bei 3,3 V nicht sauber. |
 | ☐ | 2× | Vorwiderstand 2 W für die LEDs | 2 W, Wert je nach LED | Wert rechne ich aus, sobald die genauen LEDs feststehen (ca. 0,5 W Betrieb). |
 
 ## Audio

@@ -3,10 +3,8 @@ extends RefCounted
 ## hardware/gehaeuse/bau.json. NICHT VON HAND ÄNDERN (Texte dort ändern, dann «gehaeuse_bauen.py --texte»).
 ## Texte deutsch (T.t übersetzt sie, Übersetzungen kommen aus bau.json in i18n/texte.json).
 
-const QUELLE_SHA := "546b0c656817037ace3959d6b4a06daa616955ccfffa34008a796dc710405cbe"
+const QUELLE_SHA := "153b7c2217a6320c7dbb12e5ca8d86d9bb4a64c83669ed70225265fc00ecf605"
 const VERSION := "5.1"
-const KOPF_FARBE := "#f59a4a"   # Kopfteil (dreht / neigt) in MoveEye-Orange
-const KOPF_TEILE := ["turntable", "yoke", "arm2", "head", "side", "lamp1", "lamp2"]
 const MASSE := "Unterteil 183 × 97 × 71,5 mm (mit Füssen 77,5 mm), Gesamthöhe ca. 161 mm, Kopf 58 × 58 mm"
 # Materialliste: id -> [Menge, Bezeichnung, Teilenummer, Gruppe]
 const BOM := {
@@ -28,10 +26,10 @@ const BOM := {
 	"gx16": ["1×", "GX16 4-polig: Einbaubuchse + Stecker (Ladebuchse)", "Bastelgarage 420241", "Strom"],
 	"fuse": ["1×", "Sicherungshalter fliegend + Sicherung 5 A", "Mini-Kfz (ATM) 5 A", "Strom"],
 	"usbc": ["1×", "USB-C-Stecker zum Anlöten (D36V50F5 → UPS HAT)", "USB-C Plug Breakout", "Strom"],
-	"chled": ["1×", "Lade-LED 3 mm + Lichtleiter", "LED 3 mm, PMMA 3 mm", "Strom"],
+	"chled": ["1×", "Lade-LED 3 mm + 330 Ω + Lichtleiter", "LED 3 mm grün, 330 Ω, PMMA 3 mm", "Strom"],
 	"ledw": ["1×", "Scheinwerfer-Modul weiss, Ø 18,8 × 14 mm", "Ø 18,8 mm", "Licht an der Gabel"],
 	"ledir": ["1×", "Scheinwerfer-Modul Infrarot 850 nm", "Ø 18,8 mm, 850 nm", "Licht an der Gabel"],
-	"mosfet": ["1×", "MOSFET-Modul 2-Kanal, Logic-Level", "AOD4184", "Licht an der Gabel"],
+	"mosfet": ["2×", "MOSFET-Modul 1-Kanal (2 × AOD4184 parallel), Logic-Level", "Bastelgarage 420985", "Licht an der Gabel"],
 	"res": ["2×", "Vorwiderstand 2 W für die LEDs", "", "Licht an der Gabel"],
 	"spk": ["1×", "Lautsprecher 41 mm, 4 Ω", "Visaton SC 4.7 ND", "Audio"],
 	"pam": ["1×", "Verstärkermodul PAM8403", "PAM8403", "Audio"],
@@ -51,80 +49,73 @@ const BOM := {
 	"m12": ["1×", "Kabelverschraubung M12 (Relais-Ausgang)", "Bastelgarage 420032", "Neu in v5.1"],
 	"ina": ["1×", "Strommesser INA219 (optional, Solar)", "0x44", "Neu in v5.1"],
 	"lte": ["1×", "USB-Stick LTE/GPS", "", "Später"],
-	"camwide": ["1×", "Camera Module 3 Wide NoIR", "SC0874", "Variante v5.2 (Weitwinkel-Kamera, eigenes Unterteil)"],
-	"irmod": ["1×", "IR-LED-Modul 850 nm mit 120°-Linse (Ø ca. 18,8 mm, nachmessen)", "850 nm, 120°", "Variante v5.2 (Weitwinkel-Kamera, eigenes Unterteil)"],
-	"m2": ["4×", "Schraube M2 × 6, selbstschneidend (Weitwinkel-Kamera)", "M2 × 6", "Variante v5.2 (Weitwinkel-Kamera, eigenes Unterteil)"],
-	"mosfet3": ["1×", "MOSFET-Kanal für das IR-Modul (PCA9685 Kanal 4, wie AOD4184)", "AOD4184", "Variante v5.2 (Weitwinkel-Kamera, eigenes Unterteil)"],
-	"irled5": ["1×", "IR-LED 5 mm, 850 nm", "", "Variante v5.2 (Weitwinkel-Kamera, eigenes Unterteil)"],
-	"taster": ["2×", "Taster 12 mm, IP67", "", "Variante v5.2 (Weitwinkel-Kamera, eigenes Unterteil)"],
-	"sled": ["1×", "RGB-LED 5 mm mit Diffusor «Blinki-Auge»", "", "Variante v5.2 (Weitwinkel-Kamera, eigenes Unterteil)"],
-	"camcable2": ["1×", "Kamerakabel Pi 5, 200 mm (CAM1)", "SC1129", "Variante v5.2 (Weitwinkel-Kamera, eigenes Unterteil)"],
+	"camwide": ["1×", "Camera Module 3 Wide NoIR", "SC0874", "Variante v5.2 (noch nicht im Paket v5.1)"],
+	"irled5": ["1×", "IR-LED 5 mm, 850 nm", "", "Variante v5.2 (noch nicht im Paket v5.1)"],
+	"mosfet3": ["1×", "3. MOSFET-Modul (AOD4184) für die IR-LED 5 mm, Kanal 4", "Bastelgarage 420985", "Variante v5.2 (noch nicht im Paket v5.1)"],
+	"taster": ["2×", "Taster 12 mm, IP67", "", "Variante v5.2 (noch nicht im Paket v5.1)"],
+	"sled": ["1×", "RGB-LED 5 mm mit Diffusor «Blinki-Auge»", "", "Variante v5.2 (noch nicht im Paket v5.1)"],
+	"camcable2": ["1×", "Kamerakabel Pi 5, 200 mm (CAM1)", "SC1129", "Variante v5.2 (noch nicht im Paket v5.1)"],
 	"psu12": ["1×", "Netzteil 12 V, mind. 3 A, mit GX16-Stecker verlötet", "", "Strom"],
 	"motorhat": ["1×", "Motor-HAT (Adafruit DC & Stepper Motor HAT, I2C 0x60)", "Adafruit 2348", "Mover"],
 	"chassis": ["1×", "Kettenfahrwerk mit 2 DC-Motoren", "", "Mover"],
 	"schrauben": ["1 Set", "Schraubensatz M2 / M2,5 / M3 mit Muttern und Scheiben", "", "Kabel, Druck, Notfall"],
 }
-# Teile: [id, Art (druck | teil | kabel | v52), Name, Materialliste-id, Montageschritt (0 = keiner), Druckdatei,
-#         ersetzt (v5.2: dieses Teil von v5.1, sonst "")]
+# Teile: [id, Art (druck | teil | kabel | v52), Name, Materialliste-id, Montageschritt (0 = keiner), Druckdatei]
 const TEILE := [
-	["tub", "druck", "01 Unterteil", "petg", 2, "01_Unterteil", ""],
-	["feet", "druck", "11 Füsse (4×)", "petg", 2, "11_Fuss_4x", ""],
-	["tripod", "teil", "Stativmutter 1/4\"", "", 2, "", ""],
-	["speaker", "teil", "Lautsprecher 41 mm, 4 Ω", "spk", 2, "", ""],
-	["pca", "teil", "PCA9685 16-Kanal-PWM-Modul", "pca", 3, "", ""],
-	["elko", "teil", "Elko 470 µF / 10 V", "elko", 3, "", ""],
-	["pir", "teil", "Mini-PIR AS312", "pir", 3, "", ""],
-	["mic", "teil", "USB-Mikrofon (Mini)", "mic", 3, "", ""],
-	["ups", "teil", "UPS HAT (E) mit 4 Akkus 21700", "ups", 4, "", ""],
-	["pi", "teil", "Raspberry Pi 5", "pi5", 4, "", ""],
-	["cooler", "teil", "Raspberry Pi Active Cooler (Lüfter)", "cooler", 4, "", ""],
-	["shelf", "druck", "09 Zwischenboden", "petg", 5, "09_Zwischenboden", ""],
-	["charger", "teil", "Pololu D36V50F5 (Laden 12–40 V → 5 V)", "charger", 5, "", ""],
-	["pam", "teil", "Verstärkermodul PAM8403", "pam", 5, "", ""],
-	["ina", "teil", "Strommesser INA219 (optional, Solar)", "ina", 5, "", ""],
-	["mosfet", "teil", "MOSFET-Modul 2-Kanal, Logic-Level", "mosfet", 6, "", ""],
-	["buck", "teil", "Step-Down 6–36 V → 5 V 4 A (Servos, Licht, Verstärker)", "buck", 6, "", ""],
-	["relay", "teil", "Relaismodul 1-Kanal, 5 V", "relay", 6, "", ""],
-	["hub", "teil", "USB-Hub, 4 Anschlüsse, kompakt", "hub", 6, "", ""],
-	["soundcard", "teil", "USB-Soundkarte", "sound", 6, "", ""],
-	["mpu", "teil", "Lagesensor MPU-6050", "mpu", 6, "", ""],
-	["bme", "teil", "Luftdrucksensor BME280", "bme", 6, "", ""],
-	["cable_usb", "kabel", "USB-Kabel Pi → Hub", "hub", 6, "", ""],
-	["cable_power", "kabel", "Stromkabel", "litze", 6, "", ""],
-	["jacks", "teil", "GX16 4-polig: Einbaubuchse + Stecker (Ladebuchse)", "gx16", 7, "", ""],
-	["fuse", "teil", "Sicherungshalter fliegend + Sicherung 5 A", "fuse", 7, "", ""],
-	["ledlight", "teil", "Lade-LED 3 mm + Lichtleiter", "chled", 7, "", ""],
-	["relayjack", "teil", "Kabelverschraubung M12 (Relais-Ausgang)", "m12", 7, "", ""],
-	["probe", "teil", "Temperaturfühler DS18B20 wasserdicht", "ds18", 7, "", ""],
-	["lid", "druck", "02 Deckel mit Laufring", "petg", 8, "02_Deckel_mit_Laufring", ""],
-	["servo1", "teil", "Pan-Servo MG90S", "servo", 8, "", ""],
-	["balls", "teil", "Softair-Kugeln 6 mm (0,20 g)", "bbs", 8, "", ""],
-	["horn1", "teil", "Servohorn Pan (im Drehteller)", "servo", 8, "", ""],
-	["turntable", "druck", "03 Drehteller", "petg", 8, "03_Drehteller", ""],
-	["yoke", "druck", "04 Gabel mit Arm 1", "petg", 9, "04_Gabel_mit_Arm1", ""],
-	["horn2", "teil", "Servohorn Tilt (in Arm 1)", "servo", 9, "", ""],
-	["therm", "teil", "Waveshare Thermal-90 Camera Module", "therm", 10, "", ""],
-	["cam3", "teil", "Camera Module 3 NoIR", "cam", 10, "", ""],
-	["servo2", "teil", "Tilt-Servo MG90S", "servo", 10, "", ""],
-	["head", "druck", "06 Kamerakopf", "petg", 10, "06_Kamerakopf", ""],
-	["side", "druck", "07 Seitendeckel", "petg", 10, "07_Seitendeckel", ""],
-	["arm2", "druck", "05 Arm 2 (Lagerseite)", "petg", 11, "05_Arm2_Lagerseite", ""],
-	["lamp1", "druck", "08 Lampenhalter Arm 1 (weiss)", "petg", 12, "08_Lampenhalter_2x", ""],
-	["lamp2", "druck", "08 Lampenhalter Arm 2 (IR)", "petg", 12, "08_Lampenhalter_2x", ""],
-	["alu", "teil", "LED-Platinen der Scheinwerfer", "res", 12, "", ""],
-	["lens_w", "teil", "Scheinwerfer-Modul weiss, Ø 18,8 × 14 mm", "ledw", 12, "", ""],
-	["lens_ir", "teil", "Scheinwerfer-Modul Infrarot 850 nm", "ledir", 12, "", ""],
-	["cable_cam", "kabel", "Kamerakabel (Flachkabel)", "camcable", 13, "", ""],
-	["cable_servo", "kabel", "Servokabel", "servo", 13, "", ""],
-	["plug", "druck", "10 HDMI-Stopfen", "petg", 13, "10_HDMI_Stopfen", ""],
-	["wide", "v52", "Weitwinkel-Kamera (Stirnwand, 12° nach unten)", "camwide", 0, "", ""],
-	["irled", "v52", "IR-LED-Modul 120° (Stirnwand)", "irmod", 0, "", ""],
-	["buttons", "v52", "Taster 12 mm, IP67", "taster", 0, "", ""],
-	["sled", "v52", "RGB-LED 5 mm mit Diffusor «Blinki-Auge»", "sled", 0, "", ""],
-	["tub52", "v52", "01 Unterteil v5.2 (Fenster Weitwinkel, IR-Modul, Kabelkamm, Tasten)", "petg", 0, "01_Unterteil_v52", "tub"],
-	["mosfet52", "v52", "MOSFET-Modul (v5.2: Lüftungswand unter dem PCA9685)", "mosfet", 0, "", "mosfet"],
-	["cable_cam1", "v52", "Kamerakabel CAM1 (Weitwinkel → Kabelkamm → Pi)", "camcable2", 0, "", ""],
-	["cable_cam0_52", "v52", "Kamerakabel CAM0 (v5.2: Kamin → Kabelkamm → Pi)", "camcable", 0, "", "cable_cam"],
+	["tub", "druck", "01 Unterteil", "petg", 2, "01_Unterteil"],
+	["feet", "druck", "11 Füsse (4×)", "petg", 2, "11_Fuss_4x"],
+	["tripod", "teil", "Stativmutter 1/4\"", "", 2, ""],
+	["speaker", "teil", "Lautsprecher 41 mm, 4 Ω", "spk", 2, ""],
+	["pca", "teil", "PCA9685 16-Kanal-PWM-Modul", "pca", 3, ""],
+	["elko", "teil", "Elko 470 µF / 10 V", "elko", 3, ""],
+	["pir", "teil", "Mini-PIR AS312", "pir", 3, ""],
+	["mic", "teil", "USB-Mikrofon (Mini)", "mic", 3, ""],
+	["ups", "teil", "UPS HAT (E) mit 4 Akkus 21700", "ups", 4, ""],
+	["pi", "teil", "Raspberry Pi 5", "pi5", 4, ""],
+	["cooler", "teil", "Raspberry Pi Active Cooler (Lüfter)", "cooler", 4, ""],
+	["shelf", "druck", "09 Zwischenboden", "petg", 5, "09_Zwischenboden"],
+	["charger", "teil", "Pololu D36V50F5 (Laden 12–40 V → 5 V)", "charger", 5, ""],
+	["pam", "teil", "Verstärkermodul PAM8403", "pam", 5, ""],
+	["ina", "teil", "Strommesser INA219 (optional, Solar)", "ina", 5, ""],
+	["mosfet", "teil", "MOSFET-Modul 1-Kanal (2 × AOD4184 parallel), Logic-Level", "mosfet", 6, ""],
+	["buck", "teil", "Step-Down 6–36 V → 5 V 4 A (Servos, Licht, Verstärker)", "buck", 6, ""],
+	["relay", "teil", "Relaismodul 1-Kanal, 5 V", "relay", 6, ""],
+	["hub", "teil", "USB-Hub, 4 Anschlüsse, kompakt", "hub", 6, ""],
+	["soundcard", "teil", "USB-Soundkarte", "sound", 6, ""],
+	["mpu", "teil", "Lagesensor MPU-6050", "mpu", 6, ""],
+	["bme", "teil", "Luftdrucksensor BME280", "bme", 6, ""],
+	["cable_usb", "kabel", "USB-Kabel Pi → Hub", "hub", 6, ""],
+	["cable_power", "kabel", "Stromkabel", "litze", 6, ""],
+	["jacks", "teil", "GX16 4-polig: Einbaubuchse + Stecker (Ladebuchse)", "gx16", 7, ""],
+	["fuse", "teil", "Sicherungshalter fliegend + Sicherung 5 A", "fuse", 7, ""],
+	["ledlight", "teil", "Lade-LED 3 mm + 330 Ω + Lichtleiter", "chled", 7, ""],
+	["relayjack", "teil", "Kabelverschraubung M12 (Relais-Ausgang)", "m12", 7, ""],
+	["probe", "teil", "Temperaturfühler DS18B20 wasserdicht", "ds18", 7, ""],
+	["lid", "druck", "02 Deckel mit Laufring", "petg", 8, "02_Deckel_mit_Laufring"],
+	["servo1", "teil", "Pan-Servo MG90S", "servo", 8, ""],
+	["balls", "teil", "Softair-Kugeln 6 mm (0,20 g)", "bbs", 8, ""],
+	["horn1", "teil", "Servohorn Pan (im Drehteller)", "servo", 8, ""],
+	["turntable", "druck", "03 Drehteller", "petg", 8, "03_Drehteller"],
+	["yoke", "druck", "04 Gabel mit Arm 1", "petg", 9, "04_Gabel_mit_Arm1"],
+	["horn2", "teil", "Servohorn Tilt (in Arm 1)", "servo", 9, ""],
+	["therm", "teil", "Waveshare Thermal-90 Camera Module", "therm", 10, ""],
+	["cam3", "teil", "Camera Module 3 NoIR", "cam", 10, ""],
+	["servo2", "teil", "Tilt-Servo MG90S", "servo", 10, ""],
+	["head", "druck", "06 Kamerakopf", "petg", 10, "06_Kamerakopf"],
+	["side", "druck", "07 Seitendeckel", "petg", 10, "07_Seitendeckel"],
+	["arm2", "druck", "05 Arm 2 (Lagerseite)", "petg", 11, "05_Arm2_Lagerseite"],
+	["lamp1", "druck", "08 Lampenhalter Arm 1 (weiss)", "petg", 12, "08_Lampenhalter_2x"],
+	["lamp2", "druck", "08 Lampenhalter Arm 2 (IR)", "petg", 12, "08_Lampenhalter_2x"],
+	["alu", "teil", "LED-Platinen der Scheinwerfer", "res", 12, ""],
+	["lens_w", "teil", "Scheinwerfer-Modul weiss, Ø 18,8 × 14 mm", "ledw", 12, ""],
+	["lens_ir", "teil", "Scheinwerfer-Modul Infrarot 850 nm", "ledir", 12, ""],
+	["cable_cam", "kabel", "Kamerakabel (Flachkabel)", "camcable", 13, ""],
+	["cable_servo", "kabel", "Servokabel", "servo", 13, ""],
+	["plug", "druck", "10 HDMI-Stopfen", "petg", 13, "10_HDMI_Stopfen"],
+	["wide", "v52", "Camera Module 3 Wide NoIR", "camwide", 0, ""],
+	["irled", "v52", "IR-LED 5 mm, 850 nm", "irled5", 0, ""],
+	["buttons", "v52", "Taster 12 mm, IP67", "taster", 0, ""],
+	["sled", "v52", "RGB-LED 5 mm mit Diffusor «Blinki-Auge»", "sled", 0, ""],
 ]
 # Montage v5.1: [Titel, Text]
 const SCHRITTE := [
@@ -136,10 +127,10 @@ const SCHRITTE := [
 	["Module an den Wänden", "MOSFET-Modul und Step-Down an die Stirnwand links vom PIR, das Relais über die Hub-Ablage kleben. USB-Hub mit 2 Kabelbindern auf die Ablage, Soundkarte in den Hub, MPU-6050 flach auf den Boden."],
 	["Hinten und unten", "GX16-4P-Ladebuchse (Sicherung 5 A dahinter) und die Kabelverschraubung M12 für das Relais einschrauben, Lichtleiter der Lade-LED einsetzen. Den DS18B20 von unten durch das Bodenloch führen und abdichten."],
 	["Deckel und Drehlager", "Pan-Servo von unten in den Deckel (2 × M2 × 8). Kugeln in die Rille legen, Servo auf Mitte (1500 µs) und den Drehteller mit Horn so aufstecken, dass der Kopf später zur PIR-Seite schaut."],
-	["Gabel montieren", "Die Gabel mit 4 × M3 × 8 (nicht länger: die Spitze darf nicht in den Laufring ragen) auf den Drehteller schrauben. Das Tilt-Horn senkrecht in die Vertiefung innen in Arm 1 legen und festschrauben."],
-	["Kamerakopf", "Thermal-90 (Linse links) und Camera Module 3 durch die offene Seite einschrauben (Camera Module 3: 4 × M2 × 4, Thermal-90: 2 × M2 × 6). Tilt-Servo auf Mitte einsetzen, Kabel durch den Schlitz hinten, Seitendeckel mit 3 × M3 × 10 Linsenkopf ISO 7380 zuschrauben (kein Zylinderkopf: der stösst beim Kippen an Arm 2)."],
+	["Gabel montieren", "Die Gabel mit 4 × M3 auf den Drehteller schrauben. Das Tilt-Horn senkrecht in die Vertiefung innen in Arm 1 legen und festschrauben."],
+	["Kamerakopf", "Thermal-90 (Linse links) und Camera Module 3 durch die offene Seite einschrauben (M2). Tilt-Servo auf Mitte einsetzen, Kabel durch den Schlitz hinten, Seitendeckel mit 3 × M3 zuschrauben."],
 	["Kopf einsetzen, Arm 2", "Servowelle auf das Horn in Arm 1 stecken (Kopf schaut geradeaus). Arm 2 mit Mutter in die Nut setzen, 2 × M3 von oben, 2–3 Unterlegscheiben, M3 × 12 als Achse nur bis zum Anliegen."],
-	["Lampen", "Die zwei Lampenhalter mit je 2 × M3 × 8 mit Unterlegscheibe aussen an die Arme schrauben: weiss an Arm 1, IR 850 nm an Arm 2. Module einsetzen und mit Heisskleber oder Madenschraube sichern."],
+	["Lampen", "Die zwei Lampenhalter mit je 2 × M3 × 8 aussen an die Arme schrauben: weiss an Arm 1, IR 850 nm an Arm 2. Module einsetzen und mit Heisskleber oder Madenschraube sichern."],
 	["Kabel und Deckel zu", "Kabel von Kopf und Lampen in einer Schlaufe hinter dem Kopf durch den Kabelkamin führen. Deckel mit 6 × M3 × 10 zuschrauben (Moosgummi-Dichtband), HDMI-Stopfen einsetzen."],
 	["Fertig", "In MoveEye Tilt auf ±60° und Pan auf ±90° begrenzen. Vor dem Druck des Unterteils die Masse des UPS HAT (E) mit Akkus nachmessen (siehe Anleitung)."],
 ]
@@ -184,7 +175,7 @@ const BAU := {
 				},
 				{
 					"id": "mover",
-					"name": "mit Mover (Kettenfahrzeug)"
+					"name": "mit Mover (Kettenfahrzeug) – folgt später"
 				}
 			]
 		}
@@ -228,18 +219,6 @@ const BAU := {
 				"brim": 0,
 				"zeit_h": 8.0,
 				"liegt": "Boden"
-			},
-			{
-				"datei": "01_Unterteil_v52",
-				"stueck": 1,
-				"fuellung": 15,
-				"waende": 4,
-				"stuetzen": false,
-				"schicht": "0.20",
-				"brim": 0,
-				"zeit_h": 8.5,
-				"liegt": "Boden – Kamera-Rippen und Kabelkamm mit 45°-Unterseiten, ohne Stützen",
-				"wenn": "v52"
 			},
 			{
 				"datei": "02_Deckel_mit_Laufring",
@@ -350,18 +329,6 @@ const BAU := {
 				"brim": 0,
 				"zeit_h": 0.4,
 				"liegt": "Fuss, Zapfen nach oben"
-			},
-			{
-				"datei": "12_Blindstopfen_Weitwinkel",
-				"stueck": 1,
-				"fuellung": 100,
-				"waende": 2,
-				"stuetzen": false,
-				"schicht": "0.12",
-				"brim": 0,
-				"zeit_h": 0.3,
-				"wenn": "v52",
-				"liegt": "Flansch unten (nur ohne Weitwinkel-Kamera)"
 			}
 		],
 		"hinweise": [
@@ -388,14 +355,12 @@ const BAU := {
 		{
 			"menge": "4×",
 			"was": "M2,5 × 6",
-			"schritt": 3,
-			"unklar": "Länge nicht angegeben (geschätzt)"
+			"schritt": 3
 		},
 		{
 			"menge": "2×",
 			"was": "M3 × 8",
-			"schritt": 5,
-			"unklar": "Länge nicht angegeben (geschätzt)"
+			"schritt": 5
 		},
 		{
 			"menge": "2×",
@@ -404,27 +369,27 @@ const BAU := {
 		},
 		{
 			"menge": "4×",
-			"was": "M3 × 8 (Gabel → Drehteller)",
+			"was": "M3 × 10",
 			"schritt": 9
 		},
 		{
-			"menge": "4× + 2×",
-			"was": "M2 × 4 (Camera Module 3) + M2 × 6 (Thermal-90)",
+			"menge": "6×",
+			"was": "M2 × 6 (4× Camera Module 3, 2× Thermal-90)",
 			"schritt": 10
 		},
 		{
 			"menge": "3×",
-			"was": "M3 × 10 Linsenkopf ISO 7380 (Seitendeckel)",
+			"was": "M3 × 10",
 			"schritt": 10
 		},
 		{
 			"menge": "2× + 1×",
-			"was": "M3 + Mutter, M3 × 12 (Achse), 2–3 Scheiben",
+			"was": "M3 × 10 + Mutter, M3 × 12 (Achse), 2–3 Scheiben",
 			"schritt": 11
 		},
 		{
 			"menge": "4×",
-			"was": "M3 × 8 + Unterlegscheibe M3 (Lampenhalter)",
+			"was": "M3 × 8",
 			"schritt": 12
 		},
 		{
@@ -643,12 +608,19 @@ const BAU := {
 				"wert": "1"
 			},
 			{
+				"id": "akku_buck",
+				"von": "ups",
+				"nach": "buck",
+				"art": "strom",
+				"pins": "Akku-Lötpunkte B+ / B− des UPS HAT (E) (12–16,8 V) → eigener Step-Down 6–36 V → 5 V (VIN / GND). Ersatz: USB-A-5-V-Buchse des HAT",
+				"wenn": "ups"
+			},
+			{
 				"id": "servo_strom",
 				"von": "buck",
 				"nach": "pca",
 				"art": "strom",
 				"pins": "5 V → Klemme V+ / GND des PCA9685, Elko 470 µF an V+",
-				"unklar": "Abgriff des Step-Downs am Akkupaket des UPS HAT (E) nicht beschrieben",
 				"wenn": "ups"
 			},
 			{
@@ -698,22 +670,21 @@ const BAU := {
 				"von": "pca",
 				"nach": "irled",
 				"art": "pwm",
-				"pins": "Kanal 4 → MOSFET → IR-LED 5 mm 850 nm («IR-Licht breit»)",
+				"pins": "Kanal 4 → 3. MOSFET-Modul (AOD4184, 1 Kanal) → 47 Ω / 0,5 W → IR-LED 5 mm 850 nm («IR-Licht breit», ca. 70 mA)",
 				"code": "weit_ir_ch",
 				"wert": "4",
-				"wenn": "v52",
-				"unklar": "braucht einen dritten MOSFET-Kanal – die Materialliste hat ein 2-Kanal-Modul"
+				"wenn": "v52"
 			},
 			{
 				"id": "led_rgb",
 				"von": "pca",
 				"nach": "sled",
 				"art": "pwm",
-				"pins": "Kanal 5 rot · 6 grün · 7 blau, gemeinsame Kathode (Einstellung «LED-Typ»)",
+				"pins": "Kanal 5 rot · 6 grün · 7 blau, gemeinsame Kathode (Einstellung «LED-Typ»); keine eigenen Vorwiderstände: 220 Ω sind auf dem PCA9685-Board",
 				"code": "led_ch_rgb",
 				"wert": "5/6/7",
 				"wenn": "v52",
-				"unklar": "Vorwiderstände der RGB-LED fehlen in der Materialliste"
+				"unklar": "gilt nur mit 220 Ω auf dem PCA9685-Board (Adafruit 815 oder Klon?) – klärt Daniel"
 			},
 			{
 				"id": "tasten",
@@ -758,9 +729,8 @@ const BAU := {
 				"nach": "i2c",
 				"art": "i2c",
 				"pins": "am selben I2C wie der PCA9685: BME280 0x76 / 0x77 · MPU-6050 0x68 · INA219 0x44 (optional, Solar)",
-				"unklar": "INA219: Doku 0x44, die Einstellung «Solar» steht im Code auf 0x41 (= PCA9685)",
 				"code": "solar_addr",
-				"wert": "0x41"
+				"wert": "0x44"
 			},
 			{
 				"id": "therm",
@@ -872,17 +842,16 @@ const BAU := {
 				"von": "d36",
 				"nach": "pi",
 				"art": "strom",
-				"pins": "5 V → USB-C des Pi 5 direkt",
-				"wenn": "netz",
-				"unklar": "ohne USB-PD meldet der Pi 5 «schwaches Netzteil» (USB nur 600 mA) – config.txt usb_max_current_enable=1 prüfen"
+				"pins": "5 V → USB-C des Pi 5 direkt; im EEPROM PSU_MAX_CURRENT=5000 setzen (Schritt «Netzteil-Grenze»), sonst USB nur 600 mA",
+				"wenn": "netz"
 			},
 			{
 				"id": "ladeled",
-				"von": "d36",
+				"von": "pi",
 				"nach": "gx16",
-				"art": "strom",
-				"pins": "Lade-LED 3 mm mit Vorwiderstand, Lichtleiter hinten",
-				"unklar": "wo die Lade-LED angeschlossen wird, ist nicht beschrieben"
+				"art": "gpio",
+				"pins": "GPIO 6 (Pin 31) → 330 Ω → Lade-LED 3 mm grün → GND (Pin 34); Lichtleiter hinten. MoveEye schaltet sie nach dem Lade-Zustand des UPS HAT (E)",
+				"unklar": "die Software steuert die Lade-LED noch nicht (folgt)"
 			},
 			{
 				"id": "mover",
@@ -893,7 +862,7 @@ const BAU := {
 				"code": "mover_addr",
 				"wert": "0x60",
 				"wenn": "mover",
-				"unklar": "Fahrwerk, Motorstrom und Befestigung des Gehäuses (Stativmutter 1/4\") noch offen"
+				"unklar": "folgt später: Fahrwerk, Motorstrom und Befestigung (Stativmutter 1/4\")"
 			}
 		]
 	},
@@ -911,6 +880,11 @@ const BAU := {
 			"titel": "Wärmebild-Treiber",
 			"text": "Für die Thermal-90: im Waveshare-Wiki «Thermal_Camera_Hat.zip» laden, im Ordner pysenxor-master installieren.",
 			"befehl": "pip install --break-system-packages -e ./"
+		},
+		{
+			"titel": "Netzteil-Grenze des Pi 5",
+			"text": "Der UPS HAT (E) und der 5-V-Wandler melden kein USB-PD. Ohne diese Zeile drosselt der Pi 5 USB auf 600 mA und meldet «schwaches Netzteil». Im Editor die Zeile PSU_MAX_CURRENT=5000 ergänzen, speichern, neu starten (schaltet auch usb_max_current_enable ein).",
+			"befehl": "sudo rpi-eeprom-config --edit"
 		},
 		{
 			"titel": "Neu starten und prüfen",
@@ -1039,7 +1013,7 @@ const BAU := {
 			"wenn": "mover",
 			"titel": "Mover",
 			"text": "Motor-HAT auf den Pi bzw. an I2C (0x60), Motoren M1 links und M2 rechts, das Gehäuse mit der Stativmutter 1/4\" auf das Fahrwerk schrauben. In MoveEye erscheint der zweite Stick von selbst.",
-			"unklar": "Fahrwerk und Befestigung noch nicht festgelegt"
+			"unklar": "folgt später: Fahrwerk, Motorstrom und Befestigung (Stativmutter 1/4\")"
 		}
 	],
 	"druckdateien_einzeln": [
@@ -1053,29 +1027,8 @@ const BAU := {
 		"MoveEye_v5-1_08_Lampenhalter_2x.3mf",
 		"MoveEye_v5-1_09_Zwischenboden.3mf",
 		"MoveEye_v5-1_10_HDMI_Stopfen.3mf",
-		"MoveEye_v5-1_11_Fuss_4x.3mf",
-		"MoveEye_v5-2_01_Unterteil_v52.3mf",
-		"MoveEye_v5-2_12_Blindstopfen_Weitwinkel.3mf"
+		"MoveEye_v5-1_11_Fuss_4x.3mf"
 	],
-	"farben": {
-		"kopf": "#f59a4a",
-		"kopf_teile": [
-			"turntable",
-			"yoke",
-			"arm2",
-			"head",
-			"side",
-			"lamp1",
-			"lamp2"
-		],
-		"turntable": "#f59a4a",
-		"yoke": "#f59a4a",
-		"arm2": "#f59a4a",
-		"head": "#f59a4a",
-		"side": "#f59a4a",
-		"lamp1": "#f59a4a",
-		"lamp2": "#f59a4a"
-	},
 	"bom_extra": {
 		"pi5": {
 			"preis": 85,
@@ -1221,7 +1174,7 @@ const BAU := {
 			"preis": 9.8,
 			"haendler": "bastelgarage",
 			"suche": "MOSFET AOD4184",
-			"alt": "2 × AOD4184-Modul (Bastelgarage 420985); kein IRF520",
+			"alt": "je ein Modul für weiss (Kanal 2) und IR (Kanal 3); kein IRF520",
 			"gruppe": "licht"
 		},
 		"res": {
@@ -1351,31 +1304,18 @@ const BAU := {
 			"wenn": "v52",
 			"gruppe": "v52"
 		},
-		"irmod": {
-			"preis": 8,
-			"haendler": "bastelgarage",
-			"suche": "IR LED 850nm 3W Linse 120",
-			"wenn": "v52",
-			"gruppe": "v52"
-		},
-		"m2": {
-			"preis": 3,
-			"haendler": "bastelgarage",
-			"suche": "Schraube M2x6 Kunststoff selbstschneidend",
-			"wenn": "v52",
-			"gruppe": "v52"
-		},
-		"mosfet3": {
-			"preis": 4,
-			"haendler": "bastelgarage",
-			"suche": "MOSFET Modul AOD4184",
-			"wenn": "v52",
-			"gruppe": "v52"
-		},
 		"irled5": {
 			"preis": 1,
 			"haendler": "bastelgarage",
 			"suche": "IR LED 5mm 850nm",
+			"wenn": "v52",
+			"gruppe": "v52"
+		},
+		"mosfet3": {
+			"preis": 4.9,
+			"haendler": "bastelgarage",
+			"suche": "MOSFET AOD4184",
+			"alt": "dazu Vorwiderstand 47 Ω / 0,5 W; oder ein kleiner Logic-Level-MOSFET (AO3400)",
 			"wenn": "v52",
 			"gruppe": "v52"
 		},
@@ -1429,8 +1369,4 @@ const BAU := {
 			"gruppe": "kabel"
 		}
 	}
-}
-# Gehäuse-Varianten: id -> {name, teile, ersetzt, druckdateien, anleitung, hinweis, nachmessen (deutsch, T.t übersetzt)}
-const GEHAEUSE_VARIANTEN := {
-	"v52": {"name": "Variante v5.2: Weitwinkel-Kamera im Unterteil", "teile": ["tub52", "wide", "irled", "mosfet52", "cable_cam1", "cable_cam0_52", "buttons", "sled"], "ersetzt": {"tub52": "tub", "mosfet52": "mosfet", "cable_cam0_52": "cable_cam"}, "druckdateien": ["v5-2/MotionWatch_v5-2_Platte_A_Unterteil.3mf"], "anleitung": "Dokumente/LIESMICH_Montage_v5-2.md", "hinweis": "Platte A v5.2 ersetzt Platte A v5.1 (Unterteil mit Weitwinkel-Fenster). Platte B bleibt v5.1. Vor dem Druck die Masse der Liste «Nachmessen» prüfen.", "nachmessen": ["IR-Modul: Ø 18,8 mm, Länge 14 mm, Linse vorne Ø 17 mm (IRW_MOD_D, IRW_MOD_L, IRW_LENS_D)", "Weitwinkel-Kamera: Linsenhöhe 11,4 mm ab Platine, Linsenmitte 9,5 mm unter der Platinen-Oberkante, Frontlinse Ø 6 mm (WC_LENS_H, WC_LENS_FROM_TOP, WC_R0)", "Lage der Buchsen CAM/DISP 0 und 1 am Pi 5 (Kabelkamm FPC_X0, PI_CAM0_XY, PI_CAM1_XY)", "Abstände: IR-Modul–Kamera-Fenster (Steg 3,2 mm, Trennsteg 2 mm vor der Wand), IR-Modul–Lautsprecher 11 mm, Kabel–Lüfter 4 mm / Ansaugung 8 mm, Kabel–Lüftungsschlitze 9 mm", "UPS HAT (E) mit Akkus (wie v5.1: angenommen 90 × 80 × 26 mm)"]},
 }

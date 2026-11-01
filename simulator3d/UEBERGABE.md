@@ -1,8 +1,18 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 01.11.2026 · Version **3.40.0** · MoveEye **3.40.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 01.11.2026 · Version **3.41.1** · MoveEye **3.41.1** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.41.1 (MoveEye 3.41.1): Hardware-Klärung (MoveEye Teil 639zh, Bau-Infos)
+
+- INA219 Solar 0x44 (0x41 = PCA9685), I2C-Konfliktprüfung (auch Wärmebild 0x40), Shunt 0,01 Ω; werkstatt_daten.gd und
+  bau.json nachgezogen (Freigabe Daniel).
+
+## NEU in 3.41.0 (MoveEye 3.41.0): Links zu Neuerungen (`scripts/news.gd`, MoveEye Teil 639zc)
+
+- Ziele in `ui_gemeinsam.json` «neu_ziele» (Version -> Seite / Einstellung / Simulator-Menü / -Aktion); Projektschalter
+  `projekt_veroeffentlicht` (vorerst false = Links an), eigene Wahl im Entwickler-Bereich (auto / an / aus).
 
 ## NEU in 3.40.0 (MoveEye 3.40.0): Bauen (`scripts/werkstatt.gd`, MoveEye Teile 639v / 639vb / 639w)
 
