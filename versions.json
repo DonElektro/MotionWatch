@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-01 00:34",
+ "generated": "2026-11-01 00:53",
  "versions": [
   {
-   "version": "3.23.0",
-   "file": "webcam_bewegung_3_23_0.py",
+   "version": "3.23.1",
+   "file": "webcam_bewegung_3_23_1.py",
    "url": "",
-   "sha256": "d5f3a0b9b3e3f3810f08e12acc5109a07b6fc5d0d15fbd5b80ce717766114e2f",
-   "date": "2026-11-01 00:34",
-   "notes": "Gemeinsame Menü-Datei für MoveEye und Simulator (Gruppen, Namen, Reihenfolge); der Selbsttest prüft beide Seiten. Behoben: auf der Simulator-Seite fehlten Karten nach der ersten.",
-   "size": 4460214,
-   "sig": "56c4f49d6b06670ee44388ec09e53b947c87cc3ee5665387f5d7aa9a3ff4a6f7c72daa57ee32bb13626139743bbb5304a5ec0d17d282d598239621671296750e",
+   "sha256": "e3c93a2f45b37ed31d1f3e04be811c1766702020f145a8c86293bbc2555bcaff",
+   "date": "2026-11-01 00:53",
+   "notes": "Trailer: echte Musik und Geräusche (Streicher, Pauken, Donner, Regen, Schritte; freie CC0-Aufnahmen), Lautstärken ausgeglichen; am iPad gleich wie am PC.",
+   "size": 4460518,
+   "sig": "ab5a87504fc69d3a7d614ea925767a2eca56a032791724281a510782d36bea3bfca1cf7e523ba2b2f71e77c1dc5265df26a74c29664654e012d171d203e0f30d",
    "data": {
-    "file": "moveeye_daten_3_23_0.zip",
+    "file": "moveeye_daten_3_23_1.zip",
     "url": "",
-    "sha256": "819453713fcded9f874a5ff4a92646d56b894dd7a95f5876445d04efda992d35",
-    "size": 1629870,
-    "sig": "37f39aaf553ba5b7e457e823c396e23528990cfe71c5b6c93e17f3660cbf57a2d496d04f5e343f5da83d5f8488d985abd47ccc102d2588fb4cd61561d9971e09"
+    "sha256": "6ad5625d19f7814116e8742afbcf3c4ebb6ae4623eb4fac617413f9f0201a464",
+    "size": 1630179,
+    "sig": "ee7beaae1528b9624116bbd89928df5fd819b4527ed3bd7cb24f34d85762de3f7cac467e519d04ade7903258f1ce8f5ce3b2eb339f364ee76fdaae1b0b2d0308"
    }
   },
   {
@@ -75,7 +75,7 @@
    "file": "webcam_bewegung_3_19_3.py",
    "url": "",
    "sha256": "34cb330790c7cd527ae836915c656373996e7d805595e8aa60bd85eec4635df0",
-   "date": "2026-11-01 00:31",
+   "date": "2026-11-01 00:48",
    "notes": "Trailer/Vorführung: Stopp am iPad lässt den Simulator nicht mehr schwarz (Kamera und Knöpfe kommen zurück, Knopf «× Zurück», Esc); am iPad Ton mit einem Tippen (Erzähler, Musik, Geräusche).",
    "size": 4439968,
    "sig": "c4a39873ca2d7bdc4f4a7fd89292c563e9fa86c9ffe1230e488f1aebc0825a0b3f285644b0488ad66e9c686e97f5caa451c43d5ede1975fa9eefba585b7b720c",

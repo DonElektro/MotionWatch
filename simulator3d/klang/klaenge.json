@@ -1,0 +1,191 @@
+{
+ "bellen": {
+  "s": 0,
+  "loop": false,
+  "lufs": -15.1,
+  "db": 2.1,
+  "spitze": -3.1
+ },
+ "boom": {
+  "s": 0,
+  "loop": false,
+  "lufs": -17.6,
+  "db": 0.1,
+  "spitze": -1.1
+ },
+ "chime": {
+  "s": 0,
+  "loop": false,
+  "lufs": -16.7,
+  "db": 2.7,
+  "spitze": -3.0
+ },
+ "donner": {
+  "s": 0,
+  "loop": false,
+  "lufs": -19.0,
+  "db": 0.4,
+  "spitze": -1.4
+ },
+ "grunzen": {
+  "s": 0,
+  "loop": false,
+  "lufs": -15.4,
+  "db": 0.4,
+  "spitze": -3.1
+ },
+ "heulen": {
+  "s": 0,
+  "loop": false,
+  "lufs": -15.6,
+  "db": 0.6,
+  "spitze": -3.0
+ },
+ "knacken": {
+  "s": 0,
+  "loop": false,
+  "lufs": -30.1,
+  "db": 10.9,
+  "spitze": -4.9
+ },
+ "knurren": {
+  "s": 0,
+  "loop": false,
+  "lufs": -14.2,
+  "db": 1.2,
+  "spitze": -3.0
+ },
+ "kraehen": {
+  "s": 2.6,
+  "loop": false,
+  "lufs": -15.5,
+  "db": 0.5,
+  "spitze": -2.8
+ },
+ "kuhglocke": {
+  "s": 0,
+  "loop": false,
+  "lufs": -16.6,
+  "db": 1.6,
+  "spitze": -3.3
+ },
+ "ostinato": {
+  "s": 0,
+  "loop": true,
+  "lufs": -16.7,
+  "db": 3.7,
+  "spitze": -3.2
+ },
+ "pad_dunkel": {
+  "s": 0,
+  "loop": true,
+  "lufs": -18.2,
+  "db": 6.2,
+  "spitze": -6.2
+ },
+ "pad_hell": {
+  "s": 0,
+  "loop": true,
+  "lufs": -17.8,
+  "db": 5.8,
+  "spitze": -4.5
+ },
+ "pad_ruhig": {
+  "s": 0,
+  "loop": true,
+  "lufs": -17.9,
+  "db": 3.9,
+  "spitze": -5.9
+ },
+ "papier": {
+  "s": 0,
+  "loop": false,
+  "lufs": -30.5,
+  "db": 7.2,
+  "spitze": -3.2
+ },
+ "pauke": {
+  "s": 0,
+  "loop": false,
+  "lufs": -20.5,
+  "db": 4.2,
+  "spitze": -1.2
+ },
+ "pfiff": {
+  "s": 0,
+  "loop": false,
+  "lufs": -10.2,
+  "db": -2.8,
+  "spitze": -3.2
+ },
+ "pulse": {
+  "s": 0,
+  "loop": true,
+  "lufs": -17.9,
+  "db": 5.9,
+  "spitze": -4.1
+ },
+ "rascheln": {
+  "s": 0,
+  "loop": false,
+  "lufs": -25.3,
+  "db": 8.3,
+  "spitze": -4.2
+ },
+ "regen": {
+  "s": 0,
+  "loop": true,
+  "lufs": -22.6,
+  "db": 4.6,
+  "spitze": -2.6
+ },
+ "rennen": {
+  "s": 0,
+  "loop": true,
+  "lufs": -20.3,
+  "db": 2.3,
+  "spitze": -0.8
+ },
+ "riser": {
+  "s": 0,
+  "loop": false,
+  "lufs": -16.4,
+  "db": 1.4,
+  "spitze": -1.8
+ },
+ "schritte": {
+  "s": 0,
+  "loop": true,
+  "lufs": -24.7,
+  "db": 7.7,
+  "spitze": -1.6
+ },
+ "wasser": {
+  "s": 0,
+  "loop": true,
+  "lufs": -17.2,
+  "db": -1.8,
+  "spitze": -1.1
+ },
+ "whoosh": {
+  "s": 0,
+  "loop": false,
+  "lufs": -14.4,
+  "db": -1.6,
+  "spitze": -2.5
+ },
+ "wind": {
+  "s": 20.0,
+  "loop": true,
+  "lufs": -23.9,
+  "db": 4.9,
+  "spitze": -8.6
+ },
+ "zischen": {
+  "s": 0,
+  "loop": false,
+  "lufs": -12.4,
+  "db": -4.6,
+  "spitze": -3.8
+ }
+}

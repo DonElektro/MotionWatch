@@ -23,6 +23,8 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 3.23.1: Trailer: echte Musik und Geräusche (Streicher, Pauken, Donner, Regen, Schritte; freie CC0-Aufnahmen), Lautstärken
+    ausgeglichen; am iPad gleich wie am PC.
   * 3.23.0: Gemeinsame Menü-Datei für MoveEye und Simulator (Gruppen, Namen, Reihenfolge); der Selbsttest prüft beide Seiten.
     Behoben: auf der Simulator-Seite fehlten Karten nach der ersten.
   * 3.22.0: Reiter- und Statuszeile einzeln einklappbar (pro Gerät gemerkt, roter Punkt bei Warnungen); auf jeder Seite dieselbe
@@ -89,9 +91,6 @@ Features
   * 3.6.1: Simulator sicherer: gefährliche Steuerbefehle nur von diesem PC oder vom verbundenen MoveEye; Hospiz-Rätsel und
     Maggie-Bild pro Spielstand; Kapitel-Sprung-Test ohne echten Spielstand; Werksrücksetzung mit sicherem Neustart, 3 Kopien,
     Parcours-Lernbilder bleiben.
-  * 3.6.0: Weniger Fehlalarme: Dinge, die wie eine Person aussehen (z. B. eine Fichte), lösen die Frage «ignorieren?» aus, der
-    Kopf folgt ignorierten Dingen nicht; warme Motoren sind keine «Person (Wärmebild)»; ein von der KI erkanntes Tier bleibt ein
-    Tier.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -100,10 +99,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_3_23_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_3_23_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_3_23_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_3_23_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_3_23_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_3_23_1.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -120,7 +119,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "3.23.0"
+APP_VERSION = "3.23.1"
 
 
 def default_data_dir():
@@ -242,8 +241,8 @@ def prepare_settings_file():
 #     Part 397 fetches the zip over the same update source and restarts once (zusatz_start()).
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
-ZD_FILE = "moveeye_daten_3_23_0.zip"
-ZD_SHA256 = "819453713fcded9f874a5ff4a92646d56b894dd7a95f5876445d04efda992d35"
+ZD_FILE = "moveeye_daten_3_23_1.zip"
+ZD_SHA256 = "6ad5625d19f7814116e8742afbcf3c4ebb6ae4623eb4fac617413f9f0201a464"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -24554,8 +24553,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3.23.0", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 35726805,
-         "sha256": "693053b806ce4ed6e28d7c618c1bd62495dd77a764e26ed21142495dec7e1455"}
+SIM3D = {"version": "3.23.1", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 39987563,
+         "sha256": "1c9e8d93558e273d380d90e8652a1dd7a0f1fa2581f4df5b24fde96a88059b0c"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -30568,7 +30567,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_3_23_0.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_3_23_1.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -48685,7 +48684,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 3.23.0")
+        self.root.title("MoveEye 3.23.1")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -49056,7 +49055,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 3.23.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 3.23.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -67797,7 +67796,9 @@ SELFTEST_EXTRA.append(("Vorführung «Maggie» (page /sim/vorfuehrung, owner onl
 #   * Ton auch im Browser (Fix 3.19.x, Daniel: «am iPad nichts»): grosser Knopf «🔊 Tippen für Ton» (iOS braucht ein Tippen
 #     vor Sprache und Audio; ein Tippen irgendwo genügt). Danach Erzähler (speechSynthesis, wie bisher) und Musik + Geräusche:
 #     /api/trailer?plan=1 holt den Ton-Plan des Simulators (trailer.gd ton_plan: Zeit, Klang, Lautstärke, Überblendung),
-#     /sim/trailer_ton/<klang>.wav die Klänge (trailer_ton.gd, mono 22 kHz, zusammen ≈ 3 MB); die Seite spielt sie mit
+#     /sim/trailer_ton/<klang>.wav die Klänge (ab 01.11.2026 echte Aufnahmen als MP3 aus simulator3d/klang/web/, ≈ 2.4 MB;
+#     ältere Simulatoren: WAV, mono 22 kHz; Schleifen mit Schleifenpunkten «schleifen» aus dem Plan, dazu ein Begrenzer wie der
+#     Bus «Trailer» im Simulator); die Seite spielt sie mit
 #     WebAudio im Takt von «t» aus /api/trailer (nachgeführt, wenn es mehr als 0.35 s abweicht). Ältere Simulatoren ohne
 #     Plan: nur der Erzähler. Der Ton läuft auf beiden Geräten (PC und iPad).
 #   * /api/trailer: GET = Stand (Simulator /control trailer info), POST {do: start (id) | stop}. Nur der Besitzer
@@ -68005,7 +68006,8 @@ def smalltv_routes(app, reply, body):                     # + 639n: /sim/trailer
             b_, _h = _sim_get("/trailer_ton/" + nm + ".wav", 8.0)
         except Exception:
             return Response("simulator not reachable", 502)
-        return Response(b_, mimetype="audio/wav", headers={"Cache-Control": "private, max-age=3600"})
+        mt_ = "audio/mpeg" if b_[:3] == b"ID3" or b_[:2] in (b"\xff\xfb", b"\xff\xf3", b"\xff\xf2") else "audio/wav"
+        return Response(b_, mimetype=mt_, headers={"Cache-Control": "private, max-age=3600"})
 
 
 if GUI_OK:                                                # the window: the two trailers in the developer part (639c)
@@ -68049,6 +68051,7 @@ def trl_selftest():
     assert "spk-tap" in html and "spkUnlock" in html and "taSync(S)" in html and "/sim/trailer_ton/" in html and "/api/trailer?plan=1" in html
     assert "bare ? \"bare=1&\"" in html                    # the browser picture without the PC's buttons only while the film runs
     assert TRL_TON_RE.match("pad_ruhig") and not TRL_TON_RE.match("../x")
+    assert "TA.schl[nm]" in html and "createDynamicsCompressor" in html and "x.loopStart" in html
     assert "voiceschanged" in html and "spk-vbtn" in html and "SPK_GOOD" in html and "!SPK.pop" in html and "Stimme" in html
     vh = vf_page()
     assert "spkTick(S, !!S.pause" in vh and "spk-btn" in vh and "Ton an" in vh and "!SPK.pop" in vh and "Premium" in vh

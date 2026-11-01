@@ -8,17 +8,72 @@ extends RefCounted
 ##   Krähen, Zischen, Knacken, Rascheln, Kuhglocke, Papier, Murmeltier-Pfiff.
 ## Jeder Klang wird einmal erzeugt und bleibt im Speicher (_cache); alles mono, 22,05 kHz, 16 Bit.
 ## Schleifen sind nahtlos: Frequenzen auf Vielfache von 1/Länge gerundet (pad) oder Ende in den Anfang überblendet (Rauschen).
+## Neu (Daniel 01.11.2026: «Musik und Geräusche im Trailer klingen furchtbar»): die Klänge kommen jetzt als Dateien aus
+## res://klang/ (Ogg Vorbis, 44.1 kHz, Stereo, mit Hall – gebaut von werkzeuge/klang_bauen.py aus freien CC0-Aufnahmen:
+## echte Streicher, Pauken, Blech, Glockenspiel, Donner, Regen, Bach, Schritte; Quellen in klang/LIZENZEN.txt). Die
+## Tierstimmen bleiben die bisherigen (wie im Spiel), nur in einen Raum gesetzt. Fehlt eine Datei, gilt die alte Synthese
+## (synth()). klang/klaenge.json: Länge, Schleife und «db» = Ausgleich der Lautheit je Klang (trailer.gd addiert ihn zum
+## dB des Plans). Für den Browser liegt jeder Klang zusätzlich als MP3 in klang/web/ (web_bytes; Safari spielt kein Ogg).
 
 const SR := 22050
 const TAB_N := 2048
 
+const ORDNER := "res://klang/"
+
 static var _cache := {}
 static var _tabs := {}
+static var _info = null
 
 
-static func get_snd(kind: String) -> AudioStreamWAV:
+static func info() -> Dictionary:
+	"""klang/klaenge.json: {name: {s, loop, db, lufs, spitze}} (empty without the files)"""
+	if _info == null:
+		_info = {}
+		if FileAccess.file_exists(ORDNER + "klaenge.json"):
+			var j = JSON.parse_string(FileAccess.get_file_as_string(ORDNER + "klaenge.json"))
+			if j is Dictionary:
+				_info = j
+	return _info
+
+
+static func db(kind: String) -> float:
+	"""the loudness correction of a sound (added to the dB of the plan); 0 for the old, synthesized sounds"""
+	if not _cache.has(kind):
+		get_snd(kind)
+	var e = info().get(kind, null)
+	if e is Dictionary and _cache.get(kind) is AudioStreamOggVorbis:
+		return float(e.get("db", 0.0))
+	return 0.0
+
+
+static func get_snd(kind: String) -> AudioStream:
 	if _cache.has(kind):
 		return _cache[kind]
+	var w: AudioStream = null
+	var p := ORDNER + kind + ".ogg"
+	if kind.is_valid_filename() and FileAccess.file_exists(p):
+		var o := AudioStreamOggVorbis.load_from_buffer(FileAccess.get_file_as_bytes(p))
+		if o != null and o.get_length() > 0.0:
+			var e = info().get(kind, {})
+			o.loop = bool(e.get("loop", false)) if e is Dictionary else false
+			w = o
+	if w == null:
+		w = synth(kind)
+	if w != null:
+		_cache[kind] = w
+	return w
+
+
+static func web_bytes(kind: String) -> PackedByteArray:
+	"""the sound for the browser: klang/web/<kind>.mp3 (empty if there is none - then the caller sends the synthesized WAV)"""
+	var p := ORDNER + "web/" + kind + ".mp3"
+	if kind.is_valid_filename() and FileAccess.file_exists(p):
+		return FileAccess.get_file_as_bytes(p)
+	return PackedByteArray()
+
+
+static func synth(kind: String) -> AudioStreamWAV:
+	"""the old sounds, made in code (fallback without the files; werkzeuge/klang_alt_export.gd exports them)"""
 	var w: AudioStreamWAV = null
 	match kind:
 		"pad_ruhig":
@@ -75,8 +130,6 @@ static func get_snd(kind: String) -> AudioStreamWAV:
 			w = _papier()
 		"pfiff":
 			w = _voice(0.5, 2600.0, 2300.0, "whistle")
-	if w != null:
-		_cache[kind] = w
 	return w
 
 
