@@ -56452,16 +56452,30 @@ def fbx_routes(app, watch, reply, body):
 
 
 # ---- the window (Tkinter): the same dialog and the info window --------------------------------------------------------
-def _fbx_tk_feedback(self, kind="idea"):
+def _fbx_tk_feedback(self, kind="idea", pkg=""):
+    """the window's feedback; kind «order» + pkg = «Fertig bestellen (Anfrage)» (639zj, like the web page): package, prefilled
+    text, contact needed (only in the message, never in the log), no technical details by default"""
     from tkinter import messagebox
+    fl = norm_lang(CFG.get("lang"))
+    ord_ = kind == "order" and bool((UI_GEMEINSAM.get("fertig") or {}).get("texts"))
+    kind = kind if ord_ or kind != "order" else "idea"
     w = tk.Toplevel(self.root); w.title("MoveEye – " + tr("Feedback to the developer")); w.configure(bg=C["bg"])
     ttk.Label(w, text=tr("Errors, wishes, praise, questions - everything helps. The message is sent anonymously: no name, no address, unless you write one."),
               style="Mut.TLabel", wraplength=440, justify="left").pack(padx=14, pady=(12, 6), anchor="w")
     kinds = [("bug", "🐞 " + tr("Error")), ("idea", "💡 " + tr("Wish")), ("praise", "⭐ " + tr("Praise")), ("question", "❓ " + tr("Question"))]
+    if ord_:
+        kinds.append(("order", "🛒 " + fertig_text("topic", fl)))
     kv = tk.StringVar(value=kind)
     kf = tk.Frame(w, bg=C["bg"]); kf.pack(fill="x", padx=14)
     for k, lb in kinds:
         ttk.Radiobutton(kf, text=lb, value=k, variable=kv).pack(side="left", padx=(0, 10))
+    pv_ = tk.StringVar(value=fertig_paket(pkg, fl).get("id", "") if ord_ else "")
+    if ord_:                                             # 639zj: the package and «Preise auf Anfrage»
+        pf = tk.Frame(w, bg=C["bg"]); pf.pack(fill="x", padx=14, pady=(6, 0))
+        ttk.Label(pf, text=fertig_text("package", fl) + " · " + fertig_text("price", fl), style="Mut.TLabel").pack(anchor="w")
+        for p_ in (UI_GEMEINSAM.get("fertig") or {}).get("pakete") or []:
+            pk_ = fertig_paket(p_["id"], fl)
+            ttk.Radiobutton(pf, text=pk_["name"] + " – " + pk_["desc"], value=pk_["id"], variable=pv_).pack(anchor="w")
     sf = tk.Frame(w, bg=C["bg"]); sf.pack(fill="x", padx=14, pady=(8, 0))
     ttk.Label(sf, text=tr("How happy are you?") + " (" + tr("optional") + ")", style="Mut.TLabel").pack(side="left", padx=(0, 6))
     stars = {"n": 0}; sbs = []
@@ -56475,10 +56489,30 @@ def _fbx_tk_feedback(self, kind="idea"):
         b.bind("<Button-1>", lambda e, i=i: star(i)); b.pack(side="left"); sbs.append(b)
     txt = tk.Text(w, height=7, width=54, bg=C.get("field", C["panel"]), fg=C["txt"], insertbackground=C["txt"], relief="flat")
     txt.pack(fill="both", expand=True, padx=14, pady=8)
+    otext = lambda: fertig_text("text", fl).replace("{paket}", fertig_paket(pv_.get(), fl).get("name", ""))
+    if ord_:
+        txt.insert("1.0", otext()); last_t = {"t": otext()}
+
+        def pkg_changed(*_a):                            # an untouched prefilled text follows the package
+            cur = txt.get("1.0", "end-1c")
+            if not cur.strip() or cur == last_t["t"]:
+                txt.delete("1.0", "end"); txt.insert("1.0", otext())
+            last_t["t"] = otext()
+        pv_.trace_add("write", pkg_changed)
     cf = tk.Frame(w, bg=C["bg"]); cf.pack(fill="x", padx=14)
-    ttk.Label(cf, text=tr("Contact for an answer (optional)"), style="Mut.TLabel").pack(side="left")
+    cl = ttk.Label(cf, text=tr("Contact for an answer (optional)"), style="Mut.TLabel"); cl.pack(side="left")
     ct = ttk.Entry(cf); ct.pack(side="left", fill="x", expand=True, padx=(8, 0))
-    shot = tk.BooleanVar(value=False); diag = tk.BooleanVar(value=True)
+    cn = ttk.Label(w, text=fertig_text("contact_note", fl) if ord_ else "", style="Mut.TLabel", wraplength=440, justify="left")
+
+    def kind_changed(*_a):
+        o = kv.get() == "order"
+        cl.config(text=fertig_text("contact", fl) if o else tr("Contact for an answer (optional)"))
+        if o:
+            cn.pack(anchor="w", padx=14, pady=(2, 0), after=cf)
+        else:
+            cn.pack_forget()
+    kv.trace_add("write", kind_changed); kind_changed()
+    shot = tk.BooleanVar(value=False); diag = tk.BooleanVar(value=not ord_)
     ttk.Checkbutton(w, text=tr("Send a screenshot") + " (" + tr("the window, faces pixelated") + ")", variable=shot).pack(anchor="w", padx=14, pady=(8, 0))
     ttk.Checkbutton(w, text=tr("Add technical details (version, device, last important events - no pictures, no passwords)"), variable=diag).pack(anchor="w", padx=14)
     ttk.Label(w, text=tr("Always included") + f": MoveEye {APP_VERSION} · " + tr("page") + " «" + tr("Window") + "»", style="Mut.TLabel").pack(anchor="w", padx=14, pady=(6, 0))
@@ -56496,6 +56530,8 @@ def _fbx_tk_feedback(self, kind="idea"):
     bf = ttk.Frame(w); bf.pack(fill="x", padx=14, pady=10)
 
     def send():
+        if kv.get() == "order" and len(ct.get().strip()) < 3:
+            messagebox.showerror("MoveEye", fertig_text("contact_needed", fl), parent=w); ct.focus_set(); return
         img = None
         if shot.get():
             w.withdraw(); self.root.update(); time.sleep(0.15)       # the picture without this little window
@@ -56504,14 +56540,15 @@ def _fbx_tk_feedback(self, kind="idea"):
             finally:
                 w.deiconify()
         page = "Fenster/" + str(getattr(self, "tab", "") or "")
-        ok, err = feedback_send(kv.get(), txt.get("1.0", "end"), ct.get().strip(), diag.get(), stars["n"], page, img, "window")
+        ok, err = feedback_send(kv.get(), txt.get("1.0", "end"), ct.get().strip(), diag.get(), stars["n"], page, img, "window",
+                                pv_.get() if kv.get() == "order" else "")
         if ok:
             messagebox.showinfo("MoveEye", tr("Thank you! The message is on its way."), parent=w); w.destroy()
         else:
             messagebox.showerror("MoveEye", tr_err(err), parent=w)
     ttk.Button(bf, text=tr("Send"), command=send).pack(side="right")
     ttk.Button(bf, text=tr("Cancel"), command=w.destroy).pack(side="right", padx=(0, 6))
-    txt.focus_set()
+    (ct if ord_ else txt).focus_set()
 
 
 def _fbx_tk_about(self):
@@ -74865,6 +74902,8 @@ SELFTEST_EXTRA.append(("Charge LED on GPIO 6: charging / full / almost empty, ni
 #     auf Anfrage», Knopf -> mwOrder(paket) (584); ohne Rückmeldungs-Skript: #order.
 #   * Rückmeldung (584 mwFeedback {kind: "order", pkg}): fünfte Art nur in diesem Fall, Paket umschaltbar, Text vorausgefüllt,
 #     Feld «Kontakt (E-Mail/Telefon)» Pflicht (auch feedback_send prüft das), keine technischen Angaben / kein Bild als Standard.
+#   * Pi-Fenster (Daniel 01.11.2026): Reiter Mehr zeigt unter den Knöpfen denselben Hinweis mit «Fertig bestellen (Anfrage)»
+#     -> App._feedback("order", paket) (584: fünfte Art, Paket-Wahl, Text vorausgefüllt, Kontakt Pflicht).
 #   * feedback_send (370): «Paket: … (…) · Preis auf Anfrage» in der Nachricht; der Kontakt steht nur in der Nachricht (Ausgang
 #     bis gesendet), log_event schreibt ihn nie.
 # Hier (nach 639w) weil UI_GEMEINSAM (639p), geh_page (639w), FBX_JS (584), FB_KINDS / feedback_send (370) vorher kommen.
@@ -74903,6 +74942,24 @@ if _fk_cn:
         TRX.setdefault(_L, {}).setdefault(FERTIG_ERR, _fk_cn.get(_L) or _fk_cn.get("de", FERTIG_ERR))
 if FERTIG.get("texts"):
     FB_KINDS["order"] = fertig_text("topic", "de")                  # the title of the message: «MoveEye – Bestellung fertiges Gerät»
+
+if GUI_OK and FERTIG.get("texts"):                    # the window: the same hint below the buttons of the tab «Mehr» (next to «Bauen»)
+    _fk_tk_more_base = App._tk_more_bar
+
+    def _fk_tk_more_bar(self, parent):
+        f = _fk_tk_more_base(self, parent)
+        fl = norm_lang(CFG.get("lang"))
+        n = len(f.grid_slaves())
+        row = tk.Frame(f, bg=C["panel"], highlightthickness=1, highlightbackground=C["acc"])
+        row.grid(row=(n + 2) // 3, column=0, columnspan=3, sticky="ew", pady=(4, 6))
+        tk.Label(row, text="🛒 " + fertig_text("hint", fl) + "  ·  " + fertig_text("price", fl), bg=C["panel"], fg=C["txt"],
+                 font=("DejaVu Sans", 9), wraplength=480, justify="left", anchor="w").pack(side="left", fill="x", expand=True, padx=8, pady=6)
+        self._fbtn(row, fertig_text("button", fl), lambda: self._feedback("order", FERTIG.get("standard", ""))).pack(side="right", padx=8, pady=6)
+        self._fk_more_row = row
+        return f
+
+    # wraps: App._tk_more_bar (572, after 639w «Bauen»)
+    App._tk_more_bar = _fk_tk_more_bar
 
 FERTIG_JS = r"""
 // ---- «Fertig kaufen» (639zj): the hint at the top of «Bauen» ----
@@ -74981,6 +75038,8 @@ def fertig_selftest():
     finally:
         globals().update(keep)
         FEEDBACK["sent"] = sent
+    if GUI_OK:
+        assert App._tk_more_bar is _fk_tk_more_bar and "pkg" in App._feedback.__code__.co_varnames, "window: hint and order"
     # the simulator shows the same (only in the repository)
     sd = os.path.join(os.path.dirname(os.path.abspath(__file__)), "simulator3d", "scripts")
     if os.path.isdir(sd):

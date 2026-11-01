@@ -8,6 +8,8 @@
 #     auf Anfrage», Knopf -> mwOrder(paket) (584); ohne Rückmeldungs-Skript: #order.
 #   * Rückmeldung (584 mwFeedback {kind: "order", pkg}): fünfte Art nur in diesem Fall, Paket umschaltbar, Text vorausgefüllt,
 #     Feld «Kontakt (E-Mail/Telefon)» Pflicht (auch feedback_send prüft das), keine technischen Angaben / kein Bild als Standard.
+#   * Pi-Fenster (Daniel 01.11.2026): Reiter Mehr zeigt unter den Knöpfen denselben Hinweis mit «Fertig bestellen (Anfrage)»
+#     -> App._feedback("order", paket) (584: fünfte Art, Paket-Wahl, Text vorausgefüllt, Kontakt Pflicht).
 #   * feedback_send (370): «Paket: … (…) · Preis auf Anfrage» in der Nachricht; der Kontakt steht nur in der Nachricht (Ausgang
 #     bis gesendet), log_event schreibt ihn nie.
 # Hier (nach 639w) weil UI_GEMEINSAM (639p), geh_page (639w), FBX_JS (584), FB_KINDS / feedback_send (370) vorher kommen.
@@ -46,6 +48,24 @@ if _fk_cn:
         TRX.setdefault(_L, {}).setdefault(FERTIG_ERR, _fk_cn.get(_L) or _fk_cn.get("de", FERTIG_ERR))
 if FERTIG.get("texts"):
     FB_KINDS["order"] = fertig_text("topic", "de")                  # the title of the message: «MoveEye – Bestellung fertiges Gerät»
+
+if GUI_OK and FERTIG.get("texts"):                    # the window: the same hint below the buttons of the tab «Mehr» (next to «Bauen»)
+    _fk_tk_more_base = App._tk_more_bar
+
+    def _fk_tk_more_bar(self, parent):
+        f = _fk_tk_more_base(self, parent)
+        fl = norm_lang(CFG.get("lang"))
+        n = len(f.grid_slaves())
+        row = tk.Frame(f, bg=C["panel"], highlightthickness=1, highlightbackground=C["acc"])
+        row.grid(row=(n + 2) // 3, column=0, columnspan=3, sticky="ew", pady=(4, 6))
+        tk.Label(row, text="🛒 " + fertig_text("hint", fl) + "  ·  " + fertig_text("price", fl), bg=C["panel"], fg=C["txt"],
+                 font=("DejaVu Sans", 9), wraplength=480, justify="left", anchor="w").pack(side="left", fill="x", expand=True, padx=8, pady=6)
+        self._fbtn(row, fertig_text("button", fl), lambda: self._feedback("order", FERTIG.get("standard", ""))).pack(side="right", padx=8, pady=6)
+        self._fk_more_row = row
+        return f
+
+    # wraps: App._tk_more_bar (572, after 639w «Bauen»)
+    App._tk_more_bar = _fk_tk_more_bar
 
 FERTIG_JS = r"""
 // ---- «Fertig kaufen» (639zj): the hint at the top of «Bauen» ----
@@ -124,6 +144,8 @@ def fertig_selftest():
     finally:
         globals().update(keep)
         FEEDBACK["sent"] = sent
+    if GUI_OK:
+        assert App._tk_more_bar is _fk_tk_more_bar and "pkg" in App._feedback.__code__.co_varnames, "window: hint and order"
     # the simulator shows the same (only in the repository)
     sd = os.path.join(os.path.dirname(os.path.abspath(__file__)), "simulator3d", "scripts")
     if os.path.isdir(sd):
