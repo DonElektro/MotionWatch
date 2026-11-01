@@ -49,7 +49,7 @@ OEFFENTLICH_GENAU = {
     "/i18n/fr.js": "Übersetzung", "/i18n/it.js": "Übersetzung", "/i18n/rm.js": "Übersetzung",
     "/manifest.webmanifest": "App-Manifest", "/icon-192.png": "App-Symbol", "/icon-512.png": "App-Symbol",
     "/apple-touch-icon.png": "App-Symbol", "/apple-touch-icon-precomposed.png": "App-Symbol", "/favicon.ico": "App-Symbol",
-    "/sw.js": "Service-Worker (Push)", "/sim/simulator.zip": "Simulator-Programm (öffentlich, ohne Geheimnisse)",
+    "/sw.js": "Service-Worker (Push)",
     "/static/<path:filename>": "Flask-Standard (kein Ordner)",
 }
 LANGSAM = ("/video", "/cam_feed", "/stream", "/mjpeg", "_feed")       # Bildströme: nur der Anfang wird gelesen
@@ -137,7 +137,7 @@ def main():
     cfg = os.path.join(tmp, "mw")
     os.makedirs(cfg)
     st = {"source": "sim:0", "sim_on": False, "sim_url": "http://127.0.0.1:9", "sim_auto": False, "sim_autostart": False,
-          "sim_autostart_v2": False, "sim_autoupd": False, "update_auto": False, "lang": "de", "desktop_notice": False,
+          "sim_autostart_v2": False, "sim_autoupd": False, "update_url": "", "lang": "de", "desktop_notice": False,
           "setup_done": True, "https_extra": False}
     with open(os.path.join(cfg, "motionwatch_settings.json"), "w") as f:
         json.dump({"cfg": st}, f)

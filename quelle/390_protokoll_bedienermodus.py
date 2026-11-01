@@ -196,7 +196,7 @@ def lock_pin_ok(pin):
 # not put back when unlocking: what the operator does (arm, move the camera), what the Pi measures itself, how a
 # device shows the page
 LOCK_KEEP = {"armed", "pan", "tilt", "hotspot_on", "lock_on", "lock_pin", "lock_snap", "web_ui", "ui_open", "ui_tab", "theme", "lang",
-             "fullscreen", "latitude", "longitude", "batt_full_t", "batt_warned", "setup_done", "autostart", "ui_simple", "ui_start_groups"}
+             "fullscreen", "latitude", "longitude", "batt_full_t", "batt_warned", "setup_done", "autostart", "ui_simple"}
 LOCK_LAST = {"restored": []}
 
 
@@ -370,7 +370,7 @@ def update_check():
             src_ = src
             fs_ = UPD.get("fast_sha") or ""                 # 2.95.71 test mode: the list of exactly this commit (never an old copy)
             mg_ = re.match(r"(https://raw\.githubusercontent\.com/[^/]+/[^/]+/)[^/]+(/.+)$", src)
-            if fs_ and mg_ and CFG.get("update_fast"):
+            if fs_ and mg_ and CFG.get("update_mode") == "dev":
                 src_ = mg_.group(1) + fs_ + mg_.group(2)
             req = _upd_request(src_ + ("&" if "?" in src_ else "?") + "t=" + str(int(time.time())), {"Cache-Control": "no-cache"})
             with urllib.request.urlopen(req, timeout=15) as r:
@@ -912,7 +912,7 @@ class UpdateWatcher:
     def fast_changed(self):
         """2.95.71 test mode: every minute ask GitHub whether versions.json has a new commit. The answer «unchanged» (304 with
         the ETag) does not count against GitHub's limit of 60 questions per hour; a new commit -> look for versions now."""
-        if not CFG.get("update_fast") or not CFG["update_url"].strip():
+        if CFG.get("update_mode") != "dev" or not CFG["update_url"].strip():
             return False
         m = re.match(r"https://raw\.githubusercontent\.com/([^/]+)/([^/]+)/([^/]+)/(.+)$", CFG["update_url"].strip())
         if not m:
@@ -947,15 +947,15 @@ class UpdateWatcher:
     def auto_install(self):
         """Automatic update: in the chosen hour, when nothing is going on (disarmed unless allowed, no recording, no person),
         install the newest version. If the new version does not start, the start guard goes back to the old one.
-        2.95.71 test mode (update_fast): at once, at any hour, also while armed - but never during a recording or a person."""
-        fast = bool(CFG.get("update_fast"))
-        if not (CFG["update_install"] or fast) or RESTART["pending"] or UPD["busy"] or POWER.get("pending"):
+        2.95.71 test mode (3.23: update_mode «dev»): at once, at any hour, also while armed - but never during a recording or a person."""
+        fast = CFG.get("update_mode") == "dev"
+        if CFG.get("update_mode") not in ("auto", "dev") or RESTART["pending"] or UPD["busy"] or POWER.get("pending"):
             return
         u = STATE.get("update_new") or {}
         v = u.get("version")
         if not v or (not fast and datetime.now().hour != int(CFG["update_hour"]) % 24):
             return
-        if (is_armed() and not CFG["update_install_armed"] and not fast) or STATE.get("recording") or STATE.get("persons") or STATE.get("arm_state") == "arming":
+        if (is_armed() and not fast) or STATE.get("recording") or STATE.get("persons") or STATE.get("arm_state") == "arming":
             return
         try:
             if simtask_busy():                            # 2.97.0: not in the middle of a test run, a training night or a game
@@ -981,7 +981,7 @@ class UpdateWatcher:
             log_event("sys", f"Automatic update failed: {err}")
 
     def tick(self):
-        if not (CFG["update_auto"] or CFG.get("update_fast")) or not CFG["update_url"].strip() or RESTART["pending"]:
+        if not CFG["update_url"].strip() or RESTART["pending"]:     # 3.23: every update_mode looks (and reports)
             return
         items, err = update_check()
         new = sorted((x for x in items if x.get("available") and _installable(x) and _vkey(x["version"]) > _vkey(APP_VERSION)), key=lambda x: _vkey(x["version"]))

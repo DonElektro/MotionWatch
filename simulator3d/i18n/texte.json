@@ -4147,6 +4147,12 @@
   "it": "Attivo: foto per suolo, sentieri, tenda, alberi e cielo",
   "rm": "En: fotos per terren, sendas, tenda, plantas e tschiel"
  },
+ "an: ruhige Bilder": {
+  "en": "on: still pictures",
+  "fr": "activé : images fixes",
+  "it": "attivo: immagini ferme",
+  "rm": "activà: maletgs quiets"
+ },
  "Andere beobachten (Bergtal: vom Aussichtspunkt aus)": {
   "en": "Watch others (mountain valley: from the viewpoint)",
   "fr": "Observer les autres (vallée de montagne : depuis le point de vue)",
@@ -4872,6 +4878,12 @@
   "fr": "Arrêt. Allumer : chaque partie est alors notée (seulement sur ce PC).",
   "it": "Spento. Accendi: ogni partita viene annotata (solo su questo PC).",
   "rm": "Stizzà. Envidar: lura vegn mintga runda notada (mo sin quest PC)."
+ },
+ "aus: alles bewegt sich": {
+  "en": "off: everything moves",
+  "fr": "désactivé : tout bouge",
+  "it": "spento: tutto si muove",
+  "rm": "stizzà: tut sa mova"
  },
  "AUSGANG": {
   "en": "EXIT",
@@ -6151,6 +6163,12 @@
   "it": "Movimento nella nebbia",
   "rm": "Moviment en la tschajera"
  },
+ "Bewegung reduzieren (Logo, Blinki, Wippen, Trailer sanfter)": {
+  "en": "Reduce motion (logo, Blinki, bobbing, gentler trailers)",
+  "fr": "Réduire les animations (logo, Blinki, balancement, bandes-annonces plus douces)",
+  "it": "Ridurre il movimento (logo, Blinki, oscillazione, trailer più dolci)",
+  "rm": "Reducir il moviment (logo, Blinki, dondar, trailers pli lenis)"
+ },
  "Bewegung {d} m vor MoveEye – nur im Wärmebild. Sie trägt etwas Warmes: eine Laterne?": {
   "en": "Movement {d} m in front of MoveEye – only in the thermal picture. It carries something warm: a lantern?",
   "fr": "Mouvement à {d} m devant MoveEye – seulement dans l'image thermique. Elle porte quelque chose de chaud : une lanterne ?",
@@ -6534,6 +6552,12 @@
   "fr": "Demander un indice à Blinki",
   "it": "Chiedi un suggerimento a Blinki",
   "rm": "Dumandar Blinki per in tip"
+ },
+ "Blinki zeigen (die kleine Figur im Rundgang)": {
+  "en": "Show Blinki (the little figure in the tour)",
+  "fr": "Afficher Blinki (le petit personnage de la visite)",
+  "it": "Mostra Blinki (la piccola figura del tour)",
+  "rm": "Mussar Blinki (la pitschna figura en il gir)"
  },
  "Blinki-Hinweis": {
   "en": "Blinki hint",
@@ -12531,6 +12555,12 @@
   "it": "Impostazioni",
   "rm": "Parameters"
  },
+ "Einstellungen → System → Gerät & Hilfe": {
+  "en": "Settings → System → Device & help",
+  "fr": "Réglages → Système → Appareil et aide",
+  "it": "Impostazioni → Sistema → Dispositivo e aiuto",
+  "rm": "Parameters → Sistem → Apparat & agid"
+ },
  "Einstellungs-Vergleich A/B": {
   "en": "Settings comparison A/B",
   "fr": "Comparaison de réglages A/B",
@@ -15714,6 +15744,12 @@
   "it": "DISPOSITIVO",
   "rm": "APPARAT"
  },
+ "Gerät & Hilfe": {
+  "en": "Device & help",
+  "fr": "Appareil et aide",
+  "it": "Dispositivo e aiuto",
+  "rm": "Apparat & agid"
+ },
  "Gerät (LED und Tasten)": {
   "en": "Device (LED and buttons)",
   "fr": "Appareil (LED et touches)",
@@ -17952,6 +17988,12 @@
   "fr": "Cerf",
   "it": "Cervo",
   "rm": "Tschierv"
+ },
+ "HKCU\\Control Panel\\Desktop\\WindowMetrics": {
+  "en": "HKCU\\Control Panel\\Desktop\\WindowMetrics",
+  "fr": "HKCU\\Control Panel\\Desktop\\WindowMetrics",
+  "it": "HKCU\\Control Panel\\Desktop\\WindowMetrics",
+  "rm": "HKCU\\Control Panel\\Desktop\\WindowMetrics"
  },
  "Hmm, hier ist nichts. Schau nochmals auf die Karte!": {
   "en": "Hmm, there's nothing here. Look at the map again!",
@@ -27228,6 +27270,12 @@
   "it": "solo con Windows",
   "rm": "mo sut Windows"
  },
+ "nur Untertitel": {
+  "en": "only subtitles",
+  "fr": "seulement les sous-titres",
+  "it": "solo sottotitoli",
+  "rm": "mo sutitels"
+ },
  "Nur vom Hörensagen - die Leute hier reden gern von ihm. Cooler Hut!": {
   "en": "Only by hearsay - people here like to talk about him. Cool hat!",
   "fr": "Seulement par ouï-dire - les gens d'ici aiment parler de lui. Chapeau cool !",
@@ -29635,6 +29683,12 @@
   "fr": "Visite avec Blinki",
   "it": "Tour con Blinki",
   "rm": "Gir cun Blinki"
+ },
+ "Rundgang mit Blinki beim ersten Start von selbst": {
+  "en": "Tour with Blinki by itself at the first start",
+  "fr": "Visite avec Blinki automatiquement au premier démarrage",
+  "it": "Tour con Blinki da solo al primo avvio",
+  "rm": "Gir cun Blinki sez a l’emprima aviada"
  },
  "Rundgang pausiert – weiter unter Mehr → Rundgang mit Blinki (Schritt %d von %d).": {
   "en": "Tour paused – continue under More → Tour with Blinki (step %d of %d).",
@@ -32712,6 +32766,18 @@
   "fr": "Voix",
   "it": "Voce",
   "rm": "Vusch"
+ },
+ "Stimme (Erzähler, Vorführung, Trailer)": {
+  "en": "Voice (narrator, demo, trailer)",
+  "fr": "Voix (narrateur, démonstration, bande-annonce)",
+  "it": "Voce (narratore, dimostrazione, trailer)",
+  "rm": "Vusch (narratur, preschentaziun, trailer)"
+ },
+ "Stimme: Einstellungen → Licht & Ton → Lautsprecher": {
+  "en": "Voice: Settings → Light & sound → Loudspeaker",
+  "fr": "Voix : Réglages → Lumière et son → Haut-parleur",
+  "it": "Voce: Impostazioni → Luce e suono → Altoparlante",
+  "rm": "Vusch: Parameters → Glisch & tun → Autpledader"
  },
  "Stimmen": {
   "en": "Voices",
@@ -37210,6 +37276,12 @@
   "it": "Come prima: la vista segue il percorso.",
   "rm": "Sco fin ussa: la visur va cun la tura."
  },
+ "wie das Betriebssystem": {
+  "en": "like the operating system",
+  "fr": "comme le système",
+  "it": "come il sistema operativo",
+  "rm": "sco il sistem operativ"
+ },
  "Wie das Tarp, nur halb so schwer.": {
   "en": "Like the tarp, only half the weight.",
   "fr": "Comme la bâche, mais deux fois plus légère.",
@@ -40222,6 +40294,12 @@
   "fr": "⚙ Règles personnelles – tous les types de jeu, buts et extras",
   "it": "⚙ Regole proprie – tutti i tipi di gioco, obiettivi ed extra",
   "rm": "⚙ Atgnas reglas – tut ils geners da gieu, finamiras ed extras"
+ },
+ "⚙ Rundgang und Blinki einstellen": {
+  "en": "⚙ Set up the tour and Blinki",
+  "fr": "⚙ Régler la visite et Blinki",
+  "it": "⚙ Imposta il tour e Blinki",
+  "rm": "⚙ Configurar il gir e Blinki"
  },
  "⚠ %s hat eure Fahne!": {
   "en": "⚠ %s has your flag!",

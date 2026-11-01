@@ -180,6 +180,7 @@ func _paint(d: int) -> void:
 	var s: Array = _steps[i]
 	_title.text = s[1]
 	_text.text = s[2]
+	_bk.visible = bool(main.get("blinki_on")) if main.get("blinki_on") != null else true   # 3.23: «Blinki zeigen» (System → Gerät & Hilfe)
 	_bk.mood = s[3]
 	_bk.talk()
 	if d > 0 and i > 0:
@@ -357,8 +358,10 @@ class BlinkiView extends Control:
 		var look := 0.0
 		if lk > 0.08 and lk < 0.84:
 			look = -1.0 if lk < 0.44 else 1.0
+		if UI.motion_still:                              # 3.23 «Bewegung reduzieren»: Blinki looks ahead and does not hop
+			look = 0.0
 		var hp := 0.0
-		if _hop < 0.75:
+		if _hop < 0.75 and not UI.motion_still:
 			var u := _hop / 0.75
 			hp = 8.0 * sin(PI * clampf((u - 0.15) / 0.47, 0.0, 1.0))
 		var tk := 0.0

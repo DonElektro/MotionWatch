@@ -131,9 +131,8 @@ def sim_state():
             "sound": (CFG["siren_sound"] or "siren") if SOUND["playing"] else ("talk" if TALK["proc"] is not None else ""),
             "simtask_de": tr(stk_, "de") if (stk_ := _simtask_now()) else "",   # 2.98.13: one lock (147)
             "eco": STATE.get("eco") or "off",     # power saving of MoveEye: «saving» = quiet - the simulator may calculate slower (3D-3.30)
-            # automatic update: the simulator compares these checksums with its own files and fetches /sim/simulator.zip
-            # (only the Python simulator updates itself with them - the 3D simulator (/info «view») gets an empty list)
-            "sim_files": {} if (SIM.get("info") or {}).get("view") else sim_files(), "mw_scheme": "https" if WEB_OPTS.get("https") else "http", "mw_port": int(CFG["web_port"]),
+            # 3.23: always empty - the old Python simulator that updated itself with these checksums is removed (360)
+            "sim_files": {}, "mw_scheme": "https" if WEB_OPTS.get("https") else "http", "mw_port": int(CFG["web_port"]),
             # CPU in % of the whole computer: total, MoveEye, simulator (None = not on this computer / unknown)
             "cpu": {"total": STATE.get("cpu"), "mw": STATE.get("cpu_mw"), "sim": STATE.get("cpu_sim")},
             # what MoveEye detects right now: the simulator compares it with the truth (test run, game «MoveEye decides»)
@@ -151,7 +150,6 @@ def sim_state():
                           if isinstance(w, (list, tuple)) and len(w) >= 2]}
 
 
-_SIMFILES = {}
 
 
 VIEWERS = {}                       # web page / guest page -> time of its last poll; the Pi screen counts as one more
@@ -369,49 +367,5 @@ def sim_cam_fps(cam):
     if CFG.get("eco_on") and STATE.get("eco") == "saving":      # quiet: few pictures; something moves: full speed again
         f = max(2, min(f, int(CFG.get("eco_fps") or 3)))
     return f if str(cam) == "0" else max(2, f // 2)
-
-
-def sim_files():
-    """sha256 of the simulator program files this MoveEye carries (name -> checksum)."""
-    if not _SIMFILES:
-        import base64, hashlib, io
-        try:
-            with zipfile.ZipFile(io.BytesIO(base64.b64decode("".join(SIM_ZIP_B64.split())))) as z:
-                for n in z.namelist():
-                    if n.endswith(".py"):
-                        _SIMFILES[n] = hashlib.sha256(z.read(n)).hexdigest()
-        except Exception:
-            pass
-    return dict(_SIMFILES)
-
-
-def sim_autoupdate():
-    """The simulator on this Pi is older than the one inside MoveEye -> install the new one (and restart it if it runs)."""
-    import hashlib
-    d = sim_dir()
-    if not os.path.isfile(os.path.join(d, "motionwatch_simulator.py")):
-        return False
-    old = []
-    for n, h in sim_files().items():
-        try:
-            with open(os.path.join(d, n), "rb") as f:
-                if hashlib.sha256(f.read()).hexdigest() == h:
-                    continue
-        except OSError:
-            pass
-        old.append(n)
-    if not old:
-        return False
-    was = sim_running()
-    if was:
-        sim_stop()
-    try:
-        sim_install()
-    except Exception as e:
-        log_event("sys", f"Simulator update failed: {e}"[:200]); return False
-    log_event("sys", "Simulator updated automatically to the version inside MoveEye " + APP_VERSION)
-    if was:
-        sim_start()
-    return True
 
 
