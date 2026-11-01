@@ -1,0 +1,6 @@
+three.js r160 (MIT-Lizenz, siehe LICENSE; https://github.com/mrdoob/three.js, Tag r160) – unverändert.
+Gebraucht von MoveEye → Mehr → «Bauen» (3D-Werkstatt im Browser, Teil 639w). werkzeuge/gehaeuse_bauen.py --texte packt
+diese Dateien (gzip + base64) mit gehaeuse.glb in quelle/639vb_daten_bau3d.py; bauen.py lagert sie ins Zusatz-ZIP aus.
+MoveEye liefert sie selbst aus (/bau3d/…), der Pi braucht dafür kein Internet und keinen Simulator.
+Dateien: three.module.min.js (build/), loaders/GLTFLoader.js, controls/OrbitControls.js, utils/BufferGeometryUtils.js
+(aus examples/jsm/).

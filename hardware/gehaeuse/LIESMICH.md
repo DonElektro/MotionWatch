@@ -18,9 +18,10 @@ Thermal-90, UPS HAT (E) mit 4 × 21700, Lampen weiss + IR, Lautsprecher, PIR, Mi
 | Materialliste mit Bestellliste | [Dokumente/Materialliste.md](Dokumente/Materialliste.md) |
 | Übergabe an die Software (Strom, Anschlüsse, Adressen) | [Dokumente/Uebergabe_Gehaeuse_v5.md](Dokumente/Uebergabe_Gehaeuse_v5.md) |
 | Übergabe-Paket (Stand, offene Punkte, Entscheidungen) | [Dokumente/Uebergabe_Paket_v5-1.md](Dokumente/Uebergabe_Paket_v5-1.md) |
-| Druckdateien (2 Platten, 3MF) | [Druckdateien/](Druckdateien/) |
+| Druckdateien (2 Platten + 11 einzelne Teile, 3MF) | [Druckdateien/](Druckdateien/) |
 | Parametrisches Modell (Python) | [Quellcode/](Quellcode/) |
-| Teile, Materialliste, Montageschritte in 5 Sprachen (für MoveEye und Simulator) | [bau.json](bau.json) |
+| Teile, Materialliste, Montage, dazu Varianten, Einkauf (Preis-Schätzung, Händler-Suche), Drucken, Werkzeug, Sicherheit, Verkabeln, Software, Inbetriebnahme, Fehlersuche, Wartung – 5 Sprachen, eine Quelle für MoveEye und Simulator «Bauen» | [bau.json](bau.json) |
+| Festgehaltener Stand für den Abgleich (`werkzeuge/bau_pruefen.py`) | [bau_abgleich.json](bau_abgleich.json) |
 | Bilder | [Bilder/](Bilder/) |
 
 ## Druckdateien
@@ -28,8 +29,11 @@ Thermal-90, UPS HAT (E) mit 4 × 21700, Lampen weiss + IR, Lautsprecher, PIR, Mi
 - **Im Repository:** die zwei Platten für den X2D, fertig verteilt:
   - [Platte A: Unterteil, Zwischenboden, HDMI-Stopfen, 4 Füsse](Druckdateien/MotionWatch_v5-1_Platte_A_Unterteil.3mf)
   - [Platte B: Deckel, Drehteller, Gabel, Arm 2, Kopf, Seitendeckel, 2 Lampenhalter](Druckdateien/MotionWatch_v5-1_Platte_B_Deckel_Kopf.3mf)
-- **Einzelne STL-Dateien (11 Teile, 55 MB, als ZIP 9 MB):** nicht im Repository, damit es klein bleibt. Sie liegen im
-  Übergabe-Paket bzw. als `MoveEye_Gehaeuse_v5-1_STL.zip`; neu erzeugen mit `python3 werkzeuge/gehaeuse_bauen.py --druck`.
+- **Einzelne Teile als 3MF (real-bauen, 01.11.2026):** `MoveEye_v5-1_01_Unterteil.3mf` … `MoveEye_v5-1_11_Fuss_4x.3mf`, zusammen
+  8,6 MB (komprimiert, Ecken auf 0,001 mm, Masse gegen die STL geprüft; Lampenhalter ×2 und Füsse ×4 liegen schon mehrfach auf
+  der Platte). Erzeugt aus den STL des Übergabe-Pakets mit `python3 werkzeuge/gehaeuse_bauen.py --3mf <STL-Ordner>` (nur numpy).
+  Die STL selbst (55 MB) bleiben ausserhalb; neu mit `python3 werkzeuge/gehaeuse_bauen.py --druck`.
+- In MoveEye: Mehr → Bauen → Drucken: jede Datei einzeln oder alle als ZIP (`/build/alle.zip`).
 
 Vor dem Druck des Unterteils bitte die Masse des **UPS HAT (E) mit Akkus** nachmessen (angenommen 90 × 80 × 26 mm,
 Parameter `BAT_L/BAT_W/BAT_H` und `PI_Z_ABOVE_FLOOR` oben in `Quellcode/v5.py`).
@@ -64,12 +68,20 @@ Was daraus entsteht:
 Der Selbsttest von MoveEye (Teil 639w) prüft im Repository mit einer SHA-256-Prüfsumme über `Quellcode/*.py`, `bau.json`
 und `werkzeuge/gehaeuse_bauen.py`, dass Simulator-Modelle und Texte zur Quelle passen.
 
-## In MoveEye und im Simulator
+## In MoveEye und im Simulator: «Bauen» (real-bauen, 01.11.2026)
 
-- **MoveEye:** Mehr → **«Gehäuse & Bau»** (`/case`): Montage Schritt für Schritt, Materialliste, Links zu den Druckdateien,
-  Knopf «Im Simulator ansehen» (öffnet die Werkstatt im Simulator, auch direkt bei einem Montageschritt).
-- **Simulator:** Mehr → **«Werkstatt»**: Gehäuse drehen, zoomen, Explosion (Regler), durchsichtig, Innenleben,
-  Teil anklicken (Name, Eintrag der Materialliste, Montageschritt), Montage als Abfolge mit Weiter / Zurück.
+Ein Eintrag **Mehr → «Bauen»** in beiden (früher «Gehäuse & Bau» bzw. «Werkstatt»; `/case` leitet auf `/build` weiter), mit
+denselben Reitern: Übersicht · Teile · Einkauf · Drucken · Montage · Verkabeln · Software · Inbetriebnahme · Fehlersuche · Wartung.
+
+- **MoveEye** (`/build`): 3D-Werkstatt im Browser mit three.js r160 (MIT, `werkzeuge/three/`) und demselben `gehaeuse.glb` –
+  MoveEye liefert beides selbst aus (Zusatz-ZIP), **ohne Simulator und ohne Internet**; drehen, zoomen (Touch), Explosion,
+  durchsichtig, Innenleben, Teil antippen (Materialliste, Druckdatei, Montageschritt), Montage animiert. Variante (v5.1 / v5.2,
+  mit / ohne Akku, mit / ohne Mover), Einkauf mit CSV und Druckansicht, «Mein Bau» (Checkliste pro Benutzer auf dem Pi,
+  `/api/bau`). «Im Simulator ansehen» erscheint nur mit verbundenem Simulator.
+- **Simulator:** dasselbe Fenster mit Reitern (`werkstatt.gd`); «Mein Bau» lokal in `user://bau_mein.json`.
+- **Abgleich:** `python3 werkzeuge/bau_pruefen.py` warnt (Selbsttest von MoveEye und CI), wenn Pins / Kanäle im Code, die
+  Gehäuse-Quelle, die Doku, Druckdateien oder die Teileliste nicht mehr zu den Bau-Infos passen: «Bau-Infos veraltet: … –
+  nachziehen?». Nichts wird automatisch nachgezogen; nach dem Nachziehen `bau_pruefen.py --festhalten`.
 - **Am Gerät in der Szene** zeigt der Simulator die vereinfachten echten Teile (abschaltbar in der Werkstatt). Die Kameras
   und die Erkennung sitzen genau wie vorher.
 

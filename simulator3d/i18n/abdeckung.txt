@@ -1,15 +1,16 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 7061 (Stellen: 9882)
-Übersetzt: en 7061, fr 7061, it 7061, rm 7061
+Texte gesamt: 7339 (Stellen: 10201)
+Übersetzt: en 7339, fr 7339, it 7339, rm 7339
 Unsicher markiert: 31
-Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 494 Stellen
-Nicht mehr im Code (noch in texte.json): 280
+Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 497 Stellen
+Nicht mehr im Code (noch in texte.json): 285
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 68 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main.gd 1, phone.gd 1, spieltest.gd 1
-Übersprungen (Grund: Anzahl): kennung 25525, schlüssel 18892, keine Wörter 11932, index 9429, technisch 3283, doc 2178, einheit 299, log 155, englisch 135, pfad 112, stringname 102, html 68, klasse 28, shader 6
+Übersprungen (Grund: Anzahl): kennung 25910, schlüssel 19757, keine Wörter 12150, index 9524, technisch 3367, doc 2181, einheit 314, log 155, englisch 135, pfad 112, stringname 102, html 68, klasse 28, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   main.gd                  701    50
+  werkstatt_daten.gd       376     3
   bergtal_abenteuer.gd     272     7
   gamewiz.gd               252    15
   abenteuer_figuren_daten.gd   238     0
@@ -18,7 +19,6 @@ Pro Datei (Texte / davon dynamische Stellen):
   bergtal.gd               187     5
   bergtal_horror.gd        159     3
   abenteuer_raetsel.gd     145     2
-  werkstatt_daten.gd       136     1
   maggie_story.gd          113     2
   zwei_bausteine.gd        113     2
   abenteuer_moveeye.gd     110    14
@@ -40,6 +40,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   maggie_gefahr.gd          79     0
   maggie_zwei.gd            78     0
   kids.gd                   74     1
+  werkstatt.gd              73     1
   diagnose.gd               72     9
   pruefstand.gd             72     8
   abenteuer_zweit.gd        66     0
@@ -92,7 +93,6 @@ Pro Datei (Texte / davon dynamische Stellen):
   zwilling.gd               29     3
   gamemission.gd            29     0
   news.gd                   29     1
-  werkstatt.gd              28     0
   padmap.gd                 28    19
   explore.gd                28     2
   power.gd                  28    10
@@ -337,7 +337,9 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   abenteuer_rucksack.gd:424  ' und '
   abenteuer_rucksack.gd:480  'Fertig'
   tour.gd:188  'Fertig'
-  werkstatt_daten.gd:129  'Fertig'
+  werkstatt_daten.gd:134  'Fertig'
+  werkstatt_daten.gd:172  'ohne'
+  werkstatt_daten.gd:185  'ohne'
   abenteuer_stimme.gd:32  'an'
   abenteuer_stimme.gd:32  'aus'
   abenteuer_stimme.gd:34  'an'
@@ -492,6 +494,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   diagnose.gd:141  'kein'
   diagnose.gd:146  ' · Version '
   diagnose.gd:204  ' · QR'
+  werkstatt.gd:922  'keine'
   bergtal_aussicht.gd:357  'von'
   bergtal_aussicht.gd:536  'von'
   bergtal_aussicht.gd:1159  'Abzeichen: '
