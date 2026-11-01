@@ -1142,13 +1142,13 @@ class App:
         head = tk.Frame(self.root, bg=C["bg"]); head.pack(fill="x", padx=16, pady=(10, 0))
         top = tk.Frame(head, bg=C["bg"]); top.pack(fill="x")
         if show("title"):
-            tl = tk.Frame(top, bg=C["bg"]); tl.pack(side="left")
+            tl = tk.Frame(top, bg=C["bg"]); tl.pack(side="left"); self._title_box = tl     # 639s: long press = developer area
             try:                                         # the app icon (orange camera head), like the web page
                 import base64
                 self._logo = tk.PhotoImage(data=base64.b64encode(app_icon_png(26 if self._lay[0] else 30)).decode())
-                tk.Label(tl, image=self._logo, bg=C["bg"], bd=0).pack(side="left")
+                self._logo_lbl = tk.Label(tl, image=self._logo, bg=C["bg"], bd=0); self._logo_lbl.pack(side="left")
             except Exception:
-                tk.Label(tl, text="●", bg=C["bg"], fg=C["acc"], font=("DejaVu Sans", 12)).pack(side="left")
+                self._logo_lbl = tk.Label(tl, text="●", bg=C["bg"], fg=C["acc"], font=("DejaVu Sans", 12)); self._logo_lbl.pack(side="left")
             small = self._lay[0]
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:

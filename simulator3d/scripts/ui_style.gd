@@ -504,6 +504,11 @@ static func _draw_icon(d: Control, kind: String) -> void:
 	elif kind == "close":
 		d.draw_polyline(PackedVector2Array([c + Vector2(-5, -8), c + Vector2(0, -3), c + Vector2(5, -8)]), col, w, true)
 		d.draw_polyline(PackedVector2Array([c + Vector2(-5, 8), c + Vector2(0, 3), c + Vector2(5, 8)]), col, w, true)
+	elif kind == "tools":                                 # developer window (MoveEye 🛠): wrench and screwdriver crossed
+		d.draw_line(c + Vector2(-7, 7), c + Vector2(1.5, -1.5), col, 3.0, true)
+		d.draw_arc(c + Vector2(4.5, -4.5), 4.2, -PI / 4.0 + 0.95, -PI / 4.0 + TAU - 0.95, 16, col, 2.4, true)
+		d.draw_line(c + Vector2(-7, -7), c + Vector2(2.5, 2.5), col, 1.8, true)
+		d.draw_line(c + Vector2(3.5, 3.5), c + Vector2(7.5, 7.5), col, 4.2, true)
 
 
 static func search_field(placeholder: String) -> LineEdit:
