@@ -3,7 +3,7 @@ extends RefCounted
 ## hardware/gehaeuse/bau.json. NICHT VON HAND ÄNDERN (Texte dort ändern, dann «gehaeuse_bauen.py --texte»).
 ## Texte deutsch (T.t übersetzt sie, Übersetzungen kommen aus bau.json in i18n/texte.json).
 
-const QUELLE_SHA := "13429a2720a9fe7e70bebc3415b0a7ad999fd7907e0e86b0518ada0964a80f42"
+const QUELLE_SHA := "08e02056eb9054c2f4374d2094db3ce07e9028e9a0f34952a68d1600b12c5e40"
 const VERSION := "5.1"
 const KOPF_FARBE := "#f59a4a"   # Kopfteil (dreht / neigt) in MoveEye-Orange
 const KOPF_TEILE := ["turntable", "yoke", "arm2", "head", "side", "lamp1", "lamp2", "head52"]
@@ -55,13 +55,14 @@ const BOM := {
 	"camwide": ["1×", "Camera Module 3 Wide NoIR", "SC0874", "Variante v5.2 (Weitwinkel-Kamera, eigenes Unterteil)"],
 	"irmod": ["1×", "IR-LED-Modul 850 nm mit 120°-Linse (Ø ca. 18,8 mm, nachmessen)", "850 nm, 120°", "Variante v5.2 (Weitwinkel-Kamera, eigenes Unterteil)"],
 	"m2": ["4×", "Schraube M2 × 6, selbstschneidend (Weitwinkel-Kamera)", "M2 × 6", "Variante v5.2 (Weitwinkel-Kamera, eigenes Unterteil)"],
-	"sdext": ["1×", "microSD-Verlängerung mit Einbau-Kartenhalter (ca. 15–25 cm, 2 Löcher M2,5)", "", "Variante v5.2 (Weitwinkel-Kamera, eigenes Unterteil)"],
+	"sdext": ["1×", "microSD-Verlängerung 15 cm mit Einbau-Kartenhalter (Platine ca. 22 × 15 mm, 2 Löcher M2,5 im Abstand 18 mm)", "15 cm", "Variante v5.2 (Weitwinkel-Kamera, eigenes Unterteil)"],
 	"mosfet3": ["1×", "3. MOSFET-Modul (AOD4184) für das IR-Modul 120° (bzw. die IR-LED 5 mm), Kanal 4", "Bastelgarage 420985", "Variante v5.2 (Weitwinkel-Kamera, eigenes Unterteil)"],
 	"irled5": ["1×", "IR-LED 5 mm, 850 nm", "", "Variante v5.2 (Weitwinkel-Kamera, eigenes Unterteil)"],
 	"taster": ["2×", "Taster 12 mm, IP67", "", "Variante v5.2 (Weitwinkel-Kamera, eigenes Unterteil)"],
 	"sled": ["1×", "RGB-LED 5 mm mit Diffusor «Blinki-Auge»", "", "Variante v5.2 (Weitwinkel-Kamera, eigenes Unterteil)"],
 	"camcable2": ["1×", "Kamerakabel Pi 5, 200 mm (CAM1)", "SC1129", "Variante v5.2 (Weitwinkel-Kamera, eigenes Unterteil)"],
 	"psu12": ["1×", "Netzteil 12 V, mind. 3 A, mit GX16-Stecker verlötet", "", "Strom"],
+	"psu12_dev": ["1×", "Netzteil 12 V, mind. 3 A, mit GX16-Stecker verlötet – Entwicklung", "", "Strom"],
 	"motorhat": ["1×", "Motor-HAT (Adafruit DC & Stepper Motor HAT, I2C 0x60)", "Adafruit 2348", "Mover"],
 	"chassis": ["1×", "Kettenfahrwerk mit 2 DC-Motoren", "", "Mover"],
 	"schrauben": ["1 Set", "Schraubensatz M2 / M2,5 / M3 mit Muttern und Scheiben", "", "Kabel, Druck, Notfall"],
@@ -1170,7 +1171,12 @@ const BAU := {
 		{
 			"wenn": "entwicklung",
 			"titel": "Entwicklungs-Variante ohne Akku",
-			"text": "Statt UPS HAT (E) und Akkus den Sockel 13 in den Akku-Zaun drücken (Klemmrippen), den Pi mit 4 × M2,5 × 6 auf die Bolzen schrauben – gleiche Lage und Höhe wie mit Akku, HDMI-/USB-C-Fenster und Kamerakabel passen. Der Pi bekommt Strom über sein eigenes USB-C-Netzteil (5,1 V / 5 A) durch das Service-Fenster. Servos, Lampen und Verstärker: externes Netzteil an die GX16-Ladebuchse (Pins wie beim Laden: 2 Kontakte +, 2 Kontakte −), die 5-A-Sicherung bleibt in der Leitung, dahinter auf den Eingang des Step-down. Achtung: der Step-down braucht am Eingang mindestens 6 V (6–36 V) – ein 5-V-Netzteil dort reicht nicht; dann 12 V nehmen oder das 5-V-Netzteil (≥ 4 A) direkt auf die 5-V-Schiene (Ausgang Step-down / V+ am PCA9685) legen. Polung prüfen, es gibt keinen Verpolungsschutz. In dieser Variante zeigen Akku-%, INA219 und Lade-LED nichts."
+			"text": "Statt UPS HAT (E) und Akkus den Sockel 13 in den Akku-Zaun drücken (Klemmrippen), den Pi mit 4 × M2,5 × 6 auf die Bolzen schrauben – gleiche Lage und Höhe wie mit Akku, HDMI-/USB-C-Fenster und Kamerakabel passen. Der Pi bekommt Strom über sein eigenes USB-C-Netzteil (5,1 V / 5 A) durch das Service-Fenster. Servos, Lampen und Verstärker: das 12-V-Netzteil (mind. 3 A) an die GX16-Ladebuchse (Pins wie beim Laden: 2 Kontakte +, 2 Kontakte −); die 5-A-Sicherung bleibt in der Leitung, dahinter auf den Eingang des Step-down (6–36 V → 5 V). Nur 12 V verwenden, Polung prüfen – es gibt keinen Verpolungsschutz. In dieser Variante zeigen Akku-%, INA219 und Lade-LED nichts."
+		},
+		{
+			"wenn": "v52",
+			"titel": "SD-Karte (v5.2)",
+			"text": "Die microSD-Verlängerung (15 cm) in den Kartenslot des Pi stecken. Den Einbau-Kartenhalter (Platine ca. 22 × 15 mm, 2 Löcher M2,5 im Abstand 18 mm) mit 2 × M2,5 × 6 an die zwei Dome innen an der Lüftungswand über dem PCA9685 schrauben; der Kartenschlitz liegt hinter dem Wandschlitz 14 × 3 mm. Aussen den Stopfen 16 einsetzen. Masse der gekauften Platine vorher nachmessen."
 		}
 	],
 	"druckdateien_einzeln": [
@@ -1521,9 +1527,9 @@ const BAU := {
 			"gruppe": "v52"
 		},
 		"sdext": {
-			"preis": 9,
+			"preis": 8,
 			"haendler": "galaxus",
-			"suche": "microSD Verlängerung Einbau",
+			"suche": "microSD Verlängerungskabel 15cm Einbau",
 			"wenn": "v52",
 			"gruppe": "v52"
 		},
@@ -1568,6 +1574,13 @@ const BAU := {
 			"haendler": "galaxus",
 			"suche": "Netzteil 12V 3A",
 			"wenn": "netz",
+			"gruppe": "strom"
+		},
+		"psu12_dev": {
+			"preis": 20,
+			"haendler": "galaxus",
+			"suche": "Netzteil 12V 3A",
+			"wenn": "entwicklung",
 			"gruppe": "strom"
 		},
 		"motorhat": {

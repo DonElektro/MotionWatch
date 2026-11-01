@@ -890,22 +890,22 @@
    "menge": "1×",
    "wenn": "v52",
    "name": {
-    "de": "microSD-Verlängerung mit Einbau-Kartenhalter (ca. 15–25 cm, 2 Löcher M2,5)",
-    "en": "microSD extension with panel card holder (approx. 15–25 cm, 2 holes M2.5)",
-    "fr": "Rallonge microSD avec support encastrable (env. 15–25 cm, 2 trous M2,5)",
-    "it": "Prolunga microSD con portaschede da incasso (circa 15–25 cm, 2 fori M2,5)",
-    "rm": "Prolungaziun microSD cun purtader integrà (ca. 15–25 cm, 2 foras M2,5)"
+    "de": "microSD-Verlängerung 15 cm mit Einbau-Kartenhalter (Platine ca. 22 × 15 mm, 2 Löcher M2,5 im Abstand 18 mm)",
+    "en": "microSD extension 15 cm with panel card holder (board approx. 22 × 15 mm, 2 holes M2.5, 18 mm apart)",
+    "fr": "Rallonge microSD 15 cm avec support encastrable (platine env. 22 × 15 mm, 2 trous M2,5 à 18 mm)",
+    "it": "Prolunga microSD 15 cm con portaschede da incasso (scheda circa 22 × 15 mm, 2 fori M2,5 a 18 mm)",
+    "rm": "Prolungaziun microSD 15 cm cun purtader integrà (platina ca. 22 × 15 mm, 2 foras M2,5 en distanza da 18 mm)"
    },
-   "nr": "",
-   "preis": 9,
+   "nr": "15 cm",
+   "preis": 8,
    "haendler": "galaxus",
-   "suche": "microSD Verlängerung Einbau",
+   "suche": "microSD Verlängerungskabel 15cm Einbau",
    "unklar": {
-    "de": "Masse nachmessen, Preis geschätzt",
-    "en": "measure, price estimated",
-    "fr": "à mesurer, prix estimé",
-    "it": "da misurare, prezzo stimato",
-    "rm": "mesirar, pretsch stimà"
+    "de": "Masse der Platine vor dem Druck nachmessen (Dome im Unterteil: Lochabstand 18 mm), Preis geschätzt",
+    "en": "measure the board before printing (bosses in the lower part: holes 18 mm apart), price estimated",
+    "fr": "mesurer la platine avant l'impression (dômes : entraxe 18 mm), prix estimé",
+    "it": "misurare la scheda prima di stampare (torrette: interasse 18 mm), prezzo stimato",
+    "rm": "mesirar la platina avant la stampa (cupels: distanza 18 mm), pretsch stimà"
    }
   },
   {
@@ -1016,6 +1016,23 @@
    "haendler": "galaxus",
    "suche": "Netzteil 12V 3A",
    "wenn": "netz"
+  },
+  {
+   "id": "psu12_dev",
+   "gruppe": "strom",
+   "menge": "1×",
+   "name": {
+    "de": "Netzteil 12 V, mind. 3 A, mit GX16-Stecker verlötet – Entwicklung",
+    "en": "Power supply 12 V, at least 3 A, soldered to the GX16 plug – development",
+    "fr": "Alimentation 12 V, au moins 3 A, soudée à la fiche GX16 – développement",
+    "it": "Alimentatore 12 V, almeno 3 A, saldato alla spina GX16 – sviluppo",
+    "rm": "Alimentaziun 12 V, almain 3 A, lotada vi dal stecker GX16 – svilup"
+   },
+   "nr": "",
+   "preis": 20,
+   "haendler": "galaxus",
+   "suche": "Netzteil 12V 3A",
+   "wenn": "entwicklung"
   },
   {
    "id": "motorhat",
@@ -4505,11 +4522,28 @@
     "rm": "Variante da svilup senza accu"
    },
    "text": {
-    "de": "Statt UPS HAT (E) und Akkus den Sockel 13 in den Akku-Zaun drücken (Klemmrippen), den Pi mit 4 × M2,5 × 6 auf die Bolzen schrauben – gleiche Lage und Höhe wie mit Akku, HDMI-/USB-C-Fenster und Kamerakabel passen. Der Pi bekommt Strom über sein eigenes USB-C-Netzteil (5,1 V / 5 A) durch das Service-Fenster. Servos, Lampen und Verstärker: externes Netzteil an die GX16-Ladebuchse (Pins wie beim Laden: 2 Kontakte +, 2 Kontakte −), die 5-A-Sicherung bleibt in der Leitung, dahinter auf den Eingang des Step-down. Achtung: der Step-down braucht am Eingang mindestens 6 V (6–36 V) – ein 5-V-Netzteil dort reicht nicht; dann 12 V nehmen oder das 5-V-Netzteil (≥ 4 A) direkt auf die 5-V-Schiene (Ausgang Step-down / V+ am PCA9685) legen. Polung prüfen, es gibt keinen Verpolungsschutz. In dieser Variante zeigen Akku-%, INA219 und Lade-LED nichts.",
-    "en": "Instead of the UPS HAT (E) and cells press socket 13 into the battery fence (clamp ribs) and screw the Pi onto the posts with 4 × M2.5 × 6 – same position and height as with the battery, HDMI/USB-C window and camera cables fit. The Pi gets power from its own USB-C power supply (5.1 V / 5 A) through the service window. Servos, lamps and amplifier: external power supply to the GX16 charging socket (pins as for charging: 2 contacts +, 2 contacts −), the 5 A fuse stays in the line, then to the input of the step-down. Caution: the step-down needs at least 6 V at its input (6–36 V) – a 5 V supply there is not enough; then use 12 V or put the 5 V supply (≥ 4 A) straight on the 5 V rail (step-down output / V+ on the PCA9685). Check the polarity, there is no reverse-polarity protection. In this variant battery %, INA219 and the charging LED show nothing.",
-    "fr": "Au lieu de l'UPS HAT (E) et des accus, enfoncer le socle 13 dans l'enclos (nervures de serrage) et visser le Pi sur les colonnes avec 4 × M2,5 × 6 – même position et hauteur qu'avec la batterie. Le Pi est alimenté par son propre bloc USB-C (5,1 V / 5 A) par la fenêtre de service. Servos, lampes et ampli : alimentation externe sur la prise GX16 (broches comme pour la charge : 2 +, 2 −), le fusible 5 A reste dans la ligne, puis l'entrée de l'abaisseur. Attention : l'abaisseur demande au moins 6 V à l'entrée (6–36 V) – 5 V ne suffisent pas ; prendre 12 V ou mettre l'alimentation 5 V (≥ 4 A) directement sur le rail 5 V (sortie de l'abaisseur / V+ du PCA9685). Vérifier la polarité, pas de protection. Dans cette variante, % batterie, INA219 et LED de charge n'affichent rien.",
-    "it": "Al posto dell'UPS HAT (E) e delle batterie premere lo zoccolo 13 nel recinto (nervature di bloccaggio) e avvitare il Pi sulle colonnine con 4 × M2,5 × 6 – stessa posizione e altezza che con la batteria. Il Pi è alimentato dal suo alimentatore USB-C (5,1 V / 5 A) attraverso la finestra di servizio. Servo, lampade e amplificatore: alimentatore esterno alla presa GX16 (pin come per la carica: 2 +, 2 −), il fusibile 5 A resta nella linea, poi all'ingresso dello step-down. Attenzione: lo step-down vuole almeno 6 V in ingresso (6–36 V) – 5 V non bastano; usare 12 V oppure portare l'alimentatore 5 V (≥ 4 A) direttamente sulla linea 5 V (uscita step-down / V+ del PCA9685). Controllare la polarità, non c'è protezione. In questa variante % batteria, INA219 e LED di carica non mostrano nulla.",
-    "rm": "Empè da l'UPS HAT (E) e dals accus smatgar la zocla 13 en il chasté (costas da serrar) e fixar il Pi cun 4 × M2,5 × 6 – medema posiziun ed autezza sco cun l'accu. Il Pi survegn current da ses agen alimentader USB-C (5,1 V / 5 A) tras la fanestra da servetsch. Servos, lampas ed amplificatur: alimentader extern a la bischla GX16 (pins sco per chargiar: 2 +, 2 −), la segirezza da 5 A resta en la lingia, lura a l'entrada dal step-down. Attenziun: il step-down basegna almain 6 V (6–36 V) – 5 V na tanschan betg; prender 12 V u metter l'alimentader da 5 V (≥ 4 A) directamain sin la lingia da 5 V (sortida step-down / V+ dal PCA9685). Controllar la polaritad, i na dat nagina protecziun. En questa variante mussan % d'accu, INA219 e LED da chargiar nagut."
+    "de": "Statt UPS HAT (E) und Akkus den Sockel 13 in den Akku-Zaun drücken (Klemmrippen), den Pi mit 4 × M2,5 × 6 auf die Bolzen schrauben – gleiche Lage und Höhe wie mit Akku, HDMI-/USB-C-Fenster und Kamerakabel passen. Der Pi bekommt Strom über sein eigenes USB-C-Netzteil (5,1 V / 5 A) durch das Service-Fenster. Servos, Lampen und Verstärker: das 12-V-Netzteil (mind. 3 A) an die GX16-Ladebuchse (Pins wie beim Laden: 2 Kontakte +, 2 Kontakte −); die 5-A-Sicherung bleibt in der Leitung, dahinter auf den Eingang des Step-down (6–36 V → 5 V). Nur 12 V verwenden, Polung prüfen – es gibt keinen Verpolungsschutz. In dieser Variante zeigen Akku-%, INA219 und Lade-LED nichts.",
+    "en": "Instead of the UPS HAT (E) and cells press socket 13 into the battery fence (clamp ribs) and screw the Pi onto the posts with 4 × M2.5 × 6 – same position and height as with the battery, HDMI/USB-C window and camera cables fit. The Pi gets power from its own USB-C power supply (5.1 V / 5 A) through the service window. Servos, lamps and amplifier: the 12 V power supply (at least 3 A) to the GX16 charging socket (pins as for charging: 2 contacts +, 2 contacts −); the 5 A fuse stays in the line, then to the input of the step-down (6–36 V → 5 V). Use 12 V only and check the polarity – there is no reverse-polarity protection. In this variant battery %, INA219 and the charging LED show nothing.",
+    "fr": "Au lieu de l'UPS HAT (E) et des accus, enfoncer le socle 13 dans l'enclos (nervures de serrage) et visser le Pi sur les colonnes avec 4 × M2,5 × 6 – même position et hauteur qu'avec la batterie. Le Pi est alimenté par son propre bloc USB-C (5,1 V / 5 A) par la fenêtre de service. Servos, lampes et ampli : l'alimentation 12 V (au moins 3 A) sur la prise GX16 (broches comme pour la charge : 2 +, 2 −) ; le fusible 5 A reste dans la ligne, puis l'entrée de l'abaisseur (6–36 V → 5 V). Uniquement 12 V, vérifier la polarité – pas de protection. Dans cette variante, % batterie, INA219 et LED de charge n'affichent rien.",
+    "it": "Al posto dell'UPS HAT (E) e delle batterie premere lo zoccolo 13 nel recinto (nervature di bloccaggio) e avvitare il Pi sulle colonnine con 4 × M2,5 × 6 – stessa posizione e altezza che con la batteria. Il Pi è alimentato dal suo alimentatore USB-C (5,1 V / 5 A) attraverso la finestra di servizio. Servo, lampade e amplificatore: l'alimentatore 12 V (almeno 3 A) alla presa GX16 (pin come per la carica: 2 +, 2 −); il fusibile 5 A resta nella linea, poi all'ingresso dello step-down (6–36 V → 5 V). Solo 12 V, controllare la polarità – non c'è protezione. In questa variante % batteria, INA219 e LED di carica non mostrano nulla.",
+    "rm": "Empè da l'UPS HAT (E) e dals accus smatgar la zocla 13 en il chasté (costas da serrar) e fixar il Pi cun 4 × M2,5 × 6 – medema posiziun ed autezza sco cun l'accu. Il Pi survegn current da ses agen alimentader USB-C (5,1 V / 5 A) tras la fanestra da servetsch. Servos, lampas ed amplificatur: l'alimentaziun da 12 V (almain 3 A) a la bischla GX16 (pins sco per chargiar: 2 +, 2 −); la segirezza da 5 A resta en la lingia, lura a l'entrada dal step-down (6–36 V → 5 V). Mo 12 V, controllar la polaritad – i na dat nagina protecziun. En questa variante mussan % d'accu, INA219 e LED da chargiar nagut."
+   }
+  },
+  {
+   "wenn": "v52",
+   "titel": {
+    "de": "SD-Karte (v5.2)",
+    "en": "SD card (v5.2)",
+    "fr": "Carte SD (v5.2)",
+    "it": "Scheda SD (v5.2)",
+    "rm": "Carta SD (v5.2)"
+   },
+   "text": {
+    "de": "Die microSD-Verlängerung (15 cm) in den Kartenslot des Pi stecken. Den Einbau-Kartenhalter (Platine ca. 22 × 15 mm, 2 Löcher M2,5 im Abstand 18 mm) mit 2 × M2,5 × 6 an die zwei Dome innen an der Lüftungswand über dem PCA9685 schrauben; der Kartenschlitz liegt hinter dem Wandschlitz 14 × 3 mm. Aussen den Stopfen 16 einsetzen. Masse der gekauften Platine vorher nachmessen.",
+    "en": "Plug the microSD extension (15 cm) into the card slot of the Pi. Screw the panel card holder (board approx. 22 × 15 mm, 2 holes M2.5, 18 mm apart) with 2 × M2.5 × 6 to the two bosses on the inside of the vent wall above the PCA9685; the card slot sits behind the 14 × 3 mm wall slot. Insert plug 16 from outside. Measure the board you bought first.",
+    "fr": "Brancher la rallonge microSD (15 cm) dans le lecteur du Pi. Visser le support encastrable (platine env. 22 × 15 mm, 2 trous M2,5 à 18 mm) avec 2 × M2,5 × 6 sur les deux dômes à l'intérieur de la paroi d'aération au-dessus du PCA9685 ; la fente de carte se trouve derrière la fente 14 × 3 mm. Mettre le bouchon 16 à l'extérieur. Mesurer d'abord la platine achetée.",
+    "it": "Inserire la prolunga microSD (15 cm) nello slot del Pi. Avvitare il portaschede (scheda circa 22 × 15 mm, 2 fori M2,5 a 18 mm) con 2 × M2,5 × 6 alle due torrette all'interno della parete di ventilazione sopra il PCA9685; la fessura della scheda è dietro la fessura 14 × 3 mm. Inserire il tappo 16 dall'esterno. Misurare prima la scheda acquistata.",
+    "rm": "Metter la prolungaziun microSD (15 cm) en il slot dal Pi. Fixar il purtader integrà (platina ca. 22 × 15 mm, 2 foras M2,5 en distanza da 18 mm) cun 2 × M2,5 × 6 vi dals dus cupels a l'intern da la paraid da ventilaziun sur il PCA9685; la fessa da la carta è davos la fessa 14 × 3 mm. Metter il zaffer 16 da l'exteriur. Mesirar avant la platina cumprada."
    }
   }
  ],

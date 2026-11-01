@@ -6,16 +6,15 @@
 > **Runde v5.2b (01.11.2026):**
 >
 > - **Service-Fenster** (HDMI + USB-C des Pi) hinten links in der Lüftungswand, ein Stopfen (10 v5.2, Spiel 0,2).
-> - **SD-Karte:** microSD-Verlängerung (15–25 cm) in den Pi stecken, den Einbau-Kartenhalter mit 2 × M2,5 × 6 an die zwei
+> - **SD-Karte:** microSD-Verlängerung (15 cm, Halter-Platine ca. 22 × 15 mm, Löcher M2,5 im Abstand 18 mm) in den Pi stecken, den Einbau-Kartenhalter mit 2 × M2,5 × 6 an die zwei
 >   Dome über dem PCA9685 schrauben; Schlitz aussen mit Stopfen 16. Masse des Halters nachmessen (`SD_*`).
 > - **Kopf 06 v5.2** mit Loch und Sockel für die RGB-LED, Diffusor 14 (PETG natur/weiss), Pupillenring 15 (PETG schwarz).
 > - **Lampentreiber:** Feld an der Stirnwand innen unter dem Step-down (30 × 20, 2 Dome M2,5 – Platzhalter, Löcher nach dem Kauf
 >   anpassen). **Sicherung B+ 5 A:** Inline-Halter in die Klammer am Boden (x 28–58) drücken.
 > - **Reserve-Öffnung** hinten zwischen den Tasten (GX12, Ø 12,3, Nut oben, Regendach), sonst Blindstopfen 17 einstecken.
 > - **Entwicklungs-Sockel 13** statt UPS HAT + Akkus: in den Akku-Zaun drücken (Klemmrippen), Pi mit 4 × M2,5 × 6 darauf.
->   Strom: Pi über sein USB-C-Netzteil (Service-Fenster); Servos/Lampen über die GX16-Buchse an den Step-down – dieser
->   braucht **mindestens 6 V** (12-V-Netzteil), ein 5-V-Netzteil gehört direkt auf die 5-V-Schiene. Akku-%, INA219 und
->   Lade-LED zeigen dann nichts.
+>   Strom: Pi über sein USB-C-Netzteil (Service-Fenster); Servos/Lampen: **nur 12 V** (Netzteil `psu12`, mind. 3 A) an
+>   die GX16-Buchse, über die 5-A-Sicherung auf den Step-down. Akku-%, INA219 und Lade-LED zeigen dann nichts.
 > - Alle Druckdateien v5.2 (Platten A, B und jedes Teil einzeln): `Druckdateien/v5-2/`.
 
 > - **Breite IR-LED = Modul 850 nm mit 120°-Linse** (statt 5-mm-LED): Hülse innen an der Stirnwand (y 20, z 49), Modul von innen
