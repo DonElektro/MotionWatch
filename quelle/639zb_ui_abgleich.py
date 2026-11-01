@@ -19,8 +19,9 @@
 #     geprüft nur hier: lock_set, 5 Fehlversuche = 5 Minuten Pause).
 #   * Offene Web-Seiten: kleiner Hinweis «Ansicht im Simulator geändert – neu laden» (kein Neuladen von selbst).
 # ----------------------------------------------------------------------------
-UIS_KEYS = ("simple", "icons", "lang", "motion", "voice", "tours", "blinki", "news")
-UIS_ENUM = {"icons": ("color", "plain"), "lang": LANGS, "motion": ("auto", "on", "off"), "voice": ("on", "off", "subtitles")}
+UIS_KEYS = ("simple", "icons", "lang", "motion", "voice", "tours", "blinki", "news", "news_links")
+UIS_ENUM = {"icons": ("color", "plain"), "lang": LANGS, "motion": ("auto", "on", "off"), "voice": ("on", "off", "subtitles"),
+            "news_links": ("auto", "on", "off")}   # Links zu Neuerungen (639zc)
 UIS = {"rev": 1, "last": None, "mine": set(), "took": 0, "lang_seen": None, "from_sim": [], "from_sim_t": 0.0,
        "lock_n": 0, "lock_msg": "", "upd_n": 0, "upd_msg": "", "diag_t": 0.0, "sim_diag": None, "sim_diag_t": 0.0, "sim_diag_busy": False}
 UIS_LOCK = threading.Lock()
@@ -98,7 +99,8 @@ def ui_values():
     vm = str(CFG.get("voice_mode") or "on")
     return {"simple": bool(CFG.get("ui_simple", True)), "icons": "plain" if wu.get("mw-icons") == "plain" else "color",
             "lang": cl, "motion": rm if rm in UIS_ENUM["motion"] else "auto", "voice": vm if vm in UIS_ENUM["voice"] else "on",
-            "tours": bool(CFG.get("tours_auto", True)), "blinki": bool(CFG.get("blinki_on", True)), "news": bool(CFG.get("news_popup", True))}
+            "tours": bool(CFG.get("tours_auto", True)), "blinki": bool(CFG.get("blinki_on", True)), "news": bool(CFG.get("news_popup", True)),
+            "news_links": str(CFG.get("news_links") or "auto") if str(CFG.get("news_links") or "auto") in UIS_ENUM["news_links"] else "auto"}
 
 
 def ui_apply(vals, who="simulator"):
@@ -126,6 +128,8 @@ def ui_apply(vals, who="simulator"):
             CFG["blinki_on"] = v
         elif k == "news":
             CFG["news_popup"] = v
+        elif k == "news_links":
+            CFG["news_links"] = v
     if ch:
         _save_settings_639zb()
         UIS["from_sim"] = ch; UIS["from_sim_t"] = time.time()
@@ -531,7 +535,7 @@ def ui_sync_selftest():
     """a value changed on one side appears on the other (without picture): MoveEye -> simulator (rev), simulator -> MoveEye
     (set), same packet (MoveEye wins), unlock with the PIN, one language, one Simple / Expert, level, version pair"""
     keep = {k: json.loads(json.dumps(CFG.get(k))) for k in ("ui_simple", "web_ui", "lang", "reduce_motion", "voice_mode", "tours_auto",
-                                                              "blinki_on", "news_popup", "lock_on", "lock_pin", "lock_snap", "ui_mode_merged")}
+                                                              "blinki_on", "news_popup", "news_links", "lock_on", "lock_pin", "lock_snap", "ui_mode_merged")}
     keepu = dict(UIS); keepu["mine"] = set(UIS["mine"])
     sim_keep = {k: SIM.get(k) for k in ("follower", "info")}
     try:
@@ -554,6 +558,10 @@ def ui_sync_selftest():
         CFG["tours_auto"] = False; sim_state()                # same packet: MoveEye wins
         ui_take({"n": n0 + 2, "set": {"tours": True, "news": False}})
         assert CFG["tours_auto"] is False and CFG["news_popup"] is False, "639zb: same packet - MoveEye must win (and the other key counts)"
+        ui_take({"n": n0 + 3, "set": {"news_links": "off"}})       # Links zu Neuerungen (639zc): the simulator switches them off
+        assert CFG["news_links"] == "off" and ui_values()["news_links"] == "off", "639zb: «Links zu Neuerungen» from the simulator"
+        ui_take({"n": n0 + 4, "set": {"news_links": "bad"}})
+        assert CFG["news_links"] == "off", "639zb: a bad value of «Links zu Neuerungen» must be ignored"
         SIM["follower"] = True                                # only the leading MoveEye
         assert "ui" not in sim_state(), "639zb: a watching MoveEye must not share the view"
         SIM["follower"] = False

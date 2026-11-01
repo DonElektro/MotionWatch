@@ -203,6 +203,11 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
   4. `python3 werkzeuge/versionen.py --pruefen` (eine Nummer überall, Brücke stimmt, Hauptdatei unter 8 MiB, Zusatzdatei und
      Brücken-Datei da), dann `bauen.py --signieren …`
      (Selbsttest prüft dasselbe noch einmal: «Version numbers …»), Rauchtest, committen, pushen.
+  5. **Projektschalter «Projekt veröffentlicht»:** Beim Veröffentlichen `projekt_veroeffentlicht` auf `true` setzen
+     (`simulator3d/ui_gemeinsam.json`, oberste Ebene; gilt für MoveEye und Simulator, danach `bauen.py` bettet sie ein).
+     `false` = Entwicklung: die Links zu Neuerungen im Fenster «Neu in …» sind standardmässig an; `true` = standardmässig aus.
+     Eine eigene Wahl im Entwickler-Bereich («Links zu Neuerungen», auto / an / aus) überschreibt den Standard. Neue Ziele
+     für die Links: `neu_ziele` in derselben Datei (Version -> Seite / Einstellung / Simulator-Menü / -Aktion).
 
 ## Testen (vor jeder Auslieferung)
 

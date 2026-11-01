@@ -824,6 +824,12 @@ class App:
             tk.Label(top, text="✨ " + tr("New in this version"), bg=C["panel"], fg=C["fg"], font=("TkDefaultFont", 13, "bold")).pack(anchor="w", padx=16, pady=(14, 6))
             for it in st["items"] or [{"v": st["version"], "t": tr("No changes noted.")}]:
                 tk.Label(top, text=it["v"] + "  " + it["t"], bg=C["panel"], fg=C["fg"], wraplength=520, justify="left").pack(anchor="w", padx=16, pady=2)
+                if it.get("href"):                         # Links zu Neuerungen (137): opens the page in the browser
+                    ln = tk.Label(top, text=st["lt"]["go"], bg=C["panel"], fg=C.get("acc", "#3b8cff"), cursor="hand2")
+                    ln.pack(anchor="w", padx=72)
+                    ln.bind("<Button-1>", lambda _e, h=it["href"]: (news_seen("tk"), top.destroy(), self._open_page(h)))
+                elif it.get("where") == "sim":
+                    tk.Label(top, text="(" + st["lt"]["sim"] + ")", bg=C["panel"], fg=C.get("mut", C["fg"])).pack(anchor="w", padx=72)
             if st["next"]:
                 tk.Label(top, text="🔜 %s (%d/%d)" % (tr("Next in the makeover"), st["done"], st["total"]), bg=C["panel"], fg=C["fg"],
                          font=("TkDefaultFont", 11, "bold")).pack(anchor="w", padx=16, pady=(10, 2))

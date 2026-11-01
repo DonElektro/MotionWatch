@@ -237,7 +237,7 @@ def prepare_settings_file():
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
 ZD_FILE = "moveeye_daten_3_39_1.zip"
-ZD_SHA256 = "38a2b4cd2fbae1e15c4fad53302ab2eaa703ec755a56d569d4230541400eafa2"
+ZD_SHA256 = "709645e633240ef296aff908ef2f7e9ed1b480d1a844928aeb7c2202986b8822"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -10948,7 +10948,59 @@ def news_next(n=5):
     return [{"n": k, "t": t} for k, t in MAKEOVER_ALL if k not in MAKEOVER_DONE][:n]
 
 
-def news_state(who="web"):
+# ---- Links zu Neuerungen (Wunsch Daniel, 01.11.2026) ------------------------------------------------------------------------
+# Bei jeder Neuerung ein kleiner Link, der direkt zur Funktion springt. Die Ziele stehen für beide Programme in
+# simulator3d/ui_gemeinsam.json «neu_ziele» (Version -> {seite, anker, einstellung, sim_einstellung, sim_menue, sim_aktion}).
+# Schalter «Links zu Neuerungen» (news_links auto | on | off, Entwickler-Bereich, Teil 639zc, mit dem Simulator geteilt);
+# «auto» folgt dem Projektschalter «projekt_veroeffentlicht» (ui_gemeinsam.json): false = an, true = aus.
+def news_links_on():
+    v = str(CFG.get("news_links") or "auto")
+    if v in ("on", "off"):
+        return v == "on"
+    return not bool((globals().get("UI_GEMEINSAM") or {}).get("projekt_veroeffentlicht"))
+
+
+def news_target(v):
+    z = ((globals().get("UI_GEMEINSAM") or {}).get("neu_ziele") or {}).get(str(v))
+    return z if isinstance(z, dict) else None
+
+
+def news_href(z):
+    """the page of MoveEye for a target ('' = none): /settings?setting=K (open and mark a setting), ?open=grp:x / sec:x, #anchor"""
+    if not isinstance(z, dict):
+        return ""
+    page, a, k = str(z.get("seite") or ""), str(z.get("anker") or ""), str(z.get("einstellung") or "")
+    if not (page or a or k):
+        return ""
+    if not page.startswith("/"):
+        page = "/settings" if (a or k) else "/"
+    from urllib.parse import quote
+    if k:
+        return page + "?setting=" + quote(k)
+    if a.startswith(("grp:", "sec:")):
+        return page + "?open=" + quote(a)
+    return page + ("#" + quote(a) if a else "")
+
+
+def news_hint(k, lang=None):
+    h = ((globals().get("UI_GEMEINSAM") or {}).get("hint") or {}).get(k) or {}
+    L = lang or cur_lang()
+    return str(h.get(L) or h.get("en") or h.get("de") or k)
+
+
+def news_link_item(it, lang=None):
+    """an item {v, t} + «href» (a link in MoveEye) or «where»: «sim» (only in the simulator)"""
+    z = news_target(it.get("v")) if news_links_on() else None
+    if z:
+        h = news_href(z)
+        if h:
+            it["href"] = h
+        elif any(z.get(x) for x in ("sim_einstellung", "sim_menue", "sim_aktion")):
+            it["where"] = "sim"
+    return it
+
+
+def news_state(who="web", lang=None):
     seen = str(CFG.get("news_seen_" + who) or "")
     ent = news_entries()
     cur = APP_VERSION
@@ -10959,8 +11011,10 @@ def news_state(who="web"):
     else:
         vs = sorted((v for v in ent if _news_vt(seen) < _news_vt(v) <= _news_vt(cur)), key=_news_vt, reverse=True)[:6]
         items = [{"v": v, "t": ent[v]} for v in vs]
+    items = [news_link_item(x, lang) for x in items]
     return {"version": cur, "show": bool(items) and bool(CFG.get("news_popup", True)), "items": items, "next": news_next(),
-            "done": len(MAKEOVER_DONE), "total": len(MAKEOVER_ALL)}
+            "done": len(MAKEOVER_DONE), "total": len(MAKEOVER_ALL), "links": news_links_on(),
+            "lt": {"go": news_hint("neu_link", lang), "sim": news_hint("neu_in_sim", lang)}}
 
 
 def news_seen(who="web"):
@@ -41803,7 +41857,8 @@ class WebStream:
                 if d.get("off"):
                     CFG["news_popup"] = False
                 news_seen(who)
-            return reply(dict(news_state(who), ok=True))
+            lg = str(request.args.get("lang") or "")[:3]
+            return reply(dict(news_state(who, lg if lg in LANGS else None), ok=True))
 
         @app.route("/api/sim_diary")
         def api_sim_diary():                                 # 2.96.1: the diary of the simulator
@@ -48610,6 +48665,12 @@ class App:
             tk.Label(top, text="✨ " + tr("New in this version"), bg=C["panel"], fg=C["fg"], font=("TkDefaultFont", 13, "bold")).pack(anchor="w", padx=16, pady=(14, 6))
             for it in st["items"] or [{"v": st["version"], "t": tr("No changes noted.")}]:
                 tk.Label(top, text=it["v"] + "  " + it["t"], bg=C["panel"], fg=C["fg"], wraplength=520, justify="left").pack(anchor="w", padx=16, pady=2)
+                if it.get("href"):                         # Links zu Neuerungen (137): opens the page in the browser
+                    ln = tk.Label(top, text=st["lt"]["go"], bg=C["panel"], fg=C.get("acc", "#3b8cff"), cursor="hand2")
+                    ln.pack(anchor="w", padx=72)
+                    ln.bind("<Button-1>", lambda _e, h=it["href"]: (news_seen("tk"), top.destroy(), self._open_page(h)))
+                elif it.get("where") == "sim":
+                    tk.Label(top, text="(" + st["lt"]["sim"] + ")", bg=C["panel"], fg=C.get("mut", C["fg"])).pack(anchor="w", padx=72)
             if st["next"]:
                 tk.Label(top, text="🔜 %s (%d/%d)" % (tr("Next in the makeover"), st["done"], st["total"]), bg=C["panel"], fg=C["fg"],
                          font=("TkDefaultFont", 11, "bold")).pack(anchor="w", padx=16, pady=(10, 2))
@@ -72975,8 +73036,9 @@ for _k, _v in _HX_SIMSICH.items():
 #     geprüft nur hier: lock_set, 5 Fehlversuche = 5 Minuten Pause).
 #   * Offene Web-Seiten: kleiner Hinweis «Ansicht im Simulator geändert – neu laden» (kein Neuladen von selbst).
 # ----------------------------------------------------------------------------
-UIS_KEYS = ("simple", "icons", "lang", "motion", "voice", "tours", "blinki", "news")
-UIS_ENUM = {"icons": ("color", "plain"), "lang": LANGS, "motion": ("auto", "on", "off"), "voice": ("on", "off", "subtitles")}
+UIS_KEYS = ("simple", "icons", "lang", "motion", "voice", "tours", "blinki", "news", "news_links")
+UIS_ENUM = {"icons": ("color", "plain"), "lang": LANGS, "motion": ("auto", "on", "off"), "voice": ("on", "off", "subtitles"),
+            "news_links": ("auto", "on", "off")}   # Links zu Neuerungen (639zc)
 UIS = {"rev": 1, "last": None, "mine": set(), "took": 0, "lang_seen": None, "from_sim": [], "from_sim_t": 0.0,
        "lock_n": 0, "lock_msg": "", "upd_n": 0, "upd_msg": "", "diag_t": 0.0, "sim_diag": None, "sim_diag_t": 0.0, "sim_diag_busy": False}
 UIS_LOCK = threading.Lock()
@@ -73054,7 +73116,8 @@ def ui_values():
     vm = str(CFG.get("voice_mode") or "on")
     return {"simple": bool(CFG.get("ui_simple", True)), "icons": "plain" if wu.get("mw-icons") == "plain" else "color",
             "lang": cl, "motion": rm if rm in UIS_ENUM["motion"] else "auto", "voice": vm if vm in UIS_ENUM["voice"] else "on",
-            "tours": bool(CFG.get("tours_auto", True)), "blinki": bool(CFG.get("blinki_on", True)), "news": bool(CFG.get("news_popup", True))}
+            "tours": bool(CFG.get("tours_auto", True)), "blinki": bool(CFG.get("blinki_on", True)), "news": bool(CFG.get("news_popup", True)),
+            "news_links": str(CFG.get("news_links") or "auto") if str(CFG.get("news_links") or "auto") in UIS_ENUM["news_links"] else "auto"}
 
 
 def ui_apply(vals, who="simulator"):
@@ -73082,6 +73145,8 @@ def ui_apply(vals, who="simulator"):
             CFG["blinki_on"] = v
         elif k == "news":
             CFG["news_popup"] = v
+        elif k == "news_links":
+            CFG["news_links"] = v
     if ch:
         _save_settings_639zb()
         UIS["from_sim"] = ch; UIS["from_sim_t"] = time.time()
@@ -73487,7 +73552,7 @@ def ui_sync_selftest():
     """a value changed on one side appears on the other (without picture): MoveEye -> simulator (rev), simulator -> MoveEye
     (set), same packet (MoveEye wins), unlock with the PIN, one language, one Simple / Expert, level, version pair"""
     keep = {k: json.loads(json.dumps(CFG.get(k))) for k in ("ui_simple", "web_ui", "lang", "reduce_motion", "voice_mode", "tours_auto",
-                                                              "blinki_on", "news_popup", "lock_on", "lock_pin", "lock_snap", "ui_mode_merged")}
+                                                              "blinki_on", "news_popup", "news_links", "lock_on", "lock_pin", "lock_snap", "ui_mode_merged")}
     keepu = dict(UIS); keepu["mine"] = set(UIS["mine"])
     sim_keep = {k: SIM.get(k) for k in ("follower", "info")}
     try:
@@ -73510,6 +73575,10 @@ def ui_sync_selftest():
         CFG["tours_auto"] = False; sim_state()                # same packet: MoveEye wins
         ui_take({"n": n0 + 2, "set": {"tours": True, "news": False}})
         assert CFG["tours_auto"] is False and CFG["news_popup"] is False, "639zb: same packet - MoveEye must win (and the other key counts)"
+        ui_take({"n": n0 + 3, "set": {"news_links": "off"}})       # Links zu Neuerungen (639zc): the simulator switches them off
+        assert CFG["news_links"] == "off" and ui_values()["news_links"] == "off", "639zb: «Links zu Neuerungen» from the simulator"
+        ui_take({"n": n0 + 4, "set": {"news_links": "bad"}})
+        assert CFG["news_links"] == "off", "639zb: a bad value of «Links zu Neuerungen» must be ignored"
         SIM["follower"] = True                                # only the leading MoveEye
         assert "ui" not in sim_state(), "639zb: a watching MoveEye must not share the view"
         SIM["follower"] = False
@@ -73572,6 +73641,107 @@ def ui_more_selftest():
 
 SELFTEST_EXTRA.append(("View shared with the simulator (ui, 639zb)", ui_sync_selftest))
 SELFTEST_EXTRA.append(("«Mehr» in the same order MoveEye ↔ simulator (ui_gemeinsam.json «more», 639zb)", ui_more_selftest))
+# ----------------------------------------------------------------------------
+# Wunsch Daniel (01.11.2026): nach einem Update zeigt MoveEye «Neu in …» - neu steht bei jeder Neuerung ein Link, der direkt
+# zur neuen Funktion springt. Gilt genauso im Simulator (scripts/news.gd).
+#   * Die Ziele: simulator3d/ui_gemeinsam.json «neu_ziele» (Version -> Ziel, für beide Programme). Logik in Teil 137
+#     (news_links_on, news_href, news_link_item); Web 530 (newsGo, keyOpen: /settings?setting=<Einstellung> klappt die Karte
+#     auf und hebt die Zeile kurz hervor), Pi-Fenster 570 (öffnet die Seite im Browser).
+#   * Schalter «Links zu Neuerungen» = news_links auto | on | off, nur im Entwickler-Bereich (Abschnitt «Developer»),
+#     mit dem Simulator geteilt (ui_gemeinsam.json «shared» / «sync», Teil 639zb).
+#   * «auto» (Standard): Projektschalter «projekt_veroeffentlicht» in ui_gemeinsam.json - false (Entwicklung) = Links an,
+#     true (veröffentlicht) = aus. Beim Release umlegen (CLAUDE.md, Abschnitt Release).
+# ----------------------------------------------------------------------------
+CFG.setdefault("news_links", "auto"); DEFAULTS.setdefault("news_links", "auto")
+FACTORY_CFG.setdefault("news_links", "auto")                 # 636 took its copy before this part
+TEXTS.append(("Developer", "news_links", "Links to what is new", "enum", "news_links"))
+TEXT_SPECS["news_links"] = ("enum", "news_links")
+NEWS_LINK_MODES = (("auto", "default (on until the project is published)"), ("on", "on"), ("off", "off"))
+SET_HELP["news_links"] = ("In the window «New in …» after an update: a small link at every novelty that jumps straight to it "
+                          "(page, tab or setting). «Default» follows the project: on during development, off once it is published. "
+                          "Shared with the simulator.", "Default.")
+
+_HX_NEWSLINKS = {
+    "Links to what is new": ("Links zu Neuerungen", "Liens vers les nouveautés", "Link alle novità", "Links a las novitads"),
+    "default (on until the project is published)": ("Standard (an, bis das Projekt veröffentlicht ist)",
+                                                    "par défaut (activé tant que le projet n’est pas publié)",
+                                                    "predefinito (attivo finché il progetto non è pubblicato)",
+                                                    "standard (activà fin ch’il project è publitgà)"),
+    SET_HELP["news_links"][0]:
+        ("Im Fenster «Neu in …» nach einem Update: bei jeder Neuerung ein kleiner Link, der direkt dorthin springt (Seite, Reiter "
+         "oder Einstellung). «Standard» folgt dem Projekt: während der Entwicklung an, nach dem Veröffentlichen aus. Mit dem "
+         "Simulator geteilt.",
+         "Dans la fenêtre «Nouveau dans …» après une mise à jour : un petit lien à chaque nouveauté qui y mène directement (page, "
+         "onglet ou réglage). «Par défaut» suit le projet : activé pendant le développement, désactivé après la publication. "
+         "Partagé avec le simulateur.",
+         "Nella finestra «Novità in …» dopo un aggiornamento: per ogni novità un piccolo link che porta direttamente lì (pagina, "
+         "scheda o impostazione). «Predefinito» segue il progetto: attivo durante lo sviluppo, spento dopo la pubblicazione. "
+         "Condiviso con il simulatore.",
+         "En la fanestra «Nov en …» suenter in'actualisaziun: tar mintga novitad in pitschen link che maina directamain là (pagina, "
+         "register u parameter). «Standard» suonda il project: activà durant il svilup, stizzà suenter la publicaziun. "
+         "Partì cun il simulatur."),
+    "Default.": ("Standard.", "Par défaut.", "Predefinito.", "Standard."),
+}
+for _k, _v in _HX_NEWSLINKS.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+
+_text_choice_pairs_639zc = text_choice_pairs
+
+
+# wraps: text_choice_pairs
+def text_choice_pairs(key):                               # + 639zc: «Links zu Neuerungen»
+    if (TEXT_SPECS.get(key) or (None, None))[1] == "news_links":
+        return [(k, tr(l)) for k, l in NEWS_LINK_MODES]
+    return _text_choice_pairs_639zc(key)
+
+
+def news_links_selftest():
+    """targets of ui_gemeinsam.json «neu_ziele» are valid, the links follow the project switch and the own choice"""
+    U = UI_GEMEINSAM
+    assert isinstance(U.get("projekt_veroeffentlicht"), bool), "639zc: ui_gemeinsam.json «projekt_veroeffentlicht» (true / false)"
+    zs = U.get("neu_ziele") or {}
+    assert zs, "639zc: ui_gemeinsam.json «neu_ziele» empty"
+    known = {k for lst in (TOGGLES, SLIDERS, TEXTS) for _s, k, *_r in lst}
+    secs = set(SECTIONS)
+    allowed = {"seite", "anker", "einstellung", "sim_einstellung", "sim_menue", "sim_aktion"}
+    for v, z in zs.items():
+        assert re.match(r"^\d+\.\d+\.\d+$", v) and isinstance(z, dict) and z and set(z) <= allowed, f"639zc: target of {v}: {z}"
+        if z.get("einstellung"):
+            assert z["einstellung"] in known, f"639zc: {v}: unknown setting {z['einstellung']}"
+        a = str(z.get("anker") or "")
+        if a.startswith("sec:"):
+            assert a[4:] in secs, f"639zc: {v}: unknown section {a}"
+        if z.get("seite"):
+            assert str(z["seite"]).startswith("/"), f"639zc: {v}: page must start with /"
+        if z.get("sim_aktion"):
+            assert isinstance(z["sim_aktion"], dict) and z["sim_aktion"].get("action"), f"639zc: {v}: sim_aktion needs «action»"
+    keep = CFG.get("news_links"), U.get("projekt_veroeffentlicht")
+    try:
+        CFG["news_links"] = "auto"; U["projekt_veroeffentlicht"] = False
+        assert news_links_on(), "639zc: not published -> links on"
+        U["projekt_veroeffentlicht"] = True
+        assert not news_links_on(), "639zc: published -> links off"
+        CFG["news_links"] = "on"
+        assert news_links_on(), "639zc: own choice must win"
+        it = news_link_item({"v": "3.30.0", "t": "x"})
+        assert it.get("href") == "/settings?setting=dev_area", f"639zc: href {it}"
+        assert news_link_item({"v": "3.37.0", "t": "x"}).get("where") == "sim", "639zc: only in the simulator"
+        assert news_href({"anker": "sec:Backup"}) == "/settings?open=sec%3ABackup" and news_href({"seite": "/case"}) == "/case"
+        CFG["news_links"] = "off"
+        assert "href" not in news_link_item({"v": "3.30.0", "t": "x"}), "639zc: switched off -> no link"
+        assert [k for k, _l in text_choice_pairs("news_links")] == ["auto", "on", "off"], "639zc: choices"
+        assert tr("Links to what is new", "fr") != "Links to what is new" and news_hint("neu_link", "de") == "Zur Funktion ›"
+        assert any(x[1] == "news_links" and x[0] == "Developer" for x in TEXTS), "639zc: only in the developer area"
+        js = WEB_PAGE if isinstance(globals().get("WEB_PAGE"), str) else ""
+        assert not js or ("newsGo(" in js and "keyOpen(" in js), "639zc: web page without newsGo / keyOpen"
+    finally:
+        CFG["news_links"] = keep[0]; U["projekt_veroeffentlicht"] = keep[1]
+    return f"{len(zs)} targets, default {'off' if U.get('projekt_veroeffentlicht') else 'on'} (projekt_veroeffentlicht = {str(U.get('projekt_veroeffentlicht')).lower()})"
+
+
+SELFTEST_EXTRA.append(("Links to what is new («Neu in …», ui_gemeinsam.json «neu_ziele», 639zc)", news_links_selftest))
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--cam", type=int, default=None, help="USB camera number (same as --source usb:N)")
