@@ -13,6 +13,7 @@ Neu in v5.2:
   3. Status-RGB-LED (5 mm) oben auf dem Kamerakopf mit Sockel (Vertiefung) für einen Diffusor.
   4. Zwei Tasten (12 mm, IP67) an der Rückwand mit Regendach und Seitenwangen.
   5. Neue Kleinteile: Blindstopfen Weitwinkel-Fenster, Stopfen IR-LED (beide mit Rastnasen), Diffusor + Pupillenring.
+     (Stopfen IR-LED: Datei ab 01.11.2026 22_Stopfen_IR_LED, vorher 13_Stopfen_IR_LED – 13 ist der Entwicklungs-Sockel.)
   MOSFET-Modul: neuer Platz an der -y-Wand unter dem PCA9685 (vorne war es der Kamera im Weg).
 Koordinaten wie v5.py (Unterteil: x 0..LX innen, x = 0 Stirnwand innen; Kopf: Kipp-Koordinaten, Dach z = +29).
 """
@@ -469,6 +470,118 @@ def blind_ir():
     nose = U(T([0, 0, zc], Cyl(0.4, r1=rp, r2=rp + 0.4)), cyl_z(0, 0, zc + 0.4, zc + 0.6, 2 * (rp + 0.4)),
              T([0, 0, zc + 0.6], Cyl(1.0, r1=rp + 0.4, r2=rp - 0.3)))
     return D(U(fl, pin, nose), box(-0.6, 0.6, -5, 5, 2.2, 20))
+
+
+# ======================= STOPFEN FÜR PAKETE OHNE DAS TEIL (01.11.2026, Pakete Basis / Komplett / Autark) ==========
+#   18_Stopfen_Waermebild   Fenster der Thermal-90 im Kopf (14,4 × 14,4) – Kopf ohne Wärmebild (später Solo / Kopf)
+#   19_Stopfen_IR_Modul     Loch Ø 17 des IR-Moduls 120° vorne – sitzt wie das Modul in der Hülse, Madenschraube M3 hält ihn
+#   20_Stopfen_DS18B20      Durchführung Ø 6,5 im Boden – Flansch unten (zwischen den Füssen), Rastnasen innen
+#   21_Stopfen_Relais       Relais-Buchse hinten Ø 12,3 mit Nut – gleiche Form wie 17 (Reserve-Öffnung hat dasselbe Mass)
+#   Alle PETG, ohne Stützen; 19–21 schon in Druckrichtung, 18 dreht export52.py (Flansch unten).
+TH_WIN = pt.THERM_MOD[2] + 1.0            # Fenster im Kopf (pantilt.part_head): Quadrat 14,4, Ecken r 1,2, Frontwand 2,5
+TH_WIN_R = 1.2
+DS_PLUG_FL = 9.0                          # Flansch Ø unter dem Boden (Abstand zum Fuss (10, 8) Ø 14: ca. 1,1 mm)
+
+
+def _snap_rect(W, H, r, wall, tol=BLIND_TOL, fl=1.0, fl_t=1.2, tw=6.0, tt=0.8, tl=1.8, slot=0.8):
+    """Rechteckiger Rast-Stopfen (wie 12): lokal x = Tiefe ab der Aussenfläche (Flansch x < 0), Mitte y = z = 0.
+    Zwei Rastzungen (oben / unten) greifen hinter die Wand-Innenseite (45°-Rastfläche, ohne Werkzeug abziehbar)."""
+    w, h = W - 2 * tol, H - 2 * tol
+    core = rx_box(0.0, wall, w, h, max(r - tol, 0.3))
+    fl_out = rx_box(-fl_t, -0.6, W + 2 * fl, H + 2 * fl, r + fl)
+    fl_in = rx_box(-0.6, 0.01, W + 2 * fl - 1.0, H + 2 * fl - 1.0, r + fl - 0.5)
+    zt1 = h / 2; zt0 = zt1 - tt
+    core = D(core, box(-1, wall + 1, -tw / 2 - slot, tw / 2 + slot, zt0 - slot, 100),
+             box(-1, wall + 1, -tw / 2 - slot, tw / 2 + slot, -100, -zt0 + slot))
+    L = wall + tl
+    tong = [box(-0.6, L, -tw / 2, tw / 2, zt0, zt1), box(-0.6, L, -tw / 2, tw / 2, -zt1, -zt0)]
+    bh = BLIND_NOSE; xc = wall + 0.1
+
+    def bump(sgn):
+        zf = sgn * zt1
+        b = box(xc - 0.3, L, -tw / 2 + 0.5, tw / 2 - 0.5, zf - sgn * 0.15, zf + sgn * bh)
+        k = bh / (L - xc - 0.7)
+        return I(b, Plane([-1, 0, sgn], sgn * zf - xc), Plane([k, 0, sgn], sgn * zf + k * L))
+    return U(fl_out, fl_in, core, *tong, bump(+1), bump(-1))
+
+
+def stopfen_waermebild():
+    """18: Stopfen für das Wärmebild-Fenster im Kopf (lokal: x = Tiefe ab Front-Aussenfläche). Druck: Flansch unten."""
+    return _snap_rect(TH_WIN, TH_WIN, TH_WIN_R, pt.FRONT_T)
+
+
+def stopfen_ir_modul():
+    """19: Stopfen für das IR-Modul-Loch: Körper Ø 18,8 wie das Modul in der Hülse (die Madenschraube M3 klemmt ihn),
+    Zapfen Ø 16,7 füllt das Loch Ø 17 bündig mit der Aussenwand. Druck: Rückseite unten, Vorderseite oben."""
+    Lb = IRW_SLEEVE_L
+    return U(cyl_z(0, 0, 0, Lb, IRW_MOD_D), cyl_z(0, 0, Lb - 0.01, Lb + WALL, IRW_LENS_D - 0.3))
+
+
+def stopfen_ds18():
+    """20: Stopfen für die DS18B20-Durchführung im Boden: Flansch Ø 9 unten, geschlitzter Zapfen mit Rastnasen über dem
+    Innenboden (wie 13). Druck: Flansch unten."""
+    rp = (v5.TEMP_D - 0.3) / 2
+    L = ZF
+    fl = U(cyl_z(0, 0, 0, 0.6, DS_PLUG_FL), cyl_z(0, 0, 0.6, 1.0, DS_PLUG_FL - 1.0))
+    z0 = 1.0; zc = z0 + L + 0.15
+    pin = cyl_z(0, 0, z0 - 0.1, zc, 2 * rp)
+    nose = U(T([0, 0, zc], Cyl(0.4, r1=rp, r2=rp + 0.4)), cyl_z(0, 0, zc + 0.4, zc + 0.6, 2 * (rp + 0.4)),
+             T([0, 0, zc + 0.6], Cyl(1.0, r1=rp + 0.4, r2=rp - 0.3)))
+    return D(U(fl, pin, nose), box(-0.6, 0.6, -5, 5, 2.0, 20))
+
+
+def stopfen_relais():
+    """21: Stopfen für die Relais-Buchse hinten: v5.py RELAY_D und die Nut sind gleich wie die Reserve-Öffnung (RES_D),
+    darum dieselbe Form wie 17 (eigene Datei, damit die Pakete ihn einzeln aufführen)."""
+    assert abs(v5.RELAY_D - RES_D) < 1e-9
+    return part_res_plug()
+
+
+MIC_PIN_D = 1.7                           # 23: 5 Stifte in den Mikrofon-Löchern Ø 1,8 (Presssitz)
+LL_PIN_D, LL_FL_D = 3.1, 5.0              # 24: Zapfen im Lichtleiter-Loch Ø 3,3 (+ 3 Quetschrippen), Flansch Ø 5 (GX16-Wange ab y 59)
+
+
+def stopfen_mikrofon():
+    """23: Stopfen für die 5 Mikrofon-Löcher vorne (Ø 1,8, Kreuz ± 3 mm): Flansch Ø 10 aussen, 5 Stifte im Presssitz,
+    bündig mit der Wand-Innenseite. Lokal z = Tiefe ab Flansch-Unterseite. Druck: Flansch unten."""
+    F = 1.2
+    pins = [cyl_z(dy, dz, F - 0.01, F + WALL - 0.2, MIC_PIN_D, fn=24) for dy, dz in ((0, 0), (-3, 0), (3, 0), (0, 3), (0, -3))]
+    return U(cyl_z(0, 0, 0, 0.7, 10.0), cyl_z(0, 0, 0.7, F, 9.0), *pins)
+
+
+def stopfen_lichtleiter():
+    """24: Stopfen für das Lichtleiter-Loch der Lade-LED hinten (Ø 3,3): Flansch Ø 5 aussen, Zapfen Ø 3,1 mit 3 Quetschrippen
+    (Presssitz), bündig mit der Wand-Innenseite. Druck: Flansch unten."""
+    F = 1.0
+    pin = cyl_z(0, 0, F - 0.01, F + WALL - 0.2, LL_PIN_D, fn=32)
+    ribs = [R([0, 0, a], box(LL_PIN_D / 2 - 0.2, v5.LED_D / 2 + 0.05, -0.25, 0.25, F, F + WALL - 0.6)) for a in (0, 120, 240)]
+    return U(cyl_z(0, 0, 0, F, LL_FL_D, fn=48), pin, *ribs)
+
+
+def stopfen_placed(tilt=0.0, pan=180.0):
+    """die 4 Stopfen eingesetzt (Welt-Koordinaten wie placed()) – für check52.py «stopfen»"""
+    my, mz = pt.therm_pos(pt.THERM_MOD[0], pt.THERM_MOD[1])
+    th = T([AX, AY, v5.PAN_Z0], R([0, 0, pan], T([0, 0, pt.AXZ], R([0, tilt, 0],
+           T([pt.HX1, my, mz], R([0, 0, 180], stopfen_waermebild()))))))
+    return {"st_therm": th,
+            "st_irmod": T([IRW_SLEEVE_L, IRW_Y, IRW_Z], R([0, -90, 0], stopfen_ir_modul())),
+            "st_ds18": T([v5.TEMP_XY[0], v5.TEMP_XY[1], -1.0], stopfen_ds18()),
+            "st_relay": T([LX + WALL + 1.6, v5.RELAY_Y, v5.RELAY_ZC], R([0, -90, 0], stopfen_relais())),
+            "st_mic": T([-WALL - 1.2, v5.MIC_Y, ZF + v5.MIC_ZB], R([0, 90, 0], stopfen_mikrofon())),
+            "st_ll": T([LX + WALL + 1.0, v5.LED_Y, v5.LED_Z], R([0, -90, 0], stopfen_lichtleiter()))}
+
+
+def stopfen_loecher():
+    """die Öffnungen, die die Stopfen füllen (Welt, Kopf in Grundstellung, nur der Wandteil) – Dichtheits-Test check52.py"""
+    my, mz = pt.therm_pos(pt.THERM_MOD[0], pt.THERM_MOD[1])
+    head_cut = T([AX, AY, v5.PAN_Z0], R([0, 0, 180.0], T([0, 0, pt.AXZ],
+                 T([pt.FB, my, mz], R([0, 90, 0], RBox(TH_WIN, TH_WIN, pt.FRONT_T, TH_WIN_R))))))
+    return {"st_therm": head_cut,
+            "st_irmod": cyl_x(IRW_Y, IRW_Z, -WALL, 0.0, IRW_LENS_D),
+            "st_ds18": cyl_z(*v5.TEMP_XY, 0.0, ZF, v5.TEMP_D),
+            "st_relay": cyl_x(v5.RELAY_Y, v5.RELAY_ZC, LX, LX + WALL, v5.RELAY_D),
+            "st_mic": U(*[cyl_x(v5.MIC_Y + dy, ZF + v5.MIC_ZB + dz, -WALL, 0.0, 1.8) for dy, dz in ((0, 0), (-3, 0), (3, 0), (0, 3), (0, -3))]),
+            "st_ll": cyl_x(v5.LED_Y, v5.LED_Z, LX, LX + WALL, v5.LED_D)}
 
 
 

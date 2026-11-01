@@ -124,8 +124,16 @@ Vorne ist der alte Platz jetzt von der Weitwinkel-Kamera belegt.
   - Von aussen ins Fenster drücken, bis die zwei Rastnasen oben und unten hinter der Wand einrasten.
   - Der Flansch deckt das Fenster ganz ab und liegt unter dem Regendach.
   - Zum Lösen den Fingernagel unter den Flansch-Rand (Stufe) schieben und abziehen. Die Rastflächen sind 45° schräg, darum geht das ohne Werkzeug.
-- **13_Stopfen_IR_LED:** Geschlitzter Zapfen mit Rastnasen. Er rastet hinter dem Ende der LED-Hülse ein. Flansch Ø 9.
-- **Spiel:** 0,2 mm pro Seite für PETG. Wenn es zu stramm oder zu locker ist, `BLIND_TOL` oder `BLIND_NOSE` in `v52.py` ändern und `python3 kleinteile52.py 12 13` laufen lassen.
+- **22_Stopfen_IR_LED** (bis 01.11.2026 «13_Stopfen_IR_LED», umbenannt, weil 13 der Entwicklungs-Sockel ist; nur bei IR_TYP «5mm»): Geschlitzter Zapfen mit Rastnasen. Er rastet hinter dem Ende der LED-Hülse ein. Flansch Ø 9.
+- **Stopfen für Pakete ohne das Teil** (01.11.2026, Pakete Basis / Komplett / Autark in `bau.json` «pakete»):
+  - **18_Stopfen_Waermebild:** Rast-Stopfen (wie 12) für das Fenster der Thermal-90 vorne im Kopf, Flansch aussen.
+  - **19_Stopfen_IR_Modul:** sitzt wie das IR-Modul in der Hülse, der Zapfen füllt das Loch Ø 17 bündig; die Madenschraube M3 oben hält ihn.
+  - **20_Stopfen_DS18B20:** Flansch Ø 9 aussen unter dem Boden (zwischen den Füssen), Rastnasen über dem Innenboden.
+  - **21_Stopfen_Relais:** Relais-Buchse hinten, gleiche Form wie 17 (Ø 12,3 mit Nase in der Nut).
+  - **23_Stopfen_Mikrofon:** Flansch Ø 10 vorne, 5 Stifte Ø 1,7 in die Mikrofon-Löcher (Presssitz).
+  - **24_Stopfen_Lichtleiter:** Flansch Ø 5 hinten, Zapfen Ø 3,1 mit 3 Quetschrippen im Loch Ø 3,3 der Lade-LED.
+  - Basis braucht 12, 17, 19, 20, 21, 23, 24; Komplett und Autark nur 17. 18 ist für einen Kopf ohne Wärmebild (Solo / Kopf, später).
+- **Spiel:** 0,2 mm pro Seite für PETG. Wenn es zu stramm oder zu locker ist, `BLIND_TOL` oder `BLIND_NOSE` in `v52.py` ändern und `python3 kleinteile52.py 12 22` laufen lassen.
 
 ## Druckteile v5.2 (Bambu Lab X2D, PETG, alle ohne Stützen)
 
@@ -134,9 +142,15 @@ Vorne ist der alte Platz jetzt von der Weitwinkel-Kamera belegt.
 | 01_Unterteil | 1 | A | **geändert**: Weitwinkel-Halter, Fenster, Regendach, IR-Hülse, Tastenlöcher mit Dächern |
 | 06_Kamerakopf | 1 | B | **geändert**: Loch und Sockel für die Status-LED |
 | 12_Blindstopfen_Weitwinkel | 1 | A | **neu**, liegt auf dem Flansch, nur ohne Weitwinkel-Kamera nötig |
-| 13_Stopfen_IR_LED | 1 | A | **neu**, liegt auf dem Flansch, nur ohne IR-LED nötig |
+| 22_Stopfen_IR_LED (früher 13_Stopfen_IR_LED) | 1 | A | liegt auf dem Flansch, nur bei IR_TYP «5mm» ohne IR-LED nötig |
 | 14_Diffusor_Status_LED | 1 | B | **neu**, PETG natur oder weiss (durchscheinend) |
 | 15_Pupillenring | 1 | B | **neu**, PETG schwarz |
+| 18_Stopfen_Waermebild | 1 | B | **neu** 01.11.2026, Flansch unten, nur Kopf ohne Wärmebild |
+| 19_Stopfen_IR_Modul | 1 | A | **neu** 01.11.2026, Rückseite unten, nur ohne IR-Modul |
+| 20_Stopfen_DS18B20 | 1 | A | **neu** 01.11.2026, Flansch unten, nur ohne Temperaturfühler |
+| 21_Stopfen_Relais | 1 | A | **neu** 01.11.2026, Flansch unten, nur ohne Relais |
+| 23_Stopfen_Mikrofon | 1 | A | **neu** 01.11.2026, Flansch unten, 5 Stifte im Presssitz, nur ohne Mikrofon |
+| 24_Stopfen_Lichtleiter | 1 | A | **neu** 01.11.2026, Flansch unten, Presssitz, nur ohne Lade-LED |
 | alle anderen | | | wie v5.1 |
 
 **Platten:**
