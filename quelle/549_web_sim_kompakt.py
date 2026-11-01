@@ -1,8 +1,8 @@
 #@ MoveEye – Teil 549: Live-Seite «Sim-Kompakt»: mit verbundenem Simulator das Simulator-Bild gross, die Kamera als Bild im Bild (antippen = tauschen), darunter Kopf- und Rover-Stick am Rand und die Simulator-Kacheln dazwischen. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Wish of Daniel (30.10.2026): on the tab Live, while the simulation is on AND connected, a compact view «Sim-Kompakt»
+# Wish of Besitzer (30.10.2026): on the tab Live, while the simulation is on AND connected, a compact view «Sim-Kompakt»
 # (on by itself, switchable in «◫ Ansicht», stored per device in localStorage «mw-simkompakt»):
-#   top     «Bild im Bild» (2.98.53, Daniel's variant C; before: two small pictures side by side): the simulator window big,
+#   top     «Bild im Bild» (2.98.53, the owner's variant C; before: two small pictures side by side): the simulator window big,
 #           16:9 over the whole width (the picture poll of 530/470 simViewPoll - the same <img>, moved here, no second stream;
 #           data-dock = the naked picture of the simulator when it knows dock=1), MoveEye's camera (#vcard / #video, the one
 #           stream, the same elements) small in its bottom right corner (~32 % wide, on a wide screen ~24 %, white frame,
@@ -22,7 +22,7 @@
 #           the simulator has it), Ansicht (views of the simulator window, /api/sim padview like 538), Folgen (the quick
 #           switch «Follow» of 530) and «… mehr» = the whole «Simulator-Steuerung» card (search, Simple / Expert).
 #   The explanation of the simulator window is behind «?», «Bildqualität» is in «◫ Ansicht».
-#   2.98.56 «adaptiv» (Daniel 31.10.: on a PC the small picture covered the camera picture, on ~1000 px the big one was small
+#   2.98.56 «adaptiv» (Besitzer 31.10.: on a PC the small picture covered the camera picture, on ~1000 px the big one was small
 #           and centred): is there room BESIDE the main picture (the second one >= 220 px wide, the main one ~64 % of the row,
 #           at least 60 %; height limit as above, phone sideways up to half the height), the second picture stands next to it
 #           (#lv-main.sk-side: grid areas "pic pi", top-aligned, the same card look, «Simulator» / «Kamera» + LIVE dot), the pair
@@ -284,11 +284,11 @@ body.sk #lv-sim .simq,body.sk #lv-simst{display:none}
     // visible bottom of the scrolling part, minus its padding)
     const sec = m.parentNode, sr = sec.getBoundingClientRect(), mr = m.getBoundingClientRect();
     const room = Math.min(sr.bottom, innerHeight) - (mr.top + (wide ? 0 : sec.scrollTop)) - (parseFloat(getComputedStyle(sec).paddingBottom) || 0) - 4;
-    // phone / narrow upright (Daniel 31.10.: the simulator picture over the FULL width, 16:9; fitSim fills it without black
+    // phone / narrow upright (Elektro 31.10.: the simulator picture over the FULL width, 16:9; fitSim fills it without black
     // bars), the sticks get smaller (down to 104 px) when the room is short; wider screens: as high as the room allows (16:9,
     // centred), the controls stay in view
     const full = narrow && !land;
-    // 2.98.56 «adaptiv» (Daniel 31.10.): enough room beside the main picture (the second one >= 220 px, the main one ~64 % of the
+    // 2.98.56 «adaptiv» (Elektro 31.10.): enough room beside the main picture (the second one >= 220 px, the main one ~64 % of the
     // row, at least 60 %) = both side by side, top-aligned, together over the row; not enough (phone upright) = the inset
     const GAP = 8, SMIN = 220;
     let ph, pw, side = false, sw = 0, off = 0;

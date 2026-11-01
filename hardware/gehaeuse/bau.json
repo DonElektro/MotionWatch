@@ -1885,6 +1885,38 @@
    }
   },
   {
+   "id": "wplug",
+   "art": "v52",
+   "bom": "petg",
+   "schritt": 3,
+   "datei": "12_Blindstopfen_Weitwinkel",
+   "wenn": "v52",
+   "ohne": "wide",
+   "name": {
+    "de": "12 Blindstopfen Weitwinkel-Fenster (ohne Weitwinkel-Kamera)",
+    "en": "12 Blind plug wide-angle window (without wide-angle camera)",
+    "fr": "12 Bouchon fenêtre grand-angle (sans caméra grand-angle)",
+    "it": "12 Tappo finestra grandangolare (senza fotocamera grandangolare)",
+    "rm": "12 Zaffer fanestra largangulara (senza camera largangulara)"
+   }
+  },
+  {
+   "id": "irplug",
+   "art": "v52",
+   "bom": "petg",
+   "schritt": 3,
+   "datei": "19_Stopfen_IR_Modul",
+   "wenn": "v52",
+   "ohne": "irled",
+   "name": {
+    "de": "19 Stopfen IR-Modul-Loch (ohne IR-Modul)",
+    "en": "19 Plug IR module hole (without IR module)",
+    "fr": "19 Bouchon trou du module IR (sans module IR)",
+    "it": "19 Tappo foro modulo IR (senza modulo IR)",
+    "rm": "19 Zaffer foura dal modul IR (senza modul IR)"
+   }
+  },
+  {
    "id": "resplug",
    "art": "v52",
    "bom": "petg",
@@ -1939,11 +1971,27 @@
     "rm": "Stampar las parts"
    },
    "text": {
-    "de": "Alle 11 Druckteile in PETG ohne Stützen drucken: Platte A (Unterteil, Zwischenboden, Stopfen, Füsse) und Platte B (Deckel und alles für den Kopf). Kopf, Gabel und Seitendeckel mit 5 mm Brim.",
-    "en": "Print all 11 parts in PETG without supports: plate A (lower part, shelf, plug, feet) and plate B (lid and everything for the head). Head, yoke and side cover with a 5 mm brim.",
-    "fr": "Imprimer les 11 pièces en PETG sans supports : plateau A (partie inférieure, plancher, bouchon, pieds) et plateau B (couvercle et tout pour la tête). Tête, fourche et couvercle latéral avec une bordure de 5 mm.",
-    "it": "Stampare tutti gli 11 pezzi in PETG senza supporti: piatto A (parte inferiore, ripiano, tappo, piedini) e piatto B (coperchio e tutto per la testa). Testa, forcella e coperchio laterale con brim di 5 mm.",
-    "rm": "Stampar tut las 11 parts en PETG senza sustegns: platta A (part sut, palantschieu, zaffer, peis) e platta B (viertgel e tut per il chau). Chau, furtga e viertgel lateral cun in ur da 5 mm."
+    "de": "Die Druckteile v5.2 in PETG ohne Stützen drucken: Platte A (Unterteil v5.2 mit Weitwinkel-Fenster, Zwischenboden, Stopfen, Füsse) und Platte B (Deckel, Drehteller, Gabel, Arm 2, Kopf 06 v5.2 mit Status-LED, Seitendeckel, Lampenhalter, Diffusor 14, Pupillenring 15). Kopf, Gabel und Seitendeckel mit 5 mm Brim. Stopfen 10 (Service-Fenster) und 16 (SD-Schlitz) braucht jedes Gerät, 17 auch; 12 und 18–24 nur für Teile, die dein Paket nicht hat. Sockel 13 nur für die Entwicklungs-Variante.",
+    "en": "Print the v5.2 parts in PETG without supports: plate A (lower part v5.2 with wide-angle window, shelf, plugs, feet) and plate B (lid, turntable, yoke, arm 2, head 06 v5.2 with status LED, side cover, lamp holders, diffuser 14, pupil ring 15). Head, yoke and side cover with a 5 mm brim. Every device needs plugs 10 (service window) and 16 (SD slot), and 17 too; 12 and 18–24 only for parts your package does not have. Socket 13 only for the development variant.",
+    "fr": "Imprimer les pièces v5.2 en PETG sans supports : plateau A (partie inférieure v5.2 avec fenêtre grand-angle, plancher, bouchons, pieds) et plateau B (couvercle, plateau tournant, fourche, bras 2, tête 06 v5.2 avec LED d'état, couvercle latéral, supports de lampe, diffuseur 14, anneau de pupille 15). Tête, fourche et couvercle latéral avec une bordure de 5 mm. Chaque appareil a besoin des bouchons 10 (fenêtre de service), 16 (fente SD) et 17 ; 12 et 18–24 seulement pour les pièces absentes de ton kit. Socle 13 seulement pour la variante de développement.",
+    "it": "Stampare i pezzi v5.2 in PETG senza supporti: piatto A (parte inferiore v5.2 con finestra grandangolare, ripiano, tappi, piedini) e piatto B (coperchio, piatto girevole, forcella, braccio 2, testa 06 v5.2 con LED di stato, coperchio laterale, portalampade, diffusore 14, anello pupilla 15). Testa, forcella e coperchio laterale con brim di 5 mm. Ogni apparecchio ha bisogno dei tappi 10 (finestra di servizio), 16 (fessura SD) e 17; 12 e 18–24 solo per i pezzi che il tuo pacchetto non ha. Zoccolo 13 solo per la variante di sviluppo.",
+    "rm": "Stampar las parts v5.2 en PETG senza sustegns: platta A (part sut v5.2 cun fanestra largangulara, palantschieu, zaffers, peis) e platta B (viertgel, platta rotanta, furtga, bratsch 2, chau 06 v5.2 cun LED da status, viertgel lateral, tegnalampas, diffusur 14, anel da la pupilla 15). Chau, furtga e viertgel lateral cun in ur da 5 mm. Mintga apparat dovra ils zaffers 10 (fanestra da servetsch), 16 (fessa SD) e 17; 12 e 18–24 mo per parts che tes pachet n'ha betg. Zocla 13 mo per la variante da svilup."
+   },
+   "v51": {
+    "titel": {
+     "de": "Teile drucken",
+     "en": "Print the parts",
+     "fr": "Imprimer les pièces",
+     "it": "Stampare i pezzi",
+     "rm": "Stampar las parts"
+    },
+    "text": {
+     "de": "Alle 11 Druckteile in PETG ohne Stützen drucken: Platte A (Unterteil, Zwischenboden, Stopfen, Füsse) und Platte B (Deckel und alles für den Kopf). Kopf, Gabel und Seitendeckel mit 5 mm Brim.",
+     "en": "Print all 11 parts in PETG without supports: plate A (lower part, shelf, plug, feet) and plate B (lid and everything for the head). Head, yoke and side cover with a 5 mm brim.",
+     "fr": "Imprimer les 11 pièces en PETG sans supports : plateau A (partie inférieure, plancher, bouchon, pieds) et plateau B (couvercle et tout pour la tête). Tête, fourche et couvercle latéral avec une bordure de 5 mm.",
+     "it": "Stampare tutti gli 11 pezzi in PETG senza supporti: piatto A (parte inferiore, ripiano, tappo, piedini) e piatto B (coperchio e tutto per la testa). Testa, forcella e coperchio laterale con brim di 5 mm.",
+     "rm": "Stampar tut las 11 parts en PETG senza sustegns: platta A (part sut, palantschieu, zaffer, peis) e platta B (viertgel e tut per il chau). Chau, furtga e viertgel lateral cun in ur da 5 mm."
+    }
    }
   },
   {
@@ -1956,45 +2004,93 @@
     "rm": "Preparar la part sut"
    },
    "text": {
-    "de": "Füsse einkleben und die Stativmutter 1/4\" von innen in die Sechskanttasche drücken. Den Lautsprecher mit 3–4 Tupfen Heisskleber in den Ring über dem Bodengitter kleben.",
-    "en": "Glue in the feet and press the 1/4\" tripod nut into the hexagon pocket from the inside. Glue the loudspeaker into the ring above the floor grille with 3–4 dots of hot glue.",
-    "fr": "Coller les pieds et enfoncer l'écrou de trépied 1/4\" dans la poche hexagonale depuis l'intérieur. Coller le haut-parleur dans l'anneau au-dessus de la grille avec 3–4 points de colle chaude.",
-    "it": "Incollare i piedini e premere il dado per treppiede 1/4\" nella sede esagonale dall'interno. Incollare l'altoparlante nell'anello sopra la griglia con 3–4 punti di colla a caldo.",
-    "rm": "Tatgar ils peis e smatgar la mutra da stativ 1/4\" da l'intern en la tastga sisagulara. Tatgar l'autpledader en l'anè sur la grilla dal fund cun 3–4 puncts cola chauda."
+    "de": "Füsse unter das Unterteil v5.2 kleben und die Stativmutter 1/4\" von innen in die Sechskanttasche drücken. Den Lautsprecher mit 3–4 Tupfen Heisskleber in den Ring über dem Bodengitter kleben.",
+    "en": "Glue the feet under the lower part v5.2 and press the 1/4\" tripod nut into the hex pocket from the inside. Glue the speaker into the ring above the floor grille with 3–4 dots of hot glue.",
+    "fr": "Coller les pieds sous la partie inférieure v5.2 et enfoncer l'écrou de trépied 1/4\" dans la poche hexagonale depuis l'intérieur. Coller le haut-parleur dans l'anneau au-dessus de la grille du fond avec 3–4 points de colle chaude.",
+    "it": "Incollare i piedini sotto la parte inferiore v5.2 e premere il dado treppiede 1/4\" nella tasca esagonale dall'interno. Incollare l'altoparlante nell'anello sopra la griglia del fondo con 3–4 punti di colla a caldo.",
+    "rm": "Tatgar ils peis sut la part sut v5.2 e smatgar la mutter da stativ 1/4\" da l'intern en la tastga sisgulara. Tatgar il autpledader cun 3–4 puncts cola chauda en l'anel sur la grada dal fund."
+   },
+   "v51": {
+    "titel": {
+     "de": "Unterteil vorbereiten",
+     "en": "Prepare the lower part",
+     "fr": "Préparer la partie inférieure",
+     "it": "Preparare la parte inferiore",
+     "rm": "Preparar la part sut"
+    },
+    "text": {
+     "de": "Füsse einkleben und die Stativmutter 1/4\" von innen in die Sechskanttasche drücken. Den Lautsprecher mit 3–4 Tupfen Heisskleber in den Ring über dem Bodengitter kleben.",
+     "en": "Glue in the feet and press the 1/4\" tripod nut into the hexagon pocket from the inside. Glue the loudspeaker into the ring above the floor grille with 3–4 dots of hot glue.",
+     "fr": "Coller les pieds et enfoncer l'écrou de trépied 1/4\" dans la poche hexagonale depuis l'intérieur. Coller le haut-parleur dans l'anneau au-dessus de la grille avec 3–4 points de colle chaude.",
+     "it": "Incollare i piedini e premere il dado per treppiede 1/4\" nella sede esagonale dall'interno. Incollare l'altoparlante nell'anello sopra la griglia con 3–4 punti di colla a caldo.",
+     "rm": "Tatgar ils peis e smatgar la mutra da stativ 1/4\" da l'intern en la tastga sisagulara. Tatgar l'autpledader en l'anè sur la grilla dal fund cun 3–4 puncts cola chauda."
+    }
    }
   },
   {
    "nr": 3,
    "titel": {
-    "de": "Vorne: PCA9685, PIR, Mikrofon",
-    "en": "Front: PCA9685, PIR, microphone",
-    "fr": "Avant : PCA9685, PIR, microphone",
-    "it": "Davanti: PCA9685, PIR, microfono",
-    "rm": "Davant: PCA9685, PIR, microfon"
+    "de": "Vorne: Weitwinkel, IR-Modul, PCA9685, PIR, Mikrofon",
+    "en": "Front: wide angle, IR module, PCA9685, PIR, microphone",
+    "fr": "Avant : grand-angle, module IR, PCA9685, PIR, microphone",
+    "it": "Davanti: grandangolo, modulo IR, PCA9685, PIR, microfono",
+    "rm": "Davant: grondangul, modul IR, PCA9685, PIR, microfon"
    },
    "text": {
-    "de": "PCA9685 an die 4 Dome der Lüftungswand schrauben (M2,5, Lötbrücke A0 → 0x41), Elko an V+. PIR von innen in die Hülse schieben, das Mikrofon mit Schaumstoff zwischen die Rippen klemmen.",
-    "en": "Screw the PCA9685 to the 4 bosses on the vent wall (M2.5, solder jumper A0 → 0x41), capacitor on V+. Push the PIR into its sleeve from the inside, clamp the microphone between the ribs with foam.",
-    "fr": "Visser le PCA9685 sur les 4 dômes de la paroi d'aération (M2,5, pont A0 → 0x41), condensateur sur V+. Glisser le PIR dans sa douille depuis l'intérieur, coincer le microphone entre les nervures avec de la mousse.",
-    "it": "Avvitare il PCA9685 alle 4 torrette della parete di ventilazione (M2,5, ponticello A0 → 0x41), condensatore su V+. Infilare il PIR nella sua bussola dall'interno, bloccare il microfono tra le nervature con gommapiuma.",
-    "rm": "Fixar il PCA9685 cun sitgas vi dals 4 doms da la paraid da ventilaziun (M2,5, punt A0 → 0x41), condensatur vi da V+. Stuschar il PIR da l'intern en la tgaplutta, fixar il microfon cun material da spima tranter las costas."
+    "de": "Weitwinkel-Kamera (Camera Module 3 Wide) mit 4 × M2 × 6 an die Rippen hinter dem Fenster der Stirnwand schrauben (12° nach unten). Das IR-Modul 120° von innen in die Hülse daneben schieben und mit der Madenschraube M3 sichern. PCA9685 an die 4 Dome der Lüftungswand schrauben (M2,5, Lötbrücke A0 → 0x41), Elko an V+. PIR von innen in die Hülse schieben, das Mikrofon mit Schaumstoff zwischen die Rippen klemmen. Ohne Weitwinkel-Kamera den Blindstopfen 12 von aussen ins Fenster drücken, ohne IR-Modul den Stopfen 19 in die Hülse.",
+    "en": "Screw the wide-angle camera (Camera Module 3 Wide) to the ribs behind the window of the front wall with 4 × M2 × 6 (12° down). Push the 120° IR module into the sleeve next to it from the inside and secure it with the M3 grub screw. Screw the PCA9685 to the 4 bosses on the vent wall (M2.5, solder jumper A0 → 0x41), capacitor on V+. Push the PIR into its sleeve from the inside, clamp the microphone between the ribs with foam. Without the wide-angle camera press blind plug 12 into the window from the outside, without the IR module put plug 19 into the sleeve.",
+    "fr": "Visser la caméra grand-angle (Camera Module 3 Wide) sur les nervures derrière la fenêtre de la paroi avant avec 4 × M2 × 6 (12° vers le bas). Glisser le module IR 120° depuis l'intérieur dans la douille à côté et le bloquer avec la vis sans tête M3. Visser le PCA9685 sur les 4 dômes de la paroi d'aération (M2,5, pont A0 → 0x41), condensateur sur V+. Glisser le PIR dans sa douille depuis l'intérieur, coincer le microphone entre les nervures avec de la mousse. Sans caméra grand-angle, enfoncer le bouchon 12 dans la fenêtre depuis l'extérieur ; sans module IR, mettre le bouchon 19 dans la douille.",
+    "it": "Avvitare la fotocamera grandangolare (Camera Module 3 Wide) alle nervature dietro la finestra della parete frontale con 4 × M2 × 6 (12° verso il basso). Infilare il modulo IR 120° dall'interno nella bussola accanto e fissarlo con il grano M3. Avvitare il PCA9685 alle 4 torrette della parete di ventilazione (M2,5, ponticello A0 → 0x41), condensatore su V+. Infilare il PIR nella sua bussola dall'interno, bloccare il microfono tra le nervature con gommapiuma. Senza fotocamera grandangolare premere il tappo 12 nella finestra dall'esterno, senza modulo IR mettere il tappo 19 nella bussola.",
+    "rm": "Fixar la camera largangulara (Camera Module 3 Wide) cun 4 × M2 × 6 vi da las costas davos la fanestra da la paraid davant (12° engiu). Stuschar il modul IR 120° da l'intern en la tgaplutta sperasvi e segirar cun la sitga senza chau M3. Fixar il PCA9685 vi dals 4 doms da la paraid da ventilaziun (M2,5, punt A0 → 0x41), condensatur vi da V+. Stuschar il PIR da l'intern en la tgaplutta, fixar il microfon cun material da spima tranter las costas. Senza camera largangulara smatgar il zaffer 12 dad ora en la fanestra, senza modul IR metter il zaffer 19 en la tgaplutta."
+   },
+   "v51": {
+    "titel": {
+     "de": "Vorne: PCA9685, PIR, Mikrofon",
+     "en": "Front: PCA9685, PIR, microphone",
+     "fr": "Avant : PCA9685, PIR, microphone",
+     "it": "Davanti: PCA9685, PIR, microfono",
+     "rm": "Davant: PCA9685, PIR, microfon"
+    },
+    "text": {
+     "de": "PCA9685 an die 4 Dome der Lüftungswand schrauben (M2,5, Lötbrücke A0 → 0x41), Elko an V+. PIR von innen in die Hülse schieben, das Mikrofon mit Schaumstoff zwischen die Rippen klemmen.",
+     "en": "Screw the PCA9685 to the 4 bosses on the vent wall (M2.5, solder jumper A0 → 0x41), capacitor on V+. Push the PIR into its sleeve from the inside, clamp the microphone between the ribs with foam.",
+     "fr": "Visser le PCA9685 sur les 4 dômes de la paroi d'aération (M2,5, pont A0 → 0x41), condensateur sur V+. Glisser le PIR dans sa douille depuis l'intérieur, coincer le microphone entre les nervures avec de la mousse.",
+     "it": "Avvitare il PCA9685 alle 4 torrette della parete di ventilazione (M2,5, ponticello A0 → 0x41), condensatore su V+. Infilare il PIR nella sua bussola dall'interno, bloccare il microfono tra le nervature con gommapiuma.",
+     "rm": "Fixar il PCA9685 cun sitgas vi dals 4 doms da la paraid da ventilaziun (M2,5, punt A0 → 0x41), condensatur vi da V+. Stuschar il PIR da l'intern en la tgaplutta, fixar il microfon cun material da spima tranter las costas."
+    }
    }
   },
   {
    "nr": 4,
    "titel": {
-    "de": "Akku und Pi",
-    "en": "Battery and Pi",
-    "fr": "Batterie et Pi",
-    "it": "Batteria e Pi",
-    "rm": "Accu e Pi"
+    "de": "Akku, Pi und SD-Verlängerung",
+    "en": "Battery, Pi and SD extension",
+    "fr": "Batterie, Pi et rallonge SD",
+    "it": "Batteria, Pi e prolunga SD",
+    "rm": "Accu, Pi e prolungaziun SD"
    },
    "text": {
-    "de": "Das UPS HAT (E) mit den 4 Akkus und dem Pi 5 darauf in den Zaun stellen und mit Klettband fixieren. HDMI zeigt zum Fenster, der Lüfter sitzt auf dem Pi.",
-    "en": "Put the UPS HAT (E) with the 4 cells and the Pi 5 on top into the fence and fix it with hook-and-loop tape. HDMI faces the window, the fan sits on the Pi.",
-    "fr": "Placer l'UPS HAT (E) avec les 4 accus et le Pi 5 dessus dans la clôture et le fixer avec du velcro. Le HDMI est tourné vers la fenêtre, le ventilateur est sur le Pi.",
-    "it": "Mettere l'UPS HAT (E) con le 4 batterie e il Pi 5 sopra nel recinto e fissarlo con velcro. L'HDMI guarda verso la finestra, la ventola è sul Pi.",
-    "rm": "Metter l'UPS HAT (E) cun ils 4 accus ed il Pi 5 survart en la saiv e fixar cun bindel velcro. HDMI mussa vers la fanestra, il ventilatur è sin il Pi."
+    "de": "Das UPS HAT (E) mit den 4 Akkus 21700 und dem Pi 5 darauf in den Zaun stellen und mit Klettband fixieren. HDMI und USB-C des Pi zeigen zum Service-Fenster, der Lüfter sitzt auf dem Pi. Die microSD-Verlängerung in den Kartenschlitz des Pi stecken und den Einbau-Kartenhalter mit 2 × M2,5 × 6 an die zwei Dome über dem PCA9685 schrauben.",
+    "en": "Put the UPS HAT (E) with the 4 21700 cells and the Pi 5 on top into the fence and fix it with hook-and-loop tape. HDMI and USB-C of the Pi face the service window, the fan sits on the Pi. Plug the microSD extension into the card slot of the Pi and screw the panel card holder to the two bosses above the PCA9685 with 2 × M2.5 × 6.",
+    "fr": "Placer l'UPS HAT (E) avec les 4 accus 21700 et le Pi 5 dessus dans la clôture et le fixer avec du velcro. Le HDMI et l'USB-C du Pi sont tournés vers la fenêtre de service, le ventilateur est sur le Pi. Brancher la rallonge microSD dans la fente du Pi et visser le support de carte sur les deux dômes au-dessus du PCA9685 avec 2 × M2,5 × 6.",
+    "it": "Mettere l'UPS HAT (E) con le 4 batterie 21700 e il Pi 5 sopra nel recinto e fissarlo con velcro. HDMI e USB-C del Pi guardano verso la finestra di servizio, la ventola è sul Pi. Inserire la prolunga microSD nella fessura del Pi e avvitare il portaschede alle due torrette sopra il PCA9685 con 2 × M2,5 × 6.",
+    "rm": "Metter l'UPS HAT (E) cun ils 4 accus 21700 ed il Pi 5 survart en la saiv e fixar cun bindel velcro. HDMI ed USB-C dal Pi mussan vers la fanestra da servetsch, il ventilatur è sin il Pi. Metter la prolungaziun microSD en la fessa da carta dal Pi e fixar il tegnacarta cun 2 × M2,5 × 6 vi dals dus doms sur il PCA9685."
+   },
+   "v51": {
+    "titel": {
+     "de": "Akku und Pi",
+     "en": "Battery and Pi",
+     "fr": "Batterie et Pi",
+     "it": "Batteria e Pi",
+     "rm": "Accu e Pi"
+    },
+    "text": {
+     "de": "Das UPS HAT (E) mit den 4 Akkus und dem Pi 5 darauf in den Zaun stellen und mit Klettband fixieren. HDMI zeigt zum Fenster, der Lüfter sitzt auf dem Pi.",
+     "en": "Put the UPS HAT (E) with the 4 cells and the Pi 5 on top into the fence and fix it with hook-and-loop tape. HDMI faces the window, the fan sits on the Pi.",
+     "fr": "Placer l'UPS HAT (E) avec les 4 accus et le Pi 5 dessus dans la clôture et le fixer avec du velcro. Le HDMI est tourné vers la fenêtre, le ventilateur est sur le Pi.",
+     "it": "Mettere l'UPS HAT (E) con le 4 batterie e il Pi 5 sopra nel recinto e fissarlo con velcro. L'HDMI guarda verso la finestra, la ventola è sul Pi.",
+     "rm": "Metter l'UPS HAT (E) cun ils 4 accus ed il Pi 5 survart en la saiv e fixar cun bindel velcro. HDMI mussa vers la fanestra, il ventilatur è sin il Pi."
+    }
    }
   },
   {
@@ -2007,11 +2103,27 @@
     "rm": "Palantschieu intermediar"
    },
    "text": {
-    "de": "Den Zwischenboden mit 2 × M3 einschrauben. Darauf mit Schaumklebeband: D36V50F5 (Laden), PAM8403 und optional INA219.",
-    "en": "Screw in the shelf with 2 × M3. On it, with foam tape: D36V50F5 (charging), PAM8403 and optionally INA219.",
-    "fr": "Visser le plancher avec 2 × M3. Dessus, avec du ruban mousse : D36V50F5 (charge), PAM8403 et en option l'INA219.",
-    "it": "Avvitare il ripiano con 2 × M3. Sopra, con nastro biadesivo in schiuma: D36V50F5 (ricarica), PAM8403 e opzionale INA219.",
-    "rm": "Fixar il palantschieu cun 2 × M3. Survart cun bindel adesiv da spima: D36V50F5 (chargiar), PAM8403 ed opziunal INA219."
+    "de": "Den Zwischenboden mit 2 × M3 einschrauben. Darauf mit Schaumklebeband: D36V50F5 (Laden), PAM8403 und optional INA219 (Solar, I2C 0x44, Shunt 0,01 Ω).",
+    "en": "Screw in the shelf with 2 × M3. On it, with foam tape: D36V50F5 (charging), PAM8403 and optionally INA219 (solar, I2C 0x44, shunt 0.01 Ω).",
+    "fr": "Visser le plancher avec 2 × M3. Dessus, avec du ruban mousse : D36V50F5 (charge), PAM8403 et en option l'INA219 (solaire, I2C 0x44, shunt 0,01 Ω).",
+    "it": "Avvitare il ripiano con 2 × M3. Sopra, con nastro biadesivo in schiuma: D36V50F5 (ricarica), PAM8403 e opzionale INA219 (solare, I2C 0x44, shunt 0,01 Ω).",
+    "rm": "Fixar il palantschieu cun 2 × M3. Survart cun bindel adesiv da spima: D36V50F5 (chargiar), PAM8403 ed opziunal INA219 (solar, I2C 0x44, shunt 0,01 Ω)."
+   },
+   "v51": {
+    "titel": {
+     "de": "Zwischenboden",
+     "en": "Intermediate shelf",
+     "fr": "Plancher intermédiaire",
+     "it": "Ripiano intermedio",
+     "rm": "Palantschieu intermediar"
+    },
+    "text": {
+     "de": "Den Zwischenboden mit 2 × M3 einschrauben. Darauf mit Schaumklebeband: D36V50F5 (Laden), PAM8403 und optional INA219.",
+     "en": "Screw in the shelf with 2 × M3. On it, with foam tape: D36V50F5 (charging), PAM8403 and optionally INA219.",
+     "fr": "Visser le plancher avec 2 × M3. Dessus, avec du ruban mousse : D36V50F5 (charge), PAM8403 et en option l'INA219.",
+     "it": "Avvitare il ripiano con 2 × M3. Sopra, con nastro biadesivo in schiuma: D36V50F5 (ricarica), PAM8403 e opzionale INA219.",
+     "rm": "Fixar il palantschieu cun 2 × M3. Survart cun bindel adesiv da spima: D36V50F5 (chargiar), PAM8403 ed opziunal INA219."
+    }
    }
   },
   {
@@ -2024,28 +2136,60 @@
     "rm": "Moduls vi da las paraids"
    },
    "text": {
-    "de": "MOSFET-Modul und Step-Down an die Stirnwand links vom PIR, das Relais über die Hub-Ablage kleben. USB-Hub mit 2 Kabelbindern auf die Ablage, Soundkarte in den Hub, MPU-6050 flach auf den Boden.",
-    "en": "Stick the MOSFET module and the step-down to the front wall left of the PIR, the relay above the hub tray. USB hub onto the tray with 2 cable ties, sound card into the hub, MPU-6050 flat on the floor.",
-    "fr": "Coller le module MOSFET et l'abaisseur sur la paroi avant à gauche du PIR, le relais au-dessus du support du hub. Hub USB sur le support avec 2 colliers, carte son dans le hub, MPU-6050 à plat sur le fond.",
-    "it": "Incollare il modulo MOSFET e lo step-down sulla parete frontale a sinistra del PIR, il relè sopra il ripiano dell'hub. Hub USB sul ripiano con 2 fascette, scheda audio nell'hub, MPU-6050 piatto sul fondo.",
-    "rm": "Tatgar il modul MOSFET ed il step-down vi da la paraid davant a sanestra dal PIR, il relais sur la deposita dal hub. Hub USB cun 2 ligiaments sin la deposita, carta da tun en il hub, MPU-6050 plat sin il fund."
+    "de": "MOSFET-Module (Licht weiss, IR, IR-Modul 120°) an die Lüftungswand unter dem PCA9685 kleben, den Step-Down an die Stirnwand links vom PIR, den Lampentreiber auf das Feld darunter (2 × M2,5). Das Relais über die Hub-Ablage kleben. USB-Hub mit 2 Kabelbindern auf die Ablage, Soundkarte in den Hub, MPU-6050 flach auf den Boden.",
+    "en": "Stick the MOSFET modules (white light, IR, 120° IR module) to the vent wall below the PCA9685, the step-down to the front wall left of the PIR, the lamp driver onto the field below it (2 × M2.5). Stick the relay above the hub tray. USB hub onto the tray with 2 cable ties, sound card into the hub, MPU-6050 flat on the floor.",
+    "fr": "Coller les modules MOSFET (lumière blanche, IR, module IR 120°) sur la paroi d'aération sous le PCA9685, l'abaisseur sur la paroi avant à gauche du PIR, le driver de lampe sur le champ en dessous (2 × M2,5). Coller le relais au-dessus du support du hub. Hub USB sur le support avec 2 colliers, carte son dans le hub, MPU-6050 à plat sur le fond.",
+    "it": "Incollare i moduli MOSFET (luce bianca, IR, modulo IR 120°) sulla parete di ventilazione sotto il PCA9685, lo step-down sulla parete frontale a sinistra del PIR, il driver della lampada sul campo sotto (2 × M2,5). Incollare il relè sopra il ripiano dell'hub. Hub USB sul ripiano con 2 fascette, scheda audio nell'hub, MPU-6050 piatto sul fondo.",
+    "rm": "Tatgar ils moduls MOSFET (glisch alva, IR, modul IR 120°) vi da la paraid da ventilaziun sut il PCA9685, il step-down vi da la paraid davant a sanestra dal PIR, il driver da la lampa sin il champ sutvart (2 × M2,5). Tatgar il relais sur la deposita dal hub. Hub USB cun 2 ligiaments sin la deposita, carta da tun en il hub, MPU-6050 plat sin il fund."
+   },
+   "v51": {
+    "titel": {
+     "de": "Module an den Wänden",
+     "en": "Modules on the walls",
+     "fr": "Modules sur les parois",
+     "it": "Moduli sulle pareti",
+     "rm": "Moduls vi da las paraids"
+    },
+    "text": {
+     "de": "MOSFET-Modul und Step-Down an die Stirnwand links vom PIR, das Relais über die Hub-Ablage kleben. USB-Hub mit 2 Kabelbindern auf die Ablage, Soundkarte in den Hub, MPU-6050 flach auf den Boden.",
+     "en": "Stick the MOSFET module and the step-down to the front wall left of the PIR, the relay above the hub tray. USB hub onto the tray with 2 cable ties, sound card into the hub, MPU-6050 flat on the floor.",
+     "fr": "Coller le module MOSFET et l'abaisseur sur la paroi avant à gauche du PIR, le relais au-dessus du support du hub. Hub USB sur le support avec 2 colliers, carte son dans le hub, MPU-6050 à plat sur le fond.",
+     "it": "Incollare il modulo MOSFET e lo step-down sulla parete frontale a sinistra del PIR, il relè sopra il ripiano dell'hub. Hub USB sul ripiano con 2 fascette, scheda audio nell'hub, MPU-6050 piatto sul fondo.",
+     "rm": "Tatgar il modul MOSFET ed il step-down vi da la paraid davant a sanestra dal PIR, il relais sur la deposita dal hub. Hub USB cun 2 ligiaments sin la deposita, carta da tun en il hub, MPU-6050 plat sin il fund."
+    }
    }
   },
   {
    "nr": 7,
    "titel": {
-    "de": "Hinten und unten",
-    "en": "Back and bottom",
-    "fr": "Arrière et dessous",
-    "it": "Dietro e sotto",
-    "rm": "Davos e sut"
+    "de": "Hinten und unten: Buchsen, Tasten",
+    "en": "Back and bottom: sockets, buttons",
+    "fr": "Arrière et dessous : prises, boutons",
+    "it": "Dietro e sotto: prese, pulsanti",
+    "rm": "Davos e sut: bischlas, buttuns"
    },
    "text": {
-    "de": "GX16-4P-Ladebuchse (Sicherung 5 A dahinter) und die Kabelverschraubung M12 für das Relais einschrauben, Lichtleiter der Lade-LED einsetzen. Den DS18B20 von unten durch das Bodenloch führen und abdichten.",
-    "en": "Screw in the GX16-4P charging socket (5 A fuse behind it) and the M12 cable gland for the relay, insert the light guide of the charging LED. Feed the DS18B20 through the floor hole from below and seal it.",
-    "fr": "Visser la prise de charge GX16-4P (fusible 5 A derrière) et le presse-étoupe M12 du relais, insérer le guide de lumière de la LED de charge. Passer le DS18B20 par le trou du fond depuis le dessous et étanchéifier.",
-    "it": "Avvitare la presa di ricarica GX16-4P (fusibile 5 A dietro) e il pressacavo M12 del relè, inserire la guida luce del LED di ricarica. Far passare il DS18B20 dal foro del fondo da sotto e sigillare.",
-    "rm": "Fixar la bischla da chargiar GX16-4P (segirezza 5 A davos) ed il passacabel M12 dal relais, metter la guida da glisch da la LED da chargiar. Manar il DS18B20 da sut tras la foura dal fund e stagnar."
+    "de": "GX16-4P-Ladebuchse (Sicherung 5 A dahinter) und die Kabelverschraubung M12 für das Relais einschrauben, Lichtleiter der Lade-LED einsetzen. Die 2 Tasten (12 mm, IP67) in die Rückwand, Mutter innen. Die Reserve-Öffnung mit dem Blindstopfen 17 schliessen. Den Sicherungshalter 5 A (Akku B+) in die Klammer am Boden drücken. Den DS18B20 von unten durch das Bodenloch führen und abdichten.",
+    "en": "Screw in the GX16-4P charging socket (5 A fuse behind it) and the M12 cable gland for the relay, insert the light guide of the charging LED. Fit the 2 buttons (12 mm, IP67) into the back wall, nut inside. Close the reserve opening with blind plug 17. Press the 5 A fuse holder (battery B+) into the clip on the floor. Feed the DS18B20 through the floor hole from below and seal it.",
+    "fr": "Visser la prise de charge GX16-4P (fusible 5 A derrière) et le presse-étoupe M12 du relais, insérer le guide de lumière de la LED de charge. Monter les 2 boutons (12 mm, IP67) dans la paroi arrière, écrou à l'intérieur. Fermer l'ouverture de réserve avec le bouchon 17. Enfoncer le porte-fusible 5 A (batterie B+) dans la pince au fond. Passer le DS18B20 par le trou du fond depuis le dessous et étanchéifier.",
+    "it": "Avvitare la presa di ricarica GX16-4P (fusibile 5 A dietro) e il pressacavo M12 del relè, inserire la guida luce del LED di ricarica. Montare i 2 pulsanti (12 mm, IP67) nella parete posteriore, dado all'interno. Chiudere l'apertura di riserva con il tappo 17. Premere il portafusibile 5 A (batteria B+) nella clip sul fondo. Far passare il DS18B20 dal foro del fondo da sotto e sigillare.",
+    "rm": "Fixar la bischla da chargiar GX16-4P (segirezza 5 A davos) ed il passacabel M12 dal relais, metter la guida da glisch da la LED da chargiar. Metter ils 2 buttuns (12 mm, IP67) en la paraid davos, mutter adintern. Serrar l'avertura da reserva cun il zaffer 17. Smatgar il tegnasegirezza 5 A (accu B+) en la clamma sin il fund. Manar il DS18B20 da sut tras la foura dal fund e stagnar."
+   },
+   "v51": {
+    "titel": {
+     "de": "Hinten und unten",
+     "en": "Back and bottom",
+     "fr": "Arrière et dessous",
+     "it": "Dietro e sotto",
+     "rm": "Davos e sut"
+    },
+    "text": {
+     "de": "GX16-4P-Ladebuchse (Sicherung 5 A dahinter) und die Kabelverschraubung M12 für das Relais einschrauben, Lichtleiter der Lade-LED einsetzen. Den DS18B20 von unten durch das Bodenloch führen und abdichten.",
+     "en": "Screw in the GX16-4P charging socket (5 A fuse behind it) and the M12 cable gland for the relay, insert the light guide of the charging LED. Feed the DS18B20 through the floor hole from below and seal it.",
+     "fr": "Visser la prise de charge GX16-4P (fusible 5 A derrière) et le presse-étoupe M12 du relais, insérer le guide de lumière de la LED de charge. Passer le DS18B20 par le trou du fond depuis le dessous et étanchéifier.",
+     "it": "Avvitare la presa di ricarica GX16-4P (fusibile 5 A dietro) e il pressacavo M12 del relè, inserire la guida luce del LED di ricarica. Far passare il DS18B20 dal foro del fondo da sotto e sigillare.",
+     "rm": "Fixar la bischla da chargiar GX16-4P (segirezza 5 A davos) ed il passacabel M12 dal relais, metter la guida da glisch da la LED da chargiar. Manar il DS18B20 da sut tras la foura dal fund e stagnar."
+    }
    }
   },
   {
@@ -2063,6 +2207,22 @@
     "fr": "Servo pan dans le couvercle par le dessous (2 × M2 × 8). Mettre les billes dans la rainure, servo au centre (1500 µs) et emboîter le plateau avec le palonnier pour que la tête regarde ensuite le côté PIR.",
     "it": "Servo pan nel coperchio da sotto (2 × M2 × 8). Mettere i pallini nella scanalatura, servo al centro (1500 µs) e inserire il piatto con la squadretta in modo che la testa guardi poi verso il lato PIR.",
     "rm": "Servo pan da sut en il viertgel (2 × M2 × 8). Metter las ballinas en la foppa, servo en il center (1500 µs) e metter si la platta rotanta cun il corn uschia ch'il chau guarda pli tard vers la vart dal PIR."
+   },
+   "v51": {
+    "titel": {
+     "de": "Deckel und Drehlager",
+     "en": "Lid and pan bearing",
+     "fr": "Couvercle et palier pan",
+     "it": "Coperchio e cuscinetto pan",
+     "rm": "Viertgel e cuschinet pan"
+    },
+    "text": {
+     "de": "Pan-Servo von unten in den Deckel (2 × M2 × 8). Kugeln in die Rille legen, Servo auf Mitte (1500 µs) und den Drehteller mit Horn so aufstecken, dass der Kopf später zur PIR-Seite schaut.",
+     "en": "Pan servo into the lid from below (2 × M2 × 8). Put the balls into the groove, servo to centre (1500 µs) and fit the turntable with the horn so that the head will face the PIR side.",
+     "fr": "Servo pan dans le couvercle par le dessous (2 × M2 × 8). Mettre les billes dans la rainure, servo au centre (1500 µs) et emboîter le plateau avec le palonnier pour que la tête regarde ensuite le côté PIR.",
+     "it": "Servo pan nel coperchio da sotto (2 × M2 × 8). Mettere i pallini nella scanalatura, servo al centro (1500 µs) e inserire il piatto con la squadretta in modo che la testa guardi poi verso il lato PIR.",
+     "rm": "Servo pan da sut en il viertgel (2 × M2 × 8). Metter las ballinas en la foppa, servo en il center (1500 µs) e metter si la platta rotanta cun il corn uschia ch'il chau guarda pli tard vers la vart dal PIR."
+    }
    }
   },
   {
@@ -2080,23 +2240,55 @@
     "fr": "Visser la fourche sur le plateau avec 4 × M3 × 8 (pas plus long : la pointe ne doit pas toucher la bague). Poser le palonnier tilt verticalement dans le creux à l'intérieur du bras 1 et le visser.",
     "it": "Avvitare la forcella sul piatto con 4 × M3 × 8 (non più lunghe: la punta non deve toccare l'anello). Mettere la squadretta tilt in verticale nell'incavo all'interno del braccio 1 e avvitarla.",
     "rm": "Fixar la furtga cun 4 × M3 × 8 (betg pli lungas: la piz na dastga betg tutgar l'anè) sin la platta rotanta. Metter il corn tilt vertical en l'enfossadira da l'intern dal bratsch 1 e fixar."
+   },
+   "v51": {
+    "titel": {
+     "de": "Gabel montieren",
+     "en": "Mount the yoke",
+     "fr": "Monter la fourche",
+     "it": "Montare la forcella",
+     "rm": "Montar la furtga"
+    },
+    "text": {
+     "de": "Die Gabel mit 4 × M3 × 8 (nicht länger: die Spitze darf nicht in den Laufring ragen) auf den Drehteller schrauben. Das Tilt-Horn senkrecht in die Vertiefung innen in Arm 1 legen und festschrauben.",
+     "en": "Screw the yoke onto the turntable with 4 × M3 × 8 (not longer: the tip must not reach the bearing ring). Lay the tilt horn vertically into the recess on the inside of arm 1 and screw it tight.",
+     "fr": "Visser la fourche sur le plateau avec 4 × M3 × 8 (pas plus long : la pointe ne doit pas toucher la bague). Poser le palonnier tilt verticalement dans le creux à l'intérieur du bras 1 et le visser.",
+     "it": "Avvitare la forcella sul piatto con 4 × M3 × 8 (non più lunghe: la punta non deve toccare l'anello). Mettere la squadretta tilt in verticale nell'incavo all'interno del braccio 1 e avvitarla.",
+     "rm": "Fixar la furtga cun 4 × M3 × 8 (betg pli lungas: la piz na dastga betg tutgar l'anè) sin la platta rotanta. Metter il corn tilt vertical en l'enfossadira da l'intern dal bratsch 1 e fixar."
+    }
    }
   },
   {
    "nr": 10,
    "titel": {
-    "de": "Kamerakopf",
-    "en": "Camera head",
-    "fr": "Tête de caméra",
-    "it": "Testa della fotocamera",
-    "rm": "Chau da la camera"
+    "de": "Kamerakopf v5.2 mit Status-LED",
+    "en": "Camera head v5.2 with status LED",
+    "fr": "Tête de caméra v5.2 avec LED d'état",
+    "it": "Testa della fotocamera v5.2 con LED di stato",
+    "rm": "Chau da la camera v5.2 cun LED da status"
    },
    "text": {
-    "de": "Thermal-90 (Linse links) und Camera Module 3 durch die offene Seite einschrauben (Camera Module 3: 4 × M2 × 4, Thermal-90: 2 × M2 × 6). Tilt-Servo auf Mitte einsetzen, Kabel durch den Schlitz hinten, Seitendeckel mit 3 × M3 × 10 Linsenkopf ISO 7380 zuschrauben (kein Zylinderkopf: der stösst beim Kippen an Arm 2).",
-    "en": "Screw in the Thermal-90 (lens on the left) and the Camera Module 3 through the open side (Camera Module 3: 4 × M2 × 4, Thermal-90: 2 × M2 × 6). Insert the tilt servo at centre, cables through the slot at the back, close the side cover with 3 × M3 × 10 button head ISO 7380 (no socket cap head: it hits arm 2 when tilting).",
-    "fr": "Visser la Thermal-90 (objectif à gauche) et la Camera Module 3 par le côté ouvert (Camera Module 3 : 4 × M2 × 4, Thermal-90 : 2 × M2 × 6). Mettre le servo tilt au centre, câbles par la fente arrière, fermer le couvercle latéral avec 3 × M3 × 10 ISO 7380.",
-    "it": "Avvitare la Thermal-90 (obiettivo a sinistra) e la Camera Module 3 dal lato aperto (Camera Module 3: 4 × M2 × 4, Thermal-90: 2 × M2 × 6). Inserire il servo tilt al centro, cavi nella fessura dietro, chiudere il coperchio laterale con 3 × M3 × 10 ISO 7380.",
-    "rm": "Fixar la Thermal-90 (lentilla a sanestra) e la Camera Module 3 tras la vart averta (Camera Module 3: 4 × M2 × 4, Thermal-90: 2 × M2 × 6). Metter il servo tilt en il center, cabels tras la fessa davos, serrar il viertgel lateral cun 3 × M3 × 10 ISO 7380."
+    "de": "Die RGB-Status-LED von innen ins Loch im Dach des Kopfs 06 v5.2 schieben (Heisskleber), den Diffusor 14 aussen in die Vertiefung drücken und den Pupillenring 15 oben einsetzen. Thermal-90 (Linse links) und Camera Module 3 NoIR durch die offene Seite einschrauben (Camera Module 3: 4 × M2 × 4, Thermal-90: 2 × M2 × 6). Tilt-Servo auf Mitte einsetzen, alle Kabel (auch die 4 Adern der LED) durch den Schlitz hinten, Seitendeckel mit 3 × M3 × 10 Linsenkopf ISO 7380 zuschrauben (kein Zylinderkopf: der stösst beim Kippen an Arm 2).",
+    "en": "Push the RGB status LED into the hole in the roof of head 06 v5.2 from the inside (hot glue), press diffuser 14 into the recess from the outside and fit pupil ring 15 on top. Screw in the Thermal-90 (lens on the left) and the Camera Module 3 NoIR through the open side (Camera Module 3: 4 × M2 × 4, Thermal-90: 2 × M2 × 6). Insert the tilt servo at centre, all cables (also the 4 wires of the LED) through the slot at the back, close the side cover with 3 × M3 × 10 button head ISO 7380 (no socket cap head: it hits arm 2 when tilting).",
+    "fr": "Glisser la LED d'état RVB depuis l'intérieur dans le trou du toit de la tête 06 v5.2 (colle chaude), enfoncer le diffuseur 14 dans le creux depuis l'extérieur et poser l'anneau de pupille 15 dessus. Visser la Thermal-90 (objectif à gauche) et la Camera Module 3 NoIR par le côté ouvert (Camera Module 3 : 4 × M2 × 4, Thermal-90 : 2 × M2 × 6). Mettre le servo tilt au centre, tous les câbles (aussi les 4 fils de la LED) par la fente arrière, fermer le couvercle latéral avec 3 × M3 × 10 ISO 7380.",
+    "it": "Infilare il LED di stato RGB dall'interno nel foro del tetto della testa 06 v5.2 (colla a caldo), premere il diffusore 14 nell'incavo dall'esterno e mettere sopra l'anello pupilla 15. Avvitare la Thermal-90 (obiettivo a sinistra) e la Camera Module 3 NoIR dal lato aperto (Camera Module 3: 4 × M2 × 4, Thermal-90: 2 × M2 × 6). Inserire il servo tilt al centro, tutti i cavi (anche i 4 fili del LED) nella fessura dietro, chiudere il coperchio laterale con 3 × M3 × 10 ISO 7380.",
+    "rm": "Stuschar la LED da status RGB da l'intern en la foura dal tetg dal chau 06 v5.2 (cola chauda), smatgar il diffusur 14 dad ora en l'enfossadira e metter si l'anel da la pupilla 15. Fixar la Thermal-90 (lentilla a sanestra) e la Camera Module 3 NoIR tras la vart averta (Camera Module 3: 4 × M2 × 4, Thermal-90: 2 × M2 × 6). Metter il servo tilt en il center, tut ils cabels (er ils 4 fils da la LED) tras la fessa davos, serrar il viertgel lateral cun 3 × M3 × 10 ISO 7380."
+   },
+   "v51": {
+    "titel": {
+     "de": "Kamerakopf",
+     "en": "Camera head",
+     "fr": "Tête de caméra",
+     "it": "Testa della fotocamera",
+     "rm": "Chau da la camera"
+    },
+    "text": {
+     "de": "Thermal-90 (Linse links) und Camera Module 3 durch die offene Seite einschrauben (Camera Module 3: 4 × M2 × 4, Thermal-90: 2 × M2 × 6). Tilt-Servo auf Mitte einsetzen, Kabel durch den Schlitz hinten, Seitendeckel mit 3 × M3 × 10 Linsenkopf ISO 7380 zuschrauben (kein Zylinderkopf: der stösst beim Kippen an Arm 2).",
+     "en": "Screw in the Thermal-90 (lens on the left) and the Camera Module 3 through the open side (Camera Module 3: 4 × M2 × 4, Thermal-90: 2 × M2 × 6). Insert the tilt servo at centre, cables through the slot at the back, close the side cover with 3 × M3 × 10 button head ISO 7380 (no socket cap head: it hits arm 2 when tilting).",
+     "fr": "Visser la Thermal-90 (objectif à gauche) et la Camera Module 3 par le côté ouvert (Camera Module 3 : 4 × M2 × 4, Thermal-90 : 2 × M2 × 6). Mettre le servo tilt au centre, câbles par la fente arrière, fermer le couvercle latéral avec 3 × M3 × 10 ISO 7380.",
+     "it": "Avvitare la Thermal-90 (obiettivo a sinistra) e la Camera Module 3 dal lato aperto (Camera Module 3: 4 × M2 × 4, Thermal-90: 2 × M2 × 6). Inserire il servo tilt al centro, cavi nella fessura dietro, chiudere il coperchio laterale con 3 × M3 × 10 ISO 7380.",
+     "rm": "Fixar la Thermal-90 (lentilla a sanestra) e la Camera Module 3 tras la vart averta (Camera Module 3: 4 × M2 × 4, Thermal-90: 2 × M2 × 6). Metter il servo tilt en il center, cabels tras la fessa davos, serrar il viertgel lateral cun 3 × M3 × 10 ISO 7380."
+    }
    }
   },
   {
@@ -2114,6 +2306,22 @@
     "fr": "Enfoncer l'axe du servo sur le palonnier du bras 1 (la tête regarde droit devant). Placer le bras 2 avec son écrou dans la rainure, 2 × M3 par le haut, 2–3 rondelles, M3 × 12 comme axe seulement jusqu'au contact.",
     "it": "Infilare l'albero del servo sulla squadretta nel braccio 1 (la testa guarda dritto). Mettere il braccio 2 con il dado nella scanalatura, 2 × M3 dall'alto, 2–3 rondelle, M3 × 12 come asse solo fino al contatto.",
     "rm": "Metter l'axa dal servo sin il corn en il bratsch 1 (il chau guarda drizza ora). Metter il bratsch 2 cun la mutra en la foppa, 2 × M3 da sura, 2–3 rundellas, M3 × 12 sco axa mo fin ch'ella tutga."
+   },
+   "v51": {
+    "titel": {
+     "de": "Kopf einsetzen, Arm 2",
+     "en": "Fit the head, arm 2",
+     "fr": "Monter la tête, bras 2",
+     "it": "Montare la testa, braccio 2",
+     "rm": "Montar il chau, bratsch 2"
+    },
+    "text": {
+     "de": "Servowelle auf das Horn in Arm 1 stecken (Kopf schaut geradeaus). Arm 2 mit Mutter in die Nut setzen, 2 × M3 von oben, 2–3 Unterlegscheiben, M3 × 12 als Achse nur bis zum Anliegen.",
+     "en": "Push the servo shaft onto the horn in arm 1 (head looks straight ahead). Set arm 2 with its nut into the groove, 2 × M3 from above, 2–3 washers, M3 × 12 as the axle only until it touches.",
+     "fr": "Enfoncer l'axe du servo sur le palonnier du bras 1 (la tête regarde droit devant). Placer le bras 2 avec son écrou dans la rainure, 2 × M3 par le haut, 2–3 rondelles, M3 × 12 comme axe seulement jusqu'au contact.",
+     "it": "Infilare l'albero del servo sulla squadretta nel braccio 1 (la testa guarda dritto). Mettere il braccio 2 con il dado nella scanalatura, 2 × M3 dall'alto, 2–3 rondelle, M3 × 12 come asse solo fino al contatto.",
+     "rm": "Metter l'axa dal servo sin il corn en il bratsch 1 (il chau guarda drizza ora). Metter il bratsch 2 cun la mutra en la foppa, 2 × M3 da sura, 2–3 rundellas, M3 × 12 sco axa mo fin ch'ella tutga."
+    }
    }
   },
   {
@@ -2131,23 +2339,55 @@
     "fr": "Visser les deux supports de lampe à l'extérieur des bras avec 2 × M3 × 8 avec rondelle chacun : blanc au bras 1, IR 850 nm au bras 2. Insérer les modules et les bloquer avec de la colle chaude ou une vis sans tête.",
     "it": "Avvitare i due portalampada all'esterno dei bracci con 2 × M3 × 8 con rondella ciascuno: bianco sul braccio 1, IR 850 nm sul braccio 2. Inserire i moduli e fissarli con colla a caldo o un grano.",
     "rm": "Fixar ils dus tegnalampas cun mintgamai 2 × M3 × 8 cun rundella dador vi dals bratschs: alv vi dal bratsch 1, IR 850 nm vi dal bratsch 2. Metter ils moduls e segirar cun cola chauda u cun ina sitga senza chau."
+   },
+   "v51": {
+    "titel": {
+     "de": "Lampen",
+     "en": "Lamps",
+     "fr": "Lampes",
+     "it": "Lampade",
+     "rm": "Lampas"
+    },
+    "text": {
+     "de": "Die zwei Lampenhalter mit je 2 × M3 × 8 mit Unterlegscheibe aussen an die Arme schrauben: weiss an Arm 1, IR 850 nm an Arm 2. Module einsetzen und mit Heisskleber oder Madenschraube sichern.",
+     "en": "Screw the two lamp holders to the outside of the arms with 2 × M3 × 8 with washer each: white on arm 1, IR 850 nm on arm 2. Insert the modules and secure them with hot glue or a grub screw.",
+     "fr": "Visser les deux supports de lampe à l'extérieur des bras avec 2 × M3 × 8 avec rondelle chacun : blanc au bras 1, IR 850 nm au bras 2. Insérer les modules et les bloquer avec de la colle chaude ou une vis sans tête.",
+     "it": "Avvitare i due portalampada all'esterno dei bracci con 2 × M3 × 8 con rondella ciascuno: bianco sul braccio 1, IR 850 nm sul braccio 2. Inserire i moduli e fissarli con colla a caldo o un grano.",
+     "rm": "Fixar ils dus tegnalampas cun mintgamai 2 × M3 × 8 cun rundella dador vi dals bratschs: alv vi dal bratsch 1, IR 850 nm vi dal bratsch 2. Metter ils moduls e segirar cun cola chauda u cun ina sitga senza chau."
+    }
    }
   },
   {
    "nr": 13,
    "titel": {
-    "de": "Kabel und Deckel zu",
-    "en": "Cables and close the lid",
-    "fr": "Câbles et fermer le couvercle",
-    "it": "Cavi e chiudere il coperchio",
-    "rm": "Cabels e serrar il viertgel"
+    "de": "Kabel, Deckel zu, Stopfen",
+    "en": "Cables, close the lid, plugs",
+    "fr": "Câbles, fermer le couvercle, bouchons",
+    "it": "Cavi, chiudere il coperchio, tappi",
+    "rm": "Cabels, serrar il viertgel, zaffers"
    },
    "text": {
-    "de": "Kabel von Kopf und Lampen in einer Schlaufe hinter dem Kopf durch den Kabelkamin führen. Deckel mit 6 × M3 × 10 zuschrauben (Moosgummi-Dichtband), HDMI-Stopfen einsetzen.",
-    "en": "Lead the cables of the head and lamps in a loop behind the head through the cable chimney. Screw the lid shut with 6 × M3 × 10 (foam rubber seal), insert the HDMI plug.",
-    "fr": "Passer les câbles de la tête et des lampes en boucle derrière la tête par la cheminée de câbles. Visser le couvercle avec 6 × M3 × 10 (joint en mousse), mettre le bouchon HDMI.",
-    "it": "Far passare i cavi della testa e delle lampade in un'ansa dietro la testa attraverso il camino dei cavi. Avvitare il coperchio con 6 × M3 × 10 (guarnizione in gomma), inserire il tappo HDMI.",
-    "rm": "Manar ils cabels dal chau e da las lampas en ina stgaglia davos il chau tras il chamin da cabels. Serrar il viertgel cun 6 × M3 × 10 (bindel da stagnar), metter il zaffer HDMI."
+    "de": "Kabel von Kopf, Status-LED und Lampen in einer Schlaufe hinter dem Kopf durch den Kabelkamin führen. Die Kamerakabel in den Kabelkamm an der Lüftungswand legen: Schlitz 1 = CAM1 (Weitwinkel), Schlitz 2 = CAM0 (Kopfkamera). Deckel mit 6 × M3 × 10 zuschrauben (Moosgummi-Dichtband), den Stopfen 10 ins Service-Fenster (HDMI, USB-C) und den Stopfen 16 in den SD-Schlitz drücken.",
+    "en": "Lead the cables of the head, status LED and lamps in a loop behind the head through the cable chimney. Lay the camera cables into the cable comb on the vent wall: slot 1 = CAM1 (wide angle), slot 2 = CAM0 (head camera). Screw the lid shut with 6 × M3 × 10 (foam rubber seal), press plug 10 into the service window (HDMI, USB-C) and plug 16 into the SD slot.",
+    "fr": "Passer les câbles de la tête, de la LED d'état et des lampes en boucle derrière la tête par la cheminée de câbles. Poser les câbles des caméras dans le peigne de la paroi d'aération : fente 1 = CAM1 (grand-angle), fente 2 = CAM0 (caméra de la tête). Visser le couvercle avec 6 × M3 × 10 (joint en mousse), enfoncer le bouchon 10 dans la fenêtre de service (HDMI, USB-C) et le bouchon 16 dans la fente SD.",
+    "it": "Far passare i cavi della testa, del LED di stato e delle lampade in un'ansa dietro la testa attraverso il camino dei cavi. Posare i cavi delle fotocamere nel pettine sulla parete di ventilazione: fessura 1 = CAM1 (grandangolo), fessura 2 = CAM0 (fotocamera della testa). Avvitare il coperchio con 6 × M3 × 10 (guarnizione in gomma), premere il tappo 10 nella finestra di servizio (HDMI, USB-C) e il tappo 16 nella fessura SD.",
+    "rm": "Manar ils cabels dal chau, da la LED da status e da las lampas en ina stgaglia davos il chau tras il chamin da cabels. Metter ils cabels da las cameras en il pettan vi da la paraid da ventilaziun: fessa 1 = CAM1 (grondangul), fessa 2 = CAM0 (camera dal chau). Serrar il viertgel cun 6 × M3 × 10 (bindel da stagnar), smatgar il zaffer 10 en la fanestra da servetsch (HDMI, USB-C) ed il zaffer 16 en la fessa SD."
+   },
+   "v51": {
+    "titel": {
+     "de": "Kabel und Deckel zu",
+     "en": "Cables and close the lid",
+     "fr": "Câbles et fermer le couvercle",
+     "it": "Cavi e chiudere il coperchio",
+     "rm": "Cabels e serrar il viertgel"
+    },
+    "text": {
+     "de": "Kabel von Kopf und Lampen in einer Schlaufe hinter dem Kopf durch den Kabelkamin führen. Deckel mit 6 × M3 × 10 zuschrauben (Moosgummi-Dichtband), HDMI-Stopfen einsetzen.",
+     "en": "Lead the cables of the head and lamps in a loop behind the head through the cable chimney. Screw the lid shut with 6 × M3 × 10 (foam rubber seal), insert the HDMI plug.",
+     "fr": "Passer les câbles de la tête et des lampes en boucle derrière la tête par la cheminée de câbles. Visser le couvercle avec 6 × M3 × 10 (joint en mousse), mettre le bouchon HDMI.",
+     "it": "Far passare i cavi della testa e delle lampade in un'ansa dietro la testa attraverso il camino dei cavi. Avvitare il coperchio con 6 × M3 × 10 (guarnizione in gomma), inserire il tappo HDMI.",
+     "rm": "Manar ils cabels dal chau e da las lampas en ina stgaglia davos il chau tras il chamin da cabels. Serrar il viertgel cun 6 × M3 × 10 (bindel da stagnar), metter il zaffer HDMI."
+    }
    }
   },
   {
@@ -2157,14 +2397,30 @@
     "en": "Done",
     "fr": "Terminé",
     "it": "Fatto",
-    "rm": "Finì"
+    "rm": "Fatg"
    },
    "text": {
-    "de": "In MoveEye Tilt auf ±60° und Pan auf ±90° begrenzen. Vor dem Druck des Unterteils die Masse des UPS HAT (E) mit Akkus nachmessen (siehe Anleitung).",
-    "en": "In MoveEye limit tilt to ±60° and pan to ±90°. Before printing the lower part, measure the UPS HAT (E) with its cells (see the guide).",
-    "fr": "Dans MoveEye, limiter le tilt à ±60° et le pan à ±90°. Avant d'imprimer la partie inférieure, mesurer l'UPS HAT (E) avec ses accus (voir la notice).",
-    "it": "In MoveEye limitare il tilt a ±60° e il pan a ±90°. Prima di stampare la parte inferiore misurare l'UPS HAT (E) con le batterie (vedi istruzioni).",
-    "rm": "En MoveEye limitar il tilt sin ±60° ed il pan sin ±90°. Avant che stampar la part sut, mesirar l'UPS HAT (E) cun ils accus (vesair l'instrucziun)."
+    "de": "In MoveEye Tilt auf ±60° und Pan auf ±90° begrenzen. Weitwinkel-Kamera, Tasten und Status-LED im Selbsttest prüfen. Vor dem Druck die Masse «Nachmessen» prüfen (IR-Modul, Linse der Weitwinkel-Kamera, CAM-Buchsen am Pi, UPS HAT (E) mit Akkus).",
+    "en": "In MoveEye limit tilt to ±60° and pan to ±90°. Check the wide-angle camera, buttons and status LED in the self-test. Before printing check the «measure first» dimensions (IR module, lens of the wide-angle camera, CAM sockets on the Pi, UPS HAT (E) with its cells).",
+    "fr": "Dans MoveEye, limiter le tilt à ±60° et le pan à ±90°. Vérifier la caméra grand-angle, les boutons et la LED d'état dans l'autotest. Avant l'impression, vérifier les cotes « à mesurer » (module IR, objectif de la caméra grand-angle, prises CAM du Pi, UPS HAT (E) avec ses accus).",
+    "it": "In MoveEye limitare il tilt a ±60° e il pan a ±90°. Controllare fotocamera grandangolare, pulsanti e LED di stato nell'autotest. Prima di stampare controllare le misure «da misurare» (modulo IR, obiettivo della fotocamera grandangolare, prese CAM del Pi, UPS HAT (E) con le batterie).",
+    "rm": "En MoveEye limitar il tilt sin ±60° ed il pan sin ±90°. Controllar la camera largangulara, ils buttuns e la LED da status en l'autotest. Avant la stampa controllar las mesiras «mesirar» (modul IR, lentilla da la camera largangulara, bischlas CAM dal Pi, UPS HAT (E) cun ils accus)."
+   },
+   "v51": {
+    "titel": {
+     "de": "Fertig",
+     "en": "Done",
+     "fr": "Terminé",
+     "it": "Fatto",
+     "rm": "Finì"
+    },
+    "text": {
+     "de": "In MoveEye Tilt auf ±60° und Pan auf ±90° begrenzen. Vor dem Druck des Unterteils die Masse des UPS HAT (E) mit Akkus nachmessen (siehe Anleitung).",
+     "en": "In MoveEye limit tilt to ±60° and pan to ±90°. Before printing the lower part, measure the UPS HAT (E) with its cells (see the guide).",
+     "fr": "Dans MoveEye, limiter le tilt à ±60° et le pan à ±90°. Avant d'imprimer la partie inférieure, mesurer l'UPS HAT (E) avec ses accus (voir la notice).",
+     "it": "In MoveEye limitare il tilt a ±60° e il pan a ±90°. Prima di stampare la parte inferiore misurare l'UPS HAT (E) con le batterie (vedi istruzioni).",
+     "rm": "En MoveEye limitar il tilt sin ±60° ed il pan sin ±90°. Avant che stampar la part sut, mesirar l'UPS HAT (E) cun ils accus (vesair l'instrucziun)."
+    }
    }
   }
  ],
@@ -2354,6 +2610,12 @@
    "fr": "Fermer (Échap)",
    "it": "Chiudi (Esc)",
    "rm": "Serrar (Esc)"
+  },
+  "Stand MoveEye %s": {
+   "en": "as of MoveEye %s",
+   "fr": "état MoveEye %s",
+   "it": "stato MoveEye %s",
+   "rm": "stadi MoveEye %s"
   }
  },
  "ui_mw": {
@@ -2471,11 +2733,11 @@
    "it": "Misurare prima: UPS HAT (E) con le batterie (ipotesi 90 × 80 × 26 mm) prima di stampare la parte inferiore.",
    "rm": "Mesirar l'emprim: UPS HAT (E) cun ils accus (supponì 90 × 80 × 26 mm) avant che stampar la part sut."
   },
-  "Own work of Daniel (DonElektro) – parametric Python model.": {
-   "de": "Eigenes Werk von Daniel (DonElektro) – parametrisches Python-Modell.",
-   "fr": "Œuvre propre de Daniel (DonElektro) – modèle Python paramétrique.",
-   "it": "Opera propria di Daniel (DonElektro) – modello Python parametrico.",
-   "rm": "Agen ovra da Daniel (DonElektro) – model Python parametric."
+  "Own work of Elektro – parametric Python model.": {
+   "de": "Eigenes Werk von Elektro – parametrisches Python-Modell.",
+   "fr": "Œuvre propre de Elektro – modèle Python paramétrique.",
+   "it": "Opera propria di Elektro – modello Python parametrico.",
+   "rm": "Agen ovra da Elektro – model Python parametric."
   },
   "Step": {
    "de": "Schritt",
@@ -3905,11 +4167,11 @@
     "wert": "5/6/7",
     "wenn": "v52",
     "unklar": {
-     "de": "gilt nur mit 220 Ω auf dem PCA9685-Board (Adafruit 815 oder Klon?) – klärt Daniel",
-     "en": "only with 220 Ω on the PCA9685 board (Adafruit 815 or clone?) – Daniel checks",
-     "fr": "seulement avec 220 Ω sur la carte PCA9685 (Adafruit 815 ou clone ?) – Daniel vérifie",
-     "it": "solo con 220 Ω sulla scheda PCA9685 (Adafruit 815 o clone?) – verifica Daniel",
-     "rm": "mo cun 220 Ω sin la plattina PCA9685 (Adafruit 815 u clon?) – Daniel scleresch"
+     "de": "gilt nur mit 220 Ω auf dem PCA9685-Board (Adafruit 815 oder Klon?) – klärt Elektro",
+     "en": "only with 220 Ω on the PCA9685 board (Adafruit 815 or clone?) – Elektro checks",
+     "fr": "seulement avec 220 Ω sur la carte PCA9685 (Adafruit 815 ou clone ?) – Elektro vérifie",
+     "it": "solo con 220 Ω sulla scheda PCA9685 (Adafruit 815 o clone?) – verifica Elektro",
+     "rm": "mo cun 220 Ω sin la plattina PCA9685 (Adafruit 815 u clon?) – Elektro scleresch"
     }
    },
    {
@@ -4586,11 +4848,11 @@
     "rm": "avant mintga stagiun"
    },
    "was": {
-    "de": "Moosgummi, Kabelverschraubung und HDMI-Stopfen dicht? Innen trocken?",
-    "en": "foam rubber, cable gland and HDMI plug tight? Dry inside?",
-    "fr": "joint, presse-étoupe et bouchon HDMI étanches ? Sec à l'intérieur ?",
-    "it": "guarnizione, pressacavo e tappo HDMI stagni? Asciutto dentro?",
-    "rm": "tegnidas, passacabel e cluchet HDMI stagns? Sitg en l'intern?"
+    "de": "Moosgummi, Kabelverschraubung und Stopfen (Service-Fenster, SD-Schlitz, Reserve) dicht? Innen trocken?",
+    "en": "foam rubber, cable gland and plugs (service window, SD slot, reserve) tight? Dry inside?",
+    "fr": "joint, presse-étoupe et bouchons (fenêtre de service, fente SD, réserve) étanches ? Sec à l'intérieur ?",
+    "it": "guarnizione, pressacavo e tappi (finestra di servizio, fessura SD, riserva) stagni? Asciutto dentro?",
+    "rm": "tegnidas, passacabel e zaffers (fanestra da servetsch, fessa SD, reserva) stagns? Sitg en l'intern?"
    }
   },
   {
@@ -4779,18 +5041,11 @@
     "rm": "Carta SD (v5.2)"
    },
    "text": {
-    "de": "Weitwinkel-Kamera in die Stirnwand (CAM1), IR-Modul 120° rechts neben die Kamera (Madenschraube M3), 2 Tasten in die Rückwand, Status-LED oben in den Kopf. Druckdateien: Druckdateien/v5-2/. Fehlt ein Teil im Paket, kommt der passende Stopfen hinein (12, 18–24).",
-    "en": "Wide-angle camera into the front wall (CAM1), IR module 120° next to the camera (M3 grub screw), 2 buttons into the back wall, status LED on top of the head. Print files: Druckdateien/v5-2/. If a part is missing in the package, fit the matching plug (12, 18–24).",
-    "fr": "Caméra grand-angle dans la paroi avant (CAM1), module IR 120° à côté de la caméra (vis sans tête M3), 2 boutons dans la paroi arrière, LED d'état sur la tête. Fichiers : Druckdateien/v5-2/. Si une pièce manque dans le paquet, poser le bouchon correspondant (12, 18–24).",
-    "it": "Telecamera grandangolare nella parete frontale (CAM1), modulo IR 120° accanto alla telecamera (grano M3), 2 pulsanti nella parete posteriore, LED di stato sopra la testa. File: Druckdateien/v5-2/. Se nel pacchetto manca un pezzo, montare il tappo corrispondente (12, 18–24).",
-    "rm": "Camera grondangul en la paraid davant (CAM1), modul IR 120° sper la camera (sbarra M3), 2 buttuns en la paraid davos, LED da status sur il chau. Datotecas: Druckdateien/v5-2/. Sch'i manca ina part en il pachet, metter il tappun correspundent (12, 18–24)."
-   },
-   "unklar": {
-    "de": "Masse «Nachmessen» vor dem Druck prüfen",
-    "en": "check the «measure first» dimensions before printing",
-    "fr": "vérifier les cotes «à mesurer» avant l'impression",
-    "it": "verificare le misure «da misurare» prima della stampa",
-    "rm": "controllar las mesiras «mesirar» avant la stampa"
+    "de": "Die microSD-Karte steckt nicht im Pi, sondern im Einbau-Kartenhalter der Verlängerung (15 cm) hinter dem SD-Schlitz der Stirnwand: Karte wechseln ohne das Gehäuse zu öffnen. Stopfen 16 abziehen, Karte herausnehmen bzw. einschieben, Stopfen wieder eindrücken. Vorher MoveEye herunterfahren.",
+    "en": "The microSD card is not in the Pi but in the panel card holder of the extension (15 cm) behind the SD slot in the front wall: change the card without opening the case. Pull out plug 16, take out or push in the card, press the plug back in. Shut down MoveEye first.",
+    "fr": "La carte microSD n'est pas dans le Pi mais dans le support de carte de la rallonge (15 cm) derrière la fente SD de la paroi avant : changer la carte sans ouvrir le boîtier. Retirer le bouchon 16, sortir ou insérer la carte, remettre le bouchon. Éteindre MoveEye avant.",
+    "it": "La scheda microSD non è nel Pi ma nel portaschede della prolunga (15 cm) dietro la fessura SD della parete frontale: cambiare la scheda senza aprire la custodia. Togliere il tappo 16, estrarre o inserire la scheda, rimettere il tappo. Prima spegnere MoveEye.",
+    "rm": "La carta microSD n'è betg en il Pi, mabain en il tegnacarta da la prolungaziun (15 cm) davos la fessa SD da la paraid davant: midar la carta senza avrir la chascha. Trair ora il zaffer 16, prender ora u metter en la carta, smatgar il zaffer puspè en. Avant serrar giu MoveEye."
    }
   }
  ],
@@ -5467,6 +5722,13 @@
    "fr": "Pièce",
    "it": "Pezzo",
    "rm": "Part"
+  },
+  {
+   "de": "Stand MoveEye %s",
+   "en": "as of MoveEye %s",
+   "fr": "état MoveEye %s",
+   "it": "stato MoveEye %s",
+   "rm": "stadi MoveEye %s"
   }
  ],
  "gehaeuse_v52": {
@@ -5591,7 +5853,7 @@
   }
  },
  "farben": {
-  "_hinweis": "Wunsch Daniel 01.11.2026: der ganze Kopfteil (alles, was sich dreht bzw. neigt) im Simulator in MoveEye-Orange (ui_style.gd ORG, Web #f59a4a) – Szene, Werkstatt und Browser-Werkstatt («Bauen») nehmen diese Farbe. Unterteil, Deckel, Zwischenboden, Füsse wie bisher. Dazu je Teil-id die Farbe (für die Browser-Werkstatt «Bauen», 639w: GB.farben[id]).",
+  "_hinweis": "Wunsch Elektro 01.11.2026: der ganze Kopfteil (alles, was sich dreht bzw. neigt) im Simulator in MoveEye-Orange (ui_style.gd ORG, Web #f59a4a) – Szene, Werkstatt und Browser-Werkstatt («Bauen») nehmen diese Farbe. Unterteil, Deckel, Zwischenboden, Füsse wie bisher. Dazu je Teil-id die Farbe (für die Browser-Werkstatt «Bauen», 639w: GB.farben[id]).",
   "kopf": "#f59a4a",
   "kopf_teile": [
    "turntable",
@@ -5603,6 +5865,21 @@
    "lamp2",
    "head52"
   ],
+  "grau": "#9a9ea3",
+  "grau_teile": [
+   "tub",
+   "tub52",
+   "lid",
+   "shelf",
+   "feet",
+   "plug",
+   "plug52",
+   "sdplug",
+   "resplug",
+   "wplug",
+   "sockel",
+   "irplug"
+  ],
   "turntable": "#f59a4a",
   "yoke": "#f59a4a",
   "arm2": "#f59a4a",
@@ -5613,7 +5890,7 @@
   "head52": "#f59a4a"
  },
  "pakete": {
-  "_hinweis": "Information (Entscheid Daniel 01.11.2026): drei Pakete. Die Seite «Bauen» bleibt bei den Varianten (gehaeuse / akku / mover); «variante» zeigt, welche Wahl dort passt. bom = Materialliste-IDs ohne optionale Extras, preis_chf = Summe der geschätzten bom-Preise (Zeilensumme, gerundet), extras = optionale bom-IDs (nicht in der Summe), stopfen = Druckteile nur für dieses Paket (dazu immer 17 für die Reserve-Öffnung). Solo und Mobil folgen später.",
+  "_hinweis": "Information (Entscheid Elektro 01.11.2026): drei Pakete. Die Seite «Bauen» bleibt bei den Varianten (gehaeuse / akku / mover); «variante» zeigt, welche Wahl dort passt. bom = Materialliste-IDs ohne optionale Extras, preis_chf = Summe der geschätzten bom-Preise (Zeilensumme, gerundet), extras = optionale bom-IDs (nicht in der Summe), stopfen = Druckteile nur für dieses Paket (dazu immer 17 für die Reserve-Öffnung). Solo und Mobil folgen später.",
   "stand": "01.11.2026",
   "liste": [
    {

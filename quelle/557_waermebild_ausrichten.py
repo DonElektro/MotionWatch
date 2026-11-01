@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 557: Assistent «Wärmebild ausrichten (warme Hand)» (Web /thermal_align und Fenster), Wärmebild-Modell des Simulators (Thermal-90 oder 45°), Texte und Anleitung der Teile 554 / 555 / 557. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Wish of Daniel (30.10.2026, «Wärmebild wie Thermal-90»): the simulator offers the thermal camera «Thermal-90 (Waveshare)»
+# Wish of Besitzer (30.10.2026, «Wärmebild wie Thermal-90»): the simulator offers the thermal camera «Thermal-90 (Waveshare)»
 #   (80 × 62 pixels, 90° × 67°, 15 pictures/s like the driver in 080, NETD 125 mK - Waveshare / Core Electronics data sheet)
 #   or the old 45° model; /info and every answer («thermal_model») say which -> SIM["info"]["thermal"] (230 sim_geom fits the
 #   picture with fov_h / fov_v, 290 fetches at the fps of the model).

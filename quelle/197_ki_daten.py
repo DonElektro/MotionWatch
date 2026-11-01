@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 197: KI-Daten aufräumen – Trainingspaket mit «Vielfalt», Liste der Pakete, alte Pakete löschen (Web und Fenster). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Wunsch Daniel (29.10.2026, «KI-Daten aufräumen»):
+# Wunsch Besitzer (29.10.2026, «KI-Daten aufräumen»):
 #   * «Trainingspaket für ein eigenes KI-Modell (YOLO)» (Reiter Simulator und Fenster) hat dieselbe Wahl wie der Simulator:
 #     «Vielfalt: normal / hoch» (dataset.gd / kitrain.gd, Name «vielfalt» wie dort).
 #   * Die Pakete (Ordner user://trainingsbilder/<Zeit> + ZIP «MoveEye-Trainingsbilder_….zip», bis 3D-4.21 «MW-…», auf dem Schreibtisch) liegen auf dem

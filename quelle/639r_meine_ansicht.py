@@ -1,8 +1,8 @@
 #@ MoveEye – Teil 639r: «Meine Ansicht» – der mittlere Knopf der Bedienleiste (639o, Fenster 570, Simulator bedienleiste.gd): die Menüs / Karten auf- und zugeklappt, wie der Benutzer sie selbst eingestellt hat; gespeichert pro Benutzer und Seite auf dem Pi (CFG ui_ansicht, /api/ansicht), auf allen Geräten gleich. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
-# Daniel (1.11.2026): «der mittlere der 3 Knöpfe wird Meine Ansicht».
+# Besitzer (1.11.2026): «der mittlere der 3 Knöpfe wird Meine Ansicht».
 #   * aktiv: jedes Auf- / Zuklappen einer Gruppe / Karte durch den Benutzer wird gemerkt (die Seite schreibt gebündelt, 1 s).
 #   * «Alle zuklappen» / «Alle aufklappen»: Meine Ansicht ist aus, das Gemerkte bleibt; die Mitte stellt es wieder her.
-#   * beim Start ist Meine Ansicht der Standard. «Nur Gruppen» und der Schalter «Beim Start: Nur Gruppen» bleiben (Daniel:
+#   * beim Start ist Meine Ansicht der Standard. «Nur Gruppen» und der Schalter «Beim Start: Nur Gruppen» bleiben (Besitzer:
 #     nichts entfernen ohne Zustimmung): «Nur Gruppen» = langer Druck / Rechtsklick auf die Mitte; ist der Schalter ein, startet
 #     die Seite wie bisher mit «Nur Gruppen» (Meine Ansicht aus). Übernahme einmal (ui_ansicht_mig): wer «Beim Start: Nur Gruppen»
 #     hatte, bekommt als erste Meine Ansicht «Nur Gruppen offen» und der Schalter geht aus (sonst wäre Meine Ansicht nie der Start).

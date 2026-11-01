@@ -777,7 +777,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 3.46.0")
+        self.root.title("MoveEye 3.47.0")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -996,7 +996,7 @@ class App:
         return tk.Frame(parent, bg=C["panel"], highlightthickness=1, highlightbackground=C["line"], padx=12, pady=10)
 
     def _tk_live_land(self, w=None, h=None):
-        """2.98.26: wide, low window (like Daniel's PC): the controls go right of the live picture instead of under it."""
+        """2.98.26: wide, low window (like the owner's PC): the controls go right of the live picture instead of under it."""
         try:
             w = w or self.root.winfo_width(); h = h or self.root.winfo_height()
             if w < 50 or h < 50:
@@ -1155,7 +1155,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 3.46.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 3.47.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -1175,7 +1175,7 @@ class App:
             self.tab_btns[tid] = b
         self._paint_tabs()
         if show("hdr_buttons"):
-            # 639t (Daniel 01.11.2026): the one header - ? · ♪ · ↻ · DE · ☰ · ⇱ · ▲ · ⚒ in this order like on every web page and in
+            # 639t (Besitzer 01.11.2026): the one header - ? · ♪ · ↻ · DE · ☰ · ⇱ · ▲ · ⚒ in this order like on every web page and in
             # the simulator; ✉ messages, ◷ timeline, ? manual and ◐ light / dark / red light are in ☰ (nothing gone)
             self._kopf_tk(top)
         keys = [k for k in badge_keys if show(k)] if not getattr(self, "_kopf_folded", False) else []   # 639t: ▲ folded = one line

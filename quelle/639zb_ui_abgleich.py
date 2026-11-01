@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 639zb: Abgleich der Ansicht MoveEye ↔ Simulator (P2 «totale Integration»: Feld «ui» mit Revision, letzte Änderung gewinnt, MoveEye führt bei Gleichstand und nach dem Neuverbinden), eine Einfach/Experte-Wahl und eine Sprache (P3), Zustand Aus / Wachsam / Voll, Push-Vorschau, Diagnose gegenseitig, Versions-Paar und Bedienermodus im Simulator (★ review_integration2). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Daniel (31.10. / 01.11.2026): «In MoveEye umschalten, und der Simulator zieht sofort mit, und umgekehrt» - ohne eigenen Schalter.
+# Besitzer (31.10. / 01.11.2026): «In MoveEye umschalten, und der Simulator zieht sofort mit, und umgekehrt» - ohne eigenen Schalter.
 #   * Geteilt (ui_gemeinsam.json «shared», UIS_KEYS): Einfach/Experte, Symbole farbig/schlicht, Sprache, Bewegung reduzieren,
 #     Stimme, Rundgang, Blinki, «Neu in …». Hell/Dunkel/Rotlicht bleibt pro Gerät («local»).
 #   * Protokoll (simulator3d/schnittstelle.json): MoveEye schickt im 10-Hz-Zustand (POST /state) «ui» = {"rev", "took", "v": {…}}.

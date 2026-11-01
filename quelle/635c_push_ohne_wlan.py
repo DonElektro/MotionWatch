@@ -1,4 +1,4 @@
-#@ MoveEye – Teil 635c: Kein WLAN-Name in ausgehenden Meldungen (Datenschutz, Daniel 01.11.2026): Push, ntfy, Telegram, Pushover, Web-Push, E-Mail, SMS, Webhook und das Test-Postfach zeigen statt der SSID nur einen Platzhalter («bekanntes WLAN»). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
+#@ MoveEye – Teil 635c: Kein WLAN-Name in ausgehenden Meldungen (Datenschutz, Besitzer 01.11.2026): Push, ntfy, Telegram, Pushover, Web-Push, E-Mail, SMS, Webhook und das Test-Postfach zeigen statt der SSID nur einen Platzhalter («bekanntes WLAN»). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
 # Der Name des WLAN verrät, wo das Gerät steht (Heim-WLAN, Campingplatz, Handy-Hotspot mit Vorname). Lokal (Web-Seite, Fenster)
 # bleibt er sichtbar - das sieht nur der Besitzer. Zwei Stufen:

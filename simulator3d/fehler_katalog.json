@@ -1,6 +1,6 @@
 {
  "v": 1,
- "_hinweis": "Gemeinsamer Fehler-Katalog MoveEye ↔ MoveEye Sim (Paket «Fehler-QR», Daniel 01.11.2026), Ergänzung zu ui_gemeinsam.json. Pro Fehler: Kennung, Titel, Erklärung, Schritte und optional eine Aktion, alles in de / en / fr / it / rm. MoveEye bettet die Datei beim Bauen ein (werkzeuge/bauen.py → quelle/639u_fehler_hilfe.py, FEHLER_KATALOG, bleibt in der Hauptdatei – Hilfe geht auch ohne Zusatzdaten); der Simulator liest sie aus res:// (scripts/fehler_hilfe.gd, export_presets.cfg). Neue Fehler: zuerst hier, dann bauen.",
+ "_hinweis": "Gemeinsamer Fehler-Katalog MoveEye ↔ MoveEye Sim (Paket «Fehler-QR», Elektro 01.11.2026), Ergänzung zu ui_gemeinsam.json. Pro Fehler: Kennung, Titel, Erklärung, Schritte und optional eine Aktion, alles in de / en / fr / it / rm. MoveEye bettet die Datei beim Bauen ein (werkzeuge/bauen.py → quelle/639u_fehler_hilfe.py, FEHLER_KATALOG, bleibt in der Hauptdatei – Hilfe geht auch ohne Zusatzdaten); der Simulator liest sie aus res:// (scripts/fehler_hilfe.gd, export_presets.cfg). Neue Fehler: zuerst hier, dann bauen.",
  "_felder": {
   "pfad": "Adresse der Hilfeseite in MoveEye: <MoveEye>/hilfe/fehler/<id>. Der QR-Code enthält nur diese Adresse (keine Passwörter, keine Schlüssel).",
   "fehler": "seite: mw | sim | beide. stufe: bad | warn. quelle.health: IDs der Selbstdiagnose von MoveEye (120 health_check), quelle.sim_diag: IDs der Selbstdiagnose des Simulators (diagnose.gd), quelle.meldung: englische Teile von Meldungen (Push, Bild «NO CAMERA FOUND»), quelle.wenn: Zusatzbedingung in MoveEye (639u). aktion: Schlüssel aus «aktionen». bau: Reiter der Seite «Bauen» mit der passenden Anleitung (real-bauen).",
@@ -1171,7 +1171,7 @@
     "de": [
      "Internet prüfen.",
      "Auf «Update erneut versuchen» tippen.",
-     "Meldet es «Signatur»: nur signierte Versionen installieren (Daniel signiert)."
+     "Meldet es «Signatur»: nur signierte Versionen installieren (Elektro signiert)."
     ],
     "en": [
      "Check the internet.",

@@ -1,4 +1,4 @@
-#@ MoveEye – Teil 565: die Übungen «Akku leer» und «WLAN / Internet weg» (141) spielen mit den Werten des Simulators (Aufräumen 2, Daniel 30.10.2026). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
+#@ MoveEye – Teil 565: die Übungen «Akku leer» und «WLAN / Internet weg» (141) spielen mit den Werten des Simulators (Aufräumen 2, Besitzer 30.10.2026). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
 # Der 3D-Simulator rechnet den USV-HAT, «WLAN weg / Internet weg» und die Hitze selbst (power.gd, «battery», «net»,
 # «ambient_c»). Darum gibt es jetzt EINEN Weg: ist der Simulator verbunden und simuliert er den Wert, stellen die Übungen

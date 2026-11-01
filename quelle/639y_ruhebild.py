@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 639y: Ruhebild – ein ruhiges Platzhalterbild statt Schwarz / «NO CAMERA FOUND», solange der Simulator startet, sich aktualisiert, eine Szene lädt oder nicht erreichbar ist (Web, Pi-Fenster, MJPEG / JPEG). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Wunsch Daniel (01.11.2026): nach dem Aktualisieren war das Live-Bild schwarz, weil der Simulator gerade sein Update lud und
+# Wunsch Besitzer (01.11.2026): nach dem Aktualisieren war das Live-Bild schwarz, weil der Simulator gerade sein Update lud und
 # neu startete (Chip «SIMULATION · PC 1 % · ⟳ Update 3.25.0»). Jetzt:
 #   * simwait_reason(): warum gerade keine Bilder vom Simulator kommen - «update» (Simulator meldet busy.what = update, oder
 #     MoveEye hat das Update angestossen / kennt eine neuere Version und die Verbindung ist eben abgerissen), «scene» (Szene /

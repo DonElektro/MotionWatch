@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 232: Personen im Wärmebild (nachts, wenn die normale Kamera nichts sieht). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# 2.98.13 (Wunsch Daniel): at night the normal camera often sees nobody (too dark, too far for the IR light). The thermal
+# 2.98.13 (Wunsch Besitzer): at night the normal camera often sees nobody (too dark, too far for the IR light). The thermal
 # camera still sees the warm body. A warm body (ThermalCam.detect: warmer than the scene by thermal_delta, moving unless
 # thermal_need_motion is off, in the zones, seen in 3 of 5 pictures) counts as a PERSON when it also
 #   - stands upright (taller than wide, as a person),
@@ -8,10 +8,10 @@
 #   - is warmer than the background but not hot like a fire or an engine (only with a camera that gives °C).
 # It then goes into the same person / alarm logic (push, recording, siren, zones of the recording) as «Person (Wärmebild)».
 # Option thermal_person (default on) - only at night (or by day too: thermal_person_day). Needs a thermal camera.
-# 2.98.22 (Wunsch Daniel: «das Wärmebild soll mitlaufen»): by day too is now the default, so the thermal camera always
+# 2.98.22 (Wunsch Besitzer: «das Wärmebild soll mitlaufen»): by day too is now the default, so the thermal camera always
 # runs along as soon as one is chosen - also with the overlay and the warm alarm off. Older settings are switched once
 # (thermal_migrate, called by 040); who switches «… by day too» off again keeps it off.
-# real-reh-fusspunkt (31.10.2026, Fehlalarm Daniel): a roe deer or a fox coming straight at the camera at night is narrow and
+# real-reh-fusspunkt (31.10.2026, Fehlalarm Besitzer): a roe deer or a fox coming straight at the camera at night is narrow and
 # looks «upright» in the thermal picture; with the 1.7 m of a person it seemed far away and so of person size -> push «Person».
 # Now the distance is estimated a second time from the FOOT POINT (lower edge of the box, flat ground): the camera height
 # (simulator: its pole «mast» from the twin info, else FOOT_CAM_H_M) and the tilt of the head (servo; simulator: the real
@@ -20,7 +20,7 @@
 # the thing clearly lower than a standing person (FOOT_ANIMAL_MAX_H_M), it was an animal. Since the third round this only
 # applies to a FLAT warm body - frontal / upright stays a person. Feet near the horizon or cut off at the picture edge: no
 # foot estimate, everything as before. Self-test: 417 (foot_selftest, thermal_maybe_selftest).
-# Decision Daniel (31.10.2026, third round): «animal» ONLY for a really FLAT warm body, everything upright stays as before:
+# Decision Besitzer (31.10.2026, third round): «animal» ONLY for a really FLAT warm body, everything upright stays as before:
 #   - upright boxes (h/w >= 1.3, thermal_person_check) are persons exactly as before - also a roe deer straight from the
 #     front, a child, a crouching person («im Zweifel Person»),
 #   - a flat warm body (failed the upright check, before only «warm») becomes «animal» when: it is night / low light, the
@@ -29,7 +29,7 @@
 #   - «Person?» (weak_person_feed): a flat box at the ground (w/h > WEAK_FLAT) that the AI of MoveEye calls a person with at
 #     least WEAK_AI_MIN (the normal AI threshold stays) AND a movement track or a warm body confirms it -> a person (alarm,
 #     «PERSON?»). It wins over «animal»: a warm body under a «Person?» never becomes an animal.
-# Code-Prüfung M3 (Daniel 31.10.2026, «im Zweifel Person?»): «animal» only when the AI of MoveEye really looked for weak
+# Code-Prüfung M3 (Besitzer 31.10.2026, «im Zweifel Person?»): «animal» only when the AI of MoveEye really looked for weak
 # persons in the last WEAK_OK_S seconds (AIDetector.weak_ok_t: own run on the Pi, or the PC helper with the standard model).
 # AI off, still loading, or a PC helper that gives no weak boxes: a flat warm body that would be an «animal» becomes
 # «PERSON? (THERMAL)» (a person, alarm) - never «no person». Upright warm bodies are persons as before.
@@ -53,7 +53,7 @@ FOOT_ANIMAL_MAX_H_M = 1.1   # «clearly lower than a person»: roe deer shoulder
                             # 0.35 … 0.4 m (about 0.5 m with the head) - Wildtier Schweiz / Hespeler «Rehwild heute»; standing
                             # adults are 1.45 m and taller. Small children and a crouching person are lower too - they stay
                             # persons: upright (thermal_person_check) or not flat (FLAT_MAX_ASP).
-FLAT_MAX_ASP = 0.8          # «really flat» (Daniel: wider than high): real height / real width from the side. Roe deer: shoulder
+FLAT_MAX_ASP = 0.8          # «really flat» (Besitzer: wider than high): real height / real width from the side. Roe deer: shoulder
                             # 0.6 … 0.9 m, head-body 0.95 … 1.35 m (Wildtier Schweiz) -> 0.5 … 0.8 (head held high up to ~0.9:
                             # then «warm», not animal); fox: shoulder 0.35 … 0.4 m, head-body 0.6 … 0.9 m (+ tail 0.35 … 0.45)
                             # -> 0.3 … 0.6. A crouching person (1.0 / 0.55 m = 1.8) and any child standing (> 3) are far above.

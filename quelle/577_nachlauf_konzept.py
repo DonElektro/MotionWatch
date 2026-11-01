@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 577: Nachlauf zum Konzept-Check – ein Wochenbericht, Rückkehr des Handys, Akku-Schwellen zusammen, Auto-Tuner begrenzt. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# 2.98.15 (Wunsch Daniel, Vorschläge aus dem Konzept-Check von 2.98.14):
+# 2.98.15 (Wunsch Besitzer, Vorschläge aus dem Konzept-Check von 2.98.14):
 #   1 Eine Nachricht pro Woche: der Montags-Push «Woche im Simulator» (142, simweek_on) steckt jetzt im Wochenbericht (426).
 #     Einstellung weekrep_sim («mit der Woche im Simulator»), übernommen aus simweek_on.
 #   4 Akku: die Schwelle des Akku-Sparens (batt_save_pct, 105) und die der Lagerfeuer-Spiele (mode_fire_min_pct, 130) stehen

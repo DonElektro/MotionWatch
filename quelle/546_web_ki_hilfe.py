@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 542: «KI-Hilfe» für den Menschen am Auslöser (KI-Rahmen, KI zielt, KI-Autopilot) – Live-Seite, Controller-Ansicht, Kopf folgt, Runde «mit KI-Hilfe». Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Wish of Daniel (30.10.2026): the guards at MoveEye in «Team gegen MoveEye» (the shutter of part 539) may switch on help
+# Wish of Besitzer (30.10.2026): the guards at MoveEye in «Team gegen MoveEye» (the shutter of part 539) may switch on help
 # of the AI for the running round, on the live page and in the «Controller-Ansicht» (538: L2 in a round):
 #   «KI-Rahmen»    MoveEye's live detection boxes (STATE person_boxes) on the live picture: persons green, uncertain dashed
 #                  (not confirmed by the AI this picture - STATE person_sure, from erk_frame below)

@@ -1,10 +1,10 @@
 #@ MoveEye – Teil 639w: Seite «Bauen» (/build, Mehr → Bauen; früher «Gehäuse & Bau» /case, leitet weiter): MoveEye komplett selbst bauen – 10 Reiter Übersicht · Teile · Einkauf · Drucken · Montage · Verkabeln · Software · Inbetriebnahme · Fehlersuche · Wartung, 3D-Werkstatt im Browser (three.js lokal, ohne Simulator), Varianten, «Mein Bau» pro Benutzer (/api/bau), Druckdateien (/build/datei, alle als ZIP), Knopf «Im Simulator ansehen» nur mit verbundenem Simulator; Eintrag im Fenster (Reiter Mehr); Selbsttest: Modelle = Quelle, Bau-Infos aktuell (Warnung). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Paket «real-gehaeuse» (01.11.2026), ausgebaut im Paket «real-bauen» (01.11.2026, Daniel: «ein Bediener kann MoveEye komplett
+# Paket «real-gehaeuse» (01.11.2026), ausgebaut im Paket «real-bauen» (01.11.2026, Besitzer: «ein Bediener kann MoveEye komplett
 # selbst bauen»). Eine Quelle: hardware/gehaeuse/bau.json (Teile, Materialliste mit Preis-Schätzung und Händler-Suche, Montage,
 # Drucken, Werkzeug, Sicherheit, Verkabeln, Software, Inbetriebnahme, Fehlersuche, Wartung, Varianten – 5 Sprachen).
 # werkzeuge/gehaeuse_bauen.py --texte macht daraus 639v (GEH_BAU, Texte), 639vb (three.js r160 + gehaeuse.glb, gepackt) und die
-# Daten des Simulators (werkstatt_daten.gd). Daniel (01.11.2026): die 3D-Werkstatt in MoveEye geht OHNE Simulator – MoveEye
+# Daten des Simulators (werkstatt_daten.gd). Besitzer (01.11.2026): die 3D-Werkstatt in MoveEye geht OHNE Simulator – MoveEye
 # liefert three.js, das Modell und die Daten selbst aus (auch offline); «Im Simulator ansehen» ist nur ein Zusatz.
 #   * /build: Seite (Reiter Mehr «Bauen»), Reiter über #uebersicht … #wartung; /case leitet auf /build weiter (alte Links).
 #   * /bau3d/<pfad>: three.js (gzip), /build/gehaeuse.glb: das Modell (gzip), /build/qr.svg: QR-Code zu dieser MoveEye-Seite.
@@ -15,7 +15,7 @@
 #   * /api/case: GET = ob der Simulator verbunden ist; POST {do: "sim", step?} -> Simulator /control werkstatt (wie bisher).
 #   * Mehr (525) und das Fenster (572 _tk_more_bar): ein Eintrag «Bauen». Gemeinsame Menü-Datei: «more» -> build
 #     (simulator3d/ui_gemeinsam.json; im Simulator heisst derselbe Eintrag «Bauen», mehr.gd, Fenster werkstatt.gd mit denselben Reitern).
-#   * «Fertig kaufen» (Daniel 01.11.2026, Teil 639zj): schmaler Hinweis ganz oben (#g-fertig), Paket wählen, «Fertig bestellen
+#   * «Fertig kaufen» (Besitzer 01.11.2026, Teil 639zj): schmaler Hinweis ganz oben (#g-fertig), Paket wählen, «Fertig bestellen
 #     (Anfrage)» öffnet die Rückmeldung (584 mwOrder) mit Art «Bestellung fertiges Gerät» und dem Paket.
 # Hier (nach 639p) weil render_page, sim_control, MORE_PAGE, smalltv_routes (639n), UI_GEMEINSAM (639p) vorher kommen.
 # ----------------------------------------------------------------------------
@@ -119,7 +119,7 @@ details summary{cursor:pointer;font-weight:600;padding:6px 0}
 <main>
   <div class="gc fk noprint" id="g-fertig" hidden></div>
   <div class="gc gtop"><div class="gt">
-    <h2><span data-i18n="Build yourself">Build yourself</span> · <span data-i18n="Case">Case</span> v<span id="g-ver"></span></h2><div class="mut" id="g-masse"></div>
+    <h2><span data-i18n="Build yourself">Build yourself</span> · <span data-i18n="Case">Case</span> v<span id="g-ver"></span> <span class="mut" id="g-stand" style="font-size:.6em;font-weight:400"></span></h2><div class="mut" id="g-masse"></div>
     <details id="g-vd"><summary><span data-i18n="Your variant">Your variant</span>: <span class="mut" id="g-vs"></span></summary><div id="g-var"></div></details>
     <div style="margin-top:10px"><b data-i18n="My build">My build</b> <span class="mut" id="g-prog-t"></span><div class="prog"><i id="g-prog"></i></div><div class="mut" id="g-save"></div></div>
   </div></div>
@@ -130,7 +130,7 @@ details summary{cursor:pointer;font-weight:600;padding:6px 0}
       <div class="noprint" id="g-simbox" style="display:none;margin-top:8px"><button type="button" class="sec" onclick="gSim(0)">🧊 <span data-i18n="View in the simulator">View in the simulator</span></button><div id="g-msg" class="mut"></div></div></div>
     <div class="gc"><div class="sum" id="g-sum"></div></div>
     <div class="gc warn"><b>⚠ <span data-i18n="Measure first: UPS HAT (E) with its cells (assumed 90 × 80 × 26 mm) before printing the lower part.">Measure first: UPS HAT (E) with its cells (assumed 90 × 80 × 26 mm) before printing the lower part.</span></b></div>
-    <div class="gc mut" data-i18n="Own work of Daniel (DonElektro) – parametric Python model.">Own work of Daniel (DonElektro) – parametric Python model.</div>
+    <div class="gc mut" data-i18n="Own work of Elektro – parametric Python model.">Own work of Elektro – parametric Python model.</div>
   </section>
   <section class="pane" id="p-teile"><div class="gc"><h2 data-i18n="Parts list">Parts list</h2><table class="gb" id="g-bom"></table></div></section>
   <section class="pane" id="p-einkauf"><div class="gc">
@@ -183,6 +183,9 @@ const ok = w => !w || Object.values(G.var).includes(w);
 const TEIL = {}; (GB.teile || []).forEach(x => TEIL[x.id] = x);
 const BOM = {}; (GB.bom || []).forEach(b => BOM[b.id] = b);
 const isV52 = () => G.var.gehaeuse === "v52";
+const GEH_VER = /*GEHVER*/"";                          // real-abgleich-v52: «Stand MoveEye X.Y.Z» from APP_VERSION (not in bau.json)
+// the texts of an assembly step: v5.2 (standard) or the v5.1 texts when v5.1 is chosen (bau.json «v51»)
+const sv = s => (!isV52() && s.v51) ? Object.assign({}, s, s.v51) : s;
 // the 3MF of a print part: v5.2 -> Druckdateien/v5-2/ (also for parts that exist only there), else the v5.1 file
 function pfile(datei) {
   const all = GB.druckdateien_einzeln || [], f1 = "MoveEye_v5-1_" + datei + ".3mf", f2 = "v5-2/MoveEye_v5-2_" + datei + ".3mf";
@@ -301,11 +304,12 @@ function gBuy() {
 }
 function gCsv() {
   const q = s => '"' + String(s == null ? "" : s).replace(/"/g, '""') + '"', H = GB.haendler || {};
-  const rows = [[t("done"), t("Qty"), t("Name"), t("Part number"), t("Price") + " CHF", t("Alternative"), t("Shop"), t("Search link"), t("optional")]];
+  const rows = [["MoveEye – " + t("Case") + " v" + (isV52() ? "5.2" : GB.version) + (GEH_VER ? " · " + fmt(t("as of MoveEye %s"), GEH_VER) : "")],
+                [t("done"), t("Qty"), t("Name"), t("Part number"), t("Price") + " CHF", t("Alternative"), t("Shop"), t("Search link"), t("optional")]];
   (GB.bom || []).filter(b => ok(b.wenn)).forEach(b => { const h = H[b.haendler] || {};
     rows.push([G.done.has("e:" + b.id) ? "x" : "", b.menge, gx(b.name), b.nr || "", b.preis != null ? chf(b.preis) : "", gx(b.alt), h.name || "", h.suche ? h.suche.replace("{q}", encodeURIComponent(b.suche || "")) : "", b.optional ? "x" : ""]); });
   const blob = new Blob(["﻿" + rows.map(r => r.map(q).join(";")).join("\r\n")], {type: "text/csv;charset=utf-8"});
-  const a = el("a"); a.href = URL.createObjectURL(blob); a.download = "MoveEye_Einkauf_v" + GB.version + ".csv"; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  const a = el("a"); a.href = URL.createObjectURL(blob); a.download = "MoveEye_Einkauf_v" + (isV52() ? "5.2" : GB.version) + (GEH_VER ? "_" + GEH_VER : "") + ".csv"; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
 }
 function fileLink(f, label) { const a = el("a", "", "⬇ " + (label || f)); a.href = "/build/datei/" + encodeURIComponent(f); a.setAttribute("download", f); return a; }
 function gPrint() {
@@ -322,7 +326,7 @@ function gPrint() {
   const tr = el("tr", "gh"), a = el("td", "", t("Print time") + ": " + fmt(t("about %s h"), Math.round(hrs * 10) / 10) + " · " + gx(D.zeit_hinweis)); a.colSpan = 10; tr.appendChild(a); tb.appendChild(tr);
   const ul = document.getElementById("g-phint"); ul.textContent = ""; (D.hinweise || []).forEach(h => ul.appendChild(el("li", "", gx(h))));
   const fl = document.getElementById("g-files"); fl.textContent = "";
-  const all = fileLink("MoveEye_v5-1_alle_Druckdateien.zip", t("All print files (ZIP)")); all.href = "/build/alle.zip"; fl.append(all, el("h3", "", t("Plates for the X2D (everything on 2 plates)")));
+  const all = fileLink((isV52() ? "MoveEye_v5-2_Druck_" : "MoveEye_v5-1_Druck_") + GEH_VER + ".zip", t("All print files (ZIP)")); all.href = "/build/alle.zip?v=" + (isV52() ? "v52" : "v51"); fl.append(all, el("h3", "", t("Plates for the X2D (everything on 2 plates)")));
   (GB.druckdateien || []).filter(f => f.startsWith("v5-2/") === isV52()).forEach(f => fl.appendChild(fileLink(f)));   // the plates of the chosen case
   fl.appendChild(el("h3", "", t("Single parts (3MF)"))); (GB.druckdateien_einzeln || []).filter(f => {
     const datei = f.replace(/^(v5-2\/)?MoveEye_v5-[12]_/, "").replace(/\.3mf$/, ""), p = (D.teile || []).find(x => x.datei === datei);
@@ -331,7 +335,7 @@ function gPrint() {
 }
 function stepLi(nr, s, id, cur) {
   const li = el("li", cur ? "cur" : ""), n = el("span", "nr", String(nr)), tx = el("span", "tx");
-  tx.append(el("b", "", gx(s.titel)), el("small", "", gx(s.text)));
+  s = sv(s); tx.append(el("b", "", gx(s.titel)), el("small", "", gx(s.text)));
   if (s.unklar) tx.appendChild(tags({unklar: s.unklar}));
   li.append(chk(id), n, tx); return li;
 }
@@ -355,7 +359,7 @@ function gAssembly() {
 function gStepUi() {
   const n = (GB.schritte || []).length, nx = document.getElementById("g-next");
   nx.textContent = G.step ? t("Next") + " ▶" : t("Start the assembly") + " ▶"; nx.disabled = G.step >= n;
-  document.getElementById("g-snr").textContent = G.step ? fmt(t("Step %d of %d"), G.step, n) + " – " + gx(GB.schritte[G.step - 1].titel) : "";
+  document.getElementById("g-snr").textContent = G.step ? fmt(t("Step %d of %d"), G.step, n) + " – " + gx(sv(GB.schritte[G.step - 1]).titel) : "";
   document.querySelectorAll("#g-steps li").forEach(li => li.classList.toggle("cur", li.id === "schritt-" + G.step));
 }
 function gStep(n) {
@@ -450,6 +454,7 @@ function gRender() {
   document.getElementById("g-ver").textContent = GB.version || ""; document.getElementById("g-masse").textContent = gx(GB.masse || "");
   BV.v52 = isV52(); BV.dev = G.var.akku === "entwicklung"; bv("paint");
   if (BV.v52) document.getElementById("g-ver").textContent = "5.2";
+  document.getElementById("g-stand").textContent = GEH_VER ? "· " + fmt(t("as of MoveEye %s"), GEH_VER) : "";
   gVar(); gTabs(); gSummary(); gParts(); gBuy(); gPrint(); gAssembly(); gWire(); gSoftware(); gFix(); gWart(); gInfo(); gProg();
   document.getElementById("g-simbox").style.display = SIM_ON ? "" : "none";
 }
@@ -516,6 +521,7 @@ function shown(id) {
   const r = row(id), art = r.art || "", s = B.step;
   if (art === "v52" && !B.v52) return false;           // real-v52-standard: v5.2 parts in every step (bau.json «schritt»)
   if (art === "dev" && !B.dev) return false;           // development: socket 13 instead of the UPS HAT
+  if (r.ohne) return false;                            // 12 blind plug: only in the scene (device without the wide camera)
   const by = REPL[id];                                 // replaced by the part of the chosen variant (lower part v5.2, socket ...)
   if (by && parts[by] && ((row(by).art === "v52" && B.v52) || (row(by).art === "dev" && B.dev))) return false;
   const pr = art === "druck" || !!r.datei;
@@ -565,7 +571,7 @@ renderer.domElement.addEventListener("pointerup", e => {
   down = null;
 });
 new GLTFLoader().load("/build/gehaeuse.glb", g => {
-  const farbe = id => (row(id) || {}).farbe || (GB.farben || {})[id] || (E[id] || {}).farbe || "";   // colours from the data (bau.json / modelle.json), else the model's
+  const FB = GB.farben || {}, farbe = id => (row(id) || {}).farbe || FB[id] || ((FB.grau_teile || []).includes(id) && FB.grau) || (E[id] || {}).farbe || "";   // colours from the data (bau.json / modelle.json), else the model's
   g.scene.traverse(o => { if (o.isMesh) { o.material = o.material.clone(); o.material.side = THREE.DoubleSide; o.material.roughness = 0.6; o.material.metalness = 0;
     if (farbe(o.name)) o.material.color.set(farbe(o.name)); parts[o.name] = {mesh: o}; } });
   scene.add(g.scene); msg.textContent = ""; size(); view(145, 24, 0.5); step(B.step);
@@ -590,6 +596,7 @@ def geh_page():
     J = lambda o: json.dumps(o, ensure_ascii=False).replace("</", "<\\/")
     return (render_page(GEH_PAGE, "more").replace("/*GEHDE*/", js, 1).replace("/*GEHBAU*/null", J(GEH_BAU), 1)
             .replace("/*GEHFK*/null", J(geh_fk()), 1).replace("/*GEHM3*/null", J(BAU3D_MODELLE), 1)
+            .replace("/*GEHVER*/\"\"", json.dumps(APP_VERSION), 1)
             .replace("/*GEHSIM*/false", "true" if CFG.get("sim_on") else "false", 1)
             .replace("/*GEHTABS*/", J([list(x) for x in BAU_TABS])).replace("/*GEH3D*/", GEH_3D_JS, 1)
             .replace("/*GEHFERTIG*/", fertig_js(), 1))                       # «Fertig kaufen» (639zj): the hint at the top
@@ -664,19 +671,25 @@ def geh_druck_namen():
     return list(GEH_BAU.get("druckdateien") or []) + list(GEH_BAU.get("druckdateien_einzeln") or [])
 
 
-def geh_alle_zip():
-    """all print files that are here in one ZIP (3MF are compressed already: stored) - None without the repository"""
+def geh_alle_zip(v52=True):
+    """the print files of one case (v5.2: Druckdateien/v5-2/, v5.1: the others) that are here in one ZIP, named with the
+    version (real-abgleich-v52: MoveEye_v5-2_Druck_X.Y.Z) - 3MF are compressed already: stored. None without the repository"""
     import io
     import zipfile
     d = geh_druck_dir()
-    fs = [n for n in geh_druck_namen() if os.path.isfile(os.path.join(d, n))]
+    fs = [n for n in geh_druck_namen() if os.path.isfile(os.path.join(d, n)) and n.startswith("v5-2/") == v52]
     if not fs:
         return None
     b = io.BytesIO()
     with zipfile.ZipFile(b, "w", zipfile.ZIP_STORED) as z:
         for n in fs:
-            z.write(os.path.join(d, n), "MoveEye_Gehaeuse_v5-1/" + n)
+            z.write(os.path.join(d, n), geh_alle_name(v52) + "/" + n.split("/")[-1])
     return b.getvalue()
+
+
+def geh_alle_name(v52=True):
+    """the name of the print ZIP with the running version, e.g. MoveEye_v5-2_Druck_3.46.1 (the 3MF keep their names)"""
+    return ("MoveEye_v5-2_Druck_" if v52 else "MoveEye_v5-1_Druck_") + APP_VERSION
 
 
 _BAU3D_CACHE = {}
@@ -744,10 +757,11 @@ def smalltv_routes(app, reply, body):                     # + 639w: /build, /cas
 
     @app.route("/build/alle.zip")
     def geh_alle():
-        b_ = geh_alle_zip()
+        v52_ = request.args.get("v", "v52") != "v51"
+        b_ = geh_alle_zip(v52_)
         if b_ is None:
             return redirect(GEH_BAU.get("github", "") + "/tree/main/hardware/gehaeuse/Druckdateien", code=302)
-        return Response(b_, mimetype="application/zip", headers={"Content-Disposition": 'attachment; filename="MoveEye_Gehaeuse_v5-1_Druckdateien.zip"'})
+        return Response(b_, mimetype="application/zip", headers={"Content-Disposition": f'attachment; filename="{geh_alle_name(v52_)}.zip"'})
 
     @app.route("/api/bau", methods=["GET", "POST"])
     def api_bau():                                       # «Mein Bau»: variant and checklist per user (every device)

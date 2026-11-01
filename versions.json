@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-01 21:38",
+ "generated": "2026-11-01 23:20",
  "versions": [
+  {
+   "version": "3.47.0",
+   "file": "webcam_bewegung_3_47_0.py",
+   "url": "",
+   "sha256": "07d1f7104f453c77dc836b84dd95e362197440fb1d322a8317fb18f3e2a41317",
+   "date": "2026-11-01 23:20",
+   "notes": "Gehäuse-Abgleich v5.2: Montage-Texte v5.2, Szene immer v5.2 mit Stopfen 12/19, Grau #9a9ea3 und Kopf orange, «Stand MoveEye X.Y.Z» im Bausatz, Akku UPS HAT (E) mit 4 × 21700 in Texten und Simulator, Bausatz-Link auf /info/; Trailer nur noch im Entwickler-Bereich; Entwickler heisst «Elektro», keine privaten Angaben mehr in Programm und Druckdateien.",
+   "size": 4833087,
+   "sig": "48e4726cb433fab82149c3a26f58ecc4ac662b1f803179b585a56f4c749caed6827a264a18ee3cc7e61cd2906583113e6b36d42dc5c25b59e7df2da4a10e5d0e",
+   "data": {
+    "file": "moveeye_daten_3_47_0.zip",
+    "url": "",
+    "sha256": "9a87759a4229cece16aabc8c2bd294bc520fcf608363b31645cdedc4b3b2d9ae",
+    "size": 3311895,
+    "sig": "0d3ee79a7aca90f4497f549fb4d4fcf6187cb8420e3a525255720cb30cda69e032022cbe735fffae865a8442a63095622c32dd2f09283fed1a22402e951a770f"
+   }
+  },
   {
    "version": "3.46.0",
    "file": "webcam_bewegung_3_46_0.py",
    "url": "",
    "sha256": "26f7451d86fe31fdb3974a0d63bdb75af284237b18c352ec2c7dd9be0add4709",
-   "date": "2026-11-01 21:38",
+   "date": "2026-11-01 23:20",
    "notes": "Gehäuse v5.2 ist jetzt überall Standard (v5.1 bleibt wählbar); Selbstbau-Paket MoveEye_Bausatz.zip (Anleitung als PDF in 5 Sprachen, Druckdateien, Bestelllisten, signierte Software) als GitHub-Release; USB-Installer für den Simulator-PC (Ubuntu 24.04, Kiosk).",
    "size": 4833768,
    "sig": "784467f3c28c384ac3b1469dec319dccdf3ddc94a55d63f50de51a1f7d4e7d12bdb3046f005ac1705ad727aa55ca7a3da3b20a8db4944a1bea960f30f2581b04",
@@ -136,23 +153,6 @@
     "sha256": "efc7a06b33c1dba0b394cbe92ad03e796ea8248be698da86f36d023ef358f73b",
     "size": 1589561,
     "sig": "5c66c080b39a742e94f4e3673614d59230d129157dd793074dd5c56e162e45b8afcfee54f665cb357ee9d67a7f5f4bceb5f8e8fdc8d703a294d4f7440d9f5101"
-   }
-  },
-  {
-   "version": "3.38.0",
-   "file": "webcam_bewegung_3_38_0.py",
-   "url": "",
-   "sha256": "f338a6e98d186945f09a11dcd4418a20fb39312907a4e3472ab67398dfb629f4",
-   "date": "2026-11-01 17:42",
-   "notes": "Simulator: System → Sicherung – ZIP auf dem PC, in einen Ordner/USB oder in die MoveEye-Sicherung; Wiederherstellen im Simulator oder aus MoveEye (nur Besitzer), vorher wird automatisch der aktuelle Stand gesichert.",
-   "size": 4688595,
-   "sig": "b8b4b82bb0cae94fb89cb15fc3710c5f826f13371b36cf06292aac44656650c51303d19c6b36bc4a0fc3baa15b681062e23968e39108f2a88e33ab0646d00309",
-   "data": {
-    "file": "moveeye_daten_3_38_0.zip",
-    "url": "",
-    "sha256": "e1bd303f3c954d98779dac7e65129d686f062a76870dafdfc7d9433cfa85e2f7",
-    "size": 1586833,
-    "sig": "0fb0d4b3c8ddaa277df70cac02762356c25ada1c90ced6454d65e5c85a771e26b4f887e0b34dd6404c5b545ced1ec3f2ba97bfff732c5fec4f8fcec7b841ab0e"
    }
   },
   {

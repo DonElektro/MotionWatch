@@ -78,7 +78,7 @@ class SenxorSource:
 
 
 HW_REINIT = {"want": False}
-# 3.44.3 (variants without a head, Daniel 01.11.2026): «automatic» without a PCA9685 falls back to servos on GPIO 17/27. A
+# 3.44.3 (variants without a head, Besitzer 01.11.2026): «automatic» without a PCA9685 falls back to servos on GPIO 17/27. A
 #   hobby servo gives no feedback - nobody can tell whether one hangs there. The self-check says so honestly (a hint, not a
 #   green tick: a housing v5.x has a PCA9685, so it is missing or not answering); chosen «GPIO» by hand stays «ok».
 SERVO_GPIO_FALLBACK_TEXT = "no servo driver found - GPIO fallback (17 / 27) without feedback"

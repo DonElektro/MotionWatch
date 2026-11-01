@@ -1,11 +1,11 @@
 #@ MoveEye – Teil 589: «Blinki», die kleine Figur aus dem MoveEye-Logo (Auge, Füsse; ohne Sichtfächer, Stimmung kurz in einer Sprechblase) für die Einrichtung und die Rundgänge – Web (SVG + CSS, Skript vor /g2/ui.js) und Fenster (kleines Bild, mit cv2 gezeichnet). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Wish of Daniel (30.10.2026): an own, ABSTRACT mascot «Blinki» - only in the guide (setup assistant) and the tours.
+# Wish of Besitzer (30.10.2026): an own, ABSTRACT mascot «Blinki» - only in the guide (setup assistant) and the tours.
 # Built from the shapes of the logo (144 / simulator mw_logo.gd): the orange field-of-view fan is the body, the eye at the
 # bottom (orange iris, dark pupil) is the face, the four detection corners float in the fan and show the mood.
 #   * blinks every few seconds (the name), looks left / right, hops when a step is done, «talks» when a new text comes
 #   * moods: normal · point (explains, looks at the text) · happy (eye smiles, heart) · think (looks up, three dots)
-# Daniel 31.10.2026: Blinki everywhere WITHOUT the orange fan - eye, rim, feet; the mood shows in the eye and the hop.
+# Besitzer 31.10.2026: Blinki everywhere WITHOUT the orange fan - eye, rim, feet; the mood shows in the eye and the hop.
 #   The mood signs (corners, arrow, heart, dots) appear for ~2 s in a small speech bubble above / right of Blinki, only when
 #   the mood changes (MWBlinki.mood), then fade out; same bubble in the simulator (mehr_icons.gd blinki_bubble). Window: no
 #   bubble. viewBox now 26 59 48 52 (the old coordinates stay). The logo (144 / mw_logo.gd) is separate and keeps its fan.

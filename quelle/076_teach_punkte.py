@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 076: Teach-in: Positionen mit dem Joystick anfahren und mit Namen speichern («Zelt», «Eingang» …) – die Wegpunkte der Patrouille, erweitert um Name und «in der Runde». Genau anfahren, umbenennen, löschen, ordnen, als Park- / Grundstellung. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# 2.98.35 (Wunsch Daniel): no new list - the taught points ARE the waypoints (WAYPOINTS, part 020, saved with the
+# 2.98.35 (Wunsch Besitzer): no new list - the taught points ARE the waypoints (WAYPOINTS, part 020, saved with the
 #   settings). An entry is [pan %, tilt %] (as before, also «📍＋ Wegpunkt», Platz einrichten 317, Aufstell-Planer) or
 #   [pan %, tilt %, "name"] or [pan %, tilt %, "name", 0] (0 = not in the round). Everything that reads w[0] / w[1] works
 #   unchanged (patrol, smart round 162, simulator twin 290, the stick drawing on the web page and in the window).

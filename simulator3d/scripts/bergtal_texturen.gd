@@ -1,5 +1,5 @@
 extends RefCounted
-## Foto-Texturen im Bergtal (3.30): Texturen aus eigenen Fotos von DonElektro, mit seiner Erlaubnis (LIZENZEN.md).
+## Foto-Texturen im Bergtal (3.30): Texturen aus eigenen Fotos von Elektro, mit seiner Erlaubnis (LIZENZEN.md).
 ## Dateien: res://texturen/*.jpg (Qualität 85, aus werkzeuge/texturen_bauen.py; Naht in der Mitte geglättet).
 ## Nicht benutzte Fotos liegen in texturen/unbenutzt/ (mit .gdignore: nicht importiert, nicht im Export).
 ##

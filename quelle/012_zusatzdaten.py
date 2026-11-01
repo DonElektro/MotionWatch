@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 012: Zusatzdaten laden (moveeye_daten_X_Y_Z.zip neben dem Programm: grosse Web-Seiten, Bilder, Übersetzungen, ältere Änderungen). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Zusatzdaten (Paket «MoveEye-Datei verkleinern», Entscheid Daniel 31.10.2026): devices up to 2.98.x accept program files of
+# Zusatzdaten (Paket «MoveEye-Datei verkleinern», Entscheid Besitzer 31.10.2026): devices up to 2.98.x accept program files of
 # at most 8 MiB. werkzeuge/bauen.py therefore moves the big literals of quelle/ (web pages, JavaScript, icons as base64,
 # translations, the older part of the list of changes) into moveeye_daten_X_Y_Z.zip next to the program file and writes
 # _zd("<key>", <fallback>) in their place. The sources in quelle/ stay unchanged; only the built file differs.

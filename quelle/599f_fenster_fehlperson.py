@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 599f: Fenster: Karte «Hier steht etwas, das wie eine Person aussieht – ignorieren?» (feste Fehl-Personen, 418), gleicher Text und gleiche Knöpfe wie im Web. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Entscheid Daniel (31.10.2026): the card comes into the desktop window too. App._refresh (every few seconds) looks at
+# Entscheid Besitzer (31.10.2026): the card comes into the desktop window too. App._refresh (every few seconds) looks at
 # fixp_state(); a new card opens a small window (like the walk test, 575) with the picture of the spot and the buttons
 # «Ignorieren (Maske übernehmen)» / «Ist eine Person» / «Später» - the same answer as the web card (fixp_answer, 418).
 # ----------------------------------------------------------------------------

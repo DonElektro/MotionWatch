@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 255: Wecker mit Schlafplatz und Gesten (2.98.7). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Idea of Daniel's daughter: MoveEye stands somewhere in the room. While you sleep the camera looks away (a set direction,
+# Idea of the owner's daughter: MoveEye stands somewhere in the room. While you sleep the camera looks away (a set direction,
 # e.g. the door). When the alarm rings it turns to the sleeping place and understands two gestures:
 #   wave (hand to and fro)  -> snooze (again after N minutes)
 #   sit up / get up         -> alarm off

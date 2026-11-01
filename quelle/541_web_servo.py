@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 539: Webseite «Servos» (/servo): Not-Aus / Freigeben, wer den Kopf steuert, Teach-in-Positionen, Diagnose mit Export; dazu Not-Aus und «wer steuert» auf der Live-Seite und der Eintrag unter Mehr → Werkzeuge. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# 2.98.35 (Wunsch Daniel): one page for the servos, phone first: (1) state + ⏹ Not-Aus / ✅ Freigeben + who steers the head,
+# 2.98.35 (Wunsch Besitzer): one page for the servos, phone first: (1) state + ⏹ Not-Aus / ✅ Freigeben + who steers the head,
 #   a small picture and arrows to drive, (2) the taught points (Teach-in: save, go, rename, order, round, park / home,
 #   take over from «Platz einrichten»), (3) diagnosis (counters, fault memory, maintenance hints, export JSON / CSV).
 #   Reached from Mehr → Werkzeuge («Servos»), from the live page («📍 Positionen») and the settings section.

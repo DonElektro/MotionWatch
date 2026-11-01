@@ -7,7 +7,7 @@
 #   zusatz_mitholen(...)    called by update_install() (390) after a new program file was saved: its zip comes along at once
 #                           (so a device from this version on has no minute without web pages).
 # Older devices (2.98.x up to the last version without data zip) only fetch the .py - the new program fetches its zip itself (zusatz_start).
-# Brücke (Entscheid Daniel 31.10.2026): UPD_BRIDGE (3.0.2, one file below 8 MiB, no zip needed) stays in versions.json and in
+# Brücke (Entscheid Besitzer 31.10.2026): UPD_BRIDGE (3.0.2, one file below 8 MiB, no zip needed) stays in versions.json and in
 # the repository for ever. A version entry with «needs» (lowest version that may install it directly) is offered only to
 # devices with at least that version; older ones get the newest bridge first (update_pick(), used by update_check()).
 # ----------------------------------------------------------------------------

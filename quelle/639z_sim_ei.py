@@ -1,4 +1,4 @@
-#@ MoveEye – Teil 639z: ein Geheimnis im Bergtal des 3D-Simulators – das Herz in der Live-Ansicht (Daniel 1.11.2026, Paket real-easter-egg). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
+#@ MoveEye – Teil 639z: ein Geheimnis im Bergtal des 3D-Simulators – das Herz in der Live-Ansicht (Besitzer 1.11.2026, Paket real-easter-egg). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
 # NICHTS davon in Hilfe, Anleitung oder Blinki – keine sichtbaren Texte. (Spoiler, nur für Entwickler: simulator3d/scripts/
 # bergtal_ei.gd beschreibt den ganzen Ablauf.) Hier nur das Ende in MoveEye:

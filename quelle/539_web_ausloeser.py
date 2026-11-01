@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 539: «Auslöser» – ein Mensch steuert die Kamera und drückt ab (Fadenkreuz, runder Knopf, R2, Test-Postfach). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Wish of Daniel (30.10.2026): when a PERSON steers the camera instead of the AI («Team gegen MoveEye», the game of the
+# Wish of Besitzer (30.10.2026): when a PERSON steers the camera instead of the AI («Team gegen MoveEye», the game of the
 # 3D simulator where the guards sit at MoveEye), the guard aims the MIDDLE of the live picture at a player and presses the
 # shutter. The simulator decides (simulator3d/scripts/gameshutter.gd): a hit = the player touches the circle in the middle
 # (its size by the difficulty of the game: easy big, hard small), a miss = a false alarm (−50, the shutter locked 3 s).

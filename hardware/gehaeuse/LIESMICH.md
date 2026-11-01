@@ -136,6 +136,6 @@ denselben Reitern: Übersicht · Teile · Einkauf · Drucken · Montage · Verka
 
 ## Lizenz
 
-Das Gehäuse (Modell, Quellcode in `Quellcode/`, Druckdateien, Anleitungen und Bilder) ist **eigenes Werk von DonElektro**.
-Alle Rechte bei DonElektro; eine offene Lizenz ist (noch) nicht vergeben. Die Werkzeuge im Repository
+Das Gehäuse (Modell, Quellcode in `Quellcode/`, Druckdateien, Anleitungen und Bilder) ist **eigenes Werk von Elektro**.
+Alle Rechte bei Elektro; eine offene Lizenz ist (noch) nicht vergeben. Die Werkzeuge im Repository
 (`werkzeuge/gehaeuse_bauen.py`) gehören zum Projekt MoveEye.

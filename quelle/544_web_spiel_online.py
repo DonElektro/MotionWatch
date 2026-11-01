@@ -74,7 +74,7 @@ Object.assign(I18N.de, /*GONLDE*/{});
   const paintF = (box, S) => { const F = S.funnel; if (!F) { if (!S.public) box.appendChild(el("div", "mut", "⚠ " + t("local-warn"))); return; }
     const w = el("div", ""); w.id = "g-funnel"; w.style.cssText = "border:1px solid " + (F.on ? "var(--acc)" : "var(--line)") + ";border-radius:10px;padding:8px;margin:6px 0";
     if (!S.public && !F.on) { const r = el("div", "mut", "⚠ " + t(F.avail ? "local-warn-funnel" : "local-warn"));
-      // 2.98.47 (Daniel): no extra button «Funnel einschalten» - the switch is right below
+      // 2.98.47 (Elektro): no extra button «Funnel einschalten» - the switch is right below
       w.appendChild(r); }
     const lab = el("label", "opt"), cb = document.createElement("input"); cb.type = "checkbox"; cb.className = "sw"; cb.id = "g-funnel-sw"; cb.checked = !!F.on; cb.disabled = !F.can;
     lab.append(el("span", "", "🌍 " + t("Online game over Tailscale Funnel")), cb); if (!F.can) { lab.style.opacity = ".5"; lab.title = t("Only for the administrator"); }

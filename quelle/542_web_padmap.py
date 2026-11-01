@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 542: EIN Controller-Konzept (MWPad): dieselbe Belegung des Game-Controllers für die Controller-Ansicht (538), die Simulator-Seite, das Handy-Spiel und den 3D-Simulator. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Wish of Daniel (30.10.2026, «einheitliches Controller-Konzept»): one base mapping everywhere - left stick = head,
+# Wish of Besitzer (30.10.2026, «einheitliches Controller-Konzept»): one base mapping everywhere - left stick = head,
 # right stick = rover / view (R1 held = turn the view), R2 = shutter, A / B / X / Y = light / IR / photo / follow,
 # Select = swap pictures, Start = menu (held = leave), L3 = head to the middle, R3 = next view; a game round puts the
 # tools of the guard and the moves of the sneaker on the same places. The table MAP (modes, keys, texts in English and
@@ -14,7 +14,7 @@
 
 PADMAP_JS = r"""window.MWPad = window.MWPad || (function () {
   "use strict";
-  // ONE mapping of the game controller for MoveEye and its simulator (3D-4.13 / MoveEye 2.98.38, wish of Daniel 30.10.2026).
+  // ONE mapping of the game controller for MoveEye and its simulator (3D-4.13 / MoveEye 2.98.38, wish of Elektro 30.10.2026).
   // The same text is in simulator3d/scripts/padmap.gd (JS) and in MoveEye part 542 (PADMAP_JS) - the self-test compares them.
   // modes: [key, action, English, Deutsch]; the simulator acts on the action, the help overlays are made from the texts.
   const MAP = /*MAP*/{

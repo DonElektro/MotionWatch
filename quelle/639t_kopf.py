@@ -1,5 +1,5 @@
 #@ MoveEye – Teil 639t: der gemeinsame Kopf (ein Baustein für jede Web-Seite, das Pi-Fenster und den Simulator): feste Knöpfe ? · 🔔 · ↻ · DE · ☰ · ⛶ · ▲ · 🛠 in fester Reihenfolge, seiteneigene Knöpfe im ☰-Menü («Diese Seite»), und die Ein-/Ausblenden-Listen als Chips mit Symbol in Gruppen. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
-# Daniel (01.11.2026, Screenshot): «oben rechts im Kopf stehen je nach Reiter andere Knöpfe in anderer Reihenfolge» -> Entscheid: ein
+# Besitzer (01.11.2026, Screenshot): «oben rechts im Kopf stehen je nach Reiter andere Knöpfe in anderer Reihenfolge» -> Entscheid: ein
 # gemeinsamer Kopf, überall gleich. Die Liste der Knöpfe steht in simulator3d/ui_gemeinsam.json («kopf», eingebettet als UI_GEMEINSAM, 639p):
 #   ? Hilfe (Rundgang der Seite 516, sonst die Anleitung) · 🔔 Ton (Alarmton 510) · ↻ zuerst Live, dann neu laden (510, jetzt immer da)
 #   · DE Sprache · ☰ Menü · ⛶ Vollbild · ▲ Kopf einklappen (510) · 🛠 Entwickler (nur Entwickler-Bereich an UND Besitzer, wie 639s)
@@ -9,7 +9,7 @@
 # mit ihrer Id auf der Seite (nur unsichtbar), ihre Funktionen laufen unverändert.
 # Die Häkchen-Listen (☰ «Kopfzeile / Bereiche / Einstellungen», «◫ Ansicht der Live-Seite → Karten», Pi-Fenster ☰) zeigt derselbe Baustein:
 # MWK.toggles(box, gruppen) - Gruppen mit Symbol und Überschrift, pro Gruppe «alle an / aus», Chips mit Symbol und Namen, zwei Spalten
-# auf breiten Bildschirmen, eine auf dem Handy (Daniel 01.11.2026, zweiter Screenshot).
+# auf breiten Bildschirmen, eine auf dem Handy (Besitzer 01.11.2026, zweiter Screenshot).
 # Pi-Fenster: App._kopf_tk() (Knöpfe) und App._view_menu() (Liste) unten; Simulator: simulator3d/scripts/kopf.gd.
 
 MWK_KOPF = UI_GEMEINSAM["kopf"]

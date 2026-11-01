@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.46.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.47.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -487,6 +487,13 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.47.0
+3.47.0: Gehäuse v5.2 überall gleich: Montage-Texte v5.2, die Szene zeigt immer v5.2 mit Stopfen 12/19, Grau #9a9ea3 und
+orangem Kopf; Werkstatt zeigt «Stand MoveEye X.Y.Z»; Akku ist der UPS HAT (E) mit 4 × 21700. Die Trailer-Knöpfe sind aus dem
+Reiter Simulator weg (Trailer nur noch im Entwickler-Bereich). Entwickler heisst «Elektro».
+So testest du: Mehr › Bauen (v5.2, Stand MoveEye 3.47.0), im Bergtal den Kopf ansehen (orange, Rest grau), Fenster «Gerät»
+zeigt den Akku 4 × 21700; Mehr › Über den Simulator: «Elektro».
 
 NEU IN 3.46.0
 3.46.0: Gehäuse v5.2 ist überall Standard (Werkstatt, Bauen; v5.1 «ohne Weitwinkel» bleibt wählbar). Neu: Selbstbau-Paket

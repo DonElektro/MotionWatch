@@ -1,5 +1,5 @@
 #@ Motion Watch – Teil 360: Ordner des früheren Basis-Simulators (sim_dir), SMS über einen LTE-Stick. 3.23: der alte Python-Simulator «MoveEye Sim · Basis» (SIM_ZIP_B64, Installieren / Starten auf dem Pi) ist entfernt. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
-# 3.23 (Daniel 01.11.2026): «MoveEye Sim · Basis» (the old Python simulator, SIM_ZIP_B64, install / start / stop on the Pi) is
+# 3.23 (Besitzer 01.11.2026): «MoveEye Sim · Basis» (the old Python simulator, SIM_ZIP_B64, install / start / stop on the Pi) is
 # removed - MoveEye Sim · 3D is the simulator. An old installation in sim_dir() stays on the disk (nothing is deleted).
 def sim_dir():
     return os.path.join(DATA_DIR, "simulator")

@@ -1,4 +1,4 @@
-#@ MoveEye – Teil 639i: Reiter «Spielen» (Paket «Spielbereich», Daniel 31.10.2026; Geschichten-Menü) – Kopfzeile (Stufe, Spielstand), «Weiterspielen»-Hinweis, Regal «Geschichten» (Karten nur zum Anschauen), «Entdecken» (Orte der Reihe nach), Blinki; Web /play und Fenster-Reiter, Daten vom 3D-Simulator (spielbereich.gd). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
+#@ MoveEye – Teil 639i: Reiter «Spielen» (Paket «Spielbereich», Besitzer 31.10.2026; Geschichten-Menü) – Kopfzeile (Stufe, Spielstand), «Weiterspielen»-Hinweis, Regal «Geschichten» (Karten nur zum Anschauen), «Entdecken» (Orte der Reihe nach), Blinki; Web /play und Fenster-Reiter, Daten vom 3D-Simulator (spielbereich.gd). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
 # Same structure as the start screen «Spielen» of the simulator (simulator3d/scripts/spielbereich.gd): Blinki on top
 # (greets, a tip, happy about a new level / a finished adventure), the level with its bar, the adventures (Camping-Platz →
@@ -8,7 +8,7 @@
 # The state lives in the simulator (per PC: user://spiel/spielbereich.json); MoveEye keeps the last answer in
 # DATA_DIR/spielbereich.json so the tab shows it when the simulator is off. No ranking, no music, no animations besides
 # Blinki's blink.
-# Geschichten-Menü (Daniel 31.10.2026): the same cards as the simulator (geschichten.gd) - only to look at here: picture
+# Geschichten-Menü (Besitzer 31.10.2026): the same cards as the simulator (geschichten.gd) - only to look at here: picture
 # (/sim/story_pic/<id>.jpg from the simulator, else a drawn placeholder), one sentence, duration, «from X years», progress
 # in %; on top «Continue: <story>, <chapter> (x %)» as information; the head line has level and Spielstand. «Adventures»
 # is now «Discover». The badges moved into the discovery book (139 sheet 📖). «Das Hospiz» only for the owner (nacht_may:
@@ -16,7 +16,7 @@
 # Here (after 639h, before 640) because NAV_ITEMS (470), render_page (510/584), blinki_js (589),
 # smalltv_routes (552/599c), App (570) and the tables DE / TRX come before.
 # ----------------------------------------------------------------------------
-# 2.98.85 (Koordinator, bis Daniel entscheidet): «Spielen» steht unter «Mehr» (zweite Zeile nach «Übersicht») statt als 7. Reiter -
+# 2.98.85 (Koordinator, bis Besitzer entscheidet): «Spielen» steht unter «Mehr» (zweite Zeile nach «Übersicht») statt als 7. Reiter -
 # mit 7 Reitern passt die Leiste am Handy nicht mehr, «Mehr» wäre erst nach dem Wischen sichtbar. Als eigener Reiter wieder:
 # NAV_ITEMS.insert([k for k, *_r in NAV_ITEMS].index("more"), ("play", "/play", "Play area", "Playing"))  (+ NAV_SUB/NAV_OF-Zeilen weg)
 NAV_SUB["more"].insert(1, ("play", "/play", "Play area"))   # not «Play» (= «Abspielen» / «Lire» of videos)

@@ -1,10 +1,10 @@
-#@ MoveEye – Teil 553: SmallTV «Live-Bild und Wechsel» (Entscheide Daniel 30.10.2026 Abend): tagsüber alle 30 s Live-Bild ↔ Akku und Strom, Alarm als animiertes GIF (60 s), danach das Standbild 5 min, Bilder pro Tag. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
+#@ MoveEye – Teil 553: SmallTV «Live-Bild und Wechsel» (Entscheide Besitzer 30.10.2026 Abend): tagsüber alle 30 s Live-Bild ↔ Akku und Strom, Alarm als animiertes GIF (60 s), danach das Standbild 5 min, Bilder pro Tag. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
 # Pro Bildschirm ein Schalter «Live-Bild und Wechsel» (Feld «rot» in stv_list, 552). Aus = wie bisher (Statusseite).
 # Ein (nur tagsüber - nachts bleibt die rote, gedimmte Statusseite):
 #   alle STV_ROT_S = 30 s wechselt die Seite: gerade Zeitscheibe «Live-Bild» (Standbild der Hauptkamera, 240 × 240 mit
 #   Leiste Uhrzeit · Aus/Wachsam/Voll · Akku), ungerade «Akku und Strom» (grosser Akku, Laden/Solar, Verbrauch, Restlaufzeit,
-#   «SIM» bei Simulator-Werten). Das Live-Bild ist nur bei jeder zweiten Live-Zeitscheibe neu (Daniel 30.10.: halb so viele
+#   «SIM» bei Simulator-Werten). Das Live-Bild ist nur bei jeder zweiten Live-Zeitscheibe neu (Besitzer 30.10.: halb so viele
 #   Uploads, ein neues Bild alle 2 min, beim Zeigen höchstens 60 s alt); dazwischen wird es nur wieder gezeigt;
 #   das Bild ist das reine Kamerabild ohne Leiste «Tilt … | CPU …» und ohne Rahmen (410 frame_clean, nur auf Anfrage);
 #   die Akku-Seite liegt noch auf dem Gerät (me_a / me_b, 552 StvDev.send «stored»): unverändert wird sie nur wieder gezeigt
@@ -74,7 +74,7 @@ def stv_clean_frame(w, wait=1.5):
 
 def stv_live_frame(person_pic=None):
     """a copy of the picture of the main camera (privacy zones already black) - persons pixelated unless «Bild auch bei Personen».
-    Daniel 30.10.: the pure picture without the strip «Tilt 50% | CPU …» and the marks of MoveEye (stv_clean_frame);
+    Besitzer 30.10.: the pure picture without the strip «Tilt 50% | CPU …» and the marks of MoveEye (stv_clean_frame);
     only when there is none, the picture of the page without its text line (as before)"""
     w = WATCH_REF.get("w") if "WATCH_REF" in globals() else None
     if w is None:
@@ -276,7 +276,7 @@ def _stv_day_hours():
 def stv_per_day(e):
     """about how many pictures a day go to this display (uploads = writes into its flash), without alarms / games:
     status: the clock every stv_clock_min minutes + about one change an hour; rotation by day: the live picture every
-    120 s (every second live slot, Daniel 30.10.), the battery page when its values changed (about every third time), night: status"""
+    120 s (every second live slot, Besitzer 30.10.), the battery page when its values changed (about every third time), night: status"""
     if not e.get("on"):
         return 0
     clock = max(1, int(CFG.get("stv_clock_min", 10) or 10))

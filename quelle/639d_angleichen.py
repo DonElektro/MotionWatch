@@ -1,4 +1,4 @@
-#@ MoveEye – Teil 639d: Angleichen MoveEye ↔ Simulator (Daniel 30.10.2026): Entwickler-Schalter geteilt (dev_area an den Simulator), Fenster «Strom» und Teil «System» mit Ausschalten / Neustart / Pause wie im Web. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
+#@ MoveEye – Teil 639d: Angleichen MoveEye ↔ Simulator (Besitzer 30.10.2026): Entwickler-Schalter geteilt (dev_area an den Simulator), Fenster «Strom» und Teil «System» mit Ausschalten / Neustart / Pause wie im Web. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
 #   * sim_state + «dev_area»: the 3D simulator shows its group «Entwickler» when the «Entwickler-Bereich» of MoveEye is on
 #     (simulator3d/schnittstelle.json, main.gd on_state) - no longer tied to «Experte»

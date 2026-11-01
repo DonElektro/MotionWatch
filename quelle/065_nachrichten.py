@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 065: Nachrichten – alle Push-Nachrichten (ntfy / Telegram / Webhook) in einer Liste, auch vom ntfy-Server. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# 2.98.13 (Wunsch Daniel): ein eigenes Menü «Nachrichten» (Reiter Verlauf): was MoveEye an das Handy geschickt hat – mit Bild,
+# 2.98.13 (Wunsch Besitzer): ein eigenes Menü «Nachrichten» (Reiter Verlauf): was MoveEye an das Handy geschickt hat – mit Bild,
 # Zeit, Art und ob es angekommen ist (gesendet / fehlgeschlagen / Test-Postfach). Zusätzlich: die Nachrichten des ntfy-Themas
 # direkt vom ntfy-Server holen (auch die von anderen Geräten im selben Thema). Die Adresse des Themas bleibt auf dem Pi –
 # die Webseite bekommt nur die Nachrichten, nie die Adresse.

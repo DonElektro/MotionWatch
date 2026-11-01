@@ -502,7 +502,7 @@ func _about(b: VBoxContainer) -> void:
 	t1.add_theme_font_override("font", UI.heading_font())
 	t1.add_theme_font_size_override("font_size", 18)
 	hv.add_child(t1)
-	hv.add_child(UI.small("Version %s · Elektro (alias DonElektro) · Schweiz" % main.VERSION))
+	hv.add_child(UI.small("Version %s · Elektro · Schweiz" % main.VERSION))
 	var st := UI.small("Der 3D-Simulator baut den Platz von MoveEye nach – Personen, Tiere, Wetter, Nacht –, damit MoveEye üben kann, ohne echte Nächte. Der Prüfstand misst jede Version von MoveEye damit, und am Lagerfeuer wird er zum Spiel «Team gegen MoveEye». Gebaut mit Godot 4 – von Elektro zusammen mit Claude (einer KI von Anthropic).", UI.TXT)
 	st.custom_minimum_size = Vector2(520, 0)
 	st.add_theme_font_size_override("font_size", 13)

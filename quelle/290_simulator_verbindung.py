@@ -125,6 +125,7 @@ def sim_state():
                       "track": bool(CFG["track_person"] or CFG["track_motion"]), "tracking": bool(STATE.get("tracking")),
                       "track_what": str(STATE.get("track_what") or "")},
             "ups_mah": int(CFG.get("ups_mah") or 3450),   # Aufräumen 2: the battery size - the simulator shows it «von MoveEye» (power.gd)
+            "ups_model": str(CFG.get("ups_model") or "auto"),   # real-abgleich-v52: «ina» = old HAT 2 x 18650, else the simulator is the HAT (E) 4 x 21700
             "lights": {"white": bool(L.get("white")), "ir": bool(L.get("ir")), "white_level": 1.0, "ir_level": 1.0},
             "wake": {"state": WAKE["state"], "snoozes": WAKE["snoozes"], "t0": round(WAKE["t0"], 2)},       # 2.98.9: the sleeper in the bedroom scene reacts
             "relays": [{"name": r["name"], "on": bool(rs[i]) if i < len(rs) else False} for i, r in enumerate(RELAYS)],

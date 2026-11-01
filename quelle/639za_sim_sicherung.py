@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 639za: Sicherung des Simulators – Eintrag «Simulator» in Sicherung (Backup): ZIP vom Simulator abholen, ablegen, herunterladen, «Simulator wiederherstellen» (nur der Besitzer). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Paket «Sicherung im Simulator» (Daniel 01.11.2026). Der Simulator macht die Sicherung selbst (simulator3d/scripts/sicherung.gd,
+# Paket «Sicherung im Simulator» (Besitzer 01.11.2026). Der Simulator macht die Sicherung selbst (simulator3d/scripts/sicherung.gd,
 # System → Sicherung): ZIP mit manifest.json (Version, Datum, Prüfsummen), ohne Zugangsdaten. Hier der Teil von MoveEye:
 #   * «In die MoveEye-Sicherung senden» im Simulator = Auftrag mw_cmd «sim_sicherung» (350). MoveEye holt das ZIP selbst über
 #     /control {"action": "sicherung", "do": "get", "name"} (der Simulator nimmt das nur vom verbundenen MoveEye / diesem PC an,

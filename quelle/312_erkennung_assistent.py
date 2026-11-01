@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 312: Assistent «Erkennung verbessern» – ein geführter Ablauf statt sechs einzelner Funktionen. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# 2.98.14 (Konzept, Wunsch Daniel): sechs Funktionen drehten an denselben Schwellen (Empfindlichkeit, Mindestgrösse, KI-Schwelle …):
+# 2.98.14 (Konzept, Wunsch Besitzer): sechs Funktionen drehten an denselben Schwellen (Empfindlichkeit, Mindestgrösse, KI-Schwelle …):
 # Testlauf «Automatisch optimieren» (310), A/B-Vergleich (141), Auto-Tuner (190), «Schwellen automatisch» (143),
 # Trainings-Nacht (141), Wochen-Check / Fehlalarm-Lernen (143). Jetzt gibt es EINEN Assistenten in Schritten:
 #   1 Prüfen      - ist der Simulator verbunden, ist der Schutz aus, läuft nichts anderes?

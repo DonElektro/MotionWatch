@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 041: Benutzer mit Rechten – Zeitfenster und Ablaufdatum, Handy verknüpfen (QR-Einmal-Link), Push pro Benutzer, Geräte pro Benutzer. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Wunsch Daniel (30.10.2026): feste Personen statt nur Gastlink.
+# Wunsch Besitzer (30.10.2026): feste Personen statt nur Gastlink.
 #   * Rollen = Vorlagen von Rechten (040: USER_PERMS / ROLE_PERMS): Kind · Freund · Familie · Nur ansehen · Eigene Rechte.
 #     Der Server prüft jedes Recht (role_allows, 040); die Seite blendet aus, was nicht erlaubt ist (users_ui_css unten).
 #   * Zeitfenster (z. B. Kind täglich 08–20) und Ablaufdatum (Freund): ausserhalb nur eine freundliche Seite
