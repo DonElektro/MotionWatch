@@ -105,7 +105,11 @@ func mw_extra() -> String:
 	if main.now() - main.mw_t > 3.0:
 		return ""
 	var t := ""
-	if main.mw.has("armed"):
+	var ab = main.net.abgleich if main.get("net") != null else null
+	var lv: String = ab.level_text() if ab != null else ""
+	if lv != "":
+		t += " · " + lv                                # ★1: Aus / Wachsam / Voll / Gehtest - the words of MoveEye (ui_gemeinsam.json «level»)
+	elif main.mw.has("armed"):
 		t += " · Schutz " + ("an" if bool(main.mw.get("armed", false)) else "aus")
 	var rl := []
 	for r in main.mw.get("relays", []):

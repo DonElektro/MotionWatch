@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.38.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.39.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -446,6 +446,13 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.39.0
+3.39.0: MoveEye und Simulator zeigen dasselbe: Ansicht, Sprache, Stimme, Rundgang und Blinki gleichen sich von selbst ab;
+eine Einfach/Experte-Wahl für alles. Neu: Zustand Aus/Wachsam/Voll in LED-Farben, Push-Vorschau, Versions-Paar,
+Bedienermodus mit MoveEye-PIN; Diagnose gegenseitig.
+So testest du: in MoveEye auf Experte schalten, der Simulator zieht nach; im Simulator die Sprache wechseln; MoveEye sperren,
+der Simulator zeigt nur die Hauptschalter.
 
 NEU IN 3.38.0
 3.38.0: System › Sicherung: ZIP auf dem PC, in einen Ordner/USB oder in die MoveEye-Sicherung; Wiederherstellen im Simulator

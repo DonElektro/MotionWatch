@@ -1,8 +1,15 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 01.11.2026 · Version **3.38.0** · MoveEye **3.38.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 01.11.2026 · Version **3.39.0** · MoveEye **3.39.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.39.0 (MoveEye 3.39.0): Abgleich der Ansicht (`scripts/abgleich.gd`, MoveEye Teil 639zb) + main.gd zerlegt (Teilstand real-maingd)
+
+- Feld `ui` mit Revision (letzte Änderung gewinnt, Gleichstand: MoveEye), level / push / diag, Versions-Paar, Bedienermodus.
+- main.gd leitet weiter an main_steuerung / main_einstellungen / main_menues / main_kamera / main_status / main_start.gd.
+  Neue /control-Aktionen in main_steuerung.gd und zusätzlich in der Liste in main.gd «func _control» (schnittstelle.gd prüft sie).
+  Im Zweig Teil 639z, umbenannt in 639zb (639z = Bergtal-Geheimnis).
 
 ## NEU in 3.38.0 (MoveEye 3.38.0): Sicherung (`scripts/sicherung.gd`, MoveEye Teil 639za)
 
