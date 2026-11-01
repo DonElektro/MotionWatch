@@ -339,6 +339,9 @@ def smalltv_rot_selftest():
     keep = {k: CFG.get(k) for k in STV_CFG}
     keep_a, keep_g, keep_b = STV["alarm"], STV["game"], STATE.get("battery")
     keep_dark = G["is_dark"]
+    fx_ = G.get("FX")                                    # 639s: the error page (QR) of this computer does not take part in the test
+    if isinstance(fx_, dict):
+        fx_["stv_pause"] = True
     srv = None
     try:
         CFG.update(stv_night=True, stv_alarm_s=60, stv_alarm_keep_min=5, stv_bright_s=20, stv_clock_min=10)
@@ -426,6 +429,8 @@ def smalltv_rot_selftest():
         STV["alarm"], STV["game"] = keep_a, keep_g
         STATE["battery"] = keep_b
         STV["renders"].clear()
+        if isinstance(fx_, dict):
+            fx_["stv_pause"] = False
 
 
 SELFTEST_EXTRA.append(("SmallTV live picture and rotation, alarm GIF, pictures a day (553)", smalltv_rot_selftest))

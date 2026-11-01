@@ -145,6 +145,36 @@ def ui_gemeinsam_einbetten(nur_pruefen=False):
     return True
 
 
+FXK_TEIL = "639s_fehler_hilfe.py"                          # Fehler-QR: der gemeinsame Fehler-Katalog, eingebettet als FEHLER_KATALOG
+FXK_JSON = os.path.join(REPO, "simulator3d", "fehler_katalog.json")
+FXK_RE = re.compile(r'(FEHLER_KATALOG = json\.loads\(r""")(.*?)("""\))', re.S)
+
+
+def fehler_katalog_einbetten(nur_pruefen=False):
+    """Fehler-QR (Daniel 01.11.2026): simulator3d/fehler_katalog.json als FEHLER_KATALOG in quelle/639s_fehler_hilfe.py (wie
+    ui_gemeinsam_einbetten). Bleibt in der Hauptdatei (ZD_KEEP_NAMES): die Hilfe zu Fehlern geht auch ohne Zusatzdaten."""
+    if not os.path.isfile(os.path.join(QUELLE, FXK_TEIL)) or not os.path.isfile(FXK_JSON):
+        return True
+    with open(FXK_JSON, encoding="utf-8") as f:
+        neu = json.dumps(json.load(f), ensure_ascii=False, indent=1)
+    if '"""' in neu or neu.endswith("\\"):
+        print("FEHLER: simulator3d/fehler_katalog.json enthält \"\"\" – so nicht einbettbar")
+        return False
+    t = lesen(FXK_TEIL)
+    m = FXK_RE.search(t)
+    if not m:
+        print("FEHLER: %s ohne «FEHLER_KATALOG = json.loads(r\"\"\"…\"\"\")»" % FXK_TEIL)
+        return False
+    if m.group(2) == neu:
+        return True
+    if nur_pruefen:
+        print("UNTERSCHIED: quelle/%s passt nicht zu simulator3d/fehler_katalog.json – werkzeuge/bauen.py laufen lassen" % FXK_TEIL)
+        return False
+    schreiben(FXK_TEIL, t[:m.start(2)] + neu + t[m.end(2):])
+    print("eingebettet: simulator3d/fehler_katalog.json -> quelle/%s" % FXK_TEIL)
+    return True
+
+
 def doppelte():
     """2.98.18: every top-level function / class defined in more than one part (or twice in one part) - the later one silently
     replaces the earlier one (2.98.17: bt_scan of 300 replaced the loudspeaker search of 250). Allowed only for an intended
@@ -192,7 +222,8 @@ ZD_NEU = 30                         # the list of changes in the file keeps the 
 ZD_KEEP_PARTS = ("000_", "010_", "012_", "020_")   # head, basics, loader, settings: always in the file
 # tables the core needs (settings schema, German texts, menu structure, guides with index access) stay in the file
 ZD_KEEP_NAMES = {"CFG", "TOGGLES", "SLIDERS", "TEXTS", "SECTIONS", "DE", "QUICK_GUIDE", "MENU_SHORT", "GUIDE_TIPS", "_DETAIL",
-                 "G2_UI", "SET_HELP", "GONL_DE", "ALMANAC", "PAUSE_PAGE", "LANGS"}
+                 "G2_UI", "SET_HELP", "GONL_DE", "ALMANAC", "PAUSE_PAGE", "LANGS",
+                 "FEHLER_KATALOG"}                 # Fehler-QR: die Hilfe zu Fehlern geht auch ohne Zusatzdaten (639s)
 ZD_KEEP_PREFIX = ("_HX",)          # the translation tables _HX… also carry the German texts (DE) that the start needs
 ZD_DATE = (2026, 1, 1, 0, 0, 0)     # fixed time stamp in the zip
 
@@ -495,7 +526,7 @@ def main():
     if a.groessen:
         return groessen()
     if a.pruefen:
-        if not doppelte_melden() or not ui_gemeinsam_einbetten(nur_pruefen=True):
+        if not doppelte_melden() or not ui_gemeinsam_einbetten(nur_pruefen=True) or not fehler_katalog_einbetten(nur_pruefen=True):
             return 1
         v = version()
         f, zf = dateiname(v), zd_pfad(v)
@@ -528,7 +559,7 @@ def main():
             za = zd_pfad(alt)
             if os.path.isfile(za) and git("rm", "-q", os.path.basename(za)).returncode != 0:
                 os.remove(za)
-    if not doppelte_melden() or not ui_gemeinsam_einbetten():
+    if not doppelte_melden() or not ui_gemeinsam_einbetten() or not fehler_katalog_einbetten():
         return 1
     v = version()
     f, zf = dateiname(v), zd_pfad(v)

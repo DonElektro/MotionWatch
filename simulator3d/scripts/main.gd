@@ -5248,6 +5248,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return spielbereich.control(d) if spielbereich != null else {"ok": false, "error": "no spielbereich"}
 	elif a == "dev":                                   # Entwicklertool 1 (devtool.gd): {do: places | goto (id) | fly (on, speed) | open | close | info}
 		return mehr.dev.control(d) if mehr != null and mehr.dev != null else {"ok": false, "error": "not ready"}
+	elif a == "fehler":                                # Fehler-QR (fehler_hilfe.gd): {do: info | zeige (id) | fix (aktion: sim_verbinden | sim_neustart | sim_notfall)}
+		return preload("res://scripts/fehler_hilfe.gd").control(self, mehr, d)
 	elif a == "werk":                                  # Werksrücksetzung (werk.gd): {do: info | open | close | reset (confirm: true)}
 		return mehr.werk.control(d) if mehr != null and mehr.werk != null else {"ok": false, "error": "not ready"}
 	elif a == "mehr":                                  # 3D-4.2x: «Mehr» (tests): {"do": open | theme | tour | diag | log | fb_* | shot}

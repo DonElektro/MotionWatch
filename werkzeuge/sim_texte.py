@@ -34,7 +34,7 @@ SCRIPTS = os.path.join(SIM, "scripts")
 OUT = os.path.join(SIM, "i18n", "texte.json")
 REPORT = os.path.join(SIM, "i18n", "abdeckung.txt")
 LANGS = ("en", "fr", "it", "rm")
-SKIP_FILES = {"neu_data.gd", "i18n.gd", "ui_gemeinsam.gd"}   # ui_gemeinsam.gd: nur Prüf-Meldungen fürs Log (P1)
+SKIP_FILES = {"neu_data.gd", "i18n.gd", "ui_gemeinsam.gd", "fehler_hilfe.gd"}   # ui_gemeinsam.gd: nur Prüf-Meldungen fürs Log (P1); fehler_hilfe.gd: Texte aus fehler_katalog.json (5 Sprachen)
 
 # short German words that appear as pieces of composed texts (an / aus …) - kept, marked «dynamisch»
 DE_SHORT = {"an", "aus", "ein", "und", "oder", "von", "bis", "mit", "ohne", "nein", "ja", "keine", "kein", "zu", "offen",

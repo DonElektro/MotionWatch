@@ -210,7 +210,7 @@ static func dangerous(d: Dictionary) -> bool:
 	"""/control commands that delete or lock (Code-Prüfung M4)"""
 	var a := str(d.get("action", ""))
 	var w := str(d.get("do", ""))
-	return (a == "werk" and w == "reset") or (a == "dev" and w == "spieltest" and str(d.get("what", "")) == "clear") \
+	return (a == "werk" and w == "reset") or (a == "fehler" and w == "fix") or (a == "dev" and w == "spieltest" and str(d.get("what", "")) == "clear") \
 			or (a == "horror" and w == "set_password") \
 			or (a == "vorfuehrung" and w != "info") \
 			or (a in ["press", "set"] and str(d.get("id", "")).begins_with("vorfuehrung_"))   # Vorführmodus: only this PC / MoveEye

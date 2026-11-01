@@ -618,6 +618,12 @@
   "it": " · pausa %d s",
   "rm": " · pausa %d s"
  },
+ " · QR": {
+  "en": " · QR",
+  "fr": " · QR",
+  "it": " · QR",
+  "rm": " · QR"
+ },
  " · Relais ": {
   "en": " · relays ",
   "fr": " · relais ",

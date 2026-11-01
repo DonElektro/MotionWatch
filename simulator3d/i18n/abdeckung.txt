@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 6892 (Stellen: 9626)
-Übersetzt: en 6892, fr 6892, it 6892, rm 6892
+Texte gesamt: 6893 (Stellen: 9627)
+Übersetzt: en 6893, fr 6893, it 6893, rm 6893
 Unsicher markiert: 31
-Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 489 Stellen
+Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 490 Stellen
 Nicht mehr im Code (noch in texte.json): 258
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 68 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main.gd 1, phone.gd 1, spieltest.gd 1
-Übersprungen (Grund: Anzahl): kennung 24909, schlüssel 18518, keine Wörter 11656, index 9301, technisch 3222, doc 2123, einheit 295, log 154, englisch 126, pfad 104, stringname 102, html 68, klasse 27, shader 6
+Übersprungen (Grund: Anzahl): kennung 24922, schlüssel 18520, keine Wörter 11665, index 9304, technisch 3222, doc 2123, einheit 295, log 154, englisch 126, pfad 104, stringname 102, html 68, klasse 27, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   main.gd                  699    50
@@ -39,8 +39,8 @@ Pro Datei (Texte / davon dynamische Stellen):
   maggie_zwei.gd            78     0
   mehr.gd                   76    13
   kids.gd                   74     1
+  diagnose.gd               72     9
   pruefstand.gd             72     8
-  diagnose.gd               71     8
   abenteuer_zweit.gd        66     0
   feedback.gd               66    17
   bib_berg.gd               64     0
@@ -386,36 +386,36 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   main.gd:4440  'aus'
   main.gd:4444  'aus'
   main.gd:5192  'Dein Platz: '
-  main.gd:5437  ' · schaut nur zu: '
-  main.gd:5440  ' · Treffer %d von %d Schüssen, %d Punkte'
-  main.gd:5441  ' · Update: '
-  main.gd:5773  'Blinde Flecken: '
-  main.gd:6575  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
-  main.gd:6888  'Autostart: '
-  main.gd:6899  'Autologon: '
-  main.gd:7062  'Karte öffnen: '
-  main.gd:7213  'Echt-Abgleich: '
-  main.gd:7223  'Trainingspaket: '
-  main.gd:7232  ' · %d offen · %.1f MB'
-  main.gd:7232  'Ziel: %s:%d (Port von MoveEye) · '
-  main.gd:7241  'Verbindung · '
-  main.gd:7241  'aus'
-  main.gd:7245  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
-  main.gd:7245  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
-  main.gd:7248  ' – versucht es weiter (gleich auf einem freien Port)'
+  main.gd:5439  ' · schaut nur zu: '
+  main.gd:5442  ' · Treffer %d von %d Schüssen, %d Punkte'
+  main.gd:5443  ' · Update: '
+  main.gd:5775  'Blinde Flecken: '
+  main.gd:6577  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
+  main.gd:6890  'Autostart: '
+  main.gd:6901  'Autologon: '
+  main.gd:7064  'Karte öffnen: '
+  main.gd:7215  'Echt-Abgleich: '
+  main.gd:7225  'Trainingspaket: '
+  main.gd:7234  ' · %d offen · %.1f MB'
+  main.gd:7234  'Ziel: %s:%d (Port von MoveEye) · '
+  main.gd:7243  'Verbindung · '
+  main.gd:7243  'aus'
+  main.gd:7247  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
+  main.gd:7247  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
+  main.gd:7250  ' – versucht es weiter (gleich auf einem freien Port)'
   mehr.gd:255  ' · Leistung: %d Bilder/s, Lite %s'
   mehr.gd:255  'an'
   mehr.gd:255  'aus'
   mehr.gd:291  'Hell / Dunkel / Rotlicht: '
-  mehr.gd:552  'aus'
-  mehr.gd:552  'ein'
-  mehr.gd:554  ' · Tunnel %s:%d (%s)'
-  mehr.gd:555  ' · Update: '
-  mehr.gd:557  ' · virtuelle Maschine'
-  mehr.gd:561  'Simulator '
-  mehr.gd:561  'frei %s von %s · '
-  mehr.gd:562  ' (zuletzt %s)'
-  mehr.gd:562  'nicht verbunden'
+  mehr.gd:557  'aus'
+  mehr.gd:557  'ein'
+  mehr.gd:559  ' · Tunnel %s:%d (%s)'
+  mehr.gd:560  ' · Update: '
+  mehr.gd:562  ' · virtuelle Maschine'
+  mehr.gd:566  'Simulator '
+  mehr.gd:566  'frei %s von %s · '
+  mehr.gd:567  ' (zuletzt %s)'
+  mehr.gd:567  'nicht verbunden'
   schnittstelle.gd:69  'Schnittstelle: '
   schnittstelle.gd:109  ' · Schutz '
   schnittstelle.gd:109  'an'
@@ -475,14 +475,15 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   bergtal.gd:254  'Aussicht: '
   bergtal.gd:2445  'Schlafplatz: '
   bergtal.gd:2447  'Aussicht: '
-  diagnose.gd:31  ' · virtuelle Maschine'
-  diagnose.gd:33  ' · Fenster klein / versteckt'
-  diagnose.gd:71  ' · Ersatz-Port, 8765 war besetzt'
-  diagnose.gd:75  'wartet auf MoveEye · '
-  diagnose.gd:106  'unbekannt · '
-  diagnose.gd:127  'keine'
-  diagnose.gd:140  'kein'
-  diagnose.gd:145  ' · Version '
+  diagnose.gd:32  ' · virtuelle Maschine'
+  diagnose.gd:34  ' · Fenster klein / versteckt'
+  diagnose.gd:72  ' · Ersatz-Port, 8765 war besetzt'
+  diagnose.gd:76  'wartet auf MoveEye · '
+  diagnose.gd:107  'unbekannt · '
+  diagnose.gd:128  'keine'
+  diagnose.gd:141  'kein'
+  diagnose.gd:146  ' · Version '
+  diagnose.gd:204  ' · QR'
   bergtal_aussicht.gd:357  'von'
   bergtal_aussicht.gd:536  'von'
   bergtal_aussicht.gd:1159  'Abzeichen: '

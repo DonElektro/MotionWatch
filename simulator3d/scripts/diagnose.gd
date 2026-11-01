@@ -6,6 +6,7 @@ extends RefCounted
 const UI = preload("res://scripts/ui_style.gd")
 const Icons = preload("res://scripts/mehr_icons.gd")
 const Quality = preload("res://scripts/quality.gd")   # 3D-4.25: «Leistung» (Lite, Renderer)
+const FehlerHilfe = preload("res://scripts/fehler_hilfe.gd")   # Fehler-QR: Knopf «Hilfe & Beheben» unter jedem Problem
 const QNAMES := {"simple": "einfach", "medium": "mittel", "nice": "schön", "ultra": "ultra"}
 
 
@@ -196,6 +197,16 @@ static func build(main, body: VBoxContainer, mehr) -> void:
 			var tp := UI.small("→ " + str(x["tip"]), UI.TXT)
 			tp.custom_minimum_size = Vector2(440, 0)
 			b.add_child(tp)
+		var fe: Dictionary = FehlerHilfe.for_diag(x)         # Fehler-QR: Hilfe & Beheben (fehler_katalog.json)
+		if not fe.is_empty() and mehr != null:
+			var fb := Button.new()
+			var fa := str(fe.get("aktion", ""))
+			fb.text = FehlerHilfe.ui("help") + (" & " + FehlerHilfe.ui("fix") if fa != "" else "") + (" · QR" if FehlerHilfe.mw_base(main) != "" else "")
+			fb.tooltip_text = str(FehlerHilfe.tx(fe["titel"])) + " (" + str(fe["id"]) + ")"
+			fb.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+			var fid := str(fe["id"])
+			fb.pressed.connect(func(): mehr.open_window("fehler:" + fid))
+			b.add_child(fb)
 		r.add_child(b)
 		list.add_child(r)
 	var bt := HBoxContainer.new()
