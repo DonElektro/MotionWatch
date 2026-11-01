@@ -139,7 +139,7 @@ function paintState() {
   b.className = "sv-state " + cls;
   b.appendChild(document.createTextNode(S.blocked ? (S.blocked === "estop" ? "⛔ " + t("EMERGENCY STOP") : "⚠ " + S.text) : "✅ " + t("Ready - the servos may move")));
   if (S.blocked === "estop") b.appendChild(E("small", "", tf("pressed by {who}", {who: S.estop_by || "?"}) + " · " + t("Emergency stop - press «Release» to move again")));
-  b.appendChild(E("small", "", tf("Pan {p}° · tilt {t}°", {p: S.deg[0], t: S.deg[1]}) + (S.moving ? " · " + t("moving") : "") + " · " + (S.backend || "")));
+  b.appendChild(E("small", "", tf("Pan {p}° · tilt {t}°", {p: S.deg[0], t: S.deg[1]}) + (S.moving ? " · " + t("moving") : "") + " · " + (S.backend || "") + (S.backend_note ? " · ⚠ " + S.backend_note : "")));
   document.getElementById("sv-release").hidden = !(S.blocked === "estop" || S.blocked === "fault");
   document.getElementById("sv-estop").hidden = S.blocked === "estop";
   const d = S.driver || {}, me = S.me || "";
