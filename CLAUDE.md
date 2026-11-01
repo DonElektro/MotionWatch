@@ -71,6 +71,9 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
   wenige Zeilen, Tabellen oder kurze Listen, Details nur auf Nachfrage.
 - **Nichts entfernen ohne Nachfrage (Daniel, 01.11.2026 00:28):** Funktionen, Schalter, Menüpunkte, Dateien oder Inhalte
   werden nur nach ausdrücklicher Zustimmung von Daniel entfernt. Vorher immer fragen.
+- **Bau-Infos nachziehen (Daniel, 01.11.2026 12:06):** Ändern sich Hardware oder Software so, dass die Bau-Infos betroffen
+  sind (hardware/gehaeuse, Teile-, Einkaufs- oder Verkabelungsplan, Montage, Inbetriebnahme), Daniel jedes Mal per
+  Fragebogen fragen, ob die Bau-Infos nachgezogen werden sollen. Nicht automatisch nachziehen.
 - **Pause für Realismus aufgehoben (Daniel, 31.10.2026 00:53):** bis die Hardware da ist, Realismus/Szenen in kleinen Paketen,
   je Paket eine Version mit «So testest du». Danach Pause und Hardware-Aufbau.
 
