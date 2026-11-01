@@ -1738,13 +1738,9 @@ class App:
         poll()
 
     def _set_simple(self, v):
-        """586: Simple / Expert of THIS tab (the default stays - it is chosen in the guide)"""
-        tab = self.tab
-        if page_simple(tab) != v:
-            m_ = page_modes(); m_[tab] = "simple" if v else "expert"
-            if v == bool(CFG["ui_simple"]):
-                m_.pop(tab)
-            web_ui_update({"mw-page-mode": json.dumps(m_)}); self.root.after(30, self._rebuild)
+        """639z (P3, E1): ONE Simple / Expert for every tab, the web pages and the simulator (before: per tab, 586)"""
+        if bool(CFG["ui_simple"]) != bool(v):
+            CFG["ui_simple"] = bool(v); save_settings(); self._simple_seen = bool(v); self.root.after(30, self._rebuild)
 
     def _protect(self, level):
         """2.95.105: protection level; switching off needs the PIN if one is set"""

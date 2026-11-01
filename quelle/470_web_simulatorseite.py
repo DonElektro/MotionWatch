@@ -913,6 +913,12 @@ function verPaint() {
   if (!V || !V.current) { $("#s-ver").textContent = ""; w.hidden = true; return; }
   $("#s-ver").textContent = t("Version") + ": " + V.current + " " + t("installed") + " · " + (V.latest ? t("newest") + ": " + V.latest + (V.newer ? "" : " ✓ " + t("up to date"))
     : (V.err ? t("newest version not known") + " (" + V.err + ")" : t("checking for the newest version …")));
+  { const P = S.pair; let pe = $("#s-pair");                       // ★4 (639z): «MoveEye 3.x · Sim 3.x ✓», older MoveEye: a button
+    if (!pe) { pe = document.createElement("div"); pe.id = "s-pair"; pe.className = "mut sver"; $("#s-ver").after(pe); }
+    pe.textContent = P && P.text ? P.text + " " : "";
+    if (P && P.older === "mw" && P.btn) { const b = document.createElement("button"); b.type = "button"; b.className = "sec"; b.textContent = P.btn;
+      b.onclick = () => { b.disabled = true; fetch("/api/ui_sync", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({do: "update_mw"})}).catch(() => {}); };
+      pe.appendChild(b); } }
   w.hidden = !V.newer;
   if (V.newer) { $("#s-supdt").textContent = "⚠ " + t("New update for the simulator") + ": " + V.latest + " (" + t("installed") + ": " + V.current + ")";
     $("#s-supdn").textContent = (V.notes ? V.notes + " · " : "") + ($("#s-upd").hidden ? t("Update it in the simulator on the PC.") : t("Button «Update the simulator» above.")); }

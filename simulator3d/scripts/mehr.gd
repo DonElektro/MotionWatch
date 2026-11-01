@@ -38,17 +38,19 @@ const UI = preload("res://scripts/ui_style.gd")
 const T = preload("res://scripts/i18n.gd")
 const Icons = preload("res://scripts/mehr_icons.gd")
 const Diagnose = preload("res://scripts/diagnose.gd")
-const ITEMS := [["help", "help", "Hilfe", "Maus, Tasten, Leiste – und die Anleitung von MoveEye"],
+# ★5 (ui_gemeinsam.json «more» / «more_order»): the entries both programs have in the same order and with the same names as
+# MoveEye's «Mehr» - Anleitung · Werkstatt (Gehäuse & Bau) · Rückmeldung · Über … · Werkseinstellungen; the own ones in between
+const ITEMS := [["help", "help", "Anleitung", "Maus, Tasten, Leiste – und die Anleitung von MoveEye"],
 		["tour", "tour", "Rundgang mit Blinki", "das Bedienfeld Schritt für Schritt"],
 		["diag", "steth", "Selbstdiagnose", "was läuft und was fehlt – mit einem Tipp, was zu tun ist"],
 		["log", "log", "Protokoll", "die letzten Ereignisse und Fehler – Filter, Kopieren"],
 		["updates", "update", "Updates", ""],
 		["theme", "theme", "Hell / Dunkel / Rotlicht", ""],         # Menüs A: «Ansicht» is the menu of the bar (like MoveEye), this is the colour scheme
-		["feedback", "chat", "Rückmeldung an den Entwickler", "Fehler, Wünsche, Lob, Fragen – anonym"],
 		["werkstatt", "wrench", "Werkstatt", "Gehäuse v5.1 in 3D: drehen, zerlegen, Montage Schritt für Schritt"],   # real-gehaeuse (ui_gemeinsam.json «more»: case)
+		["feedback", "chat", "Rückmeldung an den Entwickler", "Fehler, Wünsche, Lob, Fragen – anonym"],
 		["dev", "bug", "Entwickler", "Karte aller Orte, Flugkamera, Prüfstand, Störungen, Spieltest – nur für den Besitzer"],
-		["werk", "trash", "⚠ Auf Werkseinstellungen zurücksetzen …", "vorher eine Kopie der alten Einstellungen – nur für den Besitzer"],
-		["about", "info", "Über den Simulator", "Version und Status, Geschichte, Entwickler"]]
+		["about", "info", "Über den Simulator", "Version und Status, Geschichte, Entwickler"],
+		["werk", "trash", "⚠ Auf Werkseinstellungen zurücksetzen …", "vorher eine Kopie der alten Einstellungen – nur für den Besitzer"]]
 
 
 func _ready() -> void:
@@ -415,7 +417,7 @@ func close_window() -> void:
 func open_window(id: String) -> void:
 	match id:
 		"help":
-			var b := _window("Hilfe", "help")
+			var b := _window("Anleitung", "help")
 			_help(b)
 		"about":
 			var b := _window("Über den Simulator", "info")
@@ -570,7 +572,7 @@ func about_status() -> Dictionary:
 			"Leistung": _perf_line(),
 			"CPU": "PC %s · Simulator %s · %d Kerne" % ["–" if pc < 0 else "%d %%" % roundi(pc), "–" if sm < 0 else "%d %%" % roundi(sm), OS.get_processor_count()],
 			"Arbeitsspeicher": ("frei %s von %s · " % [Diagnose._gb(float(mi.get("available", 0))), Diagnose._gb(float(mi.get("physical", 0)))] if float(mi.get("physical", -1)) > 0 else "") + "Simulator " + Diagnose._gb(float(OS.get_static_memory_usage())),
-			"MoveEye": ("verbunden mit «%s» · MoveEye %s · %s" % [str(main.mw.get("device", "MoveEye")), str(main.mw.get("mw_version", "?")), main.mw_addr]) if conn else ("nicht verbunden" + (" (zuletzt %s)" % main.mw_addr if main.mw_addr != "" else "")),
+			"MoveEye": ("verbunden mit «%s» · %s · %s" % [str(main.mw.get("device", "MoveEye")), str(main.net.ui_sync().pair()["text"]) if main.net != null and main.net.ui_sync() != null else "MoveEye " + str(main.mw.get("mw_version", "?")), main.mw_addr]) if conn else ("nicht verbunden" + (" (zuletzt %s)" % main.mw_addr if main.mw_addr != "" else "")),
 			"Ports": ports,
 			"System": "%s · %s" % [OS.get_name(), OS.get_distribution_name() if OS.has_method("get_distribution_name") else ""],
 			"Ordner": OS.get_user_data_dir()}
@@ -653,8 +655,8 @@ func toast(t: String) -> void:
 
 
 func _process(dt: float) -> void:
-	if _dev_row != null and _dev_row.visible != dev.is_owner(main):
-		_dev_row.visible = dev.is_owner(main)          # Entwicklertool: only the owner (not in the children's mode)
+	if _dev_row != null and _dev_row.visible != dev.dev_ok(main):
+		_dev_row.visible = dev.dev_ok(main)            # P3: only with MoveEye's developer area and for the owner (not kids, not locked)
 	if _werk_row != null and _werk_row.visible != dev.is_owner(main):
 		_werk_row.visible = dev.is_owner(main)         # factory reset: the same check
 		if not _werk_row.visible and win_id == "werk":

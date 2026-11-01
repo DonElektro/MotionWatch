@@ -98,8 +98,17 @@ func eb():
 
 static func is_owner(m) -> bool:
 	"""only the owner: like MoveEye's night test run (579b nacht_may: admin and not in operator mode) - in the simulator: not
-	in the children's mode (the way out of it needs the little sum of main.ask_adult)"""
-	return m != null and not bool(m.get("kids_on"))
+	in the children's mode (the way out of it needs the little sum of main.ask_adult) and MoveEye not locked (★6, abgleich.gd)"""
+	if m == null or bool(m.get("kids_on")):
+		return false
+	var n = m.get("net")
+	var ab = n.abgleich if n != null and "abgleich" in n else null
+	return not (ab != null and ab.locked())
+
+
+static func dev_ok(m) -> bool:
+	"""P3: the developer window only with MoveEye's «Entwickler-Bereich» on (dev_area, last one MoveEye sent) and for the owner"""
+	return m != null and bool(m.get("dev_area")) and is_owner(m)
 
 
 # =============================================================================================================================
@@ -450,7 +459,7 @@ func _say(t: String) -> void:
 # the window
 # =============================================================================================================================
 func open() -> void:
-	if not is_owner(main):
+	if not dev_ok(main):
 		_say(T.t("Das Entwicklertool ist nur für den Besitzer (nicht im Kinder-Modus)."))
 		return
 	if panel == null:

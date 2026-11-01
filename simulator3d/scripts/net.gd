@@ -21,6 +21,19 @@ var listening := false
 var error_text := ""
 
 
+var abgleich = null                       # P2 (abgleich.gd): the view shared with the leading MoveEye + the small hints
+
+
+func ui_sync():
+	"""abgleich.gd, made on the first use (a child of main: it draws the hints)"""
+	if abgleich == null and main != null:
+		abgleich = preload("res://scripts/abgleich.gd").new()
+		abgleich.name = "Abgleich"
+		abgleich.main = main
+		main.add_child.call_deferred(abgleich)
+	return abgleich
+
+
 var beacon := PacketPeerUDP.new()
 var beacon_t := 0.0
 
@@ -226,6 +239,9 @@ func _handle(c: Dictionary, method: String, path: String, query: Dictionary, bod
 			_json(c, {"ok": false, "error": "bad state"}, 400)
 			return
 		var lead: bool = main.on_state(d, host)
+		var ab = ui_sync()
+		if ab != null:
+			ab.on_state(d, lead)                       # P2: the view of MoveEye (only the leader), level, lock, push, diag
 		var rep: Dictionary = main.world_reply()
 		if main.get("simint") != null:
 			rep.merge(main.simint.reply(), true)       # 30.10.2026: servo faults, 5 V, thermal model, warm hand (simint.gd)
@@ -233,6 +249,10 @@ func _handle(c: Dictionary, method: String, path: String, query: Dictionary, bod
 			rep["follower"] = true
 			rep["leader"] = main.mw_owner_name
 			rep["mw_cmd"] = null
+		elif ab != null:
+			var u: Dictionary = ab.reply()
+			if not u.is_empty():
+				rep["ui"] = u                          # P2: own view changes, the PIN of the operator mode, «update MoveEye»
 		_json(c, rep)
 		return
 	if method == "POST" and path == "/control":
