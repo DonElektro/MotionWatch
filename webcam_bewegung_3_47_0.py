@@ -242,7 +242,7 @@ def prepare_settings_file():
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
 ZD_FILE = "moveeye_daten_3_47_0.zip"
-ZD_SHA256 = "9a87759a4229cece16aabc8c2bd294bc520fcf608363b31645cdedc4b3b2d9ae"
+ZD_SHA256 = "c9bf6d703949ef456d1e33e396d49238fdb0dc375c604b24d7e356539ac8b1a9"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -72976,6 +72976,160 @@ def geh_selftest():
 
 
 SELFTEST_EXTRA.append(("Build (page /build, 3D in the browser, My build, models = source, build infos)", geh_selftest))
+# ----------------------------------------------------------------------------
+# Dieselben Daten liegen für den Simulator in simulator3d/inhalte/gehaeuse/druck_lage.json (werkstatt.gd).
+# ----------------------------------------------------------------------------
+GEH_DRUCK_LAGE = json.loads(_zd('639wb_daten_druck_lage/GEH_DRUCK_LAGE', ""))
+# ----------------------------------------------------------------------------
+# Paket «real-einzelteil-vorschau» (01.11.2026, Wunsch Daniel). Die Lage jedes Druckteils auf der Platte und die Platten kommen
+# aus 639wb (GEH_DRUCK_LAGE, werkzeuge/druck_lage.py aus gehaeuse.glb und den 3MF) – die Werkstatt dreht nur ihr vorhandenes
+# Modell, es kommen keine weiteren Netze dazu. Teile der Platte ohne eigenes Netz (kleine Stopfen, die 4 Füsse) erscheinen als
+# Quader in ihrer Grösse. Bestehendes bleibt: Explosion, Durchsichtig, Innenleben, Montage (die Regler ruhen in den neuen Ansichten).
+#   * GEH_PAGE: Knopf «Druckplatten» und «Zurück zum ganzen Modell» bei den 3D-Reglern, /*GEHEINZEL*/ (Bedienung, Texte),
+#     GEH_3D_JS: /*GEHEINZEL3D*/ (die Ansichten im selben Bild; «Wo es hingehört» als kleines Bild unten rechts im selben Canvas).
+#   * /build/platten.zip?v=v52|v51&lang=..: die Platten der Variante + LIESMICH_Druck.txt (Kurzanleitung in der Sprache),
+#     Name mit Version (MoveEye_v5-2_Druckplatten_X.Y.Z.zip); auf dem Pi ohne Repository: Weiterleitung zu GitHub.
+#   * «In Bambu Studio öffnen» bewusst weggelassen: das Link-Schema (bambustudio://open?file=…) ist nicht offiziell beschrieben und
+#     lädt nur Dateien, die Bambu Studio selbst aus dem Internet holen kann – die Seite des Pi im Heimnetz geht dafür nicht sicher.
+# ----------------------------------------------------------------------------
+EINZEL_TX = _zd('639wc_einzelteil/EINZEL_TX', _ZDDict())
+for _k, (_de, _fr, _it, _rm) in EINZEL_TX.items():
+    DE.setdefault(_k, _de)
+    for _L, _v in (("fr", _fr), ("it", _it), ("rm", _rm)):
+        TRX.setdefault(_L, {}).setdefault(_k, _v)
+GEH_KEYS = sorted(set(GEH_KEYS) | set(EINZEL_TX) | {"none", "Supports", "Infill", "Walls", "Layer", "pcs", "Shop", "Qty"})
+
+_EINZEL_CTL_ANCHOR = '<button type="button" class="sec" onclick="bv(\'reset\')" data-i18n="Reset the view">Reset the view</button></div>'
+_EINZEL_CTL = ('<button type="button" class="sec" id="v-plates" onclick="gPlates(BV.plate || 0)">🖨 <span data-i18n="Print plates">Print plates</span></button>'
+               '<button type="button" id="v-whole" hidden onclick="gWhole()">↩ <span data-i18n="Back to the whole model">Back to the whole model</span></button>\n    ')
+if 'id="v-plates"' not in GEH_PAGE and _EINZEL_CTL_ANCHOR in GEH_PAGE:
+    GEH_PAGE = GEH_PAGE.replace(_EINZEL_CTL_ANCHOR, _EINZEL_CTL + _EINZEL_CTL_ANCHOR, 1)
+_EINZEL_CSS = ("#v3d-where{position:absolute;right:8px;bottom:8px;border:1px solid #4b5868;border-radius:10px;background:transparent;color:#e6edf5;"
+               "display:none;align-items:flex-end;justify-content:center;padding:0 0 4px;font-size:10px;line-height:1.25;text-align:center;cursor:pointer;min-height:0}"
+               "#v3d-where span{background:#1b2430cc;border-radius:6px;padding:2px 6px;margin:0 4px}"
+               ".pinfo table.gb{margin:6px 0}.pinfo .vrow{margin-top:6px}.pinfo ul.pl{margin:6px 0;padding-left:18px}.pinfo ul.pl li{cursor:pointer;color:var(--acc);padding:2px 0}"
+               ".pinfo .btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}\n")
+if "#v3d-where" not in GEH_PAGE:
+    GEH_PAGE = GEH_PAGE.replace("</style></head>", _EINZEL_CSS + "</style></head>", 1)
+if "/*GEHEINZEL*/" not in GEH_PAGE:
+    GEH_PAGE = GEH_PAGE.replace("<script>/*GEHFERTIG*/</script>", "<script>/*GEHFERTIG*/</script>\n<script>/*GEHEINZEL*/</script>", 1)
+
+# the operation (classic script, after the page script: it may wrap gInfo / gStep, it knows GB, G, BV, TEIL, BOM, pfile …)
+GEH_EINZEL_JS = _zd('639wc_einzelteil/GEH_EINZEL_JS', "")
+
+# the 3D part (inside the module of GEH_3D_JS: it uses THREE, scene, cam, ctl, parts, paint, render, view, row, shown, bench, T0)
+GEH_EINZEL_3D = _zd('639wc_einzelteil/GEH_EINZEL_3D', "")
+
+
+def _geh_page_einzel():
+    js = GEH_EINZEL_JS.replace("/*GEHDL*/null", json.dumps(GEH_DRUCK_LAGE, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/"), 1)
+    return _geh_page_einzel_base().replace("/*GEHEINZEL*/", js, 1).replace("/*GEHEINZEL3D*/", GEH_EINZEL_3D, 1)
+
+
+_geh_page_einzel_base = geh_page
+# wraps: geh_page (639w)
+geh_page = _geh_page_einzel
+
+
+def geh_platten_zip(v52=True, lang="de"):
+    """the plates (3MF) of one case + LIESMICH_Druck.txt (short guide in the language), named with the version - None without the repository"""
+    import io
+    import zipfile
+    var = "v52" if v52 else "v51"
+    ps = (GEH_DRUCK_LAGE.get("platten") or {}).get(var) or []
+    d = geh_druck_dir()
+    fs = [p for p in ps if os.path.isfile(os.path.join(d, p["datei"]))]
+    if not fs:
+        return None
+    L = lang if lang in ("de", "en", "fr", "it", "rm") else "de"
+    T = lambda k: tr(k, L) if L != "en" else k
+    nm = lambda dt: next((x["name"].get(L) or x["name"].get("de") for x in GEH_BAU.get("teile") or [] if x.get("datei") == dt and isinstance(x.get("name"), dict)), dt.replace("_", " "))
+    z = [T("MoveEye – print plates case v%s (as of MoveEye %s)") % ("5.2" if v52 else "5.1", APP_VERSION), "=" * 64, "",
+         T("Printer: Bambu Lab X2D (other printers work too), 0.4 mm nozzle, material PETG – dry it first."),
+         T("No supports: all parts already lie right on the plate. Brim 5 mm only for head (06), yoke (04) and side cover (07)."),
+         T("Colours: head parts orange (everything that turns or tilts), the rest grey; diffuser 14 natural/white, pupil ring 15 black."),
+         T("Open: Bambu Studio → File → Open, choose the plate, slice and print."), ""]
+    for p in fs:
+        seen = []
+        for it in p["teile"]:
+            n = sum(1 for x in p["teile"] if x["datei"] == it["datei"])
+            s = nm(it["datei"]) + (" × %d" % n if n > 1 else "")
+            if s not in seen:
+                seen.append(s)
+        z.append(T("Plate %s (%s): %s") % (p["name"], p["datei"].split("/")[-1], ", ".join(seen)))
+    z += ["", T("Single parts and everything else: MoveEye → More → Build → Printing."), ""]
+    top_ = ("MoveEye_v5-2_Druckplatten_" if v52 else "MoveEye_v5-1_Druckplatten_") + APP_VERSION
+    b = io.BytesIO()
+    with zipfile.ZipFile(b, "w", zipfile.ZIP_STORED) as zf:
+        zf.writestr(top_ + "/LIESMICH_Druck.txt", "﻿" + "\r\n".join(z))
+        for p in fs:
+            zf.write(os.path.join(d, p["datei"]), top_ + "/" + p["datei"].split("/")[-1])
+    return top_, b.getvalue()
+
+
+_smalltv_routes_einzel_base = smalltv_routes
+
+
+def smalltv_routes(app, reply, body):                     # + 639wc: /build/platten.zip
+    _smalltv_routes_einzel_base(app, reply, body)
+    from flask import Response, redirect, request
+
+    @app.route("/build/platten.zip")
+    def geh_platten_():
+        v52_ = request.args.get("v", "v52") != "v51"
+        r_ = geh_platten_zip(v52_, str(request.args.get("lang") or "de")[:2])
+        if r_ is None:
+            return redirect(GEH_BAU.get("github", "") + "/tree/main/hardware/gehaeuse/Druckdateien" + ("/v5-2" if v52_ else ""), code=302)
+        return Response(r_[1], mimetype="application/zip", headers={"Content-Disposition": f'attachment; filename="{r_[0]}.zip"'})
+
+
+def geh_einzel_selftest():
+    D = GEH_DRUCK_LAGE
+    T_ = {t_["id"]: t_ for t_ in GEH_BAU["teile"]}
+    assert D.get("platte_mm") == 256 and D.get("lage") and D.get("platten"), "data 639wb"
+    for id_, L in D["lage"].items():
+        assert id_ in T_ and T_[id_].get("datei") == L["datei"], ("lage", id_)
+        r = L["r"]
+        assert len(r) == 9 and all(abs(x) in (0, 1) for x in r) and sorted(abs(x) for x in r).count(1) == 3, ("rotation", id_)
+    for t_ in GEH_BAU["teile"]:                   # every print part of the model knows how it lies on the plate
+        if t_.get("datei") and t_["id"] in {e["id"] for e in BAU3D_MODELLE.get("teile", [])}:
+            assert t_["id"] in D["lage"], ("print part without orientation", t_["id"])
+    for var in ("v52", "v51"):
+        ps = D["platten"].get(var) or []
+        assert [p["datei"] for p in ps] == [f for f in GEH_BAU.get("druckdateien") or [] if f.startswith("v5-2/") == (var == "v52")], ("plates", var)
+        for p in ps:
+            for it in p["teile"]:
+                assert 0 <= it["x"] <= 256 and 0 <= it["y"] <= 256 and len(it["g"]) == 3, ("on the plate", var, it["o"])
+                assert not it.get("id") or it["id"] in D["lage"], ("plate part", it["o"])
+    import hashlib
+    alt = False
+    sim = os.path.join(os.path.dirname(os.path.abspath(__file__)), "simulator3d", "inhalte", "gehaeuse")
+    if os.path.isfile(os.path.join(sim, "druck_lage.json")):    # the same data in the simulator, and they fit the model
+        with open(os.path.join(sim, "druck_lage.json"), encoding="utf-8") as f_:
+            assert json.load(f_) == D, "simulator3d/inhalte/gehaeuse/druck_lage.json differs from 639wb - werkzeuge/druck_lage.py"
+        with open(os.path.join(sim, "gehaeuse.glb"), "rb") as f_:
+            alt = hashlib.sha256(f_.read()).hexdigest() != D["glb_sha256"]
+    for k in EINZEL_TX:
+        assert DE.get(k) and all(TRX[L_].get(k) for L_ in ("fr", "it", "rm")), k
+    html = geh_page()
+    for x in ('id="v-plates"', "gSolo", "X.setMode", "v3d-where", '"platten"', "/build/platten.zip"):
+        assert x in html, x
+    assert "/*GEHEINZEL" not in html and "/*GEHDL*/" not in html
+    r_ = geh_platten_zip(True, "fr")
+    if r_ is not None:
+        import io
+        import zipfile
+        with zipfile.ZipFile(io.BytesIO(r_[1])) as zf:
+            ns = zf.namelist()
+            txt = zf.read(r_[0] + "/LIESMICH_Druck.txt").decode("utf-8-sig")
+        assert r_[0].endswith(APP_VERSION) and len(ns) == 1 + len(D["platten"]["v52"]) and "Plateau A" in txt, (ns, txt[:200])
+    if alt:                                               # a warning (like the build infos): the model changed after the data
+        return "WARNING – gehaeuse.glb changed after werkzeuge/druck_lage.py – run it again (orientation on the plate)"
+    return "Build: single part view and print plates (%d parts with orientation, plates v5.2 %d / v5.1 %d)" % (
+        len(D["lage"]), len(D["platten"].get("v52") or []), len(D["platten"].get("v51") or []))
+
+
+SELFTEST_EXTRA.append(("Build: single part view, print plates (orientation from the 3MF, ZIP with short guide)", geh_einzel_selftest))
 # ----------------------------------------------------------------------------
 # real-erk-e3 (31.10.2026): die Push-Nachricht «Etwas Grosses am Boden» (Titel und Text) in de / fr / it / rm.
 # ----------------------------------------------------------------------------
