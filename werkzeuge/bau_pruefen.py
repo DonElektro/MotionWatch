@@ -140,7 +140,8 @@ def pruefen():
             warn.append(f"Drucken: {t['datei']} ohne Druckangaben")
     dd = os.path.join(GEH, "Druckdateien")
     for d in druck:
-        if not os.path.isfile(os.path.join(dd, "MoveEye_v5-1_" + d + ".3mf")) and not any(d in n for n in os.listdir(dd)):
+        alle = [n for _r, _d, fs in os.walk(dd) for n in fs]          # auch Unterordner (v5-2/)
+        if not os.path.isfile(os.path.join(dd, "MoveEye_v5-1_" + d + ".3mf")) and not any(d in n for n in alle):
             warn.append(f"Drucken: keine 3MF für {d}")
     fk = os.path.join(REPO, "simulator3d", "fehler_katalog.json")
     if os.path.isfile(fk):

@@ -96,6 +96,10 @@ GEO = {
     # Variante v5.2 (echtes Unterteil aus v52.py, 01.11.2026)
     "tub52": ("base", 0.8, 3.0, "#3a73bf", True, 0, 0.0), "mosfet52": ("base", 0.5, 0.7, "#8c5933", False, 135, 1.2),
     "cable_cam1": ("base", 0.7, 1.4, "#d9c27a", False, 165, 0.5), "cable_cam0_52": ("base", 0.7, 1.4, "#d9c27a", False, 280, 0.0),
+    "plug52": ("base", 0.5, 1.6, "#262626", True, 0, 1.5), "sdplug": ("base", 0.3, 0.6, "#262626", True, 0, 1.5),
+    "head52": ("tilt", 0.6, 2.2, "#38383f", True, 400, 0.0), "diff52": ("tilt", 0.3, 0.6, "#f2f2f2", True, 450, 0.0),
+    "resplug": ("base", 0.3, 0.6, "#262626", True, 20, 1.6), "lampdrv": ("base", 0.5, 0.7, "#c8a2c8", False, 130, 1.2),
+    "fuseh": ("base", 0.5, 0.8, "#e74c3c", False, 120, 0.8), "sockel": ("base", 0.6, 1.4, "#4d80cc", False, 90, 0.3),
 }
 AUSSEN_V52 = ("wide", "irled")      # in der Szene sichtbar, wenn v5.2 gewählt ist (Linse / IR-Modul im Fenster)
 LITE_K = 2.3                         # Lite: Zellen so viel grösser
@@ -180,6 +184,12 @@ def modell():
     P["irled"] = P2["irled"]
     P["cable_cam1"] = P2["cam1"]
     P["cable_cam0_52"] = P2["cam0"]
+    P["plug52"] = P2["plug"]
+    P["sdplug"] = P2["sdplug"]
+    P["head52"] = P2["head"]
+    P["diff52"] = P2["diff"]
+    for k in ("resplug", "lampdrv", "fuseh", "sockel"):
+        P[k] = P2[k]
     info52 = {"lens_mm": [round(float(x), 2) for x in v52.WL], "tilt_deg": v52.WC_TILT, "ir_typ": v52.IR_TYP,
               "ir_mm": [0.0, v52.IRW_Y, v52.IRW_Z] if v52.IR_TYP != "5mm" else [0.0, v52.IR_Y, v52.IR_Z]}
     P["buttons"] = U(*[cyl_x(y, 33.0, LX - 12.0, LX + WALL + 3.0, 12.0) for y in (10.5, 50.5)])
@@ -384,7 +394,7 @@ def baue_sim(nur=None):
         print(f"  {i:12s} {len(f):7d} -> {len(gf):6d} Dreiecke{'  Lite ' + str(e.get('dreiecke_lite')) if aussen else ''}  {time.time() - t0:5.1f}s", flush=True)
     for e in meta:                                       # Explosion (Werkstatt): Höhe + Streuung vom Mittelpunkt der Gruppe weg
         grp, _h, _c, _col, _a, lvl, spread = GEO[e["id"]]
-        if e.get("ersetzt") and e["id"] != "tub52":                     # v5.2: wie das ersetzte Teil auseinanderfliegen
+        if e.get("ersetzt") and e["id"] not in ("tub52", "head52", "plug52"):                     # v5.2: wie das ersetzte Teil auseinanderfliegen
             grp, _h, _c, _col, _a, lvl, spread = GEO[e["ersetzt"]]
         ax_ = [0.0, 0.0, tub_c[2]] if grp == "base" else [0.0, 0.0, 0.0]
         e["explosion"] = [round((e["mitte"][0] - ax_[0]) * spread, 4), round(lvl / 1000.0, 4), round((e["mitte"][2] - ax_[2]) * spread, 4)]
