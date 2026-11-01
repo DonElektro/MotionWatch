@@ -18,6 +18,7 @@ const BTN2 := Color("#1a2433")
 
 # real-layout-leiste: «Symbole farbig | schlicht» like MoveEye. schlicht (true): grey, green while on (the look up to 3.19);
 # farbig: every symbol in its own colour, a green dot while on (orange: something to watch)
+static var motion_still := false             # 3.23 «Bewegung reduzieren» (main.gd motion_reduced): Logo, Blinki, Wippen still
 static var icons_plain := false              # 3.23: «Symbole farbig» is the standard
 const ICON_COL := {"link": Color("#3b8cff"), "keys": Color("#b38cff")}
 

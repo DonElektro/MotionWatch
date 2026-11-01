@@ -1,9 +1,9 @@
 {
- "version": "3D-5.25.0",
- "ver": "3.25.0",
- "name": "MoveEye Sim 3.25.0",
+ "version": "3D-5.29.0",
+ "ver": "3.29.0",
+ "name": "MoveEye Sim 3.29.0",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 39991331,
- "sha256": "d9852abb088e1a3cc211347025d690d0ce5c97eb2507ced4b98b1570b50342cd",
- "notes": "MoveEye Sim 3.25.0: mittlerer Klapp-Knopf «Meine Ansicht» wie in MoveEye."
+ "size": 41336549,
+ "sha256": "a4e6384d2d4ab4b2e51c7f01cb88808305ac0bced41944778fb3b2d77e2999cc",
+ "notes": "Fenster andocken, Reiter, Entwickler zuoberst"
 }

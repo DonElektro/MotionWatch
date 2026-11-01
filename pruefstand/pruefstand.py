@@ -169,7 +169,7 @@ def run(a):
         cfg = os.path.join(tmp, "mw")
         os.makedirs(cfg, exist_ok=True)
         st = {"sim_on": True, "source": "sim:0", "thermal_source": "sim:thermal", "sim_url": "http://127.0.0.1:%d" % a.sim_port,
-              "sim_auto": False, "sim_autostart": False, "sim_autostart_v2": False, "sim_autoupd": False, "update_auto": False,
+              "sim_auto": False, "sim_autostart": False, "sim_autostart_v2": False, "sim_autoupd": False, "update_url": "",
               "lang": "de", "desktop_notice": False, "setup_done": True,
               # Prüfstand 2: the pushes go into the test inbox of the simulation and are counted (MoveEye part 068);
               # the thermal camera is on - at night without light it sees the persons (part 232)

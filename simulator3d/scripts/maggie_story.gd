@@ -1939,6 +1939,8 @@ func _button(parent: Control, t: String, cb: Callable, primary := false) -> Butt
 func _play(kind: String) -> void:
 	if _snd == null:
 		return
+	if preload("res://scripts/klang.gd").ersetze(kind):
+		return                                         # Spielton: the real glockenspiel / strings play (klang.gd); else as before
 	if not _streams.has(kind):
 		match kind:
 			"chime":

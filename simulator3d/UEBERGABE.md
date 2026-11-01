@@ -1,8 +1,37 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Version **3.25.0** · MoveEye **3.25.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 01.11.2026 · Version **3.29.0** · MoveEye **3.29.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.29.0 (MoveEye 3.29.0): Fenster andocken (`scripts/fenster.gd`)
+
+- Leisten links/rechts ohne Überlappung, passt sich der Bildschirmgrösse an, «Neu anordnen»; Karte, Kompass, SmallTV, CPU als
+  Reiter in einem Fenster; Entwickler zuoberst, klein/mittel/gross, einklappbar. Test: `werkzeuge/fenster_dock_test.gd`.
+
+## NEU in 3.28.1 (MoveEye 3.28.1): CI auf GitHub
+
+- `.github/workflows/ci.yml` («CI»): Parse-Check, alle `werkzeuge/*_test.gd`, sim_texte, Export Linux + Windows (ohne Signatur)
+  laufen auf GitHub; Stand mit `werkzeuge/ci_status.sh <commit> --warten --fehler`. «Selbsttest»-Workflow entfernt.
+
+## NEU in 3.28.0 (MoveEye 3.28.0): Spielton (`scripts/klang.gd`)
+
+- Busse Musik / Effekte / Umgebung / UI mit Begrenzer, Regler unter Licht & Ton → Spiel-Ton, Aktion `spielton`.
+- 18 Klänge `klang/sp_*.ogg` (CC0, erzeugt mit `werkzeuge/spielton_bauen.py`), nur in Spielen und Geschichten
+  (still bei Tests, Prüfstand, MoveEye-Aufgaben). Test: `werkzeuge/spielton_test.gd` (in der Release-Kette).
+
+## NEU in 3.27.0 (MoveEye 3.27.0): Weniger Schalter (Teil 639q, Schritt 2)
+
+- Updates: eine Auswahl `update_mode` (von Hand / automatisch / Entwicklungsphase), alte Schalter übernommen.
+- Neu «Bewegung reduzieren» (`reduce_motion`, `UI.motion_still`) und «Stimme» (`stimme_modus`: an · aus · nur Untertitel),
+  Rundgang/Blinki nur unter System → Gerät & Hilfe (`tour_auto`, `blinki_on`); «Beim Start: Nur Gruppen» entfernt.
+- Alter Python-Basis-Simulator (`SIM_ZIP_B64`, Teil 639h) entfernt.
+
+## NEU in 3.26.0 (MoveEye 3.26.0): Maggie realistischer (`maggie_modell.gd`, `maggie_einfach.gd`)
+
+- Ab Grafik «mittel»: Modell mit Skelett (Quaternius, CC0, `simulator3d/LIZENZEN.md`) aus `modelle/maggie_hund_glb.bin`
+  (erzeugt mit `werkzeuge/maggie_modell.py`), Fell-Shader `shaders/maggie_fell.gdshader`; in «einfach» weiche Grundformen mit
+  ihrem Muster. `maggie_hund.gd` wählt die Form. Export: `modelle/*.bin`.
 
 ## NEU in 3.25.0 (MoveEye 3.25.0): «Meine Ansicht» (Teil 639r)
 

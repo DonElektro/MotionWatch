@@ -91,8 +91,7 @@ class WebStream:
         fails = {}                                  # ip -> times of wrong passwords (lock-out after 8 in 5 minutes)
 
         public = {"/i18n/fr.js", "/i18n/it.js", "/i18n/rm.js", "/manifest.webmanifest", "/icon-192.png", "/icon-512.png", "/apple-touch-icon.png",
-                  "/apple-touch-icon-precomposed.png", "/favicon.ico", "/sw.js",
-                  "/sim/simulator.zip"}                # the simulator fetches its updates here (public program, no secrets)
+                  "/apple-touch-icon-precomposed.png", "/favicon.ico", "/sw.js"}
 
         def local_req():
             """really from this computer - not through Tailscale serve / a tunnel (those also arrive as 127.0.0.1)"""
@@ -527,15 +526,8 @@ class WebStream:
                     log_event("sys", f"Simulator address set to {CFG['sim_url']} (web)")
                     if CFG["sim_on"] and WATCH_REF.get("w") is not None and str(CFG["source"]).startswith("sim:"):
                         w_ = WATCH_REF["w"]; w_._open_gen += 1; w_._start_opener(CFG["source"])
-                if act_ in ("install", "start") and not CFG.get("sim_basis_show"):   # 2.98.55: «Basis-Simulator anzeigen» off (639h)
-                    return reply({"ok": False, "error": tr_err("Switch on «Show the basic simulator» first (Simulator, Expert)", lang)}, 400)
-                if act_ in ("install", "start", "stop"):
-                    try:
-                        ok, msg = {"install": sim_install, "start": sim_start, "stop": sim_stop}[act_]()
-                    except Exception as e:
-                        ok, msg = False, str(e)[:120]
-                    if not ok:
-                        return reply({"ok": False, "error": tr_err(msg, lang)}, 400)
+                if act_ in ("install", "start", "stop"):          # 3.23: the old Python simulator on the Pi is removed (360)
+                    return reply({"ok": False, "error": tr_err("not possible", lang)}, 400)
             return reply(dict(sim_status(), ok=True, connected=sim_status()["ok"]))
 
         @app.route("/api/qs", methods=["POST"])
@@ -1205,12 +1197,6 @@ class WebStream:
             if not SIMPY_DL["msg"]:
                 sim3d_fetch(SIMPY, SIMPY_DL)
             return Response(sim3d_wait_page(lang, SIMPY, SIMPY_DL, "/sim/simulator_py.zip"), mimetype="text/html", headers={"Cache-Control": "no-store"})
-
-        @app.route("/sim/simulator.zip")
-        def sim_zip():
-            import base64
-            return Response(base64.b64decode("".join(SIM_ZIP_B64.split())), mimetype="application/zip",
-                            headers={"Content-Disposition": 'attachment; filename="MoveEye_Simulator.zip"'})
 
         @app.route("/api/hwcheck", methods=["POST"])
         def api_hwcheck():
@@ -2376,8 +2362,8 @@ class WebStream:
             pg = str(request.args.get("page") or "")[:20]
             if request.method == "POST":
                 d = body(); pg = str(d.get("page") or pg)[:20]
-                if "start_groups" in d:                          # nurgruppen: switch «On start: groups only» (all devices, Pi window)
-                    CFG["ui_start_groups"] = bool(d.get("start_groups")); save_settings()
+                if "start_groups" in d:                          # 3.23: the switch «On start: groups only» is gone (old pages)
+                    pass
                 elif pg and re.fullmatch(r"[a-z]{2,20}", pg):     # 586: Simple / Expert of ONE page (the default stays)
                     m_ = page_modes(); m_[pg] = "simple" if d.get("on") else "expert"
                     if (m_[pg] == "simple") == bool(CFG["ui_simple"]):
@@ -2387,7 +2373,7 @@ class WebStream:
                     CFG["ui_simple"] = bool(d.get("on")); save_settings()      # the default (the Pi window follows by itself)
             return reply({"on": page_simple(pg) if pg else bool(CFG["ui_simple"]), "default": bool(CFG["ui_simple"]), "own": pg in page_modes(),
                           "dev": bool(CFG.get("dev_area")),         # 639d: the group «Entwickler» of the simulator control (470)
-                          "start_groups": bool(CFG.get("ui_start_groups", True))})
+                          })
 
         @app.route("/api/ansicht", methods=["GET", "POST"])
         def api_ansicht():                               # 639r «Meine Ansicht»: the own folds per user and page (every device)

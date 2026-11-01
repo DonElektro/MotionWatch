@@ -164,7 +164,6 @@ TOGGLES = [  # (section, key, label)
     ("Simulator", "sim_auto", "Find the simulator in the network by itself (and take over its address)"),
     ("Simulator", "sim_autostart", "Switch the simulation on by itself as soon as a simulator is online (and off again when none is left)"),
     ("Simulator", "sim_autoupd", "Update the simulator by itself (the setting «Neue Versionen» of the simulator)"),
-    ("Simulator", "sim_basis_show", "Show the basic simulator (MoveEye Sim · Basis, the old Python simulator)"),
     ("AI detection", "species_on", "Recognise the animal species (second AI model - see the guide)"),
     ("Setup", "desktop_notice", "Small message on the Pi's desktop when MoveEye starts in the background"),
     ("Solar panel", "solar_on", "Solar panel with current meter (INA219 on I2C)"),
@@ -250,11 +249,7 @@ TOGGLES = [  # (section, key, label)
     ("Notifications", "msg_keyword_on", "Keyword at the start of every message (MoveEye-ALARM, MoveEye-WAERME …: for iPhone shortcuts)"),
     ("Notifications", "email_on", "E-mail: messages also by e-mail (the iPhone can start a shortcut from it)"),
     ("Notifications", "pushover_emergency", "Pushover: alarms as emergency (critical alert, repeats until confirmed)"),
-    ("Updates", "update_auto", "Look for new versions by itself (every 3 hours)"),
-    ("Updates", "update_install", "Install new versions automatically"),
-    ("Updates", "update_fast", "Test mode: get new versions at once (looks on GitHub every minute and installs right away, also while armed; while on, the other update switches do not count)"),
     ("Updates", "news_popup", "After an update: show briefly what is new and what comes next"),
-    ("Updates", "update_install_armed", "Automatic update also while armed (otherwise only when disarmed)"),
     ("Updates", "update_unsigned", "Also accept unsigned versions (not recommended - only for own builds)"),
     ("Battery", "ups_on", "UPS HAT (battery pack on the Pi): use it when found"),
     ("Battery", "ups_push", "UPS HAT: push message at a power cut / when power is back"),
@@ -482,7 +477,7 @@ def tk_main_on(sec):
             "Solar panel": lambda: g("solar_on"), "Lights": lambda: g("light_white", "off") != "off" or g("light_ir", "off") != "off",
             "Microphone": lambda: g("audio_in"), "Loudspeaker": lambda: g("siren_on") and g("siren_on") != "off", "Recording": lambda: g("record"),
             "Timelapse": lambda: g("timelapse_on"), "Backup": lambda: g("backup_type") and g("backup_type") != "off", "Relays": lambda: g("relays_on"),
-            "Web stream": lambda: g("web_stream"), "MQTT / Home Assistant": lambda: g("mqtt_on"), "Updates": lambda: g("update_auto") or g("update_fast"),
+            "Web stream": lambda: g("web_stream"), "MQTT / Home Assistant": lambda: g("mqtt_on"), "Updates": lambda: g("update_mode") in ("auto", "dev"),
             "Simulator": lambda: sim_live(), "Mover": lambda: g("mover_on"), "Guest access": lambda: g("guest_on"),
             "Reference scan": lambda: bool(refscan_meta())}.get(sec, lambda: False)())
     except Exception:
@@ -782,7 +777,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 3.25.0")
+        self.root.title("MoveEye 3.29.0")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -796,7 +791,7 @@ class App:
             self.open_secs = {"grp:alarm"}
         # nurgruppen: what is shown now (open_secs = the own state, saved); «On start: groups only» on start / tab change
         self._shown = {}; self._fold_start = True
-        self._mine = not CFG.get("ui_start_groups", False); self._mine_job = None; self._fold_cvs = {}   # 639r «Meine Ansicht»
+        self._mine = True; self._mine_job = None; self._fold_cvs = {}   # 639r «Meine Ansicht»
         self.step_var = tk.StringVar(value="3")
         self.tab = "live"; self.stick_speed = 30.0; self.relay_prev = {}
         self.left_f = self.stick = self.l_wp = None; self.qs_tiles = {}; self.tab_btns = {}
@@ -1154,7 +1149,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 3.25.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 3.29.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -2090,17 +2085,6 @@ class App:
             self.status_labels["Simulator"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
             self.status_labels["Simulator"].pack(anchor="w", pady=(4, 0))
             ttk.Button(sbody, text=tr("Simulation on / off") + "  (F9)", command=lambda: self._sim_toggle("window")).pack(fill="x", pady=(6, 0))
-            sf = ttk.Frame(sbody); sf.pack(fill="x", pady=(4, 0))
-            def sim_do(fn, done):
-                def run():
-                    ok, m = fn()
-                    self._status("Simulator", ("✓ " + tr(done)) if ok else "⚠ " + tr_err(m))
-                threading.Thread(target=run, daemon=True).start()
-            if CFG.get("sim_basis_show"):                 # 2.98.55: «MoveEye Sim · Basis» only with «Basis-Simulator anzeigen» (639h)
-                ttk.Button(sf, text=tr("Install"), command=lambda: sim_do(sim_install, "Simulator installed")).pack(side="left", expand=True, fill="x", padx=(0, 4))
-                ttk.Button(sf, text=tr("Start"), command=lambda: sim_do(sim_start, "Simulator started")).pack(side="left", expand=True, fill="x", padx=(0, 4))
-            if CFG.get("sim_basis_show") or sim_running():    # a running one can always be stopped
-                ttk.Button(sf, text=tr("Stop"), command=lambda: sim_do(sim_stop, "Simulator stopped")).pack(side="left", expand=True, fill="x")
             kidata_tk_build(self, sbody)                  # training pack with «Vielfalt», «Delete old AI data» (197)
             falearn_tk_build(self, sbody)                 # 2.98.38: «Lernbilder prüfen» (148)
         if sec == "Security":                             # «Log in only encrypted» (574)
@@ -2565,7 +2549,7 @@ class App:
                 "Microphone": lambda: bool(CFG["audio_in"]), "Loudspeaker": lambda: CFG["siren_on"] != "off", "Recording": lambda: CFG["record"],
                 "Timelapse": lambda: CFG["timelapse_on"], "Backup": lambda: CFG["backup_type"] != "off", "Relays": lambda: CFG["relays_on"],
                 "Schedule": lambda: any(x.get("enabled") for x in SCHEDULES), "Wi-Fi / hotspot": lambda: CFG["hotspot_on"],
-                "Web stream": lambda: CFG["web_stream"], "MQTT / Home Assistant": lambda: CFG["mqtt_on"], "Updates": lambda: CFG["update_auto"],
+                "Web stream": lambda: CFG["web_stream"], "MQTT / Home Assistant": lambda: CFG["mqtt_on"], "Updates": lambda: CFG.get("update_mode") in ("auto", "dev"),
                 "Extra sensors": lambda: CFG["sens_on"] and bool(CFG["sensors"]), "Storm warning": lambda: CFG["storm_on"], "GPS module": lambda: CFG["gpsmod_on"], "Mover": lambda: MOVER["avail"], "Simulator": lambda: sim_live(), "Solar panel": lambda: CFG["solar_on"]}
         for key, (arr, secs, _c, _w) in list(getattr(self, "grp_meta", {}).items()):
             try:
@@ -3003,20 +2987,13 @@ class App:
         """nurgruppen: after building a settings tab - start / tab change: «Groups only» (switch on); else as shown before"""
         if getattr(self, "_fold_start", True):
             self._fold_start = False
-            if CFG.get("ui_start_groups", False):
-                self._groups_only(save=False)
-            else:
-                self._mine_on()                              # 639r: the start = «Meine Ansicht»
+            self._mine_on()                                  # 639r: the start = «Meine Ansicht» (3.23: no switch «Nur Gruppen» any more)
             return
         for k, v in prev.items():
             if k in self.sections:
                 self._set_section(k, v, save=False)
             elif k in getattr(self, "subs", {}):
                 self._set_sub(k, v, save=False)
-
-    def _set_start_groups(self, v):
-        CFG["ui_start_groups"] = bool(v); save_settings()
-        self._groups_only(save=False) if v else self._mine_on()
 
     # ---- 639r «Meine Ansicht»: the folds the user set himself, kept for the owner («admin», the same as his web pages) per tab ----
     @staticmethod
@@ -3121,11 +3098,6 @@ class App:
         m.pack(side="left"); Tip(m, tr("This page has only one view") if nosimple else tr("Simple: only the important settings. «Expert» shows all of them."))
         ic = seg(r1, (("color", "🎨 " + tr("Symbols coloured")), ("plain", "◯ " + tr("plain"))), tk_icons(), self._set_icons)
         ic.pack(side="left", padx=(8, 0)); Tip(ic, tr("Symbols: green dot or green symbol = switched on"))
-        sg_ = Toggle(r2, tr("On start: groups only"), CFG.get("ui_start_groups", True), self._set_start_groups)
-        for w_ in (sg_, sg_.cv, sg_.lbl):
-            w_.config(bg=C["bg"])
-        sg_.lbl.config(font=("DejaVu Sans", 9), wraplength=0); sg_.pack(side="left", padx=(0 if small else 10, 0)); self.start_groups_tg = sg_
-        Tip(sg_.lbl, tr("On every start the settings show only the groups. Off: the menus open as you left them."))
         self._fold_cvs = {}
         self._fold_btn(r2, "open", lambda: self._fold_all_btn(True), tr("Expand all")).pack(side="right")
         mb = self._fold_btn(r2, "mine", self._mine_on, tr("My view: the menus open and close the way you left them (kept for you on every device). Long press or right click: groups only."))

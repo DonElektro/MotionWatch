@@ -1,13 +1,81 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-01 01:28",
+ "generated": "2026-11-01 03:09",
  "versions": [
+  {
+   "version": "3.29.0",
+   "file": "webcam_bewegung_3_29_0.py",
+   "url": "",
+   "sha256": "62f00005d536c7a2111d73c627c911d2dfff478d9675468952ad5ed5b7f9ed48",
+   "date": "2026-11-01 03:09",
+   "notes": "Simulator: Fenster docken automatisch in Leisten links/rechts an (ohne Überlappung, passt sich der Bildschirmgrösse an, «Neu anordnen»); Karte, Kompass, SmallTV und CPU als Reiter in einem Fenster; Entwickler immer vorne, klein/mittel/gross und einklappbar.",
+   "size": 4481992,
+   "sig": "cc70cbf48db570a684b681b77ed28d3721e94de0d3d0e262f4d74b94fdf8c05c79ad0325dfa4c386c6ae2887184a977ab9149a3d729cd8e16b39df2ccd954405",
+   "data": {
+    "file": "moveeye_daten_3_29_0.zip",
+    "url": "",
+    "sha256": "d3dcde8430986262bea028c8ce8a3337f706188fc8259154539b6303f2d164dd",
+    "size": 1559409,
+    "sig": "8242750553ad8dce6f03fa9ee6c8798c1c2e6cd4710db612f8dd7c04523a665b76baca8920ecddcdcbe0bbdab039669328f2331720918922945b814ae934cb0e"
+   }
+  },
+  {
+   "version": "3.28.1",
+   "file": "webcam_bewegung_3_28_1.py",
+   "url": "",
+   "sha256": "86d8ae4913f16f13f3dd6764e7ad50b10bc0838b97f27d295bf1d320263ccf9a",
+   "date": "2026-11-01 02:53",
+   "notes": "Prüfungen laufen automatisch auf GitHub (MoveEye, Simulator-Tests, Export), schneller und ohne den eigenen Rechner zu belasten.",
+   "size": 4481923,
+   "sig": "ac71cd2ef089a788e539283ada706b62944bf99db637ff821818a64dbc692dd320e5393c1ba18b261842b2d4a9dc32d228cdf9fe3ec2b1f340fbcb4f73e68f06",
+   "data": {
+    "file": "moveeye_daten_3_28_1.zip",
+    "url": "",
+    "sha256": "d3041cc52dcf2010a33cca8e9dd661c81096baa7719264eca46f9b807448c267",
+    "size": 1559270,
+    "sig": "aa1ac77c7102a907aeef75e16a7cb49cd3bedb64f40e68daa9a4df0297a704efcf2c0befc5b5985f9f44f667d4115d6c36353464b44984b7e911578c83e3c40b"
+   }
+  },
+  {
+   "version": "3.27.0",
+   "file": "webcam_bewegung_3_27_0.py",
+   "url": "",
+   "sha256": "b580e782d8fbb2780cb6c5fe625e7344900f6d8770f360d475b31c68e59be2bd",
+   "date": "2026-11-01 02:30",
+   "notes": "Weniger Schalter: Updates mit einer Auswahl, neu «Bewegung reduzieren» und «Stimme» (an · aus · nur Untertitel) in MoveEye und Simulator, Rundgang/Blinki an einem Ort, Symbole farbig, «Beim Start: Nur Gruppen» entfällt (langer Druck bleibt), alter Python-Basis-Simulator entfernt.",
+   "size": 4482017,
+   "sig": "b6200ca512174a0ce28ddfdf81a3c2d94878c97c42c94d526fd47d6ba69ea8164666c3fad273e45ee2da31722beacc3265cc23e6bdde534d5adbaa134246ba0f",
+   "data": {
+    "file": "moveeye_daten_3_27_0.zip",
+    "url": "",
+    "sha256": "8a73a7f18c50d3ef245e8d4167a133adf385c48c2b2063ed32039b9d15462dfa",
+    "size": 1559129,
+    "sig": "7a58dbb7d114a976b16e6d8a00368d2e061c0ab95117adf5d674bd89f985b77eb1db76517526bf83f616349ac7783b300f0fe1509dd6f94686c0c0592e202a0b"
+   }
+  },
+  {
+   "version": "3.26.0",
+   "file": "webcam_bewegung_3_26_0.py",
+   "url": "",
+   "sha256": "42e8667dae2f3f5979a3c892e876df327a41a8b09698a8f0138668466107d675",
+   "date": "2026-11-01 01:58",
+   "notes": "Simulator 3.26.0: Maggie sieht realistischer aus – ab Grafik «mittel» ein Modell mit Skelett und Fell, in «einfach» weiche Formen mit ihrem Muster.",
+   "size": 4482682,
+   "sig": "f5f8f957aaf2ccee2f7c5e2ca1066f3bc651d2c85612bead324f5ae01e91a3565bb0bba7623d030ee00382f6e8c622a6432312bacdb77ca8ab9ec2cbe65e9c06",
+   "data": {
+    "file": "moveeye_daten_3_26_0.zip",
+    "url": "",
+    "sha256": "a79dc30ede75e0c08d1be29ba984b651302f14f03bd882f9d6bc432b6e986270",
+    "size": 1632681,
+    "sig": "2164e4276b11657503b9e72d4ecb2e4825fc405153f67184f89f30bd535c47a241facfd51647b23efc9995e59b9afa1168f33192550da9d7e7eb92cc7444a90b"
+   }
+  },
   {
    "version": "3.25.0",
    "file": "webcam_bewegung_3_25_0.py",
    "url": "",
    "sha256": "9839882bd0bf5d3c029a171a3faeb70aab40d7a899f96a2768ae3efd1c4219da",
-   "date": "2026-11-01 01:28",
+   "date": "2026-11-01 01:40",
    "notes": "Mittlerer Klapp-Knopf «Meine Ansicht»: merkt sich dein Auf- und Zuklappen pro Seite, auf allen deinen MoveEye-Geräten gleich; «Nur Gruppen» weiter mit langem Druck; ↻ springt zuerst auf Live und lädt dann neu.",
    "size": 4482785,
    "sig": "516e3e1b9e191cc33395320c1afe497f9aad6a04190319ed562f05641aba9b2e72fc515fcb7f828fad170a51486efb2ffe1b41b3afbf614f50d5fc9402dbc407",
@@ -58,7 +126,7 @@
    "file": "webcam_bewegung_3_22_0.py",
    "url": "",
    "sha256": "df45d7aa5e86816ac9c487a86acc07634259b7d4f2ae2925d6dafdd594cf4800",
-   "date": "2026-11-01 01:24",
+   "date": "2026-11-01 02:15",
    "notes": "Reiter- und Statuszeile einzeln einklappbar (pro Gerät gemerkt, roter Punkt bei Warnungen); auf jeder Seite dieselbe Bedienleiste (Einfach/Experte, Symbole farbig/schlicht, Nur Gruppen, Alle zuklappen · Nur Gruppen · Alle aufklappen) – Web, Pi-Fenster und Simulator; Live: Gehtest ganz unten.",
    "size": 4448328,
    "sig": "486bd2fbe8f184c08e8d6e9681886afc4b231699e5454eaa7fbb8aa20a55e16ebea8a62d98771fb9104d7579057fc53ef721fb3e42bc786a156104eac790ef0f",
@@ -85,74 +153,6 @@
     "sha256": "3c74fd99c36f37414888136f81596beaf2c105d80d1ad5b835b720610b5dcbe5",
     "size": 1621446,
     "sig": "ebcc5c7da6a9d46ea1cdc24dc6500993062627aef4789146e6209288865c344431d20fe196f0f5fc749f2b7c1ebfa164adbf0e5dbbb6bf8db6c254f2dff78800"
-   }
-  },
-  {
-   "version": "3.20.0",
-   "file": "webcam_bewegung_3_20_0.py",
-   "url": "",
-   "sha256": "21524545b0f8a77a090205327df90109fa47473748fd711369bed1ebed28e037",
-   "date": "2026-10-31 23:48",
-   "notes": "Simulator 3.20.0: Figuren leben mehr (Atmen, Blick zu Geräuschen und Tieren, Blinzeln, Sprechen, Zittern, High-Five, Klettern, Aufheben; Tiere äsen und kauen; Maggie gräbt und schüttelt sich), Spuren im Schnee, Schalter «Ansicht wippt beim Gehen».",
-   "size": 4440084,
-   "sig": "5ee9b5d04c64c0f00179f3520bdb876e70b2e618a8e92d6e6f2c13aaae151e6e899e87cab89316f0461901ee0e4e15a9fe82ad91abbb330cdbeabcb291351f0d",
-   "data": {
-    "file": "moveeye_daten_3_20_0.zip",
-    "url": "",
-    "sha256": "dd047d4cd042301fc9aa42b1a03d0ff1c8b81f6db43fe85b45bef962693704eb",
-    "size": 1621220,
-    "sig": "b8bf671ae57066b64ac513da9368d13428afde57fd3dc77e33dfbd53e8e520f7da7f3c31a221f2f8e0316a46afa90864a3525905dedd5b00363350ababb4e10e"
-   }
-  },
-  {
-   "version": "3.19.3",
-   "file": "webcam_bewegung_3_19_3.py",
-   "url": "",
-   "sha256": "34cb330790c7cd527ae836915c656373996e7d805595e8aa60bd85eec4635df0",
-   "date": "2026-11-01 00:48",
-   "notes": "Trailer/Vorführung: Stopp am iPad lässt den Simulator nicht mehr schwarz (Kamera und Knöpfe kommen zurück, Knopf «× Zurück», Esc); am iPad Ton mit einem Tippen (Erzähler, Musik, Geräusche).",
-   "size": 4439968,
-   "sig": "c4a39873ca2d7bdc4f4a7fd89292c563e9fa86c9ffe1230e488f1aebc0825a0b3f285644b0488ad66e9c686e97f5caa451c43d5ede1975fa9eefba585b7b720c",
-   "data": {
-    "file": "moveeye_daten_3_19_3.zip",
-    "url": "",
-    "sha256": "a90bee6a76f1689722375ae004ff5505d440298d4ac9ff49f3b94d55abec4abf",
-    "size": 1621011,
-    "sig": "f9a58eebc707213245adbdc64e13b2165f67e46daf307619806751b0b08a758026198fbdc12b2d618ff4f3aaab4f322907bcd7e835d1a1707c55af781fc4e704"
-   }
-  },
-  {
-   "version": "3.18.0",
-   "file": "webcam_bewegung_3_18_0.py",
-   "url": "",
-   "sha256": "c7529050a3d1a2c698585cc0a99ce436a05583e1997fc5be9aeb267e07857bdd",
-   "date": "2026-10-31 22:23",
-   "notes": "Simulator 3.18.0: Figuren und Tiere mit echten Gelenken (Knie, Ellbogen, Schultern, Hüfte, Sprunggelenk) und natürlicherem Gang, Füsse bleiben am Boden.",
-   "size": 4421404,
-   "sig": "006fb23f3e3f9ecd4c4472925d55cd0e9649ff415398954c8540e6263b07f74b21fe2c07e2292b12099dc05252fad31921574cfb33db2e7b3724d93433c8dc0c",
-   "data": {
-    "file": "moveeye_daten_3_18_0.zip",
-    "url": "",
-    "sha256": "9b0ac6b9c0a94cc51a86f5c0e83c27ff69aa3ac8ea9f4569b7633a248e21ad11",
-    "size": 1613431,
-    "sig": "32f424fc51c77dcbbc29231a199213e82ad244873bc30768a83c8e48cd4c3841fd54d84d02a8908e2f9379ec858449e1408f35394adbed18d523c43053cb350e"
-   }
-  },
-  {
-   "version": "3.17.0",
-   "file": "webcam_bewegung_3_17_0.py",
-   "url": "",
-   "sha256": "ced7b39c55410c8d04078e2a583ab7629cdc176339d38022a3203800da83adcc",
-   "date": "2026-10-31 22:15",
-   "notes": "Simulator-Ports: MoveEye findet auch die Ausweich-Ports 8775/8785/8795 (Portliste geprüft). Simulator 3.17.0: Notfall-Start.bat, Fehlerbericht sammeln.bat, Fotos mit weniger Grafikspeicher, zweiter Simulator auf Port 8768.",
-   "size": 4421540,
-   "sig": "7fba0fbcd890d7e528c64b5428fff1335eb8f7bdb2ec2e9e6e85208d8aa59e0010778629bf5d71e68d067be5387cc690b8ab154074d97ac783438884e1bf3c05",
-   "data": {
-    "file": "moveeye_daten_3_17_0.zip",
-    "url": "",
-    "sha256": "bf1a8dab4f2dafc5035517f68779ff8dcc3891e147d659e502d7e9c2c0168c62",
-    "size": 1613384,
-    "sig": "6e072e5365248ee8380168ae1cbcef061f566539ac928841acb068346895eeb9edd99d12da49f98c88587ea2d0949cc1fb24bac35631505e9ce21a4921671501"
    }
   },
   {
