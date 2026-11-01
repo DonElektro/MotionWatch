@@ -1,5 +1,5 @@
 extends Node
-## Bergtal · ein Geheimnis (Daniels Entscheid 1.11.2026, Paket real-easter-egg). NICHTS davon in Hilfe, Blinki oder Anleitung –
+## Bergtal · ein Geheimnis (Entscheid des Besitzers 1.11.2026, Paket real-easter-egg). NICHTS davon in Hilfe, Blinki oder Anleitung –
 ## nur der Satz «Psst …» im Fenster «Über den Simulator» (mehr.gd), wie in MoveEye (Teil 584).
 ##
 ## Ablauf (Spoiler, nur für Entwickler):

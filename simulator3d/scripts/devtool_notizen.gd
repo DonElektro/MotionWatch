@@ -1,11 +1,11 @@
 extends Node
-## Entwicklertool 3 · Notizen an Claude (Daniel 31.10.2026): eine Stelle markieren (in der 3D-Ansicht anklicken, die Kamera
+## Entwicklertool 3 · Notizen an Claude (Besitzer 31.10.2026): eine Stelle markieren (in der 3D-Ansicht anklicken, die Kamera
 ## jetzt, oder auf der Karte), Text dazu, Kategorie (Fehler / Idee / Grafik, freiwillig). Automatisch dabei: Welt, Szene,
 ## Position (Szene und Welt), Blickrichtung, Uhrzeit, Wetter, Jahreszeit, Version, Lite, ein kleines Bild (480 × 270) der
 ## Ansicht ohne Bedienelemente. KEINE Einstellungen, keine Passwörter, keine Namen, keine Pfade des PCs in den Metadaten.
 ## Ablage: user://dev_notizen/<id>.json + <id>.jpg. Liste: hinspringen, abhaken, löschen. Marker auf der Karte (devtool.gd).
 ## «Alle Notizen exportieren»: user://dev_notizen_export/MoveEye_Notizen_<datum>.zip (notizen.json + LIESMICH.txt + Bilder) -
-## Daniel hängt sie im Chat an. Auch über HTTP: GET /dev/notizen.zip, /dev/notizen.json, /dev/notizen/<id>.jpg.
+## Der Besitzer hängt sie im Chat an. Auch über HTTP: GET /dev/notizen.zip, /dev/notizen.json, /dev/notizen/<id>.jpg.
 ## /control {"action": "dev", "do": "notes" | "note_add" (text, cat, x, z = Welt-Koordinaten, sonst die Kamera) |
 ##   "note_done" (id, value) | "note_delete" (id) | "note_goto" (id) | "notes_export"}
 

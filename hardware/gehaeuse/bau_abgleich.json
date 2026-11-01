@@ -64,11 +64,11 @@
   "usbext"
  ],
  "doku": {
-  "hardware/gehaeuse/Dokumente/Uebergabe_Gehaeuse_v5.md": "3e65ef42b20e24a09b006410d532d336d2fcb9fc1bb4d4116d0c4b7749f4ce7b",
+  "hardware/gehaeuse/Dokumente/Uebergabe_Gehaeuse_v5.md": "e9ef85744c303ef4a9920cc9c482d8d3e65c8f461b13f9eaf4455ddf3446b34a",
   "hardware/gehaeuse/Dokumente/Materialliste.md": "71af88ad0ab8c660b5a68d846a3827d737f5a77024af0e180e035751b8a32c6f",
   "hardware/gehaeuse/Dokumente/LIESMICH_Montage_v5-1.md": "eebaf2156e1ed6486925212485d5f2c774aee4cf4df051d66fe94d06666b6107",
-  "docs/Einrichtung_Raspberry_Pi.md": "12c3556d950ab63a4adc87eca154ef2c1a0c2c0d4701d4aa2e5d8664a8d315b4",
-  "docs/Gehaeuse_Variante2_Weitwinkel.md": "1f4756bb97d495c47530819f51587f36c901abdca38e1e3911f5c27bc85b969a"
+  "docs/Einrichtung_Raspberry_Pi.md": "ee9574e1a20550c613dc8ab3c221ccb31b927273db34b37353051b3da202e25e",
+  "docs/Gehaeuse_Variante2_Weitwinkel.md": "31a3b1ea80fefc384dbd00703ee1b384d81c6a4f2468d035aefcf80343c562dc"
  },
  "druckdateien": {
   "MotionWatch_v5-1_Platte_A_Unterteil.3mf": "1ca90216cf94c8c72788e749e04b3ce1a1be85a619671a9c4ccb7fe946996ef8",

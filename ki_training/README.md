@@ -4,7 +4,7 @@ Hier entsteht MoveEyes eigenes KI-Modell: ein kleiner YOLO-Detektor (YOLOv8n ode
 **person**, **animal** (Tier), **vehicle** (Fahrzeug). Er wird auf GitHub trainiert – du brauchst dafür keinen eigenen
 Rechner – und MoveEye lädt ihn danach selbst herunter.
 
-## Training starten (Daniel)
+## Training starten (Besitzer)
 
 1. Auf GitHub das Repository öffnen → oben **Actions** → links **«KI-Modell»** → rechts **«Run workflow»**.
 2. Einstellungen lassen (60 Epochen, yolov8n.pt, «veröffentlichen» angehakt) → grüner Knopf **«Run workflow»**.

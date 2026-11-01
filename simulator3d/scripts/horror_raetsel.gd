@@ -1,5 +1,5 @@
 extends Node
-## Bergtal · Horror-Modus «Das Hospiz» – Rätsel (Daniel, 31.10.2026): in jedem der 3 Kapitel ein Rätsel, dessen Lösung nur auf
+## Bergtal · Horror-Modus «Das Hospiz» – Rätsel (Besitzer, 31.10.2026): in jedem der 3 Kapitel ein Rätsel, dessen Lösung nur auf
 ## einer MoveEye-Aufnahme zu sehen ist. Die Geschichte bleibt die von bergtal_horror.gd (Hospizwartin «B.», 1936, Glocke,
 ## Laterne, verlassene Hütte, Hospizbuch) – die Rätsel öffnen nur Türen, sie erfinden keine neue Handlung.
 ##

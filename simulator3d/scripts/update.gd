@@ -75,7 +75,7 @@ func check(current: String, url := "") -> void:
 	if typeof(d) != TYPE_DICTIONARY or not d.has("version") or not d.has("sha256") or not d.has("size"):
 		await _note("Die Versions-Angabe auf GitHub ist nicht lesbar.")
 		return
-	if OS.get_name() == "Linux":                  # Paket Linux (Daniel 01.11.2026): eigenes Paket unter «linux» in version.json
+	if OS.get_name() == "Linux":                  # Paket Linux (Besitzer 01.11.2026): eigenes Paket unter «linux» in version.json
 		if not has_linux(d):
 			print("update check: no Linux package in version.json")
 			result = "für Linux noch kein Update-Paket"

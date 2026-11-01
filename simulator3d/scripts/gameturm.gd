@@ -1,5 +1,5 @@
 extends RefCounted
-## «KI-Turm» (Gameplay ausfeilen, Punkt 9, Daniel 31.10.2026): round after round against the AI guard, floor by floor harder.
+## «KI-Turm» (Gameplay ausfeilen, Punkt 9, Besitzer 31.10.2026): round after round against the AI guard, floor by floor harder.
 ## The guard is «MoveEye als KI-Wächter» (gamekiwaechter.gd: MoveEye's real AI, the head follows, the autopilot shoots)
 ## when MoveEye is connected - otherwise the Bot-Wächter of the simulator (gamebots.gd). A floor is won when at least one
 ## person reaches the goal; then the next floor starts harder (FLOORS: difficulty, Wächter-Stufe, lives, minutes, bushes,

@@ -121,7 +121,7 @@ UIG_RE = re.compile(r'(UI_GEMEINSAM = json\.loads\(r""")(.*?)("""\))', re.S)
 
 
 def ui_gemeinsam_einbetten(nur_pruefen=False):
-    """P1 (Daniel 31.10.2026): simulator3d/ui_gemeinsam.json als UI_GEMEINSAM in quelle/639p_ui_gemeinsam.py schreiben (eine
+    """P1 (Besitzer 31.10.2026): simulator3d/ui_gemeinsam.json als UI_GEMEINSAM in quelle/639p_ui_gemeinsam.py schreiben (eine
     Quelle für MoveEye und den Simulator; die Signatur der Hauptdatei deckt sie mit ab). nur_pruefen: nur melden, ob es passt."""
     if not os.path.isfile(os.path.join(QUELLE, UIG_TEIL)) or not os.path.isfile(UIG_JSON):
         return True
@@ -151,7 +151,7 @@ FXK_RE = re.compile(r'(FEHLER_KATALOG = json\.loads\(r""")(.*?)("""\))', re.S)
 
 
 def fehler_katalog_einbetten(nur_pruefen=False):
-    """Fehler-QR (Daniel 01.11.2026): simulator3d/fehler_katalog.json als FEHLER_KATALOG in quelle/639u_fehler_hilfe.py (wie
+    """Fehler-QR (Besitzer 01.11.2026): simulator3d/fehler_katalog.json als FEHLER_KATALOG in quelle/639u_fehler_hilfe.py (wie
     ui_gemeinsam_einbetten). Bleibt in der Hauptdatei (ZD_KEEP_NAMES): die Hilfe zu Fehlern geht auch ohne Zusatzdaten."""
     if not os.path.isfile(os.path.join(QUELLE, FXK_TEIL)) or not os.path.isfile(FXK_JSON):
         return True
@@ -442,7 +442,7 @@ def dateiname(v):
 
 
 def naechste(alt, stufe="fehler"):
-    """die nächste Nummer nach Daniels Regeln (31.10.2026): fehler = X.Y.Z+1, funktion = X.Y+1.0, gross = X+1.0.0"""
+    """die nächste Nummer nach den Regeln des Besitzers (31.10.2026): fehler = X.Y.Z+1, funktion = X.Y+1.0, gross = X+1.0.0"""
     a = [int(x) for x in alt.split(".")]
     if stufe == "gross":
         return "%d.0.0" % (a[0] + 1)

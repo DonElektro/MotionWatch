@@ -1,5 +1,5 @@
 extends Node
-## 3D-4.x «Gegenstände» (Wunsch Daniel, 30.10.2026): was die neuen Dinge des Katalogs (objekte_neu.gd) können.
+## 3D-4.x «Gegenstände» (Wunsch des Besitzers, 30.10.2026): was die neuen Dinge des Katalogs (objekte_neu.gd) können.
 ##  - Wind (main.wind × Böen): Früchte fallen vom Obstbaum / Beerenstrauch, Hängematte schaukelt, Windspiel dreht, Ballon
 ##    tanzt an der Schnur, Tonnendeckel klappert, Gartentor schwingt, Plastiksack wird herumgetragen, Stoff flattert
 ##    (Fahne, Wäsche, Vorhang: flap.gdshader wie die Zeltplane von simreal.gd).

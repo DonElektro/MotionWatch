@@ -1,5 +1,5 @@
 extends RefCounted
-## 3D-4.x «Szenen-Bibliothek» (Daniel, 31.10.2026, Variante A): gemeinsame Bausteine für grosse Szenen (Ferienpark am See,
+## 3D-4.x «Szenen-Bibliothek» (Besitzer, 31.10.2026, Variante A): gemeinsame Bausteine für grosse Szenen (Ferienpark am See,
 ## später vier kompakte Szenen). Rund 80 Dinge mit Parametern, wie die anderen aus Grundformen gebaut, in echter Grösse, mit
 ## Hindernis (Besucher gehen herum), Wärme für das Wärmebild (Motoren, Grill, Feuer, Tiere, Lampen) und Sichtweite.
 ##
@@ -92,7 +92,7 @@ const KINDS := {
 	# Bauernhof
 	"haybale": ["Heuballen", "Bauernhof"], "field": ["Feld", "Bauernhof"], "coop": ["Hühnerstall", "Bauernhof"],
 	"tree": ["Laubbaum", "Bauernhof"], "conifer": ["Tanne", "Bauernhof"], "orchard_tree": ["Obstbaum", "Bauernhof"],
-	# Erlebniswelt (Daniel 31.10.2026, /tmp spec Vignetten 1–19): die festen Dinge; die Abläufe baut ein späteres Paket
+	# Erlebniswelt (Besitzer 31.10.2026, /tmp spec Vignetten 1–19): die festen Dinge; die Abläufe baut ein späteres Paket
 	"tree_house": ["Baumhütte mit Strickleiter", "Erlebnis"], "cave": ["Kleine Höhle", "Erlebnis"], "mouse_holes": ["Mauer mit Mauslöchern", "Erlebnis"],
 	"gnome": ["Gartenzwerg", "Erlebnis"], "bottle_post": ["Flaschenpost", "Erlebnis"], "chest": ["Schatzkiste", "Erlebnis"],
 	"fishing_rod": ["Angelrute mit Eimer", "Erlebnis"], "boot": ["Gummistiefel", "Erlebnis"], "old_caravan": ["Verlassener Wohnwagen", "Erlebnis"],

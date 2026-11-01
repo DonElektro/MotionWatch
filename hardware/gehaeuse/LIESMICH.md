@@ -17,7 +17,6 @@ Thermal-90, UPS HAT (E) mit 4 × 21700, Lampen weiss + IR, Lautsprecher, PIR, Mi
 | Kopf-Montage im Detail (v4.1) | [Dokumente/LIESMICH_Montage_v4-1_Kopf.md](Dokumente/LIESMICH_Montage_v4-1_Kopf.md) |
 | Materialliste mit Bestellliste | [Dokumente/Materialliste.md](Dokumente/Materialliste.md) |
 | Übergabe an die Software (Strom, Anschlüsse, Adressen) | [Dokumente/Uebergabe_Gehaeuse_v5.md](Dokumente/Uebergabe_Gehaeuse_v5.md) |
-| Übergabe-Paket (Stand, offene Punkte, Entscheidungen) | [Dokumente/Uebergabe_Paket_v5-1.md](Dokumente/Uebergabe_Paket_v5-1.md) |
 | Druckdateien (2 Platten + 11 einzelne Teile, 3MF; Variante v5.2 in `v5-2/`) | [Druckdateien/](Druckdateien/) |
 | Parametrisches Modell (Python) | [Quellcode/](Quellcode/) |
 | Teile, Materialliste, Montage, dazu Varianten, Einkauf (Preis-Schätzung, Händler-Suche), Drucken, Werkzeug, Sicherheit, Verkabeln, Software, Inbetriebnahme, Fehlersuche, Wartung – 5 Sprachen, eine Quelle für MoveEye und Simulator «Bauen» | [bau.json](bau.json) |
@@ -40,7 +39,7 @@ Parameter `BAT_L/BAT_W/BAT_H` und `PI_Z_ABOVE_FLOOR` oben in `Quellcode/v5.py`).
 
 ## Eine Quelle: neu bauen
 
-`Quellcode/` ist Daniels parametrisches Modell (eigene SDF-CSG-Bibliothek `csg.py`, Netz mit Marching Cubes,
+`Quellcode/` ist das parametrische Modell des Besitzers (eigene SDF-CSG-Bibliothek `csg.py`, Netz mit Marching Cubes,
 Vereinfachung `decimate.py`). Gebraucht werden `numpy`, `scipy`, `scikit-image`, `matplotlib`.
 
 ```
@@ -51,7 +50,7 @@ python3 werkzeuge/gehaeuse_bauen.py --bilder   # Vorschaubilder neu (prev51.py)
 python3 werkzeuge/gehaeuse_bauen.py --pruefen  # passen Simulator-Modelle und Daten zur Quelle?
 ```
 
-Direkt im Ordner `Quellcode/` gehen weiterhin Daniels Befehle (`python3 v5.py`, `export5.py`, `plates5.py`,
+Direkt im Ordner `Quellcode/` gehen weiterhin die Befehle des Besitzers (`python3 v5.py`, `export5.py`, `plates5.py`,
 `printcheck5.py`, `check5.py`, `prev51.py`, siehe Übergabe-Paket). Die grossen Zwischendateien `out51/*.npz` sind nicht im
 Repository; `export5.py` erzeugt sie neu.
 
@@ -101,7 +100,7 @@ denselben Reitern: Übersicht · Teile · Einkauf · Drucken · Montage · Verka
   Löchern hinter dem Becher (x −5,5, M3 × 8 + Scheibe), Aussparung um den Kippachsen-Kopf und Schürze für den Druck.
   Neu erzeugt: 03, 04, 05, 08 und Platte B.
 
-  **Runde v5.2b (01.11.2026, Entscheide Daniel):** Service-Fenster hinten links (HDMI + USB-C, x 78–120) mit Stopfen 10 v5.2;
+  **Runde v5.2b (01.11.2026, Entscheide des Besitzers):** Service-Fenster hinten links (HDMI + USB-C, x 78–120) mit Stopfen 10 v5.2;
   SD-Schlitz in der Lüftungswand für eine microSD-Verlängerung mit Einbau-Kartenhalter (die Karte selbst steckt unter dem
   Pi mitten im Gehäuse) mit Stopfen 16; Kamerakopf 06 v5.2 mit Status-LED, Diffusor 14 und Pupillenring 15; Kamera-Rippen
   und Trennsteg ≥ 1,5 mm; Zwischenboden 09 mit Lochraster 5 mm (Ø 2,4 für M2,5 / M3); Feld für den Lampentreiber
@@ -110,7 +109,7 @@ denselben Reitern: Übersicht · Teile · Einkauf · Drucken · Montage · Verka
   Akkus (Pi in gleicher Lage und Höhe, Variante «Entwicklung» in Bauen). **Alle Druckdateien v5.2** (Platten A und B und
   jedes Teil einzeln, auch die unveränderten): [Druckdateien/v5-2/](Druckdateien/v5-2/).
 
-  **Pakete (01.11.2026, Entscheid Daniel):** Basis (Kopf + Wärmebild), Komplett (v5.2 mit Weitwinkel, Ton, Sensoren, Relais),
+  **Pakete (01.11.2026, Entscheid des Besitzers):** Basis (Kopf + Wärmebild), Komplett (v5.2 mit Weitwinkel, Ton, Sensoren, Relais),
   Autark (Komplett + Akku + Ladequelle) – Liste der bom-IDs und Preissumme in `bau.json` «pakete». Neue Stopfen für fehlende
   Teile: 18 Wärmebild-Fenster (Platte B), 19 IR-Modul-Loch, 20 DS18B20-Durchführung, 21 Relais-Buchse, 23 Mikrofon, 24 Lade-LED-Lichtleiter (Platte A); der Stopfen der
   5-mm-IR-LED heisst neu 22_Stopfen_IR_LED (vorher 13, das bleibt der Entwicklungs-Sockel). Prüfung
@@ -137,6 +136,6 @@ denselben Reitern: Übersicht · Teile · Einkauf · Drucken · Montage · Verka
 
 ## Lizenz
 
-Das Gehäuse (Modell, Quellcode in `Quellcode/`, Druckdateien, Anleitungen und Bilder) ist **Daniels eigenes Werk**
-(DonElektro). Alle Rechte bei Daniel; eine offene Lizenz ist (noch) nicht vergeben. Die Werkzeuge im Repository
+Das Gehäuse (Modell, Quellcode in `Quellcode/`, Druckdateien, Anleitungen und Bilder) ist **eigenes Werk von DonElektro**.
+Alle Rechte bei DonElektro; eine offene Lizenz ist (noch) nicht vergeben. Die Werkzeuge im Repository
 (`werkzeuge/gehaeuse_bauen.py`) gehören zum Projekt MoveEye.

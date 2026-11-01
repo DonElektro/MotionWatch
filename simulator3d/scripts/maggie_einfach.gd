@@ -1,5 +1,5 @@
 extends RefCounted
-## Maggie aus Grundformen, «einfach» (Grafik «einfach» / Lite, Raspberry Pi; Daniel 01.11.2026): statt einzelner Kugeln und
+## Maggie aus Grundformen, «einfach» (Grafik «einfach» / Lite, Raspberry Pi; Besitzer 01.11.2026): statt einzelner Kugeln und
 ## Kapseln weiche, zusammenhängende Körper aus Querschnitten (Rumpf mit tiefer Brust, aufgezogenem Bauch und Kruppe; Hals;
 ## Kopf mit Stopp und Wangen; schlanke Läufe; ein durchgehend gebogener Schwanz; gefaltete Kippohren). Maggies Muster steht
 ## als Vertex-Farbe im Netz (keine aufgesetzten Flecken). Ein Material für das ganze Fell.

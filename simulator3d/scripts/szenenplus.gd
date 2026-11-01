@@ -1,5 +1,5 @@
 extends Node
-## 3D-4.x «Neue Szenen» (Daniel, 30.10.2026, docs/Neue_Szenen_Plan.md): three scenes that train weak points of MoveEye,
+## 3D-4.x «Neue Szenen» (Besitzer, 30.10.2026): three scenes that train weak points of MoveEye,
 ## each with a fixed test run (testrun.gd plans «camping_voll», «tarnen», «velodieb», pruefstand.py) and a game idea.
 ##  1. «Voller Campingplatz»: many harmless neighbours on their own pitches and on the path (cooking, to the toilet block,
 ##     children playing, a dog walk) - only who comes to YOUR pitch counts (zones / «Dein Platz»). The neighbours are

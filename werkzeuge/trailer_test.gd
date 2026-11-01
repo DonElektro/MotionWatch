@@ -90,7 +90,7 @@ func _init() -> void:
 				errs.append("%s: Klang %s im Plan unbekannt" % [id, k])
 		var says := ev.filter(func(e): return str(e[1]) == "say").size()
 		print("Ton-Plan %s: %d Befehle, %d Klänge, %d Erzählersätze" % [id, ev.size(), (pl.get("klaenge", []) as Array).size(), says])
-	# the sounds as files (klang/, Daniel 01.11.2026): every sound an Ogg with its loop flag and level, MP3 for the browser
+	# the sounds as files (klang/, Besitzer 01.11.2026): every sound an Ogg with its loop flag and level, MP3 for the browser
 	var info: Dictionary = Ton.info()
 	for k in R.KLAENGE:
 		var w = Ton.get_snd(k)

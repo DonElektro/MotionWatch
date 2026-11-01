@@ -1,5 +1,5 @@
 extends Node
-## «Controller-Ansicht» of MoveEye (MoveEye part 538, wish of Daniel 29.10.2026): a phone / tablet shows the live picture
+## «Controller-Ansicht» of MoveEye (MoveEye part 538, wish of the owner 29.10.2026): a phone / tablet shows the live picture
 ## and this view next to each other, steered with a game controller or the fingers. MoveEye sends
 ##   {action: "padview", view: follow | driver | top | head | free | next | rnext | off,
 ##    look: [x, y] (turn the view, stick -1 … 1 for «dt» s), fly: [forward, turn] (free view, no rover), zoom: +1 / -1}
@@ -8,7 +8,7 @@ extends Node
 ## Without the rover: head camera (view 1), from above (the «Von oben» of the view bar) and the free view.
 ## view.jpg?bare=1: the picture for MoveEye without the buttons, the map and the boxes of the window (for 3 s after the
 ## last such picture - the window at the PC shows them again by itself).
-## 3D-4.x view.jpg?dock=1 (MoveEye's simulator page, wish of Daniel 30.10.2026): only the 3D view and the dock at the bottom -
+## 3D-4.x view.jpg?dock=1 (MoveEye's simulator page, wish of the owner 30.10.2026): only the 3D view and the dock at the bottom -
 ## no camera picture, no map with the compass, no rover stick, no news box. The window at the PC stays as it is: the 3D view
 ## is drawn once more without anything on it (a small picture of its own, one drawing per picture for MoveEye, the same
 ## camera) and the dock is copied in from the window (compose). Window small / minimized (main.remote_vp): nobody sees it,

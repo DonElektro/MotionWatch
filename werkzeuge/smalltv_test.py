@@ -106,7 +106,7 @@ def main():
     s4 = dv.send(a.sim, {"jpg": batt, "sig": 12, "kind": "batt", "brt": 60})
     st = ctl(a.sim, {"action": "smalltv"})
     ok(s4 and st["uploads"] == up and st["img"] == "/image/me_b.jpg", f"unverändertes Bild nur wieder gezeigt: {st['uploads']} Uploads, gezeigt {st['img']}")
-    # Aufräumen 2 (Daniel 30.10.): das Live-Bild nur jede zweite Live-Zeitscheibe neu; das Alarm-GIF auf jedem Bildschirm
+    # Aufräumen 2 (Besitzer 30.10.): das Live-Bild nur jede zweite Live-Zeitscheibe neu; das Alarm-GIF auf jedem Bildschirm
     night_, alarm_, game_, bat_ = g["CFG"].get("stv_night"), g["STV"]["alarm"], g["STV"]["game"], g["STATE"].get("battery")
     try:
         g["CFG"]["stv_night"] = False                     # (run_path gives a copy of the globals: change the dicts, not the names)

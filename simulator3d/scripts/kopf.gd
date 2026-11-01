@@ -1,5 +1,5 @@
 extends HBoxContainer
-## Der gemeinsame Kopf (Daniel 01.11.2026: «ein Kopf, überall gleich» – Gegenstück zu MoveEye Teil 639t und dem Pi-Fenster):
+## Der gemeinsame Kopf (Besitzer 01.11.2026: «ein Kopf, überall gleich» – Gegenstück zu MoveEye Teil 639t und dem Pi-Fenster):
 ##   ? Hilfe · 🔔 Ton · ↻ zurück und neu laden · DE Sprache · ☰ Menü · ⛶ Vollbild · ▲ Kopf einklappen · 🛠 Entwickler
 ## in dieser Reihenfolge, alle gleich gross (38 × 38) mit gezeichneten Symbolen (die Schrift hat keine Emoji). Die Liste, die Symbole
 ## und die Texte (de / en / fr / it / rm) kommen aus res://ui_gemeinsam.json («kopf»), genau wie in MoveEye.

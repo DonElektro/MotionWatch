@@ -1,5 +1,5 @@
 extends Node
-## Tasten statt Mausrad (Wunsch Daniel, 01.11.2026: Touchpad ohne Scrollfunktion am Linux-PC). Alles, was das Mausrad kann,
+## Tasten statt Mausrad (Wunsch des Besitzers, 01.11.2026: Touchpad ohne Scrollfunktion am Linux-PC). Alles, was das Mausrad kann,
 ## geht auch mit der Tastatur:
 ##   + / −  (auch Ziffernblock; US-Tastatur: = / −)  zoomen - in der freien Ansicht, in den Kamera-Ansichten 1 / 2 (nur das
 ##          Bild auf dem Bildschirm, MoveEye sieht unverändert), beim Erkunden, in der Flugkamera (explore.gd hat es schon),

@@ -1,5 +1,5 @@
 extends RefCounted
-## Bergtal-Abenteuer, Paket A3 (Daniel, 31.10.2026): Rätsel, Tagebuch des Grossvaters, Gegenstände des Grossvaters, Wege
+## Bergtal-Abenteuer, Paket A3 (Besitzer, 31.10.2026): Rätsel, Tagebuch des Grossvaters, Gegenstände des Grossvaters, Wege
 ## freischalten, Abzeichen, Hilfe-Stufen - eingebaut in die bestehenden Kapitel 1–5 (bergtal_abenteuer.gd ruft nur kleine
 ## Einhänge-Punkte auf: on_start, post_leg, on_ask, choose / after_choose, on_arrive, tick, paint_*, morning_xp, op, state).
 ##
@@ -25,7 +25,7 @@ extends RefCounted
 ## Inv.hat / gib / finde / nimm; «feldstecher» liegt dort unter dem Schlüssel «fernglas»; Grossvaters Feldstecher ist der einzige im Abenteuer und
 ## gibt auch die Wetterwarnung einen Abschnitt früher).
 ## Für andere Pakete: ab.hilfe_stufe() bzw. ab.raetsel.hilfe() -> "leicht" | "normal" | "schwer" (A4: Essen/Trinken in Leicht aus).
-## Ab 3D-4.74 (Daniel 31.10.2026) gibt es keine eigene Hilfe-Einstellung mehr: die Hilfe folgt der Schwierigkeit des Abenteuers
+## Ab 3D-4.74 (Besitzer 31.10.2026) gibt es keine eigene Hilfe-Einstellung mehr: die Hilfe folgt der Schwierigkeit des Abenteuers
 ## (W/R["level"]: leicht = Pfeile, mittel = «normal» = Tipp nach Wartezeit, schwer = keine Hilfe). Unterwegs gibt es auf «Mittel»
 ## nur den Knopf «Tipp jetzt» (Tipp auf Wunsch, keine zweite Einstellung). Alte Spielstände: P["a3_raetsel"]["hilfe"] wird
 ## beim Laden einmal zur Schwierigkeit (bergtal_abenteuer._load → P["schwierigkeit"]).
@@ -86,7 +86,7 @@ const ARRIVE := {1: ["hut", "An einem Haken im Stall der Alp hängt ein alter Hu
 		2: ["taschenuhr", "Neben dem Eisenring im Block: eine Taschenuhr, in Wachstuch gewickelt wie das Kartenstück. Sie geht noch - aber sie zeigt nicht die Uhrzeit, sondern die Sonnenzeit."],
 		3: ["pickel", "In einer Nische der Mauer lehnt ein alter Pickel mit Holzstiel, in Wachstuch gewickelt wie die Kartenstücke. Damit kommt man auch über Eis."],
 		4: ["seil", "Im Biwak hängt ein langes Seil am Haken. Ein Zettel daran: «Für die nächste Seilschaft.»"]}
-const NOTFALL := ["seil"]                    # zweiter (Notfall-)Ort, nur in «Leicht» (Daniel 31.10.): das Seil liegt sonst nur in der
+const NOTFALL := ["seil"]                    # zweiter (Notfall-)Ort, nur in «Leicht» (Besitzer 31.10.): das Seil liegt sonst nur in der
                                             # alten Sennerei (A4 FUNDE), das Ersatzteil sonst nur beim A2-Botendienst q_ersatzteil
 const ERSATZ_TEXT := "Neben der Seite liegt ein Brett mit Nägeln, sauber eingepackt - genau so eins fehlt am Steg."
 
@@ -484,7 +484,7 @@ func _kompass_ok(ch: int, i: int) -> void:
 		gib(it)
 		lines.append(T.t("Neu: %s.") % T.t(ITEM_NAME[it]))
 	if ch == 3 and hilfe() == "leicht" and not hat("ersatzteil") and not bool(S()["wege"].get("steg", false)):
-		gib("ersatzteil")                                # Notfall-Ort nur in «Leicht» (Daniel 31.10.); sonst nur A2-Botendienst q_ersatzteil
+		gib("ersatzteil")                                # Notfall-Ort nur in «Leicht» (Besitzer 31.10.); sonst nur A2-Botendienst q_ersatzteil
 		lines.append(T.t(ERSATZ_TEXT))
 	_check_erbe()
 	ab._diary("a3", T.t("Karte und Kompass"), " ".join(lines.slice(0, 2)))

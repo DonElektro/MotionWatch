@@ -1,11 +1,11 @@
 extends SceneTree
 ## Test «Das Hospiz»: eine Regel für alle Wege (Code-Prüfung H1) und der Knopf «Ohne Passwort starten» (31.10.2026).
 ##   cd simulator3d && HOME=<test-home> <godot> --headless --path . -s "$PWD/../werkzeuge/hospiz_test.gd"   (absoluter Pfad nötig)
-## Nur mit einem eigenen Test-HOME laufen lassen: der Test legt in user:// ein Test-Passwort an (nie Daniels user://).
+## Nur mit einem eigenen Test-HOME laufen lassen: der Test legt in user:// ein Test-Passwort an (nie das user:// des Besitzers).
 ## Ohne Fenster und ohne Welt: ein kleines Ersatz-«main» (kids_on, start_info …); bergtal_horror.gd selbst ist echt.
 ## Ende: «Hospiz-Test OK» oder «SCRIPT ERROR: Hospiz-Test: …» (Exit-Code 0 / 1).
 
-const PW := "test-hospiz-1234"         # nur im Test-HOME, nie Daniels Passwort
+const PW := "test-hospiz-1234"         # nur im Test-HOME, nie das Passwort des Besitzers
 
 var errs := []
 

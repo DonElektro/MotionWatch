@@ -1,5 +1,5 @@
 extends Node
-## Zwei-Spieler-Bausteine (Daniel 31.10.2026, Paket «Zwei-Spieler-Bausteine»): gemeinsame Bausteine fürs Spielen zu zweit
+## Zwei-Spieler-Bausteine (Besitzer 31.10.2026, Paket «Zwei-Spieler-Bausteine»): gemeinsame Bausteine fürs Spielen zu zweit
 ## (ein Bildschirm, zwei Controller) - für BEIDE Geschichten. Die Bausteine kennen keine Geschichte: alles, was sie über die
 ## Welt wissen müssen, fragen sie einen «Wirt» (host) mit kleinen zb_*-Funktionen. Allein spielen: zb_aktiv() = false, dann
 ## zeigt und tut dieser Knoten nichts.

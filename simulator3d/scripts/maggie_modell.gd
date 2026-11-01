@@ -1,5 +1,5 @@
 extends Node
-## Maggie mit Skelett (Daniel 01.11.2026, «Maggie realistischer»), ab Grafik «mittel» (nicht Lite / «einfach»):
+## Maggie mit Skelett (Besitzer 01.11.2026, «Maggie realistischer»), ab Grafik «mittel» (nicht Lite / «einfach»):
 ## ein freies Hundemodell mit Knochen (Quaternius «Ultimate Animated Animals», ShibaInu, CC0 – LIZENZEN.md), mit
 ## werkzeuge/maggie_modell.py auf Jack-Russell-Proportionen gebracht (hochbeinig, schlank, Kippohren, Schwanz nach oben
 ## gebogen) und mit Maggies Muster als Vertex-Farben. Datei: modelle/maggie_hund_glb.bin (ein GLB, roh im Export).

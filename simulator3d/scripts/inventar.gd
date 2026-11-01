@@ -4,12 +4,12 @@ extends PanelContainer
 ## Bild anklicken = setzen (dann in die Welt klicken, mehrmals möglich, Esc = fertig) oder direkt in die Welt ziehen.
 ## Menschen / laufende Tiere / fahrende Fahrzeuge kommen als Besucher; Gegenstände bleiben stehen und werden pro Szene in
 ## user://objekte.json gespeichert (beim Laden der Szene wieder hingestellt). Grosse Dinge sind Hindernisse.
-## 3D-4.x (Aufräumen, Daniel 29.10.2026): das Fenster heisst «Dein Platz» - ein Fenster statt zwei (früher «Inventar» und der
+## 3D-4.x (Aufräumen, Besitzer 29.10.2026): das Fenster heisst «Dein Platz» - ein Fenster statt zwei (früher «Inventar» und der
 ## Reiter «Dein Platz» in «Vorlagen»). Erster Reiter «Dein Platz»: Zelt und Auto setzen (zwilling.gd, mit PIR «Zelt» und
 ## Hindernis), die bewachten Sachen Velo und Kühlbox (main.test_props, dieselben wie beim Spielziel «Diebstahl» in
 ## gameplus.gd: wegnehmen / zurückstellen) und das Foto / Panorama des echten Platzes (zwilling.gd). Interne Namen bleiben
 ## (inventar, control-Aktion «inventar», user://objekte.json).
-## 3D-4.22 (Angleichen, Daniel 30.10.2026): das Fenster heisst «Gegenstände» («Dein Platz» ist der Platz von MoveEye: Ort, Zonen,
+## 3D-4.22 (Angleichen, Besitzer 30.10.2026): das Fenster heisst «Gegenstände» («Dein Platz» ist der Platz von MoveEye: Ort, Zonen,
 ## Patrouille). Statt 14 Reitern 5 Gruppen: Menschen & Tiere · Fahrzeuge · Essen · Sachen & Wertsachen · Platz & Umgebung
 ## (+ «In der Szene»); in einer Gruppe Filter-Knöpfe («Alle», Menschen, Tiere …). Die Kennungen (cat, kind, obj:…) bleiben,
 ## die Suche findet alles. Zelt / Auto, «Bewachte Sachen» und «Foto des Platzes» sind Teile von «Platz & Umgebung».

@@ -1,5 +1,5 @@
 extends RefCounted
-## «Animationen verbessern» (Daniel 31.10.2026): mehr Leben für die Menschen von actor.gd - eine Ergänzung NACH der
+## «Animationen verbessern» (Besitzer 31.10.2026): mehr Leben für die Menschen von actor.gd - eine Ergänzung NACH der
 ## Grund-Animation (actor._animate). Jede Figur «person» bekommt ein Objekt dieser Klasse (actor.anim). Es verändert nur die
 ## Gelenke (hips, torso, head, arms, legs), die actor.gd ohnehin bewegt - figur.gd (Ringe) und figur_paket.gd (Quaternius)
 ## übernehmen sie wie bisher. Für das Figuren-Paket: actor.anim_arme (Arme aus den Gelenken) / actor.anim_voll (alles).

@@ -309,8 +309,8 @@ MIT MOTION WATCH VERBINDEN (Schalter "An MoveEye senden" muss eingeschaltet sein
   Gefundene Simulatoren stehen auch unter System & Netz -> Simulator ("Simulatoren im Netz", Knopf "Verwenden").
   Geht es nicht (z. B. Firewall oder Gäste-WLAN), die Adresse wie unten von Hand eintragen:
 - Die Adresse des PCs herausfinden: Windows-Taste, "cmd" eingeben, Enter, dann "ipconfig" eingeben.
-  Bei "IPv4-Adresse" steht z. B. 192.168.1.50
-- In MoveEye unter System & Netz -> Simulator die Adresse eintragen: http://192.168.1.50:8765
+  Bei "IPv4-Adresse" steht die Adresse des PCs (im Folgenden <IP-des-PCs>)
+- In MoveEye unter System & Netz -> Simulator die Adresse eintragen: http://<IP-des-PCs>:8765
 - Die Taste "Simulation" drücken. Oben im Simulator steht dann "verbunden mit ...".
 - Die Steuerung des Simulators erscheint auch auf der Motion-Watch-Webseite unter
   System & Netz -> Simulator -> Simulator-Steuerung.
@@ -575,7 +575,7 @@ oder aus MoveEye (nur Besitzer), vorher wird automatisch der aktuelle Stand gesi
 So testest du: System › Sicherung › «Jetzt sichern», dann etwas ändern und «Wiederherstellen».
 
 NEU IN 3.37.0
-3.37.0: Foto-Texturen aus Daniels Fotos im Bergtal: Wiese, Alpweide, Alpenrosen, Geröll, Fels, Strasse (abschaltbar; Lite
+3.37.0: Foto-Texturen aus den Fotos des Besitzers im Bergtal: Wiese, Alpweide, Alpenrosen, Geröll, Fels, Strasse (abschaltbar; Lite
 unverändert).
 So testest du: System › Grafik › «Foto-Texturen im Bergtal» aus- und einschalten.
 
@@ -722,7 +722,7 @@ So testest du: 1) Notfall-Start.bat doppelklicken. 2) Fehlerbericht sammeln.bat 
 anschauen. 3) Start auf Port 8768.bat neben dem normalen Simulator starten.
 
 NEU IN 3.16.0
-3.16.0: Bergtal wie auf Daniels Fotos: heller Kalkfels mit Grasbändern und Schuttkegeln, gelbgrüne Weiden, schlanke dunkle
+3.16.0: Bergtal wie auf den Fotos des Besitzers: heller Kalkfels mit Grasbändern und Schuttkegeln, gelbgrüne Weiden, schlanke dunkle
 Fichten, smaragdgrüner Bergsee mit klarem Ufer und Spiegelung, ferne Ketten blau im Dunst; in Hoch dazu Karstweide mit
 Kalkblöcken, Felszähne, Legföhren, Alpenrosen, Quellwolken und Abendhimmel. Lite bleibt gleich schnell.
 So testest du: 1) Bergtal laden, Sommer, Grafik Hoch. 2) Schlafplatz «Am Ufer des Gumpisees» ansehen. 3) Auf die Weide und

@@ -1,5 +1,5 @@
 extends Node
-## Entwicklertool 3 · Kapitel-Sprung (Daniel 31.10.2026): Kapitel bzw. Schritt wählen und dorthin springen - zum Testen,
+## Entwicklertool 3 · Kapitel-Sprung (Besitzer 31.10.2026): Kapitel bzw. Schritt wählen und dorthin springen - zum Testen,
 ## ohne alles durchzuspielen.
 ##   * Geschichte «Die Karte des Grossvaters» (bergtal_abenteuer.gd): Kapitel 1 … 5, Schritt Kapitel … Morgen. Ab «Unterwegs»
 ##     startet die Tour (fester Seed), «Nachtlager» = am Ziel angekommen, «Nacht» = Lager steht, «Morgen» = schnelle Nacht.
@@ -7,7 +7,7 @@ extends Node
 ##   * Horror-Modus «Das Hospiz» (bergtal_horror.gd): Nacht 1 … 3 - NUR wenn Horror im laufenden Programm schon mit dem
 ##     Passwort (oder dem Knopf «Ohne Passwort starten» am PC) entsperrt ist (horror.may_play). Keine Umgehung: ohne Entsperren ist der Knopf aus, /control sagt «locked».
 ## Test-Spielstand: Abenteuer, Spielbereich und Entdeckungsbuch (Abzeichen) schreiben bis zum Neustart (oder «Test beenden»)
-## in eigene Dateien (user://dev_test/…, save_file / save_path / use_file der drei Teile) - Daniels echter Spielstand bleibt
+## in eigene Dateien (user://dev_test/…, save_file / save_path / use_file der drei Teile) - der echte Spielstand des Besitzers bleibt
 ## unberührt; das Level des Tests wird nicht beim Spielstand gemerkt (Engine-Meta «dev_test», spielstand.gd remember_lv).
 ## Der Horror-Modus hat Passwort und Fortschritt in einer Datei: im Test schreibt er Fortschritt und Rätsel unter eigene
 ## Schlüssel («progress_test» / «raetsel_test», bergtal_horror.gd test_mode) - die echten Schlüssel aller Spielstände werden

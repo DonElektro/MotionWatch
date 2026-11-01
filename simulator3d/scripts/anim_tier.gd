@@ -1,5 +1,5 @@
 extends RefCounted
-## «Animationen verbessern» (Daniel 31.10.2026): Tiere von actor.gd - eine Ergänzung NACH der Grund-Animation (wie
+## «Animationen verbessern» (Besitzer 31.10.2026): Tiere von actor.gd - eine Ergänzung NACH der Grund-Animation (wie
 ## anim_mensch.gd, actor.anim). Die Aussehen bleiben (auch Maggie aus 3.15.0), nur Gelenke und kurze Zustände.
 ##   9  Reh        äsen mit kurzem Kopfheben und Kauen, Ohren drehen (zucken, beim Sichern zum Geräusch), Flucht: Sprünge
 ##                 (actor.gd «leap») mit hochgehaltenem Kopf

@@ -1,5 +1,5 @@
 extends RefCounted
-## 3D-4.x «Vier kompakte Szenen» (Daniel, 31.10.2026): je rund 200 × 200 m, jede mit eigenem Charakter und mehreren
+## 3D-4.x «Vier kompakte Szenen» (Besitzer, 31.10.2026): je rund 200 × 200 m, jede mit eigenem Charakter und mehreren
 ## MoveEye-Standorten (wie im Ferienpark am See), gebaut aus der Szenen-Bibliothek (bib_objekte.gd):
 ##   pfadilager  Pfadilager im Wald (kompakt_pfadi.gd)     - dunkel und eng, Kinder, Tiere: schwer für die Erkennung
 ##   hofladen    Bauernhof mit Hofladen und Stellplätzen (kompakt_hof.gd) - viele Wärmequellen

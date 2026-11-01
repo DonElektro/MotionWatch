@@ -52,7 +52,7 @@ TEILE = [
     ("330_usb_geraete.py", r"^# USB devices \(2\.95\.30\)", "USB-Geräte, Spielesammlung, Seite verlassen (✕ Zurück)"),
     ("340_spiele_seiten.py", r"^SPIELE_PAGE = ", "Extras: Seiten der Spielecke und des Spieleabends"),
     ("350_simulator_link.py", r"^class SimLink:", "Verbindung zum Simulator (Schleife)"),
-    ("360_daten_simulator_python.py", r"^# 3\.23 \(Daniel 01\.11\.2026\): «MoveEye Sim · Basis»", "Ordner des früheren Basis-Simulators, SMS"),
+    ("360_daten_simulator_python.py", r"^# 3\.23 \(Besitzer 01\.11\.2026\): «MoveEye Sim · Basis»", "Ordner des früheren Basis-Simulators, SMS"),
     ("370_rueckmeldung_teilen_abschreckung.py", r"^# Feedback to the developer", "Rückmeldung, Teilen, Abschreckung, Gegensprechen"),
     ("380_updates.py", r"^# Updates: choose a version", "Updates"),
     ("390_protokoll_bedienermodus.py", r"^# Event log on the SD card", "Protokoll, Bedienermodus, Pause, Update-Wächter"),

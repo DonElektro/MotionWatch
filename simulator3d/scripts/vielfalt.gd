@@ -1,5 +1,5 @@
 extends RefCounted
-## 3D-4.x «Vielfalt» der Trainingsbilder (domain randomisation, Wunsch Daniel): dataset.gd fragt hier nach zufälligen
+## 3D-4.x «Vielfalt» der Trainingsbilder (domain randomisation, Wunsch des Besitzers): dataset.gd fragt hier nach zufälligen
 ## Kleidern (Farben, Muster), Haltungen, Dingen in der Hand, Licht (Sonnenstand, Lampen, Farbtemperatur), Wetter,
 ## Verdeckung (Hecke, Zaun, Auto davor), schwierigen leeren Bildern (Ast vor der Linse, Fahne, Licht, Insekten) und
 ## Kamera-Fehlern (Rauschen, Unschärfe, Bewegungsunschärfe, JPEG-Qualität). Dazu misst es pro Objekt, wie viel davon

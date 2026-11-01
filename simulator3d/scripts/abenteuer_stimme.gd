@@ -1,5 +1,5 @@
 extends RefCounted
-## Erzählerstimme (Paket A6, Daniel 31.10.2026): die Tagebuchseiten des Grossvaters werden vorgelesen.
+## Erzählerstimme (Paket A6, Besitzer 31.10.2026): die Tagebuchseiten des Grossvaters werden vorgelesen.
 ## Godot 4.3 DisplayServer.tts_* (Sprachausgabe des Betriebssystems):
 ##   Windows = SAPI / OneCore-Stimmen (bei Windows dabei, z. B. «Microsoft Hedda» Deutsch, «Zira» Englisch),
 ##   Linux = speech-dispatcher (libspeechd.so.2, wird zur Laufzeit geladen; Paket «speech-dispatcher» + z. B. espeak-ng),
@@ -26,7 +26,7 @@ static func moeglich() -> bool:
 
 
 static func modus() -> String:
-	"""3.23 (Daniel 01.11.2026): ONE switch «Stimme» an | aus | untertitel for narrator, demo and trailer (Einstellungen →
+	"""3.23 (Besitzer 01.11.2026): ONE switch «Stimme» an | aus | untertitel for narrator, demo and trailer (Einstellungen →
 	Licht & Ton → Lautsprecher). Older files: the switch «Erzählerstimme» (setting "stimme", true / false)."""
 	var m := str(SS.setting("stimme_modus", ""))
 	if m in ["an", "aus", "untertitel"]:

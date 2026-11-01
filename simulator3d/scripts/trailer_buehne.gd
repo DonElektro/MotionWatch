@@ -1,10 +1,10 @@
 extends "res://scripts/bergtal_erleben_base.gd"
-## Trailer-Bühne (Daniel 31.10.2026, Regie: trailer.gd): die Szenen der beiden Trailer im echten Bergtal – Orte aus bergtal.gd
+## Trailer-Bühne (Besitzer 31.10.2026, Regie: trailer.gd): die Szenen der beiden Trailer im echten Bergtal – Orte aus bergtal.gd
 ## (Konstanten, ziehen bei einer neuen Landschaft mit), Figuren aus actor.gd, Maggie aus maggie_hund.gd (ihr Aussehen kommt von
 ## dort: ändert es sich, sieht der Trailer es auch), Kristall / Lichtsäule / Teilchen aus maggie_welt.gd.
 ## Alles ist an die Zeit der Einstellung gebunden (Wege nach Zeit, nicht Schritt für Schritt): jede Einstellung kann direkt
 ## angesprungen werden (Standbilder, --trailer-ab) und sieht im Film genauso aus wie beim Sprung.
-## Spoiler (Daniel): nur Anfang und Andeutungen. Grossvater: keine Steinmännchen, kein Seeli, kein Ziel der Karte (nur das
+## Spoiler (Besitzer): nur Anfang und Andeutungen. Grossvater: keine Steinmännchen, kein Seeli, kein Ziel der Karte (nur das
 ##   erste Kartenstück). Maggie: kein Finale (keine Bergkapelle), nichts Brutales – Augen, Knurren, Nebel, die mutige Maggie.
 ## Einstellung (Dictionary): t0, d, art (welt | tafel | papier | titel | ende | schwarz), text / sub (Tafeln), zeit, wetter,
 ##   donner, nebel (zusätzliche Dichte), tint (Farbe über dem Bild), auf / tick (Methoden hier), cam, say [[t, Text]],

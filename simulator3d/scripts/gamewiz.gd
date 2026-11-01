@@ -84,10 +84,10 @@ const MODES := [["mw", "🛡", "Gegen MoveEye", "Die echte Erkennung von MoveEye
 		["guard", "👮", "Wächter", ""],   # the text: gamerules.gd GUARD_TXT (model, _rules)
 		["seek", "🙈", "Verstecken mit dem Mover", "Alle starten bei der Basis und verstecken sich 30 s lang. Der Fänger sieht nur die Kamera, fährt den Mover und drückt «Gefunden!». Wer die Basis berührt, rettet alle. Danach steht MoveEye wieder am alten Ort."],
 		["free", "🧪", "Zonen-Check", "Ohne Erwischen: geh die Grenzen deiner Zonen und die Wege ums Zelt ab. Das Handy sagt laufend, ob MoveEye dich sieht – jede Stelle, wo es dich nicht meldet, kommt auf die Karte der blinden Flecken."],
-		["escape", "🏃", "Entkomme der Kamera", "Ein Spieler steuert im Verfolgungs-Parcours eine Figur mit dem Stick (Handy, Controller oder Fenster) und versucht, aus dem Bild von MoveEye zu kommen. Eine Runde dauert 60 Sekunden. Punkte gibt es für die Zeit ausserhalb des Bilds und für jeden Verlust, den du verursachst. Die Punkte zählen in der Rangliste des Abends – und MoveEye lernt, besser zu folgen."],   # 3D-4.18 (Daniel): also in the wizard (parcours.gd)
+		["escape", "🏃", "Entkomme der Kamera", "Ein Spieler steuert im Verfolgungs-Parcours eine Figur mit dem Stick (Handy, Controller oder Fenster) und versucht, aus dem Bild von MoveEye zu kommen. Eine Runde dauert 60 Sekunden. Punkte gibt es für die Zeit ausserhalb des Bilds und für jeden Verlust, den du verursachst. Die Punkte zählen in der Rangliste des Abends – und MoveEye lernt, besser zu folgen."],   # 3D-4.18 (Besitzer): also in the wizard (parcours.gd)
 		["jaeger", "🦊", "Fehlalarm-Jäger", "Ihr seid keine Menschen, sondern Fuchs, Katze, Ast im Wind, Lampe, Ballon … Schafft ihr es, dass MoveEye trotzdem «Person!» meldet? Jeder Fehlalarm gibt Punkte – und MoveEye lernt daraus. Nur mit MoveEye."],
 		["camera", "🎥", "Alle gegen die Kamera (ältere Spielart)", "Wie «Gegen MoveEye», aber immer schätzt der Simulator, wer gesehen wird – auch wenn MoveEye verbunden ist.", true],
-		# 3D-4.x (Aufräumen, Daniel 29.10.2026): «Team gegen Team» is no longer offered - teams only with «Fahne erobern»
+		# 3D-4.x (Aufräumen, Besitzer 29.10.2026): «Team gegen Team» is no longer offered - teams only with «Fahne erobern»
 		["mwhand", "🕹", "Team gegen MoveEye", "Die Spieler schleichen mit dem Handy. Die Wächter sitzen an MoveEye: Sie drehen die echte Kamera mit dem Joystick auf der Live-Seite, zielen mit der Bildmitte und drücken den Auslöser 🎯.", true],
 		["patrol", "🚜", "Patrouille", "MoveEye fährt auf dem Mover eine Route ab und schaut sich an jedem Punkt um. Die Spieler schleichen zum Ziel, während die Patrouille unterwegs ist.", true]]
 const GOALS := [["reach", "🟢", "Zum Ziel schleichen", "Ziel: zum grünen Licht schleichen, ohne erwischt zu werden. Der Pfeil auf dem Handy zeigt den Weg."],
@@ -202,7 +202,7 @@ const BASE := {"game_mode": "mw", "game_goal": "reach", "game_level": "normal", 
 		"game_probe": "first", "game_clip": true, "game_hl": true, "game_mission": "auto", "game_nightrule": false, "game_noisecount": false,
 		"game_autofair": true,
 		"game_badges": true, "game_tour_n": 3, "game_tour_rounds": 2, "game_runtools": true}
-# 3D-4.x Spielkonzept (Daniel, 30.10.2026): the three fixed games of the quick start; the older presets stay for the kids mode,
+# 3D-4.x Spielkonzept (Besitzer, 30.10.2026): the three fixed games of the quick start; the older presets stay for the kids mode,
 # «Zonen-Check» and old saved choices
 const PRESETS := {"sneak": {"game_mode": "mw", "game_goal": "reach", "game_level": "normal", "game_lives": "3", "game_minutes": 3, "game_bots": "1",
 			"game_hides": 3, "game_items": 2},
@@ -246,7 +246,7 @@ const QUICK := [["sneak", "🕵️", "Schleichen", "Unentdeckt zum grünen Ziel 
 		["night", "🌙", "Nacht-Spiel", "Dunkel: der Wächter sieht nur im Infrarot-Kegel des Kopfs oder im Wärmebild. Kies knirscht – er hört dich (Richtungs-Ping). Will niemand Wächter sein: der Bot-Wächter."],
 		["mission", "🎒", "Mission", "Portemonnaie vom Tisch holen, 5 Früchte sammeln oder ein Paket wegbringen – ohne erwischt zu werden. 4 Minuten, 3 Leben."]]
 const LEVEL_OF := {"mission": "normal", "night": "normal", "turm": "easy", "turnier": "normal", "sweat": "normal", "szene_voll": "normal", "szene_tarnen": "normal", "szene_velo": "normal", "sneak": "normal", "duel": "normal", "theft": "normal", "kids": "easy", "family": "normal", "pro": "hard", "kids_pc": "easy", "free": "normal"}
-# 3D-4.20 (Daniel): the quick start cards have pictures again (wizpics.gd) - quick card -> picture
+# 3D-4.20 (Besitzer): the quick start cards have pictures again (wizpics.gd) - quick card -> picture
 const QUICK_PIC := {"abenteuer": "mission", "mission": "mission", "night": "night", "turm": "turm", "turnier": "turnier", "sweat": "sweat", "sneak": "mw", "duel": "guard", "theft": "theft", "szene_voll": "mw", "szene_tarnen": "free", "szene_velo": "theft", "escape_quick": "escape"}
 const OWN_LABEL := "⚙ Eigene Regeln – alle Spielarten, Ziele und Extras"
 
@@ -477,7 +477,7 @@ func model() -> Dictionary:
 	var quick := []
 	if step == 0:                                          # 3D-4.x: one tap - everything set
 		var sg: Dictionary = main.szenen.game_card() if main.szenen != null else {}
-		if main.scene == "parcours":                       # 3D-4.20 (Daniel): «Entkomme der Kamera» is the game of the tracking parcours
+		if main.scene == "parcours":                       # 3D-4.20 (Besitzer): «Entkomme der Kamera» is the game of the tracking parcours
 			sg = {"v": "escape_quick", "icon": "🏃", "title": "Spiel zur Szene: Entkomme der Kamera", "scene": true,
 					"text": "Steuere eine Figur mit dem Stick und versuche, aus dem Bild von MoveEye zu kommen – 60 Sekunden, Punkte für die Rangliste."}
 		if not sg.is_empty():

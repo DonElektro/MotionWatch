@@ -1,5 +1,5 @@
 extends Node
-## Entwicklertool · Schalter (Daniel 31.10.2026, Paket «Entwickler zusammenlegen»): der Reiter «Schalter» im Fenster
+## Entwicklertool · Schalter (Besitzer 31.10.2026, Paket «Entwickler zusammenlegen»): der Reiter «Schalter» im Fenster
 ## «Mehr → Entwickler» (devtool_extra.gd, neben Notizen / Kontaktbogen / Kapitel-Sprung / Spieltest). Hier stehen die Knöpfe
 ## der früheren Gruppe «Entwickler» des Bedienfelds - es gibt im Simulator nur noch EIN «Entwickler» (dieses Fenster).
 ##   * die Steuerelemente der Gruppe «Entwickler» mit extra «devwin» (main._register_controls: Prüfstand öffnen,

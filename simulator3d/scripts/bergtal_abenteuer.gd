@@ -1,5 +1,5 @@
 extends PanelContainer
-## Bergtal-Abenteuer «Die Karte des Grossvaters» (bis zum Geschichten-Menü «Die Karte des Bergführers»; Daniel, 31.10.2026 - Plan: Story / Abenteuer, Spiel & Ziele, Schlafplatz &
+## Bergtal-Abenteuer «Die Karte des Grossvaters» (bis zum Geschichten-Menü «Die Karte des Bergführers»; Besitzer, 31.10.2026 - Plan: Story / Abenteuer, Spiel & Ziele, Schlafplatz &
 ## Ausrüstung, Leben & Geschichten, Bergtal als Testgelände, Karte & Orientierung).
 ##
 ## Ablauf (gleicher Look wie der Spiel-Assistent gamewiz.gd: Punkte-Leiste, Karten, Zurück / Weiter):
@@ -20,7 +20,7 @@ extends PanelContainer
 ##                a2 (Figuren, Gespräche, Nebenaufgaben: abenteuer_figuren.gd) |
 ##                A6: slot (value 1–3) | slot_name (value) | resume | intro_skip | stimme (value) | szenen (value) |
 ##                    vorlesen | stopp | kinder_test (value)}
-## Paket A6 (Daniel 31.10.2026): Erzählerstimme (abenteuer_stimme.gd liest Grossvaters Tagebuchseiten vor), Zwischenszene
+## Paket A6 (Besitzer 31.10.2026): Erzählerstimme (abenteuer_stimme.gd liest Grossvaters Tagebuchseiten vor), Zwischenszene
 ## (Kamerafahrt beim Start jedes Kapitels, überspringbar), Jahreszeit vor dem Start (gilt für die ganze Runde: Eis, Lawinenkegel,
 ## gefrorene Bäche, im Winter kein Gewitter), Speichern (spielstand.gd: 3 Plätze, automatisch an Hütte und Lager), Andeutung
 ## «Teil 2» auf der letzten Seite nach Kapitel 5, Blinki als Helfer (abenteuer_blinki.gd), ein Level für alles (spielbereich.gd
@@ -115,7 +115,7 @@ func _load() -> void:
 			for k in d:
 				P[k] = d[k]
 	W["chapter"] = clampi(int(P["chapter"]), 1, 5)
-	# Schwierigkeit = Hilfe (Daniel 31.10.2026): eine alte eigene Hilfe-Stufe (A3) wird einmal zur gespeicherten Schwierigkeit
+	# Schwierigkeit = Hilfe (Besitzer 31.10.2026): eine alte eigene Hilfe-Stufe (A3) wird einmal zur gespeicherten Schwierigkeit
 	var a3s = P.get("a3_raetsel", {})
 	if a3s is Dictionary and (a3s as Dictionary).has("hilfe"):
 		if not P.has("schwierigkeit"):
@@ -216,7 +216,7 @@ func hilfe_stufe() -> String:
 
 
 func blinki_suggest() -> Dictionary:
-	"""Blinki's beginner kit (the only place Blinki speaks - Daniel): what fits the season and the goal"""
+	"""Blinki's beginner kit (the only place Blinki speaks - Besitzer): what fits the season and the goal"""
 	var winter: bool = str(W["season"]) == "winter"
 	var cold: bool = winter or str(W["season"]) in ["herbst", "fruehling"]
 	var it := {"isomatte": 1, "einmannzelt": 1, "stirnlampe": 1, "jacke": 1, "kocher": 1, "essen": 2, "wasser": 2, "apotheke": 1, "powerbank": 1}

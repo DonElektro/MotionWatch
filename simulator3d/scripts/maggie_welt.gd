@@ -12,7 +12,7 @@ const HELPER_LAYER := 128             # main.HELPER_LAYER: only the window sees 
 # region id -> data. rests: Rastplätze (valley x, z) – the first one is the spot of MoveEye; tor: the Jahreszeiten-Tor.
 # All points checked on the height map (slope < 12°, not in a lake; Probe 31.10.2026).
 # Paket «Geschichten: Dauer» (31.10.2026): 3 Rastplätze und weitere Wege, damit eine Region ca. 25–30 Min. dauert (Ziel
-# Daniel: Geschichte ca. 2 h). weg: die Reihenfolge der Ziele für den Pfeil (s = nächste Station von Maggie, r = nächster
+# Besitzer: Geschichte ca. 2 h). weg: die Reihenfolge der Ziele für den Pfeil (s = nächste Station von Maggie, r = nächster
 # Rastplatz, x = das Schutzding; danach das Tor) – Rechnung und Messung in REAL_STORY_DAUER.md.
 const REG := {
 	"herbst": {"name": "Herbsttal", "col": Color(0.95, 0.55, 0.18), "hour": 16.6, "weather": "clear",

@@ -1,6 +1,6 @@
 extends Node
-## «Maggie und der Bergkristall» für zwei Spieler (Daniel, 31.10.2026): ein Bildschirm, zwei Controller, einfache Bedienung –
-## damit Daniel die Geschichte mit seiner Tochter (12) zusammen erleben kann. Vorbild: «Die Karte des Grossvaters» zu zweit
+## «Maggie und der Bergkristall» für zwei Spieler (Besitzer, 31.10.2026): ein Bildschirm, zwei Controller, einfache Bedienung –
+## damit zwei Spieler (z. B. Eltern und Kind) die Geschichte zusammen erleben können. Vorbild: «Die Karte des Grossvaters» zu zweit
 ## (abenteuer_zweit.gd); der Teil «Bildschirm wechselnd» steht für beide in zweit_bild.gd.
 ##
 ## Wahl vor dem Start (gemeinsamer Start in geschichten.gd: Spielstand → Figur; auf der Seite «Figur» «1 oder 2 Spieler»):

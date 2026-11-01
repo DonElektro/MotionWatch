@@ -1,5 +1,5 @@
 extends RefCounted
-## 3D-4.2x «Mehr» → Selbstdiagnose (Wunsch Daniel 30.10.2026), wie «Selbstdiagnose» von MoveEye (120 health_check, 530):
+## 3D-4.2x «Mehr» → Selbstdiagnose (Wunsch des Besitzers 30.10.2026), wie «Selbstdiagnose» von MoveEye (120 health_check, 530):
 ## pro Teil eine Ampel (ok / Hinweis / Problem / aus), eine kurze Angabe und – wenn nicht ok – ein Tipp «→ was tun».
 ## Nur aus dem, was der Simulator sowieso weiss (kein Warten, kein Netz).
 

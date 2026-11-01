@@ -1,5 +1,5 @@
 extends Node3D
-## 3D-4.12 «Figuren» (Wunsch Daniel): echte 3D-Figuren mit Skelett statt Kästchen und Kapseln.
+## 3D-4.12 «Figuren» (Wunsch des Besitzers): echte 3D-Figuren mit Skelett statt Kästchen und Kapseln.
 ## Self-made in code (no model file, no licence question - see simulator3d/LIZENZEN.md): a Skeleton3D with 15 bones and
 ## one smooth skinned body built from rings (legs, pelvis, trunk, arms, hands, neck, head, shoes), with a twin mesh for
 ## the thermal camera where every corner has its own temperature (face warm, nose and ears cooler, hands, clothes cool).

@@ -1,5 +1,5 @@
 extends Node
-## 3D-4.x Spielkonzept (Daniel, 30.10.2026) - the rules around a round, here so game.gd stays small:
+## 3D-4.x Spielkonzept (Besitzer, 30.10.2026) - the rules around a round, here so game.gd stays small:
 ##   «Rollen wechseln reihum»: after a round with a guard (Wächter-Duell, Verstecken) another person becomes the guard -
 ##     in turn (by the place) or «wer am wenigsten erwischt wurde»; shown before the next round (phones, window, MoveEye).
 ##   «Fairness nach Rollen-Verhältnis»: many sneakers against one guard -> the guard gets 50 % more energy (gametools.gd)

@@ -1,6 +1,6 @@
 extends PanelContainer
 ## 3D-3.61: the tool bar at the bottom of the simulator window - everything of «Erkunden», «Patrouille» and the view
-## with the mouse only. 3D-4.13 (wish of Daniel 30.10.2026): a «Symbol-Dock» - round drawn symbols (no emoji font needed):
+## with the mouse only. 3D-4.13 (wish of the owner 30.10.2026): a «Symbol-Dock» - round drawn symbols (no emoji font needed):
 ##   Erkunden · Rover ▴ (route) · Folgen · Kopf · Versetzen · Höhe der Kamera ▴ · Mitspieler · Ansicht ▴ · Menü · ?
 ## Hover (or the focus of the controller, padmap.gd): the symbol grows and its name slides out; an active function has a
 ## gently pulsing green ring; the groups (Rover, Höhe der Kamera, Ansicht) slide a small menu up on hover / click / A. «Ansicht» has
@@ -254,7 +254,7 @@ func _open_sub(id: String, focus: bool) -> void:
 
 
 func _mast_row() -> void:
-	"""3D-4.x (wish of Daniel): a slider for the height of the pole - drag with the mouse (or ◀ ▶ of the controller), the
+	"""3D-4.x (wish of the owner): a slider for the height of the pole - drag with the mouse (or ◀ ▶ of the controller), the
 	head moves along live; the value in m. Limits = main.MAST_MIN … MAST_MAX (like set_mast and the page of MoveEye)."""
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 2)

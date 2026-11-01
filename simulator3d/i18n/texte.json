@@ -39206,11 +39206,11 @@
   "it": "Versione %s · %s",
   "rm": "Versiun %s · %s"
  },
- "Version %s · Elektro (alias Daniel) · Schweiz": {
-  "en": "Version %s · Elektro (alias Daniel) · Switzerland",
-  "fr": "Version %s · Elektro (alias Daniel) · Suisse",
-  "it": "Versione %s · Elektro (alias Daniel) · Svizzera",
-  "rm": "Versiun %s · Elektro (alias Daniel) · Svizra"
+ "Version %s · Elektro (alias DonElektro) · Schweiz": {
+  "en": "Version %s · Elektro (alias DonElektro) · Switzerland",
+  "fr": "Version %s · Elektro (alias DonElektro) · Suisse",
+  "it": "Versione %s · Elektro (alias DonElektro) · Svizzera",
+  "rm": "Versiun %s · Elektro (alias DonElektro) · Svizra"
  },
  "Version und Status": {
   "en": "Version and status",
@@ -41446,11 +41446,11 @@
   "it": "Prato con segni di distanza, cespuglio, tenda, auto, albero – esercitare l’inseguimento",
   "rm": "Prà cun marcas da distanza, chaglia, tenda, auto, planta – exercitar il suandar"
  },
- "Wiese, Fels, Geröll, Alpenrosen, Wege und Seegrund aus echten Fotos (Daniel Bärschi). Aus = die gezeichneten Farben wie früher. In Lite immer aus.": {
-  "en": "Meadow, rock, scree, alpine roses, paths and lake bed from real photos (Daniel Bärschi). Off = the drawn colours as before. Always off in Lite.",
-  "fr": "Prairie, roche, éboulis, rhododendrons, chemins et fond du lac à partir de vraies photos (Daniel Bärschi). Désactivé = les couleurs dessinées comme avant. Toujours désactivé en Lite.",
-  "it": "Prato, roccia, ghiaione, rododendri, sentieri e fondale del lago da foto vere (Daniel Bärschi). Spento = i colori disegnati come prima. Sempre spento in Lite.",
-  "rm": "Prà, grip, ruina, rosas alpinas, sendas e fund dal lai da fotografias veritablas (Daniel Bärschi). Deactivà = las colurs dissegnadas sco pli baud. En Lite adina deactivà."
+ "Wiese, Fels, Geröll, Alpenrosen, Wege und Seegrund aus echten Fotos (DonElektro). Aus = die gezeichneten Farben wie früher. In Lite immer aus.": {
+  "en": "Meadow, rock, scree, alpine roses, paths and lake bed from real photos (DonElektro). Off = the drawn colours as before. Always off in Lite.",
+  "fr": "Prairie, roche, éboulis, rhododendrons, chemins et fond du lac à partir de vraies photos (DonElektro). Désactivé = les couleurs dessinées comme avant. Toujours désactivé en Lite.",
+  "it": "Prato, roccia, ghiaione, rododendri, sentieri e fondale del lago da foto vere (DonElektro). Spento = i colori disegnati come prima. Sempre spento in Lite.",
+  "rm": "Prà, grip, ruina, rosas alpinas, sendas e fund dal lai da fotografias veritablas (DonElektro). Deactivà = las colurs dissegnadas sco pli baud. En Lite adina deactivà."
  },
  "Wildbeobachtung": {
   "en": "Wildlife watching",

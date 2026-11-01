@@ -1,5 +1,5 @@
 extends Node
-## Entwicklertool · Spieltest (Daniel 31.10.2026, Paket «Spieltest-Assistent»): der Teil «Spieltest» im Fenster
+## Entwicklertool · Spieltest (Besitzer 31.10.2026, Paket «Spieltest-Assistent»): der Teil «Spieltest» im Fenster
 ## «Mehr → Entwickler» (devtool_extra.gd, wie Notizen / Kontaktbogen / Kapitel-Sprung). Der Assistent selbst ist
 ## spieltest.gd (läuft auch ohne dieses Fenster, ein / aus bleibt über Neustarts). Hier:
 ##   * Schalter «Spieltest-Assistent» + Stand (läuft seit …, was gerade notiert wird)

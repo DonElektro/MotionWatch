@@ -1,5 +1,5 @@
 extends Node
-## «Entdecken belohnen» (Erlebniswelt Punkt 20–23, Daniel 31.10.2026, Stil «dezent»): ein System für ALLE Szenen.
+## «Entdecken belohnen» (Erlebniswelt Punkt 20–23, Besitzer 31.10.2026, Stil «dezent»): ein System für ALLE Szenen.
 ##   * Szenen und Vignetten melden ihre Entdeckungen mit register() an (Ort, Szene, Tier, Mensch).
 ##   * Gefunden ist etwas, wenn die Ansicht (frei fliegen, Erkunden, Spielen am PC) näher als «radius» kommt, es im Bild ist
 ##     und nichts davor steht (Sichtlinie) – oder, bei photo_required, wenn MoveEyes Kopfkamera es ganz im Bild hat und ein
@@ -1090,7 +1090,7 @@ func control(d: Dictionary) -> Dictionary:
 
 
 # =============================================================================================================================
-# ---- demo: three discoveries in «Camping-Platz» (Daniel: testable before the Ferienpark; can stay as a mini set) ----------
+# ---- demo: three discoveries in «Camping-Platz» (Besitzer: testable before the Ferienpark; can stay as a mini set) ----------
 # =============================================================================================================================
 func _demo_camping() -> void:
 	var root: Node3D = main.scene_parent

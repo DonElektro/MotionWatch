@@ -1,5 +1,5 @@
 extends Node
-## Paket A1 «MoveEye im Abenteuer: Lager, Wildkamera, seltene Tiere» (Abenteuer-Ausbau Kapitel 1–5, Daniel 31.10.2026).
+## Paket A1 «MoveEye im Abenteuer: Lager, Wildkamera, seltene Tiere» (Abenteuer-Ausbau Kapitel 1–5, Besitzer 31.10.2026).
 ## Ein Kind von bergtal_abenteuer.gd («ab»), dort nur mit kleinen Einhänge-Punkten (Suche nach «a1.» bzw. «A1.»).
 ##
 ## Was es macht:

@@ -1,5 +1,5 @@
 extends Node
-## Trailer (Daniel 31.10.2026): je ein Kino-Trailer (≈ 3 Min.) für «Die Karte des Grossvaters» und «Maggie und der Bergkristall» –
+## Trailer (Besitzer 31.10.2026): je ein Kino-Trailer (≈ 3 Min.) für «Die Karte des Grossvaters» und «Maggie und der Bergkristall» –
 ## eine geskriptete Kamerafahrt in Echtzeit im echten Bergtal (Orte, Figuren, Tiere, Wetter), mit Musik, Geräuschen,
 ## Texttafeln und Erzähler. Aufbau wie ein Kinotrailer: ruhiger Einstieg, Aufbau, schnellere Schnitte, Andeutung des
 ## Höhepunkts, Stille, Titelkarte, am Schluss «Jetzt spielen». Die Szenen stehen in trailer_buehne.gd, die Klänge in trailer_ton.gd.
@@ -19,7 +19,7 @@ extends Node
 ##     die Sätze (espeak-ng, falls vorhanden) nach den Zeiten in der cues-Datei auf die Tonspur.
 ## Lite (Quality.lite()): keine Funken am Kristall, weniger Krähen; die Kamerafahrten bleiben (kosten nichts).
 ## /control {"action": "trailer", "do": "start" (id, sprache, untertitel, ab) | "stop" | "info" | "plan"}
-## Stopp von aussen (Fix 3.19.x, Daniel: «nach Stopp am iPad bleibt der PC schwarz»): beenden() bringt auch die Kamera
+## Stopp von aussen (Fix 3.19.x, Besitzer: «nach Stopp am iPad bleibt der PC schwarz»): beenden() bringt auch die Kamera
 ## (Lage, Blickwinkel, Sichtweite) zurück und gibt die Knöpfe frei, auch wenn MoveEyes Browser-Bild (padview bare=1) sie
 ## gerade ausblendet (padview gibt sie 3 s nach dem letzten Bild zurück). Dazu ein Wächter (normal()): 1.5 s und 3 s nach
 ## dem Ende eines Trailers oder der Vorführung kommen Knöpfe, Kamera und Bild sicher zurück (kein schwarzer Film-Layer).
@@ -27,7 +27,7 @@ extends Node
 ## Ton im Browser (MoveEye /sim/trailer, iPad): «plan» = alle Ton-Befehle mit ihrer Zeit im Film (Musik, Geräusche, Erzähler-
 ## Ducking), GET /trailer_ton/<klang>.wav = die Klänge (trailer_ton.gd, mono 22 kHz) – die Seite spielt sie mit WebAudio
 ## im Takt von «t» (info) nach.
-## Klang (Daniel 01.11.2026): echte Aufnahmen statt Synthese (trailer_ton.gd, res://klang/). Jeder Klang hat einen Ausgleich
+## Klang (Besitzer 01.11.2026): echte Aufnahmen statt Synthese (trailer_ton.gd, res://klang/). Jeder Klang hat einen Ausgleich
 ## der Lautheit (Ton.db, klang/klaenge.json), der zum dB des Plans kommt – im Simulator und im Plan für den Browser. Alles
 ## läuft über einen eigenen Bus «Trailer» (+BUS_DB, danach ein Begrenzer bei -1 dBFS: keine Übersteuerung). Der Browser
 ## bekommt die Klänge als MP3 (/trailer_ton/<klang>.wav liefert dann audio/mpeg) und für Schleifen die Schleifenpunkte
@@ -873,7 +873,7 @@ func _input(ev: InputEvent) -> void:
 
 
 # =======================================================================================================================
-# still pictures (tests, Daniel: «Bilder ausgewählter Momente»)
+# still pictures (tests, Besitzer: «Bilder ausgewählter Momente»)
 # =======================================================================================================================
 func _standbilder(dir: String, zeiten: String) -> void:
 	var ts: Array = []

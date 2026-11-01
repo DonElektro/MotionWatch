@@ -1,5 +1,5 @@
 extends Node
-## «Maggie und der Bergkristall» für zwei Spieler - die Zwei-Spieler-Bausteine (zwei_bausteine.gd) eingebaut (Daniel 31.10.2026).
+## «Maggie und der Bergkristall» für zwei Spieler - die Zwei-Spieler-Bausteine (zwei_bausteine.gd) eingebaut (Besitzer 31.10.2026).
 ## Der Wirt (host) für zwei_bausteine.gd; ein Kind von maggie_zwei.gd («mz», Einhänge-Punkt dort in _ready), nur aktiv, wenn
 ## zwei spielen und Spieler 2 dabei ist (mz.dabei()) und die geteilten Ansichten laufen. Allein: nichts.
 ##   Rollen:  💎 Kristall-Hüter/in (Spieler 1, trägt den Kristall): sieht, was der Kristall über Gefahren in der Nähe weiss;

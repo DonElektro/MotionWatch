@@ -1,5 +1,5 @@
 extends Node
-## Simulator-Werte (30.10.2026, Wunsch Daniel): what MoveEye would measure on the real device, simulated here and sent with
+## Simulator-Werte (30.10.2026, Wunsch des Besitzers): what MoveEye would measure on the real device, simulated here and sent with
 ## every answer to MoveEye (main.gd world_reply):
 ##   battery  the Waveshare UPS HAT (2 x 18650 in series = 2S): charge from the consumption (Pi, servos, lights, siren,
 ##            CPU load of MoveEye) and the charge of the simulated solar panel (or a mains adapter); cold lowers the usable

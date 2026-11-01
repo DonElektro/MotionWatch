@@ -21,7 +21,7 @@ uniform int clip_n = 0;
 uniform vec4 clip_a[8];
 uniform vec4 clip_b[8];
 
-// Foto-Texturen (3.30, Texturen aus eigenen Fotos von Daniel Bärschi; bergtal_texturen.gd): Schalter «Foto-Texturen»
+// Foto-Texturen (3.30, Texturen aus eigenen Fotos von DonElektro; bergtal_texturen.gd): Schalter «Foto-Texturen»
 // (main.foto_tex), nie in Lite (photo = 0: alles wie vorher, es wird keine Textur gelesen). Die Fotos geben nur die Struktur
 // und einen Teil der Farbe: Farbe der Zone (Vertex-Farbe) × Foto / Mittelwert des Fotos (avg_*) - so bleiben Zonen,
 // Jahreszeit und die Farben der anderen Teile stimmig. Gegen sichtbare Wiederholung: zwei Kacheln mit Versatz und Hash-Drehung je Fleck

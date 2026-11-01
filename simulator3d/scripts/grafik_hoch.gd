@@ -1,5 +1,5 @@
 extends Node
-## F1 «Grafikstufe Hoch» (Paket Realismus, Daniel 31.10.2026; Ziel: der 3D-Simulator Schritt für Schritt Richtung Fotorealismus).
+## F1 «Grafikstufe Hoch» (Paket Realismus, Besitzer 31.10.2026; Ziel: der 3D-Simulator Schritt für Schritt Richtung Fotorealismus).
 ## Nur eingebaute Mittel von Godot 4.3, keine Dateien: alle Texturen (Normal-, Rauheits-Karten) entstehen hier aus Rauschen.
 ##
 ## Stufen (zusammen mit «Lite» aus quality.gd):   Lite  <  Normal (= bisher, «Voll»)  <  Hoch

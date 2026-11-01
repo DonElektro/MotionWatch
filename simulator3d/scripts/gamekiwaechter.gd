@@ -1,5 +1,5 @@
 extends Node
-## 3D-4.x «MoveEye als KI-Wächter» (wish of Daniel 30.10.2026, for his development tests in online games): when the switch is
+## 3D-4.x «MoveEye als KI-Wächter» (wish of the owner 30.10.2026, for his development tests in online games): when the switch is
 ## on (main.game_kiguard: MoveEye's simulator page / game card, or the simulator panel «Spiel») and a round WITH a guard role
 ## starts («Wächter» / Wächter-Duell, «Team gegen Team», «Team gegen MoveEye», also online rounds), MoveEye itself is the guard:
 ##   · the round runs as «Team gegen MoveEye» (main.game_mode = "mwhand" for this round, back afterwards): every player
@@ -13,7 +13,7 @@ extends Node
 ## Control: {action: "game_kig", op: "info" | "set" (on) | "reset"} - the switch is also the control «game_kiguard».
 
 const NAME := "Wächter: MoveEye (KI)"
-## Fair like a person (Daniel 30.10.2026): the same energy and cooldowns of gametools.gd (the fairness of gamerules.gd - more
+## Fair like a person (Besitzer 30.10.2026): the same energy and cooldowns of gametools.gd (the fairness of gamerules.gd - more
 ## energy, Bot-Helfer - does not apply: it is off in «Team gegen MoveEye»), a reaction time of 0.5 s, and the difficulty sets
 ## how long and how big it must see a sure box in the hit circle before it fires (gamekihilfe._auto): easy slower, hard faster.
 ## «Rollen reihum» (gamerules._rotate) pauses while the switch is on - everybody stays sneaker.

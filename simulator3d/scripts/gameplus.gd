@@ -1,5 +1,5 @@
 extends Node
-## 3D-4.x: four extras of the phone games that also help MoveEye (Daniel, 29.10.2026). Set up only in the wizard (gamewiz.gd).
+## 3D-4.x: four extras of the phone games that also help MoveEye (Besitzer, 29.10.2026). Set up only in the wizard (gamewiz.gd).
 ##  1. «Wetterwechsel»: in the middle of a round a thunderstorm, a fog bank or the dusk / dawn comes (10 s warning on the
 ##     phones). The round report says under which conditions MoveEye caught / missed the players (gamelearn: tag «wx»).
 ##  2. «Tarn-Sachen»: before the round every runner may take Tarnkleidung (the camo look of actor.gd), a Wärmedecke (cold in

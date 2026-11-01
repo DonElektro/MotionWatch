@@ -1,5 +1,5 @@
 extends Node
-## 3D-4.22 (Angleichen, Daniel 30.10.2026): gezeichnete Symbole statt fehlender Emoji.
+## 3D-4.22 (Angleichen, Besitzer 30.10.2026): gezeichnete Symbole statt fehlender Emoji.
 ## Die Schrift des Simulators (Godot: Open Sans) hat keine Emoji und keine Zeichen wie ⏻ ♪ ⚡ ⚠ - je nach PC erscheinen
 ## leere Kästchen oder Lücken («Auslöser , Licht»). Darum:
 ##   * tex(kind): ein kleines gezeichnetes Symbol (Linien und Kreise wie die Kachel-Symbole in ui_style.gd), als Textur -

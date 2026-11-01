@@ -128,14 +128,14 @@ func _build_ui() -> void:
 	ver.autowrap_mode = TextServer.AUTOWRAP_OFF
 	ver.size_flags_vertical = Control.SIZE_SHRINK_END
 	hdr.add_child(ver)
-	main.kopf = preload("res://scripts/kopf.gd").new()       # 639t (Daniel 01.11.2026): the one header - ? 🔔 ↻ DE ☰ ⛶ ▲ 🛠 like MoveEye
+	main.kopf = preload("res://scripts/kopf.gd").new()       # 639t (Besitzer 01.11.2026): the one header - ? 🔔 ↻ DE ☰ ⛶ ▲ 🛠 like MoveEye
 	main.kopf.build(main)                                      # (list and texts: ui_gemeinsam.json «kopf»; narrow panel: from DE on in ☰)
 	hdr.add_child(main.kopf)
 	main.devzugang = preload("res://scripts/devzugang.gd").new()   # 3.26 (MoveEye 639s): long press on wordmark / title = developer window,
 	main.devzugang.name = "DevZugang"                               # and the drawn tool button at the top right (developer area + owner)
 	main.add_child(main.devzugang)
 	main.devzugang.setup(main, hdr, [hdr.get_child(0), title, main.show_btn])
-	# Paket real-layout-leiste (Daniel 31.10.2026): the bar under the header like on every page of MoveEye (639o) -
+	# Paket real-layout-leiste (Besitzer 31.10.2026): the bar under the header like on every page of MoveEye (639o) -
 	# Einfach | Experte · Symbole farbig | schlicht · Beim Start: Nur Gruppen · Alle zuklappen / Nur Gruppen / Alle aufklappen
 	main.UI.icons_plain = main.ui_icons == "plain"
 	main.UI.motion_still = main.motion_reduced()                # 3.23 «Bewegung reduzieren»
@@ -461,7 +461,7 @@ func _build_ui() -> void:
 		kdl.text = "Gelöscht: %d Pakete (%.0f MB) · %s" % [int(r["deleted"]), float(r["freed_mb"]), KD.summary()])
 	kdr.add_child(kdb)
 	kdr.add_child(kdl)
-	# Menüs A, Punkt 5 (Daniel 31.10.2026): the part «Mehr: Aufstellen, Erkunden, Handy-Simulator» is gone - Aufstell-Planer =
+	# Menüs A, Punkt 5 (Besitzer 31.10.2026): the part «Mehr: Aufstellen, Erkunden, Handy-Simulator» is gone - Aufstell-Planer =
 	# tile «Aufstellen», Erkunden = bar below, Handy-Simulator = System → Karte und Livebild (phone_sim), Rückmeldung = «Mehr»
 	# the settings of the simulator: one card per group (with a symbol), parts inside (the same list the page of Motion
 	# Watch shows, in the same order - GROUPS / PLACE)
@@ -544,7 +544,7 @@ func _build_ui() -> void:
 		var w: Control = fb.get_meta("wrap")
 		w.get_parent().move_child(w, -1)
 	if groups.has("Entwickler"):
-		# 3D-4.22 (Angleichen, Daniel 30.10.2026): «Entwickler» like MoveEye - shown when MoveEye's «Entwickler-Bereich» is on
+		# 3D-4.22 (Angleichen, Besitzer 30.10.2026): «Entwickler» like MoveEye - shown when MoveEye's «Entwickler-Bereich» is on
 		# (dev_area, sent by MoveEye), no longer tied to «Experte». Paket «Entwickler zusammenlegen»: the card has only the
 		# button «Entwickler-Fenster öffnen» (dev_open); «Diagnose-Paket» is in the window (devtool_schalter.gd); only the owner
 		main.dev_body = groups["Entwickler"]
@@ -1049,8 +1049,8 @@ func _fold_paint() -> void:
 
 
 func _fold_group_open(b: Control) -> bool:
-	"""«Nur Gruppen» like MoveEye (Paket angleich, Daniel 31.10.2026): the groups open, their parts (Themen) closed.
-	3D-4.12 (Daniel): «Verbindung» stays closed; «Tasten» is a help card, no group"""
+	"""«Nur Gruppen» like MoveEye (Paket angleich, Besitzer 31.10.2026): the groups open, their parts (Themen) closed.
+	3D-4.12 (Besitzer): «Verbindung» stays closed; «Tasten» is a help card, no group"""
 	return not str(b.get_meta("title", "")) in ["Verbindung", "Tasten"]
 
 

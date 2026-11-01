@@ -1,5 +1,5 @@
 extends Node
-## 3D-4.27 Foto-Modus (Paket «Fotorealismus F4», Daniel 31.10.2026): das echte Foto des Platzes IST die Welt.
+## 3D-4.27 Foto-Modus (Paket «Fotorealismus F4», Besitzer 31.10.2026): das echte Foto des Platzes IST die Welt.
 ## Grundlage ist «Foto des Platzes» (zwilling.gd: Foto / Panorama pro Platz, Bildwinkel, Richtung). Im Foto-Modus:
 ##  - die Szene wird ausgeblendet; das Foto liegt auf einer grossen Kugel um die MoveEye-Kamera (shaders/fotowelt.gdshader),
 ##    so wie die Kamera es von ihrem Platz sieht (Lochkamera fürs Handyfoto, Zylinder fürs Panorama; bis 3 Fotos, weich

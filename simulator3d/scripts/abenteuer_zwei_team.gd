@@ -1,5 +1,5 @@
 extends RefCounted
-## «Die Karte des Grossvaters» zu zweit - die Zwei-Spieler-Bausteine (zwei_bausteine.gd) eingebaut (Daniel 31.10.2026).
+## «Die Karte des Grossvaters» zu zweit - die Zwei-Spieler-Bausteine (zwei_bausteine.gd) eingebaut (Besitzer 31.10.2026).
 ## Der Wirt (host) für zwei_bausteine.gd: kennt das Abenteuer (bergtal_abenteuer.gd «ab») und die zwei Wanderer
 ## (abenteuer_zweit.gd «z»). In abenteuer_zweit.gd nur kleine Einhänge-Punkte (Suche nach «team.»). Allein: nichts.
 ##   Rollen:  🗺 Kartenleser/in (Spieler 1; in «Rollen» Spieler 2, der die Karte hat) - sieht Teamstellen und den Weg zum Ziel,

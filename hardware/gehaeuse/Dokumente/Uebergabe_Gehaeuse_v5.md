@@ -1,6 +1,6 @@
 # Übergabe Gehäuse v5.1 → Software (MotionWatch)
 
-*Stand 27.10.2026, passend zu Software 2.95.32. Ersetzt in `docs/` die Gehäuse-Angaben aus `Uebergabe_Gehaeuse_Licht_Audio.md` und `Projektstand_PanTilt_Kamera.md`. Das Wetterhäuschen und der UPS HAT mit 2 × 18650 sind nicht mehr aktuell.*
+*Stand 27.10.2026, passend zu Software 2.95.32. Ersetzt die früheren Gehäuse-Angaben (v4). Das Wetterhäuschen und der UPS HAT mit 2 × 18650 sind nicht mehr aktuell.*
 
 ## Aufbau
 

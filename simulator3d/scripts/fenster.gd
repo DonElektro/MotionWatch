@@ -1,5 +1,5 @@
 extends Node
-## Paket «Fenster im Simulator» (31.10.2026, Wunsch Daniel: 1a, 2a, 3a, 4): EIN Rahmen für alle schwebenden Fenster über
+## Paket «Fenster im Simulator» (31.10.2026, Wunsch des Besitzers: 1a, 2a, 3a, 4): EIN Rahmen für alle schwebenden Fenster über
 ## der 3D-Ansicht - Kompass, Karte, Livebild, SmallTV, Gerät, Mover-Stick, Kopf steuern, Kameras (Bedienfeld zu), CPU -
 ## im Aussehen des alten Fensters «Kameras» (dunkle Karte, runde Ecken, Titelleiste mit ✥):
 ##   * Titelleiste ziehen = verschieben (Maus; Finger über die Maus-Nachbildung von Godot, emulate_mouse_from_touch)
@@ -37,7 +37,7 @@ extends Node
 ## Der Inhalt bekommt set_meta("fenster", id): Skripte, die sich bisher selbst platziert haben, lassen das dann.
 ## Tests: /control {"action": "fenster", "do": "info" | "drag" | "resize" | "close" | "list" | "check" | "reset" | "over"}
 ##
-## Paket «Andocken» (Daniel 01.11.2026, wie die Karten in MoveEye):
+## Paket «Andocken» (Besitzer 01.11.2026, wie die Karten in MoveEye):
 ##   * Andockleisten links und rechts (Spalten, optional unten): die Fenster rasten ohne Überlappung ein, die Werkzeugleiste
 ##     unten und der Knopf «Bedienfeld zeigen» bleiben frei (pack(): rein rechnerisch, Test werkzeuge/fenster_dock_test.gd)
 ##   * passt sich an Fenstergrösse / Auflösung an: Bilder (Karte, Livebild, SmallTV, Kameras …) wachsen mit der Höhe der

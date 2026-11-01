@@ -76,7 +76,7 @@ python motion_sim.py --map valley --hour 22 --people 3
 ```
 
 ```bash
-python motion_sim.py --mw 192.168.1.50:5000 --mw-password secret
+python motion_sim.py --mw <IP-des-Pi>:5000 --mw-password secret
 ```
 
 ```bash
@@ -110,5 +110,5 @@ Without a screen (e.g. on a Raspberry Pi, also without `python3-tk`): `python3 m
 * While the simulation is on, Motion Watch saves no recordings or timelapses (so nothing mixes with real clips) – the
   tests skip «recording started» then.
 * GitHub project of Motion Watch: `DonElektro/MotionWatch`. Never change `webcam_bewegung_*.py`, `versions.json`,
-  `simulator3d/` or `simulator/` there; wishes for Motion Watch go through Daniel. No passwords or keys in a repository.
+  `simulator3d/` or `simulator/` there; wishes for Motion Watch go through the owner. No passwords or keys in a repository.
 * Moving the camera rebuilds the static scene in the background for a few seconds (big city: a bit longer).

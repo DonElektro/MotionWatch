@@ -1,5 +1,5 @@
 extends Node
-## Paket A5 «Zu zweit, Handy-Begleiter, Familien-Bestenliste» (Bergtal-Abenteuer, Daniel 31.10.2026).
+## Paket A5 «Zu zweit, Handy-Begleiter, Familien-Bestenliste» (Bergtal-Abenteuer, Besitzer 31.10.2026).
 ##
 ## Spielart (Schritt «Schwierigkeit & Ziel», Gruppe «Mitspieler»), vor dem Start wählbar:
 ##   allein      wie bisher (die Fensteransicht fliegt mit der Tour)

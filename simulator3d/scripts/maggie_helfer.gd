@@ -1,5 +1,5 @@
 extends RefCounted
-## «Maggie und der Bergkristall» – die lieben Tiere (Paket S2, Daniel 31.10.2026). Werden von maggie_hund.gd gebaut und
+## «Maggie und der Bergkristall» – die lieben Tiere (Paket S2, Besitzer 31.10.2026). Werden von maggie_hund.gd gebaut und
 ## bewegt (h = maggie_hund.gd: Figuren, Töne, Wege, Rahmen-API).
 ##   * Eule (Waldkauz, ≈ 40 cm): im Winter und überall, wenn es dunkel ist – sitzt auf einem Pfosten vor dir, ruft
 ##     «hu-huu» und fliegt zur nächsten Stelle, sobald du nah bist; ein schwaches Licht zeigt den Weg zur nächsten Station.

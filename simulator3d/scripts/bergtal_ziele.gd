@@ -1,5 +1,5 @@
 extends RefCounted
-## «Bergtal · Ziele» (Daniel 31.10.2026, Paket real-berg-orte, Vorlage: Daniels Fotos): zwei neue Orte im Bergtal (bergtal.gd).
+## «Bergtal · Ziele» (Besitzer 31.10.2026, Paket real-berg-orte, Vorlage: Fotos des Besitzers): zwei neue Orte im Bergtal (bergtal.gd).
 ##   Tuffwasserfall im Schattwald: eine Tuffwand mit Moos (grün auf beige-grauem Fels), das Wasser rinnt in mehreren Fäden
 ##     über Stufen in einen flachen, bräunlich-klaren Gumpen; Laub am Ufer, Laubbäume rundum, ein Abfluss zum Bach.
 ##     Plätschern (Klang aus mikrofon_klang.gd, «water»): am PC hörbar, nahe lauter; MoveEyes Mikrofon hört es auch.
@@ -8,7 +8,7 @@ extends RefCounted
 ##     Plattform mit Geländer, Antenne, Bank und Wegweiser. Die «Bergstation» ist die BESTEHENDE obere Station der
 ##     Materialseilbahn bei der Obri Stafelhütte (bergtal.gd / bergtal_orte.gd) - keine zweite Seilbahn, keine eigene Kabine
 ##     (Wunsch Koordinator: die Grossvater-Bahn über den Tüfelsschlund und die Materialseilbahn reichen). Von dort führt ein
-##     Bergweg in Kehren hinauf, das letzte steile Stück mit Drahtseil und Eisenbügeln (Daniels Bilder 25 / 27 / 36),
+##     Bergweg in Kehren hinauf, das letzte steile Stück mit Drahtseil und Eisenbügeln (den Bildern des Besitzers 25 / 27 / 36),
 ##     bei der Station eine Holzbank mit Pfostenzaun (Bilder 21–23).
 ## Gelände: sculpt() (aus bergtal.generate(), nach Orte.sculpt) hebt den Gipfel an und gräbt den Gumpen; sonst bleibt alles.
 ## Lite: einfache Formen (weniger Felsstufen, 2 statt 5 Wasserfäden, kein fliessendes Wasser-Shader, weniger Laub, Antenne als
@@ -613,7 +613,7 @@ func _summit() -> void:
 		if k > 0:
 			for hh in [0.55, 1.08]:
 				bib._part(Bib.ROD(prev + Vector3(0, hh, 0), p + Vector3(0, hh, 0), 0.035, "6a6e72", "metal"), Transform3D.IDENTITY, "metal", "mid", ck)
-			if not lite:                                          # wire mesh between the rails (like on Daniel's photo 10)
+			if not lite:                                          # wire mesh between the rails (like on the owner's photo 10)
 				bib._part(Bib.ROD(prev + Vector3(0, 0.8, 0), p + Vector3(0, 0.8, 0), 0.012, "8a8e92", "metal"), Transform3D.IDENTITY, "metal", "small", ck)
 				bib._part(Bib.ROD(prev + Vector3(0, 0.3, 0), p + Vector3(0, 0.3, 0), 0.012, "8a8e92", "metal"), Transform3D.IDENTITY, "metal", "small", ck)
 		prev = p
@@ -660,7 +660,7 @@ func _antenna(base: Vector3, ck: String) -> void:
 
 func _via_ferrata(ck: String) -> void:
 	"""the last steep part of the Gipfelweg: a steel cable on short posts beside the path, iron rungs where it is steepest
-	(Daniel's photos 25 / 27 / 36). Lite: the cable only."""
+	(the owner's photos 25 / 27 / 36). Lite: the cable only."""
 	var pts: PackedVector2Array = bt.dense(GIPFELWEG.slice(4), 2.5)
 	var prev := Vector3.INF
 	for i in range(pts.size()):

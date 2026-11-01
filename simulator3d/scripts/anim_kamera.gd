@@ -1,5 +1,5 @@
 extends RefCounted
-## «Animationen verbessern» 16 (Daniel 31.10.2026): die Ansicht wippt leicht beim Gehen der Spielfigur (Maggie-Geschichte,
+## «Animationen verbessern» 16 (Besitzer 31.10.2026): die Ansicht wippt leicht beim Gehen der Spielfigur (Maggie-Geschichte,
 ## Kamera hinter der Figur). Abschaltbar: Einstellung «Ansicht wippt beim Gehen» (main.cam_wippen, System → Grafik,
 ## Standard an; eine Einstellung für Bewegungsempfindlichkeit gibt es im Simulator nicht). Nur bei hoher Qualität
 ## (anim_mensch.hoch), nie in Lite. Das Schaukeln in der Seilbahn macht abenteuer_action.gd (seit 3.14).

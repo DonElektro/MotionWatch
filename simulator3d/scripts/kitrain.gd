@@ -1,5 +1,5 @@
 extends Node
-## «KI trainieren» (3D-4.x, Wunsch Daniel): ein Knopf in der Karte «Testen» → «Trainingsbilder für eine eigene KI».
+## «KI trainieren» (3D-4.x, Wunsch des Besitzers): ein Knopf in der Karte «Testen» → «Trainingsbilder für eine eigene KI».
 ##   1. macht ein Trainingspaket (dataset.gd, mit der gewählten Vielfalt normal / hoch)
 ##   2. legt die ZIP-Datei als Anhang ins Release «ki-daten» auf GitHub (legt das Release an, wenn es fehlt)
 ##   3. startet auf GitHub das Training (Workflow ki_modell.yml, «workflow_dispatch»)

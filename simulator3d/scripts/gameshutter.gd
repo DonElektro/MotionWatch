@@ -1,5 +1,5 @@
 extends Node
-## 3D-4.x «Auslöser» (wish of Daniel): when a PERSON steers the camera instead of the AI, the guard aims the middle of the
+## 3D-4.x «Auslöser» (wish of the owner): when a PERSON steers the camera instead of the AI, the guard aims the middle of the
 ## camera picture at a player and presses the shutter. Used by:
 ##   · «Team gegen MoveEye» (mwhand): the guards sit at MoveEye (live page, Controller-Ansicht R2, round 🎯 button) or at
 ##     the simulator PC («Kopf steuern» headpad.gd, R2 of the controller: padmap.gd) - control «shoot» with shutter = true → main.mw_shot → fire(null)
@@ -11,7 +11,7 @@ extends Node
 ##     MoveEye puts a push into its TEST INBOX only (world_reply «shut» → MoveEye 539, never a real push).
 ##     Points for the guard: 100 + up to 100 for near + up to 100 for fast (since the runner came into the picture).
 ## Miss = a false alarm: −50 points, one false alarm more, the shutter is locked 3 s (ring on the button).
-## Balance 30.10.2026 (review, approved by Daniel):
+## Balance 30.10.2026 (review, approved by the owner):
 ##   · ONE scoring rule for every guard (score_catch, guard_points): a catch gives its points at once - with the shutter
 ##     the shot (100 + near + fast), otherwise CATCH_PTS - × REPEAT for the same sneaker again in this round (100/50/25/0 %);
 ##     every false alarm −50 (once - not again in game.guard_score); at the end + «nicht im Ziel» (200 × share of the

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Spielton bauen (Daniel 01.11.2026: «Ton in den Spielen»).
+"""Spielton bauen (Besitzer 01.11.2026: «Ton in den Spielen»).
 
 Baut die Klänge für Spiele und Geschichten (scripts/klang.gd) aus freien Aufnahmen (alle CC0, Liste in
 simulator3d/klang/LIZENZEN.txt, Abschnitt «Spielton») und legt sie als Ogg Vorbis ab:

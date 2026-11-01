@@ -1,5 +1,5 @@
 extends RefCounted
-## Bergtal-Abenteuer «Die Karte des Grossvaters» - die Daten (Daniel, 31.10.2026, Abschnitt «Story / Abenteuer» im Plan):
+## Bergtal-Abenteuer «Die Karte des Grossvaters» - die Daten (Besitzer, 31.10.2026, Abschnitt «Story / Abenteuer» im Plan):
 ## Stimmungen, Schwierigkeit, Ziele, Rucksack und Ausrüstung, die 5 Kapitel der Schatzkarte (Wege mit Gabelungen,
 ## Hinweise auf der Karte / im Gelände / bei Menschen), Begegnungen, Fundstücke, Stufen (Erfahrung).
 ## Die Abläufe stehen in bergtal_abenteuer.gd, die Karte in bergtal_abenteuer_karte.gd.
@@ -45,7 +45,7 @@ const GOALS := {"dunkel": ["Schlafplatz vor Dunkelheit", "Das Lager steht, bevor
 		"zufall": ["Freie Wahl (ausgelost)", "Das Tal entscheidet: eines der beiden Ziele wird ausgelost."]}
 const GOAL_ORDER := ["dunkel", "gipfel", "zufall"]
 
-# ---- Rucksack (Gewichtsgrenze je Grösse - vereinfacht, Daniel: echte Grammangaben nicht nötig) ------------------------------
+# ---- Rucksack (Gewichtsgrenze je Grösse - vereinfacht, Besitzer: echte Grammangaben nicht nötig) ------------------------------
 # id -> [Name, Volumen L, Leergewicht kg, Gewicht höchstens kg (bequem tragbar)]
 const PACKS := {"30": ["Rucksack 30 L", 30.0, 0.9, 8.0], "50": ["Rucksack 50 L", 50.0, 1.5, 13.0], "70": ["Rucksack 70 L", 70.0, 2.1, 18.0]}
 # id -> [Name, kg, Liter, Gruppe, Text, höchstens Anzahl, ab Stufe]
@@ -73,11 +73,11 @@ const ITEMS := {"isomatte": ["Isomatte", 0.5, 6.0, "schlafen", "Gegen den kalten
 		"karabiner": ["Der alte Karabiner", 0.05, 0.0, "andenken", "Aus der Blechdose am versteckten See.", 1, 99]}
 const ITEM_ORDER := ["isomatte", "einmannzelt", "kuppelzelt", "tarp", "ultratarp", "biwaksack", "sommerschlafsack", "winterschlafsack",
 		"daunenschlafsack", "kocher", "stirnlampe", "jacke", "essen", "wasser", "apotheke", "stoecke", "ministativ", "powerbank", "karabiner"]
-# MoveEye ist Teil der Ausrüstung, zählt aber nicht als Gewicht (Daniel)
+# MoveEye ist Teil der Ausrüstung, zählt aber nicht als Gewicht (Besitzer)
 
 # ---- Stufen (Erfahrung) -------------------------------------------------------------------------------------------------
 const LEVEL_XP := [0, 300, 700, 1200, 2000, 3000]
-const UNLOCKS := {3: "ultratarp", 4: "daunenschlafsack"}     # (Daniel 31.10.: kein «Fernglas» mehr - nur Grossvaters Feldstecher, A3)
+const UNLOCKS := {3: "ultratarp", 4: "daunenschlafsack"}     # (Besitzer 31.10.: kein «Fernglas» mehr - nur Grossvaters Feldstecher, A3)
 
 # ---- Fundstücke unterwegs (machen den Rucksack schwerer) ------------------------------------------------------------------
 # id -> [Name, kg, Text, nur lustig]

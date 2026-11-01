@@ -15,7 +15,7 @@ Getrennt nach **echt** und **Simulator**. Eine Person zählt als gefunden, wenn 
 Zurzeit liegen hier nur **30 Bilder aus dem 3D-Simulator** (9 Personen, 21 Tiere) (`sim_*.jpg`, Tag, Abend, Nacht mit Infrarot, Regen, Nebel) –
 zum Ausprobieren, bis es echte Bilder gibt.
 
-## Echte Bilder dazugeben (Daniel)
+## Echte Bilder dazugeben (Besitzer)
 
 1. In MoveEye nach einem Alarm **«Was war das?»** beantworten (Person / Tier / Nichts). Die Bilder liegen auf dem Pi in
    `~/.config/motionwatch/alarm_labels/`.

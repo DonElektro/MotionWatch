@@ -1,5 +1,5 @@
 extends Node
-## Vorführmodus «Maggie und der Bergkristall» (Daniel, 31.10.2026): eine Simulation spielt die ganze Geschichte, man schaut
+## Vorführmodus «Maggie und der Bergkristall» (Besitzer, 31.10.2026): eine Simulation spielt die ganze Geschichte, man schaut
 ## nur zu – wie ein Film, am PC im Simulator oder live im Browser (MoveEye: Simulator-Seite → Entwickler → «Vorführung ansehen»).
 ## Nur für den Besitzer: Start im Fenster «Mehr → Entwickler → Vorführung» (devtool_vorfuehrung.gd) oder von MoveEye
 ## (Steuerbefehl `vorfuehrung`, net.gd: nur dieser PC / das verbundene MoveEye, wie werk reset).
@@ -17,7 +17,7 @@ extends Node
 ##   Info, danach ein Sprung ans Ziel, damit der Film weiterläuft – so ist jede Vorführung auch ein automatischer Durchspiel-Test.
 ## Spielstand: maggie_story.demo = true -> eigene Datei user://maggie/vorfuehrung.json; maggie_gefahr ohne eigene Datei,
 ##   geschichten.gd macht kein Kartenbild und kein «zuletzt gespielt», geschichten_faden.gd merkt nichts, der Spieltest zählt
-##   keine Runde (Engine-Meta «vorfuehrung», spieltest.gd ereignis). Daniels Spielstände (spielstand.gd) bleiben unberührt.
+##   keine Runde (Engine-Meta «vorfuehrung», spieltest.gd ereignis). Die Spielstände des Besitzers (spielstand.gd) bleiben unberührt.
 ## Kamera wie im Film: Verfolgung (hinter der Figur), Nahaufnahme Maggie, Totale (hoch und weit), Kamerafahrt (Kreis), von vorne;
 ##   harte Schnitte alle 7–12 s, bei Ereignissen passend (Station = Maggie nah, Gefahr = Totale, Tor = Fahrt). Die eigenen Filme
 ##   der Geschichte (Zukunftsbilder, Finale) laufen wie sie sind.
@@ -58,7 +58,7 @@ var pausiert := false
 var ergebnis := ""                      # "" (läuft) | fertig | abgebrochen | unterbrochen
 var tempo := 1.0
 var stimme := true
-var knoepfe := false                   # Daniel (Entwicklung): «Spiel-Knöpfe zeigen» – the normal buttons stay, a press lights up
+var knoepfe := false                   # Besitzer (Entwicklung): «Spiel-Knöpfe zeigen» – the normal buttons stay, a press lights up
 var vollbild := false
 
 # the autopilot
@@ -318,7 +318,7 @@ func beenden(grund := "abgebrochen") -> void:
 	story.demo = false
 	if Engine.has_meta("vorfuehrung"):
 		Engine.remove_meta("vorfuehrung")
-	story._load()                               # back to the state of Daniel's Spielstand
+	story._load()                               # back to the state of the owner's Spielstand
 	Trailer.ui_zeigen(main)                     # the buttons back - always (Fix 3.19.x: started from the browser, _saved_ui was
 	Trailer.waechter(main)                      # «hidden» by its picture bare=1 → no buttons after the end); watchdog 1.5 s / 3 s
 	if _saved_mode >= 0 and DisplayServer.get_name() != "headless":

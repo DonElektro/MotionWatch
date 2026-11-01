@@ -604,7 +604,7 @@ def fall_aus_spur(pfad, spur_id="", wetter="", wind=None, titel=""):
     return ziel
 
 
-# ---- «Übersicht → Kopf findet Ziel» (Plan Daniel 30.10.2026, docs/Gehaeuse_Variante2_Weitwinkel.md) ---------------------
+# ---- «Übersicht → Kopf findet Ziel» (Plan des Besitzers 30.10.2026, docs/Gehaeuse_Variante2_Weitwinkel.md) ---------------------
 WW_MONTAGEN = {"case": "Im Gehäuse (v5.2)", "scene": "Mast (Szene)", "base": "Unterteil vorne, fest", "head_front": "Kopf vorne", "head_rear": "Kopf hinten"}
 
 
@@ -691,7 +691,7 @@ def weitwinkel_messung(a, sim, web):
     return res
 
 
-# ---- Plan «folgen»: the tracking parcours (Plan Daniel 30.10.2026, docs/Verfolgungs_Parcours.md) --------------------------
+# ---- Plan «folgen»: the tracking parcours (Plan des Besitzers 30.10.2026, docs/Verfolgungs_Parcours.md) --------------------------
 FOLGEN_STD = [1, 3, 4, 5, 6, 7]          # all day lessons (about 3 minutes); 8 = the same again at night with infrared
 
 

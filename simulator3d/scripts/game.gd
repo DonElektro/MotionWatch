@@ -860,7 +860,7 @@ func _smaller_team(me: int) -> int:
 
 
 func sync_teams() -> void:
-	"""3D-4.x (Aufräumen, Daniel 29.10.2026): Teams gibt es nur bei «Fahne erobern» - keine eigene Team-Wahl mehr.
+	"""3D-4.x (Aufräumen, Besitzer 29.10.2026): Teams gibt es nur bei «Fahne erobern» - keine eigene Team-Wahl mehr.
 	main.game_teams folgt dem Spielziel."""
 	var want: bool = main.game_goal == "flag"
 	if main.game_teams != want and round_state not in ["countdown", "play"]:

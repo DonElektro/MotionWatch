@@ -1,6 +1,6 @@
 extends "res://scripts/bergtal_erleben_base.gd"
-## 3D-4.x «Bergtal» – lustige und versteckte Ereignisse 1–17 (Daniel 31.10.2026, Stil «dezent», docs/Bergtal_Plan.md):
-## kleine Abläufe an den reservierten Plätzen von bergtal.gd (VIGNETTES 1–16 und 29 = Daniels Nummer 17). Humor durch Timing
+## 3D-4.x «Bergtal» – lustige und versteckte Ereignisse 1–17 (Besitzer 31.10.2026, Stil «dezent»):
+## kleine Abläufe an den reservierten Plätzen von bergtal.gd (VIGNETTES 1–16 und 29 = die Nummer des Besitzers 17). Humor durch Timing
 ## und Bewegung, keine Sprechblasen, glaubwürdig – man muss genau hinschauen.
 ##    1 Murmeltier kommt zu spät zum Bau          ·  2 Kuh leckt am Zelt und klaut die Socke (am eigenen Schlafplatz)
 ##    3 Alpendohlen streiten um ein Sandwich      ·  4 Steinbock auf der steilen Kante (Felsturm)
