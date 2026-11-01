@@ -878,17 +878,17 @@
     "it": "Canale MOSFET per il modulo IR (PCA9685 canale 4, come AOD4184)",
     "rm": "Chanal MOSFET per il modul IR (PCA9685 chanal 4, sco AOD4184)"
    },
-   "nr": "AOD4184",
+   "nr": "Bastelgarage 420985 (AOD4184)",
    "wenn": "v52",
-   "preis": 4,
+   "preis": 4.9,
    "haendler": "bastelgarage",
    "suche": "MOSFET Modul AOD4184",
-   "unklar": {
-    "de": "Preis geschätzt",
-    "en": "price estimated",
-    "fr": "prix estimé",
-    "it": "prezzo stimato",
-    "rm": "pretsch stimà"
+   "alt": {
+    "de": "dazu Vorwiderstand 47 Ω / 0,5 W; oder ein kleiner Logic-Level-MOSFET (AO3400)",
+    "en": "plus a series resistor 47 Ω / 0.5 W; or a small logic-level MOSFET (AO3400)",
+    "fr": "plus une résistance 47 Ω / 0,5 W ; ou un petit MOSFET niveau logique (AO3400)",
+    "it": "più una resistenza 47 Ω / 0,5 W; oppure un piccolo MOSFET a livello logico (AO3400)",
+    "rm": "plus ina resistenza 47 Ω / 0,5 W; u in pitschen MOSFET nivel logic (AO3400)"
    }
   },
   {
@@ -906,30 +906,6 @@
    "preis": 1,
    "haendler": "bastelgarage",
    "suche": "IR LED 5mm 850nm",
-   "wenn": "v52"
-  },
-  {
-   "id": "mosfet3",
-   "gruppe": "v52",
-   "menge": "1×",
-   "name": {
-    "de": "3. MOSFET-Modul (AOD4184) für die IR-LED 5 mm, Kanal 4",
-    "en": "3rd MOSFET module (AOD4184) for the IR LED 5 mm, channel 4",
-    "fr": "3e module MOSFET (AOD4184) pour la LED IR 5 mm, canal 4",
-    "it": "3° modulo MOSFET (AOD4184) per il LED IR 5 mm, canale 4",
-    "rm": "3. modul MOSFET (AOD4184) per la LED IR 5 mm, chanal 4"
-   },
-   "nr": "Bastelgarage 420985",
-   "preis": 4.9,
-   "haendler": "bastelgarage",
-   "suche": "MOSFET AOD4184",
-   "alt": {
-    "de": "dazu Vorwiderstand 47 Ω / 0,5 W; oder ein kleiner Logic-Level-MOSFET (AO3400)",
-    "en": "plus a series resistor 47 Ω / 0.5 W; or a small logic-level MOSFET (AO3400)",
-    "fr": "plus une résistance 47 Ω / 0,5 W ; ou un petit MOSFET niveau logique (AO3400)",
-    "it": "più una resistenza 47 Ω / 0,5 W; oppure un piccolo MOSFET a livello logico (AO3400)",
-    "rm": "plus ina resistenza 47 Ω / 0,5 W; u in pitschen MOSFET nivel logic (AO3400)"
-   },
    "wenn": "v52"
   },
   {

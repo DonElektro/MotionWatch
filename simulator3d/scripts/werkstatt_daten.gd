@@ -3,7 +3,7 @@ extends RefCounted
 ## hardware/gehaeuse/bau.json. NICHT VON HAND ÄNDERN (Texte dort ändern, dann «gehaeuse_bauen.py --texte»).
 ## Texte deutsch (T.t übersetzt sie, Übersetzungen kommen aus bau.json in i18n/texte.json).
 
-const QUELLE_SHA := "6fcf7d5cb612871f5528874ce9e02b0fe94a50c2a89625e347661516eef71539"
+const QUELLE_SHA := "a6d2adbb8c36071c3d64ae3b1e358630cb48fd4315c1965f1f65f0ce7d00defc"
 const VERSION := "5.1"
 const KOPF_FARBE := "#f59a4a"   # Kopfteil (dreht / neigt) in MoveEye-Orange
 const KOPF_TEILE := ["turntable", "yoke", "arm2", "head", "side", "lamp1", "lamp2"]
@@ -54,9 +54,8 @@ const BOM := {
 	"camwide": ["1×", "Camera Module 3 Wide NoIR", "SC0874", "Variante v5.2 (Weitwinkel-Kamera, eigenes Unterteil)"],
 	"irmod": ["1×", "IR-LED-Modul 850 nm mit 120°-Linse (Ø ca. 18,8 mm, nachmessen)", "850 nm, 120°", "Variante v5.2 (Weitwinkel-Kamera, eigenes Unterteil)"],
 	"m2": ["4×", "Schraube M2 × 6, selbstschneidend (Weitwinkel-Kamera)", "M2 × 6", "Variante v5.2 (Weitwinkel-Kamera, eigenes Unterteil)"],
-	"mosfet3": ["1×", "MOSFET-Kanal für das IR-Modul (PCA9685 Kanal 4, wie AOD4184)", "AOD4184", "Variante v5.2 (Weitwinkel-Kamera, eigenes Unterteil)"],
+	"mosfet3": ["1×", "MOSFET-Kanal für das IR-Modul (PCA9685 Kanal 4, wie AOD4184)", "Bastelgarage 420985 (AOD4184)", "Variante v5.2 (Weitwinkel-Kamera, eigenes Unterteil)"],
 	"irled5": ["1×", "IR-LED 5 mm, 850 nm", "", "Variante v5.2 (Weitwinkel-Kamera, eigenes Unterteil)"],
-	"mosfet3": ["1×", "3. MOSFET-Modul (AOD4184) für die IR-LED 5 mm, Kanal 4", "Bastelgarage 420985", "Variante v5.2 (Weitwinkel-Kamera, eigenes Unterteil)"],
 	"taster": ["2×", "Taster 12 mm, IP67", "", "Variante v5.2 (Weitwinkel-Kamera, eigenes Unterteil)"],
 	"sled": ["1×", "RGB-LED 5 mm mit Diffusor «Blinki-Auge»", "", "Variante v5.2 (Weitwinkel-Kamera, eigenes Unterteil)"],
 	"camcable2": ["1×", "Kamerakabel Pi 5, 200 mm (CAM1)", "SC1129", "Variante v5.2 (Weitwinkel-Kamera, eigenes Unterteil)"],
@@ -885,7 +884,8 @@ const BAU := {
 				"nach": "gx16",
 				"art": "gpio",
 				"pins": "GPIO 6 (Pin 31) → 330 Ω → Lade-LED 3 mm grün → GND (Pin 34); Lichtleiter hinten. MoveEye schaltet sie nach dem Lade-Zustand des UPS HAT (E)",
-				"unklar": "die Software steuert die Lade-LED noch nicht (folgt)"
+				"code": "charge_led_gpio",
+				"wert": "6"
 			},
 			{
 				"id": "mover",
@@ -1376,7 +1376,7 @@ const BAU := {
 		"mosfet3": {
 			"preis": 4.9,
 			"haendler": "bastelgarage",
-			"suche": "MOSFET AOD4184",
+			"suche": "MOSFET Modul AOD4184",
 			"alt": "dazu Vorwiderstand 47 Ω / 0,5 W; oder ein kleiner Logic-Level-MOSFET (AO3400)",
 			"wenn": "v52",
 			"gruppe": "v52"

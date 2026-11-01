@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-01 17:00",
+ "generated": "2026-11-01 17:41",
  "versions": [
   {
    "version": "3.42.0",
    "file": "webcam_bewegung_3_42_0.py",
    "url": "",
-   "sha256": "4d4ce01edd0e81e83c00d9489625b6267975a7cd57048121048bb7a558d934d8",
-   "date": "2026-11-01 17:00",
-   "notes": "Gehäuse v5.2: Unterteil mit Fenster für die Weitwinkel-Kamera, IR-Modul 120° mit Trennsteg und Kabelkamm; Druckkorrekturen an Drehteller, Gabel, Arm 2 und Lampenhalter; Kamerakopf im Simulator orange.",
-   "size": 4770951,
-   "sig": "f38bb2737a976d9e57e633adf6cb290fa3ecd9171651aee02b34fe7bb1da514cec8b6ada57ac9a63b24da13938b775800dc365ceab432985016aa7893f8ad90e",
+   "sha256": "a35e79905ea6d6cd3279cbda6a69a08e7365a2c4ec4e34c185242a90894a04a2",
+   "date": "2026-11-01 17:41",
+   "notes": "Linux-Version mit eigenem Update-Paket, ./installieren.sh legt Menü- und Desktop-Eintrag an (ohne sudo). Sparmodus: bei ≤ 4 GB Arbeitsspeicher oder älterer Intel-Grafik wählt «Automatisch» Lite; eigene Wahl hat Vorrang. Lade-LED an GPIO 6: an beim Laden, langsam blinkend = voll, schnell = Akku fast leer (Schalter «Lade-LED»). Gehäuse v5.2: Unterteil mit Fenster für die Weitwinkel-Kamera, IR-Modul 120° mit Trennsteg und Kabelkamm; Druckkorrekturen an Drehteller, Gabel, Arm 2 und Lampenhalter; Kamerakopf im Simulator orange.",
+   "size": 4792691,
+   "sig": "81af4947cb4eeab02601f8529f2f104fefa8f85872862f5acd0f4f4fe398c923c77485a0e66619f7c25b00ddf85a00a910878e16bad3d4cb64dff10ab710f407",
    "data": {
     "file": "moveeye_daten_3_42_0.zip",
     "url": "",
-    "sha256": "daaef45dd0cf5e3d36412291c1d7a7b662feb74d06b2a6861c845cb3e33b2b49",
-    "size": 2838005,
-    "sig": "b3f67ae406a330869c1d522eefdb846b706c5397ef3cd643a5c61731aa527acd43d6b2ed08aa6a2f64c1181560df306d53fab0a4a4bb03af99a379ca8797920f"
+    "sha256": "4db4f6f25ecedc0611c09a936fce795414983d56b84f190a8c5cf5da27b96f04",
+    "size": 2838319,
+    "sig": "8c69b18b1805d0dfbe87cf2b939d178208f91d74639b76ae97b80fc665bc589f3181a3036d8c2562a15673fd9396bdb76cc921d41715625636e8f5acfb830a03"
    }
   },
   {
@@ -24,7 +24,7 @@
    "file": "webcam_bewegung_3_41_1.py",
    "url": "",
    "sha256": "3ba6cfea6ab5b65c161f23dac52d18457437338452f3fdd168f731c8dceba017",
-   "date": "2026-11-01 17:00",
+   "date": "2026-11-01 17:38",
    "notes": "Fix: Solar-Strommesser (INA219) ab Werk auf 0x44 statt 0x41 (kollidierte mit dem Servo-Treiber), Shunt 0,01 Ω passend zum Gravity-Modul; Bau-Infos ergänzt (Step-Down ab Akku, 3. MOSFET, Schrauben, Lade-LED an GPIO 6).",
    "size": 4770964,
    "sig": "2371266998ffff8a256a40ffed8819f3821e030f6ba8e2adecf85a61de3f6bd4fd7e8350bd882aa6896e2b81b623d89046c3e729bdf93abdd1c88fe17d964b0d",

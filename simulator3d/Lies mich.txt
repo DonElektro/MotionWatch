@@ -460,9 +460,13 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
 NEU IN 3.42.0
-3.42.0: Gehäuse v5.2: Unterteil mit Fenster für die Weitwinkel-Kamera, IR-Modul 120° mit Trennsteg und Kabelkamm;
-Druckkorrekturen an Drehteller, Gabel, Arm 2 und Lampenhalter; der Kamerakopf ist orange.
-So testest du: Mehr › Bauen › Gehäuse v5.2; die Weitwinkel-Montage «Im Gehäuse (v5.2)» wählen.
+3.42.0: Linux-Version mit eigenem Update-Paket (MoveEyeSim3D_Linux.zip), ./installieren.sh legt Menü- und Desktop-Eintrag
+an (ohne sudo). Sparmodus: bei ≤ 4 GB Arbeitsspeicher oder älterer Intel-Grafik wählt «Automatisch» Lite; eigene Wahl hat
+Vorrang. Lade-LED im Fenster «Gerät» (an beim Laden, langsam blinkend = voll, schnell = Akku fast leer). Gehäuse v5.2:
+Unterteil mit Fenster für die Weitwinkel-Kamera, IR-Modul 120° mit Trennsteg und Kabelkamm; Druckkorrekturen an Drehteller,
+Gabel, Arm 2 und Lampenhalter; der Kamerakopf ist orange.
+So testest du: Linux: ZIP entpacken, ./installieren.sh, «MoveEye Sim» aus dem Startmenü starten; Update › «Jetzt suchen».
+Dann Fenster «Gerät»: Lade-LED; Mehr › Bauen › Gehäuse v5.2; Weitwinkel-Montage «Im Gehäuse (v5.2)» wählen.
 
 NEU IN 3.41.1
 3.41.1: Fix (MoveEye): Solar-Strommesser (INA219) ab Werk auf 0x44 statt 0x41 (kollidierte mit dem Servo-Treiber), Shunt
