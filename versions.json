@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-01 18:39",
+ "generated": "2026-11-01 18:55",
  "versions": [
   {
-   "version": "3.44.1",
-   "file": "webcam_bewegung_3_44_1.py",
+   "version": "3.44.2",
+   "file": "webcam_bewegung_3_44_2.py",
    "url": "",
-   "sha256": "17dd5f9253cf3e11c5a99dd3f25911a468e97e9cb302203bb7820d117586b56e",
-   "date": "2026-11-01 18:39",
-   "notes": "Simulator-Fenster und Kamerabild passen in die Bildschirmhöhe (zentriert, unverzerrt); Klicks treffen trotz Rändern genau.",
-   "size": 4796280,
-   "sig": "31c4acf073f47e17ea455707a5d42dda0b568209226c8f6b59bbbdf4c29ec5f3c07f3af9dba4e0c2674e70eae48af5dde35c230914d5e59814095dd5c5bcde01",
+   "sha256": "c578b917dd50377406f353848f34ab90a641a0ad57cc1584c06a07fa04bbc67d",
+   "date": "2026-11-01 18:55",
+   "notes": "Versionshinweis: eine kleine Zeile unten rechts mit Knopf und ✕ statt eines bildschirmhohen Balkens.",
+   "size": 4796077,
+   "sig": "30d7cb87cb595d41f670a1a8be476de7375c71b4f91a5a098e8f48ad3299af4d55dba9200673b68af1292352bd6c4296e14abea8374ce056d4e91cf841c68c0a",
    "data": {
-    "file": "moveeye_daten_3_44_1.zip",
+    "file": "moveeye_daten_3_44_2.zip",
     "url": "",
-    "sha256": "7dd10acddc4e4159f2bf8b0e617ceaf61469a245ff84e5edd2c35a3db7073d37",
-    "size": 3280585,
-    "sig": "ddd133cef79df4ecd1cf4c15ede8bd00d0a46aee7c6b184b661e19e636cd0038813c497fd95252d1054119823190d43950ba9501c0da3a86478d197148e2a006"
+    "sha256": "eabc6bb5085dd846c85b30ea392d7469ed420976c1fb73de5350acf8cdb69e40",
+    "size": 3280530,
+    "sig": "190b8465740036f19e110a62864b099027da0c7ead4b7c3729284740d530e4f0c6c8b573848e5d3f5516cbb31bc6d462ba421c8534e3d604499edf318eb1e30e"
    }
   },
   {

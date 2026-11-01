@@ -23,6 +23,7 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 3.44.2: Versionshinweis: eine kleine Zeile unten rechts mit Knopf und ✕ statt eines bildschirmhohen Balkens.
   * 3.44.1: Simulator-Fenster und Kamerabild passen in die Bildschirmhöhe (zentriert, unverzerrt); Klicks treffen trotz Rändern
     genau.
   * 3.44.0: Simulator: Tastatur statt Scrollrad: + / − zoomt überall, Bild↑/↓ blättert Listen, Pfeile drehen die Ansicht,
@@ -86,9 +87,6 @@ Features
     ausgeglichen; am iPad gleich wie am PC.
   * 3.23.0: Gemeinsame Menü-Datei für MoveEye und Simulator (Gruppen, Namen, Reihenfolge); der Selbsttest prüft beide Seiten.
     Behoben: auf der Simulator-Seite fehlten Karten nach der ersten.
-  * 3.22.0: Reiter- und Statuszeile einzeln einklappbar (pro Gerät gemerkt, roter Punkt bei Warnungen); auf jeder Seite dieselbe
-    Bedienleiste (Einfach/Experte, Symbole farbig/schlicht, Nur Gruppen, Alle zuklappen · Nur Gruppen · Alle aufklappen) – Web,
-    Pi-Fenster und Simulator; Live: Gehtest ganz unten.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -97,10 +95,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_3_44_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_3_44_2.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_3_44_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_3_44_1.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_3_44_2.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_3_44_2.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -117,7 +115,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "3.44.1"
+APP_VERSION = "3.44.2"
 
 
 def default_data_dir():
@@ -239,8 +237,8 @@ def prepare_settings_file():
 #     Part 397 fetches the zip over the same update source and restarts once (zusatz_start()).
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
-ZD_FILE = "moveeye_daten_3_44_1.zip"
-ZD_SHA256 = "7dd10acddc4e4159f2bf8b0e617ceaf61469a245ff84e5edd2c35a3db7073d37"
+ZD_FILE = "moveeye_daten_3_44_2.zip"
+ZD_SHA256 = "eabc6bb5085dd846c85b30ea392d7469ed420976c1fb73de5350acf8cdb69e40"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -24583,13 +24581,13 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3.44.1", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 48933511,
-         "sha256": "b00fe730465a9a7d3a40c1ce9c7e1cf77b8973f811b80349c44d73a243a8cd46"}
+SIM3D = {"version": "3.44.2", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 48938561,
+         "sha256": "48a90c8c335d7ce334c31c81991f8ebca640abf03732dee4029ea0c21aa92f59"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # 3.43.x: the same 3D simulator for Linux (x86_64), offered at /sim/simulator3d_linux.zip - fetched, checked and kept the same way
 # (simulator3d/MoveEyeSim3D_Linux.zip, block «linux» in simulator3d/version.json; bauen.py --neue-version takes it over).
-SIM3D_LINUX = {"version": "3.44.1", "file": "simulator3d/MoveEyeSim3D_Linux.zip", "size": 42908766,
-               "sha256": "72e0806283eaf85472a44fa813c807e17b0c5f9061cdd129f7c86470a5630fb2", "stem": "MoveEyeSim3D_Linux",
+SIM3D_LINUX = {"version": "3.44.2", "file": "simulator3d/MoveEyeSim3D_Linux.zip", "size": 42916361,
+               "sha256": "20a7e1f2ef5d1118b2967370e5510e763d7e504c682e576d21798039a11e1926", "stem": "MoveEyeSim3D_Linux",
                "label": "MoveEye Sim (Linux)"}
 SIM3D_LINUX_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
@@ -30489,7 +30487,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_3_44_1.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_3_44_2.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -48649,7 +48647,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 3.44.1")
+        self.root.title("MoveEye 3.44.2")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -49027,7 +49025,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 3.44.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 3.44.2 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
