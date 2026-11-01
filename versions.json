@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-01 01:28",
+ "generated": "2026-11-01 01:45",
  "versions": [
+  {
+   "version": "3.26.0",
+   "file": "webcam_bewegung_3_26_0.py",
+   "url": "",
+   "sha256": "42e8667dae2f3f5979a3c892e876df327a41a8b09698a8f0138668466107d675",
+   "date": "2026-11-01 01:45",
+   "notes": "Simulator 3.26.0: Maggie sieht realistischer aus – ab Grafik «mittel» ein Modell mit Skelett und Fell, in «einfach» weiche Formen mit ihrem Muster.",
+   "size": 4482682,
+   "sig": "f5f8f957aaf2ccee2f7c5e2ca1066f3bc651d2c85612bead324f5ae01e91a3565bb0bba7623d030ee00382f6e8c622a6432312bacdb77ca8ab9ec2cbe65e9c06",
+   "data": {
+    "file": "moveeye_daten_3_26_0.zip",
+    "url": "",
+    "sha256": "a79dc30ede75e0c08d1be29ba984b651302f14f03bd882f9d6bc432b6e986270",
+    "size": 1632681,
+    "sig": "2164e4276b11657503b9e72d4ecb2e4825fc405153f67184f89f30bd535c47a241facfd51647b23efc9995e59b9afa1168f33192550da9d7e7eb92cc7444a90b"
+   }
+  },
   {
    "version": "3.25.0",
    "file": "webcam_bewegung_3_25_0.py",
    "url": "",
    "sha256": "9839882bd0bf5d3c029a171a3faeb70aab40d7a899f96a2768ae3efd1c4219da",
-   "date": "2026-11-01 01:28",
+   "date": "2026-11-01 01:40",
    "notes": "Mittlerer Klapp-Knopf «Meine Ansicht»: merkt sich dein Auf- und Zuklappen pro Seite, auf allen deinen MoveEye-Geräten gleich; «Nur Gruppen» weiter mit langem Druck; ↻ springt zuerst auf Live und lädt dann neu.",
    "size": 4482785,
    "sig": "516e3e1b9e191cc33395320c1afe497f9aad6a04190319ed562f05641aba9b2e72fc515fcb7f828fad170a51486efb2ffe1b41b3afbf614f50d5fc9402dbc407",
@@ -136,23 +153,6 @@
     "sha256": "9b0ac6b9c0a94cc51a86f5c0e83c27ff69aa3ac8ea9f4569b7633a248e21ad11",
     "size": 1613431,
     "sig": "32f424fc51c77dcbbc29231a199213e82ad244873bc30768a83c8e48cd4c3841fd54d84d02a8908e2f9379ec858449e1408f35394adbed18d523c43053cb350e"
-   }
-  },
-  {
-   "version": "3.17.0",
-   "file": "webcam_bewegung_3_17_0.py",
-   "url": "",
-   "sha256": "ced7b39c55410c8d04078e2a583ab7629cdc176339d38022a3203800da83adcc",
-   "date": "2026-10-31 22:15",
-   "notes": "Simulator-Ports: MoveEye findet auch die Ausweich-Ports 8775/8785/8795 (Portliste geprüft). Simulator 3.17.0: Notfall-Start.bat, Fehlerbericht sammeln.bat, Fotos mit weniger Grafikspeicher, zweiter Simulator auf Port 8768.",
-   "size": 4421540,
-   "sig": "7fba0fbcd890d7e528c64b5428fff1335eb8f7bdb2ec2e9e6e85208d8aa59e0010778629bf5d71e68d067be5387cc690b8ab154074d97ac783438884e1bf3c05",
-   "data": {
-    "file": "moveeye_daten_3_17_0.zip",
-    "url": "",
-    "sha256": "bf1a8dab4f2dafc5035517f68779ff8dcc3891e147d659e502d7e9c2c0168c62",
-    "size": 1613384,
-    "sig": "6e072e5365248ee8380168ae1cbcef061f566539ac928841acb068346895eeb9edd99d12da49f98c88587ea2d0949cc1fb24bac35631505e9ce21a4921671501"
    }
   },
   {

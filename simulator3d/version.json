@@ -1,9 +1,9 @@
 {
- "version": "3D-5.25.0",
- "ver": "3.25.0",
- "name": "MoveEye Sim 3.25.0",
+ "version": "3D-5.26.0",
+ "ver": "3.26.0",
+ "name": "MoveEye Sim 3.26.0",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 39991331,
- "sha256": "d9852abb088e1a3cc211347025d690d0ce5c97eb2507ced4b98b1570b50342cd",
- "notes": "MoveEye Sim 3.25.0: mittlerer Klapp-Knopf «Meine Ansicht» wie in MoveEye."
+ "size": 40216038,
+ "sha256": "2ae9ecd1e7cc58593c0fff3c3278f076e9a4ecc11523314e62128b4933bae2c8",
+ "notes": "MoveEye Sim 3.26.0: Maggie realistischer (Modell mit Skelett und Fell ab «mittel»)."
 }

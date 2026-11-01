@@ -5221,6 +5221,18 @@
   "it": "Pietra del ruscello",
   "rm": "Crap dal ual"
  },
+ "BackLowerLeg.": {
+  "en": "BackLowerLeg.",
+  "fr": "BackLowerLeg.",
+  "it": "BackLowerLeg.",
+  "rm": "BackLowerLeg."
+ },
+ "BackUpperLeg.": {
+  "en": "BackUpperLeg.",
+  "fr": "BackUpperLeg.",
+  "it": "BackUpperLeg.",
+  "rm": "BackUpperLeg."
+ },
  "Bademeister-Stuhl": {
   "en": "Lifeguard chair",
   "fr": "Chaise de maître-nageur",
@@ -24268,6 +24280,24 @@
   "it": "Cerchio di tiro medio, 100 ⚡ di energia (0.4 ⚡ al secondo).",
   "rm": "Rintg da tutgar mesaun, 100 ⚡ energia (0.4 ⚡ per secunda)."
  },
+ "Modell fehlt: ": {
+  "en": "Model missing: ",
+  "fr": "Modèle manquant : ",
+  "it": "Modello mancante: ",
+  "rm": "Model manca: "
+ },
+ "Modell nicht lesbar": {
+  "en": "Model not readable",
+  "fr": "Modèle illisible",
+  "it": "Modello non leggibile",
+  "rm": "Model betg legibel"
+ },
+ "Modell ohne Skelett": {
+  "en": "Model without skeleton",
+  "fr": "Modèle sans squelette",
+  "it": "Modello senza scheletro",
+  "rm": "Model senza skelet"
+ },
  "Moment … diesen Hut kenne ich! Der gehört dem Bergführer. Dann bist du also sein Enkel. Willkommen auf der Alp!": {
   "en": "Wait … I know that hat! It belongs to the mountain guide. So you're his grandson. Welcome to the alp!",
   "fr": "Attends … je connais ce chapeau ! Il appartient au guide de montagne. Tu es donc son petit-fils. Bienvenue à l'alpage !",
@@ -26219,6 +26249,24 @@
   "fr": "Tâches secondaires :",
   "it": "Compiti secondari:",
   "rm": "Incumbensas secundaras:"
+ },
+ "Neck1": {
+  "en": "Neck1",
+  "fr": "Neck1",
+  "it": "Neck1",
+  "rm": "Neck1"
+ },
+ "Neck2": {
+  "en": "Neck2",
+  "fr": "Neck2",
+  "it": "Neck2",
+  "rm": "Neck2"
+ },
+ "Neck3": {
+  "en": "Neck3",
+  "fr": "Neck3",
+  "it": "Neck3",
+  "rm": "Neck3"
  },
  "Neige": {
   "en": "Tilt",
@@ -33360,6 +33408,24 @@
   "fr": "De jour au-dessus des rochers - le matin, laisser MoveEye en piège photo.",
   "it": "Di giorno sopra le rocce - al mattino lasciare MoveEye come fototrappola.",
   "rm": "Il di sur la grippa - la damaun laschar MoveEye sco camera da selvaschina."
+ },
+ "Tail1": {
+  "en": "Tail1",
+  "fr": "Tail1",
+  "it": "Tail1",
+  "rm": "Tail1"
+ },
+ "Tail2": {
+  "en": "Tail2",
+  "fr": "Tail2",
+  "it": "Tail2",
+  "rm": "Tail2"
+ },
+ "Tail3": {
+  "en": "Tail3",
+  "fr": "Tail3",
+  "it": "Tail3",
+  "rm": "Tail3"
  },
  "Talstation Materialseilbahn (innen)": {
   "en": "Goods cable car valley station (inside)",
