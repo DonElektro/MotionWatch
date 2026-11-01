@@ -4,7 +4,8 @@ extends Node
 ## Ferienpark / Bergtal / …, Fenster «Spielen»). Überwachung, Testläufe, Prüfstand, MoveEye-Aufgaben bleiben wie bisher.
 ##   * Ein Knoten unter main («klang», main.klang). Aufrufe von überall: const Klang = preload("res://scripts/klang.gd")
 ##       Klang.fund()      Glockenspiel              Klang.raetsel()   kleine Fanfare        Klang.kapitel()  Streicher
-##       Klang.tusch()     Trommelwirbel + Tusch (Easter Egg, geheime Funde: Steinmännchen, SEELI-Abzeichen)
+##       Klang.tusch()     Trommelwirbel + Tusch (geheime Funde: Steinmännchen, SEELI-Abzeichen); Klang.tusch(true) auch
+##                         ausserhalb einer Geschichte (Easter Egg beim freien Wandern), nie bei Tests
 ##       Klang.erwischt()  Paukenschlag              Klang.gefahr(quelle, stufe 0…1, dauer s)   Puls / Trommelwirbel
 ##       Klang.donner(m)   Donner (Abstand in m)     Klang.ereignis(modus, art, daten)   (Haken in spieltest.gd)
 ##     Alles prüft selbst, ob gerade ein Spiel läuft (kontext() != ""); sonst passiert nichts. Rückgabe true = gespielt.
@@ -99,9 +100,10 @@ static func kapitel() -> bool:
 	return _ok() and inst._moment("kapitel")
 
 
-static func tusch() -> bool:
-	"""Überraschung: Trommelwirbel und Tusch (Easter Egg, geheime Funde)"""
-	return _ok() and inst._tusch()
+static func tusch(auch_frei := false) -> bool:
+	"""Überraschung: Trommelwirbel und Tusch (Easter Egg, geheime Funde). auch_frei = true: auch ausserhalb einer Geschichte
+	(z. B. das Easter Egg beim freien Wandern), nur nie bei Tests / MoveEye-Aufgaben"""
+	return _ok() and inst._tusch(auch_frei)
 
 
 static func erwischt() -> bool:
@@ -202,7 +204,11 @@ func _spaet() -> void:
 
 
 func _gefunden(_a = null, _b = null, _c = null) -> void:
-	_moment("fund")
+	"""entdecken.found: a find - a little later, so a «Tusch» of the same find (secret badge, Easter Egg) wins"""
+	var t0 := _t
+	get_tree().create_timer(0.25).timeout.connect(func():
+		if not (_moment_p >= 4 and _moment_t >= t0 - 0.5):
+			_moment("fund"))
 
 
 func _laden() -> void:
@@ -438,8 +444,8 @@ func _moment(nm: String, art := "") -> bool:
 	return true
 
 
-func _tusch() -> bool:
-	if not _spielt():
+func _tusch(frei := false) -> bool:
+	if not (_spielt() or (frei and ton_am_pc() and not still())):
 		return false
 	if _t - _moment_t < 1.0 and _moment_p >= 4:
 		return true
