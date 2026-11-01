@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3.30.0"
+const VERSION := "3.31.0"
 const Versionen = preload("res://scripts/versionen.gd")   # Versionierung 3.0.0: from 3.0.0 VERSION = "X.Y.Z" like MoveEye (see there)
 const Stimme = preload("res://scripts/abenteuer_stimme.gd")   # 3.23: the one switch «Stimme» (an | aus | untertitel)
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
@@ -4765,6 +4765,12 @@ func _control(d: Dictionary) -> Dictionary:
 		return Worlds.info(self)
 	elif a == "delete":
 		return {"ok": false, "error": "cannot be deleted"}
+	elif a == "kopf":                                  # 639t: the one header - state, or {"press": id} like a click
+		if kopf == null:
+			return {"ok": false, "error": "no header"}
+		if d.has("press"):
+			kopf.press(str(d["press"]), kopf.btns.get(str(d["press"]), kopf.btns.get("menu")))
+		return {"ok": true, "kopf": kopf.state()}
 	elif a == "lang":                                  # Sprachen (i18n.gd): switch / translate, for tests
 		return preload("res://scripts/i18n.gd").control(d)
 	elif a == "ui_width":                              # for tests: is the content of the panel wider than the panel?
@@ -5584,6 +5590,9 @@ func _build_ui() -> void:
 	ver.autowrap_mode = TextServer.AUTOWRAP_OFF
 	ver.size_flags_vertical = Control.SIZE_SHRINK_END
 	hdr.add_child(ver)
+	kopf = preload("res://scripts/kopf.gd").new()       # 639t (Daniel 01.11.2026): the one header - ? 🔔 ↻ DE ☰ ⛶ ▲ 🛠 like MoveEye
+	kopf.build(self)                                      # (list and texts: ui_gemeinsam.json «kopf»; narrow panel: from DE on in ☰)
+	hdr.add_child(kopf)
 	devzugang = preload("res://scripts/devzugang.gd").new()   # 3.26 (MoveEye 639s): long press on wordmark / title = developer window,
 	devzugang.name = "DevZugang"                               # and the drawn tool button at the top right (developer area + owner)
 	add_child(devzugang)
@@ -6073,6 +6082,7 @@ var kids: Control
 var kids_seg: Control
 var _mode_row: HBoxContainer
 var simple_seg: Control
+var kopf = null                        # kopf.gd: the one header (MoveEye 639t), buttons in the order of ui_gemeinsam.json
 var devzugang = null                   # devzugang.gd: long press on the logo / tool button = developer window (MoveEye 639s)
 var leiste: Node                       # real-layout-leiste: the bar (bedienleiste.gd), the same as on every page of MoveEye
 var ui_icons := "color"                # «Symbole farbig | schlicht» ("color" | "plain", saved); 3.23: «farbig» is the standard (like MoveEye)

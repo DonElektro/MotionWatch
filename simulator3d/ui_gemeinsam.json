@@ -7,6 +7,7 @@
   "bar": "Texte der Bedienleiste (Komponente aus Paket P0 «real-layout-leiste»): «en» = Schlüssel in MoveEye, «de» = Schlüssel im Simulator (T.t).",
   "shared": "Einstellungen, die beide Seiten gleich haben (Abgleich kommt mit P2; Entscheide Daniel 31.10.2026: E1 eine Einfach/Experte-Wahl, E2 eine Sprache, E3 Auf-/Zuklappen nicht teilen, E4 Sensoren -> Zusatzgeräte).",
   "local": "bleibt pro Gerät / Programm, wird nie geteilt",
+  "kopf": "Der gemeinsame Kopf (Daniel 01.11.2026: «ein Kopf, überall gleich»): feste Knöpfe in dieser Reihenfolge auf jeder Web-Seite (Teil 639t), im Pi-Fenster (App._kopf_tk) und im Simulator (scripts/kopf.gd). «sym» = Zeichen im Web, «tk» = Zeichen im Pi-Fenster (DejaVu-Schrift), «draw» = gezeichnetes Symbol im Simulator, «texts» = Tooltip in de / en / fr / it / rm (en = Schlüssel in MoveEye, de = Schlüssel im Simulator). «schmal_ab»: auf schmalen Bildschirmen wandern dieser Knopf und alle danach ins ☰-Menü (gleiche Reihenfolge). «nur_besitzer»: nur mit Entwickler-Bereich und für den Besitzer. Seiteneigene Knöpfe kommen ins ☰-Menü (Abschnitt «Diese Seite»). «listen»: Gruppen der Ein-/Ausblenden-Listen (Chips mit Symbol, «alle an/aus»).",
   "features": "Feld «features» in /info des Simulators: was er kann (MoveEye richtet sich danach, ältere Simulatoren senden es nicht)"
  },
  "features": ["menu1"],
@@ -81,6 +82,29 @@
    "groups": {"en": "Groups only", "de": "Nur Gruppen", "fr": "Ouvrir seulement les groupes", "it": "Aprire solo i gruppi", "rm": "Avrir mo las gruppas"},
    "open": {"en": "Expand all", "de": "Alle aufklappen", "fr": "Tout ouvrir", "it": "Apri tutto", "rm": "Avrir tut"}
   }
+ },
+ "kopf": {
+  "schmal_ab": "lang", "schmal_px": 760,
+  "knoepfe": [
+   {"id": "help", "sym": "?", "tk": "?", "draw": "help", "texts": {"en": "Help", "de": "Hilfe", "fr": "Aide", "it": "Aiuto", "rm": "Agid"}},
+   {"id": "sound", "sym": "🔔", "tk": "♪", "draw": "bell", "texts": {"en": "Sound", "de": "Ton", "fr": "Son", "it": "Suono", "rm": "Tun"}},
+   {"id": "reload", "sym": "↻", "tk": "↻", "draw": "reload", "texts": {"en": "Back to Live and reload", "de": "Zurück zu Live und neu laden", "fr": "Retour au direct et recharger", "it": "Torna al live e ricarica", "rm": "Enavos tar Live e chargiar da nov"}},
+   {"id": "lang", "sym": "DE", "tk": "DE", "draw": "text", "texts": {"en": "Language", "de": "Sprache", "fr": "Langue", "it": "Lingua", "rm": "Lingua"}},
+   {"id": "menu", "sym": "☰", "tk": "☰", "draw": "menu", "texts": {"en": "Menu", "de": "Menü", "fr": "Menu", "it": "Menu", "rm": "Menu"}},
+   {"id": "fs", "sym": "⛶", "tk": "⇱", "draw": "fullscreen", "texts": {"en": "Full screen", "de": "Vollbild", "fr": "Plein écran", "it": "Schermo intero", "rm": "Maletg entir"}},
+   {"id": "fold", "sym": "▲", "tk": "▲", "draw": "fold", "texts": {"en": "Fold the header", "de": "Kopf einklappen", "fr": "Replier l’en-tête", "it": "Comprimi l’intestazione", "rm": "Zuppentar il chau"}},
+   {"id": "dev", "sym": "🛠", "tk": "⚒", "draw": "tools", "nur_besitzer": true, "texts": {"en": "Developer", "de": "Entwickler", "fr": "Développeur", "it": "Sviluppatore", "rm": "Sviluppader"}}
+  ],
+  "menue": {"head": {"en": "Header buttons", "de": "Kopf-Knöpfe", "fr": "Boutons de l’en-tête", "it": "Pulsanti dell’intestazione", "rm": "Buttuns dal chau"}, "page": {"en": "This page", "de": "Diese Seite", "fr": "Cette page", "it": "Questa pagina", "rm": "Questa pagina"}, "general": {"en": "General", "de": "Allgemein", "fr": "Général", "it": "Generale", "rm": "General"}},
+  "listen": [
+   {"id": "protect", "sym": "🛡", "texts": {"en": "Protection & detection", "de": "Schutz & Erkennung", "fr": "Protection et détection", "it": "Protezione e rilevamento", "rm": "Protecziun ed identificaziun"}},
+   {"id": "camera", "sym": "📷", "texts": {"en": "Camera & recording", "de": "Kamera & Aufnahme", "fr": "Caméra et enregistrement", "it": "Telecamera e registrazione", "rm": "Camera e registraziun"}},
+   {"id": "power", "sym": "🔋", "texts": {"en": "Power & battery", "de": "Strom & Akku", "fr": "Courant et batterie", "it": "Corrente e batteria", "rm": "Current ed accu"}},
+   {"id": "env", "sym": "🌦", "texts": {"en": "Surroundings", "de": "Umgebung", "fr": "Environnement", "it": "Ambiente", "rm": "Conturn"}},
+   {"id": "net", "sym": "📶", "texts": {"en": "Network & access", "de": "Netz & Zugang", "fr": "Réseau et accès", "it": "Rete e accesso", "rm": "Rait ed access"}},
+   {"id": "other", "sym": "⋯", "texts": {"en": "Other", "de": "Sonstiges", "fr": "Autres", "it": "Altro", "rm": "Auter"}}
+  ],
+  "alle": {"on": {"en": "all on", "de": "alle an", "fr": "tout activer", "it": "tutti attivi", "rm": "tut en"}, "off": {"en": "all off", "de": "alle aus", "fr": "tout désactiver", "it": "tutti spenti", "rm": "tut ora"}}
  },
  "shared": {
   "simple": {"mw": "CFG ui_simple", "sim": "ui_simple", "values": [true, false], "note": "E1: eine Einfach/Experte-Wahl für alles (MoveEye-Standard, Seiten und Simulator)"},
