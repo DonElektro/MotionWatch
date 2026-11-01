@@ -3,7 +3,7 @@ extends RefCounted
 ## hardware/gehaeuse/bau.json. NICHT VON HAND ÄNDERN (Texte dort ändern, dann «gehaeuse_bauen.py --texte»).
 ## Texte deutsch (T.t übersetzt sie, Übersetzungen kommen aus bau.json in i18n/texte.json).
 
-const QUELLE_SHA := "15086220216752d24e0bf5df82545e0f83304914c0ca9d84a00ca31ea3126408"
+const QUELLE_SHA := "153b7c2217a6320c7dbb12e5ca8d86d9bb4a64c83669ed70225265fc00ecf605"
 const VERSION := "5.1"
 const MASSE := "Unterteil 183 × 97 × 71,5 mm (mit Füssen 77,5 mm), Gesamthöhe ca. 161 mm, Kopf 58 × 58 mm"
 # Materialliste: id -> [Menge, Bezeichnung, Teilenummer, Gruppe]
@@ -26,7 +26,7 @@ const BOM := {
 	"gx16": ["1×", "GX16 4-polig: Einbaubuchse + Stecker (Ladebuchse)", "Bastelgarage 420241", "Strom"],
 	"fuse": ["1×", "Sicherungshalter fliegend + Sicherung 5 A", "Mini-Kfz (ATM) 5 A", "Strom"],
 	"usbc": ["1×", "USB-C-Stecker zum Anlöten (D36V50F5 → UPS HAT)", "USB-C Plug Breakout", "Strom"],
-	"chled": ["1×", "Lade-LED 3 mm + Lichtleiter", "LED 3 mm, PMMA 3 mm", "Strom"],
+	"chled": ["1×", "Lade-LED 3 mm + 330 Ω + Lichtleiter", "LED 3 mm grün, 330 Ω, PMMA 3 mm", "Strom"],
 	"ledw": ["1×", "Scheinwerfer-Modul weiss, Ø 18,8 × 14 mm", "Ø 18,8 mm", "Licht an der Gabel"],
 	"ledir": ["1×", "Scheinwerfer-Modul Infrarot 850 nm", "Ø 18,8 mm, 850 nm", "Licht an der Gabel"],
 	"mosfet": ["2×", "MOSFET-Modul 1-Kanal (2 × AOD4184 parallel), Logic-Level", "Bastelgarage 420985", "Licht an der Gabel"],
@@ -88,7 +88,7 @@ const TEILE := [
 	["cable_power", "kabel", "Stromkabel", "litze", 6, ""],
 	["jacks", "teil", "GX16 4-polig: Einbaubuchse + Stecker (Ladebuchse)", "gx16", 7, ""],
 	["fuse", "teil", "Sicherungshalter fliegend + Sicherung 5 A", "fuse", 7, ""],
-	["ledlight", "teil", "Lade-LED 3 mm + Lichtleiter", "chled", 7, ""],
+	["ledlight", "teil", "Lade-LED 3 mm + 330 Ω + Lichtleiter", "chled", 7, ""],
 	["relayjack", "teil", "Kabelverschraubung M12 (Relais-Ausgang)", "m12", 7, ""],
 	["probe", "teil", "Temperaturfühler DS18B20 wasserdicht", "ds18", 7, ""],
 	["lid", "druck", "02 Deckel mit Laufring", "petg", 8, "02_Deckel_mit_Laufring"],
@@ -175,7 +175,7 @@ const BAU := {
 				},
 				{
 					"id": "mover",
-					"name": "mit Mover (Kettenfahrzeug)"
+					"name": "mit Mover (Kettenfahrzeug) – folgt später"
 				}
 			]
 		}
@@ -360,8 +360,7 @@ const BAU := {
 		{
 			"menge": "2×",
 			"was": "M3 × 8",
-			"schritt": 5,
-			"unklar": "Länge nicht angegeben (Vorschlag M3 × 8)"
+			"schritt": 5
 		},
 		{
 			"menge": "2×",
@@ -609,12 +608,19 @@ const BAU := {
 				"wert": "1"
 			},
 			{
+				"id": "akku_buck",
+				"von": "ups",
+				"nach": "buck",
+				"art": "strom",
+				"pins": "Akku-Lötpunkte B+ / B− des UPS HAT (E) (12–16,8 V) → eigener Step-Down 6–36 V → 5 V (VIN / GND). Ersatz: USB-A-5-V-Buchse des HAT",
+				"wenn": "ups"
+			},
+			{
 				"id": "servo_strom",
 				"von": "buck",
 				"nach": "pca",
 				"art": "strom",
 				"pins": "5 V → Klemme V+ / GND des PCA9685, Elko 470 µF an V+",
-				"unklar": "Abgriff des Step-Downs am Akkupaket des UPS HAT (E) nicht beschrieben",
 				"wenn": "ups"
 			},
 			{
@@ -677,7 +683,8 @@ const BAU := {
 				"pins": "Kanal 5 rot · 6 grün · 7 blau, gemeinsame Kathode (Einstellung «LED-Typ»); keine eigenen Vorwiderstände: 220 Ω sind auf dem PCA9685-Board",
 				"code": "led_ch_rgb",
 				"wert": "5/6/7",
-				"wenn": "v52"
+				"wenn": "v52",
+				"unklar": "gilt nur mit 220 Ω auf dem PCA9685-Board (Adafruit 815 oder Klon?) – klärt Daniel"
 			},
 			{
 				"id": "tasten",
@@ -840,11 +847,11 @@ const BAU := {
 			},
 			{
 				"id": "ladeled",
-				"von": "d36",
+				"von": "pi",
 				"nach": "gx16",
-				"art": "strom",
-				"pins": "Lade-LED 3 mm mit Vorwiderstand, Lichtleiter hinten",
-				"unklar": "wo die Lade-LED angeschlossen wird, ist nicht beschrieben"
+				"art": "gpio",
+				"pins": "GPIO 6 (Pin 31) → 330 Ω → Lade-LED 3 mm grün → GND (Pin 34); Lichtleiter hinten. MoveEye schaltet sie nach dem Lade-Zustand des UPS HAT (E)",
+				"unklar": "die Software steuert die Lade-LED noch nicht (folgt)"
 			},
 			{
 				"id": "mover",
@@ -855,7 +862,7 @@ const BAU := {
 				"code": "mover_addr",
 				"wert": "0x60",
 				"wenn": "mover",
-				"unklar": "Fahrwerk, Motorstrom und Befestigung des Gehäuses (Stativmutter 1/4\") noch offen"
+				"unklar": "folgt später: Fahrwerk, Motorstrom und Befestigung (Stativmutter 1/4\")"
 			}
 		]
 	},
@@ -1006,7 +1013,7 @@ const BAU := {
 			"wenn": "mover",
 			"titel": "Mover",
 			"text": "Motor-HAT auf den Pi bzw. an I2C (0x60), Motoren M1 links und M2 rechts, das Gehäuse mit der Stativmutter 1/4\" auf das Fahrwerk schrauben. In MoveEye erscheint der zweite Stick von selbst.",
-			"unklar": "Fahrwerk und Befestigung noch nicht festgelegt"
+			"unklar": "folgt später: Fahrwerk, Motorstrom und Befestigung (Stativmutter 1/4\")"
 		}
 	],
 	"druckdateien_einzeln": [

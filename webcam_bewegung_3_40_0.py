@@ -236,7 +236,7 @@ def prepare_settings_file():
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
 ZD_FILE = "moveeye_daten_3_40_0.zip"
-ZD_SHA256 = "c16577dc0b224c23f0715e16e87508f7d5f4730337d9715056ae851daf5c61cd"
+ZD_SHA256 = "4f28d589ef3b9e917929f0e69d907b28bd16143dd74e39b8ef57fc890f792e23"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -72246,7 +72246,7 @@ SELFTEST_EXTRA.append(("Error help with QR code (simulator3d/fehler_katalog.json
 # GEH_QUELLE_SHA: Prüfsumme der Quelle (hardware/gehaeuse/Quellcode/*.py, bau.json, werkzeuge/gehaeuse_bauen.py) – der
 # Selbsttest (639w) vergleicht sie im Repository mit der Quelle und mit simulator3d/inhalte/gehaeuse/modelle.json.
 # ----------------------------------------------------------------------------
-GEH_QUELLE_SHA = '15086220216752d24e0bf5df82545e0f83304914c0ca9d84a00ca31ea3126408'
+GEH_QUELLE_SHA = '153b7c2217a6320c7dbb12e5ca8d86d9bb4a64c83669ed70225265fc00ecf605'
 GEH_BAU = json.loads(_zd('639v_daten_gehaeuse/GEH_BAU', ""))
 GEH_UI_DE = {"Case & build": "Gehäuse & Bau", "Guide, parts list, print files – in 3D in the workshop of the simulator": "Anleitung, Materialliste, Druckdateien – in 3D in der Werkstatt des Simulators", "Case": "Gehäuse", "View in the simulator": "Im Simulator ansehen", "Opens the workshop in the 3D simulator: turn, explode, see through, click parts, assembly step by step.": "Öffnet die Werkstatt im 3D-Simulator: drehen, zerlegen, durchsichtig, Teile anklicken, Montage Schritt für Schritt.", "Simulator not connected – start it and connect it on the page Simulator.": "Simulator nicht verbunden – starte ihn und verbinde ihn auf der Seite «Simulator».", "Opened in the simulator.": "Im Simulator geöffnet.", "Print files": "Druckdateien", "3MF plates for the Bambu Lab X2D (PETG, no supports)": "3MF-Platten für den Bambu Lab X2D (PETG, ohne Stützen)", "Single STL files: in the hand-over package (ZIP, about 60 MB), not in the repository.": "Einzelne STL-Dateien: im Übergabe-Paket (ZIP, ca. 60 MB), nicht im Repository.", "Assembly step by step": "Montage Schritt für Schritt", "Show this step in the simulator": "Diesen Schritt im Simulator zeigen", "Parts list": "Materialliste", "Qty": "Menge", "Part number": "Teilenummer", "Guides and source (GitHub)": "Anleitungen und Quellcode (GitHub)", "Detailed guide v5.1": "Ausführliche Anleitung v5.1", "Full parts list with order list": "Ganze Materialliste mit Bestellliste", "Measure first: UPS HAT (E) with its cells (assumed 90 × 80 × 26 mm) before printing the lower part.": "Zuerst nachmessen: UPS HAT (E) mit Akkus (angenommen 90 × 80 × 26 mm), bevor das Unterteil gedruckt wird.", "Own work of Daniel (DonElektro) – parametric Python model.": "Eigenes Werk von Daniel (DonElektro) – parametrisches Python-Modell.", "Step": "Schritt"}
 GEH_UI_TRX = _zd('639v_daten_gehaeuse/GEH_UI_TRX', _ZDDict())
@@ -72257,7 +72257,7 @@ GEH_UI2_TRX = _zd('639v_daten_gehaeuse/GEH_UI2_TRX', _ZDDict())
 # BAU3D: Pfad -> [sha256 der Datei, gzip+base64]; BAU3D_GLB: [sha256, Grösse, gzip+base64]. Ausgeliefert von 639w (/bau3d/<pfad>,
 # /build/gehaeuse.glb) mit Content-Encoding gzip. Der Selbsttest vergleicht die Prüfsummen im Repository mit den Quellen.
 # ----------------------------------------------------------------------------
-BAU3D_QUELLE_SHA = '15086220216752d24e0bf5df82545e0f83304914c0ca9d84a00ca31ea3126408'
+BAU3D_QUELLE_SHA = '153b7c2217a6320c7dbb12e5ca8d86d9bb4a64c83669ed70225265fc00ecf605'
 BAU3D = _zd('639vb_daten_bau3d/BAU3D', _ZDDict())
 BAU3D_GLB = _zd('639vb_daten_bau3d/BAU3D_GLB', [])
 # aus simulator3d/inhalte/gehaeuse/modelle.json: Gruppe, aussen, Mitte und Explosion pro Teil (wie die Werkstatt im Simulator)

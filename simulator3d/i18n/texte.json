@@ -3421,6 +3421,12 @@
   "it": "Esercitarsi con guasti di batteria, meteo e Wi-Fi",
   "rm": "Exercitar panna d’accu, aura e WLAN"
  },
+ "Akku-Lötpunkte B+ / B− des UPS HAT (E) (12–16,8 V) → eigener Step-Down 6–36 V → 5 V (VIN / GND). Ersatz: USB-A-5-V-Buchse des HAT": {
+  "en": "battery solder pads B+ / B− of the UPS HAT (E) (12–16.8 V) → own step-down 6–36 V → 5 V (VIN / GND). Fallback: USB-A 5 V socket of the HAT",
+  "fr": "pastilles B+ / B− de la batterie du UPS HAT (E) (12–16,8 V) → propre abaisseur 6–36 V → 5 V (VIN / GND). Secours : prise USB-A 5 V du HAT",
+  "it": "piazzole B+ / B− della batteria dell'UPS HAT (E) (12–16,8 V) → step-down proprio 6–36 V → 5 V (VIN / GND). Riserva: presa USB-A 5 V dell'HAT",
+  "rm": "puncts da lotar B+ / B− da l'accu dal UPS HAT (E) (12–16,8 V) → agen step-down 6–36 V → 5 V (VIN / GND). Remplazzament: bischla USB-A 5 V dal HAT"
+ },
  "Akkus 21700": {
   "en": "21700 cells",
   "fr": "Cellules 21700",
@@ -10754,6 +10760,12 @@
   "it": "La ladra di calzini",
   "rm": "La laderna da stgaffas"
  },
+ "die Software steuert die Lade-LED noch nicht (folgt)": {
+  "en": "the software does not drive the charge LED yet (to follow)",
+  "fr": "le logiciel ne commande pas encore la LED de charge (à venir)",
+  "it": "il software non comanda ancora il LED di carica (segue)",
+  "rm": "la software na stizza anc betg la LED da chargiar (suonda)"
+ },
  "die Sonne": {
   "en": "the sun",
   "fr": "le soleil",
@@ -15395,6 +15407,12 @@
   "it": "Seguire richiede MoveEye – prima collegare (fino ad allora solo la pattuglia si gira verso cose sospette)",
   "rm": "Suandar dovra MoveEye – l’emprim colliar (fin lura sa volva mo la patrulla vers chaussas suspectas)"
  },
+ "folgt später: Fahrwerk, Motorstrom und Befestigung (Stativmutter 1/4\")": {
+  "en": "to follow later: chassis, motor current and mounting (tripod nut 1/4\")",
+  "fr": "suivra plus tard : châssis, courant moteur et fixation (écrou de trépied 1/4\")",
+  "it": "seguirà più tardi: telaio, corrente motore e fissaggio (dado treppiede 1/4\")",
+  "rm": "suonda pli tard: chassis, current dal motor e fixaziun (mutter da stativ 1/4\")"
+ },
  "Fondue-Caquelon": {
   "en": "Fondue pot",
   "fr": "Caquelon à fondue",
@@ -17190,6 +17208,12 @@
   "it": "Ci sono molti animali qui?",
   "rm": "Datti qua bleras bestgas?"
  },
+ "gilt nur mit 220 Ω auf dem PCA9685-Board (Adafruit 815 oder Klon?) – klärt Daniel": {
+  "en": "only with 220 Ω on the PCA9685 board (Adafruit 815 or clone?) – Daniel checks",
+  "fr": "seulement avec 220 Ω sur la carte PCA9685 (Adafruit 815 ou clone ?) – Daniel vérifie",
+  "it": "solo con 220 Ω sulla scheda PCA9685 (Adafruit 815 o clone?) – verifica Daniel",
+  "rm": "mo cun 220 Ω sin la plattina PCA9685 (Adafruit 815 u clon?) – Daniel scleresch"
+ },
  "Ging nicht: %s": {
   "en": "Did not work: %s",
   "fr": "Échec : %s",
@@ -17513,6 +17537,12 @@
   "fr": "Bâtiments Google Earth (Blender «Maps Models Importer»)",
   "it": "Edifici di Google Earth (Blender «Maps Models Importer»)",
   "rm": "Edifizis da Google Earth (Blender «Maps Models Importer»)"
+ },
+ "GPIO 6 (Pin 31) → 330 Ω → Lade-LED 3 mm grün → GND (Pin 34); Lichtleiter hinten. MoveEye schaltet sie nach dem Lade-Zustand des UPS HAT (E)": {
+  "en": "GPIO 6 (pin 31) → 330 Ω → charge LED 3 mm green → GND (pin 34); light guide at the back. MoveEye switches it from the charge state of the UPS HAT (E)",
+  "fr": "GPIO 6 (broche 31) → 330 Ω → LED de charge 3 mm verte → GND (broche 34) ; guide de lumière à l'arrière. MoveEye l'allume selon l'état de charge du UPS HAT (E)",
+  "it": "GPIO 6 (pin 31) → 330 Ω → LED di carica 3 mm verde → GND (pin 34); guida luce dietro. MoveEye la accende secondo lo stato di carica dell'UPS HAT (E)",
+  "rm": "GPIO 6 (pin 31) → 330 Ω → LED da chargiar 3 mm verda → GND (pin 34); conductur da glisch davos. MoveEye la stizza tenor il stadi da chargiar dal UPS HAT (E)"
  },
  "GPS: MoveEye wird weggetragen": {
   "en": "GPS: MoveEye is carried away",
@@ -23600,6 +23630,12 @@
   "it": "Carico Python (solo la prima volta)",
   "rm": "Chargiar Python (mo l’emprima giada)"
  },
+ "Lade-LED 3 mm + 330 Ω + Lichtleiter": {
+  "en": "Charging LED 3 mm + 330 Ω + light guide",
+  "fr": "LED de charge 3 mm + 330 Ω + guide de lumière",
+  "it": "LED di ricarica 3 mm + 330 Ω + guida luce",
+  "rm": "LED da chargiar 3 mm + 330 Ω + guida da glisch"
+ },
  "Lade-LED 3 mm + Lichtleiter": {
   "en": "Charging LED 3 mm + light guide",
   "fr": "LED de charge 3 mm + guide de lumière",
@@ -23995,6 +24031,12 @@
   "fr": "LED",
   "it": "LED",
   "rm": "LED"
+ },
+ "LED 3 mm grün, 330 Ω, PMMA 3 mm": {
+  "en": "LED 3 mm grün, 330 Ω, PMMA 3 mm",
+  "fr": "LED 3 mm grün, 330 Ω, PMMA 3 mm",
+  "it": "LED 3 mm grün, 330 Ω, PMMA 3 mm",
+  "rm": "LED 3 mm grün, 330 Ω, PMMA 3 mm"
  },
  "LED 3 mm, PMMA 3 mm": {
   "en": "LED 3 mm, PMMA 3 mm",
@@ -25983,6 +26025,12 @@
   "fr": "avec mover (véhicule à chenilles)",
   "it": "con mover (veicolo cingolato)",
   "rm": "cun mover (vehichel cun chadainas)"
+ },
+ "mit Mover (Kettenfahrzeug) – folgt später": {
+  "en": "with mover (tracked vehicle) – to follow later",
+  "fr": "avec mover (véhicule à chenilles) – suivra plus tard",
+  "it": "con mover (veicolo cingolato) – seguirà più tardi",
+  "rm": "cun mover (vehichel cun chadainas) – suonda pli tard"
  },
  "Mit Pflaster und Binde geht es wieder. «Danke, das vergesse ich dir nicht!»": {
   "en": "With a plaster and a bandage it works again. «Thanks, I won't forget that!»",

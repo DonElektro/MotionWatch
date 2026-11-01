@@ -419,13 +419,13 @@
    "gruppe": "strom",
    "menge": "1×",
    "name": {
-    "de": "Lade-LED 3 mm + Lichtleiter",
-    "en": "Charging LED 3 mm + light guide",
-    "fr": "LED de charge 3 mm + guide de lumière",
-    "it": "LED di ricarica 3 mm + guida luce",
-    "rm": "LED da chargiar 3 mm + guida da glisch"
+    "de": "Lade-LED 3 mm + 330 Ω + Lichtleiter",
+    "en": "Charging LED 3 mm + 330 Ω + light guide",
+    "fr": "LED de charge 3 mm + 330 Ω + guide de lumière",
+    "it": "LED di ricarica 3 mm + 330 Ω + guida luce",
+    "rm": "LED da chargiar 3 mm + 330 Ω + guida da glisch"
    },
-   "nr": "LED 3 mm, PMMA 3 mm",
+   "nr": "LED 3 mm grün, 330 Ω, PMMA 3 mm",
    "preis": 2,
    "haendler": "bastelgarage",
    "suche": "LED 3mm grün"
@@ -2129,11 +2129,11 @@
     {
      "id": "mover",
      "name": {
-      "de": "mit Mover (Kettenfahrzeug)",
-      "en": "with mover (tracked vehicle)",
-      "fr": "avec mover (véhicule à chenilles)",
-      "it": "con mover (veicolo cingolato)",
-      "rm": "cun mover (vehichel cun chadainas)"
+      "de": "mit Mover (Kettenfahrzeug) – folgt später",
+      "en": "with mover (tracked vehicle) – to follow later",
+      "fr": "avec mover (véhicule à chenilles) – suivra plus tard",
+      "it": "con mover (veicolo cingolato) – seguirà più tardi",
+      "rm": "cun mover (vehichel cun chadainas) – suonda pli tard"
      }
     }
    ]
@@ -2476,14 +2476,7 @@
   {
    "menge": "2×",
    "was": "M3 × 8",
-   "schritt": 5,
-   "unklar": {
-    "de": "Länge nicht angegeben (Vorschlag M3 × 8)",
-    "en": "length not given (suggestion M3 × 8)",
-    "fr": "longueur non indiquée (proposition M3 × 8)",
-    "it": "lunghezza non indicata (proposta M3 × 8)",
-    "rm": "lunghezza betg indicada (proposta M3 × 8)"
-   }
+   "schritt": 5
   },
   {
    "menge": "2×",
@@ -2972,6 +2965,20 @@
     "wert": "1"
    },
    {
+    "id": "akku_buck",
+    "von": "ups",
+    "nach": "buck",
+    "art": "strom",
+    "pins": {
+     "de": "Akku-Lötpunkte B+ / B− des UPS HAT (E) (12–16,8 V) → eigener Step-Down 6–36 V → 5 V (VIN / GND). Ersatz: USB-A-5-V-Buchse des HAT",
+     "en": "battery solder pads B+ / B− of the UPS HAT (E) (12–16.8 V) → own step-down 6–36 V → 5 V (VIN / GND). Fallback: USB-A 5 V socket of the HAT",
+     "fr": "pastilles B+ / B− de la batterie du UPS HAT (E) (12–16,8 V) → propre abaisseur 6–36 V → 5 V (VIN / GND). Secours : prise USB-A 5 V du HAT",
+     "it": "piazzole B+ / B− della batteria dell'UPS HAT (E) (12–16,8 V) → step-down proprio 6–36 V → 5 V (VIN / GND). Riserva: presa USB-A 5 V dell'HAT",
+     "rm": "puncts da lotar B+ / B− da l'accu dal UPS HAT (E) (12–16,8 V) → agen step-down 6–36 V → 5 V (VIN / GND). Remplazzament: bischla USB-A 5 V dal HAT"
+    },
+    "wenn": "ups"
+   },
+   {
     "id": "servo_strom",
     "von": "buck",
     "nach": "pca",
@@ -2982,13 +2989,6 @@
      "fr": "5 V → borne V+ / GND du PCA9685, condensateur 470 µF sur V+",
      "it": "5 V → morsetto V+ / GND del PCA9685, condensatore 470 µF su V+",
      "rm": "5 V → clemma V+ / GND dal PCA9685, condensatur 470 µF vi da V+"
-    },
-    "unklar": {
-     "de": "Abgriff des Step-Downs am Akkupaket des UPS HAT (E) nicht beschrieben",
-     "en": "where the step-down takes power from the battery pack of the UPS HAT (E) is not described",
-     "fr": "le point de prise de l'abaisseur sur le pack de la UPS HAT (E) n'est pas décrit",
-     "it": "il punto di prelievo dello step-down sul pacco della UPS HAT (E) non è descritto",
-     "rm": "nua ch'il step-down prenda il current dal pachet d'accus da l'UPS HAT (E) n'è betg descrit"
     },
     "wenn": "ups"
    },
@@ -3106,7 +3106,14 @@
     },
     "code": "led_ch_rgb",
     "wert": "5/6/7",
-    "wenn": "v52"
+    "wenn": "v52",
+    "unklar": {
+     "de": "gilt nur mit 220 Ω auf dem PCA9685-Board (Adafruit 815 oder Klon?) – klärt Daniel",
+     "en": "only with 220 Ω on the PCA9685 board (Adafruit 815 or clone?) – Daniel checks",
+     "fr": "seulement avec 220 Ω sur la carte PCA9685 (Adafruit 815 ou clone ?) – Daniel vérifie",
+     "it": "solo con 220 Ω sulla scheda PCA9685 (Adafruit 815 o clone?) – verifica Daniel",
+     "rm": "mo cun 220 Ω sin la plattina PCA9685 (Adafruit 815 u clon?) – Daniel scleresch"
+    }
    },
    {
     "id": "tasten",
@@ -3401,22 +3408,22 @@
    },
    {
     "id": "ladeled",
-    "von": "d36",
+    "von": "pi",
     "nach": "gx16",
-    "art": "strom",
+    "art": "gpio",
     "pins": {
-     "de": "Lade-LED 3 mm mit Vorwiderstand, Lichtleiter hinten",
-     "en": "charging LED 3 mm with series resistor, light guide at the back",
-     "fr": "LED de charge 3 mm avec résistance, guide de lumière derrière",
-     "it": "LED di ricarica 3 mm con resistenza, guida luce dietro",
-     "rm": "LED da chargiar 3 mm cun resistenza, guida da glisch davos"
+     "de": "GPIO 6 (Pin 31) → 330 Ω → Lade-LED 3 mm grün → GND (Pin 34); Lichtleiter hinten. MoveEye schaltet sie nach dem Lade-Zustand des UPS HAT (E)",
+     "en": "GPIO 6 (pin 31) → 330 Ω → charge LED 3 mm green → GND (pin 34); light guide at the back. MoveEye switches it from the charge state of the UPS HAT (E)",
+     "fr": "GPIO 6 (broche 31) → 330 Ω → LED de charge 3 mm verte → GND (broche 34) ; guide de lumière à l'arrière. MoveEye l'allume selon l'état de charge du UPS HAT (E)",
+     "it": "GPIO 6 (pin 31) → 330 Ω → LED di carica 3 mm verde → GND (pin 34); guida luce dietro. MoveEye la accende secondo lo stato di carica dell'UPS HAT (E)",
+     "rm": "GPIO 6 (pin 31) → 330 Ω → LED da chargiar 3 mm verda → GND (pin 34); conductur da glisch davos. MoveEye la stizza tenor il stadi da chargiar dal UPS HAT (E)"
     },
     "unklar": {
-     "de": "wo die Lade-LED angeschlossen wird, ist nicht beschrieben",
-     "en": "where the charging LED is connected is not described",
-     "fr": "le branchement de la LED de charge n'est pas décrit",
-     "it": "dove si collega il LED di ricarica non è descritto",
-     "rm": "nua che la LED da chargiar vegn attaccada n'è betg descrit"
+     "de": "die Software steuert die Lade-LED noch nicht (folgt)",
+     "en": "the software does not drive the charge LED yet (to follow)",
+     "fr": "le logiciel ne commande pas encore la LED de charge (à venir)",
+     "it": "il software non comanda ancora il LED di carica (segue)",
+     "rm": "la software na stizza anc betg la LED da chargiar (suonda)"
     }
    },
    {
@@ -3435,11 +3442,11 @@
     "wert": "0x60",
     "wenn": "mover",
     "unklar": {
-     "de": "Fahrwerk, Motorstrom und Befestigung des Gehäuses (Stativmutter 1/4\") noch offen",
-     "en": "chassis, motor power and mounting of the case (tripod nut 1/4\") still open",
-     "fr": "châssis, alimentation des moteurs et fixation du boîtier (écrou 1/4\") encore ouverts",
-     "it": "telaio, alimentazione dei motori e fissaggio della custodia (dado 1/4\") ancora aperti",
-     "rm": "chassis, current dals motors e fixaziun da la chascha (mutter 1/4\") anc avert"
+     "de": "folgt später: Fahrwerk, Motorstrom und Befestigung (Stativmutter 1/4\")",
+     "en": "to follow later: chassis, motor current and mounting (tripod nut 1/4\")",
+     "fr": "suivra plus tard : châssis, courant moteur et fixation (écrou de trépied 1/4\")",
+     "it": "seguirà più tardi: telaio, corrente motore e fissaggio (dado treppiede 1/4\")",
+     "rm": "suonda pli tard: chassis, current dal motor e fixaziun (mutter da stativ 1/4\")"
     }
    }
   ]
@@ -3946,11 +3953,11 @@
     "rm": "Motor HAT sin il Pi u vi da I2C (0x60), motors M1 a sanestra ed M2 a dretga, scrauvar la chascha sin il chassis cun la mutter 1/4\". MoveEye mussa sez il segund stick."
    },
    "unklar": {
-    "de": "Fahrwerk und Befestigung noch nicht festgelegt",
-    "en": "chassis and mounting not decided yet",
-    "fr": "châssis et fixation pas encore définis",
-    "it": "telaio e fissaggio non ancora definiti",
-    "rm": "chassis e fixaziun anc betg fixads"
+    "de": "folgt später: Fahrwerk, Motorstrom und Befestigung (Stativmutter 1/4\")",
+    "en": "to follow later: chassis, motor current and mounting (tripod nut 1/4\")",
+    "fr": "suivra plus tard : châssis, courant moteur et fixation (écrou de trépied 1/4\")",
+    "it": "seguirà più tardi: telaio, corrente motore e fissaggio (dado treppiede 1/4\")",
+    "rm": "suonda pli tard: chassis, current dal motor e fixaziun (mutter da stativ 1/4\")"
    }
   }
  ],
