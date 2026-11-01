@@ -1708,7 +1708,7 @@
    "id": "wide",
    "art": "v52",
    "bom": "camwide",
-   "schritt": null,
+   "schritt": 3,
    "name": {
     "de": "Weitwinkel-Kamera (Stirnwand, 12° nach unten)",
     "en": "Wide camera (front wall, 12° down)",
@@ -1722,7 +1722,7 @@
    "id": "irled",
    "art": "v52",
    "bom": "irmod",
-   "schritt": null,
+   "schritt": 3,
    "name": {
     "de": "IR-LED-Modul 120° (Stirnwand)",
     "en": "IR LED module 120° (front wall)",
@@ -1736,21 +1736,21 @@
    "id": "buttons",
    "art": "v52",
    "bom": "taster",
-   "schritt": null,
+   "schritt": 7,
    "wenn": "v52"
   },
   {
    "id": "sled",
    "art": "v52",
    "bom": "sled",
-   "schritt": null,
+   "schritt": 10,
    "wenn": "v52"
   },
   {
    "id": "tub52",
    "art": "v52",
    "bom": "petg",
-   "schritt": null,
+   "schritt": 2,
    "ersetzt": "tub",
    "datei": "01_Unterteil_v52",
    "name": {
@@ -1766,7 +1766,7 @@
    "id": "mosfet52",
    "art": "v52",
    "bom": "mosfet",
-   "schritt": null,
+   "schritt": 6,
    "ersetzt": "mosfet",
    "name": {
     "de": "MOSFET-Modul (v5.2: Lüftungswand unter dem PCA9685)",
@@ -1781,7 +1781,7 @@
    "id": "cable_cam1",
    "art": "v52",
    "bom": "camcable2",
-   "schritt": null,
+   "schritt": 13,
    "name": {
     "de": "Kamerakabel CAM1 (Weitwinkel → Kabelkamm → Pi)",
     "en": "Camera cable CAM1 (wide → cable comb → Pi)",
@@ -1795,7 +1795,7 @@
    "id": "cable_cam0_52",
    "art": "v52",
    "bom": "camcable",
-   "schritt": null,
+   "schritt": 13,
    "ersetzt": "cable_cam",
    "name": {
     "de": "Kamerakabel CAM0 (v5.2: Kamin → Kabelkamm → Pi)",
@@ -1810,7 +1810,7 @@
    "id": "plug52",
    "art": "v52",
    "bom": "petg",
-   "schritt": null,
+   "schritt": 13,
    "ersetzt": "plug",
    "datei": "10_Stopfen_HDMI_USB_v52",
    "wenn": "v52",
@@ -1826,7 +1826,7 @@
    "id": "sdplug",
    "art": "v52",
    "bom": "petg",
-   "schritt": null,
+   "schritt": 13,
    "datei": "16_Stopfen_SD_v52",
    "wenn": "v52",
    "name": {
@@ -1841,7 +1841,7 @@
    "id": "head52",
    "art": "v52",
    "bom": "petg",
-   "schritt": null,
+   "schritt": 10,
    "ersetzt": "head",
    "datei": "06_Kamerakopf_v52",
    "wenn": "v52",
@@ -1857,7 +1857,7 @@
    "id": "diff52",
    "art": "v52",
    "bom": "sled",
-   "schritt": null,
+   "schritt": 10,
    "datei": "14_Diffusor_Status_LED",
    "wenn": "v52",
    "name": {
@@ -1872,7 +1872,7 @@
    "id": "sockel",
    "art": "dev",
    "bom": "petg",
-   "schritt": null,
+   "schritt": 4,
    "ersetzt": "ups",
    "datei": "13_Entwicklungs_Sockel",
    "wenn": "entwicklung",
@@ -1888,7 +1888,7 @@
    "id": "resplug",
    "art": "v52",
    "bom": "petg",
-   "schritt": null,
+   "schritt": 7,
    "datei": "17_Blindstopfen_Reserve",
    "wenn": "v52",
    "name": {
@@ -1903,7 +1903,7 @@
    "id": "lampdrv",
    "art": "v52",
    "bom": null,
-   "schritt": null,
+   "schritt": 6,
    "wenn": "v52",
    "name": {
     "de": "PLATZHALTER Lampentreiber (Feld 30 × 20, 2 × M2,5)",
@@ -1917,7 +1917,7 @@
    "id": "fuseh",
    "art": "v52",
    "bom": "fuse2",
-   "schritt": null,
+   "schritt": 7,
    "wenn": "v52",
    "name": {
     "de": "Sicherungshalter 5 A (Akku B+) in der Klammer am Boden",
@@ -2506,21 +2506,21 @@
     {
      "id": "v51",
      "name": {
-      "de": "v5.1 (Standard)",
-      "en": "v5.1 (standard)",
-      "fr": "v5.1 (standard)",
-      "it": "v5.1 (standard)",
-      "rm": "v5.1 (standard)"
+      "de": "v5.1 (ohne Weitwinkel)",
+      "en": "v5.1 (without wide angle)",
+      "fr": "v5.1 (sans grand-angle)",
+      "it": "v5.1 (senza grandangolo)",
+      "rm": "v5.1 (senza grondangul)"
      }
     },
     {
      "id": "v52",
      "name": {
-      "de": "v5.2: + Weitwinkel, IR-LED, Tasten, Status-LED",
-      "en": "v5.2: + wide angle, IR LED, buttons, status LED",
-      "fr": "v5.2 : + grand-angle, LED IR, boutons, LED d'état",
-      "it": "v5.2: + grandangolo, LED IR, pulsanti, LED di stato",
-      "rm": "v5.2: + grondangul, LED IR, buttuns, LED da status"
+      "de": "v5.2 (Standard): + Weitwinkel, IR-LED, Tasten, Status-LED",
+      "en": "v5.2 (standard): + wide angle, IR LED, buttons, status LED",
+      "fr": "v5.2 (standard) : + grand-angle, LED IR, boutons, LED d'état",
+      "it": "v5.2 (standard): + grandangolo, LED IR, pulsanti, LED di stato",
+      "rm": "v5.2 (standard): + grondangul, LED IR, buttuns, LED da status"
      }
     }
    ]
@@ -2601,7 +2601,7 @@
   }
  ],
  "variante_standard": {
-  "gehaeuse": "v51",
+  "gehaeuse": "v52",
   "akku": "ups",
   "mover": "ohne"
  },
@@ -2645,7 +2645,8 @@
      "fr": "fond",
      "it": "fondo",
      "rm": "fund"
-    }
+    },
+    "wenn": "v51"
    },
    {
     "datei": "01_Unterteil_v52",
@@ -2748,7 +2749,8 @@
      "fr": "paroi latérale droite",
      "it": "parete laterale destra",
      "rm": "paraid laterala dretga"
-    }
+    },
+    "wenn": "v51"
    },
    {
     "datei": "07_Seitendeckel",
@@ -2816,7 +2818,8 @@
      "fr": "bride",
      "it": "flangia",
      "rm": "flansch"
-    }
+    },
+    "wenn": "v51"
    },
    {
     "datei": "11_Fuss_4x",

@@ -121,6 +121,7 @@ func _build_ui() -> void:
 	root.add_child(hd)
 	var tl := Label.new()
 	tl.text = T.t("Bauen – Gehäuse v%s") % DATA.VERSION
+	_w["title"] = tl
 	tl.add_theme_font_override("font", UI.heading_font())
 	tl.add_theme_font_size_override("font_size", 17)
 	hd.add_child(tl)
@@ -626,6 +627,8 @@ func set_inner(on: bool) -> void:
 
 func set_v52(on: bool) -> void:
 	v52 = on
+	if _w.has("title") and is_instance_valid(_w["title"]):
+		(_w["title"] as Label).text = T.t("Bauen – Gehäuse v%s") % ("5.2" if v52 else DATA.VERSION)
 	_paint()
 
 
@@ -682,19 +685,20 @@ func _shown(id: String) -> bool:
 	if r == null:
 		return false
 	var art := str(r[1])
-	if art == "v52":
-		return v52 and step == 0 and (inner or _is_print(id) or bool(parts[id]["e"].get("aussen", false)))
-	if art == "dev":                                  # Entwicklungs-Variante ohne Akku (Sockel 13 statt UPS HAT + Akkus)
-		return _dev() and step == 0 and inner
-	if step == 0 and repl.has(id) and parts.has(repl[id]):
+	# real-v52-standard (01.11.2026): v5.2 is the standard - its parts are in the assembly steps too (bau.json «schritt»)
+	if art == "v52" and not v52:
+		return false
+	if art == "dev" and not _dev():                   # Entwicklungs-Variante ohne Akku (Sockel 13 statt UPS HAT + Akkus)
+		return false
+	if repl.has(id) and parts.has(repl[id]):
 		var ra := str((rows.get(repl[id], ["", ""]) as Array)[1])
 		if (ra == "v52" and v52) or (ra == "dev" and _dev()):
 			return false                              # replaced by the part of the variant (lower part v5.2, socket ...)
 	if step == 1:
-		return art == "druck"
+		return _is_print(id)
 	if step > 1 and int(r[4]) > step:
 		return false
-	if not inner and art != "druck" and not bool(parts[id]["e"].get("aussen", false)):
+	if not inner and not _is_print(id) and not bool(parts[id]["e"].get("aussen", false)):
 		return false
 	return true
 
