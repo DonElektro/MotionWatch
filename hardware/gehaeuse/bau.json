@@ -1,0 +1,1695 @@
+{
+ "_hinweis": "Eine Quelle für die Texte zum Gehäuse v5.1: Teile, Materialliste (Menge, Bezeichnung) und Montageschritte, in de / en / fr / it / rm (ein einzelner Text = in allen Sprachen gleich). werkzeuge/gehaeuse_bauen.py macht daraus simulator3d/scripts/werkstatt_daten.gd, die Übersetzungen in simulator3d/i18n/texte.json und quelle/639v_daten_gehaeuse.py. Ausführlich (mit Hinweisen und Bestellliste): Dokumente/Materialliste.md und Dokumente/LIESMICH_Montage_v5-1.md.",
+ "version": "5.1",
+ "stand": "30.10.2026",
+ "masse": {
+  "de": "Unterteil 183 × 97 × 71,5 mm (mit Füssen 77,5 mm), Gesamthöhe ca. 161 mm, Kopf 58 × 58 mm",
+  "en": "Lower part 183 × 97 × 71.5 mm (77.5 mm with feet), total height about 161 mm, head 58 × 58 mm",
+  "fr": "Partie inférieure 183 × 97 × 71,5 mm (77,5 mm avec pieds), hauteur totale env. 161 mm, tête 58 × 58 mm",
+  "it": "Parte inferiore 183 × 97 × 71,5 mm (77,5 mm con piedini), altezza totale circa 161 mm, testa 58 × 58 mm",
+  "rm": "Part sut 183 × 97 × 71,5 mm (cun peis 77,5 mm), autezza totala ca. 161 mm, chau 58 × 58 mm"
+ },
+ "bom_gruppen": {
+  "rechner": {
+   "de": "Rechner & Kameras",
+   "en": "Computer & cameras",
+   "fr": "Ordinateur et caméras",
+   "it": "Computer e fotocamere",
+   "rm": "Computer e cameras"
+  },
+  "kopf": {
+   "de": "Schwenk-/Neigekopf",
+   "en": "Pan/tilt head",
+   "fr": "Tête pan/tilt",
+   "it": "Testa pan/tilt",
+   "rm": "Chau pan/tilt"
+  },
+  "strom": {
+   "de": "Strom",
+   "en": "Power",
+   "fr": "Courant",
+   "it": "Corrente",
+   "rm": "Current"
+  },
+  "licht": {
+   "de": "Licht an der Gabel",
+   "en": "Light on the yoke",
+   "fr": "Lumière sur la fourche",
+   "it": "Luce sulla forcella",
+   "rm": "Glisch vi da la furtga"
+  },
+  "audio": {
+   "de": "Audio",
+   "en": "Audio",
+   "fr": "Audio",
+   "it": "Audio",
+   "rm": "Audio"
+  },
+  "sensor": {
+   "de": "Sensoren",
+   "en": "Sensors",
+   "fr": "Capteurs",
+   "it": "Sensori",
+   "rm": "Sensors"
+  },
+  "kabel": {
+   "de": "Kabel, Druck, Notfall",
+   "en": "Cables, printing, emergency",
+   "fr": "Câbles, impression, secours",
+   "it": "Cavi, stampa, emergenza",
+   "rm": "Cabels, stampa, urgenza"
+  },
+  "neu51": {
+   "de": "Neu in v5.1",
+   "en": "New in v5.1",
+   "fr": "Nouveau dans v5.1",
+   "it": "Nuovo nella v5.1",
+   "rm": "Nov en v5.1"
+  },
+  "spaeter": {
+   "de": "Später",
+   "en": "Later",
+   "fr": "Plus tard",
+   "it": "Più tardi",
+   "rm": "Pli tard"
+  },
+  "v52": {
+   "de": "Variante v5.2 (noch nicht im Paket v5.1)",
+   "en": "Variant v5.2 (not yet in the v5.1 package)",
+   "fr": "Variante v5.2 (pas encore dans le paquet v5.1)",
+   "it": "Variante v5.2 (non ancora nel pacchetto v5.1)",
+   "rm": "Variante v5.2 (anc betg en il pachet v5.1)"
+  }
+ },
+ "bom": [
+  {
+   "id": "pi5",
+   "gruppe": "rechner",
+   "menge": "1×",
+   "name": "Raspberry Pi 5",
+   "nr": "SC1112 (8 GB), SC1111 (4 GB)"
+  },
+  {
+   "id": "cooler",
+   "gruppe": "rechner",
+   "menge": "1×",
+   "name": {
+    "de": "Raspberry Pi Active Cooler (Lüfter)",
+    "en": "Raspberry Pi Active Cooler (fan)",
+    "fr": "Raspberry Pi Active Cooler (ventilateur)",
+    "it": "Raspberry Pi Active Cooler (ventola)",
+    "rm": "Raspberry Pi Active Cooler (ventilatur)"
+   },
+   "nr": "SC1148"
+  },
+  {
+   "id": "sd",
+   "gruppe": "rechner",
+   "menge": "1×",
+   "name": "microSD 64 GB, A2",
+   "nr": "SanDisk Extreme SDSQXAH-064G-GN6MA"
+  },
+  {
+   "id": "cam",
+   "gruppe": "rechner",
+   "menge": "1×",
+   "name": "Camera Module 3 NoIR",
+   "nr": "SC0873"
+  },
+  {
+   "id": "camcable",
+   "gruppe": "rechner",
+   "menge": "1×",
+   "name": {
+    "de": "Kamerakabel Pi 5, 500 mm (22→15-polig)",
+    "en": "Pi 5 camera cable, 500 mm (22→15 pin)",
+    "fr": "Câble caméra Pi 5, 500 mm (22→15 broches)",
+    "it": "Cavo fotocamera Pi 5, 500 mm (22→15 pin)",
+    "rm": "Cabel da camera Pi 5, 500 mm (22→15 pols)"
+   },
+   "nr": "SC1130"
+  },
+  {
+   "id": "therm",
+   "gruppe": "rechner",
+   "menge": "1×",
+   "name": "Waveshare Thermal-90 Camera Module",
+   "nr": "Waveshare SKU 31941"
+  },
+  {
+   "id": "servo",
+   "gruppe": "kopf",
+   "menge": "2×",
+   "name": {
+    "de": "Servo MG90S (Metallgetriebe)",
+    "en": "Servo MG90S (metal gears)",
+    "fr": "Servo MG90S (engrenages métal)",
+    "it": "Servo MG90S (ingranaggi in metallo)",
+    "rm": "Servo MG90S (transmissiun da metal)"
+   },
+   "nr": "TowerPro MG90S"
+  },
+  {
+   "id": "pca",
+   "gruppe": "kopf",
+   "menge": "1×",
+   "name": {
+    "de": "PCA9685 16-Kanal-PWM-Modul",
+    "en": "PCA9685 16-channel PWM module",
+    "fr": "Module PWM 16 canaux PCA9685",
+    "it": "Modulo PWM a 16 canali PCA9685",
+    "rm": "Modul PWM da 16 chanals PCA9685"
+   },
+   "nr": "Adafruit 815"
+  },
+  {
+   "id": "elko",
+   "gruppe": "kopf",
+   "menge": "1×",
+   "name": {
+    "de": "Elko 470 µF / 10 V",
+    "en": "Electrolytic capacitor 470 µF / 10 V",
+    "fr": "Condensateur électrolytique 470 µF / 10 V",
+    "it": "Condensatore elettrolitico 470 µF / 10 V",
+    "rm": "Condensatur electrolitic 470 µF / 10 V"
+   },
+   "nr": "470 µF ≥10 V"
+  },
+  {
+   "id": "bbs",
+   "gruppe": "kopf",
+   "menge": "~30×",
+   "name": {
+    "de": "Softair-Kugeln 6 mm (0,20 g)",
+    "en": "Airsoft BBs 6 mm (0.20 g)",
+    "fr": "Billes airsoft 6 mm (0,20 g)",
+    "it": "Pallini softair 6 mm (0,20 g)",
+    "rm": "Ballinas softair 6 mm (0,20 g)"
+   },
+   "nr": "BB 6 mm 0,20 g"
+  },
+  {
+   "id": "fett",
+   "gruppe": "kopf",
+   "menge": "1×",
+   "name": {
+    "de": "Silikon- oder Lagerfett",
+    "en": "Silicone or bearing grease",
+    "fr": "Graisse silicone ou pour roulements",
+    "it": "Grasso al silicone o per cuscinetti",
+    "rm": "Grass da silicon u per cuschinets"
+   },
+   "nr": ""
+  },
+  {
+   "id": "ups",
+   "gruppe": "strom",
+   "menge": "1×",
+   "name": "Waveshare UPS HAT (E)",
+   "nr": "Waveshare SKU 27966"
+  },
+  {
+   "id": "cells",
+   "gruppe": "strom",
+   "menge": "4×",
+   "name": {
+    "de": "Li-Ion-Akku 21700, Flat Top",
+    "en": "Li-ion cell 21700, flat top",
+    "fr": "Accu Li-ion 21700, flat top",
+    "it": "Batteria Li-ion 21700, flat top",
+    "rm": "Accu Li-ion 21700, flat top"
+   },
+   "nr": "Samsung INR21700-50E"
+  },
+  {
+   "id": "charger",
+   "gruppe": "strom",
+   "menge": "1×",
+   "name": {
+    "de": "Pololu D36V50F5 (Laden 12–40 V → 5 V)",
+    "en": "Pololu D36V50F5 (charging 12–40 V → 5 V)",
+    "fr": "Pololu D36V50F5 (charge 12–40 V → 5 V)",
+    "it": "Pololu D36V50F5 (ricarica 12–40 V → 5 V)",
+    "rm": "Pololu D36V50F5 (chargiar 12–40 V → 5 V)"
+   },
+   "nr": "Pololu #4091"
+  },
+  {
+   "id": "buck",
+   "gruppe": "strom",
+   "menge": "1×",
+   "name": {
+    "de": "Step-Down 6–36 V → 5 V 4 A (Servos, Licht, Verstärker)",
+    "en": "Step-down 6–36 V → 5 V 4 A (servos, light, amplifier)",
+    "fr": "Abaisseur 6–36 V → 5 V 4 A (servos, lumière, ampli)",
+    "it": "Step-down 6–36 V → 5 V 4 A (servo, luce, amplificatore)",
+    "rm": "Step-down 6–36 V → 5 V 4 A (servos, glisch, amplificatur)"
+   },
+   "nr": "Bastelgarage 424274"
+  },
+  {
+   "id": "gx16",
+   "gruppe": "strom",
+   "menge": "1×",
+   "name": {
+    "de": "GX16 4-polig: Einbaubuchse + Stecker (Ladebuchse)",
+    "en": "GX16 4-pin: panel socket + plug (charging socket)",
+    "fr": "GX16 4 broches : embase + fiche (prise de charge)",
+    "it": "GX16 4 poli: presa da pannello + spina (presa di ricarica)",
+    "rm": "GX16 4 pols: bischla + stecker (bischla da chargiar)"
+   },
+   "nr": "Bastelgarage 420241"
+  },
+  {
+   "id": "fuse",
+   "gruppe": "strom",
+   "menge": "1×",
+   "name": {
+    "de": "Sicherungshalter fliegend + Sicherung 5 A",
+    "en": "Inline fuse holder + 5 A fuse",
+    "fr": "Porte-fusible volant + fusible 5 A",
+    "it": "Portafusibile volante + fusibile 5 A",
+    "rm": "Purtader da segirezza + segirezza 5 A"
+   },
+   "nr": "Mini-Kfz (ATM) 5 A"
+  },
+  {
+   "id": "usbc",
+   "gruppe": "strom",
+   "menge": "1×",
+   "name": {
+    "de": "USB-C-Stecker zum Anlöten (D36V50F5 → UPS HAT)",
+    "en": "USB-C plug to solder (D36V50F5 → UPS HAT)",
+    "fr": "Fiche USB-C à souder (D36V50F5 → UPS HAT)",
+    "it": "Spina USB-C da saldare (D36V50F5 → UPS HAT)",
+    "rm": "Stecker USB-C da lotar (D36V50F5 → UPS HAT)"
+   },
+   "nr": "USB-C Plug Breakout"
+  },
+  {
+   "id": "chled",
+   "gruppe": "strom",
+   "menge": "1×",
+   "name": {
+    "de": "Lade-LED 3 mm + Lichtleiter",
+    "en": "Charging LED 3 mm + light guide",
+    "fr": "LED de charge 3 mm + guide de lumière",
+    "it": "LED di ricarica 3 mm + guida luce",
+    "rm": "LED da chargiar 3 mm + guida da glisch"
+   },
+   "nr": "LED 3 mm, PMMA 3 mm"
+  },
+  {
+   "id": "ledw",
+   "gruppe": "licht",
+   "menge": "1×",
+   "name": {
+    "de": "Scheinwerfer-Modul weiss, Ø 18,8 × 14 mm",
+    "en": "Spotlight module white, Ø 18.8 × 14 mm",
+    "fr": "Module projecteur blanc, Ø 18,8 × 14 mm",
+    "it": "Modulo faro bianco, Ø 18,8 × 14 mm",
+    "rm": "Modul da reflectur alv, Ø 18,8 × 14 mm"
+   },
+   "nr": "Ø 18,8 mm"
+  },
+  {
+   "id": "ledir",
+   "gruppe": "licht",
+   "menge": "1×",
+   "name": {
+    "de": "Scheinwerfer-Modul Infrarot 850 nm",
+    "en": "Spotlight module infrared 850 nm",
+    "fr": "Module projecteur infrarouge 850 nm",
+    "it": "Modulo faro infrarosso 850 nm",
+    "rm": "Modul da reflectur infracotschen 850 nm"
+   },
+   "nr": "Ø 18,8 mm, 850 nm"
+  },
+  {
+   "id": "mosfet",
+   "gruppe": "licht",
+   "menge": "1×",
+   "name": {
+    "de": "MOSFET-Modul 2-Kanal, Logic-Level",
+    "en": "MOSFET module 2-channel, logic level",
+    "fr": "Module MOSFET 2 canaux, niveau logique",
+    "it": "Modulo MOSFET 2 canali, livello logico",
+    "rm": "Modul MOSFET 2 chanals, nivel logic"
+   },
+   "nr": "AOD4184"
+  },
+  {
+   "id": "res",
+   "gruppe": "licht",
+   "menge": "2×",
+   "name": {
+    "de": "Vorwiderstand 2 W für die LEDs",
+    "en": "Series resistor 2 W for the LEDs",
+    "fr": "Résistance série 2 W pour les LED",
+    "it": "Resistenza in serie 2 W per i LED",
+    "rm": "Resistenza en seria 2 W per las LEDs"
+   },
+   "nr": ""
+  },
+  {
+   "id": "spk",
+   "gruppe": "audio",
+   "menge": "1×",
+   "name": {
+    "de": "Lautsprecher 41 mm, 4 Ω",
+    "en": "Loudspeaker 41 mm, 4 Ω",
+    "fr": "Haut-parleur 41 mm, 4 Ω",
+    "it": "Altoparlante 41 mm, 4 Ω",
+    "rm": "Autpledader 41 mm, 4 Ω"
+   },
+   "nr": "Visaton SC 4.7 ND"
+  },
+  {
+   "id": "pam",
+   "gruppe": "audio",
+   "menge": "1×",
+   "name": {
+    "de": "Verstärkermodul PAM8403",
+    "en": "Amplifier module PAM8403",
+    "fr": "Module amplificateur PAM8403",
+    "it": "Modulo amplificatore PAM8403",
+    "rm": "Modul amplificatur PAM8403"
+   },
+   "nr": "PAM8403"
+  },
+  {
+   "id": "sound",
+   "gruppe": "audio",
+   "menge": "1×",
+   "name": {
+    "de": "USB-Soundkarte",
+    "en": "USB sound card",
+    "fr": "Carte son USB",
+    "it": "Scheda audio USB",
+    "rm": "Carta da tun USB"
+   },
+   "nr": "C-Media CM108"
+  },
+  {
+   "id": "mic",
+   "gruppe": "audio",
+   "menge": "1×",
+   "name": {
+    "de": "USB-Mikrofon (Mini)",
+    "en": "USB microphone (mini)",
+    "fr": "Microphone USB (mini)",
+    "it": "Microfono USB (mini)",
+    "rm": "Microfon USB (mini)"
+   },
+   "nr": ""
+  },
+  {
+   "id": "usbext",
+   "gruppe": "audio",
+   "menge": "1×",
+   "name": {
+    "de": "USB-A-Verlängerung, ca. 15 cm",
+    "en": "USB-A extension, about 15 cm",
+    "fr": "Rallonge USB-A, env. 15 cm",
+    "it": "Prolunga USB-A, circa 15 cm",
+    "rm": "Prolungaziun USB-A, ca. 15 cm"
+   },
+   "nr": ""
+  },
+  {
+   "id": "foam",
+   "gruppe": "audio",
+   "menge": "1×",
+   "name": {
+    "de": "Schaumstoff für das Mikrofon",
+    "en": "Foam for the microphone",
+    "fr": "Mousse pour le microphone",
+    "it": "Gommapiuma per il microfono",
+    "rm": "Material da spima per il microfon"
+   },
+   "nr": ""
+  },
+  {
+   "id": "pir",
+   "gruppe": "sensor",
+   "menge": "1×",
+   "name": {
+    "de": "Mini-PIR AS312",
+    "en": "Mini PIR AS312",
+    "fr": "Mini PIR AS312",
+    "it": "Mini PIR AS312",
+    "rm": "Mini PIR AS312"
+   },
+   "nr": "Bastelgarage 420448"
+  },
+  {
+   "id": "mpu",
+   "gruppe": "sensor",
+   "menge": "1×",
+   "name": {
+    "de": "Lagesensor MPU-6050",
+    "en": "Motion sensor MPU-6050",
+    "fr": "Capteur de position MPU-6050",
+    "it": "Sensore di posizione MPU-6050",
+    "rm": "Sensur da posiziun MPU-6050"
+   },
+   "nr": "GY-521"
+  },
+  {
+   "id": "petg",
+   "gruppe": "kabel",
+   "menge": "~1 kg",
+   "name": {
+    "de": "PETG-Filament",
+    "en": "PETG filament",
+    "fr": "Filament PETG",
+    "it": "Filamento PETG",
+    "rm": "Filament PETG"
+   },
+   "nr": "Bambu PETG HF"
+  },
+  {
+   "id": "litze",
+   "gruppe": "kabel",
+   "menge": "1×",
+   "name": {
+    "de": "Litze 0,5 mm², Dupont-/JST-Kabel, Schrumpfschlauch",
+    "en": "Wire 0.5 mm², Dupont/JST cables, heat shrink",
+    "fr": "Fil 0,5 mm², câbles Dupont/JST, gaine thermo",
+    "it": "Cavo 0,5 mm², cavi Dupont/JST, guaina termorestringente",
+    "rm": "Fil 0,5 mm², cabels Dupont/JST, tub termoretractil"
+   },
+   "nr": "20 AWG"
+  },
+  {
+   "id": "hdmi",
+   "gruppe": "kabel",
+   "menge": "1×",
+   "name": {
+    "de": "Micro-HDMI-auf-HDMI-Kabel",
+    "en": "Micro HDMI to HDMI cable",
+    "fr": "Câble micro-HDMI vers HDMI",
+    "it": "Cavo da micro HDMI a HDMI",
+    "rm": "Cabel micro-HDMI sin HDMI"
+   },
+   "nr": ""
+  },
+  {
+   "id": "hub",
+   "gruppe": "neu51",
+   "menge": "1×",
+   "name": {
+    "de": "USB-Hub, 4 Anschlüsse, kompakt",
+    "en": "USB hub, 4 ports, compact",
+    "fr": "Hub USB, 4 ports, compact",
+    "it": "Hub USB, 4 porte, compatto",
+    "rm": "Hub USB, 4 attaccs, cumpact"
+   },
+   "nr": "max. 56 × 22 × 14 mm"
+  },
+  {
+   "id": "ds18",
+   "gruppe": "neu51",
+   "menge": "1×",
+   "name": {
+    "de": "Temperaturfühler DS18B20 wasserdicht",
+    "en": "Temperature probe DS18B20, waterproof",
+    "fr": "Sonde de température DS18B20 étanche",
+    "it": "Sonda di temperatura DS18B20 impermeabile",
+    "rm": "Sonda da temperatura DS18B20 impermeabla"
+   },
+   "nr": "DS18B20 Ø 6 mm"
+  },
+  {
+   "id": "bme",
+   "gruppe": "neu51",
+   "menge": "1×",
+   "name": {
+    "de": "Luftdrucksensor BME280",
+    "en": "Air pressure sensor BME280",
+    "fr": "Capteur de pression BME280",
+    "it": "Sensore di pressione BME280",
+    "rm": "Sensur da pressiun d'aria BME280"
+   },
+   "nr": "0x76 / 0x77"
+  },
+  {
+   "id": "relay",
+   "gruppe": "neu51",
+   "menge": "1×",
+   "name": {
+    "de": "Relaismodul 1-Kanal, 5 V",
+    "en": "Relay module 1-channel, 5 V",
+    "fr": "Module relais 1 canal, 5 V",
+    "it": "Modulo relè 1 canale, 5 V",
+    "rm": "Modul relais 1 chanal, 5 V"
+   },
+   "nr": ""
+  },
+  {
+   "id": "m12",
+   "gruppe": "neu51",
+   "menge": "1×",
+   "name": {
+    "de": "Kabelverschraubung M12 (Relais-Ausgang)",
+    "en": "Cable gland M12 (relay output)",
+    "fr": "Presse-étoupe M12 (sortie relais)",
+    "it": "Pressacavo M12 (uscita relè)",
+    "rm": "Passacabel M12 (sortida relais)"
+   },
+   "nr": "Bastelgarage 420032"
+  },
+  {
+   "id": "ina",
+   "gruppe": "neu51",
+   "menge": "1×",
+   "name": {
+    "de": "Strommesser INA219 (optional, Solar)",
+    "en": "Current sensor INA219 (optional, solar)",
+    "fr": "Capteur de courant INA219 (option, solaire)",
+    "it": "Sensore di corrente INA219 (opzionale, solare)",
+    "rm": "Mesira da current INA219 (opziunal, solar)"
+   },
+   "nr": "0x44"
+  },
+  {
+   "id": "lte",
+   "gruppe": "spaeter",
+   "menge": "1×",
+   "name": {
+    "de": "USB-Stick LTE/GPS",
+    "en": "USB stick LTE/GPS",
+    "fr": "Clé USB LTE/GPS",
+    "it": "Chiavetta USB LTE/GPS",
+    "rm": "Stick USB LTE/GPS"
+   },
+   "nr": ""
+  },
+  {
+   "id": "camwide",
+   "gruppe": "v52",
+   "menge": "1×",
+   "name": "Camera Module 3 Wide NoIR",
+   "nr": ""
+  },
+  {
+   "id": "irled5",
+   "gruppe": "v52",
+   "menge": "1×",
+   "name": {
+    "de": "IR-LED 5 mm, 850 nm",
+    "en": "IR LED 5 mm, 850 nm",
+    "fr": "LED IR 5 mm, 850 nm",
+    "it": "LED IR 5 mm, 850 nm",
+    "rm": "LED IR 5 mm, 850 nm"
+   },
+   "nr": ""
+  },
+  {
+   "id": "taster",
+   "gruppe": "v52",
+   "menge": "2×",
+   "name": {
+    "de": "Taster 12 mm, IP67",
+    "en": "Push button 12 mm, IP67",
+    "fr": "Bouton-poussoir 12 mm, IP67",
+    "it": "Pulsante 12 mm, IP67",
+    "rm": "Buttun 12 mm, IP67"
+   },
+   "nr": ""
+  },
+  {
+   "id": "sled",
+   "gruppe": "v52",
+   "menge": "1×",
+   "name": {
+    "de": "RGB-LED 5 mm mit Diffusor «Blinki-Auge»",
+    "en": "RGB LED 5 mm with diffuser «Blinki eye»",
+    "fr": "LED RVB 5 mm avec diffuseur «œil de Blinki»",
+    "it": "LED RGB 5 mm con diffusore «occhio di Blinki»",
+    "rm": "LED RGB 5 mm cun diffusur «egl da Blinki»"
+   },
+   "nr": ""
+  }
+ ],
+ "teile": [
+  {
+   "id": "tub",
+   "art": "druck",
+   "bom": "petg",
+   "schritt": 2,
+   "name": {
+    "de": "01 Unterteil",
+    "en": "01 Lower part",
+    "fr": "01 Partie inférieure",
+    "it": "01 Parte inferiore",
+    "rm": "01 Part sut"
+   },
+   "datei": "01_Unterteil"
+  },
+  {
+   "id": "feet",
+   "art": "druck",
+   "bom": "petg",
+   "schritt": 2,
+   "name": {
+    "de": "11 Füsse (4×)",
+    "en": "11 Feet (4×)",
+    "fr": "11 Pieds (4×)",
+    "it": "11 Piedini (4×)",
+    "rm": "11 Peis (4×)"
+   },
+   "datei": "11_Fuss_4x"
+  },
+  {
+   "id": "tripod",
+   "art": "teil",
+   "bom": null,
+   "schritt": 2,
+   "name": {
+    "de": "Stativmutter 1/4\"",
+    "en": "Tripod nut 1/4\"",
+    "fr": "Écrou de trépied 1/4\"",
+    "it": "Dado per treppiede 1/4\"",
+    "rm": "Mutra da stativ 1/4\""
+   }
+  },
+  {
+   "id": "speaker",
+   "art": "teil",
+   "bom": "spk",
+   "schritt": 2
+  },
+  {
+   "id": "pca",
+   "art": "teil",
+   "bom": "pca",
+   "schritt": 3
+  },
+  {
+   "id": "elko",
+   "art": "teil",
+   "bom": "elko",
+   "schritt": 3
+  },
+  {
+   "id": "pir",
+   "art": "teil",
+   "bom": "pir",
+   "schritt": 3
+  },
+  {
+   "id": "mic",
+   "art": "teil",
+   "bom": "mic",
+   "schritt": 3
+  },
+  {
+   "id": "ups",
+   "art": "teil",
+   "bom": "ups",
+   "schritt": 4,
+   "name": {
+    "de": "UPS HAT (E) mit 4 Akkus 21700",
+    "en": "UPS HAT (E) with 4 cells 21700",
+    "fr": "UPS HAT (E) avec 4 accus 21700",
+    "it": "UPS HAT (E) con 4 batterie 21700",
+    "rm": "UPS HAT (E) cun 4 accus 21700"
+   }
+  },
+  {
+   "id": "pi",
+   "art": "teil",
+   "bom": "pi5",
+   "schritt": 4
+  },
+  {
+   "id": "cooler",
+   "art": "teil",
+   "bom": "cooler",
+   "schritt": 4
+  },
+  {
+   "id": "shelf",
+   "art": "druck",
+   "bom": "petg",
+   "schritt": 5,
+   "name": {
+    "de": "09 Zwischenboden",
+    "en": "09 Intermediate shelf",
+    "fr": "09 Plancher intermédiaire",
+    "it": "09 Ripiano intermedio",
+    "rm": "09 Palantschieu intermediar"
+   },
+   "datei": "09_Zwischenboden"
+  },
+  {
+   "id": "charger",
+   "art": "teil",
+   "bom": "charger",
+   "schritt": 5
+  },
+  {
+   "id": "pam",
+   "art": "teil",
+   "bom": "pam",
+   "schritt": 5
+  },
+  {
+   "id": "ina",
+   "art": "teil",
+   "bom": "ina",
+   "schritt": 5
+  },
+  {
+   "id": "mosfet",
+   "art": "teil",
+   "bom": "mosfet",
+   "schritt": 6
+  },
+  {
+   "id": "buck",
+   "art": "teil",
+   "bom": "buck",
+   "schritt": 6
+  },
+  {
+   "id": "relay",
+   "art": "teil",
+   "bom": "relay",
+   "schritt": 6
+  },
+  {
+   "id": "hub",
+   "art": "teil",
+   "bom": "hub",
+   "schritt": 6
+  },
+  {
+   "id": "soundcard",
+   "art": "teil",
+   "bom": "sound",
+   "schritt": 6
+  },
+  {
+   "id": "mpu",
+   "art": "teil",
+   "bom": "mpu",
+   "schritt": 6
+  },
+  {
+   "id": "bme",
+   "art": "teil",
+   "bom": "bme",
+   "schritt": 6
+  },
+  {
+   "id": "cable_usb",
+   "art": "kabel",
+   "bom": "hub",
+   "schritt": 6,
+   "name": {
+    "de": "USB-Kabel Pi → Hub",
+    "en": "USB cable Pi → hub",
+    "fr": "Câble USB Pi → hub",
+    "it": "Cavo USB Pi → hub",
+    "rm": "Cabel USB Pi → hub"
+   }
+  },
+  {
+   "id": "cable_power",
+   "art": "kabel",
+   "bom": "litze",
+   "schritt": 6,
+   "name": {
+    "de": "Stromkabel",
+    "en": "Power cables",
+    "fr": "Câbles d'alimentation",
+    "it": "Cavi di alimentazione",
+    "rm": "Cabels da current"
+   }
+  },
+  {
+   "id": "jacks",
+   "art": "teil",
+   "bom": "gx16",
+   "schritt": 7
+  },
+  {
+   "id": "fuse",
+   "art": "teil",
+   "bom": "fuse",
+   "schritt": 7
+  },
+  {
+   "id": "ledlight",
+   "art": "teil",
+   "bom": "chled",
+   "schritt": 7
+  },
+  {
+   "id": "relayjack",
+   "art": "teil",
+   "bom": "m12",
+   "schritt": 7
+  },
+  {
+   "id": "probe",
+   "art": "teil",
+   "bom": "ds18",
+   "schritt": 7
+  },
+  {
+   "id": "lid",
+   "art": "druck",
+   "bom": "petg",
+   "schritt": 8,
+   "name": {
+    "de": "02 Deckel mit Laufring",
+    "en": "02 Lid with bearing ring",
+    "fr": "02 Couvercle avec bague de roulement",
+    "it": "02 Coperchio con anello di scorrimento",
+    "rm": "02 Viertgel cun anè da rullar"
+   },
+   "datei": "02_Deckel_mit_Laufring"
+  },
+  {
+   "id": "servo1",
+   "art": "teil",
+   "bom": "servo",
+   "schritt": 8,
+   "name": {
+    "de": "Pan-Servo MG90S",
+    "en": "Pan servo MG90S",
+    "fr": "Servo pan MG90S",
+    "it": "Servo pan MG90S",
+    "rm": "Servo pan MG90S"
+   }
+  },
+  {
+   "id": "balls",
+   "art": "teil",
+   "bom": "bbs",
+   "schritt": 8
+  },
+  {
+   "id": "horn1",
+   "art": "teil",
+   "bom": "servo",
+   "schritt": 8,
+   "name": {
+    "de": "Servohorn Pan (im Drehteller)",
+    "en": "Servo horn pan (in the turntable)",
+    "fr": "Palonnier pan (dans le plateau)",
+    "it": "Squadretta pan (nel piatto)",
+    "rm": "Corn dal servo pan (en la platta)"
+   }
+  },
+  {
+   "id": "turntable",
+   "art": "druck",
+   "bom": "petg",
+   "schritt": 8,
+   "name": {
+    "de": "03 Drehteller",
+    "en": "03 Turntable",
+    "fr": "03 Plateau tournant",
+    "it": "03 Piatto girevole",
+    "rm": "03 Platta rotanta"
+   },
+   "datei": "03_Drehteller"
+  },
+  {
+   "id": "yoke",
+   "art": "druck",
+   "bom": "petg",
+   "schritt": 9,
+   "name": {
+    "de": "04 Gabel mit Arm 1",
+    "en": "04 Yoke with arm 1",
+    "fr": "04 Fourche avec bras 1",
+    "it": "04 Forcella con braccio 1",
+    "rm": "04 Furtga cun bratsch 1"
+   },
+   "datei": "04_Gabel_mit_Arm1"
+  },
+  {
+   "id": "horn2",
+   "art": "teil",
+   "bom": "servo",
+   "schritt": 9,
+   "name": {
+    "de": "Servohorn Tilt (in Arm 1)",
+    "en": "Servo horn tilt (in arm 1)",
+    "fr": "Palonnier tilt (dans le bras 1)",
+    "it": "Squadretta tilt (nel braccio 1)",
+    "rm": "Corn dal servo tilt (en il bratsch 1)"
+   }
+  },
+  {
+   "id": "therm",
+   "art": "teil",
+   "bom": "therm",
+   "schritt": 10
+  },
+  {
+   "id": "cam3",
+   "art": "teil",
+   "bom": "cam",
+   "schritt": 10
+  },
+  {
+   "id": "servo2",
+   "art": "teil",
+   "bom": "servo",
+   "schritt": 10,
+   "name": {
+    "de": "Tilt-Servo MG90S",
+    "en": "Tilt servo MG90S",
+    "fr": "Servo tilt MG90S",
+    "it": "Servo tilt MG90S",
+    "rm": "Servo tilt MG90S"
+   }
+  },
+  {
+   "id": "head",
+   "art": "druck",
+   "bom": "petg",
+   "schritt": 10,
+   "name": {
+    "de": "06 Kamerakopf",
+    "en": "06 Camera head",
+    "fr": "06 Tête de caméra",
+    "it": "06 Testa della fotocamera",
+    "rm": "06 Chau da la camera"
+   },
+   "datei": "06_Kamerakopf"
+  },
+  {
+   "id": "side",
+   "art": "druck",
+   "bom": "petg",
+   "schritt": 10,
+   "name": {
+    "de": "07 Seitendeckel",
+    "en": "07 Side cover",
+    "fr": "07 Couvercle latéral",
+    "it": "07 Coperchio laterale",
+    "rm": "07 Viertgel lateral"
+   },
+   "datei": "07_Seitendeckel"
+  },
+  {
+   "id": "arm2",
+   "art": "druck",
+   "bom": "petg",
+   "schritt": 11,
+   "name": {
+    "de": "05 Arm 2 (Lagerseite)",
+    "en": "05 Arm 2 (bearing side)",
+    "fr": "05 Bras 2 (côté palier)",
+    "it": "05 Braccio 2 (lato cuscinetto)",
+    "rm": "05 Bratsch 2 (vart dal cuschinet)"
+   },
+   "datei": "05_Arm2_Lagerseite"
+  },
+  {
+   "id": "lamp1",
+   "art": "druck",
+   "bom": "petg",
+   "schritt": 12,
+   "name": {
+    "de": "08 Lampenhalter Arm 1 (weiss)",
+    "en": "08 Lamp holder arm 1 (white)",
+    "fr": "08 Support de lampe bras 1 (blanc)",
+    "it": "08 Portalampada braccio 1 (bianco)",
+    "rm": "08 Tegnalampa bratsch 1 (alv)"
+   },
+   "datei": "08_Lampenhalter_2x"
+  },
+  {
+   "id": "lamp2",
+   "art": "druck",
+   "bom": "petg",
+   "schritt": 12,
+   "name": {
+    "de": "08 Lampenhalter Arm 2 (IR)",
+    "en": "08 Lamp holder arm 2 (IR)",
+    "fr": "08 Support de lampe bras 2 (IR)",
+    "it": "08 Portalampada braccio 2 (IR)",
+    "rm": "08 Tegnalampa bratsch 2 (IR)"
+   },
+   "datei": "08_Lampenhalter_2x"
+  },
+  {
+   "id": "alu",
+   "art": "teil",
+   "bom": "res",
+   "schritt": 12,
+   "name": {
+    "de": "LED-Platinen der Scheinwerfer",
+    "en": "LED boards of the spotlights",
+    "fr": "Platines LED des projecteurs",
+    "it": "Schede LED dei fari",
+    "rm": "Platinas LED dals reflecturs"
+   }
+  },
+  {
+   "id": "lens_w",
+   "art": "teil",
+   "bom": "ledw",
+   "schritt": 12
+  },
+  {
+   "id": "lens_ir",
+   "art": "teil",
+   "bom": "ledir",
+   "schritt": 12
+  },
+  {
+   "id": "cable_cam",
+   "art": "kabel",
+   "bom": "camcable",
+   "schritt": 13,
+   "name": {
+    "de": "Kamerakabel (Flachkabel)",
+    "en": "Camera cable (ribbon)",
+    "fr": "Câble caméra (nappe)",
+    "it": "Cavo fotocamera (piatto)",
+    "rm": "Cabel da camera (cabel plat)"
+   }
+  },
+  {
+   "id": "cable_servo",
+   "art": "kabel",
+   "bom": "servo",
+   "schritt": 13,
+   "name": {
+    "de": "Servokabel",
+    "en": "Servo cables",
+    "fr": "Câbles des servos",
+    "it": "Cavi dei servo",
+    "rm": "Cabels dals servos"
+   }
+  },
+  {
+   "id": "plug",
+   "art": "druck",
+   "bom": "petg",
+   "schritt": 13,
+   "name": {
+    "de": "10 HDMI-Stopfen",
+    "en": "10 HDMI plug",
+    "fr": "10 Bouchon HDMI",
+    "it": "10 Tappo HDMI",
+    "rm": "10 Zaffer HDMI"
+   },
+   "datei": "10_HDMI_Stopfen"
+  },
+  {
+   "id": "wide",
+   "art": "v52",
+   "bom": "camwide",
+   "schritt": null
+  },
+  {
+   "id": "irled",
+   "art": "v52",
+   "bom": "irled5",
+   "schritt": null
+  },
+  {
+   "id": "buttons",
+   "art": "v52",
+   "bom": "taster",
+   "schritt": null
+  },
+  {
+   "id": "sled",
+   "art": "v52",
+   "bom": "sled",
+   "schritt": null
+  }
+ ],
+ "schritte": [
+  {
+   "nr": 1,
+   "titel": {
+    "de": "Teile drucken",
+    "en": "Print the parts",
+    "fr": "Imprimer les pièces",
+    "it": "Stampare i pezzi",
+    "rm": "Stampar las parts"
+   },
+   "text": {
+    "de": "Alle 11 Druckteile in PETG ohne Stützen drucken: Platte A (Unterteil, Zwischenboden, Stopfen, Füsse) und Platte B (Deckel und alles für den Kopf). Kopf, Gabel und Seitendeckel mit 5 mm Brim.",
+    "en": "Print all 11 parts in PETG without supports: plate A (lower part, shelf, plug, feet) and plate B (lid and everything for the head). Head, yoke and side cover with a 5 mm brim.",
+    "fr": "Imprimer les 11 pièces en PETG sans supports : plateau A (partie inférieure, plancher, bouchon, pieds) et plateau B (couvercle et tout pour la tête). Tête, fourche et couvercle latéral avec une bordure de 5 mm.",
+    "it": "Stampare tutti gli 11 pezzi in PETG senza supporti: piatto A (parte inferiore, ripiano, tappo, piedini) e piatto B (coperchio e tutto per la testa). Testa, forcella e coperchio laterale con brim di 5 mm.",
+    "rm": "Stampar tut las 11 parts en PETG senza sustegns: platta A (part sut, palantschieu, zaffer, peis) e platta B (viertgel e tut per il chau). Chau, furtga e viertgel lateral cun in ur da 5 mm."
+   }
+  },
+  {
+   "nr": 2,
+   "titel": {
+    "de": "Unterteil vorbereiten",
+    "en": "Prepare the lower part",
+    "fr": "Préparer la partie inférieure",
+    "it": "Preparare la parte inferiore",
+    "rm": "Preparar la part sut"
+   },
+   "text": {
+    "de": "Füsse einkleben und die Stativmutter 1/4\" von innen in die Sechskanttasche drücken. Den Lautsprecher mit 3–4 Tupfen Heisskleber in den Ring über dem Bodengitter kleben.",
+    "en": "Glue in the feet and press the 1/4\" tripod nut into the hexagon pocket from the inside. Glue the loudspeaker into the ring above the floor grille with 3–4 dots of hot glue.",
+    "fr": "Coller les pieds et enfoncer l'écrou de trépied 1/4\" dans la poche hexagonale depuis l'intérieur. Coller le haut-parleur dans l'anneau au-dessus de la grille avec 3–4 points de colle chaude.",
+    "it": "Incollare i piedini e premere il dado per treppiede 1/4\" nella sede esagonale dall'interno. Incollare l'altoparlante nell'anello sopra la griglia con 3–4 punti di colla a caldo.",
+    "rm": "Tatgar ils peis e smatgar la mutra da stativ 1/4\" da l'intern en la tastga sisagulara. Tatgar l'autpledader en l'anè sur la grilla dal fund cun 3–4 puncts cola chauda."
+   }
+  },
+  {
+   "nr": 3,
+   "titel": {
+    "de": "Vorne: PCA9685, PIR, Mikrofon",
+    "en": "Front: PCA9685, PIR, microphone",
+    "fr": "Avant : PCA9685, PIR, microphone",
+    "it": "Davanti: PCA9685, PIR, microfono",
+    "rm": "Davant: PCA9685, PIR, microfon"
+   },
+   "text": {
+    "de": "PCA9685 an die 4 Dome der Lüftungswand schrauben (M2,5, Lötbrücke A0 → 0x41), Elko an V+. PIR von innen in die Hülse schieben, das Mikrofon mit Schaumstoff zwischen die Rippen klemmen.",
+    "en": "Screw the PCA9685 to the 4 bosses on the vent wall (M2.5, solder jumper A0 → 0x41), capacitor on V+. Push the PIR into its sleeve from the inside, clamp the microphone between the ribs with foam.",
+    "fr": "Visser le PCA9685 sur les 4 dômes de la paroi d'aération (M2,5, pont A0 → 0x41), condensateur sur V+. Glisser le PIR dans sa douille depuis l'intérieur, coincer le microphone entre les nervures avec de la mousse.",
+    "it": "Avvitare il PCA9685 alle 4 torrette della parete di ventilazione (M2,5, ponticello A0 → 0x41), condensatore su V+. Infilare il PIR nella sua bussola dall'interno, bloccare il microfono tra le nervature con gommapiuma.",
+    "rm": "Fixar il PCA9685 cun sitgas vi dals 4 doms da la paraid da ventilaziun (M2,5, punt A0 → 0x41), condensatur vi da V+. Stuschar il PIR da l'intern en la tgaplutta, fixar il microfon cun material da spima tranter las costas."
+   }
+  },
+  {
+   "nr": 4,
+   "titel": {
+    "de": "Akku und Pi",
+    "en": "Battery and Pi",
+    "fr": "Batterie et Pi",
+    "it": "Batteria e Pi",
+    "rm": "Accu e Pi"
+   },
+   "text": {
+    "de": "Das UPS HAT (E) mit den 4 Akkus und dem Pi 5 darauf in den Zaun stellen und mit Klettband fixieren. HDMI zeigt zum Fenster, der Lüfter sitzt auf dem Pi.",
+    "en": "Put the UPS HAT (E) with the 4 cells and the Pi 5 on top into the fence and fix it with hook-and-loop tape. HDMI faces the window, the fan sits on the Pi.",
+    "fr": "Placer l'UPS HAT (E) avec les 4 accus et le Pi 5 dessus dans la clôture et le fixer avec du velcro. Le HDMI est tourné vers la fenêtre, le ventilateur est sur le Pi.",
+    "it": "Mettere l'UPS HAT (E) con le 4 batterie e il Pi 5 sopra nel recinto e fissarlo con velcro. L'HDMI guarda verso la finestra, la ventola è sul Pi.",
+    "rm": "Metter l'UPS HAT (E) cun ils 4 accus ed il Pi 5 survart en la saiv e fixar cun bindel velcro. HDMI mussa vers la fanestra, il ventilatur è sin il Pi."
+   }
+  },
+  {
+   "nr": 5,
+   "titel": {
+    "de": "Zwischenboden",
+    "en": "Intermediate shelf",
+    "fr": "Plancher intermédiaire",
+    "it": "Ripiano intermedio",
+    "rm": "Palantschieu intermediar"
+   },
+   "text": {
+    "de": "Den Zwischenboden mit 2 × M3 einschrauben. Darauf mit Schaumklebeband: D36V50F5 (Laden), PAM8403 und optional INA219.",
+    "en": "Screw in the shelf with 2 × M3. On it, with foam tape: D36V50F5 (charging), PAM8403 and optionally INA219.",
+    "fr": "Visser le plancher avec 2 × M3. Dessus, avec du ruban mousse : D36V50F5 (charge), PAM8403 et en option l'INA219.",
+    "it": "Avvitare il ripiano con 2 × M3. Sopra, con nastro biadesivo in schiuma: D36V50F5 (ricarica), PAM8403 e opzionale INA219.",
+    "rm": "Fixar il palantschieu cun 2 × M3. Survart cun bindel adesiv da spima: D36V50F5 (chargiar), PAM8403 ed opziunal INA219."
+   }
+  },
+  {
+   "nr": 6,
+   "titel": {
+    "de": "Module an den Wänden",
+    "en": "Modules on the walls",
+    "fr": "Modules sur les parois",
+    "it": "Moduli sulle pareti",
+    "rm": "Moduls vi da las paraids"
+   },
+   "text": {
+    "de": "MOSFET-Modul und Step-Down an die Stirnwand links vom PIR, das Relais über die Hub-Ablage kleben. USB-Hub mit 2 Kabelbindern auf die Ablage, Soundkarte in den Hub, MPU-6050 flach auf den Boden.",
+    "en": "Stick the MOSFET module and the step-down to the front wall left of the PIR, the relay above the hub tray. USB hub onto the tray with 2 cable ties, sound card into the hub, MPU-6050 flat on the floor.",
+    "fr": "Coller le module MOSFET et l'abaisseur sur la paroi avant à gauche du PIR, le relais au-dessus du support du hub. Hub USB sur le support avec 2 colliers, carte son dans le hub, MPU-6050 à plat sur le fond.",
+    "it": "Incollare il modulo MOSFET e lo step-down sulla parete frontale a sinistra del PIR, il relè sopra il ripiano dell'hub. Hub USB sul ripiano con 2 fascette, scheda audio nell'hub, MPU-6050 piatto sul fondo.",
+    "rm": "Tatgar il modul MOSFET ed il step-down vi da la paraid davant a sanestra dal PIR, il relais sur la deposita dal hub. Hub USB cun 2 ligiaments sin la deposita, carta da tun en il hub, MPU-6050 plat sin il fund."
+   }
+  },
+  {
+   "nr": 7,
+   "titel": {
+    "de": "Hinten und unten",
+    "en": "Back and bottom",
+    "fr": "Arrière et dessous",
+    "it": "Dietro e sotto",
+    "rm": "Davos e sut"
+   },
+   "text": {
+    "de": "GX16-4P-Ladebuchse (Sicherung 5 A dahinter) und die Kabelverschraubung M12 für das Relais einschrauben, Lichtleiter der Lade-LED einsetzen. Den DS18B20 von unten durch das Bodenloch führen und abdichten.",
+    "en": "Screw in the GX16-4P charging socket (5 A fuse behind it) and the M12 cable gland for the relay, insert the light guide of the charging LED. Feed the DS18B20 through the floor hole from below and seal it.",
+    "fr": "Visser la prise de charge GX16-4P (fusible 5 A derrière) et le presse-étoupe M12 du relais, insérer le guide de lumière de la LED de charge. Passer le DS18B20 par le trou du fond depuis le dessous et étanchéifier.",
+    "it": "Avvitare la presa di ricarica GX16-4P (fusibile 5 A dietro) e il pressacavo M12 del relè, inserire la guida luce del LED di ricarica. Far passare il DS18B20 dal foro del fondo da sotto e sigillare.",
+    "rm": "Fixar la bischla da chargiar GX16-4P (segirezza 5 A davos) ed il passacabel M12 dal relais, metter la guida da glisch da la LED da chargiar. Manar il DS18B20 da sut tras la foura dal fund e stagnar."
+   }
+  },
+  {
+   "nr": 8,
+   "titel": {
+    "de": "Deckel und Drehlager",
+    "en": "Lid and pan bearing",
+    "fr": "Couvercle et palier pan",
+    "it": "Coperchio e cuscinetto pan",
+    "rm": "Viertgel e cuschinet pan"
+   },
+   "text": {
+    "de": "Pan-Servo von unten in den Deckel (2 × M2 × 8). Kugeln in die Rille legen, Servo auf Mitte (1500 µs) und den Drehteller mit Horn so aufstecken, dass der Kopf später zur PIR-Seite schaut.",
+    "en": "Pan servo into the lid from below (2 × M2 × 8). Put the balls into the groove, servo to centre (1500 µs) and fit the turntable with the horn so that the head will face the PIR side.",
+    "fr": "Servo pan dans le couvercle par le dessous (2 × M2 × 8). Mettre les billes dans la rainure, servo au centre (1500 µs) et emboîter le plateau avec le palonnier pour que la tête regarde ensuite le côté PIR.",
+    "it": "Servo pan nel coperchio da sotto (2 × M2 × 8). Mettere i pallini nella scanalatura, servo al centro (1500 µs) e inserire il piatto con la squadretta in modo che la testa guardi poi verso il lato PIR.",
+    "rm": "Servo pan da sut en il viertgel (2 × M2 × 8). Metter las ballinas en la foppa, servo en il center (1500 µs) e metter si la platta rotanta cun il corn uschia ch'il chau guarda pli tard vers la vart dal PIR."
+   }
+  },
+  {
+   "nr": 9,
+   "titel": {
+    "de": "Gabel montieren",
+    "en": "Mount the yoke",
+    "fr": "Monter la fourche",
+    "it": "Montare la forcella",
+    "rm": "Montar la furtga"
+   },
+   "text": {
+    "de": "Die Gabel mit 4 × M3 auf den Drehteller schrauben. Das Tilt-Horn senkrecht in die Vertiefung innen in Arm 1 legen und festschrauben.",
+    "en": "Screw the yoke onto the turntable with 4 × M3. Lay the tilt horn vertically into the recess on the inside of arm 1 and screw it tight.",
+    "fr": "Visser la fourche sur le plateau avec 4 × M3. Poser le palonnier tilt verticalement dans le creux à l'intérieur du bras 1 et le visser.",
+    "it": "Avvitare la forcella sul piatto con 4 × M3. Mettere la squadretta tilt in verticale nell'incavo all'interno del braccio 1 e avvitarla.",
+    "rm": "Fixar la furtga cun 4 × M3 sin la platta rotanta. Metter il corn tilt vertical en l'enfossadira da l'intern dal bratsch 1 e fixar."
+   }
+  },
+  {
+   "nr": 10,
+   "titel": {
+    "de": "Kamerakopf",
+    "en": "Camera head",
+    "fr": "Tête de caméra",
+    "it": "Testa della fotocamera",
+    "rm": "Chau da la camera"
+   },
+   "text": {
+    "de": "Thermal-90 (Linse links) und Camera Module 3 durch die offene Seite einschrauben (M2). Tilt-Servo auf Mitte einsetzen, Kabel durch den Schlitz hinten, Seitendeckel mit 3 × M3 zuschrauben.",
+    "en": "Screw in the Thermal-90 (lens on the left) and the Camera Module 3 through the open side (M2). Insert the tilt servo at centre, cables through the slot at the back, close the side cover with 3 × M3.",
+    "fr": "Visser la Thermal-90 (objectif à gauche) et la Camera Module 3 par le côté ouvert (M2). Mettre le servo tilt au centre, câbles par la fente arrière, fermer le couvercle latéral avec 3 × M3.",
+    "it": "Avvitare la Thermal-90 (obiettivo a sinistra) e la Camera Module 3 dal lato aperto (M2). Inserire il servo tilt al centro, cavi nella fessura dietro, chiudere il coperchio laterale con 3 × M3.",
+    "rm": "Fixar la Thermal-90 (lentilla a sanestra) e la Camera Module 3 tras la vart averta (M2). Metter il servo tilt en il center, cabels tras la fessa davos, serrar il viertgel lateral cun 3 × M3."
+   }
+  },
+  {
+   "nr": 11,
+   "titel": {
+    "de": "Kopf einsetzen, Arm 2",
+    "en": "Fit the head, arm 2",
+    "fr": "Monter la tête, bras 2",
+    "it": "Montare la testa, braccio 2",
+    "rm": "Montar il chau, bratsch 2"
+   },
+   "text": {
+    "de": "Servowelle auf das Horn in Arm 1 stecken (Kopf schaut geradeaus). Arm 2 mit Mutter in die Nut setzen, 2 × M3 von oben, 2–3 Unterlegscheiben, M3 × 12 als Achse nur bis zum Anliegen.",
+    "en": "Push the servo shaft onto the horn in arm 1 (head looks straight ahead). Set arm 2 with its nut into the groove, 2 × M3 from above, 2–3 washers, M3 × 12 as the axle only until it touches.",
+    "fr": "Enfoncer l'axe du servo sur le palonnier du bras 1 (la tête regarde droit devant). Placer le bras 2 avec son écrou dans la rainure, 2 × M3 par le haut, 2–3 rondelles, M3 × 12 comme axe seulement jusqu'au contact.",
+    "it": "Infilare l'albero del servo sulla squadretta nel braccio 1 (la testa guarda dritto). Mettere il braccio 2 con il dado nella scanalatura, 2 × M3 dall'alto, 2–3 rondelle, M3 × 12 come asse solo fino al contatto.",
+    "rm": "Metter l'axa dal servo sin il corn en il bratsch 1 (il chau guarda drizza ora). Metter il bratsch 2 cun la mutra en la foppa, 2 × M3 da sura, 2–3 rundellas, M3 × 12 sco axa mo fin ch'ella tutga."
+   }
+  },
+  {
+   "nr": 12,
+   "titel": {
+    "de": "Lampen",
+    "en": "Lamps",
+    "fr": "Lampes",
+    "it": "Lampade",
+    "rm": "Lampas"
+   },
+   "text": {
+    "de": "Die zwei Lampenhalter mit je 2 × M3 × 8 aussen an die Arme schrauben: weiss an Arm 1, IR 850 nm an Arm 2. Module einsetzen und mit Heisskleber oder Madenschraube sichern.",
+    "en": "Screw the two lamp holders to the outside of the arms with 2 × M3 × 8 each: white on arm 1, IR 850 nm on arm 2. Insert the modules and secure them with hot glue or a grub screw.",
+    "fr": "Visser les deux supports de lampe à l'extérieur des bras avec 2 × M3 × 8 chacun : blanc au bras 1, IR 850 nm au bras 2. Insérer les modules et les bloquer avec de la colle chaude ou une vis sans tête.",
+    "it": "Avvitare i due portalampada all'esterno dei bracci con 2 × M3 × 8 ciascuno: bianco sul braccio 1, IR 850 nm sul braccio 2. Inserire i moduli e fissarli con colla a caldo o un grano.",
+    "rm": "Fixar ils dus tegnalampas cun mintgamai 2 × M3 × 8 dador vi dals bratschs: alv vi dal bratsch 1, IR 850 nm vi dal bratsch 2. Metter ils moduls e segirar cun cola chauda u cun ina sitga senza chau."
+   }
+  },
+  {
+   "nr": 13,
+   "titel": {
+    "de": "Kabel und Deckel zu",
+    "en": "Cables and close the lid",
+    "fr": "Câbles et fermer le couvercle",
+    "it": "Cavi e chiudere il coperchio",
+    "rm": "Cabels e serrar il viertgel"
+   },
+   "text": {
+    "de": "Kabel von Kopf und Lampen in einer Schlaufe hinter dem Kopf durch den Kabelkamin führen. Deckel mit 6 × M3 × 10 zuschrauben (Moosgummi-Dichtband), HDMI-Stopfen einsetzen.",
+    "en": "Lead the cables of the head and lamps in a loop behind the head through the cable chimney. Screw the lid shut with 6 × M3 × 10 (foam rubber seal), insert the HDMI plug.",
+    "fr": "Passer les câbles de la tête et des lampes en boucle derrière la tête par la cheminée de câbles. Visser le couvercle avec 6 × M3 × 10 (joint en mousse), mettre le bouchon HDMI.",
+    "it": "Far passare i cavi della testa e delle lampade in un'ansa dietro la testa attraverso il camino dei cavi. Avvitare il coperchio con 6 × M3 × 10 (guarnizione in gomma), inserire il tappo HDMI.",
+    "rm": "Manar ils cabels dal chau e da las lampas en ina stgaglia davos il chau tras il chamin da cabels. Serrar il viertgel cun 6 × M3 × 10 (bindel da stagnar), metter il zaffer HDMI."
+   }
+  },
+  {
+   "nr": 14,
+   "titel": {
+    "de": "Fertig",
+    "en": "Done",
+    "fr": "Terminé",
+    "it": "Fatto",
+    "rm": "Finì"
+   },
+   "text": {
+    "de": "In MoveEye Tilt auf ±60° und Pan auf ±90° begrenzen. Vor dem Druck des Unterteils die Masse des UPS HAT (E) mit Akkus nachmessen (siehe Anleitung).",
+    "en": "In MoveEye limit tilt to ±60° and pan to ±90°. Before printing the lower part, measure the UPS HAT (E) with its cells (see the guide).",
+    "fr": "Dans MoveEye, limiter le tilt à ±60° et le pan à ±90°. Avant d'imprimer la partie inférieure, mesurer l'UPS HAT (E) avec ses accus (voir la notice).",
+    "it": "In MoveEye limitare il tilt a ±60° e il pan a ±90°. Prima di stampare la parte inferiore misurare l'UPS HAT (E) con le batterie (vedi istruzioni).",
+    "rm": "En MoveEye limitar il tilt sin ±60° ed il pan sin ±90°. Avant che stampar la part sut, mesirar l'UPS HAT (E) cun ils accus (vesair l'instrucziun)."
+   }
+  }
+ ],
+ "ui_sim": {
+  "Werkstatt": {
+   "en": "Workshop",
+   "fr": "Atelier",
+   "it": "Officina",
+   "rm": "Ufficina"
+  },
+  "Gehäuse v5.1 in 3D: drehen, zerlegen, Montage Schritt für Schritt": {
+   "en": "Case v5.1 in 3D: turn, explode, assembly step by step",
+   "fr": "Boîtier v5.1 en 3D : tourner, éclater, montage pas à pas",
+   "it": "Custodia v5.1 in 3D: ruotare, esplodere, montaggio passo per passo",
+   "rm": "Chascha v5.1 en 3D: rotar, decumponer, muntadi pass per pass"
+  },
+  "Werkstatt – Gehäuse v%s": {
+   "en": "Workshop – case v%s",
+   "fr": "Atelier – boîtier v%s",
+   "it": "Officina – custodia v%s",
+   "rm": "Ufficina – chascha v%s"
+  },
+  "Ziehen = drehen · rechts ziehen = verschieben · Rad = zoomen · Teil anklicken = was ist das?": {
+   "en": "Drag = turn · right drag = move · wheel = zoom · click a part = what is it?",
+   "fr": "Glisser = tourner · glisser à droite = déplacer · molette = zoom · cliquer une pièce = qu'est-ce que c'est ?",
+   "it": "Trascinare = ruotare · trascinare col destro = spostare · rotella = zoom · clic su un pezzo = cos'è?",
+   "rm": "Trair = rotar · trair a dretga = spustar · rodella = zoom · cliccar ina part = tge è quai?"
+  },
+  "Explosion": {
+   "en": "Explode",
+   "fr": "Éclatement",
+   "it": "Esploso",
+   "rm": "Explosiun"
+  },
+  "Gehäuse durchsichtig": {
+   "en": "Case see-through",
+   "fr": "Boîtier transparent",
+   "it": "Custodia trasparente",
+   "rm": "Chascha transparenta"
+  },
+  "Innenleben zeigen": {
+   "en": "Show the inside",
+   "fr": "Montrer l'intérieur",
+   "it": "Mostrare l'interno",
+   "rm": "Mussar l'intern"
+  },
+  "Variante v5.2 zeigen (Weitwinkel, IR-LED, Tasten, Status-LED)": {
+   "en": "Show variant v5.2 (wide angle, IR LED, buttons, status LED)",
+   "fr": "Montrer la variante v5.2 (grand-angle, LED IR, boutons, LED d'état)",
+   "it": "Mostrare la variante v5.2 (grandangolo, LED IR, pulsanti, LED di stato)",
+   "rm": "Mussar la variante v5.2 (grondangul, LED IR, buttuns, LED da status)"
+  },
+  "Echtes Gehäuse am Gerät in der Szene": {
+   "en": "Real case on the device in the scene",
+   "fr": "Vrai boîtier sur l'appareil dans la scène",
+   "it": "Custodia vera sul dispositivo nella scena",
+   "rm": "Chascha vaira vi da l'apparat en la scena"
+  },
+  "Ansicht zurücksetzen": {
+   "en": "Reset the view",
+   "fr": "Réinitialiser la vue",
+   "it": "Ripristinare la vista",
+   "rm": "Reinizialisar la vista"
+  },
+  "Teil": {
+   "en": "Part",
+   "fr": "Pièce",
+   "it": "Pezzo",
+   "rm": "Part"
+  },
+  "Zu diesem Schritt": {
+   "en": "Go to this step",
+   "fr": "Aller à cette étape",
+   "it": "Vai a questo passo",
+   "rm": "Ir tar quest pass"
+  },
+  "Montage Schritt für Schritt": {
+   "en": "Assembly step by step",
+   "fr": "Montage pas à pas",
+   "it": "Montaggio passo per passo",
+   "rm": "Muntadi pass per pass"
+  },
+  "Montage beenden – alle Teile zeigen": {
+   "en": "End the assembly – show all parts",
+   "fr": "Terminer le montage – montrer toutes les pièces",
+   "it": "Terminare il montaggio – mostrare tutti i pezzi",
+   "rm": "Terminar il muntadi – mussar tut las parts"
+  },
+  "Anleitung, Materialliste und Druckdateien: MoveEye → Mehr → «Gehäuse & Bau» (hardware/gehaeuse/ im Repository).": {
+   "en": "Guide, parts list and print files: MoveEye → More → «Case & build» (hardware/gehaeuse/ in the repository).",
+   "fr": "Notice, liste du matériel et fichiers d'impression : MoveEye → Plus → «Boîtier et construction» (hardware/gehaeuse/ dans le dépôt).",
+   "it": "Istruzioni, distinta e file di stampa: MoveEye → Altro → «Custodia e costruzione» (hardware/gehaeuse/ nel repository).",
+   "rm": "Instrucziun, glista da material e datotecas da stampa: MoveEye → Dapli → «Chascha e construcziun» (hardware/gehaeuse/ en il repositori)."
+  },
+  "Die Modelle fehlen (inhalte/gehaeuse/) – werkzeuge/gehaeuse_bauen.py --sim": {
+   "en": "The models are missing (inhalte/gehaeuse/) – werkzeuge/gehaeuse_bauen.py --sim",
+   "fr": "Les modèles manquent (inhalte/gehaeuse/) – werkzeuge/gehaeuse_bauen.py --sim",
+   "it": "Mancano i modelli (inhalte/gehaeuse/) – werkzeuge/gehaeuse_bauen.py --sim",
+   "rm": "Ils models mancan (inhalte/gehaeuse/) – werkzeuge/gehaeuse_bauen.py --sim"
+  },
+  "Teil anklicken – oder einen Schritt der Montage wählen.": {
+   "en": "Click a part – or choose a step of the assembly.",
+   "fr": "Cliquer une pièce – ou choisir une étape du montage.",
+   "it": "Clicca un pezzo – o scegli un passo del montaggio.",
+   "rm": "Cliccar ina part – u tscherner in pass dal muntadi."
+  },
+  "Materialliste: %s %s": {
+   "en": "Parts list: %s %s",
+   "fr": "Liste du matériel : %s %s",
+   "it": "Distinta: %s %s",
+   "rm": "Glista da material: %s %s"
+  },
+  "nicht in der Materialliste": {
+   "en": "not in the parts list",
+   "fr": "pas dans la liste du matériel",
+   "it": "non nella distinta",
+   "rm": "betg en la glista da material"
+  },
+  "Druckdatei: %s": {
+   "en": "Print file: %s",
+   "fr": "Fichier d'impression : %s",
+   "it": "File di stampa: %s",
+   "rm": "Datoteca da stampa: %s"
+  },
+  "Montage: Schritt %d – %s": {
+   "en": "Assembly: step %d – %s",
+   "fr": "Montage : étape %d – %s",
+   "it": "Montaggio: passo %d – %s",
+   "rm": "Muntadi: pass %d – %s"
+  },
+  "Variante v5.2 – noch nicht in der Montage v5.1": {
+   "en": "Variant v5.2 – not yet in the assembly v5.1",
+   "fr": "Variante v5.2 – pas encore dans le montage v5.1",
+   "it": "Variante v5.2 – non ancora nel montaggio v5.1",
+   "rm": "Variante v5.2 – anc betg en il muntadi v5.1"
+  },
+  "%d Schritte": {
+   "en": "%d steps",
+   "fr": "%d étapes",
+   "it": "%d passi",
+   "rm": "%d pass"
+  },
+  "Montage starten": {
+   "en": "Start the assembly",
+   "fr": "Démarrer le montage",
+   "it": "Avviare il montaggio",
+   "rm": "Cumenzar il muntadi"
+  },
+  "«Weiter» zeigt Schritt 1. Die Teile jedes Schritts fliegen an ihren Platz.": {
+   "en": "«Next» shows step 1. The parts of each step fly to their place.",
+   "fr": "«Suivant» montre l'étape 1. Les pièces de chaque étape volent à leur place.",
+   "it": "«Avanti» mostra il passo 1. I pezzi di ogni passo volano al loro posto.",
+   "rm": "«Vinavant» mussa il pass 1. Las parts da mintga pass sgolan a lur plazza."
+  },
+  "Schritt %d von %d": {
+   "en": "Step %d of %d",
+   "fr": "Étape %d sur %d",
+   "it": "Passo %d di %d",
+   "rm": "Pass %d da %d"
+  },
+  "Zurück": {
+   "en": "Back",
+   "fr": "Retour",
+   "it": "Indietro",
+   "rm": "Enavos"
+  },
+  "Weiter": {
+   "en": "Next",
+   "fr": "Suivant",
+   "it": "Avanti",
+   "rm": "Vinavant"
+  },
+  "Ende": {
+   "en": "End",
+   "fr": "Fin",
+   "it": "Fine",
+   "rm": "Fin"
+  },
+  "Ansicht": {
+   "en": "View",
+   "fr": "Vue",
+   "it": "Vista",
+   "rm": "Vista"
+  },
+  "Schliessen (Esc)": {
+   "en": "Close (Esc)",
+   "fr": "Fermer (Échap)",
+   "it": "Chiudi (Esc)",
+   "rm": "Serrar (Esc)"
+  }
+ },
+ "ui_mw": {
+  "Case & build": {
+   "de": "Gehäuse & Bau",
+   "fr": "Boîtier et construction",
+   "it": "Custodia e costruzione",
+   "rm": "Chascha e construcziun"
+  },
+  "Guide, parts list, print files – in 3D in the workshop of the simulator": {
+   "de": "Anleitung, Materialliste, Druckdateien – in 3D in der Werkstatt des Simulators",
+   "fr": "Notice, liste du matériel, fichiers d'impression – en 3D dans l'atelier du simulateur",
+   "it": "Istruzioni, distinta, file di stampa – in 3D nell'officina del simulatore",
+   "rm": "Instrucziun, glista da material, datotecas da stampa – en 3D en l'ufficina dal simulatur"
+  },
+  "Case": {
+   "de": "Gehäuse",
+   "fr": "Boîtier",
+   "it": "Custodia",
+   "rm": "Chascha"
+  },
+  "View in the simulator": {
+   "de": "Im Simulator ansehen",
+   "fr": "Voir dans le simulateur",
+   "it": "Vedere nel simulatore",
+   "rm": "Guardar en il simulatur"
+  },
+  "Opens the workshop in the 3D simulator: turn, explode, see through, click parts, assembly step by step.": {
+   "de": "Öffnet die Werkstatt im 3D-Simulator: drehen, zerlegen, durchsichtig, Teile anklicken, Montage Schritt für Schritt.",
+   "fr": "Ouvre l'atelier dans le simulateur 3D : tourner, éclater, transparence, cliquer les pièces, montage pas à pas.",
+   "it": "Apre l'officina nel simulatore 3D: ruotare, esplodere, trasparenza, cliccare i pezzi, montaggio passo per passo.",
+   "rm": "Avra l'ufficina en il simulatur 3D: rotar, decumponer, transparent, cliccar las parts, muntadi pass per pass."
+  },
+  "Simulator not connected – start it and connect it on the page Simulator.": {
+   "de": "Simulator nicht verbunden – starte ihn und verbinde ihn auf der Seite «Simulator».",
+   "fr": "Simulateur non connecté – démarre-le et connecte-le sur la page Simulateur.",
+   "it": "Simulatore non collegato – avvialo e collegalo nella pagina Simulatore.",
+   "rm": "Simulatur betg connectà – al aviar e connectar sin la pagina Simulatur."
+  },
+  "Opened in the simulator.": {
+   "de": "Im Simulator geöffnet.",
+   "fr": "Ouvert dans le simulateur.",
+   "it": "Aperto nel simulatore.",
+   "rm": "Avert en il simulatur."
+  },
+  "Print files": {
+   "de": "Druckdateien",
+   "fr": "Fichiers d'impression",
+   "it": "File di stampa",
+   "rm": "Datotecas da stampa"
+  },
+  "3MF plates for the Bambu Lab X2D (PETG, no supports)": {
+   "de": "3MF-Platten für den Bambu Lab X2D (PETG, ohne Stützen)",
+   "fr": "Plateaux 3MF pour la Bambu Lab X2D (PETG, sans supports)",
+   "it": "Piatti 3MF per la Bambu Lab X2D (PETG, senza supporti)",
+   "rm": "Plattas 3MF per la Bambu Lab X2D (PETG, senza sustegns)"
+  },
+  "Single STL files: in the hand-over package (ZIP, about 60 MB), not in the repository.": {
+   "de": "Einzelne STL-Dateien: im Übergabe-Paket (ZIP, ca. 60 MB), nicht im Repository.",
+   "fr": "Fichiers STL séparés : dans le paquet de remise (ZIP, env. 60 Mo), pas dans le dépôt.",
+   "it": "Singoli file STL: nel pacchetto di consegna (ZIP, circa 60 MB), non nel repository.",
+   "rm": "Singulas datotecas STL: en il pachet da consegna (ZIP, ca. 60 MB), betg en il repositori."
+  },
+  "Assembly step by step": {
+   "de": "Montage Schritt für Schritt",
+   "fr": "Montage pas à pas",
+   "it": "Montaggio passo per passo",
+   "rm": "Muntadi pass per pass"
+  },
+  "Show this step in the simulator": {
+   "de": "Diesen Schritt im Simulator zeigen",
+   "fr": "Montrer cette étape dans le simulateur",
+   "it": "Mostrare questo passo nel simulatore",
+   "rm": "Mussar quest pass en il simulatur"
+  },
+  "Parts list": {
+   "de": "Materialliste",
+   "fr": "Liste du matériel",
+   "it": "Distinta dei materiali",
+   "rm": "Glista da material"
+  },
+  "Qty": {
+   "de": "Menge",
+   "fr": "Qté",
+   "it": "Qtà",
+   "rm": "Quantitad"
+  },
+  "Part number": {
+   "de": "Teilenummer",
+   "fr": "Référence",
+   "it": "Codice",
+   "rm": "Numer da la part"
+  },
+  "Guides and source (GitHub)": {
+   "de": "Anleitungen und Quellcode (GitHub)",
+   "fr": "Notices et code source (GitHub)",
+   "it": "Istruzioni e codice sorgente (GitHub)",
+   "rm": "Instrucziuns e code da funtauna (GitHub)"
+  },
+  "Detailed guide v5.1": {
+   "de": "Ausführliche Anleitung v5.1",
+   "fr": "Notice détaillée v5.1",
+   "it": "Istruzioni dettagliate v5.1",
+   "rm": "Instrucziun detagliada v5.1"
+  },
+  "Full parts list with order list": {
+   "de": "Ganze Materialliste mit Bestellliste",
+   "fr": "Liste complète du matériel avec liste de commande",
+   "it": "Distinta completa con lista d'ordine",
+   "rm": "Glista da material cumpletta cun glista da cumonda"
+  },
+  "Measure first: UPS HAT (E) with its cells (assumed 90 × 80 × 26 mm) before printing the lower part.": {
+   "de": "Zuerst nachmessen: UPS HAT (E) mit Akkus (angenommen 90 × 80 × 26 mm), bevor das Unterteil gedruckt wird.",
+   "fr": "Mesurer d'abord : UPS HAT (E) avec ses accus (supposé 90 × 80 × 26 mm) avant d'imprimer la partie inférieure.",
+   "it": "Misurare prima: UPS HAT (E) con le batterie (ipotesi 90 × 80 × 26 mm) prima di stampare la parte inferiore.",
+   "rm": "Mesirar l'emprim: UPS HAT (E) cun ils accus (supponì 90 × 80 × 26 mm) avant che stampar la part sut."
+  },
+  "Own work of Daniel (DonElektro) – parametric Python model.": {
+   "de": "Eigenes Werk von Daniel (DonElektro) – parametrisches Python-Modell.",
+   "fr": "Œuvre propre de Daniel (DonElektro) – modèle Python paramétrique.",
+   "it": "Opera propria di Daniel (DonElektro) – modello Python parametrico.",
+   "rm": "Agen ovra da Daniel (DonElektro) – model Python parametric."
+  },
+  "Step": {
+   "de": "Schritt",
+   "fr": "Étape",
+   "it": "Passo",
+   "rm": "Pass"
+  }
+ },
+ "druckdateien": [
+  "MotionWatch_v5-1_Platte_A_Unterteil.3mf",
+  "MotionWatch_v5-1_Platte_B_Deckel_Kopf.3mf"
+ ],
+ "github": "https://github.com/DonElektro/MotionWatch"
+}

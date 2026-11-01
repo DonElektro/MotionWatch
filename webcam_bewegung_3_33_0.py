@@ -238,7 +238,7 @@ def prepare_settings_file():
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
 ZD_FILE = "moveeye_daten_3_33_0.zip"
-ZD_SHA256 = "76dc5fe13587acd59fec63cd12cb7c91ed93112b96713f6e15887cf567ef42ff"
+ZD_SHA256 = "95948289a9d5df6791d987888f95df4115745629e1110de6155c1e90eb854b6a"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -71837,6 +71837,270 @@ def fx_selftest():
 
 
 SELFTEST_EXTRA.append(("Error help with QR code (simulator3d/fehler_katalog.json, /hilfe/fehler/<ID>)", fx_selftest))
+# ----------------------------------------------------------------------------
+# GEH_QUELLE_SHA: Prüfsumme der Quelle (hardware/gehaeuse/Quellcode/*.py, bau.json, werkzeuge/gehaeuse_bauen.py) – der
+# Selbsttest (639w) vergleicht sie im Repository mit der Quelle und mit simulator3d/inhalte/gehaeuse/modelle.json.
+# ----------------------------------------------------------------------------
+GEH_QUELLE_SHA = 'e828e1d476b1dd0b4d38a1c9306aaa3545b9c0b1363350aa8f5fb8c8f4021c0a'
+GEH_BAU = json.loads(_zd('639v_daten_gehaeuse/GEH_BAU', ""))
+GEH_UI_DE = {"Case & build": "Gehäuse & Bau", "Guide, parts list, print files – in 3D in the workshop of the simulator": "Anleitung, Materialliste, Druckdateien – in 3D in der Werkstatt des Simulators", "Case": "Gehäuse", "View in the simulator": "Im Simulator ansehen", "Opens the workshop in the 3D simulator: turn, explode, see through, click parts, assembly step by step.": "Öffnet die Werkstatt im 3D-Simulator: drehen, zerlegen, durchsichtig, Teile anklicken, Montage Schritt für Schritt.", "Simulator not connected – start it and connect it on the page Simulator.": "Simulator nicht verbunden – starte ihn und verbinde ihn auf der Seite «Simulator».", "Opened in the simulator.": "Im Simulator geöffnet.", "Print files": "Druckdateien", "3MF plates for the Bambu Lab X2D (PETG, no supports)": "3MF-Platten für den Bambu Lab X2D (PETG, ohne Stützen)", "Single STL files: in the hand-over package (ZIP, about 60 MB), not in the repository.": "Einzelne STL-Dateien: im Übergabe-Paket (ZIP, ca. 60 MB), nicht im Repository.", "Assembly step by step": "Montage Schritt für Schritt", "Show this step in the simulator": "Diesen Schritt im Simulator zeigen", "Parts list": "Materialliste", "Qty": "Menge", "Part number": "Teilenummer", "Guides and source (GitHub)": "Anleitungen und Quellcode (GitHub)", "Detailed guide v5.1": "Ausführliche Anleitung v5.1", "Full parts list with order list": "Ganze Materialliste mit Bestellliste", "Measure first: UPS HAT (E) with its cells (assumed 90 × 80 × 26 mm) before printing the lower part.": "Zuerst nachmessen: UPS HAT (E) mit Akkus (angenommen 90 × 80 × 26 mm), bevor das Unterteil gedruckt wird.", "Own work of Daniel (DonElektro) – parametric Python model.": "Eigenes Werk von Daniel (DonElektro) – parametrisches Python-Modell.", "Step": "Schritt"}
+GEH_UI_TRX = _zd('639v_daten_gehaeuse/GEH_UI_TRX', _ZDDict())
+# ----------------------------------------------------------------------------
+# Paket «real-gehaeuse» (01.11.2026). Eine Quelle: hardware/gehaeuse/ (Daniels parametrisches Modell v5.1 + bau.json mit den
+# Texten in 5 Sprachen). werkzeuge/gehaeuse_bauen.py macht daraus die Simulator-Modelle (simulator3d/inhalte/gehaeuse/), die
+# Texte des Simulators (werkstatt_daten.gd, i18n/texte.json) und die Daten hier (639v: GEH_BAU, GEH_UI_*, GEH_QUELLE_SHA).
+#   * /case: Seite (Reiter Mehr) – Masse, «Im Simulator ansehen», Montage (14 Schritte, je «im Simulator zeigen»),
+#     Materialliste nach Gruppen (Menge, Bezeichnung, Teilenummer), Druckdateien (3MF-Platten auf GitHub), Anleitungen.
+#     Inhalte in der Sprache der Seite (LANG; rm -> de, fr / it -> en wie sonst).
+#   * /api/case: GET = Daten + ob der Simulator verbunden ist; POST {do: "sim", step?} -> Simulator /control
+#     {"action": "werkstatt", "do": "open"} (bzw. "step", n). Ältere Simulatoren ohne Werkstatt antworten mit Fehler.
+#   * Mehr (525) und das Fenster (572 _tk_more_bar): ein Eintrag «Gehäuse & Bau». Gemeinsame Menü-Datei: «more» -> case
+#     (simulator3d/ui_gemeinsam.json; im Simulator heisst derselbe Eintrag «Werkstatt», mehr.gd).
+# Hier (nach 639p) weil render_page, sim_control, MORE_PAGE, smalltv_routes (639n), UI_GEMEINSAM (639p) vorher kommen.
+# ----------------------------------------------------------------------------
+DE.update(GEH_UI_DE)
+for _L in ("fr", "it", "rm"):
+    TRX.setdefault(_L, {}).update(GEH_UI_TRX.get(_L, {}))
+
+GEH_MORE_ROW = ('  <a class="mi" href="/case" id="m-case"><i>📐</i><span><b data-i18n="Case &amp; build">Case &amp; build</b><small data-i18n="Guide, parts list, print files – in 3D in the workshop of the simulator">'
+                'Guide, parts list, print files – in 3D in the workshop of the simulator</small></span><span class="ar">›</span></a>\n')
+_geh_anchor = '  <a class="mi" href="/info" id="m-info">'
+if 'href="/case"' not in MORE_PAGE and _geh_anchor in MORE_PAGE:
+    MORE_PAGE = MORE_PAGE.replace(_geh_anchor, GEH_MORE_ROW + _geh_anchor, 1)
+
+GEH_PAGE = _zd('639w_gehaeuse/GEH_PAGE', ZD_PAGE)
+GEH_KEYS = list(GEH_UI_DE)
+
+
+def geh_page():
+    js = "Object.assign(I18N.de, " + json.dumps({k: DE.get(k, k) for k in GEH_KEYS}, ensure_ascii=False) + ");"
+    data = json.dumps(GEH_BAU, ensure_ascii=False).replace("</", "<\\/")
+    return render_page(GEH_PAGE, "more").replace("/*GEHDE*/", js, 1).replace("/*GEHBAU*/null", data, 1)
+
+
+def geh_do(d):
+    """POST /api/case: {do: sim, step}"""
+    if str(d.get("do", "")) != "sim":
+        return {"ok": False, "error": "unknown action", "code": 400}
+    if not CFG.get("sim_on"):
+        return {"ok": False, "offline": True, "error": tr("Simulator not connected – start it and connect it on the page Simulator.")}
+    try:
+        n = int(d.get("step") or 0)
+    except (TypeError, ValueError):
+        n = 0
+    n = max(0, min(n, len(GEH_BAU.get("schritte") or [])))
+    try:
+        r = sim_control({"action": "werkstatt", "do": "step", "n": n} if n else {"action": "werkstatt", "do": "open"}) or {}
+    except Exception:
+        return {"ok": False, "offline": True, "error": tr("Simulator not connected – start it and connect it on the page Simulator.")}
+    if not r.get("ok") or not r.get("open"):
+        return {"ok": False, "error": str(r.get("error") or "the simulator has no workshop yet (update the simulator)")}
+    return {"ok": True, "step": r.get("step", 0), "steps": r.get("steps")}
+
+
+def geh_preview():
+    """the preview picture (Bilder/Vorschau_v5-1.png) - only where the repository is (PC), else 404"""
+    p = os.path.join(os.path.dirname(os.path.abspath(__file__)), "hardware", "gehaeuse", "Bilder", "Vorschau_v5-1.png")
+    if not os.path.isfile(p):
+        return None
+    with open(p, "rb") as f:
+        return f.read()
+
+
+_smalltv_routes_geh_base = smalltv_routes
+
+
+def smalltv_routes(app, reply, body):                     # + 639w: /case, /case/preview.png and /api/case
+    _smalltv_routes_geh_base(app, reply, body)
+    from flask import Response
+
+    @app.route("/case")
+    def geh_page_():
+        return Response(geh_page(), mimetype="text/html")
+
+    @app.route("/case/preview.png")
+    def geh_prev_():
+        b_ = geh_preview()
+        return Response(b_, mimetype="image/png", headers={"Cache-Control": "private, max-age=3600"}) if b_ else Response("no", 404)
+
+    @app.route("/api/case", methods=["GET", "POST"])
+    def api_case():
+        from flask import request
+        if request.method == "GET":
+            return reply({"ok": True, "version": GEH_BAU.get("version"), "sim": bool(CFG.get("sim_on")), "steps": len(GEH_BAU.get("schritte") or [])})
+        r = geh_do(body())
+        code = r.pop("code", None)
+        return reply(r, code) if code else reply(r)
+
+
+# the manual (HELP_PAGE 540 + HELP_X): a short chapter «Gehäuse & Bau» before «Einrichtung», in all 5 languages
+_HELP_GEH = {
+    "de": ('<section id="case" data-icon="📐"><h2>Gehäuse &amp; Bau</h2><p>Das Gehäuse v5.1 (Daniels parametrisches Python-Modell, '
+           'PETG, 2 Druckplatten ohne Stützen) steht unter Mehr → <a href="/case"><b>Gehäuse &amp; Bau</b></a>: Montage in 14 Schritten, '
+           'Materialliste nach Gruppen, Links zu den Druckdateien (3MF) und zur ausführlichen Anleitung. <b>«Im Simulator ansehen»</b> öffnet die '
+           '<b>Werkstatt</b> im 3D-Simulator (Mehr → Werkstatt): drehen, zoomen, Explosion, durchsichtig, Teil anklicken (Materialliste und '
+           'Montageschritt), Montage animiert Schritt für Schritt. Vor dem Druck des Unterteils die Masse des UPS HAT (E) mit Akkus nachmessen.</p></section>\n'),
+    "en": ('<section id="case" data-icon="📐"><h2>Case &amp; build</h2><p>The case v5.1 (Daniel\'s parametric Python model, PETG, '
+           '2 print plates without supports) is under More → <a href="/case"><b>Case &amp; build</b></a>: assembly in 14 steps, parts list by '
+           'group, links to the print files (3MF) and to the detailed guide. <b>«View in the simulator»</b> opens the <b>workshop</b> in the 3D '
+           'simulator (More → Workshop): turn, zoom, explode, see through, click a part (parts list and assembly step), animated assembly step by '
+           'step. Before printing the lower part, measure the UPS HAT (E) with its cells.</p></section>\n'),
+    "fr": ('<section id="case" data-icon="📐"><h2>Boîtier et construction</h2><p>Le boîtier v5.1 (modèle Python paramétrique de Daniel, '
+           'PETG, 2 plateaux sans supports) se trouve sous Plus → <a href="/case"><b>Boîtier et construction</b></a> : montage en 14 étapes, '
+           'liste du matériel par groupe, liens vers les fichiers d\'impression (3MF) et le guide détaillé. <b>«Voir dans le simulateur»</b> '
+           'ouvre l\'<b>atelier</b> du simulateur 3D (Plus → Atelier) : tourner, zoomer, vue éclatée, transparent, cliquer une pièce, montage '
+           'animé étape par étape. Avant d\'imprimer la partie inférieure, mesurer l\'UPS HAT (E) avec ses accus.</p></section>\n'),
+    "it": ('<section id="case" data-icon="📐"><h2>Custodia e costruzione</h2><p>La custodia v5.1 (modello Python parametrico di Daniel, '
+           'PETG, 2 piatti senza supporti) si trova in Altro → <a href="/case"><b>Custodia e costruzione</b></a>: montaggio in 14 passi, '
+           'distinta dei materiali per gruppo, link ai file di stampa (3MF) e alla guida dettagliata. <b>«Vedere nel simulatore»</b> apre '
+           'l\'<b>officina</b> del simulatore 3D (Altro → Officina): ruotare, zoomare, esploso, trasparente, cliccare un pezzo, montaggio '
+           'animato passo per passo. Prima di stampare la parte inferiore misurare l\'UPS HAT (E) con le batterie.</p></section>\n'),
+    "rm": ('<section id="case" data-icon="📐"><h2>Chascha e construcziun</h2><p>La chascha v5.1 (model Python parametric da Daniel, '
+           'PETG, 2 plattas senza sustegns) è sut Dapli → <a href="/case"><b>Chascha e construcziun</b></a>: muntascha en 14 pass, '
+           'glista dal material tenor gruppas, colliaziuns a las datotecas da stampa (3MF) ed a l\'instrucziun detagliada. '
+           '<b>«Guardar en il simulatur»</b> avra l\'<b>ufficina</b> dal simulatur 3D (Dapli → Ufficina): volver, zoomar, explosiun, transparent, '
+           'cliccar ina part, muntascha animada pass per pass. Avant che stampar la part sut mesirar l\'UPS HAT (E) cun ils accus.</p></section>\n'),
+}
+
+
+def _help_geh(doc, lang):
+    if 'id="case"' in doc:
+        return doc
+    i = doc.find('<section id="setup"')
+    return doc[:i] + _HELP_GEH[lang] + doc[i:] if i >= 0 else doc
+
+
+_hp_en_geh = HELP_PAGE.find('<div lang="en">')
+if _hp_en_geh > 0:
+    HELP_PAGE = _help_geh(HELP_PAGE[:_hp_en_geh], "de") + _help_geh(HELP_PAGE[_hp_en_geh:], "en")
+for _L in ("fr", "it", "rm"):
+    if HELP_X.get(_L):
+        HELP_X[_L] = _help_geh(HELP_X[_L], _L)
+
+
+if GUI_OK:                                                # the window: «Gehäuse & Bau» in the tab «Mehr» (572)
+    _geh_tk_more_base = App._tk_more_bar
+
+    def _geh_tk_more_bar(self, parent):
+        f = _geh_tk_more_base(self, parent)
+        i = len(f.grid_slaves())
+        self._fbtn(f, "📐 " + tr("Case & build"), lambda: self._open_page("/case")).grid(row=i // 3, column=i % 3, sticky="ew", padx=(0, 6), pady=(0, 6))
+        return f
+
+    # wraps: App._tk_more_bar (572)
+    App._tk_more_bar = _geh_tk_more_bar
+
+
+def geh_quelle_sha(base):
+    """the same checksum as werkzeuge/gehaeuse_bauen.py quelle_sha() (Quellcode/*.py, bau.json, the tool)"""
+    import hashlib
+    q = os.path.join(base, "hardware", "gehaeuse", "Quellcode")
+    fs = sorted(os.path.join(q, n) for n in os.listdir(q) if n.endswith(".py")) + [
+        os.path.join(base, "hardware", "gehaeuse", "bau.json"), os.path.join(base, "werkzeuge", "gehaeuse_bauen.py")]
+    h = hashlib.sha256()
+    for p in fs:
+        h.update(os.path.relpath(p, base).replace(os.sep, "/").encode() + b"\0")
+        with open(p, "rb") as f_:
+            h.update(f_.read())
+        h.update(b"\0")
+    return h.hexdigest()
+
+
+def geh_check(base=None):
+    """problems: the simulator models / texts against the source (only in the repository; the Pi has no hardware/)"""
+    import hashlib
+    base = base or os.path.dirname(os.path.abspath(__file__))
+    probs = []
+    if not os.path.isfile(os.path.join(base, "hardware", "gehaeuse", "bau.json")):
+        return probs
+    sha = geh_quelle_sha(base)
+    if sha != GEH_QUELLE_SHA:
+        probs.append("quelle/639v is older than hardware/gehaeuse - run werkzeuge/gehaeuse_bauen.py --sim")
+    with open(os.path.join(base, "hardware", "gehaeuse", "bau.json"), encoding="utf-8") as f_:
+        bau = json.load(f_)
+    for k in ("version", "bom", "schritte", "druckdateien"):
+        if bau.get(k) != GEH_BAU.get(k):
+            probs.append(f"GEH_BAU[{k}] differs from bau.json - run werkzeuge/gehaeuse_bauen.py --texte")
+    sd = os.path.join(base, "simulator3d", "inhalte", "gehaeuse")
+    mp = os.path.join(sd, "modelle.json")
+    if os.path.isfile(mp):
+        with open(mp, encoding="utf-8") as f_:
+            man = json.load(f_)
+        if man.get("quelle_sha256") != sha:
+            probs.append("simulator models do not fit the source (checksum) - run werkzeuge/gehaeuse_bauen.py --sim")
+        for fn, h_ in (man.get("dateien") or {}).items():
+            p = os.path.join(sd, fn)
+            if not os.path.isfile(p):
+                probs.append(fn + " missing")
+                continue
+            with open(p, "rb") as f_:
+                if hashlib.sha256(f_.read()).hexdigest() != h_:
+                    probs.append(fn + " changed after the build")
+        if {t["id"] for t in man.get("teile", [])} != {t["id"] for t in bau.get("teile", [])}:
+            probs.append("modelle.json and bau.json have different parts")
+    elif os.path.isdir(os.path.join(base, "simulator3d")):
+        probs.append("simulator3d/inhalte/gehaeuse/modelle.json missing")
+    gd = os.path.join(base, "simulator3d", "scripts", "werkstatt_daten.gd")
+    if os.path.isfile(gd):
+        with open(gd, encoding="utf-8") as f_:
+            if f'const QUELLE_SHA := "{sha}"' not in f_.read():
+                probs.append("simulator3d/scripts/werkstatt_daten.gd is older than the source - gehaeuse_bauen.py --texte")
+    ep = os.path.join(base, "simulator3d", "export_presets.cfg")
+    if os.path.isfile(ep):
+        with open(ep, encoding="utf-8") as f_:
+            if "inhalte/gehaeuse/*" not in f_.read():
+                probs.append("export_presets.cfg: inhalte/gehaeuse/* is not in the .exe")
+    return probs
+
+
+def geh_selftest():
+    B = GEH_BAU
+    assert B.get("version") == "5.1" and len(B.get("schritte") or []) == 14, "data"
+    bom = {b["id"] for b in B["bom"]}
+    for t_ in B["teile"]:
+        assert not t_.get("bom") or t_["bom"] in bom, t_["id"]
+        assert not t_.get("schritt") or 1 <= t_["schritt"] <= 14, t_["id"]
+    for k in GEH_KEYS:
+        assert DE.get(k), k
+        for L in ("fr", "it", "rm"):
+            assert TRX[L].get(k), (L, k)
+    assert 'href="/case"' in MORE_PAGE and MORE_PAGE.index('href="/case"') < MORE_PAGE.index('id="m-info"'), "Mehr"
+    html = geh_page()
+    assert "/api/case" in html and '"schritte"' in html and "<!--NAV-->" not in html and "/*GEHBAU*/" not in html
+    assert "Raspberry Pi 5" in html and "MotionWatch_v5-1_Platte_A_Unterteil.3mf" in html
+    assert HELP_PAGE.count('<section id="case"') == 2 and all('href="/case"' in (HELP_X.get(L) or "href=\"/case\"") for L in ("fr", "it", "rm")), "manual"
+    keep = CFG.get("sim_on")
+    _sc = globals()["sim_control"]
+    asked = []
+    try:
+        CFG["sim_on"] = False
+        r = geh_do({"do": "sim"})
+        assert not r["ok"] and r.get("offline"), r
+        assert geh_do({"do": "x"}).get("code") == 400
+        CFG["sim_on"] = True
+        globals()["sim_control"] = lambda d_: (asked.append(d_), {"ok": True, "open": True, "step": int(d_.get("n", 0)), "steps": 14})[1]
+        assert geh_do({"do": "sim"})["ok"] and asked[-1] == {"action": "werkstatt", "do": "open"}
+        assert geh_do({"do": "sim", "step": 4})["ok"] and asked[-1] == {"action": "werkstatt", "do": "step", "n": 4}
+        globals()["sim_control"] = lambda d_: {"ok": False, "error": "unknown action"}
+        assert not geh_do({"do": "sim"})["ok"]                       # an older simulator without the workshop
+    finally:
+        globals()["sim_control"] = _sc
+        CFG["sim_on"] = keep
+    more = (UI_GEMEINSAM.get("more") or [])
+    case = next((m for m in more if m.get("id") == "case"), None)
+    assert case and case["mw"]["href"] == "/case" and case["mw"]["key"] == "Case & build", "ui_gemeinsam.json more/case"
+    for L in ("de", "fr", "it", "rm"):
+        assert ui_gem_tr("Case & build", L) == case["mw"]["names"][L], ("name", L)
+    mg = os.path.join(os.path.dirname(os.path.abspath(__file__)), "simulator3d", "scripts", "mehr.gd")
+    if os.path.isfile(mg):
+        with open(mg, encoding="utf-8") as f_:
+            assert '["%s", "wrench", "%s"' % (case["sim"]["row"], case["sim"]["key"]) in f_.read(), "simulator mehr.gd row"
+    probs = geh_check()
+    assert not probs, " | ".join(probs)
+    return "Case & build: page /case, Mehr, simulator workshop command, models fit the source"
+
+
+SELFTEST_EXTRA.append(("Case & build (page /case, workshop in the simulator, models = source)", geh_selftest))
 # ----------------------------------------------------------------------------
 # real-erk-e3 (31.10.2026): die Push-Nachricht «Etwas Grosses am Boden» (Titel und Text) in de / fr / it / rm.
 # ----------------------------------------------------------------------------
