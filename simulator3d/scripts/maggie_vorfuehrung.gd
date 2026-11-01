@@ -203,10 +203,9 @@ static func _json(p: String):
 
 
 func set_stimme(v: bool) -> void:
-	stimme = v
+	stimme = v                                       # 3.23: sets the one switch «Stimme» (old /control «stimme»)
 	_einst_schreiben()
-	if not v:
-		Stimme.stopp()
+	Stimme.set_an(v)
 
 
 func set_knoepfe(v: bool) -> void:
@@ -1313,7 +1312,7 @@ func taste(ev: InputEvent) -> bool:
 # voice (abenteuer_stimme.gd: the speech of the system) – cards, tips, MoveEye
 # =======================================================================================================================
 func _stimme_ok() -> bool:
-	return stimme and Stimme.moeglich()
+	return Stimme.an() and Stimme.moeglich()          # 3.23: the one switch «Stimme» (abenteuer_stimme.gd)
 
 
 var sprech_id := 0                      # the browser (MoveEye /sim/vorfuehrung) reads the same sentences aloud: info «sprechen»
@@ -1561,7 +1560,7 @@ func info() -> Dictionary:
 			"kapitel_name": kapitel_namen()[clampi(k, 0, 5)] if k >= 0 else "", "kapitel_namen": kapitel_namen(),
 			"phase": str(story.phase) if story != null else "", "region": str(story.region) if story != null else "",
 			"autopilot": str(_ap.get("art", "")), "zeit": _min(_jetzt() - _t0) if laeuft or ergebnis != "" else "", "spielzeit": _min(_t_spiel),
-			"tempo": tempo, "stimme": stimme, "knoepfe": knoepfe, "stimme_moeglich": Stimme.moeglich(), "regionen": _regionen, "blockiert": blockaden.size(),
+			"tempo": tempo, "stimme": Stimme.an(), "knoepfe": knoepfe, "stimme_moeglich": Stimme.moeglich(), "regionen": _regionen, "blockiert": blockaden.size(),
 			"blockaden": blockaden, "fehler": _fehler.keys(), "protokoll": _zeilen.slice(-14), "lite": _lite(),
 			"datei": ProjectSettings.globalize_path(PROTOKOLL),
 			"sprechen": {"id": sprech_id, "text": sprech_text, "vorne": sprech_vorne, "lang": T.lang()}}

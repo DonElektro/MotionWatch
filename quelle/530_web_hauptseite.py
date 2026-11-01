@@ -2125,7 +2125,7 @@ const MAINSW = {
   "sec:Recording": c => c.record, "sec:Timelapse": c => c.timelapse_on, "sec:Backup": c => !!c.backup_type && c.backup_type !== "off",
   "relayset": c => c.relays_on, "schedule": (c, s, j) => (j.schedules || []).some(x => x.enabled),
   "wifi": (c, s) => !!(s.hotspot && s.hotspot.on), "sec:Web stream": c => c.web_stream, "guest": (c, s) => !!(s.guest && s.guest.active),
-  "sec:MQTT / Home Assistant": c => c.mqtt_on, "sec:Updates": c => c.update_auto};
+  "sec:MQTT / Home Assistant": c => c.mqtt_on, "sec:Updates": c => c.update_mode === "auto" || c.update_mode === "dev"};
 let MAINJ = null;
 function mainPaint(j) {
   if (j) MAINJ = j; else j = MAINJ || {};

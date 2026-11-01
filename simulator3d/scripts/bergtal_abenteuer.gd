@@ -2384,7 +2384,7 @@ func _paint_level() -> void:
 	row2.add_child(ob2)
 	var ss := sunset_h()
 	gg.add_child(_lab(T.t("Sonnenuntergang heute im Bergtal: %s · Sonnenaufgang: %s") % [hm(ss), hm(sunrise_h())], 12, Color(0.6, 0.66, 0.74)))
-	_toggle_row(gg, T.t("Erzählerstimme: Grossvaters Tagebuchseiten vorlesen"), Stimme.an(), func(x): op({"do": "stimme", "value": x}))
+	gg.add_child(_lab(T.t("Stimme: Einstellungen → Licht & Ton → Lautsprecher"), 12, Color(0.6, 0.66, 0.74)))   # 3.23: one switch «Stimme»
 	if not Stimme.moeglich():
 		gg.add_child(_lab(T.t("Auf diesem PC wurde keine Sprachausgabe gefunden - die Seiten stehen dann nur im Tagebuch."), 11, Color(0.6, 0.66, 0.74)))
 	_toggle_row(gg, T.t("Zwischenszene beim Start jedes Kapitels (kurze Kamerafahrt)"), bool(SS.setting("szenen", true)), func(x): op({"do": "szenen", "value": x}))

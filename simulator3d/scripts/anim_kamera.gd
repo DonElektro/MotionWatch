@@ -20,8 +20,8 @@ static func weg(cam: Camera3D) -> void:
 static func wippen(m, cam: Camera3D, fig, dt: float) -> void:
 	if cam == null or fig == null or not is_instance_valid(fig):
 		return
-	if not bool(m.get("cam_wippen")) or not AnimMensch.hoch(m):
-		return
+	if not bool(m.get("cam_wippen")) or not AnimMensch.hoch(m) or (m.has_method("motion_reduced") and m.motion_reduced()):
+		return                                                     # 3.23: also off with «Bewegung reduzieren»
 	var spd: float = float(fig.get("cur_speed"))
 	if spd < 0.15:
 		return

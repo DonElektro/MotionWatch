@@ -243,7 +243,7 @@ def prepare_settings_file():
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
 ZD_FILE = "moveeye_daten_3_22_0.zip"
-ZD_SHA256 = "1e774429e6c1f12a5eb02d94591fcfc4852c77fd24577ab2c3bf66f8140672cf"
+ZD_SHA256 = "ee5281e9bf599b07ec1261cdf556bc2b302b284f00e57cd0633b49c36e043b3a"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -546,7 +546,7 @@ CFG = {
     "sim_autostart": True, "sim_autostart_v2": False,   # v2 (2.95.26): on a Raspberry Pi off by default (it guards the real place)
     # 2.95.25: a simulator announces itself -> the simulation goes on by itself (and off again when it is gone)
     "sim_auto_on": False,        # ... it was switched on by that (only then it is switched off again by itself)
-    "sim_autoupd": True, "sim_basis_show": False, "net_watch": False, "net_known": {}, "presence_macs": [], "presence_auto": False, "presence_gone_min": 10.0,
+    "sim_autoupd": True, "net_watch": False, "net_known": {}, "presence_macs": [], "presence_auto": False, "presence_gone_min": 10.0,
     "bt_tracker_warn": False, "bt_tracker_min": 30.0, "presence_bt": [], "wifi_repeater": False, "clap_on": False, "clap_sens": 5, "clap_beep": True, "clap_volume": 60, "clap_2": "relay:0",
     "clap_3": "light_white", "clap_4": "none", "clap_disarmed": True, "clap_practice": False, "sneeze_on": False, "sneeze_sens": 5,
     "sneeze_volume": 70, "sneeze_reply": "tts", "sneeze_texts": "Gesundheit!|Gsundheit!|Zum Wohl!", "sneeze_night": True,
@@ -574,12 +574,14 @@ CFG = {
     "update_unsigned": False,    # also install versions without a valid signature (own builds) - not recommended
     "update_unsigned_t": 0.0,    # 3.23: when it was switched on - after 24 h it switches itself off (update_unsigned_ok, 380)
     "update_url": "",            # where new versions come from: https://.../versions.json or a folder (USB stick)
-    "update_auto": True,         # look for a new version every 3 hours (and 2 minutes after the start)
-    "update_install": False,     # install a new version by itself ...
-    "update_fast": False, "dev_phase_done": False, "news_popup": True, "msg_icons": True, "train_night_on": False, "train_hour": 1, "train_optimize": True, "train_pics": True, "train_day": "", "rover_alarm": False, "fa_learn_auto": True, "rehearsal_on_arm": False, "weekcheck_on": True, "weekcheck_last": "", "simprof_ignore": [], "simprof_opt": {}, "me_points": {"total": 0, "log": [], "week": ""}, "header_wordmark": True, "news_seen_web": "", "news_seen_tk": "",   # 2.96.3: «Neu in dieser Version»
+    # 3.23: one choice like the simulator instead of update_auto / update_install / update_fast / update_install_armed (639q):
+    #   "off" = look every 3 hours and report, install by hand · "auto" = install by itself in the update hour when disarmed ·
+    #   "dev" = development phase: look every minute, install at once (also while armed)
+    "reduce_motion": "auto",     # 3.23 «Bewegung reduzieren»: auto = like the operating system (prefers-reduced-motion) | on | off (639q)
+    "voice_mode": "on",          # 3.23 «Stimme»: on | off | subtitles - narrator, demo, trailer and the voice in the browser (639q)
+    "update_mode": "off", "dev_phase_done": False, "news_popup": True, "msg_icons": True, "train_night_on": False, "train_hour": 1, "train_optimize": True, "train_pics": True, "train_day": "", "rover_alarm": False, "fa_learn_auto": True, "rehearsal_on_arm": False, "weekcheck_on": True, "weekcheck_last": "", "simprof_ignore": [], "simprof_opt": {}, "me_points": {"total": 0, "log": [], "week": ""}, "header_wordmark": True, "news_seen_web": "", "news_seen_tk": "",   # 2.96.3: «Neu in dieser Version»
            # 2.95.71: test mode - look on GitHub every minute, install a new version at once
     "update_hour": 12,           # ... in this hour of the day
-    "update_install_armed": False,   # ... also while armed (otherwise only when disarmed)
     "update_push": True,         # push message when a new version is there (once per version)
     "update_notified": "",
     "update_token": "",          # GitHub key (read-only token) for a private repository - only ever sent to GitHub
@@ -621,7 +623,9 @@ DEFAULTS = dict(CFG)
 # 2.98.18: old keys that are only READ from settings files of older versions (the migration takes them over) - never in CFG,
 # so they are not shown, saved or exported anywhere. key -> what took its place.
 MIGRATE_ONLY = {"simweek_on": "weekrep_sim (577, 2.98.15)", "back_ask": "presence_back (577, 2.98.15)",
-                "shortcut_token": "an app key with scope «shortcut» (573, aufr)"}
+                "shortcut_token": "an app key with scope «shortcut» (573, aufr)",
+                "update_auto": "update_mode (639q, 3.23)", "update_install": "update_mode (639q, 3.23)",
+                "update_fast": "update_mode (639q, 3.23)", "update_install_armed": "update_mode (639q, 3.23)"}
 WAYPOINTS = []          # [pan, tilt] positions in percent
 
 
@@ -2323,7 +2327,7 @@ def apply_settings(data):
     CFG["web_ui"] = clean_web_ui(CFG["web_ui"])
     if not CFG.get("dev_phase_done"):                  # 2.96.2: Daniel is in the development phase - fast updates on (once)
         CFG["dev_phase_done"] = True
-        CFG["update_fast"] = True
+        CFG["update_mode"] = "dev"                    # 3.23: was update_fast (639q)
     if not CFG.get("app_icon_moveeye_done"):          # 2.96.0: the new name MoveEye and its symbol for everybody (once)
         CFG["app_icon_moveeye_done"] = True
         CFG["app_icon_orange_done"] = True
@@ -10151,7 +10155,7 @@ SIMPLE_KEYS = {"tips_level", "use_case", "wake_on", "wake_time", "wake_days", "w
                "pushover_on", "pushover_user", "pushover_token", "pushover_emergency", "msg_keyword_on", "email_on", "email_to",
                "arm_delay", "net_mode", "hotspot_ssid", "hotspot_password", "thermal_on", "thermal_alarm", "noise_alarm", "audio_in",
                "audio_out", "siren_on", "siren_volume", "siren_sound", "light_white_auto", "light_ir_auto", "report_on", "report_hour",
-               "diary_on", "weather_on", "batt_mah", "eco_on", "device_name", "update_auto", "loop_on", "loop_hours",
+               "diary_on", "weather_on", "batt_mah", "eco_on", "device_name", "update_mode", "loop_on", "loop_hours",
                "cam_rotate", "cam_mirror", "sens_on", "rf433_on", "zigbee_on", "ble_on", "tag_missing", "eco_pir", "storm_on", "storm_drop", "storm_wind", "mover_mode", "mover_speed", "gpsmod_on", "gps_theft", "lens_check", "temp_alarm_on", "temp_hot", "temp_cold", "solar_on", "night_warn",
                "tamper_on", "tamper_motion", "tamper_power", "backup_type", "deter_person_act", "deter_person_sound", "clap_on", "sneeze_on",
                "weekrep_sim", "mode_fire_min_pct", "presence_back", "presence_auto"}
@@ -23603,9 +23607,8 @@ def sim_state():
             "sound": (CFG["siren_sound"] or "siren") if SOUND["playing"] else ("talk" if TALK["proc"] is not None else ""),
             "simtask_de": tr(stk_, "de") if (stk_ := _simtask_now()) else "",   # 2.98.13: one lock (147)
             "eco": STATE.get("eco") or "off",     # power saving of MoveEye: «saving» = quiet - the simulator may calculate slower (3D-3.30)
-            # automatic update: the simulator compares these checksums with its own files and fetches /sim/simulator.zip
-            # (only the Python simulator updates itself with them - the 3D simulator (/info «view») gets an empty list)
-            "sim_files": {} if (SIM.get("info") or {}).get("view") else sim_files(), "mw_scheme": "https" if WEB_OPTS.get("https") else "http", "mw_port": int(CFG["web_port"]),
+            # 3.23: always empty - the old Python simulator that updated itself with these checksums is removed (360)
+            "sim_files": {}, "mw_scheme": "https" if WEB_OPTS.get("https") else "http", "mw_port": int(CFG["web_port"]),
             # CPU in % of the whole computer: total, MoveEye, simulator (None = not on this computer / unknown)
             "cpu": {"total": STATE.get("cpu"), "mw": STATE.get("cpu_mw"), "sim": STATE.get("cpu_sim")},
             # what MoveEye detects right now: the simulator compares it with the truth (test run, game «MoveEye decides»)
@@ -23623,7 +23626,6 @@ def sim_state():
                           if isinstance(w, (list, tuple)) and len(w) >= 2]}
 
 
-_SIMFILES = {}
 
 
 VIEWERS = {}                       # web page / guest page -> time of its last poll; the Pi screen counts as one more
@@ -23841,50 +23843,6 @@ def sim_cam_fps(cam):
     if CFG.get("eco_on") and STATE.get("eco") == "saving":      # quiet: few pictures; something moves: full speed again
         f = max(2, min(f, int(CFG.get("eco_fps") or 3)))
     return f if str(cam) == "0" else max(2, f // 2)
-
-
-def sim_files():
-    """sha256 of the simulator program files this MoveEye carries (name -> checksum)."""
-    if not _SIMFILES:
-        import base64, hashlib, io
-        try:
-            with zipfile.ZipFile(io.BytesIO(base64.b64decode("".join(SIM_ZIP_B64.split())))) as z:
-                for n in z.namelist():
-                    if n.endswith(".py"):
-                        _SIMFILES[n] = hashlib.sha256(z.read(n)).hexdigest()
-        except Exception:
-            pass
-    return dict(_SIMFILES)
-
-
-def sim_autoupdate():
-    """The simulator on this Pi is older than the one inside MoveEye -> install the new one (and restart it if it runs)."""
-    import hashlib
-    d = sim_dir()
-    if not os.path.isfile(os.path.join(d, "motionwatch_simulator.py")):
-        return False
-    old = []
-    for n, h in sim_files().items():
-        try:
-            with open(os.path.join(d, n), "rb") as f:
-                if hashlib.sha256(f.read()).hexdigest() == h:
-                    continue
-        except OSError:
-            pass
-        old.append(n)
-    if not old:
-        return False
-    was = sim_running()
-    if was:
-        sim_stop()
-    try:
-        sim_install()
-    except Exception as e:
-        log_event("sys", f"Simulator update failed: {e}"[:200]); return False
-    log_event("sys", "Simulator updated automatically to the version inside MoveEye " + APP_VERSION)
-    if was:
-        sim_start()
-    return True
 
 
 _sim_state_290_292 = sim_state
@@ -28674,7 +28632,7 @@ def sim_status():
             "simpy": {"version": SIMPY["version"], "size_kb": round(SIMPY["size"] / 1e3), "ready": sim3d_ready(SIMPY)},
             "view": bool(((SIM.get("info") or {}).get("view") or {}).get("input")) if CFG["sim_on"] else False,
             "versions": sim_versions() if CFG["sim_on"] and SIM["ok"] else None,
-            "scan": {k: v for k, v in SIMSCAN.items()}, "installed": os.path.isfile(os.path.join(sim_dir(), "motionwatch_simulator.py")), "running": sim_running(), "on": bool(CFG["sim_on"]), "tunnel": {"active": tunnel_active()}, "ok": SIM["ok"] and time.time() - SIM["t"] < 5, "pic": sim_picture_ok(), "msg": SIM["msg"], "url": sim_base(),
+            "scan": {k: v for k, v in SIMSCAN.items()}, "on": bool(CFG["sim_on"]), "tunnel": {"active": tunnel_active()}, "ok": SIM["ok"] and time.time() - SIM["t"] < 5, "pic": sim_picture_ok(), "msg": SIM["msg"], "url": sim_base(),
             "dark": SIM["dark"], "ambient": SIM["ambient"], "sent": SIM["sent"]}
 
 
@@ -29546,123 +29504,10 @@ def simdiary_days():
     except OSError:
         pass
     return d
-SIM_ZIP_B64 = _zd('360_daten_simulator_python/SIM_ZIP_B64', "")
-SIMPROC = {"p": None}
-
-
+# 3.23 (Daniel 01.11.2026): «MoveEye Sim · Basis» (the old Python simulator, SIM_ZIP_B64, install / start / stop on the Pi) is
+# removed - MoveEye Sim · 3D is the simulator. An old installation in sim_dir() stays on the disk (nothing is deleted).
 def sim_dir():
     return os.path.join(DATA_DIR, "simulator")
-
-
-def _desktop_user():
-    """(uid, gid, home, name) of the person at the desktop (the service often runs as root) - or of this program."""
-    import pwd
-    for d in sorted(glob.glob("/run/user/*")):
-        try:
-            uid = int(os.path.basename(d))
-        except ValueError:
-            continue
-        if uid >= 1000 and (glob.glob(os.path.join(d, "wayland-*")) or os.path.exists(os.path.join(d, "bus"))):
-            try:
-                p = pwd.getpwuid(uid); return uid, p.pw_gid, p.pw_dir, p.pw_name
-            except KeyError:
-                continue
-    p = pwd.getpwuid(os.getuid())
-    return p.pw_uid, p.pw_gid, p.pw_dir, p.pw_name
-
-
-def sim_install():
-    """Unpack the simulator into <data>/simulator, add a menu entry and a desktop icon for the person at the Pi."""
-    import base64, io
-    d = sim_dir(); os.makedirs(d, exist_ok=True)
-    with zipfile.ZipFile(io.BytesIO(base64.b64decode("".join(SIM_ZIP_B64.split())))) as z:
-        for n in z.namelist():
-            if re.fullmatch(r"[A-Za-z0-9_.]+", n):
-                with open(os.path.join(d, n), "wb") as f:
-                    f.write(z.read(n))
-    os.chmod(os.path.join(d, "motionwatch_simulator.py"), 0o755)
-    icon = os.path.join(d, "simulator.png")
-    try:
-        import base64
-        with open(icon, "wb") as f:
-            f.write(base64.b64decode("".join(SIM_ICONS_PNG["simbasis"])))      # MoveEye Sim · Basis: the radar eye with the grey badge
-    except Exception:
-        pass
-    entry = ("[Desktop Entry]\nType=Application\nName=MoveEye Sim · Basis\nComment=Test MoveEye without hardware\n"
-             f"Exec={sys.executable} {os.path.join(d, 'motionwatch_simulator.py')}\nPath={d}\nIcon={icon}\nTerminal=false\nCategories=Utility;\n")
-    uid, gid, home, name = _desktop_user()
-    made = []
-    for folder in (os.path.join(home, ".local", "share", "applications"), os.path.join(home, "Desktop"), os.path.join(home, "Schreibtisch")):
-        if folder.endswith(("Desktop", "Schreibtisch")) and not os.path.isdir(folder):
-            continue
-        try:
-            os.makedirs(folder, exist_ok=True)
-            p = os.path.join(folder, "motionwatch-simulator.desktop")
-            with open(p, "w") as f:
-                f.write(entry)
-            os.chmod(p, 0o755)
-            if os.getuid() == 0:
-                os.chown(p, uid, gid)
-            made.append(p)
-        except OSError:
-            continue
-    if os.getuid() == 0:
-        for root_, _ds, fs in os.walk(d):
-            for x in fs + [""]:
-                try:
-                    os.chown(os.path.join(root_, x) if x else root_, uid, gid)
-                except OSError:
-                    pass
-    log_event("sys", f"Simulator installed in {d}" + (f" (menu / desktop icon for {name})" if made else ""))
-    return True, d
-
-
-def sim_running():
-    p = SIMPROC["p"]
-    return p is not None and p.poll() is None
-
-
-def sim_start():
-    """Start the simulator on this Pi: with its window on the desktop when somebody is logged in, otherwise without window."""
-    if sim_running():
-        return True, ""
-    exe = os.path.join(sim_dir(), "motionwatch_simulator.py")
-    if not os.path.isfile(exe):
-        ok, _ = sim_install()
-    else:
-        sim_autoupdate()
-    uid, gid, home, name = _desktop_user()
-    env = dict(os.environ)
-    run = f"/run/user/{uid}"
-    way = sorted(glob.glob(os.path.join(run, "wayland-*")))
-    window = bool(way) or os.path.exists("/tmp/.X11-unix/X0") or bool(os.environ.get("DISPLAY"))
-    if window:
-        env.update(XDG_RUNTIME_DIR=run, HOME=home, USER=name)
-        if way:
-            env["WAYLAND_DISPLAY"] = os.path.basename([w for w in way if not w.endswith(".lock")][0]) if [w for w in way if not w.endswith(".lock")] else "wayland-0"
-        env.setdefault("DISPLAY", ":0")
-    cmd = [sys.executable, exe] + ([] if window else ["--no-window"])
-    kw = {"user": uid, "group": gid} if os.getuid() == 0 and uid != 0 else {}
-    try:
-        SIMPROC["p"] = subprocess.Popen(cmd, cwd=sim_dir(), env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-                                        start_new_session=True, **kw)
-    except (OSError, ValueError) as e:
-        return False, str(e)[:120]
-    CFG["sim_url"] = "http://127.0.0.1:8765"; save_settings()
-    log_event("sys", "Simulator started on this device" + (" (with window)" if window else " (without window)"))
-    return True, ""
-
-
-def sim_stop():
-    p = SIMPROC["p"]
-    if p is not None and p.poll() is None:
-        try:
-            os.killpg(p.pid, signal.SIGTERM)
-        except OSError:
-            p.terminate()
-        log_event("sys", "Simulator stopped")
-    SIMPROC["p"] = None
-    return True, ""
 
 
 def sens_has_pir():
@@ -31181,7 +31026,7 @@ def update_check():
             src_ = src
             fs_ = UPD.get("fast_sha") or ""                 # 2.95.71 test mode: the list of exactly this commit (never an old copy)
             mg_ = re.match(r"(https://raw\.githubusercontent\.com/[^/]+/[^/]+/)[^/]+(/.+)$", src)
-            if fs_ and mg_ and CFG.get("update_fast"):
+            if fs_ and mg_ and CFG.get("update_mode") == "dev":
                 src_ = mg_.group(1) + fs_ + mg_.group(2)
             req = _upd_request(src_ + ("&" if "?" in src_ else "?") + "t=" + str(int(time.time())), {"Cache-Control": "no-cache"})
             with urllib.request.urlopen(req, timeout=15) as r:
@@ -31723,7 +31568,7 @@ class UpdateWatcher:
     def fast_changed(self):
         """2.95.71 test mode: every minute ask GitHub whether versions.json has a new commit. The answer «unchanged» (304 with
         the ETag) does not count against GitHub's limit of 60 questions per hour; a new commit -> look for versions now."""
-        if not CFG.get("update_fast") or not CFG["update_url"].strip():
+        if CFG.get("update_mode") != "dev" or not CFG["update_url"].strip():
             return False
         m = re.match(r"https://raw\.githubusercontent\.com/([^/]+)/([^/]+)/([^/]+)/(.+)$", CFG["update_url"].strip())
         if not m:
@@ -31758,15 +31603,15 @@ class UpdateWatcher:
     def auto_install(self):
         """Automatic update: in the chosen hour, when nothing is going on (disarmed unless allowed, no recording, no person),
         install the newest version. If the new version does not start, the start guard goes back to the old one.
-        2.95.71 test mode (update_fast): at once, at any hour, also while armed - but never during a recording or a person."""
-        fast = bool(CFG.get("update_fast"))
-        if not (CFG["update_install"] or fast) or RESTART["pending"] or UPD["busy"] or POWER.get("pending"):
+        2.95.71 test mode (3.23: update_mode «dev»): at once, at any hour, also while armed - but never during a recording or a person."""
+        fast = CFG.get("update_mode") == "dev"
+        if CFG.get("update_mode") not in ("auto", "dev") or RESTART["pending"] or UPD["busy"] or POWER.get("pending"):
             return
         u = STATE.get("update_new") or {}
         v = u.get("version")
         if not v or (not fast and datetime.now().hour != int(CFG["update_hour"]) % 24):
             return
-        if (is_armed() and not CFG["update_install_armed"] and not fast) or STATE.get("recording") or STATE.get("persons") or STATE.get("arm_state") == "arming":
+        if (is_armed() and not fast) or STATE.get("recording") or STATE.get("persons") or STATE.get("arm_state") == "arming":
             return
         try:
             if simtask_busy():                            # 2.97.0: not in the middle of a test run, a training night or a game
@@ -31792,7 +31637,7 @@ class UpdateWatcher:
             log_event("sys", f"Automatic update failed: {err}")
 
     def tick(self):
-        if not (CFG["update_auto"] or CFG.get("update_fast")) or not CFG["update_url"].strip() or RESTART["pending"]:
+        if not CFG["update_url"].strip() or RESTART["pending"]:     # 3.23: every update_mode looks (and reports)
             return
         items, err = update_check()
         new = sorted((x for x in items if x.get("available") and _installable(x) and _vkey(x["version"]) > _vkey(APP_VERSION)), key=lambda x: _vkey(x["version"]))
@@ -32571,7 +32416,6 @@ class MotionWatch:
             SIMLINK = SimLink()
             SimDiscovery()
             ToolsWatch(); UplinkWatch(); WifiGuard()
-            threading.Thread(target=sim_autoupdate, daemon=True, name="simupdate").start()
         if AUDIO is None:
             AUDIO = AudioMonitor()
             SOUNDEV_OBJ["o"] = SoundEvents()
@@ -40210,8 +40054,7 @@ class WebStream:
         fails = {}                                  # ip -> times of wrong passwords (lock-out after 8 in 5 minutes)
 
         public = {"/i18n/fr.js", "/i18n/it.js", "/i18n/rm.js", "/manifest.webmanifest", "/icon-192.png", "/icon-512.png", "/apple-touch-icon.png",
-                  "/apple-touch-icon-precomposed.png", "/favicon.ico", "/sw.js",
-                  "/sim/simulator.zip"}                # the simulator fetches its updates here (public program, no secrets)
+                  "/apple-touch-icon-precomposed.png", "/favicon.ico", "/sw.js"}
 
         def local_req():
             """really from this computer - not through Tailscale serve / a tunnel (those also arrive as 127.0.0.1)"""
@@ -40646,15 +40489,8 @@ class WebStream:
                     log_event("sys", f"Simulator address set to {CFG['sim_url']} (web)")
                     if CFG["sim_on"] and WATCH_REF.get("w") is not None and str(CFG["source"]).startswith("sim:"):
                         w_ = WATCH_REF["w"]; w_._open_gen += 1; w_._start_opener(CFG["source"])
-                if act_ in ("install", "start") and not CFG.get("sim_basis_show"):   # 2.98.55: «Basis-Simulator anzeigen» off (639h)
-                    return reply({"ok": False, "error": tr_err("Switch on «Show the basic simulator» first (Simulator, Expert)", lang)}, 400)
-                if act_ in ("install", "start", "stop"):
-                    try:
-                        ok, msg = {"install": sim_install, "start": sim_start, "stop": sim_stop}[act_]()
-                    except Exception as e:
-                        ok, msg = False, str(e)[:120]
-                    if not ok:
-                        return reply({"ok": False, "error": tr_err(msg, lang)}, 400)
+                if act_ in ("install", "start", "stop"):          # 3.23: the old Python simulator on the Pi is removed (360)
+                    return reply({"ok": False, "error": tr_err("not possible", lang)}, 400)
             return reply(dict(sim_status(), ok=True, connected=sim_status()["ok"]))
 
         @app.route("/api/qs", methods=["POST"])
@@ -41324,12 +41160,6 @@ class WebStream:
             if not SIMPY_DL["msg"]:
                 sim3d_fetch(SIMPY, SIMPY_DL)
             return Response(sim3d_wait_page(lang, SIMPY, SIMPY_DL, "/sim/simulator_py.zip"), mimetype="text/html", headers={"Cache-Control": "no-store"})
-
-        @app.route("/sim/simulator.zip")
-        def sim_zip():
-            import base64
-            return Response(base64.b64decode("".join(SIM_ZIP_B64.split())), mimetype="application/zip",
-                            headers={"Content-Disposition": 'attachment; filename="MoveEye_Simulator.zip"'})
 
         @app.route("/api/hwcheck", methods=["POST"])
         def api_hwcheck():
@@ -48098,7 +47928,6 @@ TOGGLES = [  # (section, key, label)
     ("Simulator", "sim_auto", "Find the simulator in the network by itself (and take over its address)"),
     ("Simulator", "sim_autostart", "Switch the simulation on by itself as soon as a simulator is online (and off again when none is left)"),
     ("Simulator", "sim_autoupd", "Update the simulator by itself (the setting «Neue Versionen» of the simulator)"),
-    ("Simulator", "sim_basis_show", "Show the basic simulator (MoveEye Sim · Basis, the old Python simulator)"),
     ("AI detection", "species_on", "Recognise the animal species (second AI model - see the guide)"),
     ("Setup", "desktop_notice", "Small message on the Pi's desktop when MoveEye starts in the background"),
     ("Solar panel", "solar_on", "Solar panel with current meter (INA219 on I2C)"),
@@ -48184,11 +48013,7 @@ TOGGLES = [  # (section, key, label)
     ("Notifications", "msg_keyword_on", "Keyword at the start of every message (MoveEye-ALARM, MoveEye-WAERME …: for iPhone shortcuts)"),
     ("Notifications", "email_on", "E-mail: messages also by e-mail (the iPhone can start a shortcut from it)"),
     ("Notifications", "pushover_emergency", "Pushover: alarms as emergency (critical alert, repeats until confirmed)"),
-    ("Updates", "update_auto", "Look for new versions by itself (every 3 hours)"),
-    ("Updates", "update_install", "Install new versions automatically"),
-    ("Updates", "update_fast", "Test mode: get new versions at once (looks on GitHub every minute and installs right away, also while armed; while on, the other update switches do not count)"),
     ("Updates", "news_popup", "After an update: show briefly what is new and what comes next"),
-    ("Updates", "update_install_armed", "Automatic update also while armed (otherwise only when disarmed)"),
     ("Updates", "update_unsigned", "Also accept unsigned versions (not recommended - only for own builds)"),
     ("Battery", "ups_on", "UPS HAT (battery pack on the Pi): use it when found"),
     ("Battery", "ups_push", "UPS HAT: push message at a power cut / when power is back"),
@@ -48416,7 +48241,7 @@ def tk_main_on(sec):
             "Solar panel": lambda: g("solar_on"), "Lights": lambda: g("light_white", "off") != "off" or g("light_ir", "off") != "off",
             "Microphone": lambda: g("audio_in"), "Loudspeaker": lambda: g("siren_on") and g("siren_on") != "off", "Recording": lambda: g("record"),
             "Timelapse": lambda: g("timelapse_on"), "Backup": lambda: g("backup_type") and g("backup_type") != "off", "Relays": lambda: g("relays_on"),
-            "Web stream": lambda: g("web_stream"), "MQTT / Home Assistant": lambda: g("mqtt_on"), "Updates": lambda: g("update_auto") or g("update_fast"),
+            "Web stream": lambda: g("web_stream"), "MQTT / Home Assistant": lambda: g("mqtt_on"), "Updates": lambda: g("update_mode") in ("auto", "dev"),
             "Simulator": lambda: sim_live(), "Mover": lambda: g("mover_on"), "Guest access": lambda: g("guest_on"),
             "Reference scan": lambda: bool(refscan_meta())}.get(sec, lambda: False)())
     except Exception:
@@ -50019,17 +49844,6 @@ class App:
             self.status_labels["Simulator"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
             self.status_labels["Simulator"].pack(anchor="w", pady=(4, 0))
             ttk.Button(sbody, text=tr("Simulation on / off") + "  (F9)", command=lambda: self._sim_toggle("window")).pack(fill="x", pady=(6, 0))
-            sf = ttk.Frame(sbody); sf.pack(fill="x", pady=(4, 0))
-            def sim_do(fn, done):
-                def run():
-                    ok, m = fn()
-                    self._status("Simulator", ("✓ " + tr(done)) if ok else "⚠ " + tr_err(m))
-                threading.Thread(target=run, daemon=True).start()
-            if CFG.get("sim_basis_show"):                 # 2.98.55: «MoveEye Sim · Basis» only with «Basis-Simulator anzeigen» (639h)
-                ttk.Button(sf, text=tr("Install"), command=lambda: sim_do(sim_install, "Simulator installed")).pack(side="left", expand=True, fill="x", padx=(0, 4))
-                ttk.Button(sf, text=tr("Start"), command=lambda: sim_do(sim_start, "Simulator started")).pack(side="left", expand=True, fill="x", padx=(0, 4))
-            if CFG.get("sim_basis_show") or sim_running():    # a running one can always be stopped
-                ttk.Button(sf, text=tr("Stop"), command=lambda: sim_do(sim_stop, "Simulator stopped")).pack(side="left", expand=True, fill="x")
             kidata_tk_build(self, sbody)                  # training pack with «Vielfalt», «Delete old AI data» (197)
             falearn_tk_build(self, sbody)                 # 2.98.38: «Lernbilder prüfen» (148)
         if sec == "Security":                             # «Log in only encrypted» (574)
@@ -50494,7 +50308,7 @@ class App:
                 "Microphone": lambda: bool(CFG["audio_in"]), "Loudspeaker": lambda: CFG["siren_on"] != "off", "Recording": lambda: CFG["record"],
                 "Timelapse": lambda: CFG["timelapse_on"], "Backup": lambda: CFG["backup_type"] != "off", "Relays": lambda: CFG["relays_on"],
                 "Schedule": lambda: any(x.get("enabled") for x in SCHEDULES), "Wi-Fi / hotspot": lambda: CFG["hotspot_on"],
-                "Web stream": lambda: CFG["web_stream"], "MQTT / Home Assistant": lambda: CFG["mqtt_on"], "Updates": lambda: CFG["update_auto"],
+                "Web stream": lambda: CFG["web_stream"], "MQTT / Home Assistant": lambda: CFG["mqtt_on"], "Updates": lambda: CFG.get("update_mode") in ("auto", "dev"),
                 "Extra sensors": lambda: CFG["sens_on"] and bool(CFG["sensors"]), "Storm warning": lambda: CFG["storm_on"], "GPS module": lambda: CFG["gpsmod_on"], "Mover": lambda: MOVER["avail"], "Simulator": lambda: sim_live(), "Solar panel": lambda: CFG["solar_on"]}
         for key, (arr, secs, _c, _w) in list(getattr(self, "grp_meta", {}).items()):
             try:
@@ -56846,7 +56660,9 @@ def _g2_tk_wizard(self, force=False):
             nm = entry(tr("Name of this device (optional)"), CFG.get("device_name") or "")
             lab(tr("Time on MoveEye") + ": " + datetime.now().strftime("%d.%m.%Y %H:%M"))
             la = entry(tr("Latitude"), CFG.get("latitude")); lo = entry(tr("Longitude"), CFG.get("longitude"))
-            toggle("⚡ " + tr("Fast updates (development)"), "update_fast")
+            f_ = tk.Frame(body, bg=C["panel"], padx=8, pady=4); f_.pack(fill="x", pady=2)      # 3.23: update_mode (639q)
+            Toggle(f_, "⚡ " + tr("Fast updates (development)"), CFG.get("update_mode") == "dev",
+                   lambda v: set_text("update_mode", "dev" if v else "off")).pack(fill="x")
             lab("🔒 " + tr("Password for this page"), False)
             lab(tr("Without a password everybody in the same network (and with the link) can watch and switch everything."))
             p1 = entry(tr("Password (6-64 characters)"), "", "•"); p2 = entry(tr("Repeat password"), "", "•")
@@ -57002,7 +56818,7 @@ def _g2_tk_wizard(self, force=False):
                 res.config(text=("✓ " + tr("Connecting …")) if ok else "⚠ " + tr_err(err))
             r = row(); self._fbtn(r, tr("🔌 Connect"), conn).pack(side="left")
         elif c == "tours":
-            toggle(tr("Tour of a page on its first visit"), "tours_auto"); toggle(tr("Tip of the day"), "tip_of_day"); toggle(tr("Show Blinki"), "blinki_on")
+            lab(tr("⚙ Tour, tip of the day, Blinki: Settings → System → Device & help"))      # 3.23: set only there
             r = row(); self._fbtn(r, tr("↺ Reset all tours"), lambda: g2_action({"action": "tours_reset"}, "window")).pack(side="left")
 
         def go_next():
@@ -57034,7 +56850,8 @@ def _g2_tk_tip(self):
     bf = tk.Frame(w, bg=C["bg"]); bf.pack(fill="x", padx=14, pady=(0, 12))
     self._fbtn(bf, tr("Show me") + " ›", lambda: (w.destroy(), self._open_page(x["href"])), primary=True).pack(side="left")
     self._fbtn(bf, tr("Not now"), w.destroy).pack(side="left", padx=(6, 0))
-    self._fbtn(bf, tr("Tip of the day off"), lambda: (self._set("tip_of_day", False), w.destroy())).pack(side="left", padx=(6, 0))
+    tk.Label(w, text=tr("⚙ Tour, tip of the day, Blinki: Settings → System → Device & help"), bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8),
+             wraplength=380, justify="left", anchor="w").pack(fill="x", padx=14, pady=(0, 10))      # 3.23: set only there
 
 
 _g2_tab_before = App._tab
@@ -57140,7 +56957,7 @@ def g2_state(lang=None):
     steps = g2_steps(g.get("mode") or "quick", lang)
     ids = [s["id"] for s in steps]
     left = [i for i in ids if i not in g["done"] and i not in g["skipped"] and not next(s for s in steps if s["id"] == i)["auto_skip"]]
-    return dict(g, steps=steps, hw=g2_hw(), left=left, setup_done=bool(CFG["setup_done"]), update_fast=bool(CFG.get("update_fast")),
+    return dict(g, steps=steps, hw=g2_hw(), left=left, setup_done=bool(CFG["setup_done"]), update_fast=CFG.get("update_mode") == "dev",
                 open=bool(g.get("mode")) and not g.get("finished"), default_simple=bool(CFG.get("ui_simple")),
                 use_case=CFG.get("use_case") or "", tours_auto=bool(CFG.get("tours_auto", True)), tip_of_day=bool(CFG.get("tip_of_day", True)))
 
@@ -57267,7 +57084,6 @@ SET_HELP = {
     "report_hour": ("The end of the night time: the report comes then, «Guard tonight» ends then.", "The time you usually get up."),
     "diary_on": ("Collects the best picture of every animal visit by itself.", "On - it costs little memory."),
     "eco_on": ("Fewer pictures while all is quiet: the battery lasts longer, the reaction is a little slower.", "On with a battery, off with a power supply."),
-    "update_auto": ("New versions are installed by themselves (only signed ones).", "On."),
     "thermal_on": ("The thermal camera finds warm bodies, also in the dark and behind grass.", "On if a thermal camera is connected."),
     "thermal_alarm": ("An alarm from the thermal picture alone (warm body without movement in the normal picture).", "On at night without light."),
     "noise_alarm": ("An alarm when it is loud (the microphone).", "Off at a busy campsite."),
@@ -57428,8 +57244,7 @@ FACTORY_KEEP = {
     "record_dir", "storage_path", "lang", "sim_autostart_v2", "dev_phase_done", "app_icon_moveeye_done", "app_icon_orange_done",
     "news_seen_web", "news_seen_tk", "weekcheck_last", "weekrep_last", "report_last_day",
     # updates (Daniel, development phase: the fast test updates must keep working after a reset)
-    "update_fast", "update_auto", "update_url", "update_token", "update_unsigned", "update_hour", "update_install",
-    "update_install_armed", "update_push", "update_notified",
+    "update_mode", "update_url", "update_token", "update_unsigned", "update_unsigned_t", "update_hour", "update_push", "update_notified",
 }
 FACTORY_WORD = "ZURÜCKSETZEN"
 FACTORY_WORDS = {"ZURÜCKSETZEN", "ZURUECKSETZEN", "RESET", "RÉINITIALISER", "REINITIALISER", "RIPRISTINA", "RESETTAR"}
@@ -67066,46 +66881,6 @@ for _k, _v in _HX_DISC.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
-# Ohne den Schalter: kein Download-Link, keine Knöpfe «Simulator auf dem Pi installieren / hier starten» (Web 470, Fenster 570).
-# Der Code bleibt; /sim/simulator.zip bleibt erreichbar (bestehende Basis-Simulatoren holen dort ihre Updates); eine
-# bestehende Installation auf dem Pi bleibt unberührt (nichts wird gelöscht), ein laufender lässt sich weiter stoppen.
-_HX_BASIS = {
-    'Show the basic simulator (MoveEye Sim · Basis, the old Python simulator)':
-        ('Basis-Simulator anzeigen (MoveEye Sim · Basis, der alte Python-Simulator)',
-         'Afficher le simulateur de base (MoveEye Sim · Basis, l’ancien simulateur Python)',
-         'Mostra il simulatore di base (MoveEye Sim · Basis, il vecchio simulatore Python)',
-         'Mussar il simulatur da basa (MoveEye Sim · Basis, il vegl simulatur Python)'),
-    'Shows the download of the old Python simulator and the buttons to install and start it on the Pi (page Simulator → Programs and downloads, window → Simulator). An installation on the Pi stays as it is, also when this is off.':
-        ('Zeigt den Download des alten Python-Simulators und die Knöpfe zum Installieren und Starten auf dem Pi (Seite Simulator → Programme und Downloads, Fenster → Simulator). Eine Installation auf dem Pi bleibt, wie sie ist, auch wenn dies aus ist.',
-         'Affiche le téléchargement de l’ancien simulateur Python et les boutons pour l’installer et le démarrer sur le Pi (page Simulateur → Programmes et téléchargements, fenêtre → Simulateur). Une installation sur le Pi reste telle quelle, même si c’est désactivé.',
-         'Mostra il download del vecchio simulatore Python e i pulsanti per installarlo e avviarlo sul Pi (pagina Simulatore → Programmi e download, finestra → Simulatore). Un’installazione sul Pi resta com’è, anche se questo è spento.',
-         'Mussa la telechargiada dal vegl simulatur Python ed ils buttuns per l’installar e aviar sin il Pi (pagina Simulatur → Programs e telechargiadas, fanestra → Simulatur). Ina installaziun sin il Pi resta sco ch’ella è, er sche quai è stizzà.'),
-    'Switch on «Show the basic simulator» first (Simulator, Expert)':
-        ('Zuerst «Basis-Simulator anzeigen» einschalten (Simulator, Experte)',
-         'Activez d’abord «Afficher le simulateur de base» (Simulateur, Expert)',
-         'Prima attiva «Mostra il simulatore di base» (Simulatore, Esperto)',
-         'Avant enconuschent «Mussar il simulatur da basa» (Simulatur, Expert)'),
-    'Off: MoveEye Sim · 3D is the simulator.': ('Aus: MoveEye Sim · 3D ist der Simulator.', 'Désactivé : MoveEye Sim · 3D est le simulateur.',
-                                                'Spento: MoveEye Sim · 3D è il simulatore.', 'Stizzà: MoveEye Sim · 3D è il simulatur.'),
-}
-for _k, _v in _HX_BASIS.items():
-    DE.setdefault(_k, _v[0])
-    for _i, _L in enumerate(('fr', 'it', 'rm')):
-        TRX[_L].setdefault(_k, _v[_i + 1])
-
-SET_HELP["sim_basis_show"] = ("Shows the download of the old Python simulator and the buttons to install and start it on the Pi (page Simulator → "
-                              "Programs and downloads, window → Simulator). An installation on the Pi stays as it is, also when this is off.",
-                              "Off: MoveEye Sim · 3D is the simulator.")
-
-
-_sim_status_558 = sim_status
-
-
-# wraps: sim_status
-def sim_status():                                         # + 639h: show «MoveEye Sim · Basis» (download, install / start on the Pi)?
-    r = _sim_status_558()
-    r["basis_show"] = bool(CFG.get("sim_basis_show"))
-    return r
 # ----------------------------------------------------------------------------
 # Same structure as the start screen «Spielen» of the simulator (simulator3d/scripts/spielbereich.gd): Blinki on top
 # (greets, a tip, happy about a new level / a finished adventure), the level with its bar, the adventures (Camping-Platz →
@@ -68204,6 +67979,194 @@ SET_HELP["update_unsigned"] = ("Only for your own builds: MoveEye also installs 
                                "Off.")
 
 
+# ---- 3.23 Schritt 2 -------------------------------------------------------------------------------------------------------
+# * Updates (Daniel: «4 Schalter werden zu einer Auswahl wie im Simulator»): update_mode off | auto | dev statt update_auto /
+#   update_install / update_fast / update_install_armed (MIGRATE_ONLY, 020). Alte Dateien: update_fast -> dev, update_install -> auto,
+#   sonst off. «auto» installiert nur bei «Aus» (das alte «auch bei Schutz an» = update_install_armed fällt weg; dev tut es immer).
+# * «Bewegung reduzieren» (reduce_motion auto | on | off, Gerät & Hilfe): Logo, Radar-Symbol, Blinki, Status-LED-Blinki im Web;
+#   auto folgt dem Betriebssystem (prefers-reduced-motion), on / off überschreiben es (render_page unten, html.mwrm / html.mwrm0).
+# * «Stimme» (voice_mode on | off | subtitles, Licht & Ton → Lautsprecher): die Stimme im Browser (Trailer, Vorführung,
+#   Almanach, Spiele). Die Ansage beim Einschalten und «Gesundheit!» sind Lautsprecher-Funktionen und bleiben eigene Schalter.
+# * Rundgang, Tipp des Tages, Blinki: nur noch unter Einstellungen → System → Gerät & Hilfe; Einrichtung, Hilfe-Karte, Tipp-
+#   Fenster (Web 516, Fenster 585) zeigen einen Link dorthin.
+TEXTS.extend([
+    ("Updates", "update_mode", "New versions", "enum", "update_modes"),
+    ("Device & help", "reduce_motion", "Reduce motion (logo, radar, Blinki)", "enum", "reduce_motion"),
+    ("Loudspeaker", "voice_mode", "Voice (narrator, demo, trailer, browser)", "enum", "voice_modes"),
+])
+TEXT_SPECS.update({k: (kind, extra) for s, k, l, kind, extra in TEXTS if k in ("update_mode", "reduce_motion", "voice_mode")})
+SIMPLE_KEYS.update({"update_mode", "reduce_motion", "voice_mode"})
+UPDATE_MODES = (("off", "only by hand: look and report, install with the button"),
+                ("auto", "install automatically (in the update hour, when the protection is off)"),
+                ("dev", "development phase: every minute, at once (also while protected)"))
+REDUCE_MOTION = (("auto", "like the operating system"), ("on", "on: still pictures"), ("off", "off: everything moves"))
+VOICE_MODES = (("on", "on"), ("off", "off"), ("subtitles", "only subtitles"))
+SET_HELP.update({
+    "update_mode": ("«Only by hand»: MoveEye looks every 3 hours and reports a new version; you install it with «Update now». «Automatically»: "
+                    "in the update hour, only while the protection is off. «Development phase»: looks every minute and installs at once. Like the simulator.",
+                    "Automatically."),
+    "reduce_motion": ("Less movement on the pages: the walking person of the logo, the radar symbol and Blinki stand still. «Like the operating "
+                      "system» follows the setting of the phone or PC (reduce motion / animations).", "Like the operating system."),
+    "voice_mode": ("One switch for the voice: the narrator of the trailers and the demo, the almanac and the games in the browser. «Only "
+                   "subtitles» shows the text without speaking.", "On."),
+})
+_HX_SCHALTER2 = {
+    "New versions": ("Neue Versionen", "Nouvelles versions", "Nuove versioni", "Novas versiuns"),
+    "only by hand: look and report, install with the button":
+        ("nur von Hand: nachschauen und melden, installieren mit dem Knopf", "seulement à la main : chercher et signaler, installer avec le bouton",
+         "solo a mano: cercare e segnalare, installare con il pulsante", "mo a maun: tschertgar ed annunziar, installar cun il buttun"),
+    "install automatically (in the update hour, when the protection is off)":
+        ("automatisch installieren (in der Update-Stunde, wenn der Schutz aus ist)", "installer automatiquement (à l’heure des mises à jour, protection désactivée)",
+         "installare automaticamente (nell’ora degli aggiornamenti, con la protezione spenta)", "installar automaticamain (en l’ura d’actualisaziun, cura che la protecziun è stizzada)"),
+    "development phase: every minute, at once (also while protected)":
+        ("Entwicklungsphase: jede Minute, sofort (auch bei Schutz an)", "phase de développement : chaque minute, tout de suite (aussi sous protection)",
+         "fase di sviluppo: ogni minuto, subito (anche con la protezione attiva)", "fasa da svilup: mintga minuta, immediat (er cun protecziun)"),
+    "Reduce motion (logo, radar, Blinki)": ("Bewegung reduzieren (Logo, Radar, Blinki)", "Réduire les animations (logo, radar, Blinki)",
+                                            "Ridurre il movimento (logo, radar, Blinki)", "Reducir il moviment (logo, radar, Blinki)"),
+    "like the operating system": ("wie das Betriebssystem", "comme le système", "come il sistema operativo", "sco il sistem operativ"),
+    "on: still pictures": ("an: ruhige Bilder", "activé : images fixes", "attivo: immagini ferme", "activà: maletgs quiets"),
+    "off: everything moves": ("aus: alles bewegt sich", "désactivé : tout bouge", "spento: tutto si muove", "stizzà: tut sa mova"),
+    "Voice (narrator, demo, trailer, browser)": ("Stimme (Erzähler, Vorführung, Trailer, Browser)", "Voix (narrateur, démonstration, bande-annonce, navigateur)",
+                                                 "Voce (narratore, dimostrazione, trailer, browser)", "Vusch (narratur, preschentaziun, trailer, navigatur)"),
+    "only subtitles": ("nur Untertitel", "seulement les sous-titres", "solo sottotitoli", "mo sutitels"),
+    "⚙ Tour, tip of the day, Blinki: Settings → System → Device & help":
+        ("⚙ Rundgang, Tipp des Tages, Blinki: Einstellungen → System → Gerät & Hilfe", "⚙ Visite, astuce du jour, Blinki : Réglages → Système → Appareil et aide",
+         "⚙ Tour, consiglio del giorno, Blinki: Impostazioni → Sistema → Dispositivo e aiuto", "⚙ Gir, cussegl dal di, Blinki: Parameters → Sistem → Apparat & agid"),
+    SET_HELP["update_mode"][0]:
+        ("«Nur von Hand»: MoveEye schaut alle 3 Stunden nach und meldet eine neue Version; installiert wird mit «Jetzt aktualisieren». «Automatisch»: "
+         "in der Update-Stunde, nur wenn der Schutz aus ist. «Entwicklungsphase»: schaut jede Minute nach und installiert sofort. Wie im Simulator.",
+         "«Seulement à la main» : MoveEye cherche toutes les 3 heures et signale une nouvelle version ; vous l’installez avec «Mettre à jour». «Automatiquement» : "
+         "à l’heure des mises à jour, seulement protection désactivée. «Phase de développement» : cherche chaque minute et installe tout de suite. Comme le simulateur.",
+         "«Solo a mano»: MoveEye controlla ogni 3 ore e segnala una nuova versione; la installi con «Aggiorna ora». «Automaticamente»: "
+         "nell’ora degli aggiornamenti, solo con la protezione spenta. «Fase di sviluppo»: controlla ogni minuto e installa subito. Come il simulatore.",
+         "«Mo a maun»: MoveEye tschertga mintga 3 uras ed annunzia ina nova versiun; ti l’installeschas cun «Actualisar ussa». «Automaticamain»: "
+         "en l’ura d’actualisaziun, mo cura che la protecziun è stizzada. «Fasa da svilup»: tschertga mintga minuta ed installescha immediat. Sco il simulatur."),
+    "Automatically.": ("Automatisch.", "Automatiquement.", "Automaticamente.", "Automaticamain."),
+    SET_HELP["reduce_motion"][0]:
+        ("Weniger Bewegung auf den Seiten: die gehende Person im Logo, das Radar-Symbol und Blinki stehen still. «Wie das Betriebssystem» "
+         "folgt der Einstellung des Handys oder PCs (Bewegung / Animationen reduzieren).",
+         "Moins de mouvement sur les pages : la personne qui marche du logo, le symbole radar et Blinki restent immobiles. «Comme le système» "
+         "suit le réglage du téléphone ou du PC (réduire les animations).",
+         "Meno movimento nelle pagine: la persona che cammina nel logo, il simbolo radar e Blinki stanno fermi. «Come il sistema operativo» "
+         "segue l’impostazione del telefono o del PC (ridurre il movimento / le animazioni).",
+         "Main moviment sin las paginas: la persuna che chamina en il logo, il simbol radar e Blinki stattan quiet. «Sco il sistem operativ» "
+         "suonda il parameter dal telefonin u dal PC (reducir moviment / animaziuns)."),
+    "Like the operating system.": ("Wie das Betriebssystem.", "Comme le système.", "Come il sistema operativo.", "Sco il sistem operativ."),
+    SET_HELP["voice_mode"][0]:
+        ("Ein Schalter für die Stimme: der Erzähler der Trailer und der Vorführung, der Almanach und die Spiele im Browser. «Nur Untertitel» "
+         "zeigt den Text, ohne zu sprechen.",
+         "Un seul réglage pour la voix : le narrateur des bandes-annonces et de la démonstration, l’almanach et les jeux dans le navigateur. «Seulement les sous-titres» "
+         "affiche le texte sans parler.",
+         "Un solo interruttore per la voce: il narratore dei trailer e della dimostrazione, l’almanacco e i giochi nel browser. «Solo sottotitoli» "
+         "mostra il testo senza parlare.",
+         "In sulet interruptur per la vusch: il narratur dals trailers e da la preschentaziun, l’almanac ed ils gieus en il navigatur. «Mo sutitels» "
+         "mussa il text senza discurrer."),
+    "On.": ("An.", "Activé.", "Attivo.", "Activà."),
+}
+for _k, _v in _HX_SCHALTER2.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+G2_UI.append("⚙ Tour, tip of the day, Blinki: Settings → System → Device & help")
+
+_text_choice_pairs_639q = text_choice_pairs
+
+
+# wraps: text_choice_pairs
+def text_choice_pairs(key):                               # + 639q: updates, reduce motion, voice
+    extra = (TEXT_SPECS.get(key) or (None, None))[1]
+    if extra == "update_modes":
+        return [(k, tr(l)) for k, l in UPDATE_MODES]
+    if extra == "reduce_motion":
+        return [(k, tr(l)) for k, l in REDUCE_MOTION]
+    if extra == "voice_modes":
+        return [(k, tr(l)) for k, l in VOICE_MODES]
+    return _text_choice_pairs_639q(key)
+
+
+def update_mode_migrate(cfg_in):
+    """an older file with the four update switches -> update_mode (only when the file has no update_mode yet)"""
+    for k in ("update_auto", "update_install", "update_fast", "update_install_armed"):
+        CFG.pop(k, None)
+    if not isinstance(cfg_in, dict) or "update_mode" in cfg_in:
+        return ""
+    if not any(k in cfg_in for k in ("update_auto", "update_install", "update_fast", "update_install_armed")):
+        return ""
+    m = "dev" if cfg_in.get("update_fast") is True else "auto" if cfg_in.get("update_install") is True else "off"
+    CFG["update_mode"] = m
+    return m
+
+
+_settings_migrations_before_639q = _settings_migrations
+
+
+# wraps: _settings_migrations
+def _settings_migrations(cfg_in):                         # + 639q (3.23): the four update switches -> update_mode
+    _settings_migrations_before_639q(cfg_in)
+    try:
+        m = update_mode_migrate(cfg_in)
+        if m:
+            log_event("sys", f"Settings of an older version taken over: updates «{m}»")
+    except Exception as e:
+        log_event("sys", f"Settings migration (639q): {e}"[:150])
+
+
+# ---- web: reduce motion and the voice on every page ------------------------------------------------------------------------
+_RM_BLOCK = re.compile(r"@media \(prefers-reduced-motion:\s*reduce\)\s*\{((?:[^{}]*\{[^{}]*\})*)\s*\}")
+
+
+def rm_css(css):
+    """every «@media (prefers-reduced-motion:reduce){…}»: only when not switched off (html.mwrm0), and the same rules with
+    html.mwrm (switched on, or «auto» and the system says so - set by the script in the head)"""
+    def one(m):
+        body = m.group(1)
+        if "mwrm" in body:
+            return m.group(0)
+        rules = re.findall(r"([^{}]+)\{([^{}]*)\}", body)
+        pre = lambda p: ",".join(p + " " + x.strip() for x in sel.split(",") if x.strip())
+        a, b = [], []
+        for sel, decl in rules:
+            a.append(pre("html:not(.mwrm0)") + "{" + decl + "}")
+            b.append(pre("html.mwrm") + "{" + decl + "}")
+        return "@media (prefers-reduced-motion:reduce){" + "".join(a) + "}" + "".join(b)
+    return _RM_BLOCK.sub(one, css)
+
+
+try:
+    BLINKI_CSS = rm_css(BLINKI_CSS)                       # 589: Blinki comes with /g2/ui.js, not in the page
+except NameError:
+    pass
+
+
+def motion_head():
+    m = str(CFG.get("reduce_motion") or "auto")
+    m = m if m in ("auto", "on", "off") else "auto"
+    v = str(CFG.get("voice_mode") or "on")
+    v = v if v in ("on", "off", "subtitles") else "on"
+    js = ("(function(){var m=%s,d=document.documentElement,r=m==='on';try{if(m==='auto')r=matchMedia('(prefers-reduced-motion: reduce)').matches;}catch(e){}"
+          "d.classList.toggle('mwrm',r);d.classList.toggle('mwrm0',m==='off');window.MW_MOTION=r?'reduce':'full';window.MW_VOICE=%s;})();") % (json.dumps(m), json.dumps(v))
+    css = ("html.mwrm header h1::before{background-image:url(/icon-192.png?i=%s)!important}"
+           "html.mwrm header h1.wm *{animation:none!important}html.mwrm header h1.wm .wmp{transform:none!important}") % app_icon_id()
+    return "<script>" + js + "</script><style>" + css + "</style>"
+
+
+_render_page_before_639q = render_page
+
+
+# wraps: render_page
+def render_page(page, active):
+    """+ 639q: «Reduce motion» (class on <html> before anything is drawn) and the voice setting for the speaking pages"""
+    out = _render_page_before_639q(page, active)
+    if "prefers-reduced-motion" in out:
+        out = rm_css(out)
+    return out.replace("<head>", "<head>" + motion_head(), 1) if "<head>" in out else motion_head() + out
+
+
+def voice_say_ok():
+    """the browser may speak (voice_mode «on»)"""
+    return str(CFG.get("voice_mode") or "on") == "on"
+
+
 def schalter_selftest():
     """the removed switches stay removed, the functions are always on, unsigned versions expire after 24 hours"""
     lists = {x[1] for x in TOGGLES + SLIDERS + TEXTS}
@@ -68223,10 +68186,27 @@ def schalter_selftest():
     finally:
         G["save_settings"] = keep_save; G["log_event"] = keep_log
         CFG.update(keep)
-    return "test inbox always on in the simulation, login always encrypted, unsigned versions 24 h"
+    for k in ("update_auto", "update_install", "update_fast", "update_install_armed", "sim_basis_show"):
+        assert k not in CFG and k not in lists, f"{k} is back"
+    keep2 = CFG.get("update_mode")
+    try:
+        assert update_mode_migrate({"update_auto": True, "update_install": True}) == "auto" and CFG["update_mode"] == "auto"
+        assert update_mode_migrate({"update_fast": True, "update_install": True}) == "dev"
+        assert update_mode_migrate({"update_auto": False}) == "off"
+        assert update_mode_migrate({"update_mode": "auto", "update_fast": True}) == "" and CFG["update_mode"] == "off"
+    finally:
+        CFG["update_mode"] = keep2
+    assert [c for c, _ in text_choice_pairs("update_mode")] == ["off", "auto", "dev"]
+    css = rm_css("@media (prefers-reduced-motion:reduce){.bk *,.bk.hop .bk-all{animation:none}#x{transition:none}}")
+    assert "html:not(.mwrm0) .bk *" in css and "html.mwrm .bk.hop .bk-all{animation:none}" in css and "html.mwrm #x" in css, css
+    assert rm_css(css) == css, "not twice"
+    pg = render_page("<html><head></head><body><header><h1>MoveEye</h1></header></body></html>", "live")
+    assert "mwrm" in pg and "MW_VOICE" in pg and "SIM_ZIP_B64" not in globals()
+    return ("test inbox always on in the simulation, login always encrypted, unsigned versions 24 h, updates one choice, "
+            "reduce motion + voice on the pages, no basic simulator")
 
 
-SELFTEST_EXTRA.append(("Switches tidied up (639p)", schalter_selftest))
+SELFTEST_EXTRA.append(("Switches tidied up (639q)", schalter_selftest))
 # ----------------------------------------------------------------------------
 # real-erk-e3 (31.10.2026): die Push-Nachricht «Etwas Grosses am Boden» (Titel und Text) in de / fr / it / rm.
 # ----------------------------------------------------------------------------
@@ -68340,8 +68320,8 @@ if __name__ == "__main__":
     if a.notify_url is not None:
         CFG["notify_url"] = a.notify_url
     if DEMO["on"]:
-        CFG.update(source="demo", setup_done=True, record_dir=os.path.join(DATA_DIR, "recordings"), notify_on=False, update_auto=False,
-                   update_install=False, update_fast=False, dev_phase_done=True, hotspot_on=False, mqtt_on=False, backup_type="off", fleet=[], ai_enabled=True, diary_on=True,
+        CFG.update(source="demo", setup_done=True, record_dir=os.path.join(DATA_DIR, "recordings"), notify_on=False, update_mode="off",
+                   update_url="", dev_phase_done=True, hotspot_on=False, mqtt_on=False, backup_type="off", fleet=[], ai_enabled=True, diary_on=True,
                    device_name=CFG["device_name"] or "Demo")
         a.source = None; a.cam = None
         print("DEMO MODE - settings in " + DATA_DIR)

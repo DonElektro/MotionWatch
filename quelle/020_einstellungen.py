@@ -208,7 +208,7 @@ CFG = {
     "sim_autostart": True, "sim_autostart_v2": False,   # v2 (2.95.26): on a Raspberry Pi off by default (it guards the real place)
     # 2.95.25: a simulator announces itself -> the simulation goes on by itself (and off again when it is gone)
     "sim_auto_on": False,        # ... it was switched on by that (only then it is switched off again by itself)
-    "sim_autoupd": True, "sim_basis_show": False, "net_watch": False, "net_known": {}, "presence_macs": [], "presence_auto": False, "presence_gone_min": 10.0,
+    "sim_autoupd": True, "net_watch": False, "net_known": {}, "presence_macs": [], "presence_auto": False, "presence_gone_min": 10.0,
     "bt_tracker_warn": False, "bt_tracker_min": 30.0, "presence_bt": [], "wifi_repeater": False, "clap_on": False, "clap_sens": 5, "clap_beep": True, "clap_volume": 60, "clap_2": "relay:0",
     "clap_3": "light_white", "clap_4": "none", "clap_disarmed": True, "clap_practice": False, "sneeze_on": False, "sneeze_sens": 5,
     "sneeze_volume": 70, "sneeze_reply": "tts", "sneeze_texts": "Gesundheit!|Gsundheit!|Zum Wohl!", "sneeze_night": True,
@@ -236,12 +236,14 @@ CFG = {
     "update_unsigned": False,    # also install versions without a valid signature (own builds) - not recommended
     "update_unsigned_t": 0.0,    # 3.23: when it was switched on - after 24 h it switches itself off (update_unsigned_ok, 380)
     "update_url": "",            # where new versions come from: https://.../versions.json or a folder (USB stick)
-    "update_auto": True,         # look for a new version every 3 hours (and 2 minutes after the start)
-    "update_install": False,     # install a new version by itself ...
-    "update_fast": False, "dev_phase_done": False, "news_popup": True, "msg_icons": True, "train_night_on": False, "train_hour": 1, "train_optimize": True, "train_pics": True, "train_day": "", "rover_alarm": False, "fa_learn_auto": True, "rehearsal_on_arm": False, "weekcheck_on": True, "weekcheck_last": "", "simprof_ignore": [], "simprof_opt": {}, "me_points": {"total": 0, "log": [], "week": ""}, "header_wordmark": True, "news_seen_web": "", "news_seen_tk": "",   # 2.96.3: «Neu in dieser Version»
+    # 3.23: one choice like the simulator instead of update_auto / update_install / update_fast / update_install_armed (639q):
+    #   "off" = look every 3 hours and report, install by hand · "auto" = install by itself in the update hour when disarmed ·
+    #   "dev" = development phase: look every minute, install at once (also while armed)
+    "reduce_motion": "auto",     # 3.23 «Bewegung reduzieren»: auto = like the operating system (prefers-reduced-motion) | on | off (639q)
+    "voice_mode": "on",          # 3.23 «Stimme»: on | off | subtitles - narrator, demo, trailer and the voice in the browser (639q)
+    "update_mode": "off", "dev_phase_done": False, "news_popup": True, "msg_icons": True, "train_night_on": False, "train_hour": 1, "train_optimize": True, "train_pics": True, "train_day": "", "rover_alarm": False, "fa_learn_auto": True, "rehearsal_on_arm": False, "weekcheck_on": True, "weekcheck_last": "", "simprof_ignore": [], "simprof_opt": {}, "me_points": {"total": 0, "log": [], "week": ""}, "header_wordmark": True, "news_seen_web": "", "news_seen_tk": "",   # 2.96.3: «Neu in dieser Version»
            # 2.95.71: test mode - look on GitHub every minute, install a new version at once
     "update_hour": 12,           # ... in this hour of the day
-    "update_install_armed": False,   # ... also while armed (otherwise only when disarmed)
     "update_push": True,         # push message when a new version is there (once per version)
     "update_notified": "",
     "update_token": "",          # GitHub key (read-only token) for a private repository - only ever sent to GitHub
@@ -283,7 +285,9 @@ DEFAULTS = dict(CFG)
 # 2.98.18: old keys that are only READ from settings files of older versions (the migration takes them over) - never in CFG,
 # so they are not shown, saved or exported anywhere. key -> what took its place.
 MIGRATE_ONLY = {"simweek_on": "weekrep_sim (577, 2.98.15)", "back_ask": "presence_back (577, 2.98.15)",
-                "shortcut_token": "an app key with scope «shortcut» (573, aufr)"}
+                "shortcut_token": "an app key with scope «shortcut» (573, aufr)",
+                "update_auto": "update_mode (639q, 3.23)", "update_install": "update_mode (639q, 3.23)",
+                "update_fast": "update_mode (639q, 3.23)", "update_install_armed": "update_mode (639q, 3.23)"}
 WAYPOINTS = []          # [pan, tilt] positions in percent
 
 

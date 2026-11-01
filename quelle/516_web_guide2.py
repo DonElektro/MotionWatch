@@ -141,6 +141,7 @@ G2_JS = r"""
   if (window._g2) return; window._g2 = true;
   const D = window.MW_G2D || {tx: {}, tours: {}, tt: {}, help: {}}, B = window.MW_G2B || {};
   const T = k => D.tx[k] || k;
+  const G2_SET_LINK = "⚙ Tour, tip of the day, Blinki: Settings → System → Device & help";
   const PG = B.page || "";
   const LG = () => { try { return (typeof LANG !== "undefined" && LANG) || D.lang || "de"; } catch (e) { return D.lang || "de"; } };
   const E = (tag, cls, text) => { const x = document.createElement(tag); if (cls) x.className = cls; if (text != null) x.textContent = text; return x; };
@@ -349,7 +350,7 @@ details.g2-tt ul{margin:0 0 12px;padding-left:20px}details.g2-tt li{margin:4px 0
     c.append(E("small", "", "☀ " + T("Tip of the day")), E("b", "", x.icon + " " + x.title), E("p", "", x.text));
     const gb = E("div", "gb"), close = () => { c.classList.remove("on"); setTimeout(() => c.remove(), 350); };
     const a = E("a", "btn", T("Show me") + " ›"); a.href = x.href;
-    gb.append(a, BT(T("Not now"), "sec", close), BT(T("Tip of the day off"), "sec", async () => { await P("/api/set", {key: "tip_of_day", value: false}); close(); }));
+    gb.append(a, BT(T("Not now"), "sec", close), (() => { const k = E("a", "btn sec", T(G2_SET_LINK)); k.href = "/settings?open=grp:sys"; return k; })());   // 3.23: set only in Settings → System
     c.appendChild(gb); document.body.appendChild(c); requestAnimationFrame(() => requestAnimationFrame(() => c.classList.add("on")));
     P("/api/g2", {action: "tip_seen", id: x.id});
   }
@@ -460,7 +461,7 @@ details.g2-tt ul{margin:0 0 12px;padding-left:20px}details.g2-tt li{margin:4px 0
           if (!window.isSecureContext || !navigator.geolocation) { ctx.err.textContent = T("Location: only on a secure page (https) - or type it."); return; }
           navigator.geolocation.getCurrentPosition(p => { la.value = p.coords.latitude.toFixed(4); lo.value = p.coords.longitude.toFixed(4); }, e => { ctx.err.textContent = e.message; }, {timeout: 10000}); });
         const r2 = E("div", "row2"); r2.appendChild(gb); ctx.body.append(two, r2);
-        tgRow(ctx, "⚡ " + T("Fast updates (development)"), S.guide.update_fast, x => setKey("update_fast", x));
+        tgRow(ctx, "⚡ " + T("Fast updates (development)"), S.guide.update_fast, x => P("/api/text", {key: "update_mode", value: x ? "dev" : "off"}));   // 3.23: update_mode
         ctx.body.appendChild(E("label", "l", "🔒 " + T("Password for this page")));
         ctx.body.appendChild(E("p", "mut", T("Without a password everybody in the same network (and with the link) can watch and switch everything.")));
         let p1 = null, p2 = null, without = null;
@@ -635,9 +636,7 @@ details.g2-tt ul{margin:0 0 12px;padding-left:20px}details.g2-tt li{margin:4px 0
       },
       async tours(ctx) {
         H(ctx, "💡", titleOf("tours").title || "");
-        tgRow(ctx, T("Tour of a page on its first visit"), S.guide.tours_auto, x => { B.tourAuto = x; setKey("tours_auto", x); });
-        tgRow(ctx, T("Tip of the day"), S.guide.tip_of_day, x => setKey("tip_of_day", x));
-        if (window.MWBlinki) tgRow(ctx, MWBlinki.t("Show Blinki"), MWBlinki.on(), x => { MWBlinki.set(x); setKey("blinki_on", x); render(); });
+        { const k = E("a", "btn sec", T(G2_SET_LINK)); k.href = "/settings?open=grp:sys"; k.target = "_blank"; const r0 = E("div", "row2"); r0.appendChild(k); ctx.body.appendChild(r0); }   // 3.23: tour / tip / Blinki only in Settings → System
         const l = E("label", "tg"), s = E("select"); s.style.width = "auto";
         ["off", "basic", "normal", "all"].forEach(k => { const o = E("option", "", T(k)); o.value = k; s.appendChild(o); });
         try { s.value = ["off", "basic", "normal", "all"][(window.MW_GUIDE || {}).level ?? 2]; } catch (e) {}
@@ -723,9 +722,7 @@ details.g2-tt ul{margin:0 0 12px;padding-left:20px}details.g2-tt li{margin:4px 0
     start.href = "/?guide=1"; start.onclick = async e => { e.preventDefault(); if (g.finished || !g.mode) await P("/api/setup", {step: "again"}); else await gpost({action: "resume"}); location.href = "/?guide=1"; };
     const rs = BT(T("↺ Reset all tours"), "sec", async () => { await gpost({action: "tours_reset"}); LSset("mw-tours-seen", "[]"); rs.textContent = "✓ " + T("All tours will show again."); });
     bt.append(start, rs); box.appendChild(bt);
-    const row = (label, on, key) => { const l = E("label", "tg"); l.append(E("span", "", label), sw(on, v => P("/api/set", {key, value: v}))); box.appendChild(l); };
-    row(T("Tour of a page on its first visit"), g.tours_auto, "tours_auto"); row(T("Tip of the day"), g.tip_of_day, "tip_of_day");
-    if (window.MWBlinki) { const l = E("label", "tg"); l.append(E("span", "", MWBlinki.t("Show Blinki")), sw(MWBlinki.on(), v => { MWBlinki.set(v); P("/api/set", {key: "blinki_on", value: v}); })); box.appendChild(l); }
+    { const k = E("a", "btn sec", T(G2_SET_LINK)); k.href = "/settings?open=grp:sys"; const r0 = E("div", "btns"); r0.appendChild(k); box.appendChild(r0); }   // 3.23: tour / tip / Blinki only in Settings → System
     const sysb = document.getElementById("g2-sys"); if (!sysb) return;
     sysb.textContent = ""; sysb.className = "g2-card"; sysb.appendChild(E("h3", "", "⚙ " + T("System")));
     const sb = E("div", "btns"); sb.appendChild(BT(T("⚠ Reset to factory settings …"), "sec", g2Factory)); sysb.appendChild(sb);

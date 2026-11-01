@@ -228,6 +228,7 @@ function spkParts(text) {                                  // long sentences in 
   return out;
 }
 function spkSay(text, l, v) {
+  if (window.MW_VOICE && window.MW_VOICE !== "on") return;   // 3.23: one switch «Stimme» (639q voice_mode)
   v = v || spkPick(l);
   try { speechSynthesis.resume(); } catch (e) {}           // (iOS sometimes keeps the voice «paused» after a while)
   spkParts(text).forEach(p => { const u = new SpeechSynthesisUtterance(p);
