@@ -1,8 +1,14 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Version **3.25.0** · MoveEye **3.25.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 31.10.2026 · Version **3.26.0** · MoveEye **3.26.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.26.0 (MoveEye 3.26.0): Maggie realistischer (`maggie_modell.gd`, `maggie_einfach.gd`)
+
+- Ab Grafik «mittel»: Modell mit Skelett (Quaternius, CC0, `simulator3d/LIZENZEN.md`) aus `modelle/maggie_hund_glb.bin`
+  (erzeugt mit `werkzeuge/maggie_modell.py`), Fell-Shader `shaders/maggie_fell.gdshader`; in «einfach» weiche Grundformen mit
+  ihrem Muster. `maggie_hund.gd` wählt die Form. Export: `modelle/*.bin`.
 
 ## NEU in 3.25.0 (MoveEye 3.25.0): «Meine Ansicht» (Teil 639r)
 
