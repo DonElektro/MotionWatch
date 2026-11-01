@@ -1,14 +1,14 @@
 {
  "_hinweis": "Erzeugt von werkzeuge/gehaeuse_bauen.py aus hardware/gehaeuse/ – nicht von Hand ändern. Koordinaten: Meter, Ursprung Kippachse (main.head_pitch), Godot X = Modell y, Y = z, Z = x (vorne = −Z).",
  "version": "5.1",
- "quelle_sha256": "4605bdea032a4a3234a3a2b71dd06789e5e5da9e44d1fd29bb35d4cbd7ced57c",
+ "quelle_sha256": "546b0c656817037ace3959d6b4a06daa616955ccfffa34008a796dc710405cbe",
  "dateien": {
-  "gehaeuse.glb": "8cbcdd75e3e732c1e4933b0104ae7ae3aab10bcab364582646bd31d73c18b6af",
-  "gehaeuse_lite.glb": "7409a67ef3c68160eca424dac5c6734c3cd05338f4593032e440d7618545fac3"
+  "gehaeuse.glb": "bcec74a7770b096ee0dfad3c5344da4ae6f077237eedb33514005d50ce250780",
+  "gehaeuse_lite.glb": "df9384ea23c5cac0b297dec208b6e19e807be19100e0cb59290e02bba41ac6e2"
  },
- "dreiecke": 84000,
- "dreiecke_aussen": 76874,
- "dreiecke_lite": 12627,
+ "dreiecke": 85822,
+ "dreiecke_aussen": 78696,
+ "dreiecke_lite": 12807,
  "kippachse_ueber_boden_m": 0.1258,
  "fuesse_m": 0.006,
  "v52": {
@@ -797,7 +797,7 @@
    "gruppe": "pan",
    "farbe": "#f59a4a",
    "aussen": true,
-   "dreiecke": 3589,
+   "dreiecke": 3608,
    "mitte": [
     0.0,
     -0.0431,
@@ -808,7 +808,7 @@
     0.0062,
     0.068
    ],
-   "dreiecke_lite": 643,
+   "dreiecke_lite": 637,
    "explosion": [
     0.0,
     0.29,
@@ -820,18 +820,18 @@
    "gruppe": "pan",
    "farbe": "#f59a4a",
    "aussen": true,
-   "dreiecke": 4106,
+   "dreiecke": 4099,
    "mitte": [
     0.0005,
-    -0.0141,
+    -0.014,
     0.0045
    ],
    "groesse": [
     0.088,
-    0.052,
+    0.0519,
     0.039
    ],
-   "dreiecke_lite": 794,
+   "dreiecke_lite": 793,
    "explosion": [
     0.0,
     0.33,
@@ -990,7 +990,7 @@
     0.0494,
     0.036
    ],
-   "dreiecke_lite": 316,
+   "dreiecke_lite": 322,
    "explosion": [
     0.045,
     0.335,
@@ -1002,22 +1002,22 @@
    "gruppe": "pan",
    "farbe": "#f59a4a",
    "aussen": true,
-   "dreiecke": 2824,
+   "dreiecke": 3746,
    "mitte": [
     -0.0494,
     -0.016,
-    -0.008
+    -0.0045
    ],
    "groesse": [
     0.0278,
     0.028,
-    0.0201
+    0.0271
    ],
-   "dreiecke_lite": 530,
+   "dreiecke_lite": 623,
    "explosion": [
     -0.0692,
     0.335,
-    -0.0112
+    -0.0063
    ]
   },
   {
@@ -1025,22 +1025,22 @@
    "gruppe": "pan",
    "farbe": "#f59a4a",
    "aussen": true,
-   "dreiecke": 2794,
+   "dreiecke": 3682,
    "mitte": [
     0.0494,
     -0.016,
-    -0.008
+    -0.0045
    ],
    "groesse": [
     0.0278,
     0.028,
-    0.0201
+    0.0271
    ],
-   "dreiecke_lite": 512,
+   "dreiecke_lite": 600,
    "explosion": [
     0.0692,
     0.335,
-    -0.0112
+    -0.0063
    ]
   },
   {

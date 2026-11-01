@@ -1,22 +1,56 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-01 12:06",
+ "generated": "2026-11-01 13:48",
  "versions": [
+  {
+   "version": "3.40.0",
+   "file": "webcam_bewegung_3_40_0.py",
+   "url": "",
+   "sha256": "aa6944616f3c5ac22c4dc3f86b806eea47c78d4db33b5885990e6e284084a32d",
+   "date": "2026-11-01 13:48",
+   "notes": "Bauen: MoveEye komplett selbst bauen – ein Menüeintrag in MoveEye und Simulator, 10 Reiter, 3D im Browser auch ohne Simulator, Varianten, Einkaufsliste, alle Druckteile als 3MF, Verkabelungsplan, «Mein Bau».",
+   "size": 4751837,
+   "sig": "dcee75204e1b6dd5521502ed2ea7fc6790553ea6bdd300e7bcb3e195c4957a147396bca2c7fec109153cbb8d159f5af2c20625f12108065a3e7cf06561296e08",
+   "data": {
+    "file": "moveeye_daten_3_40_0.zip",
+    "url": "",
+    "sha256": "0881d6b89ec6446528e61c7e92ac48ddd8e072822a53b6c870cd976e7102c593",
+    "size": 2516444,
+    "sig": "138c0130c73f35d2cfb05929f4e8dee72b1d355214fd05e22275c3aeb7ca98d10c36283e58bb0ba7926975e85921e51cc140fe0302fc5879f36ea3264f7da806"
+   }
+  },
+  {
+   "version": "3.39.2",
+   "file": "webcam_bewegung_3_39_2.py",
+   "url": "",
+   "sha256": "70bc21235730a8e6b3087aafb6ce4a99ca2c74f2eca5c638aa2fac93218dc951",
+   "date": "2026-11-01 13:38",
+   "notes": "Datenschutz: Push- und E-Mail-Meldungen zeigen statt des WLAN-Namens nur noch «bekanntes WLAN».",
+   "size": 4751822,
+   "sig": "dda1ed74c09b2fe61c34e79ab3ab6c9e3bcdad376e5de3935b881dd72626c4f6e63c94c4f0133fa764fd55aba7d3448d028458ac9b90deac7b79cc3028e5780c",
+   "data": {
+    "file": "moveeye_daten_3_39_2.zip",
+    "url": "",
+    "sha256": "0ad55718ee31f06f35cc2c5bd3f6e930fd4353abbe05099e4d3b11922edd789a",
+    "size": 2516344,
+    "sig": "2142c55524195f15dcd51ae2e836ac23fac35e376ec96dcc002143a4414406de98b569aa14d125935c58dd110d2f95625fbedf8ec30afd3a00cb2fd68163d809"
+   }
+  },
   {
    "version": "3.38.0",
    "file": "webcam_bewegung_3_38_0.py",
    "url": "",
-   "sha256": "f338a6e98d186945f09a11dcd4418a20fb39312907a4e3472ab67398dfb629f4",
-   "date": "2026-11-01 12:06",
+   "sha256": "7eb916f692a391503d07ef2e49360ba7895c7d65e151122e183bbcb764847d86",
+   "date": "2026-11-01 12:37",
    "notes": "Simulator: System → Sicherung – ZIP auf dem PC, in einen Ordner/USB oder in die MoveEye-Sicherung; Wiederherstellen im Simulator oder aus MoveEye (nur Besitzer), vorher wird automatisch der aktuelle Stand gesichert.",
-   "size": 4688595,
-   "sig": "b8b4b82bb0cae94fb89cb15fc3710c5f826f13371b36cf06292aac44656650c51303d19c6b36bc4a0fc3baa15b681062e23968e39108f2a88e33ab0646d00309",
+   "size": 4723421,
+   "sig": "dd18f11d5edc5839165f1c2c32fac61e5cdfafe7006888d7555a822cc776f85e16b6a061eede5d6f1cef284f3f4298eb8480a526897db3947cfd55c7baf57704",
    "data": {
     "file": "moveeye_daten_3_38_0.zip",
     "url": "",
-    "sha256": "e1bd303f3c954d98779dac7e65129d686f062a76870dafdfc7d9433cfa85e2f7",
-    "size": 1586833,
-    "sig": "0fb0d4b3c8ddaa277df70cac02762356c25ada1c90ced6454d65e5c85a771e26b4f887e0b34dd6404c5b545ced1ec3f2ba97bfff732c5fec4f8fcec7b841ab0e"
+    "sha256": "94b593acfda8efd0df40f89ebaff7b6823c9de6dc1e51d5deb25c5636283af90",
+    "size": 1589447,
+    "sig": "baa4ddf0ce8262e3c823e26e7640755089a32c5fe4f510e6daeef88aa4c92d486876eeacde1a65035ea57fc01769bed942bbf872cb14ed4fbae4c5885b815c03"
    }
   },
   {
@@ -24,7 +58,7 @@
    "file": "webcam_bewegung_3_37_0.py",
    "url": "",
    "sha256": "4138426d4f2bf303d87ce86321420b397a58d7a28964bb6feb15c183c72dcab3",
-   "date": "2026-11-01 12:05",
+   "date": "2026-11-01 13:38",
    "notes": "Foto-Texturen aus Daniels Fotos im Bergtal: Wiese, Alpweide, Alpenrosen, Geröll, Fels, Strasse (abschaltbar; Lite unverändert).",
    "size": 4688558,
    "sig": "71b990d425a669f5898bdf598d00e8162990172e36363cf76f26ba0527a3963226a71641aa8e200ac842a6d0903240378952da7ff9583aed8a07eaf61a690300",
@@ -75,7 +109,7 @@
    "file": "webcam_bewegung_3_34_0.py",
    "url": "",
    "sha256": "ac7d566f7aabab2eb20e15218ead93c5a2de0c5afc27cd69c099098d1175645e",
-   "date": "2026-11-01 11:52",
+   "date": "2026-11-01 12:30",
    "notes": "Neue Seite «Gehäuse & Bau» (Mehr): Gehäuse v5.1 Schritt für Schritt, Materialliste, Druckdateien, Kapitel in der Anleitung (5 Sprachen); im Simulator die Werkstatt zum Drehen und Zerlegen, das echte Gehäuse am Gerät.",
    "size": 4671016,
    "sig": "fcb76cdf51c93f6dac1de01fffd0e3df01214409884d9e3facd378f9f6018c164b169b6f82942bf1f82dd31b6a763ea68b799350f17be0658f069eeaa7e4b206",
@@ -119,40 +153,6 @@
     "sha256": "d03eba7055bff2176a7dd9a51cbcfb5904df3b4a69e40a45c0316d39473c15e4",
     "size": 1567077,
     "sig": "a8d42a036a386c247b3afc41af2feac0cb5d40a6382f1e54e17fe7f39ecf560d2def518175c394952606d11bb6b2ab16fbe5b7ff5107c6ca5e7aadc6d161f00a"
-   }
-  },
-  {
-   "version": "3.31.0",
-   "file": "webcam_bewegung_3_31_0.py",
-   "url": "",
-   "sha256": "56c35f98dba982c74ee960e23f453c28659d8fcc3305b41bae40b422641180c7",
-   "date": "2026-11-01 11:35",
-   "notes": "Ein gemeinsamer Kopf auf jeder Seite (Web, Pi-Fenster, Simulator): ? 🔔 ↻ DE ☰ ⛶ ▲ 🛠 immer gleich; Ein-/Ausblenden-Listen als Chips mit Symbolen und Gruppen.",
-   "size": 4523368,
-   "sig": "b1df9658dd92f934625296f11be3fee542ef1ffc3a4da28f55bf115a065bf65dec6c87b031ba18c5fa99b0c8953bd095e737fe94e8af5be91c9cbd325d82d902",
-   "data": {
-    "file": "moveeye_daten_3_31_0.zip",
-    "url": "",
-    "sha256": "d2697360f1fe47bab69ccc7fe66090b500c80666d6992302fcb0a1b0d4b1e0c5",
-    "size": 1566711,
-    "sig": "f1b4f5ca5d7e0e54279b851bd462f89350c6e33609e0c529797fb9303b6533e80e2bfd18556ee7c4458591a6b41320e0c60a82cc2f72ab30cd88ee22f3342309"
-   }
-  },
-  {
-   "version": "3.30.0",
-   "file": "webcam_bewegung_3_30_0.py",
-   "url": "",
-   "sha256": "4de3df91e770a9233a99194e20cbe20aac049753afda3b87dc3d4e25023371c0",
-   "date": "2026-11-01 11:35",
-   "notes": "Schneller zum Entwickler-Bereich: das MoveEye-Logo etwa 1 s gedrückt halten (Web, Pi-Fenster, Simulator); im Simulator zusätzlich ein Werkzeug-Knopf 🛠 oben rechts.",
-   "size": 4523481,
-   "sig": "5f36fe5bb255c0b7391a149b09e13645e5a886939b5e890a382e0f25af195c30c73d7346bd78624b39c6f32a903ea7c196c2c3b38d4997eace5fda557789ac06",
-   "data": {
-    "file": "moveeye_daten_3_30_0.zip",
-    "url": "",
-    "sha256": "6edd516f3b91da63c9cb4524516b8f0322ef72c5982c63ac17d2b58c16787100",
-    "size": 1566651,
-    "sig": "0d89a2fd00e2d6be215b93498f7ef2cd72671c5feadb68c5f1d0096f4b866cfa218305009a66a458adc4c8b582c5159c347e47b4a5eda994591227317acfb707"
    }
   },
   {

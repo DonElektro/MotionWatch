@@ -33,7 +33,7 @@ FEHLER_KATALOG = json.loads(r"""{
  "_hinweis": "Gemeinsamer Fehler-Katalog MoveEye ↔ MoveEye Sim (Paket «Fehler-QR», Daniel 01.11.2026), Ergänzung zu ui_gemeinsam.json. Pro Fehler: Kennung, Titel, Erklärung, Schritte und optional eine Aktion, alles in de / en / fr / it / rm. MoveEye bettet die Datei beim Bauen ein (werkzeuge/bauen.py → quelle/639u_fehler_hilfe.py, FEHLER_KATALOG, bleibt in der Hauptdatei – Hilfe geht auch ohne Zusatzdaten); der Simulator liest sie aus res:// (scripts/fehler_hilfe.gd, export_presets.cfg). Neue Fehler: zuerst hier, dann bauen.",
  "_felder": {
   "pfad": "Adresse der Hilfeseite in MoveEye: <MoveEye>/hilfe/fehler/<id>. Der QR-Code enthält nur diese Adresse (keine Passwörter, keine Schlüssel).",
-  "fehler": "seite: mw | sim | beide. stufe: bad | warn. quelle.health: IDs der Selbstdiagnose von MoveEye (120 health_check), quelle.sim_diag: IDs der Selbstdiagnose des Simulators (diagnose.gd), quelle.meldung: englische Teile von Meldungen (Push, Bild «NO CAMERA FOUND»), quelle.wenn: Zusatzbedingung in MoveEye (639u). aktion: Schlüssel aus «aktionen».",
+  "fehler": "seite: mw | sim | beide. stufe: bad | warn. quelle.health: IDs der Selbstdiagnose von MoveEye (120 health_check), quelle.sim_diag: IDs der Selbstdiagnose des Simulators (diagnose.gd), quelle.meldung: englische Teile von Meldungen (Push, Bild «NO CAMERA FOUND»), quelle.wenn: Zusatzbedingung in MoveEye (639u). aktion: Schlüssel aus «aktionen». bau: Reiter der Seite «Bauen» mit der passenden Anleitung (real-bauen).",
   "aktionen": "Was «Jetzt beheben» tut. MoveEye-Aktionen laufen nur als POST des Besitzers (angemeldet, CSRF-Schlüssel); sim_* laufen im Simulator selbst (Knopf im Simulator) oder über /control von MoveEye.",
   "ui": "Texte der Hilfeseite, der Knöpfe und des Fensters im Simulator."
  },
@@ -1633,6 +1633,293 @@ FEHLER_KATALOG = json.loads(r"""{
     ]
    },
    "aktion": "sim_neustart"
+  },
+  {
+   "id": "HW_PCA9685",
+   "seite": "mw",
+   "stufe": "warn",
+   "bau": "verkabeln",
+   "titel": {
+    "de": "Servo-Steuerung PCA9685 fehlt",
+    "en": "Servo board PCA9685 missing",
+    "fr": "Carte servo PCA9685 absente",
+    "it": "Scheda servo PCA9685 assente",
+    "rm": "Platina servo PCA9685 manca"
+   },
+   "text": {
+    "de": "MoveEye findet den PCA9685 auf I2C 0x41 nicht – Kopf, Licht und Status-LED bewegen sich nicht.",
+    "en": "MoveEye does not find the PCA9685 on I2C 0x41 – head, light and status LED do not work.",
+    "fr": "MoveEye ne trouve pas le PCA9685 sur I2C 0x41 – tête, lumière et LED d'état ne marchent pas.",
+    "it": "MoveEye non trova il PCA9685 su I2C 0x41 – testa, luce e LED di stato non funzionano.",
+    "rm": "MoveEye na chatta betg il PCA9685 sin I2C 0x41 – chau, glisch e LED da status na funcziunan betg."
+   },
+   "schritte": {
+    "de": [
+     "Strom aus. Kabel prüfen: 3,3 V Pin 1, GND Pin 6, SDA Pin 3, SCL Pin 5.",
+     "Lötbrücke A0 geschlossen? Sonst hat er 0x40 wie die Thermal-90.",
+     "Auf dem Pi «sudo i2cdetect -y 1»: 41 muss erscheinen."
+    ],
+    "en": [
+     "Power off. Check the cables: 3.3 V pin 1, GND pin 6, SDA pin 3, SCL pin 5.",
+     "Solder bridge A0 closed? Otherwise it has 0x40 like the Thermal-90.",
+     "On the Pi «sudo i2cdetect -y 1»: 41 must show up."
+    ],
+    "fr": [
+     "Couper le courant. Vérifier : 3,3 V broche 1, GND broche 6, SDA broche 3, SCL broche 5.",
+     "Pont A0 fermé ? Sinon il a 0x40 comme la Thermal-90.",
+     "Sur le Pi «sudo i2cdetect -y 1» : 41 doit apparaître."
+    ],
+    "it": [
+     "Togliere corrente. Controllare: 3,3 V pin 1, GND pin 6, SDA pin 3, SCL pin 5.",
+     "Ponticello A0 chiuso? Altrimenti ha 0x40 come la Thermal-90.",
+     "Sul Pi «sudo i2cdetect -y 1»: deve comparire 41."
+    ],
+    "rm": [
+     "Current ora. Controllar: 3,3 V pin 1, GND pin 6, SDA pin 3, SCL pin 5.",
+     "Punt A0 serrà? Uschiglio ha el 0x40 sco la Thermal-90.",
+     "Sin il Pi «sudo i2cdetect -y 1»: 41 sto cumparair."
+    ]
+   }
+  },
+  {
+   "id": "HW_SERVO_JITTER",
+   "seite": "mw",
+   "stufe": "warn",
+   "bau": "inbetrieb",
+   "titel": {
+    "de": "Servo zittert oder brummt",
+    "en": "Servo jitters or hums",
+    "fr": "Le servo tremble ou bourdonne",
+    "it": "Il servo trema o ronza",
+    "rm": "Il servo tremblescha u zunzurescha"
+   },
+   "text": {
+    "de": "Meist zu wenig Strom für die Servos oder ein mechanischer Anschlag.",
+    "en": "Mostly too little power for the servos or a mechanical end stop.",
+    "fr": "Le plus souvent trop peu de courant pour les servos ou une butée mécanique.",
+    "it": "Di solito poca corrente per i servo o un fine corsa meccanico.",
+    "rm": "Per il pli memia pauc current per ils servos u in tschep mecanic."
+   },
+   "schritte": {
+    "de": [
+     "Step-Down-Ausgang unter Last messen: 5,0–5,2 V?",
+     "Elko 470 µF an V+ des PCA9685 vorhanden?",
+     "Grenzen kleiner stellen (Seite Servos), Kopf darf nicht anschlagen."
+    ],
+    "en": [
+     "Measure the step-down output under load: 5.0–5.2 V?",
+     "Capacitor 470 µF at V+ of the PCA9685 fitted?",
+     "Set smaller limits (page Servos), the head must not hit anything."
+    ],
+    "fr": [
+     "Mesurer la sortie de l'abaisseur en charge : 5,0–5,2 V ?",
+     "Condensateur 470 µF sur V+ du PCA9685 présent ?",
+     "Réduire les limites (page Servos), la tête ne doit rien toucher."
+    ],
+    "it": [
+     "Misurare l'uscita dello step-down sotto carico: 5,0–5,2 V?",
+     "Condensatore 470 µF su V+ del PCA9685 presente?",
+     "Ridurre i limiti (pagina Servo), la testa non deve urtare."
+    ],
+    "rm": [
+     "Mesirar la sortida dal step-down sut chargia: 5,0–5,2 V?",
+     "Condensatur 470 µF vi da V+ dal PCA9685 avant maun?",
+     "Pli pitschens limits (pagina Servos), il chau na dastga betg tutgar."
+    ]
+   }
+  },
+  {
+   "id": "HW_I2C",
+   "seite": "mw",
+   "stufe": "warn",
+   "bau": "verkabeln",
+   "titel": {
+    "de": "I2C-Gerät fehlt oder doppelt",
+    "en": "I2C device missing or twice",
+    "fr": "Appareil I2C absent ou en double",
+    "it": "Dispositivo I2C assente o doppio",
+    "rm": "Apparat I2C manca u dubel"
+   },
+   "text": {
+    "de": "Zwei Module mit derselben Adresse stören sich, ein lockeres Kabel versteckt ein Modul.",
+    "en": "Two modules with the same address disturb each other, a loose cable hides a module.",
+    "fr": "Deux modules à la même adresse se gênent, un câble lâche cache un module.",
+    "it": "Due moduli con lo stesso indirizzo si disturbano, un cavo allentato nasconde un modulo.",
+    "rm": "Dus moduls cun la medema adressa sa disturban, in cabel lom zuppenta in modul."
+   },
+   "schritte": {
+    "de": [
+     "«sudo i2cdetect -y 1» ausführen und mit dem Reiter Verkabeln vergleichen.",
+     "Erwartet: 40 Thermal-90, 41 PCA9685, 2d UPS HAT (E), 68 MPU-6050, 76/77 BME280, 44 INA219.",
+     "Fehlt eins: Module einzeln abstecken, bis es wieder geht."
+    ],
+    "en": [
+     "Run «sudo i2cdetect -y 1» and compare it with the tab Wiring.",
+     "Expected: 40 Thermal-90, 41 PCA9685, 2d UPS HAT (E), 68 MPU-6050, 76/77 BME280, 44 INA219.",
+     "One missing: unplug the modules one by one until it works again."
+    ],
+    "fr": [
+     "Lancer «sudo i2cdetect -y 1» et comparer avec l'onglet Câblage.",
+     "Attendu : 40 Thermal-90, 41 PCA9685, 2d UPS HAT (E), 68 MPU-6050, 76/77 BME280, 44 INA219.",
+     "S'il en manque un : débrancher les modules un par un."
+    ],
+    "it": [
+     "Eseguire «sudo i2cdetect -y 1» e confrontare con la scheda Cablaggio.",
+     "Atteso: 40 Thermal-90, 41 PCA9685, 2d UPS HAT (E), 68 MPU-6050, 76/77 BME280, 44 INA219.",
+     "Ne manca uno: staccare i moduli uno alla volta."
+    ],
+    "rm": [
+     "Exequir «sudo i2cdetect -y 1» e cumparegliar cun il tab Cablar.",
+     "Spetgà: 40 Thermal-90, 41 PCA9685, 2d UPS HAT (E), 68 MPU-6050, 76/77 BME280, 44 INA219.",
+     "Manca in: distatgar ils moduls in ad in."
+    ]
+   }
+  },
+  {
+   "id": "HW_UPS",
+   "seite": "mw",
+   "stufe": "warn",
+   "bau": "verkabeln",
+   "titel": {
+    "de": "Akku-Platine (UPS HAT) nicht gefunden",
+    "en": "Battery board (UPS HAT) not found",
+    "fr": "Carte batterie (UPS HAT) introuvable",
+    "it": "Scheda batteria (UPS HAT) non trovata",
+    "rm": "Platina d'accu (UPS HAT) betg chattada"
+   },
+   "text": {
+    "de": "Ohne UPS HAT zeigt MoveEye keinen Akkustand und fährt bei leerem Akku nicht sauber herunter.",
+    "en": "Without the UPS HAT MoveEye shows no battery level and does not shut down cleanly when empty.",
+    "fr": "Sans UPS HAT, MoveEye n'affiche pas la batterie et ne s'éteint pas proprement à vide.",
+    "it": "Senza UPS HAT MoveEye non mostra la batteria e non si spegne bene a batteria scarica.",
+    "rm": "Senza UPS HAT na mussa MoveEye nagin stadi d'accu e na sa stizza betg endretg."
+   },
+   "schritte": {
+    "de": [
+     "Pogo-Pins sauber unter dem Pi? Akkus richtig herum und geladen?",
+     "«sudo i2cdetect -y 1»: 2d muss erscheinen.",
+     "Einstellungen → Stromversorgung: Modell «UPS HAT (E)» wählen."
+    ],
+    "en": [
+     "Pogo pins clean under the Pi? Cells the right way round and charged?",
+     "«sudo i2cdetect -y 1»: 2d must show up.",
+     "Settings → Power supply: choose the model «UPS HAT (E)»."
+    ],
+    "fr": [
+     "Broches pogo propres sous le Pi ? Cellules dans le bon sens et chargées ?",
+     "«sudo i2cdetect -y 1» : 2d doit apparaître.",
+     "Réglages → Alimentation : choisir le modèle «UPS HAT (E)»."
+    ],
+    "it": [
+     "Pin pogo puliti sotto il Pi? Celle nel verso giusto e cariche?",
+     "«sudo i2cdetect -y 1»: deve comparire 2d.",
+     "Impostazioni → Alimentazione: scegliere il modello «UPS HAT (E)»."
+    ],
+    "rm": [
+     "Pins pogo nets sut il Pi? Cellas endretg e chargiadas?",
+     "«sudo i2cdetect -y 1»: 2d sto cumparair.",
+     "Parameters → Alimentaziun: tscherner il model «UPS HAT (E)»."
+    ]
+   }
+  },
+  {
+   "id": "HW_LIGHT",
+   "seite": "mw",
+   "stufe": "warn",
+   "bau": "verkabeln",
+   "quelle": {
+    "meldung": [
+     "Light error"
+    ]
+   },
+   "titel": {
+    "de": "Licht geht nicht",
+    "en": "The light does not work",
+    "fr": "La lumière ne marche pas",
+    "it": "La luce non funziona",
+    "rm": "La glisch na funcziuna betg"
+   },
+   "text": {
+    "de": "Weisses oder IR-Licht bleibt dunkel.",
+    "en": "White or IR light stays dark.",
+    "fr": "La lumière blanche ou IR reste éteinte.",
+    "it": "La luce bianca o IR resta spenta.",
+    "rm": "La glisch alva u IR resta stgira."
+   },
+   "schritte": {
+    "de": [
+     "Einstellungen → Licht & Ton: Licht weiss = PCA9685 Kanal 2, Infrarot = Kanal 3?",
+     "MOSFET-Modul (Logic-Level) richtig verdrahtet, 5 V an den Lampen?",
+     "IR-Licht im Kamerabild prüfen – das Auge sieht 850 nm kaum."
+    ],
+    "en": [
+     "Settings → Light & sound: white light = PCA9685 channel 2, infrared = channel 3?",
+     "MOSFET module (logic level) wired correctly, 5 V at the lamps?",
+     "Check the IR light in the camera picture – the eye hardly sees 850 nm."
+    ],
+    "fr": [
+     "Réglages → Lumière et son : blanc = canal 2 du PCA9685, infrarouge = canal 3 ?",
+     "Module MOSFET (niveau logique) bien câblé, 5 V aux lampes ?",
+     "Vérifier l'IR dans l'image de la caméra – l'œil voit à peine 850 nm."
+    ],
+    "it": [
+     "Impostazioni → Luce e suono: bianco = canale 2 del PCA9685, infrarosso = canale 3?",
+     "Modulo MOSFET (livello logico) cablato bene, 5 V alle lampade?",
+     "Controllare l'IR nell'immagine della fotocamera – l'occhio vede appena 850 nm."
+    ],
+    "rm": [
+     "Parameters → Glisch e tun: alv = chanal 2 dal PCA9685, infracotschen = chanal 3?",
+     "Modul MOSFET (logic level) cablà endretg, 5 V vi da las lampas?",
+     "Controllar l'IR en il maletg da la camera – l'egl vesa strusch 850 nm."
+    ]
+   }
+  },
+  {
+   "id": "HW_SOUND",
+   "seite": "mw",
+   "stufe": "warn",
+   "bau": "verkabeln",
+   "titel": {
+    "de": "Kein Ton aus dem Lautsprecher",
+    "en": "No sound from the loudspeaker",
+    "fr": "Pas de son du haut-parleur",
+    "it": "Nessun suono dall'altoparlante",
+    "rm": "Nagin tun da l'autpledader"
+   },
+   "text": {
+    "de": "Sirene, Wecker und Sprechen bleiben stumm.",
+    "en": "Siren, alarm clock and talking stay silent.",
+    "fr": "Sirène, réveil et parole restent muets.",
+    "it": "Sirena, sveglia e parlato restano muti.",
+    "rm": "Sirena, sveglia e discurrer restan muts."
+   },
+   "schritte": {
+    "de": [
+     "USB-Soundkarte im Hub? In MoveEye unter Licht & Ton als Ausgang gewählt?",
+     "PAM8403 hat 5 V und Klinke L / GND, Lautsprecher an L+ / L−?",
+     "Ton testen (Wecker-Melodie); Lautstärke nicht auf 0."
+    ],
+    "en": [
+     "USB sound card in the hub? Chosen as output under Light & sound in MoveEye?",
+     "PAM8403 has 5 V and jack L / GND, loudspeaker on L+ / L−?",
+     "Test the sound (alarm melody); volume not at 0."
+    ],
+    "fr": [
+     "Carte son USB dans le hub ? Choisie comme sortie sous Lumière et son ?",
+     "PAM8403 a 5 V et jack L / GND, haut-parleur sur L+ / L− ?",
+     "Tester le son (mélodie du réveil) ; volume pas à 0."
+    ],
+    "it": [
+     "Scheda audio USB nell'hub? Scelta come uscita in Luce e suono?",
+     "PAM8403 ha 5 V e jack L / GND, altoparlante su L+ / L−?",
+     "Provare il suono (melodia sveglia); volume non a 0."
+    ],
+    "rm": [
+     "Carta da tun USB en il hub? Tschernida sco sortida sut Glisch e tun?",
+     "PAM8403 ha 5 V e jack L / GND, autpledader vi da L+ / L−?",
+     "Testar il tun (melodia da sveglia); volumen betg sin 0."
+    ]
+   }
   }
  ]
 }""")
@@ -2407,8 +2694,8 @@ def fx_check(base=None):
     probs = []
     es = fx_entries()
     acts = FEHLER_KATALOG.get("aktionen") or {}
-    if not 20 <= len(es) <= 30:
-        probs.append(f"{len(es)} errors (20 - 30 wanted)")
+    if not 20 <= len(es) <= 40:
+        probs.append(f"{len(es)} errors (20 - 40 wanted)")
     ids = [e["id"] for e in es]
     if len(set(ids)) != len(ids):
         probs.append("an id twice")

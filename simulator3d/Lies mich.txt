@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.38.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.40.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -446,6 +446,28 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.40.0
+3.40.0: Bauen (Mehr › Bauen, früher «Werkstatt»): MoveEye komplett selbst bauen – 10 Reiter mit 3D, Teilen, Varianten,
+Einkaufsliste, Drucken (alle Druckteile als 3MF), Montage, Verkabelungsplan und «Mein Bau»; in MoveEye gleich, dort auch
+als 3D im Browser ohne Simulator.
+So testest du: Simulator aus, dann MoveEye › Mehr › Bauen; ein Teil antippen; unter Einkauf die CSV holen.
+
+NEU IN 3.39.2
+3.39.2: Datenschutz (MoveEye): Push- und E-Mail-Meldungen zeigen statt des WLAN-Namens nur noch «bekanntes WLAN». Am Simulator
+ändert sich nichts.
+So testest du: eine Test-Push auslösen, z. B. WLAN kurz trennen und wieder verbinden; statt des Namens steht «bekanntes WLAN».
+
+NEU IN 3.39.1
+3.39.1: Simulator intern aufgeräumt, schnellerer Start.
+So testest du: den Simulator normal starten und benutzen, es sollte sich nichts ändern.
+
+NEU IN 3.39.0
+3.39.0: MoveEye und Simulator zeigen dasselbe: Ansicht, Sprache, Stimme, Rundgang und Blinki gleichen sich von selbst ab;
+eine Einfach/Experte-Wahl für alles. Neu: Zustand Aus/Wachsam/Voll in LED-Farben, Push-Vorschau, Versions-Paar,
+Bedienermodus mit MoveEye-PIN; Diagnose gegenseitig.
+So testest du: in MoveEye auf Experte schalten, der Simulator zieht nach; im Simulator die Sprache wechseln; MoveEye sperren,
+der Simulator zeigt nur die Hauptschalter.
 
 NEU IN 3.38.0
 3.38.0: System › Sicherung: ZIP auf dem PC, in einen Ordner/USB oder in die MoveEye-Sicherung; Wiederherstellen im Simulator

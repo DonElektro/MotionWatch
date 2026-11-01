@@ -94,9 +94,157 @@ func _init() -> void:
 			eq("Mehr %s Symbol" % mo.get("id", ""), row[1], mo.get("draw", ""))
 			for lg in ["en", "fr", "it", "rm"]:
 				eq("Mehr %s (%s)" % [mo.get("id", ""), lg], ((tx as Dictionary).get(sm.get("key", ""), {}) as Dictionary).get(lg, ""), (sm.get("names", {}) as Dictionary).get(lg, ""))
+		# ★5: the shared entries of «Mehr» in the same order as MoveEye (more_order)
+		var order: Array = UG.data().get("more_order", [])
+		var rows: Array = Mehr.ITEMS.map(func(it): return str(it[0]))
+		var seen := []
+		for mo_id in order:
+			for mo in UG.data().get("more", []):
+				if str(mo.get("id")) == str(mo_id):
+					seen.append(rows.find(str((mo.get("sim", {}) as Dictionary).get("row", ""))))
+		var sorted_ := seen.duplicate()
+		sorted_.sort()
+		eq("Mehr: Reihenfolge wie MoveEye (%s)" % ",".join(order), seen, sorted_)
+		eq("Mehr: alle gemeinsamen Zeilen da", seen.has(-1), false)
+		_abgleich()
 	if errs.is_empty():
 		print("Menütest OK (%d Gruppen im Simulator, %d gemeinsam mit MoveEye)" % [UG.sim_groups().size(), 6])
 		quit(0)
 	else:
 		printerr("SCRIPT ERROR: Menütest: " + " | ".join(errs))
 		quit(1)
+
+
+# ---- P2: the view shared with MoveEye (abgleich.gd) - a value changed on one side appears on the other (no picture) -----
+const FAKE := """extends Node
+const VERSION := "%s"
+var ui_simple := true
+var ui_icons := "color"
+var reduce_motion := "auto"
+var tour_auto := true
+var blinki_on := true
+var news_popup := true
+var start_groups := false
+var _settings_dirty := false
+var mw := {}
+var mw_t := 0.0
+var mw_addr := ""
+var kids_on := false
+var dev_area := false
+var leiste = null
+var mehr = null
+var ui_root = null
+var net = null
+var fine_bodies := []
+var t := 100.0
+func now() -> float:
+	return t
+func set_simple(on: bool) -> void:
+	ui_simple = on
+func set_icons(v: String) -> void:
+	ui_icons = v
+func motion_reduced() -> bool:
+	return reduce_motion == "an"
+func control(_d):
+	return {}
+"""
+
+
+func _abgleich() -> void:
+	var UG = load("res://scripts/ui_gemeinsam.gd")
+	var M = load("res://scripts/main.gd")
+	var gs := GDScript.new()
+	gs.source_code = FAKE % str(M.VERSION)
+	if gs.reload() != OK:
+		errs.append("Abgleich: Test-Hauptskript lädt nicht")
+		return
+	var fm = gs.new()
+	var TT = load("res://scripts/i18n.gd")
+	var St = load("res://scripts/abenteuer_stimme.gd")
+	var keep_lang: String = TT.choice()
+	var keep_voice: String = St.modus()
+	TT.set_lang("auto")
+	var ab = load("res://scripts/abgleich.gd").new()
+	ab.main = fm
+	var n = load("res://scripts/net.gd").new()
+	n.abgleich = ab
+	fm.net = n
+	var mwv := {"simple": false, "icons": "plain", "lang": "fr", "motion": "on", "voice": "off", "tours": false, "blinki": false, "news": false}
+	var st := func(rev: int, took: int, v: Dictionary, extra := {}) -> Dictionary:
+		var d := {"uid": "A", "device": "MoveEye", "mw_version": str(M.VERSION), "ui": {"rev": rev, "took": took, "v": v.duplicate()}}
+		d.merge(extra, true)
+		fm.mw = d
+		fm.mw_t = fm.t
+		return d
+	# 1. MoveEye -> simulator: the first packet takes everything (MoveEye leads)
+	ab.on_state(st.call(5, 0, mwv, {"level": {"id": "watch", "col": "#ff8a1f"}}), true)
+	eq("Abgleich MW->Sim Einfach", fm.ui_simple, false)
+	eq("Abgleich MW->Sim Symbole", fm.ui_icons, "plain")
+	eq("Abgleich MW->Sim Sprache", TT.lang(), "fr")
+	eq("Abgleich MW->Sim Bewegung", fm.reduce_motion, "an")
+	eq("Abgleich MW->Sim Stimme", St.modus(), "aus")
+	eq("Abgleich MW->Sim Rundgang/Blinki/Neu", [fm.tour_auto, fm.blinki_on, fm.news_popup], [false, false, false])
+	eq("Abgleich: nichts zu senden", ab.reply().is_empty(), true)
+	eq("Zustand Wachsam", ab.level_text(), str((UG.data()["level"]["watch"]["names"] as Dictionary).get("fr")))
+	eq("Versions-Paar gleich", ab.pair()["same"], true)
+	# 2. simulator -> MoveEye: an own change goes out until MoveEye confirms it (took)
+	fm.t += 0.1
+	fm.set_simple(true)
+	ab.on_state(st.call(5, 0, mwv), true)
+	var r: Dictionary = ab.reply()
+	eq("Abgleich Sim->MW gesendet", (r.get("set", {}) as Dictionary).get("simple"), true)
+	eq("Abgleich Sim->MW bleibt bis bestätigt", fm.ui_simple, true)
+	fm.t += 0.1
+	ab.on_state(st.call(5, 0, mwv), true)                # the answer got lost: the change is sent again, not overwritten
+	eq("Abgleich Sim->MW nochmals", (ab.reply().get("set", {}) as Dictionary).has("simple"), true)
+	mwv["simple"] = true
+	fm.t += 0.1
+	ab.on_state(st.call(6, int(r.get("n", 0)), mwv), true)
+	eq("Abgleich bestätigt", ab.reply().is_empty(), true)
+	eq("Abgleich Wert bleibt", fm.ui_simple, true)
+	# 3. same packet: MoveEye wins
+	fm.t += 0.1
+	fm.tour_auto = true
+	ab.on_state(st.call(6, int(r.get("n", 0)), mwv), true)
+	var r2: Dictionary = ab.reply()
+	fm.t += 0.1
+	ab.on_state(st.call(7, int(r2.get("n", 0)), mwv), true)   # MoveEye kept «tours: false»
+	eq("Gleichstand: MoveEye gewinnt", fm.tour_auto, false)
+	# 4. without connection the simulator goes on; after reconnecting MoveEye leads
+	fm.blinki_on = true
+	fm.t += 10.0
+	ab.on_state(st.call(7, int(r2.get("n", 0)), mwv), true)
+	eq("Neu verbunden: MoveEye führt", fm.blinki_on, false)
+	eq("Neu verbunden: nichts zu senden", ab.reply().is_empty(), true)
+	# 5. a MoveEye that only watches changes nothing
+	var other := mwv.duplicate()
+	other["icons"] = "color"
+	ab.on_state(st.call(99, 0, other), false)
+	eq("Zuschauer ändert nichts", fm.ui_icons, "plain")
+	# 6. operator mode: locked, the PIN goes to MoveEye; the developer window only with the developer area and not locked
+	fm.dev_area = true
+	var Dev = load("res://scripts/devtool.gd")
+	eq("Entwickler mit Bereich", Dev.dev_ok(fm), true)
+	fm.t += 0.1
+	ab.on_state(st.call(7, int(r2.get("n", 0)), mwv, {"lock": {"on": true, "n": 0}}), true)
+	eq("gesperrt", ab.locked(), true)
+	eq("Entwickler gesperrt", Dev.dev_ok(fm), false)
+	ab.unlock("4321")
+	eq("PIN an MoveEye", (ab.reply().get("unlock", {}) as Dictionary).get("pin"), "4321")
+	fm.dev_area = false
+	fm.t += 0.1
+	ab.on_state(st.call(7, int(r2.get("n", 0)), mwv, {"lock": {"on": false, "n": 1, "msg": "ok"}}), true)
+	eq("entsperrt", ab.locked(), false)
+	eq("PIN vergessen", ab.reply().has("unlock"), false)
+	eq("Entwickler ohne Bereich", Dev.dev_ok(fm), false)
+	# 7. the push preview and the version pair
+	ab.on_state(st.call(7, int(r2.get("n", 0)), mwv, {"push": {"id": "1", "title": "x"}}), true)
+	ab.on_state(st.call(7, int(r2.get("n", 0)), mwv, {"push": {"id": "2", "title": "Person erkannt", "hm": "22:14", "status": "test"}}), true)
+	eq("Push-Vorschau", ab.push_text().ends_with("Person erkannt · 22:14"), true)
+	fm.mw["mw_version"] = "3.0.1"
+	eq("Versions-Paar älter", ab.pair()["older"], "mw")
+	TT.set_lang(keep_lang if keep_lang != "" else "auto")
+	St.set_modus(keep_voice)
+	ab.free()
+	n.free()
+	fm.free()

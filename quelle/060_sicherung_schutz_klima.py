@@ -1093,6 +1093,7 @@ class Notifier:
         return push_sms_text(Notifier._title(p), Notifier._text(p), p)    # 635b: with the complete map link (theft, position)
 
     def _dispatch(self, p, jpg, fname):
+        p = push_no_ssid(p)                              # 635c: never the name of a Wi-Fi (SSID) in an outgoing message
         if sim_net_down():                               # Simulator-Werte: «WLAN weg» / «Internet weg» test - nothing goes out (285)
             return simnet_hold(self, p, jpg, fname)
         if (sandbox_active() and not sandbox_lets_through(p)) or p.get("_test"):   # 2.96.6: test inbox (141), 3.23: always in the simulation

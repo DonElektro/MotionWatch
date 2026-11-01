@@ -79,6 +79,13 @@
    "fr": "Variante v5.2 (caméra grand angle, propre partie inférieure)",
    "it": "Variante v5.2 (fotocamera grandangolare, parte inferiore propria)",
    "rm": "Variante v5.2 (camera largangulara, atgna part sut)"
+  },
+  "mover": {
+   "de": "Mover",
+   "en": "Mover",
+   "fr": "Mover",
+   "it": "Mover",
+   "rm": "Mover"
   }
  },
  "bom": [
@@ -87,7 +94,17 @@
    "gruppe": "rechner",
    "menge": "1×",
    "name": "Raspberry Pi 5",
-   "nr": "SC1112 (8 GB), SC1111 (4 GB)"
+   "nr": "SC1112 (8 GB), SC1111 (4 GB)",
+   "preis": 85,
+   "haendler": "pishop",
+   "suche": "Raspberry Pi 5 8GB",
+   "alt": {
+    "de": "4 GB (SC1111) reicht auch",
+    "en": "4 GB (SC1111) is enough too",
+    "fr": "4 Go (SC1111) suffit aussi",
+    "it": "anche 4 GB (SC1111) basta",
+    "rm": "er 4 GB (SC1111) basta"
+   }
   },
   {
    "id": "cooler",
@@ -100,21 +117,44 @@
     "it": "Raspberry Pi Active Cooler (ventola)",
     "rm": "Raspberry Pi Active Cooler (ventilatur)"
    },
-   "nr": "SC1148"
+   "nr": "SC1148",
+   "preis": 10.9,
+   "haendler": "bastelgarage",
+   "suche": "Raspberry Pi 5 Aktiv Kühler",
+   "alt": {
+    "de": "DFRobot-Kühler (Bastelgarage 423487) passt",
+    "en": "DFRobot cooler (Bastelgarage 423487) fits",
+    "fr": "refroidisseur DFRobot (Bastelgarage 423487) convient",
+    "it": "dissipatore DFRobot (Bastelgarage 423487) va bene",
+    "rm": "refreidader DFRobot (Bastelgarage 423487) va"
+   }
   },
   {
    "id": "sd",
    "gruppe": "rechner",
    "menge": "1×",
    "name": "microSD 64 GB, A2",
-   "nr": "SanDisk Extreme SDSQXAH-064G-GN6MA"
+   "nr": "SanDisk Extreme SDSQXAH-064G-GN6MA",
+   "preis": 15,
+   "haendler": "galaxus",
+   "suche": "microSD 64GB A2",
+   "alt": {
+    "de": "jede A2-Karte einer Markenfirma",
+    "en": "any A2 card of a known brand",
+    "fr": "toute carte A2 de marque",
+    "it": "qualsiasi scheda A2 di marca",
+    "rm": "mintga carta A2 d'ina marca enconuschenta"
+   }
   },
   {
    "id": "cam",
    "gruppe": "rechner",
    "menge": "1×",
    "name": "Camera Module 3 NoIR",
-   "nr": "SC0873"
+   "nr": "SC0873",
+   "preis": 30,
+   "haendler": "pishop",
+   "suche": "Camera Module 3 NoIR"
   },
   {
    "id": "camcable",
@@ -127,14 +167,27 @@
     "it": "Cavo fotocamera Pi 5, 500 mm (22→15 pin)",
     "rm": "Cabel da camera Pi 5, 500 mm (22→15 pols)"
    },
-   "nr": "SC1130"
+   "nr": "SC1130",
+   "preis": 5,
+   "haendler": "pishop",
+   "suche": "Raspberry Pi 5 Kamerakabel 500mm"
   },
   {
    "id": "therm",
    "gruppe": "rechner",
    "menge": "1×",
    "name": "Waveshare Thermal-90 Camera Module",
-   "nr": "Waveshare SKU 31941"
+   "nr": "Waveshare SKU 31941",
+   "preis": 70,
+   "haendler": "pishop",
+   "suche": "Waveshare Thermal Camera",
+   "alt": {
+    "de": "SKU 31941 ausgelaufen – Nachfolger bei Pi-Shop.ch",
+    "en": "SKU 31941 discontinued – successor at Pi-Shop.ch",
+    "fr": "SKU 31941 arrêté – successeur chez Pi-Shop.ch",
+    "it": "SKU 31941 fuori produzione – successore da Pi-Shop.ch",
+    "rm": "SKU 31941 betg pli producì – successur tar Pi-Shop.ch"
+   }
   },
   {
    "id": "servo",
@@ -147,7 +200,10 @@
     "it": "Servo MG90S (ingranaggi in metallo)",
     "rm": "Servo MG90S (transmissiun da metal)"
    },
-   "nr": "TowerPro MG90S"
+   "nr": "TowerPro MG90S",
+   "preis": 15.8,
+   "haendler": "bastelgarage",
+   "suche": "MG90S"
   },
   {
    "id": "pca",
@@ -160,7 +216,17 @@
     "it": "Modulo PWM a 16 canali PCA9685",
     "rm": "Modul PWM da 16 chanals PCA9685"
    },
-   "nr": "Adafruit 815"
+   "nr": "Adafruit 815",
+   "preis": 12,
+   "haendler": "bastelgarage",
+   "suche": "PCA9685",
+   "alt": {
+    "de": "Klon «PCA9685 16 Kanal»",
+    "en": "clone «PCA9685 16 channel»",
+    "fr": "clone «PCA9685 16 canaux»",
+    "it": "clone «PCA9685 16 canali»",
+    "rm": "clon «PCA9685 16 chanals»"
+   }
   },
   {
    "id": "elko",
@@ -173,7 +239,17 @@
     "it": "Condensatore elettrolitico 470 µF / 10 V",
     "rm": "Condensatur electrolitic 470 µF / 10 V"
    },
-   "nr": "470 µF ≥10 V"
+   "nr": "470 µF ≥10 V",
+   "preis": 0.95,
+   "haendler": "bastelgarage",
+   "suche": "Elko 1000uF 25V",
+   "alt": {
+    "de": "1000 µF / 25 V geht auch",
+    "en": "1000 µF / 25 V works too",
+    "fr": "1000 µF / 25 V convient aussi",
+    "it": "anche 1000 µF / 25 V va",
+    "rm": "er 1000 µF / 25 V va"
+   }
   },
   {
    "id": "bbs",
@@ -186,7 +262,10 @@
     "it": "Pallini softair 6 mm (0,20 g)",
     "rm": "Ballinas softair 6 mm (0,20 g)"
    },
-   "nr": "BB 6 mm 0,20 g"
+   "nr": "BB 6 mm 0,20 g",
+   "preis": 5,
+   "haendler": "galaxus",
+   "suche": "Softair BB 6mm 0.20g"
   },
   {
    "id": "fett",
@@ -199,14 +278,22 @@
     "it": "Grasso al silicone o per cuscinetti",
     "rm": "Grass da silicon u per cuschinets"
    },
-   "nr": ""
+   "nr": "",
+   "preis": 5,
+   "haendler": "galaxus",
+   "suche": "Silikonfett"
   },
   {
    "id": "ups",
    "gruppe": "strom",
    "menge": "1×",
    "name": "Waveshare UPS HAT (E)",
-   "nr": "Waveshare SKU 27966"
+   "nr": "Waveshare SKU 27966",
+   "preis": 36.9,
+   "haendler": "bastelgarage",
+   "suche": "USV HAT (E) 21700",
+   "alt": "Waveshare 27966",
+   "wenn": "ups"
   },
   {
    "id": "cells",
@@ -219,7 +306,18 @@
     "it": "Batteria Li-ion 21700, flat top",
     "rm": "Accu Li-ion 21700, flat top"
    },
-   "nr": "Samsung INR21700-50E"
+   "nr": "Samsung INR21700-50E",
+   "preis": 132.92,
+   "haendler": "galaxus",
+   "suche": "Samsung INR21700-50E",
+   "alt": {
+    "de": "Molicel P45B; 4 gleiche Zellen aus einer Lieferung",
+    "en": "Molicel P45B; 4 equal cells from one delivery",
+    "fr": "Molicel P45B ; 4 cellules identiques d'une même livraison",
+    "it": "Molicel P45B; 4 celle uguali della stessa fornitura",
+    "rm": "Molicel P45B; 4 cellas egualas d'ina furniziun"
+   },
+   "wenn": "ups"
   },
   {
    "id": "charger",
@@ -232,7 +330,17 @@
     "it": "Pololu D36V50F5 (ricarica 12–40 V → 5 V)",
     "rm": "Pololu D36V50F5 (chargiar 12–40 V → 5 V)"
    },
-   "nr": "Pololu #4091"
+   "nr": "Pololu #4091",
+   "preis": 34,
+   "haendler": "berrybase",
+   "suche": "Pololu D36V50F5",
+   "alt": {
+    "de": "nur bei BerryBase (de) gefunden",
+    "en": "only found at BerryBase (de)",
+    "fr": "trouvé seulement chez BerryBase (de)",
+    "it": "trovato solo da BerryBase (de)",
+    "rm": "chattà mo tar BerryBase (de)"
+   }
   },
   {
    "id": "buck",
@@ -245,7 +353,11 @@
     "it": "Step-down 6–36 V → 5 V 4 A (servo, luce, amplificatore)",
     "rm": "Step-down 6–36 V → 5 V 4 A (servos, glisch, amplificatur)"
    },
-   "nr": "Bastelgarage 424274"
+   "nr": "Bastelgarage 424274",
+   "preis": 6.9,
+   "haendler": "bastelgarage",
+   "suche": "Step-Down 6-36V 5V 4A",
+   "alt": "Pololu #3782"
   },
   {
    "id": "gx16",
@@ -258,7 +370,10 @@
     "it": "GX16 4 poli: presa da pannello + spina (presa di ricarica)",
     "rm": "GX16 4 pols: bischla + stecker (bischla da chargiar)"
    },
-   "nr": "Bastelgarage 420241"
+   "nr": "Bastelgarage 420241",
+   "preis": 8.9,
+   "haendler": "bastelgarage",
+   "suche": "GX16-4P"
   },
   {
    "id": "fuse",
@@ -271,7 +386,10 @@
     "it": "Portafusibile volante + fusibile 5 A",
     "rm": "Purtader da segirezza + segirezza 5 A"
    },
-   "nr": "Mini-Kfz (ATM) 5 A"
+   "nr": "Mini-Kfz (ATM) 5 A",
+   "preis": 5,
+   "haendler": "galaxus",
+   "suche": "Sicherungshalter fliegend ATM"
   },
   {
    "id": "usbc",
@@ -284,7 +402,17 @@
     "it": "Spina USB-C da saldare (D36V50F5 → UPS HAT)",
     "rm": "Stecker USB-C da lotar (D36V50F5 → UPS HAT)"
    },
-   "nr": "USB-C Plug Breakout"
+   "nr": "USB-C Plug Breakout",
+   "preis": 1.7,
+   "haendler": "berrybase",
+   "suche": "USB-C Kabel offenes Ende",
+   "alt": {
+    "de": "USB-C-Kabel mit offenem Ende (BerryBase 125190)",
+    "en": "USB-C cable with open end (BerryBase 125190)",
+    "fr": "câble USB-C à bout libre (BerryBase 125190)",
+    "it": "cavo USB-C con estremità libera (BerryBase 125190)",
+    "rm": "cabel USB-C cun fin avert (BerryBase 125190)"
+   }
   },
   {
    "id": "chled",
@@ -297,7 +425,10 @@
     "it": "LED di ricarica 3 mm + guida luce",
     "rm": "LED da chargiar 3 mm + guida da glisch"
    },
-   "nr": "LED 3 mm, PMMA 3 mm"
+   "nr": "LED 3 mm, PMMA 3 mm",
+   "preis": 2,
+   "haendler": "bastelgarage",
+   "suche": "LED 3mm grün"
   },
   {
    "id": "ledw",
@@ -310,7 +441,10 @@
     "it": "Modulo faro bianco, Ø 18,8 × 14 mm",
     "rm": "Modul da reflectur alv, Ø 18,8 × 14 mm"
    },
-   "nr": "Ø 18,8 mm"
+   "nr": "Ø 18,8 mm",
+   "preis": 8,
+   "haendler": "galaxus",
+   "suche": "LED Modul 18mm weiss"
   },
   {
    "id": "ledir",
@@ -323,7 +457,17 @@
     "it": "Modulo faro infrarosso 850 nm",
     "rm": "Modul da reflectur infracotschen 850 nm"
    },
-   "nr": "Ø 18,8 mm, 850 nm"
+   "nr": "Ø 18,8 mm, 850 nm",
+   "preis": 8,
+   "haendler": "galaxus",
+   "suche": "IR LED Modul 850nm",
+   "alt": {
+    "de": "850 nm statt 940 nm (NoIR sieht es besser)",
+    "en": "850 nm instead of 940 nm (NoIR sees it better)",
+    "fr": "850 nm au lieu de 940 nm (NoIR le voit mieux)",
+    "it": "850 nm invece di 940 nm (NoIR lo vede meglio)",
+    "rm": "850 nm empè da 940 nm (NoIR vesa meglier)"
+   }
   },
   {
    "id": "mosfet",
@@ -336,7 +480,17 @@
     "it": "Modulo MOSFET 2 canali, livello logico",
     "rm": "Modul MOSFET 2 chanals, nivel logic"
    },
-   "nr": "AOD4184"
+   "nr": "AOD4184",
+   "preis": 9.8,
+   "haendler": "bastelgarage",
+   "suche": "MOSFET AOD4184",
+   "alt": {
+    "de": "2 × AOD4184-Modul (Bastelgarage 420985); kein IRF520",
+    "en": "2 × AOD4184 module (Bastelgarage 420985); no IRF520",
+    "fr": "2 × module AOD4184 (Bastelgarage 420985) ; pas d'IRF520",
+    "it": "2 × modulo AOD4184 (Bastelgarage 420985); niente IRF520",
+    "rm": "2 × modul AOD4184 (Bastelgarage 420985); betg IRF520"
+   }
   },
   {
    "id": "res",
@@ -349,7 +503,10 @@
     "it": "Resistenza in serie 2 W per i LED",
     "rm": "Resistenza en seria 2 W per las LEDs"
    },
-   "nr": ""
+   "nr": "",
+   "preis": 1,
+   "haendler": "bastelgarage",
+   "suche": "Widerstand 2W"
   },
   {
    "id": "spk",
@@ -362,7 +519,10 @@
     "it": "Altoparlante 41 mm, 4 Ω",
     "rm": "Autpledader 41 mm, 4 Ω"
    },
-   "nr": "Visaton SC 4.7 ND"
+   "nr": "Visaton SC 4.7 ND",
+   "preis": 8.9,
+   "haendler": "bastelgarage",
+   "suche": "Lautsprecher 4 Ohm 40mm"
   },
   {
    "id": "pam",
@@ -375,7 +535,11 @@
     "it": "Modulo amplificatore PAM8403",
     "rm": "Modul amplificatur PAM8403"
    },
-   "nr": "PAM8403"
+   "nr": "PAM8403",
+   "preis": 9.9,
+   "haendler": "bastelgarage",
+   "suche": "PAM8403",
+   "alt": "Fermion 3W (Bastelgarage 421925)"
   },
   {
    "id": "sound",
@@ -388,7 +552,10 @@
     "it": "Scheda audio USB",
     "rm": "Carta da tun USB"
    },
-   "nr": "C-Media CM108"
+   "nr": "C-Media CM108",
+   "preis": 8,
+   "haendler": "galaxus",
+   "suche": "USB Soundkarte"
   },
   {
    "id": "mic",
@@ -401,7 +568,10 @@
     "it": "Microfono USB (mini)",
     "rm": "Microfon USB (mini)"
    },
-   "nr": ""
+   "nr": "",
+   "preis": 10,
+   "haendler": "galaxus",
+   "suche": "USB Mini Mikrofon"
   },
   {
    "id": "usbext",
@@ -414,7 +584,10 @@
     "it": "Prolunga USB-A, circa 15 cm",
     "rm": "Prolungaziun USB-A, ca. 15 cm"
    },
-   "nr": ""
+   "nr": "",
+   "preis": 5,
+   "haendler": "galaxus",
+   "suche": "USB-A Verlängerung 15cm"
   },
   {
    "id": "foam",
@@ -427,7 +600,10 @@
     "it": "Gommapiuma per il microfono",
     "rm": "Material da spima per il microfon"
    },
-   "nr": ""
+   "nr": "",
+   "preis": 3,
+   "haendler": "galaxus",
+   "suche": "Akustikschaum"
   },
   {
    "id": "pir",
@@ -440,7 +616,10 @@
     "it": "Mini PIR AS312",
     "rm": "Mini PIR AS312"
    },
-   "nr": "Bastelgarage 420448"
+   "nr": "Bastelgarage 420448",
+   "preis": 5.9,
+   "haendler": "bastelgarage",
+   "suche": "Micro PIR AS312"
   },
   {
    "id": "mpu",
@@ -453,7 +632,10 @@
     "it": "Sensore di posizione MPU-6050",
     "rm": "Sensur da posiziun MPU-6050"
    },
-   "nr": "GY-521"
+   "nr": "GY-521",
+   "preis": 10.9,
+   "haendler": "bastelgarage",
+   "suche": "MPU-6050"
   },
   {
    "id": "petg",
@@ -466,7 +648,11 @@
     "it": "Filamento PETG",
     "rm": "Filament PETG"
    },
-   "nr": "Bambu PETG HF"
+   "nr": "Bambu PETG HF",
+   "preis": 20,
+   "haendler": "galaxus",
+   "suche": "Bambu PETG HF",
+   "alt": "eSun PETG (Bastelgarage 421203)"
   },
   {
    "id": "litze",
@@ -479,7 +665,10 @@
     "it": "Cavo 0,5 mm², cavi Dupont/JST, guaina termorestringente",
     "rm": "Fil 0,5 mm², cabels Dupont/JST, tub termoretractil"
    },
-   "nr": "20 AWG"
+   "nr": "20 AWG",
+   "preis": 15,
+   "haendler": "conrad",
+   "suche": "Silikonlitze 20 AWG"
   },
   {
    "id": "hdmi",
@@ -492,7 +681,10 @@
     "it": "Cavo da micro HDMI a HDMI",
     "rm": "Cabel micro-HDMI sin HDMI"
    },
-   "nr": ""
+   "nr": "",
+   "preis": 5,
+   "haendler": "berrybase",
+   "suche": "Micro-HDMI Kabel"
   },
   {
    "id": "hub",
@@ -505,7 +697,10 @@
     "it": "Hub USB, 4 porte, compatto",
     "rm": "Hub USB, 4 attaccs, cumpact"
    },
-   "nr": "max. 56 × 22 × 14 mm"
+   "nr": "max. 56 × 22 × 14 mm",
+   "preis": 12,
+   "haendler": "galaxus",
+   "suche": "USB Hub 4 Port kompakt"
   },
   {
    "id": "ds18",
@@ -518,7 +713,17 @@
     "it": "Sonda di temperatura DS18B20 impermeabile",
     "rm": "Sonda da temperatura DS18B20 impermeabla"
    },
-   "nr": "DS18B20 Ø 6 mm"
+   "nr": "DS18B20 Ø 6 mm",
+   "preis": 5.9,
+   "haendler": "bastelgarage",
+   "suche": "DS18B20 wasserdicht",
+   "alt": {
+    "de": "+ Widerstand 4,7 kΩ",
+    "en": "+ resistor 4.7 kΩ",
+    "fr": "+ résistance 4,7 kΩ",
+    "it": "+ resistenza 4,7 kΩ",
+    "rm": "+ resistenza 4,7 kΩ"
+   }
   },
   {
    "id": "bme",
@@ -531,7 +736,10 @@
     "it": "Sensore di pressione BME280",
     "rm": "Sensur da pressiun d'aria BME280"
    },
-   "nr": "0x76 / 0x77"
+   "nr": "0x76 / 0x77",
+   "preis": 17.9,
+   "haendler": "bastelgarage",
+   "suche": "Gravity BME280"
   },
   {
    "id": "relay",
@@ -544,7 +752,10 @@
     "it": "Modulo relè 1 canale, 5 V",
     "rm": "Modul relais 1 chanal, 5 V"
    },
-   "nr": ""
+   "nr": "",
+   "preis": 5.5,
+   "haendler": "bastelgarage",
+   "suche": "1-Kanal Relais Modul"
   },
   {
    "id": "m12",
@@ -557,7 +768,11 @@
     "it": "Pressacavo M12 (uscita relè)",
     "rm": "Passacabel M12 (sortida relais)"
    },
-   "nr": "Bastelgarage 420032"
+   "nr": "Bastelgarage 420032",
+   "preis": 1.5,
+   "haendler": "bastelgarage",
+   "suche": "Kabelverschraubung M12",
+   "alt": "GX12-3P"
   },
   {
    "id": "ina",
@@ -570,7 +785,11 @@
     "it": "Sensore di corrente INA219 (opzionale, solare)",
     "rm": "Mesira da current INA219 (opziunal, solar)"
    },
-   "nr": "0x44"
+   "nr": "0x44",
+   "preis": 12.9,
+   "haendler": "bastelgarage",
+   "suche": "Gravity INA219",
+   "optional": true
   },
   {
    "id": "lte",
@@ -583,14 +802,21 @@
     "it": "Chiavetta USB LTE/GPS",
     "rm": "Stick USB LTE/GPS"
    },
-   "nr": ""
+   "nr": "",
+   "preis": 50,
+   "haendler": "galaxus",
+   "suche": "LTE USB Stick",
+   "optional": true
   },
   {
    "id": "camwide",
    "gruppe": "v52",
    "menge": "1×",
    "name": "Camera Module 3 Wide NoIR",
-   "nr": "",
+   "nr": "SC0874",
+   "preis": 35,
+   "haendler": "pishop",
+   "suche": "Camera Module 3 Wide NoIR",
    "wenn": "v52"
   },
   {
@@ -605,21 +831,17 @@
     "rm": "Modul LED IR 850 nm cun lentilla 120° (ca. Ø 18,8 mm, mesirar)"
    },
    "nr": "850 nm, 120°",
-   "wenn": "v52"
-  },
-  {
-   "id": "camcable1",
-   "gruppe": "v52",
-   "menge": "1×",
-   "name": {
-    "de": "Kamerakabel Pi 5, 200 mm (22→15-polig) für CAM1",
-    "en": "Camera cable Pi 5, 200 mm (22→15 pin) for CAM1",
-    "fr": "Câble caméra Pi 5, 200 mm (22→15 broches) pour CAM1",
-    "it": "Cavo fotocamera Pi 5, 200 mm (22→15 poli) per CAM1",
-    "rm": "Cabel da camera Pi 5, 200 mm (22→15 pols) per CAM1"
-   },
-   "nr": "200 mm",
-   "wenn": "v52"
+   "wenn": "v52",
+   "preis": 8,
+   "haendler": "bastelgarage",
+   "suche": "IR LED 850nm 3W Linse 120",
+   "unklar": {
+    "de": "Preis geschätzt",
+    "en": "price estimated",
+    "fr": "prix estimé",
+    "it": "prezzo stimato",
+    "rm": "pretsch stimà"
+   }
   },
   {
    "id": "m2",
@@ -633,7 +855,17 @@
     "rm": "Scrauva M2 × 6, autofilettanta (camera largangulara)"
    },
    "nr": "M2 × 6",
-   "wenn": "v52"
+   "wenn": "v52",
+   "preis": 3,
+   "haendler": "bastelgarage",
+   "suche": "Schraube M2x6 Kunststoff selbstschneidend",
+   "unklar": {
+    "de": "Preis geschätzt",
+    "en": "price estimated",
+    "fr": "prix estimé",
+    "it": "prezzo stimato",
+    "rm": "pretsch stimà"
+   }
   },
   {
    "id": "mosfet3",
@@ -647,7 +879,17 @@
     "rm": "Chanal MOSFET per il modul IR (PCA9685 chanal 4, sco AOD4184)"
    },
    "nr": "AOD4184",
-   "wenn": "v52"
+   "wenn": "v52",
+   "preis": 4,
+   "haendler": "bastelgarage",
+   "suche": "MOSFET Modul AOD4184",
+   "unklar": {
+    "de": "Preis geschätzt",
+    "en": "price estimated",
+    "fr": "prix estimé",
+    "it": "prezzo stimato",
+    "rm": "pretsch stimà"
+   }
   },
   {
    "id": "irled5",
@@ -661,6 +903,9 @@
     "rm": "LED IR 5 mm, 850 nm"
    },
    "nr": "",
+   "preis": 1,
+   "haendler": "bastelgarage",
+   "suche": "IR LED 5mm 850nm",
    "wenn": "v52"
   },
   {
@@ -675,6 +920,9 @@
     "rm": "Buttun 12 mm, IP67"
    },
    "nr": "",
+   "preis": 12,
+   "haendler": "bastelgarage",
+   "suche": "Taster 12mm IP67",
    "wenn": "v52"
   },
   {
@@ -689,7 +937,95 @@
     "rm": "LED RGB 5 mm cun diffusur «egl da Blinki»"
    },
    "nr": "",
+   "preis": 1,
+   "haendler": "bastelgarage",
+   "suche": "RGB LED 5mm",
    "wenn": "v52"
+  },
+  {
+   "id": "camcable2",
+   "gruppe": "v52",
+   "menge": "1×",
+   "name": {
+    "de": "Kamerakabel Pi 5, 200 mm (CAM1)",
+    "en": "Pi 5 camera cable, 200 mm (CAM1)",
+    "fr": "Câble caméra Pi 5, 200 mm (CAM1)",
+    "it": "Cavo fotocamera Pi 5, 200 mm (CAM1)",
+    "rm": "Cabel da camera Pi 5, 200 mm (CAM1)"
+   },
+   "nr": "SC1129",
+   "preis": 4,
+   "haendler": "pishop",
+   "suche": "Raspberry Pi 5 Kamerakabel 200mm",
+   "wenn": "v52"
+  },
+  {
+   "id": "psu12",
+   "gruppe": "strom",
+   "menge": "1×",
+   "name": {
+    "de": "Netzteil 12 V, mind. 3 A, mit GX16-Stecker verlötet",
+    "en": "Power supply 12 V, at least 3 A, soldered to the GX16 plug",
+    "fr": "Alimentation 12 V, au moins 3 A, soudée à la fiche GX16",
+    "it": "Alimentatore 12 V, almeno 3 A, saldato alla spina GX16",
+    "rm": "Alimentaziun 12 V, almain 3 A, lotada vi dal stecker GX16"
+   },
+   "nr": "",
+   "preis": 20,
+   "haendler": "galaxus",
+   "suche": "Netzteil 12V 3A",
+   "wenn": "netz"
+  },
+  {
+   "id": "motorhat",
+   "gruppe": "mover",
+   "menge": "1×",
+   "name": {
+    "de": "Motor-HAT (Adafruit DC & Stepper Motor HAT, I2C 0x60)",
+    "en": "Motor HAT (Adafruit DC & Stepper Motor HAT, I2C 0x60)",
+    "fr": "Motor HAT (Adafruit DC & Stepper Motor HAT, I2C 0x60)",
+    "it": "Motor HAT (Adafruit DC & Stepper Motor HAT, I2C 0x60)",
+    "rm": "Motor HAT (Adafruit DC & Stepper Motor HAT, I2C 0x60)"
+   },
+   "nr": "Adafruit 2348",
+   "preis": 25,
+   "haendler": "pishop",
+   "suche": "Motor HAT",
+   "alt": "Waveshare Motor Driver HAT",
+   "wenn": "mover"
+  },
+  {
+   "id": "chassis",
+   "gruppe": "mover",
+   "menge": "1×",
+   "name": {
+    "de": "Kettenfahrwerk mit 2 DC-Motoren",
+    "en": "Tracked chassis with 2 DC motors",
+    "fr": "Châssis à chenilles avec 2 moteurs DC",
+    "it": "Telaio cingolato con 2 motori DC",
+    "rm": "Chassis cun chadainas e 2 motors DC"
+   },
+   "nr": "",
+   "preis": 60,
+   "haendler": "galaxus",
+   "suche": "Kettenfahrwerk Roboter",
+   "wenn": "mover"
+  },
+  {
+   "id": "schrauben",
+   "gruppe": "kabel",
+   "menge": "1 Set",
+   "name": {
+    "de": "Schraubensatz M2 / M2,5 / M3 mit Muttern und Scheiben",
+    "en": "Screw set M2 / M2.5 / M3 with nuts and washers",
+    "fr": "Assortiment de vis M2 / M2,5 / M3 avec écrous et rondelles",
+    "it": "Set di viti M2 / M2,5 / M3 con dadi e rondelle",
+    "rm": "Set da scrauvs M2 / M2,5 / M3 cun mutters e rundellas"
+   },
+   "nr": "",
+   "preis": 12,
+   "haendler": "galaxus",
+   "suche": "Schraubensortiment M2 M2.5 M3"
   }
  ],
  "teile": [
@@ -1242,7 +1578,7 @@
   {
    "id": "cable_cam1",
    "art": "v52",
-   "bom": "camcable1",
+   "bom": "camcable2",
    "schritt": null,
    "name": {
     "de": "Kamerakabel CAM1 (Weitwinkel → Kabelkamm → Pi)",
@@ -1416,11 +1752,11 @@
     "rm": "Montar la furtga"
    },
    "text": {
-    "de": "Die Gabel mit 4 × M3 auf den Drehteller schrauben. Das Tilt-Horn senkrecht in die Vertiefung innen in Arm 1 legen und festschrauben.",
-    "en": "Screw the yoke onto the turntable with 4 × M3. Lay the tilt horn vertically into the recess on the inside of arm 1 and screw it tight.",
-    "fr": "Visser la fourche sur le plateau avec 4 × M3. Poser le palonnier tilt verticalement dans le creux à l'intérieur du bras 1 et le visser.",
-    "it": "Avvitare la forcella sul piatto con 4 × M3. Mettere la squadretta tilt in verticale nell'incavo all'interno del braccio 1 e avvitarla.",
-    "rm": "Fixar la furtga cun 4 × M3 sin la platta rotanta. Metter il corn tilt vertical en l'enfossadira da l'intern dal bratsch 1 e fixar."
+    "de": "Die Gabel mit 4 × M3 × 8 (nicht länger: die Spitze darf nicht in den Laufring ragen) auf den Drehteller schrauben. Das Tilt-Horn senkrecht in die Vertiefung innen in Arm 1 legen und festschrauben.",
+    "en": "Screw the yoke onto the turntable with 4 × M3 × 8 (not longer: the tip must not reach the bearing ring). Lay the tilt horn vertically into the recess on the inside of arm 1 and screw it tight.",
+    "fr": "Visser la fourche sur le plateau avec 4 × M3 × 8 (pas plus long : la pointe ne doit pas toucher la bague). Poser le palonnier tilt verticalement dans le creux à l'intérieur du bras 1 et le visser.",
+    "it": "Avvitare la forcella sul piatto con 4 × M3 × 8 (non più lunghe: la punta non deve toccare l'anello). Mettere la squadretta tilt in verticale nell'incavo all'interno del braccio 1 e avvitarla.",
+    "rm": "Fixar la furtga cun 4 × M3 × 8 (betg pli lungas: la piz na dastga betg tutgar l'anè) sin la platta rotanta. Metter il corn tilt vertical en l'enfossadira da l'intern dal bratsch 1 e fixar."
    }
   },
   {
@@ -1433,11 +1769,11 @@
     "rm": "Chau da la camera"
    },
    "text": {
-    "de": "Thermal-90 (Linse links) und Camera Module 3 durch die offene Seite einschrauben (M2). Tilt-Servo auf Mitte einsetzen, Kabel durch den Schlitz hinten, Seitendeckel mit 3 × M3 zuschrauben.",
-    "en": "Screw in the Thermal-90 (lens on the left) and the Camera Module 3 through the open side (M2). Insert the tilt servo at centre, cables through the slot at the back, close the side cover with 3 × M3.",
-    "fr": "Visser la Thermal-90 (objectif à gauche) et la Camera Module 3 par le côté ouvert (M2). Mettre le servo tilt au centre, câbles par la fente arrière, fermer le couvercle latéral avec 3 × M3.",
-    "it": "Avvitare la Thermal-90 (obiettivo a sinistra) e la Camera Module 3 dal lato aperto (M2). Inserire il servo tilt al centro, cavi nella fessura dietro, chiudere il coperchio laterale con 3 × M3.",
-    "rm": "Fixar la Thermal-90 (lentilla a sanestra) e la Camera Module 3 tras la vart averta (M2). Metter il servo tilt en il center, cabels tras la fessa davos, serrar il viertgel lateral cun 3 × M3."
+    "de": "Thermal-90 (Linse links) und Camera Module 3 durch die offene Seite einschrauben (Camera Module 3: 4 × M2 × 4, Thermal-90: 2 × M2 × 6). Tilt-Servo auf Mitte einsetzen, Kabel durch den Schlitz hinten, Seitendeckel mit 3 × M3 × 10 Linsenkopf ISO 7380 zuschrauben (kein Zylinderkopf: der stösst beim Kippen an Arm 2).",
+    "en": "Screw in the Thermal-90 (lens on the left) and the Camera Module 3 through the open side (Camera Module 3: 4 × M2 × 4, Thermal-90: 2 × M2 × 6). Insert the tilt servo at centre, cables through the slot at the back, close the side cover with 3 × M3 × 10 button head ISO 7380 (no socket cap head: it hits arm 2 when tilting).",
+    "fr": "Visser la Thermal-90 (objectif à gauche) et la Camera Module 3 par le côté ouvert (Camera Module 3 : 4 × M2 × 4, Thermal-90 : 2 × M2 × 6). Mettre le servo tilt au centre, câbles par la fente arrière, fermer le couvercle latéral avec 3 × M3 × 10 ISO 7380.",
+    "it": "Avvitare la Thermal-90 (obiettivo a sinistra) e la Camera Module 3 dal lato aperto (Camera Module 3: 4 × M2 × 4, Thermal-90: 2 × M2 × 6). Inserire il servo tilt al centro, cavi nella fessura dietro, chiudere il coperchio laterale con 3 × M3 × 10 ISO 7380.",
+    "rm": "Fixar la Thermal-90 (lentilla a sanestra) e la Camera Module 3 tras la vart averta (Camera Module 3: 4 × M2 × 4, Thermal-90: 2 × M2 × 6). Metter il servo tilt en il center, cabels tras la fessa davos, serrar il viertgel lateral cun 3 × M3 × 10 ISO 7380."
    }
   },
   {
@@ -1467,11 +1803,11 @@
     "rm": "Lampas"
    },
    "text": {
-    "de": "Die zwei Lampenhalter mit je 2 × M3 × 8 aussen an die Arme schrauben: weiss an Arm 1, IR 850 nm an Arm 2. Module einsetzen und mit Heisskleber oder Madenschraube sichern.",
-    "en": "Screw the two lamp holders to the outside of the arms with 2 × M3 × 8 each: white on arm 1, IR 850 nm on arm 2. Insert the modules and secure them with hot glue or a grub screw.",
-    "fr": "Visser les deux supports de lampe à l'extérieur des bras avec 2 × M3 × 8 chacun : blanc au bras 1, IR 850 nm au bras 2. Insérer les modules et les bloquer avec de la colle chaude ou une vis sans tête.",
-    "it": "Avvitare i due portalampada all'esterno dei bracci con 2 × M3 × 8 ciascuno: bianco sul braccio 1, IR 850 nm sul braccio 2. Inserire i moduli e fissarli con colla a caldo o un grano.",
-    "rm": "Fixar ils dus tegnalampas cun mintgamai 2 × M3 × 8 dador vi dals bratschs: alv vi dal bratsch 1, IR 850 nm vi dal bratsch 2. Metter ils moduls e segirar cun cola chauda u cun ina sitga senza chau."
+    "de": "Die zwei Lampenhalter mit je 2 × M3 × 8 mit Unterlegscheibe aussen an die Arme schrauben: weiss an Arm 1, IR 850 nm an Arm 2. Module einsetzen und mit Heisskleber oder Madenschraube sichern.",
+    "en": "Screw the two lamp holders to the outside of the arms with 2 × M3 × 8 with washer each: white on arm 1, IR 850 nm on arm 2. Insert the modules and secure them with hot glue or a grub screw.",
+    "fr": "Visser les deux supports de lampe à l'extérieur des bras avec 2 × M3 × 8 avec rondelle chacun : blanc au bras 1, IR 850 nm au bras 2. Insérer les modules et les bloquer avec de la colle chaude ou une vis sans tête.",
+    "it": "Avvitare i due portalampada all'esterno dei bracci con 2 × M3 × 8 con rondella ciascuno: bianco sul braccio 1, IR 850 nm sul braccio 2. Inserire i moduli e fissarli con colla a caldo o un grano.",
+    "rm": "Fixar ils dus tegnalampas cun mintgamai 2 × M3 × 8 cun rundella dador vi dals bratschs: alv vi dal bratsch 1, IR 850 nm vi dal bratsch 2. Metter ils moduls e segirar cun cola chauda u cun ina sitga senza chau."
    }
   },
   {
@@ -1831,6 +2167,2646 @@
   "v5-2/MotionWatch_v5-2_Platte_A_Unterteil.3mf"
  ],
  "github": "https://github.com/DonElektro/MotionWatch",
+ "_hinweis_bauen": "real-bauen (01.11.2026): dazu für MoveEye → Mehr → «Bauen» und den Simulator (Mehr → «Bauen»): Varianten, Einkauf (Preise geschätzt, Händler-Suchlinks), Drucken (pro Teil), Werkzeug, Sicherheit, Verkabeln (Pins und Kanäle aus dem Code, «code» = Prüfwert für werkzeuge/bau_pruefen.py), Software, Inbetriebnahme, Fehlersuche (Kennungen aus simulator3d/fehler_katalog.json), Wartung. «wenn»: nur in dieser Variante (v52 | ups | netz | mover). «unklar»: offen, nicht geprüft – bitte klären.",
+ "varianten": [
+  {
+   "id": "gehaeuse",
+   "titel": {
+    "de": "Gehäuse",
+    "en": "Case",
+    "fr": "Boîtier",
+    "it": "Custodia",
+    "rm": "Chascha"
+   },
+   "werte": [
+    {
+     "id": "v51",
+     "name": {
+      "de": "v5.1 (Standard)",
+      "en": "v5.1 (standard)",
+      "fr": "v5.1 (standard)",
+      "it": "v5.1 (standard)",
+      "rm": "v5.1 (standard)"
+     }
+    },
+    {
+     "id": "v52",
+     "name": {
+      "de": "v5.2: + Weitwinkel, IR-LED, Tasten, Status-LED",
+      "en": "v5.2: + wide angle, IR LED, buttons, status LED",
+      "fr": "v5.2 : + grand-angle, LED IR, boutons, LED d'état",
+      "it": "v5.2: + grandangolo, LED IR, pulsanti, LED di stato",
+      "rm": "v5.2: + grondangul, LED IR, buttuns, LED da status"
+     }
+    }
+   ]
+  },
+  {
+   "id": "akku",
+   "titel": {
+    "de": "Strom",
+    "en": "Power",
+    "fr": "Alimentation",
+    "it": "Alimentazione",
+    "rm": "Current"
+   },
+   "werte": [
+    {
+     "id": "ups",
+     "name": {
+      "de": "mit Akku (UPS HAT (E), 4 × 21700)",
+      "en": "with battery (UPS HAT (E), 4 × 21700)",
+      "fr": "avec batterie (UPS HAT (E), 4 × 21700)",
+      "it": "con batteria (UPS HAT (E), 4 × 21700)",
+      "rm": "cun accu (UPS HAT (E), 4 × 21700)"
+     }
+    },
+    {
+     "id": "netz",
+     "name": {
+      "de": "ohne Akku (12-V-Netzteil)",
+      "en": "without battery (12 V power supply)",
+      "fr": "sans batterie (alimentation 12 V)",
+      "it": "senza batteria (alimentatore 12 V)",
+      "rm": "senza accu (alimentaziun 12 V)"
+     }
+    }
+   ]
+  },
+  {
+   "id": "mover",
+   "titel": {
+    "de": "Mover",
+    "en": "Mover",
+    "fr": "Mover",
+    "it": "Mover",
+    "rm": "Mover"
+   },
+   "werte": [
+    {
+     "id": "ohne",
+     "name": {
+      "de": "ohne Mover",
+      "en": "without mover",
+      "fr": "sans mover",
+      "it": "senza mover",
+      "rm": "senza mover"
+     }
+    },
+    {
+     "id": "mover",
+     "name": {
+      "de": "mit Mover (Kettenfahrzeug)",
+      "en": "with mover (tracked vehicle)",
+      "fr": "avec mover (véhicule à chenilles)",
+      "it": "con mover (veicolo cingolato)",
+      "rm": "cun mover (vehichel cun chadainas)"
+     }
+    }
+   ]
+  }
+ ],
+ "variante_standard": {
+  "gehaeuse": "v51",
+  "akku": "ups",
+  "mover": "ohne"
+ },
+ "haendler": {
+  "bastelgarage": {
+   "name": "Bastelgarage.ch",
+   "suche": "https://www.bastelgarage.ch/search?sSearch={q}"
+  },
+  "berrybase": {
+   "name": "BerryBase",
+   "suche": "https://www.berrybase.ch/search?search={q}"
+  },
+  "pishop": {
+   "name": "Pi-Shop.ch",
+   "suche": "https://www.pi-shop.ch/search?sSearch={q}"
+  },
+  "galaxus": {
+   "name": "Galaxus / Digitec",
+   "suche": "https://www.galaxus.ch/de/search?q={q}"
+  },
+  "conrad": {
+   "name": "Conrad.ch",
+   "suche": "https://www.conrad.ch/de/search.html?search={q}"
+  }
+ },
+ "druck": {
+  "_hinweis": "Pro Druckteil (Datei ohne Endung): Stück, Füllung %, Wände, Stützen, Schicht mm, Brim mm, liegt auf, Druckzeit h (Schätzung X2D, 0,4-mm-Düse, PETG).",
+  "teile": [
+   {
+    "datei": "01_Unterteil",
+    "stueck": 1,
+    "fuellung": 15,
+    "waende": 4,
+    "stuetzen": false,
+    "schicht": "0.20",
+    "brim": 0,
+    "zeit_h": 8.0,
+    "liegt": {
+     "de": "Boden",
+     "en": "bottom",
+     "fr": "fond",
+     "it": "fondo",
+     "rm": "fund"
+    }
+   },
+   {
+    "datei": "01_Unterteil_v52",
+    "stueck": 1,
+    "fuellung": 15,
+    "waende": 4,
+    "stuetzen": false,
+    "schicht": "0.20",
+    "brim": 0,
+    "zeit_h": 8.5,
+    "liegt": {
+     "de": "Boden – Kamera-Rippen und Kabelkamm mit 45°-Unterseiten, ohne Stützen",
+     "en": "bottom – camera ribs and cable comb with 45° undersides, no supports",
+     "fr": "fond – nervures caméra et peigne à 45°, sans supports",
+     "it": "fondo – nervature fotocamera e pettine a 45°, senza supporti",
+     "rm": "fund – costas da camera e pettan cun 45°, senza sustegns"
+    },
+    "wenn": "v52"
+   },
+   {
+    "datei": "02_Deckel_mit_Laufring",
+    "stueck": 1,
+    "fuellung": 15,
+    "waende": 3,
+    "stuetzen": false,
+    "schicht": "0.12–0.16",
+    "brim": 0,
+    "zeit_h": 3.0,
+    "liegt": {
+     "de": "Unterseite – Rille fein drucken",
+     "en": "underside – print the groove fine",
+     "fr": "face inférieure – imprimer la rainure fin",
+     "it": "lato inferiore – stampare fine la scanalatura",
+     "rm": "vart sut – stampar fin la foppa"
+    }
+   },
+   {
+    "datei": "03_Drehteller",
+    "stueck": 1,
+    "fuellung": 20,
+    "waende": 3,
+    "stuetzen": false,
+    "schicht": "0.16",
+    "brim": 0,
+    "zeit_h": 1.2,
+    "liegt": {
+     "de": "Oberseite",
+     "en": "top side",
+     "fr": "face supérieure",
+     "it": "lato superiore",
+     "rm": "vart sura"
+    }
+   },
+   {
+    "datei": "04_Gabel_mit_Arm1",
+    "stueck": 1,
+    "fuellung": 25,
+    "waende": 4,
+    "stuetzen": false,
+    "schicht": "0.20",
+    "brim": 5,
+    "zeit_h": 2.2,
+    "liegt": {
+     "de": "Gabelboden",
+     "en": "yoke base",
+     "fr": "base de la fourche",
+     "it": "base della forcella",
+     "rm": "fund da la furtga"
+    }
+   },
+   {
+    "datei": "05_Arm2_Lagerseite",
+    "stueck": 1,
+    "fuellung": 25,
+    "waende": 4,
+    "stuetzen": false,
+    "schicht": "0.20",
+    "brim": 0,
+    "zeit_h": 0.8,
+    "liegt": {
+     "de": "Innenseite",
+     "en": "inner side",
+     "fr": "face intérieure",
+     "it": "lato interno",
+     "rm": "vart interna"
+    }
+   },
+   {
+    "datei": "06_Kamerakopf",
+    "stueck": 1,
+    "fuellung": 20,
+    "waende": 3,
+    "stuetzen": false,
+    "schicht": "0.20",
+    "brim": 5,
+    "zeit_h": 2.8,
+    "liegt": {
+     "de": "rechte Seitenwand",
+     "en": "right side wall",
+     "fr": "paroi latérale droite",
+     "it": "parete laterale destra",
+     "rm": "paraid laterala dretga"
+    }
+   },
+   {
+    "datei": "07_Seitendeckel",
+    "stueck": 1,
+    "fuellung": 20,
+    "waende": 3,
+    "stuetzen": false,
+    "schicht": "0.20",
+    "brim": 5,
+    "zeit_h": 0.9,
+    "liegt": {
+     "de": "Aussenseite",
+     "en": "outer side",
+     "fr": "face extérieure",
+     "it": "lato esterno",
+     "rm": "vart externa"
+    }
+   },
+   {
+    "datei": "08_Lampenhalter_2x",
+    "stueck": 2,
+    "fuellung": 25,
+    "waende": 3,
+    "stuetzen": false,
+    "schicht": "0.20",
+    "brim": 0,
+    "zeit_h": 1.0,
+    "liegt": {
+     "de": "Rückseite",
+     "en": "back side",
+     "fr": "face arrière",
+     "it": "lato posteriore",
+     "rm": "vart davos"
+    }
+   },
+   {
+    "datei": "09_Zwischenboden",
+    "stueck": 1,
+    "fuellung": 20,
+    "waende": 3,
+    "stuetzen": false,
+    "schicht": "0.20",
+    "brim": 0,
+    "zeit_h": 0.4,
+    "liegt": {
+     "de": "flach",
+     "en": "flat",
+     "fr": "à plat",
+     "it": "piatto",
+     "rm": "plat"
+    }
+   },
+   {
+    "datei": "10_HDMI_Stopfen",
+    "stueck": 1,
+    "fuellung": 20,
+    "waende": 3,
+    "stuetzen": false,
+    "schicht": "0.16",
+    "brim": 0,
+    "zeit_h": 0.3,
+    "liegt": {
+     "de": "Flansch",
+     "en": "flange",
+     "fr": "bride",
+     "it": "flangia",
+     "rm": "flansch"
+    }
+   },
+   {
+    "datei": "11_Fuss_4x",
+    "stueck": 4,
+    "fuellung": 30,
+    "waende": 3,
+    "stuetzen": false,
+    "schicht": "0.16",
+    "brim": 0,
+    "zeit_h": 0.4,
+    "liegt": {
+     "de": "Fuss, Zapfen nach oben",
+     "en": "foot, pin up",
+     "fr": "pied, tenon en haut",
+     "it": "piede, perno in alto",
+     "rm": "pe, tschep ensi"
+    }
+   },
+   {
+    "datei": "12_Blindstopfen_Weitwinkel",
+    "stueck": 1,
+    "fuellung": 100,
+    "waende": 2,
+    "stuetzen": false,
+    "schicht": "0.12",
+    "brim": 0,
+    "zeit_h": 0.3,
+    "wenn": "v52",
+    "liegt": {
+     "de": "Flansch unten (nur ohne Weitwinkel-Kamera)",
+     "en": "flange down (only without wide camera)",
+     "fr": "bride en bas (seulement sans caméra grand angle)",
+     "it": "flangia in basso (solo senza fotocamera grandangolare)",
+     "rm": "flansch sut (mo senza camera largangulara)"
+    }
+   }
+  ],
+  "hinweise": [
+   {
+    "de": "Material PETG (z. B. Bambu PETG HF), vorher 6–8 h bei 65 °C trocknen.",
+    "en": "Material PETG (e.g. Bambu PETG HF), dry it first for 6–8 h at 65 °C.",
+    "fr": "Matériau PETG (p. ex. Bambu PETG HF), sécher d'abord 6–8 h à 65 °C.",
+    "it": "Materiale PETG (p. es. Bambu PETG HF), prima essiccare 6–8 h a 65 °C.",
+    "rm": "Material PETG (p.ex. Bambu PETG HF), l'emprim sitgar 6–8 h a 65 °C."
+   },
+   {
+    "de": "Bambu Studio: Drucker «Bambu Lab X2D», Profil «Bambu PETG HF», 0,20 mm Standard; die 3MF-Dateien öffnen und die Werte dieser Tabelle setzen.",
+    "en": "Bambu Studio: printer «Bambu Lab X2D», profile «Bambu PETG HF», 0.20 mm standard; open the 3MF files and set the values of this table.",
+    "fr": "Bambu Studio : imprimante «Bambu Lab X2D», profil «Bambu PETG HF», 0,20 mm standard ; ouvrir les 3MF et régler les valeurs du tableau.",
+    "it": "Bambu Studio: stampante «Bambu Lab X2D», profilo «Bambu PETG HF», 0,20 mm standard; aprire i 3MF e impostare i valori della tabella.",
+    "rm": "Bambu Studio: stampader «Bambu Lab X2D», profil «Bambu PETG HF», 0,20 mm standard; avrir ils 3MF e metter las valurs da la tabella."
+   },
+   {
+    "de": "Alle Teile sind schon richtig gedreht und brauchen keine Stützen.",
+    "en": "All parts are already turned the right way and need no supports.",
+    "fr": "Toutes les pièces sont déjà bien orientées et sans supports.",
+    "it": "Tutti i pezzi sono già orientati bene e senza supporti.",
+    "rm": "Tut las parts èn gia drizzadas endretg e senza sustegns."
+   },
+   {
+    "de": "Glatte PEI-Platte: dünn Klebestift als Trennmittel (PETG haftet sonst zu stark); strukturierte PEI-Platte ohne.",
+    "en": "Smooth PEI plate: a thin layer of glue stick as release agent (PETG sticks too hard otherwise); textured PEI plate without.",
+    "fr": "Plateau PEI lisse : fine couche de colle en bâton comme agent de démoulage ; plateau PEI texturé sans.",
+    "it": "Piatto PEI liscio: un velo di colla stick come distaccante; piatto PEI testurizzato senza.",
+    "rm": "Platta PEI glischa: in pau colla en pal sco separader; platta PEI structurada senza."
+   },
+   {
+    "de": "Für den Deckel die Rille des Laufrings fein drucken (variable Schichthöhe 0,12–0,16 mm).",
+    "en": "For the lid print the groove of the ring fine (variable layer height 0.12–0.16 mm).",
+    "fr": "Pour le couvercle, imprimer fin la rainure (hauteur de couche variable 0,12–0,16 mm).",
+    "it": "Per il coperchio stampare fine la scanalatura (altezza strato variabile 0,12–0,16 mm).",
+    "rm": "Per il viertgel stampar fin la foppa (autezza da strat variabla 0,12–0,16 mm)."
+   },
+   {
+    "de": "Ein fertiges Slicer-Profil liegt nicht bei: es müsste in Bambu Studio erstellt und am X2D getestet werden.",
+    "en": "No ready slicer profile is included: it would have to be made in Bambu Studio and tested on the X2D.",
+    "fr": "Aucun profil de slicer fourni : il faudrait le créer dans Bambu Studio et le tester sur la X2D.",
+    "it": "Nessun profilo slicer pronto: andrebbe creato in Bambu Studio e provato sulla X2D.",
+    "rm": "Nagin profil da slicer: el stuess vegnir fatg en Bambu Studio e testà vi da la X2D."
+   }
+  ],
+  "zeit_hinweis": {
+   "de": "Druckzeit: Schätzung, im Slicer nachsehen.",
+   "en": "Print time: an estimate, check it in the slicer.",
+   "fr": "Durée : estimation, à vérifier dans le slicer.",
+   "it": "Tempo di stampa: stima, controllare nello slicer.",
+   "rm": "Temp da stampa: stimaziun, guardar en il slicer."
+  }
+ },
+ "werkzeug": [
+  {
+   "de": "3D-Drucker (Bambu Lab X2D) und Filament-Trockner",
+   "en": "3D printer (Bambu Lab X2D) and filament dryer",
+   "fr": "Imprimante 3D (Bambu Lab X2D) et séchoir à filament",
+   "it": "Stampante 3D (Bambu Lab X2D) ed essiccatore",
+   "rm": "Stampader 3D (Bambu Lab X2D) e sitgader da filament"
+  },
+  {
+   "de": "Lötkolben mit Temperaturregler, Lötzinn (bleifrei), Ablage",
+   "en": "Soldering iron with temperature control, solder (lead-free), stand",
+   "fr": "Fer à souder régulé, étain (sans plomb), support",
+   "it": "Saldatore regolabile, stagno (senza piombo), supporto",
+   "rm": "Fier da lotar regulabel, stagn (senza plum), suport"
+  },
+  {
+   "de": "Multimeter (Spannung, Durchgang)",
+   "en": "Multimeter (voltage, continuity)",
+   "fr": "Multimètre (tension, continuité)",
+   "it": "Multimetro (tensione, continuità)",
+   "rm": "Multimeter (tensiun, cuntinuitad)"
+  },
+  {
+   "de": "Seitenschneider, Abisolierzange, Pinzette",
+   "en": "Side cutter, wire stripper, tweezers",
+   "fr": "Pince coupante, pince à dénuder, pincette",
+   "it": "Tronchesino, spelafili, pinzetta",
+   "rm": "Tanaglia, tanaglia da dischlontanar, pinzetta"
+  },
+  {
+   "de": "Schraubendreher Kreuz PH0 / PH1 und Innensechskant 1,5 / 2 / 2,5 mm",
+   "en": "Screwdrivers Phillips PH0 / PH1 and hex 1.5 / 2 / 2.5 mm",
+   "fr": "Tournevis cruciformes PH0 / PH1 et clés hexagonales 1,5 / 2 / 2,5 mm",
+   "it": "Cacciaviti a croce PH0 / PH1 e brugole 1,5 / 2 / 2,5 mm",
+   "rm": "Scruvaders en crusch PH0 / PH1 e clavs da sis chantuns 1,5 / 2 / 2,5 mm"
+  },
+  {
+   "de": "Heissklebepistole, Schrumpfschlauch und Heissluft (oder Feuerzeug)",
+   "en": "Hot glue gun, heat shrink and hot air (or a lighter)",
+   "fr": "Pistolet à colle chaude, gaine thermo et air chaud (ou briquet)",
+   "it": "Pistola a colla a caldo, guaina e aria calda (o accendino)",
+   "rm": "Pistola da colla chauda, tub termoretractil ed aria chauda (u fiugader)"
+  },
+  {
+   "de": "Kabelbinder, Klettband, doppelseitiges Schaumklebeband, Moosgummi-Dichtband",
+   "en": "Cable ties, hook-and-loop tape, double-sided foam tape, foam rubber seal",
+   "fr": "Colliers, bande auto-agrippante, adhésif mousse double face, joint en caoutchouc mousse",
+   "it": "Fascette, velcro, nastro biadesivo in schiuma, guarnizione in gomma spugna",
+   "rm": "Ligiaders da cabel, banda velcro, banda adesiva da dus vart, banda da tegnair stagn"
+  },
+  {
+   "de": "Schutzbrille, gut gelüfteter Platz",
+   "en": "Safety glasses, a well ventilated place",
+   "fr": "Lunettes de protection, endroit bien aéré",
+   "it": "Occhiali di protezione, luogo ben aerato",
+   "rm": "Egliers da protecziun, lieu bain ventilà"
+  }
+ ],
+ "schrauben": [
+  {
+   "menge": "4×",
+   "was": "M2,5 × 6",
+   "schritt": 3,
+   "unklar": {
+    "de": "Länge nicht angegeben (geschätzt)",
+    "en": "length not given (estimated)",
+    "fr": "longueur non indiquée (estimée)",
+    "it": "lunghezza non indicata (stimata)",
+    "rm": "lunghezza betg indicada (stimada)"
+   }
+  },
+  {
+   "menge": "2×",
+   "was": "M3 × 8",
+   "schritt": 5,
+   "unklar": {
+    "de": "Länge nicht angegeben (geschätzt)",
+    "en": "length not given (estimated)",
+    "fr": "longueur non indiquée (estimée)",
+    "it": "lunghezza non indicata (stimata)",
+    "rm": "lunghezza betg indicada (stimada)"
+   }
+  },
+  {
+   "menge": "2×",
+   "was": "M2 × 8",
+   "schritt": 8
+  },
+  {
+   "menge": "4×",
+   "was": {
+    "de": "M3 × 8 (Gabel → Drehteller)",
+    "en": "M3 × 8 (yoke → turntable)",
+    "fr": "M3 × 8 (fourche → plateau)",
+    "it": "M3 × 8 (forcella → piatto)",
+    "rm": "M3 × 8 (furtga → platta)"
+   },
+   "schritt": 9
+  },
+  {
+   "menge": "4× + 2×",
+   "was": {
+    "de": "M2 × 4 (Camera Module 3) + M2 × 6 (Thermal-90)",
+    "en": "M2 × 4 (Camera Module 3) + M2 × 6 (Thermal-90)",
+    "fr": "M2 × 4 (Camera Module 3) + M2 × 6 (Thermal-90)",
+    "it": "M2 × 4 (Camera Module 3) + M2 × 6 (Thermal-90)",
+    "rm": "M2 × 4 (Camera Module 3) + M2 × 6 (Thermal-90)"
+   },
+   "schritt": 10
+  },
+  {
+   "menge": "3×",
+   "was": {
+    "de": "M3 × 10 Linsenkopf ISO 7380 (Seitendeckel)",
+    "en": "M3 × 10 button head ISO 7380 (side cover)",
+    "fr": "M3 × 10 tête bombée ISO 7380 (couvercle latéral)",
+    "it": "M3 × 10 testa bombata ISO 7380 (coperchio laterale)",
+    "rm": "M3 × 10 chau bombà ISO 7380 (viertgel lateral)"
+   },
+   "schritt": 10
+  },
+  {
+   "menge": "2× + 1×",
+   "was": {
+    "de": "M3 + Mutter, M3 × 12 (Achse), 2–3 Scheiben",
+    "en": "M3 + nut, M3 × 12 (axle), 2–3 washers",
+    "fr": "M3 + écrou, M3 × 12 (axe), 2–3 rondelles",
+    "it": "M3 + dado, M3 × 12 (asse), 2–3 rondelle",
+    "rm": "M3 + mutter, M3 × 12 (axa), 2–3 rundellas"
+   },
+   "schritt": 11
+  },
+  {
+   "menge": "4×",
+   "was": {
+    "de": "M3 × 8 + Unterlegscheibe M3 (Lampenhalter)",
+    "en": "M3 × 8 + washer M3 (lamp holders)",
+    "fr": "M3 × 8 + rondelle M3 (supports de lampe)",
+    "it": "M3 × 8 + rondella M3 (portalampade)",
+    "rm": "M3 × 8 + rundella M3 (tegnalampas)"
+   },
+   "schritt": 12
+  },
+  {
+   "menge": "6×",
+   "was": "M3 × 10",
+   "schritt": 13
+  }
+ ],
+ "sicherheit": [
+  {
+   "thema": "akku",
+   "text": {
+    "de": "Akkus 21700 sind ungeschützt: nie kurzschliessen, Polung prüfen, 4 gleiche Zellen gleicher Ladung, beschädigte Zellen nicht verwenden, nicht unbeaufsichtigt laden.",
+    "en": "The 21700 cells are unprotected: never short them, check the polarity, 4 equal cells with the same charge, do not use damaged cells, do not charge unattended.",
+    "fr": "Les cellules 21700 sont non protégées : jamais de court-circuit, vérifier la polarité, 4 cellules identiques de même charge, pas de cellules abîmées, ne pas charger sans surveillance.",
+    "it": "Le celle 21700 non sono protette: mai cortocircuitarle, controllare la polarità, 4 celle uguali con la stessa carica, niente celle danneggiate, non caricare senza sorveglianza.",
+    "rm": "Las cellas 21700 n'èn betg protegidas: mai far curtcircuit, controllar la polaritad, 4 cellas egualas cun la medema chargia, betg duvrar cellas donnegiadas, betg chargiar senza survegliar."
+   },
+   "wenn": "ups"
+  },
+  {
+   "thema": "strom",
+   "text": {
+    "de": "Die Ladebuchse GX16 hat keinen Verpolungsschutz: Polung des Steckers vor dem ersten Einstecken mit dem Multimeter messen. Die Sicherung 5 A direkt hinter die Buchse.",
+    "en": "The GX16 charging socket has no reverse polarity protection: measure the plug polarity with the multimeter before plugging in. Put the 5 A fuse right behind the socket.",
+    "fr": "La prise GX16 n'a pas de protection contre l'inversion : mesurer la polarité de la fiche avant de brancher. Le fusible 5 A juste derrière la prise.",
+    "it": "La presa GX16 non ha protezione contro l'inversione: misurare la polarità della spina prima di collegare. Il fusibile 5 A subito dietro la presa.",
+    "rm": "La bischla GX16 n'ha nagina protecziun cunter polaritad faussa: mesirar la polaritad avant che attaccar. La segirezza 5 A directamain davos la bischla."
+   }
+  },
+  {
+   "thema": "strom",
+   "text": {
+    "de": "Den Ausgang jedes Step-Down-Wandlers zuerst ohne Last messen (5,0–5,2 V), erst dann Pi, Servos oder Verstärker anschliessen. Nie unter Strom verkabeln.",
+    "en": "Measure the output of every step-down converter without load first (5.0–5.2 V), only then connect the Pi, servos or amplifier. Never wire while powered.",
+    "fr": "Mesurer d'abord la sortie de chaque abaisseur à vide (5,0–5,2 V), seulement ensuite brancher le Pi, les servos ou l'ampli. Jamais câbler sous tension.",
+    "it": "Misurare prima l'uscita di ogni step-down a vuoto (5,0–5,2 V), solo dopo collegare Pi, servo o amplificatore. Mai cablare sotto tensione.",
+    "rm": "Mesirar l'emprim la sortida da mintga step-down senza chargia (5,0–5,2 V), pir lura attaccar il Pi, ils servos u l'amplificatur. Mai cablar sut current."
+   }
+  },
+  {
+   "thema": "loeten",
+   "text": {
+    "de": "Löten: Schutzbrille, Rauch nicht einatmen (lüften), heissen Kolben immer in die Ablage, danach Hände waschen.",
+    "en": "Soldering: safety glasses, do not breathe the fumes (ventilate), always put the hot iron in its stand, wash your hands afterwards.",
+    "fr": "Soudure : lunettes, ne pas respirer les fumées (aérer), toujours poser le fer chaud sur son support, se laver les mains ensuite.",
+    "it": "Saldatura: occhiali, non respirare i fumi (aerare), il saldatore caldo sempre sul supporto, poi lavarsi le mani.",
+    "rm": "Lotar: egliers, betg respirar il fim (ventilar), il fier chaud adina sin il suport, suenter lavar las mauns."
+   }
+  },
+  {
+   "thema": "servo",
+   "text": {
+    "de": "Servos: beim ersten Einschalten Finger weg vom Drehteller und vom Kopf; zuerst die Grenzen setzen (Pan ±90°, Tilt ±60°). Der Not-Aus steht auf der Seite Servos.",
+    "en": "Servos: keep your fingers away from the turntable and the head at the first start; set the limits first (pan ±90°, tilt ±60°). The emergency stop is on the page Servos.",
+    "fr": "Servos : doigts loin du plateau et de la tête au premier démarrage ; d'abord régler les limites (pan ±90°, tilt ±60°). L'arrêt d'urgence est sur la page Servos.",
+    "it": "Servo: al primo avvio dita lontane dal piatto e dalla testa; prima impostare i limiti (pan ±90°, tilt ±60°). L'arresto d'emergenza è nella pagina Servo.",
+    "rm": "Servos: tar l'emprim aviar betg tegnair ils dets vi dal plat ed il chau; l'emprim metter ils limits (pan ±90°, tilt ±60°). Il stop d'urgenza è sin la pagina Servos."
+   }
+  },
+  {
+   "thema": "licht",
+   "text": {
+    "de": "IR-Licht 850 nm ist fast unsichtbar, aber hell: nicht aus der Nähe in die Lampe schauen.",
+    "en": "IR light 850 nm is almost invisible but bright: do not look into the lamp from close by.",
+    "fr": "La lumière IR 850 nm est presque invisible mais forte : ne pas regarder la lampe de près.",
+    "it": "La luce IR 850 nm è quasi invisibile ma forte: non guardare la lampada da vicino.",
+    "rm": "La glisch IR 850 nm è quasi invisibla, ma ferma: betg guardar da datiers en la lampa."
+   }
+  }
+ ],
+ "verkabelung": {
+  "_hinweis": "knoten: Module des Plans (x / y in 0..100). verbindungen: von, nach, art (i2c | pwm | gpio | strom | usb | csi | spi | audio), pins, code = Prüfwert aus quelle/ (werkzeuge/bau_pruefen.py vergleicht «wert»), unklar = offen.",
+  "knoten": {
+   "gx16": {
+    "name": {
+     "de": "Ladebuchse GX16",
+     "en": "Charging socket GX16",
+     "fr": "Prise GX16",
+     "it": "Presa GX16",
+     "rm": "Bischla GX16"
+    },
+    "x": 4,
+    "y": 12
+   },
+   "fuse": {
+    "name": {
+     "de": "Sicherung 5 A",
+     "en": "Fuse 5 A",
+     "fr": "Fusible 5 A",
+     "it": "Fusibile 5 A",
+     "rm": "Segirezza 5 A"
+    },
+    "x": 4,
+    "y": 30
+   },
+   "d36": {
+    "name": {
+     "de": "D36V50F5 (5 V)",
+     "en": "D36V50F5 (5 V)",
+     "fr": "D36V50F5 (5 V)",
+     "it": "D36V50F5 (5 V)",
+     "rm": "D36V50F5 (5 V)"
+    },
+    "x": 4,
+    "y": 48
+   },
+   "ups": {
+    "name": {
+     "de": "UPS HAT (E)",
+     "en": "UPS HAT (E)",
+     "fr": "UPS HAT (E)",
+     "it": "UPS HAT (E)",
+     "rm": "UPS HAT (E)"
+    },
+    "x": 4,
+    "y": 68,
+    "wenn": "ups"
+   },
+   "buck": {
+    "name": {
+     "de": "Step-Down 5 V 4 A",
+     "en": "Step-down 5 V 4 A",
+     "fr": "Abaisseur 5 V 4 A",
+     "it": "Step-down 5 V 4 A",
+     "rm": "Step-down 5 V 4 A"
+    },
+    "x": 4,
+    "y": 88
+   },
+   "pi": {
+    "name": {
+     "de": "Raspberry Pi 5",
+     "en": "Raspberry Pi 5",
+     "fr": "Raspberry Pi 5",
+     "it": "Raspberry Pi 5",
+     "rm": "Raspberry Pi 5"
+    },
+    "x": 40,
+    "y": 50
+   },
+   "fan": {
+    "name": {
+     "de": "Lüfter (Active Cooler)",
+     "en": "Fan (Active Cooler)",
+     "fr": "Ventilateur",
+     "it": "Ventola",
+     "rm": "Ventilatur"
+    },
+    "x": 40,
+    "y": 12
+   },
+   "cam0": {
+    "name": {
+     "de": "Camera Module 3 NoIR",
+     "en": "Camera Module 3 NoIR",
+     "fr": "Camera Module 3 NoIR",
+     "it": "Camera Module 3 NoIR",
+     "rm": "Camera Module 3 NoIR"
+    },
+    "x": 22,
+    "y": 4
+   },
+   "cam1": {
+    "name": {
+     "de": "Weitwinkel-Kamera",
+     "en": "Wide-angle camera",
+     "fr": "Caméra grand-angle",
+     "it": "Telecamera grandangolare",
+     "rm": "Camera grondangul"
+    },
+    "x": 58,
+    "y": 4,
+    "wenn": "v52"
+   },
+   "therm": {
+    "name": {
+     "de": "Thermal-90",
+     "en": "Thermal-90",
+     "fr": "Thermal-90",
+     "it": "Thermal-90",
+     "rm": "Thermal-90"
+    },
+    "x": 22,
+    "y": 24
+   },
+   "pca": {
+    "name": {
+     "de": "PCA9685 (0x41)",
+     "en": "PCA9685 (0x41)",
+     "fr": "PCA9685 (0x41)",
+     "it": "PCA9685 (0x41)",
+     "rm": "PCA9685 (0x41)"
+    },
+    "x": 74,
+    "y": 40
+   },
+   "pan": {
+    "name": {
+     "de": "Servo Pan",
+     "en": "Servo pan",
+     "fr": "Servo pan",
+     "it": "Servo pan",
+     "rm": "Servo pan"
+    },
+    "x": 96,
+    "y": 10
+   },
+   "tilt": {
+    "name": {
+     "de": "Servo Tilt",
+     "en": "Servo tilt",
+     "fr": "Servo tilt",
+     "it": "Servo tilt",
+     "rm": "Servo tilt"
+    },
+    "x": 96,
+    "y": 24
+   },
+   "mosfet": {
+    "name": {
+     "de": "MOSFET-Modul",
+     "en": "MOSFET module",
+     "fr": "Module MOSFET",
+     "it": "Modulo MOSFET",
+     "rm": "Modul MOSFET"
+    },
+    "x": 96,
+    "y": 40
+   },
+   "lampw": {
+    "name": {
+     "de": "Lampe weiss",
+     "en": "White lamp",
+     "fr": "Lampe blanche",
+     "it": "Lampada bianca",
+     "rm": "Lampa alva"
+    },
+    "x": 96,
+    "y": 52
+   },
+   "lampir": {
+    "name": {
+     "de": "Lampe IR 850 nm",
+     "en": "IR lamp 850 nm",
+     "fr": "Lampe IR 850 nm",
+     "it": "Lampada IR 850 nm",
+     "rm": "Lampa IR 850 nm"
+    },
+    "x": 96,
+    "y": 62
+   },
+   "irled": {
+    "name": {
+     "de": "IR-LED 5 mm",
+     "en": "IR LED 5 mm",
+     "fr": "LED IR 5 mm",
+     "it": "LED IR 5 mm",
+     "rm": "LED IR 5 mm"
+    },
+    "x": 96,
+    "y": 72,
+    "wenn": "v52"
+   },
+   "sled": {
+    "name": {
+     "de": "Status-LED RGB",
+     "en": "Status LED RGB",
+     "fr": "LED d'état RVB",
+     "it": "LED di stato RGB",
+     "rm": "LED da status RGB"
+    },
+    "x": 96,
+    "y": 84,
+    "wenn": "v52"
+   },
+   "tasten": {
+    "name": {
+     "de": "2 Tasten",
+     "en": "2 buttons",
+     "fr": "2 boutons",
+     "it": "2 pulsanti",
+     "rm": "2 buttuns"
+    },
+    "x": 74,
+    "y": 92,
+    "wenn": "v52"
+   },
+   "pir": {
+    "name": {
+     "de": "PIR AS312",
+     "en": "PIR AS312",
+     "fr": "PIR AS312",
+     "it": "PIR AS312",
+     "rm": "PIR AS312"
+    },
+    "x": 58,
+    "y": 92
+   },
+   "ds18": {
+    "name": {
+     "de": "DS18B20",
+     "en": "DS18B20",
+     "fr": "DS18B20",
+     "it": "DS18B20",
+     "rm": "DS18B20"
+    },
+    "x": 40,
+    "y": 92
+   },
+   "relay": {
+    "name": {
+     "de": "Relais",
+     "en": "Relay",
+     "fr": "Relais",
+     "it": "Relè",
+     "rm": "Relais"
+    },
+    "x": 22,
+    "y": 92
+   },
+   "i2c": {
+    "name": {
+     "de": "I2C: BME280, MPU-6050, INA219",
+     "en": "I2C: BME280, MPU-6050, INA219",
+     "fr": "I2C : BME280, MPU-6050, INA219",
+     "it": "I2C: BME280, MPU-6050, INA219",
+     "rm": "I2C: BME280, MPU-6050, INA219"
+    },
+    "x": 74,
+    "y": 70
+   },
+   "hub": {
+    "name": {
+     "de": "USB-Hub",
+     "en": "USB hub",
+     "fr": "Hub USB",
+     "it": "Hub USB",
+     "rm": "Hub USB"
+    },
+    "x": 58,
+    "y": 26
+   },
+   "sound": {
+    "name": {
+     "de": "USB-Soundkarte",
+     "en": "USB sound card",
+     "fr": "Carte son USB",
+     "it": "Scheda audio USB",
+     "rm": "Carta da tun USB"
+    },
+    "x": 74,
+    "y": 14
+   },
+   "mic": {
+    "name": {
+     "de": "USB-Mikrofon",
+     "en": "USB microphone",
+     "fr": "Microphone USB",
+     "it": "Microfono USB",
+     "rm": "Microfon USB"
+    },
+    "x": 58,
+    "y": 14
+   },
+   "pam": {
+    "name": {
+     "de": "PAM8403",
+     "en": "PAM8403",
+     "fr": "PAM8403",
+     "it": "PAM8403",
+     "rm": "PAM8403"
+    },
+    "x": 22,
+    "y": 70
+   },
+   "spk": {
+    "name": {
+     "de": "Lautsprecher 4 Ω",
+     "en": "Loudspeaker 4 Ω",
+     "fr": "Haut-parleur 4 Ω",
+     "it": "Altoparlante 4 Ω",
+     "rm": "Autpledader 4 Ω"
+    },
+    "x": 22,
+    "y": 82
+   },
+   "motor": {
+    "name": {
+     "de": "Motor-HAT (0x60) + Fahrwerk",
+     "en": "Motor HAT (0x60) + chassis",
+     "fr": "Motor HAT (0x60) + châssis",
+     "it": "Motor HAT (0x60) + telaio",
+     "rm": "Motor HAT (0x60) + chassis"
+    },
+    "x": 58,
+    "y": 70,
+    "wenn": "mover"
+   }
+  },
+  "verbindungen": [
+   {
+    "id": "pca_i2c",
+    "von": "pi",
+    "nach": "pca",
+    "art": "i2c",
+    "pins": {
+     "de": "3,3 V Pin 1 · GND Pin 6 · SDA Pin 3 (GPIO 2) · SCL Pin 5 (GPIO 3) · I2C 0x41 (Lötbrücke A0)",
+     "en": "3.3 V pin 1 · GND pin 6 · SDA pin 3 (GPIO 2) · SCL pin 5 (GPIO 3) · I2C 0x41 (solder bridge A0)",
+     "fr": "3,3 V broche 1 · GND broche 6 · SDA broche 3 (GPIO 2) · SCL broche 5 (GPIO 3) · I2C 0x41 (pont A0)",
+     "it": "3,3 V pin 1 · GND pin 6 · SDA pin 3 (GPIO 2) · SCL pin 5 (GPIO 3) · I2C 0x41 (ponticello A0)",
+     "rm": "3,3 V pin 1 · GND pin 6 · SDA pin 3 (GPIO 2) · SCL pin 5 (GPIO 3) · I2C 0x41 (punt da lotar A0)"
+    },
+    "code": "pca_address",
+    "wert": "0x41"
+   },
+   {
+    "id": "pan",
+    "von": "pca",
+    "nach": "pan",
+    "art": "pwm",
+    "pins": {
+     "de": "Kanal 0 · Signal orange, + rot (V+), − braun",
+     "en": "channel 0 · signal orange, + red (V+), − brown",
+     "fr": "canal 0 · signal orange, + rouge (V+), − brun",
+     "it": "canale 0 · segnale arancione, + rosso (V+), − marrone",
+     "rm": "chanal 0 · signal oransch, + cotschen (V+), − brin"
+    },
+    "code": "pca_pan_ch",
+    "wert": "0"
+   },
+   {
+    "id": "tilt",
+    "von": "pca",
+    "nach": "tilt",
+    "art": "pwm",
+    "pins": {
+     "de": "Kanal 1 · Signal orange, + rot (V+), − braun",
+     "en": "channel 1 · signal orange, + red (V+), − brown",
+     "fr": "canal 1 · signal orange, + rouge (V+), − brun",
+     "it": "canale 1 · segnale arancione, + rosso (V+), − marrone",
+     "rm": "chanal 1 · signal oransch, + cotschen (V+), − brin"
+    },
+    "code": "pca_tilt_ch",
+    "wert": "1"
+   },
+   {
+    "id": "servo_strom",
+    "von": "buck",
+    "nach": "pca",
+    "art": "strom",
+    "pins": {
+     "de": "5 V → Klemme V+ / GND des PCA9685, Elko 470 µF an V+",
+     "en": "5 V → terminal V+ / GND of the PCA9685, capacitor 470 µF at V+",
+     "fr": "5 V → borne V+ / GND du PCA9685, condensateur 470 µF sur V+",
+     "it": "5 V → morsetto V+ / GND del PCA9685, condensatore 470 µF su V+",
+     "rm": "5 V → clemma V+ / GND dal PCA9685, condensatur 470 µF vi da V+"
+    },
+    "unklar": {
+     "de": "Abgriff des Step-Downs am Akkupaket des UPS HAT (E) nicht beschrieben",
+     "en": "where the step-down takes power from the battery pack of the UPS HAT (E) is not described",
+     "fr": "le point de prise de l'abaisseur sur le pack de la UPS HAT (E) n'est pas décrit",
+     "it": "il punto di prelievo dello step-down sul pacco della UPS HAT (E) non è descritto",
+     "rm": "nua ch'il step-down prenda il current dal pachet d'accus da l'UPS HAT (E) n'è betg descrit"
+    },
+    "wenn": "ups"
+   },
+   {
+    "id": "servo_strom_netz",
+    "von": "fuse",
+    "nach": "buck",
+    "art": "strom",
+    "pins": {
+     "de": "12 V nach der Sicherung → Step-Down → 5 V an V+ des PCA9685",
+     "en": "12 V after the fuse → step-down → 5 V at V+ of the PCA9685",
+     "fr": "12 V après le fusible → abaisseur → 5 V sur V+ du PCA9685",
+     "it": "12 V dopo il fusibile → step-down → 5 V su V+ del PCA9685",
+     "rm": "12 V suenter la segirezza → step-down → 5 V vi da V+ dal PCA9685"
+    },
+    "wenn": "netz",
+    "unklar": {
+     "de": "Variante ohne Akku ist im Gehäuse v5.1 nicht beschrieben (Vorschlag)",
+     "en": "the variant without battery is not described for case v5.1 (proposal)",
+     "fr": "la variante sans batterie n'est pas décrite pour le boîtier v5.1 (proposition)",
+     "it": "la variante senza batteria non è descritta per la custodia v5.1 (proposta)",
+     "rm": "la variante senza accu n'è betg descritta per la chascha v5.1 (proposta)"
+    }
+   },
+   {
+    "id": "licht_w",
+    "von": "pca",
+    "nach": "mosfet",
+    "art": "pwm",
+    "pins": {
+     "de": "Kanal 2 → MOSFET 1 → Lampe weiss (Einstellung «Licht weiss: PCA9685 Kanal 2»)",
+     "en": "channel 2 → MOSFET 1 → white lamp (setting «White light: PCA9685 channel 2»)",
+     "fr": "canal 2 → MOSFET 1 → lampe blanche (réglage «Lumière blanche : PCA9685 canal 2»)",
+     "it": "canale 2 → MOSFET 1 → lampada bianca (impostazione «Luce bianca: PCA9685 canale 2»)",
+     "rm": "chanal 2 → MOSFET 1 → lampa alva (endrizzaziun «Glisch alva: PCA9685 chanal 2»)"
+    },
+    "code": "doku_licht_weiss",
+    "wert": "2"
+   },
+   {
+    "id": "licht_ir",
+    "von": "pca",
+    "nach": "mosfet",
+    "art": "pwm",
+    "pins": {
+     "de": "Kanal 3 → MOSFET 2 → Lampe IR 850 nm (Einstellung «Infrarotlicht: PCA9685 Kanal 3»)",
+     "en": "channel 3 → MOSFET 2 → IR lamp 850 nm (setting «Infrared light: PCA9685 channel 3»)",
+     "fr": "canal 3 → MOSFET 2 → lampe IR 850 nm (réglage «Infrarouge : PCA9685 canal 3»)",
+     "it": "canale 3 → MOSFET 2 → lampada IR 850 nm (impostazione «Infrarosso: PCA9685 canale 3»)",
+     "rm": "chanal 3 → MOSFET 2 → lampa IR 850 nm (endrizzaziun «Infracotschen: PCA9685 chanal 3»)"
+    },
+    "code": "doku_licht_ir",
+    "wert": "3"
+   },
+   {
+    "id": "lampen",
+    "von": "mosfet",
+    "nach": "lampw",
+    "art": "strom",
+    "pins": {
+     "de": "5 V über Vorwiderstand 2 W",
+     "en": "5 V through a series resistor 2 W",
+     "fr": "5 V par une résistance série 2 W",
+     "it": "5 V tramite resistenza in serie 2 W",
+     "rm": "5 V tras ina resistenza en seria 2 W"
+    },
+    "unklar": {
+     "de": "Wert der Vorwiderstände noch offen (je nach LED)",
+     "en": "value of the series resistors still open (depends on the LED)",
+     "fr": "valeur des résistances encore ouverte (selon la LED)",
+     "it": "valore delle resistenze ancora aperto (dipende dal LED)",
+     "rm": "valur da las resistenzas anc averta (tenor LED)"
+    }
+   },
+   {
+    "id": "lampen_ir",
+    "von": "mosfet",
+    "nach": "lampir",
+    "art": "strom",
+    "pins": {
+     "de": "5 V über Vorwiderstand 2 W",
+     "en": "5 V through a series resistor 2 W",
+     "fr": "5 V par une résistance série 2 W",
+     "it": "5 V tramite resistenza in serie 2 W",
+     "rm": "5 V tras ina resistenza en seria 2 W"
+    }
+   },
+   {
+    "id": "ir_breit",
+    "von": "pca",
+    "nach": "irled",
+    "art": "pwm",
+    "pins": {
+     "de": "Kanal 4 → MOSFET → IR-LED 5 mm 850 nm («IR-Licht breit»)",
+     "en": "channel 4 → MOSFET → IR LED 5 mm 850 nm («wide IR light»)",
+     "fr": "canal 4 → MOSFET → LED IR 5 mm 850 nm («IR large»)",
+     "it": "canale 4 → MOSFET → LED IR 5 mm 850 nm («IR ampio»)",
+     "rm": "chanal 4 → MOSFET → LED IR 5 mm 850 nm («glisch IR largia»)"
+    },
+    "code": "weit_ir_ch",
+    "wert": "4",
+    "wenn": "v52",
+    "unklar": {
+     "de": "braucht einen dritten MOSFET-Kanal – die Materialliste hat ein 2-Kanal-Modul",
+     "en": "needs a third MOSFET channel – the parts list has a 2-channel module",
+     "fr": "il faut un troisième canal MOSFET – la liste a un module à 2 canaux",
+     "it": "serve un terzo canale MOSFET – la distinta ha un modulo a 2 canali",
+     "rm": "basegna in terz chanal MOSFET – la glista ha in modul cun 2 chanals"
+    }
+   },
+   {
+    "id": "led_rgb",
+    "von": "pca",
+    "nach": "sled",
+    "art": "pwm",
+    "pins": {
+     "de": "Kanal 5 rot · 6 grün · 7 blau, gemeinsame Kathode (Einstellung «LED-Typ»)",
+     "en": "channel 5 red · 6 green · 7 blue, common cathode (setting «LED type»)",
+     "fr": "canal 5 rouge · 6 vert · 7 bleu, cathode commune (réglage «Type de LED»)",
+     "it": "canale 5 rosso · 6 verde · 7 blu, catodo comune (impostazione «Tipo di LED»)",
+     "rm": "chanal 5 cotschen · 6 verd · 7 blau, catoda cuminaivla (endrizzaziun «Tip da LED»)"
+    },
+    "code": "led_ch_rgb",
+    "wert": "5/6/7",
+    "wenn": "v52",
+    "unklar": {
+     "de": "Vorwiderstände der RGB-LED fehlen in der Materialliste",
+     "en": "series resistors for the RGB LED are missing in the parts list",
+     "fr": "les résistances de la LED RVB manquent dans la liste",
+     "it": "mancano nella distinta le resistenze del LED RGB",
+     "rm": "las resistenzas da la LED RGB mancan en la glista"
+    }
+   },
+   {
+    "id": "tasten",
+    "von": "pi",
+    "nach": "tasten",
+    "art": "gpio",
+    "pins": {
+     "de": "«Schutz» GPIO 16 (Pin 36) · «Alarm quittieren» GPIO 26 (Pin 37) · je gegen GND, interner Pull-up",
+     "en": "«Protection» GPIO 16 (pin 36) · «Acknowledge alarm» GPIO 26 (pin 37) · each to GND, internal pull-up",
+     "fr": "«Protection» GPIO 16 (broche 36) · «Acquitter l'alarme» GPIO 26 (broche 37) · chacun vers GND, pull-up interne",
+     "it": "«Protezione» GPIO 16 (pin 36) · «Conferma allarme» GPIO 26 (pin 37) · ciascuno a GND, pull-up interno",
+     "rm": "«Protecziun» GPIO 16 (pin 36) · «Quittar l'alarm» GPIO 26 (pin 37) · mintgin a GND, pull-up intern"
+    },
+    "code": "btn_gpio",
+    "wert": "16/26",
+    "wenn": "v52"
+   },
+   {
+    "id": "pir",
+    "von": "pi",
+    "nach": "pir",
+    "art": "gpio",
+    "pins": {
+     "de": "3,3 V · GND · Ausgang GPIO 5 (Pin 29); in MoveEye unter Zusatzgeräte als Bewegungsmelder eintragen",
+     "en": "3.3 V · GND · output GPIO 5 (pin 29); add it in MoveEye under Extra devices as motion detector",
+     "fr": "3,3 V · GND · sortie GPIO 5 (broche 29) ; l'ajouter dans MoveEye sous Appareils supplémentaires comme détecteur",
+     "it": "3,3 V · GND · uscita GPIO 5 (pin 29); aggiungerlo in MoveEye sotto Dispositivi aggiuntivi come rilevatore",
+     "rm": "3,3 V · GND · sortida GPIO 5 (pin 29); agiuntar en MoveEye sut Apparats supplementars sco detectur"
+    },
+    "code": "doku_pir",
+    "wert": "5"
+   },
+   {
+    "id": "ds18",
+    "von": "pi",
+    "nach": "ds18",
+    "art": "gpio",
+    "pins": {
+     "de": "3,3 V · GND · Daten GPIO 4 (Pin 7) + 4,7 kΩ nach 3,3 V; config.txt: dtoverlay=w1-gpio",
+     "en": "3.3 V · GND · data GPIO 4 (pin 7) + 4.7 kΩ to 3.3 V; config.txt: dtoverlay=w1-gpio",
+     "fr": "3,3 V · GND · données GPIO 4 (broche 7) + 4,7 kΩ vers 3,3 V ; config.txt : dtoverlay=w1-gpio",
+     "it": "3,3 V · GND · dati GPIO 4 (pin 7) + 4,7 kΩ a 3,3 V; config.txt: dtoverlay=w1-gpio",
+     "rm": "3,3 V · GND · datas GPIO 4 (pin 7) + 4,7 kΩ a 3,3 V; config.txt: dtoverlay=w1-gpio"
+    },
+    "code": "doku_ds18",
+    "wert": "4"
+   },
+   {
+    "id": "relay",
+    "von": "pi",
+    "nach": "relay",
+    "art": "gpio",
+    "pins": {
+     "de": "IN GPIO 22 (Pin 15) · VCC 5 V · GND",
+     "en": "IN GPIO 22 (pin 15) · VCC 5 V · GND",
+     "fr": "IN GPIO 22 (broche 15) · VCC 5 V · GND",
+     "it": "IN GPIO 22 (pin 15) · VCC 5 V · GND",
+     "rm": "IN GPIO 22 (pin 15) · VCC 5 V · GND"
+    },
+    "code": "gpio_relay",
+    "wert": "22"
+   },
+   {
+    "id": "i2c_sens",
+    "von": "pi",
+    "nach": "i2c",
+    "art": "i2c",
+    "pins": {
+     "de": "am selben I2C wie der PCA9685: BME280 0x76 / 0x77 · MPU-6050 0x68 · INA219 0x44 (optional, Solar)",
+     "en": "on the same I2C as the PCA9685: BME280 0x76 / 0x77 · MPU-6050 0x68 · INA219 0x44 (optional, solar)",
+     "fr": "sur le même I2C que le PCA9685 : BME280 0x76 / 0x77 · MPU-6050 0x68 · INA219 0x44 (option, solaire)",
+     "it": "sullo stesso I2C del PCA9685: BME280 0x76 / 0x77 · MPU-6050 0x68 · INA219 0x44 (opzionale, solare)",
+     "rm": "sin il medem I2C sco il PCA9685: BME280 0x76 / 0x77 · MPU-6050 0x68 · INA219 0x44 (opziunal, solar)"
+    },
+    "unklar": {
+     "de": "INA219: Doku 0x44, die Einstellung «Solar» steht im Code auf 0x41 (= PCA9685)",
+     "en": "INA219: docs say 0x44, the setting «solar» is 0x41 in the code (= PCA9685)",
+     "fr": "INA219 : doc 0x44, le réglage «solaire» vaut 0x41 dans le code (= PCA9685)",
+     "it": "INA219: doc 0x44, l'impostazione «solare» nel codice è 0x41 (= PCA9685)",
+     "rm": "INA219: documentaziun 0x44, l'endrizzaziun «solar» è 0x41 en il code (= PCA9685)"
+    },
+    "code": "solar_addr",
+    "wert": "0x41"
+   },
+   {
+    "id": "therm",
+    "von": "pi",
+    "nach": "therm",
+    "art": "spi",
+    "pins": {
+     "de": "SPI0 + I2C 0x40, GPIO 7 / 23 / 24 (Kabel MX1.25 10-polig)",
+     "en": "SPI0 + I2C 0x40, GPIO 7 / 23 / 24 (cable MX1.25 10-pin)",
+     "fr": "SPI0 + I2C 0x40, GPIO 7 / 23 / 24 (câble MX1.25 10 broches)",
+     "it": "SPI0 + I2C 0x40, GPIO 7 / 23 / 24 (cavo MX1.25 10 pin)",
+     "rm": "SPI0 + I2C 0x40, GPIO 7 / 23 / 24 (cabel MX1.25 10 pols)"
+    },
+    "unklar": {
+     "de": "genaue Belegung des 10-poligen Kabels: Waveshare-Wiki, nicht mit dem echten Modul geprüft",
+     "en": "exact pinout of the 10-pin cable: Waveshare wiki, not checked with the real module",
+     "fr": "brochage exact du câble 10 broches : wiki Waveshare, non vérifié avec le vrai module",
+     "it": "piedinatura esatta del cavo a 10 pin: wiki Waveshare, non verificata col modulo vero",
+     "rm": "occupaziun exacta dal cabel cun 10 pols: wiki Waveshare, betg verifitgà cun il modul vair"
+    }
+   },
+   {
+    "id": "cam0",
+    "von": "pi",
+    "nach": "cam0",
+    "art": "csi",
+    "pins": {
+     "de": "CAM0, Kabel 22→15-polig 500 mm, Kontakte zur Platine",
+     "en": "CAM0, cable 22→15 pin 500 mm, contacts towards the board",
+     "fr": "CAM0, câble 22→15 broches 500 mm, contacts vers la carte",
+     "it": "CAM0, cavo 22→15 pin 500 mm, contatti verso la scheda",
+     "rm": "CAM0, cabel 22→15 pols 500 mm, contacts vers la platina"
+    },
+    "unklar": {
+     "de": "Anschluss CAM0 nur aus der Doku v5.2 abgeleitet (Weitwinkel = CAM1)",
+     "en": "port CAM0 only derived from the v5.2 docs (wide angle = CAM1)",
+     "fr": "port CAM0 seulement déduit de la doc v5.2 (grand-angle = CAM1)",
+     "it": "porta CAM0 dedotta solo dalla doc v5.2 (grandangolo = CAM1)",
+     "rm": "port CAM0 mo deducì da la documentaziun v5.2 (grondangul = CAM1)"
+    }
+   },
+   {
+    "id": "cam1",
+    "von": "pi",
+    "nach": "cam1",
+    "art": "csi",
+    "pins": {
+     "de": "CAM1, Kabel 22→15-polig 200 mm, in MoveEye «Raspberry Pi camera 1»",
+     "en": "CAM1, cable 22→15 pin 200 mm, in MoveEye «Raspberry Pi camera 1»",
+     "fr": "CAM1, câble 22→15 broches 200 mm, dans MoveEye «Raspberry Pi camera 1»",
+     "it": "CAM1, cavo 22→15 pin 200 mm, in MoveEye «Raspberry Pi camera 1»",
+     "rm": "CAM1, cabel 22→15 pols 200 mm, en MoveEye «Raspberry Pi camera 1»"
+    },
+    "wenn": "v52"
+   },
+   {
+    "id": "fan",
+    "von": "pi",
+    "nach": "fan",
+    "art": "strom",
+    "pins": {
+     "de": "FAN-Anschluss des Pi 5 (4-polig JST)",
+     "en": "FAN connector of the Pi 5 (4-pin JST)",
+     "fr": "connecteur FAN du Pi 5 (JST 4 broches)",
+     "it": "connettore FAN del Pi 5 (JST 4 pin)",
+     "rm": "attach FAN dal Pi 5 (JST 4 pols)"
+    }
+   },
+   {
+    "id": "hub",
+    "von": "pi",
+    "nach": "hub",
+    "art": "usb",
+    "pins": {
+     "de": "USB-A des Pi → Hub (Kabel ≥ 15 cm)",
+     "en": "USB-A of the Pi → hub (cable ≥ 15 cm)",
+     "fr": "USB-A du Pi → hub (câble ≥ 15 cm)",
+     "it": "USB-A del Pi → hub (cavo ≥ 15 cm)",
+     "rm": "USB-A dal Pi → hub (cabel ≥ 15 cm)"
+    }
+   },
+   {
+    "id": "sound",
+    "von": "hub",
+    "nach": "sound",
+    "art": "usb",
+    "pins": {
+     "de": "USB-Soundkarte im Hub",
+     "en": "USB sound card in the hub",
+     "fr": "carte son USB dans le hub",
+     "it": "scheda audio USB nell'hub",
+     "rm": "carta da tun USB en il hub"
+    }
+   },
+   {
+    "id": "mic",
+    "von": "hub",
+    "nach": "mic",
+    "art": "usb",
+    "pins": {
+     "de": "USB-Mikrofon über Verlängerung 15 cm (vorne oben)",
+     "en": "USB microphone through a 15 cm extension (front, top)",
+     "fr": "microphone USB par une rallonge 15 cm (devant en haut)",
+     "it": "microfono USB con prolunga 15 cm (davanti in alto)",
+     "rm": "microfon USB tras ina prolungaziun 15 cm (davant sura)"
+    }
+   },
+   {
+    "id": "pam_in",
+    "von": "sound",
+    "nach": "pam",
+    "art": "audio",
+    "pins": {
+     "de": "Klinke 3,5 mm → Eingang L / GND des PAM8403",
+     "en": "jack 3.5 mm → input L / GND of the PAM8403",
+     "fr": "jack 3,5 mm → entrée L / GND du PAM8403",
+     "it": "jack 3,5 mm → ingresso L / GND del PAM8403",
+     "rm": "jack 3,5 mm → entrada L / GND dal PAM8403"
+    }
+   },
+   {
+    "id": "pam_strom",
+    "von": "buck",
+    "nach": "pam",
+    "art": "strom",
+    "pins": {
+     "de": "5 V / GND",
+     "en": "5 V / GND",
+     "fr": "5 V / GND",
+     "it": "5 V / GND",
+     "rm": "5 V / GND"
+    }
+   },
+   {
+    "id": "spk",
+    "von": "pam",
+    "nach": "spk",
+    "art": "audio",
+    "pins": {
+     "de": "Ausgang L+ / L− → Lautsprecher 4 Ω",
+     "en": "output L+ / L− → loudspeaker 4 Ω",
+     "fr": "sortie L+ / L− → haut-parleur 4 Ω",
+     "it": "uscita L+ / L− → altoparlante 4 Ω",
+     "rm": "sortida L+ / L− → autpledader 4 Ω"
+    }
+   },
+   {
+    "id": "laden",
+    "von": "gx16",
+    "nach": "fuse",
+    "art": "strom",
+    "pins": {
+     "de": "12–40 V, je 2 Kontakte parallel für + und −",
+     "en": "12–40 V, 2 contacts each in parallel for + and −",
+     "fr": "12–40 V, 2 contacts en parallèle pour + et −",
+     "it": "12–40 V, 2 contatti in parallelo per + e −",
+     "rm": "12–40 V, mintgamai 2 contacts parallels per + e −"
+    }
+   },
+   {
+    "id": "laden2",
+    "von": "fuse",
+    "nach": "d36",
+    "art": "strom",
+    "pins": {
+     "de": "Sicherung 5 A → VIN / GND des D36V50F5",
+     "en": "fuse 5 A → VIN / GND of the D36V50F5",
+     "fr": "fusible 5 A → VIN / GND du D36V50F5",
+     "it": "fusibile 5 A → VIN / GND del D36V50F5",
+     "rm": "segirezza 5 A → VIN / GND dal D36V50F5"
+    }
+   },
+   {
+    "id": "laden3",
+    "von": "d36",
+    "nach": "ups",
+    "art": "strom",
+    "pins": {
+     "de": "5 V → USB-C-Stecker (56 kΩ auf CC) → USB-C des UPS HAT (E)",
+     "en": "5 V → USB-C plug (56 kΩ on CC) → USB-C of the UPS HAT (E)",
+     "fr": "5 V → fiche USB-C (56 kΩ sur CC) → USB-C de la UPS HAT (E)",
+     "it": "5 V → spina USB-C (56 kΩ su CC) → USB-C della UPS HAT (E)",
+     "rm": "5 V → stecker USB-C (56 kΩ sin CC) → USB-C da l'UPS HAT (E)"
+    },
+    "wenn": "ups"
+   },
+   {
+    "id": "ups_pi",
+    "von": "ups",
+    "nach": "pi",
+    "art": "strom",
+    "pins": {
+     "de": "5 V / 6 A über Pogo-Pins, Akku-Chip I2C 0x2D",
+     "en": "5 V / 6 A through pogo pins, battery chip I2C 0x2D",
+     "fr": "5 V / 6 A par broches pogo, puce batterie I2C 0x2D",
+     "it": "5 V / 6 A tramite pin pogo, chip batteria I2C 0x2D",
+     "rm": "5 V / 6 A tras pins pogo, chip d'accu I2C 0x2D"
+    },
+    "code": "ups_e_addr",
+    "wert": "0x2D",
+    "wenn": "ups"
+   },
+   {
+    "id": "netz_pi",
+    "von": "d36",
+    "nach": "pi",
+    "art": "strom",
+    "pins": {
+     "de": "5 V → USB-C des Pi 5 direkt",
+     "en": "5 V → USB-C of the Pi 5 directly",
+     "fr": "5 V → USB-C du Pi 5 directement",
+     "it": "5 V → USB-C del Pi 5 direttamente",
+     "rm": "5 V → USB-C dal Pi 5 directamain"
+    },
+    "wenn": "netz",
+    "unklar": {
+     "de": "ohne USB-PD meldet der Pi 5 «schwaches Netzteil» (USB nur 600 mA) – config.txt usb_max_current_enable=1 prüfen",
+     "en": "without USB PD the Pi 5 reports a «weak power supply» (USB only 600 mA) – check config.txt usb_max_current_enable=1",
+     "fr": "sans USB PD le Pi 5 signale une «alimentation faible» (USB 600 mA) – vérifier usb_max_current_enable=1",
+     "it": "senza USB PD il Pi 5 segnala «alimentatore debole» (USB 600 mA) – verificare usb_max_current_enable=1",
+     "rm": "senza USB PD annunzia il Pi 5 «alimentaziun flaivla» (USB 600 mA) – controllar usb_max_current_enable=1"
+    }
+   },
+   {
+    "id": "ladeled",
+    "von": "d36",
+    "nach": "gx16",
+    "art": "strom",
+    "pins": {
+     "de": "Lade-LED 3 mm mit Vorwiderstand, Lichtleiter hinten",
+     "en": "charging LED 3 mm with series resistor, light guide at the back",
+     "fr": "LED de charge 3 mm avec résistance, guide de lumière derrière",
+     "it": "LED di ricarica 3 mm con resistenza, guida luce dietro",
+     "rm": "LED da chargiar 3 mm cun resistenza, guida da glisch davos"
+    },
+    "unklar": {
+     "de": "wo die Lade-LED angeschlossen wird, ist nicht beschrieben",
+     "en": "where the charging LED is connected is not described",
+     "fr": "le branchement de la LED de charge n'est pas décrit",
+     "it": "dove si collega il LED di ricarica non è descritto",
+     "rm": "nua che la LED da chargiar vegn attaccada n'è betg descrit"
+    }
+   },
+   {
+    "id": "mover",
+    "von": "pi",
+    "nach": "motor",
+    "art": "i2c",
+    "pins": {
+     "de": "I2C 0x60 · Motor M1 = links, M2 = rechts",
+     "en": "I2C 0x60 · motor M1 = left, M2 = right",
+     "fr": "I2C 0x60 · moteur M1 = gauche, M2 = droite",
+     "it": "I2C 0x60 · motore M1 = sinistra, M2 = destra",
+     "rm": "I2C 0x60 · motor M1 = sanester, M2 = dretg"
+    },
+    "code": "mover_addr",
+    "wert": "0x60",
+    "wenn": "mover",
+    "unklar": {
+     "de": "Fahrwerk, Motorstrom und Befestigung des Gehäuses (Stativmutter 1/4\") noch offen",
+     "en": "chassis, motor power and mounting of the case (tripod nut 1/4\") still open",
+     "fr": "châssis, alimentation des moteurs et fixation du boîtier (écrou 1/4\") encore ouverts",
+     "it": "telaio, alimentazione dei motori e fissaggio della custodia (dado 1/4\") ancora aperti",
+     "rm": "chassis, current dals motors e fixaziun da la chascha (mutter 1/4\") anc avert"
+    }
+   }
+  ]
+ },
+ "software": [
+  {
+   "titel": {
+    "de": "Pi OS auf die Karte",
+    "en": "Pi OS on the card",
+    "fr": "Pi OS sur la carte",
+    "it": "Pi OS sulla scheda",
+    "rm": "Pi OS sin la carta"
+   },
+   "text": {
+    "de": "Mit dem Raspberry Pi Imager «Raspberry Pi OS (64-bit)», Bookworm, auf die microSD schreiben. Im Imager Hostname, Benutzer, WLAN und SSH einstellen.",
+    "en": "Write «Raspberry Pi OS (64-bit)», Bookworm, to the microSD with Raspberry Pi Imager. Set host name, user, Wi-Fi and SSH in the Imager.",
+    "fr": "Écrire «Raspberry Pi OS (64-bit)», Bookworm, sur la microSD avec Raspberry Pi Imager. Régler nom d'hôte, utilisateur, Wi-Fi et SSH dans l'Imager.",
+    "it": "Scrivere «Raspberry Pi OS (64-bit)», Bookworm, sulla microSD con Raspberry Pi Imager. Impostare nome host, utente, Wi-Fi e SSH nell'Imager.",
+    "rm": "Scriver «Raspberry Pi OS (64-bit)», Bookworm, sin la microSD cun Raspberry Pi Imager. Metter num, utilisader, WLAN e SSH en l'Imager."
+   }
+  },
+  {
+   "titel": {
+    "de": "MoveEye holen und einrichten",
+    "en": "Get and set up MoveEye",
+    "fr": "Récupérer et installer MoveEye",
+    "it": "Scaricare e installare MoveEye",
+    "rm": "Prender ed installar MoveEye"
+   },
+   "text": {
+    "de": "Auf dem Pi im Terminal (ohne sudo). Das Skript installiert die Pakete, schaltet I2C, SPI und Kamera ein, richtet den Dienst ein, lädt das KI-Modell und macht den Selbsttest. Zuerst mit --trocken ansehen.",
+    "en": "On the Pi in the terminal (without sudo). The script installs the packages, switches on I2C, SPI and the camera, sets up the service, loads the AI model and runs the self-test. Look first with --trocken.",
+    "fr": "Sur le Pi dans le terminal (sans sudo). Le script installe les paquets, active I2C, SPI et la caméra, crée le service, charge le modèle IA et fait l'autotest. D'abord regarder avec --trocken.",
+    "it": "Sul Pi nel terminale (senza sudo). Lo script installa i pacchetti, attiva I2C, SPI e la fotocamera, crea il servizio, carica il modello IA e fa l'autotest. Prima guardare con --trocken.",
+    "rm": "Sin il Pi en il terminal (senza sudo). Il script installescha ils pachets, activescha I2C, SPI e la camera, installescha il servetsch, chargia il model IA e fa l'autotest. L'emprim guardar cun --trocken."
+   },
+   "befehl": "git clone https://github.com/DonElektro/MotionWatch.git\ncd MotionWatch\nbash werkzeuge/einrichten.sh --trocken\nbash werkzeuge/einrichten.sh"
+  },
+  {
+   "titel": {
+    "de": "Wärmebild-Treiber",
+    "en": "Thermal driver",
+    "fr": "Pilote de la caméra thermique",
+    "it": "Driver della termocamera",
+    "rm": "Driver da la camera termica"
+   },
+   "text": {
+    "de": "Für die Thermal-90: im Waveshare-Wiki «Thermal_Camera_Hat.zip» laden, im Ordner pysenxor-master installieren.",
+    "en": "For the Thermal-90: load «Thermal_Camera_Hat.zip» from the Waveshare wiki, install it in the folder pysenxor-master.",
+    "fr": "Pour la Thermal-90 : télécharger «Thermal_Camera_Hat.zip» du wiki Waveshare, installer dans le dossier pysenxor-master.",
+    "it": "Per la Thermal-90: scaricare «Thermal_Camera_Hat.zip» dal wiki Waveshare, installare nella cartella pysenxor-master.",
+    "rm": "Per la Thermal-90: chargiar «Thermal_Camera_Hat.zip» dal wiki Waveshare, installar en l'ordinatur pysenxor-master."
+   },
+   "befehl": "pip install --break-system-packages -e ./"
+  },
+  {
+   "titel": {
+    "de": "Neu starten und prüfen",
+    "en": "Restart and check",
+    "fr": "Redémarrer et vérifier",
+    "it": "Riavviare e controllare",
+    "rm": "Reaviar e controllar"
+   },
+   "text": {
+    "de": "Nach dem Neustart: I2C-Geräte und Kamera prüfen. Erwartet: 40 Thermal-90, 41 PCA9685, 2d UPS HAT (E), dazu 68 / 76 / 77 / 44 je nach Sensoren.",
+    "en": "After the restart: check the I2C devices and the camera. Expected: 40 Thermal-90, 41 PCA9685, 2d UPS HAT (E), plus 68 / 76 / 77 / 44 depending on the sensors.",
+    "fr": "Après le redémarrage : vérifier les appareils I2C et la caméra. Attendu : 40 Thermal-90, 41 PCA9685, 2d UPS HAT (E), plus 68 / 76 / 77 / 44 selon les capteurs.",
+    "it": "Dopo il riavvio: controllare i dispositivi I2C e la fotocamera. Atteso: 40 Thermal-90, 41 PCA9685, 2d UPS HAT (E), più 68 / 76 / 77 / 44 secondo i sensori.",
+    "rm": "Suenter il reaviar: controllar ils apparats I2C e la camera. Spetgà: 40 Thermal-90, 41 PCA9685, 2d UPS HAT (E), plus 68 / 76 / 77 / 44 tenor ils sensurs."
+   },
+   "befehl": "sudo i2cdetect -y 1\nrpicam-hello --list-cameras"
+  },
+  {
+   "titel": {
+    "de": "Webseite öffnen, Passwort",
+    "en": "Open the web page, password",
+    "fr": "Ouvrir la page web, mot de passe",
+    "it": "Aprire la pagina web, password",
+    "rm": "Avrir la pagina web, pled-clav"
+   },
+   "text": {
+    "de": "Im Browser http://<IP-des-Pi>:5000/ öffnen (eigenes WLAN des Pi: http://10.42.0.1:5000/) und gleich ein Web-Passwort festlegen. Der QR-Code unten führt auf diese Seite.",
+    "en": "Open http://<IP of the Pi>:5000/ in the browser (own Wi-Fi of the Pi: http://10.42.0.1:5000/) and set a web password at once. The QR code below leads to this page.",
+    "fr": "Ouvrir http://<IP du Pi>:5000/ dans le navigateur (Wi-Fi propre du Pi : http://10.42.0.1:5000/) et définir tout de suite un mot de passe. Le code QR ci-dessous mène à cette page.",
+    "it": "Aprire http://<IP del Pi>:5000/ nel browser (Wi-Fi proprio del Pi: http://10.42.0.1:5000/) e impostare subito una password. Il codice QR qui sotto porta a questa pagina.",
+    "rm": "Avrir http://<IP dal Pi>:5000/ en il navigatur (WLAN agen dal Pi: http://10.42.0.1:5000/) e metter immediatamain in pled-clav. Il code QR sutvart maina sin questa pagina."
+   },
+   "link": "qr"
+  },
+  {
+   "titel": {
+    "de": "Erster Start: Einrichtungs-Assistent",
+    "en": "First start: setup assistant",
+    "fr": "Premier démarrage : assistant",
+    "it": "Primo avvio: assistente",
+    "rm": "Emprim aviar: assistent"
+   },
+   "text": {
+    "de": "Beim ersten Öffnen führt der Assistent durch Sprache, Name, Push und Schutz. Später: Live → «🧭 Einrichtungs-Assistent».",
+    "en": "At the first visit the assistant guides through language, name, push and protection. Later: Live → «🧭 Setup assistant».",
+    "fr": "À la première visite l'assistant guide : langue, nom, push et protection. Plus tard : Direct → «🧭 Assistant».",
+    "it": "Alla prima visita l'assistente guida: lingua, nome, push e protezione. Più tardi: Live → «🧭 Assistente».",
+    "rm": "A l'emprima visita maina l'assistent tras lingua, num, push e protecziun. Pli tard: Live → «🧭 Assistent»."
+   },
+   "link": "/?guide=1"
+  },
+  {
+   "titel": {
+    "de": "Updates",
+    "en": "Updates",
+    "fr": "Mises à jour",
+    "it": "Aggiornamenti",
+    "rm": "Actualisaziuns"
+   },
+   "text": {
+    "de": "MoveEye holt neue, signierte Versionen selbst (Einstellungen → System → Updates).",
+    "en": "MoveEye fetches new, signed versions by itself (Settings → System → Updates).",
+    "fr": "MoveEye récupère seul les nouvelles versions signées (Réglages → Système → Mises à jour).",
+    "it": "MoveEye scarica da sé le nuove versioni firmate (Impostazioni → Sistema → Aggiornamenti).",
+    "rm": "MoveEye prenda sez las novas versiuns signadas (Parameters → Sistem → Actualisaziuns)."
+   },
+   "link": "/settings"
+  }
+ ],
+ "inbetriebnahme": [
+  {
+   "titel": {
+    "de": "Servos kalibrieren",
+    "en": "Calibrate the servos",
+    "fr": "Calibrer les servos",
+    "it": "Calibrare i servo",
+    "rm": "Calibrar ils servos"
+   },
+   "text": {
+    "de": "Seite Servos: Mitte prüfen, Grenzen Pan ±90° und Tilt ±60° setzen, Richtung umkehren falls nötig, Nachschwingen ansehen.",
+    "en": "Page Servos: check the middle, set the limits pan ±90° and tilt ±60°, reverse the direction if needed, watch the overshoot.",
+    "fr": "Page Servos : vérifier le milieu, limites pan ±90° et tilt ±60°, inverser le sens si besoin, observer le dépassement.",
+    "it": "Pagina Servo: controllare il centro, limiti pan ±90° e tilt ±60°, invertire la direzione se serve, guardare l'oscillazione.",
+    "rm": "Pagina Servos: controllar il center, limits pan ±90° e tilt ±60°, midar la direcziun sche necessari, guardar il surpassar."
+   },
+   "link": "/servo"
+  },
+  {
+   "titel": {
+    "de": "Kamera ausrichten",
+    "en": "Align the camera",
+    "fr": "Aligner la caméra",
+    "it": "Allineare la fotocamera",
+    "rm": "Drizzar la camera"
+   },
+   "text": {
+    "de": "Im Live-Bild prüfen, ob der Kopf geradeaus schaut und das Bild nicht gedreht ist; Fokus der Camera Module 3 ist automatisch.",
+    "en": "Check in the live picture that the head looks straight ahead and the picture is not turned; the focus of the Camera Module 3 is automatic.",
+    "fr": "Vérifier dans l'image en direct que la tête regarde droit et que l'image n'est pas tournée ; la mise au point est automatique.",
+    "it": "Controllare nell'immagine live che la testa guardi dritto e che l'immagine non sia ruotata; la messa a fuoco è automatica.",
+    "rm": "Controllar en il maletg live ch'il chau guarda directamain e ch'il maletg n'è betg rotà; il focus è automatic."
+   },
+   "link": "/cams"
+  },
+  {
+   "titel": {
+    "de": "Wärmebild ausrichten",
+    "en": "Align the thermal picture",
+    "fr": "Aligner l'image thermique",
+    "it": "Allineare l'immagine termica",
+    "rm": "Drizzar il maletg termic"
+   },
+   "text": {
+    "de": "Wärmebild über das Kamerabild legen (Zoom, Verschiebung).",
+    "en": "Lay the thermal picture over the camera picture (zoom, offset).",
+    "fr": "Superposer l'image thermique à l'image de la caméra (zoom, décalage).",
+    "it": "Sovrapporre l'immagine termica a quella della fotocamera (zoom, spostamento).",
+    "rm": "Metter il maletg termic sur il maletg da la camera (zoom, spustament)."
+   },
+   "link": "/thermal_align"
+  },
+  {
+   "titel": {
+    "de": "Licht und Ton",
+    "en": "Light and sound",
+    "fr": "Lumière et son",
+    "it": "Luce e suono",
+    "rm": "Glisch e tun"
+   },
+   "text": {
+    "de": "Einstellungen → Licht & Ton: Licht weiss auf PCA9685 Kanal 2, Infrarot auf Kanal 3 stellen, dann Licht und Sirene kurz testen.",
+    "en": "Settings → Light & sound: set white light to PCA9685 channel 2, infrared to channel 3, then test light and siren briefly.",
+    "fr": "Réglages → Lumière et son : lumière blanche sur le canal 2 du PCA9685, infrarouge sur le canal 3, puis tester brièvement.",
+    "it": "Impostazioni → Luce e suono: luce bianca sul canale 2 del PCA9685, infrarosso sul canale 3, poi provare brevemente.",
+    "rm": "Parameters → Glisch e tun: glisch alva sin il chanal 2 dal PCA9685, infracotschen sin il chanal 3, lura testar curt."
+   },
+   "link": "/settings"
+  },
+  {
+   "titel": {
+    "de": "Selbsttest und Diagnose",
+    "en": "Self-test and diagnosis",
+    "fr": "Autotest et diagnostic",
+    "it": "Autotest e diagnosi",
+    "rm": "Autotest e diagnosa"
+   },
+   "text": {
+    "de": "Werkzeuge: Selbstdiagnose und Hardware-Prüfung – alles grün? Sonst Reiter «Fehlersuche».",
+    "en": "Tools: self-diagnosis and hardware check – all green? Otherwise tab «Troubleshooting».",
+    "fr": "Outils : autodiagnostic et contrôle du matériel – tout vert ? Sinon onglet «Dépannage».",
+    "it": "Strumenti: autodiagnosi e controllo hardware – tutto verde? Altrimenti scheda «Risoluzione problemi».",
+    "rm": "Utensils: autodiagnosa e controlla da la hardware – tut verd? Uschiglio tab «Tschertgar sbagls»."
+   },
+   "link": "/tools"
+  },
+  {
+   "titel": {
+    "de": "Erste Testnacht",
+    "en": "First test night",
+    "fr": "Première nuit de test",
+    "it": "Prima notte di prova",
+    "rm": "Emprima notg da test"
+   },
+   "text": {
+    "de": "Schutz «Wachsam», eine Nacht laufen lassen, morgens Verlauf ansehen; den Bericht nach feedback/ hochladen.",
+    "en": "Protection «Watchful», let it run one night, look at the history in the morning; upload the report to feedback/.",
+    "fr": "Protection «Vigilant», une nuit entière, regarder l'historique le matin ; téléverser le rapport dans feedback/.",
+    "it": "Protezione «Vigile», una notte intera, al mattino guardare la cronologia; caricare il rapporto in feedback/.",
+    "rm": "Protecziun «Attent», laschar ir ina notg, la damaun guardar l'istorgia; chargiar il rapport en feedback/."
+   },
+   "link": "/recordings"
+  }
+ ],
+ "fehlersuche": [
+  "HW_PCA9685",
+  "SERVO_NONE",
+  "HW_SERVO_JITTER",
+  "CAM_NONE",
+  "THERMAL",
+  "HW_I2C",
+  "HW_UPS",
+  "POWER_LOW",
+  "BATT_LOW",
+  "HW_LIGHT",
+  "HW_SOUND",
+  "MIC",
+  "CPU_HOT"
+ ],
+ "wartung": [
+  {
+   "teil": {
+    "de": "Drehlager (Kugeln)",
+    "en": "Turntable bearing (BBs)",
+    "fr": "Roulement (billes)",
+    "it": "Cuscinetto (pallini)",
+    "rm": "Cuschinet (ballinas)"
+   },
+   "wann": {
+    "de": "alle 6 Monate",
+    "en": "every 6 months",
+    "fr": "tous les 6 mois",
+    "it": "ogni 6 mesi",
+    "rm": "mintga 6 mais"
+   },
+   "was": {
+    "de": "leichtgängig? Wenig Silikonfett nachgeben.",
+    "en": "running freely? Add a little silicone grease.",
+    "fr": "tourne librement ? Ajouter un peu de graisse silicone.",
+    "it": "gira libero? Aggiungere poco grasso al silicone.",
+    "rm": "va levamain? Dar in pau grass da silicon."
+   }
+  },
+  {
+   "teil": {
+    "de": "Servos MG90S",
+    "en": "Servos MG90S",
+    "fr": "Servos MG90S",
+    "it": "Servo MG90S",
+    "rm": "Servos MG90S"
+   },
+   "wann": {
+    "de": "monatlich (Servo-Diagnose)",
+    "en": "monthly (servo diagnosis)",
+    "fr": "chaque mois (diagnostic servo)",
+    "it": "ogni mese (diagnosi servo)",
+    "rm": "mintga mais (diagnosa servo)"
+   },
+   "was": {
+    "de": "Zittern, Brummen, Spiel? Verschleissteil – Ersatz-Servo bereithalten.",
+    "en": "jitter, hum, play? Wear part – keep a spare servo.",
+    "fr": "tremblement, bourdonnement, jeu ? Pièce d'usure – garder un servo de rechange.",
+    "it": "tremolio, ronzio, gioco? Pezzo soggetto a usura – tenere un servo di ricambio.",
+    "rm": "tremblar, zunzurar, gieu? Part che s'consumescha – tegnair a disposiziun in servo da reserva."
+   }
+  },
+  {
+   "teil": {
+    "de": "Akkus 21700",
+    "en": "21700 cells",
+    "fr": "Cellules 21700",
+    "it": "Celle 21700",
+    "rm": "Cellas 21700"
+   },
+   "wann": {
+    "de": "alle 3 Monate, jährlich ersetzen prüfen",
+    "en": "every 3 months, check replacement yearly",
+    "fr": "tous les 3 mois, remplacement à vérifier chaque année",
+    "it": "ogni 3 mesi, sostituzione da valutare ogni anno",
+    "rm": "mintga 3 mais, controllar mintga onn da remplazzar"
+   },
+   "was": {
+    "de": "Zellspannungen in MoveEye gleich? Aufgebläht oder warm = sofort raus.",
+    "en": "cell voltages in MoveEye equal? Swollen or warm = out at once.",
+    "fr": "tensions des cellules égales dans MoveEye ? Gonflée ou chaude = retirer tout de suite.",
+    "it": "tensioni delle celle uguali in MoveEye? Gonfia o calda = togliere subito.",
+    "rm": "tensiuns da las cellas egualas en MoveEye? Inflada u chauda = immediatamain ora."
+   },
+   "wenn": "ups"
+  },
+  {
+   "teil": {
+    "de": "Dichtungen, Deckel, Stopfen",
+    "en": "Seals, lid, plug",
+    "fr": "Joints, couvercle, bouchon",
+    "it": "Guarnizioni, coperchio, tappo",
+    "rm": "Tegnidas, viertgel, cluchet"
+   },
+   "wann": {
+    "de": "vor jeder Saison",
+    "en": "before every season",
+    "fr": "avant chaque saison",
+    "it": "prima di ogni stagione",
+    "rm": "avant mintga stagiun"
+   },
+   "was": {
+    "de": "Moosgummi, Kabelverschraubung und HDMI-Stopfen dicht? Innen trocken?",
+    "en": "foam rubber, cable gland and HDMI plug tight? Dry inside?",
+    "fr": "joint, presse-étoupe et bouchon HDMI étanches ? Sec à l'intérieur ?",
+    "it": "guarnizione, pressacavo e tappo HDMI stagni? Asciutto dentro?",
+    "rm": "tegnidas, passacabel e cluchet HDMI stagns? Sitg en l'intern?"
+   }
+  },
+  {
+   "teil": {
+    "de": "Linsen und Fenster",
+    "en": "Lenses and windows",
+    "fr": "Objectifs et fenêtres",
+    "it": "Obiettivi e finestre",
+    "rm": "Lentillas e fanestras"
+   },
+   "wann": {
+    "de": "monatlich",
+    "en": "monthly",
+    "fr": "chaque mois",
+    "it": "ogni mese",
+    "rm": "mintga mais"
+   },
+   "was": {
+    "de": "Kamera, Wärmebild und PIR mit weichem Tuch reinigen (Tau, Spinnweben).",
+    "en": "clean camera, thermal and PIR with a soft cloth (dew, cobwebs).",
+    "fr": "nettoyer caméra, thermique et PIR avec un chiffon doux (rosée, toiles).",
+    "it": "pulire fotocamera, termica e PIR con un panno morbido (rugiada, ragnatele).",
+    "rm": "nettegiar camera, termica e PIR cun in pon lom (rugada, taila d'arogn)."
+   }
+  },
+  {
+   "teil": {
+    "de": "Lüfter und Lüftungsschlitze",
+    "en": "Fan and vents",
+    "fr": "Ventilateur et fentes",
+    "it": "Ventola e feritoie",
+    "rm": "Ventilatur e fessas"
+   },
+   "wann": {
+    "de": "alle 6 Monate",
+    "en": "every 6 months",
+    "fr": "tous les 6 mois",
+    "it": "ogni 6 mesi",
+    "rm": "mintga 6 mais"
+   },
+   "was": {
+    "de": "Staub entfernen; CPU-Temperatur in MoveEye unter 80 °C?",
+    "en": "remove dust; CPU temperature in MoveEye below 80 °C?",
+    "fr": "enlever la poussière ; température CPU sous 80 °C ?",
+    "it": "togliere la polvere; temperatura CPU sotto 80 °C?",
+    "rm": "allontanar la pulvra; temperatura CPU sut 80 °C?"
+   }
+  },
+  {
+   "teil": {
+    "de": "microSD-Karte",
+    "en": "microSD card",
+    "fr": "Carte microSD",
+    "it": "Scheda microSD",
+    "rm": "Carta microSD"
+   },
+   "wann": {
+    "de": "wenn MoveEye warnt",
+    "en": "when MoveEye warns",
+    "fr": "quand MoveEye avertit",
+    "it": "quando MoveEye avvisa",
+    "rm": "cura che MoveEye avertescha"
+   },
+   "was": {
+    "de": "Abnutzung der Karte (Selbstdiagnose); Sicherung machen, Ersatzkarte bereithalten.",
+    "en": "wear of the card (self-diagnosis); make a backup, keep a spare card.",
+    "fr": "usure de la carte (autodiagnostic) ; faire une sauvegarde, garder une carte de rechange.",
+    "it": "usura della scheda (autodiagnosi); fare un backup, tenere una scheda di ricambio.",
+    "rm": "consum da la carta (autodiagnosa); far ina copia, tegnair ina carta da reserva."
+   }
+  },
+  {
+   "teil": {
+    "de": "Schrauben und Kabel",
+    "en": "Screws and cables",
+    "fr": "Vis et câbles",
+    "it": "Viti e cavi",
+    "rm": "Scrauvs e cabels"
+   },
+   "wann": {
+    "de": "alle 6 Monate",
+    "en": "every 6 months",
+    "fr": "tous les 6 mois",
+    "it": "ogni 6 mesi",
+    "rm": "mintga 6 mais"
+   },
+   "was": {
+    "de": "Kabelschlaufe hinter dem Kopf scheuert nicht? Achse von Arm 2 nicht zu fest?",
+    "en": "the cable loop behind the head does not rub? Axle of arm 2 not too tight?",
+    "fr": "la boucle de câbles derrière la tête ne frotte pas ? Axe du bras 2 pas trop serré ?",
+    "it": "l'ansa dei cavi dietro la testa non sfrega? Asse del braccio 2 non troppo stretto?",
+    "rm": "la bucla da cabels davos il chau na sfruscha betg? Axa dal bratsch 2 betg memia stretga?"
+   }
+  }
+ ],
+ "extra_schritte": [
+  {
+   "wenn": "netz",
+   "titel": {
+    "de": "Ohne Akku",
+    "en": "Without battery",
+    "fr": "Sans batterie",
+    "it": "Senza batteria",
+    "rm": "Senza accu"
+   },
+   "text": {
+    "de": "Schritt 4 ohne UPS HAT und Akkus: den Pi direkt in den Zaun stellen (Klettband). Der D36V50F5 speist den Pi über USB-C, das 12-V-Netzteil kommt an die GX16-Buchse.",
+    "en": "Step 4 without UPS HAT and cells: put the Pi straight into the fence (hook-and-loop tape). The D36V50F5 feeds the Pi over USB-C, the 12 V power supply goes to the GX16 socket.",
+    "fr": "Étape 4 sans UPS HAT ni cellules : poser le Pi directement dans l'enclos (velcro). Le D36V50F5 alimente le Pi par USB-C, l'alimentation 12 V va à la prise GX16.",
+    "it": "Passo 4 senza UPS HAT e celle: mettere il Pi direttamente nel recinto (velcro). Il D36V50F5 alimenta il Pi via USB-C, l'alimentatore 12 V va alla presa GX16.",
+    "rm": "Pass 4 senza UPS HAT ed accus: metter il Pi directamain en la saiv (velcro). Il D36V50F5 alimentescha il Pi via USB-C, l'alimentaziun 12 V va a la bischla GX16."
+   }
+  },
+  {
+   "wenn": "v52",
+   "titel": {
+    "de": "Variante v5.2",
+    "en": "Variant v5.2",
+    "fr": "Variante v5.2",
+    "it": "Variante v5.2",
+    "rm": "Variante v5.2"
+   },
+   "text": {
+    "de": "Weitwinkel-Kamera in die Stirnwand (CAM1), IR-LED 5 mm links vom PIR, 2 Tasten in die Rückwand, Status-LED oben in den Kopf. Die Druckdateien v5.2 sind noch nicht im Paket.",
+    "en": "Wide-angle camera into the front wall (CAM1), IR LED 5 mm left of the PIR, 2 buttons into the back wall, status LED on top of the head. The print files v5.2 are not yet in the package.",
+    "fr": "Caméra grand-angle dans la paroi avant (CAM1), LED IR 5 mm à gauche du PIR, 2 boutons dans la paroi arrière, LED d'état sur la tête. Les fichiers v5.2 ne sont pas encore dans le paquet.",
+    "it": "Telecamera grandangolare nella parete frontale (CAM1), LED IR 5 mm a sinistra del PIR, 2 pulsanti nella parete posteriore, LED di stato sopra la testa. I file v5.2 non sono ancora nel pacchetto.",
+    "rm": "Camera grondangul en la paraid davant (CAM1), LED IR 5 mm a sanestra dal PIR, 2 buttuns en la paraid davos, LED da status sur il chau. Las datotecas v5.2 n'èn anc betg en il pachet."
+   },
+   "unklar": {
+    "de": "Druckdateien v5.2 fehlen",
+    "en": "print files v5.2 missing",
+    "fr": "fichiers v5.2 manquants",
+    "it": "mancano i file v5.2",
+    "rm": "datotecas v5.2 mancan"
+   }
+  },
+  {
+   "wenn": "mover",
+   "titel": {
+    "de": "Mover",
+    "en": "Mover",
+    "fr": "Mover",
+    "it": "Mover",
+    "rm": "Mover"
+   },
+   "text": {
+    "de": "Motor-HAT auf den Pi bzw. an I2C (0x60), Motoren M1 links und M2 rechts, das Gehäuse mit der Stativmutter 1/4\" auf das Fahrwerk schrauben. In MoveEye erscheint der zweite Stick von selbst.",
+    "en": "Motor HAT onto the Pi or on I2C (0x60), motors M1 left and M2 right, screw the case onto the chassis with the tripod nut 1/4\". MoveEye shows the second stick by itself.",
+    "fr": "Motor HAT sur le Pi ou sur I2C (0x60), moteurs M1 à gauche et M2 à droite, visser le boîtier sur le châssis avec l'écrou 1/4\". MoveEye affiche le deuxième stick tout seul.",
+    "it": "Motor HAT sul Pi o su I2C (0x60), motori M1 a sinistra e M2 a destra, avvitare la custodia sul telaio col dado 1/4\". MoveEye mostra da sé il secondo stick.",
+    "rm": "Motor HAT sin il Pi u vi da I2C (0x60), motors M1 a sanestra ed M2 a dretga, scrauvar la chascha sin il chassis cun la mutter 1/4\". MoveEye mussa sez il segund stick."
+   },
+   "unklar": {
+    "de": "Fahrwerk und Befestigung noch nicht festgelegt",
+    "en": "chassis and mounting not decided yet",
+    "fr": "châssis et fixation pas encore définis",
+    "it": "telaio e fissaggio non ancora definiti",
+    "rm": "chassis e fixaziun anc betg fixads"
+   }
+  }
+ ],
+ "druckdateien_einzeln": [
+  "MoveEye_v5-1_01_Unterteil.3mf",
+  "MoveEye_v5-1_02_Deckel_mit_Laufring.3mf",
+  "MoveEye_v5-1_03_Drehteller.3mf",
+  "MoveEye_v5-1_04_Gabel_mit_Arm1.3mf",
+  "MoveEye_v5-1_05_Arm2_Lagerseite.3mf",
+  "MoveEye_v5-1_06_Kamerakopf.3mf",
+  "MoveEye_v5-1_07_Seitendeckel.3mf",
+  "MoveEye_v5-1_08_Lampenhalter_2x.3mf",
+  "MoveEye_v5-1_09_Zwischenboden.3mf",
+  "MoveEye_v5-1_10_HDMI_Stopfen.3mf",
+  "MoveEye_v5-1_11_Fuss_4x.3mf",
+  "MoveEye_v5-2_01_Unterteil_v52.3mf",
+  "MoveEye_v5-2_12_Blindstopfen_Weitwinkel.3mf"
+ ],
+ "ui_bauen": [
+  {
+   "de": "Bauen",
+   "en": "Build yourself",
+   "fr": "Construire",
+   "it": "Costruire",
+   "rm": "Construir"
+  },
+  {
+   "de": "Alles zum Selberbauen: 3D, Teile, Einkauf, Drucken, Montage, Verkabeln, Software",
+   "en": "Everything to build it yourself: 3D, parts, shopping, printing, assembly, wiring, software",
+   "fr": "Tout pour le construire soi-même : 3D, pièces, achats, impression, montage, câblage, logiciel",
+   "it": "Tutto per costruirlo da sé: 3D, pezzi, acquisti, stampa, montaggio, cablaggio, software",
+   "rm": "Tut per al construir sez: 3D, parts, cumpras, stampar, muntadi, cablar, software"
+  },
+  {
+   "de": "Übersicht",
+   "en": "Overview",
+   "fr": "Aperçu",
+   "it": "Panoramica",
+   "rm": "Survista"
+  },
+  {
+   "de": "Teile",
+   "en": "Parts",
+   "fr": "Pièces",
+   "it": "Pezzi",
+   "rm": "Parts"
+  },
+  {
+   "de": "Einkauf",
+   "en": "Shopping",
+   "fr": "Achats",
+   "it": "Acquisti",
+   "rm": "Cumpras"
+  },
+  {
+   "de": "Drucken",
+   "en": "Printing",
+   "fr": "Impression",
+   "it": "Stampa",
+   "rm": "Stampar"
+  },
+  {
+   "de": "Montage",
+   "en": "Assembly",
+   "fr": "Montage",
+   "it": "Montaggio",
+   "rm": "Muntadi"
+  },
+  {
+   "de": "Verkabeln",
+   "en": "Wiring",
+   "fr": "Câblage",
+   "it": "Cablaggio",
+   "rm": "Cablar"
+  },
+  {
+   "de": "Software",
+   "en": "Software",
+   "fr": "Logiciel",
+   "it": "Software",
+   "rm": "Software"
+  },
+  {
+   "de": "Inbetriebnahme",
+   "en": "Commissioning",
+   "fr": "Mise en service",
+   "it": "Messa in funzione",
+   "rm": "Messa en funcziun"
+  },
+  {
+   "de": "Fehlersuche",
+   "en": "Troubleshooting",
+   "fr": "Dépannage",
+   "it": "Risoluzione problemi",
+   "rm": "Tschertgar sbagls"
+  },
+  {
+   "de": "Wartung",
+   "en": "Maintenance",
+   "fr": "Entretien",
+   "it": "Manutenzione",
+   "rm": "Mantegniment"
+  },
+  {
+   "de": "Bauen – Gehäuse v%s",
+   "en": "Build – case v%s",
+   "fr": "Construire – boîtier v%s",
+   "it": "Costruire – custodia v%s",
+   "rm": "Construir – chascha v%s"
+  },
+  {
+   "de": "Deine Variante",
+   "en": "Your variant",
+   "fr": "Ta variante",
+   "it": "La tua variante",
+   "rm": "Tia variante"
+  },
+  {
+   "de": "Mein Bau",
+   "en": "My build",
+   "fr": "Ma construction",
+   "it": "La mia costruzione",
+   "rm": "Mia construcziun"
+  },
+  {
+   "de": "%d von %d erledigt",
+   "en": "%d of %d done",
+   "fr": "%d sur %d faits",
+   "it": "%d di %d fatti",
+   "rm": "%d da %d fatg"
+  },
+  {
+   "de": "erledigt",
+   "en": "done",
+   "fr": "fait",
+   "it": "fatto",
+   "rm": "fatg"
+  },
+  {
+   "de": "Für dich auf dem Pi gespeichert – auf allen Geräten gleich.",
+   "en": "Saved for you on the Pi – the same on every device.",
+   "fr": "Enregistré pour toi sur le Pi – pareil sur tous les appareils.",
+   "it": "Salvato per te sul Pi – uguale su tutti i dispositivi.",
+   "rm": "Memorisà per tai sin il Pi – il medem sin tut ils apparats."
+  },
+  {
+   "de": "Nur auf diesem Gerät gespeichert (keine Verbindung zum Pi).",
+   "en": "Saved only on this device (no connection to the Pi).",
+   "fr": "Enregistré seulement sur cet appareil (pas de connexion au Pi).",
+   "it": "Salvato solo su questo dispositivo (nessuna connessione al Pi).",
+   "rm": "Memorisà mo sin quest apparat (nagina connexiun cun il Pi)."
+  },
+  {
+   "de": "Im Simulator gespeichert (auf diesem Rechner).",
+   "en": "Saved in the simulator (on this computer).",
+   "fr": "Enregistré dans le simulateur (sur cet ordinateur).",
+   "it": "Salvato nel simulatore (su questo computer).",
+   "rm": "Memorisà en il simulatur (sin quest computer)."
+  },
+  {
+   "de": "Gesamt (Schätzung)",
+   "en": "Total (estimate)",
+   "fr": "Total (estimation)",
+   "it": "Totale (stima)",
+   "rm": "Total (stimaziun)"
+  },
+  {
+   "de": "Preise sind Schätzungen in CHF ohne Versand – beim Händler nachsehen.",
+   "en": "Prices are estimates in CHF without shipping – check at the shop.",
+   "fr": "Les prix sont des estimations en CHF sans port – vérifier chez le vendeur.",
+   "it": "I prezzi sono stime in CHF senza spedizione – verificare dal negozio.",
+   "rm": "Ils pretschs èn stimaziuns en CHF senza spediziun – guardar tar la butia."
+  },
+  {
+   "de": "Alternative",
+   "en": "Alternative",
+   "fr": "Alternative",
+   "it": "Alternativa",
+   "rm": "Alternativa"
+  },
+  {
+   "de": "Suchen bei",
+   "en": "Search at",
+   "fr": "Chercher chez",
+   "it": "Cerca da",
+   "rm": "Tschertgar tar"
+  },
+  {
+   "de": "CSV herunterladen",
+   "en": "Download CSV",
+   "fr": "Télécharger CSV",
+   "it": "Scarica CSV",
+   "rm": "Telechargiar CSV"
+  },
+  {
+   "de": "Drucken / PDF",
+   "en": "Print / PDF",
+   "fr": "Imprimer / PDF",
+   "it": "Stampa / PDF",
+   "rm": "Stampar / PDF"
+  },
+  {
+   "de": "optional",
+   "en": "optional",
+   "fr": "option",
+   "it": "opzionale",
+   "rm": "opziunal"
+  },
+  {
+   "de": "nur mit %s",
+   "en": "only with %s",
+   "fr": "seulement avec %s",
+   "it": "solo con %s",
+   "rm": "mo cun %s"
+  },
+  {
+   "de": "Stück",
+   "en": "pcs",
+   "fr": "pièces",
+   "it": "pezzi",
+   "rm": "tocs"
+  },
+  {
+   "de": "Füllung",
+   "en": "Infill",
+   "fr": "Remplissage",
+   "it": "Riempimento",
+   "rm": "Emplenida"
+  },
+  {
+   "de": "Wände",
+   "en": "Walls",
+   "fr": "Parois",
+   "it": "Pareti",
+   "rm": "Paraids"
+  },
+  {
+   "de": "Stützen",
+   "en": "Supports",
+   "fr": "Supports",
+   "it": "Supporti",
+   "rm": "Sustegns"
+  },
+  {
+   "de": "keine",
+   "en": "none",
+   "fr": "aucun",
+   "it": "nessuno",
+   "rm": "nagins"
+  },
+  {
+   "de": "Schicht",
+   "en": "Layer",
+   "fr": "Couche",
+   "it": "Strato",
+   "rm": "Strat"
+  },
+  {
+   "de": "liegt auf",
+   "en": "lies on",
+   "fr": "posé sur",
+   "it": "appoggiato su",
+   "rm": "sa chatta sin"
+  },
+  {
+   "de": "Druckzeit",
+   "en": "Print time",
+   "fr": "Durée d'impression",
+   "it": "Tempo di stampa",
+   "rm": "Temp da stampa"
+  },
+  {
+   "de": "ca. %s h",
+   "en": "about %s h",
+   "fr": "env. %s h",
+   "it": "circa %s h",
+   "rm": "ca. %s h"
+  },
+  {
+   "de": "Herunterladen",
+   "en": "Download",
+   "fr": "Télécharger",
+   "it": "Scarica",
+   "rm": "Telechargiar"
+  },
+  {
+   "de": "Alle Druckdateien (ZIP)",
+   "en": "All print files (ZIP)",
+   "fr": "Tous les fichiers d'impression (ZIP)",
+   "it": "Tutti i file di stampa (ZIP)",
+   "rm": "Tut las datotecas da stampa (ZIP)"
+  },
+  {
+   "de": "Platten für den X2D (alles auf 2 Platten)",
+   "en": "Plates for the X2D (everything on 2 plates)",
+   "fr": "Plateaux pour la X2D (tout sur 2 plateaux)",
+   "it": "Piatti per la X2D (tutto su 2 piatti)",
+   "rm": "Plattas per la X2D (tut sin 2 plattas)"
+  },
+  {
+   "de": "Einzelne Teile (3MF)",
+   "en": "Single parts (3MF)",
+   "fr": "Pièces seules (3MF)",
+   "it": "Pezzi singoli (3MF)",
+   "rm": "Singulas parts (3MF)"
+  },
+  {
+   "de": "Hinweise für den Bambu-Drucker",
+   "en": "Notes for the Bambu printer",
+   "fr": "Conseils pour l'imprimante Bambu",
+   "it": "Note per la stampante Bambu",
+   "rm": "Indicaziuns per il stampader Bambu"
+  },
+  {
+   "de": "Werkzeug",
+   "en": "Tools",
+   "fr": "Outils",
+   "it": "Attrezzi",
+   "rm": "Utensils"
+  },
+  {
+   "de": "Schrauben",
+   "en": "Screws",
+   "fr": "Vis",
+   "it": "Viti",
+   "rm": "Scrauvs"
+  },
+  {
+   "de": "Sicherheit",
+   "en": "Safety",
+   "fr": "Sécurité",
+   "it": "Sicurezza",
+   "rm": "Segirezza"
+  },
+  {
+   "de": "unklar",
+   "en": "unclear",
+   "fr": "incertain",
+   "it": "non chiaro",
+   "rm": "nunclar"
+  },
+  {
+   "de": "Tippe ein Modul an: seine Verbindungen leuchten.",
+   "en": "Tap a module: its connections light up.",
+   "fr": "Touche un module : ses liaisons s'allument.",
+   "it": "Tocca un modulo: i suoi collegamenti si illuminano.",
+   "rm": "Tocca in modul: sias colliaziuns glischan."
+  },
+  {
+   "de": "Alle Verbindungen",
+   "en": "All connections",
+   "fr": "Toutes les liaisons",
+   "it": "Tutti i collegamenti",
+   "rm": "Tut las colliaziuns"
+  },
+  {
+   "de": "Pins und Kanäle stammen aus dem Code von MoveEye und aus der Doku. Unklares ist markiert.",
+   "en": "Pins and channels come from the MoveEye code and the docs. Unclear points are marked.",
+   "fr": "Broches et canaux viennent du code de MoveEye et de la doc. L'incertain est marqué.",
+   "it": "Pin e canali vengono dal codice di MoveEye e dalla documentazione. Le cose non chiare sono segnate.",
+   "rm": "Pins e chanals vegnan dal code da MoveEye e da la documentaziun. Il nunclar è marcà."
+  },
+  {
+   "de": "Öffnen",
+   "en": "Open",
+   "fr": "Ouvrir",
+   "it": "Apri",
+   "rm": "Avrir"
+  },
+  {
+   "de": "Kopieren",
+   "en": "Copy",
+   "fr": "Copier",
+   "it": "Copia",
+   "rm": "Copiar"
+  },
+  {
+   "de": "QR-Code zu dieser MoveEye-Seite",
+   "en": "QR code to this MoveEye page",
+   "fr": "Code QR vers cette page MoveEye",
+   "it": "Codice QR per questa pagina MoveEye",
+   "rm": "Code QR per questa pagina da MoveEye"
+  },
+  {
+   "de": "Hilfe öffnen",
+   "en": "Open help",
+   "fr": "Ouvrir l'aide",
+   "it": "Apri l'aiuto",
+   "rm": "Avrir l'agid"
+  },
+  {
+   "de": "Was verschleisst und wann prüfen",
+   "en": "What wears out and when to check",
+   "fr": "Ce qui s'use et quand vérifier",
+   "it": "Cosa si usura e quando controllare",
+   "rm": "Tge che s'consumescha e cura controllar"
+  },
+  {
+   "de": "Explosion",
+   "en": "Explode",
+   "fr": "Éclatement",
+   "it": "Esploso",
+   "rm": "Explosiun"
+  },
+  {
+   "de": "Gehäuse durchsichtig",
+   "en": "Case see-through",
+   "fr": "Boîtier transparent",
+   "it": "Custodia trasparente",
+   "rm": "Chascha transparenta"
+  },
+  {
+   "de": "Innenleben zeigen",
+   "en": "Show the inside",
+   "fr": "Montrer l'intérieur",
+   "it": "Mostrare l'interno",
+   "rm": "Mussar l'intern"
+  },
+  {
+   "de": "Ansicht zurücksetzen",
+   "en": "Reset the view",
+   "fr": "Réinitialiser la vue",
+   "it": "Ripristinare la vista",
+   "rm": "Reinizialisar la vista"
+  },
+  {
+   "de": "Montage starten",
+   "en": "Start the assembly",
+   "fr": "Démarrer le montage",
+   "it": "Avviare il montaggio",
+   "rm": "Cumenzar il muntadi"
+  },
+  {
+   "de": "Weiter",
+   "en": "Next",
+   "fr": "Suivant",
+   "it": "Avanti",
+   "rm": "Vinavant"
+  },
+  {
+   "de": "Zurück",
+   "en": "Back",
+   "fr": "Retour",
+   "it": "Indietro",
+   "rm": "Enavos"
+  },
+  {
+   "de": "Ende",
+   "en": "End",
+   "fr": "Fin",
+   "it": "Fine",
+   "rm": "Fin"
+  },
+  {
+   "de": "Schritt %d von %d",
+   "en": "Step %d of %d",
+   "fr": "Étape %d sur %d",
+   "it": "Passo %d di %d",
+   "rm": "Pass %d da %d"
+  },
+  {
+   "de": "Materialliste: %s %s",
+   "en": "Parts list: %s %s",
+   "fr": "Liste du matériel : %s %s",
+   "it": "Distinta: %s %s",
+   "rm": "Glista da material: %s %s"
+  },
+  {
+   "de": "nicht in der Materialliste",
+   "en": "not in the parts list",
+   "fr": "pas dans la liste du matériel",
+   "it": "non nella distinta",
+   "rm": "betg en la glista da material"
+  },
+  {
+   "de": "Druckdatei: %s",
+   "en": "Print file: %s",
+   "fr": "Fichier d'impression : %s",
+   "it": "File di stampa: %s",
+   "rm": "Datoteca da stampa: %s"
+  },
+  {
+   "de": "Montage: Schritt %d – %s",
+   "en": "Assembly: step %d – %s",
+   "fr": "Montage : étape %d – %s",
+   "it": "Montaggio: passo %d – %s",
+   "rm": "Muntadi: pass %d – %s"
+  },
+  {
+   "de": "Teil antippen – oder einen Schritt der Montage wählen.",
+   "en": "Tap a part – or choose a step of the assembly.",
+   "fr": "Touche une pièce – ou choisis une étape du montage.",
+   "it": "Tocca un pezzo – o scegli un passo del montaggio.",
+   "rm": "Tocca ina part – u tscherna in pass dal muntadi."
+  },
+  {
+   "de": "Zu diesem Schritt",
+   "en": "Go to this step",
+   "fr": "Aller à cette étape",
+   "it": "Vai a questo passo",
+   "rm": "Ir tar quest pass"
+  },
+  {
+   "de": "Teil im 3D zeigen",
+   "en": "Show the part in 3D",
+   "fr": "Montrer la pièce en 3D",
+   "it": "Mostra il pezzo in 3D",
+   "rm": "Mussar la part en 3D"
+  },
+  {
+   "de": "3D wird geladen …",
+   "en": "Loading 3D …",
+   "fr": "Chargement 3D …",
+   "it": "Caricamento 3D …",
+   "rm": "Chargiar 3D …"
+  },
+  {
+   "de": "3D geht hier nicht (WebGL fehlt) – die Listen gehen trotzdem.",
+   "en": "3D does not work here (no WebGL) – the lists still work.",
+   "fr": "La 3D ne marche pas ici (pas de WebGL) – les listes marchent quand même.",
+   "it": "Il 3D qui non funziona (manca WebGL) – le liste funzionano lo stesso.",
+   "rm": "3D na funcziuna betg qua (WebGL manca) – las glistas funcziunan tuttina."
+  },
+  {
+   "de": "Ziehen = drehen · zwei Finger / Rad = zoomen · Teil antippen = was ist das?",
+   "en": "Drag = turn · two fingers / wheel = zoom · tap a part = what is it?",
+   "fr": "Glisser = tourner · deux doigts / molette = zoom · toucher une pièce = qu'est-ce ?",
+   "it": "Trascinare = ruotare · due dita / rotella = zoom · tocca un pezzo = cos'è?",
+   "rm": "Trair = rotar · dus dets / rodella = zoom · tocca ina part = tge è quai?"
+  },
+  {
+   "de": "Die 3D-Werkstatt läuft hier im Browser – ohne Simulator.",
+   "en": "The 3D workshop runs here in the browser – no simulator needed.",
+   "fr": "L'atelier 3D tourne ici dans le navigateur – sans simulateur.",
+   "it": "L'officina 3D funziona qui nel browser – senza simulatore.",
+   "rm": "L'ufficina 3D funcziuna qua en il navigatur – senza simulatur."
+  },
+  {
+   "de": "Zusätzlich je nach Variante",
+   "en": "Additionally, depending on the variant",
+   "fr": "En plus, selon la variante",
+   "it": "In più, secondo la variante",
+   "rm": "Ultra da quai, tenor la variante"
+  },
+  {
+   "de": "Fortschritt",
+   "en": "Progress",
+   "fr": "Progression",
+   "it": "Avanzamento",
+   "rm": "Progress"
+  },
+  {
+   "de": "Händler",
+   "en": "Shop",
+   "fr": "Magasin",
+   "it": "Negozio",
+   "rm": "Butia"
+  },
+  {
+   "de": "Menge",
+   "en": "Qty",
+   "fr": "Qté",
+   "it": "Qtà",
+   "rm": "Quantitad"
+  },
+  {
+   "de": "Preis",
+   "en": "Price",
+   "fr": "Prix",
+   "it": "Prezzo",
+   "rm": "Pretsch"
+  },
+  {
+   "de": "CSV in die Zwischenablage",
+   "en": "CSV to the clipboard",
+   "fr": "CSV dans le presse-papiers",
+   "it": "CSV negli appunti",
+   "rm": "CSV en la tabla d'intermediar"
+  },
+  {
+   "de": "CSV gespeichert: %s",
+   "en": "CSV saved: %s",
+   "fr": "CSV enregistré : %s",
+   "it": "CSV salvato: %s",
+   "rm": "CSV memorisà: %s"
+  },
+  {
+   "de": "In MoveEye öffnen",
+   "en": "Open in MoveEye",
+   "fr": "Ouvrir dans MoveEye",
+   "it": "Apri in MoveEye",
+   "rm": "Avrir en MoveEye"
+  },
+  {
+   "de": "MoveEye nicht verbunden – die Seite öffnet sich, sobald MoveEye verbunden ist.",
+   "en": "MoveEye not connected – the page opens once MoveEye is connected.",
+   "fr": "MoveEye non connecté – la page s'ouvre dès que MoveEye est connecté.",
+   "it": "MoveEye non collegato – la pagina si apre appena MoveEye è collegato.",
+   "rm": "MoveEye betg connectà – la pagina s'avra uschespert che MoveEye è connectà."
+  },
+  {
+   "de": "Bau-Infos veraltet: %s – nachziehen?",
+   "en": "Build info out of date: %s – update it?",
+   "fr": "Infos de construction dépassées : %s – mettre à jour ?",
+   "it": "Info di costruzione superate: %s – aggiornare?",
+   "rm": "Infos da construcziun antiquadas: %s – actualisar?"
+  },
+  {
+   "de": "Modul",
+   "en": "Module",
+   "fr": "Module",
+   "it": "Modulo",
+   "rm": "Modul"
+  },
+  {
+   "de": "Verbindung",
+   "en": "Connection",
+   "fr": "Liaison",
+   "it": "Collegamento",
+   "rm": "Colliaziun"
+  },
+  {
+   "de": "Gruppe",
+   "en": "Group",
+   "fr": "Groupe",
+   "it": "Gruppo",
+   "rm": "Gruppa"
+  },
+  {
+   "de": "Bezeichnung",
+   "en": "Name",
+   "fr": "Désignation",
+   "it": "Descrizione",
+   "rm": "Designaziun"
+  },
+  {
+   "de": "Teilenummer",
+   "en": "Part number",
+   "fr": "Référence",
+   "it": "Codice",
+   "rm": "Numer da la part"
+  },
+  {
+   "de": "Suchlink",
+   "en": "Search link",
+   "fr": "Lien de recherche",
+   "it": "Link di ricerca",
+   "rm": "Link da tschertga"
+  },
+  {
+   "de": "Teil",
+   "en": "Part",
+   "fr": "Pièce",
+   "it": "Pezzo",
+   "rm": "Part"
+  }
+ ],
  "gehaeuse_v52": {
   "name": {
    "de": "Variante v5.2: Weitwinkel-Kamera im Unterteil",
@@ -1915,7 +4891,7 @@
   }
  },
  "farben": {
-  "_hinweis": "Wunsch Daniel 01.11.2026: der ganze Kopfteil (alles, was sich dreht bzw. neigt) im Simulator in MoveEye-Orange (ui_style.gd ORG, Web #f59a4a) – Szene, Werkstatt und Browser-Werkstatt («Bauen») nehmen diese Farbe. Unterteil, Deckel, Zwischenboden, Füsse wie bisher.",
+  "_hinweis": "Wunsch Daniel 01.11.2026: der ganze Kopfteil (alles, was sich dreht bzw. neigt) im Simulator in MoveEye-Orange (ui_style.gd ORG, Web #f59a4a) – Szene, Werkstatt und Browser-Werkstatt («Bauen») nehmen diese Farbe. Unterteil, Deckel, Zwischenboden, Füsse wie bisher. Dazu je Teil-id die Farbe (für die Browser-Werkstatt «Bauen», 639w: GB.farben[id]).",
   "kopf": "#f59a4a",
   "kopf_teile": [
    "turntable",
@@ -1925,6 +4901,13 @@
    "side",
    "lamp1",
    "lamp2"
-  ]
+  ],
+  "turntable": "#f59a4a",
+  "yoke": "#f59a4a",
+  "arm2": "#f59a4a",
+  "head": "#f59a4a",
+  "side": "#f59a4a",
+  "lamp1": "#f59a4a",
+  "lamp2": "#f59a4a"
  }
 }

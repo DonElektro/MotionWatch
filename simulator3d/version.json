@@ -1,9 +1,9 @@
 {
- "version": "3D-5.38.0",
- "ver": "3.38.0",
- "name": "MoveEye Sim 3.38.0",
+ "version": "3D-5.40.0",
+ "ver": "3.40.0",
+ "name": "MoveEye Sim 3.40.0",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 47869849,
- "sha256": "82954363a1286d5f62d545c27f8b9681e20c6426ff3d4b2bcd872ece3d944995",
- "notes": "Sicherung im Simulator"
+ "size": 47986579,
+ "sha256": "f66562a35061871d161050ba670f12241be04becccfb70fbb60be90cde16ae15",
+ "notes": "Bauen: MoveEye selbst bauen"
 }

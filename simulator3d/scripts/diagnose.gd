@@ -144,6 +144,19 @@ static func check(main) -> Array:
 		add.call("upd", "update", "Updates", "warn", ut, "Internet prüfen; später nochmals «Jetzt nach Updates suchen».")
 	else:
 		add.call("upd", "update", "Updates", "ok", ut + " · Version " + str(main.VERSION))
+	# ★3 / ★4 (abgleich.gd, MoveEye 639zb): the version pair and the self-diagnosis of MoveEye in the same format (ids «mw:…»)
+	var ab = main.net.abgleich if main.get("net") != null else null
+	if ab != null and conn:
+		var p: Dictionary = ab.pair()
+		if bool(p["same"]):
+			add.call("ver", "update", "Versionen", "ok", str(p["text"]))
+		else:
+			add.call("ver", "update", "Versionen", "warn", str(p["text"]), "Beide Programme sollten dieselbe Nummer haben – die ältere Seite aktualisieren (Knopf unten links).")
+		if main.now() - float(ab.diag_t) < 60.0:
+			for x in ab.diag:
+				if typeof(x) == TYPE_DICTIONARY:
+					out.append({"id": str(x.get("id", "mw:?")), "icon": "link", "title": "MoveEye: " + str(x.get("title", "")),
+							"level": str(x.get("level", "off")), "text": str(x.get("text", "")), "tip": str(x.get("tip", ""))})
 	return out
 
 

@@ -777,7 +777,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 3.38.0")
+        self.root.title("MoveEye 3.40.0")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -1149,7 +1149,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 3.38.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 3.40.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -1738,13 +1738,9 @@ class App:
         poll()
 
     def _set_simple(self, v):
-        """586: Simple / Expert of THIS tab (the default stays - it is chosen in the guide)"""
-        tab = self.tab
-        if page_simple(tab) != v:
-            m_ = page_modes(); m_[tab] = "simple" if v else "expert"
-            if v == bool(CFG["ui_simple"]):
-                m_.pop(tab)
-            web_ui_update({"mw-page-mode": json.dumps(m_)}); self.root.after(30, self._rebuild)
+        """639zb (P3, E1): ONE Simple / Expert for every tab, the web pages and the simulator (before: per tab, 586)"""
+        if bool(CFG["ui_simple"]) != bool(v):
+            CFG["ui_simple"] = bool(v); save_settings(); self._simple_seen = bool(v); self.root.after(30, self._rebuild)
 
     def _protect(self, level):
         """2.95.105: protection level; switching off needs the PIN if one is set"""

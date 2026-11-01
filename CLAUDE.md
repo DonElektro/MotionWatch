@@ -65,6 +65,8 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
   parallel an Helfer geben – bevorzugt Helfer auf eigenen Cloud-Rechnern (Agent mit isolation "remote"), damit der lokale
   Rechner nicht überlastet. Jeder Helfer: eigener Zweig, kein Release, keine Rückfragen bei bestätigten Paketen; zusammengeführt
   und veröffentlicht wird nur im Haupt-Chat, ein Paket nach dem anderen.
+- **Helfer (Daniel, 01.11.2026 13:31):** Arbeit wo möglich auf bis zu 5 parallele Helfer verteilen (plus Integrator); grosse
+  Pakete aufteilen, nicht mehr als 5 gleichzeitig.
 - **Kurz schreiben (Daniel, 31.10.2026 04:36):** Text, den Daniel lesen muss, möglichst knapp halten – nur Ergebnis,
   Entscheid, nicht getestet; keine langen Aufzählungen.
 - **Kurz fürs Handy (Daniel, 31.10.2026 21:08):** Nachrichten so kurz halten, dass Daniel auf dem Handy nicht scrollen muss:
