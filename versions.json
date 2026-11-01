@@ -1,22 +1,39 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-01 12:03",
+ "generated": "2026-11-01 12:06",
  "versions": [
+  {
+   "version": "3.38.0",
+   "file": "webcam_bewegung_3_38_0.py",
+   "url": "",
+   "sha256": "f338a6e98d186945f09a11dcd4418a20fb39312907a4e3472ab67398dfb629f4",
+   "date": "2026-11-01 12:06",
+   "notes": "Simulator: System → Sicherung – ZIP auf dem PC, in einen Ordner/USB oder in die MoveEye-Sicherung; Wiederherstellen im Simulator oder aus MoveEye (nur Besitzer), vorher wird automatisch der aktuelle Stand gesichert.",
+   "size": 4688595,
+   "sig": "b8b4b82bb0cae94fb89cb15fc3710c5f826f13371b36cf06292aac44656650c51303d19c6b36bc4a0fc3baa15b681062e23968e39108f2a88e33ab0646d00309",
+   "data": {
+    "file": "moveeye_daten_3_38_0.zip",
+    "url": "",
+    "sha256": "e1bd303f3c954d98779dac7e65129d686f062a76870dafdfc7d9433cfa85e2f7",
+    "size": 1586833,
+    "sig": "0fb0d4b3c8ddaa277df70cac02762356c25ada1c90ced6454d65e5c85a771e26b4f887e0b34dd6404c5b545ced1ec3f2ba97bfff732c5fec4f8fcec7b841ab0e"
+   }
+  },
   {
    "version": "3.37.0",
    "file": "webcam_bewegung_3_37_0.py",
    "url": "",
-   "sha256": "d75e67987b13d5363383a623074b7f951024c7fe70984cdc0551e99dd02222d5",
-   "date": "2026-11-01 12:03",
+   "sha256": "4138426d4f2bf303d87ce86321420b397a58d7a28964bb6feb15c183c72dcab3",
+   "date": "2026-11-01 12:05",
    "notes": "Foto-Texturen aus Daniels Fotos im Bergtal: Wiese, Alpweide, Alpenrosen, Geröll, Fels, Strasse (abschaltbar; Lite unverändert).",
-   "size": 4670785,
-   "sig": "d3b708117ad801182e772e8a0af2ee52ff6748737a5ac6eb9e310cd81b6c659b74e7bcb2d6d9f5baae4b2f41d5c80a5a57f0604e6284648028ab155dd4f3c300",
+   "size": 4688558,
+   "sig": "71b990d425a669f5898bdf598d00e8162990172e36363cf76f26ba0527a3963226a71641aa8e200ac842a6d0903240378952da7ff9583aed8a07eaf61a690300",
    "data": {
     "file": "moveeye_daten_3_37_0.zip",
     "url": "",
-    "sha256": "1b0b8f08b4d77026a87ed54badc4f665478a782910df017ffa4b3712180a05dc",
-    "size": 1585199,
-    "sig": "b050890b73ace4f2f4126ec9876b9302b74f5501243dff13780ff0978011f9f6319a00d9e19f10baf205e279356006bc339332d249619f5e4e78bec27b55b607"
+    "sha256": "218ebab86bab4a018a7dbf208799088ef1773b3e9706036efb37daaa2d38ab72",
+    "size": 1586761,
+    "sig": "f608889aaaef51ee6787048dfa13913dfd729bb5ea75ba174312bc76c63b858c8831648f99eb2b750ebf5cf471fd24916974f4dd0354cb2c479e56b7586b720f"
    }
   },
   {
@@ -136,23 +153,6 @@
     "sha256": "6edd516f3b91da63c9cb4524516b8f0322ef72c5982c63ac17d2b58c16787100",
     "size": 1566651,
     "sig": "0d89a2fd00e2d6be215b93498f7ef2cd72671c5feadb68c5f1d0096f4b866cfa218305009a66a458adc4c8b582c5159c347e47b4a5eda994591227317acfb707"
-   }
-  },
-  {
-   "version": "3.29.0",
-   "file": "webcam_bewegung_3_29_0.py",
-   "url": "",
-   "sha256": "62f00005d536c7a2111d73c627c911d2dfff478d9675468952ad5ed5b7f9ed48",
-   "date": "2026-11-01 11:49",
-   "notes": "Simulator: Fenster docken automatisch in Leisten links/rechts an (ohne Überlappung, passt sich der Bildschirmgrösse an, «Neu anordnen»); Karte, Kompass, SmallTV und CPU als Reiter in einem Fenster; Entwickler immer vorne, klein/mittel/gross und einklappbar.",
-   "size": 4481992,
-   "sig": "cc70cbf48db570a684b681b77ed28d3721e94de0d3d0e262f4d74b94fdf8c05c79ad0325dfa4c386c6ae2887184a977ab9149a3d729cd8e16b39df2ccd954405",
-   "data": {
-    "file": "moveeye_daten_3_29_0.zip",
-    "url": "",
-    "sha256": "d3dcde8430986262bea028c8ce8a3337f706188fc8259154539b6303f2d164dd",
-    "size": 1559409,
-    "sig": "8242750553ad8dce6f03fa9ee6c8798c1c2e6cd4710db612f8dd7c04523a665b76baca8920ecddcdcbe0bbdab039669328f2331720918922945b814ae934cb0e"
    }
   },
   {

@@ -1,15 +1,15 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 7061 (Stellen: 9882)
-Übersetzt: en 7061, fr 7061, it 7061, rm 7061
+Texte gesamt: 7095 (Stellen: 9941)
+Übersetzt: en 7095, fr 7095, it 7095, rm 7095
 Unsicher markiert: 31
-Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 494 Stellen
+Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 495 Stellen
 Nicht mehr im Code (noch in texte.json): 280
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 68 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main.gd 1, phone.gd 1, spieltest.gd 1
-Übersprungen (Grund: Anzahl): kennung 25525, schlüssel 18892, keine Wörter 11932, index 9429, technisch 3283, doc 2178, einheit 299, log 155, englisch 135, pfad 112, stringname 102, html 68, klasse 28, shader 6
+Übersprungen (Grund: Anzahl): kennung 25625, schlüssel 19018, keine Wörter 12068, index 9466, technisch 3316, doc 2191, einheit 299, log 171, englisch 140, pfad 125, stringname 102, html 68, klasse 28, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
-  main.gd                  701    50
+  main.gd                  702    50
   bergtal_abenteuer.gd     272     7
   gamewiz.gd               252    15
   abenteuer_figuren_daten.gd   238     0
@@ -66,6 +66,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   symbole.gd                44     1
   ferienpark_leben.gd       43     2
   protokoll.gd              42    16
+  sicherung.gd              42     1
   pir.gd                    41     0
   statisten.gd              41     7
   simint.gd                 41     6
@@ -361,56 +362,56 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   inhalte.gd:871  'an'
   kopf.gd:120  'an'
   kopf.gd:120  'aus'
-  main.gd:724  ' (Port %d)'
-  main.gd:1702  '  %.0f Mbit/s'
-  main.gd:2407  ' (von MoveEye)'
-  main.gd:2440  'Der Simulator ist belegt: '
-  main.gd:3330  'aus'
-  main.gd:3330  'ein'
-  main.gd:3407  'Sabotage-Test: '
-  main.gd:3407  'aus'
-  main.gd:3461  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
-  main.gd:3464  '\n🚨 Bewacht und weg: '
-  main.gd:4253  'an'
-  main.gd:4253  'an'
-  main.gd:4253  'aus'
-  main.gd:4253  'aus'
-  main.gd:4256  'an'
-  main.gd:4256  'aus'
-  main.gd:4257  'an'
-  main.gd:4257  'aus'
-  main.gd:4345  'keine'
-  main.gd:4371  'Wächter an MoveEye: '
-  main.gd:4434  'immer'
-  main.gd:4436  'aus'
-  main.gd:4443  'aus'
-  main.gd:4443  'aus'
-  main.gd:4444  'immer'
+  main.gd:729  ' (Port %d)'
+  main.gd:1707  '  %.0f Mbit/s'
+  main.gd:2412  ' (von MoveEye)'
+  main.gd:2445  'Der Simulator ist belegt: '
+  main.gd:3335  'aus'
+  main.gd:3335  'ein'
+  main.gd:3412  'Sabotage-Test: '
+  main.gd:3412  'aus'
+  main.gd:3466  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
+  main.gd:3469  '\n🚨 Bewacht und weg: '
+  main.gd:4259  'an'
+  main.gd:4259  'an'
+  main.gd:4259  'aus'
+  main.gd:4259  'aus'
+  main.gd:4262  'an'
+  main.gd:4262  'aus'
+  main.gd:4263  'an'
+  main.gd:4263  'aus'
+  main.gd:4351  'keine'
+  main.gd:4377  'Wächter an MoveEye: '
+  main.gd:4440  'immer'
+  main.gd:4442  'aus'
   main.gd:4449  'aus'
-  main.gd:4453  'aus'
-  main.gd:4453  'aus'
-  main.gd:4460  'ohne'
-  main.gd:4462  'ohne'
-  main.gd:4479  'aus'
-  main.gd:4483  'aus'
-  main.gd:5249  'Dein Platz: '
-  main.gd:5498  ' · schaut nur zu: '
-  main.gd:5501  ' · Treffer %d von %d Schüssen, %d Punkte'
-  main.gd:5502  ' · Update: '
-  main.gd:5841  'Blinde Flecken: '
-  main.gd:6645  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
-  main.gd:6960  'Autostart: '
-  main.gd:6971  'Autologon: '
-  main.gd:7134  'Karte öffnen: '
-  main.gd:7285  'Echt-Abgleich: '
-  main.gd:7295  'Trainingspaket: '
-  main.gd:7304  ' · %d offen · %.1f MB'
-  main.gd:7304  'Ziel: %s:%d (Port von MoveEye) · '
-  main.gd:7313  'Verbindung · '
-  main.gd:7313  'aus'
-  main.gd:7317  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
-  main.gd:7317  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
-  main.gd:7320  ' – versucht es weiter (gleich auf einem freien Port)'
+  main.gd:4449  'aus'
+  main.gd:4450  'immer'
+  main.gd:4455  'aus'
+  main.gd:4459  'aus'
+  main.gd:4459  'aus'
+  main.gd:4466  'ohne'
+  main.gd:4468  'ohne'
+  main.gd:4485  'aus'
+  main.gd:4489  'aus'
+  main.gd:5255  'Dein Platz: '
+  main.gd:5506  ' · schaut nur zu: '
+  main.gd:5509  ' · Treffer %d von %d Schüssen, %d Punkte'
+  main.gd:5510  ' · Update: '
+  main.gd:5849  'Blinde Flecken: '
+  main.gd:6653  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
+  main.gd:6968  'Autostart: '
+  main.gd:6979  'Autologon: '
+  main.gd:7142  'Karte öffnen: '
+  main.gd:7293  'Echt-Abgleich: '
+  main.gd:7303  'Trainingspaket: '
+  main.gd:7312  ' · %d offen · %.1f MB'
+  main.gd:7312  'Ziel: %s:%d (Port von MoveEye) · '
+  main.gd:7321  'Verbindung · '
+  main.gd:7321  'aus'
+  main.gd:7325  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
+  main.gd:7325  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
+  main.gd:7328  ' – versucht es weiter (gleich auf einem freien Port)'
   mehr.gd:256  ' · Leistung: %d Bilder/s, Lite %s'
   mehr.gd:256  'an'
   mehr.gd:256  'aus'
@@ -660,7 +661,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   mwpc.gd:340  'Die Pakete liessen sich nicht installieren: '
   mwpc.gd:365  'Unerwartete Datei in versions.json: '
   symbole.gd:27  'Aus'
-  net.gd:404  '--%s\r\nContent-Type: image/jpeg\r\nContent-Length: %d\r\n\r\n'
+  net.gd:406  '--%s\r\nContent-Type: image/jpeg\r\nContent-Length: %d\r\n\r\n'
   news.gd:83  'MOVEEYE SIM · '
   padroles.gd:129  'Spiel am PC – '
   padtest.gd:44  '  roh %.2f / %.2f'
@@ -699,6 +700,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   recorder.gd:140  '▶ Wiedergabe: '
   recorder.gd:222  ' (wiederholen)'
   replay.gd:180  '  ·  %dx schneller'
+  sicherung.gd:363  '*.zip ; '
   simint.gd:436  ' · am PC %s'
   simint.gd:437  '\n⚡ 5-V-Schiene %.2f V%s'
   simint.gd:437  ' · ⚠ Unterspannung (Servos schwach)'

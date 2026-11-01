@@ -453,6 +453,18 @@ UI_GEMEINSAM = json.loads(r"""{
    },
    "note": "eindeutiger Name: «Sicherheit» ist in MoveEye die Gruppe Passwort / Benutzer (security)"
   },
+  "sys/sicherung": {
+   "sim": "Sicherung",
+   "mw_sec": "Backup",
+   "names": {
+    "de": "Sicherung",
+    "en": "Backup",
+    "fr": "Sauvegarde",
+    "it": "Backup",
+    "rm": "Copia da segirezza"
+   },
+   "note": "gleicher Name wie MoveEye «Sicherung» (Abschnitt Backup, Gruppe Schutz): dort erscheint die Simulator-Sicherung als Eintrag «Simulator» (Teil 639za). Abweichung: im Simulator unter System (Entscheid Daniel 01.11.2026)"
+  },
   "extras/power": {
    "sim": "Strom",
    "same_as": "power",

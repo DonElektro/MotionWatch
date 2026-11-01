@@ -1,8 +1,13 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 01.11.2026 · Version **3.37.0** · MoveEye **3.37.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 01.11.2026 · Version **3.38.0** · MoveEye **3.38.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.38.0 (MoveEye 3.38.0): Sicherung (`scripts/sicherung.gd`, MoveEye Teil 639za)
+
+- ZIP mit manifest.json (Prüfsummen), Ziele PC / Ordner / MoveEye (mw_cmd «sim_sicherung», /control sicherung), vor dem
+  Wiederherstellen automatisch eine Sicherung. Test `werkzeuge/sicherung_test.gd`. Im Zweig 639s, wegen 639s_dev_zugang umbenannt.
 
 ## NEU in 3.37.0 (MoveEye 3.37.0): Foto-Texturen im Bergtal (`scripts/bergtal_texturen.gd`, `texturen/`)
 

@@ -1262,6 +1262,7 @@ class WebStream:
         place_routes(app, watch, reply, body)              # 2.98.30: «Platz einrichten» /place, field of view per camera (537)
         fixp_routes(app, reply, body)                      # real-erk-e1: still «person» = thing, card «ignorieren?» /api/fixp (418)
         g2_routes(app, watch, reply, body)                 # guide 2: tours, tip of the day, factory reset (586)
+        simsich_routes(app, reply, body)                   # Sicherung → «Simulator»: backups of the simulator, restore (639za)
         qr_routes(app, reply, body)                        # QR codes: POST /api/qr, gallery /qr, print page, no-store for secrets (587)
         servo_routes(app, reply, body)                     # 2.98.35: servos - Not-Aus, taught points, diagnosis /servo, /api/servo (539)
         users_routes(app, reply, body)                     # 2.98.42: link a phone /l/<token>, page shows only the own rights (041)

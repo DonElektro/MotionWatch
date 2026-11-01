@@ -777,7 +777,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 3.37.0")
+        self.root.title("MoveEye 3.38.0")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -1149,7 +1149,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 3.37.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 3.38.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -2114,6 +2114,21 @@ class App:
             ttk.Button(sbody, text="🧪 " + tr("Test the backup"), command=lambda: threading.Thread(target=bk_test, daemon=True).start()).pack(fill="x", pady=(8, 0))
             self.status_labels["Backup"] = ttk.Label(sbody, text=STATE.get("backup_status", ""), style="Mut.TLabel", wraplength=330, justify="left")
             self.status_labels["Backup"].pack(anchor="w", pady=(4, 0))
+            # Sicherung → «Simulator» (639za): the newest backup of the simulator back into the simulator (only the owner)
+            ttk.Label(sbody, text="🖥 " + tr("Simulator"), style="Mut.TLabel").pack(anchor="w", pady=(8, 0))
+            ss_ = simsich_list()
+            ss_l = ttk.Label(sbody, text=(ss_[0]["when"] + " · " + ss_[0]["ver"] + (" · " + tr("before") if ss_[0]["vorher"] else "")) if ss_
+                             else tr("No backup of the simulator yet."), style="Mut.TLabel", wraplength=330, justify="left")
+            ss_l.pack(anchor="w")
+            def ss_go():
+                L_ = simsich_list()
+                if not L_ or CFG.get("lock_on") or not messagebox.askyesno("MoveEye", tr("Restore the simulator from this backup? Its present state is backed up first (you can undo it), then the simulator restarts."), parent=self.root):
+                    return
+                def run_():
+                    ok_, err_, _b = simsich_restore(L_[0]["name"], "window")
+                    self.root.after(0, lambda: ss_l.config(text=("✓ " + tr("Simulator restored - it restarts")) if ok_ else "⚠ " + tr_err(err_)))
+                threading.Thread(target=run_, daemon=True).start()
+            ttk.Button(sbody, text="♻ " + tr("Restore simulator"), command=ss_go, state="normal" if ss_ else "disabled").pack(fill="x", pady=(4, 0))
         if sec == "Web stream":
             lk = ext_links()
             txt = (tr("Off – switch on «Picture for other programs» above.") if not lk.get("on") else
