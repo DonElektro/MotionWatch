@@ -1,8 +1,13 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 01.11.2026 · Version **3.32.0** · MoveEye **3.32.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 01.11.2026 · Version **3.33.0** · MoveEye **3.33.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.33.0 (MoveEye 3.33.0): Fehler-QR (`scripts/fehler_hilfe.gd`, `fehler_katalog.json`, MoveEye Teil 639u)
+
+- Ein Katalog für beide (27 Fehler, 11 Aktionen, 5 Sprachen), QR selbst gezeichnet (bitgleich mit qr_matrix), Knopf in der
+  Selbstdiagnose, /control «fehler». Test: `werkzeuge/fehler_qr_test.gd`. Teil im Zweig 639s, wegen dev-zugang in 639u umbenannt.
 
 ## NEU in 3.32.0 (MoveEye 3.32.0): Ruhebild (`scripts/ruhebild.gd`, MoveEye Teil 639y)
 

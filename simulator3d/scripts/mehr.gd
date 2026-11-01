@@ -421,7 +421,12 @@ func open_window(id: String) -> void:
 			var b := _window("Protokoll", "log")
 			protokoll.build(b, self)
 		_:
-			return
+			if not id.begins_with("fehler:"):            # Fehler-QR: Hilfe zu einem Fehler (fehler_hilfe.gd)
+				return
+			var FH = load("res://scripts/fehler_hilfe.gd")
+			var fid := id.substr(7)
+			var b := _window(FH.ui("help") + " · " + str(FH.tx(FH.entry(fid).get("titel", {"de": fid}))), "steth")
+			FH.build(main, b, self, fid)
 	win_id = id
 
 
