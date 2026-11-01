@@ -85,6 +85,21 @@ _HX_simkompakt.update({
               '«Activar la simulaziun»: MoveEye lavura ussa cun ils maletgs ed ils sensurs dal simulatur empè da la vaira hardware. '
               'Deactivar = enavos a la vaira hardware.'),
 })
+# 3.43.x: the 3D simulator for Linux (x86_64) on the page /sim (470), the wait page (300) and the window (570)
+_HX_simkompakt.update({
+    '3D simulator for Linux (x86_64, ZIP)': ('MoveEye Sim · 3D für Linux (x86_64, ZIP)', 'MoveEye Sim · 3D pour Linux (x86_64, ZIP)',
+                                             'MoveEye Sim · 3D per Linux (x86_64, ZIP)', 'MoveEye Sim · 3D per Linux (x86_64, ZIP)'),
+    '3D simulator for Linux': ('MoveEye Sim · 3D für Linux', 'MoveEye Sim · 3D pour Linux', 'MoveEye Sim · 3D per Linux',
+                               'MoveEye Sim · 3D per Linux'),
+    'unzip, then ./installieren.sh': ('entpacken, dann ./installieren.sh', 'décompresser, puis ./installieren.sh',
+                                      'decomprimere, poi ./installieren.sh', 'decumprimer, lura ./installieren.sh'),
+    'how-1l': ('', 'Linux (x86_64) : télécharger MoveEye Sim · 3D pour Linux, le décompresser, puis lancer une fois ./installieren.sh dans '
+                   'le dossier MoveEyeSim3D (entrée dans le menu et sur le bureau) – ou lancer directement MoveEyeSim3D.x86_64.',
+               'Linux (x86_64): scaricare MoveEye Sim · 3D per Linux, decomprimerlo e avviare una volta ./installieren.sh nella cartella '
+               'MoveEyeSim3D (voce nel menu e sul desktop) – oppure avviare direttamente MoveEyeSim3D.x86_64.',
+               'Linux (x86_64): chargiar giu MoveEye Sim · 3D per Linux, al decumprimer ed aviar ina giada ./installieren.sh en '
+               'l\'ordinatur MoveEyeSim3D (endataziun en il menu e sin il desktop) – u aviar directamain MoveEyeSim3D.x86_64.'),
+})
 for _k, _v in _HX_simkompakt.items():
     if _v[0]:
         DE.setdefault(_k, _v[0])

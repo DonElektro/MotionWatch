@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-01 17:51",
+ "generated": "2026-11-01 18:05",
  "versions": [
   {
-   "version": "3.43.0",
-   "file": "webcam_bewegung_3_43_0.py",
+   "version": "3.43.1",
+   "file": "webcam_bewegung_3_43_1.py",
    "url": "",
-   "sha256": "c6ea7356955cd0743bb953b8052c1d1608408f5960a9bdbb63b1762ee6ba6eb5",
-   "date": "2026-11-01 17:51",
-   "notes": "Gehäuse v5.2b: SD-Schlitz für eine Verlängerung und USB-C-Öffnung (je mit Stopfen), Kopf 06 mit Status-LED, Rippen und Trennsteg ≥ 1,5 mm, Sicherung 5 A, 13 Entwicklungs-Sockel (12 V an der GX16), Lochraster im Zwischenboden, Platz für Lampentreiber und Sicherung, Reserve-Öffnung mit Stopfen; microSD-Verlängerung in der Teileliste.",
-   "size": 4792838,
-   "sig": "719a71f8e5ecdb8b1942c45ac0d46bb55d456a096cba3d18d5a083f37380447b901bfda021af05fe7d9c2d817906e5c3c8b0c4a410f64f0d130f7f7205492a0e",
+   "sha256": "00c28106c8bc5d798def77b1501e7cfb615c266d8c60fd5754dbe4bb38f54716",
+   "date": "2026-11-01 18:05",
+   "notes": "MoveEye bietet unter /sim jetzt auch den Simulator für Linux zum Herunterladen an.",
+   "size": 4796181,
+   "sig": "bdfdc67338426bf528951d2a1481f30e52eefc6503115fce23f1e0330dfb60ddceffe35bdc6e3cabc714172ec569f2104d8c5ab0a34acad5e56636ad28f0a605",
    "data": {
-    "file": "moveeye_daten_3_43_0.zip",
+    "file": "moveeye_daten_3_43_1.zip",
     "url": "",
-    "sha256": "0f3d63334dbae60bbfcc750767ff9bd3301a195c111faf29953820e4dccaa502",
-    "size": 3278574,
-    "sig": "e28c0e059a9b116fd2d4b78fb56909438d8712fe67d4ff66c6855135f483924b8de924f1729e2a132cf6cd57313378b64d4f5d0ea98376cbc30dac416f81ec0c"
+    "sha256": "17c1a6c2815c909e05167114dc2a77a5b7ab7554d2100c21f49047aa3e9b675f",
+    "size": 3279001,
+    "sig": "198ce804af93cb7029e74f19b6c95da3b4a45fa0411898b8d1ab526c309b8f4d67f786cc9e6313c4a9227be30a96cf6510d21af68aca0edcee4a81beda2b9c06"
    }
   },
   {

@@ -672,9 +672,15 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3.43.0", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 48917957,
-         "sha256": "d13009896b4ee4e6a83fd1b993492516482456b17c1ef6dfa50ea5f496a2cdaf"}
+SIM3D = {"version": "3.43.1", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 48916532,
+         "sha256": "4b2bc90cd665f0e6a037d55b52eb8085a4ab66e241b239612e7e7b4b2a1721b6"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
+# 3.43.x: the same 3D simulator for Linux (x86_64), offered at /sim/simulator3d_linux.zip - fetched, checked and kept the same way
+# (simulator3d/MoveEyeSim3D_Linux.zip, block «linux» in simulator3d/version.json; bauen.py --neue-version takes it over).
+SIM3D_LINUX = {"version": "3.43.1", "file": "simulator3d/MoveEyeSim3D_Linux.zip", "size": 42883398,
+               "sha256": "42303428dadf4bcca543452846dfa48b470b075c91b15f8cd8efb3f9b4a23540", "stem": "MoveEyeSim3D_Linux",
+               "label": "MoveEye Sim (Linux)"}
+SIM3D_LINUX_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
          "sha256": "7e278179dc8f1c79b964248ad0a5cb500cc42f2010587a07b7641fe9f0577385", "stem": "MotionWatch_PythonSimulator",
@@ -845,7 +851,7 @@ def sim3d_wait_page(lang, pkg=None, dl=None, url="/sim/simulator3d.zip"):
     SIM3D = pkg or globals()["SIM3D"]; SIM3D_DL = dl if dl is not None else globals()["SIM3D_DL"]
     pct = int(100 * SIM3D_DL["got"] / SIM3D["size"])
     err = SIM3D_DL["msg"]
-    title = tr("3D simulator for Windows" if pkg is None else "Python world simulator", lang)
+    title = tr("3D simulator for Windows" if pkg is None else "3D simulator for Linux" if pkg is globals()["SIM3D_LINUX"] else "Python world simulator", lang)
     body = (f"<p>⚠ {html_escape(tr('could not be prepared', lang))}: {html_escape(tr(err, lang))}</p><p><a href='{url}?retry=1'>"
             f"{html_escape(tr('Try again', lang))}</a></p>") if err else (
         f"<p>{html_escape(tr('The Pi prepares the download once (about 30 MB) …' if pkg is None else 'The Pi prepares the download once …', lang))}</p>"
