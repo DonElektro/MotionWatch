@@ -9,6 +9,10 @@ config/description="3D simulation for MoveEye: cameras on a pan/tilt head, therm
 run/main_scene="res://main.tscn"
 config/features=PackedStringArray("4.3")
 run/low_processor_mode=false
+boot_splash/bg_color=Color(0.043, 0.071, 0.125, 1)
+boot_splash/image="res://ruhebild_start.png"
+boot_splash/fullsize=true
+boot_splash/use_filter=true
 
 [audio]
 

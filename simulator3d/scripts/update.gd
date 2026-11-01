@@ -132,8 +132,7 @@ func _note(msg: String) -> void:
 
 func _build_ui() -> void:
 	layer = 100
-	var bg := ColorRect.new()
-	bg.color = Color(0.06, 0.07, 0.09)
+	var bg: Control = preload("res://scripts/ruhebild.gd").new()   # Ruhebild (MoveEye 639y): calm, like the picture of MoveEye
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(bg)
 	var cc := CenterContainer.new()
@@ -141,7 +140,7 @@ func _build_ui() -> void:
 	add_child(cc)
 	var pc := PanelContainer.new()
 	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color(0.12, 0.14, 0.18)
+	sb.bg_color = Color(0.12, 0.14, 0.18, 0.94)
 	sb.set_corner_radius_all(10)
 	sb.set_content_margin_all(22)
 	pc.add_theme_stylebox_override("panel", sb)

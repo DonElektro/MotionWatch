@@ -158,8 +158,8 @@ def simwait_info(lang=None):
 
 
 # ---- the picture (numpy + PIL, the background is made once per size) ---------------------------------------------------
-def _ruhe_bg(w, h, red=False):
-    key = ("bg", w, h, red, bool(CFG.get("blinki_on", True)))
+def _ruhe_bg(w, h, red=False, mood="normal"):
+    key = ("bg", w, h, red, mood, bool(CFG.get("blinki_on", True)))
     c = SIMWAIT["cache"]
     if key in c:
         return c[key]
@@ -183,7 +183,7 @@ def _ruhe_bg(w, h, red=False):
     img = np.clip(img, 0, 255).astype(np.uint8)
     fig = None                                                                     # Blinki (without the fan) or the logo
     try:
-        png = blinki_png(int(h * 0.22), "normal", red=red) if CFG.get("blinki_on", True) else app_icon_png(int(h * 0.20))
+        png = blinki_png(int(h * 0.22), mood, red=red) if CFG.get("blinki_on", True) else app_icon_png(int(h * 0.20))
         fig = cv2.imdecode(np.frombuffer(png, np.uint8), cv2.IMREAD_UNCHANGED)
     except Exception:
         fig = None
@@ -204,24 +204,24 @@ def _ruhe_bg(w, h, red=False):
     return img
 
 
-def _ruhe_draw(w, h, lines, red=False):
+def _ruhe_draw(w, h, lines, red=False, mood="normal"):
     """lines: [(text, size, colour RGB, bold)] from the middle down. None without PIL."""
     try:
         from PIL import Image, ImageDraw
     except ImportError:
         return None
-    key = ("draw", w, h, red, tuple(lines))               # the same texts (within one second): the same picture
+    key = ("draw", w, h, red, mood, tuple(lines))               # the same texts (within one second): the same picture
     c = SIMWAIT["cache"]
     if key in c:
         return c[key].copy()
     for k_ in [k_ for k_ in c if k_[0] == "draw"]:
         c.pop(k_, None)
-    c[key] = out = _ruhe_draw_new(w, h, lines, red, Image, ImageDraw)
+    c[key] = out = _ruhe_draw_new(w, h, lines, red, mood, Image, ImageDraw)
     return out.copy()
 
 
-def _ruhe_draw_new(w, h, lines, red, Image, ImageDraw):
-    im = Image.fromarray(cv2.cvtColor(_ruhe_bg(w, h, red), cv2.COLOR_BGR2RGB))
+def _ruhe_draw_new(w, h, lines, red, mood, Image, ImageDraw):
+    im = Image.fromarray(cv2.cvtColor(_ruhe_bg(w, h, red, mood), cv2.COLOR_BGR2RGB))
     d = ImageDraw.Draw(im)
     y = int(h * 0.56)
     for txt, size, col, bold in lines:
@@ -232,12 +232,13 @@ def _ruhe_draw_new(w, h, lines, red, Image, ImageDraw):
             d.rounded_rectangle((x0, y + 2, x0 + bw, y + 8), radius=3, fill=(40, 52, 68))
             d.rounded_rectangle((x0, y + 2, x0 + max(6, int(bw * size / 100.0)), y + 8), radius=3, fill=(88, 150, 255))
             y += 20; continue
-        f = _font(max(10, int(h * size)), bold)
-        while d.textlength(txt, font=f) > w * 0.92 and f.size > 10:
-            f = _font(f.size - 1, bold)
+        fs = max(10, int(h * size))
+        f = _font(fs, bold)
+        while getattr(f, "size", None) and d.textlength(txt, font=f) > w * 0.92 and fs > 10:
+            fs -= 1; f = _font(fs, bold)                   # (without DejaVu: the default font of PIL, it has no size)
         tw = d.textlength(txt, font=f)
         d.text(((w - tw) / 2, y), txt, font=f, fill=col)
-        y += int(f.size * 1.45)
+        y += int(fs * 1.45)
     return cv2.cvtColor(np.array(im), cv2.COLOR_RGB2BGR)
 
 
@@ -265,7 +266,7 @@ def calm_frame(w=960, h=540, lang=None):
              (str(STATE.get("source_status") or "")[:90], 0.028, (170, 180, 195), False),
              (tr("Check the camera and the cable or network – MoveEye keeps trying by itself.", lang), 0.028, (139, 155, 176), False),
              ("ls /dev/video*", 0.024, (90, 104, 124), False)]
-    return _ruhe_draw(w, h, lines, red=False)
+    return _ruhe_draw(w, h, lines, mood="think")      # Blinki thinks: clearly not «all is well»
 
 
 def simwait_jpeg(w=960, q=80):
@@ -310,7 +311,7 @@ def simwait_reason_view():
 
 # ---- web: a layer over the live picture (Live and full screen; the small preview shows the picture of the server) -------
 SIMWAIT_CSS = r"""
-#simwait{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+#simwait{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
  padding:14px 16px;text-align:center;color:#e8eef5;overflow:hidden;
  background:radial-gradient(ellipse 60% 55% at 50% 38%,rgba(42,64,96,.55),transparent 70%),linear-gradient(#0b1220,#141e2c)}
 #simwait[hidden]{display:none}
@@ -333,6 +334,9 @@ SIMWAIT_CSS = r"""
 @keyframes sw-blink{0%,92%,100%{transform:scaleY(0)}95%,96.5%{transform:scaleY(1)}}
 @media (prefers-reduced-motion:reduce){#simwait .sw-fig,#simwait .bk-lid{animation:none!important}#simwait .sw-bar i{transition:none}}
 body.videoonly #simwait{border-radius:0}
+.vwrap.vlost:has(#simwait:not([hidden]))::after,.vwrap.vlost:has(#simwait:not([hidden]))::before{display:none}
+@media (max-width:520px){#simwait{gap:4px;padding:8px 12px}#simwait .sw-fig{width:min(54px,15%)}#simwait .sw-l{font-size:12px}#simwait.long .sw-fig{display:none}}
+@media (max-height:260px){#simwait .sw-fig{display:none}}
 """
 
 SIMWAIT_HTML = ('<div id="simwait" hidden role="status" aria-live="polite">'
@@ -341,7 +345,7 @@ SIMWAIT_HTML = ('<div id="simwait" hidden role="status" aria-live="polite">'
                 '<path d="M0 30 C12 24 20 28 32 22 C44 17 52 26 64 21 C76 16 86 25 100 20 V40 H0Z"/></svg>'
                 '<div class="sw-fig">' + BLINKI_SVG.replace("__I__", "sw") + '</div>'
                 '<div class="sw-t"></div><div class="sw-bar" hidden><i></i></div><div class="sw-s"></div>'
-                '<div class="sw-h" hidden></div><div class="sw-l"><a href="/sim" class="sw-a"></a><a href="/help" class="sw-b"></a></div></div>')
+                '<div class="sw-h" hidden></div><div class="sw-l"><a href="/sim" class="sw-a"></a><a href="/help#ruhebild" class="sw-b"></a></div></div>')
 
 SIMWAIT_JS = r"""
 (function () {
@@ -356,6 +360,7 @@ SIMWAIT_JS = r"""
     q("#simwait .sw-t").textContent = W.title;
     q("#simwait .sw-s").textContent = W.sub;
     const bar = q("#simwait .sw-bar"); bar.hidden = W.pct == null; if (W.pct != null) bar.firstChild.style.width = W.pct + "%";
+    B.classList.toggle("long", !!W.hint);
     const h = q("#simwait .sw-h"); h.hidden = !W.hint; h.textContent = W.hint || "";
     if (W.hint2) { const sm = document.createElement("small"); sm.textContent = W.hint2; h.appendChild(sm); }
     q("#simwait .sw-a").textContent = W.link; q("#simwait .sw-b").textContent = W.help;
@@ -411,9 +416,29 @@ def ruhebild_selftest():
             assert img is not None and img.shape == (360, 640, 3), "error picture of a real camera"
         except ImportError:
             pass
+        assert HELP_PAGE.count('id="ruhebild"') == 2, "the manual (DE + EN)"
         assert 'id="simwait"' in WEB_PAGE and "window.simPaint = function" in WEB_PAGE, "web layer missing"
     finally:
         CFG.update(keep_cfg); SIM.update(keep_sim); SIMWAIT.clear(); SIMWAIT.update(keep_w); WATCH_REF["w"] = keep_ref
+
+
+# the manual (HELP_PAGE of 540, «Probleme lösen» / «Troubleshooting»): what the calm picture means - the link of the hint
+for _a, _b in (('<section id="faq" data-icon="🛠"><h2>Probleme lösen</h2>',
+                '<p id="ruhebild"><b>🏔 Ruhiges Bild statt Live-Bild (Simulator):</b> Startet der Simulator, aktualisiert er sich, lädt er '
+                'eine Szene oder ist er nicht erreichbar, zeigt MoveEye ein ruhiges Bild mit Blinki und dem Grund (z. B. «Der Simulator '
+                'wird aktualisiert (3.29.0) … gleich wieder da»). Das Live-Bild kommt von selbst zurück. Dauert es länger als 3 Minuten: '
+                'am PC nachsehen, ob der Simulator läuft (Fenster «MoveEye Sim»); schliesst sich sein Fenster gleich wieder, '
+                '«Notfall-Start.bat» neben der .exe starten. Im Reiter Simulator stehen Adresse und Verbindung. Bei einer echten Kamera '
+                'erscheint stattdessen die Fehlermeldung «Keine Kamera gefunden»: Kamera, Kabel bzw. Netz prüfen.</p>'),
+               ('<section id="faq" data-icon="🛠"><h2>Troubleshooting</h2>',
+                '<p id="ruhebild"><b>🏔 A calm picture instead of the live picture (simulator):</b> while the simulator starts, updates, '
+                'loads a scene or cannot be reached, MoveEye shows a calm picture with Blinki and the reason (e.g. «The simulator is '
+                'being updated (3.29.0) … back in a moment»). The live picture comes back by itself. If it takes longer than 3 minutes: '
+                'check on the PC that the simulator is running (window «MoveEye Sim»); if its window closes at once, start '
+                '«Notfall-Start.bat» next to the .exe. The Simulator tab shows its address and the connection. With a real camera the '
+                'error «No camera found» appears instead: check the camera and the cable or network.</p>')):
+    if _a in HELP_PAGE:
+        HELP_PAGE = HELP_PAGE.replace(_a, _a + _b, 1)
 
 
 SELFTEST_EXTRA.append(("Calm picture while the simulator starts / updates / is not reachable (639y)", ruhebild_selftest))
