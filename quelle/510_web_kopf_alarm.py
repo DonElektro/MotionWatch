@@ -306,13 +306,15 @@ HEADER_JS = r"""
   document.body.classList.toggle("appmode", app);
   if (app) {
     const b = el("button", "sec ic"); b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg>'; b.type = "button"; b.id = "btn-reload";
-    // reload: first ask the Pi to look for a new version (max. 8 s), then load the page again - the update bar shows it
+    // reload: first ask the Pi to look for a new version (max. 8 s), then open Live and load it again - the update bar shows it
     b.onclick = async () => {
       b.disabled = true; b.classList.add("spin");
       const ac = window.AbortController ? new AbortController() : null; const to = setTimeout(() => ac && ac.abort(), 8000);
       try { await fetch("/api/update", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({action: "check", lang: LANG}),
                                        signal: ac ? ac.signal : undefined, cache: "no-store"}); } catch (e) {}
-      clearTimeout(to); location.reload();
+      clearTimeout(to);
+      // Daniel (1.11.2026): ↻ goes to the page Live first, then loads it again - on every page
+      if (location.pathname === "/" && !location.search && !location.hash) location.reload(); else location.assign("/");
     };
     const ctl = H.querySelector(".hdr-ctl"); (ctl || H).insertBefore(b, ctl ? ctl.firstChild : null);
     setTimeout(() => { b.title = tx("Reload page"); b.setAttribute("aria-label", b.title); }, 1200);

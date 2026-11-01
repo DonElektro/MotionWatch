@@ -458,7 +458,7 @@ def apply_settings(data):
     CFG["web_ui"] = clean_web_ui(CFG["web_ui"])
     if not CFG.get("dev_phase_done"):                  # 2.96.2: Daniel is in the development phase - fast updates on (once)
         CFG["dev_phase_done"] = True
-        CFG["update_fast"] = True
+        CFG["update_mode"] = "dev"                    # 3.23: was update_fast (639q)
     if not CFG.get("app_icon_moveeye_done"):          # 2.96.0: the new name MoveEye and its symbol for everybody (once)
         CFG["app_icon_moveeye_done"] = True
         CFG["app_icon_orange_done"] = True

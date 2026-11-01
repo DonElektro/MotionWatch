@@ -282,7 +282,9 @@ def _g2_tk_wizard(self, force=False):
             nm = entry(tr("Name of this device (optional)"), CFG.get("device_name") or "")
             lab(tr("Time on MoveEye") + ": " + datetime.now().strftime("%d.%m.%Y %H:%M"))
             la = entry(tr("Latitude"), CFG.get("latitude")); lo = entry(tr("Longitude"), CFG.get("longitude"))
-            toggle("⚡ " + tr("Fast updates (development)"), "update_fast")
+            f_ = tk.Frame(body, bg=C["panel"], padx=8, pady=4); f_.pack(fill="x", pady=2)      # 3.23: update_mode (639q)
+            Toggle(f_, "⚡ " + tr("Fast updates (development)"), CFG.get("update_mode") == "dev",
+                   lambda v: set_text("update_mode", "dev" if v else "off")).pack(fill="x")
             lab("🔒 " + tr("Password for this page"), False)
             lab(tr("Without a password everybody in the same network (and with the link) can watch and switch everything."))
             p1 = entry(tr("Password (6-64 characters)"), "", "•"); p2 = entry(tr("Repeat password"), "", "•")
@@ -438,7 +440,7 @@ def _g2_tk_wizard(self, force=False):
                 res.config(text=("✓ " + tr("Connecting …")) if ok else "⚠ " + tr_err(err))
             r = row(); self._fbtn(r, tr("🔌 Connect"), conn).pack(side="left")
         elif c == "tours":
-            toggle(tr("Tour of a page on its first visit"), "tours_auto"); toggle(tr("Tip of the day"), "tip_of_day"); toggle(tr("Show Blinki"), "blinki_on")
+            lab(tr("⚙ Tour, tip of the day, Blinki: Settings → System → Device & help"))      # 3.23: set only there
             r = row(); self._fbtn(r, tr("↺ Reset all tours"), lambda: g2_action({"action": "tours_reset"}, "window")).pack(side="left")
 
         def go_next():
@@ -470,7 +472,8 @@ def _g2_tk_tip(self):
     bf = tk.Frame(w, bg=C["bg"]); bf.pack(fill="x", padx=14, pady=(0, 12))
     self._fbtn(bf, tr("Show me") + " ›", lambda: (w.destroy(), self._open_page(x["href"])), primary=True).pack(side="left")
     self._fbtn(bf, tr("Not now"), w.destroy).pack(side="left", padx=(6, 0))
-    self._fbtn(bf, tr("Tip of the day off"), lambda: (self._set("tip_of_day", False), w.destroy())).pack(side="left", padx=(6, 0))
+    tk.Label(w, text=tr("⚙ Tour, tip of the day, Blinki: Settings → System → Device & help"), bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8),
+             wraplength=380, justify="left", anchor="w").pack(fill="x", padx=14, pady=(0, 10))      # 3.23: set only there
 
 
 _g2_tab_before = App._tab

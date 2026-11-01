@@ -51,8 +51,10 @@ func _ready() -> void:
 # the row «Notizen · Kontaktbogen · Kapitel» in the window (one part open at a time, below the map)
 # =============================================================================================================================
 func build(v: VBoxContainer) -> void:
-	var row := HBoxContainer.new()
+	var row := HFlowContainer.new()                     # Paket «Andocken»: bricht um, wenn das Fenster kleiner ist
 	row.add_theme_constant_override("separation", 6)
+	row.add_theme_constant_override("h_separation", 6)
+	row.add_theme_constant_override("v_separation", 6)
 	v.add_child(row)
 	var holder := VBoxContainer.new()
 	holder.add_theme_constant_override("separation", 6)
@@ -74,6 +76,12 @@ func build(v: VBoxContainer) -> void:
 		holder.add_child(body)
 		_bodies[id] = body
 	v.add_child(holder)
+
+
+func body_width(w: float) -> void:
+	"""Paket «Andocken»: die Teile unter der Karte so breit wie Liste + Karte"""
+	for k in _bodies:
+		(_bodies[k] as Control).custom_minimum_size.x = w
 
 
 func show_tab(id: String) -> void:
@@ -98,10 +106,10 @@ func _fit() -> void:
 		return
 	var vh: float = main.get_viewport().get_visible_rect().size.y
 	_fit_vh = vh
-	var h := 380.0
+	var rest: float = dev.panel.get_combined_minimum_size().y - dev._map.custom_minimum_size.y
+	var h: float = dev.map_h(rest) if dev.has_method("map_h") else 380.0   # Grösse klein / mittel / gross
 	if open_tab != "":
-		var rest: float = dev.panel.get_combined_minimum_size().y - dev._map.custom_minimum_size.y
-		h = clampf(vh - 110.0 - rest, 140.0, 380.0)
+		h = clampf(vh - 110.0 - rest, minf(140.0, h), h)
 	if absf(dev._map.custom_minimum_size.y - h) > 1.0:
 		dev._map.custom_minimum_size.y = h
 		dev._list.custom_minimum_size.y = h

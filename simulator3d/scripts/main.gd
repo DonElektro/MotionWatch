@@ -3,8 +3,9 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3.23.1"
+const VERSION := "3.29.0"
 const Versionen = preload("res://scripts/versionen.gd")   # Versionierung 3.0.0: from 3.0.0 VERSION = "X.Y.Z" like MoveEye (see there)
+const Stimme = preload("res://scripts/abenteuer_stimme.gd")   # 3.23: the one switch «Stimme» (an | aus | untertitel)
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const T := preload("res://scripts/i18n.gd")              # Menüs A: new texts of the panel in the language (Sprachen)
 const Quality := preload("res://scripts/quality.gd")     # 3D-4.25: «Lite» for the Raspberry Pi 5 (Quality.lite(), Engine meta «lite»)
@@ -226,6 +227,10 @@ var view_scale := 1.0                 # 3D-3.75: sharpness of the big view on th
 var win_fps := 0                     # 3D-3.75: frames per second of the big view (0 = as fast as it goes)
 var auto_perf := true                 # 3D-3.75: too slow? the graphics get lighter by themselves
 var cam_wippen := true                 # anim_kamera.gd: die Ansicht wippt beim Gehen der Spielfigur (Maggie)
+var reduce_motion := "auto"            # 3.23 «Bewegung reduzieren»: auto (wie das Betriebssystem) | an | aus - Logo, Blinki, Wippen, Trailer sanfter
+var tour_auto := true                  # 3.23: «Rundgang mit Blinki beim ersten Start von selbst» (System → Gerät & Hilfe, wie MoveEye)
+var blinki_on := true                  # 3.23: «Blinki zeigen» (System → Gerät & Hilfe, wie MoveEye)
+var _os_motion := -1                   # 3.23: the operating system asks for less motion (1), not (0), unknown (-1)
 var grafik_mode := "auto"             # 3D-4.25: «Grafik-Modus» auto | lite | normal (quality.gd; later «hoch»)
 var _grafik_keep := ""                 # Notfall-Start (Stabil-Start): --grafik gilt nur für diesen Start - das wird gespeichert
 var lite_why := ""                    # why Lite is on («Raspberry Pi 5 …», «von Hand», «wenige Bilder/s») - for «Leistung»
@@ -625,6 +630,9 @@ func _ready() -> void:
 	mikro = preload("res://scripts/mikrofon.gd").new()      # real-pir-ton: microphone (1/r, direction, ground) + sounds of the surroundings
 	mikro.main = self
 	add_child(mikro)
+	klang = preload("res://scripts/klang.gd").new()         # Spielton: buses, music, moments - only in games and stories (klang.gd)
+	klang.main = self
+	add_child(klang)
 	servo = preload("res://scripts/servo.gd").new()        # «Servo-Mechanik»: MG90S model of the head (with «Servos wie echt»)
 	servo.main = self
 	add_child(servo)
@@ -1927,7 +1935,9 @@ func lightning_strike() -> void:
 		_flash_seq += [[t0 + 0.4, e * 0.5, 0.6], [t0 + 0.47, 0.0, 0.0]]
 	var dist := randf_range(800.0, 4000.0)                # thunder: later and quieter the farther away
 	var dir := Vector3(randf_range(-1, 1), 0, randf_range(-1, 1)).normalized()
-	get_tree().create_timer(dist / 340.0).timeout.connect(func(): add_sound(30.0, dir * dist, 2.5))
+	get_tree().create_timer(dist / 340.0).timeout.connect(func():
+		add_sound(30.0, dir * dist, 2.5)
+		preload("res://scripts/klang.gd").donner(dist))      # Spielton: the thunder on the PC (only in games and stories)
 	if wetter != null:
 		wetter.on_strike(dist, dir)
 
@@ -3234,6 +3244,7 @@ var schnitt = null                     # schnittstelle.gd (Aufräumen 2)
 var maggie = null                      # maggie_story.gd: «Maggie und der Bergkristall» (API für maggie_hund / maggie_gefahr)
 var horror = null                      # bergtal_horror.gd: Bergtal · Horror-Modus (Hook für die Stimmungswahl: horror.mood_slot / open_from_mood)
 var spieltest = null                   # spieltest.gd: Spieltest-Assistent (Haken für Spiele: Spieltest.ereignis(modus, art, daten))
+var klang = null                       # klang.gd: Spielton (Musik, Effekte, Umgebung, Klicks - nur in Spielen und Geschichten)
 var mw_cmd := {}                       # 3D-3.71: a request to MoveEye (button here): {"id": unix ms, "op": refscan | refcompare | refstop}
 var bike_node: Node3D = null
 var refscan_label: Label
@@ -3800,12 +3811,12 @@ const GROUPS := [["Szene", "globe", "🌍", ["", "Bergtal", "Ort von der Karte",
 				"Wildtiere", "Haus- und Nutztiere", "Vögel und Kleintiere", "Fahrzeuge", "Abläufe", "Von selbst", "Verhalten"]],   # Menüs A: «Menschen / Tiere schicken» geteilt (VISIT_SUB)
 		["Kamerabild", "lens", "👁", ["", "Weitwinkel-Kamera", "Wärmebild", "Wie echt", "Schwierige Bedingungen", "Feineinstellungen"]],
 		["Mover", "track", "🚜", ["", "Patrouille", "Controller"]],
-		["Licht & Ton", "bulb", "💡", ["", "Status-LED & Tasten", "Lautsprecher", "Mikrofon", "Umgebungsgeräusche"]],      # 3D-4.22: «Lautsprecher» here like MoveEye (was «Sensoren»)
+		["Licht & Ton", "bulb", "💡", ["", "Status-LED & Tasten", "Lautsprecher", "Mikrofon", "Umgebungsgeräusche", "Spiel-Ton"]],      # 3D-4.22: «Lautsprecher» here like MoveEye (was «Sensoren»)
 		["Zusatzgeräte", "puzzle", "🔌", ["", "Bewegungsmelder (PIR)", "Strom", "Netz", "Zusatz-Bildschirm (SmallTV)"]],   # P1 ui_gemeinsam: «Sensoren» -> «Zusatzgeräte» (extras), nach Licht & Ton wie MoveEye
 		["Spiel", "pad", "🎮", ["", "Entdecken", "Assistent"]],        # Erlebniswelt 20–23: «Entdecken» (entdecken.gd) on the card
 		["Wildtier", "target", "🎯", [""]],
 		["Testen", "check", "✅", ["", "Verfolgungs-Parcours", "Störungen", "Einbruch-Abläufe"]],
-		["System", "gear", "⚙", ["Grafik", "Karte und Livebild", "Start mit dem PC", "Updates", "Kinder-Modus"]],   # Menüs A: «Ansicht» → «Karte und Livebild» (fehlte hier)
+		["System", "gear", "⚙", ["Grafik", "Karte und Livebild", "Start mit dem PC", "Updates", "Kinder-Modus", "Gerät & Hilfe"]],   # Menüs A: «Ansicht» → «Karte und Livebild» (fehlte hier)
 		["Entwickler", "tools", "🧪", ["", "Updates"]]]
 # 3D-4.21 (Menü 2, Daniel 30.10.2026): the same names as MoveEye - the controls keep their old group / part in add_control,
 # _order_controls renames them here (MoveEye reads the fixed «gid», not the name)
@@ -4210,9 +4221,20 @@ func _register_controls() -> void:
 	add_control("button", "pir", "PIR Zelt auslösen", null, func(): add_event("PIR Zelt", "pir"), "Sensoren")
 	add_control("button", "bike", "Velo-Sensor auslösen (jemand rüttelt am Velo)", null, func(): add_event("Velo", "tag"), "Sensoren")
 	simint.add_controls()                              # 30.10.2026: Lautsprecher, Störungen, Wärmebild (simint.gd)
+	# 3.23 (Daniel 01.11.2026): ONE switch for the voice (narrator, demo, trailer) - like MoveEye (Licht & Ton → Lautsprecher)
+	add_control("select", "stimme_modus", "Stimme (Erzähler, Vorführung, Trailer)", func(): return Stimme.modus(), func(v): Stimme.set_modus(str(v)),
+			"Licht & Ton", {"sub": "Lautsprecher", "options": [["an", "an"], ["aus", "aus"], ["untertitel", "nur Untertitel"]]})
+	# 3.23: «Bewegung reduzieren» and tour / Blinki in ONE place - like MoveEye (System → Gerät & Hilfe)
+	add_control("select", "reduce_motion", "Bewegung reduzieren (Logo, Blinki, Wippen, Trailer sanfter)", func(): return reduce_motion,
+			func(v): reduce_motion = str(v) if str(v) in ["auto", "an", "aus"] else "auto"; UI.motion_still = motion_reduced(), "System",
+			{"sub": "Gerät & Hilfe", "options": [["auto", "wie das Betriebssystem"], ["an", "an: ruhige Bilder"], ["aus", "aus: alles bewegt sich"]]})
+	add_control("toggle", "tour_auto", "Rundgang mit Blinki beim ersten Start von selbst", func(): return tour_auto, func(v): tour_auto = bool(v), "System", {"sub": "Gerät & Hilfe"})
+	add_control("toggle", "blinki_on", "Blinki zeigen (die kleine Figur im Rundgang)", func(): return blinki_on, func(v): blinki_on = bool(v), "System", {"sub": "Gerät & Hilfe"})
 	thermsensor.add_controls()                         # 3D-4.26: Kamerabild → Wärmebild (palette, sensor, tent, warm car)
 	pir.add_controls()                                 # real-pir-ton: Sensoren → Bewegungsmelder (PIR)
 	mikro.add_controls()                               # real-pir-ton: Licht & Ton → Mikrofon, Umgebungsgeräusche
+	if klang != null:
+		klang.add_controls()                           # Spielton: Licht & Ton → Spiel-Ton (Musik an/aus, vier Regler)
 	simwerte.add_controls()                            # Simulator-Werte: Akku und Strom, Netz-Ausfall testen (power.gd)
 	add_control("toggle", "rifle", "Gewehr (unblutig, nur Tiere)", func(): return rifle_on, func(v): rifle_on = v, "Wildbeobachtung")
 	add_control("button", "shoot_head", "Schuss aus der Kopfkamera", null, func(): shoot_head(), "Wildbeobachtung")
@@ -5230,6 +5252,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return {"ok": true, "surprise": surprise.info()}
 	elif a == "entdecken":                             # Erlebniswelt 20–23: {do: info | open | close | photo | mark (id) | reset | hint | set | where (id)}
 		return entdecken.control(d) if entdecken != null else {"ok": false, "error": "no entdecken"}
+	elif a == "spielton":                              # Spielton (klang.gd): {do: info | test (art) | erleben (id) | gefahr (quelle, stufe, dauer)}
+		return klang.control(d) if klang != null else {"ok": false, "error": "no klang"}
 	elif a == "spielbereich":                          # Paket «Spielbereich»: {do: info | open | close | start (id) | seen | reset}
 		return spielbereich.control(d) if spielbereich != null else {"ok": false, "error": "no spielbereich"}
 	elif a == "dev":                                   # Entwicklertool 1 (devtool.gd): {do: places | goto (id) | fly (on, speed) | open | close | info}
@@ -5575,6 +5599,7 @@ func _build_ui() -> void:
 	# Paket real-layout-leiste (Daniel 31.10.2026): the bar under the header like on every page of MoveEye (639o) -
 	# Einfach | Experte · Symbole farbig | schlicht · Beim Start: Nur Gruppen · Alle zuklappen / Nur Gruppen / Alle aufklappen
 	UI.icons_plain = ui_icons == "plain"
+	UI.motion_still = motion_reduced()                # 3.23 «Bewegung reduzieren»
 	leiste = preload("res://scripts/bedienleiste.gd").new()
 	leiste.build(self)
 	top_box.add_child(leiste)
@@ -6057,7 +6082,8 @@ var kids_seg: Control
 var _mode_row: HBoxContainer
 var simple_seg: Control
 var leiste: Node                       # real-layout-leiste: the bar (bedienleiste.gd), the same as on every page of MoveEye
-var ui_icons := "plain"                # «Symbole farbig | schlicht» ("color" | "plain", saved); plain = the look up to 3.19
+var ui_icons := "color"                # «Symbole farbig | schlicht» ("color" | "plain", saved); 3.23: «farbig» is the standard (like MoveEye)
+var ui_icons_pick := false             # 3.23: true once somebody chose with the switch (then the saved choice counts)
 var ui_tb: Control
 var fold_bodies: Array = []           # every card that opens / closes
 var setting_bodies: Array = []        # the cards of the settings groups
@@ -6193,6 +6219,8 @@ func _fold_state() -> String:
 		all_open = all_open and so
 		all_closed = all_closed and not so
 		groups = groups and not so
+	if mine_on:                                        # 639r «Meine Ansicht»: the middle is blue while it is on
+		return "mine"
 	if all_closed:
 		return "close"
 	if all_open:
@@ -6223,22 +6251,25 @@ func _fold_group_open(b: Control) -> bool:
 	return not str(b.get_meta("title", "")) in ["Verbindung", "Tasten"]
 
 
-func _fold_all(how: String, own := false) -> void:
-	"""own: pressed by the user (the three buttons) - kept as the own state like on the page of MoveEye; the start view is not"""
+func _fold_all(how: String, _own := false) -> void:
+	"""639r: «mine» = Meine Ansicht (the own state); «close» / «open» / «groups»: Meine Ansicht off, the own state stays as kept"""
 	_fold_lit = "-"
+	if how == "mine":
+		set_mine()
+		return
+	mine_on = false
 	for b in fold_bodies:
 		UI.set_open(b, how == "open" or (how == "groups" and _fold_group_open(b)))
 	for sb in sub_bodies:
 		UI.set_sub_open(sb, how == "open")
-	if own:
-		for b in fold_bodies + sub_bodies:
-			_fold_keep(b)
 
 
 # ---- Paket nurgruppen (Daniel, 31.10.2026): «Beim Start: Nur Gruppen» ------------------------------------------------------
 # Every start shows the settings as «Nur Gruppen» (_fold_all("groups"), not saved). What the user opens / closes himself is kept in
 # fold_mem (simulator_settings.json; before, the cards always started as built). Switch off: everything as the user left it.
-var start_groups := true              # the switch, factory: on (saved)
+var start_groups := true              # the switch, factory: on (saved); 639r: taken over once into «Meine Ansicht» (mine_mig)
+var mine_on := true                   # 639r «Meine Ansicht» (Daniel 1.11.2026): on = every fold by the user is kept in fold_mem
+var mine_mig := false                 # 639r: «Beim Start: Nur Gruppen» taken over once (the first Meine Ansicht = «Nur Gruppen»), saved
 var fold_mem := {}                    # the own state: {"c:Karte": true, "s:Karte/Teil": false} (saved)
 var _fold_init := {}                  # how the panel was built (for cards the user never touched)
 var _sg_cb: CheckButton
@@ -6264,9 +6295,22 @@ func _fold_put(b: Control, open: bool) -> void:
 
 
 func _fold_keep(b: Control) -> void:
-	if is_instance_valid(b):
-		fold_mem[_fold_key(b)] = _fold_is_open(b)
-		_settings_dirty = true
+	if is_instance_valid(b) and mine_on:
+		_mine_change(_fold_key(b), _fold_is_open(b))
+
+
+func _mine_change(key: String, open: bool) -> void:
+	"""639r: the ONE function per change of «Meine Ansicht» (saved locally; P2 hangs the sync with MoveEye in here)"""
+	if not mine_on or key == "":
+		return
+	fold_mem[key] = open
+	_settings_dirty = true
+
+
+func set_mine() -> void:
+	"""639r: the middle button «Meine Ansicht» - every card and part as the user left them"""
+	mine_on = true
+	_fold_own()
 
 
 func _fold_setup() -> void:
@@ -6283,9 +6327,20 @@ func _fold_setup() -> void:
 			hdr = b.get_parent().get_child(0)
 		if hdr is Button:
 			(hdr as Button).pressed.connect(func(): _fold_keep(b))   # after the heading's own handler: the new state
+	if not mine_mig:                                   # 639r: once - who had «Beim Start: Nur Gruppen» gets it as the first Meine Ansicht
+		mine_mig = true
+		_settings_dirty = true
+		if start_groups:
+			start_groups = false
+			if _sg_cb != null:
+				_sg_cb.set_pressed_no_signal(false)
+			_fold_all("groups")
+			mine_on = true
+			for b in fold_bodies + sub_bodies:
+				_fold_keep(b)
+	start_groups = false                              # 3.23: the switch is gone - an old saved value is ignored, the start is «Meine Ansicht»
 	_fold_own()
-	if start_groups:
-		_fold_all("groups")
+	mine_on = true
 
 
 func _fold_own() -> void:
@@ -6298,15 +6353,10 @@ func _fold_own() -> void:
 				_fold_put(b, bool(fold_mem.get(k, _fold_init.get(k))))
 
 
-func set_start_groups(on: bool) -> void:
-	start_groups = on
-	_settings_dirty = true
-	if _sg_cb != null and _sg_cb.button_pressed != on:
-		_sg_cb.set_pressed_no_signal(on)
-	if on:
-		_fold_all("groups")
-	else:
-		_fold_own()
+func set_start_groups(_on: bool) -> void:
+	"""3.23: the switch «Beim Start: Nur Gruppen» is gone (an old call only goes back to «Meine Ansicht»)"""
+	start_groups = false
+	set_mine()
 
 
 func _search(q: String) -> void:
@@ -6451,9 +6501,30 @@ func ask_adult(done: Callable) -> void:
 	le.grab_focus()
 
 
+func motion_reduced() -> bool:
+	"""3.23 «Bewegung reduzieren»: an / aus, or «auto» = what the operating system says (Windows: MinAnimate, Linux / GNOME:
+	enable-animations; asked once, not headless). Unknown = full motion."""
+	if reduce_motion == "an":
+		return true
+	if reduce_motion == "aus":
+		return false
+	if _os_motion < 0:
+		_os_motion = 0
+		if DisplayServer.get_name() != "headless":
+			var out := []
+			if OS.get_name() == "Windows":
+				if OS.execute("reg", ["query", "HKCU\\Control Panel\\Desktop\\WindowMetrics", "/v", "MinAnimate"], out) == 0 and not out.is_empty():
+					var tx := str(out[0]).strip_edges()
+					_os_motion = 1 if tx.ends_with(" 0") or tx.ends_with("\t0") else 0
+			elif OS.get_name() == "Linux" and OS.execute("gsettings", ["get", "org.gnome.desktop.interface", "enable-animations"], out) == 0 and not out.is_empty():
+				_os_motion = 1 if str(out[0]).strip_edges() == "false" else 0
+	return _os_motion == 1
+
+
 func set_icons(v: String) -> void:
 	"""real-layout-leiste: symbols «color» (own colour, a green dot while on) or «plain» (grey, green while on) - the one switch"""
 	ui_icons = "plain" if v == "plain" else "color"
+	ui_icons_pick = true
 	UI.icons_plain = ui_icons == "plain"
 	_settings_dirty = true
 	for b in fold_bodies:
@@ -6759,8 +6830,8 @@ func restart_args() -> PackedStringArray:
 	return out
 
 
-const KEEP := ["pad_auto", "pad_sens", "pad_inv_y", "pad_swap", "pad_rumble", "colors_on", "seasons_on", "pad_dead", "pad_center", "show_laser", "game_max", "tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "fp_spot", "szene_spot", "bt_spot", "bt_bed", "bt_season", "bt_free", "bt_events", "bt_mount", "bt_bag", "bt_stove", "bt_wall", "bt_orient", "bt_marks", "bt_visited", "auto_update", "dev_updates", "news_seen", "news_popup", "show_zones3d", "show_det3d", "fauna_on", "twin", "ui_simple", "ui_icons", "start_groups", "auto_visitors", "daily_life", "real_weather", "real_time", "night_weather", "surprise_on", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
-		"avoid_on", "grafik_mode", "cam_wippen", "quality", "view_scale", "win_fps", "auto_perf", "meadow_on", "season", "mover_on", "mover_max", "mast_h", "patrol_judge", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "moon_auto", "cam1_yaw", "stream_last", "game_bots", "game_tutorial", "game_daily", "game_ghost", "game_heart", "game_botguard", "kids_on", "kids_ask", "kids_thief", "kids_scary", "kids_laser", "kids_sound", "kids_stars", "dev_area"]
+const KEEP := ["pad_auto", "pad_sens", "pad_inv_y", "pad_swap", "pad_rumble", "colors_on", "seasons_on", "pad_dead", "pad_center", "show_laser", "game_max", "tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "fp_spot", "szene_spot", "bt_spot", "bt_bed", "bt_season", "bt_free", "bt_events", "bt_mount", "bt_bag", "bt_stove", "bt_wall", "bt_orient", "bt_marks", "bt_visited", "auto_update", "dev_updates", "news_seen", "news_popup", "show_zones3d", "show_det3d", "fauna_on", "twin", "ui_simple", "ui_icons", "ui_icons_pick", "start_groups", "mine_mig", "auto_visitors", "daily_life", "real_weather", "real_time", "night_weather", "surprise_on", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
+		"avoid_on", "grafik_mode", "cam_wippen", "reduce_motion", "tour_auto", "blinki_on", "quality", "view_scale", "win_fps", "auto_perf", "meadow_on", "season", "mover_on", "mover_max", "mast_h", "patrol_judge", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "moon_auto", "cam1_yaw", "stream_last", "game_bots", "game_tutorial", "game_daily", "game_ghost", "game_heart", "game_botguard", "kids_on", "kids_ask", "kids_thief", "kids_scary", "kids_laser", "kids_sound", "kids_stars", "dev_area"]
 var _settings_dirty := false
 
 
@@ -6785,6 +6856,8 @@ func _load_settings() -> void:
 			else:
 				v = str(v)
 			set(k, v)
+	if not bool(d.get("ui_icons_pick", false)) and str(d.get("ui_icons", "")) != "color":
+		ui_icons = "color"                                # 3.23: files up to 3.22 saved the old standard «schlicht» - now «farbig»
 	if typeof(d.get("fold_mem")) == TYPE_DICTIONARY:      # nurgruppen: the own open / closed state of the cards and parts
 		fold_mem = preload("res://scripts/ui_gemeinsam.gd").migrate_fold(d["fold_mem"])   # P1: «Sensoren» -> «Zusatzgeräte» …
 	grafik_mode = Quality.mode_id(grafik_mode)            # 3D-4.25: unknown / older names -> «Automatisch»

@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.23.1 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.29.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -446,6 +446,46 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.29.0
+3.29.0: Fenster docken automatisch in Leisten links/rechts an (ohne Überlappung, passt sich der Bildschirmgrösse
+an, «Neu anordnen»); Karte, Kompass, SmallTV und CPU als Reiter in einem Fenster; Entwickler immer vorne, klein/mittel/gross
+und einklappbar.
+So testest du: Fenstergrösse ändern, dann «Fenster» › «Neu anordnen». Den Entwickler öffnen und auf «gross» stellen.
+
+NEU IN 3.28.1
+3.28.1: Prüfungen laufen automatisch auf GitHub (MoveEye, Simulator-Tests, Export), schneller und ohne den
+eigenen Rechner zu belasten. Am Simulator selbst ändert sich nichts.
+So testest du: auf GitHub unter Actions «CI» anschauen.
+
+NEU IN 3.28.0
+3.28.0: Ton in den Spielen: Glockenspiel, Fanfare, Streicher, Spannung mit Puls und Trommelwirbel, Pauke, Tusch,
+leise Begleitmusik (abschaltbar, eigene Regler), echte Umgebungsgeräusche, sanfte Klicks – nur in Spielen und Geschichten.
+So testest du: Ein Spiel oder eine Geschichte starten (z. B. Bergtal-Abenteuer) und einen Fund machen: Glockenspiel.
+Licht & Ton › Spiel-Ton: Musik aus und Regler ändern. Ohne Spiel bleibt der Simulator still wie bisher.
+
+NEU IN 3.27.0
+3.27.0: Weniger Schalter: Updates mit einer Auswahl, neu «Bewegung reduzieren» und «Stimme» (an · aus · nur
+Untertitel) in MoveEye und Simulator, Rundgang/Blinki an einem Ort, Symbole farbig, «Beim Start: Nur Gruppen» entfällt
+(langer Druck bleibt), alter Python-Basis-Simulator entfernt.
+So testest du: System › Gerät & Hilfe: «Bewegung reduzieren: an» – das Logo steht still. «Stimme: aus» – der Trailer spricht
+nicht. In MoveEye: Einstellungen › Updates hat eine Auswahl mit 3 Werten.
+
+NEU IN 3.26.0
+3.26.0: Maggie sieht realistischer aus: ab Grafik «mittel» ein Modell mit Skelett und Fell, in «einfach» weiche Formen mit
+ihrem Muster.
+So testest du: Grafik «hoch» einstellen, Maggie starten, laufen, stehen bleiben und «Graben» drücken.
+
+NEU IN 3.25.0
+3.25.0: Mittlerer Klapp-Knopf «Meine Ansicht»: merkt sich dein Auf- und Zuklappen pro Seite, auf allen deinen MoveEye-Geräten
+gleich; «Nur Gruppen» weiter mit langem Druck. ↻ springt zuerst auf Live und lädt dann neu.
+So testest du: Auf dem PC Gruppen klappen und auf dem Handy neu laden: Die Gruppen sind gleich geklappt. «Alle zuklappen»
+drücken, dann die Mitte: Der eigene Zustand ist zurück.
+
+NEU IN 3.24.0
+3.24.0: Sicherheit: Test-Postfach, eigene Sim-Einstellungen und Anmelden nur über https sind immer an; unsignierte Versionen
+nur noch im Entwickler-Bereich (24 h). Simulator: ein Schalter «Ton am PC», Symbole farbig als Standard.
+So testest du: Einstellungen öffnen: Die drei Schalter sind weg, im Simulator steht «Ton am PC».
 
 NEU IN 3.23.1
 3.23.1: Trailer: echte Musik und Geräusche (Streicher, Pauken, Donner, Regen, Schritte; freie CC0-Aufnahmen), Lautstärken

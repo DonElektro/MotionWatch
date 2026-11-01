@@ -288,7 +288,7 @@ async function act(a, extra) { const r = await fetch(BASE + "/a", {method: "POST
 function toast(t) { let e = $("#toast"); if (!e) { e = document.createElement("div"); e.id = "toast"; e.style.cssText = "position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#000c;padding:10px 16px;border-radius:12px;z-index:9"; document.body.appendChild(e); }
   e.textContent = t; e.hidden = false; clearTimeout(e._t); e._t = setTimeout(() => e.hidden = true, 2500); }
 function beep(f, d) { try { const ac = beep.ac || (beep.ac = new (window.AudioContext || window.webkitAudioContext)()); const o = ac.createOscillator(), g = ac.createGain(); o.frequency.value = f || 880; g.gain.value = .2; o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + (d || .15)); } catch (e) {} }
-function speak(t) { try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang = "de-CH"; u.rate = .95; speechSynthesis.speak(u); } catch (e) {} }
+function speak(t) { if (window.MW_VOICE && window.MW_VOICE !== "on") return;   try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang = "de-CH"; u.rate = .95; speechSynthesis.speak(u); } catch (e) {} }
 async function join() { const name = $("#nm").value.trim(); if (!name) return;
   const r = await fetch(BASE + "/join", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({pid: PID, name: name})}).then(x => x.json()).catch(() => ({}));
   if (r.pid) { PID = r.pid; try { localStorage.setItem("mwp-" + KEY, PID); localStorage.setItem("mwp-name", name); } catch (e) {} SEQ = -1; poll(); } else toast(r.error || "Beitreten ging nicht"); }
@@ -635,7 +635,7 @@ def sim_status():
             "simpy": {"version": SIMPY["version"], "size_kb": round(SIMPY["size"] / 1e3), "ready": sim3d_ready(SIMPY)},
             "view": bool(((SIM.get("info") or {}).get("view") or {}).get("input")) if CFG["sim_on"] else False,
             "versions": sim_versions() if CFG["sim_on"] and SIM["ok"] else None,
-            "scan": {k: v for k, v in SIMSCAN.items()}, "installed": os.path.isfile(os.path.join(sim_dir(), "motionwatch_simulator.py")), "running": sim_running(), "on": bool(CFG["sim_on"]), "tunnel": {"active": tunnel_active()}, "ok": SIM["ok"] and time.time() - SIM["t"] < 5, "pic": sim_picture_ok(), "msg": SIM["msg"], "url": sim_base(),
+            "scan": {k: v for k, v in SIMSCAN.items()}, "on": bool(CFG["sim_on"]), "tunnel": {"active": tunnel_active()}, "ok": SIM["ok"] and time.time() - SIM["t"] < 5, "pic": sim_picture_ok(), "msg": SIM["msg"], "url": sim_base(),
             "dark": SIM["dark"], "ambient": SIM["ambient"], "sent": SIM["sent"]}
 
 
@@ -685,9 +685,7 @@ def _simprof_load(which):
 
 
 def simprof_on():
-    """simulation on: the real settings aside, the ones of the last simulation back"""
-    if not CFG.get("sim_separate", True):
-        return
+    """simulation on: the real settings aside, the ones of the last simulation back (3.23: always - the switch sim_separate is gone)"""
     keys = simprof_keys()
     _simprof_save("real", {k: CFG[k] for k in keys})
     SIMPROF["q"] = None
@@ -700,8 +698,6 @@ def simprof_on():
 
 def simprof_off():
     """simulation off: remember its settings, the real ones back, the question which changes to take over"""
-    if not CFG.get("sim_separate", True):
-        return
     keys = simprof_keys()
     real = _simprof_load("real")
     if not real:

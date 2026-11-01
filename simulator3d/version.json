@@ -1,9 +1,9 @@
 {
- "version": "3D-5.23.1",
- "ver": "3.23.1",
- "name": "MoveEye Sim 3.23.1",
+ "version": "3D-5.29.0",
+ "ver": "3.29.0",
+ "name": "MoveEye Sim 3.29.0",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 39987563,
- "sha256": "1c9e8d93558e273d380d90e8652a1dd7a0f1fa2581f4df5b24fde96a88059b0c",
- "notes": "MoveEye Sim 3.23.1: Trailer mit echten Klängen (CC0-Aufnahmen), Lautstärken ausgeglichen."
+ "size": 41336549,
+ "sha256": "a4e6384d2d4ab4b2e51c7f01cb88808305ac0bced41944778fb3b2d77e2999cc",
+ "notes": "Fenster andocken, Reiter, Entwickler zuoberst"
 }
