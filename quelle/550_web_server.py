@@ -1095,6 +1095,20 @@ class WebStream:
                 sim3d_fetch()
             return Response(sim3d_wait_page(lang), mimetype="text/html", headers={"Cache-Control": "no-store"})
 
+        @app.route("/sim/simulator3d_linux.zip")
+        def sim3d_linux_zip():
+            """3.43.x: the 3D simulator for Linux (x86_64) - same fetch and cache as the Windows package"""
+            lang = norm_lang(request.args.get("lang") or CFG["lang"])
+            if sim3d_ready(SIM3D_LINUX):
+                return send_file(sim3d_path(SIM3D_LINUX), mimetype="application/zip", as_attachment=True,
+                                 download_name=f"MoveEyeSim3D_Linux_{SIM3D_LINUX['version']}.zip", conditional=True)
+            if request.args.get("retry"):
+                SIM3D_LINUX_DL["msg"] = ""
+            if not SIM3D_LINUX_DL["msg"]:
+                sim3d_fetch(SIM3D_LINUX, SIM3D_LINUX_DL)
+            return Response(sim3d_wait_page(lang, SIM3D_LINUX, SIM3D_LINUX_DL, "/sim/simulator3d_linux.zip"), mimetype="text/html",
+                            headers={"Cache-Control": "no-store"})
+
         @app.route("/sim/game_pic/<int:i>.jpg")
         def sim_game_pic(i):
             """a «caught» photo of the game (3D-3.25)"""

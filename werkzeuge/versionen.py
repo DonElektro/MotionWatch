@@ -248,6 +248,13 @@ def linux_pruefen(vj):
         data = f.read()
     if len(data) != lx.get("size") or hashlib.sha256(data).hexdigest() != lx.get("sha256"):
         out.append("Linux-Paket %s passt nicht zu version.json (Grösse/Prüfsumme) - versionen.py --linux-json" % lx.get("file"))
+    try:                                                         # MoveEye offers it at /sim/simulator3d_linux.zip (Teil 300)
+        q300 = open(os.path.join(REPO, "quelle", "300_werkzeuge_simulator3d.py"), encoding="utf-8").read()
+        m = re.search(r'^SIM3D_LINUX = \{"version": "([^"]+)", "file": "[^"]+", "size": (\d+),\s*"sha256": "([0-9a-f]+)"', q300, re.M)
+        if m and (int(m.group(2)) != lx.get("size") or m.group(3) != lx.get("sha256")):
+            out.append("SIM3D_LINUX (300) passt nicht zum Linux-Paket in version.json - bauen.py --neue-version übernimmt es")
+    except OSError:
+        pass
     if str(lx.get("ver")) != str(vj.get("ver")):
         out.append("Linux-Paket ist %s, version.json ver %s - Linux neu exportieren und packen" % (lx.get("ver"), vj.get("ver")))
     return out

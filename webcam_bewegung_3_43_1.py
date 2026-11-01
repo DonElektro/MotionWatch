@@ -23,6 +23,7 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 3.43.1: MoveEye bietet unter /sim jetzt auch den Simulator für Linux zum Herunterladen an.
   * 3.43.0: Gehäuse v5.2b: SD-Schlitz für eine Verlängerung und USB-C-Öffnung (je mit Stopfen), Kopf 06 mit Status-LED, Rippen
     und Trennsteg ≥ 1,5 mm, Sicherung 5 A, 13 Entwicklungs-Sockel (12 V an der GX16), Lochraster im Zwischenboden, Platz für
     Lampentreiber und Sicherung, Reserve-Öffnung mit Stopfen; microSD-Verlängerung in der Teileliste.
@@ -87,8 +88,6 @@ Features
   * 3.20.0: Simulator 3.20.0: Figuren leben mehr (Atmen, Blick zu Geräuschen und Tieren, Blinzeln, Sprechen, Zittern, High-Five,
     Klettern, Aufheben; Tiere äsen und kauen; Maggie gräbt und schüttelt sich), Spuren im Schnee, Schalter «Ansicht wippt beim
     Gehen».
-  * 3.19.3: Trailer/Vorführung: Stopp am iPad lässt den Simulator nicht mehr schwarz (Kamera und Knöpfe kommen zurück, Knopf «×
-    Zurück», Esc); am iPad Ton mit einem Tippen (Erzähler, Musik, Geräusche).
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -97,10 +96,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_3_43_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_3_43_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_3_43_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_3_43_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_3_43_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_3_43_1.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -117,7 +116,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "3.43.0"
+APP_VERSION = "3.43.1"
 
 
 def default_data_dir():
@@ -239,8 +238,8 @@ def prepare_settings_file():
 #     Part 397 fetches the zip over the same update source and restarts once (zusatz_start()).
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
-ZD_FILE = "moveeye_daten_3_43_0.zip"
-ZD_SHA256 = "0f3d63334dbae60bbfcc750767ff9bd3301a195c111faf29953820e4dccaa502"
+ZD_FILE = "moveeye_daten_3_43_1.zip"
+ZD_SHA256 = "17c1a6c2815c909e05167114dc2a77a5b7ab7554d2100c21f49047aa3e9b675f"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -24583,9 +24582,15 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3.43.0", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 48917957,
-         "sha256": "d13009896b4ee4e6a83fd1b993492516482456b17c1ef6dfa50ea5f496a2cdaf"}
+SIM3D = {"version": "3.43.1", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 48916532,
+         "sha256": "4b2bc90cd665f0e6a037d55b52eb8085a4ab66e241b239612e7e7b4b2a1721b6"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
+# 3.43.x: the same 3D simulator for Linux (x86_64), offered at /sim/simulator3d_linux.zip - fetched, checked and kept the same way
+# (simulator3d/MoveEyeSim3D_Linux.zip, block «linux» in simulator3d/version.json; bauen.py --neue-version takes it over).
+SIM3D_LINUX = {"version": "3.43.1", "file": "simulator3d/MoveEyeSim3D_Linux.zip", "size": 42883398,
+               "sha256": "42303428dadf4bcca543452846dfa48b470b075c91b15f8cd8efb3f9b4a23540", "stem": "MoveEyeSim3D_Linux",
+               "label": "MoveEye Sim (Linux)"}
+SIM3D_LINUX_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
          "sha256": "7e278179dc8f1c79b964248ad0a5cb500cc42f2010587a07b7641fe9f0577385", "stem": "MotionWatch_PythonSimulator",
@@ -24756,7 +24761,7 @@ def sim3d_wait_page(lang, pkg=None, dl=None, url="/sim/simulator3d.zip"):
     SIM3D = pkg or globals()["SIM3D"]; SIM3D_DL = dl if dl is not None else globals()["SIM3D_DL"]
     pct = int(100 * SIM3D_DL["got"] / SIM3D["size"])
     err = SIM3D_DL["msg"]
-    title = tr("3D simulator for Windows" if pkg is None else "Python world simulator", lang)
+    title = tr("3D simulator for Windows" if pkg is None else "3D simulator for Linux" if pkg is globals()["SIM3D_LINUX"] else "Python world simulator", lang)
     body = (f"<p>⚠ {html_escape(tr('could not be prepared', lang))}: {html_escape(tr(err, lang))}</p><p><a href='{url}?retry=1'>"
             f"{html_escape(tr('Try again', lang))}</a></p>") if err else (
         f"<p>{html_escape(tr('The Pi prepares the download once (about 30 MB) …' if pkg is None else 'The Pi prepares the download once …', lang))}</p>"
@@ -28687,6 +28692,7 @@ def sim_live():
 def sim_status():
     return {"game": sim_game(), "found": sim_found(), "auto": bool(CFG.get("sim_auto")), "autostart": bool(CFG.get("sim_autostart")), "auto_on": bool(CFG.get("sim_auto_on")), "autoupd": bool(CFG.get("sim_autoupd", True)), "stats": sim_stats(), "eco": bool(CFG.get("sim_eco")), "fps": int(CFG.get("sim_fps") or 6),
             "sim3d": {"version": SIM3D["version"], "size_mb": round(SIM3D["size"] / 1e6), "ready": sim3d_ready()},
+            "sim3d_linux": {"version": SIM3D_LINUX["version"], "size_mb": round(SIM3D_LINUX["size"] / 1e6), "ready": sim3d_ready(SIM3D_LINUX)},
             "simpy": {"version": SIMPY["version"], "size_kb": round(SIMPY["size"] / 1e3), "ready": sim3d_ready(SIMPY)},
             "view": bool(((SIM.get("info") or {}).get("view") or {}).get("input")) if CFG["sim_on"] else False,
             "versions": sim_versions() if CFG["sim_on"] and SIM["ok"] else None,
@@ -30482,7 +30488,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_3_43_0.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_3_43_1.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -41124,6 +41130,20 @@ class WebStream:
                 sim3d_fetch()
             return Response(sim3d_wait_page(lang), mimetype="text/html", headers={"Cache-Control": "no-store"})
 
+        @app.route("/sim/simulator3d_linux.zip")
+        def sim3d_linux_zip():
+            """3.43.x: the 3D simulator for Linux (x86_64) - same fetch and cache as the Windows package"""
+            lang = norm_lang(request.args.get("lang") or CFG["lang"])
+            if sim3d_ready(SIM3D_LINUX):
+                return send_file(sim3d_path(SIM3D_LINUX), mimetype="application/zip", as_attachment=True,
+                                 download_name=f"MoveEyeSim3D_Linux_{SIM3D_LINUX['version']}.zip", conditional=True)
+            if request.args.get("retry"):
+                SIM3D_LINUX_DL["msg"] = ""
+            if not SIM3D_LINUX_DL["msg"]:
+                sim3d_fetch(SIM3D_LINUX, SIM3D_LINUX_DL)
+            return Response(sim3d_wait_page(lang, SIM3D_LINUX, SIM3D_LINUX_DL, "/sim/simulator3d_linux.zip"), mimetype="text/html",
+                            headers={"Cache-Control": "no-store"})
+
         @app.route("/sim/game_pic/<int:i>.jpg")
         def sim_game_pic(i):
             """a «caught» photo of the game (3D-3.25)"""
@@ -48628,7 +48648,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 3.43.0")
+        self.root.title("MoveEye 3.43.1")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -49006,7 +49026,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 3.43.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 3.43.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -50438,7 +50458,8 @@ class App:
                                    (tr("connected") + f" · {si_['url']} · " + (tr("night") if si_["dark"] else tr("day")) + f" · {si_['ambient']} °C"
                                     if si_["ok"] else tr_err(si_["msg"]) + " · " + si_["url"]))
                      + ("\n🔎 " + tr("Simulators in the network:") + " " + ", ".join(f"{x['name']} ({x['ip']}:{x['port']})" for x in si_["found"]) if si_["found"] else "")
-                     + ("\n🎮 " + tr("3D simulator for Windows (ZIP)") + ": " + page_address(ip3_) + "sim/simulator3d.zip" if (ip3_ := local_ip()) else ""))
+                     + ("\n🎮 " + tr("3D simulator for Windows (ZIP)") + ": " + page_address(ip3_) + "sim/simulator3d.zip"
+                        + "\n🎮 " + tr("3D simulator for Linux (x86_64, ZIP)") + ": " + page_address(ip3_) + "sim/simulator3d_linux.zip" if (ip3_ := local_ip()) else ""))
         so_ = st.get("solar") or {}; nf_ = st.get("night")
         l_ = [(tr("off") if not CFG["solar_on"] else tr("no current meter found at this address") if not so_.get("ok")
                else f"{so_['w']} W ({so_['v']} V · {so_['a']} A) · {tr('today')} {so_['wh']} Wh · {tr('max.')} {so_['max']} W")]
@@ -59129,6 +59150,21 @@ _HX_simkompakt.update({
               'Disattivare = ritorno al vero hardware.',
               '«Activar la simulaziun»: MoveEye lavura ussa cun ils maletgs ed ils sensurs dal simulatur empè da la vaira hardware. '
               'Deactivar = enavos a la vaira hardware.'),
+})
+# 3.43.x: the 3D simulator for Linux (x86_64) on the page /sim (470), the wait page (300) and the window (570)
+_HX_simkompakt.update({
+    '3D simulator for Linux (x86_64, ZIP)': ('MoveEye Sim · 3D für Linux (x86_64, ZIP)', 'MoveEye Sim · 3D pour Linux (x86_64, ZIP)',
+                                             'MoveEye Sim · 3D per Linux (x86_64, ZIP)', 'MoveEye Sim · 3D per Linux (x86_64, ZIP)'),
+    '3D simulator for Linux': ('MoveEye Sim · 3D für Linux', 'MoveEye Sim · 3D pour Linux', 'MoveEye Sim · 3D per Linux',
+                               'MoveEye Sim · 3D per Linux'),
+    'unzip, then ./installieren.sh': ('entpacken, dann ./installieren.sh', 'décompresser, puis ./installieren.sh',
+                                      'decomprimere, poi ./installieren.sh', 'decumprimer, lura ./installieren.sh'),
+    'how-1l': ('', 'Linux (x86_64) : télécharger MoveEye Sim · 3D pour Linux, le décompresser, puis lancer une fois ./installieren.sh dans '
+                   'le dossier MoveEyeSim3D (entrée dans le menu et sur le bureau) – ou lancer directement MoveEyeSim3D.x86_64.',
+               'Linux (x86_64): scaricare MoveEye Sim · 3D per Linux, decomprimerlo e avviare una volta ./installieren.sh nella cartella '
+               'MoveEyeSim3D (voce nel menu e sul desktop) – oppure avviare direttamente MoveEyeSim3D.x86_64.',
+               'Linux (x86_64): chargiar giu MoveEye Sim · 3D per Linux, al decumprimer ed aviar ina giada ./installieren.sh en '
+               'l\'ordinatur MoveEyeSim3D (endataziun en il menu e sin il desktop) – u aviar directamain MoveEyeSim3D.x86_64.'),
 })
 for _k, _v in _HX_simkompakt.items():
     if _v[0]:

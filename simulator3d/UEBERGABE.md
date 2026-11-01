@@ -1,8 +1,12 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 01.11.2026 · Version **3.43.0** · MoveEye **3.43.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 01.11.2026 · Version **3.43.1** · MoveEye **3.43.1** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.43.1 (MoveEye 3.43.1): Linux-Download auf /sim (MoveEye Teil 300 SIM3D_LINUX, 470, 550)
+
+- /sim/simulator3d_linux.zip, Prüfsumme aus version.json «linux» (bauen.py --neue-version, versionen.py --pruefen prüft sie).
 
 ## NEU in 3.43.0 (MoveEye 3.43.0): Gehäuse v5.2b (`hardware/gehaeuse/Quellcode/v52.py`, 3MF in `Druckdateien/v5-2/`)
 
