@@ -2587,7 +2587,8 @@ class App:
                                    (tr("connected") + f" · {si_['url']} · " + (tr("night") if si_["dark"] else tr("day")) + f" · {si_['ambient']} °C"
                                     if si_["ok"] else tr_err(si_["msg"]) + " · " + si_["url"]))
                      + ("\n🔎 " + tr("Simulators in the network:") + " " + ", ".join(f"{x['name']} ({x['ip']}:{x['port']})" for x in si_["found"]) if si_["found"] else "")
-                     + ("\n🎮 " + tr("3D simulator for Windows (ZIP)") + ": " + page_address(ip3_) + "sim/simulator3d.zip" if (ip3_ := local_ip()) else ""))
+                     + ("\n🎮 " + tr("3D simulator for Windows (ZIP)") + ": " + page_address(ip3_) + "sim/simulator3d.zip"
+                        + "\n🎮 " + tr("3D simulator for Linux (x86_64, ZIP)") + ": " + page_address(ip3_) + "sim/simulator3d_linux.zip" if (ip3_ := local_ip()) else ""))
         so_ = st.get("solar") or {}; nf_ = st.get("night")
         l_ = [(tr("off") if not CFG["solar_on"] else tr("no current meter found at this address") if not so_.get("ok")
                else f"{so_['w']} W ({so_['v']} V · {so_['a']} A) · {tr('today')} {so_['wh']} Wh · {tr('max.')} {so_['max']} W")]
