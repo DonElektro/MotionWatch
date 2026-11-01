@@ -15,6 +15,8 @@
 #   * /api/case: GET = ob der Simulator verbunden ist; POST {do: "sim", step?} -> Simulator /control werkstatt (wie bisher).
 #   * Mehr (525) und das Fenster (572 _tk_more_bar): ein Eintrag «Bauen». Gemeinsame Menü-Datei: «more» -> build
 #     (simulator3d/ui_gemeinsam.json; im Simulator heisst derselbe Eintrag «Bauen», mehr.gd, Fenster werkstatt.gd mit denselben Reitern).
+#   * «Fertig kaufen» (Daniel 01.11.2026, Teil 639zj): schmaler Hinweis ganz oben (#g-fertig), Paket wählen, «Fertig bestellen
+#     (Anfrage)» öffnet die Rückmeldung (584 mwOrder) mit Art «Bestellung fertiges Gerät» und dem Paket.
 # Hier (nach 639p) weil render_page, sim_control, MORE_PAGE, smalltv_routes (639n), UI_GEMEINSAM (639p) vorher kommen.
 # ----------------------------------------------------------------------------
 DE.update(GEH_UI_DE)
@@ -100,6 +102,8 @@ pre.cmd{background:#0f141b;color:#d6e2ee;border-radius:8px;padding:8px 10px;font
 .warn{border-left:4px solid #b8860b;padding-left:10px}
 details summary{cursor:pointer;font-weight:600;padding:6px 0}
 #g-msg{margin-top:6px;min-height:16px}
+.fk{border-left:4px solid var(--acc);display:flex;flex-direction:column;gap:8px;padding:10px 12px}.fkr{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+.fk .fki{font-size:18px}.fk .fkt{flex:1 1 240px;font-size:14px}.fk .seg button{min-height:32px;padding:5px 10px}
 @media (max-width:640px){main{padding:8px 10px 30px}#v3d{height:52vh}.vctl input[type=range]{width:110px}.hide-s{display:none}}
 @media print{header,.tabs,.noprint,#v3d,.vctl,.gtop .vrow{display:none!important}.pane{display:none!important}.pane.on{display:block!important}
   body{background:#fff;color:#000}.gc{border:0;padding:0}a{color:#000}}
@@ -113,6 +117,7 @@ details summary{cursor:pointer;font-weight:600;padding:6px 0}
   </span>
 </header>
 <main>
+  <div class="gc fk noprint" id="g-fertig" hidden></div>
   <div class="gc gtop"><div class="gt">
     <h2><span data-i18n="Build yourself">Build yourself</span> · <span data-i18n="Case">Case</span> v<span id="g-ver"></span></h2><div class="mut" id="g-masse"></div>
     <details id="g-vd"><summary><span data-i18n="Your variant">Your variant</span>: <span class="mut" id="g-vs"></span></summary><div id="g-var"></div></details>
@@ -454,6 +459,7 @@ applyI18n = function () { _gAi(); try { gRender(); } catch (e) { console.error(e
 })();
 /*ALERTS*/
 </script>
+<script>/*GEHFERTIG*/</script>
 <script type="module">
 /*GEH3D*/
 </script>
@@ -570,7 +576,8 @@ def geh_page():
     return (render_page(GEH_PAGE, "more").replace("/*GEHDE*/", js, 1).replace("/*GEHBAU*/null", J(GEH_BAU), 1)
             .replace("/*GEHFK*/null", J(geh_fk()), 1).replace("/*GEHM3*/null", J(BAU3D_MODELLE), 1)
             .replace("/*GEHSIM*/false", "true" if CFG.get("sim_on") else "false", 1)
-            .replace("/*GEHTABS*/", J([list(x) for x in BAU_TABS])).replace("/*GEH3D*/", GEH_3D_JS, 1))
+            .replace("/*GEHTABS*/", J([list(x) for x in BAU_TABS])).replace("/*GEH3D*/", GEH_3D_JS, 1)
+            .replace("/*GEHFERTIG*/", fertig_js(), 1))                       # «Fertig kaufen» (639zj): the hint at the top
 
 
 def geh_do(d):

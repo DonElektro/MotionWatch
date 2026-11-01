@@ -36,6 +36,12 @@
   "it": "\n\nContatto: ",
   "rm": "\n\nContact: "
  },
+ "\n\nPaket: %s (%s) · Preis auf Anfrage": {
+  "en": "\n\nPackage: %s (%s) · price on request",
+  "fr": "\n\nPaquet : %s (%s) · prix sur demande",
+  "it": "\n\nPacchetto: %s (%s) · prezzo su richiesta",
+  "rm": "\n\nPachet: %s (%s) · pretsch sin dumonda"
+ },
  "\n\nWird in %d s automatisch installiert, danach startet der Simulator neu.": {
   "en": "\n\nWill be installed automatically in %d s, then the simulator restarts.",
   "fr": "\n\nSera installée automatiquement dans %d s, puis le simulateur redémarre.",
@@ -6744,6 +6750,12 @@
   "fr": "Meilleures photos du piège photo (netteté et animal)",
   "it": "Migliori foto della fototrappola (nitidezza e animale)",
   "rm": "Meglras fotos da la camera da selvaschina (nettezza ed animal)"
+ },
+ "Bestellung fertiges Gerät": {
+  "en": "Order a ready-made device",
+  "fr": "Commande d’un appareil prêt",
+  "it": "Ordine di un dispositivo pronto",
+  "rm": "Empustaziun d’in apparat pront"
  },
  "Besten Platz suchen": {
   "en": "Find best place",
