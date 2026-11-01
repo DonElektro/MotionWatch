@@ -17755,6 +17755,7 @@ class AutoTuner:
 
     def reset(self):
         self.t_start = time.time(); self.calibrated = False
+        autotune_start_values()                                 # real-erkennung-fix: no extreme values of an earlier scene (577)
         self.noise_areas, self.noise_frac = [], []
         self.last_eval = time.time()
         self.new_candidates = self.became_person = self.near_miss = self.walkers = 0
@@ -17779,6 +17780,8 @@ class AutoTuner:
         if autotune_paused():                                   # 2.98.14: every measurement / training (312), not only three
             STATE["auto_status"] = "paused (test run)"; return   # 2.97.0: a measurement needs fixed values
         now = time.time()
+        if CFG["min_area"] > autotune_area_cap(fg.size):        # real-erkennung-fix: also a value from before / by hand (577)
+            self._set("min_area", autotune_area_cap(fg.size), "at most %.1f %% of the picture" % (AUTOTUNE_AREA_MAX * 100))
         if fps > 1:
             self._set("walk_frames", max(4, min(24, round(fps * CFG["walk_seconds"]))), "fps")
         if not self.calibrated:
@@ -17790,8 +17793,9 @@ class AutoTuner:
             STATE["auto_status"] = f"calibrating… {max(0, left):.0f}s"
             if left <= 0:
                 self.calibrated = True
-                if self.noise_areas:
-                    self._set("min_area", max(600, min(4000, float(np.percentile(self.noise_areas, 95)) * 2.5)), "scene noise")
+                if self.noise_areas:                              # real-erkennung-fix: at most AUTOTUNE_AREA_MAX of the picture (577)
+                    cap = autotune_area_cap(fg.size)
+                    self._set("min_area", max(min(600, cap), min(cap, float(np.percentile(self.noise_areas, 95)) * 2.5)), "scene noise")
                 self.base_min_area = float(CFG["min_area"])
                 frac = float(np.mean(self.noise_frac)) if self.noise_frac else 0.0
                 if frac > 0.02:
@@ -17823,7 +17827,7 @@ class AutoTuner:
         false_rate = (self.new_candidates - self.became_person) / minutes
         if not persons:
             if false_rate > 25 and self.walkers == 0:              # 2.98.13: not while somebody walks; at most 2.5 × the calibrated size
-                cap = min(8000, 2.5 * (self.base_min_area or CFG["min_area"]))
+                cap = min(autotune_area_cap(fg.size), 2.5 * (self.base_min_area or CFG["min_area"]))
                 self._set("min_area", min(cap, CFG["min_area"] * 1.2), f"{false_rate:.0f} false blobs/min")
             elif false_rate > 12:
                 self._set("sensitivity", max(10, CFG["sensitivity"] - 5), "many false blobs")
@@ -17832,7 +17836,7 @@ class AutoTuner:
         if self.near_miss > 20 and self.became_person == 0:
             self._set("speed_consistency", max(0.3, CFG["speed_consistency"] - 0.05), "steady walkers not passing")
         elif self.became_person > 0 and false_rate < 5:
-            self._set("speed_consistency", min(0.7, CFG["speed_consistency"] + 0.02), "persons detected, tightening")
+            self._set("speed_consistency", min(AUTOTUNE_STEADY_MAX, CFG["speed_consistency"] + 0.02), "persons detected, tightening")
         STATE["auto_status"] = f"tuned · {false_rate:.0f} false/min"
         self.new_candidates = self.became_person = self.near_miss = self.walkers = 0
 
@@ -32914,6 +32918,7 @@ class MotionWatch:
                       (area > CFG["car_area_frac"] * frame_area and aspect > 1.2 and sv > 1.0 * k)
             vehicle = vehicle and len(t.speeds) >= 2                 # judged from two steps on, not from the very first
             if vehicle:
+                self._veh_t = time.time(); t.was_vehicle = True         # real-erkennung-fix: headlights (veh_light_veto)
                 if not t.is_vehicle:
                     STATE["ignored_vehicles"] += 1
                     log_event("car", f"Vehicle-like object #{t.id} ignored (aspect {aspect:.2f}, speed {sp:.1f})")
@@ -32950,6 +32955,8 @@ class MotionWatch:
             walking = False                                 # needs AI confirmation
         elif t.is_person and CFG["person_sticky"] and sp <= CFG["walk_max_speed"] * k and not animal and not getattr(t, "fixp", False):
             walking = True                                  # keep flag while tracked (may stand still)
+        if walking and not t.is_person and veh_light_veto(t, getattr(self, "_veh_t", 0.0), now_):
+            walking = False                                 # real-erkennung-fix: the light of a car at night is no person
         walking = strict_gate(self, t, walking, time.time())   # 411: at dusk / in wind a new person only after 2-3 hits in a row
         if walking and not t.is_person:
             STATE["detections_total"] += 1
@@ -33601,7 +33608,7 @@ class MotionWatch:
                             roi[mroi > 0] = tint[mroi > 0]
                     draw_outline(frame, cnts, t.box, sx, sy, (0, 0, 255), 2)
                     cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 3)
-                    cv2.putText(frame, f"PERSON #{t.id}{' AI' if t.ai_confirmed else ''}" + (dist_overlay(t) or f"  {t.speed():.1f}px/f"),
+                    cv2.putText(frame, f"PERSON{'?' if getattr(t, '_strict_maybe', False) else ''} #{t.id}{' AI' if t.ai_confirmed else ''}" + (dist_overlay(t) or f"  {t.speed():.1f}px/f"),
                                 (x, max(20, y - 8)), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
                     if CFG["show_tracks"] and len(t.hist) > 1:
                         pts = np.array([(int(px * sx), int(py * sy)) for px, py in t.hist], np.int32)
@@ -33826,6 +33833,14 @@ SELFTEST_EXTRA.append(("Low-light mode: hysteresis, back fast after a light (410
 #   wind      measured: wind meter / simulator (280 StormWatch: 60-s mean >= 20 km/h or gust >= 39 km/h), or the wind seen
 #             in the picture is «strong» / «storm» (410).
 #   Bound to the existing switch «nachts strenger» (night_strict), no new control.
+# real-erkennung-fix (Erkennungstest 2: Personen 75 % -> 44 %, Kinder 5/12): the rule held back real persons.
+#   - «wind» took the strongest gust of the last 10 min (STORM, 280): one leer run with 55 km/h made every person of the next
+#     10 min «wind», also at 12 km/h. Now only the wind of the last WIND_RECENT_S: 60-s mean >= 20 km/h or at least
+#     WIND_GUST_N measurements >= 39 km/h (one single gust is not enough), or the wind seen in the picture.
+#   - an AI person counted once per new AI result: at 2-3 pictures/s the AI runs every 1-3 s and a child at 8 m was in it
+#     only once -> never confirmed. Wind moves branches = MOVEMENT; the AI does not see more persons in the wind. So an
+#     UPRIGHT AI person is reported at once («im Zweifel Person?», mark «Person?»); a wide AI «person» (boar / fox at night in
+#     the test) and movement alone still wait for 2-3 hits in a row.
 # ----------------------------------------------------------------------------
 FOG = {"on": False, "raw": False, "raw_t": 0.0, "t": 0.0, "hist": deque(maxlen=200), "since": None, "score": None,
        "sat": None, "mean": None, "wx": False, "wx_t": 0.0, "lim_g": None, "lim_l": None, "clahe": None}
@@ -33844,6 +33859,9 @@ FOG_REL, FOG_SAT, FOG_REL_WX, FOG_SAT_WX, FOG_MEAN = 0.40, 30.0, 0.46, 40.0, 90.
 FOG_ON_S, FOG_OFF_S = 10.0, 30.0          # fog comes and goes in minutes; 10 s: a white van filling the picture (2-5 s) is no fog
 TWI_NOISE_K = 1.6                         # noise dusk / day in the test: 1.8-2.2 (three places); rain 0.85, snow 0.6
 WIND_MEAN_KMH, WIND_GUST_KMH = 20.0, 39.0  # Beaufort 4 (20-28 km/h): twigs move; Beaufort 6 (39-49 km/h): big branches move
+WIND_RECENT_S, WIND_GUST_N = 120.0, 2     # real-erkennung-fix: only the last 2 min, a gust must come at least twice
+STRICT_AI_UPRIGHT = 1.2                    # real-erkennung-fix: only an upright AI person (h >= 1.2 w) is reported at once; a wide one
+                                           # (boar, fox: the AI calls them «person» at night) still needs 2-3 AI results in a row
 
 
 def fog_weather(now=None):
@@ -34016,15 +34034,17 @@ def twilight_frame(w, gray, bright, t0):
                           f" (brightness {smooth:.0f}, noise {nz:.1f}" + (f" / day {TWI['base']:.1f}" if TWI["base"] else "") + ")")
 
 
-def wind_strong():
-    """measured wind (wind meter / simulator, 280) or the wind seen in the picture (410) is strong"""
+def wind_strong(now=None):
+    """measured wind (wind meter / simulator, 280) of the last WIND_RECENT_S or the wind seen in the picture (410) is strong"""
+    now = time.time() if now is None else now
     st = STATE.get("storm") or {}
     try:
         if st.get("wind") is not None and float(st["wind"]) >= WIND_MEAN_KMH:
             return True
-        if st.get("gust") is not None and float(st["gust"]) >= WIND_GUST_KMH:
+        win = [v for t, v in list(STORM["win"]) if now - t <= WIND_RECENT_S]          # real-erkennung-fix: not the 10-min gust
+        if sum(1 for v in win if v >= WIND_GUST_KMH) >= WIND_GUST_N:
             return True
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, KeyError, NameError):
         pass
     return STATE.get("wind_level") in ("strong", "storm")
 
@@ -34042,6 +34062,24 @@ def strict_update():
     return n
 
 
+VEH_LIGHT_S = 6.0          # real-erkennung-fix (Erkennungstest 2: Auto mit Scheinwerfern = «Person»): at night, while a car was seen
+                           # in the last 6 s, its light is no person - the beam (movement only), things it lights up (an AI «person»
+                           # that does not move) and the car itself (a track that was vehicle-like). A person walking stays a person.
+
+
+def veh_light_veto(t, veh_t, t0):
+    """410 classify: True = this new person is the light of a car at night"""
+    try:
+        if not is_dark() or t0 - float(veh_t or 0.0) > VEH_LIGHT_S:
+            return False
+    except Exception:
+        return False
+    if getattr(t, "was_vehicle", False) or not t.ai_confirmed:
+        return True
+    sp = list(getattr(t, "speeds", []))
+    return len(sp) >= 3 and (sum(sp) / len(sp)) < float(CFG.get("walk_min_speed", 0.3)) * 2
+
+
 def strict_gate(w, t, walking, t0):
     """410 classify: a NEW person only after STRICT["n"] hits in a row (see the top). Returns the new «walking»."""
     n = STRICT["n"]
@@ -34049,6 +34087,13 @@ def strict_gate(w, t, walking, t0):
     if t.is_person or n <= 1:
         t._sg = None
         return walking
+    up = float(t.box[3]) >= STRICT_AI_UPRIGHT * float(t.box[2]) if getattr(t, "box", None) else True
+    if walking and t.ai_confirmed and up:                    # real-erkennung-fix: the AI sees an upright person - at once («Person?»)
+        if not getattr(t, "_strict_maybe", False):
+            t._strict_maybe = True
+            log_event("person", f"Person? #{t.id}: AI person while {STRICT['why']} - reported at once (not held back)")
+        t._sg = None
+        return True
     if not walking:
         if sg is not None:
             sg["miss"] += 1
@@ -34057,7 +34102,7 @@ def strict_gate(w, t, walking, t0):
         return False
     if sg is None:
         sg = t._sg = {"n": 0, "key": None, "t": t0, "miss": 0}
-    ai = getattr(w, "ai", None)
+    ai = getattr(w, "ai", None)                              # a wide AI person (boar / fox at night, or crawling): per AI result
     key = (("ai", getattr(ai, "_last_run", 0.0), id(getattr(ai, "boxes", None))) if t.ai_confirmed
            else ("f", STATE.get("frames", 0)))
     if key != sg["key"]:
@@ -34178,8 +34223,22 @@ def fog_selftest():
         assert run(2, [True, True]) == 1 and run(3, [True, True, True]) == 2
         assert run(2, [True, False, True, False, False, True]) == 2, "one miss allowed"
         assert run(3, [True, False, False, True, False, False, True, False, False]) is None, "single flickers never count"
-        # the walking person at dusk + wind, 3 pictures/s like the simulator, the AI each time: <= 1 s later
-        assert run(3, [True] * 6, ai=True, dt=0.33) == 2
+        # real-erkennung-fix: an AI person is reported at once («Person?»), also with a single AI result
+        assert run(3, [True] * 6, ai=True, dt=0.33) == 0 and run(2, [True], ai=True) == 0
+        dk = globals()["is_dark"]                                # real-erkennung-fix: the light of a car at night
+        try:
+            globals()["is_dark"] = lambda: True
+            v = _T(); v.speeds = [0.0, 0.1, 0.0]; v.ai_confirmed = True
+            assert veh_light_veto(v, 100.0, 103.0) and not veh_light_veto(v, 100.0, 110.0), "static AI person while a car passes"
+            v.speeds = [6.0, 7.0, 6.5]
+            assert not veh_light_veto(v, 100.0, 103.0), "a walking person stays a person"
+            v.ai_confirmed = False; assert veh_light_veto(v, 100.0, 103.0), "the beam (movement only)"
+            globals()["is_dark"] = lambda: False; assert not veh_light_veto(v, 100.0, 103.0), "by day as before"
+        finally:
+            globals()["is_dark"] = dk
+        _T.box = (0, 0, 40, 20)                                  # a wide AI «person» (boar at night): new AI results in a row
+        assert run(2, [True], ai=True) is None and run(2, [True, True], ai=True) == 1
+        del _T.box
         # Pi 5, 12 pictures/s, the AI only every 0.3 s: the cached AI boxes count once per run
         STRICT["n"] = 3; tr_ = _T(); tr_.ai_confirmed = True; t_ = 6000.0; got = None
         for i in range(40):
@@ -34188,12 +34247,22 @@ def fog_selftest():
                 w.ai._last_run = t_; w.ai.boxes = [i]
             if strict_gate(w, tr_, True, t_):
                 got = t_ - 6000.0; break
-        assert got is not None and 0.5 < got <= 1.1, f"Pi: confirmed after {got} s"
+        assert got is not None and got <= 0.1, f"Pi: confirmed after {got} s"
         # reasons: wind from the wind meter / simulator, switch «nachts strenger» off = as before
         TWI["on"] = True; STATE["storm"] = {"wind": 55.0, "gust": 70.0}
         assert strict_update() == 3 and STRICT["why"] == "dusk + wind"
         TWI["on"] = False; STATE["storm"] = {"wind": 5.0, "gust": 10.0}; wl = STATE.get("wind_level"); STATE["wind_level"] = "calm"
         assert strict_update() == 1
+        # real-erkennung-fix: one gust is not enough, an old storm (more than 2 min ago) neither
+        win_keep = list(STORM["win"]); now_ = time.time()
+        try:
+            STORM["win"].clear(); STORM["win"].extend([(now_ - 300, 55.0), (now_ - 290, 55.0), (now_ - 5, 45.0), (now_ - 2, 12.0)])
+            STATE["storm"] = {"wind": 12.0, "gust": 55.0}
+            assert not wind_strong(now_) and strict_update() == 1, "10-min gust / one gust"
+            STORM["win"].append((now_ - 1, 41.0))
+            assert wind_strong(now_), "two gusts in 2 min"
+        finally:
+            STORM["win"].clear(); STORM["win"].extend(win_keep)
         STATE["wind_level"] = wl
         CFG["night_strict"] = False; TWI["on"] = True
         assert strict_update() == 1
@@ -35315,6 +35384,10 @@ FIX_WALK_AFTER_S = 5.0
 FIX_ANIMAL_MEM_S = 4.0      # an animal of the AI is remembered 4 s on its place (the AI runs only now and then; a new track there inherits it)
 FIX_ANIMAL_AI_S = 1.0       # an animal track becomes a person only when the AI says «person» on it for 1 s (≥ 2 runs of the AI on
                             # the Pi, 0.3 … 0.6 s apart) and no animal in that time: one wrong «person» of a dog is not enough
+FIX_ANIMAL_UPRIGHT = 1.3    # real-erkennung-fix (Kinder 5/12 im Erkennungstest 2): the AI says «person» and the box stands upright
+                            # (height >= 1.3 x width, like the thermal person check 232) -> a person at once, also when an animal of
+                            # the AI lay there a moment ago. A child, a small or crouching person is upright; animals from the side
+                            # are wide (deer 0.5 … 0.8, fox 0.3 … 0.6). «Im Zweifel Person».
 FIXP = {"spots": [], "moving": deque(maxlen=1000), "animals": deque(maxlen=60), "start_t": 0.0, "head": None, "head_t": 0.0,
         "offers": [], "next": 1, "learned_n": 0, "suppressed": 0}
 
@@ -35569,6 +35642,15 @@ def fixp_veto(tracks, ai_objs, pw, ph, t0):
 def animal_track_decide(t, ai_person, animal_cls, t0):
     """Tier vor Person for one track (410 classify): -> True when the track is an animal (no person from movement / sticky).
     ai_person = the AI calls it a person now; animal_cls = an animal of the AI lies on it now (or a moment ago)."""
+    try:
+        upright = float(t.box[3]) >= FIX_ANIMAL_UPRIGHT * float(t.box[2])
+    except (AttributeError, IndexError, TypeError, ValueError):
+        upright = False
+    if ai_person and upright:                                # real-erkennung-fix: an upright AI person is a person (child)
+        if getattr(t, "animal_like", False):
+            log_event("person", f"Person #{t.id}: the AI says person, upright - not an animal ({getattr(t, 'animal_cls', '')})")
+        t.animal_like = False; t.animal_cls = None
+        return False
     if animal_cls:
         t.animal_like = True; t.animal_cls = animal_cls; t.animal_t = t0; t.ai_p_since = 0.0
     if not getattr(t, "animal_like", False):
@@ -35784,7 +35866,7 @@ def fixp_selftest():
 
     # 7) Tier vor Person: a dog track stays an animal; the AI saying «person» once does not change it, 1.5 s of it does
     class _T:
-        pass
+        id = 1; box = (10, 10, 40, 20)                                   # a wide dog box (real-erkennung-fix: upright = person)
     t = _T()
     assert animal_track_decide(t, False, None, 0.0) is False
     assert animal_track_decide(t, False, "dog", 1.0) is True
@@ -35792,6 +35874,9 @@ def fixp_selftest():
     assert animal_track_decide(t, True, None, 15.5) is True              # the AI says «person» once
     assert animal_track_decide(t, True, "dog", 16.0) is True             # and dog again: the clock starts again
     assert animal_track_decide(t, True, None, 16.5) is True and animal_track_decide(t, True, None, 18.1) is False   # 1.6 s person: a person
+    k = _T(); k.box = (100, 50, 20, 42)                                  # real-erkennung-fix: a child (upright), the AI said «dog» before
+    assert animal_track_decide(k, False, "dog", 20.0) is True and animal_track_decide(k, True, "dog", 20.5) is False, "upright AI person"
+    assert animal_track_decide(k, False, None, 21.0) is False            # stays a person (not an animal again without a new animal)
     FIXP["animals"].clear()
     fixp_animal_note([(10, 10, 40, 20, 0.6, 18)], 320, 240, 50.0)
     assert fixp_animal_of((12, 12, 38, 22), 52.0) == "dog" and fixp_animal_of((12, 12, 38, 22), 60.0) is None
@@ -53390,6 +53475,18 @@ PRESENCE_BACK_KEYS = tuple(k for k, _l in PRESENCE_BACK)
 AUTOTUNE_KEYS = ("min_area", "sensitivity", "speed_consistency")
 AUTOTUNE_SPAN = 0.20
 AUTOTUNE_LAST = {}                                          # the value the tuner set last (to see a change by hand)
+# real-erkennung-fix (Erkennungstest 2, 01.11.2026: Personen 75 % -> 44 %): the tuner had driven min_area to 2400 … 3400 (from
+# the noise while calibrating, then held there by the ±20 %) and speed_consistency to 0.7 («persons detected, tightening», never
+# back) - and the next scene started with these values. A walking person at 10 m is only about 1 % of the working picture
+# (480 x 270: ~1200 px), a child at 8 m less: such values let only the AI find persons. Now:
+#   - min_area at most AUTOTUNE_AREA_MAX of the working picture (independent of proc_width), also for a value from before,
+#   - speed_consistency tightened at most to AUTOTUNE_STEADY_MAX (factory 0.4 + 0.1),
+#   - a new calibration (new scene / camera) starts not with extreme values of before: speed_consistency <= AUTOTUNE_STEADY_MAX,
+#     sensitivity >= AUTOTUNE_SENS_MIN (only when the values were not measured by the assistant «Erkennung verbessern», 312).
+AUTOTUNE_AREA_MAX = 0.009                                   # 0.9 % of the picture (480 x 270: 1166 px; a child at 8 m ~1100 px) - wind: wind_boost
+AUTOTUNE_STEADY_MAX = 0.5
+AUTOTUNE_SENS_MIN = 35
+AUTOTUNE_CAP = {}                                           # the last cap of min_area in pixels (autotune_clamp)
 
 
 def presence_back_mode():
@@ -53419,6 +53516,25 @@ def autotune_base_set(src):
     return nb
 
 
+def autotune_area_cap(frame_px):
+    """real-erkennung-fix: the biggest min_area the tuner may set, frame_px = pixels of the working picture"""
+    cap = max(300.0, AUTOTUNE_AREA_MAX * float(frame_px or 0)) if frame_px else 4000.0
+    AUTOTUNE_CAP["px"] = cap
+    return cap
+
+
+def autotune_start_values():
+    """real-erkennung-fix: before a new calibration (190 reset) no extreme values of an earlier scene / an earlier run"""
+    b = CFG.get("auto_tune_base") if isinstance(CFG.get("auto_tune_base"), dict) else {}
+    if not CFG.get("auto_tune", True) or str(b.get("src", "")).startswith("assistant"):
+        return
+    for key, ok, v in (("speed_consistency", CFG.get("speed_consistency", 0.4) <= AUTOTUNE_STEADY_MAX, AUTOTUNE_STEADY_MAX),
+                       ("sensitivity", CFG.get("sensitivity", 50) >= AUTOTUNE_SENS_MIN, AUTOTUNE_SENS_MIN)):
+        if not ok:
+            log_event("auto", f"Auto-tune: {key} {CFG[key]} -> {v} (start of a new calibration)")
+            CFG[key] = v
+
+
 def autotune_base_reset():
     """the tuner starts again (190, reset): a new calibration measures freely - values of the assistant stay the middle"""
     b = CFG.get("auto_tune_base") if isinstance(CFG.get("auto_tune_base"), dict) else {}
@@ -53442,6 +53558,8 @@ def autotune_clamp(key, value):
         b = dict(b, **{key: cur, "src": b.get("src", "") + "+hand"}); CFG["auto_tune_base"] = b      # set by hand / by a test
         mid = cur; lo, hi = mid * (1 - AUTOTUNE_SPAN), mid * (1 + AUTOTUNE_SPAN)
     v = max(lo, min(hi, float(value)))
+    if key == "min_area" and AUTOTUNE_CAP.get("px"):
+        v = min(v, float(AUTOTUNE_CAP["px"]))                  # real-erkennung-fix: the cap wins over the ±20 %
     AUTOTUNE_LAST[key] = round(v, 2) if isinstance(CFG.get(key), float) else int(v)
     return v
 
@@ -53470,7 +53588,7 @@ def nachlauf_migrate(cfg_in):
 
 def nachlauf_selftest():
     """--self-test: the migrations, the ±20 % of the auto-tuner, the one weekly report"""
-    keep = {k: CFG.get(k) for k in ("weekrep_sim", "presence_back", "auto_tune_base", "min_area", "sensitivity", "speed_consistency")}
+    keep = {k: CFG.get(k) for k in ("weekrep_sim", "presence_back", "auto_tune_base", "min_area", "sensitivity", "speed_consistency", "auto_tune")}
     try:
         for old, want in (({"presence_auto": True, "back_ask": True}, "off"), ({"presence_auto": False, "back_ask": True}, "ask"),
                           ({"presence_auto": False, "back_ask": False}, "none"), ({"presence_auto": False}, "none")):
@@ -53493,6 +53611,15 @@ def nachlauf_selftest():
         CFG["min_area"] = 1100; autotune_base_set("calibration"); assert CFG["auto_tune_base"]["min_area"] == 1000, "assistant wins"
         CFG["min_area"] = 3000; AUTOTUNE_LAST.clear()          # changed by hand far outside: that is the new middle
         assert abs(autotune_clamp("min_area", 4000) - 3600) < 1e-6
+        CFG["auto_tune_base"] = {}; AUTOTUNE_LAST.clear()          # real-erkennung-fix: the cap and the start values
+        assert abs(autotune_area_cap(480 * 270) - 1166.4) < 0.1
+        CFG["min_area"] = 1000; autotune_base_set("calibration"); assert autotune_clamp("min_area", 1200) <= 1166.4
+        CFG["min_area"] = 3000; AUTOTUNE_LAST.clear(); assert autotune_clamp("min_area", 3400) <= 1166.4, "the cap wins"
+        CFG.update(speed_consistency=0.7, sensitivity=28, auto_tune_base={}, auto_tune=True); autotune_start_values()
+        assert CFG["speed_consistency"] == AUTOTUNE_STEADY_MAX and CFG["sensitivity"] == AUTOTUNE_SENS_MIN
+        CFG.update(speed_consistency=0.45, sensitivity=60); autotune_start_values()
+        assert CFG["speed_consistency"] == 0.45 and CFG["sensitivity"] == 60, "moderate values stay"
+        AUTOTUNE_CAP.clear()
         wr = weekrep_build("de")
         assert "with_sim" in wr and wr["text"]
     finally:

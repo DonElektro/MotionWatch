@@ -30,9 +30,9 @@
 #     10 min «wind», also at 12 km/h. Now only the wind of the last WIND_RECENT_S: 60-s mean >= 20 km/h or at least
 #     WIND_GUST_N measurements >= 39 km/h (one single gust is not enough), or the wind seen in the picture.
 #   - an AI person counted once per new AI result: at 2-3 pictures/s the AI runs every 1-3 s and a child at 8 m was in it
-#     only once -> never confirmed. Wind moves branches = MOVEMENT; the AI does not see more persons in the wind. So the
-#     hits in a row are only asked from tracks the AI does NOT confirm («im Zweifel Person?»: an AI person is reported at
-#     once, at dusk with the mark «Person?»). Dusk / wind still make a person from movement alone wait for 2-3 pictures.
+#     only once -> never confirmed. Wind moves branches = MOVEMENT; the AI does not see more persons in the wind. So an
+#     UPRIGHT AI person is reported at once («im Zweifel Person?», mark «Person?»); a wide AI «person» (boar / fox at night in
+#     the test) and movement alone still wait for 2-3 hits in a row.
 # ----------------------------------------------------------------------------
 FOG = {"on": False, "raw": False, "raw_t": 0.0, "t": 0.0, "hist": deque(maxlen=200), "since": None, "score": None,
        "sat": None, "mean": None, "wx": False, "wx_t": 0.0, "lim_g": None, "lim_l": None, "clahe": None}
@@ -52,6 +52,8 @@ FOG_ON_S, FOG_OFF_S = 10.0, 30.0          # fog comes and goes in minutes; 10 s:
 TWI_NOISE_K = 1.6                         # noise dusk / day in the test: 1.8-2.2 (three places); rain 0.85, snow 0.6
 WIND_MEAN_KMH, WIND_GUST_KMH = 20.0, 39.0  # Beaufort 4 (20-28 km/h): twigs move; Beaufort 6 (39-49 km/h): big branches move
 WIND_RECENT_S, WIND_GUST_N = 120.0, 2     # real-erkennung-fix: only the last 2 min, a gust must come at least twice
+STRICT_AI_UPRIGHT = 1.2                    # real-erkennung-fix: only an upright AI person (h >= 1.2 w) is reported at once; a wide one
+                                           # (boar, fox: the AI calls them «person» at night) still needs 2-3 AI results in a row
 
 
 def fog_weather(now=None):
@@ -252,6 +254,24 @@ def strict_update():
     return n
 
 
+VEH_LIGHT_S = 6.0          # real-erkennung-fix (Erkennungstest 2: Auto mit Scheinwerfern = «Person»): at night, while a car was seen
+                           # in the last 6 s, its light is no person - the beam (movement only), things it lights up (an AI «person»
+                           # that does not move) and the car itself (a track that was vehicle-like). A person walking stays a person.
+
+
+def veh_light_veto(t, veh_t, t0):
+    """410 classify: True = this new person is the light of a car at night"""
+    try:
+        if not is_dark() or t0 - float(veh_t or 0.0) > VEH_LIGHT_S:
+            return False
+    except Exception:
+        return False
+    if getattr(t, "was_vehicle", False) or not t.ai_confirmed:
+        return True
+    sp = list(getattr(t, "speeds", []))
+    return len(sp) >= 3 and (sum(sp) / len(sp)) < float(CFG.get("walk_min_speed", 0.3)) * 2
+
+
 def strict_gate(w, t, walking, t0):
     """410 classify: a NEW person only after STRICT["n"] hits in a row (see the top). Returns the new «walking»."""
     n = STRICT["n"]
@@ -259,7 +279,8 @@ def strict_gate(w, t, walking, t0):
     if t.is_person or n <= 1:
         t._sg = None
         return walking
-    if walking and t.ai_confirmed:                           # real-erkennung-fix: the AI sees a person - at once («Person?»)
+    up = float(t.box[3]) >= STRICT_AI_UPRIGHT * float(t.box[2]) if getattr(t, "box", None) else True
+    if walking and t.ai_confirmed and up:                    # real-erkennung-fix: the AI sees an upright person - at once («Person?»)
         if not getattr(t, "_strict_maybe", False):
             t._strict_maybe = True
             log_event("person", f"Person? #{t.id}: AI person while {STRICT['why']} - reported at once (not held back)")
@@ -273,7 +294,9 @@ def strict_gate(w, t, walking, t0):
         return False
     if sg is None:
         sg = t._sg = {"n": 0, "key": None, "t": t0, "miss": 0}
-    key = ("f", STATE.get("frames", 0))
+    ai = getattr(w, "ai", None)                              # a wide AI person (boar / fox at night, or crawling): per AI result
+    key = (("ai", getattr(ai, "_last_run", 0.0), id(getattr(ai, "boxes", None))) if t.ai_confirmed
+           else ("f", STATE.get("frames", 0)))
     if key != sg["key"]:
         sg["key"] = key; sg["n"] += 1; sg["miss"] = 0
     if sg["n"] >= n or (sg["n"] >= 2 and t0 - sg["t"] >= 1.0):
@@ -394,6 +417,20 @@ def fog_selftest():
         assert run(3, [True, False, False, True, False, False, True, False, False]) is None, "single flickers never count"
         # real-erkennung-fix: an AI person is reported at once («Person?»), also with a single AI result
         assert run(3, [True] * 6, ai=True, dt=0.33) == 0 and run(2, [True], ai=True) == 0
+        dk = globals()["is_dark"]                                # real-erkennung-fix: the light of a car at night
+        try:
+            globals()["is_dark"] = lambda: True
+            v = _T(); v.speeds = [0.0, 0.1, 0.0]; v.ai_confirmed = True
+            assert veh_light_veto(v, 100.0, 103.0) and not veh_light_veto(v, 100.0, 110.0), "static AI person while a car passes"
+            v.speeds = [6.0, 7.0, 6.5]
+            assert not veh_light_veto(v, 100.0, 103.0), "a walking person stays a person"
+            v.ai_confirmed = False; assert veh_light_veto(v, 100.0, 103.0), "the beam (movement only)"
+            globals()["is_dark"] = lambda: False; assert not veh_light_veto(v, 100.0, 103.0), "by day as before"
+        finally:
+            globals()["is_dark"] = dk
+        _T.box = (0, 0, 40, 20)                                  # a wide AI «person» (boar at night): new AI results in a row
+        assert run(2, [True], ai=True) is None and run(2, [True, True], ai=True) == 1
+        del _T.box
         # Pi 5, 12 pictures/s, the AI only every 0.3 s: the cached AI boxes count once per run
         STRICT["n"] = 3; tr_ = _T(); tr_.ai_confirmed = True; t_ = 6000.0; got = None
         for i in range(40):
