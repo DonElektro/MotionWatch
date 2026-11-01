@@ -866,7 +866,7 @@ class SolarMonitor:
             try:
                 addr = int(str(CFG["solar_addr"]), 16)
             except ValueError:
-                addr = 0x41
+                addr = 0x44                               # 0x41 is the PCA9685 (servos)
             try:
                 pca_ = int(str(CFG["pca_address"]), 16)
             except ValueError:

@@ -236,7 +236,7 @@ def prepare_settings_file():
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
 ZD_FILE = "moveeye_daten_3_39_2.zip"
-ZD_SHA256 = "efc7a06b33c1dba0b394cbe92ad03e796ea8248be698da86f36d023ef358f73b"
+ZD_SHA256 = "99703cfcbbf4e77fcf39fb6f8fbaf85f2d9fd03763fd3668539bcebf0c7fcc36"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -532,7 +532,8 @@ CFG = {
     "mover_mode": "auto", "mover_driver": "adafruit", "mover_addr": "0x60", "mover_speed": 70, "mover_turn": 50, "mover_ramp": 0.5,
     "mover_inv_l": False, "mover_inv_r": False, "mover_swap": False, "mover_sim_show": True,
     "storm_on": True, "storm_drop": 3.0, "storm_wind": 50, "storm_forecast": False, "wind_gpio": "", "wind_factor": 2.4,
-    "solar_on": False, "solar_addr": "0x41", "solar_shunt": 0.1, "night_warn": True,
+    "solar_on": False, "solar_addr": "0x44",   # 01.11.2026: was 0x41 = PCA9685 (servos); INA219 with the A1 bridge / DIP = 0x44
+    "solar_shunt": 0.1, "night_warn": True,
     "species_on": False, "species_model": "", "species_norm": "imagenet", "species_size": 224, "species_conf": 0.5,
     "desktop_notice": True,
     "sim_on": False, "sim_url": "http://127.0.0.1:8765", "sim_eco": True, "sim_fps": 6, "sim_auto": True,
@@ -1434,15 +1435,17 @@ def _http_ok(u):
     return True
 
 
-I2C_KEYS = {"pca_address": "servo board (PCA9685)", "solar_addr": "solar meter (INA219)", "mover_addr": "motor driver (mover)",
-            "ups_addr": "UPS HAT"}
+I2C_KEYS = {"_thermal": "thermal camera", "pca_address": "servo board (PCA9685)", "solar_addr": "solar meter (INA219)",
+            "mover_addr": "motor driver (mover)", "ups_addr": "UPS HAT"}
+I2C_FIXED = {"_thermal": "0x40"}                           # 01.11.2026: Thermal-90 (SenXor) is always on 0x40 (not a setting)
 
 
 def _i2c_active(key, cfg=None):
     c = cfg or CFG
     pca_on = c.get("servo_driver") == "pca9685" or (c.get("servo_driver") == "auto" and str(STATE.get("servo_backend", "")).startswith("pca9685"))
-    return {"pca_address": pca_on, "solar_addr": bool(c.get("solar_on")),
-            "mover_addr": c.get("mover_mode") != "off", "ups_addr": bool(c.get("ups_on"))}.get(key, False)
+    return {"_thermal": bool(c.get("thermal_on")) and str(c.get("thermal_source", "")).startswith("senxor"),
+            "pca_address": pca_on, "solar_addr": bool(c.get("solar_on")), "mover_addr": c.get("mover_mode") != "off",
+            "ups_addr": bool(c.get("ups_on")) and c.get("ups_model") != "e"}.get(key, False)   # UPS HAT (E): own chip on 0x2D
 
 
 def i2c_conflicts(cfg=None):
@@ -1451,7 +1454,7 @@ def i2c_conflicts(cfg=None):
     for k in I2C_KEYS:
         if not _i2c_active(k, c):
             continue
-        a = str(c.get(k, "")).lower()
+        a = I2C_FIXED.get(k) or str(c.get(k, "")).lower()
         if a in seen:
             out.append((seen[a], k, a))
         else:
@@ -23200,7 +23203,7 @@ class SolarMonitor:
             try:
                 addr = int(str(CFG["solar_addr"]), 16)
             except ValueError:
-                addr = 0x41
+                addr = 0x44                               # 0x41 is the PCA9685 (servos)
             try:
                 pca_ = int(str(CFG["pca_address"]), 16)
             except ValueError:
@@ -60782,7 +60785,7 @@ for _k, _v in _HX29.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(("fr", "it", "rm")):
         TRX[_L].setdefault(_k, _v[_i + 1])
-_HX30 = {'Solar panel': ('Solarpanel', 'Panneau solaire', 'Pannello solare', 'Panel solar'), 'Solar panel with current meter (INA219 on I2C)': ('Solarpanel mit Strommesser (INA219 an I2C)', 'Panneau solaire avec mesureur de courant (INA219 sur I2C)', 'Pannello solare con misuratore di corrente (INA219 su I2C)', 'Panel solar cun mesirader da current (INA219 sin I2C)'), 'Push message in the evening when the battery will probably not last until sunrise': ('Push-Nachricht am Abend, wenn der Akku voraussichtlich nicht bis Sonnenaufgang reicht', "Message push le soir si la batterie ne tiendra probablement pas jusqu'au lever du soleil", "Messaggio push la sera se la batteria probabilmente non durerà fino all'alba", "Messadi push la saira, sch'il accu na tanscha probablamain betg fin l'alva"), 'Current meter: shunt resistor (Ohm, usually 0.1)': ('Strommesser: Shunt-Widerstand (Ohm, meist 0,1)', 'Mesureur : résistance shunt (ohm, souvent 0,1)', 'Misuratore: resistenza shunt (ohm, di solito 0,1)', 'Mesirader: resistenza shunt (ohm, savens 0,1)'), 'Current meter: address (I2C)': ('Strommesser: Adresse (I2C)', 'Mesureur : adresse (I2C)', 'Misuratore: indirizzo (I2C)', 'Mesirader: adressa (I2C)'), 'The battery will probably not last until sunrise ({sr}): about {have} h left, {need} h needed. Charge it or switch on power saving.': ('Der Akku reicht voraussichtlich nicht bis Sonnenaufgang ({sr}): noch etwa {have} h, nötig {need} h. Aufladen oder Stromsparen einschalten.', "La batterie ne tiendra probablement pas jusqu'au lever du soleil ({sr}) : environ {have} h restantes, {need} h nécessaires. Rechargez-la ou activez l'économie d'énergie.", "La batteria probabilmente non durerà fino all'alba ({sr}): circa {have} h rimanenti, {need} h necessarie. Ricaricala o attiva il risparmio energetico.", "L'accu na tanscha probablamain betg fin l'alva ({sr}): anc var {have} h, basegn {need} h. Chargiar u activar il spargnar current."), 'Battery': ('Akku', 'Batterie', 'Batteria', 'Accu'), 'lasts until sunrise ({sr})': ('reicht bis Sonnenaufgang ({sr})', "tient jusqu'au lever du soleil ({sr})", "dura fino all'alba ({sr})", "tanscha fin l'alva ({sr})"), 'too little until sunrise ({sr})': ('zu knapp bis Sonnenaufgang ({sr})', "trop juste jusqu'au lever du soleil ({sr})", "troppo poco fino all'alba ({sr})", "memia stretg fin l'alva ({sr})"), 'INA219 current meter between the panel and the charger (address 0x41 or 0x44 - 0x40 is often taken by the servo board).': ('INA219-Strommesser zwischen Panel und Laderegler (Adresse 0x41 oder 0x44 – 0x40 ist oft vom Servo-Board belegt).', 'Mesureur INA219 entre le panneau et le chargeur (adresse 0x41 ou 0x44 – 0x40 est souvent prise par la carte servo).', 'Misuratore INA219 tra il pannello e il caricatore (indirizzo 0x41 o 0x44 – 0x40 è spesso occupato dalla scheda servo).', 'Mesirader INA219 tranter il panel ed il chargiader (adressa 0x41 u 0x44 – 0x40 è savens occupada da la plattina dals servos).'), 'no current meter found at this address': ('kein Strommesser an dieser Adresse gefunden', 'aucun mesureur trouvé à cette adresse', 'nessun misuratore trovato a questo indirizzo', 'nagin mesirader chattà sin questa adressa'), 'today': ('heute', "aujourd'hui", 'oggi', 'oz'), 'max.': ('max.', 'max.', 'max.', 'max.'), 'Battery lasts until sunrise': ('Akku reicht bis Sonnenaufgang', "La batterie tient jusqu'au lever du soleil", "La batteria dura fino all'alba", "L'accu tanscha fin l'alva"), 'Battery probably too low until sunrise': ('Akku reicht voraussichtlich nicht bis Sonnenaufgang', "Batterie probablement insuffisante jusqu'au lever du soleil", "Batteria probabilmente insufficiente fino all'alba", "L'accu na tanscha probablamain betg fin l'alva"), 'Night forecast: needs a battery value (Settings → Battery)': ('Nacht-Prognose: braucht einen Akku-Wert (Einstellungen → Akku)', 'Prévision de nuit : nécessite une valeur de batterie (Réglages → Batterie)', 'Previsione notturna: serve un valore della batteria (Impostazioni → Batteria)', "Prognosa da notg: basegna ina valur da l'accu (Configuraziuns → Accu)")}
+_HX30 = {'Solar panel': ('Solarpanel', 'Panneau solaire', 'Pannello solare', 'Panel solar'), 'Solar panel with current meter (INA219 on I2C)': ('Solarpanel mit Strommesser (INA219 an I2C)', 'Panneau solaire avec mesureur de courant (INA219 sur I2C)', 'Pannello solare con misuratore di corrente (INA219 su I2C)', 'Panel solar cun mesirader da current (INA219 sin I2C)'), 'Push message in the evening when the battery will probably not last until sunrise': ('Push-Nachricht am Abend, wenn der Akku voraussichtlich nicht bis Sonnenaufgang reicht', "Message push le soir si la batterie ne tiendra probablement pas jusqu'au lever du soleil", "Messaggio push la sera se la batteria probabilmente non durerà fino all'alba", "Messadi push la saira, sch'il accu na tanscha probablamain betg fin l'alva"), 'Current meter: shunt resistor (Ohm, usually 0.1)': ('Strommesser: Shunt-Widerstand (Ohm, meist 0,1)', 'Mesureur : résistance shunt (ohm, souvent 0,1)', 'Misuratore: resistenza shunt (ohm, di solito 0,1)', 'Mesirader: resistenza shunt (ohm, savens 0,1)'), 'Current meter: address (I2C)': ('Strommesser: Adresse (I2C)', 'Mesureur : adresse (I2C)', 'Misuratore: indirizzo (I2C)', 'Mesirader: adressa (I2C)'), 'The battery will probably not last until sunrise ({sr}): about {have} h left, {need} h needed. Charge it or switch on power saving.': ('Der Akku reicht voraussichtlich nicht bis Sonnenaufgang ({sr}): noch etwa {have} h, nötig {need} h. Aufladen oder Stromsparen einschalten.', "La batterie ne tiendra probablement pas jusqu'au lever du soleil ({sr}) : environ {have} h restantes, {need} h nécessaires. Rechargez-la ou activez l'économie d'énergie.", "La batteria probabilmente non durerà fino all'alba ({sr}): circa {have} h rimanenti, {need} h necessarie. Ricaricala o attiva il risparmio energetico.", "L'accu na tanscha probablamain betg fin l'alva ({sr}): anc var {have} h, basegn {need} h. Chargiar u activar il spargnar current."), 'Battery': ('Akku', 'Batterie', 'Batteria', 'Accu'), 'lasts until sunrise ({sr})': ('reicht bis Sonnenaufgang ({sr})', "tient jusqu'au lever du soleil ({sr})", "dura fino all'alba ({sr})", "tanscha fin l'alva ({sr})"), 'too little until sunrise ({sr})': ('zu knapp bis Sonnenaufgang ({sr})', "trop juste jusqu'au lever du soleil ({sr})", "troppo poco fino all'alba ({sr})", "memia stretg fin l'alva ({sr})"), 'INA219 current meter between the panel and the charger (address 0x44 - 0x40 is the thermal camera, 0x41 the servo board).': ('INA219-Strommesser zwischen Panel und Laderegler (Adresse 0x44 – 0x40 ist die Wärmebildkamera, 0x41 das Servo-Board).', 'Mesureur INA219 entre le panneau et le chargeur (adresse 0x44 – 0x40 est la caméra thermique, 0x41 la carte servo).', 'Misuratore INA219 tra il pannello e il caricatore (indirizzo 0x44 – 0x40 è la termocamera, 0x41 la scheda servo).', 'Mesirader INA219 tranter il panel ed il chargiader (adressa 0x44 – 0x40 è la camera termica, 0x41 la plattina dals servos).'), 'no current meter found at this address': ('kein Strommesser an dieser Adresse gefunden', 'aucun mesureur trouvé à cette adresse', 'nessun misuratore trovato a questo indirizzo', 'nagin mesirader chattà sin questa adressa'), 'today': ('heute', "aujourd'hui", 'oggi', 'oz'), 'max.': ('max.', 'max.', 'max.', 'max.'), 'Battery lasts until sunrise': ('Akku reicht bis Sonnenaufgang', "La batterie tient jusqu'au lever du soleil", "La batteria dura fino all'alba", "L'accu tanscha fin l'alva"), 'Battery probably too low until sunrise': ('Akku reicht voraussichtlich nicht bis Sonnenaufgang', "Batterie probablement insuffisante jusqu'au lever du soleil", "Batteria probabilmente insufficiente fino all'alba", "L'accu na tanscha probablamain betg fin l'alva"), 'Night forecast: needs a battery value (Settings → Battery)': ('Nacht-Prognose: braucht einen Akku-Wert (Einstellungen → Akku)', 'Prévision de nuit : nécessite une valeur de batterie (Réglages → Batterie)', 'Previsione notturna: serve un valore della batteria (Impostazioni → Batteria)', "Prognosa da notg: basegna ina valur da l'accu (Configuraziuns → Accu)")}
 for _k, _v in _HX30.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(("fr", "it", "rm")):
@@ -73672,6 +73675,69 @@ def ui_more_selftest():
 
 SELFTEST_EXTRA.append(("View shared with the simulator (ui, 639zb)", ui_sync_selftest))
 SELFTEST_EXTRA.append(("«Mehr» in the same order MoveEye ↔ simulator (ui_gemeinsam.json «more», 639zb)", ui_more_selftest))
+# ----------------------------------------------------------------------------
+# Hardware-Klärung 01.11.2026 (Paket «Bauen», Punkt 6):
+#   - Der Solar-Strommesser (INA219) stand ab Werk auf 0x41 = Adresse des PCA9685 (Servos, Lötbrücke A0). Beide zusammen
+#     lesen sich gegenseitig die Register. Doku, Materialliste und Gehäuse sagen 0x44 (INA219 mit Brücke A1 bzw. DIP 0x44).
+#     Neu: Standard 0x44 (020, 280). Alte Einstellungen mit «Solar aus» und derselben Adresse wie der PCA9685 werden einmal
+#     auf eine freie Adresse gesetzt (0x44, sonst 0x45); mit «Solar ein» bleibt alles, wie der Bediener es eingestellt hat.
+#   - Die Konfliktprüfung (030) kennt jetzt auch die Wärmebildkamera (Thermal-90, fest 0x40) und lässt den UPS HAT (E) aus
+#     (eigener Chip auf 0x2D, die Adresse «ups_addr» gilt nur für den INA219 der UPS HATs A / B / C).
+# ----------------------------------------------------------------------------
+_settings_migrations_before_i2c = _settings_migrations
+
+
+def solar_addr_migrate(cfg=None):
+    """«Solar» off and on the address of the servo board: to the first free address of 0x44 / 0x45 (True = changed)"""
+    c = CFG if cfg is None else cfg
+    a = str(c.get("solar_addr", "")).lower()
+    if c.get("solar_on") or a != str(c.get("pca_address", "")).lower():
+        return False
+    used = {str(c.get(k, "")).lower() for k in ("pca_address", "mover_addr", "ups_addr")} | set(I2C_FIXED.values())
+    for cand in ("0x44", "0x45"):
+        if cand not in used:
+            c["solar_addr"] = cand
+            return True
+    return False
+
+
+def _settings_migrations(cfg_in):                         # + 639zh: solar meter away from the address of the PCA9685
+    _settings_migrations_before_i2c(cfg_in)
+    try:
+        old = CFG.get("solar_addr")
+        if solar_addr_migrate():
+            log_event("sys", f"Solar meter (INA219): address {old} is the servo board - set to {CFG['solar_addr']}")
+    except Exception as e:
+        log_event("sys", f"Settings migration (639zh): {e}"[:150])
+
+
+def i2c_adressen_selftest():
+    """standard addresses without a conflict; the thermal camera on 0x40 and the PCA9685 on 0x41 are seen; the migration"""
+    base = {"servo_driver": "pca9685", "pca_address": "0x41", "solar_on": True, "solar_addr": DEFAULTS["solar_addr"],
+            "mover_mode": "auto", "mover_addr": DEFAULTS["mover_addr"], "ups_on": True, "ups_model": "auto",
+            "ups_addr": DEFAULTS["ups_addr"], "thermal_on": True, "thermal_source": "senxor"}
+    assert DEFAULTS["solar_addr"] == "0x44", DEFAULTS["solar_addr"]
+    assert DEFAULTS["solar_addr"] != DEFAULTS["pca_address"], "solar meter on the address of the servo board"
+    assert i2c_conflicts(base) == [], i2c_conflicts(base)
+    cf = i2c_conflicts(dict(base, solar_addr="0x41"))
+    assert cf == [("pca_address", "solar_addr", "0x41")], cf
+    cf = i2c_conflicts(dict(base, solar_addr="0x40"))
+    assert cf == [("_thermal", "solar_addr", "0x40")], cf
+    assert i2c_conflicts(dict(base, solar_addr="0x40", thermal_on=False)) == []
+    assert i2c_conflicts(dict(base, solar_addr="0x42", ups_model="e")) == [], "UPS HAT (E) has no INA219 on 0x42"
+    assert i2c_conflicts(dict(base, solar_addr="0x42"))[0][2] == "0x42"
+    c = dict(base, solar_on=False, solar_addr="0x41")
+    assert solar_addr_migrate(c) and c["solar_addr"] == "0x44", c["solar_addr"]
+    c = dict(base, solar_on=False, solar_addr="0x44", pca_address="0x44")
+    assert solar_addr_migrate(c) and c["solar_addr"] == "0x45", c["solar_addr"]
+    c = dict(base, solar_on=True, solar_addr="0x41")
+    assert not solar_addr_migrate(c) and c["solar_addr"] == "0x41", "switched on: the operator's choice stays"
+    c = dict(base, solar_on=False, solar_addr="0x45")
+    assert not solar_addr_migrate(c)
+    return "thermal 0x40 · PCA9685 0x41 · solar INA219 0x44 · UPS INA219 0x42 / UPS HAT (E) 0x2D · mover 0x60: no conflict"
+
+
+SELFTEST_EXTRA.append(("I2C addresses: no conflict with the standard values (639zh)", i2c_adressen_selftest))
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--cam", type=int, default=None, help="USB camera number (same as --source usb:N)")
