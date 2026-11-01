@@ -1,22 +1,39 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-01 11:37",
+ "generated": "2026-11-01 11:43",
  "versions": [
+  {
+   "version": "3.33.0",
+   "file": "webcam_bewegung_3_33_0.py",
+   "url": "",
+   "sha256": "173ae8ae90d0cb3af9a5bee9ec11ecdd331b67b68cc2f73278ea229b615e4c35",
+   "date": "2026-11-01 11:43",
+   "notes": "Hilfe zu jedem Fehler: Fehler-Katalog (27 Fehler, 5 Sprachen), Seite /hilfe/fehler, Knopf «Jetzt beheben» (nur Besitzer) und QR-Code in Selbstdiagnose, Fenster, SmallTV, TV und Push; im Simulator ebenso.",
+   "size": 4647515,
+   "sig": "db3afe1018bf288832807c4c70ed97b0ca5f3ea7733cc1117b6783dfd160e110e6cb2433c38905086f3c6f038a565a5834a0739ca4bb6f786efe9da5f9afd904",
+   "data": {
+    "file": "moveeye_daten_3_33_0.zip",
+    "url": "",
+    "sha256": "76dc5fe13587acd59fec63cd12cb7c91ed93112b96713f6e15887cf567ef42ff",
+    "size": 1567246,
+    "sig": "26948a205ca26c308a73374be98a0bd2a26e6d32a7e00910d6072209b4e4117b90f558bd23393362a83b87d5b5a62243d8307b00610c3b33e73d099d5b58e307"
+   }
+  },
   {
    "version": "3.32.0",
    "file": "webcam_bewegung_3_32_0.py",
    "url": "",
-   "sha256": "fd26670b55526749475f00fa04a12d4c368c41c9ffca2f187beabf9c231bc06b",
-   "date": "2026-11-01 11:37",
+   "sha256": "ac35fd81c625f0700a54206014dc66a3d32cdc4bfd1c83386454e07b55a44b98",
+   "date": "2026-11-01 11:40",
    "notes": "Ruhiges Bild statt Schwarz, wenn der Simulator startet, sich aktualisiert, einen Ort lädt oder nicht erreichbar ist (mit Blinki, nach 3 Min. ein Hinweis); echte Kamera: klarere Fehlermeldung.",
-   "size": 4552494,
-   "sig": "5a35733467bd79a0ab1c0f3d5d6f393398434ed10bceda7eac8fa275593e32f97322000b781c80ecf1586e696946256ffbdd63b4afc3c911148a87f72014c60e",
+   "size": 4647212,
+   "sig": "8e9f6092742278895b8bb9e59144413eecc7e9bec8b3fa3889d98ace49e3c50b9e7fe2dbf4b8989e5c72e95efde606bdce4e7cd3c79cc6b883560fb38d1a3609",
    "data": {
     "file": "moveeye_daten_3_32_0.zip",
     "url": "",
-    "sha256": "4534f67bd914b13671ebb831a419a4bb13a436f8b0f6dfdc9e30a3e20b07ebc8",
-    "size": 1566883,
-    "sig": "53ba347a8c4afce5245003c343b03fca2f90c29e9cd81f6481046ab010e78cabc989ad5b61e4968e8eb13f6ded5f81948d0e33de765fc868dbcbb0b12230be0a"
+    "sha256": "d03eba7055bff2176a7dd9a51cbcfb5904df3b4a69e40a45c0316d39473c15e4",
+    "size": 1567077,
+    "sig": "a8d42a036a386c247b3afc41af2feac0cb5d40a6382f1e54e17fe7f39ecf560d2def518175c394952606d11bb6b2ab16fbe5b7ff5107c6ca5e7aadc6d161f00a"
    }
   },
   {
@@ -58,7 +75,7 @@
    "file": "webcam_bewegung_3_29_0.py",
    "url": "",
    "sha256": "62f00005d536c7a2111d73c627c911d2dfff478d9675468952ad5ed5b7f9ed48",
-   "date": "2026-11-01 11:36",
+   "date": "2026-11-01 11:39",
    "notes": "Simulator: Fenster docken automatisch in Leisten links/rechts an (ohne Überlappung, passt sich der Bildschirmgrösse an, «Neu anordnen»); Karte, Kompass, SmallTV und CPU als Reiter in einem Fenster; Entwickler immer vorne, klein/mittel/gross und einklappbar.",
    "size": 4481992,
    "sig": "cc70cbf48db570a684b681b77ed28d3721e94de0d3d0e262f4d74b94fdf8c05c79ad0325dfa4c386c6ae2887184a977ab9149a3d729cd8e16b39df2ccd954405",
@@ -136,23 +153,6 @@
     "sha256": "8feaf9634c17238566f1b59599797bc65828d2ad8b435c62b3452d9433477ff1",
     "size": 1632683,
     "sig": "efc8f4974a55bd56adc7ee72b77aaf6fe8309207aa5b0e8331dd7c7d82f5361d484598ed87f70fad4482c90db5da097013f8a678e5f38bfbd0ede1ca5ddd110d"
-   }
-  },
-  {
-   "version": "3.24.0",
-   "file": "webcam_bewegung_3_24_0.py",
-   "url": "",
-   "sha256": "60ec46427a80f83fa04541750499394c9a106d1fca7fa440a7a10d3a24c4f3a9",
-   "date": "2026-11-01 01:23",
-   "notes": "Sicherheit: Test-Postfach, eigene Sim-Einstellungen und Anmelden nur über https immer an (Schalter entfernt); unsignierte Versionen nur noch im Entwickler-Bereich (24 h).",
-   "size": 4465349,
-   "sig": "fcd0edf5da4f357f17ae40067d7a2010db83c8bcf0df20ac020c4263ddb25837b499d4c04e02c7eec5d7dddefa3a408bd1b071bfb2be44675dc7b5f30cec200d",
-   "data": {
-    "file": "moveeye_daten_3_24_0.zip",
-    "url": "",
-    "sha256": "eb9abc8d988c09b9bcdad2ff08753c8aa699db85ba0ad7af4ed9681390110c9c",
-    "size": 1630180,
-    "sig": "631a057b1603c1a3b78980ce521b1611f10b0ad6b27b0283589c6c79612a68c11342359639493473932fb785cbb1ea7fc7854db2382813c1cef139a8f1d17e0e"
    }
   },
   {

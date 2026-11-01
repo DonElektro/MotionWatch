@@ -323,6 +323,7 @@ function paint() {
     if ((P.players || []).length) h += players(P.players);
   } else {
     h += '<h1>' + esc(d.state || "") + '</h1><div class="idle">' + esc(d.t_idle) + '</div>';
+    if (d.fehler && d.fehler.qr) h += '<div class="qr" style="border:2px solid var(--red);border-radius:1.4vh;padding:1.2vh 1vw"><div class="q" style="flex:none">' + d.fehler.qr + '</div><div class="t"><b>⚠ ' + esc(d.fehler.title) + '</b><br>' + esc(d.fehler.text) + '<br><small>' + esc(d.fehler.t_scan) + '</small><div class="u">' + esc(d.fehler.url) + '</div></div></div>';
     if (d.tip) h += '<div style="margin-top:2vh;border:1px solid var(--line);border-radius:1.4vh;padding:1.6vh 1.4vw"><h2>🌙 ' + esc(d.t_tip) + '</h2><div style="font-size:2.8vh;font-weight:700;margin:.6vh 0">' + esc(d.tip.title) + '</div><div class="idle">' + esc(d.tip.text) + '</div></div>';
     if (d.info && d.info.qr) h += '<div class="qr"><div class="q">' + d.info.qr + '</div><div class="t">' + esc(d.t_info) + '<div class="u">' + esc(d.info.url) + '</div></div></div>';
     if ((d.events || []).length) h += '<div class="feed">' + d.events.map(x => '<div>• ' + esc(x) + '</div>').join("") + '</div>';

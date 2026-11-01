@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.32.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.33.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -446,6 +446,11 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.33.0
+3.33.0: Hilfe zu jedem Fehler: in der Selbstdiagnose steht neben jeder Fehlermeldung ein Knopf «Beheben» und ein QR-Code
+fürs Handy (Hilfe-Seite in MoveEye); Aktionen: neu verbinden, Neustart, Notfall-Start. Ein gemeinsamer Katalog mit MoveEye.
+So testest du: MoveEye beenden, im Simulator die Selbstdiagnose öffnen, «Beheben» drücken bzw. den QR-Code mit dem Handy scannen.
 
 NEU IN 3.32.0
 3.32.0: Ruhiges Bild statt Schwarz: beim Start (Startbild), während eines Updates und beim Laden eines Orts zeigt der Simulator
