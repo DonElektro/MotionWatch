@@ -74,7 +74,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_3_41_0.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_3_41_1.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -650,6 +650,8 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 3.41.1: Fix: Solar-Strommesser (INA219) ab Werk auf 0x44 statt 0x41 (kollidierte mit dem Servo-Treiber), Shunt 0,01 Ω
+    passend zum Gravity-Modul; Bau-Infos ergänzt (Step-Down ab Akku, 3. MOSFET, Schrauben, Lade-LED an GPIO 6).
   * 3.41.0: Im Fenster «Neu in …» führt bei jeder Neuerung ein kleiner Link direkt zur Funktion (MoveEye und Simulator);
     Schalter «Links zu Neuerungen» im Entwickler-Bereich.
   * 3.40.0: Bauen: MoveEye komplett selbst bauen – ein Menüeintrag in MoveEye und Simulator, 10 Reiter, 3D im Browser auch ohne
@@ -1265,10 +1267,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_3_41_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_3_41_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_3_41_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_3_41_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_3_41_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_3_41_1.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)

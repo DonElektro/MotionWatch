@@ -604,15 +604,17 @@ def _http_ok(u):
     return True
 
 
-I2C_KEYS = {"pca_address": "servo board (PCA9685)", "solar_addr": "solar meter (INA219)", "mover_addr": "motor driver (mover)",
-            "ups_addr": "UPS HAT"}
+I2C_KEYS = {"_thermal": "thermal camera", "pca_address": "servo board (PCA9685)", "solar_addr": "solar meter (INA219)",
+            "mover_addr": "motor driver (mover)", "ups_addr": "UPS HAT"}
+I2C_FIXED = {"_thermal": "0x40"}                           # 01.11.2026: Thermal-90 (SenXor) is always on 0x40 (not a setting)
 
 
 def _i2c_active(key, cfg=None):
     c = cfg or CFG
     pca_on = c.get("servo_driver") == "pca9685" or (c.get("servo_driver") == "auto" and str(STATE.get("servo_backend", "")).startswith("pca9685"))
-    return {"pca_address": pca_on, "solar_addr": bool(c.get("solar_on")),
-            "mover_addr": c.get("mover_mode") != "off", "ups_addr": bool(c.get("ups_on"))}.get(key, False)
+    return {"_thermal": bool(c.get("thermal_on")) and str(c.get("thermal_source", "")).startswith("senxor"),
+            "pca_address": pca_on, "solar_addr": bool(c.get("solar_on")), "mover_addr": c.get("mover_mode") != "off",
+            "ups_addr": bool(c.get("ups_on")) and c.get("ups_model") != "e"}.get(key, False)   # UPS HAT (E): own chip on 0x2D
 
 
 def i2c_conflicts(cfg=None):
@@ -621,7 +623,7 @@ def i2c_conflicts(cfg=None):
     for k in I2C_KEYS:
         if not _i2c_active(k, c):
             continue
-        a = str(c.get(k, "")).lower()
+        a = I2C_FIXED.get(k) or str(c.get(k, "")).lower()
         if a in seen:
             out.append((seen[a], k, a))
         else:
