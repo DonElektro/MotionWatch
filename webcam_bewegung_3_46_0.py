@@ -59,7 +59,7 @@ Features
     Bedienermodus mit MoveEye-PIN; Diagnose gegenseitig.
   * 3.38.0: Simulator: System → Sicherung – ZIP auf dem PC, in einen Ordner/USB oder in die MoveEye-Sicherung; Wiederherstellen
     im Simulator oder aus MoveEye (nur Besitzer), vorher wird automatisch der aktuelle Stand gesichert.
-  * 3.37.0: Foto-Texturen aus Daniels Fotos im Bergtal: Wiese, Alpweide, Alpenrosen, Geröll, Fels, Strasse (abschaltbar; Lite
+  * 3.37.0: Foto-Texturen aus Besitzers Fotos im Bergtal: Wiese, Alpweide, Alpenrosen, Geröll, Fels, Strasse (abschaltbar; Lite
     unverändert).
   * 3.36.0: Simulator: menschlichere Figuren – ab Grafik mittel MakeHuman-Körper aus dem nachladbaren Menschen-Paket (~5 MB),
     einfach (Pi) mit feinerem Körper und Gesicht; Kleidung, Rucksack, Stöcke und Lampen passend zur Szene.
@@ -229,7 +229,7 @@ def prepare_settings_file():
     return msg
 
 # ----------------------------------------------------------------------------
-# Zusatzdaten (Paket «MoveEye-Datei verkleinern», Entscheid Daniel 31.10.2026): devices up to 2.98.x accept program files of
+# Zusatzdaten (Paket «MoveEye-Datei verkleinern», Entscheid Besitzer 31.10.2026): devices up to 2.98.x accept program files of
 # at most 8 MiB. werkzeuge/bauen.py therefore moves the big literals of quelle/ (web pages, JavaScript, icons as base64,
 # translations, the older part of the list of changes) into moveeye_daten_X_Y_Z.zip next to the program file and writes
 # _zd("<key>", <fallback>) in their place. The sources in quelle/ stay unchanged; only the built file differs.
@@ -241,7 +241,7 @@ def prepare_settings_file():
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
 ZD_FILE = "moveeye_daten_3_46_0.zip"
-ZD_SHA256 = "e4cd823f4d752c3ad51751cc6340fe267feea3ec0beb2fa2ec9e06611381b540"
+ZD_SHA256 = "773b344be41ad11fce2cf060a5429ea1975ec5ff3fba051766bd95fb906f1af9"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -648,7 +648,7 @@ FREE_GPIOS = (23, 24, 25, 5, 6, 12, 13, 16, 26, 4, 22, 18, 19, 20, 21)
 
 def default_relays():
     """Relay 1 = the original alarm relay on GPIO 22 (switches while a person is detected, once switched to «auto»).
-    3.44.3 (variants without a relay, Daniel 01.11.2026): off from the factory - a fresh device never switches GPIO 22 into the
+    3.44.3 (variants without a relay, Besitzer 01.11.2026): off from the factory - a fresh device never switches GPIO 22 into the
     void (or into whatever else hangs there). Who has a warning lamp on it switches it to «auto» once (Settings → Relays)."""
     return [{"name": "Relay 1", "gpio": GPIO_RELAY, "mode": "off", "trigger": "person", "hold": 5.0, "active_low": False}]
 
@@ -1918,7 +1918,7 @@ def pw_check(pw, stored=None):
     return ok
 
 
-# 2.98.42 (Daniel): roles = presets of rights; «custom» = own choice of rights. Old roles: «operate» → «family», «view» stays.
+# 2.98.42 (Besitzer): roles = presets of rights; «custom» = own choice of rights. Old roles: «operate» → «family», «view» stays.
 USER_ROLES = ("kid", "friend", "family", "view", "custom")
 USER_PERMS = ("live", "rec", "arm", "light", "siren", "games", "talk", "head", "settings")
 ROLE_PERMS = {"kid": ("live", "games"), "friend": ("live", "games", "talk", "light"),
@@ -2333,14 +2333,14 @@ def apply_settings(data):
     CFG["ui_open"] = [k for k in CFG["ui_open"] if isinstance(k, str)][:100]
     CFG["qs_layout"] = qs_layout_clean(CFG["qs_layout"])   # 2.98.29: also favourites and cards (290)
     CFG["web_ui"] = clean_web_ui(CFG["web_ui"])
-    if not CFG.get("dev_phase_done"):                  # 2.96.2: Daniel is in the development phase - fast updates on (once)
+    if not CFG.get("dev_phase_done"):                  # 2.96.2: Besitzer is in the development phase - fast updates on (once)
         CFG["dev_phase_done"] = True
         CFG["update_mode"] = "dev"                    # 3.23: was update_fast (639q)
     if not CFG.get("app_icon_moveeye_done"):          # 2.96.0: the new name MoveEye and its symbol for everybody (once)
         CFG["app_icon_moveeye_done"] = True
         CFG["app_icon_orange_done"] = True
         CFG["app_icon"] = "moveeye"
-    if not CFG.get("app_icon_orange_done"):            # 2.95.100: Daniel wants the orange MoveEye symbol everywhere (once)
+    if not CFG.get("app_icon_orange_done"):            # 2.95.100: Besitzer wants the orange MoveEye symbol everywhere (once)
         CFG["app_icon_orange_done"] = True
         if CFG.get("app_icon") in ("radar", "", None):
             CFG["app_icon"] = "classic"
@@ -2484,7 +2484,7 @@ def save_settings():
 
 
 # ----------------------------------------------------------------------------
-# Wunsch Daniel (30.10.2026): feste Personen statt nur Gastlink.
+# Wunsch Besitzer (30.10.2026): feste Personen statt nur Gastlink.
 #   * Rollen = Vorlagen von Rechten (040: USER_PERMS / ROLE_PERMS): Kind · Freund · Familie · Nur ansehen · Eigene Rechte.
 #     Der Server prüft jedes Recht (role_allows, 040); die Seite blendet aus, was nicht erlaubt ist (users_ui_css unten).
 #   * Zeitfenster (z. B. Kind täglich 08–20) und Ablaufdatum (Freund): ausserhalb nur eine freundliche Seite
@@ -4543,7 +4543,7 @@ class Notifier:
 
 
 # ----------------------------------------------------------------------------
-# 2.98.13 (Wunsch Daniel): ein eigenes Menü «Nachrichten» (Reiter Verlauf): was MoveEye an das Handy geschickt hat – mit Bild,
+# 2.98.13 (Wunsch Besitzer): ein eigenes Menü «Nachrichten» (Reiter Verlauf): was MoveEye an das Handy geschickt hat – mit Bild,
 # Zeit, Art und ob es angekommen ist (gesendet / fehlgeschlagen / Test-Postfach). Zusätzlich: die Nachrichten des ntfy-Themas
 # direkt vom ntfy-Server holen (auch die von anderen Geräten im selben Thema). Die Adresse des Themas bleibt auf dem Pi –
 # die Webseite bekommt nur die Nachrichten, nie die Adresse.
@@ -4677,7 +4677,7 @@ def ntfy_server_messages(since="24h"):
     out.sort(key=lambda x: -x["t"])
     return out[:300], ""
 # ----------------------------------------------------------------------------
-# Wunsch Daniel (29.10.2026):
+# Wunsch Besitzer (29.10.2026):
 #  1  Knöpfe in der Push-Nachricht (ntfy «Actions», Telegram: Link-Knöpfe): «Fehlalarm», «Sirene», «Aus». Jede Nachricht hat
 #     ihren eigenen Schlüssel (zufällig, 1 h gültig, jeder Knopf nur einmal) – kein Passwort in der Adresse. Adresse /na/<schlüssel>/<knopf>.
 #  2  Akku-Prognose beim Einschalten («Akku reicht bis 06:40 bei Wachsam») – Schutz-Seite, Fenster, Antwort / Meldung beim Einschalten.
@@ -5383,7 +5383,7 @@ def alx_tk_zones(app, parent):
 # ---- the web part of «Was war das?» (Live page and Verlauf → Nachrichten) ------------------------------------------------
 ALX_WHAT_JS = _zd('066_alarm_extras/ALX_WHAT_JS', "")
 # ----------------------------------------------------------------------------
-# Memory card protection (Daniel, 29.10.2026): on camp sites the power goes off without warning and a memory card that is
+# Memory card protection (Besitzer, 29.10.2026): on camp sites the power goes off without warning and a memory card that is
 # written all day wears out. Here, without root rights and without extra writes worth mentioning:
 #  * how much is written to the card per day (sectors written from /sys/block/<card>/stat, all partitions together;
 #    the day totals go into <data>/sdcard_wear.json at most once an hour),
@@ -5649,7 +5649,7 @@ def sdcard_health_item(L):
     return {"id": "sdwear", "icon": "🪪", "title": T("Memory card health"), "level": level, "text": " · ".join(parts), "tip": T(tip) if tip else "",
             "link": "/help#sdcard"}
 # ----------------------------------------------------------------------------
-# nach 2.98.17 (Wunsch Daniel, Prüfstand 2): der Prüfstand zählt nicht mehr jedes Aufflackern der Personen-Erkennung als Fehlalarm,
+# nach 2.98.17 (Wunsch Besitzer, Prüfstand 2): der Prüfstand zählt nicht mehr jedes Aufflackern der Personen-Erkennung als Fehlalarm,
 # sondern die Push-Nachrichten, die MoveEye wirklich verschickt (im Test-Postfach der Simulation). Der Simulator bekommt dafür
 # mit jedem Zustand (290, «det») die letzten paar Nachrichten der Liste «Nachrichten» (065): Kennung, Zeit, Art – ohne Text,
 # ohne Bild, ohne Adresse. Er ordnet jede neue Nachricht dem Besucher zu, der in dem Moment sichtbar war (testrun.gd).
@@ -6086,7 +6086,7 @@ def thermal_gpios():
 
 
 # ----------------------------------------------------------------------------
-# 2.98.35 (Wunsch Daniel, «industriell»): ONE motion planner for pan / tilt. Everybody (joystick, buttons, coordinator 162,
+# 2.98.35 (Wunsch Besitzer, «industriell»): ONE motion planner for pan / tilt. Everybody (joystick, buttons, coordinator 162,
 #   patrol 160, reference scan 315, place scan 317, timelapse, wake-up alarm, tracking 410 …) still writes the WANTED
 #   position into CFG["pan"] / CFG["tilt"] (0..100 %). The servo loop (Hardware.loop, part 080, 50 Hz) calls servo_plan_tick():
 #   it drives the REAL position SRV["pos"] there with a trapezoid profile per axis (max. speed and acceleration in °/s and
@@ -6431,7 +6431,7 @@ def servo_outputs_off():
 
 
 # ---- who steers the head (several «panels»: phones, PCs, the window, the controller, the simulator) --------------------
-# Lesson from robotics (Daniel): never start the wrong robot from the wrong panel. Every manual command notes its panel;
+# Lesson from robotics (Besitzer): never start the wrong robot from the wrong panel. Every manual command notes its panel;
 # all clients show «the head is steered by …» and a short notice when another panel takes it (state polling, no extra
 # connection). key = an anonymous short id of the panel (address + browser), label = what people read.
 def servo_driver_note(who, what=""):
@@ -6634,7 +6634,7 @@ def servo_state(lang=None):
             "target": [round(float(CFG["pan"]), 2), round(float(CFG["tilt"]), 2)], "moving": SRV["moving"],
             "blocked": servo_blocked(), "text": servo_blocked_text(lang), "estop": bool(CFG.get("servo_estop")),
             "estop_by": CFG.get("servo_estop_by") or "", "fault": SRV["fault"], "inhibit": SRV["inhibit"],
-            # 2.98.43 (Daniel): «⏹ Stopp» on the live page only with a head and when not switched off
+            # 2.98.43 (Besitzer): «⏹ Stopp» on the live page only with a head and when not switched off
             "stop_btn": bool(CFG.get("servo_stop_btn", True)) and bool(globals().get("live_has_head", lambda: True)()),
             "limits": [[round(plo, 1), round(phi, 1)], [round(tlo, 1), round(thi, 1)]],
             "limits_deg": [float(CFG["pan_limit"]), float(CFG["tilt_limit"])],
@@ -6683,7 +6683,7 @@ def servo_planner_selftest():
         CFG["pan_limit"], CFG["tilt_limit"] = keep
     return "trapezoid: no overshoot, limited, exact landing, synchronised, limits"
 # ----------------------------------------------------------------------------
-# 2.98.35 (Wunsch Daniel): the planner (072) counts per axis: degrees travelled, seconds moving, number of moves; the servo
+# 2.98.35 (Wunsch Besitzer): the planner (072) counts per axis: degrees travelled, seconds moving, number of moves; the servo
 #   loop counts the operating time. Real servos («hw») and the simulation («sim») are counted apart - the maintenance
 #   hints only use the real ones. Fault memory (Fehlerspeicher): I2C errors, the PCA9685 lost its settings (brown-out),
 #   no driver, limit hits, under-voltage, temperature, throttling, watchdog, Not-Aus / release - the same code within
@@ -6942,7 +6942,7 @@ def servo_diag_selftest():
         SVD["d"] = keep; SVD["dirty"] = False
     return "fault memory (counted up), maintenance hints, CSV export"
 # ----------------------------------------------------------------------------
-# 2.98.35 (Wunsch Daniel): no new list - the taught points ARE the waypoints (WAYPOINTS, part 020, saved with the
+# 2.98.35 (Wunsch Besitzer): no new list - the taught points ARE the waypoints (WAYPOINTS, part 020, saved with the
 #   settings). An entry is [pan %, tilt %] (as before, also «📍＋ Wegpunkt», Platz einrichten 317, Aufstell-Planer) or
 #   [pan %, tilt %, "name"] or [pan %, tilt %, "name", 0] (0 = not in the round). Everything that reads w[0] / w[1] works
 #   unchanged (patrol, smart round 162, simulator twin 290, the stick drawing on the web page and in the window).
@@ -7224,7 +7224,7 @@ class SenxorSource:
 
 
 HW_REINIT = {"want": False}
-# 3.44.3 (variants without a head, Daniel 01.11.2026): «automatic» without a PCA9685 falls back to servos on GPIO 17/27. A
+# 3.44.3 (variants without a head, Besitzer 01.11.2026): «automatic» without a PCA9685 falls back to servos on GPIO 17/27. A
 #   hobby servo gives no feedback - nobody can tell whether one hangs there. The self-check says so honestly (a hint, not a
 #   green tick: a housing v5.x has a PCA9685, so it is missing or not answering); chosen «GPIO» by hand stays «ok».
 SERVO_GPIO_FALLBACK_TEXT = "no servo driver found - GPIO fallback (17 / 27) without feedback"
@@ -8454,7 +8454,7 @@ class SysMonitor:
 
 
 # ----------------------------------------------------------------------------
-# 2.98.13 (Wunsch Daniel): the battery gets low (below batt_save_pct, default 25 %) - MoveEye saves by itself:
+# 2.98.13 (Wunsch Besitzer): the battery gets low (below batt_save_pct, default 25 %) - MoveEye saves by itself:
 #   - the power saving (eco_on, part 410 _eco) is switched on, if it was off (and off again afterwards),
 #   - at most batt_save_fps pictures per second also while something moves (twice that while a person is seen),
 #   - the AI looks only half as often (ai_every x 2, the pause between two AI runs x 2).
@@ -10640,7 +10640,7 @@ def _camping_overlay(on, hotspot_delay=2.0):
 
 
 # ----------------------------------------------------------------------------
-# 2.98.14 (Konzept, Wunsch Daniel): EIN Ort entscheidet, was das Gerät tut - der Modus (130). Der Einsatzzweck (use_case)
+# 2.98.14 (Konzept, Wunsch Besitzer): EIN Ort entscheidet, was das Gerät tut - der Modus (130). Der Einsatzzweck (use_case)
 # entscheidet nur, was angezeigt wird. Der Modus «Nachtwache» ist weg («Heute Nacht bewachen» macht das für eine Nacht),
 # das Camping-Profil ist der Modus «Camping». Hier werden Einstellungen älterer Versionen beim Laden umgestellt, ohne dass
 # sich am Verhalten des Geräts etwas ändert (Schutz bleibt, wie er ist; nichts wird ein- oder ausgeschaltet):
@@ -10985,12 +10985,12 @@ def _protect_test_run(L):
 
 
 # ----------------------------------------------------------------------------
-# 2.96.3 (Wunsch Daniel, während dem grossen Makeover): nach jedem Update erscheint am PC einmal eine kurze Info - was neu ist
+# 2.96.3 (Wunsch Besitzer, während dem grossen Makeover): nach jedem Update erscheint am PC einmal eine kurze Info - was neu ist
 # (aus der Änderungsliste am Dateianfang, alle Versionen seit der zuletzt gesehenen) und was als Nächstes kommt
 # (MAKEOVER_NEXT, wird bei jeder Makeover-Version nachgeführt). Web und Fenster merken sich getrennt, was gesehen wurde
 # (news_seen_web / news_seen_tk). Abschaltbar mit «news_popup».
 # ----------------------------------------------------------------------------
-# the makeover list (Daniel, 28.10.2026): number, title - what is still to come (done ones are taken out)
+# the makeover list (Besitzer, 28.10.2026): number, title - what is still to come (done ones are taken out)
 MAKEOVER_ALL = [
     (1, "Ein gemeinsames Erscheinungsbild (Web, Fenster, Simulator)"), (2, "Simulations-Modus sichtbar (oranger Streifen «SIMULATION»)"),
     (3, "Startseite mit Simulator-Kachel"), (4, "Kachel-Steuerung des Simulators auf dem Handy"), (5, "Kino-Modus (Vollbild für TV / Beamer)"),
@@ -11031,7 +11031,7 @@ def news_next(n=5):
     return [{"n": k, "t": t} for k, t in MAKEOVER_ALL if k not in MAKEOVER_DONE][:n]
 
 
-# ---- Links zu Neuerungen (Wunsch Daniel, 01.11.2026) ------------------------------------------------------------------------
+# ---- Links zu Neuerungen (Wunsch Besitzer, 01.11.2026) ------------------------------------------------------------------------
 # Bei jeder Neuerung ein kleiner Link, der direkt zur Funktion springt. Die Ziele stehen für beide Programme in
 # simulator3d/ui_gemeinsam.json «neu_ziele» (Version -> {seite, anker, einstellung, sim_einstellung, sim_menue, sim_aktion}).
 # Schalter «Links zu Neuerungen» (news_links auto | on | off, Entwickler-Bereich, Teil 639zc, mit dem Simulator geteilt);
@@ -12802,14 +12802,14 @@ def learn_state():
             "rehearsal_on_arm": bool(CFG.get("rehearsal_on_arm")), "fa_learn_auto": bool(CFG.get("fa_learn_auto")),
             "points": points_state(), "facheck": facheck_state()}
 # ----------------------------------------------------------------------------
-# 2.96.11 (Wunsch Daniel): in der Kopfzeile statt App-Symbol + «MoveEye» der Schriftzug - breit W6 (eine Zeile, «Move» hell,
+# 2.96.11 (Wunsch Besitzer): in der Kopfzeile statt App-Symbol + «MoveEye» der Schriftzug - breit W6 (eine Zeile, «Move» hell,
 # «Eye» orange, das «o» ist das Auge, darüber der Sichtfächer mit der erkannten Person), schmal (Handy) W1 (untereinander,
-# wie Daniels Skizze). Die Buchstaben sind Pfade (Liberation Sans Bold, SIL OFL) - überall gleich, ohne Schriftart.
+# wie Besitzers Skizze). Die Buchstaben sind Pfade (Liberation Sans Bold, SIL OFL) - überall gleich, ohne Schriftart.
 # Erzeugt mit werkzeuge/schriftzug_erzeugen.py. Abschaltbar: «header_wordmark».
 # ----------------------------------------------------------------------------
 WORDMARK_W6 = _zd('144_logo_schriftzug/WORDMARK_W6', "")
 WORDMARK_W1 = _zd('144_logo_schriftzug/WORDMARK_W1', "")
-LOGO_RED = "#e0242b"          # 2.98.9 (wish of Daniel): the person in the logo is a red silhouette and walks to and fro
+LOGO_RED = "#e0242b"          # 2.98.9 (wish of Besitzer): the person in the logo is a red silhouette and walks to and fro
 PUPIL_X, PUPIL_UP = 4.6, 2.0  # 2.98.52: how far the pupil looks to the side / up (free room in the ring: about 6, so 5 + margin)
 
 
@@ -12833,7 +12833,7 @@ def _wm_walk(svg):
     cone = m.group(0).replace("<path ", '<path class="wmc" style="transform-origin:%.1fpx %.1fpx;--wa:%.1fdeg" ' % (ex, ey, ang), 1)
     out = svg.replace(m.group(0), cone, 1)
     out = out.replace(f.group(0) + b.group(0), '<g class="wmw" style="--wx:%.1fpx">' % amp + person + b.group(0) + "</g>", 1)
-    # 2.98.52 (Daniel): the pupil looks at the person (same 7 s curve as the walk: x in proportion to the person's x, a little
+    # 2.98.52 (Besitzer): the pupil looks at the person (same 7 s curve as the walk: x in proportion to the person's x, a little
     # up because the person walks above the eye; at most 4.6 to the side, always inside the ring) and the eye blinks now and then
     e = re.search(r'(<circle cx="([\d.]+)" cy="([\d.]+)" r="[\d.]+" fill="none" stroke="#ff9f43" stroke-width="[\d.]+"/>)<circle ([^>]*fill="currentColor"/>)', out)
     if e:
@@ -12877,7 +12877,7 @@ def wordmark_h1(m):
     tag = tag[:-1] + (' class="wm"' if "class=" not in tag else "") + ">"
     return tag + WORDMARK_W6 + WORDMARK_W1
 # ----------------------------------------------------------------------------
-# Self-healing (Daniel, 29.10.2026). A watchdog thread looks every 15 s:
+# Self-healing (Besitzer, 29.10.2026). A watchdog thread looks every 15 s:
 #  * camera loop: no sign of life (HEART) for 90 s - the loop hangs inside a camera call. Or the source says «connected»,
 #    the loop runs, but no new frame came for 150 s. The reconnect of the camera loop (410: read_failures / _good_t) acts
 #    after ~6 s; the watchdog only steps in when that did not help for minutes, so the two never fight.
@@ -13232,7 +13232,7 @@ def real_look():
         threading.Thread(target=run, daemon=True, name="reallook").start()
     return REAL_LOOK["v"] or None
 # ----------------------------------------------------------------------------
-# 2.98.13 (Daniel, 29.10.2026): MoveEye had simtask_busy (141), the simulator busy_with (main.gd). Now they know each other:
+# 2.98.13 (Besitzer, 29.10.2026): MoveEye had simtask_busy (141), the simulator busy_with (main.gd). Now they know each other:
 #  * MoveEye asks the simulator every 3 s ({"action": "busy"} -> busy_with("")). A test run, the test bench, training
 #    pictures, blind spots … started in the simulator window lock MoveEye's own starts with the same message
 #    «The simulator is busy: …» (simtask_busy in 141 asks sim_busy_remote()).
@@ -14617,7 +14617,7 @@ class NetAuto:
 # Patrol: pendulum over waypoints  (1-2-3-2-1-2-3 ...)
 # 2.98.30: «kluge Runde» - the stops come from kopf_patrol_plan() (part 162): the places of «Platz einrichten» with a
 # longer stay at the tent and the access, hardly a stop at ignored directions; without places the waypoints. It runs only
-# when «Patrouille» is on (aufr, decision Daniel - before also by itself in Wachsam / Voll), pauses while following and gives way to every
+# when «Patrouille» is on (aufr, decision Besitzer - before also by itself in Wachsam / Voll), pauses while following and gives way to every
 # mover with a higher rank (kopf_may). Battery low / deep night: it stays at the most important direction.
 # ----------------------------------------------------------------------------
 class Patrol:
@@ -14680,7 +14680,7 @@ class Patrol:
                 if not self._go_on() or len(plan) == 1:
                     break
 # ----------------------------------------------------------------------------
-# 2.98.30 (Wunsch Daniel): the pan / tilt head moves by itself - but always only ONE mover at a time. Who may move it:
+# 2.98.30 (Wunsch Besitzer): the pan / tilt head moves by itself - but always only ONE mover at a time. Who may move it:
 #   1. by hand (joystick, buttons, reference scan, timelapse, wake-up alarm - servo_hold())
 #   2. alarm / follow (410 follows a person or movement; «turn to the alarm» in Voll; the sabotage look-around)
 #   3. walk test (the head follows the walker, 415)
@@ -14841,7 +14841,7 @@ def light_alarm():                                   # wildlife: the light stays
 
 
 def kopf_game_hand():
-    """aufr (decision Daniel): a round of «Team gegen MoveEye» runs in the simulator (countdown / play) - the players at
+    """aufr (decision Besitzer): a round of «Team gegen MoveEye» runs in the simulator (countdown / play) - the players at
     MoveEye steer the head, so MoveEye does not follow and moves the head by itself only after the round (nothing is
     switched off: «Folgen» is on again by itself afterwards). From the game state of the simulator (SIMGAME, 340)."""
     if not CFG.get("sim_on"):
@@ -14923,7 +14923,7 @@ def kopf_move(pan, tilt, who, speed=None, stop=None):
 # ---- the round (called by the patrol, part 160) ----------------------------------------------------------------------
 def kopf_patrol_plan():
     """(stops, why): what the patrol drives now. [] = it does not run (why = the status).
-    aufr (decision Daniel): the round runs only when «Patrouille» is on - «kluge Runde» (kopf_round) only chooses the stops
+    aufr (decision Besitzer): the round runs only when «Patrouille» is on - «kluge Runde» (kopf_round) only chooses the stops
     (places of «Platz einrichten», longer at the tent); without «Patrouille» the head stays at its home position."""
     if not CFG["patrol"]:
         return [], "off"
@@ -15531,7 +15531,7 @@ def _kopf_ov_tick(now):
     KOPF["ov_t"] = now
     KOPF["turn_req"] = (pan, float(CFG["tilt"]), "movement seen by the overview camera")
 # ----------------------------------------------------------------------------
-# Plan Daniel 30.10.2026 (docs/Gehaeuse_Variante2_Weitwinkel.md, «Simulator-Einbindung der Weitwinkel-Kamera»):
+# Plan Besitzer 30.10.2026 (docs/Gehaeuse_Variante2_Weitwinkel.md, «Simulator-Einbindung der Weitwinkel-Kamera»):
 #  - The simulator (3D-4.17, weitwinkel.gd) has ONE wide camera (sim:1, 102° x 67°) with a mount: scene (mast, as before),
 #    base (lower part of the device, fixed), head_front / head_rear (turns with the pan, rear = yaw offset 180°).
 #    /info cameras[1] and the reply to every POST /state («wide») tell the mount, tilt_deg, yaw_offset, pan_follow,
@@ -15737,7 +15737,7 @@ def weit_state(lang=None):
     return {"mount": str(c.get("mount")), "on_head": bool(c.get("on_head")), "tilt": c.get("tilt_deg"), "n": n, "missing": weit_missing(),
             "ov": str(CFG.get("kopf_ov") or "") == "sim:1", "ov_on": bool(CFG.get("kopf_ov_on")), "fov": [c.get("fov_h"), c.get("fov_v")]}
 # ----------------------------------------------------------------------------
-# Decisions Daniel 30.10.2026 21:55 (docs/Gehaeuse_Variante2_Weitwinkel.md, «Status-LED oben auf dem Kopf»):
+# Decisions Besitzer 30.10.2026 21:55 (docs/Gehaeuse_Variante2_Weitwinkel.md, «Status-LED oben auf dem Kopf»):
 #   * one RGB LED on the head, on the PCA9685 of the servos (channels 5 / 6 / 7 = red / green / blue; 0 / 1 servos,
 #     2 / 3 white / IR, 4 wide IR), common cathode or common anode, brightness by PWM (gamma corrected)
 #   * what it shows, the first that applies wins:
@@ -15750,7 +15750,7 @@ def weit_state(lang=None):
 #   * two buttons (GPIO, internal pull-up, to ground; debounce; long press 1.5 s):
 #       «Schutz»            short: Wachsam <-> Aus, long: Voll
 #       «Alarm quittieren»  stops the siren and the escalation, ends the red blinking
-#     every press is logged. 2.98.50 (Daniel 30.10.2026: «Die beiden Tasten dürfen alles, aber es soll in den jeweiligen
+#     every press is logged. 2.98.50 (Besitzer 30.10.2026: «Die beiden Tasten dürfen alles, aber es soll in den jeweiligen
 #     Menüs deaktivierbar sein»): the buttons may arm, disarm, stop the siren and acknowledge - also with a PIN for
 #     disarming; each of the four can be switched off (btn_allow_arm / _disarm / _siren / _ack). Every disarm and every
 #     siren stop at the device is in the log and goes out as a push message (btn_notify_off): «Schutz am Gerät
@@ -17000,7 +17000,7 @@ def _tun_take():
 
 
 def _tun_instance_ok(inst, peer):
-    """2.98.26 (Daniel: «das Bild springt zwischen zwei Ansichten»): two simulator windows were open (an old one after an update,
+    """2.98.26 (Besitzer: «das Bild springt zwischen zwei Ansichten»): two simulator windows were open (an old one after an update,
     or started twice) and both sent their lines - MoveEye took lines of both, so the picture jumped between the two. Each
     simulator (3D-4.8) names itself «start time-process»: the newest one wins, the lines of the older one are refused."""
     try:
@@ -18361,7 +18361,7 @@ def own_ai_auto_selftest():
 
 threading.Thread(target=_own_ai_auto_loop, daemon=True, name="own-ai-auto").start()
 # ----------------------------------------------------------------------------
-# Wunsch Daniel (29.10.2026, «KI-Daten aufräumen»):
+# Wunsch Besitzer (29.10.2026, «KI-Daten aufräumen»):
 #   * «Trainingspaket für ein eigenes KI-Modell (YOLO)» (Reiter Simulator und Fenster) hat dieselbe Wahl wie der Simulator:
 #     «Vielfalt: normal / hoch» (dataset.gd / kitrain.gd, Name «vielfalt» wie dort).
 #   * Die Pakete (Ordner user://trainingsbilder/<Zeit> + ZIP «MoveEye-Trainingsbilder_….zip», bis 3D-4.21 «MW-…», auf dem Schreibtisch) liegen auf dem
@@ -19111,7 +19111,7 @@ def timelapse_render(day="", fps=None):
 # Thermal camera: a second camera with the same view. Its picture is coloured and laid over the normal picture
 # (blend, or "hot mode": only the warmest areas are shown). Detection always works on the normal picture.
 # ----------------------------------------------------------------------------
-# 3.44.3 (variants without a thermal camera, Daniel 01.11.2026): «not found» (nothing answers - maybe it is not built in) and
+# 3.44.3 (variants without a thermal camera, Besitzer 01.11.2026): «not found» (nothing answers - maybe it is not built in) and
 #   «found, but an error» are two things; the self-check (120) gives the tip that fits (no «USB cable» for the Thermal-90 on SPI / I2C).
 THERMAL_NOT_FOUND = "not found: "
 THERMAL_TIPS = {
@@ -19547,7 +19547,7 @@ NIGHTVISION = NightVision()
 
 
 # ----------------------------------------------------------------------------
-# 2.98.13 (Wunsch Daniel): at night the normal camera often sees nobody (too dark, too far for the IR light). The thermal
+# 2.98.13 (Wunsch Besitzer): at night the normal camera often sees nobody (too dark, too far for the IR light). The thermal
 # camera still sees the warm body. A warm body (ThermalCam.detect: warmer than the scene by thermal_delta, moving unless
 # thermal_need_motion is off, in the zones, seen in 3 of 5 pictures) counts as a PERSON when it also
 #   - stands upright (taller than wide, as a person),
@@ -19555,10 +19555,10 @@ NIGHTVISION = NightVision()
 #   - is warmer than the background but not hot like a fire or an engine (only with a camera that gives °C).
 # It then goes into the same person / alarm logic (push, recording, siren, zones of the recording) as «Person (Wärmebild)».
 # Option thermal_person (default on) - only at night (or by day too: thermal_person_day). Needs a thermal camera.
-# 2.98.22 (Wunsch Daniel: «das Wärmebild soll mitlaufen»): by day too is now the default, so the thermal camera always
+# 2.98.22 (Wunsch Besitzer: «das Wärmebild soll mitlaufen»): by day too is now the default, so the thermal camera always
 # runs along as soon as one is chosen - also with the overlay and the warm alarm off. Older settings are switched once
 # (thermal_migrate, called by 040); who switches «… by day too» off again keeps it off.
-# real-reh-fusspunkt (31.10.2026, Fehlalarm Daniel): a roe deer or a fox coming straight at the camera at night is narrow and
+# real-reh-fusspunkt (31.10.2026, Fehlalarm Besitzer): a roe deer or a fox coming straight at the camera at night is narrow and
 # looks «upright» in the thermal picture; with the 1.7 m of a person it seemed far away and so of person size -> push «Person».
 # Now the distance is estimated a second time from the FOOT POINT (lower edge of the box, flat ground): the camera height
 # (simulator: its pole «mast» from the twin info, else FOOT_CAM_H_M) and the tilt of the head (servo; simulator: the real
@@ -19567,7 +19567,7 @@ NIGHTVISION = NightVision()
 # the thing clearly lower than a standing person (FOOT_ANIMAL_MAX_H_M), it was an animal. Since the third round this only
 # applies to a FLAT warm body - frontal / upright stays a person. Feet near the horizon or cut off at the picture edge: no
 # foot estimate, everything as before. Self-test: 417 (foot_selftest, thermal_maybe_selftest).
-# Decision Daniel (31.10.2026, third round): «animal» ONLY for a really FLAT warm body, everything upright stays as before:
+# Decision Besitzer (31.10.2026, third round): «animal» ONLY for a really FLAT warm body, everything upright stays as before:
 #   - upright boxes (h/w >= 1.3, thermal_person_check) are persons exactly as before - also a roe deer straight from the
 #     front, a child, a crouching person («im Zweifel Person»),
 #   - a flat warm body (failed the upright check, before only «warm») becomes «animal» when: it is night / low light, the
@@ -19576,7 +19576,7 @@ NIGHTVISION = NightVision()
 #   - «Person?» (weak_person_feed): a flat box at the ground (w/h > WEAK_FLAT) that the AI of MoveEye calls a person with at
 #     least WEAK_AI_MIN (the normal AI threshold stays) AND a movement track or a warm body confirms it -> a person (alarm,
 #     «PERSON?»). It wins over «animal»: a warm body under a «Person?» never becomes an animal.
-# Code-Prüfung M3 (Daniel 31.10.2026, «im Zweifel Person?»): «animal» only when the AI of MoveEye really looked for weak
+# Code-Prüfung M3 (Besitzer 31.10.2026, «im Zweifel Person?»): «animal» only when the AI of MoveEye really looked for weak
 # persons in the last WEAK_OK_S seconds (AIDetector.weak_ok_t: own run on the Pi, or the PC helper with the standard model).
 # AI off, still loading, or a PC helper that gives no weak boxes: a flat warm body that would be an «animal» becomes
 # «PERSON? (THERMAL)» (a person, alarm) - never «no person». Upright warm bodies are persons as before.
@@ -19600,7 +19600,7 @@ FOOT_ANIMAL_MAX_H_M = 1.1   # «clearly lower than a person»: roe deer shoulder
                             # 0.35 … 0.4 m (about 0.5 m with the head) - Wildtier Schweiz / Hespeler «Rehwild heute»; standing
                             # adults are 1.45 m and taller. Small children and a crouching person are lower too - they stay
                             # persons: upright (thermal_person_check) or not flat (FLAT_MAX_ASP).
-FLAT_MAX_ASP = 0.8          # «really flat» (Daniel: wider than high): real height / real width from the side. Roe deer: shoulder
+FLAT_MAX_ASP = 0.8          # «really flat» (Besitzer: wider than high): real height / real width from the side. Roe deer: shoulder
                             # 0.6 … 0.9 m, head-body 0.95 … 1.35 m (Wildtier Schweiz) -> 0.5 … 0.8 (head held high up to ~0.9:
                             # then «warm», not animal); fox: shoulder 0.35 … 0.4 m, head-body 0.6 … 0.9 m (+ tail 0.35 … 0.45)
                             # -> 0.3 … 0.6. A crouching person (1.0 / 0.55 m = 1.8) and any child standing (> 3) are far above.
@@ -21348,7 +21348,7 @@ def siren_alarm(kind):
 
 
 # ----------------------------------------------------------------------------
-# Idea of Daniel's daughter: MoveEye stands somewhere in the room. While you sleep the camera looks away (a set direction,
+# Idea of the owner's daughter: MoveEye stands somewhere in the room. While you sleep the camera looks away (a set direction,
 # e.g. the door). When the alarm rings it turns to the sleeping place and understands two gestures:
 #   wave (hand to and fro)  -> snooze (again after N minutes)
 #   sit up / get up         -> alarm off
@@ -21765,7 +21765,7 @@ def wake_action(a, who="web"):
         return wake_sleep_now(who)
     return False, "unknown action"
 # ----------------------------------------------------------------------------
-# A small area only for the developer (Daniel). It is HIDDEN until it is switched on, and protected with its own PIN.
+# A small area only for the developer (Besitzer). It is HIDDEN until it is switched on, and protected with its own PIN.
 # What it shows is only about THIS device and is read-only - never the traffic of other people:
 #   - the device's own open network connections (to where, which program, how much data) with a reverse-DNS name
 #   - the names the device itself looked up (its own DNS questions, from the connections it holds)
@@ -23420,7 +23420,7 @@ SOLARMON = None
 
 
 # ----------------------------------------------------------------------------
-# Wish of Daniel (30.10.2026): while MoveEye is connected to the 3D simulator, the «hardware» readings come from the
+# Wish of Besitzer (30.10.2026): while MoveEye is connected to the 3D simulator, the «hardware» readings come from the
 # simulated world, not from the Pi. Before (kept): solar panel, GPS (+ theft), outside temperature / pressure / wind (storm),
 # sound, thermal camera, head position, door / PIR / gas / bike sensors, darkness. New here (the simulator sends them in its
 # answer to /state, simulator3d/scripts/power.gd -> SIM, taken in 350 SimLink.tick -> simvals_take):
@@ -25621,7 +25621,7 @@ def testopt_state():
 
 
 # ----------------------------------------------------------------------------
-# 2.98.14 (Konzept, Wunsch Daniel): sechs Funktionen drehten an denselben Schwellen (Empfindlichkeit, Mindestgrösse, KI-Schwelle …):
+# 2.98.14 (Konzept, Wunsch Besitzer): sechs Funktionen drehten an denselben Schwellen (Empfindlichkeit, Mindestgrösse, KI-Schwelle …):
 # Testlauf «Automatisch optimieren» (310), A/B-Vergleich (141), Auto-Tuner (190), «Schwellen automatisch» (143),
 # Trainings-Nacht (141), Wochen-Check / Fehlalarm-Lernen (143). Jetzt gibt es EINEN Assistenten in Schritten:
 #   1 Prüfen      - ist der Simulator verbunden, ist der Schutz aus, läuft nichts anderes?
@@ -26533,7 +26533,7 @@ def _pano_loop():
 
 threading.Thread(target=_pano_loop, daemon=True, name="panorama").start()
 # ----------------------------------------------------------------------------
-# 2.98.30 (Wunsch Daniel, 29.10.2026): «MoveEye hinstellen → Platz einrichten». One assistant that only DRIVES the parts that
+# 2.98.30 (Wunsch Besitzer, 29.10.2026): «MoveEye hinstellen → Platz einrichten». One assistant that only DRIVES the parts that
 # exist already - it duplicates none of them:
 #   * the scan: the head drives its whole pan range in 2-3 tilt rows (the grid of the reference scan 315, its grab
 #     function), per direction a photo + ~10 s observation (what moves, what the AI sees) -> suggestions
@@ -27376,7 +27376,7 @@ def place_selftest():
     finally:
         CFG["pan"], CFG["tilt"], CFG["pan_servo_range"], CFG["pan_limit"] = sv
 # ----------------------------------------------------------------------------
-# 2.98.30 (Wunsch Daniel, 29.10.2026 - a second, wide-angle camera comes later: Pi 5 CAM1 -> «pi:1», Camera Module 3 Wide NoIR)
+# 2.98.30 (Wunsch Besitzer, 29.10.2026 - a second, wide-angle camera comes later: Pi 5 CAM1 -> «pi:1», Camera Module 3 Wide NoIR)
 #   CFG["cam_fov"] = {spec: {"model": "auto"|"m3"|"m3wide"|"m2"|"own", "deg": horizontal degrees for "own"}}
 #   CFG["cam_head"] = {spec: True} - an extra camera that sits on the head (turns with it) - «Platz einrichten» may use it
 #   cam_fov_h(spec=None) -> horizontal degrees (main camera when None) - other parts call it via globals().get("cam_fov_h")
@@ -28979,7 +28979,7 @@ def sim_set(on, who="web", confirm=False):
     return True, ""
 
 
-# Daniel 30.10.2026:
+# Besitzer 30.10.2026:
 #   1. «Mensch gegen KI vergleichen»: the simulator (gamecompare.gd, control «game_compare») plays the same round twice -
 #      a person (or the Bot-Wächter) guards, then the real detection of MoveEye. Here: start / state / result for the page
 #      Simulator (543) and the window (592), GET / POST /api/game_compare.
@@ -29686,7 +29686,7 @@ def simdiary_days():
     except OSError:
         pass
     return d
-# 3.23 (Daniel 01.11.2026): «MoveEye Sim · Basis» (the old Python simulator, SIM_ZIP_B64, install / start / stop on the Pi) is
+# 3.23 (Besitzer 01.11.2026): «MoveEye Sim · Basis» (the old Python simulator, SIM_ZIP_B64, install / start / stop on the Pi) is
 # removed - MoveEye Sim · 3D is the simulator. An old installation in sim_dir() stays on the disk (nothing is deleted).
 def sim_dir():
     return os.path.join(DATA_DIR, "simulator")
@@ -30339,7 +30339,7 @@ def talk_stop():
 
 
 # ----------------------------------------------------------------------------
-# 2.98.14 (Wunsch Daniel): wenn ein Bild oder Video geteilt wird (Aufnahmen, Tagebuch – alles, was über share_jpg /
+# 2.98.14 (Wunsch Besitzer): wenn ein Bild oder Video geteilt wird (Aufnahmen, Tagebuch – alles, was über share_jpg /
 # share_video in 370 geht), werden Gesichter von selbst unkenntlich gemacht (verpixelt). Einstellung «Gesichter verpixeln
 # beim Teilen» (share_blur_faces, Standard ein). Nur die geteilte Kopie wird verändert, das Original bleibt wie es ist.
 # Erkennung, der Reihe nach:
@@ -31980,7 +31980,7 @@ def self_test(folder=""):
                 bad.append("bridge " + UPD_BRIDGE + " missing")
             assert not bad, f"bad checksum / signature: {bad}"
             return f"{len(m.get('versions', []))} versions signed and checked"
-        if os.environ.get("MW_SELFTEST_NO_SIG"):         # 2.98.50 (Daniel): work branches are not signed yet - GitHub checks it only on main
+        if os.environ.get("MW_SELFTEST_NO_SIG"):         # 2.98.50 (Besitzer): work branches are not signed yet - GitHub checks it only on main
             chk("versions.json signatures", lambda: "skipped (MW_SELFTEST_NO_SIG: work branch, signed only at the release)")
         else:
             chk("versions.json signatures", manifest)
@@ -32032,7 +32032,7 @@ def make_manifest(folder, base_url, sign_key=""):
 
 
 # ----------------------------------------------------------------------------
-# 2.98.18 (Wunsch Daniel, Code-Pflege):
+# 2.98.18 (Wunsch Besitzer, Code-Pflege):
 #   - Übersetzungen: welche sichtbaren Texte (tr() / trf() im Programm, t() und data-i18n in den Webseiten, die Beschriftungen
 #     der Einstellungen) haben auf Französisch / Italienisch / Romanisch noch keine Übersetzung? Nur eine Warnung im Selbsttest
 #     (Anzahl + die ersten 20), kein Fehler: es erscheint dann Englisch (fr / it) bzw. Deutsch (rm).
@@ -32219,7 +32219,7 @@ def kopf_deter_selftest():
             assert not kopf_deter_aim("test"), "at most once in 20 s"
         STATE["tracking"] = True; KOPF["aim_t"] = 0.0
         assert not kopf_deter_aim("test"), "following holds the person already"
-        # aufr (decision Daniel): a round «Team gegen MoveEye» - no following, no automatic move; afterwards everything again
+        # aufr (decision Besitzer): a round «Team gegen MoveEye» - no following, no automatic move; afterwards everything again
         sg, sim0, gw = globals()["sim_game"], CFG.get("sim_on"), KOPF.get("game_was", False)
         try:
             CFG["sim_on"] = True
@@ -32243,7 +32243,7 @@ SELFTEST_EXTRA.append(("Deterrence turns light / siren to the person or the tent
 #   zusatz_mitholen(...)    called by update_install() (390) after a new program file was saved: its zip comes along at once
 #                           (so a device from this version on has no minute without web pages).
 # Older devices (2.98.x up to the last version without data zip) only fetch the .py - the new program fetches its zip itself (zusatz_start).
-# Brücke (Entscheid Daniel 31.10.2026): UPD_BRIDGE (3.0.2, one file below 8 MiB, no zip needed) stays in versions.json and in
+# Brücke (Entscheid Besitzer 31.10.2026): UPD_BRIDGE (3.0.2, one file below 8 MiB, no zip needed) stays in versions.json and in
 # the repository for ever. A version entry with «needs» (lowest version that may install it directly) is offered only to
 # devices with at least that version; older ones get the newest bridge first (update_pick(), used by update_check()).
 # ----------------------------------------------------------------------------
@@ -34209,7 +34209,7 @@ def fog_selftest():
 
 SELFTEST_EXTRA.append(("Fog mode (contrast, no «camera turned»), dusk / wind: person after hits in a row (411)", fog_selftest))
 # ----------------------------------------------------------------------------
-# 2.98.13 (Wunsch Daniel)
+# 2.98.13 (Wunsch Besitzer)
 # 1. Distance: a person is about 1.7 m tall - from the height of its box and the vertical field of view of the camera
 #    (simulator: /info, otherwise the setting cam_vfov, Camera Module 3: 41°) MoveEye estimates how far away it is, and from
 #    the last seconds of the track whether it comes closer or goes away. Shown on the live picture, in the push text
@@ -34608,7 +34608,7 @@ def walktest_draw(frame):
     except cv2.error:
         pass
 # ----------------------------------------------------------------------------
-# Plan Daniel 30.10.2026 (docs/Verfolgungs_Parcours.md). The simulator (3D-4.18, parcours.gd) knows where the figures really
+# Plan Besitzer 30.10.2026 (docs/Verfolgungs_Parcours.md). The simulator (3D-4.18, parcours.gd) knows where the figures really
 # are and measures: aim error, time in the picture, losses, swinging, servo travel, identity switches -> grade. MoveEye
 # only starts the lessons (sim control «parcours»), keeps the runs with the values of the following that were used, and
 # compares them. Nothing is changed by itself: the auto-tuning only PROPOSES a set (button «übernehmen»).
@@ -35281,7 +35281,7 @@ SELFTEST_EXTRA.append(("Thermal picture: no «animal» without an AI check, «Pe
 #    - it never walked there: no moving track (a person walking in) was at that place shortly before or when it appeared,
 #    - it stands still: middle within FIX_STILL of its height, height within FIX_SIZE (a few jumps of the AI box are allowed),
 #    - for FIX_LEARN_S (3 min) - or only FIX_LEARN_START_S when it was there already at the start (camera / scene new),
-#    - Entscheid Daniel (31.10.2026): only a THERMAL CAMERA that sees it NOT warm (FIX_COLD_N looks, never warm) makes it a
+#    - Entscheid Besitzer (31.10.2026): only a THERMAL CAMERA that sees it NOT warm (FIX_COLD_N looks, never warm) makes it a
 #      thing by itself. Without a thermal camera (or no clear reading) it only gets the card below and STAYS A PERSON (push,
 #      the head follows) until «Ignorieren» is tapped; warm like a body: nothing (a person).
 #    A learned spot: its AI box and a person track standing on it are no person (no push, the head does not follow, drawn
@@ -35292,7 +35292,7 @@ SELFTEST_EXTRA.append(("Thermal picture: no «animal» without an AI check, «Pe
 #    class: no person from the movement (also not «sticky» from before), no «Person?» and no thermal person on it. A new track
 #    where an animal was a moment ago inherits it. Only the AI itself saying «person» over FIX_ANIMAL_AI_S (and no animal in
 #    that time) makes it a person again («im Zweifel Person» when the AI is sure).
-# Gegenprobe (Daniel): a person who walked in and then stands still for a long time is NEVER learnt (walked = for good).
+# Gegenprobe (Besitzer): a person who walked in and then stands still for a long time is NEVER learnt (walked = for good).
 # ----------------------------------------------------------------------------
 FIX_LEARN_S = 180.0         # «über Minuten»: 3 min without moving. A visitor standing that long in front of a camera without
                             # having walked there (the case «walked» is never learnt) is very rare; a tree stands for ever.
@@ -35745,7 +35745,7 @@ def fixp_selftest():
         j = 0.1 * (1 if i % 2 else -1)
         res.append(fixp_spot_step(s, (10.0 + j, 2.0, 4.0, 9.0 * (1 + j)), 100.0 + i, 100.0, False, False))
     assert "learned" in res and res.index("learned") + 1 == int(FIX_LEARN_START_S), res.index("learned") if "learned" in res else res
-    # 1b) Entscheid Daniel: the same spruce WITHOUT a thermal camera - only the card («suggest»), it stays a person
+    # 1b) Entscheid Besitzer: the same spruce WITHOUT a thermal camera - only the card («suggest»), it stays a person
     s1 = fixp_new_spot((10.0, 2.0, 4.0, 9.0), 100.0, 100.0)
     r1 = [fixp_spot_step(s1, (10.0, 2.0, 4.0, 9.0), 100.0 + i, 100.0, False, None) for i in range(1, 400)]
     assert r1.count("suggest") == 1 and "learned" not in r1 and not s1["learned"] and r1.index("suggest") + 1 == int(FIX_LEARN_START_S)
@@ -35838,7 +35838,7 @@ SELFTEST_EXTRA.append(("Still «person» = thing, a person who walked in stays o
 #      greift oft schon früher - dann ist es sofort eine Person.
 # Kurzer Push-Text: Notifier.info mit Titel «{name}: Something big at the ground»; im Push-Format von 3.1.0 (635b push_short)
 # steht der Titel in PK_TITLES (eingetragen in 639x): «⚠ Etwas Grosses am Boden», eine Zeile «ca. 5 m, ca. 1.2 m lang – …», Bild.
-# Abgrenzung zu Tieren (Daniel: Igel und Fuchs sind kleiner und wärmer):
+# Abgrenzung zu Tieren (Besitzer: Igel und Fuchs sind kleiner und wärmer):
 #   - KLEINER ist das sichere Merkmal, darum die Länge: Igel 0.2-0.3 m, Katze ~0.45 m, Marder ~0.5 m, Feldhase ~0.55 m,
 #     Dachs ~0.75 m, Fuchs Kopf-Rumpf 0.6-0.9 m (Wildtier Schweiz; Körperlängen auch in simulator3d/scripts/waerme.gd ANIMALS);
 #     eine kriechende / robbende Person ist 1.2 m (auf Knien) bis 1.9 m (flach mit Armen vorne) lang -> CRAWL_MIN_LEN_M 1.0.
@@ -35851,7 +35851,7 @@ SELFTEST_EXTRA.append(("Still «person» = thing, a person who walked in stays o
 #   - Reh / Wildschwein (0.95-1.35 m) sind so lang wie eine kriechende Person: sie bekommen den Voralarm («im Zweifel
 #     Person», es ist nur eine Info), aber KEIN «Person?»: ein stehendes Reh ist mit Kopf 0.9-1.1 m hoch, ein Wildschwein
 #     0.8-0.95 m (Schulter 0.55-1.0 m) - über CRAWL_ESC_TOP_M 0.85; eine robbende Person ist 0.3-0.5 m hoch, auf Knien ~0.75 m.
-#     Rest-Risiko: ein äsendes Reh (Kopf unten, Rücken ~0.75 m) 6 s nahe am Zelt - dann «Person?» (Daniel: im Zweifel Person).
+#     Rest-Risiko: ein äsendes Reh (Kopf unten, Rücken ~0.75 m) 6 s nahe am Zelt - dann «Person?» (Besitzer: im Zweifel Person).
 #   - sieht die KI dort ein Tier (dog, sheep, cat, horse, cow, bird, animal), gibt es kein «Person?» (nur den Voralarm).
 # Gegenprobe Wind (leerer Wald): ohne warmen Körper nichts (Äste sind im Wärmebild Lufttemperatur) - ohne Wärmebild-Kamera
 # ist die Regel aus. Tags gilt sie nicht (Tags sieht die KI liegende Menschen besser, und Sonne wärmt den Boden).
@@ -37030,7 +37030,7 @@ def rec_dir():
 
 
 # ----------------------------------------------------------------------------
-# 2.98.14 (Wunsch Daniel): Reiter Verlauf → «Zeitleiste». Eine Nacht (Standard: letzte Nacht 18:00–09:00, Tag wählbar) oder
+# 2.98.14 (Wunsch Besitzer): Reiter Verlauf → «Zeitleiste». Eine Nacht (Standard: letzte Nacht 18:00–09:00, Tag wählbar) oder
 # ein ganzer Tag, alles auf einer Zeitachse. Die Daten kommen aus den bestehenden Quellen – nichts wird doppelt gespeichert:
 #   Aufnahmen        list_recordings (430)            Nachrichten   msglog_list (065)
 #   Tierbesuche      SIGHT / Tagebuch (090)           Alarme, Log   Protokoll-Dateien (390, nur die wichtigen Zeilen)
@@ -37253,7 +37253,7 @@ def timeline_text(tl, lang=None):
                         (f" (× {it['n']})" if it.get("n", 1) > 1 else ""), it))
     return out
 # ----------------------------------------------------------------------------
-# 2.98.14 (Wunsch Daniel): einmal pro Woche (Einstellung Tag + Stunde, Standard Sonntag 18:00) eine Push-Nachricht: wie gut
+# 2.98.14 (Wunsch Besitzer): einmal pro Woche (Einstellung Tag + Stunde, Standard Sonntag 18:00) eine Push-Nachricht: wie gut
 # erkennt MoveEye – mit dem, was MoveEye selber hat (pruefstand/VERLAUF.md gibt es nur im Repository, nicht auf dem Pi):
 #   · die eigenen Testläufe im Simulator (310, TESTOPT["runs"]): Punkte, gefundene Personen, Fehlalarme – diese / letzte Woche
 #   · die echten Aufnahmen: wie viele, wie viele als «Fehlalarm» markiert (mit Ursache) – diese / letzte Woche
@@ -38659,7 +38659,7 @@ COMMON_JS = _zd('510_web_kopf_alarm/COMMON_JS', "")
 
 
 # ----------------------------------------------------------------------------
-# Wish of Daniel: a guide that leads the operator through the device from the start. Every page / tab / settings topic is
+# Wish of Besitzer: a guide that leads the operator through the device from the start. Every page / tab / settings topic is
 # explained shortly the first time it is opened; a small dot shows what was never opened, «NEU» what came with a recent
 # version. Levels (CFG tips_level): off · basic (only the most important) · normal · all (nearly every detail).
 # What was seen is kept in the browser storage key «mw-tips-seen», which MoveEye copies to the Pi (web_ui) - so it is the
@@ -39004,12 +39004,12 @@ LOG_PAGE = _zd('520_web_seiten_kameras_zonen_tagebuch/LOG_PAGE', ZD_PAGE)
 
 
 # ----------------------------------------------------------------------------
-# 2.98.13 (Wunsch Daniel): eigenes Menü für die ntfy-Nachrichten. Zwei Quellen: «Von MoveEye» (was dieses Gerät geschickt hat,
+# 2.98.13 (Wunsch Besitzer): eigenes Menü für die ntfy-Nachrichten. Zwei Quellen: «Von MoveEye» (was dieses Gerät geschickt hat,
 # mit Bild und ob es ankam, 065_nachrichten.py) und «ntfy-Server» (alle Nachrichten des Themas der letzten 24 h / 7 Tage).
 # ----------------------------------------------------------------------------
 MSG_PAGE = _zd('522_web_nachrichten/MSG_PAGE', ZD_PAGE)
 # ----------------------------------------------------------------------------
-# 2.98.14 (Wunsch Daniel): «Zeitleiste der Nacht». Handy zuerst (390 px): oben Tag wählen (◀ ▶, Kalender, Nacht / Tag),
+# 2.98.14 (Wunsch Besitzer): «Zeitleiste der Nacht». Handy zuerst (390 px): oben Tag wählen (◀ ▶, Kalender, Nacht / Tag),
 # Zusammenfassung, ein Streifen mit Akku-, Temperatur- und Regenkurve und allen Ereignissen als Striche (antippen = dorthin
 # springen), darunter die Liste nach Stunden. Ein Eintrag antippen öffnet ihn (Video / Bild / Tagebuch-Bild / Nachricht),
 # mit Knopf zur ausführlichen Seite. Unten die Karte «Wochenbericht» (426). Daten: /api/timeline (425), /api/weekreport.
@@ -39080,7 +39080,7 @@ WEB_PAGE = WEB_PAGE.replace("/*SIMMAP*/", SIMMAP_JS)
 
 
 # ----------------------------------------------------------------------------
-# Wish of Daniel (30.10.2026): the push section like the slim cards of the simulator panel (card «Spiel»: name, state,
+# Wish of Besitzer (30.10.2026): the push section like the slim cards of the simulator panel (card «Spiel»: name, state,
 # the main buttons; details on demand). The generic rows of the section (530 build) are MOVED into the cards - their
 # handlers and the ctrl registry stay the same, nothing is built twice. Logic + /api/push: 579a; window: 571a; texts: 639a.
 #   Kopf       «Push senden», status line («2 Kanäle · Test ✓»), «Alle testen» (results below)
@@ -39117,7 +39117,7 @@ WALKTEST_JS = _zd('535_web_erkennung/WALKTEST_JS', "")
 WALKTEST_JS = WALKTEST_JS.replace("/*WTDE*/{}", json.dumps(WALKTEST_DE, ensure_ascii=False))
 WEB_PAGE = WEB_PAGE.replace("</body>", WALKTEST_JS + "</body>", 1)
 # ----------------------------------------------------------------------------
-# 2.98.26 (Wunsch Daniel): the tab Live arranges itself by the window format
+# 2.98.26 (Wunsch Besitzer): the tab Live arranges itself by the window format
 #   portrait  = picture on top (max. height = «Picture size»), simulator, walk test, controls and the other cards below
 #   landscape = picture left (as large as the height allows, never cropped: object-fit contain), the cards in a sidebar
 #               on the right that scrolls on its own; the simulator directly under the picture (left column)
@@ -39128,7 +39128,7 @@ WEB_PAGE = WEB_PAGE.replace("</body>", WALKTEST_JS + "</body>", 1)
 # aufr: «mw-hidden» (the ☰ menu of the other tabs) is per device now as well (WEB_UI_LOCAL) - the same rule and wording; the
 # live cards are only in «◫ Ansicht» (the ☰ menu leaves them out), so no card has two «hide» switches.
 # 530 stays as it is except the phone placement (not on the Live tab any more). Translations: part 626.
-# 2.98.29 (Wunsch Daniel): ONE edit mode for the arrangement (the separate «✏️ Anpassen» of the quick switches is gone):
+# 2.98.29 (Wunsch Besitzer): ONE edit mode for the arrangement (the separate «✏️ Anpassen» of the quick switches is gone):
 #   favourites ★, order ▲ ▼ and hidden ✕ of the quick switches and of the cards, per device; «Für alle Geräte übernehmen»
 #   stores it on MoveEye (CFG qs_layout: order, hidden, favs, cards, chide) as the default for devices without an own one -
 #   the earlier «Anpassen» arrangement (order / hidden) is that default. The small simulator tile only when the
@@ -39286,7 +39286,7 @@ def place_routes(app, watch, reply, body):
 SELFTEST_EXTRA.append(("Set up the place (directions, plan, items)", place_selftest))
 SELFTEST_EXTRA.append(("Field of view per camera (cam_fov_h)", cam_fov_selftest))
 # ----------------------------------------------------------------------------
-# Wish of Daniel (29.10.2026): a full-screen view for phones and tablets (web only - the Tk window has its own
+# Wish of Besitzer (29.10.2026): a full-screen view for phones and tablets (web only - the Tk window has its own
 # camera control) with a Bluetooth / USB game controller or the fingers:
 #   portrait = live picture on top, simulator picture below; landscape = live left, simulator right; swappable (long tap
 #   on a picture or Select); without the simulator only the live picture. The simulator picture is naked (view.jpg with
@@ -39311,7 +39311,7 @@ PADVIEW_JS = _zd('538_web_controller_ansicht/PADVIEW_JS', "")
 WEB_PAGE = WEB_PAGE.replace("</body>", PADVIEW_JS + "</body>", 1)
 WEB_UI_LOCAL.add("mw-pad")                                # per device: the controller view of the tablet is not the one of the PC
 # ----------------------------------------------------------------------------
-# Wish of Daniel (30.10.2026): when a PERSON steers the camera instead of the AI («Team gegen MoveEye», the game of the
+# Wish of Besitzer (30.10.2026): when a PERSON steers the camera instead of the AI («Team gegen MoveEye», the game of the
 # 3D simulator where the guards sit at MoveEye), the guard aims the MIDDLE of the live picture at a player and presses the
 # shutter. The simulator decides (simulator3d/scripts/gameshutter.gd): a hit = the player touches the circle in the middle
 # (its size by the difficulty of the game: easy big, hard small), a miss = a false alarm (−50, the shutter locked 3 s).
@@ -39383,7 +39383,7 @@ def shut_alarm(it):
 SHUT_JS = _zd('539_web_ausloeser/SHUT_JS', "")
 WEB_PAGE = WEB_PAGE.replace("</body>", SHUT_JS + "</body>", 1)
 # ----------------------------------------------------------------------------
-# Wunsch Daniel (31.10.2026): der Horror-Modus «Das Hospiz» des 3D-Simulators (simulator3d/scripts/bergtal_horror.gd) wird
+# Wunsch Besitzer (31.10.2026): der Horror-Modus «Das Hospiz» des 3D-Simulators (simulator3d/scripts/bergtal_horror.gd) wird
 # über seltsame MoveEye-Aufnahmen erzählt, die man am Morgen in MoveEyes Verlauf findet. Der Simulator schickt die neuen
 # Aufnahmen in world_reply «horror» (Liste: id, t, night, time, title, text - schon in der Sprache des Simulators), das Bild
 # (links Kamerabild, rechts Wärmebild) holt MoveEye über /horror_pic/<id>.jpg. Jede Aufnahme wird ein Eintrag im Verlauf →
@@ -39507,7 +39507,7 @@ def _set_cfg_sim(key):
 
 
 # ----------------------------------------------------------------------------
-# 2.98.35 (Wunsch Daniel): one page for the servos, phone first: (1) state + ⏹ Not-Aus / ✅ Freigeben + who steers the head,
+# 2.98.35 (Wunsch Besitzer): one page for the servos, phone first: (1) state + ⏹ Not-Aus / ✅ Freigeben + who steers the head,
 #   a small picture and arrows to drive, (2) the taught points (Teach-in: save, go, rename, order, round, park / home,
 #   take over from «Platz einrichten»), (3) diagnosis (counters, fault memory, maintenance hints, export JSON / CSV).
 #   Reached from Mehr → Werkzeuge («Servos»), from the live page («📍 Positionen») and the settings section.
@@ -39715,7 +39715,7 @@ def servo_routes(app, reply, body):
         data, mt, fn = servo_diag_export(fmt, norm_lang(request.args.get("lang") or CFG.get("lang")))
         return Response(data, mimetype=mt, headers={"Content-Disposition": f"attachment; filename={fn}", "Cache-Control": "no-store"})
 # ----------------------------------------------------------------------------
-# Wish of Daniel (30.10.2026, «einheitliches Controller-Konzept»): one base mapping everywhere - left stick = head,
+# Wish of Besitzer (30.10.2026, «einheitliches Controller-Konzept»): one base mapping everywhere - left stick = head,
 # right stick = rover / view (R1 held = turn the view), R2 = shutter, A / B / X / Y = light / IR / photo / follow,
 # Select = swap pictures, Start = menu (held = leave), L3 = head to the middle, R3 = next view; a game round puts the
 # tools of the guard and the moves of the sneaker on the same places. The table MAP (modes, keys, texts in English and
@@ -39763,7 +39763,7 @@ def padmap_selftest():
 
 SELFTEST_EXTRA.append(("One controller mapping (MWPad = simulator padmap.gd)", padmap_selftest))
 # ----------------------------------------------------------------------------
-# Spielkonzept of Daniel (30.10.2026), «Wächter-Werkzeuge mit Kosten»: in the game of the 3D simulator the guard has a budget
+# Spielkonzept of Besitzer (30.10.2026), «Wächter-Werkzeuge mit Kosten»: in the game of the 3D simulator the guard has a budget
 # of energy per round (by the difficulty) and every tool costs some and has a cooldown (simulator gametools.gd):
 # 💡 light, 📢 siren (whoever moves is noticed), 📡 scan (hint markers where runners are), 🔍 zoom of the head camera and
 # the 🎯 shutter (part 539). The guard at the phone and at the simulator PC have their own gauges (game.gd, localplay.gd).
@@ -39871,7 +39871,7 @@ def sim_owns_updates():
 # set_cfg (540) passes «sim_autoupd» changed on the web page to the simulator (_set_cfg_sim -> simupd_push)
 
 
-# ---- Versionierung 3.0.0 (Daniel 31.10.2026): MoveEye and the simulator share one number X.Y.Z from 3.0.0 («MoveEye 3.0.0» /
+# ---- Versionierung 3.0.0 (Besitzer 31.10.2026): MoveEye and the simulator share one number X.Y.Z from 3.0.0 («MoveEye 3.0.0» /
 # «MoveEye Sim 3.0.0»). simulator3d/version.json keeps «version» = «3D-(X+2).Y.Z» for old simulators (they only compare that
 # field: 3.0.0 would be older than 3D-4.82 for them) and has the real number in «ver». The self-test checks the order of the
 # numbers and - in the repository (GitHub) - that version.json, SIM3D and APP_VERSION fit together.
@@ -39902,7 +39902,7 @@ def versionen_selftest():
 
 SELFTEST_EXTRA.append(("Version numbers: order, file names, bridge for old simulators (3.0.0)", versionen_selftest))
 # ----------------------------------------------------------------------------
-# Wish of Daniel (30.10.2026): the guards at MoveEye in «Team gegen MoveEye» (the shutter of part 539) may switch on help
+# Wish of Besitzer (30.10.2026): the guards at MoveEye in «Team gegen MoveEye» (the shutter of part 539) may switch on help
 # of the AI for the running round, on the live page and in the «Controller-Ansicht» (538: L2 in a round):
 #   «KI-Rahmen»    MoveEye's live detection boxes (STATE person_boxes) on the live picture: persons green, uncertain dashed
 #                  (not confirmed by the AI this picture - STATE person_sure, from erk_frame below)
@@ -40079,7 +40079,7 @@ for _a, _b in _KIH_HELP:
 USERS_JS = _zd('547_web_benutzer/USERS_JS', "")
 WEB_PAGE = WEB_PAGE.replace("</body>", USERS_JS + "</body>", 1)
 # ----------------------------------------------------------------------------
-# Wishes of Daniel (30.10.2026):
+# Wishes of Besitzer (30.10.2026):
 #  · «MoveEye überwacht automatisch» (for his tests in online games): a switch on the game card of the page Simulator. When it is
 #    on and a round with a guard role runs (Wächter / Wächter-Duell, Team gegen Team, Team gegen MoveEye, online rounds), the
 #    simulator lets MoveEye be the guard (simulator gamekiwaechter.gd): every player sneaks, the round runs as «Team gegen
@@ -40104,9 +40104,9 @@ KIG_JS = _zd('548_web_ki_waechter/KIG_JS', "")
 SIM_PAGE = SIM_PAGE.replace('<div id="g-cmp"></div>', '<div id="g-kig"></div><div id="g-cmp"></div>', 1)
 SIM_PAGE = SIM_PAGE.replace("</body>", "<!--KIGJS--></body>", 1)          # filled by 596 (after the German texts are known)
 # ----------------------------------------------------------------------------
-# Wish of Daniel (30.10.2026): on the tab Live, while the simulation is on AND connected, a compact view «Sim-Kompakt»
+# Wish of Besitzer (30.10.2026): on the tab Live, while the simulation is on AND connected, a compact view «Sim-Kompakt»
 # (on by itself, switchable in «◫ Ansicht», stored per device in localStorage «mw-simkompakt»):
-#   top     «Bild im Bild» (2.98.53, Daniel's variant C; before: two small pictures side by side): the simulator window big,
+#   top     «Bild im Bild» (2.98.53, the owner's variant C; before: two small pictures side by side): the simulator window big,
 #           16:9 over the whole width (the picture poll of 530/470 simViewPoll - the same <img>, moved here, no second stream;
 #           data-dock = the naked picture of the simulator when it knows dock=1), MoveEye's camera (#vcard / #video, the one
 #           stream, the same elements) small in its bottom right corner (~32 % wide, on a wide screen ~24 %, white frame,
@@ -40126,7 +40126,7 @@ SIM_PAGE = SIM_PAGE.replace("</body>", "<!--KIGJS--></body>", 1)          # fill
 #           the simulator has it), Ansicht (views of the simulator window, /api/sim padview like 538), Folgen (the quick
 #           switch «Follow» of 530) and «… mehr» = the whole «Simulator-Steuerung» card (search, Simple / Expert).
 #   The explanation of the simulator window is behind «?», «Bildqualität» is in «◫ Ansicht».
-#   2.98.56 «adaptiv» (Daniel 31.10.: on a PC the small picture covered the camera picture, on ~1000 px the big one was small
+#   2.98.56 «adaptiv» (Besitzer 31.10.: on a PC the small picture covered the camera picture, on ~1000 px the big one was small
 #           and centred): is there room BESIDE the main picture (the second one >= 220 px wide, the main one ~64 % of the row,
 #           at least 60 %; height limit as above, phone sideways up to half the height), the second picture stands next to it
 #           (#lv-main.sk-side: grid areas "pic pi", top-aligned, the same card look, «Simulator» / «Kamera» + LIVE dot), the pair
@@ -40378,7 +40378,7 @@ class WebStream:
             return reply({"ok": False, "error": tr("not allowed for your user", lang)}, 403)
 
         @app.after_request
-        def gzip_text(resp):                        # 2.98.40 (Daniel: menus build up slowly): pages are ~800 KB - gzip makes
+        def gzip_text(resp):                        # 2.98.40 (Besitzer: menus build up slowly): pages are ~800 KB - gzip makes
             try:                                    # ~5× less over Wi-Fi / Tailscale; registered first = runs last
                 if (request.method == "GET" or request.method == "POST") and resp.status_code == 200 and not resp.direct_passthrough \
                         and not resp.is_streamed and "gzip" in (request.headers.get("Accept-Encoding") or "").lower() \
@@ -43353,7 +43353,7 @@ for _a, _b in (('<section id="detect" data-icon="🎯"><h2>Erkennung</h2>',
     if _a in HELP_PAGE:
         HELP_PAGE = HELP_PAGE.replace(_a, _a + _b, 1)
 # ----------------------------------------------------------------------------
-# Plan Daniel 30.10.2026 (docs/SmallTV_Anzeige_Plan.md). Gerät: GeekMagic SmallTV Ultra, Firmware Ultra-V9.0.40, 240×240,
+# Plan Besitzer 30.10.2026 (docs/SmallTV_Anzeige_Plan.md). Gerät: GeekMagic SmallTV Ultra, Firmware Ultra-V9.0.40, 240×240,
 # ESP8266, HTTP ohne Passwort. Was MoveEye zeigt (pro Bildschirm wählbar):
 #   status  Zustand Aus / Wachsam / Voll, Akku (auch der 🧪 simulierte), letzte Meldung, «Stand» (Uhrzeit)
 #   alarm   Bildausschnitt mit «Fuchs · 91 % · 6 m» (Tiere); Personen: Standard nur Symbol + Text, Schalter «Bild auch bei
@@ -43371,7 +43371,7 @@ for _a, _b in (('<section id="detect" data-icon="🎯"><h2>Erkennung</h2>',
 STV_CFG = {"stv_on": True, "stv_list": [], "stv_sim": {"on": True, "status": True, "alarm": True, "game": True, "brt": 60, "rot": True},
            "stv_person_pic": False, "stv_animals": True, "stv_night": True, "stv_night_brt": 10, "stv_alarm_s": 60,
            "stv_bright_s": 20, "stv_gap_s": 5, "stv_clock_min": 10, "stv_alarm_keep_min": 5}
-# 30.10.2026 Abend (Daniel): per display «Live-Bild und Wechsel» («rot»): by day live picture <-> battery page every 30 s,
+# 30.10.2026 Abend (Besitzer): per display «Live-Bild und Wechsel» («rot»): by day live picture <-> battery page every 30 s,
 # alarm as animated GIF (me_a.gif / me_b.gif) 60 s, then the still picture 5 min (553). Off = the status page as before.
 # Saved displays without «rot» stay off (no surprise), a newly added display has it on (stv_edit «add»).
 for _k, _v in STV_CFG.items():
@@ -43978,7 +43978,7 @@ def stv_level_name(lang=None):
 
 
 def _stv_simtimes(text, now):
-    """2.98.48 (Daniel): with the simulator the times in a message text are shown in the simulator's time too («erkannt um 13:04:40»)"""
+    """2.98.48 (Besitzer): with the simulator the times in a message text are shown in the simulator's time too («erkannt um 13:04:40»)"""
     if not (CFG.get("sim_on") and simval_live()):
         return text
     delta = now - datetime.now()
@@ -44199,7 +44199,7 @@ def stv_plan(e, now=None):
     g = STV["game"]
     playing = bool(e.get("game") and g and now - STV["game_t"] < 10 and g.get("round") in ("countdown", "play"))
     if e.get("alarm") and alarm_on and not playing:        # in a round the players are the persons: the game shows «Erwischt!»
-        if now - a["t"] < gif_s:                           # 553: first the animation (GIF) - on every display (Daniel 30.10.), with rotation then the still picture
+        if now - a["t"] < gif_s:                           # 553: first the animation (GIF) - on every display (Besitzer 30.10.), with rotation then the still picture
             key = ("alarmgif", a["t"], red, lang)
             return "gif", key, lambda: stv_render_alarm_gif(a, lang, red), brt, True
         key = ("alarm", a["t"], red, lang, rot)
@@ -44410,7 +44410,7 @@ STV_JS = _zd('552_smalltv/STV_JS', "")
 # Ein (nur tagsüber - nachts bleibt die rote, gedimmte Statusseite):
 #   alle STV_ROT_S = 30 s wechselt die Seite: gerade Zeitscheibe «Live-Bild» (Standbild der Hauptkamera, 240 × 240 mit
 #   Leiste Uhrzeit · Aus/Wachsam/Voll · Akku), ungerade «Akku und Strom» (grosser Akku, Laden/Solar, Verbrauch, Restlaufzeit,
-#   «SIM» bei Simulator-Werten). Das Live-Bild ist nur bei jeder zweiten Live-Zeitscheibe neu (Daniel 30.10.: halb so viele
+#   «SIM» bei Simulator-Werten). Das Live-Bild ist nur bei jeder zweiten Live-Zeitscheibe neu (Besitzer 30.10.: halb so viele
 #   Uploads, ein neues Bild alle 2 min, beim Zeigen höchstens 60 s alt); dazwischen wird es nur wieder gezeigt;
 #   das Bild ist das reine Kamerabild ohne Leiste «Tilt … | CPU …» und ohne Rahmen (410 frame_clean, nur auf Anfrage);
 #   die Akku-Seite liegt noch auf dem Gerät (me_a / me_b, 552 StvDev.send «stored»): unverändert wird sie nur wieder gezeigt
@@ -44480,7 +44480,7 @@ def stv_clean_frame(w, wait=1.5):
 
 def stv_live_frame(person_pic=None):
     """a copy of the picture of the main camera (privacy zones already black) - persons pixelated unless «Bild auch bei Personen».
-    Daniel 30.10.: the pure picture without the strip «Tilt 50% | CPU …» and the marks of MoveEye (stv_clean_frame);
+    Besitzer 30.10.: the pure picture without the strip «Tilt 50% | CPU …» and the marks of MoveEye (stv_clean_frame);
     only when there is none, the picture of the page without its text line (as before)"""
     w = WATCH_REF.get("w") if "WATCH_REF" in globals() else None
     if w is None:
@@ -44682,7 +44682,7 @@ def _stv_day_hours():
 def stv_per_day(e):
     """about how many pictures a day go to this display (uploads = writes into its flash), without alarms / games:
     status: the clock every stv_clock_min minutes + about one change an hour; rotation by day: the live picture every
-    120 s (every second live slot, Daniel 30.10.), the battery page when its values changed (about every third time), night: status"""
+    120 s (every second live slot, Besitzer 30.10.), the battery page when its values changed (about every third time), night: status"""
     if not e.get("on"):
         return 0
     clock = max(1, int(CFG.get("stv_clock_min", 10) or 10))
@@ -44729,7 +44729,7 @@ def stv_state(lang=None):                                 # + 553: «ca. N Bilde
     r["rot_s"] = STV_ROT_S
     return r
 # ----------------------------------------------------------------------------
-# Wish of Daniel (30.10.2026, «Sirene im Test-Postfach»): siren_quiet() (250) held the siren back whenever the test inbox
+# Wish of Besitzer (30.10.2026, «Sirene im Test-Postfach»): siren_quiet() (250) held the siren back whenever the test inbox
 #   takes the messages (simulation with the switch, game round, drill, demo) - so the simulator never got «sound» and its
 #   visitors never fled from the siren (help 540 promises «Licht und Sirene im Simulator»). And without a loudspeaker on the
 #   PC (out_selected() False) nothing played at all. Now:
@@ -44866,7 +44866,7 @@ def sim_sound_selftest():
 
 SELFTEST_EXTRA.append(("Loudspeaker in the simulator: siren also in test-inbox mode, own sound ignored (554)", sim_sound_selftest))
 # ----------------------------------------------------------------------------
-# Wish of Daniel (30.10.2026, «Servo-Störungen»): in the simulation MoveEye ignored the under-voltage (072 servo_release /
+# Wish of Besitzer (30.10.2026, «Servo-Störungen»): in the simulation MoveEye ignored the under-voltage (072 servo_release /
 #   servo_safety_tick: «and not sim_on» - the PC has no vcgencmd), the simulator only had play / overshoot («Servos wie
 #   echt»). Now the simulator (simint.gd) sends with every answer «servo_sim»:
 #     v5 / uv     the 5 V rail of the simulated UPS HAT (sags with a weak battery and the servo current, or «Unterspannung
@@ -44881,7 +44881,7 @@ SELFTEST_EXTRA.append(("Loudspeaker in the simulator: siren also in test-inbox m
 #                 then the servo diagnosis compares: MoveEye drives > 6° but the head (head_deg, 350 SIM["head"]) moves < 1°
 #                 within 2-4 s = «blocked» (stuck at the end stop) -> fault (needs «Freigeben»). Real MG90S have no position
 #                 feedback - on the real device this needs the picture (servo test «steps without a change of the picture»).
-# 2.98.53 (Daniel: «Servo blockiert» all the time on 2.98.52 - false alarm): the check compared the range of the planned angle
+# 2.98.53 (Besitzer: «Servo blockiert» all the time on 2.98.52 - false alarm): the check compared the range of the planned angle
 #   with the range of the head over the last 2-4 s. After 2 s at rest, the first move of a new command (e.g. 7° in 0.3 s) was
 #   already «> 6°», while the head angle came from the reply BEFORE (simvals_take runs before 350 stores head_deg, and the
 #   simulator answers at most every few 100 ms, slower with «Sparen» / low FPS) -> «blocked» within about one second of any
@@ -45112,7 +45112,7 @@ def simservo_selftest():
 
 
 SELFTEST_EXTRA.append(("Servo faults of the simulator: under-voltage, PCA9685 reset, I2C, blocked (555)", simservo_selftest))
-# Daniel 30.10.2026 («Tailscale-Tunnel einbauen»): friends WITHOUT Tailscale join the online game (343) from home.
+# Besitzer 30.10.2026 («Tailscale-Tunnel einbauen»): friends WITHOUT Tailscale join the online game (343) from home.
 #   Switch «Online-Spiel über Tailscale Funnel» next to the invitations (web 544, window 592). Only an administrator may switch
 #   it on (web: g.role == "admin" and no app key, else 403; window: not in operator mode).
 #   How it is built (three walls, each one alone keeps the rest of MoveEye private):
@@ -45373,7 +45373,7 @@ def funnel_on(hours=None, source="web"):
     with FUNNEL["lock"]:
         if CFG.get("lock_on"):
             return False, {"code": "locked", "msg": "Not possible in operator mode", "steps": [], "cmd": "", "links": [], "raw": ""}
-        if not funnel_pw_set():                           # 2.98.47 (Daniel): only with a web password - without one everybody is admin
+        if not funnel_pw_set():                           # 2.98.47 (Besitzer): only with a web password - without one everybody is admin
             return False, {"code": "nopw", "msg": "Set a web password first - without one everybody in the network is administrator",
                            "steps": ["Settings → 🔒 Password: set a web password, then switch the funnel on."], "cmd": "", "links": [], "raw": ""}
         h = float(hours if hours is not None else CFG.get("game_funnel_hours") or 6)
@@ -45736,7 +45736,7 @@ def _tk_funnel_row(self, card):
         fr.after(5000, loop)
     fr.after(300, loop)
 # ----------------------------------------------------------------------------
-# Wish of Daniel (30.10.2026, «Wärmebild wie Thermal-90»): the simulator offers the thermal camera «Thermal-90 (Waveshare)»
+# Wish of Besitzer (30.10.2026, «Wärmebild wie Thermal-90»): the simulator offers the thermal camera «Thermal-90 (Waveshare)»
 #   (80 × 62 pixels, 90° × 67°, 15 pictures/s like the driver in 080, NETD 125 mK - Waveshare / Core Electronics data sheet)
 #   or the old 45° model; /info and every answer («thermal_model») say which -> SIM["info"]["thermal"] (230 sim_geom fits the
 #   picture with fov_h / fov_v, 290 fetches at the fps of the model).
@@ -48992,7 +48992,7 @@ class App:
         return tk.Frame(parent, bg=C["panel"], highlightthickness=1, highlightbackground=C["line"], padx=12, pady=10)
 
     def _tk_live_land(self, w=None, h=None):
-        """2.98.26: wide, low window (like Daniel's PC): the controls go right of the live picture instead of under it."""
+        """2.98.26: wide, low window (like the owner's PC): the controls go right of the live picture instead of under it."""
         try:
             w = w or self.root.winfo_width(); h = h or self.root.winfo_height()
             if w < 50 or h < 50:
@@ -49171,7 +49171,7 @@ class App:
             self.tab_btns[tid] = b
         self._paint_tabs()
         if show("hdr_buttons"):
-            # 639t (Daniel 01.11.2026): the one header - ? · ♪ · ↻ · DE · ☰ · ⇱ · ▲ · ⚒ in this order like on every web page and in
+            # 639t (Besitzer 01.11.2026): the one header - ? · ♪ · ↻ · DE · ☰ · ⇱ · ▲ · ⚒ in this order like on every web page and in
             # the simulator; ✉ messages, ◷ timeline, ? manual and ◐ light / dark / red light are in ☰ (nothing gone)
             self._kopf_tk(top)
         keys = [k for k in badge_keys if show(k)] if not getattr(self, "_kopf_folded", False) else []   # 639t: ▲ folded = one line
@@ -52443,7 +52443,7 @@ for _n, _f in (("_tk_bar", _tk_bar), ("_tk_history_bar", _tk_history_bar), ("_tk
                ("_tune_win", _tune_win)):
     setattr(App, _n, _f)
 # ----------------------------------------------------------------------------
-# Wunsch Daniel (29.10.2026):
+# Wunsch Besitzer (29.10.2026):
 #  1  «App-Schlüssel» for other programs (Home Assistant, iPhone shortcuts, an older MoveEye in the device overview): since
 #     2.98.23 (574) the password is refused over plain http from other devices. A key is made with a name, shown ONCE in full,
 #     stored only as a hash in the settings folder (like the cookies of the trusted devices, 040 - same idea, for programs).
@@ -52943,19 +52943,19 @@ def appkey_selftest():
 
 SELFTEST_EXTRA.append(("App keys (hash only, no security changes)", appkey_selftest))
 # ----------------------------------------------------------------------------
-# Wunsch Daniel (29.10.2026): the web password must not travel unencrypted over the network.
+# Wunsch Besitzer (29.10.2026): the web password must not travel unencrypted over the network.
 #   * A login (the browser's password question, the password of a program, setting a password) over plain http is only
 #     taken from this device itself (127.0.0.1, its own addresses) and from encrypted ways: the secure page (https,
 #     port + 1, self-signed certificate made once in the settings folder, part 420), Tailscale (WireGuard, 100.64.0.0/10)
 #     and «https over Tailscale» / a tunnel on this device (arrives as 127.0.0.1 with X-Forwarded-*).
 #   * From any other address the page answers with a short hint (certificate warning of the browser) and leads to the
 #     secure page - WITHOUT asking for the password over http (no «WWW-Authenticate»), so the browser never sends it.
-#   * Never lock Daniel out: if the secure page cannot run (no openssl / cryptography, port busy, «https_extra» off),
+#   * Never lock Besitzer out: if the secure page cannot run (no openssl / cryptography, port busy, «https_extra» off),
 #     the http login keeps working and a warning is shown (self-check, settings, window).
 #   * Unchanged: links with their own key (/na/ buttons in the push, /g/ guests, /x/ shares, /k/ kiosk, /tv/ ...), the
 #     public files, and a device that is already trusted (its cookie is no password).
 # ----------------------------------------------------------------------------
-# 3.23 (Daniel 01.11.2026): always on - the switch «login_https_only» is gone (an old saved value is ignored); from the device
+# 3.23 (Besitzer 01.11.2026): always on - the switch «login_https_only» is gone (an old saved value is ignored); from the device
 # itself (localhost) the login works without https as before, without a secure page the fallback below stays.
 # «Simple» shows the section only when something is wrong (no secure page, or switched off with a password); «Expert» always
 SIMPLE_IN_USE["Security"] = lambda: web_pw_active() and seclogin_mode() != "on"
@@ -53370,7 +53370,7 @@ def _tk_tl_open(app, index):
     except (OSError, AttributeError) as e:
         app._status("Night report", f"⚠ {e}"[:120])
 # ----------------------------------------------------------------------------
-# 2.98.15 (Wunsch Daniel, Vorschläge aus dem Konzept-Check von 2.98.14):
+# 2.98.15 (Wunsch Besitzer, Vorschläge aus dem Konzept-Check von 2.98.14):
 #   1 Eine Nachricht pro Woche: der Montags-Push «Woche im Simulator» (142, simweek_on) steckt jetzt im Wochenbericht (426).
 #     Einstellung weekrep_sim («mit der Woche im Simulator»), übernommen aus simweek_on.
 #   4 Akku: die Schwelle des Akku-Sparens (batt_save_pct, 105) und die der Lagerfeuer-Spiele (mode_fire_min_pct, 130) stehen
@@ -53500,7 +53500,7 @@ def nachlauf_selftest():
         CFG.update(keep); AUTOTUNE_LAST.clear()
     return True
 # ----------------------------------------------------------------------------
-# Wunsch Daniel (29.10.2026):
+# Wunsch Besitzer (29.10.2026):
 #  1  «Aus» in der Push-Nachricht nur mit PIN: der Knopf öffnet eine kleine Seite mit dem PIN-Feld (Schutz-PIN; ohne PIN das
 #     Web-Passwort; ohne beides: «Bitte zuerst eine Schutz-PIN setzen», nichts wird ausgeschaltet). Falsche PINs: dieselbe Sperre
 #     wie beim Ausschalten im Web (5 in 10 Minuten, ab 3 Diebstahl-Alarm). «Fehlalarm» und «Sirene» bleiben ohne PIN. (066)
@@ -54142,7 +54142,7 @@ TOGGLES.extend([
     ("AI detection", "ai_own_auto", "Own model: update by itself (checks daily, installs a new model only if its evaluation is not worse)"),
 ])
 # ----------------------------------------------------------------------------
-# Wish of Daniel (30.10.2026, menu review «Push-Nachrichten»): the section was 31 settings one below the other. Now:
+# Wish of Besitzer (30.10.2026, menu review «Push-Nachrichten»): the section was 31 settings one below the other. Now:
 #   Kopf      «Push senden» (notify_on), a status line («2 Kanäle · Test ✓»), «Alle testen»
 #   Wohin     one card per channel: ntfy · Web-Push · Telegram · Pushover · E-Mail · Webhook · SMS. ntfy, Telegram and
 #             Webhook are the «main channel» (only one of them: CFG notify_type, they share the retries and the outbox);
@@ -54749,7 +54749,7 @@ def push_selftest():
 
 SELFTEST_EXTRA.append(("Push messages as cards: levels, quiet hours, old settings (579a)", push_selftest))
 # ----------------------------------------------------------------------------
-# Paket «Nacht-Testlauf» (Daniel 31.10.2026). The simulator (nachtlauf.gd, control «nacht») plays a seeded night: toilet
+# Paket «Nacht-Testlauf» (Besitzer 31.10.2026). The simulator (nachtlauf.gd, control «nacht») plays a seeded night: toilet
 # trips (some with a torch), cat / fox / hedgehog, a late car, one hour of rain, wind, fog in the morning and EXACTLY ONE
 # real incident (somebody sneaks to the tent / bike / caravan). It writes down every event with start / end and place
 # («Wahrheit»). MoveEye logs what it did: its alarms (Notifier.person / prealarm, before the push rules: quiet hours and
@@ -55558,7 +55558,7 @@ SELFTEST_EXTRA.append(("Night test run: matching, owner only, options (579b)", n
 # ----------------------------------------------------------------------------
 TRX['fr'].update(_zd('580_uebersetzungen_fr/TRX_fr_update', _ZDDict()))
 # ----------------------------------------------------------------------------
-# 2.98.29 (Wunsch Daniel «Fenster nachziehen»): the window gets the same «Ansicht» as the live page of the web (536):
+# 2.98.29 (Wunsch Besitzer «Fenster nachziehen»): the window gets the same «Ansicht» as the live page of the web (536):
 #   presets Nur schauen / Bedienen / Einrichten, layout automatic / portrait / landscape, picture size, «Grösse» (UI scale,
 #   Tk scaling: all fonts + joystick + tiles), favourites (max. 8) + «… mehr», order and hidden quick switches, cards
 #   (Bedienung, Einrichten), joystick only with a pan / tilt head (option always / never). Stored in the settings of the
@@ -56257,7 +56257,7 @@ TEXTS.extend([
 ])
 for _k in ("kopf_wild", "kopf_ov", "servo_kind"):
     TEXT_SPECS[_k] = ("enum", _k)
-# 2.98.41 (Daniel): «kluge Runde» is a sub-switch directly under «Patrouille» (same CFG key kopf_round), shown only when
+# 2.98.41 (Besitzer): «kluge Runde» is a sub-switch directly under «Patrouille» (same CFG key kopf_round), shown only when
 # «Patrouille» is on - web (530: row class «subtg», hidden in the refresh) and window (_kr_tk_refresh below).
 _kr_i = next((i for i, t_ in enumerate(TOGGLES) if t_[1] == "patrol"), len(TOGGLES) - 1)
 TOGGLES.insert(_kr_i + 1, ("Patrol", "kopf_round", "smart: look longer at the important directions"))
@@ -56348,7 +56348,7 @@ def _kr_tk_refresh(self, *a, **k):
 App._refresh = _kr_tk_refresh
 
 # ----------------------------------------------------------------------------
-# 2.98.33 (Wunsch Daniel):
+# 2.98.33 (Wunsch Besitzer):
 #   A) Rückmeldung an den Entwickler von überall: ein dezentes 💬 im Kopf jeder Webseite (ein Dialog für alle Seiten, hier
 #      im Skript /fbx/ui.js), im Fenster (💬 im Kopf, Reiter Mehr, Einstellungen) und im 3D-Simulator (Knopf → mw_cmd
 #      «feedback», 350). Art Fehler / Wunsch / Lob / Frage, «Wie zufrieden?» 1–5 Sterne, Version und Seite immer dabei,
@@ -56357,7 +56357,7 @@ App._refresh = _kr_tk_refresh
 #      FB_SHOT_MAX. Gesendet wird wie bisher von feedback_send / feedback_flush (370): Text als ntfy-Nachricht, das Bild als
 #      zweite Nachricht mit Anhang (PUT, wie die Alarm-Pushes mit Bild).
 #   B) «Über MoveEye»: Antippen der Versionsnummer neben dem Logo (Web und Fenster; ein einzelnes Tippen – 7× schnell
-#      bleibt für die kleine Überraschung) und «Über MoveEye» unten in Mehr. Geschichte, Entwickler «Daniel alias Elektro»,
+#      bleibt für die kleine Überraschung) und «Über MoveEye» unten in Mehr. Geschichte, Entwickler «Elektro»,
 #      Zeitleiste, Zahlen (zur Laufzeit gezählt), aufklappbar «Für Technik-Interessierte». Texte: 622.
 # ----------------------------------------------------------------------------
 INFO_PARTS = 264                       # number of parts in quelle/ (written by werkzeuge/bauen.py --neue-version)
@@ -56385,7 +56385,7 @@ INFO_TIMELINE = [
 ]
 INFO_STORY = [
     "MoveEye was born while camping, from a simple question: who keeps an eye on the tent while we sleep or are away? Instead of an expensive alarm system Elektro wanted something of his own - a small camera on a pan / tilt head that recognises wild animals and persons and quietly reports to the phone.",
-    "The developer is Elektro (alias Daniel) from Switzerland. Elektro is a robotics developer by profession - but MoveEye was honestly built together with Claude, an AI by Anthropic. Elektro brings the ideas, the wishes and the tests on the real device, Claude writes and explains the code. Out of the joy of tinkering a small webcam script quickly became a whole system - with web page, window, 3D simulator and games for the campfire.",
+    "The developer is Elektro from Switzerland. Elektro is a robotics developer by profession - but MoveEye was honestly built together with Claude, an AI by Anthropic. Elektro brings the ideas, the wishes and the tests on the real device, Claude writes and explains the code. Out of the joy of tinkering a small webcam script quickly became a whole system - with web page, window, 3D simulator and games for the campfire.",
     "Do you like MoveEye, or does something not work? With 💬 your message reaches Elektro directly - anonymously.",
 ]
 INFO_TECH = [
@@ -56427,7 +56427,7 @@ def about_info(lang=None):
     L = cur_lang(lang); N = info_numbers()
     fmt = {k: _fbx_n(v) for k, v in N.items()}
     return {"ok": True, "lang": L, "title": tr("About MoveEye", L), "version": APP_VERSION,
-            "dev": tr("Elektro (alias Daniel)", L), "dev_where": tr("Switzerland", L),
+            "dev": tr("Elektro", L), "dev_where": tr("Switzerland", L),
             "story": [tr(x, L) for x in INFO_STORY],
             "tech_title": tr("For the technically interested", L),
             "tech": [trf(x, L, **fmt) for x in INFO_TECH],
@@ -57257,7 +57257,7 @@ for _n, _f in (("_g2_tk_widget", _g2_tk_widget), ("_g2_tour", _g2_tk_tour), ("_g
                ("_tab", _g2_tk_tab), ("run", _g2_tk_run)):
     setattr(App, _n, _f)
 # ----------------------------------------------------------------------------
-# Wish of Daniel (29.10.2026, Konzept-Check «one system»): the setup assistant (/api/setup, before: 4 steps), the first-open
+# Wish of Besitzer (29.10.2026, Konzept-Check «one system»): the setup assistant (/api/setup, before: 4 steps), the first-open
 # explanations (515), Simple / Expert, «Platz einrichten» (317), the walk test (415), the protection assistant (135) and
 # the push test are ONE guide now:
 #   * guide after (re)install: «Quick (about 5 min) or thorough?» - quick = basics, push, camera + place, protection +
@@ -57622,7 +57622,7 @@ FACTORY_KEEP = {
     # paths, the language of the page and internal markers (otherwise old migrations / news would run again)
     "record_dir", "storage_path", "lang", "sim_autostart_v2", "dev_phase_done", "app_icon_moveeye_done", "app_icon_orange_done",
     "news_seen_web", "news_seen_tk", "weekcheck_last", "weekrep_last", "report_last_day",
-    # updates (Daniel, development phase: the fast test updates must keep working after a reset)
+    # updates (Besitzer, development phase: the fast test updates must keep working after a reset)
     "update_mode", "update_url", "update_token", "update_unsigned", "update_unsigned_t", "update_hour", "update_push", "update_notified",
 }
 FACTORY_WORD = "ZURÜCKSETZEN"
@@ -57812,7 +57812,7 @@ def g2_routes(app, watch, reply, body):
             return Response("not found", 404)
         return send_file(p, mimetype="application/json", as_attachment=True, download_name=os.path.basename(p), max_age=0)
 # ----------------------------------------------------------------------------
-# Wish of Daniel (30.10.2026): a small QR icon next to every link that a phone should open; the link and «Copy» stay.
+# Wish of Besitzer (30.10.2026): a small QR icon next to every link that a phone should open; the link and «Copy» stay.
 #   Web: one shared helper for every page (rendered into <head> by render_page below, so the main page has it too):
 #     qrBtn(url, title, opts) -> a small QR button;  qrShow(url, title, opts) -> big overlay (QR, link, Copy, Print, Close)
 #     opts: {secret: true} (a warning, never cached), {alt: [{label, url, note}]} (choice, e.g. ntfy Android / iPhone),
@@ -58587,12 +58587,12 @@ SELFTEST_EXTRA.append(("Servo fault memory and maintenance hints", servo_diag_se
 SELFTEST_EXTRA.append(("Taught points (teach-in)", teach_selftest))
 SELFTEST_EXTRA.append(("Servo page and Not-Aus on the live page", servo_web_selftest))
 # ----------------------------------------------------------------------------
-# Wish of Daniel (30.10.2026): an own, ABSTRACT mascot «Blinki» - only in the guide (setup assistant) and the tours.
+# Wish of Besitzer (30.10.2026): an own, ABSTRACT mascot «Blinki» - only in the guide (setup assistant) and the tours.
 # Built from the shapes of the logo (144 / simulator mw_logo.gd): the orange field-of-view fan is the body, the eye at the
 # bottom (orange iris, dark pupil) is the face, the four detection corners float in the fan and show the mood.
 #   * blinks every few seconds (the name), looks left / right, hops when a step is done, «talks» when a new text comes
 #   * moods: normal · point (explains, looks at the text) · happy (eye smiles, heart) · think (looks up, three dots)
-# Daniel 31.10.2026: Blinki everywhere WITHOUT the orange fan - eye, rim, feet; the mood shows in the eye and the hop.
+# Besitzer 31.10.2026: Blinki everywhere WITHOUT the orange fan - eye, rim, feet; the mood shows in the eye and the hop.
 #   The mood signs (corners, arrow, heart, dots) appear for ~2 s in a small speech bubble above / right of Blinki, only when
 #   the mood changes (MWBlinki.mood), then fade out; same bubble in the simulator (mehr_icons.gd blinki_bubble). Window: no
 #   bubble. viewBox now 26 59 48 52 (the old coordinates stay). The logo (144 / mw_logo.gd) is separate and keeps its fan.
@@ -58797,7 +58797,7 @@ def blinki_tk_say(parent, mood, title, text="", bg=None):
         return False
 TRX['it'].update(_zd('590_uebersetzungen_it/TRX_it_update', _ZDDict()))
 # ----------------------------------------------------------------------------
-# Plan Daniel 30.10.2026: the wide picture as a tile on /sim (Simulator-Zentrale, 139) and in Sim-Kompakt (549). No new
+# Plan Besitzer 30.10.2026: the wide picture as a tile on /sim (Simulator-Zentrale, 139) and in Sim-Kompakt (549). No new
 # stream: the picture is the extra camera sim:1 that MoveEye already fetches (440), shown through /cam_feed/<n> only while
 # its sheet is open (the stream stops when the sheet closes). The tile sheet: the picture (tap = big, tap again / Esc =
 # back), the four mounts (simulator control wide_mount), whether it steers the head as overview (163).
@@ -59109,11 +59109,11 @@ for _k, _v in _HX_KIHILFE.items():
         TRX[_L].setdefault(_k, _v[_i + 1])
 WEB_PAGE = WEB_PAGE.replace("/*KIHDE*/{}", json.dumps({_k: _v[0] for _k, _v in _HX_KIHILFE.items()}, ensure_ascii=False), 1)
 # ----------------------------------------------------------------------------
-# Wish of Daniel (30.10.2026): the emergency stop «⏹ Stopp» is hidden while MoveEye runs in simulation mode - the real servos
+# Wish of Besitzer (30.10.2026): the emergency stop «⏹ Stopp» is hidden while MoveEye runs in simulation mode - the real servos
 # are not used then. The web side is in 541 (servo_client_state "sim" → #srv-stop hidden); the setting servo_stop_btn stays for
 # the real hardware. Here the window: every «⏹ Stopp» made by App._fbtn with the command _srv_estop_btn (570, all three
 # layouts of the camera bar) is remembered and taken off / put back by App._refresh (it runs every few seconds).
-# 3.16 (Daniel 31.10.2026): in the simulation the whole small column (speed, ⇆, centre, calibrate, waypoints) is left out
+# 3.16 (Besitzer 31.10.2026): in the simulation the whole small column (speed, ⇆, centre, calibrate, waypoints) is left out
 # (570 _build_controls, flag self._ctl_sim); _refresh builds the tab again when the simulation is switched.
 # ----------------------------------------------------------------------------
 
@@ -59509,7 +59509,7 @@ _SVDE = json.dumps({_k: DE.get(_k, _v[0]) for _k, _v in _HX_SIMWERTE.items()}, e
 WEB_PAGE = WEB_PAGE.replace("/*SVDE*/{}", _SVDE, 1)
 SIM_PAGE = SIM_PAGE.replace("/*SVDE*/{}", _SVDE, 1)
 # ----------------------------------------------------------------------------
-# Plan Daniel 30.10.2026 (docs/Verfolgungs_Parcours.md). Here (not in 416) because SLIDERS (570) and the tab Simulator of the
+# Plan Besitzer 30.10.2026 (docs/Verfolgungs_Parcours.md). Here (not in 416) because SLIDERS (570) and the tab Simulator of the
 # window (572 / 592) come after 416. The full tile (A/B side by side, auto-tuning, game) is the web page; the window shows
 # the short form and opens the tile in the browser (like the other single tools of the Simulator centre).
 # ----------------------------------------------------------------------------
@@ -59867,7 +59867,7 @@ def smalltv_selftest():
         assert k_ == "game" and brt == 40, (k_, brt)         # during a round the players are the persons: the game stays
         STV["game"] = {"round": "end", "players": []}; STV["end_t"] = time.time()
         k_, _s, _f, brt, now_ = stv_plan(e)
-        assert k_ == "gif" and brt == 100 and now_, k_          # Daniel 30.10.: the alarm animation on every display
+        assert k_ == "gif" and brt == 100 and now_, k_          # Besitzer 30.10.: the alarm animation on every display
         assert stv_plan(dict(e, alarm=False))[0] == "game"
         STV["end_t"] = time.time() - 61
         assert stv_plan(dict(e, alarm=False))[0] == "status"      # the end screen only 60 s
@@ -59932,7 +59932,7 @@ def smalltv_rot_selftest():
         t0 = 30.0 * 100000                                   # an even slot: the live picture
         ks = [stv_plan(e, t0 + dt)[0] for dt in (0, 29, 30, 59, 60, 90)]
         assert ks == ["live", "live", "batt", "batt", "live", "batt"], ks
-        assert stv_plan(e, t0)[1] == stv_plan(e, t0 + 60)[1], "the live picture is new only at every second live slot (Daniel 30.10.)"
+        assert stv_plan(e, t0)[1] == stv_plan(e, t0 + 60)[1], "the live picture is new only at every second live slot (Elektro 30.10.)"
         assert stv_plan(e, t0)[1] != stv_plan(e, t0 + 120)[1], "a new live picture after 2 min"
         assert stv_plan(e, t0 + 30)[1] == stv_plan(e, t0 + 90)[1], "the battery page unchanged -> same picture (only shown again)"
         assert stv_plan(e, t0)[1] == stv_plan(e, t0 + 29)[1], "one picture per 30 s at most"
@@ -59959,7 +59959,7 @@ def smalltv_rot_selftest():
         STV["alarm"] = None
         assert stv_plan(e, t0 + 101)[0] == "game" and stv_plan(e, t0 + 112)[0] in ("live", "batt")   # 10 s without news: the game is over
         STV["game"] = None
-        # the live picture: the pure camera picture (410 frame_clean), not the page picture with HUD / marks (Daniel 30.10.)
+        # the live picture: the pure camera picture (410 frame_clean), not the page picture with HUD / marks (Besitzer 30.10.)
         class _W: pass
         w_ = _W(); w_.frame_out = np.full((240, 320, 3), 200, np.uint8); w_.frame_clean = np.zeros((240, 320, 3), np.uint8); w_.frame_clean_t = time.time()
         keep_w = WATCH_REF.get("w"); WATCH_REF["w"] = w_
@@ -60027,7 +60027,7 @@ TOGGLES.extend([
     (_LEDS, "led_heartbeat", "Blinki blink: a short double blink every few minutes = all is well (not at night)"),
     (_LEDS, "btn_on", "Buttons on the device (GPIO): «Protection» and «Acknowledge alarm»"),
     (_LEDS, "btn_allow_arm", "Button may switch the protection on"),           # 2.98.50: the buttons may do everything,
-    (_LEDS, "btn_allow_disarm", "Button may switch the protection off"),       # each action can be switched off (Daniel)
+    (_LEDS, "btn_allow_disarm", "Button may switch the protection off"),       # each action can be switched off (Besitzer)
     (_LEDS, "btn_allow_siren", "Button may stop the siren"),
     (_LEDS, "btn_allow_ack", "Button may acknowledge the alarm"),
     (_LEDS, "btn_notify_off", "Message when switched off at the device"),
@@ -60261,7 +60261,7 @@ WEB_PAGE = WEB_PAGE.replace("</body>", LED_JS.replace("/*LEDDE*/{}", "/*LEDDE*/"
                             .replace('/*LEDSVG*/""', json.dumps(BLINKI_SVG), 1).replace('/*LEDCSS*/""', json.dumps(LED_CSS), 1) + "</body>", 1)
 
 
-# 2.98.50 (Daniel): «Alarm quittieren» also in the alarm card of the tab «Schutz» («Was passiert bei einem Alarm?», 530) - the
+# 2.98.50 (Besitzer): «Alarm quittieren» also in the alarm card of the tab «Schutz» («Was passiert bei einem Alarm?», 530) - the
 # same function as the button of the card «Status-LED & Tasten» (led_ack: red blinking, siren, escalation)
 _LED_CHAIN_KEY_OLD = 'c.escalate_on, c.escalate_siren_s, LANG].join("|");'
 _LED_CHAIN_KEY_NEW = 'c.escalate_on, c.escalate_siren_s, LANG, !!(s.led && s.led.alarm)].join("|");'
@@ -60513,7 +60513,7 @@ def led_selftest():
             assert ("set", "watch") in calls and any("Button «Protection» short" in str(c[1]) for c in calls if c[0] == "log"), calls
             calls.clear()
             led_button_event("protect", "short", "GPIO 16")
-            assert ("set", "off") in calls, "PIN set: the button still switches off (Daniel 30.10.2026)"
+            assert ("set", "off") in calls, "PIN set: the button still switches off (Elektro 30.10.2026)"
             assert ("push", tr("Protection switched off at the device")) in calls, calls
             assert any("Protection switched off at the device" in str(c[1]) for c in calls if c[0] == "log"), "disarm at the device in the log"
             calls.clear(); CFG["armed"] = True; SOUND["playing"] = True
@@ -60783,7 +60783,7 @@ for _a, _b in (('<section id="detect" data-icon="🎯"><h2>Erkennung</h2>',
     if _a in HELP_PAGE:
         HELP_PAGE = HELP_PAGE.replace(_a, _a + _b, 1)
 # ----------------------------------------------------------------------------
-# Entscheid Daniel (31.10.2026): the card comes into the desktop window too. App._refresh (every few seconds) looks at
+# Entscheid Besitzer (31.10.2026): the card comes into the desktop window too. App._refresh (every few seconds) looks at
 # fixp_state(); a new card opens a small window (like the walk test, 575) with the picture of the spot and the buttons
 # «Ignorieren (Maske übernehmen)» / «Ist eine Person» / «Später» - the same answer as the web card (fixp_answer, 418).
 # ----------------------------------------------------------------------------
@@ -63181,18 +63181,18 @@ _HX_INFO = {
     'wait a moment': ('einen Moment warten', 'attends un instant', 'aspetta un momento', 'spetga in mument'),
     'About MoveEye': ('Über MoveEye', 'À propos de MoveEye', 'Informazioni su MoveEye', 'Davart MoveEye'),
     'history, developer, numbers': ('Geschichte, Entwickler, Zahlen', 'histoire, développeur, chiffres', 'storia, sviluppatore, numeri', 'istorgia, svilupader, cifras'),
-    'Elektro (alias Daniel)': ('Elektro (alias Daniel)', 'Elektro (alias Daniel)', 'Elektro (alias Daniel)', 'Elektro (alias Daniel)'),
+    'Elektro': ('Elektro', 'Elektro', 'Elektro', 'Elektro'),
     'Switzerland': ('Schweiz', 'Suisse', 'Svizzera', 'Svizra'),
     'MoveEye was born while camping, from a simple question: who keeps an eye on the tent while we sleep or are away? Instead of an expensive alarm system Elektro wanted something of his own - a small camera on a pan / tilt head that recognises wild animals and persons and quietly reports to the phone.': (
         'MoveEye ist beim Camping entstanden, aus einer einfachen Frage: Wer passt auf das Zelt auf, während wir schlafen oder unterwegs sind? Statt einer teuren Alarmanlage wollte Elektro etwas Eigenes – eine kleine Kamera auf einem Schwenk-Neige-Kopf, die Wildtiere und Personen erkennt und leise aufs Handy meldet.',
         'MoveEye est né en camping, d’une question simple : qui surveille la tente pendant que nous dormons ou sommes absents ? Plutôt qu’une alarme coûteuse, Elektro voulait quelque chose à lui – une petite caméra sur une tête orientable qui reconnaît les animaux sauvages et les personnes et prévient discrètement le téléphone.',
         'MoveEye è nato in campeggio, da una semplice domanda: chi tiene d’occhio la tenda mentre dormiamo o siamo via? Invece di un costoso impianto d’allarme Elektro voleva qualcosa di suo – una piccola telecamera su una testa orientabile che riconosce animali selvatici e persone e avvisa in silenzio il telefono.',
         'MoveEye è naschì durant il campadi, ord ina dumonda simpla: tgi fa adatg da la tenda, durant che nus durmin u essan davent? Empè d’in urden d’alarm char vuleva Elektro insatge agen – ina pitschna camera sin in chau che sa volva, che renconuscha animals selvadis e persunas ed avisa quietamain il telefonin.'),
-    'The developer is Elektro (alias Daniel) from Switzerland. Elektro is a robotics developer by profession - but MoveEye was honestly built together with Claude, an AI by Anthropic. Elektro brings the ideas, the wishes and the tests on the real device, Claude writes and explains the code. Out of the joy of tinkering a small webcam script quickly became a whole system - with web page, window, 3D simulator and games for the campfire.': (
-        'Der Entwickler ist Elektro (alias Daniel) aus der Schweiz. Elektro ist von Beruf Robotik-Entwickler – MoveEye ist aber, ganz ehrlich, zusammen mit Claude entstanden, einer KI von Anthropic. Elektro bringt die Ideen, die Wünsche und die Tests am echten Gerät ein, Claude schreibt und erklärt den Code. Aus Freude am Tüfteln wurde aus einem kleinen Webcam-Skript schnell ein ganzes System – mit Webseite, Fenster, 3D-Simulator und Spielen fürs Lagerfeuer.',
-        'Le développeur est Elektro (alias Daniel), de Suisse. Elektro est développeur en robotique de métier – mais MoveEye a honnêtement été créé avec Claude, une IA d’Anthropic. Elektro apporte les idées, les souhaits et les tests sur le vrai appareil, Claude écrit et explique le code. Par plaisir de bricoler, un petit script de webcam est vite devenu tout un système – avec page web, fenêtre, simulateur 3D et jeux pour le feu de camp.',
-        'Lo sviluppatore è Elektro (alias Daniel), dalla Svizzera. Elektro è sviluppatore di robotica di professione – ma MoveEye è nato, onestamente, insieme a Claude, un’IA di Anthropic. Elektro porta le idee, i desideri e i test sul vero apparecchio, Claude scrive e spiega il codice. Per il piacere di armeggiare, un piccolo script per webcam è diventato presto un intero sistema – con pagina web, finestra, simulatore 3D e giochi per il falò.',
-        'Il svilupader è Elektro (alias Daniel) da la Svizra. Elektro è svilupader da robotica da professiun – ma MoveEye è sincer naschì ensemen cun Claude, ina IA dad Anthropic. Elektro porta las ideas, ils giavischs ed ils tests vi da l’apparat vair, Claude scriva ed explitga il code. Ord plaschair da pruvar ora è naschì or d’in pitschen script da webcam spert in entir sistem – cun pagina web, fanestra, simulatur 3D e gieus per il fieu da campadi.'),
+    'The developer is Elektro from Switzerland. Elektro is a robotics developer by profession - but MoveEye was honestly built together with Claude, an AI by Anthropic. Elektro brings the ideas, the wishes and the tests on the real device, Claude writes and explains the code. Out of the joy of tinkering a small webcam script quickly became a whole system - with web page, window, 3D simulator and games for the campfire.': (
+        'Der Entwickler ist Elektro aus der Schweiz. Elektro ist von Beruf Robotik-Entwickler – MoveEye ist aber, ganz ehrlich, zusammen mit Claude entstanden, einer KI von Anthropic. Elektro bringt die Ideen, die Wünsche und die Tests am echten Gerät ein, Claude schreibt und erklärt den Code. Aus Freude am Tüfteln wurde aus einem kleinen Webcam-Skript schnell ein ganzes System – mit Webseite, Fenster, 3D-Simulator und Spielen fürs Lagerfeuer.',
+        'Le développeur est Elektro, de Suisse. Elektro est développeur en robotique de métier – mais MoveEye a honnêtement été créé avec Claude, une IA d’Anthropic. Elektro apporte les idées, les souhaits et les tests sur le vrai appareil, Claude écrit et explique le code. Par plaisir de bricoler, un petit script de webcam est vite devenu tout un système – avec page web, fenêtre, simulateur 3D et jeux pour le feu de camp.',
+        'Lo sviluppatore è Elektro, dalla Svizzera. Elektro è sviluppatore di robotica di professione – ma MoveEye è nato, onestamente, insieme a Claude, un’IA di Anthropic. Elektro porta le idee, i desideri e i test sul vero apparecchio, Claude scrive e spiega il codice. Per il piacere di armeggiare, un piccolo script per webcam è diventato presto un intero sistema – con pagina web, finestra, simulatore 3D e giochi per il falò.',
+        'Il svilupader è Elektro da la Svizra. Elektro è svilupader da robotica da professiun – ma MoveEye è sincer naschì ensemen cun Claude, ina IA dad Anthropic. Elektro porta las ideas, ils giavischs ed ils tests vi da l’apparat vair, Claude scriva ed explitga il code. Ord plaschair da pruvar ora è naschì or d’in pitschen script da webcam spert in entir sistem – cun pagina web, fanestra, simulatur 3D e gieus per il fieu da campadi.'),
     'Do you like MoveEye, or does something not work? With 💬 your message reaches Elektro directly - anonymously.': (
         'Gefällt dir MoveEye, oder klappt etwas nicht? Mit 💬 erreicht deine Nachricht Elektro direkt – anonym.',
         'MoveEye te plaît, ou quelque chose ne marche pas ? Avec 💬 ton message arrive directement chez Elektro – anonymement.',
@@ -64890,7 +64890,7 @@ for _L in ("fr", "it", "rm"):
 #     Meldung ist für den Besitzer, darum hat sie ihren eigenen Schalter. Ohne eingerichteten Push: nur in die Nachrichten.
 #   * Zustand «spieltest» an den Simulator (sim_state): on, seen (letzte id), st (sent / none / error / off / net), t - der
 #     Simulator zeigt damit im Entwickler-Fenster, ob es einen Push gibt; sein Schalter fragt über mw_cmd «spieltest_push».
-#   * Code-Prüfung (M1, Daniel 31.10.2026): der Simulator darf den Schalter nur AUSschalten - einschalten nur in MoveEye
+#   * Code-Prüfung (M1, Besitzer 31.10.2026): der Simulator darf den Schalter nur AUSschalten - einschalten nur in MoveEye
 #     (ein fremdes Gerät, das sich als Simulator meldet, könnte sonst Texte aufs Handy schicken). Gegen eine Flut: höchstens
 #     eine Push-Nachricht pro SPIELTEST_GAP_S Sekunden und SPIELTEST_MAX_H pro Stunde; was dazwischen kommt, wird gesammelt und
 #     mit der nächsten erlaubten Nachricht geschickt («+2 weitere»), über der Stundengrenze nur noch in die Nachrichten.
@@ -65127,7 +65127,7 @@ def spieltest_selftest():
 
 SELFTEST_EXTRA.append(("Play test messages of the 3D simulator (635a)", spieltest_selftest))
 # ----------------------------------------------------------------------------
-# Fehler (Screenshot Daniel, Simulator-Betrieb): Info-Meldungen («Tasten am Gerät», «Netzwerk») kamen mit dem rohen JSON als
+# Fehler (Screenshot Besitzer, Simulator-Betrieb): Info-Meldungen («Tasten am Gerät», «Netzwerk») kamen mit dem rohen JSON als
 # Text aufs Handy ({"event": "info", … "info_title": "{name}: Tasten am Gerät" …}, ä sichtbar). Ursache: der Hauptkanal
 # stand auf «Webhook» mit einer ntfy-Adresse - der Webhook schickt den JSON-Körper (json.dumps, ASCII-Escapes, info_title roh)
 # und nur den Titel als Kopfzeile; ntfy zeigt den Körper als Nachricht. Jetzt:
@@ -65413,7 +65413,7 @@ def push_show_name():
 
 
 def push_long(p):
-    """the full text for the e-mail (Daniel 31.10.2026: e-mail complete, the phone channels short): the text of the call
+    """the full text for the e-mail (Besitzer 31.10.2026: e-mail complete, the phone channels short): the text of the call
     site / the message text with time and camera, the distance, «+n», «late»"""
     ev = Notifier._event(p)
     if ev in ("info", "tamper"):
@@ -67396,7 +67396,7 @@ for _k, _v in _HX_DISC.items():
 # The state lives in the simulator (per PC: user://spiel/spielbereich.json); MoveEye keeps the last answer in
 # DATA_DIR/spielbereich.json so the tab shows it when the simulator is off. No ranking, no music, no animations besides
 # Blinki's blink.
-# Geschichten-Menü (Daniel 31.10.2026): the same cards as the simulator (geschichten.gd) - only to look at here: picture
+# Geschichten-Menü (Besitzer 31.10.2026): the same cards as the simulator (geschichten.gd) - only to look at here: picture
 # (/sim/story_pic/<id>.jpg from the simulator, else a drawn placeholder), one sentence, duration, «from X years», progress
 # in %; on top «Continue: <story>, <chapter> (x %)» as information; the head line has level and Spielstand. «Adventures»
 # is now «Discover». The badges moved into the discovery book (139 sheet 📖). «Das Hospiz» only for the owner (nacht_may:
@@ -67404,7 +67404,7 @@ for _k, _v in _HX_DISC.items():
 # Here (after 639h, before 640) because NAV_ITEMS (470), render_page (510/584), blinki_js (589),
 # smalltv_routes (552/599c), App (570) and the tables DE / TRX come before.
 # ----------------------------------------------------------------------------
-# 2.98.85 (Koordinator, bis Daniel entscheidet): «Spielen» steht unter «Mehr» (zweite Zeile nach «Übersicht») statt als 7. Reiter -
+# 2.98.85 (Koordinator, bis Besitzer entscheidet): «Spielen» steht unter «Mehr» (zweite Zeile nach «Übersicht») statt als 7. Reiter -
 # mit 7 Reitern passt die Leiste am Handy nicht mehr, «Mehr» wäre erst nach dem Wischen sichtbar. Als eigener Reiter wieder:
 # NAV_ITEMS.insert([k for k, *_r in NAV_ITEMS].index("more"), ("play", "/play", "Play area", "Playing"))  (+ NAV_SUB/NAV_OF-Zeilen weg)
 NAV_SUB["more"].insert(1, ("play", "/play", "Play area"))   # not «Play» (= «Abspielen» / «Lire» of videos)
@@ -68063,7 +68063,7 @@ SELFTEST_EXTRA.append(("Vorführung «Maggie» (page /sim/vorfuehrung, owner onl
 #   * /sim/trailer?id=…: startet den Trailer (wenn nicht schon einer läuft) und zeigt das Bild des Simulators
 #     (/sim/view.jpg?bare=1 – nur solange der Film läuft; danach ohne bare, sonst blieben die Knöpfe am PC versteckt),
 #     unten eine Leiste: Beenden, Nochmals, Ton, Stimme, Vollbild, Zurück.
-#   * Ton auch im Browser (Fix 3.19.x, Daniel: «am iPad nichts»): grosser Knopf «🔊 Tippen für Ton» (iOS braucht ein Tippen
+#   * Ton auch im Browser (Fix 3.19.x, Besitzer: «am iPad nichts»): grosser Knopf «🔊 Tippen für Ton» (iOS braucht ein Tippen
 #     vor Sprache und Audio; ein Tippen irgendwo genügt). Danach Erzähler (speechSynthesis, wie bisher) und Musik + Geräusche:
 #     /api/trailer?plan=1 holt den Ton-Plan des Simulators (trailer.gd ton_plan: Zeit, Klang, Lautstärke, Überblendung),
 #     /sim/trailer_ton/<klang>.wav die Klänge (ab 01.11.2026 echte Aufnahmen als MP3 aus simulator3d/klang/web/, ≈ 2.4 MB;
@@ -68143,12 +68143,12 @@ def trl_do(d, owner=True):
 
 TRL_PAGE = _zd('639n_trailer/TRL_PAGE', ZD_PAGE)
 
-# Sprachausgabe im Browser (Daniel 31.10.2026, Vorführung und Trailer): der Simulator meldet in /control … info das Feld
+# Sprachausgabe im Browser (Besitzer 31.10.2026, Vorführung und Trailer): der Simulator meldet in /control … info das Feld
 # «sprechen» {id, text, lang} (Erzähler, Untertitel, Texttafeln); die Seite liest jeden neuen Satz mit speechSynthesis vor, in
 # der Sprache von MoveEye (rm: eine romanische Stimme, falls das Gerät eine hat, sonst Deutsch). iOS: Ton erst nach einem
 # Tippen («🔊 Ton an»), dabei wird speechSynthesis einmal angestossen; Pause = Stimme verstummt. Dazu hält navigator.wakeLock
 # den Bildschirm wach, solange der Film läuft (iPad). Die Texte bleiben unten als Untertitel im Bild (der Simulator zeigt sie).
-# Stimme (Daniel 31.10.2026, «klingt fürchterlich»): automatisch die beste Stimme der Sprache – 1. Name/voiceURI mit Premium,
+# Stimme (Besitzer 31.10.2026, «klingt fürchterlich»): automatisch die beste Stimme der Sprache – 1. Name/voiceURI mit Premium,
 # Enhanced, Erweitert, Natural, Neural, Online oder Google, 2. lokale Stimme der Region (de-CH vor de-DE vor de-AT), 3. die
 # Standardstimme; die Liste kommt auf iOS / Chrome verzögert (voiceschanged + Nachfragen). Tempo 0.92, Trailer 0.88, Tonhöhe 0.95,
 # lange Sätze an Satzzeichen geteilt. Knopf «🗣 Stimme» neben 🔊: Liste der Stimmen (beste «empfohlen», ▶ Hörprobe), Tempo-
@@ -68332,7 +68332,7 @@ def trl_selftest():
 
 
 SELFTEST_EXTRA.append(("Trailer der Geschichten (page /sim/trailer, owner only)", trl_selftest))
-# Daniel (31.10.2026, Screenshots iPad): «Kopfbereich einklappbar, beide Teile einzeln» und «eine einheitliche Bedienleiste oben auf jeder Seite»
+# Besitzer (31.10.2026, Screenshots iPad): «Kopfbereich einklappbar, beide Teile einzeln» und «eine einheitliche Bedienleiste oben auf jeder Seite»
 # (bisher nur in Einstellungen: Suche mit drei Knöpfen, darunter Einfach / Experte, Symbole, Beim Start). Der Baustein kommt über
 # render_page() auf JEDE Seite mit Reitern (nav.nav); die Seite kann ihn über window.MWB_PAGE anpassen:
 #   simplePage() -> Seitenschlüssel für /api/ui_simple ("" = auf dieser Seite gibt es nur eine Ansicht: Einfach / Experte grau)
@@ -68426,7 +68426,7 @@ def _mwb_selftest():
 
 SELFTEST_EXTRA.append(("Header folds and bar (639o)", _mwb_selftest))
 # ----------------------------------------------------------------------------
-# Eine Quelle für beide Programme. Entscheide Daniel (31.10.2026): eine Einfach/Experte-Wahl, eine Sprache, Auf-/Zuklappen
+# Eine Quelle für beide Programme. Entscheide Besitzer (31.10.2026): eine Einfach/Experte-Wahl, eine Sprache, Auf-/Zuklappen
 # wird nicht geteilt, «Sensoren» im Simulator heisst «Zusatzgeräte» (extras, Strom und Netz bleiben darin).
 #   * UI_GEMEINSAM: die Datei, beim Bauen eingebettet (werkzeuge/bauen.py schreibt den Block unten neu, --pruefen meldet
 #     einen alten Stand) - die Signatur der Hauptdatei deckt sie mit ab. Nicht von Hand ändern: die JSON-Datei ändern, bauen.
@@ -68661,7 +68661,7 @@ SET_HELP["update_unsigned"] = ("Only for your own builds: MoveEye also installs 
 
 
 # ---- 3.23 Schritt 2 -------------------------------------------------------------------------------------------------------
-# * Updates (Daniel: «4 Schalter werden zu einer Auswahl wie im Simulator»): update_mode off | auto | dev statt update_auto /
+# * Updates (Besitzer: «4 Schalter werden zu einer Auswahl wie im Simulator»): update_mode off | auto | dev statt update_auto /
 #   update_install / update_fast / update_install_armed (MIGRATE_ONLY, 020). Alte Dateien: update_fast -> dev, update_install -> auto,
 #   sonst off. «auto» installiert nur bei «Aus» (das alte «auch bei Schutz an» = update_install_armed fällt weg; dev tut es immer).
 # * «Bewegung reduzieren» (reduce_motion auto | on | off, Gerät & Hilfe): Logo, Radar-Symbol, Blinki, Status-LED-Blinki im Web;
@@ -68888,10 +68888,10 @@ def schalter_selftest():
 
 
 SELFTEST_EXTRA.append(("Switches tidied up (639q)", schalter_selftest))
-# Daniel (1.11.2026): «der mittlere der 3 Knöpfe wird Meine Ansicht».
+# Besitzer (1.11.2026): «der mittlere der 3 Knöpfe wird Meine Ansicht».
 #   * aktiv: jedes Auf- / Zuklappen einer Gruppe / Karte durch den Benutzer wird gemerkt (die Seite schreibt gebündelt, 1 s).
 #   * «Alle zuklappen» / «Alle aufklappen»: Meine Ansicht ist aus, das Gemerkte bleibt; die Mitte stellt es wieder her.
-#   * beim Start ist Meine Ansicht der Standard. «Nur Gruppen» und der Schalter «Beim Start: Nur Gruppen» bleiben (Daniel:
+#   * beim Start ist Meine Ansicht der Standard. «Nur Gruppen» und der Schalter «Beim Start: Nur Gruppen» bleiben (Besitzer:
 #     nichts entfernen ohne Zustimmung): «Nur Gruppen» = langer Druck / Rechtsklick auf die Mitte; ist der Schalter ein, startet
 #     die Seite wie bisher mit «Nur Gruppen» (Meine Ansicht aus). Übernahme einmal (ui_ansicht_mig): wer «Beim Start: Nur Gruppen»
 #     hatte, bekommt als erste Meine Ansicht «Nur Gruppen offen» und der Schalter geht aus (sonst wäre Meine Ansicht nie der Start).
@@ -69068,7 +69068,7 @@ def _ansicht_selftest():
 
 
 SELFTEST_EXTRA.append(("My view (639r)", _ansicht_selftest))
-# Daniel (1.11.2026, Wahl 2): «schneller Zugriff auf die Entwickler-Werkzeuge, von möglichst überall».
+# Besitzer (1.11.2026, Wahl 2): «schneller Zugriff auf die Entwickler-Werkzeuge, von möglichst überall».
 #   * Web: auf jeder Seite mit Kopfzeile (über render_page) - langer Druck aufs Logo (header h1) öffnet Einstellungen → Entwickler
 #     (/settings?open=grp:dev, auf der Hauptseite direkt tabOpen). Ist die ganze Kopfzeile ausgeblendet (▴), wirkt der Griff ▾
 #     (#hdr-show) gleich. Rückmeldung: das Logo pulsiert während des Haltens, kurzes Vibrieren (navigator.vibrate) beim Auslösen.
@@ -69304,7 +69304,7 @@ def _devz_selftest():
 
 
 SELFTEST_EXTRA.append(("Long press on the logo = developer area (639s)", _devz_selftest))
-# Daniel (01.11.2026, Screenshot): «oben rechts im Kopf stehen je nach Reiter andere Knöpfe in anderer Reihenfolge» -> Entscheid: ein
+# Besitzer (01.11.2026, Screenshot): «oben rechts im Kopf stehen je nach Reiter andere Knöpfe in anderer Reihenfolge» -> Entscheid: ein
 # gemeinsamer Kopf, überall gleich. Die Liste der Knöpfe steht in simulator3d/ui_gemeinsam.json («kopf», eingebettet als UI_GEMEINSAM, 639p):
 #   ? Hilfe (Rundgang der Seite 516, sonst die Anleitung) · 🔔 Ton (Alarmton 510) · ↻ zuerst Live, dann neu laden (510, jetzt immer da)
 #   · DE Sprache · ☰ Menü · ⛶ Vollbild · ▲ Kopf einklappen (510) · 🛠 Entwickler (nur Entwickler-Bereich an UND Besitzer, wie 639s)
@@ -69314,7 +69314,7 @@ SELFTEST_EXTRA.append(("Long press on the logo = developer area (639s)", _devz_s
 # mit ihrer Id auf der Seite (nur unsichtbar), ihre Funktionen laufen unverändert.
 # Die Häkchen-Listen (☰ «Kopfzeile / Bereiche / Einstellungen», «◫ Ansicht der Live-Seite → Karten», Pi-Fenster ☰) zeigt derselbe Baustein:
 # MWK.toggles(box, gruppen) - Gruppen mit Symbol und Überschrift, pro Gruppe «alle an / aus», Chips mit Symbol und Namen, zwei Spalten
-# auf breiten Bildschirmen, eine auf dem Handy (Daniel 01.11.2026, zweiter Screenshot).
+# auf breiten Bildschirmen, eine auf dem Handy (Besitzer 01.11.2026, zweiter Screenshot).
 # Pi-Fenster: App._kopf_tk() (Knöpfe) und App._view_menu() (Liste) unten; Simulator: simulator3d/scripts/kopf.gd.
 
 MWK_KOPF = UI_GEMEINSAM["kopf"]
@@ -69751,7 +69751,7 @@ def _kopf_selftest():
 
 SELFTEST_EXTRA.append(("One header (639t)", _kopf_selftest))
 # ----------------------------------------------------------------------------
-# Wunsch Daniel (01.11.2026): neben jeder Fehlermeldung ein QR-Code bzw. Knopf, der das Problem löst.
+# Wunsch Besitzer (01.11.2026): neben jeder Fehlermeldung ein QR-Code bzw. Knopf, der das Problem löst.
 #   Katalog: simulator3d/fehler_katalog.json (eine Datei für MoveEye und den Simulator, Ergänzung zu ui_gemeinsam.json), beim
 #     Bauen hier als FEHLER_KATALOG eingebettet (werkzeuge/bauen.py fehler_katalog_einbetten; bleibt in der Hauptdatei, die Hilfe
 #     geht auch ohne Zusatzdaten). Pro Fehler: id, titel, text, schritte, optional aktion – in de / en / fr / it / rm.
@@ -69781,7 +69781,7 @@ import hmac as _fx_hmac
 
 FEHLER_KATALOG = json.loads(r"""{
  "v": 1,
- "_hinweis": "Gemeinsamer Fehler-Katalog MoveEye ↔ MoveEye Sim (Paket «Fehler-QR», Daniel 01.11.2026), Ergänzung zu ui_gemeinsam.json. Pro Fehler: Kennung, Titel, Erklärung, Schritte und optional eine Aktion, alles in de / en / fr / it / rm. MoveEye bettet die Datei beim Bauen ein (werkzeuge/bauen.py → quelle/639u_fehler_hilfe.py, FEHLER_KATALOG, bleibt in der Hauptdatei – Hilfe geht auch ohne Zusatzdaten); der Simulator liest sie aus res:// (scripts/fehler_hilfe.gd, export_presets.cfg). Neue Fehler: zuerst hier, dann bauen.",
+ "_hinweis": "Gemeinsamer Fehler-Katalog MoveEye ↔ MoveEye Sim (Paket «Fehler-QR», Elektro 01.11.2026), Ergänzung zu ui_gemeinsam.json. Pro Fehler: Kennung, Titel, Erklärung, Schritte und optional eine Aktion, alles in de / en / fr / it / rm. MoveEye bettet die Datei beim Bauen ein (werkzeuge/bauen.py → quelle/639u_fehler_hilfe.py, FEHLER_KATALOG, bleibt in der Hauptdatei – Hilfe geht auch ohne Zusatzdaten); der Simulator liest sie aus res:// (scripts/fehler_hilfe.gd, export_presets.cfg). Neue Fehler: zuerst hier, dann bauen.",
  "_felder": {
   "pfad": "Adresse der Hilfeseite in MoveEye: <MoveEye>/hilfe/fehler/<id>. Der QR-Code enthält nur diese Adresse (keine Passwörter, keine Schlüssel).",
   "fehler": "seite: mw | sim | beide. stufe: bad | warn. quelle.health: IDs der Selbstdiagnose von MoveEye (120 health_check), quelle.sim_diag: IDs der Selbstdiagnose des Simulators (diagnose.gd), quelle.meldung: englische Teile von Meldungen (Push, Bild «NO CAMERA FOUND»), quelle.wenn: Zusatzbedingung in MoveEye (639u). aktion: Schlüssel aus «aktionen». bau: Reiter der Seite «Bauen» mit der passenden Anleitung (real-bauen).",
@@ -70952,7 +70952,7 @@ FEHLER_KATALOG = json.loads(r"""{
     "de": [
      "Internet prüfen.",
      "Auf «Update erneut versuchen» tippen.",
-     "Meldet es «Signatur»: nur signierte Versionen installieren (Daniel signiert)."
+     "Meldet es «Signatur»: nur signierte Versionen installieren (Elektro signiert)."
     ],
     "en": [
      "Check the internet.",
@@ -72490,8 +72490,8 @@ def fx_check(base=None):
 def fx_selftest():
     probs, n = fx_check()
     assert not probs, f"{len(probs)} problems: " + " | ".join(probs[:10])
-    u = fx_url("CAM_NONE", "http://192.168.1.56:5000")
-    assert u == "http://192.168.1.56:5000/hilfe/fehler/CAM_NONE", u
+    u = fx_url("CAM_NONE", "http://192.0.2.56:5000")
+    assert u == "http://192.0.2.56:5000/hilfe/fehler/CAM_NONE", u
     for k in ("web_password", "notify_url", "hotspot_password", "tv_key"):     # never a secret in the QR text
         v = str(CFG.get(k) or "")
         assert len(v) < 6 or v not in u, k
@@ -72515,9 +72515,9 @@ SELFTEST_EXTRA.append(("Error help with QR code (simulator3d/fehler_katalog.json
 # GEH_QUELLE_SHA: Prüfsumme der Quelle (hardware/gehaeuse/Quellcode/*.py, bau.json, werkzeuge/gehaeuse_bauen.py) – der
 # Selbsttest (639w) vergleicht sie im Repository mit der Quelle und mit simulator3d/inhalte/gehaeuse/modelle.json.
 # ----------------------------------------------------------------------------
-GEH_QUELLE_SHA = '81709b43fce1455112e48a95811842311eeac19a42f43e3395c54739c3291a81'
+GEH_QUELLE_SHA = 'd5e568df0a5aad6c0c0f7b8892664c33a9cc11bc56e907dd08045051cd783345'
 GEH_BAU = json.loads(_zd('639v_daten_gehaeuse/GEH_BAU', ""))
-GEH_UI_DE = {"Case & build": "Gehäuse & Bau", "Guide, parts list, print files – in 3D in the workshop of the simulator": "Anleitung, Materialliste, Druckdateien – in 3D in der Werkstatt des Simulators", "Case": "Gehäuse", "View in the simulator": "Im Simulator ansehen", "Opens the workshop in the 3D simulator: turn, explode, see through, click parts, assembly step by step.": "Öffnet die Werkstatt im 3D-Simulator: drehen, zerlegen, durchsichtig, Teile anklicken, Montage Schritt für Schritt.", "Simulator not connected – start it and connect it on the page Simulator.": "Simulator nicht verbunden – starte ihn und verbinde ihn auf der Seite «Simulator».", "Opened in the simulator.": "Im Simulator geöffnet.", "Print files": "Druckdateien", "3MF plates for the Bambu Lab X2D (PETG, no supports)": "3MF-Platten für den Bambu Lab X2D (PETG, ohne Stützen)", "Single STL files: in the hand-over package (ZIP, about 60 MB), not in the repository.": "Einzelne STL-Dateien: im Übergabe-Paket (ZIP, ca. 60 MB), nicht im Repository.", "Assembly step by step": "Montage Schritt für Schritt", "Show this step in the simulator": "Diesen Schritt im Simulator zeigen", "Parts list": "Materialliste", "Qty": "Menge", "Part number": "Teilenummer", "Guides and source (GitHub)": "Anleitungen und Quellcode (GitHub)", "Detailed guide v5.1": "Ausführliche Anleitung v5.1", "Full parts list with order list": "Ganze Materialliste mit Bestellliste", "Measure first: UPS HAT (E) with its cells (assumed 90 × 80 × 26 mm) before printing the lower part.": "Zuerst nachmessen: UPS HAT (E) mit Akkus (angenommen 90 × 80 × 26 mm), bevor das Unterteil gedruckt wird.", "Own work of Daniel (DonElektro) – parametric Python model.": "Eigenes Werk von Daniel (DonElektro) – parametrisches Python-Modell.", "Step": "Schritt"}
+GEH_UI_DE = {"Case & build": "Gehäuse & Bau", "Guide, parts list, print files – in 3D in the workshop of the simulator": "Anleitung, Materialliste, Druckdateien – in 3D in der Werkstatt des Simulators", "Case": "Gehäuse", "View in the simulator": "Im Simulator ansehen", "Opens the workshop in the 3D simulator: turn, explode, see through, click parts, assembly step by step.": "Öffnet die Werkstatt im 3D-Simulator: drehen, zerlegen, durchsichtig, Teile anklicken, Montage Schritt für Schritt.", "Simulator not connected – start it and connect it on the page Simulator.": "Simulator nicht verbunden – starte ihn und verbinde ihn auf der Seite «Simulator».", "Opened in the simulator.": "Im Simulator geöffnet.", "Print files": "Druckdateien", "3MF plates for the Bambu Lab X2D (PETG, no supports)": "3MF-Platten für den Bambu Lab X2D (PETG, ohne Stützen)", "Single STL files: in the hand-over package (ZIP, about 60 MB), not in the repository.": "Einzelne STL-Dateien: im Übergabe-Paket (ZIP, ca. 60 MB), nicht im Repository.", "Assembly step by step": "Montage Schritt für Schritt", "Show this step in the simulator": "Diesen Schritt im Simulator zeigen", "Parts list": "Materialliste", "Qty": "Menge", "Part number": "Teilenummer", "Guides and source (GitHub)": "Anleitungen und Quellcode (GitHub)", "Detailed guide v5.1": "Ausführliche Anleitung v5.1", "Full parts list with order list": "Ganze Materialliste mit Bestellliste", "Measure first: UPS HAT (E) with its cells (assumed 90 × 80 × 26 mm) before printing the lower part.": "Zuerst nachmessen: UPS HAT (E) mit Akkus (angenommen 90 × 80 × 26 mm), bevor das Unterteil gedruckt wird.", "Own work of Elektro – parametric Python model.": "Eigenes Werk von Elektro – parametrisches Python-Modell.", "Step": "Schritt"}
 GEH_UI_TRX = _zd('639v_daten_gehaeuse/GEH_UI_TRX', _ZDDict())
 # real-bauen: Texte der Seite «Bauen» (englischer Schlüssel; vorhandene Übersetzungen von MoveEye gehen vor, 639w)
 GEH_UI2_DE = _zd('639v_daten_gehaeuse/GEH_UI2_DE', _ZDDict())
@@ -72526,17 +72526,17 @@ GEH_UI2_TRX = _zd('639v_daten_gehaeuse/GEH_UI2_TRX', _ZDDict())
 # BAU3D: Pfad -> [sha256 der Datei, gzip+base64]; BAU3D_GLB: [sha256, Grösse, gzip+base64]. Ausgeliefert von 639w (/bau3d/<pfad>,
 # /build/gehaeuse.glb) mit Content-Encoding gzip. Der Selbsttest vergleicht die Prüfsummen im Repository mit den Quellen.
 # ----------------------------------------------------------------------------
-BAU3D_QUELLE_SHA = '81709b43fce1455112e48a95811842311eeac19a42f43e3395c54739c3291a81'
+BAU3D_QUELLE_SHA = 'd5e568df0a5aad6c0c0f7b8892664c33a9cc11bc56e907dd08045051cd783345'
 BAU3D = _zd('639vb_daten_bau3d/BAU3D', _ZDDict())
 BAU3D_GLB = _zd('639vb_daten_bau3d/BAU3D_GLB', [])
 # aus simulator3d/inhalte/gehaeuse/modelle.json: Gruppe, aussen, Mitte und Explosion pro Teil (wie die Werkstatt im Simulator)
 BAU3D_MODELLE = json.loads(_zd('639vb_daten_bau3d/BAU3D_MODELLE', ""))
 # ----------------------------------------------------------------------------
-# Paket «real-gehaeuse» (01.11.2026), ausgebaut im Paket «real-bauen» (01.11.2026, Daniel: «ein Bediener kann MoveEye komplett
+# Paket «real-gehaeuse» (01.11.2026), ausgebaut im Paket «real-bauen» (01.11.2026, Besitzer: «ein Bediener kann MoveEye komplett
 # selbst bauen»). Eine Quelle: hardware/gehaeuse/bau.json (Teile, Materialliste mit Preis-Schätzung und Händler-Suche, Montage,
 # Drucken, Werkzeug, Sicherheit, Verkabeln, Software, Inbetriebnahme, Fehlersuche, Wartung, Varianten – 5 Sprachen).
 # werkzeuge/gehaeuse_bauen.py --texte macht daraus 639v (GEH_BAU, Texte), 639vb (three.js r160 + gehaeuse.glb, gepackt) und die
-# Daten des Simulators (werkstatt_daten.gd). Daniel (01.11.2026): die 3D-Werkstatt in MoveEye geht OHNE Simulator – MoveEye
+# Daten des Simulators (werkstatt_daten.gd). Besitzer (01.11.2026): die 3D-Werkstatt in MoveEye geht OHNE Simulator – MoveEye
 # liefert three.js, das Modell und die Daten selbst aus (auch offline); «Im Simulator ansehen» ist nur ein Zusatz.
 #   * /build: Seite (Reiter Mehr «Bauen»), Reiter über #uebersicht … #wartung; /case leitet auf /build weiter (alte Links).
 #   * /bau3d/<pfad>: three.js (gzip), /build/gehaeuse.glb: das Modell (gzip), /build/qr.svg: QR-Code zu dieser MoveEye-Seite.
@@ -72547,7 +72547,7 @@ BAU3D_MODELLE = json.loads(_zd('639vb_daten_bau3d/BAU3D_MODELLE', ""))
 #   * /api/case: GET = ob der Simulator verbunden ist; POST {do: "sim", step?} -> Simulator /control werkstatt (wie bisher).
 #   * Mehr (525) und das Fenster (572 _tk_more_bar): ein Eintrag «Bauen». Gemeinsame Menü-Datei: «more» -> build
 #     (simulator3d/ui_gemeinsam.json; im Simulator heisst derselbe Eintrag «Bauen», mehr.gd, Fenster werkstatt.gd mit denselben Reitern).
-#   * «Fertig kaufen» (Daniel 01.11.2026, Teil 639zj): schmaler Hinweis ganz oben (#g-fertig), Paket wählen, «Fertig bestellen
+#   * «Fertig kaufen» (Besitzer 01.11.2026, Teil 639zj): schmaler Hinweis ganz oben (#g-fertig), Paket wählen, «Fertig bestellen
 #     (Anfrage)» öffnet die Rückmeldung (584 mwOrder) mit Art «Bestellung fertiges Gerät» und dem Paket.
 # Hier (nach 639p) weil render_page, sim_control, MORE_PAGE, smalltv_routes (639n), UI_GEMEINSAM (639p) vorher kommen.
 # ----------------------------------------------------------------------------
@@ -73027,7 +73027,7 @@ for _L in ("fr", "it", "rm"):
     if HELP_X.get(_L):
         HELP_X[_L] = HELP_X[_L].replace(*_HELP_E3[_L], 1)
 # ----------------------------------------------------------------------------
-# Wunsch Daniel (01.11.2026): nach dem Aktualisieren war das Live-Bild schwarz, weil der Simulator gerade sein Update lud und
+# Wunsch Besitzer (01.11.2026): nach dem Aktualisieren war das Live-Bild schwarz, weil der Simulator gerade sein Update lud und
 # neu startete (Chip «SIMULATION · PC 1 % · ⟳ Update 3.25.0»). Jetzt:
 #   * simwait_reason(): warum gerade keine Bilder vom Simulator kommen - «update» (Simulator meldet busy.what = update, oder
 #     MoveEye hat das Update angestossen / kennt eine neuere Version und die Verbindung ist eben abgerissen), «scene» (Szene /
@@ -73576,7 +73576,7 @@ def egg_selftest():
 
 SELFTEST_EXTRA.append(("A secret of the simulator (heart over the live picture)", egg_selftest))
 # ----------------------------------------------------------------------------
-# Paket «Sicherung im Simulator» (Daniel 01.11.2026). Der Simulator macht die Sicherung selbst (simulator3d/scripts/sicherung.gd,
+# Paket «Sicherung im Simulator» (Besitzer 01.11.2026). Der Simulator macht die Sicherung selbst (simulator3d/scripts/sicherung.gd,
 # System → Sicherung): ZIP mit manifest.json (Version, Datum, Prüfsummen), ohne Zugangsdaten. Hier der Teil von MoveEye:
 #   * «In die MoveEye-Sicherung senden» im Simulator = Auftrag mw_cmd «sim_sicherung» (350). MoveEye holt das ZIP selbst über
 #     /control {"action": "sicherung", "do": "get", "name"} (der Simulator nimmt das nur vom verbundenen MoveEye / diesem PC an,
@@ -73830,7 +73830,7 @@ for _k, _v in _HX_SIMSICH.items():
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
 # ----------------------------------------------------------------------------
-# Daniel (31.10. / 01.11.2026): «In MoveEye umschalten, und der Simulator zieht sofort mit, und umgekehrt» - ohne eigenen Schalter.
+# Besitzer (31.10. / 01.11.2026): «In MoveEye umschalten, und der Simulator zieht sofort mit, und umgekehrt» - ohne eigenen Schalter.
 #   * Geteilt (ui_gemeinsam.json «shared», UIS_KEYS): Einfach/Experte, Symbole farbig/schlicht, Sprache, Bewegung reduzieren,
 #     Stimme, Rundgang, Blinki, «Neu in …». Hell/Dunkel/Rotlicht bleibt pro Gerät («local»).
 #   * Protokoll (simulator3d/schnittstelle.json): MoveEye schickt im 10-Hz-Zustand (POST /state) «ui» = {"rev", "took", "v": {…}}.
@@ -74455,7 +74455,7 @@ def ui_more_selftest():
 SELFTEST_EXTRA.append(("View shared with the simulator (ui, 639zb)", ui_sync_selftest))
 SELFTEST_EXTRA.append(("«Mehr» in the same order MoveEye ↔ simulator (ui_gemeinsam.json «more», 639zb)", ui_more_selftest))
 # ----------------------------------------------------------------------------
-# Wunsch Daniel (01.11.2026): nach einem Update zeigt MoveEye «Neu in …» - neu steht bei jeder Neuerung ein Link, der direkt
+# Wunsch Besitzer (01.11.2026): nach einem Update zeigt MoveEye «Neu in …» - neu steht bei jeder Neuerung ein Link, der direkt
 # zur neuen Funktion springt. Gilt genauso im Simulator (scripts/news.gd).
 #   * Die Ziele: simulator3d/ui_gemeinsam.json «neu_ziele» (Version -> Ziel, für beide Programme). Logik in Teil 137
 #     (news_links_on, news_href, news_link_item); Web 530 (newsGo, keyOpen: /settings?setting=<Einstellung> klappt die Karte
@@ -74563,7 +74563,7 @@ SELFTEST_EXTRA.append(("Links to what is new («Neu in …», ui_gemeinsam.json 
 #     auf eine freie Adresse gesetzt (0x44, sonst 0x45); mit «Solar ein» bleibt alles, wie der Bediener es eingestellt hat.
 #   - Die Konfliktprüfung (030) kennt jetzt auch die Wärmebildkamera (Thermal-90, fest 0x40) und lässt den UPS HAT (E) aus
 #     (eigener Chip auf 0x2D, die Adresse «ups_addr» gilt nur für den INA219 der UPS HATs A / B / C).
-#   - Entscheid Daniel 01.11.2026: Shunt ab Werk 0,01 Ohm (Gravity INA219, DFRobot SEN0291, Bastelgarage 421023; vorher 0,1 =
+#   - Entscheid Besitzer 01.11.2026: Shunt ab Werk 0,01 Ohm (Gravity INA219, DFRobot SEN0291, Bastelgarage 421023; vorher 0,1 =
 #     blaues Billig-Modul). Alte Einstellungen werden EINMAL umgestellt (Merker «solar_shunt_mig_done»), wenn noch der alte
 #     Standard 0,1 steht und Solar nie eingeschaltet wurde (= nie selbst eingerichtet). Mit Solar ein bleibt die eigene Wahl.
 # ----------------------------------------------------------------------------
@@ -74661,7 +74661,7 @@ def solar_shunt_selftest():
 SELFTEST_EXTRA.append(("I2C addresses: no conflict with the standard values (639zh)", i2c_adressen_selftest))
 SELFTEST_EXTRA.append(("Solar meter: shunt 0.01 Ohm, old standard taken over once (639zh)", solar_shunt_selftest))
 # ----------------------------------------------------------------------------
-# Auftrag Daniel (01.11.2026), Bau-Infos hardware/gehaeuse/bau.json «ladeled»: GPIO 6 (pin 31) -> 330 Ω -> green 3 mm LED -> GND.
+# Auftrag Besitzer (01.11.2026), Bau-Infos hardware/gehaeuse/bau.json «ladeled»: GPIO 6 (pin 31) -> 330 Ω -> green 3 mm LED -> GND.
 #   * what it shows (the first that applies wins), from STATE["battery"] (100: UPS HAT (E) / INA219, 285: the simulated HAT):
 #       on    the battery charges (UPS HAT (E): state bit «charging», INA219: current into the battery)
 #       fast  the battery is almost empty - the same limit as the warning «Battery almost empty» (100: BATT_LOW_PCT_UPS on the
@@ -75019,7 +75019,7 @@ def charge_led_selftest():
 
 SELFTEST_EXTRA.append(("Charge LED on GPIO 6: charging / full / almost empty, night, simulator (639zi)", charge_led_selftest))
 # ----------------------------------------------------------------------------
-# Wunsch Daniel (01.11.2026): auf der Bastel- bzw. Werkstatt-Seite soll jeder sehen, dass man MoveEye auch fixfertig kaufen kann.
+# Wunsch Besitzer (01.11.2026): auf der Bastel- bzw. Werkstatt-Seite soll jeder sehen, dass man MoveEye auch fixfertig kaufen kann.
 #   * Eine Quelle: simulator3d/ui_gemeinsam.json «fertig» (kind, emoji, draw, standard, texts {hint, button, topic, price,
 #     package, contact, contact_note, contact_needed, text}, pakete [{id, names, desc}]) - MoveEye (eingebettet als
 #     UI_GEMEINSAM, 639p) und der Simulator (scripts/ui_gemeinsam.gd fertig_*) zeigen dieselben Texte.
@@ -75027,7 +75027,7 @@ SELFTEST_EXTRA.append(("Charge LED on GPIO 6: charging / full / almost empty, ni
 #     auf Anfrage», Knopf -> mwOrder(paket) (584); ohne Rückmeldungs-Skript: #order.
 #   * Rückmeldung (584 mwFeedback {kind: "order", pkg}): fünfte Art nur in diesem Fall, Paket umschaltbar, Text vorausgefüllt,
 #     Feld «Kontakt (E-Mail/Telefon)» Pflicht (auch feedback_send prüft das), keine technischen Angaben / kein Bild als Standard.
-#   * Pi-Fenster (Daniel 01.11.2026): Reiter Mehr zeigt unter den Knöpfen denselben Hinweis mit «Fertig bestellen (Anfrage)»
+#   * Pi-Fenster (Besitzer 01.11.2026): Reiter Mehr zeigt unter den Knöpfen denselben Hinweis mit «Fertig bestellen (Anfrage)»
 #     -> App._feedback("order", paket) (584: fünfte Art, Paket-Wahl, Text vorausgefüllt, Kontakt Pflicht).
 #   * feedback_send (370): «Paket: … (…) · Preis auf Anfrage» in der Nachricht; der Kontakt steht nur in der Nachricht (Ausgang
 #     bis gesendet), log_event schreibt ihn nie.
