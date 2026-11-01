@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.34.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.35.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -446,6 +446,10 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.35.0
+3.35.0: Bergtal: ein neues Geheimnis.
+So testest du: im Bergtal aufmerksam sein (mehr wird nicht verraten).
 
 NEU IN 3.34.0
 3.34.0: Werkstatt (Mehr › Werkstatt): das Gehäuse v5.1 drehen, zerlegen (Explosion), durchleuchten und Schritt für Schritt
