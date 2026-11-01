@@ -175,7 +175,7 @@ def part_lid():
 
 
 # ======================= DREHTELLER (Pan-Koordinaten) ===================
-TT_SCREWS = [(-11.0, -20.5), (11.0, -20.5), (-11.0, 20.5), (11.0, 20.5)]
+TT_SCREWS = [(-8.0, -19.0), (8.0, -19.0), (-8.0, 19.0), (8.0, 19.0)]   # 01.11.2026 (Druck-Check): vorher ±11/±20,5 = 0,4 mm zur Kugelrille; M3 × 8
 
 
 def part_turntable():

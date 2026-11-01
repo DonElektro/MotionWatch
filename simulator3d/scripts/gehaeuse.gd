@@ -10,6 +10,9 @@ extends Node
 ## die Erkennung bleiben genau wo sie waren – nur das Bild des Geräts ändert sich. Der alte Kasten (main.head_box) bleibt im
 ## Code und erscheint wieder, wenn «Echtes Gehäuse» aus ist (Werkstatt, /control {"action": "werkstatt", "do": "real_case"}).
 ## Der Mast endet unter den Füssen; die Status-LED sitzt auf dem echten Kopfdach (Lage aus Gehäuse v5.2).
+## Variante v5.2 (real-gehaeuse-v52, 01.11.2026): ist die Weitwinkel-Kamera «Im Gehäuse (v5.2)» oder «Unterteil vorne»
+## montiert, zeigt die Szene das echte Unterteil v5.2 (Fenster, IR-Modul, Linse – modelle.json «variante» 5.2) statt v5.1;
+## die Teile mit «ersetzt» blenden ihr Teil von v5.1 aus.
 
 const Quality := preload("res://scripts/quality.gd")
 const DIR := "res://inhalte/gehaeuse/"
@@ -28,6 +31,9 @@ var tris := 0
 var _base: Node3D
 var _nodes: Array = []                         # [Node3D-Gruppenknoten] base / pan / tilt
 var _led_keep = null                           # [position, scale] der Status-LED vorher
+var _v52: Array = []                           # Teile der Variante v5.2 (nur sichtbar, wenn v5.2 gewählt ist)
+var _v51: Array = []                           # Teile von v5.1, die v5.2 ersetzt
+var v52 := false                               # zeigt die Szene gerade v5.2?
 
 
 func _ready() -> void:
@@ -105,7 +111,19 @@ func build() -> void:
 	petg.albedo_color = PETG
 	petg.roughness = 0.55
 	petg.cull_mode = BaseMaterial3D.CULL_DISABLED
+	var fb: Dictionary = man.get("farben", {})                 # Wunsch Daniel 01.11.2026: Kopfteil in MoveEye-Orange
+	var kopf: Array = fb.get("kopf_teile", [])
+	var orange := StandardMaterial3D.new()
+	orange.albedo_color = Color.from_string(str(fb.get("kopf", "#f59a4a")), Color("#f59a4a"))
+	orange.roughness = 0.55
+	orange.cull_mode = BaseMaterial3D.CULL_DISABLED
 	tris = 0
+	_v52 = []
+	_v51 = []
+	var repl := {}
+	for e in man.get("teile", []):
+		if str(e.get("ersetzt", "")) != "":
+			repl[str(e["ersetzt"])] = true
 	for e in man.get("teile", []):
 		var id := str(e.get("id", ""))
 		if not bool(e.get("aussen", false)) or not ms.has(id):
@@ -113,11 +131,17 @@ func build() -> void:
 		var mi: MeshInstance3D = ms[id]
 		mi.name = "geh_" + id
 		mi.layers = 1
-		if id in ["tub", "lid", "turntable", "yoke", "arm2", "lamp1", "lamp2", "head", "side", "plug", "feet"]:
+		if id in kopf:
+			mi.material_override = orange
+		elif id in ["tub", "tub52", "lid", "turntable", "yoke", "arm2", "lamp1", "lamp2", "head", "side", "plug", "feet"]:
 			mi.material_override = petg
 		var grp := str(e.get("gruppe", "base"))
 		var par: Node3D = pan if grp == "pan" else (tilt if grp == "tilt" else _base)
 		par.add_child(mi)
+		if str(e.get("variante", "")) == "5.2":
+			_v52.append(mi)
+		elif repl.has(id):
+			_v51.append(mi)
 		tris += int(e.get("dreiecke_lite" if lite else "dreiecke", 0))
 	for k in ms:                                    # what was not used
 		if (ms[k] as MeshInstance3D).get_parent() == null:
@@ -139,11 +163,24 @@ func drop() -> float:
 	return float(man.get("kippachse_ueber_boden_m", 0.1258)) + float(man.get("fuesse_m", 0.006))
 
 
+static func wide_in_case(m) -> bool:
+	"""zeigt die Szene das Unterteil v5.2? – Weitwinkel «Im Gehäuse (v5.2)» oder «Unterteil vorne» (weitwinkel.gd)"""
+	var w = m.get("weit") if m != null else null
+	return w != null and str(w.get("mount")) in ["case", "base"]
+
+
 func apply() -> void:
 	var real := on and ok
 	for n in _nodes:
 		if is_instance_valid(n):
 			(n as Node3D).visible = real
+	v52 = wide_in_case(main)
+	for mi in _v52:
+		if is_instance_valid(mi):
+			(mi as Node3D).visible = v52
+	for mi in _v51:
+		if is_instance_valid(mi):
+			(mi as Node3D).visible = not v52
 	if main.get("head_box") != null:
 		main.head_box.visible = not real
 	if not real:
@@ -175,10 +212,12 @@ func _process(_dt: float) -> void:
 	var sl = main.get("statusled")
 	if _led_keep == null and sl != null and sl.get("_rig") != null and is_instance_valid(sl._rig):
 		apply()                                       # the LED is built later than the case
+	elif wide_in_case(main) != v52:
+		apply()                                       # v5.2: the mount of the wide camera changed
 
 
 func info() -> Dictionary:
 	var hp: Vector3 = main.head.global_position if main.head != null and main.head.is_inside_tree() else Vector3.ZERO
-	return {"on": on, "ok": ok, "why": why, "lite": lite, "tris": tris, "version": str(man.get("version", "")),
+	return {"on": on, "ok": ok, "why": why, "lite": lite, "tris": tris, "version": str(man.get("version", "")), "v52": v52,
 			"head_pos": [snappedf(hp.x, 0.001), snappedf(hp.y, 0.001), snappedf(hp.z, 0.001)],
 			"quelle_sha256": str(man.get("quelle_sha256", "")).substr(0, 12)}

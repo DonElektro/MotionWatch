@@ -7,7 +7,8 @@ extends Node
 ##   · ziehen = drehen, rechts / mittlere Taste ziehen = verschieben, Rad = zoomen, Teil anklicken = Name, Eintrag aus der
 ##     Materialliste (Menge, Bezeichnung, Teilenummer) und der passende Montageschritt
 ##   · Regler «Explosion», «Durchsichtig» (Druckteile fast durchsichtig, Klicks treffen zuerst das Innenleben),
-##     «Innenleben», «Variante v5.2» (Weitwinkel-Kamera, IR-LED 5 mm, Tasten, Status-LED – Lage aus v52.py)
+##     «Innenleben», «Variante v5.2» (real-gehaeuse-v52: das echte Unterteil v5.2 mit Fenster, Weitwinkel-Kamera, IR-Modul
+##     120°, Kabelkamm, Tasten, Status-LED – aus hardware/gehaeuse/Quellcode/v52.py; ersetzte Teile von v5.1 werden ausgeblendet)
 ##   · «Montage Schritt für Schritt»: die 14 Schritte der Montageanleitung v5.1 (LIESMICH_Montage_v5-1.md + v4.1 Kopf), die
 ##     Teile des Schritts fliegen an ihren Platz, Weiter / Zurück
 ## Modelle: res://inhalte/gehaeuse/gehaeuse.glb (alle Teile, gehaeuse.gd lädt es), Texte: werkstatt_daten.gd (erzeugt aus
@@ -37,7 +38,8 @@ var vp: SubViewport
 var cam: Camera3D
 var world: Node3D
 var parts := {}                    # id -> {mi, e (modelle.json), mat, row (TEILE)}
-var rows := {}                     # id -> [id, art, name, bom, schritt, datei]
+var rows := {}                     # id -> [id, art, name, bom, schritt, datei, ersetzt]
+var repl := {}                     # v5.2: Teil von v5.1 -> das Teil der Variante, das es ersetzt
 var yaw := 145.0                  # from the front (PIR side), a little from the left
 var pitch := 24.0
 var dist := 0.62
@@ -64,6 +66,8 @@ func _ready() -> void:
 	add_child(layer)
 	for r in DATA.TEILE:
 		rows[str(r[0])] = r
+		if r.size() > 6 and str(r[6]) != "":
+			repl[str(r[6])] = str(r[0])
 	_mein_load()
 
 
@@ -454,7 +458,7 @@ func pick_at(pos: Vector2) -> String:
 			var mi: MeshInstance3D = p["mi"]
 			if not mi.visible:
 				continue
-			var druck := str((rows.get(id, ["", ""]) as Array)[1]) == "druck"
+			var druck := _is_print(id)
 			if xray and pass_ == 0 and druck:
 				continue
 			var inv := mi.global_transform.affine_inverse()
@@ -560,13 +564,21 @@ func _focus_step() -> void:
 	_place_cam()
 
 
+func _is_print(id: String) -> bool:
+	"""a printed part (v5.1 «druck» or a part of a variant with its own print file, e.g. 01_Unterteil_v52)"""
+	var r = rows.get(id)
+	return r != null and (str(r[1]) == "druck" or (r.size() > 5 and str(r[5]) != ""))
+
+
 func _shown(id: String) -> bool:
 	var r = rows.get(id)
 	if r == null:
 		return false
 	var art := str(r[1])
 	if art == "v52":
-		return v52 and step == 0
+		return v52 and step == 0 and (inner or _is_print(id) or bool(parts[id]["e"].get("aussen", false)))
+	if v52 and step == 0 and repl.has(id) and parts.has(repl[id]):
+		return false                                  # v5.2: replaced by the real part of the variant (lower part, ...)
 	if step == 1:
 		return art == "druck"
 	if step > 1 and int(r[4]) > step:
@@ -596,7 +608,7 @@ func _paint() -> void:
 		mi.position = off
 		var m: StandardMaterial3D = p["mat"]
 		var col: Color = p["base"]
-		var see := xray and str(r[1]) == "druck"
+		var see := xray and _is_print(id)
 		m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA if see else BaseMaterial3D.TRANSPARENCY_DISABLED
 		m.albedo_color = Color(col, DRUCK_ALPHA if see else 1.0)
 		m.no_depth_test = false

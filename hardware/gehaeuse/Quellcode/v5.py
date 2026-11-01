@@ -64,7 +64,10 @@ LID_SCREWS = [(3.0, 3.0), (LX - 3.0, 3.0), (3.0, LY - 3.0), (LX - 3.0, LY - 3.0)
 LAMP_Z = pt.AXZ - 16.0                   # Lampenachse (Pan-Koordinaten)
 LAMP_Y = pt.A1 + pt.ARM_T + 16.0
 ARM_OUT = pt.A1 + pt.ARM_T               # Aussenfläche Arm
-LAMP_HOLES = [(2.0, LAMP_Z - 10.75), (2.0, LAMP_Z + 10.75)]   # (x, z) M3 durch Lampenlasche in den Arm
+LAMP_HOLE_X = -5.5                       # 01.11.2026 (Druck-Check): hinter dem Becher (vorher x 2 = unter dem Becher, kein Werkzeug)
+LAMP_HOLES = [(LAMP_HOLE_X, LAMP_Z - 10.75), (LAMP_HOLE_X, LAMP_Z + 10.75)]   # (x, z) M3 × 8 + Scheibe durch Lampenlasche in den Arm
+LAMP_TAB_X0 = -8.7                       # Lasche nach hinten verlängert (trägt die Löcher; ab -9 stehen die Rippen am Armfuss)
+LAMP_AXIS_RECESS = 7.0                   # Aussparung um den Kopf der Kippachsen-Schraube (Arm 2, Ø 5,5)
 
 
 class Plane(csg.N):
@@ -270,10 +273,16 @@ CUP_X1 = CUP_X0 + CUP_BACK + 2.5 + LAMP_MOD_L + 1.0   # 2,5 mm Kabelraum hinten,
 def part_lamp():
     gy = -(LAMP_Y - ARM_OUT)                                 # -16
     cup = D(cyl_x(0, 0, CUP_X0, CUP_X1, CUP_OD), cyl_x(0, 0, CUP_X0 + CUP_BACK, CUP_X1 + 1, CUP_ID))
-    tab = box(CUP_X0, 6.0, gy, gy + 4.0, -14, 14)
+    tab = box(LAMP_TAB_X0, 6.0, gy, gy + 4.0, -14, 14)
     web = box(CUP_X0, 6.0, gy + 3.0, -CUP_OD / 2 + 2.0, -6, 6)
-    body = U(cup, tab, web)
-    cut = [cyl_x(0, 0, CUP_X0 - 1, CUP_X0 + CUP_BACK + 1, 4.0)]            # Kabel
+    # 01.11.2026: Schürze hinter dem Becher bis ans Laschenende – gedruckt liegt der Halter auf der Rückseite, so steht der
+    # Becherboden nicht in der Luft (wird eine 19-mm-Brücke); Schlitz oben für die Kabel
+    skirt = D(cyl_x(0, 0, LAMP_TAB_X0, CUP_X0 + 0.01, CUP_OD), cyl_x(0, 0, LAMP_TAB_X0 - 1, CUP_X0 + 0.02, CUP_OD - 3.2))
+    body = U(cup, tab, web, skirt)
+    cut = [box(LAMP_TAB_X0 - 1, CUP_X0 + 0.005, -3.0, 3.0, 0.0, CUP_OD / 2 + 1),   # Kabelschlitz in der Schürze (oben)
+           cyl_x(0, 0, CUP_X0 - 1, CUP_X0 + CUP_BACK + 1, 4.0),            # Kabel
+           cyl_y(0.0, pt.AXZ - LAMP_Z, gy - 1, gy + 5, LAMP_AXIS_RECESS),    # Kopf der Kippachse (lokal z +16) ...
+           cyl_y(0.0, LAMP_Z - pt.AXZ, gy - 1, gy + 5, LAMP_AXIS_RECESS)]    # ... und z -16: Halter an Arm 2 steht kopfüber
     for x, z in LAMP_HOLES:
         cut.append(cyl_y(x, z - LAMP_Z, gy - 1, gy + 5, 3.4))
     for a in (60, 120, 240, 300):                                           # Kühl-/Lüftungslöcher hinten

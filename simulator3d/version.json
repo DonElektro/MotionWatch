@@ -1,9 +1,9 @@
 {
- "version": "3D-5.41.1",
- "ver": "3.41.1",
- "name": "MoveEye Sim 3.41.1",
+ "version": "3D-5.42.0",
+ "ver": "3.42.0",
+ "name": "MoveEye Sim 3.42.0",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 48000451,
- "sha256": "1315f3b84c6a59cc216aea7c9736c87ffe48a1ad4f894685a08e6f3f68fc3f2a",
- "notes": "Fix INA219 0x44, Bau-Infos"
+ "size": 48399194,
+ "sha256": "d1776515546437a507f46856e77c86ddb6111540beb97fd5896dc87cb7cc249b",
+ "notes": "Gehäuse v5.2"
 }
