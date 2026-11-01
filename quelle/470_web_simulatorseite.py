@@ -1165,7 +1165,7 @@ $("#s-url").addEventListener("input", () => URLEDIT = true);
 async function setKey(k, v) { const r = await post("/api/set", {key: k, value: v}); if (!r.ok) toast(r.error || t("not possible")); load(); }
 // 2.98.14 (Konzept): the settings of the section «Simulator» live here (no longer under Einstellungen → System) - all of
 // them that have no own switch on this page yet
-const SIM_TILE_KEYS = ["notify_sandbox", "train_night_on", "rover_alarm", "fa_learn_auto", "rehearsal_on_arm", "weekcheck_on"];
+const SIM_TILE_KEYS = ["train_night_on", "rover_alarm", "fa_learn_auto", "rehearsal_on_arm", "weekcheck_on"];
 async function simsetLoad() {
   const box = $("#simset-box"); if (!box || box.contains(document.activeElement)) return;
   let sch; try { sch = await (await fetch("/api/schema?sec=Simulator&lang=" + LANG)).json(); } catch (e) { return; }

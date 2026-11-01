@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3.23.1"
+const VERSION := "3.24.0"
 const Versionen = preload("res://scripts/versionen.gd")   # Versionierung 3.0.0: from 3.0.0 VERSION = "X.Y.Z" like MoveEye (see there)
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const T := preload("res://scripts/i18n.gd")              # Menüs A: new texts of the panel in the language (Sprachen)
@@ -6045,7 +6045,8 @@ var kids_seg: Control
 var _mode_row: HBoxContainer
 var simple_seg: Control
 var leiste: Node                       # real-layout-leiste: the bar (bedienleiste.gd), the same as on every page of MoveEye
-var ui_icons := "plain"                # «Symbole farbig | schlicht» ("color" | "plain", saved); plain = the look up to 3.19
+var ui_icons := "color"                # «Symbole farbig | schlicht» ("color" | "plain", saved); 3.23: «farbig» is the standard (like MoveEye)
+var ui_icons_pick := false             # 3.23: true once somebody chose with the switch (then the saved choice counts)
 var ui_tb: Control
 var fold_bodies: Array = []           # every card that opens / closes
 var setting_bodies: Array = []        # the cards of the settings groups
@@ -6442,6 +6443,7 @@ func ask_adult(done: Callable) -> void:
 func set_icons(v: String) -> void:
 	"""real-layout-leiste: symbols «color» (own colour, a green dot while on) or «plain» (grey, green while on) - the one switch"""
 	ui_icons = "plain" if v == "plain" else "color"
+	ui_icons_pick = true
 	UI.icons_plain = ui_icons == "plain"
 	_settings_dirty = true
 	for b in fold_bodies:
@@ -6747,7 +6749,7 @@ func restart_args() -> PackedStringArray:
 	return out
 
 
-const KEEP := ["pad_auto", "pad_sens", "pad_inv_y", "pad_swap", "pad_rumble", "colors_on", "seasons_on", "pad_dead", "pad_center", "show_laser", "game_max", "tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "fp_spot", "szene_spot", "bt_spot", "bt_bed", "bt_season", "bt_free", "bt_events", "bt_mount", "bt_bag", "bt_stove", "bt_wall", "bt_orient", "bt_marks", "bt_visited", "auto_update", "dev_updates", "news_seen", "news_popup", "show_zones3d", "show_det3d", "fauna_on", "twin", "ui_simple", "ui_icons", "start_groups", "auto_visitors", "daily_life", "real_weather", "real_time", "night_weather", "surprise_on", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
+const KEEP := ["pad_auto", "pad_sens", "pad_inv_y", "pad_swap", "pad_rumble", "colors_on", "seasons_on", "pad_dead", "pad_center", "show_laser", "game_max", "tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "fp_spot", "szene_spot", "bt_spot", "bt_bed", "bt_season", "bt_free", "bt_events", "bt_mount", "bt_bag", "bt_stove", "bt_wall", "bt_orient", "bt_marks", "bt_visited", "auto_update", "dev_updates", "news_seen", "news_popup", "show_zones3d", "show_det3d", "fauna_on", "twin", "ui_simple", "ui_icons", "ui_icons_pick", "start_groups", "auto_visitors", "daily_life", "real_weather", "real_time", "night_weather", "surprise_on", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
 		"avoid_on", "grafik_mode", "cam_wippen", "quality", "view_scale", "win_fps", "auto_perf", "meadow_on", "season", "mover_on", "mover_max", "mast_h", "patrol_judge", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "moon_auto", "cam1_yaw", "stream_last", "game_bots", "game_tutorial", "game_daily", "game_ghost", "game_heart", "game_botguard", "kids_on", "kids_ask", "kids_thief", "kids_scary", "kids_laser", "kids_sound", "kids_stars", "dev_area"]
 var _settings_dirty := false
 
@@ -6773,6 +6775,8 @@ func _load_settings() -> void:
 			else:
 				v = str(v)
 			set(k, v)
+	if not bool(d.get("ui_icons_pick", false)) and str(d.get("ui_icons", "")) != "color":
+		ui_icons = "color"                                # 3.23: files up to 3.22 saved the old standard «schlicht» - now «farbig»
 	if typeof(d.get("fold_mem")) == TYPE_DICTIONARY:      # nurgruppen: the own open / closed state of the cards and parts
 		fold_mem = preload("res://scripts/ui_gemeinsam.gd").migrate_fold(d["fold_mem"])   # P1: «Sensoren» -> «Zusatzgeräte» …
 	grafik_mode = Quality.mode_id(grafik_mode)            # 3D-4.25: unknown / older names -> «Automatisch»
