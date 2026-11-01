@@ -1,8 +1,15 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 01.11.2026 · Version **3.45.0** · MoveEye **3.45.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 01.11.2026 · Version **3.46.0** · MoveEye **3.46.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.46.0 (MoveEye 3.46.0): Sammel-Release v5.2 Standard · Bausatz · USB-Installer
+
+- real-v52-standard: bau.json variante_standard.gehaeuse = v52, Werkstatt (_shown) und /build (639w) gleich; bauen_test.gd.
+- real-bausatz: `werkzeuge/bausatz.py`, Workflow `.github/workflows/bausatz.yml` legt bei signiertem versions.json den
+  Release vX.Y.Z mit MoveEye_Bausatz_X.Y.Z.zip und MoveEye_Bausatz.zip an (Paket nicht im Repo).
+- real-usb-installer: `werkzeuge/usb_installer/` (autoinstall-Vorlage ohne Passwort, erststart.sh, stick_erstellen.sh).
 
 ## NEU in 3.45.0 (MoveEye 3.45.0): Sammel-Release Varianten (MoveEye Teile 639zs, 639zj, 620)
 

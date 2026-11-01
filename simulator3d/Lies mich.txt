@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.45.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.46.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -487,6 +487,12 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.46.0
+3.46.0: Gehäuse v5.2 ist überall Standard (Werkstatt, Bauen; v5.1 «ohne Weitwinkel» bleibt wählbar). Neu: Selbstbau-Paket
+MoveEye_Bausatz.zip (Anleitung als PDF in 5 Sprachen, Druckdateien, Bestelllisten, signierte Software) auf GitHub unter
+Releases; USB-Installer für einen Simulator-PC (Ubuntu 24.04 Server, startet direkt im Kiosk).
+So testest du: Mehr › Bauen zeigt v5.2 (Standard), auf v5.1 umschalten; auf GitHub unter Releases MoveEye_Bausatz.zip laden.
 
 NEU IN 3.45.0
 3.45.0: Varianten: Bau-Infos mit Stopfen 18–24, Kanal 4 auf das IR-Modul, Ladequelle und 3 Paketen (Basis / Komplett /
