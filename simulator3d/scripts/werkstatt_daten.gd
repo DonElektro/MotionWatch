@@ -3,12 +3,12 @@ extends RefCounted
 ## hardware/gehaeuse/bau.json. NICHT VON HAND ÄNDERN (Texte dort ändern, dann «gehaeuse_bauen.py --texte»).
 ## Texte deutsch (T.t übersetzt sie, Übersetzungen kommen aus bau.json in i18n/texte.json).
 
-const QUELLE_SHA := "2247be719a9071df8156f3b5697420e13d5b24ef718c05bc8bf4ed5cf607dc64"
+const QUELLE_SHA := "a4af57cc5f3097a62fa86e0ca5c3c48c3421b242e417a94c2f471848942d435a"
 const VERSION := "5.1"
 const KOPF_FARBE := "#f59a4a"   # Kopfteil (dreht / neigt) in MoveEye-Orange
 const KOPF_TEILE := ["turntable", "yoke", "arm2", "head", "side", "lamp1", "lamp2", "head52"]
 const GRAU := "#9a9ea3"   # Unterteil, Deckel, Zwischenboden, Füsse, Stopfen
-const GRAU_TEILE := ["tub", "tub52", "lid", "shelf", "feet", "plug", "plug52", "sdplug", "resplug", "wplug", "sockel", "irplug"]
+const GRAU_TEILE := ["tub", "tub52", "lid", "shelf", "feet", "plug", "plug52", "sdplug", "resplug", "wplug", "sockel", "irplug", "feet2", "feet3", "feet4", "thplug", "dsplug", "rlplug", "micplug", "llplug"]
 const MASSE := "Unterteil 183 × 97 × 71,5 mm (mit Füssen 77,5 mm), Gesamthöhe ca. 161 mm, Kopf 58 × 58 mm"
 # Materialliste: id -> [Menge, Bezeichnung, Teilenummer, Gruppe]
 const BOM := {
@@ -79,6 +79,9 @@ const BOM := {
 const TEILE := [
 	["tub", "druck", "01 Unterteil", "petg", 2, "01_Unterteil", ""],
 	["feet", "druck", "11 Füsse (4×)", "petg", 2, "11_Fuss_4x", ""],
+	["feet2", "druck", "11 Fuss (2 von 4)", "petg", 2, "11_Fuss_4x", ""],
+	["feet3", "druck", "11 Fuss (3 von 4)", "petg", 2, "11_Fuss_4x", ""],
+	["feet4", "druck", "11 Fuss (4 von 4)", "petg", 2, "11_Fuss_4x", ""],
 	["tripod", "teil", "Stativmutter 1/4\"", "", 2, "", ""],
 	["speaker", "teil", "Lautsprecher 41 mm, 4 Ω", "spk", 2, "", ""],
 	["pca", "teil", "PCA9685 16-Kanal-PWM-Modul", "pca", 3, "", ""],
@@ -142,6 +145,11 @@ const TEILE := [
 	["sockel", "dev", "13 Entwicklungs-Sockel (statt UPS HAT + Akkus)", "petg", 4, "13_Entwicklungs_Sockel", "ups"],
 	["wplug", "v52", "12 Blindstopfen Weitwinkel-Fenster (ohne Weitwinkel-Kamera)", "petg", 3, "12_Blindstopfen_Weitwinkel", ""],
 	["irplug", "v52", "19 Stopfen IR-Modul-Loch (ohne IR-Modul)", "petg", 3, "19_Stopfen_IR_Modul", ""],
+	["thplug", "v52", "18 Stopfen Wärmebild-Fenster (Kopf ohne Wärmebild)", "petg", 10, "18_Stopfen_Waermebild", ""],
+	["dsplug", "v52", "20 Stopfen DS18B20-Durchführung (ohne Temperaturfühler)", "petg", 7, "20_Stopfen_DS18B20", ""],
+	["rlplug", "v52", "21 Stopfen Relais-Buchse (ohne Relais)", "petg", 7, "21_Stopfen_Relais", ""],
+	["micplug", "v52", "23 Stopfen Mikrofon-Löcher (ohne Mikrofon)", "petg", 3, "23_Stopfen_Mikrofon", ""],
+	["llplug", "v52", "24 Stopfen Lichtleiter-Loch (ohne Lade-LED)", "petg", 7, "24_Stopfen_Lichtleiter", ""],
 	["resplug", "v52", "17 Blindstopfen Reserve-Öffnung hinten (GX12)", "petg", 7, "17_Blindstopfen_Reserve", ""],
 	["lampdrv", "v52", "PLATZHALTER Lampentreiber (Feld 30 × 20, 2 × M2,5)", "", 6, "", ""],
 	["fuseh", "v52", "Sicherungshalter 5 A (Akku B+) in der Klammer am Boden", "fuse2", 7, "", ""],
@@ -1325,7 +1333,15 @@ const BAU := {
 			"resplug",
 			"wplug",
 			"sockel",
-			"irplug"
+			"irplug",
+			"feet2",
+			"feet3",
+			"feet4",
+			"thplug",
+			"dsplug",
+			"rlplug",
+			"micplug",
+			"llplug"
 		],
 		"turntable": "#f59a4a",
 		"yoke": "#f59a4a",
@@ -1334,7 +1350,15 @@ const BAU := {
 		"side": "#f59a4a",
 		"lamp1": "#f59a4a",
 		"lamp2": "#f59a4a",
-		"head52": "#f59a4a"
+		"head52": "#f59a4a",
+		"feet2": "#9a9ea3",
+		"feet3": "#9a9ea3",
+		"feet4": "#9a9ea3",
+		"thplug": "#9a9ea3",
+		"dsplug": "#9a9ea3",
+		"rlplug": "#9a9ea3",
+		"micplug": "#9a9ea3",
+		"llplug": "#9a9ea3"
 	},
 	"bom_extra": {
 		"pi5": {

@@ -23,6 +23,8 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 3.48.1: Werkstatt im Simulator wie in MoveEye (Karte unter dem Bild, Symbole, Farben), Knopftexte zweizeilig statt
+    abgeschnitten; echte 3D-Modelle für Füsse und Stopfen, echte Lage auf den Druckplatten.
   * 3.48.0: Werkstatt: Teil antippen → «Nur dieses Teil zeigen» mit Grösse, Druck-/Zukauf-Infos, 3MF-Download, «Liegend wie
     gedruckt», «Wo es hingehört» (Sprung zum Montageschritt); neue Ansicht «Druckplatten» A/B mit Download je Platte und allen
     Platten als ZIP; MoveEye und Simulator.
@@ -89,9 +91,6 @@ Features
     zu belasten.
   * 3.28.0: Ton in den Spielen: Glockenspiel, Fanfare, Streicher, Spannung mit Puls und Trommelwirbel, Pauke, Tusch, leise
     Begleitmusik (abschaltbar, eigene Regler), echte Umgebungsgeräusche, sanfte Klicks – nur in Spielen und Geschichten.
-  * 3.27.0: Weniger Schalter: Updates mit einer Auswahl, neu «Bewegung reduzieren» und «Stimme» (an · aus · nur Untertitel) in
-    MoveEye und Simulator, Rundgang/Blinki an einem Ort, Symbole farbig, «Beim Start: Nur Gruppen» entfällt (langer Druck
-    bleibt), alter Python-Basis-Simulator entfernt.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -100,10 +99,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_3_48_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_3_48_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_3_48_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_3_48_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_3_48_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_3_48_1.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -120,7 +119,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "3.48.0"
+APP_VERSION = "3.48.1"
 
 
 def default_data_dir():
@@ -242,8 +241,8 @@ def prepare_settings_file():
 #     Part 397 fetches the zip over the same update source and restarts once (zusatz_start()).
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
-ZD_FILE = "moveeye_daten_3_48_0.zip"
-ZD_SHA256 = "1c6db2da31b37a76877ff2ee3f746c3e3379cd5f4ace370cb4d97050f03287ca"
+ZD_FILE = "moveeye_daten_3_48_1.zip"
+ZD_SHA256 = "b0cf7be4227f30f4bb3982662391a2d95e1b429ba38947c831e25df6948b32b1"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -24700,13 +24699,13 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3.48.0", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 49096044,
-         "sha256": "d41dd40149da10d2ced7b849157d20504adb7b7002e2e34db3c86d92982b2f3e"}
+SIM3D = {"version": "3.48.1", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 49390593,
+         "sha256": "3a77825dee5b8db78c15f0108c65b6056b60d6fb98875a11dbe3924fd5c31018"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # 3.43.x: the same 3D simulator for Linux (x86_64), offered at /sim/simulator3d_linux.zip - fetched, checked and kept the same way
 # (simulator3d/MoveEyeSim3D_Linux.zip, block «linux» in simulator3d/version.json; bauen.py --neue-version takes it over).
-SIM3D_LINUX = {"version": "3.48.0", "file": "simulator3d/MoveEyeSim3D_Linux.zip", "size": 43074604,
-               "sha256": "bb8f59f8884a15c70e121e24010391ecff4ca7a2691f65d97f34fbb9fa962279", "stem": "MoveEyeSim3D_Linux",
+SIM3D_LINUX = {"version": "3.48.1", "file": "simulator3d/MoveEyeSim3D_Linux.zip", "size": 43369076,
+               "sha256": "3da65e63e5b53ff753b7c77e79164c0d9e9187784fafc3bddb7205d75a91b95b", "stem": "MoveEyeSim3D_Linux",
                "label": "MoveEye Sim (Linux)"}
 SIM3D_LINUX_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
@@ -30615,7 +30614,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_3_48_0.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_3_48_1.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -48776,7 +48775,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 3.48.0")
+        self.root.title("MoveEye 3.48.1")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -49154,7 +49153,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 3.48.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 3.48.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -72495,7 +72494,7 @@ SELFTEST_EXTRA.append(("Error help with QR code (simulator3d/fehler_katalog.json
 # GEH_QUELLE_SHA: Prüfsumme der Quelle (hardware/gehaeuse/Quellcode/*.py, bau.json, werkzeuge/gehaeuse_bauen.py) – der
 # Selbsttest (639w) vergleicht sie im Repository mit der Quelle und mit simulator3d/inhalte/gehaeuse/modelle.json.
 # ----------------------------------------------------------------------------
-GEH_QUELLE_SHA = '2247be719a9071df8156f3b5697420e13d5b24ef718c05bc8bf4ed5cf607dc64'
+GEH_QUELLE_SHA = 'a4af57cc5f3097a62fa86e0ca5c3c48c3421b242e417a94c2f471848942d435a'
 GEH_BAU = json.loads(_zd('639v_daten_gehaeuse/GEH_BAU', ""))
 GEH_UI_DE = {"Case & build": "Gehäuse & Bau", "Guide, parts list, print files – in 3D in the workshop of the simulator": "Anleitung, Materialliste, Druckdateien – in 3D in der Werkstatt des Simulators", "Case": "Gehäuse", "View in the simulator": "Im Simulator ansehen", "Opens the workshop in the 3D simulator: turn, explode, see through, click parts, assembly step by step.": "Öffnet die Werkstatt im 3D-Simulator: drehen, zerlegen, durchsichtig, Teile anklicken, Montage Schritt für Schritt.", "Simulator not connected – start it and connect it on the page Simulator.": "Simulator nicht verbunden – starte ihn und verbinde ihn auf der Seite «Simulator».", "Opened in the simulator.": "Im Simulator geöffnet.", "Print files": "Druckdateien", "3MF plates for the Bambu Lab X2D (PETG, no supports)": "3MF-Platten für den Bambu Lab X2D (PETG, ohne Stützen)", "Single STL files: in the hand-over package (ZIP, about 60 MB), not in the repository.": "Einzelne STL-Dateien: im Übergabe-Paket (ZIP, ca. 60 MB), nicht im Repository.", "Assembly step by step": "Montage Schritt für Schritt", "Show this step in the simulator": "Diesen Schritt im Simulator zeigen", "Parts list": "Materialliste", "Qty": "Menge", "Part number": "Teilenummer", "Guides and source (GitHub)": "Anleitungen und Quellcode (GitHub)", "Detailed guide v5.1": "Ausführliche Anleitung v5.1", "Full parts list with order list": "Ganze Materialliste mit Bestellliste", "Measure first: UPS HAT (E) with its cells (assumed 90 × 80 × 26 mm) before printing the lower part.": "Zuerst nachmessen: UPS HAT (E) mit Akkus (angenommen 90 × 80 × 26 mm), bevor das Unterteil gedruckt wird.", "Own work of Elektro – parametric Python model.": "Eigenes Werk von Elektro – parametrisches Python-Modell.", "Step": "Schritt"}
 GEH_UI_TRX = _zd('639v_daten_gehaeuse/GEH_UI_TRX', _ZDDict())
@@ -72506,7 +72505,7 @@ GEH_UI2_TRX = _zd('639v_daten_gehaeuse/GEH_UI2_TRX', _ZDDict())
 # BAU3D: Pfad -> [sha256 der Datei, gzip+base64]; BAU3D_GLB: [sha256, Grösse, gzip+base64]. Ausgeliefert von 639w (/bau3d/<pfad>,
 # /build/gehaeuse.glb) mit Content-Encoding gzip. Der Selbsttest vergleicht die Prüfsummen im Repository mit den Quellen.
 # ----------------------------------------------------------------------------
-BAU3D_QUELLE_SHA = '2247be719a9071df8156f3b5697420e13d5b24ef718c05bc8bf4ed5cf607dc64'
+BAU3D_QUELLE_SHA = 'a4af57cc5f3097a62fa86e0ca5c3c48c3421b242e417a94c2f471848942d435a'
 BAU3D = _zd('639vb_daten_bau3d/BAU3D', _ZDDict())
 BAU3D_GLB = _zd('639vb_daten_bau3d/BAU3D_GLB', [])
 # aus simulator3d/inhalte/gehaeuse/modelle.json: Gruppe, aussen, Mitte und Explosion pro Teil (wie die Werkstatt im Simulator)
@@ -73315,7 +73314,7 @@ SELFTEST_EXTRA.append(("Build print files (fetched without the repository, cache
 # ----------------------------------------------------------------------------
 GEH_DRUCK_LAGE = json.loads(_zd('639wb_daten_druck_lage/GEH_DRUCK_LAGE', ""))
 # ----------------------------------------------------------------------------
-# Paket «real-einzelteil-vorschau» (01.11.2026, Wunsch Daniel). Die Lage jedes Druckteils auf der Platte und die Platten kommen
+# Paket «real-einzelteil-vorschau» (01.11.2026, Wunsch des Besitzers). Die Lage jedes Druckteils auf der Platte und die Platten kommen
 # aus 639wb (GEH_DRUCK_LAGE, werkzeuge/druck_lage.py aus gehaeuse.glb und den 3MF) – die Werkstatt dreht nur ihr vorhandenes
 # Modell, es kommen keine weiteren Netze dazu. Teile der Platte ohne eigenes Netz (kleine Stopfen, die 4 Füsse) erscheinen als
 # Quader in ihrer Grösse. Bestehendes bleibt: Explosion, Durchsichtig, Innenleben, Montage (die Regler ruhen in den neuen Ansichten).

@@ -1,6 +1,6 @@
 #@ MoveEye – Teil 639wc: Einzelteil-Vorschau und Ansicht «Druckplatten» der 3D-Werkstatt in «Bauen» (/build, 639w): ein angetipptes Teil allein zeigen (drehen, zoomen, zentriert), Grösse, Druck-Infos bzw. Zukauf-Infos, Download 3MF genau dieses Teils, «Liegend wie gedruckt» auf einer Druckplatte 256 × 256 mm, «Wo es hingehört» (Einblendung mit dem ganzen Modell und dem Montageschritt); Druckplatten A / B der Variante mit allen Teilen wie in der 3MF, Platte herunterladen, alle Platten als ZIP mit Kurzanleitung (/build/platten.zip). Gleich im Simulator (werkstatt.gd). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Paket «real-einzelteil-vorschau» (01.11.2026, Wunsch Daniel). Die Lage jedes Druckteils auf der Platte und die Platten kommen
+# Paket «real-einzelteil-vorschau» (01.11.2026, Wunsch des Besitzers). Die Lage jedes Druckteils auf der Platte und die Platten kommen
 # aus 639wb (GEH_DRUCK_LAGE, werkzeuge/druck_lage.py aus gehaeuse.glb und den 3MF) – die Werkstatt dreht nur ihr vorhandenes
 # Modell, es kommen keine weiteren Netze dazu. Teile der Platte ohne eigenes Netz (kleine Stopfen, die 4 Füsse) erscheinen als
 # Quader in ihrer Grösse. Bestehendes bleibt: Explosion, Durchsichtig, Innenleben, Montage (die Regler ruhen in den neuen Ansichten).

@@ -1,8 +1,13 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 01.11.2026 · Version **3.48.0** · MoveEye **3.48.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 02.11.2026 · Version **3.48.1** · MoveEye **3.48.1** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.48.1 (MoveEye 3.48.1): Werkstatt wie MoveEye (`scripts/werkstatt_einzel.gd`, `werkstatt.gd`)
+
+- Karte unter dem Bild, Symbole/Farben wie /build, zweizeilige Knopftexte; Modelle für Füsse und Stopfen (gehaeuse.glb,
+  modelle.json), Lage auf den Platten neu (druck_lage.json, 639wb); Bau-Infos vom Besitzer bestätigt.
 
 ## NEU in 3.48.0 (MoveEye 3.48.0): Einzelteil-Vorschau und Druckplatten (`scripts/werkstatt_einzel.gd`, MoveEye Teile 639wb / 639wc)
 
