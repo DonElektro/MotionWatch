@@ -1,9 +1,9 @@
 {
- "version": "3D-5.34.0",
- "ver": "3.34.0",
- "name": "MoveEye Sim 3.34.0",
+ "version": "3D-5.35.0",
+ "ver": "3.35.0",
+ "name": "MoveEye Sim 3.35.0",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 42392010,
- "sha256": "4c22369cf78863725bd0ec8bb1ab90ca31de293dbc82d4b4a087dbfdc82c7371",
- "notes": "Gehäuse v5.1 und Werkstatt"
+ "size": 42430258,
+ "sha256": "4efe4fe9c1a170d689ad3a3d513066aa967b889ff73bc338fc2f805c5f8c9c20",
+ "notes": "Bergtal: ein neues Geheimnis"
 }

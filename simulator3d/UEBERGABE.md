@@ -1,8 +1,13 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 01.11.2026 · Version **3.34.0** · MoveEye **3.34.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 01.11.2026 · Version **3.35.0** · MoveEye **3.35.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.35.0 (MoveEye 3.35.0): Bergtal-Geheimnis (`scripts/bergtal_ei.gd`, MoveEye Teil 639z)
+
+- Ablauf und Entwickler-Notiz in bergtal_ei.gd (nicht in sichtbare Texte schreiben); Test `werkzeuge/ei_test.gd` (auch Lite).
+  Im Zweig Teil 639s, wegen 639s_dev_zugang in 639z umbenannt.
 
 ## NEU in 3.34.0 (MoveEye 3.34.0): Gehäuse & Werkstatt (`scripts/gehaeuse.gd`, `scripts/werkstatt.gd`, MoveEye Teile 639v / 639w)
 

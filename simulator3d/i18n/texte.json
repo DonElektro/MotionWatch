@@ -8000,6 +8000,12 @@
   "it": "Il microfono sente un campanaccio. Immagine termica: la figura sta ferma e guarda verso il campo.",
   "rm": "Il microfon auda ina stgella da vatga. Maletg termic: la figura stat salda e guarda vers il campament."
  },
+ "Das Murmeltier hinter dem Wasserfall": {
+  "en": "The marmot behind the waterfall",
+  "fr": "La marmotte derrière la cascade",
+  "it": "La marmotta dietro la cascata",
+  "rm": "La muntanella davos la cascada"
+ },
  "das Murmeltier, das pfeift und Geheimgänge kennt": {
   "en": "the marmot who whistles and knows secret tunnels",
   "fr": "la marmotte qui siffle et connaît les passages secrets",
@@ -11108,6 +11114,12 @@
   "fr": "Tu as récolté %d points d’expérience. Continue comme ça !",
   "it": "Hai raccolto %d punti esperienza. Continua così!",
   "rm": "Ti has rimnà %d puncts d’experientscha. Va vinavant uschia!"
+ },
+ "Du hast das Licht vom Chalchstock verstanden. Das Murmeltier hat dir sein Geheimnis gezeigt.": {
+  "en": "You understood the light on the Chalchstock. The marmot showed you its secret.",
+  "fr": "Tu as compris la lumière du Chalchstock. La marmotte t’a montré son secret.",
+  "it": "Hai capito la luce del Chalchstock. La marmotta ti ha mostrato il suo segreto.",
+  "rm": "Ti has chapì la glisch dal Chalchstock. La muntanella t’ha mussà ses secret."
  },
  "Du hast den Bergkristall durch alle vier Jahreszeiten getragen, %s. Jetzt ruht er sicher in der Bergkapelle.": {
   "en": "You carried the mountain crystal through all four seasons, %s. Now it rests safely in the mountain chapel.",
@@ -26207,6 +26219,12 @@
   "it": "Calcio delle marmotte (pallina da tennis)",
   "rm": "Ballapé da muntanellas (balla da tennis)"
  },
+ "Murmeltier-Geheimnis": {
+  "en": "Marmot secret",
+  "fr": "Secret de la marmotte",
+  "it": "Segreto della marmotta",
+  "rm": "Secret da la muntanella"
+ },
  "Murmeltiere überall, am Fels Gämsen und manchmal Steinböcke. Der Ruedi - der Wildhüter - weiss viel mehr. Er sucht immer Leute, die mit MoveEye Tiere aufnehmen.": {
   "en": "Marmots everywhere, chamois on the rocks and sometimes ibex. Ruedi - the gamekeeper - knows much more. He's always looking for people who record animals with MoveEye.",
   "fr": "Des marmottes partout, des chamois sur les rochers et parfois des bouquetins. Ruedi - le garde-faune - en sait bien plus. Il cherche toujours des gens qui filment les animaux avec MoveEye.",
@@ -27773,6 +27791,12 @@
   "fr": "Météo de montagne normale, animaux la nuit, seulement la boussole. Énigmes : un conseil après un moment.",
   "it": "Tempo di montagna normale, animali di notte, solo bussola. Enigmi: un consiglio dopo un po'.",
   "rm": "Aura da muntogna normala, animals la notg, mo cumpass. Enigmas: in cussegl suenter in mument."
+ },
+ "not in view": {
+  "en": "not in view",
+  "fr": "pas dans la vue",
+  "it": "non in vista",
+  "rm": "betg en vista"
  },
  "Note": {
   "en": "Grade",
@@ -29430,6 +29454,12 @@
   "fr": "Banc d’essai : chemin furtif du jeu (%s)",
   "it": "Banco di prova: percorso furtivo dal gioco (%s)",
   "rm": "Banc da prova: via da sa stular dal gieu (%s)"
+ },
+ "Psst … es gibt ein verstecktes Easter Egg.": {
+  "en": "Psst … there is a hidden easter egg.",
+  "fr": "Psst … il y a un easter egg caché.",
+  "it": "Psst … c’è un easter egg nascosto.",
+  "rm": "Psst … i dat in easter egg zuppà."
  },
  "Puh, das war knapp!": {
   "en": "Phew, that was close!",

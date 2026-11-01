@@ -505,6 +505,9 @@ func _about(b: VBoxContainer) -> void:
 	st.custom_minimum_size = Vector2(520, 0)
 	st.add_theme_font_size_override("font_size", 13)
 	b.add_child(st)
+	var ps := UI.small(T.t("Psst … es gibt ein verstecktes Easter Egg."))   # like MoveEye «Über MoveEye» (584) - nothing more
+	ps.add_theme_font_size_override("font_size", 11)
+	b.add_child(ps)
 	# «Version und Status» (like the part of the card System of MoveEye)
 	var vc := PanelContainer.new()
 	vc.add_theme_stylebox_override("panel", UI.box(UI.PANEL2, UI.LINE, 12, 10, 1))

@@ -1,22 +1,39 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-01 11:47",
+ "generated": "2026-11-01 11:50",
  "versions": [
+  {
+   "version": "3.35.0",
+   "file": "webcam_bewegung_3_35_0.py",
+   "url": "",
+   "sha256": "b540c28d05aeaf97f7245b15093b1e40f2cd8c879ac599c144e248266800ca95",
+   "date": "2026-11-01 11:50",
+   "notes": "Bergtal: ein neues Geheimnis.",
+   "size": 4670877,
+   "sig": "ae30852a59d0b8c4bbeb7eb4cdddd6fc6a3f5dbca3780447b386354210c95b830e838b78aee84d6b49f02ab62c78ca21ae73c5064ff2bb4a8bcc032f257b5606",
+   "data": {
+    "file": "moveeye_daten_3_35_0.zip",
+    "url": "",
+    "sha256": "b264f086bf4c0f27574fe49865e934b4a8006b5e0ccce7e30a89e3270352d6fc",
+    "size": 1585078,
+    "sig": "7d418e56c540a46be4ab525a974b055272da18d9915b2e6c068e7a091870e02764fcfdee84d068c3e60e3810a7fe306288da15dd170f71ee705f3b699f1e6e08"
+   }
+  },
   {
    "version": "3.34.0",
    "file": "webcam_bewegung_3_34_0.py",
    "url": "",
-   "sha256": "a8e252bd1db06981e81e366580890ebd9ebf11535f5cfbdb7d9691a05d3a550d",
-   "date": "2026-11-01 11:47",
+   "sha256": "ac7d566f7aabab2eb20e15218ead93c5a2de0c5afc27cd69c099098d1175645e",
+   "date": "2026-11-01 11:49",
    "notes": "Neue Seite «Gehäuse & Bau» (Mehr): Gehäuse v5.1 Schritt für Schritt, Materialliste, Druckdateien, Kapitel in der Anleitung (5 Sprachen); im Simulator die Werkstatt zum Drehen und Zerlegen, das echte Gehäuse am Gerät.",
-   "size": 4665432,
-   "sig": "ca1325dbdeefe6f52f2d75321b7b8f89a998167f20d05fc9c6f9bd7e97508fc2e8d00ec5d4815f0a92841f1e7cce4f274d895a0798bcb98798a43eb77965510c",
+   "size": 4671016,
+   "sig": "fcb76cdf51c93f6dac1de01fffd0e3df01214409884d9e3facd378f9f6018c164b169b6f82942bf1f82dd31b6a763ea68b799350f17be0658f069eeaa7e4b206",
    "data": {
     "file": "moveeye_daten_3_34_0.zip",
     "url": "",
-    "sha256": "099817059724b9e2c22f8da0f80db42c0ec906daad7585f1fca491ffeea4299d",
-    "size": 1583449,
-    "sig": "f31622ff347976c18fa324e982049e086c8ae82a666eed0febb3236ca7086f2223cffc602f26185bf8ff3231b787deb8476d5b49cdbb3501d245846dec6a7705"
+    "sha256": "1cea395f8893ecab2ff0d5a317ae6286994773d6e6443dddfcd40d6bd201d319",
+    "size": 1585134,
+    "sig": "36f4b2d09290488edc04cf2e48dee85c36065af807566a2d3697eaaa40b074c92df35f690b40e6fb4242f0c1f68325e63a0f2692d46286cc19b17a9aaeb77e00"
    }
   },
   {
@@ -24,7 +41,7 @@
    "file": "webcam_bewegung_3_33_0.py",
    "url": "",
    "sha256": "a627a7f39687b4f687a84aeff59fc64f3b08743bddf589fc562bd8fe95e64a23",
-   "date": "2026-11-01 11:46",
+   "date": "2026-11-01 11:48",
    "notes": "Hilfe zu jedem Fehler: Fehler-Katalog (27 Fehler, 5 Sprachen), Seite /hilfe/fehler, Knopf «Jetzt beheben» (nur Besitzer) und QR-Code in Selbstdiagnose, Fenster, SmallTV, TV und Push; im Simulator ebenso.",
    "size": 4665408,
    "sig": "26866acf44b9c22a96b38e0b4481e015b1f9feee096cbb18833203c9cee025aaeda36cb1dbdd25738d5b5b9bbee06a24e7d7a5b5f60a642fc8e756a49b7db101",
@@ -92,7 +109,7 @@
    "file": "webcam_bewegung_3_29_0.py",
    "url": "",
    "sha256": "62f00005d536c7a2111d73c627c911d2dfff478d9675468952ad5ed5b7f9ed48",
-   "date": "2026-11-01 11:45",
+   "date": "2026-11-01 11:49",
    "notes": "Simulator: Fenster docken automatisch in Leisten links/rechts an (ohne Überlappung, passt sich der Bildschirmgrösse an, «Neu anordnen»); Karte, Kompass, SmallTV und CPU als Reiter in einem Fenster; Entwickler immer vorne, klein/mittel/gross und einklappbar.",
    "size": 4481992,
    "sig": "cc70cbf48db570a684b681b77ed28d3721e94de0d3d0e262f4d74b94fdf8c05c79ad0325dfa4c386c6ae2887184a977ab9149a3d729cd8e16b39df2ccd954405",
@@ -136,23 +153,6 @@
     "sha256": "8a73a7f18c50d3ef245e8d4167a133adf385c48c2b2063ed32039b9d15462dfa",
     "size": 1559129,
     "sig": "7a58dbb7d114a976b16e6d8a00368d2e061c0ab95117adf5d674bd89f985b77eb1db76517526bf83f616349ac7783b300f0fe1509dd6f94686c0c0592e202a0b"
-   }
-  },
-  {
-   "version": "3.26.0",
-   "file": "webcam_bewegung_3_26_0.py",
-   "url": "",
-   "sha256": "42e8667dae2f3f5979a3c892e876df327a41a8b09698a8f0138668466107d675",
-   "date": "2026-11-01 01:58",
-   "notes": "Simulator 3.26.0: Maggie sieht realistischer aus – ab Grafik «mittel» ein Modell mit Skelett und Fell, in «einfach» weiche Formen mit ihrem Muster.",
-   "size": 4482682,
-   "sig": "f5f8f957aaf2ccee2f7c5e2ca1066f3bc651d2c85612bead324f5ae01e91a3565bb0bba7623d030ee00382f6e8c622a6432312bacdb77ca8ab9ec2cbe65e9c06",
-   "data": {
-    "file": "moveeye_daten_3_26_0.zip",
-    "url": "",
-    "sha256": "a79dc30ede75e0c08d1be29ba984b651302f14f03bd882f9d6bc432b6e986270",
-    "size": 1632681,
-    "sig": "2164e4276b11657503b9e72d4ecb2e4825fc405153f67184f89f30bd535c47a241facfd51647b23efc9995e59b9afa1168f33192550da9d7e7eb92cc7444a90b"
    }
   },
   {
