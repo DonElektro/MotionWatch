@@ -1,6 +1,6 @@
 # MoveEye (früher Motion Watch) – Hinweise für Claude
 
-**Interne Regeln und Notizen des Besitzers: zuerst die private Seite claude.ai/artifact/<WIRD_ERSETZT> mit dem Artifact-Tool lesen (action read).**
+**Interne Regeln und Notizen des Besitzers: zuerst die private Seite claude.ai/artifact/WiCPgjkniA3TEhxwVwhHUU mit dem Artifact-Tool lesen (action read).**
 
 **Name ab 2.96.0: MoveEye** (Logo E6a-4: Sichtfeld, Auge unten, gehende Person in Erkennungs-Ecken). In allen sichtbaren Texten «MoveEye»; interne Namen bleiben (Dateien `webcam_bewegung_*.py`, Ordner `~/.config/motionwatch/`, Repository, `"app": "Motion Watch"` in Protokollen wie versions.json und der Geräte-Suche, Basic-Realm ab 2.98.19 «MoveEye»).
 
