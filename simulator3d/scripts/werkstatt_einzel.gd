@@ -97,7 +97,7 @@ func build_ui(col: VBoxContainer) -> void:
 static func icon_button(text: String, kind: String) -> Button:
 	"""a button with a drawn symbol on the left (🔍 📍 🖨 of MoveEye – the font of Godot has no emoji)"""
 	var b := Button.new()
-	b.text = "      " + text
+	b.text = text
 	b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	var ic := Icons.icon(kind, UI.TXT, 18.0)
 	ic.set_anchors_preset(Control.PRESET_CENTER_LEFT)
@@ -108,6 +108,22 @@ static func icon_button(text: String, kind: String) -> Button:
 	b.add_child(ic)
 	b.set_meta("icon", kind)
 	return b
+
+
+static func wrap_button(b: Button) -> void:
+	"""real-einzelteil-2 (Daniel): long texts break into two lines instead of «…» (all 5 languages). Called once the button is
+	in the tree (its theme is known); a minimum width keeps the wrapped height right in a fresh column, the symbol gets room"""
+	b.clip_text = false
+	b.text_overrun_behavior = TextServer.OVERRUN_NO_TRIMMING
+	b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	b.custom_minimum_size = Vector2(maxf(b.custom_minimum_size.x, 240.0), maxf(b.custom_minimum_size.y, 36.0))
+	if b.has_meta("icon"):
+		for st in ["normal", "hover", "pressed", "focus", "disabled", "hover_pressed"]:
+			var sb: StyleBox = b.get_theme_stylebox(st)
+			if sb != null:
+				sb = sb.duplicate()
+				sb.content_margin_left = maxf(sb.content_margin_left, 34.0)
+				b.add_theme_stylebox_override(st, sb)
 
 
 func build_view(holder: Control) -> void:
@@ -468,14 +484,13 @@ func _btn(parent: Control, text: String, cb: Callable, primary := false, kind :=
 	var b: Button = icon_button(text, kind) if kind != "" else Button.new()
 	if kind == "":
 		b.text = text
-	b.clip_text = true                               # one line (autowrap made the first button very tall in a fresh column)
-	b.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	b.tooltip_text = text
 	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	if primary:
 		UI.primary(b)
 	b.pressed.connect(cb)
 	parent.add_child(b)
+	wrap_button(b)                                   # two lines instead of «…»
 	return b
 
 

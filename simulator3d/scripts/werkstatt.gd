@@ -265,6 +265,7 @@ func _build_ui() -> void:
 	plb.toggle_mode = true
 	plb.pressed.connect(func(): einzel.set_mode("platten" if einzel.mode != "platten" else "", "", false, einzel.plate))
 	v.add_child(plb)
+	EINZEL.wrap_button(plb)
 	_w["plates_btn"] = plb
 	# the part
 	v.add_child(UI.heading(T.t("Teil")))
@@ -300,6 +301,7 @@ func _build_ui() -> void:
 	so.visible = false
 	so.pressed.connect(func(): einzel.set_mode("teil", sel))
 	iv.add_child(so)
+	EINZEL.wrap_button(so)
 	_w["solo_btn"] = so
 	# assembly
 	v.add_child(UI.heading(T.t("Montage Schritt für Schritt")))
