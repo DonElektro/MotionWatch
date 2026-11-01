@@ -626,7 +626,8 @@ func grossvater() -> Array:
 	L.append(_w(10.0, "g_weg", {"k": "folge", "fig": "held", "off": Vector3(0.8, 2.3, 5.5), "off_b": Vector3(2.6, 1.9, 3.6),
 			"look": Vector3(0, 1.4, 6.0), "fov": 52.0},
 			{"zeit": 10.0, "ton": [[0.0, "loop", "schritte", -14.0, 1.0], [0.0, "loop", "pulse", -16.0, 6.0]]}))
-	L.append(_w(9.0, "g_alp", {"k": "ziel", "z": Vector3(hut.x + 10.0, 1.4, hut.y + 7.0), "dist": 24.0, "h": 2.6, "ang": 290.0, "dreh": 12.0,
+	# g_alp (Fix 3.40.x): the alp scene on the meadow west of the hut, seen from the south – east of the hut the gorge begins
+	L.append(_w(9.0, "g_alp", {"k": "ziel", "z": Vector3(hut.x - 9.0, 1.4, hut.y + 7.0), "dist": 24.0, "h": 2.6, "ang": 20.0, "dreh": 12.0,
 			"naeher": 0.25, "h_min": 0.5, "fov": 50.0},
 			{"zeit": 11.0, "say": [[0.6, T.t("Menschen, die das Tal kennen.")]],
 			"ton": [[0.0, "stop", "schritte", 0.5], [0.5, "one", "kuhglocke", -14.0], [4.0, "one", "kuhglocke", -18.0]]}))
@@ -681,7 +682,7 @@ func grossvater() -> Array:
 	var blitz := [["g_bruecke", {"k": "ziel", "z": Vector3(br.x, -1.0, br.y), "bruecke": true, "dist": 18.0, "h": 1.6, "ang": 30.0,
 					"h_min": -10.0, "fov": 50.0}, 13.0],
 			["g_wasserfall", {"k": "ziel", "z": Vector3(wf.x, 3.0, wf.y), "dist": 26.0, "h": 2.0, "ang": 200.0, "lh": 2.0, "h_min": -4.0, "fov": 55.0}, 12.5],
-			["g_alp", {"k": "ziel", "z": Vector3(hut.x + 10.0, 1.2, hut.y + 7.0), "dist": 14.0, "h": 1.6, "ang": 300.0, "h_min": 0.5, "fov": 45.0}, 11.0],
+			["g_alp", {"k": "ziel", "z": Vector3(hut.x - 9.0, 1.2, hut.y + 7.0), "dist": 14.0, "h": 1.6, "ang": 30.0, "h_min": 0.5, "fov": 45.0}, 11.0],
 			["g_augen", {"k": "fahrt", "a": Vector3(camp.x - 10, 1.3, camp.y + 6), "la": Vector3(camp.x - 40, 1.0, camp.y + 30), "fov": 34.0}, 22.2],
 			["g_blitz", {"k": "ziel", "z": Vector3(hut.x + 40, 120.0, hut.y + 400), "dist": 380.0, "h": 6.0, "ang": 175.0, "fov": 70.0,
 					"nebel_max": 0.0006}, 20.6],
@@ -864,14 +865,14 @@ func g_alp() -> void:
 	var hut := Vector2(float(Orte.B_HUT[0]), float(Orte.B_HUT[1]))
 	var fs: Dictionary = FD.FIG["aelpler"]
 	var sepp := fig("sepp", "person", {"jacke": fs["jacke"], "look": {"hat": "cap" if bool(fs.get("cap", false)) else ""}})
-	stell(sepp, hut.x + 9.0, hut.y + 8.0, hut.x + 22.0, hut.y + 18.0)
+	stell(sepp, hut.x - 7.0, hut.y + 8.0, hut.x - 17.0, hut.y + 3.0)     # (Fix 3.40.x: west of the hut, not at the gorge edge)
 	idle(sepp, "talk", 1.0e4)
 	var names := ["sepp"]
 	for i in range(4):
 		var k := "kuh%d" % i
 		var c := fig(k, "cow")
 		var a := float(i) * 1.7
-		stell(c, hut.x + 14.0 + cos(a) * (6.0 + i), hut.y + 2.0 + sin(a) * (5.0 + i), hut.x + 30.0, hut.y + 30.0 * cos(a))
+		stell(c, hut.x - 17.0 + cos(a) * (6.0 + i), hut.y + 3.0 + sin(a) * (5.0 + i), hut.x - 40.0, hut.y + 30.0 * cos(a))
 		idle(c, "graze", 1.0e4)
 		names.append(k)
 	nur(names)
