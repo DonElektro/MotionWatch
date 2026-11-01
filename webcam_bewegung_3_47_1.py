@@ -23,6 +23,8 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 3.47.1: Druckdateien herunterladen klappt auch auf dem Pi ohne Projektordner (Pi holt die Datei selbst, sauberer Dateiname);
+    «Alle als ZIP» nur für die gewählte Variante, mit Kurzanleitung.
   * 3.47.0: Gehäuse-Abgleich v5.2: Montage-Texte v5.2, Szene immer v5.2 mit Stopfen 12/19, Grau #9a9ea3 und Kopf orange, «Stand
     MoveEye X.Y.Z» im Bausatz, Akku UPS HAT (E) mit 4 × 21700 in Texten und Simulator, Bausatz-Link auf /info/; Trailer nur noch
     im Entwickler-Bereich; Entwickler heisst «Elektro», keine privaten Angaben mehr in Programm und Druckdateien.
@@ -89,8 +91,6 @@ Features
     bleibt), alter Python-Basis-Simulator entfernt.
   * 3.26.0: Simulator 3.26.0: Maggie sieht realistischer aus – ab Grafik «mittel» ein Modell mit Skelett und Fell, in «einfach»
     weiche Formen mit ihrem Muster.
-  * 3.25.0: Mittlerer Klapp-Knopf «Meine Ansicht»: merkt sich dein Auf- und Zuklappen pro Seite, auf allen deinen
-    MoveEye-Geräten gleich; «Nur Gruppen» weiter mit langem Druck; ↻ springt zuerst auf Live und lädt dann neu.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -99,10 +99,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_3_47_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_3_47_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_3_47_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_3_47_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_3_47_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_3_47_1.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -119,7 +119,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "3.47.0"
+APP_VERSION = "3.47.1"
 
 
 def default_data_dir():
@@ -241,8 +241,8 @@ def prepare_settings_file():
 #     Part 397 fetches the zip over the same update source and restarts once (zusatz_start()).
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
-ZD_FILE = "moveeye_daten_3_47_0.zip"
-ZD_SHA256 = "9a87759a4229cece16aabc8c2bd294bc520fcf608363b31645cdedc4b3b2d9ae"
+ZD_FILE = "moveeye_daten_3_47_1.zip"
+ZD_SHA256 = "bd22ee0eb3be8ed0091ec57d6dc67715973fdb34fbbd0dd3365b6ca12d5b7499"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -24699,13 +24699,13 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3.47.0", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 49068887,
-         "sha256": "cc5bc1961784479255b6321f22a225a851a813f1a9785f3ae6eb35a0a73d7471"}
+SIM3D = {"version": "3.47.1", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 49069063,
+         "sha256": "13d1bec38f02d3b6dfde9ee24d1281637d2269fbdf38850cf9624d2aab8c50f2"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # 3.43.x: the same 3D simulator for Linux (x86_64), offered at /sim/simulator3d_linux.zip - fetched, checked and kept the same way
 # (simulator3d/MoveEyeSim3D_Linux.zip, block «linux» in simulator3d/version.json; bauen.py --neue-version takes it over).
-SIM3D_LINUX = {"version": "3.47.0", "file": "simulator3d/MoveEyeSim3D_Linux.zip", "size": 43045141,
-               "sha256": "a356238b1330693791ae5a257a40c5e92cc8d5ed4324d1833aa3386caf934a6e", "stem": "MoveEyeSim3D_Linux",
+SIM3D_LINUX = {"version": "3.47.1", "file": "simulator3d/MoveEyeSim3D_Linux.zip", "size": 43044992,
+               "sha256": "aa8709dd6539398f46469ce96a441e300d2e2f3121c92e5679f2c30e6f2d934d", "stem": "MoveEyeSim3D_Linux",
                "label": "MoveEye Sim (Linux)"}
 SIM3D_LINUX_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
@@ -30614,7 +30614,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_3_47_0.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_3_47_1.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -48775,7 +48775,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 3.47.0")
+        self.root.title("MoveEye 3.47.1")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -49153,7 +49153,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 3.47.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 3.47.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -72519,8 +72519,9 @@ BAU3D_MODELLE = json.loads(_zd('639vb_daten_bau3d/BAU3D_MODELLE', ""))
 # liefert three.js, das Modell und die Daten selbst aus (auch offline); «Im Simulator ansehen» ist nur ein Zusatz.
 #   * /build: Seite (Reiter Mehr «Bauen»), Reiter über #uebersicht … #wartung; /case leitet auf /build weiter (alte Links).
 #   * /bau3d/<pfad>: three.js (gzip), /build/gehaeuse.glb: das Modell (gzip), /build/qr.svg: QR-Code zu dieser MoveEye-Seite.
-#   * /build/datei/<name>: eine Druckdatei (3MF) aus hardware/gehaeuse/Druckdateien/ – auf dem Pi ohne Repository: Weiterleitung
-#     zu GitHub; /build/alle.zip: alle Druckdateien in einem ZIP (nur wo sie liegen).
+#   * /build/datei/<name>: eine Druckdatei (3MF) aus hardware/gehaeuse/Druckdateien/ – auf dem Pi ohne Repository holt MoveEye
+#     sie selbst von GitHub (Cache ~/.config/motionwatch/druck_cache/, real-download-fix); /build/alle.zip?var=v52|v51: die
+#     Druckdateien der gewählten Variante mit LIESMICH.txt als MoveEye_v5-2_Druck_X.Y.Z.zip.
 #   * /api/bau: «Mein Bau» – GET {var, done}, POST {var?, done?}: Variante und erledigte Schritte pro Benutzer (wie «Meine
 #     Ansicht», CFG bau_mein), auf allen Geräten gleich.
 #   * /api/case: GET = ob der Simulator verbunden ist; POST {do: "sim", step?} -> Simulator /control werkstatt (wie bisher).
@@ -72564,7 +72565,36 @@ GEH_PAGE = _zd('639w_gehaeuse/GEH_PAGE', ZD_PAGE)
 
 # the 3D workshop in the browser (three.js r160 from 639vb, the model /build/gehaeuse.glb) - like werkstatt.gd in the simulator
 GEH_3D_JS = _zd('639w_gehaeuse/GEH_3D_JS', "")
-GEH_KEYS = sorted(set(GEH_UI_DE) | set(GEH_UI2_DE) | {k for _i, k in BAU_TABS} | {
+GEH_DL_TX = {                                             # real-download-fix: EN -> (de, fr, it, rm)
+    "The print file is not on this MoveEye and could not be fetched from the internet (no connection?). Try again later, or load the complete kit package.": (
+        "Die Druckdatei liegt nicht auf diesem MoveEye und konnte nicht aus dem Internet geholt werden (keine Verbindung?). Später nochmals versuchen oder das komplette Bausatz-Paket laden.",
+        "Le fichier d'impression n'est pas sur ce MoveEye et n'a pas pu être téléchargé (pas de connexion ?). Réessayer plus tard ou charger le kit complet.",
+        "Il file di stampa non è su questo MoveEye e non è stato possibile scaricarlo (nessuna connessione?). Riprovare più tardi o scaricare il kit completo.",
+        "La datoteca da stampa n'è betg sin quest MoveEye e n'ha betg pudì vegnir chargiada da l'internet (nagina colliaziun?). Empruvar pli tard u chargiar il pachet cumplet."),
+    "The print files are being fetched from the internet (%d of %d). This page tries again by itself; you can also tap «Try again».": (
+        "Die Druckdateien werden aus dem Internet geholt (%d von %d). Diese Seite versucht es selbst nochmals; du kannst auch «Nochmals versuchen» tippen.",
+        "Les fichiers d'impression sont en cours de téléchargement (%d sur %d). Cette page réessaie d'elle-même ; vous pouvez aussi toucher «Réessayer».",
+        "I file di stampa vengono scaricati da internet (%d di %d). Questa pagina riprova da sola; puoi anche toccare «Riprova».",
+        "Las datotecas da stampa vegnan chargiadas da l'internet (%d da %d). Questa pagina emprova sezza anc ina giada; ti pos er tutgar «Empruvar anc ina giada»."),
+    "Try again": ("Nochmals versuchen", "Réessayer", "Riprova", "Empruvar anc ina giada"),
+    "Complete kit package (GitHub)": ("Komplettes Bausatz-Paket (GitHub)", "Kit complet (GitHub)", "Kit completo (GitHub)", "Pachet cumplet (GitHub)"),
+    "Back to Build": ("Zurück zu Bauen", "Retour à Construire", "Torna a Costruire", "Enavos tar Construir"),
+    "The print file is too big.": ("Die Druckdatei ist zu gross.", "Le fichier d'impression est trop grand.", "Il file di stampa è troppo grande.", "La datoteca da stampa è memia gronda."),
+    "MoveEye print files – case %s – as of MoveEye %s": ("MoveEye Druckdateien – Gehäuse %s – Stand MoveEye %s", "Fichiers d'impression MoveEye – boîtier %s – état MoveEye %s",
+        "File di stampa MoveEye – custodia %s – stato MoveEye %s", "Datotecas da stampa MoveEye – chascha %s – stadi MoveEye %s"),
+    "folder": ("Ordner", "dossier", "cartella", "ordinatur"),
+    "Without the repository MoveEye fetches the files from GitHub itself (the first time takes about a minute). Everything in one package:": (
+        "Ohne Repository holt MoveEye die Dateien selbst von GitHub (beim ersten Mal rund eine Minute). Alles in einem Paket:",
+        "Sans dépôt, MoveEye télécharge lui-même les fichiers depuis GitHub (la première fois environ une minute). Tout en un paquet :",
+        "Senza repository MoveEye scarica i file da GitHub da solo (la prima volta circa un minuto). Tutto in un pacchetto:",
+        "Senza repository chargia MoveEye las datotecas sez da GitHub (l'emprima giada var ina minuta). Tut en in pachet:"),
+}
+for _k, _v in GEH_DL_TX.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX.setdefault(_L, {}).setdefault(_k, _v[_i + 1])
+GEH_KEYS = sorted(set(GEH_UI_DE) | set(GEH_UI2_DE) | {k for _i, k in BAU_TABS} | {"Complete kit package (GitHub)",
+    "Without the repository MoveEye fetches the files from GitHub itself (the first time takes about a minute). Everything in one package:"} | {
     "Case", "Step", "Name", "Opened in the simulator.", "Simulator not connected – start it and connect it on the page Simulator."})
 
 
@@ -72654,20 +72684,214 @@ def geh_druck_namen():
     return list(GEH_BAU.get("druckdateien") or []) + list(GEH_BAU.get("druckdateien_einzeln") or [])
 
 
-def geh_alle_zip(v52=True):
-    """the print files of one case (v5.2: Druckdateien/v5-2/, v5.1: the others) that are here in one ZIP, named with the
-    version (real-abgleich-v52: MoveEye_v5-2_Druck_X.Y.Z) - 3MF are compressed already: stored. None without the repository"""
+# ---- real-download-fix (01.11.2026): print files on the Pi without the repository ------------------------------------------
+# Safari on the iPhone showed «Load failed»: the Pi has no hardware/gehaeuse/Druckdateien/ and redirected to GitHub (302 ->
+# github.com/raw -> raw.githubusercontent). Now MoveEye fetches the file itself (update network functions, proxy from the
+# environment, GitHub key only for GitHub), checks the size, keeps it in ~/.config/motionwatch/druck_cache/ (renewed per
+# version with the ETag) and sends it itself with «Content-Disposition: attachment; filename=<base name>». Only names of
+# geh_druck_namen() (no path tricks). /build/alle.zip?var=v52|v51: the files of the chosen case + LIESMICH.txt, named
+# MoveEye_v5-2_Druck_X.Y.Z.zip; takes it too long, the rest is fetched in the background and the page tries again
+# (hint to the kit package MoveEye_Bausatz.zip of the releases).
+GEH_DRUCK_RAW = "https://raw.githubusercontent.com/DonElektro/MotionWatch/main/hardware/gehaeuse/Druckdateien/"
+GEH_DRUCK_MAX = 30 * 1024 * 1024                          # one print file (the biggest plate has ~6.5 MB)
+GEH_ZIP_BUDGET = 45.0                                     # seconds /build/alle.zip may fetch before it answers «try again»
+GEH_BAUSATZ_URL = "https://github.com/DonElektro/MotionWatch/releases/latest/download/MoveEye_Bausatz.zip"
+_GEH_DL_LOCK = threading.Lock()
+_GEH_DL_NAME_LOCKS = {}
+_GEH_DL_BG = {"run": False}
+
+
+def geh_cache_dir():
+    return os.path.join(DATA_DIR, "druck_cache")
+
+
+def geh_cache_file(name):
+    return os.path.join(geh_cache_dir(), name.replace("/", "__"))
+
+
+def _geh_meta(write=None):
+    p = os.path.join(geh_cache_dir(), "cache.json")
+    if write is None:
+        try:
+            with open(p, encoding="utf-8") as f_:
+                m = json.load(f_)
+            return m if isinstance(m, dict) else {}
+        except (OSError, ValueError):
+            return {}
+    os.makedirs(geh_cache_dir(), exist_ok=True)
+    tmp = p + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f_:
+        json.dump(write, f_)
+    os.replace(tmp, p)
+
+
+def geh_base_name(name):
+    return name.rsplit("/", 1)[-1]
+
+
+def geh_druck_holen(name, timeout=30):
+    """the path of a print file: the repository, else the cache, else fetched from GitHub -> (path, None) or (None, reason);
+    reason: unknown | offline | too big | bad file | <HTTP code>. An older cached file is used when the internet is gone."""
+    import http.client
+    import urllib.error
+    from urllib.parse import quote
+    if name not in geh_druck_namen() or ".." in name or name.startswith("/") or "\\" in name:
+        return None, "unknown"
+    local = os.path.join(geh_druck_dir(), name)
+    if os.path.isfile(local):
+        return local, None
+    with _GEH_DL_LOCK:
+        nl = _GEH_DL_NAME_LOCKS.setdefault(name, threading.Lock())
+    with nl:
+        cp = geh_cache_file(name)
+        with _GEH_DL_LOCK:
+            m = dict(_geh_meta().get(name) or {})
+        have = os.path.isfile(cp) and os.path.getsize(cp) == m.get("size")
+        if have and m.get("ver") == APP_VERSION:
+            return cp, None
+        hdr = {"If-None-Match": m["etag"]} if have and m.get("etag") else {}
+        tmp = cp + ".part"
+        try:
+            os.makedirs(geh_cache_dir(), exist_ok=True)
+            with urllib.request.urlopen(_upd_request(GEH_DRUCK_RAW + quote(name), hdr), timeout=timeout) as r:
+                cl = r.headers.get("Content-Length")
+                if cl and cl.isdigit() and int(cl) > GEH_DRUCK_MAX:
+                    return (cp, None) if have else (None, "too big")
+                n = 0
+                with open(tmp, "wb") as f_:
+                    while True:
+                        b_ = r.read(65536)
+                        if not b_:
+                            break
+                        n += len(b_)
+                        if n > GEH_DRUCK_MAX:
+                            break
+                        f_.write(b_)
+                etag = r.headers.get("ETag") or ""
+            if n > GEH_DRUCK_MAX:
+                os.remove(tmp)
+                return (cp, None) if have else (None, "too big")
+            with open(tmp, "rb") as f_:
+                if f_.read(2) != b"PK":                       # 3MF = ZIP; an error page of a portal is no print file
+                    os.remove(tmp)
+                    return (cp, None) if have else (None, "bad file")
+            os.replace(tmp, cp)
+            m = {"size": n, "etag": etag, "ver": APP_VERSION, "t": int(time.time())}
+        except urllib.error.HTTPError as e:
+            if e.code == 304 and have:
+                m["ver"], m["t"] = APP_VERSION, int(time.time())
+            else:
+                return (cp, None) if have else (None, str(e.code))
+        except (OSError, ValueError, http.client.HTTPException):   # no internet, timeout, DNS, cut off, disk
+            try:
+                os.remove(tmp)
+            except OSError:
+                pass
+            return (cp, None) if have else (None, "offline")
+        with _GEH_DL_LOCK:
+            meta = _geh_meta()
+            meta = {k: v for k, v in meta.items() if k in geh_druck_namen()}
+            meta[name] = m
+            try:
+                _geh_meta(meta)
+            except OSError:
+                pass
+        return cp, None
+
+
+def geh_var_namen(var):
+    """the print files of a case: v52 -> Druckdateien/v5-2/, v51 -> the others"""
+    v52 = var != "v51"
+    return [n for n in geh_druck_namen() if n.startswith("v5-2/") == v52]
+
+
+def geh_var_std():
+    return (GEH_BAU.get("variante_standard") or {}).get("gehaeuse") or "v52"
+
+
+def geh_zip_name(var):
+    return "MoveEye_%s_Druck_%s.zip" % ("v5-1" if var == "v51" else "v5-2", APP_VERSION)
+
+
+def _gx_py(o, L):
+    return o.get(L) or o.get("de" if L == "rm" else "en") or o.get("de") or "" if isinstance(o, dict) else str(o or "")
+
+
+def geh_liesmich(var, L=None):
+    """the short guide in the ZIP (language of the device)"""
+    L = cur_lang(L)
+    D = GEH_BAU.get("druck") or {}
+    vals = {o["id"] for g_ in GEH_BAU.get("varianten") or [] if g_["id"] == "gehaeuse" for o in g_["werte"]}
+    vt = "v5.1" if var == "v51" else "v5.2"
+    out = [tr("MoveEye print files – case %s – as of MoveEye %s", L) % (vt, APP_VERSION), ""]
+    for h in D.get("hinweise") or []:
+        out.append("- " + _gx_py(h, L))
+    out += ["", tr("Plates for the X2D (everything on 2 plates)", L) + ": " + tr("folder", L) + " Platten_X2D/",
+            tr("Single parts (3MF)", L) + ":"]
+    for p in D.get("teile") or []:
+        w = p.get("wenn")
+        if w in vals and w != var:
+            continue
+        opt = "  (" + tr("optional", L) + ": " + w + ")" if w and w not in vals else ""
+        out.append("- %s: × %s · %s %s %% · %s %s · %s %s · %s %s mm%s · %s %s · %s ~%s h%s" % (
+            p["datei"], p["stueck"], tr("Infill", L), p["fuellung"], tr("Walls", L), p["waende"], tr("Supports", L),
+            "✓" if p.get("stuetzen") else tr("none", L), tr("Layer", L), p["schicht"], " · Brim %s mm" % p["brim"] if p.get("brim") else "",
+            tr("lies on", L), _gx_py(p.get("liegt"), L), tr("Print time", L), p["zeit_h"], opt))
+    out += ["", _gx_py(D.get("zeit_hinweis"), L), "", tr("Complete kit package (GitHub)", L) + ": " + GEH_BAUSATZ_URL, ""]
+    return "\r\n".join(out)
+
+
+def _geh_bg_fetch(names):
+    try:
+        for n in names:
+            geh_druck_holen(n, timeout=60)
+    finally:
+        _GEH_DL_BG["run"] = False
+
+
+def geh_alle_zip(var=None, budget=None):
+    """-> ("zip", bytes, file name) | ("wait", done, total) | ("offline", reason, None): the print files of the chosen case
+    in one ZIP (3MF are compressed already: stored), fetched where missing"""
     import io
-    import zipfile
-    d = geh_druck_dir()
-    fs = [n for n in geh_druck_namen() if os.path.isfile(os.path.join(d, n)) and n.startswith("v5-2/") == v52]
-    if not fs:
-        return None
+    var = var if var in ("v51", "v52") else geh_var_std()
+    names = geh_var_namen(var)
+    t0, paths = time.time(), {}
+    budget = GEH_ZIP_BUDGET if budget is None else budget
+    for i, n in enumerate(names):
+        if time.time() - t0 > budget:
+            rest = names[i:]
+            if not _GEH_DL_BG["run"]:
+                _GEH_DL_BG["run"] = True
+                threading.Thread(target=_geh_bg_fetch, args=(rest,), daemon=True).start()
+            return "wait", len(paths), len(names)
+        p, why = geh_druck_holen(n)
+        if not p:
+            return "offline", why, None
+        paths[n] = p
+    zn = geh_zip_name(var)
+    top = zn[:-4] + "/"
     b = io.BytesIO()
     with zipfile.ZipFile(b, "w", zipfile.ZIP_STORED) as z:
-        for n in fs:
-            z.write(os.path.join(d, n), geh_alle_name(v52) + "/" + n.split("/")[-1])
-    return b.getvalue()
+        z.writestr(top + "LIESMICH.txt", geh_liesmich(var).encode("utf-8"))
+        for n in names:
+            bn = geh_base_name(n)
+            z.write(paths[n], top + ("Platten_X2D/" + bn if n in (GEH_BAU.get("druckdateien") or []) else bn))
+    return "zip", b.getvalue(), zn
+
+
+def geh_dl_page(msg, retry=None, refresh=0):
+    """a small page instead of an error (no internet, still fetching)"""
+    import html as _h
+    e = _h.escape
+    L = cur_lang()
+    rf = '<meta http-equiv="refresh" content="%d">' % refresh if refresh else ""
+    rb = '<p><a class="b" href="%s">%s</a></p>' % (e(retry), e(tr("Try again"))) if retry else ""
+    return ('<!doctype html><html lang="%s"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">%s'
+            '<title>MoveEye</title><style>:root{color-scheme:light dark}body{font:16px/1.5 system-ui,-apple-system,sans-serif;margin:0;padding:24px 16px;'
+            'background:#f4f6fa;color:#162033}@media (prefers-color-scheme:dark){body{background:#0f1624;color:#e6ebf4}}main{max-width:560px;margin:0 auto}'
+            'a{color:#2f7de1}a.b{display:inline-block;padding:10px 16px;border-radius:10px;background:#2f7de1;color:#fff;text-decoration:none}</style></head>'
+            '<body><main><h2>🛠 MoveEye</h2><p>%s</p>%s<p><a href="%s">⬇ %s</a></p><p><a href="/build#drucken">‹ %s</a></p></main></body></html>'
+            % (L, rf, e(msg), rb, e(GEH_BAUSATZ_URL), e(tr("Complete kit package (GitHub)")), e(tr("Back to Build"))))
 
 
 def geh_alle_name(v52=True):
@@ -72732,19 +72956,24 @@ def smalltv_routes(app, reply, body):                     # + 639w: /build, /cas
     def geh_datei(name):
         if name not in geh_druck_namen():
             return Response("no", 404)
-        p = os.path.join(geh_druck_dir(), name)
-        if os.path.isfile(p):
-            with open(p, "rb") as f_:
-                return Response(f_.read(), mimetype="model/3mf", headers={"Content-Disposition": f'attachment; filename="{name}"'})
-        return redirect(GEH_BAU.get("github", "") + "/raw/main/hardware/gehaeuse/Druckdateien/" + name, code=302)
+        p, why = geh_druck_holen(name)                   # real-download-fix: no redirect to GitHub (Safari: «Load failed»)
+        if not p:
+            msg = tr("The print file is too big.") if why == "too big" else tr("The print file is not on this MoveEye and could not be fetched from the internet (no connection?). Try again later, or load the complete kit package.")
+            return Response(geh_dl_page(msg, retry="/build/datei/" + name), 503, mimetype="text/html")
+        with open(p, "rb") as f_:
+            return Response(f_.read(), mimetype="application/octet-stream",
+                            headers={"Content-Disposition": f'attachment; filename="{geh_base_name(name)}"', "Cache-Control": "private, max-age=600"})
 
     @app.route("/build/alle.zip")
     def geh_alle():
-        v52_ = request.args.get("v", "v52") != "v51"
-        b_ = geh_alle_zip(v52_)
-        if b_ is None:
-            return redirect(GEH_BAU.get("github", "") + "/tree/main/hardware/gehaeuse/Druckdateien", code=302)
-        return Response(b_, mimetype="application/zip", headers={"Content-Disposition": f'attachment; filename="{geh_alle_name(v52_)}.zip"'})
+        var = request.args.get("var") or geh_var_std()
+        st, a_, b_ = geh_alle_zip(var)
+        if st == "zip":
+            return Response(a_, mimetype="application/zip", headers={"Content-Disposition": f'attachment; filename="{b_}"', "Cache-Control": "no-store"})
+        url = "/build/alle.zip?var=" + ("v51" if var == "v51" else "v52")
+        if st == "wait":
+            return Response(geh_dl_page(tr("The print files are being fetched from the internet (%d of %d). This page tries again by itself; you can also tap «Try again».") % (a_, b_), retry=url, refresh=15), 202, mimetype="text/html")
+        return Response(geh_dl_page(tr("The print file is not on this MoveEye and could not be fetched from the internet (no connection?). Try again later, or load the complete kit package."), retry=url), 503, mimetype="text/html")
 
     @app.route("/api/bau", methods=["GET", "POST"])
     def api_bau():                                       # «Mein Bau»: variant and checklist per user (every device)
@@ -72976,6 +73205,110 @@ def geh_selftest():
 
 
 SELFTEST_EXTRA.append(("Build (page /build, 3D in the browser, My build, models = source, build infos)", geh_selftest))
+def geh_dl_selftest():
+    """real-download-fix: print files without the repository - fetched from a stand-in server, cache, ETag, base name,
+    path tricks refused, size limit, no internet"""
+    import http.server
+    import tempfile
+    body_ = b"PK\x03\x04" + b"3mf" * 400
+    hits = []
+
+    class H(http.server.BaseHTTPRequestHandler):
+        def log_message(self, *a):
+            pass
+
+        def do_GET(self):
+            hits.append((self.path, self.headers.get("If-None-Match")))
+            if "bad" in self.path:
+                b_ = b"<html>portal</html>"
+            elif self.headers.get("If-None-Match") == '"e1"':
+                self.send_response(304)
+                self.end_headers()
+                return
+            else:
+                b_ = body_
+            self.send_response(200)
+            self.send_header("ETag", '"e1"')
+            self.send_header("Content-Length", str(len(b_)))
+            self.end_headers()
+            self.wfile.write(b_)
+    srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), H)
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    tmp = tempfile.mkdtemp(prefix="mw_druck_")
+    G_ = globals()
+    keep = {k: G_[k] for k in ("GEH_DRUCK_RAW", "GEH_DRUCK_MAX", "geh_druck_dir", "geh_cache_dir", "GEH_ZIP_BUDGET")}
+    npx = os.environ.get("no_proxy"), os.environ.get("NO_PROXY")
+    try:
+        os.environ["no_proxy"] = os.environ["NO_PROXY"] = "127.0.0.1,localhost"
+        G_["GEH_DRUCK_RAW"] = "http://127.0.0.1:%d/raw/" % srv.server_address[1]
+        G_["geh_druck_dir"] = lambda: os.path.join(tmp, "kein_repo")
+        G_["geh_cache_dir"] = lambda: os.path.join(tmp, "druck_cache")
+        n52 = "v5-2/MoveEye_v5-2_01_Unterteil_v52.3mf"
+        assert n52 in geh_druck_namen()
+        for bad in ("../motionwatch_settings.json", "v5-2/../../versions.json", "/etc/passwd", "v5-2\\x.3mf", "x.3mf"):
+            assert geh_druck_holen(bad) == (None, "unknown"), bad
+        p, why = geh_druck_holen(n52)
+        assert p and not why and os.path.dirname(p) == os.path.join(tmp, "druck_cache") and "/" not in os.path.basename(p), (p, why)
+        with open(p, "rb") as f_:
+            assert f_.read() == body_
+        assert hits[-1][0] == "/raw/v5-2/MoveEye_v5-2_01_Unterteil_v52.3mf", hits
+        assert geh_druck_holen(n52)[0] == p and len(hits) == 1, "from the cache, no new request"
+        m = _geh_meta()
+        m[n52]["ver"] = "0.0.1"                       # a new version: asked again with the ETag, 304 keeps the file
+        _geh_meta(m)
+        assert geh_druck_holen(n52)[0] == p and hits[-1][1] == '"e1"' and _geh_meta()[n52]["ver"] == APP_VERSION, hits
+        assert geh_base_name(n52) == "MoveEye_v5-2_01_Unterteil_v52.3mf"
+        G_["GEH_DRUCK_MAX"] = 100
+        assert geh_druck_holen("v5-2/MoveEye_v5-2_03_Drehteller.3mf") == (None, "too big")
+        G_["GEH_DRUCK_MAX"] = keep["GEH_DRUCK_MAX"]
+        G_["GEH_DRUCK_RAW"] = "http://127.0.0.1:%d/bad/" % srv.server_address[1]
+        assert geh_druck_holen("v5-2/MoveEye_v5-2_05_Arm2_Lagerseite.3mf") == (None, "bad file")
+        assert not [f_ for f_ in os.listdir(os.path.join(tmp, "druck_cache")) if f_.endswith(".part")], "no half files"
+        G_["GEH_DRUCK_RAW"] = "http://127.0.0.1:1/"   # no internet: a readable reason, the cached file still works
+        assert geh_druck_holen("v5-2/MoveEye_v5-2_07_Seitendeckel.3mf", timeout=3) == (None, "offline")
+        m = _geh_meta()
+        m[n52]["ver"] = "0.0.1"
+        _geh_meta(m)
+        assert geh_druck_holen(n52, timeout=3)[0] == p, "old cache without internet"
+        st, why, _n = geh_alle_zip("v52")
+        assert st == "offline" and why == "offline", (st, why)
+        assert "Bausatz" in geh_dl_page(tr("Try again"), retry="/build/alle.zip?var=v52") and "<script" not in geh_dl_page("<script>")
+        G_["GEH_DRUCK_RAW"] = "http://127.0.0.1:%d/raw/" % srv.server_address[1]
+        G_["GEH_ZIP_BUDGET"] = -1                     # too slow: the rest in the background, the page asks to try again
+        st, a_, b_ = geh_alle_zip("v52")
+        assert st == "wait" and a_ == 0 and b_ == len(geh_var_namen("v52")), (st, a_, b_)
+        for _i in range(100):
+            if not _GEH_DL_BG["run"]:
+                break
+            time.sleep(0.05)
+        G_["GEH_ZIP_BUDGET"] = keep["GEH_ZIP_BUDGET"]
+        st, zb, zn = geh_alle_zip("v52")
+        assert st == "zip" and zn == "MoveEye_v5-2_Druck_%s.zip" % APP_VERSION, (st, zn)
+        import io
+        with zipfile.ZipFile(io.BytesIO(zb)) as z:
+            nl = z.namelist()
+        top = zn[:-4] + "/"
+        assert top + "LIESMICH.txt" in nl and top + "MoveEye_v5-2_01_Unterteil_v52.3mf" in nl and top + "Platten_X2D/MotionWatch_v5-2_Platte_A_Unterteil.3mf" in nl, nl[:5]
+        assert len(nl) == len(geh_var_namen("v52")) + 1 and not [x for x in nl if "v5-1" in x or "v5-2/" in x[len(top):]], nl
+        assert geh_zip_name("v51") == "MoveEye_v5-1_Druck_%s.zip" % APP_VERSION and all(not n.startswith("v5-2/") for n in geh_var_namen("v51"))
+    finally:
+        srv.shutdown()
+        srv.server_close()
+        G_.update(keep)
+        for k_, v_ in zip(("no_proxy", "NO_PROXY"), npx):
+            if v_ is None:
+                os.environ.pop(k_, None)
+            else:
+                os.environ[k_] = v_
+        shutil.rmtree(tmp, ignore_errors=True)
+    html = geh_page()
+    fl_ = re.search(r"function fileLink\(f, label\) \{.*?\n", html)
+    assert fl_ and "download" not in fl_.group(0) and 'split("/").map(encodeURIComponent).join("/")' in fl_.group(0), ("links", fl_ and fl_.group(0)[:200])
+    assert "/build/alle.zip?var=" in html and "MoveEye_Bausatz.zip" in html, "ZIP of the case, kit package"
+    return "Print files without the repository: fetched, cached (ETag), base name, path tricks refused, ZIP of the case"
+
+
+SELFTEST_EXTRA.append(("Build print files (fetched without the repository, cache, ZIP of the case)", geh_dl_selftest))
 # ----------------------------------------------------------------------------
 # real-erk-e3 (31.10.2026): die Push-Nachricht «Etwas Grosses am Boden» (Titel und Text) in de / fr / it / rm.
 # ----------------------------------------------------------------------------

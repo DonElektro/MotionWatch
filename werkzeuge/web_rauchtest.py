@@ -118,6 +118,31 @@ def holen(url, auth=None, timeout=25):
         return -1, e.__class__.__name__
 
 
+def druck_pruefen(base, fehler):
+    """Druckdateien (real-download-fix): Download mit Basisnamen, kein Pfad-Trick, ZIP der Variante mit Version im Namen"""
+    def kopf(pfad):
+        req = urllib.request.Request(base + pfad)
+        req.add_header("Authorization", "Basic " + base64.b64encode(("admin:" + PASSWORT).encode()).decode())
+        try:
+            with urllib.request.build_opener(urllib.request.ProxyHandler({})).open(req, timeout=120) as r:
+                r.read(4)
+                return r.status, r.headers.get("Content-Disposition", "")
+        except urllib.error.HTTPError as e:
+            return e.code, ""
+        except Exception as e:
+            return -1, e.__class__.__name__
+    c, cd = kopf("/build/datei/v5-2/MoveEye_v5-2_01_Unterteil_v52.3mf")
+    if c != 200 or cd != 'attachment; filename="MoveEye_v5-2_01_Unterteil_v52.3mf"':
+        fehler.append("Druckdatei v5-2/…: %s %r (erwartet 200, Basisname)" % (c, cd))
+    for trick in ("/build/datei/v5-2%2F..%2F..%2Fversions.json", "/build/datei/..%2Fversions.json", "/build/datei/v5-2/../../versions.json"):
+        c, _cd = kopf(trick)
+        if c == 200:
+            fehler.append("Pfad-Trick nicht abgewiesen: " + trick)
+    c, cd = kopf("/build/alle.zip?var=v52")
+    if c != 200 or not re.fullmatch(r'attachment; filename="MoveEye_v5-2_Druck_\d+\.\d+\.\d+\.zip"', cd):
+        fehler.append("alle.zip: %s %r (erwartet MoveEye_v5-2_Druck_X.Y.Z.zip)" % (c, cd))
+
+
 DATEI_ENDUNG = (".js", ".json", ".png", ".ico", ".zip", ".jpg", ".jpeg", ".mp4", ".webm", ".wav", ".mp3", ".ogg", ".txt",
                 ".csv", ".pdf", ".svg", ".webmanifest", ".bin", ".onnx")
 
@@ -238,6 +263,7 @@ def main():
                 warn.append("langsam: %s (%.0f s)" % (r["rule"], dt))
             if a.zeigen:
                 print("  %-48s ohne %4s  mit %4s  %5.1f s  %s" % (r["rule"], c1, c2, dt, ("öffentlich: " + why) if why else ""), flush=True)
+        druck_pruefen(base, fehler)
         if a.browser:
             browser_pruefen(base, rs, fehler, warn, a.zeigen)
         if p.poll() is not None:

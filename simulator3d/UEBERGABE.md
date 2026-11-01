@@ -1,8 +1,13 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 01.11.2026 · Version **3.47.0** · MoveEye **3.47.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 01.11.2026 · Version **3.47.1** · MoveEye **3.47.1** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.47.1 (MoveEye 3.47.1): Download-Fix Druckdateien (MoveEye Teil 639w)
+
+- /build/datei und /build/alle.zip?var=v52|v51: Pi holt fehlende 3MF selbst von GitHub (Cache ~/.config/motionwatch/druck_cache),
+  ZIP nur der gewählten Variante mit LIESMICH.txt; Rauchtest prüft es (web_rauchtest.py).
 
 ## NEU in 3.47.0 (MoveEye 3.47.0): Abgleich v5.2 · Trailer-Knöpfe weg · Name «Elektro»
 
