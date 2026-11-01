@@ -3,12 +3,12 @@ extends RefCounted
 ## hardware/gehaeuse/bau.json. NICHT VON HAND ÄNDERN (Texte dort ändern, dann «gehaeuse_bauen.py --texte»).
 ## Texte deutsch (T.t übersetzt sie, Übersetzungen kommen aus bau.json in i18n/texte.json).
 
-const QUELLE_SHA := "7d9b4427a13ffae3ea21bfe3d1c62b964942a2ecce7744d7966231454adf0b73"
+const QUELLE_SHA := "2d4be5503fbda254ae1dca9426eab2eec8ea5db9b75866ba9eacb0fe9ce9e2cf"
 const VERSION := "5.1"
 const KOPF_FARBE := "#f59a4a"   # Kopfteil (dreht / neigt) in MoveEye-Orange
 const KOPF_TEILE := ["turntable", "yoke", "arm2", "head", "side", "lamp1", "lamp2", "head52"]
-const GRAU := "#6d7074"   # Unterteil, Deckel, Zwischenboden, Füsse, Stopfen
-const GRAU_TEILE := ["tub", "tub52", "lid", "shelf", "feet", "plug", "plug52", "sdplug", "resplug", "wplug", "sockel"]
+const GRAU := "#9a9ea3"   # Unterteil, Deckel, Zwischenboden, Füsse, Stopfen
+const GRAU_TEILE := ["tub", "tub52", "lid", "shelf", "feet", "plug", "plug52", "sdplug", "resplug", "wplug", "sockel", "irplug"]
 const MASSE := "Unterteil 183 × 97 × 71,5 mm (mit Füssen 77,5 mm), Gesamthöhe ca. 161 mm, Kopf 58 × 58 mm"
 # Materialliste: id -> [Menge, Bezeichnung, Teilenummer, Gruppe]
 const BOM := {
@@ -141,6 +141,7 @@ const TEILE := [
 	["diff52", "v52", "14 Diffusor «Blinki-Auge» + 15 Pupillenring", "sled", 10, "14_Diffusor_Status_LED", ""],
 	["sockel", "dev", "13 Entwicklungs-Sockel (statt UPS HAT + Akkus)", "petg", 4, "13_Entwicklungs_Sockel", "ups"],
 	["wplug", "v52", "12 Blindstopfen Weitwinkel-Fenster (ohne Weitwinkel-Kamera)", "petg", 3, "12_Blindstopfen_Weitwinkel", ""],
+	["irplug", "v52", "19 Stopfen IR-Modul-Loch (ohne IR-Modul)", "petg", 3, "19_Stopfen_IR_Modul", ""],
 	["resplug", "v52", "17 Blindstopfen Reserve-Öffnung hinten (GX12)", "petg", 7, "17_Blindstopfen_Reserve", ""],
 	["lampdrv", "v52", "PLATZHALTER Lampentreiber (Feld 30 × 20, 2 × M2,5)", "", 6, "", ""],
 	["fuseh", "v52", "Sicherungshalter 5 A (Akku B+) in der Klammer am Boden", "fuse2", 7, "", ""],
@@ -1311,7 +1312,7 @@ const BAU := {
 			"lamp2",
 			"head52"
 		],
-		"grau": "#6d7074",
+		"grau": "#9a9ea3",
 		"grau_teile": [
 			"tub",
 			"tub52",
@@ -1323,7 +1324,8 @@ const BAU := {
 			"sdplug",
 			"resplug",
 			"wplug",
-			"sockel"
+			"sockel",
+			"irplug"
 		],
 		"turntable": "#f59a4a",
 		"yoke": "#f59a4a",
@@ -1332,18 +1334,7 @@ const BAU := {
 		"side": "#f59a4a",
 		"lamp1": "#f59a4a",
 		"lamp2": "#f59a4a",
-		"head52": "#f59a4a",
-		"tub": "#6d7074",
-		"tub52": "#6d7074",
-		"lid": "#6d7074",
-		"shelf": "#6d7074",
-		"feet": "#6d7074",
-		"plug": "#6d7074",
-		"plug52": "#6d7074",
-		"sdplug": "#6d7074",
-		"resplug": "#6d7074",
-		"wplug": "#6d7074",
-		"sockel": "#6d7074"
+		"head52": "#f59a4a"
 	},
 	"bom_extra": {
 		"pi5": {

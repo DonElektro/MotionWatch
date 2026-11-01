@@ -571,7 +571,7 @@ renderer.domElement.addEventListener("pointerup", e => {
   down = null;
 });
 new GLTFLoader().load("/build/gehaeuse.glb", g => {
-  const farbe = id => (row(id) || {}).farbe || (GB.farben || {})[id] || (E[id] || {}).farbe || "";   // colours from the data (bau.json / modelle.json), else the model's
+  const FB = GB.farben || {}, farbe = id => (row(id) || {}).farbe || FB[id] || ((FB.grau_teile || []).includes(id) && FB.grau) || (E[id] || {}).farbe || "";   // colours from the data (bau.json / modelle.json), else the model's
   g.scene.traverse(o => { if (o.isMesh) { o.material = o.material.clone(); o.material.side = THREE.DoubleSide; o.material.roughness = 0.6; o.material.metalness = 0;
     if (farbe(o.name)) o.material.color.set(farbe(o.name)); parts[o.name] = {mesh: o}; } });
   scene.add(g.scene); msg.textContent = ""; size(); view(145, 24, 0.5); step(B.step);

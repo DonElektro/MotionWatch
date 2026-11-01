@@ -100,7 +100,8 @@ GEO = {
     "head52": ("tilt", 0.6, 2.2, "#38383f", True, 400, 0.0), "diff52": ("tilt", 0.3, 0.6, "#f2f2f2", True, 450, 0.0),
     "resplug": ("base", 0.3, 0.6, "#262626", True, 20, 1.6), "lampdrv": ("base", 0.5, 0.7, "#c8a2c8", False, 130, 1.2),
     "fuseh": ("base", 0.5, 0.8, "#e74c3c", False, 120, 0.8), "sockel": ("base", 0.6, 1.4, "#4d80cc", False, 90, 0.3),
-    "wplug": ("base", 0.3, 0.6, "#6d7074", True, 0, 1.5),     # 12 Blindstopfen im Weitwinkel-Fenster (Szene ohne Weitwinkel im Gehäuse)
+    "wplug": ("base", 0.3, 0.6, "#9a9ea3", True, 0, 1.5),     # 12 Blindstopfen im Weitwinkel-Fenster (Szene ohne Weitwinkel im Gehäuse)
+    "irplug": ("base", 0.3, 0.6, "#9a9ea3", True, 0, 1.5),    # 19 Stopfen im IR-Modul-Loch (Szene ohne IR-Modul / Weitwinkel)
 }
 AUSSEN_V52 = ("wide", "irled")      # in der Szene sichtbar, wenn v5.2 gewählt ist (Linse / IR-Modul im Fenster)
 LITE_K = 2.3                         # Lite: Zellen so viel grösser
@@ -192,6 +193,9 @@ def modell():
     for k in ("resplug", "lampdrv", "fuseh", "sockel"):
         P[k] = P2[k]
     P["wplug"] = P2["blind_w"]                            # 12 Blindstopfen Weitwinkel (eingesetzt)
+    # 19 Stopfen IR-Modul (v52.stopfen_ir_modul eingesetzt): Körper in der Hülse (x 0 … Hülse), Zapfen bündig im Wandloch
+    P["irplug"] = U(cyl_x(v52.IRW_Y, v52.IRW_Z, 0.0, v52.IRW_SLEEVE_L, v52.IRW_MOD_D),
+                    cyl_x(v52.IRW_Y, v52.IRW_Z, -WALL, 0.01, v52.IRW_LENS_D - 0.3))
     info52 = {"lens_mm": [round(float(x), 2) for x in v52.WL], "tilt_deg": v52.WC_TILT, "ir_typ": v52.IR_TYP,
               "ir_mm": [0.0, v52.IRW_Y, v52.IRW_Z] if v52.IR_TYP != "5mm" else [0.0, v52.IR_Y, v52.IR_Z]}
     P["buttons"] = U(*[cyl_x(y, 33.0, LX - 12.0, LX + WALL + 3.0, 12.0) for y in (10.5, 50.5)])
@@ -360,6 +364,8 @@ def baue_sim(nur=None):
     P, org, info = modell()
     farben = bau.get("farben") or {}
     kopf = {k: farben["kopf"] for k in farben.get("kopf_teile", [])} if farben.get("kopf") else {}
+    if farben.get("grau"):                                # ein Grau für alle «grau_teile» (ein Eintrag in bau.json)
+        kopf.update({k: farben["grau"] for k in farben.get("grau_teile", [])})
     kopf.update({k: v for k, v in farben.items() if k in GEO and isinstance(v, str) and v.startswith("#")})
     os.makedirs(SIMDIR, exist_ok=True)
     normal, lite, meta = [], [], []

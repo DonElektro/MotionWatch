@@ -241,7 +241,7 @@ def prepare_settings_file():
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
 ZD_FILE = "moveeye_daten_3_46_0.zip"
-ZD_SHA256 = "9c634e185ec3f23cb6b363eb01ff8849e459fd1f35af0d0829d4b336576341ff"
+ZD_SHA256 = "0da4fba76912d458d957996fc30a4aba5ddc6192f895992ae5725f176396c1b9"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -23773,6 +23773,7 @@ def sim_state():
                       "track": bool(CFG["track_person"] or CFG["track_motion"]), "tracking": bool(STATE.get("tracking")),
                       "track_what": str(STATE.get("track_what") or "")},
             "ups_mah": int(CFG.get("ups_mah") or 3450),   # Aufräumen 2: the battery size - the simulator shows it «von MoveEye» (power.gd)
+            "ups_model": str(CFG.get("ups_model") or "auto"),   # real-abgleich-v52: «ina» = old HAT 2 x 18650, else the simulator is the HAT (E) 4 x 21700
             "lights": {"white": bool(L.get("white")), "ir": bool(L.get("ir")), "white_level": 1.0, "ir_level": 1.0},
             "wake": {"state": WAKE["state"], "snoozes": WAKE["snoozes"], "t0": round(WAKE["t0"], 2)},       # 2.98.9: the sleeper in the bedroom scene reacts
             "relays": [{"name": r["name"], "on": bool(rs[i]) if i < len(rs) else False} for i, r in enumerate(RELAYS)],
@@ -59435,7 +59436,7 @@ App._update_wifi = _sv_update_wifi
 # ---- the manual (HELP_PAGE of 540): one paragraph in the section about the simulator, German and English ----------------
 _SV_HELP = {
     "de": "<p><b>🧪 Werte aus dem Simulator (ab 2.98.47):</b> Ist MoveEye mit dem 3D-Simulator verbunden, kommen die «Hardware»-Werte "
-          "aus der simulierten Welt: Akku (ein simulierter USV-HAT mit 2 × 18650 – entlädt sich mit Pi, Servos, Licht und Sirene, lädt mit "
+          "aus der simulierten Welt: Akku (ein simulierter UPS HAT (E) mit 4 × 21700 – entlädt sich mit Pi, Servos, Licht und Sirene, lädt mit "
           "dem Solarpanel oder dem Netzteil, Kälte senkt die Kapazität), Uhrzeit und Datum (Zeitpläne, Nachtbericht, «Heute Nacht bewachen», "
           "Nacht-Prognose – auch im Zeitraffer), Ort (Sonnenauf- und -untergang), Wetter und Böen-Prognose (kein Internet-Wetter), die "
           "Temperatur des Pi (Hitze-Warnung, KI langsamer) und der Test «WLAN weg» / «Internet weg» (Alarme warten und werden nachgeschickt). "
@@ -59443,7 +59444,7 @@ _SV_HELP = {
           "«🧪». Die Regler sind im Simulator unter Sensoren → «Strom» und «Netz». Protokoll, Dateinamen, Signaturen "
           "und Updates bleiben auf der echten Uhr. Antwortet der Simulator 10 Sekunden nicht, gelten wieder die echten Werte.</p>",
     "en": "<p><b>🧪 Values from the simulator (from 2.98.47):</b> while MoveEye is connected to the 3D simulator its «hardware» values come "
-          "from the simulated world: battery (a simulated UPS HAT with 2 × 18650 – drained by the Pi, servos, light and siren, charged by the "
+          "from the simulated world: battery (a simulated UPS HAT (E) with 4 × 21700 – drained by the Pi, servos, light and siren, charged by the "
           "solar panel or a mains adapter, cold lowers the capacity), time and date (schedules, night report, «Guard tonight», night forecast – "
           "also in the time-lapse), place (sunrise and sunset), weather and gust forecast (no internet weather), the temperature of the Pi "
           "(heat warning, AI slower) and the test «Wi-Fi gone» / «Internet gone» (alarms wait and are sent later). Solar, GPS, outside "
@@ -72515,7 +72516,7 @@ SELFTEST_EXTRA.append(("Error help with QR code (simulator3d/fehler_katalog.json
 # GEH_QUELLE_SHA: Prüfsumme der Quelle (hardware/gehaeuse/Quellcode/*.py, bau.json, werkzeuge/gehaeuse_bauen.py) – der
 # Selbsttest (639w) vergleicht sie im Repository mit der Quelle und mit simulator3d/inhalte/gehaeuse/modelle.json.
 # ----------------------------------------------------------------------------
-GEH_QUELLE_SHA = '7d9b4427a13ffae3ea21bfe3d1c62b964942a2ecce7744d7966231454adf0b73'
+GEH_QUELLE_SHA = '2d4be5503fbda254ae1dca9426eab2eec8ea5db9b75866ba9eacb0fe9ce9e2cf'
 GEH_BAU = json.loads(_zd('639v_daten_gehaeuse/GEH_BAU', ""))
 GEH_UI_DE = {"Case & build": "Gehäuse & Bau", "Guide, parts list, print files – in 3D in the workshop of the simulator": "Anleitung, Materialliste, Druckdateien – in 3D in der Werkstatt des Simulators", "Case": "Gehäuse", "View in the simulator": "Im Simulator ansehen", "Opens the workshop in the 3D simulator: turn, explode, see through, click parts, assembly step by step.": "Öffnet die Werkstatt im 3D-Simulator: drehen, zerlegen, durchsichtig, Teile anklicken, Montage Schritt für Schritt.", "Simulator not connected – start it and connect it on the page Simulator.": "Simulator nicht verbunden – starte ihn und verbinde ihn auf der Seite «Simulator».", "Opened in the simulator.": "Im Simulator geöffnet.", "Print files": "Druckdateien", "3MF plates for the Bambu Lab X2D (PETG, no supports)": "3MF-Platten für den Bambu Lab X2D (PETG, ohne Stützen)", "Single STL files: in the hand-over package (ZIP, about 60 MB), not in the repository.": "Einzelne STL-Dateien: im Übergabe-Paket (ZIP, ca. 60 MB), nicht im Repository.", "Assembly step by step": "Montage Schritt für Schritt", "Show this step in the simulator": "Diesen Schritt im Simulator zeigen", "Parts list": "Materialliste", "Qty": "Menge", "Part number": "Teilenummer", "Guides and source (GitHub)": "Anleitungen und Quellcode (GitHub)", "Detailed guide v5.1": "Ausführliche Anleitung v5.1", "Full parts list with order list": "Ganze Materialliste mit Bestellliste", "Measure first: UPS HAT (E) with its cells (assumed 90 × 80 × 26 mm) before printing the lower part.": "Zuerst nachmessen: UPS HAT (E) mit Akkus (angenommen 90 × 80 × 26 mm), bevor das Unterteil gedruckt wird.", "Own work of Daniel (DonElektro) – parametric Python model.": "Eigenes Werk von Daniel (DonElektro) – parametrisches Python-Modell.", "Step": "Schritt"}
 GEH_UI_TRX = _zd('639v_daten_gehaeuse/GEH_UI_TRX', _ZDDict())
@@ -72526,7 +72527,7 @@ GEH_UI2_TRX = _zd('639v_daten_gehaeuse/GEH_UI2_TRX', _ZDDict())
 # BAU3D: Pfad -> [sha256 der Datei, gzip+base64]; BAU3D_GLB: [sha256, Grösse, gzip+base64]. Ausgeliefert von 639w (/bau3d/<pfad>,
 # /build/gehaeuse.glb) mit Content-Encoding gzip. Der Selbsttest vergleicht die Prüfsummen im Repository mit den Quellen.
 # ----------------------------------------------------------------------------
-BAU3D_QUELLE_SHA = '7d9b4427a13ffae3ea21bfe3d1c62b964942a2ecce7744d7966231454adf0b73'
+BAU3D_QUELLE_SHA = '2d4be5503fbda254ae1dca9426eab2eec8ea5db9b75866ba9eacb0fe9ce9e2cf'
 BAU3D = _zd('639vb_daten_bau3d/BAU3D', _ZDDict())
 BAU3D_GLB = _zd('639vb_daten_bau3d/BAU3D_GLB', [])
 # aus simulator3d/inhalte/gehaeuse/modelle.json: Gruppe, aussen, Mitte und Explosion pro Teil (wie die Werkstatt im Simulator)

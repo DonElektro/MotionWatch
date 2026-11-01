@@ -1901,6 +1901,22 @@
    }
   },
   {
+   "id": "irplug",
+   "art": "v52",
+   "bom": "petg",
+   "schritt": 3,
+   "datei": "19_Stopfen_IR_Modul",
+   "wenn": "v52",
+   "ohne": "irled",
+   "name": {
+    "de": "19 Stopfen IR-Modul-Loch (ohne IR-Modul)",
+    "en": "19 Plug IR module hole (without IR module)",
+    "fr": "19 Bouchon trou du module IR (sans module IR)",
+    "it": "19 Tappo foro modulo IR (senza modulo IR)",
+    "rm": "19 Zaffer foura dal modul IR (senza modul IR)"
+   }
+  },
+  {
    "id": "resplug",
    "art": "v52",
    "bom": "petg",
@@ -5837,7 +5853,7 @@
   }
  },
  "farben": {
-  "_hinweis": "Wunsch Daniel 01.11.2026: der ganze Kopfteil (alles, was sich dreht bzw. neigt) im Simulator in MoveEye-Orange (ui_style.gd ORG, Web #f59a4a) – Szene, Werkstatt und Browser-Werkstatt («Bauen») nehmen diese Farbe. Unterteil, Deckel, Zwischenboden, Füsse und Stopfen in einem Grau (grau, eSun PETG Grau) – Wunsch Daniel 01.11.2026: überall gleich (Szene, Werkstatt, Browser-Werkstatt, Bauanleitung). Dazu je Teil-id die Farbe (für die Browser-Werkstatt «Bauen», 639w: GB.farben[id]).",
+  "_hinweis": "Wunsch Daniel 01.11.2026: der ganze Kopfteil (alles, was sich dreht bzw. neigt) im Simulator in MoveEye-Orange (ui_style.gd ORG, Web #f59a4a) – Szene, Werkstatt und Browser-Werkstatt («Bauen») nehmen diese Farbe. Unterteil, Deckel, Zwischenboden, Füsse und Stopfen in einem Grau («grau», PETG-Grau #9a9ea3, Entscheid Daniel 01.11.2026; ein einziger Eintrag – die Werkzeuge nehmen ihn für alle «grau_teile») – Wunsch Daniel 01.11.2026: überall gleich (Szene, Werkstatt, Browser-Werkstatt, Bauanleitung). Dazu je Teil-id die Farbe (für die Browser-Werkstatt «Bauen», 639w: GB.farben[id]).",
   "kopf": "#f59a4a",
   "kopf_teile": [
    "turntable",
@@ -5849,7 +5865,7 @@
    "lamp2",
    "head52"
   ],
-  "grau": "#6d7074",
+  "grau": "#9a9ea3",
   "grau_teile": [
    "tub",
    "tub52",
@@ -5861,7 +5877,8 @@
    "sdplug",
    "resplug",
    "wplug",
-   "sockel"
+   "sockel",
+   "irplug"
   ],
   "turntable": "#f59a4a",
   "yoke": "#f59a4a",
@@ -5870,18 +5887,7 @@
   "side": "#f59a4a",
   "lamp1": "#f59a4a",
   "lamp2": "#f59a4a",
-  "head52": "#f59a4a",
-  "tub": "#6d7074",
-  "tub52": "#6d7074",
-  "lid": "#6d7074",
-  "shelf": "#6d7074",
-  "feet": "#6d7074",
-  "plug": "#6d7074",
-  "plug52": "#6d7074",
-  "sdplug": "#6d7074",
-  "resplug": "#6d7074",
-  "wplug": "#6d7074",
-  "sockel": "#6d7074"
+  "head52": "#f59a4a"
  },
  "pakete": {
   "_hinweis": "Information (Entscheid Daniel 01.11.2026): drei Pakete. Die Seite «Bauen» bleibt bei den Varianten (gehaeuse / akku / mover); «variante» zeigt, welche Wahl dort passt. bom = Materialliste-IDs ohne optionale Extras, preis_chf = Summe der geschätzten bom-Preise (Zeilensumme, gerundet), extras = optionale bom-IDs (nicht in der Summe), stopfen = Druckteile nur für dieses Paket (dazu immer 17 für die Reserve-Öffnung). Solo und Mobil folgen später.",

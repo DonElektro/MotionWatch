@@ -292,7 +292,7 @@ def bild_specs(B, M):
     alt_weg = set(ers.values())
     F = B.get("farben") or {}
     kopf = set(F.get("kopf_teile") or [])
-    grau = F.get("grau") or "#6d7074"                    # ein Grau für alle (bau.json «farben»), wie Szene und Werkstatt
+    grau = F.get("grau") or "#9a9ea3"                    # ein Grau für alle (bau.json «farben»), wie Szene und Werkstatt
     farbe = {}
     for i, t in T.items():
         if t.get("datei") or t.get("art") == "druck":

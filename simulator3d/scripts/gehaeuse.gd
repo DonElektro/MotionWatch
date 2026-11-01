@@ -15,13 +15,13 @@ extends Node
 ## die Teile mit «ersetzt» blenden ihr Teil von v5.1 aus.
 ## real-abgleich-v52 (Wunsch Daniel 01.11.2026): v5.2 bleibt v5.2 – die Szene zeigt immer das Unterteil v5.2. Ist die
 ## Weitwinkel-Kamera am Kopf, am Mast (Szene) oder gar nicht montiert, sitzt der Blindstopfen 12 im Fenster (modelle.json
-## «ohne»: "wide"), Weitwinkel-Linse und IR-Modul sind dann nicht zu sehen. Farben aus bau.json «farben» (modelle.json):
+## «ohne»: "wide") und der Stopfen 19 im IR-Modul-Loch («ohne»: "irled"); Weitwinkel-Linse und IR-Modul sind dann nicht zu sehen. Farben aus bau.json «farben» (modelle.json):
 ## Kopfteil orange, Unterteil, Deckel, Zwischenboden, Füsse und Stopfen grau («grau», «grau_teile»).
 
 const Quality := preload("res://scripts/quality.gd")
 const DIR := "res://inhalte/gehaeuse/"
 const FILE := "user://gehaeuse.json"
-const PETG := Color("#6d7074")                 # eSun PETG Grau (Bestellliste) – nur falls modelle.json «farben.grau» fehlt
+const PETG := Color("#9a9ea3")                 # PETG-Grau (bau.json «farben.grau») – nur falls modelle.json «farben.grau» fehlt
 const GRAU_ALT := ["tub", "tub52", "lid", "plug", "feet"]   # graue Teile, falls modelle.json «farben.grau_teile» fehlt
 const MIT_WEIT := ["wide", "irled"]            # nur sichtbar, wenn die Weitwinkel-Kamera im Gehäuse sitzt
 const LED_POS := Vector3(-0.008, 0.0305, -0.003)   # v5.2: Status-LED auf dem Kopfdach (Kipp-Koordinaten x 3, y 8, Dach z 29 mm)
@@ -152,7 +152,7 @@ func build() -> void:
 		par.add_child(mi)
 		if id in MIT_WEIT:
 			_mit_weit.append(mi)
-		elif str(e.get("ohne", "")) == "wide":
+		elif str(e.get("ohne", "")) in MIT_WEIT:     # 12 Blindstopfen (ohne Weitwinkel), 19 Stopfen (ohne IR-Modul)
 			_ohne_weit.append(mi)
 		elif str(e.get("variante", "")) == "5.2":
 			_v52.append(mi)

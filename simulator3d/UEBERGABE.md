@@ -1022,7 +1022,7 @@ Rangliste, Aufgabe, Sieger, «als Nächstes». Kommentare zu Einfach/Experte (Mo
 
 ## NEU in 3D-4.18 (MoveEye 2.98.47): Simulator-Werte für MoveEye (power.gd, Branch wt-simwerte)
 
-- `scripts/power.gd` (Knoten `simwerte` in main.gd): simulierter USV-HAT (2 × 18650, Kapazität pro Zelle, Ladung jetzt,
+- `scripts/power.gd` (Knoten `simwerte` in main.gd): simulierter UPS HAT (E) (4 × 21700 in Serie, 14,4 V; nur bei MoveEye «ups_model» ina das alte HAT mit 2 × 18650; Kapazität pro Zelle, Ladung jetzt,
   Netzteil, Solarpanel-Watt; Verbrauch aus Pi + CPU von MoveEye + Servos + Licht + Ton, Laden mit `solar_reading()`, Kälte senkt
   die nutzbare Kapazität), Pi-Temperatur im Gehäuse (Aussentemperatur + Last + Sonne, Test «Lüftung blockiert»), Test
   «WLAN weg» / «Internet weg», Tageszähler über Mitternacht (Zeitraffer). Einstellungen in `user://simwerte.json`.

@@ -2688,6 +2688,12 @@
   "it": "18. Okt. 1961\nDie Wirtsleute haben uns bis zum Postauto begleitet.",
   "rm": "18. Okt. 1961\nDie Wirtsleute haben uns bis zum Postauto begleitet."
  },
+ "19 Stopfen IR-Modul-Loch (ohne IR-Modul)": {
+  "en": "19 Plug IR module hole (without IR module)",
+  "fr": "19 Bouchon trou du module IR (sans module IR)",
+  "it": "19 Tappo foro modulo IR (senza modulo IR)",
+  "rm": "19 Zaffer foura dal modul IR (senza modul IR)"
+ },
  "19.8. Zu dritt, eng aber warm. Decken wieder gefaltet. – SAC Sektion Bern": {
   "en": "19.8. Zu dritt, eng aber warm. Decken wieder gefaltet. – SAC Sektion Bern",
   "fr": "19.8. Zu dritt, eng aber warm. Decken wieder gefaltet. – SAC Sektion Bern",
@@ -46204,6 +46210,12 @@
   "fr": "🔊 Courir est bruyant – on t’a entendu (%d×)",
   "it": "🔊 Correre è rumoroso – ti hanno sentito (%d×)",
   "rm": "🔊 Currer fa canera – ins ta ha udì (%d×)"
+ },
+ "🔋 Akku simulieren (UPS HAT (E), 4 × 21700)": {
+  "en": "🔋 Simulate battery (UPS HAT (E), 4 × 21700)",
+  "fr": "🔋 Simuler la batterie (UPS HAT (E), 4 × 21700)",
+  "it": "🔋 Simulare la batteria (UPS HAT (E), 4 × 21700)",
+  "rm": "🔋 Simular l’accu (UPS HAT (E), 4 × 21700)"
  },
  "🔋 Akku simulieren (USV-HAT, 2 × 18650)": {
   "en": "🔋 Simulate battery (UPS HAT, 2 × 18650)",
