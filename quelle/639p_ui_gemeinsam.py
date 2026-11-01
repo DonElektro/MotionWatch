@@ -1289,6 +1289,11 @@ def ui_gem_check(base=None):
     if os.path.isfile(os.path.join(gdir, "main.gd")):
         with open(os.path.join(gdir, "main.gd"), encoding="utf-8") as f:
             gd = f.read()
+        gd_teile = {"main.gd": gd}                       # 3.39.1: main.gd is split into main_*.gd (Vorschlag 24) - old names in all of them
+        for fn in sorted(os.listdir(gdir)):
+            if fn.startswith("main_") and fn.endswith(".gd"):
+                with open(os.path.join(gdir, fn), encoding="utf-8") as f:
+                    gd_teile[fn] = f.read()
         n["simsrc"] = True
         m = re.search(r"\nconst GROUPS := \[(.*?)\]\]\n", gd, re.S)
         rows = re.findall(r'\[\s*"([^"]+)", "(\w*)", "([^"]*)", \[([^\]]*)\]', m.group(1) + "]]") if m else []
@@ -1314,8 +1319,9 @@ def ui_gem_check(base=None):
             if not r or f'"{pt["sim"]}"' not in r[3]:
                 probs.append(f"simulator part {pid}: «{pt['sim']}» missing in main.gd GROUPS")
             for o in pt.get("old") or []:
-                if f'"{o}"' in gd:
-                    probs.append(f"simulator part {pid}: the old name «{o}» is still in main.gd")
+                for fn, src in gd_teile.items():
+                    if f'"{o}"' in src:
+                        probs.append(f"simulator part {pid}: the old name «{o}» is still in {fn}")
         for g in U["groups"]:
             for rv in g.get("reserved") or []:
                 for r in rows:

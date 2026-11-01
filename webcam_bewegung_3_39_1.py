@@ -23,6 +23,7 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 3.39.1: Simulator intern aufgeräumt, schnellerer Start.
   * 3.39.0: MoveEye und Simulator zeigen dasselbe: Ansicht, Sprache, Stimme, Rundgang und Blinki gleichen sich von selbst ab;
     eine Einfach/Experte-Wahl für alles. Im Simulator neu: Zustand Aus/Wachsam/Voll in LED-Farben, Push-Vorschau, Versions-Paar,
     Bedienermodus mit MoveEye-PIN; Diagnose gegenseitig.
@@ -85,7 +86,6 @@ Features
     Notfall-Start.bat, Fehlerbericht sammeln.bat, Fotos mit weniger Grafikspeicher, zweiter Simulator auf Port 8768.
   * 3.16.0: Simulator 3.16.0: Bergtal wie auf Daniels Fotos – Kalkfels mit Grasbändern, gelbgrüne Weiden, dunkle Fichten,
     smaragdgrüner Bergsee mit Spiegelung, Dunst; in Hoch Karstweide, Felszähne, Legföhren, Alpenrosen, Quellwolken, Abendhimmel.
-  * 3.15.2: Vollbild: in der Simulation auch ◎, ⇆, 🚜 und der Mover-Stick ausgeblendet; beim echten Live-Bild bleiben sie.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -94,10 +94,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_3_39_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_3_39_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_3_39_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_3_39_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_3_39_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_3_39_1.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -114,7 +114,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "3.39.0"
+APP_VERSION = "3.39.1"
 
 
 def default_data_dir():
@@ -236,8 +236,8 @@ def prepare_settings_file():
 #     Part 397 fetches the zip over the same update source and restarts once (zusatz_start()).
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
-ZD_FILE = "moveeye_daten_3_39_0.zip"
-ZD_SHA256 = "fd8518f1e689d4f9790098d0e6cf846200fe780898c18fd33d9c8c65b539f20d"
+ZD_FILE = "moveeye_daten_3_39_1.zip"
+ZD_SHA256 = "38a2b4cd2fbae1e15c4fad53302ab2eaa703ec755a56d569d4230541400eafa2"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -24519,8 +24519,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3.39.0", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 47913447,
-         "sha256": "d8b9f9e66049642c1016539e1a2a853b0f148ce7e69cf9bae644d33c69f05036"}
+SIM3D = {"version": "3.39.1", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 47913472,
+         "sha256": "ff4f9201dd852cbc411cf277c5c06ad518730afae77508df1b2b42f52789e0da"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -30418,7 +30418,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_3_39_0.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_3_39_1.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -48563,7 +48563,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 3.39.0")
+        self.root.title("MoveEye 3.39.1")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -48935,7 +48935,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 3.39.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 3.39.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -68178,6 +68178,11 @@ def ui_gem_check(base=None):
     if os.path.isfile(os.path.join(gdir, "main.gd")):
         with open(os.path.join(gdir, "main.gd"), encoding="utf-8") as f:
             gd = f.read()
+        gd_teile = {"main.gd": gd}                       # 3.39.1: main.gd is split into main_*.gd (Vorschlag 24) - old names in all of them
+        for fn in sorted(os.listdir(gdir)):
+            if fn.startswith("main_") and fn.endswith(".gd"):
+                with open(os.path.join(gdir, fn), encoding="utf-8") as f:
+                    gd_teile[fn] = f.read()
         n["simsrc"] = True
         m = re.search(r"\nconst GROUPS := \[(.*?)\]\]\n", gd, re.S)
         rows = re.findall(r'\[\s*"([^"]+)", "(\w*)", "([^"]*)", \[([^\]]*)\]', m.group(1) + "]]") if m else []
@@ -68203,8 +68208,9 @@ def ui_gem_check(base=None):
             if not r or f'"{pt["sim"]}"' not in r[3]:
                 probs.append(f"simulator part {pid}: «{pt['sim']}» missing in main.gd GROUPS")
             for o in pt.get("old") or []:
-                if f'"{o}"' in gd:
-                    probs.append(f"simulator part {pid}: the old name «{o}» is still in main.gd")
+                for fn, src in gd_teile.items():
+                    if f'"{o}"' in src:
+                        probs.append(f"simulator part {pid}: the old name «{o}» is still in {fn}")
         for g in U["groups"]:
             for rv in g.get("reserved") or []:
                 for r in rows:

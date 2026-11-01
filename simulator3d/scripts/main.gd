@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3.39.0"
+const VERSION := "3.39.1"
 const Versionen = preload("res://scripts/versionen.gd")   # Versionierung 3.0.0: from 3.0.0 VERSION = "X.Y.Z" like MoveEye (see there)
 const Stimme = preload("res://scripts/abenteuer_stimme.gd")   # 3.23: the one switch «Stimme» (an | aus | untertitel)
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
@@ -332,7 +332,13 @@ var szenen                            # szenenplus.gd (3D-4.x): Voller Campingpl
 var smalltv                           # smalltv.gd (3D-4.19): virtueller Zusatz-Bildschirm GeekMagic SmallTV Ultra (MoveEye 552)
 var fenster                           # fenster.gd (Paket «Fenster»): ein Rahmen für alle schwebenden Fenster (ziehen, Grösse, ✕, Liste «Fenster»)
 var gehaeuse                          # gehaeuse.gd (real-gehaeuse): die vereinfachten echten Teile des Gehäuses v5.1 am Gerät
-var werkstatt                         # werkstatt.gd (real-gehaeuse): Mehr → Werkstatt (Gehäuse drehen, zerlegen, Montage)
+var werkstatt = null:                 # werkstatt.gd (real-gehaeuse): Mehr → Werkstatt (Gehäuse drehen, zerlegen, Montage)
+	get:                              # Vorschlag 24: made at its first use (Mehr → Werkstatt, /control «werkstatt»), not at the start
+		if werkstatt == null and is_inside_tree():
+			werkstatt = load("res://scripts/werkstatt.gd").new()
+			werkstatt.main = self
+			add_child(werkstatt)
+		return werkstatt
 var head_box: MeshInstance3D          # the dark box of the head (hidden while the real case is shown, gehaeuse.gd)
 var statusled                         # statusled.gd: Status-LED auf dem Kopf + Fenster «Gerät» mit den Tasten (MoveEye 163a / 599c)
 var weit                              # weitwinkel.gd (3D-4.17): camera 1 = the wide camera with its mount (mast, base, head front / rear)
@@ -608,9 +614,7 @@ func _ready() -> void:
 	gehaeuse = preload("res://scripts/gehaeuse.gd").new()     # real-gehaeuse: the real case v5.1 on the head (cameras stay where they are)
 	gehaeuse.main = self
 	add_child(gehaeuse)
-	werkstatt = preload("res://scripts/werkstatt.gd").new()   # real-gehaeuse: Mehr → Werkstatt
-	werkstatt.main = self
-	add_child(werkstatt)
+	# werkstatt.gd (Mehr → Werkstatt): made at its first use (var werkstatt, Vorschlag 24)
 	_build_viewports()
 	_build_weather()
 	_build_effects()

@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-01 12:36",
+ "generated": "2026-11-01 13:10",
  "versions": [
   {
-   "version": "3.39.0",
-   "file": "webcam_bewegung_3_39_0.py",
+   "version": "3.39.1",
+   "file": "webcam_bewegung_3_39_1.py",
    "url": "",
-   "sha256": "f218287e0532273ee9e8f0137a2ff3e14f50e5b5230421e17e7bcc9eb19fcd68",
-   "date": "2026-11-01 12:36",
-   "notes": "MoveEye und Simulator zeigen dasselbe: Ansicht, Sprache, Stimme, Rundgang und Blinki gleichen sich von selbst ab; eine Einfach/Experte-Wahl für alles. Im Simulator neu: Zustand Aus/Wachsam/Voll in LED-Farben, Push-Vorschau, Versions-Paar, Bedienermodus mit MoveEye-PIN; Diagnose gegenseitig.",
-   "size": 4723518,
-   "sig": "86f317e3a422af188132edf08274b10cccb4c1e734ce201af849386dc1eed58ecf820ac53b5a9fb4945aae367177f2c6a6cd38077b7ba9851bf5364db0733d0f",
+   "sha256": "3b40c816516f2fe6503dd2da840a6f3724f5380dceb3f4dc289cd6af8ca7a79e",
+   "date": "2026-11-01 13:10",
+   "notes": "Simulator intern aufgeräumt, schnellerer Start.",
+   "size": 4723870,
+   "sig": "b474f07672fb782feb654370862be8e2be7f5b67a2c3ca75e2cbccf297067fff63eacac37bb657a1cd2f784c7234b579f9a1995dc78e6e6fea6f11589b0a6d03",
    "data": {
-    "file": "moveeye_daten_3_39_0.zip",
+    "file": "moveeye_daten_3_39_1.zip",
     "url": "",
-    "sha256": "fd8518f1e689d4f9790098d0e6cf846200fe780898c18fd33d9c8c65b539f20d",
-    "size": 1589621,
-    "sig": "7a6afde84eae292881eb29c9d796fc2ca2408fc549924138bd7d7c6d9da4b5b069da6ec79acc6a3e56bcf94a8d321fd05680c2444ce67abd4151c7e9e462e40a"
+    "sha256": "38a2b4cd2fbae1e15c4fad53302ab2eaa703ec755a56d569d4230541400eafa2",
+    "size": 1589605,
+    "sig": "73b9b2909e0152650a9b622b3b85b5d25cca567eb3a44e6265267cdc73f80e71947f52528c6376b0ef00c9cee0de723f7294b2d2d6bb653ec503d79dce2e600f"
    }
   },
   {
@@ -24,7 +24,7 @@
    "file": "webcam_bewegung_3_38_0.py",
    "url": "",
    "sha256": "7eb916f692a391503d07ef2e49360ba7895c7d65e151122e183bbcb764847d86",
-   "date": "2026-11-01 12:32",
+   "date": "2026-11-01 12:37",
    "notes": "Simulator: System → Sicherung – ZIP auf dem PC, in einen Ordner/USB oder in die MoveEye-Sicherung; Wiederherstellen im Simulator oder aus MoveEye (nur Besitzer), vorher wird automatisch der aktuelle Stand gesichert.",
    "size": 4723421,
    "sig": "dd18f11d5edc5839165f1c2c32fac61e5cdfafe7006888d7555a822cc776f85e16b6a061eede5d6f1cef284f3f4298eb8480a526897db3947cfd55c7baf57704",
