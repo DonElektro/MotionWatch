@@ -28,6 +28,35 @@ LINUX (Linux Mint, Ubuntu; PC mit x86_64)
   von selbst Lite (Sparmodus, gilt auch unter Windows). Eine eigene Wahl unter System › Grafik gilt immer vor.
 - Protokoll: ~/.local/share/godot/app_userdata/MoveEye Sim 3D/logs/godot.log
 
+KIOSK (Linux Mint: der PC zeigt nur noch den Simulator)
+- Wozu: ein PC (z. B. HP EliteDesk) startet direkt in den Simulator im Vollbild, sendet an MoveEye und startet ihn
+  nach einem Absturz von selbst neu. Nichts wird deinstalliert oder gelöscht, alles lässt sich zurückstellen.
+- Was es macht: automatisch anmelden (LightDM) in die eigene, schlanke Sitzung «MoveEye Kiosk» (Openbox statt
+  Cinnamon: weniger Arbeitsspeicher, kein Bildschirmschoner, keine Sperre, keine Hinweis-Fenster über dem Simulator),
+  Energiesparen und Suspend aus, Drucker-Dienst (cups), ModemManager und Fehlerberichte deaktiviert (nicht entfernt),
+  SSH-Server ein, Firewall nur für SSH (22) und den Simulator (8765 TCP, ausgehend 8764 UDP).
+  Vorher sichert es den alten Zustand nach .moveeye_kiosk/sicherung im persönlichen Ordner, dort liegt auch das
+  Protokoll. Eigene Dateien werden nicht verändert.
+- Einschalten (Benutzer don, mit der Tastatur):
+  1. Ctrl+Alt+T drücken (Terminal öffnet sich im persönlichen Ordner).
+  2. cd Dokumente/MoveEyeSim3D   tippen, Enter (der Ordner, in den die ZIP entpackt wurde).
+  3. ./kiosk_ein.sh --trocken   tippen, Enter: zeigt nur, was passieren würde (ändert nichts).
+  4. ./kiosk_ein.sh   tippen, Enter. Bei «Fortfahren? (j/n)» j und Enter, dann das Passwort von don (für sudo).
+  5. sudo reboot   tippen, Enter. Nach dem Neustart läuft der Simulator im Vollbild.
+- Im Kiosk:
+  Ctrl+Alt+D   Kiosk beenden, das normale Mint (Cinnamon) startet, ohne Passwort.
+  Ctrl+Alt+R   nur den Simulator neu starten.
+  Zurück in den Kiosk: im normalen Mint Menü › Abmelden (oder Neustart).
+- Aus der Ferne (anderer PC oder Handy im gleichen Netz): ssh don@<IP>   (mit dem Passwort von don).
+  Die IP zeigt das Terminal am Ende von kiosk_ein.sh, sonst im Terminal: hostname -I
+  Den Simulator von dort neu starten: /usr/local/lib/moveeye-kiosk/kiosk_sitzung.sh neustart
+- Ausschalten (alles wie vorher): Ctrl+Alt+D, Ctrl+Alt+T, dann  cd Dokumente/MoveEyeSim3D  und  ./kiosk_aus.sh
+  (auch --trocken), j, Passwort, danach  sudo reboot . SSH bleibt eingeschaltet (das Skript sagt, wie man es ausschaltet);
+  openbox, openssh-server und ufw bleiben installiert.
+- Beide Skripte dürfen mehrmals laufen. Wird der Ordner des Simulators verschoben: ./kiosk_ein.sh im neuen Ordner
+  noch einmal. Protokolle des Kiosks: .moveeye_kiosk/sitzung.log und sim.log im persönlichen Ordner.
+- Hinweis: auf einem echten Mint mit Cinnamon und LightDM noch nicht getestet (nur Trockenlauf unter Ubuntu 24.04).
+
 SCHLIESST SICH DAS FENSTER GLEICH NACH DEM START?
 - "Notfall-Start.bat" doppelklicken (liegt neben der .exe). Er startet einmal mit der einfachsten Grafik: ANGLE
   (Direct3D 11), Grafik-Modus Lite, ohne Foto-Inhalte, ohne Update-Suche und ohne Grafikstufe "Hoch". Die eigenen
