@@ -1,0 +1,56 @@
+Klänge der Trailer (simulator3d/klang/) – Quellen und Lizenzen
+===============================================================
+Stand: 01.11.2026. Gebaut mit werkzeuge/klang_bauen.py (numpy/scipy, ffmpeg) aus den unten genannten Aufnahmen; dazu eigene
+Synthese (Rauschen, Filter, Hall). Jede Datei liegt zweimal vor: <name>.ogg (Simulator) und web/<name>.mp3 (Browser).
+
+Alle fremden Aufnahmen stehen unter CC0 1.0 Universal bzw. sind gemeinfrei (Public Domain): Nutzung, Änderung und
+Weitergabe – auch in einem verkauften Produkt – ohne Namensnennung erlaubt (https://creativecommons.org/publicdomain/zero/1.0/).
+Wir nennen die Quellen trotzdem. Eigene Synthese und Bearbeitung: Teil von MoveEye, frei wie CC0.
+
+Quellen (Repository @ Commit)
+-----------------------------
+[VSCO]  Versilian Studios Chamber Orchestra 2 Community Edition (Sam Gossner / Versilian Studios), CC0 1.0
+        https://github.com/sgossner/VSCO-2-CE @ 440300901dfe9275fd84e0b7763af1f8443ae62e (Datei LICENSE: CC0 1.0 Universal)
+[RD]    «rubberduck» CC0-Pakete von OpenGameArt (100 CC0 SFX #2, 40 CC0 water/splash/slime SFX), CC0 1.0,
+        gespiegelt in https://github.com/lavenderdotpet/CC0-Public-Domain-Sounds @ f2b6264f9ab89fabc266914c3654685d68c5a39b
+[BB]    Ben Burnes (Abstraction) Micro Packs «Organic Wooshes» und «Books, Paper, Writing», CC0 1.0 (laut _README.txt im Paket:
+        «These sounds are public domain (Creative Commons 0)»), gespiegelt im selben Repository wie [RD]
+[FSA]   Fugue State Audio – Stargate DAW Sample Pack, «completely free, public domain sounds»,
+        https://github.com/stargatedaw/stargate-sample-pack @ dbfd6ec52d4ed53b60bdbea5fc6adf295127c027
+[KEN]   Kenney (www.kenney.nl) «Impact Sounds» und «RPG Audio», CC0 1.0,
+        https://github.com/Boyquotes/kenney-impact-sounds-for-godot @ 999dd1684873f8b020a3aa5b26e713da21688924
+        https://github.com/Boyquotes/kenney-rpg-audio-for-godot @ 22eb79bb843bbcadcaa6ed119353a33265ffad11
+[ALT]   die bisherigen, im Code erzeugten Klänge aus scripts/trailer_ton.gd (eigene Synthese, wie im Spiel)
+[SYN]   eigene Synthese in werkzeuge/klang_bauen.py
+
+Datei je Klang
+--------------
+pad_ruhig   Streicherfläche A-Moll (Celli, Bratschen, Violinen sustain/vibrato) .......... [VSCO] Strings/*/susvib + Hall [SYN]
+pad_dunkel  Streicherfläche D-Moll über A, tief (Kontrabass, Celli, Bratschen, Violinen) .. [VSCO] Strings/*/susvib + Hall
+pad_hell    Streicherfläche F-Dur mit None ............................................. [VSCO] Strings/*/susvib + Hall
+pulse       Celli spiccato in Achteln, weiche Grosse Trommel und Pauke ................... [VSCO] Cello spic, BDrumNewhit, Timpani
+ostinato    Celli spiccato in Sechzehnteln, Grosse Trommel .............................. [VSCO] Cello spic, BDrumNewhit
+pauke       Paukenschlag (D2) mit Sub-Bass (Tonhöhe fällt) und Grosser Trommel ............ [VSCO] Timpani, BDrumNewhit + [SYN]
+boom        «Braam» unter dem Titel: Tuba, Posaunen, Hörner, Celli-Tremolo in D, Gong ....... [VSCO] Tuba/Tenor Trombone/F Horn sus,
+            Grosse Trommel, Sub-Drop ................................................... Cello trem, cymb_gong, BDrumNewhit + [SYN]
+riser       Celli-Tremolo gleitet eine Oktave hinauf, Paukenwirbel, Rauschen ............... [VSCO] Cello trem, Timpani Roll + [SYN]
+chime       Kristall: Glockenspiel E6 H6 G6 E7, langer Hall ................................ [VSCO] Percussion/Glock
+whoosh      Luftzug beim Schnitt (Rauschband mit Doppler, links -> rechts) ................. [SYN] + [BB] Organic Wooshes «Gentle Swish»
+wind        Bergwind als 20-s-Schleife (Böen, Pfeifen in den Felsen, Blätter) ............... [SYN]
+wasser      Bergbach als 12-s-Schleife ..................................................... [RD] sfx100v2_loop_water_03 + [SYN]
+regen       Regen als 13.6-s-Schleife ..................................................... [RD] loop_rain + Tropfen [SYN]
+donner      Donner (Aufnahme) mit dem Krachen eines nahen Blitzes .......................... [FSA] found-sounds/thunder.wav,
+                                                                                            [RD] sfx100v2_thunder_01
+schritte    Schritte auf Kies mit Gras am Rand (4 Schritte, Schleife) ...................... [KEN] RPG footstep_*, Impact footstep_grass_*
+rennen      dasselbe schnell ............................................................... [KEN] wie schritte
+knurren, bellen, heulen, grunzen, pfiff
+            die bisherigen Tierstimmen (bleiben wie im Spiel), nur gefiltert und mit Hall .... [ALT] + [SYN]
+kraehen     drei Krähenrufe (Formanten, Rauheit) ......................................... [SYN]
+zischen     Zischen ........................................................................ [SYN]
+knacken     ein Ast bricht ................................................................. [KEN] impact_wood_light_002/_004 + [SYN]
+rascheln    etwas im Gebüsch ............................................................... [SYN] + [KEN] RPG cloth_2
+kuhglocke   Kuhglocke weit weg auf der Alp ................................................. [KEN] impact_bell_heavy_001/_003 + Hall
+papier      ein alter Brief wird aufgefaltet ................................................ [BB] Page Turn 1/2
+
+Geprüft und nicht verwendet: Oculus Audio Pack 1 (in facebookincubator/Meta-open-sound) – CC BY 4.0 (Namensnennung nötig).
+Nicht frei gefunden (darum [SYN]): Wind, Krähen, Feuer-Knistern (Feuer kommt im Trailer nicht vor).

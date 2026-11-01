@@ -1,8 +1,21 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Version **3.23.0** · MoveEye **3.23.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 31.10.2026 · Version **3.24.0** · MoveEye **3.24.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.24.0 (MoveEye 3.24.0): Schalter aufgeräumt (Teil 639q)
+
+- MoveEye: Schalter notify_sandbox, sim_separate, login_https_only entfernt (Freigabe Daniel 01.11.2026) – die Funktionen
+  sind immer an; update_unsigned nur im Entwickler-Bereich, nach 24 h aus. Simulator: «Ton am PC» (`simint.gd`,
+  `mikrofon.gd`) statt der zwei alten Schalter, `ui_style.gd`: Symbole farbig als Standard.
+
+## NEU in 3.23.1 (MoveEye 3.23.1): echte Klänge im Trailer (`klang/`)
+
+- `simulator3d/klang/`: CC0-Aufnahmen als OGG (Simulator, Schleife und Pegel in `klaenge.json`) und MP3 in `klang/web/`
+  (Browser), Lizenzen in `klang/LIZENZEN.txt` und `LIZENZEN.md`; erzeugt mit `werkzeuge/klang_bauen.py`. `trailer_ton.gd`
+  lädt die Dateien (alte Synthese als Rückfall), Bus «Trailer» mit Begrenzer; `net.gd` liefert MP3 aus, MoveEye 639n reicht
+  sie unter /sim/trailer_ton/ weiter (gleicher Begrenzer im Browser). Export: `klang/*.ogg, klang/*.json, klang/web/*.mp3`.
 
 ## NEU in 3.23.0 (MoveEye 3.23.0): gemeinsame Menü-Datei (`ui_gemeinsam.json`)
 

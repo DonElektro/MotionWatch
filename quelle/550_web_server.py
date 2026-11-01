@@ -1737,7 +1737,7 @@ class WebStream:
             d = body(); lang = norm_lang(d.get("lang")); a = str(d.get("do") or "")
             ok, err, extra = True, "", {}
             if a == "sandbox":
-                CFG["notify_sandbox"] = bool(d.get("on")); save_settings()
+                pass                                         # 3.23: the test inbox is always on in the simulation (old pages)
             elif a == "clear":
                 SANDBOX["items"].clear()
             elif a == "chain":
@@ -1978,7 +1978,7 @@ class WebStream:
             return reply({"ok": True, "error": tr_err(err, lang) if err else None, "current": APP_VERSION, "source": CFG["update_url"],
                           "items": items, "newer": [x["version"] for x in items if _vkey(x["version"]) > _vkey(APP_VERSION)],
                           "pending": RESTART["pending"], "checked": datetime.fromtimestamp(UPD["time"]).strftime("%H:%M:%S") if UPD["time"] else "",
-                          "list_time": UPD["list_time"], "unsigned_ok": bool(CFG["update_unsigned"])})
+                          "list_time": UPD["list_time"], "unsigned_ok": bool(update_unsigned_ok())})
 
         @app.route("/api/light", methods=["POST"])
         def api_light():

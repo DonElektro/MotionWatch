@@ -301,8 +301,7 @@ SIMHUB_JS = r"""
   function labSheet(s, kind) {
     if (!LB) { s.appendChild(E("div", "mut", "…")); lab(); return; }
     if (kind === "inbox") {
-      s.appendChild(row(B((LB.sandbox ? "✓ " : "") + tt("Messages here instead of the phone"), () => lab({do: "sandbox", on: !LB.sandbox}), LB.sandbox ? "" : "sec"),
-        B("🔔 " + tt("Test the alarm chain"), async () => { const r = await lab({do: "chain"}); if (r && r.chain) { open = "inbox"; window._chain = r.chain; paintAll(); } }), B("🗑", () => lab({do: "clear"}))));
+      s.appendChild(row(B("🔔 " + tt("Test the alarm chain"), async () => { const r = await lab({do: "chain"}); if (r && r.chain) { open = "inbox"; window._chain = r.chain; paintAll(); } }), B("🗑", () => lab({do: "clear"}))));
       if (window._chain) s.appendChild(row(...window._chain.map(x => E("span", "", (x.ok ? "✅ " : "❌ ") + (L() === "en" ? x.name : (NM[x.name] || x.name)) + (x.text ? " (" + x.text + ")" : "")))));
       const ph = E("div"); ph.style.cssText = "width:100%;display:flex;flex-direction:column;gap:6px;max-height:300px;overflow:auto";
       (LB.inbox.length ? LB.inbox : [{t: "", title: tt("Empty – nothing arrived yet"), text: ""}]).forEach(m => { const c = E("div"); c.style.cssText = "display:flex;gap:8px;padding:8px;border-radius:12px;background:var(--panel2,#151e2b)";

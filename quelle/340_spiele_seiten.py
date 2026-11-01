@@ -685,9 +685,7 @@ def _simprof_load(which):
 
 
 def simprof_on():
-    """simulation on: the real settings aside, the ones of the last simulation back"""
-    if not CFG.get("sim_separate", True):
-        return
+    """simulation on: the real settings aside, the ones of the last simulation back (3.23: always - the switch sim_separate is gone)"""
     keys = simprof_keys()
     _simprof_save("real", {k: CFG[k] for k in keys})
     SIMPROF["q"] = None
@@ -700,8 +698,6 @@ def simprof_on():
 
 def simprof_off():
     """simulation off: remember its settings, the real ones back, the question which changes to take over"""
-    if not CFG.get("sim_separate", True):
-        return
     keys = simprof_keys()
     real = _simprof_load("real")
     if not real:

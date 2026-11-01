@@ -34147,6 +34147,12 @@
   "it": "suono",
   "rm": "tun"
  },
+ "Ton am PC (Lautsprecher von MoveEye und Umgebungsgeräusche; das simulierte Mikrofon hört es trotzdem)": {
+  "en": "Sound on the PC (MoveEye's loudspeaker and the sounds of the surroundings; the simulated microphone hears it anyway)",
+  "fr": "Son sur le PC (haut-parleur de MoveEye et bruits ambiants ; le microphone simulé l’entend quand même)",
+  "it": "Audio sul PC (altoparlante di MoveEye e rumori dell’ambiente; il microfono simulato lo sente comunque)",
+  "rm": "Tun sin il PC (autpledader da MoveEye e canera dals conturns; il microfon simulà al auda tuttina)"
+ },
  "Toni, Bergsteiger": {
   "en": "Toni, mountaineer",
   "fr": "Toni, alpiniste",

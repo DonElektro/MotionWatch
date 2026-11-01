@@ -223,7 +223,6 @@ SET_HELP = {
     "rec_keep_days": ("Recordings older than this are deleted by themselves (0 = keep until the memory is full).", "14 to 30 days."),
     "push_pics": ("A picture in the push message.", "On - you see at once what it is."),
     "batt_save_on": ("Below a battery level MoveEye saves power by itself (fewer pictures, the AI less often).", "On with a battery."),
-    "login_https_only": ("The password is only accepted over a secure connection (https, the device itself or Tailscale).", "On when you use MoveEye from outside."),
     "lens_check": ("Warns when the lens is dirty, wet or covered.", "On."),
     "weather_on": ("Weather forecast and warnings for the place (needs the location).", "On."),
     "gps_tag": ("Writes the location into the photos.", "Off if you share pictures."),

@@ -427,7 +427,7 @@ func add_controls() -> void:
 	main.add_control("toggle", "mic_real", "Mikrofon wie echt (Abstand, Richtung, Boden dämpft)", func(): return real_on, func(v): real_on = bool(v); save(), g, M)
 	var U := {"sub": "Umgebungsgeräusche"}
 	main.add_control("toggle", "amb_on", "Umgebungsgeräusche (Wind, Regen, Wasser, Tiere, Strasse, Stimmen)", func(): return amb_on, func(v): amb_on = bool(v); save(), g, U)
-	main.add_control("toggle", "amb_pc", "Am PC hören (so laut, wie das Mikrofon es hört)", func(): return pc_on, func(v): pc_on = bool(v); save(); if not pc_on: stop_all(), g, U)
+	# 3.23: «Am PC hören» is part of the one switch «Ton am PC» (simint.gd pc_ton, Licht & Ton → Lautsprecher)
 	main.add_control("slider", "amb_vol", "Lautstärke am PC", func(): return pc_vol, func(v): pc_vol = clampf(float(v), 0.0, 100.0); save(), g,
 			{"sub": "Umgebungsgeräusche", "min": 0, "max": 100, "step": 5, "unit": "%"})
 	var X := {"sub": "Umgebungsgeräusche", "expert": true}
