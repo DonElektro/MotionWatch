@@ -25,6 +25,8 @@ var _ft := 0.0
 
 static func allowed(m) -> bool:
 	"""developer area of MoveEye on and the owner (never in the children's mode)"""
+	if m != null and m.has_method("_dev_card_ok"):             # the same check as the card / kopf.gd «dev» (real-kopf)
+		return bool(m._dev_card_ok())
 	return m != null and bool(m.get("dev_area")) and Dev.is_owner(m)
 
 
@@ -37,7 +39,7 @@ func setup(m, hdr: Control, targets: Array) -> void:
 			c.mouse_filter = Control.MOUSE_FILTER_STOP   # the wordmark / logo ignore the mouse by themselves
 		c.gui_input.connect(_on_input.bind(c))
 	btn = UI.icon_button("tools", "Entwickler-Fenster öffnen")
-	btn.visible = allowed(main)
+	btn.visible = _btn_ok()
 	btn.pressed.connect(open_dev)
 	if hdr != null:
 		hdr.add_child(btn)
@@ -78,7 +80,7 @@ func _process(dt: float) -> void:
 	if _chk <= 0.0:
 		_chk = 1.0
 		if btn != null:
-			btn.visible = allowed(main)
+			btn.visible = _btn_ok()
 	if _flash != null:
 		_ft += dt
 		_look(_flash, maxf(0.0, 1.0 - _ft / 0.35))
@@ -102,14 +104,16 @@ func _process(dt: float) -> void:
 		open_dev()
 
 
+func _btn_ok() -> bool:
+	"""own tool button only as long as the shared header (kopf.gd, real-kopf) does not bring its own 🛠"""
+	return allowed(main) and main.get("kopf") == null
+
+
 func open_dev() -> void:
-	if not allowed(main):
+	"""the same way as the 🛠 of the shared header (kopf.gd «dev»): mehr.act("dev")"""
+	if not allowed(main) or main.mehr == null:
 		return
-	if main.mehr == null or main.mehr.get("dev") == null:
-		return
-	if main.mehr.has_method("close_window"):
-		main.mehr.close_window()
-	main.mehr.dev.open()
+	main.mehr.act("dev")
 
 
 func info() -> Dictionary:
