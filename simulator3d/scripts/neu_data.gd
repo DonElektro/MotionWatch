@@ -2,6 +2,7 @@ extends RefCounted
 ## generated from «Lies mich.txt» by neugen.py - the NEU IN blocks for the popup «Neu in dieser Version» (news.gd)
 
 const LOG := [
+	["3.44.2", "Versionshinweis: eine kleine Zeile unten rechts mit Knopf und ✕ statt eines bildschirmhohen Balkens. So testest du: Simulator und MoveEye mit verschiedenen Versionen verbinden; unten rechts erscheint die Zeile, ✕ blendet sie aus."],
 	["3.44.1", "In MoveEye passen das Simulator-Fenster und das Kamerabild in die Bildschirmhöhe (zentriert, unverzerrt); Klicks treffen trotz Rändern genau. Am Simulator selbst ändert sich nichts. So testest du: in MoveEye die Simulator-Seite auf einem breiten, niedrigen Fenster öffnen und ins Bild klicken."],
 	["3.44.0", "Tastatur statt Scrollrad: + / − zoomt überall, Bild↑/↓ blättert Listen, Pfeile drehen die Ansicht, F1 zeigt die Tasten-Hilfe, Scrollbalken sind sichtbar und ziehbar, Shift+Bild↑/↓ bewegt den Mast. Linux-Kiosk: ./kiosk_ein.sh macht den PC zur reinen Simulator-Maschine (Vollbild, sendet an MoveEye, Neustart nach Absturz, SSH); Ctrl+Alt+D = normales Mint, ./kiosk_aus.sh stellt alles zurück (siehe Abschnitt KIOSK oben). So testest du: F1 drücken; + / − und die Pfeile in der Ansicht; in einer Liste Bild↑/↓. Linux: ./kiosk_ein.sh --trocken."],
 	["3.43.1", "MoveEye bietet unter /sim jetzt auch den Simulator für Linux zum Herunterladen an (MoveEyeSim3D_Linux.zip). So testest du: in MoveEye die Seite /sim öffnen und «Simulator für Linux» herunterladen."],
@@ -16,5 +17,4 @@ const LOG := [
 	["3.38.0", "System › Sicherung: ZIP auf dem PC, in einen Ordner/USB oder in die MoveEye-Sicherung; Wiederherstellen im Simulator oder aus MoveEye (nur Besitzer), vorher wird automatisch der aktuelle Stand gesichert. So testest du: System › Sicherung › «Jetzt sichern», dann etwas ändern und «Wiederherstellen»."],
 	["3.37.0", "Foto-Texturen aus Daniels Fotos im Bergtal: Wiese, Alpweide, Alpenrosen, Geröll, Fels, Strasse (abschaltbar; Lite unverändert). So testest du: System › Grafik › «Foto-Texturen im Bergtal» aus- und einschalten."],
 	["3.36.0", "Menschlichere Figuren: ab Grafik «mittel» Körper aus dem Menschen-Paket (MakeHuman, ~5 MB, wird nachgeladen: System › Grafik › «Menschen-Paket laden»); in «einfach» feinerer Körper und Gesicht. Kleidung, Rucksack, Wanderstöcke und Lampen passen zur Szene. So testest du: System › Grafik › «Menschen-Paket laden», Grafik auf «mittel» oder «hoch», dann Besucher im Bergtal ansehen."],
-	["3.35.0", "Bergtal: ein neues Geheimnis. So testest du: im Bergtal aufmerksam sein (mehr wird nicht verraten)."],
 ]
