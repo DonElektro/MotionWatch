@@ -4321,598 +4321,7 @@ var real_label: Label
 
 
 func _build_ui() -> void:
-	"""the window: phone on the left, on the right the panel in the look of the web page of MoveEye (ui_style.gd):
-	toolbar (hide, search, groups only, expand all, collapse all), cards, at the bottom «Einfach | Experte»"""
-	var layer := CanvasLayer.new()
-	add_child(layer)
-	ui_layer = layer
-	var th: Theme = UI.theme()
-	phone = Phone.new()
-	phone.main = self
-	phone.position = Vector2(0, 0)
-	phone.theme = th
-	layer.add_child(phone)
-	_build_crosshair(layer)
-	_build_view_bar(layer, th)
-	_build_cpu_pill(layer)
-	karte = Karte.new()
-	karte.main = self
-	karte.theme = th
-	karte.visible = false
-	layer.add_child(karte)
-	dataset = preload("res://scripts/dataset.gd").new()      # Trainingsbilder (3D-3.44)
-	dataset.main = self
-	add_child(dataset)
-	kitrain = preload("res://scripts/kitrain.gd").new()      # «KI trainieren»: pack -> GitHub release «ki-daten» -> workflow
-	kitrain.main = self
-	add_child(kitrain)
-	replay = preload("res://scripts/replay.gd").new()        # Alarm-Rückblick (3D-3.44)
-	replay.main = self
-	add_child(replay)
-	replay.setup(layer)
-	planner = preload("res://scripts/planner.gd").new()      # Aufstell-Planer (3D-3.44)
-	planner.main = self
-	planner.theme = th
-	layer.add_child(planner)
-	pruef = preload("res://scripts/pruefstand.gd").new()    # Prüfstand (3D-3.49)
-	pruef.main = self
-	pruef.theme = th
-	layer.add_child(pruef)
-	var tvl := CanvasLayer.new()                            # the TV mode lies over everything (3D-3.44)
-	tvl.layer = 5
-	add_child(tvl)
-	tv = preload("res://scripts/tv.gd").new()
-	tv.main = self
-	tv.theme = th
-	tvl.add_child(tv)
-	gamewiz = preload("res://scripts/gamewiz.gd").new()     # the game wizard (3D-3.41)
-	gamewiz.main = self
-	gamewiz.theme = th
-	layer.add_child(gamewiz)
-	abenteuer = preload("res://scripts/bergtal_abenteuer.gd").new()   # Bergtal-Abenteuer (same look as the wizard)
-	abenteuer.main = self
-	abenteuer.theme = th
-	layer.add_child(abenteuer)
-	var panel := PanelContainer.new()
-	panel.theme = th
-	panel.anchor_left = 1.0
-	panel.anchor_right = 1.0
-	panel.anchor_bottom = 1.0
-	panel.offset_left = -392
-	panel.grow_horizontal = Control.GROW_DIRECTION_BEGIN   # 3D-3.43: if something is too wide it grows to the left, never off the window
-	var sb := UI.box(Color(UI.BG, 0.97), UI.LINE, 0, 8, 0)
-	sb.border_width_left = 1
-	sb.content_margin_left = 10
-	sb.content_margin_right = 6
-	sb.content_margin_top = 10
-	sb.content_margin_bottom = 6
-	panel.add_theme_stylebox_override("panel", sb)
-	layer.add_child(panel)
-	ui_root = panel
-	show_btn = UI.icon_button("show", "Bedienfeld zeigen (H)")
-	show_btn.theme = th
-	show_btn.anchor_left = 1.0
-	show_btn.anchor_right = 1.0
-	show_btn.offset_left = -48
-	show_btn.offset_top = 10
-	show_btn.offset_right = -10
-	show_btn.offset_bottom = 48
-	show_btn.visible = false
-	show_btn.pressed.connect(func(): show_panel(true))
-	layer.add_child(show_btn)
-	var outer := VBoxContainer.new()                      # from 3D-3.7: name, toolbar and the camera pictures stay at the top,
-	outer.add_theme_constant_override("separation", 10)  # only the rest scrolls
-	panel.add_child(outer)
-	var top_box := VBoxContainer.new()
-	top_box.add_theme_constant_override("separation", 10)
-	top_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	outer.add_child(top_box)
-	var scroll := ScrollContainer.new()
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	outer.add_child(scroll)
-	var box_ := VBoxContainer.new()
-	ui_box = box_
-	box_.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	box_.add_theme_constant_override("separation", 10)
-	scroll.add_child(box_)
-	# header: logo, name, version (like the top bar of the page)
-	var hdr := HBoxContainer.new()
-	hdr.add_theme_constant_override("separation", 8)
-	top_box.add_child(hdr)
-	var wm = preload("res://scripts/wordmark.gd").new()   # 3D-3.87: the wordmark W6 like on the web page
-	if wm.build(44.0):                                   # 3D-4.23: moving like on the web (person, cone, pupil, blink)
-		hdr.add_child(wm)
-	else:
-		wm.free()
-		var logo: Control = load("res://scripts/mw_logo.gd").new()  # (fallback) the orange MoveEye symbol
-		logo.custom_minimum_size = Vector2(30, 30)
-		hdr.add_child(logo)
-	var title := Label.new()
-	title.text = "Simulator"
-	title.add_theme_font_override("font", UI.heading_font())
-	title.add_theme_font_size_override("font_size", 14)
-	title.add_theme_color_override("font_color", UI.MUT)
-	title.size_flags_vertical = Control.SIZE_SHRINK_END
-	hdr.add_child(title)
-	var ver := UI.small(VERSION)
-	ver.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	ver.autowrap_mode = TextServer.AUTOWRAP_OFF
-	ver.size_flags_vertical = Control.SIZE_SHRINK_END
-	hdr.add_child(ver)
-	kopf = preload("res://scripts/kopf.gd").new()       # 639t (Daniel 01.11.2026): the one header - ? 🔔 ↻ DE ☰ ⛶ ▲ 🛠 like MoveEye
-	kopf.build(self)                                      # (list and texts: ui_gemeinsam.json «kopf»; narrow panel: from DE on in ☰)
-	hdr.add_child(kopf)
-	devzugang = preload("res://scripts/devzugang.gd").new()   # 3.26 (MoveEye 639s): long press on wordmark / title = developer window,
-	devzugang.name = "DevZugang"                               # and the drawn tool button at the top right (developer area + owner)
-	add_child(devzugang)
-	devzugang.setup(self, hdr, [hdr.get_child(0), title, show_btn])
-	# Paket real-layout-leiste (Daniel 31.10.2026): the bar under the header like on every page of MoveEye (639o) -
-	# Einfach | Experte · Symbole farbig | schlicht · Beim Start: Nur Gruppen · Alle zuklappen / Nur Gruppen / Alle aufklappen
-	UI.icons_plain = ui_icons == "plain"
-	UI.motion_still = motion_reduced()                # 3.23 «Bewegung reduzieren»
-	leiste = preload("res://scripts/bedienleiste.gd").new()
-	leiste.build(self)
-	top_box.add_child(leiste)
-	simple_seg = leiste.simple_seg
-	_sg_cb = leiste.sg_cb
-	_fold_btns = leiste.fold_btns
-	# toolbar like above the settings of MoveEye: hide and search (the fold buttons are in the bar)
-	var tb := HBoxContainer.new()
-	ui_tb = tb
-	tb.add_theme_constant_override("separation", 6)
-	top_box.add_child(tb)
-	var hide_b := UI.icon_button("hide", "Bedienfeld ausblenden (H)")
-	hide_b.pressed.connect(func(): show_panel(false))
-	tb.add_child(hide_b)
-	search_in = UI.search_field("Einstellung suchen …")
-	search_in.text_changed.connect(_search)
-	tb.add_child(search_in)
-	search_none = UI.small("Kein Treffer")
-	search_none.visible = false
-	box_.add_child(search_none)
-	_mode_row = HBoxContainer.new()                 # 3D-3.94: one small line; Kinder | Erwachsene (Einfach | Experte is in the bar, real-layout-leiste)
-	_mode_row.add_theme_constant_override("separation", 6)
-	box_.add_child(_mode_row)
-	top_cards.append(_mode_row)
-	quick = preload("res://scripts/quick.gd").new()            # 3D-3.86: the quick tiles, at the very top
-	quick.main = self
-	box_.add_child(quick)
-	top_cards.append(quick)
-	# connection to MoveEye
-	var cn := UI.fold_card(box_, "Verbindung", true, "link")     # from 3D-3.37 it folds; the symbol is green when connected
-	fold_bodies.append(cn)
-	top_cards.append(cn.get_meta("card"))
-	conn_body = cn
-	stream_cb = CheckButton.new()
-	stream_cb.text = "An MoveEye senden (Port %d)" % stream_port
-	stream_cb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	stream_cb.add_theme_font_size_override("font_size", 15)
-	stream_cb.button_pressed = stream_on
-	stream_cb.toggled.connect(func(on): set_stream(on, true); stream_last = on; _settings_dirty = true)   # 3D-3.75: busy -> spare port
-	cn.add_child(stream_cb)
-	stream_note = UI.small("")
-	cn.add_child(stream_note)
-	status_label = UI.small("", UI.TXT)
-	status_label.add_theme_font_size_override("font_size", 13)
-	cn.add_child(status_label)
-	# 3D-3.45: tunnel - when the firewall of this PC lets nothing in (no admin rights)
-	if OS.get_name() == "Windows":                 # 3D-3.92: the real fix for «MoveEye findet den Simulator nicht»: one firewall rule
-		var fwb := Button.new()
-		fwb.text = "Windows-Firewall: Simulator freigeben (einmal, fragt nach Adminrechten)"
-		fwb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		fwb.tooltip_text = "Erlaubt dem Simulator eingehende Verbindungen im privaten Netz. Danach braucht es keinen Tunnel und keinen Code mehr."
-		fwb.pressed.connect(_firewall_allow)
-		cn.add_child(fwb)
-	var tn := UI.sub_fold(cn, "Tunnel zu MoveEye (Firewall ohne Adminrechte)", tunnel_on)
-	tn.set_meta("always", true)                     # 3D-3.46: it has no settings of the list - without this it was always hidden
-	sub_bodies.append(tn)
-	var tnote := UI.small("Lässt die Firewall dieses PCs MoveEye nicht herein, verbindet sich der Simulator selbst zu MoveEye. Adresse und Code stehen auf der Seite von MoveEye unter Simulator → «Simulator hinter einer Firewall».")
-	tnote.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	tn.add_child(tnote)
-	var th_ := LineEdit.new()
-	th_.placeholder_text = "Adresse von MoveEye, z. B. 192.168.1.20"
-	th_.text = tunnel_host
-	tn.add_child(th_)
-	var tc_ := LineEdit.new()
-	tc_.placeholder_text = "Code (6 Ziffern)"
-	tc_.max_length = 6
-	tc_.text = tunnel_code
-	tn.add_child(tc_)
-	var tcb := CheckButton.new()
-	tcb.text = "Tunnel verwenden"
-	tcb.button_pressed = tunnel_on
-	tn.add_child(tcb)
-	tunnel_label = UI.small("")
-	tunnel_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	tn.add_child(tunnel_label)
-	var apply_t := func():
-		tunnel_host = th_.text.strip_edges().trim_prefix("http://").trim_prefix("https://").get_slice("/", 0).get_slice(":", 0)
-		tunnel_code = tc_.text.strip_edges()
-		tunnel_on = tcb.button_pressed
-		tunnel.host = tunnel_host
-		tunnel.code = tunnel_code
-		tunnel.set_on(false)
-		tunnel.set_on(tunnel_on)
-		_settings_dirty = true
-	th_.text_submitted.connect(func(_t): apply_t.call())
-	th_.focus_exited.connect(apply_t)
-	tc_.text_submitted.connect(func(_t): apply_t.call())
-	tc_.focus_exited.connect(apply_t)
-	# 3D-3.92: saved at once while typing (an update a minute later restarted the simulator before the field was left)
-	var keep_t := func(_t):
-		tunnel_host = th_.text.strip_edges().trim_prefix("http://").trim_prefix("https://").get_slice("/", 0).get_slice(":", 0)
-		tunnel_code = tc_.text.strip_edges()
-		_save_settings()
-	th_.text_changed.connect(keep_t)
-	tc_.text_changed.connect(keep_t)
-	tcb.toggled.connect(func(_v): apply_t.call())
-	# camera pictures
-	# 3D-3.50: order by logic - first the connection, then the cameras (still visible while searching: not in top_cards)
-	var cm := UI.fold_card(box_, "Kameras", true, "camera")
-	fold_bodies.append(cm)
-	cam_body = cm
-	cam_card = cm.get_meta("card")
-	box_.move_child(cam_card, conn_body.get_meta("card").get_index() + 1)
-	cam_float = VBoxContainer.new()
-	cam_float.theme = th
-	cam_float.visible = false
-	cam_float.add_theme_constant_override("separation", 0)
-	cam_float.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var grip := PanelContainer.new()
-	grip.add_theme_stylebox_override("panel", UI.box(Color(UI.BG, 0.92), UI.LINE, 8, 4, 1))
-	grip.mouse_default_cursor_shape = Control.CURSOR_MOVE
-	grip.tooltip_text = "Kamerabilder verschieben: hier ziehen"
-	var gl := UI.small("✥ Ziehen zum Verschieben · H = Bedienfeld")
-	gl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	gl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	grip.add_child(gl)
-	grip.gui_input.connect(_cam_float_input)
-	cam_float.add_child(grip)
-	layer.add_child(cam_float)
-	prev0 = TextureRect.new()
-	prev0.texture = vps[0].get_texture()
-	prev0.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	prev0.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT
-	prev0.custom_minimum_size = Vector2(300, 169)
-	cm.add_child(prev0)
-	var row := HBoxContainer.new()
-	cm.add_child(row)
-	prev1 = TextureRect.new()
-	prev1.texture = vps[1].get_texture()
-	prev1.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	prev1.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT
-	prev1.custom_minimum_size = Vector2(146, 82)
-	row.add_child(prev1)
-	prevt = TextureRect.new()
-	prevt.texture = th_preview
-	prevt.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	prevt.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT
-	prevt.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
-	prevt.custom_minimum_size = Vector2(146, 112)
-	row.add_child(prevt)
-	# tools: MoveEye on this PC, map, phone
-	var tl := UI.fold_card(box_, "Testen", true, "check")      # 3D-3.90: everything that measures or tests MoveEye in one card; Menüs A: symbol «check» like the group (not the spanner of «Entwickler»)
-	fold_bodies.append(tl)
-	tools_body = tl
-	top_cards.append(tl.get_meta("card"))
-	mwpc_btn = Button.new()
-	mwpc_btn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	mwpc_btn.pressed.connect(func(): mwpc.toggle())
-	UI.primary(mwpc_btn)
-	tl.add_child(mwpc_btn)
-	mwpc_label = UI.small("")
-	tl.add_child(mwpc_label)
-	var tl_main := tl                                # 3D-3.86: the rest in folds - tests for MoveEye, training pictures, more
-	tl = UI.sub_fold(tl_main, "Erkennung messen (Testlauf, Prüfstand, blinde Flecken)", true)
-	tl.set_meta("always", true)
-	sub_bodies.append(tl)
-	testen_measure = tl                              # 3D-4.x: the group «Testlauf» lives here now (one place for testing)
-	testen_rec = UI.sub_fold(tl_main, "Aufnahme: Besuch aufnehmen und genau gleich abspielen", false)
-	testen_rec.set_meta("always", true)
-	sub_bodies.append(testen_rec)
-	var trh := HBoxContainer.new()
-	trh.add_theme_constant_override("separation", 6)
-	tl.add_child(trh)
-	var trp := OptionButton.new()
-	for p_ in ["quick", "standard", "night", "hard", "wetter"]:      # real-wetter: + «Wetter physikalisch»
-		trp.add_item(str(TestrunS.PLANS[p_]["name"]).get_slice(" (", 0) + " · " + str(int(round(TestrunS.DAUER[p_] / 30.0)) / 2.0).trim_suffix(".0") + " Min.")
-	trp.select(0)
-	trh.add_child(trp)
-	var trb := Button.new()
-	trb.text = "Testlauf starten"
-	trb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	trb.pressed.connect(func():
-		var r_: String = testrun.start(["quick", "standard", "night", "hard", "wetter"][trp.selected])
-		if r_ != "":
-			start_info = r_)
-	trh.add_child(trb)
-	var bmb := Button.new()
-	bmb.text = "Blinde Flecken: Person rund um MoveEye aufstellen"
-	bmb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	bmb.pressed.connect(func():
-		var r2: Dictionary = blindmap.start({})
-		if not bool(r2.get("ok", true)):
-			start_info = "Blinde Flecken: " + str(r2.get("error", "")))
-	tl.add_child(bmb)
-	var psb := Button.new()                          # Menüs A: the one place of the Prüfstand (no tile, not in the developer window)
-	psb.text = "Prüfstand: mehrere Testläufe, Ergebnis für GitHub"
-	psb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	psb.pressed.connect(func(): pruef.open(not pruef.visible))
-	tl.add_child(psb)
-	expert_cards.append(bmb)                         # Menüs A: «Einfach» = Testlauf, Aufnahme, Parcours, Einbruch - the rest «Experte»
-	expert_cards.append(psb)
-	tl = UI.sub_fold(tl_main, "Geräusche (Klatschschalter, Gesundheit, Lärm)", false)   # 3D-3.98
-	tl.set_meta("always", true)
-	tl.set_meta("expert_sub", true)                  # Menüs A: only «Experte» (_apply_simple)
-	sub_bodies.append(tl)
-	tl.add_child(UI.small("Das Geräusch kommt von der Person im Bett, sonst vom nächsten Besucher, sonst 2 m vor MoveEye. MoveEye braucht dafür «Klatschschalter» bzw. «Gesundheit» – beim klingelnden Wecker heisst Klatschen schlummern."))
-	var sgr := GridContainer.new()
-	sgr.columns = 3
-	tl.add_child(sgr)
-	for b_ in [["Klatschen 2×", "clap", 2], ["Klatschen 3×", "clap", 3], ["Klatschen 4×", "clap", 4], ["Niesen", "sneeze", 1], ["Reden", "voice", 1], ["Rufen", "shout", 1]]:
-		var snb := Button.new()
-		snb.text = b_[0]
-		snb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		snb.pressed.connect(func(): emit_sound(b_[1], b_[2]))
-		sgr.add_child(snb)
-	testen_stoer = UI.sub_fold(tl_main, "Störungen (Servos, Unterspannung, I2C – reagiert MoveEye richtig?)", false)   # 30.10.2026 (simint.gd)
-	testen_stoer.set_meta("always", true)
-	testen_stoer.set_meta("expert_sub", true)        # Menüs A: servo faults, I2C, undervoltage - only «Experte»
-	sub_bodies.append(testen_stoer)
-	testen_stoer.add_child(UI.small("Wie bei echter Hardware: MoveEye stoppt die Servos, meldet die Störung im Fehlerspeicher (Servo-Diagnose) und braucht bei Treiber-Fehlern «Freigeben»."))
-	simint.add_info(testen_stoer, UI)
-	testen_einbruch = UI.sub_fold(tl_main, "Einbruch-Abläufe (auskundschaften, ablenken, stehlen – wann warnt MoveEye?)", false)
-	testen_einbruch.set_meta("always", true)
-	sub_bodies.append(testen_einbruch)
-	einbruch.add_info(testen_einbruch, UI)
-	tl = UI.sub_fold(tl_main, "Diebstahlschutz prüfen (Referenz-Scan, Sabotage, Überraschung)", false)
-	tl.set_meta("always", true)
-	tl.set_meta("expert_sub", true)                  # Menüs A: only «Experte»
-	sub_bodies.append(tl)
-	# 3D-3.71: the reference scan of MoveEye, started from here
-	var rsh := HBoxContainer.new()
-	rsh.add_theme_constant_override("separation", 6)
-	tl.add_child(rsh)
-	for b_ in [["MoveEye: Referenz-Scan", "refscan"], ["Mit Referenz vergleichen", "refcompare"]]:
-		var rb := Button.new()
-		rb.text = b_[0]
-		rb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		rb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		rb.tooltip_text = "MoveEye fährt mit dem Kopf alle Richtungen ab: Referenz-Fotos aufnehmen bzw. vergleichen (Bericht in MoveEye unter Werkzeuge → Referenz-Scan)"
-		rb.pressed.connect(mw_request.bind(b_[1]))
-		rsh.add_child(rb)
-	var ntb := Button.new()                          # 3D-3.72
-	ntb.text = "Referenz-Scan: am Tag aufnehmen, in der Nacht vergleichen"
-	ntb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	ntb.pressed.connect(ref_night_test)
-	tl.add_child(ntb)
-	var gsb := Button.new()                          # 3D-3.98: theft with the GPS module
-	gsb.text = "GPS: MoveEye wird weggetragen"
-	gsb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	gsb.tooltip_text = "Die GPS-Position wandert mit 1.6 m/s weg (wie zu Fuss). MoveEye braucht «GPS-Modul» und «Diebstahl-Alarm» und muss scharf sein. Nochmals drücken = zurückstellen."
-	gsb.pressed.connect(func():
-		gps_steal(gps_steal_t <= 0.0)
-		gsb.text = "GPS: zurückstellen" if gps_steal_t > 0.0 else "GPS: MoveEye wird weggetragen")
-	tl.add_child(gsb)
-	# 3D-4.7 («Dinge wegnehmen zusammenlegen»): ONE list of the things to take away - «Bewachte Sachen» in «Gegenstände»
-	var pgb := Button.new()
-	pgb.text = "→ Bewachte Sachen: Velo, Zelt, Tisch, Kühlbox, Grill wegnehmen – merkt MoveEye, dass etwas fehlt?"
-	pgb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	pgb.pressed.connect(func(): inventar.open_sec("guard"))   # 3D-4.22: window «Gegenstände», part «Bewachte Sachen»
-	tl.add_child(pgb)
-	tl.add_child(UI.small("Sabotage-Test für den Diebstahlschutz von MoveEye (scharf schalten):"))
-	var sg := HBoxContainer.new()
-	sg.add_theme_constant_override("separation", 6)
-	tl.add_child(sg)
-	for b2 in [["Kamera abdecken", "cover"], ["Kopf wegdrehen", "turn"], ["Alles normal", "off"]]:
-		var sb_ := Button.new()
-		sb_.text = b2[0]
-		sb_.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		sb_.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		sb_.pressed.connect(_sabotage_btn.bind(str(b2[1])))
-		sg.add_child(sb_)
-	refscan_label = UI.small("")
-	tl.add_child(refscan_label)
-	tl.add_child(UI.small("Überraschung jetzt auslösen (bewertet MoveEye; nachts von selbst: Wetter → Überraschungsnacht):"))
-	var sug := GridContainer.new()                   # 3D-3.75
-	sug.columns = 3
-	sug.add_theme_constant_override("h_separation", 6)
-	sug.add_theme_constant_override("v_separation", 6)
-	tl.add_child(sug)
-	for kk in surprise.KINDS + [["morning", "Bewertung jetzt"]]:
-		var ub := Button.new()
-		ub.text = kk[1]
-		ub.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		ub.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		var key_: String = kk[0]
-		ub.pressed.connect(func(): surprise.morning() if key_ == "morning" else surprise.start(key_))
-		sug.add_child(ub)
-	surprise_label = UI.small("")
-	tl.add_child(surprise_label)
-	tl = UI.sub_fold(tl_main, "Trainingsbilder für eine eigene KI", false)
-	testen_train = tl
-	tl.set_meta("always", true)
-	sub_bodies.append(tl)
-	var dsr := HBoxContainer.new()                   # 3D-3.74: a training set for an own AI model
-	dsr.add_theme_constant_override("separation", 6)
-	tl.add_child(dsr)
-	var dsn := OptionButton.new()
-	for n_ in [200, 500, 1000, 2000]:
-		dsn.add_item("%d Bilder" % n_)
-	dsn.select(1)
-	dsr.add_child(dsn)
-	var dsb := Button.new()
-	dsb.text = "Trainingspaket (YOLO) machen"
-	dsb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	dsb.tooltip_text = "Bilder mit Rahmen für ein eigenes KI-Modell: viele Szenen, Tag, Nacht, Regen, Nebel, Schnee, Menschen und Tiere. ZIP auf den Schreibtisch."
-	dsb.pressed.connect(func():
-		if dataset.busy:
-			dataset.stop()
-		else:
-			dataset.export_pack([200, 500, 1000, 2000][dsn.selected], true))
-	dsr.add_child(dsb)
-	ds_label = UI.small("")
-	tl.add_child(ds_label)
-	kitrain.build(tl, dsn)                           # Vielfalt normal / hoch, «KI trainieren» (kitrain.gd)
-	var kdr := HBoxContainer.new()                   # «KI-Daten aufräumen» (kidaten.gd)
-	kdr.add_theme_constant_override("separation", 6)
-	tl.add_child(kdr)
-	var kdl := UI.small(preload("res://scripts/kidaten.gd").summary())
-	kdl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	kdl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var kdb := Button.new()
-	kdb.text = "Alte KI-Daten löschen"
-	kdb.tooltip_text = "Löscht alle Trainingspakete ausser dem neuesten (Ordner und ZIP). Das KI-Modell bleibt."
-	kdb.pressed.connect(func():
-		if dataset.busy or kitrain.running:
-			kdl.text = "Gerade beschäftigt – später nochmals."
-			return
-		var KD = preload("res://scripts/kidaten.gd")
-		var r: Dictionary = KD.aufraeumen(true, str(dataset.last_pack.get("dir", "")).get_file())
-		kdl.text = "Gelöscht: %d Pakete (%.0f MB) · %s" % [int(r["deleted"]), float(r["freed_mb"]), KD.summary()])
-	kdr.add_child(kdb)
-	kdr.add_child(kdl)
-	# Menüs A, Punkt 5 (Daniel 31.10.2026): the part «Mehr: Aufstellen, Erkunden, Handy-Simulator» is gone - Aufstell-Planer =
-	# tile «Aufstellen», Erkunden = bar below, Handy-Simulator = System → Karte und Livebild (phone_sim), Rückmeldung = «Mehr»
-	# the settings of the simulator: one card per group (with a symbol), parts inside (the same list the page of Motion
-	# Watch shows, in the same order - GROUPS / PLACE)
-	var groups := {}
-	var subs := {}
-	var fine_folds := {}
-	for c in controls:
-		if c.extra.get("hide", false) or c.extra.get("wiz", false) or c.extra.get("devwin", false):
-			continue                                     # 3D-3.90: only for MoveEye (the web page), not in the window; 3D-4.7: «wiz» = only in the game assistant; «devwin»: in the window «Mehr → Entwickler» (tab «Schalter» / «Spieltest»)
-		if c.group == "Testen" and testen_measure != null:   # 3D-4.x: into the card «Testen» (no own card «Testlauf» any more)
-			if c.id in ["testrun_plan", "testrun_start"]:
-				continue                                 # the card has its own row «plan + Testlauf starten»
-			var tgt: VBoxContainer = testen_rec if c.id.begins_with("rec_") else (testen_stoer if c.id.begins_with("stoer_") and testen_stoer != null else testen_measure)
-			if c.id.begins_with("einbruch_") and testen_einbruch != null:
-				tgt = testen_einbruch
-
-			var k0 := ui_items.size()
-			_ui_control(tgt, c)
-			for i in range(k0, ui_items.size()):
-				ui_items[i][3] = tools_body
-				ui_items[i].append(tgt)
-			continue
-		if not groups.has(c.group):
-			var ic := ""
-			for g in GROUPS:
-				if g[0] == c.group:
-					ic = g[1]
-			groups[c.group] = UI.fold_card(box_, c.group, c.group in ["Szene", "Besuch"], ic)
-			group_bodies[c.group] = groups[c.group]
-			fold_bodies.append(groups[c.group])
-			setting_bodies.append(groups[c.group])
-		if c.group == "Besuch" and str(c.extra.get("sub", "")) != "Vorlagen" and not subs.has("Besuch/Besucher hinsetzen"):
-			# after «Vorlagen»: the pictures of the visitors, people and animals apart (3D-3.38)
-			var vs := UI.sub_fold(groups[c.group], "Besucher hinsetzen", true)
-			vs.set_meta("always", true)
-			sub_bodies.append(vs)
-			subs["Besuch/Besucher hinsetzen"] = vs
-			var ivb := Button.new()                  # 3D-3.86: all people, animals and things in the inventory
-			ivb.text = "«Gegenstände» öffnen"
-			ivb.tooltip_text = "Zelt, Auto, bewachte Sachen, Menschen, Tiere und alle 80 Dinge der KI"
-			ivb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-			UI.primary(ivb)
-			ivb.pressed.connect(func(): inventar.toggle())
-			vs.add_child(ivb)
-			vs.add_child(UI.small("Bild in die Welt ziehen – oder anklicken und dann in die Welt klicken. Die Knöpfe weiter unten schicken Besuch, der von selbst daherkommt."))
-		var card_body: VBoxContainer = groups[c.group]
-		var target: VBoxContainer = card_body
-		var sub := str(c.extra.get("sub", ""))
-		var to_fine: bool = c.extra.get("expert", false) and c.group != "Entwickler"
-		if sub == "Feineinstellungen":                    # 3D-4.22: a part named «Feineinstellungen» = the one fold of the card (not two)
-			sub = ""
-			to_fine = true
-		if sub != "":
-			var key: String = c.group + "/" + sub
-			if not subs.has(key):
-				subs[key] = UI.sub_fold(card_body, sub, sub in ["Vorlagen", "Menschen einzeln", "Wildtiere"])
-				sub_bodies.append(subs[key])
-			target = subs[key]
-		# 3D-4.21 (Menü 2, same rule as MoveEye): «Einfach» shows the main switches, the rest sits in a closed «Feineinstellungen»
-		var folded := false
-		if to_fine:
-			var fk := str(target.get_instance_id())
-			if not fine_folds.has(fk):
-				var fb := UI.sub_fold(target, "Feineinstellungen", false)
-				if target != card_body:
-					fb.set_meta("outer", target)
-				fine_folds[fk] = fb
-				sub_bodies.append(fb)
-				fine_bodies.append(fb)
-			target = fine_folds[fk]
-			folded = true
-		var n0 := ui_items.size()
-		_ui_control(target, c)
-		for i in range(n0, ui_items.size()):
-			ui_items[i][3] = card_body
-			ui_items[i].append(target)
-			if folded:
-				ui_items[i][2] = false                     # not hidden in «Einfach» - folded
-	for fb in fine_folds.values():                     # «Feineinstellungen» last in its part / card
-		var w: Control = fb.get_meta("wrap")
-		w.get_parent().move_child(w, -1)
-	if groups.has("Entwickler"):
-		# 3D-4.22 (Angleichen, Daniel 30.10.2026): «Entwickler» like MoveEye - shown when MoveEye's «Entwickler-Bereich» is on
-		# (dev_area, sent by MoveEye), no longer tied to «Experte». Paket «Entwickler zusammenlegen»: the card has only the
-		# button «Entwickler-Fenster öffnen» (dev_open); «Diagnose-Paket» is in the window (devtool_schalter.gd); only the owner
-		dev_body = groups["Entwickler"]
-	update_btn = Button.new()
-	update_btn.text = "Nach Updates suchen (jetzt %s)" % VERSION
-	update_btn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	update_btn.pressed.connect(check_updates)
-	(subs.get("System/Updates", tl) as Control).add_child(update_btn)
-	if testen_measure != null:
-		testrun.add_info(testen_measure, UI)          # progress and result of the test run (card «Testen»)
-		nacht.add_info(testen_measure, UI)            # Nacht-Testlauf: progress, «abbrechen»
-	elif groups.has("Testen"):
-		testrun.add_info(groups["Testen"], UI)
-	if subs.has("Licht & Ton/Status-LED & Tasten") and statusled != null:   # 3D-4.22: the rules of the buttons are in MoveEye - hint + link
-		statusled.add_info(subs["Licht & Ton/Status-LED & Tasten"], UI)
-	if subs.has("Zusatzgeräte/Bewegungsmelder (PIR)"):    # real-pir-ton: state, reach, triggers (pir.gd)
-		pir.add_info(subs["Zusatzgeräte/Bewegungsmelder (PIR)"], UI)
-	if subs.has("Licht & Ton/Mikrofon"):              # real-pir-ton: level, background, the loudest sources (mikrofon.gd)
-		mikro.add_info(subs["Licht & Ton/Mikrofon"], UI)
-	if subs.has("Zusatzgeräte/Strom"):                # Simulator-Werte: what goes to MoveEye (power.gd)
-		simwerte.add_info(subs["Zusatzgeräte/Strom"], UI)
-	if subs.has("Kamerabild/Wie echt"):              # 3D-3.94: what the real look adjustment does
-		real_label = UI.small("")
-		real_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		subs["Kamerabild/Wie echt"].add_child(real_label)
-	if subs.has("Spiel/Runde"):
-		game.add_info(subs["Spiel/Runde"], UI)        # address, QR code and players of the game
-	elif groups.has("Spiel"):
-		game.add_info(groups["Spiel"], UI)
-	var keys := UI.fold_card(box_, "Tasten", false, "keys")
-	fold_bodies.append(keys)
-	info_label = UI.small("Maus: links ziehen = verschieben · rechts ziehen = drehen · Rad = zoomen (Shift + Rad: Tempo von W A S D) · mittlere Taste oder Alt + rechts = umschauen · Doppelklick = hinfliegen · Besucher anklicken = auswählen, ziehen = tragen.  Tasten: W A S D Q E fliegen (Shift schneller) · 1 / 2 Kamera · 3 Wärmebild · 0 frei · F folgen · Entf entfernen · Esc abwählen · H Bedienfeld · P Handy / Tablet · K Karte · G Gewehr (Linksklick = Schuss)")
-	keys.add_child(info_label)
-	expert_cards.append(keys.get_meta("card"))
-	top_cards.append(keys.get_meta("card"))
-	mehr = preload("res://scripts/mehr.gd").new()      # 3D-4.2x: card «Mehr» like MoveEye (Hilfe, Rundgang, Diagnose, Protokoll, Ansicht, Rückmeldung, Über)
-	mehr.main = self
-	add_child(mehr)
-	mehr.build(box_)
-	# Kinder | Erwachsene: on top (3D-3.90); Einfach | Experte is in the bar (leiste)
-	var se: Control = simple_seg
-	kids_seg = UI.segment("Kinder", "Erwachsene", not kids_on, func(adult): _kids_switch(adult), true)   # 3D-3.69
-	kids_seg.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_mode_row.add_child(kids_seg)
-	se.tooltip_text = "Einfach: das Wichtigste (Szene, Zeit, Wetter, Besuch, Testen, Spiel-Assistent). «Experte» zeigt alle."
-	simple_note = UI.small("")                      # 3D-3.94: the explanation as a tooltip, no line of its own
-	simple_note.visible = false
-	_apply_simple()
-	_sync_ui()
-	_fold_setup()                                      # nurgruppen: the own open / closed state, then «Nur Gruppen» on start
-	await _make_thumbs()
-	kids = preload("res://scripts/kids.gd").new()       # 3D-3.69: the panel of the «Kinder» mode (after the pictures)
-	kids.main = self
-	box_.add_child(kids)
-	box_.move_child(kids, 0)
-	_apply_kids()
+	await _mod("menues")._build_ui()
 
 
 # ---- toolbar, search, Simple / Expert --------------------------------------------------------------------------------
@@ -5054,67 +4463,19 @@ var _fold_t := 0.0
 
 
 func _fold_state() -> String:
-	"""which of the three fold buttons matches what is open now ("" = mixed)"""
-	var all_open := true
-	var all_closed := true
-	var groups := true
-	for b in fold_bodies:
-		if not is_instance_valid(b) or not b.get_parent().visible:
-			continue
-		var o: bool = b.visible
-		all_open = all_open and o
-		all_closed = all_closed and not o
-		groups = groups and o == _fold_group_open(b)
-	for sb in sub_bodies:
-		if not is_instance_valid(sb) or not sb.has_meta("fold"):
-			continue
-		var so: bool = (sb.get_meta("fold") as Control).visible
-		all_open = all_open and so
-		all_closed = all_closed and not so
-		groups = groups and not so
-	if mine_on:                                        # 639r «Meine Ansicht»: the middle is blue while it is on
-		return "mine"
-	if all_closed:
-		return "close"
-	if all_open:
-		return "open"
-	return "groups" if groups else ""
+	return _mod("menues")._fold_state()
 
 
 func _fold_paint() -> void:
-	"""light the button of the current fold state (called a few times a second, repaints only on a change)"""
-	if _fold_btns.is_empty():
-		return
-	var st := _fold_state()
-	if st == _fold_lit:
-		return
-	_fold_lit = st
-	for k in _fold_btns:
-		var b: Button = _fold_btns[k]
-		for n in ["normal", "hover", "pressed"]:
-			if k == st:
-				b.add_theme_stylebox_override(n, UI.box(UI.ACC, UI.ACC, 10))
-			else:
-				b.remove_theme_stylebox_override(n)
+	_mod("menues")._fold_paint()
 
 
 func _fold_group_open(b: Control) -> bool:
-	"""«Nur Gruppen» like MoveEye (Paket angleich, Daniel 31.10.2026): the groups open, their parts (Themen) closed.
-	3D-4.12 (Daniel): «Verbindung» stays closed; «Tasten» is a help card, no group"""
-	return not str(b.get_meta("title", "")) in ["Verbindung", "Tasten"]
+	return _mod("menues")._fold_group_open(b)
 
 
 func _fold_all(how: String, _own := false) -> void:
-	"""639r: «mine» = Meine Ansicht (the own state); «close» / «open» / «groups»: Meine Ansicht off, the own state stays as kept"""
-	_fold_lit = "-"
-	if how == "mine":
-		set_mine()
-		return
-	mine_on = false
-	for b in fold_bodies:
-		UI.set_open(b, how == "open" or (how == "groups" and _fold_group_open(b)))
-	for sb in sub_bodies:
-		UI.set_sub_open(sb, how == "open")
+	_mod("menues")._fold_all(how, _own)
 
 
 # ---- Paket nurgruppen (Daniel, 31.10.2026): «Beim Start: Nur Gruppen» ------------------------------------------------------
@@ -5129,229 +4490,58 @@ var _sg_cb: CheckButton
 
 
 func _fold_key(b: Control) -> String:
-	if b.has_meta("fold"):                             # a part (sub_fold): its card in front, the names are not unique
-		var w: Node = b.get_meta("wrap")
-		var par: Node = w.get_parent() if w != null else null
-		return "s:%s/%s" % [str(par.get_meta("title", "")) if par != null else "", str(b.get_meta("title", ""))]
-	return "c:" + str(b.get_meta("title", ""))
+	return _mod("menues")._fold_key(b)
 
 
 func _fold_is_open(b: Control) -> bool:
-	return (b.get_meta("fold") as Control).visible if b.has_meta("fold") else b.visible
+	return _mod("menues")._fold_is_open(b)
 
 
 func _fold_put(b: Control, open: bool) -> void:
-	if b.has_meta("fold"):
-		UI.set_sub_open(b, open)
-	else:
-		UI.set_open(b, open)
+	_mod("menues")._fold_put(b, open)
 
 
 func _fold_keep(b: Control) -> void:
-	if is_instance_valid(b) and mine_on:
-		_mine_change(_fold_key(b), _fold_is_open(b))
+	_mod("menues")._fold_keep(b)
 
 
 func _mine_change(key: String, open: bool) -> void:
-	"""639r: the ONE function per change of «Meine Ansicht» (saved locally; P2 hangs the sync with MoveEye in here)"""
-	if not mine_on or key == "":
-		return
-	fold_mem[key] = open
-	_settings_dirty = true
+	_mod("menues")._mine_change(key, open)
 
 
 func set_mine() -> void:
-	"""639r: the middle button «Meine Ansicht» - every card and part as the user left them"""
-	mine_on = true
-	_fold_own()
+	_mod("menues").set_mine()
 
 
 func _fold_setup() -> void:
-	"""after building the panel: remember how it was built, follow the clicks on the headings, own state, then the start view"""
-	for b in fold_bodies + sub_bodies:
-		if not is_instance_valid(b):
-			continue
-		_fold_init[_fold_key(b)] = _fold_is_open(b)
-		var hdr: Node = null
-		if b.has_meta("fold"):
-			var w: Node = b.get_meta("wrap")
-			hdr = w.get_child(1) if w != null and w.get_child_count() > 1 else null
-		elif b.get_parent() != null:
-			hdr = b.get_parent().get_child(0)
-		if hdr is Button:
-			(hdr as Button).pressed.connect(func(): _fold_keep(b))   # after the heading's own handler: the new state
-	if not mine_mig:                                   # 639r: once - who had «Beim Start: Nur Gruppen» gets it as the first Meine Ansicht
-		mine_mig = true
-		_settings_dirty = true
-		if start_groups:
-			start_groups = false
-			if _sg_cb != null:
-				_sg_cb.set_pressed_no_signal(false)
-			_fold_all("groups")
-			mine_on = true
-			for b in fold_bodies + sub_bodies:
-				_fold_keep(b)
-	start_groups = false                              # 3.23: the switch is gone - an old saved value is ignored, the start is «Meine Ansicht»
-	_fold_own()
-	mine_on = true
+	_mod("menues")._fold_setup()
 
 
 func _fold_own() -> void:
-	"""every card and part as the user left it (cards he never touched: as built)"""
-	_fold_lit = "-"
-	for b in fold_bodies + sub_bodies:
-		if is_instance_valid(b):
-			var k := _fold_key(b)
-			if fold_mem.has(k) or _fold_init.has(k):
-				_fold_put(b, bool(fold_mem.get(k, _fold_init.get(k))))
+	_mod("menues")._fold_own()
 
 
 func set_start_groups(_on: bool) -> void:
-	"""3.23: the switch «Beim Start: Nur Gruppen» is gone (an old call only goes back to «Meine Ansicht»)"""
-	start_groups = false
-	set_mine()
+	_mod("menues").set_start_groups(_on)
 
 
 func _search(q: String) -> void:
-	"""type into the search field: only the matching settings stay, their cards open; empty = everything as before"""
-	q = q.strip_edges().to_lower()
-	var any := false
-	for c in top_cards:
-		c.visible = q == "" and not (c in expert_cards and ui_simple)
-	var hit_bodies := {}
-	for it in ui_items:
-		var show_it: bool = (q == "" or str(it[1]).to_lower().contains(q)) and not (ui_simple and it[2] and q == "") and not _dev_hidden(it)
-		it[0].visible = show_it
-		if q != "" and show_it:
-			hit_bodies[it[3]] = true
-			any = true
-			if it.size() > 4 and it[4] != it[3]:
-				UI.set_sub_open(it[4], true)
-				if (it[4] as Control).has_meta("wrap"):
-					it[4].get_meta("wrap").visible = true        # Menüs A: a hit in a part that «Einfach» hides («expert_sub»)
-				if it[4].has_meta("outer"):
-					UI.set_sub_open(it[4].get_meta("outer"), true)
-	for b in setting_bodies:
-		b.get_meta("card").visible = q == "" or hit_bodies.has(b)
-		if q != "":
-			UI.set_open(b, hit_bodies.has(b))
-	search_none.visible = q != "" and not any
-	if q == "":
-		_apply_simple()
+	_mod("menues")._search(q)
 
 
 func _kids_switch(adult: bool) -> void:
-	"""the switch «Kinder | Erwachsene»: to the children at once, back to the adults only with a little sum"""
-	if not adult:
-		kids_on = true
-		_settings_dirty = true
-		_apply_kids()
-		return
-	if not kids_on:
-		return
-	ask_adult(func(ok):
-		if ok:
-			kids_on = false
-			_settings_dirty = true
-			_apply_kids()
-		else:
-			kids_seg.get_meta("paint").call(false))
+	_mod("menues")._kids_switch(adult)
 
 
 func _apply_kids() -> void:
-	"""Kinder: only the panel with the picture buttons and the switch; no search, no tool bar. Erwachsene: as before."""
-	if ui_box == null or kids == null:
-		return
-	if kids_on:
-		for c in ui_box.get_children():
-			c.visible = c == kids or c == kids_seg or c == _mode_row
-		if simple_seg != null:
-			simple_seg.visible = false
-		kids._build()
-		var sc := ui_box.get_parent()
-		if sc is ScrollContainer:
-			(sc as ScrollContainer).scroll_vertical = 0      # start at the top with the marmot
-	else:
-		kids.visible = false
-		for c in ui_box.get_children():
-			if c != kids and c != search_none:
-				c.visible = true
-		if simple_seg != null:
-			simple_seg.visible = true
-		var keep := kids_on
-		kids_on = false
-		_apply_simple()
-		kids_on = keep
-	if ui_tb != null:
-		ui_tb.visible = not kids_on
-	if leiste != null:
-		leiste.visible = not kids_on
-	if toolbar != null:
-		toolbar.visible = not kids_on
-	if kids_seg != null and kids_seg.has_meta("paint"):
-		kids_seg.get_meta("paint").call(not kids_on)
+	_mod("menues")._apply_kids()
 
 
 var _adult_box: Control = null
 
 
 func ask_adult(done: Callable) -> void:
-	"""a little sum for the adults (7 × 8 = ?) before leaving the «Kinder» mode (3D-3.95: can be switched off)"""
-	if not kids_ask:
-		done.call(true)
-		return
-	if _adult_box != null and is_instance_valid(_adult_box):
-		_adult_box.queue_free()
-	var a := randi_range(6, 9)
-	var b := randi_range(6, 9)
-	var pc := PanelContainer.new()
-	pc.theme = ui_root.theme
-	pc.add_theme_stylebox_override("panel", UI.box(UI.PANEL, UI.ACC, 14, 16, 2))
-	ui_layer.add_child(pc)
-	_adult_box = pc
-	var v := VBoxContainer.new()
-	v.add_theme_constant_override("separation", 10)
-	pc.add_child(v)
-	v.add_child(UI.heading("Frage für Erwachsene"))
-	var q := Label.new()
-	q.text = "Wie viel ist %d × %d?" % [a, b]
-	q.add_theme_font_size_override("font_size", 22)
-	v.add_child(q)
-	var le := LineEdit.new()
-	le.placeholder_text = "Antwort"
-	le.virtual_keyboard_type = LineEdit.KEYBOARD_TYPE_NUMBER
-	v.add_child(le)
-	var msg := UI.small("")
-	v.add_child(msg)
-	var h := HBoxContainer.new()
-	h.add_theme_constant_override("separation", 8)
-	v.add_child(h)
-	var ok_b := Button.new()
-	ok_b.text = "Weiter"
-	UI.primary(ok_b)
-	var no_b := Button.new()
-	no_b.text = "Abbrechen"
-	for x in [ok_b, no_b]:
-		x.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		x.custom_minimum_size = Vector2(0, 40)
-		h.add_child(x)
-	var check := func(_t = null):
-		if le.text.strip_edges() == str(a * b):
-			pc.queue_free()
-			done.call(true)
-		else:
-			msg.text = "Leider falsch – noch einmal."
-			le.text = ""
-	ok_b.pressed.connect(check)
-	le.text_submitted.connect(check)
-	no_b.pressed.connect(func():
-		pc.queue_free()
-		done.call(false))
-	pc.custom_minimum_size = Vector2(320, 0)
-	await get_tree().process_frame
-	var vs := get_viewport().get_visible_rect().size
-	pc.position = (vs - pc.size) / 2.0
-	le.grab_focus()
+	await _mod("menues").ask_adult(done)
 
 
 func motion_reduced() -> bool:
@@ -5394,36 +4584,7 @@ func set_simple(on: bool) -> void:
 
 
 func _apply_simple() -> void:
-	"""Simple: settings marked "expert" are hidden (and cards that would be empty)"""
-	var counts := {}
-	for it in ui_items:
-		var vis: bool = not (ui_simple and it[2])
-		if dev_body != null and it[3] == dev_body:
-			vis = _dev_card_ok()                           # 3D-4.22: «Entwickler» with MoveEye's switch, also in «Einfach» (+ only the owner)
-		elif vis and _dev_hidden(it):
-			vis = false                                    # 3D-4.28: «only» (e.g. «Standort im Ferienpark» only in that scene)
-		it[0].visible = vis
-		if vis:
-			counts[it[3]] = true
-	for b in setting_bodies:
-		b.get_meta("card").visible = counts.has(b)
-	var sub_counts := {}
-	for it in ui_items:
-		if it.size() > 4 and it[0].visible:
-			sub_counts[it[4]] = true
-			if (it[4] as Control).has_meta("outer"):          # 3D-4.22: a part with only «Feineinstellungen» stays visible
-				sub_counts[it[4].get_meta("outer")] = true
-	for sb in sub_bodies:
-		sb.get_meta("wrap").visible = (sub_counts.has(sb) or sb.has_meta("always")) and not (ui_simple and sb.has_meta("expert_sub"))   # Menüs A: «expert_sub» = whole part only «Experte»
-	for c in expert_cards:
-		c.visible = not ui_simple
-	for fb in fine_bodies:                             # 3D-4.21: closed in «Einfach», open in «Experte»
-		if is_instance_valid(fb):
-			UI.set_sub_open(fb, not ui_simple)
-	if simple_note != null:
-		simple_note.visible = false                    # 3D-3.94: tooltip of the switch instead
-	if kids_on and kids != null:
-		_apply_kids()
+	_mod("menues")._apply_simple()
 
 
 # ---- the pictures of the visitors: click to choose, drag into the world ------------------------------------------------
@@ -5435,53 +4596,11 @@ var drag_kind := ""
 
 
 func _palette_item(kind: String, name_: String) -> Control:
-	var pc := PanelContainer.new()
-	pc.custom_minimum_size = Vector2(72, 88)
-	pc.tooltip_text = name_ + ": in die Welt ziehen, oder anklicken und in die Welt klicken"
-	pc.mouse_default_cursor_shape = Control.CURSOR_DRAG
-	var v := VBoxContainer.new()
-	v.add_theme_constant_override("separation", 2)
-	v.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	pc.add_child(v)
-	var tr := TextureRect.new()
-	tr.custom_minimum_size = Vector2(60, 54)
-	tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	tr.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	v.add_child(tr)
-	var l := Label.new()
-	l.text = name_
-	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	l.add_theme_font_size_override("font_size", 11)
-	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART     # 3D-3.43: long names wrap - before they pushed the panel over the right edge
-	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	v.add_child(l)
-	thumb_rects[kind] = tr
-	palette_items[kind] = pc
-	pc.gui_input.connect(func(ev):
-		if ev is InputEventMouseButton and ev.button_index == MOUSE_BUTTON_LEFT and not ev.pressed and drag_kind == "":
-			place_kind = "" if place_kind == kind else kind
-			_paint_palette())
-	var drag_fn := func(_pos):
-		drag_kind = kind
-		var pv := TextureRect.new()
-		pv.texture = thumbs.get(kind)
-		pv.custom_minimum_size = Vector2(72, 66)
-		pv.size = Vector2(72, 66)
-		pv.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		pv.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		pv.modulate = Color(1, 1, 1, 0.85)
-		pc.set_drag_preview(pv)
-		return {"visitor": kind}
-	pc.set_drag_forwarding(drag_fn, func(_p, _d): return false, func(_p, _d): pass)
-	_paint_palette.call_deferred()
-	return pc
+	return _mod("menues")._palette_item(kind, name_)
 
 
 func _paint_palette() -> void:
-	for k in palette_items:
-		var on: bool = k == place_kind
-		palette_items[k].add_theme_stylebox_override("panel", UI.box(UI.PANEL if not on else UI.ACC.darkened(0.55), UI.ACC if on else UI.LINE, 10, 4, 2 if on else 1))
+	_mod("menues")._paint_palette()
 
 
 func _notification(what: int) -> void:
@@ -5495,52 +4614,7 @@ func _notification(what: int) -> void:
 
 
 func _make_thumbs() -> void:
-	"""a little moving picture of every visitor (3D-3.24): each walks on the spot in a small world of its own; only
-	the pictures that can be seen are drawn again, about 12 times a second"""
-	var sizes := {"person": 1.9, "child": 1.3, "jogger": 1.9, "deer": 1.7, "boar": 1.1, "fox": 0.8, "dog": 0.9, "cat": 0.6, "badger": 0.6, "hare": 0.65, "hedgehog": 0.32,
-			"wolf": 1.1, "marten": 0.38, "squirrel": 0.3, "cyclist": 1.9, "stroller": 1.9, "courier": 1.9, "police": 1.9, "drunk": 1.9,
-			"cow": 1.7, "sheep": 0.9, "horse": 2.0, "chamois": 1.1, "ibex": 1.3, "lynx": 0.9}
-	for k in VISITOR_LIST:
-		var vp := SubViewport.new()
-		vp.size = Vector2i(128, 116)
-		vp.transparent_bg = true
-		vp.own_world_3d = true
-		vp.msaa_3d = Viewport.MSAA_2X
-		vp.render_target_update_mode = SubViewport.UPDATE_ONCE
-		add_child(vp)
-		var cam := Camera3D.new()
-		cam.cull_mask = 1
-		cam.fov = 30
-		var e := Environment.new()
-		e.background_mode = Environment.BG_CLEAR_COLOR
-		e.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-		e.ambient_light_color = Color(0.75, 0.78, 0.85)
-		e.ambient_light_energy = 0.7
-		cam.environment = e
-		vp.add_child(cam)
-		var sun_ := DirectionalLight3D.new()
-		sun_.rotation = Vector3(deg_to_rad(-45), deg_to_rad(-35), 0)
-		sun_.light_energy = 1.3
-		vp.add_child(sun_)
-		var a = Actor.new()
-		a.preview = true
-		vp.add_child(a)
-		a.setup(self, k[0], Vector3.ZERO, Vector3(-0.8, 0, 1.0), 0.0)
-		a.speed = THUMB_SPEED.get(k[0], 1.0)
-		var h: float = sizes.get(k[0], 1.0)
-		var wide: bool = k[0] in ["fox", "deer", "boar", "dog", "cat", "badger", "hare", "hedgehog", "wolf", "marten", "squirrel", "cow", "sheep", "horse",
-				"chamois", "ibex", "lynx", "cyclist", "stroller"]
-		cam.position = Vector3(h * 1.1, h * 0.62, h * 1.75) * (1.15 if wide else 0.78)
-		cam.look_at(Vector3(0, h * 0.48, 0), Vector3.UP)
-		thumb_vps[k[0]] = [vp, a]
-		var t: Texture2D = vp.get_texture()
-		thumbs[k[0]] = t
-		if thumb_rects.has(k[0]):
-			thumb_rects[k[0]].texture = t
-		for tb in thumb_btns:
-			if tb[1] == k[0] and is_instance_valid(tb[0]):
-				tb[0].icon = t
-		await get_tree().process_frame
+	await _mod("menues")._make_thumbs()
 
 
 const THUMB_SPEED := {"cyclist": 3.0, "stroller": 1.1, "courier": 1.6, "police": 1.2, "drunk": 0.8, "cow": 0.8, "sheep": 0.9, "horse": 1.3,
@@ -6301,240 +5375,7 @@ func _view_preset(which: String) -> void:
 
 
 func _build_view_bar(layer: CanvasLayer, th: Theme) -> void:
-	"""buttons at the bottom of the view, a compass at the top left, the box of the chosen visitor"""
-	thermal_full = TextureRect.new()
-	thermal_full.texture = th_preview
-	thermal_full.set_anchors_preset(Control.PRESET_FULL_RECT)
-	thermal_full.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	thermal_full.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	thermal_full.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
-	thermal_full.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	thermal_full.visible = false
-	layer.add_child(thermal_full)
-	layer.move_child(thermal_full, 0)
-	view_bar = HBoxContainer.new()
-	view_bar.theme = th
-	view_bar.add_theme_constant_override("separation", 6)
-	view_bar.anchor_top = 1.0
-	view_bar.anchor_bottom = 1.0
-	view_bar.offset_left = 12
-	view_bar.offset_top = -50
-	view_bar.offset_bottom = -12
-	view_bar.grow_vertical = Control.GROW_DIRECTION_BEGIN
-	view_bar.anchor_right = 1.0
-	view_bar.offset_right = -404                          # not under the panel
-	layer.add_child(view_bar)
-	for k in [[0, "Frei", "Frei herumfliegen (0)"], [1, "Kamera 1", "Durch die Kopfkamera schauen (1)"], [2, "Kamera 2", "Durch die zweite Kamera schauen (2)"],
-			[3, "Wärmebild", "Das Wärmebild gross (3)"]]:
-		var b := Button.new()
-		b.text = k[1]
-		b.tooltip_text = k[2]
-		b.toggle_mode = true
-		b.focus_mode = Control.FOCUS_NONE
-		var m: int = k[0]
-		b.pressed.connect(func(): set_view(m))
-		view_bar.add_child(b)
-		view_btns[m] = b
-	map_btn = Button.new()
-	map_btn.text = "Karte"
-	map_btn.tooltip_text = "Übersichtskarte ein / aus (M)"
-	map_btn.toggle_mode = true
-	map_btn.focus_mode = Control.FOCUS_NONE
-	map_btn.button_pressed = map_on
-	map_btn.toggled.connect(func(on): set_map(on))
-	view_bar.add_child(map_btn)
-	live_btn = Button.new()
-	live_btn.text = "Livebild"
-	live_btn.tooltip_text = "Livebild einer Kamera unter der Karte ein / aus (L)"
-	live_btn.toggle_mode = true
-	live_btn.focus_mode = Control.FOCUS_NONE
-	live_btn.button_pressed = live_on
-	live_btn.toggled.connect(func(on): set_live(on))
-	view_bar.add_child(live_btn)
-	for k in [["head", "Zum Kopf", "Zurück zu MoveEye"], ["top", "Von oben", "Von oben auf den Platz schauen"]]:
-		var b := Button.new()
-		b.text = k[1]
-		b.tooltip_text = k[2]
-		b.focus_mode = Control.FOCUS_NONE
-		var w: String = k[0]
-		b.pressed.connect(func(): _view_preset(w))
-		view_bar.add_child(b)
-	set_view(view_mode)
-	var help := UI.small("Links ziehen: verschieben · Rechts ziehen: drehen · Rad: zoomen · Doppelklick: hinfliegen")
-	view_help = help
-	help.add_theme_color_override("font_color", Color(1, 1, 1, 0.75))
-	help.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
-	help.add_theme_constant_override("shadow_offset_x", 1)
-	help.add_theme_constant_override("shadow_offset_y", 1)
-	help.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	help.autowrap_mode = TextServer.AUTOWRAP_OFF
-	help.clip_text = true
-	help.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	help.custom_minimum_size = Vector2(10, 0)
-	help.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	view_bar.add_child(help)
-	# compass: the red needle shows north; a click turns the view to the north
-	compass = Control.new()
-	compass.position = Vector2(14, 26)
-	compass.size = Vector2(54, 54)
-	compass.tooltip_text = "Norden – anklicken: nach Norden schauen"
-	compass.draw.connect(func():
-		var c := compass.size / 2.0                        # Paket «Fenster»: in the middle of its frame (room for the «N»)
-		compass.draw_circle(c, 25, Color(0.05, 0.07, 0.1, 0.75))
-		compass.draw_arc(c, 25, 0, TAU, 32, Color(1, 1, 1, 0.35), 1.5, true)
-		var fwd := -view_cam.global_transform.basis.z
-		var a := atan2(fwd.x, -fwd.z)                      # 0 = looking north
-		var n := Vector2(sin(-a), -cos(-a))
-		compass.draw_colored_polygon(PackedVector2Array([c + n * 19, c + n.orthogonal() * 5, c - n.orthogonal() * 5]), Color(0.95, 0.3, 0.25))
-		compass.draw_colored_polygon(PackedVector2Array([c - n * 19, c + n.orthogonal() * 5, c - n.orthogonal() * 5]), Color(0.85, 0.87, 0.9))
-		compass.draw_string(ThemeDB.fallback_font, c + n * 33 + Vector2(-4, 4), "N", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color(1, 1, 1, 0.95)))
-	compass.gui_input.connect(func(ev):
-		if ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_LEFT:
-			set_view(0)
-			var p := view_cam.global_position
-			var fwd := -view_cam.global_transform.basis.z
-			var tilt := asin(clampf(fwd.y, -1.0, 1.0))
-			var start := view_cam.global_transform
-			var end := Transform3D(Basis.from_euler(Vector3(tilt, 0.0, 0.0)), p)
-			if fly_tw != null:
-				fly_tw.kill()
-			fly_tw = create_tween()
-			fly_tw.tween_method(func(f: float): view_cam.global_transform = start.interpolate_with(end, f), 0.0, 1.0, 0.5))
-	layer.add_child(compass)
-	sel_ring = Control.new()                              # a ring round the chosen visitor
-	sel_ring.set_anchors_preset(Control.PRESET_FULL_RECT)
-	sel_ring.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	sel_ring.draw.connect(func():
-		if selected == null or not is_instance_valid(selected) or view_mode != 0:
-			return
-		var w: Vector3 = selected.global_position
-		if view_cam.is_position_behind(w):
-			return
-		var pts := PackedVector2Array()
-		for i in range(33):
-			var a := TAU * i / 32.0
-			pts.append(view_cam.unproject_position(w + Vector3(cos(a), 0.05, sin(a)) * (selected.radius + 0.35)))
-		sel_ring.draw_polyline(pts, Color(1.0, 0.75, 0.2, 0.95), 2.5, true))
-	layer.add_child(sel_ring)
-	layer.move_child(sel_ring, 1)
-	minimap = preload("res://scripts/minimap.gd").new()
-	minimap.main = self
-	minimap.size_px = map_size
-	minimap.span = map_span
-	minimap.visible = map_on
-	layer.add_child(minimap)
-	liveview = preload("res://scripts/liveview.gd").new()
-	liveview.main = self
-	liveview.cam = live_cam
-	liveview.width_px = live_size
-	liveview.visible = live_on
-	layer.add_child(liveview)
-	if statusled != null:
-		statusled.make_tile(layer)                         # das Fenster «Gerät» (LED + Tasten)
-	if smalltv != null:
-		smalltv.make_tile(layer)                           # 3D-4.19: das Bild des virtuellen SmallTV, unter Karte / Livebild
-	rover_pad = preload("res://scripts/rover_pad.gd").new()
-	rover_pad.main = self
-	layer.add_child(rover_pad)
-	explore = preload("res://scripts/explore.gd").new()       # 3D-3.55: explore with the rover
-	explore.main = self
-	layer.add_child(explore)
-	padview = preload("res://scripts/padview.gd").new()       # the «Controller-Ansicht» of MoveEye: views, turning, zoom, picture without buttons
-	padview.main = self
-	add_child(padview)
-	padmap = preload("res://scripts/padmap.gd").new()         # 3D-4.13: ONE controller mapping (window, explore, game, MoveEye)
-	padmap.main = self
-	add_child(padmap)
-	padhud = preload("res://scripts/padhud.gd").new()         # 3D-4.13: chips, direction, focus ring of the controller
-	padhud.main = self
-	padhud.pm = padmap
-	var phl := CanvasLayer.new()                              # above the control panel (the focus ring), below the game at the PC
-	phl.layer = 25
-	add_child(phl)
-	phl.add_child(padhud)
-	padmap.hud = padhud
-	patrol = preload("res://scripts/patrol.gd").new()         # 3D-3.61: the mover drives MoveEye round a route
-	patrol.main = self
-	add_child(patrol)
-	patrol.load_route()
-	toolbar = preload("res://scripts/toolbar.gd").new()       # 3D-3.61: everything with the mouse
-	toolbar.main = self
-	layer.add_child(toolbar)
-	headpad = preload("res://scripts/headpad.gd").new()       # 3D-3.77: steer the head of MoveEye
-	headpad.main = self
-	headpad.theme = th
-	layer.add_child(headpad)
-	templates = preload("res://scripts/templates.gd").new()   # 3D-3.82: «Vorlagen»
-	templates.main = self
-	templates.theme = th
-	layer.add_child(templates)
-	if scene == "vorlage":
-		set_scene("vorlage")                                   # built before the window existed: once more with the files
-	inventar = preload("res://scripts/inventar.gd").new()     # 3D-3.86: the inventory (all 80 things of the AI)
-	inventar.main = self
-	inventar.theme = th
-	layer.add_child(inventar)
-	inventar.rebuild()
-	blindmap = preload("res://scripts/blindmap.gd").new()     # 3D-3.85: blind spots / night rehearsal
-	blindmap.main = self
-	add_child(blindmap)
-	overlay = preload("res://scripts/overlay3d.gd").new()     # 3D-3.83: zones and detections of MoveEye in 3D
-	overlay.main = self
-	add_child(overlay)
-	news = preload("res://scripts/news.gd").new()             # 3D-3.82: «Neu in dieser Version» after an update
-	news.main = self
-	news.theme = th
-	layer.add_child(news)
-	get_tree().create_timer(3.0).timeout.connect(func(): news.check())
-	localplay = preload("res://scripts/localplay.gd").new()   # 3D-3.77: play here at the PC
-	localplay.main = self
-	localplay.theme = th
-	var lp_layer := CanvasLayer.new()                         # above everything of the window
-	lp_layer.layer = 30
-	add_child(lp_layer)
-	lp_layer.add_child(localplay)
-	home_editor = preload("res://scripts/home_editor.gd").new()   # 3D-3.73: «Mein Zuhause bauen»
-	home_editor.main = self
-	home_editor.theme = th
-	home_editor.position = Vector2(10, 345)
-	layer.add_child(home_editor)
-	# the chosen visitor
-	sel_box = PanelContainer.new()
-	sel_box.theme = th
-	sel_box.add_theme_stylebox_override("panel", UI.box(Color(UI.PANEL, 0.95), UI.LINE, 10, 8))
-	sel_box.anchor_top = 1.0
-	sel_box.anchor_bottom = 1.0
-	sel_box.offset_left = 12
-	sel_box.offset_top = -104
-	sel_box.offset_bottom = -58
-	sel_box.grow_vertical = Control.GROW_DIRECTION_BEGIN
-	sel_box.visible = false
-	layer.add_child(sel_box)
-	var hb := HBoxContainer.new()
-	hb.add_theme_constant_override("separation", 6)
-	sel_box.add_child(hb)
-	sel_label = Label.new()
-	sel_label.custom_minimum_size = Vector2(90, 0)
-	sel_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	hb.add_child(sel_label)
-	follow_btn = Button.new()
-	follow_btn.focus_mode = Control.FOCUS_NONE
-	follow_btn.pressed.connect(func():
-		follow = not follow
-		_paint_sel())
-	hb.add_child(follow_btn)
-	for k in [["scare", "Erschrecken"], ["away", "Wegschicken"], ["del", "Entfernen (Entf)"]]:
-		var b := Button.new()
-		b.text = k[1]
-		b.focus_mode = Control.FOCUS_NONE
-		var w: String = k[0]
-		b.pressed.connect(_sel_action.bind(w))
-		hb.add_child(b)
-	var x := Button.new()
-	x.text = "×"
-	x.focus_mode = Control.FOCUS_NONE
-	x.pressed.connect(func(): select_visitor(null))
-	hb.add_child(x)
+	_mod("menues")._build_view_bar(layer, th)
 
 
 func _sel_action(w: String) -> void:
@@ -6671,29 +5512,7 @@ const POINTS := {"chamois": 30, "ibex": 35, "lynx": 50, "fox": 10, "deer": 15, "
 
 
 func _build_crosshair(layer: CanvasLayer) -> void:
-	crosshair = Control.new()
-	crosshair.set_anchors_preset(Control.PRESET_FULL_RECT)
-	crosshair.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	crosshair.visible = false
-	crosshair.draw.connect(func():
-		var p: Vector2 = crosshair.size / 2.0 if look else crosshair.get_local_mouse_position()
-		var c := Color(1.0, 0.25, 0.2, 0.95)
-		crosshair.draw_arc(p, 18.0, 0.0, TAU, 40, c, 2.0)
-		for d in [Vector2(1, 0), Vector2(-1, 0), Vector2(0, 1), Vector2(0, -1)]:
-			crosshair.draw_line(p + d * 8.0, p + d * 30.0, c, 2.0)
-		crosshair.draw_circle(p, 1.5, c)
-		var f := ThemeDB.fallback_font
-		var txt := "Gewehr (unblutig): Treffer %d von %d Schüssen · %d Punkte · G: Gewehr aus" % [hits, shots, points]
-		crosshair.draw_string(f, Vector2(18, 34), txt, HORIZONTAL_ALIGNMENT_LEFT, -1, 20, Color(1, 1, 1))
-		if now() - shot_msg_t < 2.5:
-			crosshair.draw_string(f, Vector2(18, 64), shot_msg, HORIZONTAL_ALIGNMENT_LEFT, -1, 24, Color(1.0, 0.85, 0.3)))
-	layer.add_child(crosshair)
-	shot_sound = AudioStreamPlayer.new()
-	shot_sound.stream = _make_sound("shot")
-	add_child(shot_sound)
-	hit_sound = AudioStreamPlayer.new()
-	hit_sound.stream = _make_sound("boing")
-	add_child(hit_sound)
+	_mod("menues")._build_crosshair(layer)
 
 
 func _make_sound(kind: String) -> AudioStreamWAV:
@@ -7757,20 +6576,7 @@ var _cpu_t := 0.0
 
 
 func _build_cpu_pill(layer: CanvasLayer) -> void:
-	"""always to see: CPU of this PC and of the simulator (3D-3.26), like in the small box"""
-	cpu_pill = Label.new()
-	cpu_pill.add_theme_font_size_override("font_size", 13)
-	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color(0.05, 0.07, 0.1, 0.72)
-	sb.set_corner_radius_all(9)
-	sb.content_margin_left = 10
-	sb.content_margin_right = 10
-	sb.content_margin_top = 3
-	sb.content_margin_bottom = 3
-	cpu_pill.add_theme_stylebox_override("normal", sb)
-	cpu_pill.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	cpu_pill.text = "CPU …"
-	layer.add_child(cpu_pill)
+	_mod("menues")._build_cpu_pill(layer)
 
 
 func _cpu_pill_tick(dt: float) -> void:
@@ -7795,46 +6601,7 @@ func _cpu_pill_tick(dt: float) -> void:
 
 
 func _hud_layout() -> void:
-	if compass == null or view_bar == null or phone == null:
-		return
-	var vw: float = get_viewport().get_visible_rect().size.x
-	var right: float = ui_root.get_global_rect().position.x if ui_root != null and ui_root.visible else vw
-	var ph: bool = phone.visible
-	var left: float = phone.get_global_rect().end.x + 10.0 if ph else 0.0
-	var key := "%s|%d|%d|%d" % [ph, int(left), int(right), int(minimap.size.x) if minimap != null else 0]
-	if key == _hud_key:
-		return
-	_hud_key = key
-	if ph:
-		if fenster == null:                              # Paket «Fenster»: the frames place compass and map (fenster.gd)
-			compass.position = Vector2(right - 68.0, 26.0)
-			if minimap != null:
-				minimap.position = Vector2(right - minimap.size.x - 14.0, 92.0)
-		view_bar.offset_left = left + 12.0
-		view_bar.offset_right = -(vw - right) - 12.0
-		view_bar.alignment = BoxContainer.ALIGNMENT_CENTER
-		if view_help != null:
-			view_help.visible = false                   # not enough room next to the phone
-		var room: float = right - left - 24.0
-		var fs: int = 14 if room > 640.0 else (12 if room > 520.0 else 11)
-		view_bar.add_theme_constant_override("separation", 6 if room > 640.0 else 3)
-		for b in view_bar.get_children():
-			if b is Button:
-				b.add_theme_font_size_override("font_size", fs)
-	else:
-		if fenster == null:
-			compass.position = Vector2(14, 26)
-			if minimap != null:
-				minimap.position = Vector2(14, 92)
-		view_bar.offset_left = 12.0
-		view_bar.offset_right = -404.0
-		view_bar.alignment = BoxContainer.ALIGNMENT_BEGIN
-		if view_help != null:
-			view_help.visible = true
-		view_bar.add_theme_constant_override("separation", 6)
-		for b in view_bar.get_children():
-			if b is Button:
-				b.remove_theme_font_size_override("font_size")
+	_mod("menues")._hud_layout()
 
 
 # ---- presets for the visitors (from 3D-3.38) ------------------------------------------------------------------------------
