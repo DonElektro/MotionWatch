@@ -1309,6 +1309,12 @@
   "it": "%d di %d scoperti",
   "rm": "%d da %d scuvrids"
  },
+ "%d von %d erledigt": {
+  "en": "%d of %d done",
+  "fr": "%d sur %d faits",
+  "it": "%d di %d fatti",
+  "rm": "%d da %d fatg"
+ },
  "%d von 3 Sternen": {
   "en": "%d of 3 stars",
   "fr": "%d étoiles sur 3",
@@ -2188,6 +2194,12 @@
   "it": "+ Bot",
   "rm": "+ Bot"
  },
+ "+ Widerstand 4,7 kΩ": {
+  "en": "+ resistor 4.7 kΩ",
+  "fr": "+ résistance 4,7 kΩ",
+  "it": "+ resistenza 4,7 kΩ",
+  "rm": "+ resistenza 4,7 kΩ"
+ },
  "+%d Erfahrung": {
   "en": "+%d experience",
   "fr": "+%d expérience",
@@ -2478,6 +2490,12 @@
   "it": "1 furtivo",
   "rm": "1 sfugider"
  },
+ "1 Set": {
+  "en": "1 Set",
+  "fr": "1 Set",
+  "it": "1 Set",
+  "rm": "1 Set"
+ },
  "1 Spieler": {
   "en": "1 player",
   "fr": "1 joueur",
@@ -2489,6 +2507,12 @@
   "fr": "1 gardien",
   "it": "1 guardiano",
   "rm": "1 guardian"
+ },
+ "1-Kanal Relais Modul": {
+  "en": "1-Kanal Relais Modul",
+  "fr": "1-Kanal Relais Modul",
+  "it": "1-Kanal Relais Modul",
+  "rm": "1-Kanal Relais Modul"
  },
  "1. Blender installieren (gratis).  2. Erweiterung «Blosm» installieren.  3. Gebiet auf der Karte wählen → «Import».  4. «Datei → Export → glTF 2.0 (.glb)».  5. Die .glb hier in «Eigene Datei» ziehen.": {
   "en": "1. Install Blender (free).  2. Install the add-on «Blosm».  3. Choose an area on the map → «Import».  4. «File → Export → glTF 2.0 (.glb)».  5. Drag the .glb here into «Own file».",
@@ -2514,6 +2538,12 @@
   "it": "10 Tappo HDMI",
   "rm": "10 Zaffer HDMI"
  },
+ "1000 µF / 25 V geht auch": {
+  "en": "1000 µF / 25 V works too",
+  "fr": "1000 µF / 25 V convient aussi",
+  "it": "anche 1000 µF / 25 V va",
+  "rm": "er 1000 µF / 25 V va"
+ },
  "10_HDMI_Stopfen": {
   "en": "10_HDMI_Stopfen",
   "fr": "10_HDMI_Stopfen",
@@ -2532,11 +2562,23 @@
   "it": "11_Fuss_4x",
   "rm": "11_Fuss_4x"
  },
+ "12 V nach der Sicherung → Step-Down → 5 V an V+ des PCA9685": {
+  "en": "12 V after the fuse → step-down → 5 V at V+ of the PCA9685",
+  "fr": "12 V après le fusible → abaisseur → 5 V sur V+ du PCA9685",
+  "it": "12 V dopo il fusibile → step-down → 5 V su V+ del PCA9685",
+  "rm": "12 V suenter la segirezza → step-down → 5 V vi da V+ dal PCA9685"
+ },
  "12.8. Nebel, aber der Ofen hat gezogen. Danke! – Familie Brunner\n\n15.8. Les vaches nous ont réveillés à 5 h. Magnifique! – Claire": {
   "en": "12.8. Nebel, aber der Ofen hat gezogen. Danke! – Familie Brunner\n\n15.8. Les vaches nous ont réveillés à 5 h. Magnifique! – Claire",
   "fr": "12.8. Nebel, aber der Ofen hat gezogen. Danke! – Familie Brunner\n\n15.8. Les vaches nous ont réveillés à 5 h. Magnifique! – Claire",
   "it": "12.8. Nebel, aber der Ofen hat gezogen. Danke! – Familie Brunner\n\n15.8. Les vaches nous ont réveillés à 5 h. Magnifique! – Claire",
   "rm": "12.8. Nebel, aber der Ofen hat gezogen. Danke! – Familie Brunner\n\n15.8. Les vaches nous ont réveillés à 5 h. Magnifique! – Claire"
+ },
+ "12–40 V, je 2 Kontakte parallel für + und −": {
+  "en": "12–40 V, 2 contacts each in parallel for + and −",
+  "fr": "12–40 V, 2 contacts en parallèle pour + et −",
+  "it": "12–40 V, 2 contatti in parallelo per + e −",
+  "rm": "12–40 V, mintgamai 2 contacts parallels per + e −"
  },
  "14. Okt. 1961\nBei Schneetreiben über den Pass – warme Suppe, gutes Bett.": {
   "en": "14. Okt. 1961\nBei Schneetreiben über den Pass – warme Suppe, gutes Bett.",
@@ -2573,6 +2615,18 @@
   "fr": "2 joueurs",
   "it": "2 giocatori",
   "rm": "2 giugaders"
+ },
+ "2 Tasten": {
+  "en": "2 buttons",
+  "fr": "2 boutons",
+  "it": "2 pulsanti",
+  "rm": "2 buttuns"
+ },
+ "2 × AOD4184-Modul (Bastelgarage 420985); kein IRF520": {
+  "en": "2 × AOD4184 module (Bastelgarage 420985); no IRF520",
+  "fr": "2 × module AOD4184 (Bastelgarage 420985) ; pas d'IRF520",
+  "it": "2 × modulo AOD4184 (Bastelgarage 420985); niente IRF520",
+  "rm": "2 × modul AOD4184 (Bastelgarage 420985); betg IRF520"
  },
  "2. Welche Testläufe?": {
   "en": "2. Which test runs?",
@@ -2634,6 +2688,24 @@
   "it": "3 notti, circa 10 min ciascuna",
   "rm": "3 notgs, mintgina var 10 min."
  },
+ "3,3 V Pin 1 · GND Pin 6 · SDA Pin 3 (GPIO 2) · SCL Pin 5 (GPIO 3) · I2C 0x41 (Lötbrücke A0)": {
+  "en": "3.3 V pin 1 · GND pin 6 · SDA pin 3 (GPIO 2) · SCL pin 5 (GPIO 3) · I2C 0x41 (solder bridge A0)",
+  "fr": "3,3 V broche 1 · GND broche 6 · SDA broche 3 (GPIO 2) · SCL broche 5 (GPIO 3) · I2C 0x41 (pont A0)",
+  "it": "3,3 V pin 1 · GND pin 6 · SDA pin 3 (GPIO 2) · SCL pin 5 (GPIO 3) · I2C 0x41 (ponticello A0)",
+  "rm": "3,3 V pin 1 · GND pin 6 · SDA pin 3 (GPIO 2) · SCL pin 5 (GPIO 3) · I2C 0x41 (punt da lotar A0)"
+ },
+ "3,3 V · GND · Ausgang GPIO 5 (Pin 29); in MoveEye unter Zusatzgeräte als Bewegungsmelder eintragen": {
+  "en": "3.3 V · GND · output GPIO 5 (pin 29); add it in MoveEye under Extra devices as motion detector",
+  "fr": "3,3 V · GND · sortie GPIO 5 (broche 29) ; l'ajouter dans MoveEye sous Appareils supplémentaires comme détecteur",
+  "it": "3,3 V · GND · uscita GPIO 5 (pin 29); aggiungerlo in MoveEye sotto Dispositivi aggiuntivi come rilevatore",
+  "rm": "3,3 V · GND · sortida GPIO 5 (pin 29); agiuntar en MoveEye sut Apparats supplementars sco detectur"
+ },
+ "3,3 V · GND · Daten GPIO 4 (Pin 7) + 4,7 kΩ nach 3,3 V; config.txt: dtoverlay=w1-gpio": {
+  "en": "3.3 V · GND · data GPIO 4 (pin 7) + 4.7 kΩ to 3.3 V; config.txt: dtoverlay=w1-gpio",
+  "fr": "3,3 V · GND · données GPIO 4 (broche 7) + 4,7 kΩ vers 3,3 V ; config.txt : dtoverlay=w1-gpio",
+  "it": "3,3 V · GND · dati GPIO 4 (pin 7) + 4,7 kΩ a 3,3 V; config.txt: dtoverlay=w1-gpio",
+  "rm": "3,3 V · GND · datas GPIO 4 (pin 7) + 4,7 kΩ a 3,3 V; config.txt: dtoverlay=w1-gpio"
+ },
  "3. Versuch – diesmal der richtige Gipfel. – Hans": {
   "en": "3rd attempt – the right summit this time. – Hans",
   "fr": "3e essai – cette fois le bon sommet. – Hans",
@@ -2669,6 +2741,12 @@
   "fr": "Choisir un fichier 3D",
   "it": "Scegliere un file 3D",
   "rm": "Tscherner ina datoteca 3D"
+ },
+ "3D-Drucker (Bambu Lab X2D) und Filament-Trockner": {
+  "en": "3D printer (Bambu Lab X2D) and filament dryer",
+  "fr": "Imprimante 3D (Bambu Lab X2D) et séchoir à filament",
+  "it": "Stampante 3D (Bambu Lab X2D) ed essiccatore",
+  "rm": "Stampader 3D (Bambu Lab X2D) e sitgader da filament"
  },
  "3D-Gebäude von swisstopo: ": {
   "en": "3D buildings from swisstopo: ",
@@ -2724,6 +2802,12 @@
   "it": "Simulatore 3D live · %s (porta %d)",
   "rm": "Simulatur 3D live · %s (port %d)"
  },
+ "4 GB (SC1111) reicht auch": {
+  "en": "4 GB (SC1111) is enough too",
+  "fr": "4 Go (SC1111) suffit aussi",
+  "it": "anche 4 GB (SC1111) basta",
+  "rm": "er 4 GB (SC1111) basta"
+ },
  "4 Ziffern": {
   "en": "4 digits",
   "fr": "4 chiffres",
@@ -2766,11 +2850,53 @@
   "it": "5 minuti",
   "rm": "5 minutas"
  },
+ "5 V / 6 A über Pogo-Pins, Akku-Chip I2C 0x2D": {
+  "en": "5 V / 6 A through pogo pins, battery chip I2C 0x2D",
+  "fr": "5 V / 6 A par broches pogo, puce batterie I2C 0x2D",
+  "it": "5 V / 6 A tramite pin pogo, chip batteria I2C 0x2D",
+  "rm": "5 V / 6 A tras pins pogo, chip d'accu I2C 0x2D"
+ },
+ "5 V / GND": {
+  "en": "5 V / GND",
+  "fr": "5 V / GND",
+  "it": "5 V / GND",
+  "rm": "5 V / GND"
+ },
+ "5 V über Vorwiderstand 2 W": {
+  "en": "5 V through a series resistor 2 W",
+  "fr": "5 V par une résistance série 2 W",
+  "it": "5 V tramite resistenza in serie 2 W",
+  "rm": "5 V tras ina resistenza en seria 2 W"
+ },
+ "5 V → Klemme V+ / GND des PCA9685, Elko 470 µF an V+": {
+  "en": "5 V → terminal V+ / GND of the PCA9685, capacitor 470 µF at V+",
+  "fr": "5 V → borne V+ / GND du PCA9685, condensateur 470 µF sur V+",
+  "it": "5 V → morsetto V+ / GND del PCA9685, condensatore 470 µF su V+",
+  "rm": "5 V → clemma V+ / GND dal PCA9685, condensatur 470 µF vi da V+"
+ },
+ "5 V → USB-C des Pi 5 direkt": {
+  "en": "5 V → USB-C of the Pi 5 directly",
+  "fr": "5 V → USB-C du Pi 5 directement",
+  "it": "5 V → USB-C del Pi 5 direttamente",
+  "rm": "5 V → USB-C dal Pi 5 directamain"
+ },
+ "5 V → USB-C-Stecker (56 kΩ auf CC) → USB-C des UPS HAT (E)": {
+  "en": "5 V → USB-C plug (56 kΩ on CC) → USB-C of the UPS HAT (E)",
+  "fr": "5 V → fiche USB-C (56 kΩ sur CC) → USB-C de la UPS HAT (E)",
+  "it": "5 V → spina USB-C (56 kΩ su CC) → USB-C della UPS HAT (E)",
+  "rm": "5 V → stecker USB-C (56 kΩ sin CC) → USB-C da l'UPS HAT (E)"
+ },
  "8 Minuten": {
   "en": "8 minutes",
   "fr": "8 minutes",
   "it": "8 minuti",
   "rm": "8 minutas"
+ },
+ "850 nm statt 940 nm (NoIR sieht es besser)": {
+  "en": "850 nm instead of 940 nm (NoIR sees it better)",
+  "fr": "850 nm au lieu de 940 nm (NoIR le voit mieux)",
+  "it": "850 nm invece di 940 nm (NoIR lo vede meglio)",
+  "rm": "850 nm empè da 940 nm (NoIR vesa meglier)"
  },
  ": in die Welt ziehen, oder anklicken und in die Welt klicken": {
   "en": ": drag into the world, or click and click into the world",
@@ -2977,6 +3103,12 @@
   "it": "Allineamento azzerato",
   "rm": "Adattaziun reinizialisada"
  },
+ "Abgriff des Step-Downs am Akkupaket des UPS HAT (E) nicht beschrieben": {
+  "en": "where the step-down takes power from the battery pack of the UPS HAT (E) is not described",
+  "fr": "le point de prise de l'abaisseur sur le pack de la UPS HAT (E) n'est pas décrit",
+  "it": "il punto di prelievo dello step-down sul pacco della UPS HAT (E) non è descritto",
+  "rm": "nua ch'il step-down prenda il current dal pachet d'accus da l'UPS HAT (E) n'è betg descrit"
+ },
  "Abhaken": {
   "en": "Tick off",
   "fr": "Cocher",
@@ -3018,6 +3150,12 @@
   "fr": "Déroulements",
   "it": "Sequenze",
   "rm": "Process"
+ },
+ "Abnutzung der Karte (Selbstdiagnose); Sicherung machen, Ersatzkarte bereithalten.": {
+  "en": "wear of the card (self-diagnosis); make a backup, keep a spare card.",
+  "fr": "usure de la carte (autodiagnostic) ; faire une sauvegarde, garder une carte de rechange.",
+  "it": "usura della scheda (autodiagnosi); fare un backup, tenere una scheda di ricambio.",
+  "rm": "consum da la carta (autodiagnosa); far ina copia, tegnair ina carta da reserva."
  },
  "Abschnitt": {
   "en": "Part",
@@ -3181,6 +3319,12 @@
   "it": "Attenzione: «%s» ricomincia da capo in questa partita (%d %% fatto). Livello e distintivi restano. Una partita vuota conserva tutto.",
   "rm": "Attenziun: «%s» cumenza da nov en quest stadi dal gieu (%d %% èn reussids). Stgalim ed insignas restan. In stadi vid tegna tut."
  },
+ "Adafruit 2348": {
+  "en": "Adafruit 2348",
+  "fr": "Adafruit 2348",
+  "it": "Adafruit 2348",
+  "rm": "Adafruit 2348"
+ },
  "Adafruit 815": {
   "en": "Adafruit 815",
   "fr": "Adafruit 815",
@@ -3265,6 +3409,24 @@
   "it": "Esercitarsi con guasti di batteria, meteo e Wi-Fi",
   "rm": "Exercitar panna d’accu, aura e WLAN"
  },
+ "Akkus 21700": {
+  "en": "21700 cells",
+  "fr": "Cellules 21700",
+  "it": "Celle 21700",
+  "rm": "Cellas 21700"
+ },
+ "Akkus 21700 sind ungeschützt: nie kurzschliessen, Polung prüfen, 4 gleiche Zellen gleicher Ladung, beschädigte Zellen nicht verwenden, nicht unbeaufsichtigt laden.": {
+  "en": "The 21700 cells are unprotected: never short them, check the polarity, 4 equal cells with the same charge, do not use damaged cells, do not charge unattended.",
+  "fr": "Les cellules 21700 sont non protégées : jamais de court-circuit, vérifier la polarité, 4 cellules identiques de même charge, pas de cellules abîmées, ne pas charger sans surveillance.",
+  "it": "Le celle 21700 non sono protette: mai cortocircuitarle, controllare la polarità, 4 celle uguali con la stessa carica, niente celle danneggiate, non caricare senza sorveglianza.",
+  "rm": "Las cellas 21700 n'èn betg protegidas: mai far curtcircuit, controllar la polaritad, 4 cellas egualas cun la medema chargia, betg duvrar cellas donnegiadas, betg chargiar senza survegliar."
+ },
+ "Akustikschaum": {
+  "en": "Akustikschaum",
+  "fr": "Akustikschaum",
+  "it": "Akustikschaum",
+  "rm": "Akustikschaum"
+ },
  "Alarm": {
   "en": "Alarm",
   "fr": "Alarme",
@@ -3336,6 +3498,18 @@
   "fr": "Imprimer les 11 pièces en PETG sans supports : plateau A (partie inférieure, plancher, bouchon, pieds) et plateau B (couvercle et tout pour la tête). Tête, fourche et couvercle latéral avec une bordure de 5 mm.",
   "it": "Stampare tutti gli 11 pezzi in PETG senza supporti: piatto A (parte inferiore, ripiano, tappo, piedini) e piatto B (coperchio e tutto per la testa). Testa, forcella e coperchio laterale con brim di 5 mm.",
   "rm": "Stampar tut las 11 parts en PETG senza sustegns: platta A (part sut, palantschieu, zaffer, peis) e platta B (viertgel e tut per il chau). Chau, furtga e viertgel lateral cun in ur da 5 mm."
+ },
+ "alle 3 Monate, jährlich ersetzen prüfen": {
+  "en": "every 3 months, check replacement yearly",
+  "fr": "tous les 3 mois, remplacement à vérifier chaque année",
+  "it": "ogni 3 mesi, sostituzione da valutare ogni anno",
+  "rm": "mintga 3 mais, controllar mintga onn da remplazzar"
+ },
+ "alle 6 Monate": {
+  "en": "every 6 months",
+  "fr": "tous les 6 mois",
+  "it": "ogni 6 mesi",
+  "rm": "mintga 6 mais"
  },
  "Alle Abläufe nacheinander": {
   "en": "All runs one after the other",
@@ -3523,6 +3697,18 @@
   "it": "Tutti i tasti",
   "rm": "Tut las tastas"
  },
+ "Alle Teile sind schon richtig gedreht und brauchen keine Stützen.": {
+  "en": "All parts are already turned the right way and need no supports.",
+  "fr": "Toutes les pièces sont déjà bien orientées et sans supports.",
+  "it": "Tutti i pezzi sono già orientati bene e senza supporti.",
+  "rm": "Tut las parts èn gia drizzadas endretg e senza sustegns."
+ },
+ "Alle Verbindungen": {
+  "en": "All connections",
+  "fr": "Toutes les liaisons",
+  "it": "Tutti i collegamenti",
+  "rm": "Tut las colliaziuns"
+ },
  "Alle vier Jahreszeiten mit allen Stationen und das Finale – so wie ein Spieler (lang).": {
   "en": "All four seasons with all stations and the finale – like a player (long).",
   "fr": "Les quatre saisons avec toutes les étapes et la finale – comme un joueur (long).",
@@ -3642,6 +3828,12 @@
   "fr": "Tout sous «Plus» dans le panneau",
   "it": "Tutto sotto «Altro» nel pannello",
   "rm": "Tut sut «Dapli» en la panela"
+ },
+ "Alles zum Selberbauen: 3D, Teile, Einkauf, Drucken, Montage, Verkabeln, Software": {
+  "en": "Everything to build it yourself: 3D, parts, shopping, printing, assembly, wiring, software",
+  "fr": "Tout pour le construire soi-même : 3D, pièces, achats, impression, montage, câblage, logiciel",
+  "it": "Tutto per costruirlo da sé: 3D, pezzi, acquisti, stampa, montaggio, cablaggio, software",
+  "rm": "Tut per al construir sez: 3D, parts, cumpras, stampar, muntadi, cablar, software"
  },
  "Alltag: E-Trottinett, Rollstuhl, Lieferroboter und Mähroboter kommen ab und zu von selbst": {
   "en": "Everyday life: e-scooter, wheelchair, delivery robot and robot mower come by themselves now and then",
@@ -3834,6 +4026,12 @@
   "fr": "Ancien chemin muletier\nIci, des mulets portaient sel, vin et fromage par-dessus le col.",
   "it": "Antica mulattiera\nQui i muli portavano sale, vino e formaggio oltre il passo.",
   "rm": "Vegl traject da sumaders\nQua purtavan mils sal, vin e chaschiel sur il pass."
+ },
+ "Alternative": {
+  "en": "Alternative",
+  "fr": "Alternative",
+  "it": "Alternativa",
+  "rm": "Alternativa"
  },
  "Altes Holz trägt, wenn man das Gewicht langsam verlagert. Wer rennt oder springt, drückt viel stärker auf ein einzelnes Brett.": {
   "en": "Old wood holds if you shift your weight slowly. Running or jumping presses much harder on a single board.",
@@ -4140,6 +4338,12 @@
   "fr": "À la corde à travers le ressaut rocheux",
   "it": "Con la corda attraverso il salto di roccia",
   "rm": "Vi da la suga tras il scalin da grip"
+ },
+ "am selben I2C wie der PCA9685: BME280 0x76 / 0x77 · MPU-6050 0x68 · INA219 0x44 (optional, Solar)": {
+  "en": "on the same I2C as the PCA9685: BME280 0x76 / 0x77 · MPU-6050 0x68 · INA219 0x44 (optional, solar)",
+  "fr": "sur le même I2C que le PCA9685 : BME280 0x76 / 0x77 · MPU-6050 0x68 · INA219 0x44 (option, solaire)",
+  "it": "sullo stesso I2C del PCA9685: BME280 0x76 / 0x77 · MPU-6050 0x68 · INA219 0x44 (opzionale, solare)",
+  "rm": "sin il medem I2C sco il PCA9685: BME280 0x76 / 0x77 · MPU-6050 0x68 · INA219 0x44 (opziunal, solar)"
  },
  "Am Strand liegt eine Flasche mit einem Zettel – eine Schatzkarte zum Aussichtspunkt.": {
   "en": "A bottle with a note lies on the beach – a treasure map to the viewpoint.",
@@ -4513,6 +4717,12 @@
   "it": "Sulla riva del Gumpisee",
   "rm": "A la riva dal Gumpisee"
  },
+ "Anschluss CAM0 nur aus der Doku v5.2 abgeleitet (Weitwinkel = CAM1)": {
+  "en": "port CAM0 only derived from the v5.2 docs (wide angle = CAM1)",
+  "fr": "port CAM0 seulement déduit de la doc v5.2 (grand-angle = CAM1)",
+  "it": "porta CAM0 dedotta solo dalla doc v5.2 (grandangolo = CAM1)",
+  "rm": "port CAM0 mo deducì da la documentaziun v5.2 (grondangul = CAM1)"
+ },
  "Ansicht": {
   "en": "View",
   "fr": "Affichage",
@@ -4620,6 +4830,12 @@
   "fr": "réponse trop grande",
   "it": "risposta troppo grande",
   "rm": "resposta memia gronda"
+ },
+ "Anzahl und Länge nicht angegeben": {
+  "en": "number and length not given",
+  "fr": "nombre et longueur non indiqués",
+  "it": "numero e lunghezza non indicati",
+  "rm": "dumber e lunghezza betg indicads"
  },
  "Anzeige": {
   "en": "Display",
@@ -5161,6 +5377,12 @@
   "it": "USCITA",
   "rm": "SORTIDA"
  },
+ "Ausgang L+ / L− → Lautsprecher 4 Ω": {
+  "en": "output L+ / L− → loudspeaker 4 Ω",
+  "fr": "sortie L+ / L− → haut-parleur 4 Ω",
+  "it": "uscita L+ / L− → altoparlante 4 Ω",
+  "rm": "sortida L+ / L− → autpledader 4 Ω"
+ },
  "Ausgebüxt!": {
   "en": "Runaway!",
   "fr": "En fugue !",
@@ -5262,6 +5484,12 @@
   "fr": "Équipement trouvé : %s",
   "it": "Attrezzatura trovata: %s",
   "rm": "Equipament chattà: %s"
+ },
+ "Aussenseite": {
+  "en": "outer side",
+  "fr": "face extérieure",
+  "it": "lato esterno",
+  "rm": "vart externa"
  },
  "Ausserhalb des Tals.": {
   "en": "Outside the valley.",
@@ -5557,6 +5785,12 @@
   "it": "Bambu PETG HF",
   "rm": "Bambu PETG HF"
  },
+ "Bambu Studio: Drucker «Bambu Lab X2D», Profil «Bambu PETG HF», 0,20 mm Standard; die 3MF-Dateien öffnen und die Werte dieser Tabelle setzen.": {
+  "en": "Bambu Studio: printer «Bambu Lab X2D», profile «Bambu PETG HF», 0.20 mm standard; open the 3MF files and set the values of this table.",
+  "fr": "Bambu Studio : imprimante «Bambu Lab X2D», profil «Bambu PETG HF», 0,20 mm standard ; ouvrir les 3MF et régler les valeurs du tableau.",
+  "it": "Bambu Studio: stampante «Bambu Lab X2D», profilo «Bambu PETG HF», 0,20 mm standard; aprire i 3MF e impostare i valori della tabella.",
+  "rm": "Bambu Studio: stampader «Bambu Lab X2D», profil «Bambu PETG HF», 0,20 mm standard; avrir ils 3MF e metter las valurs da la tabella."
+ },
  "Banane": {
   "en": "Banana",
   "fr": "Banane",
@@ -5640,6 +5874,18 @@
   "fr": "Piles",
   "it": "Batterie",
   "rm": "Battarias"
+ },
+ "Bauen": {
+  "en": "Build yourself",
+  "fr": "Construire",
+  "it": "Costruire",
+  "rm": "Construir"
+ },
+ "Bauen – Gehäuse v%s": {
+  "en": "Build – case v%s",
+  "fr": "Construire – boîtier v%s",
+  "it": "Costruire – custodia v%s",
+  "rm": "Construir – chascha v%s"
  },
  "Bauer mäht mit dem Traktor": {
   "en": "Farmer mows with the tractor",
@@ -6018,6 +6264,12 @@
   "fr": "La première fois, tu choisis toi-même le mot de passe. Seule une empreinte chiffrée (hash) est enregistrée sur ce PC – jamais le mot de passe lui-même.",
   "it": "La prima volta scegli tu la password. Su questo PC viene salvata solo un'impronta cifrata (hash) – mai la password stessa.",
   "rm": "L'emprima giada fixeschas ti sez il pled-clav. Memorisà vegn mo in improntament criptà (hash) sin quest PC – mai il pled-clav sez."
+ },
+ "Beim ersten Öffnen führt der Assistent durch Sprache, Name, Push und Schutz. Später: Live → «🧭 Einrichtungs-Assistent».": {
+  "en": "At the first visit the assistant guides through language, name, push and protection. Later: Live → «🧭 Setup assistant».",
+  "fr": "À la première visite l'assistant guide : langue, nom, push et protection. Plus tard : Direct → «🧭 Assistant».",
+  "it": "Alla prima visita l'assistente guida: lingua, nome, push e protezione. Più tardi: Live → «🧭 Assistente».",
+  "rm": "A l'emprima visita maina l'assistent tras lingua, num, push e protecziun. Pli tard: Live → «🧭 Assistent»."
  },
  "Beim Hofladen (Kasse des Vertrauens)": {
   "en": "At the farm shop (honesty till)",
@@ -6535,6 +6787,12 @@
   "it": "nuvoloso",
   "rm": "nivlus"
  },
+ "Bezeichnung": {
+  "en": "Name",
+  "fr": "Désignation",
+  "it": "Descrizione",
+  "rm": "Designaziun"
+ },
  "Bienenkasten": {
   "en": "Beehive",
   "fr": "Ruche",
@@ -6961,6 +7219,12 @@
   "it": "Prato fiorito",
   "rm": "Prà cun flurs"
  },
+ "Boden": {
+  "en": "bottom",
+  "fr": "fond",
+  "it": "fondo",
+  "rm": "fund"
+ },
  "Boden flach genug (%d°).": {
   "en": "Ground flat enough (%d°).",
   "fr": "Sol assez plat (%d°).",
@@ -7098,6 +7362,12 @@
   "fr": "il faut une tente",
   "it": "serve una tenda",
   "rm": "dovra ina tenda"
+ },
+ "braucht einen dritten MOSFET-Kanal – die Materialliste hat ein 2-Kanal-Modul": {
+  "en": "needs a third MOSFET channel – the parts list has a 2-channel module",
+  "fr": "il faut un troisième canal MOSFET – la liste a un module à 2 canaux",
+  "it": "serve un terzo canale MOSFET – la distinta ha un modulo a 2 canali",
+  "rm": "basegna in terz chanal MOSFET – la glista ha in modul cun 2 chanals"
  },
  "Braun": {
   "en": "Brown",
@@ -7351,11 +7621,29 @@
   "it": "C-Media CM108",
   "rm": "C-Media CM108"
  },
+ "ca. %s h": {
+  "en": "about %s h",
+  "fr": "env. %s h",
+  "it": "circa %s h",
+  "rm": "ca. %s h"
+ },
  "CAFFÈ": {
   "en": "CAFFÈ",
   "fr": "CAFFÈ",
   "it": "CAFFÈ",
   "rm": "CAFFÈ"
+ },
+ "CAM0, Kabel 22→15-polig 500 mm, Kontakte zur Platine": {
+  "en": "CAM0, cable 22→15 pin 500 mm, contacts towards the board",
+  "fr": "CAM0, câble 22→15 broches 500 mm, contacts vers la carte",
+  "it": "CAM0, cavo 22→15 pin 500 mm, contatti verso la scheda",
+  "rm": "CAM0, cabel 22→15 pols 500 mm, contacts vers la platina"
+ },
+ "CAM1, Kabel 22→15-polig 200 mm, in MoveEye «Raspberry Pi camera 1»": {
+  "en": "CAM1, cable 22→15 pin 200 mm, in MoveEye «Raspberry Pi camera 1»",
+  "fr": "CAM1, câble 22→15 broches 200 mm, dans MoveEye «Raspberry Pi camera 1»",
+  "it": "CAM1, cavo 22→15 pin 200 mm, in MoveEye «Raspberry Pi camera 1»",
+  "rm": "CAM1, cabel 22→15 pols 200 mm, en MoveEye «Raspberry Pi camera 1»"
  },
  "Camera Module 3 NoIR": {
   "en": "Camera Module 3 NoIR",
@@ -7639,6 +7927,18 @@
   "fr": "Crêpes",
   "it": "Crêpes",
   "rm": "Crêpes"
+ },
+ "CSV gespeichert: %s": {
+  "en": "CSV saved: %s",
+  "fr": "CSV enregistré : %s",
+  "it": "CSV salvato: %s",
+  "rm": "CSV memorisà: %s"
+ },
+ "CSV in die Zwischenablage": {
+  "en": "CSV to the clipboard",
+  "fr": "CSV dans le presse-papiers",
+  "it": "CSV negli appunti",
+  "rm": "CSV en la tabla d'intermediar"
  },
  "Da gibt es etwas für MoveEyes Kamera – %s%s. Dreh den Kopf und mach ein Foto.": {
   "en": "There is something for MoveEye’s camera – %s%s. Turn the head and take a photo.",
@@ -8648,6 +8948,12 @@
   "it": "Il tuo messaggio …",
   "rm": "Tes messadi …"
  },
+ "Deine Variante": {
+  "en": "Your variant",
+  "fr": "Ta variante",
+  "it": "La tua variante",
+  "rm": "Tia variante"
+ },
  "Dem Bach entlang abwärts": {
   "en": "Down along the stream",
   "fr": "Le long du ruisseau vers le bas",
@@ -8677,6 +8983,12 @@
   "fr": "Réparer la vieille passerelle du Riedmoos (pièce de rechange, 15 min) - puis pieds secs",
   "it": "Riparare la vecchia passerella nel Riedmoos (pezzo di ricambio, 15 min) - poi piedi asciutti",
   "rm": "Reparar la veglia punt da lain en il Riedmoos (toc da reserva, 15 min.) - lura pes sitgs"
+ },
+ "Den Ausgang jedes Step-Down-Wandlers zuerst ohne Last messen (5,0–5,2 V), erst dann Pi, Servos oder Verstärker anschliessen. Nie unter Strom verkabeln.": {
+  "en": "Measure the output of every step-down converter without load first (5.0–5.2 V), only then connect the Pi, servos or amplifier. Never wire while powered.",
+  "fr": "Mesurer d'abord la sortie de chaque abaisseur à vide (5,0–5,2 V), seulement ensuite brancher le Pi, les servos ou l'ampli. Jamais câbler sous tension.",
+  "it": "Misurare prima l'uscita di ogni step-down a vuoto (5,0–5,2 V), solo dopo collegare Pi, servo o amplificatore. Mai cablare sotto tensione.",
+  "rm": "Mesirar l'emprim la sortida da mintga step-down senza chargia (5,0–5,2 V), pir lura attaccar il Pi, ils servos u l'amplificatur. Mai cablar sut current."
  },
  "Den Bergführer? Die Leute im Tal reden mit Respekt von ihm. Und der Hut steht dir!": {
   "en": "The mountain guide? People in the valley speak of him with respect. And the hat suits you!",
@@ -9620,6 +9932,12 @@
   "it": "Dicembre",
   "rm": "December"
  },
+ "DFRobot-Kühler (Bastelgarage 423487) passt": {
+  "en": "DFRobot cooler (Bastelgarage 423487) fits",
+  "fr": "refroidisseur DFRobot (Bastelgarage 423487) convient",
+  "it": "dissipatore DFRobot (Bastelgarage 423487) va bene",
+  "rm": "refreidader DFRobot (Bastelgarage 423487) va"
+ },
  "Diagnose-Paket (MoveEye)": {
   "en": "Diagnosis package (MoveEye)",
   "fr": "Paquet de diagnostic (MoveEye)",
@@ -9649,6 +9967,12 @@
   "fr": "Forêt dense, beaucoup d’animaux sauvages",
   "it": "Bosco fitto, molti animali selvatici",
   "rm": "Guaud spess, blers animals selvadis"
+ },
+ "Dichtungen, Deckel, Stopfen": {
+  "en": "Seals, lid, plug",
+  "fr": "Joints, couvercle, bouchon",
+  "it": "Guarnizioni, coperchio, tappo",
+  "rm": "Tegnidas, viertgel, cluchet"
  },
  "Die alte Seilbahn": {
   "en": "The old cable way",
@@ -10093,6 +10417,12 @@
   "fr": "la glacière",
   "it": "la borsa frigo",
   "rm": "la chista da fraid"
+ },
+ "Die Ladebuchse GX16 hat keinen Verpolungsschutz: Polung des Steckers vor dem ersten Einstecken mit dem Multimeter messen. Die Sicherung 5 A direkt hinter die Buchse.": {
+  "en": "The GX16 charging socket has no reverse polarity protection: measure the plug polarity with the multimeter before plugging in. Put the 5 A fuse right behind the socket.",
+  "fr": "La prise GX16 n'a pas de protection contre l'inversion : mesurer la polarité de la fiche avant de brancher. Le fusible 5 A juste derrière la prise.",
+  "it": "La presa GX16 non ha protezione contro l'inversione: misurare la polarità della spina prima di collegare. Il fusibile 5 A subito dietro la presa.",
+  "rm": "La bischla GX16 n'ha nagina protecziun cunter polaritad faussa: mesirar la polaritad avant che attaccar. La segirezza 5 A directamain davos la bischla."
  },
  "Die Laterne in der Gletscherspalte": {
   "en": "The lantern in the crevasse",
@@ -11049,6 +11379,12 @@
   "it": "girare (15°)",
   "rm": "volver (15°)"
  },
+ "Drehlager (Kugeln)": {
+  "en": "Turntable bearing (BBs)",
+  "fr": "Roulement (billes)",
+  "it": "Cuscinetto (pallini)",
+  "rm": "Cuschinet (ballinas)"
+ },
  "Drei Dohlen landen neben dir und schauen in deinen Rucksack.": {
   "en": "Three choughs land next to you and look into your backpack.",
   "fr": "Trois chocards se posent à côté de toi et regardent dans ton sac.",
@@ -11109,6 +11445,30 @@
   "it": "File di stampa: %s",
   "rm": "Datoteca da stampa: %s"
  },
+ "Druckdateien v5.2 fehlen": {
+  "en": "print files v5.2 missing",
+  "fr": "fichiers v5.2 manquants",
+  "it": "mancano i file v5.2",
+  "rm": "datotecas v5.2 mancan"
+ },
+ "Drucken": {
+  "en": "Printing",
+  "fr": "Impression",
+  "it": "Stampa",
+  "rm": "Stampar"
+ },
+ "Druckzeit": {
+  "en": "Print time",
+  "fr": "Durée d'impression",
+  "it": "Tempo di stampa",
+  "rm": "Temp da stampa"
+ },
+ "Druckzeit: Schätzung, im Slicer nachsehen.": {
+  "en": "Print time: an estimate, check it in the slicer.",
+  "fr": "Durée : estimation, à vérifier dans le slicer.",
+  "it": "Tempo di stampa: stima, controllare nello slicer.",
+  "rm": "Temp da stampa: stimaziun, guardar en il slicer."
+ },
  "Drüben!": {
   "en": "Across!",
   "fr": "De l'autre côté !",
@@ -11120,6 +11480,18 @@
   "fr": "Appuie sur K pour regarder dans le cristal – il te montre un danger ou un chemin.",
   "it": "Premi K per guardare nel cristallo – ti mostra un pericolo o una strada.",
   "rm": "Smatga K per guardar en il cristal – el ta mussa lura in privel u ina via."
+ },
+ "DS18B20": {
+  "en": "DS18B20",
+  "fr": "DS18B20",
+  "it": "DS18B20",
+  "rm": "DS18B20"
+ },
+ "DS18B20 wasserdicht": {
+  "en": "DS18B20 wasserdicht",
+  "fr": "DS18B20 wasserdicht",
+  "it": "DS18B20 wasserdicht",
+  "rm": "DS18B20 wasserdicht"
  },
  "DS18B20 Ø 6 mm": {
   "en": "DS18B20 Ø 6 mm",
@@ -11888,6 +12260,12 @@
   "fr": "Un écureuil cherche des noix.",
   "it": "Uno scoiattolo cerca noci.",
   "rm": "In squirel tschertga nuschs."
+ },
+ "Ein fertiges Slicer-Profil liegt nicht bei: es müsste in Bambu Studio erstellt und am X2D getestet werden.": {
+  "en": "No ready slicer profile is included: it would have to be made in Bambu Studio and tested on the X2D.",
+  "fr": "Aucun profil de slicer fourni : il faudrait le créer dans Bambu Studio et le tester sur la X2D.",
+  "it": "Nessun profilo slicer pronto: andrebbe creato in Bambu Studio e provato sulla X2D.",
+  "rm": "Nagin profil da slicer: el stuess vegnir fatg en Bambu Studio e testà vi da la X2D."
  },
  "Ein Fotograf mit Stativ": {
   "en": "A photographer with a tripod",
@@ -12939,6 +13317,12 @@
   "it": "Icone degli eventi uniformi",
   "rm": "Simbols d’eveniments unitars"
  },
+ "Einkauf": {
+  "en": "Shopping",
+  "fr": "Achats",
+  "it": "Acquisti",
+  "rm": "Cumpras"
+ },
  "Einklappen / aufklappen": {
   "en": "Collapse / expand",
   "fr": "Replier / déplier",
@@ -13017,6 +13401,12 @@
   "it": "Impostazioni",
   "rm": "Parameters"
  },
+ "Einstellungen → Licht & Ton: Licht weiss auf PCA9685 Kanal 2, Infrarot auf Kanal 3 stellen, dann Licht und Sirene kurz testen.": {
+  "en": "Settings → Light & sound: set white light to PCA9685 channel 2, infrared to channel 3, then test light and siren briefly.",
+  "fr": "Réglages → Lumière et son : lumière blanche sur le canal 2 du PCA9685, infrarouge sur le canal 3, puis tester brièvement.",
+  "it": "Impostazioni → Luce e suono: luce bianca sul canale 2 del PCA9685, infrarosso sul canale 3, poi provare brevemente.",
+  "rm": "Parameters → Glisch e tun: glisch alva sin il chanal 2 dal PCA9685, infracotschen sin il chanal 3, lura testar curt."
+ },
  "Einstellungen → System → Gerät & Hilfe": {
   "en": "Settings → System → Device & help",
   "fr": "Réglages → Système → Appareil et aide",
@@ -13052,6 +13442,12 @@
   "fr": "Éléphant",
   "it": "Elefante",
   "rm": "Elefant"
+ },
+ "Elko 1000uF 25V": {
+  "en": "Elko 1000uF 25V",
+  "fr": "Elko 1000uF 25V",
+  "it": "Elko 1000uF 25V",
+  "rm": "Elko 1000uF 25V"
  },
  "Elko 470 µF / 10 V": {
   "en": "Electrolytic capacitor 470 µF / 10 V",
@@ -13594,6 +13990,12 @@
   "it": "Prima notte – La campana senza mucca",
   "rm": "Emprima notg – La stgella senza vatga"
  },
+ "Erste Testnacht": {
+  "en": "First test night",
+  "fr": "Première nuit de test",
+  "it": "Prima notte di prova",
+  "rm": "Emprima notg da test"
+ },
  "Erstellt %s · Simulator %s%s · %d Runden · beobachtet seit %s\n\n": {
   "en": "Made %s · simulator %s%s · %d rounds · watched since %s\n\n",
   "fr": "Créé %s · simulateur %s%s · %d parties · observé depuis %s\n\n",
@@ -13605,6 +14007,12 @@
   "fr": "Premier push",
   "it": "Primo push",
   "rm": "Emprim push"
+ },
+ "Erster Start: Einrichtungs-Assistent": {
+  "en": "First start: setup assistant",
+  "fr": "Premier démarrage : assistant",
+  "it": "Primo avvio: assistente",
+  "rm": "Emprim aviar: assistent"
  },
  "Erwachsene": {
   "en": "Adults",
@@ -13792,6 +14200,12 @@
   "it": "Tavolo da pranzo",
   "rm": "Maisa da mangiar"
  },
+ "eSun PETG (Bastelgarage 421203)": {
+  "en": "eSun PETG (Bastelgarage 421203)",
+  "fr": "eSun PETG (Bastelgarage 421203)",
+  "it": "eSun PETG (Bastelgarage 421203)",
+  "rm": "eSun PETG (Bastelgarage 421203)"
+ },
  "Etappensieg": {
   "en": "Stage win",
   "fr": "Victoire d'étape",
@@ -13954,6 +14368,18 @@
   "it": "Vista del conducente",
   "rm": "Vista dal manischunz"
  },
+ "Fahrwerk und Befestigung noch nicht festgelegt": {
+  "en": "chassis and mounting not decided yet",
+  "fr": "châssis et fixation pas encore définis",
+  "it": "telaio e fissaggio non ancora definiti",
+  "rm": "chassis e fixaziun anc betg fixads"
+ },
+ "Fahrwerk, Motorstrom und Befestigung des Gehäuses (Stativmutter 1/4\") noch offen": {
+  "en": "chassis, motor power and mounting of the case (tripod nut 1/4\") still open",
+  "fr": "châssis, alimentation des moteurs et fixation du boîtier (écrou 1/4\") encore ouverts",
+  "it": "telaio, alimentazione dei motori e fissaggio della custodia (dado 1/4\") ancora aperti",
+  "rm": "chassis, current dals motors e fixaziun da la chascha (mutter 1/4\") anc avert"
+ },
  "Fahrzeug (Bewegung)": {
   "en": "Vehicle (movement)",
   "fr": "Véhicule (mouvement)",
@@ -14073,6 +14499,12 @@
   "fr": "Classement de la famille",
   "it": "Classifica di famiglia",
   "rm": "Glista dals megliers da la famiglia"
+ },
+ "FAN-Anschluss des Pi 5 (4-polig JST)": {
+  "en": "FAN connector of the Pi 5 (4-pin JST)",
+  "fr": "connecteur FAN du Pi 5 (JST 4 broches)",
+  "it": "connettore FAN del Pi 5 (JST 4 pin)",
+  "rm": "attach FAN dal Pi 5 (JST 4 pols)"
  },
  "Farben des Bedienfelds wie in MoveEye: Hell → Rotlicht → Dunkel (Rotlicht für die Nacht im Zelt)": {
   "en": "Colours of the panel like in MoveEye: light → red light → dark (red light for the night in the tent)",
@@ -14309,6 +14741,12 @@
   "it": "Errori, desideri, lodi, domande – anonimo",
   "rm": "Sbagls, giavischs, laud, dumondas – anonim"
  },
+ "Fehlersuche": {
+  "en": "Troubleshooting",
+  "fr": "Dépannage",
+  "it": "Risoluzione problemi",
+  "rm": "Tschertgar sbagls"
+ },
  "Fehlmeldungen (Rahmen ohne Person): %d": {
   "en": "False reports (box without a person): %d",
   "fr": "Fausses détections (cadre sans personne) : %d",
@@ -14506,6 +14944,12 @@
   "fr": "Parc de vacances : la vie selon l'heure (soirée grillade avec fumée et braises, nuit calme avec trajets aux WC à la lampe, tôt le matin joggeurs et camionnette du boulanger)",
   "it": "Parco vacanze: vita secondo l'ora (grigliata serale con fumo e brace, quiete notturna con passaggi al WC con torcia, al mattino presto jogger e furgone del panettiere)",
   "rm": "Parc da vacanzas: vita tenor l'ura (saira da grillar cun fim e burnida, ruaus da notg cun ir al WC cun glisch da maun, a bun'ura cursaders ed il char dal pancunesch)"
+ },
+ "Fermion 3W (Bastelgarage 421925)": {
+  "en": "Fermion 3W (Bastelgarage 421925)",
+  "fr": "Fermion 3W (Bastelgarage 421925)",
+  "it": "Fermion 3W (Bastelgarage 421925)",
+  "rm": "Fermion 3W (Bastelgarage 421925)"
  },
  "Fernbedienung": {
   "en": "Remote control",
@@ -14776,6 +15220,12 @@
   "fr": "Pare-feu (p. ex. ufw) : autoriser le port TCP entrant %d – «sudo ufw allow %d/tcp».",
   "it": "Firewall (p. es. ufw): consentire la porta TCP in entrata %d – «sudo ufw allow %d/tcp».",
   "rm": "Firewall (p. ex. ufw): permetter il port TCP entrant %d – «sudo ufw allow %d/tcp»."
+ },
+ "Flansch": {
+  "en": "flange",
+  "fr": "bride",
+  "it": "flangia",
+  "rm": "flansch"
  },
  "Flasche": {
   "en": "Bottle",
@@ -15473,6 +15923,12 @@
   "it": "piede slogato",
   "rm": "pe sturtì"
  },
+ "Fuss, Zapfen nach oben": {
+  "en": "foot, pin up",
+  "fr": "pied, tenon en haut",
+  "it": "piede, perno in alto",
+  "rm": "pe, tschep ensi"
+ },
  "Fussgängerbrücke": {
   "en": "Footbridge",
   "fr": "Passerelle",
@@ -15515,6 +15971,12 @@
   "it": "Asciugacapelli",
   "rm": "Fön"
  },
+ "Füllung": {
+  "en": "Infill",
+  "fr": "Remplissage",
+  "it": "Riempimento",
+  "rm": "Emplenida"
+ },
  "Fünf Kapitel. Ein Geheimnis. Deine Karte.": {
   "en": "Five chapters. One secret. Your map.",
   "fr": "Cinq chapitres. Un secret. Ta carte.",
@@ -15551,6 +16013,12 @@
   "it": "Per il telefonino senza Pi – e come aiuto di calcolo IA: il Pi fa calcolare il rilevamento a questo PC (più veloce, il Pi resta fresco). La prima volta vengono caricati Python, MoveEye e il modello IA (circa 170 MB, alcuni minuti). Windows chiede se Python può accedere alla rete: scegliere «Consenti».",
   "rm": "Per il telefonin senza Pi – e sco agid da calcular IA: il Pi lascha lura quintar l’identificaziun da quest PC (pli svelt, il Pi resta fraid). L’emprima giada vegnan chargiads Python, MoveEye ed il model IA (circa 170 MB, intginas minutas). Windows dumonda, sche Python dastga en la rait: tscherner «Permetter»."
  },
+ "Für den Deckel die Rille des Laufrings fein drucken (variable Schichthöhe 0,12–0,16 mm).": {
+  "en": "For the lid print the groove of the ring fine (variable layer height 0.12–0.16 mm).",
+  "fr": "Pour le couvercle, imprimer fin la rainure (hauteur de couche variable 0,12–0,16 mm).",
+  "it": "Per il coperchio stampare fine la scanalatura (altezza strato variabile 0,12–0,16 mm).",
+  "rm": "Per il viertgel stampar fin la foppa (autezza da strat variabla 0,12–0,16 mm)."
+ },
  "Für die Entwicklung: die normalen Knöpfe (Maggie, Schutzding, Kristall, Karten) bleiben sichtbar und leuchten auf, wenn der Autopilot sie drückt. Gilt auch für die Browser-Ansicht.": {
   "en": "For development: the normal buttons (Maggie, protective item, crystal, cards) stay visible and light up when the autopilot presses them. Also applies to the browser view.",
   "fr": "Pour le développement : les boutons normaux (Maggie, objet protecteur, cristal, cartes) restent visibles et s’allument quand le pilote automatique les presse. Vaut aussi pour la vue dans le navigateur.",
@@ -15568,6 +16036,12 @@
   "fr": "Pour la plus courageuse.",
   "it": "Per la più coraggiosa.",
   "rm": "Per la pli curaschusa."
+ },
+ "Für die Thermal-90: im Waveshare-Wiki «Thermal_Camera_Hat.zip» laden, im Ordner pysenxor-master installieren.": {
+  "en": "For the Thermal-90: load «Thermal_Camera_Hat.zip» from the Waveshare wiki, install it in the folder pysenxor-master.",
+  "fr": "Pour la Thermal-90 : télécharger «Thermal_Camera_Hat.zip» du wiki Waveshare, installer dans le dossier pysenxor-master.",
+  "it": "Per la Thermal-90: scaricare «Thermal_Camera_Hat.zip» dal wiki Waveshare, installare nella cartella pysenxor-master.",
+  "rm": "Per la Thermal-90: chargiar «Thermal_Camera_Hat.zip» dal wiki Waveshare, installar en l'ordinatur pysenxor-master."
  },
  "Für Kinder und kurze Runden: immer derselbe Parcours mit 3 Toren. Durch die Tore, dann ins Ziel – je schneller, desto mehr Punkte.": {
   "en": "For children and short rounds: always the same course with 3 gates. Through the gates, then to the goal – the faster, the more points.",
@@ -15640,6 +16114,18 @@
   "fr": "Monter la fourche",
   "it": "Montare la forcella",
   "rm": "Montar la furtga"
+ },
+ "Gabelboden": {
+  "en": "yoke base",
+  "fr": "base de la fourche",
+  "it": "base della forcella",
+  "rm": "fund da la furtga"
+ },
+ "Galaxus / Digitec": {
+  "en": "Galaxus / Digitec",
+  "fr": "Galaxus / Digitec",
+  "it": "Galaxus / Digitec",
+  "rm": "Galaxus / Digitec"
  },
  "Gang zum WC / zur Dusche (nachts mit Taschenlampe)": {
   "en": "Walk to the toilet / shower (at night with a torch)",
@@ -16062,6 +16548,12 @@
   "it": "così così",
   "rm": "uschè e uschè"
  },
+ "Gehäuse": {
+  "en": "Case",
+  "fr": "Boîtier",
+  "it": "Custodia",
+  "rm": "Chascha"
+ },
  "Gehäuse durchsichtig": {
   "en": "Case see-through",
   "fr": "Boîtier transparent",
@@ -16169,6 +16661,12 @@
   "fr": "Exactement ! Pour ça, je porte volontiers deux kilos de plus.",
   "it": "Esatto! Per questo porto volentieri due chili in più.",
   "rm": "Exact! Per quai port jau gugent dus kilos dapli."
+ },
+ "genaue Belegung des 10-poligen Kabels: Waveshare-Wiki, nicht mit dem echten Modul geprüft": {
+  "en": "exact pinout of the 10-pin cable: Waveshare wiki, not checked with the real module",
+  "fr": "brochage exact du câble 10 broches : wiki Waveshare, non vérifié avec le vrai module",
+  "it": "piedinatura esatta del cavo a 10 pin: wiki Waveshare, non verificata col modulo vero",
+  "rm": "occupaziun exacta dal cabel cun 10 pols: wiki Waveshare, betg verifitgà cun il modul vair"
  },
  "Geparktes Auto: Motor warm (eben angekommen, kühlt in 1–2 h ab)": {
   "en": "Parked car: engine warm (just arrived, cools down in 1–2 h)",
@@ -16337,6 +16835,12 @@
   "fr": "Des cailloux bloquent une petite niche. Quelque chose dépasse.",
   "it": "Dei sassi bloccano una piccola nicchia. Qualcosa spunta fuori.",
   "rm": "Grava bloccà ina pitschna nischa. Insatge guarda ora."
+ },
+ "Gesamt (Schätzung)": {
+  "en": "Total (estimate)",
+  "fr": "Total (estimation)",
+  "it": "Totale (stima)",
+  "rm": "Total (stimaziun)"
  },
  "Geschafft": {
   "en": "Done",
@@ -16788,6 +17292,12 @@
   "it": "Lastra di vetro tolta",
   "rm": "Vaider davent"
  },
+ "Glatte PEI-Platte: dünn Klebestift als Trennmittel (PETG haftet sonst zu stark); strukturierte PEI-Platte ohne.": {
+  "en": "Smooth PEI plate: a thin layer of glue stick as release agent (PETG sticks too hard otherwise); textured PEI plate without.",
+  "fr": "Plateau PEI lisse : fine couche de colle en bâton comme agent de démoulage ; plateau PEI texturé sans.",
+  "it": "Piatto PEI liscio: un velo di colla stick come distaccante; piatto PEI testurizzato senza.",
+  "rm": "Platta PEI glischa: in pau colla en pal sco separader; platta PEI structurada senza."
+ },
  "glb Version %d, Kopf unlesbar": {
   "en": "glb version %d, header unreadable",
   "fr": "glb version %d, en-tête illisible",
@@ -17123,6 +17633,18 @@
   "fr": "gris = stick brut · vert = après correction de dérive · anneau = zone morte %d %%",
   "it": "grigio = stick grezzo · verde = dopo la correzione della deriva · anello = zona morta %d %%",
   "rm": "grisch = stick crud · verd = suenter la correctura dal drift · rintg = zona morta %d %%"
+ },
+ "Gravity BME280": {
+  "en": "Gravity BME280",
+  "fr": "Gravity BME280",
+  "it": "Gravity BME280",
+  "rm": "Gravity BME280"
+ },
+ "Gravity INA219": {
+  "en": "Gravity INA219",
+  "fr": "Gravity INA219",
+  "it": "Gravity INA219",
+  "rm": "Gravity INA219"
  },
  "Griff": {
   "en": "Grab",
@@ -17556,11 +18078,23 @@
   "it": "Buongiorno. Gerber, insegnante in pensione. Ogni anno attraverso una volta questa valle.",
   "rm": "Bun di. Gerber, magister pensiunà. Jau viand mintga onn ina giada tras questa val."
  },
+ "GX12-3P": {
+  "en": "GX12-3P",
+  "fr": "GX12-3P",
+  "it": "GX12-3P",
+  "rm": "GX12-3P"
+ },
  "GX16 4-polig: Einbaubuchse + Stecker (Ladebuchse)": {
   "en": "GX16 4-pin: panel socket + plug (charging socket)",
   "fr": "GX16 4 broches : embase + fiche (prise de charge)",
   "it": "GX16 4 poli: presa da pannello + spina (presa di ricarica)",
   "rm": "GX16 4 pols: bischla + stecker (bischla da chargiar)"
+ },
+ "GX16-4P": {
+  "en": "GX16-4P",
+  "fr": "GX16-4P",
+  "it": "GX16-4P",
+  "rm": "GX16-4P"
  },
  "GX16-4P-Ladebuchse (Sicherung 5 A dahinter) und die Kabelverschraubung M12 für das Relais einschrauben, Lichtleiter der Lade-LED einsetzen. Den DS18B20 von unten durch das Bodenloch führen und abdichten.": {
   "en": "Screw in the GX16-4P charging socket (5 A fuse behind it) and the M12 cable gland for the relay, insert the light guide of the charging LED. Feed the DS18B20 through the floor hole from below and seal it.",
@@ -17904,6 +18438,12 @@
   "fr": "Gardien de la maison",
   "it": "Guardiano di casa",
   "rm": "Guardian da chasa"
+ },
+ "Heissklebepistole, Schrumpfschlauch und Heissluft (oder Feuerzeug)": {
+  "en": "Hot glue gun, heat shrink and hot air (or a lighter)",
+  "fr": "Pistolet à colle chaude, gaine thermo et air chaud (ou briquet)",
+  "it": "Pistola a colla a caldo, guaina e aria calda (o accendino)",
+  "rm": "Pistola da colla chauda, tub termoretractil ed aria chauda (u fiugader)"
  },
  "Hell": {
   "en": "Light",
@@ -18331,6 +18871,12 @@
   "it": "Aiuto negli enigmi (leggere la mappa, rilevamento, costellazione)",
   "rm": "Agid tar las enigmas (leger la charta, relevament, constellaziun)"
  },
+ "Hilfe öffnen": {
+  "en": "Open help",
+  "fr": "Ouvrir l'aide",
+  "it": "Apri l'aiuto",
+  "rm": "Avrir l'agid"
+ },
  "Hilfe, dieser Rundgang, Selbstdiagnose, Protokoll, Updates, Hell / Rotlicht / Dunkel, Rückmeldung an den Entwickler und «Über». Das «?» in der Leiste führt auch hierher. Viel Spass!": {
   "en": "Help, this tour, self-check, log, updates, light / red light / dark, feedback to the developer and «About». The «?» in the bar also leads here. Have fun!",
   "fr": "Aide, cette visite, autodiagnostic, journal, mises à jour, clair / lumière rouge / sombre, retour au développeur et «À propos». Le «?» dans la barre mène aussi ici. Amuse-toi bien !",
@@ -18528,6 +19074,12 @@
   "fr": "Remarque : la protection de MoveEye était désactivée – sans protection, pas de push.",
   "it": "Nota: la protezione di MoveEye era spenta – senza protezione non ci sono push.",
   "rm": "Remartga: la protecziun da MoveEye era deactivada – senza protecziun nagins push."
+ },
+ "Hinweise für den Bambu-Drucker": {
+  "en": "Notes for the Bambu printer",
+  "fr": "Conseils pour l'imprimante Bambu",
+  "it": "Note per la stampante Bambu",
+  "rm": "Indicaziuns per il stampader Bambu"
  },
  "Hinweise und Wetter von weitem sehen.": {
   "en": "See clues and weather from far away.",
@@ -19045,6 +19597,12 @@
   "it": "Idrante",
   "rm": "Idrant"
  },
+ "Händler": {
+  "en": "Shop",
+  "fr": "Magasin",
+  "it": "Negozio",
+  "rm": "Butia"
+ },
  "Hängebrücke": {
   "en": "Rope bridge",
   "fr": "Pont suspendu",
@@ -19237,6 +19795,12 @@
   "it": "Il guardiano spazza, il vento riporta tutto",
   "rm": "Il chasader scua, il vent bufa enavos"
  },
+ "I2C 0x60 · Motor M1 = links, M2 = rechts": {
+  "en": "I2C 0x60 · motor M1 = left, M2 = right",
+  "fr": "I2C 0x60 · moteur M1 = gauche, M2 = droite",
+  "it": "I2C 0x60 · motore M1 = sinistra, M2 = destra",
+  "rm": "I2C 0x60 · motor M1 = sanester, M2 = dretg"
+ },
  "I2C-Fehler": {
   "en": "I2C error",
   "fr": "Erreur I2C",
@@ -19248,6 +19812,12 @@
   "fr": "Erreur I2C (pas de réponse pendant 5 s)",
   "it": "Errore I2C (nessuna risposta per 5 s)",
   "rm": "Errur I2C (5 s nagina resposta)"
+ },
+ "I2C: BME280, MPU-6050, INA219": {
+  "en": "I2C: BME280, MPU-6050, INA219",
+  "fr": "I2C : BME280, MPU-6050, INA219",
+  "it": "I2C: BME280, MPU-6050, INA219",
+  "rm": "I2C: BME280, MPU-6050, INA219"
  },
  "Ich (PC)": {
   "en": "Me (PC)",
@@ -19417,6 +19987,12 @@
   "it": "Nel bivacco c'è un libro di capanna. Tra le ultime pagine: il quinto pezzo di mappa. Mostra un laghetto dietro la cresta e un sole esattamente in un varco nella roccia.",
   "rm": "En il bivac è in cudesch da chamona. Tranter las davosas paginas: il tschintgavel toc da charta. El mussa in pitschen lai davos la creesta ed in sulegl che stat exact en ina sfessa dal crap."
  },
+ "Im Browser http://<IP-des-Pi>:5000/ öffnen (eigenes WLAN des Pi: http://10.42.0.1:5000/) und gleich ein Web-Passwort festlegen. Der QR-Code unten führt auf diese Seite.": {
+  "en": "Open http://<IP of the Pi>:5000/ in the browser (own Wi-Fi of the Pi: http://10.42.0.1:5000/) and set a web password at once. The QR code below leads to this page.",
+  "fr": "Ouvrir http://<IP du Pi>:5000/ dans le navigateur (Wi-Fi propre du Pi : http://10.42.0.1:5000/) et définir tout de suite un mot de passe. Le code QR ci-dessous mène à cette page.",
+  "it": "Aprire http://<IP del Pi>:5000/ nel browser (Wi-Fi proprio del Pi: http://10.42.0.1:5000/) e impostare subito una password. Il codice QR qui sotto porta a questa pagina.",
+  "rm": "Avrir http://<IP dal Pi>:5000/ en il navigatur (WLAN agen dal Pi: http://10.42.0.1:5000/) e metter immediatamain in pled-clav. Il code QR sutvart maina sin questa pagina."
+ },
  "Im Bunker beim Pass soll es nachts ein Büro für Murmeltiere geben. Ich glaube kein Wort.": {
   "en": "They say there's an office for marmots in the bunker by the pass at night. I don't believe a word.",
   "fr": "Il paraît que dans le bunker près du col, il y a la nuit un bureau pour marmottes. Je n'en crois pas un mot.",
@@ -19543,6 +20119,12 @@
   "it": "Nella luce del cristallo vedi immagini del futuro …",
   "rm": "En la glisch dal cristal vesas ti maletgs da l’avegnir …"
  },
+ "Im Live-Bild prüfen, ob der Kopf geradeaus schaut und das Bild nicht gedreht ist; Fokus der Camera Module 3 ist automatisch.": {
+  "en": "Check in the live picture that the head looks straight ahead and the picture is not turned; the focus of the Camera Module 3 is automatic.",
+  "fr": "Vérifier dans l'image en direct que la tête regarde droit et que l'image n'est pas tournée ; la mise au point est automatique.",
+  "it": "Controllare nell'immagine live che la testa guardi dritto e che l'immagine non sia ruotata; la messa a fuoco è automatica.",
+  "rm": "Controllar en il maletg live ch'il chau guarda directamain e ch'il maletg n'è betg rotà; il focus è automatic."
+ },
  "Im Moment brauche ich nichts. Danke!": {
   "en": "I don't need anything right now. Thanks!",
   "fr": "Pour l'instant, je n'ai besoin de rien. Merci !",
@@ -19602,6 +20184,12 @@
   "fr": "Dans le vallon ouest se dresse une cabane en pierre au toit effondré.",
   "it": "Nella valle laterale ovest c’è una capanna di pietra con il tetto crollato.",
   "rm": "En la val laterala vest stat ina tegia da crap cun tetg crudà."
+ },
+ "Im Simulator gespeichert (auf diesem Rechner).": {
+  "en": "Saved in the simulator (on this computer).",
+  "fr": "Enregistré dans le simulateur (sur cet ordinateur).",
+  "it": "Salvato nel simulatore (su questo computer).",
+  "rm": "Memorisà en il simulatur (sin quest computer)."
  },
  "Im Sommer am Rand des Wyssgletschers, beim Gletscherweg: etwas Braunes im Eis.": {
   "en": "In summer at the edge of the Wyssgletscher, by the glacier path: something brown in the ice.",
@@ -19981,11 +20569,23 @@
   "it": "tra circa",
   "rm": "en var"
  },
+ "IN GPIO 22 (Pin 15) · VCC 5 V · GND": {
+  "en": "IN GPIO 22 (pin 15) · VCC 5 V · GND",
+  "fr": "IN GPIO 22 (broche 15) · VCC 5 V · GND",
+  "it": "IN GPIO 22 (pin 15) · VCC 5 V · GND",
+  "rm": "IN GPIO 22 (pin 15) · VCC 5 V · GND"
+ },
  "In MoveEye Tilt auf ±60° und Pan auf ±90° begrenzen. Vor dem Druck des Unterteils die Masse des UPS HAT (E) mit Akkus nachmessen (siehe Anleitung).": {
   "en": "In MoveEye limit tilt to ±60° and pan to ±90°. Before printing the lower part, measure the UPS HAT (E) with its cells (see the guide).",
   "fr": "Dans MoveEye, limiter le tilt à ±60° et le pan à ±90°. Avant d'imprimer la partie inférieure, mesurer l'UPS HAT (E) avec ses accus (voir la notice).",
   "it": "In MoveEye limitare il tilt a ±60° e il pan a ±90°. Prima di stampare la parte inferiore misurare l'UPS HAT (E) con le batterie (vedi istruzioni).",
   "rm": "En MoveEye limitar il tilt sin ±60° ed il pan sin ±90°. Avant che stampar la part sut, mesirar l'UPS HAT (E) cun ils accus (vesair l'instrucziun)."
+ },
+ "In MoveEye öffnen": {
+  "en": "Open in MoveEye",
+  "fr": "Ouvrir dans MoveEye",
+  "it": "Apri in MoveEye",
+  "rm": "Avrir en MoveEye"
  },
  "In MoveEye: Reiter Simulator → Verbindung: die Adresse dieses PCs eintragen (gleiches Netz) – oder unten den Tunnel nutzen.": {
   "en": "In MoveEye: tab Simulator → Connection: enter the address of this PC (same network) – or use the tunnel below.",
@@ -20040,6 +20640,18 @@
   "fr": "En « Rôles », le joueur 2 a la carte (lecteur de carte), le joueur 1 la boussole.",
   "it": "In «Ruoli» il giocatore 2 ha la carta (lettore di carta), il giocatore 1 la bussola.",
   "rm": "En «Rollas» ha il giugader 2 la charta (lectur da la charta), il giugader 1 la bussola."
+ },
+ "INA219: Doku 0x44, die Einstellung «Solar» steht im Code auf 0x41 (= PCA9685)": {
+  "en": "INA219: docs say 0x44, the setting «solar» is 0x41 in the code (= PCA9685)",
+  "fr": "INA219 : doc 0x44, le réglage «solaire» vaut 0x41 dans le code (= PCA9685)",
+  "it": "INA219: doc 0x44, l'impostazione «solare» nel codice è 0x41 (= PCA9685)",
+  "rm": "INA219: documentaziun 0x44, l'endrizzaziun «solar» è 0x41 en il code (= PCA9685)"
+ },
+ "Inbetriebnahme": {
+  "en": "Commissioning",
+  "fr": "Mise en service",
+  "it": "Messa in funzione",
+  "rm": "Messa en funcziun"
  },
  "Infanteriewerk Gufer\nZutritt auf eigene Gefahr": {
   "en": "Infantry fort Gufer\nEnter at your own risk",
@@ -20112,6 +20724,12 @@
   "fr": "Montrer l'intérieur",
   "it": "Mostrare l'interno",
   "rm": "Mussar l'intern"
+ },
+ "Innenseite": {
+  "en": "inner side",
+  "fr": "face intérieure",
+  "it": "lato interno",
+  "rm": "vart interna"
  },
  "Ins Riedmoos": {
   "en": "Into the Riedmoos",
@@ -20197,6 +20815,24 @@
   "it": "Internet assente",
   "rm": "Internet davent"
  },
+ "IR LED 5mm 850nm": {
+  "en": "IR LED 5mm 850nm",
+  "fr": "IR LED 5mm 850nm",
+  "it": "IR LED 5mm 850nm",
+  "rm": "IR LED 5mm 850nm"
+ },
+ "IR LED Modul 850nm": {
+  "en": "IR LED Modul 850nm",
+  "fr": "IR LED Modul 850nm",
+  "it": "IR LED Modul 850nm",
+  "rm": "IR LED Modul 850nm"
+ },
+ "IR-LED 5 mm": {
+  "en": "IR LED 5 mm",
+  "fr": "LED IR 5 mm",
+  "it": "LED IR 5 mm",
+  "rm": "LED IR 5 mm"
+ },
  "IR-LED 5 mm, 850 nm": {
   "en": "IR LED 5 mm, 850 nm",
   "fr": "LED IR 5 mm, 850 nm",
@@ -20208,6 +20844,12 @@
   "fr": "Lumière IR ",
   "it": "Luce IR ",
   "rm": "Glisch IR "
+ },
+ "IR-Licht 850 nm ist fast unsichtbar, aber hell: nicht aus der Nähe in die Lampe schauen.": {
+  "en": "IR light 850 nm is almost invisible but bright: do not look into the lamp from close by.",
+  "fr": "La lumière IR 850 nm est presque invisible mais forte : ne pas regarder la lampe de près.",
+  "it": "La luce IR 850 nm è quasi invisibile ma forte: non guardare la lampada da vicino.",
+  "rm": "La glisch IR 850 nm è quasi invisibla, ma ferma: betg guardar da datiers en la lampa."
  },
  "Irgendwo bimmelt eine Kuhglocke. Schläft hier eigentlich irgendwer?": {
   "en": "Somewhere a cowbell jingles. Does anyone actually sleep here?",
@@ -20406,6 +21048,12 @@
   "fr": "selon la scène",
   "it": "secondo la scena",
   "rm": "tenor la scena"
+ },
+ "jede A2-Karte einer Markenfirma": {
+  "en": "any A2 card of a known brand",
+  "fr": "toute carte A2 de marque",
+  "it": "qualsiasi scheda A2 di marca",
+  "rm": "mintga carta A2 d'ina marca enconuschenta"
  },
  "Jede Jahreszeit ist ein eigenes Tal mit eigenen Gefahren. Wohin willst du zuerst?": {
   "en": "Each season is its own valley with its own dangers. Where do you want to go first?",
@@ -20695,6 +21343,24 @@
   "it": "Cavi, stampa, emergenza",
   "rm": "Cabels, stampa, urgenza"
  },
+ "Kabelbinder, Klettband, doppelseitiges Schaumklebeband, Moosgummi-Dichtband": {
+  "en": "Cable ties, hook-and-loop tape, double-sided foam tape, foam rubber seal",
+  "fr": "Colliers, bande auto-agrippante, adhésif mousse double face, joint en caoutchouc mousse",
+  "it": "Fascette, velcro, nastro biadesivo in schiuma, guarnizione in gomma spugna",
+  "rm": "Ligiaders da cabel, banda velcro, banda adesiva da dus vart, banda da tegnair stagn"
+ },
+ "Kabelschlaufe hinter dem Kopf scheuert nicht? Achse von Arm 2 nicht zu fest?": {
+  "en": "the cable loop behind the head does not rub? Axle of arm 2 not too tight?",
+  "fr": "la boucle de câbles derrière la tête ne frotte pas ? Axe du bras 2 pas trop serré ?",
+  "it": "l'ansa dei cavi dietro la testa non sfrega? Asse del braccio 2 non troppo stretto?",
+  "rm": "la bucla da cabels davos il chau na sfruscha betg? Axa dal bratsch 2 betg memia stretga?"
+ },
+ "Kabelverschraubung M12": {
+  "en": "Kabelverschraubung M12",
+  "fr": "Kabelverschraubung M12",
+  "it": "Kabelverschraubung M12",
+  "rm": "Kabelverschraubung M12"
+ },
  "Kabelverschraubung M12 (Relais-Ausgang)": {
   "en": "Cable gland M12 (relay output)",
   "fr": "Presse-étoupe M12 (sortie relais)",
@@ -20815,6 +21481,12 @@
   "it": "Telecamera sulla testa: testa un po’ più lenta (carico extra MG90S, con «Servo realistici»)",
   "rm": "Camera sin il chau: chau in pau pli plaun (chargia supplementara MG90S, cun «Servos sco vairs»)"
  },
+ "Kamera ausrichten": {
+  "en": "Align the camera",
+  "fr": "Aligner la caméra",
+  "it": "Allineare la fotocamera",
+  "rm": "Drizzar la camera"
+ },
  "Kamera wackelt im Wind (Mast, Stange)": {
   "en": "Camera shakes in the wind (mast, pole)",
   "fr": "La caméra tremble au vent (mât, perche)",
@@ -20832,6 +21504,12 @@
   "fr": "Caméra réaliste : flou de mouvement (plus fort la nuit), couleurs du capteur, teinte rose NoIR le jour, exposition plus lente",
   "it": "Telecamera realistica: sfocatura di movimento (più forte di notte), colori del sensore, dominante rosa NoIR di giorno, esposizione più lenta",
   "rm": "Camera sco vaira: nunsclerezza da moviment (pli ferma da notg), colurs dal sensur, tun rosa NoIR dal di, exposiziun pli plauna"
+ },
+ "Kamera, Wärmebild und PIR mit weichem Tuch reinigen (Tau, Spinnweben).": {
+  "en": "clean camera, thermal and PIR with a soft cloth (dew, cobwebs).",
+  "fr": "nettoyer caméra, thermique et PIR avec un chiffon doux (rosée, toiles).",
+  "it": "pulire fotocamera, termica e PIR con un panno morbido (rugiada, ragnatele).",
+  "rm": "nettegiar camera, termica e PIR cun in pon lom (rugada, taila d'arogn)."
  },
  "Kamera: das Fenster ist hell. Wärmebild: vor der Tür steht jemand.": {
   "en": "Camera: the window is lit. Thermal: someone is standing in front of the door.",
@@ -20887,6 +21565,12 @@
   "it": "Cavo fotocamera (piatto)",
   "rm": "Cabel da camera (cabel plat)"
  },
+ "Kamerakabel Pi 5, 200 mm (CAM1)": {
+  "en": "Pi 5 camera cable, 200 mm (CAM1)",
+  "fr": "Câble caméra Pi 5, 200 mm (CAM1)",
+  "it": "Cavo fotocamera Pi 5, 200 mm (CAM1)",
+  "rm": "Cabel da camera Pi 5, 200 mm (CAM1)"
+ },
  "Kamerakabel Pi 5, 500 mm (22→15-polig)": {
   "en": "Pi 5 camera cable, 500 mm (22→15 pin)",
   "fr": "Câble caméra Pi 5, 500 mm (22→15 broches)",
@@ -20928,6 +21612,42 @@
   "fr": "Poste de tir",
   "it": "Postazione di tiro",
   "rm": "Post da cumbat"
+ },
+ "Kanal 0 · Signal orange, + rot (V+), − braun": {
+  "en": "channel 0 · signal orange, + red (V+), − brown",
+  "fr": "canal 0 · signal orange, + rouge (V+), − brun",
+  "it": "canale 0 · segnale arancione, + rosso (V+), − marrone",
+  "rm": "chanal 0 · signal oransch, + cotschen (V+), − brin"
+ },
+ "Kanal 1 · Signal orange, + rot (V+), − braun": {
+  "en": "channel 1 · signal orange, + red (V+), − brown",
+  "fr": "canal 1 · signal orange, + rouge (V+), − brun",
+  "it": "canale 1 · segnale arancione, + rosso (V+), − marrone",
+  "rm": "chanal 1 · signal oransch, + cotschen (V+), − brin"
+ },
+ "Kanal 2 → MOSFET 1 → Lampe weiss (Einstellung «Licht weiss: PCA9685 Kanal 2»)": {
+  "en": "channel 2 → MOSFET 1 → white lamp (setting «White light: PCA9685 channel 2»)",
+  "fr": "canal 2 → MOSFET 1 → lampe blanche (réglage «Lumière blanche : PCA9685 canal 2»)",
+  "it": "canale 2 → MOSFET 1 → lampada bianca (impostazione «Luce bianca: PCA9685 canale 2»)",
+  "rm": "chanal 2 → MOSFET 1 → lampa alva (endrizzaziun «Glisch alva: PCA9685 chanal 2»)"
+ },
+ "Kanal 3 → MOSFET 2 → Lampe IR 850 nm (Einstellung «Infrarotlicht: PCA9685 Kanal 3»)": {
+  "en": "channel 3 → MOSFET 2 → IR lamp 850 nm (setting «Infrared light: PCA9685 channel 3»)",
+  "fr": "canal 3 → MOSFET 2 → lampe IR 850 nm (réglage «Infrarouge : PCA9685 canal 3»)",
+  "it": "canale 3 → MOSFET 2 → lampada IR 850 nm (impostazione «Infrarosso: PCA9685 canale 3»)",
+  "rm": "chanal 3 → MOSFET 2 → lampa IR 850 nm (endrizzaziun «Infracotschen: PCA9685 chanal 3»)"
+ },
+ "Kanal 4 → MOSFET → IR-LED 5 mm 850 nm («IR-Licht breit»)": {
+  "en": "channel 4 → MOSFET → IR LED 5 mm 850 nm («wide IR light»)",
+  "fr": "canal 4 → MOSFET → LED IR 5 mm 850 nm («IR large»)",
+  "it": "canale 4 → MOSFET → LED IR 5 mm 850 nm («IR ampio»)",
+  "rm": "chanal 4 → MOSFET → LED IR 5 mm 850 nm («glisch IR largia»)"
+ },
+ "Kanal 5 rot · 6 grün · 7 blau, gemeinsame Kathode (Einstellung «LED-Typ»)": {
+  "en": "channel 5 red · 6 green · 7 blue, common cathode (setting «LED type»)",
+  "fr": "canal 5 rouge · 6 vert · 7 bleu, cathode commune (réglage «Type de LED»)",
+  "it": "canale 5 rosso · 6 verde · 7 blu, catodo comune (impostazione «Tipo di LED»)",
+  "rm": "chanal 5 cotschen · 6 verd · 7 blau, catoda cuminaivla (endrizzaziun «Tip da LED»)"
  },
  "kann %s nicht schreiben": {
   "en": "cannot write %s",
@@ -21697,6 +22417,18 @@
   "it": "Candele a San Jodern",
   "rm": "Chandailas a Son Jodern"
  },
+ "Kettenfahrwerk mit 2 DC-Motoren": {
+  "en": "Tracked chassis with 2 DC motors",
+  "fr": "Châssis à chenilles avec 2 moteurs DC",
+  "it": "Telaio cingolato con 2 motori DC",
+  "rm": "Chassis cun chadainas e 2 motors DC"
+ },
+ "Kettenfahrwerk Roboter": {
+  "en": "Kettenfahrwerk Roboter",
+  "fr": "Kettenfahrwerk Roboter",
+  "it": "Kettenfahrwerk Roboter",
+  "rm": "Kettenfahrwerk Roboter"
+ },
  "KI": {
   "en": "AI",
   "fr": "IA",
@@ -22105,6 +22837,18 @@
   "fr": "Cliquer et glisser = doigt · molette = défiler · la saisie marche quand l’image est cliquée",
   "it": "Cliccare e trascinare = dito · rotella = scorrere · si può scrivere quando l’immagine è cliccata",
   "rm": "Cliccar e trair = det · roda = scrollar · scriver va, cur ch’il maletg è cliccà"
+ },
+ "Klinke 3,5 mm → Eingang L / GND des PAM8403": {
+  "en": "jack 3.5 mm → input L / GND of the PAM8403",
+  "fr": "jack 3,5 mm → entrée L / GND du PAM8403",
+  "it": "jack 3,5 mm → ingresso L / GND del PAM8403",
+  "rm": "jack 3,5 mm → entrada L / GND dal PAM8403"
+ },
+ "Klon «PCA9685 16 Kanal»": {
+  "en": "clone «PCA9685 16 channel»",
+  "fr": "clone «PCA9685 16 canaux»",
+  "it": "clone «PCA9685 16 canali»",
+  "rm": "clon «PCA9685 16 chanals»"
  },
  "Knapp: läuft MoveEye auf demselben PC, braucht es auch Rechenzeit – Grafik etwas leichter stellen.": {
   "en": "Tight: if MoveEye runs on the same PC, it needs computing time too – set the graphics a bit lighter.",
@@ -22814,6 +23558,18 @@
   "it": "LED di ricarica 3 mm + guida luce",
   "rm": "LED da chargiar 3 mm + guida da glisch"
  },
+ "Lade-LED 3 mm mit Vorwiderstand, Lichtleiter hinten": {
+  "en": "charging LED 3 mm with series resistor, light guide at the back",
+  "fr": "LED de charge 3 mm avec résistance, guide de lumière derrière",
+  "it": "LED di ricarica 3 mm con resistenza, guida luce dietro",
+  "rm": "LED da chargiar 3 mm cun resistenza, guida da glisch davos"
+ },
+ "Ladebuchse GX16": {
+  "en": "Charging socket GX16",
+  "fr": "Prise GX16",
+  "it": "Presa GX16",
+  "rm": "Bischla GX16"
+ },
  "LADEN": {
   "en": "SHOP",
   "fr": "MAGASIN",
@@ -22904,11 +23660,23 @@
   "it": "Sensore di posizione MPU-6050",
   "rm": "Sensur da posiziun MPU-6050"
  },
+ "Lampe IR 850 nm": {
+  "en": "IR lamp 850 nm",
+  "fr": "Lampe IR 850 nm",
+  "it": "Lampada IR 850 nm",
+  "rm": "Lampa IR 850 nm"
+ },
  "Lampe mit Bewegungsmelder (Nachbar)": {
   "en": "Lamp with motion sensor (neighbour)",
   "fr": "Lampe à détecteur de mouvement (voisin)",
   "it": "Lampada con sensore di movimento (vicino)",
   "rm": "Lampa cun sensur da moviment (vischin)"
+ },
+ "Lampe weiss": {
+  "en": "White lamp",
+  "fr": "Lampe blanche",
+  "it": "Lampada bianca",
+  "rm": "Lampa alva"
  },
  "Lampen": {
   "en": "Lamps",
@@ -23108,6 +23876,18 @@
   "it": "Altoparlante",
   "rm": "Autpledader"
  },
+ "Lautsprecher 4 Ohm 40mm": {
+  "en": "Lautsprecher 4 Ohm 40mm",
+  "fr": "Lautsprecher 4 Ohm 40mm",
+  "it": "Lautsprecher 4 Ohm 40mm",
+  "rm": "Lautsprecher 4 Ohm 40mm"
+ },
+ "Lautsprecher 4 Ω": {
+  "en": "Loudspeaker 4 Ω",
+  "fr": "Haut-parleur 4 Ω",
+  "it": "Altoparlante 4 Ω",
+  "rm": "Autpledader 4 Ω"
+ },
  "Lautsprecher 41 mm, 4 Ω": {
   "en": "Loudspeaker 41 mm, 4 Ω",
   "fr": "Haut-parleur 41 mm, 4 Ω",
@@ -23174,6 +23954,18 @@
   "it": "LED 3 mm, PMMA 3 mm",
   "rm": "LED 3 mm, PMMA 3 mm"
  },
+ "LED 3mm grün": {
+  "en": "LED 3mm grün",
+  "fr": "LED 3mm grün",
+  "it": "LED 3mm grün",
+  "rm": "LED 3mm grün"
+ },
+ "LED Modul 18mm weiss": {
+  "en": "LED Modul 18mm weiss",
+  "fr": "LED Modul 18mm weiss",
+  "it": "LED Modul 18mm weiss",
+  "rm": "LED Modul 18mm weiss"
+ },
  "LED-Platinen der Scheinwerfer": {
   "en": "LED boards of the spotlights",
   "fr": "Platines LED des projecteurs",
@@ -23233,6 +24025,12 @@
   "fr": "leicht | normal | schwer",
   "it": "leicht | normal | schwer",
   "rm": "leicht | normal | schwer"
+ },
+ "leichtgängig? Wenig Silikonfett nachgeben.": {
+  "en": "running freely? Add a little silicone grease.",
+  "fr": "tourne librement ? Ajouter un peu de graisse silicone.",
+  "it": "gira libero? Aggiungere poco grasso al silicone.",
+  "rm": "va levamain? Dar in pau grass da silicon."
  },
  "Leider falsch – noch einmal.": {
   "en": "Sorry, wrong – try again.",
@@ -23438,6 +24236,12 @@
   "it": "Luce e sirena, ",
   "rm": "Glisch e sirena, "
  },
+ "Licht und Ton": {
+  "en": "Light and sound",
+  "fr": "Lumière et son",
+  "it": "Luce e suono",
+  "rm": "Glisch e tun"
+ },
  "Licht-Schwenk": {
   "en": "Light sweep",
   "fr": "Balayage lumineux",
@@ -23510,6 +24314,12 @@
   "it": "Sdraio",
   "rm": "Sutga da sulegl"
  },
+ "liegt auf": {
+  "en": "lies on",
+  "fr": "posé sur",
+  "it": "appoggiato su",
+  "rm": "sa chatta sin"
+ },
  "Lies sie mit der Sonne.": {
   "en": "Read it with the sun.",
   "fr": "Lis-la avec le soleil.",
@@ -23557,6 +24367,12 @@
   "fr": "Nettoyer l'objectif (gouttes et buée)",
   "it": "Pulire l'obiettivo (gocce e condensa)",
   "rm": "Nettegiar la lentilla (daguts e vapur)"
+ },
+ "Linsen und Fenster": {
+  "en": "Lenses and windows",
+  "fr": "Objectifs et fenêtres",
+  "it": "Obiettivi e finestre",
+  "rm": "Lentillas e fanestras"
  },
  "Liste «gegen die KI» zurücksetzen": {
   "en": "Reset the list «against the AI»",
@@ -23752,6 +24568,12 @@
   "it": "Pacchetti low-poly: natura, città, fattoria, campeggio, animali e figure.",
   "rm": "Pachets low-poly: natira, citad, bain puril, campadi, animals e figuras."
  },
+ "LTE USB Stick": {
+  "en": "LTE USB Stick",
+  "fr": "LTE USB Stick",
+  "it": "LTE USB Stick",
+  "rm": "LTE USB Stick"
+ },
  "Luchs": {
   "en": "Lynx",
   "fr": "Lynx",
@@ -23805,6 +24627,18 @@
   "fr": "chargement ",
   "it": "caricamento ",
   "rm": "chargiar "
+ },
+ "Länge nicht angegeben": {
+  "en": "length not given",
+  "fr": "longueur non indiquée",
+  "it": "lunghezza non indicata",
+  "rm": "lunghezza betg indicada"
+ },
+ "Länge nicht angegeben (geschätzt)": {
+  "en": "length not given (estimated)",
+  "fr": "longueur non indiquée (estimée)",
+  "it": "lunghezza non indicata (stimata)",
+  "rm": "lunghezza betg indicada (stimada)"
  },
  "Lärche": {
   "en": "Larch",
@@ -23902,11 +24736,47 @@
   "it": "Cancella tutti i pacchetti di addestramento tranne il più recente (cartella e ZIP). Il modello IA resta.",
   "rm": "Stizza tut ils pachets da trenament auter ch’il pli nov (ordinatur e ZIP). Il model IA resta."
  },
+ "Löten: Schutzbrille, Rauch nicht einatmen (lüften), heissen Kolben immer in die Ablage, danach Hände waschen.": {
+  "en": "Soldering: safety glasses, do not breathe the fumes (ventilate), always put the hot iron in its stand, wash your hands afterwards.",
+  "fr": "Soudure : lunettes, ne pas respirer les fumées (aérer), toujours poser le fer chaud sur son support, se laver les mains ensuite.",
+  "it": "Saldatura: occhiali, non respirare i fumi (aerare), il saldatore caldo sempre sul supporto, poi lavarsi le mani.",
+  "rm": "Lotar: egliers, betg respirar il fim (ventilar), il fier chaud adina sin il suport, suenter lavar las mauns."
+ },
+ "Lötkolben mit Temperaturregler, Lötzinn (bleifrei), Ablage": {
+  "en": "Soldering iron with temperature control, solder (lead-free), stand",
+  "fr": "Fer à souder régulé, étain (sans plomb), support",
+  "it": "Saldatore regolabile, stagno (senza piombo), supporto",
+  "rm": "Fier da lotar regulabel, stagn (senza plum), suport"
+ },
  "Lückenfinder": {
   "en": "Gap finder",
   "fr": "Chercheur de failles",
   "it": "Trovabuchi",
   "rm": "Chattader da largias"
+ },
+ "Lüfter (Active Cooler)": {
+  "en": "Fan (Active Cooler)",
+  "fr": "Ventilateur",
+  "it": "Ventola",
+  "rm": "Ventilatur"
+ },
+ "Lüfter und Lüftungsschlitze": {
+  "en": "Fan and vents",
+  "fr": "Ventilateur et fentes",
+  "it": "Ventola e feritoie",
+  "rm": "Ventilatur e fessas"
+ },
+ "M2 (Kameras)": {
+  "en": "M2 (cameras)",
+  "fr": "M2 (caméras)",
+  "it": "M2 (fotocamere)",
+  "rm": "M2 (cameras)"
+ },
+ "M3 + Mutter, M3 × 12 (Achse), 2–3 Scheiben": {
+  "en": "M3 + nut, M3 × 12 (axle), 2–3 washers",
+  "fr": "M3 + écrou, M3 × 12 (axe), 2–3 rondelles",
+  "it": "M3 + dado, M3 × 12 (asse), 2–3 rondelle",
+  "rm": "M3 + mutter, M3 × 12 (axa), 2–3 rundellas"
  },
  "Macht ein Trainingspaket, legt es auf GitHub (Release «ki-daten») und startet dort das Training. MoveEye holt das neue Modell danach selbst, wenn es nicht schlechter ist.": {
   "en": "Makes a training package, puts it on GitHub (release «ki-daten») and starts the training there. MoveEye fetches the new model itself afterwards if it is not worse.",
@@ -24244,6 +25114,12 @@
   "it": "Master",
   "rm": "Master"
  },
+ "Material PETG (z. B. Bambu PETG HF), vorher 6–8 h bei 65 °C trocknen.": {
+  "en": "Material PETG (e.g. Bambu PETG HF), dry it first for 6–8 h at 65 °C.",
+  "fr": "Matériau PETG (p. ex. Bambu PETG HF), sécher d'abord 6–8 h à 65 °C.",
+  "it": "Materiale PETG (p. es. Bambu PETG HF), prima essiccare 6–8 h a 65 °C.",
+  "rm": "Material PETG (p.ex. Bambu PETG HF), l'emprim sitgar 6–8 h a 65 °C."
+ },
  "Materialliste: %s %s": {
   "en": "Parts list: %s %s",
   "fr": "Liste du matériel : %s %s",
@@ -24424,6 +25300,12 @@
   "it": "Più persone giocano una dopo l’altra su un dispositivo (telefono o PC). Tabella dei punti, alla fine l’immagine del vincitore.",
   "rm": "Plirs giogan in suenter l’auter sin in apparat (telefonin u PC). Tabella da puncts, a la fin il maletg dal victur."
  },
+ "Mein Bau": {
+  "en": "My build",
+  "fr": "Ma construction",
+  "it": "La mia costruzione",
+  "rm": "Mia construcziun"
+ },
  "Mein schwarzes Schaf! Danke - da hast du dir ein Stück Käse verdient.": {
   "en": "My black sheep! Thanks - you've earned a piece of cheese.",
   "fr": "Mon mouton noir ! Merci - tu as mérité un morceau de fromage.",
@@ -24477,6 +25359,12 @@
   "fr": "Message sur le téléphone",
   "it": "Messaggio sul telefono",
   "rm": "Messadi sin il telefonin"
+ },
+ "Menge": {
+  "en": "Qty",
+  "fr": "Qté",
+  "it": "Qtà",
+  "rm": "Quantitad"
  },
  "Mensch": {
   "en": "Human",
@@ -24634,6 +25522,12 @@
   "it": "Misurazione finita",
   "rm": "Mesiraziun finida"
  },
+ "MG90S": {
+  "en": "MG90S",
+  "fr": "MG90S",
+  "it": "MG90S",
+  "rm": "MG90S"
+ },
  "Mia": {
   "en": "Mia",
   "fr": "Mia",
@@ -24646,6 +25540,24 @@
   "it": "Miao! Passa un gatto.",
   "rm": "Miau! In giat passa."
  },
+ "MIC": {
+  "en": "MIC",
+  "fr": "MIC",
+  "it": "MIC",
+  "rm": "MIC"
+ },
+ "Micro PIR AS312": {
+  "en": "Micro PIR AS312",
+  "fr": "Micro PIR AS312",
+  "it": "Micro PIR AS312",
+  "rm": "Micro PIR AS312"
+ },
+ "Micro-HDMI Kabel": {
+  "en": "Micro-HDMI Kabel",
+  "fr": "Micro-HDMI Kabel",
+  "it": "Micro-HDMI Kabel",
+  "rm": "Micro-HDMI Kabel"
+ },
  "Micro-HDMI-auf-HDMI-Kabel": {
   "en": "Micro HDMI to HDMI cable",
   "fr": "Câble micro-HDMI vers HDMI",
@@ -24657,6 +25569,18 @@
   "fr": "microSD 64 GB, A2",
   "it": "microSD 64 GB, A2",
   "rm": "microSD 64 GB, A2"
+ },
+ "microSD 64GB A2": {
+  "en": "microSD 64GB A2",
+  "fr": "microSD 64GB A2",
+  "it": "microSD 64GB A2",
+  "rm": "microSD 64GB A2"
+ },
+ "microSD-Karte": {
+  "en": "microSD card",
+  "fr": "Carte microSD",
+  "it": "Scheda microSD",
+  "rm": "Carta microSD"
  },
  "Mikrofon": {
   "en": "Microphone",
@@ -24820,6 +25744,12 @@
   "it": "Parlare con %s",
   "rm": "Discurrer cun %s"
  },
+ "mit Akku (UPS HAT (E), 4 × 21700)": {
+  "en": "with battery (UPS HAT (E), 4 × 21700)",
+  "fr": "avec batterie (UPS HAT (E), 4 × 21700)",
+  "it": "con batteria (UPS HAT (E), 4 × 21700)",
+  "rm": "cun accu (UPS HAT (E), 4 × 21700)"
+ },
  "mit Beute": {
   "en": "with the loot",
   "fr": "avec le butin",
@@ -24891,6 +25821,12 @@
   "fr": "Avec le piolet, tu tailles des marches dans la glace - pas à pas, en sécurité.",
   "it": "Con la piccozza intagli gradini nel ghiaccio - passo dopo passo, sicuro.",
   "rm": "Cun la zappun da glatsch taglias ti stgalims en il glatsch - pass per pass, segir."
+ },
+ "Mit dem Raspberry Pi Imager «Raspberry Pi OS (64-bit)», Bookworm, auf die microSD schreiben. Im Imager Hostname, Benutzer, WLAN und SSH einstellen.": {
+  "en": "Write «Raspberry Pi OS (64-bit)», Bookworm, to the microSD with Raspberry Pi Imager. Set host name, user, Wi-Fi and SSH in the Imager.",
+  "fr": "Écrire «Raspberry Pi OS (64-bit)», Bookworm, sur la microSD avec Raspberry Pi Imager. Régler nom d'hôte, utilisateur, Wi-Fi et SSH dans l'Imager.",
+  "it": "Scrivere «Raspberry Pi OS (64-bit)», Bookworm, sulla microSD con Raspberry Pi Imager. Impostare nome host, utente, Wi-Fi e SSH nell'Imager.",
+  "rm": "Scriver «Raspberry Pi OS (64-bit)», Bookworm, sin la microSD cun Raspberry Pi Imager. Metter num, utilisader, WLAN e SSH en l'Imager."
  },
  "Mit dem Rover durch die Gegend fahren: W A S D / Pfeile, grüner Stick, oder ein Game-Controller (auch Bluetooth; Start = ein / aus). Esc beendet.": {
   "en": "Drive through the area with the rover: W A S D / arrows, green stick, or a game controller (also Bluetooth; Start = on / off). Esc ends.",
@@ -24975,6 +25911,12 @@
   "fr": "photographier avec la caméra de MoveEye",
   "it": "fotografare con la camera di MoveEye",
   "rm": "fotografar cun la camera da MoveEye"
+ },
+ "mit Mover (Kettenfahrzeug)": {
+  "en": "with mover (tracked vehicle)",
+  "fr": "avec mover (véhicule à chenilles)",
+  "it": "con mover (veicolo cingolato)",
+  "rm": "cun mover (vehichel cun chadainas)"
  },
  "Mit Pflaster und Binde geht es wieder. «Danke, das vergesse ich dir nicht!»": {
   "en": "With a plaster and a bandage it works again. «Thanks, I won't forget that!»",
@@ -25156,11 +26098,23 @@
   "it": "Moduli sulle pareti",
   "rm": "Moduls vi da las paraids"
  },
+ "Molicel P45B; 4 gleiche Zellen aus einer Lieferung": {
+  "en": "Molicel P45B; 4 equal cells from one delivery",
+  "fr": "Molicel P45B ; 4 cellules identiques d'une même livraison",
+  "it": "Molicel P45B; 4 celle uguali della stessa fornitura",
+  "rm": "Molicel P45B; 4 cellas egualas d'ina furniziun"
+ },
  "Moment … diesen Hut kenne ich! Der gehört dem Bergführer. Dann bist du also sein Enkel. Willkommen auf der Alp!": {
   "en": "Wait … I know that hat! It belongs to the mountain guide. So you're his grandson. Welcome to the alp!",
   "fr": "Attends … je connais ce chapeau ! Il appartient au guide de montagne. Tu es donc son petit-fils. Bienvenue à l'alpage !",
   "it": "Un momento … conosco questo cappello! È della guida alpina. Allora sei suo nipote. Benvenuto all'alpe!",
   "rm": "Mument … quest chapè enconusch jau! El tutga al guid da muntogna. Lura es ti ses biadi. Bainvegni sin l'alp!"
+ },
+ "monatlich (Servo-Diagnose)": {
+  "en": "monthly (servo diagnosis)",
+  "fr": "chaque mois (diagnostic servo)",
+  "it": "ogni mese (diagnosi servo)",
+  "rm": "mintga mais (diagnosa servo)"
  },
  "Mond": {
   "en": "Moon",
@@ -25197,6 +26151,12 @@
   "fr": "Phase de lune selon la date (lumière et forme de la lune)",
   "it": "Fase lunare secondo la data (luce e forma della luna)",
   "rm": "Fasa da la glina tenor la data (glisch e furma da la glina)"
+ },
+ "Montage": {
+  "en": "Assembly",
+  "fr": "Montage",
+  "it": "Montaggio",
+  "rm": "Muntadi"
  },
  "Montage beenden – alle Teile zeigen": {
   "en": "End the assembly – show all parts",
@@ -25246,6 +26206,12 @@
   "it": "Sentiero della torbiera",
   "rm": "Senda dal palì"
  },
+ "Moosgummi, Kabelverschraubung und HDMI-Stopfen dicht? Innen trocken?": {
+  "en": "foam rubber, cable gland and HDMI plug tight? Dry inside?",
+  "fr": "joint, presse-étoupe et bouchon HDMI étanches ? Sec à l'intérieur ?",
+  "it": "guarnizione, pressacavo e tappo HDMI stagni? Asciutto dentro?",
+  "rm": "tegnidas, passacabel e cluchet HDMI stagns? Sitg en l'intern?"
+ },
  "Morgen": {
   "en": "Morning",
   "fr": "Matin",
@@ -25282,6 +26248,18 @@
   "it": "Alba",
   "rm": "Alva"
  },
+ "MOSFET AOD4184": {
+  "en": "MOSFET AOD4184",
+  "fr": "MOSFET AOD4184",
+  "it": "MOSFET AOD4184",
+  "rm": "MOSFET AOD4184"
+ },
+ "MOSFET-Modul": {
+  "en": "MOSFET module",
+  "fr": "Module MOSFET",
+  "it": "Modulo MOSFET",
+  "rm": "Modul MOSFET"
+ },
  "MOSFET-Modul 2-Kanal, Logic-Level": {
   "en": "MOSFET module 2-channel, logic level",
   "fr": "Module MOSFET 2 canaux, niveau logique",
@@ -25293,6 +26271,30 @@
   "fr": "Coller le module MOSFET et l'abaisseur sur la paroi avant à gauche du PIR, le relais au-dessus du support du hub. Hub USB sur le support avec 2 colliers, carte son dans le hub, MPU-6050 à plat sur le fond.",
   "it": "Incollare il modulo MOSFET e lo step-down sulla parete frontale a sinistra del PIR, il relè sopra il ripiano dell'hub. Hub USB sul ripiano con 2 fascette, scheda audio nell'hub, MPU-6050 piatto sul fondo.",
   "rm": "Tatgar il modul MOSFET ed il step-down vi da la paraid davant a sanestra dal PIR, il relais sur la deposita dal hub. Hub USB cun 2 ligiaments sin la deposita, carta da tun en il hub, MPU-6050 plat sin il fund."
+ },
+ "Motor HAT": {
+  "en": "Motor HAT",
+  "fr": "Motor HAT",
+  "it": "Motor HAT",
+  "rm": "Motor HAT"
+ },
+ "Motor-HAT (0x60) + Fahrwerk": {
+  "en": "Motor HAT (0x60) + chassis",
+  "fr": "Motor HAT (0x60) + châssis",
+  "it": "Motor HAT (0x60) + telaio",
+  "rm": "Motor HAT (0x60) + chassis"
+ },
+ "Motor-HAT (Adafruit DC & Stepper Motor HAT, I2C 0x60)": {
+  "en": "Motor HAT (Adafruit DC & Stepper Motor HAT, I2C 0x60)",
+  "fr": "Motor HAT (Adafruit DC & Stepper Motor HAT, I2C 0x60)",
+  "it": "Motor HAT (Adafruit DC & Stepper Motor HAT, I2C 0x60)",
+  "rm": "Motor HAT (Adafruit DC & Stepper Motor HAT, I2C 0x60)"
+ },
+ "Motor-HAT auf den Pi bzw. an I2C (0x60), Motoren M1 links und M2 rechts, das Gehäuse mit der Stativmutter 1/4\" auf das Fahrwerk schrauben. In MoveEye erscheint der zweite Stick von selbst.": {
+  "en": "Motor HAT onto the Pi or on I2C (0x60), motors M1 left and M2 right, screw the case onto the chassis with the tripod nut 1/4\". MoveEye shows the second stick by itself.",
+  "fr": "Motor HAT sur le Pi ou sur I2C (0x60), moteurs M1 à gauche et M2 à droite, visser le boîtier sur le châssis avec l'écrou 1/4\". MoveEye affiche le deuxième stick tout seul.",
+  "it": "Motor HAT sul Pi o su I2C (0x60), motori M1 a sinistra e M2 a destra, avvitare la custodia sul telaio col dado 1/4\". MoveEye mostra da sé il secondo stick.",
+  "rm": "Motor HAT sin il Pi u vi da I2C (0x60), motors M1 a sanestra ed M2 a dretga, scrauvar la chascha sin il chassis cun la mutter 1/4\". MoveEye mussa sez il segund stick."
  },
  "Motorrad": {
   "en": "Motorcycle",
@@ -25570,11 +26572,23 @@
   "it": "Mettere MoveEye qui",
   "rm": "Metter MoveEye qua"
  },
+ "MoveEye holen und einrichten": {
+  "en": "Get and set up MoveEye",
+  "fr": "Récupérer et installer MoveEye",
+  "it": "Scaricare e installare MoveEye",
+  "rm": "Prender ed installar MoveEye"
+ },
  "MoveEye holt das neue Modell danach selbst, wenn es nicht schlechter ist.%s": {
   "en": "MoveEye fetches the new model itself afterwards if it is not worse.%s",
   "fr": "MoveEye récupère ensuite lui-même le nouveau modèle s’il n’est pas moins bon.%s",
   "it": "MoveEye scarica poi da solo il nuovo modello se non è peggiore.%s",
   "rm": "MoveEye prenda suenter sez il nov model, sch’el n’è betg mender.%s"
+ },
+ "MoveEye holt neue, signierte Versionen selbst (Einstellungen → System → Updates).": {
+  "en": "MoveEye fetches new, signed versions by itself (Settings → System → Updates).",
+  "fr": "MoveEye récupère seul les nouvelles versions signées (Réglages → Système → Mises à jour).",
+  "it": "MoveEye scarica da sé le nuove versioni firmate (Impostazioni → Sistema → Aggiornamenti).",
+  "rm": "MoveEye prenda sez las novas versiuns signadas (Parameters → Sistem → Actualisaziuns)."
  },
  "MoveEye hält Wache. Ein Spiel startet man im Spiel-Assistenten – auf der Seite von MoveEye oder im Simulator.": {
   "en": "MoveEye is keeping watch. A game is started in the game wizard – on MoveEye’s page or in the simulator.",
@@ -25725,6 +26739,12 @@
   "fr": "MoveEye non connecté – le paquet de diagnostic et l’espace développeur nécessitent un MoveEye connecté.",
   "it": "MoveEye non collegato – il pacchetto diagnostico e l’area sviluppatore richiedono un MoveEye collegato.",
   "rm": "MoveEye betg collià – il pachet da diagnosa e la secziun dal sviluppader dovran in MoveEye collià."
+ },
+ "MoveEye nicht verbunden – die Seite öffnet sich, sobald MoveEye verbunden ist.": {
+  "en": "MoveEye not connected – the page opens once MoveEye is connected.",
+  "fr": "MoveEye non connecté – la page s'ouvre dès que MoveEye est connecté.",
+  "it": "MoveEye non collegato – la pagina si apre appena MoveEye è collegato.",
+  "rm": "MoveEye betg connectà – la pagina s'avra uschespert che MoveEye è connectà."
  },
  "MoveEye nimmt etwas auf": {
   "en": "MoveEye records something",
@@ -26363,6 +27383,18 @@
   "it": "Mover: la pattuglia continua",
   "rm": "Mover: la patrulla cuntinuescha"
  },
+ "MPU-6050": {
+  "en": "MPU-6050",
+  "fr": "MPU-6050",
+  "it": "MPU-6050",
+  "rm": "MPU-6050"
+ },
+ "Multimeter (Spannung, Durchgang)": {
+  "en": "Multimeter (voltage, continuity)",
+  "fr": "Multimètre (tension, continuité)",
+  "it": "Multimetro (tensione, continuità)",
+  "rm": "Multimeter (tensiun, cuntinuitad)"
+ },
  "Murmelboden": {
   "en": "Murmelboden",
   "fr": "Murmelboden",
@@ -26536,6 +27568,12 @@
   "fr": "selon le mois (saison)",
   "it": "secondo il mese (stagione)",
   "rm": "tenor il mais (stagiun)"
+ },
+ "Nach dem Neustart: I2C-Geräte und Kamera prüfen. Erwartet: 40 Thermal-90, 41 PCA9685, 2d UPS HAT (E), dazu 68 / 76 / 77 / 44 je nach Sensoren.": {
+  "en": "After the restart: check the I2C devices and the camera. Expected: 40 Thermal-90, 41 PCA9685, 2d UPS HAT (E), plus 68 / 76 / 77 / 44 depending on the sensors.",
+  "fr": "Après le redémarrage : vérifier les appareils I2C et la caméra. Attendu : 40 Thermal-90, 41 PCA9685, 2d UPS HAT (E), plus 68 / 76 / 77 / 44 selon les capteurs.",
+  "it": "Dopo il riavvio: controllare i dispositivi I2C e la fotocamera. Atteso: 40 Thermal-90, 41 PCA9685, 2d UPS HAT (E), più 68 / 76 / 77 / 44 secondo i sensori.",
+  "rm": "Suenter il reaviar: controllar ils apparats I2C e la camera. Spetgà: 40 Thermal-90, 41 PCA9685, 2d UPS HAT (E), plus 68 / 76 / 77 / 44 tenor ils sensurs."
  },
  "Nach dem Regen ziehen schwarze Alpensalamander im Gänsemarsch über den Weg. Einer kommt ihnen entgegen, stösst mit der Nase an – und kehrt um. Im Wärmebild sieht man sie kaum: sie sind so kalt wie der Boden.": {
   "en": "After the rain, black alpine salamanders cross the path in single file. One comes the other way, bumps noses – and turns round. In the thermal picture you hardly see them: they are as cold as the ground.",
@@ -27288,6 +28326,18 @@
   "it": "Testare un guasto di rete",
   "rm": "Testar ina panna da la rait"
  },
+ "Netzteil 12 V, mind. 3 A, mit GX16-Stecker verlötet": {
+  "en": "Power supply 12 V, at least 3 A, soldered to the GX16 plug",
+  "fr": "Alimentation 12 V, au moins 3 A, soudée à la fiche GX16",
+  "it": "Alimentatore 12 V, almeno 3 A, saldato alla spina GX16",
+  "rm": "Alimentaziun 12 V, almain 3 A, lotada vi dal stecker GX16"
+ },
+ "Netzteil 12V 3A": {
+  "en": "Netzteil 12V 3A",
+  "fr": "Netzteil 12V 3A",
+  "it": "Netzteil 12V 3A",
+  "rm": "Netzteil 12V 3A"
+ },
  "Neu": {
   "en": "New",
   "fr": "Nouveau",
@@ -27347,6 +28397,12 @@
   "fr": "Recharger",
   "it": "Ricarica",
   "rm": "Rechargiar"
+ },
+ "Neu starten und prüfen": {
+  "en": "Restart and check",
+  "fr": "Redémarrer et vérifier",
+  "it": "Riavviare e controllare",
+  "rm": "Reaviar e controllar"
  },
  "Neu: ": {
   "en": "New: ",
@@ -28068,6 +29124,12 @@
   "it": "solo di giorno",
   "rm": "mo di"
  },
+ "nur bei BerryBase (de) gefunden": {
+  "en": "only found at BerryBase (de)",
+  "fr": "trouvé seulement chez BerryBase (de)",
+  "it": "trovato solo da BerryBase (de)",
+  "rm": "chattà mo tar BerryBase (de)"
+ },
  "nur bei Nebel": {
   "en": "only in fog",
   "fr": "seulement dans le brouillard",
@@ -28169,6 +29231,12 @@
   "fr": "seulement des personnes",
   "it": "solo persone",
   "rm": "mo persunas"
+ },
+ "nur mit %s": {
+  "en": "only with %s",
+  "fr": "seulement avec %s",
+  "it": "solo con %s",
+  "rm": "mo cun %s"
  },
  "nur mit «Mover simulieren»": {
   "en": "only with «Simulate mover»",
@@ -28338,6 +29406,12 @@
   "it": "Superfici (legno, ghiaia, prato, cemento) per i propri modelli in Blender.",
   "rm": "Surfatschas (lain, gera, pastgira, betun) per atgns models en Blender."
  },
+ "Oberseite": {
+  "en": "top side",
+  "fr": "face supérieure",
+  "it": "lato superiore",
+  "rm": "vart sura"
+ },
  "Objektiv wie das Camera Module 3: leichte Tonnenverzerrung am Rand (Weitwinkel stärker), schräges Bild beim schnellen Drehen (Rolling Shutter), Rauschen je nach Licht": {
   "en": "Lens like the Camera Module 3: slight barrel distortion at the edge (stronger for wide angle), slanted picture when turning fast (rolling shutter), noise depending on light",
   "fr": "Objectif comme le Camera Module 3 : légère distorsion en barillet au bord (plus forte en grand-angle), image oblique en tournant vite (rolling shutter), bruit selon la lumière",
@@ -28440,6 +29514,18 @@
   "it": "senza",
   "rm": "senza"
  },
+ "Ohne Akku": {
+  "en": "Without battery",
+  "fr": "Sans batterie",
+  "it": "Senza batteria",
+  "rm": "Senza accu"
+ },
+ "ohne Akku (12-V-Netzteil)": {
+  "en": "without battery (12 V power supply)",
+  "fr": "sans batterie (alimentation 12 V)",
+  "it": "senza batteria (alimentatore 12 V)",
+  "rm": "senza accu (alimentaziun 12 V)"
+ },
  "Ohne Anmelden: automatische Anmeldung von Windows einrichten …": {
   "en": "Without signing in: set up automatic Windows sign-in …",
   "fr": "Sans connexion : configurer la connexion automatique de Windows …",
@@ -28512,6 +29598,12 @@
   "it": "Senza MoveEye la testa sorveglia da sola",
   "rm": "Senza MoveEye surveglia il chau sez"
  },
+ "ohne Mover": {
+  "en": "without mover",
+  "fr": "sans mover",
+  "it": "senza mover",
+  "rm": "senza mover"
+ },
  "Ohne Passwort starten": {
   "en": "Start without password",
   "fr": "Démarrer sans mot de passe",
@@ -28553,6 +29645,12 @@
   "fr": "Démarrer sans mise à jour",
   "it": "Avviare senza aggiornamento",
   "rm": "Cumenzar senza update"
+ },
+ "ohne USB-PD meldet der Pi 5 «schwaches Netzteil» (USB nur 600 mA) – config.txt usb_max_current_enable=1 prüfen": {
+  "en": "without USB PD the Pi 5 reports a «weak power supply» (USB only 600 mA) – check config.txt usb_max_current_enable=1",
+  "fr": "sans USB PD le Pi 5 signale une «alimentation faible» (USB 600 mA) – vérifier usb_max_current_enable=1",
+  "it": "senza USB PD il Pi 5 segnala «alimentatore debole» (USB 600 mA) – verificare usb_max_current_enable=1",
+  "rm": "senza USB PD annunzia il Pi 5 «alimentaziun flaivla» (USB 600 mA) – controllar usb_max_current_enable=1"
  },
  "Ohne Zelt oder Tarp hat der Regen alles nass gemacht.": {
   "en": "Without a tent or tarp the rain made everything wet.",
@@ -29016,6 +30114,18 @@
   "it": "CPU del PC %s  ·  simulatore %s",
   "rm": "CPU dal PC %s  ·  simulatur %s"
  },
+ "PCA9685": {
+  "en": "PCA9685",
+  "fr": "PCA9685",
+  "it": "PCA9685",
+  "rm": "PCA9685"
+ },
+ "PCA9685 (0x41)": {
+  "en": "PCA9685 (0x41)",
+  "fr": "PCA9685 (0x41)",
+  "it": "PCA9685 (0x41)",
+  "rm": "PCA9685 (0x41)"
+ },
  "PCA9685 16-Kanal-PWM-Modul": {
   "en": "PCA9685 16-channel PWM module",
   "fr": "Module PWM 16 canaux PCA9685",
@@ -29172,6 +30282,12 @@
   "it": "Pi 5: ritardo finché l’immagine arriva a MoveEye (elaborazione, Wi-Fi)",
   "rm": "Pi 5: retard fin ch’il maletg è tar MoveEye (elavuraziun, WLAN)"
  },
+ "Pi OS auf die Karte": {
+  "en": "Pi OS on the card",
+  "fr": "Pi OS sur la carte",
+  "it": "Pi OS sulla scheda",
+  "rm": "Pi OS sin la carta"
+ },
  "Pickel": {
   "en": "Ice axe",
   "fr": "Piolet",
@@ -29214,6 +30330,12 @@
   "it": "Tavolo da picnic e albero con un buco",
   "rm": "Maisa da picnic e planta cun fora"
  },
+ "Pins und Kanäle stammen aus dem Code von MoveEye und aus der Doku. Unklares ist markiert.": {
+  "en": "Pins and channels come from the MoveEye code and the docs. Unclear points are marked.",
+  "fr": "Broches et canaux viennent du code de MoveEye et de la doc. L'incertain est marqué.",
+  "it": "Pin e canali vengono dal codice di MoveEye e dalla documentazione. Le cose non chiare sono segnate.",
+  "rm": "Pins e chanals vegnan dal code da MoveEye e da la documentaziun. Il nunclar è marcà."
+ },
  "Pinselohren, kurzer Schwanz mit schwarzer Spitze, gefleckt": {
   "en": "ear tufts, short tail with a black tip, spotted",
   "fr": "pinceaux aux oreilles, queue courte à bout noir, tacheté",
@@ -29243,6 +30365,12 @@
   "fr": "PIR de l'appareil : arrêt",
   "it": "PIR del dispositivo: spento",
   "rm": "PIR da l'apparat: deactivà"
+ },
+ "PIR AS312": {
+  "en": "PIR AS312",
+  "fr": "PIR AS312",
+  "it": "PIR AS312",
+  "rm": "PIR AS312"
  },
  "PIR Gerät": {
   "en": "PIR device",
@@ -29383,11 +30511,23 @@
   "it": "Ronda della polizia",
   "rm": "Runda da polizia"
  },
+ "Pololu #3782": {
+  "en": "Pololu #3782",
+  "fr": "Pololu #3782",
+  "it": "Pololu #3782",
+  "rm": "Pololu #3782"
+ },
  "Pololu #4091": {
   "en": "Pololu #4091",
   "fr": "Pololu #4091",
   "it": "Pololu #4091",
   "rm": "Pololu #4091"
+ },
+ "Pololu D36V50F5": {
+  "en": "Pololu D36V50F5",
+  "fr": "Pololu D36V50F5",
+  "it": "Pololu D36V50F5",
+  "rm": "Pololu D36V50F5"
  },
  "Pololu D36V50F5 (Laden 12–40 V → 5 V)": {
   "en": "Pololu D36V50F5 (charging 12–40 V → 5 V)",
@@ -29496,6 +30636,18 @@
   "fr": "Station électrique portable",
   "it": "Power station",
   "rm": "Staziun d’energia"
+ },
+ "Preis": {
+  "en": "Price",
+  "fr": "Prix",
+  "it": "Prezzo",
+  "rm": "Pretsch"
+ },
+ "Preise sind Schätzungen in CHF ohne Versand – beim Händler nachsehen.": {
+  "en": "Prices are estimates in CHF without shipping – check at the shop.",
+  "fr": "Les prix sont des estimations en CHF sans port – vérifier chez le vendeur.",
+  "it": "I prezzi sono stime in CHF senza spedizione – verificare dal negozio.",
+  "rm": "Ils pretschs èn stimaziuns en CHF senza spediziun – guardar tar la butia."
  },
  "Pritschen, Wolldecken und ein Biwakbuch – eng, aber sicher bei Sturm.": {
   "en": "Bunks, woollen blankets and a bivouac book – cramped, but safe in a storm.",
@@ -29779,6 +30931,12 @@
   "it": "Download di Python danneggiato (checksum errato).",
   "rm": "Telechargiada da Python donnegiada (summa da controlla fallada)."
  },
+ "QR-Code zu dieser MoveEye-Seite": {
+  "en": "QR code to this MoveEye page",
+  "fr": "Code QR vers cette page MoveEye",
+  "it": "Codice QR per questa pagina MoveEye",
+  "rm": "Code QR per questa pagina da MoveEye"
+ },
  "Quaternius": {
   "en": "Quaternius",
   "fr": "Quaternius",
@@ -29881,6 +31039,30 @@
   "it": "Raspberry Pi 5",
   "rm": "Raspberry Pi 5"
  },
+ "Raspberry Pi 5 8GB": {
+  "en": "Raspberry Pi 5 8GB",
+  "fr": "Raspberry Pi 5 8GB",
+  "it": "Raspberry Pi 5 8GB",
+  "rm": "Raspberry Pi 5 8GB"
+ },
+ "Raspberry Pi 5 Aktiv Kühler": {
+  "en": "Raspberry Pi 5 Aktiv Kühler",
+  "fr": "Raspberry Pi 5 Aktiv Kühler",
+  "it": "Raspberry Pi 5 Aktiv Kühler",
+  "rm": "Raspberry Pi 5 Aktiv Kühler"
+ },
+ "Raspberry Pi 5 Kamerakabel 200mm": {
+  "en": "Raspberry Pi 5 Kamerakabel 200mm",
+  "fr": "Raspberry Pi 5 Kamerakabel 200mm",
+  "it": "Raspberry Pi 5 Kamerakabel 200mm",
+  "rm": "Raspberry Pi 5 Kamerakabel 200mm"
+ },
+ "Raspberry Pi 5 Kamerakabel 500mm": {
+  "en": "Raspberry Pi 5 Kamerakabel 500mm",
+  "fr": "Raspberry Pi 5 Kamerakabel 500mm",
+  "it": "Raspberry Pi 5 Kamerakabel 500mm",
+  "rm": "Raspberry Pi 5 Kamerakabel 500mm"
+ },
  "Raspberry Pi Active Cooler (Lüfter)": {
   "en": "Raspberry Pi Active Cooler (fan)",
   "fr": "Raspberry Pi Active Cooler (ventilateur)",
@@ -29964,6 +31146,12 @@
   "fr": "Ordinateur et caméras",
   "it": "Computer e fotocamere",
   "rm": "Computer e cameras"
+ },
+ "rechte Seitenwand": {
+  "en": "right side wall",
+  "fr": "paroi latérale droite",
+  "it": "parete laterale destra",
+  "rm": "paraid laterala dretga"
  },
  "Rechten Schieber ziehen": {
   "en": "Pull the right gate",
@@ -30133,6 +31321,12 @@
   "it": "Scheda: clic = mostra",
   "rm": "Register: clic = mussar"
  },
+ "Relais": {
+  "en": "Relay",
+  "fr": "Relais",
+  "it": "Relè",
+  "rm": "Relais"
+ },
  "Relaismodul 1-Kanal, 5 V": {
   "en": "Relay module 1-channel, 5 V",
   "fr": "Module relais 1 canal, 5 V",
@@ -30187,6 +31381,12 @@
   "fr": "Réception",
   "it": "Reception",
   "rm": "Recepziun"
+ },
+ "RGB LED 5mm": {
+  "en": "RGB LED 5mm",
+  "fr": "RGB LED 5mm",
+  "it": "RGB LED 5mm",
+  "rm": "RGB LED 5mm"
  },
  "RGB-LED 5 mm mit Diffusor «Blinki-Auge»": {
   "en": "RGB LED 5 mm with diffuser «Blinki eye»",
@@ -30860,6 +32060,12 @@
   "it": "Feedback: %s ha rifiutato (%s) – di nuovo più tardi",
   "rm": "Resposta: %s ha refusà (%s) – pli tard danovamain"
  },
+ "Rückseite": {
+  "en": "back side",
+  "fr": "face arrière",
+  "it": "lato posteriore",
+  "rm": "vart davos"
+ },
  "Rüebli": {
   "en": "Carrot",
   "fr": "Carotte",
@@ -31034,11 +32240,23 @@
   "it": "SC0873",
   "rm": "SC0873"
  },
+ "SC0874": {
+  "en": "SC0874",
+  "fr": "SC0874",
+  "it": "SC0874",
+  "rm": "SC0874"
+ },
  "SC1112 (8 GB), SC1111 (4 GB)": {
   "en": "SC1112 (8 GB), SC1111 (4 GB)",
   "fr": "SC1112 (8 GB), SC1111 (4 GB)",
   "it": "SC1112 (8 GB), SC1111 (4 GB)",
   "rm": "SC1112 (8 GB), SC1111 (4 GB)"
+ },
+ "SC1129": {
+  "en": "SC1129",
+  "fr": "SC1129",
+  "it": "SC1129",
+  "rm": "SC1129"
  },
  "SC1130": {
   "en": "SC1130",
@@ -31249,6 +32467,12 @@
   "fr": "Grange, étable, poules, tracteur, chien, magasin, 5 emplacements camping-car – beaucoup de chaleur – 4 emplacements",
   "it": "Fienile, stalla, galline, trattore, cane, spaccio, 5 piazzole camper – molto calore – 4 posizioni",
   "rm": "Clavà, nuegl, giaglinas, tractor, chaun, butia, 5 plazzas – bler chalur – 4 lieus"
+ },
+ "Schicht": {
+  "en": "Layer",
+  "fr": "Couche",
+  "it": "Strato",
+  "rm": "Strat"
  },
  "Schiebt ein Velo vorbei": {
   "en": "Pushes a bike past",
@@ -31678,6 +32902,30 @@
   "it": "Sbarra",
   "rm": "Barriera"
  },
+ "Schrauben und Kabel": {
+  "en": "Screws and cables",
+  "fr": "Vis et câbles",
+  "it": "Viti e cavi",
+  "rm": "Scrauvs e cabels"
+ },
+ "Schraubendreher Kreuz PH0 / PH1 und Innensechskant 1,5 / 2 / 2,5 mm": {
+  "en": "Screwdrivers Phillips PH0 / PH1 and hex 1.5 / 2 / 2.5 mm",
+  "fr": "Tournevis cruciformes PH0 / PH1 et clés hexagonales 1,5 / 2 / 2,5 mm",
+  "it": "Cacciaviti a croce PH0 / PH1 e brugole 1,5 / 2 / 2,5 mm",
+  "rm": "Scruvaders en crusch PH0 / PH1 e clavs da sis chantuns 1,5 / 2 / 2,5 mm"
+ },
+ "Schraubensatz M2 / M2,5 / M3 mit Muttern und Scheiben": {
+  "en": "Screw set M2 / M2.5 / M3 with nuts and washers",
+  "fr": "Assortiment de vis M2 / M2,5 / M3 avec écrous et rondelles",
+  "it": "Set di viti M2 / M2,5 / M3 con dadi e rondelle",
+  "rm": "Set da scrauvs M2 / M2,5 / M3 cun mutters e rundellas"
+ },
+ "Schraubensortiment M2 M2.5 M3": {
+  "en": "Schraubensortiment M2 M2.5 M3",
+  "fr": "Schraubensortiment M2 M2.5 M3",
+  "it": "Schraubensortiment M2 M2.5 M3",
+  "rm": "Schraubensortiment M2 M2.5 M3"
+ },
  "Schreck-Stärke": {
   "en": "Scare strength",
   "fr": "Intensité de la peur",
@@ -31707,6 +32955,12 @@
   "fr": "Étape 3 sur 3 · objets et cachettes",
   "it": "Passo 3 di 3 · oggetti e nascondigli",
   "rm": "Pass 3 da 3 · objects e zuppaders"
+ },
+ "Schritt 4 ohne UPS HAT und Akkus: den Pi direkt in den Zaun stellen (Klettband). Der D36V50F5 speist den Pi über USB-C, das 12-V-Netzteil kommt an die GX16-Buchse.": {
+  "en": "Step 4 without UPS HAT and cells: put the Pi straight into the fence (hook-and-loop tape). The D36V50F5 feeds the Pi over USB-C, the 12 V power supply goes to the GX16 socket.",
+  "fr": "Étape 4 sans UPS HAT ni cellules : poser le Pi directement dans l'enclos (velcro). Le D36V50F5 alimente le Pi par USB-C, l'alimentation 12 V va à la prise GX16.",
+  "it": "Passo 4 senza UPS HAT e celle: mettere il Pi direttamente nel recinto (velcro). Il D36V50F5 alimenta il Pi via USB-C, l'alimentatore 12 V va alla presa GX16.",
+  "rm": "Pass 4 senza UPS HAT ed accus: metter il Pi directamain en la saiv (velcro). Il D36V50F5 alimentescha il Pi via USB-C, l'alimentaziun 12 V va a la bischla GX16."
  },
  "Schritt für Schritt, ganz langsam. Es knackt noch zweimal - dann bist du drüben.": {
   "en": "Step by step, very slowly. It cracks twice more - then you are across.",
@@ -31755,6 +33009,18 @@
   "fr": "Protection long",
   "it": "Protezione lunga",
   "rm": "Protecziun lung"
+ },
+ "Schutz «Wachsam», eine Nacht laufen lassen, morgens Verlauf ansehen; den Bericht nach feedback/ hochladen.": {
+  "en": "Protection «Watchful», let it run one night, look at the history in the morning; upload the report to feedback/.",
+  "fr": "Protection «Vigilant», une nuit entière, regarder l'historique le matin ; téléverser le rapport dans feedback/.",
+  "it": "Protezione «Vigile», una notte intera, al mattino guardare la cronologia; caricare il rapporto in feedback/.",
+  "rm": "Protecziun «Attent», laschar ir ina notg, la damaun guardar l'istorgia; chargiar il rapport en feedback/."
+ },
+ "Schutzbrille, gut gelüfteter Platz": {
+  "en": "Safety glasses, a well ventilated place",
+  "fr": "Lunettes de protection, endroit bien aéré",
+  "it": "Occhiali di protezione, luogo ben aerato",
+  "rm": "Egliers da protecziun, lieu bain ventilà"
  },
  "Schutzding: {ding} – noch nicht gefunden": {
   "en": "Protective item: {ding} – not found yet",
@@ -32148,6 +33414,12 @@
   "it": "Rileggere la pagina",
   "rm": "Leger avant la pagina anc ina giada"
  },
+ "Seite Servos: Mitte prüfen, Grenzen Pan ±90° und Tilt ±60° setzen, Richtung umkehren falls nötig, Nachschwingen ansehen.": {
+  "en": "Page Servos: check the middle, set the limits pan ±90° and tilt ±60°, reverse the direction if needed, watch the overshoot.",
+  "fr": "Page Servos : vérifier le milieu, limites pan ±90° et tilt ±60°, inverser le sens si besoin, observer le dépassement.",
+  "it": "Pagina Servo: controllare il centro, limiti pan ±90° e tilt ±60°, invertire la direzione se serve, guardare l'oscillazione.",
+  "rm": "Pagina Servos: controllar il center, limits pan ±90° e tilt ±60°, midar la direcziun sche necessari, guardar il surpassar."
+ },
  "Seite öffnen": {
   "en": "Open page",
   "fr": "Ouvrir la page",
@@ -32160,6 +33432,12 @@
   "it": "Leggi le pagine",
   "rm": "Leger las paginas"
  },
+ "Seitenschneider, Abisolierzange, Pinzette": {
+  "en": "Side cutter, wire stripper, tweezers",
+  "fr": "Pince coupante, pince à dénuder, pincette",
+  "it": "Tronchesino, spelafili, pinzetta",
+  "rm": "Tanaglia, tanaglia da dischlontanar, pinzetta"
+ },
  "Selbst gebaut im Haus-Editor": {
   "en": "Self-built in the house editor",
   "fr": "Construit soi-même dans l’éditeur de maison",
@@ -32171,6 +33449,12 @@
   "fr": "Autodiagnostic",
   "it": "Autodiagnosi",
   "rm": "Autodiagnosa"
+ },
+ "Selbsttest und Diagnose": {
+  "en": "Self-test and diagnosis",
+  "fr": "Autotest et diagnostic",
+  "it": "Autotest e diagnosi",
+  "rm": "Autotest e diagnosa"
  },
  "Selbstversorgerhütte\nHolz im Schopf, Ofen löschen\nKasse: 15 Fr. pro Nacht\nDanke und gute Tour!": {
   "en": "Self-catering hut\nWood in the shed, put the stove out\nCash box: 15 Fr. per night\nThank you and good tour!",
@@ -32316,6 +33600,18 @@
   "it": "Servo MG90S (ingranaggi in metallo)",
   "rm": "Servo MG90S (transmissiun da metal)"
  },
+ "Servo Pan": {
+  "en": "Servo pan",
+  "fr": "Servo pan",
+  "it": "Servo pan",
+  "rm": "Servo pan"
+ },
+ "Servo Tilt": {
+  "en": "Servo tilt",
+  "fr": "Servo tilt",
+  "it": "Servo tilt",
+  "rm": "Servo tilt"
+ },
  "Servo wieder frei": {
   "en": "Servo free again",
   "fr": "Servo de nouveau libre",
@@ -32346,6 +33642,18 @@
   "it": "Cavi dei servo",
   "rm": "Cabels dals servos"
  },
+ "Servos kalibrieren": {
+  "en": "Calibrate the servos",
+  "fr": "Calibrer les servos",
+  "it": "Calibrare i servo",
+  "rm": "Calibrar ils servos"
+ },
+ "Servos MG90S": {
+  "en": "Servos MG90S",
+  "fr": "Servos MG90S",
+  "it": "Servo MG90S",
+  "rm": "Servos MG90S"
+ },
  "Servos wie echt: kleines Spiel, Nachschwingen nach dem Drehen": {
   "en": "Servos like real: a little play, overshoot after turning",
   "fr": "Servos réalistes : petit jeu, oscillation après la rotation",
@@ -32357,6 +33665,12 @@
   "fr": "Servos réalistes : vitesse MG90S selon la tension, jeu d'engrenage, dépassement, courant de démarrage",
   "it": "Servo realistici: velocità MG90S secondo la tensione, gioco degli ingranaggi, oscillazione, corrente di spunto",
   "rm": "Servos sco en realitad: svelt MG90S tenor tensiun, gieu dals rodals, surpassament, current da partenza"
+ },
+ "Servos: beim ersten Einschalten Finger weg vom Drehteller und vom Kopf; zuerst die Grenzen setzen (Pan ±90°, Tilt ±60°). Der Not-Aus steht auf der Seite Servos.": {
+  "en": "Servos: keep your fingers away from the turntable and the head at the first start; set the limits first (pan ±90°, tilt ±60°). The emergency stop is on the page Servos.",
+  "fr": "Servos : doigts loin du plateau et de la tête au premier démarrage ; d'abord régler les limites (pan ±90°, tilt ±60°). L'arrêt d'urgence est sur la page Servos.",
+  "it": "Servo: al primo avvio dita lontane dal piatto e dalla testa; prima impostare i limiti (pan ±90°, tilt ±60°). L'arresto d'emergenza è nella pagina Servo.",
+  "rm": "Servos: tar l'emprim aviar betg tegnair ils dets vi dal plat ed il chau; l'emprim metter ils limits (pan ±90°, tilt ±60°). Il stop d'urgenza è sin la pagina Servos."
  },
  "Servowelle auf das Horn in Arm 1 stecken (Kopf schaut geradeaus). Arm 2 mit Mutter in die Nut setzen, 2 × M3 von oben, 2–3 Unterlegscheiben, M3 × 12 als Achse nur bis zum Anliegen.": {
   "en": "Push the servo shaft onto the horn in arm 1 (head looks straight ahead). Set arm 2 with its nut into the groove, 2 × M3 from above, 2–3 washers, M3 × 12 as the axle only until it touches.",
@@ -32424,6 +33738,18 @@
   "it": "Scegli un backup (ZIP) da ripristinare",
   "rm": "Tscherner ina copia da segirezza (ZIP) per restaurar"
  },
+ "Sicherung 5 A": {
+  "en": "Fuse 5 A",
+  "fr": "Fusible 5 A",
+  "it": "Fusibile 5 A",
+  "rm": "Segirezza 5 A"
+ },
+ "Sicherung 5 A → VIN / GND des D36V50F5": {
+  "en": "fuse 5 A → VIN / GND of the D36V50F5",
+  "fr": "fusible 5 A → VIN / GND du D36V50F5",
+  "it": "fusibile 5 A → VIN / GND del D36V50F5",
+  "rm": "segirezza 5 A → VIN / GND dal D36V50F5"
+ },
  "Sicherung bereit – MoveEye holt sie ab …": {
   "en": "Backup ready – MoveEye fetches it …",
   "fr": "Sauvegarde prête – MoveEye la récupère …",
@@ -32441,6 +33767,12 @@
   "fr": "Porte-fusible volant + fusible 5 A",
   "it": "Portafusibile volante + fusibile 5 A",
   "rm": "Purtader da segirezza + segirezza 5 A"
+ },
+ "Sicherungshalter fliegend ATM": {
+  "en": "Sicherungshalter fliegend ATM",
+  "fr": "Sicherungshalter fliegend ATM",
+  "it": "Sicherungshalter fliegend ATM",
+  "rm": "Sicherungshalter fliegend ATM"
  },
  "Sicht": {
   "en": "View",
@@ -32525,6 +33857,18 @@
   "fr": "Graisse silicone ou pour roulements",
   "it": "Grasso al silicone o per cuscinetti",
   "rm": "Grass da silicon u per cuschinets"
+ },
+ "Silikonfett": {
+  "en": "Silikonfett",
+  "fr": "Silikonfett",
+  "it": "Silikonfett",
+  "rm": "Silikonfett"
+ },
+ "Silikonlitze 20 AWG": {
+  "en": "Silikonlitze 20 AWG",
+  "fr": "Silikonlitze 20 AWG",
+  "it": "Silikonlitze 20 AWG",
+  "rm": "Silikonlitze 20 AWG"
  },
  "Sim %d %%": {
   "en": "Sim %d %%",
@@ -32664,6 +34008,12 @@
   "it": "Sci (appoggiati)",
   "rm": "Skis (pusads)"
  },
+ "SKU 31941 ausgelaufen – Nachfolger bei Pi-Shop.ch": {
+  "en": "SKU 31941 discontinued – successor at Pi-Shop.ch",
+  "fr": "SKU 31941 arrêté – successeur chez Pi-Shop.ch",
+  "it": "SKU 31941 fuori produzione – successore da Pi-Shop.ch",
+  "rm": "SKU 31941 betg pli producì – successur tar Pi-Shop.ch"
+ },
  "SmallTV": {
   "en": "SmallTV",
   "fr": "SmallTV",
@@ -32760,11 +34110,23 @@
   "it": "Correre subito all'altra paratoia",
   "rm": "Currer immediatamain tar l'autra porta"
  },
+ "Softair BB 6mm 0.20g": {
+  "en": "Softair BB 6mm 0.20g",
+  "fr": "Softair BB 6mm 0.20g",
+  "it": "Softair BB 6mm 0.20g",
+  "rm": "Softair BB 6mm 0.20g"
+ },
  "Softair-Kugeln 6 mm (0,20 g)": {
   "en": "Airsoft BBs 6 mm (0.20 g)",
   "fr": "Billes airsoft 6 mm (0,20 g)",
   "it": "Pallini softair 6 mm (0,20 g)",
   "rm": "Ballinas softair 6 mm (0,20 g)"
+ },
+ "Software": {
+  "en": "Software",
+  "fr": "Logiciel",
+  "it": "Software",
+  "rm": "Software"
  },
  "Solarleuchten (Gartenweg)": {
   "en": "Solar lights (garden path)",
@@ -32879,6 +34241,12 @@
   "fr": "Verrou",
   "it": "Blocco",
   "rm": "Bloccada"
+ },
+ "SPI0 + I2C 0x40, GPIO 7 / 23 / 24 (Kabel MX1.25 10-polig)": {
+  "en": "SPI0 + I2C 0x40, GPIO 7 / 23 / 24 (cable MX1.25 10-pin)",
+  "fr": "SPI0 + I2C 0x40, GPIO 7 / 23 / 24 (câble MX1.25 10 broches)",
+  "it": "SPI0 + I2C 0x40, GPIO 7 / 23 / 24 (cavo MX1.25 10 pin)",
+  "rm": "SPI0 + I2C 0x40, GPIO 7 / 23 / 24 (cabel MX1.25 10 pols)"
  },
  "Spiel": {
   "en": "Game",
@@ -33690,6 +35058,18 @@
   "it": "LED di stato sopra la testa",
   "rm": "LED da status sisum il chau"
  },
+ "Status-LED RGB": {
+  "en": "Status LED RGB",
+  "fr": "LED d'état RVB",
+  "it": "LED di stato RGB",
+  "rm": "LED da status RGB"
+ },
+ "Staub entfernen; CPU-Temperatur in MoveEye unter 80 °C?": {
+  "en": "remove dust; CPU temperature in MoveEye below 80 °C?",
+  "fr": "enlever la poussière ; température CPU sous 80 °C ?",
+  "it": "togliere la polvere; temperatura CPU sotto 80 °C?",
+  "rm": "allontanar la pulvra; temperatura CPU sut 80 °C?"
+ },
  "Steg": {
   "en": "Jetty",
   "fr": "Ponton",
@@ -33900,6 +35280,18 @@
   "fr": "Emplacements",
   "it": "Piazzole",
   "rm": "Plazzas"
+ },
+ "Step-Down 5 V 4 A": {
+  "en": "Step-down 5 V 4 A",
+  "fr": "Abaisseur 5 V 4 A",
+  "it": "Step-down 5 V 4 A",
+  "rm": "Step-down 5 V 4 A"
+ },
+ "Step-Down 6-36V 5V 4A": {
+  "en": "Step-Down 6-36V 5V 4A",
+  "fr": "Step-Down 6-36V 5V 4A",
+  "it": "Step-Down 6-36V 5V 4A",
+  "rm": "Step-Down 6-36V 5V 4A"
  },
  "Step-Down 6–36 V → 5 V 4 A (Servos, Licht, Verstärker)": {
   "en": "Step-down 6–36 V → 5 V 4 A (servos, light, amplifier)",
@@ -34243,6 +35635,12 @@
   "it": "Testare i disturbi",
   "rm": "Testar disturbis"
  },
+ "Stützen": {
+  "en": "Supports",
+  "fr": "Supports",
+  "it": "Supporti",
+  "rm": "Sustegns"
+ },
  "Such den kleinen warmen Fleck aus der Aufnahme – ein paar Schritte vor dem Zelt.": {
   "en": "Look for the small warm spot from the recording – a few steps in front of the tent.",
   "fr": "Cherche la petite tache chaude de l'enregistrement – à quelques pas de la tente.",
@@ -34309,11 +35707,23 @@
   "it": "Cercare (p. es. tenda, valigia, cane, auto) …",
   "rm": "Tschertgar (p. ex. tenda, valischa, chaun, auto) …"
  },
+ "Suchen bei": {
+  "en": "Search at",
+  "fr": "Chercher chez",
+  "it": "Cerca da",
+  "rm": "Tschertgar tar"
+ },
  "Suchen gehen": {
   "en": "Go and search",
   "fr": "Aller chercher",
   "it": "Vai a cercare",
   "rm": "Ir a tschertgar"
+ },
+ "Suchlink": {
+  "en": "Search link",
+  "fr": "Lien de recherche",
+  "it": "Link di ricerca",
+  "rm": "Link da tschertga"
  },
  "SUP-Board": {
   "en": "SUP board",
@@ -34855,6 +36265,12 @@
   "it": "Pulsante 12 mm, IP67",
   "rm": "Buttun 12 mm, IP67"
  },
+ "Taster 12mm IP67": {
+  "en": "Taster 12mm IP67",
+  "fr": "Taster 12mm IP67",
+  "it": "Taster 12mm IP67",
+  "rm": "Taster 12mm IP67"
+ },
  "Tatsächlich, ein junger! Das muss ich gleich melden.": {
   "en": "Indeed, a young one! I must report that right away.",
   "fr": "En effet, un jeune ! Je dois le signaler tout de suite.",
@@ -34987,11 +36403,29 @@
   "it": "Clicca un pezzo – o scegli un passo del montaggio.",
   "rm": "Cliccar ina part – u tscherner in pass dal muntadi."
  },
+ "Teil im 3D zeigen": {
+  "en": "Show the part in 3D",
+  "fr": "Montrer la pièce en 3D",
+  "it": "Mostra il pezzo in 3D",
+  "rm": "Mussar la part en 3D"
+ },
+ "Teile": {
+  "en": "Parts",
+  "fr": "Pièces",
+  "it": "Pezzi",
+  "rm": "Parts"
+ },
  "Teile drucken": {
   "en": "Print the parts",
   "fr": "Imprimer les pièces",
   "it": "Stampare i pezzi",
   "rm": "Stampar las parts"
+ },
+ "Teilenummer": {
+  "en": "Part number",
+  "fr": "Référence",
+  "it": "Codice",
+  "rm": "Numer da la part"
  },
  "Telefoniert und bleibt lange stehen (kaum Bewegung)": {
   "en": "Phones and stands still for a long time (hardly any movement)",
@@ -35214,6 +36648,18 @@
   "fr": "Test : phase %d sur %d – %s · encore environ %d s",
   "it": "Test: fase %d di %d – %s · ancora circa %d s",
   "rm": "Test: fasa %d da %d – %s · anc circa %d s"
+ },
+ "THERMAL": {
+  "en": "THERMAL",
+  "fr": "THERMAL",
+  "it": "THERMAL",
+  "rm": "THERMAL"
+ },
+ "Thermal-90": {
+  "en": "Thermal-90",
+  "fr": "Thermal-90",
+  "it": "Thermal-90",
+  "rm": "Thermal-90"
  },
  "Thermal-90 (Linse links) und Camera Module 3 durch die offene Seite einschrauben (M2). Tilt-Servo auf Mitte einsetzen, Kabel durch den Schlitz hinten, Seitendeckel mit 3 × M3 zuschrauben.": {
   "en": "Screw in the Thermal-90 (lens on the left) and the Camera Module 3 through the open side (M2). Insert the tilt servo at centre, cables through the slot at the back, close the side cover with 3 × M3.",
@@ -35442,6 +36888,12 @@
   "fr": "Touche ce qui peut participer (plusieurs possibles). Chaque joueur choisit ensuite son leurre sur le téléphone.",
   "it": "Tocca ciò che può partecipare (più scelte possibili). Ogni giocatore sceglie poi la sua esca sul telefonino.",
   "rm": "Tutga, tge che dastga far cun (plirs pussaivels). Mintga giugader tscherna lura sin il telefonin sia attrapa."
+ },
+ "Tippe ein Modul an: seine Verbindungen leuchten.": {
+  "en": "Tap a module: its connections light up.",
+  "fr": "Touche un module : ses liaisons s'allument.",
+  "it": "Tocca un modulo: i suoi collegamenti si illuminano.",
+  "rm": "Tocca in modul: sias colliaziuns glischan."
  },
  "Tipps und Wildkamera-Aufgaben": {
   "en": "Tips and camera-trap tasks",
@@ -36260,6 +37712,12 @@
   "it": "Sotto una lastra di pietra inclinata c’è una vecchia cassa di legno, con la scritta sbiadita: CAFFÈ. Vuota – da tanto tempo.",
   "rm": "Sut ina platta da crap sbiechia stat ina veglia chista da lain, sin quella smarvida: CAFFÈ. Vida – gia daditg."
  },
+ "Unterseite – Rille fein drucken": {
+  "en": "underside – print the groove fine",
+  "fr": "face inférieure – imprimer la rainure fin",
+  "it": "lato inferiore – stampare fine la scanalatura",
+  "rm": "vart sut – stampar fin la foppa"
+ },
  "Unterteil 183 × 97 × 71,5 mm (mit Füssen 77,5 mm), Gesamthöhe ca. 161 mm, Kopf 58 × 58 mm": {
   "en": "Lower part 183 × 97 × 71.5 mm (77.5 mm with feet), total height about 161 mm, head 58 × 58 mm",
   "fr": "Partie inférieure 183 × 97 × 71,5 mm (77,5 mm avec pieds), hauteur totale env. 161 mm, tête 58 × 58 mm",
@@ -36344,6 +37802,12 @@
   "it": "Aggiornamenti: scheda Sistema non trovata",
   "rm": "Actualisaziuns: carta Sistem betg chattada"
  },
+ "UPS HAT (E)": {
+  "en": "UPS HAT (E)",
+  "fr": "UPS HAT (E)",
+  "it": "UPS HAT (E)",
+  "rm": "UPS HAT (E)"
+ },
  "UPS HAT (E) mit 4 Akkus 21700": {
   "en": "UPS HAT (E) with 4 cells 21700",
   "fr": "UPS HAT (E) avec 4 accus 21700",
@@ -36362,11 +37826,47 @@
   "it": "Giudizio",
   "rm": "Giudicament"
  },
+ "USB Hub 4 Port kompakt": {
+  "en": "USB Hub 4 Port kompakt",
+  "fr": "USB Hub 4 Port kompakt",
+  "it": "USB Hub 4 Port kompakt",
+  "rm": "USB Hub 4 Port kompakt"
+ },
+ "USB Mini Mikrofon": {
+  "en": "USB Mini Mikrofon",
+  "fr": "USB Mini Mikrofon",
+  "it": "USB Mini Mikrofon",
+  "rm": "USB Mini Mikrofon"
+ },
+ "USB Soundkarte": {
+  "en": "USB Soundkarte",
+  "fr": "USB Soundkarte",
+  "it": "USB Soundkarte",
+  "rm": "USB Soundkarte"
+ },
+ "USB-A des Pi → Hub (Kabel ≥ 15 cm)": {
+  "en": "USB-A of the Pi → hub (cable ≥ 15 cm)",
+  "fr": "USB-A du Pi → hub (câble ≥ 15 cm)",
+  "it": "USB-A del Pi → hub (cavo ≥ 15 cm)",
+  "rm": "USB-A dal Pi → hub (cabel ≥ 15 cm)"
+ },
+ "USB-A Verlängerung 15cm": {
+  "en": "USB-A Verlängerung 15cm",
+  "fr": "USB-A Verlängerung 15cm",
+  "it": "USB-A Verlängerung 15cm",
+  "rm": "USB-A Verlängerung 15cm"
+ },
  "USB-A-Verlängerung, ca. 15 cm": {
   "en": "USB-A extension, about 15 cm",
   "fr": "Rallonge USB-A, env. 15 cm",
   "it": "Prolunga USB-A, circa 15 cm",
   "rm": "Prolungaziun USB-A, ca. 15 cm"
+ },
+ "USB-C Kabel offenes Ende": {
+  "en": "USB-C Kabel offenes Ende",
+  "fr": "USB-C Kabel offenes Ende",
+  "it": "USB-C Kabel offenes Ende",
+  "rm": "USB-C Kabel offenes Ende"
  },
  "USB-C Plug Breakout": {
   "en": "USB-C Plug Breakout",
@@ -36374,11 +37874,23 @@
   "it": "USB-C Plug Breakout",
   "rm": "USB-C Plug Breakout"
  },
+ "USB-C-Kabel mit offenem Ende (BerryBase 125190)": {
+  "en": "USB-C cable with open end (BerryBase 125190)",
+  "fr": "câble USB-C à bout libre (BerryBase 125190)",
+  "it": "cavo USB-C con estremità libera (BerryBase 125190)",
+  "rm": "cabel USB-C cun fin avert (BerryBase 125190)"
+ },
  "USB-C-Stecker zum Anlöten (D36V50F5 → UPS HAT)": {
   "en": "USB-C plug to solder (D36V50F5 → UPS HAT)",
   "fr": "Fiche USB-C à souder (D36V50F5 → UPS HAT)",
   "it": "Spina USB-C da saldare (D36V50F5 → UPS HAT)",
   "rm": "Stecker USB-C da lotar (D36V50F5 → UPS HAT)"
+ },
+ "USB-Hub": {
+  "en": "USB hub",
+  "fr": "Hub USB",
+  "it": "Hub USB",
+  "rm": "Hub USB"
  },
  "USB-Hub, 4 Anschlüsse, kompakt": {
   "en": "USB hub, 4 ports, compact",
@@ -36392,11 +37904,23 @@
   "it": "Cavo USB Pi → hub",
   "rm": "Cabel USB Pi → hub"
  },
+ "USB-Mikrofon": {
+  "en": "USB microphone",
+  "fr": "Microphone USB",
+  "it": "Microfono USB",
+  "rm": "Microfon USB"
+ },
  "USB-Mikrofon (Mini)": {
   "en": "USB microphone (mini)",
   "fr": "Microphone USB (mini)",
   "it": "Microfono USB (mini)",
   "rm": "Microfon USB (mini)"
+ },
+ "USB-Mikrofon über Verlängerung 15 cm (vorne oben)": {
+  "en": "USB microphone through a 15 cm extension (front, top)",
+  "fr": "microphone USB par une rallonge 15 cm (devant en haut)",
+  "it": "microfono USB con prolunga 15 cm (davanti in alto)",
+  "rm": "microfon USB tras ina prolungaziun 15 cm (davant sura)"
  },
  "USB-Soundkarte": {
   "en": "USB sound card",
@@ -36404,11 +37928,47 @@
   "it": "Scheda audio USB",
   "rm": "Carta da tun USB"
  },
+ "USB-Soundkarte im Hub": {
+  "en": "USB sound card in the hub",
+  "fr": "carte son USB dans le hub",
+  "it": "scheda audio USB nell'hub",
+  "rm": "carta da tun USB en il hub"
+ },
  "USB-Stick LTE/GPS": {
   "en": "USB stick LTE/GPS",
   "fr": "Clé USB LTE/GPS",
   "it": "Chiavetta USB LTE/GPS",
   "rm": "Stick USB LTE/GPS"
+ },
+ "USV HAT (E) 21700": {
+  "en": "USV HAT (E) 21700",
+  "fr": "USV HAT (E) 21700",
+  "it": "USV HAT (E) 21700",
+  "rm": "USV HAT (E) 21700"
+ },
+ "v5.1 (Standard)": {
+  "en": "v5.1 (standard)",
+  "fr": "v5.1 (standard)",
+  "it": "v5.1 (standard)",
+  "rm": "v5.1 (standard)"
+ },
+ "v5.2: + Weitwinkel, IR-LED, Tasten, Status-LED": {
+  "en": "v5.2: + wide angle, IR LED, buttons, status LED",
+  "fr": "v5.2 : + grand-angle, LED IR, boutons, LED d'état",
+  "it": "v5.2: + grandangolo, LED IR, pulsanti, LED di stato",
+  "rm": "v5.2: + grondangul, LED IR, buttuns, LED da status"
+ },
+ "Variante ohne Akku ist im Gehäuse v5.1 nicht beschrieben (Vorschlag)": {
+  "en": "the variant without battery is not described for case v5.1 (proposal)",
+  "fr": "la variante sans batterie n'est pas décrite pour le boîtier v5.1 (proposition)",
+  "it": "la variante senza batteria non è descritta per la custodia v5.1 (proposta)",
+  "rm": "la variante senza accu n'è betg descritta per la chascha v5.1 (proposta)"
+ },
+ "Variante v5.2": {
+  "en": "Variant v5.2",
+  "fr": "Variante v5.2",
+  "it": "Variante v5.2",
+  "rm": "Variante v5.2"
  },
  "Variante v5.2 (noch nicht im Paket v5.1)": {
   "en": "Variant v5.2 (not yet in the v5.1 package)",
@@ -36715,6 +38275,12 @@
   "fr": "Comportement",
   "it": "Comportamento",
   "rm": "Cumportament"
+ },
+ "Verkabeln": {
+  "en": "Wiring",
+  "fr": "Câblage",
+  "it": "Cablaggio",
+  "rm": "Cablar"
  },
  "Verlassen": {
   "en": "Leave",
@@ -37262,6 +38828,12 @@
   "it": "prima di ogni turno",
   "rm": "avant mintga runda"
  },
+ "vor jeder Saison": {
+  "en": "before every season",
+  "fr": "avant chaque saison",
+  "it": "prima di ogni stagione",
+  "rm": "avant mintga stagiun"
+ },
  "Vorbereitung: Kopf zur Mitte …": {
   "en": "Preparing: head to the centre …",
   "fr": "Préparation : tête au centre …",
@@ -37381,6 +38953,12 @@
   "fr": "Résistance série 2 W pour les LED",
   "it": "Resistenza in serie 2 W per i LED",
   "rm": "Resistenza en seria 2 W per las LEDs"
+ },
+ "Vorwiderstände der RGB-LED fehlen in der Materialliste": {
+  "en": "series resistors for the RGB LED are missing in the parts list",
+  "fr": "les résistances de la LED RVB manquent dans la liste",
+  "it": "mancano nella distinta le resistenze del LED RGB",
+  "rm": "las resistenzas da la LED RGB mancan en la glista"
  },
  "Vreni, die Sennerin": {
   "en": "Vreni, the cheesemaker",
@@ -37670,6 +39248,12 @@
   "it": "aspetta MoveEye …",
   "rm": "spetga MoveEye …"
  },
+ "Wartung": {
+  "en": "Maintenance",
+  "fr": "Entretien",
+  "it": "Manutenzione",
+  "rm": "Mantegniment"
+ },
  "Warum bist du so früh los?": {
   "en": "Why did you set off so early?",
   "fr": "Pourquoi es-tu parti si tôt ?",
@@ -37783,6 +39367,12 @@
   "fr": "Qu'y a-t-il dans les cailloux ?",
   "it": "Cosa c'è tra i sassi?",
   "rm": "Tge è en la grava?"
+ },
+ "Was verschleisst und wann prüfen": {
+  "en": "What wears out and when to check",
+  "fr": "Ce qui s'use et quand vérifier",
+  "it": "Cosa si usura e quando controllare",
+  "rm": "Tge che s'consumescha e cura controllar"
  },
  "Was war am gruseligsten?": {
   "en": "What was the spookiest?",
@@ -37910,6 +39500,18 @@
   "it": "Punto acqua",
   "rm": "Funtauna"
  },
+ "Waveshare 27966": {
+  "en": "Waveshare 27966",
+  "fr": "Waveshare 27966",
+  "it": "Waveshare 27966",
+  "rm": "Waveshare 27966"
+ },
+ "Waveshare Motor Driver HAT": {
+  "en": "Waveshare Motor Driver HAT",
+  "fr": "Waveshare Motor Driver HAT",
+  "it": "Waveshare Motor Driver HAT",
+  "rm": "Waveshare Motor Driver HAT"
+ },
  "Waveshare SKU 27966": {
   "en": "Waveshare SKU 27966",
   "fr": "Waveshare SKU 27966",
@@ -37921,6 +39523,12 @@
   "fr": "Waveshare SKU 31941",
   "it": "Waveshare SKU 31941",
   "rm": "Waveshare SKU 31941"
+ },
+ "Waveshare Thermal Camera": {
+  "en": "Waveshare Thermal Camera",
+  "fr": "Waveshare Thermal Camera",
+  "it": "Waveshare Thermal Camera",
+  "rm": "Waveshare Thermal Camera"
  },
  "Waveshare Thermal-90 Camera Module": {
   "en": "Waveshare Thermal-90 Camera Module",
@@ -37981,6 +39589,12 @@
   "fr": "trajets aux WC reconnus %d sur %d",
   "it": "passaggi al WC riconosciuti %d su %d",
   "rm": "ir al WC renconuschì %d da %d"
+ },
+ "Webseite öffnen, Passwort": {
+  "en": "Open the web page, password",
+  "fr": "Ouvrir la page web, mot de passe",
+  "it": "Aprire la pagina web, password",
+  "rm": "Avrir la pagina web, pled-clav"
  },
  "Wechselnde Kamera-Einstellungen von Mover und Spielern": {
   "en": "Changing camera shots of mover and players",
@@ -38330,6 +39944,12 @@
   "it": "Telecamera grandangolare (Camera Module 3 Wide NoIR, 102° × 67°, 120° in diagonale): montaggio",
   "rm": "Camera da grond angul (Camera Module 3 Wide NoIR, 102° × 67°, 120° en diagonala): montascha"
  },
+ "Weitwinkel-Kamera in die Stirnwand (CAM1), IR-LED 5 mm links vom PIR, 2 Tasten in die Rückwand, Status-LED oben in den Kopf. Die Druckdateien v5.2 sind noch nicht im Paket.": {
+  "en": "Wide-angle camera into the front wall (CAM1), IR LED 5 mm left of the PIR, 2 buttons into the back wall, status LED on top of the head. The print files v5.2 are not yet in the package.",
+  "fr": "Caméra grand-angle dans la paroi avant (CAM1), LED IR 5 mm à gauche du PIR, 2 boutons dans la paroi arrière, LED d'état sur la tête. Les fichiers v5.2 ne sont pas encore dans le paquet.",
+  "it": "Telecamera grandangolare nella parete frontale (CAM1), LED IR 5 mm a sinistra del PIR, 2 pulsanti nella parete posteriore, LED di stato sopra la testa. I file v5.2 non sono ancora nel pacchetto.",
+  "rm": "Camera grondangul en la paraid davant (CAM1), LED IR 5 mm a sanestra dal PIR, 2 buttuns en la paraid davos, LED da status sur il chau. Las datotecas v5.2 n'èn anc betg en il pachet."
+ },
  "Weitwinkel: Fischauge wie das Objektiv der Wide (gebogene Linien am Rand, dunklere Ecken)": {
   "en": "Wide camera: fisheye like the lens of the Wide (bent lines at the edges, darker corners)",
   "fr": "Grand-angle : fisheye comme l’objectif de la Wide (lignes courbées au bord, coins plus sombres)",
@@ -38444,6 +40064,12 @@
   "fr": "quand on ne trouve rien pendant longtemps",
   "it": "quando non si trova niente per molto tempo",
   "rm": "sch’ins na chatta nagut ditg"
+ },
+ "wenn MoveEye warnt": {
+  "en": "when MoveEye warns",
+  "fr": "quand MoveEye avertit",
+  "it": "quando MoveEye avvisa",
+  "rm": "cura che MoveEye avertescha"
  },
  "Wenn Nebel kommt, gut auf die Wegweiser achten.": {
   "en": "When fog comes, watch the signposts carefully.",
@@ -38583,11 +40209,23 @@
   "it": "Gli strumenti per gli infiltrati sono spenti (assistente → Extra)",
   "rm": "Ils utensils per stgaffaders èn deactivads (assistent → Extras)"
  },
+ "Werkzeuge: Selbstdiagnose und Hardware-Prüfung – alles grün? Sonst Reiter «Fehlersuche».": {
+  "en": "Tools: self-diagnosis and hardware check – all green? Otherwise tab «Troubleshooting».",
+  "fr": "Outils : autodiagnostic et contrôle du matériel – tout vert ? Sinon onglet «Dépannage».",
+  "it": "Strumenti: autodiagnosi e controllo hardware – tutto verde? Altrimenti scheda «Risoluzione problemi».",
+  "rm": "Utensils: autodiagnosa e controlla da la hardware – tut verd? Uschiglio tab «Tschertgar sbagls»."
+ },
  "Werkzeugkiste": {
   "en": "Toolbox",
   "fr": "Caisse à outils",
   "it": "Cassetta degli attrezzi",
   "rm": "Chista d’utensils"
+ },
+ "Wert der Vorwiderstände noch offen (je nach LED)": {
+  "en": "value of the series resistors still open (depends on the LED)",
+  "fr": "valeur des résistances encore ouverte (selon la LED)",
+  "it": "valore delle resistenze ancora aperto (dipende dal LED)",
+  "rm": "valur da las resistenzas anc averta (tenor LED)"
  },
  "Wertsachen": {
   "en": "Valuables",
@@ -38715,6 +40353,12 @@
   "it": "Telecamera grandangolare (NoIR Wide)",
   "rm": "Camera da grond angul (NoIR Wide)",
   "?": "Kameraname an MoveEye (/info) – nicht umhüllen"
+ },
+ "Widerstand 2W": {
+  "en": "Widerstand 2W",
+  "fr": "Widerstand 2W",
+  "it": "Widerstand 2W",
+  "rm": "Widerstand 2W"
  },
  "wie aufgenommen": {
   "en": "as recorded",
@@ -39274,6 +40918,12 @@
   "it": "Wi-Fi assente",
   "rm": "WLAN davent"
  },
+ "wo die Lade-LED angeschlossen wird, ist nicht beschrieben": {
+  "en": "where the charging LED is connected is not described",
+  "fr": "le branchement de la LED de charge n'est pas décrit",
+  "it": "dove si collega il LED di ricarica non è descritto",
+  "rm": "nua che la LED da chargiar vegn attaccada n'è betg descrit"
+ },
  "Wo ist der Korkenzieher?": {
   "en": "Where is the corkscrew?",
   "fr": "Où est le tire-bouchon ?",
@@ -39593,6 +41243,12 @@
   "it": "Durante un'escursione il salvataggio resta - prima finisci la notte.",
   "rm": "Durant ina tura resta il stadi da gieu - l'emprim terminar la notg."
  },
+ "Wände": {
+  "en": "Walls",
+  "fr": "Parois",
+  "it": "Pareti",
+  "rm": "Paraids"
+ },
  "Wärmebild": {
   "en": "Thermal image",
   "fr": "Image thermique",
@@ -39605,6 +41261,12 @@
   "it": "Immagine termica (3)",
   "rm": "Maletg termic (3)"
  },
+ "Wärmebild ausrichten": {
+  "en": "Align the thermal picture",
+  "fr": "Aligner l'image thermique",
+  "it": "Allineare l'immagine termica",
+  "rm": "Drizzar il maletg termic"
+ },
  "Wärmebild wie echt: Kleider isolieren (Jacke kühl, Gesicht und Hände warm), Steine, Autos und Asphalt speichern die Sonnenwärme bis in die Nacht, Regen kühlt, Fenster spiegeln den kalten Himmel": {
   "en": "Thermal image like real: clothes insulate (jacket cool, face and hands warm), stones, cars and asphalt store the sun’s heat into the night, rain cools, windows reflect the cold sky",
   "fr": "Image thermique réaliste : les vêtements isolent (veste froide, visage et mains chauds), pierres, voitures et asphalte gardent la chaleur du soleil jusque dans la nuit, la pluie refroidit, les fenêtres reflètent le ciel froid",
@@ -39616,6 +41278,18 @@
   "fr": "Image thermique réaliste : capteur comme le Thermal-90 (80 × 62, bruit, dérive, flou, eau sur la fenêtre, le brouillard absorbe), chaleur réaliste (les vêtements isolent, animaux à fourrure, le moteur refroidit, le soleil chauffe l’asphalte, le toit de la voiture et la tente, ciel froid, le verre est opaque)",
   "it": "Immagine termica realistica: sensore come il Thermal-90 (80 × 62, rumore, deriva, sfocatura, acqua sulla finestra, la nebbia assorbe), calore realistico (i vestiti isolano, animali con pelliccia, il motore si raffredda, il sole scalda asfalto, tetto dell’auto e tenda, cielo freddo, il vetro è opaco)",
   "rm": "Maletg termic sco vair: sensor sco il Thermal-90 (80 × 62, canera, deriva, sfuschadad, aua sin la fanestra, tschajera traguttescha), chalur sco vaira (vestgadira isolescha, animals cun pel, motor sa sfradenta, il sulegl stgauda asfalt, tetg da l’auto e tenda, tschiel fraid, vaider è betg transparent)"
+ },
+ "Wärmebild über das Kamerabild legen (Zoom, Verschiebung).": {
+  "en": "Lay the thermal picture over the camera picture (zoom, offset).",
+  "fr": "Superposer l'image thermique à l'image de la caméra (zoom, décalage).",
+  "it": "Sovrapporre l'immagine termica a quella della fotocamera (zoom, spostamento).",
+  "rm": "Metter il maletg termic sur il maletg da la camera (zoom, spustament)."
+ },
+ "Wärmebild-Treiber": {
+  "en": "Thermal driver",
+  "fr": "Pilote de la caméra thermique",
+  "it": "Driver della termocamera",
+  "rm": "Driver da la camera termica"
  },
  "Wärmebild: %s – %d° × %d°, %d Bilder/s": {
   "en": "Thermal image: %s – %d° × %d°, %d frames/s",
@@ -39826,6 +41500,12 @@
   "fr": "Cellule",
   "it": "Cella",
   "rm": "Cella"
+ },
+ "Zellspannungen in MoveEye gleich? Aufgebläht oder warm = sofort raus.": {
+  "en": "cell voltages in MoveEye equal? Swollen or warm = out at once.",
+  "fr": "tensions des cellules égales dans MoveEye ? Gonflée ou chaude = retirer tout de suite.",
+  "it": "tensioni delle celle uguali in MoveEye? Gonfia o calda = togliere subito.",
+  "rm": "tensiuns da las cellas egualas en MoveEye? Inflada u chauda = immediatamain ora."
  },
  "Zelt": {
   "en": "Tent",
@@ -40108,6 +41788,12 @@
   "fr": "Lire le ZIP",
   "it": "Leggere lo ZIP",
   "rm": "Leger il ZIP"
+ },
+ "Zittern, Brummen, Spiel? Verschleissteil – Ersatz-Servo bereithalten.": {
+  "en": "jitter, hum, play? Wear part – keep a spare servo.",
+  "fr": "tremblement, bourdonnement, jeu ? Pièce d'usure – garder un servo de rechange.",
+  "it": "tremolio, ronzio, gioco? Pezzo soggetto a usura – tenere un servo di ricambio.",
+  "rm": "tremblar, zunzurar, gieu? Part che s'consumescha – tegnair a disposiziun in servo da reserva."
  },
  "Zone": {
   "en": "Zone",
@@ -40991,6 +42677,12 @@
   "it": "«Su in cresta si sta coprendo. Attento al tempo.»",
   "rm": "«Si sin la creesta sa stgirenta. Fa attenziun a l'aura.»"
  },
+ "«Schutz» GPIO 16 (Pin 36) · «Alarm quittieren» GPIO 26 (Pin 37) · je gegen GND, interner Pull-up": {
+  "en": "«Protection» GPIO 16 (pin 36) · «Acknowledge alarm» GPIO 26 (pin 37) · each to GND, internal pull-up",
+  "fr": "«Protection» GPIO 16 (broche 36) · «Acquitter l'alarme» GPIO 26 (broche 37) · chacun vers GND, pull-up interne",
+  "it": "«Protezione» GPIO 16 (pin 36) · «Conferma allarme» GPIO 26 (pin 37) · ciascuno a GND, pull-up interno",
+  "rm": "«Protecziun» GPIO 16 (pin 36) · «Quittar l'alarm» GPIO 26 (pin 37) · mintgin a GND, pull-up intern"
+ },
  "«Schöner Abend. Übernachte nicht zu nah an der Passstrasse.»": {
   "en": "«Nice evening. Don't sleep too close to the pass road.»",
   "fr": "«Belle soirée. Ne dors pas trop près de la route du col.»",
@@ -41302,6 +42994,12 @@
   "fr": "Nuit surprise : pas encore d’événements.",
   "it": "Notte a sorpresa: ancora nessun evento.",
   "rm": "Notg da surpraisa: anc nagins eveniments."
+ },
+ "Übersicht": {
+  "en": "Overview",
+  "fr": "Aperçu",
+  "it": "Panoramica",
+  "rm": "Survista"
  },
  "Übersicht · gleich geht es los": {
   "en": "Overview · starting soon",

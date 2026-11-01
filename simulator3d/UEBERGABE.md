@@ -1,8 +1,14 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 01.11.2026 · Version **3.39.2** · MoveEye **3.39.2** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 01.11.2026 · Version **3.40.0** · MoveEye **3.40.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.40.0 (MoveEye 3.40.0): Bauen (`scripts/werkstatt.gd`, MoveEye Teile 639v / 639vb / 639w)
+
+- Ein Eintrag «Bauen» (ui_gemeinsam.json «more»: build, alias case, order 20), /build in MoveEye (/case leitet weiter),
+  3D im Browser (werkzeuge/three), 3MF je Teil in hardware/gehaeuse/Druckdateien, Prüfung `werkzeuge/bau_pruefen.py`,
+  Test `werkzeuge/bauen_test.gd`. Bau-Infos nachziehen nur nach Fragebogen an Daniel (CLAUDE.md).
 
 ## NEU in 3.39.2 (MoveEye 3.39.2): Push ohne WLAN-Namen (MoveEye Teil 635c)
 

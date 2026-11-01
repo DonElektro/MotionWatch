@@ -1,22 +1,39 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-01 13:26",
+ "generated": "2026-11-01 13:48",
  "versions": [
+  {
+   "version": "3.40.0",
+   "file": "webcam_bewegung_3_40_0.py",
+   "url": "",
+   "sha256": "aa6944616f3c5ac22c4dc3f86b806eea47c78d4db33b5885990e6e284084a32d",
+   "date": "2026-11-01 13:48",
+   "notes": "Bauen: MoveEye komplett selbst bauen – ein Menüeintrag in MoveEye und Simulator, 10 Reiter, 3D im Browser auch ohne Simulator, Varianten, Einkaufsliste, alle Druckteile als 3MF, Verkabelungsplan, «Mein Bau».",
+   "size": 4751837,
+   "sig": "dcee75204e1b6dd5521502ed2ea7fc6790553ea6bdd300e7bcb3e195c4957a147396bca2c7fec109153cbb8d159f5af2c20625f12108065a3e7cf06561296e08",
+   "data": {
+    "file": "moveeye_daten_3_40_0.zip",
+    "url": "",
+    "sha256": "0881d6b89ec6446528e61c7e92ac48ddd8e072822a53b6c870cd976e7102c593",
+    "size": 2516444,
+    "sig": "138c0130c73f35d2cfb05929f4e8dee72b1d355214fd05e22275c3aeb7ca98d10c36283e58bb0ba7926975e85921e51cc140fe0302fc5879f36ea3264f7da806"
+   }
+  },
   {
    "version": "3.39.2",
    "file": "webcam_bewegung_3_39_2.py",
    "url": "",
-   "sha256": "94e0903a01d9a9f9443cc86ce1a5fb3d7b7360e3e17d56e5ba4ee21c9ad31ff5",
-   "date": "2026-11-01 13:25",
+   "sha256": "70bc21235730a8e6b3087aafb6ce4a99ca2c74f2eca5c638aa2fac93218dc951",
+   "date": "2026-11-01 13:38",
    "notes": "Datenschutz: Push- und E-Mail-Meldungen zeigen statt des WLAN-Namens nur noch «bekanntes WLAN».",
-   "size": 4730304,
-   "sig": "38134f9ffa90897b59740239b6707b936dd0c6e5020c91159655ea2a7a0bcb8d63f973edb76063450f846ccd38fc91020bcac2b373d6e583718314b5d7100503",
+   "size": 4751822,
+   "sig": "dda1ed74c09b2fe61c34e79ab3ab6c9e3bcdad376e5de3935b881dd72626c4f6e63c94c4f0133fa764fd55aba7d3448d028458ac9b90deac7b79cc3028e5780c",
    "data": {
     "file": "moveeye_daten_3_39_2.zip",
     "url": "",
-    "sha256": "efc7a06b33c1dba0b394cbe92ad03e796ea8248be698da86f36d023ef358f73b",
-    "size": 1589561,
-    "sig": "5c66c080b39a742e94f4e3673614d59230d129157dd793074dd5c56e162e45b8afcfee54f665cb357ee9d67a7f5f4bceb5f8e8fdc8d703a294d4f7440d9f5101"
+    "sha256": "0ad55718ee31f06f35cc2c5bd3f6e930fd4353abbe05099e4d3b11922edd789a",
+    "size": 2516344,
+    "sig": "2142c55524195f15dcd51ae2e836ac23fac35e376ec96dcc002143a4414406de98b569aa14d125935c58dd110d2f95625fbedf8ec30afd3a00cb2fd68163d809"
    }
   },
   {
@@ -41,7 +58,7 @@
    "file": "webcam_bewegung_3_37_0.py",
    "url": "",
    "sha256": "4138426d4f2bf303d87ce86321420b397a58d7a28964bb6feb15c183c72dcab3",
-   "date": "2026-11-01 12:08",
+   "date": "2026-11-01 13:38",
    "notes": "Foto-Texturen aus Daniels Fotos im Bergtal: Wiese, Alpweide, Alpenrosen, Geröll, Fels, Strasse (abschaltbar; Lite unverändert).",
    "size": 4688558,
    "sig": "71b990d425a669f5898bdf598d00e8162990172e36363cf76f26ba0527a3963226a71641aa8e200ac842a6d0903240378952da7ff9583aed8a07eaf61a690300",
@@ -136,23 +153,6 @@
     "sha256": "d03eba7055bff2176a7dd9a51cbcfb5904df3b4a69e40a45c0316d39473c15e4",
     "size": 1567077,
     "sig": "a8d42a036a386c247b3afc41af2feac0cb5d40a6382f1e54e17fe7f39ecf560d2def518175c394952606d11bb6b2ab16fbe5b7ff5107c6ca5e7aadc6d161f00a"
-   }
-  },
-  {
-   "version": "3.31.0",
-   "file": "webcam_bewegung_3_31_0.py",
-   "url": "",
-   "sha256": "56c35f98dba982c74ee960e23f453c28659d8fcc3305b41bae40b422641180c7",
-   "date": "2026-11-01 11:35",
-   "notes": "Ein gemeinsamer Kopf auf jeder Seite (Web, Pi-Fenster, Simulator): ? 🔔 ↻ DE ☰ ⛶ ▲ 🛠 immer gleich; Ein-/Ausblenden-Listen als Chips mit Symbolen und Gruppen.",
-   "size": 4523368,
-   "sig": "b1df9658dd92f934625296f11be3fee542ef1ffc3a4da28f55bf115a065bf65dec6c87b031ba18c5fa99b0c8953bd095e737fe94e8af5be91c9cbd325d82d902",
-   "data": {
-    "file": "moveeye_daten_3_31_0.zip",
-    "url": "",
-    "sha256": "d2697360f1fe47bab69ccc7fe66090b500c80666d6992302fcb0a1b0d4b1e0c5",
-    "size": 1566711,
-    "sig": "f1b4f5ca5d7e0e54279b851bd462f89350c6e33609e0c529797fb9303b6533e80e2bfd18556ee7c4458591a6b41320e0c60a82cc2f72ab30cd88ee22f3342309"
    }
   },
   {

@@ -592,7 +592,7 @@ def ui_more_selftest():
     order = U.get("more_order") or []
     items = {m["id"]: m for m in U.get("more") or []}
     assert order and all(i in items for i in order), "639zb: more_order / more"
-    marks = {"help": 'href="/help"', "case": 'href="/case"', "feedback": 'id="m-fb"', "about": 'id="m-about"', "werk": 'id="g2-sys"'}
+    marks = {"help": 'href="/help"', "case": 'href="/case"', "build": 'href="/build"', "feedback": 'id="m-fb"', "about": 'id="m-about"', "werk": 'id="g2-sys"'}
     pos = [MORE_PAGE.find(marks.get(i, "\0")) for i in order]
     assert all(p >= 0 for p in pos) and pos == sorted(pos), f"639zb: «Mehr» of MoveEye not in the order {order}: {pos}"
     for i in order:
