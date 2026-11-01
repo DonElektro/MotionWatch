@@ -63,6 +63,8 @@ func auto_quality() -> String:
 		return "simple"                                   # 3D-3.43: Raspberry Pi - the light graphics
 	if main.in_vm or a.contains("llvmpipe") or a.contains("swiftshader") or a.contains("basic render") or a.contains("software"):
 		return "simple"
+	if Quality.weak_reason() != "":
+		return "simple"                                   # Sparmodus: bis 4 GB / Intel HD der Haswell-Zeit (quality.gd weak_pc)
 	if a.contains("nvidia") or a.contains("geforce") or a.contains("radeon") or a.contains("amd") or a.contains("arc"):
 		return "nice"
 	return "medium"                                       # Intel and other built-in graphics
@@ -121,6 +123,8 @@ func lite_update() -> void:
 		var w := Quality.weak_reason()
 		if w != "":
 			why = "automatisch: " + w
+			if not Engine.get_architecture_name().begins_with("arm") and main.start_info == "" and not Quality.lite():
+				main.start_info = "Sparmodus: schwacher PC erkannt (%s) – Grafik-Modus Lite. Ändern: System › Grafik › Grafik-Modus." % w
 		elif main._lite_slow:
 			why = "automatisch: wenige Bilder pro Sekunde beim Start"
 	main.lite_why = why

@@ -16,6 +16,18 @@ STARTEN
    und wieder auf. Geht das nicht von selbst: "Start in virtueller Maschine (ANGLE).bat" benutzen.
    In der virtuellen Maschine muss die 3D-Beschleunigung eingeschaltet sein (VMware: Einstellungen -> Anzeige).
 
+LINUX (Linux Mint, Ubuntu; PC mit x86_64)
+- Datei "MoveEyeSim3D_Linux.zip" herunterladen, z. B. in den Ordner "Dokumente" entpacken (Rechtsklick › Hier entpacken).
+- Im Ordner MoveEyeSim3D ein Terminal öffnen (Rechtsklick › Im Terminal öffnen) und ./installieren.sh eingeben:
+  legt "MoveEye Sim" im Startmenü (Bildung) und auf dem Desktop an, mit dem MoveEye-Symbol. Braucht kein sudo.
+  Fragt Mint beim ersten Doppelklick aufs Desktop-Symbol nach: "Vertrauen und starten" wählen.
+- Rechtsklick auf den Eintrag im Startmenü: "Notfall-Start" (Lite, ohne Foto-Inhalte, ohne Update-Suche).
+- Updates wie unter Windows (eigenes Paket für Linux); der Eintrag im Startmenü bleibt dabei gültig.
+  Ordner verschoben: ./installieren.sh im neuen Ordner noch einmal. Wegnehmen: ./installieren.sh --entfernen
+- Schwache PCs (bis 4 GB Arbeitsspeicher oder ältere Intel-Grafik wie HD 4600): "Grafik-Modus: Automatisch" nimmt
+  von selbst Lite (Sparmodus, gilt auch unter Windows). Eine eigene Wahl unter System › Grafik gilt immer vor.
+- Protokoll: ~/.local/share/godot/app_userdata/MoveEye Sim 3D/logs/godot.log
+
 SCHLIESST SICH DAS FENSTER GLEICH NACH DEM START?
 - "Notfall-Start.bat" doppelklicken (liegt neben der .exe). Er startet einmal mit der einfachsten Grafik: ANGLE
   (Direct3D 11), Grafik-Modus Lite, ohne Foto-Inhalte, ohne Update-Suche und ohne Grafikstufe "Hoch". Die eigenen

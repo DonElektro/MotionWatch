@@ -1033,6 +1033,12 @@
   "it": "%.1f / %d kg",
   "rm": "%.1f / %d kg"
  },
+ "%.1f GB Arbeitsspeicher": {
+  "en": "%.1f GB memory",
+  "fr": "%.1f Go de mémoire",
+  "it": "%.1f GB di memoria",
+  "rm": "%.1f GB memoria"
+ },
  "%.1f kg": {
   "en": "%.1f kg",
   "fr": "%.1f kg",
@@ -1984,6 +1990,12 @@
   "it": "(la prima volta «Draft a new release», tag ki-daten). 2. Actions → «KI-Modell» → Run workflow. MoveEye scarica poi da solo il nuovo modello.\n",
   "rm": "(l’emprima giada «Draft a new release», tag ki-daten). 2. Actions → «KI-Modell» → Run workflow. MoveEye prenda suenter sez il nov model.\n"
  },
+ "(byt": {
+  "en": "(byt",
+  "fr": "(byt",
+  "it": "(byt",
+  "rm": "(byt"
+ },
  "(deine Nachricht)": {
   "en": "(your message)",
   "fr": "(ton message)",
@@ -2074,11 +2086,23 @@
   "it": "(non ha più niente per te)",
   "rm": "(n'ha nagut pli per tai)"
  },
+ "(hsw": {
+  "en": "(hsw",
+  "fr": "(hsw",
+  "it": "(hsw",
+  "rm": "(hsw"
+ },
  "(in der verlassenen Hütte geht ein Licht an)": {
   "en": "(a light comes on in the abandoned hut)",
   "fr": "(une lumière s'allume dans la cabane abandonnée)",
   "it": "(nella baita abbandonata si accende una luce)",
   "rm": "(en la chamona bandunada sa mussa ina glisch)"
+ },
+ "(ivb": {
+  "en": "(ivb",
+  "fr": "(ivb",
+  "it": "(ivb",
+  "rm": "(ivb"
  },
  "(MoveEye hat etwas aufgenommen: «{t}»)": {
   "en": "(MoveEye recorded something: «{t}»)",
@@ -2139,6 +2163,12 @@
   "fr": "(estimation du simulateur, MoveEye non connecté)",
   "it": "(stima del simulatore, MoveEye non collegato)",
   "rm": "(stimaziun dal simulatur, MoveEye betg collià)"
+ },
+ "(snb": {
+  "en": "(snb",
+  "fr": "(snb",
+  "it": "(snb",
+  "rm": "(snb"
  },
  "(still während Prüfstand / Testlauf)": {
   "en": "(silent during test bench / test run)",
@@ -16102,6 +16132,18 @@
   "fr": "Pour pivoter la tête : une deuxième / troisième photo à côté (fondu doux)",
   "it": "Per ruotare la testa: una seconda / terza foto accanto (dissolvenza morbida)",
   "rm": "Per volver il chau: ina segunda / terza foto sper quella (surfatg lom)"
+ },
+ "Für Linux gibt es auf GitHub noch kein Update-Paket.": {
+  "en": "There is no update package for Linux on GitHub yet.",
+  "fr": "Il n'y a pas encore de paquet de mise à jour pour Linux sur GitHub.",
+  "it": "Su GitHub non c’è ancora un pacchetto di aggiornamento per Linux.",
+  "rm": "Sin GitHub n’exista anc nagin pachet d’actualisaziun per Linux."
+ },
+ "für Linux noch kein Update-Paket": {
+  "en": "no update package for Linux yet",
+  "fr": "pas encore de paquet de mise à jour pour Linux",
+  "it": "ancora nessun pacchetto di aggiornamento per Linux",
+  "rm": "anc nagin pachet d’actualisaziun per Linux"
  },
  "Für MoveEye fehlen Python-Pakete: ": {
   "en": "Python packages missing for MoveEye: ",
@@ -34332,6 +34374,12 @@
   "it": "Tramonto oggi nella valle: %s · alba: %s",
   "rm": "Rendiu dal sulegl oz en la val: %s · levada: %s"
  },
+ "Sparmodus: schwacher PC erkannt (%s) – Grafik-Modus Lite. Ändern: System › Grafik › Grafik-Modus.": {
+  "en": "Saving mode: weak PC detected (%s) – graphics mode Lite. Change: System › Graphics › Graphics mode.",
+  "fr": "Mode économie : PC peu puissant détecté (%s) – mode graphique Lite. Modifier : Système › Graphisme › Mode graphique.",
+  "it": "Modalità risparmio: PC debole rilevato (%s) – modalità grafica Lite. Cambiare: Sistema › Grafica › Modalità grafica.",
+  "rm": "Modus da spargn: PC flaivel renconuschì (%s) – modus grafic Lite. Midar: Sistem › Grafica › Modus grafic."
+ },
  "Spatz-Zelte": {
   "en": "Small scout tents",
   "fr": "Petites tentes",
@@ -42898,6 +42946,12 @@
   "fr": "· Les tuiles en haut (Monde · Tester · Apprendre · Jouer) font l’essentiel en un clic.\n· «Simple» montre l’essentiel, «Expert» tout ; le champ de recherche trouve chaque réglage.\n· Le mode d’emploi complet est dans MoveEye : onglet Plus → Mode d’emploi (chapitre Simulateur 3D).",
   "it": "· I riquadri in alto (Mondo · Testare · Imparare · Giocare) fanno le cose più frequenti con un clic.\n· «Semplice» mostra l’essenziale, «Esperto» tutto; il campo di ricerca trova ogni impostazione.\n· Le istruzioni complete sono in MoveEye: scheda Altro → Istruzioni (capitolo Simulatore 3D).",
   "rm": "· Las plattas sisum (Mund · Testar · Emprender · Giugar) fan il pli frequent cun in clic.\n· «Simpel» mussa il pli impurtant, «Expert» tut; il champ da tschertga chatta mintga configuraziun.\n· Las instrucziuns cumplettas èn en MoveEye: register Dapli → Instrucziuns (chapitel Simulatur 3D)."
+ },
+ "ältere Intel-Grafik (%s)": {
+  "en": "older Intel graphics (%s)",
+  "fr": "graphique Intel ancien (%s)",
+  "it": "grafica Intel datata (%s)",
+  "rm": "grafica Intel pli veglia (%s)"
  },
  "ältere: Alle gegen die Kamera": {
   "en": "older: all against the camera",

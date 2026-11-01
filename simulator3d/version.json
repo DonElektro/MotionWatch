@@ -5,5 +5,11 @@
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
  "size": 48000451,
  "sha256": "1315f3b84c6a59cc216aea7c9736c87ffe48a1ad4f894685a08e6f3f68fc3f2a",
- "notes": "Fix INA219 0x44, Bau-Infos"
+ "notes": "Fix INA219 0x44, Bau-Infos",
+ "linux": {
+  "file": "simulator3d/MoveEyeSim3D_Linux.zip",
+  "ver": "3.41.1",
+  "size": 41969441,
+  "sha256": "031db4814208cca96650bf7451d28d6c201ba5326245e78ab39c265390fb5437"
+ }
 }
