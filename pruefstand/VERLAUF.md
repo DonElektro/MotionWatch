@@ -17,6 +17,17 @@ Spalten nah / mittel / weit: Personen nach Grösse im Bild (Höhe ≥ 100 Bildpu
 
 | Datum | Motion Watch | Simulator | Testlauf | Pushes richtig / falsch | Personen erkannt | Wärmebild | nah / mittel / weit | Reaktion | Tiere gemeldet | Flackern | Bilder/s | KI | Rechner |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 2026-11-01 02:55 | 3.29.0 | 3.29.0 | Kurz (Tag + Nacht) ×3 · Zufall 1,2,3 | **7** / **1** (falsch 0–1 pro Lauf) | 25 / 28 (**89 %**) (89–90 %) | 4 / 5 | 15/15 / 3/4 / 3/4 | 2.4 s | 5 / 9 | 13 | 1.9 | mit KI | GitHub (ubuntu, 4 Kerne) · AMD EPYC 7763 |
+| 2026-11-01 02:55 | 3.29.0 | 3.29.0 | Nacht ×3 · Zufall 1,2,3 | **12** / **3** (falsch 0–2 pro Lauf) | 22 / 22 (**100 %**) (100 %) | 16 / 16 | 6/6 / – / – | 2.6 s | 12 / 14 | 19 | 1.9 | mit KI | GitHub (ubuntu, 4 Kerne) · AMD EPYC 7763 |
+| 2026-11-01 02:55 | 3.29.0 | 3.29.0 | Standard (Tag, Wind, Nacht, Regen) ×3 · Zufall 1,2,3 | **19** / **3** (falsch 1 pro Lauf) | 53 / 56 (**95 %**) (94–95 %) | 15 / 15 | 15/15 / 17/20 / 6/6 | 3.6 s | 20 / 24 | 19 | 1.9 | mit KI | GitHub (ubuntu, 4 Kerne) · AMD EPYC 7763 |
+| 2026-11-01 02:55 | 3.29.0 | 3.29.0 | Ganze Nacht (20–6 Uhr, Zeitraffer) ×3 · Zufall 1,2,3 | **2** / **14** (falsch 4–6 pro Lauf) in 3 Nächten (Ø 0.7 / 4.7 pro Nacht) | 3 / 3 (**100 %**) (100 %) | 3 / 3 | – | 1.6 s | 11 / 13 | 51 | 1.8 | mit KI | GitHub (ubuntu, 4 Kerne) · AMD EPYC 7763 |
+| 2026-11-01 02:55 | 3.29.0 | 3.29.0 | Schwierige Bedingungen ×3 · Zufall 1,2,3 | **25** / **3** (falsch 0–2 pro Lauf) | 76 / 78 (**97 %**) (96–100 %) | 11 / 11 | 42/42 / 20/22 / 3/3 | 3.9 s | 23 / 25 | 25 | 2.0 | mit KI | GitHub (ubuntu, 4 Kerne) · AMD EPYC 7763 |
+| 2026-11-01 02:55 | 3.29.0 | 3.29.0 | Voller Campingplatz ×3 · Zufall 1,2,3 | **10** / **2** (falsch 0–2 pro Lauf) | 18 / 18 (**100 %**) (100 %) | – | 17/17 / 1/1 / – | 4.8 s | 0 / 0 | 11 | 1.6 | mit KI | GitHub (ubuntu, 4 Kerne) · AMD EPYC 7763 |
+| 2026-11-01 02:55 | 3.29.0 | 3.29.0 | Tarnen und Kriechen ×3 · Zufall 1,2,3 | **13** / **0** (falsch 0 pro Lauf) | 55 / 56 (**98 %**) (95–100 %) | 19 / 20 | 36/36 / – / – | 2.2 s | 0 / 0 | 1 | 2.1 | mit KI | GitHub (ubuntu, 4 Kerne) · AMD EPYC 7763 |
+| 2026-11-01 02:55 | 3.29.0 | 3.29.0 | Velodieb ×3 · Zufall 1,2,3 | **11** / **2** (falsch 0–1 pro Lauf) | 30 / 30 (**100 %**) (100 %) | – | 30/30 / – / – | 2.8 s | 0 / 0 | 3 | 2.3 | mit KI | GitHub (ubuntu, 4 Kerne) · AMD EPYC 7763 |
+| 2026-11-01 02:55 | 3.29.0 | 3.29.0 | Gegenstände (Wind, Licht, Lockmittel) ×3 · Zufall 1,2,3 | **7** / **0** (falsch 0 pro Lauf) | 11 / 24 (**46 %**) (25–62 %) | 1 / 3 | 5/15 / 5/6 / – | 5.8 s | 8 / 12 | 6 | 2.0 | mit KI | GitHub (ubuntu, 4 Kerne) · AMD EPYC 7763 |
+| 2026-11-01 02:55 | 3.29.0 | 3.29.0 | Fahrzeuge in der Nacht (Licht, Blendung, Parkieren) ×3 · Zufall 1,2,3 | **12** / **7** (falsch 1–4 pro Lauf) | 28 / 32 (**88 %**) (83–90 %) | 17 / 18 | 11/12 / – / 0/2 | 1.4 s | 0 / 0 | 27 | 2.3 | mit KI | GitHub (ubuntu, 4 Kerne) · AMD EPYC 7763 |
+| 2026-11-01 02:11 | 3.29.0 | 3.29.0 | Kurz (Tag + Nacht) | **3** / **0** | 10 / 10 (**100 %**) | 2 / 2 | 6/6 / – / 2/2 | 1.7 s | 3 / 3 | 2 | 1.9 | mit KI | GitHub (ubuntu, 4 Kerne) · AMD EPYC 7763 |
 | 2026-11-01 01:55 | 3.28.1 | 3.28.1 | Kurz (Tag + Nacht) | **2** / **1** | 10 / 10 (**100 %**) | 2 / 2 | 5/5 / 2/2 / 1/1 | 2.0 s | 2 / 2 | 7 | 1.9 | mit KI | GitHub (ubuntu, 4 Kerne) · AMD EPYC 7763 |
 | 2026-11-01 01:31 | 3.27.0 | 3.27.0 | Kurz (Tag + Nacht) | **3** / **0** | 10 / 10 (**100 %**) | 1 / 1 | 6/6 / 2/2 / 1/1 | 1.5 s | 2 / 3 | 6 | 1.9 | mit KI | GitHub (ubuntu, 4 Kerne) · AMD EPYC 7763 |
 | 2026-11-01 01:00 | 3.26.0 | 3.26.0 | Kurz (Tag + Nacht) | **3** / **0** | 10 / 10 (**100 %**) | 2 / 2 | 5/5 / 2/2 / 1/1 | 1.3 s | 3 / 3 | 3 | 1.9 | mit KI | GitHub (ubuntu, 4 Kerne) · AMD EPYC 7763 |
@@ -176,10 +187,89 @@ Spalten nah / mittel / weit: Personen nach Grösse im Bild (Höhe ≥ 100 Bildpu
 
 ## Einzelheiten pro Phase (letzter Lauf)
 
-**Kurz (Tag + Nacht)** – 2026-11-01 01:55, Motion Watch 3.28.1
+**Kurz (Tag + Nacht)** – 2026-11-01 02:55, Motion Watch 3.29.0
 
 | Phase | Pushes richtig / falsch | Personen | Wärmebild | Reaktion | Tiere | Flackern | verpasst, weil … |
 |---|---|---|---|---|---|---|---|
-| Tag, Wind | 1 / 1 | 6 / 6 | – | 0.9 s | 2 / 2 | 2 | – |
-| Nacht mit Infrarot | 1 / 0 | 4 / 4 | 2 / 2 | 3.7 s | 0 / 0 | 5 | – |
+| Tag, Wind | 1 / 0 | 5 / 6 | – | 0.7 s | 1 / 2 | 6 | 1× zu schnell, 1× zu klein / weit weg |
+| Nacht mit Infrarot | 1 / 0 | 3 / 3 | 1 / 1 | 2.8 s | 0 / 1 | 2 | – |
+
+**Nacht** – 2026-11-01 02:55, Motion Watch 3.29.0
+
+| Phase | Pushes richtig / falsch | Personen | Wärmebild | Reaktion | Tiere | Flackern | verpasst, weil … |
+|---|---|---|---|---|---|---|---|
+| Nacht, ohne Licht | 2 / 0 | 3 / 3 | 3 / 3 | 2.7 s | 0 / 1 | 0 | – |
+| Nacht, Infrarot an | 1 / 0 | 2 / 2 | – | 1.8 s | 4 / 4 | 1 | – |
+| Nacht, Regen | 2 / 0 | 2 / 2 | 2 / 2 | 2.9 s | 0 / 0 | 0 | – |
+
+**Standard (Tag, Wind, Nacht, Regen)** – 2026-11-01 02:55, Motion Watch 3.29.0
+
+| Phase | Pushes richtig / falsch | Personen | Wärmebild | Reaktion | Tiere | Flackern | verpasst, weil … |
+|---|---|---|---|---|---|---|---|
+| Tag, klar | 2 / 0 | 6 / 7 | – | 6.7 s | 4 / 4 | 1 | – |
+| Tag, Wind und Wolken | 2 / 0 | 6 / 6 | – | 4.4 s | 2 / 2 | 0 | – |
+| Nacht, klar (Insekten am Licht) | 1 / 0 | 3 / 3 | 3 / 3 | 2.9 s | 1 / 2 | 1 | – |
+| Nacht, Regen | 1 / 1 | 2 / 2 | 2 / 2 | 3.0 s | 0 / 0 | 2 | – |
+
+**Ganze Nacht (20–6 Uhr, Zeitraffer)** – 2026-11-01 02:55, Motion Watch 3.29.0
+
+| Phase | Pushes richtig / falsch | Personen | Wärmebild | Reaktion | Tiere | Flackern | verpasst, weil … |
+|---|---|---|---|---|---|---|---|
+| Abend, Dämmerung | 1 / 0 | 1 / 1 | 1 / 1 | 2.6 s | 1 / 1 | 1 | – |
+| Nacht, Windböen | 0 / 0 | 0 / 0 | – | – | 0 / 0 | 0 | – |
+| Nacht, Regenschauer | 0 / 2 | 0 / 0 | – | – | 0 / 0 | 6 | – |
+| Mitternacht, nach dem Regen | 1 / 0 | 0 / 0 | – | – | 1 / 1 | 0 | – |
+| Tiefe Nacht | 0 / 1 | 0 / 0 | – | – | 0 / 0 | 2 | – |
+| Morgendämmerung | 0 / 1 | 0 / 0 | – | – | 2 / 2 | 6 | – |
+
+**Schwierige Bedingungen** – 2026-11-01 02:55, Motion Watch 3.29.0
+
+| Phase | Pushes richtig / falsch | Personen | Wärmebild | Reaktion | Tiere | Flackern | verpasst, weil … |
+|---|---|---|---|---|---|---|---|
+| Gegenlicht am Morgen | 0 / 0 | 4 / 4 | – | 0.0 s | 2 / 2 | 1 | – |
+| Nebel | 2 / 0 | 4 / 4 | – | 8.0 s | 2 / 2 | 0 | – |
+| Schnee | 1 / 0 | 4 / 4 | – | 6.1 s | 2 / 2 | 2 | – |
+| Tropfen auf der Linse | 2 / 0 | 4 / 4 | – | 4.4 s | 1 / 1 | 0 | – |
+| Spinnennetz, Nacht mit Infrarot | 1 / 0 | 4 / 4 | 2 / 2 | 2.4 s | 0 / 1 | 1 | – |
+| Scheinwerfer in der Nacht | 1 / 1 | 2 / 2 | 2 / 2 | 1.9 s | 0 / 0 | 2 | – |
+| Wolkenschatten und Wind | 1 / 0 | 3 / 4 | – | 3.0 s | 1 / 1 | 0 | 1× zu schnell |
+
+**Voller Campingplatz** – 2026-11-01 02:55, Motion Watch 3.29.0
+
+| Phase | Pushes richtig / falsch | Personen | Wärmebild | Reaktion | Tiere | Flackern | verpasst, weil … |
+|---|---|---|---|---|---|---|---|
+| Nachmittag, Nachbarn kochen, Kinder spielen | 0 / 1 | 4 / 4 | – | 0.6 s | 0 / 0 | 2 | – |
+| Nacht mit Infrarot, Nachbarn gehen zum WC | 2 / 1 | 2 / 2 | – | 5.0 s | 0 / 0 | 4 | – |
+
+**Tarnen und Kriechen** – 2026-11-01 02:55, Motion Watch 3.29.0
+
+| Phase | Pushes richtig / falsch | Personen | Wärmebild | Reaktion | Tiere | Flackern | verpasst, weil … |
+|---|---|---|---|---|---|---|---|
+| Tag, Tarnkleidung und Robben | 2 / 0 | 8 / 8 | – | 3.6 s | 0 / 0 | 0 | – |
+| Dämmerung | 2 / 0 | 5 / 5 | 5 / 5 | 1.7 s | 0 / 0 | 0 | – |
+| Nacht mit Infrarot | 1 / 0 | 6 / 6 | 2 / 2 | 2.7 s | 0 / 0 | 0 | – |
+
+**Velodieb** – 2026-11-01 02:55, Motion Watch 3.29.0
+
+| Phase | Pushes richtig / falsch | Personen | Wärmebild | Reaktion | Tiere | Flackern | verpasst, weil … |
+|---|---|---|---|---|---|---|---|
+| Tag | 1 / 0 | 4 / 4 | – | 3.8 s | 0 / 0 | 0 | – |
+| Dämmerung | 1 / 0 | 2 / 2 | – | 13.1 s | 0 / 0 | 0 | – |
+| Nacht mit Infrarot | 2 / 0 | 4 / 4 | – | 1.4 s | 0 / 0 | 0 | – |
+
+**Gegenstände (Wind, Licht, Lockmittel)** – 2026-11-01 02:55, Motion Watch 3.29.0
+
+| Phase | Pushes richtig / falsch | Personen | Wärmebild | Reaktion | Tiere | Flackern | verpasst, weil … |
+|---|---|---|---|---|---|---|---|
+| Tag, Böen (Fahne, Plastiksack, Ballon, Wäsche, Tor, Obstbaum) | 2 / 0 | 3 / 4 | – | 7.9 s | 2 / 2 | 0 | – |
+| Dämmerung, Tiere am Lockmittel | 0 / 0 | 0 / 1 | 0 / 1 | – | 0 / 1 | 0 | 1× zu dunkel, 1× zu klein / weit weg |
+| Nacht mit Infrarot (Lampe mit Bewegungsmelder, Feuer, Kerze, Solarleuchten) | 1 / 0 | 1 / 3 | – | 2.9 s | 1 / 2 | 0 | 2× zu dunkel |
+
+**Fahrzeuge in der Nacht (Licht, Blendung, Parkieren)** – 2026-11-01 02:55, Motion Watch 3.29.0
+
+| Phase | Pushes richtig / falsch | Personen | Wärmebild | Reaktion | Tiere | Flackern | verpasst, weil … |
+|---|---|---|---|---|---|---|---|
+| Dämmerung, Abblendlicht, Velo mit Licht | 2 / 1 | 4 / 4 | 4 / 4 | 1.5 s | 0 / 0 | 2 | – |
+| Nacht mit Infrarot: Fernlicht, Scheinwerfer auf die Kamera, Töff | 2 / 0 | 2 / 2 | 1 / 1 | 2.1 s | 0 / 0 | 0 | – |
+| Nacht: Auto parkiert, Leute steigen aus, Wohnmobil, E-Trottinett | 2 / 0 | 3 / 4 | 1 / 1 | 0.8 s | 0 / 0 | 0 | 1× zu dunkel |
 
