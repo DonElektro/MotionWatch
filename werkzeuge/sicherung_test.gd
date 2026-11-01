@@ -1,6 +1,6 @@
 extends SceneTree
 ## Test «Sicherung im Simulator» (System → Sicherung, scripts/sicherung.gd) - ohne Bild, ohne Welt:
-##   cd simulator3d && HOME=/tmp/<test-home> MWSIM_SICHERUNG_DIR=/tmp/<test-home>/sich <godot> --headless --path . \
+##   cd simulator3d && HOME=/tmp/<test-home> [MWSIM_SICHERUNG_DIR=/tmp/…] <godot> --headless --path . \
 ##       -s "$PWD/../werkzeuge/sicherung_test.gd"            (absoluter Pfad nötig; nur mit einem Test-HOME unter /tmp)
 ## Prüft: sichern -> Daten ändern -> wiederherstellen (Vorher-Sicherung, Merker, apply_pending wie beim Neustart) -> gleich
 ## wie vorher; nicht Gesichertes bleibt unberührt; keine Zugangsdaten im ZIP; kaputte ZIPs (kein ZIP, abgeschnitten, ohne
@@ -66,6 +66,9 @@ func _init() -> void:
 	var data := OS.get_user_data_dir()
 	var home := OS.get_environment("HOME")
 	var out := OS.get_environment("MWSIM_SICHERUNG_DIR")
+	if out == "" and home.begins_with("/tmp/"):         # CI (ci.yml) sets only HOME: the backups go below it
+		out = home.path_join("sicherung_test")
+		OS.set_environment("MWSIM_SICHERUNG_DIR", out)
 	if not home.begins_with("/tmp/") or not out.begins_with("/tmp/"):
 		push_error("Sicherung-Test: nur mit HOME und MWSIM_SICHERUNG_DIR unter /tmp (jetzt: %s, %s)" % [home, out])
 		quit(1)

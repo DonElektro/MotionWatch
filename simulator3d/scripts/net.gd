@@ -322,12 +322,12 @@ func _handle(c: Dictionary, method: String, path: String, query: Dictionary, bod
 				else:
 					_send(c, 200, sj, "image/jpeg")
 				return
-			if parts.size() == 2 and parts[0] == "trailer_ton":  # Trailer im Browser (MoveEye 639n): ein Klang als WAV (trailer.gd wav_bytes)
+			if parts.size() == 2 and parts[0] == "trailer_ton":  # Trailer im Browser (MoveEye 639n): ein Klang, MP3 aus klang/web/ oder WAV (trailer.gd wav_bytes)
 				var tw: PackedByteArray = preload("res://scripts/trailer.gd").wav_bytes(parts[1].get_basename())
 				if tw.is_empty():
 					_json(c, {"ok": false, "error": "no such sound"}, 404)
 				else:
-					_send(c, 200, tw, "audio/wav")
+					_send(c, 200, tw, "audio/wav" if tw.slice(0, 4).get_string_from_ascii() == "RIFF" else "audio/mpeg")
 				return
 			if parts.size() == 2 and parts[0] == "disc_pic":    # Erlebniswelt 20–23: the picture of entry <i> of the Entdeckungsbuch (this scene)
 				var dj: PackedByteArray = main.entdecken.pic_bytes(str(query.get("scene", "")), int(parts[1].get_basename())) if main.entdecken != null else PackedByteArray()

@@ -16,7 +16,7 @@ extends Node
 ##        2. «In einen Ordner / auf einen USB-Stick»: Ordner wählen (FileDialog)
 ##        3. «In die MoveEye-Sicherung senden»: Auftrag mw_cmd «sim_sicherung» (wie «feedback», 350) - MoveEye holt das ZIP
 ##           selbst über /control {"action": "sicherung", "do": "get", "name"} und meldet {"do": "ack"}. So braucht der
-##           Simulator keine Anmeldedaten von MoveEye. MoveEye zeigt es in Sicherung → Eintrag «Simulator» (Teil 060b).
+##           Simulator keine Anmeldedaten von MoveEye. MoveEye zeigt es in Sicherung → Eintrag «Simulator» (Teil 639s).
 ## Wiederherstellen: ZIP wählen (oder aus MoveEye: /control {"do": "restore", "zip_b64", "confirm": true}), prüfen,
 ##   automatisch eine Sicherung des jetzigen Stands (…_vorher.zip, zum Rückgängigmachen), auspacken nach user://sicherung_neu,
 ##   Merker user://sicherung_laden.json, Neustart. Der neue Simulator ersetzt ganz am Anfang von main._ready (apply_pending,

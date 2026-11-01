@@ -263,7 +263,7 @@ $("b-theme").onclick = () => { const n = {light: "dark", dark: "red", red: "ligh
   fetch("/api/ui", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({set: {"mw-theme": th}})}).catch(() => {});   // like the other pages (guests: refused, no matter)
   apply(); };
 addEventListener("storage", e => { if (e.key === "mw-theme" || e.key === "mw-night") apply(); });   // switched on another page of MoveEye
-$("b-read").onclick = () => { if (!window.speechSynthesis) return; if (speechSynthesis.speaking) { speechSynthesis.cancel(); return; }
+$("b-read").onclick = () => { if (!window.speechSynthesis) return; if (window.MW_VOICE && window.MW_VOICE !== "on") return;    if (speechSynthesis.speaking) { speechSynthesis.cancel(); return; }
   const a = all[window.cur ?? tipIdx()]; const u = new SpeechSynthesisUtterance(a.t + ". " + a.x.replace(/^- /gm, "")); u.lang = "de-CH"; u.rate = 0.95; speechSynthesis.speak(u); };
 apply(); const hm = /^#a(\d+)$/.exec(location.hash); if (hm && all[+hm[1]]) show(+hm[1]); else home("");
 </script></body></html>"""

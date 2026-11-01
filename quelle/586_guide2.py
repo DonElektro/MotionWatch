@@ -79,7 +79,7 @@ def g2_state(lang=None):
     steps = g2_steps(g.get("mode") or "quick", lang)
     ids = [s["id"] for s in steps]
     left = [i for i in ids if i not in g["done"] and i not in g["skipped"] and not next(s for s in steps if s["id"] == i)["auto_skip"]]
-    return dict(g, steps=steps, hw=g2_hw(), left=left, setup_done=bool(CFG["setup_done"]), update_fast=bool(CFG.get("update_fast")),
+    return dict(g, steps=steps, hw=g2_hw(), left=left, setup_done=bool(CFG["setup_done"]), update_fast=CFG.get("update_mode") == "dev",
                 open=bool(g.get("mode")) and not g.get("finished"), default_simple=bool(CFG.get("ui_simple")),
                 use_case=CFG.get("use_case") or "", tours_auto=bool(CFG.get("tours_auto", True)), tip_of_day=bool(CFG.get("tip_of_day", True)))
 
@@ -206,7 +206,6 @@ SET_HELP = {
     "report_hour": ("The end of the night time: the report comes then, «Guard tonight» ends then.", "The time you usually get up."),
     "diary_on": ("Collects the best picture of every animal visit by itself.", "On - it costs little memory."),
     "eco_on": ("Fewer pictures while all is quiet: the battery lasts longer, the reaction is a little slower.", "On with a battery, off with a power supply."),
-    "update_auto": ("New versions are installed by themselves (only signed ones).", "On."),
     "thermal_on": ("The thermal camera finds warm bodies, also in the dark and behind grass.", "On if a thermal camera is connected."),
     "thermal_alarm": ("An alarm from the thermal picture alone (warm body without movement in the normal picture).", "On at night without light."),
     "noise_alarm": ("An alarm when it is loud (the microphone).", "Off at a busy campsite."),
@@ -223,7 +222,6 @@ SET_HELP = {
     "rec_keep_days": ("Recordings older than this are deleted by themselves (0 = keep until the memory is full).", "14 to 30 days."),
     "push_pics": ("A picture in the push message.", "On - you see at once what it is."),
     "batt_save_on": ("Below a battery level MoveEye saves power by itself (fewer pictures, the AI less often).", "On with a battery."),
-    "login_https_only": ("The password is only accepted over a secure connection (https, the device itself or Tailscale).", "On when you use MoveEye from outside."),
     "lens_check": ("Warns when the lens is dirty, wet or covered.", "On."),
     "weather_on": ("Weather forecast and warnings for the place (needs the location).", "On."),
     "gps_tag": ("Writes the location into the photos.", "Off if you share pictures."),
@@ -368,8 +366,7 @@ FACTORY_KEEP = {
     "record_dir", "storage_path", "lang", "sim_autostart_v2", "dev_phase_done", "app_icon_moveeye_done", "app_icon_orange_done",
     "news_seen_web", "news_seen_tk", "weekcheck_last", "weekrep_last", "report_last_day",
     # updates (Daniel, development phase: the fast test updates must keep working after a reset)
-    "update_fast", "update_auto", "update_url", "update_token", "update_unsigned", "update_hour", "update_install",
-    "update_install_armed", "update_push", "update_notified",
+    "update_mode", "update_url", "update_token", "update_unsigned", "update_unsigned_t", "update_hour", "update_push", "update_notified",
 }
 FACTORY_WORD = "ZURÜCKSETZEN"
 FACTORY_WORDS = {"ZURÜCKSETZEN", "ZURUECKSETZEN", "RESET", "RÉINITIALISER", "REINITIALISER", "RIPRISTINA", "RESETTAR"}

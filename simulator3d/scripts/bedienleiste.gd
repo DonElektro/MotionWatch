@@ -1,12 +1,12 @@
 extends HFlowContainer
 ## Bedienleiste (Paket real-layout-leiste, Daniel 31.10.2026): dieselbe Leiste wie oben auf jeder Seite von MoveEye
-## (Web 639o #mwbar, Pi-Fenster App._mwbar): «Einfach | Experte» · «Symbole farbig | schlicht» · «Beim Start: Nur Gruppen» ·
-## «Alle zuklappen · Nur Gruppen · Alle aufklappen». Ein Baustein für jedes Menü-Fenster des Simulators: build(main) mit
+## (Web 639o #mwbar, Pi-Fenster App._mwbar): «Einfach | Experte» · «Symbole farbig | schlicht» ·
+## «Alle zuklappen · Meine Ansicht · Alle aufklappen» (639r: die Mitte = Meine Ansicht, lange drücken / Rechtsklick = «Nur Gruppen»).
+## Ein Baustein für jedes Menü-Fenster des Simulators: build(main) mit
 ## einem Objekt, das die drei Wechsel kennt (je EINE Funktion, Review P0):
 ##   set_simple(on: bool)        ui_simple   (true = einfach)
 ##   set_icons(v: String)        ui_icons    ("color" | "plain")
-##   set_start_groups(on: bool)  start_groups
-##   _fold_all(how, true)        how = "close" | "groups" | "open"
+##   _fold_all(how, true)        how = "close" | "mine" | "groups" | "open" (mine: set_mine; jede Änderung: _mine_change)
 ## HFlowContainer: wird das Fenster schmal, bricht die Leiste um (kein seitliches Scrollen).
 
 const UI = preload("res://scripts/ui_style.gd")
@@ -34,22 +34,18 @@ func build(h: Object, fold := true) -> void:
 	icons_seg.custom_minimum_size = Vector2(230, 0)
 	icons_seg.tooltip_text = T.t("Symbole: grüner Punkt oder grünes Symbol = eingeschaltet")
 	add_child(icons_seg)
-	sg_cb = CheckButton.new()
-	sg_cb.text = T.t("Beim Start: Nur Gruppen")
-	sg_cb.tooltip_text = T.t("Bei jedem Start zeigen die Einstellungen nur die Gruppen. Aus: Die Menüs sind auf- und zugeklappt, wie du sie verlassen hast.")
-	sg_cb.add_theme_font_size_override("font_size", 13)
-	sg_cb.focus_mode = Control.FOCUS_NONE
-	sg_cb.button_pressed = bool(h.get("start_groups"))
-	sg_cb.toggled.connect(func(on): h.set_start_groups(on))
-	add_child(sg_cb)
+	# 3.23 (Daniel 01.11.2026): the switch «Beim Start: Nur Gruppen» is gone - the start is «Meine Ansicht»; «Nur Gruppen» = long press on the middle
 	var fb := HBoxContainer.new()
 	fb.add_theme_constant_override("separation", 6)
-	for k in ["close", "groups", "open"]:
-		var tip: String = {"close": T.t("Alle zuklappen"), "groups": T.t("Nur Gruppen"), "open": T.t("Alle aufklappen")}[k]
+	for k in ["close", "mine", "open"]:
+		var tip: String = {"close": T.t("Alle zuklappen"), "open": T.t("Alle aufklappen"),
+			"mine": T.t("Meine Ansicht") + "\n" + T.t("Meine Ansicht: Die Menüs sind auf- und zugeklappt, wie du sie selbst eingestellt hast. Lange drücken oder Rechtsklick: Nur Gruppen.")}[k]
 		var b := UI.icon_button(k, tip if fold else T.t("Auf dieser Seite gibt es nichts zum Klappen"))
 		b.custom_minimum_size = Vector2(34, 32)
 		b.disabled = not fold
-		if fold:
+		if fold and k == "mine":
+			_mine_button(b, h)
+		elif fold:
 			b.pressed.connect(func(): h._fold_all(k, true))
 		fb.add_child(b)
 		fold_btns[k] = b
@@ -64,3 +60,30 @@ func paint(simple: bool, icons: String, start_groups: bool) -> void:
 		icons_seg.get_meta("paint").call(icons == "plain")
 	if sg_cb != null and sg_cb.button_pressed != start_groups:
 		sg_cb.set_pressed_no_signal(start_groups)
+
+
+var _hold_t := -1.0
+var _hold_long := false
+
+
+func _mine_button(b: Button, h: Object) -> void:
+	"""639r: a click = «Meine Ansicht»; a long press (0.6 s) or a right click = «Nur Gruppen» (it stays, Daniel: nothing removed)"""
+	b.button_down.connect(func():
+		_hold_long = false
+		_hold_t = Time.get_ticks_msec() / 1000.0
+		var t := b.get_tree().create_timer(0.6)
+		var at := _hold_t
+		t.timeout.connect(func():
+			if _hold_t == at and b.button_pressed:
+				_hold_long = true
+				h._fold_all("groups", true)))
+	b.button_up.connect(func(): _hold_t = -1.0)
+	b.gui_input.connect(func(ev):
+		if ev is InputEventMouseButton and ev.button_index == MOUSE_BUTTON_RIGHT and ev.pressed:
+			_hold_long = true
+			h._fold_all("groups", true))
+	b.pressed.connect(func():
+		if _hold_long:
+			_hold_long = false
+			return
+		h._fold_all("mine", true))

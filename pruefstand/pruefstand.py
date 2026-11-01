@@ -169,11 +169,11 @@ def run(a):
         cfg = os.path.join(tmp, "mw")
         os.makedirs(cfg, exist_ok=True)
         st = {"sim_on": True, "source": "sim:0", "thermal_source": "sim:thermal", "sim_url": "http://127.0.0.1:%d" % a.sim_port,
-              "sim_auto": False, "sim_autostart": False, "sim_autostart_v2": False, "sim_autoupd": False, "update_auto": False,
+              "sim_auto": False, "sim_autostart": False, "sim_autostart_v2": False, "sim_autoupd": False, "update_url": "",
               "lang": "de", "desktop_notice": False, "setup_done": True,
               # Prüfstand 2: the pushes go into the test inbox of the simulation and are counted (MoveEye part 068);
               # the thermal camera is on - at night without light it sees the persons (part 232)
-              "notify_sandbox": True, "thermal_on": a.waermebild == "an"}
+              "thermal_on": a.waermebild == "an"}
         if a.weitwinkel or a.folgen_weitwinkel:                  # «Übersicht → Kopf findet Ziel»: the wide camera as extra camera,
             st.update(extra_cams=["sim:1"], pan_servo_range=360, pan_limit=170)   # a pan servo that can look back (cable limit ± 170°)
         with open(os.path.join(cfg, "motionwatch_settings.json"), "w") as f:

@@ -1012,7 +1012,7 @@ let LANG = "", THEME = "", videoOnly = false, TRIG = [], sigQ = "", sigE = "";
 let HIDDEN = new Set();
 try { LANG = localStorage.getItem("mw-lang") || ""; THEME = localStorage.getItem("mw-theme") || "";
       HIDDEN = new Set(JSON.parse(localStorage.getItem("mw-hidden") || "[]")); } catch (e) {}
-Object.assign(I18N.de, {"Simulator": "Simulator", "Backups of the simulator: in the simulator System → Backup → «Send to the MoveEye backup». Restore = the simulator first backs up its present state (entry «before»), then it restarts.": "Sicherungen des Simulators: im Simulator System → Sicherung → «In die MoveEye-Sicherung senden». Wiederherstellen = der Simulator sichert zuerst seinen jetzigen Stand (Eintrag «vorher»), dann startet er neu.", "No backup of the simulator yet.": "Noch keine Sicherung des Simulators.", "Restore simulator": "Simulator wiederherstellen", "before": "vorher", "Restore the simulator from this backup? Its present state is backed up first (you can undo it), then the simulator restarts.": "Den Simulator aus dieser Sicherung wiederherstellen? Sein jetziger Stand wird vorher gesichert (rückgängig machen geht), dann startet der Simulator neu.", "Delete this backup of the simulator?": "Diese Sicherung des Simulators löschen?", "Simulator restored - it restarts": "Simulator wiederhergestellt – er startet neu", "simulator not connected - switch the simulation on first": "Simulator nicht verbunden – zuerst die Simulation einschalten", "Also copied to the backup above (folder / WebDAV).": "Wird auch in die Sicherung oben kopiert (Ordner / WebDAV)."});  // Sicherung → «Simulator» (639q)
+Object.assign(I18N.de, {"Simulator": "Simulator", "Backups of the simulator: in the simulator System → Backup → «Send to the MoveEye backup». Restore = the simulator first backs up its present state (entry «before»), then it restarts.": "Sicherungen des Simulators: im Simulator System → Sicherung → «In die MoveEye-Sicherung senden». Wiederherstellen = der Simulator sichert zuerst seinen jetzigen Stand (Eintrag «vorher»), dann startet er neu.", "No backup of the simulator yet.": "Noch keine Sicherung des Simulators.", "Restore simulator": "Simulator wiederherstellen", "before": "vorher", "Restore the simulator from this backup? Its present state is backed up first (you can undo it), then the simulator restarts.": "Den Simulator aus dieser Sicherung wiederherstellen? Sein jetziger Stand wird vorher gesichert (rückgängig machen geht), dann startet der Simulator neu.", "Delete this backup of the simulator?": "Diese Sicherung des Simulators löschen?", "Simulator restored - it restarts": "Simulator wiederhergestellt – er startet neu", "simulator not connected - switch the simulation on first": "Simulator nicht verbunden – zuerst die Simulation einschalten", "Also copied to the backup above (folder / WebDAV).": "Wird auch in die Sicherung oben kopiert (Ordner / WebDAV)."});  // Sicherung → «Simulator» (639s)
 Object.assign(I18N.de, {"Person alarms at the campfire (off: only animals - the people at the fire are not burglars)": "Personen-Alarm am Lagerfeuer (aus: nur Tiere – die Leute am Feuer sind keine Einbrecher)"});  // 2.97.0
 Object.assign(I18N.de, {"Protection": "Schutz", "History": "Verlauf", "Message list": "Nachrichten", "Settings": "Einstellungen", "Sett.": "Einst.", "More": "Mehr", "Overview": "Übersicht", "Log": "Protokoll", "Sim": "Sim", "Recordings": "Aufnahmen", "Diary": "Tagebuch", "Zones": "Zonen", "Cameras": "Kameras", "Manual": "Anleitung", "Game corner": "Spielecke", "Tools": "Werkzeuge"});  // 2.98.0: the six tabs
 Object.assign(I18N.de, /*AUFRDE*/{}); Object.assign(I18N.en, /*AUFREN*/{});   // aufr (part 632): the texts of the clean-up round
@@ -2126,7 +2126,7 @@ const MAINSW = {
   "sec:Recording": c => c.record, "sec:Timelapse": c => c.timelapse_on, "sec:Backup": c => !!c.backup_type && c.backup_type !== "off",
   "relayset": c => c.relays_on, "schedule": (c, s, j) => (j.schedules || []).some(x => x.enabled),
   "wifi": (c, s) => !!(s.hotspot && s.hotspot.on), "sec:Web stream": c => c.web_stream, "guest": (c, s) => !!(s.guest && s.guest.active),
-  "sec:MQTT / Home Assistant": c => c.mqtt_on, "sec:Updates": c => c.update_auto};
+  "sec:MQTT / Home Assistant": c => c.mqtt_on, "sec:Updates": c => c.update_mode === "auto" || c.update_mode === "dev"};
 let MAINJ = null;
 function mainPaint(j) {
   if (j) MAINJ = j; else j = MAINJ || {};
@@ -3168,7 +3168,7 @@ function bkExtras(d) {
   bt.appendChild(b); box.append(bt, st); d.appendChild(box);
   simsichBox(d);
 }
-// ---- Sicherung → entry «Simulator» (639q): backups the simulator sent, download, «Restore simulator» (only the owner) ----
+// ---- Sicherung → entry «Simulator» (639s): backups the simulator sent, download, «Restore simulator» (only the owner) ----
 async function simsichBox(d) {
   let j; try { j = await (await fetch("/api/sim/sicherung?lang=" + LANG, {cache: "no-store"})).json(); } catch (e) { return; }
   if (!j || j.ok === false) return;                       // not the owner: no entry
@@ -4125,8 +4125,7 @@ async function nightGuard() {
 }
 // ---- Simple / Expert, symbols, «On start: groups only», the three fold buttons: the bar under the tabs (639o, #mwbar) ----
 // this page: Simple / Expert per tab (586; the Live tab has only one view), the own switch «On start: groups only»
-window.MWB_PAGE = {simplePage: () => { const tb = document.body.dataset.tab || "settings"; return tb === "live" ? "" : tb; },
-                   startGroups: v => startGroupsSet(v)};
+window.MWB_PAGE = {simplePage: () => { const tb = document.body.dataset.tab || "settings"; return tb === "live" ? "" : tb; }};
 // ---- self-check: one traffic light per part ----
 Object.assign(I18N.de, {"missed pictures from the game (hard cases)": "verpasste Bilder aus dem Spiel (schwierige Fälle)", "no missed pictures from the game yet - play a round with MoveEye first": "noch keine verpassten Bilder aus dem Spiel – zuerst eine Runde mit MoveEye spielen", "You are the guard: turn the camera and tap the players in the picture": "Du bist Jäger: Kamera drehen und die Spieler im Bild antippen", "Mover stick back in its place": "Mover-Stick wieder an seinem Platz", "Move (double tap: back to its place)": "Verschieben (doppelt tippen: zurück an den Platz)", "Mover stick shown": "Mover-Stick eingeblendet", "Mover stick hidden": "Mover-Stick ausgeblendet", "Show / hide the mover stick": "Mover-Stick ein- / ausblenden", "Coloured symbols": "Farbige Symbole", "Symbols coloured": "Symbole farbig", "plain": "schlicht", "Plain symbols": "Schlichte Symbole", "Symbols: green dot or green symbol = switched on": "Symbole: grüner Punkt bzw. grünes Symbol = eingeschaltet", "Download AI model": "KI-Modell herunterladen", "AI ready": "KI bereit", "downloading the AI model …": "KI-Modell wird geladen …", "🩺 Self-check": "🩺 Selbstdiagnose", "Check again": "Nochmals prüfen", "problems": "Probleme", "notes": "Hinweise"});
 async function healthLoad() {
@@ -4596,17 +4595,12 @@ function initSections() {
 // nurgruppen (Daniel, 31.10.2026): switch «On start: groups only» (CFG ui_start_groups, factory: on). On every start the settings
 // show «Groups only» WITHOUT saving it - the own open / closed state (mw-open:…, kept on the Pi through web_ui) stays as it was.
 // Switched off: every group and topic goes back to that own state.
-let START_GROUPS = window.MW_SG !== false;
+const START_GROUPS = false;                // 3.23: the switch «On start: groups only» is gone - the start is «My view»
 function foldSet(d, open, keep) { if (d.open === open) return; if (keep) d._mwSkip = true; d.open = open; }
 function foldOwn() {
   document.querySelectorAll("#settings details.grp, #settings details.sub:not(.inline), #settings details.adv").forEach(d => {
     let v = null; try { v = localStorage.getItem(secKey(d)); } catch (e) {}
     const o = v !== null ? v === "1" : d._mwDef; if (typeof o === "boolean") foldSet(d, o, true); });
-}
-function startGroupsSet(v) {
-  START_GROUPS = !!v; post("/api/ui_simple", {start_groups: START_GROUPS});
-  if (START_GROUPS) allGroups(true); else foldOwn();
-  toast((START_GROUPS ? "✓ " : "") + t("On start: groups only") + " – " + t(START_GROUPS ? "On" : "Off"));
 }
 // ---- setup assistant: first start (and System -> "Setup assistant"): language, name, push (ntfy with QR code), password, QR codes ----
 // the setup assistant is the one guide now (516 / 586): «quick or thorough?», resumable, place, walk test …

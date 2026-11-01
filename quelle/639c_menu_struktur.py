@@ -18,7 +18,7 @@ _MENU_MOVES = {
     "Setup": ("time_from_browser",),
     "Device warnings": ("temp_alarm_on", "env_on", "temp_hot", "temp_cold", "env_offset", "temp_warn", "disk_warn_mb"),
     "Device & help": ("device_name", "use_case", "tips_level", "tours_auto", "tip_of_day", "blinki_on", "desktop_notice", "log_keep_days", "dev_area"),
-    "Developer": ("log_status_min",),
+    "Developer": ("log_status_min", "update_unsigned"),       # 3.23: unsigned versions only in the developer area (24 h)
 }
 for _ms, _mk in _MENU_MOVES.items():
     for _lst in (TOGGLES, SLIDERS, TEXTS):

@@ -2,7 +2,7 @@
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_3_23_0.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_3_29_0.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -162,7 +162,28 @@ def sig_ok(version, fname, sha, sig, pub=None):
 
 def _installable(it):
     """May this list entry be installed? (already on the Pi, or signed, or unsigned ones are allowed)"""
-    return bool(it.get("installed") or it.get("signed") or CFG["update_unsigned"])
+    return bool(it.get("installed") or it.get("signed") or update_unsigned_ok())
+
+
+UNSIGNED_HOURS = 24
+
+
+def update_unsigned_ok():
+    """3.23: «Also accept unsigned versions» (developer area only) lasts 24 hours, then it switches itself off. The time
+    starts when it is first seen on (switch, old settings file); the update watcher (390) looks every minute."""
+    if not CFG.get("update_unsigned"):
+        if CFG.get("update_unsigned_t"):
+            CFG["update_unsigned_t"] = 0.0
+        return False
+    now = time.time(); t0 = float(CFG.get("update_unsigned_t") or 0.0)
+    if t0 <= 0 or t0 > now + 60:
+        CFG["update_unsigned_t"] = now; save_settings()
+        return True
+    if now - t0 >= UNSIGNED_HOURS * 3600:
+        CFG["update_unsigned"] = False; CFG["update_unsigned_t"] = 0.0; save_settings()
+        log_event("sys", "Unsigned versions: switched off by itself after 24 hours")
+        return False
+    return True
 
 VFILE_RE = re.compile(r"^webcam_bewegung_(\d{1,3})_(\d{1,3})_(\d{1,3})\.py$")
 VER_RE = re.compile(r"^\d{1,3}\.\d{1,3}\.\d{1,3}$")

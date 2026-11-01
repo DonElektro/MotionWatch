@@ -4,7 +4,8 @@ extends SceneTree
 ## Prüft: Länge je Trailer (≈ 3 Min.), jede Einstellung hat ihre Methoden, jeder Klang lässt sich erzeugen, alle Texte
 ## (Tafeln, Erzähler) sind in en / fr / it / rm übersetzt, keine Spoiler-Wörter (Steinmännchen, Seeli, Kapelle am Gipfel …).
 ## Dazu (Fix 3.19.x): der Ton-Plan für den Browser (ton_plan: sortiert, nur bekannte Klänge, Ende = Ausblenden) und die
-## WAV-Dateien (wav_bytes: RIFF-Kopf, mono 16 Bit).
+## WAV-Dateien (wav_bytes: RIFF-Kopf, mono 16 Bit). Ab 01.11.2026 (Klang): jeder Klang als Datei klang/<name>.ogg mit
+## Schleife und Pegel (klaenge.json), MP3 für den Browser (klang/web), Schleifenpunkte im Plan, Bus «Trailer» mit Begrenzer.
 ## Mit «-- --mit-welt» zusätzlich ohne Bild mit der echten Welt (main.tscn, Port 9448): Stopp von aussen (/control wie
 ## MoveEye am iPad) während MoveEyes Browser-Bild (padview bare) die Knöpfe ausblendet – danach müssen Knöpfe sichtbar,
 ## Kamera zurück (nicht unter dem Boden), kein schwarzer Film-Layer da sein; dasselbe mit der Vorführung (maggie_vorfuehrung).
@@ -89,9 +90,42 @@ func _init() -> void:
 				errs.append("%s: Klang %s im Plan unbekannt" % [id, k])
 		var says := ev.filter(func(e): return str(e[1]) == "say").size()
 		print("Ton-Plan %s: %d Befehle, %d Klänge, %d Erzählersätze" % [id, ev.size(), (pl.get("klaenge", []) as Array).size(), says])
+	# the sounds as files (klang/, Daniel 01.11.2026): every sound an Ogg with its loop flag and level, MP3 for the browser
+	var info: Dictionary = Ton.info()
+	for k in R.KLAENGE:
+		var w = Ton.get_snd(k)
+		if not w is AudioStreamOggVorbis:
+			errs.append("Klang %s: keine Datei klang/%s.ogg (nur die alte Synthese)" % [k, k])
+			continue
+		var e = info.get(k, null)
+		if not e is Dictionary or not e.has("db") or absf(float(e["db"])) > 20.0:
+			errs.append("Klang %s: kein Pegel in klaenge.json" % k)
+		elif bool(e.get("loop", false)) != (w as AudioStreamOggVorbis).loop:
+			errs.append("Klang %s: Schleife falsch" % k)
+		var mp: PackedByteArray = Ton.web_bytes(k)
+		if mp.size() < 1000 or not (mp.slice(0, 3).get_string_from_ascii() == "ID3" or (mp[0] == 0xff and (mp[1] & 0xe0) == 0xe0)):
+			errs.append("Klang %s: MP3 für den Browser fehlt oder falsch" % k)
+	for id in R.IDS:
+		var tr2 = R.new()
+		tr2.id = id
+		var pl2: Dictionary = tr2.ton_plan()
+		tr2.free()
+		for e in pl2["plan"]:
+			if str(e[1]) in ["loop", "one"] and float(e[3]) > 12.0:
+				errs.append("%s: %s zu laut im Plan (%.1f dB)" % [id, e[2], float(e[3])])
+		for nm in ["pad_ruhig", "wind"]:
+			var lp: Array = (pl2.get("schleifen", {}) as Dictionary).get(nm, [])
+			if lp.size() != 2 or float(lp[0]) != 0.1 or float(lp[1]) < 2.0:
+				errs.append("%s: Schleifenpunkte für %s fehlen" % [id, nm])
 	var wb: PackedByteArray = R.wav_bytes("pad_ruhig")
-	if wb.size() < 1000 or wb.slice(0, 4).get_string_from_ascii() != "RIFF" or wb.decode_u16(22) != 1 or wb.decode_u32(40) != wb.size() - 44:
-		errs.append("WAV pad_ruhig falsch (%d Bytes)" % wb.size())
+	if wb.size() < 1000 or wb.slice(0, 3).get_string_from_ascii() != "ID3" and wb[0] != 0xff:
+		errs.append("Browser-Klang pad_ruhig ist kein MP3 (%d Bytes)" % wb.size())
+	var ws: AudioStreamWAV = Ton.synth("pad_ruhig")             # the old synthesis still works (fallback without files)
+	if ws == null or ws.get_length() < 1.0:
+		errs.append("alte Synthese pad_ruhig fehlt")
+	var lim := AudioServer.get_bus_index(R.bus())
+	if lim < 0 or AudioServer.get_bus_effect_count(lim) < 1 or not AudioServer.get_bus_effect(lim, 0) is AudioEffectHardLimiter:
+		errs.append("Bus Trailer ohne Begrenzer")
 	if not R.wav_bytes("../etc").is_empty():
 		errs.append("WAV: unbekannter Name nicht abgewiesen")
 	if "--mit-welt" in OS.get_cmdline_user_args():

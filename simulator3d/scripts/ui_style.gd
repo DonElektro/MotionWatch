@@ -18,7 +18,8 @@ const BTN2 := Color("#1a2433")
 
 # real-layout-leiste: «Symbole farbig | schlicht» like MoveEye. schlicht (true): grey, green while on (the look up to 3.19);
 # farbig: every symbol in its own colour, a green dot while on (orange: something to watch)
-static var icons_plain := true
+static var motion_still := false             # 3.23 «Bewegung reduzieren» (main.gd motion_reduced): Logo, Blinki, Wippen still
+static var icons_plain := false              # 3.23: «Symbole farbig» is the standard
 const ICON_COL := {"link": Color("#3b8cff"), "keys": Color("#b38cff")}
 
 
@@ -489,6 +490,15 @@ static func _draw_icon(d: Control, kind: String) -> void:
 	elif kind == "groups":
 		d.draw_rect(Rect2(c + Vector2(-8, -7), Vector2(16, 5)), col, false, w)
 		d.draw_rect(Rect2(c + Vector2(-8, 2), Vector2(16, 5)), col, false, w)
+	elif kind == "mine":                                  # 639r «Meine Ansicht»: two bars and a small star
+		d.draw_rect(Rect2(c + Vector2(-8, -7), Vector2(16, 5)), col, false, w)
+		d.draw_rect(Rect2(c + Vector2(-8, 2), Vector2(8, 5)), col, false, w)
+		var st := PackedVector2Array()
+		for i in 10:
+			var r := 4.0 if i % 2 == 0 else 1.8
+			var a := -PI / 2.0 + i * PI / 5.0
+			st.append(c + Vector2(5, 4.5) + Vector2(cos(a), sin(a)) * r)
+		d.draw_colored_polygon(st, col)
 	elif kind == "open":
 		d.draw_polyline(PackedVector2Array([c + Vector2(-5, -3), c + Vector2(0, -8), c + Vector2(5, -3)]), col, w, true)
 		d.draw_polyline(PackedVector2Array([c + Vector2(-5, 3), c + Vector2(0, 8), c + Vector2(5, 3)]), col, w, true)

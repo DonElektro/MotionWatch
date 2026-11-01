@@ -1208,6 +1208,8 @@ def set_cfg(key, value):
         return False, "unknown setting"
     if spec["type"] == "bool":
         CFG[key] = bool(value)
+        if key == "update_unsigned":                     # 3.23: the 24 hours start now (380 update_unsigned_ok)
+            CFG["update_unsigned_t"] = time.time() if CFG[key] else 0.0
         sched_user_changed(key)
         save_settings()
         if key == "patrol":
