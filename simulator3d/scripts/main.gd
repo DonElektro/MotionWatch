@@ -2782,7 +2782,7 @@ func _process(dt: float) -> void:
 		_cover_mesh.global_transform = head_pitch.global_transform.translated_local(Vector3(0.05, 0.0, -0.36))   # beyond the near plane of the cameras (0.1 m)
 	weit.place()                                         # 3D-4.17: camera 1 = the wide camera (mast / base / head front / head rear)
 	var L: Dictionary = mw.get("lights", {})
-	var wl_on: bool = L.get("white", false) or (game != null and game.now() < game.flash_until)
+	var wl_on: bool = L.get("white", false) or (game != null and game.now() < game.flash_until) or (own_light and now() - mw_t >= 3.0)
 	if wl_on and white_light.light_energy == 0.0 and look_at_light:
 		for v in visitors.get_children():               # the light goes on: people stop and look at it for a moment
 			if v.get("kind") == "person" and v.position.length() < 25.0 and not v.get("controlled"):
@@ -3176,6 +3176,9 @@ func on_state(d: Dictionary, host: String) -> bool:
 			_apply_simple.call_deferred()
 	mw = d
 	mw_t = now()
+	if bt_ei != null and is_instance_valid(bt_ei):
+		var L_ = d.get("lights", {})
+		bt_ei.on_light(bool(L_.get("white", false)) if typeof(L_) == TYPE_DICTIONARY else false, "mw")
 	var dt_ = d.get("det", null)
 	if typeof(dt_) == TYPE_DICTIONARY:
 		mw_det = dt_
@@ -3214,7 +3217,8 @@ func world_reply() -> Dictionary:
 	r["horror"] = horror.reply() if horror != null else null   # Horror-Modus: neue «Aufnahmen» -> MoveEye Verlauf (539a)
 	r["spieltest"] = spieltest.reply() if spieltest != null else null   # Spieltest-Assistent: Meldung nach jeder Runde -> MoveEye 635a (Push)
 	r["sky"] = licht.reply() if licht != null else null   # «Licht & Nacht»: lux am Gerät, Dämmerung, Sonne, Mond (MoveEye liest es noch nicht)
-	r["season"] = jahreszeiten.reply() if jahreszeiten != null else null   # «Jahreszeiten»: Jahreszeit, Sonnenauf-/untergang, Belegung (MoveEye liest es noch nicht)
+	r["season"] = jahreszeiten.reply() if jahreszeiten != null else null
+	r["egg"] = bt_ei.reply() if bt_ei != null and is_instance_valid(bt_ei) else null   # (nur wenn es etwas zu zeichnen gibt) -> MoveEye 639o   # «Jahreszeiten»: Jahreszeit, Sonnenauf-/untergang, Belegung (MoveEye liest es noch nicht)
 	if simwerte != null:
 		r.merge(simwerte.reply())                     # Simulator-Werte: battery, pi_temp, net, clock, place, forecast (power.gd)
 	return r
@@ -3224,6 +3228,8 @@ var schnitt = null                     # schnittstelle.gd (Aufräumen 2)
 var maggie = null                      # maggie_story.gd: «Maggie und der Bergkristall» (API für maggie_hund / maggie_gefahr)
 var horror = null                      # bergtal_horror.gd: Bergtal · Horror-Modus (Hook für die Stimmungswahl: horror.mood_slot / open_from_mood)
 var spieltest = null                   # spieltest.gd: Spieltest-Assistent (Haken für Spiele: Spieltest.ereignis(modus, art, daten))
+var bt_ei = null                       # bergtal_ei.gd (Bergtal): reads the white light, answers {"action": "egg"}, world_reply «egg»
+var own_light := false                 # the light button here while no MoveEye is connected (bergtal_ei.gd hears it too)
 var mw_cmd := {}                       # 3D-3.71: a request to MoveEye (button here): {"id": unix ms, "op": refscan | refcompare | refstop}
 var bike_node: Node3D = null
 var refscan_label: Label
@@ -3263,6 +3269,10 @@ func mw_look(dir: String, step := 3.0) -> void:
 
 
 func mw_light(on: bool) -> void:
+	if now() - mw_t >= 3.0:                            # no MoveEye: the light of the simulator itself
+		own_light = on
+		if bt_ei != null and is_instance_valid(bt_ei):
+			bt_ei.on_light(on, "sim")
 	mw_cmd = {"id": max(int(Time.get_unix_time_from_system() * 1000.0), int(mw_cmd.get("id", 0)) + 1), "op": "light", "on": on}
 
 
@@ -5088,6 +5098,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return {"ok": true, "overlay": overlay.info()}
 	elif a == "kompakt":                               # 3D-4.x: the four compact scenes {do: info | spot (value) | perf} (kompakt.gd)
 		return Kompakt.control(self, d)
+	elif a == "egg":                                   # Entwickler-Test (bergtal_ei.gd)
+		return bt_ei.control(d) if bt_ei != null and is_instance_valid(bt_ei) else {"ok": false, "error": "only in the Bergtal"}
 	elif a == "bergtal":                               # 3D-4.x: {do: info | spot | bed | season | here | goto | event | ride | morning | rate | horn | perf} (bergtal.gd)
 		return preload("res://scripts/bergtal.gd").control(self, d)
 	elif a == "vorfuehrung":                           # Vorführmodus «Maggie» (maggie_vorfuehrung.gd): {do: start (len) | pause | weiter | kapitel (n) | stop | info}

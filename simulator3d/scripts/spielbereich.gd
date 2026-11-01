@@ -174,6 +174,9 @@ func badges() -> Array:
 	for c in chapters():
 		out.append({"id": "ch_" + str(c.id), "sym": c.badge, "name": c.badge_name, "n": 1 if c.state == "done" else 0, "kind": "chapter"})
 	out.append_array(preload("res://scripts/geschichten_faden.gd").abzeichen(main))   # Roter Faden: beide Geschichten
+	var Ei = preload("res://scripts/bergtal_ei.gd")         # a secret badge: only there (and shown) once it is found
+	if main.entdecken != null and main.entdecken.is_found(Ei.ID):
+		out.append({"id": Ei.BADGE, "sym": "🥚", "name": T.t("Murmeltier-Geheimnis"), "n": 1, "kind": "secret"})
 	return out
 
 
