@@ -1,8 +1,13 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 01.11.2026 · Version **3.28.1** · MoveEye **3.28.1** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 01.11.2026 · Version **3.29.0** · MoveEye **3.29.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.29.0 (MoveEye 3.29.0): Fenster andocken (`scripts/fenster.gd`)
+
+- Leisten links/rechts ohne Überlappung, passt sich der Bildschirmgrösse an, «Neu anordnen»; Karte, Kompass, SmallTV, CPU als
+  Reiter in einem Fenster; Entwickler zuoberst, klein/mittel/gross, einklappbar. Test: `werkzeuge/fenster_dock_test.gd`.
 
 ## NEU in 3.28.1 (MoveEye 3.28.1): CI auf GitHub
 
