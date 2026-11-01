@@ -1,9 +1,9 @@
 {
- "version": "3D-5.39.1",
- "ver": "3.39.1",
- "name": "MoveEye Sim 3.39.1",
+ "version": "3D-5.39.2",
+ "ver": "3.39.2",
+ "name": "MoveEye Sim 3.39.2",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 47913472,
- "sha256": "ff4f9201dd852cbc411cf277c5c06ad518730afae77508df1b2b42f52789e0da",
- "notes": "Simulator intern aufgeräumt"
+ "size": 47913654,
+ "sha256": "93023b4fbad80aa541f8a2c9f6cc4bc4052b6b1b0a215367a7036697b28cc9df",
+ "notes": "Datenschutz: Push ohne WLAN-Namen"
 }
