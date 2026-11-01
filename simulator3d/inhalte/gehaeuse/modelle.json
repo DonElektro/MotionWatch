@@ -1,0 +1,1223 @@
+{
+ "_hinweis": "Erzeugt von werkzeuge/gehaeuse_bauen.py aus hardware/gehaeuse/ – nicht von Hand ändern. Koordinaten: Meter, Ursprung Kippachse (main.head_pitch), Godot X = Modell y, Y = z, Z = x (vorne = −Z).",
+ "version": "5.1",
+ "quelle_sha256": "e828e1d476b1dd0b4d38a1c9306aaa3545b9c0b1363350aa8f5fb8c8f4021c0a",
+ "dateien": {
+  "gehaeuse.glb": "9b8fbdcf1f9407dfd789115e3336c2c1edc6f36cc81aba398674c87186f401ac",
+  "gehaeuse_lite.glb": "2a3fc12b7e3b02bc76c829a0dbb7f429d9613f41974c58a97d2162c259ecbf96"
+ },
+ "dreiecke": 57984,
+ "dreiecke_aussen": 51002,
+ "dreiecke_lite": 8373,
+ "kippachse_ueber_boden_m": 0.1258,
+ "fuesse_m": 0.006,
+ "teile": [
+  {
+   "id": "tub",
+   "gruppe": "base",
+   "farbe": "#3a73bf",
+   "aussen": true,
+   "dreiecke": 12738,
+   "mitte": [
+    -0.0034,
+    -0.0915,
+    0.0537
+   ],
+   "groesse": [
+    0.1039,
+    0.0687,
+    0.1923
+   ],
+   "dreiecke_lite": 2196,
+   "explosion": [
+    -0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "id": "feet",
+   "gruppe": "base",
+   "farbe": "#333333",
+   "aussen": true,
+   "dreiecke": 640,
+   "mitte": [
+    0.0,
+    -0.1279,
+    0.049
+   ],
+   "groesse": [
+    0.09,
+    0.0077,
+    0.172
+   ],
+   "dreiecke_lite": 320,
+   "explosion": [
+    0.0,
+    -0.035,
+    -0.0014
+   ]
+  },
+  {
+   "id": "tripod",
+   "gruppe": "base",
+   "farbe": "#b8b8bc",
+   "aussen": false,
+   "dreiecke": 872,
+   "mitte": [
+    -0.01,
+    -0.1202,
+    0.022
+   ],
+   "groesse": [
+    0.0095,
+    0.0055,
+    0.011
+   ],
+   "explosion": [
+    -0.0,
+    -0.018,
+    -0.0
+   ]
+  },
+  {
+   "id": "speaker",
+   "gruppe": "base",
+   "farbe": "#e6d933",
+   "aussen": false,
+   "dreiecke": 160,
+   "mitte": [
+    0.0,
+    -0.1098,
+    -0.01
+   ],
+   "groesse": [
+    0.041,
+    0.027,
+    0.041
+   ],
+   "explosion": [
+    0.0,
+    0.095,
+    -0.0382
+   ]
+  },
+  {
+   "id": "pca",
+   "gruppe": "base",
+   "farbe": "#1a4db3",
+   "aussen": false,
+   "dreiecke": 12,
+   "mitte": [
+    -0.0417,
+    -0.0886,
+    -0.0047
+   ],
+   "groesse": [
+    0.0016,
+    0.0254,
+    0.0625
+   ],
+   "explosion": [
+    -0.0334,
+    0.12,
+    -0.0467
+   ]
+  },
+  {
+   "id": "elko",
+   "gruppe": "base",
+   "farbe": "#222a55",
+   "aussen": false,
+   "dreiecke": 80,
+   "mitte": [
+    -0.036,
+    -0.1093,
+    0.02
+   ],
+   "groesse": [
+    0.008,
+    0.012,
+    0.008
+   ],
+   "explosion": [
+    -0.036,
+    0.12,
+    -0.0337
+   ]
+  },
+  {
+   "id": "pir",
+   "gruppe": "base",
+   "farbe": "#f7f7e6",
+   "aussen": false,
+   "dreiecke": 92,
+   "mitte": [
+    0.0,
+    -0.0903,
+    -0.0275
+   ],
+   "groesse": [
+    0.01,
+    0.01,
+    0.027
+   ],
+   "explosion": [
+    0.0,
+    0.115,
+    -0.0812
+   ]
+  },
+  {
+   "id": "mic",
+   "gruppe": "base",
+   "farbe": "#1accc9",
+   "aussen": false,
+   "dreiecke": 12,
+   "mitte": [
+    0.03,
+    -0.0643,
+    -0.034
+   ],
+   "groesse": [
+    0.015,
+    0.012,
+    0.01
+   ],
+   "explosion": [
+    0.03,
+    0.12,
+    -0.0877
+   ]
+  },
+  {
+   "id": "ups",
+   "gruppe": "base",
+   "farbe": "#8cbf40",
+   "aussen": false,
+   "dreiecke": 344,
+   "mitte": [
+    -0.0059,
+    -0.1103,
+    0.078
+   ],
+   "groesse": [
+    0.0798,
+    0.026,
+    0.09
+   ],
+   "explosion": [
+    -0.0018,
+    0.1,
+    0.0073
+   ]
+  },
+  {
+   "id": "pi",
+   "gruppe": "base",
+   "farbe": "#268c40",
+   "aussen": false,
+   "dreiecke": 24,
+   "mitte": [
+    -0.015,
+    -0.0775,
+    0.0775
+   ],
+   "groesse": [
+    0.056,
+    0.0176,
+    0.087
+   ],
+   "explosion": [
+    -0.0045,
+    0.15,
+    0.0071
+   ]
+  },
+  {
+   "id": "cooler",
+   "gruppe": "base",
+   "farbe": "#1f1f1f",
+   "aussen": false,
+   "dreiecke": 12,
+   "mitte": [
+    -0.015,
+    -0.0775,
+    0.0745
+   ],
+   "groesse": [
+    0.032,
+    0.0144,
+    0.031
+   ],
+   "explosion": [
+    -0.0045,
+    0.18,
+    0.0062
+   ]
+  },
+  {
+   "id": "shelf",
+   "gruppe": "base",
+   "farbe": "#4d80cc",
+   "aussen": false,
+   "dreiecke": 2886,
+   "mitte": [
+    0.0299,
+    -0.0931,
+    0.1109
+   ],
+   "groesse": [
+    0.0318,
+    0.0027,
+    0.0538
+   ],
+   "explosion": [
+    0.0269,
+    0.125,
+    0.0515
+   ]
+  },
+  {
+   "id": "charger",
+   "gruppe": "base",
+   "farbe": "#1a8c4d",
+   "aussen": false,
+   "dreiecke": 12,
+   "mitte": [
+    0.025,
+    -0.0791,
+    0.0908
+   ],
+   "groesse": [
+    0.018,
+    0.0254,
+    0.0095
+   ],
+   "explosion": [
+    0.0225,
+    0.15,
+    0.0334
+   ]
+  },
+  {
+   "id": "pam",
+   "gruppe": "base",
+   "farbe": "#d94d99",
+   "aussen": false,
+   "dreiecke": 12,
+   "mitte": [
+    0.025,
+    -0.0888,
+    0.106
+   ],
+   "groesse": [
+    0.018,
+    0.006,
+    0.018
+   ],
+   "explosion": [
+    0.0225,
+    0.15,
+    0.0471
+   ]
+  },
+  {
+   "id": "ina",
+   "gruppe": "base",
+   "farbe": "#1a4dcc",
+   "aussen": false,
+   "dreiecke": 12,
+   "mitte": [
+    0.0405,
+    -0.0898,
+    0.107
+   ],
+   "groesse": [
+    0.009,
+    0.004,
+    0.02
+   ],
+   "explosion": [
+    0.0365,
+    0.15,
+    0.048
+   ]
+  },
+  {
+   "id": "mosfet",
+   "gruppe": "base",
+   "farbe": "#8c5933",
+   "aussen": false,
+   "dreiecke": 12,
+   "mitte": [
+    -0.024,
+    -0.0693,
+    -0.0387
+   ],
+   "groesse": [
+    0.028,
+    0.02,
+    0.0016
+   ],
+   "explosion": [
+    -0.0288,
+    0.135,
+    -0.1109
+   ]
+  },
+  {
+   "id": "buck",
+   "gruppe": "base",
+   "farbe": "#d93333",
+   "aussen": false,
+   "dreiecke": 12,
+   "mitte": [
+    -0.026,
+    -0.0993,
+    -0.0387
+   ],
+   "groesse": [
+    0.02,
+    0.008,
+    0.0016
+   ],
+   "explosion": [
+    -0.0312,
+    0.135,
+    -0.1109
+   ]
+  },
+  {
+   "id": "relay",
+   "gruppe": "base",
+   "farbe": "#3359d9",
+   "aussen": false,
+   "dreiecke": 12,
+   "mitte": [
+    0.0442,
+    -0.0698,
+    -0.003
+   ],
+   "groesse": [
+    0.0016,
+    0.023,
+    0.05
+   ],
+   "explosion": [
+    0.0486,
+    0.14,
+    -0.0624
+   ]
+  },
+  {
+   "id": "hub",
+   "gruppe": "base",
+   "farbe": "#66666f",
+   "aussen": false,
+   "dreiecke": 12,
+   "mitte": [
+    0.034,
+    -0.0913,
+    0.002
+   ],
+   "groesse": [
+    0.02,
+    0.012,
+    0.056
+   ],
+   "explosion": [
+    0.0306,
+    0.13,
+    -0.0465
+   ]
+  },
+  {
+   "id": "soundcard",
+   "gruppe": "base",
+   "farbe": "#f2f2f2",
+   "aussen": false,
+   "dreiecke": 12,
+   "mitte": [
+    0.002,
+    -0.0918,
+    -0.001
+   ],
+   "groesse": [
+    0.044,
+    0.007,
+    0.012
+   ],
+   "explosion": [
+    0.0018,
+    0.145,
+    -0.0492
+   ]
+  },
+  {
+   "id": "mpu",
+   "gruppe": "base",
+   "farbe": "#8033cc",
+   "aussen": false,
+   "dreiecke": 12,
+   "mitte": [
+    0.012,
+    -0.1216,
+    0.0205
+   ],
+   "groesse": [
+    0.016,
+    0.0025,
+    0.017
+   ],
+   "explosion": [
+    0.012,
+    0.09,
+    -0.0332
+   ]
+  },
+  {
+   "id": "bme",
+   "gruppe": "base",
+   "farbe": "#991a99",
+   "aussen": false,
+   "dreiecke": 12,
+   "mitte": [
+    -0.005,
+    -0.0833,
+    0.1371
+   ],
+   "groesse": [
+    0.022,
+    0.02,
+    0.0014
+   ],
+   "explosion": [
+    -0.006,
+    0.135,
+    0.1001
+   ]
+  },
+  {
+   "id": "cable_usb",
+   "gruppe": "base",
+   "farbe": "#202020",
+   "aussen": false,
+   "dreiecke": 240,
+   "mitte": [
+    0.003,
+    -0.0776,
+    0.0815
+   ],
+   "groesse": [
+    0.0577,
+    0.0306,
+    0.1078
+   ],
+   "explosion": [
+    0.0015,
+    0.165,
+    0.0139
+   ]
+  },
+  {
+   "id": "cable_power",
+   "gruppe": "base",
+   "farbe": "#c0392b",
+   "aussen": false,
+   "dreiecke": 240,
+   "mitte": [
+    0.0005,
+    -0.1043,
+    -0.002
+   ],
+   "groesse": [
+    0.05,
+    0.013,
+    0.0739
+   ],
+   "explosion": [
+    0.0003,
+    0.11,
+    -0.0278
+   ]
+  },
+  {
+   "id": "jacks",
+   "gruppe": "base",
+   "farbe": "#4d4d4d",
+   "aussen": true,
+   "dreiecke": 80,
+   "mitte": [
+    0.027,
+    -0.0818,
+    0.1323
+   ],
+   "groesse": [
+    0.016,
+    0.016,
+    0.0285
+   ],
+   "dreiecke_lite": 40,
+   "explosion": [
+    0.0432,
+    0.03,
+    0.1258
+   ]
+  },
+  {
+   "id": "fuse",
+   "gruppe": "base",
+   "farbe": "#e74c3c",
+   "aussen": false,
+   "dreiecke": 92,
+   "mitte": [
+    0.0408,
+    -0.0883,
+    0.127
+   ],
+   "groesse": [
+    0.0065,
+    0.007,
+    0.018
+   ],
+   "explosion": [
+    0.0408,
+    0.15,
+    0.0733
+   ]
+  },
+  {
+   "id": "ledlight",
+   "gruppe": "base",
+   "farbe": "#2ecc71",
+   "aussen": true,
+   "dreiecke": 160,
+   "mitte": [
+    0.01,
+    -0.0638,
+    0.1345
+   ],
+   "groesse": [
+    0.0036,
+    0.0036,
+    0.013
+   ],
+   "dreiecke_lite": 80,
+   "explosion": [
+    0.016,
+    0.03,
+    0.1293
+   ]
+  },
+  {
+   "id": "relayjack",
+   "gruppe": "base",
+   "farbe": "#4d4d4d",
+   "aussen": true,
+   "dreiecke": 80,
+   "mitte": [
+    -0.016,
+    -0.1098,
+    0.1357
+   ],
+   "groesse": [
+    0.012,
+    0.012,
+    0.0215
+   ],
+   "dreiecke_lite": 40,
+   "explosion": [
+    -0.0256,
+    0.02,
+    0.1312
+   ]
+  },
+  {
+   "id": "probe",
+   "gruppe": "base",
+   "farbe": "#bfbfc7",
+   "aussen": true,
+   "dreiecke": 80,
+   "mitte": [
+    -0.034,
+    -0.1416,
+    -0.018
+   ],
+   "groesse": [
+    0.006,
+    0.0485,
+    0.006
+   ],
+   "dreiecke_lite": 40,
+   "explosion": [
+    -0.0,
+    -0.06,
+    -0.0
+   ]
+  },
+  {
+   "id": "lid",
+   "gruppe": "base",
+   "farbe": "#5999e6",
+   "aussen": true,
+   "dreiecke": 7014,
+   "mitte": [
+    0.0,
+    -0.0513,
+    0.0489
+   ],
+   "groesse": [
+    0.097,
+    0.012,
+    0.1829
+   ],
+   "dreiecke_lite": 775,
+   "explosion": [
+    0.0,
+    0.23,
+    -0.0
+   ]
+  },
+  {
+   "id": "servo1",
+   "gruppe": "base",
+   "farbe": "#264099",
+   "aussen": false,
+   "dreiecke": 24,
+   "mitte": [
+    0.0,
+    -0.0623,
+    -0.0054
+   ],
+   "groesse": [
+    0.0124,
+    0.0267,
+    0.0325
+   ],
+   "explosion": [
+    0.0,
+    0.205,
+    -0.0
+   ]
+  },
+  {
+   "id": "balls",
+   "gruppe": "base",
+   "farbe": "#ccccd1",
+   "aussen": false,
+   "dreiecke": 512,
+   "mitte": [
+    0.0,
+    -0.0468,
+    0.0
+   ],
+   "groesse": [
+    0.062,
+    0.006,
+    0.062
+   ],
+   "explosion": [
+    0.0,
+    0.258,
+    -0.0
+   ]
+  },
+  {
+   "id": "horn1",
+   "gruppe": "pan",
+   "farbe": "#e6e6e6",
+   "aussen": false,
+   "dreiecke": 12,
+   "mitte": [
+    0.0,
+    -0.045,
+    0.0
+   ],
+   "groesse": [
+    0.032,
+    0.002,
+    0.0058
+   ],
+   "explosion": [
+    0.0,
+    0.272,
+    0.0
+   ]
+  },
+  {
+   "id": "turntable",
+   "gruppe": "pan",
+   "farbe": "#f28c26",
+   "aussen": true,
+   "dreiecke": 3589,
+   "mitte": [
+    0.0,
+    -0.0431,
+    0.0
+   ],
+   "groesse": [
+    0.068,
+    0.0062,
+    0.068
+   ],
+   "dreiecke_lite": 643,
+   "explosion": [
+    0.0,
+    0.29,
+    0.0
+   ]
+  },
+  {
+   "id": "yoke",
+   "gruppe": "pan",
+   "farbe": "#f28c26",
+   "aussen": true,
+   "dreiecke": 4106,
+   "mitte": [
+    0.0005,
+    -0.0141,
+    0.0045
+   ],
+   "groesse": [
+    0.088,
+    0.052,
+    0.039
+   ],
+   "dreiecke_lite": 794,
+   "explosion": [
+    0.0,
+    0.33,
+    0.0
+   ]
+  },
+  {
+   "id": "horn2",
+   "gruppe": "pan",
+   "farbe": "#e6e6e6",
+   "aussen": false,
+   "dreiecke": 12,
+   "mitte": [
+    -0.031,
+    0.0,
+    0.0
+   ],
+   "groesse": [
+    0.002,
+    0.0058,
+    0.032
+   ],
+   "explosion": [
+    -0.0434,
+    0.33,
+    0.0
+   ]
+  },
+  {
+   "id": "therm",
+   "gruppe": "tilt",
+   "farbe": "#8c268c",
+   "aussen": true,
+   "dreiecke": 116,
+   "mitte": [
+    0.0035,
+    -0.013,
+    -0.0147
+   ],
+   "groesse": [
+    0.045,
+    0.022,
+    0.0086
+   ],
+   "dreiecke_lite": 76,
+   "explosion": [
+    0.0105,
+    0.4,
+    -0.0441
+   ]
+  },
+  {
+   "id": "cam3",
+   "gruppe": "tilt",
+   "farbe": "#991a1a",
+   "aussen": true,
+   "dreiecke": 92,
+   "mitte": [
+    0.0135,
+    0.011,
+    -0.016
+   ],
+   "groesse": [
+    0.025,
+    0.024,
+    0.004
+   ],
+   "dreiecke_lite": 52,
+   "explosion": [
+    0.0405,
+    0.4,
+    -0.048
+   ]
+  },
+  {
+   "id": "servo2",
+   "gruppe": "tilt",
+   "farbe": "#264099",
+   "aussen": false,
+   "dreiecke": 104,
+   "mitte": [
+    -0.015,
+    -0.0054,
+    0.0
+   ],
+   "groesse": [
+    0.0299,
+    0.0325,
+    0.0124
+   ],
+   "explosion": [
+    -0.0225,
+    0.4,
+    0.0
+   ]
+  },
+  {
+   "id": "head",
+   "gruppe": "tilt",
+   "farbe": "#38383f",
+   "aussen": true,
+   "dreiecke": 10723,
+   "mitte": [
+    -0.0011,
+    0.0,
+    -0.0138
+   ],
+   "groesse": [
+    0.0558,
+    0.058,
+    0.0476
+   ],
+   "dreiecke_lite": 1320,
+   "explosion": [
+    -0.0,
+    0.4,
+    -0.0
+   ]
+  },
+  {
+   "id": "side",
+   "gruppe": "tilt",
+   "farbe": "#595961",
+   "aussen": true,
+   "dreiecke": 2222,
+   "mitte": [
+    0.0146,
+    -0.0001,
+    -0.0135
+   ],
+   "groesse": [
+    0.0288,
+    0.0544,
+    0.0471
+   ],
+   "dreiecke_lite": 239,
+   "explosion": [
+    0.0365,
+    0.4,
+    -0.0338
+   ]
+  },
+  {
+   "id": "arm2",
+   "gruppe": "pan",
+   "farbe": "#f28c26",
+   "aussen": true,
+   "dreiecke": 1938,
+   "mitte": [
+    0.0375,
+    -0.0127,
+    0.006
+   ],
+   "groesse": [
+    0.014,
+    0.0494,
+    0.036
+   ],
+   "dreiecke_lite": 316,
+   "explosion": [
+    0.045,
+    0.335,
+    0.0072
+   ]
+  },
+  {
+   "id": "lamp1",
+   "gruppe": "pan",
+   "farbe": "#f28c26",
+   "aussen": true,
+   "dreiecke": 2824,
+   "mitte": [
+    -0.0494,
+    -0.016,
+    -0.008
+   ],
+   "groesse": [
+    0.0278,
+    0.028,
+    0.0201
+   ],
+   "dreiecke_lite": 530,
+   "explosion": [
+    -0.0692,
+    0.335,
+    -0.0112
+   ]
+  },
+  {
+   "id": "lamp2",
+   "gruppe": "pan",
+   "farbe": "#f28c26",
+   "aussen": true,
+   "dreiecke": 2794,
+   "mitte": [
+    0.0494,
+    -0.016,
+    -0.008
+   ],
+   "groesse": [
+    0.0278,
+    0.028,
+    0.0201
+   ],
+   "dreiecke_lite": 512,
+   "explosion": [
+    0.0692,
+    0.335,
+    -0.0112
+   ]
+  },
+  {
+   "id": "alu",
+   "gruppe": "pan",
+   "farbe": "#bfbfc7",
+   "aussen": false,
+   "dreiecke": 160,
+   "mitte": [
+    0.0,
+    -0.016,
+    -0.005
+   ],
+   "groesse": [
+    0.1218,
+    0.0188,
+    0.004
+   ],
+   "explosion": [
+    0.0,
+    0.335,
+    -0.009
+   ]
+  },
+  {
+   "id": "lens_w",
+   "gruppe": "pan",
+   "farbe": "#fff299",
+   "aussen": true,
+   "dreiecke": 80,
+   "mitte": [
+    -0.0515,
+    -0.016,
+    -0.012
+   ],
+   "groesse": [
+    0.0188,
+    0.0188,
+    0.01
+   ],
+   "dreiecke_lite": 40,
+   "explosion": [
+    -0.1081,
+    0.335,
+    -0.0252
+   ]
+  },
+  {
+   "id": "lens_ir",
+   "gruppe": "pan",
+   "farbe": "#bf1a1a",
+   "aussen": true,
+   "dreiecke": 80,
+   "mitte": [
+    0.0515,
+    -0.016,
+    -0.012
+   ],
+   "groesse": [
+    0.0188,
+    0.0188,
+    0.01
+   ],
+   "dreiecke_lite": 40,
+   "explosion": [
+    0.1081,
+    0.335,
+    -0.0252
+   ]
+  },
+  {
+   "id": "cable_cam",
+   "gruppe": "base",
+   "farbe": "#d9c27a",
+   "aussen": false,
+   "dreiecke": 240,
+   "mitte": [
+    -0.0114,
+    -0.071,
+    0.068
+   ],
+   "groesse": [
+    0.0268,
+    0.0293,
+    0.028
+   ],
+   "explosion": [
+    -0.0,
+    0.28,
+    0.0
+   ]
+  },
+  {
+   "id": "cable_servo",
+   "gruppe": "base",
+   "farbe": "#e67e22",
+   "aussen": false,
+   "dreiecke": 160,
+   "mitte": [
+    -0.0223,
+    -0.0763,
+    0.0002
+   ],
+   "groesse": [
+    0.0321,
+    0.0089,
+    0.0311
+   ],
+   "explosion": [
+    -0.0112,
+    0.2,
+    -0.0267
+   ]
+  },
+  {
+   "id": "plug",
+   "gruppe": "base",
+   "farbe": "#262626",
+   "aussen": true,
+   "dreiecke": 1646,
+   "mitte": [
+    -0.0481,
+    -0.0803,
+    0.065
+   ],
+   "groesse": [
+    0.0038,
+    0.026,
+    0.036
+   ],
+   "dreiecke_lite": 320,
+   "explosion": [
+    -0.0721,
+    0.0,
+    0.017
+   ]
+  },
+  {
+   "id": "wide",
+   "gruppe": "base",
+   "farbe": "#b33333",
+   "aussen": false,
+   "dreiecke": 92,
+   "mitte": [
+    0.0,
+    -0.0698,
+    -0.0324
+   ],
+   "groesse": [
+    0.025,
+    0.0237,
+    0.016
+   ],
+   "explosion": [
+    0.0,
+    0.115,
+    -0.1291
+   ]
+  },
+  {
+   "id": "irled",
+   "gruppe": "base",
+   "farbe": "#7f1a1a",
+   "aussen": false,
+   "dreiecke": 160,
+   "mitte": [
+    -0.02,
+    -0.0858,
+    -0.0377
+   ],
+   "groesse": [
+    0.0058,
+    0.0058,
+    0.0096
+   ],
+   "explosion": [
+    -0.03,
+    0.115,
+    -0.1371
+   ]
+  },
+  {
+   "id": "buttons",
+   "gruppe": "base",
+   "farbe": "#e6b800",
+   "aussen": false,
+   "dreiecke": 160,
+   "mitte": [
+    -0.0155,
+    -0.0928,
+    0.1348
+   ],
+   "groesse": [
+    0.052,
+    0.012,
+    0.0175
+   ],
+   "explosion": [
+    -0.0232,
+    0.04,
+    0.1217
+   ]
+  },
+  {
+   "id": "sled",
+   "gruppe": "tilt",
+   "farbe": "#f2f2f2",
+   "aussen": false,
+   "dreiecke": 160,
+   "mitte": [
+    -0.008,
+    0.0327,
+    -0.003
+   ],
+   "groesse": [
+    0.014,
+    0.0093,
+    0.014
+   ],
+   "explosion": [
+    -0.0,
+    0.45,
+    -0.0
+   ]
+  }
+ ]
+}

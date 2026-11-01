@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.33.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.34.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -446,6 +446,11 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.34.0
+3.34.0: Werkstatt (Mehr › Werkstatt): das Gehäuse v5.1 drehen, zerlegen (Explosion), durchleuchten und Schritt für Schritt
+montieren; am Gerät in der Szene sitzt jetzt das echte Gehäuse. In MoveEye dazu die Seite «Gehäuse & Bau» (Mehr).
+So testest du: Mehr › Werkstatt öffnen, zerlegen und die Montage-Schritte durchgehen; in MoveEye Mehr › Gehäuse & Bau › «Im Simulator ansehen».
 
 NEU IN 3.33.0
 3.33.0: Hilfe zu jedem Fehler: in der Selbstdiagnose steht neben jeder Fehlermeldung ein Knopf «Beheben» und ein QR-Code

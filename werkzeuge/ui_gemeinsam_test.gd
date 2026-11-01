@@ -78,6 +78,22 @@ func _init() -> void:
 			for line in ep.split("\n"):
 				if line.begins_with("include_filter=") and line.find("ui_gemeinsam.json") < 0:
 					errs.append("export_presets.cfg: ui_gemeinsam.json fehlt in %s" % line)
+		# real-gehaeuse: «more» – entries of the page «Mehr» in both programs (row in mehr.gd, names in texte.json)
+		var Mehr = load("res://scripts/mehr.gd")
+		var tx = JSON.parse_string(FileAccess.get_file_as_string("res://i18n/texte.json"))
+		for mo in UG.data().get("more", []):
+			var sm: Dictionary = mo.get("sim", {})
+			var row = null
+			for it in Mehr.ITEMS:
+				if str(it[0]) == str(sm.get("row", "")):
+					row = it
+			if row == null:
+				errs.append("Mehr: Zeile %s fehlt in mehr.gd" % sm.get("row", ""))
+				continue
+			eq("Mehr %s Name" % mo.get("id", ""), row[2], sm.get("key", ""))
+			eq("Mehr %s Symbol" % mo.get("id", ""), row[1], mo.get("draw", ""))
+			for lg in ["en", "fr", "it", "rm"]:
+				eq("Mehr %s (%s)" % [mo.get("id", ""), lg], ((tx as Dictionary).get(sm.get("key", ""), {}) as Dictionary).get(lg, ""), (sm.get("names", {}) as Dictionary).get(lg, ""))
 	if errs.is_empty():
 		print("Menütest OK (%d Gruppen im Simulator, %d gemeinsam mit MoveEye)" % [UG.sim_groups().size(), 6])
 		quit(0)

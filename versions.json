@@ -1,22 +1,39 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-01 11:43",
+ "generated": "2026-11-01 11:47",
  "versions": [
+  {
+   "version": "3.34.0",
+   "file": "webcam_bewegung_3_34_0.py",
+   "url": "",
+   "sha256": "a8e252bd1db06981e81e366580890ebd9ebf11535f5cfbdb7d9691a05d3a550d",
+   "date": "2026-11-01 11:47",
+   "notes": "Neue Seite «Gehäuse & Bau» (Mehr): Gehäuse v5.1 Schritt für Schritt, Materialliste, Druckdateien, Kapitel in der Anleitung (5 Sprachen); im Simulator die Werkstatt zum Drehen und Zerlegen, das echte Gehäuse am Gerät.",
+   "size": 4665432,
+   "sig": "ca1325dbdeefe6f52f2d75321b7b8f89a998167f20d05fc9c6f9bd7e97508fc2e8d00ec5d4815f0a92841f1e7cce4f274d895a0798bcb98798a43eb77965510c",
+   "data": {
+    "file": "moveeye_daten_3_34_0.zip",
+    "url": "",
+    "sha256": "099817059724b9e2c22f8da0f80db42c0ec906daad7585f1fca491ffeea4299d",
+    "size": 1583449,
+    "sig": "f31622ff347976c18fa324e982049e086c8ae82a666eed0febb3236ca7086f2223cffc602f26185bf8ff3231b787deb8476d5b49cdbb3501d245846dec6a7705"
+   }
+  },
   {
    "version": "3.33.0",
    "file": "webcam_bewegung_3_33_0.py",
    "url": "",
-   "sha256": "173ae8ae90d0cb3af9a5bee9ec11ecdd331b67b68cc2f73278ea229b615e4c35",
-   "date": "2026-11-01 11:43",
+   "sha256": "a627a7f39687b4f687a84aeff59fc64f3b08743bddf589fc562bd8fe95e64a23",
+   "date": "2026-11-01 11:46",
    "notes": "Hilfe zu jedem Fehler: Fehler-Katalog (27 Fehler, 5 Sprachen), Seite /hilfe/fehler, Knopf «Jetzt beheben» (nur Besitzer) und QR-Code in Selbstdiagnose, Fenster, SmallTV, TV und Push; im Simulator ebenso.",
-   "size": 4647515,
-   "sig": "db3afe1018bf288832807c4c70ed97b0ca5f3ea7733cc1117b6783dfd160e110e6cb2433c38905086f3c6f038a565a5834a0739ca4bb6f786efe9da5f9afd904",
+   "size": 4665408,
+   "sig": "26866acf44b9c22a96b38e0b4481e015b1f9feee096cbb18833203c9cee025aaeda36cb1dbdd25738d5b5b9bbee06a24e7d7a5b5f60a642fc8e756a49b7db101",
    "data": {
     "file": "moveeye_daten_3_33_0.zip",
     "url": "",
-    "sha256": "76dc5fe13587acd59fec63cd12cb7c91ed93112b96713f6e15887cf567ef42ff",
-    "size": 1567246,
-    "sig": "26948a205ca26c308a73374be98a0bd2a26e6d32a7e00910d6072209b4e4117b90f558bd23393362a83b87d5b5a62243d8307b00610c3b33e73d099d5b58e307"
+    "sha256": "95948289a9d5df6791d987888f95df4115745629e1110de6155c1e90eb854b6a",
+    "size": 1583339,
+    "sig": "0dfb2be5a9e06dc2756b71b031bd3e37e94ec7d76bc71fdf34ac43057f2a58af4dd69e8707f49f51a6d3414fb1f5faaa84113a66d734c192862507cf364d0208"
    }
   },
   {
@@ -24,7 +41,7 @@
    "file": "webcam_bewegung_3_32_0.py",
    "url": "",
    "sha256": "ac35fd81c625f0700a54206014dc66a3d32cdc4bfd1c83386454e07b55a44b98",
-   "date": "2026-11-01 11:40",
+   "date": "2026-11-01 11:44",
    "notes": "Ruhiges Bild statt Schwarz, wenn der Simulator startet, sich aktualisiert, einen Ort lädt oder nicht erreichbar ist (mit Blinki, nach 3 Min. ein Hinweis); echte Kamera: klarere Fehlermeldung.",
    "size": 4647212,
    "sig": "8e9f6092742278895b8bb9e59144413eecc7e9bec8b3fa3889d98ace49e3c50b9e7fe2dbf4b8989e5c72e95efde606bdce4e7cd3c79cc6b883560fb38d1a3609",
@@ -75,7 +92,7 @@
    "file": "webcam_bewegung_3_29_0.py",
    "url": "",
    "sha256": "62f00005d536c7a2111d73c627c911d2dfff478d9675468952ad5ed5b7f9ed48",
-   "date": "2026-11-01 11:39",
+   "date": "2026-11-01 11:45",
    "notes": "Simulator: Fenster docken automatisch in Leisten links/rechts an (ohne Überlappung, passt sich der Bildschirmgrösse an, «Neu anordnen»); Karte, Kompass, SmallTV und CPU als Reiter in einem Fenster; Entwickler immer vorne, klein/mittel/gross und einklappbar.",
    "size": 4481992,
    "sig": "cc70cbf48db570a684b681b77ed28d3721e94de0d3d0e262f4d74b94fdf8c05c79ad0325dfa4c386c6ae2887184a977ab9149a3d729cd8e16b39df2ccd954405",
@@ -136,23 +153,6 @@
     "sha256": "a79dc30ede75e0c08d1be29ba984b651302f14f03bd882f9d6bc432b6e986270",
     "size": 1632681,
     "sig": "2164e4276b11657503b9e72d4ecb2e4825fc405153f67184f89f30bd535c47a241facfd51647b23efc9995e59b9afa1168f33192550da9d7e7eb92cc7444a90b"
-   }
-  },
-  {
-   "version": "3.25.0",
-   "file": "webcam_bewegung_3_25_0.py",
-   "url": "",
-   "sha256": "9839882bd0bf5d3c029a171a3faeb70aab40d7a899f96a2768ae3efd1c4219da",
-   "date": "2026-11-01 01:40",
-   "notes": "Mittlerer Klapp-Knopf «Meine Ansicht»: merkt sich dein Auf- und Zuklappen pro Seite, auf allen deinen MoveEye-Geräten gleich; «Nur Gruppen» weiter mit langem Druck; ↻ springt zuerst auf Live und lädt dann neu.",
-   "size": 4482785,
-   "sig": "516e3e1b9e191cc33395320c1afe497f9aad6a04190319ed562f05641aba9b2e72fc515fcb7f828fad170a51486efb2ffe1b41b3afbf614f50d5fc9402dbc407",
-   "data": {
-    "file": "moveeye_daten_3_25_0.zip",
-    "url": "",
-    "sha256": "8feaf9634c17238566f1b59599797bc65828d2ad8b435c62b3452d9433477ff1",
-    "size": 1632683,
-    "sig": "efc8f4974a55bd56adc7ee72b77aaf6fe8309207aa5b0e8331dd7c7d82f5361d484598ed87f70fad4482c90db5da097013f8a678e5f38bfbd0ede1ca5ddd110d"
    }
   },
   {

@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3.33.0"
+const VERSION := "3.34.0"
 const Versionen = preload("res://scripts/versionen.gd")   # Versionierung 3.0.0: from 3.0.0 VERSION = "X.Y.Z" like MoveEye (see there)
 const Stimme = preload("res://scripts/abenteuer_stimme.gd")   # 3.23: the one switch «Stimme» (an | aus | untertitel)
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
@@ -330,6 +330,9 @@ var camphys                           # camphys.gd (3D-4.x P1): exposure / gain 
 var szenen                            # szenenplus.gd (3D-4.x): Voller Campingplatz, Tarnen und Kriechen, Velodieb
 var smalltv                           # smalltv.gd (3D-4.19): virtueller Zusatz-Bildschirm GeekMagic SmallTV Ultra (MoveEye 552)
 var fenster                           # fenster.gd (Paket «Fenster»): ein Rahmen für alle schwebenden Fenster (ziehen, Grösse, ✕, Liste «Fenster»)
+var gehaeuse                          # gehaeuse.gd (real-gehaeuse): die vereinfachten echten Teile des Gehäuses v5.1 am Gerät
+var werkstatt                         # werkstatt.gd (real-gehaeuse): Mehr → Werkstatt (Gehäuse drehen, zerlegen, Montage)
+var head_box: MeshInstance3D          # the dark box of the head (hidden while the real case is shown, gehaeuse.gd)
 var statusled                         # statusled.gd: Status-LED auf dem Kopf + Fenster «Gerät» mit den Tasten (MoveEye 163a / 599c)
 var weit                              # weitwinkel.gd (3D-4.17): camera 1 = the wide camera with its mount (mast, base, head front / rear)
 var nacht                             # nachtlauf.gd (Paket «Nacht-Testlauf»): eine ganze Nacht mit Wahrheit, von MoveEye gestartet
@@ -585,6 +588,12 @@ func _ready() -> void:
 	add_child(spielbereich)
 	_build_world()
 	_build_head()
+	gehaeuse = preload("res://scripts/gehaeuse.gd").new()     # real-gehaeuse: the real case v5.1 on the head (cameras stay where they are)
+	gehaeuse.main = self
+	add_child(gehaeuse)
+	werkstatt = preload("res://scripts/werkstatt.gd").new()   # real-gehaeuse: Mehr → Werkstatt
+	werkstatt.main = self
+	add_child(werkstatt)
 	_build_viewports()
 	_build_weather()
 	_build_effects()
@@ -1599,6 +1608,7 @@ func _build_head() -> void:
 	hmi.material_override = mat(Color(0.12, 0.12, 0.13))
 	hmi.layers = 1
 	head_pitch.add_child(hmi)
+	head_box = hmi
 	var pole := MeshInstance3D.new()
 	pole.mesh = box(0.06, 1.0, 0.06)
 	pole.material_override = mat(Color(0.2, 0.2, 0.2))
@@ -5274,6 +5284,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return preload("res://scripts/fehler_hilfe.gd").control(self, mehr, d)
 	elif a == "werk":                                  # Werksrücksetzung (werk.gd): {do: info | open | close | reset (confirm: true)}
 		return mehr.werk.control(d) if mehr != null and mehr.werk != null else {"ok": false, "error": "not ready"}
+	elif a == "werkstatt":                             # real-gehaeuse: {do: open | close | info | explode | xray | inner | v52 | pick | step | next | prev | view | real_case}
+		return werkstatt.control(d) if werkstatt != null else {"ok": false, "error": "not ready"}
 	elif a == "mehr":                                  # 3D-4.2x: «Mehr» (tests): {"do": open | theme | tour | diag | log | fb_* | shot}
 		return mehr.control(d) if mehr != null else {"ok": false, "error": "not ready"}
 	elif a == "feedback":                              # MoveEye 2.98.33: the dialog «Rückmeldung» (tests: {text, kind, stars, shot})

@@ -5,12 +5,16 @@ extends RefCounted
 ## Kreis beim Laden). Dazu Blinki, die kleine Figur aus dem MoveEye-Logo (wie quelle/589_blinki.py).
 
 const KINDS := ["more", "help", "chat", "info", "steth", "log", "update", "theme", "tour", "bug", "bulb", "star", "star_on",
-		"question", "copy", "x", "sun", "moon", "trash", "play"]
+		"question", "copy", "x", "sun", "moon", "trash", "play", "wrench"]
 
 
 static func draw(d: CanvasItem, kind: String, c: Vector2, col: Color, w := 1.8) -> bool:
 	"""draws the symbol, false = unknown"""
 	match kind:
+		"wrench":                                     # real-gehaeuse: Werkstatt (Schraubenschlüssel)
+			var dd := Vector2(0.7071, 0.7071)
+			d.draw_line(c - dd * 3.0, c + dd * 7.5, col, w + 1.2, true)
+			d.draw_arc(c - dd * 5.2, 4.2, deg_to_rad(80.0), deg_to_rad(370.0), 16, col, w, true)
 		"more":                                       # ⋯
 			for x in [-6.0, 0.0, 6.0]:
 				d.draw_circle(c + Vector2(x, 0), 1.9, col)
