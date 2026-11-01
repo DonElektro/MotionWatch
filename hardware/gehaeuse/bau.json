@@ -1260,6 +1260,48 @@
    "datei": "11_Fuss_4x"
   },
   {
+   "id": "feet2",
+   "art": "druck",
+   "bom": "petg",
+   "schritt": 2,
+   "name": {
+    "de": "11 Fuss (2 von 4)",
+    "en": "11 Foot (2 of 4)",
+    "fr": "11 Pied (2 sur 4)",
+    "it": "11 Piedino (2 di 4)",
+    "rm": "11 Pe (2 da 4)"
+   },
+   "datei": "11_Fuss_4x"
+  },
+  {
+   "id": "feet3",
+   "art": "druck",
+   "bom": "petg",
+   "schritt": 2,
+   "name": {
+    "de": "11 Fuss (3 von 4)",
+    "en": "11 Foot (3 of 4)",
+    "fr": "11 Pied (3 sur 4)",
+    "it": "11 Piedino (3 di 4)",
+    "rm": "11 Pe (3 da 4)"
+   },
+   "datei": "11_Fuss_4x"
+  },
+  {
+   "id": "feet4",
+   "art": "druck",
+   "bom": "petg",
+   "schritt": 2,
+   "name": {
+    "de": "11 Fuss (4 von 4)",
+    "en": "11 Foot (4 of 4)",
+    "fr": "11 Pied (4 sur 4)",
+    "it": "11 Piedino (4 di 4)",
+    "rm": "11 Pe (4 da 4)"
+   },
+   "datei": "11_Fuss_4x"
+  },
+  {
    "id": "tripod",
    "art": "teil",
    "bom": null,
@@ -1914,6 +1956,86 @@
     "fr": "19 Bouchon trou du module IR (sans module IR)",
     "it": "19 Tappo foro modulo IR (senza modulo IR)",
     "rm": "19 Zaffer foura dal modul IR (senza modul IR)"
+   }
+  },
+  {
+   "id": "thplug",
+   "art": "v52",
+   "bom": "petg",
+   "schritt": 10,
+   "datei": "18_Stopfen_Waermebild",
+   "wenn": "v52",
+   "ohne": "therm",
+   "name": {
+    "de": "18 Stopfen Wärmebild-Fenster (Kopf ohne Wärmebild)",
+    "en": "18 Plug thermal window (head without thermal camera)",
+    "fr": "18 Bouchon fenêtre thermique (tête sans caméra thermique)",
+    "it": "18 Tappo finestra termica (testa senza termocamera)",
+    "rm": "18 Zaffer fanestra termica (chau senza camera termica)"
+   }
+  },
+  {
+   "id": "dsplug",
+   "art": "v52",
+   "bom": "petg",
+   "schritt": 7,
+   "datei": "20_Stopfen_DS18B20",
+   "wenn": "v52",
+   "ohne": "probe",
+   "name": {
+    "de": "20 Stopfen DS18B20-Durchführung (ohne Temperaturfühler)",
+    "en": "20 Plug DS18B20 feed-through (without temperature probe)",
+    "fr": "20 Bouchon passage DS18B20 (sans sonde de température)",
+    "it": "20 Tappo passaggio DS18B20 (senza sonda di temperatura)",
+    "rm": "20 Zaffer passagi DS18B20 (senza sonda da temperatura)"
+   }
+  },
+  {
+   "id": "rlplug",
+   "art": "v52",
+   "bom": "petg",
+   "schritt": 7,
+   "datei": "21_Stopfen_Relais",
+   "wenn": "v52",
+   "ohne": "relayjack",
+   "name": {
+    "de": "21 Stopfen Relais-Buchse (ohne Relais)",
+    "en": "21 Plug relay socket (without relay)",
+    "fr": "21 Bouchon prise relais (sans relais)",
+    "it": "21 Tappo presa relè (senza relè)",
+    "rm": "21 Zaffer bischla relais (senza relais)"
+   }
+  },
+  {
+   "id": "micplug",
+   "art": "v52",
+   "bom": "petg",
+   "schritt": 3,
+   "datei": "23_Stopfen_Mikrofon",
+   "wenn": "v52",
+   "ohne": "mic",
+   "name": {
+    "de": "23 Stopfen Mikrofon-Löcher (ohne Mikrofon)",
+    "en": "23 Plug microphone holes (without microphone)",
+    "fr": "23 Bouchon trous du micro (sans micro)",
+    "it": "23 Tappo fori microfono (senza microfono)",
+    "rm": "23 Zaffer fouras dal microfon (senza microfon)"
+   }
+  },
+  {
+   "id": "llplug",
+   "art": "v52",
+   "bom": "petg",
+   "schritt": 7,
+   "datei": "24_Stopfen_Lichtleiter",
+   "wenn": "v52",
+   "ohne": "ledlight",
+   "name": {
+    "de": "24 Stopfen Lichtleiter-Loch (ohne Lade-LED)",
+    "en": "24 Plug light guide hole (without charging LED)",
+    "fr": "24 Bouchon trou du guide de lumière (sans LED de charge)",
+    "it": "24 Tappo foro guida luce (senza LED di carica)",
+    "rm": "24 Zaffer foura dal conductur da glisch (senza LED da chargiar)"
    }
   },
   {
@@ -5878,7 +6000,15 @@
    "resplug",
    "wplug",
    "sockel",
-   "irplug"
+   "irplug",
+   "feet2",
+   "feet3",
+   "feet4",
+   "thplug",
+   "dsplug",
+   "rlplug",
+   "micplug",
+   "llplug"
   ],
   "turntable": "#f59a4a",
   "yoke": "#f59a4a",
@@ -5887,7 +6017,15 @@
   "side": "#f59a4a",
   "lamp1": "#f59a4a",
   "lamp2": "#f59a4a",
-  "head52": "#f59a4a"
+  "head52": "#f59a4a",
+  "feet2": "#9a9ea3",
+  "feet3": "#9a9ea3",
+  "feet4": "#9a9ea3",
+  "thplug": "#9a9ea3",
+  "dsplug": "#9a9ea3",
+  "rlplug": "#9a9ea3",
+  "micplug": "#9a9ea3",
+  "llplug": "#9a9ea3"
  },
  "pakete": {
   "_hinweis": "Information (Entscheid Elektro 01.11.2026): drei Pakete. Die Seite «Bauen» bleibt bei den Varianten (gehaeuse / akku / mover); «variante» zeigt, welche Wahl dort passt. bom = Materialliste-IDs ohne optionale Extras, preis_chf = Summe der geschätzten bom-Preise (Zeilensumme, gerundet), extras = optionale bom-IDs (nicht in der Summe), stopfen = Druckteile nur für dieses Paket (dazu immer 17 für die Reserve-Öffnung). Solo und Mobil folgen später.",

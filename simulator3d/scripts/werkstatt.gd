@@ -181,11 +181,18 @@ func _build_ui() -> void:
 	vpc.custom_minimum_size = Vector2(320, 240)
 	vpc.gui_input.connect(_on_input)
 	vpc.set_meta("rad_zoom", "werkstatt")              # tasten.gd: + / − = the wheel of the 3D view
+	var col := VBoxContainer.new()                      # real-einzelteil-2: the picture and below it the card of the part (like MoveEye)
+	col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	col.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	col.add_theme_constant_override("separation", 8)
+	h.add_child(col)
 	var holder := Control.new()                         # real-einzelteil-vorschau: 3D picture + «Wo es hingehört» bottom right
 	holder.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	holder.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	holder.size_flags_stretch_ratio = 1.6
 	holder.custom_minimum_size = Vector2(320, 240)
-	h.add_child(holder)
+	col.add_child(holder)
+	einzel.build_ui(col)
 	vpc.set_anchors_preset(Control.PRESET_FULL_RECT)
 	holder.add_child(vpc)
 	vp = SubViewport.new()
@@ -254,11 +261,11 @@ func _build_ui() -> void:
 		else:
 			set_view(145.0, 24.0, 0.62))
 	v.add_child(rb)
-	var plb := Button.new()                              # real-einzelteil-vorschau: the plates of the variant as in the 3MF
-	plb.text = T.t("Druckplatten")
+	var plb: Button = EINZEL.icon_button(T.t("Druckplatten"), "printer")   # real-einzelteil-vorschau: the plates as in the 3MF
 	plb.toggle_mode = true
 	plb.pressed.connect(func(): einzel.set_mode("platten" if einzel.mode != "platten" else "", "", false, einzel.plate))
 	v.add_child(plb)
+	EINZEL.wrap_button(plb)
 	_w["plates_btn"] = plb
 	# the part
 	v.add_child(UI.heading(T.t("Teil")))
@@ -290,13 +297,12 @@ func _build_ui() -> void:
 			set_step(int(r[4])))
 	iv.add_child(gs)
 	_w["gostep"] = gs
-	var so := Button.new()                               # real-einzelteil-vorschau
-	so.text = T.t("Nur dieses Teil zeigen")
+	var so: Button = EINZEL.icon_button(T.t("Nur dieses Teil zeigen"), "search")   # real-einzelteil-vorschau
 	so.visible = false
 	so.pressed.connect(func(): einzel.set_mode("teil", sel))
 	iv.add_child(so)
+	EINZEL.wrap_button(so)
 	_w["solo_btn"] = so
-	einzel.build_ui(v)
 	# assembly
 	v.add_child(UI.heading(T.t("Montage Schritt für Schritt")))
 	var mp := PanelContainer.new()
@@ -506,7 +512,8 @@ func _build_world() -> void:
 		var mi: MeshInstance3D = ms[id]
 		var src: Material = mi.mesh.surface_get_material(0) if mi.mesh != null and mi.mesh.get_surface_count() > 0 else null
 		var m := StandardMaterial3D.new()
-		m.albedo_color = src.albedo_color if src is BaseMaterial3D else Color.from_string(str(e.get("farbe", "#888888")), Color.GRAY)
+		# real-einzelteil-2: the colour of modelle.json (bau.json «farben», sRGB like MoveEye) – the GLB factor came out too light
+		m.albedo_color = Color.from_string(str(e.get("farbe", "")), src.albedo_color if src is BaseMaterial3D else Color.GRAY)
 		m.roughness = 0.6
 		m.cull_mode = BaseMaterial3D.CULL_DISABLED
 		mi.material_override = m

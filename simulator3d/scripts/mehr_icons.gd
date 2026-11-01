@@ -5,7 +5,7 @@ extends RefCounted
 ## Kreis beim Laden). Dazu Blinki, die kleine Figur aus dem MoveEye-Logo (wie quelle/589_blinki.py).
 
 const KINDS := ["more", "help", "chat", "info", "steth", "log", "update", "theme", "tour", "bug", "bulb", "star", "star_on",
-		"question", "copy", "x", "sun", "moon", "trash", "play", "wrench", "cart"]
+		"question", "copy", "x", "sun", "moon", "trash", "play", "wrench", "cart", "search", "pin", "printer"]
 
 
 static func draw(d: CanvasItem, kind: String, c: Vector2, col: Color, w := 1.8) -> bool:
@@ -20,6 +20,18 @@ static func draw(d: CanvasItem, kind: String, c: Vector2, col: Color, w := 1.8) 
 					c + Vector2(9, -4), c + Vector2(-5, -4)]), col, w, true)
 			d.draw_circle(c + Vector2(-2, 7.5), 1.6, col)
 			d.draw_circle(c + Vector2(6, 7.5), 1.6, col)
+		"search":                                     # real-einzelteil-2: «Nur dieses Teil zeigen» (Lupe, wie 🔍 in MoveEye)
+			d.draw_arc(c + Vector2(-2, -2), 5.5, 0.0, TAU, 24, col, w, true)
+			d.draw_line(c + Vector2(2.2, 2.2), c + Vector2(7.5, 7.5), col, w + 1.0, true)
+		"pin":                                        # «Wo es hingehört» (Ortsnadel, wie 📍)
+			d.draw_arc(c + Vector2(0, -3), 5.5, PI * 0.8, PI * 2.2, 20, col, w, true)
+			d.draw_polyline(PackedVector2Array([c + Vector2(-4.4, -0.2), c + Vector2(0, 8), c + Vector2(4.4, -0.2)]), col, w, true)
+			d.draw_circle(c + Vector2(0, -3), 1.8, col)
+		"printer":                                    # «Druckplatten» (3D-Drucker, wie 🖨)
+			d.draw_rect(Rect2(c + Vector2(-8, -8), Vector2(16, 16)), col, false, w)
+			d.draw_line(c + Vector2(-8, -4), c + Vector2(8, -4), col, w, true)
+			d.draw_rect(Rect2(c + Vector2(-2, -4), Vector2(4, 3)), col, true)
+			d.draw_line(c + Vector2(-5, 5), c + Vector2(5, 5), col, w + 0.6, true)
 		"more":                                       # ⋯
 			for x in [-6.0, 0.0, 6.0]:
 				d.draw_circle(c + Vector2(x, 0), 1.9, col)

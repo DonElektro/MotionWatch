@@ -2628,6 +2628,24 @@
   "it": "10_HDMI_Stopfen",
   "rm": "10_HDMI_Stopfen"
  },
+ "11 Fuss (2 von 4)": {
+  "en": "11 Foot (2 of 4)",
+  "fr": "11 Pied (2 sur 4)",
+  "it": "11 Piedino (2 di 4)",
+  "rm": "11 Pe (2 da 4)"
+ },
+ "11 Fuss (3 von 4)": {
+  "en": "11 Foot (3 of 4)",
+  "fr": "11 Pied (3 sur 4)",
+  "it": "11 Piedino (3 di 4)",
+  "rm": "11 Pe (3 da 4)"
+ },
+ "11 Fuss (4 von 4)": {
+  "en": "11 Foot (4 of 4)",
+  "fr": "11 Pied (4 sur 4)",
+  "it": "11 Piedino (4 di 4)",
+  "rm": "11 Pe (4 da 4)"
+ },
  "11 Füsse (4×)": {
   "en": "11 Feet (4×)",
   "fr": "11 Pieds (4×)",
@@ -2699,6 +2717,12 @@
   "fr": "17 Bouchon ouverture de réserve arrière (GX12)",
   "it": "17 Tappo apertura di riserva posteriore (GX12)",
   "rm": "17 Zaffer avertura da reserva davos (GX12)"
+ },
+ "18 Stopfen Wärmebild-Fenster (Kopf ohne Wärmebild)": {
+  "en": "18 Plug thermal window (head without thermal camera)",
+  "fr": "18 Bouchon fenêtre thermique (tête sans caméra thermique)",
+  "it": "18 Tappo finestra termica (testa senza termocamera)",
+  "rm": "18 Zaffer fanestra termica (chau senza camera termica)"
  },
  "18. Okt. 1961\nDie Wirtsleute haben uns bis zum Postauto begleitet.": {
   "en": "18. Okt. 1961\nDie Wirtsleute haben uns bis zum Postauto begleitet.",
@@ -2772,11 +2796,35 @@
   "it": "20 AWG",
   "rm": "20 AWG"
  },
+ "20 Stopfen DS18B20-Durchführung (ohne Temperaturfühler)": {
+  "en": "20 Plug DS18B20 feed-through (without temperature probe)",
+  "fr": "20 Bouchon passage DS18B20 (sans sonde de température)",
+  "it": "20 Tappo passaggio DS18B20 (senza sonda di temperatura)",
+  "rm": "20 Zaffer passagi DS18B20 (senza sonda da temperatura)"
+ },
+ "21 Stopfen Relais-Buchse (ohne Relais)": {
+  "en": "21 Plug relay socket (without relay)",
+  "fr": "21 Bouchon prise relais (sans relais)",
+  "it": "21 Tappo presa relè (senza relè)",
+  "rm": "21 Zaffer bischla relais (senza relais)"
+ },
  "21.8. Holz nachgefüllt, 15 Fr. in die Kasse. – Ruedi & Vreni\n\n2.9. Sternenhimmel wie noch nie. Grazie! – Luca": {
   "en": "21.8. Holz nachgefüllt, 15 Fr. in die Kasse. – Ruedi & Vreni\n\n2.9. Sternenhimmel wie noch nie. Grazie! – Luca",
   "fr": "21.8. Holz nachgefüllt, 15 Fr. in die Kasse. – Ruedi & Vreni\n\n2.9. Sternenhimmel wie noch nie. Grazie! – Luca",
   "it": "21.8. Holz nachgefüllt, 15 Fr. in die Kasse. – Ruedi & Vreni\n\n2.9. Sternenhimmel wie noch nie. Grazie! – Luca",
   "rm": "21.8. Holz nachgefüllt, 15 Fr. in die Kasse. – Ruedi & Vreni\n\n2.9. Sternenhimmel wie noch nie. Grazie! – Luca"
+ },
+ "23 Stopfen Mikrofon-Löcher (ohne Mikrofon)": {
+  "en": "23 Plug microphone holes (without microphone)",
+  "fr": "23 Bouchon trous du micro (sans micro)",
+  "it": "23 Tappo fori microfono (senza microfono)",
+  "rm": "23 Zaffer fouras dal microfon (senza microfon)"
+ },
+ "24 Stopfen Lichtleiter-Loch (ohne Lade-LED)": {
+  "en": "24 Plug light guide hole (without charging LED)",
+  "fr": "24 Bouchon trou du guide de lumière (sans LED de charge)",
+  "it": "24 Tappo foro guida luce (senza LED di carica)",
+  "rm": "24 Zaffer foura dal conductur da glisch (senza LED da chargiar)"
  },
  "3 Bots": {
   "en": "3 bots",

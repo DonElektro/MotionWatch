@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-01 23:38",
+ "generated": "2026-11-02 00:04",
  "versions": [
   {
-   "version": "3.48.0",
-   "file": "webcam_bewegung_3_48_0.py",
+   "version": "3.48.1",
+   "file": "webcam_bewegung_3_48_1.py",
    "url": "",
-   "sha256": "03580e920a1796999d8f591b40989ccc75e202a058758d52c61789b760d58659",
-   "date": "2026-11-01 23:38",
-   "notes": "Werkstatt: Teil antippen → «Nur dieses Teil zeigen» mit Grösse, Druck-/Zukauf-Infos, 3MF-Download, «Liegend wie gedruckt», «Wo es hingehört» (Sprung zum Montageschritt); neue Ansicht «Druckplatten» A/B mit Download je Platte und allen Platten als ZIP; MoveEye und Simulator.",
-   "size": 4865237,
-   "sig": "a9744dd7ee26163269c24e007610a32f3d526a945c18ef453171a068e30b2c0d39eab4ede727116fe057d8934a6ee07fc330b0f08b9e208977e3e424a85c9c00",
+   "sha256": "89689327702c84626c8de06f413ce5720c11730cb5ecbdee6b543f4af51abef0",
+   "date": "2026-11-02 00:04",
+   "notes": "Werkstatt im Simulator wie in MoveEye (Karte unter dem Bild, Symbole, Farben), Knopftexte zweizeilig statt abgeschnitten; echte 3D-Modelle für Füsse und Stopfen, echte Lage auf den Druckplatten.",
+   "size": 4865147,
+   "sig": "c6c33be21f8e6950a6d5a38c221055684d116e05e00ba2fbef0a73bdbe66c7cb4f34d68ca9b37f7d6f74d7d4d04fbc38615dee5925be86c8b0e060df781eb509",
    "data": {
-    "file": "moveeye_daten_3_48_0.zip",
+    "file": "moveeye_daten_3_48_1.zip",
     "url": "",
-    "sha256": "1c6db2da31b37a76877ff2ee3f746c3e3379cd5f4ace370cb4d97050f03287ca",
-    "size": 3324397,
-    "sig": "4fea57698c67525c3268d34308462d5a80c1ff88801c49043dbf9a0bce3e8d1dae928a6e5f4b1993074b3e0f0fab06f5934dbd3f57c4ae26283fdf537f125304"
+    "sha256": "b0cf7be4227f30f4bb3982662391a2d95e1b429ba38947c831e25df6948b32b1",
+    "size": 3602032,
+    "sig": "7e9b100f739fbe814088a7cd8a1ff6a194a45e258eac1806255cd27a6bd33b9d05fe308299cd10b2807ba50e02e7fad1310daec848595467165ccd7b416eb005"
    }
   },
   {

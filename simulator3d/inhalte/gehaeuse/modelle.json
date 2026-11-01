@@ -1,12 +1,12 @@
 {
  "_hinweis": "Erzeugt von werkzeuge/gehaeuse_bauen.py aus hardware/gehaeuse/ – nicht von Hand ändern. Koordinaten: Meter, Ursprung Kippachse (main.head_pitch), Godot X = Modell y, Y = z, Z = x (vorne = −Z).",
  "version": "5.1",
- "quelle_sha256": "2247be719a9071df8156f3b5697420e13d5b24ef718c05bc8bf4ed5cf607dc64",
+ "quelle_sha256": "a4af57cc5f3097a62fa86e0ca5c3c48c3421b242e417a94c2f471848942d435a",
  "dateien": {
-  "gehaeuse.glb": "91d17e2f7c5f83866f79f54660a1866260709d6dcf07173a6dba1393bd600c0d",
-  "gehaeuse_lite.glb": "1a647adac8c54ece46852f1b7e0087d2bba2be4f509293c89ec743320d8a9527"
+  "gehaeuse.glb": "37f8095e93115af723ae2d974e40fd724d3deffbb7d4e30ffa6e22809b4fda97",
+  "gehaeuse_lite.glb": "d1e29bc580189f45f3c8206fa39ddb49c49c1a8f9683d08a6a818bd385988dab"
  },
- "dreiecke": 133526,
+ "dreiecke": 162352,
  "dreiecke_aussen": 109913,
  "dreiecke_lite": 17982,
  "kippachse_ueber_boden_m": 0.1258,
@@ -45,6 +45,11 @@
    "diff52",
    "wplug",
    "irplug",
+   "thplug",
+   "dsplug",
+   "rlplug",
+   "micplug",
+   "llplug",
    "resplug",
    "lampdrv",
    "fuseh"
@@ -83,7 +88,15 @@
    "resplug",
    "wplug",
    "sockel",
-   "irplug"
+   "irplug",
+   "feet2",
+   "feet3",
+   "feet4",
+   "thplug",
+   "dsplug",
+   "rlplug",
+   "micplug",
+   "llplug"
   ]
  },
  "teile": [
@@ -115,22 +128,91 @@
    "gruppe": "base",
    "farbe": "#9a9ea3",
    "aussen": true,
-   "dreiecke": 640,
+   "dreiecke": 160,
    "mitte": [
-    0.0,
+    -0.038,
     -0.1279,
-    0.049
+    -0.03
    ],
    "groesse": [
-    0.09,
+    0.014,
     0.0077,
-    0.172
+    0.014
    ],
-   "dreiecke_lite": 320,
+   "dreiecke_lite": 80,
    "explosion": [
-    0.0,
+    -0.0114,
     -0.035,
-    -0.0014
+    -0.0251
+   ]
+  },
+  {
+   "id": "feet2",
+   "gruppe": "base",
+   "farbe": "#9a9ea3",
+   "aussen": true,
+   "dreiecke": 160,
+   "mitte": [
+    -0.038,
+    -0.1279,
+    0.128
+   ],
+   "groesse": [
+    0.014,
+    0.0077,
+    0.014
+   ],
+   "dreiecke_lite": 80,
+   "explosion": [
+    -0.0114,
+    -0.035,
+    0.0223
+   ]
+  },
+  {
+   "id": "feet3",
+   "gruppe": "base",
+   "farbe": "#9a9ea3",
+   "aussen": true,
+   "dreiecke": 160,
+   "mitte": [
+    0.038,
+    -0.1279,
+    -0.03
+   ],
+   "groesse": [
+    0.014,
+    0.0077,
+    0.014
+   ],
+   "dreiecke_lite": 80,
+   "explosion": [
+    0.0114,
+    -0.035,
+    -0.0251
+   ]
+  },
+  {
+   "id": "feet4",
+   "gruppe": "base",
+   "farbe": "#9a9ea3",
+   "aussen": true,
+   "dreiecke": 160,
+   "mitte": [
+    0.038,
+    -0.1279,
+    0.128
+   ],
+   "groesse": [
+    0.014,
+    0.0077,
+    0.014
+   ],
+   "dreiecke_lite": 80,
+   "explosion": [
+    0.0114,
+    -0.035,
+    0.0223
    ]
   },
   {
@@ -1565,6 +1647,126 @@
     -0.039,
     0.0,
     -0.1371
+   ]
+  },
+  {
+   "id": "thplug",
+   "gruppe": "tilt",
+   "farbe": "#9a9ea3",
+   "aussen": false,
+   "dreiecke": 10740,
+   "mitte": [
+    0.0176,
+    -0.0127,
+    -0.0179
+   ],
+   "groesse": [
+    0.0164,
+    0.0164,
+    0.0055
+   ],
+   "variante": "5.2",
+   "ohne": "therm",
+   "explosion": [
+    0.0528,
+    0.4,
+    -0.0537
+   ]
+  },
+  {
+   "id": "dsplug",
+   "gruppe": "base",
+   "farbe": "#9a9ea3",
+   "aussen": false,
+   "dreiecke": 6448,
+   "mitte": [
+    -0.034,
+    -0.1242,
+    -0.018
+   ],
+   "groesse": [
+    0.009,
+    0.0053,
+    0.009
+   ],
+   "variante": "5.2",
+   "ohne": "probe",
+   "explosion": [
+    -0.0,
+    -0.06,
+    -0.0
+   ]
+  },
+  {
+   "id": "rlplug",
+   "gruppe": "base",
+   "farbe": "#9a9ea3",
+   "aussen": false,
+   "dreiecke": 10882,
+   "mitte": [
+    -0.016,
+    -0.1098,
+    0.1396
+   ],
+   "groesse": [
+    0.018,
+    0.018,
+    0.0051
+   ],
+   "variante": "5.2",
+   "ohne": "relayjack",
+   "explosion": [
+    -0.0256,
+    0.02,
+    0.1374
+   ]
+  },
+  {
+   "id": "micplug",
+   "gruppe": "base",
+   "farbe": "#9a9ea3",
+   "aussen": false,
+   "dreiecke": 560,
+   "mitte": [
+    0.03,
+    -0.0643,
+    -0.0419
+   ],
+   "groesse": [
+    0.01,
+    0.01,
+    0.0035
+   ],
+   "variante": "5.2",
+   "ohne": "mic",
+   "explosion": [
+    0.03,
+    0.12,
+    -0.0956
+   ]
+  },
+  {
+   "id": "llplug",
+   "gruppe": "base",
+   "farbe": "#9a9ea3",
+   "aussen": false,
+   "dreiecke": 196,
+   "mitte": [
+    0.01,
+    -0.0638,
+    0.1398
+   ],
+   "groesse": [
+    0.005,
+    0.005,
+    0.0033
+   ],
+   "variante": "5.2",
+   "ohne": "ledlight",
+   "explosion": [
+    0.016,
+    0.03,
+    0.1378
    ]
   },
   {
