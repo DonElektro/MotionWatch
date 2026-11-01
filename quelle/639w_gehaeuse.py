@@ -177,11 +177,17 @@ const gL = () => LANG || "en";
 const gx = v => v == null ? "" : typeof v === "string" ? v : (v[gL()] || (gL() === "rm" ? v.de : v.en) || v.de || "");
 const fmt = (s, ...a) => { let i = 0; return String(s).replace(/%[sd]/g, () => String(a[i++])); };
 const G = {tab: "uebersicht", step: 0, sel: "", node: "", var: Object.assign({}, GB.variante_standard || {}), done: new Set(), server: false};
-window.BV = {explode: 0, xray: false, inner: true, v52: false, step: 0, sel: "", api: null};
+window.BV = {explode: 0, xray: false, inner: true, v52: G.var.gehaeuse === "v52", dev: G.var.akku === "entwicklung", step: 0, sel: "", api: null};   // real-v52-standard: v5.2 is the standard (bau.json variante_standard)
 function bv(what, a) { if (BV.api && BV.api[what]) BV.api[what](a); }
 const ok = w => !w || Object.values(G.var).includes(w);
 const TEIL = {}; (GB.teile || []).forEach(x => TEIL[x.id] = x);
 const BOM = {}; (GB.bom || []).forEach(b => BOM[b.id] = b);
+const isV52 = () => G.var.gehaeuse === "v52";
+// the 3MF of a print part: v5.2 -> Druckdateien/v5-2/ (also for parts that exist only there), else the v5.1 file
+function pfile(datei) {
+  const all = GB.druckdateien_einzeln || [], f1 = "MoveEye_v5-1_" + datei + ".3mf", f2 = "v5-2/MoveEye_v5-2_" + datei + ".3mf";
+  return all.includes(f2) && (isV52() || !all.includes(f1)) ? f2 : f1;
+}
 const vname = w => { for (const v of GB.varianten || []) for (const o of v.werte) if (o.id === w) return gx(o.name); return w; };
 const chf = n => (Math.round(n * 20) / 20).toFixed(2);
 // ---- «Mein Bau»: the checklist (per user on the Pi, else in this browser)
@@ -308,7 +314,7 @@ function gPrint() {
   let hrs = 0;
   (D.teile || []).filter(p => ok(p.wenn)).forEach(p => {   // parts of a variant (e.g. v5.2) come from the data by themselves
     const tr = el("tr"), c0 = el("td"); c0.appendChild(chk("d:" + p.datei)); hrs += p.zeit_h;
-    const nm = (GB.teile || []).find(x => x.datei === p.datei), dl = el("td", "lk"); dl.appendChild(fileLink("MoveEye_v5-1_" + p.datei + ".3mf", "3MF"));
+    const nm = (GB.teile || []).find(x => x.datei === p.datei), dl = el("td", "lk"); dl.appendChild(fileLink(pfile(p.datei), "3MF"));
     tr.append(c0, el("td", "", nm ? gx(nm.name).replace(/^\d+ /, "") : p.datei), el("td", "q", "× " + p.stueck), el("td", "q", p.fuellung + " %"), el("td", "q", String(p.waende)),
       el("td", "q", p.stuetzen ? "✓" : t("none")), el("td", "q hide-s", p.schicht + " mm" + (p.brim ? " · Brim " + p.brim + " mm" : "")), el("td", "n hide-s", gx(p.liegt)), el("td", "q hide-s", fmt(t("about %s h"), p.zeit_h)), dl);
     tb.appendChild(tr);
@@ -317,8 +323,11 @@ function gPrint() {
   const ul = document.getElementById("g-phint"); ul.textContent = ""; (D.hinweise || []).forEach(h => ul.appendChild(el("li", "", gx(h))));
   const fl = document.getElementById("g-files"); fl.textContent = "";
   const all = fileLink("MoveEye_v5-1_alle_Druckdateien.zip", t("All print files (ZIP)")); all.href = "/build/alle.zip"; fl.append(all, el("h3", "", t("Plates for the X2D (everything on 2 plates)")));
-  (GB.druckdateien || []).forEach(f => fl.appendChild(fileLink(f)));
-  fl.appendChild(el("h3", "", t("Single parts (3MF)"))); (GB.druckdateien_einzeln || []).filter(f => { const p = (D.teile || []).find(x => f.indexOf(x.datei) >= 0); return !p || ok(p.wenn); }).forEach(f => { fl.appendChild(fileLink(f)); fl.appendChild(el("br")); });
+  (GB.druckdateien || []).filter(f => f.startsWith("v5-2/") === isV52()).forEach(f => fl.appendChild(fileLink(f)));   // the plates of the chosen case
+  fl.appendChild(el("h3", "", t("Single parts (3MF)"))); (GB.druckdateien_einzeln || []).filter(f => {
+    const datei = f.replace(/^(v5-2\/)?MoveEye_v5-[12]_/, "").replace(/\.3mf$/, ""), p = (D.teile || []).find(x => x.datei === datei);
+    return p ? ok(p.wenn) && pfile(datei) === f : f.startsWith("v5-2/") === isV52();
+  }).forEach(f => { fl.appendChild(fileLink(f)); fl.appendChild(el("br")); });
 }
 function stepLi(nr, s, id, cur) {
   const li = el("li", cur ? "cur" : ""), n = el("span", "nr", String(nr)), tx = el("span", "tx");
@@ -424,7 +433,7 @@ function gInfo() {
   box.appendChild(el("b", "", gx(p.name || (b && b.name) || p.id)));
   if (b) box.appendChild(el("div", "", fmt(t("Parts list: %s %s"), b.menge, gx(b.name)) + (b.nr ? " · " + b.nr : "") + "  (" + gx((GB.bom_gruppen || {})[b.gruppe]) + ")"));
   else box.appendChild(el("div", "mut", t("not in the parts list")));
-  if (p.datei) { const d = el("div", "lk"); d.append(el("span", "", fmt(t("Print file: %s"), p.datei) + " "), fileLink("MoveEye_v5-1_" + p.datei + ".3mf", "3MF")); box.appendChild(d); }
+  if (p.datei) { const d = el("div", "lk"); d.append(el("span", "", fmt(t("Print file: %s"), p.datei) + " "), fileLink(pfile(p.datei), "3MF")); box.appendChild(d); }
   if (p.schritt) {
     box.appendChild(el("div", "mut", fmt(t("Assembly: step %d – %s"), p.schritt, gx(GB.schritte[p.schritt - 1].titel))));
     const go = el("button", "sec", t("Go to this step")); go.type = "button"; go.onclick = () => { gTab("montage"); gStep(p.schritt); }; box.appendChild(go);
@@ -439,7 +448,8 @@ async function gSim(step) {
 }
 function gRender() {
   document.getElementById("g-ver").textContent = GB.version || ""; document.getElementById("g-masse").textContent = gx(GB.masse || "");
-  BV.v52 = G.var.gehaeuse === "v52"; bv("paint");
+  BV.v52 = isV52(); BV.dev = G.var.akku === "entwicklung"; bv("paint");
+  if (BV.v52) document.getElementById("g-ver").textContent = "5.2";
   gVar(); gTabs(); gSummary(); gParts(); gBuy(); gPrint(); gAssembly(); gWire(); gSoftware(); gFix(); gWart(); gInfo(); gProg();
   document.getElementById("g-simbox").style.display = SIM_ON ? "" : "none";
 }
@@ -501,12 +511,17 @@ function size() { const w = box.clientWidth || 300, h = box.clientHeight || 260;
 new ResizeObserver(size).observe(box);
 ctl.addEventListener("change", render);
 const row = id => (GB.teile || []).find(x => x.id === id) || {};
+const REPL = {}; (GB.teile || []).forEach(x => { if (x.ersetzt) REPL[x.ersetzt] = x.id; });
 function shown(id) {
   const r = row(id), art = r.art || "", s = B.step;
-  if (art === "v52") return B.v52 && s === 0;
-  if (s === 1) return art === "druck";
+  if (art === "v52" && !B.v52) return false;           // real-v52-standard: v5.2 parts in every step (bau.json «schritt»)
+  if (art === "dev" && !B.dev) return false;           // development: socket 13 instead of the UPS HAT
+  const by = REPL[id];                                 // replaced by the part of the chosen variant (lower part v5.2, socket ...)
+  if (by && parts[by] && ((row(by).art === "v52" && B.v52) || (row(by).art === "dev" && B.dev))) return false;
+  const pr = art === "druck" || !!r.datei;
+  if (s === 1) return pr;
   if (s > 1 && (r.schritt || 0) > s) return false;
-  if (!B.inner && art !== "druck" && !(E[id] || {}).aussen) return false;
+  if (!B.inner && !pr && !(E[id] || {}).aussen) return false;
   return true;
 }
 const ease = x => 1 - Math.pow(1 - Math.max(0, Math.min(1, x)), 3);
@@ -518,7 +533,7 @@ function paint() {
     const cur = B.step > 1 && r.schritt === B.step;
     if (B.step === 1) k = 1; else if (cur) k = Math.max(B.explode, 1 - ease(anim));
     m.position.set(ex[0] * k, ex[1] * k + (cur ? 0.06 * (1 - ease(anim)) : 0), ex[2] * k);
-    const see = B.xray && r.art === "druck", mat = m.material;
+    const see = B.xray && (r.art === "druck" || !!r.datei), mat = m.material;
     mat.transparent = see; mat.opacity = see ? DRUCK_ALPHA : 1; mat.depthWrite = !see;
     const hi = id === B.sel || cur;
     mat.emissive.set(hi ? (id === B.sel ? 0x3b82f6 : 0xf59a4a) : 0x000000); mat.emissiveIntensity = hi ? (id === B.sel ? 0.55 : 0.35) : 0;
@@ -540,7 +555,7 @@ function pick(ev) {
   rc.setFromCamera(new THREE.Vector2((ev.clientX - r.left) / r.width * 2 - 1, -((ev.clientY - r.top) / r.height) * 2 + 1), cam);
   const vis = Object.values(parts).filter(p => p.mesh.visible).map(p => p.mesh);
   let hits = rc.intersectObjects(vis, false);
-  if (B.xray) { const inner = hits.filter(h => row(h.object.name).art !== "druck"); if (inner.length) hits = inner; }
+  if (B.xray) { const inner = hits.filter(h => row(h.object.name).art !== "druck" && !row(h.object.name).datei); if (inner.length) hits = inner; }
   return hits.length ? hits[0].object.name : "";
 }
 let down = null;
@@ -717,7 +732,7 @@ def smalltv_routes(app, reply, body):                     # + 639w: /build, /cas
     def geh_qr():
         return Response(qr_svg(request.host_url), mimetype="image/svg+xml", headers={"Cache-Control": "no-store"})
 
-    @app.route("/build/datei/<name>")
+    @app.route("/build/datei/<path:name>")                # path: the files of v5.2 are in Druckdateien/v5-2/
     def geh_datei(name):
         if name not in geh_druck_namen():
             return Response("no", 404)
@@ -916,6 +931,12 @@ def geh_selftest():
         assert not t_.get("bom") or t_["bom"] in bom, t_["id"]
         assert not t_.get("schritt") or 1 <= t_["schritt"] <= 14, t_["id"]
     vals = {o["id"] for v in B["varianten"] for o in v["werte"]}
+    T_ = {t_["id"]: t_ for t_ in B["teile"]}
+    assert (B.get("variante_standard") or {}).get("gehaeuse") == "v52" and "v51" in vals, "real-v52-standard: v5.2 is the standard, v5.1 stays"
+    for t_ in B["teile"]:                         # the parts of a variant are in the assembly steps, at the step of the part they replace
+        if t_.get("art") in ("v52", "dev"):
+            assert t_.get("schritt"), ("step", t_["id"])
+            assert not t_.get("ersetzt") or T_[t_["ersetzt"]].get("schritt") == t_["schritt"], ("step of the replaced part", t_["id"])
     for b in B["bom"]:
         assert isinstance(b.get("preis"), (int, float)) and b.get("haendler") in B["haendler"], ("price / shop", b["id"])
         assert not b.get("wenn") or b["wenn"] in vals, ("variant", b["id"])

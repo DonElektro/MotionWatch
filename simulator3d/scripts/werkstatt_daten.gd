@@ -3,7 +3,7 @@ extends RefCounted
 ## hardware/gehaeuse/bau.json. NICHT VON HAND ÄNDERN (Texte dort ändern, dann «gehaeuse_bauen.py --texte»).
 ## Texte deutsch (T.t übersetzt sie, Übersetzungen kommen aus bau.json in i18n/texte.json).
 
-const QUELLE_SHA := "d1d39a6a9522ad254d372c6dca8ffd828ca5ba7c0c1472db6bb55c46745d8e33"
+const QUELLE_SHA := "81709b43fce1455112e48a95811842311eeac19a42f43e3395c54739c3291a81"
 const VERSION := "5.1"
 const KOPF_FARBE := "#f59a4a"   # Kopfteil (dreht / neigt) in MoveEye-Orange
 const KOPF_TEILE := ["turntable", "yoke", "arm2", "head", "side", "lamp1", "lamp2", "head52"]
@@ -125,22 +125,22 @@ const TEILE := [
 	["cable_cam", "kabel", "Kamerakabel (Flachkabel)", "camcable", 13, "", ""],
 	["cable_servo", "kabel", "Servokabel", "servo", 13, "", ""],
 	["plug", "druck", "10 HDMI-Stopfen", "petg", 13, "10_HDMI_Stopfen", ""],
-	["wide", "v52", "Weitwinkel-Kamera (Stirnwand, 12° nach unten)", "camwide", 0, "", ""],
-	["irled", "v52", "IR-LED-Modul 120° (Stirnwand)", "irmod", 0, "", ""],
-	["buttons", "v52", "Taster 12 mm, IP67", "taster", 0, "", ""],
-	["sled", "v52", "RGB-LED 5 mm mit Diffusor «Blinki-Auge»", "sled", 0, "", ""],
-	["tub52", "v52", "01 Unterteil v5.2 (Fenster Weitwinkel, IR-Modul, Kabelkamm, Tasten)", "petg", 0, "01_Unterteil_v52", "tub"],
-	["mosfet52", "v52", "MOSFET-Modul (v5.2: Lüftungswand unter dem PCA9685)", "mosfet", 0, "", "mosfet"],
-	["cable_cam1", "v52", "Kamerakabel CAM1 (Weitwinkel → Kabelkamm → Pi)", "camcable2", 0, "", ""],
-	["cable_cam0_52", "v52", "Kamerakabel CAM0 (v5.2: Kamin → Kabelkamm → Pi)", "camcable", 0, "", "cable_cam"],
-	["plug52", "v52", "10 Stopfen Service-Fenster v5.2 (HDMI + USB-C)", "petg", 0, "10_Stopfen_HDMI_USB_v52", "plug"],
-	["sdplug", "v52", "16 Stopfen SD-Schlitz v5.2", "petg", 0, "16_Stopfen_SD_v52", ""],
-	["head52", "v52", "06 Kamerakopf v5.2 (Status-LED oben)", "petg", 0, "06_Kamerakopf_v52", "head"],
-	["diff52", "v52", "14 Diffusor «Blinki-Auge» + 15 Pupillenring", "sled", 0, "14_Diffusor_Status_LED", ""],
-	["sockel", "dev", "13 Entwicklungs-Sockel (statt UPS HAT + Akkus)", "petg", 0, "13_Entwicklungs_Sockel", "ups"],
-	["resplug", "v52", "17 Blindstopfen Reserve-Öffnung hinten (GX12)", "petg", 0, "17_Blindstopfen_Reserve", ""],
-	["lampdrv", "v52", "PLATZHALTER Lampentreiber (Feld 30 × 20, 2 × M2,5)", "", 0, "", ""],
-	["fuseh", "v52", "Sicherungshalter 5 A (Akku B+) in der Klammer am Boden", "fuse2", 0, "", ""],
+	["wide", "v52", "Weitwinkel-Kamera (Stirnwand, 12° nach unten)", "camwide", 3, "", ""],
+	["irled", "v52", "IR-LED-Modul 120° (Stirnwand)", "irmod", 3, "", ""],
+	["buttons", "v52", "Taster 12 mm, IP67", "taster", 7, "", ""],
+	["sled", "v52", "RGB-LED 5 mm mit Diffusor «Blinki-Auge»", "sled", 10, "", ""],
+	["tub52", "v52", "01 Unterteil v5.2 (Fenster Weitwinkel, IR-Modul, Kabelkamm, Tasten)", "petg", 2, "01_Unterteil_v52", "tub"],
+	["mosfet52", "v52", "MOSFET-Modul (v5.2: Lüftungswand unter dem PCA9685)", "mosfet", 6, "", "mosfet"],
+	["cable_cam1", "v52", "Kamerakabel CAM1 (Weitwinkel → Kabelkamm → Pi)", "camcable2", 13, "", ""],
+	["cable_cam0_52", "v52", "Kamerakabel CAM0 (v5.2: Kamin → Kabelkamm → Pi)", "camcable", 13, "", "cable_cam"],
+	["plug52", "v52", "10 Stopfen Service-Fenster v5.2 (HDMI + USB-C)", "petg", 13, "10_Stopfen_HDMI_USB_v52", "plug"],
+	["sdplug", "v52", "16 Stopfen SD-Schlitz v5.2", "petg", 13, "16_Stopfen_SD_v52", ""],
+	["head52", "v52", "06 Kamerakopf v5.2 (Status-LED oben)", "petg", 10, "06_Kamerakopf_v52", "head"],
+	["diff52", "v52", "14 Diffusor «Blinki-Auge» + 15 Pupillenring", "sled", 10, "14_Diffusor_Status_LED", ""],
+	["sockel", "dev", "13 Entwicklungs-Sockel (statt UPS HAT + Akkus)", "petg", 4, "13_Entwicklungs_Sockel", "ups"],
+	["resplug", "v52", "17 Blindstopfen Reserve-Öffnung hinten (GX12)", "petg", 7, "17_Blindstopfen_Reserve", ""],
+	["lampdrv", "v52", "PLATZHALTER Lampentreiber (Feld 30 × 20, 2 × M2,5)", "", 6, "", ""],
+	["fuseh", "v52", "Sicherungshalter 5 A (Akku B+) in der Klammer am Boden", "fuse2", 7, "", ""],
 ]
 # Montage v5.1: [Titel, Text]
 const SCHRITTE := [
@@ -168,11 +168,11 @@ const BAU := {
 			"werte": [
 				{
 					"id": "v51",
-					"name": "v5.1 (Standard)"
+					"name": "v5.1 (ohne Weitwinkel)"
 				},
 				{
 					"id": "v52",
-					"name": "v5.2: + Weitwinkel, IR-LED, Tasten, Status-LED"
+					"name": "v5.2 (Standard): + Weitwinkel, IR-LED, Tasten, Status-LED"
 				}
 			]
 		},
@@ -210,7 +210,7 @@ const BAU := {
 		}
 	],
 	"variante_standard": {
-		"gehaeuse": "v51",
+		"gehaeuse": "v52",
 		"akku": "ups",
 		"mover": "ohne"
 	},
@@ -247,7 +247,8 @@ const BAU := {
 				"schicht": "0.20",
 				"brim": 0,
 				"zeit_h": 8.0,
-				"liegt": "Boden"
+				"liegt": "Boden",
+				"wenn": "v51"
 			},
 			{
 				"datei": "01_Unterteil_v52",
@@ -314,7 +315,8 @@ const BAU := {
 				"schicht": "0.20",
 				"brim": 5,
 				"zeit_h": 2.8,
-				"liegt": "rechte Seitenwand"
+				"liegt": "rechte Seitenwand",
+				"wenn": "v51"
 			},
 			{
 				"datei": "07_Seitendeckel",
@@ -358,7 +360,8 @@ const BAU := {
 				"schicht": "0.16",
 				"brim": 0,
 				"zeit_h": 0.3,
-				"liegt": "Flansch"
+				"liegt": "Flansch",
+				"wenn": "v51"
 			},
 			{
 				"datei": "11_Fuss_4x",
