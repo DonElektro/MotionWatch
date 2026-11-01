@@ -288,7 +288,11 @@ function simViewBind(VI, opt) {
     post("/api/sim", {action: "view_in", ev: ev, lang: LANG}).catch(() => {}); };
   const push = (e, now) => { if (e.t === "move" && Q.length && Q[Q.length - 1].t === "move") Q[Q.length - 1] = e; else Q.push(e);
     if (now) { clearTimeout(qT); flush(); } else if (!qT) qT = setTimeout(flush, 70); };
-  const pos = (ev) => { const r = VI.getBoundingClientRect(); return {x: Math.max(0, Math.min(1, (ev.clientX - r.left) / r.width)), y: Math.max(0, Math.min(1, (ev.clientY - r.top) / r.height))}; };
+  // 3.43.2: with object-fit: contain the picture may sit in black bars (window limited in height, full screen): count only the picture
+  const pos = (ev) => { const r = VI.getBoundingClientRect(); let L = r.left, T = r.top, W = r.width || 1, H = r.height || 1;
+    const nw = VI.naturalWidth, nh = VI.naturalHeight, of = nw && nh ? getComputedStyle(VI).objectFit : "";
+    if (of === "contain" || of === "scale-down") { const k = of === "scale-down" ? Math.min(1, W / nw, H / nh) : Math.min(W / nw, H / nh), w = nw * k, h = nh * k; L += (W - w) / 2; T += (H - h) / 2; W = w || 1; H = h || 1; }
+    return {x: Math.max(0, Math.min(1, (ev.clientX - L) / W)), y: Math.max(0, Math.min(1, (ev.clientY - T) / H))}; };
   const pts = new Map(); let pinch = 0, btn = 0, tap = null;
   const ctlOn = () => !opt.ctl || opt.ctl();             // finger: control the simulator (else the page scrolls, a tap still clicks)
   const tAct = () => { VI.style.touchAction = ctlOn() ? "none" : "pan-x pan-y pinch-zoom"; };
@@ -525,7 +529,13 @@ details.fold>.fb>.mut:first-child{margin-top:0}
 /* 2.95.20: the simulator window uses the whole width of the screen (out of the page column) */
 #c-prev.full{width:calc(100vw - var(--sbw,0px));margin-left:calc(50% - (100vw - var(--sbw,0px)) / 2);border-radius:0;border-left:0;border-right:0;padding:8px 6px}#c-prev.full>.fb{padding:0}
 #c-prev.full .pvw{border-radius:6px}
-#c-prev.full .pvw.view:not(.fs) #s-prev{max-height:none}
+/* 3.43.2: the simulator window fits the visible area (height of the screen minus the sticky header and the head of the card,
+   pvSbw measures both); the width follows the picture (object-fit: contain, centred). Full screen keeps its own rules. */
+#c-prev.full .pvw.view:not(.fs) #s-prev{max-height:max(calc(100vh - var(--pvhdr,64px) - var(--pvoff,60px) - 10px),min(calc(100vh - var(--pvhdr,64px) - 10px),240px));
+  max-height:max(calc(100dvh - var(--pvhdr,64px) - var(--pvoff,60px) - 10px),min(calc(100dvh - var(--pvhdr,64px) - 10px),240px))}
+#c-prev #s-pvw.fs #s-prev{max-height:100vh}
+#c-prev #s-pvw:fullscreen #s-prev{max-height:100vh}
+#c-prev #s-pvw:-webkit-full-screen #s-prev{max-height:100vh}
 .pvw{position:relative;background:#000;border-radius:10px;overflow:hidden}
 .gm{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
 .chips2{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}.hcp{display:flex;align-items:center;gap:4px;border:1px solid var(--line);border-radius:999px;padding:3px 4px 3px 10px;font-size:13px}
@@ -588,7 +598,8 @@ details.fold>.fb>.mut:first-child{margin-top:0}
 .pvw.fs:not(.pad) #s-pvbtn>button:not(#s-vpad),.pvw:fullscreen:not(.pad) #s-pvbtn>button:not(#s-vpad),.pvw.fs #s-vstat,.pvw:fullscreen #s-vstat{display:none}
 .pvw.fs:not(.pad) #s-pvcam,.pvw:fullscreen:not(.pad) #s-pvcam{display:none}
 .pvw.fs .pvbtn button,.pvw:fullscreen .pvbtn button{background:rgba(10,14,20,.4);border-color:rgba(255,255,255,.18)}
-#s-prev{width:100%;height:auto;min-height:200px;object-fit:contain;background:#000;display:block;max-height:calc(100vh - var(--hdr-h,64px) - 170px)}
+#s-prev{width:100%;height:auto;min-height:200px;object-fit:contain;background:#000;display:block;max-height:calc(100vh - var(--hdr-h,64px) - 170px);
+  max-height:max(calc(100dvh - var(--pvhdr,64px) - var(--pvoff,60px) - 10px),min(calc(100dvh - var(--pvhdr,64px) - 10px),240px))}
 .pvcam{position:absolute;right:58px;top:10px;width:28%;max-width:320px;min-width:120px;border:2px solid rgba(255,255,255,.8);border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.5);background:#000;cursor:pointer;z-index:3}
 .pvcam img{display:block;width:100%;border-radius:6px}.pvcam span{position:absolute;left:5px;top:5px;font:700 10px/1 system-ui,sans-serif;color:#fff;background:rgba(200,0,0,.75);padding:3px 5px;border-radius:4px}
 .pvlive{position:absolute;left:10px;bottom:10px;font:700 11px/1 system-ui,sans-serif;color:#fff;background:rgba(0,0,0,.55);padding:4px 8px;border-radius:6px}
@@ -1427,8 +1438,13 @@ async function gyroOn(on) {
   $("#s-vgyro").classList.add("on"); toast("📱 " + t("Turn the phone to look round. Press 📱 again to stop."));
 }
 $("#s-vgyro").addEventListener("click", e => { e.stopPropagation(); gyroOn(!GYRO); });
-function pvSbw() { document.documentElement.style.setProperty("--sbw", Math.max(0, innerWidth - document.documentElement.clientWidth) + "px"); }
-addEventListener("resize", pvSbw);
+function pvSbw() { document.documentElement.style.setProperty("--sbw", Math.max(0, innerWidth - document.documentElement.clientWidth) + "px");
+  // 3.43.2: the picture fits the visible area - height of the sticky header and of the card above the picture (title, switch)
+  const c = $("#c-prev"), w = $("#s-pvw"), h = document.querySelector("header");
+  if (c && w && !w.hidden) { const hh = h && getComputedStyle(h).position !== "static" ? h.offsetHeight : 0, off = Math.max(0, Math.round(w.getBoundingClientRect().top - c.getBoundingClientRect().top));
+    c.style.setProperty("--pvhdr", hh + "px"); if (off < 400) c.style.setProperty("--pvoff", off + "px"); } }
+addEventListener("resize", pvSbw); addEventListener("orientationchange", () => setTimeout(pvSbw, 300));
+$("#c-prev").addEventListener("toggle", pvSbw);
 // small camera live picture inside the simulator window (2.95.19): single pictures, so it never lags behind
 let PVCAM = true, pvCamT = null, pvCamBusy = false;
 try { PVCAM = localStorage.getItem("mw-sim-pvcam") !== "0"; } catch (e) {}

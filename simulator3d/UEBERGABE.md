@@ -1,8 +1,12 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 01.11.2026 · Version **3.44.0** · MoveEye **3.44.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 01.11.2026 · Version **3.44.1** · MoveEye **3.44.1** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.44.1 (MoveEye 3.44.1): Simulator-Fenster in der Bildschirmhöhe (MoveEye Teile 470, 530)
+
+- Bild zentriert und unverzerrt in der Höhe, Klick-Koordinaten rechnen die Ränder heraus. Nur MoveEye.
 
 ## NEU in 3.44.0 (MoveEye 3.44.0): Tastatur statt Scrollrad (`scripts/tasten.gd`)
 
