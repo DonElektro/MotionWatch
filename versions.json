@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-01 11:54",
+ "generated": "2026-11-01 12:03",
  "versions": [
+  {
+   "version": "3.37.0",
+   "file": "webcam_bewegung_3_37_0.py",
+   "url": "",
+   "sha256": "d75e67987b13d5363383a623074b7f951024c7fe70984cdc0551e99dd02222d5",
+   "date": "2026-11-01 12:03",
+   "notes": "Foto-Texturen aus Daniels Fotos im Bergtal: Wiese, Alpweide, Alpenrosen, Geröll, Fels, Strasse (abschaltbar; Lite unverändert).",
+   "size": 4670785,
+   "sig": "d3b708117ad801182e772e8a0af2ee52ff6748737a5ac6eb9e310cd81b6c659b74e7bcb2d6d9f5baae4b2f41d5c80a5a57f0604e6284648028ab155dd4f3c300",
+   "data": {
+    "file": "moveeye_daten_3_37_0.zip",
+    "url": "",
+    "sha256": "1b0b8f08b4d77026a87ed54badc4f665478a782910df017ffa4b3712180a05dc",
+    "size": 1585199,
+    "sig": "b050890b73ace4f2f4126ec9876b9302b74f5501243dff13780ff0978011f9f6319a00d9e19f10baf205e279356006bc339332d249619f5e4e78bec27b55b607"
+   }
+  },
   {
    "version": "3.36.0",
    "file": "webcam_bewegung_3_36_0.py",
    "url": "",
    "sha256": "50889009c7f3eb9a13d24ab1d9c9ea2d815ca79aa09de41ecc42c628bb56da3a",
-   "date": "2026-11-01 11:54",
+   "date": "2026-11-01 11:56",
    "notes": "Simulator: menschlichere Figuren – ab Grafik mittel MakeHuman-Körper aus dem nachladbaren Menschen-Paket (~5 MB), einfach (Pi) mit feinerem Körper und Gesicht; Kleidung, Rucksack, Stöcke und Lampen passend zur Szene.",
    "size": 4670848,
    "sig": "cde3dcdfafe9e8efa55658afba9c5d651c0cf06e2028e7f3d2690f5ed6bce7625ddf1821b2bd447e536813d8295f73ba09e5b8df0feda1565d41bc74d79d0106",
@@ -136,23 +153,6 @@
     "sha256": "d3dcde8430986262bea028c8ce8a3337f706188fc8259154539b6303f2d164dd",
     "size": 1559409,
     "sig": "8242750553ad8dce6f03fa9ee6c8798c1c2e6cd4710db612f8dd7c04523a665b76baca8920ecddcdcbe0bbdab039669328f2331720918922945b814ae934cb0e"
-   }
-  },
-  {
-   "version": "3.28.1",
-   "file": "webcam_bewegung_3_28_1.py",
-   "url": "",
-   "sha256": "86d8ae4913f16f13f3dd6764e7ad50b10bc0838b97f27d295bf1d320263ccf9a",
-   "date": "2026-11-01 11:33",
-   "notes": "Prüfungen laufen automatisch auf GitHub (MoveEye, Simulator-Tests, Export), schneller und ohne den eigenen Rechner zu belasten.",
-   "size": 4481923,
-   "sig": "ac71cd2ef089a788e539283ada706b62944bf99db637ff821818a64dbc692dd320e5393c1ba18b261842b2d4a9dc32d228cdf9fe3ec2b1f340fbcb4f73e68f06",
-   "data": {
-    "file": "moveeye_daten_3_28_1.zip",
-    "url": "",
-    "sha256": "d3041cc52dcf2010a33cca8e9dd661c81096baa7719264eca46f9b807448c267",
-    "size": 1559270,
-    "sig": "aa1ac77c7102a907aeef75e16a7cb49cd3bedb64f40e68daa9a4df0297a704efcf2c0befc5b5985f9f44f667d4115d6c36353464b44984b7e911578c83e3c40b"
    }
   },
   {
