@@ -1157,6 +1157,9 @@ class WebStream:
             try:
                 b_, h_ = _sim_get("/view.jpg" + ("?" + "&".join(q_) if q_ else ""), 3.0)
             except Exception:
+                cj_ = simwait_jpeg(request.args.get("w") or 960) if "simwait_jpeg" in globals() else None
+                if cj_:                                      # 639y: a calm picture instead of an error (Vorführung, Trailer, window)
+                    return Response(cj_, mimetype="image/jpeg", headers={"Cache-Control": "no-store", "X-MW-Wait": "1"})
                 return Response("simulator not reachable", 502)
             if not b_:
                 return Response("no picture yet", 503, {"Retry-After": "1"})
@@ -1175,13 +1178,29 @@ class WebStream:
             try:
                 up_ = _SIM_OPENER.open(urllib.request.Request(sim_base() + f"/view.mjpg?fps={fps_}" + ("&dock=1" if request.args.get("dock") == "1" else ""), headers={"User-Agent": "MotionWatch"}), timeout=5)
             except Exception:
-                return Response("simulator not reachable", 502)
-            ctype_ = up_.headers.get("Content-Type") or "multipart/x-mixed-replace; boundary=mwsimframe"
+                if "simwait_jpeg" not in globals() or not simwait_jpeg(960):
+                    return Response("simulator not reachable", 502)
+                up_ = None                                   # 639y: calm pictures until the simulator answers again
+            ctype_ = (up_.headers.get("Content-Type") if up_ is not None else "") or "multipart/x-mixed-replace; boundary=mwsimframe"
+            dock_ = request.args.get("dock") == "1"
 
             def gen():
+                up = up_
+                while up is None and CFG["sim_on"]:          # 639y: the same boundary as the simulator (net.gd BOUNDARY)
+                    cj_ = simwait_jpeg(960)
+                    if cj_:
+                        yield b"--mwsimframe\r\nContent-Type: image/jpeg\r\nContent-Length: " + str(len(cj_)).encode() + b"\r\n\r\n" + cj_ + b"\r\n"
+                    time.sleep(1.0)
+                    if int(time.time()) % 3 == 0:
+                        try:
+                            up = _SIM_OPENER.open(urllib.request.Request(sim_base() + f"/view.mjpg?fps={fps_}" + ("&dock=1" if dock_ else ""), headers={"User-Agent": "MotionWatch"}), timeout=5)
+                        except Exception:
+                            up = None
+                if up is None:
+                    return
                 try:
                     while CFG["sim_on"]:
-                        b_ = up_.read1(65536) if hasattr(up_, "read1") else up_.read(65536)
+                        b_ = up.read1(65536) if hasattr(up, "read1") else up.read(65536)
                         if not b_:
                             break
                         yield b_
@@ -1189,7 +1208,7 @@ class WebStream:
                     pass
                 finally:
                     try:
-                        up_.close()
+                        up.close()
                     except Exception:
                         pass
             return Response(gen(), mimetype=None, content_type=ctype_, headers={"Cache-Control": "no-store", "X-Accel-Buffering": "no"})
@@ -1569,6 +1588,7 @@ class WebStream:
                 if CFG["sim_on"]:                          # the simulation has its own lamps
                     st["light_cfg"]["white_out"] = st["light_cfg"]["white_out"] or "sim"; st["light_cfg"]["ir_out"] = st["light_cfg"]["ir_out"] or "sim"
                 st["sim"] = sim_status()
+                st["simwait"] = simwait_info(lang_) if "simwait_info" in globals() else None   # 639y: calm picture over the live view
                 st["turbo"] = turbo_state()
                 st["mode"] = mode_state()
                 st["tv"] = tv_state()
