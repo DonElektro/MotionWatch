@@ -786,7 +786,7 @@ GPSMODULE = None
 
 
 # ----------------------------------------------------------------------------
-# Solar panel: an INA219 module (the cheap blue board, shunt 0.1 Ohm, up to 26 V / 3.2 A) between the panel and the charger.
+# Solar panel: an INA219 module (Gravity INA219: shunt 0.01 Ohm = the standard; cheap blue board: 0.1 Ohm, up to 26 V / 3.2 A) between the panel and the charger.
 #   Watts, volts and the yield of the day. Night forecast: does the battery last until sunrise at the present consumption?
 # ----------------------------------------------------------------------------
 SOLAR = {"day": "", "wh": 0.0, "max": 0.0, "t": 0.0, "warned": ""}

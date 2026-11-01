@@ -236,7 +236,7 @@ def prepare_settings_file():
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
 ZD_FILE = "moveeye_daten_3_39_2.zip"
-ZD_SHA256 = "99703cfcbbf4e77fcf39fb6f8fbaf85f2d9fd03763fd3668539bcebf0c7fcc36"
+ZD_SHA256 = "0ad55718ee31f06f35cc2c5bd3f6e930fd4353abbe05099e4d3b11922edd789a"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -532,8 +532,7 @@ CFG = {
     "mover_mode": "auto", "mover_driver": "adafruit", "mover_addr": "0x60", "mover_speed": 70, "mover_turn": 50, "mover_ramp": 0.5,
     "mover_inv_l": False, "mover_inv_r": False, "mover_swap": False, "mover_sim_show": True,
     "storm_on": True, "storm_drop": 3.0, "storm_wind": 50, "storm_forecast": False, "wind_gpio": "", "wind_factor": 2.4,
-    "solar_on": False, "solar_addr": "0x44",   # 01.11.2026: was 0x41 = PCA9685 (servos); INA219 with the A1 bridge / DIP = 0x44
-    "solar_shunt": 0.1, "night_warn": True,
+    "solar_on": False, "solar_addr": "0x41", "solar_shunt": 0.1, "night_warn": True,
     "species_on": False, "species_model": "", "species_norm": "imagenet", "species_size": 224, "species_conf": 0.5,
     "desktop_notice": True,
     "sim_on": False, "sim_url": "http://127.0.0.1:8765", "sim_eco": True, "sim_fps": 6, "sim_auto": True,
@@ -1435,17 +1434,15 @@ def _http_ok(u):
     return True
 
 
-I2C_KEYS = {"_thermal": "thermal camera", "pca_address": "servo board (PCA9685)", "solar_addr": "solar meter (INA219)",
-            "mover_addr": "motor driver (mover)", "ups_addr": "UPS HAT"}
-I2C_FIXED = {"_thermal": "0x40"}                           # 01.11.2026: Thermal-90 (SenXor) is always on 0x40 (not a setting)
+I2C_KEYS = {"pca_address": "servo board (PCA9685)", "solar_addr": "solar meter (INA219)", "mover_addr": "motor driver (mover)",
+            "ups_addr": "UPS HAT"}
 
 
 def _i2c_active(key, cfg=None):
     c = cfg or CFG
     pca_on = c.get("servo_driver") == "pca9685" or (c.get("servo_driver") == "auto" and str(STATE.get("servo_backend", "")).startswith("pca9685"))
-    return {"_thermal": bool(c.get("thermal_on")) and str(c.get("thermal_source", "")).startswith("senxor"),
-            "pca_address": pca_on, "solar_addr": bool(c.get("solar_on")), "mover_addr": c.get("mover_mode") != "off",
-            "ups_addr": bool(c.get("ups_on")) and c.get("ups_model") != "e"}.get(key, False)   # UPS HAT (E): own chip on 0x2D
+    return {"pca_address": pca_on, "solar_addr": bool(c.get("solar_on")),
+            "mover_addr": c.get("mover_mode") != "off", "ups_addr": bool(c.get("ups_on"))}.get(key, False)
 
 
 def i2c_conflicts(cfg=None):
@@ -1454,7 +1451,7 @@ def i2c_conflicts(cfg=None):
     for k in I2C_KEYS:
         if not _i2c_active(k, c):
             continue
-        a = I2C_FIXED.get(k) or str(c.get(k, "")).lower()
+        a = str(c.get(k, "")).lower()
         if a in seen:
             out.append((seen[a], k, a))
         else:
@@ -23203,7 +23200,7 @@ class SolarMonitor:
             try:
                 addr = int(str(CFG["solar_addr"]), 16)
             except ValueError:
-                addr = 0x44                               # 0x41 is the PCA9685 (servos)
+                addr = 0x41
             try:
                 pca_ = int(str(CFG["pca_address"]), 16)
             except ValueError:
@@ -60785,7 +60782,7 @@ for _k, _v in _HX29.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(("fr", "it", "rm")):
         TRX[_L].setdefault(_k, _v[_i + 1])
-_HX30 = {'Solar panel': ('Solarpanel', 'Panneau solaire', 'Pannello solare', 'Panel solar'), 'Solar panel with current meter (INA219 on I2C)': ('Solarpanel mit Strommesser (INA219 an I2C)', 'Panneau solaire avec mesureur de courant (INA219 sur I2C)', 'Pannello solare con misuratore di corrente (INA219 su I2C)', 'Panel solar cun mesirader da current (INA219 sin I2C)'), 'Push message in the evening when the battery will probably not last until sunrise': ('Push-Nachricht am Abend, wenn der Akku voraussichtlich nicht bis Sonnenaufgang reicht', "Message push le soir si la batterie ne tiendra probablement pas jusqu'au lever du soleil", "Messaggio push la sera se la batteria probabilmente non durerà fino all'alba", "Messadi push la saira, sch'il accu na tanscha probablamain betg fin l'alva"), 'Current meter: shunt resistor (Ohm, usually 0.1)': ('Strommesser: Shunt-Widerstand (Ohm, meist 0,1)', 'Mesureur : résistance shunt (ohm, souvent 0,1)', 'Misuratore: resistenza shunt (ohm, di solito 0,1)', 'Mesirader: resistenza shunt (ohm, savens 0,1)'), 'Current meter: address (I2C)': ('Strommesser: Adresse (I2C)', 'Mesureur : adresse (I2C)', 'Misuratore: indirizzo (I2C)', 'Mesirader: adressa (I2C)'), 'The battery will probably not last until sunrise ({sr}): about {have} h left, {need} h needed. Charge it or switch on power saving.': ('Der Akku reicht voraussichtlich nicht bis Sonnenaufgang ({sr}): noch etwa {have} h, nötig {need} h. Aufladen oder Stromsparen einschalten.', "La batterie ne tiendra probablement pas jusqu'au lever du soleil ({sr}) : environ {have} h restantes, {need} h nécessaires. Rechargez-la ou activez l'économie d'énergie.", "La batteria probabilmente non durerà fino all'alba ({sr}): circa {have} h rimanenti, {need} h necessarie. Ricaricala o attiva il risparmio energetico.", "L'accu na tanscha probablamain betg fin l'alva ({sr}): anc var {have} h, basegn {need} h. Chargiar u activar il spargnar current."), 'Battery': ('Akku', 'Batterie', 'Batteria', 'Accu'), 'lasts until sunrise ({sr})': ('reicht bis Sonnenaufgang ({sr})', "tient jusqu'au lever du soleil ({sr})", "dura fino all'alba ({sr})", "tanscha fin l'alva ({sr})"), 'too little until sunrise ({sr})': ('zu knapp bis Sonnenaufgang ({sr})', "trop juste jusqu'au lever du soleil ({sr})", "troppo poco fino all'alba ({sr})", "memia stretg fin l'alva ({sr})"), 'INA219 current meter between the panel and the charger (address 0x44 - 0x40 is the thermal camera, 0x41 the servo board).': ('INA219-Strommesser zwischen Panel und Laderegler (Adresse 0x44 – 0x40 ist die Wärmebildkamera, 0x41 das Servo-Board).', 'Mesureur INA219 entre le panneau et le chargeur (adresse 0x44 – 0x40 est la caméra thermique, 0x41 la carte servo).', 'Misuratore INA219 tra il pannello e il caricatore (indirizzo 0x44 – 0x40 è la termocamera, 0x41 la scheda servo).', 'Mesirader INA219 tranter il panel ed il chargiader (adressa 0x44 – 0x40 è la camera termica, 0x41 la plattina dals servos).'), 'no current meter found at this address': ('kein Strommesser an dieser Adresse gefunden', 'aucun mesureur trouvé à cette adresse', 'nessun misuratore trovato a questo indirizzo', 'nagin mesirader chattà sin questa adressa'), 'today': ('heute', "aujourd'hui", 'oggi', 'oz'), 'max.': ('max.', 'max.', 'max.', 'max.'), 'Battery lasts until sunrise': ('Akku reicht bis Sonnenaufgang', "La batterie tient jusqu'au lever du soleil", "La batteria dura fino all'alba", "L'accu tanscha fin l'alva"), 'Battery probably too low until sunrise': ('Akku reicht voraussichtlich nicht bis Sonnenaufgang', "Batterie probablement insuffisante jusqu'au lever du soleil", "Batteria probabilmente insufficiente fino all'alba", "L'accu na tanscha probablamain betg fin l'alva"), 'Night forecast: needs a battery value (Settings → Battery)': ('Nacht-Prognose: braucht einen Akku-Wert (Einstellungen → Akku)', 'Prévision de nuit : nécessite une valeur de batterie (Réglages → Batterie)', 'Previsione notturna: serve un valore della batteria (Impostazioni → Batteria)', "Prognosa da notg: basegna ina valur da l'accu (Configuraziuns → Accu)")}
+_HX30 = {'Solar panel': ('Solarpanel', 'Panneau solaire', 'Pannello solare', 'Panel solar'), 'Solar panel with current meter (INA219 on I2C)': ('Solarpanel mit Strommesser (INA219 an I2C)', 'Panneau solaire avec mesureur de courant (INA219 sur I2C)', 'Pannello solare con misuratore di corrente (INA219 su I2C)', 'Panel solar cun mesirader da current (INA219 sin I2C)'), 'Push message in the evening when the battery will probably not last until sunrise': ('Push-Nachricht am Abend, wenn der Akku voraussichtlich nicht bis Sonnenaufgang reicht', "Message push le soir si la batterie ne tiendra probablement pas jusqu'au lever du soleil", "Messaggio push la sera se la batteria probabilmente non durerà fino all'alba", "Messadi push la saira, sch'il accu na tanscha probablamain betg fin l'alva"), 'Current meter: shunt resistor (Ohm, usually 0.1)': ('Strommesser: Shunt-Widerstand (Ohm, meist 0,1)', 'Mesureur : résistance shunt (ohm, souvent 0,1)', 'Misuratore: resistenza shunt (ohm, di solito 0,1)', 'Mesirader: resistenza shunt (ohm, savens 0,1)'), 'Current meter: address (I2C)': ('Strommesser: Adresse (I2C)', 'Mesureur : adresse (I2C)', 'Misuratore: indirizzo (I2C)', 'Mesirader: adressa (I2C)'), 'The battery will probably not last until sunrise ({sr}): about {have} h left, {need} h needed. Charge it or switch on power saving.': ('Der Akku reicht voraussichtlich nicht bis Sonnenaufgang ({sr}): noch etwa {have} h, nötig {need} h. Aufladen oder Stromsparen einschalten.', "La batterie ne tiendra probablement pas jusqu'au lever du soleil ({sr}) : environ {have} h restantes, {need} h nécessaires. Rechargez-la ou activez l'économie d'énergie.", "La batteria probabilmente non durerà fino all'alba ({sr}): circa {have} h rimanenti, {need} h necessarie. Ricaricala o attiva il risparmio energetico.", "L'accu na tanscha probablamain betg fin l'alva ({sr}): anc var {have} h, basegn {need} h. Chargiar u activar il spargnar current."), 'Battery': ('Akku', 'Batterie', 'Batteria', 'Accu'), 'lasts until sunrise ({sr})': ('reicht bis Sonnenaufgang ({sr})', "tient jusqu'au lever du soleil ({sr})", "dura fino all'alba ({sr})", "tanscha fin l'alva ({sr})"), 'too little until sunrise ({sr})': ('zu knapp bis Sonnenaufgang ({sr})', "trop juste jusqu'au lever du soleil ({sr})", "troppo poco fino all'alba ({sr})", "memia stretg fin l'alva ({sr})"), 'INA219 current meter between the panel and the charger (address 0x41 or 0x44 - 0x40 is often taken by the servo board).': ('INA219-Strommesser zwischen Panel und Laderegler (Adresse 0x41 oder 0x44 – 0x40 ist oft vom Servo-Board belegt).', 'Mesureur INA219 entre le panneau et le chargeur (adresse 0x41 ou 0x44 – 0x40 est souvent prise par la carte servo).', 'Misuratore INA219 tra il pannello e il caricatore (indirizzo 0x41 o 0x44 – 0x40 è spesso occupato dalla scheda servo).', 'Mesirader INA219 tranter il panel ed il chargiader (adressa 0x41 u 0x44 – 0x40 è savens occupada da la plattina dals servos).'), 'no current meter found at this address': ('kein Strommesser an dieser Adresse gefunden', 'aucun mesureur trouvé à cette adresse', 'nessun misuratore trovato a questo indirizzo', 'nagin mesirader chattà sin questa adressa'), 'today': ('heute', "aujourd'hui", 'oggi', 'oz'), 'max.': ('max.', 'max.', 'max.', 'max.'), 'Battery lasts until sunrise': ('Akku reicht bis Sonnenaufgang', "La batterie tient jusqu'au lever du soleil", "La batteria dura fino all'alba", "L'accu tanscha fin l'alva"), 'Battery probably too low until sunrise': ('Akku reicht voraussichtlich nicht bis Sonnenaufgang', "Batterie probablement insuffisante jusqu'au lever du soleil", "Batteria probabilmente insufficiente fino all'alba", "L'accu na tanscha probablamain betg fin l'alva"), 'Night forecast: needs a battery value (Settings → Battery)': ('Nacht-Prognose: braucht einen Akku-Wert (Einstellungen → Akku)', 'Prévision de nuit : nécessite une valeur de batterie (Réglages → Batterie)', 'Previsione notturna: serve un valore della batteria (Impostazioni → Batteria)', "Prognosa da notg: basegna ina valur da l'accu (Configuraziuns → Accu)")}
 for _k, _v in _HX30.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(("fr", "it", "rm")):
@@ -69514,7 +69511,7 @@ FEHLER_KATALOG = json.loads(r"""{
  "_hinweis": "Gemeinsamer Fehler-Katalog MoveEye ↔ MoveEye Sim (Paket «Fehler-QR», Daniel 01.11.2026), Ergänzung zu ui_gemeinsam.json. Pro Fehler: Kennung, Titel, Erklärung, Schritte und optional eine Aktion, alles in de / en / fr / it / rm. MoveEye bettet die Datei beim Bauen ein (werkzeuge/bauen.py → quelle/639u_fehler_hilfe.py, FEHLER_KATALOG, bleibt in der Hauptdatei – Hilfe geht auch ohne Zusatzdaten); der Simulator liest sie aus res:// (scripts/fehler_hilfe.gd, export_presets.cfg). Neue Fehler: zuerst hier, dann bauen.",
  "_felder": {
   "pfad": "Adresse der Hilfeseite in MoveEye: <MoveEye>/hilfe/fehler/<id>. Der QR-Code enthält nur diese Adresse (keine Passwörter, keine Schlüssel).",
-  "fehler": "seite: mw | sim | beide. stufe: bad | warn. quelle.health: IDs der Selbstdiagnose von MoveEye (120 health_check), quelle.sim_diag: IDs der Selbstdiagnose des Simulators (diagnose.gd), quelle.meldung: englische Teile von Meldungen (Push, Bild «NO CAMERA FOUND»), quelle.wenn: Zusatzbedingung in MoveEye (639u). aktion: Schlüssel aus «aktionen».",
+  "fehler": "seite: mw | sim | beide. stufe: bad | warn. quelle.health: IDs der Selbstdiagnose von MoveEye (120 health_check), quelle.sim_diag: IDs der Selbstdiagnose des Simulators (diagnose.gd), quelle.meldung: englische Teile von Meldungen (Push, Bild «NO CAMERA FOUND»), quelle.wenn: Zusatzbedingung in MoveEye (639u). aktion: Schlüssel aus «aktionen». bau: Reiter der Seite «Bauen» mit der passenden Anleitung (real-bauen).",
   "aktionen": "Was «Jetzt beheben» tut. MoveEye-Aktionen laufen nur als POST des Besitzers (angemeldet, CSRF-Schlüssel); sim_* laufen im Simulator selbst (Knopf im Simulator) oder über /control von MoveEye.",
   "ui": "Texte der Hilfeseite, der Knöpfe und des Fensters im Simulator."
  },
@@ -71114,6 +71111,293 @@ FEHLER_KATALOG = json.loads(r"""{
     ]
    },
    "aktion": "sim_neustart"
+  },
+  {
+   "id": "HW_PCA9685",
+   "seite": "mw",
+   "stufe": "warn",
+   "bau": "verkabeln",
+   "titel": {
+    "de": "Servo-Steuerung PCA9685 fehlt",
+    "en": "Servo board PCA9685 missing",
+    "fr": "Carte servo PCA9685 absente",
+    "it": "Scheda servo PCA9685 assente",
+    "rm": "Platina servo PCA9685 manca"
+   },
+   "text": {
+    "de": "MoveEye findet den PCA9685 auf I2C 0x41 nicht – Kopf, Licht und Status-LED bewegen sich nicht.",
+    "en": "MoveEye does not find the PCA9685 on I2C 0x41 – head, light and status LED do not work.",
+    "fr": "MoveEye ne trouve pas le PCA9685 sur I2C 0x41 – tête, lumière et LED d'état ne marchent pas.",
+    "it": "MoveEye non trova il PCA9685 su I2C 0x41 – testa, luce e LED di stato non funzionano.",
+    "rm": "MoveEye na chatta betg il PCA9685 sin I2C 0x41 – chau, glisch e LED da status na funcziunan betg."
+   },
+   "schritte": {
+    "de": [
+     "Strom aus. Kabel prüfen: 3,3 V Pin 1, GND Pin 6, SDA Pin 3, SCL Pin 5.",
+     "Lötbrücke A0 geschlossen? Sonst hat er 0x40 wie die Thermal-90.",
+     "Auf dem Pi «sudo i2cdetect -y 1»: 41 muss erscheinen."
+    ],
+    "en": [
+     "Power off. Check the cables: 3.3 V pin 1, GND pin 6, SDA pin 3, SCL pin 5.",
+     "Solder bridge A0 closed? Otherwise it has 0x40 like the Thermal-90.",
+     "On the Pi «sudo i2cdetect -y 1»: 41 must show up."
+    ],
+    "fr": [
+     "Couper le courant. Vérifier : 3,3 V broche 1, GND broche 6, SDA broche 3, SCL broche 5.",
+     "Pont A0 fermé ? Sinon il a 0x40 comme la Thermal-90.",
+     "Sur le Pi «sudo i2cdetect -y 1» : 41 doit apparaître."
+    ],
+    "it": [
+     "Togliere corrente. Controllare: 3,3 V pin 1, GND pin 6, SDA pin 3, SCL pin 5.",
+     "Ponticello A0 chiuso? Altrimenti ha 0x40 come la Thermal-90.",
+     "Sul Pi «sudo i2cdetect -y 1»: deve comparire 41."
+    ],
+    "rm": [
+     "Current ora. Controllar: 3,3 V pin 1, GND pin 6, SDA pin 3, SCL pin 5.",
+     "Punt A0 serrà? Uschiglio ha el 0x40 sco la Thermal-90.",
+     "Sin il Pi «sudo i2cdetect -y 1»: 41 sto cumparair."
+    ]
+   }
+  },
+  {
+   "id": "HW_SERVO_JITTER",
+   "seite": "mw",
+   "stufe": "warn",
+   "bau": "inbetrieb",
+   "titel": {
+    "de": "Servo zittert oder brummt",
+    "en": "Servo jitters or hums",
+    "fr": "Le servo tremble ou bourdonne",
+    "it": "Il servo trema o ronza",
+    "rm": "Il servo tremblescha u zunzurescha"
+   },
+   "text": {
+    "de": "Meist zu wenig Strom für die Servos oder ein mechanischer Anschlag.",
+    "en": "Mostly too little power for the servos or a mechanical end stop.",
+    "fr": "Le plus souvent trop peu de courant pour les servos ou une butée mécanique.",
+    "it": "Di solito poca corrente per i servo o un fine corsa meccanico.",
+    "rm": "Per il pli memia pauc current per ils servos u in tschep mecanic."
+   },
+   "schritte": {
+    "de": [
+     "Step-Down-Ausgang unter Last messen: 5,0–5,2 V?",
+     "Elko 470 µF an V+ des PCA9685 vorhanden?",
+     "Grenzen kleiner stellen (Seite Servos), Kopf darf nicht anschlagen."
+    ],
+    "en": [
+     "Measure the step-down output under load: 5.0–5.2 V?",
+     "Capacitor 470 µF at V+ of the PCA9685 fitted?",
+     "Set smaller limits (page Servos), the head must not hit anything."
+    ],
+    "fr": [
+     "Mesurer la sortie de l'abaisseur en charge : 5,0–5,2 V ?",
+     "Condensateur 470 µF sur V+ du PCA9685 présent ?",
+     "Réduire les limites (page Servos), la tête ne doit rien toucher."
+    ],
+    "it": [
+     "Misurare l'uscita dello step-down sotto carico: 5,0–5,2 V?",
+     "Condensatore 470 µF su V+ del PCA9685 presente?",
+     "Ridurre i limiti (pagina Servo), la testa non deve urtare."
+    ],
+    "rm": [
+     "Mesirar la sortida dal step-down sut chargia: 5,0–5,2 V?",
+     "Condensatur 470 µF vi da V+ dal PCA9685 avant maun?",
+     "Pli pitschens limits (pagina Servos), il chau na dastga betg tutgar."
+    ]
+   }
+  },
+  {
+   "id": "HW_I2C",
+   "seite": "mw",
+   "stufe": "warn",
+   "bau": "verkabeln",
+   "titel": {
+    "de": "I2C-Gerät fehlt oder doppelt",
+    "en": "I2C device missing or twice",
+    "fr": "Appareil I2C absent ou en double",
+    "it": "Dispositivo I2C assente o doppio",
+    "rm": "Apparat I2C manca u dubel"
+   },
+   "text": {
+    "de": "Zwei Module mit derselben Adresse stören sich, ein lockeres Kabel versteckt ein Modul.",
+    "en": "Two modules with the same address disturb each other, a loose cable hides a module.",
+    "fr": "Deux modules à la même adresse se gênent, un câble lâche cache un module.",
+    "it": "Due moduli con lo stesso indirizzo si disturbano, un cavo allentato nasconde un modulo.",
+    "rm": "Dus moduls cun la medema adressa sa disturban, in cabel lom zuppenta in modul."
+   },
+   "schritte": {
+    "de": [
+     "«sudo i2cdetect -y 1» ausführen und mit dem Reiter Verkabeln vergleichen.",
+     "Erwartet: 40 Thermal-90, 41 PCA9685, 2d UPS HAT (E), 68 MPU-6050, 76/77 BME280, 44 INA219.",
+     "Fehlt eins: Module einzeln abstecken, bis es wieder geht."
+    ],
+    "en": [
+     "Run «sudo i2cdetect -y 1» and compare it with the tab Wiring.",
+     "Expected: 40 Thermal-90, 41 PCA9685, 2d UPS HAT (E), 68 MPU-6050, 76/77 BME280, 44 INA219.",
+     "One missing: unplug the modules one by one until it works again."
+    ],
+    "fr": [
+     "Lancer «sudo i2cdetect -y 1» et comparer avec l'onglet Câblage.",
+     "Attendu : 40 Thermal-90, 41 PCA9685, 2d UPS HAT (E), 68 MPU-6050, 76/77 BME280, 44 INA219.",
+     "S'il en manque un : débrancher les modules un par un."
+    ],
+    "it": [
+     "Eseguire «sudo i2cdetect -y 1» e confrontare con la scheda Cablaggio.",
+     "Atteso: 40 Thermal-90, 41 PCA9685, 2d UPS HAT (E), 68 MPU-6050, 76/77 BME280, 44 INA219.",
+     "Ne manca uno: staccare i moduli uno alla volta."
+    ],
+    "rm": [
+     "Exequir «sudo i2cdetect -y 1» e cumparegliar cun il tab Cablar.",
+     "Spetgà: 40 Thermal-90, 41 PCA9685, 2d UPS HAT (E), 68 MPU-6050, 76/77 BME280, 44 INA219.",
+     "Manca in: distatgar ils moduls in ad in."
+    ]
+   }
+  },
+  {
+   "id": "HW_UPS",
+   "seite": "mw",
+   "stufe": "warn",
+   "bau": "verkabeln",
+   "titel": {
+    "de": "Akku-Platine (UPS HAT) nicht gefunden",
+    "en": "Battery board (UPS HAT) not found",
+    "fr": "Carte batterie (UPS HAT) introuvable",
+    "it": "Scheda batteria (UPS HAT) non trovata",
+    "rm": "Platina d'accu (UPS HAT) betg chattada"
+   },
+   "text": {
+    "de": "Ohne UPS HAT zeigt MoveEye keinen Akkustand und fährt bei leerem Akku nicht sauber herunter.",
+    "en": "Without the UPS HAT MoveEye shows no battery level and does not shut down cleanly when empty.",
+    "fr": "Sans UPS HAT, MoveEye n'affiche pas la batterie et ne s'éteint pas proprement à vide.",
+    "it": "Senza UPS HAT MoveEye non mostra la batteria e non si spegne bene a batteria scarica.",
+    "rm": "Senza UPS HAT na mussa MoveEye nagin stadi d'accu e na sa stizza betg endretg."
+   },
+   "schritte": {
+    "de": [
+     "Pogo-Pins sauber unter dem Pi? Akkus richtig herum und geladen?",
+     "«sudo i2cdetect -y 1»: 2d muss erscheinen.",
+     "Einstellungen → Stromversorgung: Modell «UPS HAT (E)» wählen."
+    ],
+    "en": [
+     "Pogo pins clean under the Pi? Cells the right way round and charged?",
+     "«sudo i2cdetect -y 1»: 2d must show up.",
+     "Settings → Power supply: choose the model «UPS HAT (E)»."
+    ],
+    "fr": [
+     "Broches pogo propres sous le Pi ? Cellules dans le bon sens et chargées ?",
+     "«sudo i2cdetect -y 1» : 2d doit apparaître.",
+     "Réglages → Alimentation : choisir le modèle «UPS HAT (E)»."
+    ],
+    "it": [
+     "Pin pogo puliti sotto il Pi? Celle nel verso giusto e cariche?",
+     "«sudo i2cdetect -y 1»: deve comparire 2d.",
+     "Impostazioni → Alimentazione: scegliere il modello «UPS HAT (E)»."
+    ],
+    "rm": [
+     "Pins pogo nets sut il Pi? Cellas endretg e chargiadas?",
+     "«sudo i2cdetect -y 1»: 2d sto cumparair.",
+     "Parameters → Alimentaziun: tscherner il model «UPS HAT (E)»."
+    ]
+   }
+  },
+  {
+   "id": "HW_LIGHT",
+   "seite": "mw",
+   "stufe": "warn",
+   "bau": "verkabeln",
+   "quelle": {
+    "meldung": [
+     "Light error"
+    ]
+   },
+   "titel": {
+    "de": "Licht geht nicht",
+    "en": "The light does not work",
+    "fr": "La lumière ne marche pas",
+    "it": "La luce non funziona",
+    "rm": "La glisch na funcziuna betg"
+   },
+   "text": {
+    "de": "Weisses oder IR-Licht bleibt dunkel.",
+    "en": "White or IR light stays dark.",
+    "fr": "La lumière blanche ou IR reste éteinte.",
+    "it": "La luce bianca o IR resta spenta.",
+    "rm": "La glisch alva u IR resta stgira."
+   },
+   "schritte": {
+    "de": [
+     "Einstellungen → Licht & Ton: Licht weiss = PCA9685 Kanal 2, Infrarot = Kanal 3?",
+     "MOSFET-Modul (Logic-Level) richtig verdrahtet, 5 V an den Lampen?",
+     "IR-Licht im Kamerabild prüfen – das Auge sieht 850 nm kaum."
+    ],
+    "en": [
+     "Settings → Light & sound: white light = PCA9685 channel 2, infrared = channel 3?",
+     "MOSFET module (logic level) wired correctly, 5 V at the lamps?",
+     "Check the IR light in the camera picture – the eye hardly sees 850 nm."
+    ],
+    "fr": [
+     "Réglages → Lumière et son : blanc = canal 2 du PCA9685, infrarouge = canal 3 ?",
+     "Module MOSFET (niveau logique) bien câblé, 5 V aux lampes ?",
+     "Vérifier l'IR dans l'image de la caméra – l'œil voit à peine 850 nm."
+    ],
+    "it": [
+     "Impostazioni → Luce e suono: bianco = canale 2 del PCA9685, infrarosso = canale 3?",
+     "Modulo MOSFET (livello logico) cablato bene, 5 V alle lampade?",
+     "Controllare l'IR nell'immagine della fotocamera – l'occhio vede appena 850 nm."
+    ],
+    "rm": [
+     "Parameters → Glisch e tun: alv = chanal 2 dal PCA9685, infracotschen = chanal 3?",
+     "Modul MOSFET (logic level) cablà endretg, 5 V vi da las lampas?",
+     "Controllar l'IR en il maletg da la camera – l'egl vesa strusch 850 nm."
+    ]
+   }
+  },
+  {
+   "id": "HW_SOUND",
+   "seite": "mw",
+   "stufe": "warn",
+   "bau": "verkabeln",
+   "titel": {
+    "de": "Kein Ton aus dem Lautsprecher",
+    "en": "No sound from the loudspeaker",
+    "fr": "Pas de son du haut-parleur",
+    "it": "Nessun suono dall'altoparlante",
+    "rm": "Nagin tun da l'autpledader"
+   },
+   "text": {
+    "de": "Sirene, Wecker und Sprechen bleiben stumm.",
+    "en": "Siren, alarm clock and talking stay silent.",
+    "fr": "Sirène, réveil et parole restent muets.",
+    "it": "Sirena, sveglia e parlato restano muti.",
+    "rm": "Sirena, sveglia e discurrer restan muts."
+   },
+   "schritte": {
+    "de": [
+     "USB-Soundkarte im Hub? In MoveEye unter Licht & Ton als Ausgang gewählt?",
+     "PAM8403 hat 5 V und Klinke L / GND, Lautsprecher an L+ / L−?",
+     "Ton testen (Wecker-Melodie); Lautstärke nicht auf 0."
+    ],
+    "en": [
+     "USB sound card in the hub? Chosen as output under Light & sound in MoveEye?",
+     "PAM8403 has 5 V and jack L / GND, loudspeaker on L+ / L−?",
+     "Test the sound (alarm melody); volume not at 0."
+    ],
+    "fr": [
+     "Carte son USB dans le hub ? Choisie comme sortie sous Lumière et son ?",
+     "PAM8403 a 5 V et jack L / GND, haut-parleur sur L+ / L− ?",
+     "Tester le son (mélodie du réveil) ; volume pas à 0."
+    ],
+    "it": [
+     "Scheda audio USB nell'hub? Scelta come uscita in Luce e suono?",
+     "PAM8403 ha 5 V e jack L / GND, altoparlante su L+ / L−?",
+     "Provare il suono (melodia sveglia); volume non a 0."
+    ],
+    "rm": [
+     "Carta da tun USB en il hub? Tschernida sco sortida sut Glisch e tun?",
+     "PAM8403 ha 5 V e jack L / GND, autpledader vi da L+ / L−?",
+     "Testar il tun (melodia da sveglia); volumen betg sin 0."
+    ]
+   }
   }
  ]
 }""")
@@ -71888,8 +72172,8 @@ def fx_check(base=None):
     probs = []
     es = fx_entries()
     acts = FEHLER_KATALOG.get("aktionen") or {}
-    if not 20 <= len(es) <= 30:
-        probs.append(f"{len(es)} errors (20 - 30 wanted)")
+    if not 20 <= len(es) <= 40:
+        probs.append(f"{len(es)} errors (20 - 40 wanted)")
     ids = [e["id"] for e in es]
     if len(set(ids)) != len(ids):
         probs.append("an id twice")
@@ -71958,41 +72242,91 @@ SELFTEST_EXTRA.append(("Error help with QR code (simulator3d/fehler_katalog.json
 # GEH_QUELLE_SHA: Prüfsumme der Quelle (hardware/gehaeuse/Quellcode/*.py, bau.json, werkzeuge/gehaeuse_bauen.py) – der
 # Selbsttest (639w) vergleicht sie im Repository mit der Quelle und mit simulator3d/inhalte/gehaeuse/modelle.json.
 # ----------------------------------------------------------------------------
-GEH_QUELLE_SHA = 'e828e1d476b1dd0b4d38a1c9306aaa3545b9c0b1363350aa8f5fb8c8f4021c0a'
+GEH_QUELLE_SHA = 'e8900d6f3cdb8d80230e6987c9b578e4712dc7c7800aa9ec2d288c62f26160f3'
 GEH_BAU = json.loads(_zd('639v_daten_gehaeuse/GEH_BAU', ""))
 GEH_UI_DE = {"Case & build": "Gehäuse & Bau", "Guide, parts list, print files – in 3D in the workshop of the simulator": "Anleitung, Materialliste, Druckdateien – in 3D in der Werkstatt des Simulators", "Case": "Gehäuse", "View in the simulator": "Im Simulator ansehen", "Opens the workshop in the 3D simulator: turn, explode, see through, click parts, assembly step by step.": "Öffnet die Werkstatt im 3D-Simulator: drehen, zerlegen, durchsichtig, Teile anklicken, Montage Schritt für Schritt.", "Simulator not connected – start it and connect it on the page Simulator.": "Simulator nicht verbunden – starte ihn und verbinde ihn auf der Seite «Simulator».", "Opened in the simulator.": "Im Simulator geöffnet.", "Print files": "Druckdateien", "3MF plates for the Bambu Lab X2D (PETG, no supports)": "3MF-Platten für den Bambu Lab X2D (PETG, ohne Stützen)", "Single STL files: in the hand-over package (ZIP, about 60 MB), not in the repository.": "Einzelne STL-Dateien: im Übergabe-Paket (ZIP, ca. 60 MB), nicht im Repository.", "Assembly step by step": "Montage Schritt für Schritt", "Show this step in the simulator": "Diesen Schritt im Simulator zeigen", "Parts list": "Materialliste", "Qty": "Menge", "Part number": "Teilenummer", "Guides and source (GitHub)": "Anleitungen und Quellcode (GitHub)", "Detailed guide v5.1": "Ausführliche Anleitung v5.1", "Full parts list with order list": "Ganze Materialliste mit Bestellliste", "Measure first: UPS HAT (E) with its cells (assumed 90 × 80 × 26 mm) before printing the lower part.": "Zuerst nachmessen: UPS HAT (E) mit Akkus (angenommen 90 × 80 × 26 mm), bevor das Unterteil gedruckt wird.", "Own work of Daniel (DonElektro) – parametric Python model.": "Eigenes Werk von Daniel (DonElektro) – parametrisches Python-Modell.", "Step": "Schritt"}
 GEH_UI_TRX = _zd('639v_daten_gehaeuse/GEH_UI_TRX', _ZDDict())
+# real-bauen: Texte der Seite «Bauen» (englischer Schlüssel; vorhandene Übersetzungen von MoveEye gehen vor, 639w)
+GEH_UI2_DE = _zd('639v_daten_gehaeuse/GEH_UI2_DE', _ZDDict())
+GEH_UI2_TRX = _zd('639v_daten_gehaeuse/GEH_UI2_TRX', _ZDDict())
 # ----------------------------------------------------------------------------
-# Paket «real-gehaeuse» (01.11.2026). Eine Quelle: hardware/gehaeuse/ (Daniels parametrisches Modell v5.1 + bau.json mit den
-# Texten in 5 Sprachen). werkzeuge/gehaeuse_bauen.py macht daraus die Simulator-Modelle (simulator3d/inhalte/gehaeuse/), die
-# Texte des Simulators (werkstatt_daten.gd, i18n/texte.json) und die Daten hier (639v: GEH_BAU, GEH_UI_*, GEH_QUELLE_SHA).
-#   * /case: Seite (Reiter Mehr) – Masse, «Im Simulator ansehen», Montage (14 Schritte, je «im Simulator zeigen»),
-#     Materialliste nach Gruppen (Menge, Bezeichnung, Teilenummer), Druckdateien (3MF-Platten auf GitHub), Anleitungen.
-#     Inhalte in der Sprache der Seite (LANG; rm -> de, fr / it -> en wie sonst).
-#   * /api/case: GET = Daten + ob der Simulator verbunden ist; POST {do: "sim", step?} -> Simulator /control
-#     {"action": "werkstatt", "do": "open"} (bzw. "step", n). Ältere Simulatoren ohne Werkstatt antworten mit Fehler.
-#   * Mehr (525) und das Fenster (572 _tk_more_bar): ein Eintrag «Gehäuse & Bau». Gemeinsame Menü-Datei: «more» -> case
-#     (simulator3d/ui_gemeinsam.json; im Simulator heisst derselbe Eintrag «Werkstatt», mehr.gd).
+# BAU3D: Pfad -> [sha256 der Datei, gzip+base64]; BAU3D_GLB: [sha256, Grösse, gzip+base64]. Ausgeliefert von 639w (/bau3d/<pfad>,
+# /build/gehaeuse.glb) mit Content-Encoding gzip. Der Selbsttest vergleicht die Prüfsummen im Repository mit den Quellen.
+# ----------------------------------------------------------------------------
+BAU3D_QUELLE_SHA = 'e8900d6f3cdb8d80230e6987c9b578e4712dc7c7800aa9ec2d288c62f26160f3'
+BAU3D = _zd('639vb_daten_bau3d/BAU3D', _ZDDict())
+BAU3D_GLB = _zd('639vb_daten_bau3d/BAU3D_GLB', [])
+# aus simulator3d/inhalte/gehaeuse/modelle.json: Gruppe, aussen, Mitte und Explosion pro Teil (wie die Werkstatt im Simulator)
+BAU3D_MODELLE = json.loads(_zd('639vb_daten_bau3d/BAU3D_MODELLE', ""))
+# ----------------------------------------------------------------------------
+# Paket «real-gehaeuse» (01.11.2026), ausgebaut im Paket «real-bauen» (01.11.2026, Daniel: «ein Bediener kann MoveEye komplett
+# selbst bauen»). Eine Quelle: hardware/gehaeuse/bau.json (Teile, Materialliste mit Preis-Schätzung und Händler-Suche, Montage,
+# Drucken, Werkzeug, Sicherheit, Verkabeln, Software, Inbetriebnahme, Fehlersuche, Wartung, Varianten – 5 Sprachen).
+# werkzeuge/gehaeuse_bauen.py --texte macht daraus 639v (GEH_BAU, Texte), 639vb (three.js r160 + gehaeuse.glb, gepackt) und die
+# Daten des Simulators (werkstatt_daten.gd). Daniel (01.11.2026): die 3D-Werkstatt in MoveEye geht OHNE Simulator – MoveEye
+# liefert three.js, das Modell und die Daten selbst aus (auch offline); «Im Simulator ansehen» ist nur ein Zusatz.
+#   * /build: Seite (Reiter Mehr «Bauen»), Reiter über #uebersicht … #wartung; /case leitet auf /build weiter (alte Links).
+#   * /bau3d/<pfad>: three.js (gzip), /build/gehaeuse.glb: das Modell (gzip), /build/qr.svg: QR-Code zu dieser MoveEye-Seite.
+#   * /build/datei/<name>: eine Druckdatei (3MF) aus hardware/gehaeuse/Druckdateien/ – auf dem Pi ohne Repository: Weiterleitung
+#     zu GitHub; /build/alle.zip: alle Druckdateien in einem ZIP (nur wo sie liegen).
+#   * /api/bau: «Mein Bau» – GET {var, done}, POST {var?, done?}: Variante und erledigte Schritte pro Benutzer (wie «Meine
+#     Ansicht», CFG bau_mein), auf allen Geräten gleich.
+#   * /api/case: GET = ob der Simulator verbunden ist; POST {do: "sim", step?} -> Simulator /control werkstatt (wie bisher).
+#   * Mehr (525) und das Fenster (572 _tk_more_bar): ein Eintrag «Bauen». Gemeinsame Menü-Datei: «more» -> build
+#     (simulator3d/ui_gemeinsam.json; im Simulator heisst derselbe Eintrag «Bauen», mehr.gd, Fenster werkstatt.gd mit denselben Reitern).
 # Hier (nach 639p) weil render_page, sim_control, MORE_PAGE, smalltv_routes (639n), UI_GEMEINSAM (639p) vorher kommen.
 # ----------------------------------------------------------------------------
 DE.update(GEH_UI_DE)
 for _L in ("fr", "it", "rm"):
     TRX.setdefault(_L, {}).update(GEH_UI_TRX.get(_L, {}))
+for _k, _v in GEH_UI2_DE.items():                         # real-bauen: the texts of the page «Bauen» (existing ones stay)
+    DE.setdefault(_k, _v)
+    for _L in ("fr", "it", "rm"):
+        TRX.setdefault(_L, {}).setdefault(_k, GEH_UI2_TRX[_L][_k])
 
-GEH_MORE_ROW = ('  <a class="mi" href="/case" id="m-case"><i>📐</i><span><b data-i18n="Case &amp; build">Case &amp; build</b><small data-i18n="Guide, parts list, print files – in 3D in the workshop of the simulator">'
-                'Guide, parts list, print files – in 3D in the workshop of the simulator</small></span><span class="ar">›</span></a>\n')
+BAU_TABS = (("uebersicht", "Overview"), ("teile", "Parts"), ("einkauf", "Shopping"), ("drucken", "Printing"), ("montage", "Assembly"),
+            ("verkabeln", "Wiring"), ("software", "Software"), ("inbetrieb", "Commissioning"), ("fehler", "Troubleshooting"),
+            ("wartung", "Maintenance"))
+BAU_MAX_IDS = 600
+_BAU_ID = re.compile(r"^[a-z]:[A-Za-z0-9_.\-]{1,60}$")
+CFG.setdefault("bau_mein", {})
+LOCK_KEEP.add("bau_mein")                                 # operator mode: the own checklist is no setting of the device
+VIEW_GET_PAGES.add("/build")                              # every user may look at the build guide and keep his own checklist
+VIEW_GET = VIEW_GET + ("/api/bau", "/bau3d/", "/build/")
+VIEW_POST.add("/api/bau")
+
+GEH_MORE_ROW = ('  <a class="mi" href="/build" id="m-build"><i>🛠</i><span><b data-i18n="Build yourself">Build yourself</b><small data-i18n="Everything to build it yourself: 3D, parts, shopping, printing, assembly, wiring, software">'
+                'Everything to build it yourself: 3D, parts, shopping, printing, assembly, wiring, software</small></span><span class="ar">›</span></a>\n')
 _geh_anchor = '  <a class="mi" href="/info" id="m-info">'
-if 'href="/case"' not in MORE_PAGE and _geh_anchor in MORE_PAGE:
+if 'href="/build"' not in MORE_PAGE and _geh_anchor in MORE_PAGE:
     MORE_PAGE = MORE_PAGE.replace(_geh_anchor, GEH_MORE_ROW + _geh_anchor, 1)
 
+# the setup assistant from a link (Bauen → Software: «/?guide=1»)
+_geh_wz = "setTimeout(() => setupWizard(false), 600);"
+if _geh_wz in WEB_PAGE:
+    WEB_PAGE = WEB_PAGE.replace(_geh_wz, "setTimeout(() => setupWizard(/[?&]guide=1/.test(location.search)), 600);", 1)
+
 GEH_PAGE = _zd('639w_gehaeuse/GEH_PAGE', ZD_PAGE)
-GEH_KEYS = list(GEH_UI_DE)
+
+# the 3D workshop in the browser (three.js r160 from 639vb, the model /build/gehaeuse.glb) - like werkstatt.gd in the simulator
+GEH_3D_JS = _zd('639w_gehaeuse/GEH_3D_JS', "")
+GEH_KEYS = sorted(set(GEH_UI_DE) | set(GEH_UI2_DE) | {k for _i, k in BAU_TABS} | {
+    "Case", "Step", "Name", "Opened in the simulator.", "Simulator not connected – start it and connect it on the page Simulator."})
+
+
+def geh_fk():
+    """the entries of the error catalogue (639u) the tab «Fehlersuche» shows: title, text, steps in 5 languages"""
+    es = {e["id"]: e for e in (FEHLER_KATALOG.get("fehler") or [])}
+    return {i: {k: es[i].get(k) for k in ("titel", "text", "schritte", "stufe")} for i in GEH_BAU.get("fehlersuche") or [] if i in es}
 
 
 def geh_page():
     js = "Object.assign(I18N.de, " + json.dumps({k: DE.get(k, k) for k in GEH_KEYS}, ensure_ascii=False) + ");"
-    data = json.dumps(GEH_BAU, ensure_ascii=False).replace("</", "<\\/")
-    return render_page(GEH_PAGE, "more").replace("/*GEHDE*/", js, 1).replace("/*GEHBAU*/null", data, 1)
+    J = lambda o: json.dumps(o, ensure_ascii=False).replace("</", "<\\/")
+    return (render_page(GEH_PAGE, "more").replace("/*GEHDE*/", js, 1).replace("/*GEHBAU*/null", J(GEH_BAU), 1)
+            .replace("/*GEHFK*/null", J(geh_fk()), 1).replace("/*GEHM3*/null", J(BAU3D_MODELLE), 1)
+            .replace("/*GEHSIM*/false", "true" if CFG.get("sim_on") else "false", 1)
+            .replace("/*GEHTABS*/", J([list(x) for x in BAU_TABS])).replace("/*GEH3D*/", GEH_3D_JS, 1))
 
 
 def geh_do(d):
@@ -72015,6 +72349,38 @@ def geh_do(d):
     return {"ok": True, "step": r.get("step", 0), "steps": r.get("steps")}
 
 
+# ---- «Mein Bau» (per user, like «Meine Ansicht» 639r) ------------------------------------------------------------------------
+def bau_var_clean(v):
+    out = {}
+    if isinstance(v, dict):
+        for grp in GEH_BAU.get("varianten") or []:
+            x = v.get(grp["id"])
+            if isinstance(x, str) and x in {o["id"] for o in grp["werte"]}:
+                out[grp["id"]] = x
+    return out
+
+
+def bau_mein_get(user):
+    e = (CFG.get("bau_mein") or {}).get(str(user)[:60]) or {}
+    return {"var": bau_var_clean(e.get("var")), "done": [x for x in e.get("done") or [] if isinstance(x, str) and _BAU_ID.match(x)]}
+
+
+def bau_mein_set(user, var=None, done=None):
+    allv = dict(CFG.get("bau_mein") or {})
+    e = dict(allv.get(str(user)[:60]) or {})
+    if var is not None:
+        e["var"] = bau_var_clean(var)
+    if done is not None:
+        if not isinstance(done, list):
+            return False
+        e["done"] = sorted({x for x in done if isinstance(x, str) and _BAU_ID.match(x)})[:BAU_MAX_IDS]
+    e["t"] = int(time.time())
+    allv[str(user)[:60]] = e
+    CFG["bau_mein"] = dict(sorted(allv.items(), key=lambda kv: -int((kv[1] or {}).get("t") or 0))[:60])
+    save_settings()
+    return True
+
+
 def geh_preview():
     """the preview picture (Bilder/Vorschau_v5-1.png) - only where the repository is (PC), else 404"""
     p = os.path.join(os.path.dirname(os.path.abspath(__file__)), "hardware", "gehaeuse", "Bilder", "Vorschau_v5-1.png")
@@ -72024,25 +72390,110 @@ def geh_preview():
         return f.read()
 
 
+def geh_druck_dir():
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), "hardware", "gehaeuse", "Druckdateien")
+
+
+def geh_druck_namen():
+    return list(GEH_BAU.get("druckdateien") or []) + list(GEH_BAU.get("druckdateien_einzeln") or [])
+
+
+def geh_alle_zip():
+    """all print files that are here in one ZIP (3MF are compressed already: stored) - None without the repository"""
+    import io
+    import zipfile
+    d = geh_druck_dir()
+    fs = [n for n in geh_druck_namen() if os.path.isfile(os.path.join(d, n))]
+    if not fs:
+        return None
+    b = io.BytesIO()
+    with zipfile.ZipFile(b, "w", zipfile.ZIP_STORED) as z:
+        for n in fs:
+            z.write(os.path.join(d, n), "MoveEye_Gehaeuse_v5-1/" + n)
+    return b.getvalue()
+
+
+_BAU3D_CACHE = {}
+
+
+def bau3d_bytes(key):
+    """the gzip bytes of a three.js file or of the model (639vb) - decoded once"""
+    import base64
+    if key not in _BAU3D_CACHE:
+        if key == "glb":
+            _BAU3D_CACHE[key] = base64.b64decode(BAU3D_GLB[2])
+        elif key in BAU3D:
+            _BAU3D_CACHE[key] = base64.b64decode(BAU3D[key][1])
+        else:
+            return None
+    return _BAU3D_CACHE[key]
+
+
 _smalltv_routes_geh_base = smalltv_routes
 
 
-def smalltv_routes(app, reply, body):                     # + 639w: /case, /case/preview.png and /api/case
+def smalltv_routes(app, reply, body):                     # + 639w: /build, /case (-> /build), /bau3d, /api/bau, /api/case
     _smalltv_routes_geh_base(app, reply, body)
-    from flask import Response
+    from flask import Response, redirect, request, g
 
-    @app.route("/case")
+    @app.route("/build")
     def geh_page_():
         return Response(geh_page(), mimetype="text/html")
 
+    @app.route("/case")
+    def geh_case_old():                                  # the old page «Gehäuse & Bau» is in «Bauen» now
+        return redirect("/build", code=302)
+
     @app.route("/case/preview.png")
+    @app.route("/build/preview.png")
     def geh_prev_():
         b_ = geh_preview()
         return Response(b_, mimetype="image/png", headers={"Cache-Control": "private, max-age=3600"}) if b_ else Response("no", 404)
 
+    def gz(b_, mt):
+        return Response(b_, mimetype=mt, headers={"Content-Encoding": "gzip", "Cache-Control": "private, max-age=86400", "Vary": "Accept-Encoding"})
+
+    @app.route("/bau3d/<path:p>")
+    def geh_three(p):
+        b_ = bau3d_bytes(p)
+        return gz(b_, "text/javascript") if b_ else Response("no", 404)
+
+    @app.route("/build/gehaeuse.glb")
+    def geh_glb():
+        return gz(bau3d_bytes("glb"), "model/gltf-binary")
+
+    @app.route("/build/qr.svg")
+    def geh_qr():
+        return Response(qr_svg(request.host_url), mimetype="image/svg+xml", headers={"Cache-Control": "no-store"})
+
+    @app.route("/build/datei/<name>")
+    def geh_datei(name):
+        if name not in geh_druck_namen():
+            return Response("no", 404)
+        p = os.path.join(geh_druck_dir(), name)
+        if os.path.isfile(p):
+            with open(p, "rb") as f_:
+                return Response(f_.read(), mimetype="model/3mf", headers={"Content-Disposition": f'attachment; filename="{name}"'})
+        return redirect(GEH_BAU.get("github", "") + "/raw/main/hardware/gehaeuse/Druckdateien/" + name, code=302)
+
+    @app.route("/build/alle.zip")
+    def geh_alle():
+        b_ = geh_alle_zip()
+        if b_ is None:
+            return redirect(GEH_BAU.get("github", "") + "/tree/main/hardware/gehaeuse/Druckdateien", code=302)
+        return Response(b_, mimetype="application/zip", headers={"Content-Disposition": 'attachment; filename="MoveEye_Gehaeuse_v5-1_Druckdateien.zip"'})
+
+    @app.route("/api/bau", methods=["GET", "POST"])
+    def api_bau():                                       # «Mein Bau»: variant and checklist per user (every device)
+        user = ansicht_user(g)
+        if request.method == "POST":
+            d = body()
+            ok_ = bau_mein_set(user, d.get("var"), d.get("done"))
+            return reply({"ok": ok_, "user": user}, 200 if ok_ else 400)
+        return reply(dict(bau_mein_get(user), ok=True, user=user))
+
     @app.route("/api/case", methods=["GET", "POST"])
     def api_case():
-        from flask import request
         if request.method == "GET":
             return reply({"ok": True, "version": GEH_BAU.get("version"), "sim": bool(CFG.get("sim_on")), "steps": len(GEH_BAU.get("schritte") or [])})
         r = geh_do(body())
@@ -72050,34 +72501,8 @@ def smalltv_routes(app, reply, body):                     # + 639w: /case, /case
         return reply(r, code) if code else reply(r)
 
 
-# the manual (HELP_PAGE 540 + HELP_X): a short chapter «Gehäuse & Bau» before «Einrichtung», in all 5 languages
-_HELP_GEH = {
-    "de": ('<section id="case" data-icon="📐"><h2>Gehäuse &amp; Bau</h2><p>Das Gehäuse v5.1 (Daniels parametrisches Python-Modell, '
-           'PETG, 2 Druckplatten ohne Stützen) steht unter Mehr → <a href="/case"><b>Gehäuse &amp; Bau</b></a>: Montage in 14 Schritten, '
-           'Materialliste nach Gruppen, Links zu den Druckdateien (3MF) und zur ausführlichen Anleitung. <b>«Im Simulator ansehen»</b> öffnet die '
-           '<b>Werkstatt</b> im 3D-Simulator (Mehr → Werkstatt): drehen, zoomen, Explosion, durchsichtig, Teil anklicken (Materialliste und '
-           'Montageschritt), Montage animiert Schritt für Schritt. Vor dem Druck des Unterteils die Masse des UPS HAT (E) mit Akkus nachmessen.</p></section>\n'),
-    "en": ('<section id="case" data-icon="📐"><h2>Case &amp; build</h2><p>The case v5.1 (Daniel\'s parametric Python model, PETG, '
-           '2 print plates without supports) is under More → <a href="/case"><b>Case &amp; build</b></a>: assembly in 14 steps, parts list by '
-           'group, links to the print files (3MF) and to the detailed guide. <b>«View in the simulator»</b> opens the <b>workshop</b> in the 3D '
-           'simulator (More → Workshop): turn, zoom, explode, see through, click a part (parts list and assembly step), animated assembly step by '
-           'step. Before printing the lower part, measure the UPS HAT (E) with its cells.</p></section>\n'),
-    "fr": ('<section id="case" data-icon="📐"><h2>Boîtier et construction</h2><p>Le boîtier v5.1 (modèle Python paramétrique de Daniel, '
-           'PETG, 2 plateaux sans supports) se trouve sous Plus → <a href="/case"><b>Boîtier et construction</b></a> : montage en 14 étapes, '
-           'liste du matériel par groupe, liens vers les fichiers d\'impression (3MF) et le guide détaillé. <b>«Voir dans le simulateur»</b> '
-           'ouvre l\'<b>atelier</b> du simulateur 3D (Plus → Atelier) : tourner, zoomer, vue éclatée, transparent, cliquer une pièce, montage '
-           'animé étape par étape. Avant d\'imprimer la partie inférieure, mesurer l\'UPS HAT (E) avec ses accus.</p></section>\n'),
-    "it": ('<section id="case" data-icon="📐"><h2>Custodia e costruzione</h2><p>La custodia v5.1 (modello Python parametrico di Daniel, '
-           'PETG, 2 piatti senza supporti) si trova in Altro → <a href="/case"><b>Custodia e costruzione</b></a>: montaggio in 14 passi, '
-           'distinta dei materiali per gruppo, link ai file di stampa (3MF) e alla guida dettagliata. <b>«Vedere nel simulatore»</b> apre '
-           'l\'<b>officina</b> del simulatore 3D (Altro → Officina): ruotare, zoomare, esploso, trasparente, cliccare un pezzo, montaggio '
-           'animato passo per passo. Prima di stampare la parte inferiore misurare l\'UPS HAT (E) con le batterie.</p></section>\n'),
-    "rm": ('<section id="case" data-icon="📐"><h2>Chascha e construcziun</h2><p>La chascha v5.1 (model Python parametric da Daniel, '
-           'PETG, 2 plattas senza sustegns) è sut Dapli → <a href="/case"><b>Chascha e construcziun</b></a>: muntascha en 14 pass, '
-           'glista dal material tenor gruppas, colliaziuns a las datotecas da stampa (3MF) ed a l\'instrucziun detagliada. '
-           '<b>«Guardar en il simulatur»</b> avra l\'<b>ufficina</b> dal simulatur 3D (Dapli → Ufficina): volver, zoomar, explosiun, transparent, '
-           'cliccar ina part, muntascha animada pass per pass. Avant che stampar la part sut mesirar l\'UPS HAT (E) cun ils accus.</p></section>\n'),
-}
+# the manual (HELP_PAGE 540 + HELP_X): a short chapter «Bauen» before «Einrichtung», in all 5 languages
+_HELP_GEH = _zd('639w_gehaeuse/HELP_GEH', _ZDDict())
 
 
 def _help_geh(doc, lang):
@@ -72095,13 +72520,13 @@ for _L in ("fr", "it", "rm"):
         HELP_X[_L] = _help_geh(HELP_X[_L], _L)
 
 
-if GUI_OK:                                                # the window: «Gehäuse & Bau» in the tab «Mehr» (572)
+if GUI_OK:                                                # the window: «Bauen» in the tab «Mehr» (572)
     _geh_tk_more_base = App._tk_more_bar
 
     def _geh_tk_more_bar(self, parent):
         f = _geh_tk_more_base(self, parent)
         i = len(f.grid_slaves())
-        self._fbtn(f, "📐 " + tr("Case & build"), lambda: self._open_page("/case")).grid(row=i // 3, column=i % 3, sticky="ew", padx=(0, 6), pady=(0, 6))
+        self._fbtn(f, "🛠 " + tr("Build yourself"), lambda: self._open_page("/build")).grid(row=i // 3, column=i % 3, sticky="ew", padx=(0, 6), pady=(0, 6))
         return f
 
     # wraps: App._tk_more_bar (572)
@@ -72124,7 +72549,7 @@ def geh_quelle_sha(base):
 
 
 def geh_check(base=None):
-    """problems: the simulator models / texts against the source (only in the repository; the Pi has no hardware/)"""
+    """problems: the simulator models / texts / the 3D files of the page against the source (only in the repository)"""
     import hashlib
     base = base or os.path.dirname(os.path.abspath(__file__))
     probs = []
@@ -72133,11 +72558,23 @@ def geh_check(base=None):
     sha = geh_quelle_sha(base)
     if sha != GEH_QUELLE_SHA:
         probs.append("quelle/639v is older than hardware/gehaeuse - run werkzeuge/gehaeuse_bauen.py --sim")
+    if sha != BAU3D_QUELLE_SHA:
+        probs.append("quelle/639vb is older than hardware/gehaeuse - run werkzeuge/gehaeuse_bauen.py --texte")
     with open(os.path.join(base, "hardware", "gehaeuse", "bau.json"), encoding="utf-8") as f_:
         bau = json.load(f_)
-    for k in ("version", "bom", "schritte", "druckdateien"):
+    for k in ("version", "bom", "schritte", "druckdateien", "verkabelung", "druck", "varianten"):
         if bau.get(k) != GEH_BAU.get(k):
             probs.append(f"GEH_BAU[{k}] differs from bau.json - run werkzeuge/gehaeuse_bauen.py --texte")
+    dd = os.path.join(base, "hardware", "gehaeuse", "Druckdateien")
+    for n in list(bau.get("druckdateien") or []) + list(bau.get("druckdateien_einzeln") or []):
+        if not os.path.isfile(os.path.join(dd, n)):
+            probs.append("print file missing: " + n)
+    for rel, (h_, _b) in BAU3D.items():
+        p = os.path.join(base, "werkzeuge", "three", rel)
+        if os.path.isfile(p):
+            with open(p, "rb") as f_:
+                if hashlib.sha256(f_.read()).hexdigest() != h_:
+                    probs.append(f"werkzeuge/three/{rel} differs from 639vb - gehaeuse_bauen.py --texte")
     sd = os.path.join(base, "simulator3d", "inhalte", "gehaeuse")
     mp = os.path.join(sd, "modelle.json")
     if os.path.isfile(mp):
@@ -72153,6 +72590,8 @@ def geh_check(base=None):
             with open(p, "rb") as f_:
                 if hashlib.sha256(f_.read()).hexdigest() != h_:
                     probs.append(fn + " changed after the build")
+        if (man.get("dateien") or {}).get("gehaeuse.glb") != BAU3D_GLB[0]:
+            probs.append("the model of the page /build (639vb) is not simulator3d/inhalte/gehaeuse/gehaeuse.glb - gehaeuse_bauen.py --texte")
         if {t["id"] for t in man.get("teile", [])} != {t["id"] for t in bau.get("teile", [])}:
             probs.append("modelle.json and bau.json have different parts")
     elif os.path.isdir(os.path.join(base, "simulator3d")):
@@ -72170,6 +72609,21 @@ def geh_check(base=None):
     return probs
 
 
+def bau_infos_veraltet(base=None):
+    """werkzeuge/bau_pruefen.py (only in the repository): do the build infos still fit the code / the case? -> list of warnings.
+    Nothing is changed by itself - the warning only says «Bau-Infos veraltet: … – nachziehen?»"""
+    import subprocess
+    base = base or os.path.dirname(os.path.abspath(__file__))
+    tool = os.path.join(base, "werkzeuge", "bau_pruefen.py")
+    if not os.path.isfile(tool):
+        return []
+    try:
+        r = subprocess.run([sys.executable, tool, "--json"], capture_output=True, text=True, timeout=60, cwd=base)
+        return list(json.loads(r.stdout or "{}").get("warnungen") or [])
+    except Exception as e:
+        return ["bau_pruefen.py: " + str(e)[:120]]
+
+
 def geh_selftest():
     B = GEH_BAU
     assert B.get("version") == "5.1" and len(B.get("schritte") or []) == 14, "data"
@@ -72177,22 +72631,44 @@ def geh_selftest():
     for t_ in B["teile"]:
         assert not t_.get("bom") or t_["bom"] in bom, t_["id"]
         assert not t_.get("schritt") or 1 <= t_["schritt"] <= 14, t_["id"]
+    vals = {o["id"] for v in B["varianten"] for o in v["werte"]}
+    for b in B["bom"]:
+        assert isinstance(b.get("preis"), (int, float)) and b.get("haendler") in B["haendler"], ("price / shop", b["id"])
+        assert not b.get("wenn") or b["wenn"] in vals, ("variant", b["id"])
+    K = B["verkabelung"]["knoten"]
+    for v in B["verkabelung"]["verbindungen"]:
+        assert v["von"] in K and v["nach"] in K and (not v.get("wenn") or v["wenn"] in vals), ("wiring", v["id"])
+    assert {p["datei"] for p in B["druck"]["teile"]} >= {t_["datei"] for t_ in B["teile"] if t_.get("datei")}, "every print part in the print table"
+    fk = geh_fk()
+    assert set(fk) == set(B["fehlersuche"]), "troubleshooting ids in the error catalogue: " + str(set(B["fehlersuche"]) - set(fk))
     for k in GEH_KEYS:
         assert DE.get(k), k
         for L in ("fr", "it", "rm"):
             assert TRX[L].get(k), (L, k)
-    assert 'href="/case"' in MORE_PAGE and MORE_PAGE.index('href="/case"') < MORE_PAGE.index('id="m-info"'), "Mehr"
+    assert 'href="/build"' in MORE_PAGE and MORE_PAGE.index('href="/build"') < MORE_PAGE.index('id="m-info"'), "Mehr"
     html = geh_page()
-    assert "/api/case" in html and '"schritte"' in html and "<!--NAV-->" not in html and "/*GEHBAU*/" not in html
-    assert "Raspberry Pi 5" in html and "MotionWatch_v5-1_Platte_A_Unterteil.3mf" in html
-    assert HELP_PAGE.count('<section id="case"') == 2 and all('href="/case"' in (HELP_X.get(L) or "href=\"/case\"") for L in ("fr", "it", "rm")), "manual"
-    keep = CFG.get("sim_on")
-    _sc = globals()["sim_control"]
+    for x in ("/api/bau", '"schritte"', "/build/gehaeuse.glb", "importmap", "/bau3d/three.module.min.js", '"HW_PCA9685"', "Raspberry Pi 5"):
+        assert x in html, x
+    assert "<!--NAV-->" not in html and "/*GEH" not in html
+    import gzip
+    for k in list(BAU3D) + ["glb"]:
+        raw = gzip.decompress(bau3d_bytes(k))
+        assert hashlib.sha256(raw).hexdigest() == (BAU3D_GLB[0] if k == "glb" else BAU3D[k][0]), k
+    assert gzip.decompress(bau3d_bytes("three.module.min.js")).startswith(b"/**") and bau3d_bytes("x.js") is None
+    assert HELP_PAGE.count('<section id="case"') == 2 and all('href="/build"' in (HELP_X.get(L) or "href=\"/build\"") for L in ("fr", "it", "rm")), "manual"
+    keep = CFG.get("sim_on"), CFG.get("bau_mein")
+    _sc, _ss = globals()["sim_control"], globals()["save_settings"]
     asked = []
     try:
+        globals()["save_settings"] = lambda: None
+        CFG["bau_mein"] = {}
+        assert bau_mein_set("anna", {"gehaeuse": "v52", "akku": "x"}, ["m:3", "e:pi5", "bad id", 7]) and bau_mein_get("anna") == {"var": {"gehaeuse": "v52"}, "done": ["e:pi5", "m:3"]}
+        assert bau_mein_get("admin") == {"var": {}, "done": []} and not bau_mein_set("anna", None, "x"), "per user"
+        assert "/api/bau" in VIEW_POST and role_allows("view", "/api/bau", "GET", {}) and role_allows("view", "/build", "GET", {}), "rights"
         CFG["sim_on"] = False
         r = geh_do({"do": "sim"})
         assert not r["ok"] and r.get("offline"), r
+        assert "const SIM_ON = false" in geh_page() and "/build/gehaeuse.glb" in geh_page(), "the 3D view does not need the simulator"
         assert geh_do({"do": "x"}).get("code") == 400
         CFG["sim_on"] = True
         globals()["sim_control"] = lambda d_: (asked.append(d_), {"ok": True, "open": True, "step": int(d_.get("n", 0)), "steps": 14})[1]
@@ -72201,23 +72677,36 @@ def geh_selftest():
         globals()["sim_control"] = lambda d_: {"ok": False, "error": "unknown action"}
         assert not geh_do({"do": "sim"})["ok"]                       # an older simulator without the workshop
     finally:
-        globals()["sim_control"] = _sc
-        CFG["sim_on"] = keep
+        globals()["sim_control"], globals()["save_settings"] = _sc, _ss
+        CFG["sim_on"], CFG["bau_mein"] = keep
     more = (UI_GEMEINSAM.get("more") or [])
-    case = next((m for m in more if m.get("id") == "case"), None)
-    assert case and case["mw"]["href"] == "/case" and case["mw"]["key"] == "Case & build", "ui_gemeinsam.json more/case"
+    case = next((m for m in more if m.get("id") == "build"), None)
+    assert case and case["mw"]["href"] == "/build" and case["mw"]["key"] == "Build yourself" and "case" in case.get("alias", []), "ui_gemeinsam.json more/build"
     for L in ("de", "fr", "it", "rm"):
-        assert ui_gem_tr("Case & build", L) == case["mw"]["names"][L], ("name", L)
+        assert ui_gem_tr("Build yourself", L) == case["mw"]["names"][L], ("name", L)
+    assert case["mw"]["names"]["de"] == case["sim"]["names"]["de"] == "Bauen", "the same name in both"
     mg = os.path.join(os.path.dirname(os.path.abspath(__file__)), "simulator3d", "scripts", "mehr.gd")
     if os.path.isfile(mg):
         with open(mg, encoding="utf-8") as f_:
-            assert '["%s", "wrench", "%s"' % (case["sim"]["row"], case["sim"]["key"]) in f_.read(), "simulator mehr.gd row"
+            assert '["%s", "%s", "%s"' % (case["sim"]["row"], case["draw"], case["sim"]["key"]) in f_.read(), "simulator mehr.gd row"
+    node = shutil.which("node")
+    if node:                                              # the scripts of the page: the classic one and the module
+        import tempfile
+        for i, (typ, js) in enumerate(re.findall(r'<script( type="module")?>(.*?)</script>', html, re.S)):
+            with tempfile.NamedTemporaryFile("w", suffix=".mjs" if typ else ".js", delete=False) as f_:
+                f_.write(js)
+            r = subprocess.run([node, "--check", f_.name], capture_output=True, text=True)
+            os.remove(f_.name)
+            assert r.returncode == 0, f"/build script {i}: {(r.stderr or '').strip()[-300:]}"
     probs = geh_check()
     assert not probs, " | ".join(probs)
-    return "Case & build: page /case, Mehr, simulator workshop command, models fit the source"
+    warn = bau_infos_veraltet()
+    if warn:                                              # a warning, no error: nothing is changed by itself
+        return "WARNING – " + " · ".join(tr("Build info out of date: %s – update it?") % w for w in warn[:4])
+    return "Build: page /build (10 tabs, 3D without simulator), My build per user, models = source, build infos fit the code"
 
 
-SELFTEST_EXTRA.append(("Case & build (page /case, workshop in the simulator, models = source)", geh_selftest))
+SELFTEST_EXTRA.append(("Build (page /build, 3D in the browser, My build, models = source, build infos)", geh_selftest))
 # ----------------------------------------------------------------------------
 # real-erk-e3 (31.10.2026): die Push-Nachricht «Etwas Grosses am Boden» (Titel und Text) in de / fr / it / rm.
 # ----------------------------------------------------------------------------
@@ -73675,69 +74164,6 @@ def ui_more_selftest():
 
 SELFTEST_EXTRA.append(("View shared with the simulator (ui, 639zb)", ui_sync_selftest))
 SELFTEST_EXTRA.append(("«Mehr» in the same order MoveEye ↔ simulator (ui_gemeinsam.json «more», 639zb)", ui_more_selftest))
-# ----------------------------------------------------------------------------
-# Hardware-Klärung 01.11.2026 (Paket «Bauen», Punkt 6):
-#   - Der Solar-Strommesser (INA219) stand ab Werk auf 0x41 = Adresse des PCA9685 (Servos, Lötbrücke A0). Beide zusammen
-#     lesen sich gegenseitig die Register. Doku, Materialliste und Gehäuse sagen 0x44 (INA219 mit Brücke A1 bzw. DIP 0x44).
-#     Neu: Standard 0x44 (020, 280). Alte Einstellungen mit «Solar aus» und derselben Adresse wie der PCA9685 werden einmal
-#     auf eine freie Adresse gesetzt (0x44, sonst 0x45); mit «Solar ein» bleibt alles, wie der Bediener es eingestellt hat.
-#   - Die Konfliktprüfung (030) kennt jetzt auch die Wärmebildkamera (Thermal-90, fest 0x40) und lässt den UPS HAT (E) aus
-#     (eigener Chip auf 0x2D, die Adresse «ups_addr» gilt nur für den INA219 der UPS HATs A / B / C).
-# ----------------------------------------------------------------------------
-_settings_migrations_before_i2c = _settings_migrations
-
-
-def solar_addr_migrate(cfg=None):
-    """«Solar» off and on the address of the servo board: to the first free address of 0x44 / 0x45 (True = changed)"""
-    c = CFG if cfg is None else cfg
-    a = str(c.get("solar_addr", "")).lower()
-    if c.get("solar_on") or a != str(c.get("pca_address", "")).lower():
-        return False
-    used = {str(c.get(k, "")).lower() for k in ("pca_address", "mover_addr", "ups_addr")} | set(I2C_FIXED.values())
-    for cand in ("0x44", "0x45"):
-        if cand not in used:
-            c["solar_addr"] = cand
-            return True
-    return False
-
-
-def _settings_migrations(cfg_in):                         # + 639zh: solar meter away from the address of the PCA9685
-    _settings_migrations_before_i2c(cfg_in)
-    try:
-        old = CFG.get("solar_addr")
-        if solar_addr_migrate():
-            log_event("sys", f"Solar meter (INA219): address {old} is the servo board - set to {CFG['solar_addr']}")
-    except Exception as e:
-        log_event("sys", f"Settings migration (639zh): {e}"[:150])
-
-
-def i2c_adressen_selftest():
-    """standard addresses without a conflict; the thermal camera on 0x40 and the PCA9685 on 0x41 are seen; the migration"""
-    base = {"servo_driver": "pca9685", "pca_address": "0x41", "solar_on": True, "solar_addr": DEFAULTS["solar_addr"],
-            "mover_mode": "auto", "mover_addr": DEFAULTS["mover_addr"], "ups_on": True, "ups_model": "auto",
-            "ups_addr": DEFAULTS["ups_addr"], "thermal_on": True, "thermal_source": "senxor"}
-    assert DEFAULTS["solar_addr"] == "0x44", DEFAULTS["solar_addr"]
-    assert DEFAULTS["solar_addr"] != DEFAULTS["pca_address"], "solar meter on the address of the servo board"
-    assert i2c_conflicts(base) == [], i2c_conflicts(base)
-    cf = i2c_conflicts(dict(base, solar_addr="0x41"))
-    assert cf == [("pca_address", "solar_addr", "0x41")], cf
-    cf = i2c_conflicts(dict(base, solar_addr="0x40"))
-    assert cf == [("_thermal", "solar_addr", "0x40")], cf
-    assert i2c_conflicts(dict(base, solar_addr="0x40", thermal_on=False)) == []
-    assert i2c_conflicts(dict(base, solar_addr="0x42", ups_model="e")) == [], "UPS HAT (E) has no INA219 on 0x42"
-    assert i2c_conflicts(dict(base, solar_addr="0x42"))[0][2] == "0x42"
-    c = dict(base, solar_on=False, solar_addr="0x41")
-    assert solar_addr_migrate(c) and c["solar_addr"] == "0x44", c["solar_addr"]
-    c = dict(base, solar_on=False, solar_addr="0x44", pca_address="0x44")
-    assert solar_addr_migrate(c) and c["solar_addr"] == "0x45", c["solar_addr"]
-    c = dict(base, solar_on=True, solar_addr="0x41")
-    assert not solar_addr_migrate(c) and c["solar_addr"] == "0x41", "switched on: the operator's choice stays"
-    c = dict(base, solar_on=False, solar_addr="0x45")
-    assert not solar_addr_migrate(c)
-    return "thermal 0x40 · PCA9685 0x41 · solar INA219 0x44 · UPS INA219 0x42 / UPS HAT (E) 0x2D · mover 0x60: no conflict"
-
-
-SELFTEST_EXTRA.append(("I2C addresses: no conflict with the standard values (639zh)", i2c_adressen_selftest))
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--cam", type=int, default=None, help="USB camera number (same as --source usb:N)")

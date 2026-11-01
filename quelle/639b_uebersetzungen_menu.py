@@ -120,7 +120,7 @@ MENU_SHORT = {
     'Emergency stop: brake, then drive slowly to the parking position (otherwise: hold where it stopped)': 'Emergency stop: park slowly',
     'Show the «⏹ Stop» button on the live page (only with a pan / tilt head)': '«⏹ Stop» on the live page',
     'Show MoveEye on extra displays (GeekMagic SmallTV)': 'Show MoveEye on extra displays',
-    'Current meter: shunt resistor (Ohm, usually 0.1)': 'Shunt resistor (Ohm)',
+    'Current meter: shunt resistor (Ohm; Gravity INA219 0.01, blue modules 0.1)': 'Shunt resistor (Ohm)',
     'Theft tracking: alarm from a distance of (m)': 'Theft tracking: alarm from (m)',
     'Warn when the air pressure falls by (hPa in 3 hours)': 'Air pressure falls by (hPa / 3 h)',
     'Bluetooth tag: alarm when not seen for (min)': 'Tag not seen for (min)',

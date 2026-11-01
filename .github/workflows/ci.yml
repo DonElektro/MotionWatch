@@ -44,6 +44,8 @@ jobs:
         run: pip install -q opencv-python-headless numpy flask pillow cryptography
       - name: Quelle und Datei passen zusammen (bauen.py --pruefen)
         run: python3 werkzeuge/bauen.py --pruefen
+      - name: Bau-Infos passen zum Projektstand (bau_pruefen.py, nur Warnung – nichts wird nachgezogen)
+        run: python3 werkzeuge/bau_pruefen.py --ci
       - name: Selbsttest (ohne Signaturen)
         env:
           MW_SELFTEST_NO_SIG: "1"          # signed only locally at the release

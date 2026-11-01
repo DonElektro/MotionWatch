@@ -12,6 +12,9 @@ hardware/gehaeuse/bau.json (Teile, Materialliste, Montageschritte, Texte in de/e
     python3 werkzeuge/gehaeuse_bauen.py --druck    # STL + 3MF neu (export5.py + plates5.py in einem Arbeitsordner): 3MF nach
                                                    #   hardware/gehaeuse/Druckdateien/, STL als ZIP nach --ziel (Standard
                                                    #   /tmp/gehaeuse_dist) – dauert lange (Unterteil allein ca. 20–25 min)
+    python3 werkzeuge/gehaeuse_bauen.py --3mf ORDNER  # die STL eines Ordners als einzelne, komprimierte 3MF nach
+                                                   #   hardware/gehaeuse/Druckdateien/MoveEye_v5-1_<Teil>.3mf (nur numpy;
+                                                   #   _2x / _4x: so viele Stück auf der Platte, Masse werden geprüft)
     python3 werkzeuge/gehaeuse_bauen.py --bilder   # Vorschaubilder mit prev51.py -> hardware/gehaeuse/Bilder/Vorschau_v5-1_*.png
     python3 werkzeuge/gehaeuse_bauen.py --pruefen  # passen Simulator-Modelle und Daten zur Quelle? (Exit 1 sonst; auch im
                                                    #   Selbsttest von MoveEye, Teil 639w)
@@ -46,6 +49,13 @@ GD_OUT = os.path.join(REPO, "simulator3d", "scripts", "werkstatt_daten.gd")
 TEXTE = os.path.join(REPO, "simulator3d", "i18n", "texte.json")
 MW_OUT = os.path.join(REPO, "quelle", "639v_daten_gehaeuse.py")
 LANGS = ("de", "en", "fr", "it", "rm")
+MW3D_OUT = os.path.join(REPO, "quelle", "639vb_daten_bau3d.py")
+THREE = os.path.join(HIER, "three")
+WEB3D_FILES = ("three.module.min.js", "loaders/GLTFLoader.js", "controls/OrbitControls.js", "utils/BufferGeometryUtils.js")
+BAU_KEYS = ("varianten", "variante_standard", "haendler", "druck", "werkzeug", "schrauben", "sicherheit", "verkabelung", "software",
+            "inbetriebnahme", "fehlersuche", "wartung", "extra_schritte", "druckdateien_einzeln", "farben")
+import re as _re
+ID_RE = _re.compile(r"^[a-z0-9_.\-:/#+%]*$")
 
 # ---- Geometrie der Simulator-Teile -----------------------------------------------------------------------------------------
 # id: (Gruppe, Abtastung h mm, Zellgrösse c mm, Farbe, aussen (am Gerät in der Szene), Explosion: Höhe mm, Streuung)
@@ -392,6 +402,7 @@ def baue_texte():
         if t.get("schritt") and not 1 <= t["schritt"] <= len(bau["schritte"]):
             sys.exit(f"Teil {t['id']}: Schritt {t['schritt']} fehlt")
     pairs = {}                                            # German -> {en, fr, it, rm}
+    keep_old = set()                                      # keys where an existing translation in texte.json stays
 
     def de(v):
         d = tx(v, "de")
@@ -418,7 +429,29 @@ def baue_texte():
     for s in bau["schritte"]:
         L.append(f"\t[{gd_str(de(s['titel']))}, {gd_str(de(s['text']))}],")
     L.append("]")
-    keep_old = set()
+    # real-bauen: alles für «Bauen» (Varianten, Einkauf, Drucken, Werkzeug, Sicherheit, Verkabeln, Software, Inbetriebnahme,
+    # Fehlersuche, Wartung) als ein Wörterbuch, Texte deutsch (T.t übersetzt), Kennungen bleiben
+    def gd_tief(v):
+        if isinstance(v, dict) and set(v) == set(LANGS):
+            r = de(v)
+            keep_old.add(r)                              # a text the simulator already has keeps its translation
+            return r
+        if isinstance(v, dict):
+            return {k: gd_tief(x) for k, x in v.items() if not k.startswith("_")}
+        if isinstance(v, list):
+            return [gd_tief(x) for x in v]
+        if isinstance(v, str) and any(ch.isalpha() for ch in v) and not ID_RE.match(v) and not v.startswith("http"):
+            if v not in pairs:
+                pairs[v] = {Lg: v for Lg in LANGS[1:]}
+                keep_old.add(v)                          # names / part numbers: an existing translation stays
+        return v
+    bau_sim = {k: gd_tief(bau[k]) for k in BAU_KEYS if k in bau}
+    bau_sim["bom_extra"] = {b["id"]: gd_tief({k: b[k] for k in ("preis", "haendler", "suche", "alt", "wenn", "optional", "gruppe") if k in b}) for b in bau["bom"]}
+    L += ["# Bauen (real-bauen): Varianten, Einkauf, Drucken, Werkzeug, Sicherheit, Verkabeln, Software, Inbetriebnahme, Fehlersuche, Wartung",
+          "const BAU := " + json.dumps(bau_sim, ensure_ascii=False, indent="\t")]
+    for u in bau.get("ui_bauen") or []:                   # texts of the window «Bauen» (German key)
+        pairs.setdefault(u["de"], {Lg: u[Lg] for Lg in LANGS[1:]})
+        keep_old.add(u["de"])
     for k, v in (bau.get("ui_sim") or {}).items():        # texts of werkstatt.gd / mehr.gd (an existing translation stays)
         pairs[k] = {Lg: v.get(Lg, k) for Lg in LANGS[1:]}
         keep_old.add(k)
@@ -428,7 +461,12 @@ def baue_texte():
     with open(TEXTE, encoding="utf-8") as fh:
         T = json.load(fh)
     n = 0
+    sys.path.insert(0, HIER)
+    import sim_texte                                      # nur Texte eintragen, die der Simulator wirklich zeigt (sammelt)
+    gefunden = set(sim_texte.collect()[0])
     for k, row in pairs.items():
+        if k not in T and k not in gefunden:
+            continue
         old = T.get(k) or {}
         new = {Lg: (old.get(Lg) if k in keep_old and old.get(Lg) else row.get(Lg)) or old.get(Lg, "") for Lg in LANGS[1:]}
         if old.get("?"):
@@ -441,9 +479,13 @@ def baue_texte():
     subprocess.run([sys.executable, os.path.join(HIER, "sim_texte.py")], check=True, stdout=subprocess.DEVNULL)   # sortiert, Bericht
     # MoveEye: die Daten (alle Sprachen) und die Texte der Seite /case (englischer Schlüssel -> de / fr / it / rm)
     mw = {"version": bau["version"], "stand": bau["stand"], "masse": bau["masse"], "bom_gruppen": bau["bom_gruppen"],
-          "bom": bau["bom"], "teile": [{k: t[k] for k in ("id", "art", "bom", "schritt", "name", "datei") if k in t} for t in bau["teile"]],
+          "bom": bau["bom"], "teile": [{k: t[k] for k in ("id", "art", "bom", "schritt", "name", "datei", "farbe") if k in t} for t in bau["teile"]],
           "schritte": bau["schritte"], "druckdateien": bau.get("druckdateien", []), "github": bau.get("github", "")}
+    for k in BAU_KEYS:                                   # real-bauen: dazu alles für die Seite «Bauen»
+        if k in bau:
+            mw[k] = bau[k]
     ui = bau.get("ui_mw") or {}
+    ui2 = {u["en"]: {Lg: u[Lg] for Lg in ("de", "fr", "it", "rm")} for u in bau.get("ui_bauen") or []}
     js = json.dumps(mw, ensure_ascii=False, separators=(",", ":"))
     assert '"""' not in js and not js.endswith("\\")
     body = ['#@ MoveEye – Teil 639v: Daten Gehäuse v5.1 (Teile, Materialliste, Montage in 5 Sprachen) für die Seite «Gehäuse & Bau» (639w). '
@@ -455,10 +497,49 @@ def baue_texte():
             f"GEH_QUELLE_SHA = {sha!r}",
             f'GEH_BAU = json.loads(r"""{js}""")',
             "GEH_UI_DE = " + json.dumps({k: v["de"] for k, v in ui.items()}, ensure_ascii=False),
-            "GEH_UI_TRX = " + json.dumps({Lg: {k: v[Lg] for k, v in ui.items()} for Lg in ("fr", "it", "rm")}, ensure_ascii=False), ""]
+            "GEH_UI_TRX = " + json.dumps({Lg: {k: v[Lg] for k, v in ui.items()} for Lg in ("fr", "it", "rm")}, ensure_ascii=False),
+            "# real-bauen: Texte der Seite «Bauen» (englischer Schlüssel; vorhandene Übersetzungen von MoveEye gehen vor, 639w)",
+            "GEH_UI2_DE = " + json.dumps({k: v["de"] for k, v in ui2.items()}, ensure_ascii=False),
+            "GEH_UI2_TRX = " + json.dumps({Lg: {k: v[Lg] for k, v in ui2.items()} for Lg in ("fr", "it", "rm")}, ensure_ascii=False), ""]
     with open(MW_OUT, "w", encoding="utf-8") as fh:
         fh.write("\n".join(body))
+    baue_web3d(sha)
     print(f"Texte: {len(pairs)} (davon {n} in texte.json neu/geändert) -> werkstatt_daten.gd, texte.json, quelle/639v_daten_gehaeuse.py")
+
+
+def baue_web3d(sha):
+    """real-bauen: three.js (werkzeuge/three/) und gehaeuse.glb gepackt (gzip + base64) für MoveEye (/bau3d/…, /build/gehaeuse.glb):
+    der Pi liefert die 3D-Werkstatt selbst aus – ohne Internet und ohne Simulator. bauen.py lagert die grossen Texte ins Zusatz-ZIP aus."""
+    import base64
+    import gzip
+    files = {}
+    for rel in WEB3D_FILES:
+        with open(os.path.join(THREE, rel), "rb") as fh:
+            files[rel] = fh.read()
+    with open(os.path.join(SIMDIR, "gehaeuse.glb"), "rb") as fh:
+        glb = fh.read()
+    pk = lambda b: base64.b64encode(gzip.compress(b, 9, mtime=0)).decode()
+    out = ['#@ MoveEye – Teil 639vb: 3D-Werkstatt im Browser – three.js r160 (MIT, werkzeuge/three/) und das Gehäuse-Modell gehaeuse.glb '
+           '(simulator3d/inhalte/gehaeuse/), gzip + base64. Erzeugt von werkzeuge/gehaeuse_bauen.py --texte – NICHT VON HAND ÄNDERN. '
+           'Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt (die grossen Texte kommen ins Zusatz-ZIP).',
+           "# ----------------------------------------------------------------------------",
+           "# BAU3D: Pfad -> [sha256 der Datei, gzip+base64]; BAU3D_GLB: [sha256, Grösse, gzip+base64]. Ausgeliefert von 639w (/bau3d/<pfad>,",
+           "# /build/gehaeuse.glb) mit Content-Encoding gzip. Der Selbsttest vergleicht die Prüfsummen im Repository mit den Quellen.",
+           "# ----------------------------------------------------------------------------",
+           f"BAU3D_QUELLE_SHA = {sha!r}",
+           "BAU3D = {"]
+    for rel, b in files.items():
+        out.append(f"    {rel!r}: [{hashlib.sha256(b).hexdigest()!r}, {pk(b)!r}],")
+    with open(os.path.join(SIMDIR, "modelle.json"), encoding="utf-8") as fh:
+        man = json.load(fh)
+    mod = {"kippachse_ueber_boden_m": man.get("kippachse_ueber_boden_m"), "fuesse_m": man.get("fuesse_m"),
+           "teile": [{k: e[k] for k in ("id", "gruppe", "aussen", "mitte", "explosion", "farbe") if k in e} for e in man.get("teile", [])]}
+    out += ["}", f"BAU3D_GLB = [{hashlib.sha256(glb).hexdigest()!r}, {len(glb)}, {pk(glb)!r}]",
+            "# aus simulator3d/inhalte/gehaeuse/modelle.json: Gruppe, aussen, Mitte und Explosion pro Teil (wie die Werkstatt im Simulator)",
+            "BAU3D_MODELLE = json.loads(" + repr(json.dumps(mod, ensure_ascii=False, separators=(",", ":"))) + ")", ""]
+    with open(MW3D_OUT, "w", encoding="utf-8") as fh:
+        fh.write("\n".join(out))
+    print(f"3D im Browser: {os.path.getsize(MW3D_OUT) // 1024} KB -> {os.path.relpath(MW3D_OUT, REPO)}")
 
 
 # ---- Prüfen --------------------------------------------------------------------------------------------------------------
@@ -493,6 +574,90 @@ def pruefen():
     if not probs:
         print("Gehäuse: Simulator-Modelle und Daten passen zur Quelle (" + sha[:12] + ")")
     return not probs
+
+
+# ---- einzelne 3MF aus STL (real-bauen) ------------------------------------------------------------------------------------
+DRUCK_PREFIX = "MoveEye_v5-1_"
+
+
+def lies_stl(p):
+    """binäre STL -> Dreiecks-Ecken (N*3, 3) float64"""
+    import numpy as np
+    with open(p, "rb") as fh:
+        b = fh.read()
+    n = struct.unpack("<I", b[80:84])[0]
+    if 84 + 50 * n != len(b):
+        sys.exit(p + ": keine binäre STL")
+    a = np.frombuffer(b, dtype=np.dtype([("n", "<f4", 3), ("v", "<f4", (3, 3)), ("a", "<u2")]), count=n, offset=84)
+    return a["v"].reshape(-1, 3).astype(np.float64)
+
+
+def _zahl(x):
+    s = ("%.3f" % x).rstrip("0").rstrip(".")
+    s = s.replace("-0.", "-.") if s.startswith("-0.") else (s[1:] if s.startswith("0.") else s)
+    return "0" if s in ("", "-0", "-") else s
+
+
+def schreibe_3mf_teil(pfad, name, tri, stueck=1):
+    """ein Teil als 3MF (Ecken gemeinsam, 0,001 mm, Deflate 9); stueck > 1: so viele Exemplare nebeneinander auf der Platte
+    (ein Objekt, mehrere Einträge im «build» – die Datei wird dadurch nicht grösser). -> (Dreiecke, Masse mm)"""
+    import numpy as np
+    uv, inv = np.unique(np.round(tri, 3), axis=0, return_inverse=True)
+    f = inv.reshape(-1, 3)
+    f = f[(f[:, 0] != f[:, 1]) & (f[:, 1] != f[:, 2]) & (f[:, 0] != f[:, 2])]
+    first = np.full(len(uv), 1 << 60)
+    u_, i_ = np.unique(f.ravel(), return_index=True)
+    first[u_] = i_
+    perm = np.argsort(first, kind="stable")              # Ecken in der Reihenfolge der ersten Verwendung (packt besser)
+    remap = np.empty_like(perm)
+    remap[perm] = np.arange(len(perm))
+    uv, f = uv[perm][:len(u_)], remap[f]
+    lo, hi = uv.min(0), uv.max(0)
+    ext = hi - lo
+    vs = "".join('<vertex x="%s" y="%s" z="%s"/>' % (_zahl(x), _zahl(y), _zahl(z)) for x, y, z in uv)
+    ts = "".join('<triangle v1="%d" v2="%d" v3="%d"/>' % (a, b, c) for a, b, c in f)
+    cols = min(stueck, 2 if stueck <= 2 else 2)
+    items = []
+    for k in range(stueck):
+        cx = 128 - (lo[0] + hi[0]) / 2 + (k % cols - (cols - 1) / 2) * (ext[0] + 6)
+        cy = 128 - (lo[1] + hi[1]) / 2 + (k // cols - ((stueck + cols - 1) // cols - 1) / 2) * (ext[1] + 6)
+        items.append('<item objectid="1" transform="1 0 0 0 1 0 0 0 1 %.2f %.2f %.2f"/>' % (cx, cy, -lo[2]))
+    model = ('<?xml version="1.0" encoding="UTF-8"?>\n<model unit="millimeter" xml:lang="en-US" '
+             'xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02"><metadata name="Title">MoveEye v5.1 %s</metadata>'
+             '<metadata name="Designer">Daniel (DonElektro)</metadata><resources><object id="1" name="%s" type="model"><mesh>'
+             '<vertices>%s</vertices><triangles>%s</triangles></mesh></object></resources><build>%s</build></model>') % (
+        name, name, vs, ts, "".join(items))
+    zi = lambda n: zipfile.ZipInfo(n, (2026, 1, 1, 0, 0, 0))
+    with zipfile.ZipFile(pfad, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as z:
+        for n, d in (("[Content_Types].xml", '<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml"/></Types>'),
+                     ("_rels/.rels", '<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Target="/3D/3dmodel.model" Id="rel0" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/></Relationships>'),
+                     ("3D/3dmodel.model", model)):
+            info = zi(n)
+            info.compress_type = zipfile.ZIP_DEFLATED
+            z.writestr(info, d, compresslevel=9)
+    return len(f), ext
+
+
+def baue_3mf(src):
+    """alle STL in src -> hardware/gehaeuse/Druckdateien/MoveEye_v5-1_<Teil>.3mf, Masse gegen die STL geprüft"""
+    import numpy as np
+    dd = os.path.join(GEH, "Druckdateien")
+    tot = 0
+    for fn in sorted(os.listdir(src)):
+        if not fn.lower().endswith(".stl"):
+            continue
+        name = fn[:-4]
+        tri = lies_stl(os.path.join(src, fn))
+        stueck = 4 if name.endswith("_4x") else 2 if name.endswith("_2x") else 1
+        out = os.path.join(dd, DRUCK_PREFIX + name + ".3mf")
+        nf, ext = schreibe_3mf_teil(out, name, tri, stueck)
+        e0 = tri.max(0) - tri.min(0)
+        d = float(np.abs(e0 - ext).max())
+        if d > 0.01 or nf < 0.999 * len(tri) / 3:
+            sys.exit(f"{name}: Masse / Dreiecke weichen ab ({d:.4f} mm, {nf} von {len(tri) // 3})")
+        tot += os.path.getsize(out)
+        print(f"  {name:24s} {nf:7d} Dreiecke  {' × '.join('%.2f' % x for x in ext)} mm  ×{stueck}  {os.path.getsize(out) // 1024} KB")
+    print(f"3MF: {tot / 1e6:.2f} MB -> {dd}")
 
 
 # ---- Druckdateien und Bilder (langsam: ruft Daniels Skripte in einem Arbeitsordner auf) ------------------------------------
@@ -538,6 +703,7 @@ def main():
     ap.add_argument("--druck", nargs="*", metavar="NR", help="STL + 3MF neu (optional nur Teile, z. B. 06 07)")
     ap.add_argument("--ziel", default="/tmp/gehaeuse_dist", help="Ordner für das STL-ZIP")
     ap.add_argument("--bilder", action="store_true", help="Vorschaubilder neu")
+    ap.add_argument("--3mf", dest="dreimf", metavar="ORDNER", help="STL eines Ordners als einzelne 3MF")
     ap.add_argument("--pruefen", action="store_true", help="passt alles zur Quelle?")
     a = ap.parse_args()
     if a.sim:
@@ -550,7 +716,9 @@ def main():
         baue_druck(a.ziel, a.druck)
     if a.bilder:
         baue_bilder()
-    if a.pruefen or not (a.sim or a.texte or a.druck is not None or a.bilder):
+    if a.dreimf:
+        baue_3mf(a.dreimf)
+    if a.pruefen or not (a.sim or a.texte or a.druck is not None or a.bilder or a.dreimf):
         return 0 if pruefen() else 1
     return 0
 

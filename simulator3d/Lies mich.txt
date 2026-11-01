@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.39.2 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.40.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -446,6 +446,12 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.40.0
+3.40.0: Bauen (Mehr › Bauen, früher «Werkstatt»): MoveEye komplett selbst bauen – 10 Reiter mit 3D, Teilen, Varianten,
+Einkaufsliste, Drucken (alle Druckteile als 3MF), Montage, Verkabelungsplan und «Mein Bau»; in MoveEye gleich, dort auch
+als 3D im Browser ohne Simulator.
+So testest du: Simulator aus, dann MoveEye › Mehr › Bauen; ein Teil antippen; unter Einkauf die CSV holen.
 
 NEU IN 3.39.2
 3.39.2: Datenschutz (MoveEye): Push- und E-Mail-Meldungen zeigen statt des WLAN-Namens nur noch «bekanntes WLAN». Am Simulator
