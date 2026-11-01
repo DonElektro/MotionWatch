@@ -1,0 +1,134 @@
+{
+ "fanfare": {
+  "s": 3.4,
+  "loop": false,
+  "lufs": -12.5,
+  "spitze": -2.8,
+  "db": -6.5
+ },
+ "feuer": {
+  "s": 9.0,
+  "loop": true,
+  "lufs": -27.4,
+  "spitze": -0.9,
+  "db": -2.1
+ },
+ "fund": {
+  "s": 3.0,
+  "loop": false,
+  "lufs": -15.7,
+  "spitze": -2.1,
+  "db": -4.3
+ },
+ "kapitel": {
+  "s": 6.4,
+  "loop": false,
+  "lufs": -16.8,
+  "spitze": -3.1,
+  "db": -3.2
+ },
+ "musik_fruehling": {
+  "s": 26.667,
+  "loop": true,
+  "lufs": -21.4,
+  "spitze": -9.0,
+  "db": -4.6
+ },
+ "musik_herbst": {
+  "s": 29.091,
+  "loop": true,
+  "lufs": -21.9,
+  "spitze": -10.4,
+  "db": -4.1
+ },
+ "musik_see": {
+  "s": 22.857,
+  "loop": true,
+  "lufs": -21.3,
+  "spitze": -8.7,
+  "db": -4.7
+ },
+ "musik_sommer": {
+  "s": 24.0,
+  "loop": true,
+  "lufs": -21.3,
+  "spitze": -7.9,
+  "db": -4.7
+ },
+ "musik_winter": {
+  "s": 32.0,
+  "loop": true,
+  "lufs": -21.5,
+  "spitze": -9.9,
+  "db": -4.5
+ },
+ "puls": {
+  "s": 6.667,
+  "loop": true,
+  "lufs": -28.3,
+  "spitze": -10.1,
+  "db": 4.3
+ },
+ "schritt_gras": {
+  "s": 2.0,
+  "loop": false,
+  "lufs": -31.9,
+  "spitze": -5.7,
+  "db": 2.7,
+  "slots": 4,
+  "slot_s": 0.5
+ },
+ "schritt_kies": {
+  "s": 2.0,
+  "loop": false,
+  "lufs": -26.2,
+  "spitze": -3.6,
+  "db": 0.6,
+  "slots": 4,
+  "slot_s": 0.5
+ },
+ "schritt_schnee": {
+  "s": 2.0,
+  "loop": false,
+  "lufs": -26.6,
+  "spitze": -4.1,
+  "db": 1.1,
+  "slots": 4,
+  "slot_s": 0.5
+ },
+ "tusch": {
+  "s": 4.4,
+  "loop": false,
+  "lufs": -14.4,
+  "spitze": -2.9,
+  "db": -3.6
+ },
+ "ui_auf": {
+  "s": 0.13,
+  "loop": false,
+  "lufs": -70.0,
+  "spitze": -14.4,
+  "db": 0.0
+ },
+ "ui_klick": {
+  "s": 0.05,
+  "loop": false,
+  "lufs": -70.0,
+  "spitze": -12.2,
+  "db": 0.0
+ },
+ "ui_zu": {
+  "s": 0.13,
+  "loop": false,
+  "lufs": -70.0,
+  "spitze": -14.9,
+  "db": 0.0
+ },
+ "wirbel": {
+  "s": 4.0,
+  "loop": true,
+  "lufs": -26.7,
+  "spitze": -11.6,
+  "db": 0.7
+ }
+}

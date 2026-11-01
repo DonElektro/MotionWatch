@@ -475,6 +475,7 @@ func _kompass_ok(ch: int, i: int) -> void:
 		kp.append(ch)
 	if kp.size() >= 5:
 		badge("kompass")
+	preload("res://scripts/klang.gd").raetsel()           # Spielton: puzzle solved - a small fanfare
 	var lines := [T.t("Richtig gepeilt: %s.") % T.t(str(k["target"][0])), T.t(str(k["found"]))]
 	_give_page(int(k["reward"]))
 	lines.append(T.t("Seite %d:") % int(k["reward"]) + " " + page_text(int(k["reward"])))
@@ -674,6 +675,7 @@ func star_answer(letter: String) -> Dictionary:
 	var id: String = star_cands()[j]
 	var r := RR()
 	if id == "polaris":
+		preload("res://scripts/klang.gd").raetsel()       # Spielton: puzzle solved - a small fanfare
 		r["star"] = "ok"
 		r["xp"] = int(r["xp"]) + (40 if int(r["star_wrong"]) == 0 else 20)
 		var sl: Array = S()["stern"]

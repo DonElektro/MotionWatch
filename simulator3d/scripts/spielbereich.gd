@@ -266,6 +266,7 @@ func start_adventure(id: String) -> Dictionary:
 		return {"ok": false, "error": "unknown chapter"}
 	if c.state in ["locked", "soon"]:
 		return {"ok": false, "error": c.state}
+	preload("res://scripts/klang.gd").erleben(id)      # Spielton: this place is a game now (music, sounds) until the next scene
 	if adventure_hooks.has(id) and (adventure_hooks[id] as Callable).is_valid():
 		(adventure_hooks[id] as Callable).call()
 	elif main.scene != id and not main.set_scene(id):
