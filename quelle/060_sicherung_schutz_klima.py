@@ -1095,7 +1095,7 @@ class Notifier:
     def _dispatch(self, p, jpg, fname):
         if sim_net_down():                               # Simulator-Werte: «WLAN weg» / «Internet weg» test - nothing goes out (285)
             return simnet_hold(self, p, jpg, fname)
-        if sandbox_active() or p.get("_test"):           # 2.96.6: simulator test inbox - nobody is disturbed (141); 2.97.0: per message
+        if (sandbox_active() and not sandbox_lets_through(p)) or p.get("_test"):   # 2.96.6: test inbox (141), 3.23: always in the simulation
             sandbox_add(self._title(p), push_with_map(self._text(p), p), jpg, self._event(p) if self._event(p) != "tamper" else "tamper")
             msglog_add(self._title(p), push_with_map(self._text(p), p, " · "), self._event(p), jpg, "test", "Test-Postfach")    # 2.98.13: list «Nachrichten»
             return

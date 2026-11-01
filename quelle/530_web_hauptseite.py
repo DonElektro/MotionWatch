@@ -63,7 +63,6 @@ details.grp>summary+details.sub,details.grp>summary+.blk{border-top:0;margin-top
 #srch{position:sticky;top:var(--hdr-h,64px);z-index:25;background:var(--bg);padding:8px 0;margin:-8px 0 4px;box-shadow:0 -14px 0 var(--bg),0 6px 8px -6px rgba(0,0,0,.45)}
 @media(min-width:961px){#srch{top:0}}
 body.mobland #srch{top:0}
-#srch.withall #allbtns{top:8px!important}
 #srch{padding-left:54px!important}#srch .ic{left:66px!important}
 #side-close{position:absolute;left:0;top:8px;width:46px;height:46px;padding:0;font-size:22px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center}
 #side-open{display:none;position:fixed;right:0;top:calc(var(--hdr-h,64px) + 14px);z-index:40;border-radius:12px 0 0 12px;padding:10px 8px;
@@ -112,22 +111,11 @@ body.hdr-small header .nav,body.hdr-small header .ver,body.hdr-small header .bad
   background:var(--panel);border:1px solid var(--grn);border-radius:12px;padding:10px 12px;box-shadow:var(--shadow);max-width:720px;margin:0 auto}
 #updbar .mut{font-size:12px}
 @media(max-width:520px){#updbar{flex-wrap:wrap}#updbar>div{flex-basis:100%!important}#updbar button{flex:1}}
-body.locked .l-hide,body.locked .l-off,body.locked #srch:not(.withall),body.locked #view-menu-lock{display:none!important}
+body.locked .l-hide,body.locked .l-off,body.locked #srch,body.locked #view-menu-lock{display:none!important}
 #srch input{width:100%;box-sizing:border-box;padding:11px 40px 11px 38px;font-size:15px;border-radius:12px}
 #srch .ic{position:absolute;left:12px;top:50%;transform:translateY(-50%);opacity:.6;pointer-events:none}
 #srch .x{position:absolute;right:6px;top:50%;transform:translateY(-50%);padding:4px 10px;border:0;background:none;color:var(--mut);font-size:18px;cursor:pointer}
 #srch-none{margin-top:8px}
-#allbtns button.cur{background:var(--acc,#3b8cff);color:#fff;border-color:transparent}
-#allbtns button svg{display:none;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
-/* tablet / computer: "expand all" and "collapse all" as two small symbols right of the settings search */
-#srch.withall{padding-right:152px}
-#srch.withall #srch-in{height:46px}
-#srch.withall .x{right:158px}
-#srch.withall #allbtns{position:absolute;right:0;top:0;display:flex;gap:6px;margin:0!important;flex-wrap:nowrap}
-#srch.withall #allbtns button{width:46px;height:46px;padding:0;display:inline-flex;align-items:center;justify-content:center;border-radius:12px;flex:none}
-#srch.withall #allbtns button svg{display:block}#srch.withall #allbtns button span{display:none}
-body.locked #srch.withall{display:flex!important;justify-content:flex-end;padding-right:0;min-height:46px}
-body.locked #srch.withall>:not(#allbtns){display:none}body.locked #srch.withall #allbtns{position:static}
 .s-hide{display:none!important}
 .s-hit{box-shadow:0 0 0 2px var(--acc);border-radius:8px;padding:4px 6px}
 .blk>h4{margin:0 0 2px;font-size:10.5px;letter-spacing:.09em;color:var(--mut);text-transform:uppercase;font-weight:700}
@@ -249,10 +237,9 @@ body.mobland #spos-txt{font-size:10px;margin-top:-2px}
 .stickrow select{padding:4px 8px}
 #mctl{display:none}
 #mbtns{display:none}body.mobctl #mbtns{display:block;width:100%}
-body.mobctl #mbtns #allbtns{margin:10px 0 0!important}
-#mbtns2{display:none}#mbtns2:empty{display:none!important}body.mobctl:not(.mobland) #mbtns2{display:block;margin:0 0 14px}body.mobctl #mbtns2 #allbtns{margin:0!important}
+#mbtns2{display:none}#mbtns2:empty{display:none!important}body.mobctl:not(.mobland) #mbtns2{display:block;margin:0 0 14px}
 body.mobland #mbtns .btns>*{padding:5px 8px;font-size:12px}
-body.videoonly #allbtns,body.videoonly #mbtns2{display:none!important}
+body.videoonly #mbtns2{display:none!important}
 #stick-listen{padding:5px 12px;font-size:17px;line-height:1;border-radius:999px}
 #stick-listen.lon{background:var(--grn);border-color:var(--grn);color:#fff;box-shadow:0 0 0 3px rgba(63,185,80,.25);animation:lpulse 1.6s infinite}
 @keyframes lpulse{50%{box-shadow:0 0 0 6px rgba(63,185,80,.08)}}
@@ -429,15 +416,8 @@ body[data-tab="live"] .qsw button span{font-size:17px;line-height:1.1}
 body[data-tab="live"] .qsw button small{font-size:9px}
 body[data-tab="live"] #set-foot{padding:6px;font-size:13px;margin-top:4px}
 body[data-tab="live"] #spos-txt{font-size:11px}
-/* 2.98.3: the head of the settings tidy - search with its 3 buttons over the full width, below one small line
-   «Einfach | Experte» and «Symbole farbig | schlicht» side by side; the explanations as tooltips */
+/* 639o: Einfach / Experte, Symbole, «Beim Start: Nur Gruppen» and the three fold buttons are in the bar under the tabs (#mwbar) */
 body[data-tab] #srch{padding-left:0!important}body[data-tab] #srch .ic{left:12px!important}
-body[data-tab] .simplebar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:2px 0 14px}
-body[data-tab] .simplebar>.mut,body[data-tab] .simplebar .icseg>.mut{display:none}
-body[data-tab] .simplebar .seg{display:inline-flex;flex:1 1 160px}
-body[data-tab] .simplebar .seg button{flex:1;padding:7px 8px;font-size:12.5px;white-space:nowrap}
-body[data-tab] .simplebar .icseg{margin:0;flex:1 1 160px;display:flex}
-body[data-tab] .simplebar .sgrow{margin:0;flex:1 1 160px;padding:0;justify-content:space-between}
 #alarm-chain .chain{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin:4px 0}
 #alarm-chain .chain button{padding:6px 9px;font-size:13px}#alarm-chain .chain button.off{opacity:.45;text-decoration:line-through}
 #alarm-chain .chain em{color:var(--mut);font-style:normal}
@@ -581,11 +561,6 @@ body[data-tab] .simplebar .sgrow{margin:0;flex:1 1 160px;padding:0;justify-conte
   </section>
   <button type="button" id="side-open" onclick="toggleHidden('sidebar')" title="Settings"><span>⟨</span><b data-i18n="Settings">Settings</b></button>
   <aside data-view="sidebar" data-vgroup="Panels" data-vlabel="Settings panel">
-    <div class="btns" id="allbtns" style="margin:0 0 12px">
-      <button class="sec" id="all-close" onclick="allSections(false)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l5 5 5-5M7 20l5-5 5 5"/></svg><span data-i18n="Collapse all">Collapse all</span></button>
-      <button class="sec" id="all-groups" onclick="allGroups()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v5H4zM4 14h16v5H4z"/></svg><span data-i18n="Groups only">Groups only</span></button>
-      <button class="sec" id="all-open" onclick="allSections(true)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 15l5 5 5-5M7 9l5-5 5 5"/></svg><span data-i18n="Expand all">Expand all</span></button>
-    </div>
     <div id="simtile" data-simhub="tile" hidden style="margin-bottom:12px"></div>
     <details class="card" open data-view="protect" data-vgroup="Panels" data-vlabel="Camping / protection" id="pr-card">
       <summary data-i18n="Camping / protection">Camping / protection</summary>
@@ -625,7 +600,7 @@ body[data-tab] .simplebar .sgrow{margin:0;flex:1 1 160px;padding:0;justify-conte
       <div class="err" id="pr-err"></div>
     </details>
     <details class="card" data-view="tune" data-vgroup="Panels" data-vlabel="Improve detection"><summary data-i18n="Improve detection">Improve detection</summary><div id="tune-box"></div></details>
-    <details class="card" id="hcard" data-view="health" data-vgroup="Panels" data-vlabel="Self-check">
+    <details class="card" id="hcard" data-mwb-skip data-view="health" data-vgroup="Panels" data-vlabel="Self-check">
       <summary><span data-i18n="🩺 Self-check">🩺 Self-check</span> <span class="mut" id="h-sum" style="text-transform:none;letter-spacing:0;font-weight:500"></span></summary>
       <div id="h-list"></div>
       <div class="btns"><button type="button" class="sec" onclick="healthLoad()" data-i18n="Check again">Check again</button></div>
@@ -860,8 +835,8 @@ const I18N = {en: I18N_EN, de: {
   "Open secure page": "Sichere Seite öffnen", "The secure page is not running (openssl missing).": "Die sichere Seite läuft nicht (openssl fehlt).",
   "the microphone of this device is not allowed": "das Mikrofon dieses Geräts ist nicht erlaubt", "somebody is talking": "jemand spricht",
   "Own sounds (.wav / .mp3): put the files into": "Eigene Töne (.wav / .mp3): Dateien ablegen in", "and press «Search devices»": "und «Geräte suchen» drücken",
-  "Controls": "Steuerung", "System": "System", "Event log": "Ereignisprotokoll", "Expand all": "Alle öffnen",
-  "Collapse all": "Alle schliessen", "Topics": "Themen", "Speed: slow": "Tempo: langsam", "Speed: medium": "Tempo: mittel", "Speed: fast": "Tempo: schnell",
+  "Controls": "Steuerung", "System": "System", "Event log": "Ereignisprotokoll", "Expand all": "Alle aufklappen",
+  "Collapse all": "Alle zuklappen", "Topics": "Themen", "Speed: slow": "Tempo: langsam", "Speed: medium": "Tempo: mittel", "Speed: fast": "Tempo: schnell",
   "Step": "Schritt", "◎ Centre": "◎ Mitte", "↻ Calibrate": "↻ Kalibrieren", "📍＋ Waypoint": "📍＋ Wegpunkt", "Clear all waypoints?": "Alle Wegpunkte löschen?",
   "Waypoint added": "Wegpunkt gesetzt", "Listen": "Mithören", "Listen to the microphone": "Mikrofon mithören", "Relay: on / automatic": "Relais: ein / automatisch", "Recalibrating - keep the picture empty for a few seconds": "Kalibriere neu – ein paar Sekunden niemand ins Bild", "💬 Feedback to the developer": "💬 Feedback an den Entwickler", "Feedback to the developer": "Feedback an den Entwickler",
   "Ideas, errors, praise - everything helps. The message is sent anonymously: no name, no address, unless you write one.": "Ideen, Fehler, Lob – alles hilft. Die Nachricht geht anonym weg: kein Name, keine Adresse, ausser du schreibst sie dazu.",
@@ -1969,9 +1944,8 @@ function regroup() {
   box.textContent = ""; box.appendChild(frag);
   setTimeout(() => { const sb = $("#srch"); if (sb && box.parentNode) box.parentNode.insertBefore(sb, box);
     const lb = $("#lock-bar"); if (lb && box.parentNode) box.parentNode.insertBefore(lb, sb || box);
-    const si = $("#srch-in"); if (si) si.placeholder = t(sb && sb.classList.contains("withall") ? "Search settings …" : "Search settings … (e.g. password)"); }, 0);
-  const ab = $("#allbtns");                                 // right under "expand / collapse all" (computer)
-  aside.insertBefore(box, ab && ab.parentNode === aside ? ab.nextSibling : aside.firstChild);
+    const si = $("#srch-in"); if (si) si.placeholder = t("Search settings … (e.g. password)"); }, 0);
+  aside.insertBefore(box, aside.firstChild);                // 639o: the fold buttons are in the bar under the tabs (#mwbar)
   // Off / On / Auto of the lights and the relays: in their settings topics (the live page has the quick switches)
   const put = (blk, view) => { const d = document.querySelector('#settings [data-view="' + view + '"]'); if (!blk || !d) return;
     const sm = d.querySelector(":scope > summary"); d.insertBefore(blk, sm ? sm.nextSibling : d.firstChild); };
@@ -1993,10 +1967,6 @@ function tabsArrange() {
     const sm = sc.querySelector(":scope > summary"); sc.insertBefore(a, sm ? sm.nextSibling : sc.firstChild); }
   const box = $("#settings");
   if (box && !$("#alarm-chain")) { const c = el("div", "card"); c.id = "alarm-chain"; box.parentNode.insertBefore(c, box); }
-  const sbar = $("#simplebar"); if (sbar && box) box.parentNode.insertBefore(sbar, box);     // Simple / Expert on top, not 3800 px down
-  setTimeout(() => { const sb = $("#srch"), bar = $("#simplebar"); if (sb && bar) sb.after(bar);      // 2.98.3: search first, then the small line
-    if (bar) { const sg = bar.querySelector(":scope > .seg"); if (sg) sg.title = t("Simple: only the important settings. «Expert» shows all of them.");
-      const ic = bar.querySelector(".icseg .seg"); if (ic) ic.title = t("Symbols: green dot or green symbol = switched on"); } }, 0);
   const tile = $("#simtile"), sec = document.querySelector("main>section");
   if (tile && sec) sec.appendChild(tile);
 }
@@ -2155,7 +2125,7 @@ const MAINSW = {
   "sec:Recording": c => c.record, "sec:Timelapse": c => c.timelapse_on, "sec:Backup": c => !!c.backup_type && c.backup_type !== "off",
   "relayset": c => c.relays_on, "schedule": (c, s, j) => (j.schedules || []).some(x => x.enabled),
   "wifi": (c, s) => !!(s.hotspot && s.hotspot.on), "sec:Web stream": c => c.web_stream, "guest": (c, s) => !!(s.guest && s.guest.active),
-  "sec:MQTT / Home Assistant": c => c.mqtt_on, "sec:Updates": c => c.update_auto};
+  "sec:MQTT / Home Assistant": c => c.mqtt_on, "sec:Updates": c => c.update_mode === "auto" || c.update_mode === "dev"};
 let MAINJ = null;
 function mainPaint(j) {
   if (j) MAINJ = j; else j = MAINJ || {};
@@ -2178,8 +2148,6 @@ async function build() {
   let U = {on: true}; try { U = await (await fetch("/api/ui_simple?page=" + PG)).json(); } catch (e) {}
   const sch = await (await fetch("/api/schema?lang=" + LANG + "&simple=" + (U.on ? 1 : 0))).json();
   const box = $("#settings");
-  try { const u = U; const old = document.getElementById("simplebar"); if (old) old.remove();
-    const sbar = simpleBar(!!u.on); sbar.id = "simplebar"; box.parentElement.insertBefore(sbar, box); } catch (e) {}
   sch.forEach(sec => {
     const d = el("details", "card");
     d.appendChild(el("summary", "", sec.name));
@@ -4108,7 +4076,7 @@ function updateProtect(s) {
     } else pg.textContent = t("Location") + ": " + t(window.isSecureContext ? "unknown" : "unknown – the phone shares it only over the https page"); }
 }
 // ---- «Guard tonight» ----
-Object.assign(I18N.de, {"Picture": "Bild", "Camera and alignment": "Kamera und Ausrichtung", "Hide settings": "Einstellungen ausblenden", "Show settings": "Einstellungen einblenden", "Alarm": "Alarm", "own text": "eigener Text", "standard text": "Standardtext", "Groups only": "Nur Gruppen öffnen", "Storage": "Speicher", "Memory (RAM)": "Arbeitsspeicher (RAM)", "⏻ Switch off, restart, pause": "⏻ Ausschalten, Neustart, Pause", "🔐 Operator mode": "🔐 Bedienmodus", "🧭 Help and setup": "🧭 Hilfe und Einrichtung", "🔒 Password and settings file": "🔒 Passwort und Einstellungsdatei", "ℹ Version and status": "ℹ Version und Status", "Device name": "Gerätename", "Time": "Uhrzeit", "Date": "Datum", "Number of persons": "Anzahl Personen", "Camera": "Kamera", "Volume (dB)": "Lautstärke (dB)", "Link": "Link", "Leave a field empty for the standard text. Tap a grey button to insert a placeholder at the cursor.": "Ein Feld leer lassen = Standardtext. Graue Knöpfe antippen, um einen Platzhalter an der Cursorstelle einzufügen.", "Person": "Person", "Pre-alarm": "Voralarm", "Thermal alarm": "Wärmebild-Alarm", "Noise alarm": "Geräusch-Alarm", "Preview": "Vorschau", "Title": "Titel", "Text": "Text", "Standard text": "Standardtext"});
+Object.assign(I18N.de, {"Picture": "Bild", "Camera and alignment": "Kamera und Ausrichtung", "Hide settings": "Einstellungen ausblenden", "Show settings": "Einstellungen einblenden", "Alarm": "Alarm", "own text": "eigener Text", "standard text": "Standardtext", "Groups only": "Nur Gruppen", "Storage": "Speicher", "Memory (RAM)": "Arbeitsspeicher (RAM)", "⏻ Switch off, restart, pause": "⏻ Ausschalten, Neustart, Pause", "🔐 Operator mode": "🔐 Bedienmodus", "🧭 Help and setup": "🧭 Hilfe und Einrichtung", "🔒 Password and settings file": "🔒 Passwort und Einstellungsdatei", "ℹ Version and status": "ℹ Version und Status", "Device name": "Gerätename", "Time": "Uhrzeit", "Date": "Datum", "Number of persons": "Anzahl Personen", "Camera": "Kamera", "Volume (dB)": "Lautstärke (dB)", "Link": "Link", "Leave a field empty for the standard text. Tap a grey button to insert a placeholder at the cursor.": "Ein Feld leer lassen = Standardtext. Graue Knöpfe antippen, um einen Platzhalter an der Cursorstelle einzufügen.", "Person": "Person", "Pre-alarm": "Voralarm", "Thermal alarm": "Wärmebild-Alarm", "Noise alarm": "Geräusch-Alarm", "Preview": "Vorschau", "Title": "Titel", "Text": "Text", "Standard text": "Standardtext"});
 Object.assign(I18N.de, {"Picture for other programs (Home Assistant, recorder, VLC) with a secret address": "Bild für andere Programme (Home Assistant, Rekorder, VLC) mit geheimer Adresse", "RTSP video for recorders (needs mediamtx; uses CPU)": "RTSP-Video für Rekorder (braucht mediamtx; braucht Rechenleistung)", "New secret address": "Neue geheime Adresse", "Off – switch on «Picture for other programs» above.": "Aus – oben «Bild für andere Programme» einschalten.", "Still picture": "Standbild", "Copy": "Kopieren", "Copied": "Kopiert", "Keep these addresses secret: whoever has them sees the picture without a password.": "Diese Adressen geheim halten: Wer sie hat, sieht das Bild ohne Passwort.", "Make a new secret address? The old one stops working (other programs need the new one).": "Neue geheime Adresse erstellen? Die alte funktioniert dann nicht mehr (andere Programme brauchen die neue).", "mediamtx is not installed (see the manual: RTSP)": "mediamtx ist nicht installiert (siehe Anleitung: RTSP)"});
 Object.assign(I18N.de, {"memory card": "Speicherkarte", "USB drive": "USB-Laufwerk", "drive": "Laufwerk", "chosen drive missing - recordings on the memory card": "gewähltes Laufwerk fehlt – Aufnahmen auf der Speicherkarte", "Connect the SSD / USB drive and restart, or choose another place under Settings → Recording.": "SSD / USB-Laufwerk anschliessen und neu starten, oder unter Einstellungen → Aufnahme einen anderen Ort wählen.", "An SSD / USB drive is connected: put the recordings there (Settings → Recording) - it lasts longer than a memory card.": "Ein SSD- / USB-Laufwerk ist angeschlossen: Aufnahmen dorthin legen (Einstellungen → Aufnahme) – das hält länger als eine Speicherkarte.", "Recordings stored on": "Aufnahmen speichern auf", "memory card (next to the program)": "Speicherkarte (beim Programm)", "read only": "nur lesen", "missing": "fehlt", "now": "jetzt", "no SSD / USB drive found": "kein SSD- / USB-Laufwerk gefunden", "Store the recordings there from now on? The existing ones are moved over (this can take a while).": "Aufnahmen ab jetzt dort speichern? Die bisherigen werden hinüber verschoben (das kann etwas dauern).", "moving recordings …": "Aufnahmen werden verschoben …", "drive not found": "Laufwerk nicht gefunden", "the drive cannot be written to": "auf das Laufwerk kann nicht geschrieben werden"});
 Object.assign(I18N.de, {"End operator mode (PIN)": "Bedienmodus beenden (PIN)", "Operator mode is on": "Bedienmodus ist aktiv", "since": "seit", "unlocking puts everything back": "Entsperren setzt alles zurück"});
@@ -4127,27 +4095,9 @@ async function nightGuard() {
   else box.appendChild(el("div", "nr-h", t("Everything ready - good night!")));
   toast("🌙 " + t("Guard tonight"));
 }
-// ---- Simple / Expert ----
-function simpleBar(on) {
-  const w = el("div", "simplebar"), seg = el("div", "seg lseg"), a = el("button", on ? "sel-auto" : "", t("Simple")), e = el("button", on ? "" : "sel-auto", t("Expert"));
-  a.type = e.type = "button"; seg.append(a, e);
-  const set = v => post("/api/ui_simple", {on: v, page: document.body.dataset.tab || "settings"}).then(() => location.reload());
-  a.onclick = () => { if (!on) set(true); }; e.onclick = () => { if (on) set(false); };
-  w.appendChild(seg); if (on) w.appendChild(el("div", "mut", t("Simple: only the important settings. «Expert» shows all of them.")));
-  // 2.95.70: symbols coloured (with a green dot while on) or plain (turn green) - per device
-  let pl = false; try { pl = localStorage.getItem("mw-icons") === "plain"; } catch (e) {}
-  const iw = el("div", "icseg"), is = el("div", "seg lseg"), ic = el("button", pl ? "" : "sel-auto", document.body.dataset.tab ? "🎨 " + t("Symbols coloured") : t("Coloured symbols")), ip = el("button", pl ? "sel-auto" : "", document.body.dataset.tab ? "◯ " + t("plain") : t("Plain symbols"));
-  ic.type = ip.type = "button"; is.append(ic, ip);
-  const iset = v => { try { localStorage.setItem("mw-icons", v ? "plain" : "color"); } catch (e) {} document.body.classList.toggle("icplain", v);
-    ic.className = v ? "" : "sel-auto"; ip.className = v ? "sel-auto" : ""; };
-  ic.onclick = () => iset(false); ip.onclick = () => iset(true);
-  iw.append(el("div", "mut", t("Symbols: green dot or green symbol = switched on")), is); w.appendChild(iw);
-  // nurgruppen: «On start: groups only» (all devices and the Pi window; off = the menus open as you left them)
-  const gw = el("label", "row tg sgrow"), gc = el("input"); gc.type = "checkbox"; gc.className = "sw"; gc.id = "start-groups"; gc.checked = START_GROUPS;
-  gc.onchange = () => startGroupsSet(gc.checked); gw.title = t("On every start the settings show only the groups. Off: the menus open as you left them.");
-  gw.append(el("span", "", t("On start: groups only")), gc); w.appendChild(gw);
-  return w;
-}
+// ---- Simple / Expert, symbols, «On start: groups only», the three fold buttons: the bar under the tabs (639o, #mwbar) ----
+// this page: Simple / Expert per tab (586; the Live tab has only one view), the own switch «On start: groups only»
+window.MWB_PAGE = {simplePage: () => { const tb = document.body.dataset.tab || "settings"; return tb === "live" ? "" : tb; }};
 // ---- self-check: one traffic light per part ----
 Object.assign(I18N.de, {"missed pictures from the game (hard cases)": "verpasste Bilder aus dem Spiel (schwierige Fälle)", "no missed pictures from the game yet - play a round with MoveEye first": "noch keine verpassten Bilder aus dem Spiel – zuerst eine Runde mit MoveEye spielen", "You are the guard: turn the camera and tap the players in the picture": "Du bist Jäger: Kamera drehen und die Spieler im Bild antippen", "Mover stick back in its place": "Mover-Stick wieder an seinem Platz", "Move (double tap: back to its place)": "Verschieben (doppelt tippen: zurück an den Platz)", "Mover stick shown": "Mover-Stick eingeblendet", "Mover stick hidden": "Mover-Stick ausgeblendet", "Show / hide the mover stick": "Mover-Stick ein- / ausblenden", "Coloured symbols": "Farbige Symbole", "Symbols coloured": "Symbole farbig", "plain": "schlicht", "Plain symbols": "Schlichte Symbole", "Symbols: green dot or green symbol = switched on": "Symbole: grüner Punkt bzw. grünes Symbol = eingeschaltet", "Download AI model": "KI-Modell herunterladen", "AI ready": "KI bereit", "downloading the AI model …": "KI-Modell wird geladen …", "🩺 Self-check": "🩺 Selbstdiagnose", "Check again": "Nochmals prüfen", "problems": "Probleme", "notes": "Hinweise"});
 async function healthLoad() {
@@ -4567,7 +4517,7 @@ function moverExtras(d) {
 // ---- phone: stick directly under the picture (portrait) or right next to it (landscape) ----
 (function () {
   const left = $("#ctl-left"), home = left.parentNode, slot = $("#mctl");
-  const allb = $("#allbtns"), allHome = allb.parentNode, mb = $("#mbtns");
+  const mb = $("#mbtns");
   const mqPhone = matchMedia("(max-width: 760px), (max-height: 520px) and (orientation: landscape)");
   const mqLand = matchMedia("(orientation: landscape) and (max-height: 520px)");
   let was = null;
@@ -4576,10 +4526,6 @@ function moverExtras(d) {
     const phone = mqPhone.matches && !live, land = phone && mqLand.matches;
     if (phone && left.parentNode !== slot) slot.appendChild(left);
     if (!phone && left.parentNode !== home) home.insertBefore(left, home.firstChild);
-    const sr = $("#srch");                                                          // phone, tablet, computer: two symbols next to the search
-    if (sr && allb.parentNode !== sr) sr.insertBefore(allb, $("#srch-none"));
-    if (!sr && allb.parentNode !== allHome) allHome.insertBefore(allb, allHome.firstChild);
-    if (sr) sr.classList.add("withall");
     document.body.classList.toggle("mobctl", phone); document.body.classList.toggle("mobland", land);
     if (land && was !== "land") landFit();                                          // picture + stick fill the screen
     was = land ? "land" : (phone ? "phone" : "desk");
@@ -4621,17 +4567,12 @@ function initSections() {
 // nurgruppen (Daniel, 31.10.2026): switch «On start: groups only» (CFG ui_start_groups, factory: on). On every start the settings
 // show «Groups only» WITHOUT saving it - the own open / closed state (mw-open:…, kept on the Pi through web_ui) stays as it was.
 // Switched off: every group and topic goes back to that own state.
-let START_GROUPS = window.MW_SG !== false;
+const START_GROUPS = false;                // 3.23: the switch «On start: groups only» is gone - the start is «My view»
 function foldSet(d, open, keep) { if (d.open === open) return; if (keep) d._mwSkip = true; d.open = open; }
 function foldOwn() {
   document.querySelectorAll("#settings details.grp, #settings details.sub:not(.inline), #settings details.adv").forEach(d => {
     let v = null; try { v = localStorage.getItem(secKey(d)); } catch (e) {}
     const o = v !== null ? v === "1" : d._mwDef; if (typeof o === "boolean") foldSet(d, o, true); });
-}
-function startGroupsSet(v) {
-  START_GROUPS = !!v; post("/api/ui_simple", {start_groups: START_GROUPS});
-  if (START_GROUPS) allGroups(true); else foldOwn();
-  toast((START_GROUPS ? "✓ " : "") + t("On start: groups only") + " – " + t(START_GROUPS ? "On" : "Off"));
 }
 // ---- setup assistant: first start (and System -> "Setup assistant"): language, name, push (ntfy with QR code), password, QR codes ----
 // the setup assistant is the one guide now (516 / 586): «quick or thorough?», resumable, place, walk test …
@@ -4641,18 +4582,7 @@ function allGroups(keep) {                 // overview: every group open, the to
   document.querySelectorAll("#settings details.sub:not(.inline), #settings details.adv").forEach(d => foldSet(d, false, keep));
 }
 function allSections(open) { document.querySelectorAll("details.card, details.sub:not(.inline)").forEach(d => { if (d.open !== open) d.open = open; }); }
-// 2.98.46 (Daniel): order «Collapse all | Groups only | Expand all»; the button of the current fold state is blue – all closed = «Collapse all», all open = «Expand all», groups open / topics closed = «Groups only»; mixed = none
-function allBtnState() {
-  const all = [...document.querySelectorAll("details.card, details.sub:not(.inline)")];
-  const grp = [...document.querySelectorAll("#settings details.grp")];
-  const subs = [...document.querySelectorAll("#settings details.sub:not(.inline), #settings details.adv")];
-  const st = all.length && all.every(d => d.open) ? "open" : all.every(d => !d.open) ? "close"
-    : grp.length && grp.every(d => d.open) && subs.every(d => !d.open) ? "groups" : "";
-  [["#all-groups", "groups"], ["#all-open", "open"], ["#all-close", "close"]].forEach(([id, k]) => {
-    const b = $(id); if (b) { b.classList.toggle("cur", st === k); b.setAttribute("aria-pressed", st === k ? "true" : "false"); } });
-}
-let _allBtnRaf = 0;
-document.addEventListener("toggle", e => { if (e.target.tagName === "DETAILS" && !_allBtnRaf) _allBtnRaf = requestAnimationFrame(() => { _allBtnRaf = 0; allBtnState(); }); }, true);
+// 2.98.46 / 639o: the blue button of the current fold state is drawn by the bar (#mwbar, MWB.state)
 
 $("#video").addEventListener("dblclick", () => setVideoOnly(!videoOnly));
 keepStream($("#video"));
@@ -4671,7 +4601,7 @@ document.addEventListener("webkitfullscreenchange", fsChange);
     catch (e) { LANG = LANG || "en"; THEME = THEME || "dark"; }
   }
   applyTheme(); applyI18n();
-  await build(); regroup(); applyHidden(); initSections(); if (START_GROUPS) allGroups(true); allBtnState(); refresh(); setInterval(refresh, 700);
+  await build(); regroup(); applyHidden(); initSections(); if (START_GROUPS) allGroups(true); if (window.MWB) MWB.state(); refresh(); setInterval(refresh, 700);
   setTimeout(() => setupWizard(false), 600);
 })();
 /*ALERTS*/

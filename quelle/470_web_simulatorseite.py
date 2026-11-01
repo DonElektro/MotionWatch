@@ -110,7 +110,10 @@ const SC_ICON = {
   track: '<rect x="2" y="11" width="20" height="8" rx="4"/><circle cx="7" cy="15" r="1.8"/><circle cx="12" cy="15" r="1.8"/><circle cx="17" cy="15" r="1.8"/><path d="M8 11V6h8v5"/>',
   // Menüs A (31.10.2026): the two strokes the simulator draws (ui_style.gd) - «Licht & Ton» and «Entwickler» had an emoji here
   sun: '<circle cx="12" cy="12" r="4.5"/><path d="M19 12h2.5M16.95 16.95l1.77 1.77M12 19v2.5M7.05 16.95l-1.77 1.77M5 12H2.5M7.05 7.05L5.28 5.28M12 5V2.5M16.95 7.05l1.77-1.77"/>',
-  tools: '<path d="M6 18l8-8" stroke-width="2.6"/><path d="M12.05 8.63A4 4 0 1 1 15.37 11.95"/>'};
+  tools: '<path d="M6 18l8-8" stroke-width="2.6"/><path d="M12.05 8.63A4 4 0 1 1 15.37 11.95"/>',
+  // P1 ui_gemeinsam: «Licht & Ton» = the bulb (💡 like the settings of MoveEye), «Zusatzgeräte» = the puzzle (mehr_icons.gd / ui_style.gd)
+  bulb: '<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.8.8 1 1.5 1 2.5h6c0-1 .2-1.7 1-2.5A6 6 0 0 0 12 3z"/>',
+  puzzle: '<rect x="4" y="4" width="16" height="16" rx="1"/><path d="M12 4v16M4 12h16"/><circle cx="12" cy="8" r="1.8" fill="currentColor"/><circle cx="16" cy="12" r="1.8" fill="currentColor"/>'};
 function scCss() {
   if (document.getElementById("simctl-css")) return;
   const s = document.createElement("style"); s.id = "simctl-css";
@@ -150,7 +153,11 @@ function scOn(G, r) {                               // 2.95.51: the symbol of a 
 // (simulator 3D-4.7: «Spiel-Karte schlank», those controls come with «wiz»; for older simulators the list below decides)
 const SC_GAME_MAIN = ["game_wizard", "game_start", "game_stop"];
 // 2.98.24: the groups by their fixed id «gid» (simulator 3D-4.7), the visible name only for older simulators
-const scGid = c => c.gid || ({"Spiel": "game", "Game": "game", "Testlauf": "testrun", "Test run": "testrun"})[c.group] || "";
+// P1 ui_gemeinsam (Daniel 31.10.2026): old ids of older simulators -> the ids of simulator3d/ui_gemeinsam.json («alias»; the self-test
+// compares this table with the file). A simulator with /info «features» "menu1" already sends the new ids.
+const SC_GID_ALIAS = {"system": "sys", "sensors": "extras"};
+const scGid = c => { const g = c.gid || ({"Spiel": "game", "Game": "game", "Testlauf": "testrun", "Test run": "testrun"})[c.group] || "";
+  return (window.SC_FEAT || []).indexOf("menu1") >= 0 ? g : SC_GID_ALIAS[g] || g; };
 function scExpert(c) { return !!c.expert; }
 function scWizOnly(c) { return !!c.wiz || (!("gid" in c) && scGid(c) === "game" && SC_GAME_MAIN.indexOf(c.id) < 0); }
 // 2.98.23 (Konzept): the simulator group «Testlauf» is not shown in the Simulator control (testing has ONE place: group «Testen»,
@@ -167,7 +174,7 @@ function simCtlBuild(G, r, ctl, fmt) {
   r = Object.assign({}, r, {controls: (r.controls || []).filter(c => !scWizOnly(c) && (only ? scGid(c) === only && SC_TEST_DUP.indexOf(c.id) < 0 : scGid(c) !== "testrun"))});
   const ls = (k, d) => { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } };
   const ss = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
-  const openC = new Set(ls("mw-sc-open", ["Szene", "Besuch"])), openS = new Set(ls("mw-sc-sub2", ["Besuch/Vorlagen", "Besuch/Menschen einzeln", "Besuch/Wildtiere"]));   // Menüs A: the parts of the simulator 3.3
+  const openC = new Set(ls("mw-sc-open", ["Szene", "Besuch"]).map(n => n === "Sensoren" ? "Zusatzgeräte" : n)), openS = new Set(ls("mw-sc-sub2", ["Besuch/Vorlagen", "Besuch/Menschen einzeln", "Besuch/Wildtiere"]));   // Menüs A: the parts of the simulator 3.3   // P1: «Sensoren» is «Zusatzgeräte» now
   // Aufräumen 2: Einfach / Experte is stored in the settings of MoveEye (page «sim», /api/ui_simple like the main page and the
   // simulator centre 139) - no longer per browser; the first build asks once, later builds take the known value
   let expert = only ? true : window.SC_EXPERT != null ? window.SC_EXPERT : false, q = G.dataset.q || "";
@@ -196,7 +203,7 @@ function simCtlBuild(G, r, ctl, fmt) {
       let tgt = bd; const sub = !only && c.sub === "Feineinstellungen" ? "" : c.sub || "";   // 639d: one fold «Feineinstellungen» per card
       if (sub) {
         if (!subs[sub]) {
-          const key = g + "/" + sub, w = el("div", "sc-sub"); if (openS.has(key) || (only && sub === "Störungen" && location.hash === "#c-stoer")) w.classList.add("open");
+          const key = g + "/" + sub, w = el("div", "sc-sub"); w.dataset.mwbId = "s:" + key; if (openS.has(key) || (only && sub === "Störungen" && location.hash === "#c-stoer")) w.classList.add("open");
           const sh = document.createElement("button"); sh.type = "button"; sh.className = "sc-sh";
           const p = () => { sh.textContent = (w.classList.contains("open") ? "▾  " : "▸  ") + sub; };
           sh.onclick = () => { w.classList.toggle("open"); p(); w.classList.contains("open") ? openS.add(key) : openS.delete(key); ss("mw-sc-sub2", [...openS]); };
@@ -214,7 +221,8 @@ function simCtlBuild(G, r, ctl, fmt) {
       else if (c.type === "button") {
         let grid = tgt.lastElementChild; if (!grid || !grid.classList.contains("sc-bt")) { grid = el("div", "sc-bt"); tgt.appendChild(grid); }
         const x = el("button", "", (c.emoji ? c.emoji + " " : "") + c.label); x.type = "button"; if (c.label.length > 26) x.className = "wide";
-        x.onclick = () => ctl({ctl: "press", id: c.id}); x.dataset.lab = c.label; if (c.ro) x.disabled = true;   // Menüs A: e.g. «Foto-Modus» without a photo x.dataset.ex = scExpert(c) && only ? "1" : ""; grid.appendChild(x); return;
+        x.onclick = () => ctl({ctl: "press", id: c.id}); x.dataset.lab = c.label; if (c.ro) x.disabled = true;   // Menüs A: e.g. «Foto-Modus» without a photo
+        x.dataset.ex = scExpert(c) && only ? "1" : ""; grid.appendChild(x); return;   // P1: was behind the comment above - every button ended the build
       } else if (c.type === "toggle") {
         row = el("label", "sc-row sc-tg"); const cb = document.createElement("input"); cb.type = "checkbox"; cb.className = "sc-sw simv";
         cb.onchange = () => ctl({ctl: "set", id: c.id, value: cb.checked}); row.append(el("span", "", c.label), cb); if (c.ro) cb.disabled = true;
@@ -241,9 +249,10 @@ function simCtlBuild(G, r, ctl, fmt) {
   const seg = el("div", "sc-seg"); const b1 = el("button", "", t("Simple")), b2 = el("button", "", t("Expert")); b1.type = b2.type = "button"; seg.append(b1, b2); G.appendChild(seg);
   const note = el("div", "mut", t("Simple: only the important settings. «Expert» shows all.")); G.appendChild(note);
   if (only) { top.hidden = true; seg.hidden = true; }
+  if (window.MWB_SIMPAGE) { seg.hidden = true; note.hidden = true; }   // 639o: on the page Simulator Simple / Expert is in the bar under the tabs
   function apply() {
     q = qi.value.trim().toLowerCase(); G.dataset.q = qi.value; let any = false;
-    b1.classList.toggle("on", !expert); b2.classList.toggle("on", expert); note.hidden = expert || !!only;
+    b1.classList.toggle("on", !expert); b2.classList.toggle("on", expert); note.hidden = expert || !!only || !!window.MWB_SIMPAGE;
     cards.forEach(card => {
       let vis = 0;
       card.querySelectorAll(".sc-fine").forEach(w => { if (!w.dataset.own) w.classList.toggle("open", expert); });   // 639d: closed in «Einfach», open in «Experte»
@@ -260,6 +269,7 @@ function simCtlBuild(G, r, ctl, fmt) {
   const setEx = v => { expert = v; window.SC_EXPERT = v; apply(); if (typeof simsetLoad === "function") simsetLoad();
     fetch("/api/ui_simple", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({on: !v, page: "sim"})}).catch(() => {}); };
   qi.oninput = apply; b1.onclick = () => setEx(false); b2.onclick = () => setEx(true);
+  if (!only) window.scSetEx = setEx;                 // 639o: the bar (#mwbar) switches Simple / Expert of the simulator control
   apply();
   if (!only && window.SC_EXPERT == null) fetch("/api/ui_simple?page=sim").then(x => x.json()).then(j => { window.SC_EXPERT = !j.on; window.SC_DEV = !!j.dev; expert = window.SC_EXPERT; apply(); }).catch(() => {});
   if (only && location.hash === "#c-stoer" && !window.SC_STOER) G.querySelectorAll(".sc-sub.open").forEach(w => {   // 639d: link «Störungen» (Entwickler)
@@ -728,11 +738,7 @@ details.fold>.fb>.mut:first-child{margin-top:0}
     <div class="dl">
       <a class="btn main" id="d-3d" href="/sim/simulator3d.zip"><span><img class="dlic" src="/sim-icon/sim3d.png" alt=""> <span data-i18n="3D simulator for Windows (ZIP)">3D simulator for Windows (ZIP)</span></span><small id="d-3dn"></small></a>
       <a class="btn main" id="d-py" href="/sim/simulator_py.zip"><span><img class="dlic" src="/sim-icon/simwelt.png" alt=""> <span data-i18n="Python world simulator (ZIP)">Python world simulator (ZIP)</span></span><small id="d-pyn"></small></a>
-      <a class="btn sec" id="d-basis" hidden href="/sim/simulator.zip"><span><img class="dlic" src="/sim-icon/simbasis.png" alt=""> <span data-i18n="Simple simulator (ZIP)">Simple simulator (ZIP)</span></span><small data-i18n="Python, for a PC or the Pi">Python, for a PC or the Pi</small></a>
       <a class="btn sec" href="/preview" target="_blank"><span>📱 <span data-i18n="Phone / tablet view">Phone / tablet view</span></span><small data-i18n="this page as on a phone">this page as on a phone</small></a>
-      <button type="button" class="sec" id="p-inst" hidden onclick="piAct('install')"><span id="p-instt">📦</span><small data-i18n="simple simulator directly on the Pi">simple simulator directly on the Pi</small></button>
-      <button type="button" class="sec" id="p-start" hidden onclick="piAct('start')"><span>▶ <span data-i18n="Start simulator here">Start simulator here</span></span><small data-i18n="on the Pi (uses its CPU)">on the Pi (uses its CPU)</small></button>
-      <button type="button" class="sec" id="p-stop" onclick="piAct('stop')" hidden><span>⏹ <span data-i18n="Stop simulator">Stop simulator</span></span><small data-i18n="on the Pi">on the Pi</small></button>
     </div>
     <div class="mut" id="d-link"></div>
     </div>
@@ -836,7 +842,7 @@ let S = null, CS = "", URLEDIT = false;
 const dur = n => n == null ? "–" : n < 60 ? n + " s" : n < 3600 ? Math.floor(n / 60) + " min" : Math.floor(n / 3600) + " h " + Math.floor(n % 3600 / 60) + " min";
 async function load() {
   const r = await fetch("/api/sim").then(x => x.ok ? x.json() : null).catch(() => null);
-  if (r) { if ("connected" in r) r.ok = !!r.connected; S = r; paint(); }   // 2.95.93: «ok» of the answer is the request, «connected» the simulator
+  if (r) { if ("connected" in r) r.ok = !!r.connected; S = r; window.SC_FEAT = r.features || []; paint(); }   // P1: /info «features» of the simulator   // 2.95.93: «ok» of the answer is the request, «connected» the simulator
   clearTimeout(load.t); load.t = setTimeout(load, S && S.scan && S.scan.running ? 1000 : 3000);
 }
 function foldAct() {                       // 2.95.69: symbol + arrow green while the function of the card works
@@ -896,11 +902,6 @@ function paint() {
   // control
   if (S.ok && !CS) ctl({ctl: "get"});
   if (!S.ok) { CS = ""; $("#s-groups").textContent = ""; $("#s-scn").hidden = true; $("#s-up").hidden = true; $("#s-cname").textContent = ""; $("#s-cst").textContent = t("ctl-note"); }
-  // pi programs
-  $("#p-instt").textContent = "📦 " + t(S.installed ? "Install simulator again" : "Install simulator on the Pi");
-  // 2.98.55: «MoveEye Sim · Basis» only with «Basis-Simulator anzeigen» (639h); a running one can always be stopped
-  $("#d-basis").hidden = $("#p-inst").hidden = !S.basis_show;
-  $("#p-start").hidden = !S.basis_show || !!S.running; $("#p-stop").hidden = !S.running;
 }
 // ---- button «Update the simulator» (2.95.5): the simulator's own update (control «update_now»), newest version shown ----
 // Versionierung 3.0.0: «3D-A.B[.C]» = (A-2).B.C, «3.0.0» as it is - the same rule as sim_vkey (300) and versionen.gd
@@ -1155,18 +1156,16 @@ $("#s-url").addEventListener("input", () => URLEDIT = true);
 async function setKey(k, v) { const r = await post("/api/set", {key: k, value: v}); if (!r.ok) toast(r.error || t("not possible")); load(); }
 // 2.98.14 (Konzept): the settings of the section «Simulator» live here (no longer under Einstellungen → System) - all of
 // them that have no own switch on this page yet
-const SIM_TILE_KEYS = ["notify_sandbox", "train_night_on", "rover_alarm", "fa_learn_auto", "rehearsal_on_arm", "weekcheck_on"];
+const SIM_TILE_KEYS = ["train_night_on", "rover_alarm", "fa_learn_auto", "rehearsal_on_arm", "weekcheck_on"];
 async function simsetLoad() {
   const box = $("#simset-box"); if (!box || box.contains(document.activeElement)) return;
   let sch; try { sch = await (await fetch("/api/schema?sec=Simulator&lang=" + LANG)).json(); } catch (e) { return; }
   // 2.98.24 («Sim-Schalter nur einmal», Daniel): the switches of the tiles of the Simulator centre (Test-Postfach, Trainings-Nacht,
   // Rover, Fehlalarm-Lernen, Generalprobe, Wochen-Check) are only in their tile sheet (139), not here a second time
-  // 2.98.55: «Basis-Simulator anzeigen» only in «Experte» (the switch Einfach / Experte of this page)
-  if (window.SC_EXPERT == null) { try { const j = await (await fetch("/api/ui_simple?page=sim")).json(); window.SC_EXPERT = !j.on; } catch (e) {} }
-  const S = sch[0] || {toggles: [], sliders: [], texts: []}, own = k => !!document.getElementById("k-" + k) || k === "sim_url" || SIM_TILE_KEYS.indexOf(k) >= 0 || (k === "sim_basis_show" && !window.SC_EXPERT);
+  const S = sch[0] || {toggles: [], sliders: [], texts: []}, own = k => !!document.getElementById("k-" + k) || k === "sim_url" || SIM_TILE_KEYS.indexOf(k) >= 0;
   box.textContent = "";
   S.toggles.filter(x => !own(x.key)).forEach(x => { const l = el("label", "opt"), cb = document.createElement("input"); cb.type = "checkbox"; cb.className = "sw"; cb.checked = !!x.value;
-    cb.onchange = () => post("/api/set", {key: x.key, value: cb.checked}).then(r => { if (!r.ok) toast(r.error || t("not possible")); if (x.key === "sim_basis_show") load(); }); l.append(el("span", "", x.label), cb); box.appendChild(l); });
+    cb.onchange = () => post("/api/set", {key: x.key, value: cb.checked}).then(r => { if (!r.ok) toast(r.error || t("not possible")); }); l.append(el("span", "", x.label), cb); box.appendChild(l); });
   S.sliders.filter(x => !own(x.key)).forEach(x => { const w = el("div"), top = el("div", "rng"), v = el("b", "", String(x.value)), r = document.createElement("input");
     r.type = "range"; r.min = x.min; r.max = x.max; r.step = x.step; r.value = x.value; r.oninput = () => { v.textContent = r.value; };
     r.onchange = () => post("/api/set", {key: x.key, value: +r.value}); top.append(el("span", "", x.label), v); w.append(top, r); box.appendChild(w); });
@@ -1177,7 +1176,6 @@ async function simsetLoad() {
 }
 document.addEventListener("DOMContentLoaded", () => { simsetLoad(); const d = $("#c-simset"); if (d) d.addEventListener("toggle", () => { if (d.open) simsetLoad(); }); });
 async function search() { $("#s-search").disabled = true; await post("/api/sim", {action: "search", lang: LANG}); load(); }
-async function piAct(a) { const r = await post("/api/sim", {action: a, lang: LANG}); toast(r.ok === false ? (r.error || t("not possible")) : t({install: "Simulator installed", start: "Simulator started", stop: "Simulator stopped"}[a])); load(); }
 // ---- simulator control (CONTROL protocol 1): the simulator describes its own controls ----
 const fmt = (c, v) => (v == null ? "–" : (Math.abs(v) >= 100 || c.step >= 1 ? Math.round(v) : (+v).toFixed(c.step < 0.1 ? 2 : 1))) + (c.unit ? " " + c.unit : "");
 async function ctl(d) { const r = await post("/api/sim", Object.assign({action: "ctl", lang: LANG}, d)); showCtl(r); return r; }
@@ -1522,6 +1520,10 @@ $("#d-link").textContent = t("Link for the PC browser") + ": " + location.origin
     d.addEventListener("toggle", () => { if (d._mwSkip) { d._mwSkip = false; return; }
       o[d.dataset.k] = d.open; try { localStorage.setItem("mw-sim-fold", JSON.stringify(o)); } catch (e) {} }); });
   if (sg && window.SC_SHOWN == null) window.SC_SHOWN = new Set(); })();
+// 639o: the bar under the tabs (#mwbar): Simple / Expert of this page = the one of the simulator control (page «sim»)
+window.MWB_SIMPAGE = true;
+window.MWB_PAGE = {simplePage: () => "sim", simple: v => { if (window.scSetEx) window.scSetEx(!v);
+  else fetch("/api/ui_simple", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({on: v, page: "sim"})}).catch(() => {}); }};
 (async () => { await initAppearance(); load(); if (location.hash === "#gw") setTimeout(() => gwOpen(), 400); })();   // 639i: «Spielen» → game wizard
 /*ALERTS*/
 </script></body></html>
@@ -1558,7 +1560,7 @@ def ui_seed_script():
     sends every later layout change back to the Pi, where it is kept in the settings file."""
     data = json.dumps({k: v for k, v in CFG["web_ui"].items() if k not in WEB_UI_LOCAL}).replace("</", "<\\/")   # aufr: per-device keys stay on the device
     # nurgruppen: the switch «On start: groups only» for the page code (main page 530, simulator page 470) before it builds
-    return ("<script>window.MW_SG=" + ("true" if CFG.get("ui_start_groups", True) else "false") + ";"
+    return ("<script>window.MW_SG=false;"                    # 3.23: the switch «On start: groups only» is gone - the start is «My view»
             "(function(){var S=" + data + ";try{for(var k in S)localStorage.setItem(k,S[k]);}catch(e){}"
             "var P={},T=null,L=" + json.dumps(sorted(WEB_UI_LOCAL)) + ";"
             "function send(){var b=P;P={};T=null;try{fetch('/api/ui',{method:'POST',headers:{'Content-Type':'application/json'},"

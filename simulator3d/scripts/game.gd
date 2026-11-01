@@ -2049,6 +2049,7 @@ func _caught(p: Dictionary, by) -> void:
 		get_tree().create_timer(0.35).timeout.connect(func(): _grab_pic(p))
 	news("🚨 %s erwischt" % p["name"] + ((" von %s" % by["name"]) if by is Dictionary else ""))
 	main.spectate_cut("caught", int(p["slot"]), "🚨 %s erwischt!" % p["name"])
+	preload("res://scripts/klang.gd").erwischt()          # Spielton: the big drum
 	if int(p.get("flag", -1)) >= 0 and flags.size() == 2:   # the flag goes back to its base
 		_flag_home(int(p["flag"]))
 	plus.on_caught(p)                                      # 3D-4.x: per weather phase and camouflage thing

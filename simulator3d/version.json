@@ -1,9 +1,9 @@
 {
- "version": "3D-5.21.0",
- "ver": "3.21.0",
- "name": "MoveEye Sim 3.21.0",
+ "version": "3D-5.29.0",
+ "ver": "3.29.0",
+ "name": "MoveEye Sim 3.29.0",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 35714456,
- "sha256": "27028986770972285ea1b0f1b37e1070480f5785bdac6593db5ccc95a29065dd",
- "notes": "MoveEye Sim 3.21.0: Bergtal – Tuffwasserfall, Chalchstock und gelbe Wegweiser mit Wegzeiten."
+ "size": 41336549,
+ "sha256": "a4e6384d2d4ab4b2e51c7f01cb88808305ac0bced41944778fb3b2d77e2999cc",
+ "notes": "Fenster andocken, Reiter, Entwickler zuoberst"
 }

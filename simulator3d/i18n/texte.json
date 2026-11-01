@@ -3163,6 +3163,12 @@
   "it": "Tutte le finestre al loro posto e alla dimensione standard; quelle nascoste con ✕ ritornano",
   "rm": "Tut las fanestras a lur plazza e grondezza da standard; quellas zuppentadas cun ✕ returnan"
  },
+ "Alle Fenster zurück in die Leisten links und rechts, Grösse passend zum Bildschirm": {
+  "en": "Put all windows back into the side bars, sized to fit the screen",
+  "fr": "Remettre toutes les fenêtres dans les barres gauche et droite, taille adaptée à l’écran",
+  "it": "Rimetti tutte le finestre nelle barre a sinistra e a destra, dimensione adatta allo schermo",
+  "rm": "Tut las fanestras enavos en las trav-chantun da sanestra e dretga, grondezza tenor il visur"
+ },
  "Alle fünf Peilungen auf der Landeskarte gefunden.": {
   "en": "Found all five bearings on the national map.",
   "fr": "Les cinq relèvements trouvés sur la carte nationale.",
@@ -3871,6 +3877,12 @@
   "it": "Al margine del Riedmoos",
   "rm": "A l'ur dal Riedmoos"
  },
+ "Am Rand loslassen = andocken, anderswo = frei schwebend": {
+  "en": "Drop at the edge = dock, elsewhere = floating",
+  "fr": "Lâcher au bord = ancrer, ailleurs = flottante",
+  "it": "Rilascia al bordo = aggancia, altrove = libera",
+  "rm": "Laschar liber a l’ur = fixar, autrnua = liber"
+ },
  "Am Rastplatz: Flasche und Fackel sind wieder voll.": {
   "en": "At the resting place: bottle and torch are full again.",
   "fr": "À la halte : la gourde et la torche sont de nouveau pleines.",
@@ -4146,6 +4158,12 @@
   "fr": "Activé : photos pour le sol, les chemins, la tente, les arbres et le ciel",
   "it": "Attivo: foto per suolo, sentieri, tenda, alberi e cielo",
   "rm": "En: fotos per terren, sendas, tenda, plantas e tschiel"
+ },
+ "an: ruhige Bilder": {
+  "en": "on: still pictures",
+  "fr": "activé : images fixes",
+  "it": "attivo: immagini ferme",
+  "rm": "activà: maletgs quiets"
  },
  "Andere beobachten (Bergtal: vom Aussichtspunkt aus)": {
   "en": "Watch others (mountain valley: from the viewpoint)",
@@ -4645,6 +4663,12 @@
   "it": "Su questo PC non è stata trovata alcuna sintesi vocale - le pagine restano solo nel diario.",
   "rm": "Sin quest PC n'è vegnida chattada nagina emissiun vocala - las paginas stattan lura mo en il diari."
  },
+ "Auf dieser Seite gibt es nichts zum Klappen": {
+  "en": "Nothing to fold on this page",
+  "fr": "Rien à replier sur cette page",
+  "it": "Niente da comprimere in questa pagina",
+  "rm": "Nagut da zuppentar sin questa pagina"
+ },
  "Auf einem Stein (erhöht)": {
   "en": "On a rock (raised)",
   "fr": "Sur un rocher (surélevé)",
@@ -4867,6 +4891,12 @@
   "it": "Spento. Accendi: ogni partita viene annotata (solo su questo PC).",
   "rm": "Stizzà. Envidar: lura vegn mintga runda notada (mo sin quest PC)."
  },
+ "aus: alles bewegt sich": {
+  "en": "off: everything moves",
+  "fr": "désactivé : tout bouge",
+  "it": "spento: tutto si muove",
+  "rm": "stizzà: tut sa mova"
+ },
  "AUSGANG": {
   "en": "EXIT",
   "fr": "SORTIE",
@@ -4878,6 +4908,12 @@
   "fr": "En fugue !",
   "it": "Scappata!",
   "rm": "Fugì!"
+ },
+ "ausgeschaltet": {
+  "en": "switched off",
+  "fr": "désactivé",
+  "it": "disattivato",
+  "rm": "deactivà"
  },
  "Ausgesetzt: viel Wind": {
   "en": "Exposed: lots of wind",
@@ -5215,6 +5251,18 @@
   "it": "Pietra del ruscello",
   "rm": "Crap dal ual"
  },
+ "BackLowerLeg.": {
+  "en": "BackLowerLeg.",
+  "fr": "BackLowerLeg.",
+  "it": "BackLowerLeg.",
+  "rm": "BackLowerLeg."
+ },
+ "BackUpperLeg.": {
+  "en": "BackUpperLeg.",
+  "fr": "BackUpperLeg.",
+  "it": "BackUpperLeg.",
+  "rm": "BackUpperLeg."
+ },
  "Bademeister-Stuhl": {
   "en": "Lifeguard chair",
   "fr": "Chaise de maître-nageur",
@@ -5454,6 +5502,12 @@
   "fr": "Commencer à :",
   "it": "Inizia da:",
   "rm": "Cumenzar tar:"
+ },
+ "Begleitmusik in Spielen und Geschichten (Tests und Überwachung bleiben still)": {
+  "en": "Background music in games and stories (tests and surveillance stay silent)",
+  "fr": "Musique d’accompagnement dans les jeux et les histoires (les tests et la surveillance restent silencieux)",
+  "it": "Musica di sottofondo nei giochi e nelle storie (test e sorveglianza restano silenziosi)",
+  "rm": "Musica d’accumpagnament en gieus ed istorgias (tests e survegliaziun restan quiets)"
  },
  "Behalten": {
   "en": "Keep it",
@@ -6133,6 +6187,12 @@
   "it": "Movimento nella nebbia",
   "rm": "Moviment en la tschajera"
  },
+ "Bewegung reduzieren (Logo, Blinki, Wippen, Trailer sanfter)": {
+  "en": "Reduce motion (logo, Blinki, bobbing, gentler trailers)",
+  "fr": "Réduire les animations (logo, Blinki, balancement, bandes-annonces plus douces)",
+  "it": "Ridurre il movimento (logo, Blinki, oscillazione, trailer più dolci)",
+  "rm": "Reducir il moviment (logo, Blinki, dondar, trailers pli lenis)"
+ },
  "Bewegung {d} m vor MoveEye – nur im Wärmebild. Sie trägt etwas Warmes: eine Laterne?": {
   "en": "Movement {d} m in front of MoveEye – only in the thermal picture. It carries something warm: a lantern?",
   "fr": "Mouvement à {d} m devant MoveEye – seulement dans l'image thermique. Elle porte quelque chose de chaud : une lanterne ?",
@@ -6516,6 +6576,12 @@
   "fr": "Demander un indice à Blinki",
   "it": "Chiedi un suggerimento a Blinki",
   "rm": "Dumandar Blinki per in tip"
+ },
+ "Blinki zeigen (die kleine Figur im Rundgang)": {
+  "en": "Show Blinki (the little figure in the tour)",
+  "fr": "Afficher Blinki (le petit personnage de la visite)",
+  "it": "Mostra Blinki (la piccola figura del tour)",
+  "rm": "Mussar Blinki (la pitschna figura en il gir)"
  },
  "Blinki-Hinweis": {
   "en": "Blinki hint",
@@ -11193,6 +11259,12 @@
   "it": "Meteo reale: %s, %.0f °C, vento %.0f km/h",
   "rm": "Aura vaira: %s, %.0f °C, vent %.0f km/h"
  },
+ "Effekte": {
+  "en": "Effects",
+  "fr": "Effets",
+  "it": "Effetti",
+  "rm": "Effects"
+ },
  "Ehrlich gesagt nicht so.": {
   "en": "Honestly, not really.",
   "fr": "Pour être honnête, pas trop.",
@@ -11756,6 +11828,12 @@
   "fr": "Une belle image - on voit même le terrier. Merci !",
   "it": "Una bella immagine - si vede perfino la tana. Grazie!",
   "rm": "In bel maletg - ins vesa schizunt la tauna. Grazia!"
+ },
+ "Ein Seitenfenster mit Reitern statt vier kleiner Fenster": {
+  "en": "One side window with tabs instead of four small windows",
+  "fr": "Une fenêtre latérale à onglets au lieu de quatre petites fenêtres",
+  "it": "Una finestra laterale a schede invece di quattro finestre piccole",
+  "rm": "Ina fanestra laterala cun registers empè da quatter fanestras pitschnas"
  },
  "Ein Spalt im Fels": {
   "en": "A gap in the rock",
@@ -12423,6 +12501,12 @@
   "it": "Semplice: l’essenziale (scena, ora, meteo, visite, testare, assistente di gioco). «Esperto» mostra tutto.",
   "rm": "Simpel: l’impurtant (scena, temp, aura, visita, testar, assistent da gieu). «Expert» mussa tut."
  },
+ "Einfach: nur das Wichtigste. «Experte» zeigt alle Einstellungen.": {
+  "en": "Simple: only the important settings. «Expert» shows all of them.",
+  "fr": "Simple : seulement les réglages importants. «Expert» les affiche tous.",
+  "it": "Semplice: solo le impostazioni importanti. «Esperto» le mostra tutte.",
+  "rm": "Simpel: mo ils parameters impurtants. «Expert» mussa tuts."
+ },
  "einfaches Modell": {
   "en": "simple model",
   "fr": "modèle simple",
@@ -12446,6 +12530,12 @@
   "fr": "Icônes d’événements uniformes",
   "it": "Icone degli eventi uniformi",
   "rm": "Simbols d’eveniments unitars"
+ },
+ "Einklappen / aufklappen": {
+  "en": "Collapse / expand",
+  "fr": "Replier / déplier",
+  "it": "Comprimi / espandi",
+  "rm": "Serrar / avrir"
  },
  "Einklappen: nur noch ein kleines Symbol": {
   "en": "Collapse: only a small icon",
@@ -12518,6 +12608,12 @@
   "fr": "Réglages",
   "it": "Impostazioni",
   "rm": "Parameters"
+ },
+ "Einstellungen → System → Gerät & Hilfe": {
+  "en": "Settings → System → Device & help",
+  "fr": "Réglages → Système → Appareil et aide",
+  "it": "Impostazioni → Sistema → Dispositivo e aiuto",
+  "rm": "Parameters → Sistem → Apparat & agid"
  },
  "Einstellungs-Vergleich A/B": {
   "en": "Settings comparison A/B",
@@ -13930,6 +14026,12 @@
   "fr": "Masquer la fenêtre (retour via «Fenêtres» dans la barre en bas)",
   "it": "Nascondi finestra (ritorno con «Finestre» nella barra in basso)",
   "rm": "Zuppentar la fanestra (enavos cun «Fanestras» en la trav giusut)"
+ },
+ "Fenster automatisch andocken": {
+  "en": "Dock windows automatically",
+  "fr": "Ancrer les fenêtres automatiquement",
+  "it": "Aggancia le finestre automaticamente",
+  "rm": "Fixar las fanestras automaticamain"
  },
  "Fenster mit Vorhang (Fernseher flackert)": {
   "en": "Window with curtain (TV flickers)",
@@ -15702,6 +15804,12 @@
   "it": "DISPOSITIVO",
   "rm": "APPARAT"
  },
+ "Gerät & Hilfe": {
+  "en": "Device & help",
+  "fr": "Appareil et aide",
+  "it": "Dispositivo e aiuto",
+  "rm": "Apparat & agid"
+ },
  "Gerät (LED und Tasten)": {
   "en": "Device (LED and buttons)",
   "fr": "Appareil (LED et touches)",
@@ -16608,6 +16716,12 @@
   "it": "Salsicce alla griglia (piatto)",
   "rm": "Liongias grillidas (tagliet)"
  },
+ "gross": {
+  "en": "large",
+  "fr": "grande",
+  "it": "grande",
+  "rm": "gronda"
+ },
  "gross (braucht mehr Leistung)": {
   "en": "large (needs more power)",
   "fr": "grande (demande plus de puissance)",
@@ -16727,6 +16841,12 @@
   "fr": "La taille ne correspond pas",
   "it": "La dimensione non corrisponde",
   "rm": "La grondezza na correspunda betg"
+ },
+ "Grösse: klein · mittel · gross (Klick = nächste)": {
+  "en": "Size: small · medium · large (click = next)",
+  "fr": "Taille : petite · moyenne · grande (clic = suivante)",
+  "it": "Dimensione: piccola · media · grande (clic = successiva)",
+  "rm": "Grondezza: pitschna · mesauna · gronda (clic = proxima)"
  },
  "Grösser": {
   "en": "Bigger",
@@ -17940,6 +18060,12 @@
   "fr": "Cerf",
   "it": "Cervo",
   "rm": "Tschierv"
+ },
+ "HKCU\\Control Panel\\Desktop\\WindowMetrics": {
+  "en": "HKCU\\Control Panel\\Desktop\\WindowMetrics",
+  "fr": "HKCU\\Control Panel\\Desktop\\WindowMetrics",
+  "it": "HKCU\\Control Panel\\Desktop\\WindowMetrics",
+  "rm": "HKCU\\Control Panel\\Desktop\\WindowMetrics"
  },
  "Hmm, hier ist nichts. Schau nochmals auf die Karte!": {
   "en": "Hmm, there's nothing here. Look at the map again!",
@@ -20539,6 +20665,12 @@
   "it": "Mappa, bussola, immagine live … on / off e «Ripristina disposizione»",
   "rm": "Charta, bussola, maletg live … en / ora e «Reinizialisar la disposiziun»"
  },
+ "Karte, Kompass, SmallTV und CPU als Reiter": {
+  "en": "Map, compass, SmallTV and CPU as tabs",
+  "fr": "Carte, boussole, SmallTV et CPU en onglets",
+  "it": "Mappa, bussola, SmallTV e CPU come schede",
+  "rm": "Charta, bussola, SmallTV e CPU sco registers"
+ },
  "Karte: ": {
   "en": "Map: ",
   "fr": "Carte : ",
@@ -21301,6 +21433,12 @@
   "fr": "Claquer 4×",
   "it": "Battere le mani 4×",
   "rm": "Clatschar 4×"
+ },
+ "klein": {
+  "en": "small",
+  "fr": "petite",
+  "it": "piccola",
+  "rm": "pitschna"
  },
  "klein (schnell)": {
   "en": "small (fast)",
@@ -22388,6 +22526,30 @@
   "it": "Volume sul PC",
   "rm": "Volumen sin il PC"
  },
+ "Lautstärke Effekte (Fund, Fanfare, Spannung, Tusch)": {
+  "en": "Volume of effects (find, fanfare, suspense, flourish)",
+  "fr": "Volume des effets (trouvaille, fanfare, suspense, coup de cymbale)",
+  "it": "Volume degli effetti (ritrovamento, fanfara, suspense, colpo di piatti)",
+  "rm": "Volumen dals effects (chat, fanfara, tensiun, tusch)"
+ },
+ "Lautstärke Menü-Klicks": {
+  "en": "Volume of menu clicks",
+  "fr": "Volume des clics du menu",
+  "it": "Volume dei clic del menu",
+  "rm": "Volumen dals clics dal menu"
+ },
+ "Lautstärke Musik": {
+  "en": "Volume of music",
+  "fr": "Volume de la musique",
+  "it": "Volume della musica",
+  "rm": "Volumen da la musica"
+ },
+ "Lautstärke Umgebung im Spiel (Wind, Regen, Bach, Feuer, Schritte, Tiere)": {
+  "en": "Volume of surroundings in games (wind, rain, stream, fire, steps, animals)",
+  "fr": "Volume de l’ambiance en jeu (vent, pluie, ruisseau, feu, pas, animaux)",
+  "it": "Volume dell’ambiente in gioco (vento, pioggia, ruscello, fuoco, passi, animali)",
+  "rm": "Volumen dals conturns en il gieu (vent, plievgia, ual, fieu, pass, animals)"
+ },
  "Lawinenkegel (Schneereste)": {
   "en": "Avalanche cone (old snow)",
   "fr": "Cône d'avalanche (reste de neige)",
@@ -22483,6 +22645,12 @@
   "fr": "doux et rare, pas de sursauts",
   "it": "piano e raro, nessuno spavento improvviso",
   "rm": "quiet e rar, nagins mumens da tschuffergna"
+ },
+ "Leisten links und rechts, ohne Überlappung; die Grösse passt sich dem Bildschirm an": {
+  "en": "Bars on the left and right, no overlap; the size adapts to the screen",
+  "fr": "Barres à gauche et à droite, sans chevauchement ; la taille s’adapte à l’écran",
+  "it": "Barre a sinistra e a destra, senza sovrapposizioni; la dimensione si adatta allo schermo",
+  "rm": "Trav-chantuns a sanestra ed a dretga, senza surposiziun; la grondezza s’adatta al visur"
  },
  "Leistung": {
   "en": "Performance",
@@ -23440,6 +23608,12 @@
   "it": "Palo (scena) – come prima, a 3 m dall’apparecchio",
   "rm": "Pal (scena) – sco fin ussa, 3 m sper l’apparat"
  },
+ "Master": {
+  "en": "Master",
+  "fr": "Master",
+  "it": "Master",
+  "rm": "Master"
+ },
  "Materialseilbahn (Talstation)": {
   "en": "Goods cable car (bottom station)",
   "fr": "Téléphérique de service (station aval)",
@@ -23631,6 +23805,18 @@
   "fr": "Construire ma maison (jeu de construction à la souris)",
   "it": "Costruire la mia casa (kit di costruzione con il mouse)",
   "rm": "Construir mia chasa (chaschetta da construcziun cun la mieur)"
+ },
+ "Meine Ansicht": {
+  "en": "My view",
+  "fr": "Ma vue",
+  "it": "La mia vista",
+  "rm": "Mia vista"
+ },
+ "Meine Ansicht: Die Menüs sind auf- und zugeklappt, wie du sie selbst eingestellt hast. Lange drücken oder Rechtsklick: Nur Gruppen.": {
+  "en": "My view: the menus open and close the way you left them. Long press or right click: groups only.",
+  "fr": "Ma vue : les menus s’ouvrent et se ferment comme tu les as laissés. Appui long ou clic droit : seulement les groupes.",
+  "it": "La mia vista: i menu sono aperti e chiusi come li hai lasciati. Pressione lunga o clic destro: solo i gruppi.",
+  "rm": "Mia vista: ils menus èn averts e serrads sco che ti als has laschads. Smatgar ditg u clic dretg: mo las gruppas."
  },
  "Meine Vorlage (3D-Datei)": {
   "en": "My template (3D file)",
@@ -24214,6 +24400,12 @@
   "it": "Medio",
   "rm": "Mesaun"
  },
+ "mittel": {
+  "en": "medium",
+  "fr": "moyenne",
+  "it": "media",
+  "rm": "mesauna"
+ },
  "mittel (10 m)": {
   "en": "medium (10 m)",
   "fr": "moyen (10 m)",
@@ -24255,6 +24447,24 @@
   "fr": "Cercle de tir moyen, 100 ⚡ d’énergie (0.4 ⚡ par seconde).",
   "it": "Cerchio di tiro medio, 100 ⚡ di energia (0.4 ⚡ al secondo).",
   "rm": "Rintg da tutgar mesaun, 100 ⚡ energia (0.4 ⚡ per secunda)."
+ },
+ "Modell fehlt: ": {
+  "en": "Model missing: ",
+  "fr": "Modèle manquant : ",
+  "it": "Modello mancante: ",
+  "rm": "Model manca: "
+ },
+ "Modell nicht lesbar": {
+  "en": "Model not readable",
+  "fr": "Modèle illisible",
+  "it": "Modello non leggibile",
+  "rm": "Model betg legibel"
+ },
+ "Modell ohne Skelett": {
+  "en": "Model without skeleton",
+  "fr": "Modèle sans squelette",
+  "it": "Modello senza scheletro",
+  "rm": "Model senza skelet"
  },
  "Moment … diesen Hut kenne ich! Der gehört dem Bergführer. Dann bist du also sein Enkel. Willkommen auf der Alp!": {
   "en": "Wait … I know that hat! It belongs to the mountain guide. So you're his grandson. Welcome to the alp!",
@@ -25445,6 +25655,12 @@
   "it": "Marmotte ovunque, camosci sulle rocce e a volte stambecchi. Ruedi - il guardiacaccia - ne sa molto di più. Cerca sempre persone che riprendono animali con MoveEye.",
   "rm": "Muntanellas dapertut, al grip chamutschs e mintgatant capricorns. Il Ruedi - il guardiaselvaschina - sa bler dapli. El tschertga adina glieud che registrescha bestgas cun MoveEye."
  },
+ "Musik": {
+  "en": "Music",
+  "fr": "Musique",
+  "it": "Musica",
+  "rm": "Musica"
+ },
  "Muuuh! Eine Kuh.": {
   "en": "Mooo! A cow.",
   "fr": "Meuh ! Une vache.",
@@ -26214,6 +26430,24 @@
   "it": "Compiti secondari:",
   "rm": "Incumbensas secundaras:"
  },
+ "Neck1": {
+  "en": "Neck1",
+  "fr": "Neck1",
+  "it": "Neck1",
+  "rm": "Neck1"
+ },
+ "Neck2": {
+  "en": "Neck2",
+  "fr": "Neck2",
+  "it": "Neck2",
+  "rm": "Neck2"
+ },
+ "Neck3": {
+  "en": "Neck3",
+  "fr": "Neck3",
+  "it": "Neck3",
+  "rm": "Neck3"
+ },
  "Neige": {
   "en": "Tilt",
   "fr": "Inclinaison",
@@ -26291,6 +26525,12 @@
   "fr": "Nouveau",
   "it": "Nuovo",
   "rm": "Nov"
+ },
+ "Neu anordnen": {
+  "en": "Rearrange",
+  "fr": "Réorganiser",
+  "it": "Riordina",
+  "rm": "Reordinar"
  },
  "Neu auswerten": {
   "en": "Evaluate again",
@@ -27179,6 +27419,12 @@
   "fr": "seulement sous Windows",
   "it": "solo con Windows",
   "rm": "mo sut Windows"
+ },
+ "nur Untertitel": {
+  "en": "only subtitles",
+  "fr": "seulement les sous-titres",
+  "it": "solo sottotitoli",
+  "rm": "mo sutitels"
  },
  "Nur vom Hörensagen - die Leute hier reden gern von ihm. Cooler Hut!": {
   "en": "Only by hearsay - people here like to talk about him. Cool hat!",
@@ -29017,6 +29263,18 @@
   "it": "Diario di viaggio",
   "rm": "Diari da viadi"
  },
+ "Reiter": {
+  "en": "Tabs",
+  "fr": "Onglets",
+  "it": "Schede",
+  "rm": "Registers"
+ },
+ "Reiter: Klick = zeigen": {
+  "en": "Tab: click = show",
+  "fr": "Onglet : clic = afficher",
+  "it": "Scheda: clic = mostra",
+  "rm": "Register: clic = mussar"
+ },
  "Release «ki-daten» anlegen": {
   "en": "Create release «ki-daten»",
   "fr": "Créer la release «ki-daten»",
@@ -29593,6 +29851,12 @@
   "fr": "Visite avec Blinki",
   "it": "Tour con Blinki",
   "rm": "Gir cun Blinki"
+ },
+ "Rundgang mit Blinki beim ersten Start von selbst": {
+  "en": "Tour with Blinki by itself at the first start",
+  "fr": "Visite avec Blinki automatiquement au premier démarrage",
+  "it": "Tour con Blinki da solo al primo avvio",
+  "rm": "Gir cun Blinki sez a l’emprima aviada"
  },
  "Rundgang pausiert – weiter unter Mehr → Rundgang mit Blinki (Schritt %d von %d).": {
   "en": "Tour paused – continue under More → Tour with Blinki (step %d of %d).",
@@ -30223,6 +30487,12 @@
   "fr": "Chemins furtifs : %d nouveaux sur GitHub, %d existaient déjà%s. Le banc d’essai les refait dès la prochaine mesure.",
   "it": "Percorsi furtivi: %d nuovi su GitHub, %d erano già presenti%s. Il banco di prova li ripercorre dalla prossima misurazione.",
   "rm": "Vias da sa stular: %d novas sin GitHub, %d eran gia là%s. Il banc da prova las va suenter a partir da la proxima mesiraziun."
+ },
+ "schlicht": {
+  "en": "plain",
+  "fr": "simples",
+  "it": "semplici",
+  "rm": "simpels"
  },
  "Schliessen": {
   "en": "Close",
@@ -31374,6 +31644,12 @@
   "it": "Sci (appoggiati)",
   "rm": "Skis (pusads)"
  },
+ "SmallTV": {
+  "en": "SmallTV",
+  "fr": "SmallTV",
+  "it": "SmallTV",
+  "rm": "SmallTV"
+ },
  "SmallTV (virtuell)": {
   "en": "SmallTV (virtual)",
   "fr": "SmallTV (virtuel)",
@@ -31703,6 +31979,12 @@
   "fr": "Afficher les boutons du jeu",
   "it": "Mostra i pulsanti del gioco",
   "rm": "Mussar ils buttuns dal gieu"
+ },
+ "Spiel-Ton": {
+  "en": "Game sound",
+  "fr": "Son du jeu",
+  "it": "Audio di gioco",
+  "rm": "Tun dal gieu"
  },
  "Spiel: ": {
   "en": "Game: ",
@@ -32665,6 +32947,18 @@
   "it": "Voce",
   "rm": "Vusch"
  },
+ "Stimme (Erzähler, Vorführung, Trailer)": {
+  "en": "Voice (narrator, demo, trailer)",
+  "fr": "Voix (narrateur, démonstration, bande-annonce)",
+  "it": "Voce (narratore, dimostrazione, trailer)",
+  "rm": "Vusch (narratur, preschentaziun, trailer)"
+ },
+ "Stimme: Einstellungen → Licht & Ton → Lautsprecher": {
+  "en": "Voice: Settings → Light & sound → Loudspeaker",
+  "fr": "Voix : Réglages → Lumière et son → Haut-parleur",
+  "it": "Voce: Impostazioni → Luce e suono → Altoparlante",
+  "rm": "Vusch: Parameters → Glisch & tun → Autpledader"
+ },
  "Stimmen": {
   "en": "Voices",
   "fr": "Voix",
@@ -33031,6 +33325,18 @@
   "it": "swisstopo swissALTI3D",
   "rm": "swisstopo swissALTI3D"
  },
+ "Symbole farbig": {
+  "en": "Symbols coloured",
+  "fr": "Symboles en couleur",
+  "it": "Simboli a colori",
+  "rm": "Simbols colurads"
+ },
+ "Symbole: grüner Punkt oder grünes Symbol = eingeschaltet": {
+  "en": "Symbols: green dot or green symbol = switched on",
+  "fr": "Symboles : point vert ou symbole vert = activé",
+  "it": "Simboli: punto verde o simbolo verde = acceso",
+  "rm": "Simbols: punct verd u simbol verd = activà"
+ },
  "System": {
   "en": "System",
   "fr": "Système",
@@ -33348,6 +33654,24 @@
   "fr": "De jour au-dessus des rochers - le matin, laisser MoveEye en piège photo.",
   "it": "Di giorno sopra le rocce - al mattino lasciare MoveEye come fototrappola.",
   "rm": "Il di sur la grippa - la damaun laschar MoveEye sco camera da selvaschina."
+ },
+ "Tail1": {
+  "en": "Tail1",
+  "fr": "Tail1",
+  "it": "Tail1",
+  "rm": "Tail1"
+ },
+ "Tail2": {
+  "en": "Tail2",
+  "fr": "Tail2",
+  "it": "Tail2",
+  "rm": "Tail2"
+ },
+ "Tail3": {
+  "en": "Tail3",
+  "fr": "Tail3",
+  "it": "Tail3",
+  "rm": "Tail3"
  },
  "Talstation Materialseilbahn (innen)": {
   "en": "Goods cable car valley station (inside)",
@@ -34093,6 +34417,12 @@
   "it": "suono",
   "rm": "tun"
  },
+ "Ton am PC (Lautsprecher von MoveEye und Umgebungsgeräusche; das simulierte Mikrofon hört es trotzdem)": {
+  "en": "Sound on the PC (MoveEye's loudspeaker and the sounds of the surroundings; the simulated microphone hears it anyway)",
+  "fr": "Son sur le PC (haut-parleur de MoveEye et bruits ambiants ; le microphone simulé l’entend quand même)",
+  "it": "Audio sul PC (altoparlante di MoveEye e rumori dell’ambiente; il microfono simulato lo sente comunque)",
+  "rm": "Tun sin il PC (autpledader da MoveEye e canera dals conturns; il microfon simulà al auda tuttina)"
+ },
  "Toni, Bergsteiger": {
   "en": "Toni, mountaineer",
   "fr": "Toni, alpiniste",
@@ -34495,6 +34825,12 @@
   "fr": "Heure",
   "it": "Ora",
   "rm": "Ura"
+ },
+ "UI": {
+  "en": "UI",
+  "fr": "Interface",
+  "it": "Interfaccia",
+  "rm": "Interfatscha"
  },
  "Ui, dieser Hut! Den kennt hier jeder - du bist der Enkel vom Bergführer. Komm, setz dich kurz.": {
   "en": "Oh, that hat! Everyone here knows it - you're the mountain guide's grandson. Come, sit down for a moment.",
@@ -37126,6 +37462,12 @@
   "it": "Come prima: la vista segue il percorso.",
   "rm": "Sco fin ussa: la visur va cun la tura."
  },
+ "wie das Betriebssystem": {
+  "en": "like the operating system",
+  "fr": "comme le système",
+  "it": "come il sistema operativo",
+  "rm": "sco il sistem operativ"
+ },
  "Wie das Tarp, nur halb so schwer.": {
   "en": "Like the tarp, only half the weight.",
   "fr": "Comme la bâche, mais deux fois plus légère.",
@@ -38921,6 +39263,12 @@
   "it": "Schermo supplementare (SmallTV)",
   "rm": "Visur supplementar (SmallTV)"
  },
+ "Zusatzgeräte": {
+  "en": "Extra devices",
+  "fr": "Appareils supplémentaires",
+  "it": "Dispositivi aggiuntivi",
+  "rm": "Apparats supplementars"
+ },
  "Zuschauer": {
   "en": "Spectators",
   "fr": "Spectateurs",
@@ -40132,6 +40480,12 @@
   "fr": "⚙ Règles personnelles – tous les types de jeu, buts et extras",
   "it": "⚙ Regole proprie – tutti i tipi di gioco, obiettivi ed extra",
   "rm": "⚙ Atgnas reglas – tut ils geners da gieu, finamiras ed extras"
+ },
+ "⚙ Rundgang und Blinki einstellen": {
+  "en": "⚙ Set up the tour and Blinki",
+  "fr": "⚙ Régler la visite et Blinki",
+  "it": "⚙ Imposta il tour e Blinki",
+  "rm": "⚙ Configurar il gir e Blinki"
  },
  "⚠ %s hat eure Fahne!": {
   "en": "⚠ %s has your flag!",

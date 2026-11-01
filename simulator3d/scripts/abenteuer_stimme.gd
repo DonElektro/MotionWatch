@@ -25,14 +25,34 @@ static func moeglich() -> bool:
 	return _pick() != ""
 
 
+static func modus() -> String:
+	"""3.23 (Daniel 01.11.2026): ONE switch «Stimme» an | aus | untertitel for narrator, demo and trailer (Einstellungen →
+	Licht & Ton → Lautsprecher). Older files: the switch «Erzählerstimme» (setting "stimme", true / false)."""
+	var m := str(SS.setting("stimme_modus", ""))
+	if m in ["an", "aus", "untertitel"]:
+		return m
+	return "an" if bool(SS.setting("stimme", true)) else "aus"
+
+
+static func set_modus(m: String) -> void:
+	if not m in ["an", "aus", "untertitel"]:
+		return
+	SS.set_setting("stimme_modus", m)
+	if m != "an":
+		stopp()
+
+
 static func an() -> bool:
-	return bool(SS.setting("stimme", true))
+	return modus() == "an"
+
+
+static func untertitel() -> bool:
+	"""«nur Untertitel»: the texts are shown, nothing is spoken"""
+	return modus() == "untertitel"
 
 
 static func set_an(v: bool) -> void:
-	SS.set_setting("stimme", v)
-	if not v:
-		stopp()
+	set_modus("an" if v else "aus")
 
 
 static func _pick() -> String:
@@ -110,5 +130,5 @@ static func stopp() -> void:
 
 static func state() -> Dictionary:
 	var ok := moeglich()
-	return {"an": an(), "moeglich": ok, "stimme": _voice if ok else "", "spricht": spricht() if ok else false,
+	return {"an": an(), "modus": modus(), "moeglich": ok, "stimme": _voice if ok else "", "spricht": spricht() if ok else false,
 			"display": DisplayServer.get_name()}

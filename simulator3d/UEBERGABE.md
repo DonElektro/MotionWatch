@@ -1,8 +1,70 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 31.10.2026 · Version **3.21.0** · MoveEye **3.21.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 01.11.2026 · Version **3.29.0** · MoveEye **3.29.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.29.0 (MoveEye 3.29.0): Fenster andocken (`scripts/fenster.gd`)
+
+- Leisten links/rechts ohne Überlappung, passt sich der Bildschirmgrösse an, «Neu anordnen»; Karte, Kompass, SmallTV, CPU als
+  Reiter in einem Fenster; Entwickler zuoberst, klein/mittel/gross, einklappbar. Test: `werkzeuge/fenster_dock_test.gd`.
+
+## NEU in 3.28.1 (MoveEye 3.28.1): CI auf GitHub
+
+- `.github/workflows/ci.yml` («CI»): Parse-Check, alle `werkzeuge/*_test.gd`, sim_texte, Export Linux + Windows (ohne Signatur)
+  laufen auf GitHub; Stand mit `werkzeuge/ci_status.sh <commit> --warten --fehler`. «Selbsttest»-Workflow entfernt.
+
+## NEU in 3.28.0 (MoveEye 3.28.0): Spielton (`scripts/klang.gd`)
+
+- Busse Musik / Effekte / Umgebung / UI mit Begrenzer, Regler unter Licht & Ton → Spiel-Ton, Aktion `spielton`.
+- 18 Klänge `klang/sp_*.ogg` (CC0, erzeugt mit `werkzeuge/spielton_bauen.py`), nur in Spielen und Geschichten
+  (still bei Tests, Prüfstand, MoveEye-Aufgaben). Test: `werkzeuge/spielton_test.gd` (in der Release-Kette).
+
+## NEU in 3.27.0 (MoveEye 3.27.0): Weniger Schalter (Teil 639q, Schritt 2)
+
+- Updates: eine Auswahl `update_mode` (von Hand / automatisch / Entwicklungsphase), alte Schalter übernommen.
+- Neu «Bewegung reduzieren» (`reduce_motion`, `UI.motion_still`) und «Stimme» (`stimme_modus`: an · aus · nur Untertitel),
+  Rundgang/Blinki nur unter System → Gerät & Hilfe (`tour_auto`, `blinki_on`); «Beim Start: Nur Gruppen» entfernt.
+- Alter Python-Basis-Simulator (`SIM_ZIP_B64`, Teil 639h) entfernt.
+
+## NEU in 3.26.0 (MoveEye 3.26.0): Maggie realistischer (`maggie_modell.gd`, `maggie_einfach.gd`)
+
+- Ab Grafik «mittel»: Modell mit Skelett (Quaternius, CC0, `simulator3d/LIZENZEN.md`) aus `modelle/maggie_hund_glb.bin`
+  (erzeugt mit `werkzeuge/maggie_modell.py`), Fell-Shader `shaders/maggie_fell.gdshader`; in «einfach» weiche Grundformen mit
+  ihrem Muster. `maggie_hund.gd` wählt die Form. Export: `modelle/*.bin`.
+
+## NEU in 3.25.0 (MoveEye 3.25.0): «Meine Ansicht» (Teil 639r)
+
+- Mittlerer Knopf der Bedienleiste = «Meine Ansicht» (eigenes Auf-/Zuklappen pro Benutzer und Seite, `/api/ansicht`, auf allen
+  Geräten gleich); «Nur Gruppen» mit langem Druck / Rechtsklick. Simulator `bedienleiste.gd`, `main.gd` (`mine_on`, `mine_mig`
+  in KEEP), `ui_style.gd` (Symbol «mine»). Teil im Zweig als 639p geliefert, wegen 639p_ui_gemeinsam als 639r eingereiht.
+
+## NEU in 3.24.0 (MoveEye 3.24.0): Schalter aufgeräumt (Teil 639q)
+
+- MoveEye: Schalter notify_sandbox, sim_separate, login_https_only entfernt (Freigabe Daniel 01.11.2026) – die Funktionen
+  sind immer an; update_unsigned nur im Entwickler-Bereich, nach 24 h aus. Simulator: «Ton am PC» (`simint.gd`,
+  `mikrofon.gd`) statt der zwei alten Schalter, `ui_style.gd`: Symbole farbig als Standard.
+
+## NEU in 3.23.1 (MoveEye 3.23.1): echte Klänge im Trailer (`klang/`)
+
+- `simulator3d/klang/`: CC0-Aufnahmen als OGG (Simulator, Schleife und Pegel in `klaenge.json`) und MP3 in `klang/web/`
+  (Browser), Lizenzen in `klang/LIZENZEN.txt` und `LIZENZEN.md`; erzeugt mit `werkzeuge/klang_bauen.py`. `trailer_ton.gd`
+  lädt die Dateien (alte Synthese als Rückfall), Bus «Trailer» mit Begrenzer; `net.gd` liefert MP3 aus, MoveEye 639n reicht
+  sie unter /sim/trailer_ton/ weiter (gleicher Begrenzer im Browser). Export: `klang/*.ogg, klang/*.json, klang/web/*.mp3`.
+
+## NEU in 3.23.0 (MoveEye 3.23.0): gemeinsame Menü-Datei (`ui_gemeinsam.json`)
+
+- `simulator3d/ui_gemeinsam.json`: Gruppen-IDs, Namen, Symbole, Reihenfolge und Texte für beide Projekte; `bauen.py` bettet
+  sie als `UI_GEMEINSAM` in Teil 639p ein (`--pruefen` meldet Unterschiede), der Export nimmt sie in die .exe
+  (`include_filter`). Simulator `ui_gemeinsam.gd` (Prüfung beim Start, `features()` in hello, Alias alter IDs
+  `system`/`sensors`, `migrate_fold`). «Sensoren» → «Zusatzgeräte» (extras) nach «Licht & Ton», System → «Kinder-Modus».
+  Test `werkzeuge/ui_gemeinsam_test.gd` (in der Release-Kette). FR «schlicht» = «simples» (auch Teil 639o).
+
+## NEU in 3.22.0 (MoveEye 3.22.0): eine Bedienleiste (`bedienleiste.gd`, Teil 639o)
+
+- Ein Baustein für Web, Pi-Fenster und Simulator: Einfach/Experte, Symbole farbig/schlicht (`ui_icons`, in KEEP),
+  Nur Gruppen, Alle zuklappen · Nur Gruppen · Alle aufklappen. Reiter- und Statuszeile einzeln einklappbar (pro Gerät,
+  roter Punkt bei Warnungen). MoveEye Teil 639o, Simulator `bedienleiste.gd` + `ui_style.gd`.
 
 ## NEU in 3.21.0 (MoveEye 3.21.0): Berg-Orte (`bergtal_ziele.gd`, `bergtal_wegweiser.gd`)
 

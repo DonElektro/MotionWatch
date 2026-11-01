@@ -41,6 +41,7 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
   zeigen, damit er sich vorher Notizen machen kann. Erklärungen/Vorschläge allein schicken, nie zusammen mit dem Popup.
   **Ergänzung (Daniel, 31.10.2026 11:40):** statt auf «weiter» zu warten, ganz am Schluss einen kleinen «Button» zeigen:
   Mini-Frage «Fragebogen … starten?» mit «Los» / «Noch nicht»; erst nach «Los» den eigentlichen Fragebogen.
+- **Jede Frage als Fragebogen** (Daniel, 01.11.2026 02:12): Fragen an Daniel immer über den Fragebogen (AskUserQuestion).
 - **Zusammenfassung / Stand (Daniel, 31.10.2026 11:52):** wenn Daniel nach Stand, Übersicht oder Zusammenfassung fragt,
   immer als kleine Tabelle «Teil | Stand» mit Prozenten pro Paket (geschätzt, kurz sagen woraus) und Zeile «Gesamt»,
   darunter höchstens 1–2 Sätze. Knapp und klein.
@@ -68,6 +69,8 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
   Entscheid, nicht getestet; keine langen Aufzählungen.
 - **Kurz fürs Handy (Daniel, 31.10.2026 21:08):** Nachrichten so kurz halten, dass Daniel auf dem Handy nicht scrollen muss:
   wenige Zeilen, Tabellen oder kurze Listen, Details nur auf Nachfrage.
+- **Nichts entfernen ohne Nachfrage (Daniel, 01.11.2026 00:28):** Funktionen, Schalter, Menüpunkte, Dateien oder Inhalte
+  werden nur nach ausdrücklicher Zustimmung von Daniel entfernt. Vorher immer fragen.
 - **Pause für Realismus aufgehoben (Daniel, 31.10.2026 00:53):** bis die Hardware da ist, Realismus/Szenen in kleinen Paketen,
   je Paket eine Version mit «So testest du». Danach Pause und Hardware-Aufbau.
 
@@ -201,8 +204,20 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
 ## Testen (vor jeder Auslieferung)
 
 - `python3 webcam_bewegung_X_Y_Z.py --self-test .` (im Repository: prüft auch alle Signaturen in versions.json). Läuft zusätzlich
-  automatisch auf GitHub (Actions → «Selbsttest») bei jedem Push.
+  automatisch auf GitHub (Actions → «CI», ohne Signaturen) bei jedem Push auf `real-*`, `integration`, `main`.
 
+- **Bildtests nur bei Bedarf** (Daniel, 01.11.2026): Live- bzw. Bild-Läufe (Playwright-Bildschirmfotos, allp, Live-Läufe des
+  Simulators) nur bei sichtbaren Änderungen, sonst nur Tests ohne Bild. Gilt auch für die Release-Kette.
+- **Tests auf GitHub** (Daniel, 01.11.2026): Export, Godot-Tests und Prüfstand laufen in GitHub Actions (ab 3.28.1: «CI»,
+  ersetzt «Selbsttest»; «Prüfstand» bleibt eigener Workflow). Nach jedem Push mit `werkzeuge/ci_status.sh <commit> --warten
+  --fehler` auf das CI warten statt dieselben schweren Tests lokal zu wiederholen. Lokal bleiben: Signieren, Selbsttest mit
+  Signatur, Simulator-Export und ZIP.
+- **CI statt lokal rechnen** (Workflow `.github/workflows/ci.yml`, Name «CI»): bei Push auf `real-*` laufen parallel
+  `bauen.py --pruefen`, Selbsttest (ohne Signaturen), Web-Rauchtest mit Browser (`web_rauchtest.py --browser`, Playwright),
+  Godot-4.3-Parse-Check («Schnittstelle: OK»), jeder `werkzeuge/*_test.gd` und `sim_texte.py --pruefen`; auf `integration` /
+  `main` (oder von Hand, oder «[export]» in der Commit-Nachricht) dazu der Export Linux + Windows ohne Signatur als Artefakt. Helfer und Integrator pushen und warten:
+  `werkzeuge/ci_status.sh [zweig|commit] --warten --fehler` (Exit 0 = grün; ohne `--warten` nur die letzten Läufe;
+  `--start` startet von Hand, geht erst wenn ci.yml auf main ist). Signieren bleibt lokal, der Schlüssel kommt nie ins CI.
 - `python3 -m py_compile` und JavaScript-Prüfung (`node --check` der gerenderten Seiten).
 - Programm mit simulierter Kamera starten (`open_source` ersetzen) und mit Playwright prüfen:
   Handy hoch (390 × 844) und quer, PC; keine JS-Fehler; Bildschirmfotos ansehen.
@@ -218,8 +233,10 @@ Push über ntfy (App «NTFY me», Server ntfy-me.com). Fernzugriff über Tailsca
 
 ## Simulator
 
-- Der Ordner `simulator/` ist ein eigenes Programm (motionwatch_simulator.py + motionwatch_sim_interface.py + Anleitung).
-- Ab 2.70.0 steckt er auch gepackt in der Motion-Watch-Datei (`SIM_ZIP_B64`, ZIP als base64). **Wer die Simulator-Dateien ändert, muss `SIM_ZIP_B64` (in `quelle/360_daten_simulator_python.py`) neu erzeugen**, sonst installiert Motion Watch die alte Fassung.
+- Der Simulator ist **MoveEye Sim** (3D, Godot) im Ordner `simulator3d/`. Der alte Python-Basis-Simulator
+  (`simulator/motionwatch_simulator.py`, `SIM_ZIP_B64`) ist ab 3.27.0 entfernt (Freigabe Daniel 01.11.2026); Teil 360 kennt nur
+  noch den Ordner `sim_dir`. In `simulator/` bleiben die Schnittstelle für eigene Simulatoren (`motionwatch_sim_interface.py`,
+  `Simulator_Schnittstelle.md`, `EIGENEN_SIMULATOR_ANBINDEN.md`).
 
 - **Daten aus dem Simulator** (Wunsch Daniel): nur bildbezogene, kartenunabhängige Daten für die Erkennung sammeln (Bilder mit
   Rahmen, Reaktionszeit nach Abstand/Haltung/Licht). Kartengebundenes (Schleichwege) immer mit Szene speichern und nur dort
