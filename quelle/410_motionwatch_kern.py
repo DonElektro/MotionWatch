@@ -1068,7 +1068,7 @@ class MotionWatch:
                             roi[mroi > 0] = tint[mroi > 0]
                     draw_outline(frame, cnts, t.box, sx, sy, (0, 0, 255), 2)
                     cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 3)
-                    cv2.putText(frame, f"PERSON #{t.id}{' AI' if t.ai_confirmed else ''}" + (dist_overlay(t) or f"  {t.speed():.1f}px/f"),
+                    cv2.putText(frame, f"PERSON{'?' if getattr(t, '_strict_maybe', False) else ''} #{t.id}{' AI' if t.ai_confirmed else ''}" + (dist_overlay(t) or f"  {t.speed():.1f}px/f"),
                                 (x, max(20, y - 8)), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
                     if CFG["show_tracks"] and len(t.hist) > 1:
                         pts = np.array([(int(px * sx), int(py * sy)) for px, py in t.hist], np.int32)

@@ -25,6 +25,14 @@
 #   wind      measured: wind meter / simulator (280 StormWatch: 60-s mean >= 20 km/h or gust >= 39 km/h), or the wind seen
 #             in the picture is «strong» / «storm» (410).
 #   Bound to the existing switch «nachts strenger» (night_strict), no new control.
+# real-erkennung-fix (Erkennungstest 2: Personen 75 % -> 44 %, Kinder 5/12): the rule held back real persons.
+#   - «wind» took the strongest gust of the last 10 min (STORM, 280): one leer run with 55 km/h made every person of the next
+#     10 min «wind», also at 12 km/h. Now only the wind of the last WIND_RECENT_S: 60-s mean >= 20 km/h or at least
+#     WIND_GUST_N measurements >= 39 km/h (one single gust is not enough), or the wind seen in the picture.
+#   - an AI person counted once per new AI result: at 2-3 pictures/s the AI runs every 1-3 s and a child at 8 m was in it
+#     only once -> never confirmed. Wind moves branches = MOVEMENT; the AI does not see more persons in the wind. So the
+#     hits in a row are only asked from tracks the AI does NOT confirm («im Zweifel Person?»: an AI person is reported at
+#     once, at dusk with the mark «Person?»). Dusk / wind still make a person from movement alone wait for 2-3 pictures.
 # ----------------------------------------------------------------------------
 FOG = {"on": False, "raw": False, "raw_t": 0.0, "t": 0.0, "hist": deque(maxlen=200), "since": None, "score": None,
        "sat": None, "mean": None, "wx": False, "wx_t": 0.0, "lim_g": None, "lim_l": None, "clahe": None}
@@ -43,6 +51,7 @@ FOG_REL, FOG_SAT, FOG_REL_WX, FOG_SAT_WX, FOG_MEAN = 0.40, 30.0, 0.46, 40.0, 90.
 FOG_ON_S, FOG_OFF_S = 10.0, 30.0          # fog comes and goes in minutes; 10 s: a white van filling the picture (2-5 s) is no fog
 TWI_NOISE_K = 1.6                         # noise dusk / day in the test: 1.8-2.2 (three places); rain 0.85, snow 0.6
 WIND_MEAN_KMH, WIND_GUST_KMH = 20.0, 39.0  # Beaufort 4 (20-28 km/h): twigs move; Beaufort 6 (39-49 km/h): big branches move
+WIND_RECENT_S, WIND_GUST_N = 120.0, 2     # real-erkennung-fix: only the last 2 min, a gust must come at least twice
 
 
 def fog_weather(now=None):
@@ -215,15 +224,17 @@ def twilight_frame(w, gray, bright, t0):
                           f" (brightness {smooth:.0f}, noise {nz:.1f}" + (f" / day {TWI['base']:.1f}" if TWI["base"] else "") + ")")
 
 
-def wind_strong():
-    """measured wind (wind meter / simulator, 280) or the wind seen in the picture (410) is strong"""
+def wind_strong(now=None):
+    """measured wind (wind meter / simulator, 280) of the last WIND_RECENT_S or the wind seen in the picture (410) is strong"""
+    now = time.time() if now is None else now
     st = STATE.get("storm") or {}
     try:
         if st.get("wind") is not None and float(st["wind"]) >= WIND_MEAN_KMH:
             return True
-        if st.get("gust") is not None and float(st["gust"]) >= WIND_GUST_KMH:
+        win = [v for t, v in list(STORM["win"]) if now - t <= WIND_RECENT_S]          # real-erkennung-fix: not the 10-min gust
+        if sum(1 for v in win if v >= WIND_GUST_KMH) >= WIND_GUST_N:
             return True
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, KeyError, NameError):
         pass
     return STATE.get("wind_level") in ("strong", "storm")
 
@@ -248,6 +259,12 @@ def strict_gate(w, t, walking, t0):
     if t.is_person or n <= 1:
         t._sg = None
         return walking
+    if walking and t.ai_confirmed:                           # real-erkennung-fix: the AI sees a person - at once («Person?»)
+        if not getattr(t, "_strict_maybe", False):
+            t._strict_maybe = True
+            log_event("person", f"Person? #{t.id}: AI person while {STRICT['why']} - reported at once (not held back)")
+        t._sg = None
+        return True
     if not walking:
         if sg is not None:
             sg["miss"] += 1
@@ -256,9 +273,7 @@ def strict_gate(w, t, walking, t0):
         return False
     if sg is None:
         sg = t._sg = {"n": 0, "key": None, "t": t0, "miss": 0}
-    ai = getattr(w, "ai", None)
-    key = (("ai", getattr(ai, "_last_run", 0.0), id(getattr(ai, "boxes", None))) if t.ai_confirmed
-           else ("f", STATE.get("frames", 0)))
+    key = ("f", STATE.get("frames", 0))
     if key != sg["key"]:
         sg["key"] = key; sg["n"] += 1; sg["miss"] = 0
     if sg["n"] >= n or (sg["n"] >= 2 and t0 - sg["t"] >= 1.0):
@@ -377,8 +392,8 @@ def fog_selftest():
         assert run(2, [True, True]) == 1 and run(3, [True, True, True]) == 2
         assert run(2, [True, False, True, False, False, True]) == 2, "one miss allowed"
         assert run(3, [True, False, False, True, False, False, True, False, False]) is None, "single flickers never count"
-        # the walking person at dusk + wind, 3 pictures/s like the simulator, the AI each time: <= 1 s later
-        assert run(3, [True] * 6, ai=True, dt=0.33) == 2
+        # real-erkennung-fix: an AI person is reported at once («Person?»), also with a single AI result
+        assert run(3, [True] * 6, ai=True, dt=0.33) == 0 and run(2, [True], ai=True) == 0
         # Pi 5, 12 pictures/s, the AI only every 0.3 s: the cached AI boxes count once per run
         STRICT["n"] = 3; tr_ = _T(); tr_.ai_confirmed = True; t_ = 6000.0; got = None
         for i in range(40):
@@ -387,12 +402,22 @@ def fog_selftest():
                 w.ai._last_run = t_; w.ai.boxes = [i]
             if strict_gate(w, tr_, True, t_):
                 got = t_ - 6000.0; break
-        assert got is not None and 0.5 < got <= 1.1, f"Pi: confirmed after {got} s"
+        assert got is not None and got <= 0.1, f"Pi: confirmed after {got} s"
         # reasons: wind from the wind meter / simulator, switch «nachts strenger» off = as before
         TWI["on"] = True; STATE["storm"] = {"wind": 55.0, "gust": 70.0}
         assert strict_update() == 3 and STRICT["why"] == "dusk + wind"
         TWI["on"] = False; STATE["storm"] = {"wind": 5.0, "gust": 10.0}; wl = STATE.get("wind_level"); STATE["wind_level"] = "calm"
         assert strict_update() == 1
+        # real-erkennung-fix: one gust is not enough, an old storm (more than 2 min ago) neither
+        win_keep = list(STORM["win"]); now_ = time.time()
+        try:
+            STORM["win"].clear(); STORM["win"].extend([(now_ - 300, 55.0), (now_ - 290, 55.0), (now_ - 5, 45.0), (now_ - 2, 12.0)])
+            STATE["storm"] = {"wind": 12.0, "gust": 55.0}
+            assert not wind_strong(now_) and strict_update() == 1, "10-min gust / one gust"
+            STORM["win"].append((now_ - 1, 41.0))
+            assert wind_strong(now_), "two gusts in 2 min"
+        finally:
+            STORM["win"].clear(); STORM["win"].extend(win_keep)
         STATE["wind_level"] = wl
         CFG["night_strict"] = False; TWI["on"] = True
         assert strict_update() == 1
