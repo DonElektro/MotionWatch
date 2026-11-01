@@ -234,7 +234,7 @@ MWB_JS = r"""<script>
   const MINE = {on: window.MW_SG !== true, page: "", map: {}, ready: false, done: new WeakSet(), first: false, local: false, timer: 0};
   const LSK = p => "mwa:ansicht:" + p;
   async function mineLoad() {
-    const p = pageId(); MINE.page = p; MINE.ready = false; MINE.done = new WeakSet();
+    const p = pageId(); MINE.page = p; MINE.ready = false; MINE.done = new WeakSet(); MINE.touched = false;
     let j = null;
     try { const r = await fetch("/api/ansicht?seite=" + encodeURIComponent(p), {cache: "no-store"}); if (r.ok) j = await r.json(); } catch (e) {}
     if (p !== MINE.page) return;
@@ -247,7 +247,7 @@ MWB_JS = r"""<script>
   function mineApply(all) {                  // the kept view onto the cards (all = every card; else only cards that came later)
     if (!MINE.ready) return;
     if (!MINE.known) {                       // nothing kept yet: the first view is «Groups only» (switch was on) or as the page builds it -
-      if (MINE.first) items().forEach(o => o.set(o.top));   // kept with the first own click (the page has moved its cards by then)
+      if (MINE.first && !MINE.touched) items().forEach(o => o.set(o.top));   // kept with the first own click (the page has moved its cards by then)
       return;
     }
     items().forEach(o => { if (!all && MINE.done.has(o.el)) return; MINE.done.add(o.el);
@@ -271,7 +271,7 @@ MWB_JS = r"""<script>
   addEventListener("pagehide", () => { if (MINE.timer) { clearTimeout(MINE.timer); mineFlush(); } });
   const USR = new WeakMap();                 // a fold the user clicked himself (summary / card heading) - only these are kept
   document.addEventListener("click", e => { const h = e.target.closest && e.target.closest("summary, .sc-hd, .sc-sh"); if (!h || h.closest(SKIP)) return;
-    const n = h.parentElement; USR.set(n, Date.now());
+    const n = h.parentElement; USR.set(n, Date.now()); if (MINE.on) MINE.touched = true;   // from now on the user folds (no start view any more)
     if (n.tagName !== "DETAILS") setTimeout(() => { const o = items().find(x => x.el === n); if (o) ansichtMerken(o.id, o.get()); }, 0); }, true);
   document.addEventListener("toggle", e => { const n = e.target; if (n.tagName !== "DETAILS" || !(Date.now() - (USR.get(n) || 0) < 1500)) return;
     USR.delete(n); const o = items().find(x => x.el === n); if (o) ansichtMerken(o.id, o.get()); }, true);
