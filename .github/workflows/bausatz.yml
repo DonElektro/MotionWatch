@@ -1,0 +1,75 @@
+# Selbstbau-Paket als GitHub-Release (Wunsch Daniel, 01.11.2026)
+# Bei jedem Push auf main, der eine neue *signierte* Version bringt (versions.json), baut werkzeuge/bausatz.py das Paket
+# MoveEye_Bausatz_X.Y.Z.zip und legt es als Release «vX.Y.Z» ab – zusätzlich unter dem festen Namen MoveEye_Bausatz.zip.
+# Damit geht immer: https://github.com/DonElektro/MotionWatch/releases/latest/download/MoveEye_Bausatz.zip
+#  - Gibt es den Release vX.Y.Z schon, passiert nichts (von Hand: Actions -> Bausatz -> Run workflow, «neu» = ersetzen).
+#  - Nicht signiert (Daniel signiert später): kein Release; nach dem Signieren-Push läuft es von selbst.
+#  - Die KI-Releases (ki-modell*, ki-daten) bleiben «--latest=false» und stören «latest» nicht.
+# Keine Geheimnisse: nur GITHUB_TOKEN (contents: write); der Signierschlüssel bleibt lokal, das Paket enthält nur Repo-Dateien.
+name: Bausatz
+on:
+  push:
+    branches: [main]
+    paths: [versions.json]
+  workflow_dispatch:
+    inputs:
+      neu:
+        description: "Bestehenden Release dieser Version neu bauen (Dateien ersetzen)"
+        type: boolean
+        default: false
+permissions:
+  contents: write
+concurrency:
+  group: bausatz
+  cancel-in-progress: false
+env:
+  PYTHONUNBUFFERED: "1"
+
+jobs:
+  bausatz:
+    name: Selbstbau-Paket -> Release
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Version und Signatur
+        id: v
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          V=$(sed -n 's/^APP_VERSION = "\([0-9.]*\)"/\1/p' quelle/010_grundlagen.py)
+          echo "ver=$V" >> "$GITHUB_OUTPUT"
+          SIG=$(V="$V" python3 -c 'import json,os; v=os.environ["V"]; e=[x for x in json.load(open("versions.json"))["versions"] if x["version"]==v]; print("ja" if e and e[0].get("sig") and (e[0].get("data") or {}).get("sig") else "nein")')
+          echo "sig=$SIG" >> "$GITHUB_OUTPUT"
+          if gh release view "v$V" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then echo "da=ja" >> "$GITHUB_OUTPUT"; else echo "da=nein" >> "$GITHUB_OUTPUT"; fi
+          echo "Version $V · signiert: $SIG"
+      - name: Nichts zu tun
+        if: steps.v.outputs.sig != 'ja' || (steps.v.outputs.da == 'ja' && inputs.neu != true)
+        run: echo "Kein Release (signiert=${{ steps.v.outputs.sig }}, Release schon da=${{ steps.v.outputs.da }})"
+      - uses: actions/setup-python@v5
+        if: steps.v.outputs.sig == 'ja' && (steps.v.outputs.da != 'ja' || inputs.neu == true)
+        with:
+          python-version: "3.11"
+      - name: Playwright + Chromium
+        if: steps.v.outputs.sig == 'ja' && (steps.v.outputs.da != 'ja' || inputs.neu == true)
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          pip install -q playwright==1.55.0
+          python3 -m playwright install --with-deps chromium
+      - name: Paket bauen
+        if: steps.v.outputs.sig == 'ja' && (steps.v.outputs.da != 'ja' || inputs.neu == true)
+        run: python3 werkzeuge/bausatz.py --fest --aus ausgabe_bausatz && ls -la ausgabe_bausatz
+      - name: Release vX.Y.Z mit beiden Dateien
+        if: steps.v.outputs.sig == 'ja' && (steps.v.outputs.da != 'ja' || inputs.neu == true)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          V: ${{ steps.v.outputs.ver }}
+        run: |
+          Z="ausgabe_bausatz/MoveEye_Bausatz_$V.zip"; F="ausgabe_bausatz/MoveEye_Bausatz.zip"
+          if gh release view "v$V" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "v$V" "$Z" "$F" -R "$GITHUB_REPOSITORY" --clobber
+          else
+            printf 'MoveEye %s – Selbstbau-Paket: Anleitung (PDF, 5 Sprachen), Druckdateien Gehäuse v5.2, Bestelllisten (Basis / Komplett / Autark), MoveEye-Software (signiert) mit Installationsanleitung.\n\nImmer die neueste Version: https://github.com/%s/releases/latest/download/MoveEye_Bausatz.zip\n' "$V" "$GITHUB_REPOSITORY" > notes.md
+            gh release create "v$V" "$Z" "$F" -R "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "MoveEye $V" --notes-file notes.md --latest
+          fi

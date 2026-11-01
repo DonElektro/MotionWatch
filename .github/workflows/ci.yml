@@ -84,6 +84,9 @@ jobs:
       - name: Web-Rauchtest (alle Adressen ohne / mit Anmeldung, jede Seite im Browser)
         timeout-minutes: 15
         run: python3 werkzeuge/web_rauchtest.py --browser
+      - name: Selbstbau-Paket (bausatz.py, nur Deutsch, ohne Signaturprüfung)
+        timeout-minutes: 5
+        run: python3 werkzeuge/bausatz.py --sprachen de --unsigniert --aus /tmp/bausatz && ls -la /tmp/bausatz
 
   # ---------------------------------------------------------------- Simulator
   sim-texte:

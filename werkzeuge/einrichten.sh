@@ -148,6 +148,8 @@ if [ -n "$DATEI" ] && [ -f "$DATEI" ]; then
   ZIEL="$ORDNER/$(basename "$DATEI")"
   if [ -f "$ZIEL" ] && cmp -s "$DATEI" "$ZIEL"; then info "$(basename "$DATEI") ist schon im Programmordner"; else tu cp "$DATEI" "$ZIEL"; fi
   [ -f "$HIER/../versions.json" ] && tu cp "$HIER/../versions.json" "$ORDNER/versions.json"
+  ZD="$(dirname "$DATEI")/$(basename "$DATEI" .py | sed 's/^webcam_bewegung_/moveeye_daten_/').zip"   # Zusatzdatei (ab 3.0) dazu
+  if [ -f "$ZD" ] && ! cmp -s "$ZD" "$ORDNER/$(basename "$ZD")" 2>/dev/null; then tu cp "$ZD" "$ORDNER/$(basename "$ZD")"; fi
   ok "MoveEye $(basename "$DATEI") im Ordner $ORDNER"
 else
   info "neuste Version von GitHub holen"
