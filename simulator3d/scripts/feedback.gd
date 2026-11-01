@@ -11,6 +11,9 @@ extends PanelContainer
 ##     Anonym: kein Name, keine Adresse, ausser man schreibt sie hinein; Bild = das Fenster des Simulators (verkleinert).
 ##   * Tests: «fb_test» über /control lenkt die Nachrichten an eine Adresse auf diesem PC um (nur 127.0.0.1 / localhost);
 ##     «Was wird gesendet?» im Fenster zeigt den Text, wie er abgeht.
+##   * «Fertig kaufen» (Daniel 01.11.2026): open_order(paket) aus «Bauen» (werkstatt.gd) – Art «Bestellung fertiges Gerät»
+##     (ui_gemeinsam.json «fertig», wie MoveEye Teil 639zj), Paket Basis / Komplett / Autark vorgewählt, Feld «Kontakt
+##     (E-Mail/Telefon)» Pflicht; der Kontakt steht nur in der Nachricht, nie im Protokoll.
 
 var main
 var mehr
@@ -32,6 +35,13 @@ var _send_b: Button
 var _sent_id := 0
 var _img: Image = null                 # the window as it was when the dialog opened (preview = what is sent)
 var page := "Mehr"                     # where it was written (like «Seite» in MoveEye)
+var _pkg := ""                         # «Fertig kaufen»: the chosen package (ui_gemeinsam.json fertig/pakete)
+var _order_mode := false               # opened from «Fertig bestellen (Anfrage)»: the kind «order» is shown
+var _opening_order := false
+var _pkg_box: VBoxContainer
+var _pkg_btns := {}
+var _pkg_head: Label
+var _contact_note: Label
 
 # the public developer channel of MoveEye (quelle/370_rueckmeldung_teilen_abschreckung.py _FB_DEST / _FB_DEST2), unchanged
 const _FB_DEST := "aHR0cHM6Ly9udGZ5LW1lLmNvbS9tdy1mYi0xYzE3ZTFkMWViNWZhMmFhZTQ5Nw=="
@@ -40,7 +50,9 @@ const FB_SHOT_MAX := 350 * 1024
 const OUTBOX := "user://feedback_outbox.json"
 const SHOTS := "user://feedback_shots"
 const KINDS := [["bug", "Fehler", "bug"], ["idea", "Wunsch", "bulb"], ["praise", "Lob", "star"], ["question", "Frage", "question"]]
-const FB_KINDS := {"bug": "Fehler", "idea": "Wunsch", "praise": "Lob", "question": "Frage", "other": "Feedback"}
+const FB_KINDS := {"bug": "Fehler", "idea": "Wunsch", "praise": "Lob", "question": "Frage", "order": "Bestellung fertiges Gerät", "other": "Feedback"}
+const UG = preload("res://scripts/ui_gemeinsam.gd")
+const T = preload("res://scripts/i18n.gd")
 const UI = preload("res://scripts/ui_style.gd")
 const Icons = preload("res://scripts/mehr_icons.gd")
 const YEL := Color("#f5c542")
@@ -109,6 +121,45 @@ func _ready() -> void:
 		b.pressed.connect(func(): _kind = k[0]; _paint_kind(); _peek_update())
 		seg.add_child(b)
 		_kind_btns[k[0]] = b
+	# «Fertig kaufen»: the fifth kind (only when opened from «Bauen»), the packages and the price note
+	var ob := Button.new()
+	ob.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	ob.custom_minimum_size = Vector2(0, 34)
+	ob.focus_mode = Control.FOCUS_NONE
+	ob.visible = false
+	var oh := HBoxContainer.new()
+	oh.set_anchors_preset(Control.PRESET_FULL_RECT)
+	oh.alignment = BoxContainer.ALIGNMENT_CENTER
+	oh.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	oh.add_theme_constant_override("separation", 5)
+	oh.add_child(Icons.icon("cart", UI.TXT, 16.0))
+	var ol := Label.new()
+	ol.name = "L"
+	ol.add_theme_font_size_override("font_size", 13)
+	oh.add_child(ol)
+	ob.add_child(oh)
+	ob.pressed.connect(func(): _kind = "order"; _paint_kind(); _peek_update())
+	seg.add_child(ob)
+	_kind_btns["order"] = ob
+	_pkg_box = VBoxContainer.new()
+	_pkg_box.add_theme_constant_override("separation", 4)
+	_pkg_box.visible = false
+	box.add_child(_pkg_box)
+	_pkg_head = _wrap(UI.small(""))
+	_pkg_box.add_child(_pkg_head)
+	var pr := HBoxContainer.new()
+	pr.add_theme_constant_override("separation", 6)
+	_pkg_box.add_child(pr)
+	for p in UG.fertig_pakete():
+		var pid := str(p.get("id", ""))
+		var pb := Button.new()
+		pb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		pb.custom_minimum_size = Vector2(0, 34)
+		pb.focus_mode = Control.FOCUS_NONE
+		pb.add_theme_font_size_override("font_size", 13)
+		pb.pressed.connect(func(): set_pkg(pid))
+		pr.add_child(pb)
+		_pkg_btns[pid] = pb
 	var sr := HBoxContainer.new()
 	sr.add_theme_constant_override("separation", 2)
 	box.add_child(sr)
@@ -149,6 +200,9 @@ func _ready() -> void:
 	_contact.max_length = 120
 	_contact.text_changed.connect(func(_t): _peek_update())
 	box.add_child(_contact)
+	_contact_note = _wrap(UI.small(""))
+	_contact_note.visible = false
+	box.add_child(_contact_note)
 	_shot = CheckBox.new()
 	_shot.text = "Bildschirmfoto mitschicken – das Bild des Simulator-Fensters (verkleinert)"
 	_shot.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -223,6 +277,67 @@ func _paint_kind() -> void:
 		var st := UI.box(UI.ORG.darkened(0.72) if on else UI.BTN2, UI.ORG if on else UI.LINE, 10, 8, 1)
 		for s in ["normal", "hover", "pressed", "focus"]:
 			b.add_theme_stylebox_override(s, st)
+	_paint_order()
+
+
+func _paint_order() -> void:
+	"""«Fertig kaufen»: the kind button, the packages, the contact field (texts from ui_gemeinsam.json in the language)"""
+	if _pkg_box == null:
+		return
+	var L := T.lang()
+	var ob: Button = _kind_btns.get("order")
+	if ob != null:
+		ob.visible = _order_mode or _kind == "order"
+		(ob.get_child(0).get_node("L") as Label).text = UG.fertig_text("topic", L)
+	var order := _kind == "order"
+	_pkg_box.visible = order
+	_contact_note.visible = order
+	_contact.placeholder_text = UG.fertig_text("contact", L) if order else "Kontakt für eine Antwort (freiwillig)"
+	_contact_note.text = UG.fertig_text("contact_note", L)
+	_pkg_head.text = UG.fertig_text("package", L) + " · " + UG.fertig_text("price", L)
+	for pid in _pkg_btns:
+		var pb: Button = _pkg_btns[pid]
+		var pk := UG.fertig_paket(str(pid), L)
+		pb.text = str(pk.get("name", pid))
+		pb.tooltip_text = str(pk.get("desc", ""))
+		var on: bool = str(pid) == _pkg
+		var st := UI.box(UI.ORG.darkened(0.72) if on else UI.BTN2, UI.ORG if on else UI.LINE, 10, 8, 1)
+		for s_ in ["normal", "hover", "pressed", "focus"]:
+			pb.add_theme_stylebox_override(s_, st)
+
+
+func set_pkg(id: String) -> void:
+	"""choose a package; a still untouched prefilled text follows the new package"""
+	var L := T.lang()
+	var old_t := _order_text(_pkg, L)
+	_pkg = str(UG.fertig_paket(id, L).get("id", ""))
+	if _text != null and (_text.text.strip_edges() == "" or _text.text == old_t):
+		_text.text = _order_text(_pkg, L)
+	_paint_order()
+	_peek_update()
+
+
+func _order_text(pid: String, L: String) -> String:
+	return UG.fertig_text("text", L).replace("{paket}", str(UG.fertig_paket(pid, L).get("name", pid)))
+
+
+func open_order(pkg := "", where := "Bauen") -> void:
+	"""«Fertig bestellen (Anfrage)» (werkstatt.gd): kind «order», the package chosen, the text prefilled, no picture, no
+	technical details (both can be switched on)"""
+	_order_mode = true
+	_kind = "order"
+	var L := T.lang()
+	var old_t := _order_text(_pkg, L)
+	_pkg = str(UG.fertig_paket(pkg, L).get("id", ""))
+	if _text.text.strip_edges() == "" or _text.text == old_t:
+		_text.text = _order_text(_pkg, L)
+	_shot.button_pressed = false
+	_diag.button_pressed = false
+	_paint_kind()
+	_opening_order = true
+	open(where)
+	_opening_order = false
+	_contact.grab_focus()
 
 
 func _set_stars(i: int) -> void:
@@ -241,6 +356,11 @@ func open(where := "") -> void:
 	"""the dialog (with MoveEye connected the message goes over MoveEye, else straight from here)"""
 	if where != "":
 		page = where
+	if not visible and not _opening_order:                     # opened normally: no «order» (that comes only from «Bauen»)
+		_order_mode = false
+		if _kind == "order":
+			_kind = "idea"
+	_paint_kind()
 	_status.text = ""
 	if visible:
 		get_parent().move_child(self, -1)
@@ -296,6 +416,8 @@ func fill_and_send(d: Dictionary) -> void:
 	"""for tests over /control: fill the fields and press «Senden» (press = false: only fill)"""
 	_text.text = str(d.get("text", ""))
 	_kind = str(d.get("kind", "idea"))
+	if _kind == "order":
+		_pkg = str(UG.fertig_paket(str(d.get("pkg", "")), "de").get("id", ""))
 	_paint_kind()
 	_set_stars(clampi(int(d.get("stars", 0)), 0, 5))
 	_contact.text = str(d.get("contact", ""))
@@ -310,6 +432,9 @@ func fill_and_send(d: Dictionary) -> void:
 # ---- the message (like feedback_send of MoveEye) ---------------------------------------------------------------------------
 func _body(text: String) -> String:
 	var b := text
+	if _kind == "order":
+		var pk := UG.fertig_paket(_pkg, "de")
+		b += "\n\nPaket: %s (%s) · Preis auf Anfrage" % [str(pk.get("name", _pkg)), str(pk.get("desc", ""))]
 	var ct := _contact.text.strip_edges().substr(0, 120)
 	if ct != "":
 		b += "\n\nKontakt: " + ct
@@ -350,6 +475,10 @@ func _send() -> void:
 	if t.length() < 3:
 		_status.text = "Bitte ein paar Worte schreiben."
 		return
+	if _kind == "order" and _contact.text.strip_edges().length() < 3:
+		_status.text = UG.fertig_text("contact_needed", T.lang())
+		_contact.grab_focus()
+		return
 	if connected():
 		_send_mw(t)
 		return
@@ -381,6 +510,7 @@ func _send() -> void:
 	_text.text = ""
 	_contact.text = ""
 	_set_stars(0)
+	_order_mode = false
 	visible = false
 	if mehr != null:
 		mehr.toast("Danke! Die Nachricht ist unterwegs.")
@@ -391,7 +521,7 @@ func _send_mw(t: String) -> void:
 	"""MoveEye is connected: it takes the message (mw_cmd «feedback», 350) and sends it like all feedback"""
 	var id: int = max(int(Time.get_unix_time_from_system() * 1000.0), int(main.mw_cmd.get("id", 0)) + 1)
 	main.mw_cmd = {"id": id, "op": "feedback", "kind": _kind, "stars": _stars, "text": t.substr(0, 3000),
-				   "contact": _contact.text.strip_edges(), "shot": _shot.button_pressed, "sim": main.VERSION}
+				   "contact": _contact.text.strip_edges(), "shot": _shot.button_pressed, "sim": main.VERSION, "pkg": _pkg if _kind == "order" else ""}
 	_sent_id = id
 	last = {"route": "moveeye", "id": id, "kind": _kind, "stars": _stars, "text": t.substr(0, 3000)}
 	_status.add_theme_color_override("font_color", UI.MUT)
@@ -406,7 +536,9 @@ func _send_mw(t: String) -> void:
 			if mehr != null and mehr.protokoll != null:
 				mehr.protokoll.add("rueckmeldung", "Rückmeldung an MoveEye übergeben – MoveEye schickt sie weiter")
 			_text.text = ""
+			_contact.text = ""
 			_set_stars(0)
+			_order_mode = false
 			visible = false
 			if mehr != null:
 				mehr.toast("Danke! MoveEye hat die Nachricht übernommen und schickt sie weiter.")
@@ -513,7 +645,7 @@ func flush() -> void:
 	var sent := 0
 	for m in box:
 		var title := _title(str(m.get("kind", "")), int(m.get("stars", 0)))
-		var tags: String = {"bug": "bug", "idea": "bulb", "praise": "star", "question": "question"}.get(str(m.get("kind", "")), "speech_balloon")
+		var tags: String = {"bug": "bug", "idea": "bulb", "praise": "star", "question": "question", "order": "shopping_cart"}.get(str(m.get("kind", "")), "speech_balloon")
 		if not bool(m.get("text_sent", false)):
 			var oks := []
 			for i in range(us.size()):
@@ -566,4 +698,4 @@ func _unhandled_key_input(e: InputEvent) -> void:
 
 func status() -> Dictionary:
 	return {"open": visible, "connected": connected(), "waiting": _load().size(), "errors": errs, "ok_t": ok_t, "test_url": test_url, "last": last,
-			"kind": _kind, "stars": _stars, "busy": _busy, "peek": _peek.text if _peek != null else ""}
+			"kind": _kind, "stars": _stars, "busy": _busy, "pkg": _pkg, "order": _order_mode, "peek": _peek.text if _peek != null else ""}

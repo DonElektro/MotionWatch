@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.44.2 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.45.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -487,6 +487,14 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.45.0
+3.45.0: Varianten: Bau-Infos mit Stopfen 18–24, Kanal 4 auf das IR-Modul, Ladequelle und 3 Paketen (Basis / Komplett /
+Autark); in der Werkstatt (Mehr › Bauen) der Hinweis «fixfertig kaufen» mit Anfrage. In MoveEye: ehrliche Selbstdiagnose
+ohne Servo-Treiber und ohne Wärmebild, Relais ab Werk aus, eine Mover-Fahrt löst keinen «Gerät bewegt»-Alarm mehr aus;
+/info/ als Produktseite.
+So testest du: Mehr › Bauen: Paket wählen, Stopfen 18–24 und Hinweis «fixfertig kaufen» ansehen; in MoveEye /info/ öffnen;
+mit dem Mover fahren (kein Alarm «Gerät bewegt»); Selbstdiagnose ohne Kopf zeigt den Servo-Hinweis statt Haken.
 
 NEU IN 3.44.2
 3.44.2: Versionshinweis: eine kleine Zeile unten rechts mit Knopf und ✕ statt eines bildschirmhohen Balkens.

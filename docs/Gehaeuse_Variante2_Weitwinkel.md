@@ -86,7 +86,7 @@ Grundlage: Gehäuse v5.1 (parametrisches Python-Modell). Unverändert bleiben al
 | MOSFET-Modul | neuer Platz unten an der Lüftungswand unter dem PCA9685 (vorne war es der Kamera im Weg) |
 | Status-LED | 5-mm-RGB-LED auf dem Kopfdach (Kipp-Koordinaten x +3, y +8), Sockel Ø 14,4 für Diffusor **«Blinki-Auge»** (Kuppel Ø 14 + schwarzer Pupillenring, 7,8 mm hoch). Kippen ±70° frei. **Kanäle 5/6/7**, Empfehlung **gemeinsame Kathode** (Adafruit-Board hat 220 Ω, 3,3 V) |
 | Tasten | 2 × 12-mm-Taster IP67 an der **Rückwand** (y 10,5 und 50,5, z 33), mit Dach und Seitenwangen gegen versehentliches Drücken; 12 mm Einbautiefe geprüft. GPIO noch festlegen (frei: nicht 4, 5, 22) |
-| Blindabdeckung | **12_Blindstopfen_Weitwinkel** (2 Rastzungen, 45°-Rastfläche, ohne Werkzeug lösbar) und **13_Stopfen_IR_LED** (geschlitzter Rastzapfen); STL + Generator `kleinteile52.py` (Parameter `BLIND_TOL` 0,2 mm, `BLIND_NOSE`) |
+| Blindabdeckung | **12_Blindstopfen_Weitwinkel** (2 Rastzungen, 45°-Rastfläche, ohne Werkzeug lösbar) und **22_Stopfen_IR_LED** (geschlitzter Rastzapfen; bis 01.11.2026 13_Stopfen_IR_LED); STL + Generator `kleinteile52.py` (Parameter `BLIND_TOL` 0,2 mm, `BLIND_NOSE`) |
 | Offen | Linsenhöhe / Frontlinse der CM3 Wide, Taster-Masse und Kabelweg nachmessen; Helligkeit der RGB-LED am echten Board prüfen |
 
 ## Simulator wie Gehäuse v5.2 (Paket P9 «Weitwinkel-Kamera wie Gehäuse v5.2», 31.10.2026)

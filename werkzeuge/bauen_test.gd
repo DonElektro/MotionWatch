@@ -2,6 +2,8 @@ extends SceneTree
 ## Test «Bauen» im Simulator (ohne Bild, real-bauen 01.11.2026): die Daten aus werkstatt_daten.gd (erzeugt aus
 ## hardware/gehaeuse/bau.json, dieselbe Quelle wie MoveEye /build) sind vollständig, das Fenster öffnet alle 10 Reiter in
 ## derselben Reihenfolge wie ui_gemeinsam.json «more/build/reiter», Varianten blenden Teile ein und aus, «Mein Bau» zählt.
+## «Fertig kaufen» (639zj): der Hinweis steht oben, «Fertig bestellen (Anfrage)» öffnet die Rückmeldung mit Art «order» und
+## dem Paket, ohne Kontakt geht nichts weg (es wird nie wirklich gesendet).
 ##   cd simulator3d && <godot> --headless --path . -s "$PWD/../werkzeuge/bauen_test.gd"   (absoluter Pfad nötig)
 ## Ende: «Bauen-Test OK» oder «SCRIPT ERROR: Bauen-Test: …» (Exit-Code 0 / 1).
 
@@ -11,12 +13,16 @@ var gehaeuse = null
 var mw := {}
 var mw_t := 0.0
 var mw_addr := ""
+var feedback_dlg = null
+var quality := 1
+const VERSION := "test"
 func now() -> float:
 	return Time.get_ticks_msec() / 1000.0
 """
 
 var errs := []
 var W
+var F
 var _n := 0
 
 
@@ -63,6 +69,10 @@ func _init() -> void:
 	W = Wk.new()
 	W.main = main
 	root.add_child.call_deferred(W)
+	F = load("res://scripts/feedback.gd").new()
+	F.main = main
+	main.feedback_dlg = F
+	root.add_child.call_deferred(F)
 
 
 func _process(_dt: float) -> bool:
@@ -98,6 +108,38 @@ func _process(_dt: float) -> bool:
 	var np: int = W.parts.size()
 	if np < 40:
 		errs.append("3D: nur %d Teile geladen" % np)
+	# «Fertig kaufen»: the hint at the top, the order goes into the feedback (kind «order», package), no contact = not sent
+	var UGf = load("res://scripts/ui_gemeinsam.gd")
+	var lg: String = load("res://scripts/i18n.gd").lang()          # the texts follow the language of the simulator
+	var fi: Dictionary = W.info().get("fertig", {})
+	eq("Fertig: Hinweis sichtbar", fi.get("shown", false), true)
+	eq("Fertig: Knopf", fi.get("button", ""), UGf.fertig_text("button", lg))
+	eq("Fertig: Text", fi.get("text", ""), UGf.fertig_text("hint", lg))
+	eq("Fertig: Standard-Paket", fi.get("pkg", ""), "komplett")
+	if (W._w["fertig"] as Control).get_index() > (W._w["tab_uebersicht"] as Control).get_parent().get_parent().get_index():
+		errs.append("Fertig: Hinweis nicht über den Reitern")
+	var ro: Dictionary = W.control({"do": "order", "pkg": "autark"})
+	eq("Fertig: Bestellung", ro.get("ok", false), true)
+	eq("Fertig: Bauen zu", W.is_open(), false)
+	eq("Fertig: Rückmeldung offen", F.visible, true)
+	eq("Fertig: Art", F._kind, "order")
+	eq("Fertig: Paket", F._pkg, "autark")
+	if F._text.text.find(str(UGf.fertig_paket("autark", lg).get("name", "?"))) < 0:
+		errs.append("Fertig: Text nicht vorausgefüllt: " + F._text.text)
+	eq("Fertig: Art-Knopf sichtbar", (F._kind_btns["order"] as Button).visible, true)
+	eq("Fertig: Paketwahl sichtbar", F._pkg_box.visible, true)
+	eq("Fertig: Kontakt-Feld", F._contact.placeholder_text, UGf.fertig_text("contact", lg))
+	var waiting: int = F._load().size()
+	F.fill_and_send({"kind": "order", "pkg": "basis", "text": F._text.text, "contact": "", "press": true})
+	eq("Fertig: ohne Kontakt nicht gesendet", F._load().size(), waiting)
+	eq("Fertig: Hinweis Kontakt", F._status.text, UGf.fertig_text("contact_needed", lg))
+	if F._body("x").find("Paket: Basis") < 0:
+		errs.append("Fertig: Paket fehlt in der Nachricht")
+	F.visible = false
+	F.open("Mehr")
+	eq("Fertig: normale Rückmeldung ohne Bestellung", F._kind, "idea")
+	eq("Fertig: Art-Knopf versteckt", (F._kind_btns["order"] as Button).visible, false)
+	F.visible = false
 	W.close()
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(W.MEIN_PFAD))
 	DirAccess.remove_absolute(ProjectSettings.globalize_path("user://MoveEye_Einkauf.csv"))

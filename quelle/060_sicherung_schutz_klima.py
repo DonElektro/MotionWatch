@@ -200,7 +200,7 @@ class TamperGuard:
     def __init__(self):
         self.ref = None; self.ref_mean = 0.0; self.t_last = 0.0; self.settle = time.time() + 15
         self.pos = None; self.n_cov = 0; self.n_mov = 0; self.cool = 0.0
-        self.acc = None; self.base = None; self.n_tilt = 0; self.armed_was = None
+        self.acc = None; self.base = None; self.n_tilt = 0; self.armed_was = None; self.own_drive = False
         STATE["tamper"] = {"sensor": False, "last": "", "state": "learning"}
         threading.Thread(target=self.sensor_loop, daemon=True, name="tamper").start()
 
@@ -210,7 +210,8 @@ class TamperGuard:
             return
         self.t_last = t0
         pos = (round(CFG["pan"], 1), round(CFG["tilt"], 1))
-        if pos != self.pos or manual_active() or STATE.get("tracking") or STATE.get("patrol_moving") or TL_HOLD.get("on"):
+        if (pos != self.pos or manual_active() or STATE.get("tracking") or STATE.get("patrol_moving") or TL_HOLD.get("on")
+                or mover_own_motion()):                     # 3.44.3: the mover drives itself (070) - the picture changes on purpose
             self.pos = pos; self.settle = t0 + 8; self.ref = None; self.n_cov = self.n_mov = 0
             STATE["tamper"]["state"] = "learning"; return
         if t0 < self.settle:
@@ -310,6 +311,19 @@ class TamperGuard:
         cos = sum(x / n * y for x, y in zip(a, self.base))
         ang = math.degrees(math.acos(max(-1.0, min(1.0, cos))))
         shake = abs(n - 1.0) > 0.45
+        if mover_own_motion():                              # 3.44.3: own drive of the mover (070) - not «device moved»
+            if not self.own_drive:
+                self.own_drive = True; self.n_tilt = 0
+                log_event("sys", "Motion sensor: own drive of the mover - not counted as «device moved»")
+            # only falling over still counts: > 60° against the position before the drive, several readings in a row
+            self.n_tilt = self.n_tilt + 1 if ang > 60 else 0
+            if self.n_tilt >= 4:
+                self.alarm("knocked"); self.n_tilt = 0
+                self.base = [x / n for x in a]
+            return
+        if self.own_drive:                                  # the quiet time after the drive is over: the new resting position
+            self.own_drive = False; self.n_tilt = 0
+            self.base = [x / n for x in a]; return
         self.n_tilt = self.n_tilt + 1 if (ang > float(CFG["tamper_tilt"]) or shake) else 0
         if self.n_tilt >= 2:
             self.alarm("knocked" if ang > 60 else "moved"); self.n_tilt = 0

@@ -1658,7 +1658,8 @@ class WebStream:
         def api_feedback():
             d = body(); lang = norm_lang(d.get("lang"))
             ok, err = feedback_send(d.get("kind"), d.get("text"), str(d.get("contact") or "").strip(), bool(d.get("diag")), d.get("stars"),
-                                    d.get("page"), fbx_web_shot(False) if d.get("shot") else None, "web")      # 2.98.33: stars, page, picture (584)
+                                    d.get("page"), fbx_web_shot(False) if d.get("shot") else None, "web",      # 2.98.33: stars, page, picture (584)
+                                    str(d.get("pkg") or ""))                                                    # «Fertig kaufen» (639zj)
             return reply({"ok": ok, "error": tr_err(err, lang) if err else None}, 200 if ok else 400)
 
         @app.route("/api/quick", methods=["POST"])

@@ -777,7 +777,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 3.44.2")
+        self.root.title("MoveEye 3.45.0")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -1155,7 +1155,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 3.44.2 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 3.45.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -3672,7 +3672,8 @@ class App:
         self._status("Lights", (tr("night") if lt.get("dark") else tr("day")) + " · "
                      + " · ".join(f"{tr(LIGHT_NAMES[n])}: {tr('ON') if lt.get(n) else tr('off')}" + ("" if CFG[f'light_{n}_out'] else f" ({tr('not connected')})")
                                   for n in ("white", "ir")))
-        self._status("Servo driver", f"{tr('backend')}: {st['servo_backend']}")
+        self._status("Servo driver", f"{tr('backend')}: {st['servo_backend']}"
+                     + (" · ⚠ " + tr(SERVO_GPIO_FALLBACK_TEXT) if servo_gpio_fallback() else ""))      # 3.44.3 (080)
         self._status("Timelapse", tl_status_text(st["timelapse"]) + (" · " + tl_status_text(st["timelapse_render"]) if st["timelapse_render"] else ""))
         self._status("Thermal camera", tl_status_text(st["thermal"]) + (f" · {st['thermal_res']}" if st["thermal"] == "connected" and st["thermal_res"] else "")
                      + (f" · max {st['thermal_max']:.1f} °C" if st["thermal"] == "connected" and st.get("thermal_max") is not None else ""))

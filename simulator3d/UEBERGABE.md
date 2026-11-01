@@ -1,8 +1,15 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 01.11.2026 · Version **3.44.2** · MoveEye **3.44.2** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 01.11.2026 · Version **3.45.0** · MoveEye **3.45.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.45.0 (MoveEye 3.45.0): Sammel-Release Varianten (MoveEye Teile 639zs, 639zj, 620)
+
+- real-varianten-sw (639zs): Servo-Hinweis ohne PCA9685, Wärmebild-Meldung, Relay 1 ab Werk aus, Mover-Fahrt ohne Alarm.
+- real-varianten-hw: Stopfen 18–24 (3MF in Druckdateien/v5-2), Kanal 4 → IR-Modul, Ladequelle, Pakete Basis/Komplett/Autark.
+- real-fertig-kaufen (639zj): Hinweis «fixfertig kaufen» in Bauen, Werkstatt (werkstatt.gd) und Pi-Fenster, Bestell-Rückmeldung.
+- real-homepage: /info/ als Produktseite (Teil 620, auf Basis der Fassung vom 30.10.).
 
 ## NEU in 3.44.2 (MoveEye 3.44.2): Versionshinweis als kleine Zeile (`scripts/abgleich.gd`)
 

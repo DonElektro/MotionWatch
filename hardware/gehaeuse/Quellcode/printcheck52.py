@@ -1,12 +1,15 @@
 """v5.2: Schicht-Prüfung (schwebende Inseln, Überhänge) der geänderten / neuen Teile, in Druckrichtung.
-python3 printcheck52.py 1 6 C D E F"""
+python3 printcheck52.py 1 6 C D E F G H J K M N   (G–K: Stopfen 18–21, M/N: 23/24, 01.11.2026; D = 22_Stopfen_IR_LED, früher 13)"""
 import numpy as np, sys
 from scipy import ndimage
 import v52
 from csg import R, T
 jobs = [("1_Unterteil", v52.part_tub, [0, 0, 0], 0.3), ("6_Kopf", v52.part_head, [-90, 0, 0], 0.3),
         ("C_Blindstopfen_WW", v52.blind_wide, [0, -90, 0], 0.1), ("D_Stopfen_IR", v52.blind_ir, [0, 0, 0], 0.1),
-        ("E_Diffusor", v52.part_diffuser, [0, 0, 0], 0.1), ("F_Pupillenring", v52.part_pupil, [0, 0, 0], 0.1)]
+        ("E_Diffusor", v52.part_diffuser, [0, 0, 0], 0.1), ("F_Pupillenring", v52.part_pupil, [0, 0, 0], 0.1),
+        ("G_Stopfen_Waermebild", v52.stopfen_waermebild, [0, -90, 0], 0.1), ("H_Stopfen_IR_Modul", v52.stopfen_ir_modul, [0, 0, 0], 0.1),
+        ("J_Stopfen_DS18B20", v52.stopfen_ds18, [0, 0, 0], 0.1), ("K_Stopfen_Relais", v52.stopfen_relais, [0, 0, 0], 0.1),
+        ("M_Stopfen_Mikrofon", v52.stopfen_mikrofon, [0, 0, 0], 0.05), ("N_Stopfen_Lichtleiter", v52.stopfen_lichtleiter, [0, 0, 0], 0.05)]
 sel = sys.argv[1:]
 lh = 0.2
 for name, fn, rot, h in jobs:

@@ -248,7 +248,7 @@ func servo_k() -> float:
 
 func ir_wide_on() -> bool:
 	if not installed():
-		return false                       # P9: blind cover - the LED hole has its stopper too (13_Stopfen_IR_LED)
+		return false                       # P9: blind cover - the LED hole has its stopper too (22_Stopfen_IR_LED, formerly 13)
 	var L: Dictionary = main.mw.get("lights", {})
 	return bool(L.get("ir_wide", false)) or (bool(main.cond.get("ir", false)) and on_device())
 
