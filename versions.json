@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-01 18:55",
+ "generated": "2026-11-01 20:38",
  "versions": [
+  {
+   "version": "3.45.0",
+   "file": "webcam_bewegung_3_45_0.py",
+   "url": "",
+   "sha256": "b77d51b19b7daaceb3fd7438d451055ace336cd7ee29e03869e299b372caa5c1",
+   "date": "2026-11-01 20:38",
+   "notes": "Varianten: ehrliche Selbstdiagnose ohne Servo-Treiber (PCA9685) und ohne Wärmebild, Relais ab Werk aus, eine Mover-Fahrt löst keinen «Gerät bewegt»-Alarm mehr aus; Bau-Infos: Stopfen 18–24, Kanal 4 auf das IR-Modul, Ladequelle, 3 Pakete (Basis/Komplett/Autark); Hinweis «fixfertig kaufen» in Bauen, Simulator-Werkstatt und Pi-Fenster; /info/ als Produktseite.",
+   "size": 4833020,
+   "sig": "ac29bc21a5a9ea75136ccb80a15829d45582f41ff047d8f4ad01ff69fc634c9000abd135a02a3f33ae17eca4759b64d35b21832f8a6767315b23725b29754d0b",
+   "data": {
+    "file": "moveeye_daten_3_45_0.zip",
+    "url": "",
+    "sha256": "e3fda8329172ebbae6f4549d9f1acbd76e32bd759d1068761ac365d2ca1b980a",
+    "size": 3228090,
+    "sig": "094f6a0cbb4a554e18c477bdb6682dd251af2de567e05f01d92b7e9d32479d0fc1e40f09f6d388def3ffc326ae477d4bfc210557833b72c8340d083641ff650d"
+   }
+  },
   {
    "version": "3.44.2",
    "file": "webcam_bewegung_3_44_2.py",
    "url": "",
    "sha256": "c578b917dd50377406f353848f34ab90a641a0ad57cc1584c06a07fa04bbc67d",
-   "date": "2026-11-01 18:55",
+   "date": "2026-11-01 20:37",
    "notes": "Versionshinweis: eine kleine Zeile unten rechts mit Knopf und ✕ statt eines bildschirmhohen Balkens.",
    "size": 4796077,
    "sig": "30d7cb87cb595d41f670a1a8be476de7375c71b4f91a5a098e8f48ad3299af4d55dba9200673b68af1292352bd6c4296e14abea8374ce056d4e91cf841c68c0a",
@@ -136,23 +153,6 @@
     "sha256": "1b0b8f08b4d77026a87ed54badc4f665478a782910df017ffa4b3712180a05dc",
     "size": 1585199,
     "sig": "b050890b73ace4f2f4126ec9876b9302b74f5501243dff13780ff0978011f9f6319a00d9e19f10baf205e279356006bc339332d249619f5e4e78bec27b55b607"
-   }
-  },
-  {
-   "version": "3.36.0",
-   "file": "webcam_bewegung_3_36_0.py",
-   "url": "",
-   "sha256": "50889009c7f3eb9a13d24ab1d9c9ea2d815ca79aa09de41ecc42c628bb56da3a",
-   "date": "2026-11-01 11:56",
-   "notes": "Simulator: menschlichere Figuren – ab Grafik mittel MakeHuman-Körper aus dem nachladbaren Menschen-Paket (~5 MB), einfach (Pi) mit feinerem Körper und Gesicht; Kleidung, Rucksack, Stöcke und Lampen passend zur Szene.",
-   "size": 4670848,
-   "sig": "cde3dcdfafe9e8efa55658afba9c5d651c0cf06e2028e7f3d2690f5ed6bce7625ddf1821b2bd447e536813d8295f73ba09e5b8df0feda1565d41bc74d79d0106",
-   "data": {
-    "file": "moveeye_daten_3_36_0.zip",
-    "url": "",
-    "sha256": "0a770b3b7028cda21568dbff9d76af4c7689c78716e4629a18b09fd9af31fa5b",
-    "size": 1585160,
-    "sig": "cdea2923e026abdaaadb47f9d219f69dd51c7063307013ca4ca834905dd3094fa7f006bd45dda564def18ada708228f3cab02fb0f330256c8b1db9949df1320c"
    }
   },
   {
