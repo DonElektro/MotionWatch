@@ -45,6 +45,7 @@ const ITEMS := [["help", "help", "Hilfe", "Maus, Tasten, Leiste – und die Anle
 		["updates", "update", "Updates", ""],
 		["theme", "theme", "Hell / Dunkel / Rotlicht", ""],         # Menüs A: «Ansicht» is the menu of the bar (like MoveEye), this is the colour scheme
 		["feedback", "chat", "Rückmeldung an den Entwickler", "Fehler, Wünsche, Lob, Fragen – anonym"],
+		["werkstatt", "wrench", "Werkstatt", "Gehäuse v5.1 in 3D: drehen, zerlegen, Montage Schritt für Schritt"],   # real-gehaeuse (ui_gemeinsam.json «more»: case)
 		["dev", "bug", "Entwickler", "Karte aller Orte, Flugkamera, Prüfstand, Störungen, Spieltest – nur für den Besitzer"],
 		["werk", "trash", "⚠ Auf Werkseinstellungen zurücksetzen …", "vorher eine Kopie der alten Einstellungen – nur für den Besitzer"],
 		["about", "info", "Über den Simulator", "Version und Status, Geschichte, Entwickler"]]
@@ -276,6 +277,11 @@ func act(id: String) -> void:
 			dev.open()
 		"werk":
 			werk.open()
+		"werkstatt":
+			close_window()
+			if main.werkstatt != null:
+				main.werkstatt.mehr = self
+				main.werkstatt.open()
 		"mehr":
 			show_card()
 

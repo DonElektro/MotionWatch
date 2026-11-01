@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 6852 (Stellen: 9524)
-Übersetzt: en 6852, fr 6852, it 6852, rm 6852
+Texte gesamt: 7007 (Stellen: 9755)
+Übersetzt: en 7007, fr 7007, it 7007, rm 7007
 Unsicher markiert: 31
-Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 470 Stellen
-Nicht mehr im Code (noch in texte.json): 245
+Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 471 Stellen
+Nicht mehr im Code (noch in texte.json): 262
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 68 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main.gd 1, phone.gd 1, spieltest.gd 1
-Übersprungen (Grund: Anzahl): kennung 24624, schlüssel 18342, keine Wörter 11550, index 9269, technisch 3166, doc 2066, einheit 294, log 154, englisch 126, stringname 102, pfad 98, html 68, klasse 25, shader 6
+Übersprungen (Grund: Anzahl): kennung 24883, schlüssel 18441, keine Wörter 11719, index 9330, technisch 3196, doc 2075, einheit 297, log 154, englisch 127, pfad 108, stringname 102, html 68, klasse 25, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   main.gd                  687    42
@@ -18,6 +18,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   bergtal.gd               187     5
   bergtal_horror.gd        159     3
   abenteuer_raetsel.gd     145     2
+  werkstatt_daten.gd       136     1
   maggie_story.gd          113     2
   zwei_bausteine.gd        113     2
   abenteuer_moveeye.gd     110    14
@@ -37,8 +38,8 @@ Pro Datei (Texte / davon dynamische Stellen):
   objekte_neu.gd            80     0
   maggie_gefahr.gd          79     0
   maggie_zwei.gd            78     0
+  mehr.gd                   75    13
   kids.gd                   74     1
-  mehr.gd                   73    13
   pruefstand.gd             72     8
   diagnose.gd               71     8
   abenteuer_zweit.gd        66     0
@@ -90,6 +91,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   zwilling.gd               29     3
   gamemission.gd            29     0
   news.gd                   29     1
+  werkstatt.gd              28     0
   padmap.gd                 28    19
   explore.gd                28     2
   power.gd                  28    10
@@ -109,13 +111,13 @@ Pro Datei (Texte / davon dynamische Stellen):
   mini.gd                   21     1
   phone.gd                  20     4
   patrol.gd                 20     0
+  trailer.gd                19     7
   devtool.gd                19     0
   figur_paket.gd            19     5
   devtool_vorfuehrung.gd    19     0
   tv.gd                     19     8
   statusled.gd              19     0
   surprise.gd               19     1
-  trailer.gd                18     7
   kompakt_dorf.gd           18     0
   kompakt_pfadi.gd          18     0
   planner.gd                18     0
@@ -275,13 +277,13 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   spieltest.gd:1290  '\n| Start | Einheit | Min. | Ergebnis | Tipps | Falsch | Umwege | Erwischt | Fest | Kreis | Ruckeln s | Bewertung |\n|---|---|---|---|---|---|---|---|---|---|---|---|\n'
   spieltest.gd:1305  'Noch keine Runden notiert.\n\n'
   spieltest.gd:1322  'Spieltest-Daten aus dem MoveEye-Simulator (Mehr → Entwickler → Spieltest).\nbericht.md = Zusammenfassung mit Vorschlägen, runden/ = Rohdaten (JSON pro Runde).\nVersion %s.\n'
-  trailer.gd:437  'an'
-  trailer.gd:482  'fertig'
-  trailer.gd:574  'fertig'
-  trailer.gd:835  'fertig'
-  trailer.gd:868  'fertig'
-  trailer.gd:999  'fertig'
-  trailer.gd:1079  'fertig'
+  trailer.gd:455  'an'
+  trailer.gd:500  'fertig'
+  trailer.gd:592  'fertig'
+  trailer.gd:870  'fertig'
+  trailer.gd:903  'fertig'
+  trailer.gd:1034  'fertig'
+  trailer.gd:1114  'fertig'
   zwei_bausteine.gd:617  'fertig'
   zwei_bausteine.gd:1435  ' %.1f kg'
   gamewiz.gd:63  ' (wird hingestellt)'
@@ -330,6 +332,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   abenteuer_rucksack.gd:424  ' und '
   abenteuer_rucksack.gd:480  'Fertig'
   tour.gd:187  'Fertig'
+  werkstatt_daten.gd:129  'Fertig'
   b3d.gd:86  'Kachel leer: '
   b3d.gd:186  'glTF nicht lesbar: '
   b3d.gd:208  'Kachel ohne Dreiecke: '
@@ -364,61 +367,61 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   inhalte.gd:347  'Paket: '
   inhalte.gd:871  'an'
   licht.gd:42  'aus'
-  main.gd:706  ' (Port %d)'
-  main.gd:1683  '  %.0f Mbit/s'
-  main.gd:2386  ' (von MoveEye)'
-  main.gd:2419  'Der Simulator ist belegt: '
-  main.gd:3282  'aus'
-  main.gd:3282  'ein'
-  main.gd:3359  'Sabotage-Test: '
-  main.gd:3359  'aus'
-  main.gd:3413  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
-  main.gd:3416  '\n🚨 Bewacht und weg: '
-  main.gd:4286  'keine'
-  main.gd:4312  'Wächter an MoveEye: '
-  main.gd:4373  'immer'
-  main.gd:4375  'aus'
-  main.gd:4382  'aus'
-  main.gd:4382  'aus'
+  main.gd:715  ' (Port %d)'
+  main.gd:1693  '  %.0f Mbit/s'
+  main.gd:2396  ' (von MoveEye)'
+  main.gd:2429  'Der Simulator ist belegt: '
+  main.gd:3292  'aus'
+  main.gd:3292  'ein'
+  main.gd:3369  'Sabotage-Test: '
+  main.gd:3369  'aus'
+  main.gd:3423  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
+  main.gd:3426  '\n🚨 Bewacht und weg: '
+  main.gd:4296  'keine'
+  main.gd:4322  'Wächter an MoveEye: '
   main.gd:4383  'immer'
-  main.gd:4388  'aus'
+  main.gd:4385  'aus'
   main.gd:4392  'aus'
   main.gd:4392  'aus'
-  main.gd:4399  'ohne'
-  main.gd:4401  'ohne'
-  main.gd:4418  'aus'
-  main.gd:4422  'aus'
-  main.gd:5170  'Dein Platz: '
-  main.gd:5413  ' · schaut nur zu: '
-  main.gd:5416  ' · Treffer %d von %d Schüssen, %d Punkte'
-  main.gd:5417  ' · Update: '
-  main.gd:5748  'Blinde Flecken: '
-  main.gd:6504  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
-  main.gd:6815  'Autostart: '
-  main.gd:6826  'Autologon: '
-  main.gd:6989  'Karte öffnen: '
-  main.gd:7140  'Echt-Abgleich: '
-  main.gd:7150  'Trainingspaket: '
-  main.gd:7159  ' · %d offen · %.1f MB'
-  main.gd:7159  'Ziel: %s:%d (Port von MoveEye) · '
-  main.gd:7168  'Verbindung · '
-  main.gd:7168  'aus'
-  main.gd:7172  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
-  main.gd:7172  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
-  main.gd:7175  ' – versucht es weiter (gleich auf einem freien Port)'
-  mehr.gd:255  ' · Leistung: %d Bilder/s, Lite %s'
-  mehr.gd:255  'an'
-  mehr.gd:255  'aus'
-  mehr.gd:291  'Hell / Dunkel / Rotlicht: '
-  mehr.gd:542  'aus'
-  mehr.gd:542  'ein'
-  mehr.gd:544  ' · Tunnel %s:%d (%s)'
-  mehr.gd:545  ' · Update: '
-  mehr.gd:547  ' · virtuelle Maschine'
-  mehr.gd:551  'Simulator '
-  mehr.gd:551  'frei %s von %s · '
-  mehr.gd:552  ' (zuletzt %s)'
-  mehr.gd:552  'nicht verbunden'
+  main.gd:4393  'immer'
+  main.gd:4398  'aus'
+  main.gd:4402  'aus'
+  main.gd:4402  'aus'
+  main.gd:4409  'ohne'
+  main.gd:4411  'ohne'
+  main.gd:4428  'aus'
+  main.gd:4432  'aus'
+  main.gd:5180  'Dein Platz: '
+  main.gd:5425  ' · schaut nur zu: '
+  main.gd:5428  ' · Treffer %d von %d Schüssen, %d Punkte'
+  main.gd:5429  ' · Update: '
+  main.gd:5760  'Blinde Flecken: '
+  main.gd:6516  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
+  main.gd:6827  'Autostart: '
+  main.gd:6838  'Autologon: '
+  main.gd:7001  'Karte öffnen: '
+  main.gd:7152  'Echt-Abgleich: '
+  main.gd:7162  'Trainingspaket: '
+  main.gd:7171  ' · %d offen · %.1f MB'
+  main.gd:7171  'Ziel: %s:%d (Port von MoveEye) · '
+  main.gd:7180  'Verbindung · '
+  main.gd:7180  'aus'
+  main.gd:7184  ' (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)'
+  main.gd:7184  'Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder.'
+  main.gd:7187  ' – versucht es weiter (gleich auf einem freien Port)'
+  mehr.gd:256  ' · Leistung: %d Bilder/s, Lite %s'
+  mehr.gd:256  'an'
+  mehr.gd:256  'aus'
+  mehr.gd:297  'Hell / Dunkel / Rotlicht: '
+  mehr.gd:548  'aus'
+  mehr.gd:548  'ein'
+  mehr.gd:550  ' · Tunnel %s:%d (%s)'
+  mehr.gd:551  ' · Update: '
+  mehr.gd:553  ' · virtuelle Maschine'
+  mehr.gd:557  'Simulator '
+  mehr.gd:557  'frei %s von %s · '
+  mehr.gd:558  ' (zuletzt %s)'
+  mehr.gd:558  'nicht verbunden'
   mini.gd:195  'aus'
   padmap.gd:64  ' – mehrere Controller: Bedienfeld Mover › Controller › «Controller zuteilen»'
   padmap.gd:86  'Browser'

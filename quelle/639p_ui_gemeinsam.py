@@ -20,6 +20,7 @@ UI_GEMEINSAM = json.loads(r"""{
  "_felder": {
   "groups": "Reihenfolge nach «order» (beide Seiten zeigen ihre Gruppen in dieser Reihenfolge). «mw» / «sim»: gibt es auf dieser Seite, «key» = Übersetzungs-Schlüssel der Seite (MoveEye: englischer Text, Simulator: deutscher Text), «names» = Anzeige in de / en / fr / it / rm. «emoji» = Web und Seite «Simulator» von MoveEye, «draw» = gezeichnetes Symbol im Simulator (ui_style.gd / mehr_icons.gd, keine Emoji-Schrift) und SC_ICON auf der Seite «Simulator», «tk» = Zeichen im Pi-Fenster. «sim.emoji» / «sim.draw»: bewusste Abweichung (mit «abweichung»). «alias»: alte IDs, gelten weiter (ältere Simulatoren, gespeicherte Werte). «sim.old»: alte Namen im Simulator (gespeicherter Klappzustand wird übernommen).",
   "parts": "Teile (Unterkarten) im Simulator mit eigener Regel: «gid/teil» -> neuer Name, alte Namen, Bezug zu einer MoveEye-Gruppe («same_as»: gleicher Name gewollt).",
+  "more": "Einträge der Seite «Mehr», die es in beiden Programmen gibt (real-gehaeuse, 01.11.2026): «mw.href» = Seite in MoveEye (Teil 525 / 639r), «sim.row» = Zeile in simulator3d/scripts/mehr.gd (ITEMS), «names» je Seite in de / en / fr / it / rm, «abweichung»: bewusst anderer Name.",
   "bar": "Texte der Bedienleiste (Komponente aus Paket P0 «real-layout-leiste»): «en» = Schlüssel in MoveEye, «de» = Schlüssel im Simulator (T.t).",
   "shared": "Einstellungen, die beide Seiten gleich haben (Abgleich kommt mit P2; Entscheide Daniel 31.10.2026: E1 eine Einfach/Experte-Wahl, E2 eine Sprache, E3 Auf-/Zuklappen nicht teilen, E4 Sensoren -> Zusatzgeräte).",
   "local": "bleibt pro Gerät / Programm, wird nie geteilt",
@@ -535,6 +536,36 @@ UI_GEMEINSAM = json.loads(r"""{
    }
   }
  },
+ "more": [
+  {
+   "id": "case",
+   "emoji": "📐",
+   "draw": "wrench",
+   "mw": {
+    "key": "Case & build",
+    "href": "/case",
+    "names": {
+     "de": "Gehäuse & Bau",
+     "en": "Case & build",
+     "fr": "Boîtier et construction",
+     "it": "Custodia e costruzione",
+     "rm": "Chascha e construcziun"
+    }
+   },
+   "sim": {
+    "key": "Werkstatt",
+    "row": "werkstatt",
+    "names": {
+     "de": "Werkstatt",
+     "en": "Workshop",
+     "fr": "Atelier",
+     "it": "Officina",
+     "rm": "Ufficina"
+    }
+   },
+   "abweichung": "Name bewusst verschieden: MoveEye zeigt Anleitung, Materialliste und Druckdateien («Gehäuse & Bau»), der Simulator das 3D-Modell zum Drehen und Zerlegen («Werkstatt»); beide verweisen aufeinander (Knopf «Im Simulator ansehen»)."
+  }
+ ],
  "shared": {
   "simple": {
    "mw": "CFG ui_simple",

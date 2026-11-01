@@ -2,3 +2,4 @@
 *.import
 !klang/*.import
 !klang/web/*.import
+!inhalte/gehaeuse/*.import
