@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-01 23:20",
+ "generated": "2026-11-01 23:29",
  "versions": [
   {
-   "version": "3.47.0",
-   "file": "webcam_bewegung_3_47_0.py",
+   "version": "3.47.1",
+   "file": "webcam_bewegung_3_47_1.py",
    "url": "",
-   "sha256": "07d1f7104f453c77dc836b84dd95e362197440fb1d322a8317fb18f3e2a41317",
-   "date": "2026-11-01 23:20",
-   "notes": "Gehäuse-Abgleich v5.2: Montage-Texte v5.2, Szene immer v5.2 mit Stopfen 12/19, Grau #9a9ea3 und Kopf orange, «Stand MoveEye X.Y.Z» im Bausatz, Akku UPS HAT (E) mit 4 × 21700 in Texten und Simulator, Bausatz-Link auf /info/; Trailer nur noch im Entwickler-Bereich; Entwickler heisst «Elektro», keine privaten Angaben mehr in Programm und Druckdateien.",
-   "size": 4833087,
-   "sig": "48e4726cb433fab82149c3a26f58ecc4ac662b1f803179b585a56f4c749caed6827a264a18ee3cc7e61cd2906583113e6b36d42dc5c25b59e7df2da4a10e5d0e",
+   "sha256": "7be8bc1fdcf6093f33de24e3311b8436149f9b82b0b1ae7751f80e12f6fb1726",
+   "date": "2026-11-01 23:29",
+   "notes": "Druckdateien herunterladen klappt auch auf dem Pi ohne Projektordner (Pi holt die Datei selbst, sauberer Dateiname); «Alle als ZIP» nur für die gewählte Variante, mit Kurzanleitung.",
+   "size": 4852981,
+   "sig": "35a600a5bf64499662b618c27af7ac5b249b5a76f798a784692896436f8ee14db79fb073993d7cef5d0a77f75034427765d09522220466f1a62e17141649590b",
    "data": {
-    "file": "moveeye_daten_3_47_0.zip",
+    "file": "moveeye_daten_3_47_1.zip",
     "url": "",
-    "sha256": "9a87759a4229cece16aabc8c2bd294bc520fcf608363b31645cdedc4b3b2d9ae",
-    "size": 3311895,
-    "sig": "0d3ee79a7aca90f4497f549fb4d4fcf6187cb8420e3a525255720cb30cda69e032022cbe735fffae865a8442a63095622c32dd2f09283fed1a22402e951a770f"
+    "sha256": "bd22ee0eb3be8ed0091ec57d6dc67715973fdb34fbbd0dd3365b6ca12d5b7499",
+    "size": 3312308,
+    "sig": "83245f8821184e75fdb5bb8611b805cd5ee77bd5a7a44ab7134b4558197ff482e9eb0b4f543191b70ed07693b0a581b35571a80b6d168b7e8d6daf585c4b6c08"
    }
   },
   {
@@ -24,7 +24,7 @@
    "file": "webcam_bewegung_3_46_0.py",
    "url": "",
    "sha256": "26f7451d86fe31fdb3974a0d63bdb75af284237b18c352ec2c7dd9be0add4709",
-   "date": "2026-11-01 23:20",
+   "date": "2026-11-01 23:27",
    "notes": "Gehäuse v5.2 ist jetzt überall Standard (v5.1 bleibt wählbar); Selbstbau-Paket MoveEye_Bausatz.zip (Anleitung als PDF in 5 Sprachen, Druckdateien, Bestelllisten, signierte Software) als GitHub-Release; USB-Installer für den Simulator-PC (Ubuntu 24.04, Kiosk).",
    "size": 4833768,
    "sig": "784467f3c28c384ac3b1469dec319dccdf3ddc94a55d63f50de51a1f7d4e7d12bdb3046f005ac1705ad727aa55ca7a3da3b20a8db4944a1bea960f30f2581b04",
