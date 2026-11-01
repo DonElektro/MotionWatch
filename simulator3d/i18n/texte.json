@@ -6391,6 +6391,12 @@
   "it": "I due programmi dovrebbero avere lo stesso numero – aggiornare il più vecchio (pulsante in basso a sinistra).",
   "rm": "Omadus programs duessan avair il medem numer – actualisar il pli vegl (buttun giu a sanestra)."
  },
+ "Beide Programme sollten dieselbe Nummer haben – die ältere Seite aktualisieren (Knopf unten rechts).": {
+  "en": "Both programs should have the same number – update the older one (button at the bottom right).",
+  "fr": "Les deux programmes devraient avoir le même numéro – mettre à jour le plus ancien (bouton en bas à droite).",
+  "it": "I due programmi dovrebbero avere lo stesso numero – aggiornare il più vecchio (pulsante in basso a destra).",
+  "rm": "Omadus programs duessan avair il medem numer – actualisar il pli vegl (buttun giu a dretga)."
+ },
  "Beide Schieber sind unten. Das Wasser staut sich in der alten Fassung, und in der Furt bleiben nur nasse Steine. Trockenen Fusses hinüber.": {
   "en": "Both gates are down. The water backs up in the old intake, and only wet stones are left in the ford. Across with dry feet.",
   "fr": "Les deux vannes sont baissées. L'eau s'accumule dans l'ancienne prise, et dans le gué il ne reste que des pierres mouillées. On traverse les pieds au sec.",
@@ -19332,6 +19338,12 @@
   "fr": "Indice",
   "it": "Indizio",
   "rm": "Indizi"
+ },
+ "Hinweis ausblenden (erscheint wieder, wenn sich eine Version ändert)": {
+  "en": "Hide the hint (it comes back when a version changes)",
+  "fr": "Masquer l’indication (elle réapparaît si une version change)",
+  "it": "Nascondi l’avviso (ricompare quando cambia una versione)",
+  "rm": "Zuppentar l’indicaziun (cumpara puspè, sch’ina versiun sa mida)"
  },
  "Hinweis im Gelände": {
   "en": "Clue in the terrain",
@@ -44231,6 +44243,18 @@
   "it": "⚠ Ripristinare le impostazioni di fabbrica …",
   "rm": "⚠ Restaurar ils parameters da fabrica …"
  },
+ "⚠ MoveEye %s · Sim %s": {
+  "en": "⚠ MoveEye %s · Sim %s",
+  "fr": "⚠ MoveEye %s · Sim %s",
+  "it": "⚠ MoveEye %s · Sim %s",
+  "rm": "⚠ MoveEye %s · Sim %s"
+ },
+ "⚠ MoveEye %s älter": {
+  "en": "⚠ MoveEye %s older",
+  "fr": "⚠ MoveEye %s plus ancien",
+  "it": "⚠ MoveEye %s più vecchio",
+  "rm": "⚠ MoveEye %s pli vegl"
+ },
  "⚠ MoveEye ist gerade nicht verbunden. Ohne MoveEye zählt kein Fehlalarm – zuerst in MoveEye den Simulator verbinden.": {
   "en": "⚠ MoveEye is not connected right now. Without MoveEye no false alarm counts – first connect the simulator in MoveEye.",
   "fr": "⚠ MoveEye n’est pas connecté pour l’instant. Sans MoveEye, aucune fausse alarme ne compte – connecter d’abord le simulateur dans MoveEye.",
@@ -44254,6 +44278,12 @@
   "fr": "⚠ Pas repris : ",
   "it": "⚠ Non applicato: ",
   "rm": "⚠ Betg surpiglià: "
+ },
+ "⚠ Simulator %s älter": {
+  "en": "⚠ Simulator %s older",
+  "fr": "⚠ Simulateur %s plus ancien",
+  "it": "⚠ Simulatore %s più vecchio",
+  "rm": "⚠ Simulatur %s pli vegl"
  },
  "⚠ Wiederherstellen aus einer Sicherung (ZIP) …": {
   "en": "⚠ Restore from a backup (ZIP) …",

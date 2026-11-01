@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 7457 (Stellen: 10364)
-Übersetzt: en 7457, fr 7457, it 7457, rm 7457
+Texte gesamt: 7461 (Stellen: 10368)
+Übersetzt: en 7456, fr 7456, it 7456, rm 7456
 Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 506 Stellen
-Nicht mehr im Code (noch in texte.json): 324
+Nicht mehr im Code (noch in texte.json): 325
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 68 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1
-Übersprungen (Grund: Anzahl): kennung 26494, schlüssel 20161, keine Wörter 12523, index 9598, technisch 3471, doc 2232, einheit 319, log 172, englisch 143, pfad 125, stringname 102, html 68, klasse 28, shader 6
+Übersprungen (Grund: Anzahl): kennung 26507, schlüssel 20164, keine Wörter 12528, index 9607, technisch 3472, doc 2236, einheit 320, log 172, englisch 143, pfad 125, stringname 102, html 68, klasse 28, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   werkstatt_daten.gd       424     3
@@ -166,6 +166,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   camphys.gd                 8     1
   headpad.gd                 8     2
   maggie_helfer.gd           8     0
+  abgleich.gd                7     4
   tunnel.gd                  7     2
   servo.gd                   7     0
   tiere.gd                   7     0
@@ -186,7 +187,6 @@ Pro Datei (Texte / davon dynamische Stellen):
   overlay3d.gd               4     0
   waerme_welt.gd             4     0
   abenteuer_stimme.gd        3     8
-  abgleich.gd                3     4
   gelaende.gd                3     0
   wind_fx.gd                 3     0
   bergtal_ei.gd              3     0
@@ -357,10 +357,10 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   abenteuer_stimme.gd:38  'aus'
   abenteuer_stimme.gd:55  'an'
   abenteuer_stimme.gd:55  'aus'
-  abgleich.gd:26  'an'
-  abgleich.gd:26  'aus'
-  abgleich.gd:27  'an'
-  abgleich.gd:27  'aus'
+  abgleich.gd:30  'an'
+  abgleich.gd:30  'aus'
+  abgleich.gd:31  'an'
+  abgleich.gd:31  'aus'
   inhalte.gd:28  'an'
   inhalte.gd:29  'aus'
   inhalte.gd:43  'an'
