@@ -3791,107 +3791,23 @@ func _set_speed(v: float) -> void:
 
 
 func set_view_scale(v: float) -> void:
-	if not _perf_auto:
-		_perf_orig.erase("view_scale")
-	view_scale = clampf(v, 0.4, 1.0)
-	get_viewport().scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR
-	get_viewport().scaling_3d_scale = view_scale
-	_settings_dirty = true
+	_mod("start").set_view_scale(v)
 
 
 func _perf_tick() -> void:
-	"""3D-3.75: the window draws fewer than 14 pictures per second for 20 s: one step lighter (quality, then sharpness of the
-	view, then the grass). The pictures for MoveEye are not touched."""
-	if not auto_perf or not win_open or not sim_active or now() - _perf_t < 30.0 or busy_with() != "":
-		_slow_n = 0 if not auto_perf else _slow_n
-		return
-	var lim: int = win_fps if win_fps > 0 else 60
-	if Engine.get_frames_per_second() < min(14.0, lim * 0.7):
-		_slow_n += 1
-	else:
-		_slow_n = max(0, _slow_n - 2)
-	if _slow_n < 40:
-		return
-	_slow_n = 0
-	_perf_t = now()
-	for k_ in ["quality", "view_scale", "meadow_on"]:     # 3D-3.88: only for this session - the own choice stays saved
-		if not _perf_orig.has(k_):
-			_perf_orig[k_] = get(k_)
-	_perf_auto = true
-	var lvl: int = ["simple", "medium", "nice", "ultra"].find(quality)
-	var what := ""
-	if lvl > 0:
-		_set_quality(["simple", "medium", "nice", "ultra"][lvl - 1])
-		what = "Grafik «%s»" % ["einfach", "mittel", "schön"][lvl - 1]
-	elif view_scale > 0.75:
-		set_view_scale(0.75)
-		what = "Ansicht 75 % scharf"
-	elif meadow_on:
-		set_meadow(false)
-		what = "ohne Gras und Blumen"
-	elif view_scale > 0.55:
-		set_view_scale(0.55)
-		what = "Ansicht 55 % scharf"
-	else:
-		_perf_auto = false
-		return
-	_perf_auto = false
-	start_info = "Der PC ist langsam – leichter gemacht: %s (nur bis zum Neustart; Bilder für MoveEye unverändert)" % what
-	print("auto graphics: " + what)
+	_mod("start")._perf_tick()
 
 
 func _set_quality(v: String) -> void:
-	if not _perf_auto:
-		_perf_orig.erase("quality")
-	quality = v
-	_apply_quality()
+	_mod("start")._set_quality(v)
 
 
 func auto_quality() -> String:
-	"""3D-3.33: first start - the graphics level from the graphics card (later the own choice is kept)"""
-	var a := RenderingServer.get_video_adapter_name().to_lower() + " " + RenderingServer.get_video_adapter_vendor().to_lower()
-	if Engine.get_architecture_name() in ["arm64", "arm32"] or a.contains("v3d") or a.contains("videocore"):
-		return "simple"                                   # 3D-3.43: Raspberry Pi - the light graphics
-	if in_vm or a.contains("llvmpipe") or a.contains("swiftshader") or a.contains("basic render") or a.contains("software"):
-		return "simple"
-	if a.contains("nvidia") or a.contains("geforce") or a.contains("radeon") or a.contains("amd") or a.contains("arc"):
-		return "nice"
-	return "medium"                                       # Intel and other built-in graphics
+	return _mod("start").auto_quality()
 
 
 func _apply_quality() -> void:
-	if not quality in ["simple", "medium", "nice", "ultra"]:
-		quality = "nice"
-	var lvl: int = ["simple", "medium", "nice", "ultra"].find(quality)
-	var nice := lvl >= 2
-	sun.shadow_enabled = lvl >= 1
-	sun.directional_shadow_max_distance = [40.0, 60.0, 80.0, 120.0][lvl]
-	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS if lvl <= 1 else DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS
-	white_light.shadow_enabled = lvl >= 1
-	env.glow_enabled = lvl >= 1
-	env.glow_intensity = 0.5 if lvl == 1 else 0.7
-	env.glow_bloom = 0.0 if lvl < 2 else 0.06
-	RenderingServer.directional_shadow_atlas_set_size(2048 if lvl <= 1 else 4096, true)
-	var aa: Viewport.MSAA = [Viewport.MSAA_DISABLED, Viewport.MSAA_2X, Viewport.MSAA_2X, Viewport.MSAA_4X][lvl]
-	for i in range(2):
-		vps[i].msaa_3d = aa
-	get_viewport().msaa_3d = aa
-	sky_mat.set_shader_parameter("detail", 1.0 if lvl >= 1 else 0.0)
-	for m in mats.values():
-		_mat_detail(m, lvl >= 1)
-	# Forward+ (Vulkan) only: light bouncing off surfaces, shadows in corners, reflections, light shafts in the fog
-	var fwd: bool = RenderingServer.get_rendering_device() != null       # Vulkan / Forward+ (not the OpenGL renderer)
-	env.ssao_enabled = fwd and lvl >= 2
-	env.ssao_intensity = 1.6
-	env.ssil_enabled = fwd and lvl >= 3
-	env.ssr_enabled = fwd and lvl >= 3
-	env.sdfgi_enabled = fwd and lvl >= 3
-	env.volumetric_fog_enabled = fwd and lvl >= 3
-	env.volumetric_fog_density = 0.008
-	env.volumetric_fog_length = 80.0
-	get_viewport().use_taa = fwd and lvl >= 3
-	if hoch != null:
-		hoch.after_quality()                       # F1: «Hoch» on top of the chosen level (or away again)
+	_mod("start")._apply_quality()
 
 
 # ---- 3D-4.25 «Lite» (Wunsch Daniel 31.10.2026): the same simulator, lighter for the Raspberry Pi 5 ---------------------------
@@ -3904,121 +3820,27 @@ const LITE_KEYS := ["quality", "view_scale", "win_fps", "max_visitors"]
 
 
 func set_grafik_mode(v: String) -> void:
-	grafik_mode = Quality.mode_id(v)
-	_grafik_keep = ""                                     # von Hand gewählt: das gilt (auch nach --grafik)
-	lite_update()
-	if hoch != null and (grafik_mode == "hoch") != (hoch.stufe == "hoch"):
-		hoch.set_stufe(grafik_mode)                       # F1: Hoch = Neustart mit Forward+; jede andere Wahl = wieder normal
-	_settings_dirty = true
+	_mod("start").set_grafik_mode(v)
 
 
 func lite_update() -> void:
-	"""Lite on or off - from «Grafik-Modus» and the hardware (quality.gd)"""
-	var why := ""
-	if grafik_mode == "lite":
-		why = "von Hand"
-	elif grafik_mode == "auto":
-		var w := Quality.weak_reason()
-		if w != "":
-			why = "automatisch: " + w
-		elif _lite_slow:
-			why = "automatisch: wenige Bilder pro Sekunde beim Start"
-	lite_why = why
-	var on := why != ""
-	if Engine.has_meta("lite") and on == Quality.lite():
-		return
-	Quality.set_lite(on)
-	_lite_apply(on)
-	print("graphics mode %s -> Lite %s%s" % [grafik_mode, "on" if on else "off", (" (" + why + ")") if on else ""])
+	_mod("start").lite_update()
 
 
 func _lite_apply(on: bool) -> void:
-	if on:
-		for k_ in LITE_KEYS:
-			if not _perf_orig.has(k_):
-				_perf_orig[k_] = get(k_)
-		_perf_auto = true                                  # not the own choice: the setters keep _perf_orig
-		_set_quality("simple")
-		set_view_scale(minf(view_scale, Quality.SCALE))
-		if win_fps <= 0 or win_fps > Quality.FPS:
-			win_fps = Quality.FPS
-		max_visitors = mini(max_visitors, Quality.VISITORS)
-		_perf_auto = false
-		view_w = mini(view_w, Quality.VIEW_W)
-		view_q = minf(view_q, Quality.VIEW_Q)
-	else:
-		for k_ in LITE_KEYS:
-			if _perf_orig.has(k_):
-				var v = _perf_orig[k_]
-				_perf_orig.erase(k_)
-				if k_ == "quality":
-					quality = str(v)
-					_apply_quality()
-				elif k_ == "view_scale":
-					set_view_scale(float(v))
-				else:
-					set(k_, int(v))
-	for pa in [[rain, 2500], [snow, 3000], [splashes, 700]]:
-		if pa[0] != null:
-			pa[0].amount = Quality.n(pa[1])
-	_lite_scene(on)
-	_settings_dirty = true
+	_mod("start")._lite_apply(on)
 
 
 func _lite_scene(on: bool) -> void:
-	"""the things of the scene: fewer particles, thinner grass, small things far away not drawn (visibility range)"""
-	if scene_parent == null:
-		return
-	var todo: Array = [scene_parent]
-	while not todo.is_empty():
-		var n = todo.pop_back()
-		todo.append_array(n.get_children())
-		if n is CPUParticles3D or n is GPUParticles3D:
-			if not n.has_meta("full_n"):
-				n.set_meta("full_n", n.amount)
-			n.amount = maxi(1, roundi(int(n.get_meta("full_n")) * Quality.KEEP)) if on else int(n.get_meta("full_n"))
-		elif n is MultiMeshInstance3D and n.is_in_group("meadow"):
-			if n.multimesh != null:
-				n.multimesh.visible_instance_count = roundi(n.multimesh.instance_count * Quality.KEEP) if on else -1
-		elif n is GeometryInstance3D:
-			if on:
-				var sz: Vector3 = n.get_aabb().size * n.global_transform.basis.get_scale()
-				if maxf(sz.x, maxf(sz.y, sz.z)) < 1.5 and n.visibility_range_end == 0.0:
-					n.visibility_range_end = Quality.FAR
-					n.set_meta("lite_far", true)
-			elif n.has_meta("lite_far"):
-				n.visibility_range_end = 0.0
-				n.remove_meta("lite_far")
+	_mod("start")._lite_scene(on)
 
 
 func _lite_tick() -> void:
-	"""«Automatisch» on a normal PC: are the first seconds very slow (under 12 pictures per second)? Then Lite for this session"""
-	if grafik_mode != "auto" or Quality.lite() or _lite_slow or not _lite_auto_ok:
-		return
-	var age := now() - _lite_t0
-	if age < 6.0 or age > 40.0 or not win_open or not sim_active or busy_with() != "":
-		return
-	_lite_fps.append(Engine.get_frames_per_second())
-	if _lite_fps.size() < 16:
-		return
-	var avg := 0.0
-	for f in _lite_fps:
-		avg += float(f) / _lite_fps.size()
-	_lite_fps.clear()
-	_lite_t0 = -1000.0                                   # decided once per start
-	if avg < 12.0:
-		_lite_slow = true
-		lite_update()
-		start_info = "Der Rechner ist langsam (%d Bilder/s) – «Grafik-Modus: Automatisch» hat Lite eingeschaltet (System → Grafik)." % roundi(avg)
+	_mod("start")._lite_tick()
 
 
 func perf_info() -> Dictionary:
-	"""for «Leistung» in the self-diagnosis and «Über»: frames per second, renderer, Lite, resolution"""
-	var vs: Vector2 = get_viewport().get_visible_rect().size
-	var k: float = get_viewport().scaling_3d_scale
-	return {"fps": Engine.get_frames_per_second(), "renderer": Quality.renderer(), "lite": Quality.lite(), "why": lite_why,
-			"mode": grafik_mode, "res": "%d × %d" % [roundi(vs.x * k), roundi(vs.y * k)], "scale": roundi(k * 100.0),
-			"cams": "%d × %d" % [CAM_W[0], CAM_H[0]], "max_fps": Engine.max_fps}
+	return _mod("start").perf_info()
 
 
 func _game_card_start() -> void:
@@ -4042,22 +3864,7 @@ func _game_card_stop() -> void:
 
 
 func control_info() -> Dictionary:
-	var out := []
-	for c in controls:
-		if c.has("only") and not bool(c["only"].call()):
-			continue                                     # 3D-4.28: e.g. «Standort im Ferienpark» only in that scene
-		var d := {"type": c.type, "id": c.id, "label": c.label, "group": c.group}
-		d.merge(c.extra)
-		if c["get"] != null:
-			var v = c["get"].call()
-			d["value"] = snappedf(v, 0.001) if typeof(v) == TYPE_FLOAT else v
-		if c.has("ro"):
-			d["ro"] = bool(c["ro"].call())            # Aufräumen 2: the page of MoveEye shows it read-only too
-		out.append(d)
-	return {"ok": true, "v": 1, "name": Versionen.label(VERSION), "version": VERSION,
-				"scenarios": scenarios(), "scenario": Worlds.world_of(scene), "place": scene if Worlds.is_place(scene) else "",
-			"controls": out, "status": status_text(), "upload": null, "groups_on": _groups_on(),
-			"game": {"open": game != null and game.open, "url": game.address() if game != null and game.open else "", "players": game.count() if game != null else 0}}
+	return _mod("status").control_info()
 
 
 func control(d: Dictionary) -> Dictionary:
@@ -4078,15 +3885,7 @@ func _control(d: Dictionary) -> Dictionary:
 
 
 func status_text() -> String:
-	var h := hour()
-	var mwc := "verbunden mit %s" % str(mw.get("device", "MoveEye")) if now() - mw_t < 3.0 else ("MoveEye nicht verbunden" if stream_on else "Senden aus")
-	var mww := mw_watchers()
-	if not mww.is_empty():                     # 3D-4.9: a second MoveEye only watches (does not steer the head)
-		mwc += " · schaut nur zu: " + ", ".join(mww)
-	if schnitt != null:
-		mwc += schnitt.mw_extra()                 # Aufräumen 2: «Schutz an · Relais …» from MoveEye
-	var score := " · Treffer %d von %d Schüssen, %d Punkte" % [hits, shots, points] if rifle_on else ""
-	return "%s · %02d:%02d · %s · %s · %.1f °C · Besucher %d%s · %s" % [Worlds.full_name(scene) if Worlds.is_place(scene) and not Worlds.solo(self, scene) else Scenes.name_of(scene), int(h), int(fmod(h, 1.0) * 60), "Nacht" if is_dark() else "Tag", {"clear": "klar", "cloudy": "bewölkt", "rain": "Regen", "fog": "Nebel", "snow": "Schnee"}.get(weather, weather), ambient, visitors.get_child_count(), score, mwc] + (" · Update: " + update_info if update_info != "" else "") + (" · " + start_info if start_info != "" else "") + (" · " + game.status() if game != null and game.status() != "" else "") + (" · " + testrun.status() if testrun != null and testrun.status() != "" else "") + (" · " + nacht.status() if nacht != null and nacht.running else "") + (" · " + dev2.status() if dev2 != null and dev2.on else "") + (" · " + recorder.info if recorder != null and recorder.info != "" and (recorder.recording or recorder.playing) else "") + (" · " + life.info if life != null and life.info != "" and (real_weather or daily_life) else "") + (" · " + geo.info if geo != null and geo.busy else "") + (" · " + geo_note if geo_note != "" else "")
+	return _mod("status").status_text()
 
 
 func scenarios() -> Array:
@@ -4463,97 +4262,19 @@ func _on_mwpc() -> void:
 
 
 func check_updates() -> void:
-	"""button «Nach Updates suchen» in the window: asks before installing and also says when there is nothing new"""
-	run_update(false, true)
+	_mod("start").check_updates()
 
 
 func run_update(automatic: bool, by_hand: bool) -> void:
-	"""check GitHub for a newer simulator. automatic: install by itself after 15 s (can be cancelled) - for the setting
-	«Neue Versionen automatisch installieren» and for the button on the web page of MoveEye (from far away)."""
-	if update_busy:
-		return
-	update_busy = true
-	if update_btn != null:
-		update_btn.disabled = true
-	update_info = "suche …"
-	var up = Updater.new()
-	up.manual = by_hand
-	up.quiet = not by_hand
-	up.auto = automatic
-	add_child(up)
-	update_node = up                              # Ruhebild: busy_reply() tells MoveEye about the update
-	await up.check(VERSION, update_url)
-	update_info = up.result
-	update_node = null
-	up.queue_free()
-	update_busy = false
-	if update_btn != null:
-		update_btn.disabled = false
-	_sync_update_ui()
+	await _mod("start").run_update(automatic, by_hand)
 
 
 func _restore_window(args: PackedStringArray) -> void:
-	"""after an update (or from the options): the window comes back as it was - size and place, full screen, or the
-	small box / icon in the corner"""
-	var w := get_window()
-	var i := args.find("--win")
-	if i >= 0 and i + 1 < args.size():
-		var p := args[i + 1].split(",")
-		if p.size() == 4:
-			w.size = Vector2i(maxi(400, int(p[2])), maxi(300, int(p[3])))
-			w.position = Vector2i(int(p[0]), int(p[1]))
-	if "--maximized" in args:
-		w.mode = Window.MODE_MAXIMIZED
-	if "--mini" in args or "--mini-tiny" in args:
-		var tiny := "--mini-tiny" in args
-		get_tree().create_timer(1.0).timeout.connect(func():
-			if not mini_box.mini:
-				mini_box.enter()
-			if tiny:
-				mini_box.set_tiny(true))
+	_mod("start")._restore_window(args)
 
 
 func restart_args() -> PackedStringArray:
-	"""options for the start after an update: as before, plus what is on now (sending, scene, MoveEye on this PC,
-	the window: size and place, full screen, or the small box)"""
-	var a := OS.get_cmdline_user_args()
-	var out := PackedStringArray()
-	var skip := false
-	var early := net == null                     # the update check right at the start: nothing is switched on yet - keep what was asked for
-	for x in a:
-		if skip:
-			skip = false
-			continue
-		if x in ["--stream", "--updated", "--mwpc"] or (not early and x in ["--mini", "--mini-tiny", "--maximized"]):
-			continue
-		if x == "--scene" or x == "--old-pid" or (x == "--win" and not early):
-			skip = true
-			continue
-		out.append(x)
-	if stream_on or (early and "--stream" in a):
-		out.append("--stream")
-	if not early:
-		var w := get_window()
-		if mini_box != null and mini_box.mini:
-			out.append("--mini-tiny" if mini_box.tiny else "--mini")
-			var sz: Vector2i = mini_box.saved.get("size", Vector2i(1440, 860))
-			var ps: Vector2i = mini_box.saved.get("pos", Vector2i(60, 60))
-			out.append("--win")
-			out.append("%d,%d,%d,%d" % [ps.x, ps.y, sz.x, sz.y])
-		elif w.mode == Window.MODE_MAXIMIZED or w.mode == Window.MODE_FULLSCREEN:
-			out.append("--maximized")
-		elif w.mode == Window.MODE_MINIMIZED:
-			out.append("--mini")
-		else:
-			out.append("--win")
-			out.append("%d,%d,%d,%d" % [w.position.x, w.position.y, w.size.x, w.size.y])
-	out.append("--scene")
-	out.append(scene)
-	out.append("--old-pid")                       # 3D-3.75: the new simulator may stop this one if it still holds the port
-	out.append(str(OS.get_process_id()))
-	if mwpc != null and mwpc.state == "running":
-		out.append("--mwpc")
-	return out
+	return _mod("start").restart_args()
 
 
 const KEEP := ["pad_auto", "pad_sens", "pad_inv_y", "pad_swap", "pad_rumble", "colors_on", "seasons_on", "pad_dead", "pad_center", "show_laser", "game_max", "tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "fp_spot", "szene_spot", "bt_spot", "bt_bed", "bt_season", "bt_free", "bt_events", "bt_mount", "bt_bag", "bt_stove", "bt_wall", "bt_orient", "bt_marks", "bt_visited", "auto_update", "dev_updates", "news_seen", "news_popup", "show_zones3d", "show_det3d", "fauna_on", "twin", "ui_simple", "ui_icons", "ui_icons_pick", "start_groups", "mine_mig", "auto_visitors", "daily_life", "real_weather", "real_time", "night_weather", "surprise_on", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
@@ -4573,69 +4294,23 @@ func _save_settings() -> void:
 
 
 func set_autostart(on: bool) -> void:
-	var err: String = Autostart.set_on(on)
-	autostart_on = Autostart.is_on()
-	start_info = "Autostart: " + err if err != "" else ("Startet mit dem PC" if autostart_on else "")
-	_sync_ui()
+	_mod("start").set_autostart(on)
 
 
 func setup_autologon() -> void:
-	"""without signing in: Windows signs in by itself (Autologon of Microsoft), the simulator starts and locks the screen"""
-	start_info = "Autologon wird geladen …"
-	_update_status()
-	await get_tree().process_frame
-	var err: String = Autostart.get_autologon()
-	if err != "":
-		start_info = "Autologon: " + err
-		return
-	if not autostart_on:
-		set_autostart(true)
-	autostart_lock = true
-	_settings_dirty = true
-	start_info = "Im Fenster «Autologon» das Windows-Passwort eingeben und «Enable» drücken"
-	_sync_ui()
+	await _mod("start").setup_autologon()
 
 
 func _dev_check() -> void:
-	"""3D-3.81: the development phase - has simulator3d/version.json a new commit on GitHub? The answer «unchanged» (304
-	with the ETag) does not count against GitHub's limit of 60 questions per hour. New commit -> update at once."""
-	_dev["busy"] = true
-	_dev["t"] = now()
-	var h := HTTPRequest.new()
-	h.timeout = 8.0
-	add_child(h)
-	var hd := ["User-Agent: MoveEye-Sim", "Accept: application/vnd.github+json"]
-	if str(_dev["etag"]) != "":
-		hd.append("If-None-Match: " + str(_dev["etag"]))
-	var err := h.request("https://api.github.com/repos/DonElektro/MotionWatch/commits?path=simulator3d/version.json&per_page=1", hd)
-	if err == OK:
-		var r: Array = await h.request_completed
-		if r[0] == HTTPRequest.RESULT_SUCCESS and r[1] == 200:
-			for x in r[2]:
-				if str(x).to_lower().begins_with("etag:"):
-					_dev["etag"] = str(x).substr(5).strip_edges()
-			var j = JSON.parse_string((r[3] as PackedByteArray).get_string_from_utf8())
-			var sha: String = str(j[0].get("sha", "")) if typeof(j) == TYPE_ARRAY and j.size() > 0 else ""
-			if sha != "" and sha != str(_dev["sha"]):
-				var first: bool = str(_dev["sha"]) == ""
-				_dev["sha"] = sha
-				if not first:                               # (the first answer only notes the state)
-					print("development phase: new simulator commit - looking for the update")
-					run_update(true, false)
-	h.queue_free()
-	_dev["busy"] = false
+	await _mod("start")._dev_check()
 
 
 func set_auto_update(on: bool) -> void:
-	auto_update = on
-	_save_settings()
-	next_update_check = now() + 5.0 if on else now() + UPDATE_EVERY   # switched on: look soon
-	_sync_update_ui()
+	_mod("start").set_auto_update(on)
 
 
 func _sync_update_ui() -> void:
-	if update_btn != null:
-		update_btn.text = "Nach Updates suchen (jetzt %s)" % VERSION
+	_mod("status")._sync_update_ui()
 
 
 func _toggle_phone() -> void:
@@ -4677,62 +4352,15 @@ var _syncing := false
 
 
 func refresh_controls() -> void:
-	"""the list of recordings changed: new options for the select (the page of MoveEye shows them at once)"""
-	for c in controls:
-		if c.id == "rec_pick":
-			c.extra["options"] = recorder.options()
-	_sync_ui()
+	_mod("status").refresh_controls()
 
 
 func _sync_ui() -> void:
-	_syncing = true
-	for c in controls:
-		if not ui_rows.has(c.id) or c["get"] == null:
-			continue
-		var w = ui_rows[c.id]
-		var v = c["get"].call()
-		if w is CheckBox or w is CheckButton:
-			w.set_pressed_no_signal(bool(v))
-		elif w is OptionButton:
-			for i in range(w.item_count):
-				if str(w.get_item_metadata(i)) == str(v):
-					w.select(i)
-		elif w is HSlider and not w.has_focus():
-			w.value = float(v)
-		elif w is LineEdit and not w.has_focus():
-			w.text = str(v)
-		if w is HSlider and c.has("ro"):              # Aufräumen 2: only readable now (e.g. the battery size «von MoveEye»)
-			w.editable = not bool(c["ro"].call())
-	for c in controls:                                # Menüs A: switches, choices and buttons greyed out too (e.g. «Foto-Modus» without a photo)
-		if c.has("ro") and ui_rows.has(c.id) and (ui_rows[c.id] is BaseButton):
-			var ro_: bool = bool(c["ro"].call())
-			ui_rows[c.id].disabled = ro_
-			ui_rows[c.id].tooltip_text = T.t("Zuerst ein Foto des Platzes laden (Gegenstände → Foto des Platzes)") if ro_ and c.id in PHOTO_IDS else ""
-	_syncing = false
+	_mod("status")._sync_ui()
 
 
 func group_active(g: String) -> int:
-	"""3D-3.43: is something of this group switched on? 0 = no, 1 = on (green), 2 = something to watch (orange)"""
-	match g:
-		"Szene":
-			return 1 if geo != null and geo.loaded and scene == "ort" else 0
-		"Wetter":
-			return 1 if real_weather else 0
-		"Besuch":
-			return 1 if auto_visitors else 0
-		"Kamerabild":
-			return 2 if cond.values().has(true) else 0
-		"Zusatzgeräte":
-			return 2 if door_open or gas_on else 0
-		"Mover":
-			return 1 if mover_on else 0
-		"Spiel":
-			return 1 if game != null and game.open else 0
-		"Wildtier":
-			return 1 if rifle_on else 0
-		"Testen":
-			return 1 if testrun != null and testrun.running else 0
-	return 0
+	return _mod("status").group_active(g)
 
 
 func _game_report_send() -> void:
@@ -4744,73 +4372,15 @@ func _game_report_send() -> void:
 
 
 func _groups_on() -> Dictionary:
-	var o := {}
-	for g in group_bodies:
-		var v := group_active(g)
-		if v > 0:
-			o[g] = v
-	o["Verbindung"] = 1 if connected() else 0
-	return o
+	return _mod("status")._groups_on()
 
 
 func _paint_groups() -> void:
-	"""the symbol of a group card turns green when it is on (like «Verbindung»), orange when something is to be watched"""
-	for g in group_bodies:
-		var st := group_active(g)
-		if _group_state.get(g, -1) == st:
-			continue
-		_group_state[g] = st
-		UI.fold_active(group_bodies[g], st)              # 3D-3.50: symbol and arrow green / orange, the name stays white
-	if cam_body != null:
-		UI.fold_active(cam_body, 1 if connected() else 0)
-	if tools_body != null:
-		UI.fold_active(tools_body, 1 if (mwpc != null and mwpc.state == "running") or (pruef != null and pruef.running) or (dataset != null and dataset.busy) or (testrun != null and testrun.running) or (blindmap != null and blindmap.busy) else 0)
+	_mod("status")._paint_groups()
 
 
 func _update_status() -> void:
-	if real_label != null and realism != null:
-		real_label.text = "Echt-Abgleich: " + realism.info
-		var cps: String = camphys.status() if camphys != null else ""
-		if cps != "":
-			real_label.text += "\n" + cps                 # 3D-4.x P1: exposure and gain of the head camera right now
-	_night_test_tick()
-	if refscan_label != null:
-		refscan_label.text = refscan_text()
-	if surprise_label != null:
-		surprise_label.text = surprise.status_text()
-	if ds_label != null and dataset != null:
-		ds_label.text = ("Trainingspaket: " + dataset.msg) if dataset.msg != "" else ""
-	if not mw_cmd.is_empty() and start_info.begins_with("MoveEye: "):
-		var r_ = mw.get("refscan", null)
-		if typeof(r_) == TYPE_DICTIONARY and int(r_.get("cmd_seen", 0)) >= int(mw_cmd["id"]):
-			start_info = ""                                  # MoveEye took the request
-	if status_label != null:
-		status_label.text = Sym.clean(status_text())     # 3D-4.22: no empty boxes (MoveEye gets the text with its emoji)
-	if tunnel_label != null and tunnel != null:
-		var ts: Dictionary = tunnel.state()
-		tunnel_label.text = ("Ziel: %s:%d (Port von MoveEye) · " % [tunnel_host if tunnel_host != "" else "?", tunnel.PORT]) + str(ts["msg"]) + ((" · %d offen · %.1f MB" % [int(ts["pipes"]), float(ts["mb"])]) if ts["on"] else "")
-		tunnel_label.add_theme_color_override("font_color", UI.GRN if ts["ok"] else (UI.ORG if ts["on"] else UI.MUT))
-	if conn_body != null:                                  # symbol: green = MoveEye connected, orange = sending, grey = off
-		var st := 2 if connected() else (1 if stream_on else 0)
-		if st != _conn_state:
-			_conn_state = st
-			UI.fold_active(conn_body, [0, 2, 1][st])          # 3D-3.50: symbol and arrow; the name stays white
-			var hd: Label = conn_body.get_meta("head", null)
-			if hd != null:
-				hd.text = ("Verbindung · " + ["aus", "wartet auf MoveEye", "verbunden"][st]).to_upper()
-	_paint_groups()
-	if stream_note != null:
-		if stream_on:
-			stream_note.text = "Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder." + ("" if net.port == stream_port else " (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)" % [stream_port, net.port])
-			stream_note.add_theme_color_override("font_color", UI.GRN)
-		elif net != null and net.error_text != "":
-			stream_note.text = "⚠ " + net.error_text + (" – versucht es weiter (gleich auf einem freien Port)" if (stream_last or tunnel_on) else "")
-			stream_note.add_theme_color_override("font_color", UI.ORG)
-		else:
-			stream_note.text = "Senden aus – zum Ausprobieren. MoveEye sieht den Simulator erst, wenn der Schalter eingeschaltet ist."
-			stream_note.add_theme_color_override("font_color", UI.MUT)
-	if Engine.get_process_frames() % 4 == 0:
-		_sync_ui()
+	_mod("status")._update_status()
 
 
 # ---- flying through the world, placing visitors ---------------------------------------------------------------------------
@@ -5832,15 +5402,7 @@ func _birds() -> void:
 
 
 func host_name() -> String:
-	## the name of this computer (MoveEye shows it next to the simulator in its list)
-	for k in ["COMPUTERNAME", "HOSTNAME"]:
-		var h := OS.get_environment(k).strip_edges()
-		if h != "":
-			return h.substr(0, 40)
-	var f := FileAccess.open("/etc/hostname", FileAccess.READ)
-	if f != null:
-		return f.get_as_text().strip_edges().substr(0, 40)
-	return ""
+	return _mod("status").host_name()
 
 
 # ---- the simulator window in MoveEye (3D-3.18): its picture as a stream, and mouse / finger / keys back -------------
