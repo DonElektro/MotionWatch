@@ -79,6 +79,38 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
 - **Pause für Realismus aufgehoben (Daniel, 31.10.2026 00:53):** bis die Hardware da ist, Realismus/Szenen in kleinen Paketen,
   je Paket eine Version mit «So testest du». Danach Pause und Hardware-Aufbau.
 
+- **Regeln vom 01.11.2026 (Daniel):**
+  - **Stand «st»:** mit Zeitstempel («**Stand HH:MM**»). Meldungen des Stop-Hooks nur mit «⚙️ *Systemmeldung – kannst du ignorieren*» beantworten.
+  - **Fokus zuerst:** Themen, auf die Daniel sich gerade konzentriert, haben Vorrang; anderes darf pausieren.
+  - **Vor grösseren Arbeiten fragen** (Fragebogen), ob sie jetzt laufen oder zurückgestellt werden.
+  - **Leerlauf → Erkennung:** läuft sonst nichts, an der Erkennung weiterarbeiten.
+  - **Kamera/Gehäuse überall nachziehen:** MoveEye Bauen, Browser- und Simulator-Werkstatt, Szene, Pi-Fenster,
+    Homepage, /info/, Druckdateien, Bausatz. Bei schwerwiegenden Anpassungen zuerst fragen.
+  - **Daten immer aktuell:** Gehäuse heisst v5.x (ändert nur bei neuer Bauform), dazu überall automatisch
+    «Stand MoveEye X.Y.Z»; Druck-ZIP und Bausatz mit Version im Namen, bei jedem Release neu erzeugt.
+  - **Homepage bei jedem Release prüfen** (Funktionen, Pakete, Hardware nachziehen; keine Versionsnummern zeigen).
+  - Helfer löschen nie ausserhalb ihres eigenen Worktrees/Ordners, nie mit Wildcards in gemeinsamen Ordnern.
+
+## Produkt (Entscheide Daniel, 01.11.2026)
+
+- MoveEye wird in erster Linie als **fertiges Produkt** angeboten, mit **3 Paketen**: **Basis** (Kopf + Wärmebild),
+  **Komplett** (Gehäuse v5.2 mit Weitwinkel, Ton, Sensoren, Relais), **Autark** (Komplett + Akku + Ladequelle).
+  Preise «auf Anfrage». Solo und Mobil später. Paketlisten in `hardware/gehaeuse/bau.json`.
+- **Fixfertig bestellen** über die Rückmeldung (Bauen, Simulator-Werkstatt, Pi-Fenster, /info/); Kontakt ist Pflicht und
+  steht nie im Protokoll.
+- **Selber bauen:** Bausatz-Paket (Anleitung als PDF, Druckdateien, Bestelllisten, Software) entsteht bei jedem Release
+  (`werkzeuge/bausatz.py`, Workflow «Bausatz»), Download immer unter
+  `https://github.com/DonElektro/MotionWatch/releases/latest/download/MoveEye_Bausatz.zip`.
+- **Gehäuse v5.2 ist Standard** (v5.1 bleibt wählbar). Farben: Unterteil, Deckel, Zwischenboden und Füsse grau,
+  Kopfteil orange (#f59a4a), aus `bau.json` «farben».
+- **Homepage** (Produktseite, wie ein fertiges Produkt, ohne Spiele/Trailer/Versionen):
+  claude.ai/artifact/NK9QsufjrGCY5jXzZrym2Q, dieselbe Seite eingebettet als /info/ (Teil 620). Immer unter derselben
+  URL aktualisieren.
+- **Abhak-Liste «MoveEye Startklar»** (alles vor der Veröffentlichung): claude.ai/artifact/KhF1nTmGfBeZf6nZQpvX9D.
+- **Merkliste** (offene Erinnerungen): `docs/Merkliste.md`.
+- **Linux-PC für den Simulator:** HP EliteDesk 800 G1 DM (i5-4590T, HD 4600, 4 GB). Simulator für Linux mit Kiosk
+  (`kiosk_ein.sh` / `kiosk_aus.sh`, Ctrl+Alt+D = Desktop), Neuaufsetzen per USB-Stick (`werkzeuge/usb_installer/`).
+
 ## Offene Erinnerungen an Daniel
 
 - **Hardware-Test (Wunsch Daniel, 29.10.2026):** sobald die Hardware zusammengebaut ist, daran erinnern und testen: Wärmebild
