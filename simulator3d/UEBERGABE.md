@@ -19,6 +19,8 @@ Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weite
 - **Vielfalt:** `menschen_stil.gd`: Kleidung wandern/freizeit/arbeit/regen nach Szene (Tabelle `SZENE`), Bau, Rucksack,
   Kopfbedeckung, Wanderstöcke (`actor.add_poles`), Stirnlampe/Laterne (`add_lamp("lantern")`). Tests: `/control figuren`
   op `stil` {value, bau}, op `mensch` {value: aus, lods}.
+- Kapuze (01.11. nachgebessert): ovale Gesichtsöffnung, hängt bis zum Kragen, Gewichte der nächsten Haut (vorher
+  wirkte sie wie verrutschte Haare). `MPACK_SIZE`/`MPACK_SHA` in figur_mensch.gd nach jedem Neubau des ZIP nachführen.
 
 ## NEU in 3.29.0 (MoveEye 3.29.0): Fenster andocken (`scripts/fenster.gd`)
 

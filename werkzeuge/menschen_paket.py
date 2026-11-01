@@ -540,7 +540,10 @@ def build_body(data, key, b, base, rig, wts, masks, qr):
         if R[i] <= 0:
             R[i] = R[i - 1] if i > 0 else 0.1
 
-    def grid_mesh(maskf, thick, mat, extra_rows=0, weight_neck=False):
+    hn_v = body_v[HEAD[body_v]]                              # skin of head and neck (weights for hood / long hair)
+    ieq = int(np.argmin(np.abs(ph)))                       # the row at the height of the centre (widest round the head)
+
+    def grid_mesh(maskf, thick, mat, extra_rows=0, weight_neck=False, rim=False, loose=False):
         """a shell over the head: the cells whose 4 corners are in the mask; thinner at the border"""
         idx = {}
         P, Nn, UV, C, J, Wt = [], [], [], [], [], []
@@ -563,14 +566,31 @@ def build_body(data, key, b, base, rig, wts, masks, qr):
             ip, it = divmod(q, NT)
             nb = [(ip + dp) * NT + (it + dt) % NT for dp, dt in ((1, 0), (-1, 0), (0, 1), (0, -1)) if 0 <= ip + dp < NP]
             border = any(not inm[n] for n in nb) or ip == NP - 1 and False
-            t = thick * (0.35 if border else 1.0)
+            t = thick * (0.35 if border and not rim else 1.0)
             d = D[q]
-            P[i] = c0 + d * (R[q] + t)
+            r_ = R[q]
+            if loose and d[1] < 0.1:
+                r_ = max(r_, R[ieq * NT + it] * (1.0 + 0.12 * max(0.0, -d[1])))   # fabric: no chin or jaw, wider below
+            P[i] = c0 + d * (r_ + t)
+            if loose and d[1] < 0.0:                                 # below the middle it hangs down to the shoulders
+                hz = np.array([d[0], 0.0, d[2]])
+                hz /= max(1e-6, np.linalg.norm(hz))
+                rr = r_ + t
+                P[i] = c0 + hz * rr * max(math.sqrt(max(0.0, 1.0 - d[1] * d[1])), 0.8) + np.array([0.0, d[1] * rr * 1.8, 0.0])
             Nn.append(d)
             UV.append([it / NT * 6.0, ip / NP * 2.0])
             C.append([0.8, 0.8, 0.8] if not border else [0.7, 0.7, 0.7])
             J.append([jh, jn, 0, 0])
             Wt.append([1.0, 0.0, 0, 0] if not weight_neck or d[1] > -0.2 else [0.7, 0.3, 0, 0])
+        if weight_neck and len(P):
+            # (01.11.2026) the low part takes the weights of the nearest skin (head / neck): with a fixed 70/30 it went into
+            # the head as soon as the neck turned (the hood seemed to have no sides)
+            Pa = np.array(P)
+            for i in range(len(Pa)):
+                if Pa[i, 1] < c0[1] - 0.2 * R.max():
+                    jn_ = hn_v[np.argmin(((V[hn_v] - Pa[i]) ** 2).sum(axis=1))]
+                    J[i] = list(top[jn_])
+                    Wt[i] = list(tw[jn_])
         return {"P": np.array(P), "N": np.array(Nn), "UV": np.array(UV), "C": np.array(C), "J": np.array(J), "W": np.array(Wt),
                 "T": np.array(tris), "mat": mat}
 
@@ -647,7 +667,17 @@ def build_body(data, key, b, base, rig, wts, masks, qr):
     for hn in HAIRS[hk]:
         out["Haar_" + hn] = hairs[hn]
     # hood: all round the head except the face, thick
-    out["Kapuze"] = grid_mesh(lambda d: d[1] > 0.5 or (d[2] < 0.12 and d[1] > -0.62) or (d[2] < 0.35 and d[1] > 0.2), 0.024 * k, "Kapuze", weight_neck=True)
+    # (01.11.2026) an oval opening round the face (forehead covered down to the hairline, cheeks framed), open below the
+    # chin, the same thickness at the edge (a rim, no thin spikes) and loose (further from the head than the hair)
+    def hood(d):
+        if d[1] < -0.8:
+            return False
+        if d[2] > 0.3 and abs(d[0]) < 0.5 and d[1] < -0.3:
+            return False                                            # below the chin: the collar of the jacket
+        if d[2] > 0.2 and (d[0] / 0.46) ** 2 + ((d[1] + 0.12) / 0.42) ** 2 < 1.0:
+            return False                                            # the face
+        return True
+    out["Kapuze"] = grid_mesh(hood, 0.034 * k, "Kapuze", weight_neck=True, rim=True, loose=True)
     # brows: a strip above each eye on the skin
     bro_P, bro_T, bro_UV = [], [], []
     for s, sx in (("l", 1.0), ("r", -1.0)):

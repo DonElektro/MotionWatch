@@ -13,8 +13,8 @@ extends "res://scripts/figur_paket.gd"
 
 const MPACK := "menschen_v1.zip"
 const MPACK_URL := "https://raw.githubusercontent.com/DonElektro/MotionWatch/main/simulator3d/pakete/menschen_v1.zip"
-const MPACK_SIZE := 5277361
-const MPACK_SHA := "-"
+const MPACK_SIZE := 5350219
+const MPACK_SHA := "9ba3eaef7da96fa9279121690087c55464b06e35da6d1130486f0d93651a3b39"
 const REF_HP := 0.9491                     # height of the pelvis of the clips (library «m» of figur_paket.gd)
 const BASE_H := 1.86                       # actor.gd BASE_H: height of a figure with body_root.scale.y = 1
 const LOD_FAR := 25.0                      # m: further away the bones move less often (and the LOD meshes are smaller)
