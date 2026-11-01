@@ -1,4 +1,4 @@
-#@ MoveEye – Teil 639o: ein Geheimnis im Bergtal des 3D-Simulators – das Herz in der Live-Ansicht (Daniel 1.11.2026, Paket real-easter-egg). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
+#@ MoveEye – Teil 639s: ein Geheimnis im Bergtal des 3D-Simulators – das Herz in der Live-Ansicht (Daniel 1.11.2026, Paket real-easter-egg). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
 # NICHTS davon in Hilfe, Anleitung oder Blinki – keine sichtbaren Texte. (Spoiler, nur für Entwickler: simulator3d/scripts/
 # bergtal_ei.gd beschreibt den ganzen Ablauf.) Hier nur das Ende in MoveEye:
@@ -15,7 +15,7 @@
 _simvals_take_egg = simvals_take
 
 
-def simvals_take(rep):                                    # + 639o: where the marmot is (only while a heart can be drawn)
+def simvals_take(rep):                                    # + 639s: where the marmot is (only while a heart can be drawn)
     _simvals_take_egg(rep)
     try:
         e = rep.get("egg")
@@ -57,7 +57,7 @@ def egg_post(d):
 _smalltv_routes_egg_base = smalltv_routes
 
 
-def smalltv_routes(app, reply, body):                     # + 639o: /api/simegg (550 calls smalltv_routes once)
+def smalltv_routes(app, reply, body):                     # + 639s: /api/simegg (550 calls smalltv_routes once)
     _smalltv_routes_egg_base(app, reply, body)
 
     @app.route("/api/simegg", methods=["GET", "POST"])
@@ -71,7 +71,7 @@ def smalltv_routes(app, reply, body):                     # + 639o: /api/simegg 
 
 
 EGG_JS = r"""<script>
-// 639o: (no texts) - over the live picture of the simulator, see the comment of part 639o
+// 639s: (no texts) - over the live picture of the simulator, see the comment of part 639s
 (function () {
   const v = document.getElementById("video"), wrap = v && v.closest(".vwrap"); if (!wrap) return;
   let E = null, pts = null, trail = null;

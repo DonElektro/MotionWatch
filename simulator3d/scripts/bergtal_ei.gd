@@ -18,9 +18,9 @@ extends Node
 ##      und MoveEyes Wärme-Ansicht) leuchtet es warm (Zwilling auf Ebene 2, wie alles in main.add_mesh).
 ##   5. Finale: auf dem Murmeltier ein grosses Herz im Gegenuhrzeigersinn zeichnen (ccw_heart: dieselben Regeln wie ccw_heart in
 ##      MoveEye quelle/230_waermebild.py und ccwHeart in 510) – im Simulator-Fenster mit Maus / Finger, oder in MoveEyes
-##      Live-Ansicht über dem Bild (Teil 639o: reply() meldet, wo das Murmeltier im Bild der Kopfkamera ist, MoveEye schickt
+##      Live-Ansicht über dem Bild (Teil 639s: reply() meldet, wo das Murmeltier im Bild der Kopfkamera ist, MoveEye schickt
 ##      {"action": "egg", "do": "heart", "x", "y"}). Dann dreht es sich um und zeigt auf dem Bauch das Muster belly_matrix()
-##      (BELLY = _BELLY in Teil 230, nur mit Zoom lesbar), Herzchen, ein leiser Pfiff. Gefunden: Eintrag ID im Entdeckungsbuch
+##      (BELLY = _BELLY in Teil 230, nur mit Zoom lesbar), Herzchen, ein leiser Pfiff, Tusch (klang.gd). Gefunden: Eintrag ID im Entdeckungsbuch
 ##      (erst jetzt angemeldet, also vorher kein «???» und kein Blinki-Hinweis) + geheimes Abzeichen (spielbereich.badges()).
 ## Lite: Höhle mit weniger Flächen, keine Steine rundum, Kegel mit einfachem Material.
 ## Testbefehl (Entwickler): {"action": "egg", "do": "info | light (on) | signal (falsch) | beam | cave | heart (x, y | auto) |
@@ -40,6 +40,7 @@ const AIM_DEG := 20.0                            # «roughly at the antenna»: s
 const GAP_MAX := 3.5                             # longer dark = a new try
 const ON_MAX := 3.5
 const RATIO := 1.4                               # the shortest long one at least 1.4 × the longest short one
+const ACK_S := 0.7                               # three fast flashes, then the beam
 const SWING_S := 7.0
 const HOLD_S := 30.0
 const BELLY := "25:fe87bfc14c106eb2ebb75df5dba6aaec172507faaafe006700ce29179083c51cf8728e897041b1972f895c703f641812f524ff98ff0049463f8eab9055117ba9afa5d29fbee9fec505c09efe89178"
@@ -79,6 +80,8 @@ var _phases: Array = []                          # [[t_on, t_off, aimed], …]
 var _on := {}                                    # source -> [t_on, aimed] while lit
 var _lit := {}                                   # source -> lit now
 var tries := 0
+var tusch := false                               # the flourish of klang.gd was played (info; false without sound / headless)
+var tusch_n := 0                                 # how often it was asked for (tests)
 var last := ""                                   # the last answer («ok», «muster», «zielen», «tag»)
 var _open_t := -1.0
 var _turn_t := -1.0
@@ -194,12 +197,17 @@ static func pattern_on(t: float) -> bool:
 	return false
 
 
+static func ack_on(t: float) -> bool:
+	"""the answer of the antenna: three fast flashes (0 / 0.24 / 0.48 s) while «ack» lasts (ACK_S)"""
+	return t >= 0.0 and t < ACK_S and fposmod(t, 0.24) < 0.12
+
+
 func _lamp_tick() -> void:
 	var dark: bool = m.is_dark()
 	var on := false
 	var e := 0.4
 	if stage == "ack":
-		on = fposmod(_rt() - _t0, 0.24) < 0.12          # three times fast
+		on = ack_on(_rt() - _t0)                        # three times fast
 		e = 6.0
 	elif dark:
 		on = pattern_on(_rt())
@@ -404,7 +412,7 @@ func _beam_tick() -> void:
 	var t := _rt() - _t0
 	match stage:
 		"ack":
-			if t > 0.85:
+			if t >= ACK_S:
 				_go("swing")
 		"swing":
 			_beam_amount(clampf(t / 1.2, 0.0, 1.0))
@@ -810,6 +818,8 @@ func heart(src: String) -> Dictionary:
 		stage = "turned"
 	_hearts()
 	_whistle()
+	tusch_n += 1
+	tusch = bool(preload("res://scripts/klang.gd").tusch(true))   # drum roll and flourish (klang.gd, 3.28) - also when walking freely
 	var first := not _found()
 	_register()
 	var ed = m.get("entdecken")
@@ -1017,7 +1027,7 @@ func info() -> Dictionary:
 			"belly_facing_out": marmot != null and absf(marmot.rotation.y) < 0.2,
 			"warm": snappedf(warm_c(), 0.1), "ambient": snappedf(float(m.ambient), 0.1),
 			"head": head_view(), "screen": [snappedf((sp as Vector2).x, 0.1), snappedf((sp as Vector2).y, 0.1)] if sp != null else null,
-			"reply": reply(), "badge": _found()}
+			"reply": reply(), "badge": _found(), "tusch": tusch, "tusch_n": tusch_n}
 
 
 func _look(what: String) -> Dictionary:
@@ -1065,6 +1075,8 @@ func reset() -> void:
 	_on.clear()
 	_lit.clear()
 	tries = 0
+	tusch = false
+	tusch_n = 0
 	last = ""
 	if _slab != null:
 		_slab.position = _slab_p0

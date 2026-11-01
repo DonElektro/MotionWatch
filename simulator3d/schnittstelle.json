@@ -38,7 +38,7 @@
     "spieltest": "Spieltest-Assistent (spieltest.gd): kurze Meldung nach jeder Runde (id, t, text - schon in der Sprache des Simulators) -> 635a spieltest_feed, Push nur mit Schalter «Spieltest-Meldungen» (Entwickler)",
     "sky": "Himmel und Licht der Szene (licht.gd): lux am Geraet (Himmel + Lampen), sky_lux, phase (tag / buergerlich / nautisch / astronomisch / nacht), sun_el, moon_el, moon_illum, lp (land / dorf / stadt) -> MoveEye liest es noch nicht (spaeter: Nacht-Umschaltung pruefen, Kamera-Paket Blendung)",
     "season": "Jahreszeit und Tageslauf (jahreszeiten.gd): season (fruehling / sommer / herbst / winter), doy, sunrise, sunset (H:MM Schweizer Zeit), day_h, snow (Schnee liegt), occupancy (Campingplatz 0..1) -> MoveEye liest es noch nicht (spaeter: Tagebuch, Nacht-Zeiten pruefen)",
-    "egg": "Bergtal-Geheimnis: {st, x, y, r} wo das Murmeltier im Bild der Kopfkamera ist, nur solange man ein Herz zeichnen kann (bergtal_ei.gd) -> 639o Live-Ansicht"
+    "egg": "Bergtal-Geheimnis: {st, x, y, r} wo das Murmeltier im Bild der Kopfkamera ist, nur solange man ein Herz zeichnen kann (bergtal_ei.gd) -> 639s Live-Ansicht"
   },
   "state": {
     "v": "Version des Zustands",
@@ -120,7 +120,7 @@
     "trailer": "Trailer der Geschichten (trailer.gd): do start (id grossvater | maggie, sprache) | stop | info (laeuft, t, dauer, ende, sprechen {id, text, lang} fuer die Sprachausgabe im Browser) -> 639n Seite /sim/trailer (nur Besitzer)",
     "vorfuehrung": "Vorfuehrmodus Maggie (maggie_vorfuehrung.gd): do start (len kurz | ganz, knoepfe true = Spiel-Knöpfe zeigen) | pause | weiter | kapitel (n) | stop | info -> 639m Seite /sim/vorfuehrung (nur Besitzer; Simulator: nur dieser PC / verbundenes MoveEye)",
     "spielbereich": "Reiter Spielen (639i): Kopfzeile level + slot {n, name}, resume {id, title, where, pct} (Weiterspielen-Hinweis), stories [{id, title, short, dauer, age, pct, where, started, done, locked, soon, pic, last}] (Regal Geschichten, Bild /story_pic/<id>.jpg), chapters (Entdecken: Orte der Reihe nach, start = Hinreisen), badges (-> Entdeckungsbuch, 139 auch ueber entdecken badges), kids, blinki",
-    "egg": "Entwickler-Test Bergtal-Geheimnis (bergtal_ei.gd): do info | light | signal | beam | cave | heart (x, y | auto) | draw | belly | look | reset -> 639o (heart aus der Live-Ansicht)"
+    "egg": "Entwickler-Test Bergtal-Geheimnis (bergtal_ei.gd): do info | light | signal | beam | cave | heart (x, y | auto) | draw | belly | look | reset -> 639s (heart aus der Live-Ansicht)"
   },
   "_meta": {
     "world_reply": [

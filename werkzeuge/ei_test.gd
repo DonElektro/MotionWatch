@@ -1,14 +1,14 @@
 extends SceneTree
 ## Test des Bergtal-Geheimnisses (simulator3d/scripts/bergtal_ei.gd) ohne Bild – der ganze Ablauf über die Steuer-API.
-##   cd simulator3d && HOME=<test-home> <godot> --headless --path . -s "$PWD/../werkzeuge/ei_test.gd"            (nur Regeln)
-##   cd simulator3d && HOME=<test-home> <godot> --headless --path . -s "$PWD/../werkzeuge/ei_test.gd" -- --mit-welt --no-update --no-tour --port 9461
+##   cd simulator3d && HOME=<test-home> <godot> --headless --path . -s "$PWD/../werkzeuge/ei_test.gd" -- --no-update --no-tour   (ganzer Ablauf, so im CI)
+##   cd simulator3d && HOME=<test-home> <godot> --headless --path . -s "$PWD/../werkzeuge/ei_test.gd" -- --nur-regeln           (nur Regeln, schnell)
 ## Regeln: ccw_heart wie MoveEye (Herz im Gegenuhrzeigersinn ja, im Uhrzeigersinn / zu klein / offen nein), belly_matrix gleich
 ## wie _BELLY in quelle/230_waermebild.py, das Blinkmuster, die Texte in texte.json übersetzt.
 ## Mit der Welt (Bergtal, Nacht): falsches Muster / nicht gezielt -> nichts; das richtige Muster mit echten Pausen (Licht-Kanten
 ## wie von MoveEye, mit Zittern) -> drei schnelle Blitze, Strahl schwenkt zum Wasserfall, Höhle öffnet sich; das Murmeltier ist
 ## dunkel, sein Wärme-Zwilling warm; Herz im Uhrzeigersinn / daneben -> nichts, Herz auf dem Murmeltier -> es dreht sich um
 ## (Bauch), Entdeckung + geheimes Abzeichen; MoveEye-Weg (Kopfkamera, x/y aus «egg» in world_reply); Strahl geht nach 30 s;
-## reset -> alles wieder zu. Ende: «Ei-Test OK» oder «SCRIPT ERROR: Ei-Test: …» (Exit 0 / 1).
+## reset -> alles wieder zu; zum Schluss dasselbe kurz in Lite. Ende: «Ei-Test OK» oder «SCRIPT ERROR: Ei-Test: …» (Exit 0 / 1).
 
 var errs := []
 var m = null
@@ -48,6 +48,15 @@ func _init() -> void:
 		prev = o
 	print("Muster: %d Blitze in 20 s" % flanks)
 	_ok("Muster blinkt (2–3 Durchgänge in 20 s)", flanks >= 8 and flanks <= 15)
+	_ok("Muster hat 4–5 Zeichen", Ei.MUSTER.length() >= 4 and Ei.MUSTER.length() <= 5)
+	var ack := 0
+	prev = false
+	for i in range(int(2.0 / 0.005)):
+		var o: bool = Ei.ack_on(i * 0.005)
+		if o and not prev:
+			ack += 1
+		prev = o
+	_ok("Antwort der Antenne: dreimal schnell", ack == 3, ack)
 	# texts
 	var tx = JSON.parse_string(FileAccess.get_file_as_string("res://i18n/texte.json"))
 	for t in ["Das Murmeltier hinter dem Wasserfall", "Du hast das Licht vom Chalchstock verstanden. Das Murmeltier hat dir sein Geheimnis gezeigt.",
@@ -58,7 +67,7 @@ func _init() -> void:
 			for l in ["en", "fr", "it", "rm"]:
 				full = full and str(row.get(l, "")) != ""
 		_ok("übersetzt: " + t.left(40), full)
-	if "--mit-welt" in OS.get_cmdline_user_args():
+	if not "--nur-regeln" in OS.get_cmdline_user_args():
 		_welt.call_deferred()
 		return
 	_ende()
@@ -181,6 +190,7 @@ func _welt() -> void:
 	await _warte(2.0)
 	i = E({"do": "info"})
 	_ok("Murmeltier hat sich umgedreht (Bauch nach aussen)", i.turned and i.belly_facing_out, i)
+	_ok("Tusch (klang.gd) angefordert", int(i.tusch_n) == 1, i)
 	_ok("gefunden: Entdeckungsbuch + geheimes Abzeichen", i.found and m.entdecken.items.has("berg.geheim.murmeltier") and _badge(), i)
 	_ok("kein Blinki-Hinweis darauf", m.entdecken.nearest_possible() != "berg.geheim.murmeltier")
 	_ok("danach nichts mehr für MoveEye", m.world_reply().get("egg") == null)
@@ -216,8 +226,51 @@ func _welt() -> void:
 	E({"do": "reset"})
 	i = E({"do": "info"})
 	_ok("reset: Höhle zu, nicht gefunden, Abzeichen weg", not i.cave_open and not i.found and not _badge(), i)
+	# Lite: the same valley with fewer details - the secret works the same
+	m.control({"action": "bergtal", "do": "lite_test", "value": true})
+	w = 0
+	while w < 240:
+		await _warte(0.5)
+		w += 1
+		if m.bt_ei != null and is_instance_valid(m.bt_ei) and m.bt_ei.cave != null and m.bt_ei.cave.is_inside_tree():
+			break
+	await _warte(1.0)
+	m.set_hour(23.0)
+	await _warte(0.5)
+	E({"do": "reset"})
+	i = E({"do": "info"})
+	_ok("Lite: Bergtal mit Geheimnis gebaut", bool(i.lite) and i.stage == "idle", i)
+	E({"do": "look", "what": "antenna"})
+	await _warte(0.3)
+	r = E({"do": "signal"})
+	_ok("Lite: Muster angenommen", r.accepted, r)
+	await _warte(ei_hold_s() + 0.0)
+	i = E({"do": "info"})
+	_ok("Lite: Strahl auf dem Wasserfall, Höhle offen", i.stage == "hold" and i.beam and i.cave_open, i)
+	await _warte(3.5)
+	E({"do": "look", "what": "cave"})
+	await _warte(0.3)
+	i = E({"do": "info"})
+	if i.screen != null:
+		var Ei2 = load("res://scripts/bergtal_ei.gd")
+		var lh: Array = Ei2.heart_points(float(i.screen[0]), float(i.screen[1]) - 10.0, 110.0)
+		lh.reverse()
+		r = E({"do": "draw", "pts": _arr(lh)})
+		_ok("Lite: Herz auf dem Murmeltier angenommen", r.ok, r)
+	else:
+		_ok("Lite: Murmeltier im Fenster sichtbar", false, i)
+	await _warte(2.0)
+	i = E({"do": "info"})
+	_ok("Lite: umgedreht, gefunden", i.turned and i.belly_facing_out and i.found, i)
+	E({"do": "reset"})
+	m.control({"action": "bergtal", "do": "lite_test", "value": false})
 	print("Welt-Test fertig")
 	_ende()
+
+
+func ei_hold_s() -> float:
+	var Ei = load("res://scripts/bergtal_ei.gd")
+	return float(Ei.ACK_S) + float(Ei.SWING_S) + 1.0
 
 
 func _arr(pts: Array) -> Array:

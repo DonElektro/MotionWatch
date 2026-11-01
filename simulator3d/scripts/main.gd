@@ -3227,8 +3227,8 @@ func world_reply() -> Dictionary:
 	r["horror"] = horror.reply() if horror != null else null   # Horror-Modus: neue «Aufnahmen» -> MoveEye Verlauf (539a)
 	r["spieltest"] = spieltest.reply() if spieltest != null else null   # Spieltest-Assistent: Meldung nach jeder Runde -> MoveEye 635a (Push)
 	r["sky"] = licht.reply() if licht != null else null   # «Licht & Nacht»: lux am Gerät, Dämmerung, Sonne, Mond (MoveEye liest es noch nicht)
-	r["season"] = jahreszeiten.reply() if jahreszeiten != null else null
-	r["egg"] = bt_ei.reply() if bt_ei != null and is_instance_valid(bt_ei) else null   # (nur wenn es etwas zu zeichnen gibt) -> MoveEye 639o   # «Jahreszeiten»: Jahreszeit, Sonnenauf-/untergang, Belegung (MoveEye liest es noch nicht)
+	r["season"] = jahreszeiten.reply() if jahreszeiten != null else null   # «Jahreszeiten»: Jahreszeit, Sonnenauf-/untergang, Belegung (MoveEye liest es noch nicht)
+	r["egg"] = bt_ei.reply() if bt_ei != null and is_instance_valid(bt_ei) else null   # Bergtal-Geheimnis (nur wenn es etwas zu zeichnen gibt) -> MoveEye 639s
 	if simwerte != null:
 		r.merge(simwerte.reply())                     # Simulator-Werte: battery, pi_temp, net, clock, place, forecast (power.gd)
 	return r

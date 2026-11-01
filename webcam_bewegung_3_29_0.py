@@ -239,7 +239,7 @@ def prepare_settings_file():
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
 ZD_FILE = "moveeye_daten_3_29_0.zip"
-ZD_SHA256 = "d3dcde8430986262bea028c8ce8a3337f706188fc8259154539b6303f2d164dd"
+ZD_SHA256 = "1a65e1311d6fc6d14c47b2cbdb3c9f4dc40d330881d534bf0a8678d24c7429d8"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -68656,6 +68656,112 @@ def _ansicht_selftest():
 
 
 SELFTEST_EXTRA.append(("My view (639r)", _ansicht_selftest))
+# ----------------------------------------------------------------------------
+# NICHTS davon in Hilfe, Anleitung oder Blinki – keine sichtbaren Texte. (Spoiler, nur für Entwickler: simulator3d/scripts/
+# bergtal_ei.gd beschreibt den ganzen Ablauf.) Hier nur das Ende in MoveEye:
+#   * Der Simulator meldet in seiner Antwort (world_reply «egg») nur dann etwas, wenn man ein Herz zeichnen kann und das
+#     Murmeltier im Bild der Kopfkamera ist: {"st": "heart", "x", "y", "r"} (0 … 1 im Bild). simvals_take legt es in SIM["egg"].
+#   * Die Live-Ansicht (WEB_PAGE, Bild #video) fragt /api/simegg alle 2.5 s (nur sichtbar, nur mit Simulation). Steht dort ein
+#     Murmeltier, beginnt ein Strich, der nahe beim Murmeltier anfängt, eine Herz-Zeichnung (sonst bleibt alles wie immer);
+#     mwHeart (510, dieselben Regeln wie ccw_heart in 230) prüft im Browser, POST /api/simegg prüft es hier noch einmal und
+#     schickt die Mitte (0 … 1 im Bild) an den Simulator: sim_control {"action": "egg", "do": "heart", "x", "y"}. Der Simulator
+#     entscheidet, ob es auf dem Murmeltier ist. Danach Herzchen und ein leiser Pfiff im Browser.
+#   * Das MoveEye-Fenster (Tk) zeigt das Simulator-Bild auch, kann hier aber (noch) nicht zeichnen.
+# Hier (nach 639n) weil sim_control, ccw_heart (230), smalltv_routes, WEB_PAGE, SIM vorher kommen.
+# ----------------------------------------------------------------------------
+_simvals_take_egg = simvals_take
+
+
+def simvals_take(rep):                                    # + 639s: where the marmot is (only while a heart can be drawn)
+    _simvals_take_egg(rep)
+    try:
+        e = rep.get("egg")
+        SIM["egg"] = dict(e, t=time.time()) if isinstance(e, dict) and e.get("st") == "heart" else None
+    except Exception:
+        SIM["egg"] = None
+
+
+def egg_state():
+    e = SIM.get("egg") if CFG.get("sim_on") and SIM.get("ok") else None
+    if not isinstance(e, dict) or time.time() - float(e.get("t") or 0) > 4.0:
+        return {"ok": True, "egg": None}
+    return {"ok": True, "egg": {k: e.get(k) for k in ("st", "x", "y", "r")}}
+
+
+def egg_post(d):
+    """a stroke over the live picture: {pts: [[x, y] …] (screen px), rect: [left, top, width, height] of the picture}"""
+    d = d if isinstance(d, dict) else {}
+    try:
+        pts = [(float(p[0]), float(p[1])) for p in (d.get("pts") or [])[:3000]]
+        l_, t_, w_, h_ = (float(v) for v in (d.get("rect") or [])[:4])
+    except (TypeError, ValueError, IndexError):
+        return {"ok": False, "error": "bad stroke", "code": 400}
+    if w_ < 40 or h_ < 30 or not ccw_heart(pts):
+        return {"ok": False, "error": "no heart"}
+    if not CFG.get("sim_on"):
+        return {"ok": False, "error": "no simulator"}
+    xs = [p[0] for p in pts]; ys = [p[1] for p in pts]
+    x = ((min(xs) + max(xs)) / 2 - l_) / w_; y = ((min(ys) + max(ys)) / 2 - t_) / h_
+    try:
+        r = sim_control({"action": "egg", "do": "heart", "x": round(x, 4), "y": round(y, 4), "src": "mw"}) or {}
+    except Exception as e:
+        return {"ok": False, "error": str(e)[:80]}
+    if r.get("ok"):
+        SIM["egg"] = None
+    return {"ok": bool(r.get("ok")), "error": r.get("error")}
+
+
+_smalltv_routes_egg_base = smalltv_routes
+
+
+def smalltv_routes(app, reply, body):                     # + 639s: /api/simegg (550 calls smalltv_routes once)
+    _smalltv_routes_egg_base(app, reply, body)
+
+    @app.route("/api/simegg", methods=["GET", "POST"])
+    def api_simegg():
+        from flask import request
+        if request.method == "GET":
+            return reply(egg_state())
+        r = egg_post(body())
+        code = r.pop("code", None)
+        return reply(r, code) if code else reply(r)
+
+
+EGG_JS = _zd('639s_sim_ei/EGG_JS', "")
+WEB_PAGE = WEB_PAGE.replace("</body>", EGG_JS + "</body>", 1)
+
+
+def egg_selftest():
+    hp = heart_points(400, 300, 120)
+    assert ccw_heart(list(reversed(hp))) and not ccw_heart(hp)
+    keep = (CFG.get("sim_on"), dict(SIM))
+    _sc = globals()["sim_control"]; asked = []
+    try:
+        CFG["sim_on"] = True
+        SIM.update(ok=True)
+        simvals_take({"egg": {"st": "heart", "x": 0.5, "y": 0.6, "r": 0.05}})
+        assert egg_state()["egg"] == {"st": "heart", "x": 0.5, "y": 0.6, "r": 0.05}
+        simvals_take({})
+        assert egg_state()["egg"] is None
+        globals()["sim_control"] = lambda d_: (asked.append(d_), {"ok": True})[1]
+        assert not egg_post({"pts": hp, "rect": [100, 100, 600, 400]})["ok"] and not asked      # clockwise: no heart
+        assert egg_post({"pts": "x"}).get("code") == 400
+        r = egg_post({"pts": list(reversed(hp)), "rect": [100, 100, 600, 400]})
+        assert r["ok"] and asked[-1]["action"] == "egg" and asked[-1]["do"] == "heart", (r, asked)
+        assert abs(asked[-1]["x"] - 0.5) < 0.02 and 0.3 < asked[-1]["y"] < 0.6, asked[-1]
+    finally:
+        globals()["sim_control"] = _sc
+        CFG["sim_on"] = keep[0]
+        SIM.clear(); SIM.update(keep[1])
+    assert "/api/simegg" in WEB_PAGE and "mwHeart" in WEB_PAGE
+    gd = os.path.join(os.path.dirname(os.path.abspath(__file__)), "simulator3d", "scripts", "bergtal_ei.gd")
+    if os.path.exists(gd):                                # the simulator shows the same pattern as the marmot of MoveEye
+        with open(gd, encoding="utf-8") as f:
+            assert 'const BELLY := "' + _BELLY + '"' in f.read(), "bergtal_ei.gd BELLY differs from _BELLY (230)"
+    return "heart over the live picture: rules, forwarding to the simulator, same belly pattern"
+
+
+SELFTEST_EXTRA.append(("A secret of the simulator (heart over the live picture)", egg_selftest))
 # ----------------------------------------------------------------------------
 # real-erk-e3 (31.10.2026): die Push-Nachricht «Etwas Grosses am Boden» (Titel und Text) in de / fr / it / rm.
 # ----------------------------------------------------------------------------
