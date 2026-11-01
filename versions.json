@@ -1,7 +1,24 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-01 02:53",
+ "generated": "2026-11-01 03:09",
  "versions": [
+  {
+   "version": "3.29.0",
+   "file": "webcam_bewegung_3_29_0.py",
+   "url": "",
+   "sha256": "62f00005d536c7a2111d73c627c911d2dfff478d9675468952ad5ed5b7f9ed48",
+   "date": "2026-11-01 03:09",
+   "notes": "Simulator: Fenster docken automatisch in Leisten links/rechts an (ohne Überlappung, passt sich der Bildschirmgrösse an, «Neu anordnen»); Karte, Kompass, SmallTV und CPU als Reiter in einem Fenster; Entwickler immer vorne, klein/mittel/gross und einklappbar.",
+   "size": 4481992,
+   "sig": "cc70cbf48db570a684b681b77ed28d3721e94de0d3d0e262f4d74b94fdf8c05c79ad0325dfa4c386c6ae2887184a977ab9149a3d729cd8e16b39df2ccd954405",
+   "data": {
+    "file": "moveeye_daten_3_29_0.zip",
+    "url": "",
+    "sha256": "d3dcde8430986262bea028c8ce8a3337f706188fc8259154539b6303f2d164dd",
+    "size": 1559409,
+    "sig": "8242750553ad8dce6f03fa9ee6c8798c1c2e6cd4710db612f8dd7c04523a665b76baca8920ecddcdcbe0bbdab039669328f2331720918922945b814ae934cb0e"
+   }
+  },
   {
    "version": "3.28.1",
    "file": "webcam_bewegung_3_28_1.py",
@@ -136,23 +153,6 @@
     "sha256": "3c74fd99c36f37414888136f81596beaf2c105d80d1ad5b835b720610b5dcbe5",
     "size": 1621446,
     "sig": "ebcc5c7da6a9d46ea1cdc24dc6500993062627aef4789146e6209288865c344431d20fe196f0f5fc749f2b7c1ebfa164adbf0e5dbbb6bf8db6c254f2dff78800"
-   }
-  },
-  {
-   "version": "3.20.0",
-   "file": "webcam_bewegung_3_20_0.py",
-   "url": "",
-   "sha256": "21524545b0f8a77a090205327df90109fa47473748fd711369bed1ebed28e037",
-   "date": "2026-10-31 23:48",
-   "notes": "Simulator 3.20.0: Figuren leben mehr (Atmen, Blick zu Geräuschen und Tieren, Blinzeln, Sprechen, Zittern, High-Five, Klettern, Aufheben; Tiere äsen und kauen; Maggie gräbt und schüttelt sich), Spuren im Schnee, Schalter «Ansicht wippt beim Gehen».",
-   "size": 4440084,
-   "sig": "5ee9b5d04c64c0f00179f3520bdb876e70b2e618a8e92d6e6f2c13aaae151e6e899e87cab89316f0461901ee0e4e15a9fe82ad91abbb330cdbeabcb291351f0d",
-   "data": {
-    "file": "moveeye_daten_3_20_0.zip",
-    "url": "",
-    "sha256": "dd047d4cd042301fc9aa42b1a03d0ff1c8b81f6db43fe85b45bef962693704eb",
-    "size": 1621220,
-    "sig": "b8bf671ae57066b64ac513da9368d13428afde57fd3dc77e33dfbd53e8e520f7da7f3c31a221f2f8e0316a46afa90864a3525905dedd5b00363350ababb4e10e"
    }
   },
   {
