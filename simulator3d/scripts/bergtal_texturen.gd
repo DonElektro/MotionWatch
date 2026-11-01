@@ -29,9 +29,6 @@ const GROUND := {"wiese": "wiese_alp_01", "wiese2": "wiese_hellgruen_01", "alp":
 		"geroell": "geroell_gras_02", "rose": "zwergstrauch_alpenrose_01", "fels": "fels_kalk_grau_01",
 		"fels2": "fels_platte_hell_01", "wald": "wald_von_oben_02"}
 
-static var _tex := {}
-
-
 static func on(main) -> bool:
 	"""Foto-Texturen jetzt? Schalter an, nicht Lite, Dateien da"""
 	if main == null or not bool(main.get("foto_tex")):
@@ -42,10 +39,9 @@ static func on(main) -> bool:
 
 
 static func tex(name: String) -> Texture2D:
-	if not _tex.has(name):
-		var p := DIR + name + ".jpg"
-		_tex[name] = load(p) if ResourceLoader.exists(p) else null
-	return _tex[name]
+	# no own cache (a static Dictionary with textures stays alive until exit): ResourceLoader keeps them while in use
+	var p := DIR + name + ".jpg"
+	return load(p) if ResourceLoader.exists(p) else null
 
 
 static func _lin(c: Color) -> Vector3:
