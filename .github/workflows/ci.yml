@@ -2,7 +2,7 @@
 #   werkzeuge/ci_status.sh [zweig|commit] [--warten] [--fehler]
 #  - Push auf real-*: schnelle Tests (MoveEye + Simulator), ohne Export
 #  - Push auf integration / main: alles, dazu Export Linux + Windows (ohne Signatur) als Artefakt
-#  - von Hand (Actions -> CI -> Run workflow): alles, Export abwählbar
+#  - von Hand (Actions -> CI -> Run workflow): alles, Export abwählbar; «[export]» in der Commit-Nachricht: Export auch auf real-*
 # Keine Geheimnisse: der Signierschlüssel kommt nie hierher (Signieren bleibt lokal), keine ntfy-Themen.
 name: CI
 on:
@@ -188,7 +188,8 @@ jobs:
     name: Export · ${{ matrix.preset }}
     if: >-
       github.ref == 'refs/heads/main' || github.ref == 'refs/heads/integration' ||
-      (github.event_name == 'workflow_dispatch' && github.event.inputs.export != 'false')
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.export != 'false') ||
+      contains(github.event.head_commit.message, '[export]')
     runs-on: ubuntu-latest
     timeout-minutes: 40
     strategy:
