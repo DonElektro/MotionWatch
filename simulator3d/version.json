@@ -1,9 +1,9 @@
 {
- "version": "3D-5.24.0",
- "ver": "3.24.0",
- "name": "MoveEye Sim 3.24.0",
+ "version": "3D-5.25.0",
+ "ver": "3.25.0",
+ "name": "MoveEye Sim 3.25.0",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 39988537,
- "sha256": "f6e88c502850a36179502cf634e7efb82e0bf1f975a5c97997e3ffabd44ea6ee",
- "notes": "MoveEye Sim 3.24.0: ein Schalter «Ton am PC», Symbole farbig als Standard."
+ "size": 39991331,
+ "sha256": "d9852abb088e1a3cc211347025d690d0ce5c97eb2507ced4b98b1570b50342cd",
+ "notes": "MoveEye Sim 3.25.0: mittlerer Klapp-Knopf «Meine Ansicht» wie in MoveEye."
 }

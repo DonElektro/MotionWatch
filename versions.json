@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-01 01:12",
+ "generated": "2026-11-01 01:28",
  "versions": [
+  {
+   "version": "3.25.0",
+   "file": "webcam_bewegung_3_25_0.py",
+   "url": "",
+   "sha256": "9839882bd0bf5d3c029a171a3faeb70aab40d7a899f96a2768ae3efd1c4219da",
+   "date": "2026-11-01 01:28",
+   "notes": "Mittlerer Klapp-Knopf «Meine Ansicht»: merkt sich dein Auf- und Zuklappen pro Seite, auf allen deinen MoveEye-Geräten gleich; «Nur Gruppen» weiter mit langem Druck; ↻ springt zuerst auf Live und lädt dann neu.",
+   "size": 4482785,
+   "sig": "516e3e1b9e191cc33395320c1afe497f9aad6a04190319ed562f05641aba9b2e72fc515fcb7f828fad170a51486efb2ffe1b41b3afbf614f50d5fc9402dbc407",
+   "data": {
+    "file": "moveeye_daten_3_25_0.zip",
+    "url": "",
+    "sha256": "8feaf9634c17238566f1b59599797bc65828d2ad8b435c62b3452d9433477ff1",
+    "size": 1632683,
+    "sig": "efc8f4974a55bd56adc7ee72b77aaf6fe8309207aa5b0e8331dd7c7d82f5361d484598ed87f70fad4482c90db5da097013f8a678e5f38bfbd0ede1ca5ddd110d"
+   }
+  },
   {
    "version": "3.24.0",
    "file": "webcam_bewegung_3_24_0.py",
    "url": "",
    "sha256": "60ec46427a80f83fa04541750499394c9a106d1fca7fa440a7a10d3a24c4f3a9",
-   "date": "2026-11-01 01:12",
+   "date": "2026-11-01 01:23",
    "notes": "Sicherheit: Test-Postfach, eigene Sim-Einstellungen und Anmelden nur über https immer an (Schalter entfernt); unsignierte Versionen nur noch im Entwickler-Bereich (24 h).",
    "size": 4465349,
    "sig": "fcd0edf5da4f357f17ae40067d7a2010db83c8bcf0df20ac020c4263ddb25837b499d4c04e02c7eec5d7dddefa3a408bd1b071bfb2be44675dc7b5f30cec200d",
@@ -41,7 +58,7 @@
    "file": "webcam_bewegung_3_22_0.py",
    "url": "",
    "sha256": "df45d7aa5e86816ac9c487a86acc07634259b7d4f2ae2925d6dafdd594cf4800",
-   "date": "2026-11-01 01:08",
+   "date": "2026-11-01 01:24",
    "notes": "Reiter- und Statuszeile einzeln einklappbar (pro Gerät gemerkt, roter Punkt bei Warnungen); auf jeder Seite dieselbe Bedienleiste (Einfach/Experte, Symbole farbig/schlicht, Nur Gruppen, Alle zuklappen · Nur Gruppen · Alle aufklappen) – Web, Pi-Fenster und Simulator; Live: Gehtest ganz unten.",
    "size": 4448328,
    "sig": "486bd2fbe8f184c08e8d6e9681886afc4b231699e5454eaa7fbb8aa20a55e16ebea8a62d98771fb9104d7579057fc53ef721fb3e42bc786a156104eac790ef0f",
@@ -136,23 +153,6 @@
     "sha256": "bf1a8dab4f2dafc5035517f68779ff8dcc3891e147d659e502d7e9c2c0168c62",
     "size": 1613384,
     "sig": "6e072e5365248ee8380168ae1cbcef061f566539ac928841acb068346895eeb9edd99d12da49f98c88587ea2d0949cc1fb24bac35631505e9ce21a4921671501"
-   }
-  },
-  {
-   "version": "3.16.0",
-   "file": "webcam_bewegung_3_16_0.py",
-   "url": "",
-   "sha256": "ad0ae21700563d3e61e2b370f2438040e7006b0a78c4b3d02501479a9c7e4d9c",
-   "date": "2026-10-31 22:08",
-   "notes": "Simulator 3.16.0: Bergtal wie auf Daniels Fotos – Kalkfels mit Grasbändern, gelbgrüne Weiden, dunkle Fichten, smaragdgrüner Bergsee mit Spiegelung, Dunst; in Hoch Karstweide, Felszähne, Legföhren, Alpenrosen, Quellwolken, Abendhimmel.",
-   "size": 4417151,
-   "sig": "ef583a7a32ad8fe4ba6da4f0233774ce7bfcbd725f014c34e5010b4047f796bbc84036930114f516d2a73299dd92ab28589a77c91d27c060b49403806f75c704",
-   "data": {
-    "file": "moveeye_daten_3_16_0.zip",
-    "url": "",
-    "sha256": "1f6a9c298aa565c26fabff9222a40522de85345ee01869aa1c6605a2522cf2cc",
-    "size": 1613268,
-    "sig": "90f6ac37f6f7e0b65116e8441e0e63c9828b516c560a0b195e985b497be05f45ec0ff8a295e5987274c99798a44e8d41fdde930fdcbdb4b736aa83d47cfcbb07"
    }
   },
   {

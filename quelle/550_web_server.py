@@ -2389,6 +2389,10 @@ class WebStream:
                           "dev": bool(CFG.get("dev_area")),         # 639d: the group «Entwickler» of the simulator control (470)
                           "start_groups": bool(CFG.get("ui_start_groups", True))})
 
+        @app.route("/api/ansicht", methods=["GET", "POST"])
+        def api_ansicht():                               # 639r «Meine Ansicht»: the own folds per user and page (every device)
+            return ansicht_api(request, reply, body, g)
+
         @app.route("/api/night", methods=["POST"])
         def api_night():
             return reply(night_guard(body().get("lang")))
