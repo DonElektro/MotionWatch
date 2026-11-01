@@ -816,8 +816,26 @@ func _ask(kind: String, title: String, text: String, opts: Array, extra := {}) -
 		geheim.on_ask()                                  # Action-Teile: Seilbahn an der Gabelung, Felsnische, Spalt
 	if kinder():
 		R["pending"]["text"] = kurz(str(R["pending"]["text"]))   # A6 Kinder-Modus: kurze Texte
+	_klang_ask(kind, title)
 	_replay_t = 0.7
 	_changed()
+
+
+func _klang_ask(kind: String, title: String) -> void:
+	"""Spielton (klang.gd): finds = glockenspiel, the hidden page = drum roll and «Tusch», weather / warnings = tension"""
+	const Klang = preload("res://scripts/klang.gd")
+	match kind:
+		"find", "a4_fund", "a3_seite":
+			Klang.fund()
+		"gh_blatt":
+			Klang.tusch()
+		"weather":
+			Klang.gefahr("grossvater", 0.85, 45.0)
+		"tired":
+			Klang.gefahr("grossvater", 0.35, 15.0)
+		"info":
+			if title == T.t("MoveEye warnt"):
+				Klang.gefahr("grossvater", 0.5, 25.0)
 
 
 func choose(v: String) -> Dictionary:
@@ -1406,6 +1424,8 @@ func _morning() -> void:
 	R["result"] = {"stars": stars, "xp": xp, "level": lv1, "level_up": lv1 > lv0, "unlocked": unlocked, "rating": mr, "seen": seen,
 			"missed": missed, "hidden": hidden, "hits": hits, "summit_ok": summit_ok, "sunset_ok": bool(R.get("sunset_ok", false)),
 			"sleep": snappedf(sleep, 0.01), "source": _night_src, "battery_h": battery_h, "finale": finale, "notes": notes}
+	if stars >= 1:
+		preload("res://scripts/klang.gd").kapitel()    # Spielton: chapter done - strings
 	if a1 != null:
 		a1.morning(R["result"])                          # A1: food, pictures, the hint
 	if geheim != null:

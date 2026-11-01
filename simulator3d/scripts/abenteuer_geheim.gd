@@ -470,6 +470,7 @@ func found_stein(c: int, how: String, who := "") -> bool:
 		return false
 	st[str(c)] = str(STEIN[c][2])
 	add_xp(15)
+	preload("res://scripts/klang.gd").tusch()             # Spielton: a secret find - drum roll and «Tusch»
 	RR()["neu"].append("stein%d" % c)
 	var z := str(STEIN[c][2])
 	var tx := T.t("Abseits des Weges, zwischen Gras und Steinen: ein kleines Steinmännchen, kaum kniehoch. In den obersten Stein ist ein Zeichen geritzt: «%s».") % z
@@ -501,6 +502,7 @@ func badge(id: String) -> void:
 	var b: Dictionary = S()["badges"]
 	if b.has(id) or not BADGES.has(id):
 		return
+	preload("res://scripts/klang.gd").tusch()             # Spielton: the secret badge (SEELI) - drum roll and «Tusch»
 	b[id] = Time.get_datetime_string_from_system().substr(0, 16)
 	add_xp(50)
 	var bd: Array = BADGES[id]
