@@ -121,7 +121,7 @@ class NetMonitor:
             return
         addr = page_address(self.ip)
         de = CFG["lang"] == "de"
-        txt = trf("MoveEye is online in Wi-Fi {ssid}: {addr}", ssid=ssid or "?", addr=addr)
+        txt = trf("MoveEye is online ({net}): {addr}", net=push_net_label(), addr=addr)   # 3.39: no Wi-Fi name in pushes (635c)
         if w.notifier.info(txt, addr):
             self.announced = key
             log_event("sys", f"Address sent as push message: {addr}")

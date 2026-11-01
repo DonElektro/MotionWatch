@@ -23,6 +23,7 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 3.39.2: Datenschutz: Push- und E-Mail-Meldungen zeigen statt des WLAN-Namens nur noch «bekanntes WLAN».
   * 3.39.1: Simulator intern aufgeräumt, schnellerer Start.
   * 3.39.0: MoveEye und Simulator zeigen dasselbe: Ansicht, Sprache, Stimme, Rundgang und Blinki gleichen sich von selbst ab;
     eine Einfach/Experte-Wahl für alles. Im Simulator neu: Zustand Aus/Wachsam/Voll in LED-Farben, Push-Vorschau, Versions-Paar,
@@ -84,8 +85,6 @@ Features
     natürlicherem Gang, Füsse bleiben am Boden.
   * 3.17.0: Simulator-Ports: MoveEye findet auch die Ausweich-Ports 8775/8785/8795 (Portliste geprüft). Simulator 3.17.0:
     Notfall-Start.bat, Fehlerbericht sammeln.bat, Fotos mit weniger Grafikspeicher, zweiter Simulator auf Port 8768.
-  * 3.16.0: Simulator 3.16.0: Bergtal wie auf Daniels Fotos – Kalkfels mit Grasbändern, gelbgrüne Weiden, dunkle Fichten,
-    smaragdgrüner Bergsee mit Spiegelung, Dunst; in Hoch Karstweide, Felszähne, Legföhren, Alpenrosen, Quellwolken, Abendhimmel.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -94,10 +93,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_3_39_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_3_39_2.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_3_39_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_3_39_1.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_3_39_2.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_3_39_2.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -114,7 +113,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "3.39.1"
+APP_VERSION = "3.39.2"
 
 
 def default_data_dir():
@@ -236,8 +235,8 @@ def prepare_settings_file():
 #     Part 397 fetches the zip over the same update source and restarts once (zusatz_start()).
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
-ZD_FILE = "moveeye_daten_3_39_1.zip"
-ZD_SHA256 = "38a2b4cd2fbae1e15c4fad53302ab2eaa703ec755a56d569d4230541400eafa2"
+ZD_FILE = "moveeye_daten_3_39_2.zip"
+ZD_SHA256 = "efc7a06b33c1dba0b394cbe92ad03e796ea8248be698da86f36d023ef358f73b"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -4270,6 +4269,7 @@ class Notifier:
         return push_sms_text(Notifier._title(p), Notifier._text(p), p)    # 635b: with the complete map link (theft, position)
 
     def _dispatch(self, p, jpg, fname):
+        p = push_no_ssid(p)                              # 635c: never the name of a Wi-Fi (SSID) in an outgoing message
         if sim_net_down():                               # Simulator-Werte: «WLAN weg» / «Internet weg» test - nothing goes out (285)
             return simnet_hold(self, p, jpg, fname)
         if (sandbox_active() and not sandbox_lets_through(p)) or p.get("_test"):   # 2.96.6: test inbox (141), 3.23: always in the simulation
@@ -8614,7 +8614,7 @@ class NetMonitor:
             return
         addr = page_address(self.ip)
         de = CFG["lang"] == "de"
-        txt = trf("MoveEye is online in Wi-Fi {ssid}: {addr}", ssid=ssid or "?", addr=addr)
+        txt = trf("MoveEye is online ({net}): {addr}", net=push_net_label(), addr=addr)   # 3.39: no Wi-Fi name in pushes (635c)
         if w.notifier.info(txt, addr):
             self.announced = key
             log_event("sys", f"Address sent as push message: {addr}")
@@ -14093,7 +14093,7 @@ class UplinkWatch:
         elif online and DUAL["offline_since"] is not None:
             gone = now - DUAL["offline_since"]; DUAL["offline_since"] = None
             if gone > 120:
-                dual_log(trf("Internet was gone for {min} min - it is back ({ssid})", min=int(gone / 60 + 0.5), ssid=w.get("ssid") or "?"), push=True)
+                dual_log(trf("Internet was gone for {min} min - it is back ({net})", min=int(gone / 60 + 0.5), net=push_net_label()), push=True)   # 635c: no Wi-Fi name
         conn = bool(w.get("connected")) and not w.get("ap")
         if self.was_conn and not conn:
             DUAL["drops"] = [t_ for t_ in DUAL["drops"] if now - t_ < 600] + [now]
@@ -24519,8 +24519,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3.39.1", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 47913472,
-         "sha256": "ff4f9201dd852cbc411cf277c5c06ad518730afae77508df1b2b42f52789e0da"}
+SIM3D = {"version": "3.39.2", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 47913654,
+         "sha256": "93023b4fbad80aa541f8a2c9f6cc4bc4052b6b1b0a215367a7036697b28cc9df"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -30418,7 +30418,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_3_39_1.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_3_39_2.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -48563,7 +48563,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 3.39.1")
+        self.root.title("MoveEye 3.39.2")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -48935,7 +48935,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 3.39.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 3.39.2 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -56142,7 +56142,7 @@ App._refresh = _kr_tk_refresh
 #      bleibt für die kleine Überraschung) und «Über MoveEye» unten in Mehr. Geschichte, Entwickler «Daniel alias Elektro»,
 #      Zeitleiste, Zahlen (zur Laufzeit gezählt), aufklappbar «Für Technik-Interessierte». Texte: 622.
 # ----------------------------------------------------------------------------
-INFO_PARTS = 257                       # number of parts in quelle/ (written by werkzeuge/bauen.py --neue-version)
+INFO_PARTS = 258                       # number of parts in quelle/ (written by werkzeuge/bauen.py --neue-version)
 INFO_START = "2026-10-16"              # the first lines (a small webcam program for the Pi 5)
 FBX = {"shot": None, "shot_t": 0.0, "lines": 0}
 
@@ -64896,7 +64896,7 @@ PK_TEXTS = [
     (("Protection on - alarms are active",), "🛡", "Protection on", "Alarms are active", "info", True),
     (("Siren stopped at the device",), "🔕", "Siren off", "Stopped at the device", "info", False),
     (("Disarmed via MQTT / Home Assistant",), "🛡", "Protection off", "Via MQTT / Home Assistant", "info", True),
-    (("MoveEye is online in Wi-Fi {ssid}: {addr}",), "📶", "Online", "Wi-Fi {ssid} · open page", "info", False),
+    (("MoveEye is online ({net}): {addr}",), "📶", "Online", "{net} · open page", "info", False),   # 635c: placeholder, no Wi-Fi name
     ((("Simulation switched on automatically (a simulator is online)", ": {who}"),), "🧪", "Simulation on", "{who}", "info", False),
     ((("Fixed again", ": {k}"),), "✅", "Fixed again", "{k}", "info", False),
     (("Power cut – running on the battery ({pct} %)",), "🔌", "Power cut", "Battery {pct} %", "hw_batt", False),
@@ -65306,7 +65306,8 @@ _HX_PK = {
     "Stopped at the device": ("Am Gerät gestoppt", "Arrêtée sur l’appareil", "Fermata sul dispositivo", "Fermada a l’apparat"),
     "Via MQTT / Home Assistant": ("Über MQTT / Home Assistant", "Via MQTT / Home Assistant", "Tramite MQTT / Home Assistant", "Via MQTT / Home Assistant"),
     "Online": ("Online", "En ligne", "Online", "Online"),
-    "Wi-Fi {ssid} · open page": ("WLAN {ssid} · Seite öffnen", "Wi-Fi {ssid} · ouvrir la page", "Wi-Fi {ssid} · apri la pagina", "WLAN {ssid} · avrir la pagina"),
+    "{net} · open page": ("{net} · Seite öffnen", "{net} · ouvrir la page", "{net} · apri la pagina", "{net} · avrir la pagina"),
+    "known Wi-Fi": ("bekanntes WLAN", "Wi-Fi connu", "Wi-Fi noto", "WLAN enconuschent"),
     "Simulation on": ("Simulation ein", "Simulation activée", "Simulazione attiva", "Simulaziun activada"),
     "Fixed again": ("Wieder in Ordnung", "De nouveau en ordre", "Di nuovo a posto", "Puspè en urden"),
     "Power cut": ("Stromausfall", "Coupure de courant", "Interruzione di corrente", "Interrupziun da current"),
@@ -65389,7 +65390,7 @@ def push_kurz_selftest():
         bad = re.compile(r"[{}]|\\u|\"event\"|info_title")
         cases = {
             "off": P(text=tr("Protection switched off at the device") + " 🧪", info_title="{name}: " + tr("Buttons on the device")),
-            "online": P(text=trf("MoveEye is online in Wi-Fi {ssid}: {addr}", ssid="Camping", addr="http://192.0.2.5:5000/"), info_title="", link="http://192.0.2.5:5000/"),
+            "online": P(text=trf("MoveEye is online ({net}): {addr}", net=push_net_label(), addr="http://192.0.2.5:5000/"), info_title="", link="http://192.0.2.5:5000/"),
             "batt": P(text=trf("Battery almost empty: about {pct} % ({hours:.1f} h) left – please charge or swap", pct=12, hours=1.5), info_title="{name}: " + tr("battery")),
             "person": P(event="person", persons=1, dist=tr("Person") + ", " + trf("about {m} m", m=12) + ", " + tr("coming closer")),
             "night": P(text="Zeile 1\nZeile 2", info_title="{name}: " + tr("night report")),
@@ -65400,7 +65401,7 @@ def push_kurz_selftest():
             assert not bad.search(ti + tx), f"{k}: placeholder / JSON in «{ti}» «{tx}»"
             assert "\n" not in tx and len(tx) <= PK_MAX and len(ti) <= 60, f"{k}: more than one line: «{tx}»"
         assert out["off"] == ("🛡 Schutz aus", "Am Gerät ausgeschaltet"), out["off"]
-        assert out["online"] == ("📶 Online", "WLAN Camping · Seite öffnen"), out["online"]
+        assert out["online"] == ("📶 Online", "bekanntes WLAN · Seite öffnen"), out["online"]
         assert out["batt"] == ("🪫 Akku 12 %", "Noch etwa 1.5 h · bitte laden"), out["batt"]
         assert out["person"] == ("🚶 Person erkannt", "21:07 · " + trf("about {m} m", m=12) + ", " + tr("coming closer")), out["person"]   # K8: text too
         assert out["night"] == ("🌙 Nachtbericht", "Zeile 1"), out["night"]
@@ -65638,6 +65639,105 @@ def push_map_selftest():
 
 SELFTEST_EXTRA.append(("«Protection on» only once (arm_tick from several threads, 130)", arm_once_selftest))
 SELFTEST_EXTRA.append(("Theft alarm: the map link complete on every channel (635b, H1)", push_map_selftest))
+# ----------------------------------------------------------------------------
+# Der Name des WLAN verrät, wo das Gerät steht (Heim-WLAN, Campingplatz, Handy-Hotspot mit Vorname). Lokal (Web-Seite, Fenster)
+# bleibt er sichtbar - das sieht nur der Besitzer. Zwei Stufen:
+#   * die Aufrufer schreiben ihn nicht mehr hinein: 110 «MoveEye is online ({net}): {addr}», 150 «Internet … is back ({net})»,
+#     {net} = push_net_label() (Kurzform in 635b PK_TEXTS «{net} · open page»);
+#   * Sicherheitsnetz in 060 Notifier._dispatch: push_no_ssid(p) ersetzt den Namen des verbundenen WLAN (auch des zweiten
+#     Adapters) in Titel und Text durch den Platzhalter, bevor irgendein Kanal etwas bekommt. Der Name des eigenen WLAN des
+#     Geräts (hotspot_ssid, ab Werk «MoveEye») ist kein persönliches Datum und bleibt (sonst würde «MoveEye» überall ersetzt).
+# Kein ntfy-Thema, keine Adresse, keine Zugangsdaten hier. Nach 635b (PK_TEXTS, _HX_PK, pk_tr), vor 636 Werkseinstellungen.
+# ----------------------------------------------------------------------------
+_HX_NOSSID = {
+    "MoveEye is online ({net}): {addr}": ("MoveEye ist online ({net}): {addr}", "MoveEye est en ligne ({net}) : {addr}",
+                                          "MoveEye è online ({net}): {addr}", "MoveEye è online ({net}): {addr}"),
+    "Internet was gone for {min} min - it is back ({net})": ("Internet war {min} Min. weg – es ist wieder da ({net})",
+                                                             "Internet était coupé {min} min - il est revenu ({net})",
+                                                             "Internet assente per {min} min - è tornato ({net})",
+                                                             "Internet era davent {min} min - el è puspè qua ({net})"),
+}
+for _k, _v in _HX_NOSSID.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+
+_NOSSID_KEEP = ("MoveEye", "MotionWatch")                 # names of the device itself, never replaced
+
+
+def push_net_label():
+    """the neutral name of the network in a message: «known Wi-Fi» (the Pi connects only to saved networks)"""
+    return pk_tr("known Wi-Fi")
+
+
+def push_ssids():
+    """the Wi-Fi names that must not leave the device: the connected network (main adapter, second adapter of 150) -
+    not the own Wi-Fi of the device (hotspot_ssid), names shorter than 3 characters are not searched (too many false hits)"""
+    own = {str(CFG.get("hotspot_ssid") or "").strip(), *_NOSSID_KEEP}
+    out = []
+    for src in (STATE.get("wifi"), (STATE.get("dual") or {}).get("uplink") if isinstance(STATE.get("dual"), dict) else None):
+        s = str((src or {}).get("ssid") or "").strip() if isinstance(src, dict) else ""
+        if len(s) >= 3 and s not in own and s not in out:
+            out.append(s)
+    return sorted(out, key=len, reverse=True)
+
+
+def push_no_ssid(p, ssids=None):
+    """a copy of the message with every Wi-Fi name replaced by the placeholder (title, text, extra fields)"""
+    names = push_ssids() if ssids is None else [s for s in ssids if len(str(s)) >= 3]
+    if not names or not isinstance(p, dict):
+        return p
+    rx = re.compile(r"(?<!\w)(?:" + "|".join(re.escape(s) for s in names) + r")(?!\w)")
+    lab = push_net_label()
+    q = dict(p)
+    for k in ("text", "info_title", "text_full", "dist", "where", "source"):
+        if isinstance(q.get(k), str):
+            q[k] = rx.sub(lab, q[k])
+    return q
+
+
+def push_no_ssid_selftest():
+    keep_l, keep_w, keep_h = CFG.get("lang"), STATE.get("wifi"), CFG.get("hotspot_ssid")
+    test = "Testnetz-Q7x Müller"
+    try:
+        CFG["lang"] = "de"; CFG["hotspot_ssid"] = "MoveEye"
+        STATE["wifi"] = {"connected": True, "ssid": test, "ip": "192.0.2.5", "dbm": -50}
+        now = datetime(2026, 11, 1, 9, 0, 0).isoformat(timespec="seconds")
+        P = lambda **kw: dict({"event": "info", "persons": 0, "time": now, "snapshot": None, "rain": False, "wind": "",
+                               "source": "cam", "link": ""}, **kw)
+        # the call sites (110 online, 150 internet back) and an old text that still names the network (safety net)
+        cases = [P(text=trf("MoveEye is online ({net}): {addr}", net=push_net_label(), addr="http://192.0.2.5:5000/")),
+                 P(text=trf("Internet was gone for {min} min - it is back ({net})", min=5, net=push_net_label()),
+                   info_title="{name}: " + tr("Network")),
+                 P(text=trf("MoveEye is online in Wi-Fi {ssid}: {addr}", ssid=test, addr="http://192.0.2.5:5000/")),
+                 P(text="WLAN «" + test + "» weg", info_title="{name}: " + test),
+                 P(event="tamper", text=test + " – " + tr("Wi-Fi jamming attack"), info_title="{name}: " + tr("Wi-Fi jamming attack"))]
+        for p in cases:
+            q = push_no_ssid(p)
+            outs = [Notifier._title(q), Notifier._text(q), push_long(q), Notifier._sms(q), str(q.get("info_title"))]
+            for o in outs:
+                assert test not in o and "Testnetz" not in o, f"Wi-Fi name in an outgoing message: «{o}»"
+        assert "bekanntes WLAN" in push_long(push_no_ssid(cases[0])), push_long(push_no_ssid(cases[0]))
+        assert Notifier._text(push_no_ssid(cases[0])) == "bekanntes WLAN · Seite öffnen", Notifier._text(push_no_ssid(cases[0]))
+        # the own Wi-Fi of the device and words that only contain the name stay
+        assert push_no_ssid(P(text="MoveEye ist online"))["text"] == "MoveEye ist online"
+        assert push_no_ssid(P(text="Camping-Platz"), ["Camp"])["text"] == "Camping-Platz"
+        STATE["wifi"] = {"connected": True, "ssid": "MoveEye", "ap": True}
+        assert push_ssids() == [], push_ssids()
+        # all languages have the placeholder and the new texts
+        for L in ("fr", "it", "rm"):
+            for k in _HX_NOSSID:
+                assert TRX[L].get(k) and "{net}" in TRX[L][k], (L, k)
+        for L in ("de", "en", "fr", "it", "rm"):
+            CFG["lang"] = L
+            assert push_net_label() and "{" not in push_net_label(), L
+    finally:
+        CFG["lang"], CFG["hotspot_ssid"] = keep_l, keep_h
+        STATE["wifi"] = keep_w
+    return True
+
+
+SELFTEST_EXTRA.append(("No Wi-Fi name (SSID) in push messages (635c)", push_no_ssid_selftest))
 # All parts have added their settings now (CFG.setdefault in later parts), the start (640) loads the file only after this.
 import copy as _copy_g2
 FACTORY_CFG = _copy_g2.deepcopy(CFG)

@@ -42,7 +42,7 @@ PK_TEXTS = [
     (("Protection on - alarms are active",), "🛡", "Protection on", "Alarms are active", "info", True),
     (("Siren stopped at the device",), "🔕", "Siren off", "Stopped at the device", "info", False),
     (("Disarmed via MQTT / Home Assistant",), "🛡", "Protection off", "Via MQTT / Home Assistant", "info", True),
-    (("MoveEye is online in Wi-Fi {ssid}: {addr}",), "📶", "Online", "Wi-Fi {ssid} · open page", "info", False),
+    (("MoveEye is online ({net}): {addr}",), "📶", "Online", "{net} · open page", "info", False),   # 635c: placeholder, no Wi-Fi name
     ((("Simulation switched on automatically (a simulator is online)", ": {who}"),), "🧪", "Simulation on", "{who}", "info", False),
     ((("Fixed again", ": {k}"),), "✅", "Fixed again", "{k}", "info", False),
     (("Power cut – running on the battery ({pct} %)",), "🔌", "Power cut", "Battery {pct} %", "hw_batt", False),
@@ -452,7 +452,8 @@ _HX_PK = {
     "Stopped at the device": ("Am Gerät gestoppt", "Arrêtée sur l’appareil", "Fermata sul dispositivo", "Fermada a l’apparat"),
     "Via MQTT / Home Assistant": ("Über MQTT / Home Assistant", "Via MQTT / Home Assistant", "Tramite MQTT / Home Assistant", "Via MQTT / Home Assistant"),
     "Online": ("Online", "En ligne", "Online", "Online"),
-    "Wi-Fi {ssid} · open page": ("WLAN {ssid} · Seite öffnen", "Wi-Fi {ssid} · ouvrir la page", "Wi-Fi {ssid} · apri la pagina", "WLAN {ssid} · avrir la pagina"),
+    "{net} · open page": ("{net} · Seite öffnen", "{net} · ouvrir la page", "{net} · apri la pagina", "{net} · avrir la pagina"),
+    "known Wi-Fi": ("bekanntes WLAN", "Wi-Fi connu", "Wi-Fi noto", "WLAN enconuschent"),
     "Simulation on": ("Simulation ein", "Simulation activée", "Simulazione attiva", "Simulaziun activada"),
     "Fixed again": ("Wieder in Ordnung", "De nouveau en ordre", "Di nuovo a posto", "Puspè en urden"),
     "Power cut": ("Stromausfall", "Coupure de courant", "Interruzione di corrente", "Interrupziun da current"),
@@ -535,7 +536,7 @@ def push_kurz_selftest():
         bad = re.compile(r"[{}]|\\u|\"event\"|info_title")
         cases = {
             "off": P(text=tr("Protection switched off at the device") + " 🧪", info_title="{name}: " + tr("Buttons on the device")),
-            "online": P(text=trf("MoveEye is online in Wi-Fi {ssid}: {addr}", ssid="Camping", addr="http://192.0.2.5:5000/"), info_title="", link="http://192.0.2.5:5000/"),
+            "online": P(text=trf("MoveEye is online ({net}): {addr}", net=push_net_label(), addr="http://192.0.2.5:5000/"), info_title="", link="http://192.0.2.5:5000/"),
             "batt": P(text=trf("Battery almost empty: about {pct} % ({hours:.1f} h) left – please charge or swap", pct=12, hours=1.5), info_title="{name}: " + tr("battery")),
             "person": P(event="person", persons=1, dist=tr("Person") + ", " + trf("about {m} m", m=12) + ", " + tr("coming closer")),
             "night": P(text="Zeile 1\nZeile 2", info_title="{name}: " + tr("night report")),
@@ -546,7 +547,7 @@ def push_kurz_selftest():
             assert not bad.search(ti + tx), f"{k}: placeholder / JSON in «{ti}» «{tx}»"
             assert "\n" not in tx and len(tx) <= PK_MAX and len(ti) <= 60, f"{k}: more than one line: «{tx}»"
         assert out["off"] == ("🛡 Schutz aus", "Am Gerät ausgeschaltet"), out["off"]
-        assert out["online"] == ("📶 Online", "WLAN Camping · Seite öffnen"), out["online"]
+        assert out["online"] == ("📶 Online", "bekanntes WLAN · Seite öffnen"), out["online"]
         assert out["batt"] == ("🪫 Akku 12 %", "Noch etwa 1.5 h · bitte laden"), out["batt"]
         assert out["person"] == ("🚶 Person erkannt", "21:07 · " + trf("about {m} m", m=12) + ", " + tr("coming closer")), out["person"]   # K8: text too
         assert out["night"] == ("🌙 Nachtbericht", "Zeile 1"), out["night"]

@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-01 13:10",
+ "generated": "2026-11-01 13:26",
  "versions": [
   {
-   "version": "3.39.1",
-   "file": "webcam_bewegung_3_39_1.py",
+   "version": "3.39.2",
+   "file": "webcam_bewegung_3_39_2.py",
    "url": "",
-   "sha256": "3b40c816516f2fe6503dd2da840a6f3724f5380dceb3f4dc289cd6af8ca7a79e",
-   "date": "2026-11-01 13:10",
-   "notes": "Simulator intern aufgeräumt, schnellerer Start.",
-   "size": 4723870,
-   "sig": "b474f07672fb782feb654370862be8e2be7f5b67a2c3ca75e2cbccf297067fff63eacac37bb657a1cd2f784c7234b579f9a1995dc78e6e6fea6f11589b0a6d03",
+   "sha256": "94e0903a01d9a9f9443cc86ce1a5fb3d7b7360e3e17d56e5ba4ee21c9ad31ff5",
+   "date": "2026-11-01 13:25",
+   "notes": "Datenschutz: Push- und E-Mail-Meldungen zeigen statt des WLAN-Namens nur noch «bekanntes WLAN».",
+   "size": 4730304,
+   "sig": "38134f9ffa90897b59740239b6707b936dd0c6e5020c91159655ea2a7a0bcb8d63f973edb76063450f846ccd38fc91020bcac2b373d6e583718314b5d7100503",
    "data": {
-    "file": "moveeye_daten_3_39_1.zip",
+    "file": "moveeye_daten_3_39_2.zip",
     "url": "",
-    "sha256": "38a2b4cd2fbae1e15c4fad53302ab2eaa703ec755a56d569d4230541400eafa2",
-    "size": 1589605,
-    "sig": "73b9b2909e0152650a9b622b3b85b5d25cca567eb3a44e6265267cdc73f80e71947f52528c6376b0ef00c9cee0de723f7294b2d2d6bb653ec503d79dce2e600f"
+    "sha256": "efc7a06b33c1dba0b394cbe92ad03e796ea8248be698da86f36d023ef358f73b",
+    "size": 1589561,
+    "sig": "5c66c080b39a742e94f4e3673614d59230d129157dd793074dd5c56e162e45b8afcfee54f665cb357ee9d67a7f5f4bceb5f8e8fdc8d703a294d4f7440d9f5101"
    }
   },
   {
