@@ -20,6 +20,14 @@ Geprüft und **nicht** verwendet (30.10.2026):
 Wer später ein fertiges CC0-Modell (glTF/GLB) einbauen will: hier mit Quelle, Autor und Lizenz eintragen;
 bei CC-BY zusätzlich den Namensnachweis in «Über MoveEye» und «Lies mich» aufnehmen.
 
+## Klänge der Trailer (ab 01.11.2026) – `klang/`, `scripts/trailer_ton.gd`
+
+Musik und Geräusche der beiden Trailer sind aus freien Aufnahmen gebaut (`werkzeuge/klang_bauen.py`): Streicher, Pauken,
+Blech und Glockenspiel aus **VSCO-2 Community Edition** (Versilian Studios, CC0), Regen, Bach und Donner von **rubberduck**
+(OpenGameArt, CC0) und **Fugue State Audio** (gemeinfrei), Schritte, Holz und Glocke von **Kenney** (CC0), Papier und Luftzug
+von **Ben Burnes** (CC0); dazu eigene Synthese. Alles CC0 bzw. gemeinfrei, keine Namensnennung nötig. Datei für Datei mit
+Repository und Commit: `klang/LIZENZEN.txt`.
+
 ## Figuren-Paket (ab 3D-4.56) – `pakete/figuren_v1.zip`, `scripts/figur_paket.gd`
 
 Das nachladbare Figuren-Paket (nicht im Simulator-ZIP; Download aus dem Repository oder neben die .exe legen) ist aus

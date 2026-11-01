@@ -8,7 +8,9 @@
 #   * Ton auch im Browser (Fix 3.19.x, Daniel: «am iPad nichts»): grosser Knopf «🔊 Tippen für Ton» (iOS braucht ein Tippen
 #     vor Sprache und Audio; ein Tippen irgendwo genügt). Danach Erzähler (speechSynthesis, wie bisher) und Musik + Geräusche:
 #     /api/trailer?plan=1 holt den Ton-Plan des Simulators (trailer.gd ton_plan: Zeit, Klang, Lautstärke, Überblendung),
-#     /sim/trailer_ton/<klang>.wav die Klänge (trailer_ton.gd, mono 22 kHz, zusammen ≈ 3 MB); die Seite spielt sie mit
+#     /sim/trailer_ton/<klang>.wav die Klänge (ab 01.11.2026 echte Aufnahmen als MP3 aus simulator3d/klang/web/, ≈ 2.4 MB;
+#     ältere Simulatoren: WAV, mono 22 kHz; Schleifen mit Schleifenpunkten «schleifen» aus dem Plan, dazu ein Begrenzer wie der
+#     Bus «Trailer» im Simulator); die Seite spielt sie mit
 #     WebAudio im Takt von «t» aus /api/trailer (nachgeführt, wenn es mehr als 0.35 s abweicht). Ältere Simulatoren ohne
 #     Plan: nur der Erzähler. Der Ton läuft auf beiden Geräten (PC und iPad).
 #   * /api/trailer: GET = Stand (Simulator /control trailer info), POST {do: start (id) | stop}. Nur der Besitzer
@@ -354,12 +356,17 @@ setTimeout(spkBtn, 50);
 # Erzähler spricht (0.6, wie trailer.gd _audio_tick), am Schluss 2 s ausblenden. Die Uhr: «t» aus /api/trailer (alle 1.5 s);
 # weicht sie mehr als 0.35 s ab, wird nachgeführt, bei mehr als 3 s (Sprung) neu aufgesetzt. Erst nach dem Tippen (iOS).
 TA_JS = r"""
-const TA = {ctx: null, buf: {}, plan: null, pid: "", loops: {}, ones: [], i: 0, base: null, mus: [], mb: null, fb: null, mg: null, load: 0, fail: 0, duck: 0, iv: 0};
+const TA = {ctx: null, buf: {}, plan: null, pid: "", loops: {}, ones: [], i: 0, base: null, mus: [], mb: null, fb: null, mg: null, load: 0, fail: 0, duck: 0, iv: 0, schl: {}, lim: null, pre: null};
 function taDb(db) { return Math.pow(10, db / 20); }
 function taUnlock(on) {
   try {
     if (!TA.ctx) { const C = window.AudioContext || window.webkitAudioContext; if (!C) return;
-      TA.ctx = new C(); TA.mg = TA.ctx.createGain(); TA.mg.connect(TA.ctx.destination);
+      TA.ctx = new C(); TA.mg = TA.ctx.createGain();
+      try {                                                // like the simulator's bus «Trailer»: +bus_db, then a limiter (no clipping)
+        TA.pre = TA.ctx.createGain(); TA.lim = TA.ctx.createDynamicsCompressor();
+        TA.lim.threshold.value = -2; TA.lim.knee.value = 0; TA.lim.ratio.value = 20; TA.lim.attack.value = 0.002; TA.lim.release.value = 0.12;
+        TA.mg.connect(TA.pre); TA.pre.connect(TA.lim); TA.lim.connect(TA.ctx.destination);
+      } catch (e) { TA.mg.connect(TA.ctx.destination); }
       TA.mb = TA.ctx.createGain(); TA.mb.connect(TA.mg); TA.fb = TA.ctx.createGain(); TA.fb.connect(TA.mg); }
     if (TA.ctx.resume) TA.ctx.resume();
     const b = TA.ctx.createBuffer(1, 1, 22050), x = TA.ctx.createBufferSource(); x.buffer = b; x.connect(TA.ctx.destination); x.start(0);   // iOS: unlocked by this tap
@@ -373,7 +380,8 @@ async function taLoad() {                                  // the plan and the s
   try {
     const j = await (await fetch("/api/trailer?plan=1", {cache: "no-store"})).json();
     if (!j || !Array.isArray(j.plan)) { TA.fail++; TA.load = 0; return; }   // an older simulator: only the narrator
-    TA.mus = j.musik || [];
+    TA.mus = j.musik || []; TA.schl = j.schleifen || {};
+    if (TA.pre) TA.pre.gain.value = taDb(+j.bus_db || 0);
     await Promise.all((j.klaenge || []).map(async nm => {
       if (TA.buf[nm]) return;
       const ab = await (await fetch("/sim/trailer_ton/" + encodeURIComponent(nm) + ".wav")).arrayBuffer();
@@ -391,7 +399,8 @@ function taRamp(L, to, at, f) { const v = taLv(L, at), g = L.g.gain;
 function taLoop(nm, at) {
   let L = TA.loops[nm]; if (L || !TA.buf[nm]) return L;
   const x = TA.ctx.createBufferSource(), g = TA.ctx.createGain(); x.buffer = TA.buf[nm]; x.loop = true; g.gain.value = 0;
-  x.connect(g); g.connect(TA.mus.indexOf(nm) >= 0 ? TA.mb : TA.fb); x.start(at);
+  const lp = TA.schl[nm]; if (lp && lp[1] <= x.buffer.duration + 0.01) { x.loopStart = lp[0]; x.loopEnd = Math.min(lp[1], x.buffer.duration); }   // MP3: 0.1 s wrap at both ends
+  x.connect(g); g.connect(TA.mus.indexOf(nm) >= 0 ? TA.mb : TA.fb); x.start(at, lp ? lp[0] : 0);
   return TA.loops[nm] = {x, g, from: 0, to: 0, t0: 0, t1: 0};
 }
 function taOnesStop(at) { TA.ones.forEach(o => { try { o.stop(at); } catch (e) {} }); TA.ones = []; }
@@ -551,7 +560,8 @@ def smalltv_routes(app, reply, body):                     # + 639n: /sim/trailer
             b_, _h = _sim_get("/trailer_ton/" + nm + ".wav", 8.0)
         except Exception:
             return Response("simulator not reachable", 502)
-        return Response(b_, mimetype="audio/wav", headers={"Cache-Control": "private, max-age=3600"})
+        mt_ = "audio/mpeg" if b_[:3] == b"ID3" or b_[:2] in (b"\xff\xfb", b"\xff\xf3", b"\xff\xf2") else "audio/wav"
+        return Response(b_, mimetype=mt_, headers={"Cache-Control": "private, max-age=3600"})
 
 
 if GUI_OK:                                                # the window: the two trailers in the developer part (639c)
@@ -595,6 +605,7 @@ def trl_selftest():
     assert "spk-tap" in html and "spkUnlock" in html and "taSync(S)" in html and "/sim/trailer_ton/" in html and "/api/trailer?plan=1" in html
     assert "bare ? \"bare=1&\"" in html                    # the browser picture without the PC's buttons only while the film runs
     assert TRL_TON_RE.match("pad_ruhig") and not TRL_TON_RE.match("../x")
+    assert "TA.schl[nm]" in html and "createDynamicsCompressor" in html and "x.loopStart" in html
     assert "voiceschanged" in html and "spk-vbtn" in html and "SPK_GOOD" in html and "!SPK.pop" in html and "Stimme" in html
     vh = vf_page()
     assert "spkTick(S, !!S.pause" in vh and "spk-btn" in vh and "Ton an" in vh and "!SPK.pop" in vh and "Premium" in vh
