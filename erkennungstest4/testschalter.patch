@@ -1,0 +1,138 @@
+diff --git a/quelle/232_waermebild_person.py b/quelle/232_waermebild_person.py
+index 497ba4d..1767aa2 100644
+--- a/quelle/232_waermebild_person.py
++++ b/quelle/232_waermebild_person.py
+@@ -350,6 +350,8 @@ def _tv_speed(ch, now):
+ def thermal_vehicle_step(boxes, ts, hf, vf, asp, temps=None):
+     """follow the warm bodies over the thermal pictures (ts = time of the thermal picture) -> the boxes that are a vehicle.
+     asp = picture height / width (main picture), temps(box) -> (body, scene) °C or None. Without the camera (self-test)."""
++    if _erk_off("tveh"):
++        return []
+     if ts != TVEH["ts"]:
+         TVEH["ts"] = ts
+         for b in boxes:
+@@ -387,6 +389,8 @@ def thermal_vehicle_step(boxes, ts, hf, vf, asp, temps=None):
+ 
+ def thermal_ai_checked(t0, ai=None):
+     """M3: the AI looked for weak («Person?») persons in the last WEAK_OK_S seconds - only then a flat warm body may be an animal"""
++    if _erk_off("m3"):
++        return True
+     if ai is None:
+         w = WATCH_REF.get("w")
+         ai = getattr(w, "ai", None) if w is not None else None
+diff --git a/quelle/411_nebel_daemmerung.py b/quelle/411_nebel_daemmerung.py
+index 101e00f..8001f63 100644
+--- a/quelle/411_nebel_daemmerung.py
++++ b/quelle/411_nebel_daemmerung.py
+@@ -26,6 +26,14 @@
+ #             in the picture is «strong» / «storm» (410).
+ #   Bound to the existing switch «nachts strenger» (night_strict), no new control.
+ # ----------------------------------------------------------------------------
++_ERK_OFF = set(x.strip() for x in os.environ.get("MW_ERK_AUS", "").split(",") if x.strip())
++
++
++def _erk_off(name):
++    """NUR TEST (Erkennungstest 3): Regel per Umgebungsvariable MW_ERK_AUS=fixp,tier,... ausschalten"""
++    return name in _ERK_OFF or "alle" in _ERK_OFF
++
++
+ FOG = {"on": False, "raw": False, "raw_t": 0.0, "t": 0.0, "hist": deque(maxlen=200), "since": None, "score": None,
+        "sat": None, "mean": None, "wx": False, "wx_t": 0.0, "lim_g": None, "lim_l": None, "clahe": None}
+ TWI = {"on": False, "t": 0.0, "noise": None, "base": None, "last_why": 0.0, "why": ""}
+@@ -101,6 +109,8 @@ def fog_decide(raw, t0, lowlight):
+ 
+ def fog_frame(small, t0, lowlight):
+     """410: every picture (cheap: the real work every 0.5 s on 80 x 45)"""
++    if _erk_off("nebel"):
++        FOG["on"] = False; STATE["fog"] = False; return
+     if t0 - FOG["t"] >= 0.5:
+         FOG["t"] = t0
+         raw, rel, sat, mean = fog_look(small)
+@@ -230,6 +240,8 @@ def wind_strong():
+ 
+ def strict_update():
+     """how many hits in a row a new person needs now (1 = as before)"""
++    if _erk_off("strict"):
++        STRICT["n"] = 1; STRICT["why"] = ""; STATE["strict"] = {"n": 1, "why": ""}; return 1
+     if not CFG.get("night_strict", True) or not CFG.get("detection_on", True):
+         n, why = 1, ""
+     else:
+diff --git a/quelle/418_feste_fehlperson.py b/quelle/418_feste_fehlperson.py
+index 933a5fa..d4f54d4 100644
+--- a/quelle/418_feste_fehlperson.py
++++ b/quelle/418_feste_fehlperson.py
+@@ -178,6 +178,8 @@ def fixp_new_spot(a, t0, start_t):
+ def fixp_filter_ai(ai_boxes, pw, ph, t0, small=None):
+     """410, before the AI persons become tracks: learn the spots from the AI person boxes and drop the boxes on learnt spots.
+     Returns the AI person boxes that stay persons."""
++    if _erk_off("fixp"):
++        return ai_boxes
+     if not FIXP["start_t"]:
+         FIXP["start_t"] = t0
+     head = servo_pos_deg()
+@@ -234,6 +236,8 @@ def fixp_head_still(t0):
+ def fixp_track(t, pw, ph, t0):
+     """410, after classify, for every track: remember moving tracks (a person walking in) and take the person away from a
+     track that stands on a learnt spot (the AI box is gone, «sticky» kept it a person)"""
++    if _erk_off("fixp"):
++        t.fixp = False; return
+     head = FIXP["head"] or servo_pos_deg()
+     still = t0 - FIXP["head_t"] >= FIX_HEAD_STILL_S
+     learned = [s for s in FIXP["spots"] if s["learned"]]
+@@ -280,6 +284,8 @@ VEHICLE_LABELS = ("car", "truck", "bus", "motorcycle", "train")
+ def fixp_veto(tracks, ai_objs, pw, ph, t0):
+     """for «Person?» and the thermal person (232): where the camera / AI sees an animal or a vehicle - boxes 0..1 with the kind
+     [(x, y, w, h, "animal" | "vehicle")]"""
++    if _erk_off("veto"):
++        return []
+     out = [(b[0] / pw, b[1] / ph, b[2] / pw, b[3] / ph, "animal") for tt, b, _c in FIXP["animals"] if t0 - tt <= FIX_ANIMAL_MEM_S]
+     for t in tracks:
+         if t.lost or t.is_person:
+@@ -296,6 +302,12 @@ def fixp_veto(tracks, ai_objs, pw, ph, t0):
+ def animal_track_decide(t, ai_person, animal_cls, t0):
+     """Tier vor Person for one track (410 classify): -> True when the track is an animal (no person from movement / sticky).
+     ai_person = the AI calls it a person now; animal_cls = an animal of the AI lies on it now (or a moment ago)."""
++    if _erk_off("tier"):
++        if ai_person:
++            return False
++        if animal_cls:
++            t.animal_like = True
++        return bool(getattr(t, "animal_like", False))
+     if animal_cls:
+         t.animal_like = True; t.animal_cls = animal_cls; t.animal_t = t0; t.ai_p_since = 0.0
+     if not getattr(t, "animal_like", False):
+diff --git a/quelle/418k_kriechende_nacht.py b/quelle/418k_kriechende_nacht.py
+index 0c102a7..fb60209 100644
+--- a/quelle/418k_kriechende_nacht.py
++++ b/quelle/418k_kriechende_nacht.py
+@@ -115,6 +115,8 @@ def crawl_push(notifier, frame, d, ln):
+ def crawl_feed(warm_boxes, tracks, animals, person_boxes, present, frame, pw, ph, W, H, t0, notifier=None):
+     """410, at night: warm bodies (0..1) that are not under a person box already at the same place as movement (tracks / candidates, working
+     picture) -> Voralarm or «Person?» (person_boxes). Returns the boxes that became «Person?» (0..1)."""
++    if _erk_off("kriech"):
++        return []
+     STATE["crawl"] = 0
+     if not warm_boxes:
+         return []
+diff --git a/quelle/418z_ki_zoom_weit.py b/quelle/418z_ki_zoom_weit.py
+index afe67d0..566361d 100644
+--- a/quelle/418z_ki_zoom_weit.py
++++ b/quelle/418z_ki_zoom_weit.py
+@@ -65,6 +65,8 @@ def ai_view(ai, frame):
+ def ai_full(ai, frame):
+     """the camera picture for the AI when it is bigger than the working picture and it is not an infrared night (noise), else
+     the working picture itself"""
++    if _erk_off("zoom"):
++        return frame
+     full = getattr(ai, "full", None)
+     if full is None or full.shape[1] <= frame.shape[1] or float(STATE.get("brightness") or 0) < AI_FULL_MIN_BRIGHT:
+         return frame
+@@ -85,6 +87,8 @@ def _zcell(b, pw, ph):
+ def zoom_far_feed(ai, boxes, small_area, tracks, pw, ph, t0, wind_level="calm"):
+     """410, every picture: movement boxes (x, y, w, h of the working picture) smaller than a track that come back at the same
+     place become «far» hints of the Lupe (ai.far). Not in strong wind / storm, not where a track or an AI box already is."""
++    if _erk_off("zoom"):
++        ai.far = []; return []
+     seen = ZOOM["seen"]
+     if wind_level in ("strong", "storm"):
+         seen.clear(); ai.far = []; return []
