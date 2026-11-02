@@ -22,6 +22,43 @@ Stands, seine Einstellungen und das Bild würden verändert, ein Update oder ein
 verdürbe den Lauf, und 4 GB RAM reichen nicht für zwei Simulatoren. Mit Pause ist der Lauf wiederholbar und der Kiosk
 bleibt unberührt.
 
+**Testbild (ab 3.53.0):** statt eines dunklen Bildschirms zeigt der Kiosk während des Tests ein Dashboard: «Test läuft –
+bitte nicht ausschalten», das Bild, das MoveEye gerade auswertet (mit MoveEyes Rahmen: Personen rot, KI-Objekte farbig mit
+Prozent, Bewegung weiss), «Soll / Ist» des laufenden Falls, Fall N/M mit Balken, Start, Dauer und Rest, dazu die Bilanz
+bisher (Personen erkannt, Tiere / Autos ignoriert, Leerlauf ruhig, Pushes). Nach dem Test bleibt 2 Min. die
+Zusammenfassung stehen, dann startet der Simulator wieder. Die Daten schreibt der Test nach `/run/moveeye-test/`
+(`fortschritt.json`, `bild.png`; `erkennungstest.py --fortschritt`, Teil `werkzeuge/erkennungstest/fortschritt.py`); das
+Testbild (`simulator3d/beilagen_linux/testbild.py`, braucht `python3-tk`) liest sie nur als Daten. Andere Tests (Prüfstand)
+zeigen Logo, Text und Dauer.
+
+## 0. Automatisches Update (einmal eintippen)
+
+Am HP (Text-Konsole **Ctrl+Alt+F3** oder SSH), eine Zeile:
+
+```bash
+curl -sL github.com/DonElektro/MotionWatch/raw/main/hp | sudo bash
+```
+
+Das richtet `moveeye-hp-update` ein und lässt es gleich einmal laufen. Danach holt der HP **nachts** (03:17 plus bis
+40 Min. Zufall) und **8 Min. nach jedem Start** die neueste **signierte** Version und spielt ein, was sich geändert hat:
+Kiosk (`kiosk_sitzung.sh`, Testbild), Haken und Dienst-Einstellungen des Runners, fehlende Pakete, den Simulator im
+Kiosk-Ordner und sich selbst. Die Anmeldung des Runners (Token) fasst es nie an. Läuft ein Test, wird verschoben (neuer
+Versuch nach 30 Min.).
+
+Geprüft wird wie beim Pi: Signatur (Ed25519, öffentlicher Schlüssel im Skript) des Eintrags in `versions.json` →
+Prüfsumme der Programmdatei → darin die Prüfsumme des Linux-Pakets (`SIM3D_LINUX`) → `MoveEyeSim3D_Linux.zip`, das den
+Kiosk und den HP-Teil (`hp/`) enthält. Stimmt etwas nicht, wird nichts eingespielt; ältere Versionen werden abgelehnt.
+
+```bash
+sudo moveeye-hp-update --status      # eingespielte Version, nächster Termin, letzte Zeilen des Protokolls
+sudo moveeye-hp-update               # jetzt sofort
+moveeye-hp-update --pruefen          # nur laden und prüfen, nichts einspielen
+sudo moveeye-hp-update --entfernen   # Zeitplan aus (eingespielte Dateien bleiben)
+```
+
+Protokoll: `/var/log/moveeye-hp-update.log`. Den Simulator nicht ersetzen: `SIMULATOR=nein` in
+`/etc/moveeye-hp-update.conf`. `runner_einrichten.sh` und der USB-Installer richten das Update von selbst mit ein.
+
 ## 1. Einrichten (am HP, einmal, etwa 10 Min.)
 
 Am HP eine Text-Konsole öffnen: **Ctrl+Alt+F3**, anmelden als `don`. (Zurück zum Kiosk: Ctrl+Alt+F1 bzw. F7.)

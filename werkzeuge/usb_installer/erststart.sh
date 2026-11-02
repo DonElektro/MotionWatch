@@ -3,7 +3,7 @@
 # stick_erstellen.sh packt diese Datei in die user-data; der Installer legt sie als /usr/local/sbin/moveeye-erststart ab.
 #   moveeye-erststart --einrichten   (im Installer, chroot) Dienst anlegen, automatische Sicherheitsupdates, grafischer Start
 #   moveeye-erststart                (Dienst beim ersten Start, als root) Paketquellen prüfen, Simulator laden, installieren.sh,
-#                                    kiosk_ein.sh --ja, dann neu starten. Klappt etwas nicht (kein Netz), beim nächsten Start noch einmal.
+#                                    kiosk_ein.sh --ja, moveeye-hp-update (signiertes Update), dann neu starten. Klappt etwas nicht (kein Netz), beim nächsten Start noch einmal.
 #   sudo bash erststart.sh --retten  (von Hand) nach einer abgebrochenen Installation: Paketquellen setzen (cdrom weg),
 #                                    fehlende Pakete installieren, sich selbst einrichten und den ersten Start sofort ausführen
 # Protokoll: /var/log/moveeye-erststart.log (und auf dem Bildschirm). Fertig-Marke: /var/lib/moveeye/erststart_fertig
@@ -17,7 +17,7 @@ DIENST="/etc/systemd/system/moveeye-erststart.service"
 SELBST="/usr/local/sbin/moveeye-erststart"
 # gleiche Liste wie «packages:» in user-data (stick_erstellen.sh prüft, dass beide gleich sind)
 PAKETE=(xorg openbox lightdm lightdm-gtk-greeter x11-xserver-utils libgl1-mesa-dri libglx-mesa0 mesa-vulkan-drivers mesa-utils
-	alsa-utils openssh-server ufw unattended-upgrades curl unzip wpasupplicant)
+	alsa-utils openssh-server ufw unattended-upgrades curl unzip wpasupplicant python3-tk)
 
 einrichten() {
 	cat > "$DIENST" <<EOF
@@ -172,6 +172,12 @@ erststart() {
 		echo "Kiosk eingerichtet."
 	else
 		echo "kiosk_ein.sh meldet Fehler - Protokoll in $heim/.moveeye_kiosk/. Der PC startet trotzdem neu."
+	fi
+	# automatisches, signiertes Update des Simulator-PCs (moveeye-hp-update; ab dem Linux-Paket 3.53.0 dabei). Läuft zum
+	# ersten Mal 8 Min. nach dem Neustart, danach nachts.
+	if [ -f "$ordner/hp/hp_update.sh" ]; then
+		echo "--- moveeye-hp-update einrichten"
+		bash "$ordner/hp/hp_update.sh" --einrichten --ohne-lauf || echo "moveeye-hp-update meldet Fehler (später: sudo moveeye-hp-update)"
 	fi
 	mkdir -p "$(dirname "$MARKE")"
 	date '+%F %T' > "$MARKE"

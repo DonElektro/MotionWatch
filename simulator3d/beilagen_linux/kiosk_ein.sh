@@ -17,7 +17,7 @@ MARKE="#moveeye-kiosk# "
 # Dienste, die eine Simulator-Maschine nicht braucht (nur deaktiviert, nicht entfernt; Bluetooth bleibt für Tastaturen)
 DIENSTE="cups.service cups.socket cups.path cups-browsed.service ModemManager.service kerneloops.service apport.service whoopsie.service"
 SCHLAF="sleep.target suspend.target hibernate.target hybrid-sleep.target suspend-then-hibernate.target"
-PAKETE="openbox openssh-server ufw"
+PAKETE="openbox openssh-server ufw python3-tk"   # python3-tk: Testbild während der Tests (testbild.py)
 
 TROCKEN=0 JA=0
 for a in "$@"; do
@@ -164,6 +164,12 @@ schritt "2. Sicherung ($SICH)"
 schritt "3. Sitzung «MoveEye Kiosk»"
 if [ $TROCKEN -eq 1 ]; then echo "[trocken] $SUDO install -D -m 755 $DIR/kiosk_sitzung.sh $LIB/kiosk_sitzung.sh"
 else tu install -D -m 755 "$DIR/kiosk_sitzung.sh" "$LIB/kiosk_sitzung.sh"; fi
+# Testbild während der Tests (Test-Runner): Programm und Logo neben die Sitzung (fehlen sie, bleibt der Bildschirm dunkel)
+for f in testbild.py:testbild.py moveeye-sim.png:moveeye.png; do
+	[ -r "$DIR/${f%%:*}" ] || { echo "  ${f%%:*} fehlt in $DIR (älteres Paket) - ohne Testbild"; continue; }
+	if [ $TROCKEN -eq 1 ]; then echo "[trocken] $SUDO install -D -m 644 $DIR/${f%%:*} $LIB/${f##*:}"
+	else tu install -D -m 644 "$DIR/${f%%:*}" "$LIB/${f##*:}"; fi
+done
 schreibe "$CONF" 644 <<EOF
 # MoveEye Kiosk (kiosk_ein.sh, $(date '+%F %T')). Wird beim nächsten Start der Sitzung gelesen.
 # SIM: Programmdatei des Simulators (das Update ersetzt sie am selben Ort). Ordner verschoben: kiosk_ein.sh dort neu starten.

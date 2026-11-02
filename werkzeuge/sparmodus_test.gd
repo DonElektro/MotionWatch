@@ -67,8 +67,11 @@ func _init() -> void:
 	for k in ["--trocken", "Fortfahren? (j/n)", ".moveeye_kiosk", "SSH bleibt"]:
 		eq("kiosk_aus.sh: " + k, ka.contains(k), true)
 	var ks := FileAccess.get_file_as_string("res://beilagen_linux/kiosk_sitzung.sh")
-	for k in ["--fullscreen", "--stream", "openbox", "desktop", "cinnamon"]:
+	for k in ["--fullscreen", "--stream", "openbox", "desktop", "cinnamon", "testbild.py", "testbild_nachlauf"]:
 		eq("kiosk_sitzung.sh: " + k, ks.contains(k), true)
+	# Testbild während der Tests (3.53.0): python3-tk im Kiosk, das Testbild liegt bei
+	eq("kiosk_ein.sh: python3-tk", ke.contains("python3-tk"), true)
+	eq("testbild.py da", FileAccess.file_exists("res://beilagen_linux/testbild.py"), true)
 	if errs.is_empty():
 		print("Sparmodus-Test OK")
 		quit(0)

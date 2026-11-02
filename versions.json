@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-02 20:56",
+ "generated": "2026-11-02 22:44",
  "versions": [
+  {
+   "version": "3.53.0",
+   "file": "webcam_bewegung_3_53_0.py",
+   "url": "",
+   "sha256": "9c0452f392b16bcbf7ce6ddb2358bf4eaf57d3f1897896e23c8785b0f4efb652",
+   "date": "2026-11-02 22:44",
+   "notes": "Simulator-PC (HP): während der Erkennungstests zeigt der Kiosk ein Testbild-Dashboard (Live-Bild mit MoveEyes Rahmen, Soll/Ist, Fall N/M, Bilanz, 2 Min. Zusammenfassung am Schluss); neues automatisches, signiertes Update (nachts, nie während eines Tests).",
+   "size": 4884375,
+   "sig": "80fa7f795f9c9423859f068cbe7285c7a3b86a0b539612015877bbcafe87ee7d554a5687a3ee0201c9d425baea78060b68ba6735e18fc6471ba3e9d7a8489e02",
+   "data": {
+    "file": "moveeye_daten_3_53_0.zip",
+    "url": "",
+    "sha256": "914d74a5e2b66b8d214c7486a3e480a1d7c917074652cd86bbb397a5afc376eb",
+    "size": 4081843,
+    "sig": "721918df9598dad4553869788d48390619d8eb2c94f3f8ce8a163d89ee9822cec756cd7b0fc6500802958cb4c99992e9e050eb530a1a2684eb83dc208d534f05"
+   }
+  },
   {
    "version": "3.52.0",
    "file": "webcam_bewegung_3_52_0.py",
    "url": "",
    "sha256": "fdacca18a08afaa3ec6048a7a2634a6ed257ad4d3a3431de9284f3f6e8f893c9",
-   "date": "2026-11-02 20:56",
+   "date": "2026-11-02 20:58",
    "notes": "Geschichten: «× Beenden» und Esc auf jeder Karte, alle Fenster im Handy-Stream, Geschichten vom Handy starten (Mehr › Spielen), Touch-Stick «gehen»; Erkennungstests auf dem Simulator-PC (HP) als eigener GitHub-Runner.",
    "size": 4884284,
    "sig": "066f98975fd1ef42c4efbb4611449ffa7ae61811445da30d0cd7b8094d9dddc2e1e926e9829d36eca17de61278384d347bde8d986ba84325ed9b54dde364f006",
@@ -136,23 +153,6 @@
     "sha256": "e3fda8329172ebbae6f4549d9f1acbd76e32bd759d1068761ac365d2ca1b980a",
     "size": 3228090,
     "sig": "094f6a0cbb4a554e18c477bdb6682dd251af2de567e05f01d92b7e9d32479d0fc1e40f09f6d388def3ffc326ae477d4bfc210557833b72c8340d083641ff650d"
-   }
-  },
-  {
-   "version": "3.44.2",
-   "file": "webcam_bewegung_3_44_2.py",
-   "url": "",
-   "sha256": "c578b917dd50377406f353848f34ab90a641a0ad57cc1584c06a07fa04bbc67d",
-   "date": "2026-11-01 20:37",
-   "notes": "Versionshinweis: eine kleine Zeile unten rechts mit Knopf und ✕ statt eines bildschirmhohen Balkens.",
-   "size": 4796077,
-   "sig": "30d7cb87cb595d41f670a1a8be476de7375c71b4f91a5a098e8f48ad3299af4d55dba9200673b68af1292352bd6c4296e14abea8374ce056d4e91cf841c68c0a",
-   "data": {
-    "file": "moveeye_daten_3_44_2.zip",
-    "url": "",
-    "sha256": "eabc6bb5085dd846c85b30ea392d7469ed420976c1fb73de5350acf8cdb69e40",
-    "size": 3280530,
-    "sig": "190b8465740036f19e110a62864b099027da0c7ead4b7c3729284740d530e4f0c6c8b573848e5d3f5516cbb31bc6d462ba421c8534e3d604499edf318eb1e30e"
    }
   },
   {

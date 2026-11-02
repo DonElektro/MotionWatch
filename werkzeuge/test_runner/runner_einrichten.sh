@@ -6,7 +6,8 @@
 #   runner_entfernen.sh kommen, Standard main), --hilfe
 # Was passiert: eigener Benutzer «mwrunner» (ohne sudo), GitHub-Runner (actions-runner, Linux x64) in /var/lib/mwrunner,
 # als systemd-Dienst; Labels self-hosted, linux, x64, moveeye-hp; Pakete für die Tests (Python wie im CI, Xvfb); Haken vor /
-# nach jedem Job (Kiosk-Simulator pausieren, Arbeitsordner aufräumen). Der Token wird nie gespeichert.
+# nach jedem Job (Kiosk-Simulator pausieren, Testbild, Arbeitsordner aufräumen); dazu das automatische, signierte Update
+# moveeye-hp-update (hp_update.sh, nachts). Der Token wird nie gespeichert.
 # Rückgängig: sudo bash /usr/local/lib/moveeye-runner/runner_entfernen.sh   Anleitung: werkzeuge/test_runner/ANLEITUNG.md
 set -u
 REPO="DonElektro/MotionWatch"
@@ -55,8 +56,9 @@ Das passiert:
  2. Benutzer «$RU» (Systembenutzer, kein sudo, keine Anmeldung), Ordner $RH
  3. GitHub-Runner (neuste Version, Prüfsumme) nach $RD, Python-Umgebung $RH/venv
  4. Haken vor / nach jedem Job: Kiosk-Simulator pausieren und wieder starten, Arbeitsordner aufräumen ($LIB)
- 5. Kiosk: Pause-Funktion (kiosk_sitzung.sh neu)$( [ $BILDSCHIRM -eq 1 ] && echo ", Bildschirm für $RU freigegeben (Grafikkarte)" )
+ 5. Kiosk: Pause-Funktion mit Testbild (kiosk_sitzung.sh, testbild.py neu)$( [ $BILDSCHIRM -eq 1 ] && echo ", Bildschirm für $RU freigegeben (Grafikkarte)" )
  6. Token abfragen (wird nicht gespeichert), Runner bei GitHub anmelden, Dienst einrichten und starten
+ 7. Automatisches Update moveeye-hp-update (nachts, nur signierte Versionen; fasst die Anmeldung nie an)
 Nur Jobs aus Workflow-Läufen von Hand, nach Zeitplan oder Push auf main (Stand main) laufen hier - nie Pull-Requests.
 Rückgängig: sudo bash $LIB/runner_entfernen.sh
 EOF
@@ -69,15 +71,19 @@ FEHLER=0
 schritt() { echo; echo "--- $*"; }
 warn() { echo "  WARNUNG: $*"; FEHLER=$((FEHLER + 1)); }
 als_ru() { (cd "$RH" 2>/dev/null || cd /; sudo -u "$RU" -H -- "$@"); }
-beilage() {   # beilage ZIEL QUELLE_IM_REPO MODUS: aus dem Repository neben diesem Skript, sonst von GitHub ($ZWEIG)
-	local ziel="$1" rel="$2" modus="$3" tmp
+beilage() {   # beilage ZIEL QUELLE_IM_REPO MODUS [datei]: aus dem Repository neben diesem Skript, sonst von GitHub ($ZWEIG)
+	local ziel="$1" rel="$2" modus="$3" art="${4:-skript}" tmp
 	tmp="$(mktemp)"
 	if [ -r "$HIER/../../$rel" ]; then
 		cp "$HIER/../../$rel" "$tmp"
 	elif ! curl -fsSL --retry 3 -o "$tmp" "$RAW/$rel"; then
 		rm -f "$tmp"; warn "$rel nicht geladen ($RAW)"; return 1
 	fi
-	head -n 1 "$tmp" | grep -q '^#!/bin/bash' || { rm -f "$tmp"; warn "$rel ist kein Skript"; return 1; }
+	if [ "$art" = skript ]; then
+		head -n 1 "$tmp" | grep -q '^#!/bin/bash' || { rm -f "$tmp"; warn "$rel ist kein Skript"; return 1; }
+	else
+		[ -s "$tmp" ] || { rm -f "$tmp"; warn "$rel ist leer"; return 1; }
+	fi
 	install -D -m "$modus" -o root -g root "$tmp" "$ziel"; rm -f "$tmp"
 	echo "  $ziel"
 }
@@ -175,67 +181,9 @@ fi
 # --- 4. Haken und Einstellungen
 schritt "4. Haken vor / nach jedem Job ($LIB)"
 install -d -m 755 -o root -g root "$LIB"
-cat > "$LIB/job_start.sh" <<'HAKEN'
-#!/bin/bash
-# MoveEye Test-Runner: vor jedem Job (ACTIONS_RUNNER_HOOK_JOB_STARTED), als Benutzer mwrunner. Gehört root.
-# Lässt nur erlaubte Anlässe zu (nie Pull-Requests), pausiert den Kiosk-Simulator (Pause-Datei, kiosk_sitzung.sh).
-set -u
-ERLAUBTE_REFS="refs/heads/main"
-# shellcheck source=/dev/null
-[ -r /etc/moveeye-runner.conf ] && . /etc/moveeye-runner.conf
-P="${MW_KIOSK_PAUSE:-/run/moveeye-test/kiosk_pause}"
-echo "MoveEye-Runner: ${GITHUB_REPOSITORY:-?} · ${GITHUB_WORKFLOW:-?} · Anlass ${GITHUB_EVENT_NAME:-?} · ${GITHUB_REF:-?}"
-# zweite Sperre neben den Workflows selbst (fehlen die Angaben, nur warnen - der Runner gehört ohnehin nur zu diesem Repository)
-case "${GITHUB_REPOSITORY:-}" in
-	DonElektro/MotionWatch) ;;
-	"") echo "Hinweis: GITHUB_REPOSITORY fehlt" ;;
-	*) echo "::error::Fremdes Repository - abgelehnt"; exit 1 ;;
-esac
-case "${GITHUB_EVENT_NAME:-}" in
-	workflow_dispatch|schedule|push) ;;
-	"") echo "Hinweis: GITHUB_EVENT_NAME fehlt" ;;
-	*) echo "::error::Anlass «${GITHUB_EVENT_NAME}» ist auf diesem Runner nicht erlaubt (nur von Hand, Zeitplan, Push auf main)"; exit 1 ;;
-esac
-if [ -n "${GITHUB_REF:-}" ]; then
-	ok=0
-	for r in $ERLAUBTE_REFS; do [ "$GITHUB_REF" = "$r" ] && ok=1; done
-	[ $ok -eq 1 ] || { echo "::error::Workflows laufen hier nur vom Stand ${ERLAUBTE_REFS} (jetzt $GITHUB_REF)"; exit 1; }
-fi
-fremder_sim() { ps -eo uid=,comm= | awk -v me="$(id -u)" '$1 != me && $2 ~ /^MoveEyeSim3D/ {n++} END {exit n ? 0 : 1}'; }
-if [ -d "$(dirname "$P")" ] && [ -w "$(dirname "$P")" ]; then
-	printf 'Lauf %s %s\n' "${GITHUB_RUN_ID:-?}" "$(date '+%F %T')" > "$P"
-	echo "Kiosk-Simulator: Pause angefordert"
-	i=0
-	while fremder_sim && [ $i -lt 30 ]; do sleep 2; i=$((i + 1)); done
-	if fremder_sim; then echo "Hinweis: der Kiosk-Simulator läuft noch (kiosk_sitzung.sh ohne Pause? runner_einrichten.sh noch einmal, dann neu starten)"
-	else echo "Kiosk-Simulator ist aus"; fi
-else
-	echo "Hinweis: $(dirname "$P") fehlt - der Kiosk läuft weiter (runner_einrichten.sh noch einmal)"
-fi
-echo "Speicher: $(free -m | awk '/^Mem/ {print $7 " MB frei von " $2}') · Platz: $(df -h "${MW_RUNNER_HOME:-/var/lib/mwrunner}" | awk 'NR==2 {print $4}') frei"
-exit 0
-HAKEN
-cat > "$LIB/job_ende.sh" <<'HAKEN'
-#!/bin/bash
-# MoveEye Test-Runner: nach jedem Job (ACTIONS_RUNNER_HOOK_JOB_COMPLETED), als Benutzer mwrunner. Gehört root.
-# Kiosk-Simulator wieder starten (Pause-Datei weg), Arbeitsordner und Reste des Jobs aufräumen.
-set -u
-P="${MW_KIOSK_PAUSE:-/run/moveeye-test/kiosk_pause}"
-rm -f -- "$P" && echo "Kiosk-Simulator: Pause beendet"
-BASIS="${MW_RUNNER_HOME:-/var/lib/mwrunner}/runner/_work/"
-W="${GITHUB_WORKSPACE:-}"
-case "$W" in
-	"$BASIS"?*) [ -d "$W" ] && find "$W" -mindepth 1 -maxdepth 1 -exec rm -rf -- {} + && echo "Arbeitsordner geleert: $W" ;;
-esac
-# Reste von Prüfstand / Erkennungstest dieses Benutzers in /tmp (nur die eigenen, nur diese Namen)
-find /tmp -maxdepth 1 -user "$(id -u)" \( -name 'mw_pruefstand_*' -o -name 'mw_erk_lauf_*' -o -name 'mw_erkennung_*' \) \
-	-exec rm -rf -- {} + 2>/dev/null
-echo "Platz: $(df -h "${MW_RUNNER_HOME:-/var/lib/mwrunner}" | awk 'NR==2 {print $4}') frei"
-exit 0
-HAKEN
-chmod 755 "$LIB/job_start.sh" "$LIB/job_ende.sh"
-chown root:root "$LIB/job_start.sh" "$LIB/job_ende.sh"
-echo "  $LIB/job_start.sh, $LIB/job_ende.sh"
+# die Haken liegen als eigene Dateien im Repository (moveeye-hp-update spielt dieselben aus dem signierten Paket ein)
+beilage "$LIB/job_start.sh" werkzeuge/test_runner/job_start.sh 755 || { echo "Haken fehlt - abgebrochen"; exit 1; }
+beilage "$LIB/job_ende.sh" werkzeuge/test_runner/job_ende.sh 755 || { echo "Haken fehlt - abgebrochen"; exit 1; }
 beilage "$LIB/runner_entfernen.sh" werkzeuge/test_runner/runner_entfernen.sh 755 || true
 if [ ! -f "$CONF" ]; then
 	cat > "$CONF" <<'EOF'
@@ -254,6 +202,10 @@ schritt "5. Kiosk"
 if [ -d "$KIOSK_LIB" ]; then
 	[ -f "$KIOSK_LIB/kiosk_sitzung.sh" ] && [ ! -f "$LIB/kiosk_sitzung.sh.vorher" ] && cp -p "$KIOSK_LIB/kiosk_sitzung.sh" "$LIB/kiosk_sitzung.sh.vorher"
 	beilage "$KIOSK_LIB/kiosk_sitzung.sh" simulator3d/beilagen_linux/kiosk_sitzung.sh 755 && echo "  kiosk_sitzung.sh mit Pause-Funktion"
+	beilage "$KIOSK_LIB/testbild.py" simulator3d/beilagen_linux/testbild.py 644 datei && echo "  Testbild während der Tests"
+	beilage "$KIOSK_LIB/moveeye.png" simulator3d/icon_sim3d.png 644 datei || true
+	dpkg-query -W -f='${Status}' python3-tk 2>/dev/null | grep -q "install ok installed" || \
+		apt-get install -y -q --no-install-recommends python3-tk >/dev/null 2>&1 || warn "python3-tk fehlt (Testbild)"
 else
 	echo "  Kein Kiosk eingerichtet ($KIOSK_LIB fehlt) - nur die Pause-Einstellung wird hinterlegt."
 fi
@@ -311,26 +263,20 @@ fi
 UNIT="$(cat "$RD/.service" 2>/dev/null)"
 [ -n "$UNIT" ] || { echo "Dienstname unbekannt ($RD/.service fehlt)"; exit 1; }
 install -d -m 755 "/etc/systemd/system/$UNIT.d"
-cat > "/etc/systemd/system/$UNIT.d/moveeye.conf" <<'EOF'
-# MoveEye Test-Runner (runner_einrichten.sh): Schutz und Grenzen. 4 GB RAM: höchstens etwa 3,4 GB für die Tests.
-[Service]
-NoNewPrivileges=yes
-ProtectSystem=full
-ProtectHome=yes
-ProtectKernelTunables=yes
-ProtectKernelModules=yes
-ProtectControlGroups=yes
-# RestrictSUIDSGID weggelassen: sperrt openat2 (Ubuntu 26.04), dann kann tar nichts entpacken. NoNewPrivileges deckt SUID ab.
-LockPersonality=yes
-MemoryHigh=3G
-MemoryMax=3400M
-Nice=5
-EOF
+beilage "/etc/systemd/system/$UNIT.d/moveeye.conf" werkzeuge/test_runner/runner_dienst.conf 644 datei || \
+	{ echo "Dienst-Einstellungen fehlen - abgebrochen"; exit 1; }
 systemctl daemon-reload
 systemctl enable "$UNIT" >/dev/null 2>&1
 systemctl restart "$UNIT" || warn "Dienst startet nicht (journalctl -u $UNIT)"
 sleep 5
 if systemctl is-active -q "$UNIT"; then echo "  Dienst $UNIT läuft"; else warn "Dienst $UNIT läuft nicht"; fi
+
+schritt "7. Automatisches Update (moveeye-hp-update)"
+HPU="$(mktemp)"
+if beilage "$HPU" werkzeuge/test_runner/hp_update.sh 755 >/dev/null; then
+	bash "$HPU" --einrichten --ohne-lauf || warn "moveeye-hp-update nicht eingerichtet"
+fi
+rm -f "$HPU"
 
 schritt "Fertig"
 [ "$FEHLER" -gt 0 ] && echo "ACHTUNG: $FEHLER Warnung(en) - siehe oben."
@@ -338,6 +284,7 @@ cat <<EOF
 Prüfen: GitHub → Settings → Actions → Runners: «$NAME» steht dort als «Idle» (grün).
 Hier:   systemctl status $UNIT
 Kiosk:  einmal neu starten (sudo reboot), damit die Pause-Funktion im Kiosk gilt.
+Update: sudo moveeye-hp-update --status   (nachts von selbst, nur signierte Versionen)
 Sicherheit: in den Repository-Einstellungen Actions → General → «Fork pull request workflows from outside collaborators»
         auf «Require approval for all outside collaborators» stellen (ANLEITUNG.md).
 Rückgängig: sudo bash $LIB/runner_entfernen.sh   (eingerichtet von $WER)

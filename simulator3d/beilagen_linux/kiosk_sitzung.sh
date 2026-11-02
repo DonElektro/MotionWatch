@@ -10,6 +10,9 @@
 # Testlauf-Pause (werkzeuge/test_runner): /etc/moveeye-kiosk-test.conf setzt PAUSE_DATEI. Solange diese Datei da ist (und
 # jünger als PAUSE_MAX_S), ist der Simulator aus und startet nicht neu - der Test-Runner hat Grafik und Speicher für sich.
 # TEST_BENUTZER: dieser lokale Benutzer darf den Bildschirm benutzen (xhost, nur wenn bei runner_einrichten.sh gewählt).
+# Testbild (3.53.0): während der Pause zeigt testbild.py (python3-tk) Logo, «Test läuft – bitte nicht ausschalten» und den
+# Fortschritt aus FORTSCHRITT_DATEI (nur Daten, JSON) samt Live-Bild; nach dem Test 2 Min. eine Zusammenfassung, dann
+# startet der Simulator. Ohne python3-tk bleibt der Bildschirm dunkel.
 set -u
 LIB="/usr/local/lib/moveeye-kiosk"
 CONF="/etc/moveeye-kiosk.conf"
@@ -29,8 +32,13 @@ SIM_ARGS=(--fullscreen -- --stream --no-update)
 PAUSE_DATEI=""
 PAUSE_MAX_S=25200                         # 7 Std.: eine vergessene Pause-Datei hält den Kiosk nicht für immer an
 TEST_BENUTZER=""
+FORTSCHRITT_DATEI=""
+TESTBILD_ENDE_S=120                       # so lange bleibt nach dem Test die Zusammenfassung stehen
 # shellcheck source=/dev/null
 [ -r /etc/moveeye-kiosk-test.conf ] && . /etc/moveeye-kiosk-test.conf
+[ -z "$FORTSCHRITT_DATEI" ] && [ -n "$PAUSE_DATEI" ] && FORTSCHRITT_DATEI="$(dirname "$PAUSE_DATEI")/fortschritt.json"
+TESTBILD="$LIB/testbild.py"
+LOGO="$LIB/moveeye.png"
 mkdir -p "$LOGDIR" "$RUN"
 
 log() { printf '%s %s\n' "$(date '+%F %T')" "$*" >> "$LOGDIR/sitzung.log"; }
@@ -49,6 +57,41 @@ kuerzen() {   # Protokoll höchstens ~2 MB, die letzten Zeilen bleiben
 	fi
 }
 
+TB=0 TB_N=0
+testbild_an() {   # Testbild zeigen (läuft es schon, nichts tun; stürzt es ab, höchstens 5-mal neu)
+	if [ "$TB" -gt 0 ] && kill -0 "$TB" 2>/dev/null; then return 0; fi
+	[ "$TB" -gt 0 ] && { wait "$TB" 2>/dev/null; TB=0; }
+	[ "$TB_N" -ge 5 ] && return 0
+	TB_N=$((TB_N + 1))
+	if [ -r "$TESTBILD" ] && python3 -c 'import tkinter' 2>/dev/null; then
+		python3 -I "$TESTBILD" --pause "$PAUSE_DATEI" --fortschritt "$FORTSCHRITT_DATEI" --logo "$LOGO" \
+			--ende-s "$TESTBILD_ENDE_S" >> "$LOGDIR/testbild.log" 2>&1 &
+		TB=$!
+		[ "$TB_N" -eq 1 ] && log "Testbild an"
+	else
+		[ "$TB_N" -eq 1 ] && log "Testbild fehlt ($TESTBILD oder python3-tk) - nur dunkler Hintergrund"
+		TB_N=5
+		command -v xsetroot >/dev/null 2>&1 && xsetroot -solid '#0f1624' 2>/dev/null
+	fi
+	return 0
+}
+testbild_nachlauf() {   # nach dem Test: die Zusammenfassung des Testbilds (2 Min.) abwarten, höchstens 150 s
+	local i=0
+	while [ "$TB" -gt 0 ] && kill -0 "$TB" 2>/dev/null && [ $i -lt 75 ]; do
+		pausiert && return 0                      # schon der nächste Test: Testbild läuft weiter
+		kill -0 "$eltern" 2>/dev/null || break
+		sleep 2 & kind=$!; wait "$kind"; kind=0
+		i=$((i + 1))
+	done
+	testbild_aus
+}
+testbild_aus() {
+	if [ "$TB" -gt 0 ]; then kill -TERM "$TB" 2>/dev/null; wait "$TB" 2>/dev/null; fi
+	TB=0 TB_N=0
+	kuerzen "$LOGDIR/testbild.log"
+	return 0
+}
+
 sim_stoppen() {
 	sim_signal TERM
 	local i
@@ -61,7 +104,7 @@ sim_stoppen() {
 
 schleife() {
 	local kind=0 t0 rc dauer schnell=0 pause warte=0
-	trap '[ "$kind" -gt 0 ] && kill -TERM "$kind" 2>/dev/null; exit 0' TERM INT
+	trap '[ "$kind" -gt 0 ] && kill -TERM "$kind" 2>/dev/null; [ "$TB" -gt 0 ] && kill -TERM "$TB" 2>/dev/null; exit 0' TERM INT
 	kuerzen "$LOGDIR/sim.log"
 	local eltern=$PPID
 	while :; do
@@ -75,9 +118,12 @@ schleife() {
 			log "Testlauf ($PAUSE_DATEI): Simulator pausiert"
 			sim_laeuft && sim_stoppen
 			while pausiert; do
-				kill -0 "$eltern" 2>/dev/null || { log "Sitzung ist zu - Schleife endet"; exit 0; }
+				kill -0 "$eltern" 2>/dev/null || { testbild_aus; log "Sitzung ist zu - Schleife endet"; exit 0; }
+				testbild_an
 				sleep 5 & kind=$!; wait "$kind"; kind=0
 			done
+			testbild_nachlauf
+			pausiert && continue
 			log "Testlauf fertig: Simulator startet wieder"
 			schnell=0
 			continue
