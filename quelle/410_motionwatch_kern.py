@@ -381,6 +381,7 @@ class MotionWatch:
                       (area > CFG["car_area_frac"] * frame_area and aspect > 1.2 and sv > 1.0 * k)
             vehicle = vehicle and len(t.speeds) >= 2                 # judged from two steps on, not from the very first
             if vehicle:
+                self._veh_t = time.time(); t.was_vehicle = True         # real-erkennung-fix: headlights (veh_light_veto)
                 if not t.is_vehicle:
                     STATE["ignored_vehicles"] += 1
                     log_event("car", f"Vehicle-like object #{t.id} ignored (aspect {aspect:.2f}, speed {sp:.1f})")
@@ -417,6 +418,11 @@ class MotionWatch:
             walking = False                                 # needs AI confirmation
         elif t.is_person and CFG["person_sticky"] and sp <= CFG["walk_max_speed"] * k and not animal and not getattr(t, "fixp", False):
             walking = True                                  # keep flag while tracked (may stand still)
+        if walking and not t.ai_confirmed and not t.is_person and getattr(t, "was_vehicle", False):
+            walking = False                                 # real-erkennung-fix: once vehicle-like, movement alone never makes it a
+                                                            # person (a car turning / half hidden looked «person-like» for a moment)
+        if walking and not t.is_person and veh_light_veto(t, getattr(self, "_veh_t", 0.0), now_):
+            walking = False                                 # real-erkennung-fix: the light of a car at night is no person
         walking = strict_gate(self, t, walking, time.time())   # 411: at dusk / in wind a new person only after 2-3 hits in a row
         if walking and not t.is_person:
             STATE["detections_total"] += 1
@@ -1068,7 +1074,7 @@ class MotionWatch:
                             roi[mroi > 0] = tint[mroi > 0]
                     draw_outline(frame, cnts, t.box, sx, sy, (0, 0, 255), 2)
                     cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 3)
-                    cv2.putText(frame, f"PERSON #{t.id}{' AI' if t.ai_confirmed else ''}" + (dist_overlay(t) or f"  {t.speed():.1f}px/f"),
+                    cv2.putText(frame, f"PERSON{'?' if getattr(t, '_strict_maybe', False) else ''} #{t.id}{' AI' if t.ai_confirmed else ''}" + (dist_overlay(t) or f"  {t.speed():.1f}px/f"),
                                 (x, max(20, y - 8)), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
                     if CFG["show_tracks"] and len(t.hist) > 1:
                         pts = np.array([(int(px * sx), int(py * sy)) for px, py in t.hist], np.int32)

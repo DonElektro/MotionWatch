@@ -288,6 +288,7 @@ class AutoTuner:
 
     def reset(self):
         self.t_start = time.time(); self.calibrated = False
+        autotune_start_values()                                 # real-erkennung-fix: no extreme values of an earlier scene (577)
         self.noise_areas, self.noise_frac = [], []
         self.last_eval = time.time()
         self.new_candidates = self.became_person = self.near_miss = self.walkers = 0
@@ -312,6 +313,8 @@ class AutoTuner:
         if autotune_paused():                                   # 2.98.14: every measurement / training (312), not only three
             STATE["auto_status"] = "paused (test run)"; return   # 2.97.0: a measurement needs fixed values
         now = time.time()
+        if CFG["min_area"] > autotune_area_cap(fg.size):        # real-erkennung-fix: also a value from before / by hand (577)
+            self._set("min_area", autotune_area_cap(fg.size), "at most %.1f %% of the picture" % (AUTOTUNE_AREA_MAX * 100))
         if fps > 1:
             self._set("walk_frames", max(4, min(24, round(fps * CFG["walk_seconds"]))), "fps")
         if not self.calibrated:
@@ -323,8 +326,9 @@ class AutoTuner:
             STATE["auto_status"] = f"calibrating… {max(0, left):.0f}s"
             if left <= 0:
                 self.calibrated = True
-                if self.noise_areas:
-                    self._set("min_area", max(600, min(4000, float(np.percentile(self.noise_areas, 95)) * 2.5)), "scene noise")
+                if self.noise_areas:                              # real-erkennung-fix: at most AUTOTUNE_AREA_MAX of the picture (577)
+                    cap = autotune_area_cap(fg.size)
+                    self._set("min_area", max(min(600, cap), min(cap, float(np.percentile(self.noise_areas, 95)) * 2.5)), "scene noise")
                 self.base_min_area = float(CFG["min_area"])
                 frac = float(np.mean(self.noise_frac)) if self.noise_frac else 0.0
                 if frac > 0.02:
@@ -356,7 +360,7 @@ class AutoTuner:
         false_rate = (self.new_candidates - self.became_person) / minutes
         if not persons:
             if false_rate > 25 and self.walkers == 0:              # 2.98.13: not while somebody walks; at most 2.5 × the calibrated size
-                cap = min(8000, 2.5 * (self.base_min_area or CFG["min_area"]))
+                cap = min(autotune_area_cap(fg.size), 2.5 * (self.base_min_area or CFG["min_area"]))
                 self._set("min_area", min(cap, CFG["min_area"] * 1.2), f"{false_rate:.0f} false blobs/min")
             elif false_rate > 12:
                 self._set("sensitivity", max(10, CFG["sensitivity"] - 5), "many false blobs")
@@ -365,7 +369,7 @@ class AutoTuner:
         if self.near_miss > 20 and self.became_person == 0:
             self._set("speed_consistency", max(0.3, CFG["speed_consistency"] - 0.05), "steady walkers not passing")
         elif self.became_person > 0 and false_rate < 5:
-            self._set("speed_consistency", min(0.7, CFG["speed_consistency"] + 0.02), "persons detected, tightening")
+            self._set("speed_consistency", min(AUTOTUNE_STEADY_MAX, CFG["speed_consistency"] + 0.02), "persons detected, tightening")
         STATE["auto_status"] = f"tuned · {false_rate:.0f} false/min"
         self.new_candidates = self.became_person = self.near_miss = self.walkers = 0
 
