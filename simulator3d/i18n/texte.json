@@ -31657,6 +31657,12 @@
   "it": "I piatti A, B e C v5.3 sostituiscono i piatti v5.2 (parte inferiore con inserti, sportello, presa d'aria e occhielli; coperchio con occhiello; supporto e sportello sul piatto C). Non ancora standard – v5.2 resta lo standard fino all'approvazione. Prima di stampare controllare l'elenco «da misurare».",
   "rm": "Las plattas A, B e C v5.3 remplazzan las plattas v5.2 (part sut cun inserts, portina, entrada d'aria ed ögls; viertgel cun ögl; tegnider e portina sin la platta C). Anc betg standard – v5.2 resta standard fin a l'approvaziun. Avant la stampa controllar la glista «mesirar»."
  },
+ "Platten A, B und C v5.3 ersetzen die Platten v5.2 (Unterteil mit Einsätzen, Akkuklappe, Lufteinlass und Ösen; Deckel mit Öse; Halter und Akkuklappe auf Platte C). v5.3 ist Standard (Freigabe Elektro 02.11.2026); v5.2 und v5.1 bleiben wählbar. Vor dem Druck die Liste «Nachmessen» prüfen.": {
+  "en": "Plates A, B and C v5.3 replace the v5.2 plates (lower part with inserts, battery hatch, air inlet and tie mounts; lid with tie mount; holder and battery hatch on plate C). v5.3 is the standard (released by Elektro 02.11.2026); v5.2 and v5.1 stay selectable. Check the «measure first» list before printing.",
+  "fr": "Les plateaux A, B et C v5.3 remplacent les plateaux v5.2 (partie inférieure avec inserts, trappe, entrée d'air et œillets ; couvercle avec œillet ; support et trappe sur le plateau C). v5.3 est le standard (validé par Elektro le 02.11.2026) ; v5.2 et v5.1 restent disponibles. Vérifier la liste « à mesurer » avant l'impression.",
+  "it": "I piatti A, B e C v5.3 sostituiscono i piatti v5.2 (parte inferiore con inserti, sportello, presa d'aria e occhielli; coperchio con occhiello; supporto e sportello sul piatto C). v5.3 è lo standard (approvata da Elektro il 02.11.2026); v5.2 e v5.1 restano selezionabili. Prima di stampare controllare l'elenco «da misurare».",
+  "rm": "Las plattas A, B e C v5.3 remplazzan las plattas v5.2 (part sut cun inserts, portina, entrada d'aria ed ögls; viertgel cun ögl; tegnider e portina sin la platta C). v5.3 è standard (approvà dad Elektro ils 02.11.2026); v5.2 e v5.1 restan tschernibels. Avant la stampa controllar la glista «mesirar»."
+ },
  "Plattform mit Geländer, Antenne und Wegweiser – senkrecht unter dir die helle Kalkwand und die Obri Stafelhütte.": {
   "en": "A platform with railing, antenna and signpost – straight below you the light limestone face and the Obri Stafel hut.",
   "fr": "Plateforme avec garde-corps, antenne et panneau – sous tes pieds, la paroi calcaire claire et la cabane Obri Stafel.",
@@ -39439,6 +39445,12 @@
   "fr": "v5.3 (nouveau, pas encore standard) : v5.2 + inserts filetés, trappe batterie, support, conduit d'air, serre-câbles",
   "it": "v5.3 (nuova, non ancora standard): v5.2 + inserti filettati, sportello batteria, supporto, condotto d'aria, fermacavi",
   "rm": "v5.3 (nov, anc betg standard): v5.2 + inserts da filet, portina da l'accu, tegnider, canal d'aria, distensiun dals cabels"
+ },
+ "v5.3 (Standard): v5.2 + Gewindeeinsätze, Akkuklappe, Halter, Luftkanal, Zugentlastung": {
+  "en": "v5.3 (standard): v5.2 + threaded inserts, battery hatch, holder, air duct, strain relief",
+  "fr": "v5.3 (standard) : v5.2 + inserts filetés, trappe batterie, support, conduit d'air, serre-câbles",
+  "it": "v5.3 (standard): v5.2 + inserti filettati, sportello batteria, supporto, condotto d'aria, fermacavi",
+  "rm": "v5.3 (standard): v5.2 + inserts da filet, portina da l'accu, tegnider, canal d'aria, distensiun dals cabels"
  },
  "v5.3: Einschmelzspitze M3 für den Lötkolben (z. B. ruthex), 220–230 °C für PETG": {
   "en": "v5.3: heat-set tip M3 for the soldering iron (e.g. ruthex), 220–230 °C for PETG",

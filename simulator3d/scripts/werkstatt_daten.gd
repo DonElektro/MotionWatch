@@ -3,7 +3,7 @@ extends RefCounted
 ## hardware/gehaeuse/bau.json. NICHT VON HAND ÄNDERN (Texte dort ändern, dann «gehaeuse_bauen.py --texte»).
 ## Texte deutsch (T.t übersetzt sie, Übersetzungen kommen aus bau.json in i18n/texte.json).
 
-const QUELLE_SHA := "1a20b5946f15fee014a9620de59f764cc79b9fce1cbcc424ec31890bbd6549d5"
+const QUELLE_SHA := "c6534a0b9b7a98321c9be33dab47f3f275d830ed3207b6a41a14768cc3ac1867"
 const VERSION := "5.1"
 const KOPF_FARBE := "#f59a4a"   # Kopfteil (dreht / neigt) in MoveEye-Orange
 const KOPF_TEILE := ["turntable", "yoke", "arm2", "head", "side", "lamp1", "lamp2", "head52"]
@@ -202,11 +202,11 @@ const BAU := {
 				},
 				{
 					"id": "v52",
-					"name": "v5.2 (Standard): + Weitwinkel, IR-LED, Tasten, Status-LED"
+					"name": "v5.2: + Weitwinkel, IR-LED, Tasten, Status-LED"
 				},
 				{
 					"id": "v53",
-					"name": "v5.3 (neu, noch nicht Standard): v5.2 + Gewindeeinsätze, Akkuklappe, Halter, Luftkanal, Zugentlastung"
+					"name": "v5.3 (Standard): v5.2 + Gewindeeinsätze, Akkuklappe, Halter, Luftkanal, Zugentlastung"
 				}
 			]
 		},
@@ -244,7 +244,7 @@ const BAU := {
 		}
 	],
 	"variante_standard": {
-		"gehaeuse": "v52",
+		"gehaeuse": "v53",
 		"akku": "ups",
 		"mover": "ohne"
 	},
@@ -1984,5 +1984,5 @@ const BAU := {
 # Gehäuse-Varianten: id -> {name, teile, ersetzt, druckdateien, anleitung, hinweis, nachmessen (deutsch, T.t übersetzt)}
 const GEHAEUSE_VARIANTEN := {
 	"v52": {"name": "Variante v5.2: Weitwinkel-Kamera im Unterteil", "teile": ["tub52", "wide", "irled", "mosfet52", "cable_cam1", "cable_cam0_52", "buttons", "sled", "plug52", "sdplug", "head52", "diff52", "resplug", "lampdrv", "fuseh"], "ersetzt": {"tub52": "tub", "mosfet52": "mosfet", "cable_cam0_52": "cable_cam", "plug52": "plug", "head52": "head"}, "druckdateien": ["v5-2/MotionWatch_v5-2_Platte_A_Unterteil.3mf", "v5-2/MotionWatch_v5-2_Platte_B_Deckel_Kopf.3mf"], "anleitung": "Dokumente/LIESMICH_Montage_v5-2.md", "hinweis": "Platte A und B v5.2 ersetzen die Platten v5.1 (Unterteil mit Weitwinkel-Fenster, Service-Fenster HDMI/USB-C, SD-Schlitz; Kopf mit Status-LED). Vor dem Druck die Liste «Nachmessen» prüfen.", "nachmessen": ["IR-Modul: Ø 18,8 mm, Länge 14 mm, Linse vorne Ø 17 mm (IRW_MOD_D, IRW_MOD_L, IRW_LENS_D)", "Weitwinkel-Kamera: Linsenhöhe 11,4 mm ab Platine, Linsenmitte 9,5 mm unter der Platinen-Oberkante, Frontlinse Ø 6 mm (WC_LENS_H, WC_LENS_FROM_TOP, WC_R0)", "Lage der Buchsen CAM/DISP 0 und 1 am Pi 5 (Kabelkamm FPC_X0, PI_CAM0_XY, PI_CAM1_XY)", "Abstände: IR-Modul–Kamera-Fenster (Steg 3,2 mm, Trennsteg 2 mm vor der Wand), IR-Modul–Lautsprecher 11 mm, Kabel–Lüfter 4 mm / Ansaugung 8 mm, Kabel–Lüftungsschlitze 9 mm", "UPS HAT (E) mit Akkus (wie v5.1: angenommen 90 × 80 × 26 mm)", "Service-Fenster: Lage USB-C (x 85) und HDMI am Pi 5; SD: microSD-Verlängerung mit Einbau-Kartenhalter (Lochabstand 18 mm, Platine ca. 22 × 15 mm)", "Lampentreiber: noch unbekannt – Feld 30 × 20 mit 2 Domen M2,5 ist ein Platzhalter (DRV_HOLES); Sicherungshalter 30 × 13 × 10 (FUSE_*)"]},
-	"v53": {"name": "Variante v5.3: v5.2 mit Einsätzen, Akkuklappe, Halter, Luftkanal", "teile": ["tub53", "lid53", "hatch", "duct", "holder", "feet53", "feet53_2", "feet53_3", "feet53_4", "cable_cam1_53", "cable_cam0_53"], "ersetzt": {"tub53": "tub52", "lid53": "lid", "feet53": "feet", "feet53_2": "feet2", "feet53_3": "feet3", "feet53_4": "feet4", "cable_cam1_53": "cable_cam1", "cable_cam0_53": "cable_cam0_52"}, "druckdateien": ["v5-3/MotionWatch_v5-3_Platte_A_Unterteil.3mf", "v5-3/MotionWatch_v5-3_Platte_B_Deckel_Kopf.3mf", "v5-3/MotionWatch_v5-3_Platte_C_Halter.3mf"], "anleitung": "Dokumente/LIESMICH_Montage_v5-3.md", "hinweis": "Platten A, B und C v5.3 ersetzen die Platten v5.2 (Unterteil mit Einsätzen, Akkuklappe, Lufteinlass und Ösen; Deckel mit Öse; Halter und Akkuklappe auf Platte C). Noch nicht Standard – v5.2 bleibt Standard bis zur Freigabe. Vor dem Druck die Liste «Nachmessen» prüfen.", "nachmessen": ["UPS HAT (E): Zellen unter der Platine und von unten entnehmbar? Halter-Enden liegen auf dem Bodenrand (y < 4 und > 76)? (v5.BAT_*, OPEN_*)", "Gewindeeinsatz: Bohrung Ø 4,0 / Länge 5,7 nach Herstellerangabe (ruthex M3 × 5,7) – bei anderem Einsatz INS_D / INS_L anpassen", "Active Cooler: Oberkante z 55,5, Ansaugöffnung 23 × 24 mm, Ausblasrichtung der Rippen (COOL_*, FAN_IN)", "Füsse v5.3 in den Ecken: Gerät steht stabil, Halter-Mulden passen (FEET53)", "Halter: Gurt 25 mm passt durch die Schlitze 4 × 28 mm, Wandschrauben Ø 5"]},
+	"v53": {"name": "Variante v5.3: v5.2 mit Einsätzen, Akkuklappe, Halter, Luftkanal", "teile": ["tub53", "lid53", "hatch", "duct", "holder", "feet53", "feet53_2", "feet53_3", "feet53_4", "cable_cam1_53", "cable_cam0_53"], "ersetzt": {"tub53": "tub52", "lid53": "lid", "feet53": "feet", "feet53_2": "feet2", "feet53_3": "feet3", "feet53_4": "feet4", "cable_cam1_53": "cable_cam1", "cable_cam0_53": "cable_cam0_52"}, "druckdateien": ["v5-3/MotionWatch_v5-3_Platte_A_Unterteil.3mf", "v5-3/MotionWatch_v5-3_Platte_B_Deckel_Kopf.3mf", "v5-3/MotionWatch_v5-3_Platte_C_Halter.3mf"], "anleitung": "Dokumente/LIESMICH_Montage_v5-3.md", "hinweis": "Platten A, B und C v5.3 ersetzen die Platten v5.2 (Unterteil mit Einsätzen, Akkuklappe, Lufteinlass und Ösen; Deckel mit Öse; Halter und Akkuklappe auf Platte C). v5.3 ist Standard (Freigabe Elektro 02.11.2026); v5.2 und v5.1 bleiben wählbar. Vor dem Druck die Liste «Nachmessen» prüfen.", "nachmessen": ["UPS HAT (E): Zellen unter der Platine und von unten entnehmbar? Halter-Enden liegen auf dem Bodenrand (y < 4 und > 76)? (v5.BAT_*, OPEN_*)", "Gewindeeinsatz: Bohrung Ø 4,0 / Länge 5,7 nach Herstellerangabe (ruthex M3 × 5,7) – bei anderem Einsatz INS_D / INS_L anpassen", "Active Cooler: Oberkante z 55,5, Ansaugöffnung 23 × 24 mm, Ausblasrichtung der Rippen (COOL_*, FAN_IN)", "Füsse v5.3 in den Ecken: Gerät steht stabil, Halter-Mulden passen (FEET53)", "Halter: Gurt 25 mm passt durch die Schlitze 4 × 28 mm, Wandschrauben Ø 5"]},
 }

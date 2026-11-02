@@ -76,6 +76,6 @@ jobs:
           if gh release view "v$V" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             gh release upload "v$V" "$Z" "$F" "$WV" "$WF" -R "$GITHUB_REPOSITORY" --clobber
           else
-            printf 'MoveEye %s – Selbstbau-Paket: Anleitung (PDF, 5 Sprachen), Druckdateien Gehäuse v5.2, Bestelllisten (Basis / Komplett / Autark), MoveEye-Software (signiert) mit Installationsanleitung.\n\nImmer die neueste Version: https://github.com/%s/releases/latest/download/MoveEye_Bausatz.zip\n\nWerkstatt «Bauen» als eine Datei (Doppelklick, offline im Browser, 3D, alle Reiter, 5 Sprachen): https://github.com/%s/releases/latest/download/MoveEye_Werkstatt.html\n' "$V" "$GITHUB_REPOSITORY" "$GITHUB_REPOSITORY" > notes.md
+            printf 'MoveEye %s – Selbstbau-Paket: Anleitung (PDF, 5 Sprachen), Druckdateien Gehäuse v5.3, Bestelllisten (Basis / Komplett / Autark), MoveEye-Software (signiert) mit Installationsanleitung.\n\nImmer die neueste Version: https://github.com/%s/releases/latest/download/MoveEye_Bausatz.zip\n\nWerkstatt «Bauen» als eine Datei (Doppelklick, offline im Browser, 3D, alle Reiter, 5 Sprachen): https://github.com/%s/releases/latest/download/MoveEye_Werkstatt.html\n' "$V" "$GITHUB_REPOSITORY" "$GITHUB_REPOSITORY" > notes.md
             gh release create "v$V" "$Z" "$F" "$WV" "$WF" -R "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "MoveEye $V" --notes-file notes.md --latest
           fi

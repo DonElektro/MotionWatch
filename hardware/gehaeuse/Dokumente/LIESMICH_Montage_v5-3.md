@@ -1,7 +1,7 @@
 # MoveEye Gehäuse v5.3 – Montage und Druck
 
-Stand 02.11.2026 (Zweig real-gehaeuse-v53). **v5.3 baut auf v5.2 auf** und ist **noch nicht Standard**: v5.2 bleibt Standard
-bis zur Freigabe durch Elektro, v5.1 und v5.2 bleiben wählbar. Quelle: `Quellcode/v53.py` (importiert `v52.py` und `v5.py`).
+Stand 02.11.2026. **v5.3 baut auf v5.2 auf** und ist **Standard** (Freigabe durch Elektro am 02.11.2026); v5.1 und v5.2
+bleiben wählbar. Quelle: `Quellcode/v53.py` (importiert `v52.py` und `v5.py`).
 Alles, was hier nicht steht, gilt wie in [LIESMICH_Montage_v5-2.md](LIESMICH_Montage_v5-2.md).
 
 ## Was ist neu

@@ -89,8 +89,14 @@ func _process(_dt: float) -> bool:
 		eq("Reiter " + str(td[0]), r.get("tab", ""), str(td[0]))
 		if str(td[0]) != "uebersicht" and str(td[0]) != "montage" and (W._w["pv"] as VBoxContainer).get_child_count() == 0:
 			errs.append("Reiter %s leer" % td[0])
-	# real-v52-standard (01.11.2026): v5.2 is the standard (bau.json variante_standard), v5.1 stays selectable
+	# real-gehaeuse-v53 (02.11.2026): v5.3 is the standard (bau.json variante_standard), v5.2 and v5.1 stay selectable
 	W.set_step(0)                                     # the tab «Montage» above started the assembly
+	W.control({"do": "variant", "group": "gehaeuse", "value": "v53"})
+	eq("Standard v5.3 in bau.json", str(W.DATA.BAU.get("variante_standard", {}).get("gehaeuse", "")), "v53")
+	eq("Standard v5.3", W.v53, true)
+	eq("Standard v5.3: Unterteil v5.3", W._shown("tub53"), true)
+	eq("Standard v5.3: Unterteil v5.2 aus", W._shown("tub52"), false)
+	W.control({"do": "variant", "group": "gehaeuse", "value": "v52"})
 	eq("Standard v5.2", W.v52, true)
 	eq("Standard v5.2: Unterteil v5.2", W._shown("tub52"), true)
 	eq("Standard v5.2: Unterteil v5.1 aus", W._shown("tub"), false)

@@ -130,8 +130,8 @@ denselben Reitern: Übersicht · Teile · Einkauf · Drucken · Montage · Verka
   | Lampentreiber (unbekannt) | `DRV_*` | PLATZHALTER 30 × 20, Löcher diagonal |
   | Sicherungshalter Inline 5 A | `FUSE_*` | 30 × 13 × 10 mm |
 
-- **v5.3** (02.11.2026, Zweig real-gehaeuse-v53, **noch nicht Standard** – v5.2 bleibt Standard bis zur Freigabe, v5.1 und
-  v5.2 bleiben wählbar): Gewindeeinsätze M3 × 5,7 (Deckel, Zwischenboden, Akkuklappe), **Akkuklappe unten** (Zellen 21700
+- **v5.3** (02.11.2026, **Standard** seit der Freigabe durch Elektro am 02.11.2026 – v5.2 und v5.1 bleiben wählbar, eine
+  gespeicherte eigene Wahl in «Bauen» bleibt): Gewindeeinsätze M3 × 5,7 (Deckel, Zwischenboden, Akkuklappe), **Akkuklappe unten** (Zellen 21700
   tauschen ohne Deckel und ohne Pi-Ausbau; SD-Karte weiter über die Verlängerung von v5.2), **Halter Wand / Baum** (Gurt
   25 mm, Wandschrauben, 1/4"-Schraube in die Stativmutter), **Luftkanal** auf dem Active Cooler mit Einlass und Regendach,
   **Zugentlastung** (Ösen im Kabelkamin, an GX16 und Relais), Füsse in den Ecken. Quelle `Quellcode/v53.py`, Druck

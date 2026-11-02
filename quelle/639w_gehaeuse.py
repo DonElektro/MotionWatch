@@ -1106,14 +1106,14 @@ _HELP_GEH = {
            '(früher «Gehäuse &amp; Bau»), in Reitern: Übersicht mit der <b>3D-Werkstatt</b> (drehen, zoomen, Explosion, durchsichtig, Innenleben, '
            'Teil antippen – läuft im Browser, ohne Simulator und ohne Internet), Teile, Einkauf (Preis-Schätzung, Händler-Suche, CSV, Drucken), '
            'Drucken (pro Teil, Druckdateien einzeln oder alle), Montage (14 Schritte, animiert), Verkabeln (Plan mit Pins und Kanälen), Software, '
-           'Inbetriebnahme, Fehlersuche und Wartung. Oben die Variante (v5.1 / v5.2, mit / ohne Akku, mit / ohne Mover) und <b>«Mein Bau»</b>: '
+           'Inbetriebnahme, Fehlersuche und Wartung. Oben die Variante (v5.1 / v5.2 / v5.3, mit / ohne Akku, mit / ohne Mover) und <b>«Mein Bau»</b>: '
            'deine Checkliste, für dich auf dem Pi gespeichert. Mit verbundenem Simulator öffnet «Im Simulator ansehen» dasselbe im Simulator '
            '(Mehr → Bauen). Vor dem Druck des Unterteils die Masse des UPS HAT (E) mit Akkus nachmessen.</p></section>\n'),
     "en": ('<section id="case" data-icon="🛠"><h2>Build</h2><p>Everything to build MoveEye yourself is under More → <a href="/build"><b>Build</b></a> '
            '(formerly «Case &amp; build»), in tabs: Overview with the <b>3D workshop</b> (turn, zoom, explode, see through, inside, tap a part – '
            'runs in the browser, no simulator and no internet needed), Parts, Shopping (price estimate, shop search, CSV, print), Printing (per part, '
            'print files one by one or all), Assembly (14 steps, animated), Wiring (plan with pins and channels), Software, Commissioning, '
-           'Troubleshooting and Maintenance. At the top the variant (v5.1 / v5.2, with / without battery, with / without mover) and <b>«My build»</b>: '
+           'Troubleshooting and Maintenance. At the top the variant (v5.1 / v5.2 / v5.3, with / without battery, with / without mover) and <b>«My build»</b>: '
            'your checklist, saved for you on the Pi. With a connected simulator «View in the simulator» opens the same there (More → Build). '
            'Before printing the lower part, measure the UPS HAT (E) with its cells.</p></section>\n'),
     "fr": ('<section id="case" data-icon="🛠"><h2>Construire</h2><p>Tout pour construire MoveEye soi-même se trouve sous Plus → <a href="/build"><b>Construire</b></a> '
@@ -1265,7 +1265,7 @@ def geh_selftest():
         assert not t_.get("schritt") or 1 <= t_["schritt"] <= 14, t_["id"]
     vals = {o["id"] for v in B["varianten"] for o in v["werte"]}
     T_ = {t_["id"]: t_ for t_ in B["teile"]}
-    assert (B.get("variante_standard") or {}).get("gehaeuse") == "v52" and "v51" in vals, "real-v52-standard: v5.2 is the standard, v5.1 stays"
+    assert (B.get("variante_standard") or {}).get("gehaeuse") == "v53" and {"v51", "v52"} <= vals, "real-gehaeuse-v53: v5.3 is the standard (released 02.11.2026), v5.2 and v5.1 stay"
     for t_ in B["teile"]:                         # the parts of a variant are in the assembly steps, at the step of the part they replace
         if t_.get("art") in ("v52", "v53", "dev"):
             assert t_.get("schritt"), ("step", t_["id"])

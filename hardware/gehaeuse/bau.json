@@ -3355,21 +3355,21 @@
     {
      "id": "v52",
      "name": {
-      "de": "v5.2 (Standard): + Weitwinkel, IR-LED, Tasten, Status-LED",
-      "en": "v5.2 (standard): + wide angle, IR LED, buttons, status LED",
-      "fr": "v5.2 (standard) : + grand-angle, LED IR, boutons, LED d'état",
-      "it": "v5.2 (standard): + grandangolo, LED IR, pulsanti, LED di stato",
-      "rm": "v5.2 (standard): + grondangul, LED IR, buttuns, LED da status"
+      "de": "v5.2: + Weitwinkel, IR-LED, Tasten, Status-LED",
+      "en": "v5.2: + wide angle, IR LED, buttons, status LED",
+      "fr": "v5.2 : + grand-angle, LED IR, boutons, LED d'état",
+      "it": "v5.2: + grandangolo, LED IR, pulsanti, LED di stato",
+      "rm": "v5.2: + grondangul, LED IR, buttuns, LED da status"
      }
     },
     {
      "id": "v53",
      "name": {
-      "de": "v5.3 (neu, noch nicht Standard): v5.2 + Gewindeeinsätze, Akkuklappe, Halter, Luftkanal, Zugentlastung",
-      "en": "v5.3 (new, not yet standard): v5.2 + threaded inserts, battery hatch, holder, air duct, strain relief",
-      "fr": "v5.3 (nouveau, pas encore standard) : v5.2 + inserts filetés, trappe batterie, support, conduit d'air, serre-câbles",
-      "it": "v5.3 (nuova, non ancora standard): v5.2 + inserti filettati, sportello batteria, supporto, condotto d'aria, fermacavi",
-      "rm": "v5.3 (nov, anc betg standard): v5.2 + inserts da filet, portina da l'accu, tegnider, canal d'aria, distensiun dals cabels"
+      "de": "v5.3 (Standard): v5.2 + Gewindeeinsätze, Akkuklappe, Halter, Luftkanal, Zugentlastung",
+      "en": "v5.3 (standard): v5.2 + threaded inserts, battery hatch, holder, air duct, strain relief",
+      "fr": "v5.3 (standard) : v5.2 + inserts filetés, trappe batterie, support, conduit d'air, serre-câbles",
+      "it": "v5.3 (standard): v5.2 + inserti filettati, sportello batteria, supporto, condotto d'aria, fermacavi",
+      "rm": "v5.3 (standard): v5.2 + inserts da filet, portina da l'accu, tegnider, canal d'aria, distensiun dals cabels"
      }
     }
    ]
@@ -3450,7 +3450,7 @@
   }
  ],
  "variante_standard": {
-  "gehaeuse": "v52",
+  "gehaeuse": "v53",
   "akku": "ups",
   "mover": "ohne"
  },
@@ -6733,7 +6733,7 @@
  },
  "pakete": {
   "_hinweis": "Information (Entscheid Elektro 01.11.2026): drei Pakete. Die Seite «Bauen» bleibt bei den Varianten (gehaeuse / akku / mover); «variante» zeigt, welche Wahl dort passt. bom = Materialliste-IDs ohne optionale Extras, preis_chf = Summe der geschätzten bom-Preise (Zeilensumme, gerundet), extras = optionale bom-IDs (nicht in der Summe), stopfen = Druckteile nur für dieses Paket (dazu immer 17 für die Reserve-Öffnung). Solo und Mobil folgen später.",
-  "stand": "01.11.2026",
+  "stand": "02.11.2026",
   "liste": [
    {
     "id": "basis",
@@ -6745,14 +6745,14 @@
      "rm": "Basa"
     },
     "text": {
-     "de": "Kopf + Wärmebild: Pi 5, Kopfkamera NoIR, Thermal-90, Schwenk-/Neigekopf, Licht weiss + IR, PIR, Lagesensor, Tasten, Status-LED; Unterteil v5.2 mit Stopfen, 12-V-Netzteil",
-     "en": "Head + thermal: Pi 5, head camera NoIR, Thermal-90, pan/tilt head, white + IR light, PIR, motion sensor, buttons, status LED; lower part v5.2 with plugs, 12 V power supply",
-     "fr": "Tête + thermique : Pi 5, caméra NoIR de la tête, Thermal-90, tête pan/tilt, lumière blanche + IR, PIR, capteur de position, boutons, LED d'état ; partie inférieure v5.2 avec bouchons, alimentation 12 V",
-     "it": "Testa + termocamera: Pi 5, telecamera NoIR della testa, Thermal-90, testa pan/tilt, luce bianca + IR, PIR, sensore di posizione, pulsanti, LED di stato; parte inferiore v5.2 con tappi, alimentatore 12 V",
-     "rm": "Chau + camera termica: Pi 5, camera NoIR dal chau, Thermal-90, chau pan/tilt, glisch alva + IR, PIR, sensur da posiziun, buttuns, LED da status; part sut v5.2 cun tappuns, alimentaziun 12 V"
+     "de": "Kopf + Wärmebild: Pi 5, Kopfkamera NoIR, Thermal-90, Schwenk-/Neigekopf, Licht weiss + IR, PIR, Lagesensor, Tasten, Status-LED; Unterteil v5.3 mit Stopfen, 12-V-Netzteil",
+     "en": "Head + thermal: Pi 5, head camera NoIR, Thermal-90, pan/tilt head, white + IR light, PIR, motion sensor, buttons, status LED; lower part v5.3 with plugs, 12 V power supply",
+     "fr": "Tête + thermique : Pi 5, caméra NoIR de la tête, Thermal-90, tête pan/tilt, lumière blanche + IR, PIR, capteur de position, boutons, LED d'état ; partie inférieure v5.3 avec bouchons, alimentation 12 V",
+     "it": "Testa + termocamera: Pi 5, telecamera NoIR della testa, Thermal-90, testa pan/tilt, luce bianca + IR, PIR, sensore di posizione, pulsanti, LED di stato; parte inferiore v5.3 con tappi, alimentatore 12 V",
+     "rm": "Chau + camera termica: Pi 5, camera NoIR dal chau, Thermal-90, chau pan/tilt, glisch alva + IR, PIR, sensur da posiziun, buttuns, LED da status; part sut v5.3 cun tappuns, alimentaziun 12 V"
     },
     "variante": {
-     "gehaeuse": "v52",
+     "gehaeuse": "v53",
      "akku": "netz",
      "mover": "ohne"
     },
@@ -6786,10 +6786,16 @@
      "schrauben",
      "sdext",
      "taster",
-     "sled"
+     "sled",
+     "insert",
+     "tripodscrew",
+     "ties",
+     "ductfoam"
     ],
     "extras": [
-     "lte"
+     "lte",
+     "strap",
+     "wallscrew"
     ],
     "stopfen": [
      "12_Blindstopfen_Weitwinkel",
@@ -6799,7 +6805,7 @@
      "23_Stopfen_Mikrofon",
      "24_Stopfen_Lichtleiter"
     ],
-    "preis_chf": 447.75
+    "preis_chf": 473.75
    },
    {
     "id": "komplett",
@@ -6811,14 +6817,14 @@
      "rm": "Cumplet"
     },
     "text": {
-     "de": "v5.2 mit Weitwinkel-Kamera und IR-Modul 120°, Ton (Lautsprecher, Mikrofon), Sensoren (DS18B20, BME280), Relais; 12-V-Netzteil",
-     "en": "v5.2 with wide-angle camera and IR module 120°, sound (speaker, microphone), sensors (DS18B20, BME280), relay; 12 V power supply",
-     "fr": "v5.2 avec caméra grand-angle et module IR 120°, son (haut-parleur, micro), capteurs (DS18B20, BME280), relais ; alimentation 12 V",
-     "it": "v5.2 con telecamera grandangolare e modulo IR 120°, audio (altoparlante, microfono), sensori (DS18B20, BME280), relè; alimentatore 12 V",
-     "rm": "v5.2 cun camera grondangul e modul IR 120°, tun (autpledader, microfon), sensors (DS18B20, BME280), relais; alimentaziun 12 V"
+     "de": "v5.3 mit Weitwinkel-Kamera und IR-Modul 120°, Ton (Lautsprecher, Mikrofon), Sensoren (DS18B20, BME280), Relais; 12-V-Netzteil",
+     "en": "v5.3 with wide-angle camera and IR module 120°, sound (speaker, microphone), sensors (DS18B20, BME280), relay; 12 V power supply",
+     "fr": "v5.3 avec caméra grand-angle et module IR 120°, son (haut-parleur, micro), capteurs (DS18B20, BME280), relais ; alimentation 12 V",
+     "it": "v5.3 con telecamera grandangolare e modulo IR 120°, audio (altoparlante, microfono), sensori (DS18B20, BME280), relè; alimentatore 12 V",
+     "rm": "v5.3 cun camera grondangul e modul IR 120°, tun (autpledader, microfon), sensors (DS18B20, BME280), relais; alimentaziun 12 V"
     },
     "variante": {
-     "gehaeuse": "v52",
+     "gehaeuse": "v53",
      "akku": "netz",
      "mover": "ohne"
     },
@@ -6869,13 +6875,19 @@
      "ds18",
      "bme",
      "relay",
-     "m12"
+     "m12",
+     "insert",
+     "tripodscrew",
+     "ties",
+     "ductfoam"
     ],
     "extras": [
-     "lte"
+     "lte",
+     "strap",
+     "wallscrew"
     ],
     "stopfen": [],
-    "preis_chf": 590.75
+    "preis_chf": 616.75
    },
    {
     "id": "autark",
@@ -6894,7 +6906,7 @@
      "rm": "Cumplet cun accu (UPS HAT (E), 4 × 21700) e funtauna da chargiar (alimentaziun 12 V a la GX16; solar sco extra)"
     },
     "variante": {
-     "gehaeuse": "v52",
+     "gehaeuse": "v53",
      "akku": "ups",
      "mover": "ohne"
     },
@@ -6949,16 +6961,22 @@
      "cells",
      "fuse2",
      "chled",
-     "lader12"
+     "lader12",
+     "insert",
+     "tripodscrew",
+     "ties",
+     "ductfoam"
     ],
     "extras": [
      "ina",
      "solar",
      "solarreg",
-     "lte"
+     "lte",
+     "strap",
+     "wallscrew"
     ],
     "stopfen": [],
-    "preis_chf": 767.57
+    "preis_chf": 793.57
    }
   ],
   "spaeter": [
@@ -7032,11 +7050,11 @@
   ],
   "anleitung": "Dokumente/LIESMICH_Montage_v5-3.md",
   "hinweis": {
-   "de": "Platten A, B und C v5.3 ersetzen die Platten v5.2 (Unterteil mit Einsätzen, Akkuklappe, Lufteinlass und Ösen; Deckel mit Öse; Halter und Akkuklappe auf Platte C). Noch nicht Standard – v5.2 bleibt Standard bis zur Freigabe. Vor dem Druck die Liste «Nachmessen» prüfen.",
-   "en": "Plates A, B and C v5.3 replace the v5.2 plates (lower part with inserts, battery hatch, air inlet and tie mounts; lid with tie mount; holder and battery hatch on plate C). Not yet the standard – v5.2 stays the standard until it is released. Check the «measure first» list before printing.",
-   "fr": "Les plateaux A, B et C v5.3 remplacent les plateaux v5.2 (partie inférieure avec inserts, trappe, entrée d'air et œillets ; couvercle avec œillet ; support et trappe sur le plateau C). Pas encore standard – v5.2 reste le standard jusqu'à la validation. Vérifier la liste « à mesurer » avant l'impression.",
-   "it": "I piatti A, B e C v5.3 sostituiscono i piatti v5.2 (parte inferiore con inserti, sportello, presa d'aria e occhielli; coperchio con occhiello; supporto e sportello sul piatto C). Non ancora standard – v5.2 resta lo standard fino all'approvazione. Prima di stampare controllare l'elenco «da misurare».",
-   "rm": "Las plattas A, B e C v5.3 remplazzan las plattas v5.2 (part sut cun inserts, portina, entrada d'aria ed ögls; viertgel cun ögl; tegnider e portina sin la platta C). Anc betg standard – v5.2 resta standard fin a l'approvaziun. Avant la stampa controllar la glista «mesirar»."
+   "de": "Platten A, B und C v5.3 ersetzen die Platten v5.2 (Unterteil mit Einsätzen, Akkuklappe, Lufteinlass und Ösen; Deckel mit Öse; Halter und Akkuklappe auf Platte C). v5.3 ist Standard (Freigabe Elektro 02.11.2026); v5.2 und v5.1 bleiben wählbar. Vor dem Druck die Liste «Nachmessen» prüfen.",
+   "en": "Plates A, B and C v5.3 replace the v5.2 plates (lower part with inserts, battery hatch, air inlet and tie mounts; lid with tie mount; holder and battery hatch on plate C). v5.3 is the standard (released by Elektro 02.11.2026); v5.2 and v5.1 stay selectable. Check the «measure first» list before printing.",
+   "fr": "Les plateaux A, B et C v5.3 remplacent les plateaux v5.2 (partie inférieure avec inserts, trappe, entrée d'air et œillets ; couvercle avec œillet ; support et trappe sur le plateau C). v5.3 est le standard (validé par Elektro le 02.11.2026) ; v5.2 et v5.1 restent disponibles. Vérifier la liste « à mesurer » avant l'impression.",
+   "it": "I piatti A, B e C v5.3 sostituiscono i piatti v5.2 (parte inferiore con inserti, sportello, presa d'aria e occhielli; coperchio con occhiello; supporto e sportello sul piatto C). v5.3 è lo standard (approvata da Elektro il 02.11.2026); v5.2 e v5.1 restano selezionabili. Prima di stampare controllare l'elenco «da misurare».",
+   "rm": "Las plattas A, B e C v5.3 remplazzan las plattas v5.2 (part sut cun inserts, portina, entrada d'aria ed ögls; viertgel cun ögl; tegnider e portina sin la platta C). v5.3 è standard (approvà dad Elektro ils 02.11.2026); v5.2 e v5.1 restan tschernibels. Avant la stampa controllar la glista «mesirar»."
   },
   "nachmessen": [
    {

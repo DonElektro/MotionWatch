@@ -197,10 +197,13 @@ static func wide_in_case(m) -> bool:
 
 
 static func gewaehlt_v53() -> bool:
-	"""real-gehaeuse-v53: ist in «Bauen» (Werkstatt, user://bau_mein.json) das Gehäuse v5.3 gewählt? Sonst zeigt die Szene v5.2."""
+	"""real-gehaeuse-v53: zeigt die Szene v5.3? Die Wahl in «Bauen» (Werkstatt, user://bau_mein.json), sonst der Standard aus bau.json."""
 	var p := "user://bau_mein.json"
 	var d = JSON.parse_string(FileAccess.get_file_as_string(p)) if FileAccess.file_exists(p) else null
-	return d is Dictionary and d.get("var") is Dictionary and str((d["var"] as Dictionary).get("gehaeuse", "")) == "v53"
+	if d is Dictionary and d.get("var") is Dictionary and str((d["var"] as Dictionary).get("gehaeuse", "")) != "":
+		return str((d["var"] as Dictionary)["gehaeuse"]) == "v53"     # die eigene Wahl bleibt
+	var std: Dictionary = (load("res://scripts/werkstatt_daten.gd").BAU as Dictionary).get("variante_standard", {})
+	return str(std.get("gehaeuse", "")) == "v53"                       # Standard (bau.json, ab 02.11.2026 v5.3)
 
 
 func apply() -> void:
