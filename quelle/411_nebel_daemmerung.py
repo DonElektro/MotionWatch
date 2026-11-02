@@ -52,6 +52,7 @@ FOG_ON_S, FOG_OFF_S = 10.0, 30.0          # fog comes and goes in minutes; 10 s:
 TWI_NOISE_K = 1.6                         # noise dusk / day in the test: 1.8-2.2 (three places); rain 0.85, snow 0.6
 WIND_MEAN_KMH, WIND_GUST_KMH = 20.0, 39.0  # Beaufort 4 (20-28 km/h): twigs move; Beaufort 6 (39-49 km/h): big branches move
 WIND_RECENT_S, WIND_GUST_N = 120.0, 2     # real-erkennung-fix: only the last 2 min, a gust must come at least twice
+STRICT_NIGHT_AI = True                     # real-erkennung-2 (Test 3: fox / deer / empty picture at night = «Person?» at once)
 STRICT_AI_UPRIGHT = 1.2                    # real-erkennung-fix: only an upright AI person (h >= 1.2 w) is reported at once; a wide one
                                            # (boar, fox: the AI calls them «person» at night) still needs 2-3 AI results in a row
 
@@ -280,6 +281,11 @@ def strict_gate(w, t, walking, t0):
         t._sg = None
         return walking
     up = float(t.box[3]) >= STRICT_AI_UPRIGHT * float(t.box[2]) if getattr(t, "box", None) else True
+    if up and STRICT_NIGHT_AI:                               # real-erkennung-2: at night (infrared) the AI calls fox / deer / a lit
+        try:                                                 # trunk «person» more often - there 2 AI results in a row as before
+            up = not is_dark()
+        except Exception:
+            pass
     if walking and t.ai_confirmed and up:                    # real-erkennung-fix: the AI sees an upright person - at once («Person?»)
         if not getattr(t, "_strict_maybe", False):
             t._strict_maybe = True
@@ -390,7 +396,8 @@ def fog_selftest():
         n0 = picture_noise(cv2.cvtColor(day, cv2.COLOR_BGR2GRAY))
         noisy = cv2.add(dusk, rng.randint(0, 22, dusk.shape).astype(np.uint8))
         assert picture_noise(cv2.cvtColor(noisy, cv2.COLOR_BGR2GRAY)) > 1.6 * n0
-        # strict gate: hits in a row
+        # strict gate: hits in a row (by day; real-erkennung-2: at night an AI person needs AI results in a row again)
+        dk0 = globals()["is_dark"]; globals()["is_dark"] = lambda: False
         class _T:
             def __init__(s):
                 s.is_person = False; s.ai_confirmed = False; s.id = 1
@@ -440,6 +447,9 @@ def fog_selftest():
             if strict_gate(w, tr_, True, t_):
                 got = t_ - 6000.0; break
         assert got is not None and got <= 0.1, f"Pi: confirmed after {got} s"
+        globals()["is_dark"] = lambda: True
+        assert run(2, [True], ai=True) is None and run(2, [True, True], ai=True) == 1, "night: 2 AI results"
+        globals()["is_dark"] = dk0
         # reasons: wind from the wind meter / simulator, switch «nachts strenger» off = as before
         TWI["on"] = True; STATE["storm"] = {"wind": 55.0, "gust": 70.0}
         assert strict_update() == 3 and STRICT["why"] == "dusk + wind"

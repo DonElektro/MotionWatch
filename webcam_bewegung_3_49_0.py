@@ -33867,6 +33867,7 @@ FOG_ON_S, FOG_OFF_S = 10.0, 30.0          # fog comes and goes in minutes; 10 s:
 TWI_NOISE_K = 1.6                         # noise dusk / day in the test: 1.8-2.2 (three places); rain 0.85, snow 0.6
 WIND_MEAN_KMH, WIND_GUST_KMH = 20.0, 39.0  # Beaufort 4 (20-28 km/h): twigs move; Beaufort 6 (39-49 km/h): big branches move
 WIND_RECENT_S, WIND_GUST_N = 120.0, 2     # real-erkennung-fix: only the last 2 min, a gust must come at least twice
+STRICT_NIGHT_AI = True                     # real-erkennung-2 (Test 3: fox / deer / empty picture at night = «Person?» at once)
 STRICT_AI_UPRIGHT = 1.2                    # real-erkennung-fix: only an upright AI person (h >= 1.2 w) is reported at once; a wide one
                                            # (boar, fox: the AI calls them «person» at night) still needs 2-3 AI results in a row
 
@@ -34095,6 +34096,11 @@ def strict_gate(w, t, walking, t0):
         t._sg = None
         return walking
     up = float(t.box[3]) >= STRICT_AI_UPRIGHT * float(t.box[2]) if getattr(t, "box", None) else True
+    if up and STRICT_NIGHT_AI:                               # real-erkennung-2: at night (infrared) the AI calls fox / deer / a lit
+        try:                                                 # trunk «person» more often - there 2 AI results in a row as before
+            up = not is_dark()
+        except Exception:
+            pass
     if walking and t.ai_confirmed and up:                    # real-erkennung-fix: the AI sees an upright person - at once («Person?»)
         if not getattr(t, "_strict_maybe", False):
             t._strict_maybe = True
@@ -34205,7 +34211,8 @@ def fog_selftest():
         n0 = picture_noise(cv2.cvtColor(day, cv2.COLOR_BGR2GRAY))
         noisy = cv2.add(dusk, rng.randint(0, 22, dusk.shape).astype(np.uint8))
         assert picture_noise(cv2.cvtColor(noisy, cv2.COLOR_BGR2GRAY)) > 1.6 * n0
-        # strict gate: hits in a row
+        # strict gate: hits in a row (by day; real-erkennung-2: at night an AI person needs AI results in a row again)
+        dk0 = globals()["is_dark"]; globals()["is_dark"] = lambda: False
         class _T:
             def __init__(s):
                 s.is_person = False; s.ai_confirmed = False; s.id = 1
@@ -34255,6 +34262,9 @@ def fog_selftest():
             if strict_gate(w, tr_, True, t_):
                 got = t_ - 6000.0; break
         assert got is not None and got <= 0.1, f"Pi: confirmed after {got} s"
+        globals()["is_dark"] = lambda: True
+        assert run(2, [True], ai=True) is None and run(2, [True, True], ai=True) == 1, "night: 2 AI results"
+        globals()["is_dark"] = dk0
         # reasons: wind from the wind meter / simulator, switch «nachts strenger» off = as before
         TWI["on"] = True; STATE["storm"] = {"wind": 55.0, "gust": 70.0}
         assert strict_update() == 3 and STRICT["why"] == "dusk + wind"
@@ -35961,6 +35971,15 @@ CRAWL_GAP_S = 2.0        # Lücken bis 2 s gehören dazu (das Wärmebild meldet 
 CRAWL_SAME = 0.2         # «dieselbe Stelle»: Mitte / Fusspunkt höchstens 0.2 Bildbreite / -höhe vom letzten Bild entfernt
 CRAWL_ESC_TOP_M = 0.85   # «Person?» nur niedrig: robbend 0.3-0.5 m, auf Knien ~0.75 m; Reh mit Kopf 0.9-1.1 m, Wildschwein 0.8-0.95 m
 CRAWL_REPEAT_S = 30.0    # ein neuer Voralarm (Protokoll / Push) frühestens nach 30 s Ruhe - nicht in jedem Bild
+# real-erkennung-2 (Erkennungstest 3: Kriechende nur 4/12, tags fast nie - die KI kennt liegende Menschen kaum, die Bewegung
+# allein ist «breit und flach» = kein Person): die Regel gilt jetzt auch TAGS, dann aber ohne Voralarm (tags würde jedes Reh
+# einen Push geben) - nur «Person?» nach CRAWL_ESC_S, mit denselben Grenzen (lang, niedrig, warm, bewegt, nah).
+# Und: nennt die KI das Kriechende «sheep / cow / horse / bear» (grosse Tiere), ist es trotzdem «Person?», wenn es sehr niedrig
+# (oberer Rand unter CRAWL_BIG_LOW_M) und lang (CRAWL_BIG_LEN_M) ist - ein Schaf / eine Kuh / ein Pferd ist 0.7-1.6 m hoch.
+CRAWL_DAY = True
+CRAWL_BIG_LOW_M = 0.6
+CRAWL_BIG_LEN_M = 1.2
+CRAWL_BIG_ANIMALS = ("sheep", "cow", "horse", "bear", "elephant", "zebra", "giraffe")
 CRAWL = {"since": 0.0, "last": 0.0, "pos": None, "d0": None, "esc": False, "long": False, "said": 0.0, "push_t": 0.0, "n_pre": 0, "n_esc": 0, "info": None}
 CRAWL_PK_TITLE = ("⚠", "Something big at the ground", "info", True)    # (symbol, short title, class, picture) for 635b PK_TITLES
 
@@ -36032,13 +36051,13 @@ def crawl_feed(warm_boxes, tracks, animals, person_boxes, present, frame, pw, ph
     if not warm_boxes:
         return []
     night = _foot_night()
-    if not night:
+    if not night and not CRAWL_DAY:
         return []
     if person_boxes:                                     # a person elsewhere (maybe a fixed false one): only the warm bodies beside it
         pb = [(b[0] / pw, b[1] / ph, b[2] / pw, b[3] / ph) for b in person_boxes]
         warm_boxes = [b for b in warm_boxes if not any(_ov(b, q) > 0.3 for q in pb)]
     mv = [(t.box[0] / pw, t.box[1] / ph, t.box[2] / pw, t.box[3] / ph) for t in tracks if getattr(t, "box", None) and not getattr(t, "lost", 0)]
-    an = [(o[0] / pw, o[1] / ph, o[2] / pw, o[3] / ph) for o in animals or []]
+    an = [(o[0] / pw, o[1] / ph, o[2] / pw, o[3] / ph, COCO_LABELS.get(o[5], "animal") if len(o) > 5 else "animal") for o in animals or []]
     best = None
     for b in warm_boxes:
         moving = any(_ov(b, q) > 0.3 for q in mv)
@@ -36051,12 +36070,16 @@ def crawl_feed(warm_boxes, tracks, animals, person_boxes, present, frame, pw, ph
         if m is None:
             continue
         if best is None or m["len"] > best[1]["len"]:
-            best = (b, m, any(_ov(b, q) > 0.3 for q in an))
+            best = (b, m, [q[4] for q in an if _ov(b, q[:4]) > 0.3])
     if best is None:
         return []
-    b, m, animal = best
-    c = crawl_decide(m, b, night, True, t0, CRAWL, animal)
-    if c is None:
+    b, m, kinds = best
+    animal = bool(kinds)
+    if animal and all(k in CRAWL_BIG_ANIMALS for k in kinds) and m["top"] is not None and m["top"] <= CRAWL_BIG_LOW_M \
+            and m["len"] >= CRAWL_BIG_LEN_M:
+        animal = False                                   # real-erkennung-2: «sheep» lying flat and long = a crawling person
+    c = crawl_decide(m, b, True, True, t0, CRAWL, animal)
+    if c is None or (c == "pre" and not night):          # real-erkennung-2: by day no Voralarm, only «Person?»
         return []
     CRAWL["info"] = {"d": round(m["d"], 1), "len": round(m["len"], 2), "top": None if m["top"] is None else round(m["top"], 2), "cut": m["cut"], "what": c}
     bx, by, bw, bh = b

@@ -48,6 +48,15 @@ CRAWL_GAP_S = 2.0        # Lücken bis 2 s gehören dazu (das Wärmebild meldet 
 CRAWL_SAME = 0.2         # «dieselbe Stelle»: Mitte / Fusspunkt höchstens 0.2 Bildbreite / -höhe vom letzten Bild entfernt
 CRAWL_ESC_TOP_M = 0.85   # «Person?» nur niedrig: robbend 0.3-0.5 m, auf Knien ~0.75 m; Reh mit Kopf 0.9-1.1 m, Wildschwein 0.8-0.95 m
 CRAWL_REPEAT_S = 30.0    # ein neuer Voralarm (Protokoll / Push) frühestens nach 30 s Ruhe - nicht in jedem Bild
+# real-erkennung-2 (Erkennungstest 3: Kriechende nur 4/12, tags fast nie - die KI kennt liegende Menschen kaum, die Bewegung
+# allein ist «breit und flach» = kein Person): die Regel gilt jetzt auch TAGS, dann aber ohne Voralarm (tags würde jedes Reh
+# einen Push geben) - nur «Person?» nach CRAWL_ESC_S, mit denselben Grenzen (lang, niedrig, warm, bewegt, nah).
+# Und: nennt die KI das Kriechende «sheep / cow / horse / bear» (grosse Tiere), ist es trotzdem «Person?», wenn es sehr niedrig
+# (oberer Rand unter CRAWL_BIG_LOW_M) und lang (CRAWL_BIG_LEN_M) ist - ein Schaf / eine Kuh / ein Pferd ist 0.7-1.6 m hoch.
+CRAWL_DAY = True
+CRAWL_BIG_LOW_M = 0.6
+CRAWL_BIG_LEN_M = 1.2
+CRAWL_BIG_ANIMALS = ("sheep", "cow", "horse", "bear", "elephant", "zebra", "giraffe")
 CRAWL = {"since": 0.0, "last": 0.0, "pos": None, "d0": None, "esc": False, "long": False, "said": 0.0, "push_t": 0.0, "n_pre": 0, "n_esc": 0, "info": None}
 CRAWL_PK_TITLE = ("⚠", "Something big at the ground", "info", True)    # (symbol, short title, class, picture) for 635b PK_TITLES
 
@@ -119,13 +128,13 @@ def crawl_feed(warm_boxes, tracks, animals, person_boxes, present, frame, pw, ph
     if not warm_boxes:
         return []
     night = _foot_night()
-    if not night:
+    if not night and not CRAWL_DAY:
         return []
     if person_boxes:                                     # a person elsewhere (maybe a fixed false one): only the warm bodies beside it
         pb = [(b[0] / pw, b[1] / ph, b[2] / pw, b[3] / ph) for b in person_boxes]
         warm_boxes = [b for b in warm_boxes if not any(_ov(b, q) > 0.3 for q in pb)]
     mv = [(t.box[0] / pw, t.box[1] / ph, t.box[2] / pw, t.box[3] / ph) for t in tracks if getattr(t, "box", None) and not getattr(t, "lost", 0)]
-    an = [(o[0] / pw, o[1] / ph, o[2] / pw, o[3] / ph) for o in animals or []]
+    an = [(o[0] / pw, o[1] / ph, o[2] / pw, o[3] / ph, COCO_LABELS.get(o[5], "animal") if len(o) > 5 else "animal") for o in animals or []]
     best = None
     for b in warm_boxes:
         moving = any(_ov(b, q) > 0.3 for q in mv)
@@ -138,12 +147,16 @@ def crawl_feed(warm_boxes, tracks, animals, person_boxes, present, frame, pw, ph
         if m is None:
             continue
         if best is None or m["len"] > best[1]["len"]:
-            best = (b, m, any(_ov(b, q) > 0.3 for q in an))
+            best = (b, m, [q[4] for q in an if _ov(b, q[:4]) > 0.3])
     if best is None:
         return []
-    b, m, animal = best
-    c = crawl_decide(m, b, night, True, t0, CRAWL, animal)
-    if c is None:
+    b, m, kinds = best
+    animal = bool(kinds)
+    if animal and all(k in CRAWL_BIG_ANIMALS for k in kinds) and m["top"] is not None and m["top"] <= CRAWL_BIG_LOW_M \
+            and m["len"] >= CRAWL_BIG_LEN_M:
+        animal = False                                   # real-erkennung-2: «sheep» lying flat and long = a crawling person
+    c = crawl_decide(m, b, True, True, t0, CRAWL, animal)
+    if c is None or (c == "pre" and not night):          # real-erkennung-2: by day no Voralarm, only «Person?»
         return []
     CRAWL["info"] = {"d": round(m["d"], 1), "len": round(m["len"], 2), "top": None if m["top"] is None else round(m["top"], 2), "cut": m["cut"], "what": c}
     bx, by, bw, bh = b
