@@ -4,10 +4,10 @@ Stand: 02.11.2026 · Version **3.49.0** · MoveEye **3.49.0** (ab 3.0.0 eine gem
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
-## NEU in 3.49.0 (MoveEye 3.49.0): Erkennung (MoveEye Teile 190, 410, 411, 418, 577; Werkzeuge in `erkennungstest4/`)
+## NEU in 3.49.0 (MoveEye 3.49.0): Erkennung (MoveEye Teile 190, 410, 411, 418, 577)
 
 - Auto-Tune gedeckelt, Wind-Regel nur letzte 2 Min., aufrechte KI-Person sofort «Person?» (nie «Tier»), Scheinwerfer nachts
-  keine Person, Nachlauf des Kopfs beim Verfolgen. Test 3: Personen 42 % → 69 %, Kinder 92 % (erkennungstest4/bericht3.md).
+  keine Person, Nachlauf des Kopfs beim Verfolgen. Test 3: Personen 42 % → 69 %, Kinder 92 %.
 
 ## NEU in 3.48.1 (MoveEye 3.48.1): Werkstatt wie MoveEye (`scripts/werkstatt_einzel.gd`, `werkstatt.gd`)
 
