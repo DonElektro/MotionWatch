@@ -47,7 +47,7 @@ command -v openssl >/dev/null || stopp "openssl fehlt (Linux: sudo apt install o
 # Paketliste: user-data und erststart.sh (Nachinstallieren nach einem Abbruch) müssen gleich sein
 PK_UD="$(awk '/^  packages:/ { p = 1; next } p && /^    - / { print $2; next } p { exit }' "$VORLAGE" | sort | tr '\n' ' ')"
 PK_ES="$(sed -n '/^PAKETE=(/,/)/p' "$ERSTSTART" | tr -d '()' | sed 's/^PAKETE=//' | tr -s ' \t' '\n' | grep -v '^$' | sort | tr '\n' ' ')"
-[ -n "$PK_UD" ] && [ "$PK_UD" = "$PK_ES" ] || stopp "Paketliste in user-data und erststart.sh (PAKETE) ungleich: «$PK_UD» / «$PK_ES»"
+if [ -z "$PK_UD" ] || [ "$PK_UD" != "$PK_ES" ]; then stopp "Paketliste in user-data und erststart.sh (PAKETE) ungleich: «$PK_UD» / «$PK_ES»"; fi
 if [ -z "$NUR_DATEIEN" ]; then
 	command -v xorriso >/dev/null || stopp "xorriso fehlt: sudo apt install xorriso"
 fi
