@@ -42,6 +42,8 @@ FIX_WALK_AFTER_S = 5.0
 FIX_ANIMAL_MEM_S = 4.0      # an animal of the AI is remembered 4 s on its place (the AI runs only now and then; a new track there inherits it)
 FIX_ANIMAL_AI_S = 1.0       # an animal track becomes a person only when the AI says «person» on it for 1 s (≥ 2 runs of the AI on
                             # the Pi, 0.3 … 0.6 s apart) and no animal in that time: one wrong «person» of a dog is not enough
+FIX_CRAWL_W, FIX_CRAWL_H = 0.6, 0.4   # real-erkennung-2: «kriechend»: so lang wie 0.6 und höchstens 0.4 einer stehenden Person dort
+                            # (Kriechende 0.7-1.1 / 0.2-0.3; Fuchs, Hund, Katze kürzer; Reh, Wildschwein, Schaf höher)
 FIX_ANIMAL_CHILD_H = 0.5   # real-erkennung-2: an upright AI person with an animal on it: at least half a standing person high
 FIX_ANIMAL_UPRIGHT = 1.3    # real-erkennung-fix (Kinder 5/12 im Erkennungstest 2): the AI says «person» and the box stands upright
                             # (height >= 1.3 x width, like the thermal person check 232) -> a person at once, also when an animal of
@@ -305,7 +307,21 @@ def animal_track_decide(t, ai_person, animal_cls, t0, ph=0):
         upright = float(t.box[3]) >= FIX_ANIMAL_UPRIGHT * float(t.box[2])
     except (AttributeError, IndexError, TypeError, ValueError):
         upright = False
-    if ai_person and upright and animal_cls:                 # real-erkennung-2 (Test 3: Reh, Katze «Person»): when an animal
+    crawl_like = False                                       # real-erkennung-2 (Test 3: Kriechende als «teddy bear / sheep / dog»):
+    if ai_person and not upright and ph:                     # long and low like a crawling person (1.2-1.9 m long, 0.3-0.5 m high)
+        try:
+            e = size_expected(t.box, ph)
+        except Exception:
+            e = None
+        crawl_like = bool(e) and float(t.box[2]) >= FIX_CRAWL_W * e * ph and float(t.box[3]) <= FIX_CRAWL_H * e * ph
+    if ai_person and crawl_like and animal_cls:              # the AI says «person» on it for FIX_ANIMAL_AI_S: a person
+        if not getattr(t, "up_p_since", 0.0):
+            t.up_p_since = t0
+        if t0 - t.up_p_since >= FIX_ANIMAL_AI_S:
+            upright = True
+    if ai_person and crawl_like and not animal_cls:
+        upright = True
+    if ai_person and upright and animal_cls and not crawl_like:   # real-erkennung-2 (Test 3: Reh, Katze «Person»): when an animal
         try:                                                 # lies on it too, the box must have at least half the height of a
             e = size_expected(t.box, ph) if ph else None     # standing person there (child 1.1 m = 0.63; cat, fox, hare: < 0.35)
         except Exception:
