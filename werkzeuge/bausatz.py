@@ -758,6 +758,7 @@ def liesmich(ver, sprachen, signiert):
         "1_Anleitung      Bauanleitung (PDF): MoveEye_Bauanleitung_%s_de.pdf" % ver + ("; dazu " + ", ".join(s for s in sprachen if s != "de") if len(sprachen) > 1 else ""),
         "%s   3D-Druck Gehäuse v5.2 (3MF), Kurzanleitung LIESMICH_Druck.txt" % druck_ordner(ver),
         "3_Bestellliste   Teile je Paket (Basis / Komplett / Autark) als CSV, Preise geschätzt",
+        "MoveEye_Werkstatt_%s.html   die Werkstatt «Bauen» mit 3D (Doppelklick, offline im Browser)" % ver,
         "4_Software       MoveEye für den Raspberry Pi 5 (%s), Anleitung INSTALLATION.txt" % ("signiert" if signiert else "NICHT signiert, Testpaket"),
         "", "Anfangen: Anleitung lesen, Paket wählen, Teile bestellen, drucken, bauen, Software einrichten.",
         "Projekt: https://github.com/DonElektro/MotionWatch", ""])
@@ -814,6 +815,14 @@ def main():
         z.write(os.path.join(R, "werkzeuge", "einrichten.sh"), sw + "werkzeuge/einrichten.sh")
         z.write(os.path.join(R, "docs", "Einrichtung_Raspberry_Pi.md"), sw + "Einrichtung_Raspberry_Pi.md")
         w("4_Software/INSTALLATION.txt", installation_txt(B, ver, os.path.basename(py), os.path.basename(zd), signiert))
+        try:                                            # real-werkstatt-standalone: die Werkstatt «Bauen» als eine HTML-Datei
+            sys.path.insert(0, os.path.join(R, "werkzeuge"))
+            import werkstatt_html
+            wv, wh = werkstatt_html.bauen(py)
+            w("MoveEye_Werkstatt_%s.html" % wv, wh)
+            print("  Werkstatt: MoveEye_Werkstatt_%s.html (%.1f MB)" % (wv, len(wh.encode("utf-8")) / 1e6))
+        except BaseException as e:                       # das Paket entsteht trotzdem (die Werkstatt hat ihren eigenen Test)
+            print("  WARNUNG Werkstatt nicht beigelegt: %s" % str(e)[-300:])
     print("  %s: %.1f MB (%.0f s)" % (os.path.basename(zp), os.path.getsize(zp) / 1e6, time.time() - t0))
     if a.fest:
         shutil.copyfile(zp, os.path.join(a.aus, "MoveEye_Bausatz.zip"))

@@ -82,7 +82,10 @@ FERTIG_JS = r"""
   function paint() {
     box.textContent = "";
     const r1 = mk("div", "fkr"), r2 = mk("div", "fkr");
-    r1.append(mk("span", "fki", FK.emoji || "🛒"), mk("span", "fkt", FT("hint")));
+    const OFF = !window.mwOrder && window.MW_OFFLINE;   // the offline file (639w geh_page(off)): request on the homepage, link only when set
+    const ht = mk("span", "fkt", OFF ? t("Ready-made? Request on the MoveEye homepage") : FT("hint"));
+    if (OFF && OFF.home) { ht.textContent = ""; const a = mk("a", "", t("Ready-made? Request on the MoveEye homepage")); a.href = OFF.home; a.target = "_blank"; a.rel = "noopener"; ht.appendChild(a); }
+    r1.append(mk("span", "fki", FK.emoji || "🛒"), ht);
     const sg = mk("span", "seg"); sg.setAttribute("role", "group"); sg.setAttribute("aria-label", FT("package"));
     PS.forEach(p => { const b = mk("button", p.id === pkg ? "on" : "", L5(p.names)); b.type = "button"; b.title = L5(p.desc); b.dataset.pkg = p.id;
       b.setAttribute("aria-pressed", p.id === pkg ? "true" : "false");
@@ -91,6 +94,7 @@ FERTIG_JS = r"""
     const ds = mk("span", "mut", [L5(cur.desc), FT("price")].filter(Boolean).join(" · ")); ds.id = "g-fk-desc";
     const ob = mk("button", "sec", FT("button")); ob.type = "button"; ob.id = "g-fk-btn";
     ob.onclick = () => { if (window.mwOrder) window.mwOrder(pkg); else location.hash = "#order"; };
+    if (!window.mwOrder && window.MW_OFFLINE) ob.hidden = true;   // the offline file (639w geh_page(off)): no feedback to the Pi
     r2.append(sg, ds, ob); box.append(r1, r2); box.hidden = false;
   }
   const ai = window.applyI18n;                         // the language changes: the hint follows

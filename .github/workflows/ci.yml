@@ -28,7 +28,7 @@ jobs:
   # ---------------------------------------------------------------- MoveEye
   moveeye:
     name: MoveEye · bauen --pruefen + Selbsttest
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -57,7 +57,7 @@ jobs:
 
   moveeye-web:
     name: MoveEye · Web-Rauchtest + Browser (Playwright)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -84,6 +84,9 @@ jobs:
       - name: Web-Rauchtest (alle Adressen ohne / mit Anmeldung, jede Seite im Browser)
         timeout-minutes: 15
         run: python3 werkzeuge/web_rauchtest.py --browser
+      - name: Werkstatt offline (eine HTML-Datei, file://, Netz gesperrt, keine JS-Fehler, Modell, Reiter)
+        timeout-minutes: 6
+        run: python3 werkzeuge/werkstatt_html.py --aus /tmp/werkstatt --test --bilder /tmp/werkstatt && ls -la /tmp/werkstatt
       - name: Selbstbau-Paket (bausatz.py, nur Deutsch, ohne Signaturprüfung)
         timeout-minutes: 5
         run: python3 werkzeuge/bausatz.py --sprachen de --unsigniert --aus /tmp/bausatz && ls -la /tmp/bausatz
@@ -91,7 +94,7 @@ jobs:
   # ---------------------------------------------------------------- Simulator
   sim-texte:
     name: Simulator · sim_texte.py --pruefen
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
@@ -101,9 +104,32 @@ jobs:
             werkzeuge
       - run: python3 werkzeuge/sim_texte.py --pruefen
 
+  # ---------------------------------------------------------------- USB-Installer (Simulator-PC neu aufsetzen)
+  usb-installer:
+    name: USB-Installer · ${{ matrix.pruefung }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        pruefung: ["statisch", "pakete ubuntu:24.04", "pakete ubuntu:26.04", "retten ubuntu:24.04", "retten ubuntu:26.04"]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: werkzeuge/usb_installer
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Pakete
+        run: pip install -q pyyaml jsonschema
+      - name: pruefen.sh ${{ matrix.pruefung }}
+        env:
+          P: ${{ matrix.pruefung }}
+        run: bash werkzeuge/usb_installer/pruefen.sh $P
+
   sim-liste:
     name: Simulator · Testliste
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       tests: ${{ steps.l.outputs.tests }}
     steps:
@@ -118,7 +144,7 @@ jobs:
   sim:
     name: Simulator · ${{ matrix.test }}
     needs: sim-liste
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
     strategy:
       fail-fast: false
@@ -203,7 +229,7 @@ jobs:
       github.ref == 'refs/heads/main' || github.ref == 'refs/heads/integration' ||
       (github.event_name == 'workflow_dispatch' && github.event.inputs.export != 'false') ||
       contains(github.event.head_commit.message, '[export]')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 40
     strategy:
       fail-fast: false
