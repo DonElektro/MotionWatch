@@ -63,7 +63,7 @@ func lage(id: String) -> Dictionary:
 
 
 func plates() -> Array:
-	return (dl.get("platten", {}) as Dictionary).get("v52" if w.v52 else "v51", [])
+	return (dl.get("platten", {}) as Dictionary).get("v53" if w.v53 else "v52" if w.v52 else "v51", [])
 
 
 # ---- the card of the part, below the 3D picture (like MoveEye: under the picture, not in the side panel) --------------------
@@ -284,7 +284,7 @@ func paint() -> void:
 func _make_boxes(pl: Dictionary) -> void:
 	if _boxes == null:
 		return
-	var key := ("v52" if w.v52 else "v51") + ":" + str(pl.get("name", ""))
+	var key := ("v53" if w.v53 else "v52" if w.v52 else "v51") + ":" + str(pl.get("name", ""))
 	if key == _box_key:
 		return
 	_box_key = key
@@ -412,7 +412,7 @@ func _inset() -> void:
 			mi.mesh = (w.parts[id]["mi"] as MeshInstance3D).mesh
 			_inset_world.add_child(mi)
 			_inset_mis[id] = mi
-	var key := solo + ":" + str(w.v52) + str(w.inner)
+	var key := solo + ":" + str(w.v52) + str(w.v53) + str(w.inner)
 	if key != _inset_key:
 		_inset_key = key
 		var s0: int = w.step
@@ -432,7 +432,7 @@ func _druck(datei: String) -> Dictionary:
 	var any := {}
 	for p in DATA.BAU.get("druck", {}).get("teile", []):
 		if str(p.get("datei", "")) == datei:
-			if w._ok(p.get("wenn")):
+			if w._okp(p):
 				return p
 			any = p
 	return any
@@ -443,6 +443,9 @@ func pfile(datei: String) -> String:
 	var all: Array = DATA.BAU.get("druckdateien_einzeln", [])
 	var f1 := "MoveEye_v5-1_" + datei + ".3mf"
 	var f2 := "v5-2/MoveEye_v5-2_" + datei + ".3mf"
+	var f3 := "v5-3/MoveEye_v5-3_" + datei + ".3mf"       # real-gehaeuse-v53
+	if f3 in all and (w.v53 or not (f2 in all or f1 in all)):
+		return f3
 	return f2 if f2 in all and (w.v52 or not (f1 in all)) else f1
 
 
@@ -616,7 +619,7 @@ func _side() -> void:
 			_btn(bv, T.t("Wo es hingehört") + " · " + T.t("Schritt %d von %d") % [int(rr[4]), DATA.SCHRITTE.size()], where, false, "pin")
 		_btn(bv, "↩ " + T.t("Zurück zum ganzen Modell"), func(): set_mode(""), true)
 	else:
-		v.add_child(_title(T.t("Druckplatten") + " · " + T.t("Gehäuse") + " v" + ("5.2" if w.v52 else "5.1"), "printer"))
+		v.add_child(_title(T.t("Druckplatten") + " · " + T.t("Gehäuse") + " v" + ("5.3" if w.v53 else "5.2" if w.v52 else "5.1"), "printer"))
 		var hb := HBoxContainer.new()
 		hb.add_theme_constant_override("separation", 6)
 		v.add_child(hb)
@@ -660,7 +663,7 @@ func _side() -> void:
 			v.add_child(lb2)
 		var pf := str(pl["datei"])
 		_btn(bv, "⬇ " + T.t("Platte herunterladen (3MF)"), func(): open_url("/build/datei/" + pf.uri_encode().replace("%2F", "/"), pf))
-		_btn(bv, "⬇ " + T.t("Alle Platten (ZIP mit Kurzanleitung)"), func(): open_url("/build/platten.zip?v=" + ("v52" if w.v52 else "v51") + "&lang=" + T.lang()))
+		_btn(bv, "⬇ " + T.t("Alle Platten (ZIP mit Kurzanleitung)"), func(): open_url("/build/platten.zip?v=" + ("v53" if w.v53 else "v52" if w.v52 else "v51") + "&lang=" + T.lang()))
 		_lbl(v, T.t("3MF in Bambu Studio öffnen (Datei → Öffnen): die Teile liegen schon richtig, ohne Stützen."), UI.MUT)
 		_btn(bv, "↩ " + T.t("Zurück zum ganzen Modell"), func(): set_mode(""), true)
 

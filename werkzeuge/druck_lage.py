@@ -37,7 +37,8 @@ GLB = os.path.join(ROOT, "simulator3d", "inhalte", "gehaeuse", "gehaeuse.glb")
 OUT_SIM = os.path.join(ROOT, "simulator3d", "inhalte", "gehaeuse", "druck_lage.json")
 OUT_MW = os.path.join(ROOT, "quelle", "639wb_daten_druck_lage.py")
 PLATTE_MM = 256
-VARIANTEN = {"v52": ("v5-2/", "v5-2/MoveEye_v5-2_"), "v51": ("", "MoveEye_v5-1_")}
+VARIANTEN = {"v52": ("v5-2/", "v5-2/MoveEye_v5-2_"), "v51": ("", "MoveEye_v5-1_"),
+             "v53": ("v5-3/", "v5-3/MoveEye_v5-3_")}          # real-gehaeuse-v53 (v5.3 baut auf v5.2 auf; Reihenfolge = Vorrang)
 
 
 def sha(p):
@@ -213,7 +214,7 @@ def rechnen():
     for var, (pre, pre1) in VARIANTEN.items():
         out = []
         for f in bau.get("druckdateien") or []:
-            if f.startswith("v5-2/") != (var == "v52"):
+            if (f.split("/")[0] + "/" if "/" in f else "") != pre:
                 continue
             items = []
             for nm, v, off in lies_3mf(os.path.join(DD, f)):
@@ -221,10 +222,13 @@ def rechnen():
                 cen = (v.max(0) + v.min(0)) / 2
                 datei = re.sub(r"_\d+$", "", nm) if not any(x.get("datei") == nm for x in teile) else nm
                 nr = re.search(r"_(\d+)$", nm)
-                cand = [x["id"] for x in teile if x.get("datei") == datei and (var == "v52" or x.get("art") != "v52") and not (var == "v51" and x.get("art") == "dev")]
-                if var == "v52":                       # in v5.2: the part of the variant (01_Unterteil_v52 -> tub52)
-                    c52 = [c for c in cand if next(x for x in teile if x["id"] == c).get("art") == "v52"]
-                    cand = c52 or cand
+                cand = [x["id"] for x in teile if x.get("datei") == datei and (var in ("v52", "v53") or x.get("art") != "v52")
+                        and (var == "v53" or x.get("art") != "v53") and not (var == "v51" and x.get("art") == "dev")]
+                for va in (("v53", "v52") if var == "v53" else ("v52",) if var == "v52" else ()):
+                    cv = [c for c in cand if next(x for x in teile if x["id"] == c).get("art") == va]   # the part of the variant (01_Unterteil_v52 -> tub52)
+                    if cv:
+                        cand = cv
+                        break
                 pid = ""
                 if cand:
                     pid = cand[int(nr.group(1)) - 1] if nr and datei != nm and len(cand) > 1 and int(nr.group(1)) <= len(cand) else cand[0]

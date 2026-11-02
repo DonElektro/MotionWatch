@@ -14,6 +14,8 @@ hardware/gehaeuse/bau.json (Teile, Materialliste, Montageschritte, Texte in de/e
                                                    #   /tmp/gehaeuse_dist) – dauert lange (Unterteil allein ca. 20–25 min)
     python3 werkzeuge/gehaeuse_bauen.py --druck52  # Variante v5.2: export52.py + plates52.py -> 3MF nach
                                                    #   hardware/gehaeuse/Druckdateien/v5-2/ (Unterteil allein ca. 30 min)
+    python3 werkzeuge/gehaeuse_bauen.py --druck53  # Variante v5.3 (real-gehaeuse-v53): export53.py + plates53.py -> 3MF nach
+                                                   #   hardware/gehaeuse/Druckdateien/v5-3/ (alle Teile, unveränderte als Kopie von v5.2)
     python3 werkzeuge/gehaeuse_bauen.py --3mf ORDNER  # die STL eines Ordners als einzelne, komprimierte 3MF nach
                                                    #   hardware/gehaeuse/Druckdateien/MoveEye_v5-1_<Teil>.3mf (nur numpy;
                                                    #   _2x / _4x: so viele Stück auf der Platte, Masse werden geprüft)
@@ -109,6 +111,14 @@ GEO = {
     "thplug": ("tilt", 0.2, 0.4, "#9a9ea3", False, 400, 3.0), "dsplug": ("base", 0.15, 0.3, "#9a9ea3", False, -60, 0.0),
     "rlplug": ("base", 0.2, 0.4, "#9a9ea3", False, 20, 1.6), "micplug": ("base", 0.12, 0.25, "#9a9ea3", False, 120, 1.0),
     "llplug": ("base", 0.12, 0.25, "#9a9ea3", False, 30, 1.6),
+    # real-gehaeuse-v53 (02.11.2026): Variante v5.3 aus v53.py – Unterteil mit Einsätzen, Akkuklappe, Einlass und Ösen; Deckel
+    # mit Öse im Kabelkamin; Füsse in den Ecken; Luftkanal auf dem Active Cooler; Halter Wand / Baum; Kamerakabel über dem Kanal
+    "tub53": ("base", 0.8, 3.5, "#3a73bf", True, 0, 0.0), "lid53": ("base", 0.8, 3.5, "#5999e6", True, 230, 0.0),
+    "hatch": ("base", 0.5, 2.5, "#9a9ea3", True, -45, 0.0), "duct": ("base", 0.4, 1.6, "#9a9ea3", False, 190, 0.3),
+    "holder": ("base", 0.8, 4.0, "#9a9ea3", False, -90, 0.0),
+    "feet53": ("base", 0.6, 2.0, "#333333", True, -35, 0.3), "feet53_2": ("base", 0.6, 2.0, "#333333", True, -35, 0.3),
+    "feet53_3": ("base", 0.6, 2.0, "#333333", True, -35, 0.3), "feet53_4": ("base", 0.6, 2.0, "#333333", True, -35, 0.3),
+    "cable_cam1_53": ("base", 0.7, 1.4, "#d9c27a", False, 165, 0.5), "cable_cam0_53": ("base", 0.7, 1.4, "#d9c27a", False, 280, 0.0),
 }
 AUSSEN_V52 = ("wide", "irled")      # in der Szene sichtbar, wenn v5.2 gewählt ist (Linse / IR-Modul im Fenster)
 LITE_K = 2.3                         # Lite: Zellen so viel grösser
@@ -213,6 +223,17 @@ def modell():
     info52 = {"lens_mm": [round(float(x), 2) for x in v52.WL], "tilt_deg": v52.WC_TILT, "ir_typ": v52.IR_TYP,
               "ir_mm": [0.0, v52.IRW_Y, v52.IRW_Z] if v52.IR_TYP != "5mm" else [0.0, v52.IR_Y, v52.IR_Z]}
     P["buttons"] = U(*[cyl_x(y, 33.0, LX - 12.0, LX + WALL + 3.0, 12.0) for y in (10.5, 50.5)])
+    # Variante v5.3 (v53.py): gleiche Koordinaten, ersetzt Unterteil v5.2, Deckel, Füsse und die Kamerakabel v5.2
+    import v53
+    P["tub53"] = v53.part_tub()
+    P["lid53"] = v53.part_lid()
+    P["hatch"] = v53.part_hatch()
+    P["duct"] = v53.part_duct()
+    P["holder"] = v53.part_holder()
+    for k, (fx, fy) in zip(("feet53", "feet53_2", "feet53_3", "feet53_4"), v53.FEET53):
+        P[k] = T([fx, fy, -6.0], v5.part_feet())
+    P["cable_cam1_53"] = v52.kabel(v53.cable_cam1_pts())
+    P["cable_cam0_53"] = v52.kabel(v53.cable_cam0_pts())
 
     def tilt_frame(n):
         return T([AX, AY, v5.PAN_Z0], R([0, 0, 180.0], T([0, 0, pt.AXZ], n)))
@@ -403,6 +424,8 @@ def baue_sim(nur=None):
              "mitte": [round(float(x), 4) for x in (g.min(0) + g.max(0)) / 2], "groesse": [round(float(x), 4) for x in g.max(0) - g.min(0)]}
         if rowd[i].get("art") == "v52":
             e["variante"] = "5.2"
+        elif rowd[i].get("art") == "v53":
+            e["variante"] = "5.3"
         if rowd[i].get("ersetzt"):
             e["ersetzt"] = rowd[i]["ersetzt"]
         if rowd[i].get("ohne"):                          # nur sichtbar ohne dieses Teil (12 Blindstopfen: ohne Weitwinkel)
@@ -418,7 +441,7 @@ def baue_sim(nur=None):
         print(f"  {i:12s} {len(f):7d} -> {len(gf):6d} Dreiecke{'  Lite ' + str(e.get('dreiecke_lite')) if aussen else ''}  {time.time() - t0:5.1f}s", flush=True)
     for e in meta:                                       # Explosion (Werkstatt): Höhe + Streuung vom Mittelpunkt der Gruppe weg
         grp, _h, _c, _col, _a, lvl, spread = GEO[e["id"]]
-        if e.get("ersetzt") and e["id"] not in ("tub52", "head52", "plug52"):                     # v5.2: wie das ersetzte Teil auseinanderfliegen
+        if e.get("ersetzt") and e["id"] not in ("tub52", "head52", "plug52", "tub53", "lid53"):                     # v5.2: wie das ersetzte Teil auseinanderfliegen
             grp, _h, _c, _col, _a, lvl, spread = GEO[e["ersetzt"]]
         ax_ = [0.0, 0.0, tub_c[2]] if grp == "base" else [0.0, 0.0, 0.0]
         e["explosion"] = [round((e["mitte"][0] - ax_[0]) * spread, 4), round(lvl / 1000.0, 4), round((e["mitte"][2] - ax_[2]) * spread, 4)]
@@ -440,7 +463,10 @@ def baue_sim(nur=None):
                    "linse_m": [round(float(x), 4) for x in zu_godot(np.array([info["v52"]["lens_mm"]]), org)[0]],
                    "ir_m": [round(float(x), 4) for x in zu_godot(np.array([info["v52"]["ir_mm"]]), org)[0]],
                    "teile": [e["id"] for e in meta if e.get("variante") == "5.2"],
-                   "ersetzt": {e["id"]: e["ersetzt"] for e in meta if e.get("ersetzt")}},
+                   "ersetzt": {e["id"]: e["ersetzt"] for e in meta if e.get("ersetzt") and e.get("variante") != "5.3"}},
+           "v53": {"_hinweis": "Variante v5.3 (v53.py, baut auf v5.2 auf): Teile mit «variante» 5.3, «ersetzt» nennt das Teil von v5.2 / v5.1",
+                   "teile": [e["id"] for e in meta if e.get("variante") == "5.3"],
+                   "ersetzt": {e["id"]: e["ersetzt"] for e in meta if e.get("ersetzt") and e.get("variante") == "5.3"}},
            "farben": {"kopf": farben.get("kopf", ""), "kopf_teile": farben.get("kopf_teile", []),
                       "grau": farben.get("grau", ""), "grau_teile": farben.get("grau_teile", [])},
            "teile": meta}
@@ -494,10 +520,13 @@ def baue_texte():
             pairs[t["datei"]] = {Lg: t["datei"] for Lg in LANGS[1:]}
         nm = de(t["name"]) if t.get("name") else tx(bom[t["bom"]]["name"], "de")
         L.append(f"\t[{gd_str(t['id'])}, {gd_str(t['art'])}, {gd_str(nm)}, {gd_str(t.get('bom') or '')}, {int(t.get('schritt') or 0)}, {gd_str(t.get('datei', ''))}, {gd_str(t.get('ersetzt', ''))}],")
-    L += ["]", "# Montage: [Titel v5.2, Text v5.2, Titel v5.1, Text v5.1] (v5.2 = Standard; v5.1 für die Auswahl v5.1)", "const SCHRITTE := ["]
+    L += ["]", "# Montage: [Titel v5.2, Text v5.2, Titel v5.1, Text v5.1, Titel v5.3, Text v5.3] (v5.2 = Standard; v5.1 / v5.3 für",
+          "#          die Auswahl v5.1 / v5.3 – bau.json «v51» / «v53»)", "const SCHRITTE := ["]
     for s in bau["schritte"]:
         v1 = s.get("v51") or {"titel": s["titel"], "text": s["text"]}
-        L.append(f"\t[{gd_str(de(s['titel']))}, {gd_str(de(s['text']))}, {gd_str(de(v1['titel']))}, {gd_str(de(v1['text']))}],")
+        v3 = s.get("v53") or {"titel": s["titel"], "text": s["text"]}
+        L.append(f"\t[{gd_str(de(s['titel']))}, {gd_str(de(s['text']))}, {gd_str(de(v1['titel']))}, {gd_str(de(v1['text']))}, "
+                 f"{gd_str(de(v3['titel']))}, {gd_str(de(v3['text']))}],")
     L.append("]")
     # real-bauen: alles für «Bauen» (Varianten, Einkauf, Drucken, Werkzeug, Sicherheit, Verkabeln, Software, Inbetriebnahme,
     # Fehlersuche, Wartung) als ein Wörterbuch, Texte deutsch (T.t übersetzt), Kennungen bleiben
@@ -525,7 +554,7 @@ def baue_texte():
     # Variante Gehäuse v5.2 (bau.json «gehaeuse_v52»): Name, Teile, ersetzte Teile, Druckdateien, NACHMESSEN – Werkstatt / «Bauen»
     L.append("# Gehäuse-Varianten: id -> {name, teile, ersetzt, druckdateien, anleitung, hinweis, nachmessen (deutsch, T.t übersetzt)}")
     L.append("const GEHAEUSE_VARIANTEN := {")
-    for vid, v in (("v52", bau["gehaeuse_v52"]),) if bau.get("gehaeuse_v52") else ():
+    for vid, v in [(k[9:], bau[k]) for k in ("gehaeuse_v52", "gehaeuse_v53") if bau.get(k)]:
         d = {"name": de(v["name"]), "teile": v.get("teile", []), "ersetzt": v.get("ersetzt", {}),
              "druckdateien": v.get("druckdateien", []), "anleitung": v.get("anleitung", ""),
              "hinweis": de(v["hinweis"]) if v.get("hinweis") else "", "nachmessen": [de(x) for x in v.get("nachmessen", [])]}
@@ -560,7 +589,7 @@ def baue_texte():
     mw = {"version": bau["version"], "stand": bau["stand"], "masse": bau["masse"], "bom_gruppen": bau["bom_gruppen"],
           "bom": bau["bom"], "teile": [{k: t[k] for k in ("id", "art", "bom", "schritt", "name", "datei", "farbe", "ersetzt", "wenn", "ohne") if k in t} for t in bau["teile"]],
           "schritte": bau["schritte"], "druckdateien": bau.get("druckdateien", []), "github": bau.get("github", ""),
-          "gehaeuse_v52": bau.get("gehaeuse_v52", {}), "farben": bau.get("farben", {})}
+          "gehaeuse_v52": bau.get("gehaeuse_v52", {}), "gehaeuse_v53": bau.get("gehaeuse_v53", {}), "farben": bau.get("farben", {})}
     for k in BAU_KEYS:                                   # real-bauen: dazu alles für die Seite «Bauen»
         if k in bau:
             mw[k] = bau[k]
@@ -791,6 +820,47 @@ def baue_druck52(teile_sel):
     print("3MF ->", dd)
 
 
+def baue_druck53(teile_sel, fertig=None):
+    """Variante v5.3 (real-gehaeuse-v53): geänderte / neue Teile (export53.py) als einzelne 3MF, die Platten A / B / C (plates53.py)
+    und die unveränderten Teile von v5.2 unter neuem Namen (gleicher Inhalt) -> Druckdateien/v5-3/. fertig: ein Ordner, in dem
+    export53.py schon gelaufen ist (out53/*.stl, *.npz) – dann wird nicht neu gerechnet."""
+    import numpy as np
+    dd = os.path.join(GEH, "Druckdateien", "v5-3")
+    os.makedirs(dd, exist_ok=True)
+    w = None
+    if fertig:
+        q = fertig
+    else:
+        w = arbeitsordner()
+        q = os.path.join(w, "q")
+        os.makedirs(q)
+        for p in glob.glob(os.path.join(w, "*.py")):
+            shutil.move(p, q)
+        print("Arbeitsordner:", q, flush=True)
+        subprocess.run([sys.executable, "export53.py"] + list(teile_sel or []), cwd=q, check=True)
+    neu = set()
+    for p in sorted(glob.glob(os.path.join(q, "out53", "*.stl"))):
+        name = os.path.basename(p)[:-4]
+        tri = lies_stl(p)
+        out = os.path.join(dd, "MoveEye_v5-3_" + name + ".3mf")
+        nf, ext = schreibe_3mf_teil(out, name, tri, 4 if name.endswith("_4x") else 2 if name.endswith("_2x") else 1)
+        neu.add(name)
+        print(f"  {name:28s} {nf:7d} Dreiecke  {' × '.join('%.2f' % x for x in ext)} mm  {os.path.getsize(out) // 1024} KB")
+    sys.path.insert(0, QUELL)
+    ersetzt53 = {"01_Unterteil_v52", "02_Deckel_mit_Laufring"}          # in v5.3 durch 01_Unterteil_v53 / 02_Deckel_v53 ersetzt
+    for p in sorted(glob.glob(os.path.join(GEH, "Druckdateien", "v5-2", "MoveEye_v5-2_*.3mf"))):
+        name = os.path.basename(p)[len("MoveEye_v5-2_"):-4]
+        if name in ersetzt53:
+            continue
+        shutil.copyfile(p, os.path.join(dd, "MoveEye_v5-3_" + name + ".3mf"))   # gleicher Inhalt (Git speichert ihn nur einmal)
+    subprocess.run([sys.executable, "plates53.py"], cwd=q, check=True, env=dict(os.environ, GEH_DRUCKDATEIEN=os.path.join(GEH, "Druckdateien")))
+    for p in glob.glob(os.path.join(q, "out53", "*.3mf")):
+        shutil.copy(p, dd)
+    if w:
+        shutil.rmtree(w, ignore_errors=True)
+    print("3MF ->", dd)
+
+
 def baue_bilder():
     w = arbeitsordner()
     subprocess.run([sys.executable, "prev51.py"], cwd=w, check=True)
@@ -805,6 +875,8 @@ def main():
     ap.add_argument("--texte", action="store_true", help="nur Texte und Daten")
     ap.add_argument("--druck", nargs="*", metavar="NR", help="STL + 3MF neu (optional nur Teile, z. B. 06 07)")
     ap.add_argument("--druck52", nargs="*", metavar="NR", help="Variante v5.2: STL + 3MF (Standard 01 12) -> Druckdateien/v5-2/")
+    ap.add_argument("--druck53", nargs="*", metavar="NR", help="Variante v5.3: STL + 3MF (alle neuen Teile) -> Druckdateien/v5-3/")
+    ap.add_argument("--fertig", metavar="ORDNER", help="mit --druck53: Ordner, in dem export53.py schon gelaufen ist")
     ap.add_argument("--ziel", default="/tmp/gehaeuse_dist", help="Ordner für das STL-ZIP")
     ap.add_argument("--bilder", action="store_true", help="Vorschaubilder neu")
     ap.add_argument("--3mf", dest="dreimf", metavar="ORDNER", help="STL eines Ordners als einzelne 3MF")
@@ -820,11 +892,13 @@ def main():
         baue_druck(a.ziel, a.druck)
     if a.druck52 is not None:
         baue_druck52(a.druck52)
+    if a.druck53 is not None:
+        baue_druck53(a.druck53, a.fertig)
     if a.bilder:
         baue_bilder()
     if a.dreimf:
         baue_3mf(a.dreimf)
-    if a.pruefen or not (a.sim or a.texte or a.druck is not None or a.druck52 is not None or a.bilder or a.dreimf):
+    if a.pruefen or not (a.sim or a.texte or a.druck is not None or a.druck52 is not None or a.druck53 is not None or a.bilder or a.dreimf):
         return 0 if pruefen() else 1
     return 0
 

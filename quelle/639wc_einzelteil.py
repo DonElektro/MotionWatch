@@ -109,7 +109,7 @@ GEH_EINZEL_JS = r"""
 const DL = window.DL = /*GEHDL*/null, B = BV;
 Object.assign(B, {mode: "", solo: "", flat: false, plate: 0, inset: true, pdatei: "", whereText: ""});
 const FARBE = {orange: "orange", grau: "grey", natur: "natural / white", schwarz: "black"};
-const plates = () => ((DL || {}).platten || {})[isV52() ? "v52" : "v51"] || [];
+const plates = () => ((DL || {}).platten || {})[GVAR()] || [];   // real-gehaeuse-v53: v51 | v52 | v53
 const lage = id => ((DL || {}).lage || {})[id];
 const n1 = v => { const r = v >= 20 ? Math.round(v) : Math.round(v * 10) / 10; return String(r).replace(".", gL() === "en" ? "." : ","); };
 const dims = id => { const g = ((DL || {}).masse || {})[id]; return g ? g.map(n1).join(" × ") : ""; };
@@ -194,8 +194,8 @@ function plateInfo(box) {
     li.onclick = () => B.onPlateTap(it.id || it.teil || "", it.datei); ul.appendChild(li); });
   box.appendChild(ul);
   const lk = el("div", "lk btns"); lk.appendChild(fileLink(pl.datei, t("Download plate (3MF)")));
-  const z = fileLink("", t("All plates (ZIP with short guide)")); z.href = "/build/platten.zip?v=" + (isV52() ? "v52" : "v51") + "&lang=" + gL();
-  z.setAttribute("download", (isV52() ? "MoveEye_v5-2_Druckplatten_" : "MoveEye_v5-1_Druckplatten_") + (typeof GEH_VER === "string" ? GEH_VER : "") + ".zip");
+  const z = fileLink("", t("All plates (ZIP with short guide)")); z.href = "/build/platten.zip?v=" + GVAR() + "&lang=" + gL();
+  z.setAttribute("download", "MoveEye_v" + GVT().replace(".", "-") + "_Druckplatten_" + (typeof GEH_VER === "string" ? GEH_VER : "") + ".zip");
   if (GEH_OFF) { z.removeAttribute("download"); z.href = GEH_OFF.kit; z.textContent = "⬇ " + t("Complete kit package (GitHub)") + " 🌐"; }   // offline (639w): the plates are in the kit package
   lk.appendChild(z); box.appendChild(lk);
   if (GEH_OFF) box.appendChild(el("div", "mut", "🌐 " + t("Needs internet (GitHub)")));
@@ -241,7 +241,7 @@ const wh = document.createElement("button"); wh.type = "button"; wh.id = "v3d-wh
 wh.addEventListener("pointerdown", e => e.stopPropagation()); wh.addEventListener("pointerup", e => e.stopPropagation());
 wh.onclick = () => B.onWhere && B.onWhere();
 const touched = new Set();
-const plates = () => (LG.platten || {})[B.v52 ? "v52" : "v51"] || [];
+const plates = () => (LG.platten || {})[B.v53 ? "v53" : B.v52 ? "v52" : "v51"] || [];
 function lageM(id, dx, dz) {
   const L = (LG.lage || {})[id]; if (!L) return null;
   const r = L.r, t = L.t, m = new THREE.Matrix4();
@@ -251,7 +251,7 @@ function place(m, M) { touched.add(m); m.matrixAutoUpdate = false; m.matrix.copy
 function built(m) { m.matrixAutoUpdate = true; m.position.set(0, 0, 0); m.updateMatrix(); touched.delete(m); }
 X.reset = () => { [...touched].forEach(built); plateG.visible = false; bench.visible = true; wh.style.display = "none"; };
 function makeBoxes(pl) {
-  const key = (B.v52 ? "v52" : "v51") + ":" + (pl ? pl.name : "");
+  const key = (B.v53 ? "v53" : B.v52 ? "v52" : "v51") + ":" + (pl ? pl.name : "");
   if (key === boxKey) return; boxKey = key;
   boxes.children.slice().forEach(b => { b.geometry.dispose(); b.material.dispose(); boxes.remove(b); });
   if (!pl) return;
@@ -347,13 +347,13 @@ _geh_page_einzel_base = geh_page
 geh_page = _geh_page_einzel
 
 
-def geh_platten_zip(v52=True, lang="de", budget=None):
+def geh_platten_zip(var="v52", lang="de", budget=None):
     """the plates (3MF) of one case + LIESMICH_Druck.txt (short guide in the language), named with the version
     -> ("zip", name, bytes) | ("wait", done, total) | ("offline", reason, None). 3.48.0: like /build/alle.zip (real-download-fix,
     639w geh_druck_holen) - on the Pi without the repository MoveEye fetches the plates itself (cache, base names), no redirect"""
     import io
     import zipfile
-    var = "v52" if v52 else "v51"
+    var = "v52" if var is True else "v51" if var is False else var if var in GEH_VAR_DIR else "v52"   # real-gehaeuse-v53: v51 | v52 | v53
     fs = (GEH_DRUCK_LAGE.get("platten") or {}).get(var) or []
     if not fs:
         return "offline", "unknown", None
@@ -373,7 +373,7 @@ def geh_platten_zip(v52=True, lang="de", budget=None):
     L = lang if lang in ("de", "en", "fr", "it", "rm") else "de"
     T = lambda k: tr(k, L) if L != "en" else k
     nm = lambda dt: next((x["name"].get(L) or x["name"].get("de") for x in GEH_BAU.get("teile") or [] if x.get("datei") == dt and isinstance(x.get("name"), dict)), dt.replace("_", " "))
-    z = [T("MoveEye – print plates case v%s (as of MoveEye %s)") % ("5.2" if v52 else "5.1", APP_VERSION), "=" * 64, "",
+    z = [T("MoveEye – print plates case v%s (as of MoveEye %s)") % (GEH_VAR_TXT[var][1:], APP_VERSION), "=" * 64, "",
          T("Printer: Bambu Lab X2D (other printers work too), 0.4 mm nozzle, material PETG – dry it first."),
          T("No supports: all parts already lie right on the plate. Brim 5 mm only for head (06), yoke (04) and side cover (07)."),
          T("Colours: head parts orange (everything that turns or tilts), the rest grey; diffuser 14 natural/white, pupil ring 15 black."),
@@ -387,7 +387,7 @@ def geh_platten_zip(v52=True, lang="de", budget=None):
                 seen.append(s)
         z.append(T("Plate %s (%s): %s") % (p["name"], p["datei"].split("/")[-1], ", ".join(seen)))
     z += ["", T("Single parts and everything else: MoveEye → More → Build → Printing."), ""]
-    top_ = ("MoveEye_v5-2_Druckplatten_" if v52 else "MoveEye_v5-1_Druckplatten_") + APP_VERSION
+    top_ = "MoveEye_%s_Druckplatten_" % GEH_VAR_TXT[var].replace(".", "-") + APP_VERSION
     b = io.BytesIO()
     with zipfile.ZipFile(b, "w", zipfile.ZIP_STORED) as zf:
         zf.writestr(top_ + "/LIESMICH_Druck.txt", "﻿" + "\r\n".join(z))
@@ -405,12 +405,13 @@ def smalltv_routes(app, reply, body):                     # + 639wc: /build/plat
 
     @app.route("/build/platten.zip")
     def geh_platten_():
-        v52_ = request.args.get("v", "v52") != "v51"
+        v_ = request.args.get("v", "v52")
+        v_ = v_ if v_ in GEH_VAR_DIR else "v52"
         lg_ = str(request.args.get("lang") or "de")[:2]
-        st, a_, b_ = geh_platten_zip(v52_, lg_)
+        st, a_, b_ = geh_platten_zip(v_, lg_)
         if st == "zip":
             return Response(b_, mimetype="application/zip", headers={"Content-Disposition": f'attachment; filename="{a_}.zip"', "Cache-Control": "no-store"})
-        url = "/build/platten.zip?v=" + ("v52" if v52_ else "v51") + "&lang=" + lg_
+        url = "/build/platten.zip?v=" + v_ + "&lang=" + lg_
         if st == "wait":
             return Response(geh_dl_page(tr("The print files are being fetched from the internet (%d of %d). This page tries again by itself; you can also tap «Try again».") % (a_, b_), retry=url, refresh=15), 202, mimetype="text/html")
         return Response(geh_dl_page(tr("The print file is not on this MoveEye and could not be fetched from the internet (no connection?). Try again later, or load the complete kit package."), retry=url), 503, mimetype="text/html")
@@ -427,9 +428,9 @@ def geh_einzel_selftest():
     for t_ in GEH_BAU["teile"]:                   # every print part of the model knows how it lies on the plate
         if t_.get("datei") and t_["id"] in {e["id"] for e in BAU3D_MODELLE.get("teile", [])}:
             assert t_["id"] in D["lage"], ("print part without orientation", t_["id"])
-    for var in ("v52", "v51"):
+    for var in ("v52", "v51", "v53"):
         ps = D["platten"].get(var) or []
-        assert [p["datei"] for p in ps] == [f for f in GEH_BAU.get("druckdateien") or [] if f.startswith("v5-2/") == (var == "v52")], ("plates", var)
+        assert [p["datei"] for p in ps] == [f for f in GEH_BAU.get("druckdateien") or [] if (f.split("/")[0] + "/" if "/" in f else "") == GEH_VAR_DIR[var]], ("plates", var)
         for p in ps:
             for it in p["teile"]:
                 assert 0 <= it["x"] <= 256 and 0 <= it["y"] <= 256 and len(it["g"]) == 3, ("on the plate", var, it["o"])
@@ -460,8 +461,8 @@ def geh_einzel_selftest():
         assert st_ in ("wait", "offline"), st_
     if alt:                                               # a warning (like the build infos): the model changed after the data
         return "WARNING – gehaeuse.glb changed after werkzeuge/druck_lage.py – run it again (orientation on the plate)"
-    return "Build: single part view and print plates (%d parts with orientation, plates v5.2 %d / v5.1 %d)" % (
-        len(D["lage"]), len(D["platten"].get("v52") or []), len(D["platten"].get("v51") or []))
+    return "Build: single part view and print plates (%d parts with orientation, plates v5.2 %d / v5.1 %d / v5.3 %d)" % (
+        len(D["lage"]), len(D["platten"].get("v52") or []), len(D["platten"].get("v51") or []), len(D["platten"].get("v53") or []))
 
 
 SELFTEST_EXTRA.append(("Build: single part view, print plates (orientation from the 3MF, ZIP with short guide)", geh_einzel_selftest))

@@ -178,21 +178,29 @@ const gL = () => LANG || "en";
 const gx = v => v == null ? "" : typeof v === "string" ? v : (v[gL()] || (gL() === "rm" ? v.de : v.en) || v.de || "");
 const fmt = (s, ...a) => { let i = 0; return String(s).replace(/%[sd]/g, () => String(a[i++])); };
 const G = {tab: "uebersicht", step: 0, sel: "", node: "", var: Object.assign({}, GB.variante_standard || {}), done: new Set(), server: false};
-window.BV = {explode: 0, xray: false, inner: true, v52: G.var.gehaeuse === "v52", dev: G.var.akku === "entwicklung", step: 0, sel: "", api: null};   // real-v52-standard: v5.2 is the standard (bau.json variante_standard)
+window.BV = {explode: 0, xray: false, inner: true, v52: ["v52", "v53"].includes(G.var.gehaeuse), v53: G.var.gehaeuse === "v53", dev: G.var.akku === "entwicklung", step: 0, sel: "", api: null};   // real-v52-standard: v5.2 is the standard (bau.json variante_standard)
 function bv(what, a) { if (BV.api && BV.api[what]) BV.api[what](a); }
-const ok = w => !w || Object.values(G.var).includes(w);
+// real-gehaeuse-v53: v5.3 builds on v5.2 – «wenn: v52» holds for v5.3 too, «wenn: v53» only for v5.3
+const isV53 = () => G.var.gehaeuse === "v53";
+const ok = w => !w || Object.values(G.var).includes(w) || (w === "v52" && isV53());
+const okp = p => ok(p.wenn) && !(p.nicht && Object.values(G.var).includes(p.nicht));   // print parts: «nicht» = replaced in that variant
 const TEIL = {}; (GB.teile || []).forEach(x => TEIL[x.id] = x);
 const BOM = {}; (GB.bom || []).forEach(b => BOM[b.id] = b);
-const isV52 = () => G.var.gehaeuse === "v52";
+const isV52 = () => G.var.gehaeuse === "v52" || isV53();   // v5.2 or a version built on it (v5.3)
+const GDIR = () => isV53() ? "v5-3/" : isV52() ? "v5-2/" : "";          // the folder of the print files of the chosen case
+const GVT = () => isV53() ? "5.3" : isV52() ? "5.2" : "5.1";
+const GVAR = () => isV53() ? "v53" : isV52() ? "v52" : "v51";
+const dirOf = f => (String(f).match(/^v5-\d\//) || [""])[0];
 const GEH_VER = /*GEHVER*/"";                          // real-abgleich-v52: «Stand MoveEye X.Y.Z» from APP_VERSION (not in bau.json)
 // real-werkstatt-standalone: the same page as one file without the Pi (werkzeuge/werkstatt_html.py, geh_page(off=…)):
 // window.MW_OFFLINE = {raw, kit, glb} – no /api/…, «My build» only in this browser, print files and ZIPs from GitHub (internet)
 const GEH_OFF = window.MW_OFFLINE || null;
 // the texts of an assembly step: v5.2 (standard) or the v5.1 texts when v5.1 is chosen (bau.json «v51»)
-const sv = s => (!isV52() && s.v51) ? Object.assign({}, s, s.v51) : s;
+const sv = s => (isV53() && s.v53) ? Object.assign({}, s, s.v53) : (!isV52() && s.v51) ? Object.assign({}, s, s.v51) : s;
 // the 3MF of a print part: v5.2 -> Druckdateien/v5-2/ (also for parts that exist only there), else the v5.1 file
 function pfile(datei) {
-  const all = GB.druckdateien_einzeln || [], f1 = "MoveEye_v5-1_" + datei + ".3mf", f2 = "v5-2/MoveEye_v5-2_" + datei + ".3mf";
+  const all = GB.druckdateien_einzeln || [], f1 = "MoveEye_v5-1_" + datei + ".3mf", f2 = "v5-2/MoveEye_v5-2_" + datei + ".3mf", f3 = "v5-3/MoveEye_v5-3_" + datei + ".3mf";
+  if (all.includes(f3) && (isV53() || (!all.includes(f2) && !all.includes(f1)))) return f3;   // v5.3: Druckdateien/v5-3/
   return all.includes(f2) && (isV52() || !all.includes(f1)) ? f2 : f1;
 }
 const vname = w => { for (const v of GB.varianten || []) for (const o of v.werte) if (o.id === w) return gx(o.name); return w; };
@@ -216,7 +224,7 @@ async function gLoad() {
 function allIds() {
   const ids = [];
   (GB.bom || []).forEach(b => { if (ok(b.wenn) && !b.optional) ids.push("e:" + b.id); });
-  ((GB.druck || {}).teile || []).forEach(p => { if (ok(p.wenn)) ids.push("d:" + p.datei); });
+  ((GB.druck || {}).teile || []).forEach(p => { if (okp(p)) ids.push("d:" + p.datei); });
   (GB.schritte || []).forEach(s => ids.push("m:" + s.nr));
   (GB.extra_schritte || []).forEach((s, i) => { if (ok(s.wenn)) ids.push("x:" + i); });
   (((GB.verkabelung || {}).verbindungen) || []).forEach(v => { if (ok(v.wenn)) ids.push("k:" + v.id); });
@@ -273,7 +281,7 @@ function gTab(id) {
 function gSummary() {
   const box = document.getElementById("g-sum"); box.textContent = "";
   const bom = (GB.bom || []).filter(b => ok(b.wenn) && !b.optional);
-  const sum = bom.reduce((a, b) => a + (b.preis || 0), 0), hrs = ((GB.druck || {}).teile || []).filter(p => ok(p.wenn)).reduce((a, p) => a + p.zeit_h, 0);
+  const sum = bom.reduce((a, b) => a + (b.preis || 0), 0), hrs = ((GB.druck || {}).teile || []).filter(okp).reduce((a, p) => a + p.zeit_h, 0);
   [["teile", bom.length, t("Parts")], ["einkauf", "CHF " + chf(sum), t("Total (estimate)")], ["drucken", fmt(t("about %s h"), Math.round(hrs)), t("Print time")],
    ["montage", (GB.schritte || []).length, t("Assembly")], ["verkabeln", ((GB.verkabelung || {}).verbindungen || []).filter(v => ok(v.wenn)).length, t("Wiring")]].forEach(([tab, v, k]) => {
     const b = el("button"); b.type = "button"; b.append(el("b", "", String(v)), el("small", "", k)); b.onclick = () => gTab(tab); box.appendChild(b); });
@@ -314,7 +322,7 @@ function gCsv() {
   (GB.bom || []).filter(b => ok(b.wenn)).forEach(b => { const h = H[b.haendler] || {};
     rows.push([G.done.has("e:" + b.id) ? "x" : "", b.menge, gx(b.name), b.nr || "", b.preis != null ? chf(b.preis) : "", gx(b.alt), h.name || "", h.suche ? h.suche.replace("{q}", encodeURIComponent(b.suche || "")) : "", b.optional ? "x" : ""]); });
   const blob = new Blob(["﻿" + rows.map(r => r.map(q).join(";")).join("\r\n")], {type: "text/csv;charset=utf-8"});
-  const a = el("a"); a.href = URL.createObjectURL(blob); a.download = "MoveEye_Einkauf_v" + (isV52() ? "5.2" : GB.version) + (GEH_VER ? "_" + GEH_VER : "") + ".csv"; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  const a = el("a"); a.href = URL.createObjectURL(blob); a.download = "MoveEye_Einkauf_v" + GVT() + (GEH_VER ? "_" + GEH_VER : "") + ".csv"; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
 }
 // real-download-fix: a normal link (no fetch, no «download» attribute - the iPhone only half supports it); each part of the path
 // coded by itself (v5-2/… stays a folder); MoveEye sends the file itself with Content-Disposition and the base name
@@ -323,7 +331,7 @@ function gPrint() {
   const D = GB.druck || {}, tb = document.getElementById("g-print"); tb.textContent = "";
   const hd = el("tr"); ["", t("Part"), t("pcs"), t("Infill"), t("Walls"), t("Supports"), t("Layer"), t("lies on"), t("Print time"), ""].forEach((x, i) => hd.appendChild(el("th", i > 5 && i < 9 ? "hide-s" : "", x))); tb.appendChild(hd);
   let hrs = 0;
-  (D.teile || []).filter(p => ok(p.wenn)).forEach(p => {   // parts of a variant (e.g. v5.2) come from the data by themselves
+  (D.teile || []).filter(okp).forEach(p => {   // parts of a variant (e.g. v5.2) come from the data by themselves
     const tr = el("tr"), c0 = el("td"); c0.appendChild(chk("d:" + p.datei)); hrs += p.zeit_h;
     const nm = (GB.teile || []).find(x => x.datei === p.datei), dl = el("td", "lk"); dl.appendChild(fileLink(pfile(p.datei), "3MF"));
     tr.append(c0, el("td", "", nm ? gx(nm.name).replace(/^\d+ /, "") : p.datei), el("td", "q", "× " + p.stueck), el("td", "q", p.fuellung + " %"), el("td", "q", String(p.waende)),
@@ -333,16 +341,16 @@ function gPrint() {
   const tr = el("tr", "gh"), a = el("td", "", t("Print time") + ": " + fmt(t("about %s h"), Math.round(hrs * 10) / 10) + " · " + gx(D.zeit_hinweis)); a.colSpan = 10; tr.appendChild(a); tb.appendChild(tr);
   const ul = document.getElementById("g-phint"); ul.textContent = ""; (D.hinweise || []).forEach(h => ul.appendChild(el("li", "", gx(h))));
   const fl = document.getElementById("g-files"); fl.textContent = "";
-  const all = el("a", "", "⬇ " + t("All print files (ZIP)") + " · " + (isV52() ? "v5.2" : "v5.1")); all.href = "/build/alle.zip?var=" + (isV52() ? "v52" : "v51");
+  const all = el("a", "", "⬇ " + t("All print files (ZIP)") + " · v" + GVT()); all.href = "/build/alle.zip?var=" + GVAR();
   if (GEH_OFF) { all.textContent = "⬇ " + t("Complete kit package (GitHub)") + " 🌐"; all.href = GEH_OFF.kit; all.target = "_blank"; all.rel = "noopener"; }   // offline: everything in the kit package
   const kit = el("a", "", t("Complete kit package (GitHub)")); kit.href = GB.github + "/releases/latest/download/MoveEye_Bausatz.zip"; kit.target = "_blank"; kit.rel = "noopener";
   const kh = el("div", "mut", t("Without the repository MoveEye fetches the files from GitHub itself (the first time takes about a minute). Everything in one package:") + " "); kh.appendChild(kit);
   if (GEH_OFF) { kh.textContent = "🌐 " + t("The print files come from GitHub – this needs internet. Everything else on this page works offline."); }
   fl.append(all, kh, el("h3", "", t("Plates for the X2D (everything on 2 plates)")));
-  (GB.druckdateien || []).filter(f => f.startsWith("v5-2/") === isV52()).forEach(f => fl.appendChild(fileLink(f)));   // the plates of the chosen case
+  (GB.druckdateien || []).filter(f => dirOf(f) === GDIR()).forEach(f => fl.appendChild(fileLink(f)));   // the plates of the chosen case
   fl.appendChild(el("h3", "", t("Single parts (3MF)"))); (GB.druckdateien_einzeln || []).filter(f => {
-    const datei = f.replace(/^(v5-2\/)?MoveEye_v5-[12]_/, "").replace(/\.3mf$/, ""), p = (D.teile || []).find(x => x.datei === datei);
-    return p ? ok(p.wenn) && pfile(datei) === f : f.startsWith("v5-2/") === isV52();
+    const datei = f.replace(/^(v5-\d\/)?MoveEye_v5-\d_/, "").replace(/\.3mf$/, ""), p = (D.teile || []).find(x => x.datei === datei);
+    return p ? okp(p) && pfile(datei) === f : dirOf(f) === GDIR();
   }).forEach(f => { fl.appendChild(fileLink(f)); fl.appendChild(el("br")); });
 }
 function stepLi(nr, s, id, cur) {
@@ -465,8 +473,8 @@ async function gSim(step) {
 }
 function gRender() {
   document.getElementById("g-ver").textContent = GB.version || ""; document.getElementById("g-masse").textContent = gx(GB.masse || "");
-  BV.v52 = isV52(); BV.dev = G.var.akku === "entwicklung"; bv("paint");
-  if (BV.v52) document.getElementById("g-ver").textContent = "5.2";
+  BV.v52 = isV52(); BV.v53 = isV53(); BV.dev = G.var.akku === "entwicklung"; bv("paint");
+  if (BV.v52) document.getElementById("g-ver").textContent = GVT();
   document.getElementById("g-stand").textContent = GEH_VER ? "· " + fmt(t("as of MoveEye %s"), GEH_VER) : "";
   gVar(); gTabs(); gSummary(); gParts(); gBuy(); gPrint(); gAssembly(); gWire(); gSoftware(); gFix(); gWart(); gInfo(); gProg();
   document.getElementById("g-simbox").style.display = SIM_ON ? "" : "none";
@@ -534,10 +542,11 @@ const REPL = {}; (GB.teile || []).forEach(x => { if (x.ersetzt) REPL[x.ersetzt] 
 function shown(id) {
   const r = row(id), art = r.art || "", s = B.step;
   if (art === "v52" && !B.v52) return false;           // real-v52-standard: v5.2 parts in every step (bau.json «schritt»)
+  if (art === "v53" && !B.v53) return false;           // real-gehaeuse-v53: the parts of v5.3 (lower part, lid, hatch, duct, holder)
   if (art === "dev" && !B.dev) return false;           // development: socket 13 instead of the UPS HAT
   if (r.ohne) return false;                            // 12 blind plug: only in the scene (device without the wide camera)
   const by = REPL[id];                                 // replaced by the part of the chosen variant (lower part v5.2, socket ...)
-  if (by && parts[by] && ((row(by).art === "v52" && B.v52) || (row(by).art === "dev" && B.dev))) return false;
+  if (by && parts[by] && ((row(by).art === "v52" && B.v52) || (row(by).art === "v53" && B.v53) || (row(by).art === "dev" && B.dev))) return false;
   const pr = art === "druck" || !!r.datei;
   if (s === 1) return pr;
   if (s > 1 && (r.schritt || 0) > s) return false;
@@ -892,9 +901,13 @@ def geh_druck_holen(name, timeout=30):
 
 
 def geh_var_namen(var):
-    """the print files of a case: v52 -> Druckdateien/v5-2/, v51 -> the others"""
-    v52 = var != "v51"
-    return [n for n in geh_druck_namen() if n.startswith("v5-2/") == v52]
+    """the print files of a case: v52 -> Druckdateien/v5-2/, v53 -> Druckdateien/v5-3/ (real-gehaeuse-v53), v51 -> the others"""
+    d = GEH_VAR_DIR.get(var, "v5-2/")
+    return [n for n in geh_druck_namen() if (n.split("/")[0] + "/" if "/" in n else "") == d]
+
+
+GEH_VAR_DIR = {"v51": "", "v52": "v5-2/", "v53": "v5-3/"}     # case -> folder of its print files
+GEH_VAR_TXT = {"v51": "v5.1", "v52": "v5.2", "v53": "v5.3"}
 
 
 def geh_var_std():
@@ -902,7 +915,7 @@ def geh_var_std():
 
 
 def geh_zip_name(var):
-    return "MoveEye_%s_Druck_%s.zip" % ("v5-1" if var == "v51" else "v5-2", APP_VERSION)
+    return "MoveEye_%s_Druck_%s.zip" % (GEH_VAR_TXT.get(var, "v5.2").replace(".", "-"), APP_VERSION)
 
 
 def _gx_py(o, L):
@@ -914,7 +927,7 @@ def geh_liesmich(var, L=None):
     L = cur_lang(L)
     D = GEH_BAU.get("druck") or {}
     vals = {o["id"] for g_ in GEH_BAU.get("varianten") or [] if g_["id"] == "gehaeuse" for o in g_["werte"]}
-    vt = "v5.1" if var == "v51" else "v5.2"
+    vt = GEH_VAR_TXT.get(var, "v5.2")
     out = [tr("MoveEye print files – case %s – as of MoveEye %s", L) % (vt, APP_VERSION), ""]
     for h in D.get("hinweise") or []:
         out.append("- " + _gx_py(h, L))
@@ -922,7 +935,9 @@ def geh_liesmich(var, L=None):
             tr("Single parts (3MF)", L) + ":"]
     for p in D.get("teile") or []:
         w = p.get("wenn")
-        if w in vals and w != var:
+        if p.get("nicht") == var:                     # replaced in this case (v5.3: lower part / lid v5.2)
+            continue
+        if w in vals and w != var and not (w == "v52" and var == "v53"):   # v5.3 builds on v5.2
             continue
         opt = "  (" + tr("optional", L) + ": " + w + ")" if w and w not in vals else ""
         out.append("- %s: × %s · %s %s %% · %s %s · %s %s · %s %s mm%s · %s %s · %s ~%s h%s" % (
@@ -945,7 +960,7 @@ def geh_alle_zip(var=None, budget=None):
     """-> ("zip", bytes, file name) | ("wait", done, total) | ("offline", reason, None): the print files of the chosen case
     in one ZIP (3MF are compressed already: stored), fetched where missing"""
     import io
-    var = var if var in ("v51", "v52") else geh_var_std()
+    var = var if var in GEH_VAR_DIR else geh_var_std()
     names = geh_var_namen(var)
     t0, paths = time.time(), {}
     budget = GEH_ZIP_BUDGET if budget is None else budget
@@ -1062,7 +1077,7 @@ def smalltv_routes(app, reply, body):                     # + 639w: /build, /cas
         st, a_, b_ = geh_alle_zip(var)
         if st == "zip":
             return Response(a_, mimetype="application/zip", headers={"Content-Disposition": f'attachment; filename="{b_}"', "Cache-Control": "no-store"})
-        url = "/build/alle.zip?var=" + ("v51" if var == "v51" else "v52")
+        url = "/build/alle.zip?var=" + (var if var in GEH_VAR_DIR else geh_var_std())
         if st == "wait":
             return Response(geh_dl_page(tr("The print files are being fetched from the internet (%d of %d). This page tries again by itself; you can also tap «Try again».") % (a_, b_), retry=url, refresh=15), 202, mimetype="text/html")
         return Response(geh_dl_page(tr("The print file is not on this MoveEye and could not be fetched from the internet (no connection?). Try again later, or load the complete kit package."), retry=url), 503, mimetype="text/html")
@@ -1091,14 +1106,14 @@ _HELP_GEH = {
            '(früher «Gehäuse &amp; Bau»), in Reitern: Übersicht mit der <b>3D-Werkstatt</b> (drehen, zoomen, Explosion, durchsichtig, Innenleben, '
            'Teil antippen – läuft im Browser, ohne Simulator und ohne Internet), Teile, Einkauf (Preis-Schätzung, Händler-Suche, CSV, Drucken), '
            'Drucken (pro Teil, Druckdateien einzeln oder alle), Montage (14 Schritte, animiert), Verkabeln (Plan mit Pins und Kanälen), Software, '
-           'Inbetriebnahme, Fehlersuche und Wartung. Oben die Variante (v5.1 / v5.2, mit / ohne Akku, mit / ohne Mover) und <b>«Mein Bau»</b>: '
+           'Inbetriebnahme, Fehlersuche und Wartung. Oben die Variante (v5.1 / v5.2 / v5.3, mit / ohne Akku, mit / ohne Mover) und <b>«Mein Bau»</b>: '
            'deine Checkliste, für dich auf dem Pi gespeichert. Mit verbundenem Simulator öffnet «Im Simulator ansehen» dasselbe im Simulator '
            '(Mehr → Bauen). Vor dem Druck des Unterteils die Masse des UPS HAT (E) mit Akkus nachmessen.</p></section>\n'),
     "en": ('<section id="case" data-icon="🛠"><h2>Build</h2><p>Everything to build MoveEye yourself is under More → <a href="/build"><b>Build</b></a> '
            '(formerly «Case &amp; build»), in tabs: Overview with the <b>3D workshop</b> (turn, zoom, explode, see through, inside, tap a part – '
            'runs in the browser, no simulator and no internet needed), Parts, Shopping (price estimate, shop search, CSV, print), Printing (per part, '
            'print files one by one or all), Assembly (14 steps, animated), Wiring (plan with pins and channels), Software, Commissioning, '
-           'Troubleshooting and Maintenance. At the top the variant (v5.1 / v5.2, with / without battery, with / without mover) and <b>«My build»</b>: '
+           'Troubleshooting and Maintenance. At the top the variant (v5.1 / v5.2 / v5.3, with / without battery, with / without mover) and <b>«My build»</b>: '
            'your checklist, saved for you on the Pi. With a connected simulator «View in the simulator» opens the same there (More → Build). '
            'Before printing the lower part, measure the UPS HAT (E) with its cells.</p></section>\n'),
     "fr": ('<section id="case" data-icon="🛠"><h2>Construire</h2><p>Tout pour construire MoveEye soi-même se trouve sous Plus → <a href="/build"><b>Construire</b></a> '
@@ -1250,9 +1265,9 @@ def geh_selftest():
         assert not t_.get("schritt") or 1 <= t_["schritt"] <= 14, t_["id"]
     vals = {o["id"] for v in B["varianten"] for o in v["werte"]}
     T_ = {t_["id"]: t_ for t_ in B["teile"]}
-    assert (B.get("variante_standard") or {}).get("gehaeuse") == "v52" and "v51" in vals, "real-v52-standard: v5.2 is the standard, v5.1 stays"
+    assert (B.get("variante_standard") or {}).get("gehaeuse") == "v53" and {"v51", "v52"} <= vals, "real-gehaeuse-v53: v5.3 is the standard (released 02.11.2026), v5.2 and v5.1 stay"
     for t_ in B["teile"]:                         # the parts of a variant are in the assembly steps, at the step of the part they replace
-        if t_.get("art") in ("v52", "dev"):
+        if t_.get("art") in ("v52", "v53", "dev"):
             assert t_.get("schritt"), ("step", t_["id"])
             assert not t_.get("ersetzt") or T_[t_["ersetzt"]].get("schritt") == t_["schritt"], ("step of the replaced part", t_["id"])
     for b in B["bom"]:
@@ -1423,6 +1438,9 @@ def geh_dl_selftest():
         assert top + "LIESMICH.txt" in nl and top + "MoveEye_v5-2_01_Unterteil_v52.3mf" in nl and top + "Platten_X2D/MotionWatch_v5-2_Platte_A_Unterteil.3mf" in nl, nl[:5]
         assert len(nl) == len(geh_var_namen("v52")) + 1 and not [x for x in nl if "v5-1" in x or "v5-2/" in x[len(top):]], nl
         assert geh_zip_name("v51") == "MoveEye_v5-1_Druck_%s.zip" % APP_VERSION and all(not n.startswith("v5-2/") for n in geh_var_namen("v51"))
+        n53 = geh_var_namen("v53")                    # real-gehaeuse-v53: own folder, all parts (also the unchanged ones of v5.2)
+        assert n53 and all(n.startswith("v5-3/") for n in n53) and geh_zip_name("v53") == "MoveEye_v5-3_Druck_%s.zip" % APP_VERSION, n53[:3]
+        assert len([n for n in n53 if n not in (GEH_BAU.get("druckdateien") or [])]) >= len([n for n in geh_var_namen("v52") if n not in (GEH_BAU.get("druckdateien") or [])]), "v5.3: every single part"
     finally:
         srv.shutdown()
         srv.server_close()
