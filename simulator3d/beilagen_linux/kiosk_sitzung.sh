@@ -7,6 +7,9 @@
 #   kiosk_sitzung.sh desktop    (Ctrl+Alt+D) Kiosk beenden, Cinnamon starten
 #   kiosk_sitzung.sh neustart   (Ctrl+Alt+R) nur den Simulator neu starten
 # Einstellungen: /etc/moveeye-kiosk.conf (SIM = Programmdatei, SIM_ARGS = Startoptionen). Protokolle: ~/.moveeye_kiosk/
+# Testlauf-Pause (werkzeuge/test_runner): /etc/moveeye-kiosk-test.conf setzt PAUSE_DATEI. Solange diese Datei da ist (und
+# jünger als PAUSE_MAX_S), ist der Simulator aus und startet nicht neu - der Test-Runner hat Grafik und Speicher für sich.
+# TEST_BENUTZER: dieser lokale Benutzer darf den Bildschirm benutzen (xhost, nur wenn bei runner_einrichten.sh gewählt).
 set -u
 LIB="/usr/local/lib/moveeye-kiosk"
 CONF="/etc/moveeye-kiosk.conf"
@@ -23,9 +26,21 @@ SIM=""
 SIM_ARGS=(--fullscreen -- --stream --no-update)
 # shellcheck source=/dev/null
 [ -r "$CONF" ] && . "$CONF"
+PAUSE_DATEI=""
+PAUSE_MAX_S=25200                         # 7 Std.: eine vergessene Pause-Datei hält den Kiosk nicht für immer an
+TEST_BENUTZER=""
+# shellcheck source=/dev/null
+[ -r /etc/moveeye-kiosk-test.conf ] && . /etc/moveeye-kiosk-test.conf
 mkdir -p "$LOGDIR" "$RUN"
 
 log() { printf '%s %s\n' "$(date '+%F %T')" "$*" >> "$LOGDIR/sitzung.log"; }
+
+pausiert() {   # läuft ein Testlauf (Pause-Datei des Test-Runners da und nicht zu alt)?
+	[ -n "$PAUSE_DATEI" ] && [ -f "$PAUSE_DATEI" ] || return 1
+	local m
+	m=$(stat -c %Y "$PAUSE_DATEI" 2>/dev/null) || return 1
+	[ $(( $(date +%s) - m )) -lt "$PAUSE_MAX_S" ]
+}
 
 kuerzen() {   # Protokoll höchstens ~2 MB, die letzten Zeilen bleiben
 	local f="$1"
@@ -45,7 +60,7 @@ sim_stoppen() {
 }
 
 schleife() {
-	local kind=0 t0 rc dauer schnell=0 pause
+	local kind=0 t0 rc dauer schnell=0 pause warte=0
 	trap '[ "$kind" -gt 0 ] && kill -TERM "$kind" 2>/dev/null; exit 0' TERM INT
 	kuerzen "$LOGDIR/sim.log"
 	local eltern=$PPID
@@ -56,16 +71,36 @@ schleife() {
 			sleep 30 & kind=$!; wait "$kind"; kind=0
 			continue
 		fi
+		if pausiert; then                                 # Testlauf: Simulator aus, warten, danach wieder starten
+			log "Testlauf ($PAUSE_DATEI): Simulator pausiert"
+			sim_laeuft && sim_stoppen
+			while pausiert; do
+				kill -0 "$eltern" 2>/dev/null || { log "Sitzung ist zu - Schleife endet"; exit 0; }
+				sleep 5 & kind=$!; wait "$kind"; kind=0
+			done
+			log "Testlauf fertig: Simulator startet wieder"
+			schnell=0
+			continue
+		fi
 		# nach einem Update startet sich der Simulator selbst neu (neuer Prozess): warten, bis er wieder zu ist
 		while sim_laeuft; do
+			pausiert && { sim_stoppen; break; }
 			sleep 3 & kind=$!; wait "$kind"; kind=0
 		done
+		pausiert && continue
 		log "Simulator startet: $SIM ${SIM_ARGS[*]}"
 		t0=$(date +%s)
 		( cd "$(dirname "$SIM")" && exec "$SIM" "${SIM_ARGS[@]}" ) >> "$LOGDIR/sim.log" 2>&1 &
 		kind=$!
+		if [ -n "$PAUSE_DATEI" ]; then                   # alle 3 s schauen, ob ein Testlauf den Bildschirm braucht
+			while kill -0 "$kind" 2>/dev/null; do
+				if pausiert; then sim_stoppen; break; fi
+				sleep 3 & warte=$!; wait "$warte"
+			done
+		fi
 		wait "$kind"; rc=$?; kind=0
 		kill -0 "$eltern" 2>/dev/null || { log "Sitzung ist zu - Schleife endet"; exit 0; }
+		if pausiert; then schnell=0; log "Simulator für einen Testlauf beendet"; continue; fi
 		dauer=$(( $(date +%s) - t0 ))
 		if [ "$dauer" -lt 60 ]; then schnell=$((schnell + 1)); else schnell=0; fi
 		pause=2
@@ -79,6 +114,10 @@ schleife() {
 kiosk_teil() {
 	# Bildschirmschoner, Schwarzschalten und Energiesparen des Bildschirms aus (nur in dieser Sitzung)
 	xset s off 2>/dev/null; xset s noblank 2>/dev/null; xset -dpms 2>/dev/null
+	# Test-Runner darf den Bildschirm (Grafikkarte) benutzen - nur dieser lokale Benutzer, nur wenn so eingerichtet
+	if [ -n "$TEST_BENUTZER" ] && command -v xhost >/dev/null 2>&1; then
+		xhost "+SI:localuser:$TEST_BENUTZER" >/dev/null 2>&1 && log "Bildschirm freigegeben für $TEST_BENUTZER (Testläufe)"
+	fi
 	export XDG_CURRENT_DESKTOP=MoveEye-Kiosk XDG_SESSION_DESKTOP=moveeye-kiosk DESKTOP_SESSION=moveeye-kiosk
 	rm -f "$FLAG"
 	"$LIB/kiosk_sitzung.sh" schleife &
