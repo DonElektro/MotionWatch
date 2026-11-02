@@ -328,7 +328,7 @@ function simViewBind(VI, opt) {
   VI.addEventListener("pointerup", upH); VI.addEventListener("pointercancel", upH);
   VI.addEventListener("dblclick", e => { if (opt.active && !opt.active()) return; const p = pos(e); push(Object.assign({t: "dbl", b: 1}, p)); push(Object.assign({t: "up", b: 1}, p), true); });
   VI.addEventListener("wheel", e => { if (opt.active && !opt.active()) return; if (!ctlOn() && document.activeElement !== VI) return; e.preventDefault(); push(Object.assign({t: "wheel", d: e.deltaY < 0 ? 1 : -1}, pos(e)), true); }, {passive: false});
-  const KEYS = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "w", "a", "s", "d", "q", "e", "r", "f", "PageUp", "PageDown", "0", "1", "2", "3", "4", "5", "+", "-", "Shift"];
+  const KEYS = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "w", "a", "s", "d", "q", "e", "r", "f", "PageUp", "PageDown", "0", "1", "2", "3", "4", "5", "+", "-", "Shift", "Escape", "Enter", " ", "k"];   // 3.51.x: Esc / Enter / Leertaste / K for the stories
   const keyH = down => e => { if (opt.active && !opt.active()) return; const k = e.key.length === 1 ? e.key.toLowerCase() : e.key; if (!KEYS.includes(k)) return; e.preventDefault(); if (down && e.repeat) return; push({t: "key", k: k, down: down}, true); };
   VI.addEventListener("keydown", keyH(true)); VI.addEventListener("keyup", keyH(false));
   return {push: push};

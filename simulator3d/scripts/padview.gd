@@ -14,6 +14,9 @@ extends Node
 ## camera) and the dock is copied in from the window (compose). Window small / minimized (main.remote_vp): nobody sees it,
 ## so there the layer with the buttons is hidden and the dock moves into a layer of its own (3 s after the last such
 ## picture everything is back).
+## 3.51.x (Daniel 02.11.2026): dock=1 copies in everything over the 3D view (cards of the stories and games, Tagebuch, windows
+## such as «Gerät» / «Kameras» / Karte, «Mehr», popups, hints) - only the panel, the phone picture and the mover stick stay
+## out (overlay_rects); also with the window small, so the hidden layer of _dock() is not used any more.
 
 var main
 var bare_t := -100.0
@@ -170,7 +173,8 @@ func _zoom(dir: float) -> void:
 func _process(dt: float) -> void:
 	var t: float = main.now()
 	var want := t - bare_t < 3.0
-	var want_dock := t - dock_t < 3.0 and not want and main.remote_vp != null
+	var want_dock := false                                 # 3.51.x: compose() also for the small window (before: ui_layer hidden there,
+	# so the Tagebuch, the game wizard, the cards and the windows were missing in the stream); _dock() stays for a way back
 	if _cvp != null and t - _cvp_t > 10.0:
 		_cvp.queue_free()                                  # not asked for a while: no second drawing any more
 		_cvp = null
@@ -235,7 +239,7 @@ func _dock(on: bool) -> void:
 func dock_compose() -> bool:
 	"""main._view_capture: the picture for MoveEye's simulator page is composed (window open)"""
 	var t: float = main.now()
-	return t - dock_t < 3.0 and t - bare_t >= 3.0 and main.remote_vp == null
+	return t - dock_t < 3.0 and t - bare_t >= 3.0             # 3.51.x: also with the window small (remote_vp) - no hidden layer any more
 
 
 func compose(img: Image, k: float) -> Image:
@@ -243,7 +247,7 @@ func compose(img: Image, k: float) -> Image:
 	of img per point of the window). null = not ready yet (keep the last picture)."""
 	_cvp_t = main.now()
 	var sz := img.get_size()
-	var src: Camera3D = main.get_viewport().get_camera_3d()
+	var src: Camera3D = main.view_cam if main.remote_vp != null else main.get_viewport().get_camera_3d()
 	if src == null:
 		return img
 	if _cvp == null:
@@ -289,4 +293,84 @@ func compose(img: Image, k: float) -> Image:
 			var ri := Rect2i(int(r.position.x * k), int(r.position.y * k), int(r.size.x * k), int(r.size.y * k)).intersection(Rect2i(Vector2i.ZERO, sz))
 			if ri.size.x > 0 and ri.size.y > 0:
 				out.blit_rect(img, ri, ri.position)
+	for r in overlay_rects():                          # 3.51.x: everything else that lies over the 3D view (cards, windows, hints, popups)
+		var ri := Rect2i(int(r.position.x * k), int(r.position.y * k), int(ceilf(r.size.x * k)), int(ceilf(r.size.y * k))).intersection(Rect2i(Vector2i.ZERO, sz))
+		if ri.size.x > 0 and ri.size.y > 0:
+			out.blit_rect(img, ri, ri.position)
 	return out
+
+
+# ---- 3.51.x (Daniel, 02.11.2026): what lies over the 3D view also goes into the clean picture for MoveEye ---------------------
+# Before only the dock was copied in: the cards of the stories (own CanvasLayer, e.g. 60), the Tagebuch, the game wizard, the
+# windows «Gerät» / «Kameras», popups and hints were seen at the PC but not on the phone. Now every visible Control of every
+# CanvasLayer of the window is copied in - except the parts MoveEye has itself (the panel on the right, the phone picture on
+# the left, the mover stick - MoveEye shows its own) and the cross hair / the ring round the chosen visitor.
+var _ovl_layers: Array = []
+var _ovl_t := -100.0
+var _ovl_vp: Viewport = null
+
+
+func chrome() -> Array:
+	var out := []
+	for n in ["ui_root", "show_btn", "phone", "rover_pad", "crosshair", "sel_ring"]:
+		var c = main.get(n)
+		if c != null and is_instance_valid(c) and c is Control:
+			out.append(c)
+	return out
+
+
+func overlay_rects() -> Array:
+	"""the rectangles (window points) of everything over the 3D view that MoveEye's picture shows"""
+	var vp: Viewport = main.remote_vp if main.remote_vp != null else main.get_viewport()
+	var t: float = main.now()
+	if vp != _ovl_vp or t - _ovl_t > 1.0:                # new layers (a story starts …): look again once a second
+		_ovl_vp = vp
+		_ovl_t = t
+		_ovl_layers = []
+		for l in main.get_tree().root.find_children("*", "CanvasLayer", true, false):
+			if (l as CanvasLayer).get_viewport() == vp and l != _dock_layer:
+				_ovl_layers.append(l)
+		_ovl_layers.sort_custom(func(a, b): return (a as CanvasLayer).layer < (b as CanvasLayer).layer)
+	var vs: Vector2 = vp.get_visible_rect().size
+	var ch := chrome()
+	var out := []
+	for l in _ovl_layers:
+		if is_instance_valid(l) and (l as CanvasLayer).visible:
+			_ovl_walk(l, out, ch, vs.x * vs.y)
+	for w in vp.get_embedded_subwindows():              # popups: drop-down lists, menus, tooltips
+		if is_instance_valid(w) and (w as Window).visible:
+			out.append(Rect2(Vector2((w as Window).position), Vector2((w as Window).size)).grow(4.0))
+	return out
+
+
+func _ovl_walk(n: Node, out: Array, ch: Array, area: float) -> void:
+	for c in n.get_children():
+		if c is CanvasLayer or c is Window or c is Node3D or c is Viewport:
+			continue                                     # own layers come by themselves, popups above, no 3D
+		if not (c is Control):
+			if not (c is CanvasItem) or (c as CanvasItem).visible:
+				_ovl_walk(c, out, ch, area)              # a plain Node / Node2D that holds Controls
+			continue
+		var ctl := c as Control
+		if not ctl.visible or ctl in ch or ctl.modulate.a < 0.02 or ctl.self_modulate.a < 0.02 and ctl.get_child_count() == 0:
+			continue
+		var r: Rect2 = ctl.get_global_transform_with_canvas() * Rect2(Vector2.ZERO, ctl.size)
+		var big := r.get_area() > 0.6 * area
+		var holds := false
+		for x in ch:
+			if (x as Control).is_visible_in_tree() and ctl.is_ancestor_of(x):
+				holds = true
+				break
+		if r.size.x < 2.0 or r.size.y < 2.0 or (big and _see_through(ctl)) or (holds and big):
+			_ovl_walk(ctl, out, ch, area)                # a frame without a picture of its own: what is in it counts
+		elif not holds:
+			out.append(r.grow(4.0))                     # (with a little of the shadow / the border)
+
+
+func _see_through(c: Control) -> bool:
+	if c is ColorRect:
+		return (c as ColorRect).color.a < 0.05 and c.material == null
+	if c is PanelContainer or c is Panel:
+		var sb: StyleBox = c.get_theme_stylebox("panel")
+		return sb == null or sb is StyleBoxEmpty or (sb is StyleBoxFlat and (sb as StyleBoxFlat).bg_color.a < 0.05)
+	return (c is Container and not (c is PanelContainer)) or c.get_class() == &"Control"   # frames without a picture of their own

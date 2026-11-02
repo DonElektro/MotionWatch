@@ -243,7 +243,7 @@ def prepare_settings_file():
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
 ZD_FILE = "moveeye_daten_3_51_0.zip"
-ZD_SHA256 = "4588b4718f7f60454acbb44eb5854ba5a65438ba54e1e0bd3f3262b778b214de"
+ZD_SHA256 = "ba25fd0861be6cf06b7c699ac08c4075ed932bae754439c0a7875563c1a8013e"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -67603,16 +67603,19 @@ def play_story_pic(sid, owner=True):
         return None
 
 
-def play_do(action, cid="", owner=True):
+def play_do(action, cid="", owner=True, what=""):
     """«Start the adventure» (id) / open or close the start screen in the simulator / «seen» (Blinki's joy shown).
     owner = nacht_may(...): «Das Hospiz» starts only for the owner (Code-Prüfung M4: before only the answer was filtered)"""
-    if action == "start" and str(cid or "").strip().lower() == "horror" and not owner:
+    if action in ("start", "story") and str(cid or "").strip().lower() == "horror" and not owner:
         log_event("web", "Play area: «Das Hospiz» refused (not the owner / operator mode)")
         return {"ok": False, "error": tr("Only the owner can start this story."), "code": 403}
     if not CFG.get("sim_on"):
         return {"ok": False, "error": tr("The 3D simulator is not connected.")}
     try:
-        r = sim_control({"action": "spielbereich", "do": action, "id": str(cid)[:24]}) or {}
+        q_ = {"action": "spielbereich", "do": action, "id": str(cid)[:24]}
+        if action == "story":                              # 3.51.x: a story from the phone - the same buttons as its card in the simulator
+            q_["what"] = what if what in ("weiter", "neu", "unlock") else "weiter"
+        r = sim_control(q_) or {}
     except Exception as e:
         _PLAY["t"] = 0.0
         if action == "start" and "timed out" in str(e):       # a big scene (Ferienpark) takes longer to build than the 8 s
@@ -67647,6 +67650,16 @@ _HX_PLAY = {
                                                                        'Non ancora visitato – cosa c’è da scoprire si vede sul posto.',
                                                                        'Anc betg visità – tge ch’i dat da scuvrir sa mussa al lieu.'),
     'Stories': ('Geschichten', 'Histoires', 'Storie', 'Istorgias'),
+    'Start story': ('Starten', 'Démarrer', 'Avvia', 'Cumenzar'),
+    'Continue playing': ('Weiterspielen', 'Continuer', 'Continua', 'Cuntinuar a giugar'),
+    'Start over': ('Neu beginnen', 'Recommencer', 'Ricomincia', 'Cumenzar da nov'),
+    'Unlock': ('Entsperren', 'Déverrouiller', 'Sblocca', 'Deblocar'),
+    'Opened in the simulator – you play it in the simulator window (tab «Sim»).': (
+        'Im Simulator geöffnet – gespielt wird im Simulator-Fenster (Reiter «Sim»).',
+        'Ouvert dans le simulateur – on joue dans la fenêtre du simulateur (onglet «Sim»).',
+        'Aperto nel simulatore – si gioca nella finestra del simulatore (scheda «Sim»).',
+        'Avert en il simulatur – ins giogia en la fanestra dal simulatur (tab «Sim»).'),
+    'To the simulator window': ('Zum Simulator-Fenster', 'Vers la fenêtre du simulateur', 'Alla finestra del simulatore', 'Tar la fanestra dal simulatur'),
     'Only the owner can start this story.': ('Nur der Besitzer kann diese Geschichte starten.', 'Seul le propriétaire peut lancer cette histoire.',
                                              'Solo il proprietario può avviare questa storia.', 'Mo il proprietari po cumenzar questa istorgia.'),
     'Discover': ('Entdecken', 'Découvrir', 'Scoprire', 'Scuvrir'),
@@ -67732,9 +67745,9 @@ def smalltv_routes(app, reply, body):                     # + 639i: /play and /a
         if request.method == "GET":
             return reply(play_for(play_state(), own))
         d = body(); a = str(d.get("action") or "")
-        if a not in ("start", "open", "close", "seen"):
+        if a not in ("start", "open", "close", "seen", "story"):
             return reply({"ok": False, "error": "unknown action"}, 400)
-        r = play_do(a, d.get("id") or "", own)
+        r = play_do(a, d.get("id") or "", own, str(d.get("what") or ""))
         if r.pop("code", None) == 403:
             return reply(r, 403)
         if r.get("state"):
@@ -67784,12 +67797,13 @@ def _tk_play_poll(self):
     self._play_inner.after(6000, self._play_poll)
 
 
-def _tk_play_act(self, a, cid=""):
+def _tk_play_act(self, a, cid="", what=""):
     def work():
-        r = play_do(a, cid, nacht_may("admin"))           # the window = the owner, unless operator mode (M4)
+        r = play_do(a, cid, nacht_may("admin"), what)     # the window = the owner, unless operator mode (M4)
         r.pop("code", None)
         try:
             self.root.after(0, lambda: (self._status("Playing", ("✓ " + tr("The simulator travels there.")) if r.get("ok") and a == "start"
+                                                     else ("✓ " + tr("Opened in the simulator – you play it in the simulator window (tab «Sim»).")) if r.get("ok") and a == "story"
                                                      else ("⚠ " + str(r.get("error") or "")) if not r.get("ok") else tr("Open in the simulator")),
                                         r.get("ok") and self._play_paint(r["state"])))
         except Exception:
@@ -67836,7 +67850,9 @@ def _tk_play_paint(self, d):
         rf = tk.Frame(inner, bg=C["panel"], highlightthickness=1, highlightbackground=C["acc"], padx=10, pady=8); rf.pack(fill="x", pady=(8, 0))
         tk.Label(rf, text="▶ " + txt.replace("{t}", str(R.get("title"))).replace("{p}", str(R.get("pct"))), bg=C["panel"], fg=C["txt"],
                  font=("DejaVu Sans", 11, "bold"), anchor="w").pack(fill="x")
-        tk.Label(rf, text=tr("The button «Continue» is in the simulator (window «Playing»)."), bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 9),
+        if not d.get("offline") and not R.get("locked"):
+            self._fbtn(rf, tr("Continue playing"), lambda i=R.get("id"): self._play_act("story", i, "weiter"), primary=True).pack(anchor="w", pady=(4, 0))
+        tk.Label(rf, text=tr("Opened in the simulator – you play it in the simulator window (tab «Sim»)."), bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 9),
                  anchor="w").pack(fill="x")
     ttk.Label(inner, text=tr("Stories").upper(), style="Mut.TLabel").pack(anchor="w", pady=(12, 4))
     sg = tk.Frame(inner, bg=C["bg"]); sg.pack(fill="x")
@@ -67857,6 +67873,16 @@ def _tk_play_paint(self, d):
         pb = ttk.Progressbar(pr, maximum=100, length=120); pb.pack(side="left"); pb["value"] = int(x.get("pct") or 0)
         tk.Label(pr, text=f"{int(x.get('pct') or 0)} %" + (" · " + str(x.get("where")) if x.get("where") and not x.get("done") else ""), bg=C["panel"], fg=C["txt"],
                  font=("DejaVu Sans", 9)).pack(side="left", padx=(8, 0))
+        if not off and not d.get("offline"):             # 3.51.x: start / continue here as well (the same buttons as the card in the simulator)
+            br_ = tk.Frame(f, bg=C["panel"]); br_.pack(fill="x", pady=(6, 0))
+            sid_ = x.get("id")
+            if x.get("locked"):
+                self._fbtn(br_, tr("Unlock"), lambda i=sid_: self._play_act("story", i, "unlock")).pack(side="left")
+            else:
+                self._fbtn(br_, tr("Continue playing") if x.get("started") and not x.get("done") else tr("Start story"),
+                           lambda i=sid_: self._play_act("story", i, "weiter"), primary=True).pack(side="left")
+                if x.get("started"):
+                    self._fbtn(br_, tr("Start over"), lambda i=sid_: self._play_act("story", i, "neu")).pack(side="left", padx=(6, 0))
     ttk.Label(inner, text=tr("Stories are played in the simulator – here you see the progress."), style="Mut.TLabel").pack(anchor="w")
     ttk.Label(inner, text=tr("Discover").upper(), style="Mut.TLabel").pack(anchor="w", pady=(12, 4))
     if not d.get("chapters"):
@@ -67917,11 +67943,19 @@ def play_selftest():
             assert not r["ok"] and r.get("code") == 403 and not asked, ("Hospiz started without the owner", r, asked)
             r = play_do("start", " HORROR ", False)
             assert not r["ok"] and not asked, "Hospiz with another spelling"
+            r = play_do("story", "horror", False, "neu")          # 3.51.x: the story buttons of the phone - the same rule
+            assert not r["ok"] and r.get("code") == 403 and not asked, ("Hospiz story button without the owner", r, asked)
+            play_do("story", "maggie", True, "neu")
+            play_do("story", "maggie", True, "x")
+            sq_ = [x_ for x_ in asked if x_.get("do") == "story"]
+            assert sq_ == [{"action": "spielbereich", "do": "story", "id": "maggie", "what": "neu"},
+                           {"action": "spielbereich", "do": "story", "id": "maggie", "what": "weiter"}], asked
             assert nacht_may("admin", locked=True) is False and nacht_may("user", locked=False) is False
         finally:
             globals()["sim_control"] = _sc; globals()["log_event"] = _le; CFG["sim_on"] = False
         html = play_page()
         assert 'href="/play"' in html and "/api/play" in html and "Geschichten" in html and "Entdecken" in html and "MWBlinki" in html
+        assert 'plDo("story"' in html and "/sim" in html and tr("Start over", "rm") == "Cumenzar da nov"   # 3.51.x: stories from the phone
         assert 'id="pl-bd"' not in html and "/sim/story_pic/" in html             # Geschichten-Menü: badges in the discovery book
         st = {"stories": [{"id": "horror"}, {"id": "maggie"}], "resume": {"id": "horror"}}
         assert [x["id"] for x in play_for(st, False)["stories"]] == ["maggie"] and not play_for(st, False)["resume"]

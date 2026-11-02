@@ -83,16 +83,19 @@ def play_story_pic(sid, owner=True):
         return None
 
 
-def play_do(action, cid="", owner=True):
+def play_do(action, cid="", owner=True, what=""):
     """«Start the adventure» (id) / open or close the start screen in the simulator / «seen» (Blinki's joy shown).
     owner = nacht_may(...): «Das Hospiz» starts only for the owner (Code-Prüfung M4: before only the answer was filtered)"""
-    if action == "start" and str(cid or "").strip().lower() == "horror" and not owner:
+    if action in ("start", "story") and str(cid or "").strip().lower() == "horror" and not owner:
         log_event("web", "Play area: «Das Hospiz» refused (not the owner / operator mode)")
         return {"ok": False, "error": tr("Only the owner can start this story."), "code": 403}
     if not CFG.get("sim_on"):
         return {"ok": False, "error": tr("The 3D simulator is not connected.")}
     try:
-        r = sim_control({"action": "spielbereich", "do": action, "id": str(cid)[:24]}) or {}
+        q_ = {"action": "spielbereich", "do": action, "id": str(cid)[:24]}
+        if action == "story":                              # 3.51.x: a story from the phone - the same buttons as its card in the simulator
+            q_["what"] = what if what in ("weiter", "neu", "unlock") else "weiter"
+        r = sim_control(q_) or {}
     except Exception as e:
         _PLAY["t"] = 0.0
         if action == "start" and "timed out" in str(e):       # a big scene (Ferienpark) takes longer to build than the 8 s
@@ -130,6 +133,7 @@ main{padding:16px;max-width:720px;margin:0 auto}
 .pl-st{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .pl-s{border:1px solid var(--line);border-radius:14px;background:var(--panel);overflow:hidden;display:flex;flex-direction:column}
 .pl-s.last{border-color:var(--acc)}.pl-s.off{opacity:.62}
+.pl-sbt{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.pl-sbt button{min-height:38px}
 .pl-pic{height:120px;background:#223 center/cover no-repeat;display:flex;align-items:center;justify-content:center;font-size:44px}
 .pl-pic.grossvater{background-color:#a8946d;background-image:repeating-linear-gradient(90deg,transparent 0 24%,rgba(80,50,20,.2) 24% 25%)}
 .pl-pic.maggie{background-image:linear-gradient(#5c94db,#c7e0f7 55%,#52803f 56%)}
@@ -200,7 +204,9 @@ function plPaint(j) {
   document.body.classList.toggle("kids", !!j.kids);
   const go = document.getElementById("pl-go"), R = j.resume || {}; go.textContent = "";
   if (R.id) { const g = el("div", "pl-go", "▶ " + (R.where ? t("Continue: {t}, {w} ({p} %)").replace("{w}", R.where) : t("Continue: {t} ({p} %)")).replace("{t}", R.title).replace("{p}", R.pct));
-    g.appendChild(el("small", "", t("The button «Continue» is in the simulator (window «Playing»).")));
+    const gb = el("button", "", t("Continue playing")); gb.type = "button"; gb.disabled = !!j.offline || !!R.locked;
+    gb.onclick = () => plDo("story", R.id, gb, "weiter"); g.appendChild(el("div", "pl-sbt")).appendChild(gb);
+    g.appendChild(el("small", "", t("Opened in the simulator – you play it in the simulator window (tab «Sim»).")));
     go.appendChild(g); }
   const sg = document.getElementById("pl-st"); sg.textContent = "";
   if (!(j.stories || []).length) sg.appendChild(el("p", "mut", t("No stories yet – they come from the 3D simulator.")));
@@ -215,6 +221,12 @@ function plPaint(j) {
     const p = el("div", "pl-sp"), br = el("div", "pl-bar"), i = el("i"); i.style.width = Math.max(0, Math.min(100, x.pct)) + "%"; br.appendChild(i);
     p.append(br, el("span", "", x.pct + " %" + (x.where && !x.done ? " · " + x.where : "")));
     b.append(ti, el("div", "mut", x.short || ""), el("div", "pl-m", "⏱ " + (x.dauer || "") + " · " + t("from {n} years").replace("{n}", x.age)), p);
+    if (!x.soon) {                                   // 3.51.x: start / continue from the phone (the same as the buttons of the card in the simulator)
+      const bt = el("div", "pl-sbt"), add = (txt, what, sec) => { const k = el("button", sec ? "sec" : "", txt); k.type = "button";
+        k.disabled = !!j.offline; k.onclick = () => plDo("story", x.id, k, what); bt.appendChild(k); };
+      if (x.locked) add(t("Unlock"), "unlock", false);
+      else { add(x.started && !x.done ? t("Continue playing") : t("Start story"), "weiter", false); if (x.started) add(t("Start over"), "neu", true); }
+      b.appendChild(bt); }
     c.append(pic, b); sg.appendChild(c);
   });
   const ch = document.getElementById("pl-ch"); ch.textContent = "";
@@ -240,11 +252,15 @@ function plPaint(j) {
   document.getElementById("pl-sim").disabled = !!j.offline;
   document.getElementById("pl-msg").textContent = j.offline && j.t ? t("Last state from the simulator") + ": " + new Date(j.t * 1000).toLocaleString() : "";
 }
-async function plDo(a, id, b) {
+async function plDo(a, id, b, what) {
   if (b) b.disabled = true;
-  const r = await post("/api/play", {action: a, id: id || ""});
+  const r = await post("/api/play", {action: a, id: id || "", what: what || ""});
   if (r && r.ok && r.state) plPaint(r.state);
-  document.getElementById("pl-msg").textContent = r && !r.ok ? "⚠ " + (r.error || "") : (a === "start" && r && r.ok ? "✓ " + t("The simulator travels there.") : "");
+  const m = document.getElementById("pl-msg");
+  m.textContent = r && !r.ok ? "⚠ " + (r.error || "") : (a === "start" && r && r.ok ? "✓ " + t("The simulator travels there.") : "");
+  if (a === "story" && r && r.ok) {                  // 3.51.x: the story runs in the simulator - play it in its window (stream, fingers)
+    m.textContent = "✓ " + t("Opened in the simulator – you play it in the simulator window (tab «Sim»).") + " ";
+    const go = el("a", "", t("To the simulator window") + " ›"); go.href = "/sim"; m.appendChild(go); }
   if (b) b.disabled = false;
 }
 /*ALERTS*/
@@ -273,6 +289,16 @@ _HX_PLAY = {
                                                                        'Non ancora visitato – cosa c’è da scoprire si vede sul posto.',
                                                                        'Anc betg visità – tge ch’i dat da scuvrir sa mussa al lieu.'),
     'Stories': ('Geschichten', 'Histoires', 'Storie', 'Istorgias'),
+    'Start story': ('Starten', 'Démarrer', 'Avvia', 'Cumenzar'),
+    'Continue playing': ('Weiterspielen', 'Continuer', 'Continua', 'Cuntinuar a giugar'),
+    'Start over': ('Neu beginnen', 'Recommencer', 'Ricomincia', 'Cumenzar da nov'),
+    'Unlock': ('Entsperren', 'Déverrouiller', 'Sblocca', 'Deblocar'),
+    'Opened in the simulator – you play it in the simulator window (tab «Sim»).': (
+        'Im Simulator geöffnet – gespielt wird im Simulator-Fenster (Reiter «Sim»).',
+        'Ouvert dans le simulateur – on joue dans la fenêtre du simulateur (onglet «Sim»).',
+        'Aperto nel simulatore – si gioca nella finestra del simulatore (scheda «Sim»).',
+        'Avert en il simulatur – ins giogia en la fanestra dal simulatur (tab «Sim»).'),
+    'To the simulator window': ('Zum Simulator-Fenster', 'Vers la fenêtre du simulateur', 'Alla finestra del simulatore', 'Tar la fanestra dal simulatur'),
     'Only the owner can start this story.': ('Nur der Besitzer kann diese Geschichte starten.', 'Seul le propriétaire peut lancer cette histoire.',
                                              'Solo il proprietario può avviare questa storia.', 'Mo il proprietari po cumenzar questa istorgia.'),
     'Discover': ('Entdecken', 'Découvrir', 'Scoprire', 'Scuvrir'),
@@ -358,9 +384,9 @@ def smalltv_routes(app, reply, body):                     # + 639i: /play and /a
         if request.method == "GET":
             return reply(play_for(play_state(), own))
         d = body(); a = str(d.get("action") or "")
-        if a not in ("start", "open", "close", "seen"):
+        if a not in ("start", "open", "close", "seen", "story"):
             return reply({"ok": False, "error": "unknown action"}, 400)
-        r = play_do(a, d.get("id") or "", own)
+        r = play_do(a, d.get("id") or "", own, str(d.get("what") or ""))
         if r.pop("code", None) == 403:
             return reply(r, 403)
         if r.get("state"):
@@ -410,12 +436,13 @@ def _tk_play_poll(self):
     self._play_inner.after(6000, self._play_poll)
 
 
-def _tk_play_act(self, a, cid=""):
+def _tk_play_act(self, a, cid="", what=""):
     def work():
-        r = play_do(a, cid, nacht_may("admin"))           # the window = the owner, unless operator mode (M4)
+        r = play_do(a, cid, nacht_may("admin"), what)     # the window = the owner, unless operator mode (M4)
         r.pop("code", None)
         try:
             self.root.after(0, lambda: (self._status("Playing", ("✓ " + tr("The simulator travels there.")) if r.get("ok") and a == "start"
+                                                     else ("✓ " + tr("Opened in the simulator – you play it in the simulator window (tab «Sim»).")) if r.get("ok") and a == "story"
                                                      else ("⚠ " + str(r.get("error") or "")) if not r.get("ok") else tr("Open in the simulator")),
                                         r.get("ok") and self._play_paint(r["state"])))
         except Exception:
@@ -462,7 +489,9 @@ def _tk_play_paint(self, d):
         rf = tk.Frame(inner, bg=C["panel"], highlightthickness=1, highlightbackground=C["acc"], padx=10, pady=8); rf.pack(fill="x", pady=(8, 0))
         tk.Label(rf, text="▶ " + txt.replace("{t}", str(R.get("title"))).replace("{p}", str(R.get("pct"))), bg=C["panel"], fg=C["txt"],
                  font=("DejaVu Sans", 11, "bold"), anchor="w").pack(fill="x")
-        tk.Label(rf, text=tr("The button «Continue» is in the simulator (window «Playing»)."), bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 9),
+        if not d.get("offline") and not R.get("locked"):
+            self._fbtn(rf, tr("Continue playing"), lambda i=R.get("id"): self._play_act("story", i, "weiter"), primary=True).pack(anchor="w", pady=(4, 0))
+        tk.Label(rf, text=tr("Opened in the simulator – you play it in the simulator window (tab «Sim»)."), bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 9),
                  anchor="w").pack(fill="x")
     ttk.Label(inner, text=tr("Stories").upper(), style="Mut.TLabel").pack(anchor="w", pady=(12, 4))
     sg = tk.Frame(inner, bg=C["bg"]); sg.pack(fill="x")
@@ -483,6 +512,16 @@ def _tk_play_paint(self, d):
         pb = ttk.Progressbar(pr, maximum=100, length=120); pb.pack(side="left"); pb["value"] = int(x.get("pct") or 0)
         tk.Label(pr, text=f"{int(x.get('pct') or 0)} %" + (" · " + str(x.get("where")) if x.get("where") and not x.get("done") else ""), bg=C["panel"], fg=C["txt"],
                  font=("DejaVu Sans", 9)).pack(side="left", padx=(8, 0))
+        if not off and not d.get("offline"):             # 3.51.x: start / continue here as well (the same buttons as the card in the simulator)
+            br_ = tk.Frame(f, bg=C["panel"]); br_.pack(fill="x", pady=(6, 0))
+            sid_ = x.get("id")
+            if x.get("locked"):
+                self._fbtn(br_, tr("Unlock"), lambda i=sid_: self._play_act("story", i, "unlock")).pack(side="left")
+            else:
+                self._fbtn(br_, tr("Continue playing") if x.get("started") and not x.get("done") else tr("Start story"),
+                           lambda i=sid_: self._play_act("story", i, "weiter"), primary=True).pack(side="left")
+                if x.get("started"):
+                    self._fbtn(br_, tr("Start over"), lambda i=sid_: self._play_act("story", i, "neu")).pack(side="left", padx=(6, 0))
     ttk.Label(inner, text=tr("Stories are played in the simulator – here you see the progress."), style="Mut.TLabel").pack(anchor="w")
     ttk.Label(inner, text=tr("Discover").upper(), style="Mut.TLabel").pack(anchor="w", pady=(12, 4))
     if not d.get("chapters"):
@@ -543,11 +582,19 @@ def play_selftest():
             assert not r["ok"] and r.get("code") == 403 and not asked, ("Hospiz started without the owner", r, asked)
             r = play_do("start", " HORROR ", False)
             assert not r["ok"] and not asked, "Hospiz with another spelling"
+            r = play_do("story", "horror", False, "neu")          # 3.51.x: the story buttons of the phone - the same rule
+            assert not r["ok"] and r.get("code") == 403 and not asked, ("Hospiz story button without the owner", r, asked)
+            play_do("story", "maggie", True, "neu")
+            play_do("story", "maggie", True, "x")
+            sq_ = [x_ for x_ in asked if x_.get("do") == "story"]
+            assert sq_ == [{"action": "spielbereich", "do": "story", "id": "maggie", "what": "neu"},
+                           {"action": "spielbereich", "do": "story", "id": "maggie", "what": "weiter"}], asked
             assert nacht_may("admin", locked=True) is False and nacht_may("user", locked=False) is False
         finally:
             globals()["sim_control"] = _sc; globals()["log_event"] = _le; CFG["sim_on"] = False
         html = play_page()
         assert 'href="/play"' in html and "/api/play" in html and "Geschichten" in html and "Entdecken" in html and "MWBlinki" in html
+        assert 'plDo("story"' in html and "/sim" in html and tr("Start over", "rm") == "Cumenzar da nov"   # 3.51.x: stories from the phone
         assert 'id="pl-bd"' not in html and "/sim/story_pic/" in html             # Geschichten-Menü: badges in the discovery book
         st = {"stories": [{"id": "horror"}, {"id": "maggie"}], "resume": {"id": "horror"}}
         assert [x["id"] for x in play_for(st, False)["stories"]] == ["maggie"] and not play_for(st, False)["resume"]

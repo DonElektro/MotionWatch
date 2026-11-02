@@ -5466,7 +5466,8 @@ func view_request(q: Dictionary) -> void:
 	_mod("kamera").view_request(q)
 const VIEW_KEYS := {"ArrowUp": KEY_UP, "ArrowDown": KEY_DOWN, "ArrowLeft": KEY_LEFT, "ArrowRight": KEY_RIGHT, "w": KEY_W, "a": KEY_A,
 		"s": KEY_S, "d": KEY_D, "q": KEY_Q, "e": KEY_E, "r": KEY_R, "f": KEY_F, "PageUp": KEY_PAGEUP, "PageDown": KEY_PAGEDOWN,
-		"0": KEY_0, "1": KEY_1, "2": KEY_2, "3": KEY_3, "4": KEY_4, "5": KEY_5, "+": KEY_PLUS, "-": KEY_MINUS, "Shift": KEY_SHIFT, "p": KEY_P}
+		"0": KEY_0, "1": KEY_1, "2": KEY_2, "3": KEY_3, "4": KEY_4, "5": KEY_5, "+": KEY_PLUS, "-": KEY_MINUS, "Shift": KEY_SHIFT, "p": KEY_P,
+		"Escape": KEY_ESCAPE, "Enter": KEY_ENTER, " ": KEY_SPACE, "k": KEY_K}      # 3.51.x: Esc / Enter / Leertaste / K for the stories
 
 
 func view_rect() -> Rect2:

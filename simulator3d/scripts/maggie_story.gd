@@ -124,6 +124,9 @@ var _chapel: Node3D = null
 var _me_next := 0.0
 var _region_t0 := 0.0
 var _resume_phase := ""
+var _resume_card: PanelContainer = null   # the card under the pause (Esc on a card): back on «Weiter»
+var _resume_frozen := false
+const NO_PAUSE := ["", "figur", "reise", "film", "abspann", "pause", "intro_dig", "finale_cut", "schreck"]
 var _cam_fix = null                   # tests: Transform3D of a fixed view (/control maggie kamera), null = follow the figure
 var demo := false                     # Vorführmodus: own save file, the autopilot plays (maggie_vorfuehrung.gd)
 var vf = null                         # maggie_vorfuehrung.gd while a Vorführung runs
@@ -1623,6 +1626,11 @@ func walking() -> bool:
 
 
 func _unhandled_input(ev: InputEvent) -> void:
+	if not running and _card != null and is_instance_valid(_card) and ev is InputEventKey and ev.pressed and not ev.echo \
+			and (ev as InputEventKey).keycode == KEY_ESCAPE and not demo:
+		_close_cards()                      # a card without the story running (e.g. «Weiter spielen?»): Esc closes it
+		get_viewport().set_input_as_handled()
+		return
 	if not running or phase in ["", "figur"]:
 		return
 	if demo and vf != null:                 # Vorführung: Esc = beenden, Leertaste = Pause … (maggie_vorfuehrung.gd)
@@ -1634,12 +1642,12 @@ func _unhandled_input(ev: InputEvent) -> void:
 			KEY_ESCAPE:
 				if phase == "film":
 					_film_skip()
-				elif phase in WALK:
-					_pause()
 				elif phase == "pause":
 					_unpause()
 				elif phase == "abspann":
 					_end_card()
+				elif phase in WALK or _card_open():
+					_pause()                    # also on a card (start card, choice, «Geschafft!»): the pause, «Weiter» = back to the card
 			KEY_K:
 				look_into_crystal()
 			KEY_SPACE, KEY_ENTER:
@@ -1661,26 +1669,40 @@ func _unhandled_input(ev: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 	elif ev is InputEventJoypadButton and ev.pressed:
 		if ev.button_index == JOY_BUTTON_START:
-			if phase in WALK:
-				_pause()
-			elif phase == "pause":
+			if phase == "pause":
 				_unpause()
+			elif phase in WALK or _card_open():
+				_pause()
 		get_viewport().set_input_as_handled()
 
 
+func _card_open() -> bool:
+	"""a card of the story is shown where a pause makes sense (not «Unterwegs …», not the film)"""
+	return running and phase not in NO_PAUSE and _card != null and is_instance_valid(_card)
+
+
 func _pause() -> void:
-	if phase not in WALK:
+	if not running or phase in NO_PAUSE or not (phase in WALK or _card_open()):
 		return
+	_drop_resume_card()
 	_resume_phase = phase
+	var a = spieler()
+	_resume_frozen = a != null and bool(a.frozen)
+	if _card != null and is_instance_valid(_card):
+		_resume_card = _card                     # the card stays, hidden under the pause
+		_resume_card.visible = false
+		_card = null
 	phase = "pause"
 	_freeze(true)
-	_modules_pause(true)
+	if _resume_phase in WALK:
+		_modules_pause(true)
 	var v := _new_card(T.t("Pause"), Color(0.62, 0.85, 1.0), 520)
 	_text(v, T.t("%d von 4 Jahreszeiten geschafft. Gespeichert wird an jedem Rastplatz.", [done_count()]), 15)
 	var row := _row(v)
 	_button(row, T.t("Weiter"), _unpause, true)
 	if region != "":
 		_button(row, T.t("Zur Auswahl"), func():
+			_drop_resume_card()
 			_modules_pause(false)
 			region_beendet.emit(region)
 			region = ""
@@ -1696,9 +1718,34 @@ func _unpause() -> void:
 		return
 	_clear_card()
 	phase = _resume_phase
-	_freeze(false)
-	_modules_pause(false)
+	if _resume_card != null and is_instance_valid(_resume_card):
+		_card = _resume_card                     # back to the card that was open (start card …)
+		_card.visible = true
+		_center_card.call_deferred()
+	_resume_card = null
+	_freeze(_resume_frozen)
+	if phase in WALK:
+		_modules_pause(false)
 	_safe_until = maxf(_safe_until, main.now() + 2.0)
+
+
+func _drop_resume_card() -> void:
+	if _resume_card != null and is_instance_valid(_resume_card):
+		_resume_card.queue_free()
+	_resume_card = null
+
+
+func card_quit() -> void:
+	"""«× Beenden» at the top right of every card: the story is saved and ends (not running: the card closes)"""
+	if demo and vf != null and is_instance_valid(vf):
+		vf.beenden("abgebrochen")
+		return
+	if running:
+		if phase in WALK or phase == "pause" or region != "":
+			_save()
+		stop()
+	else:
+		_close_cards()
 
 
 # =======================================================================================================================
@@ -1872,6 +1919,7 @@ func _anchor(c: Control, al: float, at: float, ar: float, ab: float, ol: float, 
 
 func _close_cards() -> void:
 	_clear_card()
+	_drop_resume_card()
 	if not running:
 		phase = ""
 
@@ -1891,11 +1939,25 @@ func _new_card(title: String, accent := UI.ACC, width := 600) -> VBoxContainer:
 	var v := VBoxContainer.new()
 	v.add_theme_constant_override("separation", 12)
 	_card.add_child(v)
+	var hr := HBoxContainer.new()                  # the title and «× Beenden» at the top right (also for the finger in MoveEye's stream)
+	hr.add_theme_constant_override("separation", 10)
+	v.add_child(hr)
 	var h := Label.new()
 	h.text = title
+	h.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	h.add_theme_font_size_override("font_size", 24)
 	h.add_theme_color_override("font_color", UI.TXT)
-	v.add_child(h)
+	hr.add_child(h)
+	var x := Button.new()
+	x.name = "Beenden"
+	x.text = T.t("× Beenden")
+	x.tooltip_text = T.t("Speichern und beenden") if running else T.t("Schliessen")
+	x.custom_minimum_size = Vector2(0, 34)
+	x.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	x.add_theme_font_size_override("font_size", 14)
+	x.focus_mode = Control.FOCUS_NONE
+	x.pressed.connect(card_quit)
+	hr.add_child(x)
 	_card.resized.connect(_center_card)
 	_center_card.call_deferred()
 	return v
