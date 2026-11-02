@@ -328,7 +328,7 @@ function simViewBind(VI, opt) {
   VI.addEventListener("pointerup", upH); VI.addEventListener("pointercancel", upH);
   VI.addEventListener("dblclick", e => { if (opt.active && !opt.active()) return; const p = pos(e); push(Object.assign({t: "dbl", b: 1}, p)); push(Object.assign({t: "up", b: 1}, p), true); });
   VI.addEventListener("wheel", e => { if (opt.active && !opt.active()) return; if (!ctlOn() && document.activeElement !== VI) return; e.preventDefault(); push(Object.assign({t: "wheel", d: e.deltaY < 0 ? 1 : -1}, pos(e)), true); }, {passive: false});
-  const KEYS = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "w", "a", "s", "d", "q", "e", "r", "f", "PageUp", "PageDown", "0", "1", "2", "3", "4", "5", "+", "-", "Shift"];
+  const KEYS = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "w", "a", "s", "d", "q", "e", "r", "f", "PageUp", "PageDown", "0", "1", "2", "3", "4", "5", "+", "-", "Shift", "Escape", "Enter", " ", "k"];   // 3.51.x: Esc / Enter / Leertaste / K for the stories
   const keyH = down => e => { if (opt.active && !opt.active()) return; const k = e.key.length === 1 ? e.key.toLowerCase() : e.key; if (!KEYS.includes(k)) return; e.preventDefault(); if (down && e.repeat) return; push({t: "key", k: k, down: down}, true); };
   VI.addEventListener("keydown", keyH(true)); VI.addEventListener("keyup", keyH(false));
   return {push: push};
@@ -373,6 +373,11 @@ function simTouchPad(box, VB, show) {
     b.addEventListener("pointerdown", e => { e.preventDefault(); e.stopPropagation(); try { b.setPointerCapture(e.pointerId); } catch (x) {} key(k, true); });
     ["pointerup", "pointercancel"].forEach(n => b.addEventListener(n, () => key(k, false))); });
   setInterval(() => { const on = !!show(); if (P.hidden === on) { P.hidden = !on; if (!on) { ["w", "s", "a", "d", "e", "q", "Shift"].forEach(k => key(k, false)); } } }, 300);
+  // 3.51.x: in a story (Maggie, Hospiz) the left stick walks the figure: «gehen» instead of «fliegen» (/api/play «playing»)
+  const lbl = P.querySelector(".stk.l .lb"), walkLbl = async () => { if (P.hidden) return;
+    const j = await fetch("/api/play", {cache: "no-store"}).then(x => x.ok ? x.json() : null).catch(() => null);
+    const walk = !!(j && !j.offline && j.playing); lbl.textContent = walk ? "gehen" : "fliegen"; P.querySelector(".ud").style.display = walk ? "none" : ""; };
+  setInterval(walkLbl, 3000);
   return P;
 }
 
