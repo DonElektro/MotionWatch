@@ -39,7 +39,7 @@ def play_state(force=False):
         try:
             r = sim_control({"action": "spielbereich", "do": "info"}) or {}
             if r.get("ok") and isinstance(r.get("chapters"), list):
-                d = {k: r.get(k) for k in ("chapters", "badges", "level", "blinki", "current", "scene", "stories", "resume", "slot", "kids")}
+                d = {k: r.get(k) for k in ("chapters", "badges", "level", "blinki", "current", "scene", "stories", "resume", "slot", "kids", "playing")}
                 d.update(ok=True, offline=False, t=now)
                 try:
                     with open(_play_file(), "w", encoding="utf-8") as f:
@@ -601,9 +601,75 @@ def play_selftest():
         assert len(play_for(st, True)["stories"]) == 2 and play_story_pic("horror", False) is None and play_story_pic("../x") is None
         assert tr("Travel there", "fr") != "Travel there" and tr("Stories", "rm") == "Istorgias" and tr("Discover", "it") == "Scoprire"
         assert hasattr(App, "_tk_play_tab")
+        assert HELP_PAGE.count('<section id="stories"') == 2 and all('id="stories"' in (HELP_X.get(L) or 'id="stories"') for L in ("fr", "it", "rm")), "manual: stories"
     finally:
         CFG["sim_on"] = keep[0]; _PLAY.clear(); _PLAY.update(keep[1])
     return "tab Play: nav, offline state, page, translations, window"
 
 
 SELFTEST_EXTRA.append(("Play area: tab «Spielen» (web, window, simulator spielbereich.gd)", play_selftest))
+
+
+# ---- 3.51.x (Daniel 02.11.2026): the manual (HELP_PAGE 540 + HELP_X) - a short chapter «Geschichten» before «Tipps & Tricks» ----
+_HELP_STORY = {
+    "de": ('<section id="stories" data-icon="📖"><h2>Geschichten im 3D-Simulator</h2><ul>'
+           '<li><b>Vom Handy starten:</b> Mehr → Spielen → bei der Geschichte «Starten», «Weiterspielen» oder «Neu beginnen». '
+           'Die Auswahl (Spielstand, Figur …) erscheint im Simulator-Fenster (Reiter Sim) – dort mit dem Finger antippen.</li>'
+           '<li><b>Gehen:</b> im Simulator-Fenster (Vollbild oder 🕹) mit dem Stick links (gehen) und rechts (umschauen); am PC W A S D und die Maus.</li>'
+           '<li><b>× Beenden:</b> jede Karte einer Geschichte hat oben rechts «× Beenden» (speichert und beendet). '
+           '<b>Esc</b> öffnet die Pause, «Weiter» bringt die Karte zurück.</li>'
+           '<li><b>Alles im Handy-Bild:</b> das Simulator-Fenster zeigt, was am PC offen ist – Karten der Geschichten und Spiele, Tagebuch, '
+           'Fenster wie Gerät oder Kameras, Hinweise und Popups. Nur das Bedienfeld und der Mover-Stick des Simulators fehlen (MoveEye hat eigene).</li>'
+           '</ul></section>\n'),
+    "en": ('<section id="stories" data-icon="📖"><h2>Stories in the 3D simulator</h2><ul>'
+           '<li><b>Start from the phone:</b> More → Play area → at the story «Start», «Continue playing» or «Start over». '
+           'The choice (game state, figure …) appears in the simulator window (tab Sim) – tap it there with the finger.</li>'
+           '<li><b>Walking:</b> in the simulator window (full screen or 🕹) the left stick walks, the right one looks around; at the PC W A S D and the mouse.</li>'
+           '<li><b>× Quit:</b> every card of a story has «× Quit» at the top right (saves and ends). '
+           '<b>Esc</b> opens the pause, «Continue» brings the card back.</li>'
+           '<li><b>Everything in the phone picture:</b> the simulator window shows what is open at the PC – cards of the stories and games, diary, '
+           'windows such as device or cameras, hints and popups. Only the panel and the mover stick of the simulator are left out (MoveEye has its own).</li>'
+           '</ul></section>\n'),
+    "fr": ('<section id="stories" data-icon="📖"><h2>Histoires dans le simulateur 3D</h2><ul>'
+           '<li><b>Lancer depuis le portable :</b> Plus → Jouer → pour l’histoire « Démarrer », « Continuer » ou « Recommencer ». '
+           'Le choix (partie, personnage …) apparaît dans la fenêtre du simulateur (onglet Sim) – le toucher du doigt.</li>'
+           '<li><b>Marcher :</b> dans la fenêtre du simulateur (plein écran ou 🕹) le stick gauche fait marcher, le droit regarde autour ; au PC W A S D et la souris.</li>'
+           '<li><b>× Quitter :</b> chaque carte d’une histoire a « × Quitter » en haut à droite (sauvegarde et termine). '
+           '<b>Échap</b> ouvre la pause, « Continuer » ramène la carte.</li>'
+           '<li><b>Tout dans l’image du portable :</b> la fenêtre du simulateur montre ce qui est ouvert au PC – cartes des histoires et des jeux, journal, '
+           'fenêtres comme appareil ou caméras, conseils et fenêtres surgissantes. Seuls le panneau et le stick du mover du simulateur manquent (MoveEye a les siens).</li>'
+           '</ul></section>\n'),
+    "it": ('<section id="stories" data-icon="📖"><h2>Storie nel simulatore 3D</h2><ul>'
+           '<li><b>Avviare dal telefono:</b> Altro → Giocare → per la storia «Avvia», «Continua» o «Ricomincia». '
+           'La scelta (partita, personaggio …) appare nella finestra del simulatore (scheda Sim) – toccarla lì con il dito.</li>'
+           '<li><b>Camminare:</b> nella finestra del simulatore (schermo intero o 🕹) lo stick sinistro cammina, quello destro guarda intorno; al PC W A S D e il mouse.</li>'
+           '<li><b>× Esci:</b> ogni carta di una storia ha «× Esci» in alto a destra (salva e termina). '
+           '<b>Esc</b> apre la pausa, «Continua» riporta la carta.</li>'
+           '<li><b>Tutto nell’immagine del telefono:</b> la finestra del simulatore mostra ciò che è aperto al PC – carte delle storie e dei giochi, diario, '
+           'finestre come dispositivo o telecamere, consigli e popup. Mancano solo il pannello e lo stick del mover del simulatore (MoveEye ha i suoi).</li>'
+           '</ul></section>\n'),
+    "rm": ('<section id="stories" data-icon="📖"><h2>Istorgias en il simulatur 3D</h2><ul>'
+           '<li><b>Cumenzar cun il telefonin:</b> Dapli → Giugar → tar l’istorgia «Cumenzar», «Cuntinuar a giugar» u «Cumenzar da nov». '
+           'La tscherna (stadi dal gieu, figura …) cumpara en la fanestra dal simulatur (tab Sim) – là la tutgar cun il det.</li>'
+           '<li><b>Ir:</b> en la fanestra dal simulatur (maletg entir u 🕹) il stick sanester va, il dretg guarda enturn; al PC W A S D e la mieur.</li>'
+           '<li><b>× Terminar:</b> mintga carta d’ina istorgia ha «× Terminar» sisum a dretga (memorisescha e termina). '
+           '<b>Esc</b> avra la pausa, «Vinavant» porta la carta enavos.</li>'
+           '<li><b>Tut en il maletg dal telefonin:</b> la fanestra dal simulatur mussa quai ch’è avert al PC – cartas da las istorgias e dals gieus, diari, '
+           'fanestras sco apparat u cameras, cussegls e popups. Mo il pult e il stick dal mover dal simulatur mancan (MoveEye ha ils agens).</li>'
+           '</ul></section>\n'),
+}
+
+
+def _help_story(doc, lang):
+    if 'id="stories"' in doc:
+        return doc
+    i = doc.find('<section id="tips"')
+    return doc[:i] + _HELP_STORY[lang] + doc[i:] if i >= 0 else doc
+
+
+_hp_en_story = HELP_PAGE.find('<div lang="en">')
+if _hp_en_story > 0:
+    HELP_PAGE = _help_story(HELP_PAGE[:_hp_en_story], "de") + _help_story(HELP_PAGE[_hp_en_story:], "en")
+for _L in ("fr", "it", "rm"):
+    if HELP_X.get(_L):
+        HELP_X[_L] = _help_story(HELP_X[_L], _L)

@@ -243,7 +243,7 @@ def prepare_settings_file():
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
 ZD_FILE = "moveeye_daten_3_51_0.zip"
-ZD_SHA256 = "ba25fd0861be6cf06b7c699ac08c4075ed932bae754439c0a7875563c1a8013e"
+ZD_SHA256 = "718fccc80adc3894066633462af56e4c202603611a1b239c4185aa811ec53ac8"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -67559,7 +67559,7 @@ def play_state(force=False):
         try:
             r = sim_control({"action": "spielbereich", "do": "info"}) or {}
             if r.get("ok") and isinstance(r.get("chapters"), list):
-                d = {k: r.get(k) for k in ("chapters", "badges", "level", "blinki", "current", "scene", "stories", "resume", "slot", "kids")}
+                d = {k: r.get(k) for k in ("chapters", "badges", "level", "blinki", "current", "scene", "stories", "resume", "slot", "kids", "playing")}
                 d.update(ok=True, offline=False, t=now)
                 try:
                     with open(_play_file(), "w", encoding="utf-8") as f:
@@ -67962,12 +67962,32 @@ def play_selftest():
         assert len(play_for(st, True)["stories"]) == 2 and play_story_pic("horror", False) is None and play_story_pic("../x") is None
         assert tr("Travel there", "fr") != "Travel there" and tr("Stories", "rm") == "Istorgias" and tr("Discover", "it") == "Scoprire"
         assert hasattr(App, "_tk_play_tab")
+        assert HELP_PAGE.count('<section id="stories"') == 2 and all('id="stories"' in (HELP_X.get(L) or 'id="stories"') for L in ("fr", "it", "rm")), "manual: stories"
     finally:
         CFG["sim_on"] = keep[0]; _PLAY.clear(); _PLAY.update(keep[1])
     return "tab Play: nav, offline state, page, translations, window"
 
 
 SELFTEST_EXTRA.append(("Play area: tab «Spielen» (web, window, simulator spielbereich.gd)", play_selftest))
+
+
+# ---- 3.51.x (Daniel 02.11.2026): the manual (HELP_PAGE 540 + HELP_X) - a short chapter «Geschichten» before «Tipps & Tricks» ----
+_HELP_STORY = _zd('639i_spielbereich/HELP_STORY', _ZDDict())
+
+
+def _help_story(doc, lang):
+    if 'id="stories"' in doc:
+        return doc
+    i = doc.find('<section id="tips"')
+    return doc[:i] + _HELP_STORY[lang] + doc[i:] if i >= 0 else doc
+
+
+_hp_en_story = HELP_PAGE.find('<div lang="en">')
+if _hp_en_story > 0:
+    HELP_PAGE = _help_story(HELP_PAGE[:_hp_en_story], "de") + _help_story(HELP_PAGE[_hp_en_story:], "en")
+for _L in ("fr", "it", "rm"):
+    if HELP_X.get(_L):
+        HELP_X[_L] = _help_story(HELP_X[_L], _L)
 _HX_NEBEL = {
     'Fog – view limited': ('Nebel – Sicht eingeschränkt', 'Brouillard – visibilité réduite', 'Nebbia – visibilità ridotta', 'Tschajera – vista limitada'),
 }

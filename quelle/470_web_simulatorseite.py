@@ -373,6 +373,11 @@ function simTouchPad(box, VB, show) {
     b.addEventListener("pointerdown", e => { e.preventDefault(); e.stopPropagation(); try { b.setPointerCapture(e.pointerId); } catch (x) {} key(k, true); });
     ["pointerup", "pointercancel"].forEach(n => b.addEventListener(n, () => key(k, false))); });
   setInterval(() => { const on = !!show(); if (P.hidden === on) { P.hidden = !on; if (!on) { ["w", "s", "a", "d", "e", "q", "Shift"].forEach(k => key(k, false)); } } }, 300);
+  // 3.51.x: in a story (Maggie, Hospiz) the left stick walks the figure: «gehen» instead of «fliegen» (/api/play «playing»)
+  const lbl = P.querySelector(".stk.l .lb"), walkLbl = async () => { if (P.hidden) return;
+    const j = await fetch("/api/play", {cache: "no-store"}).then(x => x.ok ? x.json() : null).catch(() => null);
+    const walk = !!(j && !j.offline && j.playing); lbl.textContent = walk ? "gehen" : "fliegen"; P.querySelector(".ud").style.display = walk ? "none" : ""; };
+  setInterval(walkLbl, 3000);
   return P;
 }
 
