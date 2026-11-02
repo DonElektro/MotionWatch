@@ -29,6 +29,11 @@ jobs:
           W="$(dirname "$RUNNER_TEMP")/_actions"; echo "_actions: $W"; ls -ld "$W" 2>&1
           mkdir -p "$W/probe_$$" && echo "_actions mkdir OK" || echo "_actions mkdir FEHLER"; rmdir "$W/probe_$$" 2>/dev/null
           rm -rf "$T"
+          echo "== Bildschirm"
+          ls /tmp/.X11-unix/ 2>&1; cat /etc/moveeye-kiosk-test.conf 2>&1 | grep -v -i pass
+          for d in :0 :1; do DISPLAY=$d timeout 5 python3 -c "import ctypes,sys;x=ctypes.CDLL('libX11.so.6');x.XOpenDisplay.restype=ctypes.c_void_p;print(sys.argv[1],'Bildschirm OK' if x.XOpenDisplay(None) else 'kein Zugriff')" $d 2>&1; done
+          python3 -c "import tkinter;print('tkinter da')" 2>&1 | tail -1
+          ls -d "$MW_RUNNER_HOME"/venv 2>&1; "$MW_RUNNER_PY" -c "import sys;print(sys.version)" 2>&1
           echo "== Dienst-Schutz"
           U="$(systemctl list-units --type=service --no-legend 'actions.runner.*' | awk '{print $1}' | head -1)"
           systemctl show "$U" -p ProtectSystem -p ProtectHome -p SystemCallFilter -p SystemCallErrorNumber -p RestrictFileSystems -p ReadOnlyPaths -p ReadWritePaths -p PrivateTmp -p RestrictNamespaces 2>&1 | cut -c1-200
