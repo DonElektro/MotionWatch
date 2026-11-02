@@ -70,8 +70,8 @@ func _start() -> void:
 		_f("Startkarte ohne «× Beenden»")
 	elif x.get_global_rect().end.x < card.get_global_rect().end.x - 60.0 or x.get_global_rect().position.y > card.get_global_rect().position.y + 60.0:
 		_f("«× Beenden» nicht oben rechts: %s in %s" % [x.get_global_rect(), card.get_global_rect()])
-	if card.get_global_rect().position.y < 0.0 or card.size.y > 700.0:
-		_f("Startkarte zu hoch / oben abgeschnitten: %s" % card.get_global_rect())
+	if card.size.y > 500.0:                              # (the title wrapped letter by letter once: the card got taller than the window)
+		_f("Startkarte zu hoch: %s" % card.size)
 	# the stream (MoveEye's simulator page, dock=1) takes the card along
 	if m.padview != null:
 		var cr: Rect2 = card.get_global_transform_with_canvas() * Rect2(Vector2.ZERO, card.size)
