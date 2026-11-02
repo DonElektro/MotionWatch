@@ -28,7 +28,7 @@ jobs:
   # ---------------------------------------------------------------- MoveEye
   moveeye:
     name: MoveEye · bauen --pruefen + Selbsttest
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -57,7 +57,7 @@ jobs:
 
   moveeye-web:
     name: MoveEye · Web-Rauchtest + Browser (Playwright)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -94,7 +94,7 @@ jobs:
   # ---------------------------------------------------------------- Simulator
   sim-texte:
     name: Simulator · sim_texte.py --pruefen
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
@@ -106,7 +106,7 @@ jobs:
 
   sim-liste:
     name: Simulator · Testliste
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       tests: ${{ steps.l.outputs.tests }}
     steps:
@@ -121,7 +121,7 @@ jobs:
   sim:
     name: Simulator · ${{ matrix.test }}
     needs: sim-liste
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
     strategy:
       fail-fast: false
@@ -206,7 +206,7 @@ jobs:
       github.ref == 'refs/heads/main' || github.ref == 'refs/heads/integration' ||
       (github.event_name == 'workflow_dispatch' && github.event.inputs.export != 'false') ||
       contains(github.event.head_commit.message, '[export]')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 40
     strategy:
       fail-fast: false
