@@ -243,7 +243,7 @@ def prepare_settings_file():
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
 ZD_FILE = "moveeye_daten_3_49_0.zip"
-ZD_SHA256 = "d1f3a570cea91e6fac3ab100b27019be4dc0bea26a20a14d7bc3366ce5bb446b"
+ZD_SHA256 = "a635afe9ff544ddb069c180bb6cdbab2bd8583c5dc8f8f1890e943f89c423c8d"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -72696,35 +72696,13 @@ GEH_PAGE = _zd('639w_gehaeuse/GEH_PAGE', ZD_PAGE)
 
 # the 3D workshop in the browser (three.js r160 from 639vb, the model /build/gehaeuse.glb) - like werkstatt.gd in the simulator
 GEH_3D_JS = _zd('639w_gehaeuse/GEH_3D_JS', "")
-GEH_DL_TX = {                                             # real-download-fix: EN -> (de, fr, it, rm)
-    "The print file is not on this MoveEye and could not be fetched from the internet (no connection?). Try again later, or load the complete kit package.": (
-        "Die Druckdatei liegt nicht auf diesem MoveEye und konnte nicht aus dem Internet geholt werden (keine Verbindung?). Später nochmals versuchen oder das komplette Bausatz-Paket laden.",
-        "Le fichier d'impression n'est pas sur ce MoveEye et n'a pas pu être téléchargé (pas de connexion ?). Réessayer plus tard ou charger le kit complet.",
-        "Il file di stampa non è su questo MoveEye e non è stato possibile scaricarlo (nessuna connessione?). Riprovare più tardi o scaricare il kit completo.",
-        "La datoteca da stampa n'è betg sin quest MoveEye e n'ha betg pudì vegnir chargiada da l'internet (nagina colliaziun?). Empruvar pli tard u chargiar il pachet cumplet."),
-    "The print files are being fetched from the internet (%d of %d). This page tries again by itself; you can also tap «Try again».": (
-        "Die Druckdateien werden aus dem Internet geholt (%d von %d). Diese Seite versucht es selbst nochmals; du kannst auch «Nochmals versuchen» tippen.",
-        "Les fichiers d'impression sont en cours de téléchargement (%d sur %d). Cette page réessaie d'elle-même ; vous pouvez aussi toucher «Réessayer».",
-        "I file di stampa vengono scaricati da internet (%d di %d). Questa pagina riprova da sola; puoi anche toccare «Riprova».",
-        "Las datotecas da stampa vegnan chargiadas da l'internet (%d da %d). Questa pagina emprova sezza anc ina giada; ti pos er tutgar «Empruvar anc ina giada»."),
-    "Try again": ("Nochmals versuchen", "Réessayer", "Riprova", "Empruvar anc ina giada"),
-    "Complete kit package (GitHub)": ("Komplettes Bausatz-Paket (GitHub)", "Kit complet (GitHub)", "Kit completo (GitHub)", "Pachet cumplet (GitHub)"),
-    "Back to Build": ("Zurück zu Bauen", "Retour à Construire", "Torna a Costruire", "Enavos tar Construir"),
-    "The print file is too big.": ("Die Druckdatei ist zu gross.", "Le fichier d'impression est trop grand.", "Il file di stampa è troppo grande.", "La datoteca da stampa è memia gronda."),
-    "MoveEye print files – case %s – as of MoveEye %s": ("MoveEye Druckdateien – Gehäuse %s – Stand MoveEye %s", "Fichiers d'impression MoveEye – boîtier %s – état MoveEye %s",
-        "File di stampa MoveEye – custodia %s – stato MoveEye %s", "Datotecas da stampa MoveEye – chascha %s – stadi MoveEye %s"),
-    "folder": ("Ordner", "dossier", "cartella", "ordinatur"),
-    "Without the repository MoveEye fetches the files from GitHub itself (the first time takes about a minute). Everything in one package:": (
-        "Ohne Repository holt MoveEye die Dateien selbst von GitHub (beim ersten Mal rund eine Minute). Alles in einem Paket:",
-        "Sans dépôt, MoveEye télécharge lui-même les fichiers depuis GitHub (la première fois environ une minute). Tout en un paquet :",
-        "Senza repository MoveEye scarica i file da GitHub da solo (la prima volta circa un minuto). Tutto in un pacchetto:",
-        "Senza repository chargia MoveEye las datotecas sez da GitHub (l'emprima giada var ina minuta). Tut en in pachet:"),
-}
+GEH_DL_TX = _zd('639w_gehaeuse/GEH_DL_TX', _ZDDict())
 for _k, _v in GEH_DL_TX.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(("fr", "it", "rm")):
         TRX.setdefault(_L, {}).setdefault(_k, _v[_i + 1])
-GEH_KEYS = sorted(set(GEH_UI_DE) | set(GEH_UI2_DE) | {k for _i, k in BAU_TABS} | {"Complete kit package (GitHub)",
+GEH_KEYS = sorted(set(GEH_UI_DE) | set(GEH_UI2_DE) | {k for _i, k in BAU_TABS} | {"Complete kit package (GitHub)", "Needs internet (GitHub)",
+    "Saved only in this browser (offline version).", "The print files come from GitHub – this needs internet. Everything else on this page works offline.", "Offline version",
     "Without the repository MoveEye fetches the files from GitHub itself (the first time takes about a minute). Everything in one package:"} | {
     "Case", "Step", "Name", "Opened in the simulator.", "Simulator not connected – start it and connect it on the page Simulator."})
 
@@ -72735,15 +72713,59 @@ def geh_fk():
     return {i: {k: es[i].get(k) for k in ("titel", "text", "schritte", "stufe")} for i in GEH_BAU.get("fehlersuche") or [] if i in es}
 
 
-def geh_page():
+def geh_page(off=None):
+    """the page /build; off = {"raw", "kit", "glb", "imports"}: the same page as one file without the Pi (geh_render_off)"""
     js = "Object.assign(I18N.de, " + json.dumps({k: DE.get(k, k) for k in GEH_KEYS}, ensure_ascii=False) + ");"
     J = lambda o: json.dumps(o, ensure_ascii=False).replace("</", "<\\/")
-    return (render_page(GEH_PAGE, "more").replace("/*GEHDE*/", js, 1).replace("/*GEHBAU*/null", J(GEH_BAU), 1)
+    return ((geh_render_off(GEH_PAGE, off) if off else render_page(GEH_PAGE, "more")).replace("/*GEHDE*/", js, 1).replace("/*GEHBAU*/null", J(GEH_BAU), 1)
             .replace("/*GEHFK*/null", J(geh_fk()), 1).replace("/*GEHM3*/null", J(BAU3D_MODELLE), 1)
             .replace("/*GEHVER*/\"\"", json.dumps(APP_VERSION), 1)
             .replace("/*GEHSIM*/false", "true" if CFG.get("sim_on") else "false", 1)
             .replace("/*GEHTABS*/", J([list(x) for x in BAU_TABS])).replace("/*GEH3D*/", GEH_3D_JS, 1)
             .replace("/*GEHFERTIG*/", fertig_js(), 1))                       # «Fertig kaufen» (639zj): the hint at the top
+
+
+def geh_render_off(page, off):
+    """real-werkstatt-standalone: like render_page, but for a file opened by double-click (file://, no Pi, no internet):
+    base CSS and COMMON_JS, the language menu with the translations of all five languages inside, no menu bar, no alerts,
+    no calls to the Pi (fetch of a Pi address answers at once: /api/appearance = language of the browser, else «offline»),
+    three.js and the model from `off` (data URLs), window.MW_OFFLINE for the page (639w GEH_OFF)."""
+    import base64
+    J = lambda o: json.dumps(o, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
+    probe = page + COMMON_JS + GEH_3D_JS + str(globals().get("GEH_EINZEL_JS", "")) + str(globals().get("GEH_EINZEL_3D", "")) + fertig_js()
+    keys = set(GEH_KEYS) | set(re.findall(r'data-i18n="([^"]+)"', page)) | {k for k in TRX.get("fr", {}) if '"' + k + '"' in probe}
+    trx = {L: {k: TRX.get(L, {})[k] for k in sorted(keys) if TRX.get(L, {}).get(k)} for L in ("fr", "it", "rm")}
+    cfg = {k: off[k] for k in ("raw", "kit", "glb") if k in off}
+    head = ("<script>window.MW_OFFLINE=" + J(cfg) + ";window.I18NXA=" + J(trx) + ";\n" + LANG_JS.replace("</", "<\\/") + "\n"
+            "(function(){var l='';try{l=localStorage.getItem('mw-lang')||'';}catch(e){}"
+            "var nl=((navigator.language||'de').slice(0,2)||'de').toLowerCase();if(['de','fr','it','rm','en'].indexOf(nl)<0)nl='en';"
+            "window.I18NX=window.I18NXA[l||nl]||null;window.LX=function(s){var d=window.I18NX;return (d&&d[s])||'';};"
+            "var f0=window.fetch;window.fetch=function(u,o){var s=String((u&&u.url)||u||'');"
+            "if(/^\\/[^\\/]/.test(s)){if(s.indexOf('/api/appearance')===0)return Promise.resolve(new Response(JSON.stringify({lang:nl,theme:'dark'}),{headers:{'Content-Type':'application/json'}}));"
+            "return Promise.reject(new TypeError('offline: '+s));}return f0.apply(this,arguments);};})();</script>")
+    imp = '<script type="importmap">' + J({"imports": off.get("imports") or {}}) + "</script>"
+    page = re.sub(r'<script type="importmap">.*?</script>', lambda m_: imp, page, count=1, flags=re.S)
+    page = page.replace("<head>", "<head>" + head, 1).replace('<img class="qr" src="/build/qr.svg" alt="QR">', "", 1)
+    page = page.replace("<!--NAV-->", '<span class="badge" style="font-size:11px" data-i18n="Offline version">Offline version</span>', 1)
+    page = re.sub(r"(<h1[^>]*>)MoveEye</h1>", r'\1MoveEye <span class="ver">' + APP_VERSION + "</span></h1>", page, count=1)
+    ico = "data:image/png;base64," + base64.b64encode(app_icon_png(64)).decode()     # the app icon (header, tab) inside
+    page = page.replace("</head>", str(globals().get("SX_NIGHT_CSS", "")) + '<link rel="icon" type="image/png" href="' + ico + '">'
+                        "<style>:root{--mw-icon:url(" + ico + ")}</style></head>", 1)
+    return page.replace("/*BASECSS*/", BASE_CSS).replace("/*COMMON*/", COMMON_JS).replace("/*ALERTS*/", "")
+
+
+def geh_offline_html():
+    """-> the whole workshop «Bauen» as one HTML file (werkzeuge/werkstatt_html.py): three.js and gehaeuse.glb inside as data URLs,
+    the print files from GitHub (GEH_DRUCK_RAW), «All» = the kit package of the latest release (GEH_BAUSATZ_URL)"""
+    import base64
+    import gzip
+    du = lambda b_, mt: "data:" + mt + ";base64," + base64.b64encode(b_).decode()
+    src = {k: gzip.decompress(bau3d_bytes(k)).decode("utf-8") for k in BAU3D}
+    # GLTFLoader imports «../utils/BufferGeometryUtils.js»: a data URL has no folder -> the name from the import map
+    src = {k: v.replace("'../utils/BufferGeometryUtils.js'", "'three/addons/utils/BufferGeometryUtils.js'") for k, v in src.items()}
+    imports = {("three" if k == "three.module.min.js" else "three/addons/" + k): du(v.encode("utf-8"), "text/javascript") for k, v in src.items()}
+    off = {"raw": GEH_DRUCK_RAW, "kit": GEH_BAUSATZ_URL, "glb": du(gzip.decompress(bau3d_bytes("glb")), "model/gltf-binary"), "imports": imports}
+    return geh_page(off=off)
 
 
 def geh_do(d):
@@ -73279,6 +73301,12 @@ def geh_selftest():
     for x in ("/api/bau", '"schritte"', "/build/gehaeuse.glb", "importmap", "/bau3d/three.module.min.js", '"HW_PCA9685"', "Raspberry Pi 5"):
         assert x in html, x
     assert "<!--NAV-->" not in html and "/*GEH" not in html
+    off_ = geh_offline_html()                             # real-werkstatt-standalone: the same page as one offline file
+    for x in ("window.MW_OFFLINE=", '"three":"data:text/javascript;base64,', "data:model/gltf-binary;base64,", GEH_DRUCK_RAW, GEH_BAUSATZ_URL,
+              "const GEH_OFF = window.MW_OFFLINE", "window.I18NXA=", '"Offline version"', "Parties", APP_VERSION):
+        assert x in off_, ("offline file", x)
+    for x in ('src="/', "/bau3d/", "/build/qr.svg", "/i18n/", "/*GEH", "<!--NAV-->", "/*ALERTS*/"):
+        assert x not in off_, ("offline file", x)
     import gzip
     for k in list(BAU3D) + ["glb"]:
         raw = gzip.decompress(bau3d_bytes(k))
@@ -73486,9 +73514,9 @@ GEH_EINZEL_JS = _zd('639wc_einzelteil/GEH_EINZEL_JS', "")
 GEH_EINZEL_3D = _zd('639wc_einzelteil/GEH_EINZEL_3D', "")
 
 
-def _geh_page_einzel():
+def _geh_page_einzel(*a, **k):                           # real-werkstatt-standalone: geh_page(off=…) passes through
     js = GEH_EINZEL_JS.replace("/*GEHDL*/null", json.dumps(GEH_DRUCK_LAGE, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/"), 1)
-    return _geh_page_einzel_base().replace("/*GEHEINZEL*/", js, 1).replace("/*GEHEINZEL3D*/", GEH_EINZEL_3D, 1)
+    return _geh_page_einzel_base(*a, **k).replace("/*GEHEINZEL*/", js, 1).replace("/*GEHEINZEL3D*/", GEH_EINZEL_3D, 1)
 
 
 _geh_page_einzel_base = geh_page
@@ -75735,6 +75763,7 @@ FERTIG_JS = r"""
     const ds = mk("span", "mut", [L5(cur.desc), FT("price")].filter(Boolean).join(" · ")); ds.id = "g-fk-desc";
     const ob = mk("button", "sec", FT("button")); ob.type = "button"; ob.id = "g-fk-btn";
     ob.onclick = () => { if (window.mwOrder) window.mwOrder(pkg); else location.hash = "#order"; };
+    if (!window.mwOrder && window.MW_OFFLINE) ob.hidden = true;   // the offline file (639w geh_page(off)): no feedback to the Pi
     r2.append(sg, ds, ob); box.append(r1, r2); box.hidden = false;
   }
   const ai = window.applyI18n;                         // the language changes: the hint follows

@@ -2,6 +2,8 @@
 # Bei jedem Push auf main, der eine neue *signierte* Version bringt (versions.json), baut werkzeuge/bausatz.py das Paket
 # MoveEye_Bausatz_X.Y.Z.zip und legt es als Release «vX.Y.Z» ab – zusätzlich unter dem festen Namen MoveEye_Bausatz.zip.
 # Damit geht immer: https://github.com/DonElektro/MotionWatch/releases/latest/download/MoveEye_Bausatz.zip
+# Dazu die Werkstatt «Bauen» als eine HTML-Datei (werkzeuge/werkstatt_html.py, offline geprüft): MoveEye_Werkstatt_X.Y.Z.html und
+# MoveEye_Werkstatt.html -> https://github.com/DonElektro/MotionWatch/releases/latest/download/MoveEye_Werkstatt.html
 #  - Gibt es den Release vX.Y.Z schon, passiert nichts (von Hand: Actions -> Bausatz -> Run workflow, «neu» = ersetzen).
 #  - Nicht signiert (der Besitzer signiert später): kein Release; nach dem Signieren-Push läuft es von selbst.
 #  - Die KI-Releases (ki-modell*, ki-daten) bleiben «--latest=false» und stören «latest» nicht.
@@ -60,6 +62,9 @@ jobs:
       - name: Paket bauen
         if: steps.v.outputs.sig == 'ja' && (steps.v.outputs.da != 'ja' || inputs.neu == true)
         run: python3 werkzeuge/bausatz.py --fest --aus ausgabe_bausatz && ls -la ausgabe_bausatz
+      - name: Werkstatt als eine HTML-Datei (offline geprüft)
+        if: steps.v.outputs.sig == 'ja' && (steps.v.outputs.da != 'ja' || inputs.neu == true)
+        run: python3 werkzeuge/werkstatt_html.py --aus ausgabe_werkstatt --test && ls -la ausgabe_werkstatt
       - name: Release vX.Y.Z mit beiden Dateien
         if: steps.v.outputs.sig == 'ja' && (steps.v.outputs.da != 'ja' || inputs.neu == true)
         env:
@@ -67,9 +72,10 @@ jobs:
           V: ${{ steps.v.outputs.ver }}
         run: |
           Z="ausgabe_bausatz/MoveEye_Bausatz_$V.zip"; F="ausgabe_bausatz/MoveEye_Bausatz.zip"
+          WV="ausgabe_werkstatt/MoveEye_Werkstatt_$V.html"; WF="ausgabe_werkstatt/MoveEye_Werkstatt.html"
           if gh release view "v$V" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            gh release upload "v$V" "$Z" "$F" -R "$GITHUB_REPOSITORY" --clobber
+            gh release upload "v$V" "$Z" "$F" "$WV" "$WF" -R "$GITHUB_REPOSITORY" --clobber
           else
-            printf 'MoveEye %s – Selbstbau-Paket: Anleitung (PDF, 5 Sprachen), Druckdateien Gehäuse v5.2, Bestelllisten (Basis / Komplett / Autark), MoveEye-Software (signiert) mit Installationsanleitung.\n\nImmer die neueste Version: https://github.com/%s/releases/latest/download/MoveEye_Bausatz.zip\n' "$V" "$GITHUB_REPOSITORY" > notes.md
-            gh release create "v$V" "$Z" "$F" -R "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "MoveEye $V" --notes-file notes.md --latest
+            printf 'MoveEye %s – Selbstbau-Paket: Anleitung (PDF, 5 Sprachen), Druckdateien Gehäuse v5.2, Bestelllisten (Basis / Komplett / Autark), MoveEye-Software (signiert) mit Installationsanleitung.\n\nImmer die neueste Version: https://github.com/%s/releases/latest/download/MoveEye_Bausatz.zip\n\nWerkstatt «Bauen» als eine Datei (Doppelklick, offline im Browser, 3D, alle Reiter, 5 Sprachen): https://github.com/%s/releases/latest/download/MoveEye_Werkstatt.html\n' "$V" "$GITHUB_REPOSITORY" "$GITHUB_REPOSITORY" > notes.md
+            gh release create "v$V" "$Z" "$F" "$WV" "$WF" -R "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "MoveEye $V" --notes-file notes.md --latest
           fi

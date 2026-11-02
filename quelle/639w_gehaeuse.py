@@ -156,7 +156,7 @@ details summary{cursor:pointer;font-weight:600;padding:6px 0}
     <div class="noprint"><button type="button" class="sec" onclick="gNode('')" data-i18n="All connections">All connections</button></div>
     <table class="gb" id="g-wire"></table></div></section>
   <section class="pane" id="p-software"><div class="gc"><h2 data-i18n="Software">Software</h2><ol class="gs" id="g-sw"></ol></div>
-    <div class="gc gtop"><img class="qr" src="/build/qr.svg" alt="QR"><div class="gt"><b data-i18n="QR code to this MoveEye page">QR code to this MoveEye page</b><div class="mut" id="g-url"></div></div></div></section>
+    <div class="gc gtop" id="g-qrbox"><img class="qr" src="/build/qr.svg" alt="QR"><div class="gt"><b data-i18n="QR code to this MoveEye page">QR code to this MoveEye page</b><div class="mut" id="g-url"></div></div></div></section>
   <section class="pane" id="p-inbetrieb"><div class="gc"><h2 data-i18n="Commissioning">Commissioning</h2><ol class="gs" id="g-ib"></ol></div></section>
   <section class="pane" id="p-fehler"><div class="gc"><h2 data-i18n="Troubleshooting">Troubleshooting</h2><div id="g-fx"></div></div></section>
   <section class="pane" id="p-wartung"><div class="gc"><h2 data-i18n="What wears out and when to check">What wears out and when to check</h2><table class="gb" id="g-wart"></table></div></section>
@@ -185,6 +185,9 @@ const TEIL = {}; (GB.teile || []).forEach(x => TEIL[x.id] = x);
 const BOM = {}; (GB.bom || []).forEach(b => BOM[b.id] = b);
 const isV52 = () => G.var.gehaeuse === "v52";
 const GEH_VER = /*GEHVER*/"";                          // real-abgleich-v52: «Stand MoveEye X.Y.Z» from APP_VERSION (not in bau.json)
+// real-werkstatt-standalone: the same page as one file without the Pi (werkzeuge/werkstatt_html.py, geh_page(off=…)):
+// window.MW_OFFLINE = {raw, kit, glb} – no /api/…, «My build» only in this browser, print files and ZIPs from GitHub (internet)
+const GEH_OFF = window.MW_OFFLINE || null;
 // the texts of an assembly step: v5.2 (standard) or the v5.1 texts when v5.1 is chosen (bau.json «v51»)
 const sv = s => (!isV52() && s.v51) ? Object.assign({}, s, s.v51) : s;
 // the 3MF of a print part: v5.2 -> Druckdateien/v5-2/ (also for parts that exist only there), else the v5.1 file
@@ -201,12 +204,13 @@ function gSave() {
   saveT = setTimeout(async () => {
     const d = {var: G.var, done: [...G.done]};
     try { localStorage.setItem("mwbau", JSON.stringify(d)); } catch (e) {}
+    if (GEH_OFF) { G.server = false; gProg(); return; }
     try { const r = await post("/api/bau", d); G.server = !!(r && r.ok); } catch (e) { G.server = false; }
     gProg();
   }, 700);
 }
 async function gLoad() {
-  try { const r = await (await fetch("/api/bau")).json(); if (r && r.ok) { G.server = true; if (r.var && Object.keys(r.var).length) G.var = Object.assign(G.var, r.var); G.done = new Set(r.done || []); return; } } catch (e) {}
+  if (!GEH_OFF) try { const r = await (await fetch("/api/bau")).json(); if (r && r.ok) { G.server = true; if (r.var && Object.keys(r.var).length) G.var = Object.assign(G.var, r.var); G.done = new Set(r.done || []); return; } } catch (e) {}
   try { const d = JSON.parse(localStorage.getItem("mwbau") || "{}"); if (d.var) G.var = Object.assign(G.var, d.var); G.done = new Set(d.done || []); } catch (e) {}
 }
 function allIds() {
@@ -224,7 +228,7 @@ function gProg() {
   const ids = allIds(), n = ids.filter(i => G.done.has(i)).length;
   document.getElementById("g-prog").style.width = (ids.length ? 100 * n / ids.length : 0) + "%";
   document.getElementById("g-prog-t").textContent = fmt(t("%d of %d done"), n, ids.length);
-  document.getElementById("g-save").textContent = G.server ? t("Saved for you on the Pi – the same on every device.") : t("Saved only on this device (no connection to the Pi).");
+  document.getElementById("g-save").textContent = G.server ? t("Saved for you on the Pi – the same on every device.") : GEH_OFF ? t("Saved only in this browser (offline version).") : t("Saved only on this device (no connection to the Pi).");
 }
 function chk(id) {
   const c = el("input", "chk"); c.type = "checkbox"; c.checked = G.done.has(id); c.title = t("done");
@@ -314,7 +318,7 @@ function gCsv() {
 }
 // real-download-fix: a normal link (no fetch, no «download» attribute - the iPhone only half supports it); each part of the path
 // coded by itself (v5-2/… stays a folder); MoveEye sends the file itself with Content-Disposition and the base name
-function fileLink(f, label) { const a = el("a", "", "⬇ " + (label || f.split("/").pop())); a.href = "/build/datei/" + f.split("/").map(encodeURIComponent).join("/"); return a; }
+function fileLink(f, label) { const a = el("a", "", "⬇ " + (label || f.split("/").pop()) + (GEH_OFF ? " 🌐" : "")); a.href = (GEH_OFF ? GEH_OFF.raw : "/build/datei/") + f.split("/").map(encodeURIComponent).join("/"); if (GEH_OFF) { a.target = "_blank"; a.rel = "noopener"; a.title = t("Needs internet (GitHub)"); } return a; }
 function gPrint() {
   const D = GB.druck || {}, tb = document.getElementById("g-print"); tb.textContent = "";
   const hd = el("tr"); ["", t("Part"), t("pcs"), t("Infill"), t("Walls"), t("Supports"), t("Layer"), t("lies on"), t("Print time"), ""].forEach((x, i) => hd.appendChild(el("th", i > 5 && i < 9 ? "hide-s" : "", x))); tb.appendChild(hd);
@@ -330,8 +334,10 @@ function gPrint() {
   const ul = document.getElementById("g-phint"); ul.textContent = ""; (D.hinweise || []).forEach(h => ul.appendChild(el("li", "", gx(h))));
   const fl = document.getElementById("g-files"); fl.textContent = "";
   const all = el("a", "", "⬇ " + t("All print files (ZIP)") + " · " + (isV52() ? "v5.2" : "v5.1")); all.href = "/build/alle.zip?var=" + (isV52() ? "v52" : "v51");
+  if (GEH_OFF) { all.textContent = "⬇ " + t("Complete kit package (GitHub)") + " 🌐"; all.href = GEH_OFF.kit; all.target = "_blank"; all.rel = "noopener"; }   // offline: everything in the kit package
   const kit = el("a", "", t("Complete kit package (GitHub)")); kit.href = GB.github + "/releases/latest/download/MoveEye_Bausatz.zip"; kit.target = "_blank"; kit.rel = "noopener";
   const kh = el("div", "mut", t("Without the repository MoveEye fetches the files from GitHub itself (the first time takes about a minute). Everything in one package:") + " "); kh.appendChild(kit);
+  if (GEH_OFF) { kh.textContent = "🌐 " + t("The print files come from GitHub – this needs internet. Everything else on this page works offline."); }
   fl.append(all, kh, el("h3", "", t("Plates for the X2D (everything on 2 plates)")));
   (GB.druckdateien || []).filter(f => f.startsWith("v5-2/") === isV52()).forEach(f => fl.appendChild(fileLink(f)));   // the plates of the chosen case
   fl.appendChild(el("h3", "", t("Single parts (3MF)"))); (GB.druckdateien_einzeln || []).filter(f => {
@@ -408,14 +414,15 @@ function gSoftware() {
     const li = stepLi(i + 1, s, "s:" + i, false), tx = li.querySelector(".tx");
     if (s.befehl) { const pr = el("pre", "cmd", s.befehl), cp = el("button", "sec", "📋 " + t("Copy")); cp.type = "button";
       cp.onclick = () => { try { navigator.clipboard.writeText(s.befehl); toast(t("Copy") + " ✓"); } catch (e) {} }; tx.append(pr, cp); }
-    if (s.link && s.link !== "qr") { const a = el("a", "", "↗ " + t("Open")); a.href = s.link; tx.appendChild(a); }
+    if (s.link && s.link !== "qr" && !(GEH_OFF && s.link.startsWith("/"))) { const a = el("a", "", "↗ " + t("Open")); a.href = s.link; tx.appendChild(a); }
     ol.appendChild(li);
   });
   document.getElementById("g-url").textContent = location.origin + "/";
+  document.getElementById("g-qrbox").hidden = !!GEH_OFF;   // offline: no MoveEye page to point to
   const ib = document.getElementById("g-ib"); ib.textContent = "";
   (GB.inbetriebnahme || []).forEach((s, i) => {
     const li = stepLi(i + 1, s, "i:" + i, false);
-    if (s.link) { const b = el("button", "", "↗ " + t("Open")); b.type = "button"; b.onclick = () => { location.href = s.link; }; li.appendChild(b); }
+    if (s.link && !GEH_OFF) { const b = el("button", "", "↗ " + t("Open")); b.type = "button"; b.onclick = () => { location.href = s.link; }; li.appendChild(b); }
     ib.appendChild(li);
   });
 }
@@ -426,7 +433,7 @@ function gFix() {
     const d = el("details"), sm = el("summary", "", (e.stufe === "bad" ? "⛔ " : "⚠ ") + gx(e.titel));
     d.append(sm, el("div", "mut", gx(e.text)));
     const ol = el("ol"); ((e.schritte || {})[gL()] || (e.schritte || {}).en || []).forEach(x => ol.appendChild(el("li", "", x))); d.appendChild(ol);
-    const a = el("a", "", "↗ " + t("Open help")); a.href = "/hilfe/fehler/" + id; d.appendChild(a);
+    if (!GEH_OFF) { const a = el("a", "", "↗ " + t("Open help")); a.href = "/hilfe/fehler/" + id; d.appendChild(a); }
     box.appendChild(d);
   });
 }
@@ -476,7 +483,7 @@ applyI18n = function () { _gAi(); try { gRender(); } catch (e) { console.error(e
   else G.tab = tabs.includes(h) ? h : tabs.includes(st) ? st : "uebersicht";
   await gLoad(); await initAppearance(); gRender();
   if (window.innerWidth > 640) document.getElementById("g-vd").open = true;
-  try { const r = await (await fetch("/api/case")).json(); document.getElementById("g-simbox").style.display = r && r.sim ? "" : "none"; } catch (e) {}
+  if (!GEH_OFF) try { const r = await (await fetch("/api/case")).json(); document.getElementById("g-simbox").style.display = r && r.sim ? "" : "none"; } catch (e) {}
 })();
 /*ALERTS*/
 </script>
@@ -580,7 +587,7 @@ renderer.domElement.addEventListener("pointerup", e => {
     if (B.mode) { if (X.tap) X.tap(e); } else { B.sel = pick(e); B.onSelect && B.onSelect(B.sel); paint(); } }
   down = null;
 });
-new GLTFLoader().load("/build/gehaeuse.glb", g => {
+new GLTFLoader().load((window.MW_OFFLINE || {}).glb || "/build/gehaeuse.glb", g => {
   const FB = GB.farben || {}, farbe = id => (row(id) || {}).farbe || FB[id] || ((FB.grau_teile || []).includes(id) && FB.grau) || (E[id] || {}).farbe || "";   // colours from the data (bau.json / modelle.json), else the model's
   g.scene.traverse(o => { if (o.isMesh) { o.material = o.material.clone(); o.material.side = THREE.DoubleSide; o.material.roughness = 0.6; o.material.metalness = 0;
     if (farbe(o.name)) o.material.color.set(farbe(o.name)); parts[o.name] = {mesh: o}; } });
@@ -615,12 +622,23 @@ GEH_DL_TX = {                                             # real-download-fix: E
         "Sans dépôt, MoveEye télécharge lui-même les fichiers depuis GitHub (la première fois environ une minute). Tout en un paquet :",
         "Senza repository MoveEye scarica i file da GitHub da solo (la prima volta circa un minuto). Tutto in un pacchetto:",
         "Senza repository chargia MoveEye las datotecas sez da GitHub (l'emprima giada var ina minuta). Tut en in pachet:"),
+    # real-werkstatt-standalone: the offline file (werkzeuge/werkstatt_html.py)
+    "Needs internet (GitHub)": ("Braucht Internet (GitHub)", "Nécessite internet (GitHub)", "Richiede internet (GitHub)", "Basegna internet (GitHub)"),
+    "Saved only in this browser (offline version).": ("Nur in diesem Browser gespeichert (Offline-Version).", "Enregistré seulement dans ce navigateur (version hors ligne).",
+        "Salvato solo in questo browser (versione offline).", "Memorisà mo en quest navigatur (versiun offline)."),
+    "The print files come from GitHub – this needs internet. Everything else on this page works offline.": (
+        "Die Druckdateien kommen von GitHub – dafür braucht es Internet. Alles andere auf dieser Seite geht offline.",
+        "Les fichiers d'impression viennent de GitHub – il faut internet. Tout le reste de cette page fonctionne hors ligne.",
+        "I file di stampa arrivano da GitHub – serve internet. Tutto il resto di questa pagina funziona offline.",
+        "Las datotecas da stampa vegnan da GitHub – per quai basegni internet. Tut il rest da questa pagina funcziuna offline."),
+    "Offline version": ("Offline-Version", "Version hors ligne", "Versione offline", "Versiun offline"),
 }
 for _k, _v in GEH_DL_TX.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(("fr", "it", "rm")):
         TRX.setdefault(_L, {}).setdefault(_k, _v[_i + 1])
-GEH_KEYS = sorted(set(GEH_UI_DE) | set(GEH_UI2_DE) | {k for _i, k in BAU_TABS} | {"Complete kit package (GitHub)",
+GEH_KEYS = sorted(set(GEH_UI_DE) | set(GEH_UI2_DE) | {k for _i, k in BAU_TABS} | {"Complete kit package (GitHub)", "Needs internet (GitHub)",
+    "Saved only in this browser (offline version).", "The print files come from GitHub – this needs internet. Everything else on this page works offline.", "Offline version",
     "Without the repository MoveEye fetches the files from GitHub itself (the first time takes about a minute). Everything in one package:"} | {
     "Case", "Step", "Name", "Opened in the simulator.", "Simulator not connected – start it and connect it on the page Simulator."})
 
@@ -631,15 +649,59 @@ def geh_fk():
     return {i: {k: es[i].get(k) for k in ("titel", "text", "schritte", "stufe")} for i in GEH_BAU.get("fehlersuche") or [] if i in es}
 
 
-def geh_page():
+def geh_page(off=None):
+    """the page /build; off = {"raw", "kit", "glb", "imports"}: the same page as one file without the Pi (geh_render_off)"""
     js = "Object.assign(I18N.de, " + json.dumps({k: DE.get(k, k) for k in GEH_KEYS}, ensure_ascii=False) + ");"
     J = lambda o: json.dumps(o, ensure_ascii=False).replace("</", "<\\/")
-    return (render_page(GEH_PAGE, "more").replace("/*GEHDE*/", js, 1).replace("/*GEHBAU*/null", J(GEH_BAU), 1)
+    return ((geh_render_off(GEH_PAGE, off) if off else render_page(GEH_PAGE, "more")).replace("/*GEHDE*/", js, 1).replace("/*GEHBAU*/null", J(GEH_BAU), 1)
             .replace("/*GEHFK*/null", J(geh_fk()), 1).replace("/*GEHM3*/null", J(BAU3D_MODELLE), 1)
             .replace("/*GEHVER*/\"\"", json.dumps(APP_VERSION), 1)
             .replace("/*GEHSIM*/false", "true" if CFG.get("sim_on") else "false", 1)
             .replace("/*GEHTABS*/", J([list(x) for x in BAU_TABS])).replace("/*GEH3D*/", GEH_3D_JS, 1)
             .replace("/*GEHFERTIG*/", fertig_js(), 1))                       # «Fertig kaufen» (639zj): the hint at the top
+
+
+def geh_render_off(page, off):
+    """real-werkstatt-standalone: like render_page, but for a file opened by double-click (file://, no Pi, no internet):
+    base CSS and COMMON_JS, the language menu with the translations of all five languages inside, no menu bar, no alerts,
+    no calls to the Pi (fetch of a Pi address answers at once: /api/appearance = language of the browser, else «offline»),
+    three.js and the model from `off` (data URLs), window.MW_OFFLINE for the page (639w GEH_OFF)."""
+    import base64
+    J = lambda o: json.dumps(o, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
+    probe = page + COMMON_JS + GEH_3D_JS + str(globals().get("GEH_EINZEL_JS", "")) + str(globals().get("GEH_EINZEL_3D", "")) + fertig_js()
+    keys = set(GEH_KEYS) | set(re.findall(r'data-i18n="([^"]+)"', page)) | {k for k in TRX.get("fr", {}) if '"' + k + '"' in probe}
+    trx = {L: {k: TRX.get(L, {})[k] for k in sorted(keys) if TRX.get(L, {}).get(k)} for L in ("fr", "it", "rm")}
+    cfg = {k: off[k] for k in ("raw", "kit", "glb") if k in off}
+    head = ("<script>window.MW_OFFLINE=" + J(cfg) + ";window.I18NXA=" + J(trx) + ";\n" + LANG_JS.replace("</", "<\\/") + "\n"
+            "(function(){var l='';try{l=localStorage.getItem('mw-lang')||'';}catch(e){}"
+            "var nl=((navigator.language||'de').slice(0,2)||'de').toLowerCase();if(['de','fr','it','rm','en'].indexOf(nl)<0)nl='en';"
+            "window.I18NX=window.I18NXA[l||nl]||null;window.LX=function(s){var d=window.I18NX;return (d&&d[s])||'';};"
+            "var f0=window.fetch;window.fetch=function(u,o){var s=String((u&&u.url)||u||'');"
+            "if(/^\\/[^\\/]/.test(s)){if(s.indexOf('/api/appearance')===0)return Promise.resolve(new Response(JSON.stringify({lang:nl,theme:'dark'}),{headers:{'Content-Type':'application/json'}}));"
+            "return Promise.reject(new TypeError('offline: '+s));}return f0.apply(this,arguments);};})();</script>")
+    imp = '<script type="importmap">' + J({"imports": off.get("imports") or {}}) + "</script>"
+    page = re.sub(r'<script type="importmap">.*?</script>', lambda m_: imp, page, count=1, flags=re.S)
+    page = page.replace("<head>", "<head>" + head, 1).replace('<img class="qr" src="/build/qr.svg" alt="QR">', "", 1)
+    page = page.replace("<!--NAV-->", '<span class="badge" style="font-size:11px" data-i18n="Offline version">Offline version</span>', 1)
+    page = re.sub(r"(<h1[^>]*>)MoveEye</h1>", r'\1MoveEye <span class="ver">' + APP_VERSION + "</span></h1>", page, count=1)
+    ico = "data:image/png;base64," + base64.b64encode(app_icon_png(64)).decode()     # the app icon (header, tab) inside
+    page = page.replace("</head>", str(globals().get("SX_NIGHT_CSS", "")) + '<link rel="icon" type="image/png" href="' + ico + '">'
+                        "<style>:root{--mw-icon:url(" + ico + ")}</style></head>", 1)
+    return page.replace("/*BASECSS*/", BASE_CSS).replace("/*COMMON*/", COMMON_JS).replace("/*ALERTS*/", "")
+
+
+def geh_offline_html():
+    """-> the whole workshop «Bauen» as one HTML file (werkzeuge/werkstatt_html.py): three.js and gehaeuse.glb inside as data URLs,
+    the print files from GitHub (GEH_DRUCK_RAW), «All» = the kit package of the latest release (GEH_BAUSATZ_URL)"""
+    import base64
+    import gzip
+    du = lambda b_, mt: "data:" + mt + ";base64," + base64.b64encode(b_).decode()
+    src = {k: gzip.decompress(bau3d_bytes(k)).decode("utf-8") for k in BAU3D}
+    # GLTFLoader imports «../utils/BufferGeometryUtils.js»: a data URL has no folder -> the name from the import map
+    src = {k: v.replace("'../utils/BufferGeometryUtils.js'", "'three/addons/utils/BufferGeometryUtils.js'") for k, v in src.items()}
+    imports = {("three" if k == "three.module.min.js" else "three/addons/" + k): du(v.encode("utf-8"), "text/javascript") for k, v in src.items()}
+    off = {"raw": GEH_DRUCK_RAW, "kit": GEH_BAUSATZ_URL, "glb": du(gzip.decompress(bau3d_bytes("glb")), "model/gltf-binary"), "imports": imports}
+    return geh_page(off=off)
 
 
 def geh_do(d):
@@ -1208,6 +1270,12 @@ def geh_selftest():
     for x in ("/api/bau", '"schritte"', "/build/gehaeuse.glb", "importmap", "/bau3d/three.module.min.js", '"HW_PCA9685"', "Raspberry Pi 5"):
         assert x in html, x
     assert "<!--NAV-->" not in html and "/*GEH" not in html
+    off_ = geh_offline_html()                             # real-werkstatt-standalone: the same page as one offline file
+    for x in ("window.MW_OFFLINE=", '"three":"data:text/javascript;base64,', "data:model/gltf-binary;base64,", GEH_DRUCK_RAW, GEH_BAUSATZ_URL,
+              "const GEH_OFF = window.MW_OFFLINE", "window.I18NXA=", '"Offline version"', "Parties", APP_VERSION):
+        assert x in off_, ("offline file", x)
+    for x in ('src="/', "/bau3d/", "/build/qr.svg", "/i18n/", "/*GEH", "<!--NAV-->", "/*ALERTS*/"):
+        assert x not in off_, ("offline file", x)
     import gzip
     for k in list(BAU3D) + ["glb"]:
         raw = gzip.decompress(bau3d_bytes(k))

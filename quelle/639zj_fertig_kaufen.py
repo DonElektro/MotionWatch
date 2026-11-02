@@ -91,6 +91,7 @@ FERTIG_JS = r"""
     const ds = mk("span", "mut", [L5(cur.desc), FT("price")].filter(Boolean).join(" · ")); ds.id = "g-fk-desc";
     const ob = mk("button", "sec", FT("button")); ob.type = "button"; ob.id = "g-fk-btn";
     ob.onclick = () => { if (window.mwOrder) window.mwOrder(pkg); else location.hash = "#order"; };
+    if (!window.mwOrder && window.MW_OFFLINE) ob.hidden = true;   // the offline file (639w geh_page(off)): no feedback to the Pi
     r2.append(sg, ds, ob); box.append(r1, r2); box.hidden = false;
   }
   const ai = window.applyI18n;                         // the language changes: the hint follows
