@@ -44375,6 +44375,12 @@
   "it": "· I riquadri in alto (Mondo · Testare · Imparare · Giocare) fanno le cose più frequenti con un clic.\n· «Semplice» mostra l’essenziale, «Esperto» tutto; il campo di ricerca trova ogni impostazione.\n· Le istruzioni complete sono in MoveEye: scheda Altro → Istruzioni (capitolo Simulatore 3D).",
   "rm": "· Las plattas sisum (Mund · Testar · Emprender · Giugar) fan il pli frequent cun in clic.\n· «Simpel» mussa il pli impurtant, «Expert» tut; il champ da tschertga chatta mintga configuraziun.\n· Las instrucziuns cumplettas èn en MoveEye: register Dapli → Instrucziuns (chapitel Simulatur 3D)."
  },
+ "× Beenden": {
+  "en": "× Quit",
+  "fr": "× Quitter",
+  "it": "× Esci",
+  "rm": "× Terminar"
+ },
  "ältere Intel-Grafik (%s)": {
   "en": "older Intel graphics (%s)",
   "fr": "graphique Intel ancien (%s)",

@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 7601 (Stellen: 10568)
-Übersetzt: en 7601, fr 7601, it 7601, rm 7601
+Texte gesamt: 7602 (Stellen: 10574)
+Übersetzt: en 7602, fr 7602, it 7602, rm 7602
 Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 513 Stellen
 Nicht mehr im Code (noch in texte.json): 338
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 68 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1
-Übersprungen (Grund: Anzahl): kennung 26868, schlüssel 20473, keine Wörter 12845, index 9657, technisch 3574, doc 2263, einheit 332, log 172, englisch 143, pfad 125, stringname 102, html 68, klasse 28, shader 6
+Übersprungen (Grund: Anzahl): kennung 26893, schlüssel 20476, keine Wörter 12852, index 9657, technisch 3580, doc 2269, einheit 332, log 172, englisch 143, pfad 125, stringname 103, html 68, klasse 28, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   werkstatt_daten.gd       531     4
@@ -18,9 +18,9 @@ Pro Datei (Texte / davon dynamische Stellen):
   game.gd                  211    32
   bergtal_abenteuer_daten.gd   197     0
   bergtal.gd               187     5
-  bergtal_horror.gd        159     3
+  bergtal_horror.gd        160     3
   abenteuer_raetsel.gd     145     2
-  maggie_story.gd          113     2
+  maggie_story.gd          114     2
   zwei_bausteine.gd        113     2
   abenteuer_moveeye.gd     110    14
   bergtal_orte.gd          108     0
@@ -246,8 +246,8 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   abenteuer_figuren.gd:808  'nein'
   ferienpark_leben.gd:925  'fertig'
   ferienpark_leben.gd:992  'fertig'
-  maggie_story.gd:407  'fertig'
-  maggie_story.gd:1274  'Mit'
+  maggie_story.gd:410  'fertig'
+  maggie_story.gd:1277  'Mit'
   maggie_vorfuehrung.gd:594  'fertig'
   maggie_vorfuehrung.gd:962  'ja'
   maggie_vorfuehrung.gd:962  'nein'
@@ -339,7 +339,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   abenteuer_moveeye.gd:1308  'offen'
   bergtal_horror.gd:50  'offen'
   bergtal_horror.gd:69  'offen'
-  bergtal_horror.gd:1253  'Fertig'
+  bergtal_horror.gd:1275  'Fertig'
   abenteuer_raetsel.gd:880  'Neu: '
   abenteuer_raetsel.gd:889  'Gegenstände: '
   abenteuer_rucksack.gd:218  'keine Wunschliste: '

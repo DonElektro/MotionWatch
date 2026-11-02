@@ -499,14 +499,36 @@ func _new_card(title: String, accent := UI.ORG, width := 600) -> VBoxContainer:
 	var v := VBoxContainer.new()
 	v.add_theme_constant_override("separation", 10)
 	_card.add_child(v)
+	var hr := HBoxContainer.new()                  # the title and «× Beenden» at the top right (also for the finger in MoveEye's stream)
+	hr.add_theme_constant_override("separation", 10)
+	v.add_child(hr)
 	var h := Label.new()
 	h.text = title
+	h.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	h.add_theme_font_size_override("font_size", 22)
 	h.add_theme_color_override("font_color", UI.TXT)
-	v.add_child(h)
+	hr.add_child(h)
+	var x := Button.new()
+	x.name = "Beenden"
+	x.text = T.t("× Beenden")
+	x.tooltip_text = T.t("Beenden") if running else T.t("Schliessen")
+	x.custom_minimum_size = Vector2(0, 34)
+	x.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	x.add_theme_font_size_override("font_size", 14)
+	x.focus_mode = Control.FOCUS_NONE
+	x.pressed.connect(card_quit)
+	hr.add_child(x)
 	_card.resized.connect(_center_card)
 	_center_card.call_deferred()
 	return v
+
+
+func card_quit() -> void:
+	"""«× Beenden» on every card: running = end the night (like «Beenden» in the pause), else close the card"""
+	if running:
+		stop()
+	else:
+		_close_all()
 
 
 func _center_card() -> void:

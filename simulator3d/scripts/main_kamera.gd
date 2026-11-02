@@ -266,6 +266,9 @@ func _view_capture() -> void:
 			Input.parse_input_event(ku)
 	# the window is the small box (or minimized): the view for MoveEye is drawn in a picture of its own (3D-3.19)
 	main._remote_set(t - main.view_want_t < (10.0 if main.remote_vp != null else 3.0) and not main.win_open)
+	if main.remote_vp != null and t - _adopt_t > 1.0:
+		_adopt_t = t
+		_remote_adopt()                                   # 3.51.x: layers made since (a story card …) also into the picture
 	if t - main.view_want_t > 3.0 or t - main._view_t < 1.0 / max(1.0, minf(main.view_fps, Quality.VIEW_FPS) if Quality.lite() else main.view_fps):
 		return
 	main._view_t = t
@@ -368,24 +371,52 @@ func _remote_set(on: bool) -> void:
 		main.remote_vp.size = Vector2i(clampi(sz.x, 640, 2560), clampi(sz.y, 400, 1600))
 		main.remote_vp.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 		main.remote_vp.msaa_3d = Viewport.MSAA_2X
+		main.remote_vp.gui_embed_subwindows = true       # 3.51.x: drop-down lists and popups in the picture, not as own windows
 		main.add_child(main.remote_vp)
 		main._remote_back = []
 		for n in [main.ui_layer, main.view_cam]:
 			main._remote_back.append([n, n.get_parent(), n.get_index()])
 			n.reparent(main.remote_vp)
+		_remote_adopt()
 		main.view_cam.current = true
 		print("view for MoveEye: drawn on its own (window small)")
 	else:
 		for e in main._remote_back:
 			var n: Node = e[0]
-			if is_instance_valid(n):
-				n.reparent(e[1])
-				(e[1] as Node).move_child(n, mini(int(e[2]), (e[1] as Node).get_child_count() - 1))
+			if not is_instance_valid(n):
+				continue
+			if not is_instance_valid(e[1]) or (e[1] as Node).is_queued_for_deletion():
+				n.queue_free()                            # its owner is gone meanwhile (a story module): the layer goes with it
+				continue
+			n.reparent(e[1])
+			(e[1] as Node).move_child(n, mini(int(e[2]), (e[1] as Node).get_child_count() - 1))
 		main._remote_back = []
 		main.view_cam.current = true
 		main.remote_vp.queue_free()
 		main.remote_vp = null
 		print("view for MoveEye: back in the window")
+
+
+var _adopt_t := -100.0
+
+
+func _remote_adopt() -> void:
+	"""3.51.x (Besitzer 02.11.2026): every other CanvasLayer of the window (cards of the stories and games, Tagebuch, «Mehr»,
+	Werkstatt, hints …) also into the picture of its own - before only ui_layer went, the rest stayed in the small window"""
+	var root_vp: Viewport = main.get_viewport()
+	for e in main._remote_back.duplicate():               # owner gone (a story module ended): the layer goes too
+		var n = e[0]
+		if is_instance_valid(n) and n is CanvasLayer and n != main.ui_layer and (not is_instance_valid(e[1]) or (e[1] as Node).is_queued_for_deletion()):
+			(n as Node).queue_free()
+			main._remote_back.erase(e)
+	for l in main.get_tree().root.find_children("*", "CanvasLayer", true, false):
+		var cl := l as CanvasLayer
+		if cl == main.ui_layer or cl.get_viewport() != root_vp or cl.is_queued_for_deletion() or cl.get_parent() == null:
+			continue
+		if main.remote_vp.is_ancestor_of(cl) or cl.custom_viewport != null:
+			continue
+		main._remote_back.append([cl, cl.get_parent(), cl.get_index()])
+		cl.reparent(main.remote_vp)
 
 
 func _view_send(ev: InputEvent) -> void:

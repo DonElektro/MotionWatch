@@ -255,7 +255,17 @@ func info() -> Dictionary:
 	return {"ok": true, "chapters": ch, "badges": badges(), "level": level(), "blinki": blinki(false), "current": cur,
 			"open": is_open(), "scene": main.scene, "stories": regal.stories() if regal != null else [],
 			"resume": regal.resume_info() if regal != null else {}, "slot": {"n": SS.slot(), "name": SS.name_of(SS.slot())},
-			"kids": bool(main.get("kids_on"))}
+			"kids": bool(main.get("kids_on")), "playing": playing()}
+
+
+func playing() -> String:
+	"""3.51.x: the story that runs now with a figure that walks («maggie») or «horror», else "" - MoveEye names its touch
+	stick «gehen» then instead of «fliegen» (470 simTouchPad)"""
+	if main.get("maggie") != null and bool(main.maggie.get("running")):
+		return "maggie"
+	if main.get("horror") != null and bool(main.horror.get("running")):
+		return "horror"
+	return ""
 
 
 # ---- actions -------------------------------------------------------------------------------------------------------------
