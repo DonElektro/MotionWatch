@@ -4,7 +4,9 @@
 #  - nach jeder neuen Version (versions.json geändert, ab 2.98.9): kurz, höchstens etwa 45 Minuten –
 #    nur quick (ab 29.10.2026, Ressourcen sparen); sonntags alles inkl. hard; von Hand: frei wählbar
 #  - jeden Sonntag in der Nacht: alles, auch «hard» (Nebel, Scheinwerfer, Spinnennetz, Tropfen …), 3 Zufallsstarts (Streuung)
-#  - von Hand (Actions → Prüfstand → Run workflow): alles wählbar
+#  - von Hand (Actions → Prüfstand → Run workflow): alles wählbar; «rechner: hp» = auf dem Simulator-PC (self-hosted Runner
+#    «moveeye-hp», werkzeuge/test_runner/ANLEITUNG.md; Simulator aus dem Linux-Paket, kein Godot, Lite-Grafik). Ist der HP aus,
+#    bricht der Wächter nach 15 Min. ab. Automatisch (neue Version, Sonntag) läuft der Prüfstand immer auf GitHub.
 name: Prüfstand
 on:
   workflow_dispatch:
@@ -31,6 +33,11 @@ on:
       mal:
         description: "Besucherlisten so oft, 1–5 (mehr Personen = verlässlicher, dauert länger)"
         default: "2"
+      rechner:
+        description: "Rechner: github oder hp (Simulator-PC mit eigenem Runner)"
+        type: choice
+        options: [github, hp]
+        default: github
   schedule:
     - cron: "17 2 * * 0"
   push:
@@ -45,26 +52,51 @@ concurrency:
   cancel-in-progress: false
 jobs:
   pruefstand:
-    runs-on: ubuntu-24.04
+    if: github.repository_owner == 'DonElektro'
+    runs-on: ${{ (github.event_name == 'workflow_dispatch' && github.event.inputs.rechner == 'hp') && fromJSON('["self-hosted","moveeye-hp"]') || 'ubuntu-24.04' }}
     timeout-minutes: 300
+    env:
+      HP: ${{ (github.event_name == 'workflow_dispatch' && github.event.inputs.rechner == 'hp') && '1' || '' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
+        if: env.HP != '1'
         with:
           python-version: "3.11"
       - name: Pakete
+        if: env.HP != '1'
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq xvfb libgl1 libgl1-mesa-dri libglu1-mesa libxcursor1 libxinerama1 libxrandr2 libxi6 libasound2t64 >/dev/null || \
           sudo apt-get install -y -qq xvfb libgl1 libgl1-mesa-dri libglu1-mesa libxcursor1 libxinerama1 libxrandr2 libxi6 >/dev/null
           pip install -q opencv-python-headless numpy flask pillow cryptography psutil
+      - name: Simulator-PC (HP) vorbereiten – Python, Simulator aus dem Linux-Paket, KI-Modell aus dem Zwischenspeicher
+        if: env.HP == '1'
+        run: |
+          PY="${MW_RUNNER_PY:-${MW_RUNNER_HOME:-$HOME}/venv/bin/python}"
+          [ -x "$PY" ] || { echo "::error::Python fehlt ($PY) – auf dem HP runner_einrichten.sh starten"; exit 1; }
+          unzip -q -o simulator3d/MoveEyeSim3D_Linux.zip -d "$RUNNER_TEMP/sim"
+          chmod +x "$RUNNER_TEMP/sim/MoveEyeSim3D/MoveEyeSim3D.x86_64"
+          { echo "PY=$PY"; echo "SIMARG=--sim-bin"; echo "SIMPFAD=$RUNNER_TEMP/sim/MoveEyeSim3D/MoveEyeSim3D.x86_64"
+            echo "RECHNER=HP EliteDesk 800 G1 ($(nproc) Kerne)"; } >> "$GITHUB_ENV"
+          K="${MW_RUNNER_HOME:-$HOME}/cache/ki"; mkdir -p "$K" ki
+          if [ ! -s "$K/frozen_inference_graph.pb" ] || [ ! -s "$K/ssd_mobilenet_v2_coco.pbtxt" ]; then
+            curl -fsSL --retry 3 -o "$RUNNER_TEMP/m.tgz" https://storage.googleapis.com/download.tensorflow.org/models/object_detection/ssd_mobilenet_v2_coco_2018_03_29.tar.gz
+            tar xzf "$RUNNER_TEMP/m.tgz" -C "$RUNNER_TEMP" && mv "$RUNNER_TEMP/ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb" "$K/"
+            curl -fsSL --retry 3 -o "$K/ssd_mobilenet_v2_coco.pbtxt" https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt
+          fi
+          cp "$K"/* ki/ && ls -la ki
       - name: Godot 4.3
+        if: env.HP != '1'
         run: |
           curl -sSL -o godot.zip https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip
           unzip -q godot.zip && chmod +x Godot_v4.3-stable_linux.x86_64
           # import the project once (textures, shaders) - otherwise the first start takes very long
           timeout 600 ./Godot_v4.3-stable_linux.x86_64 --headless --editor --path simulator3d --quit >/dev/null 2>&1 || true
+          { echo "PY=python3"; echo "SIMARG=--godot"; echo "SIMPFAD=./Godot_v4.3-stable_linux.x86_64"
+            echo "RECHNER=GitHub (ubuntu, $(nproc) Kerne)"; } >> "$GITHUB_ENV"
       - name: KI-Modell (SSD MobileNet V2)
+        if: env.HP != '1'
         run: |
           mkdir -p ki && cd ki
           curl -sSL -o m.tgz https://storage.googleapis.com/download.tensorflow.org/models/object_detection/ssd_mobilenet_v2_coco_2018_03_29.tar.gz
@@ -90,9 +122,9 @@ jobs:
             if [ "$IN_SCHWER" = "true" ] && ! echo ",$PLAENE," | grep -q ",hard,"; then PLAENE="$PLAENE,hard"; fi
           fi
           echo "Testläufe: $PLAENE · Zufallsstarts $SEEDS · Wiederholungen $WDH · Kamera-Effekte $REAL (ohne: ${ROH:-alle}) · Besucher ×$MAL"
-          python3 pruefstand/pruefstand.py --godot ./Godot_v4.3-stable_linux.x86_64 --ki-ordner ki \
+          "$PY" pruefstand/pruefstand.py "$SIMARG" "$SIMPFAD" --ki-ordner ki \
             --plaene "$PLAENE" --seeds "$SEEDS" --wiederholungen "$WDH" --realismus "$REAL" --roh-plaene "$ROH" --mal "$MAL" \
-            --rechner "GitHub (ubuntu, $(nproc) Kerne)" --behalten
+            --rechner "$RECHNER" --behalten
       - name: Ergebnis aufbewahren
         if: always()
         uses: actions/upload-artifact@v4
@@ -126,5 +158,41 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           [ -f pruefstand/WARNUNG.md ] || exit 0
+          command -v gh >/dev/null || { echo "::warning::gh fehlt auf diesem Rechner – kein Issue erstellt (pruefstand/WARNUNG.md)"; exit 0; }
           V=$(ls webcam_bewegung_*.py | sort -V | tail -1 | sed 's/webcam_bewegung_//; s/\.py//; s/_/./g')
           gh issue create --title "Prüfstand: Erkennung schlechter mit MoveEye $V" --body-file pruefstand/WARNUNG.md || true
+
+  # Wächter (nur bei «rechner: hp»): ist der HP aus, bliebe der Job bis zu 24 Std. in der Warteschlange
+  waechter:
+    if: github.repository_owner == 'DonElektro' && github.event_name == 'workflow_dispatch' && github.event.inputs.rechner == 'hp'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    permissions:
+      actions: write
+    steps:
+      - name: Auf den HP warten
+        env:
+          GH_TOKEN: ${{ github.token }}
+          R: ${{ github.repository }}
+          RUN: ${{ github.run_id }}
+        run: |
+          frist=$(( $(date +%s) + 15 * 60 ))
+          while :; do
+            st=$(gh api "repos/$R/actions/runs/$RUN/jobs" --jq '.jobs[] | select(.name == "pruefstand") | .status' 2>/dev/null | head -n 1 || true)
+            case "$st" in in_progress|completed) echo "Der HP hat den Prüfstand übernommen ($st)."; exit 0 ;; esac
+            besetzt=""
+            for id in $(gh api "repos/$R/actions/runs?status=in_progress&per_page=30" --jq '.workflow_runs[].id' 2>/dev/null || true); do
+              [ "$id" = "$RUN" ] && continue
+              besetzt=$(gh api "repos/$R/actions/runs/$id/jobs" --jq '.jobs[] | select(.status == "in_progress") | select(.labels | index("moveeye-hp")) | .name' 2>/dev/null | head -n 1 || true)
+              [ -n "$besetzt" ] && break
+            done
+            if [ -n "$besetzt" ]; then
+              echo "$(date +%T) HP rechnet gerade «$besetzt» – warte weiter"; frist=$(( $(date +%s) + 15 * 60 ))
+            elif [ "$(date +%s)" -ge "$frist" ]; then
+              msg="Der HP (Runner «moveeye-hp») hat den Prüfstand nach 15 Min. nicht übernommen – aus oder offline? (werkzeuge/test_runner/ANLEITUNG.md). Lauf abgebrochen."
+              echo "::error::$msg"; echo "### ⚠️ $msg" >> "$GITHUB_STEP_SUMMARY"
+              gh api -X POST "repos/$R/actions/runs/$RUN/cancel" >/dev/null || true
+              exit 1
+            fi
+            sleep 60
+          done

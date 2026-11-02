@@ -1,0 +1,243 @@
+# Erkennung (HP): der lange Erkennungstest (werkzeuge/erkennungstest/) auf dem Simulator-PC (HP EliteDesk, self-hosted
+# Runner «moveeye-hp», werkzeuge/test_runner/ANLEITUNG.md). MoveEye und Simulator kommen vom gewählten Stand (Zweig oder
+# Commit dieses Repositorys); der Simulator aus dem Linux-Paket dieses Stands (simulator3d/MoveEyeSim3D_Linux.zip) oder aus
+# dem Quelltext mit Godot 4.3. Ergebnis als Actions-Artefakt (results.jsonl, ergebnis.json, bericht.md, Protokolle, Bilder) –
+# nichts wird ins Repository geschrieben.
+# Sicherheit (öffentliches Repository): nur von Hand und nach Zeitplan, nie bei Pull-Requests; nur im Repository von
+# DonElektro; nur Stände aus Zweigen dieses Repositorys (keine Commits aus Forks). Ist der HP aus, bricht der Wächter den
+# Lauf nach «warten» Minuten mit einem Hinweis ab (sonst bliebe er bis zu 24 Std. in der Warteschlange).
+#   gh workflow run erkennung_hp.yml -f stand=main -f plan=kurz
+#   gh run download <RUN-ID> -n erkennung-kurz-<NR>
+name: Erkennung (HP)
+on:
+  workflow_dispatch:
+    inputs:
+      stand:
+        description: "Zweig oder Commit (MoveEye + Simulator von diesem Stand)"
+        default: "main"
+      plan:
+        description: "Plan: test3 (Test 3), alle, wind, tier, kriechen, nacht, ursache, kurz (5 Min., zum Prüfen)"
+        type: choice
+        options: [test3, alle, wind, tier, kriechen, nacht, ursache, kurz]
+        default: test3
+      laeufe:
+        description: "Läufe pro Fall (Personenfälle, 1–5)"
+        default: "1"
+      simulator:
+        description: "Simulator: paket (Linux-Paket des Stands) oder godot (Quelltext, für noch nicht veröffentlichte Änderungen)"
+        type: choice
+        options: [paket, godot]
+        default: paket
+      anzeige:
+        description: "xvfb (virtueller Bildschirm) oder bildschirm (Grafikkarte, nur wenn bei runner_einrichten.sh freigegeben)"
+        type: choice
+        options: [xvfb, bildschirm]
+        default: xvfb
+      warten:
+        description: "So viele Minuten auf den HP warten, dann abbrechen (wenn er aus ist)"
+        default: "15"
+  schedule:
+    - cron: "41 21 * * 6"          # Samstag 21:41 UTC (22:41 / 23:41 in der Schweiz): Test 3 auf main
+permissions:
+  contents: read
+concurrency:
+  group: moveeye-hp-erkennung
+  cancel-in-progress: false
+
+jobs:
+  vorpruefung:
+    name: Vorprüfung (Stand, Eingaben)
+    if: github.repository_owner == 'DonElektro'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    outputs:
+      sha: ${{ steps.p.outputs.sha }}
+      stand: ${{ steps.p.outputs.stand }}
+      plan: ${{ steps.p.outputs.plan }}
+      laeufe: ${{ steps.p.outputs.laeufe }}
+      simulator: ${{ steps.p.outputs.simulator }}
+      anzeige: ${{ steps.p.outputs.anzeige }}
+      warten: ${{ steps.p.outputs.warten }}
+    steps:
+      - name: Stand und Eingaben prüfen
+        id: p
+        env:
+          GH_TOKEN: ${{ github.token }}
+          R: ${{ github.repository }}
+          EVENT: ${{ github.event_name }}
+          IN_STAND: ${{ github.event.inputs.stand }}
+          IN_PLAN: ${{ github.event.inputs.plan }}
+          IN_LAEUFE: ${{ github.event.inputs.laeufe }}
+          IN_SIM: ${{ github.event.inputs.simulator }}
+          IN_ANZ: ${{ github.event.inputs.anzeige }}
+          IN_WARTEN: ${{ github.event.inputs.warten }}
+        run: |
+          STAND="${IN_STAND:-main}"; PLAN="${IN_PLAN:-test3}"; LAEUFE="${IN_LAEUFE:-1}"; SIM="${IN_SIM:-paket}"
+          ANZ="${IN_ANZ:-xvfb}"; WARTEN="${IN_WARTEN:-15}"
+          if [ "$EVENT" = "schedule" ]; then STAND=main; PLAN=test3; LAEUFE=1; SIM=paket; ANZ=xvfb; WARTEN=20; fi
+          fehler() { echo "::error::$*"; exit 1; }
+          case "$PLAN" in test3|alle|wind|tier|kriechen|nacht|ursache|kurz) ;; *) fehler "Plan «$PLAN» unbekannt" ;; esac
+          [[ "$LAEUFE" =~ ^[1-5]$ ]] || fehler "Läufe pro Fall: 1 bis 5"
+          if ! [[ "$WARTEN" =~ ^[0-9]{1,3}$ ]] || [ "$WARTEN" -lt 1 ] || [ "$WARTEN" -gt 360 ]; then fehler "warten: 1 bis 360 Minuten"; fi
+          case "$SIM" in paket|godot) ;; *) fehler "simulator: paket oder godot" ;; esac
+          case "$ANZ" in xvfb|bildschirm) ;; *) fehler "anzeige: xvfb oder bildschirm" ;; esac
+          STAND="${STAND#refs/heads/}"
+          [[ "$STAND" =~ ^[A-Za-z0-9._/-]{1,200}$ ]] || fehler "Stand «$STAND»: nur Zweig-Namen oder Commits"
+          case "$STAND" in pull/*|refs/*|*..*) fehler "Stand «$STAND»: nur Zweige oder Commits dieses Repositorys (keine Pull-Requests)" ;; esac
+          if [[ "$STAND" =~ ^[0-9a-f]{7,40}$ ]] && ! gh api "repos/$R/branches/$STAND" >/dev/null 2>&1; then
+            SHA=$(gh api "repos/$R/commits/$STAND" --jq .sha) || fehler "Commit $STAND nicht gefunden"
+            # nur Commits, die in einem Zweig dieses Repositorys liegen (GitHub zeigt sonst auch Commits aus Forks)
+            ZWEIG=""
+            for b in main $(gh api --paginate "repos/$R/branches?per_page=100" --jq '.[].name' | grep -vx main); do
+              s=$(gh api "repos/$R/compare/$b...$SHA" --jq .status 2>/dev/null || true)
+              if [ "$s" = "identical" ] || [ "$s" = "behind" ]; then ZWEIG="$b"; break; fi
+            done
+            [ -n "$ZWEIG" ] || fehler "Commit $SHA liegt in keinem Zweig dieses Repositorys"
+            echo "Commit $SHA (im Zweig $ZWEIG)"
+          else
+            SHA=$(gh api "repos/$R/branches/$STAND" --jq .commit.sha) || fehler "Zweig «$STAND» gibt es nicht"
+            echo "Zweig $STAND = $SHA"
+          fi
+          {
+            echo "sha=$SHA"; echo "stand=$STAND"; echo "plan=$PLAN"; echo "laeufe=$LAEUFE"; echo "simulator=$SIM"
+            echo "anzeige=$ANZ"; echo "warten=$WARTEN"
+          } >> "$GITHUB_OUTPUT"
+          echo "### Erkennung (HP): Plan $PLAN, $LAEUFE Lauf/Läufe pro Fall, Stand $STAND (${SHA:0:10}), Simulator $SIM, $ANZ" >> "$GITHUB_STEP_SUMMARY"
+
+  test:
+    name: Erkennungstest auf dem HP
+    needs: vorpruefung
+    if: github.repository_owner == 'DonElektro'
+    runs-on: [self-hosted, moveeye-hp]
+    timeout-minutes: 420
+    env:
+      SHA: ${{ needs.vorpruefung.outputs.sha }}
+      STAND: ${{ needs.vorpruefung.outputs.stand }}
+      PLAN: ${{ needs.vorpruefung.outputs.plan }}
+      LAEUFE: ${{ needs.vorpruefung.outputs.laeufe }}
+      SIMQ: ${{ needs.vorpruefung.outputs.simulator }}
+      ANZEIGE: ${{ needs.vorpruefung.outputs.anzeige }}
+      PYTHONUNBUFFERED: "1"
+    steps:
+      - name: Werkzeug (Stand dieses Workflows)
+        uses: actions/checkout@v4
+        with:
+          path: werkzeug
+          sparse-checkout: werkzeuge/erkennungstest
+          persist-credentials: false
+      - name: MoveEye und Simulator (gewählter Stand)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.vorpruefung.outputs.sha }}
+          path: stand
+          persist-credentials: false
+      - name: Runner prüfen
+        run: |
+          PY="${MW_RUNNER_PY:-${MW_RUNNER_HOME:-$HOME}/venv/bin/python}"
+          [ -x "$PY" ] || { echo "::error::Python fehlt ($PY) – auf dem HP runner_einrichten.sh starten"; exit 1; }
+          "$PY" -c "import cv2, numpy, flask, PIL, cryptography; print('Python', __import__('sys').version.split()[0], 'opencv', cv2.__version__)"
+          command -v Xvfb >/dev/null || { echo "::error::Xvfb fehlt – runner_einrichten.sh"; exit 1; }
+          echo "PY=$PY" >> "$GITHUB_ENV"
+          echo "CACHE=${MW_RUNNER_HOME:-$HOME}/cache" >> "$GITHUB_ENV"
+          P="${MW_KIOSK_PAUSE:-/run/moveeye-test/kiosk_pause}"
+          if [ -f "$P" ]; then echo "Kiosk-Simulator pausiert"; else echo "::warning::Kiosk nicht pausiert (Haken fehlt?) – Speicher und Bilder/s knapper"; fi
+          echo "$(nproc) Kerne · $(free -m | awk '/^Mem/ {print $7 " MB frei von " $2}') · Platz $(df -h "$RUNNER_TEMP" | awk 'NR==2 {print $4}')"
+      - name: KI-Modell (Zwischenspeicher auf dem HP)
+        run: |
+          K="$CACHE/ki"; mkdir -p "$K"
+          if [ ! -s "$K/frozen_inference_graph.pb" ] || [ ! -s "$K/ssd_mobilenet_v2_coco.pbtxt" ]; then
+            T="$RUNNER_TEMP/ki"; mkdir -p "$T" && cd "$T"
+            curl -fsSL --retry 3 -o m.tgz https://storage.googleapis.com/download.tensorflow.org/models/object_detection/ssd_mobilenet_v2_coco_2018_03_29.tar.gz
+            tar xzf m.tgz && mv ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb "$K/"
+            curl -fsSL --retry 3 -o "$K/ssd_mobilenet_v2_coco.pbtxt" https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt
+            cd "$GITHUB_WORKSPACE" && rm -rf "$T"
+          fi
+          ls -la "$K"
+          echo "KI=$K" >> "$GITHUB_ENV"
+      - name: Simulator bereitstellen
+        run: |
+          if [ "$SIMQ" = "godot" ]; then
+            G="$CACHE/godot/Godot_v4.3-stable_linux.x86_64"
+            if [ ! -x "$G" ]; then
+              mkdir -p "$CACHE/godot" && cd "$CACHE/godot"
+              curl -fsSL --retry 3 -o g.zip https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip
+              unzip -q -o g.zip && rm g.zip && chmod +x Godot_v4.3-stable_linux.x86_64
+              cd "$GITHUB_WORKSPACE"
+            fi
+            echo "Projekt importieren (einmal pro Lauf, bis 15 Min.)"
+            HOME="$RUNNER_TEMP/godot_home" timeout 900 "$G" --headless --import --path stand/simulator3d > "$RUNNER_TEMP/import.log" 2>&1 || true
+            tail -3 "$RUNNER_TEMP/import.log"
+            echo "SIMOPT=--godot" >> "$GITHUB_ENV"; echo "SIMPFAD=$G" >> "$GITHUB_ENV"
+          else
+            Z=stand/simulator3d/MoveEyeSim3D_Linux.zip
+            [ -s "$Z" ] || { echo "::error::$Z fehlt in diesem Stand – simulator: godot wählen"; exit 1; }
+            unzip -q -o "$Z" -d "$RUNNER_TEMP/sim"
+            B="$RUNNER_TEMP/sim/MoveEyeSim3D/MoveEyeSim3D.x86_64"
+            chmod +x "$B"
+            echo "SIMOPT=--sim-bin" >> "$GITHUB_ENV"; echo "SIMPFAD=$B" >> "$GITHUB_ENV"
+            python3 -c "import json; d=json.load(open('stand/simulator3d/version.json')); print('Linux-Paket', d.get('linux', {}).get('ver', '?'), '· Quelltext', d.get('ver', '?'))"
+          fi
+      - name: Erkennungstest (${{ needs.vorpruefung.outputs.plan }})
+        timeout-minutes: 400
+        run: |
+          D=xvfb; [ "$ANZEIGE" = "bildschirm" ] && D=":0"
+          "$PY" werkzeug/werkzeuge/erkennungstest/erkennungstest.py --repo stand --plan "$PLAN" --laeufe "$LAEUFE" \
+            "$SIMOPT" "$SIMPFAD" --ki-ordner "$KI" --anzeige "$D" --grafik lite --aus "$RUNNER_TEMP/erkennung" \
+            --rechner "HP EliteDesk 800 G1 ($(nproc) Kerne)" --stand "$STAND" --commit "$SHA"
+      - name: Bericht
+        if: always()
+        run: |
+          B="$RUNNER_TEMP/erkennung/bericht.md"
+          if [ -s "$B" ]; then cat "$B" >> "$GITHUB_STEP_SUMMARY"; else echo "Kein Bericht (Test nicht gelaufen)." >> "$GITHUB_STEP_SUMMARY"; fi
+      - name: Ergebnis als Artefakt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: erkennung-${{ needs.vorpruefung.outputs.plan }}-${{ github.run_number }}
+          path: ${{ runner.temp }}/erkennung
+          retention-days: 30
+          if-no-files-found: warn
+
+  # Wächter (GitHub-Rechner): ist der HP aus, bliebe der Job bis zu 24 Std. in der Warteschlange. Läuft auf dem HP gerade ein
+  # anderer Job (z. B. Prüfstand), wartet der Wächter weiter.
+  waechter:
+    name: Wächter (HP erreichbar?)
+    needs: vorpruefung
+    if: github.repository_owner == 'DonElektro'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 480
+    permissions:
+      actions: write
+    steps:
+      - name: Auf den HP warten
+        env:
+          GH_TOKEN: ${{ github.token }}
+          R: ${{ github.repository }}
+          RUN: ${{ github.run_id }}
+          WARTEN: ${{ needs.vorpruefung.outputs.warten }}
+        run: |
+          JOB="Erkennungstest auf dem HP"
+          frist=$(( $(date +%s) + WARTEN * 60 ))
+          while :; do
+            st=$(gh api "repos/$R/actions/runs/$RUN/jobs" --jq ".jobs[] | select(.name == \"$JOB\") | .status" 2>/dev/null | head -n 1 || true)
+            case "$st" in
+              in_progress|completed) echo "Der HP hat den Job übernommen ($st)."; exit 0 ;;
+            esac
+            besetzt=""
+            for id in $(gh api "repos/$R/actions/runs?status=in_progress&per_page=30" --jq '.workflow_runs[].id' 2>/dev/null || true); do
+              [ "$id" = "$RUN" ] && continue
+              besetzt=$(gh api "repos/$R/actions/runs/$id/jobs" --jq '.jobs[] | select(.status == "in_progress") | select(.labels | index("moveeye-hp")) | .name' 2>/dev/null | head -n 1 || true)
+              [ -n "$besetzt" ] && break
+            done
+            if [ -n "$besetzt" ]; then
+              echo "$(date +%T) HP rechnet gerade «$besetzt» – warte weiter"; frist=$(( $(date +%s) + WARTEN * 60 ))
+            elif [ "$(date +%s)" -ge "$frist" ]; then
+              msg="Der HP (Runner «moveeye-hp») hat den Job nach $WARTEN Min. nicht übernommen – ist er aus oder offline? Prüfen: GitHub → Settings → Actions → Runners (ANLEITUNG in werkzeuge/test_runner/). Lauf abgebrochen."
+              echo "::error::$msg"; echo "### ⚠️ $msg" >> "$GITHUB_STEP_SUMMARY"
+              gh api -X POST "repos/$R/actions/runs/$RUN/cancel" >/dev/null || true
+              exit 1
+            else
+              echo "$(date +%T) Job wartet auf den HP (${st:-?})"
+            fi
+            sleep 60
+          done

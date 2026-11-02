@@ -1,0 +1,4 @@
+# actionlint: Labels des eigenen Runners (Simulator-PC, werkzeuge/test_runner/)
+self-hosted-runner:
+  labels:
+    - moveeye-hp
