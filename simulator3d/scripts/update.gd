@@ -330,6 +330,8 @@ func _install(zip_path: String, exe: String) -> String:
 			continue
 		if name.get_file().begins_with(OLD_STEM + "."):
 			continue                                # 3D-4.24: the copy under the old name is only for old updaters
+		if name.get_base_dir().get_file() == "hp":
+			continue                                # 3.53.0: hp/ is only for the project's simulator PC (moveeye-hp-update)
 		var target := dir.path_join(name.get_file())
 		var data := z.read_file(name)
 		if name.get_file() == me:

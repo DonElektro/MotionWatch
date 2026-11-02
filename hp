@@ -1,0 +1,31 @@
+#!/bin/bash
+# MoveEye: den Simulator-PC (HP) EINMAL auf das automatische Update umstellen. Am HP eintippen (Text-Konsole oder SSH):
+#   curl -sL github.com/DonElektro/MotionWatch/raw/main/hp | sudo bash
+# Lädt werkzeuge/test_runner/hp_update.sh, richtet es als moveeye-hp-update ein (nachts und nach dem Start) und lässt es
+# gleich einmal laufen. Ab dann spielt der HP nur noch SIGNIERTE Versionen ein (Prüfung wie beim Pi). Protokoll:
+# /var/log/moveeye-hp-update.log. Mehrmals ausführen schadet nicht.
+hp_einrichten() {
+	local zweig="${MOVEEYE_ZWEIG:-main}" t rc
+	if [ "$(id -u)" -ne 0 ]; then
+		echo "Bitte mit sudo: curl -sL github.com/DonElektro/MotionWatch/raw/main/hp | sudo bash"
+		return 1
+	fi
+	[[ "$zweig" =~ ^[A-Za-z0-9._/-]{1,100}$ ]] || { echo "Ungültiger Zweig: $zweig"; return 1; }
+	t="$(mktemp)"
+	echo "MoveEye: lade das HP-Update ($zweig) …"
+	if ! curl -fsSL --proto '=https' --retry 3 -o "$t" \
+		"https://raw.githubusercontent.com/DonElektro/MotionWatch/$zweig/werkzeuge/test_runner/hp_update.sh"; then
+		echo "Laden ging nicht - Netz da? Später noch einmal versuchen."
+		rm -f "$t"; return 1
+	fi
+	if ! head -n 1 "$t" | grep -q '^#!/bin/bash'; then
+		echo "Unerwarteter Inhalt geladen - abgebrochen."
+		rm -f "$t"; return 1
+	fi
+	bash "$t" --einrichten < /dev/null
+	rc=$?
+	rm -f "$t"
+	[ $rc -eq 0 ] && echo "MoveEye: fertig. Ab jetzt kommen neue Fassungen von selbst (nachts)."
+	return $rc
+}
+hp_einrichten

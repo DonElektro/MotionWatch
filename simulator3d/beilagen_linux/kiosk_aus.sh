@@ -94,6 +94,8 @@ weg "$XSESSION"
 weg "$CONF"
 weg "$LIB/openbox.xml"
 weg "$LIB/kiosk_sitzung.sh"
+weg "$LIB/testbild.py"
+weg "$LIB/moveeye.png"
 if [ -d "$LIB" ]; then tu rmdir --ignore-fail-on-non-empty -- "$LIB"; fi
 
 schritt "3. Dienste und Suspend"
