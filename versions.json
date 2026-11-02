@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-02 06:30",
+ "generated": "2026-11-02 09:18",
  "versions": [
+  {
+   "version": "3.50.0",
+   "file": "webcam_bewegung_3_50_0.py",
+   "url": "",
+   "sha256": "e2c1ff7d71ce7b6ed64f37cf4f7daa8e02ea18b23e80a46cef00df9da5916e14",
+   "date": "2026-11-02 09:18",
+   "notes": "Werkstatt «Bauen» als eigenständige Datei MoveEye_Werkstatt.html: läuft offline im Browser ohne Pi (alle Reiter, 3D, Einzelteile, Druckplatten, Pakete, 5 Sprachen); bei jedem Release unter GitHub-Releases (latest/download/MoveEye_Werkstatt.html) und im Bausatz.",
+   "size": 4878963,
+   "sig": "c7ef1eaad1428bff46a1e0927e11efa8db56a680f45fff7999355f83bef888723fb8e6b566e63ced35e375b5b9245fb8da9aa3028e8e384f236c278f85ec670a",
+   "data": {
+    "file": "moveeye_daten_3_50_0.zip",
+    "url": "",
+    "sha256": "ca132735f91568198388804331dc1c920f8b07bec18f57acf619ddefcb8e08e4",
+    "size": 3604553,
+    "sig": "9d291a8c6b413dc8daab6caabddbcc997e59b38bc0631249adde2abb9012c6f694742cf8a9fa3593a2a3a920a940809865af45b0dbd69defd86622c19fc94603"
+   }
+  },
   {
    "version": "3.49.0",
    "file": "webcam_bewegung_3_49_0.py",
    "url": "",
    "sha256": "bfa475fb1a8730b0f7684accca870c9035ac5a1d030a1c799a53a862fcc50b86",
-   "date": "2026-11-02 06:30",
+   "date": "2026-11-02 09:16",
    "notes": "Erkennung: deutlich mehr Personen erkannt (Test 3: 42 % → 69 %, Kinder 92 %); Auto-Tune gedeckelt, Wind-Regel nur letzte 2 Min., aufrechte KI-Person sofort «Person?» und nie «Tier», Autos/Scheinwerfer nachts keine Person, Kopf schwenkt beim Verfolgen mit.",
    "size": 4876033,
    "sig": "f2115c7a2da697acedbd6428a0b2cb21384d02b7a456782bc17d31c4db0e2e846aedda219ec4cf24661dc36bb3053ccd2a7cd97c0cb033c7101e09a4a457bd09",
@@ -136,23 +153,6 @@
     "sha256": "4db4f6f25ecedc0611c09a936fce795414983d56b84f190a8c5cf5da27b96f04",
     "size": 2838319,
     "sig": "8c69b18b1805d0dfbe87cf2b939d178208f91d74639b76ae97b80fc665bc589f3181a3036d8c2562a15673fd9396bdb76cc921d41715625636e8f5acfb830a03"
-   }
-  },
-  {
-   "version": "3.41.1",
-   "file": "webcam_bewegung_3_41_1.py",
-   "url": "",
-   "sha256": "3ba6cfea6ab5b65c161f23dac52d18457437338452f3fdd168f731c8dceba017",
-   "date": "2026-11-01 17:51",
-   "notes": "Fix: Solar-Strommesser (INA219) ab Werk auf 0x44 statt 0x41 (kollidierte mit dem Servo-Treiber), Shunt 0,01 Ω passend zum Gravity-Modul; Bau-Infos ergänzt (Step-Down ab Akku, 3. MOSFET, Schrauben, Lade-LED an GPIO 6).",
-   "size": 4770964,
-   "sig": "2371266998ffff8a256a40ffed8819f3821e030f6ba8e2adecf85a61de3f6bd4fd7e8350bd882aa6896e2b81b623d89046c3e729bdf93abdd1c88fe17d964b0d",
-   "data": {
-    "file": "moveeye_daten_3_41_1.zip",
-    "url": "",
-    "sha256": "35481ec303718326350767fcf763b207b2b1bf3887d49fecbd70789b76843c3c",
-    "size": 2520195,
-    "sig": "28beb3ee7fcb687f2070db00cd3ba6ecf8d96f80da9ec83ebc1b49b9659c81873370ecef9b869a2a1cec7c51c45cfa5b06d8eaf9568ed0a3680949b78ab0e809"
    }
   },
   {

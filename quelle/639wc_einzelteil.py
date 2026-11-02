@@ -195,8 +195,10 @@ function plateInfo(box) {
   box.appendChild(ul);
   const lk = el("div", "lk btns"); lk.appendChild(fileLink(pl.datei, t("Download plate (3MF)")));
   const z = fileLink("", t("All plates (ZIP with short guide)")); z.href = "/build/platten.zip?v=" + (isV52() ? "v52" : "v51") + "&lang=" + gL();
-  z.setAttribute("download", (isV52() ? "MoveEye_v5-2_Druckplatten_" : "MoveEye_v5-1_Druckplatten_") + (typeof GEH_VER === "string" ? GEH_VER : "") + ".zip"); lk.appendChild(z);
-  box.appendChild(lk);
+  z.setAttribute("download", (isV52() ? "MoveEye_v5-2_Druckplatten_" : "MoveEye_v5-1_Druckplatten_") + (typeof GEH_VER === "string" ? GEH_VER : "") + ".zip");
+  if (GEH_OFF) { z.removeAttribute("download"); z.href = GEH_OFF.kit; z.textContent = "⬇ " + t("Complete kit package (GitHub)") + " 🌐"; }   // offline (639w): the plates are in the kit package
+  lk.appendChild(z); box.appendChild(lk);
+  if (GEH_OFF) box.appendChild(el("div", "mut", "🌐 " + t("Needs internet (GitHub)")));
   box.appendChild(el("div", "mut", t("Open the 3MF in Bambu Studio (File → Open): the parts already lie right, without supports.")));
   box.appendChild(el("div", "btns")).appendChild(btn("↩ " + t("Back to the whole model"), gWhole));
 }
@@ -335,9 +337,9 @@ B.api.mode = X.setMode; B.api.einzel = X.info; B.api.reset = () => B.mode ? X.fr
 """
 
 
-def _geh_page_einzel():
+def _geh_page_einzel(*a, **k):                           # real-werkstatt-standalone: geh_page(off=…) passes through
     js = GEH_EINZEL_JS.replace("/*GEHDL*/null", json.dumps(GEH_DRUCK_LAGE, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/"), 1)
-    return _geh_page_einzel_base().replace("/*GEHEINZEL*/", js, 1).replace("/*GEHEINZEL3D*/", GEH_EINZEL_3D, 1)
+    return _geh_page_einzel_base(*a, **k).replace("/*GEHEINZEL*/", js, 1).replace("/*GEHEINZEL3D*/", GEH_EINZEL_3D, 1)
 
 
 _geh_page_einzel_base = geh_page

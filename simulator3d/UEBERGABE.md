@@ -1,8 +1,13 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 02.11.2026 · Version **3.49.0** · MoveEye **3.49.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 02.11.2026 · Version **3.50.0** · MoveEye **3.50.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.50.0 (MoveEye 3.50.0): Werkstatt als eigene HTML-Datei (`werkzeuge/werkstatt_html.py`, MoveEye Teil 639w)
+
+- Erzeugt MoveEye_Werkstatt.html (offline, three.js und Modelle eingebettet); Workflow bausatz.yml hängt sie an den Release
+  (MoveEye_Werkstatt.html + MoveEye_Werkstatt_X.Y.Z.html) und legt sie in den Bausatz; nicht im Repo (.gitignore).
 
 ## NEU in 3.49.0 (MoveEye 3.49.0): Erkennung (MoveEye Teile 190, 410, 411, 418, 577)
 

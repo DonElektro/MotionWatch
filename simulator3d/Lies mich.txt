@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.49.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.50.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -487,6 +487,12 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.50.0
+3.50.0: Die Werkstatt «Bauen» gibt es als eigene Datei MoveEye_Werkstatt.html: läuft offline im Browser ohne Pi (alle Reiter,
+3D, Einzelteile, Druckplatten, Pakete, 5 Sprachen); bei jedem Release auf GitHub (Releases › latest › MoveEye_Werkstatt.html)
+und im Bausatz. Am Simulator ändert sich nichts.
+So testest du: auf GitHub unter Releases MoveEye_Werkstatt.html laden und ohne Internet im Browser öffnen.
 
 NEU IN 3.49.0
 3.49.0: Erkennung (MoveEye): deutlich mehr Personen erkannt (Test 3: 42 % → 69 %, Kinder 92 %); Auto-Tune gedeckelt,
