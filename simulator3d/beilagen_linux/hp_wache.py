@@ -9,18 +9,20 @@ Drei Aufgaben, alles nur mit Daten-Dateien (nichts wird ausgeführt, was von aus
 1. «Spielen»-Wunsch erkennen und als Datei melden (SPIEL_DATEI, JSON {"grund", "seit"}; ihr Änderungsdatum = letzte
    Aktivität). Der Test-Runner (werkzeuge/test_runner/dauer.py) liest sie, hält das Rechnen an, sichert den Stand und gibt
    den Bildschirm frei; der Kiosk startet dann den Simulator.
-   - Während gerechnet wird (Pause-Datei da, Kiosk-Simulator aus), lauscht die Wache auf den Ports des Simulators
-     (8765 Bilder/Steuerung, 8770 Handy-Seite des Spiels): verbindet sich MoveEye (mehr als nur die Suche nach /info) oder
-     öffnet ein Handy die Spiel-Seite, ist das ein Spielen-Wunsch. Antwort: «503 – Simulator startet», MoveEye versucht es
-     von selbst wieder.
-   - Am HP selbst: Knopf «Spielen» im Testbild (testbild.py schreibt dieselbe Datei).
-   - Läuft der Simulator ohne Rechnen (zwischen zwei Paketen) und jemand bedient ihn (Maus / Tastatur) oder MoveEye bzw. ein
-     Handy ist verbunden, gilt das auch als Spielen (sonst nähme ihn das nächste Paket gleich wieder weg).
-   - Solange gespielt wird: jede Eingabe (Leerlauf-Zähler des X-Servers, libXss) und jede Verbindung zu den Ports des
-     Simulators frischt die Datei auf. 15 Min. ohne beides -> die Datei ist abgelaufen (Änderungsdatum älter als --ruhe-s),
+   Entscheid Besitzer (03.11.2026): eine Verbindung MoveEye <-> Simulator allein ist KEIN Spielen (der Pi des Besitzers
+   bleibt im Simulator-Betrieb dauernd verbunden). Spielen ist nur, wenn jemand wirklich zuschaut oder spielt:
+   - Zuschauer in MoveEye: hat jemand bei MoveEye im Simulator-Betrieb den Reiter Live / die Sim-Ansicht offen und sichtbar
+     (Web oder Fenster am Pi), schickt MoveEye alle ~20 s «POST /zuschauer» an den Status-Dienst (Teil 639zu). Das setzt nur
+     eine Zeitmarke (Daten, höchstens 256 Bytes). Die Karte / Seite «HP rechnet» schickt das nie.
+   - Handy-Seite des Spiels (8770): während gerechnet wird, lauscht die Wache dort; wer sie öffnet, will spielen (Antwort
+     «Simulator startet», die Seite lädt neu). Verbindungen der Spieler zu 8770 / 8771 frischen das Spielen auf.
+   - Am HP selbst: Knopf «Spielen» im Testbild (testbild.py schreibt dieselbe Datei); läuft der Simulator ohne Rechnen
+     und jemand bedient ihn mit Maus / Tastatur, gilt das auch als Spielen.
+   - Solange gespielt wird: jede Eingabe (Leerlauf-Zähler des X-Servers, libXss), jeder Zuschauer-Puls und jeder Spieler
+     auf 8770 / 8771 frischt die Datei auf. 15 Min. ohne das -> die Datei ist abgelaufen (Änderungsdatum älter als --ruhe-s),
      das Rechnen geht dort weiter, wo es stand.
-2. Kleiner Status-Dienst nur fürs eigene Netz (Port 8761, nur GET, nur private Adressen): /status.json (was der HP gerade
-   rechnet, Fortschritt, Spielen) und /bild.png (das kleine Live-Bild des Tests). MoveEye (Teil 639zu «HP rechnet») holt
+2. Kleiner Status-Dienst nur fürs eigene Netz (Port 8761, nur private Adressen): GET /status.json (was der HP gerade
+   rechnet, Fortschritt, Spielen), GET /bild.png und POST /zuschauer (nur die Zeitmarke oben) (das kleine Live-Bild des Tests). MoveEye (Teil 639zu «HP rechnet») holt
    das für die Karte im Reiter Simulator. Keine Namen, Adressen, Zugangsdaten.
 3. Protokoll nach stdout (kiosk_sitzung.sh leitet es nach ~/.moveeye_kiosk/wache.log).
 """
@@ -35,8 +37,8 @@ import sys
 import time
 
 MAX_JSON, MAX_BILD = 65536, 2_500_000
-SIM_PORTS = (8765, 8770)                       # Simulator (Bilder, Steuerung) und Handy-Seite des Spiels
-AKTIV_PORTS = {8765, 8766, 8767, 8768, 8770, 8771, 8775, 8785, 8795}   # Verbindungen hier = jemand benutzt den Simulator
+SIM_PORTS = (8770,)                            # Handy-Seite des Spiels: beim Rechnen lauscht die Wache hier
+AKTIV_PORTS = {8770, 8771}                     # Spieler am Handy (Seite, WebSocket) - nicht 8765: MoveEye allein zählt nicht
 ARBEITEN = ("Erkennung messen", "KI-Trainingsbilder", "Langzeittest")
 
 
@@ -250,8 +252,9 @@ def lauscher(port):
     return None
 
 
-def anfrage(c):
-    """erste Zeile einer HTTP-Anfrage lesen (höchstens 2 KB, 2 s) -> (Methode, Pfad) oder ("", "")"""
+def anfrage(c, mit_inhalt=False):
+    """erste Zeile einer HTTP-Anfrage lesen (höchstens 2 KB, 2 s) -> (Methode, Pfad) oder ("", ""); mit_inhalt: dazu
+    höchstens 256 Bytes Inhalt -> (Methode, Pfad, Inhalt)"""
     c.settimeout(2.0)
     roh = b""
     try:
@@ -264,8 +267,30 @@ def anfrage(c):
         pass
     zeile = roh.split(b"\n", 1)[0].decode("latin-1", "replace").strip().split()
     if len(zeile) < 2:
-        return "", ""
-    return zeile[0][:8], zeile[1].split("?", 1)[0][:200]
+        return ("", "", b"") if mit_inhalt else ("", "")
+    meth, pfad = zeile[0][:8], zeile[1].split("?", 1)[0][:200]
+    if not mit_inhalt:
+        return meth, pfad
+    kopf, _, inhalt = roh.partition(b"\r\n\r\n")
+    n = 0
+    for ln in kopf.split(b"\r\n")[1:]:
+        k, _, v = ln.partition(b":")
+        if k.strip().lower() == b"content-length":
+            try:
+                n = int(v.strip())
+            except ValueError:
+                n = -1
+    if n < 0 or n > 256:
+        return meth, pfad, None
+    try:
+        while len(inhalt) < n:
+            t = c.recv(n - len(inhalt))
+            if not t:
+                break
+            inhalt += t
+    except OSError:
+        pass
+    return meth, pfad, inhalt[:n]
 
 
 def antwort(c, code, typ, daten, extra=""):
@@ -288,7 +313,7 @@ class Wache:
         if a.status_port and self.status_s is None:
             log("Status-Port", a.status_port, "besetzt - ohne Status-Dienst")
         self.leer = Leerlauf()
-        self.info_zaehler = {}                  # Adresse -> [Zeiten] der /info-Anfragen (Suche von MoveEye)
+        self.zuschauer_t = 0.0                  # letzter Zuschauer-Puls von MoveEye (POST /zuschauer)
         self.n_sek = []
         self.letzte_aktiv = 0.0
         self.t_zustand = 0.0
@@ -342,27 +367,14 @@ class Wache:
             log("Port", p, "frei (für den Simulator)")
 
     def gast(self, port, c, adr):
+        """Handy-Seite des Spiels (8770), während gerechnet wird: wer sie öffnet, will spielen"""
         meth, pfad = anfrage(c)
-        jetzt = time.time()
-        if port == self.a.sim_ports[0]:
-            if pfad == "/info":                                   # die Suche von MoveEye fragt nur /info: noch kein Wunsch
-                z = [t for t in self.info_zaehler.get(adr, []) if jetzt - t < 60] + [jetzt]
-                self.info_zaehler[adr] = z[-10:]
-                if len(self.info_zaehler) > 64:
-                    self.info_zaehler = {adr: z}
-                ja = len(z) >= 3                                  # immer wieder /info = MoveEye will sich verbinden
-            else:
-                ja = bool(meth)
-            antwort(c, 503, "text/plain; charset=utf-8", "MoveEye Sim startet - einen Moment.\n".encode(), "Retry-After: 5\r\n")
-            if ja:
-                self.wunsch("moveeye")
-        else:
-            html = ("<!doctype html><meta charset=utf-8><meta name=viewport content='width=device-width'>"
-                    "<meta http-equiv=refresh content=12><body style='font:18px sans-serif;background:#0f1624;color:#e6ebf4;"
-                    "text-align:center;padding-top:30vh'>MoveEye Sim startet …<br><small>Die Seite lädt gleich neu.</small>")
-            antwort(c, 503, "text/html; charset=utf-8", html.encode(), "Retry-After: 10\r\n")
-            if meth:
-                self.wunsch("handy")
+        html = ("<!doctype html><meta charset=utf-8><meta name=viewport content='width=device-width'>"
+                "<meta http-equiv=refresh content=12><body style='font:18px sans-serif;background:#0f1624;color:#e6ebf4;"
+                "text-align:center;padding-top:30vh'>MoveEye Sim startet …<br><small>Die Seite lädt gleich neu.</small>")
+        antwort(c, 503, "text/html; charset=utf-8", html.encode(), "Retry-After: 10\r\n")
+        if meth:
+            self.wunsch("handy")
 
     # ---------------------------------------------- Status-Dienst
     def status(self):
@@ -383,8 +395,27 @@ class Wache:
         return json.dumps(d, ensure_ascii=False).encode()
 
     def status_gast(self, c):
-        meth, pfad = anfrage(c)
-        if meth not in ("GET", "HEAD"):
+        meth, pfad, inhalt = anfrage(c, mit_inhalt=True)
+        if meth == "POST" and pfad == "/zuschauer":
+            was = ""
+            try:
+                d = json.loads((inhalt or b"").decode("utf-8", "replace")) if inhalt else {}
+                was = d.get("was") if isinstance(d, dict) else ""
+            except ValueError:
+                pass
+            if was not in ("live", "fenster", "spiel"):
+                antwort(c, 404, "text/plain", b"nicht da\n")
+                return
+            neu = time.time() - self.zuschauer_t > self.a.zuschauer_s
+            self.zuschauer_t = time.time()
+            if neu:
+                log("Zuschauer in MoveEye (%s)" % was)
+            if self.neu_zustand() != "spielen":
+                self.wunsch("zuschauer" if was != "spiel" else "spiel")
+            else:
+                self.aktivitaet("spielen")
+            antwort(c, 200, "application/json; charset=utf-8", self.status())
+        elif meth not in ("GET", "HEAD"):
             antwort(c, 405, "text/plain", b"nur GET\n")
         elif pfad in ("/status.json", "/"):
             antwort(c, 200, "application/json; charset=utf-8", self.status())
@@ -403,9 +434,10 @@ class Wache:
         jetzt = time.time()
         idle = self.leer.sekunden()
         eingabe = idle is not None and idle < 20
-        verb = verbindungen(AKTIV_PORTS) > 0 if z != "rechnet" else False   # beim Rechnen sind die Ports der Wache
+        zusch = jetzt - self.zuschauer_t < self.a.zuschauer_s
+        verb = (verbindungen(AKTIV_PORTS) > 0 if z != "rechnet" else False) or zusch   # beim Rechnen ist 8770 die Wache
         if z == "frei" and (eingabe or verb):
-            self.wunsch("eingabe" if eingabe else "moveeye")
+            self.wunsch("eingabe" if eingabe else "zuschauer" if zusch else "handy")
             return
         if z != "spielen":
             return
@@ -466,11 +498,12 @@ def main():
     ap.add_argument("--pause-max-s", type=int, default=25200)
     ap.add_argument("--ruhe-s", type=int, default=900, help="so lange ohne Eingabe und ohne Verbindung, dann wird weitergerechnet")
     ap.add_argument("--status-port", type=int, default=8761, help="0 = aus")
+    ap.add_argument("--zuschauer-s", type=int, default=60, help="so lange gilt ein Zuschauer-Puls von MoveEye (s)")
     ap.add_argument("--sim-ports", default=",".join(str(p) for p in SIM_PORTS),
-                    help="Ports des Simulators (Bilder/Steuerung, Handy-Seite), auf denen beim Rechnen gelauscht wird")
+                    help="Port der Handy-Seite des Spiels, auf dem beim Rechnen gelauscht wird")
     a = ap.parse_args()
     try:
-        a.sim_ports = [int(x) for x in a.sim_ports.split(",") if x.strip()][:2]
+        a.sim_ports = [int(x) for x in a.sim_ports.split(",") if x.strip()][:1]
     except ValueError:
         ap.error("--sim-ports: Zahlen mit Komma")
     if not a.sim_ports or not all(1024 < p < 65536 for p in a.sim_ports):

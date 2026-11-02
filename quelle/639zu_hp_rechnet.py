@@ -12,6 +12,10 @@
 # gefundenen Simulatoren (SIMFOUND, Teil 300). Gefragt wird nur, solange die Karte oder die Seite offen ist (sie fragen alle
 # paar Sekunden; dazwischen ein kurzer Zwischenspeicher) - keine Dauerlast. Alles vom HP gilt als fremde Daten: nur bekannte
 # Felder, gekürzt, Grösse begrenzt (JSON 64 KB, Bild 2,5 MB und nur PNG). Nur für den Besitzer (Rolle admin).
+# Zuschauer (Entscheid Besitzer 03.11.2026): eine Verbindung MoveEye <-> Simulator allein hält den HP NICHT vom Rechnen ab.
+# Nur wenn jemand im Simulator-Betrieb wirklich zuschaut - Reiter Live / Sim-Ansicht im Browser offen und sichtbar, oder
+# das Fenster am Pi zeigt das Live-Bild -, schickt MoveEye alle ~20 s «POST /zuschauer» an den HP (nur eine Zeitmarke);
+# dann pausiert der HP sein Rechnen und der Simulator läuft. Die Karte / Seite «HP rechnet» schicken das nie.
 # ----------------------------------------------------------------------------
 HPR_PORT = 8761
 HPR = {"t": 0.0, "d": None, "host": "", "bild": b"", "bild_t": 0.0, "fehl_t": 0.0}
@@ -136,6 +140,50 @@ def hpr_status():
                 HPR["fehl_t"] = 0.0
         HPR.update(t=now, d=res)
         return res
+
+
+HPR_ZU = {"t": 0.0, "faden": False}
+
+
+def hpr_zuschauer(was):
+    """jemand schaut im Simulator-Betrieb zu (Live / Sim-Ansicht / Fenster): dem HP melden (höchstens alle 15 s, im
+    Hintergrund). Nur, wenn die Simulation an ist und der Simulator auf einem anderen Rechner läuft."""
+    if was not in ("live", "fenster", "spiel") or not CFG.get("sim_on"):
+        return False
+    try:
+        h = urllib.parse.urlsplit(sim_base()).hostname or ""
+    except ValueError:
+        return False
+    if not h or h.startswith("127.") or h in ("localhost", "::1") or not _HPR_HOST_RE.match(h):
+        return False
+    now = time.time()
+    with HPR_LOCK:
+        if now - HPR_ZU["t"] < 15:
+            return True
+        HPR_ZU["t"] = now
+
+    def senden():
+        hh = "[" + h.strip("[]") + "]" if ":" in h else h
+        try:
+            req = urllib.request.Request("http://%s:%d/zuschauer" % (hh, HPR_PORT), data=json.dumps({"was": was}).encode(),
+                                         headers={"User-Agent": "MotionWatch", "Content-Type": "application/json"})
+            with _SIM_OPENER.open(req, timeout=3) as r:
+                r.read(65536)
+        except (OSError, ValueError):
+            pass                                      # kein HP mit Dauerrechnen dort: egal
+    threading.Thread(target=senden, daemon=True, name="hpr-zuschauer").start()
+    return True
+
+
+def _hpr_fenster_faden():
+    """das Fenster am Pi zeigt das Live-Bild (STATE local_view_t, Teil 570): auch das ist ein Zuschauer"""
+    while True:
+        time.sleep(20)
+        try:
+            if time.time() - float(STATE.get("local_view_t") or 0) <= 5:
+                hpr_zuschauer("fenster")
+        except Exception:
+            pass
 
 
 def hpr_bild():
@@ -414,6 +462,19 @@ if _HPR_ANKER in SIM_PAGE:
     SIM_PAGE = SIM_PAGE.replace("</body>", hpr_js() + "<script>Object.assign(I18N.de, " + json.dumps(
         {"HP computes": _HX_HPR["HP computes"][0]}, ensure_ascii=False) + ");</script>" + HPR_CARD_JS + "</body>", 1)
 
+# Reiter Live (auch die Sim-Ansicht, 639zt): solange die Seite sichtbar ist, alle 20 s ein Zuschauer-Puls (der Server
+# meldet ihn nur im Simulator-Betrieb weiter)
+HPR_LIVE_JS = r"""<script>
+(function () {
+  if (window._hprZu || !document.body || document.body.dataset.tab !== "live") return; window._hprZu = true;
+  const puls = () => { if (document.hidden) return; fetch("/api/hp/zuschauer", {method: "POST", headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({was: "live"}), cache: "no-store"}).catch(() => {}); };
+  setInterval(puls, 20000); setTimeout(puls, 1500);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) puls(); });
+})();
+</script>"""
+WEB_PAGE = WEB_PAGE.replace("</body>", HPR_LIVE_JS + "</body>", 1)
+
 # Einstellungen → Entwickler (530 devExtras): Eintrag «HP rechnet» vor «Entwickler-Bereich»
 _HPR_DEV = '["⚗", "Settings of the simulation", "/sim"], ["🛠", "Developer area", "/dev"]]'
 if _HPR_DEV in WEB_PAGE:
@@ -443,6 +504,14 @@ def smalltv_routes(app, reply, body):                     # + 639zu: /hp, /api/h
         if not _darf():
             return reply({"ok": False, "error": "forbidden"}, 403)
         return reply(hpr_status())
+
+    @app.route("/api/hp/zuschauer", methods=["POST"])
+    def hpr_zuschauer_():                                # Puls vom Reiter Live (jede angemeldete Rolle; nur eine Zeitmarke)
+        return reply({"ok": True, "gemeldet": hpr_zuschauer(str(body().get("was") or ""))})
+
+    if not HPR_ZU["faden"]:
+        HPR_ZU["faden"] = True
+        threading.Thread(target=_hpr_fenster_faden, daemon=True, name="hpr-fenster").start()
 
     @app.route("/api/hp/bild.png")
     def hpr_bild_():

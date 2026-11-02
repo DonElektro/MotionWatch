@@ -14,8 +14,9 @@
 # Testbild (3.53.0): während der Pause zeigt testbild.py (python3-tk) Logo, «Test läuft – bitte nicht ausschalten» und den
 # Fortschritt aus FORTSCHRITT_DATEI (nur Daten, JSON) samt Live-Bild; nach dem Test 2 Min. eine Zusammenfassung, dann
 # startet der Simulator. Ohne python3-tk bleibt der Bildschirm dunkel.
-# Dauerrechnen (3.55.0): der HP rechnet rund um die Uhr (werkzeuge/test_runner/dauer.py). «Spielen» (Knopf im Testbild) oder
-# MoveEye / ein Handy, das sich mit dem Simulator verbinden will (hp_wache.py lauscht auf seinen Ports), schreibt SPIEL_DATEI;
+# Dauerrechnen (3.55.0): der HP rechnet rund um die Uhr (werkzeuge/test_runner/dauer.py). «Spielen» (Knopf im Testbild), ein
+# Zuschauer in MoveEye (Reiter Live offen, Puls an hp_wache.py) oder ein Handy auf der Spiel-Seite schreibt SPIEL_DATEI
+# (eine Verbindung MoveEye <-> Simulator allein zählt nicht);
 # der Test-Runner hält an, sichert den Stand und nimmt die Pause-Datei weg - dann startet der Simulator gleich, ohne
 # Zusammenfassung. 15 Min. ohne Eingabe und ohne Verbindung: weiterrechnen. Während des Rechnens schaltet DPMS den Bildschirm
 # nach SCHLAF_S (10 Min.) ohne Maus / Taste aus, das Testbild schläft; beim Simulator bleibt er an wie bisher.

@@ -51,12 +51,14 @@ Gesichert wird pro Fall (Erkennung), pro Bildpaket (KI) bzw. pro Minute (Langzei
 nächsten Mal neu gerechnet, nichts anderes geht verloren. Zustand: `/var/lib/mwrunner/dauer/` (die letzten 12 Pakete bleiben).
 
 **Spielen:** Am HP eine Taste drücken oder die Maus bewegen – das Testbild zeigt gross «Spielen?» (Enter oder Klick = ja,
-Esc = weiter rechnen); unten rechts steht immer der Knopf «Spielen». Verbindet sich **MoveEye** mit dem Simulator am HP oder
-öffnet ein Handy die Spiel-Seite (Port 8770), gilt das auch als Spielen (`hp_wache.py` lauscht während des Rechnens auf
-diesen Ports; die blosse Suche nach Simulatoren zählt nicht). Dann hält der Test in wenigen Sekunden an, der Test-Simulator
-ist zu, und der Kiosk-Simulator startet (nie beide zugleich – 4 GB RAM). **15 Min. ohne Maus, Taste und Verbindung**
-rechnet der nächste Lauf genau dort weiter. Hinweis: steht MoveEye fest auf dem Simulator am HP («Simulation» an), gilt das
-als dauerndes Spielen – dann rechnet der HP nicht.
+Esc = weiter rechnen); unten rechts steht immer der Knopf «Spielen». Auch Spielen ist: in **MoveEye** im Simulator-Betrieb
+den Reiter **Live** bzw. die Sim-Ansicht offen und sichtbar haben (Browser) oder das Fenster am Pi zeigt das Live-Bild –
+MoveEye meldet das dem HP alle 20 s (`POST /zuschauer` an Port 8761, nur eine Zeitmarke) –, oder ein Handy öffnet die
+Spiel-Seite (Port 8770). **Eine Verbindung MoveEye ↔ Simulator allein zählt nicht** (Entscheid Besitzer 03.11.2026: der Pi
+bleibt im Simulator-Betrieb dauernd verbunden), die Karte / Seite «HP rechnet» auch nicht. Dann hält der Test in wenigen
+Sekunden an, der Test-Simulator ist zu, und der Kiosk-Simulator startet (nie beide zugleich – 4 GB RAM). **15 Min. ohne
+Maus, Taste, Zuschauer und Spieler am Handy** rechnet der nächste Lauf genau dort weiter. Ein Gamepad am HP zählt nicht als
+Eingabe. Steht das Fenster am Pi dauernd offen auf dem Bildschirm, gilt das als Zuschauer – dann rechnet der HP nicht.
 
 **Bildschirm:** während des Rechnens schaltet er nach 10 Min. ohne Maus / Taste ab (DPMS), das Testbild zeichnet dann nicht
 mehr; Maus oder Taste weckt ihn sofort. Beim Simulator bleibt er an wie bisher.
