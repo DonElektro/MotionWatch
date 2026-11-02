@@ -1,0 +1,34 @@
+# Kurze Prüfung des HP-Test-Runners aus der Ferne (nur Shell-Befehle, keine Actions).
+# Start: gh api -X POST repos/DonElektro/MotionWatch/actions/workflows/hp_diagnose.yml/dispatches -f ref=main
+# Gibt keine Namen, Adressen oder Zugangsdaten aus.
+name: HP-Diagnose
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  diagnose:
+    runs-on: [self-hosted, moveeye-hp]
+    timeout-minutes: 5
+    steps:
+      - name: Prüfen
+        shell: bash
+        run: |
+          set +e
+          echo "== System"; uname -r; grep -E '^(VERSION_ID|VERSION_CODENAME)=' /etc/os-release
+          echo "== Prozess"; grep -E 'NoNewPrivs|Seccomp' /proc/self/status
+          echo "== Arbeitsordner"; pwd; findmnt -T "$PWD" -o TARGET,FSTYPE,OPTIONS; df -h "$PWD" | tail -1
+          ls -ld "$PWD" "$RUNNER_TEMP" "$(dirname "$RUNNER_TOOL_CACHE")" 2>&1
+          echo "== Schreibtest"
+          T="$RUNNER_TEMP/probe_$$"; mkdir "$T" && echo "mkdir OK" || echo "mkdir FEHLER"
+          echo hallo > "$T/a.txt" && echo "Datei OK" || echo "Datei FEHLER"
+          python3 -c "import os;os.makedirs('$T/py/x');print('python mkdir OK')" 2>&1
+          (cd "$T" && mkdir -p q/r && echo x > q/r/b && tar -czf t.tgz q && mkdir aus && tar -xzf t.tgz -C aus && echo "tar OK") 2>&1 | tail -3
+          tar --version | head -1
+          W="$(dirname "$RUNNER_TEMP")/_actions"; echo "_actions: $W"; ls -ld "$W" 2>&1
+          mkdir -p "$W/probe_$$" && echo "_actions mkdir OK" || echo "_actions mkdir FEHLER"; rmdir "$W/probe_$$" 2>/dev/null
+          rm -rf "$T"
+          echo "== Dienst-Schutz"
+          U="$(systemctl list-units --type=service --no-legend 'actions.runner.*' | awk '{print $1}' | head -1)"
+          systemctl show "$U" -p ProtectSystem -p ProtectHome -p SystemCallFilter -p SystemCallErrorNumber -p RestrictFileSystems -p ReadOnlyPaths -p ReadWritePaths -p PrivateTmp -p RestrictNamespaces 2>&1 | cut -c1-200
+          ls /etc/systemd/system/"$U".d/ 2>&1
