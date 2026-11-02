@@ -40,7 +40,7 @@ INS_HOLE_L = 6.7                     # Bohrtiefe = Einsatzlänge + 1 mm (Platz f
 INS_WALL_MIN = 1.6
 SB = v5.SHELF_Z - v5.SHELF_T         # Unterseite Zwischenboden (Auflage)
 SHELF_SCREWS = [(150.0, LY - 4.0), (LX - 4.0, 76.0)]
-SHELF_BLOCK_Z0 = SB - 14.0           # Klötze tiefer als v5.1 (sonst bricht die Einsatzbohrung durch die 45°-Unterseite)
+SHELF_BLOCK_Z0 = SB - 17.0           # Klötze tiefer als v5.1 (sonst bricht die Einsatzbohrung durch die 45°-Unterseite)
 # --- 3 Akkuklappe (Boden unter dem UPS HAT (E) mit 4 × 21700)
 OPEN_X0, OPEN_X1, OPEN_Y0, OPEN_Y1 = 74.0, 162.0, 4.0, 76.0   # Öffnung im Boden (Zellen x 74,3..161,8, Länge 70 mm in y)
 OPEN_R = 3.0
@@ -59,8 +59,8 @@ HATCH_RIB_Y = (22.0, 40.0, 58.0)     # Stützrippen unter den Zellen (quer zu de
 COOL_X0, COOL_X1, COOL_Y0, COOL_Y1 = 99.0, 130.0, 15.0, 47.0   # Active Cooler (v5.py internals: px+25..px+56, y 15..47)
 COOL_TOP = v5.PI_Z + 16.0            # NACHMESSEN: Oberkante Active Cooler (Annahme v5.py)
 FAN_IN = (103.0, 126.0, 19.0, 43.0)  # NACHMESSEN: Ansaugöffnung oben auf dem Active Cooler (Annahme check52.py)
-INLET_X = (108.5, 112.3, 116.1)      # 3 Schlitze 2,8 × 6 mm über dem Service-Fenster (Stopfen-Flansch bis z 54,5, rechts vom
-INLET_W, INLET_Z0, INLET_Z1 = 2.8, 55.5, 61.5     # Griff des Stopfens 10 bei x 93..105)
+INLET_X = (108.8, 112.8, 116.8)      # 3 Schlitze 2,5 × 6 mm über dem Service-Fenster (Stopfen-Flansch bis z 54,5, rechts vom
+INLET_W, INLET_Z0, INLET_Z1 = 2.5, 55.5, 61.5     # Griff des Stopfens 10 bei x 93..105), Steg dazwischen 1,5 mm
 INLET_ROOF_Z0 = 62.5                 # Regendach: Unterseite an der Wand, 6 mm tief, 45°
 DUCT_T = 1.6                         # Wand der Haube
 DUCT_TOP0 = 63.4                     # Unterseite Haubendach (oben 65,0 – darüber die Kamerakabel, Deckel bei 68,5)

@@ -49,7 +49,7 @@ Schrauben: Deckel 6 × M3 × 10, Zwischenboden 2 × M3 × 8, Akkuklappe 4 × M3 
 
 ## Luftführung
 
-Frische Luft: 3 Schlitze 2,8 × 6 mm (rechts vom Griff des Stopfens 10) mit Regendach über dem Service-Fenster → Luftkanal 27 (Haube, unten offen, liegt mit einem
+Frische Luft: 3 Schlitze 2,5 × 6 mm (rechts vom Griff des Stopfens 10) mit Regendach über dem Service-Fenster → Luftkanal 27 (Haube, unten offen, liegt mit einem
 Moosgummi-Streifen auf dem Active Cooler, 3 Finger zentrieren ihn) → Ansaugung des Lüfters. Die warme Luft aus den Kühlrippen
 geht wie bisher durch die Lüftungsschlitze daneben hinaus. Die Kamerakabel CAM0 / CAM1 liegen flach auf dem Dach des Kanals
 und gehen dann in den Kabelkamm (wie v5.2). Ein Moosgummi-Pad oben auf dem Kanal: der Deckel hält ihn.

@@ -1,14 +1,14 @@
 {
  "_hinweis": "Erzeugt von werkzeuge/gehaeuse_bauen.py aus hardware/gehaeuse/ – nicht von Hand ändern. Koordinaten: Meter, Ursprung Kippachse (main.head_pitch), Godot X = Modell y, Y = z, Z = x (vorne = −Z).",
  "version": "5.1",
- "quelle_sha256": "d755c47fb9107b6d33bc5f5682030666ffa45c4be5e66721610610dcdc305ccf",
+ "quelle_sha256": "1a20b5946f15fee014a9620de59f764cc79b9fce1cbcc424ec31890bbd6549d5",
  "dateien": {
-  "gehaeuse.glb": "958a8d6d8257c945b001634c7c6683b9b492f7aaf62c3851422e0860782f8676",
-  "gehaeuse_lite.glb": "8d88a31c9cc349a7d105d704fcf7536ee6fc8f1f6a07a7fed46721ed6e9a1c8f"
+  "gehaeuse.glb": "729cfca1c223840d3eb759cc6e2a701fcd2000f844f27ce0c3342c801a13ac42",
+  "gehaeuse_lite.glb": "2d482068f77f1f456f34260c2769d86aba0196da665a663479bc4691b91c01d8"
  },
- "dreiecke": 206000,
- "dreiecke_aussen": 141441,
- "dreiecke_lite": 22911,
+ "dreiecke": 206022,
+ "dreiecke_aussen": 141463,
+ "dreiecke_lite": 22917,
  "kippachse_ueber_boden_m": 0.1258,
  "fuesse_m": 0.006,
  "v52": {
@@ -1879,7 +1879,7 @@
    "gruppe": "base",
    "farbe": "#9a9ea3",
    "aussen": true,
-   "dreiecke": 18154,
+   "dreiecke": 18176,
    "mitte": [
     -0.0031,
     -0.0914,
@@ -1892,7 +1892,7 @@
    ],
    "variante": "5.3",
    "ersetzt": "tub52",
-   "dreiecke_lite": 2740,
+   "dreiecke_lite": 2746,
    "explosion": [
     -0.0,
     0.0,

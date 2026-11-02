@@ -81,7 +81,7 @@
   "MotionWatch_v5-1_Platte_B_Deckel_Kopf.3mf": "1bd8cdde0ed49621c518271f03630b71549ed5eab341cf5e83a202075b8a5726",
   "v5-2/MotionWatch_v5-2_Platte_A_Unterteil.3mf": "bd1d4436e684d4c08b6000af49852f1006f3c06564adf07cb997b877a624a16d",
   "v5-2/MotionWatch_v5-2_Platte_B_Deckel_Kopf.3mf": "d3234794343dd8d3a823ebcda891388c8affd1809fd201b76fb7058770b1f849",
-  "v5-3/MotionWatch_v5-3_Platte_A_Unterteil.3mf": "b970a332ba4762bb3243db512232bb45ba1e963f2b7668b520dfff7c10c866d6",
+  "v5-3/MotionWatch_v5-3_Platte_A_Unterteil.3mf": "edae254431c9085d24c065bfb5393c4707abe5f36c8b1338a779678f18864854",
   "v5-3/MotionWatch_v5-3_Platte_B_Deckel_Kopf.3mf": "0098ef0fb7ba313254c2d1a731baa0ba02de5fbe3b8ee1ed109f422917614ced",
   "v5-3/MotionWatch_v5-3_Platte_C_Halter.3mf": "c2b6decfd68f4d7e85701831297949f121484ed99f95fcd130b3820d8df6927c",
   "MoveEye_v5-1_01_Unterteil.3mf": "481aa44fe796029480d6ee3005f2aafacafa62c34401703fb1b734ce011d2996",
@@ -118,7 +118,7 @@
   "v5-2/MoveEye_v5-2_21_Stopfen_Relais.3mf": "f934df900d5c986384131c35e0ff42eacbf5ca1c34640dbc80a3108f896b53a2",
   "v5-2/MoveEye_v5-2_23_Stopfen_Mikrofon.3mf": "ad4731d8a668595314bbc1166c3d9bca247d6476352980689702f869d0a5fca9",
   "v5-2/MoveEye_v5-2_24_Stopfen_Lichtleiter.3mf": "6763d413c35bb9ca3ed62964828fe876015202dec95364dc9c0988c9eaf3d30e",
-  "v5-3/MoveEye_v5-3_01_Unterteil_v53.3mf": "04651f3d9c87e1df6cb668621a293f4db5d2c4e58a6feb04a009ff553b4754f5",
+  "v5-3/MoveEye_v5-3_01_Unterteil_v53.3mf": "7e6398b006eae0c0305b3f7c2b32ced0808545540fa80534f4a9424f66f4784a",
   "v5-3/MoveEye_v5-3_02_Deckel_v53.3mf": "f4ea1875aedd40a73e3f1ddf75ed23fc98a60279764284f32f215ab28ddb3e36",
   "v5-3/MoveEye_v5-3_03_Drehteller.3mf": "873c404b916163f32c90c5a256e06ae724cecb78ac711ed254bdf7d75a0f0124",
   "v5-3/MoveEye_v5-3_04_Gabel_mit_Arm1.3mf": "05356092da063477877455b2fc2417079ec5b2f9f51a1442f77e2b22701bbcb5",
@@ -171,7 +171,7 @@
   "printcheck53.py": "86ed3bca29a5001898e75bf710caabb6ac3777868f0eff5619337e3cc268b440",
   "v5.py": "01c4d6773bc7f613e7f584658efb08e7c568f2af380fbcaa739a7ac87e3ee9a8",
   "v52.py": "e0339df00d0b3ab00eddaa9de184a4ef3595d2802a0eb6bb58b27530a148e29b",
-  "v53.py": "e1462fb2cf74e6edecb2a0eab67ae67bf8b9ee5b85e37d582294dc30674440e6"
+  "v53.py": "1b87af8bbeb09e8a690af37657f29e5b92eef661dc65bccfcefa930e257f8e0e"
  },
  "teile": [
   "alu",

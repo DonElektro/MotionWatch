@@ -13,8 +13,8 @@
   },
   "01_Unterteil_v53": {
    "farbe": "grau",
-   "gramm": 84,
-   "vol_cm3": 148.4
+   "gramm": 85,
+   "vol_cm3": 148.8
   },
   "02_Deckel_mit_Laufring": {
    "farbe": "grau",
@@ -157,7 +157,7 @@
    "vol_cm3": 4.2
   }
  },
- "glb_sha256": "958a8d6d8257c945b001634c7c6683b9b492f7aaf62c3851422e0860782f8676",
+ "glb_sha256": "729cfca1c223840d3eb759cc6e2a701fcd2000f844f27ce0c3342c801a13ac42",
  "lage": {
   "arm2": {
    "datei": "05_Arm2_Lagerseite",
@@ -1011,7 +1011,7 @@
   },
   "tub53": {
    "datei": "01_Unterteil_v53",
-   "f": 3.77,
+   "f": 3.69,
    "g": [
     198.2,
     103.3,
