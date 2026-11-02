@@ -882,6 +882,7 @@ func _process(dt: float) -> void:
 			tw.tween_property(self, "modulate:a", 1.0, 0.18)
 	if not visible:
 		return
+	_fit()
 	_pulse += dt
 	_prog_f = move_toward(_prog_f, float(step), dt * 4.0)
 	prog.queue_redraw()
@@ -890,6 +891,32 @@ func _process(dt: float) -> void:
 	if sig != _painted:
 		_painted = sig
 		_paint()
+
+
+func _fit() -> void:
+	"""Spielmodus (Besitzer 02.11.2026): the wizard always fits into the part of the window that MoveEye streams to the phone
+	(main.view_rect: left of the control panel) and into the height of the window - before, a wide step grew under the panel
+	and the right column and «Weiter» were cut off in the phone picture. Never wider than before (offset_right -440)."""
+	var vs: Vector2 = get_viewport_rect().size
+	if vs.x < 64.0 or vs.y < 64.0:
+		return
+	var r: Rect2 = main.view_rect() if main != null and main.has_method("view_rect") else Rect2(Vector2.ZERO, vs)
+	var right: float = minf(vs.x, r.end.x) - 16.0
+	var o_r: float = minf(-440.0, right - vs.x)
+	var mn: Vector2 = get_combined_minimum_size()
+	var o_l := 60.0
+	if vs.x + o_r - o_l < mn.x:                            # too narrow: use the room on the left first
+		o_l = maxf(8.0, vs.x + o_r - mn.x)
+	var o_t := 40.0
+	var o_b := -40.0
+	if vs.y - 80.0 < mn.y:
+		o_t = 8.0
+		o_b = -8.0
+	if absf(offset_right - o_r) > 0.5 or absf(offset_left - o_l) > 0.5 or absf(offset_top - o_t) > 0.5 or absf(offset_bottom - o_b) > 0.5:
+		offset_left = o_l
+		offset_right = o_r
+		offset_top = o_t
+		offset_bottom = o_b
 
 
 func _draw_prog() -> void:

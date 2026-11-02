@@ -1,8 +1,13 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 02.11.2026 · Version **3.53.0** · MoveEye **3.53.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 02.11.2026 · Version **3.54.0** · MoveEye **3.54.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.54.0 (MoveEye 3.54.0): Sim-Ansicht und Spielen mit einem Tipp (MoveEye Teil 639zt, `scripts/gamewiz.gd`, `main_kamera.gd`)
+
+- Live-Seite im Simulator-Betrieb mit grossem Bild und Knöpfen, «🎮 Spielen» (gamewiz: Start mit einem Tipp, Knöpfe im
+  Browser), Bild unbeschnitten (main_kamera.gd); schnittstelle.json ergänzt.
 
 ## NEU in 3.53.0 (MoveEye 3.53.0): HP-Testbild und HP-Update (`beilagen_linux/testbild.py`, `werkzeuge/test_runner/hp_update.sh`, Datei `hp`)
 
