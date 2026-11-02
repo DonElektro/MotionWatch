@@ -1,8 +1,13 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 02.11.2026 · Version **3.50.0** · MoveEye **3.50.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 02.11.2026 · Version **3.51.0** · MoveEye **3.51.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.51.0 (MoveEye 3.51.0): Gehäuse v5.3 Standard (`hardware/gehaeuse/Quellcode/v53.py`, 3MF in `Druckdateien/v5-3/`)
+
+- Gewindeeinsätze M3, Halter Wand/Baum mit Gurt, Akkuklappe im Boden, Luftkanal Pi-Lüfter, Zugentlastung, Platte C;
+  bau.json variante_standard.gehaeuse = v53, v5.2 / v5.1 wählbar; Daten mit gehaeuse_bauen.py (Freigabe des Besitzers).
 
 ## NEU in 3.50.0 (MoveEye 3.50.0): Werkstatt als eigene HTML-Datei (`werkzeuge/werkstatt_html.py`, MoveEye Teil 639w)
 

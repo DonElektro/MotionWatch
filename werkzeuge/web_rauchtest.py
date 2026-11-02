@@ -141,6 +141,9 @@ def druck_pruefen(base, fehler):
     c, cd = kopf("/build/alle.zip?var=v52")
     if c != 200 or not re.fullmatch(r'attachment; filename="MoveEye_v5-2_Druck_\d+\.\d+\.\d+\.zip"', cd):
         fehler.append("alle.zip: %s %r (erwartet MoveEye_v5-2_Druck_X.Y.Z.zip)" % (c, cd))
+    c, cd = kopf("/build/datei/v5-3/MoveEye_v5-3_26_Akkuklappe.3mf")          # real-gehaeuse-v53
+    if c != 200 or cd != 'attachment; filename="MoveEye_v5-3_26_Akkuklappe.3mf"':
+        fehler.append("Druckdatei v5-3/…: %s %r (erwartet 200, Basisname)" % (c, cd))
 
 
 DATEI_ENDUNG = (".js", ".json", ".png", ".ico", ".zip", ".jpg", ".jpeg", ".mp4", ".webm", ".wav", ".mp3", ".ogg", ".txt",

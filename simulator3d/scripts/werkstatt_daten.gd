@@ -3,12 +3,12 @@ extends RefCounted
 ## hardware/gehaeuse/bau.json. NICHT VON HAND ÄNDERN (Texte dort ändern, dann «gehaeuse_bauen.py --texte»).
 ## Texte deutsch (T.t übersetzt sie, Übersetzungen kommen aus bau.json in i18n/texte.json).
 
-const QUELLE_SHA := "a4af57cc5f3097a62fa86e0ca5c3c48c3421b242e417a94c2f471848942d435a"
+const QUELLE_SHA := "c6534a0b9b7a98321c9be33dab47f3f275d830ed3207b6a41a14768cc3ac1867"
 const VERSION := "5.1"
 const KOPF_FARBE := "#f59a4a"   # Kopfteil (dreht / neigt) in MoveEye-Orange
 const KOPF_TEILE := ["turntable", "yoke", "arm2", "head", "side", "lamp1", "lamp2", "head52"]
 const GRAU := "#9a9ea3"   # Unterteil, Deckel, Zwischenboden, Füsse, Stopfen
-const GRAU_TEILE := ["tub", "tub52", "lid", "shelf", "feet", "plug", "plug52", "sdplug", "resplug", "wplug", "sockel", "irplug", "feet2", "feet3", "feet4", "thplug", "dsplug", "rlplug", "micplug", "llplug"]
+const GRAU_TEILE := ["tub", "tub52", "lid", "shelf", "feet", "plug", "plug52", "sdplug", "resplug", "wplug", "sockel", "irplug", "feet2", "feet3", "feet4", "thplug", "dsplug", "rlplug", "micplug", "llplug", "tub53", "lid53", "hatch", "duct", "holder", "feet53", "feet53_2", "feet53_3", "feet53_4"]
 const MASSE := "Unterteil 183 × 97 × 71,5 mm (mit Füssen 77,5 mm), Gesamthöhe ca. 161 mm, Kopf 58 × 58 mm"
 # Materialliste: id -> [Menge, Bezeichnung, Teilenummer, Gruppe]
 const BOM := {
@@ -73,6 +73,12 @@ const BOM := {
 	"chassis": ["1×", "Kettenfahrwerk mit 2 DC-Motoren", "", "Mover"],
 	"schrauben": ["1 Set", "Schraubensatz M2 / M2,5 / M3 mit Muttern und Scheiben", "", "Kabel, Druck, Notfall"],
 	"psu_pi": ["1×", "Raspberry Pi 27-W-USB-C-Netzteil (Entwicklung)", "SC1153", "Strom"],
+	"insert": ["12× (Pack 50–100)", "Gewindeeinsätze M3 × 5,7 aus Messing (Heat-Set), z. B. ruthex RX-M3x5.7 – 6 Deckel, 2 Zwischenboden, 4 Akkuklappe; Bohrung Ø 4,0 nach Herstellerangabe", "ruthex RX-M3x5.7", "Variante v5.3 (Einsätze, Akkuklappe, Halter, Luftkanal)"],
+	"tripodscrew": ["1×", "Rändelschraube 1/4\"-20 × 16 mm (Halter → Stativmutter)", "1/4\"-20 × 16", "Variante v5.3 (Einsätze, Akkuklappe, Halter, Luftkanal)"],
+	"strap": ["1×", "Spanngurt 25 mm, ca. 1,5 m (Baum; Klemmschloss)", "25 mm", "Variante v5.3 (Einsätze, Akkuklappe, Halter, Luftkanal)"],
+	"wallscrew": ["4×", "Schrauben 4–5 mm mit Dübeln (Wand)", "4–5 mm", "Variante v5.3 (Einsätze, Akkuklappe, Halter, Luftkanal)"],
+	"ties": ["1 Pack", "Kabelbinder 2,5–3,6 mm (Zugentlastung an Kabelkamin, GX16, Relais)", "≤ 3,6 mm", "Variante v5.3 (Einsätze, Akkuklappe, Halter, Luftkanal)"],
+	"ductfoam": ["1×", "Moosgummi-Streifen 3 × 10 mm, selbstklebend (Luftkanal auf dem Kühler, Pad unter dem Deckel)", "3 × 10 mm", "Variante v5.3 (Einsätze, Akkuklappe, Halter, Luftkanal)"],
 }
 # Teile: [id, Art (druck | teil | kabel | v52), Name, Materialliste-id, Montageschritt (0 = keiner), Druckdatei,
 #         ersetzt (v5.2: dieses Teil von v5.1, sonst "")]
@@ -153,23 +159,35 @@ const TEILE := [
 	["resplug", "v52", "17 Blindstopfen Reserve-Öffnung hinten (GX12)", "petg", 7, "17_Blindstopfen_Reserve", ""],
 	["lampdrv", "v52", "PLATZHALTER Lampentreiber (Feld 30 × 20, 2 × M2,5)", "", 6, "", ""],
 	["fuseh", "v52", "Sicherungshalter 5 A (Akku B+) in der Klammer am Boden", "fuse2", 7, "", ""],
+	["tub53", "v53", "01 Unterteil v5.3 (Einsätze, Akkuklappe, Lufteinlass, Ösen)", "petg", 2, "01_Unterteil_v53", "tub52"],
+	["lid53", "v53", "02 Deckel v5.3 (Öse im Kabelkamin)", "petg", 8, "02_Deckel_v53", "lid"],
+	["hatch", "v53", "26 Akkuklappe (Boden, 4 × M3 × 8 in Einsätzen)", "petg", 4, "26_Akkuklappe", ""],
+	["duct", "v53", "27 Luftkanal (Haube auf dem Active Cooler)", "petg", 13, "27_Luftkanal", ""],
+	["holder", "v53", "25 Halter Wand / Baum (Gurt 25 mm, Schraube 1/4\")", "petg", 14, "25_Halter_Wand_Baum", ""],
+	["feet53", "v53", "11 Fuss 1 von 4 (v5.3: in den Ecken)", "petg", 2, "11_Fuss_4x", "feet"],
+	["feet53_2", "v53", "11 Fuss 2 von 4 (v5.3: in den Ecken)", "petg", 2, "11_Fuss_4x", "feet2"],
+	["feet53_3", "v53", "11 Fuss 3 von 4 (v5.3: in den Ecken)", "petg", 2, "11_Fuss_4x", "feet3"],
+	["feet53_4", "v53", "11 Fuss 4 von 4 (v5.3: in den Ecken)", "petg", 2, "11_Fuss_4x", "feet4"],
+	["cable_cam1_53", "v53", "Kamerakabel CAM1 (v5.3: über den Luftkanal)", "camcable2", 13, "", "cable_cam1"],
+	["cable_cam0_53", "v53", "Kamerakabel CAM0 (v5.3: Kamin → über den Luftkanal → Kabelkamm)", "camcable", 13, "", "cable_cam0_52"],
 ]
-# Montage: [Titel v5.2, Text v5.2, Titel v5.1, Text v5.1] (v5.2 = Standard; v5.1 für die Auswahl v5.1)
+# Montage: [Titel v5.2, Text v5.2, Titel v5.1, Text v5.1, Titel v5.3, Text v5.3] (v5.2 = Standard; v5.1 / v5.3 für
+#          die Auswahl v5.1 / v5.3 – bau.json «v51» / «v53»)
 const SCHRITTE := [
-	["Teile drucken", "Die Druckteile v5.2 in PETG ohne Stützen drucken: Platte A (Unterteil v5.2 mit Weitwinkel-Fenster, Zwischenboden, Stopfen, Füsse) und Platte B (Deckel, Drehteller, Gabel, Arm 2, Kopf 06 v5.2 mit Status-LED, Seitendeckel, Lampenhalter, Diffusor 14, Pupillenring 15). Kopf, Gabel und Seitendeckel mit 5 mm Brim. Stopfen 10 (Service-Fenster) und 16 (SD-Schlitz) braucht jedes Gerät, 17 auch; 12 und 18–24 nur für Teile, die dein Paket nicht hat. Sockel 13 nur für die Entwicklungs-Variante.", "Teile drucken", "Alle 11 Druckteile in PETG ohne Stützen drucken: Platte A (Unterteil, Zwischenboden, Stopfen, Füsse) und Platte B (Deckel und alles für den Kopf). Kopf, Gabel und Seitendeckel mit 5 mm Brim."],
-	["Unterteil vorbereiten", "Füsse unter das Unterteil v5.2 kleben und die Stativmutter 1/4\" von innen in die Sechskanttasche drücken. Den Lautsprecher mit 3–4 Tupfen Heisskleber in den Ring über dem Bodengitter kleben.", "Unterteil vorbereiten", "Füsse einkleben und die Stativmutter 1/4\" von innen in die Sechskanttasche drücken. Den Lautsprecher mit 3–4 Tupfen Heisskleber in den Ring über dem Bodengitter kleben."],
-	["Vorne: Weitwinkel, IR-Modul, PCA9685, PIR, Mikrofon", "Weitwinkel-Kamera (Camera Module 3 Wide) mit 4 × M2 × 6 an die Rippen hinter dem Fenster der Stirnwand schrauben (12° nach unten). Das IR-Modul 120° von innen in die Hülse daneben schieben und mit der Madenschraube M3 sichern. PCA9685 an die 4 Dome der Lüftungswand schrauben (M2,5, Lötbrücke A0 → 0x41), Elko an V+. PIR von innen in die Hülse schieben, das Mikrofon mit Schaumstoff zwischen die Rippen klemmen. Ohne Weitwinkel-Kamera den Blindstopfen 12 von aussen ins Fenster drücken, ohne IR-Modul den Stopfen 19 in die Hülse.", "Vorne: PCA9685, PIR, Mikrofon", "PCA9685 an die 4 Dome der Lüftungswand schrauben (M2,5, Lötbrücke A0 → 0x41), Elko an V+. PIR von innen in die Hülse schieben, das Mikrofon mit Schaumstoff zwischen die Rippen klemmen."],
-	["Akku, Pi und SD-Verlängerung", "Das UPS HAT (E) mit den 4 Akkus 21700 und dem Pi 5 darauf in den Zaun stellen und mit Klettband fixieren. HDMI und USB-C des Pi zeigen zum Service-Fenster, der Lüfter sitzt auf dem Pi. Die microSD-Verlängerung in den Kartenschlitz des Pi stecken und den Einbau-Kartenhalter mit 2 × M2,5 × 6 an die zwei Dome über dem PCA9685 schrauben.", "Akku und Pi", "Das UPS HAT (E) mit den 4 Akkus und dem Pi 5 darauf in den Zaun stellen und mit Klettband fixieren. HDMI zeigt zum Fenster, der Lüfter sitzt auf dem Pi."],
-	["Zwischenboden", "Den Zwischenboden mit 2 × M3 einschrauben. Darauf mit Schaumklebeband: D36V50F5 (Laden), PAM8403 und optional INA219 (Solar, I2C 0x44, Shunt 0,01 Ω).", "Zwischenboden", "Den Zwischenboden mit 2 × M3 einschrauben. Darauf mit Schaumklebeband: D36V50F5 (Laden), PAM8403 und optional INA219."],
-	["Module an den Wänden", "MOSFET-Module (Licht weiss, IR, IR-Modul 120°) an die Lüftungswand unter dem PCA9685 kleben, den Step-Down an die Stirnwand links vom PIR, den Lampentreiber auf das Feld darunter (2 × M2,5). Das Relais über die Hub-Ablage kleben. USB-Hub mit 2 Kabelbindern auf die Ablage, Soundkarte in den Hub, MPU-6050 flach auf den Boden.", "Module an den Wänden", "MOSFET-Modul und Step-Down an die Stirnwand links vom PIR, das Relais über die Hub-Ablage kleben. USB-Hub mit 2 Kabelbindern auf die Ablage, Soundkarte in den Hub, MPU-6050 flach auf den Boden."],
-	["Hinten und unten: Buchsen, Tasten", "GX16-4P-Ladebuchse (Sicherung 5 A dahinter) und die Kabelverschraubung M12 für das Relais einschrauben, Lichtleiter der Lade-LED einsetzen. Die 2 Tasten (12 mm, IP67) in die Rückwand, Mutter innen. Die Reserve-Öffnung mit dem Blindstopfen 17 schliessen. Den Sicherungshalter 5 A (Akku B+) in die Klammer am Boden drücken. Den DS18B20 von unten durch das Bodenloch führen und abdichten.", "Hinten und unten", "GX16-4P-Ladebuchse (Sicherung 5 A dahinter) und die Kabelverschraubung M12 für das Relais einschrauben, Lichtleiter der Lade-LED einsetzen. Den DS18B20 von unten durch das Bodenloch führen und abdichten."],
-	["Deckel und Drehlager", "Pan-Servo von unten in den Deckel (2 × M2 × 8). Kugeln in die Rille legen, Servo auf Mitte (1500 µs) und den Drehteller mit Horn so aufstecken, dass der Kopf später zur PIR-Seite schaut.", "Deckel und Drehlager", "Pan-Servo von unten in den Deckel (2 × M2 × 8). Kugeln in die Rille legen, Servo auf Mitte (1500 µs) und den Drehteller mit Horn so aufstecken, dass der Kopf später zur PIR-Seite schaut."],
-	["Gabel montieren", "Die Gabel mit 4 × M3 × 8 (nicht länger: die Spitze darf nicht in den Laufring ragen) auf den Drehteller schrauben. Das Tilt-Horn senkrecht in die Vertiefung innen in Arm 1 legen und festschrauben.", "Gabel montieren", "Die Gabel mit 4 × M3 × 8 (nicht länger: die Spitze darf nicht in den Laufring ragen) auf den Drehteller schrauben. Das Tilt-Horn senkrecht in die Vertiefung innen in Arm 1 legen und festschrauben."],
-	["Kamerakopf v5.2 mit Status-LED", "Die RGB-Status-LED von innen ins Loch im Dach des Kopfs 06 v5.2 schieben (Heisskleber), den Diffusor 14 aussen in die Vertiefung drücken und den Pupillenring 15 oben einsetzen. Thermal-90 (Linse links) und Camera Module 3 NoIR durch die offene Seite einschrauben (Camera Module 3: 4 × M2 × 4, Thermal-90: 2 × M2 × 6). Tilt-Servo auf Mitte einsetzen, alle Kabel (auch die 4 Adern der LED) durch den Schlitz hinten, Seitendeckel mit 3 × M3 × 10 Linsenkopf ISO 7380 zuschrauben (kein Zylinderkopf: der stösst beim Kippen an Arm 2).", "Kamerakopf", "Thermal-90 (Linse links) und Camera Module 3 durch die offene Seite einschrauben (Camera Module 3: 4 × M2 × 4, Thermal-90: 2 × M2 × 6). Tilt-Servo auf Mitte einsetzen, Kabel durch den Schlitz hinten, Seitendeckel mit 3 × M3 × 10 Linsenkopf ISO 7380 zuschrauben (kein Zylinderkopf: der stösst beim Kippen an Arm 2)."],
-	["Kopf einsetzen, Arm 2", "Servowelle auf das Horn in Arm 1 stecken (Kopf schaut geradeaus). Arm 2 mit Mutter in die Nut setzen, 2 × M3 von oben, 2–3 Unterlegscheiben, M3 × 12 als Achse nur bis zum Anliegen.", "Kopf einsetzen, Arm 2", "Servowelle auf das Horn in Arm 1 stecken (Kopf schaut geradeaus). Arm 2 mit Mutter in die Nut setzen, 2 × M3 von oben, 2–3 Unterlegscheiben, M3 × 12 als Achse nur bis zum Anliegen."],
-	["Lampen", "Die zwei Lampenhalter mit je 2 × M3 × 8 mit Unterlegscheibe aussen an die Arme schrauben: weiss an Arm 1, IR 850 nm an Arm 2. Module einsetzen und mit Heisskleber oder Madenschraube sichern.", "Lampen", "Die zwei Lampenhalter mit je 2 × M3 × 8 mit Unterlegscheibe aussen an die Arme schrauben: weiss an Arm 1, IR 850 nm an Arm 2. Module einsetzen und mit Heisskleber oder Madenschraube sichern."],
-	["Kabel, Deckel zu, Stopfen", "Kabel von Kopf, Status-LED und Lampen in einer Schlaufe hinter dem Kopf durch den Kabelkamin führen. Die Kamerakabel in den Kabelkamm an der Lüftungswand legen: Schlitz 1 = CAM1 (Weitwinkel), Schlitz 2 = CAM0 (Kopfkamera). Deckel mit 6 × M3 × 10 zuschrauben (Moosgummi-Dichtband), den Stopfen 10 ins Service-Fenster (HDMI, USB-C) und den Stopfen 16 in den SD-Schlitz drücken.", "Kabel und Deckel zu", "Kabel von Kopf und Lampen in einer Schlaufe hinter dem Kopf durch den Kabelkamin führen. Deckel mit 6 × M3 × 10 zuschrauben (Moosgummi-Dichtband), HDMI-Stopfen einsetzen."],
-	["Fertig", "In MoveEye Tilt auf ±60° und Pan auf ±90° begrenzen. Weitwinkel-Kamera, Tasten und Status-LED im Selbsttest prüfen. Vor dem Druck die Masse «Nachmessen» prüfen (IR-Modul, Linse der Weitwinkel-Kamera, CAM-Buchsen am Pi, UPS HAT (E) mit Akkus).", "Fertig", "In MoveEye Tilt auf ±60° und Pan auf ±90° begrenzen. Vor dem Druck des Unterteils die Masse des UPS HAT (E) mit Akkus nachmessen (siehe Anleitung)."],
+	["Teile drucken", "Die Druckteile v5.2 in PETG ohne Stützen drucken: Platte A (Unterteil v5.2 mit Weitwinkel-Fenster, Zwischenboden, Stopfen, Füsse) und Platte B (Deckel, Drehteller, Gabel, Arm 2, Kopf 06 v5.2 mit Status-LED, Seitendeckel, Lampenhalter, Diffusor 14, Pupillenring 15). Kopf, Gabel und Seitendeckel mit 5 mm Brim. Stopfen 10 (Service-Fenster) und 16 (SD-Schlitz) braucht jedes Gerät, 17 auch; 12 und 18–24 nur für Teile, die dein Paket nicht hat. Sockel 13 nur für die Entwicklungs-Variante.", "Teile drucken", "Alle 11 Druckteile in PETG ohne Stützen drucken: Platte A (Unterteil, Zwischenboden, Stopfen, Füsse) und Platte B (Deckel und alles für den Kopf). Kopf, Gabel und Seitendeckel mit 5 mm Brim.", "Teile drucken", "Die Druckteile v5.3 in PETG ohne Stützen drucken: Platte A (Unterteil v5.3, Zwischenboden, Stopfen, Füsse, Luftkanal 27), Platte B (Deckel v5.3, Drehteller, Gabel, Arm 2, Kopf 06 v5.2, Seitendeckel, Lampenhalter, Diffusor 14, Pupillenring 15) und Platte C (Halter 25, Akkuklappe 26). Kopf, Gabel und Seitendeckel mit 5 mm Brim. Stopfen 10, 16 und 17 braucht jedes Gerät; 12 und 18–24 nur für Teile, die dein Paket nicht hat."],
+	["Unterteil vorbereiten", "Füsse unter das Unterteil v5.2 kleben und die Stativmutter 1/4\" von innen in die Sechskanttasche drücken. Den Lautsprecher mit 3–4 Tupfen Heisskleber in den Ring über dem Bodengitter kleben.", "Unterteil vorbereiten", "Füsse einkleben und die Stativmutter 1/4\" von innen in die Sechskanttasche drücken. Den Lautsprecher mit 3–4 Tupfen Heisskleber in den Ring über dem Bodengitter kleben.", "Einsätze einschmelzen, Unterteil vorbereiten", "Zuerst die 12 Gewindeeinsätze M3 × 5,7 einschmelzen (Lötkolben mit Einschmelzspitze, 220–230 °C): 6 von oben in die Deckel-Dome, 2 von oben in die Klötze des Zwischenbodens, 4 von unten in die Dome der Akkuklappe (Unterteil auf den Kopf legen). Den Einsatz senkrecht ansetzen, ohne Druck einsinken lassen, bis er 0,2 mm unter der Fläche steht, sofort mit einer flachen kalten Fläche bündig drücken. Dann die Füsse in die vier Ecken kleben (v5.3: weiter aussen, die Akkuklappe liegt dazwischen), die Stativmutter 1/4\" von innen in die Sechskanttasche drücken und den Lautsprecher mit 3–4 Tupfen Heisskleber in den Ring über dem Bodengitter kleben."],
+	["Vorne: Weitwinkel, IR-Modul, PCA9685, PIR, Mikrofon", "Weitwinkel-Kamera (Camera Module 3 Wide) mit 4 × M2 × 6 an die Rippen hinter dem Fenster der Stirnwand schrauben (12° nach unten). Das IR-Modul 120° von innen in die Hülse daneben schieben und mit der Madenschraube M3 sichern. PCA9685 an die 4 Dome der Lüftungswand schrauben (M2,5, Lötbrücke A0 → 0x41), Elko an V+. PIR von innen in die Hülse schieben, das Mikrofon mit Schaumstoff zwischen die Rippen klemmen. Ohne Weitwinkel-Kamera den Blindstopfen 12 von aussen ins Fenster drücken, ohne IR-Modul den Stopfen 19 in die Hülse.", "Vorne: PCA9685, PIR, Mikrofon", "PCA9685 an die 4 Dome der Lüftungswand schrauben (M2,5, Lötbrücke A0 → 0x41), Elko an V+. PIR von innen in die Hülse schieben, das Mikrofon mit Schaumstoff zwischen die Rippen klemmen.", "Vorne: Weitwinkel, IR-Modul, PCA9685, PIR, Mikrofon", "Weitwinkel-Kamera (Camera Module 3 Wide) mit 4 × M2 × 6 an die Rippen hinter dem Fenster der Stirnwand schrauben (12° nach unten). Das IR-Modul 120° von innen in die Hülse daneben schieben und mit der Madenschraube M3 sichern. PCA9685 an die 4 Dome der Lüftungswand schrauben (M2,5, Lötbrücke A0 → 0x41), Elko an V+. PIR von innen in die Hülse schieben, das Mikrofon mit Schaumstoff zwischen die Rippen klemmen. Ohne Weitwinkel-Kamera den Blindstopfen 12 von aussen ins Fenster drücken, ohne IR-Modul den Stopfen 19 in die Hülse."],
+	["Akku, Pi und SD-Verlängerung", "Das UPS HAT (E) mit den 4 Akkus 21700 und dem Pi 5 darauf in den Zaun stellen und mit Klettband fixieren. HDMI und USB-C des Pi zeigen zum Service-Fenster, der Lüfter sitzt auf dem Pi. Die microSD-Verlängerung in den Kartenschlitz des Pi stecken und den Einbau-Kartenhalter mit 2 × M2,5 × 6 an die zwei Dome über dem PCA9685 schrauben.", "Akku und Pi", "Das UPS HAT (E) mit den 4 Akkus und dem Pi 5 darauf in den Zaun stellen und mit Klettband fixieren. HDMI zeigt zum Fenster, der Lüfter sitzt auf dem Pi.", "Akku, Pi, SD-Verlängerung, Akkuklappe", "Das UPS HAT (E) mit dem Pi 5 darauf in den Zaun stellen (Klettband), die 4 Zellen 21700 hängen unter der Platine über der Öffnung im Boden. Die Akkuklappe 26 von unten aufsetzen (Rand in die Öffnung, Kerbe zur Lüftungswand) und mit 4 × M3 × 8 in die Einsätze schrauben. Zum Akkutausch später nur die Klappe öffnen: Deckel und Pi bleiben drin. Die microSD-Verlängerung in den Kartenschlitz des Pi stecken und den Einbau-Kartenhalter mit 2 × M2,5 × 6 an die zwei Dome über dem PCA9685 schrauben – die Karte wechselst du von aussen (Stopfen 16)."],
+	["Zwischenboden", "Den Zwischenboden mit 2 × M3 einschrauben. Darauf mit Schaumklebeband: D36V50F5 (Laden), PAM8403 und optional INA219 (Solar, I2C 0x44, Shunt 0,01 Ω).", "Zwischenboden", "Den Zwischenboden mit 2 × M3 einschrauben. Darauf mit Schaumklebeband: D36V50F5 (Laden), PAM8403 und optional INA219.", "Zwischenboden", "Den Zwischenboden mit 2 × M3 × 8 in die Einsätze schrauben. Darauf mit Schaumklebeband: D36V50F5 (Laden), PAM8403 und optional INA219 (Solar, I2C 0x44, Shunt 0,01 Ω)."],
+	["Module an den Wänden", "MOSFET-Module (Licht weiss, IR, IR-Modul 120°) an die Lüftungswand unter dem PCA9685 kleben, den Step-Down an die Stirnwand links vom PIR, den Lampentreiber auf das Feld darunter (2 × M2,5). Das Relais über die Hub-Ablage kleben. USB-Hub mit 2 Kabelbindern auf die Ablage, Soundkarte in den Hub, MPU-6050 flach auf den Boden.", "Module an den Wänden", "MOSFET-Modul und Step-Down an die Stirnwand links vom PIR, das Relais über die Hub-Ablage kleben. USB-Hub mit 2 Kabelbindern auf die Ablage, Soundkarte in den Hub, MPU-6050 flach auf den Boden.", "Module an den Wänden", "MOSFET-Module (Licht weiss, IR, IR-Modul 120°) an die Lüftungswand unter dem PCA9685 kleben, den Step-Down an die Stirnwand links vom PIR, den Lampentreiber auf das Feld darunter (2 × M2,5). Das Relais über die Hub-Ablage kleben. USB-Hub mit 2 Kabelbindern auf die Ablage, Soundkarte in den Hub, MPU-6050 flach auf den Boden."],
+	["Hinten und unten: Buchsen, Tasten", "GX16-4P-Ladebuchse (Sicherung 5 A dahinter) und die Kabelverschraubung M12 für das Relais einschrauben, Lichtleiter der Lade-LED einsetzen. Die 2 Tasten (12 mm, IP67) in die Rückwand, Mutter innen. Die Reserve-Öffnung mit dem Blindstopfen 17 schliessen. Den Sicherungshalter 5 A (Akku B+) in die Klammer am Boden drücken. Den DS18B20 von unten durch das Bodenloch führen und abdichten.", "Hinten und unten", "GX16-4P-Ladebuchse (Sicherung 5 A dahinter) und die Kabelverschraubung M12 für das Relais einschrauben, Lichtleiter der Lade-LED einsetzen. Den DS18B20 von unten durch das Bodenloch führen und abdichten.", "Hinten und unten: Buchsen, Tasten, Zugentlastung", "GX16-4P-Ladebuchse (Sicherung 5 A dahinter) und die Kabelverschraubung M12 für das Relais einschrauben, Lichtleiter der Lade-LED einsetzen. Zugentlastung: das Kabel der GX16 mit einem Kabelbinder an die Öse über der Buchse binden, das Relais-Kabel an die Öse neben der Relais-Buchse und an die Öse neben dem Relais-Modul (+y-Wand). Die 2 Tasten (12 mm, IP67) in die Rückwand, Mutter innen. Die Reserve-Öffnung mit dem Blindstopfen 17 schliessen. Den Sicherungshalter 5 A (Akku B+) in die Klammer am Boden drücken. Den DS18B20 von unten durch das Bodenloch führen und abdichten."],
+	["Deckel und Drehlager", "Pan-Servo von unten in den Deckel (2 × M2 × 8). Kugeln in die Rille legen, Servo auf Mitte (1500 µs) und den Drehteller mit Horn so aufstecken, dass der Kopf später zur PIR-Seite schaut.", "Deckel und Drehlager", "Pan-Servo von unten in den Deckel (2 × M2 × 8). Kugeln in die Rille legen, Servo auf Mitte (1500 µs) und den Drehteller mit Horn so aufstecken, dass der Kopf später zur PIR-Seite schaut.", "Deckel und Drehlager", "Pan-Servo von unten in den Deckel v5.3 (2 × M2 × 8). Kugeln in die Rille legen, Servo auf Mitte (1500 µs) und den Drehteller mit Horn so aufstecken, dass der Kopf später zur PIR-Seite schaut. Die Öse im Kabelkamin nimmt in Schritt 13 die Kabel vom Drehteller auf."],
+	["Gabel montieren", "Die Gabel mit 4 × M3 × 8 (nicht länger: die Spitze darf nicht in den Laufring ragen) auf den Drehteller schrauben. Das Tilt-Horn senkrecht in die Vertiefung innen in Arm 1 legen und festschrauben.", "Gabel montieren", "Die Gabel mit 4 × M3 × 8 (nicht länger: die Spitze darf nicht in den Laufring ragen) auf den Drehteller schrauben. Das Tilt-Horn senkrecht in die Vertiefung innen in Arm 1 legen und festschrauben.", "Gabel montieren", "Die Gabel mit 4 × M3 × 8 (nicht länger: die Spitze darf nicht in den Laufring ragen) auf den Drehteller schrauben. Das Tilt-Horn senkrecht in die Vertiefung innen in Arm 1 legen und festschrauben."],
+	["Kamerakopf v5.2 mit Status-LED", "Die RGB-Status-LED von innen ins Loch im Dach des Kopfs 06 v5.2 schieben (Heisskleber), den Diffusor 14 aussen in die Vertiefung drücken und den Pupillenring 15 oben einsetzen. Thermal-90 (Linse links) und Camera Module 3 NoIR durch die offene Seite einschrauben (Camera Module 3: 4 × M2 × 4, Thermal-90: 2 × M2 × 6). Tilt-Servo auf Mitte einsetzen, alle Kabel (auch die 4 Adern der LED) durch den Schlitz hinten, Seitendeckel mit 3 × M3 × 10 Linsenkopf ISO 7380 zuschrauben (kein Zylinderkopf: der stösst beim Kippen an Arm 2).", "Kamerakopf", "Thermal-90 (Linse links) und Camera Module 3 durch die offene Seite einschrauben (Camera Module 3: 4 × M2 × 4, Thermal-90: 2 × M2 × 6). Tilt-Servo auf Mitte einsetzen, Kabel durch den Schlitz hinten, Seitendeckel mit 3 × M3 × 10 Linsenkopf ISO 7380 zuschrauben (kein Zylinderkopf: der stösst beim Kippen an Arm 2).", "Kamerakopf v5.2 mit Status-LED", "Die RGB-Status-LED von innen ins Loch im Dach des Kopfs 06 v5.2 schieben (Heisskleber), den Diffusor 14 aussen in die Vertiefung drücken und den Pupillenring 15 oben einsetzen. Thermal-90 (Linse links) und Camera Module 3 NoIR durch die offene Seite einschrauben (Camera Module 3: 4 × M2 × 4, Thermal-90: 2 × M2 × 6). Tilt-Servo auf Mitte einsetzen, alle Kabel (auch die 4 Adern der LED) durch den Schlitz hinten, Seitendeckel mit 3 × M3 × 10 Linsenkopf ISO 7380 zuschrauben (kein Zylinderkopf: der stösst beim Kippen an Arm 2)."],
+	["Kopf einsetzen, Arm 2", "Servowelle auf das Horn in Arm 1 stecken (Kopf schaut geradeaus). Arm 2 mit Mutter in die Nut setzen, 2 × M3 von oben, 2–3 Unterlegscheiben, M3 × 12 als Achse nur bis zum Anliegen.", "Kopf einsetzen, Arm 2", "Servowelle auf das Horn in Arm 1 stecken (Kopf schaut geradeaus). Arm 2 mit Mutter in die Nut setzen, 2 × M3 von oben, 2–3 Unterlegscheiben, M3 × 12 als Achse nur bis zum Anliegen.", "Kopf einsetzen, Arm 2", "Servowelle auf das Horn in Arm 1 stecken (Kopf schaut geradeaus). Arm 2 mit Mutter in die Nut setzen, 2 × M3 von oben, 2–3 Unterlegscheiben, M3 × 12 als Achse nur bis zum Anliegen."],
+	["Lampen", "Die zwei Lampenhalter mit je 2 × M3 × 8 mit Unterlegscheibe aussen an die Arme schrauben: weiss an Arm 1, IR 850 nm an Arm 2. Module einsetzen und mit Heisskleber oder Madenschraube sichern.", "Lampen", "Die zwei Lampenhalter mit je 2 × M3 × 8 mit Unterlegscheibe aussen an die Arme schrauben: weiss an Arm 1, IR 850 nm an Arm 2. Module einsetzen und mit Heisskleber oder Madenschraube sichern.", "Lampen", "Die zwei Lampenhalter mit je 2 × M3 × 8 mit Unterlegscheibe aussen an die Arme schrauben: weiss an Arm 1, IR 850 nm an Arm 2. Module einsetzen und mit Heisskleber oder Madenschraube sichern."],
+	["Kabel, Deckel zu, Stopfen", "Kabel von Kopf, Status-LED und Lampen in einer Schlaufe hinter dem Kopf durch den Kabelkamin führen. Die Kamerakabel in den Kabelkamm an der Lüftungswand legen: Schlitz 1 = CAM1 (Weitwinkel), Schlitz 2 = CAM0 (Kopfkamera). Deckel mit 6 × M3 × 10 zuschrauben (Moosgummi-Dichtband), den Stopfen 10 ins Service-Fenster (HDMI, USB-C) und den Stopfen 16 in den SD-Schlitz drücken.", "Kabel und Deckel zu", "Kabel von Kopf und Lampen in einer Schlaufe hinter dem Kopf durch den Kabelkamin führen. Deckel mit 6 × M3 × 10 zuschrauben (Moosgummi-Dichtband), HDMI-Stopfen einsetzen.", "Luftkanal, Kabel, Deckel zu", "Den Luftkanal 27 auf den Active Cooler setzen (Moosgummi-Streifen unter dem Rand, die Finger greifen seitlich an den Kühler, der Kanal endet an den 3 Einlass-Schlitzen der Lüftungswand) und ein Moosgummi-Pad oben aufkleben (der Deckel hält ihn). Kabel von Kopf, Status-LED und Lampen in einer Schlaufe hinter dem Kopf durch den Kabelkamin führen und mit einem Kabelbinder an der Öse im Kamin sichern (Schlaufe lassen, damit der Kopf drehen kann). Die Kamerakabel flach über das Dach des Luftkanals in den Kabelkamm legen: Schlitz 1 = CAM1 (Weitwinkel), Schlitz 2 = CAM0 (Kopfkamera). Deckel mit 6 × M3 × 10 in die Einsätze schrauben (Moosgummi-Dichtband), Stopfen 10 ins Service-Fenster und Stopfen 16 in den SD-Schlitz drücken."],
+	["Fertig", "In MoveEye Tilt auf ±60° und Pan auf ±90° begrenzen. Weitwinkel-Kamera, Tasten und Status-LED im Selbsttest prüfen. Vor dem Druck die Masse «Nachmessen» prüfen (IR-Modul, Linse der Weitwinkel-Kamera, CAM-Buchsen am Pi, UPS HAT (E) mit Akkus).", "Fertig", "In MoveEye Tilt auf ±60° und Pan auf ±90° begrenzen. Vor dem Druck des Unterteils die Masse des UPS HAT (E) mit Akkus nachmessen (siehe Anleitung).", "Fertig, Halter montieren", "In MoveEye Tilt auf ±60° und Pan auf ±90° begrenzen. Weitwinkel-Kamera, Tasten und Status-LED im Selbsttest prüfen. Halter 25: an der Wand mit 4 Schrauben 4–5 mm, am Baum mit einem Spanngurt 25 mm durch die zwei Schlitzpaare (Rippen am Stamm). Das Gerät mit den vorderen Füssen in die Mulden drücken (rastet ein) und von unten mit der Rändelschraube 1/4\"-20 × 16 mm in die Stativmutter sichern. Die Akkuklappe bleibt auch am Halter erreichbar. Vor dem Druck die Masse «Nachmessen» prüfen."],
 ]
 # Bauen (real-bauen): Varianten, Einkauf, Drucken, Werkzeug, Sicherheit, Verkabeln, Software, Inbetriebnahme, Fehlersuche, Wartung
 const BAU := {
@@ -184,7 +202,11 @@ const BAU := {
 				},
 				{
 					"id": "v52",
-					"name": "v5.2 (Standard): + Weitwinkel, IR-LED, Tasten, Status-LED"
+					"name": "v5.2: + Weitwinkel, IR-LED, Tasten, Status-LED"
+				},
+				{
+					"id": "v53",
+					"name": "v5.3 (Standard): v5.2 + Gewindeeinsätze, Akkuklappe, Halter, Luftkanal, Zugentlastung"
 				}
 			]
 		},
@@ -222,7 +244,7 @@ const BAU := {
 		}
 	],
 	"variante_standard": {
-		"gehaeuse": "v52",
+		"gehaeuse": "v53",
 		"akku": "ups",
 		"mover": "ohne"
 	},
@@ -272,7 +294,8 @@ const BAU := {
 				"brim": 0,
 				"zeit_h": 8.5,
 				"liegt": "Boden – Kamera-Rippen und Kabelkamm mit 45°-Unterseiten, ohne Stützen",
-				"wenn": "v52"
+				"wenn": "v52",
+				"nicht": "v53"
 			},
 			{
 				"datei": "02_Deckel_mit_Laufring",
@@ -283,7 +306,8 @@ const BAU := {
 				"schicht": "0.12–0.16",
 				"brim": 0,
 				"zeit_h": 3.0,
-				"liegt": "Unterseite – Rille fein drucken"
+				"liegt": "Unterseite – Rille fein drucken",
+				"nicht": "v53"
 			},
 			{
 				"datei": "03_Drehteller",
@@ -553,6 +577,66 @@ const BAU := {
 				"zeit_h": 0.1,
 				"wenn": "v52",
 				"liegt": "Flansch unten (nur ohne Lade-LED; Presssitz mit Quetschrippen)"
+			},
+			{
+				"datei": "01_Unterteil_v53",
+				"stueck": 1,
+				"fuellung": 15,
+				"waende": 4,
+				"stuetzen": false,
+				"schicht": "0.20",
+				"brim": 0,
+				"zeit_h": 9.0,
+				"wenn": "v53",
+				"liegt": "Boden – Einsatz-Dome mit 45°-Spitze, Ösen und Regendach mit 45°-Unterseiten, ohne Stützen"
+			},
+			{
+				"datei": "02_Deckel_v53",
+				"stueck": 1,
+				"fuellung": 15,
+				"waende": 3,
+				"stuetzen": false,
+				"schicht": "0.12–0.16",
+				"brim": 0,
+				"zeit_h": 3.1,
+				"wenn": "v53",
+				"liegt": "Unterseite – Rille fein drucken; Öse mit 45°-Dach"
+			},
+			{
+				"datei": "25_Halter_Wand_Baum",
+				"stueck": 1,
+				"fuellung": 25,
+				"waende": 4,
+				"stuetzen": false,
+				"schicht": "0.20",
+				"brim": 0,
+				"zeit_h": 6.5,
+				"wenn": "v53",
+				"liegt": "Plattform unten, Rückwand steht – Schlitze und Löcher mit 45°-Spitze"
+			},
+			{
+				"datei": "26_Akkuklappe",
+				"stueck": 1,
+				"fuellung": 20,
+				"waende": 3,
+				"stuetzen": false,
+				"schicht": "0.20",
+				"brim": 0,
+				"zeit_h": 1.2,
+				"wenn": "v53",
+				"liegt": "Platte unten"
+			},
+			{
+				"datei": "27_Luftkanal",
+				"stueck": 1,
+				"fuellung": 15,
+				"waende": 2,
+				"stuetzen": false,
+				"schicht": "0.20",
+				"brim": 0,
+				"zeit_h": 0.8,
+				"wenn": "v53",
+				"liegt": "Dach unten (umgedreht)"
 			}
 		],
 		"hinweise": [
@@ -573,7 +657,8 @@ const BAU := {
 		"Schraubendreher Kreuz PH0 / PH1 und Innensechskant 1,5 / 2 / 2,5 mm",
 		"Heissklebepistole, Schrumpfschlauch und Heissluft (oder Feuerzeug)",
 		"Kabelbinder, Klettband, doppelseitiges Schaumklebeband, Moosgummi-Dichtband",
-		"Schutzbrille, gut gelüfteter Platz"
+		"Schutzbrille, gut gelüfteter Platz",
+		"v5.3: Einschmelzspitze M3 für den Lötkolben (z. B. ruthex), 220–230 °C für PETG"
 	],
 	"schrauben": [
 		{
@@ -626,6 +711,24 @@ const BAU := {
 			"was": "M2,5 × 6 (Pi auf Sockel 13)",
 			"schritt": 4,
 			"wenn": "entwicklung"
+		},
+		{
+			"menge": "12×",
+			"was": "Gewindeeinsatz M3 × 5,7 einschmelzen (6 Deckel-Dome, 2 Zwischenboden-Klötze, 4 Akkuklappen-Dome von unten)",
+			"schritt": 2,
+			"wenn": "v53"
+		},
+		{
+			"menge": "4×",
+			"was": "M3 × 8 Linsenkopf (Akkuklappe)",
+			"schritt": 4,
+			"wenn": "v53"
+		},
+		{
+			"menge": "1×",
+			"was": "1/4\"-20 × 16 mm (Halter → Stativmutter)",
+			"schritt": 14,
+			"wenn": "v53"
 		}
 	],
 	"sicherheit": [
@@ -653,6 +756,11 @@ const BAU := {
 		{
 			"thema": "licht",
 			"text": "IR-Licht 850 nm ist fast unsichtbar, aber hell: nicht aus der Nähe in die Lampe schauen."
+		},
+		{
+			"thema": "loeten",
+			"wenn": "v53",
+			"text": "Gewindeeinsätze: die Spitze ist heiss (220–230 °C) – Einsatz nur mit der Spitze eindrücken, nie mit den Fingern; das Messing bleibt einige Sekunden heiss."
 		}
 	],
 	"verkabelung": {
@@ -1241,6 +1349,12 @@ const BAU := {
 			"teil": "Schrauben und Kabel",
 			"wann": "alle 6 Monate",
 			"was": "Kabelschlaufe hinter dem Kopf scheuert nicht? Achse von Arm 2 nicht zu fest?"
+		},
+		{
+			"wenn": "v53",
+			"teil": "Akkus (v5.3)",
+			"wann": "bei Bedarf",
+			"was": "Gerät ausschalten, Akkuklappe unten öffnen (4 × M3), Zellen tauschen – Polung wie im Halter, 4 gleiche Zellen. Deckel und Pi bleiben drin."
 		}
 	],
 	"extra_schritte": [
@@ -1270,6 +1384,16 @@ const BAU := {
 			"wenn": "v52",
 			"titel": "SD-Karte (v5.2)",
 			"text": "Die microSD-Karte steckt nicht im Pi, sondern im Einbau-Kartenhalter der Verlängerung (15 cm) hinter dem SD-Schlitz der Stirnwand: Karte wechseln ohne das Gehäuse zu öffnen. Stopfen 16 abziehen, Karte herausnehmen bzw. einschieben, Stopfen wieder eindrücken. Vorher MoveEye herunterfahren."
+		},
+		{
+			"wenn": "v53",
+			"titel": "Akku tauschen (v5.3)",
+			"text": "Gerät ausschalten (Taste bzw. MoveEye → Strom), auf die Seite legen oder am Halter lassen, die 4 Schrauben M3 der Akkuklappe unten lösen, Klappe abnehmen. Jede Zelle zur Feder hin drücken und herauskippen; neue Zellen gleicher Ladung mit der Polung des Halters einsetzen. Klappe wieder aufschrauben (nicht überdrehen – die Einsätze halten auch handfest)."
+		},
+		{
+			"wenn": "v53",
+			"titel": "Luftführung (v5.3)",
+			"text": "Frische Luft kommt durch die 3 Schlitze mit Regendach über dem Service-Fenster in den Luftkanal 27 und direkt in die Ansaugung des Active Cooler; die warme Luft aus den Kühlrippen geht wie bisher durch die Lüftungsschlitze daneben hinaus. Den Einlass nicht zukleben; die Kamerakabel liegen auf dem Kanal, nicht davor."
 		}
 	],
 	"druckdateien_einzeln": [
@@ -1306,7 +1430,33 @@ const BAU := {
 		"v5-2/MoveEye_v5-2_20_Stopfen_DS18B20.3mf",
 		"v5-2/MoveEye_v5-2_21_Stopfen_Relais.3mf",
 		"v5-2/MoveEye_v5-2_23_Stopfen_Mikrofon.3mf",
-		"v5-2/MoveEye_v5-2_24_Stopfen_Lichtleiter.3mf"
+		"v5-2/MoveEye_v5-2_24_Stopfen_Lichtleiter.3mf",
+		"v5-3/MoveEye_v5-3_01_Unterteil_v53.3mf",
+		"v5-3/MoveEye_v5-3_02_Deckel_v53.3mf",
+		"v5-3/MoveEye_v5-3_03_Drehteller.3mf",
+		"v5-3/MoveEye_v5-3_04_Gabel_mit_Arm1.3mf",
+		"v5-3/MoveEye_v5-3_05_Arm2_Lagerseite.3mf",
+		"v5-3/MoveEye_v5-3_06_Kamerakopf_v52.3mf",
+		"v5-3/MoveEye_v5-3_07_Seitendeckel.3mf",
+		"v5-3/MoveEye_v5-3_08_Lampenhalter_2x.3mf",
+		"v5-3/MoveEye_v5-3_09_Zwischenboden.3mf",
+		"v5-3/MoveEye_v5-3_10_Stopfen_HDMI_USB_v52.3mf",
+		"v5-3/MoveEye_v5-3_11_Fuss_4x.3mf",
+		"v5-3/MoveEye_v5-3_12_Blindstopfen_Weitwinkel.3mf",
+		"v5-3/MoveEye_v5-3_13_Entwicklungs_Sockel.3mf",
+		"v5-3/MoveEye_v5-3_14_Diffusor_Status_LED.3mf",
+		"v5-3/MoveEye_v5-3_15_Pupillenring.3mf",
+		"v5-3/MoveEye_v5-3_16_Stopfen_SD_v52.3mf",
+		"v5-3/MoveEye_v5-3_17_Blindstopfen_Reserve.3mf",
+		"v5-3/MoveEye_v5-3_18_Stopfen_Waermebild.3mf",
+		"v5-3/MoveEye_v5-3_19_Stopfen_IR_Modul.3mf",
+		"v5-3/MoveEye_v5-3_20_Stopfen_DS18B20.3mf",
+		"v5-3/MoveEye_v5-3_21_Stopfen_Relais.3mf",
+		"v5-3/MoveEye_v5-3_23_Stopfen_Mikrofon.3mf",
+		"v5-3/MoveEye_v5-3_24_Stopfen_Lichtleiter.3mf",
+		"v5-3/MoveEye_v5-3_25_Halter_Wand_Baum.3mf",
+		"v5-3/MoveEye_v5-3_26_Akkuklappe.3mf",
+		"v5-3/MoveEye_v5-3_27_Luftkanal.3mf"
 	],
 	"farben": {
 		"kopf": "#f59a4a",
@@ -1341,7 +1491,16 @@ const BAU := {
 			"dsplug",
 			"rlplug",
 			"micplug",
-			"llplug"
+			"llplug",
+			"tub53",
+			"lid53",
+			"hatch",
+			"duct",
+			"holder",
+			"feet53",
+			"feet53_2",
+			"feet53_3",
+			"feet53_4"
 		],
 		"turntable": "#f59a4a",
 		"yoke": "#f59a4a",
@@ -1775,10 +1934,55 @@ const BAU := {
 			"suche": "Raspberry Pi 27W USB-C Netzteil",
 			"wenn": "entwicklung",
 			"gruppe": "strom"
+		},
+		"insert": {
+			"preis": 15,
+			"haendler": "galaxus",
+			"suche": "ruthex Gewindeeinsatz M3",
+			"wenn": "v53",
+			"gruppe": "v53"
+		},
+		"tripodscrew": {
+			"preis": 4,
+			"haendler": "galaxus",
+			"suche": "Stativschraube 1/4 Zoll 16mm",
+			"wenn": "v53",
+			"gruppe": "v53"
+		},
+		"strap": {
+			"preis": 8,
+			"haendler": "galaxus",
+			"suche": "Spanngurt 25mm Klemmschloss",
+			"wenn": "v53",
+			"optional": true,
+			"gruppe": "v53"
+		},
+		"wallscrew": {
+			"preis": 3,
+			"haendler": "galaxus",
+			"suche": "Schrauben Dübel Set 5mm",
+			"wenn": "v53",
+			"optional": true,
+			"gruppe": "v53"
+		},
+		"ties": {
+			"preis": 3,
+			"haendler": "galaxus",
+			"suche": "Kabelbinder 2.5mm",
+			"wenn": "v53",
+			"gruppe": "v53"
+		},
+		"ductfoam": {
+			"preis": 4,
+			"haendler": "galaxus",
+			"suche": "Moosgummi Streifen selbstklebend 10mm",
+			"wenn": "v53",
+			"gruppe": "v53"
 		}
 	}
 }
 # Gehäuse-Varianten: id -> {name, teile, ersetzt, druckdateien, anleitung, hinweis, nachmessen (deutsch, T.t übersetzt)}
 const GEHAEUSE_VARIANTEN := {
 	"v52": {"name": "Variante v5.2: Weitwinkel-Kamera im Unterteil", "teile": ["tub52", "wide", "irled", "mosfet52", "cable_cam1", "cable_cam0_52", "buttons", "sled", "plug52", "sdplug", "head52", "diff52", "resplug", "lampdrv", "fuseh"], "ersetzt": {"tub52": "tub", "mosfet52": "mosfet", "cable_cam0_52": "cable_cam", "plug52": "plug", "head52": "head"}, "druckdateien": ["v5-2/MotionWatch_v5-2_Platte_A_Unterteil.3mf", "v5-2/MotionWatch_v5-2_Platte_B_Deckel_Kopf.3mf"], "anleitung": "Dokumente/LIESMICH_Montage_v5-2.md", "hinweis": "Platte A und B v5.2 ersetzen die Platten v5.1 (Unterteil mit Weitwinkel-Fenster, Service-Fenster HDMI/USB-C, SD-Schlitz; Kopf mit Status-LED). Vor dem Druck die Liste «Nachmessen» prüfen.", "nachmessen": ["IR-Modul: Ø 18,8 mm, Länge 14 mm, Linse vorne Ø 17 mm (IRW_MOD_D, IRW_MOD_L, IRW_LENS_D)", "Weitwinkel-Kamera: Linsenhöhe 11,4 mm ab Platine, Linsenmitte 9,5 mm unter der Platinen-Oberkante, Frontlinse Ø 6 mm (WC_LENS_H, WC_LENS_FROM_TOP, WC_R0)", "Lage der Buchsen CAM/DISP 0 und 1 am Pi 5 (Kabelkamm FPC_X0, PI_CAM0_XY, PI_CAM1_XY)", "Abstände: IR-Modul–Kamera-Fenster (Steg 3,2 mm, Trennsteg 2 mm vor der Wand), IR-Modul–Lautsprecher 11 mm, Kabel–Lüfter 4 mm / Ansaugung 8 mm, Kabel–Lüftungsschlitze 9 mm", "UPS HAT (E) mit Akkus (wie v5.1: angenommen 90 × 80 × 26 mm)", "Service-Fenster: Lage USB-C (x 85) und HDMI am Pi 5; SD: microSD-Verlängerung mit Einbau-Kartenhalter (Lochabstand 18 mm, Platine ca. 22 × 15 mm)", "Lampentreiber: noch unbekannt – Feld 30 × 20 mit 2 Domen M2,5 ist ein Platzhalter (DRV_HOLES); Sicherungshalter 30 × 13 × 10 (FUSE_*)"]},
+	"v53": {"name": "Variante v5.3: v5.2 mit Einsätzen, Akkuklappe, Halter, Luftkanal", "teile": ["tub53", "lid53", "hatch", "duct", "holder", "feet53", "feet53_2", "feet53_3", "feet53_4", "cable_cam1_53", "cable_cam0_53"], "ersetzt": {"tub53": "tub52", "lid53": "lid", "feet53": "feet", "feet53_2": "feet2", "feet53_3": "feet3", "feet53_4": "feet4", "cable_cam1_53": "cable_cam1", "cable_cam0_53": "cable_cam0_52"}, "druckdateien": ["v5-3/MotionWatch_v5-3_Platte_A_Unterteil.3mf", "v5-3/MotionWatch_v5-3_Platte_B_Deckel_Kopf.3mf", "v5-3/MotionWatch_v5-3_Platte_C_Halter.3mf"], "anleitung": "Dokumente/LIESMICH_Montage_v5-3.md", "hinweis": "Platten A, B und C v5.3 ersetzen die Platten v5.2 (Unterteil mit Einsätzen, Akkuklappe, Lufteinlass und Ösen; Deckel mit Öse; Halter und Akkuklappe auf Platte C). v5.3 ist Standard (Freigabe Elektro 02.11.2026); v5.2 und v5.1 bleiben wählbar. Vor dem Druck die Liste «Nachmessen» prüfen.", "nachmessen": ["UPS HAT (E): Zellen unter der Platine und von unten entnehmbar? Halter-Enden liegen auf dem Bodenrand (y < 4 und > 76)? (v5.BAT_*, OPEN_*)", "Gewindeeinsatz: Bohrung Ø 4,0 / Länge 5,7 nach Herstellerangabe (ruthex M3 × 5,7) – bei anderem Einsatz INS_D / INS_L anpassen", "Active Cooler: Oberkante z 55,5, Ansaugöffnung 23 × 24 mm, Ausblasrichtung der Rippen (COOL_*, FAN_IN)", "Füsse v5.3 in den Ecken: Gerät steht stabil, Halter-Mulden passen (FEET53)", "Halter: Gurt 25 mm passt durch die Schlitze 4 × 28 mm, Wandschrauben Ø 5"]},
 }

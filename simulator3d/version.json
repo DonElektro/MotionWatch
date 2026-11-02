@@ -1,15 +1,15 @@
 {
- "version": "3D-5.50.0",
- "ver": "3.50.0",
- "name": "MoveEye Sim 3.50.0",
+ "version": "3D-5.51.0",
+ "ver": "3.51.0",
+ "name": "MoveEye Sim 3.51.0",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 49390673,
- "sha256": "13aac51dcd5634ad27a331835ca8c711820b7c7b8f317e948162ec9732947875",
- "notes": "Werkstatt als eigene HTML-Datei",
+ "size": 49953516,
+ "sha256": "9b3f760d5482d0bcf92993a94ef195a2967942a7ede3951040733c0f219b2732",
+ "notes": "Gehäuse v5.3 Standard",
  "linux": {
   "file": "simulator3d/MoveEyeSim3D_Linux.zip",
-  "ver": "3.50.0",
-  "size": 43369521,
-  "sha256": "e550cda5b6babda006b66932547e376b0411543f1c6ac6c69d3f8153deb6afde"
+  "ver": "3.51.0",
+  "size": 43929402,
+  "sha256": "c8919235f3b0db15dec94b58b1dedd4acf25be5ff2534baff5ac2f257bae9193"
  }
 }
