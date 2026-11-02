@@ -5,7 +5,7 @@
 # moveeye-sim.png (Symbol) und «Lies mich.txt»; dazu der Kiosk (Besitzer 01.11.2026): kiosk_ein.sh / kiosk_aus.sh (reine
 # Simulator-Maschine mit Linux Mint, rückgängig machbar) und kiosk_sitzung.sh (die Sitzung «MoveEye Kiosk»). Danach schreibt `versionen.py --sim-json` den Block «linux» in version.json
 # (der Linux-Simulator holt sein Update dort, update.gd linux_info). Gleich aufgebaut wie die Windows-ZIP (simpack.sh).
-# Ab 3.53.0 dazu testbild.py (Testbild des Kiosks während der Tests) und hp/ (Simulator-PC des Projekts: moveeye-hp-update,
+# Ab 3.53.0 dazu testbild.py (Testbild des Kiosks während der Tests), ab 3.55.0 hp_wache.py (Spielen-Wunsch, Status) und hp/ (Simulator-PC des Projekts: moveeye-hp-update,
 # Haken und Dienst-Einstellungen des Test-Runners). Die SHA-256 dieser ZIP steht in der signierten Programmdatei (SIM3D_LINUX),
 # darüber prüft moveeye-hp-update alles, was es einspielt.
 set -e
@@ -17,7 +17,7 @@ W="$OUT.d"                        # Arbeitsordner neben der Ziel-ZIP (nur dieser
 rm -rf "$W"; trap 'rm -rf "$W"' EXIT
 mkdir -p "$W/MoveEyeSim3D"
 cp "$BIN" "$W/MoveEyeSim3D/MoveEyeSim3D.x86_64"
-for f in installieren.sh kiosk_ein.sh kiosk_aus.sh kiosk_sitzung.sh testbild.py; do
+for f in installieren.sh kiosk_ein.sh kiosk_aus.sh kiosk_sitzung.sh testbild.py hp_wache.py; do
 	cp "$R/simulator3d/beilagen_linux/$f" "$W/MoveEyeSim3D/"
 done
 mkdir -p "$W/MoveEyeSim3D/hp"
@@ -28,7 +28,7 @@ cp "$R/simulator3d/icon_sim3d.png" "$W/MoveEyeSim3D/moveeye-sim.png"
 cp "$R/simulator3d/Lies mich.txt" "$W/MoveEyeSim3D/"
 chmod 755 "$W/MoveEyeSim3D/MoveEyeSim3D.x86_64" "$W/MoveEyeSim3D/installieren.sh" "$W/MoveEyeSim3D/kiosk_ein.sh" \
 	"$W/MoveEyeSim3D/kiosk_aus.sh" "$W/MoveEyeSim3D/kiosk_sitzung.sh"
-chmod 644 "$W/MoveEyeSim3D/moveeye-sim.png" "$W/MoveEyeSim3D/Lies mich.txt" "$W/MoveEyeSim3D/testbild.py" \
+chmod 644 "$W/MoveEyeSim3D/moveeye-sim.png" "$W/MoveEyeSim3D/Lies mich.txt" "$W/MoveEyeSim3D/testbild.py" "$W/MoveEyeSim3D/hp_wache.py" \
 	"$W/MoveEyeSim3D/hp/runner_dienst.conf"
 chmod 755 "$W/MoveEyeSim3D/hp" "$W/MoveEyeSim3D/hp/"*.sh
 rm -f "$OUT.tmp"

@@ -6,6 +6,7 @@
 #   kiosk_sitzung.sh schleife   startet den Simulator und nach einem Absturz oder Beenden wieder neu
 #   kiosk_sitzung.sh desktop    (Ctrl+Alt+D) Kiosk beenden, Cinnamon starten
 #   kiosk_sitzung.sh neustart   (Ctrl+Alt+R) nur den Simulator neu starten
+#   kiosk_sitzung.sh wache      (von der Sitzung gestartet) hp_wache.py: Spielen-Wunsch und Status fürs eigene Netz
 # Einstellungen: /etc/moveeye-kiosk.conf (SIM = Programmdatei, SIM_ARGS = Startoptionen). Protokolle: ~/.moveeye_kiosk/
 # Testlauf-Pause (werkzeuge/test_runner): /etc/moveeye-kiosk-test.conf setzt PAUSE_DATEI. Solange diese Datei da ist (und
 # jünger als PAUSE_MAX_S), ist der Simulator aus und startet nicht neu - der Test-Runner hat Grafik und Speicher für sich.
@@ -13,6 +14,11 @@
 # Testbild (3.53.0): während der Pause zeigt testbild.py (python3-tk) Logo, «Test läuft – bitte nicht ausschalten» und den
 # Fortschritt aus FORTSCHRITT_DATEI (nur Daten, JSON) samt Live-Bild; nach dem Test 2 Min. eine Zusammenfassung, dann
 # startet der Simulator. Ohne python3-tk bleibt der Bildschirm dunkel.
+# Dauerrechnen (3.55.0): der HP rechnet rund um die Uhr (werkzeuge/test_runner/dauer.py). «Spielen» (Knopf im Testbild) oder
+# MoveEye / ein Handy, das sich mit dem Simulator verbinden will (hp_wache.py lauscht auf seinen Ports), schreibt SPIEL_DATEI;
+# der Test-Runner hält an, sichert den Stand und nimmt die Pause-Datei weg - dann startet der Simulator gleich, ohne
+# Zusammenfassung. 15 Min. ohne Eingabe und ohne Verbindung: weiterrechnen. Während des Rechnens schaltet DPMS den Bildschirm
+# nach SCHLAF_S (10 Min.) ohne Maus / Taste aus, das Testbild schläft; beim Simulator bleibt er an wie bisher.
 set -u
 LIB="/usr/local/lib/moveeye-kiosk"
 CONF="/etc/moveeye-kiosk.conf"
@@ -34,10 +40,15 @@ PAUSE_MAX_S=25200                         # 7 Std.: eine vergessene Pause-Datei 
 TEST_BENUTZER=""
 FORTSCHRITT_DATEI=""
 TESTBILD_ENDE_S=120                       # so lange bleibt nach dem Test die Zusammenfassung stehen
+SPIEL_DATEI="/run/moveeye-spiel/spielen"  # Spielen-Wunsch (hp_wache.py, testbild.py; Ordner: moveeye-hp-update)
+SPIEL_RUHE_S=900                          # so lange gilt er nach der letzten Eingabe / Verbindung
+STATUS_PORT=8761                          # Status fürs eigene Netz (MoveEye «HP rechnet»), 0 = aus
+SCHLAF_S=600                              # Testbild und Bildschirm schlafen nach so vielen s ohne Maus / Taste
 # shellcheck source=/dev/null
 [ -r /etc/moveeye-kiosk-test.conf ] && . /etc/moveeye-kiosk-test.conf
 [ -z "$FORTSCHRITT_DATEI" ] && [ -n "$PAUSE_DATEI" ] && FORTSCHRITT_DATEI="$(dirname "$PAUSE_DATEI")/fortschritt.json"
 TESTBILD="$LIB/testbild.py"
+WACHE="$LIB/hp_wache.py"
 LOGO="$LIB/moveeye.png"
 mkdir -p "$LOGDIR" "$RUN"
 
@@ -48,6 +59,22 @@ pausiert() {   # läuft ein Testlauf (Pause-Datei des Test-Runners da und nicht 
 	local m
 	m=$(stat -c %Y "$PAUSE_DATEI" 2>/dev/null) || return 1
 	[ $(( $(date +%s) - m )) -lt "$PAUSE_MAX_S" ]
+}
+
+spielt() {   # wird gerade gespielt (Spielen-Datei da und jünger als SPIEL_RUHE_S)?
+	[ -n "$SPIEL_DATEI" ] && [ -f "$SPIEL_DATEI" ] && [ ! -L "$SPIEL_DATEI" ] || return 1
+	local m
+	m=$(stat -c %Y "$SPIEL_DATEI" 2>/dev/null) || return 1
+	[ $(( $(date +%s) - m )) -lt "$SPIEL_RUHE_S" ]
+}
+
+bildschirm_sparen() {   # an: DPMS nach SCHLAF_S (nur während gerechnet wird), aus: wie bisher immer an (Simulator)
+	if [ "$1" = an ] && [ "$SCHLAF_S" -gt 0 ]; then
+		xset s off 2>/dev/null; xset +dpms 2>/dev/null; xset dpms "$SCHLAF_S" "$SCHLAF_S" "$SCHLAF_S" 2>/dev/null
+	else
+		xset s off 2>/dev/null; xset s noblank 2>/dev/null; xset -dpms 2>/dev/null
+	fi
+	return 0
 }
 
 kuerzen() {   # Protokoll höchstens ~2 MB, die letzten Zeilen bleiben
@@ -64,8 +91,10 @@ testbild_an() {   # Testbild zeigen (läuft es schon, nichts tun; stürzt es ab,
 	[ "$TB_N" -ge 5 ] && return 0
 	TB_N=$((TB_N + 1))
 	if [ -r "$TESTBILD" ] && python3 -c 'import tkinter' 2>/dev/null; then
+		local sp=""
+		[ -n "$SPIEL_DATEI" ] && [ -d "$(dirname "$SPIEL_DATEI")" ] && sp="$SPIEL_DATEI"
 		python3 -I "$TESTBILD" --pause "$PAUSE_DATEI" --fortschritt "$FORTSCHRITT_DATEI" --logo "$LOGO" \
-			--ende-s "$TESTBILD_ENDE_S" >> "$LOGDIR/testbild.log" 2>&1 &
+			--ende-s "$TESTBILD_ENDE_S" --spiel-datei "$sp" --schlaf-s "$SCHLAF_S" >> "$LOGDIR/testbild.log" 2>&1 &
 		TB=$!
 		[ "$TB_N" -eq 1 ] && log "Testbild an"
 	else
@@ -79,6 +108,7 @@ testbild_nachlauf() {   # nach dem Test: die Zusammenfassung des Testbilds (2 Mi
 	local i=0
 	while [ "$TB" -gt 0 ] && kill -0 "$TB" 2>/dev/null && [ $i -lt 75 ]; do
 		pausiert && return 0                      # schon der nächste Test: Testbild läuft weiter
+		spielt && break                           # Spielen: keine Zusammenfassung, gleich der Simulator
 		kill -0 "$eltern" 2>/dev/null || break
 		sleep 2 & kind=$!; wait "$kind"; kind=0
 		i=$((i + 1))
@@ -103,7 +133,7 @@ sim_stoppen() {
 }
 
 schleife() {
-	local kind=0 t0 rc dauer schnell=0 pause warte=0
+	local kind=0 t0 rc dauer schnell=0 pause warte=0 n=0
 	trap '[ "$kind" -gt 0 ] && kill -TERM "$kind" 2>/dev/null; [ "$TB" -gt 0 ] && kill -TERM "$TB" 2>/dev/null; exit 0' TERM INT
 	kuerzen "$LOGDIR/sim.log"
 	local eltern=$PPID
@@ -117,14 +147,23 @@ schleife() {
 		if pausiert; then                                 # Testlauf: Simulator aus, warten, danach wieder starten
 			log "Testlauf ($PAUSE_DATEI): Simulator pausiert"
 			sim_laeuft && sim_stoppen
+			bildschirm_sparen an
+			n=0
 			while pausiert; do
 				kill -0 "$eltern" 2>/dev/null || { testbild_aus; log "Sitzung ist zu - Schleife endet"; exit 0; }
-				testbild_an
-				sleep 5 & kind=$!; wait "$kind"; kind=0
+				[ $((n % 5)) -eq 0 ] && testbild_an
+				n=$((n + 1))
+				sleep 1 & kind=$!; wait "$kind"; kind=0
 			done
 			testbild_nachlauf
 			pausiert && continue
-			log "Testlauf fertig: Simulator startet wieder"
+			bildschirm_sparen aus
+			if spielt; then
+				log "Spielen: Simulator startet (Rechnen angehalten)"
+				sleep 1 & kind=$!; wait "$kind"; kind=0      # hp_wache.py gibt die Ports frei
+			else
+				log "Testlauf fertig: Simulator startet wieder"
+			fi
 			schnell=0
 			continue
 		fi
@@ -167,9 +206,10 @@ kiosk_teil() {
 	export XDG_CURRENT_DESKTOP=MoveEye-Kiosk XDG_SESSION_DESKTOP=moveeye-kiosk DESKTOP_SESSION=moveeye-kiosk
 	rm -f "$FLAG"
 	"$LIB/kiosk_sitzung.sh" schleife &
-	local sp=$! t0 n=0
-	# shellcheck disable=SC2064   # sp jetzt einsetzen
-	trap "kill -TERM $sp 2>/dev/null; sim_stoppen; exit 0" TERM HUP INT
+	local sp=$! t0 n=0 wp=0
+	if [ -r "$WACHE" ]; then "$LIB/kiosk_sitzung.sh" wache & wp=$!; fi
+	# shellcheck disable=SC2064   # sp, wp jetzt einsetzen
+	trap "kill -TERM $sp $wp 2>/dev/null; sim_stoppen; exit 0" TERM HUP INT
 	if command -v openbox >/dev/null 2>&1; then
 		while :; do
 			t0=$(date +%s)
@@ -189,6 +229,7 @@ kiosk_teil() {
 		wait "$sp"
 	fi
 	kill -TERM "$sp" 2>/dev/null
+	[ "$wp" -gt 0 ] && kill -TERM "$wp" 2>/dev/null
 	wait "$sp" 2>/dev/null
 	sim_stoppen
 	trap - TERM HUP INT
@@ -216,6 +257,28 @@ cinnamon_teil() {
 	sleep 1
 }
 
+wache() {   # hp_wache.py am Laufen halten (neu nach einem Absturz oder wenn moveeye-hp-update eine neue Fassung einspielt)
+	local kind=0 m0 n=0 pause
+	trap '[ "$kind" -gt 0 ] && kill -TERM "$kind" 2>/dev/null; exit 0' TERM INT
+	local eltern=$PPID
+	while kill -0 "$eltern" 2>/dev/null; do
+		[ -r "$WACHE" ] || { sleep 30; continue; }
+		m0=$(stat -c %Y "$WACHE" 2>/dev/null)
+		python3 -I "$WACHE" --spiel-datei "$SPIEL_DATEI" --pause "${PAUSE_DATEI:-/run/moveeye-test/kiosk_pause}" \
+			--pause-max-s "$PAUSE_MAX_S" --ruhe-s "$SPIEL_RUHE_S" --status-port "$STATUS_PORT" >> "$LOGDIR/wache.log" 2>&1 &
+		kind=$!
+		while kill -0 "$kind" 2>/dev/null && kill -0 "$eltern" 2>/dev/null; do
+			[ "$(stat -c %Y "$WACHE" 2>/dev/null)" != "$m0" ] && { log "hp_wache.py neu - startet neu"; kill -TERM "$kind"; }
+			sleep 5
+		done
+		kill -TERM "$kind" 2>/dev/null
+		wait "$kind" 2>/dev/null; kind=0
+		kuerzen "$LOGDIR/wache.log"
+		n=$((n + 1)); pause=5; [ "$n" -gt 5 ] && pause=60
+		sleep "$pause"
+	done
+}
+
 sitzung() {
 	kuerzen "$LOGDIR/sitzung.log"
 	log "Sitzung «MoveEye Kiosk» beginnt (Benutzer $(id -un), DISPLAY=${DISPLAY:-?})"
@@ -235,6 +298,7 @@ sitzung() {
 case "${1:-}" in
 	sitzung) sitzung ;;
 	schleife) schleife ;;
+	wache) wache ;;
 	desktop)
 		touch "$FLAG"
 		log "Ctrl+Alt+D gedrückt"
@@ -244,5 +308,5 @@ case "${1:-}" in
 		log "Ctrl+Alt+R: Simulator neu starten"
 		sim_stoppen
 		;;
-	*) sed -n '2,9p' "$0"; exit 2 ;;
+	*) sed -n '2,10p' "$0"; exit 2 ;;
 esac

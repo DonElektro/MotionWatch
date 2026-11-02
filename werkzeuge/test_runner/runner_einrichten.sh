@@ -203,6 +203,12 @@ if [ -d "$KIOSK_LIB" ]; then
 	[ -f "$KIOSK_LIB/kiosk_sitzung.sh" ] && [ ! -f "$LIB/kiosk_sitzung.sh.vorher" ] && cp -p "$KIOSK_LIB/kiosk_sitzung.sh" "$LIB/kiosk_sitzung.sh.vorher"
 	beilage "$KIOSK_LIB/kiosk_sitzung.sh" simulator3d/beilagen_linux/kiosk_sitzung.sh 755 && echo "  kiosk_sitzung.sh mit Pause-Funktion"
 	beilage "$KIOSK_LIB/testbild.py" simulator3d/beilagen_linux/testbild.py 644 datei && echo "  Testbild während der Tests"
+	beilage "$KIOSK_LIB/hp_wache.py" simulator3d/beilagen_linux/hp_wache.py 644 datei && echo "  Spielen-Wunsch und Status (Dauerrechnen)"
+	if [ "$WER" != root ] && id "$WER" >/dev/null 2>&1; then
+		printf '# MoveEye: Spielen-Wunsch des Kiosks für das Dauerrechnen\nd /run/moveeye-spiel 0755 %s %s -\n' "$WER" "$WER" \
+			> /etc/tmpfiles.d/moveeye-spiel.conf
+		systemd-tmpfiles --create /etc/tmpfiles.d/moveeye-spiel.conf || warn "systemd-tmpfiles (Spielen)"
+	fi
 	beilage "$KIOSK_LIB/moveeye.png" simulator3d/icon_sim3d.png 644 datei || true
 	dpkg-query -W -f='${Status}' python3-tk 2>/dev/null | grep -q "install ok installed" || \
 		apt-get install -y -q --no-install-recommends python3-tk >/dev/null 2>&1 || warn "python3-tk fehlt (Testbild)"
