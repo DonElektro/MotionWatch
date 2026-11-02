@@ -244,7 +244,7 @@ def prepare_settings_file():
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
 ZD_FILE = "moveeye_daten_3_50_0.zip"
-ZD_SHA256 = "ca132735f91568198388804331dc1c920f8b07bec18f57acf619ddefcb8e08e4"
+ZD_SHA256 = "478653ed58fd2a040379e32d72b481eb818a0cb6c530fb4314c7f86df883d65d"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -72626,7 +72626,7 @@ SELFTEST_EXTRA.append(("Error help with QR code (simulator3d/fehler_katalog.json
 # GEH_QUELLE_SHA: Prüfsumme der Quelle (hardware/gehaeuse/Quellcode/*.py, bau.json, werkzeuge/gehaeuse_bauen.py) – der
 # Selbsttest (639w) vergleicht sie im Repository mit der Quelle und mit simulator3d/inhalte/gehaeuse/modelle.json.
 # ----------------------------------------------------------------------------
-GEH_QUELLE_SHA = 'a4af57cc5f3097a62fa86e0ca5c3c48c3421b242e417a94c2f471848942d435a'
+GEH_QUELLE_SHA = 'd755c47fb9107b6d33bc5f5682030666ffa45c4be5e66721610610dcdc305ccf'
 GEH_BAU = json.loads(_zd('639v_daten_gehaeuse/GEH_BAU', ""))
 GEH_UI_DE = {"Case & build": "Gehäuse & Bau", "Guide, parts list, print files – in 3D in the workshop of the simulator": "Anleitung, Materialliste, Druckdateien – in 3D in der Werkstatt des Simulators", "Case": "Gehäuse", "View in the simulator": "Im Simulator ansehen", "Opens the workshop in the 3D simulator: turn, explode, see through, click parts, assembly step by step.": "Öffnet die Werkstatt im 3D-Simulator: drehen, zerlegen, durchsichtig, Teile anklicken, Montage Schritt für Schritt.", "Simulator not connected – start it and connect it on the page Simulator.": "Simulator nicht verbunden – starte ihn und verbinde ihn auf der Seite «Simulator».", "Opened in the simulator.": "Im Simulator geöffnet.", "Print files": "Druckdateien", "3MF plates for the Bambu Lab X2D (PETG, no supports)": "3MF-Platten für den Bambu Lab X2D (PETG, ohne Stützen)", "Single STL files: in the hand-over package (ZIP, about 60 MB), not in the repository.": "Einzelne STL-Dateien: im Übergabe-Paket (ZIP, ca. 60 MB), nicht im Repository.", "Assembly step by step": "Montage Schritt für Schritt", "Show this step in the simulator": "Diesen Schritt im Simulator zeigen", "Parts list": "Materialliste", "Qty": "Menge", "Part number": "Teilenummer", "Guides and source (GitHub)": "Anleitungen und Quellcode (GitHub)", "Detailed guide v5.1": "Ausführliche Anleitung v5.1", "Full parts list with order list": "Ganze Materialliste mit Bestellliste", "Measure first: UPS HAT (E) with its cells (assumed 90 × 80 × 26 mm) before printing the lower part.": "Zuerst nachmessen: UPS HAT (E) mit Akkus (angenommen 90 × 80 × 26 mm), bevor das Unterteil gedruckt wird.", "Own work of Elektro – parametric Python model.": "Eigenes Werk von Elektro – parametrisches Python-Modell.", "Step": "Schritt"}
 GEH_UI_TRX = _zd('639v_daten_gehaeuse/GEH_UI_TRX', _ZDDict())
@@ -72637,7 +72637,7 @@ GEH_UI2_TRX = _zd('639v_daten_gehaeuse/GEH_UI2_TRX', _ZDDict())
 # BAU3D: Pfad -> [sha256 der Datei, gzip+base64]; BAU3D_GLB: [sha256, Grösse, gzip+base64]. Ausgeliefert von 639w (/bau3d/<pfad>,
 # /build/gehaeuse.glb) mit Content-Encoding gzip. Der Selbsttest vergleicht die Prüfsummen im Repository mit den Quellen.
 # ----------------------------------------------------------------------------
-BAU3D_QUELLE_SHA = 'a4af57cc5f3097a62fa86e0ca5c3c48c3421b242e417a94c2f471848942d435a'
+BAU3D_QUELLE_SHA = 'd755c47fb9107b6d33bc5f5682030666ffa45c4be5e66721610610dcdc305ccf'
 BAU3D = _zd('639vb_daten_bau3d/BAU3D', _ZDDict())
 BAU3D_GLB = _zd('639vb_daten_bau3d/BAU3D_GLB', [])
 # aus simulator3d/inhalte/gehaeuse/modelle.json: Gruppe, aussen, Mitte und Explosion pro Teil (wie die Werkstatt im Simulator)
@@ -72955,9 +72955,13 @@ def geh_druck_holen(name, timeout=30):
 
 
 def geh_var_namen(var):
-    """the print files of a case: v52 -> Druckdateien/v5-2/, v51 -> the others"""
-    v52 = var != "v51"
-    return [n for n in geh_druck_namen() if n.startswith("v5-2/") == v52]
+    """the print files of a case: v52 -> Druckdateien/v5-2/, v53 -> Druckdateien/v5-3/ (real-gehaeuse-v53), v51 -> the others"""
+    d = GEH_VAR_DIR.get(var, "v5-2/")
+    return [n for n in geh_druck_namen() if (n.split("/")[0] + "/" if "/" in n else "") == d]
+
+
+GEH_VAR_DIR = {"v51": "", "v52": "v5-2/", "v53": "v5-3/"}     # case -> folder of its print files
+GEH_VAR_TXT = {"v51": "v5.1", "v52": "v5.2", "v53": "v5.3"}
 
 
 def geh_var_std():
@@ -72965,7 +72969,7 @@ def geh_var_std():
 
 
 def geh_zip_name(var):
-    return "MoveEye_%s_Druck_%s.zip" % ("v5-1" if var == "v51" else "v5-2", APP_VERSION)
+    return "MoveEye_%s_Druck_%s.zip" % (GEH_VAR_TXT.get(var, "v5.2").replace(".", "-"), APP_VERSION)
 
 
 def _gx_py(o, L):
@@ -72977,7 +72981,7 @@ def geh_liesmich(var, L=None):
     L = cur_lang(L)
     D = GEH_BAU.get("druck") or {}
     vals = {o["id"] for g_ in GEH_BAU.get("varianten") or [] if g_["id"] == "gehaeuse" for o in g_["werte"]}
-    vt = "v5.1" if var == "v51" else "v5.2"
+    vt = GEH_VAR_TXT.get(var, "v5.2")
     out = [tr("MoveEye print files – case %s – as of MoveEye %s", L) % (vt, APP_VERSION), ""]
     for h in D.get("hinweise") or []:
         out.append("- " + _gx_py(h, L))
@@ -72985,7 +72989,9 @@ def geh_liesmich(var, L=None):
             tr("Single parts (3MF)", L) + ":"]
     for p in D.get("teile") or []:
         w = p.get("wenn")
-        if w in vals and w != var:
+        if p.get("nicht") == var:                     # replaced in this case (v5.3: lower part / lid v5.2)
+            continue
+        if w in vals and w != var and not (w == "v52" and var == "v53"):   # v5.3 builds on v5.2
             continue
         opt = "  (" + tr("optional", L) + ": " + w + ")" if w and w not in vals else ""
         out.append("- %s: × %s · %s %s %% · %s %s · %s %s · %s %s mm%s · %s %s · %s ~%s h%s" % (
@@ -73008,7 +73014,7 @@ def geh_alle_zip(var=None, budget=None):
     """-> ("zip", bytes, file name) | ("wait", done, total) | ("offline", reason, None): the print files of the chosen case
     in one ZIP (3MF are compressed already: stored), fetched where missing"""
     import io
-    var = var if var in ("v51", "v52") else geh_var_std()
+    var = var if var in GEH_VAR_DIR else geh_var_std()
     names = geh_var_namen(var)
     t0, paths = time.time(), {}
     budget = GEH_ZIP_BUDGET if budget is None else budget
@@ -73125,7 +73131,7 @@ def smalltv_routes(app, reply, body):                     # + 639w: /build, /cas
         st, a_, b_ = geh_alle_zip(var)
         if st == "zip":
             return Response(a_, mimetype="application/zip", headers={"Content-Disposition": f'attachment; filename="{b_}"', "Cache-Control": "no-store"})
-        url = "/build/alle.zip?var=" + ("v51" if var == "v51" else "v52")
+        url = "/build/alle.zip?var=" + (var if var in GEH_VAR_DIR else geh_var_std())
         if st == "wait":
             return Response(geh_dl_page(tr("The print files are being fetched from the internet (%d of %d). This page tries again by itself; you can also tap «Try again».") % (a_, b_), retry=url, refresh=15), 202, mimetype="text/html")
         return Response(geh_dl_page(tr("The print file is not on this MoveEye and could not be fetched from the internet (no connection?). Try again later, or load the complete kit package."), retry=url), 503, mimetype="text/html")
@@ -73282,7 +73288,7 @@ def geh_selftest():
     T_ = {t_["id"]: t_ for t_ in B["teile"]}
     assert (B.get("variante_standard") or {}).get("gehaeuse") == "v52" and "v51" in vals, "real-v52-standard: v5.2 is the standard, v5.1 stays"
     for t_ in B["teile"]:                         # the parts of a variant are in the assembly steps, at the step of the part they replace
-        if t_.get("art") in ("v52", "dev"):
+        if t_.get("art") in ("v52", "v53", "dev"):
             assert t_.get("schritt"), ("step", t_["id"])
             assert not t_.get("ersetzt") or T_[t_["ersetzt"]].get("schritt") == t_["schritt"], ("step of the replaced part", t_["id"])
     for b in B["bom"]:
@@ -73453,6 +73459,9 @@ def geh_dl_selftest():
         assert top + "LIESMICH.txt" in nl and top + "MoveEye_v5-2_01_Unterteil_v52.3mf" in nl and top + "Platten_X2D/MotionWatch_v5-2_Platte_A_Unterteil.3mf" in nl, nl[:5]
         assert len(nl) == len(geh_var_namen("v52")) + 1 and not [x for x in nl if "v5-1" in x or "v5-2/" in x[len(top):]], nl
         assert geh_zip_name("v51") == "MoveEye_v5-1_Druck_%s.zip" % APP_VERSION and all(not n.startswith("v5-2/") for n in geh_var_namen("v51"))
+        n53 = geh_var_namen("v53")                    # real-gehaeuse-v53: own folder, all parts (also the unchanged ones of v5.2)
+        assert n53 and all(n.startswith("v5-3/") for n in n53) and geh_zip_name("v53") == "MoveEye_v5-3_Druck_%s.zip" % APP_VERSION, n53[:3]
+        assert len([n for n in n53 if n not in (GEH_BAU.get("druckdateien") or [])]) >= len([n for n in geh_var_namen("v52") if n not in (GEH_BAU.get("druckdateien") or [])]), "v5.3: every single part"
     finally:
         srv.shutdown()
         srv.server_close()
@@ -73527,13 +73536,13 @@ _geh_page_einzel_base = geh_page
 geh_page = _geh_page_einzel
 
 
-def geh_platten_zip(v52=True, lang="de", budget=None):
+def geh_platten_zip(var="v52", lang="de", budget=None):
     """the plates (3MF) of one case + LIESMICH_Druck.txt (short guide in the language), named with the version
     -> ("zip", name, bytes) | ("wait", done, total) | ("offline", reason, None). 3.48.0: like /build/alle.zip (real-download-fix,
     639w geh_druck_holen) - on the Pi without the repository MoveEye fetches the plates itself (cache, base names), no redirect"""
     import io
     import zipfile
-    var = "v52" if v52 else "v51"
+    var = "v52" if var is True else "v51" if var is False else var if var in GEH_VAR_DIR else "v52"   # real-gehaeuse-v53: v51 | v52 | v53
     fs = (GEH_DRUCK_LAGE.get("platten") or {}).get(var) or []
     if not fs:
         return "offline", "unknown", None
@@ -73553,7 +73562,7 @@ def geh_platten_zip(v52=True, lang="de", budget=None):
     L = lang if lang in ("de", "en", "fr", "it", "rm") else "de"
     T = lambda k: tr(k, L) if L != "en" else k
     nm = lambda dt: next((x["name"].get(L) or x["name"].get("de") for x in GEH_BAU.get("teile") or [] if x.get("datei") == dt and isinstance(x.get("name"), dict)), dt.replace("_", " "))
-    z = [T("MoveEye – print plates case v%s (as of MoveEye %s)") % ("5.2" if v52 else "5.1", APP_VERSION), "=" * 64, "",
+    z = [T("MoveEye – print plates case v%s (as of MoveEye %s)") % (GEH_VAR_TXT[var][1:], APP_VERSION), "=" * 64, "",
          T("Printer: Bambu Lab X2D (other printers work too), 0.4 mm nozzle, material PETG – dry it first."),
          T("No supports: all parts already lie right on the plate. Brim 5 mm only for head (06), yoke (04) and side cover (07)."),
          T("Colours: head parts orange (everything that turns or tilts), the rest grey; diffuser 14 natural/white, pupil ring 15 black."),
@@ -73567,7 +73576,7 @@ def geh_platten_zip(v52=True, lang="de", budget=None):
                 seen.append(s)
         z.append(T("Plate %s (%s): %s") % (p["name"], p["datei"].split("/")[-1], ", ".join(seen)))
     z += ["", T("Single parts and everything else: MoveEye → More → Build → Printing."), ""]
-    top_ = ("MoveEye_v5-2_Druckplatten_" if v52 else "MoveEye_v5-1_Druckplatten_") + APP_VERSION
+    top_ = "MoveEye_%s_Druckplatten_" % GEH_VAR_TXT[var].replace(".", "-") + APP_VERSION
     b = io.BytesIO()
     with zipfile.ZipFile(b, "w", zipfile.ZIP_STORED) as zf:
         zf.writestr(top_ + "/LIESMICH_Druck.txt", "﻿" + "\r\n".join(z))
@@ -73585,12 +73594,13 @@ def smalltv_routes(app, reply, body):                     # + 639wc: /build/plat
 
     @app.route("/build/platten.zip")
     def geh_platten_():
-        v52_ = request.args.get("v", "v52") != "v51"
+        v_ = request.args.get("v", "v52")
+        v_ = v_ if v_ in GEH_VAR_DIR else "v52"
         lg_ = str(request.args.get("lang") or "de")[:2]
-        st, a_, b_ = geh_platten_zip(v52_, lg_)
+        st, a_, b_ = geh_platten_zip(v_, lg_)
         if st == "zip":
             return Response(b_, mimetype="application/zip", headers={"Content-Disposition": f'attachment; filename="{a_}.zip"', "Cache-Control": "no-store"})
-        url = "/build/platten.zip?v=" + ("v52" if v52_ else "v51") + "&lang=" + lg_
+        url = "/build/platten.zip?v=" + v_ + "&lang=" + lg_
         if st == "wait":
             return Response(geh_dl_page(tr("The print files are being fetched from the internet (%d of %d). This page tries again by itself; you can also tap «Try again».") % (a_, b_), retry=url, refresh=15), 202, mimetype="text/html")
         return Response(geh_dl_page(tr("The print file is not on this MoveEye and could not be fetched from the internet (no connection?). Try again later, or load the complete kit package."), retry=url), 503, mimetype="text/html")
@@ -73607,9 +73617,9 @@ def geh_einzel_selftest():
     for t_ in GEH_BAU["teile"]:                   # every print part of the model knows how it lies on the plate
         if t_.get("datei") and t_["id"] in {e["id"] for e in BAU3D_MODELLE.get("teile", [])}:
             assert t_["id"] in D["lage"], ("print part without orientation", t_["id"])
-    for var in ("v52", "v51"):
+    for var in ("v52", "v51", "v53"):
         ps = D["platten"].get(var) or []
-        assert [p["datei"] for p in ps] == [f for f in GEH_BAU.get("druckdateien") or [] if f.startswith("v5-2/") == (var == "v52")], ("plates", var)
+        assert [p["datei"] for p in ps] == [f for f in GEH_BAU.get("druckdateien") or [] if (f.split("/")[0] + "/" if "/" in f else "") == GEH_VAR_DIR[var]], ("plates", var)
         for p in ps:
             for it in p["teile"]:
                 assert 0 <= it["x"] <= 256 and 0 <= it["y"] <= 256 and len(it["g"]) == 3, ("on the plate", var, it["o"])
@@ -73640,8 +73650,8 @@ def geh_einzel_selftest():
         assert st_ in ("wait", "offline"), st_
     if alt:                                               # a warning (like the build infos): the model changed after the data
         return "WARNING – gehaeuse.glb changed after werkzeuge/druck_lage.py – run it again (orientation on the plate)"
-    return "Build: single part view and print plates (%d parts with orientation, plates v5.2 %d / v5.1 %d)" % (
-        len(D["lage"]), len(D["platten"].get("v52") or []), len(D["platten"].get("v51") or []))
+    return "Build: single part view and print plates (%d parts with orientation, plates v5.2 %d / v5.1 %d / v5.3 %d)" % (
+        len(D["lage"]), len(D["platten"].get("v52") or []), len(D["platten"].get("v51") or []), len(D["platten"].get("v53") or []))
 
 
 SELFTEST_EXTRA.append(("Build: single part view, print plates (orientation from the 3MF, ZIP with short guide)", geh_einzel_selftest))

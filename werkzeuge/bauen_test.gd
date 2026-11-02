@@ -118,8 +118,30 @@ func _process(_dt: float) -> bool:
 	var n0: int = W.all_ids().size()
 	if n1 <= n0:
 		errs.append("Variante v5.2: nicht mehr Punkte (%d / %d)" % [n0, n1])
+	# real-gehaeuse-v53 (02.11.2026): v5.3 selectable, built on v5.2 (its parts replace lower part, lid, feet, camera cables)
+	W.control({"do": "variant", "group": "gehaeuse", "value": "v53"})
+	eq("v5.3 wählbar", W.v53, true)
+	eq("v5.3 baut auf v5.2", W.v52, true)
+	eq("v5.3: Unterteil v5.3", W._shown("tub53"), true)
+	eq("v5.3: Unterteil v5.2 aus", W._shown("tub52"), false)
+	eq("v5.3: Unterteil v5.1 aus", W._shown("tub"), false)
+	eq("v5.3: Deckel v5.3", W._shown("lid53"), true)
+	eq("v5.3: Deckel v5.1 aus", W._shown("lid"), false)
+	eq("v5.3: Akkuklappe", W._shown("hatch"), true)
+	eq("v5.3: Weitwinkel (v5.2) bleibt", W._shown("wide"), true)
+	eq("v5.3: Kopf v5.2 bleibt", W._shown("head52"), true)
+	var ids53: Array = W.all_ids()
+	if not ("d:26_Akkuklappe" in ids53) or ("d:01_Unterteil_v52" in ids53) or not ("e:insert" in ids53) or not ("e:sdext" in ids53):
+		errs.append("v5.3: Checkliste falsch (Akkuklappe / Einsätze fehlen oder Unterteil v5.2 noch drin)")
+	if str(W._schritt(2)[0]).find("Einsätze") < 0:
+		errs.append("v5.3: Schritt 2 ohne «Einsätze einschmelzen»: " + str(W._schritt(2)[0]))
+	if W.einzel.pfile("01_Unterteil_v53") != "v5-3/MoveEye_v5-3_01_Unterteil_v53.3mf" or W.einzel.pfile("03_Drehteller") != "v5-3/MoveEye_v5-3_03_Drehteller.3mf":
+		errs.append("v5.3: Druckdateien nicht aus v5-3/: " + W.einzel.pfile("03_Drehteller"))
 	W.control({"do": "variant", "group": "gehaeuse", "value": "v52"})
 	eq("v52 zeigt die Teile v5.2", W.v52, true)
+	eq("v52: nicht v5.3", W.v53, false)
+	eq("v52: Unterteil v5.2 wieder da", W._shown("tub52"), true)
+	eq("v52: keine Akkuklappe", W._shown("hatch"), false)
 	W.control({"do": "variant", "group": "akku", "value": "netz"})
 	if "e:ups" in W.all_ids() or not ("e:psu12" in W.all_ids()):
 		errs.append("ohne Akku: UPS HAT noch drin oder Netzteil fehlt")

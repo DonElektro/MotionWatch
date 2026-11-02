@@ -86,6 +86,13 @@
    "fr": "Mover",
    "it": "Mover",
    "rm": "Mover"
+  },
+  "v53": {
+   "de": "Variante v5.3 (Einsätze, Akkuklappe, Halter, Luftkanal)",
+   "en": "Variant v5.3 (inserts, battery hatch, holder, air duct)",
+   "fr": "Variante v5.3 (inserts, trappe batterie, support, conduit d'air)",
+   "it": "Variante v5.3 (inserti, sportello batteria, supporto, condotto d'aria)",
+   "rm": "Variante v5.3 (inserts, portina da l'accu, tegnider, canal d'aria)"
   }
  },
  "bom": [
@@ -1228,6 +1235,152 @@
    "preis": 15,
    "haendler": "pishop",
    "suche": "Raspberry Pi 27W USB-C Netzteil"
+  },
+  {
+   "id": "insert",
+   "gruppe": "v53",
+   "menge": "12× (Pack 50–100)",
+   "name": {
+    "de": "Gewindeeinsätze M3 × 5,7 aus Messing (Heat-Set), z. B. ruthex RX-M3x5.7 – 6 Deckel, 2 Zwischenboden, 4 Akkuklappe; Bohrung Ø 4,0 nach Herstellerangabe",
+    "en": "Threaded inserts M3 × 5.7, brass (heat-set), e.g. ruthex RX-M3x5.7 – 6 lid, 2 shelf, 4 battery hatch; hole Ø 4.0 as specified by the maker",
+    "fr": "Inserts filetés M3 × 5,7 en laiton (à chaud), p. ex. ruthex RX-M3x5.7 – 6 couvercle, 2 plancher, 4 trappe ; trou Ø 4,0 selon le fabricant",
+    "it": "Inserti filettati M3 × 5,7 in ottone (a caldo), p. es. ruthex RX-M3x5.7 – 6 coperchio, 2 ripiano, 4 sportello; foro Ø 4,0 secondo il produttore",
+    "rm": "Inserts da filet M3 × 5,7 da mesch (a chaud), p.ex. ruthex RX-M3x5.7 – 6 viertgel, 2 palantschieu, 4 portina; fora Ø 4,0 tenor il producent"
+   },
+   "nr": "ruthex RX-M3x5.7",
+   "preis": 15,
+   "haendler": "galaxus",
+   "suche": "ruthex Gewindeeinsatz M3",
+   "wenn": "v53",
+   "unklar": {
+    "de": "Preis geschätzt",
+    "en": "price estimated",
+    "fr": "prix estimé",
+    "it": "prezzo stimato",
+    "rm": "pretsch stimà"
+   }
+  },
+  {
+   "id": "tripodscrew",
+   "gruppe": "v53",
+   "menge": "1×",
+   "name": {
+    "de": "Rändelschraube 1/4\"-20 × 16 mm (Halter → Stativmutter)",
+    "en": "Knurled screw 1/4\"-20 × 16 mm (holder → tripod nut)",
+    "fr": "Vis moletée 1/4\"-20 × 16 mm (support → écrou de trépied)",
+    "it": "Vite zigrinata 1/4\"-20 × 16 mm (supporto → dado treppiede)",
+    "rm": "Scrauva cun chau rugà 1/4\"-20 × 16 mm (tegnider → mutter dal stativ)"
+   },
+   "nr": "1/4\"-20 × 16",
+   "preis": 4,
+   "haendler": "galaxus",
+   "suche": "Stativschraube 1/4 Zoll 16mm",
+   "wenn": "v53",
+   "unklar": {
+    "de": "Preis geschätzt",
+    "en": "price estimated",
+    "fr": "prix estimé",
+    "it": "prezzo stimato",
+    "rm": "pretsch stimà"
+   }
+  },
+  {
+   "id": "strap",
+   "gruppe": "v53",
+   "menge": "1×",
+   "optional": true,
+   "name": {
+    "de": "Spanngurt 25 mm, ca. 1,5 m (Baum; Klemmschloss)",
+    "en": "Lashing strap 25 mm, approx. 1.5 m (tree; cam buckle)",
+    "fr": "Sangle 25 mm, env. 1,5 m (arbre ; boucle à came)",
+    "it": "Cinghia 25 mm, circa 1,5 m (albero; fibbia)",
+    "rm": "Tschinta 25 mm, ca. 1,5 m (planta; fermaglia)"
+   },
+   "nr": "25 mm",
+   "preis": 8,
+   "haendler": "galaxus",
+   "suche": "Spanngurt 25mm Klemmschloss",
+   "wenn": "v53",
+   "unklar": {
+    "de": "Preis geschätzt",
+    "en": "price estimated",
+    "fr": "prix estimé",
+    "it": "prezzo stimato",
+    "rm": "pretsch stimà"
+   }
+  },
+  {
+   "id": "wallscrew",
+   "gruppe": "v53",
+   "menge": "4×",
+   "optional": true,
+   "name": {
+    "de": "Schrauben 4–5 mm mit Dübeln (Wand)",
+    "en": "Screws 4–5 mm with wall plugs (wall)",
+    "fr": "Vis 4–5 mm avec chevilles (mur)",
+    "it": "Viti 4–5 mm con tasselli (muro)",
+    "rm": "Scrauvs 4–5 mm cun tassels (paraid)"
+   },
+   "nr": "4–5 mm",
+   "preis": 3,
+   "haendler": "galaxus",
+   "suche": "Schrauben Dübel Set 5mm",
+   "wenn": "v53",
+   "unklar": {
+    "de": "Preis geschätzt",
+    "en": "price estimated",
+    "fr": "prix estimé",
+    "it": "prezzo stimato",
+    "rm": "pretsch stimà"
+   }
+  },
+  {
+   "id": "ties",
+   "gruppe": "v53",
+   "menge": "1 Pack",
+   "name": {
+    "de": "Kabelbinder 2,5–3,6 mm (Zugentlastung an Kabelkamin, GX16, Relais)",
+    "en": "Cable ties 2.5–3.6 mm (strain relief at chimney, GX16, relay)",
+    "fr": "Colliers 2,5–3,6 mm (serre-câbles cheminée, GX16, relais)",
+    "it": "Fascette 2,5–3,6 mm (fermacavi camino, GX16, relè)",
+    "rm": "Ligiaders da cabels 2,5–3,6 mm (distensiun chamin, GX16, relais)"
+   },
+   "nr": "≤ 3,6 mm",
+   "preis": 3,
+   "haendler": "galaxus",
+   "suche": "Kabelbinder 2.5mm",
+   "wenn": "v53",
+   "unklar": {
+    "de": "Preis geschätzt",
+    "en": "price estimated",
+    "fr": "prix estimé",
+    "it": "prezzo stimato",
+    "rm": "pretsch stimà"
+   }
+  },
+  {
+   "id": "ductfoam",
+   "gruppe": "v53",
+   "menge": "1×",
+   "name": {
+    "de": "Moosgummi-Streifen 3 × 10 mm, selbstklebend (Luftkanal auf dem Kühler, Pad unter dem Deckel)",
+    "en": "Foam rubber strip 3 × 10 mm, self-adhesive (air duct on the cooler, pad under the lid)",
+    "fr": "Bande de mousse 3 × 10 mm, adhésive (conduit sur le refroidisseur, pastille sous le couvercle)",
+    "it": "Striscia di gomma spugnosa 3 × 10 mm, adesiva (condotto sul dissipatore, pad sotto il coperchio)",
+    "rm": "Strivla da gomma spungiusa 3 × 10 mm, autoadesiva (canal sin il sfradentader, pad sut il viertgel)"
+   },
+   "nr": "3 × 10 mm",
+   "preis": 4,
+   "haendler": "galaxus",
+   "suche": "Moosgummi Streifen selbstklebend 10mm",
+   "wenn": "v53",
+   "unklar": {
+    "de": "Preis geschätzt",
+    "en": "price estimated",
+    "fr": "prix estimé",
+    "it": "prezzo stimato",
+    "rm": "pretsch stimà"
+   }
   }
  ],
  "teile": [
@@ -2080,6 +2233,177 @@
     "it": "Portafusibile 5 A (batteria B+) nella clip sul fondo",
     "rm": "Purtader da segirezza 5 A (accu B+) en la clip sin il fund"
    }
+  },
+  {
+   "id": "tub53",
+   "art": "v53",
+   "bom": "petg",
+   "schritt": 2,
+   "datei": "01_Unterteil_v53",
+   "ersetzt": "tub52",
+   "wenn": "v53",
+   "name": {
+    "de": "01 Unterteil v5.3 (Einsätze, Akkuklappe, Lufteinlass, Ösen)",
+    "en": "01 Lower part v5.3 (inserts, battery hatch, air inlet, tie mounts)",
+    "fr": "01 Partie inférieure v5.3 (inserts, trappe batterie, entrée d'air, œillets)",
+    "it": "01 Parte inferiore v5.3 (inserti, sportello batteria, presa d'aria, occhielli)",
+    "rm": "01 Part sut v5.3 (inserts, portina da l'accu, entrada d'aria, ögls)"
+   }
+  },
+  {
+   "id": "lid53",
+   "art": "v53",
+   "bom": "petg",
+   "schritt": 8,
+   "datei": "02_Deckel_v53",
+   "ersetzt": "lid",
+   "wenn": "v53",
+   "name": {
+    "de": "02 Deckel v5.3 (Öse im Kabelkamin)",
+    "en": "02 Lid v5.3 (tie mount in the cable chimney)",
+    "fr": "02 Couvercle v5.3 (œillet dans la cheminée de câbles)",
+    "it": "02 Coperchio v5.3 (occhiello nel camino cavi)",
+    "rm": "02 Viertgel v5.3 (ögl en il chamin da cabels)"
+   }
+  },
+  {
+   "id": "hatch",
+   "art": "v53",
+   "bom": "petg",
+   "schritt": 4,
+   "datei": "26_Akkuklappe",
+   "wenn": "v53",
+   "name": {
+    "de": "26 Akkuklappe (Boden, 4 × M3 × 8 in Einsätzen)",
+    "en": "26 Battery hatch (bottom, 4 × M3 × 8 in inserts)",
+    "fr": "26 Trappe batterie (fond, 4 × M3 × 8 dans des inserts)",
+    "it": "26 Sportello batteria (fondo, 4 × M3 × 8 negli inserti)",
+    "rm": "26 Portina da l'accu (fund, 4 × M3 × 8 en inserts)"
+   }
+  },
+  {
+   "id": "duct",
+   "art": "v53",
+   "bom": "petg",
+   "schritt": 13,
+   "datei": "27_Luftkanal",
+   "wenn": "v53",
+   "name": {
+    "de": "27 Luftkanal (Haube auf dem Active Cooler)",
+    "en": "27 Air duct (hood on the Active Cooler)",
+    "fr": "27 Conduit d'air (capot sur l'Active Cooler)",
+    "it": "27 Condotto d'aria (cappa sull'Active Cooler)",
+    "rm": "27 Canal d'aria (chapitsch sin l'Active Cooler)"
+   }
+  },
+  {
+   "id": "holder",
+   "art": "v53",
+   "bom": "petg",
+   "schritt": 14,
+   "datei": "25_Halter_Wand_Baum",
+   "wenn": "v53",
+   "name": {
+    "de": "25 Halter Wand / Baum (Gurt 25 mm, Schraube 1/4\")",
+    "en": "25 Wall / tree holder (strap 25 mm, screw 1/4\")",
+    "fr": "25 Support mur / arbre (sangle 25 mm, vis 1/4\")",
+    "it": "25 Supporto muro / albero (cinghia 25 mm, vite 1/4\")",
+    "rm": "25 Tegnider paraid / planta (tschinta 25 mm, scrauva 1/4\")"
+   }
+  },
+  {
+   "id": "feet53",
+   "art": "v53",
+   "bom": "petg",
+   "schritt": 2,
+   "datei": "11_Fuss_4x",
+   "ersetzt": "feet",
+   "wenn": "v53",
+   "name": {
+    "de": "11 Fuss 1 von 4 (v5.3: in den Ecken)",
+    "en": "11 Foot 1 of 4 (v5.3: in the corners)",
+    "fr": "11 Pied 1 sur 4 (v5.3 : dans les coins)",
+    "it": "11 Piedino 1 di 4 (v5.3: negli angoli)",
+    "rm": "11 Pe 1 da 4 (v5.3: en ils chantuns)"
+   }
+  },
+  {
+   "id": "feet53_2",
+   "art": "v53",
+   "bom": "petg",
+   "schritt": 2,
+   "datei": "11_Fuss_4x",
+   "ersetzt": "feet2",
+   "wenn": "v53",
+   "name": {
+    "de": "11 Fuss 2 von 4 (v5.3: in den Ecken)",
+    "en": "11 Foot 2 of 4 (v5.3: in the corners)",
+    "fr": "11 Pied 2 sur 4 (v5.3 : dans les coins)",
+    "it": "11 Piedino 2 di 4 (v5.3: negli angoli)",
+    "rm": "11 Pe 2 da 4 (v5.3: en ils chantuns)"
+   }
+  },
+  {
+   "id": "feet53_3",
+   "art": "v53",
+   "bom": "petg",
+   "schritt": 2,
+   "datei": "11_Fuss_4x",
+   "ersetzt": "feet3",
+   "wenn": "v53",
+   "name": {
+    "de": "11 Fuss 3 von 4 (v5.3: in den Ecken)",
+    "en": "11 Foot 3 of 4 (v5.3: in the corners)",
+    "fr": "11 Pied 3 sur 4 (v5.3 : dans les coins)",
+    "it": "11 Piedino 3 di 4 (v5.3: negli angoli)",
+    "rm": "11 Pe 3 da 4 (v5.3: en ils chantuns)"
+   }
+  },
+  {
+   "id": "feet53_4",
+   "art": "v53",
+   "bom": "petg",
+   "schritt": 2,
+   "datei": "11_Fuss_4x",
+   "ersetzt": "feet4",
+   "wenn": "v53",
+   "name": {
+    "de": "11 Fuss 4 von 4 (v5.3: in den Ecken)",
+    "en": "11 Foot 4 of 4 (v5.3: in the corners)",
+    "fr": "11 Pied 4 sur 4 (v5.3 : dans les coins)",
+    "it": "11 Piedino 4 di 4 (v5.3: negli angoli)",
+    "rm": "11 Pe 4 da 4 (v5.3: en ils chantuns)"
+   }
+  },
+  {
+   "id": "cable_cam1_53",
+   "art": "v53",
+   "bom": "camcable2",
+   "schritt": 13,
+   "ersetzt": "cable_cam1",
+   "wenn": "v53",
+   "name": {
+    "de": "Kamerakabel CAM1 (v5.3: über den Luftkanal)",
+    "en": "Camera cable CAM1 (v5.3: over the air duct)",
+    "fr": "Câble caméra CAM1 (v5.3 : par-dessus le conduit d'air)",
+    "it": "Cavo fotocamera CAM1 (v5.3: sopra il condotto d'aria)",
+    "rm": "Cabel da camera CAM1 (v5.3: sur il canal d'aria)"
+   }
+  },
+  {
+   "id": "cable_cam0_53",
+   "art": "v53",
+   "bom": "camcable",
+   "schritt": 13,
+   "ersetzt": "cable_cam0_52",
+   "wenn": "v53",
+   "name": {
+    "de": "Kamerakabel CAM0 (v5.3: Kamin → über den Luftkanal → Kabelkamm)",
+    "en": "Camera cable CAM0 (v5.3: chimney → over the air duct → cable comb)",
+    "fr": "Câble caméra CAM0 (v5.3 : cheminée → par-dessus le conduit → peigne)",
+    "it": "Cavo fotocamera CAM0 (v5.3: camino → sopra il condotto → pettine)",
+    "rm": "Cabel da camera CAM0 (v5.3: chamin → sur il canal → pettan)"
+   }
   }
  ],
  "schritte": [
@@ -2114,6 +2438,22 @@
      "it": "Stampare tutti gli 11 pezzi in PETG senza supporti: piatto A (parte inferiore, ripiano, tappo, piedini) e piatto B (coperchio e tutto per la testa). Testa, forcella e coperchio laterale con brim di 5 mm.",
      "rm": "Stampar tut las 11 parts en PETG senza sustegns: platta A (part sut, palantschieu, zaffer, peis) e platta B (viertgel e tut per il chau). Chau, furtga e viertgel lateral cun in ur da 5 mm."
     }
+   },
+   "v53": {
+    "titel": {
+     "de": "Teile drucken",
+     "en": "Print the parts",
+     "fr": "Imprimer les pièces",
+     "it": "Stampare i pezzi",
+     "rm": "Stampar las parts"
+    },
+    "text": {
+     "de": "Die Druckteile v5.3 in PETG ohne Stützen drucken: Platte A (Unterteil v5.3, Zwischenboden, Stopfen, Füsse, Luftkanal 27), Platte B (Deckel v5.3, Drehteller, Gabel, Arm 2, Kopf 06 v5.2, Seitendeckel, Lampenhalter, Diffusor 14, Pupillenring 15) und Platte C (Halter 25, Akkuklappe 26). Kopf, Gabel und Seitendeckel mit 5 mm Brim. Stopfen 10, 16 und 17 braucht jedes Gerät; 12 und 18–24 nur für Teile, die dein Paket nicht hat.",
+     "en": "Print the v5.3 parts in PETG without supports: plate A (lower part v5.3, shelf, plugs, feet, air duct 27), plate B (lid v5.3, turntable, yoke, arm 2, head 06 v5.2, side cover, lamp holders, diffuser 14, pupil ring 15) and plate C (holder 25, battery hatch 26). Head, yoke and side cover with a 5 mm brim. Every device needs plugs 10, 16 and 17; 12 and 18–24 only for parts your package does not have.",
+     "fr": "Imprimer les pièces v5.3 en PETG sans supports : plateau A (partie inférieure v5.3, plancher, bouchons, pieds, conduit d'air 27), plateau B (couvercle v5.3, plateau tournant, fourche, bras 2, tête 06 v5.2, couvercle latéral, supports de lampe, diffuseur 14, anneau 15) et plateau C (support 25, trappe 26). Tête, fourche et couvercle latéral avec une bordure de 5 mm. Chaque appareil a besoin des bouchons 10, 16 et 17 ; 12 et 18–24 seulement pour les pièces absentes de ton kit.",
+     "it": "Stampare i pezzi v5.3 in PETG senza supporti: piatto A (parte inferiore v5.3, ripiano, tappi, piedini, condotto d'aria 27), piatto B (coperchio v5.3, piatto girevole, forcella, braccio 2, testa 06 v5.2, coperchio laterale, portalampade, diffusore 14, anello 15) e piatto C (supporto 25, sportello 26). Testa, forcella e coperchio laterale con brim di 5 mm. Ogni apparecchio ha bisogno dei tappi 10, 16 e 17; 12 e 18–24 solo per i pezzi che il tuo pacchetto non ha.",
+     "rm": "Stampar las parts v5.3 en PETG senza sustegns: platta A (part sut v5.3, palantschieu, zaffers, peis, canal d'aria 27), platta B (viertgel v5.3, platta rotanta, furtga, bratsch 2, chau 06 v5.2, viertgel lateral, tegnalampas, diffusur 14, anel 15) e platta C (tegnider 25, portina 26). Chau, furtga e viertgel lateral cun in ur da 5 mm. Mintga apparat dovra ils zaffers 10, 16 e 17; 12 e 18–24 mo per parts che tes pachet n'ha betg."
+    }
    }
   },
   {
@@ -2146,6 +2486,22 @@
      "fr": "Coller les pieds et enfoncer l'écrou de trépied 1/4\" dans la poche hexagonale depuis l'intérieur. Coller le haut-parleur dans l'anneau au-dessus de la grille avec 3–4 points de colle chaude.",
      "it": "Incollare i piedini e premere il dado per treppiede 1/4\" nella sede esagonale dall'interno. Incollare l'altoparlante nell'anello sopra la griglia con 3–4 punti di colla a caldo.",
      "rm": "Tatgar ils peis e smatgar la mutra da stativ 1/4\" da l'intern en la tastga sisagulara. Tatgar l'autpledader en l'anè sur la grilla dal fund cun 3–4 puncts cola chauda."
+    }
+   },
+   "v53": {
+    "titel": {
+     "de": "Einsätze einschmelzen, Unterteil vorbereiten",
+     "en": "Melt in the inserts, prepare the lower part",
+     "fr": "Insérer les inserts à chaud, préparer la partie inférieure",
+     "it": "Inserire gli inserti a caldo, preparare la parte inferiore",
+     "rm": "Fonder en ils inserts, preparar la part sut"
+    },
+    "text": {
+     "de": "Zuerst die 12 Gewindeeinsätze M3 × 5,7 einschmelzen (Lötkolben mit Einschmelzspitze, 220–230 °C): 6 von oben in die Deckel-Dome, 2 von oben in die Klötze des Zwischenbodens, 4 von unten in die Dome der Akkuklappe (Unterteil auf den Kopf legen). Den Einsatz senkrecht ansetzen, ohne Druck einsinken lassen, bis er 0,2 mm unter der Fläche steht, sofort mit einer flachen kalten Fläche bündig drücken. Dann die Füsse in die vier Ecken kleben (v5.3: weiter aussen, die Akkuklappe liegt dazwischen), die Stativmutter 1/4\" von innen in die Sechskanttasche drücken und den Lautsprecher mit 3–4 Tupfen Heisskleber in den Ring über dem Bodengitter kleben.",
+     "en": "First melt in the 12 threaded inserts M3 × 5.7 (soldering iron with heat-set tip, 220–230 °C): 6 from above into the lid bosses, 2 from above into the shelf blocks, 4 from below into the bosses of the battery hatch (turn the lower part upside down). Put the insert on straight, let it sink without pressure until it is 0.2 mm below the surface, press it flush at once with a flat cold surface. Then glue the feet into the four corners (v5.3: further out, the battery hatch lies between them), press the tripod nut 1/4\" into the hex pocket from inside and glue the speaker into the ring above the floor grille with 3–4 dots of hot glue.",
+     "fr": "D'abord insérer à chaud les 12 inserts M3 × 5,7 (fer avec panne d'insertion, 220–230 °C) : 6 par le haut dans les dômes du couvercle, 2 par le haut dans les blocs du plancher, 4 par-dessous dans les dômes de la trappe (partie inférieure à l'envers). Poser l'insert droit, le laisser descendre sans forcer jusqu'à 0,2 mm sous la surface, l'affleurer aussitôt avec une surface plate et froide. Ensuite coller les pieds dans les quatre coins (v5.3 : plus à l'extérieur, la trappe est entre eux), enfoncer l'écrou de trépied 1/4\" par l'intérieur et coller le haut-parleur dans l'anneau avec 3–4 points de colle chaude.",
+     "it": "Prima inserire a caldo i 12 inserti M3 × 5,7 (saldatore con punta per inserti, 220–230 °C): 6 dall'alto nelle torrette del coperchio, 2 dall'alto nei blocchi del ripiano, 4 da sotto nelle torrette dello sportello (parte inferiore capovolta). Appoggiare l'inserto dritto, lasciarlo affondare senza forzare fino a 0,2 mm sotto la superficie, poi premerlo subito a filo con una superficie piana fredda. Poi incollare i piedini nei quattro angoli (v5.3: più all'esterno, lo sportello sta in mezzo), premere il dado treppiede 1/4\" dall'interno e incollare l'altoparlante nell'anello con 3–4 punti di colla a caldo.",
+     "rm": "L'emprim fonder en ils 12 inserts M3 × 5,7 (fier da lotar cun piz per inserts, 220–230 °C): 6 da sura en ils cupels dal viertgel, 2 da sura en ils blocs dal palantschieu, 4 da sut en ils cupels da la portina (part sut cun il chau engiu). Metter l'insert dretg, al laschar sfundrar senza smatgar fin 0,2 mm sut la surfatscha, lura smatgar plaun cun ina surfatscha platta e fraida. Lura tachar ils peis en ils quatter chantuns (v5.3: pli en dadora, la portina è tranteren), smatgar la mutter dal stativ 1/4\" da l'intern e tachar il autpledader en l'anel cun 3–4 puncts da cola chauda."
     }
    }
   },
@@ -2213,6 +2569,22 @@
      "it": "Mettere l'UPS HAT (E) con le 4 batterie e il Pi 5 sopra nel recinto e fissarlo con velcro. L'HDMI guarda verso la finestra, la ventola è sul Pi.",
      "rm": "Metter l'UPS HAT (E) cun ils 4 accus ed il Pi 5 survart en la saiv e fixar cun bindel velcro. HDMI mussa vers la fanestra, il ventilatur è sin il Pi."
     }
+   },
+   "v53": {
+    "titel": {
+     "de": "Akku, Pi, SD-Verlängerung, Akkuklappe",
+     "en": "Battery, Pi, SD extension, battery hatch",
+     "fr": "Batterie, Pi, rallonge SD, trappe batterie",
+     "it": "Batteria, Pi, prolunga SD, sportello batteria",
+     "rm": "Accu, Pi, prolungaziun SD, portina da l'accu"
+    },
+    "text": {
+     "de": "Das UPS HAT (E) mit dem Pi 5 darauf in den Zaun stellen (Klettband), die 4 Zellen 21700 hängen unter der Platine über der Öffnung im Boden. Die Akkuklappe 26 von unten aufsetzen (Rand in die Öffnung, Kerbe zur Lüftungswand) und mit 4 × M3 × 8 in die Einsätze schrauben. Zum Akkutausch später nur die Klappe öffnen: Deckel und Pi bleiben drin. Die microSD-Verlängerung in den Kartenschlitz des Pi stecken und den Einbau-Kartenhalter mit 2 × M2,5 × 6 an die zwei Dome über dem PCA9685 schrauben – die Karte wechselst du von aussen (Stopfen 16).",
+     "en": "Put the UPS HAT (E) with the Pi 5 on top into the fence (hook-and-loop tape); the 4 cells 21700 hang under the board above the opening in the bottom. Fit the battery hatch 26 from below (rim into the opening, notch towards the vent wall) and screw it into the inserts with 4 × M3 × 8. To swap the cells later, open only the hatch: lid and Pi stay inside. Plug the microSD extension into the card slot of the Pi and screw the panel card holder to the two bosses above the PCA9685 with 2 × M2.5 × 6 – you change the card from outside (plug 16).",
+     "fr": "Poser l'UPS HAT (E) avec le Pi 5 dessus dans la clôture (velcro) ; les 4 accus 21700 pendent sous la platine au-dessus de l'ouverture du fond. Poser la trappe 26 par-dessous (rebord dans l'ouverture, encoche côté paroi d'aération) et la visser dans les inserts avec 4 × M3 × 8. Pour changer les accus, ouvrir seulement la trappe : couvercle et Pi restent dedans. Brancher la rallonge microSD dans le Pi et visser le support encastrable avec 2 × M2,5 × 6 sur les deux dômes au-dessus du PCA9685 – la carte se change de l'extérieur (bouchon 16).",
+     "it": "Mettere l'UPS HAT (E) con il Pi 5 sopra nel recinto (velcro); le 4 batterie 21700 pendono sotto la scheda sopra l'apertura nel fondo. Applicare lo sportello 26 da sotto (bordo nell'apertura, tacca verso la parete di aerazione) e avvitarlo negli inserti con 4 × M3 × 8. Per cambiare le batterie si apre solo lo sportello: coperchio e Pi restano dentro. Inserire la prolunga microSD nel Pi e avvitare il portaschede da incasso con 2 × M2,5 × 6 alle due torrette sopra il PCA9685 – la scheda si cambia da fuori (tappo 16).",
+     "rm": "Metter l'UPS HAT (E) cun il Pi 5 sisura en la saiv (velcro); ils 4 accus 21700 pendan sut la platina sur l'avertura en il fund. Metter si la portina 26 da sut (ur en l'avertura, entaglia vers la paraid da ventilaziun) e la scrauvar en ils inserts cun 4 × M3 × 8. Per midar ils accus pli tard mo avrir la portina: viertgel e Pi restan en. Fitgar la prolungaziun microSD en il Pi e scrauvar il purtader integrà cun 2 × M2,5 × 6 vi dals dus cupels sur il PCA9685 – la carta midas ti da dadora (zaffer 16)."
+    }
    }
   },
   {
@@ -2245,6 +2617,22 @@
      "fr": "Visser le plancher avec 2 × M3. Dessus, avec du ruban mousse : D36V50F5 (charge), PAM8403 et en option l'INA219.",
      "it": "Avvitare il ripiano con 2 × M3. Sopra, con nastro biadesivo in schiuma: D36V50F5 (ricarica), PAM8403 e opzionale INA219.",
      "rm": "Fixar il palantschieu cun 2 × M3. Survart cun bindel adesiv da spima: D36V50F5 (chargiar), PAM8403 ed opziunal INA219."
+    }
+   },
+   "v53": {
+    "titel": {
+     "de": "Zwischenboden",
+     "en": "Shelf",
+     "fr": "Plancher intermédiaire",
+     "it": "Ripiano intermedio",
+     "rm": "Palantschieu"
+    },
+    "text": {
+     "de": "Den Zwischenboden mit 2 × M3 × 8 in die Einsätze schrauben. Darauf mit Schaumklebeband: D36V50F5 (Laden), PAM8403 und optional INA219 (Solar, I2C 0x44, Shunt 0,01 Ω).",
+     "en": "Screw the shelf into the inserts with 2 × M3 × 8. On it with foam tape: D36V50F5 (charging), PAM8403 and optionally INA219 (solar, I2C 0x44, shunt 0.01 Ω).",
+     "fr": "Visser le plancher dans les inserts avec 2 × M3 × 8. Dessus avec du ruban mousse : D36V50F5 (charge), PAM8403 et en option INA219 (solaire, I2C 0x44, shunt 0,01 Ω).",
+     "it": "Avvitare il ripiano negli inserti con 2 × M3 × 8. Sopra con nastro biadesivo: D36V50F5 (carica), PAM8403 e opzionale INA219 (solare, I2C 0x44, shunt 0,01 Ω).",
+     "rm": "Scrauvar il palantschieu en ils inserts cun 2 × M3 × 8. Sisura cun bindel da spuma: D36V50F5 (chargiar), PAM8403 ed opziunal INA219 (solar, I2C 0x44, shunt 0,01 Ω)."
     }
    }
   },
@@ -2312,6 +2700,22 @@
      "it": "Avvitare la presa di ricarica GX16-4P (fusibile 5 A dietro) e il pressacavo M12 del relè, inserire la guida luce del LED di ricarica. Far passare il DS18B20 dal foro del fondo da sotto e sigillare.",
      "rm": "Fixar la bischla da chargiar GX16-4P (segirezza 5 A davos) ed il passacabel M12 dal relais, metter la guida da glisch da la LED da chargiar. Manar il DS18B20 da sut tras la foura dal fund e stagnar."
     }
+   },
+   "v53": {
+    "titel": {
+     "de": "Hinten und unten: Buchsen, Tasten, Zugentlastung",
+     "en": "Rear and bottom: jacks, buttons, strain relief",
+     "fr": "Arrière et dessous : prises, boutons, serre-câbles",
+     "it": "Dietro e sotto: prese, pulsanti, fermacavi",
+     "rm": "Davos e sut: bustgas, buttuns, distensiun"
+    },
+    "text": {
+     "de": "GX16-4P-Ladebuchse (Sicherung 5 A dahinter) und die Kabelverschraubung M12 für das Relais einschrauben, Lichtleiter der Lade-LED einsetzen. Zugentlastung: das Kabel der GX16 mit einem Kabelbinder an die Öse über der Buchse binden, das Relais-Kabel an die Öse neben der Relais-Buchse und an die Öse neben dem Relais-Modul (+y-Wand). Die 2 Tasten (12 mm, IP67) in die Rückwand, Mutter innen. Die Reserve-Öffnung mit dem Blindstopfen 17 schliessen. Den Sicherungshalter 5 A (Akku B+) in die Klammer am Boden drücken. Den DS18B20 von unten durch das Bodenloch führen und abdichten.",
+     "en": "Screw in the GX16-4P charging jack (5 A fuse behind it) and the M12 cable gland for the relay, insert the light pipe of the charging LED. Strain relief: tie the GX16 cable with a cable tie to the mount above the jack, the relay cable to the mount beside the relay jack and to the mount beside the relay module (+y wall). Put the 2 buttons (12 mm, IP67) into the rear wall, nut inside. Close the reserve opening with blind plug 17. Press the 5 A fuse holder (battery B+) into the clip on the bottom. Lead the DS18B20 through the hole in the bottom from below and seal it.",
+     "fr": "Visser la prise de charge GX16-4P (fusible 5 A derrière) et le presse-étoupe M12 du relais, poser le guide de lumière de la LED de charge. Serre-câbles : attacher le câble de la GX16 à l'œillet au-dessus de la prise, le câble du relais à l'œillet à côté de la prise relais et à l'œillet à côté du module relais (paroi +y). Les 2 boutons (12 mm, IP67) dans la paroi arrière, écrou à l'intérieur. Fermer l'ouverture de réserve avec le bouchon 17. Presser le porte-fusible 5 A (accu B+) dans la pince du fond. Passer le DS18B20 par le trou du fond et étancher.",
+     "it": "Avvitare la presa di carica GX16-4P (fusibile 5 A dietro) e il pressacavo M12 del relè, inserire la guida di luce del LED di carica. Fermacavi: legare il cavo della GX16 con una fascetta all'occhiello sopra la presa, il cavo del relè all'occhiello accanto alla presa del relè e all'occhiello accanto al modulo relè (parete +y). I 2 pulsanti (12 mm, IP67) nella parete posteriore, dado dentro. Chiudere l'apertura di riserva con il tappo 17. Premere il portafusibile 5 A (batteria B+) nella clip sul fondo. Far passare il DS18B20 dal foro nel fondo e sigillare.",
+     "rm": "Scrauvar la bustga da chargiar GX16-4P (segirezza 5 A davos) e la passada M12 dal relais, metter il manader da glisch da la LED. Distensiun: liar il cabel da la GX16 cun in ligiader a l'ögl sur la bustga, il cabel dal relais a l'ögl sper la bustga dal relais ed a l'ögl sper il modul dal relais (paraid +y). Ils 2 buttuns (12 mm, IP67) en la paraid davos, mutter en l'intern. Serrar l'avertura da reserva cun il zaffer 17. Smatgar il tegnider da la segirezza 5 A (accu B+) en la clip dal fund. Manar il DS18B20 da sut tras la fora dal fund e stagnar."
+    }
    }
   },
   {
@@ -2344,6 +2748,22 @@
      "fr": "Servo pan dans le couvercle par le dessous (2 × M2 × 8). Mettre les billes dans la rainure, servo au centre (1500 µs) et emboîter le plateau avec le palonnier pour que la tête regarde ensuite le côté PIR.",
      "it": "Servo pan nel coperchio da sotto (2 × M2 × 8). Mettere i pallini nella scanalatura, servo al centro (1500 µs) e inserire il piatto con la squadretta in modo che la testa guardi poi verso il lato PIR.",
      "rm": "Servo pan da sut en il viertgel (2 × M2 × 8). Metter las ballinas en la foppa, servo en il center (1500 µs) e metter si la platta rotanta cun il corn uschia ch'il chau guarda pli tard vers la vart dal PIR."
+    }
+   },
+   "v53": {
+    "titel": {
+     "de": "Deckel und Drehlager",
+     "en": "Lid and turntable bearing",
+     "fr": "Couvercle et roulement",
+     "it": "Coperchio e cuscinetto",
+     "rm": "Viertgel e cuschinet"
+    },
+    "text": {
+     "de": "Pan-Servo von unten in den Deckel v5.3 (2 × M2 × 8). Kugeln in die Rille legen, Servo auf Mitte (1500 µs) und den Drehteller mit Horn so aufstecken, dass der Kopf später zur PIR-Seite schaut. Die Öse im Kabelkamin nimmt in Schritt 13 die Kabel vom Drehteller auf.",
+     "en": "Pan servo from below into lid v5.3 (2 × M2 × 8). Put the BBs into the groove, servo to centre (1500 µs) and fit the turntable with the horn so that the head later looks towards the PIR side. The tie mount in the cable chimney takes the cables from the turntable in step 13.",
+     "fr": "Servo pan par-dessous dans le couvercle v5.3 (2 × M2 × 8). Mettre les billes dans la rainure, servo au centre (1500 µs) et poser le plateau avec le palonnier de sorte que la tête regarde ensuite côté PIR. L'œillet de la cheminée reçoit à l'étape 13 les câbles du plateau.",
+     "it": "Servo pan da sotto nel coperchio v5.3 (2 × M2 × 8). Mettere i pallini nella scanalatura, servo al centro (1500 µs) e montare il piatto con la squadretta in modo che la testa guardi poi verso il PIR. L'occhiello nel camino prende al passo 13 i cavi dal piatto.",
+     "rm": "Servo pan da sut en il viertgel v5.3 (2 × M2 × 8). Metter las ballinas en la foppa, servo al center (1500 µs) e metter si la platta cun il corn uschia ch'il chau guarda pli tard vers il PIR. L'ögl en il chamin prenda al pass 13 ils cabels da la platta."
     }
    }
   },
@@ -2510,6 +2930,22 @@
      "it": "Far passare i cavi della testa e delle lampade in un'ansa dietro la testa attraverso il camino dei cavi. Avvitare il coperchio con 6 × M3 × 10 (guarnizione in gomma), inserire il tappo HDMI.",
      "rm": "Manar ils cabels dal chau e da las lampas en ina stgaglia davos il chau tras il chamin da cabels. Serrar il viertgel cun 6 × M3 × 10 (bindel da stagnar), metter il zaffer HDMI."
     }
+   },
+   "v53": {
+    "titel": {
+     "de": "Luftkanal, Kabel, Deckel zu",
+     "en": "Air duct, cables, close the lid",
+     "fr": "Conduit d'air, câbles, fermer le couvercle",
+     "it": "Condotto d'aria, cavi, chiudere il coperchio",
+     "rm": "Canal d'aria, cabels, serrar il viertgel"
+    },
+    "text": {
+     "de": "Den Luftkanal 27 auf den Active Cooler setzen (Moosgummi-Streifen unter dem Rand, die Finger greifen seitlich an den Kühler, der Kanal endet an den 3 Einlass-Schlitzen der Lüftungswand) und ein Moosgummi-Pad oben aufkleben (der Deckel hält ihn). Kabel von Kopf, Status-LED und Lampen in einer Schlaufe hinter dem Kopf durch den Kabelkamin führen und mit einem Kabelbinder an der Öse im Kamin sichern (Schlaufe lassen, damit der Kopf drehen kann). Die Kamerakabel flach über das Dach des Luftkanals in den Kabelkamm legen: Schlitz 1 = CAM1 (Weitwinkel), Schlitz 2 = CAM0 (Kopfkamera). Deckel mit 6 × M3 × 10 in die Einsätze schrauben (Moosgummi-Dichtband), Stopfen 10 ins Service-Fenster und Stopfen 16 in den SD-Schlitz drücken.",
+     "en": "Put the air duct 27 onto the Active Cooler (foam strip under the rim, the fingers grip the cooler at the sides, the duct ends at the 3 inlet slots of the vent wall) and stick a foam pad on top (the lid holds it). Lead the cables of head, status LED and lamps in a loop behind the head through the cable chimney and secure them with a cable tie to the mount in the chimney (leave the loop so the head can turn). Lay the camera cables flat over the roof of the air duct into the cable comb: slot 1 = CAM1 (wide), slot 2 = CAM0 (head camera). Screw the lid into the inserts with 6 × M3 × 10 (foam sealing tape), press plug 10 into the service window and plug 16 into the SD slot.",
+     "fr": "Poser le conduit d'air 27 sur l'Active Cooler (bande de mousse sous le bord, les doigts saisissent le refroidisseur sur les côtés, le conduit finit aux 3 fentes d'entrée de la paroi d'aération) et coller une pastille de mousse dessus (le couvercle le tient). Passer les câbles de la tête, de la LED d'état et des lampes en boucle derrière la tête par la cheminée et les fixer avec un collier à l'œillet de la cheminée (laisser la boucle pour que la tête puisse tourner). Poser les câbles caméra à plat sur le toit du conduit dans le peigne : fente 1 = CAM1 (grand-angle), fente 2 = CAM0 (caméra de tête). Visser le couvercle dans les inserts avec 6 × M3 × 10 (joint mousse), presser le bouchon 10 dans la fenêtre de service et le bouchon 16 dans la fente SD.",
+     "it": "Mettere il condotto d'aria 27 sull'Active Cooler (striscia di gomma spugnosa sotto il bordo, le dita afferrano il dissipatore ai lati, il condotto termina alle 3 fessure d'ingresso della parete di aerazione) e incollare sopra un pad di gomma (il coperchio lo tiene). Far passare i cavi di testa, LED di stato e lampade in un'ansa dietro la testa attraverso il camino e fissarli con una fascetta all'occhiello del camino (lasciare l'ansa perché la testa possa girare). Posare i cavi delle fotocamere piatti sul tetto del condotto nel pettine: fessura 1 = CAM1 (grandangolo), fessura 2 = CAM0 (fotocamera della testa). Avvitare il coperchio negli inserti con 6 × M3 × 10 (guarnizione in gomma), premere il tappo 10 nella finestra di servizio e il tappo 16 nella fessura SD.",
+     "rm": "Metter il canal d'aria 27 sin l'Active Cooler (strivla da gomma sut l'ur, ils dets tegnan il sfradentader da la vart, il canal finescha a las 3 fessas d'entrada da la paraid da ventilaziun) e tachar in pad da gomma sisura (il viertgel al tegna). Manar ils cabels dal chau, da la LED da status e da las lampas en ina bucla davos il chau tras il chamin e als fixar cun in ligiader a l'ögl en il chamin (laschar la bucla per ch'il chau possia sa volver). Metter ils cabels da las cameras plat sur il tetg dal canal en il pettan: fessa 1 = CAM1 (grondangul), fessa 2 = CAM0 (camera dal chau). Scrauvar il viertgel en ils inserts cun 6 × M3 × 10 (bindel da gomma), smatgar il zaffer 10 en la fanestra da servetsch ed il zaffer 16 en la fessa SD."
+    }
    }
   },
   {
@@ -2542,6 +2978,22 @@
      "fr": "Dans MoveEye, limiter le tilt à ±60° et le pan à ±90°. Avant d'imprimer la partie inférieure, mesurer l'UPS HAT (E) avec ses accus (voir la notice).",
      "it": "In MoveEye limitare il tilt a ±60° e il pan a ±90°. Prima di stampare la parte inferiore misurare l'UPS HAT (E) con le batterie (vedi istruzioni).",
      "rm": "En MoveEye limitar il tilt sin ±60° ed il pan sin ±90°. Avant che stampar la part sut, mesirar l'UPS HAT (E) cun ils accus (vesair l'instrucziun)."
+    }
+   },
+   "v53": {
+    "titel": {
+     "de": "Fertig, Halter montieren",
+     "en": "Done, mount the holder",
+     "fr": "Terminé, monter le support",
+     "it": "Fatto, montare il supporto",
+     "rm": "Finì, montar il tegnider"
+    },
+    "text": {
+     "de": "In MoveEye Tilt auf ±60° und Pan auf ±90° begrenzen. Weitwinkel-Kamera, Tasten und Status-LED im Selbsttest prüfen. Halter 25: an der Wand mit 4 Schrauben 4–5 mm, am Baum mit einem Spanngurt 25 mm durch die zwei Schlitzpaare (Rippen am Stamm). Das Gerät mit den vorderen Füssen in die Mulden drücken (rastet ein) und von unten mit der Rändelschraube 1/4\"-20 × 16 mm in die Stativmutter sichern. Die Akkuklappe bleibt auch am Halter erreichbar. Vor dem Druck die Masse «Nachmessen» prüfen.",
+     "en": "Limit tilt to ±60° and pan to ±90° in MoveEye. Check wide camera, buttons and status LED in the self-test. Holder 25: on the wall with 4 screws 4–5 mm, on a tree with a 25 mm lashing strap through the two pairs of slots (ribs against the trunk). Press the device with its front feet into the recesses (it clicks in) and secure it from below with the knurled screw 1/4\"-20 × 16 mm into the tripod nut. The battery hatch stays reachable on the holder. Check the «measure first» dimensions before printing.",
+     "fr": "Dans MoveEye, limiter le tilt à ±60° et le pan à ±90°. Contrôler caméra grand-angle, boutons et LED d'état dans l'autotest. Support 25 : au mur avec 4 vis 4–5 mm, à un arbre avec une sangle 25 mm passée dans les deux paires de fentes (nervures contre le tronc). Enfoncer l'appareil avec les pieds avant dans les creux (il s'enclenche) et le fixer par-dessous avec la vis moletée 1/4\"-20 × 16 mm dans l'écrou de trépied. La trappe reste accessible sur le support. Vérifier les cotes «à mesurer» avant l'impression.",
+     "it": "In MoveEye limitare il tilt a ±60° e il pan a ±90°. Controllare fotocamera grandangolare, pulsanti e LED di stato nell'autotest. Supporto 25: al muro con 4 viti 4–5 mm, a un albero con una cinghia 25 mm passata nelle due coppie di fessure (nervature contro il tronco). Premere l'apparecchio con i piedini anteriori negli incavi (scatta) e fissarlo da sotto con la vite zigrinata 1/4\"-20 × 16 mm nel dado treppiede. Lo sportello resta raggiungibile sul supporto. Prima di stampare controllare le misure «da misurare».",
+     "rm": "En MoveEye limitar il tilt a ±60° ed il pan a ±90°. Controllar la camera da grondangul, ils buttuns e la LED da status en l'autotest. Tegnider 25: vi da la paraid cun 4 scrauvs 4–5 mm, vi d'ina planta cun ina tschinta da 25 mm tras ils dus pèrs da fessas (costas vi dal bist). Smatgar l'apparat cun ils peis davant en las fossas (el s'engrappa) e l'assegurar da sut cun la scrauva 1/4\"-20 × 16 mm en la mutter dal stativ. La portina resta cuntanschibla sin il tegnider. Avant la stampa controllar las mesiras «mesirar»."
     }
    }
   }
@@ -2872,10 +3324,13 @@
   "MotionWatch_v5-1_Platte_A_Unterteil.3mf",
   "MotionWatch_v5-1_Platte_B_Deckel_Kopf.3mf",
   "v5-2/MotionWatch_v5-2_Platte_A_Unterteil.3mf",
-  "v5-2/MotionWatch_v5-2_Platte_B_Deckel_Kopf.3mf"
+  "v5-2/MotionWatch_v5-2_Platte_B_Deckel_Kopf.3mf",
+  "v5-3/MotionWatch_v5-3_Platte_A_Unterteil.3mf",
+  "v5-3/MotionWatch_v5-3_Platte_B_Deckel_Kopf.3mf",
+  "v5-3/MotionWatch_v5-3_Platte_C_Halter.3mf"
  ],
  "github": "https://github.com/DonElektro/MotionWatch",
- "_hinweis_bauen": "real-bauen (01.11.2026): dazu für MoveEye → Mehr → «Bauen» und den Simulator (Mehr → «Bauen»): Varianten, Einkauf (Preise geschätzt, Händler-Suchlinks), Drucken (pro Teil), Werkzeug, Sicherheit, Verkabeln (Pins und Kanäle aus dem Code, «code» = Prüfwert für werkzeuge/bau_pruefen.py), Software, Inbetriebnahme, Fehlersuche (Kennungen aus simulator3d/fehler_katalog.json), Wartung. «wenn»: nur in dieser Variante (v52 | ups | netz | mover). «unklar»: offen, nicht geprüft – bitte klären.",
+ "_hinweis_bauen": "real-bauen (01.11.2026): dazu für MoveEye → Mehr → «Bauen» und den Simulator (Mehr → «Bauen»): Varianten, Einkauf (Preise geschätzt, Händler-Suchlinks), Drucken (pro Teil), Werkzeug, Sicherheit, Verkabeln (Pins und Kanäle aus dem Code, «code» = Prüfwert für werkzeuge/bau_pruefen.py), Software, Inbetriebnahme, Fehlersuche (Kennungen aus simulator3d/fehler_katalog.json), Wartung. «wenn»: nur in dieser Variante (v52 | v53 | ups | netz | mover; «v52» gilt auch für v5.3, die auf v5.2 aufbaut). «nicht»: nicht in dieser Variante (Druckteile, die v5.3 ersetzt). «unklar»: offen, nicht geprüft – bitte klären.",
  "varianten": [
   {
    "id": "gehaeuse",
@@ -2905,6 +3360,16 @@
       "fr": "v5.2 (standard) : + grand-angle, LED IR, boutons, LED d'état",
       "it": "v5.2 (standard): + grandangolo, LED IR, pulsanti, LED di stato",
       "rm": "v5.2 (standard): + grondangul, LED IR, buttuns, LED da status"
+     }
+    },
+    {
+     "id": "v53",
+     "name": {
+      "de": "v5.3 (neu, noch nicht Standard): v5.2 + Gewindeeinsätze, Akkuklappe, Halter, Luftkanal, Zugentlastung",
+      "en": "v5.3 (new, not yet standard): v5.2 + threaded inserts, battery hatch, holder, air duct, strain relief",
+      "fr": "v5.3 (nouveau, pas encore standard) : v5.2 + inserts filetés, trappe batterie, support, conduit d'air, serre-câbles",
+      "it": "v5.3 (nuova, non ancora standard): v5.2 + inserti filettati, sportello batteria, supporto, condotto d'aria, fermacavi",
+      "rm": "v5.3 (nov, anc betg standard): v5.2 + inserts da filet, portina da l'accu, tegnider, canal d'aria, distensiun dals cabels"
      }
     }
    ]
@@ -3048,7 +3513,8 @@
      "it": "fondo – nervature fotocamera e pettine a 45°, senza supporti",
      "rm": "fund – costas da camera e pettan cun 45°, senza sustegns"
     },
-    "wenn": "v52"
+    "wenn": "v52",
+    "nicht": "v53"
    },
    {
     "datei": "02_Deckel_mit_Laufring",
@@ -3065,7 +3531,8 @@
      "fr": "face inférieure – imprimer la rainure fin",
      "it": "lato inferiore – stampare fine la scanalatura",
      "rm": "vart sut – stampar fin la foppa"
-    }
+    },
+    "nicht": "v53"
    },
    {
     "datei": "03_Drehteller",
@@ -3473,6 +3940,96 @@
      "it": "flangia in basso (solo senza LED di carica; a pressione con nervature)",
      "rm": "flansch sut (mo senza LED da chargiar; pressiun cun costas)"
     }
+   },
+   {
+    "datei": "01_Unterteil_v53",
+    "stueck": 1,
+    "fuellung": 15,
+    "waende": 4,
+    "stuetzen": false,
+    "schicht": "0.20",
+    "brim": 0,
+    "zeit_h": 9.0,
+    "wenn": "v53",
+    "liegt": {
+     "de": "Boden – Einsatz-Dome mit 45°-Spitze, Ösen und Regendach mit 45°-Unterseiten, ohne Stützen",
+     "en": "bottom – insert bosses with 45° tip, tie mounts and rain roof with 45° undersides, no supports",
+     "fr": "fond – dômes d'insert à pointe 45°, œillets et toit à 45°, sans supports",
+     "it": "fondo – torrette con punta 45°, occhielli e tettuccio a 45°, senza supporti",
+     "rm": "fund – cupels cun piz da 45°, ögls e tetg cun 45°, senza sustegns"
+    }
+   },
+   {
+    "datei": "02_Deckel_v53",
+    "stueck": 1,
+    "fuellung": 15,
+    "waende": 3,
+    "stuetzen": false,
+    "schicht": "0.12–0.16",
+    "brim": 0,
+    "zeit_h": 3.1,
+    "wenn": "v53",
+    "liegt": {
+     "de": "Unterseite – Rille fein drucken; Öse mit 45°-Dach",
+     "en": "underside – print the groove fine; tie mount with 45° roof",
+     "fr": "face inférieure – rainure fine ; œillet à toit 45°",
+     "it": "lato inferiore – scanalatura fine; occhiello con tetto 45°",
+     "rm": "vart sut – foppa fina; ögl cun tetg da 45°"
+    }
+   },
+   {
+    "datei": "25_Halter_Wand_Baum",
+    "stueck": 1,
+    "fuellung": 25,
+    "waende": 4,
+    "stuetzen": false,
+    "schicht": "0.20",
+    "brim": 0,
+    "zeit_h": 6.5,
+    "wenn": "v53",
+    "liegt": {
+     "de": "Plattform unten, Rückwand steht – Schlitze und Löcher mit 45°-Spitze",
+     "en": "platform down, back plate upright – slots and holes with 45° tip",
+     "fr": "plateforme en bas, dos debout – fentes et trous à pointe 45°",
+     "it": "piattaforma in basso, schienale in piedi – fessure e fori con punta 45°",
+     "rm": "plattafurma sut, paraid davos en pe – fessas e foras cun piz da 45°"
+    }
+   },
+   {
+    "datei": "26_Akkuklappe",
+    "stueck": 1,
+    "fuellung": 20,
+    "waende": 3,
+    "stuetzen": false,
+    "schicht": "0.20",
+    "brim": 0,
+    "zeit_h": 1.2,
+    "wenn": "v53",
+    "liegt": {
+     "de": "Platte unten",
+     "en": "plate down",
+     "fr": "plaque en bas",
+     "it": "piastra in basso",
+     "rm": "platta sut"
+    }
+   },
+   {
+    "datei": "27_Luftkanal",
+    "stueck": 1,
+    "fuellung": 15,
+    "waende": 2,
+    "stuetzen": false,
+    "schicht": "0.20",
+    "brim": 0,
+    "zeit_h": 0.8,
+    "wenn": "v53",
+    "liegt": {
+     "de": "Dach unten (umgedreht)",
+     "en": "roof down (upside down)",
+     "fr": "toit en bas (retourné)",
+     "it": "tetto in basso (capovolto)",
+     "rm": "tetg sut (volvì)"
+    }
    }
   ],
   "hinweise": [
@@ -3583,6 +4140,13 @@
    "fr": "Lunettes de protection, endroit bien aéré",
    "it": "Occhiali di protezione, luogo ben aerato",
    "rm": "Egliers da protecziun, lieu bain ventilà"
+  },
+  {
+   "de": "v5.3: Einschmelzspitze M3 für den Lötkolben (z. B. ruthex), 220–230 °C für PETG",
+   "en": "v5.3: heat-set tip M3 for the soldering iron (e.g. ruthex), 220–230 °C for PETG",
+   "fr": "v5.3 : panne d'insertion M3 pour le fer à souder (p. ex. ruthex), 220–230 °C pour le PETG",
+   "it": "v5.3: punta per inserti M3 per il saldatore (p. es. ruthex), 220–230 °C per il PETG",
+   "rm": "v5.3: piz per inserts M3 per il fier da lotar (p.ex. ruthex), 220–230 °C per PETG"
   }
  ],
  "schrauben": [
@@ -3672,6 +4236,42 @@
    },
    "schritt": 4,
    "wenn": "entwicklung"
+  },
+  {
+   "menge": "12×",
+   "was": {
+    "de": "Gewindeeinsatz M3 × 5,7 einschmelzen (6 Deckel-Dome, 2 Zwischenboden-Klötze, 4 Akkuklappen-Dome von unten)",
+    "en": "Melt in threaded insert M3 × 5.7 (6 lid bosses, 2 shelf blocks, 4 battery hatch bosses from below)",
+    "fr": "Insérer à chaud l'insert M3 × 5,7 (6 dômes couvercle, 2 blocs plancher, 4 dômes trappe par-dessous)",
+    "it": "Inserire a caldo l'inserto M3 × 5,7 (6 torrette coperchio, 2 blocchi ripiano, 4 torrette sportello da sotto)",
+    "rm": "Fonder en l'insert M3 × 5,7 (6 cupels viertgel, 2 blocs palantschieu, 4 cupels portina da sut)"
+   },
+   "schritt": 2,
+   "wenn": "v53"
+  },
+  {
+   "menge": "4×",
+   "was": {
+    "de": "M3 × 8 Linsenkopf (Akkuklappe)",
+    "en": "M3 × 8 button head (battery hatch)",
+    "fr": "M3 × 8 tête bombée (trappe batterie)",
+    "it": "M3 × 8 testa bombata (sportello batteria)",
+    "rm": "M3 × 8 chau bombà (portina da l'accu)"
+   },
+   "schritt": 4,
+   "wenn": "v53"
+  },
+  {
+   "menge": "1×",
+   "was": {
+    "de": "1/4\"-20 × 16 mm (Halter → Stativmutter)",
+    "en": "1/4\"-20 × 16 mm (holder → tripod nut)",
+    "fr": "1/4\"-20 × 16 mm (support → écrou de trépied)",
+    "it": "1/4\"-20 × 16 mm (supporto → dado treppiede)",
+    "rm": "1/4\"-20 × 16 mm (tegnider → mutter dal stativ)"
+   },
+   "schritt": 14,
+   "wenn": "v53"
   }
  ],
  "sicherheit": [
@@ -3734,6 +4334,17 @@
     "fr": "La lumière IR 850 nm est presque invisible mais forte : ne pas regarder la lampe de près.",
     "it": "La luce IR 850 nm è quasi invisibile ma forte: non guardare la lampada da vicino.",
     "rm": "La glisch IR 850 nm è quasi invisibla, ma ferma: betg guardar da datiers en la lampa."
+   }
+  },
+  {
+   "thema": "loeten",
+   "wenn": "v53",
+   "text": {
+    "de": "Gewindeeinsätze: die Spitze ist heiss (220–230 °C) – Einsatz nur mit der Spitze eindrücken, nie mit den Fingern; das Messing bleibt einige Sekunden heiss.",
+    "en": "Threaded inserts: the tip is hot (220–230 °C) – push the insert only with the tip, never with your fingers; the brass stays hot for a few seconds.",
+    "fr": "Inserts filetés : la panne est chaude (220–230 °C) – enfoncer l'insert seulement avec la panne, jamais avec les doigts ; le laiton reste chaud quelques secondes.",
+    "it": "Inserti filettati: la punta è calda (220–230 °C) – premere l'inserto solo con la punta, mai con le dita; l'ottone resta caldo per alcuni secondi.",
+    "rm": "Inserts da filet: il piz è chaud (220–230 °C) – smatgar l'insert mo cun il piz, mai cun ils dets; il mesch resta chaud intgins secunds."
    }
   }
  ],
@@ -5068,6 +5679,30 @@
     "it": "l'ansa dei cavi dietro la testa non sfrega? Asse del braccio 2 non troppo stretto?",
     "rm": "la bucla da cabels davos il chau na sfruscha betg? Axa dal bratsch 2 betg memia stretga?"
    }
+  },
+  {
+   "wenn": "v53",
+   "teil": {
+    "de": "Akkus (v5.3)",
+    "en": "Cells (v5.3)",
+    "fr": "Accus (v5.3)",
+    "it": "Batterie (v5.3)",
+    "rm": "Accus (v5.3)"
+   },
+   "wann": {
+    "de": "bei Bedarf",
+    "en": "when needed",
+    "fr": "au besoin",
+    "it": "al bisogno",
+    "rm": "sche necessari"
+   },
+   "was": {
+    "de": "Gerät ausschalten, Akkuklappe unten öffnen (4 × M3), Zellen tauschen – Polung wie im Halter, 4 gleiche Zellen. Deckel und Pi bleiben drin.",
+    "en": "Switch off, open the battery hatch underneath (4 × M3), swap the cells – polarity as in the holder, 4 equal cells. Lid and Pi stay in place.",
+    "fr": "Éteindre, ouvrir la trappe en dessous (4 × M3), changer les accus – polarité comme dans le support, 4 accus identiques. Couvercle et Pi restent en place.",
+    "it": "Spegnere, aprire lo sportello sotto (4 × M3), cambiare le batterie – polarità come nel portabatterie, 4 batterie uguali. Coperchio e Pi restano al loro posto.",
+    "rm": "Stizzar, avrir la portina sut (4 × M3), midar ils accus – polaritad sco en il tegnider, 4 accus eguals. Viertgel e Pi restan en lur lieu."
+   }
   }
  ],
  "extra_schritte": [
@@ -5169,6 +5804,40 @@
     "it": "La scheda microSD non è nel Pi ma nel portaschede della prolunga (15 cm) dietro la fessura SD della parete frontale: cambiare la scheda senza aprire la custodia. Togliere il tappo 16, estrarre o inserire la scheda, rimettere il tappo. Prima spegnere MoveEye.",
     "rm": "La carta microSD n'è betg en il Pi, mabain en il tegnacarta da la prolungaziun (15 cm) davos la fessa SD da la paraid davant: midar la carta senza avrir la chascha. Trair ora il zaffer 16, prender ora u metter en la carta, smatgar il zaffer puspè en. Avant serrar giu MoveEye."
    }
+  },
+  {
+   "wenn": "v53",
+   "titel": {
+    "de": "Akku tauschen (v5.3)",
+    "en": "Swap the cells (v5.3)",
+    "fr": "Changer les accus (v5.3)",
+    "it": "Cambiare le batterie (v5.3)",
+    "rm": "Midar ils accus (v5.3)"
+   },
+   "text": {
+    "de": "Gerät ausschalten (Taste bzw. MoveEye → Strom), auf die Seite legen oder am Halter lassen, die 4 Schrauben M3 der Akkuklappe unten lösen, Klappe abnehmen. Jede Zelle zur Feder hin drücken und herauskippen; neue Zellen gleicher Ladung mit der Polung des Halters einsetzen. Klappe wieder aufschrauben (nicht überdrehen – die Einsätze halten auch handfest).",
+    "en": "Switch the device off (button or MoveEye → Power), lay it on its side or leave it on the holder, undo the 4 M3 screws of the battery hatch underneath and take the hatch off. Push each cell towards the spring and tip it out; insert new cells of the same charge with the polarity of the holder. Screw the hatch back on (do not overtighten – the inserts hold hand-tight).",
+    "fr": "Éteindre l'appareil (bouton ou MoveEye → Alimentation), le coucher sur le côté ou le laisser sur le support, dévisser les 4 vis M3 de la trappe dessous et l'enlever. Pousser chaque accu vers le ressort et le basculer dehors ; mettre des accus de même charge selon la polarité du support. Revisser la trappe (sans forcer – les inserts tiennent serrés à la main).",
+    "it": "Spegnere l'apparecchio (pulsante o MoveEye → Alimentazione), metterlo su un fianco o lasciarlo sul supporto, svitare le 4 viti M3 dello sportello sotto e toglierlo. Spingere ogni batteria verso la molla e ribaltarla fuori; inserire batterie nuove con la stessa carica secondo la polarità del portabatterie. Riavvitare lo sportello (senza stringere troppo – gli inserti tengono a mano).",
+    "rm": "Stizzar l'apparat (buttun u MoveEye → Current), al metter sin la vart u al laschar sin il tegnider, deliberar ils 4 scrauvs M3 da la portina sut e la prender davent. Smatgar mintga accu vers la fiergia e al tippar ora; metter accus novs da la medema chargia tenor la polaritad dal tegnider. Puspè scrauvar si la portina (betg memia ferm – ils inserts tegnan a maun)."
+   }
+  },
+  {
+   "wenn": "v53",
+   "titel": {
+    "de": "Luftführung (v5.3)",
+    "en": "Air flow (v5.3)",
+    "fr": "Circulation d'air (v5.3)",
+    "it": "Flusso d'aria (v5.3)",
+    "rm": "Ventilaziun (v5.3)"
+   },
+   "text": {
+    "de": "Frische Luft kommt durch die 3 Schlitze mit Regendach über dem Service-Fenster in den Luftkanal 27 und direkt in die Ansaugung des Active Cooler; die warme Luft aus den Kühlrippen geht wie bisher durch die Lüftungsschlitze daneben hinaus. Den Einlass nicht zukleben; die Kamerakabel liegen auf dem Kanal, nicht davor.",
+    "en": "Fresh air comes in through the 3 slots with rain roof above the service window into the air duct 27 and straight into the intake of the Active Cooler; the warm air from the cooling fins leaves through the vent slots next to it as before. Do not tape over the inlet; the camera cables lie on the duct, not in front of it.",
+    "fr": "L'air frais entre par les 3 fentes avec toit anti-pluie au-dessus de la fenêtre de service dans le conduit 27 et directement dans l'aspiration de l'Active Cooler ; l'air chaud des ailettes sort comme avant par les fentes d'aération voisines. Ne pas boucher l'entrée ; les câbles caméra passent sur le conduit, pas devant.",
+    "it": "L'aria fresca entra dalle 3 fessure con tettuccio sopra la finestra di servizio nel condotto 27 e direttamente nell'aspirazione dell'Active Cooler; l'aria calda delle alette esce come prima dalle fessure di aerazione accanto. Non coprire l'ingresso; i cavi delle fotocamere stanno sul condotto, non davanti.",
+    "rm": "Aria frestga entra tras las 3 fessas cun tetg da plievgia sur la fanestra da servetsch en il canal 27 e directamain en l'aspiraziun da l'Active Cooler; l'aria chauda da las alas sorta sco fin ussa tras las fessas da ventilaziun daspera. Betg cuvrir l'entrada; ils cabels da las cameras èn sin il canal, betg davant."
+   }
   }
  ],
  "druckdateien_einzeln": [
@@ -5205,7 +5874,33 @@
   "v5-2/MoveEye_v5-2_20_Stopfen_DS18B20.3mf",
   "v5-2/MoveEye_v5-2_21_Stopfen_Relais.3mf",
   "v5-2/MoveEye_v5-2_23_Stopfen_Mikrofon.3mf",
-  "v5-2/MoveEye_v5-2_24_Stopfen_Lichtleiter.3mf"
+  "v5-2/MoveEye_v5-2_24_Stopfen_Lichtleiter.3mf",
+  "v5-3/MoveEye_v5-3_01_Unterteil_v53.3mf",
+  "v5-3/MoveEye_v5-3_02_Deckel_v53.3mf",
+  "v5-3/MoveEye_v5-3_03_Drehteller.3mf",
+  "v5-3/MoveEye_v5-3_04_Gabel_mit_Arm1.3mf",
+  "v5-3/MoveEye_v5-3_05_Arm2_Lagerseite.3mf",
+  "v5-3/MoveEye_v5-3_06_Kamerakopf_v52.3mf",
+  "v5-3/MoveEye_v5-3_07_Seitendeckel.3mf",
+  "v5-3/MoveEye_v5-3_08_Lampenhalter_2x.3mf",
+  "v5-3/MoveEye_v5-3_09_Zwischenboden.3mf",
+  "v5-3/MoveEye_v5-3_10_Stopfen_HDMI_USB_v52.3mf",
+  "v5-3/MoveEye_v5-3_11_Fuss_4x.3mf",
+  "v5-3/MoveEye_v5-3_12_Blindstopfen_Weitwinkel.3mf",
+  "v5-3/MoveEye_v5-3_13_Entwicklungs_Sockel.3mf",
+  "v5-3/MoveEye_v5-3_14_Diffusor_Status_LED.3mf",
+  "v5-3/MoveEye_v5-3_15_Pupillenring.3mf",
+  "v5-3/MoveEye_v5-3_16_Stopfen_SD_v52.3mf",
+  "v5-3/MoveEye_v5-3_17_Blindstopfen_Reserve.3mf",
+  "v5-3/MoveEye_v5-3_18_Stopfen_Waermebild.3mf",
+  "v5-3/MoveEye_v5-3_19_Stopfen_IR_Modul.3mf",
+  "v5-3/MoveEye_v5-3_20_Stopfen_DS18B20.3mf",
+  "v5-3/MoveEye_v5-3_21_Stopfen_Relais.3mf",
+  "v5-3/MoveEye_v5-3_23_Stopfen_Mikrofon.3mf",
+  "v5-3/MoveEye_v5-3_24_Stopfen_Lichtleiter.3mf",
+  "v5-3/MoveEye_v5-3_25_Halter_Wand_Baum.3mf",
+  "v5-3/MoveEye_v5-3_26_Akkuklappe.3mf",
+  "v5-3/MoveEye_v5-3_27_Luftkanal.3mf"
  ],
  "ui_bauen": [
   {
@@ -6008,7 +6703,16 @@
    "dsplug",
    "rlplug",
    "micplug",
-   "llplug"
+   "llplug",
+   "tub53",
+   "lid53",
+   "hatch",
+   "duct",
+   "holder",
+   "feet53",
+   "feet53_2",
+   "feet53_3",
+   "feet53_4"
   ],
   "turntable": "#f59a4a",
   "yoke": "#f59a4a",
@@ -6277,6 +6981,98 @@
      "it": "Mobile",
      "rm": "Mobil"
     }
+   }
+  ]
+ },
+ "gehaeuse_v53": {
+  "name": {
+   "de": "Variante v5.3: v5.2 mit Einsätzen, Akkuklappe, Halter, Luftkanal",
+   "en": "Variant v5.3: v5.2 with inserts, battery hatch, holder, air duct",
+   "fr": "Variante v5.3 : v5.2 avec inserts, trappe batterie, support, conduit d'air",
+   "it": "Variante v5.3: v5.2 con inserti, sportello batteria, supporto, condotto d'aria",
+   "rm": "Variante v5.3: v5.2 cun inserts, portina da l'accu, tegnider, canal d'aria"
+  },
+  "stand": "02.11.2026",
+  "quelle": "Quellcode/v53.py",
+  "teile": [
+   "tub53",
+   "lid53",
+   "hatch",
+   "duct",
+   "holder",
+   "feet53",
+   "feet53_2",
+   "feet53_3",
+   "feet53_4",
+   "cable_cam1_53",
+   "cable_cam0_53"
+  ],
+  "ersetzt": {
+   "tub53": "tub52",
+   "lid53": "lid",
+   "feet53": "feet",
+   "feet53_2": "feet2",
+   "feet53_3": "feet3",
+   "feet53_4": "feet4",
+   "cable_cam1_53": "cable_cam1",
+   "cable_cam0_53": "cable_cam0_52"
+  },
+  "bom_gruppe": "v53",
+  "druckdateien": [
+   "v5-3/MotionWatch_v5-3_Platte_A_Unterteil.3mf",
+   "v5-3/MotionWatch_v5-3_Platte_B_Deckel_Kopf.3mf",
+   "v5-3/MotionWatch_v5-3_Platte_C_Halter.3mf"
+  ],
+  "druckteile_neu": [
+   "01_Unterteil_v53",
+   "02_Deckel_v53",
+   "25_Halter_Wand_Baum",
+   "26_Akkuklappe",
+   "27_Luftkanal"
+  ],
+  "anleitung": "Dokumente/LIESMICH_Montage_v5-3.md",
+  "hinweis": {
+   "de": "Platten A, B und C v5.3 ersetzen die Platten v5.2 (Unterteil mit Einsätzen, Akkuklappe, Lufteinlass und Ösen; Deckel mit Öse; Halter und Akkuklappe auf Platte C). Noch nicht Standard – v5.2 bleibt Standard bis zur Freigabe. Vor dem Druck die Liste «Nachmessen» prüfen.",
+   "en": "Plates A, B and C v5.3 replace the v5.2 plates (lower part with inserts, battery hatch, air inlet and tie mounts; lid with tie mount; holder and battery hatch on plate C). Not yet the standard – v5.2 stays the standard until it is released. Check the «measure first» list before printing.",
+   "fr": "Les plateaux A, B et C v5.3 remplacent les plateaux v5.2 (partie inférieure avec inserts, trappe, entrée d'air et œillets ; couvercle avec œillet ; support et trappe sur le plateau C). Pas encore standard – v5.2 reste le standard jusqu'à la validation. Vérifier la liste « à mesurer » avant l'impression.",
+   "it": "I piatti A, B e C v5.3 sostituiscono i piatti v5.2 (parte inferiore con inserti, sportello, presa d'aria e occhielli; coperchio con occhiello; supporto e sportello sul piatto C). Non ancora standard – v5.2 resta lo standard fino all'approvazione. Prima di stampare controllare l'elenco «da misurare».",
+   "rm": "Las plattas A, B e C v5.3 remplazzan las plattas v5.2 (part sut cun inserts, portina, entrada d'aria ed ögls; viertgel cun ögl; tegnider e portina sin la platta C). Anc betg standard – v5.2 resta standard fin a l'approvaziun. Avant la stampa controllar la glista «mesirar»."
+  },
+  "nachmessen": [
+   {
+    "de": "UPS HAT (E): Zellen unter der Platine und von unten entnehmbar? Halter-Enden liegen auf dem Bodenrand (y < 4 und > 76)? (v5.BAT_*, OPEN_*)",
+    "en": "UPS HAT (E): cells under the board and removable from below? Holder ends rest on the floor rim (y < 4 and > 76)? (v5.BAT_*, OPEN_*)",
+    "fr": "UPS HAT (E) : accus sous la platine et amovibles par-dessous ? Extrémités des supports sur le bord du fond (y < 4 et > 76) ? (v5.BAT_*, OPEN_*)",
+    "it": "UPS HAT (E): batterie sotto la scheda e estraibili da sotto? Estremità dei portabatterie sul bordo del fondo (y < 4 e > 76)? (v5.BAT_*, OPEN_*)",
+    "rm": "UPS HAT (E): accus sut la platina e prendibels da sut? Fins dals tegniders sin l'ur dal fund (y < 4 e > 76)? (v5.BAT_*, OPEN_*)"
+   },
+   {
+    "de": "Gewindeeinsatz: Bohrung Ø 4,0 / Länge 5,7 nach Herstellerangabe (ruthex M3 × 5,7) – bei anderem Einsatz INS_D / INS_L anpassen",
+    "en": "Threaded insert: hole Ø 4.0 / length 5.7 as specified by the maker (ruthex M3 × 5.7) – adjust INS_D / INS_L for another insert",
+    "fr": "Insert fileté : trou Ø 4,0 / longueur 5,7 selon le fabricant (ruthex M3 × 5,7) – adapter INS_D / INS_L pour un autre insert",
+    "it": "Inserto filettato: foro Ø 4,0 / lunghezza 5,7 secondo il produttore (ruthex M3 × 5,7) – per un altro inserto adattare INS_D / INS_L",
+    "rm": "Insert da filet: fora Ø 4,0 / lunghezza 5,7 tenor il producent (ruthex M3 × 5,7) – per in auter insert adattar INS_D / INS_L"
+   },
+   {
+    "de": "Active Cooler: Oberkante z 55,5, Ansaugöffnung 23 × 24 mm, Ausblasrichtung der Rippen (COOL_*, FAN_IN)",
+    "en": "Active Cooler: top edge z 55.5, intake opening 23 × 24 mm, exhaust direction of the fins (COOL_*, FAN_IN)",
+    "fr": "Active Cooler : arête supérieure z 55,5, ouverture d'aspiration 23 × 24 mm, sens de sortie des ailettes (COOL_*, FAN_IN)",
+    "it": "Active Cooler: bordo superiore z 55,5, apertura di aspirazione 23 × 24 mm, direzione d'uscita delle alette (COOL_*, FAN_IN)",
+    "rm": "Active Cooler: ur sura z 55,5, avertura d'aspiraziun 23 × 24 mm, direcziun da las alas (COOL_*, FAN_IN)"
+   },
+   {
+    "de": "Füsse v5.3 in den Ecken: Gerät steht stabil, Halter-Mulden passen (FEET53)",
+    "en": "Feet v5.3 in the corners: the device stands firmly, the holder recesses fit (FEET53)",
+    "fr": "Pieds v5.3 dans les coins : l'appareil est stable, les creux du support conviennent (FEET53)",
+    "it": "Piedini v5.3 negli angoli: l'apparecchio sta stabile, gli incavi del supporto vanno bene (FEET53)",
+    "rm": "Peis v5.3 en ils chantuns: l'apparat stat stabil, las fossas dal tegnider tutgan (FEET53)"
+   },
+   {
+    "de": "Halter: Gurt 25 mm passt durch die Schlitze 4 × 28 mm, Wandschrauben Ø 5",
+    "en": "Holder: 25 mm strap fits through the 4 × 28 mm slots, wall screws Ø 5",
+    "fr": "Support : la sangle 25 mm passe dans les fentes 4 × 28 mm, vis murales Ø 5",
+    "it": "Supporto: la cinghia 25 mm passa nelle fessure 4 × 28 mm, viti a muro Ø 5",
+    "rm": "Tegnider: la tschinta 25 mm passa tras las fessas 4 × 28 mm, scrauvs da paraid Ø 5"
    }
   ]
  }

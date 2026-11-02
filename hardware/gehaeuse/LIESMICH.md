@@ -130,6 +130,17 @@ denselben Reitern: Übersicht · Teile · Einkauf · Drucken · Montage · Verka
   | Lampentreiber (unbekannt) | `DRV_*` | PLATZHALTER 30 × 20, Löcher diagonal |
   | Sicherungshalter Inline 5 A | `FUSE_*` | 30 × 13 × 10 mm |
 
+- **v5.3** (02.11.2026, Zweig real-gehaeuse-v53, **noch nicht Standard** – v5.2 bleibt Standard bis zur Freigabe, v5.1 und
+  v5.2 bleiben wählbar): Gewindeeinsätze M3 × 5,7 (Deckel, Zwischenboden, Akkuklappe), **Akkuklappe unten** (Zellen 21700
+  tauschen ohne Deckel und ohne Pi-Ausbau; SD-Karte weiter über die Verlängerung von v5.2), **Halter Wand / Baum** (Gurt
+  25 mm, Wandschrauben, 1/4"-Schraube in die Stativmutter), **Luftkanal** auf dem Active Cooler mit Einlass und Regendach,
+  **Zugentlastung** (Ösen im Kabelkamin, an GX16 und Relais), Füsse in den Ecken. Quelle `Quellcode/v53.py`, Druck
+  [Druckdateien/v5-3/](Druckdateien/v5-3/) (Platten A, B, C und alle Teile einzeln), Anleitung
+  [Dokumente/LIESMICH_Montage_v5-3.md](Dokumente/LIESMICH_Montage_v5-3.md) mit der Liste NACHMESSEN. Neu bauen:
+  `python3 werkzeuge/gehaeuse_bauen.py --druck53`; prüfen im Ordner `Quellcode/`: `check53.py`, `druckcheck53.py`,
+  `printcheck53.py`, Bilder `prev53.py`. In `bau.json`: Variante «v53», Teile mit `art` v53, `gehaeuse_v53`, Montagetexte
+  «v53» je Schritt; «wenn: v52» gilt auch für v5.3, Druckteile mit «nicht: v53» fallen in v5.3 weg.
+
 - **Archiv «PanTilt v6» (22.10.2026):** `PanTilt_v6_X2D_alle_Teile.3mf`, 7 Teile mit der alten Nummerierung
   (1_Gehaeuse_Unterteil … 7_Rueckdeckel), Unterteil 122 × 87 × 48 mm. Das ist die **ältere** PanTilt-Linie (v4, geschlossener
   Kopf mit Rückdeckel – der gescheiterte Druck), nicht neuer als v5.1. Nicht im Repository (6,8 MB), nur als Archiv abgelegt.

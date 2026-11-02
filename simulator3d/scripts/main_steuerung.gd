@@ -514,7 +514,7 @@ func _control(d: Dictionary) -> Dictionary:
 		return preload("res://scripts/fehler_hilfe.gd").control(main, main.mehr, d)
 	elif a == "werk":                                  # Werksrücksetzung (werk.gd): {do: info | open | close | reset (confirm: true)}
 		return main.mehr.werk.control(d) if main.mehr != null and main.mehr.werk != null else {"ok": false, "error": "not ready"}
-	elif a == "werkstatt":                             # real-gehaeuse: {do: open | close | info | explode | xray | inner | v52 | pick | step | next | prev | view | real_case}
+	elif a == "werkstatt":                             # real-gehaeuse: {do: open | close | info | explode | xray | inner | v52 | v53 | pick | step | next | prev | view | real_case}
 		return main.werkstatt.control(d) if main.werkstatt != null else {"ok": false, "error": "not ready"}
 	elif a == "egg":                                   # Entwickler-Test (bergtal_ei.gd)
 		return main.bt_ei.control(d) if main.bt_ei != null and is_instance_valid(main.bt_ei) else {"ok": false, "error": "only in the Bergtal"}

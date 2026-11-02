@@ -1,14 +1,14 @@
 {
  "_hinweis": "Erzeugt von werkzeuge/gehaeuse_bauen.py aus hardware/gehaeuse/ – nicht von Hand ändern. Koordinaten: Meter, Ursprung Kippachse (main.head_pitch), Godot X = Modell y, Y = z, Z = x (vorne = −Z).",
  "version": "5.1",
- "quelle_sha256": "a4af57cc5f3097a62fa86e0ca5c3c48c3421b242e417a94c2f471848942d435a",
+ "quelle_sha256": "d755c47fb9107b6d33bc5f5682030666ffa45c4be5e66721610610dcdc305ccf",
  "dateien": {
-  "gehaeuse.glb": "37f8095e93115af723ae2d974e40fd724d3deffbb7d4e30ffa6e22809b4fda97",
-  "gehaeuse_lite.glb": "d1e29bc580189f45f3c8206fa39ddb49c49c1a8f9683d08a6a818bd385988dab"
+  "gehaeuse.glb": "958a8d6d8257c945b001634c7c6683b9b492f7aaf62c3851422e0860782f8676",
+  "gehaeuse_lite.glb": "8d88a31c9cc349a7d105d704fcf7536ee6fc8f1f6a07a7fed46721ed6e9a1c8f"
  },
- "dreiecke": 162352,
- "dreiecke_aussen": 109913,
- "dreiecke_lite": 17982,
+ "dreiecke": 206000,
+ "dreiecke_aussen": 141441,
+ "dreiecke_lite": 22911,
  "kippachse_ueber_boden_m": 0.1258,
  "fuesse_m": 0.006,
  "v52": {
@@ -63,6 +63,32 @@
    "sockel": "ups"
   }
  },
+ "v53": {
+  "_hinweis": "Variante v5.3 (v53.py, baut auf v5.2 auf): Teile mit «variante» 5.3, «ersetzt» nennt das Teil von v5.2 / v5.1",
+  "teile": [
+   "tub53",
+   "lid53",
+   "hatch",
+   "duct",
+   "holder",
+   "feet53",
+   "feet53_2",
+   "feet53_3",
+   "feet53_4",
+   "cable_cam1_53",
+   "cable_cam0_53"
+  ],
+  "ersetzt": {
+   "tub53": "tub52",
+   "lid53": "lid",
+   "feet53": "feet",
+   "feet53_2": "feet2",
+   "feet53_3": "feet3",
+   "feet53_4": "feet4",
+   "cable_cam1_53": "cable_cam1",
+   "cable_cam0_53": "cable_cam0_52"
+  }
+ },
  "farben": {
   "kopf": "#f59a4a",
   "kopf_teile": [
@@ -96,7 +122,16 @@
    "dsplug",
    "rlplug",
    "micplug",
-   "llplug"
+   "llplug",
+   "tub53",
+   "lid53",
+   "hatch",
+   "duct",
+   "holder",
+   "feet53",
+   "feet53_2",
+   "feet53_3",
+   "feet53_4"
   ]
  },
  "teile": [
@@ -1837,6 +1872,274 @@
     -0.0268,
     0.12,
     -0.0406
+   ]
+  },
+  {
+   "id": "tub53",
+   "gruppe": "base",
+   "farbe": "#9a9ea3",
+   "aussen": true,
+   "dreiecke": 18154,
+   "mitte": [
+    -0.0031,
+    -0.0914,
+    0.0513
+   ],
+   "groesse": [
+    0.1033,
+    0.0688,
+    0.1982
+   ],
+   "variante": "5.3",
+   "ersetzt": "tub52",
+   "dreiecke_lite": 2740,
+   "explosion": [
+    -0.0,
+    0.0,
+    -0.0
+   ]
+  },
+  {
+   "id": "lid53",
+   "gruppe": "base",
+   "farbe": "#9a9ea3",
+   "aussen": true,
+   "dreiecke": 7038,
+   "mitte": [
+    0.0,
+    -0.0513,
+    0.0489
+   ],
+   "groesse": [
+    0.097,
+    0.012,
+    0.1829
+   ],
+   "variante": "5.3",
+   "ersetzt": "lid",
+   "dreiecke_lite": 785,
+   "explosion": [
+    0.0,
+    0.23,
+    -0.0
+   ]
+  },
+  {
+   "id": "hatch",
+   "gruppe": "base",
+   "farbe": "#9a9ea3",
+   "aussen": true,
+   "dreiecke": 5696,
+   "mitte": [
+    -0.006,
+    -0.1258,
+    0.0785
+   ],
+   "groesse": [
+    0.08,
+    0.004,
+    0.108
+   ],
+   "variante": "5.3",
+   "dreiecke_lite": 1084,
+   "explosion": [
+    -0.0,
+    -0.045,
+    0.0
+   ]
+  },
+  {
+   "id": "duct",
+   "gruppe": "base",
+   "farbe": "#9a9ea3",
+   "aussen": false,
+   "dreiecke": 4416,
+   "mitte": [
+    -0.0213,
+    -0.0683,
+    0.0745
+   ],
+   "groesse": [
+    0.0485,
+    0.015,
+    0.0348
+   ],
+   "variante": "5.3",
+   "explosion": [
+    -0.0064,
+    0.19,
+    0.0062
+   ]
+  },
+  {
+   "id": "holder",
+   "gruppe": "base",
+   "farbe": "#9a9ea3",
+   "aussen": false,
+   "dreiecke": 7248,
+   "mitte": [
+    0.005,
+    -0.1013,
+    0.049
+   ],
+   "groesse": [
+    0.1141,
+    0.0652,
+    0.198
+   ],
+   "variante": "5.3",
+   "explosion": [
+    0.0,
+    -0.09,
+    -0.0
+   ]
+  },
+  {
+   "id": "feet53",
+   "gruppe": "base",
+   "farbe": "#9a9ea3",
+   "aussen": true,
+   "dreiecke": 160,
+   "mitte": [
+    -0.04,
+    -0.1279,
+    -0.034
+   ],
+   "groesse": [
+    0.014,
+    0.0077,
+    0.014
+   ],
+   "variante": "5.3",
+   "ersetzt": "feet",
+   "dreiecke_lite": 80,
+   "explosion": [
+    -0.012,
+    -0.035,
+    -0.0263
+   ]
+  },
+  {
+   "id": "feet53_2",
+   "gruppe": "base",
+   "farbe": "#9a9ea3",
+   "aussen": true,
+   "dreiecke": 160,
+   "mitte": [
+    -0.04,
+    -0.1279,
+    0.132
+   ],
+   "groesse": [
+    0.014,
+    0.0077,
+    0.014
+   ],
+   "variante": "5.3",
+   "ersetzt": "feet2",
+   "dreiecke_lite": 80,
+   "explosion": [
+    -0.012,
+    -0.035,
+    0.0235
+   ]
+  },
+  {
+   "id": "feet53_3",
+   "gruppe": "base",
+   "farbe": "#9a9ea3",
+   "aussen": true,
+   "dreiecke": 160,
+   "mitte": [
+    0.04,
+    -0.1279,
+    -0.034
+   ],
+   "groesse": [
+    0.014,
+    0.0077,
+    0.014
+   ],
+   "variante": "5.3",
+   "ersetzt": "feet3",
+   "dreiecke_lite": 80,
+   "explosion": [
+    0.012,
+    -0.035,
+    -0.0263
+   ]
+  },
+  {
+   "id": "feet53_4",
+   "gruppe": "base",
+   "farbe": "#9a9ea3",
+   "aussen": true,
+   "dreiecke": 160,
+   "mitte": [
+    0.04,
+    -0.1279,
+    0.132
+   ],
+   "groesse": [
+    0.014,
+    0.0077,
+    0.014
+   ],
+   "variante": "5.3",
+   "ersetzt": "feet4",
+   "dreiecke_lite": 80,
+   "explosion": [
+    0.012,
+    -0.035,
+    0.0235
+   ]
+  },
+  {
+   "id": "cable_cam1_53",
+   "gruppe": "base",
+   "farbe": "#d9c27a",
+   "aussen": false,
+   "dreiecke": 264,
+   "mitte": [
+    -0.0192,
+    -0.0711,
+    0.0305
+   ],
+   "groesse": [
+    0.0415,
+    0.0265,
+    0.1086
+   ],
+   "variante": "5.3",
+   "ersetzt": "cable_cam1",
+   "explosion": [
+    -0.0096,
+    0.165,
+    -0.0116
+   ]
+  },
+  {
+   "id": "cable_cam0_53",
+   "gruppe": "base",
+   "farbe": "#d9c27a",
+   "aussen": false,
+   "dreiecke": 192,
+   "mitte": [
+    -0.0182,
+    -0.0698,
+    0.0711
+   ],
+   "groesse": [
+    0.0395,
+    0.027,
+    0.033
+   ],
+   "variante": "5.3",
+   "ersetzt": "cable_cam0_52",
+   "explosion": [
+    -0.0,
+    0.28,
+    0.0
    ]
   }
  ]

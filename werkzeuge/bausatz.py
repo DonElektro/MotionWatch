@@ -47,6 +47,10 @@ SPR_NAME = {"de": "Deutsch", "fr": "Français", "it": "Italiano", "rm": "Rumants
 # ---- Texte, die nicht in bau.json stehen (Schlüssel = Deutsch) --------------------------------------------------------------
 TX = {
     "MoveEye – Bauanleitung": {"en": "MoveEye – build guide", "fr": "MoveEye – notice de construction", "it": "MoveEye – istruzioni di costruzione", "rm": "MoveEye – instrucziun da construcziun"},
+    "Variante v5.3 (Vorschau, noch nicht Standard)": {"en": "Variant v5.3 (preview, not yet standard)", "fr": "Variante v5.3 (aperçu, pas encore standard)",
+                                                      "it": "Variante v5.3 (anteprima, non ancora standard)", "rm": "Variante v5.3 (prevista, anc betg standard)"},
+    "Neue Druckteile": {"en": "New print parts", "fr": "Nouvelles pièces imprimées", "it": "Nuovi pezzi stampati", "rm": "Novas parts da stampa"},
+    "Druckdateien": {"en": "Print files", "fr": "Fichiers d'impression", "it": "File di stampa", "rm": "Datotecas da stampa"},
     "Selbstbau-Paket": {"en": "Self-build kit", "fr": "Kit à construire soi-même", "it": "Kit fai da te", "rm": "Pachet per construir sez"},
     "Gehäuse v5.2 (Standard)": {"en": "Case v5.2 (standard)", "fr": "Boîtier v5.2 (standard)", "it": "Custodia v5.2 (standard)", "rm": "Chascha v5.2 (standard)"},
     "Stand": {"en": "Status", "fr": "État", "it": "Stato", "rm": "Stadi"},
@@ -300,7 +304,7 @@ def bild_specs(B, M):
     farbe["sockel"] = grau
     schritt, druck = {}, set()
     for i, t in T.items():
-        if i in alt_weg or t.get("art") == "dev" or i not in E or t.get("ohne"):   # «ohne»: 12 Blindstopfen (nur ohne Weitwinkel)
+        if i in alt_weg or t.get("art") in ("dev", "v53") or i not in E or t.get("ohne"):   # «ohne»: 12 Blindstopfen; v5.3 ist (noch) nicht Standard
             continue
         if i in ers:
             s = (T.get(ers[i]) or {}).get("schritt")
@@ -583,6 +587,12 @@ def anleitung_html(B, K, ver, bilder, L, signiert, py_name, zd_name):
     nm = (B.get("gehaeuse_v52") or {}).get("nachmessen") or []
     if nm:
         a('<div class="kasten"><b>%s</b><ul>%s</ul></div>' % (T("Vor dem Druck nachmessen"), "".join("<li>%s</li>" % X(x) for x in nm)))
+    g53 = B.get("gehaeuse_v53") or {}
+    if g53:                                             # real-gehaeuse-v53: Vorschau (Standard bleibt v5.2 bis zur Freigabe)
+        a('<div class="kasten"><b>%s</b><p>%s</p><p>%s</p><p><b>%s:</b> %s</p><p><b>%s:</b> %s/</p><b>%s</b><ul>%s</ul></div>' % (
+            T("Variante v5.3 (Vorschau, noch nicht Standard)"), X(g53.get("name")), X(g53.get("hinweis")), T("Neue Druckteile"),
+            esc(", ".join(teil_name(B, d, L) for d in g53.get("druckteile_neu") or [])), T("Druckdateien"), esc(druck_ordner53(ver)),
+            T("Vor dem Druck nachmessen"), "".join("<li>%s</li>" % X(x) for x in g53.get("nachmessen") or [])))
     a("</section>")
     # -- Montage
     a('<section id="montage"><h2>%s</h2><p class="mut klein">%s</p>' % (U("Assembly"), T("Bild: Teile dieses Schritts blau hervorgehoben und leicht abgehoben.") if bilder else ""))
@@ -752,11 +762,17 @@ def druck_ordner(ver):
     return "2_MoveEye_v5-2_Druck_%s" % ver
 
 
+def druck_ordner53(ver):
+    """real-gehaeuse-v53: die Druckdateien v5.3 als Vorschau neben dem Standard v5.2"""
+    return "2b_MoveEye_v5-3_Druck_%s_Vorschau" % ver
+
+
 def liesmich(ver, sprachen, signiert):
     return "\r\n".join([
         "MoveEye %s – Selbstbau-Paket" % ver, "",
         "1_Anleitung      Bauanleitung (PDF): MoveEye_Bauanleitung_%s_de.pdf" % ver + ("; dazu " + ", ".join(s for s in sprachen if s != "de") if len(sprachen) > 1 else ""),
         "%s   3D-Druck Gehäuse v5.2 (3MF), Kurzanleitung LIESMICH_Druck.txt" % druck_ordner(ver),
+        "%s   Vorschau Gehäuse v5.3 (Einsätze, Akkuklappe, Halter, Luftkanal) – noch nicht Standard" % druck_ordner53(ver),
         "3_Bestellliste   Teile je Paket (Basis / Komplett / Autark) als CSV, Preise geschätzt",
         "MoveEye_Werkstatt_%s.html   die Werkstatt «Bauen» mit 3D (Doppelklick, offline im Browser)" % ver,
         "4_Software       MoveEye für den Raspberry Pi 5 (%s), Anleitung INSTALLATION.txt" % ("signiert" if signiert else "NICHT signiert, Testpaket"),
@@ -805,6 +821,10 @@ def main():
             if f.startswith("v5-2/") and os.path.isfile(os.path.join(GEH, "Druckdateien", f)):
                 z.write(os.path.join(GEH, "Druckdateien", f), name + "/" + dd + "/" + f[5:], compress_type=zipfile.ZIP_STORED)
         w(dd + "/LIESMICH_Druck.txt", druck_liesmich(B, ver))
+        d3 = druck_ordner53(ver)                        # real-gehaeuse-v53: Vorschau v5.3 (alle Teile, Platten A/B/C)
+        for f in druck:
+            if f.startswith("v5-3/") and os.path.isfile(os.path.join(GEH, "Druckdateien", f)):
+                z.write(os.path.join(GEH, "Druckdateien", f), name + "/" + d3 + "/" + f[5:], compress_type=zipfile.ZIP_STORED)
         for p in (B.get("pakete") or {}).get("liste") or []:
             c, _s = csv_paket(B, p, ver=ver)
             w("3_Bestellliste/MoveEye_Bestellliste_%s_%s.csv" % (lx(p["name"], "de"), ver), c)
