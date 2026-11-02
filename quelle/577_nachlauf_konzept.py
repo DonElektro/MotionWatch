@@ -21,6 +21,18 @@ PRESENCE_BACK_KEYS = tuple(k for k, _l in PRESENCE_BACK)
 AUTOTUNE_KEYS = ("min_area", "sensitivity", "speed_consistency")
 AUTOTUNE_SPAN = 0.20
 AUTOTUNE_LAST = {}                                          # the value the tuner set last (to see a change by hand)
+# real-erkennung-fix (Erkennungstest 2, 01.11.2026: Personen 75 % -> 44 %): the tuner had driven min_area to 2400 … 3400 (from
+# the noise while calibrating, then held there by the ±20 %) and speed_consistency to 0.7 («persons detected, tightening», never
+# back) - and the next scene started with these values. A walking person at 10 m is only about 1 % of the working picture
+# (480 x 270: ~1200 px), a child at 8 m less: such values let only the AI find persons. Now:
+#   - min_area at most AUTOTUNE_AREA_MAX of the working picture (independent of proc_width), also for a value from before,
+#   - speed_consistency tightened at most to AUTOTUNE_STEADY_MAX (factory 0.4 + 0.1),
+#   - a new calibration (new scene / camera) starts not with extreme values of before: speed_consistency <= AUTOTUNE_STEADY_MAX,
+#     sensitivity >= AUTOTUNE_SENS_MIN (only when the values were not measured by the assistant «Erkennung verbessern», 312).
+AUTOTUNE_AREA_MAX = 0.009                                   # 0.9 % of the picture (480 x 270: 1166 px; a child at 8 m ~1100 px) - wind: wind_boost
+AUTOTUNE_STEADY_MAX = 0.5
+AUTOTUNE_SENS_MIN = 35
+AUTOTUNE_CAP = {}                                           # the last cap of min_area in pixels (autotune_clamp)
 
 
 def presence_back_mode():
@@ -50,6 +62,25 @@ def autotune_base_set(src):
     return nb
 
 
+def autotune_area_cap(frame_px):
+    """real-erkennung-fix: the biggest min_area the tuner may set, frame_px = pixels of the working picture"""
+    cap = max(300.0, AUTOTUNE_AREA_MAX * float(frame_px or 0)) if frame_px else 4000.0
+    AUTOTUNE_CAP["px"] = cap
+    return cap
+
+
+def autotune_start_values():
+    """real-erkennung-fix: before a new calibration (190 reset) no extreme values of an earlier scene / an earlier run"""
+    b = CFG.get("auto_tune_base") if isinstance(CFG.get("auto_tune_base"), dict) else {}
+    if not CFG.get("auto_tune", True) or str(b.get("src", "")).startswith("assistant"):
+        return
+    for key, ok, v in (("speed_consistency", CFG.get("speed_consistency", 0.4) <= AUTOTUNE_STEADY_MAX, AUTOTUNE_STEADY_MAX),
+                       ("sensitivity", CFG.get("sensitivity", 50) >= AUTOTUNE_SENS_MIN, AUTOTUNE_SENS_MIN)):
+        if not ok:
+            log_event("auto", f"Auto-tune: {key} {CFG[key]} -> {v} (start of a new calibration)")
+            CFG[key] = v
+
+
 def autotune_base_reset():
     """the tuner starts again (190, reset): a new calibration measures freely - values of the assistant stay the middle"""
     b = CFG.get("auto_tune_base") if isinstance(CFG.get("auto_tune_base"), dict) else {}
@@ -73,6 +104,8 @@ def autotune_clamp(key, value):
         b = dict(b, **{key: cur, "src": b.get("src", "") + "+hand"}); CFG["auto_tune_base"] = b      # set by hand / by a test
         mid = cur; lo, hi = mid * (1 - AUTOTUNE_SPAN), mid * (1 + AUTOTUNE_SPAN)
     v = max(lo, min(hi, float(value)))
+    if key == "min_area" and AUTOTUNE_CAP.get("px"):
+        v = min(v, float(AUTOTUNE_CAP["px"]))                  # real-erkennung-fix: the cap wins over the ±20 %
     AUTOTUNE_LAST[key] = round(v, 2) if isinstance(CFG.get(key), float) else int(v)
     return v
 
@@ -101,7 +134,7 @@ def nachlauf_migrate(cfg_in):
 
 def nachlauf_selftest():
     """--self-test: the migrations, the ±20 % of the auto-tuner, the one weekly report"""
-    keep = {k: CFG.get(k) for k in ("weekrep_sim", "presence_back", "auto_tune_base", "min_area", "sensitivity", "speed_consistency")}
+    keep = {k: CFG.get(k) for k in ("weekrep_sim", "presence_back", "auto_tune_base", "min_area", "sensitivity", "speed_consistency", "auto_tune")}
     try:
         for old, want in (({"presence_auto": True, "back_ask": True}, "off"), ({"presence_auto": False, "back_ask": True}, "ask"),
                           ({"presence_auto": False, "back_ask": False}, "none"), ({"presence_auto": False}, "none")):
@@ -124,6 +157,15 @@ def nachlauf_selftest():
         CFG["min_area"] = 1100; autotune_base_set("calibration"); assert CFG["auto_tune_base"]["min_area"] == 1000, "assistant wins"
         CFG["min_area"] = 3000; AUTOTUNE_LAST.clear()          # changed by hand far outside: that is the new middle
         assert abs(autotune_clamp("min_area", 4000) - 3600) < 1e-6
+        CFG["auto_tune_base"] = {}; AUTOTUNE_LAST.clear()          # real-erkennung-fix: the cap and the start values
+        assert abs(autotune_area_cap(480 * 270) - 1166.4) < 0.1
+        CFG["min_area"] = 1000; autotune_base_set("calibration"); assert autotune_clamp("min_area", 1200) <= 1166.4
+        CFG["min_area"] = 3000; AUTOTUNE_LAST.clear(); assert autotune_clamp("min_area", 3400) <= 1166.4, "the cap wins"
+        CFG.update(speed_consistency=0.7, sensitivity=28, auto_tune_base={}, auto_tune=True); autotune_start_values()
+        assert CFG["speed_consistency"] == AUTOTUNE_STEADY_MAX and CFG["sensitivity"] == AUTOTUNE_SENS_MIN
+        CFG.update(speed_consistency=0.45, sensitivity=60); autotune_start_values()
+        assert CFG["speed_consistency"] == 0.45 and CFG["sensitivity"] == 60, "moderate values stay"
+        AUTOTUNE_CAP.clear()
         wr = weekrep_build("de")
         assert "with_sim" in wr and wr["text"]
     finally:

@@ -672,13 +672,13 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3.48.1", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 49390593,
-         "sha256": "3a77825dee5b8db78c15f0108c65b6056b60d6fb98875a11dbe3924fd5c31018"}
+SIM3D = {"version": "3.49.0", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 49390911,
+         "sha256": "fb88996945bb829c404ec4513d7a01aecc7c04695abef4e59596b47cb941ab5d"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # 3.43.x: the same 3D simulator for Linux (x86_64), offered at /sim/simulator3d_linux.zip - fetched, checked and kept the same way
 # (simulator3d/MoveEyeSim3D_Linux.zip, block «linux» in simulator3d/version.json; bauen.py --neue-version takes it over).
-SIM3D_LINUX = {"version": "3.48.1", "file": "simulator3d/MoveEyeSim3D_Linux.zip", "size": 43369076,
-               "sha256": "3da65e63e5b53ff753b7c77e79164c0d9e9187784fafc3bddb7205d75a91b95b", "stem": "MoveEyeSim3D_Linux",
+SIM3D_LINUX = {"version": "3.49.0", "file": "simulator3d/MoveEyeSim3D_Linux.zip", "size": 43369794,
+               "sha256": "579ead27ba73bbf67b36ab8d6cc7e1d85772503db2a8d8f90724b799a1dd39ba", "stem": "MoveEyeSim3D_Linux",
                "label": "MoveEye Sim (Linux)"}
 SIM3D_LINUX_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.

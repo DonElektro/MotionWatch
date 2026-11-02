@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-02 00:04",
+ "generated": "2026-11-02 06:30",
  "versions": [
+  {
+   "version": "3.49.0",
+   "file": "webcam_bewegung_3_49_0.py",
+   "url": "",
+   "sha256": "bfa475fb1a8730b0f7684accca870c9035ac5a1d030a1c799a53a862fcc50b86",
+   "date": "2026-11-02 06:30",
+   "notes": "Erkennung: deutlich mehr Personen erkannt (Test 3: 42 % → 69 %, Kinder 92 %); Auto-Tune gedeckelt, Wind-Regel nur letzte 2 Min., aufrechte KI-Person sofort «Person?» und nie «Tier», Autos/Scheinwerfer nachts keine Person, Kopf schwenkt beim Verfolgen mit.",
+   "size": 4876033,
+   "sig": "f2115c7a2da697acedbd6428a0b2cb21384d02b7a456782bc17d31c4db0e2e846aedda219ec4cf24661dc36bb3053ccd2a7cd97c0cb033c7101e09a4a457bd09",
+   "data": {
+    "file": "moveeye_daten_3_49_0.zip",
+    "url": "",
+    "sha256": "d1f3a570cea91e6fac3ab100b27019be4dc0bea26a20a14d7bc3366ce5bb446b",
+    "size": 3602272,
+    "sig": "5f00f393032d6d4781bc836ae93f8fe99607ea2433fcae2ab36ade87d691df1b4dfd6b90a7f02659f166e66cf5705474edc72a3cef1c7f0ffc9b7c6a1ee19401"
+   }
+  },
   {
    "version": "3.48.1",
    "file": "webcam_bewegung_3_48_1.py",
    "url": "",
    "sha256": "89689327702c84626c8de06f413ce5720c11730cb5ecbdee6b543f4af51abef0",
-   "date": "2026-11-02 00:04",
+   "date": "2026-11-02 00:06",
    "notes": "Werkstatt im Simulator wie in MoveEye (Karte unter dem Bild, Symbole, Farben), Knopftexte zweizeilig statt abgeschnitten; echte 3D-Modelle für Füsse und Stopfen, echte Lage auf den Druckplatten.",
    "size": 4865147,
    "sig": "c6c33be21f8e6950a6d5a38c221055684d116e05e00ba2fbef0a73bdbe66c7cb4f34d68ca9b37f7d6f74d7d4d04fbc38615dee5925be86c8b0e060df781eb509",
@@ -58,7 +75,7 @@
    "file": "webcam_bewegung_3_45_0.py",
    "url": "",
    "sha256": "b77d51b19b7daaceb3fd7438d451055ace336cd7ee29e03869e299b372caa5c1",
-   "date": "2026-11-01 21:36",
+   "date": "2026-11-02 06:27",
    "notes": "Varianten: ehrliche Selbstdiagnose ohne Servo-Treiber (PCA9685) und ohne Wärmebild, Relais ab Werk aus, eine Mover-Fahrt löst keinen «Gerät bewegt»-Alarm mehr aus; Bau-Infos: Stopfen 18–24, Kanal 4 auf das IR-Modul, Ladequelle, 3 Pakete (Basis/Komplett/Autark); Hinweis «fixfertig kaufen» in Bauen, Simulator-Werkstatt und Pi-Fenster; /info/ als Produktseite.",
    "size": 4833020,
    "sig": "ac29bc21a5a9ea75136ccb80a15829d45582f41ff047d8f4ad01ff69fc634c9000abd135a02a3f33ae17eca4759b64d35b21832f8a6767315b23725b29754d0b",
@@ -136,23 +153,6 @@
     "sha256": "35481ec303718326350767fcf763b207b2b1bf3887d49fecbd70789b76843c3c",
     "size": 2520195,
     "sig": "28beb3ee7fcb687f2070db00cd3ba6ecf8d96f80da9ec83ebc1b49b9659c81873370ecef9b869a2a1cec7c51c45cfa5b06d8eaf9568ed0a3680949b78ab0e809"
-   }
-  },
-  {
-   "version": "3.40.0",
-   "file": "webcam_bewegung_3_40_0.py",
-   "url": "",
-   "sha256": "aa6944616f3c5ac22c4dc3f86b806eea47c78d4db33b5885990e6e284084a32d",
-   "date": "2026-11-01 17:47",
-   "notes": "Bauen: MoveEye komplett selbst bauen – ein Menüeintrag in MoveEye und Simulator, 10 Reiter, 3D im Browser auch ohne Simulator, Varianten, Einkaufsliste, alle Druckteile als 3MF, Verkabelungsplan, «Mein Bau».",
-   "size": 4751837,
-   "sig": "dcee75204e1b6dd5521502ed2ea7fc6790553ea6bdd300e7bcb3e195c4957a147396bca2c7fec109153cbb8d159f5af2c20625f12108065a3e7cf06561296e08",
-   "data": {
-    "file": "moveeye_daten_3_40_0.zip",
-    "url": "",
-    "sha256": "0881d6b89ec6446528e61c7e92ac48ddd8e072822a53b6c870cd976e7102c593",
-    "size": 2516444,
-    "sig": "138c0130c73f35d2cfb05929f4e8dee72b1d355214fd05e22275c3aeb7ca98d10c36283e58bb0ba7926975e85921e51cc140fe0302fc5879f36ea3264f7da806"
    }
   },
   {

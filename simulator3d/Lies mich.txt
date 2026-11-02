@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.48.1 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.49.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -487,6 +487,13 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.49.0
+3.49.0: Erkennung (MoveEye): deutlich mehr Personen erkannt (Test 3: 42 % → 69 %, Kinder 92 %); Auto-Tune gedeckelt,
+Wind-Regel nur letzte 2 Min., aufrechte KI-Person sofort «Person?» und nie «Tier», Autos/Scheinwerfer nachts keine Person,
+der Kopf schwenkt beim Verfolgen mit. Am Simulator selbst ändert sich nichts.
+So testest du: im Simulator Besucher (auch Kinder) durchs Bild schicken und in MoveEye die Meldungen ansehen; nachts ein Auto
+vorbeifahren lassen (keine Person); eine Person laufen lassen, der Kopf folgt.
 
 NEU IN 3.48.1
 3.48.1: Werkstatt wie in MoveEye (Karte unter dem Bild, Symbole, Farben), Knopftexte zweizeilig statt abgeschnitten; echte
