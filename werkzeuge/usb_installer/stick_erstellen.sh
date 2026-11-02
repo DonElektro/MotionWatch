@@ -1,7 +1,7 @@
 #!/bin/bash
-# MoveEye USB-Installer - macht aus dem offiziellen Ubuntu-24.04-Server-ISO einen Stick, der den Simulator-PC
+# MoveEye USB-Installer - macht aus dem offiziellen Ubuntu-Server-ISO (24.04 oder 26.04) einen Stick, der den Simulator-PC
 # (HP EliteDesk 800 G1 DM) ohne Fragen neu aufsetzt und danach direkt im Kiosk mit MoveEye Sim startet.
-#   ./stick_erstellen.sh ubuntu-24.04.x-live-server-amd64.iso              fragt alles, baut das ISO, schreibt den Stick
+#   ./stick_erstellen.sh ubuntu-2X.04.x-live-server-amd64.iso              fragt alles, baut das ISO, schreibt den Stick
 #   ./stick_erstellen.sh ISO --geraet /dev/sdX                             Stick gleich angeben (wird trotzdem bestätigt)
 #   ./stick_erstellen.sh ISO --nur-iso                                     nur moveeye-<iso> bauen (z. B. für Rufus «DD»)
 #   ./stick_erstellen.sh ISO --nur-dateien ORDNER                          nur Dateien für einen Ventoy-Stick (auch Windows/Git Bash)
@@ -16,6 +16,7 @@ HIER="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
 VORLAGE="$HIER/user-data"
 META="$HIER/meta-data"
 ERSTSTART="$HIER/erststart.sh"
+NETZ="$HIER/netzpruefung.sh"
 
 ISO="" GERAET="" NUR_ISO=0 NUR_DATEIEN="" SSHKEY="" TAST_ARG=""
 while [ $# -gt 0 ]; do
@@ -38,11 +39,15 @@ stopp() { echo "FEHLER: $*" >&2; exit 1; }
 ISO="$(readlink -f "$ISO")"
 ISONAME="$(basename "$ISO")"
 case "$ISONAME" in
-	ubuntu-24.04*-live-server-amd64.iso) ;;
-	*) echo "WARNUNG: $ISONAME sieht nicht nach ubuntu-24.04.x-live-server-amd64.iso aus (geprüft ist nur dieses)." ;;
+	ubuntu-24.04*-live-server-amd64.iso | ubuntu-26.04*-live-server-amd64.iso) ;;
+	*) echo "WARNUNG: $ISONAME sieht nicht nach ubuntu-24.04.x- oder ubuntu-26.04.x-live-server-amd64.iso aus (geprüft sind nur diese)." ;;
 esac
-for f in "$VORLAGE" "$META" "$ERSTSTART"; do [ -r "$f" ] || stopp "Datei fehlt: $f"; done
+for f in "$VORLAGE" "$META" "$ERSTSTART" "$NETZ"; do [ -r "$f" ] || stopp "Datei fehlt: $f"; done
 command -v openssl >/dev/null || stopp "openssl fehlt (Linux: sudo apt install openssl; Windows: Git Bash verwenden)"
+# Paketliste: user-data und erststart.sh (Nachinstallieren nach einem Abbruch) müssen gleich sein
+PK_UD="$(awk '/^  packages:/ { p = 1; next } p && /^    - / { print $2; next } p { exit }' "$VORLAGE" | sort | tr '\n' ' ')"
+PK_ES="$(sed -n '/^PAKETE=(/,/)/p' "$ERSTSTART" | tr -d '()' | sed 's/^PAKETE=//' | tr -s ' \t' '\n' | grep -v '^$' | sort | tr '\n' ' ')"
+if [ -z "$PK_UD" ] || [ "$PK_UD" != "$PK_ES" ]; then stopp "Paketliste in user-data und erststart.sh (PAKETE) ungleich: «$PK_UD» / «$PK_ES»"; fi
 if [ -z "$NUR_DATEIEN" ]; then
 	command -v xorriso >/dev/null || stopp "xorriso fehlt: sudo apt install xorriso"
 fi
@@ -124,8 +129,10 @@ if [ -n "$SSHKEY" ]; then
 fi
 
 # --- user-data für den Stick zusammensetzen
-B64="$(base64 -w0 < "$ERSTSTART" 2>/dev/null || base64 < "$ERSTSTART" | tr -d '\n')"
-M_TAST="$T" M_HASH="$HASH" M_B64="$B64" M_WLAN="$WLAN_BLOCK" M_SSH="$SSH_BLOCK" awk '
+b64() { base64 -w0 < "$1" 2>/dev/null || base64 < "$1" | tr -d '\n'; }
+B64="$(b64 "$ERSTSTART")"
+NETZ_B64="$(b64 "$NETZ")"
+M_TAST="$T" M_HASH="$HASH" M_B64="$B64" M_NETZ="$NETZ_B64" M_WLAN="$WLAN_BLOCK" M_SSH="$SSH_BLOCK" awk '
 	function ersetze(s, alt, neu,   i) {
 		while ((i = index(s, alt)) > 0) s = substr(s, 1, i - 1) neu substr(s, i + length(alt))
 		return s
@@ -136,6 +143,7 @@ M_TAST="$T" M_HASH="$HASH" M_B64="$B64" M_WLAN="$WLAN_BLOCK" M_SSH="$SSH_BLOCK" 
 		z = ersetze($0, "@@TASTATUR@@", ENVIRON["M_TAST"])
 		z = ersetze(z, "@@PASSWORT_HASH@@", ENVIRON["M_HASH"])
 		z = ersetze(z, "@@ERSTSTART_B64@@", ENVIRON["M_B64"])
+		z = ersetze(z, "@@NETZ_B64@@", ENVIRON["M_NETZ"])
 		print z
 	}' "$VORLAGE" > "$W/moveeye/user-data"
 unset HASH WLAN_BLOCK

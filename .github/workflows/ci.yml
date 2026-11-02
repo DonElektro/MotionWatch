@@ -104,6 +104,29 @@ jobs:
             werkzeuge
       - run: python3 werkzeuge/sim_texte.py --pruefen
 
+  # ---------------------------------------------------------------- USB-Installer (Simulator-PC neu aufsetzen)
+  usb-installer:
+    name: USB-Installer · ${{ matrix.pruefung }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        pruefung: ["statisch", "pakete ubuntu:24.04", "pakete ubuntu:26.04", "retten ubuntu:24.04", "retten ubuntu:26.04"]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: werkzeuge/usb_installer
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Pakete
+        run: pip install -q pyyaml jsonschema
+      - name: pruefen.sh ${{ matrix.pruefung }}
+        env:
+          P: ${{ matrix.pruefung }}
+        run: bash werkzeuge/usb_installer/pruefen.sh $P
+
   sim-liste:
     name: Simulator · Testliste
     runs-on: ubuntu-24.04
