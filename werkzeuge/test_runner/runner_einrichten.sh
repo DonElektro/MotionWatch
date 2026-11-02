@@ -320,7 +320,7 @@ ProtectHome=yes
 ProtectKernelTunables=yes
 ProtectKernelModules=yes
 ProtectControlGroups=yes
-RestrictSUIDSGID=yes
+# RestrictSUIDSGID weggelassen: sperrt openat2 (Ubuntu 26.04), dann kann tar nichts entpacken. NoNewPrivileges deckt SUID ab.
 LockPersonality=yes
 MemoryHigh=3G
 MemoryMax=3400M
