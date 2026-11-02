@@ -127,6 +127,22 @@ jobs:
           P: ${{ matrix.pruefung }}
         run: bash werkzeuge/usb_installer/pruefen.sh $P
 
+  # ---------------------------------------------------------------- Simulator-PC (HP): signiertes Update, Haken, Testbild
+  hp-update:
+    name: HP-Update · Prüfkette + Einspielen
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: shellcheck
+        run: |
+          shellcheck -x hp werkzeuge/test_runner/*.sh werkzeuge/linux_paket.sh
+          shellcheck -x simulator3d/beilagen_linux/kiosk_sitzung.sh simulator3d/beilagen_linux/kiosk_ein.sh simulator3d/beilagen_linux/kiosk_aus.sh
+      - name: Testbild (Python)
+        run: python3 -m py_compile simulator3d/beilagen_linux/testbild.py werkzeuge/erkennungstest/fortschritt.py
+      - name: hp_update_test.sh (echte Signaturen, Verfälschungen, Einspielen mit Test-Schlüssel)
+        run: sudo bash werkzeuge/test_runner/hp_update_test.sh
+
   sim-liste:
     name: Simulator · Testliste
     runs-on: ubuntu-24.04

@@ -74,6 +74,7 @@ autoinstall:
     - curl
     - unzip
     - wpasupplicant
+    - python3-tk
   late-commands:
     - echo '@@ERSTSTART_B64@@' | base64 -d > /target/usr/local/sbin/moveeye-erststart
     - chmod 755 /target/usr/local/sbin/moveeye-erststart

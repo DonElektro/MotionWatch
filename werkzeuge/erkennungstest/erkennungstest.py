@@ -30,6 +30,7 @@ HIER = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HIER)
 import faelle as F          # noqa: E402
 import bericht as B         # noqa: E402
+import fortschritt as FS    # noqa: E402
 
 BASIS = "camping,wald,stellplatz"                                      # die 3 Orte × 4 Bedingungen von Test 1–3 (72 Fälle)
 NEU = "festival:tag+nacht,garten:tag+nachtregen,baustelle:nacht,wild:tag+nacht,camping:dunkel"
@@ -189,6 +190,8 @@ def main():
     ap.add_argument("--rechner", default="", help="Name des Rechners im Bericht")
     ap.add_argument("--stand", default="", help="Zweig / Stand (nur für den Bericht)")
     ap.add_argument("--commit", default="", help="Commit (nur für den Bericht)")
+    ap.add_argument("--fortschritt", default="", help="Fortschritt + Bild fürs Testbild des Kiosks (JSON, z. B. "
+                    "/run/moveeye-test/fortschritt.json; daneben bild.png); leer = aus")
     ap.add_argument("--liste", action="store_true", help="nur die Pläne zeigen")
     a = ap.parse_args()
     if a.liste:
@@ -226,6 +229,16 @@ def main():
     P = Prozesse()
     env = dict(os.environ)
     fehler = ""
+    fs = None
+    if a.fortschritt and os.path.isdir(os.path.dirname(os.path.abspath(a.fortschritt))):
+        try:
+            gesamt = FS.faelle_zaehlen(plaene, lambda p: PLAENE[p][1], a.laeufe)
+            fs = FS.Fortschritt(os.path.abspath(a.fortschritt), lauf["plan"], " + ".join(PLAENE[p][0] for p in plaene)[:90],
+                                gesamt, t_start, schon=FS.zeilen(os.path.join(aus, "results.jsonl")))
+            log("Fortschritt fürs Testbild:", a.fortschritt, "·", gesamt, "Fälle")
+        except Exception as e:                              # der Test geht vor
+            log("Fortschritt aus:", repr(e))
+            fs = None
     try:
         # --- Bildschirm: eigener Xvfb, oder ein vorhandenes Display (Grafikkarte), sonst doch Xvfb
         disp = ""
@@ -261,6 +274,8 @@ def main():
         st = {"sim_on": True, "source": "sim:0", "thermal_source": "sim:thermal", "sim_url": "http://127.0.0.1:%d" % a.sim_port,
               "sim_auto": False, "sim_autostart": False, "sim_autostart_v2": False, "sim_autoupd": False, "update_url": "",
               "lang": "de", "desktop_notice": False, "setup_done": True, "thermal_on": True}
+        if fs:
+            st["show_hud"] = False                          # Testbild: Bild ohne Textleiste oben (nur Anzeige, ändert die Erkennung nicht)
         with open(os.path.join(cfg, "motionwatch_settings.json"), "w") as f:
             json.dump({"cfg": st}, f)
         if a.ki_ordner:
@@ -298,6 +313,10 @@ def main():
         time.sleep(30)
         F.konfig(sim=sim, mw=web, out=aus, shots=os.path.join(aus, "bilder"), variant=lauf["plan"], fpsmin=a.fpsmin,
                  fpswait=a.fpswait)
+        if fs:
+            FS.einhaengen(fs)
+            fs.setze(status="laeuft")
+            fs.bild_faden(web)
         for p in plaene:
             log("Plan", p, "–", PLAENE[p][0])
             for schritt in PLAENE[p][1]:
@@ -326,6 +345,8 @@ def main():
             fehler = str(e.code)
         raise
     finally:
+        if fs:
+            fs.fertig("fertig" if not fehler else "fehler")
         P.stop()
         lauf["dauer_min"] = round((time.time() - t_start) / 60.0)
         if fehler:

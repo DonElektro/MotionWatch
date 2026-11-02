@@ -76,7 +76,7 @@ else
 fi
 
 schritt "3. Haken und Einstellungen"
-rm -f -- "$PAUSE_DIR/kiosk_pause"
+rm -f -- "$PAUSE_DIR/kiosk_pause" "$PAUSE_DIR/fortschritt.json" "$PAUSE_DIR/bild.png" "$PAUSE_DIR/bild_klein.png"
 rmdir -- "$PAUSE_DIR" 2>/dev/null
 weg "$TMPFILES"
 weg "$KIOSK_TEST"
@@ -106,4 +106,5 @@ fi
 schritt "Fertig"
 [ "$FEHLER" -gt 0 ] && echo "ACHTUNG: $FEHLER Schritt(e) mit Fehler - siehe oben."
 echo "Test-Runner entfernt. Der Kiosk läuft wie vorher (kiosk_sitzung.sh bleibt; ohne $KIOSK_TEST pausiert er nie)."
+echo "Das automatische Update (moveeye-hp-update) bleibt für den Kiosk; ausschalten: sudo moveeye-hp-update --entfernen"
 [ "$FEHLER" -eq 0 ]

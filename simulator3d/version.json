@@ -1,15 +1,15 @@
 {
- "version": "3D-5.52.0",
- "ver": "3.52.0",
- "name": "MoveEye Sim 3.52.0",
+ "version": "3D-5.53.0",
+ "ver": "3.53.0",
+ "name": "MoveEye Sim 3.53.0",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 49959093,
- "sha256": "b9123631f09edfd13aeac09e4059540712632e073c37bd4257d9da0db42448a4",
- "notes": "Geschichten-Fenster, Test-Runner",
+ "size": 49959054,
+ "sha256": "a2b29e7c828c258a25214d9dc50d153a0edd46ac6ad25c6a10fbe22afd7f0969",
+ "notes": "HP-Testbild, HP-Update",
  "linux": {
   "file": "simulator3d/MoveEyeSim3D_Linux.zip",
-  "ver": "3.52.0",
-  "size": 43935415,
-  "sha256": "4fb6f337b677f90e374f3f326cb6df45a8cce9386a6e2d4d1b613617ae685342"
+  "ver": "3.53.0",
+  "size": 43958606,
+  "sha256": "14147fd6cf378b84442414f1b3ede8833431a4ec0a03fa42f0e95ad5c76e2ec4"
  }
 }

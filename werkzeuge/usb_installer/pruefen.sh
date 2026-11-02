@@ -71,6 +71,8 @@ retten() {
 	printf '#!/bin/sh\necho ersatz\n' > "$W/zip/MoveEyeSim3D/MoveEyeSim3D.x86_64"
 	printf '#!/bin/bash\nid -un > "$HOME/installieren.txt"\n' > "$W/zip/MoveEyeSim3D/installieren.sh"
 	printf '#!/bin/bash\necho "$(id -un) SUDO_USER=$SUDO_USER $*" > /tmp/kiosk.txt\n' > "$W/zip/MoveEyeSim3D/kiosk_ein.sh"
+	mkdir -p "$W/zip/MoveEyeSim3D/hp"
+	printf '#!/bin/bash\necho "$(id -un) $*" > /tmp/hpupdate.txt\n' > "$W/zip/MoveEyeSim3D/hp/hp_update.sh"
 	(cd "$W/zip" && python3 -c 'import shutil; shutil.make_archive("sim", "zip", ".", "MoveEyeSim3D")')
 	cp "$HIER/erststart.sh" "$W/"
 	cat > "$W/innen.sh" <<'EOF'
@@ -100,6 +102,7 @@ done
 [ -x /home/simtest/MoveEyeSim3D/MoveEyeSim3D.x86_64 ] || { echo "FEHLER: nicht ausführbar"; f=1; }
 [ "$(cat /home/simtest/installieren.txt)" = simtest ] || { echo "FEHLER: installieren.sh nicht als simtest"; f=1; }
 [ "$(cat /tmp/kiosk.txt)" = "root SUDO_USER=simtest --ja" ] || { echo "FEHLER: kiosk_ein.sh falsch aufgerufen"; f=1; }
+[ "$(cat /tmp/hpupdate.txt 2>/dev/null)" = "root --einrichten --ohne-lauf" ] || { echo "FEHLER: moveeye-hp-update nicht eingerichtet"; f=1; }
 [ -s /var/lib/moveeye/erststart_fertig ] || { echo "FEHLER: Fertig-Marke fehlt"; f=1; }
 [ -x /usr/local/sbin/moveeye-erststart ] || { echo "FEHLER: nicht installiert"; f=1; }
 grep -q 'ExecStart=/usr/local/sbin/moveeye-erststart' /etc/systemd/system/moveeye-erststart.service || { echo "FEHLER: Dienst"; f=1; }

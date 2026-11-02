@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.52.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.53.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -487,6 +487,13 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.53.0
+3.53.0: Simulator-PC (HP): während der Erkennungstests zeigt der Kiosk ein Testbild-Dashboard (Live-Bild mit MoveEyes
+Rahmen, Soll/Ist, Fall N/M, Bilanz, 2 Min. Zusammenfassung am Schluss); neues automatisches, signiertes Update (nachts, nie
+während eines Tests). Der Ordner hp/ im Linux-Paket ist nur für diesen PC; das normale Update lässt ihn aus.
+So testest du: am HP einmal  curl -sL github.com/DonElektro/MotionWatch/raw/main/hp | sudo bash  eingeben; dann auf GitHub
+Actions › «Erkennung (HP)» › Plan «kurz» starten und am HP das Testbild ansehen.
 
 NEU IN 3.52.0
 3.52.0: Geschichten: jede Karte (Maggie, Das Hospiz) hat oben rechts «× Beenden» (speichert und beendet); Esc öffnet auch auf

@@ -181,9 +181,12 @@ jobs:
         timeout-minutes: 400
         run: |
           D=xvfb; [ "$ANZEIGE" = "bildschirm" ] && D=":0"
+          # Testbild am HP (Kiosk): Fortschritt und Live-Bild nach /run/moveeye-test (nur Daten; job_ende.sh räumt auf)
+          FD="$(dirname "${MW_KIOSK_PAUSE:-/run/moveeye-test/kiosk_pause}")"; FO=""
+          [ -d "$FD" ] && [ -w "$FD" ] && FO="$FD/fortschritt.json"
           "$PY" werkzeug/werkzeuge/erkennungstest/erkennungstest.py --repo stand --plan "$PLAN" --laeufe "$LAEUFE" \
             "$SIMOPT" "$SIMPFAD" --ki-ordner "$KI" --anzeige "$D" --grafik lite --aus "$RUNNER_TEMP/erkennung" \
-            --rechner "HP EliteDesk 800 G1 ($(nproc) Kerne)" --stand "$STAND" --commit "$SHA"
+            --rechner "HP EliteDesk 800 G1 ($(nproc) Kerne)" --stand "$STAND" --commit "$SHA" --fortschritt "$FO"
       - name: Bericht
         if: always()
         run: |
