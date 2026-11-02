@@ -42,6 +42,7 @@ FIX_WALK_AFTER_S = 5.0
 FIX_ANIMAL_MEM_S = 4.0      # an animal of the AI is remembered 4 s on its place (the AI runs only now and then; a new track there inherits it)
 FIX_ANIMAL_AI_S = 1.0       # an animal track becomes a person only when the AI says «person» on it for 1 s (≥ 2 runs of the AI on
                             # the Pi, 0.3 … 0.6 s apart) and no animal in that time: one wrong «person» of a dog is not enough
+FIX_ANIMAL_UP_S = 1.0      # real-erkennung-2: so lange muss die KI «Person» sagen, wenn auch ein Tier darauf liegt
 FIX_ANIMAL_CHILD_H = 0.5   # real-erkennung-2: an upright AI person with an animal on it: at least half a standing person high
 FIX_ANIMAL_UPRIGHT = 1.3    # real-erkennung-fix (Kinder 5/12 im Erkennungstest 2): the AI says «person» and the box stands upright
                             # (height >= 1.3 x width, like the thermal person check 232) -> a person at once, also when an animal of
@@ -315,7 +316,7 @@ def animal_track_decide(t, ai_person, animal_cls, t0, ph=0):
         elif not getattr(t, "up_p_since", 0.0):              # and the AI says «person» for FIX_ANIMAL_AI_S (the animal does not
             t.up_p_since = t0                                # start the clock again - that held children back before)
             upright = False
-        elif t0 - t.up_p_since < FIX_ANIMAL_AI_S:
+        elif t0 - t.up_p_since < FIX_ANIMAL_UP_S:
             upright = False
     elif not ai_person:
         t.up_p_since = 0.0

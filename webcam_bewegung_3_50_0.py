@@ -32940,7 +32940,7 @@ class MotionWatch:
         # that class - no person from the movement, not «sticky» from before; only the AI saying «person» on it for
         # FIX_ANIMAL_AI_S makes it a person (test: dog correctly «dog», 14 s later push «Person»)
         now_ = time.time()
-        animal = animal_track_decide(t, t.ai_confirmed, fixp_animal_of(t.box, now_, same=t.ai_confirmed), now_, getattr(self, "_ph", 0))
+        animal = animal_track_decide(t, t.ai_confirmed, fixp_animal_of(t.box, now_, same=t.ai_confirmed), now_)
         if t.ai_confirmed and not animal:
             walking = True                                  # AI says person -> person
         elif animal or (ai_on and aspect > 1.4 and not t.is_person):
@@ -32963,8 +32963,6 @@ class MotionWatch:
         if walking and not t.ai_confirmed and not t.is_person and getattr(t, "was_vehicle", False):
             walking = False                                 # real-erkennung-fix: once vehicle-like, movement alone never makes it a
                                                             # person (a car turning / half hidden looked «person-like» for a moment)
-        if walking and not t.is_person and night_still_veto(t):
-            walking = False                                 # real-erkennung-2: at night an AI person must have moved (411)
         if walking and not t.is_person and veh_light_veto(t, getattr(self, "_veh_t", 0.0), now_):
             walking = False                                 # real-erkennung-fix: the light of a car at night is no person
         walking = strict_gate(self, t, walking, time.time())   # 411: at dusk / in wind a new person only after 2-3 hits in a row
@@ -33870,9 +33868,6 @@ FOG_ON_S, FOG_OFF_S = 10.0, 30.0          # fog comes and goes in minutes; 10 s:
 TWI_NOISE_K = 1.6                         # noise dusk / day in the test: 1.8-2.2 (three places); rain 0.85, snow 0.6
 WIND_MEAN_KMH, WIND_GUST_KMH = 20.0, 39.0  # Beaufort 4 (20-28 km/h): twigs move; Beaufort 6 (39-49 km/h): big branches move
 WIND_RECENT_S, WIND_GUST_N = 120.0, 2     # real-erkennung-fix: only the last 2 min, a gust must come at least twice
-STRICT_NIGHT_AI = False                    # real-erkennung-2: nachts KI-Person wieder 2 Treffer? Gemessen (40 Nachtfälle): Personen
-                                           # 82 % statt 88 %, Tier/Auto als Person 8/16 statt 6/16 - kein Gewinn, darum aus.
-                                           # Gegen die Geister nachts hilft night_still_veto (unten).
 STRICT_AI_UPRIGHT = 1.2                    # real-erkennung-fix: only an upright AI person (h >= 1.2 w) is reported at once; a wide one
                                            # (boar, fox: the AI calls them «person» at night) still needs 2-3 AI results in a row
 
@@ -34093,26 +34088,6 @@ def veh_light_veto(t, veh_t, t0):
     return len(sp) >= 3 and (sum(sp) / len(sp)) < float(CFG.get("walk_min_speed", 0.3)) * 2
 
 
-NIGHT_STILL_PX = 1.5       # real-erkennung-2 (Test 3: nachts KI-«Person» auf Dingen, die ein Scheinwerfer / das IR-Licht anstrahlt -
-NIGHT_STILL_N = 3          # immer neue Spuren mit 0.0 px/Bild): nachts zählt eine neue KI-Person erst, wenn sie sich bewegt hat
-                           # (Mittel der ersten 3 Schritte >= 1.5 px/Bild) - eine echte Person ist hereingegangen / gekrochen.
-                           # Eine stehende Person ohne Bewegung findet nachts das Wärmebild (232); am Tag wie bisher.
-
-
-def night_still_veto(t):
-    """410 classify: True = at night a new AI person that has not moved yet (wait)"""
-    try:
-        if not t.ai_confirmed or getattr(t, "moved_once", False) or not is_dark():
-            return False
-    except Exception:
-        return False
-    sp = list(getattr(t, "speeds", []))[-NIGHT_STILL_N:]
-    if len(sp) >= NIGHT_STILL_N and sum(sp) / len(sp) >= NIGHT_STILL_PX:
-        t.moved_once = True
-        return False
-    return True
-
-
 def strict_gate(w, t, walking, t0):
     """410 classify: a NEW person only after STRICT["n"] hits in a row (see the top). Returns the new «walking»."""
     n = STRICT["n"]
@@ -34121,11 +34096,6 @@ def strict_gate(w, t, walking, t0):
         t._sg = None
         return walking
     up = float(t.box[3]) >= STRICT_AI_UPRIGHT * float(t.box[2]) if getattr(t, "box", None) else True
-    if up and STRICT_NIGHT_AI:                               # real-erkennung-2: at night (infrared) the AI calls fox / deer / a lit
-        try:                                                 # trunk «person» more often - there 2 AI results in a row as before
-            up = not is_dark()
-        except Exception:
-            pass
     if walking and t.ai_confirmed and up:                    # real-erkennung-fix: the AI sees an upright person - at once («Person?»)
         if not getattr(t, "_strict_maybe", False):
             t._strict_maybe = True
@@ -34236,8 +34206,7 @@ def fog_selftest():
         n0 = picture_noise(cv2.cvtColor(day, cv2.COLOR_BGR2GRAY))
         noisy = cv2.add(dusk, rng.randint(0, 22, dusk.shape).astype(np.uint8))
         assert picture_noise(cv2.cvtColor(noisy, cv2.COLOR_BGR2GRAY)) > 1.6 * n0
-        # strict gate: hits in a row (by day; real-erkennung-2: at night an AI person needs AI results in a row again)
-        dk0 = globals()["is_dark"]; globals()["is_dark"] = lambda: False
+        # strict gate: hits in a row
         class _T:
             def __init__(s):
                 s.is_person = False; s.ai_confirmed = False; s.id = 1
@@ -34272,9 +34241,6 @@ def fog_selftest():
             v.speeds = [6.0, 7.0, 6.5]
             assert not veh_light_veto(v, 100.0, 103.0), "a walking person stays a person"
             v.ai_confirmed = False; assert veh_light_veto(v, 100.0, 103.0), "the beam (movement only)"
-            v.ai_confirmed = True; v.speeds = [0.0, 0.1, 0.0]
-            globals()["is_dark"] = lambda: True; assert night_still_veto(v), "night: a still AI person waits"
-            v.speeds = [0.0, 3.0, 4.0, 5.0]; assert not night_still_veto(v) and not night_still_veto(v), "it moved: a person"
             globals()["is_dark"] = lambda: False; assert not veh_light_veto(v, 100.0, 103.0), "by day as before"
         finally:
             globals()["is_dark"] = dk
@@ -34290,10 +34256,6 @@ def fog_selftest():
             if strict_gate(w, tr_, True, t_):
                 got = t_ - 6000.0; break
         assert got is not None and got <= 0.1, f"Pi: confirmed after {got} s"
-        globals()["is_dark"] = lambda: True
-        if STRICT_NIGHT_AI:
-            assert run(2, [True], ai=True) is None and run(2, [True, True], ai=True) == 1, "night: 2 AI results"
-        globals()["is_dark"] = dk0
         # reasons: wind from the wind meter / simulator, switch «nachts strenger» off = as before
         TWI["on"] = True; STATE["storm"] = {"wind": 55.0, "gust": 70.0}
         assert strict_update() == 3 and STRICT["why"] == "dusk + wind"
@@ -35430,7 +35392,6 @@ FIX_WALK_AFTER_S = 5.0
 FIX_ANIMAL_MEM_S = 4.0      # an animal of the AI is remembered 4 s on its place (the AI runs only now and then; a new track there inherits it)
 FIX_ANIMAL_AI_S = 1.0       # an animal track becomes a person only when the AI says «person» on it for 1 s (≥ 2 runs of the AI on
                             # the Pi, 0.3 … 0.6 s apart) and no animal in that time: one wrong «person» of a dog is not enough
-FIX_ANIMAL_CHILD_H = 0.5   # real-erkennung-2: an upright AI person with an animal on it: at least half a standing person high
 FIX_ANIMAL_UPRIGHT = 1.3    # real-erkennung-fix (Kinder 5/12 im Erkennungstest 2): the AI says «person» and the box stands upright
                             # (height >= 1.3 x width, like the thermal person check 232) -> a person at once, also when an animal of
                             # the AI lay there a moment ago. A child, a small or crouching person is upright; animals from the side
@@ -35686,27 +35647,13 @@ def fixp_veto(tracks, ai_objs, pw, ph, t0):
     return out
 
 
-def animal_track_decide(t, ai_person, animal_cls, t0, ph=0):
+def animal_track_decide(t, ai_person, animal_cls, t0):
     """Tier vor Person for one track (410 classify): -> True when the track is an animal (no person from movement / sticky).
     ai_person = the AI calls it a person now; animal_cls = an animal of the AI lies on it now (or a moment ago)."""
     try:
         upright = float(t.box[3]) >= FIX_ANIMAL_UPRIGHT * float(t.box[2])
     except (AttributeError, IndexError, TypeError, ValueError):
         upright = False
-    if ai_person and upright and animal_cls:                 # real-erkennung-2 (Test 3: Reh, Katze «Person»): when an animal
-        try:                                                 # lies on it too, the box must have at least half the height of a
-            e = size_expected(t.box, ph) if ph else None     # standing person there (child 1.1 m = 0.63; cat, fox, hare: < 0.35)
-        except Exception:
-            e = None
-        if e is not None and float(t.box[3]) / ph < FIX_ANIMAL_CHILD_H * e:
-            upright = False
-        elif not getattr(t, "up_p_since", 0.0):              # and the AI says «person» for FIX_ANIMAL_AI_S (the animal does not
-            t.up_p_since = t0                                # start the clock again - that held children back before)
-            upright = False
-        elif t0 - t.up_p_since < FIX_ANIMAL_AI_S:
-            upright = False
-    elif not ai_person:
-        t.up_p_since = 0.0
     if ai_person and upright:                                # real-erkennung-fix: an upright AI person is a person (child)
         if getattr(t, "animal_like", False):
             log_event("person", f"Person #{t.id}: the AI says person, upright - not an animal ({getattr(t, 'animal_cls', '')})")
@@ -35936,9 +35883,8 @@ def fixp_selftest():
     assert animal_track_decide(t, True, "dog", 16.0) is True             # and dog again: the clock starts again
     assert animal_track_decide(t, True, None, 16.5) is True and animal_track_decide(t, True, None, 18.1) is False   # 1.6 s person: a person
     k = _T(); k.box = (100, 50, 20, 42)                                  # real-erkennung-fix: a child (upright), the AI said «dog» before
-    assert animal_track_decide(k, False, "dog", 20.0) is True and animal_track_decide(k, True, "dog", 20.5) is True
-    assert animal_track_decide(k, True, "dog", 21.0) is True and animal_track_decide(k, True, "dog", 21.6) is False, "upright AI person 1 s"
-    assert animal_track_decide(k, False, None, 22.0) is False            # stays a person (not an animal again without a new animal)
+    assert animal_track_decide(k, False, "dog", 20.0) is True and animal_track_decide(k, True, "dog", 20.5) is False, "upright AI person"
+    assert animal_track_decide(k, False, None, 21.0) is False            # stays a person (not an animal again without a new animal)
     FIXP["animals"].clear()
     fixp_animal_note([(10, 10, 40, 20, 0.6, 18)], 320, 240, 50.0)
     assert fixp_animal_of((12, 12, 38, 22), 52.0) == "dog" and fixp_animal_of((12, 12, 38, 22), 60.0) is None
@@ -36016,15 +35962,6 @@ CRAWL_GAP_S = 2.0        # Lücken bis 2 s gehören dazu (das Wärmebild meldet 
 CRAWL_SAME = 0.2         # «dieselbe Stelle»: Mitte / Fusspunkt höchstens 0.2 Bildbreite / -höhe vom letzten Bild entfernt
 CRAWL_ESC_TOP_M = 0.85   # «Person?» nur niedrig: robbend 0.3-0.5 m, auf Knien ~0.75 m; Reh mit Kopf 0.9-1.1 m, Wildschwein 0.8-0.95 m
 CRAWL_REPEAT_S = 30.0    # ein neuer Voralarm (Protokoll / Push) frühestens nach 30 s Ruhe - nicht in jedem Bild
-# real-erkennung-2 (Erkennungstest 3: Kriechende nur 4/12, tags fast nie - die KI kennt liegende Menschen kaum, die Bewegung
-# allein ist «breit und flach» = kein Person): die Regel gilt jetzt auch TAGS, dann aber ohne Voralarm (tags würde jedes Reh
-# einen Push geben) - nur «Person?» nach CRAWL_ESC_S, mit denselben Grenzen (lang, niedrig, warm, bewegt, nah).
-# Und: nennt die KI das Kriechende «sheep / cow / horse / bear» (grosse Tiere), ist es trotzdem «Person?», wenn es sehr niedrig
-# (oberer Rand unter CRAWL_BIG_LOW_M) und lang (CRAWL_BIG_LEN_M) ist - ein Schaf / eine Kuh / ein Pferd ist 0.7-1.6 m hoch.
-CRAWL_DAY = True
-CRAWL_BIG_LOW_M = 0.6
-CRAWL_BIG_LEN_M = 1.2
-CRAWL_BIG_ANIMALS = ("sheep", "cow", "horse", "bear", "elephant", "zebra", "giraffe")
 CRAWL = {"since": 0.0, "last": 0.0, "pos": None, "d0": None, "esc": False, "long": False, "said": 0.0, "push_t": 0.0, "n_pre": 0, "n_esc": 0, "info": None}
 CRAWL_PK_TITLE = ("⚠", "Something big at the ground", "info", True)    # (symbol, short title, class, picture) for 635b PK_TITLES
 
@@ -36096,13 +36033,13 @@ def crawl_feed(warm_boxes, tracks, animals, person_boxes, present, frame, pw, ph
     if not warm_boxes:
         return []
     night = _foot_night()
-    if not night and not CRAWL_DAY:
+    if not night:
         return []
     if person_boxes:                                     # a person elsewhere (maybe a fixed false one): only the warm bodies beside it
         pb = [(b[0] / pw, b[1] / ph, b[2] / pw, b[3] / ph) for b in person_boxes]
         warm_boxes = [b for b in warm_boxes if not any(_ov(b, q) > 0.3 for q in pb)]
     mv = [(t.box[0] / pw, t.box[1] / ph, t.box[2] / pw, t.box[3] / ph) for t in tracks if getattr(t, "box", None) and not getattr(t, "lost", 0)]
-    an = [(o[0] / pw, o[1] / ph, o[2] / pw, o[3] / ph, COCO_LABELS.get(o[5], "animal") if len(o) > 5 else "animal") for o in animals or []]
+    an = [(o[0] / pw, o[1] / ph, o[2] / pw, o[3] / ph) for o in animals or []]
     best = None
     for b in warm_boxes:
         moving = any(_ov(b, q) > 0.3 for q in mv)
@@ -36115,16 +36052,12 @@ def crawl_feed(warm_boxes, tracks, animals, person_boxes, present, frame, pw, ph
         if m is None:
             continue
         if best is None or m["len"] > best[1]["len"]:
-            best = (b, m, [q[4] for q in an if _ov(b, q[:4]) > 0.3])
+            best = (b, m, any(_ov(b, q) > 0.3 for q in an))
     if best is None:
         return []
-    b, m, kinds = best
-    animal = bool(kinds)
-    if animal and all(k in CRAWL_BIG_ANIMALS for k in kinds) and m["top"] is not None and m["top"] <= CRAWL_BIG_LOW_M \
-            and m["len"] >= CRAWL_BIG_LEN_M:
-        animal = False                                   # real-erkennung-2: «sheep» lying flat and long = a crawling person
-    c = crawl_decide(m, b, True, True, t0, CRAWL, animal)
-    if c is None or (c == "pre" and not night):          # real-erkennung-2: by day no Voralarm, only «Person?»
+    b, m, animal = best
+    c = crawl_decide(m, b, night, True, t0, CRAWL, animal)
+    if c is None:
         return []
     CRAWL["info"] = {"d": round(m["d"], 1), "len": round(m["len"], 2), "top": None if m["top"] is None else round(m["top"], 2), "cut": m["cut"], "what": c}
     bx, by, bw, bh = b
