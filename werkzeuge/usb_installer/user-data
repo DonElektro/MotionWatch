@@ -1,12 +1,17 @@
 #cloud-config
-# MoveEye USB-Installer: Ubuntu 24.04 LTS Server, unbeaufsichtigt (Subiquity autoinstall über cloud-init NoCloud).
+# MoveEye USB-Installer: Ubuntu 24.04 oder 26.04 LTS Server, unbeaufsichtigt (Subiquity autoinstall über cloud-init NoCloud).
 # Ziel: HP EliteDesk 800 G1 DM als reine Simulator-Maschine (Kiosk mit MoveEye Sim).
 # VORLAGE - nicht direkt verwenden: stick_erstellen.sh ersetzt die Platzhalter @@...@@ (Passwort-Hash, Tastatur,
 # erster Start) und schreibt das Ergebnis NUR auf den Stick. Kein Passwort und kein Hash ins Repository.
 # ACHTUNG: «storage» löscht die ganze (grösste) interne Platte ohne Rückfrage.
+# Vorher prüft «early-commands», ob Internet da ist (ohne Netz bricht die Installation sonst NACH dem Löschen ab):
+# ohne Internet erscheint eine Meldung, und es wird gewartet - die Platte bleibt bis dahin unberührt.
 autoinstall:
   version: 1
   interactive-sections: []
+  early-commands:
+    - echo '@@NETZ_B64@@' | base64 -d > /tmp/moveeye-netz.sh
+    - bash /tmp/moveeye-netz.sh
   refresh-installer:
     update: false
   locale: de_CH.UTF-8
@@ -32,6 +37,18 @@ autoinstall:
         dhcp4: true
         optional: true
     #@@WLAN@@
+  # Online-Paketquellen (nächster Spiegel per geoip); ohne erreichbaren Spiegel abbrechen statt «offline» weiter
+  # (offline fehlen xorg usw.). Die cdrom-Quelle entfernt der Installer am Schluss, moveeye-erststart prüft es noch einmal.
+  apt:
+    preserve_sources_list: false
+    geoip: true
+    primary:
+      - arches: [default]
+        uri: http://archive.ubuntu.com/ubuntu
+    security:
+      - arches: [default]
+        uri: http://security.ubuntu.com/ubuntu
+    fallback: abort
   storage:
     layout:
       name: direct
