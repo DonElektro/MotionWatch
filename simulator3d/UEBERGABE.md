@@ -1,8 +1,15 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 02.11.2026 · Version **3.51.0** · MoveEye **3.51.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 02.11.2026 · Version **3.52.0** · MoveEye **3.52.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.52.0 (MoveEye 3.52.0): Geschichten-Fenster · Test-Runner HP
+
+- real-story-fenster: «× Beenden» und Esc auf den Karten der Geschichten, alle Overlays im Handy-Stream (main_kamera.gd,
+  padview.gd dock=1), Geschichten vom Handy (Mehr › Spielen, Teil 639i), Touch-Stick «gehen»; Test `werkzeuge/story_karten_test.gd`.
+- real-test-runner: HP als self-hosted Runner (`werkzeuge/test_runner/`, Workflow `erkennung_hp.yml` nur von Hand / Zeitplan,
+  Prüfstand «rechner: hp»), Erkennungstest in `werkzeuge/erkennungstest/`, Kiosk-Pause-Hook; Linux-Paket mit den neuen Kiosk-Skripten.
 
 ## NEU in 3.51.0 (MoveEye 3.51.0): Gehäuse v5.3 Standard (`hardware/gehaeuse/Quellcode/v53.py`, 3MF in `Druckdateien/v5-3/`)
 

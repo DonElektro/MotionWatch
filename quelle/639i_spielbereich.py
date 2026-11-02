@@ -610,7 +610,7 @@ def play_selftest():
 SELFTEST_EXTRA.append(("Play area: tab «Spielen» (web, window, simulator spielbereich.gd)", play_selftest))
 
 
-# ---- 3.51.x (Daniel 02.11.2026): the manual (HELP_PAGE 540 + HELP_X) - a short chapter «Geschichten» before «Tipps & Tricks» ----
+# ---- 3.51.x (Besitzer 02.11.2026): the manual (HELP_PAGE 540 + HELP_X) - a short chapter «Geschichten» before «Tipps & Tricks» ----
 _HELP_STORY = {
     "de": ('<section id="stories" data-icon="📖"><h2>Geschichten im 3D-Simulator</h2><ul>'
            '<li><b>Vom Handy starten:</b> Mehr → Spielen → bei der Geschichte «Starten», «Weiterspielen» oder «Neu beginnen». '

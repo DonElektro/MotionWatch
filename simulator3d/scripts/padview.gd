@@ -14,7 +14,7 @@ extends Node
 ## camera) and the dock is copied in from the window (compose). Window small / minimized (main.remote_vp): nobody sees it,
 ## so there the layer with the buttons is hidden and the dock moves into a layer of its own (3 s after the last such
 ## picture everything is back).
-## 3.51.x (Daniel 02.11.2026): dock=1 copies in everything over the 3D view (cards of the stories and games, Tagebuch, windows
+## 3.51.x (Besitzer 02.11.2026): dock=1 copies in everything over the 3D view (cards of the stories and games, Tagebuch, windows
 ## such as «Gerät» / «Kameras» / Karte, «Mehr», popups, hints) - only the panel, the phone picture and the mover stick stay
 ## out (overlay_rects); also with the window small, so the hidden layer of _dock() is not used any more.
 
@@ -300,7 +300,7 @@ func compose(img: Image, k: float) -> Image:
 	return out
 
 
-# ---- 3.51.x (Daniel, 02.11.2026): what lies over the 3D view also goes into the clean picture for MoveEye ---------------------
+# ---- 3.51.x (Besitzer, 02.11.2026): what lies over the 3D view also goes into the clean picture for MoveEye ---------------------
 # Before only the dock was copied in: the cards of the stories (own CanvasLayer, e.g. 60), the Tagebuch, the game wizard, the
 # windows «Gerät» / «Kameras», popups and hints were seen at the PC but not on the phone. Now every visible Control of every
 # CanvasLayer of the window is copied in - except the parts MoveEye has itself (the panel on the right, the phone picture on

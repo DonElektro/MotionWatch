@@ -74,7 +74,7 @@ Auf GitHub: **Actions → Erkennung (HP) → Run workflow**. Eingaben:
 | `anzeige` | `xvfb` (Standard) oder `bildschirm` (nur mit `--bildschirm` eingerichtet) |
 | `warten` | so viele Minuten auf den HP warten, dann abbrechen (Standard 15) |
 
-Mit `gh` (Daniel oder Claude):
+Mit `gh` (Besitzer oder Claude):
 
 ```bash
 gh workflow run erkennung_hp.yml -R DonElektro/MotionWatch -f stand=real-mein-zweig -f plan=test3 -f laeufe=2

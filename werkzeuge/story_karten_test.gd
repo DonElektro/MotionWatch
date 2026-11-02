@@ -1,5 +1,5 @@
 extends SceneTree
-## Test «Karten der Geschichten» (Daniel 02.11.2026) ohne Bild, mit der echten Welt (main.tscn):
+## Test «Karten der Geschichten» (Besitzer 02.11.2026) ohne Bild, mit der echten Welt (main.tscn):
 ##   cd simulator3d && HOME=<test-home> <godot> --headless --path . -s "$PWD/../werkzeuge/story_karten_test.gd" -- --no-update --no-tour
 ## Prüft an «Maggie und der Bergkristall»: die Startkarte «Ein Abendspaziergang» hat oben rechts «× Beenden»; Esc öffnet
 ## die Pause (die Karte bleibt darunter), Esc / «Weiter» bringt die Karte zurück; «× Beenden» beendet die Geschichte;

@@ -401,7 +401,7 @@ var _adopt_t := -100.0
 
 
 func _remote_adopt() -> void:
-	"""3.51.x (Daniel 02.11.2026): every other CanvasLayer of the window (cards of the stories and games, Tagebuch, «Mehr»,
+	"""3.51.x (Besitzer 02.11.2026): every other CanvasLayer of the window (cards of the stories and games, Tagebuch, «Mehr»,
 	Werkstatt, hints …) also into the picture of its own - before only ui_layer went, the rest stayed in the small window"""
 	var root_vp: Viewport = main.get_viewport()
 	for e in main._remote_back.duplicate():               # owner gone (a story module ended): the layer goes too
