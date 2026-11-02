@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.53.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.54.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -487,6 +487,12 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.54.0
+3.54.0: Sim-Ansicht in MoveEye: im Simulator-Betrieb zeigt die Live-Seite auf Handy und Tablet ein grosses Simulator-Bild mit
+grossen Knöpfen (Kopf, Folgen, IR, Licht, Sirene, Aufnahme), «⋯ Mehr» und «▦ Klassisch»; «🎮 Spielen» startet ein Spiel mit
+einem Tipp, gespielt wird mit Knöpfen im Browser; das Simulator-Bild wird nicht mehr abgeschnitten (auch der Spiel-Assistent).
+So testest du: Simulator starten, in MoveEye am Handy oder iPad «Live» öffnen, die grossen Knöpfe und «🎮 Spielen» antippen.
 
 NEU IN 3.53.0
 3.53.0: Simulator-PC (HP): während der Erkennungstests zeigt der Kiosk ein Testbild-Dashboard (Live-Bild mit MoveEyes

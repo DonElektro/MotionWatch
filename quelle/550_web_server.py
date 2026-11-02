@@ -438,6 +438,18 @@ class WebStream:
                     if not isinstance(r, dict) or not r.get("ok"):
                         return reply({"ok": False, "error": tr_err(str((r or {}).get("error") or "not supported - update the simulator"), lang)}, 400)
                     return reply(r)
+                if act_ == "localplay":                      # 639zt Sim-Ansicht: play «here at the PC» from the phone (localplay.gd 3D-3.77)
+                    do_ = str(d.get("do") or "get")
+                    if do_ not in ("get", "stop", "start"):
+                        return reply({"ok": False, "error": "unknown action"}, 400)
+                    q_ = {"action": "localplay", "do": do_}
+                    if do_ == "start":
+                        q_["role"] = "guard" if d.get("role") == "guard" else "runner"
+                    try:
+                        r = sim_control(q_)
+                    except Exception:
+                        return reply({"ok": False, "error": tr_err("simulator not reachable", lang)}, 400)
+                    return reply(r if isinstance(r, dict) else {"ok": False})
                 if act_ == "game_hc":                        # handicap for a player (3D-3.25)
                     try:
                         r = sim_control({"action": "game_handicap", "slot": int(d.get("slot", -1)), "level": max(0, min(2, int(d.get("level", 0))))})
