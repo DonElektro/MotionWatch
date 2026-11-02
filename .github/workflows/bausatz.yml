@@ -57,7 +57,7 @@ jobs:
         env:
           DEBIAN_FRONTEND: noninteractive
         run: |
-          pip install -q playwright==1.55.0
+          pip install -q opencv-python-headless numpy flask pillow cryptography playwright==1.55.0   # werkstatt_html.py lädt die Programmdatei (cv2 usw.)
           python3 -m playwright install --with-deps chromium
       - name: Paket bauen
         if: steps.v.outputs.sig == 'ja' && (steps.v.outputs.da != 'ja' || inputs.neu == true)
