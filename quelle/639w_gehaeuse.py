@@ -631,6 +631,8 @@ GEH_DL_TX = {                                             # real-download-fix: E
         "Les fichiers d'impression viennent de GitHub – il faut internet. Tout le reste de cette page fonctionne hors ligne.",
         "I file di stampa arrivano da GitHub – serve internet. Tutto il resto di questa pagina funziona offline.",
         "Las datotecas da stampa vegnan da GitHub – per quai basegni internet. Tut il rest da questa pagina funcziuna offline."),
+    "Ready-made? Request on the MoveEye homepage": ("Fixfertig kaufen? Anfrage auf der MoveEye-Homepage", "Tout prêt ? Demande sur le site de MoveEye",
+        "Già pronto? Richiesta sul sito di MoveEye", "Cumplettamain pront? Dumonda sin la pagina d'internet da MoveEye"),
     "Offline version": ("Offline-Version", "Version hors ligne", "Versione offline", "Versiun offline"),
 }
 for _k, _v in GEH_DL_TX.items():
@@ -638,7 +640,7 @@ for _k, _v in GEH_DL_TX.items():
     for _i, _L in enumerate(("fr", "it", "rm")):
         TRX.setdefault(_L, {}).setdefault(_k, _v[_i + 1])
 GEH_KEYS = sorted(set(GEH_UI_DE) | set(GEH_UI2_DE) | {k for _i, k in BAU_TABS} | {"Complete kit package (GitHub)", "Needs internet (GitHub)",
-    "Saved only in this browser (offline version).", "The print files come from GitHub – this needs internet. Everything else on this page works offline.", "Offline version",
+    "Saved only in this browser (offline version).", "The print files come from GitHub – this needs internet. Everything else on this page works offline.", "Offline version", "Ready-made? Request on the MoveEye homepage",
     "Without the repository MoveEye fetches the files from GitHub itself (the first time takes about a minute). Everything in one package:"} | {
     "Case", "Step", "Name", "Opened in the simulator.", "Simulator not connected – start it and connect it on the page Simulator."})
 
@@ -671,7 +673,7 @@ def geh_render_off(page, off):
     probe = page + COMMON_JS + GEH_3D_JS + str(globals().get("GEH_EINZEL_JS", "")) + str(globals().get("GEH_EINZEL_3D", "")) + fertig_js()
     keys = set(GEH_KEYS) | set(re.findall(r'data-i18n="([^"]+)"', page)) | {k for k in TRX.get("fr", {}) if '"' + k + '"' in probe}
     trx = {L: {k: TRX.get(L, {})[k] for k in sorted(keys) if TRX.get(L, {}).get(k)} for L in ("fr", "it", "rm")}
-    cfg = {k: off[k] for k in ("raw", "kit", "glb") if k in off}
+    cfg = {k: off[k] for k in ("home", "raw", "kit", "glb") if off.get(k)}
     head = ("<script>window.MW_OFFLINE=" + J(cfg) + ";window.I18NXA=" + J(trx) + ";\n" + LANG_JS.replace("</", "<\\/") + "\n"
             "(function(){var l='';try{l=localStorage.getItem('mw-lang')||'';}catch(e){}"
             "var nl=((navigator.language||'de').slice(0,2)||'de').toLowerCase();if(['de','fr','it','rm','en'].indexOf(nl)<0)nl='en';"
@@ -690,7 +692,7 @@ def geh_render_off(page, off):
     return page.replace("/*BASECSS*/", BASE_CSS).replace("/*COMMON*/", COMMON_JS).replace("/*ALERTS*/", "")
 
 
-def geh_offline_html():
+def geh_offline_html(homepage=""):
     """-> the whole workshop «Bauen» as one HTML file (werkzeuge/werkstatt_html.py): three.js and gehaeuse.glb inside as data URLs,
     the print files from GitHub (GEH_DRUCK_RAW), «All» = the kit package of the latest release (GEH_BAUSATZ_URL)"""
     import base64
@@ -700,7 +702,8 @@ def geh_offline_html():
     # GLTFLoader imports «../utils/BufferGeometryUtils.js»: a data URL has no folder -> the name from the import map
     src = {k: v.replace("'../utils/BufferGeometryUtils.js'", "'three/addons/utils/BufferGeometryUtils.js'") for k, v in src.items()}
     imports = {("three" if k == "three.module.min.js" else "three/addons/" + k): du(v.encode("utf-8"), "text/javascript") for k, v in src.items()}
-    off = {"raw": GEH_DRUCK_RAW, "kit": GEH_BAUSATZ_URL, "glb": du(gzip.decompress(bau3d_bytes("glb")), "model/gltf-binary"), "imports": imports}
+    home = str(homepage or (globals().get("FERTIG") or {}).get("homepage_url") or "")   # empty: the hint without a link
+    off = {"home": home if home.startswith("https://") else "", "raw": GEH_DRUCK_RAW, "kit": GEH_BAUSATZ_URL, "glb": du(gzip.decompress(bau3d_bytes("glb")), "model/gltf-binary"), "imports": imports}
     return geh_page(off=off)
 
 
@@ -1272,8 +1275,9 @@ def geh_selftest():
     assert "<!--NAV-->" not in html and "/*GEH" not in html
     off_ = geh_offline_html()                             # real-werkstatt-standalone: the same page as one offline file
     for x in ("window.MW_OFFLINE=", '"three":"data:text/javascript;base64,', "data:model/gltf-binary;base64,", GEH_DRUCK_RAW, GEH_BAUSATZ_URL,
-              "const GEH_OFF = window.MW_OFFLINE", "window.I18NXA=", '"Offline version"', "Parties", APP_VERSION):
+              "const GEH_OFF = window.MW_OFFLINE", "window.I18NXA=", '"Offline version"', "Parties", APP_VERSION, "Request on the MoveEye homepage"):
         assert x in off_, ("offline file", x)
+    assert '"home"' not in off_.split("window.I18NXA=")[0] and '"home":"https://x.ch/"' in geh_offline_html("https://x.ch/")[:300000], "homepage link only when set"
     for x in ('src="/', "/bau3d/", "/build/qr.svg", "/i18n/", "/*GEH", "<!--NAV-->", "/*ALERTS*/"):
         assert x not in off_, ("offline file", x)
     import gzip

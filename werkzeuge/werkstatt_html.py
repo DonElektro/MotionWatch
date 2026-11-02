@@ -18,6 +18,7 @@ Läuft bei jedem Release im Workflow «Bausatz» (Release-Asset, beide Namen) un
 """
 import argparse
 import glob
+import json
 import os
 import re
 import shutil
@@ -28,6 +29,9 @@ import tempfile
 HIER = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HIER)
 MAX_MB = 15.0                                              # Ziel: unter ca. 15 MB
+# Homepage für «Fixfertig kaufen? Anfrage auf der MoveEye-Homepage» (Daniel, 02.11.2026): leer = nur Text, sobald die Homepage
+# öffentlich ist hier die Adresse (https://…) eintragen -> der Hinweis wird ein Link (oder in ui_gemeinsam.json «fertig» «homepage_url»).
+HOMEPAGE_URL = ""
 
 
 def app_version():
@@ -55,15 +59,15 @@ def bauen(datei):
     home = tempfile.mkdtemp(prefix="mw_werkstatt_")
     out = os.path.join(home, "werkstatt.html")
     code = r'''
-import os, sys
+import json, os, sys
 ns = {"__name__": "mw_werkstatt", "__file__": os.path.abspath(sys.argv[1])}
 exec(compile(open(sys.argv[1], encoding="utf-8").read(), sys.argv[1], "exec"), ns)
-h = ns["geh_offline_html"]()
+h = ns["geh_offline_html"](json.loads(sys.argv[3]))
 open(sys.argv[2], "w", encoding="utf-8").write(h)
 print("VERSION " + ns["APP_VERSION"])
 '''
     try:
-        r = subprocess.run([sys.executable, "-c", code, datei, out], capture_output=True, text=True, timeout=300,
+        r = subprocess.run([sys.executable, "-c", code, datei, out, json.dumps(HOMEPAGE_URL)], capture_output=True, text=True, timeout=300,
                            env=dict(os.environ, MOTIONWATCH_HOME=home), cwd=home)
         ver = next((l[8:].strip() for l in r.stdout.splitlines() if l.startswith("VERSION ")), "")
         if r.returncode or not ver or not os.path.isfile(out):
@@ -145,6 +149,9 @@ def browser_test(pfad, bilder=None):
             fehler.append(name + ": Mein Bau nicht im Browser gespeichert: " + saved[:80])
         pg.evaluate("window.scrollTo(0, 0)")
         tab_txt = pg.locator("#g-tabs button").nth(1).inner_text()
+        fk = pg.evaluate("(() => { const e = document.querySelector('#g-fertig .fkt'); return e ? [e.textContent, !!e.querySelector('a'), !document.getElementById('g-fk-btn').hidden] : null; })()")
+        if name == "pc" and (not fk or fk[0] != "Fixfertig kaufen? Anfrage auf der MoveEye-Homepage" or fk[1] != bool(HOMEPAGE_URL) or fk[2]):
+            fehler.append(name + ": Hinweis fixfertig " + str(fk))
         if bilder:
             os.makedirs(bilder, exist_ok=True)
             pg.screenshot(path=os.path.join(bilder, "werkstatt_%s.png" % name), full_page=False)
