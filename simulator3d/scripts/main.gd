@@ -3917,7 +3917,7 @@ func _control(d: Dictionary) -> Dictionary:
 	#     "game_shut", "game_mwcatch", "shoot", "replay", "planner", "blindmap", "dataset", "farecreate", "whatif",
 	#     "input", "pad", "padview", "press", "rover", "view_look", "netmap", "nacht", "parcours", "sabotage",
 	#     "templates", "twin", "visits", "weit", "entdecken", "werkstatt", "trailer", "vorfuehrung", "spielbereich",
-	#     "egg", "sicherung", "mehr"]
+	#     "egg", "sicherung", "mehr", "localplay"]
 	return _mod("steuerung")._control(d)
 
 

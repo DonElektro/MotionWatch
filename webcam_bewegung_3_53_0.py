@@ -244,7 +244,7 @@ def prepare_settings_file():
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
 ZD_FILE = "moveeye_daten_3_53_0.zip"
-ZD_SHA256 = "914d74a5e2b66b8d214c7486a3e480a1d7c917074652cd86bbb397a5afc376eb"
+ZD_SHA256 = "64bdb4d6a56f7b4f4844fe3c7c5786f3647b98431c8fa1b692ec5766c3ccd9d7"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -40689,6 +40689,18 @@ class WebStream:
                     if not isinstance(r, dict) or not r.get("ok"):
                         return reply({"ok": False, "error": tr_err(str((r or {}).get("error") or "not supported - update the simulator"), lang)}, 400)
                     return reply(r)
+                if act_ == "localplay":                      # 639zt Sim-Ansicht: play «here at the PC» from the phone (localplay.gd 3D-3.77)
+                    do_ = str(d.get("do") or "get")
+                    if do_ not in ("get", "stop", "start"):
+                        return reply({"ok": False, "error": "unknown action"}, 400)
+                    q_ = {"action": "localplay", "do": do_}
+                    if do_ == "start":
+                        q_["role"] = "guard" if d.get("role") == "guard" else "runner"
+                    try:
+                        r = sim_control(q_)
+                    except Exception:
+                        return reply({"ok": False, "error": tr_err("simulator not reachable", lang)}, 400)
+                    return reply(r if isinstance(r, dict) else {"ok": False})
                 if act_ == "game_hc":                        # handicap for a player (3D-3.25)
                     try:
                         r = sim_control({"action": "game_handicap", "slot": int(d.get("slot", -1)), "level": max(0, min(2, int(d.get("level", 0))))})
@@ -76081,6 +76093,185 @@ def varianten_sw_selftest():
 
 SELFTEST_EXTRA.append(("Variants without all parts: servo fallback, thermal not found, relay 1 off, mover own drive (639zs)",
                        varianten_sw_selftest))
+# ----------------------------------------------------------------------------
+# Wunsch des Besitzers (02.11.2026, Paket «spielmodus»): am iPad war das Spielen «nicht spielbar», obwohl alles da ist -
+# der Spiel-Assistent kam als kleines, abgeschnittenes PC-Bild im Stream, die Knöpfe waren Fernbedienung eines PC-Bilds, die
+# Live-Seite war voll, bis zum Spielen brauchte es viele Schritte. Entscheid:
+#   * NUR im Simulator-Betrieb (Simulation ein und verbunden) zeigt die Live-Seite eine eigene, ruhige Vollbild-Ansicht
+#     «Sim-Ansicht»: oben eine schmale Leiste (Schutz-Zustand, 🎮 Spielen, ⋯ Mehr, ▦ Klassisch), in der Mitte das Bild des
+#     Simulators (view.jpg mit dock=1: nur 3D-Bild und Karten / Fenster, ohne Bedienfeld, ohne Abschneiden; klein darüber das
+#     Kamerabild von MoveEye), unten gross: Kopf-Stick, 🎯 Folgen, 🔴 IR, 💡 Licht, 🚨 Sirene, ⏺ Aufnahme.
+#   * Alles andere der Live-Seite liegt hinter «⋯ Mehr» (alle Schnellschalter in derselben Reihenfolge wie auf der Live-Seite,
+#     dazu Controller-Ansicht, Sticks fliegen / umschauen, Simulator, Schutz, Einstellungen) - nichts ist entfernt.
+#     «▦ Klassisch» führt zur bisherigen Live-Seite (gemerkt pro Gerät, localStorage «mw-simv»); dort bringt «📱 Sim-Ansicht»
+#     (Karte «Simulator-Steuerung») sie zurück. Im echten Betrieb (ohne Simulator) bleibt die Live-Seite genau wie bisher.
+#   * «🎮 Spielen»: die Spiele des Spiel-Assistenten (Schnellstart der Simulator-Datei gamewiz.gd, «quick»: Schleichen,
+#     Wächter-Duell, Diebstahl, KI-Turm, Spielabend-Turnier, MoveEye ins Schwitzen, Nacht-Spiel, Mission, Die Karte des
+#     Grossvaters, das Spiel zur Szene) als grosse Karten im Browser. Ein Tipp = spielen: gamewiz «quick» (alles eingestellt,
+#     Spiel offen), «Hier am PC mitspielen» (Steuerung game_local, localplay.gd), gamewiz «next» (Runde startet). Der
+#     Assistent selbst öffnet sich im Simulator nicht. «⚙ Anpassen» = der ganze Assistent (Seite Simulator, /sim#gw).
+#   * Im Spiel: die Spielknöpfe sind Knöpfe im Browser (Stick gehen links, Stick umschauen rechts, Ducken, Kriechen, Stein,
+#     Lampe, Rennen; Wächter: Auslöser, «Erwischt!», Licht, Scan, Sirene, Zoom). Sie wirken wie ein Game-Controller am Browser
+#     (/api/sim «pad», die EINE Belegung von padmap.gd: rechter Stick = gehen, linker = umschauen, A Lampe, B Ducken, X Stein,
+#     Y Kriechen, R2 Rennen / Auslöser, Start = Runde starten, Select = Wiederholung). Zeit, Verdacht, Leben und das Ergebnis
+#     zeigt der Browser selbst (game_info, wie die Zuschauer-Anzeige der Seite Simulator). «× Beenden» = localplay stop.
+# Die Geschichten (Maggie, Grossvater, Hospiz) laufen weiter im Simulator-Fenster: dort zeigt die Sim-Ansicht die Sticks
+# «gehen / umschauen» von selbst (470 simTouchPad, /api/play «playing»).
+# Daten: /api/state (530 refresh → QSJ), /api/sim (gamewiz, ctl, pad, game, localplay), /snapshot.jpg. Kein neuer Begriff
+# auf dem Pi, keine neue Einstellung. Übersetzungen: unten (_HX_SIMV, alle 5 Sprachen).
+# ----------------------------------------------------------------------------
+
+SIMV_JS = _zd('639zt_sim_ansicht/SIMV_JS', "")
+
+# Key = English text: (Deutsch, Français, Italiano, Rumantsch)
+_HX_SIMV = {
+    'Let’s play': ('Spielen', 'Jouer', 'Gioca', 'Giugar'),
+    'More': ('Mehr', 'Plus', 'Altro', 'Dapli'),
+    'Classic': ('Klassisch', 'Classique', 'Classico', 'Classic'),
+    'Back to the usual live screen': ('Zurück zur gewohnten Live-Seite', 'Retour à l’écran live habituel', 'Torna alla solita schermata live',
+                                      'Enavos al visur live usità'),
+    'Waiting for the picture of the simulator …': ('Warte auf das Bild des Simulators …', 'En attente de l’image du simulateur …',
+                                                    'In attesa dell’immagine del simulatore …', 'Spetg sin il maletg dal simulatur …'),
+    'Camera picture of MoveEye (tap: bigger / smaller)': ('Kamerabild von MoveEye (antippen: grösser / kleiner)', 'Image caméra de MoveEye (toucher : plus grand / plus petit)',
+                                                          'Immagine della telecamera di MoveEye (tocca: più grande / più piccola)', 'Maletg da la camera da MoveEye (tutgar: pli grond / pli pitschen)'),
+    'Head': ('Kopf', 'Tête', 'Testa', 'Chau'),
+    'walk': ('gehen', 'marcher', 'camminare', 'ir'),
+    'look around': ('umschauen', 'regarder autour', 'guardarsi intorno', 'guardar enturn'),
+    'aim finely': ('fein zielen', 'viser finement', 'mirare fine', 'mirar fin'),
+    'turn the camera': ('Kamera drehen', 'tourner la caméra', 'girare la telecamera', 'volver la camera'),
+    'What do you want to play?': ('Was willst du spielen?', 'À quoi veux-tu jouer ?', 'A cosa vuoi giocare?', 'Tge vuls ti giugar?'),
+    'Customise': ('Anpassen', 'Personnaliser', 'Personalizza', 'Adattar'),
+    'The whole game wizard (all rules and extras)': ('Der ganze Spiel-Assistent (alle Regeln und Extras)', 'L’assistant de jeu complet (toutes les règles et options)',
+                                                     'L’assistente di gioco completo (tutte le regole e gli extra)', 'L’entir assistent da gieu (tut las reglas ed extras)'),
+    'Follow': ('Folgen', 'Suivre', 'Seguire', 'Suandar'),
+    'IR light': ('IR-Licht', 'Lumière IR', 'Luce IR', 'Glisch IR'),
+    'Spotlight': ('Licht', 'Lumière', 'Luce', 'Glisch'),
+    'Siren': ('Sirene', 'Sirène', 'Sirena', 'Sirena'),
+    'Recording': ('Aufnahme', 'Enregistrement', 'Registrazione', 'Registraziun'),
+    'Full': ('Voll', 'Complet', 'Pieno', 'Cumplain'),
+    'Alert': ('Wachsam', 'Vigilant', 'Vigile', 'Attent'),
+    'Off': ('Aus', 'Arrêt', 'Spento', 'Giu'),
+    'not connected': ('nicht angeschlossen', 'non connecté', 'non collegato', 'betg collià'),
+    'All switches of the live screen. Tap «▦ Classic» for the complete usual live screen.': (
+        'Alle Schalter der Live-Seite. «▦ Klassisch» zeigt die ganze gewohnte Live-Seite.',
+        'Tous les interrupteurs de l’écran live. «▦ Classique» montre tout l’écran live habituel.',
+        'Tutti gli interruttori della schermata live. «▦ Classico» mostra tutta la solita schermata live.',
+        'Tut ils interruttus dal visur live. «▦ Classic» mussa l’entir visur live usità.'),
+    'Talk: hold the button on the usual live screen': ('Sprechen: auf der gewohnten Live-Seite den Knopf gedrückt halten',
+                                                      'Parler : maintenir le bouton sur l’écran live habituel',
+                                                      'Parlare: tenere premuto il pulsante nella solita schermata live',
+                                                      'Discurrer: tegnair smatgà il buttun sin il visur live usità'),
+    'Classic live screen (everything)': ('Klassische Live-Seite (alles)', 'Écran live classique (tout)', 'Schermata live classica (tutto)', 'Visur live classic (tut)'),
+    'Sticks fly / look around': ('Sticks fliegen / umschauen', 'Sticks voler / regarder autour', 'Stick volare / guardarsi intorno', 'Sticks sgular / guardar enturn'),
+    'Controller view': ('Controller-Ansicht', 'Vue manette', 'Vista controller', 'Vista dal controller'),
+    'Simulator (tab)': ('Simulator (Reiter)', 'Simulateur (onglet)', 'Simulatore (scheda)', 'Simulatur (register)'),
+    'Stories and places': ('Geschichten und Orte', 'Histoires et lieux', 'Storie e luoghi', 'Istorgias e lieus'),
+    'Protection': ('Schutz', 'Protection', 'Protezione', 'Protecziun'),
+    'Settings': ('Einstellungen', 'Réglages', 'Impostazioni', 'Parameters'),
+    'History': ('Verlauf', 'Historique', 'Cronologia', 'Cronologia'),
+    'More (tab)': ('Mehr (Reiter)', 'Plus (onglet)', 'Altro (scheda)', 'Dapli (register)'),
+    'Screens': ('Ansichten', 'Écrans', 'Schermate', 'Visurs'),
+    'loading the games …': ('lade die Spiele …', 'chargement des jeux …', 'caricamento dei giochi …', 'chargia ils gieus …'),
+    'simulator not reachable': ('Simulator nicht erreichbar', 'simulateur injoignable', 'simulatore non raggiungibile', 'simulatur betg cuntanschibel'),
+    'The game wizard is open at the simulator PC. «⚙ Customise» shows it here.': (
+        'Der Spiel-Assistent ist am Simulator-PC offen. «⚙ Anpassen» zeigt ihn hier.',
+        'L’assistant de jeu est ouvert sur le PC du simulateur. «⚙ Personnaliser» l’affiche ici.',
+        'L’assistente di gioco è aperto sul PC del simulatore. «⚙ Personalizza» lo mostra qui.',
+        'L’assistent da gieu è avert al PC dal simulatur. «⚙ Adattar» al mussa qua.'),
+    'One tap: everything is set (3 minutes, good rules) and you play here with the buttons. «⚙ Customise» for your own rules.': (
+        'Ein Tipp: alles ist eingestellt (3 Minuten, gute Regeln) und du spielst hier mit den Knöpfen. «⚙ Anpassen» für eigene Regeln.',
+        'Un toucher : tout est réglé (3 minutes, bonnes règles) et tu joues ici avec les boutons. «⚙ Personnaliser» pour tes propres règles.',
+        'Un tocco: è tutto impostato (3 minuti, buone regole) e giochi qui con i pulsanti. «⚙ Personalizza» per regole proprie.',
+        'In tip: tut è endrizzà (3 minutas, bunas reglas) e ti giogas qua cun ils buttuns. «⚙ Adattar» per atgnas reglas.'),
+    'It starts in the simulator window – walk with the sticks.': ('Es startet im Simulator-Fenster – mit den Sticks gehen.',
+                                                                 'Ça démarre dans la fenêtre du simulateur – marche avec les sticks.',
+                                                                 'Parte nella finestra del simulatore – cammina con gli stick.',
+                                                                 'I cumenza en la fanestra dal simulatur – ir cun ils sticks.'),
+    'not possible': ('nicht möglich', 'impossible', 'non possibile', 'betg pussaivel'),
+    'The round starts': ('Die Runde startet', 'La manche commence', 'Il round inizia', 'La runda cumenza'),
+    'Crouch': ('Ducken', 'Se baisser', 'Abbassarsi', 'Sa sbassar'),
+    'Crawl': ('Kriechen', 'Ramper', 'Strisciare', 'Ruschnar'),
+    'Stone': ('Stein', 'Pierre', 'Sasso', 'Crap'),
+    'Torch': ('Lampe', 'Lampe', 'Lampada', 'Lampa'),
+    'Run': ('Rennen', 'Courir', 'Correre', 'Currer'),
+    'Replay': ('Wiederholung', 'Ralenti', 'Replay', 'Repetiziun'),
+    'Shutter': ('Auslöser', 'Déclencheur', 'Scatto', 'Deliberader'),
+    'Caught!': ('Erwischt!', 'Attrapé !', 'Preso!', 'Tschiffà!'),
+    'Radar scan': ('Scan', 'Scan', 'Scansione', 'Scan'),
+    'Zoom': ('Zoom', 'Zoom', 'Zoom', 'Zoom'),
+    'Quit': ('Beenden', 'Quitter', 'Esci', 'Terminar'),
+    'Guard': ('Wächter', 'Gardien', 'Guardiano', 'Guardian'),
+    'Sneaker': ('Schleicher', 'Furtif', 'Furtivo', 'Furtiv'),
+    'Ready?': ('Bereit?', 'Prêt ?', 'Pronto?', 'Pront?'),
+    'You are the guard: turn the camera and catch them': ('Du bist Wächter: Kamera drehen und erwischen', 'Tu es le gardien : tourne la caméra et attrape-les',
+                                                          'Sei il guardiano: gira la telecamera e prendili', 'Ti es il guardian: volva la camera e tschiffa els'),
+    'Sneak unseen to the green light – the arrow shows the way.': ('Schleich ungesehen zum grünen Licht – der Pfeil zeigt den Weg.',
+                                                                   'Faufile-toi sans être vu jusqu’à la lumière verte – la flèche montre le chemin.',
+                                                                   'Arriva di nascosto alla luce verde – la freccia mostra la strada.',
+                                                                   'Sa zuppa fin tar la glisch verda – la frizza mussa la via.'),
+    'More players: open on the phone': ('Weitere Spieler: auf dem Handy öffnen', 'Autres joueurs : ouvrir sur le portable', 'Altri giocatori: apri sul telefono',
+                                        'Ulteriurs giugaders: avrir sin il telefonin'),
+    'Round over': ('Runde vorbei', 'Manche terminée', 'Round finito', 'Runda terminada'),
+    'Play again': ('Nochmals spielen', 'Rejouer', 'Gioca ancora', 'Giugar anc ina giada'),
+    'Start the round': ('Runde starten', 'Lancer la manche', 'Avvia il round', 'Cumenzar la runda'),
+    'Another game': ('Anderes Spiel', 'Autre jeu', 'Altro gioco', 'Auter gieu'),
+    'This simulator does not send its window (update the simulator).': ('Dieser Simulator schickt sein Fenster nicht (Simulator aktualisieren).',
+                                                                         'Ce simulateur n’envoie pas sa fenêtre (mettre à jour le simulateur).',
+                                                                         'Questo simulatore non invia la sua finestra (aggiorna il simulatore).',
+                                                                         'Quest simulatur na tramet betg sia fanestra (actualisar il simulatur).'),
+    'Sim view': ('Sim-Ansicht', 'Vue simulateur', 'Vista simulatore', 'Vista dal simulatur'),
+}
+for _k, _v in _HX_SIMV.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+WEB_PAGE = WEB_PAGE.replace("</body>", SIMV_JS.replace("/*SIMVDE*/{}", json.dumps({_k: _v[0] for _k, _v in _HX_SIMV.items()}, ensure_ascii=False), 1)
+                            + "</body>", 1)
+
+
+def simv_selftest():
+    html = WEB_PAGE
+    assert html.count('id="sv-css"') == 1 and "/*SIMVDE*/" not in html and '"Sim-Ansicht"' in html, "Sim-Ansicht not in the live page"
+    i = html.find('id="sv-css"')
+    assert html.find("function simTouchPad", 0, i) > 0 and html.find("function simViewPoll", 0, i) > 0, "Sim-Ansicht before the stream functions (470)"
+    js = SIMV_JS
+    for need in ('action: "gamewiz"', 'op: "quick"', 'id: "game_local"', 'op: "next"', 'action: "pad"', 'action: "localplay", do: "stop"',
+                 'action: "game"', '"/api/stick"', '"/snapshot.jpg', 'dataset.dock = "1"', '"mw-simv"', "S_.on && S_.ok",
+                 'dataset.tab !== "live"', "qsArrange(qsList(J)", '"/sim#gw"'):
+        assert need in js, ("Sim-Ansicht: missing " + need)
+    for k, v in _HX_SIMV.items():                         # all five languages
+        assert len(v) == 4 and all(v), k
+        assert k in TRX["fr"] and k in TRX["it"] and k in TRX["rm"] and k in DE, k
+    assert tr("Sim view", "rm") == "Vista dal simulatur" and DE.get("Quit") == "Beenden"
+    assert HELP_PAGE.count('<section id="simview"') == 2 and all('id="simview"' in (HELP_X.get(L) or 'id="simview"') for L in ("fr", "it", "rm")), "manual: simview"
+    try:
+        src_ = open(__file__, encoding="utf-8").read()
+    except OSError:
+        src_ = 'act_ == "localplay"'
+    assert 'act_ == "localplay"' in src_, "server: /api/sim localplay (550)"
+    return "Sim-Ansicht: live page in simulator operation, game choice, pad, translations"
+
+
+# ---- the manual (HELP_PAGE 540 + HELP_X): a short chapter «Sim-Ansicht und Spielen» before «Tipps & Tricks» ----
+_HELP_SIMV = _zd('639zt_sim_ansicht/HELP_SIMV', _ZDDict())
+
+
+def _help_simv(doc, lang):
+    if 'id="simview"' in doc:
+        return doc
+    i = doc.find('<section id="tips"')
+    return doc[:i] + _HELP_SIMV[lang] + doc[i:] if i >= 0 else doc
+
+
+_hp_en_simv = HELP_PAGE.find('<div lang="en">')
+if _hp_en_simv > 0:
+    HELP_PAGE = _help_simv(HELP_PAGE[:_hp_en_simv], "de") + _help_simv(HELP_PAGE[_hp_en_simv:], "en")
+for _L in ("fr", "it", "rm"):
+    if HELP_X.get(_L):
+        HELP_X[_L] = _help_simv(HELP_X[_L], _L)
+
+
+SELFTEST_EXTRA.append(("Sim view: live screen in simulator operation, one-tap games, touch pad (639zt)", simv_selftest))
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--cam", type=int, default=None, help="USB camera number (same as --source usb:N)")

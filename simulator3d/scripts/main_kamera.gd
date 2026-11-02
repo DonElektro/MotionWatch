@@ -249,6 +249,8 @@ func view_rect() -> Rect2:
 	"""the part of the window with the 3D world (without the panel on the right)"""
 	var vs: Vector2 = Vector2(main.remote_vp.size) if main.remote_vp != null else main.get_viewport().get_visible_rect().size
 	var w := vs.x
+	if main.padview != null and main.padview.dock_compose():
+		return Rect2(0, 0, max(64.0, w), vs.y)            # Spielmodus (3.54): dock=1 leaves the panel out by itself - nothing is cut off
 	if main.ui_root != null and main.ui_root.visible:
 		w = min(w, main.ui_root.get_global_rect().position.x)
 	return Rect2(0, 0, max(64.0, w), vs.y)
@@ -306,6 +308,8 @@ func view_input(evs: Array) -> int:
 			continue
 		var t := str(e.get("t", ""))
 		var p = r.position + Vector2(clampf(float(e.get("x", 0.5)), 0.0, 1.0) * r.size.x, clampf(float(e.get("y", 0.5)), 0.0, 1.0) * r.size.y)
+		if t in ["down", "dbl", "wheel"] and _hidden_chrome(p):
+			continue                                      # Spielmodus (3.54): not on the panel that the picture for MoveEye leaves out
 		if t == "move":
 			var m := InputEventMouseMotion.new()
 			m.position = p
@@ -356,6 +360,25 @@ func view_input(evs: Array) -> int:
 			main._in_pos = p
 		n += 1
 	return n
+
+
+func _hidden_chrome(p: Vector2) -> bool:
+	"""dock=1: the picture shows the clean 3D view where the panel is - a tap there must not press a button nobody sees
+	(cards and windows over the panel are in the picture and keep working)"""
+	var pv = main.padview
+	if pv == null or not pv.dock_compose():
+		return false
+	var hit := false
+	for c in pv.chrome():
+		if (c as Control).is_visible_in_tree() and (c as Control).get_global_rect().has_point(p):
+			hit = true
+			break
+	if not hit:
+		return false
+	for o in pv.overlay_rects():
+		if (o as Rect2).has_point(p):
+			return false
+	return true
 
 
 func _remote_set(on: bool) -> void:

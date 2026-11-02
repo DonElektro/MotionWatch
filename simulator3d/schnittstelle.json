@@ -116,6 +116,7 @@
     "whatif": "Was waere wenn (139)",
     "input": "Eingaben der Controller-Ansicht",
     "pad": "Controller",
+    "localplay": "Hier am PC mitspielen vom Handy aus: do get | stop | start (role) -> Sim-Ansicht der Live-Seite (639zt, localplay.gd)",
     "padview": "Controller-Ansicht (550)",
     "press": "Knopf im Simulator druecken",
     "rover": "Rover",
