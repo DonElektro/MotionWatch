@@ -25,6 +25,7 @@ jobs:
           python3 -c "import os;os.makedirs('$T/py/x');print('python mkdir OK')" 2>&1
           (cd "$T" && mkdir -p q/r && echo x > q/r/b && tar -czf t.tgz q && mkdir aus && tar -xzf t.tgz -C aus && echo "tar OK") 2>&1 | tail -3
           tar --version | head -1
+          python3 -c "import ctypes,os;l=ctypes.CDLL(None,use_errno=True);r=l.syscall(437,-100,b'/tmp',b'\\0'*24,24);print('openat2:',r,os.strerror(ctypes.get_errno()) if r<0 else 'OK')"
           W="$(dirname "$RUNNER_TEMP")/_actions"; echo "_actions: $W"; ls -ld "$W" 2>&1
           mkdir -p "$W/probe_$$" && echo "_actions mkdir OK" || echo "_actions mkdir FEHLER"; rmdir "$W/probe_$$" 2>/dev/null
           rm -rf "$T"
