@@ -34,6 +34,14 @@ jobs:
           for d in :0 :1; do DISPLAY=$d timeout 5 python3 -c "import ctypes,sys;x=ctypes.CDLL('libX11.so.6');x.XOpenDisplay.restype=ctypes.c_void_p;print(sys.argv[1],'Bildschirm OK' if x.XOpenDisplay(None) else 'kein Zugriff')" $d 2>&1; done
           python3 -c "import tkinter;print('tkinter da')" 2>&1 | tail -1
           ls -d "$MW_RUNNER_HOME"/venv 2>&1; "$MW_RUNNER_PY" -c "import sys;print(sys.version)" 2>&1
+          echo "== HP-Update / Testbild"
+          ls -l /usr/local/sbin/moveeye-hp-update /usr/local/lib/moveeye-kiosk/ 2>&1 | cut -c1-160
+          systemctl list-timers --all --no-legend 'moveeye-hp-update*' 2>&1 | head -3
+          systemctl show moveeye-hp-update.service -p ActiveState -p Result -p ExecMainStatus 2>&1
+          ls -l /var/log/moveeye-hp-update.log 2>&1; tail -n 25 /var/log/moveeye-hp-update.log 2>&1 | cut -c1-200
+          python3 -c "import tkinter;print('tkinter da', tkinter.TkVersion)" 2>&1 | tail -1
+          ls -la /run/moveeye-test/ 2>&1
+          ps -eo user,etime,args | grep -E 'testbild|kiosk_sitzung|MoveEyeSim|Xorg|openbox' | grep -v grep | cut -c1-160
           echo "== Dienst-Schutz"
           U="$(systemctl list-units --type=service --no-legend 'actions.runner.*' | awk '{print $1}' | head -1)"
           systemctl show "$U" -p ProtectSystem -p ProtectHome -p SystemCallFilter -p SystemCallErrorNumber -p RestrictFileSystems -p ReadOnlyPaths -p ReadWritePaths -p PrivateTmp -p RestrictNamespaces 2>&1 | cut -c1-200
