@@ -10,7 +10,8 @@
 
 Ergebnis: MoveEye_Bausatz_X.Y.Z.zip mit (alle Namen mit der laufenden Version, real-abgleich-v52)
   1_Anleitung/     MoveEye_Bauanleitung_X.Y.Z_de.pdf (Schweizer Deutsch; dazu fr / it / rm / en aus bau.json)
-  2_MoveEye_v5-2_Druck_X.Y.Z/  3MF v5.2 (Platten A/B, alle Einzelteile mit Stopfen, Namen wie im Repository) + LIESMICH_Druck.txt
+  2_MoveEye_v5-3_Druck_X.Y.Z/  3MF v5.3 (Platten A/B/C, alle Einzelteile mit Stopfen, Namen wie im Repository) + LIESMICH_Druck.txt
+                   (v5.3 ist Standard ab 02.11.2026, Freigabe Elektro; v5.2 / v5.1 bleiben in «Bauen» wählbar)
   3_Bestellliste/  MoveEye_Bestellliste_<Paket>_X.Y.Z.csv (Basis / Komplett / Autark), Preise geschätzt
   4_Software/      webcam_bewegung_X_Y_Z.py + moveeye_daten_X_Y_Z.zip + versions.json (signiert) + werkzeuge/einrichten.sh,
                    INSTALLATION.txt, Einrichtung_Raspberry_Pi.md
@@ -47,8 +48,13 @@ SPR_NAME = {"de": "Deutsch", "fr": "Français", "it": "Italiano", "rm": "Rumants
 # ---- Texte, die nicht in bau.json stehen (Schlüssel = Deutsch) --------------------------------------------------------------
 TX = {
     "MoveEye – Bauanleitung": {"en": "MoveEye – build guide", "fr": "MoveEye – notice de construction", "it": "MoveEye – istruzioni di costruzione", "rm": "MoveEye – instrucziun da construcziun"},
+    "Variante v5.3 (Vorschau, noch nicht Standard)": {"en": "Variant v5.3 (preview, not yet standard)", "fr": "Variante v5.3 (aperçu, pas encore standard)",
+                                                      "it": "Variante v5.3 (anteprima, non ancora standard)", "rm": "Variante v5.3 (prevista, anc betg standard)"},
+    "Neue Druckteile": {"en": "New print parts", "fr": "Nouvelles pièces imprimées", "it": "Nuovi pezzi stampati", "rm": "Novas parts da stampa"},
+    "Druckdateien": {"en": "Print files", "fr": "Fichiers d'impression", "it": "File di stampa", "rm": "Datotecas da stampa"},
     "Selbstbau-Paket": {"en": "Self-build kit", "fr": "Kit à construire soi-même", "it": "Kit fai da te", "rm": "Pachet per construir sez"},
-    "Gehäuse v5.2 (Standard)": {"en": "Case v5.2 (standard)", "fr": "Boîtier v5.2 (standard)", "it": "Custodia v5.2 (standard)", "rm": "Chascha v5.2 (standard)"},
+    "Gehäuse v5.3 (Standard)": {"en": "Case v5.3 (standard)", "fr": "Boîtier v5.3 (standard)", "it": "Custodia v5.3 (standard)", "rm": "Chascha v5.3 (standard)"},
+    "Neu in v5.3": {"en": "New in v5.3", "fr": "Nouveau dans la v5.3", "it": "Novità nella v5.3", "rm": "Nov en la v5.3"},
     "Stand": {"en": "Status", "fr": "État", "it": "Stato", "rm": "Stadi"},
     "Inhalt": {"en": "Contents", "fr": "Sommaire", "it": "Indice", "rm": "Cuntegn"},
     "Die drei Pakete": {"en": "The three packages", "fr": "Les trois kits", "it": "I tre pacchetti", "rm": "Ils trais pachets"},
@@ -111,11 +117,11 @@ TX = {
     "Die Bilder zeigen das 3D-Modell aus dem Simulator (Werkstatt).": {"en": "The pictures show the 3D model from the simulator (workshop).", "fr": "Les images montrent le modèle 3D du simulateur (atelier).", "it": "Le immagini mostrano il modello 3D del simulatore (officina).", "rm": "Ils maletgs mussan il model 3D dal simulatur (ufficina)."},
     "Übersicht (zerlegt)": {"en": "Overview (exploded)", "fr": "Vue d'ensemble (éclatée)", "it": "Panoramica (esploso)", "rm": "Survista (decumponì)"},
     "Nicht geprüft": {"en": "Not tested", "fr": "Non testé", "it": "Non verificato", "rm": "Betg verifitgà"},
-    "Gehäuse v5.2 ist berechnet und am Modell geprüft, aber noch nicht gedruckt und nicht mit echten Teilen zusammengebaut. Masse mit «Nachmessen» vor dem Druck prüfen.":
-        {"en": "Case v5.2 is calculated and checked on the model, but not yet printed and not assembled with real parts. Check the «measure first» dimensions before printing.",
-         "fr": "Le boîtier v5.2 est calculé et vérifié sur le modèle, mais pas encore imprimé ni monté avec de vraies pièces. Vérifier les cotes «à mesurer» avant l'impression.",
-         "it": "La custodia v5.2 è calcolata e verificata sul modello, ma non ancora stampata né montata con pezzi veri. Verificare le misure «da misurare» prima della stampa.",
-         "rm": "La chascha v5.2 è calculada e verifitgada vi dal model, ma anc betg stampada e betg montada cun parts veras. Controllar las mesiras «mesirar» avant la stampa."},
+    "Gehäuse v5.3 ist berechnet und am Modell geprüft, aber noch nicht gedruckt und nicht mit echten Teilen zusammengebaut. Masse mit «Nachmessen» vor dem Druck prüfen.":
+        {"en": "Case v5.3 is calculated and checked on the model, but not yet printed and not assembled with real parts. Check the «measure first» dimensions before printing.",
+         "fr": "Le boîtier v5.3 est calculé et vérifié sur le modèle, mais pas encore imprimé ni monté avec de vraies pièces. Vérifier les cotes «à mesurer» avant l'impression.",
+         "it": "La custodia v5.3 è calcolata e verificata sul modello, ma non ancora stampata né montata con pezzi veri. Verificare le misure «da misurare» prima della stampa.",
+         "rm": "La chascha v5.3 è calculada e verifitgada vi dal model, ma anc betg stampada e betg montada cun parts veras. Controllar las mesiras «mesirar» avant la stampa."},
     # Installation aus dem Paket
     "Mit diesem Paket": {"en": "With this package", "fr": "Avec ce kit", "it": "Con questo pacchetto", "rm": "Cun quest pachet"},
     "Ordner 4_Software auf den Pi kopieren": {"en": "Copy the folder 4_Software to the Pi", "fr": "Copier le dossier 4_Software sur le Pi", "it": "Copiare la cartella 4_Software sul Pi", "rm": "Copiar l'ordinatur 4_Software sin il Pi"},
@@ -205,7 +211,7 @@ def release_dateien(ver, unsigniert):
 SCHRITT_V52 = {"wide": 3, "irled": 3, "lampdrv": 6, "fuseh": 7, "buttons": 7, "resplug": 7, "sled": 10, "diff52": 10,
                "sdplug": 13, "cable_cam1": 13}
 # Bedingungen («wenn») in den Standard-Paketen: v5.2, mit oder ohne Akku; nicht: v5.1, Entwicklung, Mover
-STANDARD_WENN = {None, "", "v52", "ups", "netz"}
+STANDARD_WENN = {None, "", "v52", "v53", "ups", "netz"}     # real-gehaeuse-v53: v5.3 (baut auf v5.2 auf) ist Standard
 
 
 def wenn_tag(w, L):
@@ -215,8 +221,8 @@ def wenn_tag(w, L):
 def druckteile52(B):
     """Druckteile der Standard-Pakete v5.2: v5.1-Teile, die v5.2 ersetzt (gleiche Nummer), fallen weg"""
     T = (B.get("druck") or {}).get("teile") or []
-    nr52 = {p["datei"][:2] for p in T if p.get("wenn") == "v52"}
-    out = [p for p in T if (not p.get("wenn") and p["datei"][:2] not in nr52) or p.get("wenn") == "v52"]
+    nr52 = {p["datei"][:2] for p in T if p.get("wenn") in ("v52", "v53")}
+    out = [p for p in T if p.get("nicht") != "v53" and ((not p.get("wenn") and p["datei"][:2] not in nr52) or p.get("wenn") in ("v52", "v53"))]
     return sorted(out, key=lambda p: p["datei"])
 
 
@@ -231,7 +237,7 @@ def druck_farbe(B, datei):
 
 
 def druck_datei52(datei):
-    return "MoveEye_v5-2_%s.3mf" % datei
+    return "MoveEye_v5-3_%s.3mf" % datei
 
 
 def teil_name(B, datei, L):
@@ -287,6 +293,7 @@ def bild_specs(B, M):
     E = {e["id"]: e for e in M.get("teile") or []}
     T = {t["id"]: t for t in B.get("teile") or []}
     ers = dict((M.get("v52") or {}).get("ersetzt") or {})
+    ers.update((M.get("v53") or {}).get("ersetzt") or {})          # v5.3: Unterteil v5.3 ersetzt v5.2, Deckel, Füsse, Kamerakabel
     dev_ers = {k: v for k, v in ers.items() if k == "sockel"}
     ers = {k: v for k, v in ers.items() if k != "sockel"}
     alt_weg = set(ers.values())
@@ -303,14 +310,14 @@ def bild_specs(B, M):
         if i in alt_weg or t.get("art") == "dev" or i not in E or t.get("ohne"):   # «ohne»: 12 Blindstopfen (nur ohne Weitwinkel)
             continue
         if i in ers:
-            s = (T.get(ers[i]) or {}).get("schritt")
-            if (T.get(ers[i]) or {}).get("art") == "druck":
+            s = (T.get(ers[i]) or {}).get("schritt") or SCHRITT_V52.get(ers[i]) or t.get("schritt")
+            if (T.get(ers[i]) or {}).get("art") == "druck" or t.get("datei"):
                 druck.add(i)
         elif t.get("art") == "v52":
             s = SCHRITT_V52.get(i)
         else:
             s = t.get("schritt")
-        if t.get("art") == "druck" or (t.get("art") == "v52" and t.get("datei")):
+        if t.get("art") == "druck" or (t.get("art") in ("v52", "v53") and t.get("datei")):
             druck.add(i)
         if s:
             schritt[i] = s
@@ -399,7 +406,7 @@ def csv_paket(B, p, L="de", ver=""):
     s = io.StringIO()
     w = csv.writer(s, delimiter=";", quoting=csv.QUOTE_MINIMAL, lineterminator="\r\n")
     if ver:
-        w.writerow(["MoveEye – Bestellliste %s · Gehäuse v5.2 · Stand MoveEye %s" % (lx(p["name"], L), ver)])
+        w.writerow(["MoveEye – Bestellliste %s · Gehäuse v5.3 · Stand MoveEye %s" % (lx(p["name"], L), ver)])
     w.writerow(["Paket", "Gruppe", "Teil", "Menge", "Artikel-Nr.", "Händler", "Suchbegriff", "Link (Suche)", "Preis CHF (geschätzt)", "optional", "Alternative"])
     zeilen, extras = paket_zeilen(B, p)
     G = B.get("bom_gruppen") or {}
@@ -513,14 +520,14 @@ def anleitung_html(B, K, ver, bilder, L, signiert, py_name, zd_name):
            ("fehler", U("Troubleshooting")), ("wartung", U("Maintenance")), ("anhang", T("Anhang: Entwicklungs-Variante ohne Akku"))]
     # -- Titel
     a('<section class="first titel"><h1>%s</h1><div class="ver">%s · %s · %s · %s %s</div>' % (
-        T("MoveEye – Bauanleitung"), T("Selbstbau-Paket"), T("Gehäuse v5.2 (Standard)"), esc(T("Stand MoveEye %s") % ver), T("Stand"), datum))
+        T("MoveEye – Bauanleitung"), T("Selbstbau-Paket"), T("Gehäuse v5.3 (Standard)"), esc(T("Stand MoveEye %s") % ver), T("Stand"), datum))
     if "gesamt" in bilder:
         a('<img class="gross" src="%s" alt="">' % bilder["gesamt"])
     a('<h3>%s</h3><ol class="inhalt">%s</ol>' % (T("Inhalt"), "".join('<li><a href="#%s">%s</a></li>' % (i, n) for i, n in kap)))
-    a('<div class="kasten"><b>%s:</b> %s</div></section>' % (T("Nicht geprüft"), T("Gehäuse v5.2 ist berechnet und am Modell geprüft, aber noch nicht gedruckt und nicht mit echten Teilen zusammengebaut. Masse mit «Nachmessen» vor dem Druck prüfen.")))
+    a('<div class="kasten"><b>%s:</b> %s</div></section>' % (T("Nicht geprüft"), T("Gehäuse v5.3 ist berechnet und am Modell geprüft, aber noch nicht gedruckt und nicht mit echten Teilen zusammengebaut. Masse mit «Nachmessen» vor dem Druck prüfen.")))
     # -- Übersicht
     a('<section id="uebersicht"><h2>%s</h2>' % U("Overview"))
-    a("<p>%s</p>" % X(B.get("gehaeuse_v52", {}).get("name")))
+    a("<p>%s</p>" % X(B.get("gehaeuse_v53", {}).get("name")))
     a("<p><b>%s:</b> %s</p>" % (T("Masse"), X(B.get("masse"))))
     a('<h3>%s</h3><table><tr><th>%s</th><th>%s</th><th class="z">%s</th></tr>' % (T("Die drei Pakete"), T("Paket"), T("Was drin ist"), T("Summe (geschätzt)")))
     for p in pakete:
@@ -563,7 +570,7 @@ def anleitung_html(B, K, ver, bilder, L, signiert, py_name, zd_name):
     # -- Drucken
     dt = druckteile52(B)
     a('<section id="drucken"><h2>%s</h2>' % U("Printing"))
-    a("<p>%s</p>" % X(B.get("gehaeuse_v52", {}).get("hinweis")))
+    a("<p>%s</p>" % X(B.get("gehaeuse_v53", {}).get("hinweis")))
     a('<table><tr><th>%s</th><th>%s</th><th class="z">%s</th><th class="z">%s</th><th class="z">%s</th><th>%s</th><th>%s</th><th class="z">%s</th></tr>' % (
         U("Part"), T("Farbe"), U("pcs"), U("Infill"), U("Walls"), U("Layer"), U("lies on"), U("Print time")))
     h = 0
@@ -580,13 +587,17 @@ def anleitung_html(B, K, ver, bilder, L, signiert, py_name, zd_name):
         st = [teil_name(B, s, L) for s in p.get("stopfen") or []]
         a("<tr><td><b>%s</b></td><td>%s</td></tr>" % (X(p["name"]), esc(", ".join(st) if st else tx("keine weiteren", L))))
     a("</table>")
-    nm = (B.get("gehaeuse_v52") or {}).get("nachmessen") or []
+    nm = ((B.get("gehaeuse_v53") or {}).get("nachmessen") or []) + ((B.get("gehaeuse_v52") or {}).get("nachmessen") or [])
     if nm:
         a('<div class="kasten"><b>%s</b><ul>%s</ul></div>' % (T("Vor dem Druck nachmessen"), "".join("<li>%s</li>" % X(x) for x in nm)))
+    g53 = B.get("gehaeuse_v53") or {}
+    if g53:                                             # real-gehaeuse-v53: v5.3 ist Standard (Freigabe 02.11.2026)
+        a('<p><b>%s:</b> %s</p>' % (T("Neu in v5.3"), esc(", ".join(teil_name(B, d, L) for d in g53.get("druckteile_neu") or []))))
     a("</section>")
     # -- Montage
     a('<section id="montage"><h2>%s</h2><p class="mut klein">%s</p>' % (U("Assembly"), T("Bild: Teile dieses Schritts blau hervorgehoben und leicht abgehoben.") if bilder else ""))
     for s in B.get("schritte") or []:
+        s = dict(s, **s["v53"]) if s.get("v53") else s   # real-gehaeuse-v53: Montagetexte v5.3 (Standard)
         sc = " · ".join("%s %s" % (x["menge"], lx(x["was"], L)) for x in B.get("schrauben") or [] if x.get("schritt") == s["nr"] and x.get("wenn") in STANDARD_WENN)
         a('<div class="schritt"><div class="nr">%d</div><div><b>%s</b><div>%s</div>%s%s%s</div></div>' % (
             s["nr"], X(s.get("titel")), X(s.get("text")), '<div class="tag u">%s</div>' % X(s["unklar"]) if s.get("unklar") else "",
@@ -595,7 +606,7 @@ def anleitung_html(B, K, ver, bilder, L, signiert, py_name, zd_name):
     gesehen = set()
     for s in B.get("extra_schritte") or []:
         w = s.get("wenn")
-        if w not in ("v52", "netz"):
+        if w not in ("v52", "v53", "netz"):
             continue
         if w == "v52" and lx(s.get("titel"), "de") == "Variante v5.2":   # Überblick v5.1 -> v5.2: steht hier schon in den Schritten
             continue
@@ -695,16 +706,18 @@ def pdf_aus_html(pw_browser, htm, ziel, fuss):
 # ---- Texte im Paket (Deutsch) -----------------------------------------------------------------------------------------------
 def druck_liesmich(B, ver):
     L = "de"
-    z = ["MoveEye – Druckdateien Gehäuse v5.2 · Stand MoveEye %s" % ver, "=" * 60, "",
+    z = ["MoveEye – Druckdateien Gehäuse v5.3 · Stand MoveEye %s" % ver, "=" * 60, "",
          "Drucker: Bambu Lab X2D (andere Drucker gehen auch), 0,4-mm-Düse, Material PETG.",
          "Keine Stützen: alle Teile liegen schon richtig auf der Platte.",
          "Brim 5 mm nur bei Kopf (06), Gabel (04) und Seitendeckel (07).",
          "Farben: Kopfteile orange (alles, was sich dreht oder neigt: 03, 04, 05, 06, 07, 08), Rest grau;",
          "        Diffusor 14 natur/weiss (durchscheinend), Pupillenring 15 schwarz.", "",
          "Platten (alles fertig verteilt):",
-         "  MotionWatch_v5-2_Platte_A_Unterteil.3mf      Unterteil, Zwischenboden, Stopfen, Füsse",
-         "  MotionWatch_v5-2_Platte_B_Deckel_Kopf.3mf    Deckel, Drehteller, Gabel, Arm 2, Kopf, Seitendeckel, Lampenhalter, Diffusor, Pupillenring",
-         "Einzelteile: MoveEye_v5-2_NN_*.3mf (zum Nachdrucken oder für andere Drucker).", "",
+         "  MotionWatch_v5-3_Platte_A_Unterteil.3mf      Unterteil, Zwischenboden, Stopfen, Füsse, Luftkanal 27",
+         "  MotionWatch_v5-3_Platte_B_Deckel_Kopf.3mf    Deckel, Drehteller, Gabel, Arm 2, Kopf, Seitendeckel, Lampenhalter, Diffusor, Pupillenring",
+         "  MotionWatch_v5-3_Platte_C_Halter.3mf         Halter Wand / Baum 25, Akkuklappe 26",
+         "Einzelteile: MoveEye_v5-3_NN_*.3mf (zum Nachdrucken oder für andere Drucker).",
+         "Vor dem Zusammenbau: 12 Gewindeeinsätze M3 × 5,7 einschmelzen (Anleitung, Schritt 2).", "",
          "Teil                                   Stück  Füllung  Wände  Schicht      Brim   Farbe        ca. h"]
     for p in druckteile52(B):
         z.append("%-38s %5s  %5s %%  %5s  %-11s  %-5s  %-11s  %5s" % (
@@ -716,7 +729,7 @@ def druck_liesmich(B, ver):
         z.append("  %-9s %s" % (lx(p["name"], L) + ":", ", ".join(p.get("stopfen") or []) or "keine weiteren"))
     z += ["  18_Stopfen_Waermebild ist für einen Kopf ohne Wärmebild (später), 22 nur für die 5-mm-IR-LED (nicht im Paket).",
           "  13_Entwicklungs_Sockel nur für die Entwicklungs-Variante ohne Akku (Anhang der Anleitung).", "",
-          "Vor dem Druck nachmessen:"] + ["  - " + lx(x, L) for x in (B.get("gehaeuse_v52") or {}).get("nachmessen") or []]
+          "Vor dem Druck nachmessen:"] + ["  - " + lx(x, L) for x in ((B.get("gehaeuse_v53") or {}).get("nachmessen") or []) + ((B.get("gehaeuse_v52") or {}).get("nachmessen") or [])]
     z += ["", "Kleinteile (Stopfen, Diffusor) zuerst drucken und den Sitz probieren (Spiel 0,2 mm pro Seite).", ""]
     return "\r\n".join(clean(x) if x else "" for x in z)
 
@@ -748,15 +761,15 @@ def installation_txt(B, ver, py_name, zd_name, signiert):
 
 
 def druck_ordner(ver):
-    """der Druckordner im Bausatz mit Version (Wunsch des Besitzers 01.11.2026), z. B. 2_MoveEye_v5-2_Druck_3.46.1"""
-    return "2_MoveEye_v5-2_Druck_%s" % ver
+    """der Druckordner im Bausatz mit Version (Wunsch des Besitzers 01.11.2026), z. B. 2_MoveEye_v5-3_Druck_3.51.0"""
+    return "2_MoveEye_v5-3_Druck_%s" % ver
 
 
 def liesmich(ver, sprachen, signiert):
     return "\r\n".join([
         "MoveEye %s – Selbstbau-Paket" % ver, "",
         "1_Anleitung      Bauanleitung (PDF): MoveEye_Bauanleitung_%s_de.pdf" % ver + ("; dazu " + ", ".join(s for s in sprachen if s != "de") if len(sprachen) > 1 else ""),
-        "%s   3D-Druck Gehäuse v5.2 (3MF), Kurzanleitung LIESMICH_Druck.txt" % druck_ordner(ver),
+        "%s   3D-Druck Gehäuse v5.3 (3MF), Kurzanleitung LIESMICH_Druck.txt" % druck_ordner(ver),
         "3_Bestellliste   Teile je Paket (Basis / Komplett / Autark) als CSV, Preise geschätzt",
         "MoveEye_Werkstatt_%s.html   die Werkstatt «Bauen» mit 3D (Doppelklick, offline im Browser)" % ver,
         "4_Software       MoveEye für den Raspberry Pi 5 (%s), Anleitung INSTALLATION.txt" % ("signiert" if signiert else "NICHT signiert, Testpaket"),
@@ -802,7 +815,7 @@ def main():
         druck = (B.get("druckdateien") or []) + (B.get("druckdateien_einzeln") or [])
         dd = druck_ordner(ver)                          # Ordner mit Version, die 3MF behalten ihre Namen
         for f in druck:
-            if f.startswith("v5-2/") and os.path.isfile(os.path.join(GEH, "Druckdateien", f)):
+            if f.startswith("v5-3/") and os.path.isfile(os.path.join(GEH, "Druckdateien", f)):
                 z.write(os.path.join(GEH, "Druckdateien", f), name + "/" + dd + "/" + f[5:], compress_type=zipfile.ZIP_STORED)
         w(dd + "/LIESMICH_Druck.txt", druck_liesmich(B, ver))
         for p in (B.get("pakete") or {}).get("liste") or []:

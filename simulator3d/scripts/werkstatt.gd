@@ -13,7 +13,7 @@ extends Node
 ##     Teile des Schritts fliegen an ihren Platz, Weiter / Zurück
 ## Modelle: res://inhalte/gehaeuse/gehaeuse.glb (alle Teile, gehaeuse.gd lädt es), Texte: werkstatt_daten.gd (erzeugt aus
 ## hardware/gehaeuse/bau.json). Die Welt rechnet nur, solange das Fenster offen ist.
-## /control {"action": "werkstatt", "do": open | close | info | explode (value) | xray (on) | inner (on) | v52 (on) |
+## /control {"action": "werkstatt", "do": open | close | info | explode (value) | xray (on) | inner (on) | v52 (on) | v53 (on) |
 ##           pick (id) | step (n, 0 = frei) | next | prev | view (yaw, pitch, dist) | real_case (on) | tab (name) |
 ##           variant (gehaeuse | akku | mover, value) | done (id, on) | fertig (pkg) | order (pkg)}
 ## «Fertig kaufen» (Besitzer 01.11.2026): ein schmaler Hinweis oben im Fenster (wie MoveEye /build, Teil 639zj; Texte und
@@ -53,7 +53,8 @@ var target := Vector3(0, -0.06, 0.04)
 var explode := 0.0
 var xray := false
 var inner := true
-var v52 := false
+var v52 := false                   # v5.2 or a version built on it (v5.3)
+var v53 := false                   # real-gehaeuse-v53: case v5.3 (inserts, battery hatch, holder, air duct)
 var sel := ""
 var step := 0                      # 0 = frei, 1..N = Montage
 var _anim := 1.0                   # 0 -> 1: the parts of the step fly in
@@ -94,7 +95,7 @@ func open() -> void:
 		mehr.close_menu()
 	_build_ui()
 	_build_world()
-	set_v52(str(_vars().get("gehaeuse", "")) == "v52")
+	set_gehaeuse(str(_vars().get("gehaeuse", "")))
 	set_tab(tab)
 
 
@@ -676,9 +677,17 @@ func set_v52(on: bool) -> void:
 	_paint()
 
 
+func set_gehaeuse(g: String) -> void:
+	"""real-gehaeuse-v53: v51 | v52 | v53 – v5.3 builds on v5.2 (its parts replace some of v5.2)"""
+	v53 = g == "v53"
+	set_v52(g == "v52" or g == "v53")
+	if main != null and main.get("gehaeuse") != null and main.gehaeuse.has_method("apply"):
+		main.gehaeuse.apply()                         # the scene shows v5.3 when it is chosen here
+
+
 func _title_text() -> String:
 	"""Modellname (v5.1 / v5.2) und automatisch «Stand MoveEye X.Y.Z» aus der laufenden Version (main.VERSION, Wunsch des Besitzers)"""
-	var t := T.t("Bauen – Gehäuse v%s") % ("5.2" if v52 else DATA.VERSION)
+	var t := T.t("Bauen – Gehäuse v%s") % ("5.3" if v53 else "5.2" if v52 else DATA.VERSION)
 	var ver := str(main.get("VERSION")) if main != null and main.get("VERSION") != null else ""
 	return t + ("  ·  " + T.t("Stand MoveEye %s") % ver if ver != "" else "")
 
@@ -686,6 +695,8 @@ func _title_text() -> String:
 func _schritt(n: int) -> Array:
 	"""[Titel, Text] von Schritt n (1…): v5.2 (Standard) oder die Texte von v5.1, wenn v5.1 gewählt ist (bau.json «v51»)"""
 	var s: Array = DATA.SCHRITTE[n - 1]
+	if v53 and s.size() >= 6:
+		return [s[4], s[5]]                           # v5.3 (bau.json «v53», else the same as v5.2)
 	return [s[0], s[1]] if v52 or s.size() < 4 else [s[2], s[3]]
 
 
@@ -747,13 +758,15 @@ func _shown(id: String) -> bool:
 	# real-v52-standard (01.11.2026): v5.2 is the standard - its parts are in the assembly steps too (bau.json «schritt»)
 	if art == "v52" and not v52:
 		return false
+	if art == "v53" and not v53:
+		return false
 	if art == "dev" and not _dev():                   # Entwicklungs-Variante ohne Akku (Sockel 13 statt UPS HAT + Akkus)
 		return false
 	if parts.has(id) and str(parts[id]["e"].get("ohne", "")) != "":
 		return false                                  # 12 Blindstopfen: nur in der Szene (Gerät ohne Weitwinkel), der Bau zeigt die Kamera
 	if repl.has(id) and parts.has(repl[id]):
 		var ra := str((rows.get(repl[id], ["", ""]) as Array)[1])
-		if (ra == "v52" and v52) or (ra == "dev" and _dev()):
+		if (ra == "v52" and v52) or (ra == "v53" and v53) or (ra == "dev" and _dev()):
 			return false                              # replaced by the part of the variant (lower part v5.2, socket ...)
 	if step == 1:
 		return _is_print(id)
@@ -878,7 +891,12 @@ func _vars() -> Dictionary:
 
 func _ok(w) -> bool:
 	var s := str(w) if w != null else ""
-	return s == "" or s in _vars().values()
+	return s == "" or s in _vars().values() or (s == "v52" and str(_vars().get("gehaeuse", "")) == "v53")   # v5.3 builds on v5.2
+
+
+func _okp(p: Dictionary) -> bool:
+	"""a print part in this variant («nicht»: replaced there, e.g. the lower part v5.2 in v5.3)"""
+	return _ok(p.get("wenn")) and not (str(p.get("nicht", "")) != "" and str(p.get("nicht", "")) in _vars().values())
 
 
 func all_ids() -> Array:
@@ -890,7 +908,7 @@ func all_ids() -> Array:
 		if _ok(e.get("wenn")) and not bool(e.get("optional", false)):
 			ids.append("e:" + str(id))
 	for p in DATA.BAU.get("druck", {}).get("teile", []):
-		if _ok(p.get("wenn")):
+		if _okp(p):
 			ids.append("d:" + str(p["datei"]))
 	for i in range(DATA.SCHRITTE.size()):
 		ids.append("m:%d" % (i + 1))
@@ -933,7 +951,7 @@ func set_variant(g: String, v: String) -> void:
 	(mein["var"] as Dictionary)[g] = v
 	_mein_save()
 	if g == "gehaeuse":
-		set_v52(v == "v52")
+		set_gehaeuse(v)
 	elif g == "akku":
 		_paint()
 	if is_open():
@@ -1099,7 +1117,7 @@ func _page() -> void:
 			var D: Dictionary = DATA.BAU.get("druck", {})
 			var hrs := 0.0
 			for p in D.get("teile", []):
-				if not _ok(p.get("wenn")):
+				if not _okp(p):
 					continue
 				hrs += float(p["zeit_h"])
 				var v := _card(pv)
@@ -1301,6 +1319,8 @@ func control(d: Dictionary) -> Dictionary:
 			set_inner(bool(d.get("on", true)))
 		"v52":
 			set_v52(bool(d.get("on", true)))
+		"v53":                                         # real-gehaeuse-v53: show case v5.3 (or back to v5.2)
+			set_gehaeuse("v53" if bool(d.get("on", true)) else "v52")
 		"pick":
 			select(str(d.get("id", "")))
 		"solo":                                      # real-einzelteil-vorschau: only this part (flat = as printed)
@@ -1351,7 +1371,7 @@ func info() -> Dictionary:
 			vis += 1
 	return {"ok": true, "open": is_open(), "version": DATA.VERSION, "step": step, "steps": DATA.SCHRITTE.size(),
 			"step_title": T.t(str(_schritt(step)[0])) if step > 0 else "", "sel": sel, "part": part_info(sel),
-			"explode": explode, "xray": xray, "inner": inner, "v52": v52, "parts": parts.size(), "visible": vis,
+			"explode": explode, "xray": xray, "inner": inner, "v52": v52, "v53": v53, "parts": parts.size(), "visible": vis,
 			"real_case": main.gehaeuse.info() if main.gehaeuse != null else {}, "source_sha": DATA.QUELLE_SHA.substr(0, 12),
 			"tab": tab, "variant": _vars(), "done": (mein["done"] as Array).size(), "todo": all_ids().size(),
 			"fertig": {"shown": is_open() and _w.has("fertig") and is_instance_valid(_w["fertig"]), "pkg": fertig_pkg,

@@ -17,6 +17,8 @@ extends Node
 ## Weitwinkel-Kamera am Kopf, am Mast (Szene) oder gar nicht montiert, sitzt der Blindstopfen 12 im Fenster (modelle.json
 ## «ohne»: "wide") und der Stopfen 19 im IR-Modul-Loch («ohne»: "irled"); Weitwinkel-Linse und IR-Modul sind dann nicht zu sehen. Farben aus bau.json «farben» (modelle.json):
 ## Kopfteil orange, Unterteil, Deckel, Zwischenboden, Füsse und Stopfen grau («grau», «grau_teile»).
+## real-gehaeuse-v53 (02.11.2026): ist in «Bauen» das Gehäuse v5.3 gewählt (user://bau_mein.json), zeigt die Szene die Teile mit
+## «variante» 5.3 (Unterteil, Deckel, Füsse in den Ecken, Akkuklappe) und blendet die ersetzten Teile aus; sonst bleibt es v5.2.
 
 const Quality := preload("res://scripts/quality.gd")
 const DIR := "res://inhalte/gehaeuse/"
@@ -42,6 +44,9 @@ var _v51: Array = []                           # Teile von v5.1, die v5.2 ersetz
 var v52 := true                                # zeigt die Szene v5.2? (immer, real-abgleich-v52)
 var weit := false                              # Weitwinkel-Kamera im Gehäuse (sonst Blindstopfen 12 im Fenster)
 var _mit_weit: Array = []                      # Linse + IR-Modul
+var _v53: Array = []                           # real-gehaeuse-v53: Teile der Variante v5.3 (nur, wenn in «Bauen» v5.3 gewählt ist)
+var _ers53: Array = []                         # Teile, die v5.3 ersetzt (Unterteil v5.2, Deckel, Füsse)
+var v53 := false                               # zeigt die Szene v5.3? (Wahl «Gehäuse» in Bauen / Werkstatt, sonst v5.2)
 var _ohne_weit: Array = []                     # Blindstopfen 12
 
 
@@ -130,12 +135,14 @@ func build() -> void:
 	tris = 0
 	_v52 = []
 	_v51 = []
+	_v53 = []
+	_ers53 = []
 	_mit_weit = []
 	_ohne_weit = []
-	var repl := {}
+	var repl := {}                                 # ersetztes Teil -> Variante des ersetzenden Teils ("5.2" / "5.3")
 	for e in man.get("teile", []):
 		if str(e.get("ersetzt", "")) != "":
-			repl[str(e["ersetzt"])] = true
+			repl[str(e["ersetzt"])] = str(e.get("variante", "5.2"))
 	for e in man.get("teile", []):
 		var id := str(e.get("id", ""))
 		if not bool(e.get("aussen", false)) or not ms.has(id):
@@ -154,10 +161,14 @@ func build() -> void:
 			_mit_weit.append(mi)
 		elif str(e.get("ohne", "")) in MIT_WEIT:     # 12 Blindstopfen (ohne Weitwinkel), 19 Stopfen (ohne IR-Modul)
 			_ohne_weit.append(mi)
+		elif str(e.get("variante", "")) == "5.3":
+			_v53.append(mi)
 		elif str(e.get("variante", "")) == "5.2":
 			_v52.append(mi)
-		elif repl.has(id):
+		elif repl.has(id) and repl[id] != "5.3":
 			_v51.append(mi)
+		if repl.get(id, "") == "5.3":
+			_ers53.append(mi)
 		tris += int(e.get("dreiecke_lite" if lite else "dreiecke", 0))
 	for k in ms:                                    # what was not used
 		if (ms[k] as MeshInstance3D).get_parent() == null:
@@ -185,6 +196,16 @@ static func wide_in_case(m) -> bool:
 	return w != null and str(w.get("mount")) in ["case", "base"]
 
 
+static func gewaehlt_v53() -> bool:
+	"""real-gehaeuse-v53: zeigt die Szene v5.3? Die Wahl in «Bauen» (Werkstatt, user://bau_mein.json), sonst der Standard aus bau.json."""
+	var p := "user://bau_mein.json"
+	var d = JSON.parse_string(FileAccess.get_file_as_string(p)) if FileAccess.file_exists(p) else null
+	if d is Dictionary and d.get("var") is Dictionary and str((d["var"] as Dictionary).get("gehaeuse", "")) != "":
+		return str((d["var"] as Dictionary)["gehaeuse"]) == "v53"     # die eigene Wahl bleibt
+	var std: Dictionary = (load("res://scripts/werkstatt_daten.gd").BAU as Dictionary).get("variante_standard", {})
+	return str(std.get("gehaeuse", "")) == "v53"                       # Standard (bau.json, ab 02.11.2026 v5.3)
+
+
 func apply() -> void:
 	var real := on and ok
 	for n in _nodes:
@@ -204,6 +225,13 @@ func apply() -> void:
 	for mi in _v51:
 		if is_instance_valid(mi):
 			(mi as Node3D).visible = not v52
+	v53 = gewaehlt_v53()
+	for mi in _v53:
+		if is_instance_valid(mi):
+			(mi as Node3D).visible = v53
+	for mi in _ers53:
+		if is_instance_valid(mi) and v53:
+			(mi as Node3D).visible = false
 	if main.get("head_box") != null:
 		main.head_box.visible = not real
 	if not real:
@@ -241,6 +269,6 @@ func _process(_dt: float) -> void:
 
 func info() -> Dictionary:
 	var hp: Vector3 = main.head.global_position if main.head != null and main.head.is_inside_tree() else Vector3.ZERO
-	return {"on": on, "ok": ok, "why": why, "lite": lite, "tris": tris, "version": str(man.get("version", "")), "v52": v52, "weit": weit,
+	return {"on": on, "ok": ok, "why": why, "lite": lite, "tris": tris, "version": str(man.get("version", "")), "v52": v52, "v53": v53, "weit": weit,
 			"head_pos": [snappedf(hp.x, 0.001), snappedf(hp.y, 0.001), snappedf(hp.z, 0.001)],
 			"quelle_sha256": str(man.get("quelle_sha256", "")).substr(0, 12)}
