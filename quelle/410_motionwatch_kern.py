@@ -398,7 +398,7 @@ class MotionWatch:
         # that class - no person from the movement, not «sticky» from before; only the AI saying «person» on it for
         # FIX_ANIMAL_AI_S makes it a person (test: dog correctly «dog», 14 s later push «Person»)
         now_ = time.time()
-        animal = animal_track_decide(t, t.ai_confirmed, fixp_animal_of(t.box, now_, same=t.ai_confirmed), now_)
+        animal = animal_track_decide(t, t.ai_confirmed, fixp_animal_of(t.box, now_, same=t.ai_confirmed), now_, getattr(self, "_ph", 0))
         if t.ai_confirmed and not animal:
             walking = True                                  # AI says person -> person
         elif animal or (ai_on and aspect > 1.4 and not t.is_person):
@@ -421,6 +421,8 @@ class MotionWatch:
         if walking and not t.ai_confirmed and not t.is_person and getattr(t, "was_vehicle", False):
             walking = False                                 # real-erkennung-fix: once vehicle-like, movement alone never makes it a
                                                             # person (a car turning / half hidden looked «person-like» for a moment)
+        if walking and not t.is_person and night_still_veto(t):
+            walking = False                                 # real-erkennung-2: at night an AI person must have moved (411)
         if walking and not t.is_person and veh_light_veto(t, getattr(self, "_veh_t", 0.0), now_):
             walking = False                                 # real-erkennung-fix: the light of a car at night is no person
         walking = strict_gate(self, t, walking, time.time())   # 411: at dusk / in wind a new person only after 2-3 hits in a row

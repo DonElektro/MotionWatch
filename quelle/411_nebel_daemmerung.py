@@ -273,6 +273,26 @@ def veh_light_veto(t, veh_t, t0):
     return len(sp) >= 3 and (sum(sp) / len(sp)) < float(CFG.get("walk_min_speed", 0.3)) * 2
 
 
+NIGHT_STILL_PX = 1.5       # real-erkennung-2 (Test 3: nachts KI-«Person» auf Dingen, die ein Scheinwerfer / das IR-Licht anstrahlt -
+NIGHT_STILL_N = 3          # immer neue Spuren mit 0.0 px/Bild): nachts zählt eine neue KI-Person erst, wenn sie sich bewegt hat
+                           # (Mittel der ersten 3 Schritte >= 1.5 px/Bild) - eine echte Person ist hereingegangen / gekrochen.
+                           # Eine stehende Person ohne Bewegung findet nachts das Wärmebild (232); am Tag wie bisher.
+
+
+def night_still_veto(t):
+    """410 classify: True = at night a new AI person that has not moved yet (wait)"""
+    try:
+        if not t.ai_confirmed or getattr(t, "moved_once", False) or not is_dark():
+            return False
+    except Exception:
+        return False
+    sp = list(getattr(t, "speeds", []))[-NIGHT_STILL_N:]
+    if len(sp) >= NIGHT_STILL_N and sum(sp) / len(sp) >= NIGHT_STILL_PX:
+        t.moved_once = True
+        return False
+    return True
+
+
 def strict_gate(w, t, walking, t0):
     """410 classify: a NEW person only after STRICT["n"] hits in a row (see the top). Returns the new «walking»."""
     n = STRICT["n"]
@@ -432,6 +452,9 @@ def fog_selftest():
             v.speeds = [6.0, 7.0, 6.5]
             assert not veh_light_veto(v, 100.0, 103.0), "a walking person stays a person"
             v.ai_confirmed = False; assert veh_light_veto(v, 100.0, 103.0), "the beam (movement only)"
+            v.ai_confirmed = True; v.speeds = [0.0, 0.1, 0.0]
+            globals()["is_dark"] = lambda: True; assert night_still_veto(v), "night: a still AI person waits"
+            v.speeds = [0.0, 3.0, 4.0, 5.0]; assert not night_still_veto(v) and not night_still_veto(v), "it moved: a person"
             globals()["is_dark"] = lambda: False; assert not veh_light_veto(v, 100.0, 103.0), "by day as before"
         finally:
             globals()["is_dark"] = dk

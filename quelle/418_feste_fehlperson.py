@@ -42,6 +42,7 @@ FIX_WALK_AFTER_S = 5.0
 FIX_ANIMAL_MEM_S = 4.0      # an animal of the AI is remembered 4 s on its place (the AI runs only now and then; a new track there inherits it)
 FIX_ANIMAL_AI_S = 1.0       # an animal track becomes a person only when the AI says «person» on it for 1 s (≥ 2 runs of the AI on
                             # the Pi, 0.3 … 0.6 s apart) and no animal in that time: one wrong «person» of a dog is not enough
+FIX_ANIMAL_CHILD_H = 0.5   # real-erkennung-2: an upright AI person with an animal on it: at least half a standing person high
 FIX_ANIMAL_UPRIGHT = 1.3    # real-erkennung-fix (Kinder 5/12 im Erkennungstest 2): the AI says «person» and the box stands upright
                             # (height >= 1.3 x width, like the thermal person check 232) -> a person at once, also when an animal of
                             # the AI lay there a moment ago. A child, a small or crouching person is upright; animals from the side
@@ -297,13 +298,27 @@ def fixp_veto(tracks, ai_objs, pw, ph, t0):
     return out
 
 
-def animal_track_decide(t, ai_person, animal_cls, t0):
+def animal_track_decide(t, ai_person, animal_cls, t0, ph=0):
     """Tier vor Person for one track (410 classify): -> True when the track is an animal (no person from movement / sticky).
     ai_person = the AI calls it a person now; animal_cls = an animal of the AI lies on it now (or a moment ago)."""
     try:
         upright = float(t.box[3]) >= FIX_ANIMAL_UPRIGHT * float(t.box[2])
     except (AttributeError, IndexError, TypeError, ValueError):
         upright = False
+    if ai_person and upright and animal_cls:                 # real-erkennung-2 (Test 3: Reh, Katze «Person»): when an animal
+        try:                                                 # lies on it too, the box must have at least half the height of a
+            e = size_expected(t.box, ph) if ph else None     # standing person there (child 1.1 m = 0.63; cat, fox, hare: < 0.35)
+        except Exception:
+            e = None
+        if e is not None and float(t.box[3]) / ph < FIX_ANIMAL_CHILD_H * e:
+            upright = False
+        elif not getattr(t, "up_p_since", 0.0):              # and the AI says «person» for FIX_ANIMAL_AI_S (the animal does not
+            t.up_p_since = t0                                # start the clock again - that held children back before)
+            upright = False
+        elif t0 - t.up_p_since < FIX_ANIMAL_AI_S:
+            upright = False
+    elif not ai_person:
+        t.up_p_since = 0.0
     if ai_person and upright:                                # real-erkennung-fix: an upright AI person is a person (child)
         if getattr(t, "animal_like", False):
             log_event("person", f"Person #{t.id}: the AI says person, upright - not an animal ({getattr(t, 'animal_cls', '')})")
@@ -533,8 +548,9 @@ def fixp_selftest():
     assert animal_track_decide(t, True, "dog", 16.0) is True             # and dog again: the clock starts again
     assert animal_track_decide(t, True, None, 16.5) is True and animal_track_decide(t, True, None, 18.1) is False   # 1.6 s person: a person
     k = _T(); k.box = (100, 50, 20, 42)                                  # real-erkennung-fix: a child (upright), the AI said «dog» before
-    assert animal_track_decide(k, False, "dog", 20.0) is True and animal_track_decide(k, True, "dog", 20.5) is False, "upright AI person"
-    assert animal_track_decide(k, False, None, 21.0) is False            # stays a person (not an animal again without a new animal)
+    assert animal_track_decide(k, False, "dog", 20.0) is True and animal_track_decide(k, True, "dog", 20.5) is True
+    assert animal_track_decide(k, True, "dog", 21.0) is True and animal_track_decide(k, True, "dog", 21.6) is False, "upright AI person 1 s"
+    assert animal_track_decide(k, False, None, 22.0) is False            # stays a person (not an animal again without a new animal)
     FIXP["animals"].clear()
     fixp_animal_note([(10, 10, 40, 20, 0.6, 18)], 320, 240, 50.0)
     assert fixp_animal_of((12, 12, 38, 22), 52.0) == "dog" and fixp_animal_of((12, 12, 38, 22), 60.0) is None
