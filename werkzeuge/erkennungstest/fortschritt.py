@@ -74,12 +74,14 @@ def ist_von(s):
 
 
 class Fortschritt:
-    def __init__(self, pfad, plan, plan_text, faelle, start, schon=0):
+    def __init__(self, pfad, plan, plan_text, faelle, start, schon=0, arbeit=""):
         self.pfad = pfad
         self.ordner = os.path.dirname(pfad)
         self.lock = threading.Lock()
         self.d = {"v": 1, "plan": plan, "plan_text": plan_text, "faelle": faelle, "fall": 0, "name": "", "start": int(start),
                   "status": "vorbereitung", "bilanz": {"personen": [0, 0], "ignoriert": [0, 0], "leer": [0, 0], "pushes": 0}}
+        if arbeit:
+            self.d["arbeit"] = arbeit[:30]                       # Dauerrechnen (3.55.0): welche Arbeit das Testbild zeigt
         self.gezaehlt = schon
         self.laeuft = True
         self._schreiben()

@@ -1,8 +1,13 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 02.11.2026 · Version **3.54.0** · MoveEye **3.54.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 03.11.2026 · Version **3.55.0** · MoveEye **3.55.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.55.0 (MoveEye 3.55.0): HP rechnet rund um die Uhr (`beilagen_linux/hp_wache.py`, `werkzeuge/test_runner/dauer.py`, MoveEye Teil 639zu)
+
+- Workflow `dauer_hp.yml` (Zeitplan alle 30 Min., nur DonElektro, nie neben einem anderen HP-Job), Pause bei Spielen / Zuschauen,
+  15 Min. Nachlauf, Bildschirm schläft nach 10 Min., HP_FASSUNG=2; Tests dauer_test.sh / hp_update_test.sh im CI.
 
 ## NEU in 3.54.0 (MoveEye 3.54.0): Sim-Ansicht und Spielen mit einem Tipp (MoveEye Teil 639zt, `scripts/gamewiz.gd`, `main_kamera.gd`)
 

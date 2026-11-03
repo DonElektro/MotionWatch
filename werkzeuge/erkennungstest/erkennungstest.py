@@ -192,6 +192,7 @@ def main():
     ap.add_argument("--commit", default="", help="Commit (nur für den Bericht)")
     ap.add_argument("--fortschritt", default="", help="Fortschritt + Bild fürs Testbild des Kiosks (JSON, z. B. "
                     "/run/moveeye-test/fortschritt.json; daneben bild.png); leer = aus")
+    ap.add_argument("--arbeit", default="", help="Name der Arbeit fürs Testbild (Dauerrechnen: «Erkennung messen»)")
     ap.add_argument("--liste", action="store_true", help="nur die Pläne zeigen")
     a = ap.parse_args()
     if a.liste:
@@ -234,7 +235,7 @@ def main():
         try:
             gesamt = FS.faelle_zaehlen(plaene, lambda p: PLAENE[p][1], a.laeufe)
             fs = FS.Fortschritt(os.path.abspath(a.fortschritt), lauf["plan"], " + ".join(PLAENE[p][0] for p in plaene)[:90],
-                                gesamt, t_start, schon=FS.zeilen(os.path.join(aus, "results.jsonl")))
+                                gesamt, t_start, schon=FS.zeilen(os.path.join(aus, "results.jsonl")), arbeit=a.arbeit)
             log("Fortschritt fürs Testbild:", a.fortschritt, "·", gesamt, "Fälle")
         except Exception as e:                              # der Test geht vor
             log("Fortschritt aus:", repr(e))

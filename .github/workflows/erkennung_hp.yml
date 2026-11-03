@@ -6,6 +6,9 @@
 # Sicherheit (öffentliches Repository): nur von Hand und nach Zeitplan, nie bei Pull-Requests; nur im Repository von
 # DonElektro; nur Stände aus Zweigen dieses Repositorys (keine Commits aus Forks). Ist der HP aus, bricht der Wächter den
 # Lauf nach «warten» Minuten mit einem Hinweis ab (sonst bliebe er bis zu 24 Std. in der Warteschlange).
+# Spielen am HP (3.55.0, werkzeuge/test_runner/dauer.py halten): der Test hält in Sekunden an (Stand gesichert, jeder fertige
+# Fall bleibt), der Simulator gehört dem Spieler; 15 Min. ohne Spielen rechnet er im selben Job genau dort weiter
+# (höchstens 6 Std. Warten, dann hört der Job mit dem Teilergebnis auf).
 #   gh workflow run erkennung_hp.yml -f stand=main -f plan=kurz
 #   gh run download <RUN-ID> -n erkennung-kurz-<NR>
 name: Erkennung (HP)
@@ -109,7 +112,7 @@ jobs:
     needs: vorpruefung
     if: github.repository_owner == 'DonElektro'
     runs-on: [self-hosted, moveeye-hp]
-    timeout-minutes: 420
+    timeout-minutes: 840
     env:
       SHA: ${{ needs.vorpruefung.outputs.sha }}
       STAND: ${{ needs.vorpruefung.outputs.stand }}
@@ -123,7 +126,9 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: werkzeug
-          sparse-checkout: werkzeuge/erkennungstest
+          sparse-checkout: |
+            werkzeuge/erkennungstest
+            werkzeuge/test_runner
           persist-credentials: false
       - name: MoveEye und Simulator (gewählter Stand)
         uses: actions/checkout@v4
@@ -178,12 +183,13 @@ jobs:
             python3 -c "import json; d=json.load(open('stand/simulator3d/version.json')); print('Linux-Paket', d.get('linux', {}).get('ver', '?'), '· Quelltext', d.get('ver', '?'))"
           fi
       - name: Erkennungstest (${{ needs.vorpruefung.outputs.plan }})
-        timeout-minutes: 400
+        timeout-minutes: 820
         run: |
           D=xvfb; [ "$ANZEIGE" = "bildschirm" ] && D=":0"
           # Testbild am HP (Kiosk): Fortschritt und Live-Bild nach /run/moveeye-test (nur Daten; job_ende.sh räumt auf)
           FD="$(dirname "${MW_KIOSK_PAUSE:-/run/moveeye-test/kiosk_pause}")"; FO=""
           [ -d "$FD" ] && [ -w "$FD" ] && FO="$FD/fortschritt.json"
+          "$PY" werkzeug/werkzeuge/test_runner/dauer.py halten --warten-max 21600 -- \
           "$PY" werkzeug/werkzeuge/erkennungstest/erkennungstest.py --repo stand --plan "$PLAN" --laeufe "$LAEUFE" \
             "$SIMOPT" "$SIMPFAD" --ki-ordner "$KI" --anzeige "$D" --grafik lite --aus "$RUNNER_TEMP/erkennung" \
             --rechner "HP EliteDesk 800 G1 ($(nproc) Kerne)" --stand "$STAND" --commit "$SHA" --fortschritt "$FO"

@@ -4,9 +4,17 @@ Kiosk-Sitzung statt eines dunklen Bildschirms dieses Bild im Vollbild, wie ein D
 ausschalten», das Bild, das MoveEye gerade auswertet (mit MoveEyes Rahmen), «Soll / Ist» des laufenden Falls, Fortschritt
 (Plan, Fall N/M, Start, Dauer, Rest) und die Bilanz bisher (Personen erkannt, Tiere / Autos ignoriert, Leerlauf ruhig,
 Pushes). Nach dem Test bleibt 2 Min. eine Zusammenfassung stehen, dann startet kiosk_sitzung.sh den Simulator wieder.
+Ab 3.55.0 (Dauerrechnen): oben steht, welche Arbeit läuft («Erkennung messen», «KI-Trainingsbilder», «Langzeittest»), andere
+Arbeiten zeigen eigene Kacheln (Feld «kacheln»). Knopf «Spielen» unten rechts (Maus); jede Taste / Mausbewegung zeigt ihn
+gross in der Mitte (Enter oder Klick = Spielen, Esc = weiter rechnen). Spielen schreibt die Spielen-Datei (wie hp_wache.py),
+der Test-Runner hält an und gibt den Bildschirm frei – dann kommt keine Zusammenfassung, der Simulator startet gleich.
+Nach 10 Min. ohne Maus / Taste schläft das Bild (schwarz, nichts wird mehr gezeichnet; den Bildschirm schaltet DPMS aus,
+kiosk_sitzung.sh); eine Taste oder die Maus weckt es sofort. «ende»: false im Fortschritt (z. B. HP-Diagnose) = keine
+Zusammenfassung.
 
   python3 -I testbild.py --pause /run/moveeye-test/kiosk_pause --fortschritt /run/moveeye-test/fortschritt.json \
-      --logo /usr/local/lib/moveeye-kiosk/moveeye.png [--fenster 1366x768] [--ende-s 120]
+      --logo /usr/local/lib/moveeye-kiosk/moveeye.png [--fenster 1366x768] [--ende-s 120] \
+      [--spiel-datei /run/moveeye-spiel/spielen] [--schlaf-s 600]
 
 Die Fortschritt-Datei und bild.png / bild_klein.png daneben schreibt der Test (werkzeuge/erkennungstest/fortschritt.py,
 Haken job_start.sh). Sie gelten nur als Daten: JSON bzw. PNG lesen (Grösse begrenzt, keine Verknüpfungen), nur bekannte
@@ -31,6 +39,8 @@ except ImportError:                                   # python3-tk fehlt: kiosk_
 BG, PANEL, KACHEL, LINIE = "#0f1624", "#172134", "#1d2940", "#27324a"
 FG, GRAU, ORANGE, GRUEN, ROT = "#e6ebf4", "#9a9ea3", "#f59a4a", "#3ecf8e", "#ef5b5b"
 DATEN_S = 5
+SPIEL_RUHE_S = 900                                    # wie hp_wache.py --ruhe-s: so lange gilt ein Spielen-Wunsch
+ARBEITEN = {"Erkennung messen", "KI-Trainingsbilder", "Langzeittest"}
 MAX_JSON, MAX_BILD = 65536, 4_000_000
 
 
@@ -96,6 +106,7 @@ def lesen(p, seit):
         return {}
     jetzt = time.time()
     out = {"titel": text(d.get("titel"), 40), "plan": text(d.get("plan"), 24), "plan_text": text(d.get("plan_text"), 90),
+           "arbeit": text(d.get("arbeit"), 30), "ende": d.get("ende") is not False, "fall_name": text(d.get("fall_name"), 14),
            "name": text(d.get("name"), 60), "fall": zahl(d.get("fall"), 0, 100000), "faelle": zahl(d.get("faelle"), 1, 100000),
            "start": zahl(d.get("start"), jetzt - 2 * 86400, jetzt + 120), "status": text(d.get("status"), 20),
            "soll": text(d.get("soll"), 20), "bild_t": zahl(d.get("bild_t"), jetzt - 86400, jetzt + 120)}
@@ -110,7 +121,47 @@ def lesen(p, seit):
     le = d.get("letzter") if isinstance(d.get("letzter"), dict) else {}
     out["letzter"] = {"name": text(le.get("name"), 60), "text": text(le.get("text"), 60),
                       "ok": le.get("ok") if isinstance(le.get("ok"), bool) else None} if le else {}
+    ka = []                                             # andere Arbeiten (KI-Bilder, Langzeittest): [Name, Wert, Farbe]
+    for k in (d.get("kacheln") if isinstance(d.get("kacheln"), list) else [])[:4]:
+        if isinstance(k, list) and len(k) >= 2:
+            ka.append((text(k[0], 30), text(k[1], 20), text(k[2], 8) if len(k) > 2 else ""))
+    out["kacheln"] = ka
     return out
+
+
+def spiel_alter(p):
+    """Alter der Spielen-Datei in s (normale Datei, keine Verknüpfung), None = fehlt"""
+    if not p:
+        return None
+    try:
+        st = os.lstat(p)
+    except OSError:
+        return None
+    return max(0.0, time.time() - st.st_mtime) if stat.S_ISREG(st.st_mode) else None
+
+
+def spielt(p):
+    al = spiel_alter(p)
+    return al is not None and al < SPIEL_RUHE_S
+
+
+def spielen_schreiben(p, grund):
+    """Spielen-Wunsch (wie hp_wache.spielen_schreiben): JSON {"grund", "seit"}, atomar, lesbar für den Test-Runner"""
+    if not p:
+        return False
+    try:
+        if spielt(p):
+            os.utime(p, None)
+            return True
+        tmp = p + ".neu"
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump({"grund": grund[:20], "seit": int(time.time())}, f)
+        os.chmod(tmp, 0o644)
+        os.replace(tmp, p)
+        return True
+    except OSError as e:
+        print("testbild: Spielen-Datei:", e, file=sys.stderr)
+        return False
 
 
 def dauer(s, kurz=False):
@@ -153,7 +204,133 @@ class Testbild:
         self.puls = 0
         self.n_tick = 0
         self.root.bind("<Escape>", lambda e: None)    # Kiosk: nichts schliesst das Bild ausser dem Ende des Tests
+        self.eingabe_t = time.time()                  # letzte Maus / Taste (Schlaf nach --schlaf-s)
+        self.schlaeft = False
+        self.hinweis_bis = 0.0                        # bis wann der grosse Spielen-Knopf in der Mitte steht
+        self.spiel_ab = None                          # Spielen gewünscht (hier oder über MoveEye / hp_wache)
+        self.maus = None
+        self.root.bind_all("<Key>", self._taste)
+        self.root.bind_all("<Motion>", self._bewegung)
+        self.root.bind_all("<Button>", self._klick)
         self.tick()
+
+    # ---------------------------------------------- Eingaben: wecken, Spielen
+    def _aufwachen(self):
+        self.eingabe_t = time.time()
+        if self.schlaeft:
+            self.schlaeft = False
+            self.modus = ""                           # beim nächsten Takt neu aufbauen
+            self.n_tick = DATEN_S - 1
+            return True
+        return False
+
+    def _taste(self, e):
+        geweckt = self._aufwachen()
+        if self.modus != "live" or self.spiel_ab is not None:
+            return
+        k = (e.keysym or "").lower()
+        if self.hinweis_bis > time.time() and not geweckt and k in ("return", "kp_enter", "space"):
+            self.spielen("taste")
+        elif k == "escape":
+            self.hinweis_bis = 0.0
+        else:
+            self.hinweis_bis = time.time() + 20
+        self.zeichne_spielknopf()
+
+    def _bewegung(self, e):
+        if self.maus is not None and abs(e.x_root - self.maus[0]) + abs(e.y_root - self.maus[1]) < 12:
+            return                                    # kleines Zittern der Maus zählt nicht
+        self.maus = (e.x_root, e.y_root)
+        geweckt = self._aufwachen()
+        if self.modus == "live" and self.spiel_ab is None and not geweckt:
+            neu = self.hinweis_bis < time.time()
+            self.hinweis_bis = time.time() + 20
+            if neu:
+                self.zeichne_spielknopf()
+
+    def _klick(self, e):
+        geweckt = self._aufwachen()
+        if geweckt or self.modus != "live" or self.spiel_ab is not None:
+            return
+        x, y = e.x_root - self.root.winfo_rootx(), e.y_root - self.root.winfo_rooty()
+        for box in (getattr(self, "knopf_box", None), getattr(self, "gross_box", None) if self.hinweis_bis > time.time() else None):
+            if box and box[0] <= x <= box[2] and box[1] <= y <= box[3]:
+                self.spielen("knopf")
+                return
+        self.hinweis_bis = time.time() + 20
+        self.zeichne_spielknopf()
+
+    def spielen(self, grund):
+        if spielen_schreiben(self.a.spiel_datei, grund):
+            self.spiel_ab = time.time()
+        self.hinweis_bis = 0.0
+        self.zeichne_spielknopf()
+
+    def gamepad(self, cx, cy, s, farbe, tag):
+        """Symbol Spielkonsole (gezeichnet - Farb-Emoji kann Tk unter X11 nicht sicher zeigen)"""
+        c = self.c
+        w, h = s * 1.6, s * 0.9
+        self.rund(cx - w / 2, cy - h / 2, cx + w / 2, cy + h / 2, s * 0.4, fill=farbe, outline="", tags=(tag,))
+        k = s * 0.13
+        x0 = cx - w * 0.27
+        c.create_rectangle(x0 - k * 2.2, cy - k * 0.7, x0 + k * 2.2, cy + k * 0.7, fill=BG, outline="", tags=(tag,))
+        c.create_rectangle(x0 - k * 0.7, cy - k * 2.2, x0 + k * 0.7, cy + k * 2.2, fill=BG, outline="", tags=(tag,))
+        for dx, dy in ((0.2, -0.1), (0.32, 0.1)):
+            x1, y1 = cx + w * dx, cy + h * dy
+            c.create_oval(x1 - k, y1 - k, x1 + k, y1 + k, fill=BG, outline="", tags=(tag,))
+
+    def zeichne_spielknopf(self):
+        """unten rechts immer der Knopf «Spielen»; nach einer Eingabe gross in der Mitte; nach dem Wunsch: Hinweis"""
+        c, w, h = self.c, self.w, self.h
+        c.delete("spiel")
+        self.knopf_box = self.gross_box = None
+        if self.modus != "live" or self.schlaeft or not self.a.spiel_datei:
+            return
+        m = int(h * 0.035)
+        f = self.f["mittel"]
+        if self.spiel_ab is None and spielt(self.a.spiel_datei):
+            self.spiel_ab = time.time()                  # Wunsch kam von MoveEye / einem Handy (hp_wache.py)
+        if self.spiel_ab is not None:
+            lange = self.spiel_ab is not None and time.time() - self.spiel_ab > 90
+            t1 = "Spielen – das Rechnen wird angehalten"
+            t2 = ("Dieser Test kann nicht anhalten – der Simulator startet, sobald er fertig ist." if lange
+                  else "Der Stand wird gesichert, der Simulator startet in wenigen Sekunden.")
+            bw = max(f.measure(t1), self.f["text"].measure(t2)) + int(h * 0.12)
+            bh = int(h * 0.20)
+            x0, y0 = w // 2 - bw // 2, h // 2 - bh // 2
+            self.rund(x0, y0, x0 + bw, y0 + bh, int(h * 0.02), fill=PANEL, outline=ORANGE, width=3, tags=("spiel",))
+            self.gamepad(w // 2, y0 + int(bh * 0.28), int(h * 0.05), ORANGE, "spiel")
+            c.create_text(w // 2, y0 + int(bh * 0.58), text=t1, fill=FG, font=f, anchor="center", tags=("spiel",))
+            c.create_text(w // 2, y0 + int(bh * 0.82), text=t2, fill=GRAU, font=self.f["text"], anchor="center", tags=("spiel",))
+            self.knopf_box = self.gross_box = None
+            return
+        # kleiner Knopf unten rechts
+        t = "Spielen"
+        bh = int(h * 0.055)
+        bw = int(bh * 1.3) + self.f["klein_fett"].measure(t) + int(h * 0.03)
+        x1, y1 = w - m, h - int(h * 0.012)
+        x0, y0 = x1 - bw, y1 - bh
+        self.rund(x0, y0, x1, y1, int(bh * 0.3), fill=KACHEL, outline=ORANGE, width=2, tags=("spiel",))
+        self.gamepad(x0 + int(bh * 0.7), (y0 + y1) // 2, int(bh * 0.42), ORANGE, "spiel")
+        c.create_text(x0 + int(bh * 1.3), (y0 + y1) // 2, text=t, fill=FG, font=self.f["klein_fett"], anchor="w", tags=("spiel",))
+        self.knopf_box = (x0, y0, x1, y1)
+        self.gross_box = None
+        if self.hinweis_bis <= time.time():
+            return
+        # gross in der Mitte (nach Taste / Maus)
+        t1 = "Spielen?"
+        t2 = "Das Rechnen hält an (der Stand wird gesichert), der Simulator startet."
+        t3 = "Enter oder Klick: spielen  ·  Esc: weiter rechnen"
+        bw = max(self.f["text"].measure(t2), self.f["klein"].measure(t3)) + int(h * 0.14)
+        bh = int(h * 0.34)
+        x0, y0 = w // 2 - bw // 2, h // 2 - bh // 2
+        c.create_rectangle(0, 0, w, h, fill=BG, stipple="gray50", outline="", tags=("spiel",))
+        self.rund(x0, y0, x0 + bw, y0 + bh, int(h * 0.025), fill=PANEL, outline=ORANGE, width=3, tags=("spiel",))
+        self.gamepad(w // 2, y0 + int(bh * 0.25), int(h * 0.075), ORANGE, "spiel")
+        c.create_text(w // 2, y0 + int(bh * 0.52), text=t1, fill=FG, font=self.f["titel"], anchor="center", tags=("spiel",))
+        c.create_text(w // 2, y0 + int(bh * 0.71), text=t2, fill=FG, font=self.f["text"], anchor="center", tags=("spiel",))
+        c.create_text(w // 2, y0 + int(bh * 0.87), text=t3, fill=GRAU, font=self.f["klein"], anchor="center", tags=("spiel",))
+        self.gross_box = (x0, y0, x0 + bw, y0 + bh)
 
     def _familie(self):
         da = {f.lower(): f for f in tkfont.families(self.root)}
@@ -219,6 +396,8 @@ class Testbild:
             self._bild_laden()
         elif self.ende_ab is None:
             self.ende_ab = time.time()                 # Test fertig: Zusammenfassung (Daten vom letzten Stand)
+            if spielt(self.a.spiel_datei) or self.d.get("ende") is False or self.a.ende_s == 0:
+                self.ende_ab = -1e9                    # gespielt wird / ohne Zusammenfassung (HP-Diagnose): gleich zu
 
     def _bild_laden(self):
         self.bild_ok = False
@@ -251,6 +430,20 @@ class Testbild:
     # ---------------------------------------------- Takt
     def tick(self):
         self.n_tick += 1
+        if not self.schlaeft and self.a.schlaf_s and time.time() - self.eingabe_t >= self.a.schlaf_s and self.spiel_ab is None:
+            self.schlaeft = True                       # schlafen: schwarz, nichts mehr zeichnen (DPMS schaltet ab)
+            self.c.delete("all")
+            self.modus = "schlaf"
+            self.c.configure(bg="#000000")
+        if self.schlaeft:
+            if self.n_tick % DATEN_S == 0:
+                self.daten()                           # nur: ist der Test fertig? (dann zu, ohne Zusammenfassung zu zeichnen)
+                if self.ende_ab is not None and time.time() - self.ende_ab >= self.a.ende_s:
+                    self.root.destroy()
+                    return
+            self.root.after(1000, self.tick)
+            return
+        self.c.configure(bg=BG)
         if self.n_tick == 1 or self.n_tick % DATEN_S == 0:
             if not self.modus:
                 self.aufbau_live()
@@ -261,9 +454,13 @@ class Testbild:
             fertig = self.ende_ab is not None or self.d.get("status") in ("fertig", "fehler")
             if fertig and self.modus != "ende":
                 self.aufbau_ende()
-            elif not fertig and self.modus != "live":
-                self.aufbau_live()
+            elif not fertig and (self.modus != "live" or getattr(self, "kopf_arbeit", "") != self.arbeit_name()):
+                self.aufbau_live()                     # (auch wenn die Arbeit wechselt: Kopfzeile neu)
             (self.zeichne_ende if self.modus == "ende" else self.zeichne_live)()
+            self.zeichne_spielknopf()
+        elif self.modus == "live" and self.hinweis_bis and self.hinweis_bis <= time.time():
+            self.hinweis_bis = 0.0
+            self.zeichne_spielknopf()
         self.animieren()
         self.root.after(1000, self.tick)
 
@@ -277,6 +474,9 @@ class Testbild:
         elif self.modus == "ende" and self.ende_ab is not None:
             rest = max(0, int(self.a.ende_s - (time.time() - self.ende_ab)))
             self.c.itemconfigure("countdown", text="Der Simulator startet in %d:%02d wieder." % (rest // 60, rest % 60))
+
+    def arbeit_name(self):
+        return self.d.get("arbeit") if self.d.get("arbeit") in ARBEITEN else "Erkennungstest" if self.d.get("plan") else "Test"
 
     # ---------------------------------------------- Kopf (beide Ansichten)
     def kopf(self, rechts_text, rechts_farbe, puls):
@@ -293,7 +493,9 @@ class Testbild:
         c.create_text(x, ym, text="Move", fill=FG, font=self.f["marke"], anchor="w")
         c.create_text(x + wm, ym, text="Eye", fill=ORANGE, font=self.f["marke"], anchor="w")
         x += wm + self.f["marke"].measure("Eye") + int(h * 0.02)
-        c.create_text(x, ym, text="Simulator-PC · Erkennungstest", fill=GRAU, font=self.f["text"], anchor="w")
+        arbeit = self.arbeit_name()
+        self.kopf_arbeit = arbeit
+        c.create_text(x, ym, text="Simulator-PC · " + arbeit, fill=GRAU, font=self.f["text"], anchor="w")
         # rechts: Uhr, Zustand mit pulsierendem Punkt
         xr = w - m
         c.create_text(xr, ym, text="", fill=GRAU, font=self.f["mittel"], anchor="e", tags=("uhr",))
@@ -324,7 +526,9 @@ class Testbild:
         lb = int(w * 0.58) - m
         p = int(h * 0.022)
         self.rund(m, y, m + lb, unten, int(h * 0.018), fill=PANEL, outline=LINIE, width=2)
-        c.create_text(m + p, y + p, text="LIVE-BILD · SO SIEHT ES MOVEEYE", fill=GRAU, font=self.f["klein_fett"], anchor="nw")
+        sim_bild = self.d.get("arbeit") == "KI-Trainingsbilder"          # Bild des Simulators, nicht von MoveEye
+        c.create_text(m + p, y + p, text="LIVE-BILD · SIMULATOR" if sim_bild else "LIVE-BILD · SO SIEHT ES MOVEEYE", fill=GRAU,
+                      font=self.f["klein_fett"], anchor="nw")
         iy = y + p + self.f["klein_fett"].metrics("linespace") + int(h * 0.012)
         zeile = self.f["mittel"].metrics("linespace") + int(h * 0.03)
         bh = unten - p - zeile - iy
@@ -342,8 +546,9 @@ class Testbild:
         y2 = y + ph + int(h * 0.022)
         self.rund(rx0, y2, rx1, unten, int(h * 0.018), fill=PANEL, outline=LINIE, width=2)
         self.bilanz_ort = (rx0 + p, y2 + p, rx1 - p, unten - p)
-        c.create_text(w // 2, h - int(h * 0.03), text="Der Simulator startet nach dem Test von selbst wieder.", fill=GRAU,
-                      font=self.f["klein"], anchor="center")
+        c.create_text(m, h - int(h * 0.03), text="Spielen: Taste drücken oder klicken – das Rechnen hält an und geht später "
+                      "dort weiter." if self.a.spiel_datei else "Der Simulator startet nach dem Test von selbst wieder.",
+                      fill=GRAU, font=self.f["klein"], anchor="w")
 
     def zeichne_live(self):
         c, h, d = self.c, self.h, self.d
@@ -359,7 +564,7 @@ class Testbild:
             c.create_rectangle(mx - bb // 2, iy, mx + bb // 2, iy + bh, fill=KACHEL, outline="", tags=("daten",))
             if self.logo_gross is not None:
                 c.create_image(mx, iy + bh // 2 - int(h * 0.03), image=self.logo_gross, anchor="center", tags=("daten",))
-            self.txt(mx, iy + bh // 2 + int(h * 0.10), "Noch kein Bild – es kommt mit dem ersten Fall" if d.get("plan")
+            self.txt(mx, iy + bh // 2 + int(h * 0.10), "Noch kein Bild – es kommt mit dem ersten Fall" if d.get("plan") or d.get("arbeit")
                      else "Für diesen Test gibt es kein Live-Bild", "text", GRAU, "n")
         # Soll / Ist (gleich unter dem Bild)
         sx, sy, sb = self.soll_ort
@@ -380,7 +585,7 @@ class Testbild:
                 x += self.f[f].measure(t)
         elif soll:
             self.txt(sx, sy, "Soll: " + soll, "mittel", GRAU, breite=sb)
-        if self.bild is not None and getattr(self, "bild_ok", False):   # Legende: MoveEyes Farben im Bild
+        if self.bild is not None and getattr(self, "bild_ok", False) and d.get("arbeit") != "KI-Trainingsbilder":   # Legende: MoveEyes Farben
             ly = sy + self.f["mittel"].metrics("linespace") + int(h * 0.016)
             x, q = sx, int(h * 0.016)
             for farbe, name in (("#ff2020", "Person (MoveEye)"), ("#50c878", "KI-Objekt mit Sicherheit"),
@@ -396,22 +601,26 @@ class Testbild:
         y = y0
         if d.get("plan"):
             plan = "PLAN " + d["plan"].upper() + ("  ·  " + d["plan_text"] if d.get("plan_text") else "")
+        elif d.get("plan_text"):
+            plan = d["plan_text"].upper()
         else:
             plan = (d.get("titel") or "Test auf diesem PC").upper()
+        if d.get("arbeit") in ARBEITEN:
+            plan = d["arbeit"].upper() + "  ·  " + plan
         self.txt(x0, y, plan, "klein_fett", GRAU, breite=b)
         y += self.f["klein_fett"].metrics("linespace") + int(h * 0.01)
         n, mm = d.get("fall"), d.get("faelle")
         start = d.get("start") or self.seit or jetzt
         anteil = None
         if n and mm:
-            t1 = self.txt(x0, y, "Fall %d" % n, "gross", ORANGE)
+            t1 = self.txt(x0, y, "%s %d" % (d.get("fall_name") or "Fall", n), "gross", ORANGE)
             xx = c.bbox(t1)[2] + int(h * 0.012)
             self.txt(xx, y + self.f["gross"].metrics("ascent") - self.f["mittel"].metrics("ascent"), "/ %d" % mm, "mittel", GRAU)
             anteil = max(0.0, min(1.0, (n - 1) / float(mm)))
             self.txt(x1, y + self.f["gross"].metrics("ascent") - self.f["mittel"].metrics("ascent"), "%d %%" % round(anteil * 100),
                      "mittel", FG, "ne")
         else:
-            self.txt(x0, y, "Vorbereitung …" if d.get("plan") else "läuft", "gross", ORANGE)
+            self.txt(x0, y, "Vorbereitung …" if d.get("plan") or d.get("arbeit") else "läuft", "gross", ORANGE)
         y += self.f["gross"].metrics("linespace")
         self.txt(x0, y, d.get("name") or "", "text", FG, breite=b)
         y += self.f["text"].metrics("linespace") + int(h * 0.016)
@@ -440,12 +649,19 @@ class Testbild:
         kw, kh = (x1 - x0 - g) // 2, (unten - y - g) // 2
         kacheln = [("Personen erkannt", bi.get("personen")), ("Tiere / Autos ignoriert", bi.get("ignoriert")),
                    ("Leerlauf ruhig", bi.get("leer")), ("Pushes", bi.get("pushes"))]
+        if d.get("kacheln"):                           # andere Arbeit: ihre eigenen Kacheln (Text, schon fertig)
+            kacheln = [(n, ("text", v, f)) for n, v, f in d["kacheln"]] + [("", None)] * (4 - len(d["kacheln"]))
         for i, (name, wert) in enumerate(kacheln):
+            if not name:
+                continue
             kx, ky = x0 + (i % 2) * (kw + g), y + (i // 2) * (kh + g)
             self.rund(kx, ky, kx + kw, ky + kh, int(h * 0.012), fill=KACHEL, outline="", tags=("daten",))
             p = int(h * 0.016)
             self.txt(kx + p, ky + p, name, "klein", GRAU, breite=kw - 2 * p)
-            if isinstance(wert, list):
+            if isinstance(wert, tuple):
+                farbe = {"gruen": GRUEN, "orange": ORANGE, "rot": ROT}.get(wert[2], FG)
+                s, zus = wert[1] or "–", ""
+            elif isinstance(wert, list):
                 a, b = wert
                 farbe = GRAU if b == 0 else (GRUEN if a == b else (ORANGE if a >= 0.8 * b else ROT))
                 s, zus = ("%d" % a, " / %d" % b) if b else ("–", "")
@@ -454,6 +670,8 @@ class Testbild:
             else:
                 farbe, s, zus = GRAU, "–", ""
             f = "riesig" if gross else "gross"
+            if isinstance(wert, tuple) and self.f[f].measure(s) > kw - 2 * p:
+                f = "mittel"
             vy = ky + kh - p
             if gross and isinstance(wert, list) and wert[1]:      # Zusammenfassung: Anteil gross rechts und als Balken
                 a, b = wert
@@ -487,7 +705,8 @@ class Testbild:
         kb = min(w - 2 * m, int(h * 1.5))
         self.ende_box = (w // 2 - kb // 2, w // 2 + kb // 2)
         c.create_text(w // 2, h - int(h * 0.075), text="", fill=FG, font=self.f["mittel"], anchor="center", tags=("countdown",))
-        c.create_text(w // 2, h - int(h * 0.03), text="Ergebnisse: GitHub → Actions → Erkennung (HP) → Artefakt", fill=GRAU,
+        c.create_text(w // 2, h - int(h * 0.03), text="Ergebnisse: GitHub → Actions → " + (
+                      "Dauerrechnen (HP)" if self.d.get("arbeit") in ARBEITEN else "Erkennung (HP)") + " → Artefakt", fill=GRAU,
                       font=self.f["klein"], anchor="center")
 
     def zeichne_ende(self):
@@ -507,7 +726,7 @@ class Testbild:
         if self.ende_ab is None:
             c.itemconfigure("countdown", text="Ergebnisse werden gespeichert …")
         unten = h - int(h * 0.13)
-        if any(v is not None for v in (d.get("bilanz") or {}).values()):
+        if d.get("kacheln") or any(v is not None for v in (d.get("bilanz") or {}).values()):
             self.bilanz(x0, y, x1, unten, d, "ERGEBNIS", gross=True)
         elif self.logo_gross is not None:
             c.create_image(w // 2, (y + unten) // 2, image=self.logo_gross, anchor="center", tags=("daten",))
@@ -520,10 +739,13 @@ def main():
     ap.add_argument("--logo", default="", help="Logo (PNG)")
     ap.add_argument("--ende-s", type=int, default=120, help="so lange bleibt die Zusammenfassung nach dem Test (s)")
     ap.add_argument("--fenster", default="", help="BxH statt Vollbild (zum Prüfen)")
+    ap.add_argument("--spiel-datei", default="", help="Spielen-Wunsch (JSON, wie hp_wache.py); leer = ohne Knopf «Spielen»")
+    ap.add_argument("--schlaf-s", type=int, default=600, help="nach so vielen s ohne Maus / Taste schläft das Bild (0 = nie)")
     a = ap.parse_args()
     if a.fenster and not all(x.isdigit() for x in a.fenster.split("x")):
         ap.error("--fenster BxH, z. B. 1366x768")
     a.ende_s = max(0, min(600, a.ende_s))
+    a.schlaf_s = max(0, min(86400, a.schlaf_s))
     try:
         Testbild(a).root.mainloop()
     except tk.TclError as e:                          # kein Display
