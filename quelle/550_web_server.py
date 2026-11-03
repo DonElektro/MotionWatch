@@ -181,7 +181,7 @@ class WebStream:
             if who:
                 fails.pop(ip, None)
                 g.user, g.role = who
-                if request.method == "GET" and not request.path.startswith(("/api/", "/video", "/cam_feed", "/sim/", "/snapshot")):
+                if request.method == "GET" and not request.path.startswith(("/api/", "/video", "/cam_feed", "/cam_snap", "/sim/", "/snapshot")):
                     g.new_trust = trust_add(who[0], who[1], request.headers.get("User-Agent", ""), ip)   # remember this device
                 return None
             if a:
@@ -2545,6 +2545,69 @@ class WebStream:
                 finally:
                     cam.viewers = max(0, cam.viewers - 1)
             return Response(gen(), mimetype="multipart/x-mixed-replace; boundary=frame")
+
+        # 3.55.2 (Besitzer: Vorschauen unter Kameras am iPhone oft schwarz): single pictures instead of endless streams. A
+        # picture counts as «somebody watches» for 4 s (lease), so the camera loop keeps making JPEGs (it only makes them for
+        # viewers); no thread waits for the next picture like a stream does. n = 0: the main camera (as /video_feed).
+        SNAP_LEASE = {}
+        SNAP_LOCK = threading.Lock()
+        SNAP_RUN = []
+
+        def _snap_expire():
+            while True:
+                time.sleep(0.5)
+                now_ = time.time()
+                with SNAP_LOCK:
+                    for k_, e_ in list(SNAP_LEASE.items()):
+                        if e_[3] < now_:
+                            del SNAP_LEASE[k_]
+                            o_, a_, ip_ = e_[0], e_[1], e_[2]
+                            setattr(o_, a_, max(0, getattr(o_, a_, 0) - 1))
+                            if a_ == "web_viewers":
+                                STATE["web_viewers"] = o_.web_viewers; remote_stream(ip_, -1)
+
+        def _snap_lease(key, obj, attr, ip):
+            """True = the lease is new (the newest JPEG may be old: wait for a fresh one)"""
+            with SNAP_LOCK:
+                e_ = SNAP_LEASE.get(key)
+                if e_ is not None and e_[0] is obj:
+                    e_[3] = time.time() + 4.0
+                    return False
+                if not SNAP_RUN:
+                    SNAP_RUN.append(1)
+                    threading.Thread(target=_snap_expire, daemon=True, name="snaplease").start()
+                setattr(obj, attr, getattr(obj, attr, 0) + 1)
+                if attr == "web_viewers":
+                    STATE["web_viewers"] = obj.web_viewers; remote_stream(ip, +1)
+                SNAP_LEASE[key] = [obj, attr, ip, time.time() + 4.0]
+                return True
+
+        @app.route("/cam_snap/<int:n>")
+        def cam_snap(n):
+            rip = request.remote_addr or ""
+            if n == 0:
+                fresh = _snap_lease(("w", rip), watch, "web_viewers", rip)
+                get = lambda: (watch.jpeg, watch.jpeg_seq)
+            else:
+                cam = next((c for c in CAMS if c.idx == n), None)
+                if cam is None:
+                    return Response("unknown camera", 404)
+                fresh = _snap_lease(("c", n, rip), cam, "viewers", rip)
+                get = lambda: (cam.jpeg, cam.seq)
+            jpg, seq = get()
+            if fresh or not jpg:                            # the loop starts making pictures now: wait a moment for a new one
+                t_ = time.time() + 1.5
+                while time.time() < t_:
+                    j2, s2 = get()
+                    if j2 and s2 != seq:
+                        jpg = j2
+                        break
+                    time.sleep(0.03)
+                else:
+                    jpg = get()[0]
+            if not jpg:
+                return Response("no picture yet", 503, headers={"Cache-Control": "no-store"})
+            return Response(jpg, mimetype="image/jpeg", headers={"Cache-Control": "no-store"})
 
         # ---- zones ----
         # ---- app icon (home screen) ----

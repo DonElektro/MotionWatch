@@ -32,6 +32,7 @@ python3 werkzeuge/bauen.py --neue-version "Was neu ist" --stufe funktion   # ab 
 python3 werkzeuge/bauen.py --signieren SCHLUESSELDATEI               # versions.json signieren + Selbsttest (Schlüssel nie ins Repository)
 python3 werkzeuge/bauen.py --pruefen                                # passt die Datei zu quelle/? keine Funktion doppelt?
 python3 werkzeuge/web_rauchtest.py                                  # jede Web-Adresse ohne / mit Anmeldung (auch auf GitHub)
+python3 werkzeuge/bildstrom_test.py                                 # Kamerabilder im Browser: Verbindungen, Selbstheilung (auch auf GitHub)
 python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung messen (siehe pruefstand/LIESMICH.md)
 ```
 

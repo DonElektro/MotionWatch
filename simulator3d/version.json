@@ -1,15 +1,15 @@
 {
- "version": "3D-5.55.1",
- "ver": "3.55.1",
- "name": "MoveEye Sim 3.55.1",
+ "version": "3D-5.55.2",
+ "ver": "3.55.2",
+ "name": "MoveEye Sim 3.55.2",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 49961865,
- "sha256": "244afb50e2f13d281627b8e14220f033b03eeedec883b4400ed03acfcc6609f7",
- "notes": "Fix Absturz und Linsen-Shader",
+ "size": 49962056,
+ "sha256": "5c108026d0daa39c5a06dd90d1dcf3a5a780b1fadc933d61bba445d5d8143fc3",
+ "notes": "Fix Kamerabilder (MoveEye)",
  "linux": {
   "file": "simulator3d/MoveEyeSim3D_Linux.zip",
-  "ver": "3.55.1",
-  "size": 43975795,
-  "sha256": "acbacddeffad6dd9b04948fdad9b3b62d54d04ac0f38061f849bce0a9bfb24c9"
+  "ver": "3.55.2",
+  "size": 43975923,
+  "sha256": "33a6d3d842b2cd1fcce614182d60bc2d2e5df284eb9d517e5f0f4690d33bcde5"
  }
 }

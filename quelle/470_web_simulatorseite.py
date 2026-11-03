@@ -389,7 +389,7 @@ let SIM_WEBP = false;
 (() => { const i = new Image(); i.onload = () => { SIM_WEBP = i.width === 1; }; i.src = "data:image/webp;base64,UklGRiIAAABXRUJQVlA4IBYAAAAwAQCdASoBAAEADsD+JaQAA3AAAAAA"; })();
 function simQMode() { try { return localStorage.getItem("mw-simq") || "auto"; } catch (e) { return "auto"; } }
 function simViewPoll(VI, fps) {
-  let on = false, gen = 0, url = "", lvl = 2, slow = 0, fast = 0, ema = 0;
+  let on = false, gen = 0, url = "", lvl = 2, slow = 0, fast = 0, ema = 0, fails = 0;
   const info = {w: 0, q: 0, fmt: "", kb: 0, lvl: 2, mode: "auto"};
   const params = () => {
     const mode = simQMode(); info.mode = mode;
@@ -406,8 +406,10 @@ function simViewPoll(VI, fps) {
   const step = async (g) => {
     if (!on || g !== gen) return;
     const t0 = Date.now(); let wait = 1000;
+    // 3.55.2: a picture that does not come within 5 s is given up (before: one hanging request stopped the picture for good)
+    const ac = window.AbortController ? new AbortController() : null, wd = setTimeout(() => { if (ac) ac.abort(); }, 5000);
     try {
-      const r = await fetch("/sim/view.jpg?" + params() + "&r=" + t0, {cache: "no-store"});
+      const r = await fetch("/sim/view.jpg?" + params() + "&r=" + t0, {cache: "no-store", signal: ac ? ac.signal : undefined});
       if (r.ok) { const b = await r.blob(); if (on && g === gen && b.size > 0) { const u = URL.createObjectURL(b); const old = url; url = u; VI.src = u;
         if (old) setTimeout(() => URL.revokeObjectURL(old), 1000); info.kb = Math.round(b.size / 1024); }
         const target = 1000 / (fps || 8), dt = Date.now() - t0;
@@ -416,8 +418,10 @@ function simViewPoll(VI, fps) {
           if (ema > target * 2.5) { slow++; fast = 0; if (slow >= 4 && lvl > 0) { lvl--; slow = 0; ema = 0; } }
           else if (ema < target * 1.2) { fast++; slow = 0; if (fast >= 10 && lvl < 3) { lvl++; fast = 0; ema = 0; } }
           else { slow = 0; fast = 0; } }
-        wait = Math.max(0, target - dt); }
-    } catch (e) {}
+        wait = Math.max(0, target - dt); fails = 0; } else fails++;
+    } catch (e) { fails++; }
+    clearTimeout(wd);
+    if (fails) wait = Math.min(8000, 1000 * Math.pow(2, fails - 1));      // 3.55.2: 1, 2, 4, 8 s after failures
     setTimeout(() => step(g), wait);
   };
   return {start() { if (on) return; on = true; gen++; step(gen); }, stop() { on = false; gen++; }, get on() { return on; }, info};

@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.55.1 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.55.2 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -487,6 +487,11 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.55.2
+3.55.2: Fix (MoveEye): Kamerabilder halten nur noch eine Verbindung offen, wenn sie sichtbar sind; Vorschauen als Einzelbilder;
+nach 5 s ohne Bild verbindet sich das Bild selbst neu; ↻ lädt den aktuellen Reiter neu. Am Simulator ändert sich nichts.
+So testest du: in MoveEye am iPhone Live öffnen, kurz in einen anderen Reiter und zurück – das Bild kommt ohne Neuladen wieder.
 
 NEU IN 3.55.1
 3.55.1: Fix: kein Absturz mehr bei KI-Trainingsbildern «Vielfalt hoch» (Morgen im Bergtal in einer Welt); Tropfen und Beschlag

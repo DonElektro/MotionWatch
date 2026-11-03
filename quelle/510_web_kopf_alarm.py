@@ -307,15 +307,15 @@ HEADER_JS = r"""
   document.body.classList.toggle("appmode", app);
   {                                   // 639t (Elektro 01.11.2026): ↻ is one of the fixed header buttons - on every page, not only in app mode
     const b = el("button", "sec ic"); b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg>'; b.type = "button"; b.id = "btn-reload";
-    // reload: first ask the Pi to look for a new version (max. 8 s), then open Live and load it again - the update bar shows it
+    // reload: first ask the Pi to look for a new version (max. 8 s), then load this page again - the update bar shows it
     b.onclick = async () => {
       b.disabled = true; b.classList.add("spin");
       const ac = window.AbortController ? new AbortController() : null; const to = setTimeout(() => ac && ac.abort(), 8000);
       try { await fetch("/api/update", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({action: "check", lang: LANG}),
                                        signal: ac ? ac.signal : undefined, cache: "no-store"}); } catch (e) {}
       clearTimeout(to);
-      // Elektro (1.11.2026): ↻ goes to the page Live first, then loads it again - on every page
-      if (location.pathname === "/" && !location.search && !location.hash) location.reload(); else location.assign("/");
+      // Elektro (3.11.2026, statt 1.11.2026 «immer zu Live»): ↻ bleibt im aktuellen Reiter / Unterreiter und lädt ihn neu
+      location.reload();
     };
     const ctl = H.querySelector(".hdr-ctl"); (ctl || H).insertBefore(b, ctl ? ctl.firstChild : null);
     setTimeout(() => { b.title = tx("Reload page"); b.setAttribute("aria-label", b.title); }, 1200);
@@ -504,34 +504,121 @@ ALERT_JS = r"""
 """
 
 
+# 3.55.2 (Besitzer: Kamerabilder am iPhone / iPad oft schwarz «noch kein Bild», unter Einstellungen → Kameras und auf Live;
+# neu laden half): EIN Weg für jedes Kamerabild der Web-Seiten, eingesetzt in COMMON_JS (hier unten) und in WEB_PAGE (530).
+#   * Nur ein sichtbares Bild hat eine Verbindung: anderer Reiter, zugeklappte Karte, Seite im Hintergrund, weggescrollt oder
+#     img.dataset.hold = "1" (Bild verdeckt, z. B. von der Sim-Ansicht) -> die Verbindung wird geschlossen. Safari hat pro
+#     Gerät nur rund 6 Verbindungen; offene Bildströme im Versteckten liessen neue Bilder warten («noch kein Bild»).
+#   * Strom (Live, Zonen, Gast): der bewährte MJPEG-Strom im <img>. Wächter: kommt 5 s lang kein erstes Bild, oder ändert sich
+#     das Bild 5 s lang nicht (kleines Abbild im Canvas), verbindet es sich selbst neu - sofort, dann nach 1, 2, 4, 8, 15 s
+#     (ein stehendes Bild ohne Fehler: still nach 5, 10, 20, 40, 60 s). Antippen von ⏳ verbindet sofort.
+#   * Einzelbilder (opt.snap, Vorschauen unter Kameras): ein Bild alle opt.every ms (~2 / s), nur solange sichtbar.
+#   * img.mwKeep zeigt den Zustand (Tests: werkzeuge/bildstrom_test.py): frames, conns, stalls, on, lost, mode.
+KEEP_JS = r"""function keepStream(img, opt) {
+  if (!img) return null;
+  if (img.mwKeep) return img.mwKeep;
+  opt = opt || {};
+  const base = (img.dataset.src || img.getAttribute("src") || "").split("?")[0];
+  const snap = opt.snap || img.dataset.snap || "", every = opt.every || 500, STALL = opt.stall || 5000, BL = "data:,";
+  const K = {frames: 0, conns: 0, stalls: 0, on: false, lost: false, mode: snap ? "snap" : "stream"};
+  img.mwKeep = K; img.dataset.keep = "1";
+  if (img.getAttribute("src")) img.src = BL;                // the browser's own stream (src in the HTML) is closed, we open it
+  const box0 = img.parentNode;
+  let gen = 0, ac = null, timer = 0, tries = 0, still = 0, lastT = 0, t0 = 0, cur = "", first = false, lastH = null, h0 = null, cv = null, gone = 0, iv = 0, inView = true, lock = null;
+  const now = () => Date.now();
+  const lost = on => {
+    if (K.lost === on) return; K.lost = on;
+    if (opt.onlost) { try { opt.onlost(on); } catch (e) {} } else img.style.visibility = on ? "hidden" : "";
+    const box = img.parentNode;
+    if (box && box.classList) { box.classList.toggle("vlost", on);
+      if (on) { let s = "Picture is loading – tap to reload"; try { if (typeof t === "function") s = t(s); } catch (e) {} box.dataset.lost = s; } }
+  };
+  const unlock = () => { if (lock) { lock.style.minHeight = lock.dataset.mwMh || ""; lock = null; } };
+  const hold = () => { const b = img.parentNode; if (!lock && b && b.style && b.offsetHeight > 40) { lock = b; b.dataset.mwMh = b.style.minHeight; b.style.minHeight = b.offsetHeight + "px"; } };
+  const visible = () => img.isConnected && !document.hidden && img.dataset.hold !== "1" && inView && img.getClientRects().length > 0;
+  const hash = () => {                       // a small copy of the picture: has it changed?
+    try { if (!img.naturalWidth) return null; cv = cv || document.createElement("canvas"); cv.width = 32; cv.height = 18;
+      const g = cv.getContext("2d", {willReadFrequently: true}); g.drawImage(img, 0, 0, 32, 18);
+      const d = g.getImageData(0, 0, 32, 18).data; let s = 0; for (let k = 0; k < d.length; k++) s = (s * 31 + d[k]) | 0; return s; } catch (e) { return null; }
+  };
+  const freeze = () => {                     // the last picture stays (no jump of the page) while the stream is closed
+    try { if (K.mode !== "stream" || !img.naturalWidth || !first) return BL; const c = document.createElement("canvas");
+      c.width = img.naturalWidth; c.height = img.naturalHeight; c.getContext("2d").drawImage(img, 0, 0); return c.toDataURL("image/jpeg", 0.75); } catch (e) { return BL; }
+  };
+  const got = () => { K.frames++; lastT = now(); tries = 0; first = true; unlock(); lost(false); };
+  const stop = keep => {
+    gen++; clearTimeout(timer); timer = 0;
+    if (ac) { try { ac.abort(); } catch (e) {} ac = null; }
+    if (K.on && K.mode === "stream") { const f = keep === false ? BL : freeze(); cur = f; img.src = f; }
+    K.on = false;
+  };
+  const fail = quiet => {                    // the connection broke or brings nothing: again after a pause (backoff)
+    stop(); if (!visible()) return;
+    let d;
+    if (quiet) d = 300;
+    else { d = tries ? Math.min(15000, 1000 * Math.pow(2, tries - 1)) : 300; tries++; if (!first || now() - lastT > 2000) lost(true); }
+    timer = setTimeout(() => { timer = 0; start(); }, d);
+  };
+  async function runSnap(g, sig) {           // single pictures, one after the other (one short connection at a time)
+    for (;;) {
+      const a = now();
+      const r = await fetch(snap + (snap.indexOf("?") < 0 ? "?" : "&") + "r=" + a, {cache: "no-store", signal: sig});
+      if (g !== gen) return;
+      if (r.ok) { const b = await r.blob(); if (g !== gen) return;
+        if (b.size) { const u = URL.createObjectURL(b), old = cur; cur = u; img.src = u; if (old && old.startsWith("blob:")) setTimeout(() => URL.revokeObjectURL(old), 3000); got(); } }
+      else if (r.status !== 503) throw new Error("http " + r.status);   // 503 = no picture yet: keep asking, the watchdog decides
+      await new Promise(res => setTimeout(res, Math.max(60, (r.ok ? every : 1000) - (now() - a))));
+      if (g !== gen) return;
+    }
+  }
+  function start() {
+    stop(); if (!visible()) return;
+    const g = gen; K.on = true; K.conns++; t0 = lastT = now(); first = false; lastH = null;
+    if (!K.frames) lost(true);
+    if (K.mode === "snap") {
+      ac = window.AbortController ? new AbortController() : null;
+      runSnap(g, ac ? ac.signal : undefined).then(() => {}, () => { if (g === gen) fail(false); });
+      return;
+    }
+    hold(); h0 = img.naturalWidth ? hash() : null; cur = base + (base.indexOf("?") < 0 ? "?" : "&") + "r=" + t0; img.src = cur;
+  }
+  const mine = () => K.mode === "stream" && K.on && now() - t0 > 120 && img.src.indexOf(cur) >= 0;   // not the event of the picture before
+  img.addEventListener("load", () => { if (mine() && !first) got(); });
+  img.addEventListener("error", () => { if (mine()) fail(false); });
+  const tick = () => {
+    if (!img.isConnected) { if (!gone) gone = now(); else if (now() - gone > 15000) dispose(); if (K.on || timer) stop(false); return; }
+    gone = 0;
+    if (!visible()) { if (K.on || timer) stop(); return; }
+    if (!K.on) { if (!timer) start(); return; }
+    const n = now();
+    if (K.mode === "snap") { if (n - lastT > STALL) { K.stalls++; fail(false); } return; }
+    if (!first) { if (img.naturalWidth && (h0 === null || hash() !== h0)) got(); else if (n - t0 > STALL) { K.stalls++; fail(false); } return; }
+    const h = hash();
+    if (h !== null && h !== lastH) { if (lastH !== null) { lastT = n; still = 0; K.frames++; } lastH = h; return; }
+    if (n - lastT > Math.min(60000, STALL * Math.pow(2, still))) { K.stalls++; still = Math.min(still + 1, 4); fail(true); }   // no new picture: quietly anew
+  };
+  const vis = () => tick();
+  const dispose = () => { clearInterval(iv); document.removeEventListener("visibilitychange", vis); stop(false); unlock(); if (cur.startsWith("blob:")) URL.revokeObjectURL(cur); };
+  const restart = () => { tries = 0; still = 0; stop(); if (visible()) start(); };
+  img.mwRestart = restart;                  // 2.95.72: the page fetches the picture anew when the video source changes
+  K.restart = restart;
+  document.addEventListener("visibilitychange", vis);
+  addEventListener("pageshow", e => { if (e.persisted) restart(); });
+  addEventListener("pagehide", () => stop());          // leaving the page: close at once (Safari keeps pages a while)
+  try { new IntersectionObserver(es => { inView = es[es.length - 1].isIntersecting; tick(); }, {rootMargin: "120px"}).observe(img); } catch (e) {}
+  if (box0) box0.addEventListener("click", ev => { if (box0.classList.contains("vlost")) { ev.stopPropagation(); restart(); } }, true);
+  iv = setInterval(tick, 1000);
+  setTimeout(tick, 0);
+  return K;
+}
+"""
+
+
 COMMON_JS = r"""
 const $ = s => document.querySelector(s);
 // Live picture that heals itself: phones (above all iPhone) drop the endless MJPEG stream after a network hiccup,
 // in the background or when the Pi restarts -> broken-image "?" icon. Reconnect automatically.
-function keepStream(img) {
-  if (!img || img.dataset.keep) return;
-  img.dataset.keep = "1";
-  const base = (img.dataset.src || img.getAttribute("src") || "").split("?")[0];
-  let tries = 0, timer = null;
-  const box = img.parentNode;
-  const lost = on => { img.style.visibility = on ? "hidden" : ""; if (box) box.classList.toggle("vlost", on); };
-  let iv = 0;
-  // 2.95.34: a picture that was removed from the page stops its stream (otherwise every rebuilt tile kept one open)
-  const alive = () => { if (img.isConnected) return true; clearInterval(iv); clearTimeout(timer); document.removeEventListener("visibilitychange", vis); img.src = ""; return false; };
-  const restart = () => { clearTimeout(timer); timer = null; if (alive()) img.src = base + "?r=" + Date.now(); };
-  const later = () => { if (timer) return; lost(true); timer = setTimeout(restart, Math.min(10000, 1000 * (1 + tries++))); };
-  const vis = () => { if (!document.hidden) restart(); };
-  img.mwRestart = restart;                  // 2.95.72: the page fetches the picture anew when the video source changes
-  img.addEventListener("error", later);
-  img.addEventListener("load", () => { tries = 0; lost(false); });
-  document.addEventListener("visibilitychange", vis);
-  addEventListener("pageshow", e => { if (e.persisted) restart(); });
-  iv = setInterval(() => {
-    if (!alive() || document.hidden) return;
-    if (img.naturalWidth) { if (!timer) { tries = 0; lost(false); } }
-    else if (img.complete) later();
-  }, 3000);
-}
+/*KEEPSTREAM*/
 const post = (u, b) => fetch(u, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(b || {})})
     .then(r => r.json()).catch(() => ({ok: false, error: "connection"}));
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -565,5 +652,6 @@ async function initAppearance() {
   applyTheme(); applyI18n();
 }
 """
+COMMON_JS = COMMON_JS.replace("/*KEEPSTREAM*/", KEEP_JS.rstrip("\n"), 1)   # 3.55.2: one keepStream for every page (KEEP_JS above)
 
 
