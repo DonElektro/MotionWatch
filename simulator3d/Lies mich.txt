@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.54.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.55.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -487,6 +487,12 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.55.0
+3.55.0: Simulator-PC (HP) rechnet rund um die Uhr (Erkennung messen, KI-Trainingsbilder, Langzeittest); Spielen am HP oder
+Zuschauen in MoveEye Live hält das Rechnen sofort an, nach 15 Min. ohne Zuschauer geht es dort weiter; «HP rechnet» im Reiter
+Simulator zum Zuschauen; Bildschirm schläft nach 10 Min.; HP-Update nur in Pausen. Homepage: «Spielen mit einem Tipp».
+So testest du: in MoveEye Reiter Simulator › «HP rechnet» öffnen und zuschauen; am HP eine Taste drücken = Rechnen hält an.
 
 NEU IN 3.54.0
 3.54.0: Sim-Ansicht in MoveEye: im Simulator-Betrieb zeigt die Live-Seite auf Handy und Tablet ein grosses Simulator-Bild mit

@@ -6,6 +6,7 @@ Der HP (EliteDesk 800 G1 DM, Ubuntu-Kiosk mit MoveEye Sim) wird ein **eigener Gi
 - **Erkennung (HP)** (`.github/workflows/erkennung_hp.yml`): der lange Erkennungstest (`werkzeuge/erkennungstest/`), Fall
   für Fall an mehreren Orten und bei mehreren Bedingungen. Von Hand oder jeden Samstag um 22:41 Uhr (Winterzeit) mit Plan «test3».
 - **Prüfstand** (`.github/workflows/pruefstand.yml`): von Hand mit «rechner: hp» (sonst wie bisher auf GitHub).
+- **Dauerrechnen (HP)** (`.github/workflows/dauer_hp.yml`, ab 3.55.0): rund um die Uhr, solange niemand spielt (Abschnitt unten).
 
 Ergebnisse kommen als **Actions-Artefakt** (JSON und kurzer Bericht) und stehen in der Zusammenfassung des Laufs. Die
 Erkennung schreibt nichts ins Repository.
@@ -31,6 +32,47 @@ Zusammenfassung stehen, dann startet der Simulator wieder. Die Daten schreibt de
 Testbild (`simulator3d/beilagen_linux/testbild.py`, braucht `python3-tk`) liest sie nur als Daten. Andere Tests (Prüfstand)
 zeigen Logo, Text und Dauer.
 
+## Dauerrechnen (ab 3.55.0)
+
+Der HP rechnet **rund um die Uhr**; der Kiosk ist nicht mehr die Hauptsache. Ohne besonderen Auftrag reihum
+(`werkzeuge/test_runner/dauer.py`):
+
+1. **Erkennung messen** – main gegen die Version davor (Tag) und aktive `real-erkennung*`-Zweige (letzte 14 Tage), Pläne
+   ursache, kriechen, nacht, tier, wind, je **3 Läufe pro Fall**; ist ein Plan für zwei Stände fertig, steht `vergleich.md` im Artefakt.
+2. **KI-Trainingsbilder** – der Simulator macht Bildpakete (YOLO, Vielfalt hoch, alle Szenen), 6 × 150 Bilder pro Paket,
+   höchstens 2 Pakete pro Stand von main. Die ZIPs kommen ins Artefakt; fürs Training von Hand ins Release «ki-daten»
+   ziehen (`ki_training/README.md`).
+3. **Langzeittest** – MoveEye und Simulator 3 Std. im Leerlauf (Nacht, Tag, Nacht mit Regen, Dämmerung je 30 Min.):
+   Abstürze, Speicher (und wie er wächst), Fehlalarme pro Nacht, Bilder/s; einmal pro Tag.
+
+Ein Lauf rechnet höchstens 3 Std. (`stunden`) und startet dann selbst den nächsten; der Zeitplan (alle 30 Min.) springt ein,
+wenn nichts läuft. Wartet ein Auftrag von Hand (Erkennung (HP), Prüfstand), beginnt kein neues Paket – er kommt zuerst dran.
+Gesichert wird pro Fall (Erkennung), pro Bildpaket (KI) bzw. pro Minute (Langzeittest); ein unterbrochener Fall wird beim
+nächsten Mal neu gerechnet, nichts anderes geht verloren. Zustand: `/var/lib/mwrunner/dauer/` (die letzten 12 Pakete bleiben).
+
+**Spielen:** Am HP eine Taste drücken oder die Maus bewegen – das Testbild zeigt gross «Spielen?» (Enter oder Klick = ja,
+Esc = weiter rechnen); unten rechts steht immer der Knopf «Spielen». Auch Spielen ist: in **MoveEye** im Simulator-Betrieb
+den Reiter **Live** bzw. die Sim-Ansicht offen und sichtbar haben (Browser, ebenso das Fenster am Pi: Reiter Live, nicht verkleinert) –
+MoveEye meldet das dem HP alle 20 s (`POST /zuschauer` an Port 8761, nur eine Zeitmarke) –, oder ein Handy öffnet die
+Spiel-Seite (Port 8770). **Eine Verbindung MoveEye ↔ Simulator allein zählt nicht** (Entscheid Besitzer 03.11.2026: der Pi
+bleibt im Simulator-Betrieb dauernd verbunden), die Karte / Seite «HP rechnet» auch nicht. Dann hält der Test in wenigen
+Sekunden an, der Test-Simulator ist zu, und der Kiosk-Simulator startet (nie beide zugleich – 4 GB RAM). **15 Min. ohne
+Maus, Taste, Zuschauer und Spieler am Handy** rechnet der nächste Lauf genau dort weiter. Ein Gamepad am HP zählt nicht als
+Eingabe.
+
+**Bildschirm:** während des Rechnens schaltet er nach 10 Min. ohne Maus / Taste ab (DPMS), das Testbild zeichnet dann nicht
+mehr; Maus oder Taste weckt ihn sofort. Beim Simulator bleibt er an wie bisher.
+
+**Vom Handy zuschauen:** MoveEye → Reiter Simulator → Karte «HP rechnet» (Tipp = ganze Ansicht `/hp`), oder Einstellungen →
+Entwickler → «HP rechnet». Nur zuschauen. MoveEye holt die Angaben im eigenen Netz vom HP (`hp_wache.py`, Port 8761, nur
+GET, nur private Adressen; mit ufw nur fürs eigene Netz freigegeben) – das Handy redet nie direkt mit dem HP, unterwegs geht
+es über den gewohnten Zugang zu MoveEye.
+
+```bash
+gh workflow run dauer_hp.yml -R DonElektro/MotionWatch -f arbeit=ki      # eine bestimmte Arbeit jetzt
+gh run list -R DonElektro/MotionWatch -w "Dauerrechnen (HP)" -L 5
+```
+
 ## 0. Automatisches Update (einmal eintippen)
 
 Am HP (Text-Konsole **Ctrl+Alt+F3** oder SSH), eine Zeile:
@@ -39,11 +81,13 @@ Am HP (Text-Konsole **Ctrl+Alt+F3** oder SSH), eine Zeile:
 curl -sL github.com/DonElektro/MotionWatch/raw/main/hp | sudo bash
 ```
 
-Das richtet `moveeye-hp-update` ein und lässt es gleich einmal laufen. Danach holt der HP **nachts** (03:17 plus bis
-40 Min. Zufall) und **8 Min. nach jedem Start** die neueste **signierte** Version und spielt ein, was sich geändert hat:
+Das richtet `moveeye-hp-update` ein und lässt es gleich einmal laufen. Danach schaut der HP **alle 15 Min.** nach, ob gerade
+eine **Pause** ist (kein Test, niemand spielt), und prüft dann – höchstens alle 6 Std. und **8 Min. nach jedem Start** – die
+neueste **signierte** Version; ist die letzte Prüfung über 20 Std. her, lässt das Dauerrechnen den HP frei, bis sie gelaufen
+ist (so mindestens einmal am Tag). Es spielt ein, was sich geändert hat:
 Kiosk (`kiosk_sitzung.sh`, Testbild), Haken und Dienst-Einstellungen des Runners, fehlende Pakete, den Simulator im
-Kiosk-Ordner und sich selbst. Die Anmeldung des Runners (Token) fasst es nie an. Läuft ein Test, wird verschoben (neuer
-Versuch nach 30 Min.).
+Kiosk-Ordner und sich selbst (ab 3.55.0 auch `hp_wache.py` und den Ordner `/run/moveeye-spiel`). Die Anmeldung des Runners
+(Token) fasst es nie an. Läuft ein Test oder wird gespielt, wird verschoben (nächster Blick in 15 Min.).
 
 Geprüft wird wie beim Pi: Signatur (Ed25519, öffentlicher Schlüssel im Skript) des Eintrags in `versions.json` →
 Prüfsumme der Programmdatei → darin die Prüfsumme des Linux-Pakets (`SIM3D_LINUX`) → `MoveEyeSim3D_Linux.zip`, das den

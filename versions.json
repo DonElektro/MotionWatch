@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-02 23:44",
+ "generated": "2026-11-03 01:08",
  "versions": [
+  {
+   "version": "3.55.0",
+   "file": "webcam_bewegung_3_55_0.py",
+   "url": "",
+   "sha256": "aa1fea4d56c708e6704c598d69ed41e2e9ea4da444d94ed39ded4cbfec1147f2",
+   "date": "2026-11-03 01:08",
+   "notes": "HP rechnet rund um die Uhr (Erkennung messen, KI-Trainingsbilder, Langzeittest); Spielen am HP oder Zuschauen in MoveEye Live hält das Rechnen sofort an, nach 15 Min. ohne Zuschauer geht es dort weiter; «HP rechnet» im Reiter Simulator zum Zuschauen; Bildschirm schläft nach 10 Min.; HP-Update nur in Pausen.",
+   "size": 4926042,
+   "sig": "f25f23bc7df045b75704df2a605ac23be9d78f541c9432d826386f1066190b59877b4eca87048685eb4cd88f638da6e5c6ec999eef65349ad74f912b82f1b608",
+   "data": {
+    "file": "moveeye_daten_3_55_0.zip",
+    "url": "",
+    "sha256": "28b18a17d4cbd94cb0793cd4aec0d6bab102e6c620f446289e6788fe3f95a0ff",
+    "size": 4097674,
+    "sig": "b0a72f174a54efea498d20d8f858819ef6238527cb4a094771bfa8342ca76dd630a770379ccbd03a018d0349b4ce11d1c3627c97376bc412b61a7188d607fb0e"
+   }
+  },
   {
    "version": "3.54.0",
    "file": "webcam_bewegung_3_54_0.py",
    "url": "",
    "sha256": "0111d6b349679e9d6886df9b08a90dfed6ce7d35787467e7238238cee4b431db",
-   "date": "2026-11-02 23:44",
+   "date": "2026-11-02 23:45",
    "notes": "Sim-Ansicht: im Simulator-Betrieb zeigt die Live-Seite auf Handy und Tablet ein grosses Simulator-Bild mit grossen Knöpfen (Kopf, Folgen, IR, Licht, Sirene, Aufnahme), «⋯ Mehr» und «▦ Klassisch»; «🎮 Spielen» startet ein Spiel mit einem Tipp, gespielt wird mit Knöpfen im Browser; das Simulator-Bild wird nicht mehr abgeschnitten (auch der Spiel-Assistent).",
    "size": 4901142,
    "sig": "64f4e5974a46649372ac3ee80a407340cee02b18a352ef67aadd2c6e59c65c921a79971849fab529eae180f797f0e805d7b0568c852a9b449907249478d7bd07",
@@ -136,23 +153,6 @@
     "sha256": "bd22ee0eb3be8ed0091ec57d6dc67715973fdb34fbbd0dd3365b6ca12d5b7499",
     "size": 3312308,
     "sig": "83245f8821184e75fdb5bb8611b805cd5ee77bd5a7a44ab7134b4558197ff482e9eb0b4f543191b70ed07693b0a581b35571a80b6d168b7e8d6daf585c4b6c08"
-   }
-  },
-  {
-   "version": "3.46.0",
-   "file": "webcam_bewegung_3_46_0.py",
-   "url": "",
-   "sha256": "26f7451d86fe31fdb3974a0d63bdb75af284237b18c352ec2c7dd9be0add4709",
-   "date": "2026-11-01 23:27",
-   "notes": "Gehäuse v5.2 ist jetzt überall Standard (v5.1 bleibt wählbar); Selbstbau-Paket MoveEye_Bausatz.zip (Anleitung als PDF in 5 Sprachen, Druckdateien, Bestelllisten, signierte Software) als GitHub-Release; USB-Installer für den Simulator-PC (Ubuntu 24.04, Kiosk).",
-   "size": 4833768,
-   "sig": "784467f3c28c384ac3b1469dec319dccdf3ddc94a55d63f50de51a1f7d4e7d12bdb3046f005ac1705ad727aa55ca7a3da3b20a8db4944a1bea960f30f2581b04",
-   "data": {
-    "file": "moveeye_daten_3_46_0.zip",
-    "url": "",
-    "sha256": "e4cd823f4d752c3ad51751cc6340fe267feea3ec0beb2fa2ec9e06611381b540",
-    "size": 3228828,
-    "sig": "bb44155a740fd1b95c0244f0273bb83182f48c60d3a69bfcd8f1129385b9479875476363a60e741c4179caf35904fb02147c6ea935889aaaec436efc5c89f00a"
    }
   },
   {

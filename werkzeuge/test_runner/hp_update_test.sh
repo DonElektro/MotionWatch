@@ -84,7 +84,7 @@ mkdir -p "$SIMD"
 printf '#!/bin/sh\necho alt\n' > "$SIMD/MoveEyeSim3D.x86_64"; chmod 755 "$SIMD/MoveEyeSim3D.x86_64"
 chown -R nobody "$X/home/kiosk"
 printf 'SIM=%q\nSIM_ARGS=(--fullscreen)\n' "$SIMD/MoveEyeSim3D.x86_64" > "$X/etc/moveeye-kiosk.conf"; chmod 644 "$X/etc/moveeye-kiosk.conf"
-for b in systemctl apt-get systemd-run; do
+for b in systemctl apt-get systemd-run systemd-tmpfiles; do
 	printf '#!/bin/sh\necho "%s $*" >> "%s/aufrufe.txt"\n[ "%s $1 $2" = "systemctl is-active -q" ] && exit 0\nexit 0\n' "$b" "$W" "$b" > "$B/$b"
 	chmod 755 "$B/$b"
 done
@@ -118,6 +118,7 @@ T="$W/hp_update_kopie.sh"
 sed -e "s#^UPDATE_PUBKEY=\"[0-9a-f]*\"#UPDATE_PUBKEY=\"$(cat "$W/pub.txt")\"#" \
 	-e "s#\"/usr/local/#\"$X/usr/local/#g" -e "s#\"/etc/#\"$X/etc/#g" -e "s#\"/var/lib/#\"$X/var/lib/#g" \
 	-e "s#\"/var/log/#\"$X/var/log/#g" -e "s#\"/run/moveeye-test/#\"$X/run/moveeye-test/#g" \
+	-e "s#\"/run/moveeye-spiel/#\"$X/run/moveeye-spiel/#g" \
 	-e "s#/run/lock/moveeye-hp-update.lock#$W/sperre#g" "$U" > "$T"
 grep -q "$(cat "$W/pub.txt")" "$T" || fehler "Test-Schlüssel nicht eingesetzt"
 mkdir -p "$X/var/log"
@@ -126,13 +127,14 @@ lauf() { PATH="$B:$PATH" MOVEEYE_HP_QUELLE="file://$W/$1" bash "$T" > "$W/lauf.l
 chmod 755 "$W" "$X" "$X/home"
 PATH="$B:$PATH" bash "$T" --einrichten --ohne-lauf > "$W/lauf.log" 2>&1 || { fehler "--einrichten"; sed 's/^/    /' "$W/lauf.log"; }
 grep -q "systemctl enable moveeye-hp-update.timer" "$W/aufrufe.txt" && ok "--einrichten: Zeitplan eingeschaltet" || fehler "Zeitplan"
-[ -f "$X/etc/systemd/system/moveeye-hp-update.service" ] && grep -q "OnCalendar=\*-\*-\* 03:17" "$X/etc/systemd/system/moveeye-hp-update.timer" \
-	&& ok "--einrichten: Dienst und Zeitplan 03:17" || fehler "Dienst-/Zeitplan-Datei"
+grep -q -- "--zeitplan" "$X/etc/systemd/system/moveeye-hp-update.service" && grep -q "OnCalendar=\*:07/15" "$X/etc/systemd/system/moveeye-hp-update.timer" \
+	&& ok "--einrichten: Dienst (--zeitplan) und Zeitplan alle 15 Min." || fehler "Dienst-/Zeitplan-Datei"
 cmp -s "$T" "$X/usr/local/sbin/moveeye-hp-update" && ok "--einrichten: sich selbst abgelegt" || fehler "nicht abgelegt"
 : > "$W/aufrufe.txt"
 lauf q || { fehler "erster Lauf (Exit $?)"; sed 's/^/    /' "$W/lauf.log"; }
 grep -q "Fertig: MoveEye 9.0.0 eingespielt" "$W/lauf.log" && ok "erster Lauf: eingespielt" || { fehler "nicht eingespielt"; sed 's/^/    /' "$W/lauf.log"; }
 for f in usr/local/lib/moveeye-kiosk/kiosk_sitzung.sh usr/local/lib/moveeye-kiosk/testbild.py usr/local/lib/moveeye-kiosk/moveeye.png \
+	usr/local/lib/moveeye-kiosk/hp_wache.py etc/tmpfiles.d/moveeye-spiel.conf \
 	usr/local/lib/moveeye-runner/job_start.sh usr/local/lib/moveeye-runner/job_ende.sh usr/local/lib/moveeye-runner/runner_entfernen.sh \
 	etc/systemd/system/actions.runner.Test-Repo.moveeye-hp.service.d/moveeye.conf usr/local/sbin/moveeye-hp-update; do
 	[ -f "$X/$f" ] || { fehler "$f fehlt"; continue; }
@@ -140,6 +142,8 @@ for f in usr/local/lib/moveeye-kiosk/kiosk_sitzung.sh usr/local/lib/moveeye-kios
 done
 cmp -s "$X/usr/local/lib/moveeye-kiosk/kiosk_sitzung.sh" "$R/simulator3d/beilagen_linux/kiosk_sitzung.sh" && ok "kiosk_sitzung.sh wie im Paket" || fehler "kiosk_sitzung.sh"
 cmp -s "$X/usr/local/sbin/moveeye-hp-update" "$U" && ok "sich selbst eingespielt" || fehler "moveeye-hp-update"
+grep -q "^d $X/run/moveeye-spiel 0755 nobody nobody -" "$X/etc/tmpfiles.d/moveeye-spiel.conf" && ok "Spielen-Ordner für den Benutzer des Kiosks" || fehler "Spielen-Ordner"
+[ -s "$X/var/lib/moveeye-hp-update/letzter_lauf" ] && [ "$(stat -c %a "$X/var/lib/moveeye-hp-update/letzter_lauf")" = 644 ] && ok "Stempel letzter_lauf (fürs Dauerrechnen lesbar)" || fehler "Stempel"
 [ "$(stat -c %a "$X/usr/local/lib/moveeye-runner/job_start.sh")" = 755 ] && ok "Haken ausführbar" || fehler "Haken-Rechte"
 grep -q '^echo neu' "$SIMD/MoveEyeSim3D.x86_64" && [ "$(stat -c %U "$SIMD/MoveEyeSim3D.x86_64")" = nobody ] && [ -x "$SIMD/MoveEyeSim3D.x86_64" ] \
 	&& ok "Simulator ersetzt (als Benutzer des Kiosks)" || fehler "Simulator nicht ersetzt"
@@ -162,6 +166,24 @@ lauf q; grep -q "Es läuft ein Test - verschoben" "$W/lauf.log" && [ "$(cat "$X/
 	&& ok "Test läuft: verschoben, nichts geändert" || { fehler "trotz Pause eingespielt"; sed 's/^/    /' "$W/lauf.log"; }
 rm -f "$X/run/moveeye-test/kiosk_pause"
 lauf q; cmp -s "$X/usr/local/lib/moveeye-kiosk/testbild.py" "$R/simulator3d/beilagen_linux/testbild.py" && ok "nach dem Test eingespielt" || fehler "nach dem Test"
+
+# 3.55.0: Zeitplan alle 15 Min. - nur in Pausen (kein Test, niemand spielt), höchstens alle 6 Std.; neue Fassung = nochmal
+zp() { PATH="$B:$PATH" MOVEEYE_HP_QUELLE="file://$W/q" MOVEEYE_HP_UPTIME=99999 bash "$T" --zeitplan > "$W/lauf.log" 2>&1; }
+alt6() { echo $(( $(date +%s) - 25200 )) > "$X/var/lib/moveeye-hp-update/letzter_lauf"; }
+zp; [ ! -s "$W/lauf.log" ] && ok "--zeitplan: vor kurzem geprüft -> still fertig" || { fehler "--zeitplan prüft zu oft"; sed 's/^/    /' "$W/lauf.log"; }
+alt6; mkdir -p "$X/run/moveeye-spiel"; echo '{"grund": "test"}' > "$X/run/moveeye-spiel/spielen"
+echo "# alt" > "$X/usr/local/lib/moveeye-kiosk/testbild.py"; echo "8.0.0" > "$X/var/lib/moveeye-hp-update/version"
+zp; grep -q "Am HP wird gespielt - verschoben" "$W/lauf.log" && [ "$(cat "$X/usr/local/lib/moveeye-kiosk/testbild.py")" = "# alt" ] \
+	&& ok "--zeitplan: es wird gespielt -> verschoben" || { fehler "beim Spielen eingespielt"; sed 's/^/    /' "$W/lauf.log"; }
+rm -f "$X/run/moveeye-spiel/spielen" "$X/var/lib/moveeye-hp-update/verschoben"; touch "$X/run/moveeye-test/kiosk_pause"
+zp; grep -q "Es läuft ein Test - verschoben" "$W/lauf.log" && ok "--zeitplan: der HP rechnet -> verschoben" || { fehler "beim Rechnen"; sed 's/^/    /' "$W/lauf.log"; }
+zp; [ ! -s "$W/lauf.log" ] && ok "--zeitplan: «verschoben» höchstens einmal pro Stunde im Protokoll" || fehler "Protokoll zu gesprächig"
+rm -f "$X/run/moveeye-test/kiosk_pause"
+zp; grep -q "Fertig: MoveEye 9.0.0 eingespielt" "$W/lauf.log" && cmp -s "$X/usr/local/lib/moveeye-kiosk/testbild.py" "$R/simulator3d/beilagen_linux/testbild.py" \
+	&& ok "--zeitplan: in der Pause eingespielt" || { fehler "in der Pause nicht eingespielt"; sed 's/^/    /' "$W/lauf.log"; }
+echo 1 > "$X/var/lib/moveeye-hp-update/fassung"; rm -f "$X/usr/local/lib/moveeye-kiosk/hp_wache.py"
+lauf q; grep -q "neue Fassung" "$W/lauf.log" && [ -f "$X/usr/local/lib/moveeye-kiosk/hp_wache.py" ] \
+	&& ok "gleiche Version, neue Fassung des Updates: spielt nach (hp_wache.py)" || { fehler "neue Fassung"; sed 's/^/    /' "$W/lauf.log"; }
 
 echo
 if [ $F -eq 0 ]; then echo "HP-Update-Test: OK"; else echo "HP-Update-Test: $F Fehler"; fi

@@ -1,0 +1,237 @@
+# Dauerrechnen (HP): der Simulator-PC (HP EliteDesk, self-hosted Runner «moveeye-hp») rechnet rund um die Uhr, solange
+# niemand spielt (Besitzer, 02.11.2026). Reihum: (1) Erkennung messen - main gegen die Version davor und aktive
+# real-erkennung*-Zweige, 3 Läufe pro Fall; (2) KI-Trainingsbilder aus dem Simulator (für das eigene YOLO-Modell,
+# ki_training/); (3) Langzeittest (MoveEye stundenlang: Abstürze, Speicher, Fehlalarme pro Nacht). Werkzeug:
+# werkzeuge/test_runner/dauer.py (ANLEITUNG.md, Abschnitt «Dauerrechnen»).
+# Spielen am HP (Knopf im Testbild) oder MoveEye / ein Handy, das sich mit dem Simulator verbinden will: das Rechnen hält in
+# Sekunden an (Stand gesichert), der Simulator startet. 15 Min. ohne Spielen: der nächste Lauf (Zeitplan alle 30 Min.) rechnet
+# genau dort weiter. Ein Lauf rechnet höchstens «stunden» lang und startet dann selbst den nächsten - so kommen Aufträge von
+# Hand (Erkennung (HP), Prüfstand) dazwischen dran. Wartet ein solcher Auftrag, beginnt hier nichts.
+# Ergebnis als Actions-Artefakt «dauer-<arbeit>-<paket>-<nr>» (nichts Geheimes, nichts ins Repository).
+# Sicherheit: nur Zeitplan und von Hand (auch der Selbst-Start nutzt workflow_dispatch), nie bei Pull-Requests; nur im
+# Repository von DonElektro; nur Stände aus Zweigen / Tags dieses Repositorys (die Vorprüfung legt sie fest).
+#   gh workflow run dauer_hp.yml -f arbeit=ki
+name: Dauerrechnen (HP)
+on:
+  schedule:
+    - cron: "11,41 * * * *"        # alle 30 Min.: weiterrechnen, wenn der HP frei ist
+  workflow_dispatch:
+    inputs:
+      arbeit:
+        description: "auto (reihum), erkennung, ki oder langzeit"
+        type: choice
+        options: [auto, erkennung, ki, langzeit]
+        default: auto
+      stunden:
+        description: "so lange rechnet ein Lauf höchstens (1–12 Std.), dann startet er den nächsten"
+        default: "3"
+      anzeige:
+        description: "xvfb (virtueller Bildschirm) oder bildschirm (Grafikkarte, nur wenn bei runner_einrichten.sh freigegeben)"
+        type: choice
+        options: [xvfb, bildschirm]
+        default: xvfb
+      grund:
+        description: "nur fürs Protokoll (der Selbst-Start schreibt «weiter»)"
+        default: "von Hand"
+permissions:
+  contents: read
+# Keine concurrency-Gruppe: sie würde wartende Zeitplan-Läufe laufend abbrechen («cancelled»). Die Vorprüfung startet nichts,
+# solange der HP beschäftigt ist oder ein Auftrag auf ihn wartet; der eine Runner rechnet ohnehin nur einen Job aufs Mal.
+
+jobs:
+  vorpruefung:
+    name: Vorprüfung (HP frei? Stände)
+    if: github.repository_owner == 'DonElektro'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      los: ${{ steps.p.outputs.los }}
+      kandidaten: ${{ steps.p.outputs.kandidaten }}
+      arbeit: ${{ steps.p.outputs.arbeit }}
+      stunden: ${{ steps.p.outputs.stunden }}
+      anzeige: ${{ steps.p.outputs.anzeige }}
+    steps:
+      - name: HP frei? Welche Stände?
+        id: p
+        env:
+          GH_TOKEN: ${{ github.token }}
+          R: ${{ github.repository }}
+          RUN: ${{ github.run_id }}
+          IN_ARBEIT: ${{ github.event.inputs.arbeit }}
+          IN_STUNDEN: ${{ github.event.inputs.stunden }}
+          IN_ANZ: ${{ github.event.inputs.anzeige }}
+        run: |
+          ARBEIT="${IN_ARBEIT:-auto}"; STUNDEN="${IN_STUNDEN:-3}"; ANZ="${IN_ANZ:-xvfb}"
+          fehler() { echo "::error::$*"; exit 1; }
+          case "$ARBEIT" in auto|erkennung|ki|langzeit) ;; *) fehler "arbeit: auto, erkennung, ki oder langzeit" ;; esac
+          if ! [[ "$STUNDEN" =~ ^[0-9]{1,2}$ ]] || [ "$STUNDEN" -lt 1 ] || [ "$STUNDEN" -gt 12 ]; then fehler "stunden: 1 bis 12"; fi
+          case "$ANZ" in xvfb|bildschirm) ;; *) fehler "anzeige: xvfb oder bildschirm" ;; esac
+          # Ist der HP schon beschäftigt, oder wartet ein anderer Auftrag auf ihn (Erkennung von Hand, Prüfstand)? Dann nichts.
+          los=1 grund=""
+          for st in queued in_progress waiting; do
+            for id in $(gh api "repos/$R/actions/runs?status=$st&per_page=50" --jq '.workflow_runs[].id' 2>/dev/null || true); do
+              [ "$id" = "$RUN" ] && continue
+              j=$(gh api "repos/$R/actions/runs/$id/jobs" --jq '.jobs[] | select(.status != "completed") | select(.labels | index("moveeye-hp")) | .name' 2>/dev/null | head -n 1 || true)
+              if [ -n "$j" ]; then los=0; grund="der HP rechnet schon bzw. ein Auftrag wartet: «$j»"; break 2; fi
+            done
+          done
+          # Stände: main, die Version davor (Tag), aktive Erkennungs-Zweige (letzte 14 Tage, höchstens 2)
+          python3 - "$R" > kand.json <<'PY'
+          import json, re, subprocess, sys, time
+          R = sys.argv[1]
+          def api(p):
+              return json.loads(subprocess.run(["gh", "api", p], check=True, capture_output=True, text=True).stdout or "null")
+          def liste(p):                               # Seite für Seite (je 100)
+              out = []
+              for n in range(1, 11):
+                  s = api(p + "&page=%d" % n)
+                  out += s
+                  if len(s) < 100:
+                      break
+              return out
+          main = api("repos/%s/branches/main" % R)["commit"]["sha"]
+          out = {"main": {"name": "main", "sha": main}, "zweige": []}
+          try:
+              raw = subprocess.run(["gh", "api", "repos/%s/contents/versions.json?ref=main" % R, "-H", "Accept: application/vnd.github.raw"],
+                                   check=True, capture_output=True, text=True).stdout
+              ver = tuple(int(x) for x in json.loads(raw)["versions"][0]["version"].split("."))
+              tags = [t for t in liste("repos/%s/tags?per_page=100" % R) if re.fullmatch(r"v\d{1,3}\.\d{1,3}\.\d{1,3}", t["name"])]
+              alt = sorted((tuple(int(x) for x in t["name"][1:].split(".")), t) for t in tags)
+              alt = [t for v, t in alt if v < ver]
+              if alt:
+                  out["vorher"] = {"name": alt[-1]["name"], "sha": alt[-1]["commit"]["sha"]}
+          except Exception as e:
+              print("Version davor nicht gefunden:", e, file=sys.stderr)
+          jetzt = time.time()
+          zw = []
+          for b in liste("repos/%s/branches?per_page=100" % R):
+              if not re.fullmatch(r"real-erkennung[A-Za-z0-9._-]{0,60}", b["name"]):
+                  continue
+              c = api("repos/%s/commits/%s" % (R, b["commit"]["sha"]))
+              t = time.mktime(time.strptime(c["commit"]["committer"]["date"], "%Y-%m-%dT%H:%M:%SZ"))
+              if jetzt - t < 14 * 86400 and b["commit"]["sha"] != main:
+                  zw.append((t, {"name": b["name"], "sha": b["commit"]["sha"]}))
+          out["zweige"] = [e for _, e in sorted(zw, key=lambda x: -x[0])[:2]]
+          print(json.dumps(out, separators=(",", ":")))
+          PY
+          {
+            echo "los=$los"; echo "kandidaten=$(cat kand.json)"; echo "arbeit=$ARBEIT"; echo "stunden=$STUNDEN"; echo "anzeige=$ANZ"
+          } >> "$GITHUB_OUTPUT"
+          if [ "$los" = 1 ]; then
+            echo "### Dauerrechnen (HP): $ARBEIT, höchstens $STUNDEN Std. · Stände: $(python3 -c 'import json,sys; d=json.load(open("kand.json")); print(", ".join([d["main"]["name"]] + ([d["vorher"]["name"]] if d.get("vorher") else []) + [z["name"] for z in d["zweige"]]))')" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "### Dauerrechnen (HP): nichts gestartet - $grund" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  rechnen:
+    name: Rechnen auf dem HP
+    needs: vorpruefung
+    if: github.repository_owner == 'DonElektro' && needs.vorpruefung.outputs.los == '1'
+    runs-on: [self-hosted, moveeye-hp]
+    timeout-minutes: 900
+    outputs:
+      weiter: ${{ steps.r.outputs.weiter }}
+    env:
+      KAND: ${{ needs.vorpruefung.outputs.kandidaten }}
+      ARBEIT: ${{ needs.vorpruefung.outputs.arbeit }}
+      STUNDEN: ${{ needs.vorpruefung.outputs.stunden }}
+      ANZEIGE: ${{ needs.vorpruefung.outputs.anzeige }}
+      PYTHONUNBUFFERED: "1"
+    steps:
+      - name: Werkzeug (Stand dieses Workflows)
+        uses: actions/checkout@v4
+        with:
+          path: werkzeug
+          sparse-checkout: |
+            werkzeuge/erkennungstest
+            werkzeuge/test_runner
+          persist-credentials: false
+      - name: Runner prüfen
+        run: |
+          PY="${MW_RUNNER_PY:-${MW_RUNNER_HOME:-$HOME}/venv/bin/python}"
+          [ -x "$PY" ] || { echo "::error::Python fehlt ($PY) – auf dem HP runner_einrichten.sh starten"; exit 1; }
+          echo "PY=$PY" >> "$GITHUB_ENV"
+          echo "CACHE=${MW_RUNNER_HOME:-$HOME}/cache" >> "$GITHUB_ENV"
+          echo "$(nproc) Kerne · $(free -m | awk '/^Mem/ {print $7 " MB frei von " $2}') · Platz $(df -h "$RUNNER_TEMP" | awk 'NR==2 {print $4}')"
+      - name: Arbeit wählen
+        id: w
+        run: |
+          "$PY" werkzeug/werkzeuge/test_runner/dauer.py waehlen --kandidaten "$KAND" --arbeit "$ARBEIT"
+          G="$(sed -n 's/^grund=//p' "$GITHUB_OUTPUT" | tail -n 1)"; N="$(sed -n 's/^name=//p' "$GITHUB_OUTPUT" | tail -n 1)"
+          echo "### ${N:-Nichts zu tun}: ${G}" >> "$GITHUB_STEP_SUMMARY"
+      - name: MoveEye und Simulator (gewählter Stand)
+        if: steps.w.outputs.art != 'nichts'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.w.outputs.sha }}
+          path: stand
+          persist-credentials: false
+      - name: KI-Modell (Zwischenspeicher auf dem HP)
+        if: steps.w.outputs.art != 'nichts'
+        run: |
+          K="$CACHE/ki"; mkdir -p "$K"
+          if [ ! -s "$K/frozen_inference_graph.pb" ] || [ ! -s "$K/ssd_mobilenet_v2_coco.pbtxt" ]; then
+            T="$RUNNER_TEMP/ki"; mkdir -p "$T" && cd "$T"
+            curl -fsSL --retry 3 -o m.tgz https://storage.googleapis.com/download.tensorflow.org/models/object_detection/ssd_mobilenet_v2_coco_2018_03_29.tar.gz
+            tar xzf m.tgz && mv ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb "$K/"
+            curl -fsSL --retry 3 -o "$K/ssd_mobilenet_v2_coco.pbtxt" https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt
+            cd "$GITHUB_WORKSPACE" && rm -rf "$T"
+          fi
+          echo "KI=$K" >> "$GITHUB_ENV"
+      - name: Simulator bereitstellen (Linux-Paket des Stands)
+        if: steps.w.outputs.art != 'nichts'
+        run: |
+          Z=stand/simulator3d/MoveEyeSim3D_Linux.zip
+          [ -s "$Z" ] || { echo "::error::$Z fehlt in diesem Stand"; exit 1; }
+          unzip -q -o "$Z" -d "$RUNNER_TEMP/sim"
+          B="$RUNNER_TEMP/sim/MoveEyeSim3D/MoveEyeSim3D.x86_64"
+          chmod +x "$B"
+          echo "SIMBIN=$B" >> "$GITHUB_ENV"
+      - name: Rechnen (${{ steps.w.outputs.name }})
+        id: r
+        if: steps.w.outputs.art != 'nichts'
+        env:
+          PAKET: ${{ steps.w.outputs.paket }}
+        run: |
+          D=xvfb; [ "$ANZEIGE" = "bildschirm" ] && D=":0"
+          "$PY" werkzeug/werkzeuge/test_runner/dauer.py rechnen --paket "$PAKET" --stand stand --sim-bin "$SIMBIN" \
+            --ki-ordner "$KI" --stunden "$STUNDEN" --anzeige "$D"
+      - name: Bericht
+        if: always() && steps.w.outputs.art != 'nichts' && steps.r.outputs.ordner != ''
+        env:
+          O: ${{ steps.r.outputs.ordner }}
+        run: |
+          for f in vergleich.md bericht.md; do [ -s "$O/$f" ] && { cat "$O/$f" >> "$GITHUB_STEP_SUMMARY"; break; }; done
+          [ -d "$O/pakete" ] && echo "KI-Bildpakete: $(ls "$O/pakete" | wc -l) (Artefakt → ki_training/README.md, Release «ki-daten»)" >> "$GITHUB_STEP_SUMMARY"
+          echo "Status: ${{ steps.r.outputs.status }}" >> "$GITHUB_STEP_SUMMARY"
+      - name: Ergebnis als Artefakt
+        if: always() && steps.w.outputs.art != 'nichts' && steps.r.outputs.ordner != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: dauer-${{ steps.w.outputs.art }}-${{ steps.w.outputs.paket }}-${{ github.run_number }}
+          path: ${{ steps.r.outputs.ordner }}
+          retention-days: 30
+          if-no-files-found: warn
+
+  # Selbst-Start: Zeit um oder Paket fertig, und es gibt noch Arbeit -> gleich der nächste Lauf (nicht beim Spielen, nicht
+  # wenn das HP-Update an der Reihe ist - dann übernimmt der Zeitplan). Läuft auf GitHub, nicht auf dem HP.
+  weiter:
+    name: Nächster Lauf
+    needs: [vorpruefung, rechnen]
+    if: github.repository_owner == 'DonElektro' && needs.rechnen.outputs.weiter == '1'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      actions: write
+    steps:
+      - name: Dauerrechnen weiter
+        env:
+          GH_TOKEN: ${{ github.token }}
+          R: ${{ github.repository }}
+          ARBEIT: ${{ needs.vorpruefung.outputs.arbeit }}
+          STUNDEN: ${{ needs.vorpruefung.outputs.stunden }}
+          ANZ: ${{ needs.vorpruefung.outputs.anzeige }}
+        run: gh workflow run dauer_hp.yml -R "$R" --ref main -f arbeit="$ARBEIT" -f stunden="$STUNDEN" -f anzeige="$ANZ" -f grund=weiter
