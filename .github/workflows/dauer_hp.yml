@@ -183,13 +183,19 @@ jobs:
           echo "KI=$K" >> "$GITHUB_ENV"
       - name: Simulator bereitstellen (Linux-Paket des Stands)
         if: steps.w.outputs.art != 'nichts'
+        # Fehlt das Paket (alter Stand) oder lässt es sich nicht entpacken: kein Abbruch hier (sonst bliebe das Paket ewig
+        # angefangen) - dauer.py rechnen schliesst es dann als «Stand nicht brauchbar» ab, ohne weitere Versuche.
         run: |
           Z=stand/simulator3d/MoveEyeSim3D_Linux.zip
-          [ -s "$Z" ] || { echo "::error::$Z fehlt in diesem Stand"; exit 1; }
-          unzip -q -o "$Z" -d "$RUNNER_TEMP/sim"
           B="$RUNNER_TEMP/sim/MoveEyeSim3D/MoveEyeSim3D.x86_64"
-          chmod +x "$B"
-          echo "SIMBIN=$B" >> "$GITHUB_ENV"
+          rm -rf "$RUNNER_TEMP/sim"
+          if [ -s "$Z" ] && unzip -q -o "$Z" -d "$RUNNER_TEMP/sim" && [ -f "$B" ]; then
+            chmod +x "$B"
+            echo "SIMBIN=$B" >> "$GITHUB_ENV"
+          else
+            echo "::warning::$Z fehlt in diesem Stand oder enthält MoveEyeSim3D/MoveEyeSim3D.x86_64 nicht - Paket wird übersprungen"
+            echo "SIMBIN=" >> "$GITHUB_ENV"
+          fi
       - name: Rechnen (${{ steps.w.outputs.name }})
         id: r
         if: steps.w.outputs.art != 'nichts'

@@ -11,6 +11,8 @@
 #  4. KI-Trainingsbilder mit Ersatz-Simulator: Absturz (Neustart, weiter; fertige Bilder als Teilpaket), langsame Antworten,
 #     Dauer-Absturz, Hänger;
 #     der Grund steht als ::error:: im Job-Protokoll.
+#  5. Erkennung messen: Absturz (Neustart, beim selben Fall weiter, Fall zweimal -> übersprungen, Code 3 mit Grund);
+#     Stand ohne MoveEye / Simulator-Paket -> Code 7, sofort abgeschlossen, das nächste Paket kommt dran.
 # Ersatz-Programm statt Simulator / MoveEye (MW_DAUER_ERSATZ), schnelle Takte (MW_DAUER_TAKT).
 # shellcheck disable=SC2015,SC2317  # «A && ok || fehler»: ok gibt immer 0 zurück; Hilfen laufen über «warte»
 set -u
@@ -327,6 +329,72 @@ grep -q '^::error title=Dauerrechnen KI-Trainingsbilder::Simulator 3-mal abgest�
 	&& ok "rechnen: Grund als ::error:: im Job-Protokoll, Ende von dauer.log dabei, kein Sofort-Neustart" \
 	|| { fehler "Meldung im Job-Protokoll"; cat "$W/r6.log"; }
 python3 "$D" status > "$W/st4.json" 2>&1; grep -q '"versuche": 1' "$W/st4.json" && ok "Paket bleibt angefangen (Versuch 1 von 3)" || fehler "Versuche"
+
+# ---------------------------------------------------------------- 5. Erkennung messen: Absturz, Stand nicht brauchbar
+# Der echte Fehler am HP (03.11.2026, «Code 3» dreimal für main, dann für v3.54.0): Simulator oder MoveEye beendete sich
+# mitten im Plan, erkennungstest.py gab nach dem Schritt sofort Code 3 zurück, ohne zu sagen, wer und warum; jeder neue
+# Versuch scheiterte nach rund 2 Min. wieder. Jetzt: Protokoll sichern, neu starten, beim selben Fall weiter; derselbe Fall
+# zweimal -> übersprungen; Stand ohne MoveEye / Simulator -> Code 7, sofort abgeschlossen (nicht dreimal).
+echo "--- 5. Erkennung messen: Absturz überstehen, Fall überspringen, unbrauchbaren Stand nicht wiederholen"
+python3 - "$R/werkzeuge/erkennungstest" "$W/erk5" > "$W/erk5.log" 2>&1 <<'EOF'
+import os, sys
+sys.path.insert(0, sys.argv[1])
+import erkennungstest as E, faelle as F
+out = sys.argv[2]
+def lauf(name, faelle, absturz, neustart_ok=True):
+    o = os.path.join(out, name); os.makedirs(o, exist_ok=True); F.K["out"] = o
+    st = {"tot": False, "neustarts": 0}
+    def schritt(s):
+        done = F.done_keys()
+        for k in faelle:
+            if k in done:
+                continue
+            F.ST["fall"] = k
+            if absturz(k, st):
+                st["tot"] = True                       # wie am HP: Simulator weg, die nächste Anfrage scheitert
+                raise ConnectionRefusedError("Simulator weg")
+            F.save({"key": k})
+    tote = lambda: [("Simulator", "Code -11 = Speicherzugriffsfehler (SIGSEGV)")] if st["tot"] else []
+    def neustart(t, n):
+        st["neustarts"] += 1; st["tot"] = False
+        return "" if neustart_ok else "nicht wieder verbunden"
+    rc, grund, fe = E.plan_rechnen([("orte", "x", {})], schritt, tote, neustart, log=lambda *a: None)
+    return rc, grund, st["neustarts"], sorted(F.done_keys()), [u["key"] for u in F.uebersprungene()]
+K = ["a", "b", "c", "d"]
+r = lauf("einmal", K, lambda k, st: k == "b" and st["neustarts"] == 0)
+assert r[:3] == (0, "", 1) and r[3] == K and r[4] == [], r
+r = lauf("immer_c", K, lambda k, st: k == "c")
+assert r[0] == 0 and r[2] == 2 and r[3] == K and r[4] == ["c"], r
+r = lauf("alles", ["f%02d" % i for i in range(20)], lambda k, st: True)
+assert r[0] == 3 and "8-mal abgestürzt" in r[1] and "SIGSEGV" in r[1] and r[2] == 7, r
+r = lauf("neustart", K, lambda k, st: k == "a", neustart_ok=False)
+assert r[0] == 3 and "gescheitert" in r[1] and "beim Fall a" in r[1], r
+EOF
+rc=$?
+[ "$rc" = 0 ] && ok "Absturz: Neustart, beim selben Fall weiter; zweimal beim selben Fall -> übersprungen; 8 Abstürze / Neustart gescheitert -> Code 3 mit Grund" \
+	|| { fehler "plan_rechnen (Exit $rc)"; cat "$W/erk5.log"; }
+# ganze Kette: ein Stand ohne MoveEye-Datei (bzw. ohne Simulator-Paket) -> Code 7, Paket sofort abgeschlossen, das nächste kommt dran
+export MW_RUNNER_HOME="$W/home5"
+mkdir -p "$MW_RUNNER_HOME" "$W/leerer_stand"
+erk_paket() { : > "$W/aus"; python3 "$D" waehlen --kandidaten "$K" --arbeit erkennung --ausgabe "$W/aus" > /dev/null 2>&1; wert paket "$W/aus"; }
+P5=$(erk_paket)
+python3 "$D" rechnen --paket "$P5" --stand "$W/leerer_stand" --sim-bin "$W/ersatz_sim.py" --anzeige keine --stunden 1 \
+	--ausgabe "$W/r7" > "$W/r7.log" 2>&1
+grep -q '^::error title=Dauerrechnen Erkennung messen::Stand main nicht brauchbar: MoveEye (webcam_bewegung_X_Y_Z.py) fehlt' "$W/r7.log" \
+	&& grep -q "(Code 7)" "$W/r7.log" && grep -q "kein weiterer Versuch" "$W/r7.log" && [ "$(wert weiter "$W/r7")" = 1 ] \
+	&& ok "Stand ohne MoveEye: Code 7 mit klarem Grund, kein zweiter Versuch, nächstes Paket darf gleich starten" \
+	|| { fehler "Stand ohne MoveEye"; cat "$W/r7.log" "$W/r7"; }
+sleep 1   # Paket-IDs sind sekundengenau
+P6=$(erk_paket)
+[ -n "$P6" ] && [ "$P6" != "$P5" ] && [ "$(wert stand "$W/aus")" = v3.53.0 ] && ok "danach: der nächste Stand (v3.53.0), nicht noch einmal main" \
+	|| { fehler "nach übersprungenem Stand"; cat "$W/aus"; }
+python3 "$D" rechnen --paket "$P6" --stand "$R" --sim-bin "" --anzeige keine --stunden 1 --ausgabe "$W/r8" > "$W/r8.log" 2>&1
+grep -q '::error title=Dauerrechnen Erkennung messen::Stand v3.53.0 (bbbbbbbbbb) nicht brauchbar: Simulator fehlt' "$W/r8.log" \
+	&& python3 "$D" status > "$W/st5.json" 2>&1 && grep -q '"aktiv": null' "$W/st5.json" && ok "Stand ohne Simulator-Paket: ohne Start übersprungen, Grund im Job-Protokoll" \
+	|| { fehler "Stand ohne Simulator"; cat "$W/r8.log"; }
+python3 -c 'import json, sys; z = json.load(open(sys.argv[1]))["erledigt"]
+assert sum(1 for e in z.values() if e["status"].startswith("übersprungen: Stand nicht brauchbar")) == 2, z' \
+	"$MW_RUNNER_HOME/dauer/zustand.json" && ok "Zustand: beide als «übersprungen: Stand nicht brauchbar» erledigt" || fehler "Zustand nach Code 7"
 
 echo
 if [ $F -eq 0 ]; then echo "Dauerrechnen-Test: OK"; else echo "Dauerrechnen-Test: $F Fehler"; fi

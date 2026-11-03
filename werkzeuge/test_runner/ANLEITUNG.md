@@ -39,6 +39,12 @@ Der HP rechnet **rund um die Uhr**; der Kiosk ist nicht mehr die Hauptsache. Ohn
 
 1. **Erkennung messen** – main gegen die Version davor (Tag) und aktive `real-erkennung*`-Zweige (letzte 14 Tage), Pläne
    ursache, kriechen, nacht, tier, wind, je **3 Läufe pro Fall**; ist ein Plan für zwei Stände fertig, steht `vergleich.md` im Artefakt.
+   Stürzt der Simulator oder MoveEye ab, sichert der Test das Protokoll (`simulator_absturz_N.log` bzw.
+   `motionwatch_absturz_N.log` im Artefakt), startet neu und rechnet beim selben Fall weiter; stürzt es beim selben Fall
+   zweimal ab, wird der Fall übersprungen (`uebersprungen.jsonl`, im Bericht). Code 3 = 8 Abstürze in einem Lauf bzw.
+   Neustart gescheitert (Grund mit Code/Signal und Ende von `simulator.log` im Job-Protokoll). Code 7 = Stand nicht brauchbar
+   (MoveEye-Datei oder Simulator-Paket `simulator3d/MoveEyeSim3D_Linux.zip` fehlt, alte MoveEye-Fassung kennt die
+   Start-Optionen nicht): das Paket wird sofort abgeschlossen, nicht dreimal versucht.
 2. **KI-Trainingsbilder** – der Simulator macht Bildpakete (YOLO, Vielfalt hoch, alle Szenen), 6 × 150 Bilder pro Paket,
    höchstens 2 Pakete pro Stand von main. Die ZIPs kommen ins Artefakt; fürs Training von Hand ins Release «ki-daten»
    ziehen (`ki_training/README.md`). Unter Xvfb (ohne Grafikkarte) braucht ein Szenenwechsel bis rund 1 Min. – so lange

@@ -14,6 +14,13 @@ keine Updates, Test-Postfach), wartet auf die Verbindung und rechnet dann den Pl
 Auf dem Simulator-PC (HP, self-hosted Runner) läuft das über GitHub: Actions → «Erkennung (HP)» (werkzeuge/test_runner/).
 Ergebnis im Ordner --aus: results.jsonl (ein Fall pro Zeile), ergebnis.json (Kennzahlen + Angaben), bericht.md, Protokolle,
 Bilder. Mit demselben --aus fortsetzbar (gemessene Fälle werden übersprungen).
+
+Stürzt der Simulator (oder MoveEye) ab, sichert der Test dessen Protokoll (simulator_absturz_N.log), startet ihn neu und rechnet
+beim selben Fall weiter; stürzt er beim selben Fall zweimal ab, wird dieser Fall übersprungen (uebersprungen.jsonl, im Bericht).
+Exit-Codes (Grund in fehler.txt im --aus-Ordner, das Dauerrechnen zeigt ihn im Job-Protokoll):
+  0 fertig · 1 Abbruch (Signal) / unerwartet · 2 Simulator und MoveEye beim Start nicht verbunden ·
+  3 zu viele Abstürze bzw. Neustart gescheitert · 7 Stand nicht brauchbar (MoveEye oder Simulator fehlt, MoveEye des Stands
+  kennt die Start-Optionen nicht) - das Dauerrechnen versucht ihn nicht noch einmal
 """
 import argparse
 import json
@@ -39,6 +46,14 @@ ORTE_BED = [(p, c) for p in ("camping", "wald", "stellplatz") for c in F.PLAN[p]
     ("festival", "tag"), ("festival", "nacht"), ("garten", "tag"), ("garten", "nachtregen"), ("baustelle", "nacht"),
     ("wild", "tag"), ("wild", "nacht"), ("camping", "dunkel")]
 NACHT = ("nacht", "nachtregen", "dunkel")
+RC_START, RC_ABSTURZ, RC_STAND = 2, 3, 7
+FEHLER_DATEI = "fehler.txt"
+ABSTURZ_MAX = int(os.environ.get("MW_ERK_ABSTUERZE") or 8)    # so viele Abstürze pro Lauf, dann Schluss (Exit 3)
+ABSTURZ_FALL = 2                                               # so oft beim selben Fall -> Fall übersprungen
+EINGEWOEHNEN_S = float(os.environ.get("MW_ERK_EINGEWOEHNEN_S") or 30)
+SIGNALE = {-11: "Speicherzugriffsfehler (SIGSEGV)", -6: "abgebrochen (SIGABRT)", -9: "abgeschossen (SIGKILL, Speicher voll?)",
+           -7: "Busfehler (SIGBUS)", -15: "beendet (SIGTERM)", 139: "Speicherzugriffsfehler (SIGSEGV)", 134: "abgebrochen (SIGABRT)",
+           137: "abgeschossen (SIGKILL, Speicher voll?)"}
 
 
 def _sel(events, conds=None):
@@ -99,8 +114,37 @@ class Prozesse:
         self.p.append((name, pr))
         return pr
 
+    def letzter(self, name):
+        for n, pr in reversed(self.p):
+            if n == name:
+                return pr
+        return None
+
     def laeuft(self, name):
-        return any(n == name and pr.poll() is None for n, pr in self.p)
+        pr = self.letzter(name)
+        return pr is not None and pr.poll() is None
+
+    def code(self, name):
+        """«läuft» | «Code -11 = Speicherzugriffsfehler (SIGSEGV)» | «nicht gestartet»"""
+        pr = self.letzter(name)
+        if pr is None:
+            return "nicht gestartet"
+        rc = pr.poll()
+        if rc is None:
+            return "läuft"
+        return "Code %s%s" % (rc, (" = " + SIGNALE[rc]) if rc in SIGNALE else "")
+
+    def stoppe(self, name):
+        pr = self.letzter(name)
+        if pr is not None and pr.poll() is None:
+            try:
+                os.killpg(pr.pid, signal.SIGTERM)
+                pr.wait(10)
+            except Exception:
+                try:
+                    os.killpg(pr.pid, signal.SIGKILL)
+                except OSError:
+                    pass
 
     def stop(self):
         for name, pr in reversed(self.p):
@@ -154,6 +198,69 @@ def cpu_modell():
     return ""
 
 
+def letzte_zeilen(pfad, n=12):
+    """die letzten n nicht leeren Zeilen eines Protokolls (für den Grund im Job-Protokoll)"""
+    try:
+        with open(pfad, "rb") as f:
+            f.seek(0, 2)
+            f.seek(max(0, f.tell() - 64_000))
+            z = [ln.rstrip() for ln in f.read().decode("utf-8", "replace").splitlines() if ln.strip()]
+        return z[-n:]
+    except OSError:
+        return []
+
+
+def fehler_schreiben(aus, text):
+    try:
+        with open(os.path.join(aus, FEHLER_DATEI), "w", encoding="utf-8") as f:
+            f.write(text.strip()[:1500] + "\n")
+    except OSError:
+        pass
+
+
+def plan_rechnen(schritte, schritt_rechnen, tote, neustart, log=print, nachsehen_s=6.0):
+    """alle Schritte rechnen und Abstürze überstehen. schritt_rechnen(schritt) rechnet einen Schritt (überspringt Gemessenes);
+    tote() -> [(Name, Code-Text)] der beendeten Programme; neustart(tote, n) -> "" (wieder verbunden) oder Grund.
+    Stürzt etwas ab: neu starten und den Schritt wiederholen (beim selben Fall weiter); derselbe Fall ABSTURZ_FALL-mal ->
+    übersprungen (F.ueberspringen); ABSTURZ_MAX Abstürze -> Schluss. -> (rc, Grund, [Schritt-Fehler])"""
+    n_abst, pro_fall, fehler = 0, {}, []
+    for schritt in schritte:
+        while True:
+            F.ST["fall"] = ""
+            err = None
+            try:
+                schritt_rechnen(schritt)
+            except SystemExit:
+                raise
+            except Exception as e:                      # ein Schritt bricht nicht den ganzen Test ab
+                err = e
+            t = tote()
+            t_bis = time.time() + nachsehen_s
+            while not t and err is not None and time.time() < t_bis:   # Verbindung weg: beendet er sich gerade?
+                time.sleep(0.5)
+                t = tote()
+            if not t:
+                if err is not None:
+                    log("Schritt", schritt[:2], "Fehler:", repr(err))
+                    fehler.append("%s: %r" % (schritt[1], err))
+                break
+            n_abst += 1
+            fall = F.ST.get("fall") or ""
+            was = ", ".join("%s %s" % x for x in t)
+            log("ABSTURZ %d: %s%s" % (n_abst, was, (" - beim Fall " + fall) if fall else ""))
+            if fall:
+                pro_fall[fall] = pro_fall.get(fall, 0) + 1
+                if pro_fall[fall] >= ABSTURZ_FALL:
+                    F.ueberspringen(fall, "%d-mal abgestürzt (%s)" % (pro_fall[fall], was))
+                    log("Fall", fall, "übersprungen (%d-mal abgestürzt)" % pro_fall[fall])
+            if n_abst >= ABSTURZ_MAX:
+                return RC_ABSTURZ, "%d-mal abgestürzt, zuletzt %s%s" % (n_abst, was, (" beim Fall " + fall) if fall else ""), fehler
+            g = neustart(t, n_abst)
+            if g:
+                return RC_ABSTURZ, "Neustart nach Absturz (%s%s) gescheitert: %s" % (was, (" beim Fall " + fall) if fall else "", g), fehler
+    return 0, "", fehler
+
+
 def ende_protokoll(pfad, ziel, max_bytes=2_000_000):
     """die letzten max_bytes eines Protokolls in den Ergebnis-Ordner"""
     try:
@@ -205,13 +312,25 @@ def main():
             sys.exit("unbekannter Plan «%s» (%s)" % (p, ", ".join(PLAENE)))
     a.laeufe = max(1, min(5, a.laeufe))
     repo = os.path.abspath(a.repo)
-    mw = os.path.abspath(a.mw) if a.mw else neueste_mw(repo)
-    if not mw or not os.path.isfile(mw):
-        sys.exit("MoveEye nicht gefunden (--mw oder --repo)")
-    if not a.sim_bin and not a.godot:
-        sys.exit("Simulator fehlt: --sim-bin (Export) oder --godot (Godot 4.3)")
     aus = os.path.abspath(a.aus or tempfile.mkdtemp(prefix="mw_erkennung_"))
     os.makedirs(aus, exist_ok=True)
+    try:
+        os.unlink(os.path.join(aus, FEHLER_DATEI))
+    except OSError:
+        pass
+
+    def unbrauchbar(text):                              # Stand nicht brauchbar: Grund, Exit 7 (kein neuer Versuch)
+        log("FEHLER:", text)
+        fehler_schreiben(aus, text)
+        return RC_STAND
+    mw = os.path.abspath(a.mw) if a.mw else (neueste_mw(repo) if os.path.isdir(repo) else "")
+    if not mw or not os.path.isfile(mw):
+        return unbrauchbar("Stand %s nicht brauchbar: MoveEye (webcam_bewegung_X_Y_Z.py) fehlt in %s" % (a.stand or "?", repo))
+    if not a.sim_bin and not a.godot:
+        return unbrauchbar("Stand %s nicht brauchbar: Simulator fehlt (--sim-bin bzw. --godot; Paket "
+                           "simulator3d/MoveEyeSim3D_Linux.zip im Stand?)" % (a.stand or "?"))
+    if a.sim_bin and not (os.path.isfile(a.sim_bin) and os.access(a.sim_bin, os.X_OK)):
+        return unbrauchbar("Stand %s nicht brauchbar: Simulator %s fehlt oder ist nicht ausführbar" % (a.stand or "?", a.sim_bin))
     tmp = tempfile.mkdtemp(prefix="mw_erk_lauf_")
     t_start = time.time()
 
@@ -264,11 +383,14 @@ def main():
         sargs = ["--no-update", "--stream", "--scene", "camping", "--hour", "12", "--port", str(a.sim_port), "--quality", "simple",
                  "--grafik", a.grafik, "--mini-tiny"]
         if a.sim_bin:
-            cmd = [os.path.abspath(a.sim_bin), "--max-fps", a.max_fps, "--"] + sargs
+            scmd = [os.path.abspath(a.sim_bin), "--max-fps", a.max_fps, "--"] + sargs
         else:
-            cmd = [a.godot, "--max-fps", a.max_fps, "--path", os.path.join(repo, "simulator3d"), "--"] + sargs
-        log("Simulator:", os.path.basename(cmd[0]), simver)
-        P.start("Simulator", cmd, senv, os.path.join(tmp, "simulator.log"))
+            scmd = [a.godot, "--max-fps", a.max_fps, "--path", os.path.join(repo, "simulator3d"), "--"] + sargs
+        log("Simulator:", os.path.basename(scmd[0]), simver)
+
+        def sim_start():
+            P.start("Simulator", scmd, senv, os.path.join(tmp, "simulator.log"))
+        sim_start()
         # --- MoveEye: leere Einstellungen, Simulation an, keine Updates, keine automatische Simulator-Suche
         cfg = os.path.join(tmp, "mw")
         os.makedirs(cfg, exist_ok=True)
@@ -286,59 +408,116 @@ def main():
         menv = dict(env, HOME=os.path.join(tmp, "mw_home"))
         os.makedirs(menv["HOME"], exist_ok=True)
         log("MoveEye:", os.path.basename(mw))
-        P.start("MoveEye", [sys.executable, mw, "--headless", "--port", str(a.mw_port), "--bind", "127.0.0.1", "--config", cfg],
-                menv, os.path.join(tmp, "motionwatch.log"))
+
+        def mw_start():
+            P.start("MoveEye", [sys.executable, mw, "--headless", "--port", str(a.mw_port), "--bind", "127.0.0.1", "--config", cfg],
+                    menv, os.path.join(tmp, "motionwatch.log"))
+        mw_start()
         sim = "http://127.0.0.1:%d" % a.sim_port
         web = "http://127.0.0.1:%d" % a.mw_port
-        t_end = time.time() + a.start_zeit
-        ok = False
-        while time.time() < t_end:
-            if not P.laeuft("Simulator") or not P.laeuft("MoveEye"):
-                break
-            try:
-                s = http_json(web + "/api/state", timeout=4)["state"]
-                c = http_json(sim + "/control", {"action": "get"}, timeout=4)
-                if str(s.get("source_status", "")).startswith("connected") and float(s.get("fps") or 0) > 0 \
-                        and "nicht verbunden" not in str(c.get("status", "")):
-                    ok = True
-                    break
-            except Exception:
-                pass
-            time.sleep(3)
-        if not ok:
-            fehler = "Simulator und MoveEye nicht verbunden nach %d s (Simulator läuft: %s, MoveEye läuft: %s)" % (
-                a.start_zeit, P.laeuft("Simulator"), P.laeuft("MoveEye"))
+        protokolle = {"Simulator": "simulator.log", "MoveEye": "motionwatch.log", "Xvfb": "xvfb.log"}
+
+        def verbunden(sek):
+            """True, sobald MoveEye Bilder vom Simulator hat; False nach sek oder wenn eines beendet ist"""
+            t_end = time.time() + sek
+            while time.time() < t_end:
+                if not P.laeuft("Simulator") or not P.laeuft("MoveEye"):
+                    return False
+                try:
+                    s = http_json(web + "/api/state", timeout=4)["state"]
+                    c = http_json(sim + "/control", {"action": "get"}, timeout=4)
+                    if str(s.get("source_status", "")).startswith("connected") and float(s.get("fps") or 0) > 0 \
+                            and "nicht verbunden" not in str(c.get("status", "")):
+                        return True
+                except Exception:
+                    pass
+                time.sleep(3)
+            return False
+
+        def ende_von(name):                             # die letzten Zeilen eines Protokolls (für den Grund)
+            z = letzte_zeilen(os.path.join(tmp, protokolle[name]), 6)
+            return (" · Ende %s: %s" % (protokolle[name], " | ".join(x[:160] for x in z))) if z else ""
+
+        if not verbunden(a.start_zeit):
+            sl, ml = P.code("Simulator"), P.code("MoveEye")
+            mz = " ".join(letzte_zeilen(os.path.join(tmp, "motionwatch.log"), 40))
+            if ml != "läuft" and re.search(r"unrecognized arguments|error: argument|usage: ", mz):
+                fehler = "Stand %s nicht brauchbar: MoveEye %s kennt die Start-Optionen des Tests nicht (%s)%s" % (
+                    a.stand or "?", mwver, ml, ende_von("MoveEye"))
+                return unbrauchbar(fehler)
+            fehler = "Simulator und MoveEye nicht verbunden nach %d s (Simulator: %s, MoveEye: %s)" % (a.start_zeit, sl, ml)
+            fehler += ende_von("Simulator") if sl != "läuft" or ml == "läuft" else ""
+            fehler += ende_von("MoveEye") if ml != "läuft" else ""
             log("FEHLER:", fehler)
-            return 2
-        log("verbunden – 30 s eingewöhnen")
-        time.sleep(30)
+            for name in ("Simulator", "MoveEye"):
+                for ln in letzte_zeilen(os.path.join(tmp, protokolle[name]), 15):
+                    log("  [%s] %s" % (protokolle[name], ln[:300]))
+            fehler_schreiben(aus, fehler)
+            return RC_START
+        log("verbunden – %.0f s eingewöhnen" % EINGEWOEHNEN_S)
+        time.sleep(EINGEWOEHNEN_S)
         F.konfig(sim=sim, mw=web, out=aus, shots=os.path.join(aus, "bilder"), variant=lauf["plan"], fpsmin=a.fpsmin,
                  fpswait=a.fpswait)
         if fs:
             FS.einhaengen(fs)
             fs.setze(status="laeuft")
             fs.bild_faden(web)
+
+        def schritt_rechnen(schritt):
+            done = F.done_keys()
+            if schritt[0] == "orte":
+                o = dict(schritt[2])
+                F.orte(schritt[1], done, rep=a.laeufe, leerwind=o.get("leerwind", 55), sel=o.get("sel"),
+                       sel_leer=o.get("sel_leer", False), blindmap=a.blindmap)
+            else:
+                for w in schritt[1].split(","):
+                    F.EXTRAS[w](done)
+
+        def tote():
+            return [(n, P.code(n)) for n in ("Xvfb", "Simulator", "MoveEye") if P.letzter(n) is not None and not P.laeuft(n)]
+
+        def neustart(t, n):
+            """Protokolle sichern (<name>_absturz_N.log, ins Artefakt), Beendetes neu starten, wieder verbinden"""
+            namen = [x[0] for x in t]
+            for name in namen:
+                q = os.path.join(tmp, protokolle[name])
+                ende_protokoll(q, os.path.join(aus, protokolle[name].replace(".log", "_absturz_%d.log" % n)), 500_000)
+                for ln in letzte_zeilen(q, 12):
+                    log("  [%s] %s" % (protokolle[name], ln[:300]))
+            if "Xvfb" in namen:
+                return "Xvfb beendet (virtueller Bildschirm)"
+            if "Simulator" in namen:
+                log("Simulator neu starten")
+                sim_start()
+            if "MoveEye" in namen:
+                log("MoveEye neu starten")
+                mw_start()
+            if not verbunden(a.start_zeit):
+                if P.laeuft("Simulator") and P.laeuft("MoveEye") and "MoveEye" not in namen:
+                    log("MoveEye verbindet nicht wieder - MoveEye auch neu starten")
+                    P.stoppe("MoveEye")
+                    mw_start()
+                    if verbunden(a.start_zeit):
+                        time.sleep(EINGEWOEHNEN_S)
+                        return ""
+                return "nicht wieder verbunden (Simulator: %s, MoveEye: %s)%s" % (P.code("Simulator"), P.code("MoveEye"),
+                                                                                  ende_von("Simulator"))
+            log("wieder verbunden – %.0f s eingewöhnen, weiter beim selben Fall" % EINGEWOEHNEN_S)
+            time.sleep(EINGEWOEHNEN_S)
+            return ""
+
+        schritte = []
         for p in plaene:
-            log("Plan", p, "–", PLAENE[p][0])
-            for schritt in PLAENE[p][1]:
-                done = F.done_keys()
-                try:
-                    if schritt[0] == "orte":
-                        o = dict(schritt[2])
-                        F.orte(schritt[1], done, rep=a.laeufe, leerwind=o.get("leerwind", 55), sel=o.get("sel"),
-                               sel_leer=o.get("sel_leer", False), blindmap=a.blindmap)
-                    else:
-                        for w in schritt[1].split(","):
-                            F.EXTRAS[w](done)
-                except SystemExit:
-                    raise
-                except Exception as e:                      # ein Schritt bricht nicht den ganzen Test ab
-                    log("Schritt", schritt[:2], "Fehler:", repr(e))
-                    fehler = (fehler + "; " if fehler else "") + "%s: %r" % (schritt[1], e)
-                if not P.laeuft("Simulator") or not P.laeuft("MoveEye"):
-                    fehler = (fehler + "; " if fehler else "") + "Simulator oder MoveEye beendet"
-                    log("FEHLER: Simulator oder MoveEye läuft nicht mehr")
-                    return 3
+            schritte += PLAENE[p][1]
+        log("Plan", lauf["plan"], "–", " + ".join(PLAENE[p][0] for p in plaene)[:200])
+        rc, grund, sfehler = plan_rechnen(schritte, schritt_rechnen, tote, neustart, log)
+        if sfehler:
+            fehler = "; ".join(sfehler)
+        if rc:
+            fehler = (fehler + "; " if fehler else "") + grund
+            log("FEHLER:", grund)
+            fehler_schreiben(aus, grund + ende_von("Simulator"))
+            return rc
         log("fertig")
         return 0
     except SystemExit as e:
@@ -353,6 +532,14 @@ def main():
         if fehler:
             lauf["fehler"] = fehler
             lauf["hinweis"] = (lauf.get("hinweis", "") + " · " if lauf.get("hinweis") else "") + "Fehler: " + fehler
+        try:
+            ueb = F.uebersprungene(aus)
+        except Exception:
+            ueb = []
+        if ueb:
+            lauf["uebersprungen"] = ueb
+            lauf["hinweis"] = (lauf.get("hinweis", "") + " · " if lauf.get("hinweis") else "") + \
+                "Übersprungen (Simulator / MoveEye stürzt dort immer ab): " + ", ".join(u.get("key", "?") for u in ueb)
         for fn in ("simulator.log", "motionwatch.log", "xvfb.log"):
             ende_protokoll(os.path.join(tmp, fn), os.path.join(aus, fn))
         R = B.lesen(os.path.join(aus, "results.jsonl"))
