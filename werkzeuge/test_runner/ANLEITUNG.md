@@ -41,7 +41,12 @@ Der HP rechnet **rund um die Uhr**; der Kiosk ist nicht mehr die Hauptsache. Ohn
    ursache, kriechen, nacht, tier, wind, je **3 Läufe pro Fall**; ist ein Plan für zwei Stände fertig, steht `vergleich.md` im Artefakt.
 2. **KI-Trainingsbilder** – der Simulator macht Bildpakete (YOLO, Vielfalt hoch, alle Szenen), 6 × 150 Bilder pro Paket,
    höchstens 2 Pakete pro Stand von main. Die ZIPs kommen ins Artefakt; fürs Training von Hand ins Release «ki-daten»
-   ziehen (`ki_training/README.md`).
+   ziehen (`ki_training/README.md`). Unter Xvfb (ohne Grafikkarte) braucht ein Szenenwechsel bis rund 1 Min. – so lange
+   wartet das Werkzeug (`MW_KI_ANTWORT_S`, `MW_KI_STILL_S`); stürzt der Simulator ab, werden die schon fertigen Bilder
+   (ab 10) als Teilpaket gesichert und er wird neu gestartet (Protokoll `simulator_absturz_N.log` im Artefakt; 3-mal
+   hintereinander ohne gesicherte Bilder = Schluss). Geht es nicht weiter,
+   steht der Grund im Job-Protokoll (`::error::`, dazu das Ende von `dauer.log`) und in `fehler.txt` – nicht mehr nur
+   «Code 1». Grafik: normal (`MW_KI_GRAFIK=lite` zum Ausprobieren).
 3. **Langzeittest** – MoveEye und Simulator 3 Std. im Leerlauf (Nacht, Tag, Nacht mit Regen, Dämmerung je 30 Min.):
    Abstürze, Speicher (und wie er wächst), Fehlalarme pro Nacht, Bilder/s; einmal pro Tag.
 

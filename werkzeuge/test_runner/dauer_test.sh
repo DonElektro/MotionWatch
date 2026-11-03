@@ -8,6 +8,9 @@
 #     (schnelle Uhr: das Datum der Spielen-Datei wird zurückgestellt) -> Pause wieder da, der Test rechnet genau dort weiter.
 #  3. dauer.py waehlen / rechnen: Spielen -> «nichts»; HP-Update fällig -> «nichts»; reihum Erkennung -> KI -> Langzeit;
 #     angehaltenes Paket kommt beim nächsten Lauf wieder dran und wird fertig.
+#  4. KI-Trainingsbilder mit Ersatz-Simulator: Absturz (Neustart, weiter; fertige Bilder als Teilpaket), langsame Antworten,
+#     Dauer-Absturz, Hänger;
+#     der Grund steht als ::error:: im Job-Protokoll.
 # Ersatz-Programm statt Simulator / MoveEye (MW_DAUER_ERSATZ), schnelle Takte (MW_DAUER_TAKT).
 # shellcheck disable=SC2015,SC2317  # «A && ok || fehler»: ok gibt immer 0 zurück; Hilfen laufen über «warte»
 set -u
@@ -207,6 +210,123 @@ python3 "$D" rechnen --paket "$P3" --stunden 1 --ausgabe "$W/r5" > "$W/r5.log" 2
 waehle "$K"; [ "$(wert art "$W/aus")" = erkennung ] && [ "$(wert stand "$W/aus")" = v3.53.0 ] && [ "$(wert plan "$W/aus")" = ursache ] \
 	&& ok "reihum: Erkennung, jetzt der Vergleichs-Stand" || { fehler "Vergleichs-Stand"; cat "$W/aus"; }
 python3 "$D" status > "$W/st.json" && grep -q '"erledigt": 3' "$W/st.json" && ok "Zustand: 3 Pakete erledigt" || { fehler "Zustand"; cat "$W/st.json"; }
+
+# ---------------------------------------------------------------- 4. KI-Trainingsbilder mit Ersatz-Simulator
+# Der echte Fehler am HP (03.11.2026, «Code 1» dreimal): unter Xvfb (ohne Grafikkarte) stürzt der Simulator beim Export
+# (Vielfalt hoch) nach einigen Minuten ab (SIGSEGV) bzw. antwortet beim Szenenwechsel über 20 s nicht - ki-teil starb an der
+# ersten Zeitüberschreitung, ohne Grund im Job-Protokoll. Ersatz-Simulator (HTTP /control wie der echte) mit den Fällen: stürzt einmal ab, antwortet
+# langsam, stürzt immer ab, hängt.
+echo "--- 4. KI-Trainingsbilder: Absturz, langsame Antworten, Hänger, klare Meldung"
+unset MW_DAUER_ERSATZ
+cat > "$W/ersatz_sim.py" <<'EOF'
+#!/usr/bin/env python3
+import json, os, signal, sys, threading, time
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+arg = sys.argv[1:]
+port = int(arg[arg.index("--port") + 1])
+grafik = arg[arg.index("--grafik") + 1] if "--grafik" in arg else "?"
+modus = os.environ.get("ERSATZ_SIM_MODUS", "")
+zf = os.environ["ERSATZ_SIM_ZAEHLER"]
+start = (int(open(zf).read()) if os.path.exists(zf) else 0) + 1
+open(zf, "w").write(str(start))
+with open(os.environ["ERSATZ_SIM_PROTOKOLL"], "a") as f:
+    f.write("start %d grafik %s\n" % (start, grafik))
+print("Ersatz-Simulator Start %d, Grafik %s, Modus %s" % (start, grafik, modus), flush=True)
+z = {"busy": False, "bis": 0.0, "gets": 0}
+lock = threading.Lock()
+class H(BaseHTTPRequestHandler):
+    def log_message(self, *a):
+        pass
+    def do_POST(self):
+        d = json.loads(self.rfile.read(int(self.headers.get("Content-Length") or 0)) or b"{}")
+        out = {"ok": True}
+        if d.get("action") == "dataset":
+            with lock:
+                if d.get("op") == "export":
+                    z.update(busy=True, bis=time.time() + 0.6)
+                    out = {"ok": True, "busy": True, "msg": "Paket: Bild 1 von %s" % d.get("n")}
+                else:
+                    z["gets"] += 1
+                    g = z["gets"]
+                    if modus == "teil" and start == 1:      # 6 Bilder fertig, das 7. nur halb - dann Absturz
+                        e = os.path.join(os.environ["HOME"], ".local/share/godot/app_userdata/MoveEye Sim/trainingsbilder/20261103_1200_hoch")
+                        for i in range(7):
+                            t = "val" if i % 7 == 6 else "train"
+                            for u in ("images", "labels", "labels_meta"):
+                                os.makedirs(os.path.join(e, u, t), exist_ok=True)
+                            open(os.path.join(e, "images", t, "%05d_wald_tag.jpg" % i), "wb").write(b"\xff\xd8" + os.urandom(500))
+                            if i < 6:
+                                open(os.path.join(e, "labels", t, "%05d_wald_tag.txt" % i), "w").write("0 0.5 0.5 0.1 0.3\n")
+                                open(os.path.join(e, "labels_meta", t, "%05d_wald_tag.json" % i), "w").write("{}")
+                    if modus == "immer" or (modus in ("absturz1", "teil") and start == 1):
+                        print("Speicherzugriffsfehler (nachgestellt)", flush=True)
+                        os.kill(os.getpid(), signal.SIGSEGV)
+                    if modus == "haengt" or (modus == "langsam" and g <= 2):
+                        time.sleep(100 if modus == "haengt" else 2.5)   # länger als MW_KI_ANTWORT_S
+                    if z["busy"] and time.time() > z["bis"]:
+                        d0 = os.path.join(os.environ["HOME"], ".local/share/godot/app_userdata/MoveEye Sim")
+                        os.makedirs(d0, exist_ok=True)
+                        with open(os.path.join(d0, "MoveEye-Trainingsbilder_%d.zip" % int(time.time() * 1000)), "wb") as f:
+                            f.write(b"PK" + os.urandom(2048))
+                        z["busy"] = False
+                    out = {"ok": True, "busy": z["busy"], "msg": "fertig" if not z["busy"] else "Paket: Bild 7 von 150"}
+        b = json.dumps(out).encode()
+        try:
+            self.send_response(200); self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(b))); self.end_headers(); self.wfile.write(b)
+        except OSError:
+            pass
+    def do_GET(self):
+        self.send_response(404); self.end_headers()
+ThreadingHTTPServer.daemon_threads = True
+ThreadingHTTPServer(("127.0.0.1", port), H).serve_forever()
+EOF
+chmod +x "$W/ersatz_sim.py"
+export ERSATZ_SIM_PROTOKOLL="$W/sim_starts.log" ERSATZ_SIM_ZAEHLER="$W/sim_zaehler" MW_KI_PORT=$(( 40000 + RANDOM % 20000 ))
+ki() {   # ki MODUS MENGE AUSGABE [ENV=…]: ki-teil mit dem Ersatz-Simulator, ohne Bildschirm -> Exit-Code
+	local m=$1 n=$2 aus=$3; shift 3
+	rm -f "$ERSATZ_SIM_PROTOKOLL" "$ERSATZ_SIM_ZAEHLER"
+	env ERSATZ_SIM_MODUS="$m" MW_KI_ANTWORT_S=1 MW_KI_STILL_S=6 "$@" python3 "$D" ki-teil --repo "$R" --sim-bin "$W/ersatz_sim.py" --aus "$aus" \
+		--anzeige keine --menge "$n" --stand-name main > "$aus.log" 2>&1
+}
+ki absturz1 2 "$W/ki1" MW_KI_GRAFIK=lite; rc=$?
+[ "$rc" = 0 ] && [ -s "$W/ki1/pakete/ki_01.zip" ] && [ -s "$W/ki1/pakete/ki_02.zip" ] && [ -s "$W/ki1/simulator_absturz_1.log" ] \
+	&& grep -q "SIGSEGV" "$W/ki1.log" && ok "Simulator stürzt ab (SIGSEGV): Protokoll gesichert, Neustart, beide Bildpakete fertig" \
+	|| { fehler "Absturz nicht überstanden (Exit $rc)"; cat "$W/ki1.log"; }
+[ "$(grep -c '^start .* grafik lite' "$ERSATZ_SIM_PROTOKOLL")" = 2 ] && ok "MW_KI_GRAFIK=lite gilt auch nach dem Neustart" \
+	|| { fehler "Grafik"; cat "$ERSATZ_SIM_PROTOKOLL"; }
+ki teil 2 "$W/ki5" MW_KI_TEIL_MIN=5; rc=$?
+[ "$rc" = 0 ] && [ "$(grep -c '^start' "$ERSATZ_SIM_PROTOKOLL")" = 2 ] && python3 -c 'import sys, zipfile
+z = zipfile.ZipFile(sys.argv[1]); n = z.namelist()
+assert sum(x.endswith(".jpg") for x in n) == 6 and sum(x.startswith("labels/") for x in n) == 6 and "data.yaml" in n, n
+y = z.read([x for x in n if x.endswith("data.yaml")][0]).decode()
+assert "names:" in y and "  0: person" in y and "Teilpaket" in y' "$W/ki5/pakete/ki_01.zip" && [ -s "$W/ki5/pakete/ki_02.zip" ] \
+	&& ok "Absturz mitten im Bildpaket: 6 fertige Bilder als Teilpaket gesichert (data.yaml aus dataset.gd), weiter mit Paket 2" \
+	|| { fehler "Teilpaket (Exit $rc)"; cat "$W/ki5.log"; }
+ki langsam 1 "$W/ki2"; rc=$?
+[ "$rc" = 0 ] && [ -s "$W/ki2/pakete/ki_01.zip" ] && ok "langsame Antworten (Szenenwechsel unter Xvfb): kein Abbruch" \
+	|| { fehler "langsame Antworten (Exit $rc)"; cat "$W/ki2.log"; }
+ki immer 2 "$W/ki3"; rc=$?
+[ "$rc" = 4 ] && grep -q "abgestürzt" "$W/ki3/fehler.txt" && grep -q "SIGSEGV" "$W/ki3/fehler.txt" && [ "$(grep -c '^start' "$ERSATZ_SIM_PROTOKOLL")" = 3 ] \
+	&& ok "stürzt immer ab: Exit 4 nach 2 Neustarts, Grund in fehler.txt ($(head -c 70 "$W/ki3/fehler.txt") …)" \
+	|| { fehler "Dauer-Absturz (Exit $rc)"; cat "$W/ki3.log"; }
+ki haengt 1 "$W/ki4"; rc=$?
+[ "$rc" = 5 ] && grep -q "hängt" "$W/ki4/fehler.txt" && ok "hängt: Exit 5, Grund in fehler.txt" || { fehler "Hänger (Exit $rc)"; cat "$W/ki4.log"; }
+pgrep -f "$W/ersatz_sim.py" >/dev/null && fehler "Ersatz-Simulator läuft noch" || ok "kein Simulator bleibt übrig"
+# ganze Kette wie am HP: waehlen -> rechnen; der Grund steht im Job-Protokoll (::error::), nicht nur «Code 1»
+export MW_RUNNER_HOME="$W/home4"
+mkdir -p "$MW_RUNNER_HOME"
+waehle "$K" >/dev/null; : > "$W/aus"
+python3 "$D" waehlen --kandidaten "$K" --arbeit ki --ausgabe "$W/aus" > /dev/null 2>&1
+P4=$(wert paket "$W/aus")
+rm -f "$ERSATZ_SIM_ZAEHLER"
+ERSATZ_SIM_MODUS=immer MW_KI_ANTWORT_S=1 python3 "$D" rechnen --paket "$P4" --stand "$R" --sim-bin "$W/ersatz_sim.py" --anzeige keine \
+	--stunden 1 --ausgabe "$W/r6" > "$W/r6.log" 2>&1
+grep -q '^::error title=Dauerrechnen KI-Trainingsbilder::Simulator 3-mal abgestürzt' "$W/r6.log" && grep -q "Versuch 1): Simulator" "$W/r6.log" \
+	&& grep -q "::group::Ende von dauer.log" "$W/r6.log" && [ "$(wert weiter "$W/r6")" = 0 ] \
+	&& ok "rechnen: Grund als ::error:: im Job-Protokoll, Ende von dauer.log dabei, kein Sofort-Neustart" \
+	|| { fehler "Meldung im Job-Protokoll"; cat "$W/r6.log"; }
+python3 "$D" status > "$W/st4.json" 2>&1; grep -q '"versuche": 1' "$W/st4.json" && ok "Paket bleibt angefangen (Versuch 1 von 3)" || fehler "Versuche"
 
 echo
 if [ $F -eq 0 ]; then echo "Dauerrechnen-Test: OK"; else echo "Dauerrechnen-Test: $F Fehler"; fi
