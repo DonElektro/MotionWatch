@@ -52,13 +52,13 @@ nächsten Mal neu gerechnet, nichts anderes geht verloren. Zustand: `/var/lib/mw
 
 **Spielen:** Am HP eine Taste drücken oder die Maus bewegen – das Testbild zeigt gross «Spielen?» (Enter oder Klick = ja,
 Esc = weiter rechnen); unten rechts steht immer der Knopf «Spielen». Auch Spielen ist: in **MoveEye** im Simulator-Betrieb
-den Reiter **Live** bzw. die Sim-Ansicht offen und sichtbar haben (Browser) oder das Fenster am Pi zeigt das Live-Bild –
+den Reiter **Live** bzw. die Sim-Ansicht offen und sichtbar haben (Browser, ebenso das Fenster am Pi: Reiter Live, nicht verkleinert) –
 MoveEye meldet das dem HP alle 20 s (`POST /zuschauer` an Port 8761, nur eine Zeitmarke) –, oder ein Handy öffnet die
 Spiel-Seite (Port 8770). **Eine Verbindung MoveEye ↔ Simulator allein zählt nicht** (Entscheid Besitzer 03.11.2026: der Pi
 bleibt im Simulator-Betrieb dauernd verbunden), die Karte / Seite «HP rechnet» auch nicht. Dann hält der Test in wenigen
 Sekunden an, der Test-Simulator ist zu, und der Kiosk-Simulator startet (nie beide zugleich – 4 GB RAM). **15 Min. ohne
 Maus, Taste, Zuschauer und Spieler am Handy** rechnet der nächste Lauf genau dort weiter. Ein Gamepad am HP zählt nicht als
-Eingabe. Steht das Fenster am Pi dauernd offen auf dem Bildschirm, gilt das als Zuschauer – dann rechnet der HP nicht.
+Eingabe.
 
 **Bildschirm:** während des Rechnens schaltet er nach 10 Min. ohne Maus / Taste ab (DPMS), das Testbild zeichnet dann nicht
 mehr; Maus oder Taste weckt ihn sofort. Beim Simulator bleibt er an wie bisher.

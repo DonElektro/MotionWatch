@@ -14,7 +14,7 @@
 # Felder, gekürzt, Grösse begrenzt (JSON 64 KB, Bild 2,5 MB und nur PNG). Nur für den Besitzer (Rolle admin).
 # Zuschauer (Entscheid Besitzer 03.11.2026): eine Verbindung MoveEye <-> Simulator allein hält den HP NICHT vom Rechnen ab.
 # Nur wenn jemand im Simulator-Betrieb wirklich zuschaut - Reiter Live / Sim-Ansicht im Browser offen und sichtbar, oder
-# das Fenster am Pi zeigt das Live-Bild -, schickt MoveEye alle ~20 s «POST /zuschauer» an den HP (nur eine Zeitmarke);
+# das Fenster am Pi zeigt den Reiter Live (nicht verkleinert) -, schickt MoveEye alle ~20 s «POST /zuschauer» an den HP (nur eine Zeitmarke);
 # dann pausiert der HP sein Rechnen und der Simulator läuft. Die Karte / Seite «HP rechnet» schicken das nie.
 # ----------------------------------------------------------------------------
 HPR_PORT = 8761
@@ -142,7 +142,7 @@ def hpr_status():
         return res
 
 
-HPR_ZU = {"t": 0.0, "faden": False}
+HPR_ZU = {"t": 0.0, "faden": False, "app": None}
 
 
 def hpr_zuschauer(was):
@@ -175,15 +175,32 @@ def hpr_zuschauer(was):
     return True
 
 
+def hpr_fenster_schaut():
+    """das Fenster am Pi ist ein Zuschauer - gleiche Regel wie im Browser: es ist sichtbar (nicht verkleinert, STATE
+    local_view_t, Teil 570) UND zeigt den Reiter Live (App.tab)"""
+    app = HPR_ZU.get("app")
+    return (app is not None and getattr(app, "tab", "") == "live"
+            and time.time() - float(STATE.get("local_view_t") or 0) <= 5)
+
+
 def _hpr_fenster_faden():
-    """das Fenster am Pi zeigt das Live-Bild (STATE local_view_t, Teil 570): auch das ist ein Zuschauer"""
     while True:
         time.sleep(20)
         try:
-            if time.time() - float(STATE.get("local_view_t") or 0) <= 5:
+            if hpr_fenster_schaut():
                 hpr_zuschauer("fenster")
         except Exception:
             pass
+
+
+if GUI_OK:                                                # das Fenster merken (für den Reiter, nur lesen)
+    _hpr_app_init_base = App.__init__
+
+    def _hpr_app_init(self, *a, **kw):
+        HPR_ZU["app"] = self
+        _hpr_app_init_base(self, *a, **kw)
+    # wraps: App.__init__
+    App.__init__ = _hpr_app_init
 
 
 def hpr_bild():
