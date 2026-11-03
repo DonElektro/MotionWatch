@@ -1,15 +1,15 @@
 {
- "version": "3D-5.55.0",
- "ver": "3.55.0",
- "name": "MoveEye Sim 3.55.0",
+ "version": "3D-5.55.1",
+ "ver": "3.55.1",
+ "name": "MoveEye Sim 3.55.1",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 49961478,
- "sha256": "15776d2683e09b438bf8668301e9d515ab50fbec847031de8d17f0bf913391f7",
- "notes": "HP rechnet rund um die Uhr",
+ "size": 49961865,
+ "sha256": "244afb50e2f13d281627b8e14220f033b03eeedec883b4400ed03acfcc6609f7",
+ "notes": "Fix Absturz und Linsen-Shader",
  "linux": {
   "file": "simulator3d/MoveEyeSim3D_Linux.zip",
-  "ver": "3.55.0",
-  "size": 43975559,
-  "sha256": "a2ba13926df582cc4fd5f29921780aa9d129f2c99b08fb1aca1eff7d26cb7965"
+  "ver": "3.55.1",
+  "size": 43975795,
+  "sha256": "acbacddeffad6dd9b04948fdad9b3b62d54d04ac0f38061f849bce0a9bfb24c9"
  }
 }

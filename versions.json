@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-03 01:08",
+ "generated": "2026-11-03 15:34",
  "versions": [
   {
-   "version": "3.55.0",
-   "file": "webcam_bewegung_3_55_0.py",
+   "version": "3.55.1",
+   "file": "webcam_bewegung_3_55_1.py",
    "url": "",
-   "sha256": "aa1fea4d56c708e6704c598d69ed41e2e9ea4da444d94ed39ded4cbfec1147f2",
-   "date": "2026-11-03 01:08",
-   "notes": "HP rechnet rund um die Uhr (Erkennung messen, KI-Trainingsbilder, Langzeittest); Spielen am HP oder Zuschauen in MoveEye Live hält das Rechnen sofort an, nach 15 Min. ohne Zuschauer geht es dort weiter; «HP rechnet» im Reiter Simulator zum Zuschauen; Bildschirm schläft nach 10 Min.; HP-Update nur in Pausen.",
-   "size": 4926042,
-   "sig": "f25f23bc7df045b75704df2a605ac23be9d78f541c9432d826386f1066190b59877b4eca87048685eb4cd88f638da6e5c6ec999eef65349ad74f912b82f1b608",
+   "sha256": "a3e537423096002b12d60f99bec87de0edf52e5d1debad0c0ad165062ecbfcc1",
+   "date": "2026-11-03 15:34",
+   "notes": "Simulator: kein Absturz mehr bei KI-Trainingsbildern «Vielfalt hoch» (Morgen im Bergtal in einer Welt); Tropfen und Beschlag auf der Linse funktionieren jetzt auch im Kompatibilitäts-Modus (Linux/HP), Protokoll ohne Shader-Fehlerflut.",
+   "size": 4926056,
+   "sig": "7a8fd29b0877fef93b5391d2a8d844341af28b7dd121e76fab1532c7cea8050ed480e4a17d9b08a739d636081678c48ae08cba2c106e782057fa28f070a77e04",
    "data": {
-    "file": "moveeye_daten_3_55_0.zip",
+    "file": "moveeye_daten_3_55_1.zip",
     "url": "",
-    "sha256": "28b18a17d4cbd94cb0793cd4aec0d6bab102e6c620f446289e6788fe3f95a0ff",
-    "size": 4097674,
-    "sig": "b0a72f174a54efea498d20d8f858819ef6238527cb4a094771bfa8342ca76dd630a770379ccbd03a018d0349b4ce11d1c3627c97376bc412b61a7188d607fb0e"
+    "sha256": "6229bf56f59396598a8fe90b652fb13d77be8bfd75de18d4068b36be39d976cd",
+    "size": 4097821,
+    "sig": "ad0e2685f56cd070a2560d0d1b6590b669d7c80f27e8f03aa02d20791cb60ae846769c78fc57338336ea4de83badcec506d0456f2c90224914acc7f335b7120d"
    }
   },
   {

@@ -653,7 +653,8 @@ def fehler_schreiben(o, text):
 
 def ki_grafik():
     """Grafik-Modus der Trainingsbilder: normal (lite wäre zu einfach); MW_KI_GRAFIK=lite|normal auf dem HP zum Ausprobieren.
-    Hinweis: unter Xvfb (Mesa llvmpipe) stürzt der Simulator bei «Vielfalt hoch» mit beiden Modi gleich ab (SIGSEGV)."""
+    Hinweis: bis Simulator 3.55.0 stürzte er bei «Vielfalt hoch» ab (SIGSEGV, Morgen im Bergtal in einer Welt, bergtal.gd
+    _rank_add) - ab 3.55.1 behoben; das Retten der Teilpakete bleibt für andere Abstürze."""
     g = (os.environ.get("MW_KI_GRAFIK") or "").strip()
     return g if g in ("lite", "normal") else "normal"
 

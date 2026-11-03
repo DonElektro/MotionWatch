@@ -57,7 +57,7 @@ func _process(dt: float) -> void:
 		var pos: Vector3 = (v as Node3D).global_position
 		var kind := _kind_of(v)
 		var step := 0.65 if kind == "foot" else (1.2 if kind == "tyre" else 0.45)
-		var last = v.get_meta("trk", null)
+		var last = v.get_meta("trk") if v.has_meta("trk") else null   # get_meta(.., null) meldet sonst jedes Mal einen Fehler
 		if last is Vector3 and Vector2(pos.x - last.x, pos.z - last.z).length() < step:
 			continue
 		var side: float = -1.0 if bool(v.get_meta("trk_l", false)) else 1.0

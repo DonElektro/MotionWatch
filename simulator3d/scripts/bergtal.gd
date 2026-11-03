@@ -3521,9 +3521,14 @@ static func ranking() -> Array:
 func _rank_add(res: Dictionary) -> Array:
 	var lst := ranking()
 	var nm := "Eigener Platz %d / %d" % [int(spot_xz.x), int(spot_xz.y)]
-	if spot != "frei":
-		var sd: Array = spot_data(spot)
+	# Fix 3.55.1: in einer Welt (alte Szene als Ort im Tal, worlds.gd) ist `spot` der Ort und kein Schlafplatz - spot_data()
+	# gibt dann null. Früher `var sd: Array = spot_data(spot)`: im exportierten Simulator (Release, ohne Typprüfung) war sd
+	# dann kein Array, sd[0] las ins Leere -> Absturz (SIGSEGV) beim ersten Morgen in einer Welt, z. B. KI-Bilder «Vielfalt hoch».
+	var sd = spot_data(spot) if spot != "frei" else null
+	if sd is Array and not (sd as Array).is_empty():
 		nm = str(sd[0])
+	elif place != "" and Worlds.PLACES.has(place):
+		nm = str(Worlds.PLACES[place][1])
 	lst.append({"name": nm, "spot": spot, "x": snappedf(spot_xz.x, 0.1), "z": snappedf(spot_xz.y, 0.1), "total": res["total"], "sicherheit": res["sicherheit"],
 			"aussicht": res["aussicht"], "ruhe": res["ruhe"], "season": season, "bed": bed, "date": Time.get_datetime_string_from_system().substr(0, 16)})
 	lst.sort_custom(func(a, b): return float(a["total"]) > float(b["total"]))
