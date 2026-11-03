@@ -135,18 +135,38 @@ PLAN = {
 }
 EVENTS = ["leer", "gehen", "kriechen", "kind", "tier", "fahrzeug"]
 PERSON_EVENTS = ("gehen", "kriechen", "kind")
-ST = {"ani_i": 0, "cur_key": ""}
+ST = {"ani_i": 0, "cur_key": "", "fall": ""}   # fall: woran gerade gerechnet wird (erkennungstest.py: Absturz -> welcher Fall)
+UEBERSPRUNGEN = "uebersprungen.jsonl"          # Fälle, bei denen der Simulator / MoveEye immer wieder abstürzt (gelten als erledigt)
 
 
 def done_keys():
     k = set()
-    if os.path.exists(res_path()):
-        for ln in open(res_path()):
+    for pfad in (res_path(), os.path.join(K["out"], UEBERSPRUNGEN)):
+        if os.path.exists(pfad):
+            for ln in open(pfad):
+                try:
+                    k.add(json.loads(ln)["key"])
+                except Exception:
+                    pass
+    return k
+
+
+def ueberspringen(key, grund):
+    """den Fall (oder «ort|…» bzw. «ort|bedingung|*») nicht mehr rechnen - steht im Bericht"""
+    with open(os.path.join(K["out"], UEBERSPRUNGEN), "a") as f:
+        f.write(json.dumps({"key": key, "grund": grund, "t": time.strftime("%H:%M:%S")}, ensure_ascii=False) + "\n")
+
+
+def uebersprungene(ordner=None):
+    out = []
+    p = os.path.join(ordner or K["out"], UEBERSPRUNGEN)
+    if os.path.exists(p):
+        for ln in open(p):
             try:
-                k.add(json.loads(ln)["key"])
+                out.append(json.loads(ln))
             except Exception:
                 pass
-    return k
+    return out
 
 
 def save(rec):
@@ -335,6 +355,7 @@ def _run_case(place, ck, ev, done, sfx="", leerwind=55):
     world = PLAN[place][0]
     name, hour, weather, ir, (dw, dc, dk) = COND[ck]
     ST["cur_key"] = key.split("#")[0]
+    ST["fall"] = key
     waited = wait_ok()
     if waited > 15:
         log("  gewartet %d s (Bilder/s %.1f, Last %.1f)" % (waited, mw_fps(), load()))
@@ -395,6 +416,7 @@ def blind(place, ck, done):
     key = "%s|%s|blindmap" % (place, ck)
     if key in done:
         return
+    ST["fall"] = key
     night = COND[ck][3]
     clear()
     time.sleep(2)
@@ -422,6 +444,7 @@ def blind(place, ck, done):
 
 def goto_place(place):
     world = PLAN[place][0]
+    ST["fall"] = "ort|" + place
     t0 = time.time()
     r = ctl(action="scenario", id=place)
     for _ in range(90):
@@ -501,9 +524,16 @@ def orte(spec, done, rep=1, leerwind=55, sel=None, sel_leer=False, blindmap=Fals
                 for c in conds for e in EVENTS if wanted(c, e) for r in range(rep if e in PERSON_EVENTS else 1)]
         if all(k in done for k in todo):          # schon gemessen (Fortsetzen) oder nichts zu tun
             continue
+        if "ort|" + place in done:                # Ort lädt nicht (Simulator stürzt dort immer ab): übersprungen
+            log("Ort", place, "übersprungen (stürzt beim Laden ab)")
+            continue
         wait_ok()
         goto_place(place)
         for ck in conds:
+            if "%s|%s|*" % (place, ck) in done:    # Bedingung lässt sich nicht setzen (Absturz): übersprungen
+                log("Bedingung", place, ck, "übersprungen (stürzt beim Setzen ab)")
+                continue
+            ST["fall"] = "%s|%s|*" % (place, ck)
             set_cond(ck)
             time.sleep(15)                      # Belichtung / MoveEye eingewöhnen
             for ev in EVENTS:
@@ -524,6 +554,7 @@ def case(place, ck, ev, want, secs, act, info, done, wind=12, before=None):
     key = "%s|%s|%s" % (place, ck, ev)
     if key in done:
         return
+    ST["fall"] = key
     wait_ok()
     clear()
     time.sleep(2)

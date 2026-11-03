@@ -57,6 +57,7 @@ KI_PRO_STAND = 2                                               # so viele Pakete
 LZ_MINUTEN = 180                                               # ein Langzeittest: 3 Std. (in Abschnitten zu 30 Min.)
 LZ_BEDINGUNGEN = ("nacht", "tag", "nachtregen", "daemmerung")
 BEHALTEN = 12
+RC_STAND = 7                                                   # Teil / Erkennungstest: Stand nicht brauchbar -> nicht noch einmal
 NAME_RE = re.compile(r"^[A-Za-z0-9._/-]{1,120}$")
 SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 ID_RE = re.compile(r"^[0-9]{8}-[0-9]{6}-(erkennung|ki|langzeit)$")
@@ -412,7 +413,13 @@ def rechnen(a):
         log_ab = os.path.getsize(dlog)
     except OSError:
         log_ab = 0
-    st, rc = betreuen(cmd, frist=frist, warten_max=0, log_datei=dlog, grund=NAMEN[art])
+    if not ERSATZ and not (a.sim_bin and os.path.isfile(a.sim_bin)):
+        # kein Simulator-Paket in diesem Stand (alter Stand, Paket nicht eingecheckt): nicht dreimal versuchen
+        fehler_schreiben(o, "Stand %s (%s) nicht brauchbar: Simulator fehlt (%s; Paket simulator3d/MoveEyeSim3D_Linux.zip "
+                            "im Stand?)" % (ak["stand"], ak["sha"][:10], a.sim_bin or "kein --sim-bin"))
+        st, rc = "fertig", RC_STAND
+    else:
+        st, rc = betreuen(cmd, frist=frist, warten_max=0, log_datei=dlog, grund=NAMEN[art])
     z = zustand_lesen()
     ak = z.get("aktiv") or ak
     ak["rechenzeit_s"] = int(ak.get("rechenzeit_s", 0) + time.time() - t0)
@@ -427,7 +434,10 @@ def rechnen(a):
         ak["versuche"] = int(ak.get("versuche", 0)) + 1
         grund = fehler_melden(art, o, dlog, log_ab, rc)
         log("Paket nicht fertig (Code %s, Versuch %d): %s" % (rc, ak["versuche"], grund))
-        if ak["versuche"] >= 3:
+        if rc == RC_STAND:
+            erledigen(z, ak, "übersprungen: Stand nicht brauchbar (%s)" % grund[:200])
+            log("Stand %s nicht brauchbar - Paket übersprungen (kein weiterer Versuch), das nächste kommt dran" % ak["stand"])
+        elif ak["versuche"] >= 3:
             erledigen(z, ak, "abgebrochen nach 3 Versuchen (Code %s: %s)" % (rc, grund[:200]))
             log("Drei Versuche ohne Erfolg - Paket abgeschlossen, das nächste kommt dran")
         else:
@@ -443,7 +453,7 @@ def rechnen(a):
     zustand_schreiben(z)
     if update_faellig():
         weiter = 0                                             # das HP-Update ist dran: der HP bleibt frei
-    if weiter and st == "fertig" and rc != 0 and time.time() - t0 < 600:
+    if weiter and st == "fertig" and rc not in (0, RC_STAND) and time.time() - t0 < 600:
         weiter = 0                                             # schnell gescheitert: nicht im Kreis neu starten (Zeitplan genügt)
     ausgabe(a.ausgabe, status=st, weiter=weiter, ordner=o, name=NAMEN[art])
     return 0
@@ -492,7 +502,8 @@ def fertig_pruefen(art, o, ak):
             soll = FS.faelle_zaehlen([ak["plan"]], lambda p: E.PLAENE[p][1], ak["laeufe"])
         except Exception:
             return True
-        return FS.zeilen(os.path.join(o, "results.jsonl")) >= soll * 0.9 or ERSATZ != ""
+        n = FS.zeilen(os.path.join(o, "results.jsonl")) + FS.zeilen(os.path.join(o, "uebersprungen.jsonl"))  # übersprungen: stürzt dort ab
+        return n >= soll * 0.9 or ERSATZ != ""
     if art == "ki":
         return len(ki_fertig(o)) >= ak["laeufe"]
     if art == "langzeit":
