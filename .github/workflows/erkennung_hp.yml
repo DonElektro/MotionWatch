@@ -40,7 +40,7 @@ on:
         description: "So viele Minuten auf den HP warten, dann abbrechen (wenn er aus ist)"
         default: "15"
   schedule:
-    - cron: "41 21 * * 6"          # Samstag 21:41 UTC (22:41 / 23:41 in der Schweiz): Test 3 auf main
+    - cron: "41 23 * * 6"          # Samstag 23:41 UTC (Sonntag 00:41 im Winter / 01:41 im Sommer, im Rechenfenster 00-06): Test 3 auf main
 permissions:
   contents: read
 concurrency:

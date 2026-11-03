@@ -14,7 +14,7 @@
 name: Dauerrechnen (HP)
 on:
   schedule:
-    - cron: "11,41 * * * *"        # alle 30 Min.: weiterrechnen, wenn der HP frei ist
+    - cron: "11,41 22,23,0-5 * * *" # alle 30 Min. rund ums Rechenfenster 00:00-06:00 (Schweiz); die Vorprüfung prüft die Ortszeit
   workflow_dispatch:
     inputs:
       arbeit:
@@ -52,6 +52,7 @@ jobs:
       kandidaten: ${{ steps.p.outputs.kandidaten }}
       arbeit: ${{ steps.p.outputs.arbeit }}
       stunden: ${{ steps.p.outputs.stunden }}
+      frist: ${{ steps.p.outputs.frist }}
       anzeige: ${{ steps.p.outputs.anzeige }}
     steps:
       - name: HP frei? Welche Stände?
@@ -63,6 +64,7 @@ jobs:
           IN_ARBEIT: ${{ github.event.inputs.arbeit }}
           IN_STUNDEN: ${{ github.event.inputs.stunden }}
           IN_ANZ: ${{ github.event.inputs.anzeige }}
+          IN_GRUND: ${{ github.event.inputs.grund }}
         run: |
           ARBEIT="${IN_ARBEIT:-auto}"; STUNDEN="${IN_STUNDEN:-3}"; ANZ="${IN_ANZ:-xvfb}"
           fehler() { echo "::error::$*"; exit 1; }
@@ -78,6 +80,20 @@ jobs:
               if [ -n "$j" ]; then los=0; grund="der HP rechnet schon bzw. ein Auftrag wartet: «$j»"; break 2; fi
             done
           done
+          # Rechenfenster (Besitzer, 03.11.2026): von selbst nur 00:00-06:00 Schweizer Zeit; sonst gehört der HP dem Simulator.
+          # Ein Lauf von Hand (grund ist nicht «weiter») darf auch tagsüber. Die Frist endet spätestens um 06:00.
+          MIN=$(( 10#$(TZ=Europe/Zurich date +%H) * 60 + 10#$(TZ=Europe/Zurich date +%M) ))
+          FRIST="$STUNDEN"
+          if [ "$MIN" -lt 360 ]; then
+            FRIST=$(python3 -c "import sys; print(round(min(float(sys.argv[1]), (360-int(sys.argv[2]))/60), 2))" "$STUNDEN" "$MIN")
+          elif [ "$GITHUB_EVENT_NAME" = schedule ] || [ "${IN_GRUND:-}" = weiter ]; then
+            [ "$los" = 1 ] && grund="ausserhalb des Rechenfensters (00:00-06:00) - der Simulator steht zur Verfügung"
+            los=0
+          fi
+          if [ "$los" = 1 ] && python3 -c "import sys; sys.exit(0 if float(sys.argv[1]) < 0.1 else 1)" "$FRIST"; then
+            los=0; grund="Rechenfenster endet gleich (06:00)"
+          fi
+          echo "frist=$FRIST" >> "$GITHUB_OUTPUT"
           # Stände: main, die Version davor (Tag), aktive Erkennungs-Zweige (letzte 14 Tage, höchstens 2)
           python3 - "$R" > kand.json <<'PY'
           import json, re, subprocess, sys, time
@@ -137,7 +153,7 @@ jobs:
     env:
       KAND: ${{ needs.vorpruefung.outputs.kandidaten }}
       ARBEIT: ${{ needs.vorpruefung.outputs.arbeit }}
-      STUNDEN: ${{ needs.vorpruefung.outputs.stunden }}
+      STUNDEN: ${{ needs.vorpruefung.outputs.frist }}
       ANZEIGE: ${{ needs.vorpruefung.outputs.anzeige }}
       PYTHONUNBUFFERED: "1"
     steps:
