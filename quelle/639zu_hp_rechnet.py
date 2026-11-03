@@ -282,7 +282,10 @@ HPR_JS = r"""<script>
   const ARB = {"Erkennung messen": "Measuring detection", "KI-Trainingsbilder": "AI training pictures", "Langzeittest": "Long-run test"};
   const E = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
   const dauer = s => { const m = Math.max(0, Math.round(s / 60)); return m < 60 ? m + " Min." : Math.floor(m / 60) + ":" + String(m % 60).padStart(2, "0") + " h"; };
-  async function holen() { try { const r = await fetch("/api/hp", {cache: "no-store"}); return r.ok ? await r.json() : null; } catch (e) { return null; } }
+  async function holen() {                      // 3.55.2: at most 10 s - a hanging request no longer stops the page for good
+    const ac = window.AbortController ? new AbortController() : null, wd = setTimeout(() => { if (ac) ac.abort(); }, 10000);
+    try { const r = await fetch("/api/hp", {cache: "no-store", signal: ac ? ac.signal : undefined}); return r.ok ? await r.json() : null; } catch (e) { return null; }
+    finally { clearTimeout(wd); } }
   function titel(j) {
     if (!j || !j.bekannt) return ["⚪", T("No HP known yet: connect MoveEye once with the simulator on the HP.")];
     if (!j.erreichbar) return ["⚪", T("HP not reachable")];

@@ -86,8 +86,10 @@ let SIG = "", SRC = null;
 const tStatus = s => !s ? "" : s.startsWith("switch failed:") ? t("switch failed") + s.slice(14).replace("(still using ", "(" + t("still using") + " ") : s.startsWith("failed:") ? t("failed") + s.slice(7) : t(s);
 function tile(c) {
   const box = el("div", "tile"); box.dataset.id = c.id;
-  const vw = el("div", "vw"), img = el("img"); img.alt = ""; img.dataset.src = c.n === 0 ? "/video_feed" : "/cam_feed/" + c.n; img.src = img.dataset.src; keepStream(img);
+  const vw = el("div", "vw"), img = el("img"); img.alt = "";
   const ov = el("div", "ov", t("no picture yet")); img.onload = () => ov.hidden = true;
+  // 3.55.2 (Besitzer: Vorschauen oft schwarz am iPhone): single pictures ~2 / s instead of an endless stream, only while visible
+  keepStream(img, {snap: "/cam_snap/" + c.n, every: 500, onlost: on => { if (on) ov.hidden = false; }});
   vw.append(img, ov); vw.onclick = () => box.classList.toggle("big");
   const hd = el("div", "th2"), dot = el("span", "dot", "●"), name = el("b", "", c.n === 0 ? t("Main camera") + " · " + c.label : c.label);
   const mo = el("span", "chip mo", t("motion")), rc = el("span", "chip rc", "● " + t("REC")), st = el("span", "mut");
@@ -98,7 +100,7 @@ function tile(c) {
     dot.className = "dot " + (c2.status === "connected" ? "on" : (c2.status.startsWith("failed") ? "bad" : ""));
     mo.hidden = !c2.motion; rc.hidden = !c2.recording;
     st.textContent = tStatus(c2.status) === t("connected") ? (c2.res || "") + (c2.fps ? " · " + c2.fps + " fps" : "") : tStatus(c2.status);
-    ov.hidden = c2.status === "connected" && img.naturalWidth > 0;
+    ov.hidden = c2.status === "connected" && img.naturalWidth > 0 && !(img.mwKeep && img.mwKeep.lost);
   };
   return box;
 }
@@ -144,8 +146,9 @@ let FLSIG = "";
 function flTile(id, name, url, st, me) {
   const box = el("div", "tile");
   const vw = el("div", "vw"), img = el("img"); img.alt = "";
-  img.src = me ? "/video_feed" : "/fleet/snap/" + id + "?t=" + Date.now(); if (me) keepStream(img); else img.dataset.fl = id;
   const ov = el("div", "ov", st.ok === false ? "⚠ " + t(st.err || "not reachable") : t("no picture yet")); img.onload = () => ov.hidden = true;
+  if (me) keepStream(img, {snap: "/cam_snap/0", every: 1000, onlost: on => { if (on) ov.hidden = false; }});   // 3.55.2: single pictures (the same camera as above)
+  else { img.src = "/fleet/snap/" + id + "?t=" + Date.now(); img.dataset.fl = id; }
   vw.append(img, ov);
   const hd = el("div", "th2"), dot = el("span", "dot" + (st.ok === false ? " bad" : " on"), "●");
   const nm = el("b", "", (me ? "📍 " : "") + (name || url || "?"));
@@ -207,9 +210,7 @@ async function btUse() {
     $("#bt-use").textContent = t("Loudspeaker in use") + ": " + (d ? d.name + (d.connected ? " ✓" : "") : (j.out && !j.out.startsWith("bt:") ? j.out.replace("plughw:CARD=", "").split(",")[0] : t("none")));
   } catch (e) {}
 }
-document.addEventListener("visibilitychange", () => {      // no stream while the tab is hidden = no CPU
-  document.querySelectorAll(".tile img").forEach(i => { if (i.dataset.src) i.src = document.hidden ? "" : i.dataset.src; });
-});
+// no picture while the tab is hidden = no CPU: keepStream (510) closes it by itself (3.55.2, before: here)
 (async () => { await initAppearance(); poll(); setInterval(poll, 2500);
   fleetPoll(); setInterval(fleetPoll, 3000); })();
 /*ALERTS*/
@@ -702,7 +703,7 @@ html,body{margin:0;background:#000;color:#e6edf3;font:15px/1.4 system-ui,-apple-
 .big .top,.big .foot{display:none}.big #v{max-height:100dvh;height:100dvh}
 </style></head><body>
 <div class="top"><span class="dot"></span><b>MoveEye</b><span class="st" id="st">…</span></div>
-<div class="wrap vwrap"><img id="v" alt="" src="__BASE__/video"></div>
+<div class="wrap vwrap"><img id="v" alt="" data-src="__BASE__/video"></div>
 <div class="foot" id="ft"></div>
 <script>
 const GL = (navigator.language || "").toLowerCase().slice(0, 2), GT = /*GT*/{};

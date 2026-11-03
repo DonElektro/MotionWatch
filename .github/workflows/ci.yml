@@ -84,6 +84,9 @@ jobs:
       - name: Web-Rauchtest (alle Adressen ohne / mit Anmeldung, jede Seite im Browser)
         timeout-minutes: 15
         run: python3 werkzeuge/web_rauchtest.py --browser
+      - name: Kamerabilder im Browser (Verbindungen, Selbstheilung, Neu laden bleibt im Reiter)
+        timeout-minutes: 8
+        run: python3 werkzeuge/bildstrom_test.py
       - name: Werkstatt offline (eine HTML-Datei, file://, Netz gesperrt, keine JS-Fehler, Modell, Reiter)
         timeout-minutes: 6
         run: python3 werkzeuge/werkstatt_html.py --aus /tmp/werkstatt --test --bilder /tmp/werkstatt && ls -la /tmp/werkstatt

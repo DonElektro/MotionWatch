@@ -369,8 +369,8 @@ SIMWAIT_JS = r"""
 })();
 """
 
-if '<img id="video" src="/video_feed" alt="">' in WEB_PAGE:
-    WEB_PAGE = WEB_PAGE.replace('<img id="video" src="/video_feed" alt="">', '<img id="video" src="/video_feed" alt="">' + SIMWAIT_HTML, 1)
+if '<img id="video" data-src="/video_feed" alt="">' in WEB_PAGE:            # 3.55.2: data-src - keepStream (510) opens the stream
+    WEB_PAGE = WEB_PAGE.replace('<img id="video" data-src="/video_feed" alt="">', '<img id="video" data-src="/video_feed" alt="">' + SIMWAIT_HTML, 1)
     WEB_PAGE = WEB_PAGE.replace("</script></body></html>", "</script><style>" + SIMWAIT_CSS + "</style><script>" + SIMWAIT_JS + "</script></body></html>", 1)
 
 
