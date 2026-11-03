@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-03 15:34",
+ "generated": "2026-11-03 21:19",
  "versions": [
   {
-   "version": "3.55.1",
-   "file": "webcam_bewegung_3_55_1.py",
+   "version": "3.55.2",
+   "file": "webcam_bewegung_3_55_2.py",
    "url": "",
-   "sha256": "a3e537423096002b12d60f99bec87de0edf52e5d1debad0c0ad165062ecbfcc1",
-   "date": "2026-11-03 15:34",
-   "notes": "Simulator: kein Absturz mehr bei KI-Trainingsbildern «Vielfalt hoch» (Morgen im Bergtal in einer Welt); Tropfen und Beschlag auf der Linse funktionieren jetzt auch im Kompatibilitäts-Modus (Linux/HP), Protokoll ohne Shader-Fehlerflut.",
-   "size": 4926056,
-   "sig": "7a8fd29b0877fef93b5391d2a8d844341af28b7dd121e76fab1532c7cea8050ed480e4a17d9b08a739d636081678c48ae08cba2c106e782057fa28f070a77e04",
+   "sha256": "ddd82f3e66146ec2fe9ab3d50d6fc4cd579a5a8589d2083c77220d5f9dfcd56a",
+   "date": "2026-11-03 21:19",
+   "notes": "Kamerabilder: Nur sichtbare Bilder halten eine Verbindung offen; die Vorschauen unter Einstellungen → Kameras kommen als Einzelbilder (2 pro Sekunde); bleibt ein Bild 5 s ohne neues Bild, verbindet es sich selbst neu (kein «noch kein Bild» mehr bis zum Neuladen); ↻ lädt den aktuellen Reiter neu, statt zu Live zu springen.",
+   "size": 4934909,
+   "sig": "50e5dd0e8d6394528c51d98f644d4f87a8773c93343ef169c53bb77dc38c8a95d4a205513eb96f0c2fe8ae011a8735e824a81f024a429edf165dd147bc9fa807",
    "data": {
-    "file": "moveeye_daten_3_55_1.zip",
+    "file": "moveeye_daten_3_55_2.zip",
     "url": "",
-    "sha256": "6229bf56f59396598a8fe90b652fb13d77be8bfd75de18d4068b36be39d976cd",
-    "size": 4097821,
-    "sig": "ad0e2685f56cd070a2560d0d1b6590b669d7c80f27e8f03aa02d20791cb60ae846769c78fc57338336ea4de83badcec506d0456f2c90224914acc7f335b7120d"
+    "sha256": "f35323d456f9c9f4d9e54f869a4d023a1e4e77c031f3085a96b8d5a5c725e362",
+    "size": 4098424,
+    "sig": "429a689dcaab98dd7504bd79a989572cf2cdc22d93b28a4e199ea442d5824c0ef13f9c9c5d8522eba30c49ce3bc251ac487dfe669d8942fbc6141d6a74fe4f01"
    }
   },
   {

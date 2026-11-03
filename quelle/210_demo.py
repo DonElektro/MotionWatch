@@ -51,6 +51,9 @@ class DemoSource:
             cv2.line(img, (int(x + dx * size), int(y - 15 * size)), (int(x + dx * size + leg), int(y)), col, max(2, int(4 * size)))
 
     def read(self):
+        hold_ = os.environ.get("MW_TEST_HOLD")          # 3.55.2, only for werkzeuge/bildstrom_test.py: the demo picture source
+        while hold_ and os.path.exists(hold_):           # stands still while this file exists (a camera that hangs)
+            time.sleep(0.1)
         wait = 1.0 / max(1.0, self.fps) - (time.time() - self.last)
         if wait > 0:
             time.sleep(wait)

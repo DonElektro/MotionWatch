@@ -629,7 +629,7 @@ body.lv #vcard>:not(.vwrap){zoom:var(--lv-ui,1)}
     if (/\bvideoonly\b/.test(lastCls) && !isVO()) lowWas = false;      // back from full screen: the sideways phone shows the picture again
     lastCls = c; fit(); placeStick(); lowScroll(); })
     .observe(document.body, {attributes: true, attributeFilter: ["class"]});
-  const v = document.getElementById("video"); if (v) v.addEventListener("load", fit);
+  const v = document.getElementById("video"); if (v) v.addEventListener("load", () => { const k = v.naturalWidth + "x" + v.naturalHeight; if (k !== v.dataset.fitk) { v.dataset.fitk = k; fit(); } });   // 3.55.2: only when the size changes (keepStream 510 loads the picture anew)
   let lastSig = "";
   setInterval(() => {
     const sw = document.getElementById("lv-simw");

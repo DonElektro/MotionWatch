@@ -476,7 +476,7 @@ body[data-tab] #srch{padding-left:0!important}body[data-tab] #srch .ic{left:12px
   <div id="pip" hidden data-c="br" title="Live"><div class="pip-in"></div><span class="pip-live">● LIVE</span><button type="button" id="pip-x" aria-label="close">✕</button></div>
   <section>
     <div class="card" id="vcard">
-      <div class="vwrap"><img id="video" src="/video_feed" alt=""><button id="vo-exit" onclick="setVideoOnly(false)" title="Exit full screen">&#x2715;</button>
+      <div class="vwrap"><img id="video" data-src="/video_feed" alt=""><button id="vo-exit" onclick="setVideoOnly(false)" title="Exit full screen">&#x2715;</button>
         <button type="button" id="vo-side" title="⇆">⇆</button>
         <button type="button" id="vo-mv" title="Mover" onclick="const m = document.getElementById('mv-tog'); if (m) m.click()">🚜</button>
         <div id="vo-ctl" class="idle"><div class="vbtns"><button type="button" id="vo-center" title="Centre">◎</button>
@@ -738,35 +738,7 @@ body[data-tab] #srch{padding-left:0!important}body[data-tab] #srch .ic{left:12px
 </main>
 <script>
 // live picture that reconnects by itself (same as in the other pages)
-function keepStream(img) {
-  if (!img || img.dataset.keep) return;
-  img.dataset.keep = "1";
-  const base = (img.dataset.src || img.getAttribute("src") || "").split("?")[0];
-  let tries = 0, timer = null;
-  const box = img.parentNode;
-  const lost = on => { img.style.visibility = on ? "hidden" : ""; if (box) { box.classList.toggle("vlost", on); box.dataset.lost = typeof t === "function" ? t("Picture is loading – tap to reload") : "Picture is loading – tap to reload"; } };
-  let iv = 0;
-  // 2.95.34: a picture that was removed from the page stops its stream (otherwise every rebuilt tile kept one open)
-  const alive = () => { if (img.isConnected) return true; clearInterval(iv); clearTimeout(timer); document.removeEventListener("visibilitychange", vis); img.src = ""; return false; };
-  const restart = () => { clearTimeout(timer); timer = null; if (alive()) { lost(true); img.src = base + "?r=" + Date.now(); } };   // 2.98.38: ⏳ until the first picture
-  const later = () => { if (timer) return; lost(true); timer = setTimeout(restart, Math.min(10000, 1000 * (1 + tries++))); };
-  const vis = () => { if (!document.hidden) restart(); };
-  img.mwRestart = restart;                  // 2.95.72: the page fetches the picture anew when the video source changes
-  img.addEventListener("error", later);
-  img.addEventListener("load", () => { tries = 0; lost(false); });
-  document.addEventListener("visibilitychange", vis);
-  addEventListener("pageshow", e => { if (e.persisted) restart(); });
-  // 2.98.38 (Elektro: sometimes black after swiping through the tabs): the picture was hidden (other tab / menu) and the
-  // browser (Safari) let the stream die - when it is visible again, it gets a fresh stream; a tap on ⏳ also restarts
-  let shown = true;
-  try { new IntersectionObserver(es => { const v = es.some(e => e.isIntersecting); if (v && !shown) restart(); shown = v; }).observe(img); } catch (e) {}
-  if (box) box.addEventListener("click", ev => { if (box.classList.contains("vlost")) { ev.stopPropagation(); tries = 0; restart(); } }, true);
-  iv = setInterval(() => {
-    if (!alive() || document.hidden) return;
-    if (img.naturalWidth) { if (!timer) { tries = 0; lost(false); } }
-    else if (img.complete) later();
-  }, 3000);
-}
+/*KEEPSTREAM*/
 const $ = s => document.querySelector(s);
 const post = (u, b) => fetch(u, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(b || {})})
     .then(r => r.json()).catch(() => ({ok: false, error: "connection"}));
@@ -4789,5 +4761,6 @@ I18N.en = I18N.en || {}; Object.assign(I18N.en, {"tunnel-note": "If the simulato
 """
 SIM_PAGE = SIM_PAGE.replace("/*SIMMAP*/", SIMMAP_JS + SIMTOOLS_JS + SIMTUN_JS)
 WEB_PAGE = WEB_PAGE.replace("/*SIMMAP*/", SIMMAP_JS)
+WEB_PAGE = WEB_PAGE.replace("/*KEEPSTREAM*/", KEEP_JS.rstrip("\n"), 1)   # 3.55.2: the same keepStream as every page (510)
 
 

@@ -23,6 +23,9 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 3.55.2: Kamerabilder: Nur sichtbare Bilder halten eine Verbindung offen; die Vorschauen unter Einstellungen → Kameras kommen
+    als Einzelbilder (2 pro Sekunde); bleibt ein Bild 5 s ohne neues Bild, verbindet es sich selbst neu (kein «noch kein Bild»
+    mehr bis zum Neuladen); ↻ lädt den aktuellen Reiter neu, statt zu Live zu springen.
   * 3.55.1: Simulator: kein Absturz mehr bei KI-Trainingsbildern «Vielfalt hoch» (Morgen im Bergtal in einer Welt); Tropfen und
     Beschlag auf der Linse funktionieren jetzt auch im Kompatibilitäts-Modus (Linux/HP), Protokoll ohne Shader-Fehlerflut.
   * 3.55.0: HP rechnet rund um die Uhr (Erkennung messen, KI-Trainingsbilder, Langzeittest); Spielen am HP oder Zuschauen in
@@ -94,7 +97,6 @@ Features
     unverändert).
   * 3.36.0: Simulator: menschlichere Figuren – ab Grafik mittel MakeHuman-Körper aus dem nachladbaren Menschen-Paket (~5 MB),
     einfach (Pi) mit feinerem Körper und Gesicht; Kleidung, Rucksack, Stöcke und Lampen passend zur Szene.
-  * 3.35.0: Bergtal: ein neues Geheimnis.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -103,10 +105,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_3_55_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_3_55_2.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_3_55_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_3_55_1.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_3_55_2.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_3_55_2.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -123,7 +125,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "3.55.1"
+APP_VERSION = "3.55.2"
 
 
 def default_data_dir():
@@ -245,8 +247,8 @@ def prepare_settings_file():
 #     Part 397 fetches the zip over the same update source and restarts once (zusatz_start()).
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
-ZD_FILE = "moveeye_daten_3_55_1.zip"
-ZD_SHA256 = "6229bf56f59396598a8fe90b652fb13d77be8bfd75de18d4068b36be39d976cd"
+ZD_FILE = "moveeye_daten_3_55_2.zip"
+ZD_SHA256 = "f35323d456f9c9f4d9e54f869a4d023a1e4e77c031f3085a96b8d5a5c725e362"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -2126,7 +2128,7 @@ VIEW_GET_PAGES = {"/", "/help", "/quick", "/more"}
 VIEW_GET = ("/api/tunnel", "/api/helper", "/api/info", "/api/nettest", "/api/state", "/api/alerts", "/api/appearance", "/api/version",
             "/api/health", "/api/gps", "/api/zones", "/api/webpush", "/api/ui", "/api/battery", "/api/sensors", "/api/qs", "/api/schedule",
             "/api/schema", "/api/triggers", "/api/fa", "/api/appicon", "/api/audio", "/i18n/", "/app-icon/", "/sim-icon/", "/api/simbar", "/api/news")
-PERM_GET = {"live": ("/cams", "/preview", "/api/cams", "/api/frame.jpg", "/video_feed", "/cam_feed/", "/snapshot.jpg", "/api/audio/live",
+PERM_GET = {"live": ("/cams", "/preview", "/api/cams", "/api/frame.jpg", "/video_feed", "/cam_feed/", "/cam_snap/", "/snapshot.jpg", "/api/audio/live",
                      "/sim/view.jpg", "/sim/view.mjpg"),
             "rec": ("/recordings", "/diary", "/kino", "/api/kino", "/api/dataset.zip", "/api/recordings", "/api/places", "/rec/file/", "/rec/play/",
                     "/rec/thumb/", "/rec/share/", "/rec/report/", "/api/day", "/api/diary", "/diary/img/", "/api/timelapse", "/timelapse/",
@@ -18693,6 +18695,9 @@ class DemoSource:
             cv2.line(img, (int(x + dx * size), int(y - 15 * size)), (int(x + dx * size + leg), int(y)), col, max(2, int(4 * size)))
 
     def read(self):
+        hold_ = os.environ.get("MW_TEST_HOLD")          # 3.55.2, only for werkzeuge/bildstrom_test.py: the demo picture source
+        while hold_ and os.path.exists(hold_):           # stands still while this file exists (a camera that hangs)
+            time.sleep(0.1)
         wait = 1.0 / max(1.0, self.fps) - (time.time() - self.last)
         if wait > 0:
             time.sleep(wait)
@@ -24707,13 +24712,13 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3.55.1", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 49961865,
-         "sha256": "244afb50e2f13d281627b8e14220f033b03eeedec883b4400ed03acfcc6609f7"}
+SIM3D = {"version": "3.55.2", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 49962056,
+         "sha256": "5c108026d0daa39c5a06dd90d1dcf3a5a780b1fadc933d61bba445d5d8143fc3"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # 3.43.x: the same 3D simulator for Linux (x86_64), offered at /sim/simulator3d_linux.zip - fetched, checked and kept the same way
 # (simulator3d/MoveEyeSim3D_Linux.zip, block «linux» in simulator3d/version.json; bauen.py --neue-version takes it over).
-SIM3D_LINUX = {"version": "3.55.1", "file": "simulator3d/MoveEyeSim3D_Linux.zip", "size": 43975795,
-               "sha256": "acbacddeffad6dd9b04948fdad9b3b62d54d04ac0f38061f849bce0a9bfb24c9", "stem": "MoveEyeSim3D_Linux",
+SIM3D_LINUX = {"version": "3.55.2", "file": "simulator3d/MoveEyeSim3D_Linux.zip", "size": 43975923,
+               "sha256": "33a6d3d842b2cd1fcce614182d60bc2d2e5df284eb9d517e5f0f4690d33bcde5", "stem": "MoveEyeSim3D_Linux",
                "label": "MoveEye Sim (Linux)"}
 SIM3D_LINUX_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
@@ -30622,7 +30627,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_3_55_1.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_3_55_2.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -38749,7 +38754,58 @@ HEADER_JS = _zd('510_web_kopf_alarm/HEADER_JS', "")
 ALERT_JS = _zd('510_web_kopf_alarm/ALERT_JS', "")
 
 
-COMMON_JS = _zd('510_web_kopf_alarm/COMMON_JS', "")
+# 3.55.2 (Besitzer: Kamerabilder am iPhone / iPad oft schwarz «noch kein Bild», unter Einstellungen → Kameras und auf Live;
+# neu laden half): EIN Weg für jedes Kamerabild der Web-Seiten, eingesetzt in COMMON_JS (hier unten) und in WEB_PAGE (530).
+#   * Nur ein sichtbares Bild hat eine Verbindung: anderer Reiter, zugeklappte Karte, Seite im Hintergrund, weggescrollt oder
+#     img.dataset.hold = "1" (Bild verdeckt, z. B. von der Sim-Ansicht) -> die Verbindung wird geschlossen. Safari hat pro
+#     Gerät nur rund 6 Verbindungen; offene Bildströme im Versteckten liessen neue Bilder warten («noch kein Bild»).
+#   * Strom (Live, Zonen, Gast): der bewährte MJPEG-Strom im <img>. Wächter: kommt 5 s lang kein erstes Bild, oder ändert sich
+#     das Bild 5 s lang nicht (kleines Abbild im Canvas), verbindet es sich selbst neu - sofort, dann nach 1, 2, 4, 8, 15 s
+#     (ein stehendes Bild ohne Fehler: still nach 5, 10, 20, 40, 60 s). Antippen von ⏳ verbindet sofort.
+#   * Einzelbilder (opt.snap, Vorschauen unter Kameras): ein Bild alle opt.every ms (~2 / s), nur solange sichtbar.
+#   * img.mwKeep zeigt den Zustand (Tests: werkzeuge/bildstrom_test.py): frames, conns, stalls, on, lost, mode.
+KEEP_JS = _zd('510_web_kopf_alarm/KEEP_JS', "")
+
+
+COMMON_JS = r"""
+const $ = s => document.querySelector(s);
+// Live picture that heals itself: phones (above all iPhone) drop the endless MJPEG stream after a network hiccup,
+// in the background or when the Pi restarts -> broken-image "?" icon. Reconnect automatically.
+/*KEEPSTREAM*/
+const post = (u, b) => fetch(u, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(b || {})})
+    .then(r => r.json()).catch(() => ({ok: false, error: "connection"}));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; }
+let LANG = "", THEME = "";
+try { LANG = localStorage.getItem("mw-lang") || ""; THEME = localStorage.getItem("mw-theme") || ""; } catch (e) {}
+const I18N = {de: {"Live": "Live", "Cameras": "Kameras", "Recordings": "Aufzeichnungen", "Zones": "Zonen", "Manual": "Anleitung", "Diary": "Tagebuch", "Tools": "Werkzeuge", "Simulator": "Simulator", "Game corner": "Spielecke"}};
+Object.assign(I18N.de, {"Protection": "Schutz", "History": "Verlauf", "Message list": "Nachrichten", "Settings": "Einstellungen", "Sett.": "Einst.", "More": "Mehr", "Overview": "Übersicht", "Log": "Protokoll", "Sim": "Sim", "Recordings": "Aufnahmen", "Diary": "Tagebuch", "Zones": "Zonen", "Cameras": "Kameras", "Manual": "Anleitung", "Game corner": "Spielecke", "Tools": "Werkzeuge"});  // 2.98.0: the six tabs
+const t = s => (LANG === "de" && I18N.de[s]) || (window.LX ? LX(s) : "") || (LANG === "rm" && I18N.de[s]) || (I18N.en && I18N.en[s]) || s;
+function applyI18n() {
+  document.querySelectorAll("[data-i18n]").forEach(e => e.textContent = t(e.dataset.i18n));
+  const b = $("#btn-lang"); if (b) b.textContent = (LANG || "en").toUpperCase();
+  document.documentElement.lang = LANG;
+}
+function themeStep() { return document.documentElement.classList.contains("sxnight") ? "red" : THEME === "light" ? "light" : "dark"; }   // 573/578: Hell → Dunkel → Rotlicht
+function applyTheme() { document.body.classList.toggle("light", THEME === "light"); const b = $("#btn-theme"), s = themeStep();
+  if (b) { b.innerHTML = s === "light" ? "&#9790;" : s === "dark" ? "&#9673;" : "&#9728;"; b.classList.toggle("thred", s === "red"); } }
+function toggleTheme() { const n = {light: "red", red: "dark", dark: "light"}[themeStep()];
+  document.documentElement.classList.toggle("sxnight", n === "red"); THEME = n === "light" ? "light" : "dark";
+  try { localStorage.setItem("mw-theme", THEME); localStorage.setItem("mw-night", n === "red" ? "1" : "0"); } catch (e) {} applyTheme();
+  if (window.sxThemeSaid) window.sxThemeSaid(n); }
+function toggleLang() { langMenu(document.querySelector("#btn-lang")); }
+let toastTimer = null;
+function toast(msg) { let e = $("#toast"); if (!e) { e = el("div"); e.id = "toast"; document.body.appendChild(e); } e.textContent = msg; e.classList.add("on");
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => e.classList.remove("on"), 2600); }
+async function initAppearance() {
+  if (!LANG || !THEME) {
+    try { const a = await (await fetch("/api/appearance")).json(); LANG = LANG || a.lang; THEME = THEME || a.theme; }
+    catch (e) { LANG = LANG || "en"; THEME = THEME || "dark"; }
+  }
+  applyTheme(); applyI18n();
+}
+"""
+COMMON_JS = COMMON_JS.replace("/*KEEPSTREAM*/", KEEP_JS.rstrip("\n"), 1)   # 3.55.2: one keepStream for every page (KEEP_JS above)
 
 
 # ----------------------------------------------------------------------------
@@ -39069,7 +39125,7 @@ html,body{margin:0;background:#000;color:#e6edf3;font:15px/1.4 system-ui,-apple-
 .big .top,.big .foot{display:none}.big #v{max-height:100dvh;height:100dvh}
 </style></head><body>
 <div class="top"><span class="dot"></span><b>MoveEye</b><span class="st" id="st">…</span></div>
-<div class="wrap vwrap"><img id="v" alt="" src="__BASE__/video"></div>
+<div class="wrap vwrap"><img id="v" alt="" data-src="__BASE__/video"></div>
 <div class="foot" id="ft"></div>
 <script>
 const GL = (navigator.language || "").toLowerCase().slice(0, 2), GT = /*GT*/{};
@@ -39171,6 +39227,7 @@ SIMTOOLS_JS = _zd('530_web_hauptseite/SIMTOOLS_JS', "")
 SIMTUN_JS = _zd('530_web_hauptseite/SIMTUN_JS', "")
 SIM_PAGE = SIM_PAGE.replace("/*SIMMAP*/", SIMMAP_JS + SIMTOOLS_JS + SIMTUN_JS)
 WEB_PAGE = WEB_PAGE.replace("/*SIMMAP*/", SIMMAP_JS)
+WEB_PAGE = WEB_PAGE.replace("/*KEEPSTREAM*/", KEEP_JS.rstrip("\n"), 1)   # 3.55.2: the same keepStream as every page (510)
 
 
 # ----------------------------------------------------------------------------
@@ -40434,7 +40491,7 @@ class WebStream:
             if who:
                 fails.pop(ip, None)
                 g.user, g.role = who
-                if request.method == "GET" and not request.path.startswith(("/api/", "/video", "/cam_feed", "/sim/", "/snapshot")):
+                if request.method == "GET" and not request.path.startswith(("/api/", "/video", "/cam_feed", "/cam_snap", "/sim/", "/snapshot")):
                     g.new_trust = trust_add(who[0], who[1], request.headers.get("User-Agent", ""), ip)   # remember this device
                 return None
             if a:
@@ -42798,6 +42855,69 @@ class WebStream:
                 finally:
                     cam.viewers = max(0, cam.viewers - 1)
             return Response(gen(), mimetype="multipart/x-mixed-replace; boundary=frame")
+
+        # 3.55.2 (Besitzer: Vorschauen unter Kameras am iPhone oft schwarz): single pictures instead of endless streams. A
+        # picture counts as «somebody watches» for 4 s (lease), so the camera loop keeps making JPEGs (it only makes them for
+        # viewers); no thread waits for the next picture like a stream does. n = 0: the main camera (as /video_feed).
+        SNAP_LEASE = {}
+        SNAP_LOCK = threading.Lock()
+        SNAP_RUN = []
+
+        def _snap_expire():
+            while True:
+                time.sleep(0.5)
+                now_ = time.time()
+                with SNAP_LOCK:
+                    for k_, e_ in list(SNAP_LEASE.items()):
+                        if e_[3] < now_:
+                            del SNAP_LEASE[k_]
+                            o_, a_, ip_ = e_[0], e_[1], e_[2]
+                            setattr(o_, a_, max(0, getattr(o_, a_, 0) - 1))
+                            if a_ == "web_viewers":
+                                STATE["web_viewers"] = o_.web_viewers; remote_stream(ip_, -1)
+
+        def _snap_lease(key, obj, attr, ip):
+            """True = the lease is new (the newest JPEG may be old: wait for a fresh one)"""
+            with SNAP_LOCK:
+                e_ = SNAP_LEASE.get(key)
+                if e_ is not None and e_[0] is obj:
+                    e_[3] = time.time() + 4.0
+                    return False
+                if not SNAP_RUN:
+                    SNAP_RUN.append(1)
+                    threading.Thread(target=_snap_expire, daemon=True, name="snaplease").start()
+                setattr(obj, attr, getattr(obj, attr, 0) + 1)
+                if attr == "web_viewers":
+                    STATE["web_viewers"] = obj.web_viewers; remote_stream(ip, +1)
+                SNAP_LEASE[key] = [obj, attr, ip, time.time() + 4.0]
+                return True
+
+        @app.route("/cam_snap/<int:n>")
+        def cam_snap(n):
+            rip = request.remote_addr or ""
+            if n == 0:
+                fresh = _snap_lease(("w", rip), watch, "web_viewers", rip)
+                get = lambda: (watch.jpeg, watch.jpeg_seq)
+            else:
+                cam = next((c for c in CAMS if c.idx == n), None)
+                if cam is None:
+                    return Response("unknown camera", 404)
+                fresh = _snap_lease(("c", n, rip), cam, "viewers", rip)
+                get = lambda: (cam.jpeg, cam.seq)
+            jpg, seq = get()
+            if fresh or not jpg:                            # the loop starts making pictures now: wait a moment for a new one
+                t_ = time.time() + 1.5
+                while time.time() < t_:
+                    j2, s2 = get()
+                    if j2 and s2 != seq:
+                        jpg = j2
+                        break
+                    time.sleep(0.03)
+                else:
+                    jpg = get()[0]
+            if not jpg:
+                return Response("no picture yet", 503, headers={"Cache-Control": "no-store"})
+            return Response(jpg, mimetype="image/jpeg", headers={"Cache-Control": "no-store"})
 
         # ---- zones ----
         # ---- app icon (home screen) ----
@@ -48879,7 +48999,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 3.55.1")
+        self.root.title("MoveEye 3.55.2")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -49257,7 +49377,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 3.55.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 3.55.2 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -74129,8 +74249,8 @@ SIMWAIT_JS = r"""
 })();
 """
 
-if '<img id="video" src="/video_feed" alt="">' in WEB_PAGE:
-    WEB_PAGE = WEB_PAGE.replace('<img id="video" src="/video_feed" alt="">', '<img id="video" src="/video_feed" alt="">' + SIMWAIT_HTML, 1)
+if '<img id="video" data-src="/video_feed" alt="">' in WEB_PAGE:            # 3.55.2: data-src - keepStream (510) opens the stream
+    WEB_PAGE = WEB_PAGE.replace('<img id="video" data-src="/video_feed" alt="">', '<img id="video" data-src="/video_feed" alt="">' + SIMWAIT_HTML, 1)
     WEB_PAGE = WEB_PAGE.replace("</script></body></html>", "</script><style>" + SIMWAIT_CSS + "</style><script>" + SIMWAIT_JS + "</script></body></html>", 1)
 
 
@@ -76557,7 +76677,10 @@ HPR_JS = r"""<script>
   const ARB = {"Erkennung messen": "Measuring detection", "KI-Trainingsbilder": "AI training pictures", "Langzeittest": "Long-run test"};
   const E = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
   const dauer = s => { const m = Math.max(0, Math.round(s / 60)); return m < 60 ? m + " Min." : Math.floor(m / 60) + ":" + String(m % 60).padStart(2, "0") + " h"; };
-  async function holen() { try { const r = await fetch("/api/hp", {cache: "no-store"}); return r.ok ? await r.json() : null; } catch (e) { return null; } }
+  async function holen() {                      // 3.55.2: at most 10 s - a hanging request no longer stops the page for good
+    const ac = window.AbortController ? new AbortController() : null, wd = setTimeout(() => { if (ac) ac.abort(); }, 10000);
+    try { const r = await fetch("/api/hp", {cache: "no-store", signal: ac ? ac.signal : undefined}); return r.ok ? await r.json() : null; } catch (e) { return null; }
+    finally { clearTimeout(wd); } }
   function titel(j) {
     if (!j || !j.bekannt) return ["⚪", T("No HP known yet: connect MoveEye once with the simulator on the HP.")];
     if (!j.erreichbar) return ["⚪", T("HP not reachable")];

@@ -1,8 +1,13 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 03.11.2026 · Version **3.55.1** · MoveEye **3.55.1** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 03.11.2026 · Version **3.55.2** · MoveEye **3.55.2** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.55.2 (MoveEye 3.55.2): Fix schwarze Kamerabilder (nur MoveEye: Teile 510, 520, 530, 550 u. a.)
+
+- Verbindung nur für sichtbare Bilder, Vorschauen als Einzelbilder (2/s), Neuverbinden nach 5 s ohne Bild, ↻ lädt den Reiter
+  neu; Test `werkzeuge/bildstrom_test.py` im CI. Simulator nur neu exportiert (eine Nummer für alles).
 
 ## NEU in 3.55.1 (MoveEye 3.55.1): Fix Absturz und Linsen-Shader (`scripts/bergtal.gd`, `shaders/linse.gdshader`, `scripts/tracks.gd`)
 

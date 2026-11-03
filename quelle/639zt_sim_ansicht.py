@@ -172,8 +172,15 @@ body.sv-on{overflow:hidden}body.sv-on #lv-side,body.sv-on #lv-tools,body.sv-on #
   } catch (e) {}
   img.addEventListener("load", () => { wait.hidden = true; });
   pip.onclick = () => pip.classList.toggle("big");
+  // 3.55.2: a picture that does not come within 5 s is given up and asked anew (before: one hanging picture stopped the corner
+  // picture for good), wait 2, 4, 8 s after failures
+  let pipFail = 0;
   const pipTick = () => { clearTimeout(SV.pipT); if (!SV.open || document.hidden) return;
-    const n = new Image(); n.onload = () => { pimg.src = n.src; SV.pipT = setTimeout(pipTick, 700); }; n.onerror = () => { SV.pipT = setTimeout(pipTick, 2000); };
+    const n = new Image(); let done = false;
+    const end = ok => { if (done) return; done = true; clearTimeout(wd); if (ok) { pipFail = 0; pimg.src = n.src; } else { pipFail++; n.src = "data:,"; }
+      SV.pipT = setTimeout(pipTick, ok ? 700 : Math.min(8000, 1000 * Math.pow(2, pipFail))); };
+    const wd = setTimeout(() => end(false), 5000);
+    n.onload = () => end(true); n.onerror = () => end(false);
     n.src = "/snapshot.jpg?r=" + Date.now(); };
 
   // ---- the big buttons: the same switches as the live page (530 QS) ----
@@ -361,6 +368,7 @@ body.sv-on{overflow:hidden}body.sv-on #lv-side,body.sv-on #lv-tools,body.sv-on #
     backBtn(sim && SV.klass);
     if (want !== SV.open) {
       SV.open = want; R.hidden = !want; document.body.classList.toggle("sv-on", want);
+      const lv = document.getElementById("video"); if (lv) { if (want) lv.dataset.hold = "1"; else delete lv.dataset.hold; }   // 3.55.2: the live stream below is covered: closed (keepStream 510)
       if (want) { try { scrollTo(0, 0); } catch (e) {} wait.hidden = false; if (SV.VP) SV.VP.start(); pipTick(); land();
         const l = await P("/api/sim", {action: "localplay", do: "get", lang: LANG}); if (l && l.active && !SV.game) gameOn(true); }   // a game of this device after a reload
       else { if (SV.VP) SV.VP.stop(); img.removeAttribute("src"); mS.hidden = pS.hidden = true; if (SV.game) gameOn(false); }
