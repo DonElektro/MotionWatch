@@ -24,6 +24,7 @@ Zustand: MW_RUNNER_HOME/dauer/zustand.json, Pakete in dauer/pakete/<ID>/ (die le
 Actions-Artefakt hinaus - nichts Geheimes, öffentliches Repository).
 """
 import argparse
+import http.client
 import json
 import os
 import re
@@ -402,7 +403,16 @@ def rechnen(a):
                "--anzeige", a.anzeige, "--fortschritt", fo, "--menge", str(ak["laeufe"]), "--stand-name", ak["stand"]] + \
               (["--ki-ordner", a.ki_ordner] if a.ki_ordner else [])
     log("Paket %s: %s, Stand %s (%s), %s" % (ak["id"], NAMEN[art], ak["stand"], ak["sha"][:10], ak["plan"]))
-    st, rc = betreuen(cmd, frist=frist, warten_max=0, log_datei=os.path.join(o, "dauer.log"), grund=NAMEN[art])
+    dlog = os.path.join(o, "dauer.log")
+    try:
+        os.unlink(os.path.join(o, FEHLER_DATEI))
+    except OSError:
+        pass
+    try:
+        log_ab = os.path.getsize(dlog)
+    except OSError:
+        log_ab = 0
+    st, rc = betreuen(cmd, frist=frist, warten_max=0, log_datei=dlog, grund=NAMEN[art])
     z = zustand_lesen()
     ak = z.get("aktiv") or ak
     ak["rechenzeit_s"] = int(ak.get("rechenzeit_s", 0) + time.time() - t0)
@@ -415,9 +425,10 @@ def rechnen(a):
         weiter = 1
     elif st == "fertig":
         ak["versuche"] = int(ak.get("versuche", 0)) + 1
-        log("Paket nicht fertig (Code %s, Versuch %d)" % (rc, ak["versuche"]))
+        grund = fehler_melden(art, o, dlog, log_ab, rc)
+        log("Paket nicht fertig (Code %s, Versuch %d): %s" % (rc, ak["versuche"], grund))
         if ak["versuche"] >= 3:
-            erledigen(z, ak, "abgebrochen nach 3 Versuchen (Code %s)" % rc)
+            erledigen(z, ak, "abgebrochen nach 3 Versuchen (Code %s: %s)" % (rc, grund[:200]))
             log("Drei Versuche ohne Erfolg - Paket abgeschlossen, das nächste kommt dran")
         else:
             z["aktiv"] = ak
@@ -436,6 +447,40 @@ def rechnen(a):
         weiter = 0                                             # schnell gescheitert: nicht im Kreis neu starten (Zeitplan genügt)
     ausgabe(a.ausgabe, status=st, weiter=weiter, ordner=o, name=NAMEN[art])
     return 0
+
+
+def fehler_melden(art, o, dlog, ab, rc):
+    """warum ist das Paket nicht fertig? Grund aus fehler.txt (vom Teil geschrieben), sonst die letzte Fehlerzeile aus
+    dauer.log; dazu das Ende von dauer.log (nur dieser Versuch) ins Job-Protokoll und eine ::error::-Zeile -> Grund"""
+    grund = ""
+    try:
+        with open(os.path.join(o, FEHLER_DATEI), encoding="utf-8", errors="replace") as f:
+            grund = " ".join(f.read().split())
+    except OSError:
+        pass
+    zeilen = []
+    try:
+        with open(dlog, "rb") as f:
+            f.seek(ab)
+            zeilen = f.read()[-200_000:].decode("utf-8", "replace").splitlines()
+    except OSError:
+        pass
+    if not grund:
+        for ln in reversed(zeilen):
+            t = ln.strip()
+            if t and (re.match(r"^[A-Za-z_.]*(Error|Exception|Exit)\b", t) or "FEHLER" in t or "Fehler" in t):
+                grund = t
+                break
+    if not grund:
+        grund = ("rc %s ohne Meldung" % rc) if zeilen else "keine Ausgabe (dauer.log leer)"
+    rest = [ln for ln in zeilen if ln.strip()][-40:]
+    if rest:
+        print("::group::Ende von dauer.log (%s, dieser Versuch)" % NAMEN.get(art, art), flush=True)
+        for ln in rest:
+            print("    " + ln[:400], flush=True)
+        print("::endgroup::", flush=True)
+    print("::error title=Dauerrechnen %s::%s (Code %s)" % (NAMEN.get(art, art), grund.replace("\n", " ")[:900], rc), flush=True)
+    return grund
 
 
 def fertig_pruefen(art, o, ak):
@@ -508,27 +553,37 @@ def _angehalten(sig, frm):
     raise SystemExit("angehalten (Signal %d)" % sig)
 
 
-def start_sim(P, E, a, tmp, port):
-    """Xvfb (oder Display) und den Test-Simulator mit eigenem HOME starten -> (env, sim_home)"""
+def anzeige_starten(P, E, a, tmp):
+    """Display für den Test-Simulator: der echte Bildschirm (wenn freigegeben und erreichbar), sonst ein eigenes Xvfb;
+    «keine» nur für dauer_test.sh (Ersatz-Simulator ohne Fenster). -> (env, art) mit art "bildschirm" | "xvfb" | "keine" """
     import shutil as sh
     env = dict(os.environ)
-    disp = ""
+    if a.anzeige == "keine":
+        env.pop("DISPLAY", None)
+        return env, "keine"
     if a.anzeige not in ("", "xvfb") and E.bildschirm_ok(a.anzeige):
-        disp = a.anzeige
-    if not disp:
-        if not sh.which("Xvfb"):
-            raise SystemExit("Xvfb fehlt")
-        disp = E.freies_display()
-        P.start("Xvfb", ["Xvfb", disp, "-screen", "0", "1280x720x24", "-nolisten", "tcp"], log_file=os.path.join(tmp, "xvfb.log"))
-        time.sleep(2)
+        env["DISPLAY"] = a.anzeige
+        return env, "bildschirm"
+    if not sh.which("Xvfb"):
+        raise TeilFehler(6, "Xvfb fehlt auf dem HP (sudo apt install xvfb, runner_einrichten.sh)")
+    disp = E.freies_display()
+    P.start("Xvfb", ["Xvfb", disp, "-screen", "0", "1280x720x24", "-nolisten", "tcp"], log_file=os.path.join(tmp, "xvfb.log"))
+    time.sleep(2)
     env["DISPLAY"] = disp
+    return env, "xvfb"
+
+
+def start_sim(P, E, a, tmp, port, env=None, log_name="simulator.log"):
+    """den Test-Simulator mit eigenem HOME starten (Display über anzeige_starten, beim Neustart dasselbe) -> (env, sim_home)"""
+    if env is None:
+        env, _ = anzeige_starten(P, E, a, tmp)
     home = os.path.join(tmp, "sim_home")
     os.makedirs(home, exist_ok=True)
     sargs = ["--no-update", "--stream", "--scene", "camping", "--hour", "12", "--port", str(port), "--quality", "simple"]
     if getattr(a, "grafik", ""):
         sargs += ["--grafik", a.grafik]
     P.start("Simulator", [os.path.abspath(a.sim_bin), "--max-fps", "8", "--"] + sargs, dict(env, HOME=home),
-            os.path.join(tmp, "simulator.log"))
+            os.path.join(tmp, log_name))
     return env, home
 
 
@@ -551,54 +606,233 @@ def ki_fertig(o):
         return []
 
 
+# Fehler der Teile: Code + klarer Text (fehler.txt im Paket-Ordner; rechnen zeigt ihn im Job-Protokoll als ::error::)
+FEHLER_DATEI = "fehler.txt"
+KI_ANTWORT_S = float(os.environ.get("MW_KI_ANTWORT_S") or 60)   # eine Anfrage an den Simulator darf so lange dauern
+KI_STILL_S = float(os.environ.get("MW_KI_STILL_S") or 300)      # so lange darf er schweigen, solange er läuft (Szenenwechsel)
+KI_NEUSTARTS = 2                                               # so oft hintereinander ohne gesicherte Bilder neu gestartet
+KI_ABSTUERZE_MAX = 20                                          # und höchstens so viele Abstürze pro Lauf
+KI_TEIL_MIN = int(os.environ.get("MW_KI_TEIL_MIN") or 10)      # so viele fertige Bilder retten ein abgebrochenes Bildpaket
+SIGNALE = {-11: "Speicherzugriffsfehler (SIGSEGV)", -6: "abgebrochen (SIGABRT)", -9: "abgeschossen (SIGKILL, Speicher voll?)",
+           -7: "Busfehler (SIGBUS)", 139: "Speicherzugriffsfehler (SIGSEGV)", 134: "abgebrochen (SIGABRT)"}
+
+
+class TeilFehler(Exception):
+    """ein Teil (KI-Bilder, Langzeittest) kann nicht weiter: code = Exit-Code, text = Grund für das Protokoll"""
+
+    def __init__(self, code, text):
+        super().__init__(text)
+        self.code, self.text = code, text
+
+
+def sim_code(pr):
+    rc = pr.poll() if pr is not None else None
+    if rc is None:
+        return "läuft"
+    return "Code %s%s" % (rc, (" = " + SIGNALE[rc]) if rc in SIGNALE else "")
+
+
+def fehler_schreiben(o, text):
+    try:
+        with open(os.path.join(o, FEHLER_DATEI), "w", encoding="utf-8") as f:
+            f.write(text.strip()[:1500] + "\n")
+    except OSError:
+        pass
+
+
+def ki_grafik():
+    """Grafik-Modus der Trainingsbilder: normal (lite wäre zu einfach); MW_KI_GRAFIK=lite|normal auf dem HP zum Ausprobieren.
+    Hinweis: unter Xvfb (Mesa llvmpipe) stürzt der Simulator bei «Vielfalt hoch» mit beiden Modi gleich ab (SIGSEGV)."""
+    g = (os.environ.get("MW_KI_GRAFIK") or "").strip()
+    return g if g in ("lite", "normal") else "normal"
+
+
+def ki_klassen(repo):
+    """Klassennamen der Trainingsbilder aus dataset.gd des Stands (EXPORT_CLASSES) - für data.yaml eines Teilpakets"""
+    try:
+        with open(os.path.join(repo, "simulator3d", "scripts", "dataset.gd"), encoding="utf-8") as f:
+            m = re.search(r"const EXPORT_CLASSES := \[(.*?)\]", f.read(), re.S)
+        return re.findall(r'"([a-z_]+)"', m.group(1)) if m else []
+    except OSError:
+        return []
+
+
+def ki_retten(home, t1, ziel, repo, grund):
+    """der Simulator ist mitten im Bildpaket abgestürzt: die schon fertigen Bilder (Bild + Rahmen-Datei) aus seinem
+    Export-Ordner als Teilpaket (YOLO wie sonst, data.yaml aus dataset.gd des Stands) sichern -> Anzahl Bilder (0 = nichts)"""
+    import zipfile
+    namen = ki_klassen(repo) if repo else []
+    if not namen:
+        return 0
+    best, best_n = None, []
+    for wurzel, dirs, _ in os.walk(home):
+        if os.path.basename(wurzel) != "trainingsbilder":
+            continue
+        for d in dirs:
+            e = os.path.join(wurzel, d)
+            if os.path.islink(e) or os.path.getmtime(e) < t1 - 2:
+                continue
+            fertig = []
+            for teil in ("train", "val"):
+                bd = os.path.join(e, "images", teil)
+                for n in sorted(os.listdir(bd)) if os.path.isdir(bd) else []:
+                    stem = n[:-4]
+                    if n.endswith(".jpg") and os.path.isfile(os.path.join(e, "labels", teil, stem + ".txt")) and \
+                            os.path.getsize(os.path.join(bd, n)) > 0:
+                        fertig.append((teil, stem))
+            if len(fertig) > len(best_n):
+                best, best_n = e, fertig
+    if not best or len(best_n) < KI_TEIL_MIN:
+        if best:
+            log("Teilpaket: nur %d fertige Bilder (mindestens %d) - nicht gesichert" % (len(best_n), KI_TEIL_MIN))
+        return 0
+    yaml = "# Trainingsbilder (Teilpaket: %s) - YOLO-Format\npath: .\ntrain: images/train\nval: images/val\nnames:\n" % grund
+    yaml += "".join("  %d: %s\n" % (i, n) for i, n in enumerate(namen))
+    info = {"made": len(best_n), "teilpaket": True, "grund": grund, "vielfalt": "hoch",
+            "note": "Abgebrochenes Bildpaket (Dauerrechnen): nur fertige Bilder mit Rahmen-Datei"}
+    with zipfile.ZipFile(ziel + ".neu", "w", zipfile.ZIP_DEFLATED) as z:
+        for teil, stem in best_n:
+            z.write(os.path.join(best, "images", teil, stem + ".jpg"), "images/%s/%s.jpg" % (teil, stem))   # wie dataset.gd: flach
+            z.write(os.path.join(best, "labels", teil, stem + ".txt"), "labels/%s/%s.txt" % (teil, stem))
+            mj = os.path.join(best, "labels_meta", teil, stem + ".json")
+            if os.path.isfile(mj):
+                z.write(mj, "labels_meta/%s/%s.json" % (teil, stem))
+        z.writestr("data.yaml", yaml)
+        z.writestr("info.json", json.dumps(info, ensure_ascii=False, indent=1))
+    os.replace(ziel + ".neu", ziel)
+    shutil.rmtree(best, ignore_errors=True)                    # Platz: die Bilder sind jetzt im Teilpaket
+    return len(best_n)
+
+
 def ki_teil(a):
-    """KI-Trainingsbilder: Simulator macht Bildpakete (YOLO, Vielfalt hoch, alle Szenen); jedes fertige Paket ist gesichert"""
+    """KI-Trainingsbilder: Simulator macht Bildpakete (YOLO, Vielfalt hoch, alle Szenen); jedes fertige Paket ist gesichert.
+    Exit: 0 fertig, 2 Simulator startet nicht, 3 Bildpakete ohne ZIP, 4 Simulator stürzt immer wieder ab, 5 Simulator hängt,
+    6 sonstiger Fehler. Der Grund steht in fehler.txt (und im Job-Protokoll)."""
+    o = a.aus
+    os.makedirs(os.path.join(o, "pakete"), exist_ok=True)
+    try:
+        os.unlink(os.path.join(o, FEHLER_DATEI))
+    except OSError:
+        pass
+    try:
+        return _ki_teil(a, o)
+    except TeilFehler as e:
+        log("FEHLER: " + e.text)
+        fehler_schreiben(o, e.text)
+        return e.code
+    except Exception as e:                                     # unerwartet: Grund + Ort statt nur «Code 1»
+        import traceback
+        traceback.print_exc()
+        t = traceback.extract_tb(e.__traceback__)
+        wo = ("%s:%d" % (os.path.basename(t[-1].filename), t[-1].lineno)) if t else "?"
+        text = "Unerwarteter Fehler beim KI-Export: %s: %s (%s)" % (type(e).__name__, e, wo)
+        log("FEHLER: " + text)
+        fehler_schreiben(o, text)
+        return 6
+
+
+def _ki_teil(a, o):
     sys.path.insert(0, ERK)
     import erkennungstest as E
     import faelle as F
     import tempfile
-    o = a.aus
-    os.makedirs(os.path.join(o, "pakete"), exist_ok=True)
     tmp = tempfile.mkdtemp(prefix="mw_erk_lauf_")
     P = E.Prozesse()
     signal.signal(signal.SIGTERM, _angehalten)
-    port = 8797
+    port = int(os.environ.get("MW_KI_PORT") or 8797)
     F.K["sim"] = "http://127.0.0.1:%d" % port
     F.K["out"] = o
     t_start = time.time()
     bild = None
     leer = 0
-    try:
-        a.grafik = "normal"                                    # Trainingsbilder: volle Grafik (lite wäre zu einfach)
-        env, home = start_sim(P, E, a, tmp, port)
+    st = {"starts": 0, "abstuerze": 0, "ohne": 0, "pr": None, "home": "", "env": None}
+
+    def sim_log():
+        return os.path.join(tmp, "simulator_%d.log" % st["starts"])
+
+    def sim_start():
+        st["starts"] += 1
+        env, st["home"] = start_sim(P, E, a, tmp, port, st["env"], os.path.basename(sim_log()))
+        st["env"] = env
+        st["pr"] = [pr for n, pr in P.p if n == "Simulator"][-1]
         if not warte_sim(F, P):
-            log("Simulator antwortet nicht")
-            return 2
+            E.ende_protokoll(sim_log(), os.path.join(o, "simulator_start.log"), 300_000)
+            raise TeilFehler(2, "Simulator %s (%s, Grafik %s, Anzeige %s) - siehe simulator_start.log im Artefakt"
+                             % ("antwortet nach 5 Min. nicht" if P.laeuft("Simulator") else "startet nicht",
+                                sim_code(st["pr"]), a.grafik, anzeige))
+
+    def frage(**d):
+        """eine Anfrage an den Simulator. Unter Xvfb (ohne Grafikkarte) braucht ein Szenenwechsel oft über 20 s: so lange
+        er läuft, wird bis KI_STILL_S weiter gefragt. Abgestürzt -> SimWeg."""
+        t0 = time.time()
+        letzter = None
+        while True:
+            if not P.laeuft("Simulator"):
+                raise SimWeg()
+            try:
+                return F.http_json(F.K["sim"] + "/control", d, timeout=KI_ANTWORT_S) or {}
+            except (OSError, ValueError, http.client.HTTPException) as e:
+                letzter = e
+            if not P.laeuft("Simulator"):
+                raise SimWeg()
+            if time.time() - t0 > KI_STILL_S:
+                raise TeilFehler(5, "Simulator hängt: %.0f s keine Antwort auf «%s» (%s: %s, Grafik %s, Anzeige %s)"
+                                 % (time.time() - t0, d.get("op") or d.get("action"), type(letzter).__name__, letzter,
+                                    a.grafik, anzeige))
+            time.sleep(min(3.0, TAKT * 3))
+
+    try:
+        st["env"], anzeige = anzeige_starten(P, E, a, tmp)
+        a.grafik = ki_grafik()
+        log("KI-Trainingsbilder: Anzeige %s, Grafik %s, %d Bildpakete à %d Bilder" % (anzeige, a.grafik, a.menge, KI_BILDER))
+        sim_start()
         if a.fortschritt:
             bild = Bild(F.K["sim"] + "/view.jpg", os.path.dirname(a.fortschritt))
             bild.start()
         while len(ki_fertig(o)) < a.menge:
             k = len(ki_fertig(o))
             t1 = time.time()
-            r = F.ctl(action="dataset", op="export", n=KI_BILDER, scenes=True, vielfalt="hoch")
-            log("Bildpaket %d/%d gestartet: %s" % (k + 1, a.menge, (r or {}).get("msg", "")))
-            time.sleep(4)
-            while True:
-                s = F.ctl(action="dataset", op="get")
-                bilder = len(ki_fertig(o)) * KI_BILDER
-                fortschritt(a.fortschritt, titel="Dauerrechnen", arbeit="KI-Trainingsbilder", fall=k + 1, faelle=a.menge,
-                            fall_name="Bildpaket", start=int(t_start), status="laeuft",
-                            plan_text="Trainingsbilder (YOLO) für das eigene KI-Modell, Vielfalt hoch, alle Szenen",
-                            name=str(s.get("msg") or "")[:60],
-                            kacheln=[["Bilder fertig", "%d" % bilder, ""], ["Bildpakete", "%d / %d" % (k, a.menge), ""],
-                                     ["Vielfalt", "hoch", ""], ["Simulator", "MoveEye Sim " + a.stand_name[:12], ""]])
-                if not s.get("busy"):
-                    break
-                if not P.laeuft("Simulator"):
-                    raise SystemExit("Simulator beendet")
-                time.sleep(3)
+            try:
+                r = frage(action="dataset", op="export", n=KI_BILDER, scenes=True, vielfalt="hoch")
+                log("Bildpaket %d/%d gestartet: %s" % (k + 1, a.menge, r.get("msg", "")))
+                time.sleep(TAKT * 4)
+                while True:
+                    s = frage(action="dataset", op="get")
+                    bilder = len(ki_fertig(o)) * KI_BILDER
+                    fortschritt(a.fortschritt, titel="Dauerrechnen", arbeit="KI-Trainingsbilder", fall=k + 1, faelle=a.menge,
+                                fall_name="Bildpaket", start=int(t_start), status="laeuft",
+                                plan_text="Trainingsbilder (YOLO) für das eigene KI-Modell, Vielfalt hoch, alle Szenen",
+                                name=str(s.get("msg") or "")[:60],
+                                kacheln=[["Bilder fertig", "%d" % bilder, ""], ["Bildpakete", "%d / %d" % (k, a.menge), ""],
+                                         ["Vielfalt", "hoch", ""], ["Simulator", "MoveEye Sim " + a.stand_name[:12], ""]])
+                    if not s.get("busy"):
+                        break
+                    time.sleep(min(3.0, TAKT * 3))
+            except SimWeg:
+                st["abstuerze"] += 1
+                code = sim_code(st["pr"])
+                E.ende_protokoll(sim_log(), os.path.join(o, "simulator_absturz_%d.log" % st["abstuerze"]), 300_000)
+                log("Simulator abgestürzt (%s) bei Bildpaket %d, Grafik %s - Protokoll: simulator_absturz_%d.log"
+                    % (code, k + 1, a.grafik, st["abstuerze"]))
+                ziel = os.path.join(o, "pakete", "ki_%02d.zip" % (k + 1))
+                n_teil = ki_retten(st["home"], t1, ziel, a.repo, "Simulator abgestürzt (%s)" % code)
+                if n_teil:
+                    st["ohne"] = 0
+                    log("Bildpaket %d als Teilpaket gesichert: %d Bilder (%d kB)" % (k + 1, n_teil, os.path.getsize(ziel) // 1024))
+                else:
+                    st["ohne"] += 1
+                if st["ohne"] > KI_NEUSTARTS or st["abstuerze"] > KI_ABSTUERZE_MAX:
+                    raise TeilFehler(4, "Simulator %d-mal abgestürzt (zuletzt %s, Grafik %s, Anzeige %s) - siehe "
+                                     "simulator_absturz_*.log im Artefakt" % (st["abstuerze"], code, a.grafik, anzeige))
+                P.p = [(n, pr) for n, pr in P.p if pr.poll() is None]
+                if len(ki_fertig(o)) >= a.menge:
+                    continue                                   # das war das letzte Bildpaket: kein Neustart mehr
+                sim_start()
+                log("Simulator neu gestartet - %s" % ("weiter mit Bildpaket %d" % (k + 2) if n_teil else
+                                                     "Bildpaket %d beginnt von vorn" % (k + 1)))
+                continue
             neu = []
-            for wurzel, _, dateien in os.walk(home):
+            for wurzel, _, dateien in os.walk(st["home"]):
                 for n in dateien:
                     p = os.path.join(wurzel, n)
                     if re.match(r"^(MoveEye|MW)-Trainingsbilder_.*\.zip$", n) and os.path.getmtime(p) >= t1 - 2:
@@ -607,7 +841,7 @@ def ki_teil(a):
                 leer += 1
                 log("Bildpaket ohne ZIP (%s)" % s.get("msg"))
                 if leer >= 2:
-                    return 3
+                    raise TeilFehler(3, "Simulator meldet fertig, schreibt aber kein ZIP (zweimal): %s" % s.get("msg"))
                 continue
             ziel = os.path.join(o, "pakete", "ki_%02d.zip" % (k + 1))
             shutil.move(max(neu, key=os.path.getmtime), ziel + ".neu")
@@ -618,7 +852,13 @@ def ki_teil(a):
         if bild:
             bild.an = False
         P.stop()
+        if st["starts"]:
+            E.ende_protokoll(sim_log(), os.path.join(o, "simulator.log"), 300_000)
         shutil.rmtree(tmp, ignore_errors=True)
+
+
+class SimWeg(Exception):
+    """der Test-Simulator läuft nicht mehr (abgestürzt)"""
 
 
 def lz_proben(o):
@@ -793,7 +1033,7 @@ def langzeit_teil(a):
             if ps.poll() is not None:
                 probe["crash_sim"] = 1
                 log("Simulator beendet (Code %s) - Neustart" % ps.returncode)
-                start_sim(P, E, a, tmp, sport)
+                start_sim(P, E, a, tmp, sport, env)            # dasselbe Display (kein zweites Xvfb)
                 ps = [pr for n_, pr in P.p if n_ == "Simulator"][-1]
                 warte_sim(F, P)
                 seg_alt = None
@@ -851,7 +1091,7 @@ def main():
         t.add_argument("--repo", default="")
         t.add_argument("--sim-bin", required=True)
         t.add_argument("--aus", required=True)
-        t.add_argument("--anzeige", default="xvfb")
+        t.add_argument("--anzeige", default="xvfb", help="xvfb | :0 (Bildschirm) | keine (nur dauer_test.sh)")
         t.add_argument("--fortschritt", default="")
         t.add_argument("--menge", type=int, default=1)
         t.add_argument("--stand-name", default="")
@@ -860,8 +1100,14 @@ def main():
     a = ap.parse_args()
     if a.cmd == "rechnen":
         a.stunden = max(0.0003, min(24.0, a.stunden))
-    return {"waehlen": waehlen, "rechnen": rechnen, "halten": halten, "ki-teil": ki_teil, "langzeit-teil": langzeit_teil,
-            "status": status}[a.cmd](a)
+    if a.cmd == "langzeit-teil":
+        try:
+            return langzeit_teil(a)
+        except TeilFehler as e:
+            log("FEHLER: " + e.text)
+            fehler_schreiben(a.aus, e.text)
+            return e.code
+    return {"waehlen": waehlen, "rechnen": rechnen, "halten": halten, "ki-teil": ki_teil, "status": status}[a.cmd](a)
 
 
 if __name__ == "__main__":
