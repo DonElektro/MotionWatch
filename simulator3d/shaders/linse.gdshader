@@ -16,19 +16,10 @@ uniform float refr = 0.055;         // wie stark ein Tropfen das Bild verschiebt
 uniform float blur_px = 3.0;
 uniform float mul_expo = 1.0;      // 1 = das gelesene Bild ist noch unbelichtet (Test: 0)
 
-vec3 grab(vec2 uv, float r) {
-	vec2 o = vec2(r) / res;
-	vec3 c = texture(screen_tex, uv).rgb * 0.28;
-	c += texture(screen_tex, uv + vec2(o.x, 0.0)).rgb * 0.12;
-	c += texture(screen_tex, uv - vec2(o.x, 0.0)).rgb * 0.12;
-	c += texture(screen_tex, uv + vec2(0.0, o.y)).rgb * 0.12;
-	c += texture(screen_tex, uv - vec2(0.0, o.y)).rgb * 0.12;
-	c += texture(screen_tex, uv + o * 0.7).rgb * 0.06;
-	c += texture(screen_tex, uv - o * 0.7).rgb * 0.06;
-	c += texture(screen_tex, uv + vec2(o.x, -o.y) * 0.7).rgb * 0.06;
-	c += texture(screen_tex, uv + vec2(-o.x, o.y) * 0.7).rgb * 0.06;
-	return c;
-}
+// Godot 4.3 Kompatibilität (GLES3): das Bildschirm-Bild (color_buffer) ist erst nach den eigenen Funktionen deklariert -
+// darum wird es nicht in einer Funktion gelesen, sondern mit einem Makro direkt in fragment() (sonst «color_buffer undeclared»
+// im Kompatibilitäts-Renderer, jeder Treiber). Gleiche Rechnung wie vorher: Mitte 0.28, vier Nachbarn je 0.12, vier schräge je 0.06.
+#define GRAB(G_UV, G_R) (texture(screen_tex, (G_UV)).rgb * 0.28 + texture(screen_tex, (G_UV) + vec2((vec2(G_R) / res).x, 0.0)).rgb * 0.12 + texture(screen_tex, (G_UV) - vec2((vec2(G_R) / res).x, 0.0)).rgb * 0.12 + texture(screen_tex, (G_UV) + vec2(0.0, (vec2(G_R) / res).y)).rgb * 0.12 + texture(screen_tex, (G_UV) - vec2(0.0, (vec2(G_R) / res).y)).rgb * 0.12 + texture(screen_tex, (G_UV) + (vec2(G_R) / res) * 0.7).rgb * 0.06 + texture(screen_tex, (G_UV) - (vec2(G_R) / res) * 0.7).rgb * 0.06 + texture(screen_tex, (G_UV) + vec2((vec2(G_R) / res).x, -(vec2(G_R) / res).y) * 0.7).rgb * 0.06 + texture(screen_tex, (G_UV) + vec2(-(vec2(G_R) / res).x, (vec2(G_R) / res).y) * 0.7).rgb * 0.06)
 
 void fragment() {
 	vec4 m = texture(drop_map, UV);
@@ -43,7 +34,7 @@ void fragment() {
 	float a;
 	if (th > 0.77) {
 		// Schnee auf der Linse: weiss, kaum durchsichtig, nimmt das Licht der Umgebung an
-		vec3 bg = grab(SCREEN_UV, blur_px * 3.0) * e;
+		vec3 bg = GRAB(SCREEN_UV, blur_px * 3.0) * e;
 		float l = dot(bg, vec3(0.333));
 		col = vec3(0.55 + 0.45 * clamp(l * 2.0, 0.0, 1.0)) * mix(0.35, 1.0, e);
 		a = 0.92;
@@ -51,7 +42,7 @@ void fragment() {
 		th = th / 0.745;                                                   // Wasser: B bis 190 (darüber Schnee)
 		// Wassertropfen: kleine Linse - verkehrtes, verschwommenes Bild der Umgebung
 		vec2 uv = clamp(SCREEN_UV - n * refr * (0.4 + th), vec2(0.002), vec2(0.998));
-		col = grab(uv, blur_px * (1.0 + 1.5 * th)) * e;
+		col = GRAB(uv, blur_px * (1.0 + 1.5 * th)) * e;
 		col *= mix(0.45, 1.05, smoothstep(0.05, 0.55, th));                 // Rand dunkel (Totalreflexion)
 		float spec = pow(max(0.0, dot(normalize(n + vec2(0.0001)), normalize(vec2(-0.55, -0.75)))), 12.0) * smoothstep(0.35, 0.75, 1.0 - th) * th;
 		col += vec3(spec * 1.6 * (0.25 + 0.75 * e));
@@ -62,7 +53,7 @@ void fragment() {
 	}
 	if (fg > 0.01) {
 		// Beschlag: viele winzige Tröpfchen streuen das Licht - weich, weniger Kontrast, ein heller Schleier
-		vec3 soft = grab(SCREEN_UV, 4.0 + 10.0 * fg) * e;
+		vec3 soft = GRAB(SCREEN_UV, 4.0 + 10.0 * fg) * e;
 		vec3 veil = mix(soft, vec3(dot(soft, vec3(0.333))) * 0.6 + vec3(0.35) * (0.25 + 0.75 * e), 0.45 * fg);
 		float fa = clamp(fg * 1.1, 0.0, 0.95);
 		col = mix(veil, col, a);

@@ -1,8 +1,13 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 03.11.2026 · Version **3.55.0** · MoveEye **3.55.0** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 03.11.2026 · Version **3.55.1** · MoveEye **3.55.1** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.55.1 (MoveEye 3.55.1): Fix Absturz und Linsen-Shader (`scripts/bergtal.gd`, `shaders/linse.gdshader`, `scripts/tracks.gd`)
+
+- _rank_add mit Null-Prüfung (Morgen im Bergtal in einer Welt), GRAB-Makro im Linsen-Shader für Kompatibilität, has_meta in
+  tracks.gd; Test `werkzeuge/bergtal_morgen_test.gd`.
 
 ## NEU in 3.55.0 (MoveEye 3.55.0): HP rechnet rund um die Uhr (`beilagen_linux/hp_wache.py`, `werkzeuge/test_runner/dauer.py`, MoveEye Teil 639zu)
 
