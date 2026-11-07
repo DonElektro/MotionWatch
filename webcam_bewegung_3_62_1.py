@@ -23,6 +23,9 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 3.62.1: Piper: «Piper installieren» richtet auch espeak-ng selbst ein, wenn es fehlt (apt, ohne Passwort-Abfrage, mit
+    Zeitlimit; als root direkt, sonst sudo -n), mit Fortschritt und klarer Meldung, wenn es nicht geht («espeak-ng konnte nicht
+    installiert werden – …»).
   * 3.62.0: Piper-Stimme: MoveEye spricht Ansagen mit einer natürlichen Offline-Stimme (Thorsten; Stimme pro Sprache, Tempo,
     Lautstärke, «Stimme testen»), einmal geladen mit fester Prüfsumme; Ansagen auch im Browser («🔊 Ton im Browser»), im
     Pi-Fenster und im Simulator; ohne Piper die alte Stimme.
@@ -108,8 +111,6 @@ Features
     Druckkorrekturen an Drehteller, Gabel, Arm 2 und Lampenhalter; Kamerakopf im Simulator orange.
   * 3.41.1: Fix: Solar-Strommesser (INA219) ab Werk auf 0x44 statt 0x41 (kollidierte mit dem Servo-Treiber), Shunt 0,01 Ω
     passend zum Gravity-Modul; Bau-Infos ergänzt (Step-Down ab Akku, 3. MOSFET, Schrauben, Lade-LED an GPIO 6).
-  * 3.41.0: Im Fenster «Neu in …» führt bei jeder Neuerung ein kleiner Link direkt zur Funktion (MoveEye und Simulator);
-    Schalter «Links zu Neuerungen» im Entwickler-Bereich.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -118,10 +119,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_3_62_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_3_62_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_3_62_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_3_62_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_3_62_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_3_62_1.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -138,7 +139,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "3.62.0"
+APP_VERSION = "3.62.1"
 
 
 def default_data_dir():
@@ -263,8 +264,8 @@ def prepare_settings_file():
 
 
 
-ZD_FILE = "moveeye_daten_3_62_0.zip"
-ZD_SHA256 = "0e3f0d6978845ba80542a3313b7ce02e8505954db3a74cfb4c26d1c0caa00e94"
+ZD_FILE = "moveeye_daten_3_62_1.zip"
+ZD_SHA256 = "03685cc0ff7666eed3346271731c1e95b04b60fd3f473adfee6f521143c9ed83"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -48767,7 +48768,7 @@ class App:
 		self.watch = watch
 		self.web = web or WebStream(watch)
 		self.root = tk.Tk()
-		self.root.title("MoveEye 3.62.0")
+		self.root.title("MoveEye 3.62.1")
 		try:
 			import base64
 			self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -49145,7 +49146,7 @@ class App:
 			if not small:
 				vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
 				vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))
-			Tip(nm, f"{tr('Build')} 3.62.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+			Tip(nm, f"{tr('Build')} 3.62.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
 			self._egg_taps = []
 			for w_ in tl.winfo_children():
 				w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -82220,7 +82221,7 @@ for _k, _v in {"tts_engine": "auto", "tts_speed": 1.0, "tts_volume": 80,
 	CFG.setdefault(_k, _v); DEFAULTS.setdefault(_k, _v); FACTORY_CFG.setdefault(_k, _v)
 
 PIPER = {"lock": threading.Lock(), "proc": None, "q": None, "last": 0.0, "model": "", "err": "", "t_err": 0.0,
-         "ms": None, "warm_t": 0.0, "install": "", "sim_ok": None}
+         "ms": None, "warm_t": 0.0, "install": "", "install_step": "", "sim_ok": None}
 PIPER_DL = {"voice": "", "running": False, "got": 0, "total": 0, "msg": "", "stop": False, "done": ""}
 
 
@@ -82794,21 +82795,89 @@ def piper_delete(vid):
 	return True, ""
 
 
+PIPER_APT_TIMEOUT_S = 600
+
+
+def piper_espeak_install():
+	"""
+
+
+"""
+	if shutil.which("espeak-ng"):
+		return True, ""
+	apt = shutil.which("apt-get")
+	if not apt:
+		return False, "no apt-get on this system - install espeak-ng by hand"
+	pre = [] if (hasattr(os, "geteuid") and os.geteuid() == 0) else ["sudo", "-n"]
+	if pre and not shutil.which("sudo"):
+		return False, "MoveEye has no rights for apt (no sudo) - in a terminal: sudo apt install espeak-ng"
+	env = dict(os.environ, DEBIAN_FRONTEND="noninteractive", APT_LISTCHANGES_FRONTEND="none")
+
+	def run(args, step):
+		PIPER["install_step"] = step
+		try:
+			r = subprocess.run(pre + [apt] + args, capture_output=True, text=True, timeout=PIPER_APT_TIMEOUT_S, env=env,
+                               stdin=subprocess.DEVNULL)
+			return r.returncode, (r.stdout or "") + (r.stderr or "")
+		except subprocess.TimeoutExpired:
+			return -9, "timeout"
+		except OSError as e:
+			return -1, str(e)
+	inst = ["install", "-y", "--no-install-recommends", "-o", "Dpkg::Options::=--force-confold", "espeak-ng"]
+	rc, out = run(inst, "espeak-ng")
+	if rc != 0 and re.search(r"Unable to locate package|has no installation candidate|404\s+Not Found|Failed to fetch", out):
+		rc_u, out_u = run(["update"], "apt-get update")
+		rc, out = run(inst, "espeak-ng") if rc_u == 0 else (rc_u, out_u)
+	PIPER["install_step"] = ""
+	if rc == 0 and shutil.which("espeak-ng"):
+		log_event("sys", "Piper: espeak-ng installed (apt)")
+		return True, ""
+	low = out.lower()
+	if pre and ("password is required" in low or "a terminal is required" in low or "not in the sudoers" in low
+                or "may not run sudo" in low):
+		why = "MoveEye has no rights for apt (sudo asks for a password) - in a terminal: sudo apt install espeak-ng"
+	elif rc == -9:
+		why = "apt took too long (over 10 min.) - try again later"
+	elif "could not get lock" in low or "unable to acquire the dpkg frontend lock" in low or "is another process using it" in low:
+		why = "apt is busy right now (another installation or update) - try again in a few minutes"
+	elif "temporary failure resolving" in low or "could not resolve" in low or "failed to fetch" in low:
+		why = "no internet for apt - try again with internet"
+	elif rc == 0:
+		why = "apt finished, but espeak-ng is still missing"
+	else:
+		why = (out.strip().splitlines() or ["?"])[-1][:120]
+	log_event("sys", "Piper: espeak-ng not installed: " + why)
+	return False, why
+
+
 def piper_install():
-	""
+	"""
+"""
 	if PIPER["install"] == "running":
 		return False, "already running"
 	PIPER["install"] = "running"
+	PIPER["install_step"] = ""
 
 	def work():
 		try:
-			r = subprocess.run([sys.executable, "-m", "pip", "install", "--break-system-packages", PIPER_ORT],
-                               capture_output=True, text=True, timeout=1500)
-			ok = r.returncode == 0
-			PIPER["install"] = "done" if ok else "failed: " + ((r.stderr or r.stdout).strip().splitlines() or ["?"])[-1][:140]
-			log_event("sys", "Piper: runtime installed (" + PIPER_ORT + ")" if ok else "Piper: " + PIPER["install"])
+			fail = []
+			ok_e, why = piper_espeak_install()
+			if not ok_e:
+				fail.append(tr("espeak-ng could not be installed") + " – " + tr(why))
+			if not piper_runtime()[0]:
+				PIPER["install_step"] = "onnxruntime"
+				r = subprocess.run([sys.executable, "-m", "pip", "install", "--break-system-packages", PIPER_ORT],
+                                   capture_output=True, text=True, timeout=1500)
+				if r.returncode == 0:
+					log_event("sys", "Piper: runtime installed (" + PIPER_ORT + ")")
+				else:
+					fail.append("onnxruntime: " + ((r.stderr or r.stdout).strip().splitlines() or ["?"])[-1][:140])
+			PIPER["install"] = "done" if not fail else " · ".join(fail)
+			if fail:
+				log_event("sys", "Piper: " + PIPER["install"])
 		except Exception as e:
 			PIPER["install"] = "failed: " + str(e)[:120]
+		PIPER["install_step"] = ""
 	threading.Thread(target=work, daemon=True, name="piper-install").start()
 	return True, ""
 
@@ -82843,7 +82912,7 @@ def piper_state(lang=None):
                    "mb": round((v["model"].get("size") or 63000000) / 1048576.0), "pinned": piper_pinned(vid), "installed": piper_installed(vid)})
 	cur = {L_: piper_voice_for(L_) for L_ in LANGS}
 	return {"engine": str(CFG.get("tts_engine") or "auto"), "voices": vs, "chosen": cur, "voice": cur.get(L, ""),
-            "ready": piper_ready(L), "ort": ort, "espeak": esp, "install": PIPER["install"], "warm": PIPER.get("proc") is not None,
+            "ready": piper_ready(L), "ort": ort, "espeak": esp, "install": PIPER["install"], "install_step": PIPER.get("install_step") or "", "warm": PIPER.get("proc") is not None,
             "dl": dict({k: PIPER_DL[k] for k in ("voice", "running", "got", "total", "done")}, msg=tr_err(PIPER_DL["msg"], L) if PIPER_DL["msg"] else ""),
             "err": tr_err(PIPER["err"], L) if PIPER["err"] and time.time() - PIPER["t_err"] < 600 else "", "ms": PIPER.get("ms"),
             "old": _tts_engine_639zzb() or "", "speed": CFG.get("tts_speed"), "volume": CFG.get("tts_volume"), "sim": PIPER.get("sim_ok")}
@@ -82867,7 +82936,11 @@ def piper_text(lang=None):
 	if not s["ort"]:
 		parts.append(tr("Piper runtime missing (onnxruntime, about 15 MB) – «Install Piper»", L))
 	if not s["espeak"]:
-		parts.append(tr("espeak-ng is missing (sudo apt install espeak-ng)", L))
+		parts.append(tr("espeak-ng is missing – «Install Piper» installs it", L))
+	if PIPER["install"] == "running":
+		parts.append(tr("installing …", L) + (f" ({PIPER['install_step']})" if PIPER.get("install_step") else ""))
+	elif PIPER["install"] and PIPER["install"] != "done":
+		parts.append("⚠ " + PIPER["install"])
 	if PIPER_DL["msg"]:
 		parts.append("⚠ " + tr_err(PIPER_DL["msg"], L))
 	if s["err"]:
@@ -82981,6 +83054,15 @@ _HX_PIPER = _zd('639zzb_piper_stimme/HX_PIPER', _zd_hx({
     'Attention, you are being filmed.': 'Achtung, Sie werden gefilmt.',
     'Piper runtime missing (onnxruntime, about 15 MB) – «Install Piper»': 'Piper-Laufzeit fehlt (onnxruntime, etwa 15 MB) – «Piper installieren»',
     'espeak-ng is missing (sudo apt install espeak-ng)': 'espeak-ng fehlt (sudo apt install espeak-ng)',
+    'espeak-ng is missing – «Install Piper» installs it': 'espeak-ng fehlt – «Piper installieren» richtet es ein',
+    'espeak-ng could not be installed': 'espeak-ng konnte nicht installiert werden',
+    'no apt-get on this system - install espeak-ng by hand': 'kein apt-get auf diesem System – espeak-ng von Hand installieren',
+    'MoveEye has no rights for apt (no sudo) - in a terminal: sudo apt install espeak-ng': 'MoveEye hat keine Rechte für apt (kein sudo) – im Terminal: sudo apt install espeak-ng',
+    'MoveEye has no rights for apt (sudo asks for a password) - in a terminal: sudo apt install espeak-ng': 'MoveEye hat keine Rechte für apt (sudo will ein Passwort) – im Terminal: sudo apt install espeak-ng',
+    'apt took too long (over 10 min.) - try again later': 'apt hat zu lange gebraucht (über 10 Min.) – später nochmals versuchen',
+    'apt is busy right now (another installation or update) - try again in a few minutes': 'apt ist gerade beschäftigt (andere Installation oder Update) – in ein paar Minuten nochmals',
+    'no internet for apt - try again with internet': 'kein Internet für apt – mit Internet nochmals versuchen',
+    'apt finished, but espeak-ng is still missing': 'apt ist fertig, aber espeak-ng fehlt immer noch',
     'loading the voice …': 'lade die Stimme …',
     'This voice is not pinned yet (comes with an update)': 'Diese Stimme ist noch nicht freigegeben (kommt mit einem Update)',
     'speaks with': 'spricht mit',
