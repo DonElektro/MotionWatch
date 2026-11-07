@@ -72,6 +72,27 @@ func _init() -> void:
 	# Testbild während der Tests (3.53.0): python3-tk im Kiosk, das Testbild liegt bei
 	eq("kiosk_ein.sh: python3-tk", ke.contains("python3-tk"), true)
 	eq("testbild.py da", FileAccess.file_exists("res://beilagen_linux/testbild.py"), true)
+	# Sim 3.57.0 «Simulator intern» auf dem Raspberry Pi 5: Block «pi» in version.json, Preset «Linux Pi» (arm64), installieren.sh kennt arm64
+	var dp := d.duplicate(true)
+	dp["pi"] = {"file": "simulator3d/MoveEyeSim3D_Pi.zip", "ver": "3.42.0", "size": 30, "sha256": "cc",
+			"url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.42.0/MoveEyeSim3D_Pi.zip"}
+	eq("has_linux pi", U.has_linux(dp, "pi"), true)
+	eq("has_linux pi ohne Block", U.has_linux(d, "pi"), false)
+	var px: Dictionary = U.linux_info(dp, "pi")
+	eq("Pi: Datei", px["file"], "simulator3d/MoveEyeSim3D_Pi.zip")
+	eq("Pi: Prüfsumme", px["sha256"], "cc")
+	eq("Pi: Release-Asset", str(px.get("url", "")).begins_with(U.PI_ASSET), true)
+	eq("Pi: Linux bleibt", U.linux_info(dp)["sha256"], "bb")
+	var found_pi := false
+	for s in cf.get_sections():
+		if cf.get_value(s, "name", "") == "Linux Pi":
+			found_pi = true
+			eq("Pi: arm64", cf.get_value(s + ".options", "binary_format/architecture", ""), "arm64")
+			eq("Pi: eine Datei", cf.get_value(s + ".options", "binary_format/embed_pck", false), true)
+			eq("Pi: ETC2/ASTC", cf.get_value(s + ".options", "texture_format/etc2_astc", false), true)
+			eq("Pi: Datei", str(cf.get_value(s, "export_path", "")).get_file(), "MoveEyeSim3D.arm64")
+	eq("Preset «Linux Pi» da", found_pi, true)
+	eq("installieren.sh: arm64", sh.contains("MoveEyeSim3D.arm64"), true)
 	if errs.is_empty():
 		print("Sparmodus-Test OK")
 		quit(0)

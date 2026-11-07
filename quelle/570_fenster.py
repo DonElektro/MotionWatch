@@ -2077,6 +2077,7 @@ class App:
             self.status_labels["Simulator"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
             self.status_labels["Simulator"].pack(anchor="w", pady=(4, 0))
             ttk.Button(sbody, text=tr("Simulation on / off") + "  (F9)", command=lambda: self._sim_toggle("window")).pack(fill="x", pady=(6, 0))
+            simpi_tk_build(self, sbody)                  # 3.59.0: «Simulator intern» on this Pi - start / stop (639zx)
             kidata_tk_build(self, sbody)                  # training pack with «Vielfalt», «Delete old AI data» (197)
             falearn_tk_build(self, sbody)                 # 2.98.38: «Lernbilder prüfen» (148)
         if sec == "Security":                             # «Log in only encrypted» (574)

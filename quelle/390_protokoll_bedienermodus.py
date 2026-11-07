@@ -1158,9 +1158,13 @@ def sim_manifest_check(folder, m):
     simtxt = ""
     if sim is not None and os.path.isdir(os.path.join(folder, "simulator3d")):   # e.g. not in the Bausatz folder
         ok_ = sim_manifest_verify(sim)
-        for key in ("win", "linux"):
+        for key in ("win", "linux", "pi"):
             e = sim.get(key) if isinstance(sim, dict) else None
             if e is None:
+                continue
+            if key == "pi" and not os.path.isfile(os.path.join(folder, str(e.get("file") or ""))):
+                if key not in ok_:                      # Pi: a Release asset, not in the repository - only the signature
+                    bad.append(f"simulator pi {e.get('ver')} (signature / url)")
                 continue
             p_ = os.path.join(folder, str(e.get("file") or ""))
             sha = ""
@@ -1244,9 +1248,14 @@ def sim_manifest_block(folder, seed=b""):
     if d.get("mw_min") and VER_RE.match(str(d.get("mw_min"))):
         blk["mw_min"] = str(d["mw_min"])
     lx = d.get("linux") if isinstance(d.get("linux"), dict) else {}
-    for key, e in (("win", d), ("linux", lx)):
+    px = d.get("pi") if isinstance(d.get("pi"), dict) else {}      # «Simulator intern» (639zx): Release asset, file only local
+    for key, e in (("win", d), ("linux", lx), ("pi", px)):
         fn, v = str(e.get("file") or ""), str(e.get("ver") or ver)
-        if not fn or not VER_RE.match(v) or fn not in ("simulator3d/MotionWatch3D_Simulator.zip", "simulator3d/MoveEyeSim3D_Linux.zip"):
+        if not fn or not VER_RE.match(v) or fn not in ("simulator3d/MotionWatch3D_Simulator.zip", "simulator3d/MoveEyeSim3D_Linux.zip",
+                                                        "simulator3d/MoveEyeSim3D_Pi.zip"):
+            continue
+        if key == "pi" and not SIM3D_PI_URL_RE.match(str(e.get("url") or "")):
+            print("Note: simulator3d/version.json «pi» without a Release-asset url - «sim» without pi")
             continue
         fp = os.path.join(folder, fn)
         if not os.path.isfile(fp):
@@ -1261,6 +1270,8 @@ def sim_manifest_block(folder, seed=b""):
             print(f"Note: {fn} does not fit simulator3d/version.json (size / checksum) - «sim» without {key}")
             continue
         blk[key] = {"ver": v, "file": fn, "size": size, "sha256": sha}
+        if key == "pi":
+            blk[key]["url"] = str(e["url"])           # not signed itself: the signed sha256 guards the content
         if seed:
             blk[key]["sig"] = _ED[1](seed, _sig_msg(v, fn, sha)).hex()
     return blk if ("win" in blk or "linux" in blk) else None

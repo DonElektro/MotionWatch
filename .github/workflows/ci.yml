@@ -96,6 +96,9 @@ jobs:
       - name: Drei Kamera-Ansichten (Kopf / Wärmebild / Weitwinkel, Übersichtsbild, pro Gerät gemerkt)
         timeout-minutes: 8
         run: python3 werkzeuge/ansichten_test.py
+      - name: Simulator intern (gefälschtes Pi-Paket - holen, prüfen, auspacken, starten, beenden, zurück)
+        timeout-minutes: 4
+        run: python3 werkzeuge/sim_intern_test.py
       - name: Werkstatt offline (eine HTML-Datei, file://, Netz gesperrt, keine JS-Fehler, Modell, Reiter)
         timeout-minutes: 6
         run: python3 werkzeuge/werkstatt_html.py --aus /tmp/werkstatt --test --bilder /tmp/werkstatt && ls -la /tmp/werkstatt
@@ -269,6 +272,8 @@ jobs:
             datei: MoveEyeSim3D.x86_64
           - preset: Windows Desktop
             datei: MoveEyeSim3D.exe
+          - preset: Linux Pi                 # Sim 3.57.0: Raspberry Pi 5 (arm64), «Simulator intern» (MoveEye Teil 639zx)
+            datei: MoveEyeSim3D.arm64
     steps:
       - uses: actions/checkout@v4
       - name: Godot 4.3 (Cache)
@@ -283,19 +288,20 @@ jobs:
           mkdir -p ~/godot && cd ~/godot
           curl -fsSL -o g.zip https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip
           unzip -q g.zip && rm g.zip && chmod +x Godot_v4.3-stable_linux.x86_64
-      - name: Export-Vorlagen 4.3 (Cache, nur Linux + Windows)
+      - name: Export-Vorlagen 4.3 (Cache, nur Linux + Windows + Linux arm64)
         id: tcache
         uses: actions/cache@v4
         with:
           path: ~/.local/share/godot/export_templates/4.3.stable
-          key: godot-templates-4.3-stable-linux-windows
+          key: godot-templates-4.3-stable-linux-windows-arm64
       - name: Export-Vorlagen herunterladen
         if: steps.tcache.outputs.cache-hit != 'true'
         run: |
           d=~/.local/share/godot/export_templates/4.3.stable; mkdir -p "$d" "$RUNNER_TEMP/t" && cd "$RUNNER_TEMP/t"
           curl -fsSL -o t.tpz https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_export_templates.tpz
           unzip -q t.tpz templates/version.txt templates/linux_release.x86_64 templates/linux_debug.x86_64 \
-            templates/windows_release_x86_64.exe templates/windows_debug_x86_64.exe
+            templates/windows_release_x86_64.exe templates/windows_debug_x86_64.exe \
+            templates/linux_release.arm64 templates/linux_debug.arm64
           mv templates/* "$d"/ && rm -rf "$RUNNER_TEMP/t" && ls -la "$d"
       - name: Import (Cache simulator3d/.godot)
         uses: actions/cache@v4
@@ -319,6 +325,6 @@ jobs:
           echo "VER=$ver" >> "$GITHUB_ENV"
       - uses: actions/upload-artifact@v4
         with:
-          name: MoveEyeSim3D-${{ env.VER }}-${{ matrix.preset == 'Linux' && 'linux' || 'windows' }}-${{ github.sha }}
+          name: MoveEyeSim3D-${{ env.VER }}-${{ matrix.preset == 'Linux' && 'linux' || matrix.preset == 'Linux Pi' && 'pi' || 'windows' }}-${{ github.sha }}
           path: ${{ runner.temp }}/build/
           retention-days: 14
