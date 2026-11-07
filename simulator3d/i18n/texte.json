@@ -16691,6 +16691,18 @@
   "it": "Per il coperchio stampare fine la scanalatura (altezza strato variabile 0,12–0,16 mm).",
   "rm": "Per il viertgel stampar fin la foppa (autezza da strat variabla 0,12–0,16 mm)."
  },
+ "Für den Raspberry Pi (arm64) gibt es auf GitHub noch kein Update-Paket.": {
+  "en": "There is no update package for the Raspberry Pi (arm64) on GitHub yet.",
+  "fr": "Il n'y a pas encore de paquet de mise à jour pour le Raspberry Pi (arm64) sur GitHub.",
+  "it": "Su GitHub non c'è ancora un pacchetto di aggiornamento per il Raspberry Pi (arm64).",
+  "rm": "Sin GitHub n'ha i anc nagin pachet d'actualisaziun per il Raspberry Pi (arm64)."
+ },
+ "für den Raspberry Pi noch kein Update-Paket": {
+  "en": "no update package for the Raspberry Pi yet",
+  "fr": "pas encore de paquet de mise à jour pour le Raspberry Pi",
+  "it": "ancora nessun pacchetto di aggiornamento per il Raspberry Pi",
+  "rm": "anc nagin pachet d'actualisaziun per il Raspberry Pi"
+ },
  "Für die Entwicklung: die normalen Knöpfe (Maggie, Schutzding, Kristall, Karten) bleiben sichtbar und leuchten auf, wenn der Autopilot sie drückt. Gilt auch für die Browser-Ansicht.": {
   "en": "For development: the normal buttons (Maggie, protective item, crystal, cards) stay visible and light up when the autopilot presses them. Also applies to the browser view.",
   "fr": "Pour le développement : les boutons normaux (Maggie, objet protecteur, cristal, cartes) restent visibles et s’allument quand le pilote automatique les presse. Vaut aussi pour la vue dans le navigateur.",
@@ -27171,6 +27183,12 @@
   "fr": "Modèle sans squelette",
   "it": "Modello senza scheletro",
   "rm": "Model senza skelet"
+ },
+ "Modell ohne Skelett / Bewegungen": {
+  "en": "Model without skeleton / animations",
+  "fr": "Modèle sans squelette / animations",
+  "it": "Modello senza scheletro / animazioni",
+  "rm": "Model senza skelet / moviments"
  },
  "Module an den Wänden": {
   "en": "Modules on the walls",
