@@ -298,7 +298,7 @@ static func bush(sc, parent: Node3D, p: Vector3, kind := "rund", s := 1.0) -> No
 					sc.put(n, dot, Vector3(cos(a2) * cos(el) * rr, 0.75 * s + sin(el) * rr * 0.75, sin(a2) * cos(el) * rr), dm, "tree")
 	sc.m.add_obstacle(p, r_ob)
 	sc.m.set_obstacle_height(ht)
-	Flora.dress(sc, n)                                         # «Flora und Fauna»: leaf cards (own random numbers)
+	Flora.dress(sc, n, "hasel" if kind == "hasel" else "")     # «Flora und Fauna»: leaf cards / hazel with rods (own random numbers)
 	return n
 
 

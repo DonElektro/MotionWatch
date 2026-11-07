@@ -23,6 +23,7 @@ extends Node
 ## Schalter für Tests / Vergleiche: Flora.modus = "" (nach Stufe) | "alt" (alles wie vor Phase 1) | "lite" | "normal" | "hoch".
 
 const Quality = preload("res://scripts/quality.gd")
+const Baeume = preload("res://scripts/baeume.gd")    # Paket 1: Bäume und Sträucher mit Ästen (Fichte, Buche, Hasel)
 
 static var modus := ""
 static var _tex_broad: ImageTexture = null
@@ -223,8 +224,22 @@ static func _card_mat(sc, crown: ShaderMaterial, conifer: bool) -> ShaderMateria
 	return cm
 
 
-static func dress(sc, plant: Node3D) -> void:
-	"""Blatt-Karten an alle Kronen-Teile (Kugeln, Kegel mit foliage.gdshader) dieser Pflanze"""
+static func _kern(crown: ShaderMaterial, art: String) -> ShaderMaterial:
+	"""Paket 1: der alte Kronen-Teil als kleinerer, dunkler Kern hinter den Ästen und Blättern (kahl im Winter weg)"""
+	if crown.has_meta("flora_kern"):
+		return crown.get_meta("flora_kern")
+	var k := crown.duplicate() as ShaderMaterial
+	k.set_shader_parameter("ragged", 0.0)
+	k.set_shader_parameter("kern", 0.62 if art == "fichte" else 0.66)
+	k.set_shader_parameter("kern_y", 0.78 if art == "fichte" else 0.82)
+	k.set_shader_parameter("kern_dark", 0.8)
+	crown.set_meta("flora_kern", k)
+	return k
+
+
+static func dress(sc, plant: Node3D, art := "") -> void:
+	"""Blatt-Karten an alle Kronen-Teile (Kugeln, Kegel mit foliage.gdshader) dieser Pflanze.
+	Paket 1: mit art (fichte, buche, hasel) statt dessen Äste, Blatt-Büschel, Kern und Ferne-Bild (baeume.gd)"""
 	if plant == null or sc == null or sc.root == null:
 		return
 	var st := stufe(sc.m)
@@ -236,8 +251,17 @@ static func dress(sc, plant: Node3D) -> void:
 		_pending[key] = {"root": sc.root, "sc": sc, "mats": {}}
 		sc.m.get_tree().process_frame.connect(_flush.bind(key), CONNECT_ONE_SHOT)
 	var job: Dictionary = _pending[key]
-	var r := RandomNumberGenerator.new()
 	var base_t := _rel(plant, sc.root)
+	if art in Baeume.ARTEN:
+		var root: Node3D = sc.root
+		Baeume.build(sc, plant, art, st, job, base_t, func(n): return _rel(n, root), func(c, a):
+			var km := _kern(c, a)
+			if not job.has("kerns"):
+				job["kerns"] = {}
+			job["kerns"][km] = c
+			return km)
+		return
+	var r := RandomNumberGenerator.new()
 	r.seed = hash(Vector3i(roundi(base_t.origin.x * 10), roundi(base_t.origin.y * 10), roundi(base_t.origin.z * 10)))
 	var parts: Array = plant.find_children("*", "MeshInstance3D", true, false)
 	if plant is MeshInstance3D:
@@ -307,6 +331,9 @@ static func _flush(key: int) -> void:
 		sync = load("res://scripts/flora.gd").new()
 		sync.name = "flora_sync"
 		root.add_child(sync)
+	for km in job.get("kerns", {}):
+		sync.pairs.append([job["kerns"][km], km])
+	Baeume.flush(job, root, sync, job["sc"].m.noise_tex)
 	for cm in job["mats"]:
 		var list: Array = job["mats"][cm]["list"]
 		if list.is_empty():
@@ -336,6 +363,7 @@ static func _flush(key: int) -> void:
 
 # ---- Abgleich mit der Krone (Wind, Jahreszeit, Wolkenschatten) ----------------------------------------------------------
 var pairs: Array = []                # [crown ShaderMaterial, card ShaderMaterial]
+var groups: Array = []               # Paket 1: [[crown materials], [card / bark / far materials]] (baeume.gd)
 var _t := 0.0
 const SYNC := ["color", "wind", "bare", "blossom", "cloud_amt", "cloud_off", "gust_amt", "dir"]
 
@@ -345,6 +373,8 @@ func _process(dt: float) -> void:
 	if _t > 0.0:
 		return
 	_t = 0.25
+	for g in groups:
+		Baeume.sync_group(g)
 	for p in pairs:
 		if p[0] == null:
 			continue
