@@ -17,7 +17,8 @@ import urllib.request
 import faelle as F
 
 SOLL = {"person": "Person", "animal": "Tier", "vehicle": "Fahrzeug", "none": "nichts"}
-EXTRA_FAELLE = {"blend": 4, "linse": 3, "kopf": 2, "ruhig": 4, "nebenfunde": 5}
+EXTRA_FAELLE = {"blend": 4, "linse": 3, "kopf": 2, "ruhig": 4, "nebenfunde": 5, "real": len(F.REAL)}
+EXTRA_JE_LAUF = ("real",)          # diese Sonderfälle gibt es --laeufe mal
 
 
 def faelle_zaehlen(plaene, schritte_von, laeufe):
@@ -26,7 +27,7 @@ def faelle_zaehlen(plaene, schritte_von, laeufe):
     for p in plaene:
         for schritt in schritte_von(p):
             if schritt[0] != "orte":
-                n += sum(EXTRA_FAELLE.get(w, 0) for w in schritt[1].split(","))
+                n += sum(EXTRA_FAELLE.get(w, 0) * (laeufe if w in EXTRA_JE_LAUF else 1) for w in schritt[1].split(","))
                 continue
             o = schritt[2]
             sel, sel_leer = o.get("sel"), o.get("sel_leer", False)
@@ -182,12 +183,12 @@ def einhaengen(fs):
     """faelle.observe / faelle.save umleiten: Fallbeginn und -ende landen im Fortschritt (sonst ändert sich nichts)"""
     obs, sav = F.observe, F.save
 
-    def observe(secs, tag, want, t_spawn, base):
+    def observe(secs, tag, want, t_spawn, base, **kw):
         try:
             fs.fall_beginnt(tag, want)
         except Exception:
             pass
-        return obs(secs, tag, want, t_spawn, base)
+        return obs(secs, tag, want, t_spawn, base, **kw)
 
     def save(rec):
         sav(rec)

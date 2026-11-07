@@ -52,6 +52,7 @@ var stuck_pos := Vector3.ZERO
 var detour_until := 0.0
 var detour_sign := 1.0
 var preview := false          # only a picture for the list of visitors (does not move)
+var privat := false           # Wunsch Nr. 2 (privatplatz.gd): a normal visitor - keeps off your pitch (main.visit, statisten, life)
 # ---- a player of the game (game.gd, from 3D-2.4): moved by the phone instead of a route ----
 var controlled := false
 var player_color := Color(0, 0, 0, 0)  # jacket colour of the player (red, blue, green, yellow)
@@ -1359,6 +1360,9 @@ func _step(dt: float) -> void:
 			return
 	idle_kind = ""
 	dir = Vector3(to.x / dist, 0, to.z / dist)
+	if privat and main.privat != null:                   # Wunsch Nr. 2: round your pitch, not across it (privatplatz.gd)
+		var pd: Vector2 = main.privat.steer(self, Vector2(dir.x, dir.z))
+		dir = Vector3(pd.x, 0, pd.y)
 	# steering round obstacles (people and animals; cars stay on their way)
 	if kind != "car" and main.avoid_on:
 		avoid_t -= dt
@@ -1376,6 +1380,9 @@ func _step(dt: float) -> void:
 				avoid_dir = main.statisten.steer(self, avoid_dir)   # Paket «Statisten»: other figures, pass on the right
 		if avoid_dir != Vector2.ZERO:
 			dir = Vector3(avoid_dir.x, 0, avoid_dir.y)
+	if privat and main.privat != null:                   # ... and the detours round obstacles never lead onto it
+		var hd: Vector2 = main.privat.hold(self, Vector2(dir.x, dir.z))
+		dir = Vector3(hd.x, 0, hd.y)
 	var want: float = speed * main.time_scale_visitors() * (0.3 if prone > 0.5 else (0.6 if crouch > 0.5 else 1.0))
 	if anim != null and kind == "person":
 		want *= anim.tempo_k                             # anim_mensch.gd: uphill shorter steps, downhill braking
@@ -1393,6 +1400,8 @@ func _step(dt: float) -> void:
 		var q: Vector2 = main.keep_out(Vector2(position.x, position.z), radius, kind == "person")
 		position.x = q.x
 		position.z = q.y
+	if privat and main.privat != null:
+		position = main.privat.keep(self, position)
 	# stuck? (against a fence, between trees) - try round the other side for a moment
 	if now - stuck_t > 3.0:
 		if position.distance_to(stuck_pos) < 0.4 and cur_speed > 0.05 and now > detour_until:

@@ -9,6 +9,13 @@ extends Node
 ##   kuehlbox     Kühlbox aus der Deckung: kriecht heran, trägt sie geduckt weg
 ##   autos_zelte  Runde mit Taschenlampe: Blick in Auto / Wohnwagen / Zelt, Türgriff probieren, nichts gefunden - weg
 ##   warten       sehr geduldig: lange in der Deckung beobachten, näher, nochmals warten, dann zugreifen
+##   zelt_runde   (Wunsch Nr. 3, 07.11.2026) nachts lange ums Zelt schleichen: umkreisen, Pausen, geduckt / kriechend, im
+##                Schatten (Deckung, ausserhalb des Bildes) - dann Rucksack, Kühlbox oder Handy vom Tisch, weg
+##   velo_weg     (Wunsch Nr. 3) Velo-Diebstahl: kommt ganz normal zum abgeschlossenen Velo, macht lange am Schloss herum
+##                (mehrmals, dazwischen aufstehen und umschauen), dann wegfahren, tragen oder schieben
+##   Die zwei neuen stehen nicht in ORDER («zufällig» und «Alle Abläufe nacheinander» bleiben wie bisher), sondern in NEU;
+##   für den Erkennungstest (Plan «real», werkzeuge/erkennungstest/faelle.py) mit Seed: Startseite, Zeiten, Kleidung, Beute
+##   und Fluchtart wechseln mit dem Seed.
 ##
 ## Jeder Ablauf ist ein Zufall mit Seed (gleicher Seed + gleiche Szene = gleicher Ablauf), sucht sich in jeder Szene Ziel,
 ## Deckung (von der Kopfkamera aus verdeckt) und Wege selbst (main.obj, main.obstacles, Kamera-Blickfeld). Nachts meiden
@@ -40,12 +47,16 @@ const ABL := {
 	"kuehlbox": ["Kühlbox aus der Deckung", "kriecht heran, trägt die Kühlbox geduckt weg", -1.0, 1.6],
 	"autos_zelte": ["Blick in Autos und Zelte", "Runde mit Taschenlampe, Türgriff probieren, nichts gefunden", -1.0, 23.2],
 	"warten": ["Lange beobachten, dann zugreifen", "minutenlang in der Deckung, näher, nochmals warten, Griff", -1.0, 2.4],
+	"zelt_runde": ["Nachts ums Zelt schleichen, dann stehlen", "lange ums Zelt: umkreisen, warten, ducken, Schatten – dann Rucksack, Kühlbox oder Handy weg", -1.0, 1.2],
+	"velo_weg": ["Velo-Diebstahl: Schloss knacken, wegfahren oder tragen", "kommt zum abgeschlossenen Velo, lange am Schloss, fährt oder trägt es weg", -1.0, 23.4],
 }
 const ORDER := ["kundschaft", "ablenkung", "velo", "rucksack", "kuehlbox", "autos_zelte", "warten"]
+const NEU := ["zelt_runde", "velo_weg"]   # Wunsch Nr. 3: in the menu and the API, not in «zufällig» / the series (stay comparable)
 # the names of the parts of a run (the report shows them in this order)
 const SEC := {"kundschaft": "Auskundschaften", "beobachten": "Beobachten", "ablenken": "Ablenken", "annaehern": "Annähern",
-		"pruefen": "Autos / Zelte prüfen", "griff": "Griff", "flucht": "Weg / Flucht"}
-const SEC_ORDER := ["kundschaft", "beobachten", "ablenken", "annaehern", "pruefen", "griff", "flucht"]
+		"pruefen": "Autos / Zelte prüfen", "griff": "Griff", "flucht": "Weg / Flucht", "umkreisen": "Ums Zelt schleichen",
+		"schloss": "Am Schloss"}
+const SEC_ORDER := ["kundschaft", "beobachten", "umkreisen", "ablenken", "annaehern", "schloss", "pruefen", "griff", "flucht"]
 const ALARM_EVS := ["person", "prealarm", "warm"]   # «tamper» is counted apart (_sample)
 const HOLD := 99999.0                 # a standing actor waits «for ever» - the next step comes from here (never deletes itself)
 const SETTLE := 12.0                  # after a jump of the clock: MoveEye and the exposure adapt
@@ -317,7 +328,89 @@ func _build(id: String, night_only := false) -> Array:
 			r5["steps"].insert(k, _go(c2, 1.0, "beobachten", 0.8))
 			r5["name"] = "geduldiger Dieb"
 			out.append({"hour": night_h, "roles": [r5]})
+		"zelt_runde":
+			out.append({"hour": night_h, "roles": [_tent_role(side)]})
+		"velo_weg":
+			out.append({"hour": night_h, "roles": [_bike_role(side)]})
 	return out
+
+
+func _tent_role(side: float) -> Dictionary:
+	"""Wunsch Nr. 3a: a long sneak round the tent at night - watch from cover, circle it (1.1-1.6 turns, 5-8 points at
+	3.5-7 m, preferring spots out of the picture or behind something), pause, crouch, crawl where the camera sees it,
+	then the backpack / cool box / phone on the table, back into cover, away"""
+	var what: String = ["rucksack", "kuehlbox", "handy"][_rng.randi() % 3]
+	var goal := _loot_place(what)
+	var tent: Vector3 = _flat(main.obj.get("pir", Vector3.ZERO))
+	if tent == Vector3.ZERO or tent.distance_to(_flat(_hp())) > 25.0:
+		tent = _flat(goal)
+	var st := _start_far(tent, side)
+	var steps := []
+	var cov := _hide_spot(tent, 9.0, 15.0, st)
+	steps.append(_go(cov, 0.0, "beobachten", 1.0))
+	steps.append(_wait(_rng.randf_range(10.0, 25.0), 1.0, tent, "beobachten"))
+	var a0 := atan2(cov.z - tent.z, cov.x - tent.x)
+	var turn := 1.0 if _rng.randf() < 0.5 else -1.0
+	var n := _rng.randi_range(5, 8)
+	var span := _rng.randf_range(1.1, 1.6) * TAU
+	var last := cov
+	for i in range(n):
+		var ang := a0 + turn * span * float(i + 1) / float(n)
+		var best := Vector3.INF
+		var best_s := -1e9
+		for rr in [3.5, 4.5, 5.5, 7.0]:
+			var q: Vector3 = main.free_spot(tent + Vector3(cos(ang), 0, sin(ang)) * rr, 0.45, true)
+			var sc := -absf(rr - 4.5) * 0.3 - _rng.randf_range(0.0, 0.8)
+			if not _in_view(q):
+				sc += 2.0                                     # out of the picture
+			if not main.line_free(_hp(), q + Vector3(0, 0.9, 0)):
+				sc += 1.5                                     # in the shadow of something (the camera cannot see it)
+			if sc > best_s:
+				best_s = sc
+				best = q
+		var seen := _in_view(best)
+		var c := 2.0 if seen and _rng.randf() < 0.5 else (1.0 if _rng.randf() < 0.8 else 0.0)
+		steps.append(_go(best, c, "umkreisen", 0.9))
+		if _rng.randf() < 0.65:                               # stops: listens, looks at the tent or at the camera
+			steps.append(_wait(_rng.randf_range(3.0, 12.0), 2.0 if c >= 1.5 else 1.0, tent if _rng.randf() < 0.6 else _hp(), "umkreisen"))
+		last = best
+	var grab: Vector3 = main.free_spot(goal + (_flat(last) - _flat(goal)).normalized() * 0.75, 0.4, true)
+	steps.append(_go(grab, 1.0, "annaehern", 0.7))
+	steps.append(_wait(_rng.randf_range(1.5, 4.0), 1.0, _hp(), "annaehern"))
+	steps.append({"do": "grab", "s": _rng.randf_range(2.0, 5.0), "c": 1.0, "look": goal, "what": what, "sec": "griff"})
+	steps.append(_go(_hide_spot(tent, 6.0, 12.0, st), 0.7, "flucht", 1.0))
+	steps.append({"do": "leave", "p": _exit_far(tent, side if _rng.randf() < 0.5 else -side), "sec": "flucht", "spd": 1.3})
+	var kind := "burglar" if _rng.randf() < 0.5 else "person"         # the burglar's own dark clothes, or random dark ones
+	return _role(kind, st, steps, {"name": "Dieb am Zelt", "torch": _rng.randf() < 0.3, "shy": true, "spd": 1.0})
+
+
+func _bike_role(side: float) -> Dictionary:
+	"""Wunsch Nr. 3b: bike theft - walks up quite normally, a look round, then at the lock for a long time (2-4 bouts of
+	8-22 s, standing up and looking round between them), then rides off, carries or pushes the bike away"""
+	var goal := _target("velo")
+	var st := _start_far(goal, side)
+	var steps := []
+	var dirn := (_flat(st) - _flat(goal))
+	dirn = dirn.normalized() if dirn.length() > 0.1 else Vector3(0, 0, -1)
+	var mid: Vector3 = main.free_spot(_flat(goal) + dirn * _rng.randf_range(8.0, 12.0), 0.5, true)
+	steps.append(_go(mid, 0.0, "annaehern", 1.15))
+	steps.append(_wait(_rng.randf_range(2.5, 6.0), 0.0, _hp() if _rng.randf() < 0.5 else goal, "annaehern"))
+	var at: Vector3 = main.free_spot(goal + dirn * 0.7, 0.35, true)
+	steps.append(_go(at, 0.0, "annaehern", 1.0))
+	var bouts := _rng.randi_range(2, 4)
+	for i in range(bouts):
+		steps.append({"do": "fiddle", "s": _rng.randf_range(8.0, 22.0), "c": 1.0 if _rng.randf() < 0.7 else 0.6, "look": goal, "sec": "schloss"})
+		if i < bouts - 1:
+			var la := _rng.randf_range(-PI, PI)
+			steps.append(_wait(_rng.randf_range(2.0, 6.0), 0.0, _flat(at) + Vector3(cos(la), 0, sin(la)) * 6.0, "schloss"))
+	var how: String = ["fahren", "fahren", "tragen", "schieben"][_rng.randi() % 4]
+	steps.append({"do": "grab", "s": _rng.randf_range(1.5, 3.5), "c": 0.6, "look": goal, "what": "velo", "how": how, "sec": "griff"})
+	var ex := _exit_far(goal, side if _rng.randf() < 0.5 else -side)
+	if how == "fahren":
+		steps.append({"do": "leave", "p": ex, "sec": "flucht", "spd": _rng.randf_range(4.0, 5.5), "ride": true})
+	else:
+		steps.append({"do": "leave", "p": ex, "sec": "flucht", "spd": 1.3 if how == "schieben" else 1.1})
+	return _role("person", st, steps, {"name": "Velodieb", "torch": _rng.randf() < 0.35, "shy": true, "spd": 1.15})
 
 
 func _thief_role(what: String, goal: Vector3, side: float, watch_s: float, night: bool) -> Dictionary:
@@ -384,6 +477,8 @@ func _ensure_prop(what: String) -> Vector3:
 		if is_instance_valid(pr) and str(pr.get_meta("einbruch", "")) == what:
 			return _flat(pr.global_position)
 	var p := _place_near_tent()
+	if what == "handy":
+		return _phone_table(p)
 	var n := Node3D.new()
 	n.set_meta("einbruch", what)
 	main.scenes.root.add_child(n)
@@ -409,6 +504,47 @@ func _ensure_prop(what: String) -> Vector3:
 	return p
 
 
+func _phone_table(p: Vector3) -> Vector3:
+	"""Wunsch Nr. 3a: a small camping table with a phone on it (the phone is the loot, the table stays)"""
+	var amb: float = float(main.ambient)
+	var tb := Node3D.new()
+	tb.set_meta("einbruch", "tisch")
+	main.scenes.root.add_child(tb)
+	tb.global_position = Vector3(p.x, main.ground_y(p.x, p.z), p.z)
+	tb.rotation.y = _rng.randf_range(0.0, TAU)
+	var top := BoxMesh.new()
+	top.size = Vector3(0.7, 0.03, 0.5)
+	main.add_mesh(tb, top, Vector3(0, 0.72, 0), main.mat(Color(0.75, 0.75, 0.72)), amb)
+	for x in [-0.3, 0.3]:
+		for z in [-0.2, 0.2]:
+			var lg := BoxMesh.new()
+			lg.size = Vector3(0.025, 0.72, 0.025)
+			main.add_mesh(tb, lg, Vector3(x, 0.36, z), main.mat(Color(0.55, 0.55, 0.58)), amb)
+	props.append(tb)
+	var ph := Node3D.new()
+	ph.set_meta("einbruch", "handy")
+	main.scenes.root.add_child(ph)
+	ph.global_position = tb.global_position + Vector3(0, 0.74, 0)
+	ph.rotation.y = _rng.randf_range(0.0, TAU)
+	var pm := BoxMesh.new()
+	pm.size = Vector3(0.075, 0.012, 0.155)
+	main.add_mesh(ph, pm, Vector3(0, 0.006, 0), main.mat(Color(0.05, 0.05, 0.06)), amb)
+	var sc := BoxMesh.new()                               # the screen glows a little (a message came in)
+	sc.size = Vector3(0.065, 0.002, 0.14)
+	var sm := StandardMaterial3D.new()
+	sm.albedo_color = Color(0.2, 0.3, 0.45)
+	sm.emission_enabled = true
+	sm.emission = Color(0.4, 0.55, 0.8)
+	sm.emission_energy_multiplier = 0.6
+	var smi := MeshInstance3D.new()
+	smi.mesh = sc
+	smi.material_override = sm
+	smi.position = Vector3(0, 0.013, 0)
+	ph.add_child(smi)
+	props.append(ph)
+	return p
+
+
 func _take(r: Dictionary, what: String) -> void:
 	"""the grab: the thing goes with the thief (the original is hidden until the end of the run)"""
 	var v = r["v"]
@@ -424,10 +560,14 @@ func _take(r: Dictionary, what: String) -> void:
 		return
 	if what == "rucksack" and v.has_method("add_backpack"):
 		v.add_backpack(Color(0.3, 0.1, 0.08))            # puts it on
+	elif what == "handy":
+		pass                                              # into the pocket
 	else:
 		var cp: Node3D = src.duplicate()
 		v.add_child(cp)
-		if what == "velo":
+		if what == "velo" and str(r.get("how", "")) == "tragen":
+			cp.transform = Transform3D(Basis(Vector3(0, 0, 1), 0.25), Vector3(0.3, 0.75, 0.0))   # on the shoulder
+		elif what == "velo":
 			cp.transform = Transform3D(Basis.IDENTITY, Vector3(0.5, 0.05, 0.0))
 		else:
 			cp.transform = Transform3D(Basis.IDENTITY, Vector3(0, 0.62, -0.38))
@@ -438,6 +578,10 @@ func _take(r: Dictionary, what: String) -> void:
 
 
 # ---- start / stop -----------------------------------------------------------------------------------------------------
+static func all_ids() -> Array:
+	return ORDER + NEU
+
+
 func ablauf_name(id: String) -> String:
 	return T.t(str(ABL[id][0])) if ABL.has(id) else id
 
@@ -466,8 +610,8 @@ func start(id: String, sd := -1, zeit = null) -> String:
 	main._set_speed(1.0)
 	_reset_run()
 	ablauf = id
-	_rng.seed = s_used * 7919 + ORDER.find(id) * 31 + 7
-	seed(s_used * 104729 + ORDER.find(id))              # the look of the visitors and the shuffles: same seed, same run
+	_rng.seed = s_used * 7919 + all_ids().find(id) * 31 + 7
+	seed(s_used * 104729 + all_ids().find(id))              # the look of the visitors and the shuffles: same seed, same run
 	acts = _build(id)
 	randomize()
 	rep = {"ablauf": id, "name": ablauf_name(id), "seed": s_used, "scene": str(main.scene), "date": Time.get_datetime_string_from_system(false, true)}
@@ -600,6 +744,7 @@ func _next_act() -> void:
 
 
 func _spawn(r: Dictionary) -> void:
+	r["spawned"] = true
 	var first: Vector3 = r["from"]
 	for s in r["steps"]:
 		if s.has("p"):
@@ -670,10 +815,16 @@ func _step_next(r: Dictionary) -> void:
 		"go":
 			_move(v, s["p"], float(s.get("c", 0.0)), s.get("look"))
 			r["until"] = now() + v.position.distance_to(s["p"]) / maxf(0.2, float(v.speed) * (0.3 if float(s.get("c", 0.0)) >= 1.5 else (0.6 if float(s.get("c", 0.0)) > 0.5 else 1.0))) * 2.2 + 12.0
-		"wait", "grab", "handle", "talk":
+		"wait", "grab", "handle", "talk", "fiddle":
 			_stand(v, float(s.get("c", 0.0)), s.get("look"))
 			r["until"] = now() + float(s.get("s", 3.0))
-			if str(s["do"]) == "handle":
+			if str(s["do"]) == "fiddle":                      # Wunsch Nr. 3b: at the lock - small metal noises now and then
+				main.add_sound(-28.0, v.position + Vector3(0, 0.5, 0), 0.4)
+				r["next_snd"] = now() + _rng.randf_range(1.2, 3.5)
+				if not bool(r.get("fiddled", false)):
+					r["fiddled"] = true
+					_note(T.t("%s macht sich am Schloss zu schaffen", [T.t(str(r["name"]))]))
+			elif str(s["do"]) == "handle":
 				main.add_sound(-30.0, v.position + Vector3(0, 1.0, 0), 0.6)       # a quiet click of the handle
 			elif str(s["do"]) == "talk":
 				main.emit_sound("voice", 1, v.position + Vector3(0, 1.5, 0))
@@ -681,6 +832,7 @@ func _step_next(r: Dictionary) -> void:
 			elif str(s["do"]) == "grab":
 				_grab_t = now() - t0 if _grab_t < 0.0 else _grab_t
 				_note(T.t("%s greift zu (%s)", [T.t(str(r["name"])), T.t(_what_name(str(s.get("what", ""))))]))
+				r["how"] = str(s.get("how", ""))
 				if str(s.get("what", "")) == "velo":
 					main.add_sound(-14.0, v.position + Vector3(0, 0.5, 0), 0.5)   # the bolt cutter
 		"signal":
@@ -690,12 +842,32 @@ func _step_next(r: Dictionary) -> void:
 			_stand(v, 0.8, _hp())
 			r["until"] = 1e12
 		"leave":
+			if bool(s.get("ride", false)):
+				v = _mount(r, s)                              # Wunsch Nr. 3b: gets on the stolen bike and rides off
+				v.speed = spd if spd > 0.0 else float(r["spd"])
 			v.route = []
 			v.target = s["p"]
 			v.wait_until = 0.0
 			_posture(v, 0.0)
 			v._face(s["p"])
 			r["until"] = now() + 120.0
+
+
+func _mount(r: Dictionary, s: Dictionary):
+	"""the thief becomes a cyclist (actor variant «cyclist», its own bike): same place, dark clothes, rides to the exit"""
+	var old = r["v"]
+	var pos: Vector3 = old.position
+	seed(int(rep.get("seed", 1)) * 1000 + 77)
+	_thief_look(r)
+	var cy = main.spawn("cyclist", pos, s["p"])
+	randomize()
+	cy.route = []
+	cy.next_idle = cy.now_s() + 9999.0
+	cy.rotation.y = old.rotation.y
+	old.queue_free()
+	r["v"] = cy
+	_note(T.t("%s fährt mit dem Velo davon", [T.t(str(r["name"]))]))
+	return cy
 
 
 func _move(v, p: Vector3, c: float, look) -> void:
@@ -716,7 +888,7 @@ func _stand(v, c: float, look) -> void:
 
 
 func _what_name(w: String) -> String:
-	return {"velo": "Velo", "rucksack": "Rucksack", "kuehlbox": "Kühlbox"}.get(w, w)
+	return {"velo": "Velo", "rucksack": "Rucksack", "kuehlbox": "Kühlbox", "handy": "Handy"}.get(w, w)
 
 
 func _step_done(r: Dictionary) -> bool:
@@ -769,7 +941,7 @@ func _process(dt: float) -> void:
 		if bool(r["gone"]):
 			continue
 		all_gone = false
-		if r["v"] == null:
+		if not bool(r.get("spawned", false)):            # once: a figure that freed itself (reached its exit point) is gone, not respawned
 			_spawn(r)
 			continue
 		var v = r["v"]
@@ -791,6 +963,9 @@ func _process(dt: float) -> void:
 					v.queue_free()
 				continue
 			_step_next(r)
+		elif int(r["i"]) < (r["steps"] as Array).size() and str(r["steps"][r["i"]]["do"]) == "fiddle" and t > float(r.get("next_snd", 0.0)):
+			main.add_sound(-28.0, v.position + Vector3(0, 0.5, 0), 0.4)
+			r["next_snd"] = t + _rng.randf_range(1.2, 3.5)
 		elif int(r["i"]) < (r["steps"] as Array).size() and str(r["steps"][r["i"]]["do"]) == "talk" and t > float(r.get("next_talk", 0.0)):
 			main.emit_sound("voice", 1, v.position + Vector3(0, 1.5, 0))
 			r["next_talk"] = t + _rng.randf_range(6.0, 10.0)
@@ -1220,7 +1395,7 @@ func control(d: Dictionary) -> Dictionary:
 		"result":
 			return {"ok": true, "result": rep, "html": last_html}
 	var ab := []
-	for k in ORDER:
+	for k in all_ids():
 		ab.append({"id": k, "name": ablauf_name(k), "info": T.t(str(ABL[k][1]))})
 	return {"ok": true, "ablaeufe": ab, "state": state(), "seed": seed_n, "zeit": use_time}
 
@@ -1229,7 +1404,7 @@ func add_controls() -> void:
 	var g := "Testen"
 	var X := {"sub": "Einbruch-Abläufe"}
 	var opts := [["zufall", T.t("zufällig")]]
-	for k in ORDER:
+	for k in all_ids():
 		opts.append([k, ablauf_name(k)])
 	main.add_control("select", "einbruch_ablauf", T.t("Einbruch-Ablauf"), func(): return ablauf_pick, func(v): ablauf_pick = str(v), g, _x(X, {"options": opts}))
 	main.add_control("slider", "einbruch_seed", T.t("Zufall (Seed, 0 = jedes Mal neu)"), func(): return seed_n, func(v): seed_n = int(v), g, _x(X, {"min": 0, "max": 99, "step": 1}))

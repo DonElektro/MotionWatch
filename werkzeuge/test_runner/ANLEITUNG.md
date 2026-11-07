@@ -160,7 +160,7 @@ Auf GitHub: **Actions → Erkennung (HP) → Run workflow**. Eingaben:
 | Eingabe | Bedeutung |
 |---|---|
 | `stand` | Zweig oder Commit dieses Repositorys (MoveEye und Simulator von diesem Stand), Standard `main` |
-| `plan` | `test3` (Test 3, etwa 2–3 Std.), `alle`, `wind`, `tier`, `kriechen`, `nacht`, `ursache`, `kurz` (etwa 5 Min.) |
+| `plan` | `test3` (Test 3, etwa 2–3 Std.), `alle`, `wind`, `tier`, `kriechen`, `nacht`, `ursache`, `real` (echte Situationen: Dieb ums Zelt, Velo-Diebstahl; 6 Fälle à 2–5 Min.), `kurz` (etwa 5 Min.) |
 | `laeufe` | Läufe pro Personenfall, 1–5 (der Simulator wählt die Richtung jedes Mal neu) |
 | `simulator` | `paket` (Linux-Paket des Stands, Standard) oder `godot` (aus dem Quelltext – für noch nicht veröffentlichte Simulator-Änderungen; lädt Godot 4.3 einmal) |
 | `anzeige` | `xvfb` (Standard) oder `bildschirm` (nur mit `--bildschirm` eingerichtet) |

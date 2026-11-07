@@ -74,9 +74,9 @@ PLAENE = {
     "test3": ("Test 3: 3 Orte × 4 Bedingungen × 6 Fälle, dazu neue Orte, Schlafzimmer, Kopf-Verfolgung, Blendung",
               [("orte", BASIS, {"leerwind": 55}), ("orte", NEU, {"leerwind": 12}), ("orte", "schlafzimmer", {}),
                ("extra", "kopf,blend")]),
-    "alle": ("Alles: alle Orte und Bedingungen, Schlafzimmer, alle Sonderfälle",
+    "alle": ("Alles: alle Orte und Bedingungen, Schlafzimmer, alle Sonderfälle, echte Situationen",
              [("orte", BASIS, {"leerwind": 55}), ("orte", ALLE_NEU, {"leerwind": 12}), ("orte", "schlafzimmer", {}),
-              ("extra", "kopf,blend,linse,ruhig,nebenfunde")]),
+              ("extra", "kopf,blend,linse,ruhig,nebenfunde,real")]),
     "wind": ("Wind: Leerlauf an allen Orten (alte Orte mit Sturm 55 km/h), Spinnennetz und Vogel vor der Linse, Gegenprobe ohne Sturm",
              [("orte", BASIS, {"leerwind": 55, "sel": _sel(["leer"])}), ("orte", NEU, {"leerwind": 12, "sel": _sel(["leer"])}),
               ("extra", "linse,ruhig")]),
@@ -89,6 +89,8 @@ PLAENE = {
     "nacht": ("Nacht: alle Fälle bei Nacht (Infrarot, Regen, ohne Licht), mit Leerlauf",
               [("orte", BASIS, {"leerwind": 55, "sel": _sel(F.EVENTS[1:], NACHT), "sel_leer": True}),
                ("orte", NEU, {"leerwind": 12, "sel": _sel(F.EVENTS[1:], NACHT), "sel_leer": True})]),
+    "real": ("Echte Situationen: nachts lange ums Zelt schleichen und stehlen, Velo-Diebstahl (Camping, Stellplatz; Soll: Person)",
+             [("extra", "real")]),
     "ursache": ("Ursache: die 16 heiklen Fälle aus Erkennung 4 plus Tiere / Autos, mit Leerlauf",
                 [("orte", BASIS, {"leerwind": 55, "sel": SEL_URSACHE, "sel_leer": True})]),
 }
@@ -457,7 +459,7 @@ def main():
         log("verbunden – %.0f s eingewöhnen" % EINGEWOEHNEN_S)
         time.sleep(EINGEWOEHNEN_S)
         F.konfig(sim=sim, mw=web, out=aus, shots=os.path.join(aus, "bilder"), variant=lauf["plan"], fpsmin=a.fpsmin,
-                 fpswait=a.fpswait)
+                 fpswait=a.fpswait, laeufe=a.laeufe)
         if fs:
             FS.einhaengen(fs)
             fs.setze(status="laeuft")

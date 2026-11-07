@@ -233,6 +233,7 @@ func _register_controls() -> void:
 	main.add_control("toggle", "flee_light", "Tiere flüchten nachts vor dem weissen Licht", func(): return main.flee_light, func(v): main.flee_light = v, "Besuch", ex)
 	main.add_control("toggle", "flee_sound", "Tiere flüchten vor der Sirene", func(): return main.flee_sound, func(v): main.flee_sound = v, "Besuch", ex)
 	main.add_control("toggle", "avoid_on", "Um Bäume, Häuser und Fahrzeuge herumgehen", func(): return main.avoid_on, func(v): main.avoid_on = v, "Besuch", ex)
+	main.add_control("toggle", "privat_on", "Besucher meiden deinen Platz (Privatsphäre; Einbrecher und Diebe nicht)", func(): return main.privat_on, func(v): main.privat_on = v, "Besuch", ex)
 	# 3D-4.x P1: the noise slider is also the one of «Kamera wie echt» (camphys.gd: noise from the gain of the sensor) - no second one
 	main.add_control("slider", "lens_noise", "Rauschen (wie der Sensor: mehr Verstärkung = mehr Rauschen, am Tag sauber)", func(): return main.lens_noise, func(v): main.lens_noise = v, "Kamerabild", {"sub": "Wie echt", "min": 0, "max": 1, "step": 0.05, "expert": true})
 	main.add_control("slider", "night_gain", "Nachtverstärkung der Kameras (höchstens)", func(): return main.night_gain, func(v): main.night_gain = v, "Kamerabild", {"min": 1, "max": 8, "step": 0.5, "unit": "×"})
