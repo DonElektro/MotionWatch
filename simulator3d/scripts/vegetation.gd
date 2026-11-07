@@ -444,7 +444,7 @@ static func tree(sc, parent: Node3D, p: Vector3, kind := "laub", s := 1.0) -> No
 	if parent == sc.root or parent.get_parent() == sc.root:
 		sc.m.add_obstacle(p, trunk_r * s)
 	sc.m.tree_spots.append([Vector2(p.x, p.z), crown_r * s, crown_y * s])
-	Flora.dress(sc, tr)                                        # «Flora und Fauna»: leaf / needle cards (own random numbers)
+	Flora.dress(sc, tr, kind if kind in ["birke", "kiefer", "eiche"] else "")   # «Flora und Fauna»: branches + tufts / leaf cards
 	return tr
 
 

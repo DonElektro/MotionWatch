@@ -1,6 +1,5 @@
 // «Flora und Fauna» Paket 1 (scripts/baeume.gd): bark of the new branch frames (all trees of a 32 m cell in one mesh).
-// COLOR.a = pattern (colour from bark_cols) (0.1 spruce: small scales, 0.4 beech: smooth grey with faint bands,
-// 0.7 hazel: smooth with cork pores). UV.x = around, UV.y = along (m), UV2 = (wind weight, radius m).
+// COLOR.a = (pattern + 0.5) / 8, colour from bark_cols: 0 spruce, 1 beech, 2 hazel, 3 pine, 4 birch, 5 oak. UV.x = around, UV.y = along (m), UV2 = (wind weight, radius m).
 // CUSTOM0 = (centre of the crown xyz, height in the crown part + 1): the same sway as the leaf cards (baum_karten.gdshader).
 // Beyond near_d (per tree, from the centre of the crown) the tree is drawn as a far picture: the bark collapses.
 shader_type spatial;
@@ -13,7 +12,7 @@ uniform float cloud_amt = 0.0;
 uniform vec2 cloud_off = vec2(0.0);
 uniform float near_d = 45.0;
 uniform float fine = 0.0;          // Hoch: bumpier bark
-uniform vec4 bark_cols[4] : source_color;   // per pattern (baeume.gd RINDE: spruce, beech, hazel)
+uniform vec4 bark_cols[8] : source_color;   // per pattern (baeume.gd RINDE)
 
 varying vec3 wpos;
 varying float v_pat;
@@ -48,17 +47,38 @@ void fragment() {
 	float n1 = texture(noise_tex, bc * vec2(1.6, 0.45) + vec2(wpos.x * 0.07, 0.0)).r;
 	float n2 = texture(noise_tex, bc * vec2(5.0, 2.2) + 0.37).r;
 	float h;
-	vec3 col = v_pat < 0.25 ? bark_cols[0].rgb : (v_pat < 0.55 ? bark_cols[1].rgb : bark_cols[2].rgb);
-	if (v_pat < 0.25) {                       // spruce: small round scales, reddish grey
+	int pid = clamp(int(v_pat * 8.0), 0, 7);
+	vec3 col = bark_cols[pid].rgb;
+	float bump = 1.0;
+	if (pid == 0) {                           // spruce: small round scales, reddish grey
 		float sc = texture(noise_tex, bc * vec2(7.0, 5.0)).r;
 		h = smoothstep(0.35, 0.65, sc) * 0.7 + n1 * 0.3;
 		col *= mix(0.62, 1.12, h) * mix(vec3(1.0), vec3(1.08, 0.95, 0.88), n2);
-	} else if (v_pat < 0.55) {                // beech: smooth grey, faint rings, lighter spots of lichen
+	} else if (pid == 1) {                    // beech: smooth grey, faint rings, lighter spots of lichen
 		h = n1 * 0.4 + n2 * 0.2;
 		col *= 0.85 + 0.3 * n1;
 		float lic = smoothstep(0.62, 0.72, texture(noise_tex, bc * vec2(0.9, 0.7) + 0.71).r);
 		col = mix(col, vec3(0.6, 0.64, 0.52), lic * 0.45);
 		col *= 1.0 - 0.12 * smoothstep(0.45, 0.5, fract(UV.y * 1.3 + n1 * 0.4)) * (1.0 - smoothstep(0.5, 0.56, fract(UV.y * 1.3 + n1 * 0.4)));
+	} else if (pid == 3) {                    // pine: thick grey-brown plates below, thin orange bark up in the crown
+		float pl = texture(noise_tex, bc * vec2(2.2, 0.9)).r;
+		h = smoothstep(0.3, 0.7, pl);
+		col *= mix(0.45, 1.1, h);
+		vec3 orange = vec3(0.72, 0.42, 0.24) * (0.85 + 0.3 * n2);
+		col = mix(col, orange * orange, smoothstep(0.16, 0.09, v_rad));
+		bump = 1.6;
+	} else if (pid == 4) {                    // birch: white, black dashes across, dark and cracked at the foot, thin twigs brown
+		h = n1 * 0.3;
+		float dash = smoothstep(0.7, 0.76, texture(noise_tex, bc * vec2(2.5, 9.0) + 0.13).r);
+		col *= 0.9 + 0.15 * n2;
+		col = mix(col, vec3(0.03), dash * 0.85);
+		col = mix(col, vec3(0.16, 0.15, 0.14) * (0.6 + n1), 0.7 * smoothstep(0.6, 0.15, UV.y + n1 * 0.3) * smoothstep(0.08, 0.12, v_rad) * step(n2, 0.7));
+		col = mix(col, vec3(0.09, 0.06, 0.05), smoothstep(0.035, 0.02, v_rad));
+	} else if (pid == 5) {                    // oak: deep long furrows
+		float fu = texture(noise_tex, bc * vec2(3.2, 0.35)).r;
+		h = smoothstep(0.25, 0.75, fu);
+		col *= mix(0.4, 1.15, h) * (0.9 + 0.2 * n2);
+		bump = 2.0;
 	} else {                                  // hazel: smooth grey-brown, small light cork pores across
 		h = n1 * 0.5;
 		col *= 0.85 + 0.3 * n1;
@@ -74,7 +94,7 @@ void fragment() {
 	vec3 r2 = cross(NORMAL, sx);
 	float det = dot(sx, r1);
 	vec3 grad = sign(det) * (hx * r1 + hy * r2);
-	NORMAL = normalize(abs(det) * NORMAL - grad * (0.25 + 0.35 * fine));
+	NORMAL = normalize(abs(det) * NORMAL - grad * (0.25 + 0.35 * fine) * bump);
 	col *= 1.0 - cloud_amt * smoothstep(0.52, 0.68, texture(noise_tex, (wpos.xz + cloud_off) * 0.0035).r);
 	ALBEDO = col;
 	ROUGHNESS = 0.92;

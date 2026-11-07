@@ -3,11 +3,12 @@ extends SceneTree
 ## des Simulators (Stufe Hoch), rendert ihn von der Seite (orthogonal, nur Umgebungslicht) in drei Durchgängen
 ## (alles / nur Blätter / nur Rinde) und schreibt texturen/flora_fern_<art>.png:
 ##   R = Helligkeit der Blätter (zur Farbe der Krone, /2), G = 1 Blätter vorne, B = Helligkeit der Rinde (/2), A = Deckung.
-## Gibt die Rahmen-Grösse (Breite, Höhe in m) aus – die gehört nach baeume.gd (FERN).
+## Gibt die Rahmen-Grösse (Breite, Höhe in m) aus – die gehört nach baeume.gd (FERN). Mit «--grafik normal» starten.
 ##   cd simulator3d && HOME=<test-home> xvfb-run -a -s "-screen 0 1280x720x24" <godot> --path . -s "$PWD/../werkzeuge/flora_fernbilder.gd" \
 ##       -- --no-update [--aus <ordner>]   (ohne --aus: texturen/)
 
-const ARTEN := {"fichte": [320, 512, 4], "buche": [384, 448, 7], "hasel": [384, 320, 3]}   # Pixel, Startwert
+const ARTEN := {"fichte": [320, 512, 4], "buche": [448, 448, 7], "hasel": [448, 320, 3], "kiefer": [320, 512, 5],
+		"birke": [240, 512, 6], "eiche": [576, 448, 8]}   # Pixel, Startwert
 
 var main
 var out := "res://texturen/"
@@ -95,8 +96,10 @@ func _run() -> void:
 				sc.tree(holder, Vector3.ZERO, 1.0, 1)
 			"buche":
 				sc.tree(holder, Vector3.ZERO, 1.0, 0)
-			_:
+			"hasel":
 				Veg.bush(sc, holder, Vector3.ZERO, "hasel", 1.0)
+			_:
+				Veg.tree(sc, holder, Vector3.ZERO, art, 1.0)
 		await _frames(3)                                           # Flora flushes on the next frame
 		var info: Dictionary = Baeume.last
 		var h: float = info["h"]
@@ -138,7 +141,7 @@ func _run() -> void:
 		Baeume._bleed(img)
 		var path := out + "flora_fern_%s.png" % art
 		img.save_png(ProjectSettings.globalize_path(path) if path.begins_with("res://") else path)
-		print("FERN ", art, " w=%.2f h=%.2f -> %s" % [w, h, path])
+		print("FERN ", art, " w=%.2f h=%.2f -> %s   (baeume.gd FERN: \"%s\": Vector2(%.2f, %.2f))" % [w, h, path, art, w, h])
 		for ch in holder.get_children():
 			ch.free()
 		vp.queue_free()

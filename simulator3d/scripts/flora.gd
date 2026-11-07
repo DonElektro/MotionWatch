@@ -230,9 +230,10 @@ static func _kern(crown: ShaderMaterial, art: String) -> ShaderMaterial:
 		return crown.get_meta("flora_kern")
 	var k := crown.duplicate() as ShaderMaterial
 	k.set_shader_parameter("ragged", 0.0)
-	k.set_shader_parameter("kern", 0.62 if art == "fichte" else 0.66)
-	k.set_shader_parameter("kern_y", 0.78 if art == "fichte" else 0.82)
-	k.set_shader_parameter("kern_dark", 0.8)
+	var nadel := art in ["fichte", "kiefer"]                                  # (shared crown materials: one core per material)
+	k.set_shader_parameter("kern", 0.5 if nadel else 0.55)
+	k.set_shader_parameter("kern_y", 0.72 if nadel else 0.75)
+	k.set_shader_parameter("kern_dark", 0.85 if art == "fichte" else 1.05)  # like shaded leaves, not a dark lump
 	crown.set_meta("flora_kern", k)
 	return k
 
