@@ -179,6 +179,10 @@ SIM_OHNE = ("simulator3d/version.json", "simulator3d/MotionWatch3D_Simulator.zip
             "simulator3d/i18n/abdeckung.txt", "simulator3d/pruefnaechte/")
 
 
+SIM_HP = ["werkzeuge/test_runner/" + f for f in ("hp_update.sh", "job_start.sh", "job_ende.sh", "runner_dienst.conf",
+                                                 "runner_entfernen.sh")] + ["werkzeuge/linux_paket.sh"]
+
+
 def geh_basis(cur):
     """der Commit, mit dem «version» in bau.json zuletzt auf cur gesetzt wurde (None = unbekannt)"""
     rel = "hardware/gehaeuse/bau.json"
@@ -265,7 +269,8 @@ def pruefen():
         warn.append("version.json «mw_min» %s ≠ abgleich.gd MW_MIN %s - --sim-json neu schreiben" % (vj.get("mw_min"), w["mw_min"]))
     if w["sim_min"] and ver and sim_key(w["sim_min"]) > sim_key(ver):
         probleme.append("MoveEye braucht Sim ≥ %s (545 SIM_MIN), version.json ist %s - zuerst den Simulator veröffentlichen" % (w["sim_min"], ver))
-    ch = geaendert_seit((git_text("log", "-1", "--format=%H", "--", "simulator3d/version.json") or "").strip(), ["simulator3d"], SIM_OHNE)
+    ch = geaendert_seit((git_text("log", "-1", "--format=%H", "--", "simulator3d/version.json") or "").strip(),
+                        ["simulator3d"] + SIM_HP, SIM_OHNE)          # das Linux-Paket bringt auch den HP-Teil mit (linux_paket.sh)
     if str(alt_vj.get("ver") or "") != ver:
         ch = []                                              # die Nummer wird gerade erhöht (version.json noch nicht committet)
     if ch and sim_key(gd) == sim_key(ver):
