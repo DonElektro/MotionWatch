@@ -17,6 +17,16 @@ on:
         description: "Als Release «ki-modell» veröffentlichen (sonst nur zum Herunterladen unter Artifacts)"
         type: boolean
         default: true
+      klassen:
+        description: "Klassen: standard (Person / Tier / Fahrzeug) oder wildtiere (+ Fuchs, Reh, Dachs, Igel, Wildschwein) - wildtiere geht nur ins Release «ki-modell-versuch»"
+        type: choice
+        options: [standard, wildtiere]
+        default: standard
+      eingang:
+        description: "Bildgrösse des Modells (320 = Standard; 480 / 640 = grösseres Modell «moveeye_model_gross», nur Release «ki-modell-versuch»)"
+        type: choice
+        options: ["320", "480", "640"]
+        default: "320"
       quelle:
         description: "Wer hat das Training gestartet (nur fürs Protokoll, z. B. «Simulator: MoveEye-Trainingsbilder_….zip»)"
         default: "von Hand"
@@ -41,6 +51,8 @@ jobs:
       VEROEFFENTLICHEN: ${{ github.event.inputs.veroeffentlichen || 'true' }}
       GH_TOKEN: ${{ github.token }}
       QUELLE: ${{ github.event.inputs.quelle || 'Zeitplan' }}
+      KLASSEN: ${{ github.event.inputs.klassen || 'standard' }}
+      EINGANG: ${{ github.event.inputs.eingang || '320' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -57,6 +69,12 @@ jobs:
           case "$EPOCHEN" in ''|*[!0-9]*) echo "Epochen: nur eine Zahl"; exit 1;; esac
           if [ "$EPOCHEN" -lt 1 ] || [ "$EPOCHEN" -gt 300 ]; then echo "Epochen: 1-300"; exit 1; fi
           case "$BASIS" in yolov8n.pt|yolo11n.pt) ;; *) echo "Grundmodell unbekannt"; exit 1;; esac
+          case "$KLASSEN" in standard|wildtiere) ;; *) echo "Klassen unbekannt"; exit 1;; esac
+          case "$EINGANG" in 320|480|640) ;; *) echo "Eingang: 320, 480 oder 640"; exit 1;; esac
+          # 639zz: everything that is not the standard model goes to «ki-modell-versuch» only - the devices keep their model
+          if [ "$KLASSEN" = standard ] && [ "$EINGANG" = 320 ]; then echo "NAME=moveeye_model" >> "$GITHUB_ENV"; echo "VERSUCH=0" >> "$GITHUB_ENV"
+          elif [ "$EINGANG" = 320 ]; then echo "NAME=moveeye_model" >> "$GITHUB_ENV"; echo "VERSUCH=1" >> "$GITHUB_ENV"
+          else echo "NAME=moveeye_model_gross" >> "$GITHUB_ENV"; echo "VERSUCH=1" >> "$GITHUB_ENV"; fi
       - name: Zusätzliche Bilder aus dem Release «ki-daten» (falls vorhanden)
         run: |
           mkdir -p extra/pakete extra/echt
@@ -83,7 +101,8 @@ jobs:
       - name: Trainieren, messen, als ONNX exportieren
         run: |
           python ki_training/trainieren.py --pakete ki_training/pakete extra/pakete --echt ki_training/echt extra/echt \
-            --basis "$BASIS" --epochen "$EPOCHEN" --imgsz 320 --version "${{ github.run_number }}" --aus ausgabe --arbeit arbeit
+            --basis "$BASIS" --epochen "$EPOCHEN" --imgsz "$EINGANG" --klassen "$KLASSEN" --name "$NAME" \
+            --version "${{ github.run_number }}" --aus ausgabe --arbeit arbeit
           echo "Gestartet: $QUELLE"
           cat ausgabe/bericht.md >> "$GITHUB_STEP_SUMMARY"
           if [ -f ausgabe/auswertung.md ]; then cat ausgabe/auswertung.md >> "$GITHUB_STEP_SUMMARY"; fi
@@ -103,6 +122,15 @@ jobs:
           # notes = short report + «wo versagt die KI» (auswertung.md, also as a file in the release)
           { cat ausgabe/bericht.md; echo; [ -f ausgabe/auswertung.md ] && cat ausgabe/auswertung.md; } > ausgabe/notizen.md
           [ -f ausgabe/auswertung.md ] || echo "## Auswertung fehlt" > ausgabe/auswertung.md
+          if [ "$VERSUCH" = 1 ]; then                       # 639zz: trial (wildlife classes / bigger model) - never «ki-modell»
+            if ! gh release view ki-modell-versuch -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+              gh release create ki-modell-versuch -R "$GITHUB_REPOSITORY" --title "MoveEye-KI-Modell (Versuch: Wildtiere / grösser)" \
+                --notes "Nicht für die Geräte von selbst. Erst nach einer Messung am Pi von Hand in ~/.config/motionwatch/models/ legen." --latest=false
+            fi
+            gh release upload ki-modell-versuch "ausgabe/$NAME.onnx" "ausgabe/$NAME.json" ausgabe/auswertung.md -R "$GITHUB_REPOSITORY" --clobber
+            gh release edit ki-modell-versuch -R "$GITHUB_REPOSITORY" --notes-file ausgabe/notizen.md
+            exit 0
+          fi
           gh release create "ki-modell-$n" ausgabe/moveeye_model.onnx ausgabe/moveeye_model.json ausgabe/auswertung.md -R "$GITHUB_REPOSITORY" \
             --title "MoveEye-KI-Modell $n" --notes-file ausgabe/notizen.md --latest=false
           if ! gh release view ki-modell -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then

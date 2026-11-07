@@ -39,6 +39,10 @@ Der HP rechnet **rund um die Uhr**; der Kiosk ist nicht mehr die Hauptsache. Ohn
 
 1. **Erkennung messen** – main gegen die Version davor (Tag) und aktive `real-erkennung*`-Zweige (letzte 14 Tage), Pläne
    ursache, kriechen, nacht, tier, wind, je **3 Läufe pro Fall**; ist ein Plan für zwei Stände fertig, steht `vergleich.md` im Artefakt.
+   Sind alle Stände gemessen, misst es main zusätzlich mit jeder **Variante** (ab 3.60: `bestaetigung2` = doppelte Bestätigung an;
+   Pläne ursache, nacht, wind; `erkennungstest.py --variante`, `dauer.py waehlen --varianten keine` schaltet ab, Umgebung
+   `MW_DAUER_VARIANTEN`) und schreibt `varianten.md`: Erkennung, Pushes pro Stunde und falsche Pushes pro Stunde nebeneinander.
+   Von Hand: Actions → «Erkennung (HP)» → Variante; `bericht.py --varianten standard=A/results.jsonl bestaetigung2=B/results.jsonl`.
    Stürzt der Simulator oder MoveEye ab, sichert der Test das Protokoll (`simulator_absturz_N.log` bzw.
    `motionwatch_absturz_N.log` im Artefakt), startet neu und rechnet beim selben Fall weiter; stürzt es beim selben Fall
    zweimal ab, wird der Fall übersprungen (`uebersprungen.jsonl`, im Bericht). Code 3 = 8 Abstürze in einem Lauf bzw.

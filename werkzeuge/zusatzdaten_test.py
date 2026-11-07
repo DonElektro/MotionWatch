@@ -224,7 +224,10 @@ print("KERN " + json.dumps(res, ensure_ascii=False))
         ok(a1 and not o1, "3.9 MiB: ok, keine Meldung")
         ok(a2 and "WARNUNG" in o2, "4.5 MiB: Warnung")
         ok(not a3 and "ZU GROSS" in o3, "über 5 MiB: Abbruch")
-        ok(len(text.encode()) <= 3.5 * 1000 * 1000, "Hauptdatei höchstens 3.5 MB (%d Bytes)" % len(text.encode()))
+        n_ = len(text.encode())                     # gleiche Grenze wie bauen.py / versionen.py: Warnung ab 4 MiB, Abbruch ab 5 MiB
+        if n_ > 4 * 1048576:
+            print("  Hinweis: Hauptdatei %.2f MiB - über 4 MiB (Warnung), mehr in die Zusatzdatei" % (n_ / 1048576))
+        ok(n_ < 5 * 1048576, "Hauptdatei unter 5 MiB (%d Bytes, %.2f MiB)" % (n_, n_ / 1048576))
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     print("\n" + ("Zusatzdaten-Test OK" if not FEHLER else "%d FEHLER" % len(FEHLER)))

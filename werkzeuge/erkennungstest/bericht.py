@@ -3,6 +3,8 @@
   python3 werkzeuge/erkennungstest/bericht.py ERGEBNIS/results.jsonl                    # Bericht (Markdown) auf stdout
   python3 werkzeuge/erkennungstest/bericht.py NEU/results.jsonl --vergleich ALT/results.jsonl   # mit Vergleich (nur gleiche Fälle)
   python3 werkzeuge/erkennungstest/bericht.py NEU/results.jsonl --json                  # nur die Kennzahlen als JSON
+  python3 werkzeuge/erkennungstest/bericht.py --varianten standard=A/results.jsonl bestaetigung2=B/results.jsonl
+                                                       # Varianten nebeneinander (nur gleiche Fälle): Erkennung, Pushes pro Stunde
 Hauptzahlen: Personen erkannt (gehen / kriechen / Kind), Tier oder Auto als Person, falsche Pushes (Person, Wärme, Voralarm
 ohne Person) pro Stunde, Bilder pro Sekunde."""
 import argparse
@@ -69,6 +71,9 @@ def kennzahlen(R):
     k["falsche_pushes"] = fp
     k["falsche_pushes_pro_h"] = round(fp * 3600.0 / sek, 1)
     k["minuten_ohne_person"] = round(sek / 60.0, 1)
+    sek_alle = sum(float(r.get("secs") or 0) for r in C) or 1.0          # alle Alarm-Pushes (auch die richtigen) pro Stunde
+    k["pushes_alle"] = sum(len(alarm_pushes(r)) for r in C)
+    k["pushes_pro_h"] = round(k["pushes_alle"] * 3600.0 / sek_alle, 1)
     k["fps_mittel"] = round(sum(fps) / len(fps), 1) if fps else None
     k["fps_min"] = round(min(fps), 1) if fps else None
     k["feste_fehl_person"] = sorted({"%s/%s" % (r.get("place"), r.get("cond")) for r in C if r.get("static_person_boxes")})
@@ -141,7 +146,7 @@ def markdown(R, meta=None, alt=None):
     C = faelle(R)
     out = ["# Erkennungstest" + (" · Plan «%s»" % meta["plan"] if meta.get("plan") else "")]
     info = []
-    for key, name in (("moveeye", "MoveEye"), ("simulator", "Simulator"), ("stand", "Stand"), ("commit", "Commit"),
+    for key, name in (("moveeye", "MoveEye"), ("simulator", "Simulator"), ("stand", "Stand"), ("commit", "Commit"), ("variante", "Variante"),
                       ("laeufe", "Läufe pro Fall"), ("rechner", "Rechner"), ("dauer_min", "Dauer (Min.)")):
         if meta.get(key) not in (None, ""):
             info.append("%s: %s" % (name, str(meta[key])[:12] if key == "commit" else meta[key]))
@@ -183,13 +188,53 @@ def markdown(R, meta=None, alt=None):
     return "\n".join(out) + "\n"
 
 
+VAR_ZEILEN = [("personen", "**Personen erkannt**", "q"), ("gehen", "· Person geht", "q"), ("kriechen", "· kriecht (dunkel)", "q"),
+              ("kind", "· Kind", "q"), ("personen_oder_push", "Personen: Rahmen oder Personen-Push", "q"),
+              ("pushes_pro_h", "**Pushes pro Stunde** (alle Alarm-Pushes)", "n"),
+              ("falsche_pushes_pro_h", "**Falsche Pushes pro Stunde** (ohne Person)", "n"), ("falsche_pushes", "Falsche Pushes (Anzahl)", "n"),
+              ("tier_auto_als_person", "Tier / Auto als Person", "q"), ("reaktion_median_s", "Reaktion (Median, s)", "n"),
+              ("fps_mittel", "Bilder/s (Mittel)", "n")]
+
+
+def varianten(reihen):
+    """[(Name, results)] -> Markdown: die Kennzahlen der Varianten nebeneinander, nur die Fälle, die alle gemessen haben"""
+    reihen = [(n, faelle(R)) for n, R in reihen]
+    if not reihen:
+        return "Keine Varianten.\n"
+    gemeinsam = set.intersection(*[{r["key"] for r in R} for _n, R in reihen]) if all(R for _n, R in reihen) else set()
+    ks = [(n, kennzahlen([r for r in R if r["key"] in gemeinsam])) for n, R in reihen]
+    out = ["## Varianten nebeneinander (gleiche Fälle: %d)\n" % len(gemeinsam),
+           "| Kennzahl | " + " | ".join(n for n, _k in ks) + " |", "|---|" + "---|" * len(ks)]
+    for key, name, art in VAR_ZEILEN:
+        werte = [(pct(k[key]) if art == "q" else ("–" if k.get(key) is None else str(k[key]))) for _n, k in ks]
+        out.append("| %s | %s |" % (name, " | ".join(werte)))
+    if len(ks) >= 2 and gemeinsam:
+        a, b = ks[0][1], ks[1][1]
+        dp = (b["personen"]["prozent"] or 0) - (a["personen"]["prozent"] or 0)
+        out.append("\n%s gegen %s: Personen erkannt %+d Prozentpunkte, Pushes/h %s → %s, falsche Pushes/h %s → %s"
+                   % (ks[1][0], ks[0][0], dp, a["pushes_pro_h"], b["pushes_pro_h"], a["falsche_pushes_pro_h"], b["falsche_pushes_pro_h"]))
+    return "\n".join(out) + "\n"
+
+
 def main():
     ap = argparse.ArgumentParser(description="Erkennungstest: Bericht aus results.jsonl")
-    ap.add_argument("results")
+    ap.add_argument("results", nargs="?", default="")
+    ap.add_argument("--varianten", nargs="+", default=[], metavar="NAME=results.jsonl", help="Varianten nebeneinander")
     ap.add_argument("--vergleich", default="", help="ein älteres results.jsonl zum Vergleichen")
     ap.add_argument("--meta", default="", help="ergebnis.json (Angaben zum Lauf)")
     ap.add_argument("--json", action="store_true", help="nur die Kennzahlen als JSON")
     a = ap.parse_args()
+    if a.varianten:
+        reihen = []
+        for x in a.varianten:
+            n, _, f = x.partition("=")
+            if not f:
+                ap.error("--varianten: NAME=results.jsonl")
+            reihen.append((n, lesen(f)))
+        print(varianten(reihen), end="")
+        return
+    if not a.results:
+        ap.error("results.jsonl fehlt")
     R = lesen(a.results)
     if a.json:
         print(json.dumps(kennzahlen(R), ensure_ascii=False, indent=1))
