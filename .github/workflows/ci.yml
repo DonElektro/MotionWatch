@@ -54,6 +54,10 @@ jobs:
           echo "Teste $f"
           python3 -m py_compile "$f"
           python3 "$f" --self-test .
+      - name: Zusatzdatei – gültig / verändert / fehlt, Signatur (Test-Schlüssel), Kern ohne ZIP, Grösse
+        run: |
+          f=$(ls webcam_bewegung_*.py | sort -V | tail -1)
+          python3 werkzeuge/zusatzdaten_test.py --datei "$f"
       - name: Drei Spuren – Simulator nur im signierten versions.json (Test-Schlüssel), Versionsprüfung je Spur
         run: |
           f=$(ls webcam_bewegung_*.py | sort -V | tail -1)

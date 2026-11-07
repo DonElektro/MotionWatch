@@ -23,6 +23,13 @@ grossen Datei steht an ihrer Stelle `_zd("<teil>/<name>", <Ersatz>)`. Hier in `q
 weiter wie bisher bearbeiten. Was in der Datei bleibt, steht in `bauen.py` (`ZD_KEEP_PARTS`, `ZD_KEEP_NAMES`, `ZD_KEEP_PREFIX`:
 Einstellungen, deutsche Texte, `_HX…`-Tabellen, Menü). Wer den eigenen Quelltext lesen will, nimmt `zd_source()` (Teil 012).
 `python3 werkzeuge/bauen.py --groessen` zeigt, was am meisten Platz braucht.
+**Schlank** (für 3.59.0): dazu kommen statische Inhalte schon ab 1 KB in die ZIP (Übersetzungen `_HX…` / `TRX[…]` / `HELP_…`,
+Texte `…_PAGE` / `_HTML` / `_JS` / `_CSS`); die `_HX…`-Tabellen behalten in der Datei nur Deutsch (`_zd_hx`, Teil 012). Die
+gebaute Datei hat keine Kommentare und keine Docstrings von Funktionen / Klassen und ist mit Tabs eingerückt – jede Zeile
+bleibt an ihrer Nummer (Fehlermeldungen zeigen dieselben Zeilen), die Originalzeilen stehen in der ZIP (`zeilen`).
+Hier in `quelle/` bleibt alles wie gewohnt (Leerzeichen, Kommentare). Grenze der Hauptdatei: Warnung ab 4 MiB, Abbruch ab 5 MiB.
+Tests: `werkzeuge/zusatzdaten_test.py` (ZIP gültig / verändert / fehlt, Signatur, Kern ohne ZIP),
+`werkzeuge/update_uebergang_test.py` (altes Gerät → neue Version über einen lokalen HTTPS-Server).
 
 ## Ablauf
 

@@ -9,6 +9,9 @@
 #   * Without the zip (an old device fetched only the .py) MoveEye starts in the core mode: camera, detection, alarms,
 #     push and the window work; web pages show «Zusatzdaten fehlen – Update», texts fall back to English / German.
 #     Part 397 fetches the zip over the same update source and restarts once (zusatz_start()).
+#   * Schlank (3.59.0): the translation tables _HX… {English: (de, fr, it, rm)} keep only German in the file (_zd_hx below),
+#     fr / it / rm come from the zip. Comments and the docstrings of functions / classes are not in the program file and
+#     it is indented with tabs (same line numbers); the zip keeps the original lines ("zeilen"), zd_source() puts them back.
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
 ZD_FILE = ""
@@ -31,6 +34,7 @@ text-align:center;padding:20px;box-sizing:border-box}.c{max-width:440px}.big{fon
 <div class="m">MoveEye läuft und schützt (Kamera, Erkennung, Alarm, Push). Die Web-Seiten, Bilder und Übersetzungen stecken in
 der Zusatzdatei <b>moveeye_daten_….zip</b> neben dem Programm. MoveEye holt sie selbst über die Update-Quelle und startet
 dann einmal neu. Ohne Internet: die Datei aus dem Update-Ordner (USB) neben das Programm legen.</div>
+<div class="m" style="margin-top:14px"><a href="/hilfe/fehler/DATA_MISSING" style="color:#58a6ff">Jetzt nachladen · Download now</a></div>
 <div class="m" style="margin-top:14px">Additional data missing – update. MoveEye runs and protects; the web pages come back
 by themselves once the data file is there. This page reloads every 30 s.</div></div></body></html>"""
 
@@ -82,6 +86,12 @@ def _zd(key, fallback):
     return fallback
 
 
+def _zd_hx(de, as_list=False):
+    """Schlank: the stand-in for a moved-out table {English: (de, fr, it, rm)} while the zip is missing: German stays,
+    French / Italian show English, Romansh German (the same as for a missing translation)"""
+    return {k: ([v, k, k, v] if as_list else (v, k, k, v)) for k, v in de.items()}
+
+
 def zd_source():
     """the program text exactly as put together from quelle/ (the moved-out literals back in their place) - for the checks
     that read their own source (i18n keys 395, interface 558). Without the zip: the program file as it is."""
@@ -93,6 +103,17 @@ def zd_source():
         d = _zd_read(os.path.join(HERE, ZD_FILE), ZD_SHA256)
     except Exception:
         return text
+    if d.get("zeilen"):                                    # Schlank: indentation, comments and docstrings back (same lines)
+        lines = []
+        for ln in text.split("\n"):
+            n = len(ln) - len(ln.lstrip("\t"))
+            lines.append("    " * n + ln[n:] if n else ln)
+        try:
+            for row, orig in d["zeilen"]:
+                lines[row - 1] = orig
+        except (IndexError, TypeError, ValueError):
+            return text
+        text = "\n".join(lines)
     out, pos = [], 0
     for _k, ph, seg in d["entries"]:
         i = text.find(ph, pos)

@@ -22,6 +22,11 @@ Zusatzdaten (31.10.2026, Paket «MoveEye-Datei verkleinern»): grosse Literale (
 (Geräte bis 2.98.x nehmen nur Programmdateien bis 8 MiB an). quelle/ bleibt unverändert; die grosse Datei lädt die ZIP
 beim Start (Teil 012) und kennt ihre Prüfsumme (ZD_SHA256). Beide Dateien gehören zusammen ins Repository.
 
+Schlank (07.11.2026, für 3.59.0): zusätzlich kommen kleinere statische Inhalte ab 1 KiB (Übersetzungen, Anleitung, Web-Seiten /
+JS / CSS) in die ZIP, die Tabellen _HX… behalten nur Deutsch, und die Hauptdatei hat keine Kommentare und Docstrings von
+Funktionen / Klassen und ist mit Tabs eingerückt (gleiche Zeilennummern; die Originalzeilen stehen in der ZIP, zd_source()
+setzt sie wieder ein). Grenze der Hauptdatei: Warnung ab 4 MiB, Abbruch ab 5 MiB.
+
 Den Schlüssel nie ins Repository legen.
 """
 import argparse
@@ -221,13 +226,17 @@ def zusammensetzen():
 
 # ---------------------------------------------------------------------------- Zusatzdaten (moveeye_daten_X_Y_Z.zip)
 ZD_MIN = 4096                       # literals from this size (bytes of source) are moved out
+ZD_MIN_KLEIN = 1024                 # 3.59.0: pure static content (translations, manual, web pages / JS / CSS) from this size
 ZD_NEU = 30                         # the list of changes in the file keeps the entries of the newest 30 versions
 ZD_KEEP_PARTS = ("000_", "010_", "012_", "020_")   # head, basics, loader, settings: always in the file
 # tables the core needs (settings schema, German texts, menu structure, guides with index access) stay in the file
 ZD_KEEP_NAMES = {"CFG", "TOGGLES", "SLIDERS", "TEXTS", "SECTIONS", "DE", "QUICK_GUIDE", "MENU_SHORT", "GUIDE_TIPS", "_DETAIL",
                  "G2_UI", "SET_HELP", "GONL_DE", "ALMANAC", "PAUSE_PAGE", "LANGS",
-                 "FEHLER_KATALOG"}                 # Fehler-QR: die Hilfe zu Fehlern geht auch ohne Zusatzdaten (639u)
+                 "FEHLER_KATALOG",                 # Fehler-QR: die Hilfe zu Fehlern geht auch ohne Zusatzdaten (639u)
+                 "UI_GEMEINSAM"}                   # Schlank: Menü-Datei (Fenster, Kopf 639t) - ohne Zusatzdaten startete 3.58.0 nicht
 ZD_KEEP_PREFIX = ("_HX",)          # the translation tables _HX… also carry the German texts (DE) that the start needs
+# Schlank (3.59.0): a table _HX… {English: (de, fr, it, rm)} keeps only {English: de} in the file (fallback _zd_hx, 012);
+# the whole table with fr / it / rm goes to the zip. Tables {English: (fr, it, rm)} (no German) go to the zip as a whole.
 ZD_DATE = (2026, 1, 1, 0, 0, 0)     # fixed time stamp in the zip
 
 
@@ -261,6 +270,37 @@ def _zd_ctx(st):
     return type(st).__name__
 
 
+def _zd_hx_art(nd):
+    """a translation table _HX…: 4 = {English: (de, fr, it, rm)} (tuple or list), 3 = {English: (fr, it, rm)}, else 0 (stays)"""
+    if not isinstance(nd, ast.Dict) or not nd.values:
+        return 0
+    lens = set()
+    for k, v in zip(nd.keys, nd.values):
+        if not (isinstance(k, ast.Constant) and isinstance(k.value, str) and isinstance(v, (ast.Tuple, ast.List))
+                and all(isinstance(e, ast.Constant) and isinstance(e.value, str) for e in v.elts)):
+            return 0
+        lens.add((len(v.elts), type(v)))
+    return 4 if lens in ({(4, ast.Tuple)}, {(4, ast.List)}) else 3 if lens in ({(3, ast.Tuple)}, {(3, ast.List)}) else 0
+
+
+def _zd_statisch(nd, base, hx):
+    """pure static content that the core does not need (moved out from ZD_MIN_KLEIN on): a translation table _HX…, a table
+    TRX[…] / HELP_… (fr / it / rm, manual), a text <NAME>_PAGE / _HTML / _JS / _CSS (web). Never a list / dict of other
+    data (labels of the AI, menu groups of the window, keys for the factory reset …): those stay from ZD_MIN on."""
+    if hx:
+        return True
+    if base == "TRX" or base.startswith("HELP_"):
+        return isinstance(nd, ast.Dict)
+    return isinstance(nd, ast.Constant) and isinstance(nd.value, str) and bool(re.search(r"_(PAGE|HTML|JS|CSS)$", base))
+
+
+def _zd_hx_fallback(seg):
+    """the German part of a table {English: (de, fr, it, rm)} as source: _zd_hx({English: de, …}, list?) (012)"""
+    d = ast.literal_eval("(" + seg + "\n)")
+    rows = "".join("    %r: %r,\n" % (k, v[0]) for k, v in d.items())
+    return "_zd_hx({\n%s}%s)" % (rows, ", True" if isinstance(next(iter(d.values())), list) else "")
+
+
 def _zd_fallback(nd, ctx):
     if isinstance(nd, ast.Dict):
         return "_ZDDict()"
@@ -272,6 +312,8 @@ def _zd_fallback(nd, ctx):
         return "set()"
     if isinstance(nd.value, bytes):
         return 'b""'
+    if isinstance(nd.value, str) and getattr(nd, "_zd_json", False):
+        return repr("[]" if nd.value.lstrip().startswith("[") else "{}")
     if isinstance(nd.value, str):
         return "ZD_PAGE" if re.search(r"_(PAGE|HTML)$", ctx) else '""'
     return repr(nd.value)
@@ -333,10 +375,15 @@ def auslagern(name, text):
             a = off[nd.lineno - 1] + nd.col_offset
             e = off[nd.end_lineno - 1] + nd.end_col_offset
             base = re.split(r"[.\[]", ctx, maxsplit=1)[0]
-            if e - a >= ZD_MIN and base not in ZD_KEEP_NAMES and not base.startswith(ZD_KEEP_PREFIX):
-                found.append((a, e, nd, ctx))
+            hx = _zd_hx_art(nd) if base.startswith(ZD_KEEP_PREFIX) else 0
+            if e - a >= (ZD_MIN_KLEIN if _zd_statisch(nd, base, hx) else ZD_MIN) and base not in ZD_KEEP_NAMES and (
+                    hx or not base.startswith(ZD_KEEP_PREFIX)):
+                found.append((a, e, nd, ctx, hx))
             return
+        js = isinstance(nd, ast.Call) and ast.unparse(nd.func) == "json.loads"
         for c in ast.iter_child_nodes(nd):
+            if js and isinstance(c, ast.Constant) and isinstance(c.value, str):
+                c._zd_json = True                          # json.loads(<text>): without the zip an empty JSON, never ""
             walk(c, ctx)
 
     def body(stmts):
@@ -355,42 +402,131 @@ def auslagern(name, text):
         return text, []
     stem = name[:-3]
     out, ents, pos, used = [], [], 0, {}
-    for a, e, nd, ctx in sorted(found, key=lambda x: x[0]):
+    for a, e, nd, ctx, hx in sorted(found, key=lambda x: x[0]):
         k = re.sub(r"[^A-Za-z0-9_]+", "_", ctx).strip("_") or "x"
         used[k] = used.get(k, 0) + 1
         key = "%s/%s" % (stem, k) + ("~%d" % used[k] if used[k] > 1 else "")
-        ph = "_zd(%r, %s)" % (key, _zd_fallback(nd, ctx))
+        fb = _zd_hx_fallback(b[a:e].decode()) if hx == 4 else _zd_fallback(nd, ctx)
+        ph = "_zd(%r, %s)" % (key, fb)
         out.append(b[pos:a]); out.append(ph.encode()); pos = e
         ents.append((key, ph, b[a:e].decode()))
     out.append(b[pos:])
     return b"".join(out).decode(), ents
 
 
+ZD_SCHLANK = True                   # 3.59.0: comments, docstrings of functions / classes, indentation as tabs (_schlank)
+
+
+def _schlank(text):
+    """Schlank (3.59.0): the program without comments and without the docstrings of functions and classes - every line
+    stays at its place (same line numbers in tracebacks and logs), only its text gets shorter. -> (new text, [[line,
+    original line], …]); the original lines go into the zip ("zeilen"), zd_source() (012) puts them back. Kept: the first
+    line (#!), the module docstring (list of changes), every string literal that is not a docstring."""
+    import io
+    import tokenize
+    lines = text.split("\n")
+    new = list(lines)
+
+    def put(row, a, e, rep):                               # row 1-based; a / e = character columns on that row
+        ln = new[row - 1]
+        new[row - 1] = ln[:a] + rep + ln[e:]
+
+    tree = ast.parse(text)
+    docs = []
+    for nd in ast.walk(tree):
+        if isinstance(nd, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)) and nd.body:
+            st = nd.body[0]
+            if isinstance(st, ast.Expr) and isinstance(st.value, ast.Constant) and isinstance(st.value.value, str):
+                docs.append(st.value)
+    for c in sorted(docs, key=lambda c: (c.lineno, c.col_offset), reverse=True):
+        a = len(lines[c.lineno - 1].encode()[:c.col_offset].decode())          # ast: byte offsets -> characters
+        e = len(lines[c.end_lineno - 1].encode()[:c.end_col_offset].decode())
+        if c.lineno == c.end_lineno:
+            put(c.lineno, a, e, '""')
+        else:                                              # «"""» … «"""»: the empty lines keep the line numbers
+            put(c.end_lineno, 0, e, '"""')
+            for r in range(c.lineno + 1, c.end_lineno):
+                new[r - 1] = ""
+            put(c.lineno, a, len(new[c.lineno - 1]), '"""')
+    mid = "\n".join(new)
+    # indentation: a level of four more spaces becomes one tab, any other step stays spaces (the new indentation of a
+    # level always starts with the one of its parent - Python sees the same blocks with tabs of any width)
+    cm, starts, stack, prev_end, at_start = {}, [], [("", "")], 0, True
+    for tok in tokenize.generate_tokens(io.StringIO(mid).readline):
+        tt = tok.type
+        if tt == tokenize.COMMENT:
+            if not (tok.start[0] == 1 and tok.string.startswith("#!")):
+                cm[tok.start[0]] = tok.start[1]
+            continue
+        if tt == tokenize.INDENT:
+            old, neu = stack[-1]
+            d = tok.string[len(old):]
+            if not tok.string.startswith(old) or d.strip(" "):
+                raise SystemExit("Schlank: Einrückung mit Tabs in quelle/ (Zeile %d) – nur Leerzeichen verwenden" % tok.start[0])
+            stack.append((tok.string, neu + ("\t" if d == "    " else d)))
+            continue
+        if tt == tokenize.DEDENT:
+            stack.pop()
+            continue
+        if tt in (tokenize.NL, tokenize.NEWLINE, tokenize.ENDMARKER):
+            at_start = at_start or tt == tokenize.NEWLINE
+            prev_end = tok.end[0]
+            continue
+        if at_start:                                       # the first token of a logical line
+            if len(stack) > 1 and prev_end < tok.start[0]:
+                starts.append((tok.start[0], tok.start[1]) + stack[-1])
+            at_start = False
+        prev_end = tok.end[0]
+    for row, col in cm.items():
+        new[row - 1] = new[row - 1][:col].rstrip()
+    for row, col, old, neu in starts:
+        ln = new[row - 1]
+        if ln[:col] == old:
+            new[row - 1] = neu + ln[col:]
+    out = "\n".join(new)
+    if len(new) != len(lines):
+        raise SystemExit("Schlank: Zeilenzahl geändert – Fehler in bauen.py")
+    compile(out, "schlank", "exec")                        # TabError / SyntaxError: stop here, never write such a file
+    return out, [[i + 1, a] for i, (a, b) in enumerate(zip(lines, new)) if _zd_tabs_aus(b) != a]
+
+
+def _zd_tabs_aus(line):
+    """the leading tabs of a line back to four spaces each (the same as zd_source() in 012)"""
+    n = len(line) - len(line.lstrip("\t"))
+    return "    " * n + line[n:] if n else line
+
+
 def zusammensetzen_klein(zd_sha=None):
-    """(program text, entries of the data zip, version). zd_sha: the checksum written into the program (None = of the
-    zip that these entries give, see zd_bytes)"""
+    """(program text, entries of the data zip, version, original lines). zd_sha: the checksum written into the program
+    (None = of the zip that these entries give, see zd_bytes)"""
     teile_ = teile()
     v = version()
     texts, ents = [], []
     for n in teile_:
         t, e = auslagern(n, lesen(n))
         texts.append(t); ents += e
-    if ents:
-        if zd_sha is None:
-            zd_sha = hashlib.sha256(zd_bytes(v, ents)).hexdigest()
-        for i, n in enumerate(teile_):
-            if n.startswith("012_"):
-                texts[i] = (texts[i].replace('ZD_FILE = ""', 'ZD_FILE = "%s"' % zd_name(v), 1)
-                            .replace('ZD_SHA256 = ""', 'ZD_SHA256 = "%s"' % zd_sha, 1))
-    return "".join(texts), ents, v
+    if not ents:
+        return "".join(texts), ents, v, []
+    for i, n in enumerate(teile_):
+        if n.startswith("012_"):
+            texts[i] = texts[i].replace('ZD_FILE = ""', 'ZD_FILE = "%s"' % zd_name(v), 1)
+    text, zeilen = _schlank("".join(texts)) if ZD_SCHLANK else ("".join(texts), [])
+    if zd_sha is None:
+        zd_sha = hashlib.sha256(zd_bytes(v, ents, zeilen)).hexdigest()
+    text, n = re.subn(r'^ZD_SHA256 = ""$', 'ZD_SHA256 = "%s"' % zd_sha, text, count=1, flags=re.M)
+    if not n:
+        raise SystemExit("Teil 012: Zeile «ZD_SHA256 = \"\"» fehlt")
+    return text, ents, v, zeilen
 
 
-def zd_json(v, ents):
-    return json.dumps({"app": "MoveEye", "version": v, "file": os.path.basename(dateiname(v)),
-                       "entries": [list(x) for x in ents]}, ensure_ascii=False, indent=0)
+def zd_json(v, ents, zeilen=()):
+    d = {"app": "MoveEye", "version": v, "file": os.path.basename(dateiname(v)), "entries": [list(x) for x in ents]}
+    if zeilen:
+        d["zeilen"] = [list(x) for x in zeilen]            # 3.59.0: original lines (comments, docstrings) for zd_source()
+    return json.dumps(d, ensure_ascii=False, indent=0)
 
 
-def zd_bytes(v, ents):
+def zd_bytes(v, ents, zeilen=()):
     import io
     import zipfile
     bio = io.BytesIO()
@@ -398,7 +534,7 @@ def zd_bytes(v, ents):
         zi = zipfile.ZipInfo("daten.json", ZD_DATE)
         zi.compress_type = zipfile.ZIP_DEFLATED
         zi.external_attr = 0o644 << 16
-        z.writestr(zi, zd_json(v, ents).encode("utf-8"), compresslevel=9)
+        z.writestr(zi, zd_json(v, ents, zeilen).encode("utf-8"), compresslevel=9)
     return bio.getvalue()
 
 
@@ -426,10 +562,20 @@ def groessen(n=15):
     print("\nGrösste ausgelagerte Literale:")
     for sz, k in sorted(rows, reverse=True)[:n]:
         print("  %8d  %s" % (sz, k))
-    text, ents, v = zusammensetzen_klein()
-    print("\nAusgelagert: %d Literale, %d Bytes · Hauptdatei %d Bytes (%.2f MiB) · ZIP %d Bytes"
-          % (len(ents), sum(len(x[2].encode()) for x in ents), len(text.encode()), len(text.encode()) / 1048576,
-             len(zd_bytes(v, ents))))
+    text, ents, v, zeilen = zusammensetzen_klein()
+    print("\nGrösste Teile in der Hauptdatei (nach Auslagern und Schlank):")
+    rows, pos = [], 0
+    lines = text.split("\n")
+    for nm in teile():                                     # every part starts on a new line: count its lines in the file
+        t, _e = auslagern(nm, lesen(nm))
+        k = t.count("\n")
+        rows.append((len("\n".join(lines[pos:pos + k]).encode()) + 1, nm)); pos += k
+    for sz, nm in sorted(rows, reverse=True)[:n]:
+        print("  %8d  %s" % (sz, nm))
+    print("\nAusgelagert: %d Literale, %d Bytes · %d Zeilen ohne Kommentare / Docstrings · Hauptdatei %d Bytes (%.2f MiB) · ZIP %d Bytes"
+          % (len(ents), sum(len(x[2].encode()) for x in ents), len(zeilen), len(text.encode()), len(text.encode()) / 1048576,
+             len(zd_bytes(v, ents, zeilen))))
+    groesse_pruefen(text)
     return 0
 
 
@@ -504,8 +650,11 @@ def git(*a):
 
 # Code-Prüfung K9: Geräte bis 2.98.x nehmen nur Programmdateien bis 8 MiB an (UPD_MAX_BYTES damals, Teil 390) und holen die
 # NEUESTE Version aus versions.json - darum muss jede angebotene Version darunter bleiben, solange es solche Geräte gibt.
-GROESSE_MAX = 8 * 1024 * 1024                 # darüber: Abbruch (die Datei wird nicht geschrieben)
-GROESSE_WARN = int(7.5 * 1024 * 1024)         # darüber: Warnung (noch rund 512 KiB Reserve)
+# Schlank (3.59.0): die Hauptdatei bleibt klein (Platz für neue Pakete, schnelleres Update): Warnung ab 4 MiB, Abbruch ab
+# 5 MiB - dann mehr in die Zusatzdatei (ZD_MIN_KLEIN / _zd_statisch, ZD_KEEP_NAMES). Die 8 MiB der alten Geräte bleiben die
+# äussere Grenze (versionen.py MAX_ALT).
+GROESSE_MAX = 5 * 1024 * 1024                 # darüber: Abbruch (die Datei wird nicht geschrieben)
+GROESSE_WARN = 4 * 1024 * 1024                # darüber: Warnung
 
 
 def groesse_pruefen(text):
@@ -513,11 +662,12 @@ def groesse_pruefen(text):
     n = len(text.encode("utf-8"))
     mib = n / 1048576.0
     if n > GROESSE_MAX:
-        print("ZU GROSS: %.2f MiB (%d Bytes) – Geräte bis 2.98.x nehmen höchstens 8 MiB an. Teile verkleinern "
-              "(z. B. Daten-Teile 360 / 480 / 620) oder eine Brückenversion unter 8 MiB in versions.json behalten." % (mib, n))
+        print("ZU GROSS: Hauptdatei %.2f MiB (%d Bytes) – höchstens 5 MiB. Mehr in die Zusatzdatei auslagern (bauen.py "
+              "ZD_MIN_KLEIN / _zd_statisch) oder Teile verkleinern; «bauen.py --groessen» zeigt, was Platz braucht." % (mib, n))
         return False
     if n > GROESSE_WARN:
-        print("WARNUNG: %.2f MiB (%d Bytes) – noch %d KiB bis zur 8-MiB-Grenze der Geräte bis 2.98.x" % (mib, n, (GROESSE_MAX - n) // 1024))
+        print("WARNUNG: Hauptdatei %.2f MiB (%d Bytes) – noch %d KiB bis zur 5-MiB-Grenze («bauen.py --groessen»)"
+              % (mib, n, (GROESSE_MAX - n) // 1024))
     return True
 
 
@@ -559,10 +709,10 @@ def main():
             print("FEHLT: %s – zuerst bauen" % os.path.basename(f))
             return 1
         sha = hashlib.sha256(open(zf, "rb").read()).hexdigest() if os.path.isfile(zf) else ""
-        text, ents, _v = zusammensetzen_klein(sha)
+        text, ents, _v, zeilen = zusammensetzen_klein(sha)
         if not groesse_pruefen(text):                      # the program file (without the data zip) counts
             return 1
-        if ents and zd_inhalt(zf) != zd_json(v, ents):
+        if ents and zd_inhalt(zf) != zd_json(v, ents, zeilen):
             print("UNTERSCHIED: %s fehlt oder passt nicht zu quelle/ – werkzeuge/bauen.py laufen lassen" % os.path.basename(zf))
             return 1
         if open(f, encoding="utf-8", newline="").read() != text:
@@ -588,13 +738,13 @@ def main():
         return 1
     v = version()
     f, zf = dateiname(v), zd_pfad(v)
-    text, ents, _v = zusammensetzen_klein("")
+    text, ents, _v, zeilen = zusammensetzen_klein("")
     if ents:
-        if zd_inhalt(zf) != zd_json(v, ents):              # only a changed content gives a new zip (stable checksum)
+        if zd_inhalt(zf) != zd_json(v, ents, zeilen):      # only a changed content gives a new zip (stable checksum)
             with open(zf, "wb") as fh:
-                fh.write(zd_bytes(v, ents))
+                fh.write(zd_bytes(v, ents, zeilen))
         sha = hashlib.sha256(open(zf, "rb").read()).hexdigest()
-        text, ents, _v = zusammensetzen_klein(sha)
+        text, ents, _v, zeilen = zusammensetzen_klein(sha)
     if not groesse_pruefen(text):
         return 1
     with open(f, "w", encoding="utf-8", newline="") as fh:
