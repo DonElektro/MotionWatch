@@ -121,6 +121,8 @@ const FigurMensch = preload("res://scripts/figur_mensch.gd")   # «Figuren mensc
 const MenschStil = preload("res://scripts/menschen_stil.gd")   # «Figuren menschlicher»: Vielfalt pro Szene
 const Kleidung = preload("res://scripts/kleidung.gd")   # «Kleidung nach Jahreszeit» (31.10.2026)
 const Quality = preload("res://scripts/quality.gd")
+const Flora = preload("res://scripts/flora.gd")            # «Flora und Fauna» Phase 1
+const TierModell = preload("res://scripts/tier_modell.gd") # Tier als Modell mit Skelett (zuerst der Fuchs)
 var fig = null                # the figure with a skeleton (null = built from shapes)
 var demo := -1.0              # tests (figur.gd «row»): walks on the spot at this speed
 var tag_p = null              # players: the dictionary of game.gd (name, role, team above the head)
@@ -171,6 +173,8 @@ func setup(m, k: String, from: Vector3, to: Vector3, spd: float) -> void:
 			radius = 1.2 if variant != "moto" else 0.6
 		_:
 			_build_animal()
+			if not preview and TierModell.DATEI.has(kind) and Flora.stufe(main) in ["normal", "hoch"]:
+				TierModell.bauen(self)                    # «Flora und Fauna»: model with skeleton (thermal twins stay)
 	var d := to - from
 	heading = atan2(-d.x, -d.z) if d.length() > 0.05 else randf() * TAU
 	rotation.y = heading

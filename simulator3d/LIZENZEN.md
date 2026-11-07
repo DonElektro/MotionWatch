@@ -68,6 +68,20 @@ Lizenzdatei des Pakets liegt z. B. in francisb1996/brave-chicken-assets). Angepa
 Randlicht: `shaders/maggie_fell.gdshader` (selbst geschrieben). Mit Grafik «einfach» (Lite) baut `scripts/maggie_einfach.gd`
 sie aus eigenen Grundformen (keine fremde Datei). Andere Hunde und Tiere sind unverändert.
 
+## Fuchs mit Skelett und Pflanzen («Flora und Fauna», Phase 1, Zweig sim-flora-fauna) – `modelle/fuchs_glb.bin`, `scripts/tier_modell.gd`, `scripts/flora.gd`
+
+Ab Stufe «Normal» (nicht Lite) ist der Fuchs ein Modell mit Skelett und eigenen Bewegungen (Gehen, Galopp, Sprung, Stehen,
+Schnüffeln, Fressen). Grundlage: **Quaternius «Ultimate Animated Animals»** (Juli 2021), Modell «Fox» (`glTF/Fox.gltf`,
+SHA-256 `2f36e3c9…64c7`), Lizenz **CC0 1.0 Universal** (gemeinfrei, <https://creativecommons.org/publicdomain/zero/1.0/>) –
+dasselbe Paket wie Maggie, bezogen am 07.11.2026 aus derselben öffentlichen GitHub-Kopie (laoniutoushx/TD-demo-2024-04-03).
+Angepasst mit `werkzeuge/tier_modelle.py` (ein Netz, Fell-Farben eines Rotfuchses als Vertex-Farben, weiche Normalen, nur die
+gebrauchten Bewegungen). Fell: `shaders/maggie_fell.gdshader` (selbst geschrieben). Das Wärmebild bleibt aus den Grundformen.
+
+Blatt- und Nadelbilder der Baumkronen, Blätterbüschel, Gras-Farben (`scripts/flora.gd`, `shaders/blatt_karten.gdshader`,
+`shaders/foliage.gdshader`, `shaders/gras_halme.gdshader`): **selbst gebaut**, beim Start im Code erzeugt, keine fremde Datei.
+Der Wiesenboden nutzt die eigenen Fotos von Elektro (`texturen/wiese_alp_01.jpg`, `texturen/wiese_alp_steinig_01.jpg`,
+Abschnitt «Foto-Texturen im Bergtal»).
+
 ## Foto-Texturen im Bergtal (ab 3.37) – `texturen/`, `scripts/bergtal_texturen.gd`
 
 Die Foto-Texturen (Wiese, Alpweide, Geröll, Alpenrosen, Kalkfels, Felsplatten, Wald von oben, Seegrund, Asphalt) sind aus

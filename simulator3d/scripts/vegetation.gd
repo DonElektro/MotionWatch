@@ -21,6 +21,7 @@ extends RefCounted
 ## **gleich** – sonst sähe MoveEye in Lite andere Dinge als in Normal.
 
 const Quality = preload("res://scripts/quality.gd")
+const Flora = preload("res://scripts/flora.gd")      # «Flora und Fauna» Phase 1
 const CELL := 20.0
 const GRASS_FAR := 55.0
 const GRASS_FAR_LITE := 35.0
@@ -182,6 +183,7 @@ static func grass(sc, n: int, dmin: float, dmax: float, keep_clear := Callable()
 	var short_cells := {}
 	var tall_cells := {}
 	var tall_spots: Array = o.get("tall_spots", [])        # [Vector2 Mitte, Radius]: dort vor allem hohes Gras
+	var tufts := Flora.neu(sc.m)
 	for i in range(n):
 		var p: Vector3 = _rand_pos(sc, dmin, dmax)
 		if keep_clear.is_valid() and keep_clear.call(p):
@@ -190,6 +192,10 @@ static func grass(sc, n: int, dmin: float, dmax: float, keep_clear := Callable()
 		for ts in tall_spots:
 			if Vector2(p.x, p.z).distance_to(ts[0]) < float(ts[1]):
 				tall = sc.rng.randf() < 0.8
+		if tufts:                                                # «Flora und Fauna»: grass grows in tussocks - moved only
+			var pt: Vector3 = Flora.tuft(p)                      # after every use of sc.rng that depends on the place:
+			if not (keep_clear.is_valid() and keep_clear.call(pt)):   # the same random numbers, the scene stays the same
+				p = pt
 		p = ground(sc, p)
 		var nrm: Vector3 = sc.m.gelaende.normal_at(p.x, p.z) if sc.m.gelaende != null and sc.m.gelaende.on else Vector3.UP
 		var b = Basis(Vector3.UP, sc.rng.randf() * TAU)
@@ -204,6 +210,11 @@ static func grass(sc, n: int, dmin: float, dmax: float, keep_clear := Callable()
 			cells[key] = []
 		cells[key].append([t, col])
 	var mat := blade_mat(sc, 1.0)
+	Flora.grass_params(sc.m, mat, far)
+	if Flora.neu(sc.m) and not tall_cells.is_empty():          # the tall grass ends 15 m later: its own fade
+		var mat_t := blade_mat(sc, 1.0)
+		Flora.grass_params(sc.m, mat_t, far + 15.0)
+		return _cells_to_nodes(sc, short_cells, _clump, mat, far) + _cells_to_nodes(sc, tall_cells, _tall, mat_t, far + 15.0)
 	return _cells_to_nodes(sc, short_cells, _clump, mat, far) + _cells_to_nodes(sc, tall_cells, _tall, mat, far + 15.0)
 
 
@@ -238,6 +249,7 @@ static func flowers(sc, n: int, dmin: float, dmax: float, keep_clear := Callable
 				p + Vector3(0, 0.28 * hh, 0)), c])
 	var sm := blade_mat(sc, 1.6)
 	sm.set_shader_parameter("tint_amt", 0.0)              # flowers keep their colours
+	Flora.grass_params(sc.m, sm, far)
 	_cells_to_nodes(sc, stems, _stem, sm, far)
 	return _cells_to_nodes(sc, blooms, _bloom, sm, far)
 
@@ -286,6 +298,7 @@ static func bush(sc, parent: Node3D, p: Vector3, kind := "rund", s := 1.0) -> No
 					sc.put(n, dot, Vector3(cos(a2) * cos(el) * rr, 0.75 * s + sin(el) * rr * 0.75, sin(a2) * cos(el) * rr), dm, "tree")
 	sc.m.add_obstacle(p, r_ob)
 	sc.m.set_obstacle_height(ht)
+	Flora.dress(sc, n)                                         # «Flora und Fauna»: leaf cards (own random numbers)
 	return n
 
 
@@ -431,6 +444,7 @@ static func tree(sc, parent: Node3D, p: Vector3, kind := "laub", s := 1.0) -> No
 	if parent == sc.root or parent.get_parent() == sc.root:
 		sc.m.add_obstacle(p, trunk_r * s)
 	sc.m.tree_spots.append([Vector2(p.x, p.z), crown_r * s, crown_y * s])
+	Flora.dress(sc, tr)                                        # «Flora und Fauna»: leaf / needle cards (own random numbers)
 	return tr
 
 
