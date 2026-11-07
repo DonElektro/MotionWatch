@@ -10,6 +10,9 @@ keine Updates, Test-Postfach), wartet auf die Verbindung und rechnet dann den Pl
   python3 werkzeuge/erkennungstest/erkennungstest.py --sim-bin /pfad/MoveEyeSim3D.x86_64 --plan kurz
   python3 werkzeuge/erkennungstest/erkennungstest.py --godot /pfad/Godot_v4.3-stable_linux.x86_64 --plan test3 --laeufe 2
   python3 werkzeuge/erkennungstest/bericht.py ERGEBNIS/results.jsonl --vergleich ALT/results.jsonl
+  python3 werkzeuge/erkennungstest/erkennungstest.py … --variante bestaetigung2      # Einstellungen der Variante (siehe --liste)
+  python3 werkzeuge/erkennungstest/erkennungstest.py --plan ursache --variante bestaetigung2 --trocken   # nur zeigen, nichts starten
+  python3 werkzeuge/erkennungstest/bericht.py --varianten standard=A/results.jsonl bestaetigung2=B/results.jsonl   # nebeneinander
 
 Auf dem Simulator-PC (HP, self-hosted Runner) läuft das über GitHub: Actions → «Erkennung (HP)» (werkzeuge/test_runner/).
 Ergebnis im Ordner --aus: results.jsonl (ein Fall pro Zeile), ergebnis.json (Kennzahlen + Angaben), bericht.md, Protokolle,
@@ -92,6 +95,36 @@ PLAENE = {
     "ursache": ("Ursache: die 16 heiklen Fälle aus Erkennung 4 plus Tiere / Autos, mit Leerlauf",
                 [("orte", BASIS, {"leerwind": 55, "sel": SEL_URSACHE, "sel_leer": True})]),
 }
+
+# Varianten (Paket «Fehlalarme und Pushes», 3.60): derselbe Plan mit anderen Einstellungen von MoveEye - so lassen sich ein
+# Schalter an / aus vergleichen (Erkennung und Pushes pro Stunde nebeneinander: bericht.py --varianten, das Dauerrechnen
+# schreibt varianten.md). Nur Schlüssel, die MoveEye kennt (ältere Stände übergehen unbekannte).
+VARIANTEN = {
+    "standard": ("Einstellungen ab Werk", {}),
+    "bestaetigung2": ("Doppelte Bestätigung an (alarm_confirm2: Personen-Alarm nur, wenn KI und Wärmebild übereinstimmen oder "
+                      "die KI zweimal nacheinander sieht)", {"alarm_confirm2": True}),
+    "bestaetigung2_aus": ("Doppelte Bestätigung aus (Gegenprobe, falls sie einmal ab Werk an ist)", {"alarm_confirm2": False}),
+    "windschutz_aus": ("Windschutz für Pflanzen-Bereiche aus (wind_guard, 639zy)", {"wind_guard": False}),
+}
+
+
+def variante_einstellungen(name):
+    """(Name, Einstellungen) der Variante; unbekannt -> SystemExit"""
+    n = (name or "standard").strip() or "standard"
+    if n not in VARIANTEN:
+        sys.exit("unbekannte Variante «%s» (%s)" % (n, ", ".join(VARIANTEN)))
+    return n, dict(VARIANTEN[n][1])
+
+
+def mw_einstellungen(sim_port, variante="standard", testbild=False):
+    """die Einstellungen, mit denen MoveEye startet: leer, Simulation an, keine Updates, plus die der Variante"""
+    st = {"sim_on": True, "source": "sim:0", "thermal_source": "sim:thermal", "sim_url": "http://127.0.0.1:%d" % sim_port,
+          "sim_auto": False, "sim_autostart": False, "sim_autostart_v2": False, "sim_autoupd": False, "update_url": "",
+          "lang": "de", "desktop_notice": False, "setup_done": True, "thermal_on": True}
+    if testbild:
+        st["show_hud"] = False                          # Testbild: Bild ohne Textleiste oben (nur Anzeige, ändert die Erkennung nicht)
+    st.update(variante_einstellungen(variante)[1])
+    return st
 
 
 def log(*a):
@@ -300,16 +333,27 @@ def main():
     ap.add_argument("--fortschritt", default="", help="Fortschritt + Bild fürs Testbild des Kiosks (JSON, z. B. "
                     "/run/moveeye-test/fortschritt.json; daneben bild.png); leer = aus")
     ap.add_argument("--arbeit", default="", help="Name der Arbeit fürs Testbild (Dauerrechnen: «Erkennung messen»)")
-    ap.add_argument("--liste", action="store_true", help="nur die Pläne zeigen")
+    ap.add_argument("--variante", default="standard", help="Einstellungen von MoveEye: " + " | ".join(VARIANTEN) + " (siehe --liste)")
+    ap.add_argument("--trocken", action="store_true", help="nur zeigen, was gerechnet würde (Plan, Variante, Einstellungen, Fälle)")
+    ap.add_argument("--liste", action="store_true", help="nur die Pläne und Varianten zeigen")
     a = ap.parse_args()
     if a.liste:
         for k, (txt, _) in PLAENE.items():
             print("%-9s %s" % (k, txt))
+        print("\nVarianten (--variante):")
+        for k, (txt, st) in VARIANTEN.items():
+            print("%-18s %s%s" % (k, txt, (" · " + json.dumps(st)) if st else ""))
         return 0
     plaene = [p.strip() for p in a.plan.split(",") if p.strip()]
     for p in plaene:
         if p not in PLAENE:
             sys.exit("unbekannter Plan «%s» (%s)" % (p, ", ".join(PLAENE)))
+    a.variante, _vst = variante_einstellungen(a.variante)
+    if a.trocken:
+        print(json.dumps({"plan": ",".join(plaene), "variante": a.variante, "laeufe": max(1, min(5, a.laeufe)),
+                          "faelle": FS.faelle_zaehlen(plaene, lambda p: PLAENE[p][1], max(1, min(5, a.laeufe))),
+                          "einstellungen": mw_einstellungen(a.sim_port, a.variante)}, ensure_ascii=False, indent=1))
+        return 0
     a.laeufe = max(1, min(5, a.laeufe))
     repo = os.path.abspath(a.repo)
     aus = os.path.abspath(a.aus or tempfile.mkdtemp(prefix="mw_erkennung_"))
@@ -343,7 +387,7 @@ def main():
     except Exception:
         simver = ""
     mwver = ".".join(re.findall(r"\d+", os.path.basename(mw))) or os.path.basename(mw)
-    lauf = {"plan": ",".join(plaene), "laeufe": a.laeufe, "moveeye": mwver, "simulator": simver + (" (Godot)" if a.godot else ""),
+    lauf = {"plan": ",".join(plaene), "variante": a.variante, "laeufe": a.laeufe, "moveeye": mwver, "simulator": simver + (" (Godot)" if a.godot else ""),
             "stand": a.stand, "commit": a.commit, "rechner": a.rechner or ("%s, %d Kerne" % (cpu_modell(), os.cpu_count() or 0)),
             "anzeige": a.anzeige, "grafik": a.grafik, "ki": bool(a.ki_ordner), "start": time.strftime("%Y-%m-%d %H:%M:%S")}
     P = Prozesse()
@@ -394,11 +438,9 @@ def main():
         # --- MoveEye: leere Einstellungen, Simulation an, keine Updates, keine automatische Simulator-Suche
         cfg = os.path.join(tmp, "mw")
         os.makedirs(cfg, exist_ok=True)
-        st = {"sim_on": True, "source": "sim:0", "thermal_source": "sim:thermal", "sim_url": "http://127.0.0.1:%d" % a.sim_port,
-              "sim_auto": False, "sim_autostart": False, "sim_autostart_v2": False, "sim_autoupd": False, "update_url": "",
-              "lang": "de", "desktop_notice": False, "setup_done": True, "thermal_on": True}
-        if fs:
-            st["show_hud"] = False                          # Testbild: Bild ohne Textleiste oben (nur Anzeige, ändert die Erkennung nicht)
+        st = mw_einstellungen(a.sim_port, a.variante, testbild=bool(fs))   # + die Einstellungen der Variante (--variante)
+        if a.variante != "standard":
+            log("Variante", a.variante, "–", VARIANTEN[a.variante][0])
         with open(os.path.join(cfg, "motionwatch_settings.json"), "w") as f:
             json.dump({"cfg": st}, f)
         if a.ki_ordner:
@@ -456,7 +498,7 @@ def main():
             return RC_START
         log("verbunden – %.0f s eingewöhnen" % EINGEWOEHNEN_S)
         time.sleep(EINGEWOEHNEN_S)
-        F.konfig(sim=sim, mw=web, out=aus, shots=os.path.join(aus, "bilder"), variant=lauf["plan"], fpsmin=a.fpsmin,
+        F.konfig(sim=sim, mw=web, out=aus, shots=os.path.join(aus, "bilder"), variant=lauf["plan"] + ("" if a.variante == "standard" else "@" + a.variante), fpsmin=a.fpsmin,
                  fpswait=a.fpswait)
         if fs:
             FS.einhaengen(fs)

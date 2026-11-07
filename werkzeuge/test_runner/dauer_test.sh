@@ -396,6 +396,47 @@ python3 -c 'import json, sys; z = json.load(open(sys.argv[1]))["erledigt"]
 assert sum(1 for e in z.values() if e["status"].startswith("übersprungen: Stand nicht brauchbar")) == 2, z' \
 	"$MW_RUNNER_HOME/dauer/zustand.json" && ok "Zustand: beide als «übersprungen: Stand nicht brauchbar» erledigt" || fehler "Zustand nach Code 7"
 
+# ---------------------------------------------------------------- 6. Varianten (Paket «Fehlalarme und Pushes»)
+# Sind alle Stände mit allen Plänen gemessen, misst das Dauerrechnen main zusätzlich mit jeder Variante (z. B. doppelte
+# Bestätigung an) und schreibt varianten.md (Erkennung und Pushes/h nebeneinander, gegen dieselbe Messung ohne Variante).
+echo "--- 6. Varianten: nach allen Ständen main mit der Variante, Bericht nebeneinander"
+MW_DAUER="$W/dauer6" python3 - "$R/werkzeuge/test_runner" "$R/werkzeuge/erkennungstest" > "$W/var6.log" 2>&1 <<'EOF6'
+import json, os, sys, time
+sys.path.insert(0, sys.argv[1]); sys.path.insert(0, sys.argv[2])
+import dauer as D, bericht as B
+kand = D.kandidaten_lesen(json.dumps({"main": {"name": "main", "sha": "a" * 40}, "vorher": {"name": "v1", "sha": "b" * 40}}))
+z = {"erledigt": {}}
+for plan in D.ERK_PLAENE:
+    for k in kand:
+        z["erledigt"][D.erk_key(k["sha"], plan)] = {"t": 1, "status": "fertig", "paket": "20261107-100000-erkennung"}
+n = D.naechstes(z, kand, "erkennung", time.time())
+assert n and n["sha"] == "a" * 40 and n.get("variante") == "bestaetigung2" and n["plan"] == D.ERK_VAR_PLAENE[0], n
+assert D.erk_key(n["sha"], n["plan"], n["variante"]) == "erkennung|%s|%s@bestaetigung2" % ("a" * 40, n["plan"])
+assert D.naechstes(z, kand, "erkennung", time.time(), ()) is None, "--varianten keine: nichts mehr"
+for plan in D.ERK_VAR_PLAENE:
+    z["erledigt"][D.erk_key("a" * 40, plan, "bestaetigung2")] = {"t": 2, "status": "fertig", "paket": "x"}
+assert D.naechstes(z, kand, "erkennung", time.time()) is None, "alles gemessen"
+# Bericht nebeneinander: weniger Pushes, eine Person weniger erkannt
+def fall(key, ev, det, pushes, secs=60):
+    return {"key": key, "event": ev, "detected": det, "pushes": [[p, 5] for p in pushes], "secs": secs, "place": "camping", "cond": "tag"}
+std = [fall("a", "gehen", True, ["person"]), fall("b", "kind", True, ["person"]), fall("c", "leer", False, ["person", "prealarm"])]
+var = [fall("a", "gehen", True, ["person"]), fall("b", "kind", False, []), fall("c", "leer", False, [])]
+os.makedirs(os.path.join(D.DAUER, "pakete", "20261107-100000-erkennung"), exist_ok=True)
+os.makedirs(os.path.join(D.DAUER, "pakete", "20261107-110000-erkennung"), exist_ok=True)
+for pid, R in (("20261107-100000-erkennung", std), ("20261107-110000-erkennung", var)):
+    with open(os.path.join(D.DAUER, "pakete", pid, "results.jsonl"), "w") as f:
+        f.write("".join(json.dumps(r) + "\n" for r in R))
+ak = {"id": "20261107-110000-erkennung", "sha": "a" * 40, "stand": "main", "plan": D.ERK_PLAENE[0], "laeufe": 3, "variante": "bestaetigung2"}
+D.erk_vergleich(z, ak)
+md = open(os.path.join(D.DAUER, "pakete", ak["id"], "varianten.md"), encoding="utf-8").read()
+assert "| Kennzahl | standard | bestaetigung2 |" in md and "Pushes pro Stunde" in md and "2/2 (100 %) | 1/2 (50 %)" in md, md
+assert "Personen erkannt -50 Prozentpunkte, Pushes/h 80.0 → 20.0, falsche Pushes/h 120.0 → 0.0" in md, md
+print("ok")
+EOF6
+rc=$?
+[ "$rc" = 0 ] && ok "Varianten: nach allen Ständen main mit doppelter Bestätigung, «keine» schaltet ab, varianten.md mit Erkennung und Pushes/h" \
+	|| { fehler "Varianten (Exit $rc)"; cat "$W/var6.log"; }
+
 echo
 if [ $F -eq 0 ]; then echo "Dauerrechnen-Test: OK"; else echo "Dauerrechnen-Test: $F Fehler"; fi
 exit $F
