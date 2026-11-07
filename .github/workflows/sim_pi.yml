@@ -1,0 +1,174 @@
+# Pi-Paket (Sim 3.57.0+, «Simulator intern» auf dem Raspberry Pi 5, Teil 639zx): exportiert das Preset «Linux Pi» (arm64)
+# hier im CI, packt MoveEyeSim3D_Pi.zip (werkzeuge/linux_paket.sh --pi) und hängt es als Release-Asset an sim-X.Y.Z.
+# Die 37 MB kommen so nie ins Repository und es braucht keinen Tag-Push von aussen.
+# Nur von Hand (Actions -> Pi-Paket -> Run workflow, oder: gh workflow run sim_pi.yml -f ver=X.Y.Z).
+#
+# Ablauf beim echten Sim-Release:
+#   1. rel_sim.sh X.Y.Z … wie immer, committen, main pushen (main.gd VERSION = X.Y.Z)
+#   2. dieser Workflow mit ver=X.Y.Z (ref main, probe aus): Release sim-X.Y.Z (--latest=false, der Bausatz bleibt «latest»),
+#      Asset MoveEyeSim3D_Pi.zip, SHA-256 und Grösse in den Notizen
+#   3. lokal: PI_NUR=1 rel_sim.sh X.Y.Z - holt das Asset über die REST-API (werkzeuge/pi_asset.py), rechnet SHA-256 und
+#      Grösse selbst nach, schreibt «pi» in version.json und signiert «sim.pi» in versions.json (Schlüssel nur lokal)
+# Sicher, weil MoveEye ein Pi-Paket NUR mit der signierten SHA-256 aus versions.json annimmt: bis Schritt 3 nimmt kein Gerät
+# das Asset, ein später ausgetauschtes Asset passt nicht mehr zur Signatur.
+#
+# probe=true (Standard): Probelauf. Release «simprobe-X.Y.Z-<Lauf>» als Vorabversion (prerelease, nicht latest), jeder Zweig
+# erlaubt. Kein Gerät sucht diesen Namen (Geräte: nur sim-X.Y.Z und nur mit Eintrag in versions.json); danach von Hand löschen.
+# Keine Geheimnisse: nur GITHUB_TOKEN (contents: write), kein Signierschlüssel.
+name: Pi-Paket
+on:
+  workflow_dispatch:
+    inputs:
+      ver:
+        description: "Sim-Nummer X.Y.Z (= simulator3d/scripts/main.gd VERSION)"
+        required: true
+      ref:
+        description: "Zweig / Commit (echt: nur main)"
+        default: main
+      probe:
+        description: "Probelauf: Vorabversion simprobe-X.Y.Z-<Lauf> statt sim-X.Y.Z"
+        type: boolean
+        default: true
+permissions:
+  contents: write
+concurrency:
+  group: sim-pi
+  cancel-in-progress: false
+env:
+  GODOT_BIN: /home/runner/godot/Godot_v4.3-stable_linux.x86_64
+  PYTHONUNBUFFERED: "1"
+
+jobs:
+  pi:
+    name: Pi-Paket · ${{ inputs.ver }}${{ inputs.probe && ' (Probe)' || '' }}
+    if: github.repository == 'DonElektro/MotionWatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+      - name: Prüfen (Nummer, Zweig, Preset, Release noch nicht da)
+        id: v
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VER: ${{ inputs.ver }}
+          REF: ${{ inputs.ref }}
+          PROBE: ${{ inputs.probe }}
+        run: |
+          set -e
+          echo "$VER" | grep -Eq '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$' || { echo "::error::ver $VER ist nicht X.Y.Z"; exit 1; }
+          mv_=$(sed -n 's/^const VERSION := "\(.*\)"/\1/p' simulator3d/scripts/main.gd)
+          [ "$mv_" = "$VER" ] || { echo "::error::main.gd VERSION ist $mv_, nicht $VER"; exit 1; }
+          grep -q "NEU IN $VER" "simulator3d/Lies mich.txt" || { echo "::error::«Lies mich.txt» ohne NEU IN $VER"; exit 1; }
+          grep -q '^name="Linux Pi"' simulator3d/export_presets.cfg || { echo "::error::Preset «Linux Pi» fehlt (kommt mit sim-pi-intern)"; exit 1; }
+          grep -q -- '--pi' werkzeuge/linux_paket.sh || { echo "::error::linux_paket.sh kennt --pi noch nicht"; exit 1; }
+          sha=$(git rev-parse HEAD)
+          if [ "$PROBE" = "true" ]; then
+            tag="simprobe-$VER-$GITHUB_RUN_NUMBER"
+          else
+            msha=$(git ls-remote origin refs/heads/main | cut -f1)
+            [ "$REF" = "main" ] && [ "$sha" = "$msha" ] || { echo "::error::echt nur vom aktuellen main ($msha), nicht $REF ($sha)"; exit 1; }
+            tag="sim-$VER"
+          fi
+          if gh release view "$tag" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "::error::Release $tag gibt es schon - nie überschreiben (Geräte prüfen die signierte SHA-256)"; exit 1
+          fi
+          if git ls-remote --tags origin "refs/tags/$tag" | grep -q .; then
+            t=$(git ls-remote --tags origin "refs/tags/$tag" | cut -f1)
+            [ "$t" = "$sha" ] || { echo "::error::Tag $tag zeigt schon auf $t, nicht auf $sha"; exit 1; }
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"; echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "Pi-Paket $VER von $REF ($sha) -> Release $tag"
+      - name: Godot 4.3 (Cache)
+        id: gcache
+        uses: actions/cache@v4
+        with:
+          path: ~/godot
+          key: godot-4.3-stable-linux
+      - name: Godot 4.3 herunterladen
+        if: steps.gcache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ~/godot && cd ~/godot
+          curl -fsSL -o g.zip https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip
+          unzip -q g.zip && rm g.zip && chmod +x Godot_v4.3-stable_linux.x86_64
+      - name: Export-Vorlagen 4.3 arm64 (Cache)
+        id: tcache
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/godot/export_templates/4.3.stable
+          key: godot-templates-4.3-stable-arm64
+      - name: Export-Vorlagen herunterladen (nur Linux arm64)
+        if: steps.tcache.outputs.cache-hit != 'true'
+        run: |
+          d=~/.local/share/godot/export_templates/4.3.stable; mkdir -p "$d" "$RUNNER_TEMP/t" && cd "$RUNNER_TEMP/t"
+          curl -fsSL -o t.tpz https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_export_templates.tpz
+          unzip -q t.tpz templates/version.txt templates/linux_release.arm64 templates/linux_debug.arm64
+          mv templates/* "$d"/ && rm -rf "$RUNNER_TEMP/t" && ls -la "$d"
+      - name: Import (Cache simulator3d/.godot)
+        uses: actions/cache@v4
+        with:
+          path: simulator3d/.godot
+          key: godot-import-${{ hashFiles('simulator3d/**/*.png', 'simulator3d/**/*.glb', 'simulator3d/**/*.ogg', 'simulator3d/**/*.wav', 'simulator3d/**/*.mp3', 'simulator3d/**/*.jpg', 'simulator3d/**/*.gdshader', 'simulator3d/project.godot') }}
+          restore-keys: godot-import-
+      - name: Projekt importieren
+        run: timeout 900 "$GODOT_BIN" --headless --import --path simulator3d > "$RUNNER_TEMP/import.log" 2>&1 || true
+      - name: Exportieren «Linux Pi» (arm64) und packen
+        run: |
+          set -e
+          out="$RUNNER_TEMP/build"; mkdir -p "$out"
+          timeout 1500 "$GODOT_BIN" --headless --path simulator3d --export-release "Linux Pi" "$out/MoveEyeSim3D.arm64" 2>&1 | tail -30
+          test -s "$out/MoveEyeSim3D.arm64" || { echo "::error::Export «Linux Pi» fehlgeschlagen"; exit 1; }
+          bash werkzeuge/linux_paket.sh --pi "$out/MoveEyeSim3D.arm64" "$out/MoveEyeSim3D_Pi.zip"
+          python3 - "$out/MoveEyeSim3D_Pi.zip" "${{ inputs.ver }}" <<'PY'
+          import sys, zipfile
+          p, v = sys.argv[1:]
+          with zipfile.ZipFile(p) as z:
+              n = z.namelist()
+              lies = z.read("MoveEyeSim3D/Lies mich.txt").decode("utf-8", "replace")
+              b = z.read("MoveEyeSim3D/MoveEyeSim3D.arm64")[:20]
+              mode = (z.getinfo("MoveEyeSim3D/MoveEyeSim3D.arm64").external_attr >> 16) & 0o777
+          assert "MoveEyeSim3D/installieren.sh" in n, "installieren.sh fehlt"
+          assert not any(x.startswith("MoveEyeSim3D/hp/") for x in n), "hp/ gehört nicht ins Pi-Paket"
+          assert b[:6] == b"\x7fELF\x02\x01" and b[18:20] == b"\xb7\x00", "keine arm64-ELF-Datei"
+          assert mode & 0o100, "nicht ausführbar"
+          assert "NEU IN %s\n" % v in lies, "Lies mich ohne NEU IN %s" % v
+          print("Pi-Paket ok:", len(n), "Dateien")
+          PY
+          sz=$(stat -c %s "$out/MoveEyeSim3D_Pi.zip"); sh=$(sha256sum "$out/MoveEyeSim3D_Pi.zip" | cut -d' ' -f1)
+          echo "SZ=$sz" >> "$GITHUB_ENV"; echo "SH=$sh" >> "$GITHUB_ENV"
+          echo "Pi-Paket: $sz Bytes, sha256 $sh"
+      - name: Release anlegen, Asset hochladen, zurücklesen
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VER: ${{ inputs.ver }}
+          TAG: ${{ steps.v.outputs.tag }}
+          SHA: ${{ steps.v.outputs.sha }}
+          PROBE: ${{ inputs.probe }}
+        run: |
+          set -e
+          Z="$RUNNER_TEMP/build/MoveEyeSim3D_Pi.zip"
+          {
+            if [ "$PROBE" = "true" ]; then echo "PROBELAUF (Vorabversion) - nicht für Geräte, wird wieder gelöscht."; echo; fi
+            echo "MoveEye Sim $VER · Pi-Paket («Simulator intern», Raspberry Pi 5, arm64)"
+            echo
+            echo "Wird von MoveEye nur mit der signierten Prüfsumme aus versions.json «sim.pi» angenommen."
+            echo
+            echo "pi-ver: $VER"
+            echo "pi-size: $SZ"
+            echo "pi-sha256: $SH"
+            echo "commit: $SHA"
+            echo "lauf: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          } > notes.md
+          if [ "$PROBE" = "true" ]; then
+            gh release create "$TAG" "$Z" -R "$GITHUB_REPOSITORY" --target "$SHA" --title "Probe · Pi-Paket Sim $VER" \
+              --notes-file notes.md --prerelease --latest=false
+          else
+            gh release create "$TAG" "$Z" -R "$GITHUB_REPOSITORY" --target "$SHA" --title "MoveEye Sim $VER · Pi-Paket" \
+              --notes-file notes.md --latest=false
+          fi
+          mkdir -p "$RUNNER_TEMP/zurueck"
+          gh release download "$TAG" -R "$GITHUB_REPOSITORY" -p MoveEyeSim3D_Pi.zip -D "$RUNNER_TEMP/zurueck"
+          echo "$SH  $RUNNER_TEMP/zurueck/MoveEyeSim3D_Pi.zip" | sha256sum -c -
+          echo "### Pi-Paket $VER -> $TAG" >> "$GITHUB_STEP_SUMMARY"
+          echo "Grösse $SZ Bytes, sha256 \`$SH\`, commit $SHA" >> "$GITHUB_STEP_SUMMARY"
