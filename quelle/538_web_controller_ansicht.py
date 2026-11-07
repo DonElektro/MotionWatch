@@ -19,6 +19,8 @@
 #   While it is open the raw controller is not sent to the simulator (470 simPadLink: mwPadOwn), the small simulator
 #   window of the live page pauses (530) - one picture, one mapping. Stored per device (localStorage «mw-pad», not on
 #   the Pi): open, swapped, asked. Translations: part 628.
+# 3.57 (639zv «Drei Kamera-Ansichten»): the bar has «Ansicht» (head → thermal → wide, long press = menu); without the simulator
+#   «⇅ Swap» (Select, long tap on the live picture) swaps big / small of the camera views (the small overview picture).
 # ----------------------------------------------------------------------------
 
 PADVIEW_JS = r"""
@@ -112,10 +114,12 @@ body.pv-on #toast{z-index:205;bottom:calc(max(10px,env(safe-area-inset-bottom,0p
     center: {ic: "◎", lb: "Centre", tip: "Head to the middle", on: () => false, go: () => post("/api/move", {dir: "center"})},
     rover: {ic: "🚜", lb: "Mover", tip: "The mover in the simulator on / off", on: () => rover(), ok: () => simOn() && !(ST().mover || {}).hw,
             go: () => post("/api/sim", {action: "ctl", ctl: "set", id: "mover_on", value: !rover(), lang: LANG})},
-    swap: {ic: "⇅", lb: "Swap", tip: "Swap the pictures (long tap on a picture, Select)", on: () => !!P.swap, ok: () => simOn(), go: () => { swap(); return Promise.resolve({ok: true}); }, util: true},
+    swap: {ic: "⇅", lb: "Swap", tip: "Swap the pictures (long tap on a picture, Select)", on: () => simOn() ? !!P.swap : !!(window.mwView3 && mwView3.cur() === "wide"),
+           ok: () => simOn() || v3swap(), go: () => { swap(); return Promise.resolve({ok: true}); }, util: true},
     help: {ic: "?", lb: "Help", tip: "Controller and gestures", on: () => !HELP.hidden, go: () => { help(HELP.hidden); return Promise.resolve({ok: true}); }, util: true},
     exit: {ic: "✕", lb: "Exit", tip: "Leave the controller view", on: () => false, go: () => { open(false); return Promise.resolve({ok: true}); }, util: true}};
-  const ORDER = ["white", "ir", "therm", "nv", "marks", "photo", "rec", "track", "center", "patrol", "listen", "mask", "rover", "swap", "help", "exit"];
+  const v3swap = () => !!(window.mwView3 && mwView3.canSwap());   // 639zv: without the simulator «Swap» = big / small of the camera views
+  const ORDER = ["white", "ir", "therm", "view", "nv", "marks", "photo", "rec", "track", "center", "patrol", "listen", "mask", "rover", "swap", "help", "exit"];
   const ACT2ID = {light: "white", ir: "ir", photo: "photo", follow: "track"};   // the actions of MWPad (542) -> the buttons of the bar
   const KEYS = () => { const K = {}; ((window.MWPad && MWPad.MAP.modes.view) || []).forEach(e => { if (ACT2ID[e[1]] && /^[abxy]$/.test(e[0])) K[ACT2ID[e[1]]] = e[0].toUpperCase(); }); return K; };
   const item = id => EXTRA[id] || QD(id);
@@ -192,7 +196,7 @@ body.pv-on #toast{z-index:205;bottom:calc(max(10px,env(safe-area-inset-bottom,0p
     W.classList.toggle("swap", !!P.swap);
     W.classList.toggle("nosim", !simOn());
   }
-  function swap() { if (!simOn()) return; P.swap = !P.swap; save(); layout(); paintBar(); toastT("⇅ " + T("Pictures swapped")); }
+  function swap() { if (!simOn()) { if (v3swap()) { mwView3.swap(); paintBar(); } return; } P.swap = !P.swap; save(); layout(); paintBar(); toastT("⇅ " + T("Pictures swapped")); }
   addEventListener("resize", () => { layout(); paintBar(); });
   // ---- the simulator picture: the picture poll of the simulator window (470 simViewPoll), naked (bare=1) ----
   let VP = null, vOn = false;

@@ -23,6 +23,7 @@
 #     zeigt der Browser selbst (game_info, wie die Zuschauer-Anzeige der Seite Simulator). «× Beenden» = localplay stop.
 # Die Geschichten (Maggie, Grossvater, Hospiz) laufen weiter im Simulator-Fenster: dort zeigt die Sim-Ansicht die Sticks
 # «gehen / umschauen» von selbst (470 simTouchPad, /api/play «playing»).
+# 3.57 (639zv): das kleine Kamerabild zeigt die gewählte Kamera-Ansicht (Weitwinkel: /cam_snap/<n>), «⋯ Mehr» hat «Ansicht».
 # Daten: /api/state (530 refresh → QSJ), /api/sim (gamewiz, ctl, pad, game, localplay), /snapshot.jpg. Kein neuer Begriff
 # auf dem Pi, keine neue Einstellung. Übersetzungen: unten (_HX_SIMV, alle 5 Sprachen).
 # ----------------------------------------------------------------------------
@@ -181,7 +182,9 @@ body.sv-on{overflow:hidden}body.sv-on #lv-side,body.sv-on #lv-tools,body.sv-on #
       SV.pipT = setTimeout(pipTick, ok ? 700 : Math.min(8000, 1000 * Math.pow(2, pipFail))); };
     const wd = setTimeout(() => end(false), 5000);
     n.onload = () => end(true); n.onerror = () => end(false);
-    n.src = "/snapshot.jpg?r=" + Date.now(); };
+    const v3 = window.mwView3, ps = v3 && v3.pipSrc();   // 639zv: the small picture shows the chosen camera view (wide: single pictures of the overview)
+    pip.lastChild.textContent = (v3 && v3.cur() !== "head" ? v3.icon() : "📷") + " LIVE";
+    n.src = (ps || "/snapshot.jpg") + "?r=" + Date.now(); };
 
   // ---- the big buttons: the same switches as the live page (530 QS) ----
   const QSA = id => (typeof QS !== "undefined" ? QS : []).find(q => q.id === id);
@@ -224,6 +227,7 @@ body.sv-on{overflow:hidden}body.sv-on #lv-side,body.sv-on #lv-tools,body.sv-on #
     let L = []; try { L = qsArrange(qsList(J), J && J.cfg, true); } catch (e) {}
     L.forEach(q => { const o = document.getElementById("qs-" + q.id), b = B("svb", q.ic, q.raw ? q.lb : T(q.lb)); b.title = T(q.tip || "");
       if (J) { try { const ok = q.ok ? q.ok(J.cfg, J.state) : true; b.disabled = !ok; if (q.on(J.cfg, J.state)) b.classList.add(q.cls || "on"); } catch (e) {} }
+      if (q.id === "view") b.dataset.v3btn = "1";      // 639zv: long press = the menu of the three views
       b.onclick = () => { if (q.talk) { klass(true); say("🎙 " + T("Talk: hold the button on the usual live screen")); return; }
         if (o) o.click(); else if (q.go && J) q.go(J.cfg, J.state); setTimeout(moreBuild, 900); };
       g.appendChild(b); });

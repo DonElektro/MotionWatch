@@ -518,8 +518,9 @@ KEEP_JS = r"""function keepStream(img, opt) {
   if (!img) return null;
   if (img.mwKeep) return img.mwKeep;
   opt = opt || {};
-  const base = (img.dataset.src || img.getAttribute("src") || "").split("?")[0];
-  const snap = opt.snap || img.dataset.snap || "", every = opt.every || 500, STALL = opt.stall || 5000, BL = "data:,";
+  let base = (img.dataset.src || img.getAttribute("src") || "").split("?")[0];
+  let snap = opt.snap || img.dataset.snap || "";
+  const every = opt.every || 500, STALL = opt.stall || 5000, BL = "data:,";
   const K = {frames: 0, conns: 0, stalls: 0, on: false, lost: false, mode: snap ? "snap" : "stream"};
   img.mwKeep = K; img.dataset.keep = "1";
   if (img.getAttribute("src")) img.src = BL;                // the browser's own stream (src in the HTML) is closed, we open it
@@ -602,6 +603,14 @@ KEEP_JS = r"""function keepStream(img, opt) {
   const restart = () => { tries = 0; still = 0; stop(); if (visible()) start(); };
   img.mwRestart = restart;                  // 2.95.72: the page fetches the picture anew when the video source changes
   K.restart = restart;
+  // 3.57 (drei Ansichten, 639zv): the same picture element shows another camera - a stream (src) or single pictures (sn);
+  // still one connection per picture, closed while hidden like before
+  K.src = snap || base;
+  K.retarget = (src, sn) => {
+    const nb = src != null ? String(src).split("?")[0] : base, ns = sn != null ? String(sn) : snap;
+    if (nb === base && ns === snap) return K;
+    stop(); base = nb; snap = ns; K.mode = snap ? "snap" : "stream"; K.src = snap || base; restart(); return K;
+  };
   document.addEventListener("visibilitychange", vis);
   addEventListener("pageshow", e => { if (e.persisted) restart(); });
   addEventListener("pagehide", () => stop());          // leaving the page: close at once (Safari keeps pages a while)
