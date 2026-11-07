@@ -314,6 +314,8 @@ func foliage(k: int) -> ShaderMaterial:
 				Flora.foliage_params(m, fm)
 				m.foliage_mats.append(fm)
 				fol_mats.append(fm)
+	if not m.foliage_mats.has(fol_mats[0]):
+		m.foliage_mats.append_array(fol_mats)                  # after a change of scene (main clears the list): wind, seasons again
 	return fol_mats[k % fol_mats.size()]
 
 
