@@ -151,7 +151,7 @@ static func check(main) -> Array:
 		if bool(p["same"]):
 			add.call("ver", "update", "Versionen", "ok", str(p["text"]))
 		else:
-			add.call("ver", "update", "Versionen", "warn", str(p["text"]), "Beide Programme sollten dieselbe Nummer haben – die ältere Seite aktualisieren (Knopf unten rechts).")
+			add.call("ver", "update", "Versionen", "warn", str(p["text"]), "Die Nummern dürfen verschieden sein, aber ein Programm ist älter, als das andere braucht – die ältere Seite aktualisieren (Knopf unten rechts).")
 		if main.now() - float(ab.diag_t) < 60.0:
 			for x in ab.diag:
 				if typeof(x) == TYPE_DICTIONARY:

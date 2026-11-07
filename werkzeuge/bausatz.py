@@ -7,6 +7,11 @@
     python3 werkzeuge/bausatz.py --ohne-bilder         # Anleitung ohne 3D-Bilder (schneller, kein WebGL nötig)
     python3 werkzeuge/bausatz.py --fest                # zusätzlich MoveEye_Bausatz.zip (fester Name für GitHub-Releases)
     python3 werkzeuge/bausatz.py --unsigniert          # auch ohne Signatur in versions.json (nur zum Testen)
+    python3 werkzeuge/bausatz.py --moveeye 3.56.0      # diese MoveEye-Version (Standard: die neuste signierte im Repository)
+
+Drei Spuren (Besitzer 03.11.2026): der Bausatz gehört zur Spur 🧩 Gehäuse (Release «geh-<bau.json version>», Workflow
+«Bausatz»), entsteht nur, wenn sich Gehäuse-Daten oder Werkstatt ändern (oder von Hand), und legt die neuste SIGNIERTE
+MoveEye-Version aus versions.json bei - nicht einfach APP_VERSION (die kann auf einem Arbeitszweig schon weiter sein).
 
 Ergebnis: MoveEye_Bausatz_X.Y.Z.zip mit (alle Namen mit der laufenden Version, real-abgleich-v52)
   1_Anleitung/     MoveEye_Bauanleitung_X.Y.Z_de.pdf (Schweizer Deutsch; dazu fr / it / rm / en aus bau.json)
@@ -180,6 +185,19 @@ def lade():
     src = open(os.path.join(R, "quelle", "010_grundlagen.py"), encoding="utf-8").read()
     ver = re.search(r'^APP_VERSION = "([0-9.]+)"', src, re.M).group(1)
     return B, K, M, ver
+
+
+def neuste_signierte(app):
+    """Drei Spuren: die neuste MoveEye-Version mit Signatur (Programm + Zusatzdatei) in versions.json, deren Dateien da sind;
+    sonst APP_VERSION (dann meldet release_dateien, was fehlt)"""
+    try:
+        vs = json.load(open(os.path.join(R, "versions.json"), encoding="utf-8")).get("versions") or []
+    except (OSError, ValueError):
+        return app
+    key = lambda v: tuple(int(x) for x in v.split("."))  # noqa: E731
+    gut = [e["version"] for e in vs if e.get("sig") and (e.get("data") or {}).get("sig") and re.match(r"^\d+\.\d+\.\d+$", str(e.get("version")))
+           and os.path.isfile(os.path.join(R, str(e.get("file")))) and os.path.isfile(os.path.join(R, str((e.get("data") or {}).get("file"))))]
+    return max(gut, key=key) if gut else app
 
 
 def sha(p):
@@ -785,9 +803,11 @@ def main():
     ap.add_argument("--ohne-bilder", action="store_true")
     ap.add_argument("--fest", action="store_true", help="zusätzlich MoveEye_Bausatz.zip (fester Name)")
     ap.add_argument("--unsigniert", action="store_true", help="auch ohne passende Signatur (nur Test)")
+    ap.add_argument("--moveeye", default="", help="diese MoveEye-Version (Standard: die neuste signierte)")
     a = ap.parse_args()
     sprachen = [s for s in a.sprachen.split(",") if s in SPRACHEN] or ["de"]
     B, K, M, ver = lade()
+    ver = a.moveeye or (ver if a.unsigniert else neuste_signierte(ver))
     py, zd, vj, signiert = release_dateien(ver, a.unsigniert)
     os.makedirs(a.aus, exist_ok=True)
     name = "MoveEye_Bausatz_%s" % ver

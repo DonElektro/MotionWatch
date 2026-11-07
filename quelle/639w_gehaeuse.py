@@ -1258,7 +1258,7 @@ def bau_infos_veraltet(base=None):
 
 def geh_selftest():
     B = GEH_BAU
-    assert B.get("version") == "5.1" and len(B.get("schritte") or []) == 14, "data"
+    assert re.fullmatch(r"\d+\.\d+(\.\d+)?", str(B.get("version"))) and len(B.get("schritte") or []) == 14, "data"   # 3 tracks: own number
     bom = {b["id"] for b in B["bom"]}
     for t_ in B["teile"]:
         assert not t_.get("bom") or t_["bom"] in bom, t_["id"]
@@ -1344,6 +1344,9 @@ def geh_selftest():
             os.remove(f_.name)
             assert r.returncode == 0, f"/build script {i}: {(r.stderr or '').strip()[-300:]}"
     probs = geh_check()
+    if probs:   # Drei Spuren (Besitzer 03.11.2026): the case is released on its own, its data come with the next MoveEye /
+        # simulator version («Kamera/Gehäuse überall nachziehen» is paused) - a warning here; rel_mw.sh shows it before a release
+        return "WARNING – case data in the repository differ from this MoveEye (3 tracks: gehaeuse_bauen.py --sim at the next release): " + probs[0]
     assert not probs, " | ".join(probs)
     warn = bau_infos_veraltet()
     if warn:                                              # a warning, no error: nothing is changed by itself

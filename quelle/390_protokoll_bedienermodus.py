@@ -377,6 +377,10 @@ def update_check():
                 data = json.loads(r.read(1024 * 1024 + 1)[:1024 * 1024].decode("utf-8"))
             UPD["list_time"] = str(data.get("generated") or "")[:16]
             base = src.rsplit("/", 1)[0] + "/"
+            try:                                         # 3 tracks: the newest signed simulator for /sim (300 sim_manifest_take)
+                sim_manifest_take(data.get("sim"))
+            except Exception:
+                pass
             for e in (data.get("versions") or [])[:200]:
                 v, fn = str(e.get("version", "")), str(e.get("file", ""))
                 url = str(e.get("url") or (base + fn))
@@ -1132,8 +1136,34 @@ def self_test(folder=""):
                         bad.append(e["version"] + " (data file)")
             if not any(e.get("bridge") and e.get("version") == UPD_BRIDGE for e in m.get("versions", [])):
                 bad.append("bridge " + UPD_BRIDGE + " missing")
+            sim = m.get("sim")                           # 3 tracks: the signed simulator block (300 sim_manifest_verify)
+            simtxt = ""
+            if sim is not None and os.path.isdir(os.path.join(folder, "simulator3d")):   # e.g. not in the Bausatz folder
+                ok_ = sim_manifest_verify(sim)
+                for key in ("win", "linux"):
+                    e = sim.get(key) if isinstance(sim, dict) else None
+                    if e is None:
+                        continue
+                    p_ = os.path.join(folder, str(e.get("file") or ""))
+                    sha = ""
+                    if os.path.isfile(p_):
+                        h_ = hashlib.sha256()
+                        with open(p_, "rb") as f:
+                            for b_ in iter(lambda: f.read(1 << 20), b""):
+                                h_.update(b_)
+                        sha = h_.hexdigest()
+                    if key not in ok_ or not sha or sha != ok_[key]["sha256"] or os.path.getsize(p_) != ok_[key]["size"]:
+                        bad.append(f"simulator {key} {e.get('ver')}")
+                try:
+                    with open(os.path.join(folder, "simulator3d", "version.json"), encoding="utf-8") as f:
+                        vj_ = json.load(f)
+                    if str(vj_.get("ver")) != str(sim.get("ver")):
+                        bad.append(f"simulator {sim.get('ver')} in versions.json, simulator3d/version.json has {vj_.get('ver')} - sign again")
+                except (OSError, ValueError, AttributeError):
+                    pass
+                simtxt = f", simulator {sim.get('ver') if isinstance(sim, dict) else '?'} ({'+'.join(sorted(ok_))})"
             assert not bad, f"bad checksum / signature: {bad}"
-            return f"{len(m.get('versions', []))} versions signed and checked"
+            return f"{len(m.get('versions', []))} versions signed and checked" + simtxt
         if os.environ.get("MW_SELFTEST_NO_SIG"):         # 2.98.50 (Besitzer): work branches are not signed yet - GitHub checks it only on main
             chk("versions.json signatures", lambda: "skipped (MW_SELFTEST_NO_SIG: work branch, signed only at the release)")
         else:
@@ -1178,10 +1208,53 @@ def make_manifest(folder, base_url, sign_key=""):
             if seed:
                 e["data"]["sig"] = _ED[1](seed, _sig_msg(it["version"], zf, zsha)).hex()
         out.append(e)
+    man = {"app": "Motion Watch", "generated": datetime.now().strftime("%Y-%m-%d %H:%M"), "versions": out}
+    sim = sim_manifest_block(folder, seed)                # 3 tracks: the simulator with its own number (300 sim_manifest_take)
+    if sim:
+        man["sim"] = sim
     p = os.path.join(folder, "versions.json")
     with open(p, "w") as f:
-        json.dump({"app": "Motion Watch", "generated": datetime.now().strftime("%Y-%m-%d %H:%M"), "versions": out}, f, indent=1, ensure_ascii=False)
-    print(f"{p}: {len(out)} version(s)" + (", signed" if seed else ", NOT signed"))
+        json.dump(man, f, indent=1, ensure_ascii=False)
+    print(f"{p}: {len(out)} version(s)" + (f", simulator {sim['ver']}" if sim else "") + (", signed" if seed else ", NOT signed"))
     return 0
+
+
+def sim_manifest_block(folder, seed=b""):
+    """«sim» for versions.json from simulator3d/version.json: Windows + Linux package with size, checksum and - with the key - a
+    signature over «MotionWatch|ver|file|sha256» (same scheme as the program files). Only packages that are there and fit
+    version.json; None without simulator3d/version.json. Old devices ignore this block (they only read «versions»)."""
+    try:
+        with open(os.path.join(folder, "simulator3d", "version.json"), encoding="utf-8") as f:
+            d = json.load(f)
+    except (OSError, ValueError):
+        return None
+    ver = str(d.get("ver") or "")
+    if not VER_RE.match(ver):
+        print("Note: simulator3d/version.json without «ver» X.Y.Z - no «sim» block in versions.json")
+        return None
+    blk = {"ver": ver, "version": str(d.get("version") or ""), "notes": str(d.get("notes") or "")[:400]}
+    if d.get("mw_min") and VER_RE.match(str(d.get("mw_min"))):
+        blk["mw_min"] = str(d["mw_min"])
+    lx = d.get("linux") if isinstance(d.get("linux"), dict) else {}
+    for key, e in (("win", d), ("linux", lx)):
+        fn, v = str(e.get("file") or ""), str(e.get("ver") or ver)
+        if not fn or not VER_RE.match(v) or fn not in ("simulator3d/MotionWatch3D_Simulator.zip", "simulator3d/MoveEyeSim3D_Linux.zip"):
+            continue
+        fp = os.path.join(folder, fn)
+        if not os.path.isfile(fp):
+            print(f"Note: {fn} missing - «sim» without {key}")
+            continue
+        h = hashlib.sha256()
+        with open(fp, "rb") as f:
+            for b in iter(lambda: f.read(1 << 20), b""):
+                h.update(b)
+        sha, size = h.hexdigest(), os.path.getsize(fp)
+        if sha != str(e.get("sha256") or "") or size != e.get("size"):
+            print(f"Note: {fn} does not fit simulator3d/version.json (size / checksum) - «sim» without {key}")
+            continue
+        blk[key] = {"ver": v, "file": fn, "size": size, "sha256": sha}
+        if seed:
+            blk[key]["sig"] = _ED[1](seed, _sig_msg(v, fn, sha)).hex()
+    return blk if ("win" in blk or "linux" in blk) else None
 
 

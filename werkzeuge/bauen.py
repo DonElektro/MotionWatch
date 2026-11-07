@@ -12,6 +12,9 @@ Der Pi, die Update-Funktion und die Signatur arbeiten weiter mit dieser einen Da
   python3 werkzeuge/bauen.py --neue-version "Text" --stufe funktion      # ab 3.0.0: neue Funktion X.Y+1.0 (fehler = X.Y.Z+1,
                                                                          #   gross = X+1.0.0), siehe CLAUDE.md «Versionierung»
   python3 werkzeuge/bauen.py --signieren SCHLUESSELDATEI                 # danach: versions.json schreiben, signieren, Selbsttest
+  python3 werkzeuge/bauen.py --nur-signieren SCHLUESSELDATEI             # Drei Spuren: OHNE zu bauen (Sim- oder Gehäuse-Release:
+                                                                         #   die veröffentlichte MoveEye-Datei bleibt Byte für Byte)
+                                                                         #   versions.json mit Block «sim» neu signieren, Selbsttest
   python3 werkzeuge/bauen.py --groessen                                  # was braucht am meisten Platz? (Teile, Literale)
 
 Zusatzdaten (31.10.2026, Paket «MoveEye-Datei verkleinern»): grosse Literale (Web-Seiten, JavaScript, Bilder als base64,
@@ -527,7 +530,24 @@ def main():
                     help="mit --neue-version: fehler = X.Y.Z+1 (Standard), funktion = X.Y+1.0, gross = X+1.0.0")
     ap.add_argument("--groessen", action="store_true", help="was braucht am meisten Platz?")
     ap.add_argument("--signieren", metavar="SCHLUESSEL", default="", help="versions.json schreiben und signieren, Selbsttest")
+    ap.add_argument("--nur-signieren", metavar="SCHLUESSEL", default="",
+                    help="Drei Spuren: nicht bauen, nur versions.json (mit «sim») mit der vorhandenen Datei signieren, Selbsttest")
     a = ap.parse_args()
+    if a.nur_signieren:
+        f = dateiname(version())
+        if not os.path.isfile(f):
+            print("FEHLT: %s – zuerst die MoveEye-Spur veröffentlichen" % os.path.basename(f))
+            return 1
+        sha = hashlib.sha256(open(zd_pfad(version()), "rb").read()).hexdigest() if os.path.isfile(zd_pfad(version())) else ""
+        if open(f, encoding="utf-8", newline="").read() != zusammensetzen_klein(sha)[0]:
+            print("Hinweis: quelle/ ist weiter als %s (unveröffentlichte MoveEye-Änderungen) – signiert wird die Datei, wie sie ist"
+                  % os.path.basename(f))
+        for cmd in ([sys.executable, f, "--make-manifest", ".", "--sign-key", a.nur_signieren], [sys.executable, f, "--self-test", "."]):
+            r = subprocess.run(cmd, cwd=REPO, capture_output=True, text=True)
+            print((r.stdout + r.stderr).strip().splitlines()[-1] if (r.stdout + r.stderr).strip() else "")
+            if r.returncode != 0:
+                return 1
+        return 0
     if a.groessen:
         return groessen()
     if a.pruefen:

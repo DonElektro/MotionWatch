@@ -29,6 +29,11 @@ const LINKS := ["auto", "on", "off"]   # «Links zu Neuerungen» (news.gd)
 const GAP := 3.0                      # seconds without a packet = a new connection (MoveEye leads again)
 const MOTION_TO := {"auto": "auto", "on": "an", "off": "aus"}
 const VOICE_TO := {"on": "an", "off": "aus", "subtitles": "untertitel"}
+## Drei Spuren (Besitzer 03.11.2026): MoveEye und der Simulator haben eigene Nummern. Statt «gleiche Nummer» nennt jede Seite
+## die älteste Version der anderen, mit der sie arbeitet: MW_MIN hier (geht als «mw_min» in /info, main.gd, und in version.json),
+## «sim_min» schickt MoveEye im Zustand (Teil 545 SIM_MIN). Das Versions-Paar warnt nur unter dem Minimum. Erhöhen, wenn sich die
+## Schnittstelle (schnittstelle.json) so ändert, dass die ältere Seite nicht mehr mitkommt.
+const MW_MIN := "3.55.0"
 
 var main
 var synced := false                   # this connection already has the values of MoveEye
@@ -266,15 +271,22 @@ static func vkey(s: String) -> Array:
 	return a
 
 
+static func vnum(k: Array) -> int:
+	return int(k[0]) * 1000000 + int(k[1]) * 1000 + int(k[2]) if k.size() == 3 else 0
+
+
 func pair() -> Dictionary:
-	"""{mw, sim, same, older ("" | "sim" | "mw"), text} - «MoveEye 3.34.0 · Sim 3.34.0 ✓»"""
+	"""{mw, sim, same, older ("" | "sim" | "mw"), text} - «MoveEye 3.56.0 · Sim 3.55.4 ✓» (3 tracks: «same» = the pair works
+	together, each side at least the minimum of the other; «older» = the side below it)"""
 	var mv := str(main.mw.get("mw_version", "")) if main.now() - float(main.mw_t) < GAP else ""
 	var sv := str(main.VERSION)
 	var a := vkey(mv)
 	var b := vkey(sv)
-	var o := {"mw": mv, "sim": sv, "same": not a.is_empty() and a == b, "older": ""}
-	if not a.is_empty() and not b.is_empty() and a != b:
-		o["older"] = "sim" if (b[0] * 1000000 + b[1] * 1000 + b[2]) < (a[0] * 1000000 + a[1] * 1000 + a[2]) else "mw"
+	var smin := vkey(str(main.mw.get("sim_min", ""))) if mv != "" else []   # 3 tracks: what MoveEye needs (545 SIM_MIN)
+	var mmin := vkey(MW_MIN)
+	var o := {"mw": mv, "sim": sv, "same": not a.is_empty() and not b.is_empty() and vnum(a) >= vnum(mmin) and (smin.is_empty() or vnum(b) >= vnum(smin)), "older": ""}
+	if not a.is_empty() and not b.is_empty() and not o["same"]:
+		o["older"] = "mw" if vnum(a) < vnum(mmin) else "sim"
 	var tx := "MoveEye %s · Sim %s" % [mv if mv != "" else "?", sv]
 	if o["same"]:
 		tx += " ✓"

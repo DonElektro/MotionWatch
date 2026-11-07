@@ -3284,7 +3284,7 @@ func refscan_text() -> String:
 
 
 func info() -> Dictionary:
-	return {"v": 1, "name": Versionen.label(VERSION), "version": VERSION, "host": host_name(),   # «version»: Versionierung 3.0.0 (MoveEye 300 sim_versions)
+	return {"v": 1, "name": Versionen.label(VERSION), "version": VERSION, "mw_min": preload("res://scripts/abgleich.gd").MW_MIN, "host": host_name(),   # «version»: Versionierung 3.0.0 (MoveEye 300 sim_versions); «mw_min»: 3 tracks (abgleich.gd, MoveEye 639zb)
 			"cameras": [{"id": 0, "name": "Head camera (NoIR)", "w": CAM_W[0], "h": CAM_H[0], "fps": CAM_FPS[0], "fov_h": CAM_FOV[0], "fov_v": 41.0, "on_head": true, "noir": true},
 						weit.cam_info()],          # 3D-4.17: the wide camera with its mount (weitwinkel.gd)
 			"thermal": simint.thermal_info() if simint != null else {"w": TH_W, "h": TH_H, "fps": th_fps, "fov_h": TH_FOV, "fov_v": 35.0, "unit": "C", "on_head": true},
