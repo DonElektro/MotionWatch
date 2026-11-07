@@ -23,6 +23,36 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 3.58.0: Weitwinkel = Wache: leichte KI im Weitwinkelbild – nur Personen rufen den Kopf (Tiere / Fahrzeuge wählbar),
+    Auslösezonen im Weitwinkelbild (Zonen-Editor 🔭), nachts mit Wärmebild kein Personen-Alarm ohne Wärme (ab Werk an, ohne
+    Wärmebild wie bisher); Anleitung «Weitwinkel einrichten und testen».
+  * 3.57.0: Drei Kamera-Ansichten: Knopf «Ansicht» schaltet das Hauptbild 🎯 Kopf → 🌡 Wärmebild → 🔭 Weitwinkel (mit Rahmen, wohin
+    der Kopf schaut), lang drücken = Auswahl; kleines Übersichtsbild in der Ecke (antippen = tauschen, pro Gerät gemerkt) –
+    Live, Controller-Ansicht, Sim-Ansicht und Pi-Fenster.
+  * 3.56.0: Drei Spuren: MoveEye, Simulator und Gehäuse haben je eine eigene Nummer und erscheinen einzeln; MoveEye prüft den
+    Simulator für /sim über die signierte Liste (versions.json «sim»), der HP holt neue Simulatoren selbst, das Versions-Paar
+    warnt nur noch unter der Mindestversion.
+  * 3.55.2: Kamerabilder: Nur sichtbare Bilder halten eine Verbindung offen; die Vorschauen unter Einstellungen → Kameras kommen
+    als Einzelbilder (2 pro Sekunde); bleibt ein Bild 5 s ohne neues Bild, verbindet es sich selbst neu (kein «noch kein Bild»
+    mehr bis zum Neuladen); ↻ lädt den aktuellen Reiter neu, statt zu Live zu springen.
+  * 3.55.1: Simulator: kein Absturz mehr bei KI-Trainingsbildern «Vielfalt hoch» (Morgen im Bergtal in einer Welt); Tropfen und
+    Beschlag auf der Linse funktionieren jetzt auch im Kompatibilitäts-Modus (Linux/HP), Protokoll ohne Shader-Fehlerflut.
+  * 3.55.0: HP rechnet rund um die Uhr (Erkennung messen, KI-Trainingsbilder, Langzeittest); Spielen am HP oder Zuschauen in
+    MoveEye Live hält das Rechnen sofort an, nach 15 Min. ohne Zuschauer geht es dort weiter; «HP rechnet» im Reiter Simulator
+    zum Zuschauen; Bildschirm schläft nach 10 Min.; HP-Update nur in Pausen.
+  * 3.54.0: Sim-Ansicht: im Simulator-Betrieb zeigt die Live-Seite auf Handy und Tablet ein grosses Simulator-Bild mit grossen
+    Knöpfen (Kopf, Folgen, IR, Licht, Sirene, Aufnahme), «⋯ Mehr» und «▦ Klassisch»; «🎮 Spielen» startet ein Spiel mit einem
+    Tipp, gespielt wird mit Knöpfen im Browser; das Simulator-Bild wird nicht mehr abgeschnitten (auch der Spiel-Assistent).
+  * 3.53.0: Simulator-PC (HP): während der Erkennungstests zeigt der Kiosk ein Testbild-Dashboard (Live-Bild mit MoveEyes
+    Rahmen, Soll/Ist, Fall N/M, Bilanz, 2 Min. Zusammenfassung am Schluss); neues automatisches, signiertes Update (nachts, nie
+    während eines Tests).
+  * 3.52.0: Geschichten: «× Beenden» und Esc auf jeder Karte, alle Fenster im Handy-Stream, Geschichten vom Handy starten (Mehr
+    › Spielen), Touch-Stick «gehen»; Erkennungstests auf dem Simulator-PC (HP) als eigener GitHub-Runner.
+  * 3.51.0: Gehäuse v5.3 ist Standard: Messing-Gewindeeinsätze M3, Halter für Wand/Baum mit Gurt, Akkuklappe im Boden (Zellen
+    tauschen ohne Ausbau), Luftkanal für den Pi-Lüfter, Zugentlastung; neue Platte C; v5.2/v5.1 wählbar.
+  * 3.50.0: Werkstatt «Bauen» als eigenständige Datei MoveEye_Werkstatt.html: läuft offline im Browser ohne Pi (alle Reiter, 3D,
+    Einzelteile, Druckplatten, Pakete, 5 Sprachen); bei jedem Release unter GitHub-Releases
+    (latest/download/MoveEye_Werkstatt.html) und im Bausatz.
   * 3.49.0: Erkennung: deutlich mehr Personen erkannt (Test 3: 42 % → 69 %, Kinder 92 %); Auto-Tune gedeckelt, Wind-Regel nur
     letzte 2 Min., aufrechte KI-Person sofort «Person?» und nie «Tier», Autos/Scheinwerfer nachts keine Person, Kopf schwenkt
     beim Verfolgen mit.
@@ -70,28 +100,6 @@ Features
   * 3.39.0: MoveEye und Simulator zeigen dasselbe: Ansicht, Sprache, Stimme, Rundgang und Blinki gleichen sich von selbst ab;
     eine Einfach/Experte-Wahl für alles. Im Simulator neu: Zustand Aus/Wachsam/Voll in LED-Farben, Push-Vorschau, Versions-Paar,
     Bedienermodus mit MoveEye-PIN; Diagnose gegenseitig.
-  * 3.38.0: Simulator: System → Sicherung – ZIP auf dem PC, in einen Ordner/USB oder in die MoveEye-Sicherung; Wiederherstellen
-    im Simulator oder aus MoveEye (nur Besitzer), vorher wird automatisch der aktuelle Stand gesichert.
-  * 3.37.0: Foto-Texturen aus Besitzers Fotos im Bergtal: Wiese, Alpweide, Alpenrosen, Geröll, Fels, Strasse (abschaltbar; Lite
-    unverändert).
-  * 3.36.0: Simulator: menschlichere Figuren – ab Grafik mittel MakeHuman-Körper aus dem nachladbaren Menschen-Paket (~5 MB),
-    einfach (Pi) mit feinerem Körper und Gesicht; Kleidung, Rucksack, Stöcke und Lampen passend zur Szene.
-  * 3.35.0: Bergtal: ein neues Geheimnis.
-  * 3.34.0: Neue Seite «Gehäuse & Bau» (Mehr): Gehäuse v5.1 Schritt für Schritt, Materialliste, Druckdateien, Kapitel in der
-    Anleitung (5 Sprachen); im Simulator die Werkstatt zum Drehen und Zerlegen, das echte Gehäuse am Gerät.
-  * 3.33.0: Hilfe zu jedem Fehler: Fehler-Katalog (27 Fehler, 5 Sprachen), Seite /hilfe/fehler, Knopf «Jetzt beheben» (nur
-    Besitzer) und QR-Code in Selbstdiagnose, Fenster, SmallTV, TV und Push; im Simulator ebenso.
-  * 3.32.0: Ruhiges Bild statt Schwarz, wenn der Simulator startet, sich aktualisiert, einen Ort lädt oder nicht erreichbar ist
-    (mit Blinki, nach 3 Min. ein Hinweis); echte Kamera: klarere Fehlermeldung.
-  * 3.31.0: Ein gemeinsamer Kopf auf jeder Seite (Web, Pi-Fenster, Simulator): ? 🔔 ↻ DE ☰ ⛶ ▲ 🛠 immer gleich;
-    Ein-/Ausblenden-Listen als Chips mit Symbolen und Gruppen.
-  * 3.30.0: Schneller zum Entwickler-Bereich: das MoveEye-Logo etwa 1 s gedrückt halten (Web, Pi-Fenster, Simulator); im
-    Simulator zusätzlich ein Werkzeug-Knopf 🛠 oben rechts.
-  * 3.29.0: Simulator: Fenster docken automatisch in Leisten links/rechts an (ohne Überlappung, passt sich der Bildschirmgrösse
-    an, «Neu anordnen»); Karte, Kompass, SmallTV und CPU als Reiter in einem Fenster; Entwickler immer vorne, klein/mittel/gross
-    und einklappbar.
-  * 3.28.1: Prüfungen laufen automatisch auf GitHub (MoveEye, Simulator-Tests, Export), schneller und ohne den eigenen Rechner
-    zu belasten.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -100,10 +108,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_3_49_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_3_58_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_3_49_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_3_49_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_3_58_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_3_58_0.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -120,7 +128,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "3.49.0"
+APP_VERSION = "3.58.0"
 
 
 def default_data_dir():
@@ -242,8 +250,8 @@ def prepare_settings_file():
 #     Part 397 fetches the zip over the same update source and restarts once (zusatz_start()).
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
-ZD_FILE = "moveeye_daten_3_49_0.zip"
-ZD_SHA256 = "d1f3a570cea91e6fac3ab100b27019be4dc0bea26a20a14d7bc3366ce5bb446b"
+ZD_FILE = "moveeye_daten_3_58_0.zip"
+ZD_SHA256 = "22512e5a96f1e4a6c90dc42705f38399871d9c7e36d2a28943650d50030ce343"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -2123,7 +2131,7 @@ VIEW_GET_PAGES = {"/", "/help", "/quick", "/more"}
 VIEW_GET = ("/api/tunnel", "/api/helper", "/api/info", "/api/nettest", "/api/state", "/api/alerts", "/api/appearance", "/api/version",
             "/api/health", "/api/gps", "/api/zones", "/api/webpush", "/api/ui", "/api/battery", "/api/sensors", "/api/qs", "/api/schedule",
             "/api/schema", "/api/triggers", "/api/fa", "/api/appicon", "/api/audio", "/i18n/", "/app-icon/", "/sim-icon/", "/api/simbar", "/api/news")
-PERM_GET = {"live": ("/cams", "/preview", "/api/cams", "/api/frame.jpg", "/video_feed", "/cam_feed/", "/snapshot.jpg", "/api/audio/live",
+PERM_GET = {"live": ("/cams", "/preview", "/api/cams", "/api/frame.jpg", "/video_feed", "/cam_feed/", "/cam_snap/", "/snapshot.jpg", "/api/audio/live",
                      "/sim/view.jpg", "/sim/view.mjpg"),
             "rec": ("/recordings", "/diary", "/kino", "/api/kino", "/api/dataset.zip", "/api/recordings", "/api/places", "/rec/file/", "/rec/play/",
                     "/rec/thumb/", "/rec/share/", "/rec/report/", "/api/day", "/api/diary", "/diary/img/", "/api/timelapse", "/timelapse/",
@@ -15523,7 +15531,7 @@ def _kopf_ov_tick(now):
     c = kopf_ov_cam()
     if c is None or STATE.get("tracking") or KOPF["turn_req"] or now - KOPF.get("ov_t", 0.0) < 6.0 or not kopf_may("alarm"):
         return
-    t = kopf_ov_target(c)
+    t = weit_pick(c, now)                                 # 639zw: trigger zones + light AI of the wide picture (else kopf_ov_target)
     if t is None:
         return
     pan = kopf_pan_add(50.0, kopf_ov_deg(t[0]))
@@ -18690,6 +18698,9 @@ class DemoSource:
             cv2.line(img, (int(x + dx * size), int(y - 15 * size)), (int(x + dx * size + leg), int(y)), col, max(2, int(4 * size)))
 
     def read(self):
+        hold_ = os.environ.get("MW_TEST_HOLD")          # 3.55.2, only for werkzeuge/bildstrom_test.py: the demo picture source
+        while hold_ and os.path.exists(hold_):           # stands still while this file exists (a camera that hangs)
+            time.sleep(0.1)
         wait = 1.0 / max(1.0, self.fps) - (time.time() - self.last)
         if wait > 0:
             time.sleep(wait)
@@ -24704,13 +24715,13 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3.49.0", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 49390911,
-         "sha256": "fb88996945bb829c404ec4513d7a01aecc7c04695abef4e59596b47cb941ab5d"}
+SIM3D = {"version": "3.56.0", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 49961650,
+         "sha256": "894aa4af3f94a36e04b15deb2ea04dcf900abcd11a26760ca20817da59189abf"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # 3.43.x: the same 3D simulator for Linux (x86_64), offered at /sim/simulator3d_linux.zip - fetched, checked and kept the same way
 # (simulator3d/MoveEyeSim3D_Linux.zip, block «linux» in simulator3d/version.json; bauen.py --neue-version takes it over).
-SIM3D_LINUX = {"version": "3.49.0", "file": "simulator3d/MoveEyeSim3D_Linux.zip", "size": 43369794,
-               "sha256": "579ead27ba73bbf67b36ab8d6cc7e1d85772503db2a8d8f90724b799a1dd39ba", "stem": "MoveEyeSim3D_Linux",
+SIM3D_LINUX = {"version": "3.56.0", "file": "simulator3d/MoveEyeSim3D_Linux.zip", "size": 43977805,
+               "sha256": "66fbf70e6f1aa6ca7a467ba1ef7ad6f8abcda4d9fd29ec473206d708e1fa4ef4", "stem": "MoveEyeSim3D_Linux",
                "label": "MoveEye Sim (Linux)"}
 SIM3D_LINUX_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
@@ -24825,6 +24836,91 @@ def sim_versions():
 SIM3D["stem"] = "MotionWatch3D_Simulator"; SIM3D["label"] = "MoveEye Sim · 3D" if "3D-" in SIM3D["version"] else "MoveEye Sim"
 SIM3D_BASE = "https://raw.githubusercontent.com/DonElektro/MotionWatch/main/"
 
+# ---- Drei Spuren (Besitzer 03.11.2026): the simulator has its own number and can be released without a new MoveEye. The
+# checksums above are only the fallback (the simulator of this MoveEye's own release). The signed versions.json carries the
+# newest simulator under «sim» (bauen.py --signieren / --nur-signieren, make_manifest 390): {"ver", "win": {file, size, sha256,
+# ver, sig}, "linux": {…}} - each signed with the same key and the same scheme as the program files (Ed25519 over
+# «MotionWatch|ver|file|sha256», sig_ok 380). Only a correctly signed entry for exactly the expected file, never older than the
+# embedded one or the one taken before (no replay of an old list), replaces version / size / checksum - anything else keeps
+# the values. MoveEye versions from before this change know only their embedded checksum: they serve /sim again after their
+# own update. Test: sim_manifest_selftest (545). ----
+SIM3D_EMBED = {k: SIM3D[k] for k in ("version", "size", "sha256")}
+SIM3D_LINUX_EMBED = {k: SIM3D_LINUX[k] for k in ("version", "size", "sha256")}
+SIMMAN = {"t": 0.0, "src": "embedded", "loaded": False}
+SIMMAN_FILE = "sim_manifest.json"                   # in DATA_DIR/sim3d: the last verified «sim» block (checked again on load)
+
+
+def sim_manifest_verify(blk):
+    """the parts of a versions.json «sim» block whose signature is valid: {"win": {...}, "linux": {...}} (maybe empty)"""
+    out = {}
+    if not isinstance(blk, dict):
+        return out
+    for key, pkg in (("win", SIM3D), ("linux", SIM3D_LINUX)):
+        e = blk.get(key)
+        if not isinstance(e, dict):
+            continue
+        v, fn, sha = str(e.get("ver") or ""), str(e.get("file") or ""), str(e.get("sha256") or "").lower()
+        try:
+            size = int(e.get("size") or 0)
+        except (TypeError, ValueError):
+            continue
+        if not (VER_RE.match(v) and fn == pkg["file"] and re.fullmatch(r"[0-9a-f]{64}", sha) and 0 < size <= 2 * 1024 ** 3):
+            continue
+        if sig_ok(v, fn, sha, e.get("sig")):
+            out[key] = {"ver": v, "file": fn, "size": size, "sha256": sha, "sig": str(e.get("sig"))}
+    return out
+
+
+def sim_manifest_take(blk, save=True):
+    """use the signed simulator entries of versions.json (see above); returns the keys that changed"""
+    ok = sim_manifest_verify(blk)
+    changed = []
+    for key, pkg in (("win", SIM3D), ("linux", SIM3D_LINUX)):
+        e = ok.get(key)
+        if not e or not sim_vkey(e["ver"]) or not sim_vkey(pkg["version"]) or sim_vkey(e["ver"]) < sim_vkey(pkg["version"]):
+            continue                                              # never back: not older than the embedded / the last taken one
+        if (pkg["version"], pkg["size"], pkg["sha256"]) != (e["ver"], e["size"], e["sha256"]):
+            pkg.update(version=e["ver"], size=e["size"], sha256=e["sha256"])
+            changed.append(key)
+    if ok:
+        SIMMAN.update(t=time.time(), src="versions.json")
+        if save and changed:
+            try:
+                d_ = os.path.join(DATA_DIR, "sim3d")
+                os.makedirs(d_, exist_ok=True)
+                with open(os.path.join(d_, SIMMAN_FILE), "w", encoding="utf-8") as f:
+                    json.dump(ok, f)
+            except (OSError, TypeError, ValueError):
+                pass
+    return changed
+
+
+def sim_manifest_load():
+    """once: the last verified «sim» block from DATA_DIR (signatures checked again - a changed file is ignored)"""
+    if SIMMAN["loaded"]:
+        return
+    SIMMAN["loaded"] = True
+    try:
+        with open(os.path.join(DATA_DIR, "sim3d", SIMMAN_FILE), encoding="utf-8") as f:
+            sim_manifest_take(json.load(f), save=False)
+    except (OSError, ValueError, TypeError, AttributeError):
+        pass
+
+
+def sim_manifest_refresh(base, max_age=600):
+    """fetch versions.json from the same place as the simulator packages and take its signed «sim» block"""
+    sim_manifest_load()
+    if time.time() - SIMMAN["t"] < max_age:
+        return
+    SIMMAN["t"] = time.time() - max_age + 60                    # not reachable / no signed block: ask again in a minute
+    try:
+        req = _upd_request(base + "versions.json?t=" + str(int(time.time())), {"Cache-Control": "no-cache"})
+        with urllib.request.urlopen(req, timeout=15) as r:
+            data = json.loads(r.read(1024 * 1024 + 1)[:1024 * 1024].decode("utf-8"))
+        sim_manifest_take(data.get("sim") if isinstance(data, dict) else None)
+    except Exception:
+        pass
+
 
 def sim3d_path(pkg=None):
     pkg = pkg or SIM3D
@@ -24833,6 +24929,8 @@ def sim3d_path(pkg=None):
 
 def sim3d_ready(pkg=None):
     pkg = pkg or SIM3D
+    if not SIMMAN["loaded"]:
+        sim_manifest_load()                               # 3 tracks: the simulator of the last signed versions.json
     p = sim3d_path(pkg)
     return os.path.isfile(p) and os.path.getsize(p) == pkg["size"]
 
@@ -24846,11 +24944,17 @@ def sim3d_fetch(pkg=None, dl=None):
 
     def work(SIM3D=SIM3D_, SIM3D_DL=SIM3D_DL_):
         import hashlib
-        p = sim3d_path(SIM3D); tmp = p + ".part"
+        tmp = ""
         try:
-            os.makedirs(os.path.dirname(p), exist_ok=True)
             src = CFG["update_url"].strip()
             base = src.rsplit("/", 1)[0] + "/" if src.startswith("https://") else SIM3D_BASE
+            if SIM3D is globals()["SIM3D"] or SIM3D is globals()["SIM3D_LINUX"]:
+                sim_manifest_refresh(base)                    # 3 tracks: the newest signed simulator (versions.json «sim»)
+                if sim3d_ready(SIM3D):
+                    return
+            want = {"version": SIM3D["version"], "size": SIM3D["size"], "sha256": SIM3D["sha256"]}   # fixed for this download
+            p = os.path.join(DATA_DIR, "sim3d", SIM3D["stem"] + "_" + want["version"] + ".zip"); tmp = p + ".part"
+            os.makedirs(os.path.dirname(p), exist_ok=True)
             h = hashlib.sha256()
             with urllib.request.urlopen(_upd_request(base + SIM3D["file"]), timeout=30) as r, open(tmp, "wb") as f:
                 while True:
@@ -24858,15 +24962,15 @@ def sim3d_fetch(pkg=None, dl=None):
                     if not b:
                         break
                     f.write(b); h.update(b); SIM3D_DL["got"] += len(b)
-                    if SIM3D_DL["got"] > SIM3D["size"] + 1024:
+                    if SIM3D_DL["got"] > want["size"] + 1024:
                         raise ValueError("file too large")
-            if h.hexdigest() != SIM3D["sha256"]:
+            if h.hexdigest() != want["sha256"]:
                 raise ValueError("checksum wrong - the file was changed or is damaged")
             os.replace(tmp, p)
             for old in glob.glob(os.path.join(os.path.dirname(p), SIM3D["stem"] + "_*.zip")):
                 if old != p:
                     os.remove(old)
-            log_event("sys", f"{SIM3D['label']} {SIM3D['version']} ready for download")
+            log_event("sys", f"{SIM3D['label']} {want['version']} ready for download")
         except Exception as e:
             SIM3D_DL["msg"] = _upd_error(e)[:160]
             log_event("sys", f"{SIM3D['label']} could not be fetched: " + SIM3D_DL["msg"])
@@ -30619,7 +30723,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_3_49_0.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_3_58_0.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -31230,6 +31334,10 @@ def update_check():
                 data = json.loads(r.read(1024 * 1024 + 1)[:1024 * 1024].decode("utf-8"))
             UPD["list_time"] = str(data.get("generated") or "")[:16]
             base = src.rsplit("/", 1)[0] + "/"
+            try:                                         # 3 tracks: the newest signed simulator for /sim (300 sim_manifest_take)
+                sim_manifest_take(data.get("sim"))
+            except Exception:
+                pass
             for e in (data.get("versions") or [])[:200]:
                 v, fn = str(e.get("version", "")), str(e.get("file", ""))
                 url = str(e.get("url") or (base + fn))
@@ -31985,8 +32093,10 @@ def self_test(folder=""):
                         bad.append(e["version"] + " (data file)")
             if not any(e.get("bridge") and e.get("version") == UPD_BRIDGE for e in m.get("versions", [])):
                 bad.append("bridge " + UPD_BRIDGE + " missing")
+            sbad, simtxt = sim_manifest_check(folder, m)     # 3 tracks: the signed simulator block (300 sim_manifest_verify)
+            bad = sbad + bad                                 # first: the list can be long
             assert not bad, f"bad checksum / signature: {bad}"
-            return f"{len(m.get('versions', []))} versions signed and checked"
+            return f"{len(m.get('versions', []))} versions signed and checked" + simtxt
         if os.environ.get("MW_SELFTEST_NO_SIG"):         # 2.98.50 (Besitzer): work branches are not signed yet - GitHub checks it only on main
             chk("versions.json signatures", lambda: "skipped (MW_SELFTEST_NO_SIG: work branch, signed only at the release)")
         else:
@@ -31996,6 +32106,38 @@ def self_test(folder=""):
         print(("✓ " if good else "✗ ") + name + (f" – {note}" if note else ""))
     print("Self-test " + ("OK" if ok else "FAILED") + f" (MoveEye {APP_VERSION})")
     return 0 if ok else 1
+
+
+def sim_manifest_check(folder, m):
+    """3 tracks: the block «sim» of a versions.json against the files in folder - (problems, short text); used by the self-test"""
+    bad = []
+    sim = m.get("sim")
+    simtxt = ""
+    if sim is not None and os.path.isdir(os.path.join(folder, "simulator3d")):   # e.g. not in the Bausatz folder
+        ok_ = sim_manifest_verify(sim)
+        for key in ("win", "linux"):
+            e = sim.get(key) if isinstance(sim, dict) else None
+            if e is None:
+                continue
+            p_ = os.path.join(folder, str(e.get("file") or ""))
+            sha = ""
+            if os.path.isfile(p_):
+                h_ = hashlib.sha256()
+                with open(p_, "rb") as f:
+                    for b_ in iter(lambda: f.read(1 << 20), b""):
+                        h_.update(b_)
+                sha = h_.hexdigest()
+            if key not in ok_ or not sha or sha != ok_[key]["sha256"] or os.path.getsize(p_) != ok_[key]["size"]:
+                bad.append(f"simulator {key} {e.get('ver')}")
+        try:
+            with open(os.path.join(folder, "simulator3d", "version.json"), encoding="utf-8") as f:
+                vj_ = json.load(f)
+            if str(vj_.get("ver")) != str(sim.get("ver")):
+                bad.append(f"simulator {sim.get('ver')} in versions.json, simulator3d/version.json has {vj_.get('ver')} - sign again")
+        except (OSError, ValueError, AttributeError):
+            pass
+        simtxt = f", simulator {sim.get('ver') if isinstance(sim, dict) else '?'} ({'+'.join(sorted(ok_))})"
+    return bad, simtxt
 
 
 def make_manifest(folder, base_url, sign_key=""):
@@ -32031,11 +32173,54 @@ def make_manifest(folder, base_url, sign_key=""):
             if seed:
                 e["data"]["sig"] = _ED[1](seed, _sig_msg(it["version"], zf, zsha)).hex()
         out.append(e)
+    man = {"app": "Motion Watch", "generated": datetime.now().strftime("%Y-%m-%d %H:%M"), "versions": out}
+    sim = sim_manifest_block(folder, seed)                # 3 tracks: the simulator with its own number (300 sim_manifest_take)
+    if sim:
+        man["sim"] = sim
     p = os.path.join(folder, "versions.json")
     with open(p, "w") as f:
-        json.dump({"app": "Motion Watch", "generated": datetime.now().strftime("%Y-%m-%d %H:%M"), "versions": out}, f, indent=1, ensure_ascii=False)
-    print(f"{p}: {len(out)} version(s)" + (", signed" if seed else ", NOT signed"))
+        json.dump(man, f, indent=1, ensure_ascii=False)
+    print(f"{p}: {len(out)} version(s)" + (f", simulator {sim['ver']}" if sim else "") + (", signed" if seed else ", NOT signed"))
     return 0
+
+
+def sim_manifest_block(folder, seed=b""):
+    """«sim» for versions.json from simulator3d/version.json: Windows + Linux package with size, checksum and - with the key - a
+    signature over «MotionWatch|ver|file|sha256» (same scheme as the program files). Only packages that are there and fit
+    version.json; None without simulator3d/version.json. Old devices ignore this block (they only read «versions»)."""
+    try:
+        with open(os.path.join(folder, "simulator3d", "version.json"), encoding="utf-8") as f:
+            d = json.load(f)
+    except (OSError, ValueError):
+        return None
+    ver = str(d.get("ver") or "")
+    if not VER_RE.match(ver):
+        print("Note: simulator3d/version.json without «ver» X.Y.Z - no «sim» block in versions.json")
+        return None
+    blk = {"ver": ver, "version": str(d.get("version") or ""), "notes": str(d.get("notes") or "")[:400]}
+    if d.get("mw_min") and VER_RE.match(str(d.get("mw_min"))):
+        blk["mw_min"] = str(d["mw_min"])
+    lx = d.get("linux") if isinstance(d.get("linux"), dict) else {}
+    for key, e in (("win", d), ("linux", lx)):
+        fn, v = str(e.get("file") or ""), str(e.get("ver") or ver)
+        if not fn or not VER_RE.match(v) or fn not in ("simulator3d/MotionWatch3D_Simulator.zip", "simulator3d/MoveEyeSim3D_Linux.zip"):
+            continue
+        fp = os.path.join(folder, fn)
+        if not os.path.isfile(fp):
+            print(f"Note: {fn} missing - «sim» without {key}")
+            continue
+        h = hashlib.sha256()
+        with open(fp, "rb") as f:
+            for b in iter(lambda: f.read(1 << 20), b""):
+                h.update(b)
+        sha, size = h.hexdigest(), os.path.getsize(fp)
+        if sha != str(e.get("sha256") or "") or size != e.get("size"):
+            print(f"Note: {fn} does not fit simulator3d/version.json (size / checksum) - «sim» without {key}")
+            continue
+        blk[key] = {"ver": v, "file": fn, "size": size, "sha256": sha}
+        if seed:
+            blk[key]["sig"] = _ED[1](seed, _sig_msg(v, fn, sha)).hex()
+    return blk if ("win" in blk or "linux" in blk) else None
 
 
 # ----------------------------------------------------------------------------
@@ -38411,6 +38596,11 @@ class ExtraCam:
         now = time.time()
         if self.motion and self.streak >= 3:
             self.last_motion = now
+        try:                                                   # 639zw: the overview runs a light AI on its movement (Wache)
+            weit_ki_frame(self, frame)
+        except Exception as e:
+            if now - getattr(self, "_wk_err_t", 0.0) > 60:
+                self._wk_err_t = now; log_event("ai", f"Overview AI: {type(e).__name__}: {e}"[:160])
         for x, y, w, h in self.boxes:
             cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 255, 255), 1)
         cv2.rectangle(frame, (0, 0), (W, 26), (0, 0, 0), -1)
@@ -38746,7 +38936,58 @@ HEADER_JS = _zd('510_web_kopf_alarm/HEADER_JS', "")
 ALERT_JS = _zd('510_web_kopf_alarm/ALERT_JS', "")
 
 
-COMMON_JS = _zd('510_web_kopf_alarm/COMMON_JS', "")
+# 3.55.2 (Besitzer: Kamerabilder am iPhone / iPad oft schwarz «noch kein Bild», unter Einstellungen → Kameras und auf Live;
+# neu laden half): EIN Weg für jedes Kamerabild der Web-Seiten, eingesetzt in COMMON_JS (hier unten) und in WEB_PAGE (530).
+#   * Nur ein sichtbares Bild hat eine Verbindung: anderer Reiter, zugeklappte Karte, Seite im Hintergrund, weggescrollt oder
+#     img.dataset.hold = "1" (Bild verdeckt, z. B. von der Sim-Ansicht) -> die Verbindung wird geschlossen. Safari hat pro
+#     Gerät nur rund 6 Verbindungen; offene Bildströme im Versteckten liessen neue Bilder warten («noch kein Bild»).
+#   * Strom (Live, Zonen, Gast): der bewährte MJPEG-Strom im <img>. Wächter: kommt 5 s lang kein erstes Bild, oder ändert sich
+#     das Bild 5 s lang nicht (kleines Abbild im Canvas), verbindet es sich selbst neu - sofort, dann nach 1, 2, 4, 8, 15 s
+#     (ein stehendes Bild ohne Fehler: still nach 5, 10, 20, 40, 60 s). Antippen von ⏳ verbindet sofort.
+#   * Einzelbilder (opt.snap, Vorschauen unter Kameras): ein Bild alle opt.every ms (~2 / s), nur solange sichtbar.
+#   * img.mwKeep zeigt den Zustand (Tests: werkzeuge/bildstrom_test.py): frames, conns, stalls, on, lost, mode.
+KEEP_JS = _zd('510_web_kopf_alarm/KEEP_JS', "")
+
+
+COMMON_JS = r"""
+const $ = s => document.querySelector(s);
+// Live picture that heals itself: phones (above all iPhone) drop the endless MJPEG stream after a network hiccup,
+// in the background or when the Pi restarts -> broken-image "?" icon. Reconnect automatically.
+/*KEEPSTREAM*/
+const post = (u, b) => fetch(u, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(b || {})})
+    .then(r => r.json()).catch(() => ({ok: false, error: "connection"}));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; }
+let LANG = "", THEME = "";
+try { LANG = localStorage.getItem("mw-lang") || ""; THEME = localStorage.getItem("mw-theme") || ""; } catch (e) {}
+const I18N = {de: {"Live": "Live", "Cameras": "Kameras", "Recordings": "Aufzeichnungen", "Zones": "Zonen", "Manual": "Anleitung", "Diary": "Tagebuch", "Tools": "Werkzeuge", "Simulator": "Simulator", "Game corner": "Spielecke"}};
+Object.assign(I18N.de, {"Protection": "Schutz", "History": "Verlauf", "Message list": "Nachrichten", "Settings": "Einstellungen", "Sett.": "Einst.", "More": "Mehr", "Overview": "Übersicht", "Log": "Protokoll", "Sim": "Sim", "Recordings": "Aufnahmen", "Diary": "Tagebuch", "Zones": "Zonen", "Cameras": "Kameras", "Manual": "Anleitung", "Game corner": "Spielecke", "Tools": "Werkzeuge"});  // 2.98.0: the six tabs
+const t = s => (LANG === "de" && I18N.de[s]) || (window.LX ? LX(s) : "") || (LANG === "rm" && I18N.de[s]) || (I18N.en && I18N.en[s]) || s;
+function applyI18n() {
+  document.querySelectorAll("[data-i18n]").forEach(e => e.textContent = t(e.dataset.i18n));
+  const b = $("#btn-lang"); if (b) b.textContent = (LANG || "en").toUpperCase();
+  document.documentElement.lang = LANG;
+}
+function themeStep() { return document.documentElement.classList.contains("sxnight") ? "red" : THEME === "light" ? "light" : "dark"; }   // 573/578: Hell → Dunkel → Rotlicht
+function applyTheme() { document.body.classList.toggle("light", THEME === "light"); const b = $("#btn-theme"), s = themeStep();
+  if (b) { b.innerHTML = s === "light" ? "&#9790;" : s === "dark" ? "&#9673;" : "&#9728;"; b.classList.toggle("thred", s === "red"); } }
+function toggleTheme() { const n = {light: "red", red: "dark", dark: "light"}[themeStep()];
+  document.documentElement.classList.toggle("sxnight", n === "red"); THEME = n === "light" ? "light" : "dark";
+  try { localStorage.setItem("mw-theme", THEME); localStorage.setItem("mw-night", n === "red" ? "1" : "0"); } catch (e) {} applyTheme();
+  if (window.sxThemeSaid) window.sxThemeSaid(n); }
+function toggleLang() { langMenu(document.querySelector("#btn-lang")); }
+let toastTimer = null;
+function toast(msg) { let e = $("#toast"); if (!e) { e = el("div"); e.id = "toast"; document.body.appendChild(e); } e.textContent = msg; e.classList.add("on");
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => e.classList.remove("on"), 2600); }
+async function initAppearance() {
+  if (!LANG || !THEME) {
+    try { const a = await (await fetch("/api/appearance")).json(); LANG = LANG || a.lang; THEME = THEME || a.theme; }
+    catch (e) { LANG = LANG || "en"; THEME = THEME || "dark"; }
+  }
+  applyTheme(); applyI18n();
+}
+"""
+COMMON_JS = COMMON_JS.replace("/*KEEPSTREAM*/", KEEP_JS.rstrip("\n"), 1)   # 3.55.2: one keepStream for every page (KEEP_JS above)
 
 
 # ----------------------------------------------------------------------------
@@ -39066,7 +39307,7 @@ html,body{margin:0;background:#000;color:#e6edf3;font:15px/1.4 system-ui,-apple-
 .big .top,.big .foot{display:none}.big #v{max-height:100dvh;height:100dvh}
 </style></head><body>
 <div class="top"><span class="dot"></span><b>MoveEye</b><span class="st" id="st">…</span></div>
-<div class="wrap vwrap"><img id="v" alt="" src="__BASE__/video"></div>
+<div class="wrap vwrap"><img id="v" alt="" data-src="__BASE__/video"></div>
 <div class="foot" id="ft"></div>
 <script>
 const GL = (navigator.language || "").toLowerCase().slice(0, 2), GT = /*GT*/{};
@@ -39168,6 +39409,7 @@ SIMTOOLS_JS = _zd('530_web_hauptseite/SIMTOOLS_JS', "")
 SIMTUN_JS = _zd('530_web_hauptseite/SIMTUN_JS', "")
 SIM_PAGE = SIM_PAGE.replace("/*SIMMAP*/", SIMMAP_JS + SIMTOOLS_JS + SIMTUN_JS)
 WEB_PAGE = WEB_PAGE.replace("/*SIMMAP*/", SIMMAP_JS)
+WEB_PAGE = WEB_PAGE.replace("/*KEEPSTREAM*/", KEEP_JS.rstrip("\n"), 1)   # 3.55.2: the same keepStream as every page (510)
 
 
 # ----------------------------------------------------------------------------
@@ -39396,6 +39638,8 @@ SELFTEST_EXTRA.append(("Field of view per camera (cam_fov_h)", cam_fov_selftest)
 #   While it is open the raw controller is not sent to the simulator (470 simPadLink: mwPadOwn), the small simulator
 #   window of the live page pauses (530) - one picture, one mapping. Stored per device (localStorage «mw-pad», not on
 #   the Pi): open, swapped, asked. Translations: part 628.
+# 3.57 (639zv «Drei Kamera-Ansichten»): the bar has «Ansicht» (head → thermal → wide, long press = menu); without the simulator
+#   «⇅ Swap» (Select, long tap on the live picture) swaps big / small of the camera views (the small overview picture).
 # ----------------------------------------------------------------------------
 
 PADVIEW_JS = _zd('538_web_controller_ansicht/PADVIEW_JS', "")
@@ -39966,6 +40210,14 @@ def sim_owns_updates():
 # «MoveEye Sim 3.0.0»). simulator3d/version.json keeps «version» = «3D-(X+2).Y.Z» for old simulators (they only compare that
 # field: 3.0.0 would be older than 3D-4.82 for them) and has the real number in «ver». The self-test checks the order of the
 # numbers and - in the repository (GitHub) - that version.json, SIM3D and APP_VERSION fit together.
+# Drei Spuren (Besitzer 03.11.2026, bis zum Zusammenführen): MoveEye, the simulator and the case each have their own number and
+# are released on their own. Instead of «the same number» each side names the OLDEST version of the other it works with:
+# SIM_MIN here (MoveEye -> simulator, sent as «sim_min» in the state, 639zb) and MW_MIN in simulator3d/scripts/abgleich.gd
+# (simulator -> MoveEye, sent as «mw_min» in /info, also in version.json). Raise it when the interface (schnittstelle.json)
+# changes in a way the older side cannot follow. The version pair (639zb / abgleich.gd) only warns below the minimum.
+SIM_MIN = "3.55.0"
+
+
 def versionen_selftest():
     order = ["2.98.113", "2.98.114", "3.0.0", "3.0.1", "3.1.0", "3.1.1", "3.10.0", "4.0.0"]
     for a, b in zip(order, order[1:]):
@@ -39976,6 +40228,7 @@ def versionen_selftest():
         assert sim_vkey(a) < sim_vkey(b), f"simulator {a} < {b}"
     assert sim_vkey("3D-5.0.0") == sim_vkey("3.0.0") == sim_vkey("MoveEye Sim 3.0.0") == (3, 0, 0), "bridge 3D-5.0.0 = 3.0.0"
     assert sim_vlegacy("3.0.0") == "3D-5.0.0" and sim_vlegacy("3.10.2") == "3D-5.10.2" and sim_vlegacy("3D-4.82") == "3D-4.82"
+    assert VER_RE.match(SIM_MIN) and sim_vkey(SIM_MIN) <= sim_vkey(SIM3D_EMBED["version"]), f"SIM_MIN {SIM_MIN} newer than the own simulator"
     p = os.path.join(HERE, "simulator3d", "version.json")
     if not os.path.isfile(p):
         return None                                               # on the Pi: no repository next to the program
@@ -39985,13 +40238,71 @@ def versionen_selftest():
     assert old.startswith("3D-"), f"version.json «version» must stay «3D-…» for old simulators (is {old!r})"
     if ver:
         assert old == sim_vlegacy(ver), f"version.json: «version» {old} must be {sim_vlegacy(ver)} (= {ver} for old simulators)"
-        assert SIM3D["version"] in (ver, old), f"SIM3D {SIM3D['version']} does not fit version.json {ver}"
-    if _vkey(APP_VERSION) >= (3, 0, 0):
-        assert ver == APP_VERSION == SIM3D["version"], f"from 3.0.0 one number: MoveEye {APP_VERSION}, SIM3D {SIM3D['version']}, version.json {ver or old}"
-    return f"simulator {ver or old} (old simulators read {old})"
+        # 3 tracks (Besitzer 03.11.2026): each part has its own number - the simulator of this MoveEye may be older than the
+        # one in the repository (a release of the simulator alone), never newer
+        assert sim_vkey(SIM3D_EMBED["version"]) <= sim_vkey(ver), f"SIM3D {SIM3D_EMBED['version']} newer than version.json {ver}"
+        assert sim_vkey(SIM_MIN) <= sim_vkey(ver), f"MoveEye needs simulator {SIM_MIN}, version.json has {ver}"
+        mm = str(d.get("mw_min") or "")
+        assert not mm or (VER_RE.match(mm) and _vkey(mm) <= _vkey(APP_VERSION)), f"the simulator {ver} needs MoveEye {mm} (this is {APP_VERSION})"
+    return f"MoveEye {APP_VERSION} · Sim {ver or old} (old simulators read {old}) · needs Sim ≥ {SIM_MIN}" + (
+        f", Sim needs MoveEye ≥ {d.get('mw_min')}" if d.get("mw_min") else "")
 
 
-SELFTEST_EXTRA.append(("Version numbers: order, file names, bridge for old simulators (3.0.0)", versionen_selftest))
+SELFTEST_EXTRA.append(("Version numbers: order, file names, bridge for old simulators, minimum of the other track (3 tracks)", versionen_selftest))
+
+
+def sim_manifest_selftest():
+    """3 tracks: a correctly signed «sim» block of versions.json is taken, a changed / unsigned / foreign one is not - with a
+    TEST key made here (never the signing key; the public key is swapped only during this test)"""
+    import hashlib
+    keep = ({k: SIM3D[k] for k in SIM3D_EMBED}, {k: SIM3D_LINUX[k] for k in SIM3D_LINUX_EMBED}, dict(SIMMAN))
+    g = globals()
+    real = g["UPDATE_PUBKEY"]
+    try:
+        if not _ED:
+            _ED.extend(_ed25519_impl())
+        seed = hashlib.sha256(b"MoveEye self-test key - not the signing key").digest()
+        a, b, c = sim_vkey(SIM3D_EMBED["version"])
+        nv = "%d.%d.%d" % (a, b, c + 1)
+        sha = hashlib.sha256(b"fake simulator zip").hexdigest()
+
+        def blk(v=nv, fn=SIM3D["file"], sh=sha, key=seed, lx=False):
+            e = {"ver": v, "file": fn, "size": 18, "sha256": sh, "sig": _ED[1](key, _sig_msg(v, fn, sh)).hex()}
+            r = {"ver": v, "win": e}
+            if lx:
+                fl = SIM3D_LINUX["file"]
+                r["linux"] = {"ver": v, "file": fl, "size": 19, "sha256": sh, "sig": _ED[1](key, _sig_msg(v, fl, sh)).hex()}
+            return r
+
+        def back():
+            SIM3D.update(SIM3D_EMBED); SIM3D_LINUX.update(SIM3D_LINUX_EMBED)
+        g["UPDATE_PUBKEY"] = _ED[0](seed).hex()                    # sig_ok (380) checks against this - the test key
+        assert sim_manifest_take(blk(lx=True), save=False) == ["win", "linux"], "signed entries not taken"
+        assert SIM3D["version"] == nv and SIM3D["sha256"] == sha and SIM3D["size"] == 18 and SIM3D_LINUX["size"] == 19, "values"
+        assert sim3d_path().endswith("_" + nv + ".zip"), "cache name of the new simulator"
+        back()
+        bad = {"changed checksum": dict(blk(), win=dict(blk()["win"], sha256=hashlib.sha256(b"other").hexdigest())),
+               "changed number": dict(blk(), win=dict(blk()["win"], ver="%d.%d.%d" % (a, b, c + 2))),
+               "unsigned": dict(blk(), win={k: v for k, v in blk()["win"].items() if k != "sig"}),
+               "broken signature": dict(blk(), win=dict(blk()["win"], sig="00" * 64)),
+               "other key": blk(key=hashlib.sha256(b"another key").digest()),
+               "other file": blk(fn="simulator3d/anders.zip"),
+               "program file name": blk(fn="webcam_bewegung_9_9_9.py"),
+               "not a dict": "x"}
+        if c > 0:
+            bad["older simulator"] = blk(v="%d.%d.%d" % (a, b, c - 1))
+        for what, x in bad.items():
+            assert not sim_manifest_take(x, save=False), f"{what} taken"
+            assert SIM3D["sha256"] == SIM3D_EMBED["sha256"] and SIM3D["version"] == SIM3D_EMBED["version"], f"{what}: values changed"
+        g["UPDATE_PUBKEY"] = real
+        assert not sim_manifest_take(blk(), save=False), "test key accepted with the real public key"
+    finally:
+        g["UPDATE_PUBKEY"] = real
+        SIM3D.update(keep[0]); SIM3D_LINUX.update(keep[1]); SIMMAN.clear(); SIMMAN.update(keep[2])
+    return "signed «sim» entry taken; changed, unsigned, other key / file, older refused (test key)"
+
+
+SELFTEST_EXTRA.append(("Simulator checksums from the signed versions.json (3 tracks, 300)", sim_manifest_selftest))
 # ----------------------------------------------------------------------------
 # Wish of Besitzer (30.10.2026): the guards at MoveEye in «Team gegen MoveEye» (the shutter of part 539) may switch on help
 # of the AI for the running round, on the live page and in the «Controller-Ansicht» (538: L2 in a round):
@@ -40431,7 +40742,7 @@ class WebStream:
             if who:
                 fails.pop(ip, None)
                 g.user, g.role = who
-                if request.method == "GET" and not request.path.startswith(("/api/", "/video", "/cam_feed", "/sim/", "/snapshot")):
+                if request.method == "GET" and not request.path.startswith(("/api/", "/video", "/cam_feed", "/cam_snap", "/sim/", "/snapshot")):
                     g.new_trust = trust_add(who[0], who[1], request.headers.get("User-Agent", ""), ip)   # remember this device
                 return None
             if a:
@@ -40688,6 +40999,18 @@ class WebStream:
                     if not isinstance(r, dict) or not r.get("ok"):
                         return reply({"ok": False, "error": tr_err(str((r or {}).get("error") or "not supported - update the simulator"), lang)}, 400)
                     return reply(r)
+                if act_ == "localplay":                      # 639zt Sim-Ansicht: play «here at the PC» from the phone (localplay.gd 3D-3.77)
+                    do_ = str(d.get("do") or "get")
+                    if do_ not in ("get", "stop", "start"):
+                        return reply({"ok": False, "error": "unknown action"}, 400)
+                    q_ = {"action": "localplay", "do": do_}
+                    if do_ == "start":
+                        q_["role"] = "guard" if d.get("role") == "guard" else "runner"
+                    try:
+                        r = sim_control(q_)
+                    except Exception:
+                        return reply({"ok": False, "error": tr_err("simulator not reachable", lang)}, 400)
+                    return reply(r if isinstance(r, dict) else {"ok": False})
                 if act_ == "game_hc":                        # handicap for a player (3D-3.25)
                     try:
                         r = sim_control({"action": "game_handicap", "slot": int(d.get("slot", -1)), "level": max(0, min(2, int(d.get("level", 0))))})
@@ -42783,6 +43106,69 @@ class WebStream:
                 finally:
                     cam.viewers = max(0, cam.viewers - 1)
             return Response(gen(), mimetype="multipart/x-mixed-replace; boundary=frame")
+
+        # 3.55.2 (Besitzer: Vorschauen unter Kameras am iPhone oft schwarz): single pictures instead of endless streams. A
+        # picture counts as «somebody watches» for 4 s (lease), so the camera loop keeps making JPEGs (it only makes them for
+        # viewers); no thread waits for the next picture like a stream does. n = 0: the main camera (as /video_feed).
+        SNAP_LEASE = {}
+        SNAP_LOCK = threading.Lock()
+        SNAP_RUN = []
+
+        def _snap_expire():
+            while True:
+                time.sleep(0.5)
+                now_ = time.time()
+                with SNAP_LOCK:
+                    for k_, e_ in list(SNAP_LEASE.items()):
+                        if e_[3] < now_:
+                            del SNAP_LEASE[k_]
+                            o_, a_, ip_ = e_[0], e_[1], e_[2]
+                            setattr(o_, a_, max(0, getattr(o_, a_, 0) - 1))
+                            if a_ == "web_viewers":
+                                STATE["web_viewers"] = o_.web_viewers; remote_stream(ip_, -1)
+
+        def _snap_lease(key, obj, attr, ip):
+            """True = the lease is new (the newest JPEG may be old: wait for a fresh one)"""
+            with SNAP_LOCK:
+                e_ = SNAP_LEASE.get(key)
+                if e_ is not None and e_[0] is obj:
+                    e_[3] = time.time() + 4.0
+                    return False
+                if not SNAP_RUN:
+                    SNAP_RUN.append(1)
+                    threading.Thread(target=_snap_expire, daemon=True, name="snaplease").start()
+                setattr(obj, attr, getattr(obj, attr, 0) + 1)
+                if attr == "web_viewers":
+                    STATE["web_viewers"] = obj.web_viewers; remote_stream(ip, +1)
+                SNAP_LEASE[key] = [obj, attr, ip, time.time() + 4.0]
+                return True
+
+        @app.route("/cam_snap/<int:n>")
+        def cam_snap(n):
+            rip = request.remote_addr or ""
+            if n == 0:
+                fresh = _snap_lease(("w", rip), watch, "web_viewers", rip)
+                get = lambda: (watch.jpeg, watch.jpeg_seq)
+            else:
+                cam = next((c for c in CAMS if c.idx == n), None)
+                if cam is None:
+                    return Response("unknown camera", 404)
+                fresh = _snap_lease(("c", n, rip), cam, "viewers", rip)
+                get = lambda: (cam.jpeg, cam.seq)
+            jpg, seq = get()
+            if fresh or not jpg:                            # the loop starts making pictures now: wait a moment for a new one
+                t_ = time.time() + 1.5
+                while time.time() < t_:
+                    j2, s2 = get()
+                    if j2 and s2 != seq:
+                        jpg = j2
+                        break
+                    time.sleep(0.03)
+                else:
+                    jpg = get()[0]
+            if not jpg:
+                return Response("no picture yet", 503, headers={"Cache-Control": "no-store"})
+            return Response(jpg, mimetype="image/jpeg", headers={"Cache-Control": "no-store"})
 
         # ---- zones ----
         # ---- app icon (home screen) ----
@@ -48864,7 +49250,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 3.49.0")
+        self.root.title("MoveEye 3.58.0")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -49242,7 +49628,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 3.49.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 3.58.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -56493,7 +56879,7 @@ App._refresh = _kr_tk_refresh
 #      bleibt für die kleine Überraschung) und «Über MoveEye» unten in Mehr. Geschichte, Entwickler «Elektro»,
 #      Zeitleiste, Zahlen (zur Laufzeit gezählt), aufklappbar «Für Technik-Interessierte». Texte: 622.
 # ----------------------------------------------------------------------------
-INFO_PARTS = 266                       # number of parts in quelle/ (written by werkzeuge/bauen.py --neue-version)
+INFO_PARTS = 270                       # number of parts in quelle/ (written by werkzeuge/bauen.py --neue-version)
 INFO_START = "2026-10-16"              # the first lines (a small webcam program for the Pi 5)
 FBX = {"shot": None, "shot_t": 0.0, "lines": 0}
 
@@ -63127,9 +63513,8 @@ for _k, _v in _HX_SIMDOPP.items():
         TRX[_L].setdefault(_k, _v[_i + 1])
 # ---- the product page (2.95.52): the homepage of MoveEye (made as an artifact), packed here (gzip + base64) so the Pi
 # can show it without internet to guests in the same Wi-Fi at /info/. Questions from the form arrive as a push message. ----
-INFO_HTML_GZ = (  # real-abgleich-v52: battery UPS HAT (E) 4 × 21700, download button for the kit; 3.45: homepage as a finished product (based on the artifact of 30.10.): features, 3 packages with extras, request form with package; 2.98.9: FAQ, French and Italian, «a night in time-lapse»; 2.98.7: MoveEye name, wake-up alarm, «Spiele freigeben», ticker, join wall, more animation
-    _zd('620_daten_produktseite/INFO_HTML_GZ', "")
-)
+INFO_HTML_GZ = (  # 3.55: «Spielen mit einem Tipp» unter «Vorab ausprobieren»; real-gehaeuse-v53: holder wall / tree, threaded inserts and battery hatch; real-abgleich-v52: battery UPS HAT (E) 4 × 21700, download button for the kit; 3.45: homepage as a finished product (based on the artifact of 30.10.): features, 3 packages with extras, request form with package; 2.98.9: FAQ, French and Italian, «a night in time-lapse»; 2.98.7: MoveEye name, wake-up alarm, «Spiele freigeben», ticker, join wall, more animation
+    _zd('620_daten_produktseite/INFO_HTML_GZ', ""))
 
 INFO_MSGS = deque(maxlen=50)
 _INFO_ASK = {}                       # ip -> times of questions (at most 5 per hour)
@@ -67560,7 +67945,7 @@ def play_state(force=False):
         try:
             r = sim_control({"action": "spielbereich", "do": "info"}) or {}
             if r.get("ok") and isinstance(r.get("chapters"), list):
-                d = {k: r.get(k) for k in ("chapters", "badges", "level", "blinki", "current", "scene", "stories", "resume", "slot", "kids")}
+                d = {k: r.get(k) for k in ("chapters", "badges", "level", "blinki", "current", "scene", "stories", "resume", "slot", "kids", "playing")}
                 d.update(ok=True, offline=False, t=now)
                 try:
                     with open(_play_file(), "w", encoding="utf-8") as f:
@@ -67604,16 +67989,19 @@ def play_story_pic(sid, owner=True):
         return None
 
 
-def play_do(action, cid="", owner=True):
+def play_do(action, cid="", owner=True, what=""):
     """«Start the adventure» (id) / open or close the start screen in the simulator / «seen» (Blinki's joy shown).
     owner = nacht_may(...): «Das Hospiz» starts only for the owner (Code-Prüfung M4: before only the answer was filtered)"""
-    if action == "start" and str(cid or "").strip().lower() == "horror" and not owner:
+    if action in ("start", "story") and str(cid or "").strip().lower() == "horror" and not owner:
         log_event("web", "Play area: «Das Hospiz» refused (not the owner / operator mode)")
         return {"ok": False, "error": tr("Only the owner can start this story."), "code": 403}
     if not CFG.get("sim_on"):
         return {"ok": False, "error": tr("The 3D simulator is not connected.")}
     try:
-        r = sim_control({"action": "spielbereich", "do": action, "id": str(cid)[:24]}) or {}
+        q_ = {"action": "spielbereich", "do": action, "id": str(cid)[:24]}
+        if action == "story":                              # 3.51.x: a story from the phone - the same buttons as its card in the simulator
+            q_["what"] = what if what in ("weiter", "neu", "unlock") else "weiter"
+        r = sim_control(q_) or {}
     except Exception as e:
         _PLAY["t"] = 0.0
         if action == "start" and "timed out" in str(e):       # a big scene (Ferienpark) takes longer to build than the 8 s
@@ -67648,6 +68036,16 @@ _HX_PLAY = {
                                                                        'Non ancora visitato – cosa c’è da scoprire si vede sul posto.',
                                                                        'Anc betg visità – tge ch’i dat da scuvrir sa mussa al lieu.'),
     'Stories': ('Geschichten', 'Histoires', 'Storie', 'Istorgias'),
+    'Start story': ('Starten', 'Démarrer', 'Avvia', 'Cumenzar'),
+    'Continue playing': ('Weiterspielen', 'Continuer', 'Continua', 'Cuntinuar a giugar'),
+    'Start over': ('Neu beginnen', 'Recommencer', 'Ricomincia', 'Cumenzar da nov'),
+    'Unlock': ('Entsperren', 'Déverrouiller', 'Sblocca', 'Deblocar'),
+    'Opened in the simulator – you play it in the simulator window (tab «Sim»).': (
+        'Im Simulator geöffnet – gespielt wird im Simulator-Fenster (Reiter «Sim»).',
+        'Ouvert dans le simulateur – on joue dans la fenêtre du simulateur (onglet «Sim»).',
+        'Aperto nel simulatore – si gioca nella finestra del simulatore (scheda «Sim»).',
+        'Avert en il simulatur – ins giogia en la fanestra dal simulatur (tab «Sim»).'),
+    'To the simulator window': ('Zum Simulator-Fenster', 'Vers la fenêtre du simulateur', 'Alla finestra del simulatore', 'Tar la fanestra dal simulatur'),
     'Only the owner can start this story.': ('Nur der Besitzer kann diese Geschichte starten.', 'Seul le propriétaire peut lancer cette histoire.',
                                              'Solo il proprietario può avviare questa storia.', 'Mo il proprietari po cumenzar questa istorgia.'),
     'Discover': ('Entdecken', 'Découvrir', 'Scoprire', 'Scuvrir'),
@@ -67733,9 +68131,9 @@ def smalltv_routes(app, reply, body):                     # + 639i: /play and /a
         if request.method == "GET":
             return reply(play_for(play_state(), own))
         d = body(); a = str(d.get("action") or "")
-        if a not in ("start", "open", "close", "seen"):
+        if a not in ("start", "open", "close", "seen", "story"):
             return reply({"ok": False, "error": "unknown action"}, 400)
-        r = play_do(a, d.get("id") or "", own)
+        r = play_do(a, d.get("id") or "", own, str(d.get("what") or ""))
         if r.pop("code", None) == 403:
             return reply(r, 403)
         if r.get("state"):
@@ -67785,12 +68183,13 @@ def _tk_play_poll(self):
     self._play_inner.after(6000, self._play_poll)
 
 
-def _tk_play_act(self, a, cid=""):
+def _tk_play_act(self, a, cid="", what=""):
     def work():
-        r = play_do(a, cid, nacht_may("admin"))           # the window = the owner, unless operator mode (M4)
+        r = play_do(a, cid, nacht_may("admin"), what)     # the window = the owner, unless operator mode (M4)
         r.pop("code", None)
         try:
             self.root.after(0, lambda: (self._status("Playing", ("✓ " + tr("The simulator travels there.")) if r.get("ok") and a == "start"
+                                                     else ("✓ " + tr("Opened in the simulator – you play it in the simulator window (tab «Sim»).")) if r.get("ok") and a == "story"
                                                      else ("⚠ " + str(r.get("error") or "")) if not r.get("ok") else tr("Open in the simulator")),
                                         r.get("ok") and self._play_paint(r["state"])))
         except Exception:
@@ -67837,7 +68236,9 @@ def _tk_play_paint(self, d):
         rf = tk.Frame(inner, bg=C["panel"], highlightthickness=1, highlightbackground=C["acc"], padx=10, pady=8); rf.pack(fill="x", pady=(8, 0))
         tk.Label(rf, text="▶ " + txt.replace("{t}", str(R.get("title"))).replace("{p}", str(R.get("pct"))), bg=C["panel"], fg=C["txt"],
                  font=("DejaVu Sans", 11, "bold"), anchor="w").pack(fill="x")
-        tk.Label(rf, text=tr("The button «Continue» is in the simulator (window «Playing»)."), bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 9),
+        if not d.get("offline") and not R.get("locked"):
+            self._fbtn(rf, tr("Continue playing"), lambda i=R.get("id"): self._play_act("story", i, "weiter"), primary=True).pack(anchor="w", pady=(4, 0))
+        tk.Label(rf, text=tr("Opened in the simulator – you play it in the simulator window (tab «Sim»)."), bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 9),
                  anchor="w").pack(fill="x")
     ttk.Label(inner, text=tr("Stories").upper(), style="Mut.TLabel").pack(anchor="w", pady=(12, 4))
     sg = tk.Frame(inner, bg=C["bg"]); sg.pack(fill="x")
@@ -67858,6 +68259,16 @@ def _tk_play_paint(self, d):
         pb = ttk.Progressbar(pr, maximum=100, length=120); pb.pack(side="left"); pb["value"] = int(x.get("pct") or 0)
         tk.Label(pr, text=f"{int(x.get('pct') or 0)} %" + (" · " + str(x.get("where")) if x.get("where") and not x.get("done") else ""), bg=C["panel"], fg=C["txt"],
                  font=("DejaVu Sans", 9)).pack(side="left", padx=(8, 0))
+        if not off and not d.get("offline"):             # 3.51.x: start / continue here as well (the same buttons as the card in the simulator)
+            br_ = tk.Frame(f, bg=C["panel"]); br_.pack(fill="x", pady=(6, 0))
+            sid_ = x.get("id")
+            if x.get("locked"):
+                self._fbtn(br_, tr("Unlock"), lambda i=sid_: self._play_act("story", i, "unlock")).pack(side="left")
+            else:
+                self._fbtn(br_, tr("Continue playing") if x.get("started") and not x.get("done") else tr("Start story"),
+                           lambda i=sid_: self._play_act("story", i, "weiter"), primary=True).pack(side="left")
+                if x.get("started"):
+                    self._fbtn(br_, tr("Start over"), lambda i=sid_: self._play_act("story", i, "neu")).pack(side="left", padx=(6, 0))
     ttk.Label(inner, text=tr("Stories are played in the simulator – here you see the progress."), style="Mut.TLabel").pack(anchor="w")
     ttk.Label(inner, text=tr("Discover").upper(), style="Mut.TLabel").pack(anchor="w", pady=(12, 4))
     if not d.get("chapters"):
@@ -67918,23 +68329,51 @@ def play_selftest():
             assert not r["ok"] and r.get("code") == 403 and not asked, ("Hospiz started without the owner", r, asked)
             r = play_do("start", " HORROR ", False)
             assert not r["ok"] and not asked, "Hospiz with another spelling"
+            r = play_do("story", "horror", False, "neu")          # 3.51.x: the story buttons of the phone - the same rule
+            assert not r["ok"] and r.get("code") == 403 and not asked, ("Hospiz story button without the owner", r, asked)
+            play_do("story", "maggie", True, "neu")
+            play_do("story", "maggie", True, "x")
+            sq_ = [x_ for x_ in asked if x_.get("do") == "story"]
+            assert sq_ == [{"action": "spielbereich", "do": "story", "id": "maggie", "what": "neu"},
+                           {"action": "spielbereich", "do": "story", "id": "maggie", "what": "weiter"}], asked
             assert nacht_may("admin", locked=True) is False and nacht_may("user", locked=False) is False
         finally:
             globals()["sim_control"] = _sc; globals()["log_event"] = _le; CFG["sim_on"] = False
         html = play_page()
         assert 'href="/play"' in html and "/api/play" in html and "Geschichten" in html and "Entdecken" in html and "MWBlinki" in html
+        assert 'plDo("story"' in html and "/sim" in html and tr("Start over", "rm") == "Cumenzar da nov"   # 3.51.x: stories from the phone
         assert 'id="pl-bd"' not in html and "/sim/story_pic/" in html             # Geschichten-Menü: badges in the discovery book
         st = {"stories": [{"id": "horror"}, {"id": "maggie"}], "resume": {"id": "horror"}}
         assert [x["id"] for x in play_for(st, False)["stories"]] == ["maggie"] and not play_for(st, False)["resume"]
         assert len(play_for(st, True)["stories"]) == 2 and play_story_pic("horror", False) is None and play_story_pic("../x") is None
         assert tr("Travel there", "fr") != "Travel there" and tr("Stories", "rm") == "Istorgias" and tr("Discover", "it") == "Scoprire"
         assert hasattr(App, "_tk_play_tab")
+        assert HELP_PAGE.count('<section id="stories"') == 2 and all('id="stories"' in (HELP_X.get(L) or 'id="stories"') for L in ("fr", "it", "rm")), "manual: stories"
     finally:
         CFG["sim_on"] = keep[0]; _PLAY.clear(); _PLAY.update(keep[1])
     return "tab Play: nav, offline state, page, translations, window"
 
 
 SELFTEST_EXTRA.append(("Play area: tab «Spielen» (web, window, simulator spielbereich.gd)", play_selftest))
+
+
+# ---- 3.51.x (Besitzer 02.11.2026): the manual (HELP_PAGE 540 + HELP_X) - a short chapter «Geschichten» before «Tipps & Tricks» ----
+_HELP_STORY = _zd('639i_spielbereich/HELP_STORY', _ZDDict())
+
+
+def _help_story(doc, lang):
+    if 'id="stories"' in doc:
+        return doc
+    i = doc.find('<section id="tips"')
+    return doc[:i] + _HELP_STORY[lang] + doc[i:] if i >= 0 else doc
+
+
+_hp_en_story = HELP_PAGE.find('<div lang="en">')
+if _hp_en_story > 0:
+    HELP_PAGE = _help_story(HELP_PAGE[:_hp_en_story], "de") + _help_story(HELP_PAGE[_hp_en_story:], "en")
+for _L in ("fr", "it", "rm"):
+    if HELP_X.get(_L):
+        HELP_X[_L] = _help_story(HELP_X[_L], _L)
 _HX_NEBEL = {
     'Fog – view limited': ('Nebel – Sicht eingeschränkt', 'Brouillard – visibilité réduite', 'Nebbia – visibilità ridotta', 'Tschajera – vista limitada'),
 }
@@ -72625,7 +73064,7 @@ SELFTEST_EXTRA.append(("Error help with QR code (simulator3d/fehler_katalog.json
 # GEH_QUELLE_SHA: Prüfsumme der Quelle (hardware/gehaeuse/Quellcode/*.py, bau.json, werkzeuge/gehaeuse_bauen.py) – der
 # Selbsttest (639w) vergleicht sie im Repository mit der Quelle und mit simulator3d/inhalte/gehaeuse/modelle.json.
 # ----------------------------------------------------------------------------
-GEH_QUELLE_SHA = 'a4af57cc5f3097a62fa86e0ca5c3c48c3421b242e417a94c2f471848942d435a'
+GEH_QUELLE_SHA = 'c3f799224806a51b6254b10f6d11b4d017f6c0a691c2d374c056ee988c808763'
 GEH_BAU = json.loads(_zd('639v_daten_gehaeuse/GEH_BAU', ""))
 GEH_UI_DE = {"Case & build": "Gehäuse & Bau", "Guide, parts list, print files – in 3D in the workshop of the simulator": "Anleitung, Materialliste, Druckdateien – in 3D in der Werkstatt des Simulators", "Case": "Gehäuse", "View in the simulator": "Im Simulator ansehen", "Opens the workshop in the 3D simulator: turn, explode, see through, click parts, assembly step by step.": "Öffnet die Werkstatt im 3D-Simulator: drehen, zerlegen, durchsichtig, Teile anklicken, Montage Schritt für Schritt.", "Simulator not connected – start it and connect it on the page Simulator.": "Simulator nicht verbunden – starte ihn und verbinde ihn auf der Seite «Simulator».", "Opened in the simulator.": "Im Simulator geöffnet.", "Print files": "Druckdateien", "3MF plates for the Bambu Lab X2D (PETG, no supports)": "3MF-Platten für den Bambu Lab X2D (PETG, ohne Stützen)", "Single STL files: in the hand-over package (ZIP, about 60 MB), not in the repository.": "Einzelne STL-Dateien: im Übergabe-Paket (ZIP, ca. 60 MB), nicht im Repository.", "Assembly step by step": "Montage Schritt für Schritt", "Show this step in the simulator": "Diesen Schritt im Simulator zeigen", "Parts list": "Materialliste", "Qty": "Menge", "Part number": "Teilenummer", "Guides and source (GitHub)": "Anleitungen und Quellcode (GitHub)", "Detailed guide v5.1": "Ausführliche Anleitung v5.1", "Full parts list with order list": "Ganze Materialliste mit Bestellliste", "Measure first: UPS HAT (E) with its cells (assumed 90 × 80 × 26 mm) before printing the lower part.": "Zuerst nachmessen: UPS HAT (E) mit Akkus (angenommen 90 × 80 × 26 mm), bevor das Unterteil gedruckt wird.", "Own work of Elektro – parametric Python model.": "Eigenes Werk von Elektro – parametrisches Python-Modell.", "Step": "Schritt"}
 GEH_UI_TRX = _zd('639v_daten_gehaeuse/GEH_UI_TRX', _ZDDict())
@@ -72636,7 +73075,7 @@ GEH_UI2_TRX = _zd('639v_daten_gehaeuse/GEH_UI2_TRX', _ZDDict())
 # BAU3D: Pfad -> [sha256 der Datei, gzip+base64]; BAU3D_GLB: [sha256, Grösse, gzip+base64]. Ausgeliefert von 639w (/bau3d/<pfad>,
 # /build/gehaeuse.glb) mit Content-Encoding gzip. Der Selbsttest vergleicht die Prüfsummen im Repository mit den Quellen.
 # ----------------------------------------------------------------------------
-BAU3D_QUELLE_SHA = 'a4af57cc5f3097a62fa86e0ca5c3c48c3421b242e417a94c2f471848942d435a'
+BAU3D_QUELLE_SHA = 'c3f799224806a51b6254b10f6d11b4d017f6c0a691c2d374c056ee988c808763'
 BAU3D = _zd('639vb_daten_bau3d/BAU3D', _ZDDict())
 BAU3D_GLB = _zd('639vb_daten_bau3d/BAU3D_GLB', [])
 # aus simulator3d/inhalte/gehaeuse/modelle.json: Gruppe, aussen, Mitte und Explosion pro Teil (wie die Werkstatt im Simulator)
@@ -72696,35 +73135,13 @@ GEH_PAGE = _zd('639w_gehaeuse/GEH_PAGE', ZD_PAGE)
 
 # the 3D workshop in the browser (three.js r160 from 639vb, the model /build/gehaeuse.glb) - like werkstatt.gd in the simulator
 GEH_3D_JS = _zd('639w_gehaeuse/GEH_3D_JS', "")
-GEH_DL_TX = {                                             # real-download-fix: EN -> (de, fr, it, rm)
-    "The print file is not on this MoveEye and could not be fetched from the internet (no connection?). Try again later, or load the complete kit package.": (
-        "Die Druckdatei liegt nicht auf diesem MoveEye und konnte nicht aus dem Internet geholt werden (keine Verbindung?). Später nochmals versuchen oder das komplette Bausatz-Paket laden.",
-        "Le fichier d'impression n'est pas sur ce MoveEye et n'a pas pu être téléchargé (pas de connexion ?). Réessayer plus tard ou charger le kit complet.",
-        "Il file di stampa non è su questo MoveEye e non è stato possibile scaricarlo (nessuna connessione?). Riprovare più tardi o scaricare il kit completo.",
-        "La datoteca da stampa n'è betg sin quest MoveEye e n'ha betg pudì vegnir chargiada da l'internet (nagina colliaziun?). Empruvar pli tard u chargiar il pachet cumplet."),
-    "The print files are being fetched from the internet (%d of %d). This page tries again by itself; you can also tap «Try again».": (
-        "Die Druckdateien werden aus dem Internet geholt (%d von %d). Diese Seite versucht es selbst nochmals; du kannst auch «Nochmals versuchen» tippen.",
-        "Les fichiers d'impression sont en cours de téléchargement (%d sur %d). Cette page réessaie d'elle-même ; vous pouvez aussi toucher «Réessayer».",
-        "I file di stampa vengono scaricati da internet (%d di %d). Questa pagina riprova da sola; puoi anche toccare «Riprova».",
-        "Las datotecas da stampa vegnan chargiadas da l'internet (%d da %d). Questa pagina emprova sezza anc ina giada; ti pos er tutgar «Empruvar anc ina giada»."),
-    "Try again": ("Nochmals versuchen", "Réessayer", "Riprova", "Empruvar anc ina giada"),
-    "Complete kit package (GitHub)": ("Komplettes Bausatz-Paket (GitHub)", "Kit complet (GitHub)", "Kit completo (GitHub)", "Pachet cumplet (GitHub)"),
-    "Back to Build": ("Zurück zu Bauen", "Retour à Construire", "Torna a Costruire", "Enavos tar Construir"),
-    "The print file is too big.": ("Die Druckdatei ist zu gross.", "Le fichier d'impression est trop grand.", "Il file di stampa è troppo grande.", "La datoteca da stampa è memia gronda."),
-    "MoveEye print files – case %s – as of MoveEye %s": ("MoveEye Druckdateien – Gehäuse %s – Stand MoveEye %s", "Fichiers d'impression MoveEye – boîtier %s – état MoveEye %s",
-        "File di stampa MoveEye – custodia %s – stato MoveEye %s", "Datotecas da stampa MoveEye – chascha %s – stadi MoveEye %s"),
-    "folder": ("Ordner", "dossier", "cartella", "ordinatur"),
-    "Without the repository MoveEye fetches the files from GitHub itself (the first time takes about a minute). Everything in one package:": (
-        "Ohne Repository holt MoveEye die Dateien selbst von GitHub (beim ersten Mal rund eine Minute). Alles in einem Paket:",
-        "Sans dépôt, MoveEye télécharge lui-même les fichiers depuis GitHub (la première fois environ une minute). Tout en un paquet :",
-        "Senza repository MoveEye scarica i file da GitHub da solo (la prima volta circa un minuto). Tutto in un pacchetto:",
-        "Senza repository chargia MoveEye las datotecas sez da GitHub (l'emprima giada var ina minuta). Tut en in pachet:"),
-}
+GEH_DL_TX = _zd('639w_gehaeuse/GEH_DL_TX', _ZDDict())
 for _k, _v in GEH_DL_TX.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(("fr", "it", "rm")):
         TRX.setdefault(_L, {}).setdefault(_k, _v[_i + 1])
-GEH_KEYS = sorted(set(GEH_UI_DE) | set(GEH_UI2_DE) | {k for _i, k in BAU_TABS} | {"Complete kit package (GitHub)",
+GEH_KEYS = sorted(set(GEH_UI_DE) | set(GEH_UI2_DE) | {k for _i, k in BAU_TABS} | {"Complete kit package (GitHub)", "Needs internet (GitHub)",
+    "Saved only in this browser (offline version).", "The print files come from GitHub – this needs internet. Everything else on this page works offline.", "Offline version", "Ready-made? Request on the MoveEye homepage",
     "Without the repository MoveEye fetches the files from GitHub itself (the first time takes about a minute). Everything in one package:"} | {
     "Case", "Step", "Name", "Opened in the simulator.", "Simulator not connected – start it and connect it on the page Simulator."})
 
@@ -72735,15 +73152,60 @@ def geh_fk():
     return {i: {k: es[i].get(k) for k in ("titel", "text", "schritte", "stufe")} for i in GEH_BAU.get("fehlersuche") or [] if i in es}
 
 
-def geh_page():
+def geh_page(off=None):
+    """the page /build; off = {"raw", "kit", "glb", "imports"}: the same page as one file without the Pi (geh_render_off)"""
     js = "Object.assign(I18N.de, " + json.dumps({k: DE.get(k, k) for k in GEH_KEYS}, ensure_ascii=False) + ");"
     J = lambda o: json.dumps(o, ensure_ascii=False).replace("</", "<\\/")
-    return (render_page(GEH_PAGE, "more").replace("/*GEHDE*/", js, 1).replace("/*GEHBAU*/null", J(GEH_BAU), 1)
+    return ((geh_render_off(GEH_PAGE, off) if off else render_page(GEH_PAGE, "more")).replace("/*GEHDE*/", js, 1).replace("/*GEHBAU*/null", J(GEH_BAU), 1)
             .replace("/*GEHFK*/null", J(geh_fk()), 1).replace("/*GEHM3*/null", J(BAU3D_MODELLE), 1)
             .replace("/*GEHVER*/\"\"", json.dumps(APP_VERSION), 1)
             .replace("/*GEHSIM*/false", "true" if CFG.get("sim_on") else "false", 1)
             .replace("/*GEHTABS*/", J([list(x) for x in BAU_TABS])).replace("/*GEH3D*/", GEH_3D_JS, 1)
             .replace("/*GEHFERTIG*/", fertig_js(), 1))                       # «Fertig kaufen» (639zj): the hint at the top
+
+
+def geh_render_off(page, off):
+    """real-werkstatt-standalone: like render_page, but for a file opened by double-click (file://, no Pi, no internet):
+    base CSS and COMMON_JS, the language menu with the translations of all five languages inside, no menu bar, no alerts,
+    no calls to the Pi (fetch of a Pi address answers at once: /api/appearance = language of the browser, else «offline»),
+    three.js and the model from `off` (data URLs), window.MW_OFFLINE for the page (639w GEH_OFF)."""
+    import base64
+    J = lambda o: json.dumps(o, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
+    probe = page + COMMON_JS + GEH_3D_JS + str(globals().get("GEH_EINZEL_JS", "")) + str(globals().get("GEH_EINZEL_3D", "")) + fertig_js()
+    keys = set(GEH_KEYS) | set(re.findall(r'data-i18n="([^"]+)"', page)) | {k for k in TRX.get("fr", {}) if '"' + k + '"' in probe}
+    trx = {L: {k: TRX.get(L, {})[k] for k in sorted(keys) if TRX.get(L, {}).get(k)} for L in ("fr", "it", "rm")}
+    cfg = {k: off[k] for k in ("home", "raw", "kit", "glb") if off.get(k)}
+    head = ("<script>window.MW_OFFLINE=" + J(cfg) + ";window.I18NXA=" + J(trx) + ";\n" + LANG_JS.replace("</", "<\\/") + "\n"
+            "(function(){var l='';try{l=localStorage.getItem('mw-lang')||'';}catch(e){}"
+            "var nl=((navigator.language||'de').slice(0,2)||'de').toLowerCase();if(['de','fr','it','rm','en'].indexOf(nl)<0)nl='en';"
+            "window.I18NX=window.I18NXA[l||nl]||null;window.LX=function(s){var d=window.I18NX;return (d&&d[s])||'';};"
+            "var f0=window.fetch;window.fetch=function(u,o){var s=String((u&&u.url)||u||'');"
+            "if(/^\\/[^\\/]/.test(s)){if(s.indexOf('/api/appearance')===0)return Promise.resolve(new Response(JSON.stringify({lang:nl,theme:'dark'}),{headers:{'Content-Type':'application/json'}}));"
+            "return Promise.reject(new TypeError('offline: '+s));}return f0.apply(this,arguments);};})();</script>")
+    imp = '<script type="importmap">' + J({"imports": off.get("imports") or {}}) + "</script>"
+    page = re.sub(r'<script type="importmap">.*?</script>', lambda m_: imp, page, count=1, flags=re.S)
+    page = page.replace("<head>", "<head>" + head, 1).replace('<img class="qr" src="/build/qr.svg" alt="QR">', "", 1)
+    page = page.replace("<!--NAV-->", '<span class="badge" style="font-size:11px" data-i18n="Offline version">Offline version</span>', 1)
+    page = re.sub(r"(<h1[^>]*>)MoveEye</h1>", r'\1MoveEye <span class="ver">' + APP_VERSION + "</span></h1>", page, count=1)
+    ico = "data:image/png;base64," + base64.b64encode(app_icon_png(64)).decode()     # the app icon (header, tab) inside
+    page = page.replace("</head>", str(globals().get("SX_NIGHT_CSS", "")) + '<link rel="icon" type="image/png" href="' + ico + '">'
+                        "<style>:root{--mw-icon:url(" + ico + ")}</style></head>", 1)
+    return page.replace("/*BASECSS*/", BASE_CSS).replace("/*COMMON*/", COMMON_JS).replace("/*ALERTS*/", "")
+
+
+def geh_offline_html(homepage=""):
+    """-> the whole workshop «Bauen» as one HTML file (werkzeuge/werkstatt_html.py): three.js and gehaeuse.glb inside as data URLs,
+    the print files from GitHub (GEH_DRUCK_RAW), «All» = the kit package of the latest release (GEH_BAUSATZ_URL)"""
+    import base64
+    import gzip
+    du = lambda b_, mt: "data:" + mt + ";base64," + base64.b64encode(b_).decode()
+    src = {k: gzip.decompress(bau3d_bytes(k)).decode("utf-8") for k in BAU3D}
+    # GLTFLoader imports «../utils/BufferGeometryUtils.js»: a data URL has no folder -> the name from the import map
+    src = {k: v.replace("'../utils/BufferGeometryUtils.js'", "'three/addons/utils/BufferGeometryUtils.js'") for k, v in src.items()}
+    imports = {("three" if k == "three.module.min.js" else "three/addons/" + k): du(v.encode("utf-8"), "text/javascript") for k, v in src.items()}
+    home = str(homepage or (globals().get("FERTIG") or {}).get("homepage_url") or "")   # empty: the hint without a link
+    off = {"home": home if home.startswith("https://") else "", "raw": GEH_DRUCK_RAW, "kit": GEH_BAUSATZ_URL, "glb": du(gzip.decompress(bau3d_bytes("glb")), "model/gltf-binary"), "imports": imports}
+    return geh_page(off=off)
 
 
 def geh_do(d):
@@ -72931,9 +73393,13 @@ def geh_druck_holen(name, timeout=30):
 
 
 def geh_var_namen(var):
-    """the print files of a case: v52 -> Druckdateien/v5-2/, v51 -> the others"""
-    v52 = var != "v51"
-    return [n for n in geh_druck_namen() if n.startswith("v5-2/") == v52]
+    """the print files of a case: v52 -> Druckdateien/v5-2/, v53 -> Druckdateien/v5-3/ (real-gehaeuse-v53), v51 -> the others"""
+    d = GEH_VAR_DIR.get(var, "v5-2/")
+    return [n for n in geh_druck_namen() if (n.split("/")[0] + "/" if "/" in n else "") == d]
+
+
+GEH_VAR_DIR = {"v51": "", "v52": "v5-2/", "v53": "v5-3/"}     # case -> folder of its print files
+GEH_VAR_TXT = {"v51": "v5.1", "v52": "v5.2", "v53": "v5.3"}
 
 
 def geh_var_std():
@@ -72941,7 +73407,7 @@ def geh_var_std():
 
 
 def geh_zip_name(var):
-    return "MoveEye_%s_Druck_%s.zip" % ("v5-1" if var == "v51" else "v5-2", APP_VERSION)
+    return "MoveEye_%s_Druck_%s.zip" % (GEH_VAR_TXT.get(var, "v5.2").replace(".", "-"), APP_VERSION)
 
 
 def _gx_py(o, L):
@@ -72953,7 +73419,7 @@ def geh_liesmich(var, L=None):
     L = cur_lang(L)
     D = GEH_BAU.get("druck") or {}
     vals = {o["id"] for g_ in GEH_BAU.get("varianten") or [] if g_["id"] == "gehaeuse" for o in g_["werte"]}
-    vt = "v5.1" if var == "v51" else "v5.2"
+    vt = GEH_VAR_TXT.get(var, "v5.2")
     out = [tr("MoveEye print files – case %s – as of MoveEye %s", L) % (vt, APP_VERSION), ""]
     for h in D.get("hinweise") or []:
         out.append("- " + _gx_py(h, L))
@@ -72961,7 +73427,9 @@ def geh_liesmich(var, L=None):
             tr("Single parts (3MF)", L) + ":"]
     for p in D.get("teile") or []:
         w = p.get("wenn")
-        if w in vals and w != var:
+        if p.get("nicht") == var:                     # replaced in this case (v5.3: lower part / lid v5.2)
+            continue
+        if w in vals and w != var and not (w == "v52" and var == "v53"):   # v5.3 builds on v5.2
             continue
         opt = "  (" + tr("optional", L) + ": " + w + ")" if w and w not in vals else ""
         out.append("- %s: × %s · %s %s %% · %s %s · %s %s · %s %s mm%s · %s %s · %s ~%s h%s" % (
@@ -72984,7 +73452,7 @@ def geh_alle_zip(var=None, budget=None):
     """-> ("zip", bytes, file name) | ("wait", done, total) | ("offline", reason, None): the print files of the chosen case
     in one ZIP (3MF are compressed already: stored), fetched where missing"""
     import io
-    var = var if var in ("v51", "v52") else geh_var_std()
+    var = var if var in GEH_VAR_DIR else geh_var_std()
     names = geh_var_namen(var)
     t0, paths = time.time(), {}
     budget = GEH_ZIP_BUDGET if budget is None else budget
@@ -73101,7 +73569,7 @@ def smalltv_routes(app, reply, body):                     # + 639w: /build, /cas
         st, a_, b_ = geh_alle_zip(var)
         if st == "zip":
             return Response(a_, mimetype="application/zip", headers={"Content-Disposition": f'attachment; filename="{b_}"', "Cache-Control": "no-store"})
-        url = "/build/alle.zip?var=" + ("v51" if var == "v51" else "v52")
+        url = "/build/alle.zip?var=" + (var if var in GEH_VAR_DIR else geh_var_std())
         if st == "wait":
             return Response(geh_dl_page(tr("The print files are being fetched from the internet (%d of %d). This page tries again by itself; you can also tap «Try again».") % (a_, b_), retry=url, refresh=15), 202, mimetype="text/html")
         return Response(geh_dl_page(tr("The print file is not on this MoveEye and could not be fetched from the internet (no connection?). Try again later, or load the complete kit package."), retry=url), 503, mimetype="text/html")
@@ -73249,16 +73717,16 @@ def bau_infos_veraltet(base=None):
 
 def geh_selftest():
     B = GEH_BAU
-    assert B.get("version") == "5.1" and len(B.get("schritte") or []) == 14, "data"
+    assert re.fullmatch(r"\d+\.\d+(\.\d+)?", str(B.get("version"))) and len(B.get("schritte") or []) == 14, "data"   # 3 tracks: own number
     bom = {b["id"] for b in B["bom"]}
     for t_ in B["teile"]:
         assert not t_.get("bom") or t_["bom"] in bom, t_["id"]
         assert not t_.get("schritt") or 1 <= t_["schritt"] <= 14, t_["id"]
     vals = {o["id"] for v in B["varianten"] for o in v["werte"]}
     T_ = {t_["id"]: t_ for t_ in B["teile"]}
-    assert (B.get("variante_standard") or {}).get("gehaeuse") == "v52" and "v51" in vals, "real-v52-standard: v5.2 is the standard, v5.1 stays"
+    assert (B.get("variante_standard") or {}).get("gehaeuse") == "v53" and {"v51", "v52"} <= vals, "real-gehaeuse-v53: v5.3 is the standard (released 02.11.2026), v5.2 and v5.1 stay"
     for t_ in B["teile"]:                         # the parts of a variant are in the assembly steps, at the step of the part they replace
-        if t_.get("art") in ("v52", "dev"):
+        if t_.get("art") in ("v52", "v53", "dev"):
             assert t_.get("schritt"), ("step", t_["id"])
             assert not t_.get("ersetzt") or T_[t_["ersetzt"]].get("schritt") == t_["schritt"], ("step of the replaced part", t_["id"])
     for b in B["bom"]:
@@ -73279,6 +73747,13 @@ def geh_selftest():
     for x in ("/api/bau", '"schritte"', "/build/gehaeuse.glb", "importmap", "/bau3d/three.module.min.js", '"HW_PCA9685"', "Raspberry Pi 5"):
         assert x in html, x
     assert "<!--NAV-->" not in html and "/*GEH" not in html
+    off_ = geh_offline_html()                             # real-werkstatt-standalone: the same page as one offline file
+    for x in ("window.MW_OFFLINE=", '"three":"data:text/javascript;base64,', "data:model/gltf-binary;base64,", GEH_DRUCK_RAW, GEH_BAUSATZ_URL,
+              "const GEH_OFF = window.MW_OFFLINE", "window.I18NXA=", '"Offline version"', "Parties", APP_VERSION, "Request on the MoveEye homepage"):
+        assert x in off_, ("offline file", x)
+    assert '"home"' not in off_.split("window.I18NXA=")[0] and '"home":"https://x.ch/"' in geh_offline_html("https://x.ch/")[:300000], "homepage link only when set"
+    for x in ('src="/', "/bau3d/", "/build/qr.svg", "/i18n/", "/*GEH", "<!--NAV-->", "/*ALERTS*/"):
+        assert x not in off_, ("offline file", x)
     import gzip
     for k in list(BAU3D) + ["glb"]:
         raw = gzip.decompress(bau3d_bytes(k))
@@ -73328,6 +73803,9 @@ def geh_selftest():
             os.remove(f_.name)
             assert r.returncode == 0, f"/build script {i}: {(r.stderr or '').strip()[-300:]}"
     probs = geh_check()
+    if probs:   # Drei Spuren (Besitzer 03.11.2026): the case is released on its own, its data come with the next MoveEye /
+        # simulator version («Kamera/Gehäuse überall nachziehen» is paused) - a warning here; rel_mw.sh shows it before a release
+        return "WARNING – case data in the repository differ from this MoveEye (3 tracks: gehaeuse_bauen.py --sim at the next release): " + probs[0]
     assert not probs, " | ".join(probs)
     warn = bau_infos_veraltet()
     if warn:                                              # a warning, no error: nothing is changed by itself
@@ -73422,6 +73900,9 @@ def geh_dl_selftest():
         assert top + "LIESMICH.txt" in nl and top + "MoveEye_v5-2_01_Unterteil_v52.3mf" in nl and top + "Platten_X2D/MotionWatch_v5-2_Platte_A_Unterteil.3mf" in nl, nl[:5]
         assert len(nl) == len(geh_var_namen("v52")) + 1 and not [x for x in nl if "v5-1" in x or "v5-2/" in x[len(top):]], nl
         assert geh_zip_name("v51") == "MoveEye_v5-1_Druck_%s.zip" % APP_VERSION and all(not n.startswith("v5-2/") for n in geh_var_namen("v51"))
+        n53 = geh_var_namen("v53")                    # real-gehaeuse-v53: own folder, all parts (also the unchanged ones of v5.2)
+        assert n53 and all(n.startswith("v5-3/") for n in n53) and geh_zip_name("v53") == "MoveEye_v5-3_Druck_%s.zip" % APP_VERSION, n53[:3]
+        assert len([n for n in n53 if n not in (GEH_BAU.get("druckdateien") or [])]) >= len([n for n in geh_var_namen("v52") if n not in (GEH_BAU.get("druckdateien") or [])]), "v5.3: every single part"
     finally:
         srv.shutdown()
         srv.server_close()
@@ -73486,9 +73967,9 @@ GEH_EINZEL_JS = _zd('639wc_einzelteil/GEH_EINZEL_JS', "")
 GEH_EINZEL_3D = _zd('639wc_einzelteil/GEH_EINZEL_3D', "")
 
 
-def _geh_page_einzel():
+def _geh_page_einzel(*a, **k):                           # real-werkstatt-standalone: geh_page(off=…) passes through
     js = GEH_EINZEL_JS.replace("/*GEHDL*/null", json.dumps(GEH_DRUCK_LAGE, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/"), 1)
-    return _geh_page_einzel_base().replace("/*GEHEINZEL*/", js, 1).replace("/*GEHEINZEL3D*/", GEH_EINZEL_3D, 1)
+    return _geh_page_einzel_base(*a, **k).replace("/*GEHEINZEL*/", js, 1).replace("/*GEHEINZEL3D*/", GEH_EINZEL_3D, 1)
 
 
 _geh_page_einzel_base = geh_page
@@ -73496,13 +73977,13 @@ _geh_page_einzel_base = geh_page
 geh_page = _geh_page_einzel
 
 
-def geh_platten_zip(v52=True, lang="de", budget=None):
+def geh_platten_zip(var="v52", lang="de", budget=None):
     """the plates (3MF) of one case + LIESMICH_Druck.txt (short guide in the language), named with the version
     -> ("zip", name, bytes) | ("wait", done, total) | ("offline", reason, None). 3.48.0: like /build/alle.zip (real-download-fix,
     639w geh_druck_holen) - on the Pi without the repository MoveEye fetches the plates itself (cache, base names), no redirect"""
     import io
     import zipfile
-    var = "v52" if v52 else "v51"
+    var = "v52" if var is True else "v51" if var is False else var if var in GEH_VAR_DIR else "v52"   # real-gehaeuse-v53: v51 | v52 | v53
     fs = (GEH_DRUCK_LAGE.get("platten") or {}).get(var) or []
     if not fs:
         return "offline", "unknown", None
@@ -73522,7 +74003,7 @@ def geh_platten_zip(v52=True, lang="de", budget=None):
     L = lang if lang in ("de", "en", "fr", "it", "rm") else "de"
     T = lambda k: tr(k, L) if L != "en" else k
     nm = lambda dt: next((x["name"].get(L) or x["name"].get("de") for x in GEH_BAU.get("teile") or [] if x.get("datei") == dt and isinstance(x.get("name"), dict)), dt.replace("_", " "))
-    z = [T("MoveEye – print plates case v%s (as of MoveEye %s)") % ("5.2" if v52 else "5.1", APP_VERSION), "=" * 64, "",
+    z = [T("MoveEye – print plates case v%s (as of MoveEye %s)") % (GEH_VAR_TXT[var][1:], APP_VERSION), "=" * 64, "",
          T("Printer: Bambu Lab X2D (other printers work too), 0.4 mm nozzle, material PETG – dry it first."),
          T("No supports: all parts already lie right on the plate. Brim 5 mm only for head (06), yoke (04) and side cover (07)."),
          T("Colours: head parts orange (everything that turns or tilts), the rest grey; diffuser 14 natural/white, pupil ring 15 black."),
@@ -73536,7 +74017,7 @@ def geh_platten_zip(v52=True, lang="de", budget=None):
                 seen.append(s)
         z.append(T("Plate %s (%s): %s") % (p["name"], p["datei"].split("/")[-1], ", ".join(seen)))
     z += ["", T("Single parts and everything else: MoveEye → More → Build → Printing."), ""]
-    top_ = ("MoveEye_v5-2_Druckplatten_" if v52 else "MoveEye_v5-1_Druckplatten_") + APP_VERSION
+    top_ = "MoveEye_%s_Druckplatten_" % GEH_VAR_TXT[var].replace(".", "-") + APP_VERSION
     b = io.BytesIO()
     with zipfile.ZipFile(b, "w", zipfile.ZIP_STORED) as zf:
         zf.writestr(top_ + "/LIESMICH_Druck.txt", "﻿" + "\r\n".join(z))
@@ -73554,12 +74035,13 @@ def smalltv_routes(app, reply, body):                     # + 639wc: /build/plat
 
     @app.route("/build/platten.zip")
     def geh_platten_():
-        v52_ = request.args.get("v", "v52") != "v51"
+        v_ = request.args.get("v", "v52")
+        v_ = v_ if v_ in GEH_VAR_DIR else "v52"
         lg_ = str(request.args.get("lang") or "de")[:2]
-        st, a_, b_ = geh_platten_zip(v52_, lg_)
+        st, a_, b_ = geh_platten_zip(v_, lg_)
         if st == "zip":
             return Response(b_, mimetype="application/zip", headers={"Content-Disposition": f'attachment; filename="{a_}.zip"', "Cache-Control": "no-store"})
-        url = "/build/platten.zip?v=" + ("v52" if v52_ else "v51") + "&lang=" + lg_
+        url = "/build/platten.zip?v=" + v_ + "&lang=" + lg_
         if st == "wait":
             return Response(geh_dl_page(tr("The print files are being fetched from the internet (%d of %d). This page tries again by itself; you can also tap «Try again».") % (a_, b_), retry=url, refresh=15), 202, mimetype="text/html")
         return Response(geh_dl_page(tr("The print file is not on this MoveEye and could not be fetched from the internet (no connection?). Try again later, or load the complete kit package."), retry=url), 503, mimetype="text/html")
@@ -73576,9 +74058,9 @@ def geh_einzel_selftest():
     for t_ in GEH_BAU["teile"]:                   # every print part of the model knows how it lies on the plate
         if t_.get("datei") and t_["id"] in {e["id"] for e in BAU3D_MODELLE.get("teile", [])}:
             assert t_["id"] in D["lage"], ("print part without orientation", t_["id"])
-    for var in ("v52", "v51"):
+    for var in ("v52", "v51", "v53"):
         ps = D["platten"].get(var) or []
-        assert [p["datei"] for p in ps] == [f for f in GEH_BAU.get("druckdateien") or [] if f.startswith("v5-2/") == (var == "v52")], ("plates", var)
+        assert [p["datei"] for p in ps] == [f for f in GEH_BAU.get("druckdateien") or [] if (f.split("/")[0] + "/" if "/" in f else "") == GEH_VAR_DIR[var]], ("plates", var)
         for p in ps:
             for it in p["teile"]:
                 assert 0 <= it["x"] <= 256 and 0 <= it["y"] <= 256 and len(it["g"]) == 3, ("on the plate", var, it["o"])
@@ -73609,8 +74091,8 @@ def geh_einzel_selftest():
         assert st_ in ("wait", "offline"), st_
     if alt:                                               # a warning (like the build infos): the model changed after the data
         return "WARNING – gehaeuse.glb changed after werkzeuge/druck_lage.py – run it again (orientation on the plate)"
-    return "Build: single part view and print plates (%d parts with orientation, plates v5.2 %d / v5.1 %d)" % (
-        len(D["lage"]), len(D["platten"].get("v52") or []), len(D["platten"].get("v51") or []))
+    return "Build: single part view and print plates (%d parts with orientation, plates v5.2 %d / v5.1 %d / v5.3 %d)" % (
+        len(D["lage"]), len(D["platten"].get("v52") or []), len(D["platten"].get("v51") or []), len(D["platten"].get("v53") or []))
 
 
 SELFTEST_EXTRA.append(("Build: single part view, print plates (orientation from the 3MF, ZIP with short guide)", geh_einzel_selftest))
@@ -74021,8 +74503,8 @@ SIMWAIT_JS = r"""
 })();
 """
 
-if '<img id="video" src="/video_feed" alt="">' in WEB_PAGE:
-    WEB_PAGE = WEB_PAGE.replace('<img id="video" src="/video_feed" alt="">', '<img id="video" src="/video_feed" alt="">' + SIMWAIT_HTML, 1)
+if '<img id="video" data-src="/video_feed" alt="">' in WEB_PAGE:            # 3.55.2: data-src - keepStream (510) opens the stream
+    WEB_PAGE = WEB_PAGE.replace('<img id="video" data-src="/video_feed" alt="">', '<img id="video" data-src="/video_feed" alt="">' + SIMWAIT_HTML, 1)
     WEB_PAGE = WEB_PAGE.replace("</script></body></html>", "</script><style>" + SIMWAIT_CSS + "</style><script>" + SIMWAIT_JS + "</script></body></html>", 1)
 
 
@@ -74493,11 +74975,11 @@ _HX_UIS = {
     'MoveEye older': ('MoveEye älter', 'MoveEye plus ancien', 'MoveEye più vecchio', 'MoveEye pli vegl'),
     'Update the simulator': ('Simulator aktualisieren', 'Mettre à jour le simulateur', 'Aggiorna il simulatore', 'Actualisar il simulatur'),
     'Update MoveEye': ('MoveEye aktualisieren', 'Mettre à jour MoveEye', 'Aggiorna MoveEye', 'Actualisar MoveEye'),
-    'Both programs should have the same number (they are always published together).':
-        ('Beide Programme sollten dieselbe Nummer haben (sie erscheinen immer zusammen).',
-         'Les deux programmes devraient avoir le même numéro (ils sont toujours publiés ensemble).',
-         'I due programmi dovrebbero avere lo stesso numero (vengono sempre pubblicati insieme).',
-         'Omadus programs duessan avair il medem numer (els cumparan adina ensemen).'),
+    'The numbers may differ, but one program is older than the other one needs.':
+        ('Die Nummern dürfen verschieden sein, aber ein Programm ist älter, als das andere braucht.',
+         'Les numéros peuvent différer, mais un programme est plus ancien que ce dont l’autre a besoin.',
+         'I numeri possono essere diversi, ma un programma è più vecchio di quanto serve all’altro.',
+         'Ils numers dastgan esser differents, ma in program è pli vegl che quai che l’auter dovra.'),
     'Simulator': ('Simulator', 'Simulateur', 'Simulatore', 'Simulatur'),
     'MoveEye gets only {f} pictures/s from the simulator - it hardly detects anything (from about 3/s on it works)':
         ('MoveEye bekommt nur {f} Bilder/s vom Simulator – so erkennt es kaum etwas (ab etwa 3/s geht es)',
@@ -74706,6 +75188,7 @@ _sim_state_639zb = sim_state
 def sim_state():                                          # + 639zb: ui, features, level, lock, push (and every 15 s diag)
     d = _sim_state_639zb()
     d["features"] = ["ui1", "level1", "push1", "diag1", "lock1", "ver1"]
+    d["sim_min"] = SIM_MIN                                # 3 tracks: the oldest simulator this MoveEye works with (545)
     cur = ui_tick()
     if not SIM.get("follower"):                           # only the leading MoveEye shares the view
         d["ui"] = {"rev": UIS["rev"], "took": UIS["took"], "v": cur}
@@ -74753,16 +75236,20 @@ def ui_vnum(v):
 
 
 def ui_ver_pair(lang=None):
-    """{"mw", "sim", "same", "older": "" | "sim" | "mw", "text"} - «MoveEye 3.34.0 · Sim 3.34.0 ✓» or «⚠ Simulator older …»"""
+    """{"mw", "sim", "same", "older": "" | "sim" | "mw", "text"} - «MoveEye 3.34.0 · Sim 3.34.0 ✓» or «⚠ Simulator older …».
+    3 tracks (Besitzer 03.11.2026): the numbers differ on purpose; «same» = the pair works together (each side at least the
+    minimum of the other: SIM_MIN of MoveEye 545, «mw_min» of the simulator in /info), «older» = the side below that minimum."""
     info = SIM.get("info") or {}
     sv = str(info.get("ver") or info.get("version") or "")
     if not re.match(r"^\d+\.\d+\.\d+$", sv):
         m = re.search(r"\d+\.\d+\.\d+", str(info.get("name") or ""))
         sv = m.group(0) if m else sv
     a, b = ui_vnum(APP_VERSION), ui_vnum(sv)
-    out = {"mw": APP_VERSION, "sim": sv, "same": bool(a and b and a == b), "older": ""}
-    if a and b and a != b:
-        out["older"] = "sim" if b < a else "mw"
+    smin, mmin = ui_vnum(SIM_MIN), ui_vnum(str(info.get("mw_min") or "")) or (0, 0, 0)
+    out = {"mw": APP_VERSION, "sim": sv, "same": bool(a and b and b >= smin and a >= mmin), "older": ""}
+    if a and b and not out["same"]:
+        out["older"] = "sim" if b < smin else "mw"
+        out["need"] = SIM_MIN if out["older"] == "sim" else str(info.get("mw_min"))
     txt = f"MoveEye {APP_VERSION} · Sim {sv or '?'}"
     if out["same"]:
         txt += " ✓"
@@ -74806,7 +75293,7 @@ def ui_pair_items(L):
     out = []
     vp = ui_ver_pair(L)
     out.append({"id": "sim:ver", "icon": "🔢", "title": tr("Versions", L), "level": "ok" if vp["same"] else "warn", "text": vp["text"],
-                "tip": "" if vp["same"] else tr("Both programs should have the same number (they are always published together).", L)
+                "tip": "" if vp["same"] else tr("The numbers may differ, but one program is older than the other one needs.", L)
                 + " → " + tr("Update the simulator" if vp["older"] == "sim" else "Update MoveEye", L)})
     if str(CFG.get("source") or "").startswith("sim:"):
         f = float(STATE.get("fps") or 0)
@@ -75038,6 +75525,11 @@ def ui_sync_selftest():
         assert ui_ver_pair("de")["same"] and ui_ver_pair("de")["text"].endswith("✓"), "639zb: version pair"
         SIM["info"] = {"version": "3.0.1"}
         assert ui_ver_pair("de")["older"] == "sim" and ui_ver_pair("de")["text"].startswith("⚠"), "639zb: older simulator"
+        SIM["info"] = {"version": SIM_MIN}                # 3 tracks: another number, but new enough = ✓
+        assert ui_ver_pair("de")["same"] and ui_ver_pair("de")["older"] == "", "639zb: 3 tracks, different numbers that fit"
+        SIM["info"] = {"version": "99.0.0", "mw_min": "99.0.0"}
+        assert ui_ver_pair("de")["older"] == "mw" and ui_ver_pair("de")["need"] == "99.0.0", "639zb: the simulator needs a newer MoveEye"
+        assert "sim_min" in sim_state() and sim_state()["sim_min"] == SIM_MIN, "639zb: sim_min in the state"
         js = render_page("<html><head></head><body><header><h1>MoveEye</h1><!--NAV--></header><main></main></body></html>", "live")
         assert js.count('id="uis-js"') == 1 and "Ansicht im Simulator" in js, "639zb: hint script"
         sh = UI_GEMEINSAM.get("shared") or {}
@@ -75726,7 +76218,10 @@ FERTIG_JS = r"""
   function paint() {
     box.textContent = "";
     const r1 = mk("div", "fkr"), r2 = mk("div", "fkr");
-    r1.append(mk("span", "fki", FK.emoji || "🛒"), mk("span", "fkt", FT("hint")));
+    const OFF = !window.mwOrder && window.MW_OFFLINE;   // the offline file (639w geh_page(off)): request on the homepage, link only when set
+    const ht = mk("span", "fkt", OFF ? t("Ready-made? Request on the MoveEye homepage") : FT("hint"));
+    if (OFF && OFF.home) { ht.textContent = ""; const a = mk("a", "", t("Ready-made? Request on the MoveEye homepage")); a.href = OFF.home; a.target = "_blank"; a.rel = "noopener"; ht.appendChild(a); }
+    r1.append(mk("span", "fki", FK.emoji || "🛒"), ht);
     const sg = mk("span", "seg"); sg.setAttribute("role", "group"); sg.setAttribute("aria-label", FT("package"));
     PS.forEach(p => { const b = mk("button", p.id === pkg ? "on" : "", L5(p.names)); b.type = "button"; b.title = L5(p.desc); b.dataset.pkg = p.id;
       b.setAttribute("aria-pressed", p.id === pkg ? "true" : "false");
@@ -75735,6 +76230,7 @@ FERTIG_JS = r"""
     const ds = mk("span", "mut", [L5(cur.desc), FT("price")].filter(Boolean).join(" · ")); ds.id = "g-fk-desc";
     const ob = mk("button", "sec", FT("button")); ob.type = "button"; ob.id = "g-fk-btn";
     ob.onclick = () => { if (window.mwOrder) window.mwOrder(pkg); else location.hash = "#order"; };
+    if (!window.mwOrder && window.MW_OFFLINE) ob.hidden = true;   // the offline file (639w geh_page(off)): no feedback to the Pi
     r2.append(sg, ds, ob); box.append(r1, r2); box.hidden = false;
   }
   const ai = window.applyI18n;                         // the language changes: the hint follows
@@ -75983,6 +76479,1822 @@ def varianten_sw_selftest():
 
 SELFTEST_EXTRA.append(("Variants without all parts: servo fallback, thermal not found, relay 1 off, mover own drive (639zs)",
                        varianten_sw_selftest))
+# ----------------------------------------------------------------------------
+# Wunsch des Besitzers (02.11.2026, Paket «spielmodus»): am iPad war das Spielen «nicht spielbar», obwohl alles da ist -
+# der Spiel-Assistent kam als kleines, abgeschnittenes PC-Bild im Stream, die Knöpfe waren Fernbedienung eines PC-Bilds, die
+# Live-Seite war voll, bis zum Spielen brauchte es viele Schritte. Entscheid:
+#   * NUR im Simulator-Betrieb (Simulation ein und verbunden) zeigt die Live-Seite eine eigene, ruhige Vollbild-Ansicht
+#     «Sim-Ansicht»: oben eine schmale Leiste (Schutz-Zustand, 🎮 Spielen, ⋯ Mehr, ▦ Klassisch), in der Mitte das Bild des
+#     Simulators (view.jpg mit dock=1: nur 3D-Bild und Karten / Fenster, ohne Bedienfeld, ohne Abschneiden; klein darüber das
+#     Kamerabild von MoveEye), unten gross: Kopf-Stick, 🎯 Folgen, 🔴 IR, 💡 Licht, 🚨 Sirene, ⏺ Aufnahme.
+#   * Alles andere der Live-Seite liegt hinter «⋯ Mehr» (alle Schnellschalter in derselben Reihenfolge wie auf der Live-Seite,
+#     dazu Controller-Ansicht, Sticks fliegen / umschauen, Simulator, Schutz, Einstellungen) - nichts ist entfernt.
+#     «▦ Klassisch» führt zur bisherigen Live-Seite (gemerkt pro Gerät, localStorage «mw-simv»); dort bringt «📱 Sim-Ansicht»
+#     (Karte «Simulator-Steuerung») sie zurück. Im echten Betrieb (ohne Simulator) bleibt die Live-Seite genau wie bisher.
+#   * «🎮 Spielen»: die Spiele des Spiel-Assistenten (Schnellstart der Simulator-Datei gamewiz.gd, «quick»: Schleichen,
+#     Wächter-Duell, Diebstahl, KI-Turm, Spielabend-Turnier, MoveEye ins Schwitzen, Nacht-Spiel, Mission, Die Karte des
+#     Grossvaters, das Spiel zur Szene) als grosse Karten im Browser. Ein Tipp = spielen: gamewiz «quick» (alles eingestellt,
+#     Spiel offen), «Hier am PC mitspielen» (Steuerung game_local, localplay.gd), gamewiz «next» (Runde startet). Der
+#     Assistent selbst öffnet sich im Simulator nicht. «⚙ Anpassen» = der ganze Assistent (Seite Simulator, /sim#gw).
+#   * Im Spiel: die Spielknöpfe sind Knöpfe im Browser (Stick gehen links, Stick umschauen rechts, Ducken, Kriechen, Stein,
+#     Lampe, Rennen; Wächter: Auslöser, «Erwischt!», Licht, Scan, Sirene, Zoom). Sie wirken wie ein Game-Controller am Browser
+#     (/api/sim «pad», die EINE Belegung von padmap.gd: rechter Stick = gehen, linker = umschauen, A Lampe, B Ducken, X Stein,
+#     Y Kriechen, R2 Rennen / Auslöser, Start = Runde starten, Select = Wiederholung). Zeit, Verdacht, Leben und das Ergebnis
+#     zeigt der Browser selbst (game_info, wie die Zuschauer-Anzeige der Seite Simulator). «× Beenden» = localplay stop.
+# Die Geschichten (Maggie, Grossvater, Hospiz) laufen weiter im Simulator-Fenster: dort zeigt die Sim-Ansicht die Sticks
+# «gehen / umschauen» von selbst (470 simTouchPad, /api/play «playing»).
+# 3.57 (639zv): das kleine Kamerabild zeigt die gewählte Kamera-Ansicht (Weitwinkel: /cam_snap/<n>), «⋯ Mehr» hat «Ansicht».
+# Daten: /api/state (530 refresh → QSJ), /api/sim (gamewiz, ctl, pad, game, localplay), /snapshot.jpg. Kein neuer Begriff
+# auf dem Pi, keine neue Einstellung. Übersetzungen: unten (_HX_SIMV, alle 5 Sprachen).
+# ----------------------------------------------------------------------------
+
+SIMV_JS = _zd('639zt_sim_ansicht/SIMV_JS', "")
+
+# Key = English text: (Deutsch, Français, Italiano, Rumantsch)
+_HX_SIMV = {
+    'Let’s play': ('Spielen', 'Jouer', 'Gioca', 'Giugar'),
+    'More': ('Mehr', 'Plus', 'Altro', 'Dapli'),
+    'Classic': ('Klassisch', 'Classique', 'Classico', 'Classic'),
+    'Back to the usual live screen': ('Zurück zur gewohnten Live-Seite', 'Retour à l’écran live habituel', 'Torna alla solita schermata live',
+                                      'Enavos al visur live usità'),
+    'Waiting for the picture of the simulator …': ('Warte auf das Bild des Simulators …', 'En attente de l’image du simulateur …',
+                                                    'In attesa dell’immagine del simulatore …', 'Spetg sin il maletg dal simulatur …'),
+    'Camera picture of MoveEye (tap: bigger / smaller)': ('Kamerabild von MoveEye (antippen: grösser / kleiner)', 'Image caméra de MoveEye (toucher : plus grand / plus petit)',
+                                                          'Immagine della telecamera di MoveEye (tocca: più grande / più piccola)', 'Maletg da la camera da MoveEye (tutgar: pli grond / pli pitschen)'),
+    'Head': ('Kopf', 'Tête', 'Testa', 'Chau'),
+    'walk': ('gehen', 'marcher', 'camminare', 'ir'),
+    'look around': ('umschauen', 'regarder autour', 'guardarsi intorno', 'guardar enturn'),
+    'aim finely': ('fein zielen', 'viser finement', 'mirare fine', 'mirar fin'),
+    'turn the camera': ('Kamera drehen', 'tourner la caméra', 'girare la telecamera', 'volver la camera'),
+    'What do you want to play?': ('Was willst du spielen?', 'À quoi veux-tu jouer ?', 'A cosa vuoi giocare?', 'Tge vuls ti giugar?'),
+    'Customise': ('Anpassen', 'Personnaliser', 'Personalizza', 'Adattar'),
+    'The whole game wizard (all rules and extras)': ('Der ganze Spiel-Assistent (alle Regeln und Extras)', 'L’assistant de jeu complet (toutes les règles et options)',
+                                                     'L’assistente di gioco completo (tutte le regole e gli extra)', 'L’entir assistent da gieu (tut las reglas ed extras)'),
+    'Follow': ('Folgen', 'Suivre', 'Seguire', 'Suandar'),
+    'IR light': ('IR-Licht', 'Lumière IR', 'Luce IR', 'Glisch IR'),
+    'Spotlight': ('Licht', 'Lumière', 'Luce', 'Glisch'),
+    'Siren': ('Sirene', 'Sirène', 'Sirena', 'Sirena'),
+    'Recording': ('Aufnahme', 'Enregistrement', 'Registrazione', 'Registraziun'),
+    'Full': ('Voll', 'Complet', 'Pieno', 'Cumplain'),
+    'Alert': ('Wachsam', 'Vigilant', 'Vigile', 'Attent'),
+    'Off': ('Aus', 'Arrêt', 'Spento', 'Giu'),
+    'not connected': ('nicht angeschlossen', 'non connecté', 'non collegato', 'betg collià'),
+    'All switches of the live screen. Tap «▦ Classic» for the complete usual live screen.': (
+        'Alle Schalter der Live-Seite. «▦ Klassisch» zeigt die ganze gewohnte Live-Seite.',
+        'Tous les interrupteurs de l’écran live. «▦ Classique» montre tout l’écran live habituel.',
+        'Tutti gli interruttori della schermata live. «▦ Classico» mostra tutta la solita schermata live.',
+        'Tut ils interruttus dal visur live. «▦ Classic» mussa l’entir visur live usità.'),
+    'Talk: hold the button on the usual live screen': ('Sprechen: auf der gewohnten Live-Seite den Knopf gedrückt halten',
+                                                      'Parler : maintenir le bouton sur l’écran live habituel',
+                                                      'Parlare: tenere premuto il pulsante nella solita schermata live',
+                                                      'Discurrer: tegnair smatgà il buttun sin il visur live usità'),
+    'Classic live screen (everything)': ('Klassische Live-Seite (alles)', 'Écran live classique (tout)', 'Schermata live classica (tutto)', 'Visur live classic (tut)'),
+    'Sticks fly / look around': ('Sticks fliegen / umschauen', 'Sticks voler / regarder autour', 'Stick volare / guardarsi intorno', 'Sticks sgular / guardar enturn'),
+    'Controller view': ('Controller-Ansicht', 'Vue manette', 'Vista controller', 'Vista dal controller'),
+    'Simulator (tab)': ('Simulator (Reiter)', 'Simulateur (onglet)', 'Simulatore (scheda)', 'Simulatur (register)'),
+    'Stories and places': ('Geschichten und Orte', 'Histoires et lieux', 'Storie e luoghi', 'Istorgias e lieus'),
+    'Protection': ('Schutz', 'Protection', 'Protezione', 'Protecziun'),
+    'Settings': ('Einstellungen', 'Réglages', 'Impostazioni', 'Parameters'),
+    'History': ('Verlauf', 'Historique', 'Cronologia', 'Cronologia'),
+    'More (tab)': ('Mehr (Reiter)', 'Plus (onglet)', 'Altro (scheda)', 'Dapli (register)'),
+    'Screens': ('Ansichten', 'Écrans', 'Schermate', 'Visurs'),
+    'loading the games …': ('lade die Spiele …', 'chargement des jeux …', 'caricamento dei giochi …', 'chargia ils gieus …'),
+    'simulator not reachable': ('Simulator nicht erreichbar', 'simulateur injoignable', 'simulatore non raggiungibile', 'simulatur betg cuntanschibel'),
+    'The game wizard is open at the simulator PC. «⚙ Customise» shows it here.': (
+        'Der Spiel-Assistent ist am Simulator-PC offen. «⚙ Anpassen» zeigt ihn hier.',
+        'L’assistant de jeu est ouvert sur le PC du simulateur. «⚙ Personnaliser» l’affiche ici.',
+        'L’assistente di gioco è aperto sul PC del simulatore. «⚙ Personalizza» lo mostra qui.',
+        'L’assistent da gieu è avert al PC dal simulatur. «⚙ Adattar» al mussa qua.'),
+    'One tap: everything is set (3 minutes, good rules) and you play here with the buttons. «⚙ Customise» for your own rules.': (
+        'Ein Tipp: alles ist eingestellt (3 Minuten, gute Regeln) und du spielst hier mit den Knöpfen. «⚙ Anpassen» für eigene Regeln.',
+        'Un toucher : tout est réglé (3 minutes, bonnes règles) et tu joues ici avec les boutons. «⚙ Personnaliser» pour tes propres règles.',
+        'Un tocco: è tutto impostato (3 minuti, buone regole) e giochi qui con i pulsanti. «⚙ Personalizza» per regole proprie.',
+        'In tip: tut è endrizzà (3 minutas, bunas reglas) e ti giogas qua cun ils buttuns. «⚙ Adattar» per atgnas reglas.'),
+    'It starts in the simulator window – walk with the sticks.': ('Es startet im Simulator-Fenster – mit den Sticks gehen.',
+                                                                 'Ça démarre dans la fenêtre du simulateur – marche avec les sticks.',
+                                                                 'Parte nella finestra del simulatore – cammina con gli stick.',
+                                                                 'I cumenza en la fanestra dal simulatur – ir cun ils sticks.'),
+    'not possible': ('nicht möglich', 'impossible', 'non possibile', 'betg pussaivel'),
+    'The round starts': ('Die Runde startet', 'La manche commence', 'Il round inizia', 'La runda cumenza'),
+    'Crouch': ('Ducken', 'Se baisser', 'Abbassarsi', 'Sa sbassar'),
+    'Crawl': ('Kriechen', 'Ramper', 'Strisciare', 'Ruschnar'),
+    'Stone': ('Stein', 'Pierre', 'Sasso', 'Crap'),
+    'Torch': ('Lampe', 'Lampe', 'Lampada', 'Lampa'),
+    'Run': ('Rennen', 'Courir', 'Correre', 'Currer'),
+    'Replay': ('Wiederholung', 'Ralenti', 'Replay', 'Repetiziun'),
+    'Shutter': ('Auslöser', 'Déclencheur', 'Scatto', 'Deliberader'),
+    'Caught!': ('Erwischt!', 'Attrapé !', 'Preso!', 'Tschiffà!'),
+    'Radar scan': ('Scan', 'Scan', 'Scansione', 'Scan'),
+    'Zoom': ('Zoom', 'Zoom', 'Zoom', 'Zoom'),
+    'Quit': ('Beenden', 'Quitter', 'Esci', 'Terminar'),
+    'Guard': ('Wächter', 'Gardien', 'Guardiano', 'Guardian'),
+    'Sneaker': ('Schleicher', 'Furtif', 'Furtivo', 'Furtiv'),
+    'Ready?': ('Bereit?', 'Prêt ?', 'Pronto?', 'Pront?'),
+    'You are the guard: turn the camera and catch them': ('Du bist Wächter: Kamera drehen und erwischen', 'Tu es le gardien : tourne la caméra et attrape-les',
+                                                          'Sei il guardiano: gira la telecamera e prendili', 'Ti es il guardian: volva la camera e tschiffa els'),
+    'Sneak unseen to the green light – the arrow shows the way.': ('Schleich ungesehen zum grünen Licht – der Pfeil zeigt den Weg.',
+                                                                   'Faufile-toi sans être vu jusqu’à la lumière verte – la flèche montre le chemin.',
+                                                                   'Arriva di nascosto alla luce verde – la freccia mostra la strada.',
+                                                                   'Sa zuppa fin tar la glisch verda – la frizza mussa la via.'),
+    'More players: open on the phone': ('Weitere Spieler: auf dem Handy öffnen', 'Autres joueurs : ouvrir sur le portable', 'Altri giocatori: apri sul telefono',
+                                        'Ulteriurs giugaders: avrir sin il telefonin'),
+    'Round over': ('Runde vorbei', 'Manche terminée', 'Round finito', 'Runda terminada'),
+    'Play again': ('Nochmals spielen', 'Rejouer', 'Gioca ancora', 'Giugar anc ina giada'),
+    'Start the round': ('Runde starten', 'Lancer la manche', 'Avvia il round', 'Cumenzar la runda'),
+    'Another game': ('Anderes Spiel', 'Autre jeu', 'Altro gioco', 'Auter gieu'),
+    'This simulator does not send its window (update the simulator).': ('Dieser Simulator schickt sein Fenster nicht (Simulator aktualisieren).',
+                                                                         'Ce simulateur n’envoie pas sa fenêtre (mettre à jour le simulateur).',
+                                                                         'Questo simulatore non invia la sua finestra (aggiorna il simulatore).',
+                                                                         'Quest simulatur na tramet betg sia fanestra (actualisar il simulatur).'),
+    'Sim view': ('Sim-Ansicht', 'Vue simulateur', 'Vista simulatore', 'Vista dal simulatur'),
+}
+for _k, _v in _HX_SIMV.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+WEB_PAGE = WEB_PAGE.replace("</body>", SIMV_JS.replace("/*SIMVDE*/{}", json.dumps({_k: _v[0] for _k, _v in _HX_SIMV.items()}, ensure_ascii=False), 1)
+                            + "</body>", 1)
+
+
+def simv_selftest():
+    html = WEB_PAGE
+    assert html.count('id="sv-css"') == 1 and "/*SIMVDE*/" not in html and '"Sim-Ansicht"' in html, "Sim-Ansicht not in the live page"
+    i = html.find('id="sv-css"')
+    assert html.find("function simTouchPad", 0, i) > 0 and html.find("function simViewPoll", 0, i) > 0, "Sim-Ansicht before the stream functions (470)"
+    js = SIMV_JS
+    for need in ('action: "gamewiz"', 'op: "quick"', 'id: "game_local"', 'op: "next"', 'action: "pad"', 'action: "localplay", do: "stop"',
+                 'action: "game"', '"/api/stick"', '"/snapshot.jpg', 'dataset.dock = "1"', '"mw-simv"', "S_.on && S_.ok",
+                 'dataset.tab !== "live"', "qsArrange(qsList(J)", '"/sim#gw"'):
+        assert need in js, ("Sim-Ansicht: missing " + need)
+    for k, v in _HX_SIMV.items():                         # all five languages
+        assert len(v) == 4 and all(v), k
+        assert k in TRX["fr"] and k in TRX["it"] and k in TRX["rm"] and k in DE, k
+    assert tr("Sim view", "rm") == "Vista dal simulatur" and DE.get("Quit") == "Beenden"
+    assert HELP_PAGE.count('<section id="simview"') == 2 and all('id="simview"' in (HELP_X.get(L) or 'id="simview"') for L in ("fr", "it", "rm")), "manual: simview"
+    try:
+        src_ = open(__file__, encoding="utf-8").read()
+    except OSError:
+        src_ = 'act_ == "localplay"'
+    assert 'act_ == "localplay"' in src_, "server: /api/sim localplay (550)"
+    return "Sim-Ansicht: live page in simulator operation, game choice, pad, translations"
+
+
+# ---- the manual (HELP_PAGE 540 + HELP_X): a short chapter «Sim-Ansicht und Spielen» before «Tipps & Tricks» ----
+_HELP_SIMV = _zd('639zt_sim_ansicht/HELP_SIMV', _ZDDict())
+
+
+def _help_simv(doc, lang):
+    if 'id="simview"' in doc:
+        return doc
+    i = doc.find('<section id="tips"')
+    return doc[:i] + _HELP_SIMV[lang] + doc[i:] if i >= 0 else doc
+
+
+_hp_en_simv = HELP_PAGE.find('<div lang="en">')
+if _hp_en_simv > 0:
+    HELP_PAGE = _help_simv(HELP_PAGE[:_hp_en_simv], "de") + _help_simv(HELP_PAGE[_hp_en_simv:], "en")
+for _L in ("fr", "it", "rm"):
+    if HELP_X.get(_L):
+        HELP_X[_L] = _help_simv(HELP_X[_L], _L)
+
+
+SELFTEST_EXTRA.append(("Sim view: live screen in simulator operation, one-tap games, touch pad (639zt)", simv_selftest))
+# ----------------------------------------------------------------------------
+# Besitzer (02.11.2026): der HP rechnet rund um die Uhr (Erkennung messen, KI-Trainingsbilder, Langzeittest; Werkzeug
+# werkzeuge/test_runner/dauer.py). Hier nur ZUSCHAUEN, nichts steuern:
+#   * Karte «HP rechnet» im Reiter Simulator (kleines Live-Bild, Arbeit, Fall N/M; Tipp -> ganze Ansicht /hp)
+#   * Eintrag «HP rechnet» unter Einstellungen → Entwickler (devExtras, 530)
+#   * /hp: dasselbe wie das Testbild am HP - Live-Bild mit MoveEyes Rahmen, Fortschritt, Bilanz, welche Arbeit läuft, oder
+#     «Spielen – Rechnen pausiert» / «HP frei» / «HP nicht erreichbar».
+# Der Weg: das Handy fragt nur MoveEye (/api/hp, /api/hp/bild.png; zu Hause und unterwegs über den gewohnten Zugang bzw.
+# Tunnel). MoveEye fragt den HP im eigenen Netz: kleiner Status-Dienst der Kiosk-Sitzung (hp_wache.py, Port 8761, nur GET,
+# nur private Adressen). Wo der HP steht, weiss MoveEye schon: die Adresse des Simulators (sim_url, Teil 290) bzw. die
+# gefundenen Simulatoren (SIMFOUND, Teil 300). Gefragt wird nur, solange die Karte oder die Seite offen ist (sie fragen alle
+# paar Sekunden; dazwischen ein kurzer Zwischenspeicher) - keine Dauerlast. Alles vom HP gilt als fremde Daten: nur bekannte
+# Felder, gekürzt, Grösse begrenzt (JSON 64 KB, Bild 2,5 MB und nur PNG). Nur für den Besitzer (Rolle admin).
+# Zuschauer (Entscheid Besitzer 03.11.2026): eine Verbindung MoveEye <-> Simulator allein hält den HP NICHT vom Rechnen ab.
+# Nur wenn jemand im Simulator-Betrieb wirklich zuschaut - Reiter Live / Sim-Ansicht im Browser offen und sichtbar, oder
+# das Fenster am Pi zeigt den Reiter Live (nicht verkleinert) -, schickt MoveEye alle ~20 s «POST /zuschauer» an den HP (nur eine Zeitmarke);
+# dann pausiert der HP sein Rechnen und der Simulator läuft. Die Karte / Seite «HP rechnet» schicken das nie.
+# ----------------------------------------------------------------------------
+HPR_PORT = 8761
+HPR = {"t": 0.0, "d": None, "host": "", "bild": b"", "bild_t": 0.0, "fehl_t": 0.0}
+HPR_LOCK = threading.Lock()
+HPR_ARBEITEN = ("Erkennung messen", "KI-Trainingsbilder", "Langzeittest")
+_HPR_HOST_RE = re.compile(r"^[A-Za-z0-9.\-]{1,100}$|^\[?[0-9A-Fa-f:]{2,45}\]?$")
+
+
+def hpr_hosts():
+    """wo der HP sein kann: Rechner der Simulator-Adresse (nicht dieses Gerät), dann die gefundenen Simulatoren (letzte Std.)"""
+    out = []
+    try:
+        h = urllib.parse.urlsplit(sim_base()).hostname or ""
+    except ValueError:
+        h = ""
+    if h and not h.startswith("127.") and h not in ("localhost", "::1"):
+        out.append(h)
+    try:
+        now = time.time()
+        for e in sorted(list(SIMFOUND.values()), key=lambda e_: -float(e_.get("t") or 0)):
+            ip = str(e.get("ip") or "")
+            if ip and not ip.startswith("127.") and now - float(e.get("t") or 0) < 3600 and ip not in out:
+                out.append(ip)
+    except Exception:
+        pass
+    return [h_ for h_ in out if _HPR_HOST_RE.match(h_)][:4]
+
+
+def _hpr_get(host, path, max_bytes, timeout=2.5):
+    h = "[" + host.strip("[]") + "]" if ":" in host else host
+    with _SIM_OPENER.open(urllib.request.Request("http://%s:%d%s" % (h, HPR_PORT, path), headers={"User-Agent": "MotionWatch"}),
+                          timeout=timeout) as r:
+        b_ = r.read(max_bytes + 1)
+    if len(b_) > max_bytes:
+        raise ValueError("zu gross")
+    return b_
+
+
+def _hpr_t(v, n):
+    if not isinstance(v, str):
+        return ""
+    return "".join(c for c in v if c.isprintable()).strip()[:n]
+
+
+def _hpr_z(v, lo, hi):
+    if isinstance(v, bool) or not isinstance(v, (int, float)):
+        return None
+    return v if lo <= v <= hi else None
+
+
+def hpr_sauber(d):
+    """Antwort des HP -> nur bekannte Felder (er steht im eigenen Netz, gilt trotzdem als fremd)"""
+    if not isinstance(d, dict):
+        return {"zustand": "unbekannt"}
+    z = d.get("zustand") if d.get("zustand") in ("rechnet", "spielen", "frei") else "unbekannt"
+    out = {"zustand": z}
+    if z == "rechnet":
+        f = d.get("fortschritt") if isinstance(d.get("fortschritt"), dict) else {}
+        now = time.time()
+        g_ = {"arbeit": _hpr_t(f.get("arbeit"), 30), "titel": _hpr_t(f.get("titel"), 40), "plan": _hpr_t(f.get("plan"), 24),
+              "plan_text": _hpr_t(f.get("plan_text"), 90), "name": _hpr_t(f.get("name"), 60), "fall_name": _hpr_t(f.get("fall_name"), 14),
+              "fall": _hpr_z(f.get("fall"), 0, 100000), "faelle": _hpr_z(f.get("faelle"), 1, 100000),
+              "start": _hpr_z(f.get("start"), now - 7 * 86400, now + 600), "status": _hpr_t(f.get("status"), 20),
+              "soll": _hpr_t(f.get("soll"), 20)}
+        ist = f.get("ist") if isinstance(f.get("ist"), dict) else {}
+        if ist:
+            g_["ist"] = {"art": _hpr_t(ist.get("art"), 12), "text": _hpr_t(ist.get("text"), 30)}
+        b_ = f.get("bilanz") if isinstance(f.get("bilanz"), dict) else {}
+        bil = {}
+        for k in ("personen", "ignoriert", "leer"):
+            v = b_.get(k)
+            if isinstance(v, list) and len(v) == 2 and all(_hpr_z(x, 0, 100000) is not None for x in v) and v[0] <= v[1]:
+                bil[k] = [int(v[0]), int(v[1])]
+        if _hpr_z(b_.get("pushes"), 0, 100000) is not None:
+            bil["pushes"] = int(b_["pushes"])
+        g_["bilanz"] = bil
+        ka = []
+        for k in (f.get("kacheln") if isinstance(f.get("kacheln"), list) else [])[:4]:
+            if isinstance(k, list) and len(k) >= 2:
+                ka.append([_hpr_t(k[0], 30), _hpr_t(k[1], 20), _hpr_t(k[2], 8) if len(k) > 2 and k[2] in ("gruen", "orange", "rot") else ""])
+        g_["kacheln"] = ka
+        le = f.get("letzter") if isinstance(f.get("letzter"), dict) else {}
+        if le:
+            g_["letzter"] = {"name": _hpr_t(le.get("name"), 60), "text": _hpr_t(le.get("text"), 60),
+                             "ok": le.get("ok") if isinstance(le.get("ok"), bool) else None}
+        if g_["fall"] is not None and g_["faelle"] is not None:
+            g_["faelle"] = max(g_["faelle"], g_["fall"])
+        out["fortschritt"] = {k: v for k, v in g_.items() if v not in ("", None, {}, [])}
+        out["arbeit"] = d.get("arbeit") if d.get("arbeit") in HPR_ARBEITEN else (g_["arbeit"] if g_["arbeit"] in HPR_ARBEITEN else "")
+        out["bild"] = d.get("bild") is True
+    elif z == "spielen":
+        s = d.get("spielen") if isinstance(d.get("spielen"), dict) else {}
+        out["spielen"] = {"grund": _hpr_t(s.get("grund"), 20), "ruhe_noch_s": _hpr_z(s.get("ruhe_noch_s"), 0, 86400)}
+    return out
+
+
+def hpr_status():
+    """{"ok", "bekannt" (ein HP ist bekannt), "erreichbar", "zustand", …} - höchstens alle 3 s wird der HP gefragt"""
+    now = time.time()
+    with HPR_LOCK:
+        if HPR["d"] is not None and now - HPR["t"] < 3.0:
+            return HPR["d"]
+        hosts = hpr_hosts()
+        if HPR["host"] in hosts:                            # der zuletzt erreichte zuerst
+            hosts.remove(HPR["host"])
+            hosts.insert(0, HPR["host"])
+        res = {"ok": True, "bekannt": bool(hosts), "erreichbar": False, "zustand": "unbekannt", "t": int(now)}
+        if hosts and HPR["fehl_t"] and now - HPR["fehl_t"] < 10:
+            pass                                            # eben nicht erreicht: 10 s nicht wieder fragen
+        elif hosts:
+            for h in hosts:
+                try:
+                    d = json.loads(_hpr_get(h, "/status.json", 65536).decode("utf-8", "replace"))
+                except (OSError, ValueError):
+                    continue
+                res.update(hpr_sauber(d), erreichbar=True)
+                HPR["host"] = h
+                break
+            else:
+                HPR["fehl_t"] = now
+            if res["erreichbar"]:
+                HPR["fehl_t"] = 0.0
+        HPR.update(t=now, d=res)
+        return res
+
+
+HPR_ZU = {"t": 0.0, "faden": False, "app": None}
+
+
+def hpr_zuschauer(was):
+    """jemand schaut im Simulator-Betrieb zu (Live / Sim-Ansicht / Fenster): dem HP melden (höchstens alle 15 s, im
+    Hintergrund). Nur, wenn die Simulation an ist und der Simulator auf einem anderen Rechner läuft."""
+    if was not in ("live", "fenster", "spiel") or not CFG.get("sim_on"):
+        return False
+    try:
+        h = urllib.parse.urlsplit(sim_base()).hostname or ""
+    except ValueError:
+        return False
+    if not h or h.startswith("127.") or h in ("localhost", "::1") or not _HPR_HOST_RE.match(h):
+        return False
+    now = time.time()
+    with HPR_LOCK:
+        if now - HPR_ZU["t"] < 15:
+            return True
+        HPR_ZU["t"] = now
+
+    def senden():
+        hh = "[" + h.strip("[]") + "]" if ":" in h else h
+        try:
+            req = urllib.request.Request("http://%s:%d/zuschauer" % (hh, HPR_PORT), data=json.dumps({"was": was}).encode(),
+                                         headers={"User-Agent": "MotionWatch", "Content-Type": "application/json"})
+            with _SIM_OPENER.open(req, timeout=3) as r:
+                r.read(65536)
+        except (OSError, ValueError):
+            pass                                      # kein HP mit Dauerrechnen dort: egal
+    threading.Thread(target=senden, daemon=True, name="hpr-zuschauer").start()
+    return True
+
+
+def hpr_fenster_schaut():
+    """das Fenster am Pi ist ein Zuschauer - gleiche Regel wie im Browser: es ist sichtbar (nicht verkleinert, STATE
+    local_view_t, Teil 570) UND zeigt den Reiter Live (App.tab)"""
+    app = HPR_ZU.get("app")
+    return (app is not None and getattr(app, "tab", "") == "live"
+            and time.time() - float(STATE.get("local_view_t") or 0) <= 5)
+
+
+def _hpr_fenster_faden():
+    while True:
+        time.sleep(20)
+        try:
+            if hpr_fenster_schaut():
+                hpr_zuschauer("fenster")
+        except Exception:
+            pass
+
+
+if GUI_OK:                                                # das Fenster merken (für den Reiter, nur lesen)
+    _hpr_app_init_base = App.__init__
+
+    def _hpr_app_init(self, *a, **kw):
+        HPR_ZU["app"] = self
+        _hpr_app_init_base(self, *a, **kw)
+    # wraps: App.__init__
+    App.__init__ = _hpr_app_init
+
+
+def hpr_bild():
+    """das kleine Live-Bild des HP (PNG) - nur während er rechnet; höchstens alle 4 s neu geholt"""
+    now = time.time()
+    with HPR_LOCK:
+        if HPR["bild"] and now - HPR["bild_t"] < 4.0:
+            return HPR["bild"]
+    st = hpr_status()
+    if not (st.get("erreichbar") and st.get("zustand") == "rechnet" and st.get("bild")):
+        return b""
+    try:
+        b_ = _hpr_get(HPR["host"], "/bild.png", 2_500_000, timeout=4.0)
+    except (OSError, ValueError):
+        return b""
+    if not b_.startswith(b"\x89PNG\r\n\x1a\n"):
+        return b""
+    with HPR_LOCK:
+        HPR.update(bild=b_, bild_t=now)
+    return b_
+
+
+# key = English text: (Deutsch, Français, Italiano, Rumantsch)
+_HX_HPR = {
+    "HP computes": ("HP rechnet", "Le PC HP calcule", "Il PC HP calcola", "Il PC HP quinta"),
+    "Measuring detection": ("Erkennung messen", "Mesurer la détection", "Misurare il rilevamento", "Mesirar la renconuschientscha"),
+    "AI training pictures": ("KI-Trainingsbilder", "Images d'entraînement IA", "Immagini di addestramento IA", "Maletgs da trenament IA"),
+    "Long-run test": ("Langzeittest", "Test de longue durée", "Test di lunga durata", "Test da lunga durada"),
+    "Playing – computing paused": ("Spielen – Rechnen pausiert", "On joue – calcul en pause", "Si gioca – calcolo in pausa",
+                                   "Ins giogia – il quint è en pausa"),
+    "HP not reachable": ("HP nicht erreichbar", "PC HP injoignable", "PC HP non raggiungibile", "PC HP betg cuntanschibel"),
+    "HP free – the simulator is running": ("HP frei – der Simulator läuft", "PC HP libre – le simulateur tourne",
+                                           "PC HP libero – il simulatore è in funzione", "PC HP liber – il simulatur va"),
+    "No HP known yet: connect MoveEye once with the simulator on the HP.": (
+        "Noch kein HP bekannt: MoveEye einmal mit dem Simulator auf dem HP verbinden.",
+        "Aucun PC HP connu : connecte une fois MoveEye au simulateur sur le PC HP.",
+        "Nessun PC HP noto: collega una volta MoveEye al simulatore sul PC HP.",
+        "Anc nagin PC HP enconuschent: collia ina giada MoveEye cun il simulatur sin il PC HP."),
+    "Case": ("Fall", "Cas", "Caso", "Cas"),
+    "since": ("seit", "depuis", "da", "dapi"),
+    "rest about": ("Rest etwa", "reste environ", "resto circa", "rest var"),
+    "Persons detected": ("Personen erkannt", "Personnes détectées", "Persone rilevate", "Persunas renconuschidas"),
+    "Animals / cars ignored": ("Tiere / Autos ignoriert", "Animaux / voitures ignorés", "Animali / auto ignorati", "Animals / autos ignorads"),
+    "Idle quiet": ("Leerlauf ruhig", "Ralenti calme", "Inattivo tranquillo", "Marscha vida quieta"),
+    "Pushes": ("Pushes", "Notifications", "Notifiche", "Avis push"),
+    "Last case": ("Letzter Fall", "Dernier cas", "Ultimo caso", "Ultim cas"),
+    "Should": ("Soll", "Attendu", "Atteso", "Duess"),
+    "Is": ("Ist", "Vu", "Visto", "È"),
+    "Computing goes on after 15 min without playing": ("Weitergerechnet wird nach 15 Min. ohne Spielen",
+                                                        "Le calcul reprend après 15 min sans jeu",
+                                                        "Il calcolo riprende dopo 15 min senza giocare",
+                                                        "Il quint cuntinuescha suenter 15 min senza giugar"),
+    "in about": ("in etwa", "dans environ", "tra circa", "en var"),
+    "Watch only – the HP computes by itself.": ("Nur zuschauen – der HP rechnet von selbst.", "Seulement regarder – le PC HP calcule tout seul.",
+                                                "Solo guardare – il PC HP calcola da solo.", "Mo guardar – il PC HP quinta sez."),
+    "Live picture of the HP": ("Live-Bild des HP", "Image en direct du PC HP", "Immagine dal vivo del PC HP", "Maletg live dal PC HP"),
+    "No picture yet": ("Noch kein Bild", "Pas encore d'image", "Ancora nessuna immagine", "Anc nagin maletg"),
+    "Back": ("Zurück", "Retour", "Indietro", "Enavos"),
+    "Tap for the full view": ("Antippen für die ganze Ansicht", "Toucher pour la vue complète", "Tocca per la vista completa",
+                              "Tutgar per la vista cumpletta"),
+}
+for _k, _v in _HX_HPR.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+
+
+def hpr_tx():
+    return {L: {k: v[i] for k, v in _HX_HPR.items()} for i, L in enumerate(("de", "fr", "it", "rm"))}
+
+
+# gemeinsam für Karte und Seite: Texte, Zeichnen der Angaben (nur textContent, nichts vom HP als HTML)
+HPR_JS = r"""<script>
+(function () {
+  if (window.HPR) return;
+  const TX = /*HPRTX*/{};
+  const L = () => (typeof LANG === "string" && LANG) || (document.documentElement.lang || "de").slice(0, 2);
+  const T = k => ((TX[L()] || {})[k]) || k;
+  const ARB = {"Erkennung messen": "Measuring detection", "KI-Trainingsbilder": "AI training pictures", "Langzeittest": "Long-run test"};
+  const E = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
+  const dauer = s => { const m = Math.max(0, Math.round(s / 60)); return m < 60 ? m + " Min." : Math.floor(m / 60) + ":" + String(m % 60).padStart(2, "0") + " h"; };
+  async function holen() {                      // 3.55.2: at most 10 s - a hanging request no longer stops the page for good
+    const ac = window.AbortController ? new AbortController() : null, wd = setTimeout(() => { if (ac) ac.abort(); }, 10000);
+    try { const r = await fetch("/api/hp", {cache: "no-store", signal: ac ? ac.signal : undefined}); return r.ok ? await r.json() : null; } catch (e) { return null; }
+    finally { clearTimeout(wd); } }
+  function titel(j) {
+    if (!j || !j.bekannt) return ["⚪", T("No HP known yet: connect MoveEye once with the simulator on the HP.")];
+    if (!j.erreichbar) return ["⚪", T("HP not reachable")];
+    if (j.zustand === "spielen") return ["🎮", T("Playing – computing paused")];
+    if (j.zustand === "frei") return ["🟢", T("HP free – the simulator is running")];
+    if (j.zustand === "rechnet") return ["🟠", T("HP computes") + (j.arbeit ? " · " + T(ARB[j.arbeit] || j.arbeit) : "")];
+    return ["⚪", T("HP not reachable")];
+  }
+  function zeile(j) {                       // kurz: Fall N/M · Name
+    const f = (j && j.fortschritt) || {};
+    if (!j || j.zustand !== "rechnet") {
+      if (j && j.zustand === "spielen") { const r = (j.spielen || {}).ruhe_noch_s; return T("Computing goes on after 15 min without playing") + (r != null ? " (" + T("in about") + " " + dauer(r) + ")" : "") + "."; }
+      return "";
+    }
+    const n = f.fall, m = f.faelle, fn = f.fall_name || T("Case");
+    return [n && m ? fn + " " + n + " / " + m + " (" + Math.round(Math.max(0, (n - 1) / m) * 100) + " %)" : "", f.name || f.plan_text || ""].filter(Boolean).join(" · ");
+  }
+  function kacheln(j) {
+    const f = (j && j.fortschritt) || {};
+    if (f.kacheln && f.kacheln.length) return f.kacheln.map(k => [k[0], k[1], k[2] || ""]);
+    const b = f.bilanz || {}, p = v => v ? v[0] + " / " + v[1] : "–";
+    const fb = v => !v || !v[1] ? "" : v[0] === v[1] ? "gruen" : v[0] >= 0.8 * v[1] ? "orange" : "rot";
+    if (!Object.keys(b).length) return [];
+    return [[T("Persons detected"), p(b.personen), fb(b.personen)], [T("Animals / cars ignored"), p(b.ignoriert), fb(b.ignoriert)],
+            [T("Idle quiet"), p(b.leer), fb(b.leer)], [T("Pushes"), b.pushes != null ? String(b.pushes) : "–", ""]];
+  }
+  window.HPR = {T, E, holen, titel, zeile, kacheln, dauer};
+})();
+</script>"""
+
+HPR_CSS = """<style>
+.hpr-card{display:flex;gap:12px;align-items:center;color:var(--txt);text-decoration:none;border-radius:12px}
+.hpr-card img{width:160px;max-width:42%;aspect-ratio:16/9;object-fit:cover;border-radius:8px;background:#0f1624;flex:0 0 auto}
+.hpr-card .hpr-t{flex:1 1 auto;min-width:0}.hpr-card b{display:block;font-size:15px}.hpr-card .mut{font-size:12px;overflow-wrap:anywhere}
+.hpr-bar{height:6px;border-radius:3px;background:var(--line);margin:6px 0 2px;overflow:hidden}.hpr-bar i{display:block;height:100%;background:#f59a4a}
+.hpr-k{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:12px;margin-top:4px}.hpr-k span b{display:inline;font-size:12px}
+.hpr-gruen{color:#3ecf8e}.hpr-orange{color:#f59a4a}.hpr-rot{color:#ef5b5b}
+</style>"""
+
+HPR_CARD = (HPR_CSS + """
+  <details class="sc fold wide" id="c-hp" data-k="hp" hidden open>
+    <summary><h2><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg><span data-i18n="HP computes">HP computes</span><span class="mut hsub" id="hp-sub"></span></h2></summary>
+    <div class="fb"><a class="hpr-card" href="/hp" id="hp-card"><img id="hp-img" alt="" hidden><div class="hpr-t"><b id="hp-t1"></b>
+      <div class="mut" id="hp-t2"></div><div class="hpr-bar" id="hp-bar" hidden><i id="hp-bari"></i></div><div class="hpr-k" id="hp-k"></div>
+      <div class="mut" id="hp-t3"></div></div><span class="ar" style="margin-left:auto;color:var(--mut);font-size:18px">›</span></a></div>
+  </details>
+""")
+
+HPR_CARD_JS = r"""<script>
+(function () {
+  const box = document.getElementById("c-hp"); if (!box || !window.HPR) return;
+  const H = window.HPR, $i = id => document.getElementById(id);
+  let tm = 0, bt = 0, warBild = false;
+  async function lauf() {
+    clearTimeout(tm);
+    if (document.hidden || !box.open && !box.hidden) { tm = setTimeout(lauf, 4000); return; }   // nur solange sichtbar und offen
+    const j = await H.holen();
+    if (!j || j.ok === false) { box.hidden = true; tm = setTimeout(lauf, 60000); return; }       // kein Recht / alte Fassung
+    box.hidden = !j.bekannt;
+    const [ic, t1] = H.titel(j); $i("hp-t1").textContent = ic + " " + (j.zustand === "rechnet" ? t1.replace(H.T("HP computes") + " · ", "") : t1);
+    $i("hp-sub").textContent = j.zustand === "rechnet" ? "· " + H.T(({"Erkennung messen": "Measuring detection", "KI-Trainingsbilder": "AI training pictures", "Langzeittest": "Long-run test"})[j.arbeit] || "HP computes") : "";
+    $i("hp-t2").textContent = H.zeile(j);
+    const f = j.fortschritt || {};
+    const an = j.zustand === "rechnet" && f.fall && f.faelle;
+    $i("hp-bar").hidden = !an; if (an) $i("hp-bari").style.width = Math.round(Math.max(0, (f.fall - 1) / f.faelle) * 100) + "%";
+    const k = $i("hp-k"); k.textContent = "";
+    if (j.zustand === "rechnet") H.kacheln(j).forEach(([n, v, c]) => { const s = H.E("span", "", n + ": "); const b = H.E("b", c ? "hpr-" + c : "", v); s.appendChild(b); k.appendChild(s); });
+    $i("hp-t3").textContent = j.bekannt ? H.T("Tap for the full view") : "";
+    const img = $i("hp-img"), bild = j.zustand === "rechnet" && j.bild;
+    if (bild && (!warBild || Date.now() - bt > 10000)) { img.src = "/api/hp/bild.png?t=" + Date.now(); bt = Date.now(); }
+    img.hidden = !bild; warBild = bild;
+    tm = setTimeout(lauf, !j.bekannt ? 60000 : j.zustand === "rechnet" ? 6000 : 15000);
+  }
+  box.addEventListener("toggle", () => { if (box.open) lauf(); });
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) lauf(); });
+  setTimeout(lauf, 800);
+})();
+</script>"""
+
+HPR_PAGE = _zd('639zu_hp_rechnet/HPR_PAGE', ZD_PAGE)
+
+
+def hpr_js():
+    return HPR_JS.replace("/*HPRTX*/{}", json.dumps(hpr_tx(), ensure_ascii=False).replace("</", "<\\/"))
+
+
+def hpr_page():
+    return render_page(HPR_PAGE, "sim").replace("/*HPRJS*/", hpr_js(), 1)
+
+
+# Karte im Reiter Simulator: vor der Simulator-Zentrale (eigene Karte, nur wenn ein HP bekannt ist)
+_HPR_ANKER = '<section class="sc wide" id="c-hub"'
+if _HPR_ANKER in SIM_PAGE:
+    SIM_PAGE = SIM_PAGE.replace(_HPR_ANKER, HPR_CARD + _HPR_ANKER, 1)
+    SIM_PAGE = SIM_PAGE.replace("</body>", hpr_js() + "<script>Object.assign(I18N.de, " + json.dumps(
+        {"HP computes": _HX_HPR["HP computes"][0]}, ensure_ascii=False) + ");</script>" + HPR_CARD_JS + "</body>", 1)
+
+# Reiter Live (auch die Sim-Ansicht, 639zt): solange die Seite sichtbar ist, alle 20 s ein Zuschauer-Puls (der Server
+# meldet ihn nur im Simulator-Betrieb weiter)
+HPR_LIVE_JS = r"""<script>
+(function () {
+  if (window._hprZu || !document.body || document.body.dataset.tab !== "live") return; window._hprZu = true;
+  const puls = () => { if (document.hidden) return; fetch("/api/hp/zuschauer", {method: "POST", headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({was: "live"}), cache: "no-store"}).catch(() => {}); };
+  setInterval(puls, 20000); setTimeout(puls, 1500);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) puls(); });
+})();
+</script>"""
+WEB_PAGE = WEB_PAGE.replace("</body>", HPR_LIVE_JS + "</body>", 1)
+
+# Einstellungen → Entwickler (530 devExtras): Eintrag «HP rechnet» vor «Entwickler-Bereich»
+_HPR_DEV = '["⚗", "Settings of the simulation", "/sim"], ["🛠", "Developer area", "/dev"]]'
+if _HPR_DEV in WEB_PAGE:
+    WEB_PAGE = WEB_PAGE.replace(_HPR_DEV, '["⚗", "Settings of the simulation", "/sim"], ["🖥", "HP computes", "/hp"], ["🛠", "Developer area", "/dev"]]', 1)
+    WEB_PAGE = WEB_PAGE.replace("</body>", "<script>Object.assign(I18N.de, " + json.dumps({"HP computes": _HX_HPR["HP computes"][0]}, ensure_ascii=False)
+                                + ");</script></body>", 1)
+
+
+_smalltv_routes_hpr_base = smalltv_routes
+
+
+def smalltv_routes(app, reply, body):                     # + 639zu: /hp, /api/hp, /api/hp/bild.png (nur zuschauen)
+    _smalltv_routes_hpr_base(app, reply, body)
+    from flask import Response, g
+
+    def _darf():
+        return getattr(g, "role", "admin") == "admin"
+
+    @app.route("/hp")
+    def hpr_page_():
+        if not _darf():
+            return Response("forbidden", 403)
+        return Response(hpr_page(), mimetype="text/html", headers={"Cache-Control": "no-store"})
+
+    @app.route("/api/hp")
+    def hpr_api_():
+        if not _darf():
+            return reply({"ok": False, "error": "forbidden"}, 403)
+        return reply(hpr_status())
+
+    @app.route("/api/hp/zuschauer", methods=["POST"])
+    def hpr_zuschauer_():                                # Puls vom Reiter Live (jede angemeldete Rolle; nur eine Zeitmarke)
+        return reply({"ok": True, "gemeldet": hpr_zuschauer(str(body().get("was") or ""))})
+
+    if not HPR_ZU["faden"]:
+        HPR_ZU["faden"] = True
+        threading.Thread(target=_hpr_fenster_faden, daemon=True, name="hpr-fenster").start()
+
+    @app.route("/api/hp/bild.png")
+    def hpr_bild_():
+        if not _darf():
+            return Response("forbidden", 403)
+        b_ = hpr_bild()
+        if not b_:
+            return Response("no picture", 404, headers={"Cache-Control": "no-store"})
+        return Response(b_, mimetype="image/png", headers={"Cache-Control": "no-store", "X-Content-Type-Options": "nosniff"})
+# ----------------------------------------------------------------------------
+# Wunsch des Besitzers (07.11.2026, «Drei Kamera-Ansichten»):
+#   * Ein Knopf «Ansicht» (Bild-Werkzeug auf der Live-Seite + Schnellschalter «view») schaltet das grosse Bild der Reihe nach:
+#       🎯 Kopf       = die Hauptkamera am Kopf (/video_feed, wie bisher)
+#       🌡 Wärmebild  = dasselbe Bild mit dem Wärmebild halb durchsichtig darüber - genau der bisherige 🌡-Schalter
+#                       (CFG thermal_on, Quelle thermal_source; gilt also für alle Geräte und die Aufnahmen wie bisher)
+#       🔭 Weitwinkel = die Übersichtskamera (Zusatzkamera, 440: CFG kopf_ov «Übersicht lenkt den Kopf», sonst die
+#                       Weitwinkel-Kamera des Simulators sim:1, 163) über /cam_feed/<n>, mit einem Rahmen, wohin der Kopf
+#                       gerade schaut (view3_frame: Kopf-Richtung, kopf_ov_offset bzw. Montage des Simulators, Blickwinkel).
+#     Lang drücken (oder Rechtsklick) = kleines Menü mit den drei Ansichten; was fehlt (keine Wärmebildquelle, keine
+#     Weitwinkel-Kamera), wird übersprungen und im Menü grau gezeigt. Der 🌡-Schalter bleibt, wie er ist.
+#   * Bild im Bild: klein die Weitwinkel-Übersicht in der Ecke (bzw. der Kopf, wenn das Weitwinkelbild gross ist), ein / aus im
+#     Menü, pro Gerät gemerkt (localStorage «mw-view3» = WEB_UI_LOCAL; Fenster: CFG tk_live_view view3 / pip3). Antippen = tauschen.
+#   * Bildströme (3.55.2, KEEP_JS 510): das grosse Bild bleibt EIN Strom (keepStream.retarget wechselt nur seine Adresse), das
+#     kleine Bild holt Einzelbilder (/cam_snap/<n>, ~2 / s) und ist zu, sobald es nicht sichtbar ist (verdeckt, weggescrollt,
+#     Sim-Ansicht, anderer Reiter). Pro Gerät also höchstens ein langer Bildstrom.
+#   * Controller-Ansicht (538): Knopf «Ansicht» in der Leiste; «⇅ Tauschen» (Select, langes Tippen) tauscht ohne Simulator
+#     gross / klein der Kamera-Ansichten. Die Belegung des Controllers (542 / padmap.gd) bleibt: Select = «Bilder / Ansichten
+#     tauschen». Sim-Ansicht (639zt): das kleine Kamerabild zeigt die gewählte Ansicht, «⋯ Mehr» hat den Knopf.
+#   * Pi-Fenster (570 / 581): derselbe Schnellschalter (lang drücken / Rechtsklick = Menü), Bild im Bild unten links.
+# Übersetzungen: unten (_HX_V3, alle 5 Sprachen), Anleitung: Abschnitt «views».
+# ----------------------------------------------------------------------------
+VIEW3_ORDER = ("head", "thermal", "wide")
+
+
+def view3_wide_cam():
+    """the wide overview camera (an extra camera of 440): «Übersicht lenkt den Kopf» (kopf_ov), else the simulator's wide
+    camera sim:1 (when it is built in) - or None"""
+    sp = str(CFG.get("kopf_ov") or "")
+    c = next((x for x in CAMS if sp and str(x.spec) == sp), None)
+    if c is None:
+        try:
+            sc = weit_sim_cam()
+            if sc and "mount" in sc and not weit_missing():
+                c = next((x for x in CAMS if str(x.spec) == "sim:1"), None)
+        except Exception:
+            c = None
+    return c
+
+
+def view3_frame_calc(head_pan, head_tilt, centre, ov_tilt, hf, vf, of, ofv):
+    """where the head picture lies in the wide picture: centre x / y and size w / h (0..1 of the wide picture), or None when
+    the head looks outside it. Degrees: + = right / up; centre = where the middle of the wide picture looks (pan)."""
+    try:
+        of = max(10.0, float(of)); ofv = max(5.0, float(ofv))
+        dx = (float(head_pan) - float(centre) + 180.0) % 360.0 - 180.0
+        cx = 0.5 + dx / of; w = min(1.5, float(hf) / of)
+        cy = 0.5 - (float(head_tilt) - float(ov_tilt)) / ofv; h = min(1.5, float(vf) / ofv)
+    except (TypeError, ValueError):
+        return None
+    if cx + w / 2 <= 0.0 or cx - w / 2 >= 1.0 or cy + h / 2 <= 0.0 or cy - h / 2 >= 1.0:
+        return None
+    return {"x": round(cx, 3), "y": round(cy, 3), "w": round(w, 3), "h": round(h, 3)}
+
+
+def view3_frame(c=None):
+    """the frame «where the head looks» in the picture of the wide camera c (see view3_frame_calc)"""
+    c = c or view3_wide_cam()
+    if c is None:
+        return None
+    try:
+        spec = str(c.spec)
+        hf, vf = cam_fov()
+        of = kopf_ov_fov() if spec == str(CFG.get("kopf_ov") or "") else cam_fov_h(spec)
+        ofv = cam_fov_hv(spec)[1]
+        head = weit_head_deg()
+        h = SIM.get("head") if CFG.get("sim_on") else None
+        ht = float(h[1]) if isinstance(h, list) and len(h) >= 2 else servo_pos_deg()[1]
+        sc = weit_sim_cam() if spec == "sim:1" else None
+        centre, ot = float(CFG.get("kopf_ov_offset") or 0.0), 0.0
+        if sc and str(sc.get("mount") or "scene") in WEIT_DEVICE_MOUNTS:
+            centre = float(sc.get("yaw_offset") or 0.0) + (head if sc.get("on_head") else 0.0)
+            ot = float(sc.get("tilt_deg") or 0.0) + (ht if sc.get("tilt_follow") else 0.0)
+            of = float(sc.get("fov_h") or of); ofv = float(sc.get("fov_v") or ofv)
+        elif sc:
+            ot = float(sc.get("tilt_deg") or 0.0)
+        return view3_frame_calc(head, ht, centre, ot, hf, vf, of, ofv)
+    except Exception:
+        return None
+
+
+def view3_info():
+    """for the pages (in /api/state → extra[0].view3): the wide camera (number, name, connected), thermal source, frame"""
+    c = view3_wide_cam()
+    return {"wide": c.idx if c else None, "wide_label": c.label if c else "", "wide_ok": bool(c and c.status == "connected"),
+            "thermal": bool(CFG.get("thermal_source")), "frame": view3_frame(c) if c else None}
+
+
+_cams_status_v3 = cams_status
+
+
+def cams_status(watch=None):                              # + 639zv: the main camera tells the pages about the three views
+    out = _cams_status_v3(watch)
+    try:
+        out[0]["view3"] = view3_info()
+    except Exception:
+        pass
+    return out
+
+
+_HX_V3 = {   # English (key): Deutsch, Français, Italiano, Rumantsch
+    "Camera view": ("Ansicht", "Vue", "Vista", "Vista"),
+    "Head view": ("Kopf", "Tête", "Testa", "Chau"),
+    "Thermal view": ("Wärmebild", "Image thermique", "Immagine termica", "Maletg termic"),
+    "Wide view": ("Weitwinkel", "Grand angle", "Grandangolo", "Grond angul"),
+    "Main picture": ("Hauptbild", "Image principale", "Immagine principale", "Maletg principal"),
+    "Camera view: head → thermal → wide angle (hold: choose)": ("Ansicht: Kopf → Wärmebild → Weitwinkel (halten: wählen)",
+                                                               "Vue : tête → image thermique → grand angle (maintenir : choisir)",
+                                                               "Vista: testa → immagine termica → grandangolo (tenere premuto: scegliere)",
+                                                               "Vista: chau → maletg termic → grond angul (tegnair: tscherner)"),
+    "The camera of the head": ("Die Kamera am Kopf", "La caméra de la tête", "La telecamera della testa", "La camera dal chau"),
+    "Thermal picture half transparent over the head picture": ("Wärmebild halb durchsichtig über dem Kopfbild",
+                                                               "Image thermique semi-transparente sur l’image de la tête",
+                                                               "Immagine termica semitrasparente sopra l’immagine della testa",
+                                                               "Maletg termic mez transparent sur il maletg dal chau"),
+    "The overview camera - the frame shows where the head looks": ("Die Übersichtskamera – der Rahmen zeigt, wohin der Kopf schaut",
+                                                                   "La caméra d’ensemble – le cadre montre où regarde la tête",
+                                                                   "La telecamera panoramica – il riquadro mostra dove guarda la testa",
+                                                                   "La camera da survista – il rom mussa nua ch’il chau guarda"),
+    "No thermal camera chosen": ("Keine Wärmebildkamera gewählt", "Aucune caméra thermique choisie", "Nessuna termocamera scelta",
+                                 "Nagina camera termica tschernida"),
+    "No wide-angle camera (overview)": ("Keine Weitwinkel-Kamera (Übersicht)", "Pas de caméra grand angle (vue d’ensemble)",
+                                        "Nessuna telecamera grandangolare (panoramica)", "Nagina camera da grond angul (survista)"),
+    "Small overview picture": ("Kleines Übersichtsbild", "Petite image d’ensemble", "Piccola immagine panoramica", "Pitschen maletg da survista"),
+    "Tap the small picture: swap big and small": ("Kleines Bild antippen: gross und klein tauschen",
+                                                  "Toucher la petite image : échanger grande et petite",
+                                                  "Tocca l’immagine piccola: scambia grande e piccola",
+                                                  "Tutgar il pitschen maletg: barattar grond e pitschen"),
+    "Where the head looks": ("Wohin der Kopf schaut", "Où regarde la tête", "Dove guarda la testa", "Nua ch’il chau guarda"),
+    "Views swapped": ("Ansichten getauscht", "Vues échangées", "Viste scambiate", "Vistas barattadas"),
+}
+for _k, _v in _HX_V3.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+
+VIEW3_JS = _zd('639zv_drei_ansichten/VIEW3_JS', "")
+WEB_PAGE = WEB_PAGE.replace("</body>", VIEW3_JS.replace("/*V3DE*/{}", json.dumps({_k: _v[0] for _k, _v in _HX_V3.items()}, ensure_ascii=False), 1)
+                            + "</body>", 1)
+WEB_UI_LOCAL.add("mw-view3")                              # per device: which picture is big on this phone, small picture on / off
+
+
+# ---- the window (Tk, 570 / 581): the same quick switch, menu, small picture ------------------------------------------
+_tkv_v3 = tkv
+
+
+def tkv():                                                # + 639zv: view3 (head / wide) and pip3 (small picture) of this window
+    v = _tkv_v3()
+    d = CFG.get("tk_live_view") if isinstance(CFG.get("tk_live_view"), dict) else {}
+    v["view3"] = "wide" if d.get("view3") == "wide" else "head"
+    v["pip3"] = d.get("pip3") is not False
+    return v
+
+
+V3_TK_IC = {"head": "⊙", "thermal": "♨", "wide": "◠"}
+V3_TK_LB = {"head": "Head view", "thermal": "Thermal view", "wide": "Wide view"}
+
+
+def v3_avail(v):
+    if v == "thermal":
+        return bool(CFG.get("thermal_source"))
+    if v == "wide":
+        return view3_wide_cam() is not None
+    return True
+
+
+def v3_cur():
+    if tkv()["view3"] == "wide" and v3_avail("wide"):
+        return "wide"
+    return "thermal" if CFG.get("thermal_on") and v3_avail("thermal") else "head"
+
+
+def _v3_tk_set(self, v):
+    if not v3_avail(v):
+        return
+    if v == "wide":
+        tkv_set(view3="wide")
+    else:
+        tkv_set(view3="head")
+        if bool(CFG.get("thermal_on")) != (v == "thermal"):
+            self._set("thermal_on", v == "thermal")
+    self._qs_paint()
+
+
+def _v3_tk_next(self):
+    L = [v for v in VIEW3_ORDER if v3_avail(v)]
+    c = v3_cur()
+    self._v3_set(L[(L.index(c) + 1) % len(L)] if c in L else L[0])
+
+
+def _v3_tk_swap(self):
+    if v3_avail("wide"):
+        tkv_set(view3="head" if v3_cur() == "wide" else "wide"); self._qs_paint()
+
+
+def _v3_tk_menu(self, x, y):
+    m = tk.Menu(self.root, tearoff=0)
+    c = v3_cur()
+    m.add_command(label=tr("Main picture"), state="disabled")
+    for v in VIEW3_ORDER:
+        ok = v3_avail(v)
+        lab = ("● " if v == c else "○ ") + V3_TK_IC[v] + "  " + tr(V3_TK_LB[v]) + ("" if ok else "  (" + tr("No thermal camera chosen" if v == "thermal" else "No wide-angle camera (overview)") + ")")
+        m.add_command(label=lab, state="normal" if ok else "disabled", command=lambda v=v: self._v3_set(v))
+    m.add_separator()
+    pv = tkv()["pip3"]
+    m.add_command(label=("☑ " if pv else "☐ ") + tr("Small overview picture"), state="normal" if v3_avail("wide") else "disabled",
+                  command=lambda: (tkv_set(pip3=not tkv()["pip3"]), self._qs_paint()))
+    try:
+        m.tk_popup(x, y)
+    finally:
+        m.grab_release()
+
+
+_v3_qs_list_581 = App._qs_list
+
+
+def _v3_qs_list(self):                                    # + 639zv: «Ansicht» right after «Wärmebild»
+    q = _v3_qs_list_581(self)
+    it = dict(id="view", ic=V3_TK_IC[v3_cur()], lb=tr("Camera view"), tip=tr("Camera view: head → thermal → wide angle (hold: choose)"),
+              on=lambda: v3_cur() != "head", ok=lambda: sum(1 for v in VIEW3_ORDER if v3_avail(v)) > 1, go=lambda: self._v3_next())
+    at = next((i for i, x in enumerate(q) if x.get("id") == "therm"), len(q) - 1)
+    q.insert(at + 1, it)
+    return q
+
+
+_v3_qs_paint_570 = App._qs_paint
+
+
+def _v3_qs_paint(self):                                   # + 639zv: the tile «view» shows the current view, long press = menu
+    _v3_qs_paint_570(self)
+    tl = (getattr(self, "qs_tiles", None) or {}).get("view")
+    if not tl:
+        return
+    t, ic, lb, q = tl
+    try:
+        if not t.winfo_exists():
+            return
+        ic.config(text=V3_TK_IC[v3_cur()]); lb.config(text=tr(V3_TK_LB[v3_cur()]))
+        if getattr(t, "_v3b", False):
+            return
+        t._v3b = True
+        st = {"job": None, "long": False}
+
+        def press(e):
+            st["long"] = False
+            st["job"] = self.root.after(550, lambda: (st.update(long=True, job=None), self._v3_menu(e.x_root, e.y_root)))
+
+        def release(e):
+            if st["job"] is not None:
+                self.root.after_cancel(st["job"]); st["job"] = None
+                self._qs_click(q)
+        for w in (t, ic, lb):
+            w.unbind("<Button-1>")
+            w.bind("<ButtonPress-1>", press); w.bind("<ButtonRelease-1>", release)
+            w.bind("<Button-3>", lambda e: self._v3_menu(e.x_root, e.y_root))
+    except tk.TclError:
+        pass
+
+
+def _v3_wide_img(self, cam):
+    """the newest picture of the wide camera (decoded once per new JPEG) with the frame «where the head looks»"""
+    jpg, seq = cam.jpeg, cam.seq
+    if not jpg:
+        return None
+    w = getattr(self, "_v3_w", None)
+    now = time.time()
+    if w and w[0] is cam and w[1] == seq and now - w[3] < 0.5:
+        return w[2]
+    img = cv2.imdecode(np.frombuffer(jpg, np.uint8), cv2.IMREAD_COLOR)
+    if img is None:
+        return None
+    f = view3_frame(cam)
+    if f:
+        H, W = img.shape[:2]
+        x0, y0 = int((f["x"] - f["w"] / 2) * W), int((f["y"] - f["h"] / 2) * H)
+        x1, y1 = int((f["x"] + f["w"] / 2) * W), int((f["y"] + f["h"] / 2) * H)
+        cv2.rectangle(img, (x0, y0), (x1, y1), (0, 0, 0), 4); cv2.rectangle(img, (x0, y0), (x1, y1), (77, 211, 255), 2)
+    self._v3_w = (cam, seq, img, now)
+    return img
+
+
+def _v3_lease(self, cam):
+    """the wide camera makes JPEGs only for viewers (440): the window counts as one while it needs the picture"""
+    old = getattr(self, "_v3_cam", None)
+    if old is cam:
+        return
+    if old is not None:
+        old.viewers = max(0, old.viewers - 1)
+    if cam is not None:
+        cam.viewers += 1
+    self._v3_cam = cam
+
+
+def _v3_tk_update_video(self):
+    """like 578 (night view) + 639zv: the big picture is the head or the wide camera, the other one small in a corner"""
+    try:
+        frame = self.watch.frame_out
+        if self.video is not None and self.video.winfo_exists():
+            cam = view3_wide_cam(); cur = v3_cur(); pip = tkv()["pip3"] and cam is not None
+            _v3_lease(self, cam if cam is not None and (cur == "wide" or pip) else None)
+            wide = _v3_wide_img(self, cam) if self._v3_cam is not None else None
+            big, small = (wide if wide is not None else frame, frame) if cur == "wide" else (frame, wide)
+            if not pip:
+                small = None
+            if big is not None:
+                w = max(160, self.video.winfo_width()); h = max(90, self.video.winfo_height())
+                fh, fw = big.shape[:2]; scale = min(w / fw, h / fh)
+                out = cv2.resize(big, (max(1, int(fw * scale)), max(1, int(fh * scale))))
+                self._v3_pip = None
+                if small is not None and small is not big:
+                    oh, ow = out.shape[:2]; pw = max(80, min(260, int(ow * 0.3)))
+                    sh, sw = small.shape[:2]; ph = max(1, int(sh * pw / sw))
+                    if ph + 16 < oh:
+                        out = out.copy()
+                        out[8:8 + ph, 8:8 + pw] = cv2.resize(small, (pw, ph))
+                        cv2.rectangle(out, (7, 7), (8 + pw, 8 + ph), (235, 235, 235), 2)
+                        self._v3_pip = (8, 8, 8 + pw, 8 + ph, ow, oh)
+                if CFG.get("tk_night"):
+                    gy = cv2.cvtColor(out, cv2.COLOR_BGR2GRAY)
+                    img = np.zeros((gy.shape[0], gy.shape[1], 3), dtype=np.uint8); img[:, :, 0] = (gy * 0.42).astype(np.uint8)
+                else:
+                    img = cv2.cvtColor(out, cv2.COLOR_BGR2RGB)
+                pim = Image.fromarray(img)
+                if getattr(self, "_egg_t0", 0):
+                    pim = self._egg_draw(pim)
+                self.photo = ImageTk.PhotoImage(pim); self.video.config(image=self.photo)
+                if getattr(self, "_v3_bound", None) is not self.video:
+                    self._v3_bound = self.video
+                    self.video.bind("<ButtonRelease-1>", self._v3_tap, add="+")
+        else:
+            _v3_lease(self, None)
+    finally:
+        self.root.after(33, self._update_video)
+
+
+def _v3_tk_tap(self, e):
+    """a tap on the small picture: swap big and small"""
+    p = getattr(self, "_v3_pip", None)
+    if not p or self.video is None:
+        return
+    x0, y0, x1, y1, ow, oh = p
+    x = e.x - (self.video.winfo_width() - ow) / 2; y = e.y - (self.video.winfo_height() - oh) / 2
+    if x0 <= x <= x1 and y0 <= y <= y1:
+        self._v3_swap()
+
+
+# wraps: App._qs_list
+App._qs_list = _v3_qs_list
+# wraps: App._qs_paint
+App._qs_paint = _v3_qs_paint
+# wraps: App._update_video
+App._update_video = _v3_tk_update_video
+for _n, _f in (("_v3_set", _v3_tk_set), ("_v3_next", _v3_tk_next), ("_v3_swap", _v3_tk_swap), ("_v3_menu", _v3_tk_menu), ("_v3_tap", _v3_tk_tap)):
+    setattr(App, _n, _f)
+
+
+# ---- the manual: a short chapter before «Tipps & Tricks» ----
+_HELP_V3 = _zd('639zv_drei_ansichten/HELP_V3', _ZDDict())
+
+
+def _help_v3(doc, lang):
+    if 'id="views"' in doc:
+        return doc
+    i = doc.find('<section id="tips"')
+    return doc[:i] + _HELP_V3[lang] + doc[i:] if i >= 0 else doc
+
+
+_hp_en_v3 = HELP_PAGE.find('<div lang="en">')
+if _hp_en_v3 > 0:
+    HELP_PAGE = _help_v3(HELP_PAGE[:_hp_en_v3], "de") + _help_v3(HELP_PAGE[_hp_en_v3:], "en")
+for _L in ("fr", "it", "rm"):
+    if HELP_X.get(_L):
+        HELP_X[_L] = _help_v3(HELP_X[_L], _L)
+
+
+def view3_selftest():
+    f = view3_frame_calc(0.0, 0.0, 0.0, 0.0, 66.0, 41.0, 102.0, 67.0)
+    assert f and f["x"] == 0.5 and f["y"] == 0.5 and abs(f["w"] - 66 / 102) < 0.01, f
+    f = view3_frame_calc(30.0, 0.0, 0.0, 0.0, 66.0, 41.0, 102.0, 67.0)
+    assert abs(f["x"] - (0.5 + 30 / 102)) < 0.01, f                               # head right -> frame right
+    f = view3_frame_calc(0.0, 10.0, 0.0, -12.0, 66.0, 41.0, 102.0, 67.0)
+    assert f["y"] < 0.5, f                                                          # head up, wide camera down -> frame high
+    assert view3_frame_calc(180.0, 0.0, 0.0, 0.0, 66.0, 41.0, 102.0, 67.0) is None  # looks backwards: no frame
+    assert abs(view3_frame_calc(-170.0, 0.0, 170.0, 0.0, 66.0, 41.0, 102.0, 67.0)["x"] - (0.5 + 20 / 102)) < 0.01   # across ±180°
+    html = WEB_PAGE
+    assert html.count('id="v3-css"') == 1 and "/*V3DE*/" not in html, "Drei Ansichten not in the live page"
+    assert html.find('id="v3-css"') > html.find('id="sv-css"') > 0 and html.find('id="v3-css"') > html.find('id="pv-css"') > 0, "after 538 / 639zt"
+    for need in ('"/cam_feed/"', '"/cam_snap/"', '"/video_feed"', "K.retarget", 'key: "thermal_on"', '"mw-view3"', "keepStream(MI"):
+        assert need in VIEW3_JS, "Drei Ansichten: missing " + need
+    assert "K.retarget = (src, sn)" in KEEP_JS, "keepStream.retarget (510)"
+    for k, v in _HX_V3.items():
+        assert len(v) == 4 and all(v), k
+        assert k in DE and k in TRX["fr"] and k in TRX["it"] and k in TRX["rm"], k
+    assert tr("Wide view", "de") == "Weitwinkel" and tr("Camera view", "rm") == "Vista"
+    assert HELP_PAGE.count('<section id="views"') == 2 and all('id="views"' in (HELP_X.get(L) or 'id="views"') for L in ("fr", "it", "rm")), "manual: views"
+    assert "mw-view3" in WEB_UI_LOCAL
+    keep = {k: CFG.get(k) for k in ("kopf_ov", "tk_live_view", "thermal_source", "thermal_on")}
+    _ss = save_settings
+    try:
+        globals()["save_settings"] = lambda *a, **k: None
+        CFG.update(kopf_ov="", thermal_source="", thermal_on=False)
+        if view3_wide_cam() is None:
+            assert not v3_avail("wide") and v3_cur() == "head" and view3_info()["wide"] is None
+        CFG["thermal_source"] = "senxor"; CFG["thermal_on"] = True
+        assert v3_avail("thermal") and v3_cur() in ("thermal", "wide")
+        tkv_set(view3="wide", pip3=False)
+        assert tkv()["view3"] == "wide" and tkv()["pip3"] is False
+        assert "view3" in cams_status()[0]
+    finally:
+        globals()["save_settings"] = _ss
+        CFG.update(keep)
+    return "Drei Ansichten: views, frame of the head, page, window, translations"
+
+
+SELFTEST_EXTRA.append(("Three camera views: head / thermal / wide, picture in picture, frame of the head (639zv)", view3_selftest))
+# ----------------------------------------------------------------------------
+# Strategie des Besitzers (07.11.2026): die Weitwinkel-Kamera (Camera Module 3 Wide NoIR) ist die «Wache» (immer an, leichte KI),
+# der Kopf der «Detektiv» (wird gerufen, verfolgt dann; das Wärmebild nimmt nachts die Fehlalarme weg).
+#
+# (a) Leichte KI auf dem Weitwinkelbild (weit_ki_frame, aus der Schleife der Zusatzkamera 440):
+#     - nur für die Übersicht (CFG kopf_ov), nur scharf, nur wenn das Weitwinkelbild Bewegung hat (c.boxes, in einer Auslösezone);
+#     - dasselbe Netz wie die Hauptkamera (SSD MobileNet COCO oder das eigene YOLO-Modell, Teil 195 - kein zweites Modell im
+#       Speicher) auf einem Ausschnitt um die grösste Bewegung (Quadrat, das Netz verkleinert selbst auf 300 / 320-640 px);
+#     - höchstens kopf_ov_ki_fps Läufe pro Sekunde (ab Werk 1), mindestens 3 x die letzte Laufzeit Pause, heiss / Sim-Sparen
+#       doppelt so lang; die Hauptkamera hat Vorrang: ein Schloss um AIDetector.infer - die Übersicht nimmt es nur, wenn es
+#       frei ist (sonst lässt sie den Lauf aus), die Hauptkamera wartet höchstens auf einen Übersichts-Lauf;
+#     - aus im Akku-Sparen (BATT_SAVE), in der Demo, ohne Modell / KI aus, mit dem PC-Helfer ohne eigenes Netz: dann wie bisher
+#       (Bewegung allein ruft den Kopf); im Dunkeln (is_dark oder Weitwinkelbild dunkel) ab Werk ebenfalls Bewegung allein
+#       (kopf_ov_ki_dark: die KI sieht im Infrarot-Fischauge wenig - am Kopf prüft dann das Wärmebild, (c)).
+#     - Klassen: Person immer; Tier (kopf_ov_ki_animal, im Wildtier-Modus immer) und Fahrzeug (kopf_ov_ki_vehicle) wahlweise.
+#     _kopf_ov_tick (162) fragt weit_pick(c, now): Bewegung ausserhalb der Zonen = nur notiert, ohne passende Klasse = der Kopf
+#     bleibt (notiert), mit Treffer = Richtung aus dem KI-Kasten.
+#     Kosten (geschätzt, Pi 5, OpenCV-DNN, 4 Kerne): SSD 300 px ~60-90 ms, eigenes YOLO 320 px ~60-80 ms, 640 px ~200-250 ms
+#     (418z). Bei 1 Lauf/s und nur bei Bewegung: SSD ~2 % der ganzen CPU (6-9 % eines Kerns), YOLO 640 ~6 % (25 % eines Kerns);
+#     ohne Bewegung im Weitwinkel 0. Gemessen auf dem Entwicklungsrechner: siehe Bericht (werkzeuge-Lauf, nicht im Repository).
+# (b) Auslösezonen im Weitwinkelbild (CFG kopf_ov_zones, normiert 0..1 auf das Bild der Übersicht): «trigger» = nur hier darf
+#     der Weitwinkel den Kopf rufen (keine = das ganze Bild), «ignore» = hier nie. Gezählt wird der Fusspunkt (unten Mitte),
+#     wie bei den Zonen der Hauptkamera (030). Zonen-Editor = die Seite /zones mit ?cam=weit (520 + Patch unten): eigenes Bild
+#     (/api/weit/frame.jpg, ohne Kästen), eigene Liste (/api/weit/zones), nur die zwei Arten. Dreht die Weitwinkel-Kamera mit
+#     dem Kopf (Montage head_*, cam_on_head), gelten die Zonen nicht (sie würden mitwandern) - einmal im Protokoll.
+# (c) Wärmebild-Fusion (alarm_heat_fusion, ab Werk an): nachts (is_dark / lowlight) und nur wenn eine Wärmebildquelle gewählt ist
+#     UND Bilder liefert (frisch < 3 s, «connected»), braucht ein Personen-Alarm Wärme am Ort der Person (Wärmebild-Ausschnitt
+#     wie das Overlay, 230 crop: 95. Perzentil im Kasten deutlich über dem Median des Bilds - °C: + fusion_heat_c, 8 Bit: + max(25,
+#     20 % des Rests); oder ein warmer Körper von THERMAL.detect im Kasten). Keine Wärme = kein Alarm, Protokoll «Person without
+#     heat - no alarm» (DE «ohne Wärme – kein Alarm»), Zähler vetoed. Tag, kein Wärmebild, Wärmebild ohne Bild = genau wie
+#     bisher (auch die doppelte Bestätigung alarm_confirm2 bleibt, wie sie ist). Bestätigt = 10 s offen (kein Flackern).
+#     Damit das Wärmebild nachts läuft, will ThermalCam.wanted die Quelle auch dann (nur mit gewählter Quelle).
+#     Messbar: /api/wache (Zähler seit dem Start) und die Protokollzeilen; Prüfstand 2 zählt die echten Pushes (068).
+# Selbsttest: weit_wache_selftest (Klassen, Zonen, Entscheidungstabelle Tag/Nacht x Wärmebild ja/nein x Wärme ja/nein).
+# ----------------------------------------------------------------------------
+for _k, _v in {"kopf_ov_ki": True, "kopf_ov_ki_animal": False, "kopf_ov_ki_vehicle": False, "kopf_ov_ki_dark": True,
+               "kopf_ov_ki_fps": 1.0, "kopf_ov_zones": [], "alarm_heat_fusion": True, "fusion_heat_c": 3.0}.items():
+    CFG.setdefault(_k, _v)
+    DEFAULTS.setdefault(_k, _v)
+
+WK = {"runs": 0, "ms": 0.0, "last_run": 0.0, "ran_t": 0.0, "hits": [], "calls": 0, "no_class": 0, "out_zone": 0, "busy": 0,
+      "nc_t": 0.0, "oz_t": 0.0, "call_log": 0.0, "head_log": False, "since": time.time()}
+FUS = {"vetoed": 0, "confirmed": 0, "latch": 0.0, "veto_t": 0.0, "ok_log": 0.0, "miss_log": 0.0, "since": time.time()}
+WK_MAX_ZONES = 8
+WK_HIT_S = 4.0                       # a hit of the light AI counts this long for the head (it walks on meanwhile)
+WK_DARK_BRIGHT = 30                  # mean brightness of the wide picture below this = infrared night (like AI_FULL_MIN_BRIGHT, 418z)
+WK_VEHICLES = set(VEHICLE_LABELS) | {"bicycle", "vehicle"}
+_WK_AI_LOCK = threading.Lock()
+_wk_infer_base = AIDetector.infer
+
+
+def _wk_infer_locked(self, img, conf_p, conf_o):          # the main camera (and its zoom) wait at most for one overview run
+    with _WK_AI_LOCK:
+        return _wk_infer_base(self, img, conf_p, conf_o)
+
+
+# wraps: AIDetector.infer
+AIDetector.infer = _wk_infer_locked
+
+
+# ---- (a) classes -------------------------------------------------------------------------------------------------------
+def wk_kind(cls_id):
+    """COCO id (also the mapped ids of the own model, 195) -> "person" / "animal" / "vehicle" / "other\""""
+    if int(cls_id) == 1:
+        return "person"
+    lab = COCO_LABELS.get(int(cls_id), "")
+    if lab in ANIMALS:
+        return "animal"
+    if lab in WK_VEHICLES:
+        return "vehicle"
+    return "other"
+
+
+def wk_classes():
+    """which kinds may call the head: a person always, animals / vehicles by switch (animals always in the wildlife mode)"""
+    s = {"person"}
+    try:
+        wild = kopf_wild_active()
+    except Exception:
+        wild = False
+    if CFG.get("kopf_ov_ki_animal") or wild:
+        s.add("animal")
+    if CFG.get("kopf_ov_ki_vehicle"):
+        s.add("vehicle")
+    return s
+
+
+def wk_ai():
+    """(detector, "") when the light AI may run on the wide picture now, else (None, why)"""
+    if not CFG.get("kopf_ov_ki"):
+        return None, "off"
+    try:
+        if batt_save_active():
+            return None, "battery saver"
+    except NameError:
+        pass
+    if DEMO.get("on"):
+        return None, "demo"
+    w = WATCH_REF.get("w")
+    ai = getattr(w, "ai", None)
+    if ai is None or getattr(ai, "net", None) is None or not CFG.get("ai_enabled"):
+        return None, "no AI"
+    return ai, ""
+
+
+def wk_dark(c=None):
+    try:
+        if is_dark():
+            return True
+    except Exception:
+        pass
+    b = getattr(c, "wk_bright", None) if c is not None else None
+    return b is not None and b < WK_DARK_BRIGHT
+
+
+def wk_mode(c=None):
+    """"ai" = the light AI decides what calls the head, "motion" = movement alone (as before: AI off / not there / battery
+    saver / dark with kopf_ov_ki_dark)"""
+    ai, _why = wk_ai()
+    if ai is None:
+        return "motion"
+    if CFG.get("kopf_ov_ki_dark") and wk_dark(c):
+        return "motion"
+    return "ai"
+
+
+# ---- (b) trigger zones --------------------------------------------------------------------------------------------------
+def wk_zones_clean(lst):
+    out = []
+    for z in (lst if isinstance(lst, list) else [])[:WK_MAX_ZONES]:
+        if not isinstance(z, dict):
+            continue
+        mode = "trigger" if z.get("mode") == "trigger" else "ignore"
+        c = _clean_zone(dict(z, mode="only" if mode == "trigger" else "ignore", anchor=False, src=None), len(out))
+        if c:
+            out.append({"id": c["id"], "name": c["name"], "mode": mode, "points": c["points"]})
+    return out
+
+
+def wk_zone_ok(nx, ny, zones=None):
+    """may movement whose foot point is (nx, ny) of the wide picture call the head? (pure: zones given, else the setting)"""
+    zs = wk_zones_clean(CFG.get("kopf_ov_zones")) if zones is None else zones
+    if not zs:
+        return True
+    if any(z["mode"] == "ignore" and point_in_poly(nx, ny, z["points"]) for z in zs):
+        return False
+    trig = [z for z in zs if z["mode"] == "trigger"]
+    return (not trig) or any(point_in_poly(nx, ny, z["points"]) for z in trig)
+
+
+def wk_zones_active(c):
+    """the zones count only for a fixed wide camera (on the head they would wander with the picture)"""
+    zs = wk_zones_clean(CFG.get("kopf_ov_zones"))
+    if not zs:
+        return []
+    try:
+        head = cam_on_head(getattr(c, "spec", ""))
+    except Exception:
+        head = False
+    if head:
+        if not WK["head_log"]:
+            WK["head_log"] = True
+            log_event("servo", "Overview: the wide camera turns with the head - its trigger zones do not count")
+        return []
+    WK["head_log"] = False
+    return zs
+
+
+def wk_foot(b, W, H):
+    return (b[0] + b[2] / 2.0) / float(W), (b[1] + b[3] * 0.92) / float(H)
+
+
+# ---- (a) the light AI on the wide picture (called by the extra camera, 440) ------------------------------------------
+def wk_wanted(c):
+    return (str(CFG.get("kopf_ov") or "") == str(getattr(c, "spec", "")) and CFG.get("kopf_on") and CFG.get("kopf_ov_on")
+            and CFG.get("armed") and STATE.get("arm_state") == "armed")
+
+
+def wk_gap():
+    fps = max(0.1, min(5.0, float(CFG.get("kopf_ov_ki_fps") or 1.0)))
+    gap = max(1.0 / fps, 3.0 * WK["ms"] / 1000.0)
+    ct = STATE.get("cpu_temp") or 0
+    gap *= 2.0 if ct >= 75 else 1.0
+    try:
+        if CFG.get("sim_on") and sim_eco_now():
+            gap *= 2.0
+    except NameError:
+        pass
+    return gap
+
+
+def wk_crop(box, W, H):
+    """a square around the movement (2.2 x its size, at least 30 % of the picture height), inside the picture"""
+    x, y, w, h = box[:4]
+    s = int(min(min(W, H), max(2.2 * max(w, h), 0.3 * min(W, H))))
+    cx, cy = x + w / 2.0, y + h / 2.0
+    x0 = int(max(0, min(W - s, cx - s / 2.0))); y0 = int(max(0, min(H - s, cy - s / 2.0)))
+    return x0, y0, s
+
+
+def weit_ki_frame(c, frame):
+    """440, every picture of an extra camera: the overview runs the light AI on its movement (see the head of this part)"""
+    if not wk_wanted(c):
+        return
+    now = time.time()
+    H, W = frame.shape[:2]
+    if now - getattr(c, "wk_bt", 0.0) > 2.0:
+        c.wk_bt = now
+        try:
+            c.wk_bright = float(np.mean(cv2.resize(frame, (64, 36), interpolation=cv2.INTER_AREA)))
+        except cv2.error:
+            pass
+    for t_, kind, conf, nb in WK["hits"]:                    # the last hits in the picture (green), for the live view
+        if now - t_ < 1.5:
+            p1 = (int(nb[0] * W), int(nb[1] * H)); p2 = (int((nb[0] + nb[2]) * W), int((nb[1] + nb[3]) * H))
+            cv2.rectangle(frame, p1, p2, (60, 220, 60), 2)
+            cv2.putText(frame, f"{kind} {conf:.2f}", (p1[0], max(40, p1[1] - 5)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (60, 220, 60), 1, cv2.LINE_AA)
+    if not c.motion or not c.boxes or wk_mode(c) != "ai" or now - WK["last_run"] < wk_gap():
+        return
+    zs = wk_zones_active(c)
+    cand = [b for b in c.boxes if b[2] * b[3] <= 0.3 * W * H and wk_zone_ok(*wk_foot(b, W, H), zones=zs)]
+    if not cand:
+        return
+    ai, _why = wk_ai()
+    if ai is None:
+        return
+    if not _WK_AI_LOCK.acquire(blocking=False):
+        WK["busy"] += 1                                      # the main camera runs its AI now: it has priority
+        return
+    try:
+        WK["last_run"] = now
+        x0, y0, s = wk_crop(max(cand, key=lambda b: b[2] * b[3]), W, H)
+        img = np.ascontiguousarray(frame[y0:y0 + s, x0:x0 + s])
+        t0 = time.time()
+        persons, objs = _wk_infer_base(ai, img, float(CFG.get("ai_conf") or 0.5), float(CFG.get("object_conf") or 0.5))
+        ms = (time.time() - t0) * 1000.0
+    finally:
+        _WK_AI_LOCK.release()
+    WK["ms"] = ms if not WK["runs"] else 0.8 * WK["ms"] + 0.2 * ms
+    WK["runs"] += 1; WK["ran_t"] = now
+    found = [("person", float(b[4]), b) for b in persons] + [(wk_kind(o[5]), float(o[4]), o) for o in objs]
+    hits = [(now, k, cf, ((x0 + b[0]) / W, (y0 + b[1]) / H, b[2] / W, b[3] / H)) for k, cf, b in found if k != "other"]
+    WK["hits"] = (hits + [h for h in WK["hits"] if now - h[0] < WK_HIT_S])[:12]
+
+
+def weit_pick(c, now, mode=None):
+    """162 _kopf_ov_tick: (cx, size) of what may call the head now, or None. Zones first (outside = only noted), then the
+    light AI (a hit of a wanted kind; movement without one = the head stays). mode None = wk_mode(c)."""
+    raw = kopf_ov_target(c)                                   # moving, 2+ pictures, not half the picture (light, wind)
+    if raw is None:
+        return None
+    W, H = c.wh
+    zs = wk_zones_active(c)
+    inz = [b for b in c.boxes if b[2] * b[3] <= 0.3 * W * H and wk_zone_ok(*wk_foot(b, W, H), zones=zs)]
+    if not inz:
+        if now - WK["oz_t"] > 10.0:
+            WK["out_zone"] += 1
+            if now - WK["oz_t"] > 60.0:
+                log_event("servo", "Overview: movement outside the trigger zones - only noted")
+        WK["oz_t"] = now
+        return None
+    mode = mode or wk_mode(c)
+    if mode != "ai":
+        x, y, w, h = max(inz, key=lambda b: b[2] * b[3])
+        return ((x + w / 2.0) / W, w * h / float(W * H))
+    want = wk_classes()
+    hits = [h for h in WK["hits"] if now - h[0] < WK_HIT_S and h[1] in want
+            and wk_zone_ok(h[3][0] + h[3][2] / 2.0, h[3][1] + h[3][3] * 0.92, zones=zs)]
+    if hits:
+        t_, kind, conf, nb = max(hits, key=lambda h: (h[0], h[2]))
+        WK["calls"] += 1
+        if now - WK["call_log"] > 20.0:
+            WK["call_log"] = now
+            log_event("servo", f"Overview AI: {kind} seen ({conf:.2f}) - the head looks")
+        return (nb[0] + nb[2] / 2.0, nb[2] * nb[3])
+    if now - WK["ran_t"] < 3.0:                               # the AI looked at this movement: nothing that may call the head
+        if now - WK["nc_t"] > 10.0:
+            WK["no_class"] += 1
+            if now - WK["nc_t"] > 60.0:
+                log_event("servo", "Overview: movement without a person - the head stays (light AI)")
+        WK["nc_t"] = now
+    return None
+
+
+# ---- (c) thermal fusion at night -----------------------------------------------------------------------------------------
+def fus_thermal_ok():
+    """a thermal source is chosen and gives pictures right now"""
+    th = THERMAL
+    return (bool(CFG.get("thermal_source")) and th is not None and getattr(th, "frame", None) is not None
+            and time.time() - float(getattr(th, "t", 0.0) or 0.0) < 3.0 and STATE.get("thermal") == "connected")
+
+
+def fus_night():
+    try:
+        return bool(is_dark() or STATE.get("lowlight"))
+    except Exception:
+        return bool(STATE.get("lowlight"))
+
+
+def fus_heat_in(f, nb, temps, boxes=(), dc=3.0):
+    """pure: is there heat at the normalised box nb in the (already aligned) thermal picture f? temps = f is in °C.
+    True / False, None = cannot tell (empty region)"""
+    for b in boxes or ():                                    # a warm moving body of THERMAL.detect inside the (bigger) box
+        cx, cy = b[0] + b[2] / 2.0, b[1] + b[3] / 2.0
+        if nb[0] - 0.1 * nb[2] <= cx <= nb[0] + 1.1 * nb[2] and nb[1] - 0.1 * nb[3] <= cy <= nb[1] + 1.1 * nb[3]:
+            return True
+    if f is None:
+        return None
+    g = f.astype(np.float32) if temps else ThermalCam.to_gray8(f).astype(np.float32)
+    if g.ndim == 3:
+        g = g.mean(axis=2)
+    H, W = g.shape[:2]
+    x0 = max(0, int((nb[0] - 0.1 * nb[2]) * W)); y0 = max(0, int((nb[1] - 0.1 * nb[3]) * H))
+    x1 = min(W, max(x0 + 1, int(math.ceil((nb[0] + 1.1 * nb[2]) * W)))); y1 = min(H, max(y0 + 1, int(math.ceil((nb[1] + 1.1 * nb[3]) * H))))
+    reg = g[y0:y1, x0:x1]
+    if reg.size < 1:
+        return None
+    hot, med = float(np.percentile(reg, 95)), float(np.median(g))
+    need = float(dc) if temps else max(25.0, 0.2 * (255.0 - med))
+    return hot >= med + need
+
+
+def fus_heat(nb):
+    th = THERMAL
+    try:
+        fr = th.frame
+        f = th.crop(fr)
+        boxes = th.boxes if time.time() - float(getattr(th, "det_t", 0.0) or 0.0) < 2.0 else ()
+        return fus_heat_in(f, nb, fr.dtype != np.uint8, boxes, float(CFG.get("fusion_heat_c") or 3.0))
+    except Exception:
+        return None
+
+
+def fus_decide(on, thermal_ok, night, heats):
+    """the decision table: "pass" (as before) / "confirmed" (heat at the person) / "veto" (night, thermal ok, no heat)"""
+    if not on or not thermal_ok or not night:
+        return "pass"
+    if any(h is True for h in heats):
+        return "confirmed"
+    if not heats or all(h is None for h in heats):
+        return "pass"
+    return "veto"
+
+
+_alarm_gate_639zw = alarm_gate
+
+
+def alarm_gate(w, frame, persons, now):                   # + 639zw: at night a person alarm needs heat (thermal fusion)
+    res = _alarm_gate_639zw(w, frame, persons, now)
+    if not res or not CFG.get("alarm_heat_fusion") or now < FUS["latch"]:
+        return res
+    ok, night = fus_thermal_ok(), fus_night()
+    if not ok:
+        if night and CFG.get("thermal_source") and now - FUS["miss_log"] > 600:
+            FUS["miss_log"] = now
+            log_event("person", "Thermal check: the thermal camera gives no picture - person alarms as before (without heat)")
+        return res
+    if not night:
+        return res
+    pw, ph = getattr(w, "_proc_size", None) or (frame.shape[1], frame.shape[0])
+    heats = [fus_heat((b[0] / pw, b[1] / ph, b[2] / pw, b[3] / ph)) for b in res[:6]]
+    d = fus_decide(True, ok, night, heats)
+    if d == "pass":
+        return res
+    if d == "confirmed":
+        FUS["confirmed"] += 1; FUS["latch"] = now + 10.0
+        if now - FUS["ok_log"] > 30:
+            FUS["ok_log"] = now
+            log_event("person", "Thermal check: person with heat - alarm")
+        return res
+    if now - FUS["veto_t"] > 10.0:
+        FUS["vetoed"] += 1
+        log_event("person", "Person without heat - no alarm (night, thermal camera)")
+    FUS["veto_t"] = now
+    return []
+
+
+_th_wanted_639zw = ThermalCam.wanted
+
+
+def _wk_th_wanted(self):                                   # the thermal camera runs at night for the fusion (only when chosen)
+    s = _th_wanted_639zw(self)
+    if s or not CFG.get("alarm_heat_fusion") or not CFG.get("thermal_source") or not CFG.get("detection_on"):
+        return s
+    if not (CFG.get("armed") and fus_night()):
+        return s
+    spec = CFG["thermal_source"]
+    return "" if spec == STATE.get("source_id") else spec
+
+
+# wraps: ThermalCam.wanted
+ThermalCam.wanted = _wk_th_wanted
+
+
+def wache_state():
+    """/api/wache: what the overview and the night thermal check did since the start (measurable)"""
+    c = kopf_ov_cam()
+    ai, why = wk_ai()
+    return {"ov": bool(c), "mode": wk_mode(c) if c else "", "ai": not why, "why": why, "classes": sorted(wk_classes()),
+            "zones": len(wk_zones_clean(CFG.get("kopf_ov_zones"))), "zones_on": bool(c is not None and wk_zones_active(c)),
+            "runs": WK["runs"], "ms": round(WK["ms"], 1), "calls": WK["calls"], "no_class": WK["no_class"],
+            "out_zone": WK["out_zone"], "busy": WK["busy"], "since": int(WK["since"]),
+            "fusion": {"on": bool(CFG.get("alarm_heat_fusion")), "thermal": fus_thermal_ok(), "night": fus_night(),
+                       "confirmed": FUS["confirmed"], "vetoed": FUS["vetoed"]}}
+
+
+# ---- web: /api/wache, /api/weit/zones, /api/weit/frame.jpg ------------------------------------------------------------
+def wk_cam():
+    c = kopf_ov_cam()
+    if c is None:
+        try:
+            c = view3_wide_cam()
+        except Exception:
+            c = None
+    return c
+
+
+_smalltv_routes_639zw = smalltv_routes
+
+
+def smalltv_routes(app, reply, body):                     # + 639zw
+    _smalltv_routes_639zw(app, reply, body)
+    from flask import Response, request
+
+    @app.route("/api/wache")
+    def wk_api_state():
+        return reply(wache_state())
+
+    @app.route("/api/weit/zones", methods=["GET", "POST"])
+    def wk_api_zones():
+        c = wk_cam()
+        if request.method == "POST":
+            d = body()
+            if not isinstance(d.get("zones"), list):
+                return reply({"ok": False, "error": tr_err("invalid zones", norm_lang(d.get("lang")))}, 400)
+            CFG["kopf_ov_zones"] = wk_zones_clean(d.get("zones"))
+            save_settings(); log_event("sys", f"Trigger zones of the overview updated ({len(CFG['kopf_ov_zones'])})")
+            return reply({"ok": True, "error": None})
+        try:
+            head = bool(c is not None and cam_on_head(c.spec))
+        except Exception:
+            head = False
+        return reply({"zones": wk_zones_clean(CFG.get("kopf_ov_zones")), "avail": c is not None, "n": getattr(c, "idx", None),
+                      "on_head": head, "ov": bool(kopf_ov_cam())})
+
+    @app.route("/api/weit/frame.jpg")
+    def wk_api_frame():
+        c = wk_cam()
+        if c is None:
+            return Response("no wide camera", 404)
+        if time.time() > c.raw_until:
+            c.raw = None
+        c.raw_until = time.time() + 15
+        for _ in range(25):
+            if c.raw is not None:
+                break
+            time.sleep(0.1)
+        f = c.raw
+        if f is None:
+            return Response("no frame yet", 503)
+        if f.shape[1] > 960:
+            f = cv2.resize(f, (960, int(f.shape[0] * 960 / f.shape[1])), interpolation=cv2.INTER_AREA)
+        ok, buf = cv2.imencode(".jpg", f, [cv2.IMWRITE_JPEG_QUALITY, 85])
+        return Response(buf.tobytes(), mimetype="image/jpeg", headers={"Cache-Control": "no-store"})
+
+
+# ---- settings (web + window: the same lists) ------------------------------------------------------------------------------
+_WK_TG = [
+    ("kopf_ov_ki", "Overview: light AI on the wide picture - only a person calls the head (animals / vehicles: switches below)"),
+    ("kopf_ov_ki_animal", "Overview: animals call the head too (always in the wildlife mode)"),
+    ("kopf_ov_ki_vehicle", "Overview: vehicles call the head too"),
+    ("kopf_ov_ki_dark", "Overview in the dark: movement alone calls the head (the AI sees little in the infrared wide picture - the thermal camera checks at the head)"),
+]
+_wk_i = next((i for i, t_ in enumerate(TOGGLES) if t_[1] == "kopf_ov_on"), len(TOGGLES) - 1)
+for _j, (_k, _l) in enumerate(_WK_TG):
+    TOGGLES.insert(_wk_i + 1 + _j, ("Automatic head movement", _k, _l))
+_wk_s = next((i for i, s_ in enumerate(SLIDERS) if s_[1] == "kopf_ov_fov"), len(SLIDERS) - 1)
+SLIDERS.insert(_wk_s + 1, ("Automatic head movement", "kopf_ov_ki_fps", "Overview AI: at most runs per second", 0.2, 3.0, 0.1))
+_wk_c = next((i for i, t_ in enumerate(TOGGLES) if t_[1] == "alarm_confirm2"), len(TOGGLES) - 1)
+_wk_sec = TOGGLES[_wk_c][0] if 0 <= _wk_c < len(TOGGLES) and TOGGLES[_wk_c][1] == "alarm_confirm2" else "Detection"
+TOGGLES.insert(_wk_c + 1, (_wk_sec, "alarm_heat_fusion",
+                           "At night with a thermal camera: a person alarm only with heat (AI + thermal camera) - no heat source = no alarm, only a log line"))
+
+# ---- translations (English key: Deutsch, Français, Italiano, Rumantsch) ----------------------------------------------------
+_HX_WK = {
+    "Overview: light AI on the wide picture - only a person calls the head (animals / vehicles: switches below)": (
+        "Übersicht: leichte KI im Weitwinkelbild – nur eine Person ruft den Kopf (Tiere / Fahrzeuge: Schalter darunter)",
+        "Vue d’ensemble : IA légère sur l’image grand-angle – seule une personne appelle la tête (animaux / véhicules : interrupteurs ci-dessous)",
+        "Panoramica: IA leggera sull’immagine grandangolare – solo una persona chiama la testa (animali / veicoli: interruttori sotto)",
+        "Survista: IA levgia en il maletg da grond angul – mo ina persuna clama il chau (animals / vehichels: interruptuors sutvart)"),
+    "Overview: animals call the head too (always in the wildlife mode)": (
+        "Übersicht: auch Tiere rufen den Kopf (im Wildtier-Modus immer)",
+        "Vue d’ensemble : les animaux appellent aussi la tête (toujours en mode faune)",
+        "Panoramica: anche gli animali chiamano la testa (sempre in modalità fauna)",
+        "Survista: er animals claman il chau (adina en il modus da selvaschina)"),
+    "Overview: vehicles call the head too": (
+        "Übersicht: auch Fahrzeuge rufen den Kopf", "Vue d’ensemble : les véhicules appellent aussi la tête",
+        "Panoramica: anche i veicoli chiamano la testa", "Survista: er vehichels claman il chau"),
+    "Overview in the dark: movement alone calls the head (the AI sees little in the infrared wide picture - the thermal camera checks at the head)": (
+        "Übersicht im Dunkeln: Bewegung allein ruft den Kopf (die KI sieht im Infrarot-Weitwinkelbild wenig – am Kopf prüft das Wärmebild)",
+        "Vue d’ensemble dans l’obscurité : le mouvement seul appelle la tête (l’IA voit peu dans l’image grand-angle infrarouge – la caméra thermique vérifie à la tête)",
+        "Panoramica al buio: basta il movimento per chiamare la testa (l’IA vede poco nell’immagine grandangolare a infrarossi – alla testa controlla la termocamera)",
+        "Survista en il stgir: il moviment sulet clama il chau (l’IA vesa pauc en il maletg infracotschen da grond angul – al chau controllescha il maletg termic)"),
+    "Overview AI: at most runs per second": (
+        "Übersichts-KI: höchstens Läufe pro Sekunde", "IA de la vue d’ensemble : au plus passages par seconde",
+        "IA panoramica: al massimo esecuzioni al secondo", "IA da la survista: al pli passadas per secunda"),
+    "At night with a thermal camera: a person alarm only with heat (AI + thermal camera) - no heat source = no alarm, only a log line": (
+        "Nachts mit Wärmebild: Personen-Alarm nur mit Wärme (KI + Wärmebild) – ohne Wärmequelle kein Alarm, nur ein Eintrag im Protokoll",
+        "La nuit avec caméra thermique : alarme personne seulement avec chaleur (IA + image thermique) – sans source de chaleur pas d’alarme, seulement une ligne au journal",
+        "Di notte con termocamera: allarme persona solo con calore (IA + immagine termica) – senza fonte di calore nessun allarme, solo una riga nel registro",
+        "La notg cun maletg termic: alarm da persuna mo cun chalur (IA + maletg termic) – senza funtauna da chalur nagin alarm, mo ina lingia en il protocol"),
+    "Trigger zones in the wide picture": (
+        "Auslösezonen im Weitwinkelbild", "Zones de déclenchement dans l’image grand-angle",
+        "Zone di attivazione nell’immagine grandangolare", "Zonas da declegnida en il maletg da grond angul"),
+    "Trigger zones in the wide picture (browser)": (
+        "Auslösezonen im Weitwinkelbild (Browser)", "Zones de déclenchement dans l’image grand-angle (navigateur)",
+        "Zone di attivazione nell’immagine grandangolare (browser)", "Zonas da declegnida en il maletg da grond angul (navigatur)"),
+    "+ Trigger zone": ("+ Auslösezone", "+ Zone de déclenchement", "+ Zona di attivazione", "+ Zona da declegnida"),
+    "Trigger zone": ("Auslösezone", "Zone de déclenchement", "Zona di attivazione", "Zona da declegnida"),
+    "Head camera": ("Kopfkamera", "Caméra de la tête", "Telecamera della testa", "Camera dal chau"),
+    "z-trig": (
+        "Nur Bewegung, deren Füsse darin stehen, darf den Kopf rufen (was es ist, entscheidet die leichte KI). Ausserhalb: nur im Protokoll notiert. Keine Auslösezone = das ganze Bild.",
+        "Seul un mouvement dont les pieds sont dedans peut appeler la tête (l’IA légère décide de quoi il s’agit). Dehors : seulement noté au journal. Aucune zone = toute l’image.",
+        "Solo un movimento con i piedi dentro può chiamare la testa (l’IA leggera decide che cos’è). Fuori: solo annotato nel registro. Nessuna zona = tutta l’immagine.",
+        "Mo in moviment cun ils pes en la zona dastga clamar il chau (tge ch’i è, decida l’IA levgia). Ordaifer: mo notà en il protocol. Nagina zona = l’entir maletg."),
+    "z-wign": (
+        "Bewegung, deren Füsse darin stehen, ruft den Kopf nie (Strasse, Äste).",
+        "Un mouvement dont les pieds sont dedans n’appelle jamais la tête (route, branches).",
+        "Un movimento con i piedi dentro non chiama mai la testa (strada, rami).",
+        "In moviment cun ils pes en la zona na clama mai il chau (via, roms)."),
+    "z-whead": (
+        "Die Weitwinkel-Kamera dreht mit dem Kopf: Zonen im Bild würden mitwandern – sie gelten nur bei fester Weitwinkel-Kamera (Gehäuse, Unterteil, Mast).",
+        "La caméra grand-angle tourne avec la tête : des zones fixées à son image se déplaceraient – elles ne valent qu’avec une caméra grand-angle fixe (boîtier, socle, mât).",
+        "La telecamera grandangolare gira con la testa: zone fisse nella sua immagine si sposterebbero – valgono solo con una telecamera grandangolare fissa (custodia, base, palo).",
+        "La camera da grond angul sa volva cun il chau: zonas fixadas en ses maletg sa movessan – ellas valan mo cun ina camera da grond angul fixa (chaschetta, part sut, pal)."),
+    "No wide camera - choose «Overview camera» under Automatic head movement first.": (
+        "Keine Weitwinkel-Kamera – zuerst unter «Automatische Kopfbewegung» die «Übersichtskamera» wählen.",
+        "Pas de caméra grand-angle – choisis d’abord la «caméra d’ensemble» sous Mouvement automatique de la tête.",
+        "Nessuna telecamera grandangolare – scegli prima la «telecamera panoramica» in Movimento automatico della testa.",
+        "Nagina camera da grond angul – tscherna l’emprim la «camera da survista» sut Moviment automatic dal chau."),
+    "Guard": ("Wache", "Garde", "Guardia", "Guardia"),
+    "AI runs": ("KI-Läufe", "passages IA", "esecuzioni IA", "passadas IA"),
+    "head called": ("Kopf gerufen", "tête appelée", "testa chiamata", "chau clamà"),
+    "without a person": ("ohne Person", "sans personne", "senza persona", "senza persuna"),
+    "outside the zones": ("ausserhalb der Zonen", "hors des zones", "fuori dalle zone", "ordaifer las zonas"),
+    "night with heat": ("nachts mit Wärme", "nuit avec chaleur", "notte con calore", "notg cun chalur"),
+    "without heat - no alarm": ("ohne Wärme – kein Alarm", "sans chaleur – pas d’alarme", "senza calore – nessun allarme", "senza chalur – nagin alarm"),
+    "movement alone": ("Bewegung allein", "mouvement seul", "solo movimento", "mo moviment"),
+}
+for _k, _v in _HX_WK.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_WK_DE = {_k: _v[0] for _k, _v in _HX_WK.items()}
+for _k in ("Wide camera", "Ignore zone", "Delete", "Saved", "Save zones"):
+    if _k in DE:
+        _WK_DE.setdefault(_k, DE[_k])
+
+# ---- the zone editor on the wide picture: /zones?cam=weit (520) ------------------------------------------------------------
+_WK_ZP = [
+    ('const cv = $("#cv"), g = cv.getContext("2d"), img = new Image();',
+     'const WEIT = new URLSearchParams(location.search).get("cam") === "weit";       // 639zw: trigger zones of the wide picture\n'
+     'const ZAPI = WEIT ? "/api/weit/zones" : "/api/zones", ZFRAME = WEIT ? "/api/weit/frame.jpg?" : "/api/frame.jpg?";\n'
+     'const cv = $("#cv"), g = cv.getContext("2d"), img = new Image();'),
+    ('zones = (await (await fetch("/api/zones")).json()).zones || [];', 'zones = (await (await fetch(ZAPI)).json()).zones || [];'),
+    ('post("/api/zones", {zones: zones, lang: LANG})', 'post(ZAPI, {zones: zones, lang: LANG})'),
+    ('img.src = "/api/frame.jpg?" + Date.now();', 'img.src = ZFRAME + Date.now();'),
+    ('(z.mode === "line" ? [["line", t("Line")]] : [["ignore", t("Ignore zone")]',
+     '(z.mode === "line" ? [["line", t("Line")]] : WEIT ? [["trigger", tt("Trigger zone")], ["ignore", t("Ignore zone")]] : [["ignore", t("Ignore zone")]'),
+    ('if (z.mode === "ignore" || z.mode === "only") { const k = el("select");', 'if (!WEIT && (z.mode === "ignore" || z.mode === "only")) { const k = el("select");'),
+    ('    {                                                    // aufr: «stays on its place» (anchor, 030 / 317) for every zone',
+     '    if (!WEIT) {                                         // aufr: «stays on its place» (anchor, 030 / 317) for every zone'),
+]
+WK_ZONES_JS = r"""
+Object.assign(I18N.de, /*WKDE*/{});
+Object.assign(I18N, {en: Object.assign(I18N.en || {}, {"z-trig": "Only movement whose feet are inside may call the head (the light AI decides what it is). Outside: only noted in the log. No trigger zone = the whole picture.",
+  "z-wign": "Movement whose feet are inside never calls the head (road, branches).",
+  "z-whead": "The wide camera turns with the head: zones fixed to its picture would move - they count only with a fixed wide camera (case, base, mast)."})});
+(function () {                                             // 639zw: switch head camera / wide camera, the two kinds on the wide picture
+  COL.trigger = "255,96,96"; ZNAME.trigger = "Trigger zone";
+  const aside = document.querySelector("aside .card"); if (!aside) return;
+  const bar = el("div", "btns"); bar.id = "wk-bar"; bar.style.cssText = "margin:0 0 10px"; bar.hidden = !WEIT;
+  const lab = (tag, cls, ic, key) => { const e = el(tag, cls, ic); const sp = el("span", "", tt(key)); sp.dataset.i18n = key; e.appendChild(sp); return e; };
+  const a1 = lab("a", "btn" + (WEIT ? " sec" : ""), "🎯 ", "Head camera"); a1.href = "/zones";
+  const a2 = lab("a", "btn" + (WEIT ? "" : " sec"), "🔭 ", "Wide camera"); a2.href = "/zones?cam=weit";
+  bar.append(a1, a2); aside.insertBefore(bar, aside.firstChild);
+  fetch("/api/weit/zones").then(r => r.json()).then(j => { if (j.avail || WEIT) bar.hidden = false;
+    if (WEIT && !j.avail) $("#hint").textContent = tt("No wide camera - choose «Overview camera» under Automatic head movement first.");
+    if (WEIT && j.on_head) { const n = el("div", "err", "⚠ " + tt("z-whead")); aside.appendChild(n); } }).catch(() => {});
+  if (!WEIT) return;
+  const _wkA = applyI18n;                                 // LANG is known only after initAppearance: translate then
+  applyI18n = function () { _wkA(); document.title = "MoveEye - " + tt("Trigger zones in the wide picture"); };
+  const bs = [...aside.querySelectorAll(".btns")].find(d => d.querySelector('button[onclick^="startZone"]'));
+  if (bs) { bs.querySelectorAll("button").forEach(b => { if (!/'ignore'/.test(b.getAttribute("onclick") || "")) b.hidden = true; });
+    const nb = el("button", "", tt("+ Trigger zone")); nb.dataset.i18n = "+ Trigger zone"; nb.onclick = () => startZone("trigger"); bs.insertBefore(nb, bs.firstChild); }
+  const lg = document.querySelector(".legend"); if (lg) { [...lg.children].forEach((d, i) => { if (i) d.hidden = true; });
+    const d = el("div"); d.style.marginTop = "4px"; d.innerHTML = '<i style="background:#ff6060"></i>'; const s1 = el("span", "", tt("Trigger zone")); s1.dataset.i18n = "Trigger zone"; const s2 = el("span", "", tt("z-trig")); s2.dataset.i18n = "z-trig"; d.append(s1, ": ", s2); lg.insertBefore(d, lg.firstChild);
+    const ig = lg.children[1]; if (ig) { const s = ig.querySelector("span[data-i18n=z-ign]"); if (s) { s.dataset.i18n = "z-wign"; s.textContent = tt("z-wign"); } } }
+  const how = document.querySelector('[data-i18n="z-how"]'); if (how) how.hidden = true;
+  const h = lab("h3", "", "🔭 ", "Trigger zones in the wide picture"); h.style.margin = "0 0 6px"; aside.insertBefore(h, aside.firstChild);
+})();
+"""
+for _a, _b in _WK_ZP:
+    if _a in ZONES_PAGE:
+        ZONES_PAGE = ZONES_PAGE.replace(_a, _b, 1)
+ZONES_PAGE = ZONES_PAGE.replace("/*ALERTS*/\n</script>", WK_ZONES_JS.replace("/*WKDE*/{}", json.dumps(_WK_DE, ensure_ascii=False), 1)
+                                + "/*ALERTS*/\n</script>", 1)
+
+# ---- the settings page: a link to the editor and the counters below «The overview camera steers the head» ----------------
+WK_WEB_JS = r"""
+<script>
+Object.assign(I18N.de, /*WKDE2*/{});
+(function () {                                             // 639zw: link «Auslösezonen» + counters of the guard (/api/wache)
+  let busy = false, last = 0;
+  function stat(s) {
+    busy = true; last = Date.now();
+    fetch("/api/wache").then(r => r.json()).then(j => { busy = false;
+      const f = j.fusion || {};
+      s.textContent = "🔭 " + t("Guard") + ": " + (j.mode === "motion" ? t("movement alone") + " · " : "") + j.runs + " " + t("AI runs") + (j.runs ? " (Ø " + j.ms + " ms)" : "")
+        + " · " + t("head called") + " " + j.calls + "× · " + t("without a person") + " " + j.no_class + "× · " + t("outside the zones") + " " + j.out_zone + "×"
+        + (f.on ? " · 🌡 " + t("night with heat") + " " + f.confirmed + "× · " + t("without heat - no alarm") + " " + f.vetoed + "×" : "");
+    }).catch(() => { busy = false; });
+  }
+  function put() {
+    if (busy || document.hidden) return;
+    const old = document.getElementById("wk-stat");
+    if (old) { if (old.offsetParent && Date.now() - last > 6000) stat(old); return; }
+    const row = document.querySelector('#settings [data-key="kopf_ov_on"]');
+    if (!row) return;
+    const box = el("div", "mut"); box.id = "wk-link"; box.style.cssText = "margin:4px 0 8px";
+    const a = el("a", "btn sec", "🗺 " + t("Trigger zones in the wide picture") + " ›"); a.href = "/zones?cam=weit"; a.style.cssText = "display:block;margin:4px 0";
+    const s = el("div", "mut"); s.id = "wk-stat"; s.style.fontSize = "13px"; box.append(a, s); row.after(box);
+    if (row.offsetParent) stat(s);
+  }
+  setInterval(put, 1500);
+})();
+</script>
+"""
+WEB_PAGE = WEB_PAGE.replace("</body>", WK_WEB_JS.replace("/*WKDE2*/{}", json.dumps(_WK_DE, ensure_ascii=False), 1) + "</body>", 1)
+
+
+# ---- the window (Tk): a button to the editor in «Automatic head movement» ---------------------------------------------------
+def _wk_tk_build_section(self, sec, sbody, settings_parent=None):
+    _wk_tk_build_section_before(self, sec, sbody, settings_parent)
+    if sec != "Automatic head movement":
+        return
+    try:
+        from tkinter import ttk as _ttk
+        _ttk.Button(sbody, text="🗺 " + tr("Trigger zones in the wide picture (browser)"),
+                    command=lambda: self._open_page("/zones?cam=weit")).pack(fill="x", pady=(8, 0))
+    except Exception:
+        pass
+
+
+_wk_tk_build_section_before = App._build_section
+# wraps: App._build_section
+App._build_section = _wk_tk_build_section
+
+# ---- the manual: «Weitwinkel einrichten und testen» (all 5 languages) -------------------------------------------------------
+_HELP_WK = _zd('639zw_weit_wache/HELP_WK', _ZDDict())
+
+
+def _help_wk(doc, lang):
+    if 'id="wide-setup"' in doc:
+        return doc
+    i = doc.find('<section id="tips"')
+    return doc[:i] + _HELP_WK[lang] + doc[i:] if i >= 0 else doc
+
+
+_hp_en_wk = HELP_PAGE.find('<div lang="en">')
+if _hp_en_wk > 0:
+    HELP_PAGE = _help_wk(HELP_PAGE[:_hp_en_wk], "de") + _help_wk(HELP_PAGE[_hp_en_wk:], "en")
+for _L in ("fr", "it", "rm"):
+    if HELP_X.get(_L):
+        HELP_X[_L] = _help_wk(HELP_X[_L], _L)
+
+
+# ---- self-test: (a) classes, (b) zones, (c) the decision table --------------------------------------------------------------
+class _WkCam:
+    def __init__(self, boxes, wh=(640, 400), spec="usb:9"):
+        self.boxes, self.wh, self.spec = list(boxes), wh, spec
+        self.motion, self.streak = bool(boxes), 3
+
+
+def weit_wache_selftest():
+    keep = {k: CFG.get(k) for k in ("kopf_ov_ki_animal", "kopf_ov_ki_vehicle", "kopf_ov_zones", "kopf_wild", "use_case", "mode",
+                                    "cam_head", "alarm_heat_fusion")}
+    keep_wk = dict(WK); keep_fus = dict(FUS)
+    _ls = log_event
+    try:
+        globals()["log_event"] = lambda *a, **k: None
+        # (a) classes: person always, animal / vehicle by switch, wildlife = animals
+        assert wk_kind(1) == "person" and wk_kind(18) == "animal" and wk_kind(OWN_AI_ANIMAL_ID) == "animal"
+        assert wk_kind(3) == "vehicle" and wk_kind(8) == "vehicle" and wk_kind(2) == "vehicle" and wk_kind(62) == "other"
+        CFG.update(kopf_ov_ki_animal=False, kopf_ov_ki_vehicle=False, kopf_wild="off", cam_head={}, kopf_ov_zones=[])
+        assert wk_classes() == {"person"}
+        CFG["kopf_ov_ki_vehicle"] = True; assert wk_classes() == {"person", "vehicle"}
+        CFG.update(kopf_ov_ki_vehicle=False, kopf_wild="on"); assert "animal" in wk_classes()
+        CFG["kopf_wild"] = "off"
+        now = time.time()
+        c = _WkCam([(400, 150, 40, 100)])                                  # one moving box right of the middle
+        WK.update(hits=[], ran_t=now)
+        assert weit_pick(c, now, "motion") is not None, "movement alone (AI off / dark): as before"
+        assert weit_pick(c, now, "ai") is None, "AI looked, nothing found: the head stays"
+        WK["hits"] = [(now, "animal", 0.8, (0.62, 0.37, 0.07, 0.25))]
+        assert weit_pick(c, now, "ai") is None, "an animal does not call the head (switch off)"
+        CFG["kopf_ov_ki_animal"] = True
+        assert weit_pick(c, now, "ai") is not None, "animal with the switch on"
+        CFG["kopf_ov_ki_animal"] = False
+        WK["hits"] = [(now, "person", 0.7, (0.62, 0.37, 0.07, 0.25))]
+        t = weit_pick(c, now, "ai")
+        assert t is not None and abs(t[0] - 0.655) < 0.01, t
+        WK["hits"] = [(now - 10.0, "person", 0.7, (0.62, 0.37, 0.07, 0.25))]
+        assert weit_pick(c, now, "ai") is None, "an old hit does not count"
+        # (b) zones: foot point, trigger = only there, ignore = never there, none = all
+        zs = wk_zones_clean([{"mode": "trigger", "points": [[0.0, 0.5], [0.5, 0.5], [0.5, 1.0], [0.0, 1.0]]},
+                             {"mode": "ignore", "points": [[0.0, 0.8], [0.2, 0.8], [0.2, 1.0], [0.0, 1.0]]},
+                             {"mode": "privacy", "points": [[0.9, 0.9], [1, 0.9], [1, 1]]}])
+        assert [z["mode"] for z in zs] == ["trigger", "ignore", "ignore"], zs
+        zs = zs[:2]
+        assert wk_zone_ok(0.3, 0.7, zs) and not wk_zone_ok(0.8, 0.7, zs) and not wk_zone_ok(0.1, 0.9, zs) and wk_zone_ok(0.8, 0.7, [])
+        CFG["kopf_ov_zones"] = zs
+        WK["hits"] = []
+        assert weit_pick(_WkCam([(400, 150, 40, 100)]), now, "motion") is None, "foot outside the trigger zone: only noted"
+        assert weit_pick(_WkCam([(100, 150, 40, 140)]), now, "motion") is not None, "foot inside the trigger zone"
+        CFG["cam_head"] = {"usb:9": True}
+        assert weit_pick(_WkCam([(400, 150, 40, 100)]), now, "motion") is not None, "on the head the zones do not count"
+        CFG.update(cam_head={}, kopf_ov_zones=[])
+        assert wk_crop((600, 380, 40, 20), 640, 400)[0] + wk_crop((600, 380, 40, 20), 640, 400)[2] <= 640
+        # (c) the decision table: day / night x thermal yes / no x heat yes / no
+        for night in (False, True):
+            for th in (False, True):
+                for heat in (False, True):
+                    d = fus_decide(True, th, night, [heat])
+                    want = "pass" if not (night and th) else ("confirmed" if heat else "veto")
+                    assert d == want, (night, th, heat, d)
+        assert fus_decide(False, True, True, [False]) == "pass", "switch off: as before"
+        assert fus_decide(True, True, True, [None]) == "pass", "cannot tell: as before"
+        f = np.full((62, 80), 10.0, np.float32); f[20:40, 30:40] = 31.0          # °C: a warm body
+        assert fus_heat_in(f, (0.35, 0.3, 0.15, 0.35), True) is True and fus_heat_in(f, (0.0, 0.0, 0.2, 0.2), True) is False
+        g = np.full((62, 80), 60, np.uint8); g[20:40, 30:40] = 230                 # 8 bit: bright = warm
+        assert fus_heat_in(g, (0.35, 0.3, 0.15, 0.35), False) is True and fus_heat_in(g, (0.8, 0.7, 0.15, 0.2), False) is False
+        assert fus_heat_in(None, (0.1, 0.1, 0.2, 0.2), True, [(0.12, 0.15, 0.05, 0.1)]) is True, "a warm moving body in the box"
+        # (c) the wrapper: night, thermal ok, no heat -> no alarm; without a thermal picture -> as before
+        class _W:
+            _proc_size = (480, 270)
+        fr_ = np.zeros((270, 480, 3), np.uint8); P = [(100, 50, 40, 120, 0.9)]
+        sv = {k: globals()[k] for k in ("_alarm_gate_639zw", "fus_thermal_ok", "fus_night", "fus_heat")}
+        try:
+            globals()["_alarm_gate_639zw"] = lambda w, frame, persons, now: persons
+            CFG["alarm_heat_fusion"] = True; FUS.update(latch=0.0, veto_t=0.0)
+            globals().update(fus_thermal_ok=lambda: True, fus_night=lambda: True, fus_heat=lambda nb: False)
+            v0 = FUS["vetoed"]
+            assert alarm_gate(_W(), fr_, P, now) == [] and FUS["vetoed"] == v0 + 1, "night without heat: no alarm"
+            globals()["fus_heat"] = lambda nb: True
+            assert alarm_gate(_W(), fr_, P, now) == P and FUS["latch"] > now, "night with heat: alarm"
+            FUS["latch"] = 0.0; globals()["fus_heat"] = lambda nb: False; globals()["fus_night"] = lambda: False
+            assert alarm_gate(_W(), fr_, P, now) == P, "day: as before"
+            globals()["fus_night"] = lambda: True; globals()["fus_thermal_ok"] = lambda: False
+            assert alarm_gate(_W(), fr_, P, now) == P, "no thermal picture: as before"
+        finally:
+            globals().update(sv)
+        # pages: the zone editor knows the wide picture, translations in all languages
+        for need in ("const WEIT = ", "fetch(ZAPI)", "post(ZAPI,", "ZFRAME + Date.now()", 'startZone("trigger")', '"Auslösezone"'):
+            assert need in ZONES_PAGE, "zone editor: missing " + need
+        assert 'id="wk-link"' in WEB_PAGE or "wk-link" in WEB_PAGE
+        for k, v in _HX_WK.items():
+            assert len(v) == 4 and all(v) and k in DE and all(k in TRX[L] for L in ("fr", "it", "rm")), k
+        assert HELP_PAGE.count('<section id="wide-setup"') == 2 and all('id="wide-setup"' in (HELP_X.get(L) or 'id="wide-setup"') for L in ("fr", "it", "rm"))
+        assert any(x[1] == "alarm_heat_fusion" for x in TOGGLES) and any(x[1] == "kopf_ov_ki_fps" for x in SLIDERS)
+        assert DEFAULTS["alarm_heat_fusion"] is True and DEFAULTS["kopf_ov_ki"] is True and DEFAULTS["kopf_ov_ki_animal"] is False
+    finally:
+        globals()["log_event"] = _ls
+        CFG.update(keep); WK.clear(); WK.update(keep_wk); FUS.clear(); FUS.update(keep_fus)
+    return "Weitwinkel-Wache: classes, trigger zones, thermal fusion table (8 cases), zone editor, manual"
+
+
+SELFTEST_EXTRA.append(("Wide camera as guard: light AI classes, trigger zones, night thermal fusion (639zw)", weit_wache_selftest))
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--cam", type=int, default=None, help="USB camera number (same as --source usb:N)")
