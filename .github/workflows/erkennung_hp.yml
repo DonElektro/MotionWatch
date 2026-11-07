@@ -26,6 +26,11 @@ on:
       laeufe:
         description: "Läufe pro Fall (Personenfälle, 1–5)"
         default: "1"
+      variante:
+        description: "Einstellungen von MoveEye: standard, bestaetigung2 (doppelte Bestätigung an), bestaetigung2_aus, windschutz_aus"
+        type: choice
+        options: [standard, bestaetigung2, bestaetigung2_aus, windschutz_aus]
+        default: standard
       simulator:
         description: "Simulator: paket (Linux-Paket des Stands) oder godot (Quelltext, für noch nicht veröffentlichte Änderungen)"
         type: choice
@@ -58,6 +63,7 @@ jobs:
       stand: ${{ steps.p.outputs.stand }}
       plan: ${{ steps.p.outputs.plan }}
       laeufe: ${{ steps.p.outputs.laeufe }}
+      variante: ${{ steps.p.outputs.variante }}
       simulator: ${{ steps.p.outputs.simulator }}
       anzeige: ${{ steps.p.outputs.anzeige }}
       warten: ${{ steps.p.outputs.warten }}
@@ -71,16 +77,18 @@ jobs:
           IN_STAND: ${{ github.event.inputs.stand }}
           IN_PLAN: ${{ github.event.inputs.plan }}
           IN_LAEUFE: ${{ github.event.inputs.laeufe }}
+          IN_VARIANTE: ${{ github.event.inputs.variante }}
           IN_SIM: ${{ github.event.inputs.simulator }}
           IN_ANZ: ${{ github.event.inputs.anzeige }}
           IN_WARTEN: ${{ github.event.inputs.warten }}
         run: |
           STAND="${IN_STAND:-main}"; PLAN="${IN_PLAN:-test3}"; LAEUFE="${IN_LAEUFE:-1}"; SIM="${IN_SIM:-paket}"
-          ANZ="${IN_ANZ:-xvfb}"; WARTEN="${IN_WARTEN:-15}"
-          if [ "$EVENT" = "schedule" ]; then STAND=main; PLAN=test3; LAEUFE=1; SIM=paket; ANZ=xvfb; WARTEN=20; fi
+          ANZ="${IN_ANZ:-xvfb}"; WARTEN="${IN_WARTEN:-15}"; VARIANTE="${IN_VARIANTE:-standard}"
+          if [ "$EVENT" = "schedule" ]; then STAND=main; PLAN=test3; LAEUFE=1; SIM=paket; ANZ=xvfb; WARTEN=20; VARIANTE=standard; fi
           fehler() { echo "::error::$*"; exit 1; }
           case "$PLAN" in test3|alle|wind|tier|kriechen|nacht|ursache|kurz) ;; *) fehler "Plan «$PLAN» unbekannt" ;; esac
           [[ "$LAEUFE" =~ ^[1-5]$ ]] || fehler "Läufe pro Fall: 1 bis 5"
+          case "$VARIANTE" in standard|bestaetigung2|bestaetigung2_aus|windschutz_aus) ;; *) fehler "Variante «$VARIANTE» unbekannt" ;; esac
           if ! [[ "$WARTEN" =~ ^[0-9]{1,3}$ ]] || [ "$WARTEN" -lt 1 ] || [ "$WARTEN" -gt 360 ]; then fehler "warten: 1 bis 360 Minuten"; fi
           case "$SIM" in paket|godot) ;; *) fehler "simulator: paket oder godot" ;; esac
           case "$ANZ" in xvfb|bildschirm) ;; *) fehler "anzeige: xvfb oder bildschirm" ;; esac
@@ -103,9 +111,9 @@ jobs:
           fi
           {
             echo "sha=$SHA"; echo "stand=$STAND"; echo "plan=$PLAN"; echo "laeufe=$LAEUFE"; echo "simulator=$SIM"
-            echo "anzeige=$ANZ"; echo "warten=$WARTEN"
+            echo "anzeige=$ANZ"; echo "warten=$WARTEN"; echo "variante=$VARIANTE"
           } >> "$GITHUB_OUTPUT"
-          echo "### Erkennung (HP): Plan $PLAN, $LAEUFE Lauf/Läufe pro Fall, Stand $STAND (${SHA:0:10}), Simulator $SIM, $ANZ" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Erkennung (HP): Plan $PLAN, Variante $VARIANTE, $LAEUFE Lauf/Läufe pro Fall, Stand $STAND (${SHA:0:10}), Simulator $SIM, $ANZ" >> "$GITHUB_STEP_SUMMARY"
 
   test:
     name: Erkennungstest auf dem HP
@@ -118,6 +126,7 @@ jobs:
       STAND: ${{ needs.vorpruefung.outputs.stand }}
       PLAN: ${{ needs.vorpruefung.outputs.plan }}
       LAEUFE: ${{ needs.vorpruefung.outputs.laeufe }}
+      VARIANTE: ${{ needs.vorpruefung.outputs.variante }}
       SIMQ: ${{ needs.vorpruefung.outputs.simulator }}
       ANZEIGE: ${{ needs.vorpruefung.outputs.anzeige }}
       PYTHONUNBUFFERED: "1"
@@ -190,7 +199,7 @@ jobs:
           FD="$(dirname "${MW_KIOSK_PAUSE:-/run/moveeye-test/kiosk_pause}")"; FO=""
           [ -d "$FD" ] && [ -w "$FD" ] && FO="$FD/fortschritt.json"
           "$PY" werkzeug/werkzeuge/test_runner/dauer.py halten --warten-max 21600 -- \
-          "$PY" werkzeug/werkzeuge/erkennungstest/erkennungstest.py --repo stand --plan "$PLAN" --laeufe "$LAEUFE" \
+          "$PY" werkzeug/werkzeuge/erkennungstest/erkennungstest.py --repo stand --plan "$PLAN" --laeufe "$LAEUFE" --variante "$VARIANTE" \
             "$SIMOPT" "$SIMPFAD" --ki-ordner "$KI" --anzeige "$D" --grafik lite --aus "$RUNNER_TEMP/erkennung" \
             --rechner "HP EliteDesk 800 G1 ($(nproc) Kerne)" --stand "$STAND" --commit "$SHA" --fortschritt "$FO"
       - name: Bericht

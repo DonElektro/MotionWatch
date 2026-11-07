@@ -2,9 +2,10 @@
 """MoveEye Dauerrechnen (3.55.0) - der Simulator-PC (HP, Test-Runner «moveeye-hp») rechnet rund um die Uhr, solange niemand
 spielt. Läuft als Benutzer des Runners (mwrunner) in den Workflows .github/workflows/dauer_hp.yml und erkennung_hp.yml.
 
-  dauer.py waehlen --kandidaten JSON [--arbeit auto|erkennung|ki|langzeit] [--ausgabe $GITHUB_OUTPUT]
+  dauer.py waehlen --kandidaten JSON [--arbeit auto|erkennung|ki|langzeit] [--varianten bestaetigung2|keine] [--ausgabe …]
       nächstes Arbeitspaket: zuerst ein angefangenes, sonst reihum (1) Erkennung messen (Stände vergleichen, 3 Läufe pro
-      Fall), (2) KI-Trainingsbilder aus dem Simulator, (3) Langzeittest. «nichts», wenn gespielt wird, alles erledigt ist
+      Fall; sind alle Stände gemessen: main zusätzlich mit jeder Variante, z. B. doppelte Bestätigung an - Bericht
+      varianten.md mit Erkennung und Pushes/h nebeneinander), (2) KI-Trainingsbilder aus dem Simulator, (3) Langzeittest. «nichts», wenn gespielt wird, alles erledigt ist
       oder das HP-Update an der Reihe ist (seit 20 Std. nicht mehr geprüft: dann bleibt der HP frei, bis es gelaufen ist).
   dauer.py rechnen --paket ID --stand DIR --sim-bin BIN [--ki-ordner K] [--stunden 3] [--anzeige xvfb] [--ausgabe …]
       das Paket rechnen, bis es fertig ist, die Zeit um ist oder jemand spielt. Stand gesichert wird pro Fall (Erkennung:
@@ -52,6 +53,12 @@ ARTEN = ("erkennung", "ki", "langzeit")
 NAMEN = {"erkennung": "Erkennung messen", "ki": "KI-Trainingsbilder", "langzeit": "Langzeittest"}
 ERK_PLAENE = ("ursache", "kriechen", "nacht", "tier", "wind")  # reihum, je Plan alle Stände (so lassen sie sich vergleichen)
 ERK_LAEUFE = 3
+# Varianten (Paket «Fehlalarme und Pushes»): main zusätzlich mit anderen Einstellungen messen (erkennungstest.py --variante),
+# erst wenn alle Stände mit allen Plänen gemessen sind; nur diese Pläne (Personen + Leerlauf, Nacht, Wind = Pushes/h).
+ERK_VARIANTEN = tuple(v.strip() for v in (os.environ.get("MW_DAUER_VARIANTEN") or "bestaetigung2").split(",")
+                      if v.strip() and v.strip() != "keine")
+ERK_VAR_PLAENE = tuple(v.strip() for v in (os.environ.get("MW_DAUER_VAR_PLAENE") or "ursache,nacht,wind").split(",") if v.strip())
+VAR_RE = re.compile(r"^[a-z0-9_]{1,30}$")
 KI_PAKETE, KI_BILDER = 6, 150                                  # ein Paket = 6 × 150 Bilder (je Bildpaket gesichert)
 KI_PRO_STAND = 2                                               # so viele Pakete pro MoveEye-Stand (main)
 LZ_MINUTEN = 180                                               # ein Langzeittest: 3 Std. (in Abschnitten zu 30 Min.)
@@ -200,14 +207,23 @@ def kandidaten_lesen(txt):
     return out
 
 
-def naechstes(z, kand, art, jetzt):
+def erk_key(sha, plan, variante=""):
+    """erkennung|<sha>|<plan>[@<variante>] (drei Teile wie bisher; die Variante hängt am Plan)"""
+    return "erkennung|%s|%s" % (sha, plan + ("@" + variante if variante else ""))
+
+
+def naechstes(z, kand, art, jetzt, varianten=None):
     """(art, Angaben) der nächsten Arbeit dieser Art oder None"""
     main = kand[0]
     if art == "erkennung":
         for plan in ERK_PLAENE:
             for k in kand:
-                if "erkennung|%s|%s" % (k["sha"], plan) not in z["erledigt"]:
+                if erk_key(k["sha"], plan) not in z["erledigt"]:
                     return {"art": art, "sha": k["sha"], "stand": k["name"], "plan": plan, "laeufe": ERK_LAEUFE}
+        for v in (ERK_VARIANTEN if varianten is None else varianten):
+            for plan in ERK_VAR_PLAENE:
+                if erk_key(main["sha"], plan, v) not in z["erledigt"]:
+                    return {"art": art, "sha": main["sha"], "stand": main["name"], "plan": plan, "laeufe": ERK_LAEUFE, "variante": v}
         return None
     if art == "ki":
         n = sum(1 for key in z["erledigt"] if key.startswith("ki|%s|" % main["sha"]))
@@ -237,7 +253,7 @@ def waehlen(a):
     if ak and ak.get("art") in ARTEN and (a.arbeit in ("auto", ak["art"])):
         if ak.get("sha") in shas:
             ausgabe(a.ausgabe, art=ak["art"], grund="angefangenes Paket", paket=ak["id"], sha=ak["sha"], stand=ak["stand"],
-                    plan=ak["plan"], laeufe=ak["laeufe"], name=NAMEN[ak["art"]])
+                    plan=ak["plan"], laeufe=ak["laeufe"], name=NAMEN[ak["art"]], variante=ak.get("variante") or "standard")
             return 0
         log("Angefangenes Paket %s: Stand %s ist nicht mehr dabei - abgeschlossen (Teilergebnis bleibt)" % (ak["id"], ak.get("stand")))
         z["erledigt"][ak["key"]] = {"t": int(jetzt), "status": "abgebrochen (Stand nicht mehr aktuell)", "paket": ak["id"]}
@@ -246,12 +262,17 @@ def waehlen(a):
     r0 = int(z.get("rotation", 0)) % len(ARTEN)
     if a.arbeit == "auto":
         arten = [ARTEN[(r0 + i) % len(ARTEN)] for i in range(len(ARTEN))]
+    var = None
+    if a.varianten:
+        var = tuple(v for v in a.varianten.split(",") if v and v != "keine")
+        if not all(VAR_RE.match(v) for v in var):
+            raise SystemExit("Varianten: nur a-z, 0-9, _")
     for art in arten:
-        n = naechstes(z, kand, art, jetzt)
+        n = naechstes(z, kand, art, jetzt, var)
         if not n:
             continue
         pid = time.strftime("%Y%m%d-%H%M%S", time.localtime(jetzt)) + "-" + art
-        key = {"erkennung": "erkennung|%s|%s" % (n["sha"], n["plan"]), "ki": "ki|%s|%s" % (n["sha"], pid),
+        key = {"erkennung": erk_key(n["sha"], n["plan"], n.get("variante", "")), "ki": "ki|%s|%s" % (n["sha"], pid),
                "langzeit": "langzeit|%s|%s" % (n["sha"], time.strftime("%Y-%m-%d", time.localtime(jetzt)))}[art]
         z["aktiv"] = dict(n, id=pid, key=key, start=int(jetzt), versuche=0, rechenzeit_s=0)
         if a.arbeit == "auto":
@@ -260,7 +281,7 @@ def waehlen(a):
         zustand_schreiben(z)
         aufraeumen(z)
         ausgabe(a.ausgabe, art=art, grund="neues Paket", paket=pid, sha=n["sha"], stand=n["stand"], plan=n["plan"],
-                laeufe=n["laeufe"], name=NAMEN[art])
+                laeufe=n["laeufe"], name=NAMEN[art], variante=n.get("variante") or "standard")
         return 0
     zustand_schreiben(z)
     ausgabe(a.ausgabe, art="nichts", grund="alles erledigt (bis main sich ändert bzw. bis morgen)")
@@ -360,7 +381,8 @@ def erledigen(z, ak, status):
 
 
 def erk_vergleich(z, ak):
-    """fertige Messung: Bericht mit Vergleich zu derselben Messung (gleicher Plan) des anderen Stands"""
+    """fertige Messung: Bericht mit Vergleich zu derselben Messung (gleicher Plan, gleiche Variante) des anderen Stands;
+    eine Variante dazu varianten.md: dieselbe Messung desselben Stands ohne Variante nebeneinander (Erkennung, Pushes/h)"""
     sys.path.insert(0, ERK)
     try:
         import bericht as B
@@ -368,9 +390,19 @@ def erk_vergleich(z, ak):
         return
     o = paket_ordner(ak["id"])
     R = B.lesen(os.path.join(o, "results.jsonl"))
+    v = ak.get("variante") or ""
+    pk = ak["plan"] + ("@" + v if v else "")
+    if v:
+        e0 = z["erledigt"].get(erk_key(ak["sha"], ak["plan"]))
+        alt = os.path.join(DAUER, "pakete", e0["paket"], "results.jsonl") if e0 and e0.get("paket") else ""
+        if alt and os.path.exists(alt):
+            with open(os.path.join(o, "varianten.md"), "w", encoding="utf-8") as f:
+                f.write("# Varianten: %s (Plan %s, %d Läufe pro Fall)\n\n" % (ak["stand"], ak["plan"], ak["laeufe"]))
+                f.write(B.varianten([("standard", B.lesen(alt)), (v, R)]))
+            log("Varianten-Vergleich geschrieben: standard gegen", v)
     for key, e in sorted(z["erledigt"].items(), key=lambda kv: -kv[1].get("t", 0)):
         p = key.split("|")
-        if len(p) == 3 and p[0] == "erkennung" and p[2] == ak["plan"] and p[1] != ak["sha"] and e.get("paket"):
+        if len(p) == 3 and p[0] == "erkennung" and p[2] == pk and p[1] != ak["sha"] and e.get("paket"):
             alt = os.path.join(DAUER, "pakete", e["paket"], "results.jsonl")
             if os.path.exists(alt):
                 with open(os.path.join(o, "vergleich.md"), "w", encoding="utf-8") as f:
@@ -398,12 +430,14 @@ def rechnen(a):
         cmd = [py, os.path.join(ERK, "erkennungstest.py"), "--repo", a.stand, "--plan", ak["plan"], "--laeufe", str(ak["laeufe"]),
                "--sim-bin", a.sim_bin, "--anzeige", a.anzeige, "--grafik", "lite", "--aus", o,
                "--rechner", "HP EliteDesk 800 G1 (%d Kerne)" % (os.cpu_count() or 0), "--stand", ak["stand"], "--commit", ak["sha"],
-               "--fortschritt", fo, "--arbeit", NAMEN[art]] + (["--ki-ordner", a.ki_ordner] if a.ki_ordner else [])
+               "--fortschritt", fo, "--arbeit", NAMEN[art]] + (["--ki-ordner", a.ki_ordner] if a.ki_ordner else []) + \
+              (["--variante", ak["variante"]] if ak.get("variante") else [])
     else:
         cmd = [py, os.path.abspath(__file__), art + "-teil", "--repo", a.stand, "--sim-bin", a.sim_bin, "--aus", o,
                "--anzeige", a.anzeige, "--fortschritt", fo, "--menge", str(ak["laeufe"]), "--stand-name", ak["stand"]] + \
               (["--ki-ordner", a.ki_ordner] if a.ki_ordner else [])
-    log("Paket %s: %s, Stand %s (%s), %s" % (ak["id"], NAMEN[art], ak["stand"], ak["sha"][:10], ak["plan"]))
+    log("Paket %s: %s, Stand %s (%s), %s" % (ak["id"], NAMEN[art], ak["stand"], ak["sha"][:10], ak["plan"])
+        + (" · Variante " + ak["variante"] if ak.get("variante") else ""))
     dlog = os.path.join(o, "dauer.log")
     try:
         os.unlink(os.path.join(o, FEHLER_DATEI))
@@ -1086,6 +1120,8 @@ def main():
     w = sub.add_parser("waehlen")
     w.add_argument("--kandidaten", required=True)
     w.add_argument("--arbeit", default="auto", choices=("auto",) + ARTEN)
+    w.add_argument("--varianten", default="", help="Erkennung: diese Varianten für main (Komma; «keine» = aus; Standard: "
+                   + (",".join(ERK_VARIANTEN) or "keine") + ", Umgebung MW_DAUER_VARIANTEN)")
     w.add_argument("--ausgabe", default=os.environ.get("GITHUB_OUTPUT", ""))
     r = sub.add_parser("rechnen")
     r.add_argument("--paket", required=True)
