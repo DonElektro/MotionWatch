@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-07 11:15",
+ "generated": "2026-11-07 12:51",
  "versions": [
+  {
+   "version": "3.57.0",
+   "file": "webcam_bewegung_3_57_0.py",
+   "url": "",
+   "sha256": "6f03ebeaf88918a8913e7e15377e501da529bf2ef8e4efd24f7d15dd16a95de3",
+   "date": "2026-11-07 12:51",
+   "notes": "Drei Kamera-Ansichten: Knopf «Ansicht» schaltet das Hauptbild 🎯 Kopf → 🌡 Wärmebild → 🔭 Weitwinkel (mit Rahmen, wohin der Kopf schaut), lang drücken = Auswahl; kleines Übersichtsbild in der Ecke (antippen = tauschen, pro Gerät gemerkt) – Live, Controller-Ansicht, Sim-Ansicht und Pi-Fenster.",
+   "size": 4972770,
+   "sig": "5dbf2897dbc584bbd4ec77abcb702701c648b5686344fd5744b551c719bf6ffb3f1fbf77601264a359a08496cbc53e510f63e9487495d032a20fa649dd043f01",
+   "data": {
+    "file": "moveeye_daten_3_57_0.zip",
+    "url": "",
+    "sha256": "cf5a27bc049b30c798fc79f315adcf732d2a9a85026c475a0be06cfcb38f6352",
+    "size": 4105270,
+    "sig": "ec9d3b99ee0faed29413fdeca45aff2c011a009333070cfd247fd37749785caf61928f36d93845070b6bcaa3f95330099786f2ec81990ad016f3dc101a4c6c0e"
+   }
+  },
   {
    "version": "3.56.0",
    "file": "webcam_bewegung_3_56_0.py",
    "url": "",
    "sha256": "6daaaecfeda9c87f6b7d342a1f8a38e5c192c313e62e35e16cca0dbc73b1a421",
-   "date": "2026-11-07 11:15",
+   "date": "2026-11-07 11:18",
    "notes": "Drei Spuren: MoveEye, Simulator und Gehäuse haben je eine eigene Nummer und erscheinen einzeln; MoveEye prüft den Simulator für /sim über die signierte Liste (versions.json «sim»), der HP holt neue Simulatoren selbst, das Versions-Paar warnt nur noch unter der Mindestversion.",
    "size": 4950616,
    "sig": "33fb1c0d917db99326c117ce42eff62904755c4089852ccd3c9cc643febd8f15b71410915bc9e9fb221b970fe6243cc20fa6e4e97a34cd97467e9ddbb0387e03",
@@ -136,23 +153,6 @@
     "sha256": "d1f3a570cea91e6fac3ab100b27019be4dc0bea26a20a14d7bc3366ce5bb446b",
     "size": 3602272,
     "sig": "5f00f393032d6d4781bc836ae93f8fe99607ea2433fcae2ab36ade87d691df1b4dfd6b90a7f02659f166e66cf5705474edc72a3cef1c7f0ffc9b7c6a1ee19401"
-   }
-  },
-  {
-   "version": "3.48.1",
-   "file": "webcam_bewegung_3_48_1.py",
-   "url": "",
-   "sha256": "89689327702c84626c8de06f413ce5720c11730cb5ecbdee6b543f4af51abef0",
-   "date": "2026-11-02 00:06",
-   "notes": "Werkstatt im Simulator wie in MoveEye (Karte unter dem Bild, Symbole, Farben), Knopftexte zweizeilig statt abgeschnitten; echte 3D-Modelle für Füsse und Stopfen, echte Lage auf den Druckplatten.",
-   "size": 4865147,
-   "sig": "c6c33be21f8e6950a6d5a38c221055684d116e05e00ba2fbef0a73bdbe66c7cb4f34d68ca9b37f7d6f74d7d4d04fbc38615dee5925be86c8b0e060df781eb509",
-   "data": {
-    "file": "moveeye_daten_3_48_1.zip",
-    "url": "",
-    "sha256": "b0cf7be4227f30f4bb3982662391a2d95e1b429ba38947c831e25df6948b32b1",
-    "size": 3602032,
-    "sig": "7e9b100f739fbe814088a7cd8a1ff6a194a45e258eac1806255cd27a6bd33b9d05fe308299cd10b2807ba50e02e7fad1310daec848595467165ccd7b416eb005"
    }
   },
   {
