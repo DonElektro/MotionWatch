@@ -42,7 +42,8 @@ LINUX_REL = "simulator3d/MoveEyeSim3D_Linux.zip"   # Paket Linux (werkzeuge/linu
 SHIFT = 2
 BRUECKE = "3.0.2"                   # = UPD_BRIDGE in quelle/397_zusatzdaten_nachladen.py
 MAX_ALT = 8 * 1024 * 1024           # Grenze der Geräte bis 2.98.x
-ZIEL = 5 * 1024 * 1024              # Ziel für die Hauptdatei (Platz für Wachstum)
+ZIEL = 5 * 1024 * 1024              # Schlank (3.59.0): Grenze der Hauptdatei (= bauen.py GROESSE_MAX), darüber Problem
+ZIEL_WARN = 4 * 1024 * 1024         # darüber Hinweis (= bauen.py GROESSE_WARN)
 MAX_HAUPT = 10                      # höchstens 10 Hauptversionen X.Y im Repository
 VFILE = re.compile(r"^webcam_bewegung_(\d{1,3})_(\d{1,3})_(\d{1,3})\.py$")
 
@@ -310,8 +311,11 @@ def groesse_bruecke(app):
         print("Hauptdatei %s: %d Bytes (%.2f MiB)" % (os.path.basename(f), n, n / 1048576))
         if n >= MAX_ALT:
             out.append("%s ist %.2f MiB - Geräte bis 2.98.x nehmen höchstens 8 MiB an" % (os.path.basename(f), n / 1048576))
-        elif n >= ZIEL:
-            print("Hinweis: über dem Ziel von 5 MiB - mehr in die Zusatzdatei (bauen.py ZD_MIN / ZD_KEEP_NAMES)")
+        elif n > ZIEL:
+            out.append("%s ist %.2f MiB - höchstens 5 MiB (mehr in die Zusatzdatei: bauen.py --groessen, ZD_MIN_KLEIN)"
+                       % (os.path.basename(f), n / 1048576))
+        elif n > ZIEL_WARN:
+            print("Hinweis: über 4 MiB - bald mehr in die Zusatzdatei (bauen.py --groessen, ZD_MIN_KLEIN / ZD_KEEP_NAMES)")
         txt = lesen(f)
         m = re.search(r'^ZD_FILE = "([^"]+)"', txt, re.M)
         if m and not os.path.isfile(os.path.join(REPO, m.group(1))):

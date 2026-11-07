@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-07 16:55",
+ "generated": "2026-11-07 18:58",
  "versions": [
+  {
+   "version": "3.59.0",
+   "file": "webcam_bewegung_3_59_0.py",
+   "url": "",
+   "sha256": "4fd1fa47f0953371c048e7c62da4f8eb4cb1e26a44dfdbf852cb9d12870fe11e",
+   "date": "2026-11-07 18:58",
+   "notes": "MoveEye-Datei schlank: Hauptdatei von 5,0 auf 3,4 MB (mehr in die Zusatzdatei: Übersetzungen, Anleitung, Web-Teile; gebaute Datei ohne Kommentare, mit Tabs, gleiche Zeilennummern). Ohne Zusatzdatei startet MoveEye wieder im Kern, mit «Jetzt nachladen». Grenze: Warnung ab 4 MiB, Abbruch ab 5 MiB.",
+   "size": 3416329,
+   "sig": "54158c576ecc486a62597a89f612a5a406edf7791e1d4f4964b5bf037c2dc5ed5ddffaa89094c0d16c8ef62cf3ed39e3a96196fc83365c63f3ddfbc65e41b300",
+   "data": {
+    "file": "moveeye_daten_3_59_0.zip",
+    "url": "",
+    "sha256": "b29ea6f5d1dec51e052f0b3c8f0a3bc842c00b2fa3476774bcda30790f872e42",
+    "size": 4785308,
+    "sig": "f2fdbbc09407af651c915017a61f6f63e3286b5edc6fc27f33b41753b427d5cf0789bb3a5755425c590ed7176387fd6dafcfb126d678a1264d69c41335de4001"
+   }
+  },
   {
    "version": "3.58.0",
    "file": "webcam_bewegung_3_58_0.py",
    "url": "",
    "sha256": "42233e1dcce930a2c56d6cab58812f4f5596f27f3f7190a63a5d55f5e61f82a2",
-   "date": "2026-11-07 16:55",
+   "date": "2026-11-07 16:56",
    "notes": "Weitwinkel = Wache: leichte KI im Weitwinkelbild – nur Personen rufen den Kopf (Tiere / Fahrzeuge wählbar), Auslösezonen im Weitwinkelbild (Zonen-Editor 🔭), nachts mit Wärmebild kein Personen-Alarm ohne Wärme (ab Werk an, ohne Wärmebild wie bisher); Anleitung «Weitwinkel einrichten und testen».",
    "size": 5020080,
    "sig": "1035f24a1d487f68eff6fa7af53942754d21ceed51a2e6910ec0d80b5a25fd1d8c35c20ed564d67752e880c0e1edf08ab329dd1031f672cd449a4085c7e0f109",
@@ -136,23 +153,6 @@
     "sha256": "4588b4718f7f60454acbb44eb5854ba5a65438ba54e1e0bd3f3262b778b214de",
     "size": 4079140,
     "sig": "810aaaac3476b132ca3b0c83401615c50f87ce5cb4ef42ee89a798815d3ef378f54461560a9b90e84357c6281e0e069ece26c072103844c096fe92dcca386201"
-   }
-  },
-  {
-   "version": "3.50.0",
-   "file": "webcam_bewegung_3_50_0.py",
-   "url": "",
-   "sha256": "e2c1ff7d71ce7b6ed64f37cf4f7daa8e02ea18b23e80a46cef00df9da5916e14",
-   "date": "2026-11-02 17:51",
-   "notes": "Werkstatt «Bauen» als eigenständige Datei MoveEye_Werkstatt.html: läuft offline im Browser ohne Pi (alle Reiter, 3D, Einzelteile, Druckplatten, Pakete, 5 Sprachen); bei jedem Release unter GitHub-Releases (latest/download/MoveEye_Werkstatt.html) und im Bausatz.",
-   "size": 4878963,
-   "sig": "c7ef1eaad1428bff46a1e0927e11efa8db56a680f45fff7999355f83bef888723fb8e6b566e63ced35e375b5b9245fb8da9aa3028e8e384f236c278f85ec670a",
-   "data": {
-    "file": "moveeye_daten_3_50_0.zip",
-    "url": "",
-    "sha256": "ca132735f91568198388804331dc1c920f8b07bec18f57acf619ddefcb8e08e4",
-    "size": 3604553,
-    "sig": "9d291a8c6b413dc8daab6caabddbcc997e59b38bc0631249adde2abb9012c6f694742cf8a9fa3593a2a3a920a940809865af45b0dbd69defd86622c19fc94603"
    }
   },
   {

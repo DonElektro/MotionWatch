@@ -108,8 +108,11 @@ Push-Nachrichten). Einrichtung: `docs/Einrichtung_Raspberry_Pi.md`, Gehäuse: `h
   SHA-256 der ZIP (`ZD_SHA256`, Teil 012) – die Signatur der Hauptdatei bürgt so auch für die ZIP; zusätzlich steht sie mit
   eigener Signatur unter `"data"` in versions.json. **Beide Dateien gehören zusammen ins Repository** (`git add` beider).
   Ohne ZIP startet MoveEye im Kern (Kamera, Erkennung, Alarm, Push, Fenster; Web-Seiten zeigen «Zusatzdaten fehlen – Update»)
-  und holt sie über dieselbe Update-Quelle (Teil 397), dann ein Neustart. Ziel Hauptdatei unter 5 MiB, Pflicht unter 8 MiB
-  (`versionen.py --pruefen`) – so gehen auch Geräte bis 2.98.x direkt auf die neueste Version.
+  und holt sie über dieselbe Update-Quelle (Teil 397), dann ein Neustart. **Schlank (ab 3.59.0):** statische Inhalte schon
+  ab 1 KiB in die ZIP, `_HX…`-Tabellen behalten nur Deutsch, die gebaute Datei ohne Kommentare / Docstrings und mit Tabs
+  (gleiche Zeilennummern; Originalzeilen in der ZIP, `zd_source()`). Hauptdatei: Warnung ab 4 MiB, Abbruch ab 5 MiB
+  (`bauen.py`, `versionen.py --pruefen`), äussere Grenze 8 MiB für Geräte bis 2.98.x. Tests: `werkzeuge/zusatzdaten_test.py`,
+  `werkzeuge/update_uebergang_test.py`.
 - **Brücke**: `webcam_bewegung_3_0_2.py` (eine Datei unter 8 MiB, ohne Zusatzdatei) bleibt
   **für immer** im Repository und in versions.json (`"bridge": true`, `BRUECKE` in `versionen.py`, `UPD_BRIDGE` in Teil 397).
   Beim Aufräumen («höchstens 10») nie löschen – `python3 werkzeuge/versionen.py --aufraeumen` lässt sie stehen (sie zählt mit).
