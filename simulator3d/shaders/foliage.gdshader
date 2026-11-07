@@ -14,9 +14,16 @@ uniform vec2 cloud_off = vec2(0.0);
 // gust_amt 0 = only the old sway (switched off); Lite: weak.
 uniform float gust_amt = 0.0;
 uniform vec2 dir = vec2(0.8, 0.6);
+// «Flora und Fauna» Phase 1 (scripts/flora.gd): neu = leaf clumps instead of a smooth ball (colour + normal), darker inside
+// and below, every plant a little different; ragged = frayed outline (Normal / Hoch, not Lite: alpha test is dear on the Pi).
+// neu = 0: exactly as before.
+uniform float neu = 0.0;
+uniform float ragged = 0.0;
+varying float v_hue;
 
 void vertex() {
 	vec3 wp = (MODEL_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+	v_hue = fract(sin(dot(floor(wp.xz * 0.5), vec2(12.9898, 78.233))) * 43758.5453);
 	float a = wind / 60.0 * (1.0 - 0.75 * bare);   // bare twigs hardly sway
 	float s = sin(TIME * (1.2 + a) + wp.x * 0.37 + wp.z * 0.21);
 	float f = sin(TIME * 4.3 + wp.z + VERTEX.y * 3.0) * 0.25;
@@ -48,6 +55,36 @@ void fragment() {
 		if (blossom > 0.0 && f > 1.0 - 0.45 * blossom) {
 			col = mix(vec3(0.86, 0.84, 0.82), vec3(0.88, 0.7, 0.76), n);    // apple / cherry blossom
 		}
+	}
+	if (neu > 0.0) {
+		vec3 wn = normalize((INV_VIEW_MATRIX * vec4(NORMAL, 0.0)).xyz);
+		vec3 bw = abs(wn) + 0.05;
+		bw /= bw.x + bw.y + bw.z;                                            // three planes: no streaks on the sides
+		float c1 = texture(noise_tex, w.yz * 0.9).r * bw.x + texture(noise_tex, w.xz * 0.9).r * bw.y + texture(noise_tex, w.xy * 0.9).r * bw.z;   // leaf clumps (~1 m)
+		float c2 = texture(noise_tex, w.yz * 2.6 + 0.3).r * bw.x + texture(noise_tex, w.xz * 2.6 + 0.3).r * bw.y + texture(noise_tex, w.xy * 2.6 + 0.3).r * bw.z;   // smaller ones
+		float clump = c1 * 0.6 + c2 * 0.4;
+		float gap = smoothstep(0.38, 0.62, clump);
+		col *= mix(vec3(0.9, 1.0, 0.92), vec3(1.1, 1.03, 0.85), v_hue);
+		col *= mix(0.42, 1.08, gap);                                         // deep gaps between the clumps
+		col *= mix(0.62, 1.0, smoothstep(-0.7, 0.45, wn.y));                 // underside in the shade of the crown
+		col = mix(col, col * vec3(1.06, 1.12, 0.78), smoothstep(0.55, 0.9, c2) * 0.35 * (1.0 - bare));   // light leaf tips
+		// bumpy normal from the clumps (no tangents: screen-space derivative, like maggie_fell.gdshader)
+		vec3 sx = dFdx(VERTEX);
+		vec3 sy = dFdy(VERTEX);
+		float hx = dFdx(clump);
+		float hy = dFdy(clump);
+		vec3 r1 = cross(sy, NORMAL);
+		vec3 r2 = cross(NORMAL, sx);
+		float det = dot(sx, r1);
+		vec3 grad = sign(det) * (hx * r1 + hy * r2);
+		NORMAL = normalize(abs(det) * NORMAL - grad * 0.45);
+		if (ragged > 0.0) {
+			float rim = 1.0 - abs(dot(normalize(NORMAL), normalize(-VERTEX)));
+			if (rim > 0.5 && clump < (rim - 0.45) * 1.25 * ragged) {
+				discard;                                                     // frayed outline: leaves, not a ball
+			}
+		}
+		BACKLIGHT = col * 0.1;
 	}
 	ALBEDO = col * (1.0 - cloud_amt * smoothstep(0.52, 0.68, texture(noise_tex, (w.xz + cloud_off) * 0.0035).r));   // gelaende.gd: cloud shadows
 	ROUGHNESS = 0.9;

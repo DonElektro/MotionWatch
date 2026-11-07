@@ -38,8 +38,17 @@ sim_laeuft() { pgrep -u "$(id -u)" -f "$MUSTER" >/dev/null || pgrep -u "$(id -u)
 sim_signal() { pkill "-$1" -u "$(id -u)" -f "$MUSTER" 2>/dev/null; pkill "-$1" -u "$(id -u)" "$NAME" 2>/dev/null; return 0; }
 SIM=""
 SIM_ARGS=(--fullscreen -- --stream --no-update)
+# Grafik-Modus des Kiosks (Besitzer 07.11.2026, «Flora und Fauna»): der HP (HD 4600) läuft mit «Normal» statt dem
+# automatischen Lite (quality.gd weak_pc). In /etc/moveeye-kiosk.conf überschreibbar: GRAFIK=auto | lite | normal | hoch,
+# GRAFIK="" = nichts mitgeben. ARM-Rechner (Raspberry Pi) bekommen nichts: dort bleibt Automatisch = Lite.
+GRAFIK="normal"
 # shellcheck source=/dev/null
 [ -r "$CONF" ] && . "$CONF"
+case "$(uname -m)" in aarch64|arm*) GRAFIK="" ;; esac
+if [ -n "$GRAFIK" ] && [[ " ${SIM_ARGS[*]} " != *" --grafik "* ]]; then
+	[[ " ${SIM_ARGS[*]} " == *" -- "* ]] || SIM_ARGS+=(--)
+	SIM_ARGS+=(--grafik "$GRAFIK")          # nach «--»: eine Option des Simulators (nur für diesen Start, main.gd)
+fi
 PAUSE_DATEI=""
 PAUSE_MAX_S=25200                         # 7 Std.: eine vergessene Pause-Datei hält den Kiosk nicht für immer an
 TEST_BENUTZER=""

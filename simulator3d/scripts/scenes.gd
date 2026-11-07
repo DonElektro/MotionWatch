@@ -90,6 +90,8 @@ func build(id: String, parent: Node3D) -> void:
 # (the neighbours), no_road = no road across, decor = only scenery (a neighbour)
 const Worlds = preload("res://scripts/worlds.gd")
 const Quality = preload("res://scripts/quality.gd")
+const Flora = preload("res://scripts/flora.gd")      # «Flora und Fauna» Phase 1: echtere Kronen, Blatt-Karten, Gras
+const Veg = preload("res://scripts/vegetation.gd")
 var clip := 0.0
 var excl: Array = []
 var no_road := false
@@ -309,6 +311,7 @@ func foliage(k: int) -> ShaderMaterial:
 				fm.set_shader_parameter("noise_tex", m.noise_tex)
 				fm.set_shader_parameter("color", c)
 				fm.set_meta("broad", broad)
+				Flora.foliage_params(m, fm)
 				m.foliage_mats.append(fm)
 				fol_mats.append(fm)
 	return fol_mats[k % fol_mats.size()]
@@ -325,6 +328,7 @@ func _berg_foliage() -> ShaderMaterial:
 		_berg_fm.set_shader_parameter("noise_tex", m.noise_tex)
 		_berg_fm.set_shader_parameter("color", Color(0.07, 0.15, 0.09))
 		_berg_fm.set_meta("broad", false)
+		Flora.foliage_params(m, _berg_fm)
 	if not m.foliage_mats.has(_berg_fm):
 		m.foliage_mats.append(_berg_fm)                        # (wind, seasons like the other foliage)
 	return _berg_fm
@@ -365,6 +369,7 @@ func tree(parent: Node3D, p: Vector3, sc: float, conifer := -1) -> void:
 		m.add_obstacle(p, 0.32 * sc)
 	var gp: Vector3 = tr.global_position if tr.is_inside_tree() else p
 	m.tree_spots.append([Vector2(gp.x, gp.z), (1.75 if con else 1.5) * sc, (1.9 if con else 3.0) * sc])   # 3D-3.76: crowns (camera of the players)
+	Flora.dress(self, tr)                                        # «Flora und Fauna»: leaf / needle cards (own random numbers)
 
 
 func trees(n: int, dmin: float, dmax: float, keep_clear: Callable) -> void:
@@ -385,6 +390,9 @@ func road(z: float, width := 5.0) -> void:
 	if no_road:
 		return
 	put(root, m.box(400, 0.04, width), Vector3(0, 0.02, z), Color(0.42, 0.4, 0.37), "road")
+
+
+var _meadow_mat: ShaderMaterial
 
 
 func meadow(n: int, dmin: float, dmax: float, keep_clear := Callable()) -> void:
@@ -408,6 +416,15 @@ func meadow(n: int, dmin: float, dmax: float, keep_clear := Callable()) -> void:
 	mm.transform_format = MultiMesh.TRANSFORM_3D
 	mm.use_colors = false
 	mm.mesh = blade
+	var neu_g := Flora.neu(m)                                 # «Flora und Fauna»: clumps of blades like vegetation.gd
+	var gr := RandomNumberGenerator.new()                     # (own random numbers: the rest of the scene stays the same)
+	gr.seed = 9173
+	if neu_g:
+		Veg._meshes()
+		mm.mesh = Veg._clump
+		mm.use_colors = true
+		_meadow_mat = Veg.blade_mat(self, 1.0)
+		Flora.grass_params(m, _meadow_mat, 60.0)
 	mm.instance_count = n * 3
 	var fl := SphereMesh.new()
 	fl.radius = 0.035
@@ -426,6 +443,8 @@ func meadow(n: int, dmin: float, dmax: float, keep_clear := Callable()) -> void:
 	var k := 0
 	for i in range(n):
 		var p: Vector3 = m.pos_of(rng.randf_range(-180, 180), rng.randf_range(dmin, dmax))
+		if neu_g:
+			p = Flora.tuft(p)                                    # «Flora und Fauna»: grass grows in tussocks
 		if keep_clear.is_valid() and keep_clear.call(p):
 			p = Vector3(0, -50, 0)                               # hidden below the ground
 		else:
@@ -433,6 +452,10 @@ func meadow(n: int, dmin: float, dmax: float, keep_clear := Callable()) -> void:
 		for b in range(3):
 			var t := Transform3D(Basis(Vector3.UP, rng.randf() * TAU).rotated(Vector3.RIGHT, rng.randf_range(-0.25, 0.25)).scaled(Vector3.ONE * rng.randf_range(0.7, 1.4)),
 					p + Vector3(rng.randf_range(-0.12, 0.12), 0.12, rng.randf_range(-0.12, 0.12)))
+			if neu_g:
+				t.origin.y -= 0.13                                     # the clump stands on the ground (the prism was centred)
+				mm.set_instance_color(i * 3 + b, [Color(0.3, 0.5, 0.17), Color(0.36, 0.54, 0.2), Color(0.26, 0.44, 0.15),
+						Color(0.42, 0.52, 0.22), Color(0.5, 0.5, 0.26)][gr.randi() % 5])
 			mm.set_instance_transform(i * 3 + b, t)
 		if i % 3 == 0 and k < mf.instance_count:
 			mf.set_instance_transform(k, Transform3D(Basis(), p + Vector3(rng.randf_range(-0.2, 0.2), 0.26, rng.randf_range(-0.2, 0.2))))
@@ -441,6 +464,8 @@ func meadow(n: int, dmin: float, dmax: float, keep_clear := Callable()) -> void:
 	for x in [mm, mf]:
 		var mi := MultiMeshInstance3D.new()
 		mi.multimesh = x
+		if neu_g and x == mm:
+			mi.material_override = _meadow_mat
 		mi.layers = 1
 		mi.add_to_group("meadow")
 		mi.visible = m.meadow_on
@@ -938,6 +963,7 @@ func _garten() -> void:
 	hm.shader = load("res://shaders/foliage.gdshader")
 	hm.set_shader_parameter("noise_tex", m.noise_tex)
 	hm.set_shader_parameter("color", Color(0.12, 0.3, 0.1))
+	Flora.foliage_params(m, hm)
 	m.foliage_mats.append(hm)
 	for x in [-10.5, 10.5]:                                       # hedge with a gap at the gate
 		put(root, m.box(19.0, 1.8, 1.0), Vector3(x, 0.9, -27.2), hm, "tree")
@@ -1171,7 +1197,8 @@ func _wild() -> void:
 	stones(6, 5.0, 20.0)
 	for i in range(10):
 		var bp: Vector3 = m.pos_of(rng.randf_range(-70, 70), rng.randf_range(8, 30))
-		put(root, sph(0.4, 0.5), bp + Vector3(0, 0.1, 0), Color(0.2, 0.32, 0.14), "tree")
+		var bmi := put(root, sph(0.4, 0.5), bp + Vector3(0, 0.1, 0), foliage(1) if Flora.neu(m) else Color(0.2, 0.32, 0.14), "tree")
+		Flora.dress(self, bmi)                                    # «Flora und Fauna»: a leafy little bush
 		m.add_obstacle(bp, 0.35)
 	meadow(900, 3.0, 40.0)
 	# forest edge behind the meadow and on both sides
@@ -1206,6 +1233,7 @@ func prop(kind: String, p: Vector3, rot_y: float) -> void:
 				put(n, sph(r, r * 1.6), Vector3(rng.randf_range(-0.6, 0.6) * s, r * 0.75 + rng.randf_range(0.0, 0.3), rng.randf_range(-0.6, 0.6) * s), fm, "tree")
 			m.add_obstacle(p, 0.95 * s)
 			m.set_obstacle_height(1.5 * s)
+			Flora.dress(self, n)                                  # «Flora und Fauna»: leaf cards
 		"hedge":                                                  # a piece of hedge, 5 - 9 m long, 1.7 m high
 			var l := rng.randf_range(5.0, 9.0)
 			put(root, m.box(l, 1.7, 0.9), p + Vector3(0, 0.85, 0), foliage(2), "tree", Vector3(0, rot_y, 0))
@@ -1419,6 +1447,7 @@ func _hm() -> ShaderMaterial:
 	hm.shader = load("res://shaders/foliage.gdshader")
 	hm.set_shader_parameter("noise_tex", m.noise_tex)
 	hm.set_shader_parameter("color", Color(0.12, 0.3, 0.1))
+	Flora.foliage_params(m, hm)
 	m.foliage_mats.append(hm)
 	return hm
 

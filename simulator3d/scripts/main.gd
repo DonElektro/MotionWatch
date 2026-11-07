@@ -1242,6 +1242,7 @@ func _build_scene() -> void:
 		rifle_on = true                          # wildlife watching: the rifle is on by itself
 	if inhalte != null:
 		inhalte.on_scene()                       # F2: photo textures / HDRI sky for this scene (or back to the code materials)
+	preload("res://scripts/flora.gd").ground(self)   # «Flora und Fauna»: meadow from the owner's photos (if F2 did not)
 	if Quality.lite():
 		_lite_scene.call_deferred(true)          # 3D-4.25: Lite - thin grass, far small things not drawn
 
