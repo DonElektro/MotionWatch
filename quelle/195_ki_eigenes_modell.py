@@ -327,7 +327,7 @@ def own_ai_selftest():
     got_t = own_ai_decode(o.transpose(0, 2, 1), nc, [0.5, 0.5, 0.5], r, dx, dy, w, h)     # 1 x A x (4 + nc) gives the same
     assert got_t == got, "transposed output"
     cm = own_ai_classmap(["person", "animal", "vehicle", "dog", "fox", "toaster-robot"])
-    assert cm[0] == (1, True) and cm[1] == (OWN_AI_ANIMAL_ID, False) and cm[2] == (3, False) and cm[3] == (18, False) and cm[4] == (OWN_AI_ANIMAL_ID, False) and cm[5] is None
+    assert cm[0] == (1, True) and cm[1] == (OWN_AI_ANIMAL_ID, False) and cm[2] == (3, False) and cm[3] == (18, False) and cm[4] == (WILD_IDS["fox"], False) and cm[5] is None   # 639zz: wildlife keeps its name
     assert COCO_LABELS[OWN_AI_ANIMAL_ID] in ANIMALS
     try:
         own_ai_decode(np.zeros((1, 9, 5), np.float32), nc, [0.5] * 3, 1, 0, 0, w, h); raise AssertionError("wrong shape not found")
