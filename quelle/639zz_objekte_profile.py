@@ -308,7 +308,24 @@ def prof_effective(now=None, battery=None):
     if sp and PROF["over"] != (sn, sp):
         return sp, "schedule:" + str(sn)
     m = str(CFG.get("det_profile") or "")
-    return (m if m in PROFILES else ""), "manual"
+    if m in PROFILES:
+        return m, "manual"
+    md = prof_mode_default(now)                              # owner 07.11.2026: the mode picks a default profile
+    if md:
+        return md, "mode:" + str(CFG.get("mode") or "")
+    return "", "manual"
+
+
+PROF_MODE_NIGHT = (20, 7)        # mode «Camping»: the profile «Night at the tent» from 20:00 to 07:00, else no profile
+
+
+def prof_mode_default(now=None):
+    """the default profile of the mode (130): camping -> Night (20:00-07:00), home / garden -> House, wildlife -> Garden"""
+    m = str(CFG.get("mode") or "")
+    if m == "camping":
+        h = (now or sim_now()).hour
+        return "night" if h >= PROF_MODE_NIGHT[0] or h < PROF_MODE_NIGHT[1] else ""
+    return {"home": "home", "wild": "garden"}.get(m, "")
 
 
 def prof_tick(force=False, now=None, battery=None):
@@ -361,6 +378,9 @@ def prof_set(pid, who="web"):
 def prof_why_text(why, lang=None):
     if why == "battery":
         return trf("battery below {p} %", lang, p=int(CFG.get("prof_batt_pct") or 20))
+    if str(why).startswith("mode:"):
+        mn = dict((x[0], x[2]) for x in MODES).get(why.split(":", 1)[1], why.split(":", 1)[1])
+        return trf("by the mode «{n}»", lang, n=tr(mn, lang))
     if str(why).startswith("schedule:"):
         return trf("schedule «{n}»", lang, n=why.split(":", 1)[1])
     return tr("chosen by hand", lang)
@@ -1141,6 +1161,7 @@ _HX_OBJPROF = {
     'Only persons. The AI looks seldom, small pictures - for long nights on the battery.': ('Nur Personen. Die KI schaut selten, kleine Bilder – für lange Nächte am Akku.', 'Seulement les personnes. L’IA regarde rarement, petites images – pour de longues nuits sur batterie.', 'Solo persone. L’IA guarda raramente, immagini piccole – per lunghe notti a batteria.', 'Mo persunas. La IA guarda darar, maletgs pitschens – per lungas notgs cun l’accu.'),
     'Active': ('Aktiv', 'Actif', 'Attivo', 'Activ'),
     'chosen by hand': ('von Hand gewählt', 'choisi à la main', 'scelto a mano', 'tschernì a maun'),
+    'by the mode «{n}»': ('vom Modus «{n}»', 'par le mode « {n} »', 'dal modo «{n}»', 'dal modus «{n}»'),
     'schedule «{n}»': ('Zeitplan «{n}»', 'horaire « {n} »', 'programma «{n}»', 'plan d’urari «{n}»'),
     'battery below {p} %': ('Akku unter {p} %', 'batterie sous {p} %', 'batteria sotto {p} %', 'accu sut {p} %'),
     'AI only at movement': ('KI nur bei Bewegung', 'IA seulement au mouvement', 'IA solo con movimento', 'IA mo tar moviment'),
@@ -1175,11 +1196,11 @@ _HX_OBJPROF = {
     'only log': ('nur protokollieren', 'seulement journal', 'solo protocollo', 'mo protocollar'),
     'ignore': ('ignorieren', 'ignorer', 'ignorare', 'ignorar'),
     '🚗 Car': ('🚗 Auto', '🚗 Voiture', '🚗 Auto', '🚗 Auto'),
-    '🏍️ Motorbike': ('🏍️ Motorrad', '🏍️ Moto', '🏍️ Moto', '🏍️ Moto'),
+    '🏍️ Motorbike': ('🏍️ Töff', '🏍️ Moto', '🏍️ Moto', '🏍️ Moto'),
     '🚲 Bicycle': ('🚲 Velo', '🚲 Vélo', '🚲 Bicicletta', '🚲 Velo'),
     '🚚 Van / truck': ('🚚 Lieferwagen / Lastwagen', '🚚 Camionnette / camion', '🚚 Furgone / camion', '🚚 Furgun / camiun'),
     'Car': ('Auto', 'Voiture', 'Auto', 'Auto'),
-    'Motorbike': ('Motorrad', 'Moto', 'Moto', 'Moto'),
+    'Motorbike': ('Töff', 'Moto', 'Moto', 'Moto'),
     'Bicycle': ('Velo', 'Vélo', 'Bicicletta', 'Velo'),
     'Van / truck': ('Lieferwagen', 'Camionnette', 'Furgone', 'Furgun'),
     'Fox': ('Fuchs', 'Renard', 'Volpe', 'Vulp'),
@@ -1266,6 +1287,7 @@ _HX_OBJPROF = {
          'Per tipo di veicolo: segnalare (notifica push, nel profilo «Sorveglianza casa»), solo protocollo o ignorare.',
          'Per tip da vehichel: annunziar (avis push, en il profil «Survegliaziun da la chasa»), mo protocollar u ignorar.'),
 }
+DE["Motorbike"] = "Töff"                                   # owner 07.11.2026: Swiss German «Töff» (the key stays)
 for _k, _v in _HX_OBJPROF.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
@@ -1280,7 +1302,7 @@ _OP_HELP = (
      "<i>🌳 Garten tagsüber</i>: Personen und alle Tiere mit Namen («🦊 Fuchs beim Zelt»), gemerkte Dinge werden bewacht. "
      "<i>🏠 Hausüberwachung</i>: Personen, Fahrzeuge, «📦 Paket vor der Tür», liegen gelassene und verschwundene Dinge (Prüfung etwa jede Minute). "
      "<i>🔋 Akku sparen</i>: nur Personen, die KI selten, kleine Bilder. Wechsel von Hand, per Zeitplan (Feld «Erkennungsprofil») oder bei tiefem Akku. "
-     "Ohne Profil bleibt alles wie bisher. Fahrzeuge je Art (Auto, Motorrad, Velo, Lieferwagen): melden, nur protokollieren oder ignorieren "
+     "Ohne Profil bleibt alles wie bisher. Fahrzeuge je Art (Auto, Töff, Velo, Lieferwagen): melden, nur protokollieren oder ignorieren "
      "(Erkennung → Fahrzeugfilter). Namen der Wildtiere kommen vom Tierarten-Modell oder vom eigenen Modell mit Wildtier-Klassen – "
      "das Standard-Modell kennt Fuchs, Reh, Dachs, Igel und Wildschwein nicht. Ein Paket erkennt MoveEye als neuen Gegenstand, der still liegen bleibt.</p>"),
     ('<section id="detect" data-icon="🎯"><h2>Detection</h2>',
@@ -1302,7 +1324,7 @@ for _h_old, _h_new in _OP_HELP:
 def objprof_selftest():
     """profiles by time / battery, vehicle choices, the state machines of parcel / left behind / gone with made-up
     detections, the energy per profile, the words of the messages"""
-    keep_cfg = {k: json.loads(json.dumps(CFG.get(k))) for k in list(_OP_DEF) + ["ai_model"]}
+    keep_cfg = {k: json.loads(json.dumps(CFG.get(k))) for k in list(_OP_DEF) + ["ai_model", "mode"]}
     keep_prof = {k: PROF[k] for k in ("eff", "why", "batt", "over", "sched", "seen_manual", "tick_t", "big_on")}
     with LOCK:
         keep_sched = [dict(s) for s in SCHEDULES]
@@ -1347,6 +1369,18 @@ def objprof_selftest():
         assert prof_tick(True, day, {"on": True, "pct": 10, "charging": True}) == "home"         # charging: no switch
         CFG["prof_batt_on"] = False
         assert prof_tick(True, day, {"on": True, "pct": 5, "on_battery": True}) == "home"
+        # 2b. the mode picks a default profile; a manual profile or a schedule wins
+        CFG["det_profile"] = ""; CFG["mode"] = "camping"
+        assert prof_tick(True, datetime(2026, 11, 9, 20, 30), {}) == "night"          # schedule «Nacht» not yet running
+        assert PROF["why"] == "mode:camping" and prof_why_text(PROF["why"], "de") == "vom Modus «Camping»"
+        assert prof_tick(True, datetime(2026, 11, 10, 6, 59), {}) == "night"
+        assert prof_tick(True, day, {}) == "" and PROF["why"] == "manual"              # camping by day: no profile
+        CFG["mode"] = "home"; assert prof_tick(True, day, {}) == "home" and PROF["why"] == "mode:home"
+        CFG["mode"] = "wild"; assert prof_tick(True, day, {}) == "garden"
+        assert prof_tick(True, night, {}) == "night" and PROF["why"] == "schedule:Nacht"   # the schedule wins
+        CFG["det_profile"] = "battery"; assert prof_tick(True, day, {}) == "battery" and PROF["why"] == "manual"
+        CFG["mode"] = "transport"; CFG["det_profile"] = ""; assert prof_tick(True, day, {}) == ""
+        CFG["det_profile"] = "home"; prof_tick(True, day, {})
         # 3. vehicles per type, the profile caps «report»
         CFG.update(veh_car="report", veh_moto="ignore", veh_bike="log", veh_truck="report")
         assert veh_policy("car", "home") == "report" and veh_policy("car", "night") == "log" and veh_policy("car", "") == "report"
@@ -1373,7 +1407,7 @@ def objprof_selftest():
         assert obj_push_text("package", "", "", "de")[1] == "Paket abgelegt"
         assert obj_push_text("left", "backpack", "Zelt", "de")[1] == "Rucksack beim Zelt liegen gelassen"
         assert obj_push_text("gone", "bicycle", "", "de")[1] == "Velo weg"
-        assert obj_push_text("vehicle", "moto", "Einfahrt", "de")[1] == "Motorrad bei der Einfahrt"
+        assert obj_push_text("vehicle", "moto", "Einfahrt", "de")[1] == "Töff bei der Einfahrt"
         assert obj_push_text("animal", "fox", "Tent", "en")[1] == "Fox at Tent" and obj_push_text("animal", "fox", "Velo-Platz", "de")[1] == "Fuchs bei «Velo-Platz»"
         assert obj_push_text("animal", "roe deer", "", "fr")[1] == "Chevreuil vu"
         pk = push_kind({"event": "info", "text": "22:14 · KI 80 %", "info_title": "{name}: Fuchs beim Zelt", "obj_ic": "🦊", "obj_title": "Fuchs beim Zelt"})
