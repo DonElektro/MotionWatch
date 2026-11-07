@@ -179,7 +179,8 @@ SIM_ARGS=(--fullscreen -- --stream --no-update)
 EOF
 schreibe "$LIB/openbox.xml" 644 <<'EOF'
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- MoveEye Kiosk: Openbox nur als schlanker Fenstermanager. Ctrl+Alt+D = normales Mint, Ctrl+Alt+R = Simulator neu -->
+<!-- MoveEye Kiosk: Openbox nur als schlanker Fenstermanager. Ctrl+Alt+D = normales Mint, Ctrl+Alt+R = Simulator neu,
+     Ctrl+Alt+B = Controller koppeln (Bluetooth) -->
 <openbox_config xmlns="http://openbox.org/3.4/rc">
   <focus><focusNew>yes</focusNew><followMouse>no</followMouse></focus>
   <placement><policy>Smart</policy></placement>
@@ -187,6 +188,7 @@ schreibe "$LIB/openbox.xml" 644 <<'EOF'
   <keyboard>
     <keybind key="C-A-d"><action name="Execute"><command>/usr/local/lib/moveeye-kiosk/kiosk_sitzung.sh desktop</command></action></keybind>
     <keybind key="C-A-r"><action name="Execute"><command>/usr/local/lib/moveeye-kiosk/kiosk_sitzung.sh neustart</command></action></keybind>
+    <keybind key="C-A-b"><action name="Execute"><command>/usr/local/lib/moveeye-kiosk/kiosk_sitzung.sh koppeln</command></action></keybind>
     <keybind key="A-Tab"><action name="NextWindow"/></keybind>
   </keyboard>
   <mouse><context name="Root"></context></mouse>

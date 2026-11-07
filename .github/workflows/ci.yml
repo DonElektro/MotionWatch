@@ -153,11 +153,13 @@ jobs:
       - name: shellcheck
         run: |
           shellcheck -x hp werkzeuge/test_runner/*.sh werkzeuge/linux_paket.sh
-          shellcheck -x simulator3d/beilagen_linux/kiosk_sitzung.sh simulator3d/beilagen_linux/kiosk_ein.sh simulator3d/beilagen_linux/kiosk_aus.sh
+          shellcheck -x simulator3d/beilagen_linux/kiosk_sitzung.sh simulator3d/beilagen_linux/kiosk_ein.sh simulator3d/beilagen_linux/kiosk_aus.sh simulator3d/beilagen_linux/controller_koppeln.sh
       - name: Testbild (Python)
-        run: python3 -m py_compile simulator3d/beilagen_linux/testbild.py simulator3d/beilagen_linux/hp_wache.py werkzeuge/erkennungstest/fortschritt.py werkzeuge/erkennungstest/erkennungstest.py werkzeuge/test_runner/dauer.py
+        run: python3 -m py_compile simulator3d/beilagen_linux/testbild.py simulator3d/beilagen_linux/hp_wache.py simulator3d/beilagen_linux/controller_fenster.py werkzeuge/erkennungstest/fortschritt.py werkzeuge/erkennungstest/erkennungstest.py werkzeuge/test_runner/dauer.py
       - name: dauer_test.sh (Dauerrechnen - Spielen hält an, sichert, rechnet weiter)
         run: bash werkzeuge/test_runner/dauer_test.sh
+      - name: controller_test.sh (PS5-Controller koppeln mit Ersatz-bluetoothctl)
+        run: bash werkzeuge/test_runner/controller_test.sh
       - name: hp_update_test.sh (echte Signaturen, Verfälschungen, Einspielen mit Test-Schlüssel)
         run: sudo bash werkzeuge/test_runner/hp_update_test.sh
 

@@ -26,6 +26,10 @@
 # (werkzeuge/test_runner/dauer.py) den HP frei, bis das Update gelaufen ist - so kommt es mindestens einmal am Tag dran.
 # Dazu: hp_wache.py (Spielen-Wunsch, Status fürs eigene Netz, Port 8761), Ordner /run/moveeye-spiel für den Benutzer des
 # Kiosks, libxss1; ist die Firewall ufw an, Port 8761 nur fürs eigene Netz.
+# Controller (HP_FASSUNG 4): bluez + rfkill, der Treiber hid-playstation (fehlt er: linux-modules-extra des laufenden Kerns),
+# controller_koppeln.sh / controller_fenster.py, die Einheiten moveeye-controller-koppeln.path / .service (der Benutzer des
+# Kiosks legt nur die leere Wunsch-Datei /run/moveeye-spiel/controller_koppeln an, dann koppelt der Dienst als root einen
+# PS5-Controller - kein sudo, keine polkit-Regel) und Ctrl+Alt+B in der Openbox-Einstellung des Kiosks.
 # Einstellungen: /etc/moveeye-hp-update.conf (SIMULATOR=nein: den Simulator nicht ersetzen). Protokoll: /var/log/moveeye-hp-update.log
 set -u
 REPO_RAW="${MOVEEYE_HP_QUELLE:-https://raw.githubusercontent.com/DonElektro/MotionWatch}"   # nur zum Prüfen änderbar
@@ -44,10 +48,12 @@ RU="mwrunner"
 PAUSE="/run/moveeye-test/kiosk_pause"
 SPIEL="/run/moveeye-spiel/spielen"
 SPIEL_TMPFILES="/etc/tmpfiles.d/moveeye-spiel.conf"
-HP_FASSUNG=3                     # 3 = drei Spuren (Sim aus versions.json «sim»); erhöhen, wenn dieses Skript bei gleicher Version mehr einspielt als die Fassung davor
+HP_FASSUNG=4                     # 4 = Controller koppeln (Bluetooth), 3 = drei Spuren (Sim aus versions.json «sim»); erhöhen, wenn dieses Skript bei gleicher Version mehr einspielt als die Fassung davor
 STATUS_PORT=8761
 # Pakete, die Kiosk und Testbild brauchen (nur fehlende werden installiert, nichts wird entfernt)
-PAKETE="python3-tk x11-xserver-utils libxss1 unzip curl"
+PAKETE="python3-tk x11-xserver-utils libxss1 unzip curl bluez rfkill"   # bluez, rfkill: Controller per Bluetooth koppeln
+KOPPELN_DIENST="/etc/systemd/system/moveeye-controller-koppeln.service"
+KOPPELN_PFAD="/etc/systemd/system/moveeye-controller-koppeln.path"
 MUSTER='^([^ ]*/)?MoveEyeSim3D\.x86_64( |$)'
 
 MODUS=lauf OHNE_LAUF=0 IMMER=0 PLANLAUF=0
@@ -305,6 +311,18 @@ pakete() {
 	apt-get install -y -q --no-install-recommends $fehlt >/dev/null 2>&1 || log "FEHLER: Pakete nicht installiert:$fehlt"
 }
 
+modul_pakete() {   # Treiber des PS5-Controllers (hid-playstation): fehlt er, linux-modules-extra des laufenden Kerns
+	local p
+	command -v modinfo >/dev/null 2>&1 || return 0
+	modinfo hid_playstation >/dev/null 2>&1 && return 0
+	p="linux-modules-extra-$(uname -r)"
+	[[ "$p" =~ ^[a-z0-9][a-z0-9.+-]{1,60}$ ]] || return 0
+	dpkg-query -W -f='${Status}' "$p" 2>/dev/null | grep -q 'install ok installed' && return 0
+	apt-cache show "$p" >/dev/null 2>&1 || { log "Hinweis: Treiber hid-playstation fehlt, $p gibt es nicht"; return 0; }
+	log "Treiber für den PS5-Controller nachinstallieren: $p"
+	DEBIAN_FRONTEND=noninteractive apt-get install -y -q --no-install-recommends "$p" >/dev/null 2>&1 || log "FEHLER: $p nicht installiert"
+}
+
 kiosk() {   # kiosk ORDNER -> setzt KIOSK_NEU
 	local d="$1"
 	KIOSK_NEU=0
@@ -313,7 +331,11 @@ kiosk() {   # kiosk ORDNER -> setzt KIOSK_NEU
 	einspielen "$d/testbild.py" "$KIOSK_LIB/testbild.py" 644
 	einspielen "$d/hp_wache.py" "$KIOSK_LIB/hp_wache.py" 644
 	einspielen "$d/moveeye-sim.png" "$KIOSK_LIB/moveeye.png" 644
+	einspielen "$d/controller_koppeln.sh" "$KIOSK_LIB/controller_koppeln.sh" 755
+	einspielen "$d/controller_fenster.py" "$KIOSK_LIB/controller_fenster.py" 644
 	spiel_ordner
+	koppeln_dienst
+	openbox_taste && KIOSK_NEU=1
 	status_firewall
 	return 0
 }
@@ -331,6 +353,73 @@ spiel_ordner() {   # /run/moveeye-spiel gehört dem Benutzer des Kiosks (hp_wach
 	rm -f "$tmp"
 	[ -d "$(dirname "$SPIEL")" ] || systemd-tmpfiles --create "$SPIEL_TMPFILES" >/dev/null 2>&1 || log "Hinweis: $(dirname "$SPIEL") nicht angelegt"
 	return 0
+}
+
+koppeln_dienst() {   # Controller koppeln: Pfad-Einheit (Wunsch-Datei des Kiosks) startet den Dienst (root, feste Aufgabe)
+	local tmp neu=0 wunsch
+	[ -f "$KIOSK_LIB/controller_koppeln.sh" ] || return 0
+	wunsch="$(dirname "$SPIEL")/controller_koppeln"
+	tmp="$(mktemp)"
+	cat > "$tmp" <<EOF
+# MoveEye: PS5-Controller (DualSense) per Bluetooth koppeln (moveeye-hp-update). Startet nur über
+# moveeye-controller-koppeln.path (Wunsch-Datei des Kiosks) oder von Hand; nimmt keine Angaben an.
+[Unit]
+Description=MoveEye: PS5-Controller per Bluetooth koppeln
+After=bluetooth.service
+
+[Service]
+Type=oneshot
+ExecStart=$KIOSK_LIB/controller_koppeln.sh
+TimeoutStartSec=180
+RuntimeDirectory=moveeye-controller
+RuntimeDirectoryMode=0755
+RuntimeDirectoryPreserve=yes
+NoNewPrivileges=yes
+ProtectHome=yes
+ProtectSystem=full
+PrivateTmp=yes
+EOF
+	neu_ist "$tmp" "$KOPPELN_DIENST" && install -D -m 644 "$tmp" "$KOPPELN_DIENST" && neu=1
+	cat > "$tmp" <<EOF
+# MoveEye: Wunsch «Controller koppeln» (Knopf im Testbild, Ctrl+Alt+B) -> moveeye-controller-koppeln.service
+[Unit]
+Description=MoveEye: Wunsch «Controller koppeln» vom Kiosk
+
+[Path]
+PathExists=$wunsch
+Unit=moveeye-controller-koppeln.service
+
+[Install]
+WantedBy=paths.target
+EOF
+	neu_ist "$tmp" "$KOPPELN_PFAD" && install -D -m 644 "$tmp" "$KOPPELN_PFAD" && neu=1
+	rm -f "$tmp"
+	if [ $neu -eq 1 ]; then
+		log "neu: Controller koppeln ($KOPPELN_PFAD, $KOPPELN_DIENST)"
+		GEAENDERT=$((GEAENDERT + 1))
+		systemctl daemon-reload
+		systemctl enable moveeye-controller-koppeln.path >/dev/null 2>&1 || log "FEHLER: moveeye-controller-koppeln.path nicht eingeschaltet"
+		systemctl restart moveeye-controller-koppeln.path >/dev/null 2>&1
+	elif ! systemctl is-enabled -q moveeye-controller-koppeln.path 2>/dev/null; then
+		systemctl enable --now moveeye-controller-koppeln.path >/dev/null 2>&1 || log "FEHLER: moveeye-controller-koppeln.path nicht eingeschaltet"
+	fi
+	return 0
+}
+
+openbox_taste() {   # Ctrl+Alt+B (Controller koppeln) in die Openbox-Einstellung des Kiosks; Exit 0 = geändert
+	local ob="$KIOSK_LIB/openbox.xml" tmp
+	[ -f "$ob" ] && [ ! -L "$ob" ] || return 1
+	grep -q 'kiosk_sitzung.sh koppeln' "$ob" && return 1
+	grep -q 'kiosk_sitzung.sh neustart</command></action></keybind>' "$ob" || return 1
+	tmp="$(mktemp)"
+	sed '/kiosk_sitzung.sh neustart<\/command><\/action><\/keybind>/a\
+    <keybind key="C-A-b"><action name="Execute"><command>/usr/local/lib/moveeye-kiosk/kiosk_sitzung.sh koppeln</command></action></keybind>' \
+		"$ob" > "$tmp"
+	if grep -q 'kiosk_sitzung.sh koppeln' "$tmp" && einspielen "$tmp" "$ob" 644 "Ctrl+Alt+B: Controller koppeln"; then
+		rm -f "$tmp"; return 0
+	fi
+	rm -f "$tmp"
+	return 1
 }
 
 status_firewall() {   # ist ufw an: Port 8761 (Status für MoveEye «HP rechnet») nur aus den eigenen Netzen erlauben
@@ -551,6 +640,7 @@ lauf() {   # einmal: laden, prüfen, einspielen
 	chmod 755 "$w" "$w/x" "$d"
 	GEAENDERT=0
 	pakete
+	modul_pakete
 	kiosk "$d"
 	runner "$d"
 	simulator "$d" "$w"
