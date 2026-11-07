@@ -596,6 +596,142 @@ _smalltv_routes_simpi_base = smalltv_routes
 def smalltv_routes(app, reply, body):                     # + 639zx: /api/simintern («Simulator intern» auf dem Pi)
     _smalltv_routes_simpi_base(app, reply, body)
     simpi_routes(app, reply, body)
+    threading.Thread(target=lambda: (time.sleep(30), simpi_launcher_cleanup()), daemon=True, name="simpi-starter").start()
+
+
+# ---- Alte Starter auf dem Pi aufräumen (Besitzer 07.11.2026, einmal pro MoveEye-Version: beim Start / nach einem Update) ----
+# Nur .desktop-Dateien (nie Programme), nur in ~/Desktop, ~/Schreibtisch und ~/.local/share/applications des Desktop-Benutzers,
+# nur wenn «Exec» eindeutig auf eines der zwei alten Ziele zeigt:
+#   «MW Sim · Basis» / «MoveEye Sim · Basis» - der alte Python-Simulator (seit 3.23 entfernt): Exec …/simulator/motionwatch_simulator.py
+#   «MoveEye Sim» aus der x86_64-ZIP (installieren.sh) - auf dem Pi (arm64) nicht startbar: Exec …/MoveEyeSim3D.x86_64
+# Die Starter werden nicht gelöscht, sondern nach <Daten>/sim3d/_to_delete/ verschoben (rückgängig machbar), jede Datei im
+# Protokoll. Die alten Programm-Dateien selbst bleiben, wo sie sind. Wo ein Starter weg ist, kommt «MoveEye Sim (intern)» hin:
+# öffnet im Browser den Reiter Simulator dieses Pi (dort «Simulator intern»).
+SIMPI_STARTER_MARK = "starter_aufgeraeumt.json"
+
+
+def _simpi_desktop_exec(path):
+    """(Name, Exec) einer .desktop-Datei - nur der Abschnitt [Desktop Entry]"""
+    name = exe = ""
+    try:
+        with open(path, encoding="utf-8", errors="replace") as f:
+            sec = ""
+            for line in f.read(65536).splitlines():
+                line = line.strip()
+                if line.startswith("["):
+                    sec = line
+                elif sec == "[Desktop Entry]" and line.startswith("Exec="):
+                    exe = line[5:]
+                elif sec == "[Desktop Entry]" and line.startswith("Name="):
+                    name = line[5:]
+    except OSError:
+        pass
+    return name, exe
+
+
+def simpi_starter_kind(path):
+    """«basis» / «x86» / "" (nicht unser alter Starter)"""
+    if not path.endswith(".desktop") or os.path.islink(path) or not os.path.isfile(path):
+        return ""
+    _n, exe = _simpi_desktop_exec(path)
+    if re.search(r"(^|[\s/\"'])motionwatch_simulator\.py([\s\"']|$)", exe) and "/simulator/" in exe:
+        return "basis"
+    if re.search(r"MoveEyeSim3D\.x86_64([\s\"']|$)", exe) and simpi_arch_ok():
+        return "x86"                                       # nur auf dem Pi (arm64): auf einem x86-PC ist dieser Starter richtig
+    return ""
+
+
+def _simpi_homes():
+    """[(home, uid, gid)] der Benutzer am Desktop (MoveEye als root-Dienst: alle Desktop-Benutzer ab 1000, sonst nur ich)"""
+    import pwd
+    out = []
+    if os.environ.get("MW_SIMPI_HOME"):                    # nur für werkzeuge/sim_intern_test.py
+        return [(os.environ["MW_SIMPI_HOME"], os.getuid(), os.getgid())]
+    if hasattr(os, "getuid") and os.getuid() != 0:
+        return [(os.path.expanduser("~"), os.getuid(), os.getgid())]
+    seen = set()
+    names = [os.environ.get("SUDO_USER") or ""] + [pwd.getpwuid(int(os.path.basename(d))).pw_name
+                                                   for d in glob.glob("/run/user/*") if os.path.basename(d).isdigit()
+                                                   and int(os.path.basename(d)) >= 1000 and _simpi_safe_pw(int(os.path.basename(d)))]
+    for n in names:
+        try:
+            p = pwd.getpwnam(n) if n else None
+        except KeyError:
+            p = None
+        if p and p.pw_uid >= 1000 and p.pw_dir not in seen:
+            seen.add(p.pw_dir); out.append((p.pw_dir, p.pw_uid, p.pw_gid))
+    return out
+
+
+def _simpi_safe_pw(uid):
+    import pwd
+    try:
+        pwd.getpwuid(uid); return True
+    except KeyError:
+        return False
+
+
+def _simpi_new_starter(folder, uid, gid):
+    """«MoveEye Sim (intern)»: öffnet den Reiter Simulator dieses Pi im Browser"""
+    url = f"http://127.0.0.1:{int(CFG.get('web_port') or 5000)}/sim"
+    p = os.path.join(folder, "moveeye-sim-intern.desktop")
+    if os.path.exists(p):
+        return ""
+    txt = ("[Desktop Entry]\nType=Application\nVersion=1.0\nName=MoveEye Sim (intern)\n"
+           "Comment=Reiter Simulator von MoveEye - «Simulator intern» auf diesem Pi (langsamer, nur zum Vorführen)\n"
+           f"Exec=xdg-open {url}\nIcon=applications-science\nTerminal=false\nCategories=Education;Science;Simulation;\n")
+    try:
+        with open(p, "w", encoding="utf-8") as f:
+            f.write(txt)
+        os.chmod(p, 0o755)
+        if hasattr(os, "getuid") and os.getuid() == 0:
+            os.chown(p, uid, gid)
+        return p
+    except OSError:
+        return ""
+
+
+def simpi_launcher_cleanup(force=False):
+    """die zwei alten Starter einmal pro MoveEye-Version wegräumen; [(alt, wohin)]"""
+    mark = os.path.join(simpi_dir(), SIMPI_STARTER_MARK)
+    try:
+        if not force and json.load(open(mark, encoding="utf-8")).get("version") == APP_VERSION:
+            return []
+    except (OSError, ValueError, AttributeError):
+        pass
+    moved, made = [], []
+    bin_ = os.path.join(simpi_dir(), "_to_delete", time.strftime("%Y%m%d-%H%M%S"))
+    for home, uid, gid in _simpi_homes():
+        for folder in (os.path.join(home, "Desktop"), os.path.join(home, "Schreibtisch"), os.path.join(home, ".local", "share", "applications")):
+            if not os.path.isdir(folder) or os.path.islink(folder):
+                continue
+            hit = False
+            for f in sorted(os.listdir(folder)):
+                src = os.path.join(folder, f)
+                kind = simpi_starter_kind(src)
+                if not kind:
+                    continue
+                try:
+                    os.makedirs(bin_, exist_ok=True)
+                    dst = os.path.join(bin_, folder.strip("/").replace("/", "_") + "__" + f)
+                    shutil.move(src, dst)
+                    moved.append((src, dst)); hit = True
+                    log_event("sys", f"Old simulator launcher removed ({'MW Sim · Basis' if kind == 'basis' else 'MoveEye Sim x86_64'}): "
+                                     f"{src} -> {dst} (the program files stay)")
+                except OSError as e:
+                    log_event("sys", f"Old simulator launcher {src} could not be moved: {e}"[:200])
+            if hit and simpi_arch_ok():
+                n_ = _simpi_new_starter(folder, uid, gid)
+                if n_:
+                    made.append(n_)
+                    log_event("sys", f"Launcher «MoveEye Sim (intern)» added: {n_}")
+    try:
+        os.makedirs(simpi_dir(), exist_ok=True)
+        with open(mark, "w", encoding="utf-8") as f:
+            json.dump({"version": APP_VERSION, "t": int(time.time()), "moved": moved, "new": made}, f)
+    except OSError:
+        pass
+    return moved
 
 
 # ---- Fenster (Tk), Abschnitt Simulator: ein Knopf Starten / Beenden + eine Zeile Zustand ----

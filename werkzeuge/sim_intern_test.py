@@ -213,6 +213,36 @@ def main():
         r = g["simpi_start"]("test")
         ok(not r[0] and r[2] == "armed", "scharf: erst nach Bestätigung")
         g["CFG"]["armed"] = False
+        # 7b. alte Starter aufräumen (Besitzer 07.11.2026): nur die zwei alten .desktop-Ziele, nichts anderes
+        fh = os.path.join(tmp, "home"); dk = os.path.join(fh, "Desktop"); ap = os.path.join(fh, ".local", "share", "applications")
+        os.makedirs(dk); os.makedirs(ap); os.makedirs(os.path.join(fh, "simulator"))
+        prog_py = os.path.join(fh, "simulator", "motionwatch_simulator.py"); open(prog_py, "w").write("# alt\n")
+        de = lambda n, e: "[Desktop Entry]\nType=Application\nName=%s\nExec=%s\n" % (n, e)
+        files = {os.path.join(dk, "motionwatch-simulator.desktop"): de("MoveEye Sim · Basis", "/usr/bin/python3 " + prog_py),
+                 os.path.join(dk, "moveeye-sim.desktop"): de("MoveEye Sim", '"/home/x/MoveEyeSim3D/MoveEyeSim3D.x86_64"'),
+                 os.path.join(ap, "moveeye-sim.desktop"): de("MoveEye Sim", '"/home/x/MoveEyeSim3D/MoveEyeSim3D.x86_64"'),
+                 os.path.join(dk, "firefox.desktop"): de("Firefox", "firefox %u"),
+                 os.path.join(dk, "pi-sim.desktop"): de("MoveEye Sim", "/home/x/MoveEyeSim3D/MoveEyeSim3D.arm64"),
+                 os.path.join(dk, "notiz.txt"): "Exec=/home/x/MoveEyeSim3D/MoveEyeSim3D.x86_64\n",
+                 os.path.join(dk, "kommentar.desktop"): de("X", "/bin/true") + "# MoveEyeSim3D.x86_64 motionwatch_simulator.py\n"}
+        for fp, tx in files.items():
+            open(fp, "w").write(tx)
+        os.symlink(os.path.join(ap, "moveeye-sim.desktop"), os.path.join(dk, "link.desktop"))
+        os.environ["MW_SIMPI_HOME"] = fh
+        mv = g["simpi_launcher_cleanup"](force=True)
+        gone = sorted(os.path.basename(a) + "@" + os.path.basename(os.path.dirname(a)) for a, _b in mv)
+        ok(gone == ["motionwatch-simulator.desktop@Desktop", "moveeye-sim.desktop@Desktop", "moveeye-sim.desktop@applications"],
+           "alte Starter weggeräumt: %s" % gone)
+        ok(all(os.path.isfile(b) and "_to_delete" in b for _a, b in mv), "nach _to_delete verschoben (rückgängig machbar)")
+        ok(all(os.path.exists(x) for x in (os.path.join(dk, "firefox.desktop"), os.path.join(dk, "pi-sim.desktop"), os.path.join(dk, "notiz.txt"),
+                                          os.path.join(dk, "kommentar.desktop"), prog_py)) and os.path.islink(os.path.join(dk, "link.desktop")),
+           "alles andere bleibt (anderer Starter, arm64-Starter, Textdatei, Kommentar, Link, das alte Programm)")
+        nw = os.path.join(dk, "moveeye-sim-intern.desktop")
+        ok(os.path.isfile(nw) and "/sim" in open(nw).read() and "Name=MoveEye Sim (intern)" in open(nw).read()
+           and os.path.isfile(os.path.join(ap, "moveeye-sim-intern.desktop")), "neuer Starter «MoveEye Sim (intern)» (Reiter Simulator)")
+        open(os.path.join(dk, "moveeye-sim.desktop"), "w").write(files[os.path.join(dk, "moveeye-sim.desktop")])
+        ok(g["simpi_launcher_cleanup"]() == [] and os.path.exists(os.path.join(dk, "moveeye-sim.desktop")), "nur einmal pro MoveEye-Version")
+        del os.environ["MW_SIMPI_HOME"]
         # 8. Web-Adresse
         try:
             from flask import Flask, g as fg
