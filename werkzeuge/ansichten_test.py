@@ -153,6 +153,7 @@ def lauf(pg, a, base, pruef, gname, voll):
         return m, lang
 
     def lang_druecken(sel):
+        weg()                                             # the tour (#g2-ov) may come between two steps
         b = pg.locator(sel).first.bounding_box()
         pg.mouse.move(b["x"] + b["width"] / 2, b["y"] + b["height"] / 2); pg.mouse.down(); pg.wait_for_timeout(800); pg.mouse.up()
         pg.wait_for_timeout(300)
