@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.55.2 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.56.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -487,6 +487,12 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.56.0
+3.56.0: Drei Spuren: MoveEye, Simulator und Gehäuse haben je eine eigene Nummer und erscheinen einzeln; MoveEye prüft den
+Simulator für /sim über die signierte Liste (versions.json «sim»), der HP holt neue Simulatoren selbst, das Versions-Paar warnt
+nur noch unter der Mindestversion. Am Simulator selbst ändert sich sonst nichts.
+So testest du: in MoveEye den Reiter Simulator öffnen – kein Versions-Hinweis, solange der Simulator neu genug ist; /sim lädt den Simulator.
 
 NEU IN 3.55.2
 3.55.2: Fix (MoveEye): Kamerabilder halten nur noch eine Verbindung offen, wenn sie sichtbar sind; Vorschauen als Einzelbilder;
