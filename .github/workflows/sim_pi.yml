@@ -13,7 +13,8 @@
 # das Asset, ein später ausgetauschtes Asset passt nicht mehr zur Signatur.
 #
 # probe=true (Standard): Probelauf. Release «simprobe-X.Y.Z-<Lauf>» als Vorabversion (prerelease, nicht latest), jeder Zweig
-# erlaubt. Kein Gerät sucht diesen Namen (Geräte: nur sim-X.Y.Z und nur mit Eintrag in versions.json); danach von Hand löschen.
+# erlaubt. Kein Gerät sucht diesen Namen (Geräte: nur sim-X.Y.Z und nur mit Eintrag in versions.json). Danach wegräumen:
+#   gh api -X POST …/actions/workflows/sim_pi.yml/dispatches -f ref=main -f 'inputs[loeschen]=simprobe-X.Y.Z-N'
 # Keine Geheimnisse: nur GITHUB_TOKEN (contents: write), kein Signierschlüssel.
 name: Pi-Paket
 on:
@@ -21,7 +22,7 @@ on:
     inputs:
       ver:
         description: "Sim-Nummer X.Y.Z (= simulator3d/scripts/main.gd VERSION)"
-        required: true
+        default: ""
       ref:
         description: "Zweig / Commit (echt: nur main)"
         default: main
@@ -29,6 +30,9 @@ on:
         description: "Probelauf: Vorabversion simprobe-X.Y.Z-<Lauf> statt sim-X.Y.Z"
         type: boolean
         default: true
+      loeschen:
+        description: "Statt bauen: Probe-Release + Tag löschen (nur simprobe-…, nur Vorabversion)"
+        default: ""
 permissions:
   contents: write
 concurrency:
@@ -41,7 +45,7 @@ env:
 jobs:
   pi:
     name: Pi-Paket · ${{ inputs.ver }}${{ inputs.probe && ' (Probe)' || '' }}
-    if: github.repository == 'DonElektro/MotionWatch'
+    if: github.repository == 'DonElektro/MotionWatch' && inputs.loeschen == ''
     runs-on: ubuntu-24.04
     timeout-minutes: 50
     steps:
@@ -172,3 +176,21 @@ jobs:
           echo "$SH  $RUNNER_TEMP/zurueck/MoveEyeSim3D_Pi.zip" | sha256sum -c -
           echo "### Pi-Paket $VER -> $TAG" >> "$GITHUB_STEP_SUMMARY"
           echo "Grösse $SZ Bytes, sha256 \`$SH\`, commit $SHA" >> "$GITHUB_STEP_SUMMARY"
+
+  weg:
+    name: Probe löschen · ${{ inputs.loeschen }}
+    if: github.repository == 'DonElektro/MotionWatch' && inputs.loeschen != ''
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Probe-Release und Tag löschen (nie sim-X.Y.Z)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.loeschen }}
+        run: |
+          set -e
+          echo "$TAG" | grep -Eq '^simprobe-[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}-[0-9]+$' || { echo "::error::nur simprobe-X.Y.Z-N, nicht $TAG"; exit 1; }
+          pre=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" --jq .prerelease)
+          [ "$pre" = "true" ] || { echo "::error::$TAG ist keine Vorabversion - nicht gelöscht"; exit 1; }
+          gh release delete "$TAG" -R "$GITHUB_REPOSITORY" --yes --cleanup-tag
+          echo "gelöscht: $TAG" >> "$GITHUB_STEP_SUMMARY"
