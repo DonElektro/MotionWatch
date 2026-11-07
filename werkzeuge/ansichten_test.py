@@ -154,9 +154,20 @@ def lauf(pg, a, base, pruef, gname, voll):
 
     def lang_druecken(sel):
         weg()                                             # the tour (#g2-ov) may come between two steps
-        b = pg.locator(sel).first.bounding_box()
-        pg.mouse.move(b["x"] + b["width"] / 2, b["y"] + b["height"] / 2); pg.mouse.down(); pg.wait_for_timeout(800); pg.mouse.up()
-        pg.wait_for_timeout(300)
+        for _ in range(3):                                # cards above the picture (e.g. 639zy / 639zz) can push it down while
+            b0 = pg.locator(sel).first.bounding_box()     # pressing: wait until the button stands still, retry if no menu
+            for _ in range(10):
+                pg.wait_for_timeout(300)
+                b = pg.locator(sel).first.bounding_box()
+                if b == b0:
+                    break
+                b0 = b
+            pg.mouse.move(b["x"] + b["width"] / 2, b["y"] + b["height"] / 2); pg.mouse.down(); pg.wait_for_timeout(800); pg.mouse.up()
+            pg.wait_for_timeout(300)
+            if pg.evaluate("() => { const m = document.getElementById('v3-menu'); return !!(m && !m.hidden); }"):
+                break
+            print("  Hinweis: lang drücken ohne Menü (Knopf verschoben?), nochmals")
+            weg()
 
     pg.goto(base + "/", wait_until="domcontentloaded")
     pg.evaluate("() => { try { localStorage.removeItem('mw-view3'); } catch (e) {} }")
