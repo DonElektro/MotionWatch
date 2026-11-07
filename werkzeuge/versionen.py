@@ -17,6 +17,7 @@ simulator3d/scripts/versionen.gd und sim_vkey() in quelle/300_werkzeuge_simulato
   python3 werkzeuge/versionen.py --pruefen                    # jede Spur für sich (Exit 1 nur bei Problemen, sonst Warnungen)
   python3 werkzeuge/versionen.py --spuren                     # nur die Nummern: «MoveEye 3.56.0 · Sim 3.55.4 · Gehäuse 5.3.0»
   python3 werkzeuge/versionen.py --sim-json 3.0.0 "Notiz"     # simulator3d/version.json aus der ZIP schreiben (beide Felder)
+  python3 werkzeuge/versionen.py --pi-json                    # nur den Block «pi» (MoveEyeSim3D_Pi.zip, Release-Asset sim-X.Y.Z)
   python3 werkzeuge/versionen.py --linux-json                 # nur den Block «linux» (MoveEyeSim3D_Linux.zip) in version.json
   python3 werkzeuge/versionen.py --neu-data                   # scripts/neu_data.gd aus «Lies mich.txt» (NEU IN …, beide Schemas)
   python3 werkzeuge/versionen.py --aufraeumen [--nur-zeigen]  # höchstens 10 Hauptversionen X.Y behalten, die Brücke nie löschen
@@ -39,6 +40,11 @@ REPO = os.environ.get("MW_VERSIONEN_REPO") or os.path.dirname(HIER)     # andere
 SIM = os.path.join(REPO, "simulator3d")
 ZIP_REL = "simulator3d/MotionWatch3D_Simulator.zip"
 LINUX_REL = "simulator3d/MoveEyeSim3D_Linux.zip"   # Paket Linux (werkzeuge/linux_paket.sh, update.gd linux_info)
+# Paket Pi (Raspberry Pi 5, arm64, «Simulator intern» Teil 639zx): NICHT im Repository (37 MB), sondern als Release-Asset am
+# Tag sim-X.Y.Z. Lokal liegt es beim Packen unter PI_REL (.gitignore); Grösse + Prüfsumme kommen in version.json «pi» und
+# signiert in versions.json «sim.pi» (390 sim_manifest_block). MoveEye lädt von «url», prüft die signierte SHA-256.
+PI_REL = "simulator3d/MoveEyeSim3D_Pi.zip"
+PI_URL = "https://github.com/DonElektro/MotionWatch/releases/download/sim-%s/MoveEyeSim3D_Pi.zip"
 SHIFT = 2
 BRUECKE = "3.0.2"                   # = UPD_BRIDGE in quelle/397_zusatzdaten_nachladen.py
 MAX_ALT = 8 * 1024 * 1024           # Grenze der Geräte bis 2.98.x
@@ -280,6 +286,8 @@ def pruefen():
     elif ch is None:
         print("Hinweis: keine git-Geschichte - Änderungen am Simulator nicht geprüft")
     probleme += linux_pruefen(vj)
+    pp_, pw_ = pi_pruefen(vj, man)                           # «Simulator intern» auf dem Pi (Release-Asset)
+    probleme += pp_; warn += pw_
     # ---- 🧩 Gehäuse
     if w["geh"]:
         if not re.match(r"^\d{1,3}\.\d{1,3}(?:\.\d{1,3})?$", w["geh"]):
@@ -425,6 +433,71 @@ def linux_pruefen(vj):
     return out
 
 
+def pi_block(v):
+    """Block «pi» für version.json - nur wenn die (lokale, nicht eingecheckte) Pi-ZIP da ist und zu Nummer v passt"""
+    import zipfile
+    p = os.path.join(REPO, PI_REL)
+    if not os.path.isfile(p):
+        return None
+    try:
+        with zipfile.ZipFile(p) as z:
+            names = z.namelist()
+            lies = z.read("MoveEyeSim3D/Lies mich.txt").decode("utf-8", "replace")
+            mode = (z.getinfo("MoveEyeSim3D/MoveEyeSim3D.arm64").external_attr >> 16) & 0o777
+    except (KeyError, zipfile.BadZipFile, OSError) as e:
+        print("PROBLEM: %s ist kein Pi-Paket (%s) - version.json ohne Pi-Paket" % (PI_REL, e))
+        return None
+    if "NEU IN %s\n" % v not in lies or "MoveEyeSim3D/installieren.sh" not in names or not mode & 0o100:
+        print("PROBLEM: %s passt nicht zu %s (Lies mich, installieren.sh, ausführbar?) - linux_paket.sh --pi neu packen" % (PI_REL, v))
+        return None
+    if any(n.startswith("MoveEyeSim3D/hp/") for n in names):
+        print("PROBLEM: %s enthält hp/ (nur für den Simulator-PC) - linux_paket.sh --pi neu packen" % PI_REL)
+        return None
+    with open(p, "rb") as f:
+        data = f.read()
+    return {"file": PI_REL, "ver": v, "size": len(data), "sha256": hashlib.sha256(data).hexdigest(), "url": PI_URL % v}
+
+
+def pi_json():
+    p = os.path.join(SIM, "version.json")
+    d = json.load(open(p, encoding="utf-8"))
+    px = pi_block(str(d.get("ver") or ""))
+    if px is None:
+        print("kein passendes %s (zuerst exportieren: Preset «Linux Pi», dann werkzeuge/linux_paket.sh --pi)" % PI_REL)
+        return 1
+    d["pi"] = px
+    with open(p, "w", encoding="utf-8") as f:
+        json.dump(d, f, indent=1, ensure_ascii=False)
+    print("version.json: pi %s, %d Bytes - als Release-Asset hochladen: %s" % (px["ver"], px["size"], px["url"]))
+    return 0
+
+
+def pi_pruefen(vj, man):
+    """das Pi-Paket ist freiwillig (Release-Asset): nur Warnungen, ausser die lokale Datei passt nicht zu version.json"""
+    px = vj.get("pi")
+    if not isinstance(px, dict):
+        return [], []
+    probleme, warn = [], []
+    if px.get("file") != PI_REL or not str(px.get("url") or "").startswith("https://github.com/DonElektro/MotionWatch/releases/download/"):
+        probleme.append("version.json «pi»: file muss %s sein, url ein Release-Asset von DonElektro/MotionWatch" % PI_REL)
+    p = os.path.join(REPO, PI_REL)
+    if os.path.isfile(p):
+        with open(p, "rb") as f:
+            data = f.read()
+        if len(data) != px.get("size") or hashlib.sha256(data).hexdigest() != px.get("sha256"):
+            probleme.append("%s passt nicht zu version.json «pi» (Grösse/Prüfsumme) - versionen.py --pi-json" % PI_REL)
+    if str(px.get("ver")) != str(vj.get("ver")):
+        warn.append("Pi-Paket ist %s, version.json ver %s - «Simulator intern» bleibt beim älteren (Preset «Linux Pi» neu exportieren)"
+                    % (px.get("ver"), vj.get("ver")))
+    sp = ((man.get("sim") or {}) if isinstance(man.get("sim"), dict) else {}).get("pi") or {}
+    if sp and (sp.get("sha256") != px.get("sha256") or sp.get("size") != px.get("size")):
+        warn.append("versions.json «sim.pi» passt nicht zu version.json «pi» - neu signieren")
+    elif not sp:
+        warn.append("Pi-Paket %s noch nicht signiert in versions.json «sim.pi» (bauen.py --nur-signieren, Asset %s hochladen)"
+                    % (px.get("ver"), px.get("url")))
+    return probleme, warn
+
+
 def sim_json(v, notes, zip_path=""):
     if not re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}$", v):
         sys.exit("Nummer %s passt nicht zum Schema X.Y.Z" % v)
@@ -439,6 +512,9 @@ def sim_json(v, notes, zip_path=""):
     lx = linux_block(v)
     if lx is not None:
         d["linux"] = lx
+    px = pi_block(v)                                          # «Simulator intern» (Pi): nur wenn lokal frisch gepackt
+    if px is not None:
+        d["pi"] = px
     with open(os.path.join(SIM, "version.json"), "w", encoding="utf-8") as f:
         json.dump(d, f, indent=1, ensure_ascii=False)
     print("version.json: ver %s (alte Simulatoren lesen %s), %d Bytes" % (v, d["version"], d["size"]))
@@ -473,6 +549,7 @@ def main():
     ap.add_argument("--sim-json", nargs=2, metavar=("X.Y.Z", "NOTIZ"))
     ap.add_argument("--zip", default="", help="mit --sim-json: diese ZIP statt simulator3d/MotionWatch3D_Simulator.zip")
     ap.add_argument("--linux-json", action="store_true", help="nur den Block «linux» in version.json (Linux-ZIP)")
+    ap.add_argument("--pi-json", action="store_true", help="nur den Block «pi» in version.json (Pi-ZIP, Release-Asset)")
     ap.add_argument("--neu-data", action="store_true")
     ap.add_argument("--aufraeumen", action="store_true", help="höchstens 10 Hauptversionen, die Brücke bleibt")
     ap.add_argument("--nur-zeigen", action="store_true", help="mit --aufraeumen: nur anzeigen")
@@ -490,6 +567,8 @@ def main():
         return sim_json(a.sim_json[0], a.sim_json[1], a.zip)
     if a.linux_json:
         return linux_json()
+    if a.pi_json:
+        return pi_json()
     if a.neu_data:
         return neu_data()
     ap.print_help()

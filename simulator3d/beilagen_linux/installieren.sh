@@ -7,6 +7,10 @@
 set -u
 DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
 EXE="$DIR/MoveEyeSim3D.x86_64"
+# Sim 3.57.0: dasselbe Skript liegt im Pi-Paket (MoveEyeSim3D_Pi.zip, Raspberry Pi 5, arm64) - dort heisst die Datei .arm64
+case "$(uname -m)" in
+	aarch64|arm64) EXE="$DIR/MoveEyeSim3D.arm64" ;;
+esac
 ID="moveeye-sim"
 APPS="${XDG_DATA_HOME:-$HOME/.local/share}/applications"
 ICONDIR="${XDG_DATA_HOME:-$HOME/.local/share}/icons/hicolor/512x512/apps"
@@ -32,7 +36,10 @@ if [ "${1:-}" = "--entfernen" ]; then
 fi
 
 if [ ! -f "$EXE" ]; then
-	echo "MoveEyeSim3D.x86_64 fehlt in $DIR - den ganzen Ordner aus der ZIP-Datei entpacken und hier starten."
+	echo "$(basename "$EXE") fehlt in $DIR - den ganzen Ordner aus der ZIP-Datei entpacken und hier starten."
+	case "$(uname -m)" in
+		aarch64|arm64) [ -f "$DIR/MoveEyeSim3D.x86_64" ] && echo "Das ist das Paket für PCs (x86_64). Auf dem Raspberry Pi: MoveEyeSim3D_Pi.zip - oder in MoveEye, Reiter Simulator, «Simulator intern (auf diesem Pi) ausprobieren»." ;;
+	esac
 	exit 1
 fi
 chmod +x "$EXE" "$DIR"/*.sh 2>/dev/null
