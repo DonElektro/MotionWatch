@@ -404,8 +404,11 @@ def linux_pruefen(vj):
     try:                                                         # MoveEye offers it at /sim/simulator3d_linux.zip (Teil 300)
         q300 = open(os.path.join(REPO, "quelle", "300_werkzeuge_simulator3d.py"), encoding="utf-8").read()
         m = re.search(r'^SIM3D_LINUX = \{"version": "([^"]+)", "file": "[^"]+", "size": (\d+),\s*"sha256": "([0-9a-f]+)"', q300, re.M)
-        if m and (int(m.group(2)) != lx.get("size") or m.group(3) != lx.get("sha256")):
-            out.append("SIM3D_LINUX (300) passt nicht zum Linux-Paket in version.json - bauen.py --neue-version übernimmt es")
+        # Drei Spuren: der eingebettete Rückfall darf älter sein (Sim-Release allein), aber nie neuer; gleiche Nummer = gleiche Datei
+        if m and sim_key(m.group(1)) and sim_key(str(lx.get("ver"))) and sim_key(m.group(1)) > sim_key(str(lx.get("ver"))):
+            out.append("SIM3D_LINUX (300) %s ist neuer als das Linux-Paket %s in version.json" % (m.group(1), lx.get("ver")))
+        elif m and m.group(1) == str(lx.get("ver")) and (int(m.group(2)) != lx.get("size") or m.group(3) != lx.get("sha256")):
+            out.append("SIM3D_LINUX (300) passt nicht zum Linux-Paket %s in version.json - bauen.py --neue-version übernimmt es" % m.group(1))
     except OSError:
         pass
     if str(lx.get("ver")) != str(vj.get("ver")):

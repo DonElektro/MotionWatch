@@ -69,7 +69,8 @@ def main():
         os.makedirs(T)
         schreib(T, "quelle/010_grundlagen.py", 'APP_VERSION = "3.56.0"\n')
         schreib(T, "quelle/300_werkzeuge_simulator3d.py", 'SIM3D = {"version": "3.55.2", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 1,\n'
-                '         "sha256": "00"}\n')
+                '         "sha256": "00"}\nSIM3D_LINUX = {"version": "3.55.2", "file": "simulator3d/MoveEyeSim3D_Linux.zip", "size": 1,\n'
+                '               "sha256": "00", "stem": "MoveEyeSim3D_Linux"}\n')
         schreib(T, "quelle/545_simulator_updates.py", 'SIM_MIN = "3.55.0"\n')
         schreib(T, "quelle/500_web.py", "# web\n")
         schreib(T, "simulator3d/scripts/main.gd", 'extends Node\nconst VERSION := "3.55.2"\n')
@@ -85,6 +86,11 @@ def main():
         linux_zip(T, "3.55.2")
         rc, out = lauf("--sim-json", "3.55.2", "Start")
         ok(rc == 0, "Ausgangslage: version.json mit --sim-json", out)
+        vj0 = json.load(open(os.path.join(T, "simulator3d", "version.json")))
+        schreib(T, "quelle/300_werkzeuge_simulator3d.py",            # wie sim3d_sync.py / bauen.py --neue-version
+                'SIM3D = {"version": "3.55.2", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": %d,\n         "sha256": "%s"}\n'
+                'SIM3D_LINUX = {"version": "3.55.2", "file": "simulator3d/MoveEyeSim3D_Linux.zip", "size": %d,\n'
+                '               "sha256": "%s", "stem": "MoveEyeSim3D_Linux"}\n' % (vj0["size"], vj0["sha256"], vj0["linux"]["size"], vj0["linux"]["sha256"]))
         git("init", "-q"); commit("Start")
         rc, out = lauf("--pruefen")
         ok(rc == 0 and "WARNUNG: Simulator" not in out and "WARNUNG: Gehäuse" not in out and "WARNUNG: MoveEye geändert" not in out

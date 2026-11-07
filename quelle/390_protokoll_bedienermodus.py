@@ -1136,32 +1136,8 @@ def self_test(folder=""):
                         bad.append(e["version"] + " (data file)")
             if not any(e.get("bridge") and e.get("version") == UPD_BRIDGE for e in m.get("versions", [])):
                 bad.append("bridge " + UPD_BRIDGE + " missing")
-            sim = m.get("sim")                           # 3 tracks: the signed simulator block (300 sim_manifest_verify)
-            simtxt = ""
-            if sim is not None and os.path.isdir(os.path.join(folder, "simulator3d")):   # e.g. not in the Bausatz folder
-                ok_ = sim_manifest_verify(sim)
-                for key in ("win", "linux"):
-                    e = sim.get(key) if isinstance(sim, dict) else None
-                    if e is None:
-                        continue
-                    p_ = os.path.join(folder, str(e.get("file") or ""))
-                    sha = ""
-                    if os.path.isfile(p_):
-                        h_ = hashlib.sha256()
-                        with open(p_, "rb") as f:
-                            for b_ in iter(lambda: f.read(1 << 20), b""):
-                                h_.update(b_)
-                        sha = h_.hexdigest()
-                    if key not in ok_ or not sha or sha != ok_[key]["sha256"] or os.path.getsize(p_) != ok_[key]["size"]:
-                        bad.append(f"simulator {key} {e.get('ver')}")
-                try:
-                    with open(os.path.join(folder, "simulator3d", "version.json"), encoding="utf-8") as f:
-                        vj_ = json.load(f)
-                    if str(vj_.get("ver")) != str(sim.get("ver")):
-                        bad.append(f"simulator {sim.get('ver')} in versions.json, simulator3d/version.json has {vj_.get('ver')} - sign again")
-                except (OSError, ValueError, AttributeError):
-                    pass
-                simtxt = f", simulator {sim.get('ver') if isinstance(sim, dict) else '?'} ({'+'.join(sorted(ok_))})"
+            sbad, simtxt = sim_manifest_check(folder, m)     # 3 tracks: the signed simulator block (300 sim_manifest_verify)
+            bad = sbad + bad                                 # first: the list can be long
             assert not bad, f"bad checksum / signature: {bad}"
             return f"{len(m.get('versions', []))} versions signed and checked" + simtxt
         if os.environ.get("MW_SELFTEST_NO_SIG"):         # 2.98.50 (Besitzer): work branches are not signed yet - GitHub checks it only on main
@@ -1173,6 +1149,38 @@ def self_test(folder=""):
         print(("✓ " if good else "✗ ") + name + (f" – {note}" if note else ""))
     print("Self-test " + ("OK" if ok else "FAILED") + f" (MoveEye {APP_VERSION})")
     return 0 if ok else 1
+
+
+def sim_manifest_check(folder, m):
+    """3 tracks: the block «sim» of a versions.json against the files in folder - (problems, short text); used by the self-test"""
+    bad = []
+    sim = m.get("sim")
+    simtxt = ""
+    if sim is not None and os.path.isdir(os.path.join(folder, "simulator3d")):   # e.g. not in the Bausatz folder
+        ok_ = sim_manifest_verify(sim)
+        for key in ("win", "linux"):
+            e = sim.get(key) if isinstance(sim, dict) else None
+            if e is None:
+                continue
+            p_ = os.path.join(folder, str(e.get("file") or ""))
+            sha = ""
+            if os.path.isfile(p_):
+                h_ = hashlib.sha256()
+                with open(p_, "rb") as f:
+                    for b_ in iter(lambda: f.read(1 << 20), b""):
+                        h_.update(b_)
+                sha = h_.hexdigest()
+            if key not in ok_ or not sha or sha != ok_[key]["sha256"] or os.path.getsize(p_) != ok_[key]["size"]:
+                bad.append(f"simulator {key} {e.get('ver')}")
+        try:
+            with open(os.path.join(folder, "simulator3d", "version.json"), encoding="utf-8") as f:
+                vj_ = json.load(f)
+            if str(vj_.get("ver")) != str(sim.get("ver")):
+                bad.append(f"simulator {sim.get('ver')} in versions.json, simulator3d/version.json has {vj_.get('ver')} - sign again")
+        except (OSError, ValueError, AttributeError):
+            pass
+        simtxt = f", simulator {sim.get('ver') if isinstance(sim, dict) else '?'} ({'+'.join(sorted(ok_))})"
+    return bad, simtxt
 
 
 def make_manifest(folder, base_url, sign_key=""):

@@ -159,6 +159,20 @@ def main():
         for p in glob.glob(os.path.join(os.environ["MOTIONWATCH_HOME"], "sim3d", "*.zip")):
             os.remove(p)
 
+        frisch(test_pub)
+        sb, stxt = mw.sim_manifest_check(T, man)
+        ok(not sb and "win+linux" in stxt.replace("linux+win", "win+linux"), "Selbsttest-Prüfung des Blocks «sim» (%s)" % stxt.strip(", "))
+        zp = os.path.join(T, "simulator3d", "MoveEyeSim3D_Linux.zip"); orig = open(zp, "rb").read()
+        open(zp, "wb").write(orig[:-1] + bytes([orig[-1] ^ 1]))
+        sb, _t = mw.sim_manifest_check(T, man)
+        ok(sb == ["simulator linux " + nv], "Selbsttest-Prüfung: verändertes Linux-Paket gemeldet (%s)" % sb)
+        open(zp, "wb").write(orig)
+        sb, _t = mw.sim_manifest_check(T, dict(man, sim=dict(sim, ver="9.9.9")))
+        ok(any("sign again" in x for x in sb), "Selbsttest-Prüfung: versions.json «sim» ≠ version.json gemeldet")
+        mw.UPDATE_PUBKEY = real_pub
+        sb, _t = mw.sim_manifest_check(T, man)
+        ok(len(sb) == 2, "Selbsttest-Prüfung mit dem echten Schlüssel: Test-Signaturen abgelehnt (%s)" % sb)
+
         print("--- 4. Abgelehnt")
         serve["dir"] = T
 
