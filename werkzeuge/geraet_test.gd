@@ -4,6 +4,7 @@ extends SceneTree
 ## (Tilt). Dazu: Linse Weisslicht leuchtet, IR-Lampe glimmt nur schwach, Sichtweiten (LOD), Weitwinkel-Modul am Kopf,
 ## Gerät 2 (device.gd) mit dem echten Gehäuse statt des roten Kastens. Ohne Bild.
 ##   cd simulator3d && <godot> --headless --path . -s "$PWD/../werkzeuge/geraet_test.gd"   (absoluter Pfad nötig)
+##   Grafik-Stufe Lite: am Schluss «-- --grafik lite» (nur die groben Teile mit Schatten, kein LOD)
 ## Ende: «Geraetetest OK» oder «SCRIPT ERROR: Geraetetest: …» (Exit-Code 0 / 1).
 
 var main
@@ -102,11 +103,11 @@ func _process(_dt: float) -> bool:
 	elif step == 5 and t - phase_t > 0.5:
 		var gh = main.gehaeuse
 		_check(gh.wmod == null or not gh.wmod.visible, "Weitwinkel zurück: kein Modul am Kopf")
-		var r: Dictionary = main.control({"action": "werkstatt", "do": "v53", "on": false})   # Bauen: v5.2 wählen
+		var r: Dictionary = main.control({"action": "werkstatt", "do": "variant", "group": "gehaeuse", "value": "v52"})   # Mein Bau: v5.2
 		var t53: Node3D = _find(main.rig, "geh_tub53")
 		var t52: Node3D = _find(main.rig, "geh_tub52")
 		_check(t53 != null and t52 != null and not t53.visible and t52.visible, "Bauen → v5.2: Unterteil v5.2 zu sehen (%s)" % str(r).left(60))
-		main.control({"action": "werkstatt", "do": "v53", "on": true})
+		main.control({"action": "werkstatt", "do": "variant", "group": "gehaeuse", "value": "v53"})
 		_check(t53 != null and t52 != null and t53.visible and not t52.visible, "Bauen → v5.3: Unterteil v5.3 zu sehen")
 		var lod_n := 0
 		for n in [_find(main.rig, "geh_tub53_lod"), _find(main.rig, "geh_tub53_schatten")]:
