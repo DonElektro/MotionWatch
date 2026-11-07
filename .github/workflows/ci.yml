@@ -77,7 +77,7 @@ jobs:
           cache: pip
           cache-dependency-path: .github/workflows/ci.yml
       - name: Pakete
-        run: pip install -q opencv-python-headless numpy flask pillow cryptography playwright==1.55.0
+        run: pip install -q opencv-python-headless numpy flask pillow cryptography playwright==1.55.0 onnxruntime==1.20.1   # onnxruntime: piper_test.py (= PIPER_ORT, Teil 639zzb)
       - name: Chromium (Cache)
         id: pwcache
         uses: actions/cache@v4
