@@ -1,13 +1,13 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-07 21:37",
+ "generated": "2026-11-07 21:41",
  "versions": [
   {
    "version": "3.61.0",
    "file": "webcam_bewegung_3_61_0.py",
    "url": "",
    "sha256": "4912b457d5ba60a39161d08878c61763d0ad566c015db1c17c1dccc4100a0d9b",
-   "date": "2026-11-07 21:37",
+   "date": "2026-11-07 21:39",
    "notes": "Simulator intern: MoveEye Sim läuft abgespeckt direkt auf dem Pi 5 (Reiter Simulator → «🧪 Simulator intern (auf diesem Pi) ausprobieren»), Paket signiert geprüft, «Beenden» = zurück zur vorherigen Verbindung; alte Desktop-Symbole «MW Sim · Basis» und x86-«MoveEye Sim» werden aufgeräumt. Dazu Sim 3.57.0: Gerät wie das echte (Gehäuse v5.3), Pflanzen natürlicher, PS5-Controller am Simulator-PC.",
    "size": 3568830,
    "sig": "22535685f60d34fc9b824155efed2346bd8df4575374312b27cbd14fd5bac2692e35d734bb3f9afa82fac12472d5e2287303c62d886f32cb2e04656256502407",
@@ -185,6 +185,14 @@
    "size": 44426291,
    "sha256": "cc577931e302dda25a7f864e22503402d9c488423e5bc14cb00e447149eff56a",
    "sig": "10bbeec8b1ded0153e8a4e666f7f4d4b1bb94772eb2202d2e6b5d837492f069fb96e775ce1116cde77845a6d317b49303f8aaf3165e7f62c2ea54b8eb1009a04"
+  },
+  "pi": {
+   "ver": "3.57.0",
+   "file": "simulator3d/MoveEyeSim3D_Pi.zip",
+   "size": 38138116,
+   "sha256": "475ca9a44251fcb4e70c87b68e0168cf5bffa2e923265209655263d708e42412",
+   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.57.0/MoveEyeSim3D_Pi.zip",
+   "sig": "978b3324028d8fb142813ec7fef2939c7931990507ca558788a26b46168cc175ed5018a4e7ab18d92f6717cc51a1649163b3990a57e68af771da2c1348060007"
   }
  }
 }
