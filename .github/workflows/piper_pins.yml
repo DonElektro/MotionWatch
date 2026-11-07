@@ -1,0 +1,62 @@
+# Piper-Stimmen (MoveEye Teil 639zzb): feste Werte (Grösse, sha256, md5) einer Stimme von Hugging Face holen und nachrechnen.
+# Hugging Face ist vom Rechner des Integrators aus nicht erreichbar, hier schon. Nur lesen: der Lauf ändert nichts im
+# Repository; die Werte stehen im Protokoll und in der Zusammenfassung, der Integrator setzt sie in PIPER_VOICES ein (die
+# Signatur der Hauptdatei bürgt dann für die Stimme).
+#   gh api -X POST …/actions/workflows/piper_pins.yml/dispatches -f ref=main -f 'inputs[stimme]=fr_FR-siwis-medium'
+name: Piper-Stimmen
+on:
+  workflow_dispatch:
+    inputs:
+      stimme:
+        description: "Stimme (id aus PIPER_VOICES), leer = alle"
+        default: ""
+      ref:
+        description: "Zweig / Commit mit quelle/639zzb_piper_stimme.py"
+        default: main
+permissions:
+  contents: read
+jobs:
+  pins:
+    name: Piper-Werte · ${{ inputs.stimme || 'alle' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+      - name: Werte aus der Hugging-Face-API (piper_stimmen.py --pins)
+        env:
+          STIMME: ${{ inputs.stimme }}
+        run: |
+          if [ -n "$STIMME" ]; then python3 werkzeuge/piper_stimmen.py --pins --stimme "$STIMME" || true
+          else python3 werkzeuge/piper_stimmen.py --pins || true; fi
+      - name: Ganze Dateien laden und selbst nachrechnen (Grösse, sha256, md5)
+        env:
+          STIMME: ${{ inputs.stimme }}
+        run: |
+          python3 - <<'PY'
+          import ast, hashlib, os, urllib.request
+          src = open("quelle/639zzb_piper_stimme.py", encoding="utf-8").read()
+          T = next(ast.literal_eval(n.value) for n in ast.parse(src).body
+                   if isinstance(n, ast.Assign) and any(getattr(t, "id", "") == "PIPER_VOICES" for t in n.targets))
+          want = os.environ.get("STIMME") or ""
+          out = []
+          for vid, v in T.items():
+              if want and vid != want:
+                  continue
+              for which, fn in (("model", vid + ".onnx"), ("config", vid + ".onnx.json")):
+                  url = "https://huggingface.co/rhasspy/piper-voices/resolve/%s/%s%s" % (v["rev"], v["path"], fn)
+                  h, m, n = hashlib.sha256(), hashlib.md5(), 0
+                  with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "MoveEye-piper-pins"}), timeout=120) as r:
+                      while True:
+                          b = r.read(1 << 20)
+                          if not b:
+                              break
+                          h.update(b); m.update(b); n += len(b)
+                  old = v.get(which) or {}
+                  same = all(not old.get(k) or old[k] == x for k, x in (("size", n), ("sha256", h.hexdigest()), ("md5", m.hexdigest())))
+                  line = "PIN %s %s size=%d sha256=%s md5=%s tabelle=%s" % (vid, which, n, h.hexdigest(), m.hexdigest(), "passt" if same else "ANDERS")
+                  print(line); out.append(line)
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as f:
+              f.write("```\n" + "\n".join(out) + "\n```\n")
+          PY
