@@ -1,7 +1,7 @@
 // «Flora und Fauna» Paket 1 (scripts/baeume.gd): tufts of leaf / needle cards at the ends of the branches. Alpha test.
 // INSTANCE_CUSTOM.xyz = from the card to the centre of the crown (the same for the whole tree: same sway as the bark, same
 // near / far switch), .w = height in the crown part + 1 (0..2) + 4 * index of the crown material (cols / states).
-// Image: R = brightness, G = 1 leaf / 0 twig, A = cover. Season per crown material: states[k].x bare, .y blossom.
+// Image: R = brightness, G = 1 leaf / 0 twig, B = 1 flower / berry, A = cover. Season per crown material: states[k].x bare, .y blossom.
 shader_type spatial;
 render_mode cull_disabled, depth_draw_opaque;
 
@@ -18,6 +18,8 @@ uniform float cloud_amt = 0.0;
 uniform vec2 cloud_off = vec2(0.0);
 uniform float near_d = 45.0;
 uniform float backlight_k = 0.15;
+uniform vec4 bluete_col : source_color = vec4(0.8, 0.8, 0.8, 1.0);   // image B = 1: flowers / berries (alpine rose, elder)
+uniform float bluete_an = 1.0;
 
 varying vec3 wpos;
 varying vec3 outn;
@@ -68,6 +70,9 @@ void fragment() {
 	vec3 leaf = v_col * (0.65 + 0.6 * n) * (0.35 + 0.7 * t.r);
 	leaf *= mix(vec3(0.92, 1.0, 0.9), vec3(1.08, 1.02, 0.86), hue);
 	vec3 col = mix(twig_col.rgb * (0.6 + 0.6 * t.r), leaf, step(0.5, t.g));
+	if (t.b > 0.5 && t.g > 0.5) {
+		col = bluete_an > 0.5 ? bluete_col.rgb * (0.55 + 0.6 * t.r) : leaf;
+	}
 	if (v_bl > 0.0 && t.g > 0.5 && texture(noise_tex, wpos.xz * 1.7 + vec2(wpos.y * 1.3)).r > 1.0 - 0.45 * v_bl) {
 		col = mix(vec3(0.86, 0.84, 0.82), vec3(0.88, 0.7, 0.76), n);
 	}

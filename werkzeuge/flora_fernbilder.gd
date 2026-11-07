@@ -8,7 +8,8 @@ extends SceneTree
 ##       -- --no-update [--aus <ordner>]   (ohne --aus: texturen/)
 
 const ARTEN := {"fichte": [320, 512, 4], "buche": [448, 448, 7], "hasel": [448, 320, 3], "kiefer": [320, 512, 5],
-		"birke": [240, 512, 6], "eiche": [576, 448, 8]}   # Pixel, Startwert
+		"birke": [240, 512, 6], "eiche": [576, 448, 8], "tanne": [320, 512, 4], "laerche": [320, 512, 9], "ahorn": [448, 448, 11],
+		"esche": [448, 448, 12], "obst": [448, 384, 13], "holunder": [448, 320, 14]}   # Pixel, Startwert
 
 var main
 var out := "res://texturen/"
@@ -91,15 +92,19 @@ func _run() -> void:
 		vp.add_child(holder)
 		sc.root = holder
 		sc.rng.seed = int(px[2])
+		Baeume.force = art
 		match art:
-			"fichte":
+			"fichte", "tanne", "laerche":
 				sc.tree(holder, Vector3.ZERO, 1.0, 1)
-			"buche":
+			"buche", "ahorn", "esche":
 				sc.tree(holder, Vector3.ZERO, 1.0, 0)
 			"hasel":
 				Veg.bush(sc, holder, Vector3.ZERO, "hasel", 1.0)
+			"holunder":
+				Veg.bush(sc, holder, Vector3.ZERO, "beeren", 1.0)
 			_:
 				Veg.tree(sc, holder, Vector3.ZERO, art, 1.0)
+		Baeume.force = ""
 		await _frames(3)                                           # Flora flushes on the next frame
 		var info: Dictionary = Baeume.last
 		var h: float = info["h"]

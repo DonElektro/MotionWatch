@@ -1,7 +1,9 @@
 extends RefCounted
 ## «Flora und Fauna» Paket 1 – Bäume und Sträucher mit echten Ästen (Freigabe des Besitzers):
-## Fichte, Buche, Hasel, Kiefer, Birke, Eiche (ARTEN; Parameter je Art in SPEC, Rinde in RINDE, Ferne-Bild in FERN).
-## Aufgerufen von flora.gd (Flora.dress mit Art), nur in den Stufen Normal und Hoch.
+## ARTEN (Nadelbäume mit Quirlen: FSPEC; Laubbäume, Kiefer, Sträucher: SPEC; Rinde: RINDE / RINDE_P; Ferne-Bild: FERN).
+## «fichte» und «laub» der Szenen werden nach dem Ort aufgeteilt (split: Tanne, Lärche, Ahorn, Esche) – ohne Zufall der Szene.
+## Aufgerufen von flora.gd: Flora.dress (Bäume / Sträucher aus Knoten), Flora.hedge (Blätter auf Hecken), Flora.bib
+## (Bergtal-Bäume der Bibliothek: nur nahe ≤ NAH + 15 m um den Ursprung, die MultiMesh-Bäume bleiben ganz). Nur Normal / Hoch.
 ##
 ##   - Äste: zu jedem Baum ein Gerüst aus Röhren (Stamm, Astquirle bzw. Hauptäste + Seitenäste), das genau in die alten
 ##     Kronen-Teile (Kugeln / Kegel) hineinwächst. Alle Äste einer Zelle (32 m) sind EIN Mesh mit EINEM Rinden-Material
@@ -18,33 +20,83 @@ extends RefCounted
 ## Wärmebild, Ebene 2), sc.rng (eigener Zufall mit Startwert aus dem Ort). Die alten Stämme werfen weiter den Schatten
 ## (nur Schatten, bis NAH); die neuen Teile sind nur auf Ebene 1.
 
-const ARTEN := ["fichte", "buche", "hasel", "kiefer", "birke", "eiche"]
-const NADEL := ["fichte", "kiefer"]
+const ARTEN := ["fichte", "tanne", "laerche", "buche", "ahorn", "esche", "hasel", "kiefer", "birke", "eiche", "obst", "holunder",
+		"alpenrose", "arve", "legfoehre"]
+const NADEL := ["fichte", "tanne", "laerche", "kiefer", "arve", "legfoehre"]
+# Nadelbäume mit Quirlen (_fichte): Hängen der Äste (von, bis), Behänge pro Ast, Äste pro Quirl / Zweige pro Ast (Faktor),
+# Neigung der Zweige (0 = waagrecht, Tanne flach, Fichte hängend)
+const FSPEC := {
+	"fichte": {"droop": Vector2(0.15, 0.35), "vorhang": 2, "nb": 1.0, "sprigs": 1.0, "tilt": Vector2(0.5, 1.1)},
+	"tanne": {"droop": Vector2(-0.06, 0.08), "vorhang": 0, "nb": 0.9, "sprigs": 1.3, "tilt": Vector2(0.35, 0.8)},
+	"laerche": {"droop": Vector2(0.2, 0.45), "vorhang": 1, "nb": 0.75, "sprigs": 0.9, "tilt": Vector2(0.5, 1.2)},
+}
 # Laubbäume / Kiefer / Sträucher (_laub): stamm gabel | leiter (durchgehend) | ruten (vom Boden); bend = Bogen der Hauptäste,
 # knorr = knorrig, sec = Menge Seitenäste, tuft = Grösse der Büschel zum Kronen-Teil, haengt / auf = Büschel hängend / nach oben
 const SPEC := {
 	"buche": {"stamm": "gabel", "bend": 0.4, "tuft": 0.95},
+	"ahorn": {"stamm": "gabel", "bend": 0.45, "tuft": 1.0},
+	"esche": {"stamm": "gabel", "bend": 0.35, "sec": 0.85, "tuft": 1.05},
 	"eiche": {"stamm": "gabel", "bend": 0.7, "knorr": 1.0, "sec": 1.1, "tuft": 0.9},
+	"obst": {"stamm": "gabel", "bend": 0.6, "knorr": 0.5, "tuft": 0.85},
 	"hasel": {"stamm": "ruten", "tuft": 1.0},
+	"holunder": {"stamm": "ruten", "tuft": 0.95, "haengt": 0.2},
+	"alpenrose": {"stamm": "ruten", "sec": 0.7, "tuft": 0.8},
 	"birke": {"stamm": "leiter", "bend": 0.3, "tuft": 0.8, "haengt": 0.75},
 	"kiefer": {"stamm": "leiter", "bend": 0.5, "sec": 1.5, "tuft": 0.8, "auf": 0.1},
+	"arve": {"stamm": "leiter", "bend": 0.4, "sec": 1.4, "tuft": 0.8, "auf": 0.1},
+	"legfoehre": {"stamm": "ruten", "sec": 1.2, "tuft": 0.8, "auf": 0.15},
 }
+const TEX_OF := {"arve": "kiefer", "legfoehre": "kiefer", "thuja": "tanne"}   # same twig picture
+const BLUETE := {"holunder": Color(0.62, 0.07, 0.05), "alpenrose": Color(0.85, 0.16, 0.36)}   # berries / flowers (blue channel)
 const CELL := 32.0
-# Ferne-Bilder: Breite / Höhe des Bild-Rahmens in m bei Grösse 1 (aus werkzeuge/flora_fernbilder.gd)
+# Ferne-Bilder: Breite / Höhe des Bild-Rahmens in m bei Grösse 1 (aus werkzeuge/flora_fernbilder.gd); ohne Eintrag: kein Bild
 const FERN := {"fichte": Vector2(4.44, 7.10), "buche": Vector2(5.84, 5.84), "hasel": Vector2(3.59, 2.56),
-		"kiefer": Vector2(6.51, 10.41), "birke": Vector2(3.35, 7.14), "eiche": Vector2(9.02, 7.01)}
-# Rinde: Farbe (rgb) + Muster (a = (Nummer + 0.5) / 8: 0 Fichte schuppig, 1 Buche glatt grau, 2 Hasel mit Korkporen,
-# 3 Kiefer Borke unten / orange oben, 4 Birke weiss mit schwarzen Strichen, 5 Eiche tief gefurcht)
-const RINDE := {"fichte": Color(0.36, 0.25, 0.19, 0.0625), "buche": Color(0.34, 0.34, 0.32, 0.1875), "hasel": Color(0.45, 0.38, 0.31, 0.3125),
-		"kiefer": Color(0.38, 0.3, 0.25, 0.4375), "birke": Color(0.86, 0.85, 0.82, 0.5625), "eiche": Color(0.3, 0.26, 0.22, 0.6875)}
+		"kiefer": Vector2(6.51, 10.41), "birke": Vector2(3.35, 7.14), "eiche": Vector2(9.02, 7.01), "tanne": Vector2(4.44, 7.10),
+		"laerche": Vector2(3.78, 6.05), "ahorn": Vector2(5.78, 5.78), "esche": Vector2(5.72, 5.72), "obst": Vector2(4.18, 3.58),
+		"holunder": Vector2(2.20, 1.57)}
+# Rinde: Farbe (rgb) + Nummer (a = (Nummer + 0.5) / 16) -> Muster in RINDE_P (Art, Massstab x, y, Relief):
+# Art 0 Schuppen, 1 glatt, 2 Korkporen, 3 Kiefer (Borke unten, orange oben), 4 Birke, 5 Furchen
+const RINDE_ARTEN := ["fichte", "buche", "hasel", "kiefer", "birke", "eiche", "tanne", "laerche", "ahorn", "esche", "obst", "holunder",
+		"alpenrose", "arve", "legfoehre", "liguster"]
+const RINDE := {"fichte": Color(0.36, 0.25, 0.19), "buche": Color(0.34, 0.34, 0.32), "hasel": Color(0.45, 0.38, 0.31),
+		"kiefer": Color(0.38, 0.3, 0.25), "birke": Color(0.86, 0.85, 0.82), "eiche": Color(0.3, 0.26, 0.22),
+		"tanne": Color(0.5, 0.5, 0.48), "laerche": Color(0.4, 0.26, 0.2), "ahorn": Color(0.4, 0.36, 0.3), "esche": Color(0.42, 0.42, 0.38),
+		"obst": Color(0.3, 0.25, 0.21), "holunder": Color(0.5, 0.45, 0.37), "alpenrose": Color(0.38, 0.3, 0.24),
+		"arve": Color(0.4, 0.36, 0.32), "legfoehre": Color(0.32, 0.26, 0.22), "liguster": Color(0.4, 0.35, 0.28)}
+const RINDE_P := {"fichte": Vector4(0, 7, 5, 1), "buche": Vector4(1, 1, 1, 1), "hasel": Vector4(2, 3, 14, 1), "kiefer": Vector4(3, 2.2, 0.9, 1.6),
+		"birke": Vector4(4, 1, 1, 1), "eiche": Vector4(5, 3.2, 0.35, 2.0), "tanne": Vector4(1, 1, 1, 0.8), "laerche": Vector4(5, 2.4, 0.5, 1.8),
+		"ahorn": Vector4(0, 3.0, 1.6, 1.3), "esche": Vector4(5, 5.0, 0.9, 1.4), "obst": Vector4(0, 2.5, 2.2, 1.6), "holunder": Vector4(5, 3.5, 0.6, 1.4),
+		"alpenrose": Vector4(2, 3, 10, 0.8), "arve": Vector4(0, 4, 2, 1.2), "legfoehre": Vector4(0, 5, 3, 1.2), "liguster": Vector4(2, 3, 12, 1)}
+
+
+static func rinde(art: String) -> Color:
+	"""Farbe + Nummer der Rinde (für die Ecken des Gerüsts)"""
+	var c: Color = RINDE.get(art, RINDE["hasel"])
+	c.a = (maxi(0, RINDE_ARTEN.find(art)) + 0.5) / 16.0
+	return c
+
+
+static func split(art: String, p: Vector3) -> String:
+	"""Paket 1: die vorhandenen Arten nach dem Ort aufteilen (kein Zufall aus der Szene): «fichte» -> auch Tanne, Lärche,
+	«buche» (laub) -> auch Ahorn, Esche"""
+	if force != "":
+		return force                                        # werkzeuge/flora_fernbilder.gd
+	var h := float(absi(hash(Vector2i(roundi(p.x * 4.0), roundi(p.z * 4.0)))) % 1000) / 1000.0
+	if art == "fichte":
+		return "tanne" if h < 0.25 else ("laerche" if h < 0.37 else "fichte")
+	if art == "buche":
+		return "ahorn" if h < 0.25 else ("esche" if h < 0.45 else "buche")
+	return art
+
 
 static var _tex := {}
 static var _imp_mesh: ArrayMesh = null
 static var last := {}                # the last tree built (for werkzeuge/flora_fernbilder.gd)
+static var force := ""               # werkzeuge/flora_fernbilder.gd: this species instead of the split by place
 
 
 static func nah(st: String) -> float:
-	return 90.0 if st == "hoch" else 45.0
+	return 70.0 if st == "hoch" else 45.0                     # Hoch: 70 m (dichter Wald: 90 m war schwer)
 
 
 # ---- Gerüst ------------------------------------------------------------------------------------------------------------
@@ -155,7 +207,11 @@ static func _tuft(bm: Dictionary, art: String, r: RandomNumberGenerator, tip: Ve
 
 
 # ---- die Arten ---------------------------------------------------------------------------------------------------------
-static func _fichte(bm: Dictionary, r: RandomNumberGenerator, base_t: Transform3D, parts: Array, trunk_r: float, st: String, k: int, ctr: Vector3) -> Dictionary:
+static func _fichte(bm: Dictionary, r: RandomNumberGenerator, base_t: Transform3D, parts: Array, trunk_r: float, st: String, k: int, ctr: Vector3, art := "fichte") -> Dictionary:
+	"""Nadelbaum mit Quirlen in den Kegeln (Fichte, Tanne, Lärche nach FSPEC)"""
+	var fs: Dictionary = FSPEC.get(art, FSPEC["fichte"])
+	var droop: Vector2 = fs["droop"]
+	var tilt: Vector2 = fs["tilt"]
 	var s := base_t.basis.get_scale().x
 	var upv := base_t.basis.y.normalized()
 	var root := base_t.origin
@@ -166,7 +222,7 @@ static func _fichte(bm: Dictionary, r: RandomNumberGenerator, base_t: Transform3
 		top_y = maxf(top_y, ((pt["t"].origin as Vector3) - root).dot(upv) + h * 0.5 * s)
 		bot_y = minf(bot_y, ((pt["t"].origin as Vector3) - root).dot(upv) - h * 0.5 * s)
 	var B := _bark_buf(bm, root)
-	var col: Color = RINDE["fichte"]
+	var col: Color = rinde(art)
 	var pts := []
 	var rads := []
 	var ups := []
@@ -181,8 +237,8 @@ static func _fichte(bm: Dictionary, r: RandomNumberGenerator, base_t: Transform3
 		wts.append(clampf((u * top_y - bot_y) / maxf(0.1, top_y - bot_y), 0.0, 1.0) * 0.4)
 	_tube(B, pts, rads, 7 if st == "hoch" else 6, col, ctr, ups, wts)
 	var whorls := 4 if st == "hoch" else 3
-	var nb := 8 if st == "hoch" else 7
-	var sprigs := 6 if st == "hoch" else 4
+	var nb := maxi(3, int((8 if st == "hoch" else 7) * float(fs["nb"])))
+	var sprigs := maxi(2, int((6 if st == "hoch" else 4) * float(fs["sprigs"])))
 	for pt in parts:
 		var t: Transform3D = pt["t"]
 		var h: float = pt["h"]
@@ -196,7 +252,7 @@ static func _fichte(bm: Dictionary, r: RandomNumberGenerator, base_t: Transform3
 				var start: Vector3 = t * lp
 				var outl := Vector3(cos(a), 0, sin(a))
 				var ln := rb * f * r.randf_range(0.85, 1.0)
-				var endl := lp + outl * ln + Vector3(0, -ln * r.randf_range(0.15, 0.35), 0)
+				var endl := lp + outl * ln + Vector3(0, -ln * r.randf_range(droop.x, droop.y), 0)
 				var endw: Vector3 = t * endl
 				var bend := upv * ln * s * 0.12
 				var bp := _curve(start, endw, bend, 3)
@@ -211,19 +267,19 @@ static func _fichte(bm: Dictionary, r: RandomNumberGenerator, base_t: Transform3
 					var at: Vector3 = start.lerp(endw, u2) + bend * (4.0 * u2 * (1.0 - u2))
 					var sd := side * (1.0 if sp % 2 == 0 else -1.0)
 					var d2 := (dirw * 0.75 + sd * 0.55 - upv * 0.15).normalized()
-					var face := upv.rotated(d2, r.randf_range(0.5, 1.1) * (1.0 if r.randf() < 0.5 else -1.0))
-					_card(bm, "fichte", at + d2 * csz * 0.4, _basis_y(d2, face, csz * 0.8, csz), ctr, _up_in(parts, at), k)
+					var face := upv.rotated(d2, r.randf_range(tilt.x, tilt.y) * (1.0 if r.randf() < 0.5 else -1.0))
+					_card(bm, art, at + d2 * csz * 0.4, _basis_y(d2, face, csz * 0.8, csz), ctr, _up_in(parts, at), k)
 				# the tip and a curtain of hanging twigs below the branch (seen from the side)
-				_card(bm, "fichte", endw + dirw * csz * 0.3, _basis_y(dirw + upv * 0.2, upv.rotated(dirw, r.randf_range(-0.6, 0.6)), csz * 0.8, csz),
+				_card(bm, art, endw + dirw * csz * 0.3, _basis_y(dirw + upv * 0.2, upv.rotated(dirw, r.randf_range(-0.6, 0.6)), csz * 0.8, csz),
 						ctr, _up_in(parts, endw), k)
-				for cu in [0.5, 0.85]:                          # two hanging curtains: the cone behind hardly shows
+				for cu in [0.5, 0.85].slice(0, int(fs["vorhang"])):   # hanging curtains (spruce): the cone behind hardly shows
 					var mid: Vector3 = start.lerp(endw, cu)
-					_card(bm, "fichte", mid - upv * csz * 0.35, _basis_y(-upv * 0.8 + dirw * 0.4, Vector3(dirw.x, 0, dirw.z).rotated(Vector3.UP, r.randf_range(-0.5, 0.5)), csz * 0.9, csz * 0.95),
+					_card(bm, art, mid - upv * csz * 0.35, _basis_y(-upv * 0.8 + dirw * 0.4, Vector3(dirw.x, 0, dirw.z).rotated(Vector3.UP, r.randf_range(-0.5, 0.5)), csz * 0.9, csz * 0.95),
 							ctr, _up_in(parts, mid), k)
 	var topw := root + upv * top_y
 	for c in range(2):                                          # the leader at the top
 		var face := Vector3(cos(c * PI * 0.5), 0, sin(c * PI * 0.5))
-		_card(bm, "fichte", topw - upv * 0.25 * s, _basis_y(upv, face, 0.5 * s, 0.8 * s), ctr, 2.0, k)
+		_card(bm, art, topw - upv * 0.25 * s, _basis_y(upv, face, 0.5 * s, 0.8 * s), ctr, 2.0, k)
 	return {"h": top_y, "s": s}
 
 
@@ -235,7 +291,7 @@ static func _laub(bm: Dictionary, r: RandomNumberGenerator, base_t: Transform3D,
 	var upv := base_t.basis.y.normalized()
 	var root := base_t.origin
 	var B := _bark_buf(bm, root)
-	var col: Color = RINDE[art]
+	var col: Color = rinde(art)
 	var stamm: String = sp["stamm"]
 	var top_y := 0.0
 	var fork_y := 1e9
@@ -340,17 +396,31 @@ static func _tuft_dir(dir: Vector3, out: Vector3, upv: Vector3, haengt: float, a
 
 
 # ---- Einstieg (von Flora.dress) ----------------------------------------------------------------------------------------
-static func build(sc, plant: Node3D, art: String, st: String, job: Dictionary, base_t: Transform3D, rel: Callable, kern_of: Callable) -> void:
+static func _bm(job: Dictionary, st: String) -> Dictionary:
 	if not job.has("bm"):
-		job["bm"] = {"bark": {}, "cards": {}, "imp": {}, "crowns": [], "st": st}
-	var bm: Dictionary = job["bm"]
-	bm["cur"] = _cell(bm, base_t.origin)
-	var r := RandomNumberGenerator.new()
-	r.seed = hash(Vector3i(roundi(base_t.origin.x * 10), roundi(base_t.origin.y * 10), roundi(base_t.origin.z * 10))) + 17
+		job["bm"] = {"bark": {}, "cards": {}, "imp": {}, "crowns": [], "st": st, "bluete": {}}
+	return job["bm"]
+
+
+static func _k(bm: Dictionary, crown: ShaderMaterial) -> int:
+	var k: int = bm["crowns"].find(crown)
+	if k < 0:
+		bm["crowns"].append(crown)
+		k = bm["crowns"].size() - 1
+	return mini(k, 15)
+
+
+static func build(sc, plant: Node3D, art: String, st: String, job: Dictionary, base_t: Transform3D, rel: Callable, kern_of: Callable) -> void:
+	"""ein Baum / Strauch aus Knoten (scenes.tree, vegetation.tree / bush): Kronen-Teile lesen, Kern, alte Stämme nur Schatten"""
+	var bm := _bm(job, st)
+	art = split(art, base_t.origin)
 	var parts := []
 	var trunk_r := 0.0
 	var crown: ShaderMaterial = null
 	var d_near := nah(st)
+	var leaf_crown: ShaderMaterial = null
+	if art == "laerche" and sc.has_method("foliage"):
+		leaf_crown = sc.foliage(7)                              # larch: a broad-leaved crown material (yellow in autumn, bare in winter)
 	var all: Array = plant.find_children("*", "MeshInstance3D", true, false)
 	for ch in all:
 		var mi := ch as MeshInstance3D
@@ -360,7 +430,7 @@ static func build(sc, plant: Node3D, art: String, st: String, job: Dictionary, b
 		var fol := mi.material_override is ShaderMaterial and (mi.material_override as ShaderMaterial).shader != null \
 				and (mi.material_override as ShaderMaterial).shader.resource_path.ends_with("foliage.gdshader")
 		if fol:
-			crown = mi.material_override
+			crown = mi.material_override if leaf_crown == null else leaf_crown
 			if mi.mesh is SphereMesh:
 				var sm := mi.mesh as SphereMesh
 				var sv := t.basis.get_scale()
@@ -368,7 +438,7 @@ static func build(sc, plant: Node3D, art: String, st: String, job: Dictionary, b
 			elif mi.mesh is CylinderMesh:
 				var cy := mi.mesh as CylinderMesh
 				parts.append({"t": t, "h": cy.height, "r": maxf(cy.bottom_radius, cy.top_radius), "rx": 0.0, "ry": 0.0})
-			mi.material_override = kern_of.call(crown, art)        # smaller, darker core (the same part: same place, same twin)
+			mi.material_override = kern_of.call(crown, art)        # smaller core (the same part: same place, same twin)
 			mi.visibility_range_end = d_near
 		elif mi.mesh is CylinderMesh:
 			if t.origin.y - base_t.origin.y < 5.0 * base_t.basis.get_scale().x:
@@ -379,23 +449,34 @@ static func build(sc, plant: Node3D, art: String, st: String, job: Dictionary, b
 		return
 	if trunk_r <= 0.0:
 		trunk_r = 0.2 * base_t.basis.get_scale().x
-	var k: int = bm["crowns"].find(crown)
-	if k < 0:
-		bm["crowns"].append(crown)
-		k = bm["crowns"].size() - 1
-	if k > 15:
-		k = 15
+	_grow(bm, art, st, base_t, parts, crown, trunk_r, {})
+
+
+static func _grow(bm: Dictionary, art: String, st: String, base_t: Transform3D, parts: Array, crown: ShaderMaterial, trunk_r: float, opts: Dictionary) -> void:
+	"""Gerüst, Büschel und (wenn es ein Bild gibt) das Ferne-Bild eines Baums; opts: no_imp, no_cards"""
+	bm["cur"] = _cell(bm, base_t.origin)
+	var r := RandomNumberGenerator.new()
+	r.seed = hash(Vector3i(roundi(base_t.origin.x * 10), roundi(base_t.origin.y * 10), roundi(base_t.origin.z * 10))) + 17
+	var k := _k(bm, crown)
 	var ctr := Vector3.ZERO
 	for pt in parts:
 		ctr += pt["t"].origin
 	ctr /= parts.size()
+	var cards_before := {}
+	if opts.get("no_cards", false):
+		for a in bm["cards"]:
+			cards_before[a] = bm["cards"][a].duplicate(true)
 	var info: Dictionary
-	if art == "fichte":
-		info = _fichte(bm, r, base_t, parts, trunk_r, st, k, ctr)
+	if FSPEC.has(art):
+		info = _fichte(bm, r, base_t, parts, trunk_r, st, k, ctr, art)
 	else:
 		info = _laub(bm, r, base_t, parts, trunk_r, st, k, ctr, art)
-	# the far picture: one quad per tree (turns to the camera in the shader)
+	if opts.get("no_cards", false):
+		bm["cards"] = cards_before                            # e.g. a larch in the Bergtal winter: only the bare frame
 	last = {"art": art, "h": info["h"], "k": k, "crown": crown}
+	if opts.get("no_imp", false) or not FERN.has(art):
+		return
+	# the far picture: one quad per tree (turns to the camera in the shader)
 	var fs: Vector2 = FERN[art]
 	var s: float = info["s"]
 	var hy: float = float(info["h"]) / maxf(0.1, fs.y)          # as high as this tree
@@ -407,6 +488,78 @@ static func build(sc, plant: Node3D, art: String, st: String, job: Dictionary, b
 		bm["imp"][art][ikey] = []
 	bm["imp"][art][ikey].append([Transform3D(Basis().scaled(Vector3(s * flip, hy, s)), base_t.origin),
 			Color(ctr.x - base_t.origin.x, ctr.y - base_t.origin.y, ctr.z - base_t.origin.z, float(k))])
+
+
+static func hedge(job: Dictionary, st: String, xf: Transform3D, L: float, h: float, thick: float, kind: String, crown: ShaderMaterial, ground: Callable) -> void:
+	"""Blatt-Karten auf einer Hecke (Veg.hedge): beide Seiten und oben, nach aussen gedreht; der Kern der Hecke (Kästen,
+	Buckel, Wärmebild, Hindernis) bleibt genau gleich. xf = Lage der Hecke (x entlang, z quer), ground(x_lokal) = Bodenhöhe"""
+	var bm := _bm(job, st)
+	bm["cur"] = _cell(bm, xf.origin)
+	var art: String = {"buche": "buche", "thuja": "thuja"}.get(kind, "liguster")
+	var k := _k(bm, crown)
+	var r := RandomNumberGenerator.new()
+	r.seed = hash(Vector3i(roundi(xf.origin.x * 10), 7, roundi(xf.origin.z * 10)))
+	var step := 0.42 if st == "hoch" else 0.55
+	var nx := maxi(1, int(L / step))
+	var ny := maxi(1, int(h / step))
+	var ax := xf.basis.x.normalized()
+	var az := xf.basis.z.normalized()
+	for ix in range(nx):
+		var lx := -L * 0.5 + (ix + r.randf()) * L / nx
+		var gy: float = ground.call(lx)
+		for side in [-1.0, 1.0]:
+			var nrm: Vector3 = az * side
+			for iy in range(ny):
+				var y := gy + (iy + r.randf_range(0.1, 0.9)) * h / ny
+				var p: Vector3 = xf.origin + ax * lx + nrm * thick * r.randf_range(0.42, 0.52)
+				p.y = y
+				var sz := r.randf_range(0.5, 0.7) * (0.9 if art == "liguster" else 1.0)
+				var face := nrm.rotated(Vector3.UP, r.randf_range(-0.5, 0.5))
+				var b := _basis_y(Vector3.UP.rotated(nrm, r.randf_range(-0.9, 0.9)), face, sz, sz)
+				_card(bm, art, p, b, p - nrm * 0.4, 0.0, k)
+		var top: Vector3 = xf.origin + ax * lx + az * r.randf_range(-0.35, 0.35) * thick
+		top.y = gy + h - 0.05
+		var bt := _basis_y((ax * r.randf_range(-1, 1) + az * r.randf_range(-1, 1)).normalized() + Vector3.UP * 0.4, Vector3.UP, 0.6, 0.6)
+		_card(bm, art, top, bt, top - Vector3.UP * 0.4, 0.0, k)
+
+
+static func bib(bm_job: Dictionary, st: String, kind: String, items: Array, d: Dictionary, to_world: Transform3D, crown: ShaderMaterial, season: String) -> int:
+	"""Bergtal (bib_berg.gd, MultiMesh-Bäume): Gerüst + Büschel für die nahen Bäume; die alten Kegel / Kugeln bleiben ganz
+	(Kern und Ferne wie bisher), die Büschel sitzen darum herum (Teile etwas grösser genommen)"""
+	var art: String = {"spruce": "fichte", "larch": "laerche", "arve": "arve", "pine_shrub": "legfoehre", "dwarf_shrub": "alpenrose"}.get(kind, "")
+	if art == "" or (art == "laerche" and season == "winter"):
+		return 0
+	var bm := _bm(bm_job, st)
+	if art == "alpenrose":
+		bm["bluete"]["alpenrose"] = season == "sommer"
+	var lim := nah(st) + 15.0
+	var n := 0
+	for e in items:
+		var p: Vector3 = e[0]
+		var sc := float(e[2]) if e.size() > 2 else 1.0
+		var xf: Transform3D = to_world * Transform3D(Basis(Vector3.UP, float(e[1])).scaled(Vector3.ONE * sc), p)
+		if Vector2(xf.origin.x, xf.origin.z).length() > lim:
+			continue                                           # the cards would be too far (collapse anyway)
+		var parts := []
+		var trunk_r := 0.0
+		for part in d["p"]:
+			var typ := str(part[0])
+			var pos := Vector3(float(part[4]), float(part[5]), float(part[6]))
+			var t: Transform3D = xf * Transform3D(Basis.from_euler(Vector3(deg_to_rad(float(part[8])), deg_to_rad(float(part[9])), deg_to_rad(float(part[10])))), pos)
+			var col := str(part[7])
+			if col == "e8ecf0":
+				continue                                       # snow on the branches
+			if typ == "k":
+				parts.append({"t": t, "h": float(part[2]), "r": float(part[1]) * 1.08, "rx": 0.0, "ry": 0.0})
+			elif typ == "s":
+				parts.append({"t": t, "rx": float(part[1]) * sc * 1.1, "ry": float(part[2]) * 0.5 * sc * 1.1, "h": float(part[2]), "r": float(part[1])})
+			elif typ == "c":
+				trunk_r = maxf(trunk_r, maxf(float(part[1]), float(part[3])) * sc)
+		if parts.is_empty():
+			continue
+		_grow(bm, art, st, xf, parts, crown, trunk_r if trunk_r > 0.0 else 0.03 * sc, {"no_imp": true})
+		n += 1
+	return n
 
 
 # ---- in die Szene (von Flora._flush) -----------------------------------------------------------------------------------
@@ -423,11 +576,13 @@ static func flush(job: Dictionary, root: Node3D, sync: Node, noise: Texture2D) -
 	bark_m.set_shader_parameter("near_d", d_near)
 	bark_m.set_shader_parameter("fine", 1.0 if st == "hoch" else 0.0)
 	var bc := PackedColorArray()
-	for a in ["fichte", "buche", "hasel", "kiefer", "birke", "eiche"]:
+	var bp := PackedColorArray()
+	for a in RINDE_ARTEN:
 		bc.append(RINDE[a])
-	bc.append(Color(0.4, 0.3, 0.2))
-	bc.append(Color(0.4, 0.3, 0.2))
+		var v: Vector4 = RINDE_P[a]
+		bp.append(Color(v.x, v.y, v.z, v.w))
 	bark_m.set_shader_parameter("bark_cols", bc)
+	bark_m.set_shader_parameter("bark_p", bp)
 	mats.append(bark_m)
 	for key in bm["bark"]:
 		var B: Dictionary = bm["bark"][key]
@@ -457,12 +612,14 @@ static func flush(job: Dictionary, root: Node3D, sync: Node, noise: Texture2D) -
 	for art in bm["cards"]:
 		var cm := ShaderMaterial.new()
 		cm.shader = load("res://shaders/baum_karten.gdshader")
-		cm.set_shader_parameter("leaf_tex", tex(art))
+		cm.set_shader_parameter("leaf_tex", tex(TEX_OF.get(art, art)))
 		cm.set_shader_parameter("noise_tex", noise)
 		cm.set_shader_parameter("near_d", d_near)
 		cm.set_shader_parameter("backlight_k", 0.25 if st == "hoch" else 0.15)
-		cm.set_shader_parameter("twig_col", RINDE[art])
-		cm.set_shader_parameter("conifer", 1.0 if art in NADEL else 0.0)
+		cm.set_shader_parameter("twig_col", RINDE.get(art, RINDE["hasel"]))
+		cm.set_shader_parameter("conifer", 1.0 if art in NADEL or art == "thuja" else 0.0)
+		cm.set_shader_parameter("bluete_col", BLUETE.get(art, Color(0.8, 0.8, 0.8)))
+		cm.set_shader_parameter("bluete_an", 1.0 if bm["bluete"].get(art, true) else 0.0)
 		mats.append(cm)
 		for key in bm["cards"][art]:
 			var list: Array = bm["cards"][art][key]
@@ -577,10 +734,22 @@ static func tex(art: String) -> ImageTexture:
 	var img := Image.create(256, 256, false, Image.FORMAT_RGBA8)
 	img.fill(Color(0.5, 1.0, 0.0, 0.0))
 	var r := RandomNumberGenerator.new()
-	r.seed = {"fichte": 1201, "buche": 1202, "hasel": 1203, "kiefer": 1204, "birke": 1205, "eiche": 1206}.get(art, 1200)
+	r.seed = 1200 + maxi(0, RINDE_ARTEN.find(art)) + (50 if art == "tanne" else 0)
 	match art:
 		"fichte":
 			_draw_fichte(img, r)
+		"tanne":
+			_draw_tanne(img, r)
+		"laerche":
+			_draw_laerche(img, r)
+		"ahorn":
+			_draw_ahorn(img, r)
+		"esche", "holunder":
+			_draw_fieder(img, r, art == "holunder")
+		"alpenrose", "liguster":
+			_draw_klein(img, r, art == "alpenrose")
+		"obst":
+			_draw_laub(img, r, "obst")
 		"kiefer":
 			_draw_kiefer(img, r)
 		"hasel":
@@ -598,9 +767,9 @@ static func tex(art: String) -> ImageTexture:
 	return t
 
 
-static func _px(img: Image, x: int, y: int, g: float, leaf: float) -> void:
+static func _px(img: Image, x: int, y: int, g: float, leaf: float, bl := 0.0) -> void:
 	if x >= 0 and y >= 0 and x < img.get_width() and y < img.get_height():
-		img.set_pixel(x, y, Color(clampf(g, 0.0, 1.0), leaf, 0.0, 1.0))
+		img.set_pixel(x, y, Color(clampf(g, 0.0, 1.0), leaf, bl, 1.0))
 
 
 static func _line(img: Image, a: Vector2, b: Vector2, w: float, g: float, leaf: float) -> void:
@@ -708,7 +877,7 @@ static func _draw_laub(img: Image, r: RandomNumberGenerator, art: String) -> voi
 		_line(img, tw[0], tw[1], 2.2, 0.4, 0.0)
 	leaves.sort_custom(func(x, y): return x[4] < y[4])      # darker ones behind
 	for lf in leaves:
-		_leaf(img, lf[0], lf[1], lf[2], lf[3], lf[4], 0.12 if hasel else 0.015, 0.55 if hasel else (1.0 if eiche else 0.8), 4.5 if eiche else 0.0)
+		_leaf(img, lf[0], lf[1], lf[2], lf[3], lf[4], 0.12 if hasel else (0.06 if art == "obst" else 0.015), 0.55 if hasel else (1.0 if eiche else 0.8), 4.5 if eiche else 0.0)
 
 
 static func _draw_birke(img: Image, r: RandomNumberGenerator) -> void:
@@ -754,6 +923,146 @@ static func _draw_kiefer(img: Image, r: RandomNumberGenerator) -> void:
 				var pp := p + Vector2(cos(na), sin(na)) * k2
 				_px(img, int(pp.x), int(pp.y), g * (0.75 + 0.25 * k2 / nl), 1.0)
 				_px(img, int(pp.x) + 1, int(pp.y), g * (0.7 + 0.25 * k2 / nl), 1.0)   # 2 px: stays in the small mipmaps
+
+
+static func _draw_tanne(img: Image, r: RandomNumberGenerator) -> void:
+	"""Tannenzweig: flach, Seitenzweige in einer Ebene, kurze breite Nadeln in zwei Reihen (gescheitelt), dunkel"""
+	var base := Vector2(128, 252)
+	var tip := Vector2(128 + r.randf_range(-8, 8), 16)
+	var segs := [[base, tip]]
+	for i in range(8):
+		var u := lerpf(0.15, 0.9, float(i) / 7)
+		var p := base.lerp(tip, u)
+		for sd in [-1.0, 1.0]:
+			var ln := lerpf(95.0, 30.0, u) * r.randf_range(0.85, 1.05)
+			var ang: float = -PI / 2 + sd * r.randf_range(0.9, 1.15)
+			segs.append([p, p + Vector2(cos(ang), sin(ang)) * ln])
+	for sg in segs:
+		var a: Vector2 = sg[0]
+		var b: Vector2 = sg[1]
+		var dirv := (b - a).normalized()
+		var steps := int(a.distance_to(b) / 2.0)
+		for s2 in range(steps):
+			var p := a.lerp(b, float(s2) / steps)
+			for sd in [-1.0, 1.0]:
+				var na: float = dirv.angle() + sd * r.randf_range(1.35, 1.6)
+				var g := r.randf_range(0.5, 0.85)
+				for t in range(10):
+					var q := p + Vector2(cos(na), sin(na)) * t
+					_px(img, int(q.x), int(q.y), g * (0.85 + 0.15 * t / 10.0), 1.0)
+					_px(img, int(q.x) + 1, int(q.y), g * 0.8, 1.0)
+	for sg in segs:
+		_line(img, sg[0], sg[1], 2.0 if sg == segs[0] else 1.4, 0.45, 0.0)
+
+
+static func _draw_laerche(img: Image, r: RandomNumberGenerator) -> void:
+	"""Lärchenzweig: hängende Langtriebe mit Kurztrieben = kleine Nadel-Rosetten (weich, hellgrün)"""
+	for t in range(3):
+		var a := Vector2(128 + (t - 1) * 34, 252)
+		var b := a + Vector2((t - 1) * 40 + r.randf_range(-15, 15), -r.randf_range(170, 225))
+		_line(img, a, b, 1.6, 0.4, 0.0)
+		var n := 9
+		for q in range(n):
+			var c: Vector2 = a.lerp(b, lerpf(0.15, 1.0, float(q) / (n - 1))) + Vector2(r.randf_range(-6, 6), 0)
+			for k2 in range(22):
+				var na := r.randf() * TAU
+				var nl := r.randf_range(9, 16)
+				var g := r.randf_range(0.65, 1.0)
+				for j in range(int(nl)):
+					var pp := c + Vector2(cos(na), sin(na)) * j
+					_px(img, int(pp.x), int(pp.y), g, 1.0)
+
+
+static func _palm(img: Image, c: Vector2, ang: float, sz: float, shade: float) -> void:
+	"""ein Ahornblatt: fünf spitze Lappen, Nerven von der Mitte, Stiel bei c"""
+	var ctr := c + Vector2(cos(ang), sin(ang)) * sz * 0.45
+	var rr := int(ceil(sz)) + 2
+	for y in range(maxi(0, int(ctr.y) - rr), mini(img.get_height(), int(ctr.y) + rr)):
+		for x in range(maxi(0, int(ctr.x) - rr), mini(img.get_width(), int(ctr.x) + rr)):
+			var d := Vector2(x, y) - ctr
+			var th := wrapf(d.angle() - ang, -PI, PI)
+			if absf(th) > PI * 0.86:
+				continue                                         # the notch at the stalk
+			var lobe := pow(absf(cos(th * 2.5)), 0.7)
+			var R := sz * (0.38 + 0.62 * lobe) * (1.0 - 0.25 * absf(th) / PI)
+			var dl := d.length()
+			if dl > R:
+				continue
+			var g := shade * (0.82 + 0.2 * dl / maxf(R, 1.0))
+			if lobe > 0.97:
+				g = minf(1.0, g * 1.15)                          # the main veins
+			_px(img, x, y, g, 1.0)
+
+
+static func _draw_ahorn(img: Image, r: RandomNumberGenerator) -> void:
+	"""Ahornzweig: gegenständige, langgestielte, fünflappige Blätter"""
+	var base := Vector2(128, 252)
+	var tip := Vector2(128 + r.randf_range(-12, 12), 40)
+	_line(img, base, tip, 2.4, 0.4, 0.0)
+	var leaves := []
+	for i in range(4):
+		var p := base.lerp(tip, lerpf(0.3, 1.0, float(i) / 3))
+		for sd in [-1.0, 1.0]:
+			var ang: float = -PI / 2 + sd * r.randf_range(0.7, 1.2)
+			var stalk := p + Vector2(cos(ang), sin(ang)) * r.randf_range(14, 24)
+			_line(img, p, stalk, 1.4, 0.5, 0.0)
+			leaves.append([stalk, ang, r.randf_range(34, 44), r.randf_range(0.6, 1.0)])
+	leaves.sort_custom(func(x, y): return x[3] < y[3])
+	for lf in leaves:
+		_palm(img, lf[0], lf[1], lf[2], lf[3])
+
+
+static func _draw_fieder(img: Image, r: RandomNumberGenerator, holunder: bool) -> void:
+	"""gefiederte Blätter (Esche: 4–5 schmale Paare + Endblatt; Holunder: 2–3 breite, gezähnte Paare) und beim Holunder
+	eine Dolde roter Beeren (Blau-Kanal: Farbe aus BLUETE)"""
+	var base := Vector2(128, 252)
+	for f in range(3):
+		var a := base + Vector2((f - 1) * 18, 0)
+		var ang: float = -PI / 2 + (f - 1) * 0.55 + r.randf_range(-0.1, 0.1)
+		var L := r.randf_range(170, 215) * (0.85 if holunder else 1.0)
+		var b := a + Vector2(cos(ang), sin(ang)) * L
+		_line(img, a, b, 1.6, 0.45, 0.0)
+		var pairs := 3 if holunder else 5
+		for q in range(pairs):
+			var u := lerpf(0.3, 0.9, float(q) / maxf(1, pairs - 1))
+			var p := a.lerp(b, u)
+			for sd in [-1.0, 1.0]:
+				var la: float = ang + sd * r.randf_range(0.9, 1.2)
+				_leaf(img, p, la, r.randf_range(38, 46) if holunder else r.randf_range(34, 40), 18.0 if holunder else 12.0,
+						r.randf_range(0.6, 1.0), 0.09 if holunder else 0.04, 0.7)
+		_leaf(img, b - Vector2(cos(ang), sin(ang)) * 4.0, ang, 36.0, 15.0 if holunder else 12.0, r.randf_range(0.7, 1.0), 0.05, 0.7)
+	if holunder:
+		var c := Vector2(128 + r.randf_range(-20, 20), 60)
+		for k2 in range(70):                                  # the umbel of berries
+			var pp := c + Vector2.from_angle(r.randf() * TAU) * r.randf_range(0.0, 26.0)
+			for dy in range(-3, 4):
+				for dx in range(-3, 4):
+					if dx * dx + dy * dy <= 8:
+						_px(img, int(pp.x) + dx, int(pp.y) + dy, r.randf_range(0.6, 1.0) * (1.0 - (dx * dx + dy * dy) / 16.0), 1.0, 1.0)
+
+
+static func _draw_klein(img: Image, r: RandomNumberGenerator, alpenrose: bool) -> void:
+	"""kleine, schmale, ledrige Blätter dicht an kurzen Trieben (Liguster; Alpenrose rostrot unten, mit Blütendolden)"""
+	for t in range(4):
+		var a := Vector2(128 + (t - 1.5) * 30, 252)
+		var ang: float = -PI / 2 + (t - 1.5) * 0.35
+		var b := a + Vector2(cos(ang), sin(ang)) * r.randf_range(150, 210)
+		_line(img, a, b, 1.8, 0.4, 0.0)
+		var n := 12
+		for q in range(n):
+			var u := lerpf(0.3, 1.0, float(q) / (n - 1))
+			if alpenrose:
+				u = lerpf(0.55, 1.0, float(q) / (n - 1))       # the leaves crowded at the end of the shoot
+			var p := a.lerp(b, u)
+			var la: float = ang + (1.0 if q % 2 == 0 else -1.0) * r.randf_range(0.5, 1.1)
+			_leaf(img, p, la, r.randf_range(26, 34), r.randf_range(10, 13), r.randf_range(0.55, 1.0), 0.0, 0.7)
+		if alpenrose:
+			for k2 in range(9):                                 # a cluster of funnel flowers at the tip
+				var pp := b + Vector2.from_angle(r.randf() * TAU) * r.randf_range(2.0, 16.0)
+				for dy in range(-5, 6):
+					for dx in range(-5, 6):
+						if dx * dx + dy * dy <= 22:
+							_px(img, int(pp.x) + dx, int(pp.y) + dy, r.randf_range(0.7, 1.0) * (1.0 - (dx * dx + dy * dy) / 40.0), 1.0, 1.0)
 
 
 static func _bleed(img: Image) -> void:

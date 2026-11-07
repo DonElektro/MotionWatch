@@ -82,10 +82,11 @@ Blatt- und Nadelbilder der Baumkronen, Blätterbüschel, Gras-Farben (`scripts/f
 Der Wiesenboden nutzt die eigenen Fotos von Elektro (`texturen/wiese_alp_01.jpg`, `texturen/wiese_alp_steinig_01.jpg`,
 Abschnitt «Foto-Texturen im Bergtal»).
 
-Bäume und Sträucher mit Ästen («Flora und Fauna», Paket 1, Zweig sim-flora-baeume: Fichte, Buche, Hasel, Kiefer, Birke, Eiche –
+Bäume und Sträucher mit Ästen («Flora und Fauna», Paket 1, Zweig sim-flora-baeume: Fichte, Tanne, Lärche, Kiefer, Arve, Legföhre,
+Buche, Ahorn, Esche, Eiche, Birke, Obstbaum, Hasel, Holunder, Alpenrose, Blätter auf Hecken –
 `scripts/baeume.gd`, `shaders/rinde.gdshader`, `shaders/baum_karten.gdshader`, `shaders/baum_fern.gdshader`): **selbst gebaut**.
-Äste, Rinde und Zweig-Bilder entstehen im Code; die Ferne-Bilder `texturen/flora_fern_<art>.png` (sechs Bilder, zusammen
-~570 KB) sind mit `werkzeuge/flora_fernbilder.gd` aus genau diesen Bäumen gerendert.
+Äste, Rinde und Zweig-Bilder entstehen im Code; die Ferne-Bilder `texturen/flora_fern_<art>.png` (zwölf Bilder, zusammen
+~1.2 MB) sind mit `werkzeuge/flora_fernbilder.gd` aus genau diesen Bäumen gerendert.
 Keine fremde Datei.
 
 ## Foto-Texturen im Bergtal (ab 3.37) – `texturen/`, `scripts/bergtal_texturen.gd`
