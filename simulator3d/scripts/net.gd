@@ -268,6 +268,12 @@ func _handle(c: Dictionary, method: String, path: String, query: Dictionary, bod
 			dc["_von_lokal"] = true
 		_json(c, main.control(dc))
 		return
+	if method == "POST" and path == "/speech":         # MoveEye 3.61+: die Ansage als WAV (simint.gd speech_in), nur vom verbundenen MoveEye
+		if not trusted(host) or main.get("simint") == null:
+			_json(c, {"ok": false, "error": "nur_lokal"}, 403)
+			return
+		_json(c, {"ok": main.simint.speech_in(body)})
+		return
 	if method == "POST" and path == "/upload":
 		_json(c, {"ok": false, "error": "not supported"})
 		return

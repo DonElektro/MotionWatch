@@ -26,6 +26,9 @@ var _cur := ""
 var _snd_t := 0.0
 var _clap_t := 0.0
 const RATE := 22050
+var _speech: AudioStreamWAV = null  # MoveEye 3.61+: die echte Ansage (Piper / pico2wave) als WAV über POST /speech (net.gd)
+var _speech_t := -100.0              # wann sie kam: gilt für das nächste «tts» / die eigene Ansage innert ein paar Sekunden
+var _speech_on := false              # die Ansage läuft gerade statt des Gemurmels
 
 # ---- 2. Servo-Störungen ------------------------------------------------------------------------------------------------
 var uv_force := false                # «Unterspannung erzwingen» (sonst nur aus dem Akku)
@@ -117,8 +120,11 @@ func _process(_delta: float) -> void:
 	var t: float = main.now()
 	if k != _cur:
 		_cur = k
+		_speech_on = false
 		if k == "":
 			_player.stop()
+		elif _family(k) == "voice" and _speech != null and t - _speech_t < 6.0:
+			_play_speech()
 		else:
 			_play(_family(k))
 	if k != "":
@@ -140,6 +146,58 @@ func _process(_delta: float) -> void:
 
 func _dev_pos() -> Vector3:
 	return main.head.global_position if main.head != null else Vector3(0, main.HEAD_H, 0)
+
+
+func speech_in(b: PackedByteArray) -> bool:
+	"""MoveEye schickt die Ansage, die es gerade spricht, als WAV (16 Bit PCM, mono oder stereo): hier statt des Gemurmels
+	abspielen. Ältere MoveEye schicken nichts - dann bleibt das Gemurmel («voice»)."""
+	var w := wav_from_bytes(b)
+	if w == null:
+		return false
+	_speech = w
+	_speech_t = main.now()
+	if _cur != "" and _family(_cur) == "voice" and not _speech_on:
+		_play_speech()                                # kam kurz nach dem Start der Ansage: gleich umschalten
+	return true
+
+
+static func wav_from_bytes(b: PackedByteArray) -> AudioStreamWAV:
+	"""RIFF/WAVE mit 16-Bit-PCM lesen (höchstens 60 s); null wenn es kein solches WAV ist"""
+	if b.size() < 44 or b.slice(0, 4).get_string_from_ascii() != "RIFF" or b.slice(8, 12).get_string_from_ascii() != "WAVE":
+		return null
+	var i := 12
+	var ch := 0
+	var rate := 0
+	var bits := 0
+	while i + 8 <= b.size():
+		var id := b.slice(i, i + 4).get_string_from_ascii()
+		var n := b.decode_u32(i + 4)
+		if id == "fmt " and n >= 16 and i + 24 <= b.size():
+			if b.decode_u16(i + 8) != 1:
+				return null                           # nur PCM
+			ch = b.decode_u16(i + 10)
+			rate = b.decode_u32(i + 12)
+			bits = b.decode_u16(i + 22)
+		elif id == "data":
+			if bits != 16 or ch < 1 or ch > 2 or rate < 8000 or rate > 48000:
+				return null
+			var e := mini(b.size(), i + 8 + n)
+			e = mini(e, i + 8 + rate * ch * 2 * 60)
+			var w := AudioStreamWAV.new()
+			w.format = AudioStreamWAV.FORMAT_16_BITS
+			w.mix_rate = rate
+			w.stereo = ch == 2
+			w.data = b.slice(i + 8, e)
+			w.loop_mode = AudioStreamWAV.LOOP_DISABLED
+			return w
+		i += 8 + n + (n % 2)
+	return null
+
+
+func _play_speech() -> void:
+	_speech_on = true
+	_player.stream = _speech
+	_player.play()
 
 
 func _play(fam: String) -> void:

@@ -258,12 +258,12 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 <li><b>Sicherheit:</b> QR-Codes gibt es nur für den Administrator (nicht für andere Benutzer und nicht über einen App-Schlüssel). Geheime Codes (Schlüssel, Stream-Adresse, ntfy-Thema, App-Schlüssel der Kurzbefehle) bleiben nicht im Browser-Speicher und stehen in keinem Protokoll. Wer einen geheimen Code scannt, hat Zugang – nur Vertrauten zeigen, Ausdrucke sicher aufbewahren.</li>
 <li><b>Fenster:</b> Knöpfe «QR-Code …» bei Gast-Zugang, Web-Stream, Benachrichtigungen, Simulator (Tunnel) und beim App-Schlüssel; unter Einrichtung «Alle QR-Codes …». Dort auch «Bild speichern …» und – wenn ein Drucker eingerichtet ist – «Drucken».</li></ul></section>
 <section id="setup" data-icon="🧰"><h2>Einrichtung auf dem Raspberry Pi</h2>
-<pre>sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils openssl bluez pulseaudio-utils
+<pre>sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils openssl bluez pulseaudio-utils espeak-ng
 pip install opencv-python numpy pillow flask psutil</pre>
 <ul><li>I2C und SPI einschalten (<code>sudo raspi-config</code>), in <code>/boot/firmware/config.txt</code> unter <code>[all]</code>: <code>dtoverlay=spi0-0cs</code>.</li>
 <li>Einmalig: <code>sudo python3 webcam_bewegung_X.py --allow-wifi</code> (WLAN, Uhrzeit, Autostart, Ausschalten, Watchdog).</li>
 <li>Starten: <code>python3 webcam_bewegung_X.py</code> (Fenster + Webseite) oder <code>--headless</code> (nur Webseite).</li>
-<li>Einstellungen, Protokoll, Töne: <code>~/.config/motionwatch/</code> – bleiben bei neuen Versionen erhalten.</li></ul>
+<li>Einstellungen, Protokoll, Töne: <code>~/.config/motionwatch/</code> – bleiben bei neuen Versionen erhalten.</li><li>Piper-Stimme (natürliche Ansagen): braucht <code>espeak-ng</code> (oben dabei); die Laufzeit onnxruntime (pip, etwa 15 MB) und die Stimme lädt MoveEye selbst auf Knopfdruck (Einstellungen → Licht &amp; Ton → Lautsprecher).</li></ul>
 </section>
 </div>
     <div lang="en"><section id="start" data-icon="🚀"><h2>Quick start: the first 10 minutes</h2>
@@ -483,12 +483,12 @@ pip install opencv-python numpy pillow flask psutil</pre>
 <li><b>Security:</b> QR codes only for the administrator (not for other users, not through an app key). Secret codes (keys, stream address, ntfy topic, the app key of the shortcuts) are not kept in the browser cache and never written to a log. Whoever scans a secret code has access – show it only to people you trust, keep printouts safe.</li>
 <li><b>Window:</b> buttons «QR code …» at guest access, web stream, notifications, simulator (tunnel) and the app key; under Setup «All QR codes …». There also «Save picture …» and – when a printer is set up – «Print».</li></ul></section>
 <section id="setup" data-icon="🧰"><h2>Setup on the Raspberry Pi</h2>
-<pre>sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils openssl bluez pulseaudio-utils
+<pre>sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils openssl bluez pulseaudio-utils espeak-ng
 pip install opencv-python numpy pillow flask psutil</pre>
 <ul><li>Switch on I2C and SPI (<code>sudo raspi-config</code>); in <code>/boot/firmware/config.txt</code> under <code>[all]</code>: <code>dtoverlay=spi0-0cs</code>.</li>
 <li>Once: <code>sudo python3 webcam_bewegung_X.py --allow-wifi</code> (Wi-Fi, clock, autostart, shut down, watchdog).</li>
 <li>Start: <code>python3 webcam_bewegung_X.py</code> (window + web page) or <code>--headless</code> (web page only).</li>
-<li>Settings, log, sounds: <code>~/.config/motionwatch/</code> – kept for new versions.</li></ul>
+<li>Settings, log, sounds: <code>~/.config/motionwatch/</code> – kept for new versions.</li><li>Piper voice (natural announcements): needs <code>espeak-ng</code> (included above); MoveEye installs the runtime onnxruntime (pip, about 15 MB) and the voice itself at the press of a button (Settings → Light &amp; sound → Loudspeaker).</li></ul>
 </section>
 </div>
   </div>

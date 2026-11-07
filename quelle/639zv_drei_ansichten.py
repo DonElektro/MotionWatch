@@ -170,7 +170,11 @@ VIEW3_JS = r"""
   const T = x => (typeof t === "function" ? t(x) : x);
   const E = (tag, cls, text) => { const x = document.createElement(tag); if (cls) x.className = cls; if (text != null) x.textContent = text; return x; };
   const say = m => { try { toast(m); } catch (e) {} };
-  const vimg = document.getElementById("video"), home = vimg && vimg.parentNode;
+  // the place of the big picture: NOT vimg.parentNode when the scroll corner (530 #pip) holds the picture right now - on a big
+  // page its IntersectionObserver can fire while the page is still parsed, before this script runs (3.62.0: then the small
+  // picture and the frame never showed up until a reload)
+  const vimg = document.getElementById("video"), pipC = document.getElementById("pip");
+  const home = vimg && (pipC && pipC.contains(vimg) ? document.querySelector("#vcard .vwrap") : vimg.parentNode);
   if (!vimg || !home) return;
   const KEY = "mw-view3";                                 // per device (WEB_UI_LOCAL): which picture is big, small picture on / off
   const V = {view: "head", pip: true};

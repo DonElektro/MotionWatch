@@ -2312,10 +2312,14 @@ function ttsBox() {                                 // the Pi speaks a typed tex
   const bt = el("div", "btns"), say = el("button", "", "🗣 " + t("Speak now")), sv = el("button", "sec", "💾 " + t("Save as own sound"));
   say.type = sv.type = "button"; const msg = el("div", "mut", "");
   const go = async save => { if (!tx.value.trim()) { tx.focus(); return; } say.disabled = sv.disabled = true; msg.textContent = "…";
+    if (!save && window.mwSpeechUnlock) mwSpeechUnlock();   // 639zzb: inside the tap - the browser may play it (iPhone)
     const r = await post("/api/tts", {text: tx.value, voice: lang.value, save: save, lang: LANG}); say.disabled = sv.disabled = false;
-    msg.textContent = r.ok ? (save ? "✓ " + t("Saved - now selectable as sound for the siren / deterrence") + ": " + r.file : "✓") : "⚠ " + (r.error || "error"); };
+    msg.textContent = r.ok ? (save ? "✓ " + t("Saved - now selectable as sound for the siren / deterrence") + ": " + r.file : "✓" + (r.note ? " " + r.note : "")) : "⚠ " + (r.error || "error");
+    if (r.ok && r.id && window.mwSpeak) mwSpeak(r.id); };
   say.onclick = () => go(false); sv.onclick = () => go(true);
-  bt.append(lang, say, sv); w.append(tx, chips, bt, msg); return w;
+  bt.append(lang, say, sv); w.append(tx, chips, bt, msg);
+  if (typeof piperBox === "function") w.appendChild(piperBox());   // 639zzb: Piper voice, «Test voice», sound in the browser
+  return w;
 }
 function moveSelects(d, after, keys) {              // the device choice comes first, then the switches and sliders
   let ref = after;
