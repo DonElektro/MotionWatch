@@ -13,10 +13,10 @@ import os
 import statistics
 from collections import OrderedDict
 
-PERSON = ("gehen", "kriechen", "kind")
+PERSON = ("gehen", "kriechen", "kind", "einbruch", "veloklau")      # einbruch / veloklau: Plan «real» (faelle.REAL)
 ALARM = ("person", "warm", "prealarm")
 EVN = OrderedDict([("gehen", "Person geht"), ("kriechen", "kriecht (dunkel)"), ("kind", "Kind"), ("tier", "Tier"),
-                   ("fahrzeug", "Auto"), ("leer", "Leerlauf 45 s")])
+                   ("fahrzeug", "Auto"), ("leer", "Leerlauf 45 s"), ("einbruch", "Dieb ums Zelt"), ("veloklau", "Velo-Diebstahl")])
 
 
 def lesen(pfad):
@@ -60,6 +60,8 @@ def kennzahlen(R):
     for e in PERSON:
         x = [r for r in pers if r["event"] == e]
         k[e] = _q(sum(1 for r in x if r.get("detected")), len(x))
+    real = [r for r in pers if r.get("event") in ("einbruch", "veloklau")]
+    k["vor_griff"] = _q(sum(1 for r in real if r.get("vor_griff")), len(real))
     k["personen_oder_push"] = _q(sum(1 for r in pers if r.get("detected") or alarm_pushes(r)), len(pers))
     k["reaktion_median_s"] = round(statistics.median(td), 1) if td else None
     for e in ("tier", "fahrzeug"):
@@ -119,7 +121,8 @@ def punkte(r):
 
 
 ZEILEN = [("personen", "**Personen erkannt**"), ("gehen", "· Person geht"), ("kriechen", "· kriecht (dunkle Kleidung)"),
-          ("kind", "· Kind"), ("personen_oder_push", "Personen: Rahmen oder Personen-Push"), ("tier_erkannt", "Tier als Tier"),
+          ("kind", "· Kind"), ("einbruch", "· Dieb schleicht ums Zelt (nachts)"), ("veloklau", "· Velo-Diebstahl"),
+          ("vor_griff", "Echte Situationen: Person VOR dem Griff"), ("personen_oder_push", "Personen: Rahmen oder Personen-Push"), ("tier_erkannt", "Tier als Tier"),
           ("fahrzeug_erkannt", "Auto als Fahrzeug"), ("tier_auto_als_person", "**Tier / Auto als Person**")]
 
 
