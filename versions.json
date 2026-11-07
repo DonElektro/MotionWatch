@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-07 18:58",
+ "generated": "2026-11-07 20:08",
  "versions": [
+  {
+   "version": "3.60.0",
+   "file": "webcam_bewegung_3_60_0.py",
+   "url": "",
+   "sha256": "b0e0141366ee3bff2e8f99b1f82a05ecba6f0d32a312f1c5a0e20d351f5aaffc",
+   "date": "2026-11-07 20:08",
+   "notes": "Fehlalarme und Pushes: MoveEye merkt sich Fehlalarm-Stellen und fragt nach 3 Fehlalarmen in 7 Tagen einmal «künftig ignorieren?», Windschutz für Pflanzen-Bereiche, Alarme in der Pause gebündelt («+N weitere in M Min.» mit Bildstreifen), Zonen-Name im Push, kurzer Clip (ab Werk aus), «Bilder bleiben zu Hause» (ab Werk aus); doppelte Bestätigung im Erkennungstest messbar · Objekte und Profile: Erkennungsprofile 🏕️ Nacht am Zelt · 🌳 Garten tagsüber · 🏠 Hausüberwachung · 🔋 Akku sparen (von Hand, per Zeitplan, vom Modus oder bei tiefem Akku; ohne Profil wie bisher), Wildtiere mit Namen («🦊 Fuchs be",
+   "size": 3531045,
+   "sig": "c0e5cbc0880b463a5b938e0a6c56b0b358fa13b33f36baa3f2da27039b485327713fa8821929abf11db7b16f6874ce381305c27b4400bf75bf18beee75501003",
+   "data": {
+    "file": "moveeye_daten_3_60_0.zip",
+    "url": "",
+    "sha256": "ad16b982e0de3b8451d961e68a653edfcb5e5b90fb531f136d2ebfcacb841deb",
+    "size": 4811182,
+    "sig": "dc62df47b9740de7c47faa1511a231401343e3523f8d77f12dc3a83e167796fdb34c1d47472bdc43909400e69e2bb62f01e68c3c9477f075b1894bf8ef0b2d03"
+   }
+  },
   {
    "version": "3.59.0",
    "file": "webcam_bewegung_3_59_0.py",
    "url": "",
    "sha256": "4fd1fa47f0953371c048e7c62da4f8eb4cb1e26a44dfdbf852cb9d12870fe11e",
-   "date": "2026-11-07 18:58",
+   "date": "2026-11-07 19:00",
    "notes": "MoveEye-Datei schlank: Hauptdatei von 5,0 auf 3,4 MB (mehr in die Zusatzdatei: Übersetzungen, Anleitung, Web-Teile; gebaute Datei ohne Kommentare, mit Tabs, gleiche Zeilennummern). Ohne Zusatzdatei startet MoveEye wieder im Kern, mit «Jetzt nachladen». Grenze: Warnung ab 4 MiB, Abbruch ab 5 MiB.",
    "size": 3416329,
    "sig": "54158c576ecc486a62597a89f612a5a406edf7791e1d4f4964b5bf037c2dc5ed5ddffaa89094c0d16c8ef62cf3ed39e3a96196fc83365c63f3ddfbc65e41b300",
@@ -136,23 +153,6 @@
     "sha256": "a081ffe8fbdd130b6be55588c3acbee7443572a06f49a7cbf32196436a41c3b0",
     "size": 4081692,
     "sig": "856f4a98dde8bbd4a6d8c002a58f2ed76f9fab24ab9d81b24df7698eaffc163295071e7f34e9cb544aceb849c1de3d045d3f4896709db58c368d1366158d3009"
-   }
-  },
-  {
-   "version": "3.51.0",
-   "file": "webcam_bewegung_3_51_0.py",
-   "url": "",
-   "sha256": "8d40fb4c811a2a82f5d28ddc9598cd7011b1a729a126f9a017512f5814920118",
-   "date": "2026-11-02 20:55",
-   "notes": "Gehäuse v5.3 ist Standard: Messing-Gewindeeinsätze M3, Halter für Wand/Baum mit Gurt, Akkuklappe im Boden (Zellen tauschen ohne Ausbau), Luftkanal für den Pi-Lüfter, Zugentlastung; neue Platte C; v5.2/v5.1 wählbar.",
-   "size": 4880143,
-   "sig": "dbfa8d55eadc039a4ff2a503794ded84f448182fa92daf20cfd10fc7b41d90ba943ae8d911aa346f14d0f117aef804c4925c5f0069fd032951c3408e99ce0706",
-   "data": {
-    "file": "moveeye_daten_3_51_0.zip",
-    "url": "",
-    "sha256": "4588b4718f7f60454acbb44eb5854ba5a65438ba54e1e0bd3f3262b778b214de",
-    "size": 4079140,
-    "sig": "810aaaac3476b132ca3b0c83401615c50f87ce5cb4ef42ee89a798815d3ef378f54461560a9b90e84357c6281e0e069ece26c072103844c096fe92dcca386201"
    }
   },
   {
