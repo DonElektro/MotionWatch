@@ -19,6 +19,11 @@ Fehlalarme auf leeren Bildern (nach Art der Falle: Ast, Fahne, Licht, Insekt, Sc
 import argparse, datetime, hashlib, json, os, re, shutil, sys, zipfile
 
 CLASSES = ["person", "animal", "vehicle"]
+# 639zz «Objekte und Profile»: --klassen wildtiere trains the five wildlife species as classes of their own (after the three
+# base classes, so «vehicle» stays index 2); the other animals stay «animal». MoveEye maps the names (part 639zz, WILD_IDS).
+WILD_CLASSES = ["fox", "roe deer", "badger", "hedgehog", "wild boar"]
+WILD_OF = {"fox": "fox", "roe deer": "roe deer", "deer": "roe deer", "roe": "roe deer", "badger": "badger", "hedgehog": "hedgehog",
+           "wild boar": "wild boar", "boar": "wild boar"}
 ANIMAL_NAMES = {"animal", "dog", "cat", "horse", "sheep", "cow", "fox", "deer", "boar", "badger", "hare", "hedgehog", "wolf", "marten",
                 "squirrel", "lynx", "chamois", "ibex", "bird", "bear", "elephant", "zebra", "giraffe", "roe deer", "wild boar", "rabbit"}
 VEHICLE_NAMES = {"vehicle", "car", "truck", "bus", "motorcycle", "bicycle", "van", "tractor"}
@@ -35,6 +40,8 @@ def target_class(name):
     n = str(name).strip().lower()
     if n == "person":
         return 0
+    if WILD_OF.get(n) in CLASSES:
+        return CLASSES.index(WILD_OF[n])
     if n in ANIMAL_NAMES:
         return 1
     if n in VEHICLE_NAMES:
@@ -578,9 +585,16 @@ def main():
     ap.add_argument("--imgsz", type=int, default=320)
     ap.add_argument("--batch", type=int, default=32)
     ap.add_argument("--version", default="")
+    ap.add_argument("--klassen", choices=("standard", "wildtiere"), default="standard",
+                    help="standard = person / animal / vehicle; wildtiere = + fox, roe deer, badger, hedgehog, wild boar")
+    ap.add_argument("--name", default="moveeye_model", help="file name of the model (moveeye_model_gross = the bigger model)")
     ap.add_argument("--nur-daten", action="store_true", help="only build the dataset (no training)")
     ap.add_argument("--probe-auswertung", action="store_true", help="dataset + evaluation report with made-up finds (tests the report without ultralytics)")
     a = ap.parse_args()
+    if a.klassen == "wildtiere":
+        CLASSES[:] = CLASSES[:3] + WILD_CLASSES
+    if not re.fullmatch(r"[A-Za-z0-9_\-]{1,60}", a.name):
+        sys.exit("--name: only letters, digits, _ -")
     os.makedirs(a.aus, exist_ok=True); os.makedirs(a.arbeit, exist_ok=True)
     ds_root = os.path.join(a.arbeit, "datensatz")
     shutil.rmtree(ds_root, ignore_errors=True)
@@ -621,7 +635,7 @@ def main():
     metrics = {"map50": round(float(m.box.map50), 4), "map50_95": round(float(m.box.map), 4), "precision": round(float(m.box.mp), 4),
                "recall": round(float(m.box.mr), 4), "per_class": per, "val_images": st["val_images"]}
     onnx_tmp = best.export(format="onnx", imgsz=a.imgsz, opset=12, simplify=True, dynamic=False)
-    onnx = os.path.join(a.aus, "moveeye_model.onnx"); shutil.copyfile(onnx_tmp, onnx)
+    onnx = os.path.join(a.aus, a.name + ".onnx"); shutil.copyfile(onnx_tmp, onnx)
     check = opencv_check(onnx, a.imgsz, os.path.join(ds_root, "images", "val"), len(CLASSES))
     with open(onnx, "rb") as f:
         raw = f.read()
@@ -634,13 +648,13 @@ def main():
     with open(os.path.join(a.aus, "auswertung.md"), "w", encoding="utf-8") as f:
         f.write(ev_md)
     version = a.version or datetime.datetime.utcnow().strftime("%Y%m%d-%H%M")
-    man = {"format": "moveeye-model-1", "version": str(version), "classes": CLASSES, "input": a.imgsz, "file": "moveeye_model.onnx",
+    man = {"format": "moveeye-model-1", "version": str(version), "classes": CLASSES, "input": a.imgsz, "file": a.name + ".onnx",
            "sha256": hashlib.sha256(raw).hexdigest(), "size": len(raw), "conf": conf, "metrics": metrics,
            "eval": ev, "summary": ev.get("summary", ""), "summary_en": ev.get("summary_en", ""),
            "made": datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC"), "base": a.basis, "epochs": a.epochen,
            "ultralytics": ul_version, "images": {k: st[k] for k in ("pack_images", "real_images", "real_skipped", "blank_skipped", "background", "val_images", "boxes")},
            "check": check}
-    with open(os.path.join(a.aus, "moveeye_model.json"), "w", encoding="utf-8") as f:
+    with open(os.path.join(a.aus, a.name + ".json"), "w", encoding="utf-8") as f:
         json.dump(man, f, indent=1, ensure_ascii=False)
     pc = "".join(f"| {k} | {v['map50']:.3f} | {v['map50_95']:.3f} |\n" for k, v in per.items())
     rep = (f"## MoveEye-KI-Modell {version}\n\n"

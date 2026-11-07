@@ -862,7 +862,7 @@ class MotionWatch:
             if t0 < getattr(self, "clean_until", 0.0):   # 553: the live picture of the SmallTV - the pure picture, without HUD and marks
                 self.frame_clean = frame.copy(); self.frame_clean_t = t0
             H, W = frame.shape[:2]
-            pw = CFG["proc_width"]; ph = int(H * pw / W); sx = W / pw; sy = H / ph
+            pw = prof_proc_width(CFG["proc_width"]); ph = int(H * pw / W); sx = W / pw; sy = H / ph   # 639zz: «Save battery» = smaller
             if (pw, ph) != getattr(self, "_proc_size", (pw, ph)):     # power mode / camera changed the working size
                 self._reset_models()
             self._proc_size = (pw, ph)
@@ -911,6 +911,7 @@ class MotionWatch:
                 g = self.preprocess(fog_gray(gray, t0), rain_mode)       # 411: in fog with the contrast lifted
                 fg = self.foreground(g, small, rain_mode, wind_boost)
                 self.ai.full = full_                       # real-erk-e3: the camera pixels for the AI / the Lupe (418z)
+                prof_motion(self.ai, fg, t0)               # 639zz: profile «Night» - the AI only after movement
                 ai_boxes = [b for b in self.ai.detect(small) if zone_box_ok(b, pw, ph, "person")]     # 2.98.13: zones by kind (066)
                 ai_objs = [o for o in self.ai.objects if zone_box_ok(o, pw, ph, "animal" if COCO_LABELS.get(o[5]) in ANIMALS else "other")]
                 rec_animals = [o for o in ai_objs if COCO_LABELS.get(o[5]) in ANIMALS]
@@ -992,6 +993,10 @@ class MotionWatch:
                 if present & ANIMALS:
                     present.add("animal")
                 species_update(ai_objs, frame, pw, ph, t0)
+                try:                                        # 639zz: animals with names, vehicles by type, things (once a minute)
+                    prof_frame(self, small, full_, ai_objs, person_boxes, pw, ph, t0)
+                except Exception as e:
+                    log_event("sys", f"Objects / profiles: {type(e).__name__}: {e}"[:160])
                 if CFG["diary_on"] and not CFG["sim_on"]:  # animal diary + night report: best picture of every visit (not in the simulation)
                     for o in ai_objs:
                         lab = COCO_LABELS.get(o[5], "object")

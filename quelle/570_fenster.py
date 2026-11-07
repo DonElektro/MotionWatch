@@ -2776,6 +2776,12 @@ class App:
             cb = ttk.Combobox(f, values=opts, state="readonly", width=11)
             cb.set(opts[0] if key not in sc["actions"] else (opts[1] if sc["actions"][key] else opts[2]))
             cb.grid(row=10 + r, column=2, columnspan=2, sticky="e", pady=1); fv[key] = cb
+        pf_keys = [""] + list(PROF_ORDER)                   # 639zz: «Detection profile» while the schedule runs
+        pf_opts = ["– " + tr("unchanged") + " –"] + [PROFILES[k]["icon"] + " " + tr(PROFILES[k]["name"]) for k in PROF_ORDER]
+        ttk.Label(f, text=tr("Detection profile")).grid(row=10 + len(SCHED_FEATURES), column=0, columnspan=2, sticky="w", pady=(6, 0))
+        pf_cb = ttk.Combobox(f, values=pf_opts, state="readonly", width=22)
+        pf_cb.current(pf_keys.index(sc.get("profile", "")) if sc.get("profile", "") in pf_keys else 0)
+        pf_cb.grid(row=10 + len(SCHED_FEATURES), column=2, columnspan=2, sticky="e", pady=(6, 0))
 
         def save():
             for t_ in (sv.get().strip(), ev.get().strip()):
@@ -2788,7 +2794,7 @@ class App:
             schedule_save(i, {"name": nv.get(), "enabled": en.get(), "days": [d for d, v in enumerate(dv) if v.get()],
                               "start": sv.get().strip(), "end": ev.get().strip(), "actions": acts,
                               "sun": sun_keys[max(0, sun_cb.current())], "sun_offset": int(offv.get()) if offv.get().strip().lstrip("-").isdigit() else 0,
-                              "presence": pr_keys[max(0, pr_cb.current())], "skip": skv.get()})
+                              "presence": pr_keys[max(0, pr_cb.current())], "skip": skv.get(), "profile": pf_keys[max(0, pf_cb.current())]})
             dlg.destroy(); self._schedule_rebuild()
         bf = ttk.Frame(f); bf.grid(row=11 + len(SCHED_FEATURES), column=0, columnspan=4, sticky="ew", pady=(12, 0))
         ttk.Button(bf, text=tr("Save"), command=save).pack(side="left", expand=True, fill="x", padx=(0, 4))

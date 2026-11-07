@@ -21,6 +21,23 @@ auf dem Pi kopieren.
 Automatisch trainieren (z. B. jeden Sonntag): in `.github/workflows/ki_modell.yml` vor den zwei Zeilen
 `schedule:` und `- cron:` das `#` entfernen. Standardmässig ist das aus.
 
+## Wildtiere mit Namen und grösseres Modell (Versuch, «Objekte und Profile»)
+
+Beim Start unter Actions → «KI-Modell» → «Run workflow» gibt es zwei Felder mehr:
+
+* **Klassen: wildtiere** – das Modell lernt zusätzlich **fox, roe deer, badger, hedgehog, wild boar** als eigene Klassen
+  (Simulator-Arten `fox`, `deer`/`roe deer`, `badger`, `hedgehog`, `boar`/`wild boar`; alle anderen Tiere bleiben «animal»).
+  MoveEye zeigt dann den Namen in der Push-Nachricht («🦊 Fuchs beim Zelt», Teil 639zz).
+* **Eingang 480 / 640** – ein grösseres Modell (`moveeye_model_gross.onnx` / `.json`). MoveEye nimmt es nur in den Profilen
+  «Hausüberwachung» und «Garten tagsüber» und nur mit dem Schalter «Grösseres eigenes Modell …» (ab Werk aus).
+
+Beides landet **nur** im Release **«ki-modell-versuch»**, nie in «ki-modell» – die Geräte behalten ihr Modell. Erst nach einer
+Messung am Pi (Zeit pro Bild, Temperatur, Akku) von Hand nach `~/.config/motionwatch/models/` kopieren.
+**Ehrlich:** Wie gut die Arten getrennt werden, hängt fast nur an den Bildern. Mit reinen Simulator-Bildern ist auf echten
+Kamerabildern (vor allem nachts im Infrarot) eher wenig zu erwarten – Fuchs/Dachs/Reh werden oft verwechselt; brauchbar wird
+es erst mit echten, beschrifteten Bildern («Was war das?»). Die Auswertung «Wo versagt die KI?» zählt die fünf Arten noch nicht
+einzeln (nur Person / Tier).
+
 ## Am einfachsten: Knopf «KI trainieren» im Simulator
 
 Im 3D-Simulator: Karte **«Testen»** → **«Trainingsbilder für eine eigene KI»** → Anzahl und **«Vielfalt: normal / hoch»**
