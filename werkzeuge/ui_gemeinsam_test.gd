@@ -246,6 +246,13 @@ func _abgleich() -> void:
 	eq("Push-Vorschau", ab.push_text().ends_with("Person erkannt · 22:14"), true)
 	fm.mw["mw_version"] = "3.0.1"
 	eq("Versions-Paar älter", ab.pair()["older"], "mw")
+	# Drei Spuren: verschiedene Nummern sind in Ordnung, solange jede Seite das Minimum der anderen erfüllt
+	fm.mw["mw_version"] = ab.MW_MIN
+	fm.mw.erase("sim_min")
+	eq("Drei Spuren: andere Nummer, passt", [ab.pair()["same"], ab.pair()["older"]], [true, ""])
+	fm.mw["sim_min"] = "99.0.0"
+	eq("Drei Spuren: MoveEye braucht einen neueren Simulator", ab.pair()["older"], "sim")
+	fm.mw.erase("sim_min")
 	TT.set_lang(keep_lang if keep_lang != "" else "auto")
 	St.set_modus(keep_voice)
 	ab.free()

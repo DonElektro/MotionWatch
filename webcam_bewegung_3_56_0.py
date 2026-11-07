@@ -23,6 +23,38 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 3.56.0: Drei Spuren: MoveEye, Simulator und Gehäuse haben je eine eigene Nummer und erscheinen einzeln; MoveEye prüft den
+    Simulator für /sim über die signierte Liste (versions.json «sim»), der HP holt neue Simulatoren selbst, das Versions-Paar
+    warnt nur noch unter der Mindestversion.
+  * 3.55.2: Kamerabilder: Nur sichtbare Bilder halten eine Verbindung offen; die Vorschauen unter Einstellungen → Kameras kommen
+    als Einzelbilder (2 pro Sekunde); bleibt ein Bild 5 s ohne neues Bild, verbindet es sich selbst neu (kein «noch kein Bild»
+    mehr bis zum Neuladen); ↻ lädt den aktuellen Reiter neu, statt zu Live zu springen.
+  * 3.55.1: Simulator: kein Absturz mehr bei KI-Trainingsbildern «Vielfalt hoch» (Morgen im Bergtal in einer Welt); Tropfen und
+    Beschlag auf der Linse funktionieren jetzt auch im Kompatibilitäts-Modus (Linux/HP), Protokoll ohne Shader-Fehlerflut.
+  * 3.55.0: HP rechnet rund um die Uhr (Erkennung messen, KI-Trainingsbilder, Langzeittest); Spielen am HP oder Zuschauen in
+    MoveEye Live hält das Rechnen sofort an, nach 15 Min. ohne Zuschauer geht es dort weiter; «HP rechnet» im Reiter Simulator
+    zum Zuschauen; Bildschirm schläft nach 10 Min.; HP-Update nur in Pausen.
+  * 3.54.0: Sim-Ansicht: im Simulator-Betrieb zeigt die Live-Seite auf Handy und Tablet ein grosses Simulator-Bild mit grossen
+    Knöpfen (Kopf, Folgen, IR, Licht, Sirene, Aufnahme), «⋯ Mehr» und «▦ Klassisch»; «🎮 Spielen» startet ein Spiel mit einem
+    Tipp, gespielt wird mit Knöpfen im Browser; das Simulator-Bild wird nicht mehr abgeschnitten (auch der Spiel-Assistent).
+  * 3.53.0: Simulator-PC (HP): während der Erkennungstests zeigt der Kiosk ein Testbild-Dashboard (Live-Bild mit MoveEyes
+    Rahmen, Soll/Ist, Fall N/M, Bilanz, 2 Min. Zusammenfassung am Schluss); neues automatisches, signiertes Update (nachts, nie
+    während eines Tests).
+  * 3.52.0: Geschichten: «× Beenden» und Esc auf jeder Karte, alle Fenster im Handy-Stream, Geschichten vom Handy starten (Mehr
+    › Spielen), Touch-Stick «gehen»; Erkennungstests auf dem Simulator-PC (HP) als eigener GitHub-Runner.
+  * 3.51.0: Gehäuse v5.3 ist Standard: Messing-Gewindeeinsätze M3, Halter für Wand/Baum mit Gurt, Akkuklappe im Boden (Zellen
+    tauschen ohne Ausbau), Luftkanal für den Pi-Lüfter, Zugentlastung; neue Platte C; v5.2/v5.1 wählbar.
+  * 3.50.0: Werkstatt «Bauen» als eigenständige Datei MoveEye_Werkstatt.html: läuft offline im Browser ohne Pi (alle Reiter, 3D,
+    Einzelteile, Druckplatten, Pakete, 5 Sprachen); bei jedem Release unter GitHub-Releases
+    (latest/download/MoveEye_Werkstatt.html) und im Bausatz.
+  * 3.49.0: Erkennung: deutlich mehr Personen erkannt (Test 3: 42 % → 69 %, Kinder 92 %); Auto-Tune gedeckelt, Wind-Regel nur
+    letzte 2 Min., aufrechte KI-Person sofort «Person?» und nie «Tier», Autos/Scheinwerfer nachts keine Person, Kopf schwenkt
+    beim Verfolgen mit.
+  * 3.48.1: Werkstatt im Simulator wie in MoveEye (Karte unter dem Bild, Symbole, Farben), Knopftexte zweizeilig statt
+    abgeschnitten; echte 3D-Modelle für Füsse und Stopfen, echte Lage auf den Druckplatten.
+  * 3.48.0: Werkstatt: Teil antippen → «Nur dieses Teil zeigen» mit Grösse, Druck-/Zukauf-Infos, 3MF-Download, «Liegend wie
+    gedruckt», «Wo es hingehört» (Sprung zum Montageschritt); neue Ansicht «Druckplatten» A/B mit Download je Platte und allen
+    Platten als ZIP; MoveEye und Simulator.
   * 3.47.1: Druckdateien herunterladen klappt auch auf dem Pi ohne Projektordner (Pi holt die Datei selbst, sauberer Dateiname);
     «Alle als ZIP» nur für die gewählte Variante, mit Kurzanleitung.
   * 3.47.0: Gehäuse-Abgleich v5.2: Montage-Texte v5.2, Szene immer v5.2 mit Stopfen 12/19, Grau #9a9ea3 und Kopf orange, «Stand
@@ -66,31 +98,6 @@ Features
     im Simulator oder aus MoveEye (nur Besitzer), vorher wird automatisch der aktuelle Stand gesichert.
   * 3.37.0: Foto-Texturen aus Besitzers Fotos im Bergtal: Wiese, Alpweide, Alpenrosen, Geröll, Fels, Strasse (abschaltbar; Lite
     unverändert).
-  * 3.36.0: Simulator: menschlichere Figuren – ab Grafik mittel MakeHuman-Körper aus dem nachladbaren Menschen-Paket (~5 MB),
-    einfach (Pi) mit feinerem Körper und Gesicht; Kleidung, Rucksack, Stöcke und Lampen passend zur Szene.
-  * 3.35.0: Bergtal: ein neues Geheimnis.
-  * 3.34.0: Neue Seite «Gehäuse & Bau» (Mehr): Gehäuse v5.1 Schritt für Schritt, Materialliste, Druckdateien, Kapitel in der
-    Anleitung (5 Sprachen); im Simulator die Werkstatt zum Drehen und Zerlegen, das echte Gehäuse am Gerät.
-  * 3.33.0: Hilfe zu jedem Fehler: Fehler-Katalog (27 Fehler, 5 Sprachen), Seite /hilfe/fehler, Knopf «Jetzt beheben» (nur
-    Besitzer) und QR-Code in Selbstdiagnose, Fenster, SmallTV, TV und Push; im Simulator ebenso.
-  * 3.32.0: Ruhiges Bild statt Schwarz, wenn der Simulator startet, sich aktualisiert, einen Ort lädt oder nicht erreichbar ist
-    (mit Blinki, nach 3 Min. ein Hinweis); echte Kamera: klarere Fehlermeldung.
-  * 3.31.0: Ein gemeinsamer Kopf auf jeder Seite (Web, Pi-Fenster, Simulator): ? 🔔 ↻ DE ☰ ⛶ ▲ 🛠 immer gleich;
-    Ein-/Ausblenden-Listen als Chips mit Symbolen und Gruppen.
-  * 3.30.0: Schneller zum Entwickler-Bereich: das MoveEye-Logo etwa 1 s gedrückt halten (Web, Pi-Fenster, Simulator); im
-    Simulator zusätzlich ein Werkzeug-Knopf 🛠 oben rechts.
-  * 3.29.0: Simulator: Fenster docken automatisch in Leisten links/rechts an (ohne Überlappung, passt sich der Bildschirmgrösse
-    an, «Neu anordnen»); Karte, Kompass, SmallTV und CPU als Reiter in einem Fenster; Entwickler immer vorne, klein/mittel/gross
-    und einklappbar.
-  * 3.28.1: Prüfungen laufen automatisch auf GitHub (MoveEye, Simulator-Tests, Export), schneller und ohne den eigenen Rechner
-    zu belasten.
-  * 3.28.0: Ton in den Spielen: Glockenspiel, Fanfare, Streicher, Spannung mit Puls und Trommelwirbel, Pauke, Tusch, leise
-    Begleitmusik (abschaltbar, eigene Regler), echte Umgebungsgeräusche, sanfte Klicks – nur in Spielen und Geschichten.
-  * 3.27.0: Weniger Schalter: Updates mit einer Auswahl, neu «Bewegung reduzieren» und «Stimme» (an · aus · nur Untertitel) in
-    MoveEye und Simulator, Rundgang/Blinki an einem Ort, Symbole farbig, «Beim Start: Nur Gruppen» entfällt (langer Druck
-    bleibt), alter Python-Basis-Simulator entfernt.
-  * 3.26.0: Simulator 3.26.0: Maggie sieht realistischer aus – ab Grafik «mittel» ein Modell mit Skelett und Fell, in «einfach»
-    weiche Formen mit ihrem Muster.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -99,10 +106,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_3_47_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_3_56_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_3_47_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_3_47_1.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_3_56_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_3_56_0.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -119,7 +126,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "3.47.1"
+APP_VERSION = "3.56.0"
 
 
 def default_data_dir():
@@ -241,8 +248,8 @@ def prepare_settings_file():
 #     Part 397 fetches the zip over the same update source and restarts once (zusatz_start()).
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
-ZD_FILE = "moveeye_daten_3_47_1.zip"
-ZD_SHA256 = "bd22ee0eb3be8ed0091ec57d6dc67715973fdb34fbbd0dd3365b6ca12d5b7499"
+ZD_FILE = "moveeye_daten_3_56_0.zip"
+ZD_SHA256 = "54e2a16729033fcaaa4b9182c08c9649ab6df68d856a89f5c69166fd1b311023"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -2122,7 +2129,7 @@ VIEW_GET_PAGES = {"/", "/help", "/quick", "/more"}
 VIEW_GET = ("/api/tunnel", "/api/helper", "/api/info", "/api/nettest", "/api/state", "/api/alerts", "/api/appearance", "/api/version",
             "/api/health", "/api/gps", "/api/zones", "/api/webpush", "/api/ui", "/api/battery", "/api/sensors", "/api/qs", "/api/schedule",
             "/api/schema", "/api/triggers", "/api/fa", "/api/appicon", "/api/audio", "/i18n/", "/app-icon/", "/sim-icon/", "/api/simbar", "/api/news")
-PERM_GET = {"live": ("/cams", "/preview", "/api/cams", "/api/frame.jpg", "/video_feed", "/cam_feed/", "/snapshot.jpg", "/api/audio/live",
+PERM_GET = {"live": ("/cams", "/preview", "/api/cams", "/api/frame.jpg", "/video_feed", "/cam_feed/", "/cam_snap/", "/snapshot.jpg", "/api/audio/live",
                      "/sim/view.jpg", "/sim/view.mjpg"),
             "rec": ("/recordings", "/diary", "/kino", "/api/kino", "/api/dataset.zip", "/api/recordings", "/api/places", "/rec/file/", "/rec/play/",
                     "/rec/thumb/", "/rec/share/", "/rec/report/", "/api/day", "/api/diary", "/diary/img/", "/api/timelapse", "/timelapse/",
@@ -17757,6 +17764,7 @@ class AutoTuner:
 
     def reset(self):
         self.t_start = time.time(); self.calibrated = False
+        autotune_start_values()                                 # real-erkennung-fix: no extreme values of an earlier scene (577)
         self.noise_areas, self.noise_frac = [], []
         self.last_eval = time.time()
         self.new_candidates = self.became_person = self.near_miss = self.walkers = 0
@@ -17781,6 +17789,8 @@ class AutoTuner:
         if autotune_paused():                                   # 2.98.14: every measurement / training (312), not only three
             STATE["auto_status"] = "paused (test run)"; return   # 2.97.0: a measurement needs fixed values
         now = time.time()
+        if CFG["min_area"] > autotune_area_cap(fg.size):        # real-erkennung-fix: also a value from before / by hand (577)
+            self._set("min_area", autotune_area_cap(fg.size), "at most %.1f %% of the picture" % (AUTOTUNE_AREA_MAX * 100))
         if fps > 1:
             self._set("walk_frames", max(4, min(24, round(fps * CFG["walk_seconds"]))), "fps")
         if not self.calibrated:
@@ -17792,8 +17802,9 @@ class AutoTuner:
             STATE["auto_status"] = f"calibrating… {max(0, left):.0f}s"
             if left <= 0:
                 self.calibrated = True
-                if self.noise_areas:
-                    self._set("min_area", max(600, min(4000, float(np.percentile(self.noise_areas, 95)) * 2.5)), "scene noise")
+                if self.noise_areas:                              # real-erkennung-fix: at most AUTOTUNE_AREA_MAX of the picture (577)
+                    cap = autotune_area_cap(fg.size)
+                    self._set("min_area", max(min(600, cap), min(cap, float(np.percentile(self.noise_areas, 95)) * 2.5)), "scene noise")
                 self.base_min_area = float(CFG["min_area"])
                 frac = float(np.mean(self.noise_frac)) if self.noise_frac else 0.0
                 if frac > 0.02:
@@ -17825,7 +17836,7 @@ class AutoTuner:
         false_rate = (self.new_candidates - self.became_person) / minutes
         if not persons:
             if false_rate > 25 and self.walkers == 0:              # 2.98.13: not while somebody walks; at most 2.5 × the calibrated size
-                cap = min(8000, 2.5 * (self.base_min_area or CFG["min_area"]))
+                cap = min(autotune_area_cap(fg.size), 2.5 * (self.base_min_area or CFG["min_area"]))
                 self._set("min_area", min(cap, CFG["min_area"] * 1.2), f"{false_rate:.0f} false blobs/min")
             elif false_rate > 12:
                 self._set("sensitivity", max(10, CFG["sensitivity"] - 5), "many false blobs")
@@ -17834,7 +17845,7 @@ class AutoTuner:
         if self.near_miss > 20 and self.became_person == 0:
             self._set("speed_consistency", max(0.3, CFG["speed_consistency"] - 0.05), "steady walkers not passing")
         elif self.became_person > 0 and false_rate < 5:
-            self._set("speed_consistency", min(0.7, CFG["speed_consistency"] + 0.02), "persons detected, tightening")
+            self._set("speed_consistency", min(AUTOTUNE_STEADY_MAX, CFG["speed_consistency"] + 0.02), "persons detected, tightening")
         STATE["auto_status"] = f"tuned · {false_rate:.0f} false/min"
         self.new_candidates = self.became_person = self.near_miss = self.walkers = 0
 
@@ -18685,6 +18696,9 @@ class DemoSource:
             cv2.line(img, (int(x + dx * size), int(y - 15 * size)), (int(x + dx * size + leg), int(y)), col, max(2, int(4 * size)))
 
     def read(self):
+        hold_ = os.environ.get("MW_TEST_HOLD")          # 3.55.2, only for werkzeuge/bildstrom_test.py: the demo picture source
+        while hold_ and os.path.exists(hold_):           # stands still while this file exists (a camera that hangs)
+            time.sleep(0.1)
         wait = 1.0 / max(1.0, self.fps) - (time.time() - self.last)
         if wait > 0:
             time.sleep(wait)
@@ -24699,13 +24713,13 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3.47.1", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 49069063,
-         "sha256": "13d1bec38f02d3b6dfde9ee24d1281637d2269fbdf38850cf9624d2aab8c50f2"}
+SIM3D = {"version": "3.56.0", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 49961650,
+         "sha256": "894aa4af3f94a36e04b15deb2ea04dcf900abcd11a26760ca20817da59189abf"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # 3.43.x: the same 3D simulator for Linux (x86_64), offered at /sim/simulator3d_linux.zip - fetched, checked and kept the same way
 # (simulator3d/MoveEyeSim3D_Linux.zip, block «linux» in simulator3d/version.json; bauen.py --neue-version takes it over).
-SIM3D_LINUX = {"version": "3.47.1", "file": "simulator3d/MoveEyeSim3D_Linux.zip", "size": 43044992,
-               "sha256": "aa8709dd6539398f46469ce96a441e300d2e2f3121c92e5679f2c30e6f2d934d", "stem": "MoveEyeSim3D_Linux",
+SIM3D_LINUX = {"version": "3.56.0", "file": "simulator3d/MoveEyeSim3D_Linux.zip", "size": 43977805,
+               "sha256": "66fbf70e6f1aa6ca7a467ba1ef7ad6f8abcda4d9fd29ec473206d708e1fa4ef4", "stem": "MoveEyeSim3D_Linux",
                "label": "MoveEye Sim (Linux)"}
 SIM3D_LINUX_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
@@ -24820,6 +24834,91 @@ def sim_versions():
 SIM3D["stem"] = "MotionWatch3D_Simulator"; SIM3D["label"] = "MoveEye Sim · 3D" if "3D-" in SIM3D["version"] else "MoveEye Sim"
 SIM3D_BASE = "https://raw.githubusercontent.com/DonElektro/MotionWatch/main/"
 
+# ---- Drei Spuren (Besitzer 03.11.2026): the simulator has its own number and can be released without a new MoveEye. The
+# checksums above are only the fallback (the simulator of this MoveEye's own release). The signed versions.json carries the
+# newest simulator under «sim» (bauen.py --signieren / --nur-signieren, make_manifest 390): {"ver", "win": {file, size, sha256,
+# ver, sig}, "linux": {…}} - each signed with the same key and the same scheme as the program files (Ed25519 over
+# «MotionWatch|ver|file|sha256», sig_ok 380). Only a correctly signed entry for exactly the expected file, never older than the
+# embedded one or the one taken before (no replay of an old list), replaces version / size / checksum - anything else keeps
+# the values. MoveEye versions from before this change know only their embedded checksum: they serve /sim again after their
+# own update. Test: sim_manifest_selftest (545). ----
+SIM3D_EMBED = {k: SIM3D[k] for k in ("version", "size", "sha256")}
+SIM3D_LINUX_EMBED = {k: SIM3D_LINUX[k] for k in ("version", "size", "sha256")}
+SIMMAN = {"t": 0.0, "src": "embedded", "loaded": False}
+SIMMAN_FILE = "sim_manifest.json"                   # in DATA_DIR/sim3d: the last verified «sim» block (checked again on load)
+
+
+def sim_manifest_verify(blk):
+    """the parts of a versions.json «sim» block whose signature is valid: {"win": {...}, "linux": {...}} (maybe empty)"""
+    out = {}
+    if not isinstance(blk, dict):
+        return out
+    for key, pkg in (("win", SIM3D), ("linux", SIM3D_LINUX)):
+        e = blk.get(key)
+        if not isinstance(e, dict):
+            continue
+        v, fn, sha = str(e.get("ver") or ""), str(e.get("file") or ""), str(e.get("sha256") or "").lower()
+        try:
+            size = int(e.get("size") or 0)
+        except (TypeError, ValueError):
+            continue
+        if not (VER_RE.match(v) and fn == pkg["file"] and re.fullmatch(r"[0-9a-f]{64}", sha) and 0 < size <= 2 * 1024 ** 3):
+            continue
+        if sig_ok(v, fn, sha, e.get("sig")):
+            out[key] = {"ver": v, "file": fn, "size": size, "sha256": sha, "sig": str(e.get("sig"))}
+    return out
+
+
+def sim_manifest_take(blk, save=True):
+    """use the signed simulator entries of versions.json (see above); returns the keys that changed"""
+    ok = sim_manifest_verify(blk)
+    changed = []
+    for key, pkg in (("win", SIM3D), ("linux", SIM3D_LINUX)):
+        e = ok.get(key)
+        if not e or not sim_vkey(e["ver"]) or not sim_vkey(pkg["version"]) or sim_vkey(e["ver"]) < sim_vkey(pkg["version"]):
+            continue                                              # never back: not older than the embedded / the last taken one
+        if (pkg["version"], pkg["size"], pkg["sha256"]) != (e["ver"], e["size"], e["sha256"]):
+            pkg.update(version=e["ver"], size=e["size"], sha256=e["sha256"])
+            changed.append(key)
+    if ok:
+        SIMMAN.update(t=time.time(), src="versions.json")
+        if save and changed:
+            try:
+                d_ = os.path.join(DATA_DIR, "sim3d")
+                os.makedirs(d_, exist_ok=True)
+                with open(os.path.join(d_, SIMMAN_FILE), "w", encoding="utf-8") as f:
+                    json.dump(ok, f)
+            except (OSError, TypeError, ValueError):
+                pass
+    return changed
+
+
+def sim_manifest_load():
+    """once: the last verified «sim» block from DATA_DIR (signatures checked again - a changed file is ignored)"""
+    if SIMMAN["loaded"]:
+        return
+    SIMMAN["loaded"] = True
+    try:
+        with open(os.path.join(DATA_DIR, "sim3d", SIMMAN_FILE), encoding="utf-8") as f:
+            sim_manifest_take(json.load(f), save=False)
+    except (OSError, ValueError, TypeError, AttributeError):
+        pass
+
+
+def sim_manifest_refresh(base, max_age=600):
+    """fetch versions.json from the same place as the simulator packages and take its signed «sim» block"""
+    sim_manifest_load()
+    if time.time() - SIMMAN["t"] < max_age:
+        return
+    SIMMAN["t"] = time.time() - max_age + 60                    # not reachable / no signed block: ask again in a minute
+    try:
+        req = _upd_request(base + "versions.json?t=" + str(int(time.time())), {"Cache-Control": "no-cache"})
+        with urllib.request.urlopen(req, timeout=15) as r:
+            data = json.loads(r.read(1024 * 1024 + 1)[:1024 * 1024].decode("utf-8"))
+        sim_manifest_take(data.get("sim") if isinstance(data, dict) else None)
+    except Exception:
+        pass
+
 
 def sim3d_path(pkg=None):
     pkg = pkg or SIM3D
@@ -24828,6 +24927,8 @@ def sim3d_path(pkg=None):
 
 def sim3d_ready(pkg=None):
     pkg = pkg or SIM3D
+    if not SIMMAN["loaded"]:
+        sim_manifest_load()                               # 3 tracks: the simulator of the last signed versions.json
     p = sim3d_path(pkg)
     return os.path.isfile(p) and os.path.getsize(p) == pkg["size"]
 
@@ -24841,11 +24942,17 @@ def sim3d_fetch(pkg=None, dl=None):
 
     def work(SIM3D=SIM3D_, SIM3D_DL=SIM3D_DL_):
         import hashlib
-        p = sim3d_path(SIM3D); tmp = p + ".part"
+        tmp = ""
         try:
-            os.makedirs(os.path.dirname(p), exist_ok=True)
             src = CFG["update_url"].strip()
             base = src.rsplit("/", 1)[0] + "/" if src.startswith("https://") else SIM3D_BASE
+            if SIM3D is globals()["SIM3D"] or SIM3D is globals()["SIM3D_LINUX"]:
+                sim_manifest_refresh(base)                    # 3 tracks: the newest signed simulator (versions.json «sim»)
+                if sim3d_ready(SIM3D):
+                    return
+            want = {"version": SIM3D["version"], "size": SIM3D["size"], "sha256": SIM3D["sha256"]}   # fixed for this download
+            p = os.path.join(DATA_DIR, "sim3d", SIM3D["stem"] + "_" + want["version"] + ".zip"); tmp = p + ".part"
+            os.makedirs(os.path.dirname(p), exist_ok=True)
             h = hashlib.sha256()
             with urllib.request.urlopen(_upd_request(base + SIM3D["file"]), timeout=30) as r, open(tmp, "wb") as f:
                 while True:
@@ -24853,15 +24960,15 @@ def sim3d_fetch(pkg=None, dl=None):
                     if not b:
                         break
                     f.write(b); h.update(b); SIM3D_DL["got"] += len(b)
-                    if SIM3D_DL["got"] > SIM3D["size"] + 1024:
+                    if SIM3D_DL["got"] > want["size"] + 1024:
                         raise ValueError("file too large")
-            if h.hexdigest() != SIM3D["sha256"]:
+            if h.hexdigest() != want["sha256"]:
                 raise ValueError("checksum wrong - the file was changed or is damaged")
             os.replace(tmp, p)
             for old in glob.glob(os.path.join(os.path.dirname(p), SIM3D["stem"] + "_*.zip")):
                 if old != p:
                     os.remove(old)
-            log_event("sys", f"{SIM3D['label']} {SIM3D['version']} ready for download")
+            log_event("sys", f"{SIM3D['label']} {want['version']} ready for download")
         except Exception as e:
             SIM3D_DL["msg"] = _upd_error(e)[:160]
             log_event("sys", f"{SIM3D['label']} could not be fetched: " + SIM3D_DL["msg"])
@@ -30614,7 +30721,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_3_47_1.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_3_56_0.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -31225,6 +31332,10 @@ def update_check():
                 data = json.loads(r.read(1024 * 1024 + 1)[:1024 * 1024].decode("utf-8"))
             UPD["list_time"] = str(data.get("generated") or "")[:16]
             base = src.rsplit("/", 1)[0] + "/"
+            try:                                         # 3 tracks: the newest signed simulator for /sim (300 sim_manifest_take)
+                sim_manifest_take(data.get("sim"))
+            except Exception:
+                pass
             for e in (data.get("versions") or [])[:200]:
                 v, fn = str(e.get("version", "")), str(e.get("file", ""))
                 url = str(e.get("url") or (base + fn))
@@ -31980,8 +32091,10 @@ def self_test(folder=""):
                         bad.append(e["version"] + " (data file)")
             if not any(e.get("bridge") and e.get("version") == UPD_BRIDGE for e in m.get("versions", [])):
                 bad.append("bridge " + UPD_BRIDGE + " missing")
+            sbad, simtxt = sim_manifest_check(folder, m)     # 3 tracks: the signed simulator block (300 sim_manifest_verify)
+            bad = sbad + bad                                 # first: the list can be long
             assert not bad, f"bad checksum / signature: {bad}"
-            return f"{len(m.get('versions', []))} versions signed and checked"
+            return f"{len(m.get('versions', []))} versions signed and checked" + simtxt
         if os.environ.get("MW_SELFTEST_NO_SIG"):         # 2.98.50 (Besitzer): work branches are not signed yet - GitHub checks it only on main
             chk("versions.json signatures", lambda: "skipped (MW_SELFTEST_NO_SIG: work branch, signed only at the release)")
         else:
@@ -31991,6 +32104,38 @@ def self_test(folder=""):
         print(("✓ " if good else "✗ ") + name + (f" – {note}" if note else ""))
     print("Self-test " + ("OK" if ok else "FAILED") + f" (MoveEye {APP_VERSION})")
     return 0 if ok else 1
+
+
+def sim_manifest_check(folder, m):
+    """3 tracks: the block «sim» of a versions.json against the files in folder - (problems, short text); used by the self-test"""
+    bad = []
+    sim = m.get("sim")
+    simtxt = ""
+    if sim is not None and os.path.isdir(os.path.join(folder, "simulator3d")):   # e.g. not in the Bausatz folder
+        ok_ = sim_manifest_verify(sim)
+        for key in ("win", "linux"):
+            e = sim.get(key) if isinstance(sim, dict) else None
+            if e is None:
+                continue
+            p_ = os.path.join(folder, str(e.get("file") or ""))
+            sha = ""
+            if os.path.isfile(p_):
+                h_ = hashlib.sha256()
+                with open(p_, "rb") as f:
+                    for b_ in iter(lambda: f.read(1 << 20), b""):
+                        h_.update(b_)
+                sha = h_.hexdigest()
+            if key not in ok_ or not sha or sha != ok_[key]["sha256"] or os.path.getsize(p_) != ok_[key]["size"]:
+                bad.append(f"simulator {key} {e.get('ver')}")
+        try:
+            with open(os.path.join(folder, "simulator3d", "version.json"), encoding="utf-8") as f:
+                vj_ = json.load(f)
+            if str(vj_.get("ver")) != str(sim.get("ver")):
+                bad.append(f"simulator {sim.get('ver')} in versions.json, simulator3d/version.json has {vj_.get('ver')} - sign again")
+        except (OSError, ValueError, AttributeError):
+            pass
+        simtxt = f", simulator {sim.get('ver') if isinstance(sim, dict) else '?'} ({'+'.join(sorted(ok_))})"
+    return bad, simtxt
 
 
 def make_manifest(folder, base_url, sign_key=""):
@@ -32026,11 +32171,54 @@ def make_manifest(folder, base_url, sign_key=""):
             if seed:
                 e["data"]["sig"] = _ED[1](seed, _sig_msg(it["version"], zf, zsha)).hex()
         out.append(e)
+    man = {"app": "Motion Watch", "generated": datetime.now().strftime("%Y-%m-%d %H:%M"), "versions": out}
+    sim = sim_manifest_block(folder, seed)                # 3 tracks: the simulator with its own number (300 sim_manifest_take)
+    if sim:
+        man["sim"] = sim
     p = os.path.join(folder, "versions.json")
     with open(p, "w") as f:
-        json.dump({"app": "Motion Watch", "generated": datetime.now().strftime("%Y-%m-%d %H:%M"), "versions": out}, f, indent=1, ensure_ascii=False)
-    print(f"{p}: {len(out)} version(s)" + (", signed" if seed else ", NOT signed"))
+        json.dump(man, f, indent=1, ensure_ascii=False)
+    print(f"{p}: {len(out)} version(s)" + (f", simulator {sim['ver']}" if sim else "") + (", signed" if seed else ", NOT signed"))
     return 0
+
+
+def sim_manifest_block(folder, seed=b""):
+    """«sim» for versions.json from simulator3d/version.json: Windows + Linux package with size, checksum and - with the key - a
+    signature over «MotionWatch|ver|file|sha256» (same scheme as the program files). Only packages that are there and fit
+    version.json; None without simulator3d/version.json. Old devices ignore this block (they only read «versions»)."""
+    try:
+        with open(os.path.join(folder, "simulator3d", "version.json"), encoding="utf-8") as f:
+            d = json.load(f)
+    except (OSError, ValueError):
+        return None
+    ver = str(d.get("ver") or "")
+    if not VER_RE.match(ver):
+        print("Note: simulator3d/version.json without «ver» X.Y.Z - no «sim» block in versions.json")
+        return None
+    blk = {"ver": ver, "version": str(d.get("version") or ""), "notes": str(d.get("notes") or "")[:400]}
+    if d.get("mw_min") and VER_RE.match(str(d.get("mw_min"))):
+        blk["mw_min"] = str(d["mw_min"])
+    lx = d.get("linux") if isinstance(d.get("linux"), dict) else {}
+    for key, e in (("win", d), ("linux", lx)):
+        fn, v = str(e.get("file") or ""), str(e.get("ver") or ver)
+        if not fn or not VER_RE.match(v) or fn not in ("simulator3d/MotionWatch3D_Simulator.zip", "simulator3d/MoveEyeSim3D_Linux.zip"):
+            continue
+        fp = os.path.join(folder, fn)
+        if not os.path.isfile(fp):
+            print(f"Note: {fn} missing - «sim» without {key}")
+            continue
+        h = hashlib.sha256()
+        with open(fp, "rb") as f:
+            for b in iter(lambda: f.read(1 << 20), b""):
+                h.update(b)
+        sha, size = h.hexdigest(), os.path.getsize(fp)
+        if sha != str(e.get("sha256") or "") or size != e.get("size"):
+            print(f"Note: {fn} does not fit simulator3d/version.json (size / checksum) - «sim» without {key}")
+            continue
+        blk[key] = {"ver": v, "file": fn, "size": size, "sha256": sha}
+        if seed:
+            blk[key]["sig"] = _ED[1](seed, _sig_msg(v, fn, sha)).hex()
+    return blk if ("win" in blk or "linux" in blk) else None
 
 
 # ----------------------------------------------------------------------------
@@ -32917,6 +33105,7 @@ class MotionWatch:
                       (area > CFG["car_area_frac"] * frame_area and aspect > 1.2 and sv > 1.0 * k)
             vehicle = vehicle and len(t.speeds) >= 2                 # judged from two steps on, not from the very first
             if vehicle:
+                self._veh_t = time.time(); t.was_vehicle = True         # real-erkennung-fix: headlights (veh_light_veto)
                 if not t.is_vehicle:
                     STATE["ignored_vehicles"] += 1
                     log_event("car", f"Vehicle-like object #{t.id} ignored (aspect {aspect:.2f}, speed {sp:.1f})")
@@ -32953,6 +33142,11 @@ class MotionWatch:
             walking = False                                 # needs AI confirmation
         elif t.is_person and CFG["person_sticky"] and sp <= CFG["walk_max_speed"] * k and not animal and not getattr(t, "fixp", False):
             walking = True                                  # keep flag while tracked (may stand still)
+        if walking and not t.ai_confirmed and not t.is_person and getattr(t, "was_vehicle", False):
+            walking = False                                 # real-erkennung-fix: once vehicle-like, movement alone never makes it a
+                                                            # person (a car turning / half hidden looked «person-like» for a moment)
+        if walking and not t.is_person and veh_light_veto(t, getattr(self, "_veh_t", 0.0), now_):
+            walking = False                                 # real-erkennung-fix: the light of a car at night is no person
         walking = strict_gate(self, t, walking, time.time())   # 411: at dusk / in wind a new person only after 2-3 hits in a row
         if walking and not t.is_person:
             STATE["detections_total"] += 1
@@ -33604,7 +33798,7 @@ class MotionWatch:
                             roi[mroi > 0] = tint[mroi > 0]
                     draw_outline(frame, cnts, t.box, sx, sy, (0, 0, 255), 2)
                     cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 3)
-                    cv2.putText(frame, f"PERSON #{t.id}{' AI' if t.ai_confirmed else ''}" + (dist_overlay(t) or f"  {t.speed():.1f}px/f"),
+                    cv2.putText(frame, f"PERSON{'?' if getattr(t, '_strict_maybe', False) else ''} #{t.id}{' AI' if t.ai_confirmed else ''}" + (dist_overlay(t) or f"  {t.speed():.1f}px/f"),
                                 (x, max(20, y - 8)), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
                     if CFG["show_tracks"] and len(t.hist) > 1:
                         pts = np.array([(int(px * sx), int(py * sy)) for px, py in t.hist], np.int32)
@@ -33829,6 +34023,14 @@ SELFTEST_EXTRA.append(("Low-light mode: hysteresis, back fast after a light (410
 #   wind      measured: wind meter / simulator (280 StormWatch: 60-s mean >= 20 km/h or gust >= 39 km/h), or the wind seen
 #             in the picture is «strong» / «storm» (410).
 #   Bound to the existing switch «nachts strenger» (night_strict), no new control.
+# real-erkennung-fix (Erkennungstest 2: Personen 75 % -> 44 %, Kinder 5/12): the rule held back real persons.
+#   - «wind» took the strongest gust of the last 10 min (STORM, 280): one leer run with 55 km/h made every person of the next
+#     10 min «wind», also at 12 km/h. Now only the wind of the last WIND_RECENT_S: 60-s mean >= 20 km/h or at least
+#     WIND_GUST_N measurements >= 39 km/h (one single gust is not enough), or the wind seen in the picture.
+#   - an AI person counted once per new AI result: at 2-3 pictures/s the AI runs every 1-3 s and a child at 8 m was in it
+#     only once -> never confirmed. Wind moves branches = MOVEMENT; the AI does not see more persons in the wind. So an
+#     UPRIGHT AI person is reported at once («im Zweifel Person?», mark «Person?»); a wide AI «person» (boar / fox at night in
+#     the test) and movement alone still wait for 2-3 hits in a row.
 # ----------------------------------------------------------------------------
 FOG = {"on": False, "raw": False, "raw_t": 0.0, "t": 0.0, "hist": deque(maxlen=200), "since": None, "score": None,
        "sat": None, "mean": None, "wx": False, "wx_t": 0.0, "lim_g": None, "lim_l": None, "clahe": None}
@@ -33847,6 +34049,9 @@ FOG_REL, FOG_SAT, FOG_REL_WX, FOG_SAT_WX, FOG_MEAN = 0.40, 30.0, 0.46, 40.0, 90.
 FOG_ON_S, FOG_OFF_S = 10.0, 30.0          # fog comes and goes in minutes; 10 s: a white van filling the picture (2-5 s) is no fog
 TWI_NOISE_K = 1.6                         # noise dusk / day in the test: 1.8-2.2 (three places); rain 0.85, snow 0.6
 WIND_MEAN_KMH, WIND_GUST_KMH = 20.0, 39.0  # Beaufort 4 (20-28 km/h): twigs move; Beaufort 6 (39-49 km/h): big branches move
+WIND_RECENT_S, WIND_GUST_N = 120.0, 2     # real-erkennung-fix: only the last 2 min, a gust must come at least twice
+STRICT_AI_UPRIGHT = 1.2                    # real-erkennung-fix: only an upright AI person (h >= 1.2 w) is reported at once; a wide one
+                                           # (boar, fox: the AI calls them «person» at night) still needs 2-3 AI results in a row
 
 
 def fog_weather(now=None):
@@ -34019,15 +34224,17 @@ def twilight_frame(w, gray, bright, t0):
                           f" (brightness {smooth:.0f}, noise {nz:.1f}" + (f" / day {TWI['base']:.1f}" if TWI["base"] else "") + ")")
 
 
-def wind_strong():
-    """measured wind (wind meter / simulator, 280) or the wind seen in the picture (410) is strong"""
+def wind_strong(now=None):
+    """measured wind (wind meter / simulator, 280) of the last WIND_RECENT_S or the wind seen in the picture (410) is strong"""
+    now = time.time() if now is None else now
     st = STATE.get("storm") or {}
     try:
         if st.get("wind") is not None and float(st["wind"]) >= WIND_MEAN_KMH:
             return True
-        if st.get("gust") is not None and float(st["gust"]) >= WIND_GUST_KMH:
+        win = [v for t, v in list(STORM["win"]) if now - t <= WIND_RECENT_S]          # real-erkennung-fix: not the 10-min gust
+        if sum(1 for v in win if v >= WIND_GUST_KMH) >= WIND_GUST_N:
             return True
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, KeyError, NameError):
         pass
     return STATE.get("wind_level") in ("strong", "storm")
 
@@ -34045,6 +34252,24 @@ def strict_update():
     return n
 
 
+VEH_LIGHT_S = 6.0          # real-erkennung-fix (Erkennungstest 2: Auto mit Scheinwerfern = «Person»): at night, while a car was seen
+                           # in the last 6 s, its light is no person - the beam (movement only), things it lights up (an AI «person»
+                           # that does not move) and the car itself (a track that was vehicle-like). A person walking stays a person.
+
+
+def veh_light_veto(t, veh_t, t0):
+    """410 classify: True = this new person is the light of a car at night"""
+    try:
+        if not is_dark() or t0 - float(veh_t or 0.0) > VEH_LIGHT_S:
+            return False
+    except Exception:
+        return False
+    if getattr(t, "was_vehicle", False) or not t.ai_confirmed:
+        return True
+    sp = list(getattr(t, "speeds", []))
+    return len(sp) >= 3 and (sum(sp) / len(sp)) < float(CFG.get("walk_min_speed", 0.3)) * 2
+
+
 def strict_gate(w, t, walking, t0):
     """410 classify: a NEW person only after STRICT["n"] hits in a row (see the top). Returns the new «walking»."""
     n = STRICT["n"]
@@ -34052,6 +34277,13 @@ def strict_gate(w, t, walking, t0):
     if t.is_person or n <= 1:
         t._sg = None
         return walking
+    up = float(t.box[3]) >= STRICT_AI_UPRIGHT * float(t.box[2]) if getattr(t, "box", None) else True
+    if walking and t.ai_confirmed and up:                    # real-erkennung-fix: the AI sees an upright person - at once («Person?»)
+        if not getattr(t, "_strict_maybe", False):
+            t._strict_maybe = True
+            log_event("person", f"Person? #{t.id}: AI person while {STRICT['why']} - reported at once (not held back)")
+        t._sg = None
+        return True
     if not walking:
         if sg is not None:
             sg["miss"] += 1
@@ -34060,7 +34292,7 @@ def strict_gate(w, t, walking, t0):
         return False
     if sg is None:
         sg = t._sg = {"n": 0, "key": None, "t": t0, "miss": 0}
-    ai = getattr(w, "ai", None)
+    ai = getattr(w, "ai", None)                              # a wide AI person (boar / fox at night, or crawling): per AI result
     key = (("ai", getattr(ai, "_last_run", 0.0), id(getattr(ai, "boxes", None))) if t.ai_confirmed
            else ("f", STATE.get("frames", 0)))
     if key != sg["key"]:
@@ -34181,8 +34413,22 @@ def fog_selftest():
         assert run(2, [True, True]) == 1 and run(3, [True, True, True]) == 2
         assert run(2, [True, False, True, False, False, True]) == 2, "one miss allowed"
         assert run(3, [True, False, False, True, False, False, True, False, False]) is None, "single flickers never count"
-        # the walking person at dusk + wind, 3 pictures/s like the simulator, the AI each time: <= 1 s later
-        assert run(3, [True] * 6, ai=True, dt=0.33) == 2
+        # real-erkennung-fix: an AI person is reported at once («Person?»), also with a single AI result
+        assert run(3, [True] * 6, ai=True, dt=0.33) == 0 and run(2, [True], ai=True) == 0
+        dk = globals()["is_dark"]                                # real-erkennung-fix: the light of a car at night
+        try:
+            globals()["is_dark"] = lambda: True
+            v = _T(); v.speeds = [0.0, 0.1, 0.0]; v.ai_confirmed = True
+            assert veh_light_veto(v, 100.0, 103.0) and not veh_light_veto(v, 100.0, 110.0), "static AI person while a car passes"
+            v.speeds = [6.0, 7.0, 6.5]
+            assert not veh_light_veto(v, 100.0, 103.0), "a walking person stays a person"
+            v.ai_confirmed = False; assert veh_light_veto(v, 100.0, 103.0), "the beam (movement only)"
+            globals()["is_dark"] = lambda: False; assert not veh_light_veto(v, 100.0, 103.0), "by day as before"
+        finally:
+            globals()["is_dark"] = dk
+        _T.box = (0, 0, 40, 20)                                  # a wide AI «person» (boar at night): new AI results in a row
+        assert run(2, [True], ai=True) is None and run(2, [True, True], ai=True) == 1
+        del _T.box
         # Pi 5, 12 pictures/s, the AI only every 0.3 s: the cached AI boxes count once per run
         STRICT["n"] = 3; tr_ = _T(); tr_.ai_confirmed = True; t_ = 6000.0; got = None
         for i in range(40):
@@ -34191,12 +34437,22 @@ def fog_selftest():
                 w.ai._last_run = t_; w.ai.boxes = [i]
             if strict_gate(w, tr_, True, t_):
                 got = t_ - 6000.0; break
-        assert got is not None and 0.5 < got <= 1.1, f"Pi: confirmed after {got} s"
+        assert got is not None and got <= 0.1, f"Pi: confirmed after {got} s"
         # reasons: wind from the wind meter / simulator, switch «nachts strenger» off = as before
         TWI["on"] = True; STATE["storm"] = {"wind": 55.0, "gust": 70.0}
         assert strict_update() == 3 and STRICT["why"] == "dusk + wind"
         TWI["on"] = False; STATE["storm"] = {"wind": 5.0, "gust": 10.0}; wl = STATE.get("wind_level"); STATE["wind_level"] = "calm"
         assert strict_update() == 1
+        # real-erkennung-fix: one gust is not enough, an old storm (more than 2 min ago) neither
+        win_keep = list(STORM["win"]); now_ = time.time()
+        try:
+            STORM["win"].clear(); STORM["win"].extend([(now_ - 300, 55.0), (now_ - 290, 55.0), (now_ - 5, 45.0), (now_ - 2, 12.0)])
+            STATE["storm"] = {"wind": 12.0, "gust": 55.0}
+            assert not wind_strong(now_) and strict_update() == 1, "10-min gust / one gust"
+            STORM["win"].append((now_ - 1, 41.0))
+            assert wind_strong(now_), "two gusts in 2 min"
+        finally:
+            STORM["win"].clear(); STORM["win"].extend(win_keep)
         STATE["wind_level"] = wl
         CFG["night_strict"] = False; TWI["on"] = True
         assert strict_update() == 1
@@ -35318,6 +35574,10 @@ FIX_WALK_AFTER_S = 5.0
 FIX_ANIMAL_MEM_S = 4.0      # an animal of the AI is remembered 4 s on its place (the AI runs only now and then; a new track there inherits it)
 FIX_ANIMAL_AI_S = 1.0       # an animal track becomes a person only when the AI says «person» on it for 1 s (≥ 2 runs of the AI on
                             # the Pi, 0.3 … 0.6 s apart) and no animal in that time: one wrong «person» of a dog is not enough
+FIX_ANIMAL_UPRIGHT = 1.3    # real-erkennung-fix (Kinder 5/12 im Erkennungstest 2): the AI says «person» and the box stands upright
+                            # (height >= 1.3 x width, like the thermal person check 232) -> a person at once, also when an animal of
+                            # the AI lay there a moment ago. A child, a small or crouching person is upright; animals from the side
+                            # are wide (deer 0.5 … 0.8, fox 0.3 … 0.6). «Im Zweifel Person».
 FIXP = {"spots": [], "moving": deque(maxlen=1000), "animals": deque(maxlen=60), "start_t": 0.0, "head": None, "head_t": 0.0,
         "offers": [], "next": 1, "learned_n": 0, "suppressed": 0}
 
@@ -35572,6 +35832,15 @@ def fixp_veto(tracks, ai_objs, pw, ph, t0):
 def animal_track_decide(t, ai_person, animal_cls, t0):
     """Tier vor Person for one track (410 classify): -> True when the track is an animal (no person from movement / sticky).
     ai_person = the AI calls it a person now; animal_cls = an animal of the AI lies on it now (or a moment ago)."""
+    try:
+        upright = float(t.box[3]) >= FIX_ANIMAL_UPRIGHT * float(t.box[2])
+    except (AttributeError, IndexError, TypeError, ValueError):
+        upright = False
+    if ai_person and upright:                                # real-erkennung-fix: an upright AI person is a person (child)
+        if getattr(t, "animal_like", False):
+            log_event("person", f"Person #{t.id}: the AI says person, upright - not an animal ({getattr(t, 'animal_cls', '')})")
+        t.animal_like = False; t.animal_cls = None
+        return False
     if animal_cls:
         t.animal_like = True; t.animal_cls = animal_cls; t.animal_t = t0; t.ai_p_since = 0.0
     if not getattr(t, "animal_like", False):
@@ -35787,7 +36056,7 @@ def fixp_selftest():
 
     # 7) Tier vor Person: a dog track stays an animal; the AI saying «person» once does not change it, 1.5 s of it does
     class _T:
-        pass
+        id = 1; box = (10, 10, 40, 20)                                   # a wide dog box (real-erkennung-fix: upright = person)
     t = _T()
     assert animal_track_decide(t, False, None, 0.0) is False
     assert animal_track_decide(t, False, "dog", 1.0) is True
@@ -35795,6 +36064,9 @@ def fixp_selftest():
     assert animal_track_decide(t, True, None, 15.5) is True              # the AI says «person» once
     assert animal_track_decide(t, True, "dog", 16.0) is True             # and dog again: the clock starts again
     assert animal_track_decide(t, True, None, 16.5) is True and animal_track_decide(t, True, None, 18.1) is False   # 1.6 s person: a person
+    k = _T(); k.box = (100, 50, 20, 42)                                  # real-erkennung-fix: a child (upright), the AI said «dog» before
+    assert animal_track_decide(k, False, "dog", 20.0) is True and animal_track_decide(k, True, "dog", 20.5) is False, "upright AI person"
+    assert animal_track_decide(k, False, None, 21.0) is False            # stays a person (not an animal again without a new animal)
     FIXP["animals"].clear()
     fixp_animal_note([(10, 10, 40, 20, 0.6, 18)], 320, 240, 50.0)
     assert fixp_animal_of((12, 12, 38, 22), 52.0) == "dog" and fixp_animal_of((12, 12, 38, 22), 60.0) is None
@@ -38657,7 +38929,58 @@ HEADER_JS = _zd('510_web_kopf_alarm/HEADER_JS', "")
 ALERT_JS = _zd('510_web_kopf_alarm/ALERT_JS', "")
 
 
-COMMON_JS = _zd('510_web_kopf_alarm/COMMON_JS', "")
+# 3.55.2 (Besitzer: Kamerabilder am iPhone / iPad oft schwarz «noch kein Bild», unter Einstellungen → Kameras und auf Live;
+# neu laden half): EIN Weg für jedes Kamerabild der Web-Seiten, eingesetzt in COMMON_JS (hier unten) und in WEB_PAGE (530).
+#   * Nur ein sichtbares Bild hat eine Verbindung: anderer Reiter, zugeklappte Karte, Seite im Hintergrund, weggescrollt oder
+#     img.dataset.hold = "1" (Bild verdeckt, z. B. von der Sim-Ansicht) -> die Verbindung wird geschlossen. Safari hat pro
+#     Gerät nur rund 6 Verbindungen; offene Bildströme im Versteckten liessen neue Bilder warten («noch kein Bild»).
+#   * Strom (Live, Zonen, Gast): der bewährte MJPEG-Strom im <img>. Wächter: kommt 5 s lang kein erstes Bild, oder ändert sich
+#     das Bild 5 s lang nicht (kleines Abbild im Canvas), verbindet es sich selbst neu - sofort, dann nach 1, 2, 4, 8, 15 s
+#     (ein stehendes Bild ohne Fehler: still nach 5, 10, 20, 40, 60 s). Antippen von ⏳ verbindet sofort.
+#   * Einzelbilder (opt.snap, Vorschauen unter Kameras): ein Bild alle opt.every ms (~2 / s), nur solange sichtbar.
+#   * img.mwKeep zeigt den Zustand (Tests: werkzeuge/bildstrom_test.py): frames, conns, stalls, on, lost, mode.
+KEEP_JS = _zd('510_web_kopf_alarm/KEEP_JS', "")
+
+
+COMMON_JS = r"""
+const $ = s => document.querySelector(s);
+// Live picture that heals itself: phones (above all iPhone) drop the endless MJPEG stream after a network hiccup,
+// in the background or when the Pi restarts -> broken-image "?" icon. Reconnect automatically.
+/*KEEPSTREAM*/
+const post = (u, b) => fetch(u, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(b || {})})
+    .then(r => r.json()).catch(() => ({ok: false, error: "connection"}));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; }
+let LANG = "", THEME = "";
+try { LANG = localStorage.getItem("mw-lang") || ""; THEME = localStorage.getItem("mw-theme") || ""; } catch (e) {}
+const I18N = {de: {"Live": "Live", "Cameras": "Kameras", "Recordings": "Aufzeichnungen", "Zones": "Zonen", "Manual": "Anleitung", "Diary": "Tagebuch", "Tools": "Werkzeuge", "Simulator": "Simulator", "Game corner": "Spielecke"}};
+Object.assign(I18N.de, {"Protection": "Schutz", "History": "Verlauf", "Message list": "Nachrichten", "Settings": "Einstellungen", "Sett.": "Einst.", "More": "Mehr", "Overview": "Übersicht", "Log": "Protokoll", "Sim": "Sim", "Recordings": "Aufnahmen", "Diary": "Tagebuch", "Zones": "Zonen", "Cameras": "Kameras", "Manual": "Anleitung", "Game corner": "Spielecke", "Tools": "Werkzeuge"});  // 2.98.0: the six tabs
+const t = s => (LANG === "de" && I18N.de[s]) || (window.LX ? LX(s) : "") || (LANG === "rm" && I18N.de[s]) || (I18N.en && I18N.en[s]) || s;
+function applyI18n() {
+  document.querySelectorAll("[data-i18n]").forEach(e => e.textContent = t(e.dataset.i18n));
+  const b = $("#btn-lang"); if (b) b.textContent = (LANG || "en").toUpperCase();
+  document.documentElement.lang = LANG;
+}
+function themeStep() { return document.documentElement.classList.contains("sxnight") ? "red" : THEME === "light" ? "light" : "dark"; }   // 573/578: Hell → Dunkel → Rotlicht
+function applyTheme() { document.body.classList.toggle("light", THEME === "light"); const b = $("#btn-theme"), s = themeStep();
+  if (b) { b.innerHTML = s === "light" ? "&#9790;" : s === "dark" ? "&#9673;" : "&#9728;"; b.classList.toggle("thred", s === "red"); } }
+function toggleTheme() { const n = {light: "red", red: "dark", dark: "light"}[themeStep()];
+  document.documentElement.classList.toggle("sxnight", n === "red"); THEME = n === "light" ? "light" : "dark";
+  try { localStorage.setItem("mw-theme", THEME); localStorage.setItem("mw-night", n === "red" ? "1" : "0"); } catch (e) {} applyTheme();
+  if (window.sxThemeSaid) window.sxThemeSaid(n); }
+function toggleLang() { langMenu(document.querySelector("#btn-lang")); }
+let toastTimer = null;
+function toast(msg) { let e = $("#toast"); if (!e) { e = el("div"); e.id = "toast"; document.body.appendChild(e); } e.textContent = msg; e.classList.add("on");
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => e.classList.remove("on"), 2600); }
+async function initAppearance() {
+  if (!LANG || !THEME) {
+    try { const a = await (await fetch("/api/appearance")).json(); LANG = LANG || a.lang; THEME = THEME || a.theme; }
+    catch (e) { LANG = LANG || "en"; THEME = THEME || "dark"; }
+  }
+  applyTheme(); applyI18n();
+}
+"""
+COMMON_JS = COMMON_JS.replace("/*KEEPSTREAM*/", KEEP_JS.rstrip("\n"), 1)   # 3.55.2: one keepStream for every page (KEEP_JS above)
 
 
 # ----------------------------------------------------------------------------
@@ -38977,7 +39300,7 @@ html,body{margin:0;background:#000;color:#e6edf3;font:15px/1.4 system-ui,-apple-
 .big .top,.big .foot{display:none}.big #v{max-height:100dvh;height:100dvh}
 </style></head><body>
 <div class="top"><span class="dot"></span><b>MoveEye</b><span class="st" id="st">…</span></div>
-<div class="wrap vwrap"><img id="v" alt="" src="__BASE__/video"></div>
+<div class="wrap vwrap"><img id="v" alt="" data-src="__BASE__/video"></div>
 <div class="foot" id="ft"></div>
 <script>
 const GL = (navigator.language || "").toLowerCase().slice(0, 2), GT = /*GT*/{};
@@ -39079,6 +39402,7 @@ SIMTOOLS_JS = _zd('530_web_hauptseite/SIMTOOLS_JS', "")
 SIMTUN_JS = _zd('530_web_hauptseite/SIMTUN_JS', "")
 SIM_PAGE = SIM_PAGE.replace("/*SIMMAP*/", SIMMAP_JS + SIMTOOLS_JS + SIMTUN_JS)
 WEB_PAGE = WEB_PAGE.replace("/*SIMMAP*/", SIMMAP_JS)
+WEB_PAGE = WEB_PAGE.replace("/*KEEPSTREAM*/", KEEP_JS.rstrip("\n"), 1)   # 3.55.2: the same keepStream as every page (510)
 
 
 # ----------------------------------------------------------------------------
@@ -39877,6 +40201,14 @@ def sim_owns_updates():
 # «MoveEye Sim 3.0.0»). simulator3d/version.json keeps «version» = «3D-(X+2).Y.Z» for old simulators (they only compare that
 # field: 3.0.0 would be older than 3D-4.82 for them) and has the real number in «ver». The self-test checks the order of the
 # numbers and - in the repository (GitHub) - that version.json, SIM3D and APP_VERSION fit together.
+# Drei Spuren (Besitzer 03.11.2026, bis zum Zusammenführen): MoveEye, the simulator and the case each have their own number and
+# are released on their own. Instead of «the same number» each side names the OLDEST version of the other it works with:
+# SIM_MIN here (MoveEye -> simulator, sent as «sim_min» in the state, 639zb) and MW_MIN in simulator3d/scripts/abgleich.gd
+# (simulator -> MoveEye, sent as «mw_min» in /info, also in version.json). Raise it when the interface (schnittstelle.json)
+# changes in a way the older side cannot follow. The version pair (639zb / abgleich.gd) only warns below the minimum.
+SIM_MIN = "3.55.0"
+
+
 def versionen_selftest():
     order = ["2.98.113", "2.98.114", "3.0.0", "3.0.1", "3.1.0", "3.1.1", "3.10.0", "4.0.0"]
     for a, b in zip(order, order[1:]):
@@ -39887,6 +40219,7 @@ def versionen_selftest():
         assert sim_vkey(a) < sim_vkey(b), f"simulator {a} < {b}"
     assert sim_vkey("3D-5.0.0") == sim_vkey("3.0.0") == sim_vkey("MoveEye Sim 3.0.0") == (3, 0, 0), "bridge 3D-5.0.0 = 3.0.0"
     assert sim_vlegacy("3.0.0") == "3D-5.0.0" and sim_vlegacy("3.10.2") == "3D-5.10.2" and sim_vlegacy("3D-4.82") == "3D-4.82"
+    assert VER_RE.match(SIM_MIN) and sim_vkey(SIM_MIN) <= sim_vkey(SIM3D_EMBED["version"]), f"SIM_MIN {SIM_MIN} newer than the own simulator"
     p = os.path.join(HERE, "simulator3d", "version.json")
     if not os.path.isfile(p):
         return None                                               # on the Pi: no repository next to the program
@@ -39896,13 +40229,71 @@ def versionen_selftest():
     assert old.startswith("3D-"), f"version.json «version» must stay «3D-…» for old simulators (is {old!r})"
     if ver:
         assert old == sim_vlegacy(ver), f"version.json: «version» {old} must be {sim_vlegacy(ver)} (= {ver} for old simulators)"
-        assert SIM3D["version"] in (ver, old), f"SIM3D {SIM3D['version']} does not fit version.json {ver}"
-    if _vkey(APP_VERSION) >= (3, 0, 0):
-        assert ver == APP_VERSION == SIM3D["version"], f"from 3.0.0 one number: MoveEye {APP_VERSION}, SIM3D {SIM3D['version']}, version.json {ver or old}"
-    return f"simulator {ver or old} (old simulators read {old})"
+        # 3 tracks (Besitzer 03.11.2026): each part has its own number - the simulator of this MoveEye may be older than the
+        # one in the repository (a release of the simulator alone), never newer
+        assert sim_vkey(SIM3D_EMBED["version"]) <= sim_vkey(ver), f"SIM3D {SIM3D_EMBED['version']} newer than version.json {ver}"
+        assert sim_vkey(SIM_MIN) <= sim_vkey(ver), f"MoveEye needs simulator {SIM_MIN}, version.json has {ver}"
+        mm = str(d.get("mw_min") or "")
+        assert not mm or (VER_RE.match(mm) and _vkey(mm) <= _vkey(APP_VERSION)), f"the simulator {ver} needs MoveEye {mm} (this is {APP_VERSION})"
+    return f"MoveEye {APP_VERSION} · Sim {ver or old} (old simulators read {old}) · needs Sim ≥ {SIM_MIN}" + (
+        f", Sim needs MoveEye ≥ {d.get('mw_min')}" if d.get("mw_min") else "")
 
 
-SELFTEST_EXTRA.append(("Version numbers: order, file names, bridge for old simulators (3.0.0)", versionen_selftest))
+SELFTEST_EXTRA.append(("Version numbers: order, file names, bridge for old simulators, minimum of the other track (3 tracks)", versionen_selftest))
+
+
+def sim_manifest_selftest():
+    """3 tracks: a correctly signed «sim» block of versions.json is taken, a changed / unsigned / foreign one is not - with a
+    TEST key made here (never the signing key; the public key is swapped only during this test)"""
+    import hashlib
+    keep = ({k: SIM3D[k] for k in SIM3D_EMBED}, {k: SIM3D_LINUX[k] for k in SIM3D_LINUX_EMBED}, dict(SIMMAN))
+    g = globals()
+    real = g["UPDATE_PUBKEY"]
+    try:
+        if not _ED:
+            _ED.extend(_ed25519_impl())
+        seed = hashlib.sha256(b"MoveEye self-test key - not the signing key").digest()
+        a, b, c = sim_vkey(SIM3D_EMBED["version"])
+        nv = "%d.%d.%d" % (a, b, c + 1)
+        sha = hashlib.sha256(b"fake simulator zip").hexdigest()
+
+        def blk(v=nv, fn=SIM3D["file"], sh=sha, key=seed, lx=False):
+            e = {"ver": v, "file": fn, "size": 18, "sha256": sh, "sig": _ED[1](key, _sig_msg(v, fn, sh)).hex()}
+            r = {"ver": v, "win": e}
+            if lx:
+                fl = SIM3D_LINUX["file"]
+                r["linux"] = {"ver": v, "file": fl, "size": 19, "sha256": sh, "sig": _ED[1](key, _sig_msg(v, fl, sh)).hex()}
+            return r
+
+        def back():
+            SIM3D.update(SIM3D_EMBED); SIM3D_LINUX.update(SIM3D_LINUX_EMBED)
+        g["UPDATE_PUBKEY"] = _ED[0](seed).hex()                    # sig_ok (380) checks against this - the test key
+        assert sim_manifest_take(blk(lx=True), save=False) == ["win", "linux"], "signed entries not taken"
+        assert SIM3D["version"] == nv and SIM3D["sha256"] == sha and SIM3D["size"] == 18 and SIM3D_LINUX["size"] == 19, "values"
+        assert sim3d_path().endswith("_" + nv + ".zip"), "cache name of the new simulator"
+        back()
+        bad = {"changed checksum": dict(blk(), win=dict(blk()["win"], sha256=hashlib.sha256(b"other").hexdigest())),
+               "changed number": dict(blk(), win=dict(blk()["win"], ver="%d.%d.%d" % (a, b, c + 2))),
+               "unsigned": dict(blk(), win={k: v for k, v in blk()["win"].items() if k != "sig"}),
+               "broken signature": dict(blk(), win=dict(blk()["win"], sig="00" * 64)),
+               "other key": blk(key=hashlib.sha256(b"another key").digest()),
+               "other file": blk(fn="simulator3d/anders.zip"),
+               "program file name": blk(fn="webcam_bewegung_9_9_9.py"),
+               "not a dict": "x"}
+        if c > 0:
+            bad["older simulator"] = blk(v="%d.%d.%d" % (a, b, c - 1))
+        for what, x in bad.items():
+            assert not sim_manifest_take(x, save=False), f"{what} taken"
+            assert SIM3D["sha256"] == SIM3D_EMBED["sha256"] and SIM3D["version"] == SIM3D_EMBED["version"], f"{what}: values changed"
+        g["UPDATE_PUBKEY"] = real
+        assert not sim_manifest_take(blk(), save=False), "test key accepted with the real public key"
+    finally:
+        g["UPDATE_PUBKEY"] = real
+        SIM3D.update(keep[0]); SIM3D_LINUX.update(keep[1]); SIMMAN.clear(); SIMMAN.update(keep[2])
+    return "signed «sim» entry taken; changed, unsigned, other key / file, older refused (test key)"
+
+
+SELFTEST_EXTRA.append(("Simulator checksums from the signed versions.json (3 tracks, 300)", sim_manifest_selftest))
 # ----------------------------------------------------------------------------
 # Wish of Besitzer (30.10.2026): the guards at MoveEye in «Team gegen MoveEye» (the shutter of part 539) may switch on help
 # of the AI for the running round, on the live page and in the «Controller-Ansicht» (538: L2 in a round):
@@ -40342,7 +40733,7 @@ class WebStream:
             if who:
                 fails.pop(ip, None)
                 g.user, g.role = who
-                if request.method == "GET" and not request.path.startswith(("/api/", "/video", "/cam_feed", "/sim/", "/snapshot")):
+                if request.method == "GET" and not request.path.startswith(("/api/", "/video", "/cam_feed", "/cam_snap", "/sim/", "/snapshot")):
                     g.new_trust = trust_add(who[0], who[1], request.headers.get("User-Agent", ""), ip)   # remember this device
                 return None
             if a:
@@ -40599,6 +40990,18 @@ class WebStream:
                     if not isinstance(r, dict) or not r.get("ok"):
                         return reply({"ok": False, "error": tr_err(str((r or {}).get("error") or "not supported - update the simulator"), lang)}, 400)
                     return reply(r)
+                if act_ == "localplay":                      # 639zt Sim-Ansicht: play «here at the PC» from the phone (localplay.gd 3D-3.77)
+                    do_ = str(d.get("do") or "get")
+                    if do_ not in ("get", "stop", "start"):
+                        return reply({"ok": False, "error": "unknown action"}, 400)
+                    q_ = {"action": "localplay", "do": do_}
+                    if do_ == "start":
+                        q_["role"] = "guard" if d.get("role") == "guard" else "runner"
+                    try:
+                        r = sim_control(q_)
+                    except Exception:
+                        return reply({"ok": False, "error": tr_err("simulator not reachable", lang)}, 400)
+                    return reply(r if isinstance(r, dict) else {"ok": False})
                 if act_ == "game_hc":                        # handicap for a player (3D-3.25)
                     try:
                         r = sim_control({"action": "game_handicap", "slot": int(d.get("slot", -1)), "level": max(0, min(2, int(d.get("level", 0))))})
@@ -42694,6 +43097,69 @@ class WebStream:
                 finally:
                     cam.viewers = max(0, cam.viewers - 1)
             return Response(gen(), mimetype="multipart/x-mixed-replace; boundary=frame")
+
+        # 3.55.2 (Besitzer: Vorschauen unter Kameras am iPhone oft schwarz): single pictures instead of endless streams. A
+        # picture counts as «somebody watches» for 4 s (lease), so the camera loop keeps making JPEGs (it only makes them for
+        # viewers); no thread waits for the next picture like a stream does. n = 0: the main camera (as /video_feed).
+        SNAP_LEASE = {}
+        SNAP_LOCK = threading.Lock()
+        SNAP_RUN = []
+
+        def _snap_expire():
+            while True:
+                time.sleep(0.5)
+                now_ = time.time()
+                with SNAP_LOCK:
+                    for k_, e_ in list(SNAP_LEASE.items()):
+                        if e_[3] < now_:
+                            del SNAP_LEASE[k_]
+                            o_, a_, ip_ = e_[0], e_[1], e_[2]
+                            setattr(o_, a_, max(0, getattr(o_, a_, 0) - 1))
+                            if a_ == "web_viewers":
+                                STATE["web_viewers"] = o_.web_viewers; remote_stream(ip_, -1)
+
+        def _snap_lease(key, obj, attr, ip):
+            """True = the lease is new (the newest JPEG may be old: wait for a fresh one)"""
+            with SNAP_LOCK:
+                e_ = SNAP_LEASE.get(key)
+                if e_ is not None and e_[0] is obj:
+                    e_[3] = time.time() + 4.0
+                    return False
+                if not SNAP_RUN:
+                    SNAP_RUN.append(1)
+                    threading.Thread(target=_snap_expire, daemon=True, name="snaplease").start()
+                setattr(obj, attr, getattr(obj, attr, 0) + 1)
+                if attr == "web_viewers":
+                    STATE["web_viewers"] = obj.web_viewers; remote_stream(ip, +1)
+                SNAP_LEASE[key] = [obj, attr, ip, time.time() + 4.0]
+                return True
+
+        @app.route("/cam_snap/<int:n>")
+        def cam_snap(n):
+            rip = request.remote_addr or ""
+            if n == 0:
+                fresh = _snap_lease(("w", rip), watch, "web_viewers", rip)
+                get = lambda: (watch.jpeg, watch.jpeg_seq)
+            else:
+                cam = next((c for c in CAMS if c.idx == n), None)
+                if cam is None:
+                    return Response("unknown camera", 404)
+                fresh = _snap_lease(("c", n, rip), cam, "viewers", rip)
+                get = lambda: (cam.jpeg, cam.seq)
+            jpg, seq = get()
+            if fresh or not jpg:                            # the loop starts making pictures now: wait a moment for a new one
+                t_ = time.time() + 1.5
+                while time.time() < t_:
+                    j2, s2 = get()
+                    if j2 and s2 != seq:
+                        jpg = j2
+                        break
+                    time.sleep(0.03)
+                else:
+                    jpg = get()[0]
+            if not jpg:
+                return Response("no picture yet", 503, headers={"Cache-Control": "no-store"})
+            return Response(jpg, mimetype="image/jpeg", headers={"Cache-Control": "no-store"})
 
         # ---- zones ----
         # ---- app icon (home screen) ----
@@ -48775,7 +49241,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 3.47.1")
+        self.root.title("MoveEye 3.56.0")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -49153,7 +49619,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 3.47.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 3.56.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -53393,6 +53859,18 @@ PRESENCE_BACK_KEYS = tuple(k for k, _l in PRESENCE_BACK)
 AUTOTUNE_KEYS = ("min_area", "sensitivity", "speed_consistency")
 AUTOTUNE_SPAN = 0.20
 AUTOTUNE_LAST = {}                                          # the value the tuner set last (to see a change by hand)
+# real-erkennung-fix (Erkennungstest 2, 01.11.2026: Personen 75 % -> 44 %): the tuner had driven min_area to 2400 … 3400 (from
+# the noise while calibrating, then held there by the ±20 %) and speed_consistency to 0.7 («persons detected, tightening», never
+# back) - and the next scene started with these values. A walking person at 10 m is only about 1 % of the working picture
+# (480 x 270: ~1200 px), a child at 8 m less: such values let only the AI find persons. Now:
+#   - min_area at most AUTOTUNE_AREA_MAX of the working picture (independent of proc_width), also for a value from before,
+#   - speed_consistency tightened at most to AUTOTUNE_STEADY_MAX (factory 0.4 + 0.1),
+#   - a new calibration (new scene / camera) starts not with extreme values of before: speed_consistency <= AUTOTUNE_STEADY_MAX,
+#     sensitivity >= AUTOTUNE_SENS_MIN (only when the values were not measured by the assistant «Erkennung verbessern», 312).
+AUTOTUNE_AREA_MAX = 0.009                                   # 0.9 % of the picture (480 x 270: 1166 px; a child at 8 m ~1100 px) - wind: wind_boost
+AUTOTUNE_STEADY_MAX = 0.5
+AUTOTUNE_SENS_MIN = 35
+AUTOTUNE_CAP = {}                                           # the last cap of min_area in pixels (autotune_clamp)
 
 
 def presence_back_mode():
@@ -53422,6 +53900,25 @@ def autotune_base_set(src):
     return nb
 
 
+def autotune_area_cap(frame_px):
+    """real-erkennung-fix: the biggest min_area the tuner may set, frame_px = pixels of the working picture"""
+    cap = max(300.0, AUTOTUNE_AREA_MAX * float(frame_px or 0)) if frame_px else 4000.0
+    AUTOTUNE_CAP["px"] = cap
+    return cap
+
+
+def autotune_start_values():
+    """real-erkennung-fix: before a new calibration (190 reset) no extreme values of an earlier scene / an earlier run"""
+    b = CFG.get("auto_tune_base") if isinstance(CFG.get("auto_tune_base"), dict) else {}
+    if not CFG.get("auto_tune", True) or str(b.get("src", "")).startswith("assistant"):
+        return
+    for key, ok, v in (("speed_consistency", CFG.get("speed_consistency", 0.4) <= AUTOTUNE_STEADY_MAX, AUTOTUNE_STEADY_MAX),
+                       ("sensitivity", CFG.get("sensitivity", 50) >= AUTOTUNE_SENS_MIN, AUTOTUNE_SENS_MIN)):
+        if not ok:
+            log_event("auto", f"Auto-tune: {key} {CFG[key]} -> {v} (start of a new calibration)")
+            CFG[key] = v
+
+
 def autotune_base_reset():
     """the tuner starts again (190, reset): a new calibration measures freely - values of the assistant stay the middle"""
     b = CFG.get("auto_tune_base") if isinstance(CFG.get("auto_tune_base"), dict) else {}
@@ -53445,6 +53942,8 @@ def autotune_clamp(key, value):
         b = dict(b, **{key: cur, "src": b.get("src", "") + "+hand"}); CFG["auto_tune_base"] = b      # set by hand / by a test
         mid = cur; lo, hi = mid * (1 - AUTOTUNE_SPAN), mid * (1 + AUTOTUNE_SPAN)
     v = max(lo, min(hi, float(value)))
+    if key == "min_area" and AUTOTUNE_CAP.get("px"):
+        v = min(v, float(AUTOTUNE_CAP["px"]))                  # real-erkennung-fix: the cap wins over the ±20 %
     AUTOTUNE_LAST[key] = round(v, 2) if isinstance(CFG.get(key), float) else int(v)
     return v
 
@@ -53473,7 +53972,7 @@ def nachlauf_migrate(cfg_in):
 
 def nachlauf_selftest():
     """--self-test: the migrations, the ±20 % of the auto-tuner, the one weekly report"""
-    keep = {k: CFG.get(k) for k in ("weekrep_sim", "presence_back", "auto_tune_base", "min_area", "sensitivity", "speed_consistency")}
+    keep = {k: CFG.get(k) for k in ("weekrep_sim", "presence_back", "auto_tune_base", "min_area", "sensitivity", "speed_consistency", "auto_tune")}
     try:
         for old, want in (({"presence_auto": True, "back_ask": True}, "off"), ({"presence_auto": False, "back_ask": True}, "ask"),
                           ({"presence_auto": False, "back_ask": False}, "none"), ({"presence_auto": False}, "none")):
@@ -53496,6 +53995,15 @@ def nachlauf_selftest():
         CFG["min_area"] = 1100; autotune_base_set("calibration"); assert CFG["auto_tune_base"]["min_area"] == 1000, "assistant wins"
         CFG["min_area"] = 3000; AUTOTUNE_LAST.clear()          # changed by hand far outside: that is the new middle
         assert abs(autotune_clamp("min_area", 4000) - 3600) < 1e-6
+        CFG["auto_tune_base"] = {}; AUTOTUNE_LAST.clear()          # real-erkennung-fix: the cap and the start values
+        assert abs(autotune_area_cap(480 * 270) - 1166.4) < 0.1
+        CFG["min_area"] = 1000; autotune_base_set("calibration"); assert autotune_clamp("min_area", 1200) <= 1166.4
+        CFG["min_area"] = 3000; AUTOTUNE_LAST.clear(); assert autotune_clamp("min_area", 3400) <= 1166.4, "the cap wins"
+        CFG.update(speed_consistency=0.7, sensitivity=28, auto_tune_base={}, auto_tune=True); autotune_start_values()
+        assert CFG["speed_consistency"] == AUTOTUNE_STEADY_MAX and CFG["sensitivity"] == AUTOTUNE_SENS_MIN
+        CFG.update(speed_consistency=0.45, sensitivity=60); autotune_start_values()
+        assert CFG["speed_consistency"] == 0.45 and CFG["sensitivity"] == 60, "moderate values stay"
+        AUTOTUNE_CAP.clear()
         wr = weekrep_build("de")
         assert "with_sim" in wr and wr["text"]
     finally:
@@ -56362,7 +56870,7 @@ App._refresh = _kr_tk_refresh
 #      bleibt für die kleine Überraschung) und «Über MoveEye» unten in Mehr. Geschichte, Entwickler «Elektro»,
 #      Zeitleiste, Zahlen (zur Laufzeit gezählt), aufklappbar «Für Technik-Interessierte». Texte: 622.
 # ----------------------------------------------------------------------------
-INFO_PARTS = 264                       # number of parts in quelle/ (written by werkzeuge/bauen.py --neue-version)
+INFO_PARTS = 268                       # number of parts in quelle/ (written by werkzeuge/bauen.py --neue-version)
 INFO_START = "2026-10-16"              # the first lines (a small webcam program for the Pi 5)
 FBX = {"shot": None, "shot_t": 0.0, "lines": 0}
 
@@ -62996,9 +63504,8 @@ for _k, _v in _HX_SIMDOPP.items():
         TRX[_L].setdefault(_k, _v[_i + 1])
 # ---- the product page (2.95.52): the homepage of MoveEye (made as an artifact), packed here (gzip + base64) so the Pi
 # can show it without internet to guests in the same Wi-Fi at /info/. Questions from the form arrive as a push message. ----
-INFO_HTML_GZ = (  # real-abgleich-v52: battery UPS HAT (E) 4 × 21700, download button for the kit; 3.45: homepage as a finished product (based on the artifact of 30.10.): features, 3 packages with extras, request form with package; 2.98.9: FAQ, French and Italian, «a night in time-lapse»; 2.98.7: MoveEye name, wake-up alarm, «Spiele freigeben», ticker, join wall, more animation
-    _zd('620_daten_produktseite/INFO_HTML_GZ', "")
-)
+INFO_HTML_GZ = (  # 3.55: «Spielen mit einem Tipp» unter «Vorab ausprobieren»; real-gehaeuse-v53: holder wall / tree, threaded inserts and battery hatch; real-abgleich-v52: battery UPS HAT (E) 4 × 21700, download button for the kit; 3.45: homepage as a finished product (based on the artifact of 30.10.): features, 3 packages with extras, request form with package; 2.98.9: FAQ, French and Italian, «a night in time-lapse»; 2.98.7: MoveEye name, wake-up alarm, «Spiele freigeben», ticker, join wall, more animation
+    _zd('620_daten_produktseite/INFO_HTML_GZ', ""))
 
 INFO_MSGS = deque(maxlen=50)
 _INFO_ASK = {}                       # ip -> times of questions (at most 5 per hour)
@@ -67429,7 +67936,7 @@ def play_state(force=False):
         try:
             r = sim_control({"action": "spielbereich", "do": "info"}) or {}
             if r.get("ok") and isinstance(r.get("chapters"), list):
-                d = {k: r.get(k) for k in ("chapters", "badges", "level", "blinki", "current", "scene", "stories", "resume", "slot", "kids")}
+                d = {k: r.get(k) for k in ("chapters", "badges", "level", "blinki", "current", "scene", "stories", "resume", "slot", "kids", "playing")}
                 d.update(ok=True, offline=False, t=now)
                 try:
                     with open(_play_file(), "w", encoding="utf-8") as f:
@@ -67473,16 +67980,19 @@ def play_story_pic(sid, owner=True):
         return None
 
 
-def play_do(action, cid="", owner=True):
+def play_do(action, cid="", owner=True, what=""):
     """«Start the adventure» (id) / open or close the start screen in the simulator / «seen» (Blinki's joy shown).
     owner = nacht_may(...): «Das Hospiz» starts only for the owner (Code-Prüfung M4: before only the answer was filtered)"""
-    if action == "start" and str(cid or "").strip().lower() == "horror" and not owner:
+    if action in ("start", "story") and str(cid or "").strip().lower() == "horror" and not owner:
         log_event("web", "Play area: «Das Hospiz» refused (not the owner / operator mode)")
         return {"ok": False, "error": tr("Only the owner can start this story."), "code": 403}
     if not CFG.get("sim_on"):
         return {"ok": False, "error": tr("The 3D simulator is not connected.")}
     try:
-        r = sim_control({"action": "spielbereich", "do": action, "id": str(cid)[:24]}) or {}
+        q_ = {"action": "spielbereich", "do": action, "id": str(cid)[:24]}
+        if action == "story":                              # 3.51.x: a story from the phone - the same buttons as its card in the simulator
+            q_["what"] = what if what in ("weiter", "neu", "unlock") else "weiter"
+        r = sim_control(q_) or {}
     except Exception as e:
         _PLAY["t"] = 0.0
         if action == "start" and "timed out" in str(e):       # a big scene (Ferienpark) takes longer to build than the 8 s
@@ -67517,6 +68027,16 @@ _HX_PLAY = {
                                                                        'Non ancora visitato – cosa c’è da scoprire si vede sul posto.',
                                                                        'Anc betg visità – tge ch’i dat da scuvrir sa mussa al lieu.'),
     'Stories': ('Geschichten', 'Histoires', 'Storie', 'Istorgias'),
+    'Start story': ('Starten', 'Démarrer', 'Avvia', 'Cumenzar'),
+    'Continue playing': ('Weiterspielen', 'Continuer', 'Continua', 'Cuntinuar a giugar'),
+    'Start over': ('Neu beginnen', 'Recommencer', 'Ricomincia', 'Cumenzar da nov'),
+    'Unlock': ('Entsperren', 'Déverrouiller', 'Sblocca', 'Deblocar'),
+    'Opened in the simulator – you play it in the simulator window (tab «Sim»).': (
+        'Im Simulator geöffnet – gespielt wird im Simulator-Fenster (Reiter «Sim»).',
+        'Ouvert dans le simulateur – on joue dans la fenêtre du simulateur (onglet «Sim»).',
+        'Aperto nel simulatore – si gioca nella finestra del simulatore (scheda «Sim»).',
+        'Avert en il simulatur – ins giogia en la fanestra dal simulatur (tab «Sim»).'),
+    'To the simulator window': ('Zum Simulator-Fenster', 'Vers la fenêtre du simulateur', 'Alla finestra del simulatore', 'Tar la fanestra dal simulatur'),
     'Only the owner can start this story.': ('Nur der Besitzer kann diese Geschichte starten.', 'Seul le propriétaire peut lancer cette histoire.',
                                              'Solo il proprietario può avviare questa storia.', 'Mo il proprietari po cumenzar questa istorgia.'),
     'Discover': ('Entdecken', 'Découvrir', 'Scoprire', 'Scuvrir'),
@@ -67602,9 +68122,9 @@ def smalltv_routes(app, reply, body):                     # + 639i: /play and /a
         if request.method == "GET":
             return reply(play_for(play_state(), own))
         d = body(); a = str(d.get("action") or "")
-        if a not in ("start", "open", "close", "seen"):
+        if a not in ("start", "open", "close", "seen", "story"):
             return reply({"ok": False, "error": "unknown action"}, 400)
-        r = play_do(a, d.get("id") or "", own)
+        r = play_do(a, d.get("id") or "", own, str(d.get("what") or ""))
         if r.pop("code", None) == 403:
             return reply(r, 403)
         if r.get("state"):
@@ -67654,12 +68174,13 @@ def _tk_play_poll(self):
     self._play_inner.after(6000, self._play_poll)
 
 
-def _tk_play_act(self, a, cid=""):
+def _tk_play_act(self, a, cid="", what=""):
     def work():
-        r = play_do(a, cid, nacht_may("admin"))           # the window = the owner, unless operator mode (M4)
+        r = play_do(a, cid, nacht_may("admin"), what)     # the window = the owner, unless operator mode (M4)
         r.pop("code", None)
         try:
             self.root.after(0, lambda: (self._status("Playing", ("✓ " + tr("The simulator travels there.")) if r.get("ok") and a == "start"
+                                                     else ("✓ " + tr("Opened in the simulator – you play it in the simulator window (tab «Sim»).")) if r.get("ok") and a == "story"
                                                      else ("⚠ " + str(r.get("error") or "")) if not r.get("ok") else tr("Open in the simulator")),
                                         r.get("ok") and self._play_paint(r["state"])))
         except Exception:
@@ -67706,7 +68227,9 @@ def _tk_play_paint(self, d):
         rf = tk.Frame(inner, bg=C["panel"], highlightthickness=1, highlightbackground=C["acc"], padx=10, pady=8); rf.pack(fill="x", pady=(8, 0))
         tk.Label(rf, text="▶ " + txt.replace("{t}", str(R.get("title"))).replace("{p}", str(R.get("pct"))), bg=C["panel"], fg=C["txt"],
                  font=("DejaVu Sans", 11, "bold"), anchor="w").pack(fill="x")
-        tk.Label(rf, text=tr("The button «Continue» is in the simulator (window «Playing»)."), bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 9),
+        if not d.get("offline") and not R.get("locked"):
+            self._fbtn(rf, tr("Continue playing"), lambda i=R.get("id"): self._play_act("story", i, "weiter"), primary=True).pack(anchor="w", pady=(4, 0))
+        tk.Label(rf, text=tr("Opened in the simulator – you play it in the simulator window (tab «Sim»)."), bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 9),
                  anchor="w").pack(fill="x")
     ttk.Label(inner, text=tr("Stories").upper(), style="Mut.TLabel").pack(anchor="w", pady=(12, 4))
     sg = tk.Frame(inner, bg=C["bg"]); sg.pack(fill="x")
@@ -67727,6 +68250,16 @@ def _tk_play_paint(self, d):
         pb = ttk.Progressbar(pr, maximum=100, length=120); pb.pack(side="left"); pb["value"] = int(x.get("pct") or 0)
         tk.Label(pr, text=f"{int(x.get('pct') or 0)} %" + (" · " + str(x.get("where")) if x.get("where") and not x.get("done") else ""), bg=C["panel"], fg=C["txt"],
                  font=("DejaVu Sans", 9)).pack(side="left", padx=(8, 0))
+        if not off and not d.get("offline"):             # 3.51.x: start / continue here as well (the same buttons as the card in the simulator)
+            br_ = tk.Frame(f, bg=C["panel"]); br_.pack(fill="x", pady=(6, 0))
+            sid_ = x.get("id")
+            if x.get("locked"):
+                self._fbtn(br_, tr("Unlock"), lambda i=sid_: self._play_act("story", i, "unlock")).pack(side="left")
+            else:
+                self._fbtn(br_, tr("Continue playing") if x.get("started") and not x.get("done") else tr("Start story"),
+                           lambda i=sid_: self._play_act("story", i, "weiter"), primary=True).pack(side="left")
+                if x.get("started"):
+                    self._fbtn(br_, tr("Start over"), lambda i=sid_: self._play_act("story", i, "neu")).pack(side="left", padx=(6, 0))
     ttk.Label(inner, text=tr("Stories are played in the simulator – here you see the progress."), style="Mut.TLabel").pack(anchor="w")
     ttk.Label(inner, text=tr("Discover").upper(), style="Mut.TLabel").pack(anchor="w", pady=(12, 4))
     if not d.get("chapters"):
@@ -67787,23 +68320,51 @@ def play_selftest():
             assert not r["ok"] and r.get("code") == 403 and not asked, ("Hospiz started without the owner", r, asked)
             r = play_do("start", " HORROR ", False)
             assert not r["ok"] and not asked, "Hospiz with another spelling"
+            r = play_do("story", "horror", False, "neu")          # 3.51.x: the story buttons of the phone - the same rule
+            assert not r["ok"] and r.get("code") == 403 and not asked, ("Hospiz story button without the owner", r, asked)
+            play_do("story", "maggie", True, "neu")
+            play_do("story", "maggie", True, "x")
+            sq_ = [x_ for x_ in asked if x_.get("do") == "story"]
+            assert sq_ == [{"action": "spielbereich", "do": "story", "id": "maggie", "what": "neu"},
+                           {"action": "spielbereich", "do": "story", "id": "maggie", "what": "weiter"}], asked
             assert nacht_may("admin", locked=True) is False and nacht_may("user", locked=False) is False
         finally:
             globals()["sim_control"] = _sc; globals()["log_event"] = _le; CFG["sim_on"] = False
         html = play_page()
         assert 'href="/play"' in html and "/api/play" in html and "Geschichten" in html and "Entdecken" in html and "MWBlinki" in html
+        assert 'plDo("story"' in html and "/sim" in html and tr("Start over", "rm") == "Cumenzar da nov"   # 3.51.x: stories from the phone
         assert 'id="pl-bd"' not in html and "/sim/story_pic/" in html             # Geschichten-Menü: badges in the discovery book
         st = {"stories": [{"id": "horror"}, {"id": "maggie"}], "resume": {"id": "horror"}}
         assert [x["id"] for x in play_for(st, False)["stories"]] == ["maggie"] and not play_for(st, False)["resume"]
         assert len(play_for(st, True)["stories"]) == 2 and play_story_pic("horror", False) is None and play_story_pic("../x") is None
         assert tr("Travel there", "fr") != "Travel there" and tr("Stories", "rm") == "Istorgias" and tr("Discover", "it") == "Scoprire"
         assert hasattr(App, "_tk_play_tab")
+        assert HELP_PAGE.count('<section id="stories"') == 2 and all('id="stories"' in (HELP_X.get(L) or 'id="stories"') for L in ("fr", "it", "rm")), "manual: stories"
     finally:
         CFG["sim_on"] = keep[0]; _PLAY.clear(); _PLAY.update(keep[1])
     return "tab Play: nav, offline state, page, translations, window"
 
 
 SELFTEST_EXTRA.append(("Play area: tab «Spielen» (web, window, simulator spielbereich.gd)", play_selftest))
+
+
+# ---- 3.51.x (Besitzer 02.11.2026): the manual (HELP_PAGE 540 + HELP_X) - a short chapter «Geschichten» before «Tipps & Tricks» ----
+_HELP_STORY = _zd('639i_spielbereich/HELP_STORY', _ZDDict())
+
+
+def _help_story(doc, lang):
+    if 'id="stories"' in doc:
+        return doc
+    i = doc.find('<section id="tips"')
+    return doc[:i] + _HELP_STORY[lang] + doc[i:] if i >= 0 else doc
+
+
+_hp_en_story = HELP_PAGE.find('<div lang="en">')
+if _hp_en_story > 0:
+    HELP_PAGE = _help_story(HELP_PAGE[:_hp_en_story], "de") + _help_story(HELP_PAGE[_hp_en_story:], "en")
+for _L in ("fr", "it", "rm"):
+    if HELP_X.get(_L):
+        HELP_X[_L] = _help_story(HELP_X[_L], _L)
 _HX_NEBEL = {
     'Fog – view limited': ('Nebel – Sicht eingeschränkt', 'Brouillard – visibilité réduite', 'Nebbia – visibilità ridotta', 'Tschajera – vista limitada'),
 }
@@ -72494,7 +73055,7 @@ SELFTEST_EXTRA.append(("Error help with QR code (simulator3d/fehler_katalog.json
 # GEH_QUELLE_SHA: Prüfsumme der Quelle (hardware/gehaeuse/Quellcode/*.py, bau.json, werkzeuge/gehaeuse_bauen.py) – der
 # Selbsttest (639w) vergleicht sie im Repository mit der Quelle und mit simulator3d/inhalte/gehaeuse/modelle.json.
 # ----------------------------------------------------------------------------
-GEH_QUELLE_SHA = '2247be719a9071df8156f3b5697420e13d5b24ef718c05bc8bf4ed5cf607dc64'
+GEH_QUELLE_SHA = 'c6534a0b9b7a98321c9be33dab47f3f275d830ed3207b6a41a14768cc3ac1867'
 GEH_BAU = json.loads(_zd('639v_daten_gehaeuse/GEH_BAU', ""))
 GEH_UI_DE = {"Case & build": "Gehäuse & Bau", "Guide, parts list, print files – in 3D in the workshop of the simulator": "Anleitung, Materialliste, Druckdateien – in 3D in der Werkstatt des Simulators", "Case": "Gehäuse", "View in the simulator": "Im Simulator ansehen", "Opens the workshop in the 3D simulator: turn, explode, see through, click parts, assembly step by step.": "Öffnet die Werkstatt im 3D-Simulator: drehen, zerlegen, durchsichtig, Teile anklicken, Montage Schritt für Schritt.", "Simulator not connected – start it and connect it on the page Simulator.": "Simulator nicht verbunden – starte ihn und verbinde ihn auf der Seite «Simulator».", "Opened in the simulator.": "Im Simulator geöffnet.", "Print files": "Druckdateien", "3MF plates for the Bambu Lab X2D (PETG, no supports)": "3MF-Platten für den Bambu Lab X2D (PETG, ohne Stützen)", "Single STL files: in the hand-over package (ZIP, about 60 MB), not in the repository.": "Einzelne STL-Dateien: im Übergabe-Paket (ZIP, ca. 60 MB), nicht im Repository.", "Assembly step by step": "Montage Schritt für Schritt", "Show this step in the simulator": "Diesen Schritt im Simulator zeigen", "Parts list": "Materialliste", "Qty": "Menge", "Part number": "Teilenummer", "Guides and source (GitHub)": "Anleitungen und Quellcode (GitHub)", "Detailed guide v5.1": "Ausführliche Anleitung v5.1", "Full parts list with order list": "Ganze Materialliste mit Bestellliste", "Measure first: UPS HAT (E) with its cells (assumed 90 × 80 × 26 mm) before printing the lower part.": "Zuerst nachmessen: UPS HAT (E) mit Akkus (angenommen 90 × 80 × 26 mm), bevor das Unterteil gedruckt wird.", "Own work of Elektro – parametric Python model.": "Eigenes Werk von Elektro – parametrisches Python-Modell.", "Step": "Schritt"}
 GEH_UI_TRX = _zd('639v_daten_gehaeuse/GEH_UI_TRX', _ZDDict())
@@ -72505,7 +73066,7 @@ GEH_UI2_TRX = _zd('639v_daten_gehaeuse/GEH_UI2_TRX', _ZDDict())
 # BAU3D: Pfad -> [sha256 der Datei, gzip+base64]; BAU3D_GLB: [sha256, Grösse, gzip+base64]. Ausgeliefert von 639w (/bau3d/<pfad>,
 # /build/gehaeuse.glb) mit Content-Encoding gzip. Der Selbsttest vergleicht die Prüfsummen im Repository mit den Quellen.
 # ----------------------------------------------------------------------------
-BAU3D_QUELLE_SHA = '2247be719a9071df8156f3b5697420e13d5b24ef718c05bc8bf4ed5cf607dc64'
+BAU3D_QUELLE_SHA = 'c6534a0b9b7a98321c9be33dab47f3f275d830ed3207b6a41a14768cc3ac1867'
 BAU3D = _zd('639vb_daten_bau3d/BAU3D', _ZDDict())
 BAU3D_GLB = _zd('639vb_daten_bau3d/BAU3D_GLB', [])
 # aus simulator3d/inhalte/gehaeuse/modelle.json: Gruppe, aussen, Mitte und Explosion pro Teil (wie die Werkstatt im Simulator)
@@ -72565,35 +73126,13 @@ GEH_PAGE = _zd('639w_gehaeuse/GEH_PAGE', ZD_PAGE)
 
 # the 3D workshop in the browser (three.js r160 from 639vb, the model /build/gehaeuse.glb) - like werkstatt.gd in the simulator
 GEH_3D_JS = _zd('639w_gehaeuse/GEH_3D_JS', "")
-GEH_DL_TX = {                                             # real-download-fix: EN -> (de, fr, it, rm)
-    "The print file is not on this MoveEye and could not be fetched from the internet (no connection?). Try again later, or load the complete kit package.": (
-        "Die Druckdatei liegt nicht auf diesem MoveEye und konnte nicht aus dem Internet geholt werden (keine Verbindung?). Später nochmals versuchen oder das komplette Bausatz-Paket laden.",
-        "Le fichier d'impression n'est pas sur ce MoveEye et n'a pas pu être téléchargé (pas de connexion ?). Réessayer plus tard ou charger le kit complet.",
-        "Il file di stampa non è su questo MoveEye e non è stato possibile scaricarlo (nessuna connessione?). Riprovare più tardi o scaricare il kit completo.",
-        "La datoteca da stampa n'è betg sin quest MoveEye e n'ha betg pudì vegnir chargiada da l'internet (nagina colliaziun?). Empruvar pli tard u chargiar il pachet cumplet."),
-    "The print files are being fetched from the internet (%d of %d). This page tries again by itself; you can also tap «Try again».": (
-        "Die Druckdateien werden aus dem Internet geholt (%d von %d). Diese Seite versucht es selbst nochmals; du kannst auch «Nochmals versuchen» tippen.",
-        "Les fichiers d'impression sont en cours de téléchargement (%d sur %d). Cette page réessaie d'elle-même ; vous pouvez aussi toucher «Réessayer».",
-        "I file di stampa vengono scaricati da internet (%d di %d). Questa pagina riprova da sola; puoi anche toccare «Riprova».",
-        "Las datotecas da stampa vegnan chargiadas da l'internet (%d da %d). Questa pagina emprova sezza anc ina giada; ti pos er tutgar «Empruvar anc ina giada»."),
-    "Try again": ("Nochmals versuchen", "Réessayer", "Riprova", "Empruvar anc ina giada"),
-    "Complete kit package (GitHub)": ("Komplettes Bausatz-Paket (GitHub)", "Kit complet (GitHub)", "Kit completo (GitHub)", "Pachet cumplet (GitHub)"),
-    "Back to Build": ("Zurück zu Bauen", "Retour à Construire", "Torna a Costruire", "Enavos tar Construir"),
-    "The print file is too big.": ("Die Druckdatei ist zu gross.", "Le fichier d'impression est trop grand.", "Il file di stampa è troppo grande.", "La datoteca da stampa è memia gronda."),
-    "MoveEye print files – case %s – as of MoveEye %s": ("MoveEye Druckdateien – Gehäuse %s – Stand MoveEye %s", "Fichiers d'impression MoveEye – boîtier %s – état MoveEye %s",
-        "File di stampa MoveEye – custodia %s – stato MoveEye %s", "Datotecas da stampa MoveEye – chascha %s – stadi MoveEye %s"),
-    "folder": ("Ordner", "dossier", "cartella", "ordinatur"),
-    "Without the repository MoveEye fetches the files from GitHub itself (the first time takes about a minute). Everything in one package:": (
-        "Ohne Repository holt MoveEye die Dateien selbst von GitHub (beim ersten Mal rund eine Minute). Alles in einem Paket:",
-        "Sans dépôt, MoveEye télécharge lui-même les fichiers depuis GitHub (la première fois environ une minute). Tout en un paquet :",
-        "Senza repository MoveEye scarica i file da GitHub da solo (la prima volta circa un minuto). Tutto in un pacchetto:",
-        "Senza repository chargia MoveEye las datotecas sez da GitHub (l'emprima giada var ina minuta). Tut en in pachet:"),
-}
+GEH_DL_TX = _zd('639w_gehaeuse/GEH_DL_TX', _ZDDict())
 for _k, _v in GEH_DL_TX.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(("fr", "it", "rm")):
         TRX.setdefault(_L, {}).setdefault(_k, _v[_i + 1])
-GEH_KEYS = sorted(set(GEH_UI_DE) | set(GEH_UI2_DE) | {k for _i, k in BAU_TABS} | {"Complete kit package (GitHub)",
+GEH_KEYS = sorted(set(GEH_UI_DE) | set(GEH_UI2_DE) | {k for _i, k in BAU_TABS} | {"Complete kit package (GitHub)", "Needs internet (GitHub)",
+    "Saved only in this browser (offline version).", "The print files come from GitHub – this needs internet. Everything else on this page works offline.", "Offline version", "Ready-made? Request on the MoveEye homepage",
     "Without the repository MoveEye fetches the files from GitHub itself (the first time takes about a minute). Everything in one package:"} | {
     "Case", "Step", "Name", "Opened in the simulator.", "Simulator not connected – start it and connect it on the page Simulator."})
 
@@ -72604,15 +73143,60 @@ def geh_fk():
     return {i: {k: es[i].get(k) for k in ("titel", "text", "schritte", "stufe")} for i in GEH_BAU.get("fehlersuche") or [] if i in es}
 
 
-def geh_page():
+def geh_page(off=None):
+    """the page /build; off = {"raw", "kit", "glb", "imports"}: the same page as one file without the Pi (geh_render_off)"""
     js = "Object.assign(I18N.de, " + json.dumps({k: DE.get(k, k) for k in GEH_KEYS}, ensure_ascii=False) + ");"
     J = lambda o: json.dumps(o, ensure_ascii=False).replace("</", "<\\/")
-    return (render_page(GEH_PAGE, "more").replace("/*GEHDE*/", js, 1).replace("/*GEHBAU*/null", J(GEH_BAU), 1)
+    return ((geh_render_off(GEH_PAGE, off) if off else render_page(GEH_PAGE, "more")).replace("/*GEHDE*/", js, 1).replace("/*GEHBAU*/null", J(GEH_BAU), 1)
             .replace("/*GEHFK*/null", J(geh_fk()), 1).replace("/*GEHM3*/null", J(BAU3D_MODELLE), 1)
             .replace("/*GEHVER*/\"\"", json.dumps(APP_VERSION), 1)
             .replace("/*GEHSIM*/false", "true" if CFG.get("sim_on") else "false", 1)
             .replace("/*GEHTABS*/", J([list(x) for x in BAU_TABS])).replace("/*GEH3D*/", GEH_3D_JS, 1)
             .replace("/*GEHFERTIG*/", fertig_js(), 1))                       # «Fertig kaufen» (639zj): the hint at the top
+
+
+def geh_render_off(page, off):
+    """real-werkstatt-standalone: like render_page, but for a file opened by double-click (file://, no Pi, no internet):
+    base CSS and COMMON_JS, the language menu with the translations of all five languages inside, no menu bar, no alerts,
+    no calls to the Pi (fetch of a Pi address answers at once: /api/appearance = language of the browser, else «offline»),
+    three.js and the model from `off` (data URLs), window.MW_OFFLINE for the page (639w GEH_OFF)."""
+    import base64
+    J = lambda o: json.dumps(o, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
+    probe = page + COMMON_JS + GEH_3D_JS + str(globals().get("GEH_EINZEL_JS", "")) + str(globals().get("GEH_EINZEL_3D", "")) + fertig_js()
+    keys = set(GEH_KEYS) | set(re.findall(r'data-i18n="([^"]+)"', page)) | {k for k in TRX.get("fr", {}) if '"' + k + '"' in probe}
+    trx = {L: {k: TRX.get(L, {})[k] for k in sorted(keys) if TRX.get(L, {}).get(k)} for L in ("fr", "it", "rm")}
+    cfg = {k: off[k] for k in ("home", "raw", "kit", "glb") if off.get(k)}
+    head = ("<script>window.MW_OFFLINE=" + J(cfg) + ";window.I18NXA=" + J(trx) + ";\n" + LANG_JS.replace("</", "<\\/") + "\n"
+            "(function(){var l='';try{l=localStorage.getItem('mw-lang')||'';}catch(e){}"
+            "var nl=((navigator.language||'de').slice(0,2)||'de').toLowerCase();if(['de','fr','it','rm','en'].indexOf(nl)<0)nl='en';"
+            "window.I18NX=window.I18NXA[l||nl]||null;window.LX=function(s){var d=window.I18NX;return (d&&d[s])||'';};"
+            "var f0=window.fetch;window.fetch=function(u,o){var s=String((u&&u.url)||u||'');"
+            "if(/^\\/[^\\/]/.test(s)){if(s.indexOf('/api/appearance')===0)return Promise.resolve(new Response(JSON.stringify({lang:nl,theme:'dark'}),{headers:{'Content-Type':'application/json'}}));"
+            "return Promise.reject(new TypeError('offline: '+s));}return f0.apply(this,arguments);};})();</script>")
+    imp = '<script type="importmap">' + J({"imports": off.get("imports") or {}}) + "</script>"
+    page = re.sub(r'<script type="importmap">.*?</script>', lambda m_: imp, page, count=1, flags=re.S)
+    page = page.replace("<head>", "<head>" + head, 1).replace('<img class="qr" src="/build/qr.svg" alt="QR">', "", 1)
+    page = page.replace("<!--NAV-->", '<span class="badge" style="font-size:11px" data-i18n="Offline version">Offline version</span>', 1)
+    page = re.sub(r"(<h1[^>]*>)MoveEye</h1>", r'\1MoveEye <span class="ver">' + APP_VERSION + "</span></h1>", page, count=1)
+    ico = "data:image/png;base64," + base64.b64encode(app_icon_png(64)).decode()     # the app icon (header, tab) inside
+    page = page.replace("</head>", str(globals().get("SX_NIGHT_CSS", "")) + '<link rel="icon" type="image/png" href="' + ico + '">'
+                        "<style>:root{--mw-icon:url(" + ico + ")}</style></head>", 1)
+    return page.replace("/*BASECSS*/", BASE_CSS).replace("/*COMMON*/", COMMON_JS).replace("/*ALERTS*/", "")
+
+
+def geh_offline_html(homepage=""):
+    """-> the whole workshop «Bauen» as one HTML file (werkzeuge/werkstatt_html.py): three.js and gehaeuse.glb inside as data URLs,
+    the print files from GitHub (GEH_DRUCK_RAW), «All» = the kit package of the latest release (GEH_BAUSATZ_URL)"""
+    import base64
+    import gzip
+    du = lambda b_, mt: "data:" + mt + ";base64," + base64.b64encode(b_).decode()
+    src = {k: gzip.decompress(bau3d_bytes(k)).decode("utf-8") for k in BAU3D}
+    # GLTFLoader imports «../utils/BufferGeometryUtils.js»: a data URL has no folder -> the name from the import map
+    src = {k: v.replace("'../utils/BufferGeometryUtils.js'", "'three/addons/utils/BufferGeometryUtils.js'") for k, v in src.items()}
+    imports = {("three" if k == "three.module.min.js" else "three/addons/" + k): du(v.encode("utf-8"), "text/javascript") for k, v in src.items()}
+    home = str(homepage or (globals().get("FERTIG") or {}).get("homepage_url") or "")   # empty: the hint without a link
+    off = {"home": home if home.startswith("https://") else "", "raw": GEH_DRUCK_RAW, "kit": GEH_BAUSATZ_URL, "glb": du(gzip.decompress(bau3d_bytes("glb")), "model/gltf-binary"), "imports": imports}
+    return geh_page(off=off)
 
 
 def geh_do(d):
@@ -72800,9 +73384,13 @@ def geh_druck_holen(name, timeout=30):
 
 
 def geh_var_namen(var):
-    """the print files of a case: v52 -> Druckdateien/v5-2/, v51 -> the others"""
-    v52 = var != "v51"
-    return [n for n in geh_druck_namen() if n.startswith("v5-2/") == v52]
+    """the print files of a case: v52 -> Druckdateien/v5-2/, v53 -> Druckdateien/v5-3/ (real-gehaeuse-v53), v51 -> the others"""
+    d = GEH_VAR_DIR.get(var, "v5-2/")
+    return [n for n in geh_druck_namen() if (n.split("/")[0] + "/" if "/" in n else "") == d]
+
+
+GEH_VAR_DIR = {"v51": "", "v52": "v5-2/", "v53": "v5-3/"}     # case -> folder of its print files
+GEH_VAR_TXT = {"v51": "v5.1", "v52": "v5.2", "v53": "v5.3"}
 
 
 def geh_var_std():
@@ -72810,7 +73398,7 @@ def geh_var_std():
 
 
 def geh_zip_name(var):
-    return "MoveEye_%s_Druck_%s.zip" % ("v5-1" if var == "v51" else "v5-2", APP_VERSION)
+    return "MoveEye_%s_Druck_%s.zip" % (GEH_VAR_TXT.get(var, "v5.2").replace(".", "-"), APP_VERSION)
 
 
 def _gx_py(o, L):
@@ -72822,7 +73410,7 @@ def geh_liesmich(var, L=None):
     L = cur_lang(L)
     D = GEH_BAU.get("druck") or {}
     vals = {o["id"] for g_ in GEH_BAU.get("varianten") or [] if g_["id"] == "gehaeuse" for o in g_["werte"]}
-    vt = "v5.1" if var == "v51" else "v5.2"
+    vt = GEH_VAR_TXT.get(var, "v5.2")
     out = [tr("MoveEye print files – case %s – as of MoveEye %s", L) % (vt, APP_VERSION), ""]
     for h in D.get("hinweise") or []:
         out.append("- " + _gx_py(h, L))
@@ -72830,7 +73418,9 @@ def geh_liesmich(var, L=None):
             tr("Single parts (3MF)", L) + ":"]
     for p in D.get("teile") or []:
         w = p.get("wenn")
-        if w in vals and w != var:
+        if p.get("nicht") == var:                     # replaced in this case (v5.3: lower part / lid v5.2)
+            continue
+        if w in vals and w != var and not (w == "v52" and var == "v53"):   # v5.3 builds on v5.2
             continue
         opt = "  (" + tr("optional", L) + ": " + w + ")" if w and w not in vals else ""
         out.append("- %s: × %s · %s %s %% · %s %s · %s %s · %s %s mm%s · %s %s · %s ~%s h%s" % (
@@ -72853,7 +73443,7 @@ def geh_alle_zip(var=None, budget=None):
     """-> ("zip", bytes, file name) | ("wait", done, total) | ("offline", reason, None): the print files of the chosen case
     in one ZIP (3MF are compressed already: stored), fetched where missing"""
     import io
-    var = var if var in ("v51", "v52") else geh_var_std()
+    var = var if var in GEH_VAR_DIR else geh_var_std()
     names = geh_var_namen(var)
     t0, paths = time.time(), {}
     budget = GEH_ZIP_BUDGET if budget is None else budget
@@ -72970,7 +73560,7 @@ def smalltv_routes(app, reply, body):                     # + 639w: /build, /cas
         st, a_, b_ = geh_alle_zip(var)
         if st == "zip":
             return Response(a_, mimetype="application/zip", headers={"Content-Disposition": f'attachment; filename="{b_}"', "Cache-Control": "no-store"})
-        url = "/build/alle.zip?var=" + ("v51" if var == "v51" else "v52")
+        url = "/build/alle.zip?var=" + (var if var in GEH_VAR_DIR else geh_var_std())
         if st == "wait":
             return Response(geh_dl_page(tr("The print files are being fetched from the internet (%d of %d). This page tries again by itself; you can also tap «Try again».") % (a_, b_), retry=url, refresh=15), 202, mimetype="text/html")
         return Response(geh_dl_page(tr("The print file is not on this MoveEye and could not be fetched from the internet (no connection?). Try again later, or load the complete kit package."), retry=url), 503, mimetype="text/html")
@@ -73118,16 +73708,16 @@ def bau_infos_veraltet(base=None):
 
 def geh_selftest():
     B = GEH_BAU
-    assert B.get("version") == "5.1" and len(B.get("schritte") or []) == 14, "data"
+    assert re.fullmatch(r"\d+\.\d+(\.\d+)?", str(B.get("version"))) and len(B.get("schritte") or []) == 14, "data"   # 3 tracks: own number
     bom = {b["id"] for b in B["bom"]}
     for t_ in B["teile"]:
         assert not t_.get("bom") or t_["bom"] in bom, t_["id"]
         assert not t_.get("schritt") or 1 <= t_["schritt"] <= 14, t_["id"]
     vals = {o["id"] for v in B["varianten"] for o in v["werte"]}
     T_ = {t_["id"]: t_ for t_ in B["teile"]}
-    assert (B.get("variante_standard") or {}).get("gehaeuse") == "v52" and "v51" in vals, "real-v52-standard: v5.2 is the standard, v5.1 stays"
+    assert (B.get("variante_standard") or {}).get("gehaeuse") == "v53" and {"v51", "v52"} <= vals, "real-gehaeuse-v53: v5.3 is the standard (released 02.11.2026), v5.2 and v5.1 stay"
     for t_ in B["teile"]:                         # the parts of a variant are in the assembly steps, at the step of the part they replace
-        if t_.get("art") in ("v52", "dev"):
+        if t_.get("art") in ("v52", "v53", "dev"):
             assert t_.get("schritt"), ("step", t_["id"])
             assert not t_.get("ersetzt") or T_[t_["ersetzt"]].get("schritt") == t_["schritt"], ("step of the replaced part", t_["id"])
     for b in B["bom"]:
@@ -73148,6 +73738,13 @@ def geh_selftest():
     for x in ("/api/bau", '"schritte"', "/build/gehaeuse.glb", "importmap", "/bau3d/three.module.min.js", '"HW_PCA9685"', "Raspberry Pi 5"):
         assert x in html, x
     assert "<!--NAV-->" not in html and "/*GEH" not in html
+    off_ = geh_offline_html()                             # real-werkstatt-standalone: the same page as one offline file
+    for x in ("window.MW_OFFLINE=", '"three":"data:text/javascript;base64,', "data:model/gltf-binary;base64,", GEH_DRUCK_RAW, GEH_BAUSATZ_URL,
+              "const GEH_OFF = window.MW_OFFLINE", "window.I18NXA=", '"Offline version"', "Parties", APP_VERSION, "Request on the MoveEye homepage"):
+        assert x in off_, ("offline file", x)
+    assert '"home"' not in off_.split("window.I18NXA=")[0] and '"home":"https://x.ch/"' in geh_offline_html("https://x.ch/")[:300000], "homepage link only when set"
+    for x in ('src="/', "/bau3d/", "/build/qr.svg", "/i18n/", "/*GEH", "<!--NAV-->", "/*ALERTS*/"):
+        assert x not in off_, ("offline file", x)
     import gzip
     for k in list(BAU3D) + ["glb"]:
         raw = gzip.decompress(bau3d_bytes(k))
@@ -73197,6 +73794,9 @@ def geh_selftest():
             os.remove(f_.name)
             assert r.returncode == 0, f"/build script {i}: {(r.stderr or '').strip()[-300:]}"
     probs = geh_check()
+    if probs:   # Drei Spuren (Besitzer 03.11.2026): the case is released on its own, its data come with the next MoveEye /
+        # simulator version («Kamera/Gehäuse überall nachziehen» is paused) - a warning here; rel_mw.sh shows it before a release
+        return "WARNING – case data in the repository differ from this MoveEye (3 tracks: gehaeuse_bauen.py --sim at the next release): " + probs[0]
     assert not probs, " | ".join(probs)
     warn = bau_infos_veraltet()
     if warn:                                              # a warning, no error: nothing is changed by itself
@@ -73291,6 +73891,9 @@ def geh_dl_selftest():
         assert top + "LIESMICH.txt" in nl and top + "MoveEye_v5-2_01_Unterteil_v52.3mf" in nl and top + "Platten_X2D/MotionWatch_v5-2_Platte_A_Unterteil.3mf" in nl, nl[:5]
         assert len(nl) == len(geh_var_namen("v52")) + 1 and not [x for x in nl if "v5-1" in x or "v5-2/" in x[len(top):]], nl
         assert geh_zip_name("v51") == "MoveEye_v5-1_Druck_%s.zip" % APP_VERSION and all(not n.startswith("v5-2/") for n in geh_var_namen("v51"))
+        n53 = geh_var_namen("v53")                    # real-gehaeuse-v53: own folder, all parts (also the unchanged ones of v5.2)
+        assert n53 and all(n.startswith("v5-3/") for n in n53) and geh_zip_name("v53") == "MoveEye_v5-3_Druck_%s.zip" % APP_VERSION, n53[:3]
+        assert len([n for n in n53 if n not in (GEH_BAU.get("druckdateien") or [])]) >= len([n for n in geh_var_namen("v52") if n not in (GEH_BAU.get("druckdateien") or [])]), "v5.3: every single part"
     finally:
         srv.shutdown()
         srv.server_close()
@@ -73309,6 +73912,181 @@ def geh_dl_selftest():
 
 
 SELFTEST_EXTRA.append(("Build print files (fetched without the repository, cache, ZIP of the case)", geh_dl_selftest))
+# ----------------------------------------------------------------------------
+# Dieselben Daten liegen für den Simulator in simulator3d/inhalte/gehaeuse/druck_lage.json (werkstatt.gd).
+# ----------------------------------------------------------------------------
+GEH_DRUCK_LAGE = json.loads(_zd('639wb_daten_druck_lage/GEH_DRUCK_LAGE', ""))
+# ----------------------------------------------------------------------------
+# Paket «real-einzelteil-vorschau» (01.11.2026, Wunsch des Besitzers). Die Lage jedes Druckteils auf der Platte und die Platten kommen
+# aus 639wb (GEH_DRUCK_LAGE, werkzeuge/druck_lage.py aus gehaeuse.glb und den 3MF) – die Werkstatt dreht nur ihr vorhandenes
+# Modell, es kommen keine weiteren Netze dazu. Teile der Platte ohne eigenes Netz (kleine Stopfen, die 4 Füsse) erscheinen als
+# Quader in ihrer Grösse. Bestehendes bleibt: Explosion, Durchsichtig, Innenleben, Montage (die Regler ruhen in den neuen Ansichten).
+#   * GEH_PAGE: Knopf «Druckplatten» und «Zurück zum ganzen Modell» bei den 3D-Reglern, /*GEHEINZEL*/ (Bedienung, Texte),
+#     GEH_3D_JS: /*GEHEINZEL3D*/ (die Ansichten im selben Bild; «Wo es hingehört» als kleines Bild unten rechts im selben Canvas).
+#   * /build/platten.zip?v=v52|v51&lang=..: die Platten der Variante + LIESMICH_Druck.txt (Kurzanleitung in der Sprache),
+#     Name mit Version (MoveEye_v5-2_Druckplatten_X.Y.Z.zip); auf dem Pi ohne Repository holt MoveEye die Platten selbst
+#     (real-download-fix: geh_druck_holen, Cache, Basisnamen), keine Weiterleitung zu GitHub.
+#   * «In Bambu Studio öffnen» bewusst weggelassen: das Link-Schema (bambustudio://open?file=…) ist nicht offiziell beschrieben und
+#     lädt nur Dateien, die Bambu Studio selbst aus dem Internet holen kann – die Seite des Pi im Heimnetz geht dafür nicht sicher.
+# ----------------------------------------------------------------------------
+EINZEL_TX = _zd('639wc_einzelteil/EINZEL_TX', _ZDDict())
+for _k, (_de, _fr, _it, _rm) in EINZEL_TX.items():
+    DE.setdefault(_k, _de)
+    for _L, _v in (("fr", _fr), ("it", _it), ("rm", _rm)):
+        TRX.setdefault(_L, {}).setdefault(_k, _v)
+GEH_KEYS = sorted(set(GEH_KEYS) | set(EINZEL_TX) | {"none", "Supports", "Infill", "Walls", "Layer", "pcs", "Shop", "Qty"})
+
+_EINZEL_CTL_ANCHOR = '<button type="button" class="sec" onclick="bv(\'reset\')" data-i18n="Reset the view">Reset the view</button></div>'
+_EINZEL_CTL = ('<button type="button" class="sec" id="v-plates" onclick="gPlates(BV.plate || 0)">🖨 <span data-i18n="Print plates">Print plates</span></button>'
+               '<button type="button" id="v-whole" hidden onclick="gWhole()">↩ <span data-i18n="Back to the whole model">Back to the whole model</span></button>\n    ')
+if 'id="v-plates"' not in GEH_PAGE and _EINZEL_CTL_ANCHOR in GEH_PAGE:
+    GEH_PAGE = GEH_PAGE.replace(_EINZEL_CTL_ANCHOR, _EINZEL_CTL + _EINZEL_CTL_ANCHOR, 1)
+_EINZEL_CSS = ("#v3d-where{position:absolute;right:8px;bottom:8px;border:1px solid #4b5868;border-radius:10px;background:transparent;color:#e6edf5;"
+               "display:none;align-items:flex-end;justify-content:center;padding:0 0 4px;font-size:10px;line-height:1.25;text-align:center;cursor:pointer;min-height:0}"
+               "#v3d-where span{background:#1b2430cc;border-radius:6px;padding:2px 6px;margin:0 4px}"
+               ".pinfo table.gb{margin:6px 0}.pinfo .vrow{margin-top:6px}.pinfo ul.pl{margin:6px 0;padding-left:18px}.pinfo ul.pl li{cursor:pointer;color:var(--acc);padding:2px 0}"
+               ".pinfo .btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}\n")
+if "#v3d-where" not in GEH_PAGE:
+    GEH_PAGE = GEH_PAGE.replace("</style></head>", _EINZEL_CSS + "</style></head>", 1)
+if "/*GEHEINZEL*/" not in GEH_PAGE:
+    GEH_PAGE = GEH_PAGE.replace("<script>/*GEHFERTIG*/</script>", "<script>/*GEHFERTIG*/</script>\n<script>/*GEHEINZEL*/</script>", 1)
+
+# the operation (classic script, after the page script: it may wrap gInfo / gStep, it knows GB, G, BV, TEIL, BOM, pfile …)
+GEH_EINZEL_JS = _zd('639wc_einzelteil/GEH_EINZEL_JS', "")
+
+# the 3D part (inside the module of GEH_3D_JS: it uses THREE, scene, cam, ctl, parts, paint, render, view, row, shown, bench, T0)
+GEH_EINZEL_3D = _zd('639wc_einzelteil/GEH_EINZEL_3D', "")
+
+
+def _geh_page_einzel(*a, **k):                           # real-werkstatt-standalone: geh_page(off=…) passes through
+    js = GEH_EINZEL_JS.replace("/*GEHDL*/null", json.dumps(GEH_DRUCK_LAGE, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/"), 1)
+    return _geh_page_einzel_base(*a, **k).replace("/*GEHEINZEL*/", js, 1).replace("/*GEHEINZEL3D*/", GEH_EINZEL_3D, 1)
+
+
+_geh_page_einzel_base = geh_page
+# wraps: geh_page (639w)
+geh_page = _geh_page_einzel
+
+
+def geh_platten_zip(var="v52", lang="de", budget=None):
+    """the plates (3MF) of one case + LIESMICH_Druck.txt (short guide in the language), named with the version
+    -> ("zip", name, bytes) | ("wait", done, total) | ("offline", reason, None). 3.48.0: like /build/alle.zip (real-download-fix,
+    639w geh_druck_holen) - on the Pi without the repository MoveEye fetches the plates itself (cache, base names), no redirect"""
+    import io
+    import zipfile
+    var = "v52" if var is True else "v51" if var is False else var if var in GEH_VAR_DIR else "v52"   # real-gehaeuse-v53: v51 | v52 | v53
+    fs = (GEH_DRUCK_LAGE.get("platten") or {}).get(var) or []
+    if not fs:
+        return "offline", "unknown", None
+    t0, paths = time.time(), {}
+    budget = GEH_ZIP_BUDGET if budget is None else budget
+    for i, p in enumerate(fs):
+        if time.time() - t0 > budget:
+            rest = [x["datei"] for x in fs[i:]]
+            if not _GEH_DL_BG["run"]:
+                _GEH_DL_BG["run"] = True
+                threading.Thread(target=_geh_bg_fetch, args=(rest,), daemon=True).start()
+            return "wait", len(paths), len(fs)
+        fp, why = geh_druck_holen(p["datei"])
+        if not fp:
+            return "offline", why, None
+        paths[p["datei"]] = fp
+    L = lang if lang in ("de", "en", "fr", "it", "rm") else "de"
+    T = lambda k: tr(k, L) if L != "en" else k
+    nm = lambda dt: next((x["name"].get(L) or x["name"].get("de") for x in GEH_BAU.get("teile") or [] if x.get("datei") == dt and isinstance(x.get("name"), dict)), dt.replace("_", " "))
+    z = [T("MoveEye – print plates case v%s (as of MoveEye %s)") % (GEH_VAR_TXT[var][1:], APP_VERSION), "=" * 64, "",
+         T("Printer: Bambu Lab X2D (other printers work too), 0.4 mm nozzle, material PETG – dry it first."),
+         T("No supports: all parts already lie right on the plate. Brim 5 mm only for head (06), yoke (04) and side cover (07)."),
+         T("Colours: head parts orange (everything that turns or tilts), the rest grey; diffuser 14 natural/white, pupil ring 15 black."),
+         T("Open: Bambu Studio → File → Open, choose the plate, slice and print."), ""]
+    for p in fs:
+        seen = []
+        for it in p["teile"]:
+            n = sum(1 for x in p["teile"] if x["datei"] == it["datei"])
+            s = nm(it["datei"]) + (" × %d" % n if n > 1 else "")
+            if s not in seen:
+                seen.append(s)
+        z.append(T("Plate %s (%s): %s") % (p["name"], p["datei"].split("/")[-1], ", ".join(seen)))
+    z += ["", T("Single parts and everything else: MoveEye → More → Build → Printing."), ""]
+    top_ = "MoveEye_%s_Druckplatten_" % GEH_VAR_TXT[var].replace(".", "-") + APP_VERSION
+    b = io.BytesIO()
+    with zipfile.ZipFile(b, "w", zipfile.ZIP_STORED) as zf:
+        zf.writestr(top_ + "/LIESMICH_Druck.txt", "﻿" + "\r\n".join(z))
+        for p in fs:
+            zf.write(paths[p["datei"]], top_ + "/" + geh_base_name(p["datei"]))
+    return "zip", top_, b.getvalue()
+
+
+_smalltv_routes_einzel_base = smalltv_routes
+
+
+def smalltv_routes(app, reply, body):                     # + 639wc: /build/platten.zip
+    _smalltv_routes_einzel_base(app, reply, body)
+    from flask import Response, request
+
+    @app.route("/build/platten.zip")
+    def geh_platten_():
+        v_ = request.args.get("v", "v52")
+        v_ = v_ if v_ in GEH_VAR_DIR else "v52"
+        lg_ = str(request.args.get("lang") or "de")[:2]
+        st, a_, b_ = geh_platten_zip(v_, lg_)
+        if st == "zip":
+            return Response(b_, mimetype="application/zip", headers={"Content-Disposition": f'attachment; filename="{a_}.zip"', "Cache-Control": "no-store"})
+        url = "/build/platten.zip?v=" + v_ + "&lang=" + lg_
+        if st == "wait":
+            return Response(geh_dl_page(tr("The print files are being fetched from the internet (%d of %d). This page tries again by itself; you can also tap «Try again».") % (a_, b_), retry=url, refresh=15), 202, mimetype="text/html")
+        return Response(geh_dl_page(tr("The print file is not on this MoveEye and could not be fetched from the internet (no connection?). Try again later, or load the complete kit package."), retry=url), 503, mimetype="text/html")
+
+
+def geh_einzel_selftest():
+    D = GEH_DRUCK_LAGE
+    T_ = {t_["id"]: t_ for t_ in GEH_BAU["teile"]}
+    assert D.get("platte_mm") == 256 and D.get("lage") and D.get("platten"), "data 639wb"
+    for id_, L in D["lage"].items():
+        assert id_ in T_ and T_[id_].get("datei") == L["datei"], ("lage", id_)
+        r = L["r"]
+        assert len(r) == 9 and all(abs(x) in (0, 1) for x in r) and sorted(abs(x) for x in r).count(1) == 3, ("rotation", id_)
+    for t_ in GEH_BAU["teile"]:                   # every print part of the model knows how it lies on the plate
+        if t_.get("datei") and t_["id"] in {e["id"] for e in BAU3D_MODELLE.get("teile", [])}:
+            assert t_["id"] in D["lage"], ("print part without orientation", t_["id"])
+    for var in ("v52", "v51", "v53"):
+        ps = D["platten"].get(var) or []
+        assert [p["datei"] for p in ps] == [f for f in GEH_BAU.get("druckdateien") or [] if (f.split("/")[0] + "/" if "/" in f else "") == GEH_VAR_DIR[var]], ("plates", var)
+        for p in ps:
+            for it in p["teile"]:
+                assert 0 <= it["x"] <= 256 and 0 <= it["y"] <= 256 and len(it["g"]) == 3, ("on the plate", var, it["o"])
+                assert not it.get("id") or it["id"] in D["lage"], ("plate part", it["o"])
+    import hashlib
+    alt = False
+    sim = os.path.join(os.path.dirname(os.path.abspath(__file__)), "simulator3d", "inhalte", "gehaeuse")
+    if os.path.isfile(os.path.join(sim, "druck_lage.json")):    # the same data in the simulator, and they fit the model
+        with open(os.path.join(sim, "druck_lage.json"), encoding="utf-8") as f_:
+            assert json.load(f_) == D, "simulator3d/inhalte/gehaeuse/druck_lage.json differs from 639wb - werkzeuge/druck_lage.py"
+        with open(os.path.join(sim, "gehaeuse.glb"), "rb") as f_:
+            alt = hashlib.sha256(f_.read()).hexdigest() != D["glb_sha256"]
+    for k in EINZEL_TX:
+        assert DE.get(k) and all(TRX[L_].get(k) for L_ in ("fr", "it", "rm")), k
+    html = geh_page()
+    for x in ('id="v-plates"', "gSolo", "X.setMode", "v3d-where", '"platten"', "/build/platten.zip"):
+        assert x in html, x
+    assert "/*GEHEINZEL" not in html and "/*GEHDL*/" not in html
+    st_, a_, b_ = geh_platten_zip(True, "fr", budget=0 if not os.path.isdir(geh_druck_dir()) else None)
+    if st_ == "zip":                                      # in the repository; on the Pi without it: fetched (wait / offline)
+        import io
+        import zipfile
+        with zipfile.ZipFile(io.BytesIO(b_)) as zf:
+            ns = zf.namelist()
+            txt = zf.read(a_ + "/LIESMICH_Druck.txt").decode("utf-8-sig")
+        assert a_.endswith(APP_VERSION) and len(ns) == 1 + len(D["platten"]["v52"]) and "Plateau A" in txt, (ns, txt[:200])
+    else:
+        assert st_ in ("wait", "offline"), st_
+    if alt:                                               # a warning (like the build infos): the model changed after the data
+        return "WARNING – gehaeuse.glb changed after werkzeuge/druck_lage.py – run it again (orientation on the plate)"
+    return "Build: single part view and print plates (%d parts with orientation, plates v5.2 %d / v5.1 %d / v5.3 %d)" % (
+        len(D["lage"]), len(D["platten"].get("v52") or []), len(D["platten"].get("v51") or []), len(D["platten"].get("v53") or []))
+
+
+SELFTEST_EXTRA.append(("Build: single part view, print plates (orientation from the 3MF, ZIP with short guide)", geh_einzel_selftest))
 # ----------------------------------------------------------------------------
 # real-erk-e3 (31.10.2026): die Push-Nachricht «Etwas Grosses am Boden» (Titel und Text) in de / fr / it / rm.
 # ----------------------------------------------------------------------------
@@ -73716,8 +74494,8 @@ SIMWAIT_JS = r"""
 })();
 """
 
-if '<img id="video" src="/video_feed" alt="">' in WEB_PAGE:
-    WEB_PAGE = WEB_PAGE.replace('<img id="video" src="/video_feed" alt="">', '<img id="video" src="/video_feed" alt="">' + SIMWAIT_HTML, 1)
+if '<img id="video" data-src="/video_feed" alt="">' in WEB_PAGE:            # 3.55.2: data-src - keepStream (510) opens the stream
+    WEB_PAGE = WEB_PAGE.replace('<img id="video" data-src="/video_feed" alt="">', '<img id="video" data-src="/video_feed" alt="">' + SIMWAIT_HTML, 1)
     WEB_PAGE = WEB_PAGE.replace("</script></body></html>", "</script><style>" + SIMWAIT_CSS + "</style><script>" + SIMWAIT_JS + "</script></body></html>", 1)
 
 
@@ -74188,11 +74966,11 @@ _HX_UIS = {
     'MoveEye older': ('MoveEye älter', 'MoveEye plus ancien', 'MoveEye più vecchio', 'MoveEye pli vegl'),
     'Update the simulator': ('Simulator aktualisieren', 'Mettre à jour le simulateur', 'Aggiorna il simulatore', 'Actualisar il simulatur'),
     'Update MoveEye': ('MoveEye aktualisieren', 'Mettre à jour MoveEye', 'Aggiorna MoveEye', 'Actualisar MoveEye'),
-    'Both programs should have the same number (they are always published together).':
-        ('Beide Programme sollten dieselbe Nummer haben (sie erscheinen immer zusammen).',
-         'Les deux programmes devraient avoir le même numéro (ils sont toujours publiés ensemble).',
-         'I due programmi dovrebbero avere lo stesso numero (vengono sempre pubblicati insieme).',
-         'Omadus programs duessan avair il medem numer (els cumparan adina ensemen).'),
+    'The numbers may differ, but one program is older than the other one needs.':
+        ('Die Nummern dürfen verschieden sein, aber ein Programm ist älter, als das andere braucht.',
+         'Les numéros peuvent différer, mais un programme est plus ancien que ce dont l’autre a besoin.',
+         'I numeri possono essere diversi, ma un programma è più vecchio di quanto serve all’altro.',
+         'Ils numers dastgan esser differents, ma in program è pli vegl che quai che l’auter dovra.'),
     'Simulator': ('Simulator', 'Simulateur', 'Simulatore', 'Simulatur'),
     'MoveEye gets only {f} pictures/s from the simulator - it hardly detects anything (from about 3/s on it works)':
         ('MoveEye bekommt nur {f} Bilder/s vom Simulator – so erkennt es kaum etwas (ab etwa 3/s geht es)',
@@ -74401,6 +75179,7 @@ _sim_state_639zb = sim_state
 def sim_state():                                          # + 639zb: ui, features, level, lock, push (and every 15 s diag)
     d = _sim_state_639zb()
     d["features"] = ["ui1", "level1", "push1", "diag1", "lock1", "ver1"]
+    d["sim_min"] = SIM_MIN                                # 3 tracks: the oldest simulator this MoveEye works with (545)
     cur = ui_tick()
     if not SIM.get("follower"):                           # only the leading MoveEye shares the view
         d["ui"] = {"rev": UIS["rev"], "took": UIS["took"], "v": cur}
@@ -74448,16 +75227,20 @@ def ui_vnum(v):
 
 
 def ui_ver_pair(lang=None):
-    """{"mw", "sim", "same", "older": "" | "sim" | "mw", "text"} - «MoveEye 3.34.0 · Sim 3.34.0 ✓» or «⚠ Simulator older …»"""
+    """{"mw", "sim", "same", "older": "" | "sim" | "mw", "text"} - «MoveEye 3.34.0 · Sim 3.34.0 ✓» or «⚠ Simulator older …».
+    3 tracks (Besitzer 03.11.2026): the numbers differ on purpose; «same» = the pair works together (each side at least the
+    minimum of the other: SIM_MIN of MoveEye 545, «mw_min» of the simulator in /info), «older» = the side below that minimum."""
     info = SIM.get("info") or {}
     sv = str(info.get("ver") or info.get("version") or "")
     if not re.match(r"^\d+\.\d+\.\d+$", sv):
         m = re.search(r"\d+\.\d+\.\d+", str(info.get("name") or ""))
         sv = m.group(0) if m else sv
     a, b = ui_vnum(APP_VERSION), ui_vnum(sv)
-    out = {"mw": APP_VERSION, "sim": sv, "same": bool(a and b and a == b), "older": ""}
-    if a and b and a != b:
-        out["older"] = "sim" if b < a else "mw"
+    smin, mmin = ui_vnum(SIM_MIN), ui_vnum(str(info.get("mw_min") or "")) or (0, 0, 0)
+    out = {"mw": APP_VERSION, "sim": sv, "same": bool(a and b and b >= smin and a >= mmin), "older": ""}
+    if a and b and not out["same"]:
+        out["older"] = "sim" if b < smin else "mw"
+        out["need"] = SIM_MIN if out["older"] == "sim" else str(info.get("mw_min"))
     txt = f"MoveEye {APP_VERSION} · Sim {sv or '?'}"
     if out["same"]:
         txt += " ✓"
@@ -74501,7 +75284,7 @@ def ui_pair_items(L):
     out = []
     vp = ui_ver_pair(L)
     out.append({"id": "sim:ver", "icon": "🔢", "title": tr("Versions", L), "level": "ok" if vp["same"] else "warn", "text": vp["text"],
-                "tip": "" if vp["same"] else tr("Both programs should have the same number (they are always published together).", L)
+                "tip": "" if vp["same"] else tr("The numbers may differ, but one program is older than the other one needs.", L)
                 + " → " + tr("Update the simulator" if vp["older"] == "sim" else "Update MoveEye", L)})
     if str(CFG.get("source") or "").startswith("sim:"):
         f = float(STATE.get("fps") or 0)
@@ -74733,6 +75516,11 @@ def ui_sync_selftest():
         assert ui_ver_pair("de")["same"] and ui_ver_pair("de")["text"].endswith("✓"), "639zb: version pair"
         SIM["info"] = {"version": "3.0.1"}
         assert ui_ver_pair("de")["older"] == "sim" and ui_ver_pair("de")["text"].startswith("⚠"), "639zb: older simulator"
+        SIM["info"] = {"version": SIM_MIN}                # 3 tracks: another number, but new enough = ✓
+        assert ui_ver_pair("de")["same"] and ui_ver_pair("de")["older"] == "", "639zb: 3 tracks, different numbers that fit"
+        SIM["info"] = {"version": "99.0.0", "mw_min": "99.0.0"}
+        assert ui_ver_pair("de")["older"] == "mw" and ui_ver_pair("de")["need"] == "99.0.0", "639zb: the simulator needs a newer MoveEye"
+        assert "sim_min" in sim_state() and sim_state()["sim_min"] == SIM_MIN, "639zb: sim_min in the state"
         js = render_page("<html><head></head><body><header><h1>MoveEye</h1><!--NAV--></header><main></main></body></html>", "live")
         assert js.count('id="uis-js"') == 1 and "Ansicht im Simulator" in js, "639zb: hint script"
         sh = UI_GEMEINSAM.get("shared") or {}
@@ -75421,7 +76209,10 @@ FERTIG_JS = r"""
   function paint() {
     box.textContent = "";
     const r1 = mk("div", "fkr"), r2 = mk("div", "fkr");
-    r1.append(mk("span", "fki", FK.emoji || "🛒"), mk("span", "fkt", FT("hint")));
+    const OFF = !window.mwOrder && window.MW_OFFLINE;   // the offline file (639w geh_page(off)): request on the homepage, link only when set
+    const ht = mk("span", "fkt", OFF ? t("Ready-made? Request on the MoveEye homepage") : FT("hint"));
+    if (OFF && OFF.home) { ht.textContent = ""; const a = mk("a", "", t("Ready-made? Request on the MoveEye homepage")); a.href = OFF.home; a.target = "_blank"; a.rel = "noopener"; ht.appendChild(a); }
+    r1.append(mk("span", "fki", FK.emoji || "🛒"), ht);
     const sg = mk("span", "seg"); sg.setAttribute("role", "group"); sg.setAttribute("aria-label", FT("package"));
     PS.forEach(p => { const b = mk("button", p.id === pkg ? "on" : "", L5(p.names)); b.type = "button"; b.title = L5(p.desc); b.dataset.pkg = p.id;
       b.setAttribute("aria-pressed", p.id === pkg ? "true" : "false");
@@ -75430,6 +76221,7 @@ FERTIG_JS = r"""
     const ds = mk("span", "mut", [L5(cur.desc), FT("price")].filter(Boolean).join(" · ")); ds.id = "g-fk-desc";
     const ob = mk("button", "sec", FT("button")); ob.type = "button"; ob.id = "g-fk-btn";
     ob.onclick = () => { if (window.mwOrder) window.mwOrder(pkg); else location.hash = "#order"; };
+    if (!window.mwOrder && window.MW_OFFLINE) ob.hidden = true;   // the offline file (639w geh_page(off)): no feedback to the Pi
     r2.append(sg, ds, ob); box.append(r1, r2); box.hidden = false;
   }
   const ai = window.applyI18n;                         // the language changes: the hint follows
@@ -75678,6 +76470,628 @@ def varianten_sw_selftest():
 
 SELFTEST_EXTRA.append(("Variants without all parts: servo fallback, thermal not found, relay 1 off, mover own drive (639zs)",
                        varianten_sw_selftest))
+# ----------------------------------------------------------------------------
+# Wunsch des Besitzers (02.11.2026, Paket «spielmodus»): am iPad war das Spielen «nicht spielbar», obwohl alles da ist -
+# der Spiel-Assistent kam als kleines, abgeschnittenes PC-Bild im Stream, die Knöpfe waren Fernbedienung eines PC-Bilds, die
+# Live-Seite war voll, bis zum Spielen brauchte es viele Schritte. Entscheid:
+#   * NUR im Simulator-Betrieb (Simulation ein und verbunden) zeigt die Live-Seite eine eigene, ruhige Vollbild-Ansicht
+#     «Sim-Ansicht»: oben eine schmale Leiste (Schutz-Zustand, 🎮 Spielen, ⋯ Mehr, ▦ Klassisch), in der Mitte das Bild des
+#     Simulators (view.jpg mit dock=1: nur 3D-Bild und Karten / Fenster, ohne Bedienfeld, ohne Abschneiden; klein darüber das
+#     Kamerabild von MoveEye), unten gross: Kopf-Stick, 🎯 Folgen, 🔴 IR, 💡 Licht, 🚨 Sirene, ⏺ Aufnahme.
+#   * Alles andere der Live-Seite liegt hinter «⋯ Mehr» (alle Schnellschalter in derselben Reihenfolge wie auf der Live-Seite,
+#     dazu Controller-Ansicht, Sticks fliegen / umschauen, Simulator, Schutz, Einstellungen) - nichts ist entfernt.
+#     «▦ Klassisch» führt zur bisherigen Live-Seite (gemerkt pro Gerät, localStorage «mw-simv»); dort bringt «📱 Sim-Ansicht»
+#     (Karte «Simulator-Steuerung») sie zurück. Im echten Betrieb (ohne Simulator) bleibt die Live-Seite genau wie bisher.
+#   * «🎮 Spielen»: die Spiele des Spiel-Assistenten (Schnellstart der Simulator-Datei gamewiz.gd, «quick»: Schleichen,
+#     Wächter-Duell, Diebstahl, KI-Turm, Spielabend-Turnier, MoveEye ins Schwitzen, Nacht-Spiel, Mission, Die Karte des
+#     Grossvaters, das Spiel zur Szene) als grosse Karten im Browser. Ein Tipp = spielen: gamewiz «quick» (alles eingestellt,
+#     Spiel offen), «Hier am PC mitspielen» (Steuerung game_local, localplay.gd), gamewiz «next» (Runde startet). Der
+#     Assistent selbst öffnet sich im Simulator nicht. «⚙ Anpassen» = der ganze Assistent (Seite Simulator, /sim#gw).
+#   * Im Spiel: die Spielknöpfe sind Knöpfe im Browser (Stick gehen links, Stick umschauen rechts, Ducken, Kriechen, Stein,
+#     Lampe, Rennen; Wächter: Auslöser, «Erwischt!», Licht, Scan, Sirene, Zoom). Sie wirken wie ein Game-Controller am Browser
+#     (/api/sim «pad», die EINE Belegung von padmap.gd: rechter Stick = gehen, linker = umschauen, A Lampe, B Ducken, X Stein,
+#     Y Kriechen, R2 Rennen / Auslöser, Start = Runde starten, Select = Wiederholung). Zeit, Verdacht, Leben und das Ergebnis
+#     zeigt der Browser selbst (game_info, wie die Zuschauer-Anzeige der Seite Simulator). «× Beenden» = localplay stop.
+# Die Geschichten (Maggie, Grossvater, Hospiz) laufen weiter im Simulator-Fenster: dort zeigt die Sim-Ansicht die Sticks
+# «gehen / umschauen» von selbst (470 simTouchPad, /api/play «playing»).
+# Daten: /api/state (530 refresh → QSJ), /api/sim (gamewiz, ctl, pad, game, localplay), /snapshot.jpg. Kein neuer Begriff
+# auf dem Pi, keine neue Einstellung. Übersetzungen: unten (_HX_SIMV, alle 5 Sprachen).
+# ----------------------------------------------------------------------------
+
+SIMV_JS = _zd('639zt_sim_ansicht/SIMV_JS', "")
+
+# Key = English text: (Deutsch, Français, Italiano, Rumantsch)
+_HX_SIMV = {
+    'Let’s play': ('Spielen', 'Jouer', 'Gioca', 'Giugar'),
+    'More': ('Mehr', 'Plus', 'Altro', 'Dapli'),
+    'Classic': ('Klassisch', 'Classique', 'Classico', 'Classic'),
+    'Back to the usual live screen': ('Zurück zur gewohnten Live-Seite', 'Retour à l’écran live habituel', 'Torna alla solita schermata live',
+                                      'Enavos al visur live usità'),
+    'Waiting for the picture of the simulator …': ('Warte auf das Bild des Simulators …', 'En attente de l’image du simulateur …',
+                                                    'In attesa dell’immagine del simulatore …', 'Spetg sin il maletg dal simulatur …'),
+    'Camera picture of MoveEye (tap: bigger / smaller)': ('Kamerabild von MoveEye (antippen: grösser / kleiner)', 'Image caméra de MoveEye (toucher : plus grand / plus petit)',
+                                                          'Immagine della telecamera di MoveEye (tocca: più grande / più piccola)', 'Maletg da la camera da MoveEye (tutgar: pli grond / pli pitschen)'),
+    'Head': ('Kopf', 'Tête', 'Testa', 'Chau'),
+    'walk': ('gehen', 'marcher', 'camminare', 'ir'),
+    'look around': ('umschauen', 'regarder autour', 'guardarsi intorno', 'guardar enturn'),
+    'aim finely': ('fein zielen', 'viser finement', 'mirare fine', 'mirar fin'),
+    'turn the camera': ('Kamera drehen', 'tourner la caméra', 'girare la telecamera', 'volver la camera'),
+    'What do you want to play?': ('Was willst du spielen?', 'À quoi veux-tu jouer ?', 'A cosa vuoi giocare?', 'Tge vuls ti giugar?'),
+    'Customise': ('Anpassen', 'Personnaliser', 'Personalizza', 'Adattar'),
+    'The whole game wizard (all rules and extras)': ('Der ganze Spiel-Assistent (alle Regeln und Extras)', 'L’assistant de jeu complet (toutes les règles et options)',
+                                                     'L’assistente di gioco completo (tutte le regole e gli extra)', 'L’entir assistent da gieu (tut las reglas ed extras)'),
+    'Follow': ('Folgen', 'Suivre', 'Seguire', 'Suandar'),
+    'IR light': ('IR-Licht', 'Lumière IR', 'Luce IR', 'Glisch IR'),
+    'Spotlight': ('Licht', 'Lumière', 'Luce', 'Glisch'),
+    'Siren': ('Sirene', 'Sirène', 'Sirena', 'Sirena'),
+    'Recording': ('Aufnahme', 'Enregistrement', 'Registrazione', 'Registraziun'),
+    'Full': ('Voll', 'Complet', 'Pieno', 'Cumplain'),
+    'Alert': ('Wachsam', 'Vigilant', 'Vigile', 'Attent'),
+    'Off': ('Aus', 'Arrêt', 'Spento', 'Giu'),
+    'not connected': ('nicht angeschlossen', 'non connecté', 'non collegato', 'betg collià'),
+    'All switches of the live screen. Tap «▦ Classic» for the complete usual live screen.': (
+        'Alle Schalter der Live-Seite. «▦ Klassisch» zeigt die ganze gewohnte Live-Seite.',
+        'Tous les interrupteurs de l’écran live. «▦ Classique» montre tout l’écran live habituel.',
+        'Tutti gli interruttori della schermata live. «▦ Classico» mostra tutta la solita schermata live.',
+        'Tut ils interruttus dal visur live. «▦ Classic» mussa l’entir visur live usità.'),
+    'Talk: hold the button on the usual live screen': ('Sprechen: auf der gewohnten Live-Seite den Knopf gedrückt halten',
+                                                      'Parler : maintenir le bouton sur l’écran live habituel',
+                                                      'Parlare: tenere premuto il pulsante nella solita schermata live',
+                                                      'Discurrer: tegnair smatgà il buttun sin il visur live usità'),
+    'Classic live screen (everything)': ('Klassische Live-Seite (alles)', 'Écran live classique (tout)', 'Schermata live classica (tutto)', 'Visur live classic (tut)'),
+    'Sticks fly / look around': ('Sticks fliegen / umschauen', 'Sticks voler / regarder autour', 'Stick volare / guardarsi intorno', 'Sticks sgular / guardar enturn'),
+    'Controller view': ('Controller-Ansicht', 'Vue manette', 'Vista controller', 'Vista dal controller'),
+    'Simulator (tab)': ('Simulator (Reiter)', 'Simulateur (onglet)', 'Simulatore (scheda)', 'Simulatur (register)'),
+    'Stories and places': ('Geschichten und Orte', 'Histoires et lieux', 'Storie e luoghi', 'Istorgias e lieus'),
+    'Protection': ('Schutz', 'Protection', 'Protezione', 'Protecziun'),
+    'Settings': ('Einstellungen', 'Réglages', 'Impostazioni', 'Parameters'),
+    'History': ('Verlauf', 'Historique', 'Cronologia', 'Cronologia'),
+    'More (tab)': ('Mehr (Reiter)', 'Plus (onglet)', 'Altro (scheda)', 'Dapli (register)'),
+    'Screens': ('Ansichten', 'Écrans', 'Schermate', 'Visurs'),
+    'loading the games …': ('lade die Spiele …', 'chargement des jeux …', 'caricamento dei giochi …', 'chargia ils gieus …'),
+    'simulator not reachable': ('Simulator nicht erreichbar', 'simulateur injoignable', 'simulatore non raggiungibile', 'simulatur betg cuntanschibel'),
+    'The game wizard is open at the simulator PC. «⚙ Customise» shows it here.': (
+        'Der Spiel-Assistent ist am Simulator-PC offen. «⚙ Anpassen» zeigt ihn hier.',
+        'L’assistant de jeu est ouvert sur le PC du simulateur. «⚙ Personnaliser» l’affiche ici.',
+        'L’assistente di gioco è aperto sul PC del simulatore. «⚙ Personalizza» lo mostra qui.',
+        'L’assistent da gieu è avert al PC dal simulatur. «⚙ Adattar» al mussa qua.'),
+    'One tap: everything is set (3 minutes, good rules) and you play here with the buttons. «⚙ Customise» for your own rules.': (
+        'Ein Tipp: alles ist eingestellt (3 Minuten, gute Regeln) und du spielst hier mit den Knöpfen. «⚙ Anpassen» für eigene Regeln.',
+        'Un toucher : tout est réglé (3 minutes, bonnes règles) et tu joues ici avec les boutons. «⚙ Personnaliser» pour tes propres règles.',
+        'Un tocco: è tutto impostato (3 minuti, buone regole) e giochi qui con i pulsanti. «⚙ Personalizza» per regole proprie.',
+        'In tip: tut è endrizzà (3 minutas, bunas reglas) e ti giogas qua cun ils buttuns. «⚙ Adattar» per atgnas reglas.'),
+    'It starts in the simulator window – walk with the sticks.': ('Es startet im Simulator-Fenster – mit den Sticks gehen.',
+                                                                 'Ça démarre dans la fenêtre du simulateur – marche avec les sticks.',
+                                                                 'Parte nella finestra del simulatore – cammina con gli stick.',
+                                                                 'I cumenza en la fanestra dal simulatur – ir cun ils sticks.'),
+    'not possible': ('nicht möglich', 'impossible', 'non possibile', 'betg pussaivel'),
+    'The round starts': ('Die Runde startet', 'La manche commence', 'Il round inizia', 'La runda cumenza'),
+    'Crouch': ('Ducken', 'Se baisser', 'Abbassarsi', 'Sa sbassar'),
+    'Crawl': ('Kriechen', 'Ramper', 'Strisciare', 'Ruschnar'),
+    'Stone': ('Stein', 'Pierre', 'Sasso', 'Crap'),
+    'Torch': ('Lampe', 'Lampe', 'Lampada', 'Lampa'),
+    'Run': ('Rennen', 'Courir', 'Correre', 'Currer'),
+    'Replay': ('Wiederholung', 'Ralenti', 'Replay', 'Repetiziun'),
+    'Shutter': ('Auslöser', 'Déclencheur', 'Scatto', 'Deliberader'),
+    'Caught!': ('Erwischt!', 'Attrapé !', 'Preso!', 'Tschiffà!'),
+    'Radar scan': ('Scan', 'Scan', 'Scansione', 'Scan'),
+    'Zoom': ('Zoom', 'Zoom', 'Zoom', 'Zoom'),
+    'Quit': ('Beenden', 'Quitter', 'Esci', 'Terminar'),
+    'Guard': ('Wächter', 'Gardien', 'Guardiano', 'Guardian'),
+    'Sneaker': ('Schleicher', 'Furtif', 'Furtivo', 'Furtiv'),
+    'Ready?': ('Bereit?', 'Prêt ?', 'Pronto?', 'Pront?'),
+    'You are the guard: turn the camera and catch them': ('Du bist Wächter: Kamera drehen und erwischen', 'Tu es le gardien : tourne la caméra et attrape-les',
+                                                          'Sei il guardiano: gira la telecamera e prendili', 'Ti es il guardian: volva la camera e tschiffa els'),
+    'Sneak unseen to the green light – the arrow shows the way.': ('Schleich ungesehen zum grünen Licht – der Pfeil zeigt den Weg.',
+                                                                   'Faufile-toi sans être vu jusqu’à la lumière verte – la flèche montre le chemin.',
+                                                                   'Arriva di nascosto alla luce verde – la freccia mostra la strada.',
+                                                                   'Sa zuppa fin tar la glisch verda – la frizza mussa la via.'),
+    'More players: open on the phone': ('Weitere Spieler: auf dem Handy öffnen', 'Autres joueurs : ouvrir sur le portable', 'Altri giocatori: apri sul telefono',
+                                        'Ulteriurs giugaders: avrir sin il telefonin'),
+    'Round over': ('Runde vorbei', 'Manche terminée', 'Round finito', 'Runda terminada'),
+    'Play again': ('Nochmals spielen', 'Rejouer', 'Gioca ancora', 'Giugar anc ina giada'),
+    'Start the round': ('Runde starten', 'Lancer la manche', 'Avvia il round', 'Cumenzar la runda'),
+    'Another game': ('Anderes Spiel', 'Autre jeu', 'Altro gioco', 'Auter gieu'),
+    'This simulator does not send its window (update the simulator).': ('Dieser Simulator schickt sein Fenster nicht (Simulator aktualisieren).',
+                                                                         'Ce simulateur n’envoie pas sa fenêtre (mettre à jour le simulateur).',
+                                                                         'Questo simulatore non invia la sua finestra (aggiorna il simulatore).',
+                                                                         'Quest simulatur na tramet betg sia fanestra (actualisar il simulatur).'),
+    'Sim view': ('Sim-Ansicht', 'Vue simulateur', 'Vista simulatore', 'Vista dal simulatur'),
+}
+for _k, _v in _HX_SIMV.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+WEB_PAGE = WEB_PAGE.replace("</body>", SIMV_JS.replace("/*SIMVDE*/{}", json.dumps({_k: _v[0] for _k, _v in _HX_SIMV.items()}, ensure_ascii=False), 1)
+                            + "</body>", 1)
+
+
+def simv_selftest():
+    html = WEB_PAGE
+    assert html.count('id="sv-css"') == 1 and "/*SIMVDE*/" not in html and '"Sim-Ansicht"' in html, "Sim-Ansicht not in the live page"
+    i = html.find('id="sv-css"')
+    assert html.find("function simTouchPad", 0, i) > 0 and html.find("function simViewPoll", 0, i) > 0, "Sim-Ansicht before the stream functions (470)"
+    js = SIMV_JS
+    for need in ('action: "gamewiz"', 'op: "quick"', 'id: "game_local"', 'op: "next"', 'action: "pad"', 'action: "localplay", do: "stop"',
+                 'action: "game"', '"/api/stick"', '"/snapshot.jpg', 'dataset.dock = "1"', '"mw-simv"', "S_.on && S_.ok",
+                 'dataset.tab !== "live"', "qsArrange(qsList(J)", '"/sim#gw"'):
+        assert need in js, ("Sim-Ansicht: missing " + need)
+    for k, v in _HX_SIMV.items():                         # all five languages
+        assert len(v) == 4 and all(v), k
+        assert k in TRX["fr"] and k in TRX["it"] and k in TRX["rm"] and k in DE, k
+    assert tr("Sim view", "rm") == "Vista dal simulatur" and DE.get("Quit") == "Beenden"
+    assert HELP_PAGE.count('<section id="simview"') == 2 and all('id="simview"' in (HELP_X.get(L) or 'id="simview"') for L in ("fr", "it", "rm")), "manual: simview"
+    try:
+        src_ = open(__file__, encoding="utf-8").read()
+    except OSError:
+        src_ = 'act_ == "localplay"'
+    assert 'act_ == "localplay"' in src_, "server: /api/sim localplay (550)"
+    return "Sim-Ansicht: live page in simulator operation, game choice, pad, translations"
+
+
+# ---- the manual (HELP_PAGE 540 + HELP_X): a short chapter «Sim-Ansicht und Spielen» before «Tipps & Tricks» ----
+_HELP_SIMV = _zd('639zt_sim_ansicht/HELP_SIMV', _ZDDict())
+
+
+def _help_simv(doc, lang):
+    if 'id="simview"' in doc:
+        return doc
+    i = doc.find('<section id="tips"')
+    return doc[:i] + _HELP_SIMV[lang] + doc[i:] if i >= 0 else doc
+
+
+_hp_en_simv = HELP_PAGE.find('<div lang="en">')
+if _hp_en_simv > 0:
+    HELP_PAGE = _help_simv(HELP_PAGE[:_hp_en_simv], "de") + _help_simv(HELP_PAGE[_hp_en_simv:], "en")
+for _L in ("fr", "it", "rm"):
+    if HELP_X.get(_L):
+        HELP_X[_L] = _help_simv(HELP_X[_L], _L)
+
+
+SELFTEST_EXTRA.append(("Sim view: live screen in simulator operation, one-tap games, touch pad (639zt)", simv_selftest))
+# ----------------------------------------------------------------------------
+# Besitzer (02.11.2026): der HP rechnet rund um die Uhr (Erkennung messen, KI-Trainingsbilder, Langzeittest; Werkzeug
+# werkzeuge/test_runner/dauer.py). Hier nur ZUSCHAUEN, nichts steuern:
+#   * Karte «HP rechnet» im Reiter Simulator (kleines Live-Bild, Arbeit, Fall N/M; Tipp -> ganze Ansicht /hp)
+#   * Eintrag «HP rechnet» unter Einstellungen → Entwickler (devExtras, 530)
+#   * /hp: dasselbe wie das Testbild am HP - Live-Bild mit MoveEyes Rahmen, Fortschritt, Bilanz, welche Arbeit läuft, oder
+#     «Spielen – Rechnen pausiert» / «HP frei» / «HP nicht erreichbar».
+# Der Weg: das Handy fragt nur MoveEye (/api/hp, /api/hp/bild.png; zu Hause und unterwegs über den gewohnten Zugang bzw.
+# Tunnel). MoveEye fragt den HP im eigenen Netz: kleiner Status-Dienst der Kiosk-Sitzung (hp_wache.py, Port 8761, nur GET,
+# nur private Adressen). Wo der HP steht, weiss MoveEye schon: die Adresse des Simulators (sim_url, Teil 290) bzw. die
+# gefundenen Simulatoren (SIMFOUND, Teil 300). Gefragt wird nur, solange die Karte oder die Seite offen ist (sie fragen alle
+# paar Sekunden; dazwischen ein kurzer Zwischenspeicher) - keine Dauerlast. Alles vom HP gilt als fremde Daten: nur bekannte
+# Felder, gekürzt, Grösse begrenzt (JSON 64 KB, Bild 2,5 MB und nur PNG). Nur für den Besitzer (Rolle admin).
+# Zuschauer (Entscheid Besitzer 03.11.2026): eine Verbindung MoveEye <-> Simulator allein hält den HP NICHT vom Rechnen ab.
+# Nur wenn jemand im Simulator-Betrieb wirklich zuschaut - Reiter Live / Sim-Ansicht im Browser offen und sichtbar, oder
+# das Fenster am Pi zeigt den Reiter Live (nicht verkleinert) -, schickt MoveEye alle ~20 s «POST /zuschauer» an den HP (nur eine Zeitmarke);
+# dann pausiert der HP sein Rechnen und der Simulator läuft. Die Karte / Seite «HP rechnet» schicken das nie.
+# ----------------------------------------------------------------------------
+HPR_PORT = 8761
+HPR = {"t": 0.0, "d": None, "host": "", "bild": b"", "bild_t": 0.0, "fehl_t": 0.0}
+HPR_LOCK = threading.Lock()
+HPR_ARBEITEN = ("Erkennung messen", "KI-Trainingsbilder", "Langzeittest")
+_HPR_HOST_RE = re.compile(r"^[A-Za-z0-9.\-]{1,100}$|^\[?[0-9A-Fa-f:]{2,45}\]?$")
+
+
+def hpr_hosts():
+    """wo der HP sein kann: Rechner der Simulator-Adresse (nicht dieses Gerät), dann die gefundenen Simulatoren (letzte Std.)"""
+    out = []
+    try:
+        h = urllib.parse.urlsplit(sim_base()).hostname or ""
+    except ValueError:
+        h = ""
+    if h and not h.startswith("127.") and h not in ("localhost", "::1"):
+        out.append(h)
+    try:
+        now = time.time()
+        for e in sorted(list(SIMFOUND.values()), key=lambda e_: -float(e_.get("t") or 0)):
+            ip = str(e.get("ip") or "")
+            if ip and not ip.startswith("127.") and now - float(e.get("t") or 0) < 3600 and ip not in out:
+                out.append(ip)
+    except Exception:
+        pass
+    return [h_ for h_ in out if _HPR_HOST_RE.match(h_)][:4]
+
+
+def _hpr_get(host, path, max_bytes, timeout=2.5):
+    h = "[" + host.strip("[]") + "]" if ":" in host else host
+    with _SIM_OPENER.open(urllib.request.Request("http://%s:%d%s" % (h, HPR_PORT, path), headers={"User-Agent": "MotionWatch"}),
+                          timeout=timeout) as r:
+        b_ = r.read(max_bytes + 1)
+    if len(b_) > max_bytes:
+        raise ValueError("zu gross")
+    return b_
+
+
+def _hpr_t(v, n):
+    if not isinstance(v, str):
+        return ""
+    return "".join(c for c in v if c.isprintable()).strip()[:n]
+
+
+def _hpr_z(v, lo, hi):
+    if isinstance(v, bool) or not isinstance(v, (int, float)):
+        return None
+    return v if lo <= v <= hi else None
+
+
+def hpr_sauber(d):
+    """Antwort des HP -> nur bekannte Felder (er steht im eigenen Netz, gilt trotzdem als fremd)"""
+    if not isinstance(d, dict):
+        return {"zustand": "unbekannt"}
+    z = d.get("zustand") if d.get("zustand") in ("rechnet", "spielen", "frei") else "unbekannt"
+    out = {"zustand": z}
+    if z == "rechnet":
+        f = d.get("fortschritt") if isinstance(d.get("fortschritt"), dict) else {}
+        now = time.time()
+        g_ = {"arbeit": _hpr_t(f.get("arbeit"), 30), "titel": _hpr_t(f.get("titel"), 40), "plan": _hpr_t(f.get("plan"), 24),
+              "plan_text": _hpr_t(f.get("plan_text"), 90), "name": _hpr_t(f.get("name"), 60), "fall_name": _hpr_t(f.get("fall_name"), 14),
+              "fall": _hpr_z(f.get("fall"), 0, 100000), "faelle": _hpr_z(f.get("faelle"), 1, 100000),
+              "start": _hpr_z(f.get("start"), now - 7 * 86400, now + 600), "status": _hpr_t(f.get("status"), 20),
+              "soll": _hpr_t(f.get("soll"), 20)}
+        ist = f.get("ist") if isinstance(f.get("ist"), dict) else {}
+        if ist:
+            g_["ist"] = {"art": _hpr_t(ist.get("art"), 12), "text": _hpr_t(ist.get("text"), 30)}
+        b_ = f.get("bilanz") if isinstance(f.get("bilanz"), dict) else {}
+        bil = {}
+        for k in ("personen", "ignoriert", "leer"):
+            v = b_.get(k)
+            if isinstance(v, list) and len(v) == 2 and all(_hpr_z(x, 0, 100000) is not None for x in v) and v[0] <= v[1]:
+                bil[k] = [int(v[0]), int(v[1])]
+        if _hpr_z(b_.get("pushes"), 0, 100000) is not None:
+            bil["pushes"] = int(b_["pushes"])
+        g_["bilanz"] = bil
+        ka = []
+        for k in (f.get("kacheln") if isinstance(f.get("kacheln"), list) else [])[:4]:
+            if isinstance(k, list) and len(k) >= 2:
+                ka.append([_hpr_t(k[0], 30), _hpr_t(k[1], 20), _hpr_t(k[2], 8) if len(k) > 2 and k[2] in ("gruen", "orange", "rot") else ""])
+        g_["kacheln"] = ka
+        le = f.get("letzter") if isinstance(f.get("letzter"), dict) else {}
+        if le:
+            g_["letzter"] = {"name": _hpr_t(le.get("name"), 60), "text": _hpr_t(le.get("text"), 60),
+                             "ok": le.get("ok") if isinstance(le.get("ok"), bool) else None}
+        if g_["fall"] is not None and g_["faelle"] is not None:
+            g_["faelle"] = max(g_["faelle"], g_["fall"])
+        out["fortschritt"] = {k: v for k, v in g_.items() if v not in ("", None, {}, [])}
+        out["arbeit"] = d.get("arbeit") if d.get("arbeit") in HPR_ARBEITEN else (g_["arbeit"] if g_["arbeit"] in HPR_ARBEITEN else "")
+        out["bild"] = d.get("bild") is True
+    elif z == "spielen":
+        s = d.get("spielen") if isinstance(d.get("spielen"), dict) else {}
+        out["spielen"] = {"grund": _hpr_t(s.get("grund"), 20), "ruhe_noch_s": _hpr_z(s.get("ruhe_noch_s"), 0, 86400)}
+    return out
+
+
+def hpr_status():
+    """{"ok", "bekannt" (ein HP ist bekannt), "erreichbar", "zustand", …} - höchstens alle 3 s wird der HP gefragt"""
+    now = time.time()
+    with HPR_LOCK:
+        if HPR["d"] is not None and now - HPR["t"] < 3.0:
+            return HPR["d"]
+        hosts = hpr_hosts()
+        if HPR["host"] in hosts:                            # der zuletzt erreichte zuerst
+            hosts.remove(HPR["host"])
+            hosts.insert(0, HPR["host"])
+        res = {"ok": True, "bekannt": bool(hosts), "erreichbar": False, "zustand": "unbekannt", "t": int(now)}
+        if hosts and HPR["fehl_t"] and now - HPR["fehl_t"] < 10:
+            pass                                            # eben nicht erreicht: 10 s nicht wieder fragen
+        elif hosts:
+            for h in hosts:
+                try:
+                    d = json.loads(_hpr_get(h, "/status.json", 65536).decode("utf-8", "replace"))
+                except (OSError, ValueError):
+                    continue
+                res.update(hpr_sauber(d), erreichbar=True)
+                HPR["host"] = h
+                break
+            else:
+                HPR["fehl_t"] = now
+            if res["erreichbar"]:
+                HPR["fehl_t"] = 0.0
+        HPR.update(t=now, d=res)
+        return res
+
+
+HPR_ZU = {"t": 0.0, "faden": False, "app": None}
+
+
+def hpr_zuschauer(was):
+    """jemand schaut im Simulator-Betrieb zu (Live / Sim-Ansicht / Fenster): dem HP melden (höchstens alle 15 s, im
+    Hintergrund). Nur, wenn die Simulation an ist und der Simulator auf einem anderen Rechner läuft."""
+    if was not in ("live", "fenster", "spiel") or not CFG.get("sim_on"):
+        return False
+    try:
+        h = urllib.parse.urlsplit(sim_base()).hostname or ""
+    except ValueError:
+        return False
+    if not h or h.startswith("127.") or h in ("localhost", "::1") or not _HPR_HOST_RE.match(h):
+        return False
+    now = time.time()
+    with HPR_LOCK:
+        if now - HPR_ZU["t"] < 15:
+            return True
+        HPR_ZU["t"] = now
+
+    def senden():
+        hh = "[" + h.strip("[]") + "]" if ":" in h else h
+        try:
+            req = urllib.request.Request("http://%s:%d/zuschauer" % (hh, HPR_PORT), data=json.dumps({"was": was}).encode(),
+                                         headers={"User-Agent": "MotionWatch", "Content-Type": "application/json"})
+            with _SIM_OPENER.open(req, timeout=3) as r:
+                r.read(65536)
+        except (OSError, ValueError):
+            pass                                      # kein HP mit Dauerrechnen dort: egal
+    threading.Thread(target=senden, daemon=True, name="hpr-zuschauer").start()
+    return True
+
+
+def hpr_fenster_schaut():
+    """das Fenster am Pi ist ein Zuschauer - gleiche Regel wie im Browser: es ist sichtbar (nicht verkleinert, STATE
+    local_view_t, Teil 570) UND zeigt den Reiter Live (App.tab)"""
+    app = HPR_ZU.get("app")
+    return (app is not None and getattr(app, "tab", "") == "live"
+            and time.time() - float(STATE.get("local_view_t") or 0) <= 5)
+
+
+def _hpr_fenster_faden():
+    while True:
+        time.sleep(20)
+        try:
+            if hpr_fenster_schaut():
+                hpr_zuschauer("fenster")
+        except Exception:
+            pass
+
+
+if GUI_OK:                                                # das Fenster merken (für den Reiter, nur lesen)
+    _hpr_app_init_base = App.__init__
+
+    def _hpr_app_init(self, *a, **kw):
+        HPR_ZU["app"] = self
+        _hpr_app_init_base(self, *a, **kw)
+    # wraps: App.__init__
+    App.__init__ = _hpr_app_init
+
+
+def hpr_bild():
+    """das kleine Live-Bild des HP (PNG) - nur während er rechnet; höchstens alle 4 s neu geholt"""
+    now = time.time()
+    with HPR_LOCK:
+        if HPR["bild"] and now - HPR["bild_t"] < 4.0:
+            return HPR["bild"]
+    st = hpr_status()
+    if not (st.get("erreichbar") and st.get("zustand") == "rechnet" and st.get("bild")):
+        return b""
+    try:
+        b_ = _hpr_get(HPR["host"], "/bild.png", 2_500_000, timeout=4.0)
+    except (OSError, ValueError):
+        return b""
+    if not b_.startswith(b"\x89PNG\r\n\x1a\n"):
+        return b""
+    with HPR_LOCK:
+        HPR.update(bild=b_, bild_t=now)
+    return b_
+
+
+# key = English text: (Deutsch, Français, Italiano, Rumantsch)
+_HX_HPR = {
+    "HP computes": ("HP rechnet", "Le PC HP calcule", "Il PC HP calcola", "Il PC HP quinta"),
+    "Measuring detection": ("Erkennung messen", "Mesurer la détection", "Misurare il rilevamento", "Mesirar la renconuschientscha"),
+    "AI training pictures": ("KI-Trainingsbilder", "Images d'entraînement IA", "Immagini di addestramento IA", "Maletgs da trenament IA"),
+    "Long-run test": ("Langzeittest", "Test de longue durée", "Test di lunga durata", "Test da lunga durada"),
+    "Playing – computing paused": ("Spielen – Rechnen pausiert", "On joue – calcul en pause", "Si gioca – calcolo in pausa",
+                                   "Ins giogia – il quint è en pausa"),
+    "HP not reachable": ("HP nicht erreichbar", "PC HP injoignable", "PC HP non raggiungibile", "PC HP betg cuntanschibel"),
+    "HP free – the simulator is running": ("HP frei – der Simulator läuft", "PC HP libre – le simulateur tourne",
+                                           "PC HP libero – il simulatore è in funzione", "PC HP liber – il simulatur va"),
+    "No HP known yet: connect MoveEye once with the simulator on the HP.": (
+        "Noch kein HP bekannt: MoveEye einmal mit dem Simulator auf dem HP verbinden.",
+        "Aucun PC HP connu : connecte une fois MoveEye au simulateur sur le PC HP.",
+        "Nessun PC HP noto: collega una volta MoveEye al simulatore sul PC HP.",
+        "Anc nagin PC HP enconuschent: collia ina giada MoveEye cun il simulatur sin il PC HP."),
+    "Case": ("Fall", "Cas", "Caso", "Cas"),
+    "since": ("seit", "depuis", "da", "dapi"),
+    "rest about": ("Rest etwa", "reste environ", "resto circa", "rest var"),
+    "Persons detected": ("Personen erkannt", "Personnes détectées", "Persone rilevate", "Persunas renconuschidas"),
+    "Animals / cars ignored": ("Tiere / Autos ignoriert", "Animaux / voitures ignorés", "Animali / auto ignorati", "Animals / autos ignorads"),
+    "Idle quiet": ("Leerlauf ruhig", "Ralenti calme", "Inattivo tranquillo", "Marscha vida quieta"),
+    "Pushes": ("Pushes", "Notifications", "Notifiche", "Avis push"),
+    "Last case": ("Letzter Fall", "Dernier cas", "Ultimo caso", "Ultim cas"),
+    "Should": ("Soll", "Attendu", "Atteso", "Duess"),
+    "Is": ("Ist", "Vu", "Visto", "È"),
+    "Computing goes on after 15 min without playing": ("Weitergerechnet wird nach 15 Min. ohne Spielen",
+                                                        "Le calcul reprend après 15 min sans jeu",
+                                                        "Il calcolo riprende dopo 15 min senza giocare",
+                                                        "Il quint cuntinuescha suenter 15 min senza giugar"),
+    "in about": ("in etwa", "dans environ", "tra circa", "en var"),
+    "Watch only – the HP computes by itself.": ("Nur zuschauen – der HP rechnet von selbst.", "Seulement regarder – le PC HP calcule tout seul.",
+                                                "Solo guardare – il PC HP calcola da solo.", "Mo guardar – il PC HP quinta sez."),
+    "Live picture of the HP": ("Live-Bild des HP", "Image en direct du PC HP", "Immagine dal vivo del PC HP", "Maletg live dal PC HP"),
+    "No picture yet": ("Noch kein Bild", "Pas encore d'image", "Ancora nessuna immagine", "Anc nagin maletg"),
+    "Back": ("Zurück", "Retour", "Indietro", "Enavos"),
+    "Tap for the full view": ("Antippen für die ganze Ansicht", "Toucher pour la vue complète", "Tocca per la vista completa",
+                              "Tutgar per la vista cumpletta"),
+}
+for _k, _v in _HX_HPR.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+
+
+def hpr_tx():
+    return {L: {k: v[i] for k, v in _HX_HPR.items()} for i, L in enumerate(("de", "fr", "it", "rm"))}
+
+
+# gemeinsam für Karte und Seite: Texte, Zeichnen der Angaben (nur textContent, nichts vom HP als HTML)
+HPR_JS = r"""<script>
+(function () {
+  if (window.HPR) return;
+  const TX = /*HPRTX*/{};
+  const L = () => (typeof LANG === "string" && LANG) || (document.documentElement.lang || "de").slice(0, 2);
+  const T = k => ((TX[L()] || {})[k]) || k;
+  const ARB = {"Erkennung messen": "Measuring detection", "KI-Trainingsbilder": "AI training pictures", "Langzeittest": "Long-run test"};
+  const E = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
+  const dauer = s => { const m = Math.max(0, Math.round(s / 60)); return m < 60 ? m + " Min." : Math.floor(m / 60) + ":" + String(m % 60).padStart(2, "0") + " h"; };
+  async function holen() {                      // 3.55.2: at most 10 s - a hanging request no longer stops the page for good
+    const ac = window.AbortController ? new AbortController() : null, wd = setTimeout(() => { if (ac) ac.abort(); }, 10000);
+    try { const r = await fetch("/api/hp", {cache: "no-store", signal: ac ? ac.signal : undefined}); return r.ok ? await r.json() : null; } catch (e) { return null; }
+    finally { clearTimeout(wd); } }
+  function titel(j) {
+    if (!j || !j.bekannt) return ["⚪", T("No HP known yet: connect MoveEye once with the simulator on the HP.")];
+    if (!j.erreichbar) return ["⚪", T("HP not reachable")];
+    if (j.zustand === "spielen") return ["🎮", T("Playing – computing paused")];
+    if (j.zustand === "frei") return ["🟢", T("HP free – the simulator is running")];
+    if (j.zustand === "rechnet") return ["🟠", T("HP computes") + (j.arbeit ? " · " + T(ARB[j.arbeit] || j.arbeit) : "")];
+    return ["⚪", T("HP not reachable")];
+  }
+  function zeile(j) {                       // kurz: Fall N/M · Name
+    const f = (j && j.fortschritt) || {};
+    if (!j || j.zustand !== "rechnet") {
+      if (j && j.zustand === "spielen") { const r = (j.spielen || {}).ruhe_noch_s; return T("Computing goes on after 15 min without playing") + (r != null ? " (" + T("in about") + " " + dauer(r) + ")" : "") + "."; }
+      return "";
+    }
+    const n = f.fall, m = f.faelle, fn = f.fall_name || T("Case");
+    return [n && m ? fn + " " + n + " / " + m + " (" + Math.round(Math.max(0, (n - 1) / m) * 100) + " %)" : "", f.name || f.plan_text || ""].filter(Boolean).join(" · ");
+  }
+  function kacheln(j) {
+    const f = (j && j.fortschritt) || {};
+    if (f.kacheln && f.kacheln.length) return f.kacheln.map(k => [k[0], k[1], k[2] || ""]);
+    const b = f.bilanz || {}, p = v => v ? v[0] + " / " + v[1] : "–";
+    const fb = v => !v || !v[1] ? "" : v[0] === v[1] ? "gruen" : v[0] >= 0.8 * v[1] ? "orange" : "rot";
+    if (!Object.keys(b).length) return [];
+    return [[T("Persons detected"), p(b.personen), fb(b.personen)], [T("Animals / cars ignored"), p(b.ignoriert), fb(b.ignoriert)],
+            [T("Idle quiet"), p(b.leer), fb(b.leer)], [T("Pushes"), b.pushes != null ? String(b.pushes) : "–", ""]];
+  }
+  window.HPR = {T, E, holen, titel, zeile, kacheln, dauer};
+})();
+</script>"""
+
+HPR_CSS = """<style>
+.hpr-card{display:flex;gap:12px;align-items:center;color:var(--txt);text-decoration:none;border-radius:12px}
+.hpr-card img{width:160px;max-width:42%;aspect-ratio:16/9;object-fit:cover;border-radius:8px;background:#0f1624;flex:0 0 auto}
+.hpr-card .hpr-t{flex:1 1 auto;min-width:0}.hpr-card b{display:block;font-size:15px}.hpr-card .mut{font-size:12px;overflow-wrap:anywhere}
+.hpr-bar{height:6px;border-radius:3px;background:var(--line);margin:6px 0 2px;overflow:hidden}.hpr-bar i{display:block;height:100%;background:#f59a4a}
+.hpr-k{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:12px;margin-top:4px}.hpr-k span b{display:inline;font-size:12px}
+.hpr-gruen{color:#3ecf8e}.hpr-orange{color:#f59a4a}.hpr-rot{color:#ef5b5b}
+</style>"""
+
+HPR_CARD = (HPR_CSS + """
+  <details class="sc fold wide" id="c-hp" data-k="hp" hidden open>
+    <summary><h2><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg><span data-i18n="HP computes">HP computes</span><span class="mut hsub" id="hp-sub"></span></h2></summary>
+    <div class="fb"><a class="hpr-card" href="/hp" id="hp-card"><img id="hp-img" alt="" hidden><div class="hpr-t"><b id="hp-t1"></b>
+      <div class="mut" id="hp-t2"></div><div class="hpr-bar" id="hp-bar" hidden><i id="hp-bari"></i></div><div class="hpr-k" id="hp-k"></div>
+      <div class="mut" id="hp-t3"></div></div><span class="ar" style="margin-left:auto;color:var(--mut);font-size:18px">›</span></a></div>
+  </details>
+""")
+
+HPR_CARD_JS = r"""<script>
+(function () {
+  const box = document.getElementById("c-hp"); if (!box || !window.HPR) return;
+  const H = window.HPR, $i = id => document.getElementById(id);
+  let tm = 0, bt = 0, warBild = false;
+  async function lauf() {
+    clearTimeout(tm);
+    if (document.hidden || !box.open && !box.hidden) { tm = setTimeout(lauf, 4000); return; }   // nur solange sichtbar und offen
+    const j = await H.holen();
+    if (!j || j.ok === false) { box.hidden = true; tm = setTimeout(lauf, 60000); return; }       // kein Recht / alte Fassung
+    box.hidden = !j.bekannt;
+    const [ic, t1] = H.titel(j); $i("hp-t1").textContent = ic + " " + (j.zustand === "rechnet" ? t1.replace(H.T("HP computes") + " · ", "") : t1);
+    $i("hp-sub").textContent = j.zustand === "rechnet" ? "· " + H.T(({"Erkennung messen": "Measuring detection", "KI-Trainingsbilder": "AI training pictures", "Langzeittest": "Long-run test"})[j.arbeit] || "HP computes") : "";
+    $i("hp-t2").textContent = H.zeile(j);
+    const f = j.fortschritt || {};
+    const an = j.zustand === "rechnet" && f.fall && f.faelle;
+    $i("hp-bar").hidden = !an; if (an) $i("hp-bari").style.width = Math.round(Math.max(0, (f.fall - 1) / f.faelle) * 100) + "%";
+    const k = $i("hp-k"); k.textContent = "";
+    if (j.zustand === "rechnet") H.kacheln(j).forEach(([n, v, c]) => { const s = H.E("span", "", n + ": "); const b = H.E("b", c ? "hpr-" + c : "", v); s.appendChild(b); k.appendChild(s); });
+    $i("hp-t3").textContent = j.bekannt ? H.T("Tap for the full view") : "";
+    const img = $i("hp-img"), bild = j.zustand === "rechnet" && j.bild;
+    if (bild && (!warBild || Date.now() - bt > 10000)) { img.src = "/api/hp/bild.png?t=" + Date.now(); bt = Date.now(); }
+    img.hidden = !bild; warBild = bild;
+    tm = setTimeout(lauf, !j.bekannt ? 60000 : j.zustand === "rechnet" ? 6000 : 15000);
+  }
+  box.addEventListener("toggle", () => { if (box.open) lauf(); });
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) lauf(); });
+  setTimeout(lauf, 800);
+})();
+</script>"""
+
+HPR_PAGE = _zd('639zu_hp_rechnet/HPR_PAGE', ZD_PAGE)
+
+
+def hpr_js():
+    return HPR_JS.replace("/*HPRTX*/{}", json.dumps(hpr_tx(), ensure_ascii=False).replace("</", "<\\/"))
+
+
+def hpr_page():
+    return render_page(HPR_PAGE, "sim").replace("/*HPRJS*/", hpr_js(), 1)
+
+
+# Karte im Reiter Simulator: vor der Simulator-Zentrale (eigene Karte, nur wenn ein HP bekannt ist)
+_HPR_ANKER = '<section class="sc wide" id="c-hub"'
+if _HPR_ANKER in SIM_PAGE:
+    SIM_PAGE = SIM_PAGE.replace(_HPR_ANKER, HPR_CARD + _HPR_ANKER, 1)
+    SIM_PAGE = SIM_PAGE.replace("</body>", hpr_js() + "<script>Object.assign(I18N.de, " + json.dumps(
+        {"HP computes": _HX_HPR["HP computes"][0]}, ensure_ascii=False) + ");</script>" + HPR_CARD_JS + "</body>", 1)
+
+# Reiter Live (auch die Sim-Ansicht, 639zt): solange die Seite sichtbar ist, alle 20 s ein Zuschauer-Puls (der Server
+# meldet ihn nur im Simulator-Betrieb weiter)
+HPR_LIVE_JS = r"""<script>
+(function () {
+  if (window._hprZu || !document.body || document.body.dataset.tab !== "live") return; window._hprZu = true;
+  const puls = () => { if (document.hidden) return; fetch("/api/hp/zuschauer", {method: "POST", headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({was: "live"}), cache: "no-store"}).catch(() => {}); };
+  setInterval(puls, 20000); setTimeout(puls, 1500);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) puls(); });
+})();
+</script>"""
+WEB_PAGE = WEB_PAGE.replace("</body>", HPR_LIVE_JS + "</body>", 1)
+
+# Einstellungen → Entwickler (530 devExtras): Eintrag «HP rechnet» vor «Entwickler-Bereich»
+_HPR_DEV = '["⚗", "Settings of the simulation", "/sim"], ["🛠", "Developer area", "/dev"]]'
+if _HPR_DEV in WEB_PAGE:
+    WEB_PAGE = WEB_PAGE.replace(_HPR_DEV, '["⚗", "Settings of the simulation", "/sim"], ["🖥", "HP computes", "/hp"], ["🛠", "Developer area", "/dev"]]', 1)
+    WEB_PAGE = WEB_PAGE.replace("</body>", "<script>Object.assign(I18N.de, " + json.dumps({"HP computes": _HX_HPR["HP computes"][0]}, ensure_ascii=False)
+                                + ");</script></body>", 1)
+
+
+_smalltv_routes_hpr_base = smalltv_routes
+
+
+def smalltv_routes(app, reply, body):                     # + 639zu: /hp, /api/hp, /api/hp/bild.png (nur zuschauen)
+    _smalltv_routes_hpr_base(app, reply, body)
+    from flask import Response, g
+
+    def _darf():
+        return getattr(g, "role", "admin") == "admin"
+
+    @app.route("/hp")
+    def hpr_page_():
+        if not _darf():
+            return Response("forbidden", 403)
+        return Response(hpr_page(), mimetype="text/html", headers={"Cache-Control": "no-store"})
+
+    @app.route("/api/hp")
+    def hpr_api_():
+        if not _darf():
+            return reply({"ok": False, "error": "forbidden"}, 403)
+        return reply(hpr_status())
+
+    @app.route("/api/hp/zuschauer", methods=["POST"])
+    def hpr_zuschauer_():                                # Puls vom Reiter Live (jede angemeldete Rolle; nur eine Zeitmarke)
+        return reply({"ok": True, "gemeldet": hpr_zuschauer(str(body().get("was") or ""))})
+
+    if not HPR_ZU["faden"]:
+        HPR_ZU["faden"] = True
+        threading.Thread(target=_hpr_fenster_faden, daemon=True, name="hpr-fenster").start()
+
+    @app.route("/api/hp/bild.png")
+    def hpr_bild_():
+        if not _darf():
+            return Response("forbidden", 403)
+        b_ = hpr_bild()
+        if not b_:
+            return Response("no picture", 404, headers={"Cache-Control": "no-store"})
+        return Response(b_, mimetype="image/png", headers={"Cache-Control": "no-store", "X-Content-Type-Options": "nosniff"})
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--cam", type=int, default=None, help="USB camera number (same as --source usb:N)")

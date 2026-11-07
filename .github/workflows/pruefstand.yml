@@ -1,7 +1,7 @@
 # Prüfstand: lässt die neuste Version von Motion Watch gegen den 3D-Simulator laufen (feste Testläufe, immer dieselben
 # Besucher) und schreibt die Zahlen in pruefstand/VERLAUF.md: Pushes richtig / falsch, Personen erkannt, Reaktionszeit,
 # Tiere, Flackern. Ist die Erkennung schlechter als beim letzten Lauf, öffnet er ein GitHub-Issue.
-#  - nach jeder neuen Version (versions.json geändert, ab 2.98.9): kurz, höchstens etwa 45 Minuten –
+#  - nach jeder neuen Version (versions.json geändert, ab 2.98.9; Drei Spuren: auch simulator3d/version.json): kurz, höchstens etwa 45 Minuten –
 #    nur quick (ab 29.10.2026, Ressourcen sparen); sonntags alles inkl. hard; von Hand: frei wählbar
 #  - jeden Sonntag in der Nacht: alles, auch «hard» (Nebel, Scheinwerfer, Spinnennetz, Tropfen …), 3 Zufallsstarts (Streuung)
 #  - von Hand (Actions → Prüfstand → Run workflow): alles wählbar; «rechner: hp» = auf dem Simulator-PC (self-hosted Runner
@@ -43,7 +43,8 @@ on:
   push:
     branches: [main]
     paths:
-      - "versions.json"
+      - "versions.json"                 # neue MoveEye (und ab den drei Spuren auch der signierte Block «sim»)
+      - "simulator3d/version.json"      # Drei Spuren: auch bei einer neuen Simulator-Nummer allein
 permissions:
   contents: write
   issues: write

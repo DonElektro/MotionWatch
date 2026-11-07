@@ -1,15 +1,16 @@
 {
- "version": "3D-5.55.2",
- "ver": "3.55.2",
- "name": "MoveEye Sim 3.55.2",
+ "version": "3D-5.56.0",
+ "ver": "3.56.0",
+ "name": "MoveEye Sim 3.56.0",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 49962056,
- "sha256": "5c108026d0daa39c5a06dd90d1dcf3a5a780b1fadc933d61bba445d5d8143fc3",
- "notes": "Fix Kamerabilder (MoveEye)",
+ "size": 49961650,
+ "sha256": "894aa4af3f94a36e04b15deb2ea04dcf900abcd11a26760ca20817da59189abf",
+ "notes": "Drei Spuren",
+ "mw_min": "3.55.0",
  "linux": {
   "file": "simulator3d/MoveEyeSim3D_Linux.zip",
-  "ver": "3.55.2",
-  "size": 43975923,
-  "sha256": "33a6d3d842b2cd1fcce614182d60bc2d2e5df284eb9d517e5f0f4690d33bcde5"
+  "ver": "3.56.0",
+  "size": 43977805,
+  "sha256": "66fbf70e6f1aa6ca7a467ba1ef7ad6f8abcda4d9fd29ec473206d708e1fa4ef4"
  }
 }

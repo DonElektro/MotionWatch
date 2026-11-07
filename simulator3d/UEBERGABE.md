@@ -1,8 +1,13 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 03.11.2026 · Version **3.55.2** · MoveEye **3.55.2** (ab 3.0.0 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 07.11.2026 · Version **3.56.0** · MoveEye **3.55.2** (Drei Spuren ab 03.11.2026: Simulator und MoveEye mit eigenen Nummern, Verträglichkeit über `MW_MIN` in `scripts/abgleich.gd` / `SIM_MIN` in MoveEye Teil 545; 3.0.0 bis 3.55.2 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.56.0 (MoveEye 3.55.2): Drei Spuren (versionen.py --spuren, rel_mw.sh / rel_sim.sh / rel_geh.sh)
+
+- Eigene Nummern für MoveEye, Simulator und Gehäuse; Prüfsummen des Simulators signiert als Block «sim» in versions.json
+  (Teil 300 / 390 / 545), Versions-Paar mit Mindestversion (abgleich.gd, Teil 639zb), HP-Update holt Sim-Spur (HP_FASSUNG=3).
 
 ## NEU in 3.55.2 (MoveEye 3.55.2): Fix schwarze Kamerabilder (nur MoveEye: Teile 510, 520, 530, 550 u. a.)
 

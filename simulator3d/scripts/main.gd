@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3.55.2"
+const VERSION := "3.56.0"
 const Versionen = preload("res://scripts/versionen.gd")   # Versionierung 3.0.0: from 3.0.0 VERSION = "X.Y.Z" like MoveEye (see there)
 const Stimme = preload("res://scripts/abenteuer_stimme.gd")   # 3.23: the one switch «Stimme» (an | aus | untertitel)
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
@@ -3284,7 +3284,7 @@ func refscan_text() -> String:
 
 
 func info() -> Dictionary:
-	return {"v": 1, "name": Versionen.label(VERSION), "version": VERSION, "host": host_name(),   # «version»: Versionierung 3.0.0 (MoveEye 300 sim_versions)
+	return {"v": 1, "name": Versionen.label(VERSION), "version": VERSION, "mw_min": preload("res://scripts/abgleich.gd").MW_MIN, "host": host_name(),   # «version»: Versionierung 3.0.0 (MoveEye 300 sim_versions); «mw_min»: 3 tracks (abgleich.gd, MoveEye 639zb)
 			"cameras": [{"id": 0, "name": "Head camera (NoIR)", "w": CAM_W[0], "h": CAM_H[0], "fps": CAM_FPS[0], "fov_h": CAM_FOV[0], "fov_v": 41.0, "on_head": true, "noir": true},
 						weit.cam_info()],          # 3D-4.17: the wide camera with its mount (weitwinkel.gd)
 			"thermal": simint.thermal_info() if simint != null else {"w": TH_W, "h": TH_H, "fps": th_fps, "fov_h": TH_FOV, "fov_v": 35.0, "unit": "C", "on_head": true},

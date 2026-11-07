@@ -54,6 +54,12 @@ jobs:
           echo "Teste $f"
           python3 -m py_compile "$f"
           python3 "$f" --self-test .
+      - name: Drei Spuren – Simulator nur im signierten versions.json (Test-Schlüssel), Versionsprüfung je Spur
+        run: |
+          f=$(ls webcam_bewegung_*.py | sort -V | tail -1)
+          python3 werkzeuge/sim_manifest_test.py --datei "$f"
+          python3 werkzeuge/versionen.py --test > /dev/null
+          python3 werkzeuge/versionen_spuren_test.py
 
   moveeye-web:
     name: MoveEye · Web-Rauchtest + Browser (Playwright)

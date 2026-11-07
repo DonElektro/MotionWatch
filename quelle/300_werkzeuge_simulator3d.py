@@ -672,13 +672,13 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3.55.2", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 49962056,
-         "sha256": "5c108026d0daa39c5a06dd90d1dcf3a5a780b1fadc933d61bba445d5d8143fc3"}
+SIM3D = {"version": "3.56.0", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 49961650,
+         "sha256": "894aa4af3f94a36e04b15deb2ea04dcf900abcd11a26760ca20817da59189abf"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # 3.43.x: the same 3D simulator for Linux (x86_64), offered at /sim/simulator3d_linux.zip - fetched, checked and kept the same way
 # (simulator3d/MoveEyeSim3D_Linux.zip, block «linux» in simulator3d/version.json; bauen.py --neue-version takes it over).
-SIM3D_LINUX = {"version": "3.55.2", "file": "simulator3d/MoveEyeSim3D_Linux.zip", "size": 43975923,
-               "sha256": "33a6d3d842b2cd1fcce614182d60bc2d2e5df284eb9d517e5f0f4690d33bcde5", "stem": "MoveEyeSim3D_Linux",
+SIM3D_LINUX = {"version": "3.56.0", "file": "simulator3d/MoveEyeSim3D_Linux.zip", "size": 43977805,
+               "sha256": "66fbf70e6f1aa6ca7a467ba1ef7ad6f8abcda4d9fd29ec473206d708e1fa4ef4", "stem": "MoveEyeSim3D_Linux",
                "label": "MoveEye Sim (Linux)"}
 SIM3D_LINUX_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
@@ -793,6 +793,91 @@ def sim_versions():
 SIM3D["stem"] = "MotionWatch3D_Simulator"; SIM3D["label"] = "MoveEye Sim · 3D" if "3D-" in SIM3D["version"] else "MoveEye Sim"
 SIM3D_BASE = "https://raw.githubusercontent.com/DonElektro/MotionWatch/main/"
 
+# ---- Drei Spuren (Besitzer 03.11.2026): the simulator has its own number and can be released without a new MoveEye. The
+# checksums above are only the fallback (the simulator of this MoveEye's own release). The signed versions.json carries the
+# newest simulator under «sim» (bauen.py --signieren / --nur-signieren, make_manifest 390): {"ver", "win": {file, size, sha256,
+# ver, sig}, "linux": {…}} - each signed with the same key and the same scheme as the program files (Ed25519 over
+# «MotionWatch|ver|file|sha256», sig_ok 380). Only a correctly signed entry for exactly the expected file, never older than the
+# embedded one or the one taken before (no replay of an old list), replaces version / size / checksum - anything else keeps
+# the values. MoveEye versions from before this change know only their embedded checksum: they serve /sim again after their
+# own update. Test: sim_manifest_selftest (545). ----
+SIM3D_EMBED = {k: SIM3D[k] for k in ("version", "size", "sha256")}
+SIM3D_LINUX_EMBED = {k: SIM3D_LINUX[k] for k in ("version", "size", "sha256")}
+SIMMAN = {"t": 0.0, "src": "embedded", "loaded": False}
+SIMMAN_FILE = "sim_manifest.json"                   # in DATA_DIR/sim3d: the last verified «sim» block (checked again on load)
+
+
+def sim_manifest_verify(blk):
+    """the parts of a versions.json «sim» block whose signature is valid: {"win": {...}, "linux": {...}} (maybe empty)"""
+    out = {}
+    if not isinstance(blk, dict):
+        return out
+    for key, pkg in (("win", SIM3D), ("linux", SIM3D_LINUX)):
+        e = blk.get(key)
+        if not isinstance(e, dict):
+            continue
+        v, fn, sha = str(e.get("ver") or ""), str(e.get("file") or ""), str(e.get("sha256") or "").lower()
+        try:
+            size = int(e.get("size") or 0)
+        except (TypeError, ValueError):
+            continue
+        if not (VER_RE.match(v) and fn == pkg["file"] and re.fullmatch(r"[0-9a-f]{64}", sha) and 0 < size <= 2 * 1024 ** 3):
+            continue
+        if sig_ok(v, fn, sha, e.get("sig")):
+            out[key] = {"ver": v, "file": fn, "size": size, "sha256": sha, "sig": str(e.get("sig"))}
+    return out
+
+
+def sim_manifest_take(blk, save=True):
+    """use the signed simulator entries of versions.json (see above); returns the keys that changed"""
+    ok = sim_manifest_verify(blk)
+    changed = []
+    for key, pkg in (("win", SIM3D), ("linux", SIM3D_LINUX)):
+        e = ok.get(key)
+        if not e or not sim_vkey(e["ver"]) or not sim_vkey(pkg["version"]) or sim_vkey(e["ver"]) < sim_vkey(pkg["version"]):
+            continue                                              # never back: not older than the embedded / the last taken one
+        if (pkg["version"], pkg["size"], pkg["sha256"]) != (e["ver"], e["size"], e["sha256"]):
+            pkg.update(version=e["ver"], size=e["size"], sha256=e["sha256"])
+            changed.append(key)
+    if ok:
+        SIMMAN.update(t=time.time(), src="versions.json")
+        if save and changed:
+            try:
+                d_ = os.path.join(DATA_DIR, "sim3d")
+                os.makedirs(d_, exist_ok=True)
+                with open(os.path.join(d_, SIMMAN_FILE), "w", encoding="utf-8") as f:
+                    json.dump(ok, f)
+            except (OSError, TypeError, ValueError):
+                pass
+    return changed
+
+
+def sim_manifest_load():
+    """once: the last verified «sim» block from DATA_DIR (signatures checked again - a changed file is ignored)"""
+    if SIMMAN["loaded"]:
+        return
+    SIMMAN["loaded"] = True
+    try:
+        with open(os.path.join(DATA_DIR, "sim3d", SIMMAN_FILE), encoding="utf-8") as f:
+            sim_manifest_take(json.load(f), save=False)
+    except (OSError, ValueError, TypeError, AttributeError):
+        pass
+
+
+def sim_manifest_refresh(base, max_age=600):
+    """fetch versions.json from the same place as the simulator packages and take its signed «sim» block"""
+    sim_manifest_load()
+    if time.time() - SIMMAN["t"] < max_age:
+        return
+    SIMMAN["t"] = time.time() - max_age + 60                    # not reachable / no signed block: ask again in a minute
+    try:
+        req = _upd_request(base + "versions.json?t=" + str(int(time.time())), {"Cache-Control": "no-cache"})
+        with urllib.request.urlopen(req, timeout=15) as r:
+            data = json.loads(r.read(1024 * 1024 + 1)[:1024 * 1024].decode("utf-8"))
+        sim_manifest_take(data.get("sim") if isinstance(data, dict) else None)
+    except Exception:
+        pass
+
 
 def sim3d_path(pkg=None):
     pkg = pkg or SIM3D
@@ -801,6 +886,8 @@ def sim3d_path(pkg=None):
 
 def sim3d_ready(pkg=None):
     pkg = pkg or SIM3D
+    if not SIMMAN["loaded"]:
+        sim_manifest_load()                               # 3 tracks: the simulator of the last signed versions.json
     p = sim3d_path(pkg)
     return os.path.isfile(p) and os.path.getsize(p) == pkg["size"]
 
@@ -814,11 +901,17 @@ def sim3d_fetch(pkg=None, dl=None):
 
     def work(SIM3D=SIM3D_, SIM3D_DL=SIM3D_DL_):
         import hashlib
-        p = sim3d_path(SIM3D); tmp = p + ".part"
+        tmp = ""
         try:
-            os.makedirs(os.path.dirname(p), exist_ok=True)
             src = CFG["update_url"].strip()
             base = src.rsplit("/", 1)[0] + "/" if src.startswith("https://") else SIM3D_BASE
+            if SIM3D is globals()["SIM3D"] or SIM3D is globals()["SIM3D_LINUX"]:
+                sim_manifest_refresh(base)                    # 3 tracks: the newest signed simulator (versions.json «sim»)
+                if sim3d_ready(SIM3D):
+                    return
+            want = {"version": SIM3D["version"], "size": SIM3D["size"], "sha256": SIM3D["sha256"]}   # fixed for this download
+            p = os.path.join(DATA_DIR, "sim3d", SIM3D["stem"] + "_" + want["version"] + ".zip"); tmp = p + ".part"
+            os.makedirs(os.path.dirname(p), exist_ok=True)
             h = hashlib.sha256()
             with urllib.request.urlopen(_upd_request(base + SIM3D["file"]), timeout=30) as r, open(tmp, "wb") as f:
                 while True:
@@ -826,15 +919,15 @@ def sim3d_fetch(pkg=None, dl=None):
                     if not b:
                         break
                     f.write(b); h.update(b); SIM3D_DL["got"] += len(b)
-                    if SIM3D_DL["got"] > SIM3D["size"] + 1024:
+                    if SIM3D_DL["got"] > want["size"] + 1024:
                         raise ValueError("file too large")
-            if h.hexdigest() != SIM3D["sha256"]:
+            if h.hexdigest() != want["sha256"]:
                 raise ValueError("checksum wrong - the file was changed or is damaged")
             os.replace(tmp, p)
             for old in glob.glob(os.path.join(os.path.dirname(p), SIM3D["stem"] + "_*.zip")):
                 if old != p:
                     os.remove(old)
-            log_event("sys", f"{SIM3D['label']} {SIM3D['version']} ready for download")
+            log_event("sys", f"{SIM3D['label']} {want['version']} ready for download")
         except Exception as e:
             SIM3D_DL["msg"] = _upd_error(e)[:160]
             log_event("sys", f"{SIM3D['label']} could not be fetched: " + SIM3D_DL["msg"])

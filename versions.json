@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-03 21:19",
+ "generated": "2026-11-07 11:15",
  "versions": [
+  {
+   "version": "3.56.0",
+   "file": "webcam_bewegung_3_56_0.py",
+   "url": "",
+   "sha256": "6daaaecfeda9c87f6b7d342a1f8a38e5c192c313e62e35e16cca0dbc73b1a421",
+   "date": "2026-11-07 11:15",
+   "notes": "Drei Spuren: MoveEye, Simulator und Gehäuse haben je eine eigene Nummer und erscheinen einzeln; MoveEye prüft den Simulator für /sim über die signierte Liste (versions.json «sim»), der HP holt neue Simulatoren selbst, das Versions-Paar warnt nur noch unter der Mindestversion.",
+   "size": 4950616,
+   "sig": "33fb1c0d917db99326c117ce42eff62904755c4089852ccd3c9cc643febd8f15b71410915bc9e9fb221b970fe6243cc20fa6e4e97a34cd97467e9ddbb0387e03",
+   "data": {
+    "file": "moveeye_daten_3_56_0.zip",
+    "url": "",
+    "sha256": "54e2a16729033fcaaa4b9182c08c9649ab6df68d856a89f5c69166fd1b311023",
+    "size": 4098539,
+    "sig": "4fbea139ad7b654e84a7780821ef3c747beb6c415cdeed3ba0971814fbe49fbf8f243253961b025ccaa246efe682bf9f456155940bf101a544d5151400353108"
+   }
+  },
   {
    "version": "3.55.2",
    "file": "webcam_bewegung_3_55_2.py",
    "url": "",
    "sha256": "ddd82f3e66146ec2fe9ab3d50d6fc4cd579a5a8589d2083c77220d5f9dfcd56a",
-   "date": "2026-11-03 21:19",
+   "date": "2026-11-07 11:13",
    "notes": "Kamerabilder: Nur sichtbare Bilder halten eine Verbindung offen; die Vorschauen unter Einstellungen → Kameras kommen als Einzelbilder (2 pro Sekunde); bleibt ein Bild 5 s ohne neues Bild, verbindet es sich selbst neu (kein «noch kein Bild» mehr bis zum Neuladen); ↻ lädt den aktuellen Reiter neu, statt zu Live zu springen.",
    "size": 4934909,
    "sig": "50e5dd0e8d6394528c51d98f644d4f87a8773c93343ef169c53bb77dc38c8a95d4a205513eb96f0c2fe8ae011a8735e824a81f024a429edf165dd147bc9fa807",
@@ -139,23 +156,6 @@
    }
   },
   {
-   "version": "3.47.1",
-   "file": "webcam_bewegung_3_47_1.py",
-   "url": "",
-   "sha256": "7be8bc1fdcf6093f33de24e3311b8436149f9b82b0b1ae7751f80e12f6fb1726",
-   "date": "2026-11-01 23:36",
-   "notes": "Druckdateien herunterladen klappt auch auf dem Pi ohne Projektordner (Pi holt die Datei selbst, sauberer Dateiname); «Alle als ZIP» nur für die gewählte Variante, mit Kurzanleitung.",
-   "size": 4852981,
-   "sig": "35a600a5bf64499662b618c27af7ac5b249b5a76f798a784692896436f8ee14db79fb073993d7cef5d0a77f75034427765d09522220466f1a62e17141649590b",
-   "data": {
-    "file": "moveeye_daten_3_47_1.zip",
-    "url": "",
-    "sha256": "bd22ee0eb3be8ed0091ec57d6dc67715973fdb34fbbd0dd3365b6ca12d5b7499",
-    "size": 3312308,
-    "sig": "83245f8821184e75fdb5bb8611b805cd5ee77bd5a7a44ab7134b4558197ff482e9eb0b4f543191b70ed07693b0a581b35571a80b6d168b7e8d6daf585c4b6c08"
-   }
-  },
-  {
    "version": "3.0.2",
    "file": "webcam_bewegung_3_0_2.py",
    "url": "",
@@ -166,5 +166,25 @@
    "sig": "f88dc49ba510c1a8d70bf0d3bf12f431945591b66074181237bca78dc3fe2e704d52cb2dc5496931174a1fc1eac9a38cbdb2c73c48ac17de05696e6744b1e302",
    "bridge": true
   }
- ]
+ ],
+ "sim": {
+  "ver": "3.56.0",
+  "version": "3D-5.56.0",
+  "notes": "Drei Spuren",
+  "mw_min": "3.55.0",
+  "win": {
+   "ver": "3.56.0",
+   "file": "simulator3d/MotionWatch3D_Simulator.zip",
+   "size": 49961650,
+   "sha256": "894aa4af3f94a36e04b15deb2ea04dcf900abcd11a26760ca20817da59189abf",
+   "sig": "77dbe7c47d217d91fe41f895671afa0b0b3434259457aa832f98081c1cd1eff44456e60dd65232faddf283cc328bf5278dc152e8dd446b254e146912a5b0f705"
+  },
+  "linux": {
+   "ver": "3.56.0",
+   "file": "simulator3d/MoveEyeSim3D_Linux.zip",
+   "size": 43977805,
+   "sha256": "66fbf70e6f1aa6ca7a467ba1ef7ad6f8abcda4d9fd29ec473206d708e1fa4ef4",
+   "sig": "c7676160dae3754cd84cdc947a204ccd402792ff48d1c6f3d85bae37381f8fc62474464fde26447ed0cdb89b8d75be7d20a4fcafc6baead5ad68bac199fb5e0c"
+  }
+ }
 }
