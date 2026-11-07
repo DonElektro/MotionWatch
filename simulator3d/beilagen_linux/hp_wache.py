@@ -18,8 +18,12 @@ Drei Aufgaben, alles nur mit Daten-Dateien (nichts wird ausgeführt, was von aus
      «Simulator startet», die Seite lädt neu). Verbindungen der Spieler zu 8770 / 8771 frischen das Spielen auf.
    - Am HP selbst: Knopf «Spielen» im Testbild (testbild.py schreibt dieselbe Datei); läuft der Simulator ohne Rechnen
      und jemand bedient ihn mit Maus / Tastatur, gilt das auch als Spielen.
-   - Solange gespielt wird: jede Eingabe (Leerlauf-Zähler des X-Servers, libXss), jeder Zuschauer-Puls und jeder Spieler
-     auf 8770 / 8771 frischt die Datei auf. 15 Min. ohne das -> die Datei ist abgelaufen (Änderungsdatum älter als --ruhe-s),
+   - Controller (Gamepad, z. B. PS5 DualSense per USB-C oder Bluetooth): jede Taste und jeder deutliche Ausschlag eines
+     Sticks gilt als Spielen - auch während gerechnet wird (dann hält das Rechnen an, wie beim Knopf «Spielen»). Gelesen
+     werden nur die Joystick-Geräte /dev/input/js* (die Kiosk-Sitzung darf sie lesen: logind «uaccess»); ohne js* die
+     event-Geräte, die udev als Joystick kennt (nur Tasten und Steuerkreuz). Nichts davon wird gespeichert.
+   - Solange gespielt wird: jede Eingabe (Leerlauf-Zähler des X-Servers, libXss), jede Controller-Eingabe, jeder
+     Zuschauer-Puls und jeder Spieler auf 8770 / 8771 frischt die Datei auf. 15 Min. ohne das -> die Datei ist abgelaufen (Änderungsdatum älter als --ruhe-s),
      das Rechnen geht dort weiter, wo es stand.
 2. Kleiner Status-Dienst nur fürs eigene Netz (Port 8761, nur private Adressen): GET /status.json (was der HP gerade
    rechnet, Fortschritt, Spielen), GET /bild.png und POST /zuschauer (nur die Zeitmarke oben) (das kleine Live-Bild des Tests). MoveEye (Teil 639zu «HP rechnet») holt
@@ -27,12 +31,14 @@ Drei Aufgaben, alles nur mit Daten-Dateien (nichts wird ausgeführt, was von aus
 3. Protokoll nach stdout (kiosk_sitzung.sh leitet es nach ~/.moveeye_kiosk/wache.log).
 """
 import argparse
+import glob
 import ipaddress
 import json
 import os
 import select
 import socket
 import stat
+import struct
 import sys
 import time
 
@@ -199,6 +205,119 @@ class Leerlauf:
         return None
 
 
+class Pads:
+    """Controller-Eingaben aus /dev/input: js* (Joystick-Schnittstelle, Werte -32767..32767) oder - ohne js* - die
+    event-Geräte, die udev als Joystick kennt. Zählt nur Tasten (gedrückt), das Steuerkreuz und deutliche Stick-Ausschläge
+    (Rauschen und ruhig liegende Controller zählen nicht). Neue / abgezogene Controller: alle scan_s Sekunden neu schauen."""
+    JS = struct.Struct("IhBB")                         # struct js_event: Zeit, Wert, Art, Nummer
+    EV = struct.Struct("llHHi")                        # struct input_event (64 Bit: timeval, type, code, value)
+    JS_TASTE, JS_ACHSE, JS_INIT = 0x01, 0x02, 0x80
+    ACHSE_SCHRITT = 9000                              # so weit muss sich eine Achse seit dem letzten Wert bewegen
+
+    def __init__(self, quelle="/dev/input", scan_s=5.0, udev="/run/udev/data"):
+        self.quelle, self.scan_s, self.udev = quelle, scan_s, udev
+        self.fds = {}                                  # Pfad -> fd
+        self.art = {}                                  # fd -> "js" | "ev"
+        self.rest = {}                                 # fd -> unvollständige Bytes
+        self.achsen = {}                               # (fd, Nummer) -> letzter Wert
+        self.t_scan = 0.0
+        self.t_aktiv = 0.0                             # letzte deutliche Controller-Eingabe
+        self.gemeldet = set()
+
+    def _ist_joystick_ev(self, pfad):
+        """event-Gerät, das udev als Joystick führt (ID_INPUT_JOYSTICK=1)"""
+        try:
+            st = os.stat(pfad)
+            with open(os.path.join(self.udev, "c%d:%d" % (os.major(st.st_rdev), os.minor(st.st_rdev))), encoding="utf-8",
+                      errors="replace") as f:
+                return any(ln.strip() == "E:ID_INPUT_JOYSTICK=1" for ln in f.read(65536).splitlines())
+        except (OSError, ValueError):
+            return False
+
+    def scan(self, jetzt=None):
+        jetzt = time.time() if jetzt is None else jetzt
+        if jetzt - self.t_scan < self.scan_s:
+            return
+        self.t_scan = jetzt
+        js = sorted(glob.glob(os.path.join(self.quelle, "js[0-9]*")))
+        kand = [(p, "js") for p in js] if js else \
+            [(p, "ev") for p in sorted(glob.glob(os.path.join(self.quelle, "event[0-9]*"))) if self._ist_joystick_ev(p)]
+        for p, art in kand:
+            if p in self.fds:
+                continue
+            try:
+                fd = os.open(p, os.O_RDONLY | os.O_NONBLOCK | getattr(os, "O_NOFOLLOW", 0))
+            except OSError as e:
+                if p not in self.gemeldet:
+                    log("Controller", os.path.basename(p), "nicht lesbar:", e.strerror or e)
+                    self.gemeldet.add(p)
+                continue
+            self.fds[p], self.art[fd], self.rest[fd] = fd, art, b""
+            self.gemeldet.discard(p)
+            log("Controller", os.path.basename(p), "erkannt - Eingaben zählen als Spielen")
+        for p in [p for p in self.fds if not any(p == k for k, _ in kand)]:
+            self._zu(p)
+
+    def _zu(self, p):
+        fd = self.fds.pop(p, None)
+        if fd is None:
+            return
+        for k in [k for k in self.achsen if k[0] == fd]:
+            del self.achsen[k]
+        self.art.pop(fd, None)
+        self.rest.pop(fd, None)
+        try:
+            os.close(fd)
+        except OSError:
+            pass
+        log("Controller", os.path.basename(p), "weg")
+
+    def liste(self):
+        return list(self.fds.values())
+
+    def lesen(self, fd, jetzt=None):
+        """neue Ereignisse eines Geräts auswerten -> True, wenn jemand den Controller bedient hat"""
+        jetzt = time.time() if jetzt is None else jetzt
+        p = next((k for k, v in self.fds.items() if v == fd), None)
+        if p is None:
+            return False
+        try:
+            roh = os.read(fd, 4096)
+        except BlockingIOError:
+            return False
+        except OSError:
+            roh = b""
+        if not roh:                                    # abgezogen / Verbindung weg
+            self._zu(p)
+            return False
+        daten = self.rest[fd] + roh
+        s = self.JS if self.art[fd] == "js" else self.EV
+        n = len(daten) // s.size
+        self.rest[fd] = daten[n * s.size:]
+        aktiv = False
+        for i in range(n):
+            if self.art[fd] == "js":
+                _, wert, typ, nr = s.unpack_from(daten, i * s.size)
+                init = bool(typ & self.JS_INIT)
+                typ &= ~self.JS_INIT
+                if typ == self.JS_TASTE:
+                    aktiv = aktiv or (wert == 1 and not init)
+                elif typ == self.JS_ACHSE:
+                    alt = self.achsen.get((fd, nr))
+                    self.achsen[(fd, nr)] = wert
+                    if not init and alt is not None and abs(wert - alt) >= self.ACHSE_SCHRITT:
+                        aktiv = True                   # (der erste Wert einer Achse wird nur gemerkt)
+            else:
+                _, _, typ, code, wert = s.unpack_from(daten, i * s.size)
+                if typ == 1 and wert == 1 and code >= 0x120:           # EV_KEY, BTN_JOYSTICK / BTN_GAMEPAD …
+                    aktiv = True
+                elif typ == 3 and 0x10 <= code <= 0x17 and wert != 0:    # EV_ABS, Steuerkreuz (ABS_HAT*)
+                    aktiv = True
+        if aktiv:
+            self.t_aktiv = jetzt
+        return aktiv
+
+
 def verbindungen(ports):
     """Zahl der TCP-Verbindungen (offen oder gerade beendet) auf diesen lokalen Ports, aus /proc/net/tcp(6)"""
     n = 0
@@ -313,6 +432,7 @@ class Wache:
         if a.status_port and self.status_s is None:
             log("Status-Port", a.status_port, "besetzt - ohne Status-Dienst")
         self.leer = Leerlauf()
+        self.pads = Pads(a.pad_quelle, a.pad_scan_s, a.pad_udev) if a.pad_quelle else None
         self.zuschauer_t = 0.0                  # letzter Zuschauer-Puls von MoveEye (POST /zuschauer)
         self.n_sek = []
         self.letzte_aktiv = 0.0
@@ -434,10 +554,15 @@ class Wache:
         jetzt = time.time()
         idle = self.leer.sekunden()
         eingabe = idle is not None and idle < 20
+        pad = self.pads is not None and jetzt - self.pads.t_aktiv < 20
+        if pad and z == "rechnet":                       # Controller: wie der Knopf «Spielen» - das Rechnen hält an
+            self.wunsch("controller")
+            return
+        eingabe = eingabe or pad
         zusch = jetzt - self.zuschauer_t < self.a.zuschauer_s
         verb = (verbindungen(AKTIV_PORTS) > 0 if z != "rechnet" else False) or zusch   # beim Rechnen ist 8770 die Wache
         if z == "frei" and (eingabe or verb):
-            self.wunsch("eingabe" if eingabe else "zuschauer" if zusch else "handy")
+            self.wunsch(("controller" if pad else "eingabe") if eingabe else "zuschauer" if zusch else "handy")
             return
         if z != "spielen":
             return
@@ -462,16 +587,23 @@ class Wache:
                     self.lauscher_auf()
                 else:
                     self.lauscher_zu()
+                if self.pads is not None:
+                    self.pads.scan(jetzt)
                 if jetzt - t_akt >= 3:
                     t_akt = jetzt
                     self.aktivitaet(z)
-            socks = list(self.yield_s.values()) + ([self.status_s] if self.status_s else [])
+            pfds = self.pads.liste() if self.pads is not None else []
+            socks = list(self.yield_s.values()) + ([self.status_s] if self.status_s else []) + pfds
             try:
                 bereit, _, _ = select.select(socks, [], [], 0.5)
             except (OSError, ValueError):
                 time.sleep(0.5)
                 continue
             for s in bereit:
+                if isinstance(s, int):                   # Controller
+                    if self.pads.lesen(s, jetzt):
+                        t_akt = 0.0                      # gleich prüfen (nicht erst in 3 s)
+                    continue
                 try:
                     c, adr = s.accept()
                 except OSError:
@@ -499,6 +631,9 @@ def main():
     ap.add_argument("--ruhe-s", type=int, default=900, help="so lange ohne Eingabe und ohne Verbindung, dann wird weitergerechnet")
     ap.add_argument("--status-port", type=int, default=8761, help="0 = aus")
     ap.add_argument("--zuschauer-s", type=int, default=60, help="so lange gilt ein Zuschauer-Puls von MoveEye (s)")
+    ap.add_argument("--pad-quelle", default="/dev/input", help="Ordner mit js* / event* (Controller); leer = aus")
+    ap.add_argument("--pad-scan-s", type=float, default=5.0, help="so oft nach neuen Controllern schauen (s)")
+    ap.add_argument("--pad-udev", default="/run/udev/data", help=argparse.SUPPRESS)      # nur zum Prüfen
     ap.add_argument("--sim-ports", default=",".join(str(p) for p in SIM_PORTS),
                     help="Port der Handy-Seite des Spiels, auf dem beim Rechnen gelauscht wird")
     a = ap.parse_args()

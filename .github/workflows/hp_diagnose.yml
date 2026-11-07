@@ -44,6 +44,21 @@ jobs:
           echo "HP-Update zuletzt geprüft vor $(( ($(date +%s) - $(cat /var/lib/moveeye-hp-update/letzter_lauf 2>/dev/null || echo 0)) / 60 )) Min."
           ls -la "$MW_RUNNER_HOME"/dauer/ 2>&1 | head -5
           ps -eo user,etime,args | grep -E 'testbild|hp_wache|kiosk_sitzung|MoveEyeSim|Xorg|openbox' | grep -v grep | cut -c1-160
+          echo "== Bluetooth / Controller (ohne Adressen)"
+          if compgen -G '/sys/class/bluetooth/hci*' >/dev/null; then A=ja; else A=nein; fi
+          C=nein
+          for d in /sys/bus/hid/devices/*:054C:0CE6.* /sys/bus/hid/devices/*:054C:0DF2.*; do
+            [ -e "$d" ] || continue
+            case "$(basename "$d")" in 0005:*) C="ja (Bluetooth)" ;; 0003:*) C="ja (USB-C)" ;; *) C=ja ;; esac
+          done
+          echo "Bluetooth: Adapter $A, Controller verbunden $C"
+          V="$(dpkg-query -W -f='${db:Status-Abbrev}${Version}' bluez 2>/dev/null)"
+          case "$V" in ii*) echo "bluez ${V#ii }" ;; *) echo "bluez fehlt" ;; esac
+          echo "bluetooth.service: $(systemctl is-active bluetooth.service 2>/dev/null | head -n 1)"
+          modinfo -F filename hid_playstation >/dev/null 2>&1 && echo "Treiber hid-playstation: da" || echo "Treiber hid-playstation: fehlt"
+          echo "Koppeln (moveeye-controller-koppeln.path): $(systemctl is-enabled moveeye-controller-koppeln.path 2>/dev/null | head -n 1) / $(systemctl is-active moveeye-controller-koppeln.path 2>/dev/null | head -n 1)"
+          python3 -I -c "import json;d=json.load(open('/run/moveeye-controller/status.json'));print('Letztes Koppeln:',str(d.get('schritt'))[:20],'-',str(d.get('text'))[:120])" 2>/dev/null || echo "Letztes Koppeln: -"
+          echo "Joystick-Geräte (js*): $(compgen -G '/dev/input/js*' | wc -l)"
           echo "== Dienst-Schutz"
           U="$(systemctl list-units --type=service --no-legend 'actions.runner.*' | awk '{print $1}' | head -1)"
           systemctl show "$U" -p ProtectSystem -p ProtectHome -p SystemCallFilter -p SystemCallErrorNumber -p RestrictFileSystems -p ReadOnlyPaths -p ReadWritePaths -p PrivateTmp -p RestrictNamespaces 2>&1 | cut -c1-200

@@ -154,6 +154,9 @@ func place() -> void:
 		var hb: Basis = (main.head_pitch.global_transform.basis if tilt_follow else main.head.global_transform.basis).orthonormalized()
 		var rear := mount == "head_rear"
 		var local := Vector3(0, -0.13, 0.13) if rear else Vector3(0, -0.14, -0.08)   # below the head box (front) / behind it (rear)
+		var gh = main.get("gehaeuse")
+		if gh != null and gh.on and gh.ok:              # sim-echte-kamera: the real case - the module sits on the roof of the head
+			local = gh.head_mount_pos(rear)
 		var b := hb * Basis.from_euler(Vector3(0, PI if rear else 0.0, 0)) * Basis.from_euler(Vector3(deg_to_rad(tilt), 0, 0))
 		cam.global_transform = Transform3D(b, main.head.global_position + hb * local)
 	if ir_spot == null:

@@ -672,15 +672,23 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3.56.0", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 49961650,
-         "sha256": "894aa4af3f94a36e04b15deb2ea04dcf900abcd11a26760ca20817da59189abf"}
+SIM3D = {"version": "3.57.0", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 50399264,
+         "sha256": "2286accdea657b5bd842a2c14a302db9ebf3147882d61297898eeab547a77f92"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # 3.43.x: the same 3D simulator for Linux (x86_64), offered at /sim/simulator3d_linux.zip - fetched, checked and kept the same way
 # (simulator3d/MoveEyeSim3D_Linux.zip, block «linux» in simulator3d/version.json; bauen.py --neue-version takes it over).
-SIM3D_LINUX = {"version": "3.56.0", "file": "simulator3d/MoveEyeSim3D_Linux.zip", "size": 43977805,
-               "sha256": "66fbf70e6f1aa6ca7a467ba1ef7ad6f8abcda4d9fd29ec473206d708e1fa4ef4", "stem": "MoveEyeSim3D_Linux",
+SIM3D_LINUX = {"version": "3.57.0", "file": "simulator3d/MoveEyeSim3D_Linux.zip", "size": 44426291,
+               "sha256": "cc577931e302dda25a7f864e22503402d9c488423e5bc14cb00e447149eff56a", "stem": "MoveEyeSim3D_Linux",
                "label": "MoveEye Sim (Linux)"}
 SIM3D_LINUX_DL = {"running": False, "got": 0, "msg": ""}
+# MoveEye 3.59.0 (Besitzer 03.11.2026): the same simulator for the Raspberry Pi 5 (arm64, abgespeckt: preset «Linux Pi», without the HP
+# folder) - not a download for other devices: MoveEye installs and starts it itself («Simulator intern», Teil 639zx). It is NOT
+# in the repository (37 MB): a GitHub Release asset of the tag sim-X.Y.Z («url»), its size and checksum come ONLY from the
+# signed block «sim.pi» of versions.json (sim_manifest_take below) - size 0 here = not known yet.
+SIM3D_PI = {"version": "3.56.0", "file": "simulator3d/MoveEyeSim3D_Pi.zip", "size": 0,
+            "sha256": "", "stem": "MoveEyeSim3D_Pi", "label": "MoveEye Sim (Pi)", "url": ""}
+SIM3D_PI_DL = {"running": False, "got": 0, "msg": ""}
+SIM3D_PI_URL_RE = re.compile(r"^https://github\.com/DonElektro/MotionWatch/releases/download/sim-\d{1,3}\.\d{1,3}\.\d{1,3}/MoveEyeSim3D_Pi\.zip$")
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
          "sha256": "7e278179dc8f1c79b964248ad0a5cb500cc42f2010587a07b7641fe9f0577385", "stem": "MotionWatch_PythonSimulator",
@@ -752,7 +760,7 @@ def sim_auto_update_check():
     """MoveEye knows a newer simulator than the one connected: let it update itself (it starts again as it was)"""
     try:
         v = sim_versions()
-        if not v.get("newer"):
+        if not v.get("newer") or simpi_running():         # «Simulator intern» comes with MoveEye's signed list (Teil 639zx)
             return
         key = (sim_base(), v["latest"])
         if key in SIM_AUTOUPD:
@@ -812,7 +820,7 @@ def sim_manifest_verify(blk):
     out = {}
     if not isinstance(blk, dict):
         return out
-    for key, pkg in (("win", SIM3D), ("linux", SIM3D_LINUX)):
+    for key, pkg in (("win", SIM3D), ("linux", SIM3D_LINUX), ("pi", SIM3D_PI)):
         e = blk.get(key)
         if not isinstance(e, dict):
             continue
@@ -823,8 +831,13 @@ def sim_manifest_verify(blk):
             continue
         if not (VER_RE.match(v) and fn == pkg["file"] and re.fullmatch(r"[0-9a-f]{64}", sha) and 0 < size <= 2 * 1024 ** 3):
             continue
+        url = str(e.get("url") or "")
+        if key == "pi" and not SIM3D_PI_URL_RE.match(url):
+            continue                                              # Pi: only a Release asset of this project (content: signed sha256)
         if sig_ok(v, fn, sha, e.get("sig")):
             out[key] = {"ver": v, "file": fn, "size": size, "sha256": sha, "sig": str(e.get("sig"))}
+            if key == "pi":
+                out[key]["url"] = url
     return out
 
 
@@ -832,12 +845,14 @@ def sim_manifest_take(blk, save=True):
     """use the signed simulator entries of versions.json (see above); returns the keys that changed"""
     ok = sim_manifest_verify(blk)
     changed = []
-    for key, pkg in (("win", SIM3D), ("linux", SIM3D_LINUX)):
+    for key, pkg in (("win", SIM3D), ("linux", SIM3D_LINUX), ("pi", SIM3D_PI)):
         e = ok.get(key)
         if not e or not sim_vkey(e["ver"]) or not sim_vkey(pkg["version"]) or sim_vkey(e["ver"]) < sim_vkey(pkg["version"]):
             continue                                              # never back: not older than the embedded / the last taken one
         if (pkg["version"], pkg["size"], pkg["sha256"]) != (e["ver"], e["size"], e["sha256"]):
             pkg.update(version=e["ver"], size=e["size"], sha256=e["sha256"])
+            if key == "pi":
+                pkg["url"] = e["url"]
             changed.append(key)
     if ok:
         SIMMAN.update(t=time.time(), src="versions.json")
@@ -905,7 +920,7 @@ def sim3d_fetch(pkg=None, dl=None):
         try:
             src = CFG["update_url"].strip()
             base = src.rsplit("/", 1)[0] + "/" if src.startswith("https://") else SIM3D_BASE
-            if SIM3D is globals()["SIM3D"] or SIM3D is globals()["SIM3D_LINUX"]:
+            if SIM3D is globals()["SIM3D"] or SIM3D is globals()["SIM3D_LINUX"] or SIM3D is globals()["SIM3D_PI"]:
                 sim_manifest_refresh(base)                    # 3 tracks: the newest signed simulator (versions.json «sim»)
                 if sim3d_ready(SIM3D):
                     return
@@ -913,7 +928,10 @@ def sim3d_fetch(pkg=None, dl=None):
             p = os.path.join(DATA_DIR, "sim3d", SIM3D["stem"] + "_" + want["version"] + ".zip"); tmp = p + ".part"
             os.makedirs(os.path.dirname(p), exist_ok=True)
             h = hashlib.sha256()
-            with urllib.request.urlopen(_upd_request(base + SIM3D["file"]), timeout=30) as r, open(tmp, "wb") as f:
+            if not want["size"] or not want["sha256"]:
+                raise ValueError("no signed package known yet")
+            src_url = SIM3D.get("url") or (base + SIM3D["file"])     # Pi: the Release asset (only with a signed «sim.pi»)
+            with urllib.request.urlopen(_upd_request(src_url), timeout=30) as r, open(tmp, "wb") as f:
                 while True:
                     b = r.read(1 << 16)
                     if not b:

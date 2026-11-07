@@ -3,3 +3,6 @@
 __pycache__/
 ausgabe_bausatz/
 ausgabe_werkstatt/
+
+# 3.56+ «Simulator intern»: das Pi-Paket (37 MB) ist ein Release-Asset (sim-X.Y.Z), nicht im Repository
+simulator3d/MoveEyeSim3D_Pi.zip

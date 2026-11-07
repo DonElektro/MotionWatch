@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3.56.0"
+const VERSION := "3.57.0"
 const Versionen = preload("res://scripts/versionen.gd")   # Versionierung 3.0.0: from 3.0.0 VERSION = "X.Y.Z" like MoveEye (see there)
 const Stimme = preload("res://scripts/abenteuer_stimme.gd")   # 3.23: the one switch «Stimme» (an | aus | untertitel)
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
@@ -1242,6 +1242,7 @@ func _build_scene() -> void:
 		rifle_on = true                          # wildlife watching: the rifle is on by itself
 	if inhalte != null:
 		inhalte.on_scene()                       # F2: photo textures / HDRI sky for this scene (or back to the code materials)
+	preload("res://scripts/flora.gd").ground(self)   # «Flora und Fauna»: meadow from the owner's photos (if F2 did not)
 	if Quality.lite():
 		_lite_scene.call_deferred(true)          # 3D-4.25: Lite - thin grass, far small things not drawn
 

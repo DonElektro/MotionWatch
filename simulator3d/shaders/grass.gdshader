@@ -21,7 +21,8 @@ uniform vec3 ref_a = vec3(0.3, 0.35, 0.2);   // mittlere Farbe der Texturen (zum
 uniform vec3 ref_b = vec3(0.35, 0.33, 0.22);
 uniform float scale_a = 0.5;                 // 1 / Kachelgrösse in m
 uniform float scale_b = 0.33;
-uniform float tex_far = 70.0;                // weiter weg wieder das Rauschen (keine sichtbaren Wiederholungen)
+uniform float tex_far = 70.0;
+uniform float ref_auto = 0.0;                // «Flora und Fauna» (flora.gd): mean colour from the smallest mip (same in every renderer)                // weiter weg wieder das Rauschen (keine sichtbaren Wiederholungen)
 
 vec3 tex2(sampler2D t, vec2 uv, float k) {
 	// zwei gedrehte Abtastungen, gemischt nach dem Rauschen: keine sichtbaren Kacheln
@@ -43,9 +44,11 @@ void fragment() {
 		float sd = smoothstep(0.45, 0.75, big);
 		vec3 ta = tex2(tex_a_alb, w.xz * scale_a, k);
 		vec3 tb = tex2(tex_b_alb, w.xz * scale_b, k);
-		vec3 ga = mix(ta, ta * grass.rgb / max(ref_a, vec3(0.02)), 0.65);
-		vec3 gb = mix(tb, tb * dry.rgb / max(ref_b, vec3(0.02)), 0.5);
-		vec3 tc = mix(ga, gb, sd) * (0.85 + 0.3 * big);
+		vec3 ra = ref_auto > 0.0 ? textureLod(tex_a_alb, vec2(0.5), 12.0).rgb : ref_a;
+		vec3 rb = ref_auto > 0.0 ? textureLod(tex_b_alb, vec2(0.5), 12.0).rgb : ref_b;
+		vec3 ga = mix(ta, ta * grass.rgb / max(ra, vec3(0.02)), 0.65);
+		vec3 gb = mix(tb, tb * dry.rgb / max(rb, vec3(0.02)), 0.5);
+		vec3 tc = mix(ga, gb, sd) * (0.85 + 0.3 * big) * (ref_auto > 0.0 ? 0.82 : 1.0);   // flora.gd: own photos a bit darker
 		c = mix(c, tc, f);
 		vec3 na = tex2(tex_a_nrm, w.xz * scale_a, k);
 		vec3 nb = tex2(tex_b_nrm, w.xz * scale_b, k);

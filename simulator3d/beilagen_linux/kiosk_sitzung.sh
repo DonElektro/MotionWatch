@@ -7,6 +7,7 @@
 #   kiosk_sitzung.sh desktop    (Ctrl+Alt+D) Kiosk beenden, Cinnamon starten
 #   kiosk_sitzung.sh neustart   (Ctrl+Alt+R) nur den Simulator neu starten
 #   kiosk_sitzung.sh wache      (von der Sitzung gestartet) hp_wache.py: Spielen-Wunsch und Status fürs eigene Netz
+#   kiosk_sitzung.sh koppeln    (Ctrl+Alt+B) Fenster «Controller koppeln»: PS5-Controller per Bluetooth (controller_fenster.py)
 # Einstellungen: /etc/moveeye-kiosk.conf (SIM = Programmdatei, SIM_ARGS = Startoptionen). Protokolle: ~/.moveeye_kiosk/
 # Testlauf-Pause (werkzeuge/test_runner): /etc/moveeye-kiosk-test.conf setzt PAUSE_DATEI. Solange diese Datei da ist (und
 # jünger als PAUSE_MAX_S), ist der Simulator aus und startet nicht neu - der Test-Runner hat Grafik und Speicher für sich.
@@ -20,6 +21,9 @@
 # der Test-Runner hält an, sichert den Stand und nimmt die Pause-Datei weg - dann startet der Simulator gleich, ohne
 # Zusammenfassung. 15 Min. ohne Eingabe und ohne Verbindung: weiterrechnen. Während des Rechnens schaltet DPMS den Bildschirm
 # nach SCHLAF_S (10 Min.) ohne Maus / Taste aus, das Testbild schläft; beim Simulator bleibt er an wie bisher.
+# Controller (PS5 / Gamepad): Eingaben am Gamepad zählen in hp_wache.py als Spielen; Ctrl+Alt+B bzw. der Knopf im Testbild legt die
+# Wunsch-Datei «controller_koppeln» neben SPIEL_DATEI an, der Dienst moveeye-controller-koppeln (root, moveeye-hp-update)
+# koppelt dann einen DualSense per Bluetooth. Die Sitzung selbst bekommt dafür keine Rechte.
 set -u
 LIB="/usr/local/lib/moveeye-kiosk"
 CONF="/etc/moveeye-kiosk.conf"
@@ -34,8 +38,17 @@ sim_laeuft() { pgrep -u "$(id -u)" -f "$MUSTER" >/dev/null || pgrep -u "$(id -u)
 sim_signal() { pkill "-$1" -u "$(id -u)" -f "$MUSTER" 2>/dev/null; pkill "-$1" -u "$(id -u)" "$NAME" 2>/dev/null; return 0; }
 SIM=""
 SIM_ARGS=(--fullscreen -- --stream --no-update)
+# Grafik-Modus des Kiosks (Besitzer 07.11.2026, «Flora und Fauna»): der HP (HD 4600) läuft mit «Normal» statt dem
+# automatischen Lite (quality.gd weak_pc). In /etc/moveeye-kiosk.conf überschreibbar: GRAFIK=auto | lite | normal | hoch,
+# GRAFIK="" = nichts mitgeben. ARM-Rechner (Raspberry Pi) bekommen nichts: dort bleibt Automatisch = Lite.
+GRAFIK="normal"
 # shellcheck source=/dev/null
 [ -r "$CONF" ] && . "$CONF"
+case "$(uname -m)" in aarch64|arm*) GRAFIK="" ;; esac
+if [ -n "$GRAFIK" ] && [[ " ${SIM_ARGS[*]} " != *" --grafik "* ]]; then
+	[[ " ${SIM_ARGS[*]} " == *" -- "* ]] || SIM_ARGS+=(--)
+	SIM_ARGS+=(--grafik "$GRAFIK")          # nach «--»: eine Option des Simulators (nur für diesen Start, main.gd)
+fi
 PAUSE_DATEI=""
 PAUSE_MAX_S=25200                         # 7 Std.: eine vergessene Pause-Datei hält den Kiosk nicht für immer an
 TEST_BENUTZER=""
@@ -50,6 +63,7 @@ SCHLAF_S=600                              # Testbild und Bildschirm schlafen nac
 [ -z "$FORTSCHRITT_DATEI" ] && [ -n "$PAUSE_DATEI" ] && FORTSCHRITT_DATEI="$(dirname "$PAUSE_DATEI")/fortschritt.json"
 TESTBILD="$LIB/testbild.py"
 WACHE="$LIB/hp_wache.py"
+KOPPELN="$LIB/controller_fenster.py"
 LOGO="$LIB/moveeye.png"
 mkdir -p "$LOGDIR" "$RUN"
 
@@ -309,5 +323,13 @@ case "${1:-}" in
 		log "Ctrl+Alt+R: Simulator neu starten"
 		sim_stoppen
 		;;
-	*) sed -n '2,10p' "$0"; exit 2 ;;
+	koppeln)
+		log "Ctrl+Alt+B: Controller koppeln"
+		if [ -r "$KOPPELN" ] && [ -n "$SPIEL_DATEI" ]; then
+			python3 -I "$KOPPELN" --wunsch "$(dirname "$SPIEL_DATEI")/controller_koppeln" >> "$LOGDIR/controller.log" 2>&1 &
+		else
+			log "controller_fenster.py fehlt (kommt mit moveeye-hp-update)"
+		fi
+		;;
+	*) sed -n '2,11p' "$0"; exit 2 ;;
 esac

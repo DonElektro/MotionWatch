@@ -13,6 +13,7 @@ const INFO_FILE := "simulator3d/version.json"
 # updater of an install looks for MotionWatch3D.exe, puts it in place of the running file and starts it - that one sees its
 # old name and starts MoveEyeSim3D.exe (written next to it from the same ZIP) instead, see old_name_forward().
 const EXE_STEM := "MoveEyeSim3D"
+const PI_ASSET := "https://github.com/DonElektro/MotionWatch/releases/download/sim-"   # Sim 3.57.0: block «pi» «url»
 const OLD_STEM := "MotionWatch3D"
 const GONE_FILES := ["Start auf Port 8766.bat"]   # Ports aufräumen: umbenannt (8766 = Tunnel-Port von MoveEye) - nach dem Update weg
 
@@ -75,7 +76,14 @@ func check(current: String, url := "") -> void:
 	if typeof(d) != TYPE_DICTIONARY or not d.has("version") or not d.has("sha256") or not d.has("size"):
 		await _note("Die Versions-Angabe auf GitHub ist nicht lesbar.")
 		return
-	if OS.get_name() == "Linux":                  # Paket Linux (Besitzer 01.11.2026): eigenes Paket unter «linux» in version.json
+	if OS.get_name() == "Linux" and Engine.get_architecture_name() == "arm64":   # Sim 3.57.0: Raspberry Pi 5 - Paket «pi» (arm64)
+		if not has_linux(d, "pi"):
+			print("update check: no Pi package in version.json")
+			result = "für den Raspberry Pi noch kein Update-Paket"
+			await _note("Für den Raspberry Pi (arm64) gibt es auf GitHub noch kein Update-Paket.")
+			return
+		d = linux_info(d, "pi")
+	elif OS.get_name() == "Linux":                # Paket Linux (Besitzer 01.11.2026): eigenes Paket unter «linux» in version.json
 		if not has_linux(d):
 			print("update check: no Linux package in version.json")
 			result = "für Linux noch kein Update-Paket"
@@ -126,17 +134,18 @@ func check(current: String, url := "") -> void:
 	await _update()
 
 
-static func has_linux(d: Dictionary) -> bool:
-	var lx = d.get("linux")
+static func has_linux(d: Dictionary, block: String = "linux") -> bool:
+	var lx = d.get(block)
 	return typeof(lx) == TYPE_DICTIONARY and lx.has("file") and lx.has("sha256") and lx.has("size")
 
 
-static func linux_info(d: Dictionary) -> Dictionary:
+static func linux_info(d: Dictionary, block: String = "linux") -> Dictionary:
 	"""version.json for Linux x86_64: file, size, sha256 (and «ver», when the Linux package has its own number) from «linux»;
-	the ZIP holds MoveEyeSim3D/MoveEyeSim3D.x86_64 (werkzeuge/linux_paket.sh), the Windows ZIP stays for Windows"""
+	the ZIP holds MoveEyeSim3D/MoveEyeSim3D.x86_64 (werkzeuge/linux_paket.sh), the Windows ZIP stays for Windows.
+	Sim 3.57.0: block «pi» = the same for the Raspberry Pi 5 (MoveEyeSim3D/MoveEyeSim3D.arm64, linux_paket.sh --pi)"""
 	var out := d.duplicate()
-	var lx: Dictionary = d.get("linux", {})
-	for k in ["file", "size", "sha256", "ver"]:
+	var lx: Dictionary = d.get(block, {})
+	for k in ["file", "size", "sha256", "ver", "url"]:
 		if lx.has(k):
 			out[k] = lx[k]
 	if lx.has("ver"):
@@ -255,6 +264,8 @@ func _update() -> void:
 	var ok_file := false
 	for attempt in range(3):                        # GitHub may hand out the old ZIP for some minutes after a new version
 		var u := base + file                        # (cache): then wait and ask again, the address made new (from 3D-3.4)
+		if str(info.get("url", "")).begins_with(PI_ASSET):
+			u = str(info["url"])                    # Sim 3.57.0: the Pi package is a Release asset (not in the repository)
 		if attempt > 0:
 			for i in range(20 * attempt, 0, -1):
 				text.text = "GitHub liefert noch die alte Datei – neuer Versuch in %d s …" % i

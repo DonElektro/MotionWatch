@@ -19,6 +19,11 @@ extends Node
 ## Kopfteil orange, Unterteil, Deckel, Zwischenboden, Füsse und Stopfen grau («grau», «grau_teile»).
 ## real-gehaeuse-v53 (02.11.2026): ist in «Bauen» das Gehäuse v5.3 gewählt (user://bau_mein.json), zeigt die Szene die Teile mit
 ## «variante» 5.3 (Unterteil, Deckel, Füsse in den Ecken, Akkuklappe) und blendet die ersetzten Teile aus; sonst bleibt es v5.2.
+## sim-echte-kamera (Idee 4, 07.11.2026): die Linse des Weisslichts leuchtet, wenn es an ist; die IR-Lampe und das IR-Modul im
+## Unterteil glimmen schwach dunkelrot (850 nm, fürs Auge kaum sichtbar). Sichtweiten: Normal = feine Teile bis LOD_M (ohne
+## eigenen Schatten), dahinter die groben; den Schatten werfen immer die groben (nur Schatten); ab FAR_M nichts. Lite = nur grob.
+## Weitwinkel «Kopf vorne / hinten»: ein kleines Modul auf dem Kopfdach (weitwinkel.gd setzt die Kamera dorthin, solange das
+## echte Gehäuse zu sehen ist). Gerät 2 (device.gd) bekommt dasselbe Gehäuse (grob) über build_copy().
 
 const Quality := preload("res://scripts/quality.gd")
 const DIR := "res://inhalte/gehaeuse/"
@@ -28,6 +33,18 @@ const GRAU_ALT := ["tub", "tub52", "lid", "plug", "feet"]   # graue Teile, falls
 const MIT_WEIT := ["wide", "irled"]            # nur sichtbar, wenn die Weitwinkel-Kamera im Gehäuse sitzt
 const LED_POS := Vector3(-0.008, 0.0305, -0.003)   # v5.2: Status-LED auf dem Kopfdach (Kipp-Koordinaten x 3, y 8, Dach z 29 mm)
 const LED_SCALE := 0.2                         # Diffusor Ø 14 mm statt des grossen Auges auf dem Kasten
+# sim-echte-kamera (Idee 4, 07.11.2026): Sichtweiten und Leuchten
+const LOD_M := 6.0                             # Normal: die feinen Teile bis 6 m, dahinter die groben (gehaeuse_lite.glb)
+const FAR_M := 150.0                           # weiter weg ist das Gerät kleiner als ein Bildpunkt: nicht zeichnen
+# leuchtende Teile: [Grundfarbe aus, Farbe des Leuchtens]
+const GLOW := {"lens_w": [Color("#e9e4c8"), Color(1.0, 0.95, 0.82)], "lens_ir": [Color("#3a1010"), Color(0.6, 0.03, 0.02)],
+		"irled": [Color("#3a1010"), Color(0.6, 0.03, 0.02)]}
+const GLOW_WHITE := 8.0                        # Weisslicht nachts (die Linse ist das Hellste im Bild)
+const GLOW_WHITE_DAY := 2.5                    # am Tag
+const GLOW_IR := 0.35                          # 850 nm: das Auge sieht nur ein schwaches dunkelrotes Glimmen
+# Weitwinkel-Modul (Camera Module 3 Wide, 25 × 24 mm) auf dem Kopfdach, wenn es «Kopf vorne / hinten» montiert ist
+const WMOD_FRONT := Vector3(0.0, 0.0445, -0.030)
+const WMOD_REAR := Vector3(0.0, 0.0445, 0.016)
 
 var main
 var on := true                                 # gespeichert (user://gehaeuse.json)
@@ -39,15 +56,15 @@ var tris := 0
 var _base: Node3D
 var _nodes: Array = []                         # [Node3D-Gruppenknoten] base / pan / tilt
 var _led_keep = null                           # [position, scale] der Status-LED vorher
-var _v52: Array = []                           # Teile der Variante v5.2 (nur sichtbar, wenn v5.2 gewählt ist)
-var _v51: Array = []                           # Teile von v5.1, die v5.2 ersetzt
 var v52 := true                                # zeigt die Szene v5.2? (immer, real-abgleich-v52)
 var weit := false                              # Weitwinkel-Kamera im Gehäuse (sonst Blindstopfen 12 im Fenster)
-var _mit_weit: Array = []                      # Linse + IR-Modul
-var _v53: Array = []                           # real-gehaeuse-v53: Teile der Variante v5.3 (nur, wenn in «Bauen» v5.3 gewählt ist)
-var _ers53: Array = []                         # Teile, die v5.3 ersetzt (Unterteil v5.2, Deckel, Füsse)
 var v53 := false                               # zeigt die Szene v5.3? (Wahl «Gehäuse» in Bauen / Werkstatt, sonst v5.2)
-var _ohne_weit: Array = []                     # Blindstopfen 12
+var lists := {}                                # sim-echte-kamera: die Teile nach Rolle (place_parts), alle Sätze (fein, grob, Schatten)
+var mats := {}
+var lod := false                               # Normal: feine Teile in der Nähe, grobe dahinter (LOD_M)
+var tris_lod := 0
+var glow_on := {"white": false, "ir": false, "ir_wide": false}
+var wmod: Node3D                               # sim-echte-kamera: Weitwinkel-Modul am Kopf (Halterung «Kopf vorne / hinten»)
 
 
 func _ready() -> void:
@@ -121,60 +138,173 @@ func build() -> void:
 	tilt.name = "GehaeuseTilt"
 	main.head_pitch.add_child(tilt)
 	_nodes = [_base, pan, tilt]
-	var fb: Dictionary = man.get("farben", {})                 # Wunsch des Besitzers 01.11.2026: Kopfteil in MoveEye-Orange, Rest grau
+	mats = materials(man)
+	# sim-echte-kamera: Lite = nur die groben Teile (mit Schatten); Normal = die feinen Teile bis LOD_M (ohne eigene Schatten),
+	# dahinter die groben, und die groben werfen auch in der Nähe den Schatten (nur Schatten) – der Schatten-Durchgang zeichnet
+	# so nie die 140'000 Dreiecke der feinen Teile.
+	var L: Dictionary
+	if lite:
+		L = place_parts(man, ms, _base, pan, tilt, mats, true, 0.0, FAR_M, GeometryInstance3D.SHADOW_CASTING_SETTING_ON)
+	else:
+		L = place_parts(man, ms, _base, pan, tilt, mats, false, 0.0, LOD_M, GeometryInstance3D.SHADOW_CASTING_SETTING_OFF)
+		var ml := load_parts("gehaeuse_lite.glb")
+		if not ml.is_empty():
+			var far := place_parts(man, ml, _base, pan, tilt, mats, true, LOD_M, FAR_M, GeometryInstance3D.SHADOW_CASTING_SETTING_ON)
+			var sh := place_parts(man, ml, _base, pan, tilt, mats, true, 0.0, LOD_M, GeometryInstance3D.SHADOW_CASTING_SETTING_SHADOWS_ONLY, true)
+			lod = true
+			for k in far:
+				if far[k] is Array:
+					(L[k] as Array).append_array(far[k])
+					(L[k] as Array).append_array(sh[k])
+			tris_lod = int(far["tris"])
+		else:
+			for mi in L["alle"]:                         # no lite parts: the fine parts cast the shadow themselves
+				(mi as GeometryInstance3D).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+	lists = L
+	tris = int(L["tris"])
+	ok = true
+	apply()
+
+
+static func materials(m: Dictionary) -> Dictionary:
+	"""die Materialien des Geräts: PETG-Grau, Kopf-Orange (bau.json «farben» über modelle.json) und die leuchtenden Teile
+	(sim-echte-kamera): Linse Weisslicht, Linse IR-Lampe, IR-Modul im Unterteil – je ein eigenes Material, das leuchtet"""
+	var fb: Dictionary = m.get("farben", {})                 # Wunsch des Besitzers 01.11.2026: Kopfteil in MoveEye-Orange, Rest grau
 	var petg := StandardMaterial3D.new()
 	petg.albedo_color = Color.from_string(str(fb.get("grau", "")), PETG) if str(fb.get("grau", "")) != "" else PETG
 	petg.roughness = 0.55
 	petg.cull_mode = BaseMaterial3D.CULL_DISABLED
-	var kopf: Array = fb.get("kopf_teile", [])
-	var grau: Array = fb.get("grau_teile", GRAU_ALT)
 	var orange := StandardMaterial3D.new()
 	orange.albedo_color = Color.from_string(str(fb.get("kopf", "#f59a4a")), Color("#f59a4a"))
 	orange.roughness = 0.55
 	orange.cull_mode = BaseMaterial3D.CULL_DISABLED
-	tris = 0
-	_v52 = []
-	_v51 = []
-	_v53 = []
-	_ers53 = []
-	_mit_weit = []
-	_ohne_weit = []
+	var glow := {}
+	for id in GLOW:
+		var g: Array = GLOW[id]
+		var gm := StandardMaterial3D.new()
+		gm.albedo_color = g[0]
+		gm.roughness = 0.25
+		gm.emission_enabled = true
+		gm.emission = g[1]
+		gm.emission_energy_multiplier = 0.0
+		glow[id] = gm
+	return {"petg": petg, "orange": orange, "glow": glow, "kopf": fb.get("kopf_teile", []), "grau": fb.get("grau_teile", GRAU_ALT)}
+
+
+static func place_parts(m: Dictionary, ms: Dictionary, base: Node3D, pan: Node3D, tilt: Node3D, mt: Dictionary, coarse: bool,
+		r0: float, r1: float, shadow: int, copy := false) -> Dictionary:
+	"""die äusseren Teile aus ms an base / pan / tilt hängen (Farben, Sichtweite r0..r1 m, Schatten); copy = die Meshes
+	stammen aus einem anderen Satz, der schon hängt (nur neue Knoten, gleiche Meshes). Antwort: die Listen für show_variant()"""
+	var L := {"alle": [], "mit_weit": [], "ohne_weit": [], "v53": [], "v52": [], "v51": [], "ers53": [], "glow": {}, "tris": 0}
 	var repl := {}                                 # ersetztes Teil -> Variante des ersetzenden Teils ("5.2" / "5.3")
-	for e in man.get("teile", []):
+	for e in m.get("teile", []):
 		if str(e.get("ersetzt", "")) != "":
 			repl[str(e["ersetzt"])] = str(e.get("variante", "5.2"))
-	for e in man.get("teile", []):
+	var kopf: Array = mt.get("kopf", [])
+	var grau: Array = mt.get("grau", GRAU_ALT)
+	var glow: Dictionary = mt.get("glow", {})
+	for e in m.get("teile", []):
 		var id := str(e.get("id", ""))
 		if not bool(e.get("aussen", false)) or not ms.has(id):
 			continue
 		var mi: MeshInstance3D = ms[id]
-		mi.name = "geh_" + id
+		if copy:
+			var c := MeshInstance3D.new()
+			c.mesh = mi.mesh
+			c.transform = mi.transform
+			mi = c
+		mi.name = ("geh_" + id) + ("_lod" if coarse and r0 > 0.0 else ("_schatten" if copy else ""))
 		mi.layers = 1
-		if id in kopf:
-			mi.material_override = orange
+		if glow.has(id):
+			mi.material_override = glow[id]
+			if not copy:
+				L["glow"][id] = glow[id]
+		elif id in kopf:
+			mi.material_override = mt["orange"]
 		elif id in grau:
-			mi.material_override = petg
+			mi.material_override = mt["petg"]
+		mi.cast_shadow = shadow
+		mi.visibility_range_begin = r0
+		mi.visibility_range_end = r1
 		var grp := str(e.get("gruppe", "base"))
-		var par: Node3D = pan if grp == "pan" else (tilt if grp == "tilt" else _base)
+		var par: Node3D = pan if grp == "pan" else (tilt if grp == "tilt" else base)
 		par.add_child(mi)
+		L["alle"].append(mi)
 		if id in MIT_WEIT:
-			_mit_weit.append(mi)
+			L["mit_weit"].append(mi)
 		elif str(e.get("ohne", "")) in MIT_WEIT:     # 12 Blindstopfen (ohne Weitwinkel), 19 Stopfen (ohne IR-Modul)
-			_ohne_weit.append(mi)
+			L["ohne_weit"].append(mi)
 		elif str(e.get("variante", "")) == "5.3":
-			_v53.append(mi)
+			L["v53"].append(mi)
 		elif str(e.get("variante", "")) == "5.2":
-			_v52.append(mi)
+			L["v52"].append(mi)
 		elif repl.has(id) and repl[id] != "5.3":
-			_v51.append(mi)
+			L["v51"].append(mi)
 		if repl.get(id, "") == "5.3":
-			_ers53.append(mi)
-		tris += int(e.get("dreiecke_lite" if lite else "dreiecke", 0))
-	for k in ms:                                    # what was not used
-		if (ms[k] as MeshInstance3D).get_parent() == null:
-			(ms[k] as MeshInstance3D).free()
-	ok = true
-	apply()
+			L["ers53"].append(mi)
+		L["tris"] = int(L["tris"]) + int(e.get("dreiecke_lite" if coarse else "dreiecke", 0))
+	if not copy:
+		for k in ms:                                    # what was not used
+			if (ms[k] as MeshInstance3D).get_parent() == null:
+				(ms[k] as MeshInstance3D).free()
+	return L
+
+
+static func show_variant(L: Dictionary, with_wide: bool, show52: bool, show53: bool) -> void:
+	"""welche Teile zu sehen sind: Weitwinkel-Linse + IR-Modul oder Stopfen, v5.1 / v5.2 / v5.3"""
+	for mi in L.get("mit_weit", []):
+		if is_instance_valid(mi):
+			(mi as Node3D).visible = with_wide
+	for mi in L.get("ohne_weit", []):
+		if is_instance_valid(mi):
+			(mi as Node3D).visible = not with_wide
+	for mi in L.get("v52", []):
+		if is_instance_valid(mi):
+			(mi as Node3D).visible = show52
+	for mi in L.get("v51", []):
+		if is_instance_valid(mi):
+			(mi as Node3D).visible = not show52
+	for mi in L.get("v53", []):
+		if is_instance_valid(mi):
+			(mi as Node3D).visible = show53
+	for mi in L.get("ers53", []):
+		if is_instance_valid(mi) and show53:
+			(mi as Node3D).visible = false
+
+
+static func set_glow(L: Dictionary, white: bool, ir: bool, ir_wide: bool, dark: bool) -> void:
+	"""sim-echte-kamera: Weisslicht = die Linse leuchtet hell; IR (850 nm) = fürs Auge nur ein schwaches dunkelrotes Glimmen"""
+	var g: Dictionary = L.get("glow", {})
+	var want := {"lens_w": (GLOW_WHITE if dark else GLOW_WHITE_DAY) if white else 0.0,
+			"lens_ir": GLOW_IR if ir else 0.0, "irled": GLOW_IR if ir_wide else 0.0}
+	for id in g:
+		var gm: StandardMaterial3D = g[id]
+		var e := float(want.get(id, 0.0))
+		if gm.emission_energy_multiplier != e:
+			gm.emission_energy_multiplier = e
+
+
+static func build_copy(rig: Node3D, head: Node3D, pitch: Node3D) -> Dictionary:
+	"""sim-echte-kamera: das echte Gehäuse (grobe Teile) an einem weiteren Gerät (device.gd, Gerät 2): {ok, base, nodes, lists, tris}"""
+	var m := manifest()
+	if m.is_empty():
+		return {"ok": false, "why": "no_manifest"}
+	var ms := load_parts("gehaeuse_lite.glb")
+	if ms.is_empty():
+		return {"ok": false, "why": "glb_unreadable"}
+	var b := Node3D.new()
+	b.name = "GehaeuseUnterteil"
+	rig.add_child(b)
+	var pan := Node3D.new()
+	pan.name = "GehaeusePan"
+	head.add_child(pan)
+	var tilt := Node3D.new()
+	tilt.name = "GehaeuseTilt"
+	pitch.add_child(tilt)
+	var L := place_parts(m, ms, b, pan, tilt, materials(m), true, 0.0, FAR_M, GeometryInstance3D.SHADOW_CASTING_SETTING_ON)
+	show_variant(L, false, true, gewaehlt_v53())       # Gerät 2: ohne Weitwinkel im Gehäuse (Blindstopfen 12)
+	return {"ok": true, "base": b, "nodes": [b, pan, tilt], "lists": L, "tris": int(L["tris"]),
+			"drop": float(m.get("kippachse_ueber_boden_m", 0.1258)) + float(m.get("fuesse_m", 0.006))}
 
 
 func set_on(v: bool) -> void:
@@ -213,27 +343,12 @@ func apply() -> void:
 			(n as Node3D).visible = real
 	v52 = true                                      # real-abgleich-v52: v5.2 bleibt v5.2
 	weit = wide_in_case(main)
-	for mi in _mit_weit:
-		if is_instance_valid(mi):
-			(mi as Node3D).visible = weit
-	for mi in _ohne_weit:
-		if is_instance_valid(mi):
-			(mi as Node3D).visible = not weit
-	for mi in _v52:
-		if is_instance_valid(mi):
-			(mi as Node3D).visible = v52
-	for mi in _v51:
-		if is_instance_valid(mi):
-			(mi as Node3D).visible = not v52
 	v53 = gewaehlt_v53()
-	for mi in _v53:
-		if is_instance_valid(mi):
-			(mi as Node3D).visible = v53
-	for mi in _ers53:
-		if is_instance_valid(mi) and v53:
-			(mi as Node3D).visible = false
+	show_variant(lists, weit, v52, v53)
 	if main.get("head_box") != null:
 		main.head_box.visible = not real
+	if wmod != null and not real:
+		wmod.visible = false
 	if not real:
 		main.set_mast(main.mast_h)
 	var sl = main.get("statusled")
@@ -265,10 +380,74 @@ func _process(_dt: float) -> void:
 		apply()                                       # the LED is built later than the case
 	elif wide_in_case(main) != weit:
 		apply()                                       # v5.2: the mount of the wide camera changed (lens or plug 12)
+	_glow_tick()
+	_wmod_tick()
+
+
+func _glow_tick() -> void:
+	"""sim-echte-kamera: die Lampen am Kopf leuchten, wenn sie an sind (Weisslicht: das echte Licht der Szene; IR: ir_on())"""
+	var w: bool = main.white_light != null and main.white_light.light_energy > 0.0
+	var ir: bool = main.ir_on()
+	var iw: bool = main.weit != null and main.weit.has_method("ir_wide_on") and main.weit.ir_wide_on() and weit
+	glow_on = {"white": w, "ir": ir, "ir_wide": iw}
+	set_glow(lists, w, ir, iw, main.is_dark())
+
+
+static func head_mount_pos(rear: bool) -> Vector3:
+	return WMOD_REAR if rear else WMOD_FRONT
+
+
+func _wmod_tick() -> void:
+	"""das Weitwinkel-Modul am Kopf: dort, wo cams[1] ist (weitwinkel.gd), nur bei «Kopf vorne / hinten»"""
+	var wt = main.weit
+	var want: bool = wt != null and wt.has_method("on_head") and wt.on_head()
+	if not want:
+		if wmod != null:
+			wmod.visible = false
+		return
+	if wmod == null:
+		wmod = Node3D.new()
+		wmod.name = "WeitwinkelModul"
+		wmod.top_level = true
+		add_child(wmod)
+		var pcb := MeshInstance3D.new()
+		pcb.mesh = BoxMesh.new()
+		(pcb.mesh as BoxMesh).size = Vector3(0.025, 0.024, 0.004)
+		pcb.position = Vector3(0, 0, 0.009)
+		var pm := StandardMaterial3D.new()
+		pm.albedo_color = Color("#b33333")            # wie «wide» in modelle.json
+		pcb.material_override = pm
+		pcb.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		wmod.add_child(pcb)
+		var hold := MeshInstance3D.new()              # Halterung (Kopf-Orange)
+		hold.mesh = BoxMesh.new()
+		(hold.mesh as BoxMesh).size = Vector3(0.029, 0.028, 0.008)
+		hold.position = Vector3(0, 0, 0.015)
+		hold.material_override = mats.get("orange", main.mat(Color("#f59a4a")))
+		hold.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		wmod.add_child(hold)
+		var lens := MeshInstance3D.new()
+		var cy := CylinderMesh.new()
+		cy.top_radius = 0.0045
+		cy.bottom_radius = 0.0055
+		cy.height = 0.007
+		cy.radial_segments = 12
+		cy.rings = 1
+		lens.mesh = cy
+		lens.rotation.x = PI / 2.0
+		lens.position = Vector3(0, 0, 0.004)
+		lens.material_override = main.mat(Color(0.05, 0.05, 0.06))
+		lens.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		wmod.add_child(lens)
+		for c in wmod.get_children():
+			(c as GeometryInstance3D).visibility_range_end = 40.0
+	wmod.visible = on and ok
+	wmod.global_transform = main.cams[1].global_transform
 
 
 func info() -> Dictionary:
 	var hp: Vector3 = main.head.global_position if main.head != null and main.head.is_inside_tree() else Vector3.ZERO
 	return {"on": on, "ok": ok, "why": why, "lite": lite, "tris": tris, "version": str(man.get("version", "")), "v52": v52, "v53": v53, "weit": weit,
+			"lod": lod, "tris_lod": tris_lod, "glow": glow_on, "wmod": wmod != null and wmod.visible,
 			"head_pos": [snappedf(hp.x, 0.001), snappedf(hp.y, 0.001), snappedf(hp.z, 0.001)],
 			"quelle_sha256": str(man.get("quelle_sha256", "")).substr(0, 12)}
