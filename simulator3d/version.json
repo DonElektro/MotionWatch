@@ -1,23 +1,16 @@
 {
- "version": "3D-5.57.0",
- "ver": "3.57.0",
- "name": "MoveEye Sim 3.57.0",
+ "version": "3D-5.58.0",
+ "ver": "3.58.0",
+ "name": "MoveEye Sim 3.58.0",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 50399264,
- "sha256": "2286accdea657b5bd842a2c14a302db9ebf3147882d61297898eeab547a77f92",
- "notes": "Gerät wie das echte, Pflanzen natürlicher, PS5-Controller am Simulator-PC, Simulator intern (Pi)",
+ "size": 51804614,
+ "sha256": "555ac3bd18258a197ed433cef77319396e6a2dc68758a5d50633a146f18798e0",
+ "notes": "Bäume und Sträucher echt, Herbst/Winter, Wind nach Szenenwechsel, Piper-Ansagen im Simulator",
  "mw_min": "3.55.0",
  "linux": {
   "file": "simulator3d/MoveEyeSim3D_Linux.zip",
-  "ver": "3.57.0",
-  "size": 44426291,
-  "sha256": "cc577931e302dda25a7f864e22503402d9c488423e5bc14cb00e447149eff56a"
- },
- "pi": {
-  "file": "simulator3d/MoveEyeSim3D_Pi.zip",
-  "ver": "3.57.0",
-  "size": 38138116,
-  "sha256": "475ca9a44251fcb4e70c87b68e0168cf5bffa2e923265209655263d708e42412",
-  "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.57.0/MoveEyeSim3D_Pi.zip"
+  "ver": "3.58.0",
+  "size": 45832283,
+  "sha256": "8f24318b823cf7708eb5f5144db3b974885ca0403a75a8e6887edb0c990b4d09"
  }
 }

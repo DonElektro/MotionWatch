@@ -1,13 +1,13 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-07 23:02",
+ "generated": "2026-11-07 23:38",
  "versions": [
   {
    "version": "3.62.1",
    "file": "webcam_bewegung_3_62_1.py",
    "url": "",
    "sha256": "e606e3ddc7ea23d19e616542f46ba0439b75a92d548b61f1397350999a1e30fd",
-   "date": "2026-11-07 23:01",
+   "date": "2026-11-07 23:03",
    "notes": "Piper: «Piper installieren» richtet auch espeak-ng selbst ein, wenn es fehlt (apt, ohne Passwort-Abfrage, mit Zeitlimit; als root direkt, sonst sudo -n), mit Fortschritt und klarer Meldung, wenn es nicht geht («espeak-ng konnte nicht installiert werden – …»).",
    "size": 3612293,
    "sig": "9610d0d5652ef82d64b6f8926577f5568a31b440c6505bf1e53d273178f657b0648a5e832ac62add2eff9f6f3cdbe43ecc76c8bddd0dc006d03ea8a33c99710f",
@@ -168,31 +168,23 @@
   }
  ],
  "sim": {
-  "ver": "3.57.0",
-  "version": "3D-5.57.0",
-  "notes": "Gerät wie das echte, Pflanzen natürlicher, PS5-Controller am Simulator-PC, Simulator intern (Pi)",
+  "ver": "3.58.0",
+  "version": "3D-5.58.0",
+  "notes": "Bäume und Sträucher echt, Herbst/Winter, Wind nach Szenenwechsel, Piper-Ansagen im Simulator",
   "mw_min": "3.55.0",
   "win": {
-   "ver": "3.57.0",
+   "ver": "3.58.0",
    "file": "simulator3d/MotionWatch3D_Simulator.zip",
-   "size": 50399264,
-   "sha256": "2286accdea657b5bd842a2c14a302db9ebf3147882d61297898eeab547a77f92",
-   "sig": "8ff25872e70ebd1ecb738696fdb68e20718ad4ca41db6eb264ef9bafc257abb56eb99b4faada91ca3439fd7f98ab776be68b0cdea4701b41131c56c924b2cd07"
+   "size": 51804614,
+   "sha256": "555ac3bd18258a197ed433cef77319396e6a2dc68758a5d50633a146f18798e0",
+   "sig": "a57636391fe4280f9c4ebf29e176e66b373e1f8fe35466161ab7b4ca3fb92589410e9d20ff011de1d07e85bd7e5da6bb7ff433617a77be11cb30486a7a0c3905"
   },
   "linux": {
-   "ver": "3.57.0",
+   "ver": "3.58.0",
    "file": "simulator3d/MoveEyeSim3D_Linux.zip",
-   "size": 44426291,
-   "sha256": "cc577931e302dda25a7f864e22503402d9c488423e5bc14cb00e447149eff56a",
-   "sig": "10bbeec8b1ded0153e8a4e666f7f4d4b1bb94772eb2202d2e6b5d837492f069fb96e775ce1116cde77845a6d317b49303f8aaf3165e7f62c2ea54b8eb1009a04"
-  },
-  "pi": {
-   "ver": "3.57.0",
-   "file": "simulator3d/MoveEyeSim3D_Pi.zip",
-   "size": 38138116,
-   "sha256": "475ca9a44251fcb4e70c87b68e0168cf5bffa2e923265209655263d708e42412",
-   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.57.0/MoveEyeSim3D_Pi.zip",
-   "sig": "978b3324028d8fb142813ec7fef2939c7931990507ca558788a26b46168cc175ed5018a4e7ab18d92f6717cc51a1649163b3990a57e68af771da2c1348060007"
+   "size": 45832283,
+   "sha256": "8f24318b823cf7708eb5f5144db3b974885ca0403a75a8e6887edb0c990b4d09",
+   "sig": "4a23b6b7d1704371a75420a88239001de5a72945005f32c6730579adccd010e45468196f8c55e16ea72e3e5d86113ffe025ec28e8b906cbfb0d88e98f17f3c07"
   }
  }
 }

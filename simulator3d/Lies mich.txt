@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.57.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.58.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -487,6 +487,13 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.58.0
+3.58.0: Bäume und Sträucher echt: Fichte, Tanne, Lärche, Föhre, Arve, Bergföhre, Buche, Ahorn, Esche, Birke, Eiche, Obstbaum,
+Hasel, Holunder, Alpenrose mit Ästen, Blatt-/Nadelbüscheln, Rinde und Fernbildern; Hecken mit Blättern; Herbst/Winter stimmen;
+Kronen bewegen sich nach Szenenwechsel wieder im Wind; Ansagen mit der Piper-Stimme im Simulator; Prüfstand unverändert.
+So testest du: im Bergtal und im Garten nah an die Bäume heran und wieder weg (Fernbild), Jahreszeit auf Herbst / Winter stellen,
+Szene wechseln und zurück – die Kronen wiegen im Wind; in MoveEye (ab 3.62.0) «Stimme testen», die Ansage kommt im Simulator.
 
 NEU IN 3.57.0
 3.57.0: Das Gerät in der Szene sieht aus wie das echte (Gehäuse v5.3): Weisslicht-Linse leuchtet, IR glimmt schwach dunkelrot,

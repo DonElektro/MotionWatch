@@ -1,8 +1,14 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 07.11.2026 · Version **3.57.0** · MoveEye **3.61.0** (Drei Spuren ab 03.11.2026: Simulator und MoveEye mit eigenen Nummern, Verträglichkeit über `MW_MIN` in `scripts/abgleich.gd` / `SIM_MIN` in MoveEye Teil 545; 3.0.0 bis 3.55.2 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 07.11.2026 · Version **3.58.0** · MoveEye **3.62.1** (Drei Spuren ab 03.11.2026: Simulator und MoveEye mit eigenen Nummern, Verträglichkeit über `MW_MIN` in `scripts/abgleich.gd` / `SIM_MIN` in MoveEye Teil 545; 3.0.0 bis 3.55.2 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.58.0 (MoveEye 3.62.1): Bäume und Sträucher (Flora Paket 1), Piper im Simulator
+
+- baeume.gd (Äste, Blatt-/Nadelbüschel, Rinde, Fernbilder flora_fern_*.png aus werkzeuge/flora_fernbilder.gd), Shader baum_*,
+  rinde; Hecken mit Blättern; Herbst/Winter; Wind nach Szenenwechsel (f67ba53). Mit «--quality» (Prüfstand) altes Aussehen.
+- Piper: POST /speech (simint.gd speech_in, net.gd) spielt die Ansage von MoveEye statt des Gemurmels.
 
 ## NEU in 3.57.0 (MoveEye 3.61.0): Echtes Gerät, Flora und Fauna, PS5-Controller, Simulator intern (Pi)
 
