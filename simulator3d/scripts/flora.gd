@@ -23,6 +23,7 @@ extends Node
 ## Schalter für Tests / Vergleiche: Flora.modus = "" (nach Stufe) | "alt" (alles wie vor Phase 1) | "lite" | "normal" | "hoch".
 
 const Quality = preload("res://scripts/quality.gd")
+const Baeume = preload("res://scripts/baeume.gd")    # Paket 1: Bäume und Sträucher mit Ästen (Fichte, Buche, Hasel)
 
 static var modus := ""
 static var _tex_broad: ImageTexture = null
@@ -223,21 +224,104 @@ static func _card_mat(sc, crown: ShaderMaterial, conifer: bool) -> ShaderMateria
 	return cm
 
 
-static func dress(sc, plant: Node3D) -> void:
-	"""Blatt-Karten an alle Kronen-Teile (Kugeln, Kegel mit foliage.gdshader) dieser Pflanze"""
+static func _kern(crown: ShaderMaterial, art: String) -> ShaderMaterial:
+	"""Paket 1: der alte Kronen-Teil als kleinerer Kern hinter den Ästen und Blättern (kahl im Winter weg); einer pro
+	Kronen-Material und Art (geteilte Materialien)"""
+	var key := "flora_kern_" + art
+	if crown.has_meta(key):
+		return crown.get_meta(key)
+	var k := crown.duplicate() as ShaderMaterial
+	k.set_shader_parameter("ragged", 0.0)
+	var nadel := art in Baeume.NADEL
+	k.set_shader_parameter("kern", {"kiefer": 0.4, "arve": 0.45, "laerche": 0.33}.get(art, 0.5 if nadel else 0.55))
+	k.set_shader_parameter("kern_y", 0.72 if nadel else 0.75)
+	k.set_shader_parameter("kern_dark", 0.85 if art in ["fichte", "tanne"] else 1.05)  # like shaded leaves, not a dark lump
+	crown.set_meta(key, k)
+	return k
+
+
+static func _job(sc) -> Dictionary:
+	var key: int = sc.root.get_instance_id()
+	if not _pending.has(key):
+		_pending[key] = {"root": sc.root, "sc": sc, "mats": {}}
+	var tree: SceneTree = sc.m.get_tree()
+	if not tree.process_frame.is_connected(_flush_all):     # one call for all roots (bound callables count as the same)
+		tree.process_frame.connect(_flush_all, CONNECT_ONE_SHOT)
+	return _pending[key]
+
+
+static func _flush_all() -> void:
+	for key in _pending.keys():
+		_flush(key)
+
+
+static func hedge(sc, n: Node3D, L: float, h: float, thick: float, kind: String, crown: ShaderMaterial, ground: Callable) -> void:
+	"""Paket 1: Blatt-Karten auf einer Hecke (vegetation.gd Veg.hedge); Kern, Buckel, Wärmebild, Hindernis bleiben gleich"""
+	if sc == null or sc.root == null or n == null:
+		return
+	var st := stufe(sc.m)
+	if st == "alt" or st == "lite":
+		return
+	Baeume.hedge(_job(sc), st, _rel(n, sc.root), L, h, thick, kind, crown, ground)
+
+
+static var _bib_crowns := {}
+
+
+static func bib(b, kind: String, list: Array, q: Dictionary) -> void:
+	"""Paket 1: Bäume der Bergtal-Bibliothek (bib_berg.gd many): Gerüst + Büschel für die nahen; die MultiMesh-Bäume
+	(Kegel / Kugeln, Wärmebild, Hindernisse) bleiben ganz"""
+	var sc = b.s
+	if sc == null or sc.root == null or b.m == null:
+		return
+	var st := stufe(b.m)
+	if st == "alt" or st == "lite":
+		return
+	var d: Dictionary = b.make(kind, q)
+	if d.is_empty() or not d.has("p"):
+		return
+	var col := ""
+	for part in d["p"]:
+		if str(part[0]) in ["k", "s"] and str(part[7]) != "e8ecf0":
+			col = str(part[7])
+			break
+	if col == "":
+		return
+	var ck := kind + "|" + col
+	var crown: ShaderMaterial = _bib_crowns.get(ck)
+	if crown == null or not is_instance_valid(crown):
+		crown = ShaderMaterial.new()                          # stands for the crown (colour, wind): never drawn itself
+		crown.shader = load("res://shaders/foliage.gdshader")
+		crown.set_shader_parameter("color", Color("#" + col))
+		crown.set_shader_parameter("noise_tex", b.m.noise_tex)
+		crown.set_meta("broad", false)
+		_bib_crowns[ck] = crown
+	if not b.m.foliage_mats.has(crown):
+		b.m.foliage_mats.append(crown)                        # wind like the other crowns
+	Baeume.bib(_job(sc), st, kind, list, d, _rel(b.root, sc.root) if b.root != sc.root else Transform3D(), crown, str(q.get("season", "sommer")))
+
+
+static func dress(sc, plant: Node3D, art := "") -> void:
+	"""Blatt-Karten an alle Kronen-Teile (Kugeln, Kegel mit foliage.gdshader) dieser Pflanze.
+	Paket 1: mit art (Baeume.ARTEN) statt dessen Äste, Blatt-Büschel, Kern und Ferne-Bild (baeume.gd)"""
 	if plant == null or sc == null or sc.root == null:
 		return
 	var st := stufe(sc.m)
 	if st == "alt" or st == "lite":
 		return
 	var per := 24 if st == "hoch" else 12
-	var key: int = sc.root.get_instance_id()
-	if not _pending.has(key):
-		_pending[key] = {"root": sc.root, "sc": sc, "mats": {}}
-		sc.m.get_tree().process_frame.connect(_flush.bind(key), CONNECT_ONE_SHOT)
-	var job: Dictionary = _pending[key]
-	var r := RandomNumberGenerator.new()
+	var job := _job(sc)
 	var base_t := _rel(plant, sc.root)
+	if art in Baeume.ARTEN:
+		var root: Node3D = sc.root
+		Baeume.build(sc, plant, art, st, job, base_t, func(n): return _rel(n, root), func(c, a):
+			var km := _kern(c, a)
+			if not job.has("kerns"):
+				job["kerns"] = {}
+			job["kerns"][km] = c
+			return km)
+		return
+	var r := RandomNumberGenerator.new()
 	r.seed = hash(Vector3i(roundi(base_t.origin.x * 10), roundi(base_t.origin.y * 10), roundi(base_t.origin.z * 10)))
 	var parts: Array = plant.find_children("*", "MeshInstance3D", true, false)
 	if plant is MeshInstance3D:
@@ -307,6 +391,9 @@ static func _flush(key: int) -> void:
 		sync = load("res://scripts/flora.gd").new()
 		sync.name = "flora_sync"
 		root.add_child(sync)
+	for km in job.get("kerns", {}):
+		sync.pairs.append([job["kerns"][km], km])
+	Baeume.flush(job, root, sync, job["sc"].m.noise_tex)
 	for cm in job["mats"]:
 		var list: Array = job["mats"][cm]["list"]
 		if list.is_empty():
@@ -336,6 +423,7 @@ static func _flush(key: int) -> void:
 
 # ---- Abgleich mit der Krone (Wind, Jahreszeit, Wolkenschatten) ----------------------------------------------------------
 var pairs: Array = []                # [crown ShaderMaterial, card ShaderMaterial]
+var groups: Array = []               # Paket 1: [[crown materials], [card / bark / far materials]] (baeume.gd)
 var _t := 0.0
 const SYNC := ["color", "wind", "bare", "blossom", "cloud_amt", "cloud_off", "gust_amt", "dir"]
 
@@ -345,6 +433,8 @@ func _process(dt: float) -> void:
 	if _t > 0.0:
 		return
 	_t = 0.25
+	for g in groups:
+		Baeume.sync_group(g)
 	for p in pairs:
 		if p[0] == null:
 			continue

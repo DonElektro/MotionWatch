@@ -45,6 +45,14 @@ func make(kind: String, q := {}) -> Dictionary:
 	return d2
 
 
+func many(kind: String, list: Array, q := {}) -> void:
+	super.many(kind, list, q)
+	# «Flora und Fauna» Paket 1: die nahen Bäume bekommen Äste und Büschel (nur Normal / Hoch; die Bäume selbst bleiben gleich)
+	if not bool(q.get("noob", false)) and kind in ["spruce", "larch", "arve", "pine_shrub", "dwarf_shrub"]:
+		var l2 := list if (clear.is_empty() and keep.is_empty()) else list.filter(func(e): return not _cleared(e[0]))
+		preload("res://scripts/flora.gd").bib(self, kind, l2, q)
+
+
 func _lod(gi: GeometryInstance3D, lod: String, shadow := true) -> void:
 	"""like the library, plus «tree» (forest, 480 m / Lite 220 m) and «far» (big buildings, 1400 m / Lite 700 m)"""
 	var far := {"big": 700.0 if _lite else 0.0, "mid": 110.0 if _lite else 170.0, "small": 45.0 if _lite else 75.0,

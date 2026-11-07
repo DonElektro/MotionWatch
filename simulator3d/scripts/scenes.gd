@@ -314,6 +314,8 @@ func foliage(k: int) -> ShaderMaterial:
 				Flora.foliage_params(m, fm)
 				m.foliage_mats.append(fm)
 				fol_mats.append(fm)
+	if not m.foliage_mats.has(fol_mats[0]):
+		m.foliage_mats.append_array(fol_mats)                  # after a change of scene (main clears the list): wind, seasons again
 	return fol_mats[k % fol_mats.size()]
 
 
@@ -369,7 +371,7 @@ func tree(parent: Node3D, p: Vector3, sc: float, conifer := -1) -> void:
 		m.add_obstacle(p, 0.32 * sc)
 	var gp: Vector3 = tr.global_position if tr.is_inside_tree() else p
 	m.tree_spots.append([Vector2(gp.x, gp.z), (1.75 if con else 1.5) * sc, (1.9 if con else 3.0) * sc])   # 3D-3.76: crowns (camera of the players)
-	Flora.dress(self, tr)                                        # «Flora und Fauna»: leaf / needle cards (own random numbers)
+	Flora.dress(self, tr, "fichte" if con else "buche")          # «Flora und Fauna»: branches, leaf / needle tufts (own random numbers)
 
 
 func trees(n: int, dmin: float, dmax: float, keep_clear: Callable) -> void:
