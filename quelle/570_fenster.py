@@ -2015,6 +2015,8 @@ class App:
             ttk.Button(tf, text=tr("Save as own sound"), command=lambda: tts_do(True)).pack(side="left", expand=True, fill="x")
             self.status_labels["Announcement"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
             self.status_labels["Announcement"].pack(anchor="w", pady=(2, 0))
+            if "piper_tk_box" in globals():
+                piper_tk_box(self, sbody)               # 639zzb: Piper voice - state, «Test voice», «Load voice», «Install Piper»
             ttk.Label(sbody, text=tr("Own sounds (.wav / .mp3): put the files into") + " " + sounds_dir(), style="Mut.TLabel",
                       wraplength=330, justify="left").pack(anchor="w", pady=(4, 0))
             tk.Label(sbody, text=tr("Bluetooth").upper(), bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 7, "bold"), anchor="w").pack(fill="x", pady=(8, 0))

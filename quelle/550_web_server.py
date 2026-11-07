@@ -1657,8 +1657,14 @@ class WebStream:
         @app.route("/api/tts", methods=["POST"])
         def api_tts():
             d = body(); lang = norm_lang(d.get("lang"))
+            TTS["id"] = ""
             ok, msg = tts_say(d.get("text"), d.get("voice") or lang, bool(d.get("save")))
-            return reply({"ok": ok, "error": tr_err(msg, lang) if not ok else None, "file": msg if ok and d.get("save") else ""}, 200 if ok else 400)
+            sid = "" if d.get("save") else str(TTS.get("id") or "")      # 639zzb: the browser can play it (/api/tts_audio/<id>.wav)
+            note = ""
+            if not ok and sid and msg == "no loudspeaker selected":
+                ok, note = True, tr("no loudspeaker selected - only in the browser", lang)
+            return reply({"ok": ok, "error": tr_err(msg, lang) if not ok else None, "file": msg if ok and d.get("save") else "",
+                          "id": sid if ok else "", "note": note}, 200 if ok else 400)
 
         @app.route("/api/sensors", methods=["POST"])
         def api_sensors():
