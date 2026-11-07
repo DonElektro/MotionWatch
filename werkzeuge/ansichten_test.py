@@ -134,6 +134,8 @@ def lauf(pg, a, base, pruef, gname, voll):
             pg.evaluate("""() => [...document.querySelectorAll('button')].filter(b => b.offsetParent && ['OK', 'Überspringen', 'Verstanden', 'Später', 'Schliessen'].includes(b.textContent.trim().replace(/ ?›$/, ''))).forEach(b => b.click())""")
             pg.wait_for_timeout(300)
         pg.evaluate("() => { const g = document.getElementById('gd-card'); if (g) g.style.display = 'none'; }")
+        # the coach-mark tour of the page (516, #g2-ov over everything) can start a little later: end it like Esc / «Fertig»
+        pg.evaluate("() => { ['g2-ov', 'g2-spot', 'g2-bub'].forEach(i => { const e = document.getElementById(i); if (e) e.remove(); }); }")
 
     def foto(name):
         if a.bilder:
@@ -176,6 +178,7 @@ def lauf(pg, a, base, pruef, gname, voll):
     foto("1_kopf")
     # 1. cycle
     pg.evaluate("() => fetch('/api/move', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({dir: 'center'})})")
+    weg()
     pg.click("#lv-b-cam"); pg.wait_for_timeout(400)
     s = pg.evaluate(V3); th = warte(cfg_th, 6000)
     pruef(s["cur"] == "thermal" and th, "1× Ansicht: Wärmebild, thermal_on auf dem Gerät (%s, %s)" % (s["cur"], th))
