@@ -16,11 +16,17 @@ uniform sampler2D noise_tex : repeat_enable;
 // one by one, no alpha test) instead of all ending at one line. neu = 0: as before.
 uniform float neu = 0.0;
 uniform float fade_far = 0.0;
+// «Flora und Fauna» Paket 2 (scripts/gras.gd, wind_fx.gd): gusts roll over the meadow as ONE wave with trees, bushes and
+// hedges (same noise, scale, speed and direction as foliage.gdshader); the bent grass shows a lighter sheen.
+// gust_amt = 0: as before. COLOR.a < 0.9 (gras.gd head_mesh): a flower head - not darkened like the foot of a blade.
+uniform float gust_amt = 0.0;
+uniform vec2 dir = vec2(0.8, 0.6);
 
 varying vec3 wpos;
 varying float tip;
 varying float cl_rand;
 varying float cam_d;
+varying float v_gust;
 
 void vertex() {
 	vec3 wp = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
@@ -28,9 +34,16 @@ void vertex() {
 	float a = (0.15 + wind / 45.0) / stiff;
 	float s = sin(TIME * (1.6 + wind / 30.0) + wp.x * 0.45 + wp.z * 0.3) + 0.35 * sin(TIME * 4.1 + wp.x * 2.0);
 	vec3 bend = vec3(s * 0.09, 0.0, s * 0.04) * a * tip * tip;
+	vec3 o = (MODEL_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz;            // the clump (MultiMesh instance)
+	v_gust = 0.0;
+	if (gust_amt > 0.0) {
+		float g = smoothstep(0.3, 0.8, texture(noise_tex, (o.xz - dir * TIME * (0.6 + wind * 0.03)) * 0.02).r);
+		float lean = (0.25 + 1.2 * g) * (0.08 + wind / 40.0) / stiff;
+		bend = bend * (1.0 - 0.4 * gust_amt) + vec3(dir.x, 0.0, dir.y) * lean * 0.12 * tip * tip * gust_amt;
+		v_gust = g * gust_amt * clamp(wind / 25.0, 0.0, 1.0);
+	}
 	VERTEX += (inverse(MODEL_MATRIX) * vec4(bend, 0.0)).xyz;
 	wpos = wp;
-	vec3 o = (MODEL_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz;            // the clump (MultiMesh instance)
 	cl_rand = fract(sin(dot(o.xz, vec2(12.9898, 78.233))) * 43758.5453);
 	cam_d = length(o - CAMERA_POSITION_WORLD);
 	if (neu > 0.0 && fade_far > 0.0) {                                   // soft end: clumps shrink away one by one
@@ -43,7 +56,11 @@ void vertex() {
 void fragment() {
 	float n = texture(noise_tex, wpos.xz * 0.11).r;
 	vec3 c = mix(COLOR.rgb, tint.rgb * 1.15, tint_amt) * (0.8 + 0.45 * tip) * (0.85 + 0.3 * n);
-	if (neu > 0.0) {
+	bool head = COLOR.a < 0.9;
+	if (head) {
+		c = COLOR.rgb * (0.9 + 0.2 * n);
+	}
+	if (neu > 0.0 && !head) {
 		float big = texture(noise_tex, wpos.xz * 0.018).r;               // patches of ~20 m: lush or drier meadow
 		float mid = texture(noise_tex, wpos.xz * 0.09 + 3.1).r;          // ~4 m
 		vec3 lush = vec3(0.78, 1.0, 0.72);
@@ -55,6 +72,7 @@ void fragment() {
 		c = mix(c, c * vec3(1.35, 1.18, 0.7), smoothstep(0.65, 1.0, tip) * (0.35 + 0.4 * mid));   // dry, light tips
 		c *= mix(0.55, 1.0, smoothstep(0.0, 0.35, tip));                 // dark at the root (shade in the sward)
 	}
+	c *= 1.0 + 0.22 * v_gust * tip;                                    // the sheen of bent grass in a gust
 	c = mix(c, vec3(0.92, 0.93, 0.95), snow_amount * 0.7 * tip);
 	c *= 1.0 - cloud_amt * smoothstep(0.52, 0.68, texture(noise_tex, (wpos.xz + cloud_off) * 0.0035).r);
 	ALBEDO = c;

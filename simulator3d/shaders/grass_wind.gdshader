@@ -9,14 +9,15 @@ uniform float amount = 1.0;        // 0 = still (Lite, switched off)
 uniform vec2 dir = vec2(0.8, 0.6); // where the wind blows to (world x, z)
 uniform float blade_h = 0.28;      // height of the mesh (PrismMesh: y from -h/2 to h/2)
 uniform sampler2D noise_tex;
+uniform float wave_k = 0.035;      // «Flora und Fauna» Paket 2 (wind_fx.gd): 0.02 = the same gust wave as crowns and grass blades
 
 void vertex() {
 	vec3 wp = MODEL_MATRIX[3].xyz;                                   // the tuft (MultiMesh instance)
 	float h = clamp(VERTEX.y / blade_h + 0.5, 0.0, 1.0);
 	float w = clamp(wind / 50.0, 0.0, 1.6) * amount;
 	float spd = 0.6 + wind * 0.03;                                   // gust fronts move faster in strong wind
-	float g = texture(noise_tex, (wp.xz - dir * TIME * spd) * 0.035).r;       // gust waves over the meadow
-	g = smoothstep(0.3, 0.75, g);
+	float g = texture(noise_tex, (wp.xz - dir * TIME * spd) * wave_k).r;     // gust waves over the meadow
+	g = wave_k < 0.03 ? smoothstep(0.3, 0.8, g) : smoothstep(0.3, 0.75, g);
 	float flut = sin(TIME * (5.0 + 4.0 * w) + wp.x * 7.1 + wp.z * 5.3) * (0.25 + 0.35 * w);
 	float bend = (0.25 + 0.9 * g) * w + flut * w * 0.35;
 	vec3 off = vec3(dir.x, 0.0, dir.y) * bend * 0.16 * h * h;
