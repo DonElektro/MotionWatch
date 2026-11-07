@@ -298,6 +298,87 @@ def main():
     with g["PIPER"]["lock"]:
         g["piper_worker_stop"]()
 
+    # 5b. «Install Piper» installs espeak-ng itself (3.62.1): fake apt-get / sudo in an own PATH -----------------------------------
+    fb = os.path.join(tmp, "fakebin"); os.makedirs(fb)
+    alog = os.path.join(tmp, "apt.log")
+    for tool in ("chmod",):
+        w_ = shutil.which(tool)
+        if w_:
+            os.symlink(w_, os.path.join(fb, tool))
+    with open(os.path.join(fb, "apt-get"), "w") as f:
+        f.write(f"""#!/bin/sh
+printf '%s FRONTEND=%s\\n' "$*" "$DEBIAN_FRONTEND" >> {alog}
+case "$FAKE_APT" in
+  lock) echo "E: Could not get lock /var/lib/dpkg/lock-frontend. It is held by process 42 (apt)" >&2; exit 100 ;;
+  locate) if [ "$1" = update ]; then : > {tmp}/apt_updated; exit 0; fi
+          [ -f {tmp}/apt_updated ] || {{ echo "E: Unable to locate package espeak-ng" >&2; exit 100; }} ;;
+esac
+[ "$1" = install ] && {{ printf '#!/bin/sh\\nexit 0\\n' > {fb}/espeak-ng; chmod 755 {fb}/espeak-ng; }}
+exit 0
+""")
+    with open(os.path.join(fb, "sudo"), "w") as f:
+        f.write(f"""#!/bin/sh
+printf 'SUDO %s\\n' "$*" >> {alog}
+[ "$FAKE_SUDO" = pw ] && {{ echo "sudo: a password is required" >&2; exit 1; }}
+[ "$1" = -n ] && shift
+exec "$@"
+""")
+    for x in ("apt-get", "sudo"):
+        os.chmod(os.path.join(fb, x), 0o755)
+    keep_path, keep_euid = os.environ.get("PATH", ""), getattr(os, "geteuid", None)
+
+    def espeak_case(apt="", sudo_="", root=False):
+        for x in ("espeak-ng", "../apt_updated"):
+            if os.path.exists(os.path.join(fb, x)):
+                os.remove(os.path.join(fb, x))
+        if os.path.exists(alog):
+            os.remove(alog)
+        os.environ.update(PATH=fb, FAKE_APT=apt, FAKE_SUDO=sudo_)
+        os.geteuid = (lambda: 0) if root else (lambda: 1000)
+        r = g["piper_espeak_install"]()
+        lg = open(alog).read() if os.path.exists(alog) else ""
+        return r, lg
+
+    def apt_calls(lg):                                     # what apt-get itself was asked (not the lines of the fake sudo)
+        return [x for x in lg.splitlines() if not x.startswith("SUDO ")]
+    try:
+        r, lg = espeak_case()
+        ok(r[0] and "SUDO -n " in lg and "install -y --no-install-recommends" in lg and "FRONTEND=noninteractive" in lg
+           and os.path.exists(os.path.join(fb, "espeak-ng")),
+           "espeak-ng fehlt -> sudo -n apt-get install -y (ohne Rückfrage, noninteractive), danach da")
+        r, lg = espeak_case(root=True)
+        ok(r[0] and "SUDO" not in lg and "install -y" in lg, "als root: apt-get direkt, ohne sudo")
+        r, lg = espeak_case(apt="locate")
+        ok(r[0] and sum(x.startswith("install -y") for x in apt_calls(lg)) == 2 and any(x.startswith("update") for x in apt_calls(lg)), "«Unable to locate package» -> einmal apt-get update, dann geht es")
+        r, lg = espeak_case(sudo_="pw")
+        ok(not r[0] and "password" in r[1] and "sudo apt install espeak-ng" in r[1] and not apt_calls(lg),
+           f"sudo will ein Passwort -> nie fragen, klare Meldung ({r[1]})")
+        r, lg = espeak_case(apt="lock")
+        ok(not r[0] and "busy" in r[1], f"apt beschäftigt -> klare Meldung ({r[1]})")
+        os.environ.update(FAKE_SUDO="pw")
+        if os.path.exists(os.path.join(fb, "espeak-ng")):
+            os.remove(os.path.join(fb, "espeak-ng"))
+        g["CFG"]["lang"] = "de"
+        keep_rt = g["piper_runtime"]
+        g["piper_runtime"] = lambda: (True, False)
+        g["PIPER"]["install"] = ""
+        g["piper_install"]()
+        t_ = time.time() + 20
+        while g["PIPER"]["install"] == "running" and time.time() < t_:
+            time.sleep(0.1)
+        st_ = g["PIPER"]["install"]
+        ok(st_.startswith("espeak-ng konnte nicht installiert werden – ") and "Passwort" in st_,
+           f"«Piper installieren»: Fehler als klare Meldung im Zustand ({st_})")
+        j = g["piper_state"]("de")
+        ok(j.get("install") == st_ and "install_step" in j, "/api/piper zeigt die Meldung (install, install_step)")
+        g["piper_runtime"] = keep_rt; g["PIPER"]["install"] = ""
+    finally:
+        os.environ["PATH"] = keep_path
+        for x in ("FAKE_APT", "FAKE_SUDO"):
+            os.environ.pop(x, None)
+        if keep_euid:
+            os.geteuid = keep_euid
+
     # 6. optional: a real Piper voice --------------------------------------------------------------------------------------------
     if a.modell:
         os.environ.pop("MW_PIPER_FAKE_PHON", None)

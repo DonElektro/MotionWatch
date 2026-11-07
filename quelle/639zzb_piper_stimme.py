@@ -86,7 +86,7 @@ for _k, _v in {"tts_engine": "auto", "tts_speed": 1.0, "tts_volume": 80,
     CFG.setdefault(_k, _v); DEFAULTS.setdefault(_k, _v); FACTORY_CFG.setdefault(_k, _v)   # 636 took its copy before this part
 
 PIPER = {"lock": threading.Lock(), "proc": None, "q": None, "last": 0.0, "model": "", "err": "", "t_err": 0.0,
-         "ms": None, "warm_t": 0.0, "install": "", "sim_ok": None}
+         "ms": None, "warm_t": 0.0, "install": "", "install_step": "", "sim_ok": None}
 PIPER_DL = {"voice": "", "running": False, "got": 0, "total": 0, "msg": "", "stop": False, "done": ""}
 
 
@@ -660,21 +660,89 @@ def piper_delete(vid):
     return True, ""
 
 
+PIPER_APT_TIMEOUT_S = 600            # 3.62.1: apt-get for espeak-ng (once apt-get update + install)
+
+
+def piper_espeak_install():
+    """3.62.1: espeak-ng (the phonemes of Piper) with apt, if it is missing - (ok, english reason).
+    Same privilege path as the other system calls of MoveEye (050 / 400 / 556): as root directly, otherwise «sudo -n»
+    (only works when sudo needs no password, as for the user of Raspberry Pi OS). Never asks for a password; non-interactive
+    (DEBIAN_FRONTEND=noninteractive, -y), with a time limit. «Unable to locate package» -> once apt-get update, then again."""
+    if shutil.which("espeak-ng"):
+        return True, ""
+    apt = shutil.which("apt-get")
+    if not apt:
+        return False, "no apt-get on this system - install espeak-ng by hand"
+    pre = [] if (hasattr(os, "geteuid") and os.geteuid() == 0) else ["sudo", "-n"]
+    if pre and not shutil.which("sudo"):
+        return False, "MoveEye has no rights for apt (no sudo) - in a terminal: sudo apt install espeak-ng"
+    env = dict(os.environ, DEBIAN_FRONTEND="noninteractive", APT_LISTCHANGES_FRONTEND="none")
+
+    def run(args, step):
+        PIPER["install_step"] = step
+        try:
+            r = subprocess.run(pre + [apt] + args, capture_output=True, text=True, timeout=PIPER_APT_TIMEOUT_S, env=env,
+                               stdin=subprocess.DEVNULL)
+            return r.returncode, (r.stdout or "") + (r.stderr or "")
+        except subprocess.TimeoutExpired:
+            return -9, "timeout"
+        except OSError as e:
+            return -1, str(e)
+    inst = ["install", "-y", "--no-install-recommends", "-o", "Dpkg::Options::=--force-confold", "espeak-ng"]
+    rc, out = run(inst, "espeak-ng")
+    if rc != 0 and re.search(r"Unable to locate package|has no installation candidate|404\s+Not Found|Failed to fetch", out):
+        rc_u, out_u = run(["update"], "apt-get update")
+        rc, out = run(inst, "espeak-ng") if rc_u == 0 else (rc_u, out_u)
+    PIPER["install_step"] = ""
+    if rc == 0 and shutil.which("espeak-ng"):
+        log_event("sys", "Piper: espeak-ng installed (apt)")
+        return True, ""
+    low = out.lower()
+    if pre and ("password is required" in low or "a terminal is required" in low or "not in the sudoers" in low
+                or "may not run sudo" in low):
+        why = "MoveEye has no rights for apt (sudo asks for a password) - in a terminal: sudo apt install espeak-ng"
+    elif rc == -9:
+        why = "apt took too long (over 10 min.) - try again later"
+    elif "could not get lock" in low or "unable to acquire the dpkg frontend lock" in low or "is another process using it" in low:
+        why = "apt is busy right now (another installation or update) - try again in a few minutes"
+    elif "temporary failure resolving" in low or "could not resolve" in low or "failed to fetch" in low:
+        why = "no internet for apt - try again with internet"
+    elif rc == 0:
+        why = "apt finished, but espeak-ng is still missing"
+    else:
+        why = (out.strip().splitlines() or ["?"])[-1][:120]
+    log_event("sys", "Piper: espeak-ng not installed: " + why)
+    return False, why
+
+
 def piper_install():
-    """the runtime onnxruntime (pip, MIT, pinned) in the background - like the sound recognition (250 sneeze_install)"""
+    """«Install Piper» in the background: espeak-ng (apt, if missing, 3.62.1) and the runtime onnxruntime (pip, MIT, pinned)
+    - like the sound recognition (250 sneeze_install)"""
     if PIPER["install"] == "running":
         return False, "already running"
     PIPER["install"] = "running"
+    PIPER["install_step"] = ""
 
     def work():
         try:
-            r = subprocess.run([sys.executable, "-m", "pip", "install", "--break-system-packages", PIPER_ORT],
-                               capture_output=True, text=True, timeout=1500)
-            ok = r.returncode == 0
-            PIPER["install"] = "done" if ok else "failed: " + ((r.stderr or r.stdout).strip().splitlines() or ["?"])[-1][:140]
-            log_event("sys", "Piper: runtime installed (" + PIPER_ORT + ")" if ok else "Piper: " + PIPER["install"])
+            fail = []
+            ok_e, why = piper_espeak_install()
+            if not ok_e:
+                fail.append(tr("espeak-ng could not be installed") + " – " + tr(why))
+            if not piper_runtime()[0]:
+                PIPER["install_step"] = "onnxruntime"
+                r = subprocess.run([sys.executable, "-m", "pip", "install", "--break-system-packages", PIPER_ORT],
+                                   capture_output=True, text=True, timeout=1500)
+                if r.returncode == 0:
+                    log_event("sys", "Piper: runtime installed (" + PIPER_ORT + ")")
+                else:
+                    fail.append("onnxruntime: " + ((r.stderr or r.stdout).strip().splitlines() or ["?"])[-1][:140])
+            PIPER["install"] = "done" if not fail else " · ".join(fail)
+            if fail:
+                log_event("sys", "Piper: " + PIPER["install"])
         except Exception as e:
             PIPER["install"] = "failed: " + str(e)[:120]
+        PIPER["install_step"] = ""
     threading.Thread(target=work, daemon=True, name="piper-install").start()
     return True, ""
 
@@ -709,7 +777,7 @@ def piper_state(lang=None):
                    "mb": round((v["model"].get("size") or 63000000) / 1048576.0), "pinned": piper_pinned(vid), "installed": piper_installed(vid)})
     cur = {L_: piper_voice_for(L_) for L_ in LANGS}
     return {"engine": str(CFG.get("tts_engine") or "auto"), "voices": vs, "chosen": cur, "voice": cur.get(L, ""),
-            "ready": piper_ready(L), "ort": ort, "espeak": esp, "install": PIPER["install"], "warm": PIPER.get("proc") is not None,
+            "ready": piper_ready(L), "ort": ort, "espeak": esp, "install": PIPER["install"], "install_step": PIPER.get("install_step") or "", "warm": PIPER.get("proc") is not None,
             "dl": dict({k: PIPER_DL[k] for k in ("voice", "running", "got", "total", "done")}, msg=tr_err(PIPER_DL["msg"], L) if PIPER_DL["msg"] else ""),
             "err": tr_err(PIPER["err"], L) if PIPER["err"] and time.time() - PIPER["t_err"] < 600 else "", "ms": PIPER.get("ms"),
             "old": _tts_engine_639zzb() or "", "speed": CFG.get("tts_speed"), "volume": CFG.get("tts_volume"), "sim": PIPER.get("sim_ok")}
@@ -733,7 +801,11 @@ def piper_text(lang=None):
     if not s["ort"]:
         parts.append(tr("Piper runtime missing (onnxruntime, about 15 MB) – «Install Piper»", L))
     if not s["espeak"]:
-        parts.append(tr("espeak-ng is missing (sudo apt install espeak-ng)", L))
+        parts.append(tr("espeak-ng is missing – «Install Piper» installs it", L))
+    if PIPER["install"] == "running":
+        parts.append(tr("installing …", L) + (f" ({PIPER['install_step']})" if PIPER.get("install_step") else ""))
+    elif PIPER["install"] and PIPER["install"] != "done":
+        parts.append("⚠ " + PIPER["install"])
     if PIPER_DL["msg"]:
         parts.append("⚠ " + tr_err(PIPER_DL["msg"], L))
     if s["err"]:
@@ -855,6 +927,38 @@ _HX_PIPER = {
         "Manca il motore Piper (onnxruntime, circa 15 MB) – «Installa Piper»", "Il motor Piper manca (onnxruntime, var 15 MB) – «Installar Piper»"),
     "espeak-ng is missing (sudo apt install espeak-ng)": ("espeak-ng fehlt (sudo apt install espeak-ng)", "espeak-ng manque (sudo apt install espeak-ng)",
                                                           "manca espeak-ng (sudo apt install espeak-ng)", "espeak-ng manca (sudo apt install espeak-ng)"),
+    "espeak-ng is missing – «Install Piper» installs it": (
+        "espeak-ng fehlt – «Piper installieren» richtet es ein", "espeak-ng manque – «Installer Piper» l’installe",
+        "manca espeak-ng – «Installa Piper» lo installa", "espeak-ng manca – «Installar Piper» l’installescha"),
+    "espeak-ng could not be installed": ("espeak-ng konnte nicht installiert werden", "espeak-ng n’a pas pu être installé",
+                                         "non è stato possibile installare espeak-ng", "espeak-ng n’ha betg pudì vegnir installà"),
+    "no apt-get on this system - install espeak-ng by hand": (
+        "kein apt-get auf diesem System – espeak-ng von Hand installieren", "pas d’apt-get sur ce système – installer espeak-ng à la main",
+        "nessun apt-get su questo sistema – installare espeak-ng a mano", "nagin apt-get sin quest sistem – installar espeak-ng a maun"),
+    "MoveEye has no rights for apt (no sudo) - in a terminal: sudo apt install espeak-ng": (
+        "MoveEye hat keine Rechte für apt (kein sudo) – im Terminal: sudo apt install espeak-ng",
+        "MoveEye n’a pas les droits pour apt (pas de sudo) – dans un terminal : sudo apt install espeak-ng",
+        "MoveEye non ha i permessi per apt (niente sudo) – nel terminale: sudo apt install espeak-ng",
+        "MoveEye n’ha nagins dretgs per apt (nagin sudo) – en il terminal: sudo apt install espeak-ng"),
+    "MoveEye has no rights for apt (sudo asks for a password) - in a terminal: sudo apt install espeak-ng": (
+        "MoveEye hat keine Rechte für apt (sudo will ein Passwort) – im Terminal: sudo apt install espeak-ng",
+        "MoveEye n’a pas les droits pour apt (sudo demande un mot de passe) – dans un terminal : sudo apt install espeak-ng",
+        "MoveEye non ha i permessi per apt (sudo chiede una password) – nel terminale: sudo apt install espeak-ng",
+        "MoveEye n’ha nagins dretgs per apt (sudo dumonda in pled-clav) – en il terminal: sudo apt install espeak-ng"),
+    "apt took too long (over 10 min.) - try again later": (
+        "apt hat zu lange gebraucht (über 10 Min.) – später nochmals versuchen", "apt a pris trop de temps (plus de 10 min) – réessayer plus tard",
+        "apt ha impiegato troppo (oltre 10 min) – riprovare più tardi", "apt ha durà memia ditg (dapli che 10 min.) – empruvar pli tard"),
+    "apt is busy right now (another installation or update) - try again in a few minutes": (
+        "apt ist gerade beschäftigt (andere Installation oder Update) – in ein paar Minuten nochmals",
+        "apt est occupé (autre installation ou mise à jour) – réessayer dans quelques minutes",
+        "apt è occupato (altra installazione o aggiornamento) – riprovare tra qualche minuto",
+        "apt è gist occupà (autra installaziun u actualisaziun) – empruvar en in pèr minutas"),
+    "no internet for apt - try again with internet": (
+        "kein Internet für apt – mit Internet nochmals versuchen", "pas d’Internet pour apt – réessayer avec Internet",
+        "nessuna connessione Internet per apt – riprovare con Internet", "nagin internet per apt – empruvar cun internet"),
+    "apt finished, but espeak-ng is still missing": (
+        "apt ist fertig, aber espeak-ng fehlt immer noch", "apt a terminé, mais espeak-ng manque toujours",
+        "apt ha finito, ma espeak-ng manca ancora", "apt è finì, ma espeak-ng manca anc adina"),
     "loading the voice …": ("lade die Stimme …", "chargement de la voix …", "caricamento della voce …", "chargiar la vusch …"),
     "This voice is not pinned yet (comes with an update)": (
         "Diese Stimme ist noch nicht freigegeben (kommt mit einem Update)", "Cette voix n’est pas encore validée (arrive avec une mise à jour)",
@@ -941,15 +1045,15 @@ function piperBox() {                                      // 639zzb: Piper voic
     if (J.engine === "old" || !v) parts.push(t("old voice (pico2wave / espeak-ng)"));
     else parts.push("Piper · " + vName(v.id) + " – " + (v.installed ? t("loaded") : (v.pinned ? t("{mb} MB to load").replace("{mb}", v.mb) : t("comes with an update"))));
     if (!J.ort) parts.push(t("Piper runtime missing (onnxruntime, about 15 MB) – «Install Piper»"));
-    if (!J.espeak) parts.push(t("espeak-ng is missing (sudo apt install espeak-ng)"));
-    if (J.install && J.install !== "done") parts.push(J.install === "running" ? t("installing …") : "⚠ " + J.install);
+    if (!J.espeak) parts.push(t("espeak-ng is missing – «Install Piper» installs it"));
+    if (J.install && J.install !== "done") parts.push(J.install === "running" ? t("installing …") + (J.install_step ? " (" + J.install_step + ")" : "") : "⚠ " + J.install);
     if (d.msg) parts.push("⚠ " + d.msg);
     if (J.err) parts.push("⚠ " + J.err);
     st.textContent = parts.join(" · ");
     bar.style.display = d.running ? "" : "none"; fill.style.width = (d.total ? Math.round(100 * d.got / d.total) : 0) + "%";
     if (d.running) st.textContent = t("loading the voice …") + " " + (d.total ? Math.round(100 * d.got / d.total) : 0) + " %";
     bLoad.hidden = !v || v.installed || !v.pinned || d.running || J.engine === "old";
-    bStop.hidden = !d.running; bInst.hidden = J.ort || J.install === "running"; bDel.hidden = !v || !v.installed;
+    bStop.hidden = !d.running; bInst.hidden = (J.ort && J.espeak) || J.install === "running"; bDel.hidden = !v || !v.installed;
     lic.textContent = v ? t("Licence") + ": " + v.licence + " · " + t("Loaded once from Hugging Face (checked), then works offline") : "";
     clearTimeout(timer); if (d.running || J.install === "running") timer = setTimeout(load, 1000);
   }
@@ -1018,8 +1122,8 @@ _HELP_PIPER = {
     "de": ('<section id="piper" data-icon="🗣"><h2>Piper-Stimme</h2><ul>'
            '<li>MoveEye spricht Ansagen mit <b>Piper</b>, einer natürlichen Stimme ohne Internet. Einmal einrichten unter '
            'Einstellungen → Licht &amp; Ton → Lautsprecher: «Piper installieren» (onnxruntime, etwa 15 MB), «Stimme laden» '
-           '(etwa 60 MB von Hugging Face, mit fester Prüfsumme geprüft), dann «Stimme testen». Auf dem Pi braucht es einmal '
-           '<code>sudo apt install espeak-ng</code>.</li>'
+           '(etwa 60 MB von Hugging Face, mit fester Prüfsumme geprüft), dann «Stimme testen». «Piper installieren» richtet auch '
+           '<code>espeak-ng</code> ein (apt, ohne Passwort-Abfrage; geht das nicht: <code>sudo apt install espeak-ng</code>).</li>'
            '<li>Pro Sprache eine Stimme (Deutsch: Thorsten, Englisch: Cori, Französisch: Siwis; Italienisch folgt), Tempo und Lautstärke. '
            'Rätoromanisch spricht mit der deutschen Stimme. Fehlt Piper, spricht die alte Stimme (pico2wave / espeak-ng).</li>'
            '<li><b>🔊 Ton im Browser:</b> Schalter bei der Glocke oben oder unter Lautsprecher – Ansagen kommen dann auch aus dem Handy oder PC '
@@ -1029,8 +1133,8 @@ _HELP_PIPER = {
     "en": ('<section id="piper" data-icon="🗣"><h2>Piper voice</h2><ul>'
            '<li>MoveEye speaks announcements with <b>Piper</b>, a natural voice without internet. Set it up once under '
            'Settings → Light &amp; sound → Loudspeaker: «Install Piper» (onnxruntime, about 15 MB), «Load voice» '
-           '(about 60 MB from Hugging Face, checked with a fixed checksum), then «Test voice». The Pi needs once '
-           '<code>sudo apt install espeak-ng</code>.</li>'
+           '(about 60 MB from Hugging Face, checked with a fixed checksum), then «Test voice». «Install Piper» also sets up '
+           '<code>espeak-ng</code> (apt, never asks for a password; if that fails: <code>sudo apt install espeak-ng</code>).</li>'
            '<li>One voice per language (German: Thorsten, English: Cori, French: Siwis; Italian follows), speed and volume. '
            'Romansh speaks with the German voice. Without Piper the old voice speaks (pico2wave / espeak-ng).</li>'
            '<li><b>🔊 Sound in the browser:</b> switch at the bell at the top or under Loudspeaker – announcements then also come from the phone or PC '

@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-07 22:26",
+ "generated": "2026-11-07 23:02",
  "versions": [
   {
-   "version": "3.62.0",
-   "file": "webcam_bewegung_3_62_0.py",
+   "version": "3.62.1",
+   "file": "webcam_bewegung_3_62_1.py",
    "url": "",
-   "sha256": "75e10d6918c7f7d921e1006621d4b582c561bd72e7c25a58368bc5cb7080efcc",
-   "date": "2026-11-07 22:26",
-   "notes": "Piper-Stimme: MoveEye spricht Ansagen mit einer natürlichen Offline-Stimme (Thorsten; Stimme pro Sprache, Tempo, Lautstärke, «Stimme testen»), einmal geladen mit fester Prüfsumme; Ansagen auch im Browser («🔊 Ton im Browser»), im Pi-Fenster und im Simulator; ohne Piper die alte Stimme.",
-   "size": 3607814,
-   "sig": "af643a38ff3f2389db5196d2cc87486bb9668b245c25f54f6722a887b6847d17a15ed0446f7cd2cfd50eeb5872c88688a3c8c2e549c687d4f9815fccda9ae600",
+   "sha256": "e606e3ddc7ea23d19e616542f46ba0439b75a92d548b61f1397350999a1e30fd",
+   "date": "2026-11-07 23:01",
+   "notes": "Piper: «Piper installieren» richtet auch espeak-ng selbst ein, wenn es fehlt (apt, ohne Passwort-Abfrage, mit Zeitlimit; als root direkt, sonst sudo -n), mit Fortschritt und klarer Meldung, wenn es nicht geht («espeak-ng konnte nicht installiert werden – …»).",
+   "size": 3612293,
+   "sig": "9610d0d5652ef82d64b6f8926577f5568a31b440c6505bf1e53d273178f657b0648a5e832ac62add2eff9f6f3cdbe43ecc76c8bddd0dc006d03ea8a33c99710f",
    "data": {
-    "file": "moveeye_daten_3_62_0.zip",
+    "file": "moveeye_daten_3_62_1.zip",
     "url": "",
-    "sha256": "0e3f0d6978845ba80542a3313b7ce02e8505954db3a74cfb4c26d1c0caa00e94",
-    "size": 4834016,
-    "sig": "3ec9c9dc58018bda7d9cefc2939df865edc6c7379161fd6f1be58691d40998d55e2b0ced6a8c3a795d71135af1a2fa9efa63b039fa2175b8d942a1e7c67eab01"
+    "sha256": "03685cc0ff7666eed3346271731c1e95b04b60fd3f473adfee6f521143c9ed83",
+    "size": 4835682,
+    "sig": "265e985fe5935d33e90a276b98b118b884345ba204df2fcf39c13de1973b9457c485f21822ff17bcafd8af6831aa6ba9bb7b573b35e1dcf2e57086acdb9e280d"
    }
   },
   {
