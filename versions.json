@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-08 00:18",
+ "generated": "2026-11-08 00:33",
  "versions": [
   {
-   "version": "3.63.0",
-   "file": "webcam_bewegung_3_63_0.py",
+   "version": "3.63.1",
+   "file": "webcam_bewegung_3_63_1.py",
    "url": "",
-   "sha256": "a504c7b110e8d069fa8230f6014fcf9f466e31d80ae17e7d531d413c5fcc8708",
-   "date": "2026-11-08 00:18",
-   "notes": "📁 Datentausch unter Mehr: Fotos, Videos und Dokumente teilen (Für alle / Meine Dateien, Ordner, Vorschaubilder, Hochladen in Stücken), 📝 Texte im Browser bearbeiten mit Versionen, 💬 Chats; neue Rechte pro Benutzer, Gäste nur ansehen, Grenzen und immer 2 GB frei, Push gebündelt.",
-   "size": 3697522,
-   "sig": "4b01a08d6b947e2feacc9f4bf62d2a958855c62f8e2ecb2f1ee3919ec7a8dd9e5eb19c60ed57a5a1c3c356e1efb461ca48549f71f099ca093abc4239dac6ca0d",
+   "sha256": "3d28f961ea5510184bf18662baa969be99008cd7ee27e514196869e62b4c90bf",
+   "date": "2026-11-08 00:33",
+   "notes": "Fehlerkorrektur: Selbsttest «Fertig kaufen» (639zj) erkennt den Eintrag im Fenster «Mehr» auch, wenn der Datentausch ihn umhüllt (nur im CI mit Fenster sichtbar).",
+   "size": 3697256,
+   "sig": "1f7b5abc562b8203d248b0eb21d58c6a575bd81caf8918ae2d0a3bca6ef42600a872aadd121299581ba39603d58fa2077e80a3d00c079c8f41c81f2df36bca0a",
    "data": {
-    "file": "moveeye_daten_3_63_0.zip",
+    "file": "moveeye_daten_3_63_1.zip",
     "url": "",
-    "sha256": "38b0dd55ea29941106d406ce645db0533fdf5ebc159c1132757da1a436f22249",
-    "size": 4869808,
-    "sig": "91e57d21658e6ad26df3bac6eb5958e880b5f606edee178ab96f218833d2e68f6c7302d50f2cb16be45f3a16adbb08897c24b0304c769b1b5b1c469361c4ab09"
+    "sha256": "968cb4a0bdf050741a1899cf61c2647e180fba8b06b352f888990ede0975a544",
+    "size": 4869756,
+    "sig": "56df7679208bfdf26cbeeb43540f8a173a0fc9e37f9da556374b630bc54c0d61412e3571d0e3430cc725f3825fd44957854fee35abe7cd97b357fa6733cb1a08"
    }
   },
   {
