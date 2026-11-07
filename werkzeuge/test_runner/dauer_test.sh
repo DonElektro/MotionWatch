@@ -3,6 +3,8 @@
 #  1. hp_wache.py: Status-Dienst (rechnet / spielen); eine dauernde Verbindung MoveEye <-> Simulator ohne Zuschauer ist KEIN
 #     Spielen (Entscheid Besitzer 03.11.2026); ein Zuschauer-Puls von MoveEye (POST /zuschauer, nur Daten, höchstens 256 Bytes)
 #     und die Handy-Seite des Spiels schon -> Spielen-Datei.
+#  1b. Controller (Gamepad) = Spielen: Ersatz-Geräte (FIFO statt /dev/input/js0 bzw. event0 mit udev-Eintrag): Taste oder
+#     deutlicher Stick-Ausschlag -> Spielen-Datei (auch während gerechnet wird), Rauschen / Startwerte nicht; frischt auf.
 #  2. dauer.py halten mit hp_wache.py: Test läuft (MoveEye verbunden, niemand schaut), Zuschauer-Puls -> Test in Sekunden
 #     angehalten, Pause-Datei weg (Bildschirm frei), Stand gesichert (nur ganze Fälle); Puls hört auf, 15 Min. später
 #     (schnelle Uhr: das Datum der Spielen-Datei wird zurückgestellt) -> Pause wieder da, der Test rechnet genau dort weiter.
@@ -74,8 +76,9 @@ python3 -c 'import sys; print(sys.version.split()[0])' >/dev/null || { echo "pyt
 PB=$(( 20000 + RANDOM % 20000 ))
 SP1=$((PB + 1)) SP2=$((PB + 2)) STP=$((PB + 3))
 touch "$MW_KIOSK_PAUSE"
+mkdir -p "$W/keine_pads"
 python3 -I "$R/simulator3d/beilagen_linux/hp_wache.py" --spiel-datei "$MW_SPIEL" --pause "$MW_KIOSK_PAUSE" --ruhe-s 900 \
-	--status-port "$STP" --sim-ports "$SP2" --zuschauer-s 3 > "$W/wache.log" 2>&1 &
+	--status-port "$STP" --sim-ports "$SP2" --zuschauer-s 3 --pad-quelle "$W/keine_pads" > "$W/wache.log" 2>&1 &
 WP=$!; PIDS+=("$WP")
 get() { python3 -c 'import sys, urllib.request
 try:
@@ -131,6 +134,67 @@ rm -f "$MW_SPIEL"
 warte 5 handy_lauscht; warte 5 test -f "$MW_SPIEL" && python3 -c 'import json, sys; assert json.load(open(sys.argv[1]))["grund"] == "handy"' "$MW_SPIEL" \
 	&& ok "Handy öffnet die Spiel-Seite -> Spielen" || fehler "Handy-Seite"
 rm -f "$MW_SPIEL" "$MW_KIOSK_PAUSE"
+
+# ---------------------------------------------------------------- 1b. Controller = Spielen (Ersatz-Geräte)
+echo "--- 1b. hp_wache.py: Controller (Gamepad) zählt als Spielen"
+kill "$WP" 2>/dev/null; wait "$WP" 2>/dev/null
+mkdir -p "$W/pads" "$W/pads_ev" "$W/udev"
+mkfifo "$W/pads/js0" "$W/pads_ev/event0"
+exec 7<>"$W/pads/js0" 8<>"$W/pads_ev/event0"         # Schreib-Ende offen halten (wie ein Gerät: nie «zu Ende»)
+echo "E:ID_INPUT_JOYSTICK=1" > "$W/udev/c0:0"          # FIFO: Gerätenummer 0:0 -> «udev kennt es als Joystick»
+js() { python3 -c 'import struct, sys
+a = sys.argv[1:]
+sys.stdout.buffer.write(b"".join(struct.pack("IhBB", 0, int(a[i + 1]), int(a[i], 0), int(a[i + 2])) for i in range(0, len(a), 3)))' "$@" >&7; }
+ev() { python3 -c 'import struct, sys
+a = sys.argv[1:]
+sys.stdout.buffer.write(b"".join(struct.pack("llHHi", 0, 0, int(a[i], 0), int(a[i + 1], 0), int(a[i + 2])) for i in range(0, len(a), 3)))' "$@" >&8; }
+STP2=$((PB + 4)) SP3=$((PB + 5))
+touch "$MW_KIOSK_PAUSE"
+python3 -I "$R/simulator3d/beilagen_linux/hp_wache.py" --spiel-datei "$MW_SPIEL" --pause "$MW_KIOSK_PAUSE" --ruhe-s 900 \
+	--status-port "$STP2" --sim-ports "$SP3" --pad-quelle "$W/pads" --pad-scan-s 0.3 > "$W/wache_pad.log" 2>&1 &
+WP=$!; PIDS+=("$WP")
+status2() { get "http://127.0.0.1:$STP2/status.json" | grep -q "\"zustand\": \"$1\""; }
+warte 10 status2 rechnet && warte 5 grep -q "Controller js0 erkannt" "$W/wache_pad.log" && ok "Controller erkannt, der HP rechnet" \
+	|| { fehler "Controller nicht erkannt"; cat "$W/wache_pad.log"; }
+js 0x81 0 0  0x81 0 1  0x82 0 0  0x82 -32767 2               # Startwerte (INIT): Tasten los, Sticks Mitte, Trigger unten
+js 2 300 0  2 -200 1  2 500 0                               # Rauschen eines ruhig liegenden Controllers
+sleep 4
+[ ! -e "$MW_SPIEL" ] && status2 rechnet && ok "Startwerte und Rauschen: kein Spielen" || fehler "Rauschen hat Spielen ausgelöst"
+T0=$(date +%s%N)
+js 1 1 0  1 0 0                                              # Taste A gedrückt, losgelassen
+warte 5 test -f "$MW_SPIEL" && python3 -c 'import json, sys; assert json.load(open(sys.argv[1]))["grund"] == "controller"' "$MW_SPIEL" \
+	&& ok "Taste am Controller während des Rechnens -> Spielen nach $(( ($(date +%s%N) - T0) / 1000000 )) ms (grund «controller»)" \
+	|| { fehler "Taste ohne Wirkung"; cat "$W/wache_pad.log"; }
+warte 5 status2 spielen && ok "Status: spielen" || fehler "Status nicht «spielen»"
+touch -d '10 minutes ago' "$MW_SPIEL"
+js 2 -30000 0                                                # Stick ganz nach links
+sleep 4
+[ "$(( $(date +%s) - $(stat -c %Y "$MW_SPIEL") ))" -lt 60 ] && ok "Stick-Ausschlag beim Spielen frischt die Spielen-Datei auf" || fehler "nicht aufgefrischt"
+ruhig_15min
+warte 6 status2 rechnet && ok "15 Min. ohne Controller -> wieder «rechnet»" || fehler "nach 15 Min."
+rm -f "$MW_SPIEL"
+js 2 -2000 0                                                 # zurück zur Mitte: deutlicher Ausschlag
+warte 5 test -f "$MW_SPIEL" && ok "deutlicher Stick-Ausschlag allein -> Spielen" || fehler "Stick ohne Wirkung"
+kill "$WP" 2>/dev/null; wait "$WP" 2>/dev/null
+rm -f "$MW_SPIEL"
+# ohne js*: event-Gerät, das udev als Joystick kennt (nur Tasten / Steuerkreuz)
+python3 -I "$R/simulator3d/beilagen_linux/hp_wache.py" --spiel-datei "$MW_SPIEL" --pause "$MW_KIOSK_PAUSE" --ruhe-s 900 \
+	--status-port "$STP2" --sim-ports "$SP3" --pad-quelle "$W/pads_ev" --pad-scan-s 0.3 --pad-udev "$W/udev" > "$W/wache_ev.log" 2>&1 &
+WP=$!; PIDS+=("$WP")
+warte 10 grep -q "Controller event0 erkannt" "$W/wache_ev.log" || { fehler "event-Gerät nicht erkannt"; cat "$W/wache_ev.log"; }
+ev 3 0 1200  0 0 0  1 0x110 1                               # Stick (zählt hier nicht), Maustaste BTN_LEFT (kein Controller)
+sleep 3
+[ ! -e "$MW_SPIEL" ] && ok "event-Gerät: Stick-Werte und Nicht-Controller-Tasten zählen nicht" || fehler "event: falsch ausgelöst"
+ev 1 0x130 1  0 0 0                                          # BTN_SOUTH (A) gedrückt
+warte 5 test -f "$MW_SPIEL" && ok "event-Gerät (udev: Joystick): Taste -> Spielen" || { fehler "event-Taste ohne Wirkung"; cat "$W/wache_ev.log"; }
+kill "$WP" 2>/dev/null; wait "$WP" 2>/dev/null
+exec 7>&- 8>&-
+rm -f "$MW_SPIEL" "$MW_KIOSK_PAUSE"
+# die Wache von Teil 1 wieder (Teil 2 schickt ihr Zuschauer-Pulse)
+python3 -I "$R/simulator3d/beilagen_linux/hp_wache.py" --spiel-datei "$MW_SPIEL" --pause "$MW_KIOSK_PAUSE" --ruhe-s 900 \
+	--status-port "$STP" --sim-ports "$SP2" --zuschauer-s 3 --pad-quelle "$W/keine_pads" >> "$W/wache.log" 2>&1 &
+WP=$!; PIDS+=("$WP")
+warte 10 status_ist frei || fehler "Wache startet nicht wieder"
 
 # ---------------------------------------------------------------- 2. halten: Zuschauer -> Pause + Sicherung -> 15 Min. -> weiter
 echo "--- 2. dauer.py halten (Zuschauer hält an, Stand gesichert, ohne Puls nach 15 Min. weiter)"

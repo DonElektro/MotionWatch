@@ -68,8 +68,8 @@ MoveEye meldet das dem HP alle 20 s (`POST /zuschauer` an Port 8761, nur eine Ze
 Spiel-Seite (Port 8770). **Eine Verbindung MoveEye ↔ Simulator allein zählt nicht** (Entscheid Besitzer 03.11.2026: der Pi
 bleibt im Simulator-Betrieb dauernd verbunden), die Karte / Seite «HP rechnet» auch nicht. Dann hält der Test in wenigen
 Sekunden an, der Test-Simulator ist zu, und der Kiosk-Simulator startet (nie beide zugleich – 4 GB RAM). **15 Min. ohne
-Maus, Taste, Zuschauer und Spieler am Handy** rechnet der nächste Lauf genau dort weiter. Ein Gamepad am HP zählt nicht als
-Eingabe.
+Maus, Taste, Controller, Zuschauer und Spieler am Handy** rechnet der nächste Lauf genau dort weiter. Ein Controller
+(Gamepad) am HP zählt als Spielen – auch während gerechnet wird (Abschnitt «Controller»).
 
 **Bildschirm:** während des Rechnens schaltet er nach 10 Min. ohne Maus / Taste ab (DPMS), das Testbild zeichnet dann nicht
 mehr; Maus oder Taste weckt ihn sofort. Beim Simulator bleibt er an wie bisher.
@@ -84,6 +84,27 @@ gh workflow run dauer_hp.yml -R DonElektro/MotionWatch -f arbeit=ki      # eine 
 gh run list -R DonElektro/MotionWatch -w "Dauerrechnen (HP)" -L 5
 ```
 
+## Controller (PS5 DualSense) am HP
+
+- **Per Kabel (geht immer):** Controller mit USB-C anstecken – Linux kennt ihn von selbst (Treiber `hid-playstation`).
+- **Per Bluetooth, ohne Tippen:** im Testbild den Knopf **«Controller koppeln»** (oder Taste **K**), im Kiosk (Simulator
+  läuft) **Ctrl+Alt+B**. Dann am Controller **PS-Taste und Create-Taste** gleichzeitig halten, bis das Licht schnell blinkt.
+  Ein Fenster zeigt den Fortschritt (Suche bis 60 s → gekoppelt → verbunden). Danach genügt die PS-Taste.
+  Ohne Bluetooth-Adapter steht dort «Kein Bluetooth – USB-Stick nötig oder Controller per USB-C-Kabel» (ein USB-Bluetooth-Stick
+  genügt, einstecken und noch einmal).
+- **Spielen:** jede Taste und jeder deutliche Stick-Ausschlag zählt als Spielen (`hp_wache.py` liest nur `/dev/input/js*`
+  bzw. die Joystick-Geräte, die die Kiosk-Sitzung ohnehin lesen darf); das Rechnen hält an, der Simulator startet. Der
+  Simulator kennt den DualSense über die eingebaute SDL-Liste von Godot 4.3 (USB und Bluetooth), Tasten wie beim Xbox-Controller
+  (Kreuz = A, Kreis = B, Viereck = X, Dreieck = Y, Create = Select, Options = Start).
+- **Sicherheit:** der Kiosk-Benutzer bekommt kein root, kein sudo, keine polkit-Regel. Er legt nur die leere Datei
+  `/run/moveeye-spiel/controller_koppeln` an; die Pfad-Einheit `moveeye-controller-koppeln.path` startet dann den Dienst
+  `moveeye-controller-koppeln.service` (root, `controller_koppeln.sh`), der immer dasselbe tut: Bluetooth an, 60 s suchen,
+  nur einen Sony-DualSense koppeln (Hersteller-Kennung 054C), vertrauen, verbinden, Kopplung wieder aus. Der HP selbst wird
+  nicht sichtbar gemacht. Fortschritt: `/run/moveeye-controller/status.json` (feste Texte, keine Adressen).
+- **Von Hand / prüfen:** `sudo /usr/local/lib/moveeye-kiosk/controller_koppeln.sh`, Protokoll `journalctl -u
+  moveeye-controller-koppeln`; aus der Ferne Actions → «HP-Diagnose» (Zeile «Bluetooth: Adapter ja/nein, Controller verbunden …»).
+  Eingerichtet wird alles von `moveeye-hp-update` (bluez, rfkill, fehlt der Treiber: `linux-modules-extra` des Kerns).
+
 ## 0. Automatisches Update (einmal eintippen)
 
 Am HP (Text-Konsole **Ctrl+Alt+F3** oder SSH), eine Zeile:
@@ -97,7 +118,8 @@ eine **Pause** ist (kein Test, niemand spielt), und prüft dann – höchstens a
 neueste **signierte** Version; ist die letzte Prüfung über 20 Std. her, lässt das Dauerrechnen den HP frei, bis sie gelaufen
 ist (so mindestens einmal am Tag). Es spielt ein, was sich geändert hat:
 Kiosk (`kiosk_sitzung.sh`, Testbild), Haken und Dienst-Einstellungen des Runners, fehlende Pakete, den Simulator im
-Kiosk-Ordner und sich selbst (ab 3.55.0 auch `hp_wache.py` und den Ordner `/run/moveeye-spiel`). Die Anmeldung des Runners
+Kiosk-Ordner und sich selbst (ab 3.55.0 auch `hp_wache.py` und den Ordner `/run/moveeye-spiel`, mit HP_FASSUNG 4 auch
+«Controller koppeln»: bluez, Dienst, Ctrl+Alt+B). Die Anmeldung des Runners
 (Token) fasst es nie an. Läuft ein Test oder wird gespielt, wird verschoben (nächster Blick in 15 Min.).
 
 Geprüft wird wie beim Pi: Signatur (Ed25519, öffentlicher Schlüssel im Skript) des Eintrags in `versions.json` →

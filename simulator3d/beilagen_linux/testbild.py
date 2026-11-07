@@ -8,6 +8,8 @@ Ab 3.55.0 (Dauerrechnen): oben steht, welche Arbeit läuft («Erkennung messen»
 Arbeiten zeigen eigene Kacheln (Feld «kacheln»). Knopf «Spielen» unten rechts (Maus); jede Taste / Mausbewegung zeigt ihn
 gross in der Mitte (Enter oder Klick = Spielen, Esc = weiter rechnen). Spielen schreibt die Spielen-Datei (wie hp_wache.py),
 der Test-Runner hält an und gibt den Bildschirm frei – dann kommt keine Zusammenfassung, der Simulator startet gleich.
+Daneben der Knopf «Controller koppeln» (oder Taste K): öffnet controller_fenster.py (PS5-Controller per Bluetooth koppeln,
+der Dienst moveeye-controller-koppeln macht das als root; hier wird nur die leere Wunsch-Datei angelegt).
 Nach 10 Min. ohne Maus / Taste schläft das Bild (schwarz, nichts wird mehr gezeichnet; den Bildschirm schaltet DPMS aus,
 kiosk_sitzung.sh); eine Taste oder die Maus weckt es sofort. «ende»: false im Fortschritt (z. B. HP-Diagnose) = keine
 Zusammenfassung.
@@ -27,6 +29,7 @@ import base64
 import json
 import os
 import stat
+import subprocess
 import sys
 import time
 
@@ -229,6 +232,9 @@ class Testbild:
         if self.modus != "live" or self.spiel_ab is not None:
             return
         k = (e.keysym or "").lower()
+        if k == "k" and not geweckt:
+            self.koppeln()
+            return
         if self.hinweis_bis > time.time() and not geweckt and k in ("return", "kp_enter", "space"):
             self.spielen("taste")
         elif k == "escape":
@@ -253,12 +259,32 @@ class Testbild:
         if geweckt or self.modus != "live" or self.spiel_ab is not None:
             return
         x, y = e.x_root - self.root.winfo_rootx(), e.y_root - self.root.winfo_rooty()
+        kb = getattr(self, "koppeln_box", None)
+        if kb and kb[0] <= x <= kb[2] and kb[1] <= y <= kb[3] and self.hinweis_bis <= time.time():
+            self.koppeln()
+            return
         for box in (getattr(self, "knopf_box", None), getattr(self, "gross_box", None) if self.hinweis_bis > time.time() else None):
             if box and box[0] <= x <= box[2] and box[1] <= y <= box[3]:
                 self.spielen("knopf")
                 return
         self.hinweis_bis = time.time() + 20
         self.zeichne_spielknopf()
+
+    def koppeln(self):
+        """Fenster «Controller koppeln» (controller_fenster.py daneben) öffnen - es legt die Wunsch-Datei an"""
+        if not self.a.spiel_datei:
+            return
+        prog = os.path.join(os.path.dirname(os.path.abspath(__file__)), "controller_fenster.py")
+        if not os.path.isfile(prog):
+            print("testbild: controller_fenster.py fehlt", file=sys.stderr)
+            return
+        try:
+            subprocess.Popen([sys.executable, "-I", prog, "--wunsch",
+                              os.path.join(os.path.dirname(self.a.spiel_datei), "controller_koppeln")],
+                             stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                             start_new_session=True)
+        except OSError as e:
+            print("testbild: Controller koppeln:", e, file=sys.stderr)
 
     def spielen(self, grund):
         if spielen_schreiben(self.a.spiel_datei, grund):
@@ -283,7 +309,7 @@ class Testbild:
         """unten rechts immer der Knopf «Spielen»; nach einer Eingabe gross in der Mitte; nach dem Wunsch: Hinweis"""
         c, w, h = self.c, self.w, self.h
         c.delete("spiel")
-        self.knopf_box = self.gross_box = None
+        self.knopf_box = self.gross_box = self.koppeln_box = None
         if self.modus != "live" or self.schlaeft or not self.a.spiel_datei:
             return
         m = int(h * 0.035)
@@ -315,6 +341,13 @@ class Testbild:
         c.create_text(x0 + int(bh * 1.3), (y0 + y1) // 2, text=t, fill=FG, font=self.f["klein_fett"], anchor="w", tags=("spiel",))
         self.knopf_box = (x0, y0, x1, y1)
         self.gross_box = None
+        # links daneben: «Controller koppeln» (PS5-Controller per Bluetooth)
+        t = "Controller koppeln"
+        kx1 = x0 - int(h * 0.02)
+        kx0 = kx1 - self.f["klein_fett"].measure(t) - int(h * 0.05)
+        self.rund(kx0, y0, kx1, y1, int(bh * 0.3), fill=KACHEL, outline=LINIE, width=2, tags=("spiel",))
+        c.create_text((kx0 + kx1) // 2, (y0 + y1) // 2, text=t, fill=FG, font=self.f["klein_fett"], anchor="center", tags=("spiel",))
+        self.koppeln_box = (kx0, y0, kx1, y1)
         if self.hinweis_bis <= time.time():
             return
         # gross in der Mitte (nach Taste / Maus)
@@ -546,8 +579,7 @@ class Testbild:
         y2 = y + ph + int(h * 0.022)
         self.rund(rx0, y2, rx1, unten, int(h * 0.018), fill=PANEL, outline=LINIE, width=2)
         self.bilanz_ort = (rx0 + p, y2 + p, rx1 - p, unten - p)
-        c.create_text(m, h - int(h * 0.03), text="Spielen: Taste drücken oder klicken – das Rechnen hält an und geht später "
-                      "dort weiter." if self.a.spiel_datei else "Der Simulator startet nach dem Test von selbst wieder.",
+        c.create_text(m, h - int(h * 0.03), text="Spielen: Taste, Klick oder Controller  ·  K: Controller koppeln" if self.a.spiel_datei else "Der Simulator startet nach dem Test von selbst wieder.",
                       fill=GRAU, font=self.f["klein"], anchor="w")
 
     def zeichne_live(self):

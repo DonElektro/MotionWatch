@@ -9,6 +9,8 @@
 #  3. Drei Spuren: ein Sim-Release allein (Block «sim» in versions.json, ohne neue Programmdatei) wird eingespielt;
 #     verfälschter Block «sim» = abgelehnt (kein Ausweichen auf die Programmdatei), ältere Sim = abgelehnt, neue MoveEye bei
 #     gleicher Sim = nichts zu laden.
+#  4. Controller koppeln (HP_FASSUNG 4): controller_koppeln.sh / controller_fenster.py, Pfad-Einheit + Dienst (nur die
+#     feste Aufgabe, kein sudo / polkit für den Kiosk), Ctrl+Alt+B in openbox.xml (einmal), bluez / rfkill nachinstalliert.
 # Der echte Signierschlüssel wird nie gebraucht. Braucht root (runuser, chown), python3, unzip, zip, curl.
 # shellcheck disable=SC2015,SC2016  # «A && ok || fehler»: ok gibt immer 0 zurück; Ersatz-Befehle in '…' laufen erst später
 set -u
@@ -113,7 +115,11 @@ mkdir -p "$SIMD"
 printf '#!/bin/sh\necho alt\n' > "$SIMD/MoveEyeSim3D.x86_64"; chmod 755 "$SIMD/MoveEyeSim3D.x86_64"
 chown -R nobody "$X/home/kiosk"
 printf 'SIM=%q\nSIM_ARGS=(--fullscreen)\n' "$SIMD/MoveEyeSim3D.x86_64" > "$X/etc/moveeye-kiosk.conf"; chmod 644 "$X/etc/moveeye-kiosk.conf"
-for b in systemctl apt-get systemd-run systemd-tmpfiles; do
+# Openbox-Einstellung wie von kiosk_ein.sh vor der Controller-Taste (Ctrl+Alt+B fehlt noch)
+sed -n "/^schreibe \"\$LIB\/openbox.xml\" 644 <<'EOF'\$/,/^EOF\$/p" "$R/simulator3d/beilagen_linux/kiosk_ein.sh" | sed '1d;$d' \
+	| grep -v 'kiosk_sitzung.sh koppeln' > "$X/usr/local/lib/moveeye-kiosk/openbox.xml"
+grep -q 'kiosk_sitzung.sh neustart' "$X/usr/local/lib/moveeye-kiosk/openbox.xml" || fehler "Testaufbau: openbox.xml"
+for b in systemctl apt-get apt-cache systemd-run systemd-tmpfiles modinfo; do
 	printf '#!/bin/sh\necho "%s $*" >> "%s/aufrufe.txt"\n[ "%s $1 $2" = "systemctl is-active -q" ] && exit 0\nexit 0\n' "$b" "$W" "$b" > "$B/$b"
 	chmod 755 "$B/$b"
 done
@@ -181,6 +187,23 @@ grep -q '^echo neu' "$SIMD/MoveEyeSim3D.x86_64" && [ "$(stat -c %U "$SIMD/MoveEy
 grep -q "apt-get install .*python3-tk" "$W/aufrufe.txt" && ok "fehlende Pakete nachinstalliert" || echo "  (python3-tk war schon da)"
 grep -q "systemctl restart actions.runner.Test-Repo.moveeye-hp.service" "$W/aufrufe.txt" && ok "Runner-Dienst neu gestartet" || fehler "Runner-Dienst nicht neu gestartet"
 grep -q "systemctl restart display-manager" "$W/aufrufe.txt" && ok "Kiosk neu gestartet" || fehler "Kiosk nicht neu gestartet"
+# 4. Controller koppeln
+KL="$X/usr/local/lib/moveeye-kiosk"
+[ -x "$KL/controller_koppeln.sh" ] && [ "$(stat -c %U:%a "$KL/controller_koppeln.sh")" = root:755 ] && [ "$(stat -c %U:%a "$KL/controller_fenster.py")" = root:644 ] \
+	&& ok "controller_koppeln.sh (root, 755) / controller_fenster.py eingespielt" || fehler "Controller-Dateien"
+KD="$X/etc/systemd/system/moveeye-controller-koppeln"
+grep -qx "ExecStart=$KL/controller_koppeln.sh" "$KD.service" && grep -qx "Type=oneshot" "$KD.service" && grep -qx "NoNewPrivileges=yes" "$KD.service" \
+	&& ! grep -q '%\|\$' "$KD.service" && ok "Dienst: feste Aufgabe ohne Angaben (oneshot, NoNewPrivileges)" || { fehler "Dienst"; cat "$KD.service"; }
+grep -qx "PathExists=$X/run/moveeye-spiel/controller_koppeln" "$KD.path" && grep -qx "Unit=moveeye-controller-koppeln.service" "$KD.path" \
+	&& ok "Pfad-Einheit: Wunsch-Datei im Spielen-Ordner des Kiosks" || { fehler "Pfad-Einheit"; cat "$KD.path"; }
+grep -q "systemctl enable moveeye-controller-koppeln.path" "$W/aufrufe.txt" && ok "Pfad-Einheit eingeschaltet" || fehler "Pfad-Einheit nicht eingeschaltet"
+ls "$X/etc/polkit-1" "$X/etc/sudoers.d" >/dev/null 2>&1 && fehler "polkit / sudoers angefasst" || ok "kein sudo, keine polkit-Regel für den Kiosk"
+[ "$(grep -c 'kiosk_sitzung.sh koppeln' "$KL/openbox.xml")" = 1 ] && grep -q 'key="C-A-b"' "$KL/openbox.xml" && [ "$(stat -c %U:%a "$KL/openbox.xml")" = root:644 ] \
+	&& python3 -c 'import sys, xml.dom.minidom; xml.dom.minidom.parse(sys.argv[1])' "$KL/openbox.xml" \
+	&& ok "openbox.xml: Ctrl+Alt+B dazu (gültiges XML, root)" || { fehler "openbox.xml"; cat "$KL/openbox.xml"; }
+grep -q "apt-get install .*bluez" "$W/aufrufe.txt" && grep -q "apt-get install .*rfkill" "$W/aufrufe.txt" && ok "bluez, rfkill nachinstalliert" \
+	|| echo "  (bluez / rfkill waren schon da)"
+grep -q "modinfo hid_playstation" "$W/aufrufe.txt" && ok "Treiber hid-playstation geprüft" || fehler "hid-playstation nicht geprüft"
 
 : > "$W/aufrufe.txt"
 lauf q; grep -q "Schon eingespielt" "$W/lauf.log" && ok "zweiter Lauf: nichts zu tun" || { fehler "zweiter Lauf"; sed 's/^/    /' "$W/lauf.log"; }
