@@ -385,10 +385,11 @@ ALERT_JS = r"""
     "Pre-alarm: movement": "Voralarm: Bewegung", "Tap anywhere on the page to allow the sound": "Irgendwo auf die Seite tippen, um den Ton zu erlauben",
     "Mute 30 min": "30 Min. stumm", "Muted until": "Stumm bis", "Unmute": "Ton wieder an", "Pre-alarm": "Voralarm", "Person": "Person",
     "connection to the camera interrupted - reconnecting": "Verbindung zur Kamera unterbrochen - verbinde neu",
+    "🔊 Sound in the browser (announcements)": "🔊 Ton im Browser (Ansagen)",
     "The page must stay open (also in the background). With the screen off or the browser closed only the push message (ntfy / Telegram) arrives.":
       "Die Seite muss offen bleiben (auch im Hintergrund geht es). Bei ausgeschaltetem Bildschirm oder geschlossenem Browser kommt nur die Push-Nachricht (ntfy / Telegram)."};
   const at = s => (LANG === "de" && ALT[s]) || (window.LX ? LX(s) : "") || (LANG === "rm" && ALT[s]) || s;
-  const S = {on: false, pre: true, person: true, vol: 0.7, vib: true, mute: 0};
+  const S = {on: false, pre: true, person: true, vol: 0.7, vib: true, mute: 0, speak: false};   // speak: 639zzb announcements
   try { Object.assign(S, JSON.parse(localStorage.getItem("mw-sound") || "{}")); } catch (e) {}
   const save = () => { try { localStorage.setItem("mw-sound", JSON.stringify(S)); } catch (e) {} };
   let ctx = null, es = null, lastPre = 0, connOk = true, errTimer = null, titleTimer = null;
@@ -424,7 +425,7 @@ ALERT_JS = r"""
   const btn = el("button", "sec sndbtn ic"); btn.type = "button"; btn.id = "btn-sound";
   const ctl = document.querySelector(".hdr-ctl"); if (ctl) ctl.insertBefore(btn, ctl.firstChild); else document.body.appendChild(btn);
   function paint() {
-    const needTap = S.on && (!ctx || ctx.state !== "running");
+    const needTap = (S.on || S.speak) && (!ctx || ctx.state !== "running");
     btn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>' + ((S.on && !muted()) ? '' : '<path d="M3 3l18 18"/>') + '</svg>';
     btn.classList.toggle("on", S.on && !muted() && !needTap && connOk);
     btn.classList.toggle("warn", S.on && (needTap || !connOk));
@@ -433,7 +434,25 @@ ALERT_JS = r"""
       + (muted() ? " · " + at("Muted until") + " " + new Date(S.mute).toLocaleTimeString().slice(0, 5) : "");
   }
   // browsers only allow sound after a click / tap on the page: unlock on the first one
-  ["pointerdown", "keydown", "touchstart"].forEach(ev => document.addEventListener(ev, () => { if (S.on) { audio(); setTimeout(paint, 200); } }, {passive: true}));
+  ["pointerdown", "keydown", "touchstart"].forEach(ev => document.addEventListener(ev, () => { if (S.on || S.speak) { audio(); setTimeout(paint, 200); } }, {passive: true}));
+
+  // ---- 639zzb: announcements (Piper / old voice) in the browser: /api/tts_audio/<id>.wav over Web Audio (iPhone: after a tap) ----
+  const said = new Set();
+  async function speak(id, force) {
+    if (!id || said.has(id) || (!S.speak && !force) || muted()) return;
+    said.add(id); if (said.size > 50) said.delete(said.values().next().value);
+    const c = audio(); if (!c) return;
+    try {
+      const buf = await (await fetch("/api/tts_audio/" + id + ".wav")).arrayBuffer();
+      const ab = await new Promise((ok, no) => { const p = c.decodeAudioData(buf, ok, no); if (p && p.then) p.then(ok, no); });
+      const src = c.createBufferSource(), g = c.createGain(); g.gain.value = Math.max(0.05, S.vol);
+      src.buffer = ab; src.connect(g); g.connect(c.destination); src.start();
+    } catch (e) {}
+  }
+  window.mwSpeak = id => speak(id, false);
+  window.mwSpeechOn = () => !!S.speak;
+  window.mwSpeechSet = on => { S.speak = !!on; save(); if (on) audio(); connect(); paint(); };
+  window.mwSpeechUnlock = () => { if (S.speak) audio(); };
 
   // ---- settings panel ----
   let pop = null;
@@ -448,7 +467,9 @@ ALERT_JS = r"""
     pop = el("div", "sndpop card");
     pop.appendChild(el("div", "sndhead", at("Alarm sound")));
     pop.append(sw("Sound on", "on", () => { if (S.on) { audio(); play("prealarm"); } connect(); }),
-               sw("Pre-alarm (first movement)", "pre"), sw("Person / warm body / noise", "person"), sw("Vibrate (phones)", "vib"));
+               sw("Pre-alarm (first movement)", "pre"), sw("Person / warm body / noise", "person"), sw("Vibrate (phones)", "vib"),
+               sw("🔊 Sound in the browser (announcements)", "speak", () => { if (S.speak) audio(); connect();
+                 const x = document.getElementById("piper-browser"); if (x) x.checked = !!S.speak; }));
     const vr = el("div", "sl"); const top = el("div", "row"); const vv = el("span", "val", Math.round(S.vol * 100) + " %");
     top.append(el("span", "", at("Volume")), vv);
     const r = el("input"); r.type = "range"; r.min = 0.1; r.max = 1; r.step = 0.05; r.value = S.vol;
@@ -477,6 +498,7 @@ ALERT_JS = r"""
   }
   document.addEventListener("visibilitychange", () => { if (!document.hidden) document.title = baseTitle; });
   function onAlert(a) {
+    if (a.kind === "speech") { speak(a.id, false); return; }   // 639zzb: an announcement, not an alarm
     if (!S.on) return;
     if (a.kind === "armed") { try { toast("🛡 " + at("Armed - alarms are active")); } catch (e) {} return; }
     const label = a.kind === "person" ? at("Person detected") + (a.count ? " (" + a.count + ")" : "")
@@ -490,7 +512,7 @@ ALERT_JS = r"""
     play(a.kind);
   }
   function connect() {
-    if (!S.on) { if (es) { es.close(); es = null; } connOk = true; paint(); return; }
+    if (!S.on && !S.speak) { if (es) { es.close(); es = null; } connOk = true; paint(); return; }
     if (es || !window.EventSource) return;
     es = new EventSource("/api/alerts");
     es.addEventListener("alert", e => { try { onAlert(JSON.parse(e.data)); } catch (x) {} });

@@ -79,7 +79,7 @@ command -v sudo >/dev/null || { echo "sudo fehlt"; exit 1; }
 # ---- 1. packages (from the system: Bookworm does not allow pip outside a venv) ------------------------------------------
 PAKETE=(python3 python3-numpy python3-opencv python3-pil python3-pil.imagetk python3-tk python3-flask python3-psutil
         python3-cryptography python3-gpiozero python3-picamera2 python3-smbus python3-spidev i2c-tools ffmpeg alsa-utils
-        openssl bluez pulseaudio-utils curl ca-certificates)
+        openssl bluez pulseaudio-utils curl ca-certificates espeak-ng)
 FEHLT=()
 for p in "${PAKETE[@]}"; do dpkg -s "$p" >/dev/null 2>&1 || FEHLT+=("$p"); done
 if [ ${#FEHLT[@]} -eq 0 ]; then
