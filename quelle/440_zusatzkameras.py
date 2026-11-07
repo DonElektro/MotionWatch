@@ -94,6 +94,11 @@ class ExtraCam:
         now = time.time()
         if self.motion and self.streak >= 3:
             self.last_motion = now
+        try:                                                   # 639zw: the overview runs a light AI on its movement (Wache)
+            weit_ki_frame(self, frame)
+        except Exception as e:
+            if now - getattr(self, "_wk_err_t", 0.0) > 60:
+                self._wk_err_t = now; log_event("ai", f"Overview AI: {type(e).__name__}: {e}"[:160])
         for x, y, w, h in self.boxes:
             cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 255, 255), 1)
         cv2.rectangle(frame, (0, 0), (W, 26), (0, 0, 0), -1)
