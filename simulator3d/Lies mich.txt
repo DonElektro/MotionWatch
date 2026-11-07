@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.56.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.57.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -487,6 +487,21 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.57.0
+3.57.0: Das Gerät in der Szene sieht aus wie das echte (Gehäuse v5.3): Weisslicht-Linse leuchtet, IR glimmt schwach dunkelrot,
+Weitwinkel «Kopf vorne/hinten» als Modul auf dem Kopfdach, Gerät 2 mit echtem Gehäuse und Status-LED statt rotem Kasten; feine
+Teile nur in der Nähe (schneller).
+Pflanzen natürlicher: Baumkronen aus Blattbüscheln mit Blatt-/Nadelkarten, Gras mit Farbflecken und Büscheln, Wiesenboden aus
+echten Fotos, neuer Fuchs mit echtem Gang; HP-Kiosk startet mit Grafik «Normal»; Prüfstand unverändert.
+Simulator-PC: PS5-Controller per Bluetooth koppeln ohne Tippen (Knopf «Controller koppeln» im Testbild, Ctrl+Alt+B im Kiosk),
+Controller-Eingaben zählen als Spielen, HP-Diagnose zeigt Bluetooth und Controller.
+Simulator intern: MoveEye Sim läuft abgespeckt direkt auf dem Pi 5 (in MoveEye: Reiter Simulator → «🧪 Simulator intern (auf
+diesem Pi) ausprobieren»), Paket signiert geprüft, «Beenden» = zurück zur vorherigen Verbindung; alte Desktop-Symbole
+«MW Sim · Basis» und x86-«MoveEye Sim» werden aufgeräumt.
+So testest du: Licht ein/aus und IR am Gerät in der Szene ansehen, nah heran- und wegfahren; Wiese und Bäume im Tageslicht; den
+Fuchs laufen lassen; am HP Ctrl+Alt+B drücken und den Controller koppeln; auf dem Pi in MoveEye «Simulator intern» starten und
+mit «Beenden» zurück.
 
 NEU IN 3.56.0
 3.56.0: Drei Spuren: MoveEye, Simulator und Gehäuse haben je eine eigene Nummer und erscheinen einzeln; MoveEye prüft den

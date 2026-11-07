@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-07 20:08",
+ "generated": "2026-11-07 21:37",
  "versions": [
+  {
+   "version": "3.61.0",
+   "file": "webcam_bewegung_3_61_0.py",
+   "url": "",
+   "sha256": "4912b457d5ba60a39161d08878c61763d0ad566c015db1c17c1dccc4100a0d9b",
+   "date": "2026-11-07 21:37",
+   "notes": "Simulator intern: MoveEye Sim läuft abgespeckt direkt auf dem Pi 5 (Reiter Simulator → «🧪 Simulator intern (auf diesem Pi) ausprobieren»), Paket signiert geprüft, «Beenden» = zurück zur vorherigen Verbindung; alte Desktop-Symbole «MW Sim · Basis» und x86-«MoveEye Sim» werden aufgeräumt. Dazu Sim 3.57.0: Gerät wie das echte (Gehäuse v5.3), Pflanzen natürlicher, PS5-Controller am Simulator-PC.",
+   "size": 3568830,
+   "sig": "22535685f60d34fc9b824155efed2346bd8df4575374312b27cbd14fd5bac2692e35d734bb3f9afa82fac12472d5e2287303c62d886f32cb2e04656256502407",
+   "data": {
+    "file": "moveeye_daten_3_61_0.zip",
+    "url": "",
+    "sha256": "c12a3a463fa865279a6414149c5342af01a4df2e3794b45520a6d0e4e360e045",
+    "size": 4821324,
+    "sig": "345324c5fa3fcc12f427cd8742da7ab81b297485beefe66eca08bd3be5abe9bf8106d36ee66ae8d6c5dd5360bf13c7d451a76fe71711f696cb6606ff7115650a"
+   }
+  },
   {
    "version": "3.60.0",
    "file": "webcam_bewegung_3_60_0.py",
    "url": "",
    "sha256": "b0e0141366ee3bff2e8f99b1f82a05ecba6f0d32a312f1c5a0e20d351f5aaffc",
-   "date": "2026-11-07 20:08",
+   "date": "2026-11-07 20:10",
    "notes": "Fehlalarme und Pushes: MoveEye merkt sich Fehlalarm-Stellen und fragt nach 3 Fehlalarmen in 7 Tagen einmal «künftig ignorieren?», Windschutz für Pflanzen-Bereiche, Alarme in der Pause gebündelt («+N weitere in M Min.» mit Bildstreifen), Zonen-Name im Push, kurzer Clip (ab Werk aus), «Bilder bleiben zu Hause» (ab Werk aus); doppelte Bestätigung im Erkennungstest messbar · Objekte und Profile: Erkennungsprofile 🏕️ Nacht am Zelt · 🌳 Garten tagsüber · 🏠 Hausüberwachung · 🔋 Akku sparen (von Hand, per Zeitplan, vom Modus oder bei tiefem Akku; ohne Profil wie bisher), Wildtiere mit Namen («🦊 Fuchs be",
    "size": 3531045,
    "sig": "c0e5cbc0880b463a5b938e0a6c56b0b358fa13b33f36baa3f2da27039b485327713fa8821929abf11db7b16f6874ce381305c27b4400bf75bf18beee75501003",
@@ -41,7 +58,7 @@
    "file": "webcam_bewegung_3_58_0.py",
    "url": "",
    "sha256": "42233e1dcce930a2c56d6cab58812f4f5596f27f3f7190a63a5d55f5e61f82a2",
-   "date": "2026-11-07 16:56",
+   "date": "2026-11-07 21:33",
    "notes": "Weitwinkel = Wache: leichte KI im Weitwinkelbild – nur Personen rufen den Kopf (Tiere / Fahrzeuge wählbar), Auslösezonen im Weitwinkelbild (Zonen-Editor 🔭), nachts mit Wärmebild kein Personen-Alarm ohne Wärme (ab Werk an, ohne Wärmebild wie bisher); Anleitung «Weitwinkel einrichten und testen».",
    "size": 5020080,
    "sig": "1035f24a1d487f68eff6fa7af53942754d21ceed51a2e6910ec0d80b5a25fd1d8c35c20ed564d67752e880c0e1edf08ab329dd1031f672cd449a4085c7e0f109",
@@ -139,23 +156,6 @@
    }
   },
   {
-   "version": "3.52.0",
-   "file": "webcam_bewegung_3_52_0.py",
-   "url": "",
-   "sha256": "fdacca18a08afaa3ec6048a7a2634a6ed257ad4d3a3431de9284f3f6e8f893c9",
-   "date": "2026-11-02 20:58",
-   "notes": "Geschichten: «× Beenden» und Esc auf jeder Karte, alle Fenster im Handy-Stream, Geschichten vom Handy starten (Mehr › Spielen), Touch-Stick «gehen»; Erkennungstests auf dem Simulator-PC (HP) als eigener GitHub-Runner.",
-   "size": 4884284,
-   "sig": "066f98975fd1ef42c4efbb4611449ffa7ae61811445da30d0cd7b8094d9dddc2e1e926e9829d36eca17de61278384d347bde8d986ba84325ed9b54dde364f006",
-   "data": {
-    "file": "moveeye_daten_3_52_0.zip",
-    "url": "",
-    "sha256": "a081ffe8fbdd130b6be55588c3acbee7443572a06f49a7cbf32196436a41c3b0",
-    "size": 4081692,
-    "sig": "856f4a98dde8bbd4a6d8c002a58f2ed76f9fab24ab9d81b24df7698eaffc163295071e7f34e9cb544aceb849c1de3d045d3f4896709db58c368d1366158d3009"
-   }
-  },
-  {
    "version": "3.0.2",
    "file": "webcam_bewegung_3_0_2.py",
    "url": "",
@@ -168,23 +168,23 @@
   }
  ],
  "sim": {
-  "ver": "3.56.0",
-  "version": "3D-5.56.0",
-  "notes": "Drei Spuren",
+  "ver": "3.57.0",
+  "version": "3D-5.57.0",
+  "notes": "Gerät wie das echte, Pflanzen natürlicher, PS5-Controller am Simulator-PC, Simulator intern (Pi)",
   "mw_min": "3.55.0",
   "win": {
-   "ver": "3.56.0",
+   "ver": "3.57.0",
    "file": "simulator3d/MotionWatch3D_Simulator.zip",
-   "size": 49961650,
-   "sha256": "894aa4af3f94a36e04b15deb2ea04dcf900abcd11a26760ca20817da59189abf",
-   "sig": "77dbe7c47d217d91fe41f895671afa0b0b3434259457aa832f98081c1cd1eff44456e60dd65232faddf283cc328bf5278dc152e8dd446b254e146912a5b0f705"
+   "size": 50399264,
+   "sha256": "2286accdea657b5bd842a2c14a302db9ebf3147882d61297898eeab547a77f92",
+   "sig": "8ff25872e70ebd1ecb738696fdb68e20718ad4ca41db6eb264ef9bafc257abb56eb99b4faada91ca3439fd7f98ab776be68b0cdea4701b41131c56c924b2cd07"
   },
   "linux": {
-   "ver": "3.56.0",
+   "ver": "3.57.0",
    "file": "simulator3d/MoveEyeSim3D_Linux.zip",
-   "size": 43977805,
-   "sha256": "66fbf70e6f1aa6ca7a467ba1ef7ad6f8abcda4d9fd29ec473206d708e1fa4ef4",
-   "sig": "c7676160dae3754cd84cdc947a204ccd402792ff48d1c6f3d85bae37381f8fc62474464fde26447ed0cdb89b8d75be7d20a4fcafc6baead5ad68bac199fb5e0c"
+   "size": 44426291,
+   "sha256": "cc577931e302dda25a7f864e22503402d9c488423e5bc14cb00e447149eff56a",
+   "sig": "10bbeec8b1ded0153e8a4e666f7f4d4b1bb94772eb2202d2e6b5d837492f069fb96e775ce1116cde77845a6d317b49303f8aaf3165e7f62c2ea54b8eb1009a04"
   }
  }
 }

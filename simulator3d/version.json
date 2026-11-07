@@ -1,16 +1,16 @@
 {
- "version": "3D-5.56.0",
- "ver": "3.56.0",
- "name": "MoveEye Sim 3.56.0",
+ "version": "3D-5.57.0",
+ "ver": "3.57.0",
+ "name": "MoveEye Sim 3.57.0",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 49961650,
- "sha256": "894aa4af3f94a36e04b15deb2ea04dcf900abcd11a26760ca20817da59189abf",
- "notes": "Drei Spuren",
+ "size": 50399264,
+ "sha256": "2286accdea657b5bd842a2c14a302db9ebf3147882d61297898eeab547a77f92",
+ "notes": "Gerät wie das echte, Pflanzen natürlicher, PS5-Controller am Simulator-PC, Simulator intern (Pi)",
  "mw_min": "3.55.0",
  "linux": {
   "file": "simulator3d/MoveEyeSim3D_Linux.zip",
-  "ver": "3.56.0",
-  "size": 43977805,
-  "sha256": "66fbf70e6f1aa6ca7a467ba1ef7ad6f8abcda4d9fd29ec473206d708e1fa4ef4"
+  "ver": "3.57.0",
+  "size": 44426291,
+  "sha256": "cc577931e302dda25a7f864e22503402d9c488423e5bc14cb00e447149eff56a"
  }
 }

@@ -1,8 +1,17 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 07.11.2026 · Version **3.56.0** · MoveEye **3.55.2** (Drei Spuren ab 03.11.2026: Simulator und MoveEye mit eigenen Nummern, Verträglichkeit über `MW_MIN` in `scripts/abgleich.gd` / `SIM_MIN` in MoveEye Teil 545; 3.0.0 bis 3.55.2 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 07.11.2026 · Version **3.57.0** · MoveEye **3.61.0** (Drei Spuren ab 03.11.2026: Simulator und MoveEye mit eigenen Nummern, Verträglichkeit über `MW_MIN` in `scripts/abgleich.gd` / `SIM_MIN` in MoveEye Teil 545; 3.0.0 bis 3.55.2 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.57.0 (MoveEye 3.61.0): Echtes Gerät, Flora und Fauna, PS5-Controller, Simulator intern (Pi)
+
+- Gerät wie das echte (gehaeuse.gd, device.gd, weitwinkel.gd; Test geraet_test.gd).
+- Flora: flora.gd, blatt_karten / gras_halme, tier_modell.gd + modelle/fuchs_glb.bin; mit «--quality» (Prüfstand) bleibt das alte
+  Aussehen (flora.gd stufe «alt»). Kiosk: GRAFIK=normal (kiosk_sitzung.sh, nicht auf ARM).
+- PS5-Controller: controller_koppeln.sh / controller_fenster.py, hp_wache.py, Ctrl+Alt+B, HP_FASSUNG=4 (controller_test.sh).
+- Simulator intern: Preset «Linux Pi» (arm64), MoveEyeSim3D_Pi.zip als Release-Asset sim-3.57.0 (Workflow sim_pi.yml),
+  signiert in versions.json «sim.pi»; MoveEye Teil 639zx (sim_intern_test.py).
 
 ## NEU in 3.56.0 (MoveEye 3.55.2): Drei Spuren (versionen.py --spuren, rel_mw.sh / rel_sim.sh / rel_geh.sh)
 
