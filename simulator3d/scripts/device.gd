@@ -23,6 +23,8 @@ var last_cap := [0.0, 0.0]
 var snap_want := [0.0, 0.0]
 var busy := false
 var mw := {"servo": {"pan_deg": 0.0, "tilt_deg": 0.0}, "lights": {}}
+var case := {}                         # sim-echte-kamera: das echte Gehäuse (gehaeuse.gd build_copy) oder leer (roter Kasten)
+var led_mat: StandardMaterial3D
 var mw_t := 0.0
 
 const PLACES := {"opposite": Vector3(0, 0, -30), "left": Vector3(-20, 0, -12), "right": Vector3(20, 0, -12)}
@@ -79,6 +81,8 @@ func set_on(v: bool) -> void:
 			if n != null:
 				n.queue_free()
 		rig = null
+		case = {}
+		led_mat = null
 		vps.clear()
 		cams.clear()
 		thermal = PackedFloat32Array()
@@ -149,15 +153,40 @@ func _build() -> void:
 	ir.spot_angle = 48.0
 	ir.light_energy = 0.0
 	head_pitch.add_child(ir)
-	var hm := MeshInstance3D.new()
-	hm.mesh = main.box(0.25, 0.18, 0.2)
-	hm.material_override = main.mat(Color(0.75, 0.2, 0.15))   # a red head: the second device is easy to find
-	head_pitch.add_child(hm)
+	# sim-echte-kamera (Idee 4): Gerät 2 sieht aus wie das echte Gerät (Gehäuse v5.x, grobe Teile wie in Lite) - der rote
+	# Kasten bleibt nur, wenn die Modelle fehlen oder «Echtes Gehäuse» aus ist
+	var gh = main.get("gehaeuse")
+	if gh == null or gh.on:
+		case = preload("res://scripts/gehaeuse.gd").build_copy(rig, head, head_pitch)
+	var real := bool(case.get("ok", false))
+	var drop := float(case.get("drop", 0.0)) if real else 0.0
+	if real:
+		(case["base"] as Node3D).position = head.position      # the lower part does not pan
+		led_mat = StandardMaterial3D.new()                      # its status LED (MoveEye 2 sends «led» like the first)
+		led_mat.albedo_color = Color(0.85, 0.86, 0.88)
+		led_mat.emission_enabled = true
+		led_mat.emission = Color.BLACK
+		var led := MeshInstance3D.new()
+		var sm := SphereMesh.new()
+		sm.radius = 0.006
+		sm.height = 0.007
+		sm.radial_segments = 10
+		sm.rings = 4
+		led.mesh = sm
+		led.position = preload("res://scripts/gehaeuse.gd").LED_POS + Vector3(0, 0.002, 0)
+		led.material_override = led_mat
+		led.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		head_pitch.add_child(led)
+	else:
+		var hm := MeshInstance3D.new()
+		hm.mesh = main.box(0.25, 0.18, 0.2)
+		hm.material_override = main.mat(Color(0.75, 0.2, 0.15))   # a red head: the second device is easy to find
+		head_pitch.add_child(hm)
 	var pole := MeshInstance3D.new()
-	pole.mesh = main.box(0.06, main.HEAD_H, 0.06)
-	pole.position = Vector3(0, -main.HEAD_H / 2.0, 0)
+	pole.mesh = main.box(0.06, main.HEAD_H - drop, 0.06)
+	pole.position = Vector3(0, (main.HEAD_H - drop) / 2.0, 0)   # in the rig: from the ground up to the feet of the case
 	pole.material_override = main.mat(Color(0.2, 0.2, 0.2))
-	head.add_child(pole)
+	rig.add_child(pole)
 	for i in range(2):
 		var vp := SubViewport.new()
 		vp.size = Vector2i(main.CAM_W[i], main.CAM_H[i])
@@ -206,6 +235,15 @@ func _process(dt: float) -> void:
 	cams[2].global_transform = head_pitch.global_transform.translated_local(Vector3(0.12, 0.0, -0.12))
 	var L: Dictionary = mw.get("lights", {})
 	white.light_energy = 9.0 if L.get("white", false) else 0.0
+	if bool(case.get("ok", false)):                      # sim-echte-kamera: the lamps of its case glow, its status LED shows «led»
+		preload("res://scripts/gehaeuse.gd").set_glow(case["lists"], bool(L.get("white", false)), bool(L.get("ir", false)), false, main.is_dark())
+		if led_mat != null:
+			var ld = mw.get("led", null)
+			var lc := Color.BLACK
+			if typeof(ld) == TYPE_DICTIONARY and bool(ld.get("on", true)) and main.now() - mw_t < 3.0:
+				lc = Color.html(str(ld.get("rgb", "#000000")))
+				led_mat.emission_energy_multiplier = 1.5 * clampf(float(ld.get("br", 0.0)), 0.0, 1.0)
+			led_mat.emission = lc
 	if busy:
 		return
 	var d: Dictionary = net.stream_demand() if net != null else {}
