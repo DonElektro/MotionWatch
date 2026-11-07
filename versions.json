@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-07 12:51",
+ "generated": "2026-11-07 16:55",
  "versions": [
+  {
+   "version": "3.58.0",
+   "file": "webcam_bewegung_3_58_0.py",
+   "url": "",
+   "sha256": "42233e1dcce930a2c56d6cab58812f4f5596f27f3f7190a63a5d55f5e61f82a2",
+   "date": "2026-11-07 16:55",
+   "notes": "Weitwinkel = Wache: leichte KI im Weitwinkelbild – nur Personen rufen den Kopf (Tiere / Fahrzeuge wählbar), Auslösezonen im Weitwinkelbild (Zonen-Editor 🔭), nachts mit Wärmebild kein Personen-Alarm ohne Wärme (ab Werk an, ohne Wärmebild wie bisher); Anleitung «Weitwinkel einrichten und testen».",
+   "size": 5020080,
+   "sig": "1035f24a1d487f68eff6fa7af53942754d21ceed51a2e6910ec0d80b5a25fd1d8c35c20ed564d67752e880c0e1edf08ab329dd1031f672cd449a4085c7e0f109",
+   "data": {
+    "file": "moveeye_daten_3_58_0.zip",
+    "url": "",
+    "sha256": "22512e5a96f1e4a6c90dc42705f38399871d9c7e36d2a28943650d50030ce343",
+    "size": 4109495,
+    "sig": "56de2277810459926e54c2ef223cbfad2ecb16de8f7d7ae984cb4d376fc76214a86a88aa7c841208d6fa6ed886f3e39058975d2425498212a3db5d59f9f25f03"
+   }
+  },
   {
    "version": "3.57.0",
    "file": "webcam_bewegung_3_57_0.py",
    "url": "",
    "sha256": "6f03ebeaf88918a8913e7e15377e501da529bf2ef8e4efd24f7d15dd16a95de3",
-   "date": "2026-11-07 12:51",
+   "date": "2026-11-07 12:53",
    "notes": "Drei Kamera-Ansichten: Knopf «Ansicht» schaltet das Hauptbild 🎯 Kopf → 🌡 Wärmebild → 🔭 Weitwinkel (mit Rahmen, wohin der Kopf schaut), lang drücken = Auswahl; kleines Übersichtsbild in der Ecke (antippen = tauschen, pro Gerät gemerkt) – Live, Controller-Ansicht, Sim-Ansicht und Pi-Fenster.",
    "size": 4972770,
    "sig": "5dbf2897dbc584bbd4ec77abcb702701c648b5686344fd5744b551c719bf6ffb3f1fbf77601264a359a08496cbc53e510f63e9487495d032a20fa649dd043f01",
@@ -136,23 +153,6 @@
     "sha256": "ca132735f91568198388804331dc1c920f8b07bec18f57acf619ddefcb8e08e4",
     "size": 3604553,
     "sig": "9d291a8c6b413dc8daab6caabddbcc997e59b38bc0631249adde2abb9012c6f694742cf8a9fa3593a2a3a920a940809865af45b0dbd69defd86622c19fc94603"
-   }
-  },
-  {
-   "version": "3.49.0",
-   "file": "webcam_bewegung_3_49_0.py",
-   "url": "",
-   "sha256": "bfa475fb1a8730b0f7684accca870c9035ac5a1d030a1c799a53a862fcc50b86",
-   "date": "2026-11-02 09:16",
-   "notes": "Erkennung: deutlich mehr Personen erkannt (Test 3: 42 % → 69 %, Kinder 92 %); Auto-Tune gedeckelt, Wind-Regel nur letzte 2 Min., aufrechte KI-Person sofort «Person?» und nie «Tier», Autos/Scheinwerfer nachts keine Person, Kopf schwenkt beim Verfolgen mit.",
-   "size": 4876033,
-   "sig": "f2115c7a2da697acedbd6428a0b2cb21384d02b7a456782bc17d31c4db0e2e846aedda219ec4cf24661dc36bb3053ccd2a7cd97c0cb033c7101e09a4a457bd09",
-   "data": {
-    "file": "moveeye_daten_3_49_0.zip",
-    "url": "",
-    "sha256": "d1f3a570cea91e6fac3ab100b27019be4dc0bea26a20a14d7bc3366ce5bb446b",
-    "size": 3602272,
-    "sig": "5f00f393032d6d4781bc836ae93f8fe99607ea2433fcae2ab36ade87d691df1b4dfd6b90a7f02659f166e66cf5705474edc72a3cef1c7f0ffc9b7c6a1ee19401"
    }
   },
   {

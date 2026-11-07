@@ -841,7 +841,7 @@ def _kopf_ov_tick(now):
     c = kopf_ov_cam()
     if c is None or STATE.get("tracking") or KOPF["turn_req"] or now - KOPF.get("ov_t", 0.0) < 6.0 or not kopf_may("alarm"):
         return
-    t = kopf_ov_target(c)
+    t = weit_pick(c, now)                                 # 639zw: trigger zones + light AI of the wide picture (else kopf_ov_target)
     if t is None:
         return
     pan = kopf_pan_add(50.0, kopf_ov_deg(t[0]))
