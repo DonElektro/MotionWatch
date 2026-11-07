@@ -68,7 +68,13 @@ for e in d["versions"]:
 json.dump(d, open(sys.argv[1], "w"))
 EOF
 	pruefe ohne 1 "nur unsignierte Versionen"
-	quelle prog; printf '\n# verändert\n' >> "$W/prog/main/$NEUSTE"; pruefe prog 1 "Programmdatei verändert"
+	# Drei Spuren: mit Block «sim» lädt der HP die Programmdatei gar nicht (Sim-Prüfsummen aus der signierten Liste) - dann
+	# ändert eine veränderte Programmdatei nichts am HP; ohne Block «sim» muss sie abgelehnt werden
+	if python3 -c 'import json, sys; sys.exit(0 if (json.load(open("'"$R"'/versions.json")).get("sim") or {}).get("linux", {}).get("sig") else 1)'; then
+		quelle prog; printf '\n# verändert\n' >> "$W/prog/main/$NEUSTE"; pruefe prog 0 "Programmdatei verändert, Block «sim» da: Programmdatei nicht gebraucht"
+	else
+		quelle prog; printf '\n# verändert\n' >> "$W/prog/main/$NEUSTE"; pruefe prog 1 "Programmdatei verändert"
+	fi
 	quelle zip; python3 -c 'import sys; f=open(sys.argv[1], "r+b"); f.seek(-100, 2); b=f.read(1); f.seek(-100, 2); f.write(bytes([b[0] ^ 255]))' \
 		"$W/zip/main/simulator3d/MoveEyeSim3D_Linux.zip"
 	pruefe zip 1 "Linux-ZIP verändert (1 Byte)"
