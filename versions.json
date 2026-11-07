@@ -1,7 +1,24 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-07 23:42",
+ "generated": "2026-11-08 00:18",
  "versions": [
+  {
+   "version": "3.63.0",
+   "file": "webcam_bewegung_3_63_0.py",
+   "url": "",
+   "sha256": "a504c7b110e8d069fa8230f6014fcf9f466e31d80ae17e7d531d413c5fcc8708",
+   "date": "2026-11-08 00:18",
+   "notes": "📁 Datentausch unter Mehr: Fotos, Videos und Dokumente teilen (Für alle / Meine Dateien, Ordner, Vorschaubilder, Hochladen in Stücken), 📝 Texte im Browser bearbeiten mit Versionen, 💬 Chats; neue Rechte pro Benutzer, Gäste nur ansehen, Grenzen und immer 2 GB frei, Push gebündelt.",
+   "size": 3697522,
+   "sig": "4b01a08d6b947e2feacc9f4bf62d2a958855c62f8e2ecb2f1ee3919ec7a8dd9e5eb19c60ed57a5a1c3c356e1efb461ca48549f71f099ca093abc4239dac6ca0d",
+   "data": {
+    "file": "moveeye_daten_3_63_0.zip",
+    "url": "",
+    "sha256": "38b0dd55ea29941106d406ce645db0533fdf5ebc159c1132757da1a436f22249",
+    "size": 4869808,
+    "sig": "91e57d21658e6ad26df3bac6eb5958e880b5f606edee178ab96f218833d2e68f6c7302d50f2cb16be45f3a16adbb08897c24b0304c769b1b5b1c469361c4ab09"
+   }
+  },
   {
    "version": "3.62.1",
    "file": "webcam_bewegung_3_62_1.py",
@@ -136,23 +153,6 @@
     "sha256": "f35323d456f9c9f4d9e54f869a4d023a1e4e77c031f3085a96b8d5a5c725e362",
     "size": 4098424,
     "sig": "429a689dcaab98dd7504bd79a989572cf2cdc22d93b28a4e199ea442d5824c0ef13f9c9c5d8522eba30c49ce3bc251ac487dfe669d8942fbc6141d6a74fe4f01"
-   }
-  },
-  {
-   "version": "3.54.0",
-   "file": "webcam_bewegung_3_54_0.py",
-   "url": "",
-   "sha256": "0111d6b349679e9d6886df9b08a90dfed6ce7d35787467e7238238cee4b431db",
-   "date": "2026-11-02 23:45",
-   "notes": "Sim-Ansicht: im Simulator-Betrieb zeigt die Live-Seite auf Handy und Tablet ein grosses Simulator-Bild mit grossen Knöpfen (Kopf, Folgen, IR, Licht, Sirene, Aufnahme), «⋯ Mehr» und «▦ Klassisch»; «🎮 Spielen» startet ein Spiel mit einem Tipp, gespielt wird mit Knöpfen im Browser; das Simulator-Bild wird nicht mehr abgeschnitten (auch der Spiel-Assistent).",
-   "size": 4901142,
-   "sig": "64f4e5974a46649372ac3ee80a407340cee02b18a352ef67aadd2c6e59c65c921a79971849fab529eae180f797f0e805d7b0568c852a9b449907249478d7bd07",
-   "data": {
-    "file": "moveeye_daten_3_54_0.zip",
-    "url": "",
-    "sha256": "b57e94c3642e3c5509990bc5a3db8f5b727bf307e70fafb458c1a9cbcfbaacce",
-    "size": 4094367,
-    "sig": "0c8f5a3a5757e827c7873b48c01b2dc2dc9503d48d2c56f98abebd37f30b5db7493687aabb0c60cc914044fa54fa5f394081ed7b8cbb598f8316aab0e1691a0d"
    }
   },
   {

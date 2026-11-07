@@ -100,6 +100,9 @@ jobs:
       - name: Drei Kamera-Ansichten (Kopf / Wärmebild / Weitwinkel, Übersichtsbild, pro Gerät gemerkt)
         timeout-minutes: 8
         run: python3 werkzeuge/ansichten_test.py
+      - name: Datentausch (Dateien, Texte mit Versionen, Chats, Rechte, Gäste, Grenzen, Hochladen in Stücken, Browser)
+        timeout-minutes: 8
+        run: python3 werkzeuge/tausch_test.py --browser
       - name: Simulator intern (gefälschtes Pi-Paket - holen, prüfen, auspacken, starten, beenden, zurück)
         timeout-minutes: 4
         run: python3 werkzeuge/sim_intern_test.py
