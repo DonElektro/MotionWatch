@@ -103,6 +103,9 @@ jobs:
       - name: Simulator intern (gefälschtes Pi-Paket - holen, prüfen, auspacken, starten, beenden, zurück)
         timeout-minutes: 4
         run: python3 werkzeuge/sim_intern_test.py
+      - name: Piper-Stimme (Tabelle, Ersatz alte Stimme, Laden mit Prüfsumme, Browser «Ton im Browser», Simulator /speech)
+        timeout-minutes: 6
+        run: python3 werkzeuge/piper_test.py --browser
       - name: Werkstatt offline (eine HTML-Datei, file://, Netz gesperrt, keine JS-Fehler, Modell, Reiter)
         timeout-minutes: 6
         run: python3 werkzeuge/werkstatt_html.py --aus /tmp/werkstatt --test --bilder /tmp/werkstatt && ls -la /tmp/werkstatt

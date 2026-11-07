@@ -763,7 +763,9 @@ def installation_txt(B, ver, py_name, zd_name, signiert):
           "3. Auf dem Pi im Terminal (ohne sudo – das Skript fragt selbst nach dem Passwort):",
           "     cd ~/MoveEye_Bausatz", "     bash werkzeuge/einrichten.sh --trocken     # nur ansehen", "     bash werkzeuge/einrichten.sh", "",
           "   Das Skript kopiert MoveEye, die Zusatzdatei und versions.json nach ~/MoveEye, installiert die Pakete,",
-          "   schaltet I2C, SPI und Kamera ein, richtet den Dienst ein, lädt das KI-Modell und macht den Selbsttest.", ""]
+          "   schaltet I2C, SPI und Kamera ein, richtet den Dienst ein, lädt das KI-Modell und macht den Selbsttest.",
+          "   Unter den Paketen ist espeak-ng (für die Piper-Stimme). Die Piper-Laufzeit onnxruntime (pip, etwa 15 MB) und die",
+          "   Stimme (etwa 60 MB) lädt MoveEye danach selbst: Einstellungen -> Licht & Ton -> Lautsprecher.", ""]
     n = 4
     for s in sw[2:]:
         z.append("%d. %s" % (n, lx(s["titel"], "de")))

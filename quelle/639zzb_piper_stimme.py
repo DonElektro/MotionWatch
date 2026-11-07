@@ -46,25 +46,30 @@ PIPER_VOICES = {
         "licence": "CC0 (Thorsten-Voice, github.com/thorstenMueller/Thorsten-Voice)",
         "model": {"size": 63201294, "sha256": "7e64762d8e5118bb578f2eea6207e1a35a8e0c30595010b666f983fc87bb7819",
                   "md5": "a129b00fb3078df43c96bab6c94535c0"},
-        "config": {"size": 4819, "md5": "843a7bd7272724f750534dd5a26d1aad"}},
+        "config": {"size": 4819, "sha256": "974adee790533adb273a1ac88f49027d2a1b8f0f2cf4905954a4791e79264e85",
+                   "md5": "843a7bd7272724f750534dd5a26d1aad"}},
     "de_DE-thorsten-high": {
         "lang": "de", "name": "Thorsten", "quality": "high", "rev": "v1.0.0", "path": "de/de_DE/thorsten/high/",
         "licence": "CC0 (Thorsten-Voice, github.com/thorstenMueller/Thorsten-Voice)",
         "model": {"size": 113895201, "sha256": "9df1c43c61149ef9b39e618e2b861fbe41e1fcea9390b2dac62e8761573ea4f1",
                   "md5": "256505fe58fb8b9d6ed78b83f6b8a9d2"},
-        "config": {"size": 4875, "md5": "e81686e00a9d825e2488ead660bec6fd"}},
+        "config": {"size": 4875, "sha256": "6de734444e4c3f9e33b7ebe2746dbc19b71e85f613e79c65acf623200b99a76a",
+                   "md5": "e81686e00a9d825e2488ead660bec6fd"}},
     "en_GB-cori-medium": {
         "lang": "en", "name": "Cori", "quality": "medium", "rev": "v1.0.0", "path": "en/en_GB/cori/medium/",
         "licence": "public domain (LibriVox)",
         "model": {"size": 63531379, "sha256": "1899f98e5fb8310154f3c2973f4b8a929ba7245e722b3d3a85680b833d95f10d",
                   "md5": "f143307611eccea9d976235d0895f57c"},
-        "config": {"size": 4966, "md5": "12b1dc45d8919f3475cf296d5f16a4c6"}},
-    "fr_FR-siwis-medium": {          # Grösse und Konfiguration noch offen -> werkzeuge/piper_stimmen.py --pins
+        "config": {"size": 4966, "sha256": "e262c16d7f192f69d4edd6b4ef8a5915379e67495fcc402f1ab15eeb33da3d36",
+                   "md5": "12b1dc45d8919f3475cf296d5f16a4c6"}},
+    "fr_FR-siwis-medium": {          # Werte 07.11.2026 (Workflow «Piper-Stimmen»: API + ganze Datei nachgerechnet, gleich)
         "lang": "fr", "name": "Siwis", "quality": "medium", "rev": "v1.0.0", "path": "fr/fr_FR/siwis/medium/",
         "licence": "CC BY 4.0 (SIWIS French Speech Synthesis Database, Univ. Edinburgh) – Nennung nötig",
-        "model": {"size": 0, "sha256": "641d1ab097da2b81128c076810edb052b385decc8be3381814802a64a73baf99"},
-        "config": {"size": 0}},
-    "it_IT-paola-medium": {          # Grösse und Konfiguration noch offen -> werkzeuge/piper_stimmen.py --pins
+        "model": {"size": 63201294, "sha256": "641d1ab097da2b81128c076810edb052b385decc8be3381814802a64a73baf99",
+                  "md5": "20e876e8c839e9b11a26085858f2300c"},
+        "config": {"size": 4875, "sha256": "39479916c2db192b5ac9764daddd0c744d83e023ad890c6976c0633ae4df8959",
+                   "md5": "a407e7e6901feb79c2ea2a5466076cce"}},
+    "it_IT-paola-medium": {          # gesperrt (Besitzer 07.11.2026): erst wenn die Herkunft der Aufnahmen geklärt ist, Werte eintragen
         "lang": "it", "name": "Paola", "quality": "medium", "rev": "3f71c558aea760af723ae1c111c62f265892b59f",
         "path": "it/it_IT/paola/medium/", "licence": "CC0 (paolapersico1/Voice-Dataset-Italian, Herkunft der Aufnahmen prüfen)",
         "model": {"size": 0, "sha256": "6fc918b5a0ea6137382833dddfa567bffbe6a5060c02043c87192ee59c04210c"},
@@ -1015,47 +1020,52 @@ _HELP_PIPER = {
            'Einstellungen → Licht &amp; Ton → Lautsprecher: «Piper installieren» (onnxruntime, etwa 15 MB), «Stimme laden» '
            '(etwa 60 MB von Hugging Face, mit fester Prüfsumme geprüft), dann «Stimme testen». Auf dem Pi braucht es einmal '
            '<code>sudo apt install espeak-ng</code>.</li>'
-           '<li>Pro Sprache eine Stimme (Deutsch: Thorsten, Englisch: Cori, Französisch / Italienisch folgen), Tempo und Lautstärke. '
+           '<li>Pro Sprache eine Stimme (Deutsch: Thorsten, Englisch: Cori, Französisch: Siwis; Italienisch folgt), Tempo und Lautstärke. '
            'Rätoromanisch spricht mit der deutschen Stimme. Fehlt Piper, spricht die alte Stimme (pico2wave / espeak-ng).</li>'
            '<li><b>🔊 Ton im Browser:</b> Schalter bei der Glocke oben oder unter Lautsprecher – Ansagen kommen dann auch aus dem Handy oder PC '
            '(einmal auf die Seite tippen; iPhone: Stummschalter aus). Mit dem Simulator hört man die Ansage im Simulator.</li>'
+           '<li><b>Stimmen und Lizenzen:</b> Piper-Modelle von rhasspy/piper-voices (MIT). Thorsten: Thorsten-Voice (Thorsten Müller), CC0. Cori: LibriVox, gemeinfrei. <b>Siwis</b> (Französisch): «SIWIS French Speech Synthesis Database» (University of Edinburgh / Idiap, datashare.ed.ac.uk/handle/10283/2353), Lizenz CC BY 4.0 – wir danken den Urhebern. Die Lautschrift macht espeak-ng (GPL, eigenes Programm), die Rechnung onnxruntime (MIT).</li>'
            '</ul></section>\n'),
     "en": ('<section id="piper" data-icon="🗣"><h2>Piper voice</h2><ul>'
            '<li>MoveEye speaks announcements with <b>Piper</b>, a natural voice without internet. Set it up once under '
            'Settings → Light &amp; sound → Loudspeaker: «Install Piper» (onnxruntime, about 15 MB), «Load voice» '
            '(about 60 MB from Hugging Face, checked with a fixed checksum), then «Test voice». The Pi needs once '
            '<code>sudo apt install espeak-ng</code>.</li>'
-           '<li>One voice per language (German: Thorsten, English: Cori, French / Italian follow), speed and volume. '
+           '<li>One voice per language (German: Thorsten, English: Cori, French: Siwis; Italian follows), speed and volume. '
            'Romansh speaks with the German voice. Without Piper the old voice speaks (pico2wave / espeak-ng).</li>'
            '<li><b>🔊 Sound in the browser:</b> switch at the bell at the top or under Loudspeaker – announcements then also come from the phone or PC '
            '(tap the page once; iPhone: silent switch off). With the simulator the announcement is heard in the simulator.</li>'
+           '<li><b>Voices and licences:</b> Piper models from rhasspy/piper-voices (MIT). Thorsten: Thorsten-Voice (Thorsten Müller), CC0. Cori: LibriVox, public domain. <b>Siwis</b> (French): «SIWIS French Speech Synthesis Database» (University of Edinburgh / Idiap, datashare.ed.ac.uk/handle/10283/2353), licence CC BY 4.0 – with thanks to its authors. Phonemes by espeak-ng (GPL, separate program), inference by onnxruntime (MIT).</li>'
            '</ul></section>\n'),
     "fr": ('<section id="piper" data-icon="🗣"><h2>Voix Piper</h2><ul>'
            '<li>MoveEye prononce les annonces avec <b>Piper</b>, une voix naturelle sans Internet. À configurer une fois sous '
            'Réglages → Lumière et son → Haut-parleur : «Installer Piper» (onnxruntime, env. 15 Mo), «Charger la voix» '
            '(env. 60 Mo depuis Hugging Face, vérifiée par une somme de contrôle fixe), puis «Tester la voix». Le Pi a besoin une fois de '
            '<code>sudo apt install espeak-ng</code>.</li>'
-           '<li>Une voix par langue, vitesse et volume. Le romanche parle avec la voix allemande. Sans Piper, l’ancienne voix parle.</li>'
+           '<li>Une voix par langue (allemand : Thorsten, anglais : Cori, français : Siwis ; l’italien suivra), vitesse et volume. Le romanche parle avec la voix allemande. Sans Piper, l’ancienne voix parle.</li>'
            '<li><b>🔊 Son dans le navigateur :</b> interrupteur à la cloche en haut ou sous Haut-parleur – les annonces sortent aussi du téléphone ou du PC '
            '(toucher une fois la page ; iPhone : mode silencieux désactivé). Avec le simulateur, l’annonce s’entend dans le simulateur.</li>'
+           '<li><b>Voix et licences :</b> modèles Piper de rhasspy/piper-voices (MIT). Thorsten : Thorsten-Voice (Thorsten Müller), CC0. Cori : LibriVox, domaine public. <b>Siwis</b> (français) : «SIWIS French Speech Synthesis Database» (University of Edinburgh / Idiap, datashare.ed.ac.uk/handle/10283/2353), licence CC BY 4.0 – merci à ses auteurs. Phonèmes : espeak-ng (GPL, programme séparé), calcul : onnxruntime (MIT).</li>'
            '</ul></section>\n'),
     "it": ('<section id="piper" data-icon="🗣"><h2>Voce Piper</h2><ul>'
            '<li>MoveEye pronuncia gli annunci con <b>Piper</b>, una voce naturale senza Internet. Da configurare una volta in '
            'Impostazioni → Luce e suono → Altoparlante: «Installa Piper» (onnxruntime, circa 15 MB), «Carica la voce» '
            '(circa 60 MB da Hugging Face, verificata con un checksum fisso), poi «Prova la voce». Sul Pi serve una volta '
            '<code>sudo apt install espeak-ng</code>.</li>'
-           '<li>Una voce per lingua, velocità e volume. Il romancio parla con la voce tedesca. Senza Piper parla la voce vecchia.</li>'
+           '<li>Una voce per lingua (tedesco: Thorsten, inglese: Cori, francese: Siwis; l’italiano seguirà), velocità e volume. Il romancio parla con la voce tedesca. Senza Piper parla la voce vecchia.</li>'
            '<li><b>🔊 Audio nel browser:</b> interruttore alla campanella in alto o in Altoparlante – gli annunci escono anche dal telefono o dal PC '
            '(toccare una volta la pagina; iPhone: silenzioso disattivato). Con il simulatore l’annuncio si sente nel simulatore.</li>'
+           '<li><b>Voci e licenze:</b> modelli Piper da rhasspy/piper-voices (MIT). Thorsten: Thorsten-Voice (Thorsten Müller), CC0. Cori: LibriVox, pubblico dominio. <b>Siwis</b> (francese): «SIWIS French Speech Synthesis Database» (University of Edinburgh / Idiap, datashare.ed.ac.uk/handle/10283/2353), licenza CC BY 4.0 – grazie agli autori. Fonemi: espeak-ng (GPL, programma separato), calcolo: onnxruntime (MIT).</li>'
            '</ul></section>\n'),
     "rm": ('<section id="piper" data-icon="🗣"><h2>Vusch Piper</h2><ul>'
            '<li>MoveEye di annunzias cun <b>Piper</b>, ina vusch natirala senza internet. Ina giada endrizzar sut '
            'Parameters → Glisch &amp; tun → Autpledader: «Installar Piper» (onnxruntime, var 15 MB), «Chargiar la vusch» '
            '(var 60 MB da Hugging Face, controllada cun ina summa fixa), lura «Testar la vusch». Il Pi dovra ina giada '
            '<code>sudo apt install espeak-ng</code>.</li>'
-           '<li>Ina vusch per lingua, tempo e volumen. Il rumantsch discurra cun la vusch tudestga. Senza Piper discurra la vusch veglia.</li>'
+           '<li>Ina vusch per lingua (tudestg: Thorsten, englais: Cori, franzos: Siwis; talian suonda), tempo e volumen. Il rumantsch discurra cun la vusch tudestga. Senza Piper discurra la vusch veglia.</li>'
            '<li><b>🔊 Tun en il navigatur:</b> interruptur tar la sain sura u sut Autpledader – las annunzias vegnan lura er dal telefonin u dal PC '
            '(ina giada tutgar la pagina; iPhone: modus silenzius stizzà). Cun il simulatur auda ins l’annunzia en il simulatur.</li>'
+           '<li><b>Vuschs e licenzas:</b> models Piper da rhasspy/piper-voices (MIT). Thorsten: Thorsten-Voice (Thorsten Müller), CC0. Cori: LibriVox, dominio public. <b>Siwis</b> (franzos): «SIWIS French Speech Synthesis Database» (University of Edinburgh / Idiap, datashare.ed.ac.uk/handle/10283/2353), licenza CC BY 4.0 – grazia fitg als auturs. Fonems: espeak-ng (GPL, agen program), quint: onnxruntime (MIT).</li>'
            '</ul></section>\n'),
 }
 
@@ -1105,6 +1115,7 @@ def piper_selftest():
         ks = [k for k, _l in text_choice_pairs("tts_voice_" + L_)]
         assert "old" in ks and PIPER_DEFAULT[L_] in ks, (L_, ks)
     assert piper_pinned("de_DE-thorsten-medium"), "the default German voice must be pinned"
+    assert piper_pinned("fr_FR-siwis-medium") and not piper_pinned("it_IT-paola-medium"), "French on (07.11.2026), Italian locked"
     assert [k for k, _l in text_choice_pairs("tts_engine")] == ["auto", "piper", "old"]
     for k, v in _HX_PIPER.items():
         assert len(v) == 4 and all(v) and k in DE and all(k in TRX[L] for L in ("fr", "it", "rm")), k
@@ -1137,7 +1148,7 @@ def piper_selftest():
         n0 = ALERTS["seq"]
         assert speech_alert(TTS["id"], "Hallo") and ALERTS["seq"] == n0 + 1 and ALERTS["items"][-1]["kind"] == "speech"
         assert not speech_alert("../x")
-        ok, err = piper_download("fr_FR-siwis-medium") if not piper_pinned("fr_FR-siwis-medium") else (False, "This voice is not pinned yet (comes with an update)")
+        ok, err = piper_download("it_IT-paola-medium") if not piper_pinned("it_IT-paola-medium") else (False, "This voice is not pinned yet (comes with an update)")
         assert not ok and "not pinned" in err
         js = WEB_PAGE if isinstance(globals().get("WEB_PAGE"), str) else ""
         assert not js or ("piperBox" in js and "piperBox()" in js), "the card «Piper voice» is missing on the main page"

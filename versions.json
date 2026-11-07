@@ -1,7 +1,24 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-07 21:41",
+ "generated": "2026-11-07 22:26",
  "versions": [
+  {
+   "version": "3.62.0",
+   "file": "webcam_bewegung_3_62_0.py",
+   "url": "",
+   "sha256": "75e10d6918c7f7d921e1006621d4b582c561bd72e7c25a58368bc5cb7080efcc",
+   "date": "2026-11-07 22:26",
+   "notes": "Piper-Stimme: MoveEye spricht Ansagen mit einer natürlichen Offline-Stimme (Thorsten; Stimme pro Sprache, Tempo, Lautstärke, «Stimme testen»), einmal geladen mit fester Prüfsumme; Ansagen auch im Browser («🔊 Ton im Browser»), im Pi-Fenster und im Simulator; ohne Piper die alte Stimme.",
+   "size": 3607814,
+   "sig": "af643a38ff3f2389db5196d2cc87486bb9668b245c25f54f6722a887b6847d17a15ed0446f7cd2cfd50eeb5872c88688a3c8c2e549c687d4f9815fccda9ae600",
+   "data": {
+    "file": "moveeye_daten_3_62_0.zip",
+    "url": "",
+    "sha256": "0e3f0d6978845ba80542a3313b7ce02e8505954db3a74cfb4c26d1c0caa00e94",
+    "size": 4834016,
+    "sig": "3ec9c9dc58018bda7d9cefc2939df865edc6c7379161fd6f1be58691d40998d55e2b0ced6a8c3a795d71135af1a2fa9efa63b039fa2175b8d942a1e7c67eab01"
+   }
+  },
   {
    "version": "3.61.0",
    "file": "webcam_bewegung_3_61_0.py",
@@ -136,23 +153,6 @@
     "sha256": "b57e94c3642e3c5509990bc5a3db8f5b727bf307e70fafb458c1a9cbcfbaacce",
     "size": 4094367,
     "sig": "0c8f5a3a5757e827c7873b48c01b2dc2dc9503d48d2c56f98abebd37f30b5db7493687aabb0c60cc914044fa54fa5f394081ed7b8cbb598f8316aab0e1691a0d"
-   }
-  },
-  {
-   "version": "3.53.0",
-   "file": "webcam_bewegung_3_53_0.py",
-   "url": "",
-   "sha256": "9c0452f392b16bcbf7ce6ddb2358bf4eaf57d3f1897896e23c8785b0f4efb652",
-   "date": "2026-11-02 23:42",
-   "notes": "Simulator-PC (HP): während der Erkennungstests zeigt der Kiosk ein Testbild-Dashboard (Live-Bild mit MoveEyes Rahmen, Soll/Ist, Fall N/M, Bilanz, 2 Min. Zusammenfassung am Schluss); neues automatisches, signiertes Update (nachts, nie während eines Tests).",
-   "size": 4884375,
-   "sig": "80fa7f795f9c9423859f068cbe7285c7a3b86a0b539612015877bbcafe87ee7d554a5687a3ee0201c9d425baea78060b68ba6735e18fc6471ba3e9d7a8489e02",
-   "data": {
-    "file": "moveeye_daten_3_53_0.zip",
-    "url": "",
-    "sha256": "914d74a5e2b66b8d214c7486a3e480a1d7c917074652cd86bbb397a5afc376eb",
-    "size": 4081843,
-    "sig": "721918df9598dad4553869788d48390619d8eb2c94f3f8ce8a163d89ee9822cec756cd7b0fc6500802958cb4c99992e9e050eb530a1a2684eb83dc208d534f05"
    }
   },
   {

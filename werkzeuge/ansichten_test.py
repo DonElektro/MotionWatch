@@ -92,6 +92,32 @@ def main():
                 lauf(pg, a, base, pruef, gname, gname == "iphone")
                 pruef(not jsf, "%s: keine JavaScript-Fehler %s" % (gname, jsf[:3]))
                 ctx.close()
+            # 3.62.0 (Ursache der wackligen Läufe): die Ecke beim Scrollen (530 #pip) holt das Bild schon während die grosse
+            # Seite noch geladen wird - danach müssen kleines Bild und Rahmen trotzdem da sein. Hier erzwungen: der erste
+            # Bericht des IntersectionObserver sagt «nicht sichtbar», die echten kommen erst nach dem Laden.
+            print("== iphone, Bild beim Laden in der Ecke", flush=True)
+            ctx = br.new_context(viewport={"width": 390, "height": 844}, is_mobile=True, has_touch=True, device_scale_factor=3,
+                                 http_credentials={"username": "admin", "password": PASSWORT})
+            pg = ctx.new_page()
+            pg.add_init_script("""(() => { const IO = window.IntersectionObserver; if (!IO) return; let first = true;
+              window.IntersectionObserver = function (cb, o) { let ready = false;
+                document.addEventListener('DOMContentLoaded', () => setTimeout(() => { ready = true; }, 50));
+                const io = new IO((es, x) => { if (ready) cb(es, x); else setTimeout(() => cb(es, x), 300); }, o), ob = io.observe.bind(io);
+                io.observe = t => { if (first && t.classList && t.classList.contains('vwrap')) { first = false;
+                  cb([{isIntersecting: false, intersectionRatio: 0, target: t}]); window.__eckeBeimLaden = !!t.closest('body') && !!document.querySelector('#pip #video'); } ob(t); };
+                return io; }; })();""")
+            pg.goto(base + "/", wait_until="domcontentloaded")
+            pg.evaluate("() => { try { localStorage.removeItem('mw-view3'); } catch (e) {} }")
+            pg.reload(wait_until="domcontentloaded")
+            ecke = pg.evaluate("() => !!window.__eckeBeimLaden")
+            ok_ = False
+            t_ = time.time() + 15
+            while time.time() < t_ and not ok_:
+                ok_ = pg.evaluate("""() => { const m = document.getElementById('v3-mini'), v = document.getElementById('video');
+                  return !!(m && !m.hidden && m.parentNode && m.parentNode.matches('#vcard > .vwrap') && v.parentNode === m.parentNode); }""")
+                pg.wait_for_timeout(300)
+            pruef(ecke and ok_, "Bild beim Laden in der Ecke: danach kleines Bild im grossen Bild (Ecke erzwungen %s, kleines Bild %s)" % (ecke, ok_))
+            ctx.close()
             br.close()
         if p.poll() is not None:
             fehler.append("MoveEye ist während des Tests abgestürzt")
@@ -152,28 +178,34 @@ def lauf(pg, a, base, pruef, gname, voll):
             pg.wait_for_timeout(250)
         return m, lang
 
+    def ruhig(sel="#vcard", ms=8000):
+        """wait until the element stands still for 1 s: after the first state the status chips in the header (#mwb-g-chips:
+        LED, recording, health, pattern, view …) appear and can wrap into a second row - everything below moves ~30 px down"""
+        t_ = time.time() + ms / 1000.0
+        b0, seit = None, time.time()
+        while time.time() < t_:
+            b = pg.locator(sel).first.bounding_box()
+            if b != b0:
+                b0, seit = b, time.time()
+            elif time.time() - seit >= 1.0:
+                return b
+            pg.wait_for_timeout(150)
+        return b0
+
     def lang_druecken(sel):
         weg()                                             # the tour (#g2-ov) may come between two steps
-        for _ in range(3):                                # cards above the picture (e.g. 639zy / 639zz) can push it down while
-            b0 = pg.locator(sel).first.bounding_box()     # pressing: wait until the button stands still, retry if no menu
-            for _ in range(10):
-                pg.wait_for_timeout(300)
-                b = pg.locator(sel).first.bounding_box()
-                if b == b0:
-                    break
-                b0 = b
-            pg.mouse.move(b["x"] + b["width"] / 2, b["y"] + b["height"] / 2); pg.mouse.down(); pg.wait_for_timeout(800); pg.mouse.up()
-            pg.wait_for_timeout(300)
-            if pg.evaluate("() => { const m = document.getElementById('v3-menu'); return !!(m && !m.hidden); }"):
-                break
-            print("  Hinweis: lang drücken ohne Menü (Knopf verschoben?), nochmals")
-            weg()
+        ruhig(); b = ruhig(sel)
+        # hold 1.2 s (long press = 550 ms in 639zv): Chrome handles input before timers - on a busy runner the release must
+        # not overtake the timer of the long press
+        pg.mouse.move(b["x"] + b["width"] / 2, b["y"] + b["height"] / 2); pg.mouse.down(); pg.wait_for_timeout(1200); pg.mouse.up()
+        warte(lambda: pg.evaluate("() => { const m = document.getElementById('v3-menu'); return !!(m && !m.hidden); }"), 3000)
 
     pg.goto(base + "/", wait_until="domcontentloaded")
     pg.evaluate("() => { try { localStorage.removeItem('mw-view3'); } catch (e) {} }")
     pg.reload(wait_until="domcontentloaded")
     v = warte(lambda: (k := keep("#video")) and k["frames"] > 0 and k["w"] > 0 and k)
     pruef(bool(v), "Live: Bild kommt (%s)" % v)
+    ruhig()                                               # the first state: chips in the header, cards - the page settles
     weg()
     s = warte(lambda: (x := pg.evaluate(V3)) and len(x["order"]) == 3 and x)
     pruef(bool(s) and s["order"] == ["head", "thermal", "wide"] and s["cur"] == "head", "drei Ansichten verfügbar, Start = Kopf (%s)" % s)

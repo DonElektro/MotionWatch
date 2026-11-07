@@ -39,8 +39,12 @@ Bookworm erlaubt `pip install` nur in einer venv – darum alles aus den System-
 sudo apt update
 sudo apt install python3-numpy python3-opencv python3-pil python3-pil.imagetk python3-tk python3-flask python3-psutil \
   python3-cryptography python3-gpiozero python3-picamera2 python3-smbus python3-spidev i2c-tools ffmpeg alsa-utils \
-  openssl bluez pulseaudio-utils curl
+  openssl bluez pulseaudio-utils curl espeak-ng
 ```
+
+`espeak-ng` braucht die **Piper-Stimme** (natürliche Ansagen, ab 3.62.0) für die Lautschrift. Die Laufzeit `onnxruntime`
+(pip, MIT, etwa 15 MB) und die Stimme selbst (etwa 60 MB, feste Prüfsumme) lädt MoveEye auf Knopfdruck: Einstellungen →
+Licht & Ton → Lautsprecher → «Piper installieren» / «Stimme laden». Ohne Internet beim Einrichten spricht die alte Stimme.
 
 Wärmebildkamera Thermal-90: im Waveshare-Wiki `Thermal_Camera_Hat.zip` laden, entpacken, im Ordner `pysenxor-master`
 `pip install --break-system-packages -e ./` (oder in einer venv mit `--system-site-packages`).
