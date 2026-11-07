@@ -298,7 +298,7 @@ static func bush(sc, parent: Node3D, p: Vector3, kind := "rund", s := 1.0) -> No
 					sc.put(n, dot, Vector3(cos(a2) * cos(el) * rr, 0.75 * s + sin(el) * rr * 0.75, sin(a2) * cos(el) * rr), dm, "tree")
 	sc.m.add_obstacle(p, r_ob)
 	sc.m.set_obstacle_height(ht)
-	Flora.dress(sc, n)                                         # «Flora und Fauna»: leaf cards (own random numbers)
+	Flora.dress(sc, n, {"hasel": "hasel", "beeren": "holunder"}.get(kind, ""))   # «Flora und Fauna»: leaf cards / rods (own random numbers)
 	return n
 
 
@@ -364,6 +364,9 @@ static func hedge(sc, parent: Node3D, a: Vector2, b: Vector2, h := 1.9, thick :=
 	sc.m.add_obstacle_box(Vector3(mid2.x, 0, mid2.y), L + 0.2, thick + 0.15, rot_y)
 	sc.m.set_obstacle_height(h)
 	n.set_meta("hedge", [a, b, h])
+	Flora.hedge(sc, n, L, h, thick, kind, fm, func(lx: float) -> float:   # «Flora und Fauna» Paket 1: leaf cards on both sides
+		var w := a + d * clampf((lx + L * 0.5) / L, 0.0, 1.0)
+		return sc.m.ground_y(w.x, w.y))
 	return n
 
 
@@ -444,7 +447,7 @@ static func tree(sc, parent: Node3D, p: Vector3, kind := "laub", s := 1.0) -> No
 	if parent == sc.root or parent.get_parent() == sc.root:
 		sc.m.add_obstacle(p, trunk_r * s)
 	sc.m.tree_spots.append([Vector2(p.x, p.z), crown_r * s, crown_y * s])
-	Flora.dress(sc, tr)                                        # «Flora und Fauna»: leaf / needle cards (own random numbers)
+	Flora.dress(sc, tr, kind if kind in ["birke", "kiefer", "eiche", "obst"] else "")   # «Flora und Fauna»: branches + tufts / leaf cards
 	return tr
 
 

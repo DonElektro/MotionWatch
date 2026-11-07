@@ -19,9 +19,17 @@ uniform vec2 dir = vec2(0.8, 0.6);
 // neu = 0: exactly as before.
 uniform float neu = 0.0;
 uniform float ragged = 0.0;
+// Paket 1 (scripts/baeume.gd): the part as a smaller, darker core behind branches and leaf tufts; gone when bare.
+// kern = 0: as before.
+uniform float kern = 0.0;
+uniform float kern_y = 1.0;
+uniform float kern_dark = 1.0;
 varying float v_hue;
 
 void vertex() {
+	if (kern > 0.0) {
+		VERTEX *= vec3(kern, kern_y, kern) * (1.0 - bare);
+	}
 	vec3 wp = (MODEL_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
 	v_hue = fract(sin(dot(floor(wp.xz * 0.5), vec2(12.9898, 78.233))) * 43758.5453);
 	float a = wind / 60.0 * (1.0 - 0.75 * bare);   // bare twigs hardly sway
@@ -85,6 +93,9 @@ void fragment() {
 			}
 		}
 		BACKLIGHT = col * 0.1;
+	}
+	if (kern > 0.0) {
+		col *= kern_dark;
 	}
 	ALBEDO = col * (1.0 - cloud_amt * smoothstep(0.52, 0.68, texture(noise_tex, (w.xz + cloud_off) * 0.0035).r));   // gelaende.gd: cloud shadows
 	ROUGHNESS = 0.9;
