@@ -1,13 +1,21 @@
 #!/usr/bin/env python3
-"""Versionsnummern von MoveEye und dem 3D-Simulator (Versionierung 3.0.0, Entscheid des Besitzers 31.10.2026).
+"""Versionsnummern der drei Spuren: 📷 MoveEye, 🎮 MoveEye Sim, 🧩 Gehäuse (Drei Spuren, Entscheid des Besitzers 03.11.2026).
 
-Ab 3.0.0 haben beide dieselbe Nummer X.Y.Z («MoveEye 3.0.0» / «MoveEye Sim 3.0.0») und werden zusammen veröffentlicht.
+Bis zum Zusammenführen hat jede Spur ihre eigene Nummer und wird allein veröffentlicht (Berichte immer mit Vorsilbe, z. B.
+«MoveEye 3.56.0 · Sim 3.55.4 · Gehäuse 5.3.0»):
+  MoveEye  = APP_VERSION (quelle/010) + Eintrag in versions.json (signiert)
+  Sim      = VERSION in simulator3d/scripts/main.gd + simulator3d/version.json («ver», Brücke «version», Block «linux») + «NEU IN»
+             in «Lies mich.txt»; signiert als Block «sim» in versions.json (MoveEye prüft /sim damit, Teil 300)
+  Gehäuse  = «version» in hardware/gehaeuse/bau.json
+Verträglichkeit statt gleicher Nummer: SIM_MIN (MoveEye, Teil 545) und MW_MIN (simulator3d/scripts/abgleich.gd, auch «mw_min»
+in version.json). Die alte Regel «eine Nummer für alles» (ab 3.0.0) ist bis zum Zusammenführen ausgesetzt.
 Brücke: alte Simulatoren (bis 3D-4.8x) lesen in simulator3d/version.json nur «version» und vergleichen «3D-A.B» als Zahlen.
 Darum steht dort «3D-(X+2).Y.Z» (3.0.0 -> «3D-5.0.0») und die echte Nummer in «ver». Gleiche Regel wie
 simulator3d/scripts/versionen.gd und sim_vkey() in quelle/300_werkzeuge_simulator3d.py.
 
   python3 werkzeuge/versionen.py --test                       # Reihenfolge der Nummern prüfen (ohne Dateien)
-  python3 werkzeuge/versionen.py --pruefen                    # passen main.gd, version.json, SIM3D, APP_VERSION zusammen?
+  python3 werkzeuge/versionen.py --pruefen                    # jede Spur für sich (Exit 1 nur bei Problemen, sonst Warnungen)
+  python3 werkzeuge/versionen.py --spuren                     # nur die Nummern: «MoveEye 3.56.0 · Sim 3.55.4 · Gehäuse 5.3.0»
   python3 werkzeuge/versionen.py --sim-json 3.0.0 "Notiz"     # simulator3d/version.json aus der ZIP schreiben (beide Felder)
   python3 werkzeuge/versionen.py --linux-json                 # nur den Block «linux» (MoveEyeSim3D_Linux.zip) in version.json
   python3 werkzeuge/versionen.py --neu-data                   # scripts/neu_data.gd aus «Lies mich.txt» (NEU IN …, beide Schemas)
@@ -27,7 +35,7 @@ import re
 import sys
 
 HIER = os.path.dirname(os.path.abspath(__file__))
-REPO = os.path.dirname(HIER)
+REPO = os.environ.get("MW_VERSIONEN_REPO") or os.path.dirname(HIER)     # anderer Ordner nur für versionen_spuren_test.py
 SIM = os.path.join(REPO, "simulator3d")
 ZIP_REL = "simulator3d/MotionWatch3D_Simulator.zip"
 LINUX_REL = "simulator3d/MoveEyeSim3D_Linux.zip"   # Paket Linux (werkzeuge/linux_paket.sh, update.gd linux_info)
@@ -112,34 +120,184 @@ def lesen(p):
         return f.read()
 
 
-def pruefen():
-    probleme = []
-    gd = re.search(r'^const VERSION := "([^"]+)"', lesen(os.path.join(SIM, "scripts", "main.gd")), re.M).group(1)
-    vj = json.load(open(os.path.join(SIM, "version.json"), encoding="utf-8"))
+def git_text(*a):
+    """Ausgabe von git im Repository oder None (kein git, keine Geschichte - z. B. flacher Klon)"""
+    import subprocess
+    try:
+        r = subprocess.run(["git"] + list(a), cwd=REPO, capture_output=True, text=True, timeout=60)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return r.stdout if r.returncode == 0 else None
+
+
+def geaendert_seit(base, pfade, ohne=()):
+    """Dateien unter pfade, die seit Commit base geändert sind (auch nicht committete und neue); None = unbekannt"""
+    if not base:
+        return None
+    a = git_text("diff", "--name-only", base, "--", *pfade)
+    b = git_text("ls-files", "--others", "--exclude-standard", "--", *pfade)
+    if a is None or b is None:
+        return None
+    out = sorted({x for x in (a + b).splitlines() if x.strip()})
+    return [x for x in out if not any(x == o or (o.endswith("/") and x.startswith(o)) for o in ohne)]
+
+
+def mw_min_gd():
+    """MW_MIN in simulator3d/scripts/abgleich.gd: die älteste MoveEye, mit der dieser Simulator arbeitet ("" = keine Angabe)"""
+    try:
+        m = re.search(r'^const MW_MIN := "([^"]+)"', lesen(os.path.join(SIM, "scripts", "abgleich.gd")), re.M)
+    except OSError:
+        m = None
+    return m.group(1) if m else ""
+
+
+def werte():
+    """die Nummern aller drei Spuren aus den Dateien (ohne Prüfung)"""
+    w = {}
+    w["app"] = re.search(r'^APP_VERSION = "([^"]+)"', lesen(os.path.join(REPO, "quelle", "010_grundlagen.py")), re.M).group(1)
+    w["gd"] = re.search(r'^const VERSION := "([^"]+)"', lesen(os.path.join(SIM, "scripts", "main.gd")), re.M).group(1)
+    w["vj"] = json.load(open(os.path.join(SIM, "version.json"), encoding="utf-8"))
     q300 = lesen(os.path.join(REPO, "quelle", "300_werkzeuge_simulator3d.py"))
-    s3d = re.search(r'^SIM3D = \{"version": "([^"]+)"', q300, re.M).group(1)
-    app = re.search(r'^APP_VERSION = "([^"]+)"', lesen(os.path.join(REPO, "quelle", "010_grundlagen.py")), re.M).group(1)
+    w["s3d"] = re.search(r'^SIM3D = \{"version": "([^"]+)"', q300, re.M).group(1)
+    m = re.search(r'^SIM_MIN = "([^"]+)"', lesen(os.path.join(REPO, "quelle", "545_simulator_updates.py")), re.M)
+    w["sim_min"] = m.group(1) if m else ""
+    w["mw_min"] = mw_min_gd()
+    try:
+        w["geh"] = str(json.load(open(os.path.join(REPO, "hardware", "gehaeuse", "bau.json"), encoding="utf-8")).get("version") or "")
+    except (OSError, ValueError):
+        w["geh"] = ""
+    return w
+
+
+def spuren_text(w=None):
+    w = w or werte()
+    return "MoveEye %s · Sim %s · Gehäuse %s" % (w["app"], w["vj"].get("ver") or w["gd"], w["geh"] or "?")
+
+
+SIM_OHNE = ("simulator3d/version.json", "simulator3d/MotionWatch3D_Simulator.zip", "simulator3d/MoveEyeSim3D_Linux.zip",
+            "simulator3d/scripts/neu_data.gd", "simulator3d/Lies mich.txt", "simulator3d/UEBERGABE.md",
+            "simulator3d/i18n/abdeckung.txt", "simulator3d/pruefnaechte/")
+
+
+SIM_HP = ["werkzeuge/test_runner/" + f for f in ("hp_update.sh", "job_start.sh", "job_ende.sh", "runner_dienst.conf",
+                                                 "runner_entfernen.sh")] + ["werkzeuge/linux_paket.sh"]
+
+
+def geh_basis(cur):
+    """der Commit, mit dem «version» in bau.json zuletzt auf cur gesetzt wurde (None = unbekannt)"""
+    rel = "hardware/gehaeuse/bau.json"
+    log = git_text("log", "--format=%H", "-n", "80", "--", rel)
+    if log is None:
+        return None
+    last = None
+    for c in log.split():
+        try:
+            alt = json.loads(git_text("show", c + "^:" + rel) or "{}").get("version")
+        except ValueError:
+            alt = None
+        last = c
+        if str(alt) != cur:
+            return c
+    return last
+
+
+def pruefen():
+    """Drei Spuren: jede Spur für sich. PROBLEM (Exit 1) = so nicht veröffentlichen; WARNUNG = Nummer vergessen?"""
+    probleme, warn = [], []
+    w = werte()
+    app, gd, vj, s3d = w["app"], w["gd"], w["vj"], w["s3d"]
     ver, alt = str(vj.get("ver") or ""), str(vj.get("version") or "")
-    print("main.gd VERSION %s · version.json ver %s / version %s · SIM3D %s · APP_VERSION %s" % (gd, ver or "-", alt, s3d, app))
+    print("Spuren: " + spuren_text(w))
+    print("  📷 MoveEye: APP_VERSION %s · SIM3D (eingebettet) %s · braucht Sim ≥ %s" % (app, s3d, w["sim_min"] or "-"))
+    print("  🎮 Sim: main.gd %s · version.json ver %s / Brücke %s · braucht MoveEye ≥ %s" % (gd, ver or "-", alt, w["mw_min"] or "-"))
+    print("  🧩 Gehäuse: bau.json %s" % (w["geh"] or "-"))
+    # ---- 📷 MoveEye
+    if not re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}$", app):
+        probleme.append("APP_VERSION %s passt nicht zum Schema X.Y.Z (je 1-3 Ziffern, VFILE_RE der Geräte)" % app)
+    probleme += groesse_bruecke(app)
+    try:
+        man = json.load(open(os.path.join(REPO, "versions.json"), encoding="utf-8"))
+    except (OSError, ValueError):
+        man = {}
+    if not any(e.get("version") == app for e in man.get("versions") or []):
+        warn.append("MoveEye %s steht noch nicht in versions.json (rel_mw.sh signiert)" % app)
+    else:                                                    # schon veröffentlicht: quelle/ seither geändert?
+        q = geaendert_seit((git_text("log", "-1", "-m", "--format=%H", "-G", '"version": "%s"' % re.escape(app), "--", "versions.json") or "").strip(),
+                           ["quelle"])
+        if q:
+            warn.append("MoveEye geändert seit %s (%d Teile, z. B. %s), Nummer nicht erhöht (bauen.py --neue-version)"
+                        % (app, len(q), ", ".join(q[:3])))
+    # ---- 🎮 Sim
     if not alt.startswith("3D-"):
         probleme.append("version.json «version» muss «3D-…» bleiben (alte Simulatoren), ist %r" % alt)
     if ver and alt != legacy(ver):
-        probleme.append("version.json «version» %s muss %s sein" % (alt, legacy(ver)))
-    if (ver or alt) not in (gd,) and sim_key(ver or alt) != sim_key(gd):
-        probleme.append("version.json (%s) passt nicht zu main.gd VERSION %s" % (ver or alt, gd))
-    if "3D-" not in gd and ver != gd:
-        probleme.append("main.gd VERSION %s ist im neuen Schema, dann braucht version.json «ver»: %s" % (gd, gd))
-    if s3d not in (ver, alt) or (ver and s3d != ver):
-        probleme.append("SIM3D (300) %s sollte %s sein" % (s3d, ver or alt))
-    if mw_key(app) >= (3, 0, 0) and not (app == gd == ver == s3d):
-        probleme.append("ab 3.0.0 eine Nummer für alles: APP_VERSION %s, main.gd %s, version.json ver %s, SIM3D %s" % (app, gd, ver or "-", s3d))
+        probleme.append("version.json «version» %s muss %s sein (Brücke aus «ver»)" % (alt, legacy(ver)))
+    if "3D-" not in gd and not re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}$", gd):
+        probleme.append("main.gd VERSION %s passt nicht zum Schema X.Y.Z" % gd)
+    if ver and sim_key(gd) and sim_key(ver):
+        if sim_key(gd) < sim_key(ver):
+            probleme.append("main.gd VERSION %s ist älter als version.json ver %s" % (gd, ver))
+        elif sim_key(gd) > sim_key(ver):
+            warn.append("Sim %s gesetzt, version.json hat noch %s - exportieren und packen (rel_sim.sh)" % (gd, ver))
     if "NEU IN %s\n" % gd not in lesen(os.path.join(SIM, "Lies mich.txt")):
         probleme.append("«Lies mich.txt» hat keinen Block «NEU IN %s»" % gd)
-    probleme += groesse_bruecke(app)
+    try:                                                     # die Brücke darf nie kleiner werden (alte Simulatoren)
+        alt_vj = json.loads(git_text("show", "HEAD:simulator3d/version.json") or "{}")
+    except ValueError:
+        alt_vj = {}
+    av = str(alt_vj.get("version") or "")
+    if av and alt and alt_sim_newer(av, alt):
+        probleme.append("Brücke kleiner geworden: %s -> %s (alte Simulatoren fänden kein Update mehr)" % (av, alt))
+    if alt_vj.get("ver") and ver and sim_key(str(alt_vj["ver"])) and sim_key(ver) < sim_key(str(alt_vj["ver"])):
+        probleme.append("Sim-Nummer kleiner geworden: %s -> %s" % (alt_vj["ver"], ver))
+    if ver and sim_key(s3d) and sim_key(s3d) > sim_key(ver):
+        probleme.append("SIM3D (300) %s ist neuer als version.json ver %s" % (s3d, ver))
+    sm = man.get("sim") if isinstance(man.get("sim"), dict) else None
+    if ver and sim_key(s3d) != sim_key(ver) and not (sm and sm.get("ver") == ver):
+        warn.append("Sim %s steht nicht signiert in versions.json («sim»), MoveEye kennt nur %s - /sim liefert erst nach "
+                    "rel_sim.sh (signieren) die neue Fassung" % (ver, s3d))
+    elif sm and sm.get("ver") != ver:
+        warn.append("versions.json «sim» ist %s, version.json %s - neu signieren (rel_sim.sh)" % (sm.get("ver"), ver))
+    if sm:
+        for key, e in (("win", vj), ("linux", vj.get("linux") or {})):
+            x = sm.get(key) or {}
+            if x and (x.get("sha256") != e.get("sha256") or x.get("size") != e.get("size")):
+                warn.append("versions.json «sim.%s» passt nicht zu version.json (Grösse/Prüfsumme) - neu signieren" % key)
+    if w["mw_min"] and mw_key(w["mw_min"]) > mw_key(app):
+        probleme.append("der Simulator braucht MoveEye ≥ %s (abgleich.gd MW_MIN), APP_VERSION ist %s - zuerst MoveEye veröffentlichen" % (w["mw_min"], app))
+    if vj.get("mw_min") and w["mw_min"] and str(vj.get("mw_min")) != w["mw_min"] and sim_key(gd) == sim_key(ver):
+        warn.append("version.json «mw_min» %s ≠ abgleich.gd MW_MIN %s - --sim-json neu schreiben" % (vj.get("mw_min"), w["mw_min"]))
+    if w["sim_min"] and ver and sim_key(w["sim_min"]) > sim_key(ver):
+        probleme.append("MoveEye braucht Sim ≥ %s (545 SIM_MIN), version.json ist %s - zuerst den Simulator veröffentlichen" % (w["sim_min"], ver))
+    ch = geaendert_seit((git_text("log", "-1", "--format=%H", "--", "simulator3d/version.json") or "").strip(),
+                        ["simulator3d"] + SIM_HP, SIM_OHNE)          # das Linux-Paket bringt auch den HP-Teil mit (linux_paket.sh)
+    if str(alt_vj.get("ver") or "") != ver:
+        ch = []                                              # die Nummer wird gerade erhöht (version.json noch nicht committet)
+    if ch and sim_key(gd) == sim_key(ver):
+        warn.append("Simulator geändert seit Sim %s (%d Dateien, z. B. %s), Nummer nicht erhöht (main.gd VERSION)"
+                    % (ver, len(ch), ", ".join(ch[:3])))
+    elif ch is None:
+        print("Hinweis: keine git-Geschichte - Änderungen am Simulator nicht geprüft")
     probleme += linux_pruefen(vj)
+    # ---- 🧩 Gehäuse
+    if w["geh"]:
+        if not re.match(r"^\d{1,3}\.\d{1,3}(?:\.\d{1,3})?$", w["geh"]):
+            probleme.append("bau.json «version» %s passt nicht zum Schema X.Y[.Z]" % w["geh"])
+        try:
+            geh_head = str(json.loads(git_text("show", "HEAD:hardware/gehaeuse/bau.json") or "{}").get("version") or "")
+        except ValueError:
+            geh_head = ""
+        gc = geaendert_seit(geh_basis(w["geh"]), ["hardware/gehaeuse"]) if geh_head == w["geh"] else []
+        if gc:
+            warn.append("Gehäuse geändert seit v%s (%d Dateien, z. B. %s), Nummer nicht erhöht (bau.json «version»)"
+                        % (w["geh"], len(gc), ", ".join(gc[:3])))
+    else:
+        probleme.append("hardware/gehaeuse/bau.json ohne «version»")
     for p in probleme:
         print("PROBLEM: " + p)
-    print("ok" if not probleme else "%d Probleme" % len(probleme))
+    for x in warn:
+        print("WARNUNG: " + x)
+    print(("ok" if not warn else "ok, %d Warnungen" % len(warn)) if not probleme else "%d Probleme" % len(probleme))
     return 1 if probleme else 0
 
 
@@ -251,8 +409,11 @@ def linux_pruefen(vj):
     try:                                                         # MoveEye offers it at /sim/simulator3d_linux.zip (Teil 300)
         q300 = open(os.path.join(REPO, "quelle", "300_werkzeuge_simulator3d.py"), encoding="utf-8").read()
         m = re.search(r'^SIM3D_LINUX = \{"version": "([^"]+)", "file": "[^"]+", "size": (\d+),\s*"sha256": "([0-9a-f]+)"', q300, re.M)
-        if m and (int(m.group(2)) != lx.get("size") or m.group(3) != lx.get("sha256")):
-            out.append("SIM3D_LINUX (300) passt nicht zum Linux-Paket in version.json - bauen.py --neue-version übernimmt es")
+        # Drei Spuren: der eingebettete Rückfall darf älter sein (Sim-Release allein), aber nie neuer; gleiche Nummer = gleiche Datei
+        if m and sim_key(m.group(1)) and sim_key(str(lx.get("ver"))) and sim_key(m.group(1)) > sim_key(str(lx.get("ver"))):
+            out.append("SIM3D_LINUX (300) %s ist neuer als das Linux-Paket %s in version.json" % (m.group(1), lx.get("ver")))
+        elif m and m.group(1) == str(lx.get("ver")) and (int(m.group(2)) != lx.get("size") or m.group(3) != lx.get("sha256")):
+            out.append("SIM3D_LINUX (300) passt nicht zum Linux-Paket %s in version.json - bauen.py --neue-version übernimmt es" % m.group(1))
     except OSError:
         pass
     if str(lx.get("ver")) != str(vj.get("ver")):
@@ -268,6 +429,9 @@ def sim_json(v, notes, zip_path=""):
         data = f.read()
     d = {"version": legacy(v), "ver": v, "name": "MoveEye Sim " + v, "file": ZIP_REL, "size": len(data),
          "sha256": hashlib.sha256(data).hexdigest(), "notes": notes}
+    mm = mw_min_gd()                                          # Drei Spuren: älteste passende MoveEye (abgleich.gd MW_MIN)
+    if mm:
+        d["mw_min"] = mm
     lx = linux_block(v)
     if lx is not None:
         d["linux"] = lx
@@ -298,9 +462,10 @@ def neu_data(n=15):
 
 
 def main():
-    ap = argparse.ArgumentParser(description="Versionsnummern MoveEye / MoveEye Sim (ab 3.0.0 eine Nummer)")
+    ap = argparse.ArgumentParser(description="Versionsnummern der drei Spuren MoveEye / MoveEye Sim / Gehäuse")
     ap.add_argument("--test", action="store_true")
     ap.add_argument("--pruefen", action="store_true")
+    ap.add_argument("--spuren", action="store_true", help="nur die Nummern der drei Spuren")
     ap.add_argument("--sim-json", nargs=2, metavar=("X.Y.Z", "NOTIZ"))
     ap.add_argument("--zip", default="", help="mit --sim-json: diese ZIP statt simulator3d/MotionWatch3D_Simulator.zip")
     ap.add_argument("--linux-json", action="store_true", help="nur den Block «linux» in version.json (Linux-ZIP)")
@@ -314,6 +479,9 @@ def main():
         return test()
     if a.pruefen:
         return pruefen()
+    if a.spuren:
+        print(spuren_text())
+        return 0
     if a.sim_json:
         return sim_json(a.sim_json[0], a.sim_json[1], a.zip)
     if a.linux_json:

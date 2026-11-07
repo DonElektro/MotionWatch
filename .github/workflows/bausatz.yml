@@ -1,22 +1,36 @@
-# Selbstbau-Paket als GitHub-Release (Wunsch des Besitzers, 01.11.2026)
-# Bei jedem Push auf main, der eine neue *signierte* Version bringt (versions.json), baut werkzeuge/bausatz.py das Paket
-# MoveEye_Bausatz_X.Y.Z.zip und legt es als Release «vX.Y.Z» ab – zusätzlich unter dem festen Namen MoveEye_Bausatz.zip.
-# Damit geht immer: https://github.com/DonElektro/MotionWatch/releases/latest/download/MoveEye_Bausatz.zip
+# Selbstbau-Paket als GitHub-Release (Wunsch des Besitzers, 01.11.2026) – Spur 🧩 Gehäuse (Drei Spuren, 03.11.2026)
+# Läuft nur, wenn sich das Gehäuse oder die Werkstatt ändert (hardware/gehaeuse/**, bau.json, Werkstatt-Quellen) oder von Hand –
+# NICHT mehr bei jeder MoveEye- oder Simulator-Version (kein Bausatz ohne Grund). werkzeuge/bausatz.py baut das Paket mit der
+# neusten SIGNIERTEN MoveEye-Version aus versions.json und legt es als Release «geh-<bau.json version>» ab (z. B. geh-5.3.1) –
+# zusätzlich unter dem festen Namen MoveEye_Bausatz.zip, als «latest». Damit geht weiterhin:
+#   https://github.com/DonElektro/MotionWatch/releases/latest/download/MoveEye_Bausatz.zip
 # Dazu die Werkstatt «Bauen» als eine HTML-Datei (werkzeuge/werkstatt_html.py, offline geprüft): MoveEye_Werkstatt_X.Y.Z.html und
 # MoveEye_Werkstatt.html -> https://github.com/DonElektro/MotionWatch/releases/latest/download/MoveEye_Werkstatt.html
-#  - Gibt es den Release vX.Y.Z schon, passiert nichts (von Hand: Actions -> Bausatz -> Run workflow, «neu» = ersetzen).
-#  - Nicht signiert (der Besitzer signiert später): kein Release; nach dem Signieren-Push läuft es von selbst.
-#  - Die KI-Releases (ki-modell*, ki-daten) bleiben «--latest=false» und stören «latest» nicht.
+#  - Gibt es den Release geh-<version> schon, passiert nichts (Gehäuse-Nummer in bau.json erhöhen; oder von Hand:
+#    Actions -> Bausatz -> Run workflow, «neu» = Dateien ersetzen, z. B. nach einer neuen MoveEye-Version).
+#  - Keine signierte MoveEye-Version im Repository: kein Release.
+#  - Ältere Releases «vX.Y.Z» (bis zu den drei Spuren) bleiben stehen. Die KI-Releases (ki-modell*, ki-daten) bleiben
+#    «--latest=false» und stören «latest» nicht.
 # Keine Geheimnisse: nur GITHUB_TOKEN (contents: write); der Signierschlüssel bleibt lokal, das Paket enthält nur Repo-Dateien.
 name: Bausatz
 on:
   push:
     branches: [main]
-    paths: [versions.json]
+    paths:
+      - "hardware/gehaeuse/**"
+      - "werkzeuge/bausatz.py"
+      - "werkzeuge/werkstatt_html.py"
+      - "werkzeuge/gehaeuse_bauen.py"
+      - "werkzeuge/three/**"
+      - "quelle/639v_daten_gehaeuse.py"
+      - "quelle/639vb_daten_bau3d.py"
+      - "quelle/639w_gehaeuse.py"
+      - "quelle/639wb_daten_druck_lage.py"
+      - "quelle/639wc_einzelteil.py"
   workflow_dispatch:
     inputs:
       neu:
-        description: "Bestehenden Release dieser Version neu bauen (Dateien ersetzen)"
+        description: "Bestehenden Release dieser Gehäuse-Version neu bauen (Dateien ersetzen, z. B. mit neuer MoveEye)"
         type: boolean
         default: false
 permissions:
@@ -29,25 +43,25 @@ env:
 
 jobs:
   bausatz:
-    name: Selbstbau-Paket -> Release
+    name: Selbstbau-Paket -> Release geh-X
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
-      - name: Version und Signatur
+      - name: Gehäuse-Version, neuste signierte MoveEye
         id: v
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          V=$(sed -n 's/^APP_VERSION = "\([0-9.]*\)"/\1/p' quelle/010_grundlagen.py)
-          echo "ver=$V" >> "$GITHUB_OUTPUT"
-          SIG=$(V="$V" python3 -c 'import json,os; v=os.environ["V"]; e=[x for x in json.load(open("versions.json"))["versions"] if x["version"]==v]; print("ja" if e and e[0].get("sig") and (e[0].get("data") or {}).get("sig") else "nein")')
-          echo "sig=$SIG" >> "$GITHUB_OUTPUT"
-          if gh release view "v$V" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then echo "da=ja" >> "$GITHUB_OUTPUT"; else echo "da=nein" >> "$GITHUB_OUTPUT"; fi
-          echo "Version $V · signiert: $SIG"
+          G=$(python3 -c 'import json; print(json.load(open("hardware/gehaeuse/bau.json"))["version"])')
+          V=$(python3 -c 'import sys; sys.path.insert(0, "werkzeuge"); import bausatz; print(bausatz.neuste_signierte(""))')
+          echo "geh=$G" >> "$GITHUB_OUTPUT"; echo "ver=$V" >> "$GITHUB_OUTPUT"
+          if [ -n "$V" ]; then echo "sig=ja" >> "$GITHUB_OUTPUT"; else echo "sig=nein" >> "$GITHUB_OUTPUT"; fi
+          if gh release view "geh-$G" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then echo "da=ja" >> "$GITHUB_OUTPUT"; else echo "da=nein" >> "$GITHUB_OUTPUT"; fi
+          echo "Gehäuse $G · MoveEye $V (neuste signierte)"
       - name: Nichts zu tun
         if: steps.v.outputs.sig != 'ja' || (steps.v.outputs.da == 'ja' && inputs.neu != true)
-        run: echo "Kein Release (signiert=${{ steps.v.outputs.sig }}, Release schon da=${{ steps.v.outputs.da }})"
+        run: echo "Kein Release (signierte MoveEye=${{ steps.v.outputs.sig }}, Release geh-${{ steps.v.outputs.geh }} schon da=${{ steps.v.outputs.da }})"
       - uses: actions/setup-python@v5
         if: steps.v.outputs.sig == 'ja' && (steps.v.outputs.da != 'ja' || inputs.neu == true)
         with:
@@ -61,21 +75,27 @@ jobs:
           python3 -m playwright install --with-deps chromium
       - name: Paket bauen
         if: steps.v.outputs.sig == 'ja' && (steps.v.outputs.da != 'ja' || inputs.neu == true)
-        run: python3 werkzeuge/bausatz.py --fest --aus ausgabe_bausatz && ls -la ausgabe_bausatz
+        env:
+          V: ${{ steps.v.outputs.ver }}
+        run: python3 werkzeuge/bausatz.py --fest --moveeye "$V" --aus ausgabe_bausatz && ls -la ausgabe_bausatz
       - name: Werkstatt als eine HTML-Datei (offline geprüft)
         if: steps.v.outputs.sig == 'ja' && (steps.v.outputs.da != 'ja' || inputs.neu == true)
-        run: python3 werkzeuge/werkstatt_html.py --aus ausgabe_werkstatt --test && ls -la ausgabe_werkstatt
-      - name: Release vX.Y.Z mit beiden Dateien
+        env:
+          V: ${{ steps.v.outputs.ver }}
+        run: python3 werkzeuge/werkstatt_html.py --datei "webcam_bewegung_${V//./_}.py" --aus ausgabe_werkstatt --test && ls -la ausgabe_werkstatt
+      - name: Release geh-X mit beiden Dateien
         if: steps.v.outputs.sig == 'ja' && (steps.v.outputs.da != 'ja' || inputs.neu == true)
         env:
           GH_TOKEN: ${{ github.token }}
           V: ${{ steps.v.outputs.ver }}
+          G: ${{ steps.v.outputs.geh }}
         run: |
           Z="ausgabe_bausatz/MoveEye_Bausatz_$V.zip"; F="ausgabe_bausatz/MoveEye_Bausatz.zip"
           WV="ausgabe_werkstatt/MoveEye_Werkstatt_$V.html"; WF="ausgabe_werkstatt/MoveEye_Werkstatt.html"
-          if gh release view "v$V" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            gh release upload "v$V" "$Z" "$F" "$WV" "$WF" -R "$GITHUB_REPOSITORY" --clobber
+          if gh release view "geh-$G" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "geh-$G" "$Z" "$F" "$WV" "$WF" -R "$GITHUB_REPOSITORY" --clobber
+            gh release edit "geh-$G" -R "$GITHUB_REPOSITORY" --latest
           else
-            printf 'MoveEye %s – Selbstbau-Paket: Anleitung (PDF, 5 Sprachen), Druckdateien Gehäuse v5.3, Bestelllisten (Basis / Komplett / Autark), MoveEye-Software (signiert) mit Installationsanleitung.\n\nImmer die neueste Version: https://github.com/%s/releases/latest/download/MoveEye_Bausatz.zip\n\nWerkstatt «Bauen» als eine Datei (Doppelklick, offline im Browser, 3D, alle Reiter, 5 Sprachen): https://github.com/%s/releases/latest/download/MoveEye_Werkstatt.html\n' "$V" "$GITHUB_REPOSITORY" "$GITHUB_REPOSITORY" > notes.md
-            gh release create "v$V" "$Z" "$F" "$WV" "$WF" -R "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "MoveEye $V" --notes-file notes.md --latest
+            printf 'Gehäuse %s · MoveEye %s – Selbstbau-Paket: Anleitung (PDF, 5 Sprachen), Druckdateien, Bestelllisten (Basis / Komplett / Autark), MoveEye-Software (signiert) mit Installationsanleitung.\n\nImmer die neueste Version: https://github.com/%s/releases/latest/download/MoveEye_Bausatz.zip\n\nWerkstatt «Bauen» als eine Datei (Doppelklick, offline im Browser, 3D, alle Reiter, 5 Sprachen): https://github.com/%s/releases/latest/download/MoveEye_Werkstatt.html\n' "$G" "$V" "$GITHUB_REPOSITORY" "$GITHUB_REPOSITORY" > notes.md
+            gh release create "geh-$G" "$Z" "$F" "$WV" "$WF" -R "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "MoveEye Bausatz · Gehäuse $G · MoveEye $V" --notes-file notes.md --latest
           fi

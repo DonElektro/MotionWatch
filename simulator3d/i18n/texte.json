@@ -11084,6 +11084,12 @@
   "it": "Impossibile posizionare il nuovo file.",
   "rm": "La nova datoteca na po betg vegnir messa."
  },
+ "Die Nummern dürfen verschieden sein, aber ein Programm ist älter, als das andere braucht – die ältere Seite aktualisieren (Knopf unten rechts).": {
+  "en": "The numbers may differ, but one program is older than the other one needs – update the older one (button at the bottom right).",
+  "fr": "Les numéros peuvent différer, mais un programme est plus ancien que ce dont l’autre a besoin – mettre à jour le plus ancien (bouton en bas à droite).",
+  "it": "I numeri possono essere diversi, ma un programma è più vecchio di quanto serve all’altro – aggiornare il più vecchio (pulsante in basso a destra).",
+  "rm": "Ils numers dastgan esser differents, ma in program è pli vegl che quai che l’auter dovra – actualisar il pli vegl (buttun giu a dretga)."
+ },
  "Die obere Stafelhütte": {
   "en": "The upper alp hut",
   "fr": "La cabane d'alpage supérieure",

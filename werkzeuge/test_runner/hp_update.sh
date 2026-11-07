@@ -11,10 +11,13 @@
 #   moveeye-hp-update --status              eingespielte Version, Zeitplan, letzte Zeilen des Protokolls
 #   moveeye-hp-update --entfernen           Dienst und Zeitplan entfernen (eingespielte Dateien bleiben)
 # Prüfkette (dieselbe wie beim Pi, nichts Neues zu signieren): versions.json -> Eintrag mit gültiger Ed25519-Signatur über
-# «MotionWatch|Version|Datei|SHA-256» (öffentlicher Schlüssel wie im Programm, Teil 380) -> webcam_bewegung_X_Y_Z.py mit
-# genau dieser SHA-256 -> darin SIM3D_LINUX (SHA-256 und Grösse der Linux-ZIP, Teil 300) -> MoveEyeSim3D_Linux.zip mit genau
-# dieser SHA-256 -> darin kiosk_sitzung.sh, testbild.py, hp/ (dieses Skript, Haken, Dienst-Einstellungen). Stimmt etwas
-# nicht, wird nichts eingespielt. Ältere Versionen als die eingespielte werden abgelehnt. Der geheime Schlüssel ist nie nötig.
+# «MotionWatch|Version|Datei|SHA-256» (öffentlicher Schlüssel wie im Programm, Teil 380). Drei Spuren (HP_FASSUNG 3): der
+# Simulator hat eine eigene Nummer und steht als Block «sim» in versions.json, das Linux-Paket mit eigener Signatur über
+# «MotionWatch|Sim-Version|simulator3d/MoveEyeSim3D_Linux.zip|SHA-256» -> MoveEyeSim3D_Linux.zip mit genau dieser SHA-256.
+# Ohne gültigen Block «sim» (Listen von vor den drei Spuren) wie bisher: webcam_bewegung_X_Y_Z.py mit der signierten SHA-256
+# -> darin SIM3D_LINUX (Teil 300) -> Linux-ZIP. Im Paket: kiosk_sitzung.sh, testbild.py, hp/ (dieses Skript, Haken,
+# Dienst-Einstellungen). Stimmt etwas nicht, wird nichts eingespielt. MoveEye- und Sim-Nummer werden je für sich gemerkt
+# (ZUSTAND/version, ZUSTAND/sim_version); ältere als die eingespielten werden abgelehnt. Der geheime Schlüssel ist nie nötig.
 # Spielt ein: Kiosk (kiosk_sitzung.sh, testbild.py, Logo), Haken und Dienst-Einstellungen des Test-Runners, fehlende Pakete,
 # den Simulator im Ordner des Kiosks und sich selbst. Fasst die Anmeldung des Runners (Token, .runner, .credentials, .env)
 # nie an. Läuft ein Test (Pause-Datei des Kiosks oder ein Job des Runners) oder wird gespielt, wird alles verschoben.
@@ -41,7 +44,7 @@ RU="mwrunner"
 PAUSE="/run/moveeye-test/kiosk_pause"
 SPIEL="/run/moveeye-spiel/spielen"
 SPIEL_TMPFILES="/etc/tmpfiles.d/moveeye-spiel.conf"
-HP_FASSUNG=2                     # erhöhen, wenn dieses Skript bei gleicher Version mehr einspielt als die Fassung davor
+HP_FASSUNG=3                     # 3 = drei Spuren (Sim aus versions.json «sim»); erhöhen, wenn dieses Skript bei gleicher Version mehr einspielt als die Fassung davor
 STATUS_PORT=8761
 # Pakete, die Kiosk und Testbild brauchen (nur fehlende werden installiert, nichts wird entfernt)
 PAKETE="python3-tk x11-xserver-utils libxss1 unzip curl"
@@ -171,6 +174,29 @@ if cmd == "manifest":            # manifest VERSIONS_JSON PUBKEY -> «Version Da
     if not best:
         fail("keine gültig signierte Version in versions.json")
     print(*best)
+elif cmd == "sim":               # sim VERSIONS_JSON PUBKEY -> «SHA Grösse Version» des signierten Linux-Pakets (Block «sim»)
+    pfad, pub = args
+    try:
+        with open(pfad, encoding="utf-8") as f:
+            m = json.load(f)
+    except (OSError, ValueError) as e:
+        fail("versions.json unlesbar: %s" % e)
+    s = m.get("sim") if isinstance(m, dict) else None
+    e = s.get("linux") if isinstance(s, dict) else None
+    if not isinstance(e, dict):
+        fail("kein Block «sim» mit Linux-Paket in versions.json")
+    v, fn, sh, sig = (str(e.get(k) or "") for k in ("ver", "file", "sha256", "sig"))
+    size = e.get("size")
+    if not VER_RE.match(v) or fn != "simulator3d/MoveEyeSim3D_Linux.zip" or not re.fullmatch(r"[0-9a-f]{64}", sh) \
+            or not isinstance(size, int) or not 0 < size <= 400000000:
+        fail("Block «sim»: Linux-Paket unvollständig")
+    try:
+        ok = ed25519_verify(bytes.fromhex(pub), ("MotionWatch|%s|%s|%s" % (v, fn, sh)).encode(), bytes.fromhex(sig))
+    except ValueError:
+        ok = False
+    if not ok:
+        fail("Block «sim»: Signatur des Linux-Pakets ungültig")
+    print(sh, size, v)
 elif cmd == "programm":          # programm DATEI SHA VERSION -> «SHA Grösse» der Linux-ZIP (SIM3D_LINUX)
     pfad, sh, v = args
     if sha256(pfad) != sh:
@@ -420,12 +446,14 @@ EOF
 }
 
 lauf() {   # einmal: laden, prüfen, einspielen
-	local nur_pruefen="$1" w v fn sh lx_sha lx_size lx_ver alt="" zip_ok=0 u
+	local nur_pruefen="$1" w v fn sh lx_sha="" lx_size="" lx_ver="" alt="" sim_alt="" sim_sha_alt="" zip_ok=0 u herkunft urls
 	w="$(mktemp -d /var/tmp/moveeye-hp-update.XXXXXX)" || { log "FEHLER: kein Arbeitsordner"; return 1; }
 	# shellcheck disable=SC2064
 	trap "rm -rf -- '$w'" EXIT
 	pruefer_schreiben "$w/pruefer.py"
 	[ -r "$ZUSTAND/version" ] && alt="$(tr -cd '0-9.' < "$ZUSTAND/version")"
+	[ -r "$ZUSTAND/sim_version" ] && sim_alt="$(tr -cd '0-9.' < "$ZUSTAND/sim_version")"
+	[ -r "$ZUSTAND/sim_sha256" ] && sim_sha_alt="$(tr -cd '0-9a-f' < "$ZUSTAND/sim_sha256")"
 	[ "$nur_pruefen" -eq 0 ] && [ "$(readlink -f "$0")" = "$SELBST" ] && einheiten
 	if [ "$nur_pruefen" -eq 0 ] && [ "$PLANLAUF" -eq 1 ]; then
 		# Zeitplan (alle 15 Min.): still fertig, wenn vor kurzem geprüft (ausser kurz nach dem Start); beschäftigt: höchstens
@@ -455,27 +483,52 @@ lauf() {   # einmal: laden, prüfen, einspielen
 	read -r v fn sh < <(pruefer manifest "$w/versions.json" "$UPDATE_PUBKEY" 2> "$w/fehler") || true
 	if [ -z "${sh:-}" ]; then log "ABGELEHNT: $(cat "$w/fehler")"; return 1; fi
 	log "Signatur gültig: MoveEye $v ($fn)"
+	read -r lx_sha lx_size lx_ver < <(pruefer sim "$w/versions.json" "$UPDATE_PUBKEY" 2> "$w/fehler_sim") || true
+	if [ -n "${lx_ver:-}" ]; then
+		herkunft="versions.json «sim»"
+		log "Signatur gültig: Sim $lx_ver (Linux-Paket, eigene Spur)"
+	elif grep -q 'Signatur\|unvollständig' "$w/fehler_sim"; then
+		log "ABGELEHNT: $(cat "$w/fehler_sim")"; return 1       # ein Block «sim», der nicht stimmt: nie auf die Programmdatei ausweichen
+	else
+		herkunft="Programmdatei"
+	fi
 	if [ -n "$alt" ] && [ "$IMMER" -eq 0 ] && [ "$nur_pruefen" -eq 0 ]; then
-		if [ "$alt" = "$v" ] && [ "$(cat "$ZUSTAND/fassung" 2>/dev/null)" = "$HP_FASSUNG" ]; then
+		if [ "$alt" != "$v" ] && ! pruefer vergleich "$v" "$alt"; then log "ABGELEHNT: $v ist älter als die eingespielte $alt"; return 1; fi
+		if [ "$herkunft" = Programmdatei ] && [ "$alt" = "$v" ] && [ "$(cat "$ZUSTAND/fassung" 2>/dev/null)" = "$HP_FASSUNG" ]; then
 			log "Schon eingespielt - nichts zu tun."; stempel; return 0
 		fi
-		[ "$alt" = "$v" ] && log "Gleiche Version, neue Fassung dieses Updates - spiele noch einmal ein."
-		if [ "$alt" != "$v" ] && ! pruefer vergleich "$v" "$alt"; then log "ABGELEHNT: $v ist älter als die eingespielte $alt"; return 1; fi
 	fi
-	if ! { laden "$REPO_RAW/v$v/$fn" "$w/programm.py" 64000000 || laden "$REPO_RAW/main/$fn" "$w/programm.py" 64000000; }; then
-		log "FEHLER: $fn nicht geladen"; return 1
+	if [ "$herkunft" = Programmdatei ]; then
+		if ! { laden "$REPO_RAW/v$v/$fn" "$w/programm.py" 64000000 || laden "$REPO_RAW/main/$fn" "$w/programm.py" 64000000; }; then
+			log "FEHLER: $fn nicht geladen"; return 1
+		fi
+		read -r lx_sha lx_size lx_ver < <(pruefer programm "$w/programm.py" "$sh" "$v" 2> "$w/fehler") || true
+		if [ -z "${lx_ver:-}" ]; then log "ABGELEHNT: $(cat "$w/fehler")"; return 1; fi
+		log "Programmdatei geprüft (SHA-256 wie signiert), Linux-Paket $lx_ver: $lx_sha"
 	fi
-	read -r lx_sha lx_size lx_ver < <(pruefer programm "$w/programm.py" "$sh" "$v" 2> "$w/fehler") || true
-	if [ -z "${lx_ver:-}" ]; then log "ABGELEHNT: $(cat "$w/fehler")"; return 1; fi
-	log "Programmdatei geprüft (SHA-256 wie signiert), Linux-Paket $lx_ver: $lx_sha"
-	for u in "$REPO_RAW/v$v/simulator3d/MoveEyeSim3D_Linux.zip" "$REPO_RAW/main/simulator3d/MoveEyeSim3D_Linux.zip"; do
+	if [ -n "$sim_alt" ] && [ "$IMMER" -eq 0 ] && [ "$nur_pruefen" -eq 0 ]; then
+		if [ "$sim_alt" != "$lx_ver" ] && ! pruefer vergleich "$lx_ver" "$sim_alt"; then
+			log "ABGELEHNT: Sim $lx_ver ist älter als die eingespielte Sim $sim_alt"; return 1
+		fi
+		if [ "$sim_sha_alt" = "$lx_sha" ] && [ "$(cat "$ZUSTAND/fassung" 2>/dev/null)" = "$HP_FASSUNG" ]; then
+			[ "$alt" != "$v" ] && log "Neue MoveEye $v, der Simulator bleibt Sim $lx_ver - am HP nichts einzuspielen."
+			[ "$alt" = "$v" ] && log "Schon eingespielt - nichts zu tun."
+			mkdir -p "$ZUSTAND" && echo "$v" > "$ZUSTAND/version"
+			stempel; return 0
+		fi
+		[ "$sim_sha_alt" = "$lx_sha" ] && log "Gleiche Version, neue Fassung dieses Updates - spiele noch einmal ein."
+	fi
+	urls="$REPO_RAW/main/simulator3d/MoveEyeSim3D_Linux.zip"
+	if [ "$herkunft" = Programmdatei ]; then urls="$REPO_RAW/v$v/simulator3d/MoveEyeSim3D_Linux.zip $urls"
+	else urls="$REPO_RAW/sim-$lx_ver/simulator3d/MoveEyeSim3D_Linux.zip $urls"; fi
+	for u in $urls; do
 		rm -f "$w/linux.zip"
 		laden "$u" "$w/linux.zip" 400000000 || continue
 		if pruefer datei "$w/linux.zip" "$lx_sha" "$lx_size" > /dev/null 2> "$w/fehler"; then zip_ok=1; break; fi
 		log "Linux-Paket von $u: $(cat "$w/fehler") - nicht verwendet"
 	done
 	[ $zip_ok -eq 1 ] || { log "ABGELEHNT: kein Linux-Paket mit der signierten Prüfsumme gefunden"; return 1; }
-	log "Linux-Paket geprüft (SHA-256 und Grösse wie in der signierten Programmdatei)"
+	log "Linux-Paket geprüft (SHA-256 und Grösse wie signiert, aus: $herkunft)"
 	if [ "$nur_pruefen" -eq 1 ]; then
 		unzip -Z1 "$w/linux.zip" | grep '^MoveEyeSim3D/.*[^/]$' | sed 's/^/  /'
 		log "Prüfung OK - nichts eingespielt (--pruefen)."
@@ -487,7 +540,7 @@ lauf() {   # einmal: laden, prüfen, einspielen
 	[ -f "$d/kiosk_sitzung.sh" ] || { log "FEHLER: kiosk_sitzung.sh fehlt im Paket"; return 1; }
 	if [ ! -f "$d/hp/hp_update.sh" ]; then
 		log "Dieses Paket hat noch keinen HP-Teil (vor 3.53.0) - nichts eingespielt, warte auf die nächste Version."
-		mkdir -p "$ZUSTAND" && echo "$v" > "$ZUSTAND/version"
+		mkdir -p "$ZUSTAND" && echo "$v" > "$ZUSTAND/version" && echo "$lx_ver" > "$ZUSTAND/sim_version" && echo "$lx_sha" > "$ZUSTAND/sim_sha256"
 		stempel
 		return 0
 	fi
@@ -520,9 +573,9 @@ lauf() {   # einmal: laden, prüfen, einspielen
 			if pkill -TERM -u "$SIM_BENUTZER" -f "$MUSTER" 2>/dev/null; then log "Simulator neu gestartet (die Kiosk-Schleife startet ihn)"; fi
 		fi
 	fi
-	mkdir -p "$ZUSTAND" && echo "$v" > "$ZUSTAND/version"
+	mkdir -p "$ZUSTAND" && echo "$v" > "$ZUSTAND/version" && echo "$lx_ver" > "$ZUSTAND/sim_version" && echo "$lx_sha" > "$ZUSTAND/sim_sha256"
 	stempel
-	log "Fertig: MoveEye $v eingespielt ($GEAENDERT Datei(en) neu)."
+	log "Fertig: MoveEye $v · Sim $lx_ver eingespielt ($GEAENDERT Datei(en) neu)."
 	return 0
 }
 
@@ -534,7 +587,7 @@ case "$MODUS" in
 		lauf 1
 		;;
 	status)
-		echo "Eingespielt: $(cat "$ZUSTAND/version" 2>/dev/null || echo nichts)"
+		echo "Eingespielt: MoveEye $(cat "$ZUSTAND/version" 2>/dev/null || echo -) · Sim $(cat "$ZUSTAND/sim_version" 2>/dev/null || echo -)"
 		systemctl list-timers --no-pager moveeye-hp-update.timer 2>/dev/null | head -n 2
 		tail -n 15 "$LOG" 2>/dev/null
 		;;

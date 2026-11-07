@@ -27,10 +27,10 @@ Push-Nachrichten). Einrichtung: `docs/Einrichtung_Raspberry_Pi.md`, Gehäuse: `h
   `python3 werkzeuge/bauen.py` setzt sie Byte für Byte zur **einen Datei** `webcam_bewegung_X_Y_Z.py` zusammen (ca. 51'000 Zeilen),
   die der Pi, die Update-Funktion und die Signatur kennen. **Die grosse Datei nie von Hand ändern** – GitHub prüft bei jedem Push
   (`bauen.py --pruefen`), dass sie zu `quelle/` passt. Alle Teile sind zusammen *ein* Programm (gemeinsame Namen, keine Importe).
-- Jede Änderung = **neue Version und neue Datei** (Nummern-Regeln ab 3.0.0: Abschnitt «Versionierung»): `python3 werkzeuge/bauen.py --neue-version "Was neu ist"` erhöht die Nummer an
+- Jede Änderung = **neue Version und neue Datei** (Nummern-Regeln: Abschnitt «Versionierung», drei Spuren): `python3 werkzeuge/bauen.py --neue-version "Was neu ist"` erhöht die MoveEye-Nummer an
   allen Stellen (`APP_VERSION`, Fenstertitel, `{tr('Build')}`, Dateiname in der Hilfe), schreibt die Zeile in die Änderungsliste
-  (`quelle/000_kopf_aenderungen.py`), übernimmt die Simulator-Version aus `simulator3d/version.json`, baut die Datei und entfernt
-  die ältere Datei derselben Hauptversion. `--version X.Y.Z` für eine bestimmte Nummer.
+  (`quelle/000_kopf_aenderungen.py`), übernimmt den Simulator aus `simulator3d/version.json` als eingebetteten Rückfall, baut die
+  Datei und entfernt die ältere Datei derselben Hauptversion. `--version X.Y.Z` für eine bestimmte Nummer.
 - **Prüfstand** (`pruefstand/`): misst die Erkennung mit dem 3D-Simulator (feste Testläufe) und schreibt `pruefstand/VERLAUF.md`.
   Vor Änderungen an der Erkennung und danach laufen lassen und vergleichen; auf GitHub: Actions → «Prüfstand».
   Ab 2.98.13: Szene «stellplatz», Besucher gehen durchs Bild der Kopfkamera, `--mal 2`, `--realismus an,aus` (Zeilen
@@ -46,8 +46,8 @@ Push-Nachrichten). Einrichtung: `docs/Einrichtung_Raspberry_Pi.md`, Gehäuse: `h
   englische Text. Deutsch: `DE` (Python) bzw. `I18N.de` / `TX` / `ALT` / `WZ` (Web). Französisch / Italienisch / Romanisch: Tabellen
   `TRX["fr"|"it"|"rm"]` und die Anleitung `HELP_X` am Dateiende (das Web lädt sie über `/i18n/<sprache>.js`). Neue Texte in
   allen Sprachen ergänzen; fehlt ein romanischer Text, erscheint Deutsch, bei Französisch / Italienisch Englisch.
-- Danach im Repository: `python3 werkzeuge/bauen.py --signieren SCHLUESSELDATEI` (schreibt und **signiert** `versions.json`,
-  dann Selbsttest), committen, pushen. Ab 2.4.0 installieren die Geräte nur signierte Versionen. Den geheimen Schlüssel
+- Danach im Repository: `python3 werkzeuge/bauen.py --signieren SCHLUESSELDATEI` (schreibt und **signiert** `versions.json`
+  samt Block `sim`, dann Selbsttest; nur Simulator: `--nur-signieren`, baut nichts), committen, pushen. Ab 2.4.0 installieren die Geräte nur signierte Versionen. Den geheimen Schlüssel
   (`MotionWatch_Signierschluessel.txt`, 64 Hex-Zeichen) hat nur der Besitzer – bei Bedarf danach fragen; **nie ins Repository** legen.
   Ohne Schlüssel: Version trotzdem hochladen, der Besitzer signiert später (oder vorübergehend «Auch nicht signierte Versionen annehmen»).
   Der Pi holt Updates von `https://raw.githubusercontent.com/DonElektro/MotionWatch/main/versions.json`.
@@ -64,21 +64,44 @@ Push-Nachrichten). Einrichtung: `docs/Einrichtung_Raspberry_Pi.md`, Gehäuse: `h
   - Einstellungen bleiben bei neuen Versionen erhalten (`~/.config/motionwatch/`); `VOLATILE` wird nie geladen.
 - Anleitung (`HELP_PAGE`, Abschnitte `<section id=…>` DE und EN) bei neuen Funktionen ergänzen.
 
-## Versionierung (gilt ab dem Release 3.0.0)
+## Versionierung: drei Spuren (Entscheid des Besitzers 03.11.2026, gilt bis zum Zusammenführen)
 
-- **Eine gemeinsame Nummer X.Y.Z:** «MoveEye 3.0.0» und «MoveEye Sim 3.0.0» haben immer dieselbe Nummer und werden **immer
-  zusammen** veröffentlicht (auch wenn sich nur eines geändert hat). Start bei **3.0.0** (davor MoveEye 2.98.x / Simulator 3D-4.8x).
-- **Zählen:** neue Funktion = zweite Zahl +1 (3.0.4 → 3.1.0), reine Fehlerkorrektur = dritte Zahl +1 (3.1.0 → 3.1.1),
-  grosser Sprung (z. B. Hardware) = erste Zahl +1 (→ 4.0.0). Jede Zahl höchstens 3 Ziffern (Update-Muster der Geräte).
-- **Dateiname bleibt** `webcam_bewegung_X_Y_Z.py` (z. B. `webcam_bewegung_3_0_0.py`): alte Geräte suchen genau dieses Muster
-  (`VFILE_RE`, Signatur über Version + Dateiname). Pro Hauptversion X.Y nur die neueste Datei, höchstens 10 Hauptversionen.
-- **Brücke für alte Simulatoren:** sie lesen in `simulator3d/version.json` nur `version` und vergleichen «3D-A.B» als Zahlen
-  («3.0.0» wäre für sie älter als «3D-4.82»). Darum steht dort immer `"version": "3D-(X+2).Y.Z"` (3.0.0 → `3D-5.0.0`,
-  3.1.0 → `3D-5.1.0`, 4.0.0 → `3D-6.0.0`) und die echte Nummer in `"ver": "X.Y.Z"`. Neue Simulatoren und MoveEye lesen `ver`
-  und rechnen «3D-A.B» als (A−2).B (`simulator3d/scripts/versionen.gd`, `sim_vkey()` in Teil 300, `vnum` im Web-JS, Teil 470).
-  Dieses Feld nie weglassen, auch nicht in späteren Versionen.
-- **Grösse:** Geräte bis 2.98.x nehmen nur Programmdateien bis 8 MiB an (3.0.0 hat rund 7.6 MB) – 3.0.0 muss darunter
-  bleiben. Ab 3.0.0 gilt 32 MiB (`UPD_MAX_BYTES`, Teil 390).
+- **Drei Spuren im selben Repository, jede mit eigener Nummer**, veröffentlicht wird nur die geänderte Spur (kein Sim-Export,
+  kein Bausatz ohne Grund). Berichte immer mit Vorsilben: «MoveEye 3.56.0 · Sim 3.55.4 · Gehäuse 5.3.1»
+  (`python3 werkzeuge/versionen.py --spuren`).
+  - 📷 **MoveEye 3.x**: `APP_VERSION` (Teil 010) + Eintrag in `versions.json` (signiert).
+  - 🎮 **Simulator** (eigene Nummer, weiter ab 3.55.x): `VERSION` in `simulator3d/scripts/main.gd`, `simulator3d/version.json`
+    (`ver`, Brücke `version`, Block `linux`, optional `mw_min`), Block `NEU IN X.Y.Z` in `simulator3d/Lies mich.txt`; signiert
+    als Block `"sim"` in `versions.json`.
+  - 🧩 **Gehäuse v5.x**: `"version"` in `hardware/gehaeuse/bau.json` (X.Y oder X.Y.Z), Release `geh-X.Y.Z` mit dem Bausatz.
+- **Pausiert bis zum Zusammenführen:** «eine Nummer für alles» (ab 3.0.0), MoveEye = Sim angleichen, Kamera/Gehäuse überall
+  nachziehen, Bausatz und Homepage-Prüfung bei jedem Release. **Weiter gültig:** Sicherheit, Signatur (gleicher Schlüssel,
+  gleiches Verfahren), «So testest du», Name «Elektro», Fragebogen-Regeln. Am Schluss (Zusammenführen): gemeinsame Nummer +
+  grosser Konzept-Check; dann diesen Abschnitt zurück auf «eine Nummer» stellen.
+- **Zählen** (jede Spur für sich): neue Funktion = zweite Zahl +1, reine Fehlerkorrektur = dritte Zahl +1, grosser Sprung = erste
+  Zahl +1. Jede Zahl höchstens 3 Ziffern (Update-Muster der Geräte). Keine Nummer wird je kleiner.
+- **Verträglichkeit statt gleicher Nummer:** `SIM_MIN` (Teil 545, geht als `sim_min` im Zustand an den Simulator) und `MW_MIN`
+  (`simulator3d/scripts/abgleich.gd`, geht als `mw_min` in `/info` und in `version.json`) nennen die älteste Version der
+  anderen Spur, mit der es geht. Das Versions-Paar (Teil 639zb / `abgleich.gd`) warnt nur darunter. Erhöhen, wenn sich die
+  Schnittstelle (`simulator3d/schnittstelle.json`, Teil 558 / `schnittstelle.gd`) so ändert, dass die ältere Seite nicht mitkommt.
+- **Simulator für /sim und den HP aus der signierten Liste:** `make_manifest` (Teil 390, `bauen.py --signieren` oder
+  `--nur-signieren`) schreibt `"sim": {"ver", "win": {file, size, sha256, ver, sig}, "linux": {…}}` in `versions.json`;
+  Signatur wie bei den Programmdateien (Ed25519 über `MotionWatch|ver|file|sha256`). MoveEye (Teil 300 `sim_manifest_take`)
+  nimmt nur einen richtig signierten Eintrag für genau diese Datei und nie eine ältere Nummer, sonst die eingebettete
+  `SIM3D` / `SIM3D_LINUX` (Rückfall = Simulator des eigenen Releases). `moveeye-hp-update` (HP_FASSUNG 3) holt die Sim-Nummer
+  ebenso aus dem Block `sim` und merkt MoveEye- und Sim-Nummer getrennt. **Alt:** MoveEye vor diesem Umbau kennt nur die
+  eingebettete Prüfsumme – nach einem Sim-Release allein liefert es /sim erst nach dem eigenen Update wieder.
+- **Gehäuse-Daten** in MoveEye (Teil 639v) und im Simulator (`werkstatt_daten.gd`, Modelle) kommen mit deren nächstem Release
+  (`gehaeuse_bauen.py --sim`); der Selbsttest meldet abweichende Gehäuse-Daten bis dahin nur als Warnung.
+- **In MoveEye eingebettet** (dann braucht es auch ein MoveEye-Release): `simulator3d/ui_gemeinsam.json`,
+  `simulator3d/fehler_katalog.json` (`bauen.py --pruefen` schlägt sonst fehl).
+- **Dateiname bleibt** `webcam_bewegung_X_Y_Z.py`: alte Geräte suchen genau dieses Muster (`VFILE_RE`, Signatur über Version +
+  Dateiname). Pro Hauptversion X.Y nur die neueste Datei, höchstens 10 Hauptversionen.
+- **Brücke für alte Simulatoren:** sie lesen in `simulator3d/version.json` nur `version` und vergleichen «3D-A.B» als Zahlen.
+  Darum steht dort immer `"version": "3D-(X+2).Y.Z"` zur Sim-Nummer `"ver": "X.Y.Z"` (3.55.4 → `3D-5.55.4`). Neue Simulatoren und
+  MoveEye lesen `ver` und rechnen «3D-A.B» als (A−2).B (`simulator3d/scripts/versionen.gd`, `sim_vkey()` in Teil 300, `vnum`
+  im Web-JS, Teil 470). Dieses Feld nie weglassen und **nie kleiner** werden lassen (`versionen.py --pruefen` prüft es).
+- **Grösse:** Geräte bis 2.98.x nehmen nur Programmdateien bis 8 MiB an. Ab 3.0.0 gilt 32 MiB (`UPD_MAX_BYTES`, Teil 390).
 - **Zusatzdatei**: `bauen.py` lagert grosse Literale
   (Web-Seiten, JavaScript, Bilder als base64, Übersetzungen fr/it/rm, ältere Einträge der Änderungsliste) in
   `moveeye_daten_X_Y_Z.zip` neben `webcam_bewegung_X_Y_Z.py` aus; `quelle/` bleibt unverändert. Die Hauptdatei kennt die
@@ -93,21 +116,28 @@ Push-Nachrichten). Einrichtung: `docs/Einrichtung_Raspberry_Pi.md`, Gehäuse: `h
   Wäre eine Hauptdatei je über 8 MiB, schreibt `--make-manifest` `"needs": "3.0.0"` in ihren Eintrag: Geräte ab dieser Fassung
   nehmen dann zuerst die Brücke und danach die neueste (`update_pick`, Teil 397). Ältere Geräte (2.98.x bis zur letzten Version ohne Zusatzdatei) wählen immer die
   neueste – für sie ist die 8-MiB-Grenze der Hauptdatei die eigentliche Sicherung, 3.0.2 von Hand in der Liste der Rückweg.
-- **Release-Ablauf ab 3.0.0** (nur der Koordinator, Schlüssel nur beim Besitzer):
-  1. Nummer wählen (Regeln oben); `VERSION := "X.Y.Z"` in `simulator3d/scripts/main.gd`, Block `NEU IN X.Y.Z` in
-     `simulator3d/Lies mich.txt`, Kopf von `simulator3d/UEBERGABE.md`.
-  2. Simulator exportieren und ZIP packen, dann `python3 werkzeuge/versionen.py --neu-data` (vor dem Export) und
-     `python3 werkzeuge/versionen.py --sim-json X.Y.Z "Notiz"` (schreibt `version.json` mit `version` + `ver`).
-  3. `python3 werkzeuge/bauen.py --version X.Y.Z --neue-version "Was neu ist"` (oder `--stufe funktion|fehler|gross` statt
-     `--version`); übernimmt `ver` aus `version.json` in `SIM3D` (Teil 300).
-  4. `python3 werkzeuge/versionen.py --pruefen` (eine Nummer überall, Brücke stimmt, Hauptdatei unter 8 MiB, Zusatzdatei und
-     Brücken-Datei da), dann `bauen.py --signieren …`
-     (Selbsttest prüft dasselbe noch einmal: «Version numbers …»), Rauchtest, committen, pushen.
-  5. **Projektschalter «Projekt veröffentlicht»:** Beim Veröffentlichen `projekt_veroeffentlicht` auf `true` setzen
-     (`simulator3d/ui_gemeinsam.json`, oberste Ebene; gilt für MoveEye und Simulator, danach `bauen.py` bettet sie ein).
-     `false` = Entwicklung: die Links zu Neuerungen im Fenster «Neu in …» sind standardmässig an; `true` = standardmässig aus.
-     Eine eigene Wahl im Entwickler-Bereich («Links zu Neuerungen», auto / an / aus) überschreibt den Standard. Neue Ziele
-     für die Links: `neu_ziele` in derselben Datei (Version -> Seite / Einstellung / Simulator-Menü / -Aktion).
+- **Prüfen:** `python3 werkzeuge/versionen.py --pruefen` prüft jede Spur für sich (Exit 1 nur bei Problemen: Brücke / Nummer
+  kleiner, Minimum der anderen Spur nicht erfüllt, Grösse, Brücken-Datei) und **warnt**, wenn Dateien einer Spur seit ihrem
+  letzten Release geändert sind, die Nummer aber nicht. Tests: `werkzeuge/versionen_spuren_test.py`, `werkzeuge/sim_manifest_test.py`.
+- **Release-Ablauf** (nur der Integrator, Schlüssel nur beim Besitzer; Werkzeuge ausserhalb des Repositorys: `rel_mw.sh`,
+  `rel_sim.sh`, `rel_geh.sh`, `pub.sh`; die alte `rel_kette.sh` nur noch mit `ALTE_KETTE=1`):
+  - 📷 **MoveEye allein:** `bauen.py --version X.Y.Z --neue-version "Was neu ist"` (bettet den aktuellen Simulator als
+    Rückfall ein), `versionen.py --pruefen`, `bauen.py --signieren …` (schreibt auch den Block `sim`), Selbsttest, Rauchtest,
+    committen, pushen. Kein Sim-Export, kein Bausatz.
+  - 🎮 **Simulator allein:** `VERSION := "X.Y.Z"` in `main.gd`, Block `NEU IN X.Y.Z` in «Lies mich», Kopf von `UEBERGABE.md`;
+    exportieren (Windows + Linux), ZIP + Linux-Paket, `versionen.py --neu-data`, `versionen.py --sim-json X.Y.Z "Notiz"`,
+    dann `bauen.py --nur-signieren …` (baut nichts, die MoveEye-Datei bleibt Byte für Byte; Block `sim` neu signiert),
+    Selbsttest, committen, pushen. Der Prüfstand läuft auch bei einer neuen Sim-Nummer.
+  - 🧩 **Gehäuse allein:** `"version"` in `bau.json` erhöhen, `bau_pruefen.py` (nach Freigabe `--festhalten`), committen,
+    pushen: der Workflow «Bausatz» baut den Release `geh-X.Y.Z` mit der neusten signierten MoveEye
+    (`releases/latest/download/MoveEye_Bausatz.zip` bleibt). Kein MoveEye-Bau, kein Signieren.
+  - **Erstes Mal nach dem Umbau** (Reihenfolge zählt): zuerst MoveEye mit der neuen Prüfung (zusammen mit einem Sim-Paket, das
+    das neue `hp_update.sh` enthält: `rel_sim.sh … SIGNIEREN=0`, dann `rel_mw.sh`), erst danach Releases einer Spur allein.
+  - **Projektschalter «Projekt veröffentlicht»:** Beim Veröffentlichen `projekt_veroeffentlicht` auf `true` setzen
+    (`simulator3d/ui_gemeinsam.json`, oberste Ebene; gilt für MoveEye und Simulator, danach `bauen.py` bettet sie ein).
+    `false` = Entwicklung: die Links zu Neuerungen im Fenster «Neu in …» sind standardmässig an; `true` = standardmässig aus.
+    Eine eigene Wahl im Entwickler-Bereich («Links zu Neuerungen», auto / an / aus) überschreibt den Standard. Neue Ziele
+    für die Links: `neu_ziele` in derselben Datei (Version -> Seite / Einstellung / Simulator-Menü / -Aktion).
 
 ## Testen (vor jeder Auslieferung)
 

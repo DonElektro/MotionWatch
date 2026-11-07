@@ -68,6 +68,14 @@ def sim_owns_updates():
 # «MoveEye Sim 3.0.0»). simulator3d/version.json keeps «version» = «3D-(X+2).Y.Z» for old simulators (they only compare that
 # field: 3.0.0 would be older than 3D-4.82 for them) and has the real number in «ver». The self-test checks the order of the
 # numbers and - in the repository (GitHub) - that version.json, SIM3D and APP_VERSION fit together.
+# Drei Spuren (Besitzer 03.11.2026, bis zum Zusammenführen): MoveEye, the simulator and the case each have their own number and
+# are released on their own. Instead of «the same number» each side names the OLDEST version of the other it works with:
+# SIM_MIN here (MoveEye -> simulator, sent as «sim_min» in the state, 639zb) and MW_MIN in simulator3d/scripts/abgleich.gd
+# (simulator -> MoveEye, sent as «mw_min» in /info, also in version.json). Raise it when the interface (schnittstelle.json)
+# changes in a way the older side cannot follow. The version pair (639zb / abgleich.gd) only warns below the minimum.
+SIM_MIN = "3.55.0"
+
+
 def versionen_selftest():
     order = ["2.98.113", "2.98.114", "3.0.0", "3.0.1", "3.1.0", "3.1.1", "3.10.0", "4.0.0"]
     for a, b in zip(order, order[1:]):
@@ -78,6 +86,7 @@ def versionen_selftest():
         assert sim_vkey(a) < sim_vkey(b), f"simulator {a} < {b}"
     assert sim_vkey("3D-5.0.0") == sim_vkey("3.0.0") == sim_vkey("MoveEye Sim 3.0.0") == (3, 0, 0), "bridge 3D-5.0.0 = 3.0.0"
     assert sim_vlegacy("3.0.0") == "3D-5.0.0" and sim_vlegacy("3.10.2") == "3D-5.10.2" and sim_vlegacy("3D-4.82") == "3D-4.82"
+    assert VER_RE.match(SIM_MIN) and sim_vkey(SIM_MIN) <= sim_vkey(SIM3D_EMBED["version"]), f"SIM_MIN {SIM_MIN} newer than the own simulator"
     p = os.path.join(HERE, "simulator3d", "version.json")
     if not os.path.isfile(p):
         return None                                               # on the Pi: no repository next to the program
@@ -87,10 +96,68 @@ def versionen_selftest():
     assert old.startswith("3D-"), f"version.json «version» must stay «3D-…» for old simulators (is {old!r})"
     if ver:
         assert old == sim_vlegacy(ver), f"version.json: «version» {old} must be {sim_vlegacy(ver)} (= {ver} for old simulators)"
-        assert SIM3D["version"] in (ver, old), f"SIM3D {SIM3D['version']} does not fit version.json {ver}"
-    if _vkey(APP_VERSION) >= (3, 0, 0):
-        assert ver == APP_VERSION == SIM3D["version"], f"from 3.0.0 one number: MoveEye {APP_VERSION}, SIM3D {SIM3D['version']}, version.json {ver or old}"
-    return f"simulator {ver or old} (old simulators read {old})"
+        # 3 tracks (Besitzer 03.11.2026): each part has its own number - the simulator of this MoveEye may be older than the
+        # one in the repository (a release of the simulator alone), never newer
+        assert sim_vkey(SIM3D_EMBED["version"]) <= sim_vkey(ver), f"SIM3D {SIM3D_EMBED['version']} newer than version.json {ver}"
+        assert sim_vkey(SIM_MIN) <= sim_vkey(ver), f"MoveEye needs simulator {SIM_MIN}, version.json has {ver}"
+        mm = str(d.get("mw_min") or "")
+        assert not mm or (VER_RE.match(mm) and _vkey(mm) <= _vkey(APP_VERSION)), f"the simulator {ver} needs MoveEye {mm} (this is {APP_VERSION})"
+    return f"MoveEye {APP_VERSION} · Sim {ver or old} (old simulators read {old}) · needs Sim ≥ {SIM_MIN}" + (
+        f", Sim needs MoveEye ≥ {d.get('mw_min')}" if d.get("mw_min") else "")
 
 
-SELFTEST_EXTRA.append(("Version numbers: order, file names, bridge for old simulators (3.0.0)", versionen_selftest))
+SELFTEST_EXTRA.append(("Version numbers: order, file names, bridge for old simulators, minimum of the other track (3 tracks)", versionen_selftest))
+
+
+def sim_manifest_selftest():
+    """3 tracks: a correctly signed «sim» block of versions.json is taken, a changed / unsigned / foreign one is not - with a
+    TEST key made here (never the signing key; the public key is swapped only during this test)"""
+    import hashlib
+    keep = ({k: SIM3D[k] for k in SIM3D_EMBED}, {k: SIM3D_LINUX[k] for k in SIM3D_LINUX_EMBED}, dict(SIMMAN))
+    g = globals()
+    real = g["UPDATE_PUBKEY"]
+    try:
+        if not _ED:
+            _ED.extend(_ed25519_impl())
+        seed = hashlib.sha256(b"MoveEye self-test key - not the signing key").digest()
+        a, b, c = sim_vkey(SIM3D_EMBED["version"])
+        nv = "%d.%d.%d" % (a, b, c + 1)
+        sha = hashlib.sha256(b"fake simulator zip").hexdigest()
+
+        def blk(v=nv, fn=SIM3D["file"], sh=sha, key=seed, lx=False):
+            e = {"ver": v, "file": fn, "size": 18, "sha256": sh, "sig": _ED[1](key, _sig_msg(v, fn, sh)).hex()}
+            r = {"ver": v, "win": e}
+            if lx:
+                fl = SIM3D_LINUX["file"]
+                r["linux"] = {"ver": v, "file": fl, "size": 19, "sha256": sh, "sig": _ED[1](key, _sig_msg(v, fl, sh)).hex()}
+            return r
+
+        def back():
+            SIM3D.update(SIM3D_EMBED); SIM3D_LINUX.update(SIM3D_LINUX_EMBED)
+        g["UPDATE_PUBKEY"] = _ED[0](seed).hex()                    # sig_ok (380) checks against this - the test key
+        assert sim_manifest_take(blk(lx=True), save=False) == ["win", "linux"], "signed entries not taken"
+        assert SIM3D["version"] == nv and SIM3D["sha256"] == sha and SIM3D["size"] == 18 and SIM3D_LINUX["size"] == 19, "values"
+        assert sim3d_path().endswith("_" + nv + ".zip"), "cache name of the new simulator"
+        back()
+        bad = {"changed checksum": dict(blk(), win=dict(blk()["win"], sha256=hashlib.sha256(b"other").hexdigest())),
+               "changed number": dict(blk(), win=dict(blk()["win"], ver="%d.%d.%d" % (a, b, c + 2))),
+               "unsigned": dict(blk(), win={k: v for k, v in blk()["win"].items() if k != "sig"}),
+               "broken signature": dict(blk(), win=dict(blk()["win"], sig="00" * 64)),
+               "other key": blk(key=hashlib.sha256(b"another key").digest()),
+               "other file": blk(fn="simulator3d/anders.zip"),
+               "program file name": blk(fn="webcam_bewegung_9_9_9.py"),
+               "not a dict": "x"}
+        if c > 0:
+            bad["older simulator"] = blk(v="%d.%d.%d" % (a, b, c - 1))
+        for what, x in bad.items():
+            assert not sim_manifest_take(x, save=False), f"{what} taken"
+            assert SIM3D["sha256"] == SIM3D_EMBED["sha256"] and SIM3D["version"] == SIM3D_EMBED["version"], f"{what}: values changed"
+        g["UPDATE_PUBKEY"] = real
+        assert not sim_manifest_take(blk(), save=False), "test key accepted with the real public key"
+    finally:
+        g["UPDATE_PUBKEY"] = real
+        SIM3D.update(keep[0]); SIM3D_LINUX.update(keep[1]); SIMMAN.clear(); SIMMAN.update(keep[2])
+    return "signed «sim» entry taken; changed, unsigned, other key / file, older refused (test key)"
+
+
+SELFTEST_EXTRA.append(("Simulator checksums from the signed versions.json (3 tracks, 300)", sim_manifest_selftest))

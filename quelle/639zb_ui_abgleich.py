@@ -38,11 +38,11 @@ _HX_UIS = {
     'MoveEye older': ('MoveEye älter', 'MoveEye plus ancien', 'MoveEye più vecchio', 'MoveEye pli vegl'),
     'Update the simulator': ('Simulator aktualisieren', 'Mettre à jour le simulateur', 'Aggiorna il simulatore', 'Actualisar il simulatur'),
     'Update MoveEye': ('MoveEye aktualisieren', 'Mettre à jour MoveEye', 'Aggiorna MoveEye', 'Actualisar MoveEye'),
-    'Both programs should have the same number (they are always published together).':
-        ('Beide Programme sollten dieselbe Nummer haben (sie erscheinen immer zusammen).',
-         'Les deux programmes devraient avoir le même numéro (ils sont toujours publiés ensemble).',
-         'I due programmi dovrebbero avere lo stesso numero (vengono sempre pubblicati insieme).',
-         'Omadus programs duessan avair il medem numer (els cumparan adina ensemen).'),
+    'The numbers may differ, but one program is older than the other one needs.':
+        ('Die Nummern dürfen verschieden sein, aber ein Programm ist älter, als das andere braucht.',
+         'Les numéros peuvent différer, mais un programme est plus ancien que ce dont l’autre a besoin.',
+         'I numeri possono essere diversi, ma un programma è più vecchio di quanto serve all’altro.',
+         'Ils numers dastgan esser differents, ma in program è pli vegl che quai che l’auter dovra.'),
     'Simulator': ('Simulator', 'Simulateur', 'Simulatore', 'Simulatur'),
     'MoveEye gets only {f} pictures/s from the simulator - it hardly detects anything (from about 3/s on it works)':
         ('MoveEye bekommt nur {f} Bilder/s vom Simulator – so erkennt es kaum etwas (ab etwa 3/s geht es)',
@@ -251,6 +251,7 @@ _sim_state_639zb = sim_state
 def sim_state():                                          # + 639zb: ui, features, level, lock, push (and every 15 s diag)
     d = _sim_state_639zb()
     d["features"] = ["ui1", "level1", "push1", "diag1", "lock1", "ver1"]
+    d["sim_min"] = SIM_MIN                                # 3 tracks: the oldest simulator this MoveEye works with (545)
     cur = ui_tick()
     if not SIM.get("follower"):                           # only the leading MoveEye shares the view
         d["ui"] = {"rev": UIS["rev"], "took": UIS["took"], "v": cur}
@@ -298,16 +299,20 @@ def ui_vnum(v):
 
 
 def ui_ver_pair(lang=None):
-    """{"mw", "sim", "same", "older": "" | "sim" | "mw", "text"} - «MoveEye 3.34.0 · Sim 3.34.0 ✓» or «⚠ Simulator older …»"""
+    """{"mw", "sim", "same", "older": "" | "sim" | "mw", "text"} - «MoveEye 3.34.0 · Sim 3.34.0 ✓» or «⚠ Simulator older …».
+    3 tracks (Besitzer 03.11.2026): the numbers differ on purpose; «same» = the pair works together (each side at least the
+    minimum of the other: SIM_MIN of MoveEye 545, «mw_min» of the simulator in /info), «older» = the side below that minimum."""
     info = SIM.get("info") or {}
     sv = str(info.get("ver") or info.get("version") or "")
     if not re.match(r"^\d+\.\d+\.\d+$", sv):
         m = re.search(r"\d+\.\d+\.\d+", str(info.get("name") or ""))
         sv = m.group(0) if m else sv
     a, b = ui_vnum(APP_VERSION), ui_vnum(sv)
-    out = {"mw": APP_VERSION, "sim": sv, "same": bool(a and b and a == b), "older": ""}
-    if a and b and a != b:
-        out["older"] = "sim" if b < a else "mw"
+    smin, mmin = ui_vnum(SIM_MIN), ui_vnum(str(info.get("mw_min") or "")) or (0, 0, 0)
+    out = {"mw": APP_VERSION, "sim": sv, "same": bool(a and b and b >= smin and a >= mmin), "older": ""}
+    if a and b and not out["same"]:
+        out["older"] = "sim" if b < smin else "mw"
+        out["need"] = SIM_MIN if out["older"] == "sim" else str(info.get("mw_min"))
     txt = f"MoveEye {APP_VERSION} · Sim {sv or '?'}"
     if out["same"]:
         txt += " ✓"
@@ -351,7 +356,7 @@ def ui_pair_items(L):
     out = []
     vp = ui_ver_pair(L)
     out.append({"id": "sim:ver", "icon": "🔢", "title": tr("Versions", L), "level": "ok" if vp["same"] else "warn", "text": vp["text"],
-                "tip": "" if vp["same"] else tr("Both programs should have the same number (they are always published together).", L)
+                "tip": "" if vp["same"] else tr("The numbers may differ, but one program is older than the other one needs.", L)
                 + " → " + tr("Update the simulator" if vp["older"] == "sim" else "Update MoveEye", L)})
     if str(CFG.get("source") or "").startswith("sim:"):
         f = float(STATE.get("fps") or 0)
@@ -583,6 +588,11 @@ def ui_sync_selftest():
         assert ui_ver_pair("de")["same"] and ui_ver_pair("de")["text"].endswith("✓"), "639zb: version pair"
         SIM["info"] = {"version": "3.0.1"}
         assert ui_ver_pair("de")["older"] == "sim" and ui_ver_pair("de")["text"].startswith("⚠"), "639zb: older simulator"
+        SIM["info"] = {"version": SIM_MIN}                # 3 tracks: another number, but new enough = ✓
+        assert ui_ver_pair("de")["same"] and ui_ver_pair("de")["older"] == "", "639zb: 3 tracks, different numbers that fit"
+        SIM["info"] = {"version": "99.0.0", "mw_min": "99.0.0"}
+        assert ui_ver_pair("de")["older"] == "mw" and ui_ver_pair("de")["need"] == "99.0.0", "639zb: the simulator needs a newer MoveEye"
+        assert "sim_min" in sim_state() and sim_state()["sim_min"] == SIM_MIN, "639zb: sim_min in the state"
         js = render_page("<html><head></head><body><header><h1>MoveEye</h1><!--NAV--></header><main></main></body></html>", "live")
         assert js.count('id="uis-js"') == 1 and "Ansicht im Simulator" in js, "639zb: hint script"
         sh = UI_GEMEINSAM.get("shared") or {}
