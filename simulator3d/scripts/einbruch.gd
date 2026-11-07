@@ -395,7 +395,20 @@ func _bike_role(side: float) -> Dictionary:
 	var mid: Vector3 = main.free_spot(_flat(goal) + dirn * _rng.randf_range(8.0, 12.0), 0.5, true)
 	steps.append(_go(mid, 0.0, "annaehern", 1.15))
 	steps.append(_wait(_rng.randf_range(2.5, 6.0), 0.0, _hp() if _rng.randf() < 0.5 else goal, "annaehern"))
-	var at: Vector3 = main.free_spot(goal + dirn * 0.7, 0.35, true)
+	# where to kneel at the lock: 8 spots round the bike; mostly one the head camera sees (the thief does not know it is
+	# there - and the test needs a picture), now and then one behind the tent / windbreak (random by the seed)
+	var at := Vector3.INF
+	var at_s := -1e9
+	var a0 := atan2(dirn.z, dirn.x)
+	for k in range(8):
+		var ak := a0 + TAU * float(k) / 8.0
+		var q: Vector3 = main.free_spot(goal + Vector3(cos(ak), 0, sin(ak)) * 0.7, 0.35, true)
+		var sc := _rng.randf_range(0.0, 2.5) - 0.3 * absf(angle_difference(ak, a0))
+		if _in_view(q) and main.line_free(_hp(), q + Vector3(0, 0.9, 0)):
+			sc += 2.0
+		if sc > at_s:
+			at_s = sc
+			at = q
 	steps.append(_go(at, 0.0, "annaehern", 1.0))
 	var bouts := _rng.randi_range(2, 4)
 	for i in range(bouts):
@@ -857,7 +870,7 @@ func _mount(r: Dictionary, s: Dictionary):
 	"""the thief becomes a cyclist (actor variant «cyclist», its own bike): same place, dark clothes, rides to the exit"""
 	var old = r["v"]
 	var pos: Vector3 = old.position
-	seed(int(rep.get("seed", 1)) * 1000 + 77)
+	seed(int(rep.get("seed", 1)) * 1000 + act_i * 10 + roles.find(r))   # the same seed as in _spawn: the same clothes on the bike
 	_thief_look(r)
 	var cy = main.spawn("cyclist", pos, s["p"])
 	randomize()

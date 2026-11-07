@@ -1,16 +1,16 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 7605 (Stellen: 10581)
-Übersetzt: en 7605, fr 7605, it 7605, rm 7605
+Texte gesamt: 7615 (Stellen: 10596)
+Übersetzt: en 7615, fr 7615, it 7615, rm 7615
 Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 514 Stellen
 Nicht mehr im Code (noch in texte.json): 339
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 68 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1
-Übersprungen (Grund: Anzahl): kennung 27043, schlüssel 20530, keine Wörter 12885, index 9685, technisch 3600, doc 2289, einheit 332, log 173, englisch 143, pfad 125, stringname 103, html 68, klasse 33, shader 6
+Übersprungen (Grund: Anzahl): kennung 27121, schlüssel 20593, keine Wörter 12901, index 9697, technisch 3611, doc 2300, einheit 332, log 173, englisch 143, pfad 125, stringname 103, html 68, klasse 33, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   werkstatt_daten.gd       531     4
-  main_einstellungen.gd    399    25
+  main_einstellungen.gd    400    25
   bergtal_abenteuer.gd     272     7
   gamewiz.gd               252    15
   abenteuer_figuren_daten.gd   238     0
@@ -26,11 +26,11 @@ Pro Datei (Texte / davon dynamische Stellen):
   bergtal_orte.gd          108     0
   bib_objekte.gd           108     0
   main_menues.gd           106     2
+  einbruch.gd              102     0
   spieltest.gd              99    20
   bergtal_aussicht.gd       94     4
   testrun.gd                94     3
   templates.gd              93     6
-  einbruch.gd               91     0
   ferienpark.gd             89     0
   toolbar.gd                87     3
   maggie_hund.gd            85     0
@@ -379,31 +379,31 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   inhalte.gd:871  'an'
   kopf.gd:120  'an'
   kopf.gd:120  'aus'
-  main_einstellungen.gd:327  'an'
-  main_einstellungen.gd:327  'an'
-  main_einstellungen.gd:327  'aus'
-  main_einstellungen.gd:327  'aus'
-  main_einstellungen.gd:330  'an'
-  main_einstellungen.gd:330  'aus'
+  main_einstellungen.gd:328  'an'
+  main_einstellungen.gd:328  'an'
+  main_einstellungen.gd:328  'aus'
+  main_einstellungen.gd:328  'aus'
   main_einstellungen.gd:331  'an'
   main_einstellungen.gd:331  'aus'
-  main_einstellungen.gd:349  'an'
-  main_einstellungen.gd:349  'aus'
-  main_einstellungen.gd:423  'keine'
-  main_einstellungen.gd:449  'Wächter an MoveEye: '
-  main_einstellungen.gd:512  'immer'
-  main_einstellungen.gd:514  'aus'
-  main_einstellungen.gd:521  'aus'
-  main_einstellungen.gd:521  'aus'
-  main_einstellungen.gd:522  'immer'
-  main_einstellungen.gd:527  'aus'
-  main_einstellungen.gd:531  'aus'
-  main_einstellungen.gd:531  'aus'
-  main_einstellungen.gd:538  'ohne'
-  main_einstellungen.gd:540  'ohne'
-  main_einstellungen.gd:557  'aus'
-  main_einstellungen.gd:561  'aus'
-  main_einstellungen.gd:723  'Karte öffnen: '
+  main_einstellungen.gd:332  'an'
+  main_einstellungen.gd:332  'aus'
+  main_einstellungen.gd:350  'an'
+  main_einstellungen.gd:350  'aus'
+  main_einstellungen.gd:424  'keine'
+  main_einstellungen.gd:450  'Wächter an MoveEye: '
+  main_einstellungen.gd:513  'immer'
+  main_einstellungen.gd:515  'aus'
+  main_einstellungen.gd:522  'aus'
+  main_einstellungen.gd:522  'aus'
+  main_einstellungen.gd:523  'immer'
+  main_einstellungen.gd:528  'aus'
+  main_einstellungen.gd:532  'aus'
+  main_einstellungen.gd:532  'aus'
+  main_einstellungen.gd:539  'ohne'
+  main_einstellungen.gd:541  'ohne'
+  main_einstellungen.gd:558  'aus'
+  main_einstellungen.gd:562  'aus'
+  main_einstellungen.gd:724  'Karte öffnen: '
   mehr.gd:258  ' · Leistung: %d Bilder/s, Lite %s'
   mehr.gd:258  'an'
   mehr.gd:258  'aus'
@@ -437,16 +437,16 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   gamekiwaechter.gd:147  '🤖 MoveEye als KI-Wächter: '
   gamemore.gd:23  'aus'
   licht.gd:42  'aus'
-  main.gd:750  ' (Port %d)'
-  main.gd:1654  '  %.0f Mbit/s'
-  main.gd:2282  ' (von MoveEye)'
-  main.gd:2315  'Der Simulator ist belegt: '
-  main.gd:3149  'aus'
-  main.gd:3149  'ein'
-  main.gd:3226  'Sabotage-Test: '
-  main.gd:3226  'aus'
-  main.gd:3280  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
-  main.gd:3283  '\n🚨 Bewacht und weg: '
+  main.gd:755  ' (Port %d)'
+  main.gd:1659  '  %.0f Mbit/s'
+  main.gd:2287  ' (von MoveEye)'
+  main.gd:2320  'Der Simulator ist belegt: '
+  main.gd:3154  'aus'
+  main.gd:3154  'ein'
+  main.gd:3231  'Sabotage-Test: '
+  main.gd:3231  'aus'
+  main.gd:3285  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
+  main.gd:3288  '\n🚨 Bewacht und weg: '
   main_status.gd:14  'Echt-Abgleich: '
   main_status.gd:24  'Trainingspaket: '
   main_status.gd:33  ' · %d offen · %.1f MB'
@@ -675,7 +675,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   main_menues.gd:851  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
   main_start.gd:364  'Autostart: '
   main_start.gd:375  'Autologon: '
-  main_steuerung.gd:452  'Dein Platz: '
+  main_steuerung.gd:454  'Dein Platz: '
   mwpc.gd:22  'Aus'
   mwpc.gd:75  'MoveEye hat sich beendet. Protokoll: '
   mwpc.gd:107  ' · %d Bilder erkannt, %d ms'
@@ -689,7 +689,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   mwpc.gd:340  'Die Pakete liessen sich nicht installieren: '
   mwpc.gd:365  'Unerwartete Datei in versions.json: '
   symbole.gd:27  'Aus'
-  net.gd:426  '--%s\r\nContent-Type: image/jpeg\r\nContent-Length: %d\r\n\r\n'
+  net.gd:432  '--%s\r\nContent-Type: image/jpeg\r\nContent-Length: %d\r\n\r\n'
   news.gd:258  'MOVEEYE SIM · '
   padroles.gd:129  'Spiel am PC – '
   padtest.gd:44  '  roh %.2f / %.2f'
@@ -729,12 +729,12 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   recorder.gd:222  ' (wiederholen)'
   replay.gd:180  '  ·  %dx schneller'
   sicherung.gd:363  '*.zip ; '
-  simint.gd:436  ' · am PC %s'
-  simint.gd:437  '\n⚡ 5-V-Schiene %.2f V%s'
-  simint.gd:437  ' · ⚠ Unterspannung (Servos schwach)'
-  simint.gd:440  ' · Servos %.2f A (Spitze %.2f A)'
-  simint.gd:442  ' · Servosignal schwach (Kopf zittert)'
-  simint.gd:449  '-Servo blockiert'
+  simint.gd:494  ' · am PC %s'
+  simint.gd:495  '\n⚡ 5-V-Schiene %.2f V%s'
+  simint.gd:495  ' · ⚠ Unterspannung (Servos schwach)'
+  simint.gd:498  ' · Servos %.2f A (Spitze %.2f A)'
+  simint.gd:500  ' · Servosignal schwach (Kopf zittert)'
+  simint.gd:507  '-Servo blockiert'
   surprise.gd:113  'Überraschung: '
   szenenplus.gd:768  'Spiel zur Szene: '
   templates.gd:225  'Lizenz: '
