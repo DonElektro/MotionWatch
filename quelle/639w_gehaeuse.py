@@ -1014,6 +1014,8 @@ def bau3d_bytes(key):
     import base64
     if key not in _BAU3D_CACHE:
         if key == "glb":
+            if len(BAU3D_GLB) < 3:                         # Schlank: the model is in the data zip (012) - without it: 503
+                return None
             _BAU3D_CACHE[key] = base64.b64decode(BAU3D_GLB[2])
         elif key in BAU3D:
             _BAU3D_CACHE[key] = base64.b64decode(BAU3D[key][1])
@@ -1053,7 +1055,8 @@ def smalltv_routes(app, reply, body):                     # + 639w: /build, /cas
 
     @app.route("/build/gehaeuse.glb")
     def geh_glb():
-        return gz(bau3d_bytes("glb"), "model/gltf-binary")
+        b_ = bau3d_bytes("glb")
+        return gz(b_, "model/gltf-binary") if b_ else Response("additional data missing", 503)
 
     @app.route("/build/qr.svg")
     def geh_qr():
