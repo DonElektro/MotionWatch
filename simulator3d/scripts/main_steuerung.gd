@@ -432,6 +432,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return main.abenteuer.op(d)
 	elif a == "parcours":                              # 3D-4.18: {do: info | start (lessons, night, seed, prep_s) | stop | state | result | game | steer ...}
 		return main.parcours.control(d)
+	elif a == "privat":                                # Wunsch Nr. 2: {} -> the private circle, how many visitors keep off it
+		return main.privat.control(d)
 	elif a == "einbruch":                              # {do: info | start (ablauf, seed, zeit) | serie | stop | state | result}
 		return main.einbruch.control(d)
 	elif a == "zwilling":                              # 3D-4.4: {do: info | import (path) | set (key, value) | item (k, x, z, r) | clear | remove | on}

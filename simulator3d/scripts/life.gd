@@ -161,8 +161,11 @@ func _event(k: String, name: String) -> void:
 			var a = main.spawn("child")
 			var b = main.spawn("child", a.position + Vector3(1.2, 0, 0.6), a.target + Vector3(1.2, 0, 0.6))
 			b.speed = a.speed
+			if main.get("privat") != null:                      # Wunsch Nr. 2: they keep off your pitch (privatplatz.gd)
+				main.privat.mark(a)
+				main.privat.mark(b)
 		"jogger":
-			main.spawn("jogger")
+			main.visit("jogger")
 		"cat_round":
 			main.spawn("cat")
 	info = "%02d:%02d %s" % [int(main.hour()), int(fmod(main.hour(), 1.0) * 60.0), name]
