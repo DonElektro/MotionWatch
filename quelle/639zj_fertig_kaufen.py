@@ -149,7 +149,9 @@ def fertig_selftest():
         globals().update(keep)
         FEEDBACK["sent"] = sent
     if GUI_OK:
-        assert App._tk_more_bar is _fk_tk_more_bar and "pkg" in App._feedback.__code__.co_varnames, "window: hint and order"
+        # in the chain of wrappers (later parts like 639zzc wrap _tk_more_bar again and keep ours as their base)
+        in_chain = App._tk_more_bar is _fk_tk_more_bar or any(v is _fk_tk_more_bar for k, v in list(globals().items()) if k.endswith("_tk_more_base"))
+        assert in_chain and "pkg" in App._feedback.__code__.co_varnames, "window: hint and order"
     # the simulator shows the same (only in the repository)
     sd = os.path.join(os.path.dirname(os.path.abspath(__file__)), "simulator3d", "scripts")
     if os.path.isdir(sd):
