@@ -372,8 +372,7 @@ static func steps(m, parent: Node3D, line: PackedVector2Array, hw: float, hfn: C
 		var col := Color(0.5, 0.48, 0.45) if stone else Color(0.45, 0.34, 0.23)
 		var depth := 0.3 if stone else 0.13
 		var wdt := hw * (1.7 if stone else 1.8)
-		var yy := hs[k] + 0.035                         # mostly in the ground: only the front edge shows
-		_box(pieces[key], Vector3(p.x, yy, p.y), Vector2(d.x, d.y), Vector2(side.x, side.y), wdt, 0.09 if stone else 0.08, depth, col)
+		_step(pieces[key], p, d, side, wdt, depth, hfn, col)
 		cnt += 1
 	if _step_mat == null:
 		_step_mat = StandardMaterial3D.new()
@@ -388,6 +387,31 @@ static func steps(m, parent: Node3D, line: PackedVector2Array, hw: float, hfn: C
 		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		parent.add_child(mi)
 	return cnt
+
+
+static func _step(st: SurfaceTool, p: Vector2, d: Vector2, side: Vector2, w: float, depth: float, hfn: Callable, col: Color) -> void:
+	"""eine Stufe, die dem Hang quer folgt: oben eben in Wegrichtung (an der oberen Kante bündig mit dem Boden), vorne eine
+	Kante bis in den Boden - keine schiefen Klötze auf einem Querhang"""
+	var f := d * depth * 0.5
+	var tops := []
+	var lows := []
+	for e in [p - side * w * 0.5, p + side * w * 0.5]:
+		var h0 := float(hfn.call((e - f).x, (e - f).y))
+		var h1 := float(hfn.call((e + f).x, (e + f).y))
+		tops.append(maxf(h0, h1) + 0.03)
+		lows.append(minf(h0, h1) - 0.03)
+	var a := p - side * w * 0.5
+	var b := p + side * w * 0.5
+	var A0 := Vector3((a - f).x, tops[0], (a - f).y)
+	var A1 := Vector3((a + f).x, tops[0], (a + f).y)
+	var B0 := Vector3((b - f).x, tops[1], (b - f).y)
+	var B1 := Vector3((b + f).x, tops[1], (b + f).y)
+	_quad_c(st, A0, A1, B1, B0, Vector3.UP, col)
+	for k in [0, 1]:                                      # both long faces down into the ground (the lower one shows)
+		var sg := -1.0 if k == 0 else 1.0
+		var t0 := A0 if k == 0 else A1
+		var t1 := B0 if k == 0 else B1
+		_quad_c(st, t0, t1, Vector3(t1.x, lows[1], t1.z), Vector3(t0.x, lows[0], t0.z), Vector3(d.x * sg, 0, d.y * sg), col * 0.88)
 
 
 static func _box(st: SurfaceTool, c: Vector3, fwd: Vector2, side: Vector2, w: float, h: float, d: float, col: Color) -> void:

@@ -53,6 +53,39 @@ func _layout() -> String:
 	return "obstacles=%d trees=%d sum=%.2f" % [main.obstacles.size(), main.tree_spots.size(), h]
 
 
+func _wege_stats() -> Dictionary:
+	"""Netze von «Wege und Strassen» in der Szene: Anzahl (sichtbar, Ebene 1) und Dreiecke, nach Art"""
+	var out := {}
+	var Wg = load("res://scripts/wege.gd")
+	var neu: bool = Wg != null and Wg.has_method("steps")      # (3.63.0: only the shaders)
+	var stack: Array = [main.scenes.root]
+	while not stack.is_empty():
+		var n: Node = stack.pop_back()
+		stack.append_array(n.get_children())
+		if not (n is MeshInstance3D) or not (n as MeshInstance3D).visible or ((n as MeshInstance3D).layers & 1) == 0:
+			continue
+		var mi := n as MeshInstance3D
+		var mt = mi.material_override
+		var kind := ""
+		if mt is ShaderMaterial and (mt as ShaderMaterial).shader != null:
+			var pth := (mt as ShaderMaterial).shader.resource_path.get_file().get_basename()
+			if pth in ["strasse", "feldweg", "wanderweg", "pfad"]:
+				kind = pth
+		elif neu and mt != null and (mt == Wg._step_mat or mt == Wg._mark_mat or mt == Wg._kerb_mat):
+			kind = "stufen" if mt == Wg._step_mat else ("pfosten" if mt == Wg._mark_mat else "randstein")
+		if kind == "" or mi.mesh == null:
+			continue
+		var tris := 0
+		for si in range(mi.mesh.get_surface_count()):
+			var arr: Array = mi.mesh.surface_get_arrays(si)
+			tris += (arr[Mesh.ARRAY_INDEX].size() if arr[Mesh.ARRAY_INDEX] != null else arr[Mesh.ARRAY_VERTEX].size()) / 3
+		if not out.has(kind):
+			out[kind] = [0, 0]
+		out[kind][0] += 1
+		out[kind][1] += tris
+	return out
+
+
 func _quiet() -> void:
 	main.control({"action": "set", "id": "auto", "value": false})
 	for v in main.visitors.get_children():
@@ -96,6 +129,7 @@ func _run() -> void:
 		_quiet()
 		await wait(0.3)
 		print("WEGE layout ", sc, " ", _layout())
+		print("WEGE netze ", _wege_stats())
 		main.weather = str(v.get("weather", "clear"))
 		main.wind = float(v.get("wind", 8.0))
 		main.set_hour(float(v.get("hour", 13.0)))
