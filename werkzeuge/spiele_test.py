@@ -7,6 +7,8 @@
   2. Browser (Playwright, ohne Internet - jede Anfrage nach aussen ist ein Fehler): jedes Spiel am Handy (390 × 844,
      Touch) und am PC (1280 × 800) laden, Start-Knopf antippen bzw. klicken, ein paar Eingaben; keine JavaScript-Fehler.
      Touch-Spiele: das Antippen muss im Spiel ankommen. Der eigene Zurück-Link führt zur Spielesammlung von MoveEye.
+  3. Wobbly Truck (ab GS-1.5, mit ?test=1): Truck und Motorrad auf beiden Strecken, ein Salto und ein Wheelie werden erkannt,
+     der Looping gelingt auf «Normal» und ist keine Falle, Einstellungen werden gespeichert, Rekord je Strecke und Fahrzeug.
 
   python3 werkzeuge/spiele_test.py                    # Paket + Browser, nur die Spiele mit 5 Sprachen (ab GS-1.4)
   python3 werkzeuge/spiele_test.py --alle             # dazu die älteren Spiele (2048, Tetris …)
@@ -212,6 +214,83 @@ def spiel_pruefen(br, base, g, fehler, warn, bilder, zeile):
         ctx.close()
 
 
+# Wobbly Truck (GS-1.5): ?test=1 gives a fixed seed and window.__wt (deterministic simulation with fixed time steps)
+WT_BOT = """window.__bot = (W, I) => { const a = W.B.a, w = W.B.w, sl = Math.atan((W.H(W.B.x + .04) - W.H(W.B.x - .04)) / .08);
+  if (W.air.on && W.air.t > 0.12) { const tgt = Math.round((a - sl) / 6.283) * 6.283 + sl, e = a + w * 0.3 - tgt; I.gas = e < -0.12; I.brake = e > 0.12; }
+  else { const d = a - sl, dw = d - Math.round(d / 6.283) * 6.283; I.brake = false; I.gas = dw < 0.35; } };"""
+WT_RUN = """([veh, trk, scen]) => { const W = window.__wt, I = W.inp; W.freeze(true); W.select(veh, trk); W.start();
+  const r = {state0: W.state}; I.gas = I.brake = I.trick = false;
+  if (scen === 'fahren') { W.place(5, 0, 0, 0, 0, 0); W.sim(1.5, () => { __bot(W, I); }); r.dx = W.B.x - 5; }
+  if (scen === 'salto') { W.place(8, 9, 9, 6, 0, 0);          // in the air: lean back until one turn, then land level
+    W.sim(3.5, () => { const a = W.B.a, w = W.B.w; I.gas = W.air.on && a + w * 0.3 < 5.98; I.brake = W.air.on && !I.gas && w > 2.5; }); }
+  if (scen === 'wheelie') { W.place(5, 0, 0, 0, 0, 0); W.sim(3, () => { I.gas = W.B.a < 0.45; }); I.gas = false; W.sim(1.5); }
+  if (scen === 'looping') { const L = W.loops[0]; W.place(L.cx - 60, 0, 6, 0, 0, 0); W.sim(10, () => { __bot(W, I); }); r.x = W.B.x - L.cx; }
+  if (scen === 'langsam') { const L = W.loops[0]; W.place(L.cx - 12, 0, 8, 0, 0, 0); W.sim(25, () => { __bot(W, I); }); r.x = W.B.x - L.cx; }
+  if (scen === 'sturz') { W.place(8, 6, 6, 0, Math.PI, 0); W.sim(4); }
+  I.gas = I.brake = I.trick = false; r.state = W.state; r.ids = W.log.map(e => e.id); return r; }"""
+
+
+def wobbly_pruefen(br, base, fehler, bilder):
+    """Wobbly Truck: both vehicles on both tracks, a flip and a wheelie are detected, the loop works on Normal and is no trap,
+    settings are saved (and «Standard» resets them), the best score is kept per track and vehicle"""
+    d = "kv-wobbly-truck"
+    for name, vp, mobil in (("Handy", {"width": 390, "height": 844}, True), ("PC", {"width": 1280, "height": 800}, False)):
+        ctx = br.new_context(viewport=vp, is_mobile=mobil, has_touch=mobil, device_scale_factor=1)
+        ctx.route("**/*", lambda r: r.continue_() if r.request.url.startswith(base) else r.abort())
+        pg = ctx.new_page()
+        fe = []
+        pg.on("pageerror", lambda e, fe=fe: fe.append(str(e)[:300]))
+        ok = []
+        try:
+            pg.goto(f"{base}/g/{d}/index.html?test=1", wait_until="load", timeout=30000)
+            pg.wait_for_timeout(400)
+            pg.evaluate("() => {" + WT_BOT + "}")
+            for veh in ("truck", "bike"):
+                for trk in ("hills", "stunt"):
+                    r = pg.evaluate(WT_RUN, [veh, trk, "fahren"])
+                    if r["state0"] != "play" or r["state"] != "play" or r["dx"] < 5:
+                        fehler.append(f"{d} {name}: {veh}/{trk} startet oder fährt nicht ({r})")
+            for veh, trk, scen, want in (("truck", "hills", "salto", "backflip"), ("bike", "stunt", "salto", "backflip"),
+                                         ("bike", "stunt", "wheelie", "wheelie"), ("truck", "stunt", "looping", "loop"),
+                                         ("bike", "stunt", "looping", "loop")):
+                r = pg.evaluate(WT_RUN, [veh, trk, scen])
+                if want not in r["ids"] or r["state"] != "play":
+                    fehler.append(f"{d} {name}: {veh}/{trk} {scen}: «{want}» nicht erkannt ({r['state']}, {r['ids']})")
+                else:
+                    ok.append(f"{scen}-{veh}")
+            for veh in ("truck", "bike"):           # too slow for the loop: fall off or pass behind it, never stuck in it
+                r = pg.evaluate(WT_RUN, [veh, "stunt", "langsam"])
+                if r["state"] == "play" and r["x"] < 15:
+                    fehler.append(f"{d} {name}: {veh} bleibt beim Looping hängen ({r})")
+            r = pg.evaluate(WT_RUN, ["bike", "stunt", "sturz"])  # upside down onto the head: crash, then game over with a best score
+            best = pg.evaluate("() => localStorage.getItem('kv-game-wobbly-truck-best-stunt-bike')")
+            if r["state"] != "over" or not best:
+                fehler.append(f"{d} {name}: Sturz / Rekord je Strecke und Fahrzeug fehlt ({r['state']}, {best})")
+            if mobil:   # the trick button is there for the motorbike while playing
+                pg.evaluate("() => { __wt.select('bike', 'stunt'); __wt.start(); }")
+                if not pg.locator("#trickP").is_visible():
+                    fehler.append(f"{d} Handy: Trick-Knopf fehlt beim Motorrad")
+            # settings: saved in localStorage, «Standard» resets
+            pg.evaluate("() => { __wt.freeze(false); __wt.showSettings(); }")
+            pg.locator("[data-diff='2']").click()
+            pg.locator("#s_real").fill("80")
+            s = pg.evaluate("() => JSON.parse(localStorage.getItem('kv-game-wobbly-truck-settings') || '{}')")
+            if s.get("diff") != 2 or s.get("real") != 80:
+                fehler.append(f"{d} {name}: Einstellungen nicht gespeichert ({s})")
+            pg.locator("#resetBtn").click()
+            s = pg.evaluate("() => JSON.parse(localStorage.getItem('kv-game-wobbly-truck-settings') || '{}')")
+            if s.get("diff") != 1 or s.get("real") != 40:
+                fehler.append(f"{d} {name}: «Standard» setzt nicht zurück ({s})")
+            if bilder:
+                pg.screenshot(path=os.path.join(bilder, f"spiel_{d}_einstellungen_{'handy' if mobil else 'pc'}.png"))
+        except Exception as e:
+            fehler.append(f"{d} {name}: {e.__class__.__name__}: {str(e)[:200]}")
+        for x in fe:
+            fehler.append(f"{d} {name}: JavaScript: {x}")
+        print(f"{d:<20} {name:<6} Stunts/Looping: {', '.join(ok) or '-'}", flush=True)
+        ctx.close()
+
+
 def main():
     ap = argparse.ArgumentParser(description="Test der Spielesammlung (Paket und Browser)")
     ap.add_argument("--zip", default=os.path.join(REPO, "games", "MotionWatch_Spiele.zip"))
@@ -248,6 +327,8 @@ def main():
                     h, p = zeile.get("Handy", {}), zeile.get("PC", {})
                     print(f"{g['dir']:<20} {g.get('input', 'touch'):<8} {h.get('start', '-') + ' / ' + h.get('eingabe', '-'):<34} {p.get('start', '-')}"
                           + ("" if len(fehler) == n0 else f"   ✗ {len(fehler) - n0} Fehler"), flush=True)
+                if any(g["dir"] == "kv-wobbly-truck" for g in spiele):
+                    wobbly_pruefen(br, base, fehler, a.bilder)
                 br.close()
             s.shutdown()
         finally:
