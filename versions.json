@@ -1,7 +1,24 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-08 21:23",
+ "generated": "2026-11-08 22:38",
  "versions": [
+  {
+   "version": "3.66.0",
+   "file": "webcam_bewegung_3_66_0.py",
+   "url": "",
+   "sha256": "c581cba1246b9b1529f3d7cab84eaeefc7a31b7f0a0fd7b97d536bbe2cded2e8",
+   "date": "2026-11-08 22:38",
+   "notes": "Spielesammlung GS-1.5: Wobbly Truck mit Motorrad, Stunt-Piste, Stunts, Kombos und Einstellungen; Spielecke (Mehr → Spielecke) und Gast-Spieleabend mit denselben Spiel-Kacheln wie die Spielesammlung, kurz «✓ N Spiele installiert».",
+   "size": 3736452,
+   "sig": "eb6f5930fbd30f3dc8bd875ac0e3dd1eee96a06fca7f8cecd136de900146f866a2b399efff6966d24965c350816c806e16204d77d8efc8c66a8f876a9be18302",
+   "data": {
+    "file": "moveeye_daten_3_66_0.zip",
+    "url": "",
+    "sha256": "0cb7e869e46bdb5322c25701b7340501da99aa8ce5d3a1bf1c86326809d125af",
+    "size": 4884939,
+    "sig": "db018b53ec8dde404daaa3c9dc3f65e4a01c72ad4cbc16224831b3f407767ee6480fd3148dfe55772d23d6e9dedad81ba25bcf35e676099d9612900c5b7baa01"
+   }
+  },
   {
    "version": "3.65.0",
    "file": "webcam_bewegung_3_65_0.py",
@@ -136,23 +153,6 @@
     "sha256": "22512e5a96f1e4a6c90dc42705f38399871d9c7e36d2a28943650d50030ce343",
     "size": 4109495,
     "sig": "56de2277810459926e54c2ef223cbfad2ecb16de8f7d7ae984cb4d376fc76214a86a88aa7c841208d6fa6ed886f3e39058975d2425498212a3db5d59f9f25f03"
-   }
-  },
-  {
-   "version": "3.57.0",
-   "file": "webcam_bewegung_3_57_0.py",
-   "url": "",
-   "sha256": "6f03ebeaf88918a8913e7e15377e501da529bf2ef8e4efd24f7d15dd16a95de3",
-   "date": "2026-11-07 12:53",
-   "notes": "Drei Kamera-Ansichten: Knopf «Ansicht» schaltet das Hauptbild 🎯 Kopf → 🌡 Wärmebild → 🔭 Weitwinkel (mit Rahmen, wohin der Kopf schaut), lang drücken = Auswahl; kleines Übersichtsbild in der Ecke (antippen = tauschen, pro Gerät gemerkt) – Live, Controller-Ansicht, Sim-Ansicht und Pi-Fenster.",
-   "size": 4972770,
-   "sig": "5dbf2897dbc584bbd4ec77abcb702701c648b5686344fd5744b551c719bf6ffb3f1fbf77601264a359a08496cbc53e510f63e9487495d032a20fa649dd043f01",
-   "data": {
-    "file": "moveeye_daten_3_57_0.zip",
-    "url": "",
-    "sha256": "cf5a27bc049b30c798fc79f315adcf732d2a9a85026c475a0be06cfcb38f6352",
-    "size": 4105270,
-    "sig": "ec9d3b99ee0faed29413fdeca45aff2c011a009333070cfd247fd37749785caf61928f36d93845070b6bcaa3f95330099786f2ec81990ad016f3dc101a4c6c0e"
    }
   },
   {
