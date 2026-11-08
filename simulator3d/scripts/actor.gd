@@ -174,7 +174,7 @@ func setup(m, k: String, from: Vector3, to: Vector3, spd: float) -> void:
 			radius = 1.2 if variant != "moto" else 0.6
 		_:
 			_build_animal()
-			if not preview and TierModell.DATEI.has(kind) and Flora.stufe(main) in ["normal", "hoch"]:
+			if not preview and TierModell.DATEI.has(kind) and TierModell.an(Flora.stufe(main)):
 				TierModell.bauen(self)                    # «Flora und Fauna»: model with skeleton (thermal twins stay)
 	var d := to - from
 	heading = atan2(-d.x, -d.z) if d.length() > 0.05 else randf() * TAU

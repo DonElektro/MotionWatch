@@ -8,6 +8,14 @@ uniform float fein = 1.0;          // 0 = ohne Haarstruktur (Lite)
 uniform float haar = 48.0;         // Haare pro Modell-Einheit quer zum Strich (1 Einheit ≈ 13 cm)
 uniform float relief = 0.0012;     // Höhe der Haarstruktur (m) für die Normale
 uniform float rand = 0.35;         // Randlicht
+// Paket 3 «Tiere echt» (tier_modell.gd): Beine ab dieser Höhe (Modell-Einheiten, Haarstrich nach unten); Farbschlag:
+// das Fell (Vertex-Alpha 1) wird nach seiner Helligkeit auf dunkel / mittel / hell umgefärbt (0 = aus, wie bisher)
+uniform float bein_y = 1.35;
+uniform float umfaerben = 0.0;
+uniform vec3 f_dunkel = vec3(0.02);
+uniform vec3 f_mittel = vec3(0.2);
+uniform vec3 f_hell = vec3(0.7);
+uniform float hell_ref = 0.5;      // Helligkeit, die im Original «hell» ist
 
 varying vec3 rest;
 
@@ -31,9 +39,14 @@ void vertex() {
 
 void fragment() {
 	vec3 base = COLOR.rgb;           // Godot liefert die Vertex-Farbe des GLB schon linear
+	if (umfaerben > 0.0) {
+		float l = clamp(dot(base, vec3(0.2126, 0.7152, 0.0722)) / hell_ref, 0.0, 1.0);
+		vec3 g = l < 0.5 ? mix(f_dunkel, f_mittel, l * 2.0) : mix(f_mittel, f_hell, l * 2.0 - 1.0);
+		base = mix(base, g, umfaerben * COLOR.a);
+	}
 	// Haarstrich: am Rumpf nach hinten (Modell -z), an den Beinen nach unten - gestreckt entlang dieser Richtung
 	vec3 p = rest;
-	float leg = smoothstep(1.35, 1.1, p.y);
+	float leg = smoothstep(bein_y, bein_y - 0.25, p.y);
 	vec3 q = mix(vec3(p.x * haar, p.y * haar, p.z * haar * 0.18), vec3(p.x * haar, p.y * haar * 0.18, p.z * haar), leg);
 	float n = vnoise(q) * 0.65 + vnoise(q * 2.13 + 7.1) * 0.35;
 	// in der Ferne ausblenden (sonst flimmert es)
