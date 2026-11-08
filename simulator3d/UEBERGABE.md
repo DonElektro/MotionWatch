@@ -1,8 +1,13 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 08.11.2026 · Version **3.61.0** · MoveEye **3.63.2** (Drei Spuren ab 03.11.2026: Simulator und MoveEye mit eigenen Nummern, Verträglichkeit über `MW_MIN` in `scripts/abgleich.gd` / `SIM_MIN` in MoveEye Teil 545; 3.0.0 bis 3.55.2 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 08.11.2026 · Version **3.62.0** · MoveEye **3.63.2** (Drei Spuren ab 03.11.2026: Simulator und MoveEye mit eigenen Nummern, Verträglichkeit über `MW_MIN` in `scripts/abgleich.gd` / `SIM_MIN` in MoveEye Teil 545; 3.0.0 bis 3.55.2 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.62.0 (MoveEye 3.63.2): Tier-Modelle Schritt 2 (sim-flora-tiere2)
+
+- Wolf, Dachs, Wildschwein, Hase (modelle/*_glb.bin), vogel_modell.gd (auch in den Bäumen, fauna.gd), Liegen / Sitzen;
+  Pi-Paket ohne die Tier-Modelle (Preset «Linux Pi» exclude_filter). Messung: tiere_fps_hp.yml / tier_fps.sh.
 
 ## NEU in 3.61.0 (MoveEye 3.63.2): Tier-Modelle (Flora Paket 3, Schritt 1), Bildschirm für HP-Tests
 
