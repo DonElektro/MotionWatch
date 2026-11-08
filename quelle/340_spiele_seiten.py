@@ -2,11 +2,21 @@
 SPIELE_PAGE = """<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Spielecke</title><link rel="icon" href="/icon-192.png"><style>
 body{margin:0;background:#0E1621;color:#E8EEF5;font-family:system-ui,sans-serif}main{max-width:720px;margin:0 auto;padding:20px 16px}
-h1{font-size:26px;margin:6px 0 4px}p{color:#9FB0C3;margin:4px 0 16px}.g{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
-a.c{display:block;background:#16263A;border-radius:14px;padding:14px;color:inherit;text-decoration:none}a.c:active{transform:scale(.98)}
-.i{font-size:34px}.i img{width:56px;height:56px;border-radius:12px;object-fit:cover;display:block}.n{font-weight:700;margin:6px 0 2px}.d{font-size:13px;color:#9FB0C3}.big{background:#E9A23B;color:#0E1621;font-weight:700;
+h1{font-size:26px;margin:6px 0 4px}p{color:#9FB0C3;margin:4px 0 16px}
+/*GAMETILES*/.big{background:#E9A23B;color:#0E1621;font-weight:700;
 display:block;text-align:center;padding:14px;border-radius:14px;text-decoration:none;margin:0 0 18px}</style></head><body><main>
-<h1>🎲 Spielecke</h1>__PARTY__<p>__NOTE__</p><div class="g">__GAMES__</div></main></body></html>"""
+<h1>🎲 Spielecke</h1>__PARTY__<p>__NOTE__</p><div class="g mwg">__GAMES__</div></main></body></html>"""
+# Spieltab: the game tiles (picture or emoji, name, short description, group headings) - ONE style for the public page /spiele
+# and the admin tab «Mehr → Spielecke» (TOOLS_PAGE, part 460). Colours come from tokens with the old /spiele colours as fallback.
+GAME_TILES_CSS = """.mwg{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+@media (max-width:520px){.mwg{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.mwg a.c{display:block;background:var(--mwg-tile,#16263A);border-radius:14px;padding:14px;color:inherit;text-decoration:none;min-width:0;overflow-wrap:anywhere}
+.mwg a.c:hover{filter:brightness(1.12)}.mwg a.c:active{transform:scale(.98)}
+.mwg .i{font-size:34px}.mwg .i img{width:56px;height:56px;border-radius:12px;object-fit:cover;display:block}
+.mwg .n{font-weight:700;margin:6px 0 2px}.mwg .d{font-size:13px;color:var(--mwg-mut,#9FB0C3)}
+.mwg .gh{grid-column:1/-1;font-weight:700;margin:14px 0 2px}
+"""
+SPIELE_PAGE = SPIELE_PAGE.replace("/*GAMETILES*/", GAME_TILES_CSS, 1)
 
 
 GAMESRV = {"port": 0, "msg": ""}
@@ -156,7 +166,7 @@ def spiele_page(host=""):
         if not part:
             continue
         if grp:
-            cards += f'<div style="grid-column:1/-1;font-weight:700;margin:14px 0 2px">{_e(GAME_GROUPS[grp])}</div>'
+            cards += f'<div class="gh">{_e(GAME_GROUPS[grp])}</div>'
         cards += "".join(f'<a class="c" href="{_e(games_url(x["dir"], x.get("start", "index.html"), host) or "/spiele/g/" + x["dir"] + "/" + x.get("start", "index.html"))}"><div class="i">{_game_icon(x, host)}</div>'
                          f'<div class="n">{_e(x.get("name", x["dir"]))}</div><div class="d">{_e(x.get("desc", ""))}</div></a>' for x in part)
     party = (f'<a class="big" href="/p/{PARTY["key"]}/">👥 Zum Spieleabend (Quiz, Werwolf, Malen, 4 gewinnt)</a>' if party_on()

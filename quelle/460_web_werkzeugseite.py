@@ -76,6 +76,9 @@ svg.tico{flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-w
 .lv i.lvl{flex:none;width:8px;height:8px;border-radius:50%;margin-top:6px;background:var(--mut)}
 .lv i.ok{background:var(--grn)}.lv i.warn{background:var(--yel)}.lv i.bad{background:var(--red)}
 .big{font-size:24px;font-weight:600;line-height:1.2}
+/*GAMETILES*/#party-box .mwg{--mwg-tile:var(--btn2);--mwg-mut:var(--mut);margin-top:6px}
+#party-box .gcs{margin:4px 0 8px}#party-box .gcs summary{cursor:pointer;font-weight:600;color:var(--txt)}
+#party-box .gcs div{margin-top:6px;font-size:12px;line-height:1.5}
 .bar{height:6px;border-radius:3px;background:var(--field);overflow:hidden}
 .bar>div{height:100%;background:var(--acc);width:0;transition:width .3s}
 .spark{width:100%;height:56px;display:block;color:var(--acc)}
@@ -571,14 +574,34 @@ function partyPaint() {
   if (P.lan_url) { const lr = el("div", "mut"); lr.style.margin = "8px 0"; lr.append(t("Without login in your own Wi-Fi:") + " "); const la = el("a", "", P.lan_url); la.href = P.lan_url; la.target = "_blank"; lr.appendChild(la); box.appendChild(lr); }
   const h = el("h3", "", "🕹 " + t("Game collection")); h.style.margin = "16px 0 6px"; box.appendChild(h);
   const gl = P.games || [];
-  box.appendChild(el("div", "mut", gl.length ? t("Installed") + ": " + gl.map(x => x.name).join(", ") + " (" + P.games_ver + ")" : t("coll-note")));
+  const GC = gcollNodes(P, gl);                               // Spieltab: kept between the repaints (open list, loaded pictures)
+  box.appendChild(GC ? GC.sum : el("div", "mut", t("coll-note")));
   const ib = el("button", gl.length ? "sec" : "", (P.dl && P.dl.running) ? "⏳ " + Math.round((P.dl.got || 0) / 1e6) + " MB …" : (gl.length && P.games_ver === (P.games_pkg || {}).version ? "✓ " + t("Up to date") : "⬇ " + t("Install / update") + " (" + Math.round(((P.games_pkg || {}).size || 0) / 1e6) + " MB)"));
   ib.type = "button"; ib.disabled = !!(P.dl && P.dl.running); ib.onclick = () => partyDo({action: "install"}); box.appendChild(ib);
   if (P.dl && P.dl.msg && !P.dl.running) box.appendChild(el("div", "mut", t(P.dl.msg)));
-  if (gl.length) { const GG = {touch: "👆 " + t("Touch (phone, tablet)"), buttons: "🎮 " + t("With on-screen buttons"), keys: "⌨️ " + t("With keyboard and mouse (PC)")};       // 2.95.54, GS-1.4: keys
-    (gl.some(x => x.input) ? ["touch", "buttons", "keys"] : [null]).forEach(grp => { const part = gl.filter(x => grp === null || (x.input || "touch") === grp); if (!part.length) return;
-      if (grp) box.appendChild(el("div", "mut", GG[grp]));
-      const g2 = el("div", "trow"); part.forEach(x => { const a = el("a", "btn sec", (x.icon && x.icon.length < 4 ? x.icon + " " : "") + x.name); a.href = "/games/" + x.dir + "/"; a.target = "_blank"; g2.appendChild(a); }); box.appendChild(g2); }); }
+  if (GC) box.appendChild(GC.grid);
+}
+// Spieltab: the game collection as tiles like on /spiele (same CSS GAME_TILES_CSS from part 340): picture or emoji, name, short
+// description, the same group headings. Each tile opens the game like the former buttons (/games/<dir>/, new tab).
+let GCOLL = null;
+function gcollNodes(P, gl) {
+  if (!gl.length) return null;
+  const sig = [LANG, P.games_ver, gl.map(x => x.dir).join(",")].join("|");
+  if (GCOLL && GCOLL.sig === sig) return GCOLL;
+  const L = x => (k, ks) => ((x[ks] || {})[LANG]) || x[k] || "";
+  const sum = el("details", "gcs mut"); sum.dataset.mwbSkip = "1"; sum.appendChild(el("summary", "", "✓ " + gl.length + " " + t("games installed") + (P.games_ver ? " (" + P.games_ver + ")" : "")));
+  sum.appendChild(el("div", "mut", gl.map(x => L(x)("name", "names") || x.dir).join(" · ")));
+  const GG = {touch: "👆 " + t("For phone and tablet (touch)"), buttons: "🎮 " + t("With on-screen buttons (on the PC with the keyboard)"), keys: "⌨️ " + t("On the PC with keyboard and mouse")};   // = GAME_GROUPS (340)
+  const grid = el("div", "mwg");
+  (gl.some(x => x.input) ? ["touch", "buttons", "keys"] : [null]).forEach(grp => { const part = gl.filter(x => grp === null || (x.input || "touch") === grp); if (!part.length) return;
+    if (grp) grid.appendChild(el("div", "gh", GG[grp]));
+    part.forEach(x => { const a = el("a", "c"); a.href = "/games/" + x.dir + "/"; a.target = "_blank";
+      const ic = el("div", "i"), s_ = String(x.icon || "🎮");
+      if (s_.includes(".")) { const im = document.createElement("img"); im.src = "/games/" + x.dir + "/" + s_; im.alt = ""; im.loading = "lazy"; im.onerror = () => { im.style.visibility = "hidden"; }; ic.appendChild(im); }
+      else ic.textContent = s_;
+      a.append(ic, el("div", "n", L(x)("name", "names") || x.dir), el("div", "d", L(x)("desc", "descs"))); grid.appendChild(a); }); });
+  GCOLL = {sig, sum, grid};
+  return GCOLL;
 }
 (async () => { for (let i = 0; i < 30 && !LANG; i++) await new Promise(r => setTimeout(r, 100)); partyLoad(); })();   // after the language is known
 Object.assign(I18N.de, {"Network check of the players": "Netz-Check der Mitspieler", "How well does every phone reach MoveEye? Each one measures reaction time, jitter, losses, download and upload; MoveEye adds the signal it receives from each phone (at its own Wi-Fi).": "Wie gut erreicht jedes Handy MoveEye? Jedes misst Reaktionszeit, Schwankung, Verluste, Download und Upload; MoveEye ergänzt das Signal, das es von jedem Handy empfängt (am eigenen WLAN).", "running": "läuft", "measured": "gemessen", "weak": "schwach", "measure all phones at once": "alle Handys auf einmal messen", "End the check": "Check beenden", "open for": "offen noch", "Start the check": "Check starten", "Clear": "Leeren", "Phones in the game corner measure by themselves. Everybody else: scan the QR code or open": "Handys in der Spielecke messen von selbst. Alle anderen: QR-Code scannen oder öffnen", "still waiting for": "warte noch auf", "MoveEye is the Wi-Fi itself: the signal of every phone is measured too.": "MoveEye ist selbst das WLAN: Das Signal jedes Handys wird mitgemessen.", "Player": "Spieler", "Reaction": "Reaktion", "Jitter": "Schwankung", "Signal": "Signal", "Down / Up in Mbit/s, between the phone and MoveEye (not the internet). Reaction under 30 ms and over 10 Mbit/s are fine for all games.": "Down / Up in Mbit/s, zwischen Handy und MoveEye (nicht Internet). Reaktion unter 30 ms und über 10 Mbit/s reichen für alle Spiele.", "nt-tips": "Schwache Handys näher zu MoveEye bringen, MoveEye höher stellen (nicht am Boden, nicht hinter dem Auto), Körper und Wände dazwischen meiden. Viele Handys gleichzeitig teilen sich die Geschwindigkeit.", "At the own Wi-Fi, not measured yet": "Am eigenen WLAN, noch nicht gemessen", "lost packets": "Pakete verloren", "slow reaction": "langsame Reaktion", "reaction a bit slow": "Reaktion etwas langsam", "unsteady": "schwankend", "little speed": "wenig Geschwindigkeit", "medium speed": "mittlere Geschwindigkeit", "weak signal": "schwaches Signal", "signal could be better": "Signal könnte besser sein"});
@@ -589,6 +612,7 @@ Object.assign(I18N.de, {"AI helper (PC)": "KI-Rechenhilfe (PC)", "helper-note": 
 I18N.en = I18N.en || {}; Object.assign(I18N.en, {"helper-note": "A PC in the same network does the detection (people, animals, vehicles) for the Pi: much faster, the Pi stays cool and needs less power. If the PC stops answering, the Pi does it itself again at once. Only small pictures go to the PC, nothing is stored there.", "helper-manual": "Start MoveEye on the PC with «--helper» (or switch on «works as AI helper for others» there). Then enter its address and the 6-digit code here.", "helper-how": "Easiest: in the 3D simulator on the PC press «Start MoveEye on this PC» - the Pi then finds the helper by itself."});
 Object.assign(I18N.de, {"Survival almanac": "Überlebens-Almanach", "tips for camping, to look up or read in the evening": "Tipps fürs Camping – zum Nachschlagen oder als Abendlektüre"});
 Object.assign(I18N.de, {"Touch (phone, tablet)": "Touch (Handy, Tablet)", "With on-screen buttons": "Mit Bildschirm-Tasten", "With keyboard and mouse (PC)": "Am PC mit Tastatur und Maus"});
+Object.assign(I18N.de, {"games installed": "Spiele installiert", "For phone and tablet (touch)": "Für Handy und Tablet (Touch)", "With on-screen buttons (on the PC with the keyboard)": "Mit Bildschirm-Tasten (am PC mit der Tastatur)", "On the PC with keyboard and mouse": "Am PC mit Tastatur und Maus"});   // Spieltab
 Object.assign(I18N.de, {"Open all games": "Spiele freigeben", "all-games-note": "Eine Taste für alles: Spielecke (Quiz, Werwolf …), Spielesammlung und – wenn der 3D-Simulator läuft – «Team gegen MoveEye». Die Mitspieler scannen einen QR-Code, geben ihren Namen ein und sind dabei.",
   "Simulator game": "Simulator-Spiel", "runners": "Läufer", "simulator not running": "Simulator läuft nicht"});
 I18N.en = I18N.en || {}; Object.assign(I18N.en, {"all-games-note": "One button for everything: game corner (quiz, werewolf …), game collection and - when the 3D simulator runs - «Team against MoveEye». The players scan one QR code, type their name and are in."});
@@ -1093,5 +1117,6 @@ async function soundTest() { const r = await post("/api/audio", {action: "test"}
 /*ALERTS*/
 </script></body></html>
 """
+TOOLS_PAGE = TOOLS_PAGE.replace("/*GAMETILES*/", GAME_TILES_CSS, 1)      # Spieltab: same game tiles as /spiele (part 340)
 
 
