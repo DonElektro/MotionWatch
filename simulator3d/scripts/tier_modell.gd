@@ -282,6 +282,8 @@ func _aufbauen(act, k: String, sc: Node3D, v: Dictionary, m: Dictionary) -> bool
 	_augen()
 	if k == "deer" and _bock():
 		_geweih(temps)
+	if k == "boar":
+		_hauer(temps)
 	if k == "hedgehog":
 		for bn in ["Head", "Neck3", "FrontUpperLeg.L", "FrontUpperLeg.R", "BackUpperLeg.L", "BackUpperLeg.R", "Tail1"]:
 			var bi := sk.find_bone(bn)
@@ -457,6 +459,40 @@ func _geweih(t: Dictionary) -> void:
 		gt.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		gt.transform = g.transform
 		ba.add_child(gt)
+
+
+func _hauer(t: Dictionary) -> void:
+	"""Wildschwein: kurze, nach oben gebogene Hauer (Eckzähne) seitlich hinter der Rüsselscheibe - am Kopf-Knochen"""
+	var hi := sk.find_bone("Head")
+	if hi < 0:
+		return
+	var ba := BoneAttachment3D.new()
+	ba.bone_name = "Head"
+	sk.add_child(ba)
+	var inv := sk.get_bone_global_rest(hi).affine_inverse()
+	var nase: Array = meta.get("nase", [0.0, 1.6, 2.3])
+	var cm := CylinderMesh.new()
+	cm.top_radius = 0.0
+	cm.bottom_radius = 0.009 / einheit
+	cm.height = 0.065 / einheit
+	cm.radial_segments = 5
+	cm.rings = 1
+	var mt := StandardMaterial3D.new()
+	mt.albedo_color = Color(0.86, 0.83, 0.74)
+	mt.roughness = 0.4
+	for s in [-1.0, 1.0]:
+		var base := Vector3(s * 0.052 / einheit, float(nase[1]) - 0.045 / einheit, float(nase[2]) - 0.06 / einheit)
+		var b := Basis(Vector3.FORWARD, -s * 0.5) * Basis(Vector3.RIGHT, -0.35)    # nach oben, aussen, leicht nach hinten
+		for layer in [1, 2]:
+			if layer == 2 and t.is_empty():
+				continue
+			var m := MeshInstance3D.new()
+			m.mesh = cm
+			m.material_override = mt if layer == 1 else a.main.tmat_fixed(float(t["kuehl"]))
+			m.layers = layer
+			m.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			m.transform = inv * Transform3D(b, base + b.y * cm.height * 0.5)
+			ba.add_child(m)
 
 
 func _play(n: String, blend := 0.3, spd := 1.0) -> void:
