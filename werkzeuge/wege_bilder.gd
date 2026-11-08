@@ -6,7 +6,7 @@ extends SceneTree
 ## ansichten.json: [{"name", "scene", "hour", "pos": [x,y,z], "look": [x,y,z], "fov", "tier": {"kind", "at": [x,z], "to": [x,z]},
 ##                  "wind", "fps_s", "weather", "puddle", "wet", "pan", "tilt",
 ##                  "saison", "snow" (on / off / auto), "snow_cm" (Schneedecke von wetter.gd),
-##                  "tal": Bergtal-Koordinaten (pos / look = x, Höhe über Boden, z)}]
+##                  "tal": Bergtal-Koordinaten (pos / look = x, Höhe über Boden, z), "frame": bergtal | ferienpark | kompakt}]
 ## Schreibt <prefix><name>.png (freie Ansicht, ohne Bedienung), <prefix><name>_kopf.png (Bild der Kopfkamera für MoveEye)
 ## und <prefix>fps.json (Bilder pro Sekunde je Ansicht, gemessen mit derselben Kameralage in der grossen Ansicht).
 
@@ -155,10 +155,11 @@ func _run() -> void:
 		if v.get("ground", false):
 			pos.y += main.ground_y(pos.x, pos.z)
 			look.y += main.ground_y(look.x, look.z)
-		var bt = main.scenes.data.get("bergtal") if main.scenes.data.has("bergtal") else null
-		if v.get("tal", false) and bt != null:                # Bergtal: pos / look in valley coordinates (x, height above ground, z)
-			pos = bt.WG(pos.x, pos.z, pos.y)
-			look = bt.WG(look.x, look.z, look.y)
+		var fr := "bergtal" if v.get("tal", false) else str(v.get("frame", ""))
+		var fo = main.scenes.data.get(fr) if fr != "" and main.scenes.data.has(fr) else null
+		if fo != null:                                       # Bergtal / Ferienpark / kompakt: pos / look in its coordinates
+			pos = fo.W(fo.P(pos.x, pos.z, pos.y))             # (x, height above ground, z)
+			look = fo.W(fo.P(look.x, look.z, look.y))
 		cam.fov = float(v.get("fov", 60.0))
 		cam.look_at_from_position(pos, look, Vector3.UP)
 		main.view_cam.global_transform = cam.global_transform

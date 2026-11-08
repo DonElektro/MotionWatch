@@ -19,6 +19,7 @@ extends RefCounted
 ## Das Festival-Gelände ist eine eigene Welt (Gelände wie bisher), «allein» (--solo) baut auch die anderen wie bisher.
 
 const Bib = preload("res://scripts/bib_objekte.gd")
+const Wege = preload("res://scripts/wege.gd")        # «Wege und Strassen» 2b (Normal / Hoch)
 const Szenen = preload("res://scripts/szenenplus.gd")
 const T = preload("res://scripts/i18n.gd")
 
@@ -219,6 +220,8 @@ func _build(sc, sid: String) -> void:
 		_ground_place()
 	else:
 		_ground()
+	if Wege.an(m):
+		_wege_neu()                                      # «Wege und Strassen» 2b: asphalt and gravel in the new look
 	bib.finish()
 	_lights_and_fx()
 	_hiding()
@@ -256,6 +259,32 @@ func _ground() -> void:
 		var th: MeshInstance3D = park.get_child(park.get_child_count() - 1)
 		th.material_override = m.tmats["ground"]
 		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF if pair[0] == far else GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+
+
+func _wege_neu() -> void:
+	"""«Wege und Strassen» 2b (Normal / Hoch): Asphalt-Wege als echte Strassen (Markierung, Bankett, Wetter), Kies-Wege als
+	Kieswege mit weichem Rand - über dem gemalten Boden, nur sichtbar; Pflaster und Pfade bleiben gemalt. Als Platz in einer
+	Welt (flat): auf der flachen Scheibe, nur Kies (die Strasse dort ist die der Welt, schon neu)"""
+	var hfn := Wege.grid_fn(Callable(self, "H"), -NEAR, 2.5) if not flat else func(_x: float, _z: float) -> float: return 0.035
+	var smt: ShaderMaterial = null
+	var kmt: ShaderMaterial = null
+	for wv in ways:
+		var c: Color = wv[2]
+		var pts: Array = wv[0]
+		var w := float(wv[1])
+		if c.s < 0.06 and c.v < 0.36 and not flat:
+			smt = Wege.strassen_band(m, park, Wege.spline(pts, 1.5), w * 0.5, {"centre": w >= 5.0, "edge": w >= 4.0}, hfn,
+					PackedFloat32Array(), 0.06, 0.5, 400.0, smt)
+		elif c.v > 0.5 and c.v < 0.57 and c.r - c.b > 0.06 and c.r - c.b < 0.11:
+			if kmt == null:
+				kmt = Wege.feld_mat(m, "kies", Color(0.58, 0.55, 0.49), Color(0.38, 0.36, 0.33))
+			var mi := MeshInstance3D.new()
+			mi.mesh = Wege.band(m, Wege.spline(pts, 1.0), w * 0.5, 0.4, 0.06, Wege.COLS_FELD, 0.0, hfn)
+			mi.material_override = kmt
+			mi.layers = 1
+			mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			mi.visibility_range_end = 250.0
+			park.add_child(mi)
 
 
 func _ground_place() -> void:

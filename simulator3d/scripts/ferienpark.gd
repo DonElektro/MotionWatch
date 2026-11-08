@@ -11,6 +11,7 @@ extends RefCounted
 ## die richtige Richtung schaut (Park-Knoten, Transform W). Park-Koordinaten: x = Osten, z = Süden (bergauf), der See im Norden.
 ## Gelände: main.ground_fn (Höhe in Weltkoordinaten) - Besucher gehen die Terrassen hinauf, Dinge stehen auf dem Boden.
 
+const Wege = preload("res://scripts/wege.gd")      # «Wege und Strassen» 2b: Asphalt, Kies (Normal / Hoch)
 const Bib = preload("res://scripts/bib_objekte.gd")
 const Szenen = preload("res://scripts/szenenplus.gd")
 const T = preload("res://scripts/i18n.gd")
@@ -212,6 +213,8 @@ func _build(sc) -> void:
 	_terrace4()
 	_terrace5()
 	_ways()
+	if Wege.an(m):
+		_strassen_neu()                                  # «Wege und Strassen» 2b (Normal / Hoch)
 	_forest()
 	_village()
 	if place == "":
@@ -368,6 +371,27 @@ func _paint() -> ImageTexture:
 	_polyline(img, prom, 2.6, C_GRAVEL)
 	var tex := ImageTexture.create_from_image(img)
 	return tex
+
+
+func _strassen_neu() -> void:
+	"""«Wege und Strassen» 2b (Normal / Hoch): die Zufahrt, die Rampe und die Dorfstrasse als echte Asphalt-Strassen, der
+	Parkplatz mit weissen Feldern, die Kies-Gassen der Stellplätze als Kieswege - über dem gemalten Boden (nur sichtbar).
+	Höhe genau wie das Boden-Gitter (_ground: Zellen 4 m ab -NEAR)"""
+	var hfn := Wege.grid_fn(Callable(self, "H"), -NEAR, 4.0)
+	var mt: ShaderMaterial = null
+	for r in [[Vector2(-185.0, -104.0), Vector2(-185.0, 72.0)], [Vector2(-330.0, -58.0), Vector2(-185.0, -58.0)],
+			[Vector2(-291.0, -58.0), Vector2(-291.0, 35.0)]]:
+		mt = Wege.strassen_band(m, park, Wege.dense(r, 2.0), 3.0, {"centre": true, "edge": true}, hfn, PackedFloat32Array(), 0.06, 0.5, 400.0, mt)
+	Wege.parkplatz(m, park, Vector2(-238.0, -78.0), 48.0, 24.0, 0.0, hfn, Wege.WEISS, 0.06)
+	var km: ShaderMaterial = Wege.feld_mat(m, "kies", Color(0.58, 0.55, 0.49), Color(0.38, 0.36, 0.33))
+	for ln in LANES:
+		var mi := MeshInstance3D.new()
+		mi.mesh = Wege.band(m, Wege.dense([Vector2(ln[1], ln[0]), Vector2(ln[2], ln[0])], 1.5), 2.0, 0.4, 0.06, Wege.COLS_FELD, 0.0, hfn)
+		mi.material_override = km
+		mi.layers = 1
+		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		mi.visibility_range_end = 250.0
+		park.add_child(mi)
 
 
 func _paved_rects() -> Array:
