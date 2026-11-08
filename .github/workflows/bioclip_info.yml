@@ -82,6 +82,14 @@ jobs:
           [ "$NUR" = "alle" ] && NUR=""
           python3 werkzeuge/bioclip_info_bauen.py --arten "$RUNNER_TEMP/in/bioclip-1-arten.json" --aus "$RUNNER_TEMP/info" --nur "$NUR"
           ls -la "$RUNNER_TEMP/info"
+      - name: MoveEye selbst mit der echten Datei (bioclip_test.py --info - «essbar» nie ohne Warnung, Stichprobe)
+        if: inputs.nur == 'alle'
+        run: |
+          set -e
+          pip install -q opencv-python-headless numpy flask cryptography pillow
+          python3 werkzeuge/bauen.py > /dev/null
+          f=$(ls webcam_bewegung_*.py | sort -V | tail -1)
+          python3 werkzeuge/bioclip_test.py --datei "$f" --info "$RUNNER_TEMP/info/bioclip-info-1.sqlite"
       - name: Zusammenfassung
         if: always()
         run: |
