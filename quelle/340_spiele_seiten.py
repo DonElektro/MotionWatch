@@ -73,9 +73,28 @@ def games_server_start():
     threading.Thread(target=srv.serve_forever, daemon=True, name="games").start()
 
 
-GAME_BACK = """<div id="mw-back" style="position:fixed;bottom:10px;left:10px;opacity:.85;z-index:2147483647;font:600 15px system-ui,sans-serif">
-<a href="__BACK__" onclick="if(history.length>1){history.back();return false}try{window.close()}catch(e){}" style="display:inline-block;
-background:rgba(14,22,33,.85);color:#fff;text-decoration:none;padding:8px 13px;border-radius:12px;border:1px solid rgba(255,255,255,.25)">✕ Zurück</a></div>"""
+# 3.66.1: the button no longer sits fixed bottom left (it covered pedals / pads of several games). If the game shows its
+# own back link («../», «index.html» - the games ZIP makes it click this button), the button hides itself; otherwise it
+# takes the first free spot (top centre, top left, top right, bottom centre, left / right middle) with no button, link
+# or form field under it, keeps clear of the notch (safe area) and checks again on turning and every few seconds.
+GAME_BACK = """<div id="mw-back" style="position:fixed;top:calc(8px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);opacity:.88;z-index:2147483647;font:600 15px system-ui,sans-serif">
+<a href="__BACK__" onclick="if(history.length>1){history.back();return false}try{window.close()}catch(e){}" style="display:inline-flex;align-items:center;
+box-sizing:border-box;min-height:40px;min-width:44px;background:rgba(14,22,33,.85);color:#fff;text-decoration:none;padding:8px 13px;border-radius:12px;
+border:1px solid rgba(255,255,255,.25);white-space:nowrap;-webkit-tap-highlight-color:transparent">✕ Zurück</a></div>
+<script>(function(){var d=document,b=d.getElementById("mw-back");if(!b||b.__mw)return;b.__mw=1;
+var T="calc(8px + env(safe-area-inset-top,0px))",B="calc(8px + env(safe-area-inset-bottom,0px))",L="calc(8px + env(safe-area-inset-left,0px))",R="calc(8px + env(safe-area-inset-right,0px))";
+var P=[[T,"","","50%","translateX(-50%)"],[T,"","",L,""],[T,"",R,"",""],["",B,"","50%","translateX(-50%)"],["50%","","",L,"translateY(-50%)"],["50%","",R,"","translateY(-50%)"]],cur=-1;
+function set(i){var p=P[i],s=b.style;s.top=p[0]||"auto";s.bottom=p[1]||"auto";s.right=p[2]||"auto";s.left=p[3]||"auto";s.transform=p[4]||"none";cur=i}
+function own(){var a=d.querySelectorAll('a[href="../"],a[href="index.html"]');for(var i=0;i<a.length;i++){if(b.contains(a[i]))continue;
+ var r=a[i].getBoundingClientRect();if(r.width>0&&r.height>0&&r.bottom>0&&r.top<innerHeight&&r.right>0&&r.left<innerWidth&&getComputedStyle(a[i]).visibility!=="hidden")return true}return false}
+function busy(){var r=b.firstElementChild.getBoundingClientRect();for(var i=0;i<=4;i++)for(var j=0;j<=2;j++){
+ var x=Math.min(innerWidth-1,Math.max(0,r.left+2+(r.width-4)*i/4)),y=Math.min(innerHeight-1,Math.max(0,r.top+2+(r.height-4)*j/2)),e=d.elementsFromPoint(x,y);
+ for(var k=0;k<e.length;k++){var q=e[k];if(b.contains(q)||q===d.body||q===d.documentElement)continue;
+  if(q.closest&&q.closest("a,button,input,select,textarea,label,[role=button],[onclick]"))return true}}return false}
+function fit(force){if(own()){b.style.display="none";return}b.style.display="";if(!force&&cur>=0&&!busy())return;
+ for(var i=0;i<P.length;i++){set(i);if(!busy())return}set(0)}
+fit(1);addEventListener("load",function(){fit(1)});setTimeout(function(){fit()},1200);setInterval(function(){fit()},2500);
+addEventListener("resize",function(){setTimeout(function(){fit(1)},250)})})();</script>"""
 
 
 # 2.95.56: every page without its own way back gets a «✕ Zurück» button. On the phone MoveEye often runs as an app from

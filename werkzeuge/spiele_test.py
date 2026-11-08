@@ -6,9 +6,12 @@
      aussen in neuen Spielen (nur die eigenen Dateien), GAMES_PKG in quelle/320 passt zu Grösse und SHA-256 der ZIP.
   2. Browser (Playwright, ohne Internet - jede Anfrage nach aussen ist ein Fehler): jedes Spiel am Handy (390 × 844,
      Touch) und am PC (1280 × 800) laden, Start-Knopf antippen bzw. klicken, ein paar Eingaben; keine JavaScript-Fehler.
+     Ab 3.66.1 mit dem echten «✕ Zurück» aus quelle/340 (GAME_BACK): er darf keinen Knopf, Link und kein Feld überdecken.
      Touch-Spiele: das Antippen muss im Spiel ankommen. Der eigene Zurück-Link führt zur Spielesammlung von MoveEye.
   3. Wobbly Truck (ab GS-1.5, mit ?test=1): Truck und Motorrad auf beiden Strecken, ein Salto und ein Wheelie werden erkannt,
      der Looping gelingt auf «Normal» und ist keine Falle, Einstellungen werden gespeichert, Rekord je Strecke und Fahrzeug.
+     GS-1.6: auf «Einfach» landet ein schiefer Sprung ohne Eingabe gerade, ein Salto wird trotzdem erkannt, kein Abwurf mit ★;
+     der schwebende «✕ Zurück» von MoveEye ist ausgeblendet (eigener Link oben, sonst über der Bremse).
 
   python3 werkzeuge/spiele_test.py                    # Paket + Browser, nur die Spiele mit 5 Sprachen (ab GS-1.4)
   python3 werkzeuge/spiele_test.py --alle             # dazu die älteren Spiele (2048, Tetris …)
@@ -35,6 +38,21 @@ REPO = os.path.dirname(HIER)
 SPRACHEN = ("de", "en", "fr", "it", "rm")
 GRUPPEN = ("touch", "buttons", "keys")
 ZURUECK = '<div id="mw-back"><a href="/zurueck-zur-sammlung">✕ Zurück</a></div>'
+try:    # 3.66.1: the real button of MoveEye (quelle/340 GAME_BACK) with its placement script
+    _q = open(os.path.join(REPO, "quelle", "340_spiele_seiten.py"), encoding="utf-8").read()
+    ZURUECK = re.search(r'GAME_BACK = """(.*?)"""', _q, re.S).group(1).replace("__BACK__", "/zurueck-zur-sammlung")
+except (OSError, AttributeError):
+    pass
+# the floating «✕ Zurück» must never lie on a button, link or form field of the game (or it is hidden: own back link)
+UEBERDECKT = """() => { const b = document.getElementById('mw-back'); if (!b || getComputedStyle(b).display === 'none') return null;
+  const r = b.firstElementChild.getBoundingClientRect(), out = new Set();
+  if (r.left < 0 || r.top < 0 || r.right > innerWidth || r.bottom > innerHeight) out.add('ausserhalb');
+  for (let i = 0; i <= 4; i++) for (let j = 0; j <= 2; j++)
+    for (const e of document.elementsFromPoint(Math.min(innerWidth - 1, r.left + 2 + (r.width - 4) * i / 4), Math.min(innerHeight - 1, r.top + 2 + (r.height - 4) * j / 2))) {
+      if (b.contains(e) || e === document.body || e === document.documentElement) continue;
+      const c = e.closest('a,button,input,select,textarea,label,[role=button],[onclick]');
+      if (c) out.add(c.tagName.toLowerCase() + (c.id ? '#' + c.id : '') + ' ' + (c.textContent || '').trim().slice(0, 16)); }
+  return [...out]; }"""
 START = ["#bPlay", "#playBtn", "#btnPlay", "#startBtn", "#play", "button.play", "[data-t=play]",
          ".q-shade[data-card=ready] .play"]
 
@@ -183,6 +201,12 @@ def spiel_pruefen(br, base, g, fehler, warn, bilder, zeile):
                 pg.mouse.click(cx, cy); pg.wait_for_timeout(300)
             pg.wait_for_timeout(600)
             T = pg.evaluate("() => window.__mwT")
+            for zeit in (0, 2800):                     # after the inputs and once more after the next re-check of the button
+                pg.wait_for_timeout(zeit)
+                ue = pg.evaluate(UEBERDECKT)
+                if ue:
+                    fehler.append(f"{d} {name}: «✕ Zurück» überdeckt {', '.join(ue)}")
+                    break
             st = pg.evaluate(ZUSTAND)
             if mobil:
                 ok = (T["pd"] + T["md"] + T["ts"]) > 0
@@ -200,6 +224,7 @@ def spiel_pruefen(br, base, g, fehler, warn, bilder, zeile):
                 if pg.locator('a[href="../"], a[href="index.html"]').count():
                     href_ok = pg.evaluate("""() => { const a = document.querySelector('a[href="../"], a[href="index.html"]');
                       let to = null; const b = document.querySelector('#mw-back a'); if (!b) return 'kein #mw-back';
+                      b.removeAttribute('onclick');   // the real button goes back in the history: here only where it leads
                       b.addEventListener('click', e => { to = b.getAttribute('href'); e.preventDefault(); }, {once: true});
                       a.dispatchEvent(new MouseEvent('click', {bubbles: true, cancelable: true})); return to || 'nicht umgeleitet'; }""")
                     if href_ok != "/zurueck-zur-sammlung":
@@ -218,7 +243,7 @@ def spiel_pruefen(br, base, g, fehler, warn, bilder, zeile):
 WT_BOT = """window.__bot = (W, I) => { const a = W.B.a, w = W.B.w, sl = Math.atan((W.H(W.B.x + .04) - W.H(W.B.x - .04)) / .08);
   if (W.air.on && W.air.t > 0.12) { const tgt = Math.round((a - sl) / 6.283) * 6.283 + sl, e = a + w * 0.3 - tgt; I.gas = e < -0.12; I.brake = e > 0.12; }
   else { const d = a - sl, dw = d - Math.round(d / 6.283) * 6.283; I.brake = false; I.gas = dw < 0.35; } };"""
-WT_RUN = """([veh, trk, scen]) => { const W = window.__wt, I = W.inp; W.freeze(true); W.select(veh, trk); W.start();
+WT_RUN = """([veh, trk, scen, diff]) => { const W = window.__wt, I = W.inp; W.freeze(true); W.SET.diff = diff == null ? 1 : diff; W.select(veh, trk); W.start();
   const r = {state0: W.state}; I.gas = I.brake = I.trick = false;
   if (scen === 'fahren') { W.place(5, 0, 0, 0, 0, 0); W.sim(1.5, () => { __bot(W, I); }); r.dx = W.B.x - 5; }
   if (scen === 'salto') { W.place(8, 9, 9, 6, 0, 0);          // in the air: lean back until one turn, then land level
@@ -227,6 +252,9 @@ WT_RUN = """([veh, trk, scen]) => { const W = window.__wt, I = W.inp; W.freeze(t
   if (scen === 'looping') { const L = W.loops[0]; W.place(L.cx - 60, 0, 6, 0, 0, 0); W.sim(10, () => { __bot(W, I); }); r.x = W.B.x - L.cx; }
   if (scen === 'langsam') { const L = W.loops[0]; W.place(L.cx - 12, 0, 8, 0, 0, 0); W.sim(25, () => { __bot(W, I); }); r.x = W.B.x - L.cx; }
   if (scen === 'sturz') { W.place(8, 6, 6, 0, Math.PI, 0); W.sim(4); }
+  if (scen === 'schief') { W.place(8, 8, 9, 6, 0.9, 2.5); W.sim(5); }     // Einfach: crooked jump, no input -> lands level by itself
+  if (scen === 'halbsalto') { W.place(8, 9, 9, 6, 0, 0); W.sim(5, () => { I.gas = W.air.on && W.B.a < 4.0; }); }   // tilt, let go, assist finishes
+  if (scen === 'superman') { W.place(8, 8, 9, 6, 0, 0); W.sim(5, () => { I.trick = true; }); }                      // ★ held into the landing
   I.gas = I.brake = I.trick = false; r.state = W.state; r.ids = W.log.map(e => e.id); return r; }"""
 
 
@@ -258,6 +286,17 @@ def wobbly_pruefen(br, base, fehler, bilder):
                     fehler.append(f"{d} {name}: {veh}/{trk} {scen}: «{want}» nicht erkannt ({r['state']}, {r['ids']})")
                 else:
                     ok.append(f"{scen}-{veh}")
+            for veh, trk, scen, want in (("truck", "hills", "schief", "bigair"), ("bike", "stunt", "schief", "bigair"),
+                                         ("truck", "stunt", "halbsalto", "backflip"), ("bike", "hills", "halbsalto", "backflip"),
+                                         ("bike", "stunt", "superman", "superman")):
+                r = pg.evaluate(WT_RUN, [veh, trk, scen, 0])          # difficulty «Einfach»: automatic air control
+                if want not in r["ids"] or r["state"] != "play":
+                    fehler.append(f"{d} {name}: Einfach {veh}/{trk} {scen}: «{want}» / Landung ohne Sturz fehlt ({r['state']}, {r['ids']})")
+                else:
+                    ok.append(f"einfach-{scen}-{veh}")
+            # MoveEye's floating «✕ Zurück» (#mw-back) would cover the Brake pedal: the game hides it (own header link)
+            if pg.evaluate("() => { const b = document.getElementById('mw-back'); return !b || getComputedStyle(b).display !== 'none'; }"):
+                fehler.append(f"{d} {name}: schwebender Zurück-Knopf nicht ausgeblendet (überdeckt die Bremse)")
             for veh in ("truck", "bike"):           # too slow for the loop: fall off or pass behind it, never stuck in it
                 r = pg.evaluate(WT_RUN, [veh, "stunt", "langsam"])
                 if r["state"] == "play" and r["x"] < 15:
