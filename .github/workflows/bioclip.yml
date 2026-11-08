@@ -4,18 +4,15 @@
 # werkzeuge/bioclip_test.py --echt) und hängt sie als Release-Assets an «bioclip-N». Die rund 450 MB kommen so nie ins
 # Repository, torch nie auf den Pi, Hugging Face muss beim Integrator nicht erreichbar sein.
 #
-#   Probe ohne Release (auch bei jedem Push auf mw-bioclip):
+#   Probe ohne Release:
 #     gh api -X POST repos/DonElektro/MotionWatch/actions/workflows/bioclip.yml/dispatches -f ref=<zweig>
 #   Echt (einmal pro Fassung, nie überschreiben; «latest» bleibt das Gehäuse-Release):
-#     … -f ref=<zweig> -f 'inputs[release]=echt' -f 'inputs[tag]=bioclip-1'
+#     … -f ref=<zweig> -f 'inputs[release]=echt' -f 'inputs[tag]=bioclip-N'   (zuletzt bioclip-3, Lauf 42502560598)
 #   Danach: Grösse + sha256 aus pins.txt / der Release-Notiz in BIO_FILES (Teil 639zzd) eintragen – die Signatur der
 #   Hauptdatei bürgt dann für die Dateien (wie bei den Piper-Stimmen). MoveEye nimmt nur genau diese Bytes.
 # Keine Geheimnisse: nur GITHUB_TOKEN (contents: write für das Release), kein Signierschlüssel.
 name: BioCLIP
 on:
-  push:
-    branches: [mw-bioclip]
-    paths: [".github/workflows/bioclip.yml", "werkzeuge/bioclip_bauen.py"]
   workflow_dispatch:
     inputs:
       release:
@@ -45,8 +42,8 @@ env:
 
 jobs:
   bauen:
-    name: BioCLIP · ${{ inputs.release || 'push' }} ${{ inputs.release == 'echt' && inputs.tag || '' }}
-    if: github.repository == 'DonElektro/MotionWatch' && (github.event_name == 'push' || inputs.loeschen == '')
+    name: BioCLIP · ${{ inputs.release }} ${{ inputs.release == 'echt' && inputs.tag || '' }}
+    if: github.repository == 'DonElektro/MotionWatch' && inputs.loeschen == ''
     runs-on: ubuntu-24.04
     timeout-minutes: 90
     steps:
@@ -160,7 +157,7 @@ jobs:
 
   weg:
     name: Probe löschen · ${{ inputs.loeschen }}
-    if: github.repository == 'DonElektro/MotionWatch' && github.event_name == 'workflow_dispatch' && inputs.loeschen != ''
+    if: github.repository == 'DonElektro/MotionWatch' && inputs.loeschen != ''
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:

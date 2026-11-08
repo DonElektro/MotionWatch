@@ -25,21 +25,21 @@
 # Selbsttest bio_selftest; Tests werkzeuge/bioclip_test.py (Ersatz-Modell, Rechte, Gäste, Zwischenspeicher, besetzt, Laden,
 # Browser) und im Workflow «BioCLIP» mit dem echten Modell (--echt).
 # ----------------------------------------------------------------------------
-BIO_TAG = "bioclip-2"
+BIO_TAG = "bioclip-3"
 BIO_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/" + BIO_TAG + "/"}   # Tests: lokaler Server
-# Werte aus dem Workflow «BioCLIP» (Release bioclip-2, Lauf 42499975458, 08.11.2026; = «digest» von GitHub); size 0 = nicht freigegeben.
-# (bioclip-1: gleiches Modell, gleiche Einbettungen, aber Namen aus Wikidata-P1843 zuerst - dort auch Mundart wie «Bettsaier».)
+# Werte aus dem Workflow «BioCLIP» (Release bioclip-3, Lauf 42502560598, 08.11.2026; = «digest» von GitHub); size 0 = nicht freigegeben.
+# (bioclip-1 / -2: gleiches Modell; die Namen dort noch schlechter gewählt - Mundart wie «Bettsaier», Sorten wie «fiaschello».)
 # fp32 statt int8: auf 74 echten Fotos (iNaturalist) trifft fp32 genau wie torch (Art top-1 70 %, top-3 81 %), int8 nur 61 % /
-# 80 % (gleiche Art wie fp32 bei 84 %) - die Genauigkeit hält bei int8 nicht. int8 (schneller, 90 MB) liegt im selben Release:
+# 80 % (gleiche Art wie fp32 bei 84 %; Lauf zu bioclip-1) - die Genauigkeit hält bei int8 nicht. int8 (schneller, 90 MB) liegt im selben Release:
 #   "model": {"name": "bioclip-1-bild-int8.onnx", "size": 89759048,
 #             "sha256": "a9e05a3b77a329ea898b60f8fd8e6f0e97938e35efbc39b157151910aac5d4d6"}
 BIO_FILES = {
     "model": {"name": "bioclip-1-bild-fp32.onnx", "size": 345124167,
               "sha256": "c88a6b554da4f11caa29887bbbb3b02f2aeed891c49ede400ac1706c64e45687"},
-    "emb": {"name": "bioclip-1-arten.npy", "size": 10595456,
-            "sha256": "4349a4a499614d6774b41e8a1212ad9733f0f3fe5dfcff06203c05e8d0a1a5f6"},
-    "labels": {"name": "bioclip-1-arten.json", "size": 1543420,
-               "sha256": "0126bef7fa4df76f4e627de53899acd775f0bff1494486c5dac90d2bcb5a58f5"},
+    "emb": {"name": "bioclip-1-arten.npy", "size": 10568832,
+            "sha256": "d170bb9363f33a6524f6bef666df09b66c137c5f5c410af9d84d5aedc88c6663"},
+    "labels": {"name": "bioclip-1-arten.json", "size": 1523047,
+               "sha256": "d8cb52c4f9bae2f51147579bc71c1b65e0dfd66133115c3f9ca204423e6ec699"},
 }
 BIO_MAX_BYTES = 400 * 1024 * 1024        # harte Obergrenze für alle Dateien zusammen (ein falscher Eintrag lädt nie mehr)
 BIO_IDLE_S = 10 * 60
@@ -732,6 +732,8 @@ def smalltv_routes(app, reply, body):                     # + 639zzd
 
     def answer(fid, who, L, action, rate_key):
         r = bio_state(fid, who, L, action, rate_key)
+        if r.get("msg"):
+            r["msg"] = r["msg"].replace(" MB", "\u00a0MB").replace(" Mo", "\u00a0Mo").replace(" %", "\u00a0%")
         code = 200 if r.get("ok") or r.get("st") in ("load", "runtime") else (404 if r.get("msg") == tr("not found", L) else (
             429 if r.get("msg") == tr("Too many requests in a short time - wait a few minutes.", L) else 400))
         return reply(r, code)
@@ -838,7 +840,7 @@ function tzBioPanel(f, ov, url, extra, T) {
     else m.textContent = r.msg || "";
     bd.appendChild(m);
     const act = mk("div", "act");
-    if (r.st === "load" && r.can_dl) act.appendChild(btn("⬇ " + T("Load") + (r.mb ? " (" + r.mb + " MB)" : ""), "download"));
+    if (r.st === "load" && r.can_dl) act.appendChild(btn("⬇ " + T("Load") + (r.mb ? " (" + r.mb + "\u00a0MB)" : ""), "download"));
     if (r.st === "loading") { const pb = mk("div", "pb"), pi = mk("i"); pi.style.width = (r.pct || 0) + "%"; pb.appendChild(pi); bd.appendChild(pb); act.appendChild(btn(T("Cancel"), "cancel", "sec")); }
     if (r.st === "runtime" && r.can_install) act.appendChild(btn("⬇ " + T("Install"), "install"));
     if (r.st === "err") act.appendChild(btn(T("Try again"), "start", "sec"));
