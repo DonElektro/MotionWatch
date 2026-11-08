@@ -1,6 +1,6 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-08 17:17",
+ "generated": "2026-11-08 17:20",
  "versions": [
   {
    "version": "3.63.2",
@@ -168,31 +168,23 @@
   }
  ],
  "sim": {
-  "ver": "3.62.1",
-  "version": "3D-5.62.1",
-  "notes": "Wildschwein mit Hauern, Hase überarbeitet",
+  "ver": "3.62.2",
+  "version": "3D-5.62.2",
+  "notes": "HP-Update: neue Versionen kommen auch beim Dauerrechnen an",
   "mw_min": "3.55.0",
   "win": {
-   "ver": "3.62.1",
+   "ver": "3.62.2",
    "file": "simulator3d/MotionWatch3D_Simulator.zip",
-   "size": 54307117,
-   "sha256": "3ad38b619fb55359aa771eca0fa26fab95fd14ac95c6d731f6ba271682ed4152",
-   "sig": "93ce7eb256c8825bab37d1e8144692dd31a941cb3e20d1efebf9fc666d962d4e95995f04c708d331ff770daf38916936c5ce43df48c1e9f5c9b05cb9c6ed600a"
+   "size": 54306040,
+   "sha256": "37d5f7edc81ec03c47e355a10a5e3eb103defbed36c589cd37ce6ef9596ce981",
+   "sig": "f6b6a2b839b990e27450613b229dc3ec9c13018b144227a1ad1f6810dcc72e4cde830c3f9ac1516ff0e3c584d7bc2f180152bbfd5bc55e9d9059b6af9204b00e"
   },
   "linux": {
-   "ver": "3.62.1",
+   "ver": "3.62.2",
    "file": "simulator3d/MoveEyeSim3D_Linux.zip",
-   "size": 48333568,
-   "sha256": "ec26eb1239c9b2e9e2032eadce7376e98eb1ed8d4a7279b4b9536ced6ca335d7",
-   "sig": "4ab1d7215590706edfb5f5a741f2894b79b486ba2e6604391b977891a05a6d6abb7b8a208692347d2edd4a1113e5ea43ece4613130817c22daaa6264d17e630b"
-  },
-  "pi": {
-   "ver": "3.62.1",
-   "file": "simulator3d/MoveEyeSim3D_Pi.zip",
-   "size": 37844590,
-   "sha256": "06811664e47e80af3ad07a18b276de2c8a943d729000eac9ee92a1d1c3fd8377",
-   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.62.1/MoveEyeSim3D_Pi.zip",
-   "sig": "9618e635da67f554707178c0fc3401b50a735220f0235766c7fab1bf7c07ddc985b2a44db6963bc731549bd6a24faadfda386d0c28731815de373e280f8ed700"
+   "size": 48336215,
+   "sha256": "d0a9b56c865d96fe8609d2d5e08a8589e6f55b3e58e6eff3f50975d338b7afc6",
+   "sig": "d07d6db499f4f8931b89805ee56158068927d19f2dc96670aff01377458e07bba396200b707d1e0e7cbc1e4b3a9ccc48a777585d3f6547cefc4b76434fecce0b"
   }
  }
 }
