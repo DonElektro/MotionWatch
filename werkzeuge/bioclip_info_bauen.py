@@ -57,7 +57,8 @@ STICH = {"Colchicum autumnale": "tox", "Convallaria majalis": "tox", "Taxus bacc
 _ABK = ("z. B.", "u. a.", "d. h.", "v. a.", "s. o.", "s. u.", "o. Ä.", "u. Ä.", "bzw.", "ca.", "etc.", "sog.", "vgl.", "evtl.",
         "inkl.", "lat.", "griech.", "Nr.", "St.", "Dr.", "Prof.", "subsp.", "var.", "agg.", "spec.", "sp.", "ssp.", "u. U.", "z. T.")
 NEG_TOX = re.compile(r"\b(nicht|kaum|wenig|un)\s*giftig|\bungiftig|\bkein(e|en|er)?\s+(Gift|giftig)|\bnicht\s+als\s+giftig", re.I)
-TOX = re.compile(r"(\b(ist|sind|gilt|gelten|wirkt|wirken|werden|wird)\b[^.;]{0,40}\bgiftig\b|\bgiftig\s+(für|ist|sind)\b"
+TOX = re.compile(r"(\b(ist|sind|gilt|gelten|wirkt|wirken|werden|wird|gehört|gehören|zählt|zählen)\b[^.;]{0,50}\b(?!un|nicht)\w*giftig(e|en|er|es|ste|sten)?\b"
+                 r"|\bgiftig\s+(für|ist|sind)\b|\b(hoch|höchst|stark|sehr|tödlich|extrem|äußerst)giftig\w*"
                  r"|\b(sehr|stark|hoch|tödlich|schwach|leicht|mäßig|gering)\s+giftig\b|\bgiftigsten?\b|\bGiftpflanze\w*|\bGiftpilz\w*"
                  r"|\bGiftschlange\w*|\bgiftige[nrs]?\s+(Pflanze|Pilz|Art|Zierpflanze|Gartenpflanze|Wildpflanze)\b)")
 TOXWORD = re.compile(r"giftig|Gift|Vergiftung|toxisch", re.I)
@@ -65,7 +66,8 @@ VERW = re.compile(r"verwechs|Verwechs|Doppelgänger|zum Verwechseln", re.I)
 NEG_ED = re.compile(r"\bnicht\s+(essbar|genießbar|zum\s+Verzehr|gegessen|verzehrt)|\bunessbar|\bungenießbar|\bkein(e|en)?\s+Speisepilz"
                     r"|\bnicht\s+geeignet|\bungeeignet", re.I)
 ED = re.compile(r"\bessbar\w*|\bSpeisepilz\w*|\bWildgemüse\b|\bals\s+(Salat|Gemüse|Gewürz|Würze|Tee|Wildgemüse|Kompott|Speise\w*|"
-                r"Nahrungsmittel|Küchenkraut|Obst|Wildobst)\b[^.;]{0,40}\b(verwendet|genutzt|gegessen|verzehrt|zubereitet|gebraucht)"
+                r"Nahrungsmittel|Küchenkraut|Obst|Wildobst|\w*salat|\w*gemüse)\b[^.;]{0,40}\b(verwendet|genutzt|gegessen|verzehrt|zubereitet|gebraucht|verarbeitet)"
+                r"|\b(Gemüse|Gewürz|Nahrungs|Wildgemüse|Küchen)(-|pflanze\b)|\beignen\s+sich\s+(zum|für\s+den)\s+(Frisch|Roh)?verzehr"
                 r"|\bwerden\b[^.;]{0,50}\b(roh|gekocht|gegart|gebraten)?\s*gegessen\b|\bwird\b[^.;]{0,50}\bgegessen\b"
                 r"|\bzu\s+(Marmelade|Konfitüre|Saft|Gelee|Pesto|Likör|Kompott|Mus)\w*\s+verarbeitet")
 
@@ -283,6 +285,8 @@ def pruefen(text, own, namen, links, pflanze_pilz, dbg=None):
                 tox.append(s)
             elif dbg is not None:
                 dbg.append("  [giftig verworfen: %s] %s" % (why, s[:200]))
+        elif dbg is not None and re.search(r"giftig|Giftpflanze", s):
+            dbg.append("  [giftig kein Muster] " + s[:200])
         elif pflanze_pilz and EDISH.search(s):
             why = "kein Muster" if not ED.search(s) else "Verneinung" if NEG_ED.search(s) else "Gift-Wort" if TOXWORD.search(s) \
                 else "andere Art %s" % sorted(other) if other else "«Diese …»" if DIESE.search(s) else ""
