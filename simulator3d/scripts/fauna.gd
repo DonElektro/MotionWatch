@@ -16,6 +16,8 @@ var _next_birds := 0.0
 var _bats: Array = []            # [{node, wings, c: Vector3, r, w, ph, until}]
 var _next_bats := 0.0
 const Quality = preload("res://scripts/quality.gd")
+const VogelModell = preload("res://scripts/vogel_modell.gd")   # Paket 3: Vögel echter, sitzen auf Bäumen (ab Stufe Normal)
+var _next_perch := -1.0
 var _rig_alt := Vector3.INF      # «Animationen» 12: where the Mover was (once per frame)
 var _rig_f := -1
 var _rig_mv := false
@@ -25,7 +27,9 @@ var _gscan := 0.0
 # kind: [length m, body colour, wing colour, flight distance m, hops (true) or walks]
 const GROUND := {"crows": [0.46, Color(0.06, 0.06, 0.07), Color(0.05, 0.05, 0.06), 15.0, false],
 		"magpies": [0.45, Color(0.05, 0.06, 0.09), Color(0.06, 0.08, 0.14), 10.0, true],
-		"gulls": [0.45, Color(0.93, 0.93, 0.92), Color(0.62, 0.65, 0.7), 12.0, false]}
+		"gulls": [0.45, Color(0.93, 0.93, 0.92), Color(0.62, 0.65, 0.7), 12.0, false],
+		# Paket 3 (nur ab Stufe Normal, sitzt auf Bäumen): Ringeltaube 40–42 cm, Fluchtdistanz ~10 m
+		"pigeons": [0.41, Color(0.42, 0.44, 0.48), Color(0.38, 0.40, 0.45), 10.0, false]}
 
 
 func _process(dt: float) -> void:
@@ -50,7 +54,59 @@ func _process(dt: float) -> void:
 			var water: bool = main.scene == "seeufer"
 			ground_flock("gulls" if water and randf() < 0.7 else ("magpies" if randf() < 0.35 else "crows"), null)
 		_next_ground = t + randf_range(60.0, 180.0)
+	# ---- Paket 3: Vögel sitzen auf den Bäumen und fliegen auf, wenn jemand kommt (nur ab Stufe Normal) ----
+	if not quiet and not dark and VogelModell.an(main) and t > _next_perch and not main.tree_spots.is_empty():
+		if _next_perch < 0.0:
+			_next_perch = t + randf_range(8.0, 25.0)
+		else:
+			_next_perch = t + randf_range(50.0, 150.0)
+			var r := randf()
+			perch_flock("pigeons" if r < 0.45 else ("crows" if r < 0.8 else "magpies"))
 	_ground_tick(t, dt, dark)
+
+
+func perch_flock(kind: String) -> Node3D:
+	"""ein paar Vögel auf den unteren Ästen von ein, zwei Bäumen vor der Kopfkamera (Paket 3)"""
+	if main.head == null or not main.head.is_inside_tree() or not GROUND.has(kind):
+		return null
+	var hp: Vector3 = main.head.global_position
+	var f: Vector3 = -main.cams[0].global_transform.basis.z
+	f.y = 0.0
+	f = f.normalized() if f.length() > 0.01 else Vector3(0, 0, -1)
+	var cand: Array = []
+	var weit: Array = []
+	for ts in main.tree_spots:
+		var tp: Vector2 = ts[0]
+		var d := Vector2(tp.x - hp.x, tp.y - hp.z)
+		if d.length() > 5.0 and d.length() < 45.0:
+			weit.append(ts)
+			if d.normalized().dot(Vector2(f.x, f.z)) > 0.45:
+				cand.append(ts)                                 # im Bild der Kopfkamera
+	if cand.is_empty():
+		cand = weit
+	if cand.is_empty():
+		return null
+	var first: Node3D = null
+	for k in range(mini(2, cand.size())):
+		var ts: Array = cand[randi() % cand.size()]
+		var tp2: Vector2 = ts[0]
+		for i in range(randi_range(1, 4 if kind != "magpies" else 2)):
+			var b := _ground_bird(kind)
+			var a := randf() * TAU
+			var rr: float = float(ts[1]) * randf_range(0.9, 1.05)          # aussen an den unteren Ästen (sichtbar)
+			var p := Vector3(tp2.x + cos(a) * rr, 0.0, tp2.y + sin(a) * rr)
+			p.y = _gy(Vector3(tp2.x, 0, tp2.y)) + float(ts[2]) * randf_range(0.85, 1.0)
+			b["node"].position = p
+			b["st"] = "perch"
+			b["yaw"] = a + PI * 0.5 + randf_range(-0.6, 0.6)
+			b["node"].rotation.y = b["yaw"]
+			b["until"] = main.now() + randf_range(90.0, 240.0)
+			if VogelModell.an(main):
+				VogelModell.boden(b)
+			_ground.append(b)
+			if first == null:
+				first = b["node"]
+	return first
 
 
 func _bird(size: float, col: Color, temp: float) -> Dictionary:
@@ -86,8 +142,11 @@ func _spawn_flock() -> void:
 	var col: Color = [Color(0.1, 0.1, 0.1), Color(0.35, 0.3, 0.25), Color(0.55, 0.55, 0.58)][randi() % 3]
 	var spd := randf_range(7.0, 12.0)
 	var half := 70.0
+	var echt := VogelModell.an(main)
 	for i in range(n):
 		var b := _bird(0.22 if not low else 0.28, col, 38.0)
+		if echt:
+			VogelModell.schwarm(b, 0.22 if not low else 0.28, col)
 		var off := Vector3(randf_range(-3, 3), randf_range(-1.2, 1.2), randf_range(-3, 3)) * (0.0 if low else 1.0)
 		b["from"] = center - side * half + off + Vector3(0, h, 0)
 		b["to"] = center + side * half + off + Vector3(0, h + randf_range(-2, 2), 0)
@@ -228,7 +287,7 @@ func ground_flock(kind: String, at) -> Node3D:
 	"""a few birds on the ground in the picture of the head camera (gulls: at the water if the scene has some)"""
 	if not GROUND.has(kind):
 		return null
-	var n: int = {"crows": randi_range(2, 6), "magpies": randi_range(1, 3), "gulls": randi_range(3, 8)}[kind]
+	var n: int = randi_range(2, 5) if kind == "pigeons" else {"crows": randi_range(2, 6), "magpies": randi_range(1, 3), "gulls": randi_range(3, 8)}[kind]
 	n = maxi(1, Quality.n(n)) if Quality.lite() else n
 	var c: Vector3
 	if at != null:
@@ -241,8 +300,11 @@ func ground_flock(kind: String, at) -> Node3D:
 		c = Vector3(hp.x, 0, hp.z) + f.rotated(Vector3.UP, randf_range(-0.4, 0.4)) * randf_range(7.0, 16.0)
 	var water: bool = kind == "gulls" and main.scene == "seeufer"     # scenes.gd _seeufer: water from z = -25 on
 	var first: Node3D = null
+	var echt := VogelModell.an(main)
 	for i in range(n):
 		var b := _ground_bird(kind)
+		if echt:
+			VogelModell.boden(b)
 		var p := c + Vector3(randf_range(-2.5, 2.5), 0, randf_range(-2.0, 2.0)) * (1.0 + n * 0.12)
 		if water:
 			p = Vector3(randf_range(-14.0, 14.0), 0, -24.6 + randf_range(-0.5, 0.6))   # on the shore
@@ -318,6 +380,10 @@ func _take_off(b: Dictionary, t: float) -> void:
 	b["from"] = p
 	b["to"] = p + away * (randf_range(14.0, 24.0) if land else 70.0) + Vector3(0, 0 if land else randf_range(10.0, 18.0), 0)
 	b["land"] = land
+	if land and b.get("modell", false):                        # Paket 3: vom Ast auf den Boden (nicht in der Luft landen)
+		var tg: Vector3 = b["to"]
+		tg.y = _gy(tg)
+		b["to"] = tg
 	b["dur"] = (b["to"] - p).length() / randf_range(7.0, 10.0)
 	for w in b["wings"]:
 		w.visible = true
@@ -344,6 +410,20 @@ func _ground_tick(t: float, dt: float, dark: bool) -> void:
 			continue
 		var g: Array = GROUND[b["kind"]]
 		match str(b["st"]):
+			"perch":                                                    # Paket 3: auf einem Ast - schaut sich um, putzt sich
+				if scan and (siren or dark or t > float(b["until"]) or _threat_near(n.position, float(g[3]))):
+					_take_off(b, t + randf_range(0.0, 0.5))
+					continue
+				if t > float(b["t"]):
+					b["t"] = t + randf_range(0.8, 3.0)
+					b["look"] = randf_range(-1.3, 1.3)
+					b["t0"] = t
+					b["do"] = "putz" if randf() < 0.2 else "look"
+				if str(b.get("do", "")) == "putz":
+					b["head"].rotation.x = lerpf(b["head"].rotation.x, 0.9 if t - float(b["t0"]) < 0.8 else 0.0, 0.2)
+				else:
+					b["head"].rotation.x = lerpf(b["head"].rotation.x, 0.0, 0.2)
+					b["head"].rotation.y = lerpf(b["head"].rotation.y, float(b.get("look", 0.0)), 0.12)
 			"ground", "swim":
 				if scan and (siren or dark or t > float(b["until"]) or (b["st"] == "ground" and _threat_near(n.position, float(g[3])))):
 					_take_off(b, t + randf_range(0.0, 0.35))          # not all at the same moment

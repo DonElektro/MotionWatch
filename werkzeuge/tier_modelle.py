@@ -4,10 +4,10 @@
 Quelle: Quaternius «Ultimate Animated Animals» (Juli 2021), Lizenz CC0 1.0 (gemeinfrei,
 https://creativecommons.org/publicdomain/zero/1.0/), https://quaternius.com – dasselbe Paket wie Maggie. Bezogen aus der
 öffentlichen GitHub-Kopie laoniutoushx/TD-demo-2024-04-03 («Asserts/Models/ulitimate animals/glTF/»): Fuchs am 07.11.2026,
-Reh, Husky, Shiba am 08.11.2026. SHA-256 der benutzten Dateien: siehe QUELLE unten (das Werkzeug prüft sie).
+Reh, Husky, Shiba, Wolf am 08.11.2026. SHA-256 der benutzten Dateien: siehe QUELLE unten (das Werkzeug prüft sie).
 
-Arten (ART unten): fuchs (Fox), reh (Deer), hund_husky (Husky), hund_shiba (ShibaInu), katze (aus Fox umgeformt),
-igel (aus Fox umgeformt, mit Stacheln). Was das Werkzeug macht (alles im Code, keine Handarbeit in Blender):
+Arten (ART unten): fuchs (Fox), reh (Deer), hund_husky (Husky), hund_shiba (ShibaInu), wolf (Wolf), katze, igel (mit
+Stacheln), dachs, hase (aus Fox umgeformt), wildschwein (aus Wolf umgeformt). Was das Werkzeug macht (alles im Code, keine Handarbeit in Blender):
   1. Umformen (Katze, Igel …): jeder Knochen bekommt eine Länge (Faktor auf seinen Abstand zum Vater) und eine Dicke
      (Skalierung im Raum des Knochens, nur für die Haut). Die Haut wird mit ihren Gewichten in die neue Ruhelage
      gebracht, die Bind-Matrizen neu gerechnet, die Verschiebungen der Bewegungen mit derselben Länge skaliert – die
@@ -42,6 +42,7 @@ QUELLE = {
     "Deer.gltf": "b8afd0647e7a74332ce802c8326dfefe1a2b76da67ab925a631aaddb5ae9bdd4",
     "Husky.gltf": "0cfd85ddfcc5c07caf1bdeb296b21017b0da4c8558a92086daf4a172e0bf8d97",
     "ShibaInu.gltf": "3236979b94a840eb72d9ce091b1361da327a96f5ce068e666680297480f30f6b",
+    "Wolf.gltf": "cc02e9d128b5715f352ee8bea086f97a35f1d875d240de99b0f9f2775c37d415",
 }
 ANIM_STD = ["Walk", "Gallop", "Gallop_Jump", "Idle", "Idle_2", "Idle_2_HeadLow", "Eating"]
 ANIM_ALIAS = {"Idle_Headlow": "Idle_2_HeadLow"}
@@ -556,6 +557,217 @@ for _s in ("L", "R"):
                    ("BackLowerLeg", (1.1, 0.28, 1.1))):
         IGEL_D[_b + "." + _s] = _v
 
+
+# ---- Paket 3, Schritt 2: Wolf, Dachs, Wildschwein, Hase ------------------------------------------------------------
+def farbe_wolf(t, g, P):
+    """Grauwolf (Mitteleuropa): graubraun mit dunklerem Sattel, Rücken und Schwanzspitze dunkel, Wangen, Kehle, Bauch und
+    Beine innen hell cremegrau, Beine aussen gelblich; Nase schwarz"""
+    GRAU = np.array([0.27, 0.24, 0.19])
+    SATTEL = np.array([0.13, 0.115, 0.095])
+    GELB = np.array([0.34, 0.25, 0.15])
+    HELL = np.array([0.55, 0.50, 0.42])
+    y, z = P[:, 1], P[:, 2]
+    nz = noise3(P, 3.0)
+    nz2 = noise3(P, 11.0, 2.7)
+    col = np.tile(GRAU, (len(P), 1))
+    sat = sst(0.3, 0.7, (y - 1.75) * 1.6 + nz * 0.6) * (1 - np.clip(g["kopf"], 0, 1))
+    col = col * (1 - sat[:, None]) + SATTEL * sat[:, None]
+    bein = np.clip(g["bein_u"] * 1.3, 0, 1)
+    col = col * (1 - bein[:, None]) + GELB * bein[:, None]
+    light = t.mat == "Main_Light"
+    col[light] = HELL
+    sch = g["schwanz"] > 0.5
+    if sch.any():
+        col[sch & (z < z[sch].min() + 0.45)] = SATTEL * 0.6
+    col[t.mat == "Nose"] = [0.012, 0.01, 0.009]
+    col[t.mat == "Eyes_Black"] = [0.03, 0.022, 0.01]
+    col *= (1.0 + 0.14 * (nz - 0.5) + 0.10 * (nz2 - 0.5))[:, None]
+    klasse = np.zeros(len(P))
+    klasse[t.mat == "Eyes_Black"] = 1
+    klasse[t.mat == "Nose"] = 2
+    fell = np.isin(t.mat, ["Main", "Main_Light"]).astype(float)
+    return col, fell, klasse
+
+
+def farbe_dachs(t, g, P):
+    """Dachs: Rücken und Flanken silbergrau (grob gesprenkelt), Beine und Bauch schwarz, Kopf weiss mit zwei schwarzen
+    Streifen über Augen und Ohren, Ohrränder weiss"""
+    GRAU = np.array([0.32, 0.31, 0.29])
+    SCHW = np.array([0.015, 0.014, 0.013])
+    WEISS = np.array([0.72, 0.71, 0.68])
+    y, ax = P[:, 1], np.abs(P[:, 0])
+    nz = noise3(P, 14.0, 1.3)
+    col = np.tile(GRAU, (len(P), 1)) * (0.75 + 0.5 * nz[:, None])
+    unten = 1 - sst(0.0, 0.25, y - t.bauch_y)
+    col = col * (1 - unten[:, None]) + SCHW * unten[:, None]
+    bein = np.clip(g["bein"] * 1.2, 0, 1)
+    col = col * (1 - bein[:, None]) + SCHW * bein[:, None]
+    kopf = np.clip(t.wsum(["Head"]) + g["ohr"] * 0.0, 0, 1) > 0.4
+    kopf |= (g["hals"] > 0.5) & (P[:, 2] > t.kopf_z0 - 0.25)
+    streif = (ax > 0.06) & (ax < 0.19)
+    col[kopf] = WEISS
+    col[kopf & streif & (y > t.kinn_y - 0.05) & (P[:, 2] < t.kopf_z0 + 0.95)] = SCHW
+    col[(g["ohr"] > 0.5)] = SCHW
+    col[(g["ohr"] > 0.5) & (y > np.percentile(y[g["ohr"] > 0.5], 70))] = WEISS
+    col[t.mat == "Eyes"] = [0.01, 0.01, 0.01]
+    col[t.mat == "Black"] = [0.012, 0.011, 0.01]
+    klasse = np.zeros(len(P))
+    klasse[t.mat == "Eyes"] = 1
+    klasse[t.mat == "Black"] = 2
+    fell = np.isin(t.mat, ["Main", "Main_Light", "Grey"]).astype(float)
+    return col, fell, klasse
+
+
+def farbe_schwein(t, g, P):
+    """Wildschwein: schwarzbraun bis grau mit Borsten (grobes Rauschen), Rückenkamm dunkler, Rüssel mit grauer Scheibe,
+    Beine schwarz; Hauer weisslich (an der Schnauze)"""
+    BRAUN = np.array([0.075, 0.06, 0.048])
+    GRAU = np.array([0.16, 0.145, 0.13])
+    SCHW = np.array([0.02, 0.018, 0.016])
+    y, z = P[:, 1], P[:, 2]
+    nz = noise3(P, 16.0, 0.7)
+    nz2 = noise3(P, 4.0, 3.1)
+    col = BRAUN * (1 - nz2[:, None]) + GRAU * nz2[:, None]
+    col *= (0.6 + 0.8 * nz[:, None])
+    kamm = sst(0.6, 0.95, (y - (t.rueck_y - 0.35)) / 0.35) * (1 - np.clip(g["kopf"], 0, 1))
+    col = col * (1 - kamm[:, None]) + SCHW * kamm[:, None]
+    bein = np.clip(g["bein_u"] * 1.4, 0, 1)
+    col = col * (1 - bein[:, None]) + SCHW * bein[:, None]
+    col[t.mat == "Nose"] = [0.10, 0.08, 0.075]               # Rüsselscheibe
+    col[t.mat == "Eyes_Black"] = [0.012, 0.01, 0.008]
+    klasse = np.zeros(len(P))
+    klasse[t.mat == "Eyes_Black"] = 1
+    klasse[t.mat == "Nose"] = 2
+    fell = np.isin(t.mat, ["Main", "Main_Light"]).astype(float)
+    return col, fell, klasse
+
+
+def farbe_hase(t, g, P):
+    """Feldhase: «gesprenkelt» gelbbraun (Agouti), Rücken dunkler, Flanke rötlicher, Bauch weiss, Ohrspitzen schwarz,
+    Schwanz oben schwarz, unten weiss; grosse dunkle Augen"""
+    BRAUN = np.array([0.30, 0.20, 0.10])
+    DUNKEL = np.array([0.13, 0.09, 0.05])
+    ROT = np.array([0.38, 0.22, 0.10])
+    WEISS = np.array([0.66, 0.63, 0.56])
+    y, z = P[:, 1], P[:, 2]
+    nz = noise3(P, 18.0, 2.0)
+    nz2 = noise3(P, 4.0, 5.5)
+    col = BRAUN * (0.75 + 0.5 * nz[:, None])
+    top = sst(0.25, 0.75, (y - (t.rueck_y - 0.4)) / 0.4 + 0.4 * (nz2 - 0.5))
+    col = col * (1 - top[:, None]) + DUNKEL * top[:, None]
+    flank = 1 - sst(0.3, 0.6, (y - t.bauch_y) / max(1e-6, t.rueck_y - t.bauch_y))
+    col = col * (1 - 0.4 * flank[:, None]) + ROT * 0.4 * flank[:, None]
+    light = t.mat == "Main_Light"
+    bauch = light & (y < t.bauch_y + 0.25 * (t.rueck_y - t.bauch_y)) & (g["schwanz"] < 0.5)
+    col[light & (g["schwanz"] < 0.5) & (g["ohr"] < 0.5)] = BRAUN * 1.35 + 0.04       # Wangen / Kehle: hell gelbbraun
+    col[bauch] = WEISS
+    ohr = g["ohr"] > 0.5
+    if ohr.any():
+        col[ohr & (y > np.percentile(y[ohr], 85))] = [0.015, 0.013, 0.012]
+    sch = g["schwanz"] > 0.3
+    col[sch] = WEISS
+    col[sch & (y > np.median(y[sch])) ] = [0.02, 0.018, 0.016]
+    col[t.mat == "Eyes"] = [0.03, 0.02, 0.008]
+    col[t.mat == "Black"] = [0.06, 0.04, 0.03]
+    klasse = np.zeros(len(P))
+    klasse[t.mat == "Eyes"] = 1
+    klasse[t.mat == "Black"] = 2
+    fell = np.isin(t.mat, ["Main", "Main_Light", "Grey"]).astype(float)
+    return col, fell, klasse
+
+
+def _schnauze(P, t, cz, f_len, f_breit, senk=0.0):
+    """Schnauze (Kopf vorne ab cz) länger / kürzer und schmaler / breiter, etwas tiefer"""
+    head = np.clip(t.wsum(["Head"]) * 1.2, 0, 1)
+    dz = P[:, 2] - cz
+    vor = np.where(dz > 0, dz * f_len, dz)
+    P[:, 2] = P[:, 2] * (1 - head) + (cz + vor) * head
+    k = sst(0.0, 0.35, dz) * head
+    P[:, 0] = P[:, 0] * (1 + (f_breit - 1) * k)
+    P[:, 1] = P[:, 1] - senk * k * np.clip(dz, 0, None)
+    return P
+
+
+def _ohren_klein(P, t, f):
+    """die Ohren zu ihrem Ansatz hin verkleinern (Punkte, die an den Ohr-Knochen hängen)"""
+    w = np.clip(t.wpre("Ear") * 1.5, 0, 1)
+    for sd in (1, -1):
+        m = (w > 0.05) & (P[:, 0] * sd > 0)
+        if not m.any():
+            continue
+        basis = np.array([np.median(P[m, 0]), P[m, 1].min(), np.median(P[m, 2])])
+        P[m] = basis + (P[m] - basis) * (1 - (1 - f) * w[m, None])
+    return P
+
+
+def dachs_vorform(P, t):
+    return _schnauze(_ohren_klein(P, t, 0.45), t, 2.0, 1.1, 0.8, 0.15)
+
+
+def schwein_vorform(P, t):
+    return _schnauze(_ohren_klein(P, t, 0.75), t, 1.9, 1.75, 1.05, 0.3)    # Wolf: lange Keilschnauze, tief
+
+
+def hase_vorform(P, t):
+    return _schnauze(P, t, 2.0, 0.45, 1.05, 0.0)
+
+
+def _beine(d, s_front, s_back, s_dicke=1.0):
+    for _s in ("L", "R"):
+        d["FrontUpperLeg." + _s] = (s_dicke, s_front, s_dicke)
+        d["FrontLowerLeg." + _s] = (s_dicke, s_front, s_dicke)
+        d["BackUpperLeg." + _s] = (s_dicke, s_back, s_dicke)
+        d["BackLowerLeg." + _s] = (s_dicke, s_back, s_dicke)
+    return d
+
+
+def _laengen(d, s_front, s_back):
+    for _s in ("L", "R"):
+        for b in ("FrontUpperLeg", "FrontLowerLeg"):
+            d[b + "." + _s] = s_front
+        for b in ("BackUpperLeg", "BackLowerLeg"):
+            d[b + "." + _s] = s_back
+    return d
+
+
+def _ohren(d_l, d_d, f_l, f_d):
+    for e in ("Ear2", "Ear3", "Ear4"):
+        for _s in ("L", "R"):
+            d_l[e + "." + _s] = f_l
+    for e in ("Ear1", "Ear2", "Ear3", "Ear4"):
+        for _s in ("L", "R"):
+            d_d[e + "." + _s] = f_d
+
+
+def _schwanz(d_l, d_d, n, f_l, f_d):
+    for k in range(1, n + 1):
+        if k > 1:
+            d_l["Tail%d" % k] = f_l
+        d_d["Tail%d" % k] = f_d
+
+
+DACHS_L = _laengen({"Neck1": 0.55, "Neck2": 0.55, "Neck3": 0.7, "Torso": 1.05, "Torso2": 1.05}, 0.45, 0.42)
+DACHS_D = _beine({"Back": (1.5, 1.05, 1.1), "Torso": (1.6, 1.0, 1.1), "Torso2": (1.6, 1.0, 1.1), "Torso3": (1.35, 1.0, 1.05),
+                  "Body": (1.4, 1.0, 1.1), "Neck1": (1.35, 1.0, 1.2), "Neck2": (1.25, 1.0, 1.1), "Head": (1.05, 0.95, 1.0)},
+                 0.45, 0.42, 1.35)
+_ohren(DACHS_L, DACHS_D, 0.2, (0.38, 0.3, 0.38))
+_schwanz(DACHS_L, DACHS_D, 8, 0.35, (0.45, 0.45, 0.45))
+SCHWEIN_L = _laengen({"Neck1": 0.5, "Neck2": 0.5, "Neck3": 0.6, "Torso3": 1.1}, 0.62, 0.6)
+SCHWEIN_D = _beine({"Back": (1.35, 1.3, 1.1), "Torso": (1.45, 1.35, 1.1), "Torso2": (1.5, 1.45, 1.1), "Torso3": (1.45, 1.5, 1.1),
+                    "Body": (1.3, 1.2, 1.1), "Neck1": (1.55, 1.25, 1.4), "Neck2": (1.45, 1.2, 1.3), "Neck3": (1.25, 1.1, 1.1),
+                    "Head": (1.1, 1.15, 1.0)}, 0.62, 0.6, 1.35)
+_ohren(SCHWEIN_L, SCHWEIN_D, 0.75, (0.85, 0.85, 0.85))
+_schwanz(SCHWEIN_L, SCHWEIN_D, 8, 0.6, (0.22, 0.22, 0.22))
+HASE_L = _laengen({"Neck1": 0.5, "Neck2": 0.5, "Neck3": 0.65, "Torso": 0.8, "Torso2": 0.8}, 0.5, 0.75)
+HASE_D = _beine({"Back": (1.15, 1.3, 1.1), "Torso": (1.15, 1.3, 1.15), "Torso2": (1.05, 1.2, 1.0), "Torso3": (0.95, 1.1, 0.95),
+                 "Body": (1.15, 1.2, 1.1), "Head": (0.95, 1.1, 1.0), "Neck1": (1.1, 1.0, 1.1), "Neck2": (1.1, 1.0, 1.1)}, 0.5, 0.75, 1.0)
+for _s in ("L", "R"):
+    HASE_D["BackUpperLeg." + _s] = (1.4, 0.75, 1.4)            # kräftige Keulen
+    HASE_D["BackLeg." + _s] = (1.4, 1.1, 1.4)
+    HASE_D["BackLowerLeg." + _s] = (1.0, 0.95, 1.6)            # lange Hinterpfoten
+_ohren(HASE_L, HASE_D, 2.2, (0.55, 1.5, 0.7))
+_schwanz(HASE_L, HASE_D, 8, 0.12, (0.6, 0.6, 0.6))
+
 TORSO = ["Torso", "Torso2", "Torso3", "Back"]
 ART = {
     "fuchs": {"src": "Fox.gltf", "out": "fuchs_glb.bin", "farbe": farbe_fuchs},
@@ -566,6 +778,13 @@ ART = {
               "vorform": katze_vorform},
     "igel": {"src": "Fox.gltf", "out": "igel_glb.bin", "farbe": farbe_igel, "laenge": IGEL_L, "dicke": IGEL_D,
              "vorform": igel_vorform, "stacheln": (3000, 0.24, 0.02), "torso": TORSO + ["Body"]},
+    "wolf": {"src": "Wolf.gltf", "out": "wolf_glb.bin", "farbe": farbe_wolf},
+    "dachs": {"src": "Fox.gltf", "out": "dachs_glb.bin", "farbe": farbe_dachs, "laenge": DACHS_L, "dicke": DACHS_D,
+              "vorform": dachs_vorform},
+    "wildschwein": {"src": "Wolf.gltf", "out": "wildschwein_glb.bin", "farbe": farbe_schwein, "laenge": SCHWEIN_L,
+                    "dicke": SCHWEIN_D, "vorform": schwein_vorform},
+    "hase": {"src": "Fox.gltf", "out": "hase_glb.bin", "farbe": farbe_hase, "laenge": HASE_L, "dicke": HASE_D,
+             "vorform": hase_vorform},
 }
 
 
@@ -589,6 +808,12 @@ def bauen(art, ordner, out=None):
     lo = auf_boden(t)
     g = t.gruppen()
     P = t.P
+    rk = (t.wsum(TORSO) > 0.5) & (t.mat != "Stachel")
+    t.rueck_y = float(P[rk, 1].max()) if rk.any() else float(P[:, 1].max())
+    t.bauch_y = float(np.percentile(P[rk, 1], 3)) if rk.any() else 0.0
+    hk = t.wsum(["Head"]) > 0.5
+    t.kopf_z0 = float(P[hk, 2].min()) if hk.any() else 0.0
+    t.kinn_y = float(np.percentile(P[hk, 1], 30)) if hk.any() else 0.0
     col, fell, klasse = cfg["farbe"](t, g, P)
     col = np.clip(col, 0, 1)
     N = normalen(P, t.I)
