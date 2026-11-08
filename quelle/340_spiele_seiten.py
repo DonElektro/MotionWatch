@@ -2,11 +2,21 @@
 SPIELE_PAGE = """<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Spielecke</title><link rel="icon" href="/icon-192.png"><style>
 body{margin:0;background:#0E1621;color:#E8EEF5;font-family:system-ui,sans-serif}main{max-width:720px;margin:0 auto;padding:20px 16px}
-h1{font-size:26px;margin:6px 0 4px}p{color:#9FB0C3;margin:4px 0 16px}.g{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
-a.c{display:block;background:#16263A;border-radius:14px;padding:14px;color:inherit;text-decoration:none}a.c:active{transform:scale(.98)}
-.i{font-size:34px}.i img{width:56px;height:56px;border-radius:12px;object-fit:cover;display:block}.n{font-weight:700;margin:6px 0 2px}.d{font-size:13px;color:#9FB0C3}.big{background:#E9A23B;color:#0E1621;font-weight:700;
+h1{font-size:26px;margin:6px 0 4px}p{color:#9FB0C3;margin:4px 0 16px}
+/*GAMETILES*/.big{background:#E9A23B;color:#0E1621;font-weight:700;
 display:block;text-align:center;padding:14px;border-radius:14px;text-decoration:none;margin:0 0 18px}</style></head><body><main>
-<h1>🎲 Spielecke</h1>__PARTY__<p>__NOTE__</p><div class="g">__GAMES__</div></main></body></html>"""
+<h1>🎲 Spielecke</h1>__PARTY__<p>__NOTE__</p><div class="g mwg">__GAMES__</div></main></body></html>"""
+# Spieltab: the game tiles (picture or emoji, name, short description, group headings) - ONE style for the public page /spiele
+# and the admin tab «Mehr → Spielecke» (TOOLS_PAGE, part 460). Colours come from tokens with the old /spiele colours as fallback.
+GAME_TILES_CSS = """.mwg{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+@media (max-width:520px){.mwg{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.mwg a.c{display:block;background:var(--mwg-tile,#16263A);border-radius:14px;padding:14px;color:inherit;text-decoration:none;min-width:0;overflow-wrap:anywhere}
+.mwg a.c:hover{filter:brightness(1.12)}.mwg a.c:active{transform:scale(.98)}
+.mwg .i{font-size:34px}.mwg .i img{width:56px;height:56px;border-radius:12px;object-fit:cover;display:block}
+.mwg .n{font-weight:700;margin:6px 0 2px}.mwg .d{font-size:13px;color:var(--mwg-mut,#9FB0C3)}
+.mwg .gh{grid-column:1/-1;font-weight:700;margin:14px 0 2px}
+"""
+SPIELE_PAGE = SPIELE_PAGE.replace("/*GAMETILES*/", GAME_TILES_CSS, 1)
 
 
 GAMESRV = {"port": 0, "msg": ""}
@@ -156,7 +166,7 @@ def spiele_page(host=""):
         if not part:
             continue
         if grp:
-            cards += f'<div style="grid-column:1/-1;font-weight:700;margin:14px 0 2px">{_e(GAME_GROUPS[grp])}</div>'
+            cards += f'<div class="gh">{_e(GAME_GROUPS[grp])}</div>'
         cards += "".join(f'<a class="c" href="{_e(games_url(x["dir"], x.get("start", "index.html"), host) or "/spiele/g/" + x["dir"] + "/" + x.get("start", "index.html"))}"><div class="i">{_game_icon(x, host)}</div>'
                          f'<div class="n">{_e(x.get("name", x["dir"]))}</div><div class="d">{_e(x.get("desc", ""))}</div></a>' for x in part)
     party = (f'<a class="big" href="/p/{PARTY["key"]}/">👥 Zum Spieleabend (Quiz, Werwolf, Malen, 4 gewinnt)</a>' if party_on()
@@ -269,6 +279,7 @@ canvas{width:100%;aspect-ratio:4/3;background:#fff;border-radius:12px;touch-acti
 .pill{display:inline-block;padding:3px 10px;border-radius:999px;background:#24324a;font-size:13px;margin:2px}
 a.gl{display:flex;gap:10px;align-items:center;text-decoration:none;color:var(--txt);background:#1c2a3d;border:1px solid var(--line);border-radius:12px;padding:10px}
 a.gl img{width:44px;height:44px;border-radius:10px;object-fit:cover;background:#0b121c}a.gl b{display:block}a.gl span{font-size:12px;color:var(--mut)}
+/*GAMETILES*/#coll{--mwg-tile:#1c2a3d;--mwg-mut:var(--mut)}
 .hidden{display:none!important}
 </style></head><body>
 <header><img src="/icon-192.png" alt=""><h1>🎲 Spielecke</h1><div class="me" id="me"></div><button class="sec" id="quit" style="padding:8px 12px" title="Spielecke verlassen">🚪 Verlassen</button></header>
@@ -286,7 +297,7 @@ a.gl img{width:44px;height:44px;border-radius:10px;object-fit:cover;background:#
   <div class="card"><h2>🏆 Punkte</h2><div id="players"></div><div id="hostbox" class="hidden" style="margin-top:8px"><button class="sec" id="resetsc">Punkte auf 0</button></div></div>
   <div class="card hidden" id="simcard"><h2>🎯 Team gegen MoveEye (3D-Simulator)</h2><p class="mut" id="simtxt"></p>
     <a id="simgo" href="#" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none;background:var(--amber);color:#0e1621;font-weight:700;padding:13px;border-radius:12px">🏃 Mitspielen</a></div>
-  <div class="card" id="collcard"><h2>🕹 Spielesammlung (für dich allein)</h2><div id="coll" class="grid"></div></div>
+  <div class="card" id="collcard"><h2>🕹 Spielesammlung (für dich allein)</h2><div id="coll" class="mwg"></div></div>
 </div>
 <script>
 const KEY = "__KEY__", BASE = "/p/" + KEY;
@@ -353,11 +364,11 @@ function render() {
     + (SG.runners >= SG.max ? "Alle " + SG.max + " Läuferplätze sind besetzt – du schaust zuerst durch die Kamera zu." : (SG.max - SG.runners) + " von " + SG.max + " Läuferplätzen frei.")
     + (SG.round === "play" ? " Eine Runde läuft gerade." : ""); }
   // collection
-  const GG = {touch: "👆 Für Handy und Tablet (Touch)", buttons: "🎮 Mit Bildschirm-Tasten", keys: "⌨️ Am PC mit Tastatur und Maus"};        // 2.95.54: touch games first, GS-1.4: «keys» last
+  const GG = {touch: "👆 Für Handy und Tablet (Touch)", buttons: "🎮 Mit Bildschirm-Tasten (am PC mit der Tastatur)", keys: "⌨️ Am PC mit Tastatur und Maus"};        // 2.95.54: touch games first, GS-1.4: «keys» last; = GAME_GROUPS
   const GO = {touch: 0, buttons: 1, keys: 2}, gsorted = (V.games || []).slice().sort((a, b) => (GO[a.input] || 0) - (GO[b.input] || 0));
   let gprev = null;
-  $("#coll").innerHTML = gsorted.length ? gsorted.map(g => { const hd = g.input && g.input !== gprev ? `<div style="font-weight:700;margin:12px 0 4px;grid-column:1/-1">${GG[g.input] || ""}</div>` : ""; gprev = g.input; return hd + `<a class="gl" href="${BASE}/g/${g.dir}/" target="_blank">${/\./.test(g.icon || "") ? `<img src="${BASE}/g/${g.dir}/${g.icon}" alt="" onerror="this.style.visibility='hidden'">` : `<span style="font-size:30px;width:44px;text-align:center;flex:0 0 44px">${esc(g.icon || "🎮")}</span>`}<div><b>${esc(g.name)}</b><span>${esc(g.desc || "")}</span></div></a>`; }).join("")
-    : "<div class='mut'>Die Spielesammlung ist auf diesem Gerät noch nicht installiert (MoveEye → Reiter Spielecke).</div>";
+  $("#coll").innerHTML = gsorted.length ? gsorted.map(g => { const hd = g.input && g.input !== gprev ? `<div class="gh">${GG[g.input] || ""}</div>` : ""; gprev = g.input; return hd + `<a class="c" href="${BASE}/g/${g.dir}/" target="_blank"><div class="i">${/\./.test(g.icon || "") ? `<img src="${BASE}/g/${g.dir}/${g.icon}" alt="" onerror="this.style.visibility='hidden'">` : esc(g.icon || "🎮")}</div><div class="n">${esc(g.name)}</div><div class="d">${esc(g.desc || "")}</div></a>`; }).join("")   // Spieltab: the tiles of /spiele (GAME_TILES_CSS)
+    : "<div class='mut' style='grid-column:1/-1'>Die Spielesammlung ist auf diesem Gerät noch nicht installiert (MoveEye → Reiter Spielecke).</div>";
   renderGame();
 }
 function gameChooser() {
@@ -592,6 +603,7 @@ poll();
 __NTJS__
 </script></body></html>
 """
+PARTY_PAGE = PARTY_PAGE.replace("/*GAMETILES*/", GAME_TILES_CSS, 1)      # Spieltab: same game tiles as /spiele and the admin tab
 
 
 SIMGAME = {"t": 0.0, "busy": False, "g": None}   # the game in the simulator, fetched now and then (2.95.22: «Team gegen MoveEye»)
