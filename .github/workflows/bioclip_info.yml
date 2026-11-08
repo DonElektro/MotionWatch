@@ -108,7 +108,7 @@ jobs:
           NUR: ${{ inputs.nur }}
         run: |
           set -e
-          [ "$NUR" = "alle" ] || { echo "::error::Release nur mit allen Arten (nur = alle)"; exit 1; }
+          [ "$NUR" = "alle" ] || [ "$REL" = "probe" ] || { echo "::error::echtes Release nur mit allen Arten (nur = alle)"; exit 1; }
           B="$RUNNER_TEMP/info"
           {
             if [ "$REL" = "probe" ]; then echo "PROBELAUF (Vorabversion) - nicht für Geräte, wird wieder gelöscht."; echo; fi
