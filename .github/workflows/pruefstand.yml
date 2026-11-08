@@ -43,6 +43,11 @@ on:
         type: choice
         options: [standard, alt, neu]
         default: standard
+      anzeige:
+        description: "Nur rechner hp: xvfb (virtueller Bildschirm, wie bisher) oder bildschirm (Grafikkarte :0 – nur wenn für den Runner freigegeben; sonst Abbruch)"
+        type: choice
+        options: [xvfb, bildschirm]
+        default: xvfb
   schedule:
     - cron: "17 2 * * 0"
   push:
@@ -121,6 +126,7 @@ jobs:
           IN_MAL: ${{ github.event.inputs.mal }}
           MW_FLORA: ${{ github.event.inputs.flora == 'neu' && 'normal' || '' }}
           MW_PRUEFSTAND_GRAFIK: ${{ (github.event.inputs.flora == 'alt' || github.event.inputs.flora == 'neu') && 'normal' || '' }}
+          MW_PRUEFSTAND_DISPLAY: ${{ (github.event.inputs.rechner == 'hp' && github.event.inputs.anzeige == 'bildschirm') && ':0' || '' }}
         run: |
           PLAENE="quick"; SEEDS=1; WDH=1; REAL="an"; ROH=""; MAL=2     # 29.10.2026 (Besitzer: Ressourcen sparen): pro Version nur «quick»
           if [ "$EVENT" = "schedule" ]; then                  # weekly: everything, also «hard», 3 random starts
@@ -131,6 +137,7 @@ jobs:
           fi
           AUSSEHEN="${{ github.event.inputs.flora }}"
           [ -n "$MW_PRUEFSTAND_GRAFIK" ] && RECHNER="$RECHNER · A/B Aussehen $AUSSEHEN, Grafik Normal"
+          [ -n "$MW_PRUEFSTAND_DISPLAY" ] && RECHNER="$RECHNER · Grafikkarte"
           echo "Testläufe: $PLAENE · Zufallsstarts $SEEDS · Wiederholungen $WDH · Kamera-Effekte $REAL (ohne: ${ROH:-alle}) · Besucher ×$MAL · Aussehen ${AUSSEHEN:-standard}"
           "$PY" pruefstand/pruefstand.py "$SIMARG" "$SIMPFAD" --ki-ordner ki \
             --plaene "$PLAENE" --seeds "$SEEDS" --wiederholungen "$WDH" --realismus "$REAL" --roh-plaene "$ROH" --mal "$MAL" \
