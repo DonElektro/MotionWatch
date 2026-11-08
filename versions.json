@@ -1,6 +1,6 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-08 16:12",
+ "generated": "2026-11-08 16:30",
  "versions": [
   {
    "version": "3.63.2",
@@ -168,31 +168,23 @@
   }
  ],
  "sim": {
-  "ver": "3.61.0",
-  "version": "3D-5.61.0",
-  "notes": "Tiere als Modelle mit Skelett (Reh, Hund, Katze, Igel, Fuchs), Bildschirm für HP-Tests",
+  "ver": "3.62.0",
+  "version": "3D-5.62.0",
+  "notes": "Wolf, Dachs, Wildschwein, Hase und Vögel als Modelle, Liegen und Sitzen",
   "mw_min": "3.55.0",
   "win": {
-   "ver": "3.61.0",
+   "ver": "3.62.0",
    "file": "simulator3d/MotionWatch3D_Simulator.zip",
-   "size": 53315963,
-   "sha256": "ecc691304bc64869624618ad8ebcb8c6422a5aa3a9fc24a7b0298d7ae1443270",
-   "sig": "80faf7a18b4f9bcd87b91dd7157c381bfc4e31880b144cd9b32bb980bbecb099bef53f1744aa355924d308947c2ac0ba6cbbbf03213973a2a0a55c333956430b"
+   "size": 54308016,
+   "sha256": "d88736d21f508547c71228149cf4ded41215f649ee126698d805bc5b97795f58",
+   "sig": "857d72707ba2151f7b7a29c43163b226be81b4efa76411a6313f3fe722beec170018f9d7a81463422cf9a252e264c891e7df6992e36b0efec9d20d0dba7a7b07"
   },
   "linux": {
-   "ver": "3.61.0",
+   "ver": "3.62.0",
    "file": "simulator3d/MoveEyeSim3D_Linux.zip",
-   "size": 47348657,
-   "sha256": "d0b64957336e0c0f3cc052985d7195e3b536f614924d2afa9e7dc9a2fb9e9426",
-   "sig": "5588cce52069a7743028dfe86606991599df4ac522d439926a4fff58124a837163ce2bacb469d020eb0244e0786c1bfee7072c1618dacfd8620b1073c7d1b80f"
-  },
-  "pi": {
-   "ver": "3.61.0",
-   "file": "simulator3d/MoveEyeSim3D_Pi.zip",
-   "size": 37824655,
-   "sha256": "a02f5ee1c4052211405a0b2e1ea7d6292894aaa19b9628ea9fb47999a5c15970",
-   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.61.0/MoveEyeSim3D_Pi.zip",
-   "sig": "807665dde20d8597a33f6ba73a28de0231e4a154486a46c4125e4076aaf8551f113253732b71596c6c1240d6da20e21c9ff24c56c78889e09471a509dd140606"
+   "size": 48336913,
+   "sha256": "02b0333e707b4ce321680a8d7574666cb57603a937efe7afb2578731ca416e05",
+   "sig": "392a7b2d7bfe022526be8480443c991ade50612bd1d22765b5d3924011cc38efd48987abce3fc4718541175912ab45b08cd8582f548490f997fa90cb36811704"
   }
  }
 }

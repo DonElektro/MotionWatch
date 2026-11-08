@@ -89,6 +89,12 @@ Modelle «Deer» (`glTF/Deer.gltf`, SHA-256 `b8afd064…7e7333`), «Husky» (`gl
 Dicke, kürzere Schnauze; Igel-Stacheln im Code erzeugt), alle Fell-Farben, das Rehbock-Gehörn (`scripts/tier_modell.gd`) und
 das Wärmebild der Modelle (`shaders/thermal_tier.gdshader`) sind selbst gebaut.
 
+Schritt 2 (Zweig sim-flora-tiere2): Wolf aus «Wolf» (`glTF/Wolf.gltf`, SHA-256 `cc02e9d1…37d415`, CC0, gleiche Quelle),
+Wildschwein aus dem Wolf, Dachs und Feldhase aus dem Fuchs umgeformt (`werkzeuge/tier_modelle.py`) –
+`modelle/{wolf,wildschwein,dachs,hase}_glb.bin`. Die Vögel (Krähe, Elster, Möwe, Ringeltaube, Schwarm-Vögel,
+`scripts/vogel_modell.gd`) sind im Code gebaut, keine fremde Datei. Im Pi-Paket (Lite) fehlen die neuen Modell-Dateien
+(`export_presets.cfg`, «Linux Pi»): dort bleiben die Grundformen.
+
 Blatt- und Nadelbilder der Baumkronen, Blätterbüschel, Gras-Farben (`scripts/flora.gd`, `shaders/blatt_karten.gdshader`,
 `shaders/foliage.gdshader`, `shaders/gras_halme.gdshader`): **selbst gebaut**, beim Start im Code erzeugt, keine fremde Datei.
 Der Wiesenboden nutzt die eigenen Fotos von Elektro (`texturen/wiese_alp_01.jpg`, `texturen/wiese_alp_steinig_01.jpg`,

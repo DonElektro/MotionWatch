@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.61.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.62.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -487,6 +487,12 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.62.0
+3.62.0: Tiere echt (Flora Paket 3, Schritt 2): Wolf, Dachs, Wildschwein und Hase als Modelle mit Skelett, Vögel als Modelle
+(auch in den Bäumen), Tiere liegen und sitzen auch; nur mit Grafik «Normal» / «Hoch» (Lite und Prüfstand: wie bisher).
+So testest du: Grafik «Normal», unter Tiere Wolf, Dachs, Wildschwein und Hase auftreten lassen, im Wärmebild ansehen; Vögel in
+den Bäumen suchen; eine Weile warten, bis ein Tier liegt oder sitzt; mit Grafik «Lite» die Grundformen wie in 3.61.0.
 
 NEU IN 3.61.0
 3.61.0: Tiere echt (Flora Paket 3, Schritt 1): Reh, Hund (Husky / Shiba), Katze, Igel und Fuchs als Modelle mit Skelett und
