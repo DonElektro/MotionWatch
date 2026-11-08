@@ -651,6 +651,56 @@ def teil_b(ns, app, home, PW, bilder, tok, echt):
     srv.shutdown()
 
 
+STICH = {"Colchicum autumnale": "tox", "Convallaria majalis": "tox", "Taxus baccata": "tox", "Amanita muscaria": "tox",
+         "Amanita phalloides": "tox", "Atropa belladonna": "tox", "Allium ursinum": "ed", "Taraxacum officinale": "ed",
+         "Boletus edulis": "ed", "Rubus fruticosus": "ed"}
+
+
+def info_pruefen(datei, info, pins=False):
+    """die echte Artinfo-Datei: jede Karte (de / en / fr) ohne «essbar» ohne Warnung, Stichprobe des Besitzers, Abdeckung"""
+    import sqlite3
+    import zlib
+    ns, home = laden(datei)
+    b = open(info, "rb").read()
+    want = dict(ns["BIO_INFO"])
+    ns["BIO_INFO"].update(size=len(b), sha256=hashlib.sha256(b).hexdigest())
+    if pins:
+        ok(want["size"] == len(b) and want["sha256"] == ns["BIO_INFO"]["sha256"], "Artinfos = feste Werte in BIO_INFO (Grösse + sha256)")
+    os.makedirs(os.path.join(home, "bioclip"), exist_ok=True)
+    shutil.copy(info, ns["bio_info_path"]())
+    open(os.path.join(home, "bioclip", "info.ok"), "w").write(ns["BIO_INFO"]["sha256"])
+    ok(ns["bio_info_installed"](), "Artinfos eingerichtet")
+    con = sqlite3.connect(info)
+    rows = con.execute("SELECT sci, z FROM info").fetchall()
+    meta = dict(con.execute("SELECT k, v FROM meta").fetchall())
+    con.close()
+    n = {"alle": 0, "text_de": 0, "text_en": 0, "giftig": 0, "essbar": 0, "nur_warnung": 0, "verwechslung": 0, "leer": 0}
+    bad = []
+    for sci, z in rows:
+        e = json.loads(zlib.decompress(z))
+        for L in ("de", "en", "fr"):
+            c = ns["bio_card"](e, [], L)
+            bad += essbar_verstoesse({"c": c}, sci + "/" + L)
+        c = ns["bio_card"](e, [], "de")
+        n["alle"] += 1
+        if c.get("text"):
+            n["text_" + c["lang"]] += 1
+        n["giftig"] += int(bool(c.get("tox"))); n["essbar"] += int(bool(c.get("edible"))); n["nur_warnung"] += int(bool(c.get("note_ed")))
+        n["verwechslung"] += int(bool(c.get("look"))); n["leer"] += int(c["empty"])
+    ok(not bad, f"echte Artinfos: «essbar» nie ohne Warnung ({len(rows)} Arten × 3 Sprachen) {bad[:3]}")
+    print("  Karten:", json.dumps(n), "\n  Abdeckung (Bau):", meta.get("abdeckung"))
+    for sci, kind in STICH.items():
+        e = ns["bio_info_get"](sci)
+        c = ns["bio_card"](e, [], "de")
+        tox, ed = bool(c.get("tox")), bool(c.get("edible"))
+        good = tox if kind == "tox" else (ed and not tox)
+        ok(good, "Stichprobe %-26s %-5s → %s%s%s" % (sci, kind, "☠️ giftig" if tox else "", "essbar+Warnung" if ed else "",
+                                                     ("  Verwechslung: " + ", ".join(("☠️" if x["tox"] else "") + x["name"] for x in c["look"])) if c.get("look") else ""))
+    c = ns["bio_card"](ns["bio_info_get"]("Allium ursinum"), [], "de")
+    ok(c.get("edible", {}).get("warn", "").startswith("Essbar laut Wikipedia") and c.get("look"), "Bärlauch: Warnung + Verwechslungs-Arten")
+    shutil.rmtree(home, ignore_errors=True)
+
+
 def main():
     ap = argparse.ArgumentParser(description="Test «🌿 Bestimmen» (639zzd)")
     ap.add_argument("--datei", default="")
@@ -658,10 +708,14 @@ def main():
     ap.add_argument("--bilder", default=os.path.join(tempfile.gettempdir(), "bioclip_bilder"))
     ap.add_argument("--echt", default="", help="Ordner mit den echten Dateien aus dem Workflow «BioCLIP»")
     ap.add_argument("--fotos", default="", help="mit --echt: Fotos Gattung_art_N.jpg für Treffer und Zeit")
+    ap.add_argument("--info", default="", help="nur die echte Artinfo-Datei prüfen (bioclip-info-N.sqlite)")
     ap.add_argument("--pins", action="store_true", help="mit --echt: die Dateien müssen genau den festen Werten in BIO_FILES entsprechen")
     a = ap.parse_args()
     t0 = time.time()
-    teil_a(a.datei or neueste(), a.echt, a.fotos, a.browser, a.bilder, a.pins)
+    if a.info:
+        info_pruefen(a.datei or neueste(), a.info, a.pins)
+    else:
+        teil_a(a.datei or neueste(), a.echt, a.fotos, a.browser, a.bilder, a.pins)
     print(f"{N['ok']} Prüfungen ok, {len(FEHLER)} Fehler ({time.time() - t0:.0f} s)")
     for f in FEHLER:
         print("  ✗ " + f)

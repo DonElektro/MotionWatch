@@ -38,7 +38,7 @@ jobs:
     name: BioCLIP-Infos · ${{ inputs.nur || 'stich' }} · ${{ inputs.release || 'keins' }}
     if: github.repository == 'DonElektro/MotionWatch'
     runs-on: ubuntu-24.04
-    timeout-minutes: 120
+    timeout-minutes: 240
     steps:
       - uses: actions/checkout@v4
       - name: Prüfen (Tag noch nicht da) und die Artenliste aus dem Release von BIO_TAG holen (sha256 wie in 639zzd)

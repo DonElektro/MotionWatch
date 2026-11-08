@@ -174,11 +174,16 @@ def intros(L, titles):
     for i in range(0, len(lst), 20):
         part = lst[i:i + 20]
         q = {"action": "query", "format": "json", "formatversion": "2", "prop": "extracts|info", "exintro": "1", "explaintext": "1",
-             "exlimit": "20", "redirects": "1", "titles": "|".join(part), "maxlag": "5"}
-        try:
-            j = getj(API[L] + "?" + urllib.parse.urlencode(q))
-        except Exception as e:
-            print("  %s Einleitungen %d: %s" % (L, i, e), flush=True); continue
+             "exlimit": "20", "redirects": "1", "titles": "|".join(part)}
+        j = {}
+        for k in range(5):
+            try:
+                j = getj(API[L] + "?" + urllib.parse.urlencode(q))
+            except Exception as e:
+                j = {"error": str(e)}
+            if "query" in j:
+                break
+            time.sleep(5 + 5 * k)
         qq = j.get("query") or {}
         back = {}
         for k in ("normalized", "redirects"):
@@ -194,31 +199,85 @@ def intros(L, titles):
     return out
 
 
-def volltext(title):
-    """ganzer Artikel als Text (mit == Abschnitten ==) + verlinkte Artikel"""
-    q = {"action": "query", "format": "json", "formatversion": "2", "prop": "extracts|links", "explaintext": "1",
-         "exsectionformat": "wiki", "pllimit": "max", "plnamespace": "0", "redirects": "1", "titles": title, "maxlag": "5"}
-    for i in range(6):                                       # «maxlag» / Fehler kommen als JSON: nochmals
-        try:
-            j = getj(API["de"] + "?" + urllib.parse.urlencode(q))
-        except Exception:
-            j = {}
-        ps = (j.get("query") or {}).get("pages") or []
-        if ps and ps[0].get("extract"):
-            links = [x["title"] for x in ps[0].get("links") or []]
-            cont = j.get("continue") or {}
-            while cont.get("plcontinue") and len(links) < 3000:  # mehr als 500 Links: weiter holen (ohne den Text nochmals)
-                try:
-                    k = getj(API["de"] + "?" + urllib.parse.urlencode({"action": "query", "format": "json", "formatversion": "2",
-                             "prop": "links", "pllimit": "max", "plnamespace": "0", "redirects": "1", "titles": title,
-                             "plcontinue": cont["plcontinue"]}))
-                except Exception:
-                    break
-                links += [x["title"] for x in ((k.get("query") or {}).get("pages") or [{}])[0].get("links") or []]
-                cont = k.get("continue") or {}
-            return title, ps[0]["extract"], links
-        time.sleep(2 + 3 * i)
-    return title, "", []
+def volltexte(titles):
+    """Titel -> Wikitext (50 Artikel pro Anfrage, nacheinander - so will es Wikimedia)"""
+    out = {}
+    lst = sorted(set(titles))
+    for i in range(0, len(lst), 50):
+        part = lst[i:i + 50]
+        q = {"action": "query", "format": "json", "formatversion": "2", "prop": "revisions", "rvprop": "content", "rvslots": "main",
+             "redirects": "1", "titles": "|".join(part)}
+        for k in range(5):
+            try:
+                j = getj(API["de"] + "?" + urllib.parse.urlencode(q), timeout=180)
+            except Exception as e:
+                j = {"error": str(e)}
+            if "query" in j:
+                break
+            time.sleep(5 + 5 * k)
+        qq = j.get("query") or {}
+        back = {}
+        for kk in ("normalized", "redirects"):
+            for r in qq.get(kk) or []:
+                back[r["to"]] = back.get(r["from"], r["from"])
+        for pg in qq.get("pages") or []:
+            rv = (pg.get("revisions") or [{}])[0]
+            wt = ((rv.get("slots") or {}).get("main") or {}).get("content") or ""
+            if wt:
+                out[back.get(pg["title"], pg["title"])] = wt
+        if i % 1000 == 0:
+            print("  Volltexte %d / %d" % (i, len(lst)), flush=True)
+    return out
+
+
+_NS = re.compile(r"^(Datei|File|Bild|Image|Kategorie|Category|Media|Medium|Vorlage|Template|Wikipedia|Hilfe|Portal|commons|wikt|"
+                 r"[a-z]{2,3}(-[a-z]+)?):", re.I)
+
+
+def wt2text(wt):
+    """Wikitext -> Text (Abschnitte als «== X ==»); Links als \x01Ziel\x02Anzeige\x03 (für die Verwechslungs-Arten im Satz)"""
+    import html
+    t = re.sub(r"<!--.*?-->", "", wt, flags=re.S)
+    t = re.sub(r"<ref[^>]*/>", "", t)
+    t = re.sub(r"<ref[^>]*>.*?</ref>", "", t, flags=re.S)
+    t = re.sub(r"<(gallery|imagemap|math|score|timeline|syntaxhighlight)[^>]*>.*?</\1>", "", t, flags=re.S | re.I)
+    for _ in range(10):
+        t2 = re.sub(r"\{\{[^{}]*\}\}", "", t)
+        if t2 == t:
+            break
+        t = t2
+    t = re.sub(r"\{\|.*?\|\}", "", t, flags=re.S)
+
+    def link(m):
+        tgt, _, disp = m.group(1).partition("|")
+        if _NS.match(tgt.strip()):
+            return ""
+        disp = (disp.split("|")[-1] if disp else tgt).strip()
+        tgt = tgt.split("#")[0].strip()
+        if not tgt:
+            return disp
+        return "\x01%s\x02%s\x03" % (tgt[:1].upper() + tgt[1:], disp)
+    for _ in range(6):
+        t2 = re.sub(r"\[\[([^\[\]]*)\]\]", link, t)
+        if t2 == t:
+            break
+        t = t2
+    t = re.sub(r"\[https?://\S+\s([^\]]*)\]", r"\1", t)
+    t = re.sub(r"\[https?://\S+\]", "", t)
+    t = re.sub(r"'{2,}", "", t)
+    t = re.sub(r"<[^>]+>", "", t)
+    t = html.unescape(t).replace("\u00a0", " ")
+    lines = []
+    for ln in t.split("\n"):
+        ln = re.sub(r"^[*#:;]+\s*", "", ln.strip())
+        if ln.startswith(("|", "!", "{", "}")):
+            continue
+        lines.append(re.sub(r"[ \t]+", " ", ln))
+    return "\n".join(lines)
+
+
+def _plain(s):
+    return re.sub(r"\x01[^\x02]*\x02([^\x03]*)\x03", r"\1", s)
 
 
 SKIP_SEC = re.compile(r"Literatur|Weblinks|Einzelnachweis|Quellen|Anmerkung|Siehe auch|Belege|Fußnote|Weiterführend", re.I)
@@ -239,7 +298,7 @@ def saetze(text, mit_abschnitt=False):
             sec = m.group(1); continue
         if SKIP_SEC.search(sec):
             continue
-        for s in re.split(r"(?<=[.!?])\s+(?=[A-ZÄÖÜ„«(])", para):
+        for s in re.split(r"(?<=[.!?])\s+(?=[A-ZÄÖÜ„«(\x01])", para):
             s = s.replace("․", ".").strip()
             if s:
                 out.append((s, sec) if mit_abschnitt else s)
@@ -279,16 +338,18 @@ NUR_TIER = re.compile(r"\bungefährlich\b|\bfür\s+(den\s+)?Menschen\s+(un|nicht
 EDISH = re.compile(r"essbar|Speise|Gemüse|Salat|Gewürz|gegessen|verzehr|Küche|Obst|Marmelade|Konfitüre", re.I)
 
 
-def pruefen(text, own, namen, links, pflanze_pilz, dbg=None):
+def pruefen(text, own, namen, pflanze_pilz, dbg=None):
+    """text: aus wt2text (mit Link-Marken). (giftig-Sätze, essbar-Sätze, Verwechslungs-Arten)"""
     tox, ed, look = [], [], []
-    for s, sec in saetze(text, True):
-        if len(s) > 500:
+    for sm, sec in saetze(text, True):
+        s = _plain(sm)
+        if len(s) > 500 or len(s) < 12:
             continue
         verw = bool(VERW.search(s)) or bool(VERW_SEC.search(sec))
         other = andere_namen(s, own, namen)
         if verw:
-            for t in links:
-                if t not in own and len(t) > 3 and re.search(r"(?<![A-Za-zÄÖÜäöüß])" + re.escape(t) + r"(?![a-zäöüß])", s):
+            for t in re.findall(r"\x01([^\x02]*)\x02", sm):          # die im Satz verlinkten Artikel
+                if t not in own and len(t) > 3 and not re.search(r"\d", t):
                     look.append(t)
             if dbg is not None and (TOX.search(s) or EDISH.search(s)):
                 dbg.append("  [Verwechslung] " + s[:200])
@@ -373,13 +434,8 @@ def main():
     for n, t in de_t.items():
         if len(t) > 3 and t != n:
             namen.add(t)
-    full = {}
-    with cf.ThreadPoolExecutor(6) as ex:
-        for k, (tit, txt, links) in enumerate(ex.map(volltext, sorted(set(de_t.values())))):
-            full[tit] = (txt, links)
-            if k % 1000 == 0:
-                print("  Volltexte %d / %d" % (k, len(de_t)), flush=True)
-    print("Volltexte: %d, davon leer %d" % (len(full), sum(1 for v in full.values() if not v[0])), flush=True)
+    full = {k: wt2text(v) for k, v in volltexte(de_t.values()).items()}
+    print("Volltexte: %d von %d" % (len(full), len(set(de_t.values()))), flush=True)
     rows, cov = {}, {"arten": len(want), "de": 0, "en": 0, "keiner": 0, "giftig": 0, "giftig_wd": 0, "essbar": 0, "verwechslung": 0,
                      "hoehe": 0, "iucn": 0, "lebensraum": 0}
     for n in want:
@@ -395,9 +451,9 @@ def main():
             x, rev, tit = I_de[de_t[n]]
             own.add(tit)
             e.update(l="de", t=tit, x=kuerzen(x), r=rev)
-            txt, links = full.get(de_t[n], ("", []))
+            txt = full.get(de_t[n]) or x
             dbg = [] if a.nur else None
-            tox, ed, look = pruefen(txt or x, own, namen, links, t[0] in ("Plantae", "Fungi"), dbg)
+            tox, ed, look = pruefen(txt, own, namen, t[0] in ("Plantae", "Fungi"), dbg)
             if dbg:
                 print("--- %s: verworfene Sätze\n%s" % (n, "\n".join(dbg)))
             if tox:
