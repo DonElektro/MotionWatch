@@ -388,7 +388,7 @@ def teil_a(datei, echt="", fotos="", browser=False, bilder="", pins=False):
         ok(j.get("st") == "runtime" and not j.get("can_install") and "Administrator" in j.get("msg", ""), "Laufzeit fehlt: Benutzer sieht den Hinweis")
         ok(bio("admin", bid)[1].get("can_install"), "Laufzeit fehlt: Admin darf installieren")
         ns["bio_runtime"] = rt
-        u_ = ns["BIO_BASE"]["url"]; ns["BIO_BASE"]["url"] = "https://github.com/DonElektro/MotionWatch/releases/download/bioclip-1/"
+        u_ = ns["BIO_BASE"]["url"]; ns["BIO_BASE"]["url"] = "https://github.com/DonElektro/MotionWatch/releases/download/" + ns["BIO_TAG"] + "/"
         ok(ns["bio_selftest"]().startswith("pins"), "Selbsttest bio_selftest")
         ns["BIO_BASE"]["url"] = u_
     else:

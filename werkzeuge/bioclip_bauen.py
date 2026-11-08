@@ -244,11 +244,14 @@ def wikidata(names):
             n, L, src, t = b["name"]["value"], b["l"]["value"][:2], b["src"]["value"], b["txt"]["value"].strip()
             if not t or t.lower() == n.lower() or n.lower() in t.lower() or len(t) > 60:
                 continue
+            if t.split(" ")[0].lower() == n.split(" ")[0].lower() and " " in n:
+                continue                                         # nur eine Schreibvariante des lateinischen Namens
             d = out.setdefault(n, {})
             cur = d.get(L)
             # die Bezeichnung (= der übliche Name, z. B. «Gemeiner Löwenzahn») vor dem Trivialnamen P1843 (dort stehen auch
-            # Mundart-Namen wie «Bettsaier»); «de» vor «de-ch»; unter mehreren Trivialnamen der längere (meist der volle)
-            k = (0 if src == "l" else 1, 0 if b["l"]["value"] in ("de", "fr", "it", "en") else 1, -len(t))
+            # Mundart-Namen wie «Bettsaier»); «de» vor «de-ch». Mehrere Bezeichnungen (gleicher lateinischer Name bei einer
+            # Sorte, z. B. «fiaschello» neben «tomato»): die kürzere; mehrere Trivialnamen: der längere (meist der volle)
+            k = (0 if src == "l" else 1, 0 if b["l"]["value"] in ("de", "fr", "it", "en") else 1, len(t) if src == "l" else -len(t))
             if cur is None or k < cur[1]:
                 d[L] = (t, k)
         time.sleep(0.6)
