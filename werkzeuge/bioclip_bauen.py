@@ -23,7 +23,7 @@ Auswahl der Arten (Entscheid Besitzer: alles – Pflanzen, Tiere, Pilze, Insekte
     Einbettungen genau die von pybioclip (txt_emb_species: nur die 7 Stufen der Taxonomie als Text, 80 Vorlagen gemittelt -
     die Gegenprobe im Lauf misst das nach: Kosinus 1.000 für «taxonomic», 0.99 mit Trivialname).
   * Höhere Stufen (Gattung, Familie, Ordnung, Klasse) entstehen auf dem Pi durch Zusammenzählen (wie pybioclip «rank»).
-Namen: Wikidata (CC0) – Eigenschaft «Trivialname» (P1843), sonst die Bezeichnung, wenn sie nicht nur der lateinische Name ist.
+Namen: Wikidata (CC0) – die Bezeichnung in der Sprache, wenn sie nicht nur der lateinische Name ist, sonst «Trivialname» (P1843).
 """
 import argparse
 import concurrent.futures as cf
@@ -246,8 +246,9 @@ def wikidata(names):
                 continue
             d = out.setdefault(n, {})
             cur = d.get(L)
-            # Trivialname (P1843) vor Bezeichnung; in Deutsch «de» vor «de-ch»; sonst der kürzere
-            k = (0 if src == "c" else 1, 0 if b["l"]["value"] in ("de", "fr", "it", "en") else 1, len(t))
+            # die Bezeichnung (= der übliche Name, z. B. «Gemeiner Löwenzahn») vor dem Trivialnamen P1843 (dort stehen auch
+            # Mundart-Namen wie «Bettsaier»); «de» vor «de-ch»; unter mehreren Trivialnamen der längere (meist der volle)
+            k = (0 if src == "l" else 1, 0 if b["l"]["value"] in ("de", "fr", "it", "en") else 1, -len(t))
             if cur is None or k < cur[1]:
                 d[L] = (t, k)
         time.sleep(0.6)
@@ -426,7 +427,7 @@ def main():
             "sources": {"model": "BioCLIP (Stevens et al., CVPR 2024), huggingface.co/imageomics/bioclip, MIT",
                         "embeddings": "txt_emb_species.npy/.json as used by pybioclip (Space imageomics/bioclip-demo, TreeOfLife-10M taxonomy); extra species computed with the BioCLIP text encoder, taxonomy GBIF Backbone (CC BY 4.0)",
                         "selection": "most reported species in CH/LI (and DE/AT) after occurrence counts on GBIF.org, plus pets, farm animals, garden and crop plants",
-                        "names": "Wikidata (CC0), taxon common name P1843 / labels"}}
+                        "names": "Wikidata (CC0), labels, else taxon common name P1843"}}
     with open(os.path.join(a.aus, "bioclip-1-arten.json"), "w", encoding="utf-8") as f:
         json.dump(meta, f, ensure_ascii=False, separators=(",", ":"))
 

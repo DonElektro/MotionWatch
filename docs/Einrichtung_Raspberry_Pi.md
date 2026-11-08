@@ -46,7 +46,7 @@ sudo apt install python3-numpy python3-opencv python3-pil python3-pil.imagetk py
 (pip, MIT, etwa 15 MB) und die Stimme selbst (etwa 60 MB, feste Prüfsumme) lädt MoveEye auf Knopfdruck: Einstellungen →
 Licht & Ton → Lautsprecher → «Piper installieren» / «Stimme laden». Ohne Internet beim Einrichten spricht die alte Stimme.
 Dieselbe Laufzeit braucht **«🌿 Bestimmen»** im Datentausch (Arten auf Fotos, BioCLIP, ganz auf dem Pi): das Modell
-(etwa 100 MB, feste Prüfsumme, Release `bioclip-1`) lädt MoveEye beim ersten «Bestimmen» nach einer Rückfrage.
+(etwa 340 MB, feste Prüfsumme, Release `bioclip-1`) lädt MoveEye beim ersten «Bestimmen» nach einer Rückfrage.
 
 Wärmebildkamera Thermal-90: im Waveshare-Wiki `Thermal_Camera_Hat.zip` laden, entpacken, im Ordner `pysenxor-master`
 `pip install --break-system-packages -e ./` (oder in einer venv mit `--system-site-packages`).

@@ -14,7 +14,7 @@
   B) --browser: dieselbe App mit einem echten Server im Prozess, Playwright: Seite /tausch (Handy 390 × 844 und PC), 🌿 auf der
      Karte und «🌿 Bestimmen» in der Vorschau, Laden mit Fortschritt, Ergebnis, Gast-Seite; keine JavaScript-Fehler;
      --bilder ORDNER: Bildschirmfotos bioclip_*.png
-  --echt ORDNER: dazu die echten Dateien aus dem Workflow «BioCLIP» (bioclip-1-bild-int8.onnx, -arten.npy, -arten.json)
+  --echt ORDNER: dazu die echten Dateien aus dem Workflow «BioCLIP» (Modell wie in BIO_FILES, -arten.npy, -arten.json)
      über denselben Weg laden und rechnen; --fotos ORDNER (Gattung_art_N.jpg) misst Treffer und Zeit.
 
   python3 werkzeuge/bioclip_test.py [--datei X.py] [--browser] [--bilder ORDNER] [--echt ORDNER [--fotos ORDNER]]
@@ -153,8 +153,9 @@ def laden(datei):
 
 
 # ---------------------------------------------------------------------------------------------------------------------- A
-def teil_a(datei, echt="", fotos="", browser=False, bilder=""):
+def teil_a(datei, echt="", fotos="", browser=False, bilder="", pins=False):
     ns, home = laden(datei)
+    real = {w: dict(f) for w, f in ns["BIO_FILES"].items()}          # the pins of the program (before the test pins)
     CFG, TZ, BIO, BIO_DL = ns["CFG"], ns["TZ"], ns["BIO"], ns["BIO_DL"]
     GB = ns["TZ_GB"]
     root = tempfile.mkdtemp(prefix="mw_bio_root_")
@@ -221,7 +222,7 @@ def teil_a(datei, echt="", fotos="", browser=False, bilder=""):
     emb, lab = fake_tables()
     model = fake_model()
     pin = lambda name, b: {"name": name, "size": len(b), "sha256": hashlib.sha256(b).hexdigest()}
-    files = {"model": ("bioclip-1-bild-int8.onnx", model), "emb": ("bioclip-1-arten.npy", emb), "labels": ("bioclip-1-arten.json", lab)}
+    files = {"model": (ns["BIO_FILES"]["model"]["name"], model), "emb": ("bioclip-1-arten.npy", emb), "labels": ("bioclip-1-arten.json", lab)}
     for w, (n_, b_) in files.items():
         ns["BIO_FILES"][w] = pin(n_, b_)
         srv.files["/bioclip-1/" + n_] = b_
@@ -288,10 +289,12 @@ def teil_a(datei, echt="", fotos="", browser=False, bilder=""):
     ok(code == 400 and "Platz" in j.get("msg", ""), f"zu wenig Platz in der Seite ({j.get('msg')})")
     shutil.disk_usage = du
     if echt:
-        for w, n_ in (("model", "bioclip-1-bild-int8.onnx"), ("emb", "bioclip-1-arten.npy"), ("labels", "bioclip-1-arten.json")):
+        for w, n_ in (("model", ns["BIO_FILES"]["model"]["name"]), ("emb", "bioclip-1-arten.npy"), ("labels", "bioclip-1-arten.json")):
             b_ = open(os.path.join(echt, n_), "rb").read()
             ns["BIO_FILES"][w] = pin(n_, b_)
             srv.files["/bioclip-1/" + n_] = b_
+    if echt and pins:
+        ok(all(ns["BIO_FILES"][w] == real[w] for w in real), "echt: Dateien = feste Werte in BIO_FILES (Grösse + sha256)")
     code, j = bio("Anna", fid, "download")
     ok(code == 200 and j.get("st") == "loading", f"Laden startet ({j.get('st')})")
     t0 = time.time()
@@ -540,9 +543,10 @@ def main():
     ap.add_argument("--bilder", default=os.path.join(tempfile.gettempdir(), "bioclip_bilder"))
     ap.add_argument("--echt", default="", help="Ordner mit den echten Dateien aus dem Workflow «BioCLIP»")
     ap.add_argument("--fotos", default="", help="mit --echt: Fotos Gattung_art_N.jpg für Treffer und Zeit")
+    ap.add_argument("--pins", action="store_true", help="mit --echt: die Dateien müssen genau den festen Werten in BIO_FILES entsprechen")
     a = ap.parse_args()
     t0 = time.time()
-    teil_a(a.datei or neueste(), a.echt, a.fotos, a.browser, a.bilder)
+    teil_a(a.datei or neueste(), a.echt, a.fotos, a.browser, a.bilder, a.pins)
     print(f"{N['ok']} Prüfungen ok, {len(FEHLER)} Fehler ({time.time() - t0:.0f} s)")
     for f in FEHLER:
         print("  ✗ " + f)

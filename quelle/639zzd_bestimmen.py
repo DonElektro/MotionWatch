@@ -5,7 +5,7 @@
 #   * Wer das Bild sehen darf, darf es bestimmen – auch Gäste (Gast-Link, nur «Für alle», wie die Vorschaubilder).
 #   * Ganz lokal: kein Cloud-Dienst, das Bild verlässt das Gerät nie.
 # Motor wie die Piper-Stimme (639zzb): onnxruntime (MIT, dieselbe feste Fassung PIPER_ORT), kein torch auf dem Pi.
-#   * Bild-Teil (ViT-B/16) als ONNX, Gewichte int8; der Text-Teil läuft nie auf dem Pi: die Einbettungen einer Auswahl von
+#   * Bild-Teil (ViT-B/16) als ONNX (fp32, siehe BIO_FILES); der Text-Teil läuft nie auf dem Pi: die Einbettungen einer Auswahl von
 #     Arten sind fertig gerechnet (BIO_FILES «emb» + «labels»). Gebaut und geprüft im Workflow «BioCLIP»
 #     (.github/workflows/bioclip.yml, werkzeuge/bioclip_bauen.py) auf einem GitHub-Rechner, veröffentlicht als Release-Assets
 #     (Tag BIO_TAG, nicht «latest»). Grösse + sha256 jeder Datei stehen hier in der (signierten) Hauptdatei – die Signatur
@@ -27,16 +27,23 @@
 # ----------------------------------------------------------------------------
 BIO_TAG = "bioclip-1"
 BIO_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/" + BIO_TAG + "/"}   # Tests: lokaler Server
-# Werte aus dem Workflow «BioCLIP» (Release bioclip-1, Notiz «pin: …» / pins.txt); size 0 = noch nicht freigegeben
+# Werte aus dem Workflow «BioCLIP» (Release bioclip-1, Lauf 42497082558, 08.11.2026; = «digest» von GitHub); size 0 = nicht freigegeben.
+# fp32 statt int8: auf 74 echten Fotos (iNaturalist) trifft fp32 genau wie torch (Art top-1 70 %, top-3 81 %), int8 nur 61 % /
+# 80 % (gleiche Art wie fp32 bei 84 %) - die Genauigkeit hält bei int8 nicht. int8 (schneller, 90 MB) liegt im selben Release:
+#   "model": {"name": "bioclip-1-bild-int8.onnx", "size": 89759048,
+#             "sha256": "a9e05a3b77a329ea898b60f8fd8e6f0e97938e35efbc39b157151910aac5d4d6"}
 BIO_FILES = {
-    "model": {"name": "bioclip-1-bild-int8.onnx", "size": 0, "sha256": ""},
-    "emb": {"name": "bioclip-1-arten.npy", "size": 0, "sha256": ""},
-    "labels": {"name": "bioclip-1-arten.json", "size": 0, "sha256": ""},
+    "model": {"name": "bioclip-1-bild-fp32.onnx", "size": 345124167,
+              "sha256": "c88a6b554da4f11caa29887bbbb3b02f2aeed891c49ede400ac1706c64e45687"},
+    "emb": {"name": "bioclip-1-arten.npy", "size": 10595456,
+            "sha256": "4349a4a499614d6774b41e8a1212ad9733f0f3fe5dfcff06203c05e8d0a1a5f6"},
+    "labels": {"name": "bioclip-1-arten.json", "size": 1529538,
+               "sha256": "47bcf91c024a8b08d3e1cd5abadc0e3506e6a53d57a0085d078b49daea1ce0ae"},
 }
 BIO_MAX_BYTES = 400 * 1024 * 1024        # harte Obergrenze für alle Dateien zusammen (ein falscher Eintrag lädt nie mehr)
 BIO_IDLE_S = 10 * 60
 BIO_IDLE_TICK = 20                       # how often the idle watch looks
-BIO_TIMEOUT_S = 120.0                    # ein Bild inkl. Modell laden (Pi 5 kalt: ~2-4 s laden + ~1-2 s rechnen, geschätzt)
+BIO_TIMEOUT_S = 120.0                    # ein Bild inkl. Modell laden (Pi 5, geschätzt: kalt ~3-5 s laden, ~1-2 s rechnen)
 BIO_CACHE_N = 3000
 BIO_THREADS = 2
 BIO_TOPK = 3
@@ -760,7 +767,7 @@ def smalltv_routes(app, reply, body):                     # + 639zzd
 # ---- settings: one switch under Einstellungen → System → Datentausch ------------------------------------------------------------
 TOGGLES.append((_TZS, "tausch_bio", "🌿 Identify species in pictures (BioCLIP, on the device)"))
 SET_HELP.update({"tausch_bio": ("The button «🌿 Identify» at every picture: the three most likely species with name and percent. "
-                                "Runs only on this MoveEye (the picture never leaves the device); BioCLIP is loaded once (about 100 MB).", "")})
+                                "Runs only on this MoveEye (the picture never leaves the device); BioCLIP is loaded once (about 340 MB).", "")})
 
 # ---- the page /tausch and the guest page: button + panel ------------------------------------------------------------------------
 BIO_CSS = r"""
@@ -1002,11 +1009,11 @@ _HX_BIO = {
                                                                 "🌿 Identifier les espèces sur les images (BioCLIP, sur l’appareil)",
                                                                 "🌿 Identificare le specie nelle immagini (BioCLIP, sul dispositivo)",
                                                                 "🌿 Determinar spezias sin maletgs (BioCLIP, sin l’apparat)"),
-    "The button «🌿 Identify» at every picture: the three most likely species with name and percent. Runs only on this MoveEye (the picture never leaves the device); BioCLIP is loaded once (about 100 MB).": (
-        "Der Knopf «🌿 Bestimmen» bei jedem Bild: die drei wahrscheinlichsten Arten mit Name und Prozent. Läuft nur auf diesem MoveEye (das Bild verlässt das Gerät nie); BioCLIP wird einmal geladen (etwa 100 MB).",
-        "Le bouton «🌿 Identifier» à chaque image : les trois espèces les plus probables avec nom et pourcentage. Uniquement sur ce MoveEye (l’image ne quitte jamais l’appareil) ; BioCLIP est chargé une fois (env. 100 Mo).",
-        "Il pulsante «🌿 Identificare» su ogni immagine: le tre specie più probabili con nome e percentuale. Solo su questo MoveEye (l’immagine non lascia mai il dispositivo); BioCLIP viene caricato una volta (circa 100 MB).",
-        "Il buttun «🌿 Determinar» tar mintga maletg: las trais spezias las pli probablas cun num e pertschient. Mo sin quest MoveEye (il maletg na banduna mai l’apparat); BioCLIP vegn chargià ina giada (var 100 MB)."),
+    "The button «🌿 Identify» at every picture: the three most likely species with name and percent. Runs only on this MoveEye (the picture never leaves the device); BioCLIP is loaded once (about 340 MB).": (
+        "Der Knopf «🌿 Bestimmen» bei jedem Bild: die drei wahrscheinlichsten Arten mit Name und Prozent. Läuft nur auf diesem MoveEye (das Bild verlässt das Gerät nie); BioCLIP wird einmal geladen (etwa 340 MB).",
+        "Le bouton «🌿 Identifier» à chaque image : les trois espèces les plus probables avec nom et pourcentage. Uniquement sur ce MoveEye (l’image ne quitte jamais l’appareil) ; BioCLIP est chargé une fois (env. 340 Mo).",
+        "Il pulsante «🌿 Identificare» su ogni immagine: le tre specie più probabili con nome e percentuale. Solo su questo MoveEye (l’immagine non lascia mai il dispositivo); BioCLIP viene caricato una volta (circa 340 MB).",
+        "Il buttun «🌿 Determinar» tar mintga maletg: las trais spezias las pli probablas cun num e pertschient. Mo sin quest MoveEye (il maletg na banduna mai l’apparat); BioCLIP vegn chargià ina giada (var 340 MB)."),
 }
 for _k, _v in _HX_BIO.items():
     DE.setdefault(_k, _v[0])
@@ -1018,27 +1025,27 @@ _BIO_DE = {_k: _HX_BIO[_k][0] if _k in _HX_BIO else DE.get(_k, _k) for _k in BIO
 _HELP_BIO = {
     "de": ('<li><b>🌿 Bestimmen</b> (bei jedem Bild, auch für Gäste): MoveEye nennt die drei wahrscheinlichsten Arten mit deutschem und lateinischem Namen und Prozent '
            '(Pflanzen, Tiere, Pilze, Insekten), ist die Art unsicher, die sichere Gattung oder Familie. Gerechnet wird nur auf dem Gerät – das Bild verlässt MoveEye nie. '
-           'Beim ersten Mal lädt MoveEye das Modell einmal (etwa 100 MB, feste Prüfsumme), danach geht es ohne Internet; ein Bild braucht auf dem Pi 5 wenige Sekunden. '
+           'Beim ersten Mal lädt MoveEye das Modell einmal (etwa 340 MB, feste Prüfsumme), danach geht es ohne Internet; ein Bild braucht auf dem Pi 5 wenige Sekunden. '
            'Bekannt sind rund 10\'000 Arten, die in der Schweiz und in Mitteleuropa am häufigsten gemeldet werden, dazu Haustiere, Nutztiere, Garten- und Kulturpflanzen. '
            'Ausschalten: Einstellungen → System → Datentausch. <b>Modell und Lizenzen:</b> BioCLIP (Stevens et al., CVPR 2024, Imageomics Institute), MIT; '
            'Auswahl der Arten nach den Fundmeldungen auf GBIF.org; Namen von Wikidata (CC0); Rechnung mit onnxruntime (MIT). Bitte Ergebnisse vor dem Essen von Pilzen oder Pflanzen nie als sicher nehmen.</li>'),
     "en": ('<li><b>🌿 Identify</b> (at every picture, also for guests): MoveEye names the three most likely species with common and Latin name and percent '
            '(plants, animals, fungi, insects); when the species is unsure, the sure genus or family. It is computed only on the device – the picture never leaves MoveEye. '
-           'The first time MoveEye loads the model once (about 100 MB, fixed checksum), after that it works without internet; a picture takes a few seconds on the Pi 5. '
+           'The first time MoveEye loads the model once (about 340 MB, fixed checksum), after that it works without internet; a picture takes a few seconds on the Pi 5. '
            'It knows about 10,000 species most often reported in Switzerland and Central Europe, plus pets, farm animals, garden and crop plants. '
            'Switch off: Settings → System → File exchange. <b>Model and licences:</b> BioCLIP (Stevens et al., CVPR 2024, Imageomics Institute), MIT; '
            'species chosen after the occurrence records on GBIF.org; names from Wikidata (CC0); inference with onnxruntime (MIT). Never rely on it before eating mushrooms or plants.</li>'),
     "fr": ('<li><b>🌿 Identifier</b> (à chaque image, aussi pour les invités) : MoveEye donne les trois espèces les plus probables avec nom et nom latin et pourcentage '
            '(plantes, animaux, champignons, insectes) ; si l’espèce est incertaine, le genre ou la famille sûrs. Calcul uniquement sur l’appareil – l’image ne quitte jamais MoveEye. '
-           'La première fois, MoveEye charge le modèle (env. 100 Mo, somme de contrôle fixe), ensuite sans internet. Environ 10 000 espèces de Suisse et d’Europe centrale, animaux domestiques et plantes cultivées. '
+           'La première fois, MoveEye charge le modèle (env. 340 Mo, somme de contrôle fixe), ensuite sans internet. Environ 10 000 espèces de Suisse et d’Europe centrale, animaux domestiques et plantes cultivées. '
            '<b>Modèle et licences :</b> BioCLIP (Stevens et al., CVPR 2024), MIT ; sélection d’après GBIF.org ; noms : Wikidata (CC0) ; calcul : onnxruntime (MIT). Ne jamais s’y fier avant de manger champignons ou plantes.</li>'),
     "it": ('<li><b>🌿 Identificare</b> (su ogni immagine, anche per gli ospiti): MoveEye indica le tre specie più probabili con nome, nome latino e percentuale '
            '(piante, animali, funghi, insetti); se la specie è incerta, il genere o la famiglia sicuri. Calcolo solo sul dispositivo – l’immagine non lascia mai MoveEye. '
-           'La prima volta MoveEye carica il modello (circa 100 MB, somma di controllo fissa), poi senza internet. Circa 10 000 specie di Svizzera ed Europa centrale, animali domestici e piante coltivate. '
+           'La prima volta MoveEye carica il modello (circa 340 MB, somma di controllo fissa), poi senza internet. Circa 10 000 specie di Svizzera ed Europa centrale, animali domestici e piante coltivate. '
            '<b>Modello e licenze:</b> BioCLIP (Stevens et al., CVPR 2024), MIT; selezione secondo GBIF.org; nomi: Wikidata (CC0); calcolo: onnxruntime (MIT). Mai fidarsi prima di mangiare funghi o piante.</li>'),
     "rm": ('<li><b>🌿 Determinar</b> (tar mintga maletg, er per giasts): MoveEye num las trais spezias las pli probablas cun num, num latin e pertschient '
            '(plantas, animals, bulieus, insects); sche la spezia è malsegira, il gener u la famiglia segira. Calculà mo sin l’apparat – il maletg na banduna mai MoveEye. '
-           'L’emprima giada chargia MoveEye il model (var 100 MB, summa da controlla fixa), lura senza internet. Var 10 000 spezias da la Svizra e da l’Europa centrala, animals da chasa e plantas cultivadas. '
+           'L’emprima giada chargia MoveEye il model (var 340 MB, summa da controlla fixa), lura senza internet. Var 10 000 spezias da la Svizra e da l’Europa centrala, animals da chasa e plantas cultivadas. '
            '<b>Model e licenzas:</b> BioCLIP (Stevens et al., CVPR 2024), MIT; selecziun tenor GBIF.org; nums: Wikidata (CC0); calculaziun: onnxruntime (MIT). Mai sa fidar avant che mangiar bulieus u plantas.</li>'),
 }
 

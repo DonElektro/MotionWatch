@@ -25,7 +25,7 @@ on:
         default: keins
       tag:
         description: "Tag für «echt» (bioclip-N)"
-        default: bioclip-1
+        default: bioclip-2
       hf_rev:
         description: "Revision (Commit) von imageomics/bioclip, leer = aktuelle"
         default: ""
