@@ -269,7 +269,8 @@ def onnx_export(model, ziel):
             return self.v(image)
     fp32 = os.path.join(ziel, "bioclip-1-bild-fp32.onnx")
     int8 = os.path.join(ziel, "bioclip-1-bild-int8.onnx")
-    torch.onnx.export(Bild(model.visual), torch.randn(1, 3, 224, 224), fp32, input_names=["image"], output_names=["emb"],
+    from torch.onnx import utils as onnx_utils               # der klassische TorchScript-Export (ohne onnxscript)
+    onnx_utils.export(Bild(model.visual), torch.randn(1, 3, 224, 224), fp32, input_names=["image"], output_names=["emb"],
                       dynamic_axes={"image": {0: "n"}, "emb": {0: "n"}}, opset_version=17, do_constant_folding=True)
     quantize_dynamic(fp32, int8, weight_type=QuantType.QInt8, per_channel=True)
     return fp32, int8
@@ -329,6 +330,8 @@ def main():
     model, pre, pc = modell_laden(paths, wname)
     scale = float(model.logit_scale.exp().item())
     print("logit_scale.exp() = %.4f" % scale)
+    fp32, int8 = onnx_export(model, a.aus)                    # zuerst: ein Fehler hier zeigt sich nach Minuten
+    print("ONNX: fp32 %d Bytes, int8 %d Bytes" % (os.path.getsize(fp32), os.path.getsize(int8)), flush=True)
 
     # Text-Einbettungen von BioCLIP (pybioclip-Format) und die Auswahl
     E = np.load(paths["txt_emb_species.npy"], mmap_mode="r")
@@ -418,8 +421,7 @@ def main():
     with open(os.path.join(a.aus, "bioclip-1-arten.json"), "w", encoding="utf-8") as f:
         json.dump(meta, f, ensure_ascii=False, separators=(",", ":"))
 
-    # ONNX + Prüfung
-    fp32, int8 = onnx_export(model, a.aus)
+    # Prüfung
     import cv2
     import onnxruntime as ort
     from PIL import Image
