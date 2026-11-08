@@ -248,17 +248,30 @@ lauf q; cmp -s "$X/usr/local/lib/moveeye-kiosk/testbild.py" "$R/simulator3d/beil
 # 3.55.0: Zeitplan alle 15 Min. - nur in Pausen (kein Test, niemand spielt), höchstens alle 6 Std.; neue Fassung = nochmal
 zp() { PATH="$B:$PATH" MOVEEYE_HP_QUELLE="file://$W/q" MOVEEYE_HP_UPTIME=99999 bash "$T" --zeitplan > "$W/lauf.log" 2>&1; }
 alt6() { echo $(( $(date +%s) - 25200 )) > "$X/var/lib/moveeye-hp-update/letzter_lauf"; }
-zp; [ ! -s "$W/lauf.log" ] && ok "--zeitplan: vor kurzem geprüft -> still fertig" || { fehler "--zeitplan prüft zu oft"; sed 's/^/    /' "$W/lauf.log"; }
+zp; grep -q "Geprüft: nichts Neues" "$W/lauf.log" && [ "$(wc -l < "$W/lauf.log")" = 1 ] && ok "--zeitplan: nichts Neues -> eine Zeile" || { fehler "--zeitplan: nichts Neues"; sed 's/^/    /' "$W/lauf.log"; }
+zp; [ ! -s "$W/lauf.log" ] && ok "--zeitplan: nichts Neues höchstens stündlich im Protokoll" || { fehler "--zeitplan: nichts Neues zu oft"; sed 's/^/    /' "$W/lauf.log"; }
 alt6; mkdir -p "$X/run/moveeye-spiel"; echo '{"grund": "test"}' > "$X/run/moveeye-spiel/spielen"
 echo "# alt" > "$X/usr/local/lib/moveeye-kiosk/testbild.py"; echo "8.0.0" > "$X/var/lib/moveeye-hp-update/version"; echo 0 > "$X/var/lib/moveeye-hp-update/sim_sha256"
 zp; grep -q "Am HP wird gespielt - verschoben" "$W/lauf.log" && [ "$(cat "$X/usr/local/lib/moveeye-kiosk/testbild.py")" = "# alt" ] \
 	&& ok "--zeitplan: es wird gespielt -> verschoben" || { fehler "beim Spielen eingespielt"; sed 's/^/    /' "$W/lauf.log"; }
 rm -f "$X/run/moveeye-spiel/spielen" "$X/var/lib/moveeye-hp-update/verschoben"; touch "$X/run/moveeye-test/kiosk_pause"
-zp; grep -q "Es läuft ein Test - verschoben" "$W/lauf.log" && ok "--zeitplan: der HP rechnet -> verschoben" || { fehler "beim Rechnen"; sed 's/^/    /' "$W/lauf.log"; }
-zp; [ ! -s "$W/lauf.log" ] && ok "--zeitplan: «verschoben» höchstens einmal pro Stunde im Protokoll" || fehler "Protokoll zu gesprächig"
+zp; grep -q "Neu: MoveEye 9.0.0 .*es läuft ein Test, wartet" "$W/lauf.log" && [ -f "$X/var/lib/moveeye-hp-update/wartet" ] \
+	&& [ "$(cat "$X/usr/local/lib/moveeye-kiosk/testbild.py")" = "# alt" ] \
+	&& ok "--zeitplan: Neues, der HP rechnet -> wartet (Zeile mit Grund, Marke «wartet» fürs Dauerrechnen)" || { fehler "beim Rechnen"; sed 's/^/    /' "$W/lauf.log"; }
+zp; grep -q "es läuft ein Test, wartet" "$W/lauf.log" && ok "--zeitplan: jedes Verschieben schreibt eine Zeile mit dem Grund" || { fehler "Verschieben ohne Zeile"; sed 's/^/    /' "$W/lauf.log"; }
 rm -f "$X/run/moveeye-test/kiosk_pause"
 zp; grep -q "Fertig: MoveEye 9.0.0 · Sim 9.0.0 eingespielt" "$W/lauf.log" && cmp -s "$X/usr/local/lib/moveeye-kiosk/testbild.py" "$R/simulator3d/beilagen_linux/testbild.py" \
-	&& ok "--zeitplan: in der Pause eingespielt" || { fehler "in der Pause nicht eingespielt"; sed 's/^/    /' "$W/lauf.log"; }
+	&& [ ! -e "$X/var/lib/moveeye-hp-update/wartet" ] \
+	&& ok "--zeitplan: in der Pause eingespielt, Marke «wartet» weg" || { fehler "in der Pause nicht eingespielt"; sed 's/^/    /' "$W/lauf.log"; }
+# höchstens WARTE_MAX_S (6 Std.) warten: danach trotz laufendem Test einspielen, Neustarts erst danach; Spielen hält weiter auf
+echo "# alt" > "$X/usr/local/lib/moveeye-kiosk/testbild.py"; echo "8.0.0" > "$X/var/lib/moveeye-hp-update/version"; echo 0 > "$X/var/lib/moveeye-hp-update/sim_sha256"
+touch "$X/run/moveeye-test/kiosk_pause"; echo "9.0.0 9.0.0" > "$X/var/lib/moveeye-hp-update/wartet"; touch -d '7 hours ago' "$X/var/lib/moveeye-hp-update/wartet"
+: > "$W/aufrufe.txt"
+zp; grep -q "spiele trotz laufendem Test ein" "$W/lauf.log" && grep -q "Fertig: MoveEye 9.0.0" "$W/lauf.log" \
+	&& cmp -s "$X/usr/local/lib/moveeye-kiosk/testbild.py" "$R/simulator3d/beilagen_linux/testbild.py" && ! grep -q "restart" "$W/aufrufe.txt" \
+	&& [ ! -e "$X/var/lib/moveeye-hp-update/wartet" ] \
+	&& ok "--zeitplan: nach 6 Std. Warten trotz Test eingespielt, ohne Neustart während des Tests" || { fehler "Höchstwartezeit"; sed 's/^/    /' "$W/lauf.log" "$W/aufrufe.txt"; }
+rm -f "$X/run/moveeye-test/kiosk_pause"
 echo 1 > "$X/var/lib/moveeye-hp-update/fassung"; rm -f "$X/usr/local/lib/moveeye-kiosk/hp_wache.py"
 lauf q; grep -q "neue Fassung" "$W/lauf.log" && [ -f "$X/usr/local/lib/moveeye-kiosk/hp_wache.py" ] \
 	&& ok "gleiche Version, neue Fassung des Updates: spielt nach (hp_wache.py)" || { fehler "neue Fassung"; sed 's/^/    /' "$W/lauf.log"; }

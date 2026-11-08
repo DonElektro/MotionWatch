@@ -125,6 +125,11 @@ Kiosk (`kiosk_sitzung.sh`, Testbild), Haken und Dienst-Einstellungen des Runners
 Kiosk-Ordner und sich selbst (ab 3.55.0 auch `hp_wache.py` und den Ordner `/run/moveeye-spiel`, mit HP_FASSUNG 4 auch
 «Controller koppeln»: bluez, Dienst, Ctrl+Alt+B; mit HP_FASSUNG 5 den **Bildschirm für die Tests**, siehe unten). Die Anmeldung des Runners
 (Token) fasst es nie an. Läuft ein Test oder wird gespielt, wird verschoben (nächster Blick in 15 Min.).
+**Ab HP_FASSUNG 6 (08.11.2026):** der Zeitplan schaut jedes Mal kurz in die signierte `versions.json`; nichts Neues: höchstens
+stündlich eine Zeile. Gibt es Neues und läuft ein Test, steht jedes Mal eine Zeile mit dem Grund im Protokoll und die Marke
+`/var/lib/moveeye-hp-update/wartet` sagt dem Dauerrechnen, kein neues Paket zu starten – das Update kommt zwischen zwei Paketen
+dran, spätestens nach 6 Std. auch während eines Tests (Neustarts erst danach). Spielen hat immer Vorrang. Vorher (bis Fassung 5)
+prüfte der Zeitplan still nur alle 6 Std. und nur in einer Pause; beim Dauerrechnen kam ein Update so bis zu 20 Std. nicht dran.
 
 Geprüft wird wie beim Pi: Signatur (Ed25519, öffentlicher Schlüssel im Skript) des Eintrags in `versions.json` →
 Prüfsumme der Programmdatei → darin die Prüfsumme des Linux-Pakets (`SIM3D_LINUX`) → `MoveEyeSim3D_Linux.zip`, das den
