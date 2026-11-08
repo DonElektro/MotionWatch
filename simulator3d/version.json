@@ -12,5 +12,12 @@
   "ver": "3.63.0",
   "size": 48353301,
   "sha256": "d27087288ac3a02352f866e9b5f6ca59926cec93062ae5da5dc1295cacf562bf"
+ },
+ "pi": {
+  "file": "simulator3d/MoveEyeSim3D_Pi.zip",
+  "ver": "3.63.0",
+  "size": 37858905,
+  "sha256": "2b937077958b2762ce9905afae891e1002b6965c5e27389fd94f191846020bfb",
+  "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.63.0/MoveEyeSim3D_Pi.zip"
  }
 }
