@@ -212,7 +212,9 @@ def lauf(pg, a, base, pruef, gname, voll):
     pruef(pg.evaluate("() => { const b = document.getElementById('lv-b-cam'); return !!(b && b.offsetParent && b.textContent === '🎯'); }"),
           "Knopf «Ansicht» auf dem Bild zeigt 🎯")
     # PiP (head view): single pictures of the overview
-    m = warte(lambda: (k := keep("#v3-mimg")) and k["frames"] >= 2 and k)
+    # snap mode: each frame is a new blob url - right after the swap the picture is not decoded yet (naturalWidth 0 for a few ms,
+    # longer on a busy runner): wait for a decoded frame instead of taking the first sample (CI 08.11.2026: w 0, frames 6)
+    m = warte(lambda: (k := keep("#v3-mimg")) and k["frames"] >= 2 and k["w"] > 0 and k)
     pruef(bool(m) and m["mode"] == "snap" and "/cam_snap/1" in m["src"] and m["w"] > 0, "Bild im Bild: Übersicht als Einzelbilder (%s)" % m)
     if m:
         f0 = m["frames"]; pg.wait_for_timeout(2000); f1 = keep("#v3-mimg")["frames"]
