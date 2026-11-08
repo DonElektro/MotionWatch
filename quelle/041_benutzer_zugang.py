@@ -414,6 +414,9 @@ def users_selftest():
     assert role_allows("family", "/api/audio", "POST", {"action": "siren"}) and not role_allows("family", "/settings", "GET", {})
     assert not role_allows("family", "/api/users", "GET", {}) and not role_allows("family", "/api/set", "POST", {"key": "web_port"})
     assert role_allows("operate", "/api/arm", "POST", {}) and not role_allows("view", "/api/arm", "POST", {})
+    for r_ in ("kid", "friend", "family", "view"):              # 3.64.0: the scripts of every page (578 / 584) for every user
+        assert all(role_allows(r_, p_, "GET", {}) for p_ in ("/sx/ui.js", "/fbx/ui.js") if p_ in str(VIEW_GET)), r_
+    assert role_allows("custom", "/fbx/ui.js", "GET", {}, set()) or "/fbx/ui.js" not in str(VIEW_GET)
     assert role_allows("custom", "/api/set", "POST", {"key": "record"}, {"settings"})
     assert not role_allows("custom", "/api/set", "POST", {"key": "users"}, {"settings"})
     assert not role_allows("custom", "/api/text", "POST", {"key": "notify_url"}, {"settings"})

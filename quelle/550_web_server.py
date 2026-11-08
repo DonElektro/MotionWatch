@@ -2263,6 +2263,8 @@ class WebStream:
                         return reply({"ok": True, "ignored": len(CFG.get("simprof_ignore") or [])})
                 n = simprof_answer([str(k) for k in (d.get("take") or [])][:200])
                 return reply({"ok": True, "taken": n})
+            if getattr(g, "role", "admin") != "admin":           # 3.64.0: every page asks; only the administrator gets the question
+                return reply({"ok": True, "q": None})
             return reply({"ok": True, "q": simprof_state(lang)})
 
         @app.route("/api/alerts")

@@ -40,8 +40,9 @@ sys.path.insert(0, HIER)
 from piper_test import Srv, _f, _node, _s, _tensor, _valinfo   # noqa: E402  (tiny ONNX by hand + a test server with Range)
 
 FEHLER = []
-# schon vor 639zzd: ein Benutzer «Familie» bekommt auf jeder Seite 403 für /sx/ui.js und /fbx/ui.js (role_allows) - nicht von hier
-KNOWN_403 = re.compile(r"status of 403|/(sx|fbx)/ui\.js")
+# bis 3.63: ein Benutzer «Familie» bekam auf jeder Seite 403 für /sx/ui.js und /fbx/ui.js (role_allows) - ab 3.64.0 behoben,
+# darum wird hier keine 403 mehr übergangen
+KNOWN_403 = re.compile(r"(?!x)x")
 N = {"ok": 0}
 D = 16
 

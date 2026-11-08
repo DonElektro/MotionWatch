@@ -12,7 +12,7 @@
 #      bleibt für die kleine Überraschung) und «Über MoveEye» unten in Mehr. Geschichte, Entwickler «Elektro»,
 #      Zeitleiste, Zahlen (zur Laufzeit gezählt), aufklappbar «Für Technik-Interessierte». Texte: 622.
 # ----------------------------------------------------------------------------
-INFO_PARTS = 275                       # number of parts in quelle/ (written by werkzeuge/bauen.py --neue-version)
+INFO_PARTS = 276                       # number of parts in quelle/ (written by werkzeuge/bauen.py --neue-version)
 INFO_START = "2026-10-16"              # the first lines (a small webcam program for the Pi 5)
 FBX = {"shot": None, "shot_t": 0.0, "lines": 0}
 
@@ -332,6 +332,10 @@ FBX_JS = r"""
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", go); else go();
 })();
 """
+
+
+VIEW_GET = VIEW_GET + ("/fbx/ui.js", "/api/simprofile")   # /api/simprofile: GET only, empty for users (550); 3.64.0: feedback / «About» script of every page for every logged-in user (texts,
+                                               # version, «Fertig kaufen» texts - nothing only for the administrator)
 
 
 def fbx_routes(app, watch, reply, body):
