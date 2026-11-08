@@ -1,6 +1,6 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-08 19:15",
+ "generated": "2026-11-08 19:19",
  "versions": [
   {
    "version": "3.64.0",
@@ -185,6 +185,14 @@
    "size": 48373074,
    "sha256": "e19b1083bdc4390db6b82a6c38e90b4cc0130d1b35e2d955e612568ac68ec3ac",
    "sig": "dfe41363d14239cc7d3f2dbd41216ae5bfec005c96ffd13e4a0093d73d80c5aa83242de3c05f0e9d754e39606c14eab7cb2077c670a70caa8846c19c6442b40c"
+  },
+  "pi": {
+   "ver": "3.64.0",
+   "file": "simulator3d/MoveEyeSim3D_Pi.zip",
+   "size": 37881752,
+   "sha256": "af2da6447afe7b3e79352379c1ae8fec5f045204220b6e98a5ec07678a152b5b",
+   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.64.0/MoveEyeSim3D_Pi.zip",
+   "sig": "4a8d2ae5290d6f0d7715072912684ac3b375978b44df5596c4f8a2ec1004f5946a61ad99f8e14a2f327d62e72b9341eb14fea858d2bdc7fa83e770ecc40f1106"
   }
  }
 }
