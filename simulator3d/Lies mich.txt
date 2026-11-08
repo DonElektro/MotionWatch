@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.63.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.64.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -487,6 +487,13 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.64.0
+3.64.0: Wege und Strassen (Schritt 2a): Wanderwege mit gelben Wegweisern, Kurven und Stufen am Hang, Laub im Herbst, Schnee und
+Matsch auf den Wegen, weichere Fussspuren; «Schnee liegt im Winter» wirkt wieder; nur mit Grafik «Normal» / «Hoch» (Lite und
+Prüfstand: wie bisher). Werkstatt «Bauen»: Gehäuse 5.3.1 mit Adapter 28 für das alte UPS HAT.
+So testest du: Grafik «Normal», im Bergtal den Wanderweg mit Wegweiser und Stufen ansehen, Jahreszeit Herbst und Winter (Schnee
+liegt), dann Lite: wie in 3.63.0; in der Werkstatt Gehäuse 5.3.1 und Teil 28.
 
 NEU IN 3.63.0
 3.63.0: Wege und Strassen (Schritt 1): Asphalt mit Rand und Abnutzung, Feldwege mit Fahrspuren und Grasstreifen, weicher Übergang

@@ -32,6 +32,7 @@ const T = preload("res://scripts/i18n.gd")
 const Quality = preload("res://scripts/quality.gd")
 const Licht = preload("res://scripts/licht.gd")
 const Worlds = preload("res://scripts/worlds.gd")
+const Wege = preload("res://scripts/wege.gd")
 const FILE := "user://jahreszeiten.json"
 const SAVE := ["mode", "snow_mode", "occupancy_on", "fog_on", "leaves_on"]
 
@@ -291,6 +292,8 @@ func update() -> void:
 		for gm in main.ground_mats:
 			gm.set_shader_parameter("snow_amount", snow)
 	_leaves_tick(d)
+	if Wege.an(main):
+		Wege.season(main)                              # «Wege und Strassen»: autumn leaves on paths and roads (Normal / Hoch)
 	_now = state()
 
 

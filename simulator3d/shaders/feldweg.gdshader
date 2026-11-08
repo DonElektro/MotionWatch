@@ -12,7 +12,9 @@ uniform float wet = 0.0;
 uniform float puddle = 0.0;
 uniform float cloud_amt = 0.0;
 uniform vec2 cloud_off = vec2(0.0);
+uniform float laub = 0.0;             // Schritt 2: autumn leaves (jahreszeiten.gd via wege.gd)
 uniform sampler2D noise_tex : repeat_enable;
+#include "res://shaders/wege_laub.gdshaderinc"
 
 float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 
@@ -75,6 +77,7 @@ void fragment() {
 	ALPHA_SCISSOR_THRESHOLD = 0.5;
 	// darker towards the edge (earth with grass roots)
 	c *= 1.0 - 0.2 * smoothstep(-0.6, 0.6, out_k);
+	c = laub_mix(c, w.xz, laub * (0.4 + 0.6 * max(1.0 - trk, smoothstep(-0.8, 0.4, out_k))) * (0.5 + mid), near, wet, noise_tex);
 	// weather: wet, puddles in the ruts (long, along the path), snow (tracks show)
 	float pd = 0.0;
 	if (puddle > 0.0) {

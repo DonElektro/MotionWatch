@@ -187,6 +187,10 @@ static func grass(sc, n: int, dmin: float, dmax: float, keep_clear := Callable()
 	var tall_cells := {}
 	var tall_spots: Array = o.get("tall_spots", [])        # [Vector2 Mitte, Radius]: dort vor allem hohes Gras
 	var tufts := Flora.neu(sc.m)
+	var hide: Callable = o.get("hide", Callable())
+	var kc_near := keep_clear
+	if hide.is_valid():
+		kc_near = func(q: Vector3) -> bool: return (keep_clear.is_valid() and keep_clear.call(q)) or hide.call(q)
 	for i in range(n):
 		var p: Vector3 = _rand_pos(sc, dmin, dmax)
 		if keep_clear.is_valid() and keep_clear.call(p):
@@ -210,13 +214,15 @@ static func grass(sc, n: int, dmin: float, dmax: float, keep_clear := Callable()
 		var tf := Gras.trodden(sc.m, p)                      # Paket 2: lower next to the paths (no random numbers)
 		if tf < 1.0:
 			t.basis.y *= tf
+		if hide.is_valid() and hide.call(p):                 # «Wege und Strassen»: not on the new paths - after all random
+			continue                                         # numbers of this tuft (the scene stays the same)
 		var key := _cell_key(p)
 		var cells: Dictionary = tall_cells if tall else short_cells
 		if not cells.has(key):
 			cells[key] = []
 		cells[key].append([t, col])
 	var fine_cells := {}
-	Gras.near_grass(sc, dmin, dmax, keep_clear, fine_cells, _cell_key)   # Paket 2: the near ring (own random numbers)
+	Gras.near_grass(sc, dmin, dmax, kc_near, fine_cells, _cell_key)   # Paket 2: the near ring (own random numbers)
 	var mat := blade_mat(sc, 1.0)
 	Flora.grass_params(sc.m, mat, far)
 	if not fine_cells.is_empty():
@@ -228,7 +234,7 @@ static func grass(sc, n: int, dmin: float, dmax: float, keep_clear := Callable()
 	return _cells_to_nodes(sc, short_cells, _clump, mat, far) + _cells_to_nodes(sc, tall_cells, _tall, mat, far + 15.0)
 
 
-static func flowers(sc, n: int, dmin: float, dmax: float, keep_clear := Callable(), cols := []) -> int:
+static func flowers(sc, n: int, dmin: float, dmax: float, keep_clear := Callable(), cols := [], hide := Callable()) -> int:
 	"""n Blumen: grüner Stiel + farbige Blüte (Wiesen-Mischung: weiss, gelb, rosa, violett, orange)"""
 	_meshes()
 	var far: float = GRASS_FAR_LITE if Quality.lite() else GRASS_FAR
@@ -249,15 +255,20 @@ static func flowers(sc, n: int, dmin: float, dmax: float, keep_clear := Callable
 		p = ground(sc, p)
 		var hh = sc.rng.randf_range(0.8, 1.3)
 		var b = Basis(Vector3.UP, sc.rng.randf() * TAU).scaled(Vector3(1, hh, 1))
+		var c: Color = cols[sc.rng.randi() % cols.size()]
+		var bt := Transform3D(Basis(Vector3.UP, sc.rng.randf() * TAU).scaled(Vector3.ONE * sc.rng.randf_range(0.8, 1.4)), p + Vector3(0, 0.28 * hh, 0))
+		if hide.is_valid() and hide.call(p):                 # «Wege und Strassen»: after the random numbers (scene stays the same)
+			continue
 		var key := _cell_key(p)
 		if not stems.has(key):
 			stems[key] = []
 			blooms[key] = []
 		stems[key].append([Transform3D(b, p), Color(0.3, 0.48, 0.18)])
-		var c: Color = cols[sc.rng.randi() % cols.size()]
-		blooms[key].append([Transform3D(Basis(Vector3.UP, sc.rng.randf() * TAU).scaled(Vector3.ONE * sc.rng.randf_range(0.8, 1.4)),
-				p + Vector3(0, 0.28 * hh, 0)), c])
-	Gras.near_flowers(sc, dmin, dmax, keep_clear, cols, stems, blooms, _cell_key)   # Paket 2: more near, in patches
+		blooms[key].append([bt, c])
+	var kc_near := keep_clear
+	if hide.is_valid():
+		kc_near = func(q: Vector3) -> bool: return (keep_clear.is_valid() and keep_clear.call(q)) or hide.call(q)
+	Gras.near_flowers(sc, dmin, dmax, kc_near, cols, stems, blooms, _cell_key)   # Paket 2: more near, in patches
 	var sm := blade_mat(sc, 1.6)
 	sm.set_shader_parameter("tint_amt", 0.0)              # flowers keep their colours
 	Flora.grass_params(sc.m, sm, far)

@@ -1,8 +1,13 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 08.11.2026 · Version **3.63.0** · MoveEye **3.63.2** (Drei Spuren ab 03.11.2026: Simulator und MoveEye mit eigenen Nummern, Verträglichkeit über `MW_MIN` in `scripts/abgleich.gd` / `SIM_MIN` in MoveEye Teil 545; 3.0.0 bis 3.55.2 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 08.11.2026 · Version **3.64.0** · MoveEye **3.64.0** (Drei Spuren ab 03.11.2026: Simulator und MoveEye mit eigenen Nummern, Verträglichkeit über `MW_MIN` in `scripts/abgleich.gd` / `SIM_MIN` in MoveEye Teil 545; 3.0.0 bis 3.55.2 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.64.0 (MoveEye 3.64.0): Wege Schritt 2a (sim-wege2), Gehäuse-Daten 5.3.1
+
+- wege.gd (Wanderwege, Wegweiser, Kurven, Stufen), wanderweg.gdshader / wege_laub.gdshaderinc, Schnee-Fix (jahreszeiten.gd /
+  wetter.gd); nur Normal / Hoch. Werkstatt-Daten 5.3.1 (gehaeuse_bauen.py --sim). Wegweiser-Namen in allen Sprachen gleich.
 
 ## NEU in 3.63.0 (MoveEye 3.63.2): Wege und Strassen, Schritt 1 (sim-wege)
 

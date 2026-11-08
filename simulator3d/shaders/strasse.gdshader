@@ -5,7 +5,9 @@ shader_type spatial;
 uniform vec4 asphalt : source_color = vec4(0.29, 0.29, 0.3, 1.0);
 uniform vec4 gravel : source_color = vec4(0.45, 0.43, 0.39, 1.0);
 uniform vec4 snow : source_color = vec4(0.93, 0.94, 0.96, 1.0);
+uniform float laub = 0.0;             // Schritt 2: autumn leaves at the edge (jahreszeiten.gd via wege.gd)
 uniform sampler2D noise_tex : repeat_enable;
+#include "res://shaders/wege_laub.gdshaderinc"
 uniform sampler2D photo : source_color, filter_linear_mipmap_anisotropic, repeat_enable;
 uniform float photo_on = 0.0;
 uniform float fine = 0.6;             // fine detail (Hoch 1.0)
@@ -131,6 +133,7 @@ void fragment() {
 	}
 	ALPHA_SCISSOR_THRESHOLD = 0.5;
 
+	c = laub_mix(c, w.xz, laub * (0.12 + 0.88 * smoothstep(hw - 1.0, hw + 0.2, ax)) * (1.0 - 0.7 * tr) * (0.5 + mid), near, wet, noise_tex);
 	// ---- weather ----
 	float pd = 0.0;
 	if (puddle > 0.0) {                                                 // in the wheel tracks and along the edge
