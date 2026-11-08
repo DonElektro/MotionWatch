@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 7615 (Stellen: 10596)
-Übersetzt: en 7615, fr 7615, it 7615, rm 7615
+Texte gesamt: 7617 (Stellen: 10605)
+Übersetzt: en 7617, fr 7617, it 7617, rm 7617
 Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 514 Stellen
 Nicht mehr im Code (noch in texte.json): 339
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 68 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1
-Übersprungen (Grund: Anzahl): kennung 27121, schlüssel 20593, keine Wörter 12901, index 9697, technisch 3611, doc 2300, einheit 332, log 173, englisch 143, pfad 125, stringname 103, html 68, klasse 33, shader 6
+Übersprungen (Grund: Anzahl): kennung 27356, schlüssel 20772, keine Wörter 12971, index 9757, technisch 3620, doc 2340, einheit 332, log 173, englisch 143, pfad 125, stringname 103, html 68, klasse 34, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   werkstatt_daten.gd       531     4
@@ -180,6 +180,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   autostart.gd               5     0
   visitlog.gd                5     0
   figur.gd                   5     0
+  gras.gd                    4     0
   device.gd                  4     2
   main_steuerung.gd          4     1
   rover_pad.gd               4     0
@@ -496,8 +497,8 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   bergtal.gd:244  'Aussicht: '
   bergtal.gd:253  'Schlafplatz: '
   bergtal.gd:255  'Aussicht: '
-  bergtal.gd:2451  'Schlafplatz: '
-  bergtal.gd:2453  'Aussicht: '
+  bergtal.gd:2452  'Schlafplatz: '
+  bergtal.gd:2454  'Aussicht: '
   diagnose.gd:32  ' · virtuelle Maschine'
   diagnose.gd:34  ' · Fenster klein / versteckt'
   diagnose.gd:72  ' · Ersatz-Port, 8765 war besetzt'
@@ -621,8 +622,8 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   geo.gd:324  ' – Internet da?'
   geo.gd:324  'Laden nicht möglich: '
   geo.gd:411  ' geladen (Höhen: '
-  geo.gd:1482  ' (Fluss)'
-  geo.gd:1578  'Ort: %s (%.5f, %.5f)\n%s\n'
+  geo.gd:1483  ' (Fluss)'
+  geo.gd:1579  'Ort: %s (%.5f, %.5f)\n%s\n'
   grafik_hoch.gd:199  'Hoch gewählt, aber aus: '
   headpad.gd:106  '\nAuslöser: Bildmitte (Kreis) auf einen Spieler, dann der runde Knopf im Bild oder R2 am Controller.'
   headpad.gd:108  '\nController: '

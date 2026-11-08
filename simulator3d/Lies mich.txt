@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.59.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.60.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -487,6 +487,13 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.60.0
+3.60.0: Flora Paket 2: Boden mit echten Gras- und Erdtönen, Trampelpfade zwischen Zelt, Tisch, Grill und Tür, Gras dichter in der
+Nähe; Jahreszeiten und Nacht stimmen auch am Boden; Farbstimmung der freien Ansicht etwa halb so stark. Lite und Prüfstand
+(«--quality») bleiben genau wie vorher.
+So testest du: Camping-Platz mit Grafik «Normal» oder «Hoch»: Boden und Trampelpfade ansehen, Jahreszeit (Herbst / Winter) und
+Nacht umschalten; freie Ansicht: Farben natürlich, nicht zu stark; mit Grafik «Lite» sieht es aus wie in 3.59.0.
 
 NEU IN 3.59.0
 3.59.0: Besucher meiden deinen Platz (Privatsphäre, Schalter unter Besuch → Verhalten; Einbrecher, Diebe, Gäste, Spiele und

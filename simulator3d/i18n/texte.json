@@ -38431,6 +38431,12 @@
   "it": "Consigli: abbassarsi e strisciare aiuta. Al buio e dietro le cose la telecamera vi vede peggio. Il microfono sente chi corre.",
   "rm": "Cussegls: sa bassar e sa trair gida. En il stgir e davos chaussas vesa la camera vus mender. Il microfon auda, sch’ins curra."
  },
+ "Tisch": {
+  "en": "Table",
+  "fr": "Table",
+  "it": "Tavolo",
+  "rm": "Maisa"
+ },
  "Tisch + Stühle": {
   "en": "Table + chairs",
   "fr": "Table + chaises",
@@ -38863,6 +38869,12 @@
   "fr": "Tüfelsschlund (cascade)",
   "it": "Tüfelsschlund (cascata)",
   "rm": "Tüfelsschlund (cascada)"
+ },
+ "Tür": {
+  "en": "Door",
+  "fr": "Porte",
+  "it": "Porta",
+  "rm": "Porta"
  },
  "Tür / Haus": {
   "en": "Door / house",
