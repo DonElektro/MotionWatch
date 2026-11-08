@@ -44,6 +44,11 @@ on:
       warten:
         description: "So viele Minuten auf den HP warten, dann abbrechen (wenn er aus ist)"
         default: "15"
+      tiere:
+        description: "Tiere im Simulator: grundformen (wie bisher im Prüfstand) oder modelle (Flora Paket 3: Tiere mit Skelett, MW_TIERE=modell)"
+        type: choice
+        options: [grundformen, modelle]
+        default: grundformen
   schedule:
     - cron: "41 23 * * 6"          # Samstag 23:41 UTC (Sonntag 00:41 im Winter / 01:41 im Sommer, im Rechenfenster 00-06): Test 3 auf main
 permissions:
@@ -129,6 +134,7 @@ jobs:
       VARIANTE: ${{ needs.vorpruefung.outputs.variante }}
       SIMQ: ${{ needs.vorpruefung.outputs.simulator }}
       ANZEIGE: ${{ needs.vorpruefung.outputs.anzeige }}
+      MW_TIERE: ${{ github.event.inputs.tiere == 'modelle' && 'modell' || '' }}
       PYTHONUNBUFFERED: "1"
     steps:
       - name: Werkzeug (Stand dieses Workflows)
