@@ -1,23 +1,16 @@
 {
- "version": "3D-5.63.0",
- "ver": "3.63.0",
- "name": "MoveEye Sim 3.63.0",
+ "version": "3D-5.64.0",
+ "ver": "3.64.0",
+ "name": "MoveEye Sim 3.64.0",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 54321973,
- "sha256": "d79b4a83cc8422d1778d04bef5278d9d33b5703f39f98eb6bdf76307aadb2c19",
- "notes": "Wege und Strassen: Asphalt, Feldwege, weicher Rand",
+ "size": 54340645,
+ "sha256": "0a4a0881928cb07f0dbd3fdbda05caeed49000ab30eab77e2185f4ee351e0cf6",
+ "notes": "Wanderwege mit Wegweisern, Stufen, Schnee und Laub auf den Wegen; Gehäuse 5.3.1 in der Werkstatt",
  "mw_min": "3.55.0",
  "linux": {
   "file": "simulator3d/MoveEyeSim3D_Linux.zip",
-  "ver": "3.63.0",
-  "size": 48353301,
-  "sha256": "d27087288ac3a02352f866e9b5f6ca59926cec93062ae5da5dc1295cacf562bf"
- },
- "pi": {
-  "file": "simulator3d/MoveEyeSim3D_Pi.zip",
-  "ver": "3.63.0",
-  "size": 37858905,
-  "sha256": "2b937077958b2762ce9905afae891e1002b6965c5e27389fd94f191846020bfb",
-  "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.63.0/MoveEyeSim3D_Pi.zip"
+  "ver": "3.64.0",
+  "size": 48373074,
+  "sha256": "e19b1083bdc4390db6b82a6c38e90b4cc0130d1b35e2d955e612568ac68ec3ac"
  }
 }

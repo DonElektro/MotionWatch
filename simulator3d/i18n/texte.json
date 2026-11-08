@@ -3469,6 +3469,12 @@
   "it": "Transenna",
   "rm": "Cancel da serrar"
  },
+ "Abstandsbolzen M2,5 × 17 mm, Innen-/Aussengewinde (durch den Pi in die Bolzen des Adapters 28)": {
+  "en": "Standoff M2.5 × 17 mm, female/male (through the Pi into the posts of adapter 28)",
+  "fr": "Entretoise M2,5 × 17 mm, femelle/mâle (à travers le Pi dans les plots de l'adaptateur 28)",
+  "it": "Distanziale M2,5 × 17 mm, femmina/maschio (attraverso il Pi nei perni dell'adattatore 28)",
+  "rm": "Distanziader M2,5 × 17 mm, filet intern/extern (tras il Pi en ils bulluns da l'adapter 28)"
+ },
  "Abstecher: dorthin, wo auf der Aufnahme das Licht war": {
   "en": "Detour: to where the light was on the picture",
   "fr": "Détour : là où était la lumière sur l'image",
@@ -8119,6 +8125,12 @@
   "it": "Campeggio",
   "rm": "Camping"
  },
+ "Camping Moosmatt": {
+  "en": "Camping Moosmatt",
+  "fr": "Camping Moosmatt",
+  "it": "Camping Moosmatt",
+  "rm": "Camping Moosmatt"
+ },
  "Camping-Platz": {
   "en": "Campsite",
   "fr": "Camping",
@@ -8196,6 +8208,12 @@
   "fr": "Checkpoints (+150 points)",
   "it": "Checkpoint (+150 punti)",
   "rm": "Checkpoints (+150 puncts)"
+ },
+ "Chrüzweid": {
+  "en": "Chrüzweid",
+  "fr": "Chrüzweid",
+  "it": "Chrüzweid",
+  "rm": "Chrüzweid"
  },
  "Churros": {
   "en": "Churros",
@@ -25822,6 +25840,12 @@
   "it": "M2 × 6 (4× Camera Module 3, 2× Thermal-90)",
   "rm": "M2 × 6 (4× Camera Module 3, 2× Thermal-90)"
  },
+ "M2,5 × 6 (altes UPS HAT oben auf die Abstandsbolzen, Adapter 28)": {
+  "en": "M2.5 × 6 (old UPS HAT on top of the standoffs, adapter 28)",
+  "fr": "M2,5 × 6 (ancien UPS HAT sur les entretoises, adaptateur 28)",
+  "it": "M2,5 × 6 (vecchio UPS HAT sopra i distanziali, adattatore 28)",
+  "rm": "M2,5 × 6 (vegl UPS HAT sura sin ils distanziaders, adapter 28)"
+ },
  "M2,5 × 6 (Pi auf Sockel 13)": {
   "en": "M2.5 × 6 (Pi on socket 13)",
   "fr": "M2,5 × 6 (Pi sur socle 13)",
@@ -27375,6 +27399,12 @@
   "fr": "Bande de mousse 3 × 10 mm, adhésive (conduit sur le refroidisseur, pastille sous le couvercle)",
   "it": "Striscia di gomma spugnosa 3 × 10 mm, adesiva (condotto sul dissipatore, pad sotto il coperchio)",
   "rm": "Strivla da gomma spungiusa 3 × 10 mm, autoadesiva (canal sin il sfradentader, pad sut il viertgel)"
+ },
+ "Moosmatt Strasse %d m": {
+  "en": "Moosmatt Strasse %d m",
+  "fr": "Moosmatt Strasse %d m",
+  "it": "Moosmatt Strasse %d m",
+  "rm": "Moosmatt Strasse %d m"
  },
  "Morgen": {
   "en": "Morning",
@@ -30647,6 +30677,12 @@
   "fr": "En haut ! %s : lancer %s",
   "it": "Su! %s: butta giù %s",
   "rm": "Sisum! %s: bittar giu %s"
+ },
+ "Ober Tannenegg": {
+  "en": "Ober Tannenegg",
+  "fr": "Ober Tannenegg",
+  "it": "Ober Tannenegg",
+  "rm": "Ober Tannenegg"
  },
  "Oberflächen (Holz, Kies, Rasen, Beton) für eigene Modelle in Blender.": {
   "en": "Surfaces (wood, gravel, lawn, concrete) for your own models in Blender.",
@@ -34685,6 +34721,12 @@
   "fr": "Lac / rivière",
   "it": "Lago / fiume",
   "rm": "Lai / flum"
+ },
+ "Seeblick": {
+  "en": "Seeblick",
+  "fr": "Seeblick",
+  "it": "Seeblick",
+  "rm": "Seeblick"
  },
  "Seeblick Gumpisee": {
   "en": "Lake view Gumpisee",

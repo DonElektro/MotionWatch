@@ -1,13 +1,13 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-08 19:07",
+ "generated": "2026-11-08 19:15",
  "versions": [
   {
    "version": "3.64.0",
    "file": "webcam_bewegung_3_64_0.py",
    "url": "",
    "sha256": "758bca65f6bc8dc89263c4ff3ad6e10e0d90e7b9d68035281135956b4901d62a",
-   "date": "2026-11-08 19:07",
+   "date": "2026-11-08 19:09",
    "notes": "🌿 Bestimmen im Datentausch: MoveEye erkennt auf einem Foto die Art (Pflanze, Tier, Pilz, Insekt; BioCLIP, ganz auf dem Pi, über 10'000 Arten), Top 3 mit deutschem und lateinischem Namen; das Modell (etwa 350 MB, feste Prüfsumme) wird beim ersten Mal nach einer Rückfrage geladen. Fehlerkorrektur: Benutzer mit eigener Rolle (z. B. «Familie») bekamen auf jeder Seite eine Fehlermeldung für zwei Seiten-Skripte. Gehäuse-Daten 5.3.1 (Adapter 28 für das alte UPS HAT) auch in MoveEye.",
    "size": 3735465,
    "sig": "740bad488ffb2c528c9d30b41583a9164c163586fc83024b334e74f5f5298df09606f2187a2010cf013d7be19047f3ae32fbf7fb70bfa29ce3259b8051d96a0d",
@@ -168,23 +168,23 @@
   }
  ],
  "sim": {
-  "ver": "3.63.0",
-  "version": "3D-5.63.0",
-  "notes": "Wege und Strassen: Asphalt, Feldwege, weicher Rand",
+  "ver": "3.64.0",
+  "version": "3D-5.64.0",
+  "notes": "Wanderwege mit Wegweisern, Stufen, Schnee und Laub auf den Wegen; Gehäuse 5.3.1 in der Werkstatt",
   "mw_min": "3.55.0",
   "win": {
-   "ver": "3.63.0",
+   "ver": "3.64.0",
    "file": "simulator3d/MotionWatch3D_Simulator.zip",
-   "size": 54321973,
-   "sha256": "d79b4a83cc8422d1778d04bef5278d9d33b5703f39f98eb6bdf76307aadb2c19",
-   "sig": "8250df89da678ac6bd29f2134b5eea880332345cc58b92a1154a74de0e759cec1c3148bdd8cb3508f7031f6ead1afeac17319da0d491c377105a772ab3e8db08"
+   "size": 54340645,
+   "sha256": "0a4a0881928cb07f0dbd3fdbda05caeed49000ab30eab77e2185f4ee351e0cf6",
+   "sig": "10cd1815a63bfefbd08d6c16b61d8f08e2dfe19f6da58163a388a9cca1f2ddbcb2e51527f00d066a74ecc32625dca3729c72a6b23e85bbb490a93232d6481b09"
   },
   "linux": {
-   "ver": "3.63.0",
+   "ver": "3.64.0",
    "file": "simulator3d/MoveEyeSim3D_Linux.zip",
-   "size": 48353301,
-   "sha256": "d27087288ac3a02352f866e9b5f6ca59926cec93062ae5da5dc1295cacf562bf",
-   "sig": "566f041c7a9bd05444c77a0d5a57b971b18491b28ff32feb54ccb882bf28ff29f0aa264c6f11be832dc6757623b4c8ee5e7ebd393adb741a903d9e2d815c740b"
+   "size": 48373074,
+   "sha256": "e19b1083bdc4390db6b82a6c38e90b4cc0130d1b35e2d955e612568ac68ec3ac",
+   "sig": "dfe41363d14239cc7d3f2dbd41216ae5bfec005c96ffd13e4a0093d73d80c5aa83242de3c05f0e9d754e39606c14eab7cb2077c670a70caa8846c19c6442b40c"
   }
  }
 }

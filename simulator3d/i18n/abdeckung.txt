@@ -1,15 +1,15 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 7618 (Stellen: 10614)
-Übersetzt: en 7618, fr 7618, it 7618, rm 7618
+Texte gesamt: 7625 (Stellen: 10623)
+Übersetzt: en 7625, fr 7625, it 7625, rm 7625
 Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 514 Stellen
 Nicht mehr im Code (noch in texte.json): 340
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 68 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1
-Übersprungen (Grund: Anzahl): kennung 27471, schlüssel 20876, keine Wörter 12982, index 9810, technisch 3637, doc 2354, einheit 332, log 173, englisch 143, pfad 125, stringname 103, html 68, klasse 36, shader 6
+Übersprungen (Grund: Anzahl): kennung 27545, schlüssel 20910, keine Wörter 12987, index 9816, technisch 3647, doc 2377, einheit 338, log 173, englisch 143, pfad 125, stringname 103, html 68, klasse 36, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
-  werkstatt_daten.gd       531     4
+  werkstatt_daten.gd       533     4
   main_einstellungen.gd    400    25
   bergtal_abenteuer.gd     272     7
   gamewiz.gd               252    15
@@ -181,6 +181,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   autostart.gd               5     0
   visitlog.gd                5     0
   figur.gd                   5     0
+  wege.gd                    5     0
   gras.gd                    4     0
   device.gd                  4     2
   main_steuerung.gd          4     1
@@ -494,11 +495,11 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   b3d.gd:86  'Kachel leer: '
   b3d.gd:186  'glTF nicht lesbar: '
   b3d.gd:208  'Kachel ohne Dreiecke: '
-  bergtal.gd:244  'Aussicht: '
-  bergtal.gd:253  'Schlafplatz: '
-  bergtal.gd:255  'Aussicht: '
-  bergtal.gd:2452  'Schlafplatz: '
-  bergtal.gd:2454  'Aussicht: '
+  bergtal.gd:245  'Aussicht: '
+  bergtal.gd:254  'Schlafplatz: '
+  bergtal.gd:256  'Aussicht: '
+  bergtal.gd:2503  'Schlafplatz: '
+  bergtal.gd:2505  'Aussicht: '
   diagnose.gd:32  ' · virtuelle Maschine'
   diagnose.gd:34  ' · Fenster klein / versteckt'
   diagnose.gd:72  ' · Ersatz-Port, 8765 war besetzt'
@@ -529,7 +530,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   explore.gd:580  ' (automatisch von oben)'
   explore.gd:580  ' · schnell'
   fahrzeuge.gd:90  'nie'
-  jahreszeiten.gd:51  'nie'
+  jahreszeiten.gd:52  'nie'
   feedback.gd:386  ' · TESTMODUS: geht nur an '
   feedback.gd:402  '\nLetzter Fehler · %s: %s'
   feedback.gd:437  '\n\nPaket: %s (%s) · Preis auf Anfrage'
@@ -617,13 +618,13 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   gameshutter.gd:713  ' · Sim-KI'
   gametools.gd:343  'Licht '
   gametools.gd:346  'Energie ['
-  geo.gd:205  'Ortssuche: '
-  geo.gd:303  'way[landuse];relation[landuse~"forest|orchard"];way[waterway];node[natural=tree];way[barrier];way[leisure~"pitch|swimming_pool|park"];way[amenity=parking];);out geom;'
-  geo.gd:324  ' – Internet da?'
-  geo.gd:324  'Laden nicht möglich: '
-  geo.gd:411  ' geladen (Höhen: '
-  geo.gd:1483  ' (Fluss)'
-  geo.gd:1579  'Ort: %s (%.5f, %.5f)\n%s\n'
+  geo.gd:206  'Ortssuche: '
+  geo.gd:304  'way[landuse];relation[landuse~"forest|orchard"];way[waterway];node[natural=tree];way[barrier];way[leisure~"pitch|swimming_pool|park"];way[amenity=parking];);out geom;'
+  geo.gd:325  ' – Internet da?'
+  geo.gd:325  'Laden nicht möglich: '
+  geo.gd:412  ' geladen (Höhen: '
+  geo.gd:1535  ' (Fluss)'
+  geo.gd:1631  'Ort: %s (%.5f, %.5f)\n%s\n'
   grafik_hoch.gd:199  'Hoch gewählt, aber aus: '
   headpad.gd:106  '\nAuslöser: Bildmitte (Kreis) auf einen Spieler, dann der runde Knopf im Bild oder R2 am Controller.'
   headpad.gd:108  '\nController: '
@@ -671,7 +672,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   maggie_modell.gd:48  'Modell fehlt: '
   maggie_modell.gd:165  'BackUpperLeg.'
   maggie_modell.gd:166  'BackLowerLeg.'
-  tier_modell.gd:118  'Modell fehlt: '
+  tier_modell.gd:123  'Modell fehlt: '
   main_menues.gd:324  'Blinde Flecken: '
   main_menues.gd:851  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
   main_start.gd:364  'Autostart: '
