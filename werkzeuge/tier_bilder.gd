@@ -179,8 +179,15 @@ func _run() -> void:
 			walk = maxf(walk, float(tier.get("walk_s", 2.5)))
 		for vg in v.get("voegel", []):                                 # birds of fauna.gd: on the ground or on a tree
 			var at2: Array = vg.get("at", [0, -10])
-			if vg.get("perch", false):
-				main.fauna.perch_flock(str(vg["kind"]))
+			if vg.get("perch", false) and main.fauna.has_method("perch_flock"):
+				var pb = main.fauna.perch_flock(str(vg["kind"]))
+				if pb != null and v.has("zu_vogel"):                     # the camera goes close to the first bird on the tree
+					var zo: Array = v["zu_vogel"]
+					var bp: Vector3 = (pb as Node3D).global_position
+					cam.look_at_from_position(bp + Vector3(zo[0], zo[1], zo[2]), bp + Vector3(0, 0.1, 0), Vector3.UP)
+					cam.fov = float(v.get("fov", 40.0))
+					camt.global_transform = cam.global_transform
+					main.view_cam.global_transform = cam.global_transform
 			else:
 				main.fauna.ground_flock(str(vg["kind"]), Vector3(at2[0], 0, at2[1]))
 			if vg.has("scheuchen_s"):                                  # somebody comes: they fly up (frozen in the air)

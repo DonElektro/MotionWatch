@@ -1,6 +1,6 @@
 extends Node
 ## «Flora und Fauna»: Tiere als echte Modelle mit Skelett und eigenen Bewegungen (Phase 1: der Fuchs; Paket 3 «Tiere echt»:
-## Reh, Hund in mehreren Rassen / Farbschlägen, Katze in vier Farbschlägen, Igel).
+## Reh, Hund in mehreren Rassen / Farbschlägen, Katze in vier Farbschlägen, Igel; Schritt 2: Wolf, Dachs, Wildschwein, Hase).
 ## Modelle: Quaternius «Ultimate Animated Animals» (CC0, wie Maggie), mit werkzeuge/tier_modelle.py zu EINEM Netz mit
 ## Fell-Farben gemacht (Katze und Igel aus dem Fuchs umgeformt); Dateien modelle/<art>_glb.bin, Kennzahlen im GLB
 ## (scenes[0].extras.moveeye: Rückenhöhe, Augen, Bereiche für das Wärmebild). Fell: shaders/maggie_fell.gdshader
@@ -32,6 +32,11 @@ const ARTEN := {
 	"dog": {"ruecken_m": 0.66, "auge_m": 0.01},
 	"cat": {"ruecken_m": 0.2904, "auge_m": 0.008},
 	"hedgehog": {"ruecken_m": 0.16, "auge_m": 0.004},
+	# Paket 3, Schritt 2 (Rückenhöhe wie die Grundformen: Wolf 0.66 + 0.21, Dachs 0.22 + 0.11, Wildschwein 0.58 + 0.26)
+	"wolf": {"ruecken_m": 0.87, "auge_m": 0.012},
+	"badger": {"ruecken_m": 0.334, "auge_m": 0.006},
+	"boar": {"ruecken_m": 0.84, "auge_m": 0.009},
+	"hare": {"ruecken_m": 0.37, "auge_m": 0.01},
 }
 # Farbschläge: [dunkel, mittel, hell, Helligkeit «hell» im Original] (lineare Farben, maggie_fell.gdshader)
 const VARIANTEN := {
@@ -48,6 +53,10 @@ const VARIANTEN := {
 			{"datei": "katze", "farbe": [Color(0.005, 0.005, 0.005), Color(0.011, 0.010, 0.010), Color(0.03, 0.028, 0.027), 0.52]},
 			{"datei": "katze", "farbe": [Color(0.40, 0.38, 0.35), Color(0.66, 0.64, 0.60), Color(0.78, 0.76, 0.72), 0.52]}],
 	"hedgehog": [{"datei": "igel"}],
+	"wolf": [{"datei": "wolf"}],
+	"badger": [{"datei": "dachs"}],
+	"boar": [{"datei": "wildschwein"}],
+	"hare": [{"datei": "hase"}],
 }
 const FARBE_ALT := {   # actor.gd _build_animal: die Grundfarben vor dem Aufhellen (Index = Variante)
 	"dog": [Color(0.45, 0.35, 0.22), Color(0.1, 0.1, 0.1), Color(0.85, 0.75, 0.55), Color(0.6, 0.55, 0.5)],
@@ -56,7 +65,11 @@ const FARBE_ALT := {   # actor.gd _build_animal: die Grundfarben vor dem Aufhell
 const REH_WINTER := [Color(0.025, 0.02, 0.016), Color(0.24, 0.19, 0.14), Color(0.62, 0.59, 0.54), 0.36]   # Okt. - April
 const SCHRITT := [0.75, 3.2]      # m/s beim Fuchs (Rücken 0.41 m), bei denen Walk / Gallop mit Tempo 1 ohne Rutschen laufen
 # (die alte Liste DATEI bleibt der Schalter für actor.gd: welche Arten ein Modell bekommen)
-const DATEI := {"fox": "fuchs", "deer": "reh", "dog": "hund", "cat": "katze", "hedgehog": "igel"}
+const DATEI := {"fox": "fuchs", "deer": "reh", "dog": "hund", "cat": "katze", "hedgehog": "igel", "wolf": "wolf",
+		"badger": "dachs", "boar": "wildschwein", "hare": "hase"}
+# Schwanz-Haltung (Grad um die Querachse des Knochens, nach der Bewegung dazu): die Katze trägt ihn hoch, beim Schleichen tief
+const SCHWANZ_HOCH := {"cat": [["Tail1", -55.0], ["Tail2", -25.0], ["Tail3", 15.0], ["Tail5", 20.0]]}
+const BEINE := ["FrontUpperLeg", "FrontLowerLeg", "BackUpperLeg", "BackLowerLeg"]
 
 static var _cache := {}           # datei -> {"bytes", "meta"}
 static var fehler := ""
@@ -78,6 +91,10 @@ var _frame := 0
 var _acc := 0.0
 var _stp := [0.75, 3.2]
 var _igel_bones: Array = []
+var _schwanz: Array = []          # [bone, Grad]
+var _beine: Array = []            # [bone, Faktor] fürs Liegen
+var _tief := 1.0
+var _schwanz_k := 1.0
 
 
 static func an(stufe: String) -> bool:
@@ -270,6 +287,16 @@ func _aufbauen(act, k: String, sc: Node3D, v: Dictionary, m: Dictionary) -> bool
 			var bi := sk.find_bone(bn)
 			if bi >= 0:
 				_igel_bones.append(bi)
+	for e in SCHWANZ_HOCH.get(k, []):
+		var ti := sk.find_bone(str(e[0]))
+		if ti >= 0:
+			_schwanz.append([ti, deg_to_rad(float(e[1]))])
+	for side in [".L", ".R"]:
+		for bn in BEINE:
+			var li := sk.find_bone(bn + side)
+			if li >= 0:
+				# zum Liegen: Oberschenkel / Oberarm nach hinten / vorne, der Unterlauf gefaltet
+				_beine.append([li, (1.0 if bn.begins_with("Front") else -1.0) * (1.0 if bn.ends_with("UpperLeg") else -2.0)])
 	for an in ap.get_animation_list():
 		var anim := ap.get_animation(an)
 		if anim != null:
@@ -453,14 +480,19 @@ func _process(dt: float) -> void:
 			st = str(s.get("st", ""))
 			curl = float(s.get("k", 0.0)) if kind == "hedgehog" else 0.0
 	var leap: bool = kind == "deer" and bool(a.fled) and spd > 2.0
+	var lie: float = float(a.get("_lie_k")) if a.get("_lie_k") != null else 0.0
 	if st == "pounce":
 		_play("Gallop_Jump", 0.15)
-	elif curl > 0.5:
-		_play("Idle_2_HeadLow", 0.3, 0.3)
+	elif curl > 0.5 or st == "press":
+		_play("Idle_2_HeadLow", 0.3, 0.3)                     # Igel eingerollt / Hase drückt sich ins Gras
+	elif spd <= 0.04 and st in ["alert", "lookback", "listen"]:
+		_play("Idle" if st != "listen" else "Idle_2_HeadLow", 0.3)   # äugt / sichert mit hohem Kopf, lauscht
+	elif kind == "hare" and spd > 0.04:
+		_play("Gallop", 0.2, clampf(spd / float(_stp[1]) * 1.6, 0.6, 2.4))   # der Hase hoppelt / springt immer
 	elif spd > _stp[1] * 0.8 or (bool(a.fled) and spd > 1.0 * _stp[0] / SCHRITT[0]):
 		_play("Gallop", 0.25, clampf(spd / float(_stp[1]), 0.6, 2.2))
 	elif spd > 0.04:
-		var sneak: bool = kind == "cat" and spd < 0.9
+		var sneak: bool = (kind == "cat" and spd < 0.9) or st == "stalk"
 		_play("Walk", 0.3, clampf(spd / float(_stp[0]) * (1.25 if sneak else 1.0), 0.35, 2.6))
 	else:
 		var idle: String = str(a.idle_kind) if a.now_s() < float(a.idle_until) else ""
@@ -483,8 +515,15 @@ func _process(dt: float) -> void:
 	else:
 		holder.position.y = 0.0
 		holder.rotation.x = 0.0
-	var low: float = 0.86 if kind == "cat" and spd > 0.04 and spd < 0.9 else 1.0
+	var low: float = 0.86 if (kind == "cat" and spd > 0.04 and spd < 0.9) or st == "stalk" else 1.0
+	if st == "press":
+		low = 0.72                                               # Hase: flach ins Gras gedrückt
+	_tief = low
+	_schwanz_k = move_toward(_schwanz_k, 0.2 if low < 0.95 or bool(a.fled) else 1.0, dt * 2.0)
 	holder.scale = Vector3(einheit, einheit * lerpf(holder.scale.y / einheit, low, clampf(dt * 4.0, 0.0, 1.0)), einheit)
+	if lie > 0.0:                                              # liegen (actor.gd _lie_k): der Körper sinkt, die Beine falten sich
+		holder.position.y -= lie * float(ARTEN[kind]["ruecken_m"]) * 0.5 / maxf(0.01, sy)
+	_lie = lie
 	# LOD: far away the pose is computed less often
 	_lod_t -= dt
 	if _lod_t <= 0.0:
@@ -503,10 +542,25 @@ func _process(dt: float) -> void:
 		_acc = 0.0
 		if kind == "hedgehog":
 			_igel_einrollen(curl)
+		_haltung()
 	_box_t -= dt
 	if _box_t <= 0.0:
 		_box_t = 0.2
 		_update_box()
+
+
+var _lie := 0.0
+
+
+func _haltung() -> void:
+	"""nach der Bewegung: Schwanz hoch (Katze), Beine gefaltet beim Liegen - Drehung um die Querachse des Knochens"""
+	for e in _schwanz:
+		var bi: int = e[0]
+		sk.set_bone_pose_rotation(bi, sk.get_bone_pose_rotation(bi) * Quaternion(Vector3.RIGHT, float(e[1]) * _schwanz_k))
+	if _lie > 0.01:
+		for e in _beine:
+			var bi2: int = e[0]
+			sk.set_bone_pose_rotation(bi2, sk.get_bone_pose_rotation(bi2) * Quaternion(Vector3.RIGHT, 0.75 * float(e[1]) * _lie))
 
 
 func _igel_einrollen(k: float) -> void:
