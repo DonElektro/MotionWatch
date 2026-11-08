@@ -236,10 +236,14 @@ def main():
     r = g["tts_make"]("Guten Tag, hier ist MoveEye.", "de", out)
     ok(r[0] and g["TTS"]["engine"] == "piper" and not calls, f"auto: spricht mit Piper ({time.time() - t0:.2f} s)")
     sid = g["TTS"]["id"]
+    synth_calls = []                                         # count the calls instead of timing (CI runners are slow sometimes)
+    keep_sy = g["piper_synth"]
+    g["piper_synth"] = lambda *x, **k: synth_calls.append(1) or keep_sy(*x, **k)
     t0 = time.time()
     r = g["tts_make"]("Guten Tag, hier ist MoveEye.", "de", out)
     dt = time.time() - t0
-    ok(r[0] and g["TTS"]["id"] == sid and dt < 0.05, f"Zwischenspeicher: gleicher Text ohne Rechnen ({dt * 1000:.1f} ms)")
+    g["piper_synth"] = keep_sy
+    ok(r[0] and g["TTS"]["id"] == sid and not synth_calls, f"Zwischenspeicher: gleicher Text ohne Rechnen ({dt * 1000:.1f} ms, Rechnen {len(synth_calls)}×)")
     g["CFG"]["tts_speed"] = 1.2
     g["tts_make"]("Guten Tag, hier ist MoveEye.", "de", out)
     ok(g["TTS"]["id"] != sid, "anderes Tempo -> neuer Eintrag im Zwischenspeicher")
