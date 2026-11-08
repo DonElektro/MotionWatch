@@ -1,0 +1,173 @@
+# BioCLIP (MoveEye Teil 639zzd, «🌿 Bestimmen» im Datentausch): baut hier auf einem GitHub-Rechner die Dateien, die der Pi
+# braucht – den Bild-Teil von BioCLIP 1 als ONNX (int8 + fp32) und die fertig gerechneten Text-Einbettungen einer Auswahl
+# mitteleuropäischer Arten mit Namen (werkzeuge/bioclip_bauen.py) – prüft sie (torch ↔ ONNX, echte Fotos, MoveEye selbst mit
+# werkzeuge/bioclip_test.py --echt) und hängt sie als Release-Assets an «bioclip-N». Die rund 450 MB kommen so nie ins
+# Repository, torch nie auf den Pi, Hugging Face muss beim Integrator nicht erreichbar sein.
+#
+#   Probe ohne Release (auch bei jedem Push auf mw-bioclip):
+#     gh api -X POST repos/DonElektro/MotionWatch/actions/workflows/bioclip.yml/dispatches -f ref=<zweig>
+#   Echt (einmal pro Fassung, nie überschreiben; «latest» bleibt das Gehäuse-Release):
+#     … -f ref=<zweig> -f 'inputs[release]=echt' -f 'inputs[tag]=bioclip-1'
+#   Danach: Grösse + sha256 aus pins.txt / der Release-Notiz in BIO_FILES (Teil 639zzd) eintragen – die Signatur der
+#   Hauptdatei bürgt dann für die Dateien (wie bei den Piper-Stimmen). MoveEye nimmt nur genau diese Bytes.
+# Keine Geheimnisse: nur GITHUB_TOKEN (contents: write für das Release), kein Signierschlüssel.
+name: BioCLIP
+on:
+  push:
+    branches: [mw-bioclip]
+    paths: [".github/workflows/bioclip.yml", "werkzeuge/bioclip_bauen.py"]
+  workflow_dispatch:
+    inputs:
+      release:
+        description: "keins = nur bauen und prüfen · probe = Vorabversion bioclipprobe-<Lauf> · echt = Release <tag>"
+        type: choice
+        options: [keins, probe, echt]
+        default: keins
+      tag:
+        description: "Tag für «echt» (bioclip-N)"
+        default: bioclip-1
+      hf_rev:
+        description: "Revision (Commit) von imageomics/bioclip, leer = aktuelle"
+        default: ""
+      loeschen:
+        description: "Statt bauen: Probe-Release + Tag löschen (nur bioclipprobe-…, nur Vorabversion)"
+        default: ""
+permissions:
+  contents: write
+concurrency:
+  group: bioclip
+  cancel-in-progress: false
+env:
+  PYTHONUNBUFFERED: "1"
+
+jobs:
+  bauen:
+    name: BioCLIP · ${{ inputs.release || 'push' }} ${{ inputs.release == 'echt' && inputs.tag || '' }}
+    if: github.repository == 'DonElektro/MotionWatch' && (github.event_name == 'push' || inputs.loeschen == '')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prüfen (Tag noch nicht da)
+        id: v
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REL: ${{ inputs.release || 'keins' }}
+          TAG: ${{ inputs.tag }}
+        run: |
+          set -e
+          sha=$(git rev-parse HEAD)
+          if [ "$REL" = "echt" ]; then
+            echo "$TAG" | grep -Eq '^bioclip-[0-9]{1,3}$' || { echo "::error::Tag $TAG ist nicht bioclip-N"; exit 1; }
+            tag="$TAG"
+          else
+            tag="bioclipprobe-$GITHUB_RUN_NUMBER"
+          fi
+          if [ "$REL" != "keins" ] && gh release view "$tag" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "::error::Release $tag gibt es schon - nie überschreiben (MoveEye prüft die festen Prüfsummen)"; exit 1
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"; echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          df -h . | tail -1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Pakete (torch nur hier, CPU)
+        run: |
+          pip install -q torch==2.5.1 --index-url https://download.pytorch.org/whl/cpu
+          pip install -q open_clip_torch==2.29.0 huggingface_hub==0.26.2 onnx==1.17.0 onnxruntime==1.20.1 pillow==11.0.0 \
+            "numpy<2.2" opencv-python-headless==4.10.0.84 flask cryptography
+          python3 -c "import torch, open_clip, onnxruntime; print(torch.__version__, open_clip.__version__, onnxruntime.__version__)"
+      - name: Bauen und prüfen (bioclip_bauen.py)
+        env:
+          HF_REV: ${{ inputs.hf_rev }}
+        run: |
+          set -e
+          python3 werkzeuge/bioclip_bauen.py --aus "$RUNNER_TEMP/bio" --rev "$HF_REV" 2>&1 | tee "$RUNNER_TEMP/bau.log"
+          ls -la "$RUNNER_TEMP/bio"
+          python3 - "$RUNNER_TEMP/bio/pruefung.json" <<'PY'
+          import json, sys
+          r = json.load(open(sys.argv[1]))
+          print("Prüfung:", json.dumps(r))
+          bad = []
+          if r["cos"]["torch_vs_onnx_same_input"][0] is not None and r["cos"]["torch_vs_onnx_same_input"][0] < 0.999:
+              bad.append("ONNX fp32 weicht von torch ab")
+          if r["n_img"] >= 20 and r["top3"]["fp32_area"] < 0.6:
+              bad.append("zu wenige Treffer auf echten Fotos")
+          if r["n_arten"] < 5000:
+              bad.append("zu wenige Arten")
+          for b in bad:
+              print("::error::" + b)
+          sys.exit(1 if bad else 0)
+          PY
+      - name: MoveEye selbst mit den echten Dateien (bioclip_test.py --echt)
+        if: hashFiles('werkzeuge/bioclip_test.py') != ''
+        run: |
+          set -e
+          python3 werkzeuge/bauen.py > /dev/null
+          f=$(ls webcam_bewegung_*.py | sort -V | tail -1)
+          python3 werkzeuge/bioclip_test.py --datei "$f" --echt "$RUNNER_TEMP/bio" --fotos "$RUNNER_TEMP/fotos"
+      - name: Zusammenfassung
+        run: |
+          {
+            echo "### BioCLIP-Dateien"
+            echo '```'; cat "$RUNNER_TEMP/bio/pins.txt"; echo '```'
+            echo '```'; cat "$RUNNER_TEMP/bio/pruefung.json"; echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Release anlegen, Assets hochladen, zurücklesen
+        if: inputs.release == 'probe' || inputs.release == 'echt'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.v.outputs.tag }}
+          SHA: ${{ steps.v.outputs.sha }}
+          REL: ${{ inputs.release }}
+        run: |
+          set -e
+          B="$RUNNER_TEMP/bio"
+          {
+            if [ "$REL" = "probe" ]; then echo "PROBELAUF (Vorabversion) - nicht für Geräte, wird wieder gelöscht."; echo; fi
+            echo "BioCLIP 1 für MoveEye «🌿 Bestimmen» (Datentausch, Teil 639zzd) - läuft ganz auf dem Pi, das Bild verlässt das Gerät nie."
+            echo
+            echo "MoveEye nimmt die Dateien nur mit der festen Grösse und Prüfsumme aus der signierten Programmdatei (BIO_FILES)."
+            echo
+            echo "Modell: BioCLIP (Stevens et al., CVPR 2024), huggingface.co/imageomics/bioclip, MIT. Bild-Teil ViT-B/16 als ONNX."
+            echo "Arten: Auswahl nach Fundmeldungen auf GBIF.org (CH/LI, DE/AT) + Haustiere, Nutztiere, Garten- und Kulturpflanzen;"
+            echo "Einbettungen txt_emb_species von imageomics/bioclip (TreeOfLife-10M). Namen: Wikidata (CC0)."
+            echo
+            sed 's/^PIN /pin: /' "$B/pins.txt"
+            echo
+            echo "pruefung: $(tr -d '\n ' < "$B/pruefung.json")"
+            echo "commit: $SHA"
+            echo "lauf: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          } > notes.md
+          A="$B/bioclip-1-bild-int8.onnx $B/bioclip-1-bild-fp32.onnx $B/bioclip-1-arten.npy $B/bioclip-1-arten.json $B/pruefung.json"
+          if [ "$REL" = "probe" ]; then
+            gh release create "$TAG" $A -R "$GITHUB_REPOSITORY" --target "$SHA" --title "Probe · BioCLIP 1" --notes-file notes.md --prerelease --latest=false
+          else
+            gh release create "$TAG" $A -R "$GITHUB_REPOSITORY" --target "$SHA" --title "BioCLIP 1 · Artenbestimmung (Datentausch)" --notes-file notes.md --latest=false
+          fi
+          mkdir -p "$RUNNER_TEMP/zurueck"
+          gh release download "$TAG" -R "$GITHUB_REPOSITORY" -D "$RUNNER_TEMP/zurueck"
+          cd "$RUNNER_TEMP/zurueck"
+          while read -r _ fn sz sh; do
+            s=${sh#sha256=}; echo "$s  $fn" | sha256sum -c -
+          done < "$B/pins.txt"
+          echo "latest bleibt: $(gh api repos/$GITHUB_REPOSITORY/releases/latest --jq .tag_name)"
+          echo "### Release $TAG angelegt" >> "$GITHUB_STEP_SUMMARY"
+
+  weg:
+    name: Probe löschen · ${{ inputs.loeschen }}
+    if: github.repository == 'DonElektro/MotionWatch' && github.event_name == 'workflow_dispatch' && inputs.loeschen != ''
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Probe-Release und Tag löschen (nie bioclip-N)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.loeschen }}
+        run: |
+          set -e
+          echo "$TAG" | grep -Eq '^bioclipprobe-[0-9]+$' || { echo "::error::nur bioclipprobe-N, nicht $TAG"; exit 1; }
+          pre=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" --jq .prerelease)
+          [ "$pre" = "true" ] || { echo "::error::$TAG ist keine Vorabversion - nicht gelöscht"; exit 1; }
+          gh release delete "$TAG" -R "$GITHUB_REPOSITORY" --yes --cleanup-tag
+          echo "gelöscht: $TAG" >> "$GITHUB_STEP_SUMMARY"
