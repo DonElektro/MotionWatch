@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-08 22:38",
+ "generated": "2026-11-09 00:10",
  "versions": [
   {
-   "version": "3.66.0",
-   "file": "webcam_bewegung_3_66_0.py",
+   "version": "3.66.1",
+   "file": "webcam_bewegung_3_66_1.py",
    "url": "",
-   "sha256": "c581cba1246b9b1529f3d7cab84eaeefc7a31b7f0a0fd7b97d536bbe2cded2e8",
-   "date": "2026-11-08 22:38",
-   "notes": "Spielesammlung GS-1.5: Wobbly Truck mit Motorrad, Stunt-Piste, Stunts, Kombos und Einstellungen; Spielecke (Mehr → Spielecke) und Gast-Spieleabend mit denselben Spiel-Kacheln wie die Spielesammlung, kurz «✓ N Spiele installiert».",
-   "size": 3736452,
-   "sig": "eb6f5930fbd30f3dc8bd875ac0e3dd1eee96a06fca7f8cecd136de900146f866a2b399efff6966d24965c350816c806e16204d77d8efc8c66a8f876a9be18302",
+   "sha256": "43c5621a3446ce93cbe9d74c6c189affb38d6f85af9b85791f0a799bb32a63b6",
+   "date": "2026-11-09 00:10",
+   "notes": "Spielesammlung GS-1.6: Wobbly Truck mit Landehilfe im leichten Modus; der Knopf «✕ Zurück» sucht sich in allen Spielen einen freien Platz (oder bleibt weg, wenn das Spiel einen eigenen Zurück-Link hat) und überdeckt keine Spiel-Knöpfe mehr.",
+   "size": 3738628,
+   "sig": "b5bb5d35d7b69495bcb53a89d9311ce9002ad664b88c3781a7b085a01f688221ebb32d75d32bd4df8d2b4b1342d6ee4edecdc0caa37f92b2a10a97e23cef9005",
    "data": {
-    "file": "moveeye_daten_3_66_0.zip",
+    "file": "moveeye_daten_3_66_1.zip",
     "url": "",
-    "sha256": "0cb7e869e46bdb5322c25701b7340501da99aa8ce5d3a1bf1c86326809d125af",
-    "size": 4884939,
-    "sig": "db018b53ec8dde404daaa3c9dc3f65e4a01c72ad4cbc16224831b3f407767ee6480fd3148dfe55772d23d6e9dedad81ba25bcf35e676099d9612900c5b7baa01"
+    "sha256": "3e70a17a52e342f80646dd9654e6f5fe07c89f7536adb50270060a6ada72569a",
+    "size": 4885326,
+    "sig": "12b4fa45f26440d56fc2a2cae4a5032137fa3d766976c293d0399537e3b77822bf832e143bcc826279e5111704b7f7ffc60e228a8b7a59fa4a0b40f6fb59460c"
    }
   },
   {

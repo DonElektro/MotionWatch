@@ -23,6 +23,9 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 3.66.1: Spielesammlung GS-1.6: Wobbly Truck mit Landehilfe im leichten Modus; der Knopf «✕ Zurück» sucht sich in allen
+    Spielen einen freien Platz (oder bleibt weg, wenn das Spiel einen eigenen Zurück-Link hat) und überdeckt keine Spiel-Knöpfe
+    mehr.
   * 3.66.0: Spielesammlung GS-1.5: Wobbly Truck mit Motorrad, Stunt-Piste, Stunts, Kombos und Einstellungen; Spielecke (Mehr →
     Spielecke) und Gast-Spieleabend mit denselben Spiel-Kacheln wie die Spielesammlung, kurz «✓ N Spiele installiert».
   * 3.65.0: Spielesammlung GS-1.4: 36 neue Browserspiele (12 Kevlaschef Games, 24 Quantum Games) – am Handy mit Antippen, am PC
@@ -109,7 +112,6 @@ Features
     Mover-Fahrt löst keinen «Gerät bewegt»-Alarm mehr aus; Bau-Infos: Stopfen 18–24, Kanal 4 auf das IR-Modul, Ladequelle, 3
     Pakete (Basis/Komplett/Autark); Hinweis «fixfertig kaufen» in Bauen, Simulator-Werkstatt und Pi-Fenster; /info/ als
     Produktseite.
-  * 3.44.2: Versionshinweis: eine kleine Zeile unten rechts mit Knopf und ✕ statt eines bildschirmhohen Balkens.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -118,10 +120,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_3_66_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_3_66_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_3_66_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_3_66_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_3_66_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_3_66_1.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -138,7 +140,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "3.66.0"
+APP_VERSION = "3.66.1"
 
 
 def default_data_dir():
@@ -263,8 +265,8 @@ def prepare_settings_file():
 
 
 
-ZD_FILE = "moveeye_daten_3_66_0.zip"
-ZD_SHA256 = "0cb7e869e46bdb5322c25701b7340501da99aa8ce5d3a1bf1c86326809d125af"
+ZD_FILE = "moveeye_daten_3_66_1.zip"
+ZD_SHA256 = "3e70a17a52e342f80646dd9654e6f5fe07c89f7536adb50270060a6ada72569a"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -27546,7 +27548,7 @@ threading.Thread(target=_extra_cams_boot, daemon=True, name="extracams-boot").st
 
 PARTY = {"key": "", "until": 0.0, "game": "lobby", "seq": 0, "players": {}, "host": "", "g": {}, "tools": {}}
 PARTY_COND = threading.Condition()
-GAMES_PKG = {"version": "GS-1.5", "file": "games/MotionWatch_Spiele.zip", "size": 14632796, "sha256": "cd827a1dbe5b067a6fe92e8c24d5f005fcac399ec7cb530d089a67573ced4034"}
+GAMES_PKG = {"version": "GS-1.6", "file": "games/MotionWatch_Spiele.zip", "size": 14633505, "sha256": "2766080ba932c76ee57cb19290d4d2b18092fa858beaee58304c06a300898b42"}
 GAMES_DL = {"running": False, "msg": "", "got": 0}
 
 QUIZ = [("Wie heisst der höchste Berg der Schweiz?", "Dufourspitze (4634 m)"), ("Wie viele Kantone hat die Schweiz?", "26"),
@@ -28570,9 +28572,28 @@ def games_server_start():
 	threading.Thread(target=srv.serve_forever, daemon=True, name="games").start()
 
 
-GAME_BACK = """<div id="mw-back" style="position:fixed;bottom:10px;left:10px;opacity:.85;z-index:2147483647;font:600 15px system-ui,sans-serif">
-<a href="__BACK__" onclick="if(history.length>1){history.back();return false}try{window.close()}catch(e){}" style="display:inline-block;
-background:rgba(14,22,33,.85);color:#fff;text-decoration:none;padding:8px 13px;border-radius:12px;border:1px solid rgba(255,255,255,.25)">✕ Zurück</a></div>"""
+
+
+
+
+GAME_BACK = """<div id="mw-back" style="position:fixed;top:calc(8px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);opacity:.88;z-index:2147483647;font:600 15px system-ui,sans-serif">
+<a href="__BACK__" onclick="if(history.length>1){history.back();return false}try{window.close()}catch(e){}" style="display:inline-flex;align-items:center;
+box-sizing:border-box;min-height:40px;min-width:44px;background:rgba(14,22,33,.85);color:#fff;text-decoration:none;padding:8px 13px;border-radius:12px;
+border:1px solid rgba(255,255,255,.25);white-space:nowrap;-webkit-tap-highlight-color:transparent">✕ Zurück</a></div>
+<script>(function(){var d=document,b=d.getElementById("mw-back");if(!b||b.__mw)return;b.__mw=1;
+var T="calc(8px + env(safe-area-inset-top,0px))",B="calc(8px + env(safe-area-inset-bottom,0px))",L="calc(8px + env(safe-area-inset-left,0px))",R="calc(8px + env(safe-area-inset-right,0px))";
+var P=[[T,"","","50%","translateX(-50%)"],[T,"","",L,""],[T,"",R,"",""],["",B,"","50%","translateX(-50%)"],["50%","","",L,"translateY(-50%)"],["50%","",R,"","translateY(-50%)"]],cur=-1;
+function set(i){var p=P[i],s=b.style;s.top=p[0]||"auto";s.bottom=p[1]||"auto";s.right=p[2]||"auto";s.left=p[3]||"auto";s.transform=p[4]||"none";cur=i}
+function own(){var a=d.querySelectorAll('a[href="../"],a[href="index.html"]');for(var i=0;i<a.length;i++){if(b.contains(a[i]))continue;
+ var r=a[i].getBoundingClientRect();if(r.width>0&&r.height>0&&r.bottom>0&&r.top<innerHeight&&r.right>0&&r.left<innerWidth&&getComputedStyle(a[i]).visibility!=="hidden")return true}return false}
+function busy(){var r=b.firstElementChild.getBoundingClientRect();for(var i=0;i<=4;i++)for(var j=0;j<=2;j++){
+ var x=Math.min(innerWidth-1,Math.max(0,r.left+2+(r.width-4)*i/4)),y=Math.min(innerHeight-1,Math.max(0,r.top+2+(r.height-4)*j/2)),e=d.elementsFromPoint(x,y);
+ for(var k=0;k<e.length;k++){var q=e[k];if(b.contains(q)||q===d.body||q===d.documentElement)continue;
+  if(q.closest&&q.closest("a,button,input,select,textarea,label,[role=button],[onclick]"))return true}}return false}
+function fit(force){if(own()){b.style.display="none";return}b.style.display="";if(!force&&cur>=0&&!busy())return;
+ for(var i=0;i<P.length;i++){set(i);if(!busy())return}set(0)}
+fit(1);addEventListener("load",function(){fit(1)});setTimeout(function(){fit()},1200);setInterval(function(){fit()},2500);
+addEventListener("resize",function(){setTimeout(function(){fit(1)},250)})})();</script>"""
 
 
 
@@ -48795,7 +48816,7 @@ class App:
 		self.watch = watch
 		self.web = web or WebStream(watch)
 		self.root = tk.Tk()
-		self.root.title("MoveEye 3.66.0")
+		self.root.title("MoveEye 3.66.1")
 		try:
 			import base64
 			self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -49173,7 +49194,7 @@ class App:
 			if not small:
 				vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
 				vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))
-			Tip(nm, f"{tr('Build')} 3.66.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+			Tip(nm, f"{tr('Build')} 3.66.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
 			self._egg_taps = []
 			for w_ in tl.winfo_children():
 				w_.bind("<Button-1>", self._egg_tap, add="+")
