@@ -1111,6 +1111,8 @@ func _road(l: PackedVector2Array, tg: Dictionary) -> void:
 		_ribbon(l, w, 0.05, "road", Color(0.36, 0.36, 0.37))
 	elif t == "track" and Wege.an(main):
 		_ribbon(l, w, 0.04, "road_feld", Color(0.56, 0.52, 0.44))   # «Wege und Strassen»: Feldweg (Normal / Hoch)
+	elif t in ["path", "footway", "bridleway", "steps"] and Wege.an(main):
+		_ribbon(l, w, 0.04, "road_pfad", Color(0.56, 0.52, 0.44))   # Schritt 2: Wanderweg / Fussweg (Normal / Hoch)
 	else:
 		_ribbon(l, w, 0.04, "road_g", Color(0.56, 0.52, 0.44))
 	counts["roads"] = counts.get("roads", 0) + 1
@@ -1125,7 +1127,7 @@ func _road(l: PackedVector2Array, tg: Dictionary) -> void:
 func _ribbon(l: PackedVector2Array, w: float, lift: float, key: String, col: Color) -> void:
 	if l.size() < 2:
 		return
-	if key in ["road", "road_feld"] and Wege.an(main):
+	if key in ["road", "road_feld", "road_pfad"] and Wege.an(main):
 		_wege_runs(l, w, lift, key)                      # the visible road (the thermal twin keeps this strip)
 	if not ribbon_st.has(key):
 		var st := SurfaceTool.new()
@@ -1185,15 +1187,18 @@ func _wege_mesh(key: String, mi: MeshInstance3D) -> void:
 		var st := SurfaceTool.new()
 		var any := false
 		for r in wege_runs[key]:
-			var feld: bool = key == "road_feld"
-			var am: ArrayMesh = Wege.band(main, r[0], float(r[1]) * 0.5, 0.45 if feld else 0.6, float(r[2]),
+			var feld: bool = key in ["road_feld", "road_pfad"]
+			var hw := float(r[1]) * (0.3 if key == "road_pfad" else 0.5)       # a footpath: the trodden part, grass at its sides
+			var am: ArrayMesh = Wege.band(main, r[0], hw, (0.35 if key == "road_pfad" else 0.45) if feld else 0.6, float(r[2]),
 					Wege.COLS_FELD if feld else Wege.COLS_STRASSE)
 			st.append_from(am, 0, Transform3D.IDENTITY)
 			any = true
 		if not any:
 			return
 		mi.mesh = st.commit()
-		if key == "road_feld":
+		if key == "road_pfad":
+			mi.material_override = Wege.wander_mat(main, {"rock": 0.2, "roots": 0.6})
+		elif key == "road_feld":
 			mi.material_override = Wege.feld_mat(main, "erde", Color(0.42, 0.37, 0.29), Color(0.32, 0.28, 0.22))
 		else:
 			mi.material_override = Wege.strasse_mat(main, {"centre": true, "edge": true})

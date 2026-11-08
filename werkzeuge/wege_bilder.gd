@@ -4,7 +4,9 @@ extends SceneTree
 ##   cd simulator3d && HOME=<test-home> xvfb-run -s "-screen 0 1280x720x24" <godot> --path . -s "$PWD/../werkzeuge/wege_bilder.gd" \
 ##       -- --no-update --grafik normal --ansichten <ansichten.json> --aus <ordner/prefix_>
 ## ansichten.json: [{"name", "scene", "hour", "pos": [x,y,z], "look": [x,y,z], "fov", "tier": {"kind", "at": [x,z], "to": [x,z]},
-##                  "wind", "fps_s", "weather", "puddle", "wet", "pan", "tilt"}]
+##                  "wind", "fps_s", "weather", "puddle", "wet", "pan", "tilt",
+##                  "saison", "snow" (on / off / auto),
+##                  "tal": Bergtal-Koordinaten (pos / look = x, Höhe über Boden, z)}]
 ## Schreibt <prefix><name>.png (freie Ansicht, ohne Bedienung), <prefix><name>_kopf.png (Bild der Kopfkamera für MoveEye)
 ## und <prefix>fps.json (Bilder pro Sekunde je Ansicht, gemessen mit derselben Kameralage in der grossen Ansicht).
 
@@ -100,6 +102,13 @@ func _run() -> void:
 		if main.colors != null and v.has("puddle"):
 			main.colors.puddle = float(v["puddle"])
 			main.colors.wetness = float(v.get("wet", 1.0))
+		if v.has("saison") and main.get("jahreszeiten") != null:   # season (fixed) and snow lying (jahreszeiten «jz_snow»: on / off / auto)
+			main.control({"action": "jahreszeiten", "do": "set", "key": "mode", "value": str(v["saison"])})
+		if v.has("snow") and main.get("jahreszeiten") != null:
+			main.jahreszeiten.snow_mode = str(v["snow"])
+			if main.get("wetter") != null and str(v["snow"]) == "on":
+				main.wetter.snow_cm = 8.0                    # wetter.gd «Schnee bleibt liegen»: as after a snowfall
+			main.jahreszeiten.update()
 		if v.has("pan"):                                     # the MoveEye head: pan / tilt like a servo packet of MoveEye
 			if main.patrol != null:
 				main.patrol.active = false
@@ -112,6 +121,10 @@ func _run() -> void:
 		if v.get("ground", false):
 			pos.y += main.ground_y(pos.x, pos.z)
 			look.y += main.ground_y(look.x, look.z)
+		var bt = main.scenes.data.get("bergtal") if main.scenes.data.has("bergtal") else null
+		if v.get("tal", false) and bt != null:                # Bergtal: pos / look in valley coordinates (x, height above ground, z)
+			pos = bt.WG(pos.x, pos.z, pos.y)
+			look = bt.WG(look.x, look.z, look.y)
 		cam.fov = float(v.get("fov", 60.0))
 		cam.look_at_from_position(pos, look, Vector3.UP)
 		main.view_cam.global_transform = cam.global_transform
