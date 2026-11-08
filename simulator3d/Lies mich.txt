@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.62.1 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.62.2 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -487,6 +487,13 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.62.2
+3.62.2: Simulator-PC (HP): neue Versionen kommen auch beim Dauerrechnen an – das HP-Update schaut alle 15 Min. kurz nach, ein
+neues Update wartet höchstens 6 Std. auf die Pause zwischen zwei Tests (Spielen hat Vorrang), jedes Verschieben steht mit Grund
+im Protokoll. Am Simulator selbst ändert sich nichts.
+So testest du: am HP «moveeye-hp-update --status»: im Protokoll steht alle 15 Min. eine Zeile mit dem Grund oder höchstens
+stündlich «nichts Neues»; nach einer neuen Sim-Version ist sie spätestens nach 6 Std. eingespielt.
 
 NEU IN 3.62.1
 3.62.1: Wildschwein mit Hauern (im Wärmebild kühl), Hase weniger fuchsartig: runder, hockt in Ruhe, lange Hinterläufe, kurze

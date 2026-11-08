@@ -46,6 +46,16 @@ SPIEL = os.environ.get("MW_SPIEL") or "/run/moveeye-spiel/spielen"
 RUHE_S = int(os.environ.get("MW_SPIEL_RUHE_S") or 900)
 HPU_STEMPEL = os.environ.get("MW_HPU_STEMPEL") or "/var/lib/moveeye-hp-update/letzter_lauf"
 HPU_FAELLIG_S = 20 * 3600
+# HP_FASSUNG 5: moveeye-hp-update legt diese Marke an, wenn ein neues signiertes Update auf eine Pause wartet - dann startet das
+# Dauerrechnen kein neues Paket, das Update kommt zwischen zwei Paketen dran (höchstens HPU_WARTET_S lang, falls es scheitert)
+HPU_WARTET = os.environ.get("MW_HPU_WARTET") or "/var/lib/moveeye-hp-update/wartet"
+HPU_WARTET_S = 8 * 3600
+# Übergang (08.11.2026): ein HP-Update vor HP_FASSUNG 6 prüft höchstens alle 6 Std. und spielt nur in einer Pause ein - bei
+# Dauerrechnen kam es so bis zu 20 Std. nicht dran. Ist die eingespielte Fassung älter und die letzte Prüfung über 6 Std. her,
+# bleibt der HP nach dem laufenden Paket frei, bis die neue Fassung eingespielt ist.
+HPU_FASSUNG = os.environ.get("MW_HPU_FASSUNG") or "/var/lib/moveeye-hp-update/fassung"
+HPU_FASSUNG_MIN = 6
+HPU_ALT_S = 6 * 3600
 TAKT = float(os.environ.get("MW_DAUER_TAKT") or 1.0)          # wie oft geschaut wird, ob jemand spielt (s)
 ERSATZ = os.environ.get("MW_DAUER_ERSATZ") or ""              # nur für dauer_test.sh: Ersatz-Programm statt der echten Arbeit
 
@@ -136,8 +146,20 @@ def kiosk_sim():
 
 
 def update_faellig():
-    """moveeye-hp-update seit HPU_FAELLIG_S nicht mehr gelaufen? (fehlt der Stempel ganz: nicht eingerichtet -> nein)"""
+    """moveeye-hp-update seit HPU_FAELLIG_S nicht mehr gelaufen (fehlt der Stempel ganz: nicht eingerichtet -> nein), oder
+    wartet ein neues Update auf eine Pause (Marke HPU_WARTET, jünger als HPU_WARTET_S)?"""
+    aw = datei_alter(HPU_WARTET)
+    if aw is not None and aw < HPU_WARTET_S:
+        return True
     al = datei_alter(HPU_STEMPEL)
+    if al is not None and al > HPU_ALT_S and datei_alter(HPU_FASSUNG) is not None:
+        try:
+            with open(HPU_FASSUNG, encoding="utf-8") as f:
+                fa = int((f.read(16).strip() or "0"))
+        except (OSError, ValueError):
+            fa = HPU_FASSUNG_MIN
+        if fa < HPU_FASSUNG_MIN:
+            return True
     return al is not None and al > HPU_FAELLIG_S
 
 
@@ -245,7 +267,7 @@ def waehlen(a):
         ausgabe(a.ausgabe, art="nichts", grund="Am HP wird gespielt - Rechnen pausiert")
         return 0
     if update_faellig():
-        ausgabe(a.ausgabe, art="nichts", grund="HP-Update ist an der Reihe (seit 20 Std. nicht geprüft) - der HP bleibt kurz frei")
+        ausgabe(a.ausgabe, art="nichts", grund="HP-Update ist an der Reihe (neues Update wartet, oder seit 20 Std. nicht geprüft) - der HP bleibt kurz frei")
         return 0
     kand = kandidaten_lesen(a.kandidaten)
     shas = {k["sha"] for k in kand}

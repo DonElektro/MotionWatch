@@ -3,7 +3,11 @@
 #   sudo moveeye-hp-update                  neueste signierte Version holen, prüfen, einspielen (sofort, von Hand)
 #   moveeye-hp-update --zeitplan            so startet es der Dienst moveeye-hp-update (Zeitplan: alle 15 Min. und 8 Min.
 #                                           nach jedem Start): nur in einer Pause - nie, während der HP rechnet oder jemand
-#                                           spielt - und nur, wenn die letzte Prüfung über 6 Std. her ist (sonst still fertig)
+#                                           spielt. Ab HP_FASSUNG 5 (08.11.2026): jedes Mal ein kurzer Blick in die signierte
+#                                           versions.json (10 KB); nichts Neues: höchstens stündlich eine Zeile; Neues während
+#                                           eines Tests: wartet (Zeile mit Grund, Marke ZUSTAND/wartet: das Dauerrechnen
+#                                           startet dann kein neues Paket), nach 6 Std. trotzdem (Neustarts erst danach).
+#                                           Spielen hat immer Vorrang. Jedes Verschieben schreibt eine Zeile mit dem Grund.
 #   sudo bash hp_update.sh --einrichten     sich selbst als /usr/local/sbin/moveeye-hp-update einrichten (Dienst, Zeitplan),
 #                                           danach einmal laufen lassen (--ohne-lauf: nur einrichten)
 #   moveeye-hp-update --pruefen             nur laden und prüfen (Signatur, Prüfsummen), nichts einspielen (geht ohne sudo)
@@ -49,7 +53,7 @@ PAUSE="/run/moveeye-test/kiosk_pause"
 SPIEL="/run/moveeye-spiel/spielen"
 SPIEL_TMPFILES="/etc/tmpfiles.d/moveeye-spiel.conf"
 KIOSK_TEST="/etc/moveeye-kiosk-test.conf"   # von runner_einrichten.sh (Pause-Datei, TEST_BENUTZER); runner_entfernen.sh nimmt sie weg
-HP_FASSUNG=5                     # 5 = Bildschirm für die Testläufe (TEST_BENUTZER, xhost), 4 = Controller koppeln (Bluetooth), 3 = drei Spuren (Sim aus versions.json «sim»); erhöhen, wenn dieses Skript bei gleicher Version mehr einspielt als die Fassung davor
+HP_FASSUNG=6                     # 6 = Zeitplan prüft jedes Mal kurz, Neues wartet höchstens 6 Std. auf eine Pause (Marke «wartet»); 5 = Bildschirm für die Testläufe (TEST_BENUTZER, xhost), 4 = Controller koppeln (Bluetooth), 3 = drei Spuren (Sim aus versions.json «sim»); erhöhen, wenn dieses Skript bei gleicher Version mehr einspielt als die Fassung davor
 STATUS_PORT=8761
 # Pakete, die Kiosk und Testbild brauchen (nur fehlende werden installiert, nichts wird entfernt)
 PAKETE="python3-tk x11-xserver-utils libxss1 unzip curl bluez rfkill"   # bluez, rfkill: Controller per Bluetooth koppeln
@@ -249,9 +253,26 @@ test_laeuft() {   # läuft gerade ein Test? (Pause-Datei des Kiosks oder ein Job
 spielt() {   # wird am HP gespielt? (Spielen-Datei von hp_wache.py / testbild.py, jünger als 15 Min.) - Kiosk nicht neu starten
 	[ -f "$SPIEL" ] && [ ! -L "$SPIEL" ] && [ $(( $(date +%s) - $(stat -c %Y "$SPIEL" 2>/dev/null || echo 0) )) -lt 900 ]
 }
-beschaeftigt() {   # Grund, warum jetzt nicht eingespielt wird (leer = Pause)
-	if test_laeuft; then echo "Es läuft ein Test"; elif spielt; then echo "Am HP wird gespielt"; fi
+beschaeftigt() {   # Grund, warum jetzt nicht eingespielt wird (leer = Pause); TROTZ_TEST=1: ein Test hält nicht mehr auf
+	if spielt; then echo "Am HP wird gespielt"; elif [ "${TROTZ_TEST:-0}" != 1 ] && test_laeuft; then echo "Es läuft ein Test"; fi
 }
+WARTE_MAX_S=21600                # so lange wartet ein neues Update auf eine Pause zwischen Tests, danach wird es trotzdem eingespielt
+plog() {   # Zeitplan: Zeilen sammeln, bis klar ist, ob es Neues gibt (sonst stünde alle 15 Min. dasselbe im Protokoll)
+	if [ "${STILL:-0}" = 1 ]; then PUFFER="${PUFFER:-}$(date '+%F %T') $*"$'\n'; else log "$*"; fi
+}
+nichts_neu() {   # nichts Neues: im Zeitplan höchstens stündlich eine Zeile (Marke ZUSTAND/nichts_neu), von Hand immer
+	if [ "${STILL:-0}" = 1 ]; then
+		STILL=0; PUFFER=""
+		if [ ! -f "$ZUSTAND/nichts_neu" ] || [ $(( $(date +%s) - $(stat -c %Y "$ZUSTAND/nichts_neu") )) -ge 3600 ]; then
+			mkdir -p "$ZUSTAND" && touch "$ZUSTAND/nichts_neu"
+			log "Geprüft: nichts Neues (MoveEye ${v:-?}${lx_ver:+ · Sim $lx_ver}; nächste solche Zeile in einer Stunde)."
+		fi
+	else
+		log "$*"
+	fi
+	rm -f "$ZUSTAND/wartet"
+}
+laut() { if [ "${STILL:-0}" = 1 ]; then STILL=0; printf '%s' "${PUFFER:-}"; PUFFER=""; fi; }
 stempel() {   # nach jeder vollständigen Prüfung: Zeit und Fassung merken (lesbar für das Dauerrechnen)
 	mkdir -p "$ZUSTAND" && date +%s > "$ZUSTAND/letzter_lauf" && chmod 644 "$ZUSTAND/letzter_lauf"
 	echo "$HP_FASSUNG" > "$ZUSTAND/fassung"
@@ -585,26 +606,15 @@ lauf() {   # einmal: laden, prüfen, einspielen
 	[ -r "$ZUSTAND/sim_version" ] && sim_alt="$(tr -cd '0-9.' < "$ZUSTAND/sim_version")"
 	[ -r "$ZUSTAND/sim_sha256" ] && sim_sha_alt="$(tr -cd '0-9a-f' < "$ZUSTAND/sim_sha256")"
 	[ "$nur_pruefen" -eq 0 ] && [ "$(readlink -f "$0")" = "$SELBST" ] && einheiten
+	STILL=0 PUFFER="" TROTZ_TEST=0
 	if [ "$nur_pruefen" -eq 0 ] && [ "$PLANLAUF" -eq 1 ]; then
-		# Zeitplan (alle 15 Min.): still fertig, wenn vor kurzem geprüft (ausser kurz nach dem Start); beschäftigt: höchstens
-		# einmal pro Stunde ins Protokoll
-		local zuletzt=0 up
-		[ -r "$ZUSTAND/letzter_lauf" ] && zuletzt="$(tr -cd '0-9' < "$ZUSTAND/letzter_lauf")"
-		up="${MOVEEYE_HP_UPTIME:-$(cut -d. -f1 /proc/uptime 2>/dev/null || echo 9999)}"   # nur zum Prüfen änderbar
-		if [ $(( $(date +%s) - ${zuletzt:-0} )) -lt 21600 ] && [ "${up:-9999}" -gt 1200 ] && \
-			[ "$(cat "$ZUSTAND/fassung" 2>/dev/null)" = "$HP_FASSUNG" ]; then return 0; fi
-		local b
-		b="$(beschaeftigt)"
-		if [ -n "$b" ]; then
-			if [ ! -f "$ZUSTAND/verschoben" ] || [ $(( $(date +%s) - $(stat -c %Y "$ZUSTAND/verschoben") )) -gt 3600 ]; then
-				mkdir -p "$ZUSTAND" && touch "$ZUSTAND/verschoben"
-				log "$b - verschoben (nächster Versuch in 15 Min.)."
-			fi
-			return 0
-		fi
+		# Zeitplan (alle 15 Min.): Spielen hat Vorrang (jedes Mal eine Zeile). Sonst ein kurzer Blick in die signierte Liste;
+		# ob ein Test läuft, zählt erst, wenn es etwas Neues gibt (unten).
+		if spielt; then log "Am HP wird gespielt - verschoben (nächster Versuch in 15 Min.)."; return 0; fi
+		STILL=1
 	fi
-	log "=== MoveEye HP-Update (eingespielt: ${alt:-nichts}) ==="
-	if [ "$nur_pruefen" -eq 0 ]; then
+	plog "=== MoveEye HP-Update (eingespielt: ${alt:-nichts}) ==="
+	if [ "$nur_pruefen" -eq 0 ] && [ "$PLANLAUF" -eq 0 ]; then
 		local b
 		b="$(beschaeftigt)"
 		if [ -n "$b" ]; then log "$b - verschoben."; return 0; fi
@@ -612,11 +622,11 @@ lauf() {   # einmal: laden, prüfen, einspielen
 	laden "$REPO_RAW/main/versions.json" "$w/versions.json" 4000000 || { log "FEHLER: versions.json nicht geladen (Netz?)"; return 1; }
 	read -r v fn sh < <(pruefer manifest "$w/versions.json" "$UPDATE_PUBKEY" 2> "$w/fehler") || true
 	if [ -z "${sh:-}" ]; then log "ABGELEHNT: $(cat "$w/fehler")"; return 1; fi
-	log "Signatur gültig: MoveEye $v ($fn)"
+	plog "Signatur gültig: MoveEye $v ($fn)"
 	read -r lx_sha lx_size lx_ver < <(pruefer sim "$w/versions.json" "$UPDATE_PUBKEY" 2> "$w/fehler_sim") || true
 	if [ -n "${lx_ver:-}" ]; then
 		herkunft="versions.json «sim»"
-		log "Signatur gültig: Sim $lx_ver (Linux-Paket, eigene Spur)"
+		plog "Signatur gültig: Sim $lx_ver (Linux-Paket, eigene Spur)"
 	elif grep -q 'Signatur\|unvollständig' "$w/fehler_sim"; then
 		log "ABGELEHNT: $(cat "$w/fehler_sim")"; return 1       # ein Block «sim», der nicht stimmt: nie auf die Programmdatei ausweichen
 	else
@@ -625,7 +635,7 @@ lauf() {   # einmal: laden, prüfen, einspielen
 	if [ -n "$alt" ] && [ "$IMMER" -eq 0 ] && [ "$nur_pruefen" -eq 0 ]; then
 		if [ "$alt" != "$v" ] && ! pruefer vergleich "$v" "$alt"; then log "ABGELEHNT: $v ist älter als die eingespielte $alt"; return 1; fi
 		if [ "$herkunft" = Programmdatei ] && [ "$alt" = "$v" ] && [ "$(cat "$ZUSTAND/fassung" 2>/dev/null)" = "$HP_FASSUNG" ]; then
-			log "Schon eingespielt - nichts zu tun."; stempel; return 0
+			nichts_neu "Schon eingespielt - nichts zu tun."; stempel; return 0
 		fi
 	fi
 	if [ "$herkunft" = Programmdatei ]; then
@@ -641,12 +651,28 @@ lauf() {   # einmal: laden, prüfen, einspielen
 			log "ABGELEHNT: Sim $lx_ver ist älter als die eingespielte Sim $sim_alt"; return 1
 		fi
 		if [ "$sim_sha_alt" = "$lx_sha" ] && [ "$(cat "$ZUSTAND/fassung" 2>/dev/null)" = "$HP_FASSUNG" ]; then
-			[ "$alt" != "$v" ] && log "Neue MoveEye $v, der Simulator bleibt Sim $lx_ver - am HP nichts einzuspielen."
-			[ "$alt" = "$v" ] && log "Schon eingespielt - nichts zu tun."
+			if [ "$alt" != "$v" ]; then laut; log "Neue MoveEye $v, der Simulator bleibt Sim $lx_ver - am HP nichts einzuspielen."
+			else nichts_neu "Schon eingespielt - nichts zu tun."; fi
 			mkdir -p "$ZUSTAND" && echo "$v" > "$ZUSTAND/version"
 			stempel; return 0
 		fi
-		[ "$sim_sha_alt" = "$lx_sha" ] && log "Gleiche Version, neue Fassung dieses Updates - spiele noch einmal ein."
+		[ "$sim_sha_alt" = "$lx_sha" ] && plog "Gleiche Version, neue Fassung dieses Updates - spiele noch einmal ein."
+	fi
+	# Es gibt Neues. Zeitplan: läuft ein Test, warten (Marke ZUSTAND/wartet: das Dauerrechnen startet dann kein neues Paket,
+	# so kommt das Update zwischen zwei Tests dran); nach WARTE_MAX_S trotzdem - nur Spielen hält es dann noch auf.
+	if [ "$nur_pruefen" -eq 0 ] && [ "$PLANLAUF" -eq 1 ]; then
+		laut
+		mkdir -p "$ZUSTAND"
+		[ -f "$ZUSTAND/wartet" ] || { printf '%s %s\n' "$v" "$lx_ver" > "$ZUSTAND/wartet"; chmod 644 "$ZUSTAND/wartet"; }
+		if test_laeuft; then
+			local seit=$(( $(date +%s) - $(stat -c %Y "$ZUSTAND/wartet" 2>/dev/null || date +%s) ))
+			if [ "$seit" -lt "$WARTE_MAX_S" ]; then
+				log "Neu: MoveEye $v · Sim $lx_ver - es läuft ein Test, wartet auf die Pause danach (seit $((seit / 60)) Min., spätestens nach $((WARTE_MAX_S / 3600)) Std.; das Dauerrechnen startet so lange nichts Neues)."
+				return 0
+			fi
+			log "Neu: MoveEye $v · Sim $lx_ver wartet seit über $((WARTE_MAX_S / 3600)) Std. - spiele trotz laufendem Test ein (Neustarts erst danach)."
+			TROTZ_TEST=1
+		fi
 	fi
 	urls="$REPO_RAW/main/simulator3d/MoveEyeSim3D_Linux.zip"
 	if [ "$herkunft" = Programmdatei ]; then urls="$REPO_RAW/v$v/simulator3d/MoveEyeSim3D_Linux.zip $urls"
@@ -687,7 +713,7 @@ lauf() {   # einmal: laden, prüfen, einspielen
 	simulator "$d" "$w"
 	einspielen "$d/hp/hp_update.sh" "$SELBST" 755 "dieses Update, gilt ab dem nächsten Lauf"
 	# Neu starten, was neu ist - nie während eines Tests oder beim Spielen
-	if [ -n "$(beschaeftigt)" ]; then
+	if [ -n "$(beschaeftigt)" ] || test_laeuft; then
 		log "Inzwischen läuft ein Test oder es wird gespielt - Neustarts verschoben (Dateien sind eingespielt, gelten danach bzw. nach dem nächsten Start)."
 	else
 		if [ "${RUNNER_NEU:-0}" -eq 1 ] && u="$(runner_dienst)" && [ -n "$u" ]; then
@@ -706,6 +732,7 @@ lauf() {   # einmal: laden, prüfen, einspielen
 	fi
 	mkdir -p "$ZUSTAND" && echo "$v" > "$ZUSTAND/version" && echo "$lx_ver" > "$ZUSTAND/sim_version" && echo "$lx_sha" > "$ZUSTAND/sim_sha256"
 	stempel
+	rm -f "$ZUSTAND/wartet"
 	log "Fertig: MoveEye $v · Sim $lx_ver eingespielt ($GEAENDERT Datei(en) neu)."
 	return 0
 }

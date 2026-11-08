@@ -37,7 +37,11 @@ jobs:
           echo "== HP-Update / Testbild"
           ls -l /usr/local/sbin/moveeye-hp-update /usr/local/lib/moveeye-kiosk/ 2>&1 | cut -c1-160
           systemctl list-timers --all --no-legend 'moveeye-hp-update*' 2>&1 | head -3
-          systemctl show moveeye-hp-update.service -p ActiveState -p Result -p ExecMainStatus 2>&1
+          systemctl show moveeye-hp-update.service -p ActiveState -p Result -p ExecMainStatus -p ExecMainStartTimestamp -p ExecMainExitTimestamp 2>&1
+          echo "Zustand HP-Update:"; for f in version sim_version fassung letzter_lauf wartet nichts_neu verschoben; do
+            p="/var/lib/moveeye-hp-update/$f"; [ -e "$p" ] && echo "  $f: $(head -c 80 "$p" | tr -cd '0-9a-zA-Z. \n' | head -n 1) ($(date -r "$p" '+%F %T'))" || echo "  $f: -"; done
+          grep -m1 '^HP_FASSUNG=' /usr/local/sbin/moveeye-hp-update 2>&1 | cut -c1-60
+          journalctl -u moveeye-hp-update.service -n 8 --no-pager -o short-iso 2>&1 | cut -c1-200
           ls -l /var/log/moveeye-hp-update.log 2>&1; tail -n 25 /var/log/moveeye-hp-update.log 2>&1 | cut -c1-200
           python3 -c "import tkinter;print('tkinter da', tkinter.TkVersion)" 2>&1 | tail -1
           ls -la /run/moveeye-test/ /run/moveeye-spiel/ 2>&1

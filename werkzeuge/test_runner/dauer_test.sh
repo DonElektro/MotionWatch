@@ -34,7 +34,7 @@ warte() {   # warte SEKUNDEN BEDINGUNG…: bis die Bedingung gilt
 }
 mkdir -p "$W/run/test" "$W/run/spiel" "$W/home"
 export MW_KIOSK_PAUSE="$W/run/test/kiosk_pause" MW_SPIEL="$W/run/spiel/spielen" MW_RUNNER_HOME="$W/home"
-export MW_HPU_STEMPEL="$W/letzter_lauf" MW_DAUER_TAKT=0.2
+export MW_HPU_STEMPEL="$W/letzter_lauf" MW_HPU_WARTET="$W/hpu_wartet" MW_HPU_FASSUNG="$W/hpu_fassung" MW_DAUER_TAKT=0.2
 D="$HIER/dauer.py"
 spielen() { printf '{"grund": "test", "seit": %s}\n' "$(date +%s)" > "$MW_SPIEL"; }
 ruhig_15min() { touch -d '16 minutes ago' "$MW_SPIEL"; }     # schnelle Uhr: 16 Min. ohne Spielen
@@ -239,6 +239,16 @@ rm -f "$MW_SPIEL"
 touch -d '21 hours ago' "$MW_HPU_STEMPEL"
 waehle "$K"; [ "$(wert art "$W/aus")" = nichts ] && grep -q Update "$W/aus" && ok "HP-Update fällig: HP bleibt frei" || fehler "Update-Fenster"
 touch "$MW_HPU_STEMPEL"
+echo "9.0.0 9.0.0" > "$MW_HPU_WARTET"
+waehle "$K"; [ "$(wert art "$W/aus")" = nichts ] && grep -q Update "$W/aus" && ok "neues HP-Update wartet (Marke): kein neues Paket, HP bleibt frei" || fehler "Marke «wartet» nicht beachtet"
+touch -d '9 hours ago' "$MW_HPU_WARTET"
+waehle "$K"; [ "$(wert art "$W/aus")" != nichts ] && ok "alte Marke «wartet» (über 8 Std.) hält nicht mehr auf" || fehler "alte Marke hält auf"
+rm -f "$MW_HPU_WARTET"; : > "$W/aus"
+echo 5 > "$MW_HPU_FASSUNG"; touch -d '7 hours ago' "$MW_HPU_STEMPEL"
+waehle "$K"; [ "$(wert art "$W/aus")" = nichts ] && grep -q Update "$W/aus" && ok "altes HP-Update (Fassung 5, über 6 Std.): HP bleibt frei" || fehler "Übergang Fassung 5"
+echo 6 > "$MW_HPU_FASSUNG"
+waehle "$K"; [ "$(wert art "$W/aus")" != nichts ] && ok "neue Fassung 6: rechnet weiter" || fehler "Fassung 6 hält auf"
+touch "$MW_HPU_STEMPEL"; rm -f "$MW_HPU_FASSUNG"; : > "$W/aus"
 python3 "$D" waehlen --kandidaten '{"zweige": []}' --ausgabe /dev/null > /dev/null 2>&1 && fehler "Kandidaten ohne main angenommen" || ok "Kandidaten ohne main abgelehnt"
 python3 "$D" waehlen --kandidaten '{"main": {"name": "x;rm", "sha": "123"}}' --ausgabe /dev/null > /dev/null 2>&1 && fehler "ungültiger Stand angenommen" || ok "ungültiger Stand / SHA abgelehnt"
 waehle "$K"; P1=$(wert paket "$W/aus")
