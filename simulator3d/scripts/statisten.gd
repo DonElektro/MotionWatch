@@ -728,7 +728,11 @@ func spawn_one(group := "") -> Node3D:
 	S[lead.get_instance_id()] = e
 	seen[lead.get_instance_id()] = true
 	lead.set_meta("st_statist", true)
+	if main.get("privat") != null:
+		main.privat.mark(lead)                                   # Wunsch Nr. 2: statists keep off your pitch (privatplatz.gd)
 	for mbr in members:
+		if main.get("privat") != null:
+			main.privat.mark(mbr)
 		var f := _new_entry(mbr, true)
 		f["group"] = lead.get_instance_id()
 		S[mbr.get_instance_id()] = f

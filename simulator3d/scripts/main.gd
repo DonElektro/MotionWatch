@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3.58.0"
+const VERSION := "3.59.0"
 const Versionen = preload("res://scripts/versionen.gd")   # Versionierung 3.0.0: from 3.0.0 VERSION = "X.Y.Z" like MoveEye (see there)
 const Stimme = preload("res://scripts/abenteuer_stimme.gd")   # 3.23: the one switch «Stimme» (an | aus | untertitel)
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
@@ -414,6 +414,8 @@ var visitor_speed := 1.0
 var mix := "mixed"                    # mixed | more_animals | more_people | animals | people
 var flee_light := true                # animals flee from the white light at night
 var flee_sound := true                # ... and from the siren
+var privat_on := true                 # Wunsch Nr. 2: normal visitors keep off your pitch (privatplatz.gd)
+var privat                            # privatplatz.gd: the private circle round MoveEye and its tent
 # ---- parts of main.gd in their own files (Vorschlag 24): main_*.gd, loaded at their first use ----
 var _mods := {}                       # "steuerung" -> main_steuerung.gd … (load, not preload: parsed only when needed)
 
@@ -516,6 +518,9 @@ func _ready() -> void:
 	parcours = preload("res://scripts/parcours.gd").new()   # 3D-4.18: the tracking parcours (scene «parcours»)
 	parcours.main = self
 	add_child(parcours)
+	privat = preload("res://scripts/privatplatz.gd").new()  # Wunsch Nr. 2: normal visitors keep off your pitch (burglars do not)
+	privat.main = self
+	add_child(privat)
 	einbruch = preload("res://scripts/einbruch.gd").new()   # Einbruch-Abläufe: auskundschaften, ablenken, stehlen - wann warnt MoveEye?
 	einbruch.main = self
 	add_child(einbruch)
@@ -3353,6 +3358,8 @@ func spawn(kind: String, from = null, to = null) -> Node3D:
 	v.setup(self, kind, a, b, spd * randf_range(0.85, 1.15))
 	if menschen != null:
 		menschen.after_build(v, kind)               # P10: vest, bag, bike, own pace, gentle bends, children run about
+	if privat != null:
+		privat.on_spawn(v)                          # Wunsch Nr. 2: from main.visit(): keeps off your pitch (privatplatz.gd)
 	if tiere != null:
 		tiere.on_spawn(v)                         # Paket «Tiere»: the real walking speed of the animal
 	v.set_night(is_dark())
@@ -3394,6 +3401,17 @@ func car(kind_ := "car") -> void:
 
 
 func visit(k: String) -> void:
+	"""Wunsch Nr. 2 (privatplatz.gd): the persons of a normal visit keep off your pitch - not the burglars, thieves, guests
+	and deliveries (privatplatz.AUSNAHMEN)"""
+	var pv: bool = privat != null and not privat.exempt(k)
+	if pv:
+		privat.ctx += 1
+	_visit_kind(k)
+	if pv:
+		privat.ctx -= 1
+
+
+func _visit_kind(k: String) -> void:
 	"""a visitor that fits the scene: also the special ones (a car parks, somebody sits on the bench, an animal comes to the feeder)"""
 	if k == "car":
 		car()
@@ -3688,7 +3706,7 @@ const PLACE := {"patrol_on": ["Mover", "Patrouille"], "patrol_mode": ["Mover", "
 		"tractor": ["Besuch", "Fahrzeuge"], "moto": ["Besuch", "Fahrzeuge"], "van": ["Besuch", "Fahrzeuge"], "auto": ["Besuch", "Von selbst"], "mix": ["Besuch", "Von selbst"],
 		"visit_rate": ["Besuch", "Von selbst"], "daily_life": ["Besuch", "Von selbst"], "real_time": ["Szene", "Zeit"], "max_visitors": ["Besuch", "Von selbst"], "visitor_speed": ["Besuch", "Verhalten"],
 		"lamp_share": ["Besuch", "Verhalten"], "look_at_light": ["Besuch", "Verhalten"], "flee_light": ["Besuch", "Verhalten"],
-		"flee_sound": ["Besuch", "Verhalten"], "avoid_on": ["Besuch", "Verhalten"], "lens_vignette": ["Kamerabild", "Feineinstellungen"],
+		"flee_sound": ["Besuch", "Verhalten"], "avoid_on": ["Besuch", "Verhalten"], "privat_on": ["Besuch", "Verhalten"], "lens_vignette": ["Kamerabild", "Feineinstellungen"],
 		"sound_on": ["Licht & Ton", "Mikrofon"], "game_open": ["Spiel", "Runde"], "game_start": ["Spiel", ""],
 		"game_stop": ["Spiel", ""], "game_wizard": ["Spiel", ""], "tv_mode": ["Spiel", "Anzeige"], "game_minutes": ["Spiel", "Runde"], "game_mode": ["Spiel", "Runde"], "game_goal": ["Spiel", "Runde"],
 		"game_level": ["Spiel", "Regeln"], "game_glevel": ["Spiel", "Regeln"], "game_real": ["Spiel", "Regeln"], "game_lives": ["Spiel", "Regeln"], "game_items": ["Spiel", "Regeln"], "game_teams": ["Spiel", "Regeln"],
@@ -4315,7 +4333,7 @@ func restart_args() -> PackedStringArray:
 	return _mod("start").restart_args()
 
 
-const KEEP := ["pad_auto", "pad_sens", "pad_inv_y", "pad_swap", "pad_rumble", "colors_on", "seasons_on", "pad_dead", "pad_center", "show_laser", "game_max", "tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "fp_spot", "szene_spot", "bt_spot", "bt_bed", "bt_season", "bt_free", "bt_events", "bt_mount", "bt_bag", "bt_stove", "bt_wall", "bt_orient", "bt_marks", "bt_visited", "auto_update", "dev_updates", "news_seen", "news_popup", "show_zones3d", "show_det3d", "fauna_on", "twin", "ui_simple", "ui_icons", "ui_icons_pick", "start_groups", "mine_mig", "auto_visitors", "daily_life", "real_weather", "real_time", "night_weather", "surprise_on", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
+const KEEP := ["pad_auto", "pad_sens", "pad_inv_y", "pad_swap", "pad_rumble", "colors_on", "seasons_on", "pad_dead", "pad_center", "show_laser", "game_max", "tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "fp_spot", "szene_spot", "bt_spot", "bt_bed", "bt_season", "bt_free", "bt_events", "bt_mount", "bt_bag", "bt_stove", "bt_wall", "bt_orient", "bt_marks", "bt_visited", "auto_update", "dev_updates", "news_seen", "news_popup", "show_zones3d", "show_det3d", "fauna_on", "twin", "ui_simple", "ui_icons", "ui_icons_pick", "start_groups", "mine_mig", "auto_visitors", "daily_life", "real_weather", "real_time", "night_weather", "surprise_on", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound", "privat_on",
 		"avoid_on", "grafik_mode", "cam_wippen", "foto_tex", "reduce_motion", "tour_auto", "blinki_on", "quality", "view_scale", "win_fps", "auto_perf", "meadow_on", "season", "mover_on", "mover_max", "mast_h", "patrol_judge", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "moon_auto", "cam1_yaw", "stream_last", "game_bots", "game_tutorial", "game_daily", "game_ghost", "game_heart", "game_botguard", "kids_on", "kids_ask", "kids_thief", "kids_scary", "kids_laser", "kids_sound", "kids_stars", "dev_area", "news_links"]
 var _settings_dirty := false
 

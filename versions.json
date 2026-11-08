@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-08 00:33",
+ "generated": "2026-11-08 00:56",
  "versions": [
   {
-   "version": "3.63.1",
-   "file": "webcam_bewegung_3_63_1.py",
+   "version": "3.63.2",
+   "file": "webcam_bewegung_3_63_2.py",
    "url": "",
-   "sha256": "3d28f961ea5510184bf18662baa969be99008cd7ee27e514196869e62b4c90bf",
-   "date": "2026-11-08 00:33",
-   "notes": "Fehlerkorrektur: Selbsttest «Fertig kaufen» (639zj) erkennt den Eintrag im Fenster «Mehr» auch, wenn der Datentausch ihn umhüllt (nur im CI mit Fenster sichtbar).",
-   "size": 3697256,
-   "sig": "1f7b5abc562b8203d248b0eb21d58c6a575bd81caf8918ae2d0a3bca6ef42600a872aadd121299581ba39603d58fa2077e80a3d00c079c8f41c81f2df36bca0a",
+   "sha256": "d15e69a5eedc80630cc0f78c3d0fea888822511d1cdf9d291aecf6adb9031695",
+   "date": "2026-11-08 00:56",
+   "notes": "Fehlerkorrektur: langes Drücken auf «Ansicht» – öffnet sich das Menü unter dem Finger, schliesst es das Loslassen nicht mehr sofort. Dazu Sim 3.59.0: Besucher meiden deinen Platz, neue Einbruch-Abläufe (Nachts ums Zelt schleichen, Velo-Diebstahl), Erkennungstest-Plan «real».",
+   "size": 3697199,
+   "sig": "9b524623aabbd52ca81ee98b3c68504eb1a3afae584cd3ef009a05def00207adb66a5b1a574b2055cbadbb042423773fea9608a13d40f7973f689b812bf1dc08",
    "data": {
-    "file": "moveeye_daten_3_63_1.zip",
+    "file": "moveeye_daten_3_63_2.zip",
     "url": "",
-    "sha256": "968cb4a0bdf050741a1899cf61c2647e180fba8b06b352f888990ede0975a544",
-    "size": 4869756,
-    "sig": "56df7679208bfdf26cbeeb43540f8a173a0fc9e37f9da556374b630bc54c0d61412e3571d0e3430cc725f3825fd44957854fee35abe7cd97b357fa6733cb1a08"
+    "sha256": "96338579219885a79478e93cf54ce12e773fb7ed2ae9428bf285c9775f7c4ac2",
+    "size": 4869953,
+    "sig": "5741426fbc043dbadb7ca241e7b631da0a57323a9cfae3f568900e03a4c94b18aa1aeec95afe78fdb71d61ae4cbd03dc66e39f76b38ba8fca85fdfe4c81f7a0c"
    }
   },
   {
@@ -168,31 +168,23 @@
   }
  ],
  "sim": {
-  "ver": "3.58.0",
-  "version": "3D-5.58.0",
-  "notes": "Bäume und Sträucher echt, Herbst/Winter, Wind nach Szenenwechsel, Piper-Ansagen im Simulator",
+  "ver": "3.59.0",
+  "version": "3D-5.59.0",
+  "notes": "Besucher meiden deinen Platz, Einbruch-Abläufe Zelt und Velo, Plan «real»",
   "mw_min": "3.55.0",
   "win": {
-   "ver": "3.58.0",
+   "ver": "3.59.0",
    "file": "simulator3d/MotionWatch3D_Simulator.zip",
-   "size": 51804614,
-   "sha256": "555ac3bd18258a197ed433cef77319396e6a2dc68758a5d50633a146f18798e0",
-   "sig": "a57636391fe4280f9c4ebf29e176e66b373e1f8fe35466161ab7b4ca3fb92589410e9d20ff011de1d07e85bd7e5da6bb7ff433617a77be11cb30486a7a0c3905"
+   "size": 51821365,
+   "sha256": "bbbf2db8a45f1858785b6853e901b044cda9672b798c44f90bef9c1f46e51f15",
+   "sig": "cf1745d67ee4de2752ee99f469bbe8531371426227c7a4a31b6d4d215f10b9e0e33e30dec7685c7660228c2c6cfd6839efc278ff4adb6b27131c45cf9c018301"
   },
   "linux": {
-   "ver": "3.58.0",
+   "ver": "3.59.0",
    "file": "simulator3d/MoveEyeSim3D_Linux.zip",
-   "size": 45832283,
-   "sha256": "8f24318b823cf7708eb5f5144db3b974885ca0403a75a8e6887edb0c990b4d09",
-   "sig": "4a23b6b7d1704371a75420a88239001de5a72945005f32c6730579adccd010e45468196f8c55e16ea72e3e5d86113ffe025ec28e8b906cbfb0d88e98f17f3c07"
-  },
-  "pi": {
-   "ver": "3.58.0",
-   "file": "simulator3d/MoveEyeSim3D_Pi.zip",
-   "size": 38186828,
-   "sha256": "dd9b194664306df7ace9a70b66889959ad8cf2c37c68da19d0d8326a9fd0e6f2",
-   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.58.0/MoveEyeSim3D_Pi.zip",
-   "sig": "523739b9e496b078de0379624cec6f8777700d1a13b641815effe4d7ee39ff8a0860523be421c21d292efcb5e5f75cc7cc6c9463c784f8449eefb74b9308ec0f"
+   "size": 45850098,
+   "sha256": "13d95cc66e8ace8dfd2fce2bc6d16f745bde729f6513fd7a0a3fa8f42b05f694",
+   "sig": "83af8a8589f6b9aaa24f6d74c9b1760a22fb2d0c32b74caaf47934fdc2649a120b2101fa7a1108a8410cb56ad7f5a9e8764360d396074145a1be8ced04b45307"
   }
  }
 }

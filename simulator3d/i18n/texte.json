@@ -1579,6 +1579,12 @@
   "it": "%s attraversa l’immagine (nessuna persona – MoveEye non deve inviare un push)",
   "rm": "%s charra tras il maletg (betg ina persuna – MoveEye na duai betg trametter in push)"
  },
+ "%s fährt mit dem Velo davon": {
+  "en": "%s rides off on the bike",
+  "fr": "%s s’enfuit sur le vélo",
+  "it": "%s se ne va in bici",
+  "rm": "%s va davent cun il velo"
+ },
  "%s gegen %s": {
   "en": "%s for %s",
   "fr": "%s contre %s",
@@ -1716,6 +1722,12 @@
   "fr": "%s se recharge encore %d s",
   "it": "%s si ricarica ancora %d s",
   "rm": "%s chargia anc %d s"
+ },
+ "%s macht sich am Schloss zu schaffen": {
+  "en": "%s is tampering with the lock",
+  "fr": "%s s’attaque au cadenas",
+  "it": "%s armeggia con il lucchetto",
+  "rm": "%s sa fa da chaffar vi da la serra"
  },
  "%s MoveEye hat bemerkt: %s fehlt ✓": {
   "en": "%s MoveEye noticed: %s is missing ✓",
@@ -4639,6 +4651,12 @@
   "it": "Al punto di sosta: borraccia e torcia sono di nuovo piene.",
   "rm": "A la plazza da pausa: buttiglia e fatschla èn puspè plainas."
  },
+ "Am Schloss": {
+  "en": "At the lock",
+  "fr": "Au cadenas",
+  "it": "Al lucchetto",
+  "rm": "Vi da la serra"
+ },
  "Am Schluchtweg beim Schild «Absturzgefahr» fotografiert sich jemand. Die Kühe schauen zu.": {
   "en": "On the gorge path by the «danger of falling» sign someone takes pictures of himself. The cows are watching.",
   "fr": "Sur le chemin de la gorge, près du panneau «danger de chute», quelqu’un se photographie. Les vaches regardent.",
@@ -7032,6 +7050,12 @@
   "fr": "Faire asseoir les visiteurs",
   "it": "Far sedere i visitatori",
   "rm": "Far seser visitaders"
+ },
+ "Besucher meiden deinen Platz (Privatsphäre; Einbrecher und Diebe nicht)": {
+  "en": "Visitors keep off your pitch (privacy; burglars and thieves do not)",
+  "fr": "Les visiteurs évitent ton emplacement (vie privée ; pas les cambrioleurs ni les voleurs)",
+  "it": "I visitatori evitano la tua piazzola (privacy; non gli scassinatori e i ladri)",
+  "rm": "Visitaders evitan tia plazza (sfera privata; betg ils scassaders ed ils laders)"
  },
  "Betrunkener": {
   "en": "Drunk person",
@@ -11629,6 +11653,12 @@
   "fr": "Voleur (vélo, porte)",
   "it": "Ladro (bici, porta)",
   "rm": "Lair (velo, isch)"
+ },
+ "Dieb am Zelt": {
+  "en": "Thief at the tent",
+  "fr": "Voleur à la tente",
+  "it": "Ladro alla tenda",
+  "rm": "Lader vi da la tenda"
  },
  "Dieb mit Lampe": {
   "en": "Thief with a torch",
@@ -23852,6 +23882,12 @@
   "it": "Se ti avvicini, si appallottola. Se aspetti in silenzio, riprende a sgattaiolare lungo la siepe.",
   "rm": "Sch’ins vegn pli datiers, sa rulla el ensemen. Sch’ins spetga quiet, sa stgaffa el vinavant lung la saiv."
  },
+ "kommt zum abgeschlossenen Velo, lange am Schloss, fährt oder trägt es weg": {
+  "en": "comes to the locked bike, works on the lock for a long time, rides or carries it away",
+  "fr": "vient vers le vélo cadenassé, s’acharne longtemps sur le cadenas, part avec en roulant ou en le portant",
+  "it": "arriva alla bici chiusa, armeggia a lungo con il lucchetto, se ne va in sella o portandola",
+  "rm": "vegn tar il velo serrà, lavura ditg vi da la serra, va davent cun el u al porta"
+ },
  "Kompass": {
   "en": "Compass",
   "fr": "Boussole",
@@ -24733,6 +24769,12 @@
   "fr": "Longues journées, orages possibles, le cône d'avalanche porte.",
   "it": "Giornate lunghe, temporali possibili, il cono di valanga regge.",
   "rm": "Dis lungs, urizis pussaivels, il cumulus da lavina tegna."
+ },
+ "lange ums Zelt: umkreisen, warten, ducken, Schatten – dann Rucksack, Kühlbox oder Handy weg": {
+  "en": "a long time round the tent: circling, waiting, crouching, shadows – then the backpack, cool box or phone is gone",
+  "fr": "longtemps autour de la tente : tourner, attendre, se baisser, l’ombre – puis le sac à dos, la glacière ou le téléphone disparaît",
+  "it": "a lungo intorno alla tenda: girare, aspettare, abbassarsi, ombra – poi spariscono zaino, borsa frigo o telefonino",
+  "rm": "ditg enturn la tenda: circular, spetgar, sa sbassar, sumbriva – lura èn il sac da dies, la chista da fraid u il telefonin davent"
  },
  "lange, gebogene Hörner": {
   "en": "long, curved horns",
@@ -29146,6 +29188,12 @@
   "fr": "La nuit, de petites lumières vertes dansent près du tas de bois. Le jour, on n’en voit rien.",
   "it": "Di notte piccole luci verdi danzano vicino alla catasta. Di giorno non si vede niente.",
   "rm": "La notg sautan pitschnas glischs verdas tar la pigna da laina. Di na vesan ins nagut."
+ },
+ "Nachts ums Zelt schleichen, dann stehlen": {
+  "en": "Sneaking round the tent at night, then stealing",
+  "fr": "Rôder la nuit autour de la tente, puis voler",
+  "it": "Di notte girare furtivi intorno alla tenda, poi rubare",
+  "rm": "La notg sa stgaffar enturn la tenda, lura engular"
  },
  "Nachts zeigt ein Stern die Richtung: der Polarstern steht immer im Norden. Welcher ist es?": {
   "en": "At night a star shows the way: the pole star is always in the north. Which one is it?",
@@ -38948,6 +38996,12 @@
   "it": "Tornare all'ultimo luogo",
   "rm": "Turnar al davos lieu"
  },
+ "Ums Zelt schleichen": {
+  "en": "Sneaking round the tent",
+  "fr": "Rôder autour de la tente",
+  "it": "Girare furtivi intorno alla tenda",
+  "rm": "Sa stgaffar enturn la tenda"
+ },
  "Umwandeln ging nicht: ": {
   "en": "Conversion failed: ",
   "fr": "Échec de la conversion : ",
@@ -39601,6 +39655,12 @@
   "fr": "Vol de vélo la nuit",
   "it": "Furto di bicicletta di notte",
   "rm": "Engular in velo la notg"
+ },
+ "Velo-Diebstahl: Schloss knacken, wegfahren oder tragen": {
+  "en": "Bike theft: picking the lock, riding or carrying it away",
+  "fr": "Vol de vélo : forcer le cadenas, partir en roulant ou en le portant",
+  "it": "Furto di bici: forzare il lucchetto, andarsene in sella o portandola",
+  "rm": "Engulada da velo: rumper la serra, ir davent u al purtar"
  },
  "Velo-Platz": {
   "en": "Bike spot",

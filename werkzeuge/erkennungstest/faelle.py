@@ -235,8 +235,9 @@ def new_boxes(s, base_boxes):
     return out
 
 
-def observe(secs, tag, want, t_spawn, base):
-    """MoveEye abfragen; want = person | animal | vehicle | none. base = (Labels, Personen-Rahmen) ohne Besucher."""
+def observe(secs, tag, want, t_spawn, base, stop=None):
+    """MoveEye abfragen; want = person | animal | vehicle | none. base = (Labels, Personen-Rahmen) ohne Besucher.
+    stop: Funktion -> True = vorzeitig fertig (z. B. der Einbruch-Ablauf ist zu Ende; höchstens secs)"""
     base_labs, base_boxes = base
     seen = {}
     first_person = None
@@ -248,7 +249,15 @@ def observe(secs, tag, want, t_spawn, base):
     shot_first = shot_mid = ""
     msgs0 = msg_ids()
     t_end = t_spawn + secs
+    n_loop = 0
     while time.time() < t_end:
+        n_loop += 1
+        if stop is not None and n_loop % 4 == 0:
+            try:
+                if stop():
+                    break
+            except Exception:
+                pass
         try:
             s = mw_state()
         except Exception:
@@ -735,4 +744,89 @@ def nebenfunde(done):
         ctl(action="set", id="cond_headlights", value=False)
 
 
-EXTRAS = {"blend": blend, "linse": linse, "kopf": kopf, "ruhig": ruhig, "nebenfunde": nebenfunde}
+# ------------------------------------------------------------------ echte Situationen (Wunsch Nr. 3, 07.11.2026)
+# Einbruch-Abläufe des Simulators (simulator3d/scripts/einbruch.gd, Steuerung {"action": "einbruch"}): «zelt_runde» – ein
+# Dieb schleicht nachts lange ums Zelt (umkreisen, Pausen, geduckt / kriechend, im Schatten), stiehlt Rucksack, Kühlbox oder
+# Handy und geht; «velo_weg» – Velo-Diebstahl (kommt normal hin, lange am Schloss, dann wegfahren / tragen / schieben).
+# Soll: Person (die ganze Zeit ist nur der Dieb da). Abwechslung über den Seed (Startseite, Zeiten, Kleidung, Beute,
+# Fluchtart): je Fall und Lauf ein anderer, aber fester Seed (gleicher Schlüssel = gleicher Ablauf, auch in alten Läufen).
+# Zusätzlich im Ergebnis: Griff (s), ob MoveEye die Person VOR dem Griff hatte, Urteil / Note des Simulators.
+REAL = [("camping", "nacht", "einbruch", "zelt_runde"), ("camping", "nacht", "veloklau", "velo_weg"),
+        ("camping", "dunkel", "einbruch", "zelt_runde"), ("camping", "daemmerung", "veloklau", "velo_weg"),
+        ("stellplatz", "nacht", "einbruch", "zelt_runde"), ("stellplatz", "nacht", "veloklau", "velo_weg")]
+REAL_EVENTS = ("einbruch", "veloklau")
+REAL_INFO = {"zelt_runde": "Dieb schleicht nachts lange ums Zelt, stiehlt etwas", "velo_weg": "Velo-Diebstahl: lange am Schloss, dann weg"}
+REAL_MAX_S = 480.0          # höchstens so lange (die Abläufe dauern etwa 2–5 Min.)
+
+
+def real_seed(key):
+    """fester Seed aus dem Schlüssel (nicht hash(): der ändert bei jedem Python-Start)"""
+    return 1 + sum((i + 1) * ord(ch) for i, ch in enumerate(key)) % 997
+
+
+def real_keys(rep):
+    return ["%s|%s|%s" % (p, c, e) + ("" if r == 0 else "#%d" % (r + 1)) for p, c, e, _ in REAL for r in range(rep)]
+
+
+def _real_case(place, ck, ev, ablauf, key):
+    ST["cur_key"] = key.split("#")[0]
+    ST["fall"] = key
+    waited = wait_ok()
+    clear()
+    time.sleep(2)
+    base = baseline(3.0)
+    sd = real_seed(key)
+    tag = key.replace("|", "_").replace("#", "_")
+    r = ctl(action="einbruch", do="start", ablauf=ablauf, seed=sd, zeit=False)
+
+    def fertig():
+        return not bool(((ctl(action="einbruch", do="state") or {}).get("state") or {}).get("running", True))
+    t_spawn = time.time()
+    rec = observe(REAL_MAX_S, tag, "person", t_spawn, base, stop=fertig if r.get("ok") else (lambda: True))
+    res = {}
+    try:
+        if not fertig():
+            ctl(action="einbruch", do="stop")
+        res = ctl(action="einbruch", do="result").get("result") or {}
+    except Exception:
+        pass
+    griff = res.get("griff_s")
+    fp = rec.get("first_person_s")
+    rec.update({"key": key, "place": place, "world": PLAN[place][0], "cond": ck, "cond_name": COND[ck][0], "event": ev,
+                "info": "%s (Zufall %d)" % (REAL_INFO.get(ablauf, ablauf), sd), "ablauf": ablauf, "seed": sd,
+                "spawn_ok": bool(r.get("ok", False)), "spawn_err": r.get("error", ""), "secs": round(time.time() - t_spawn, 1),
+                "t": time.strftime("%H:%M:%S"), "load": load(), "waited": waited, "sonderfall": True,
+                "griff_s": griff, "beute": res.get("beute", ""), "sim_fertig": bool(res.get("fertig", False)),
+                "sim_urteil": res.get("urteil", ""), "sim_note": res.get("note"), "sim_push_s": res.get("push_s"),
+                "vor_griff": bool(fp is not None and griff is not None and float(griff) >= 0 and fp <= float(griff))})
+    save(rec)
+    log(key, "->", rec.get("detected"), rec.get("as", ""), rec.get("t_detect", ""), "Griff", griff, "vor Griff", rec["vor_griff"],
+        "fps", rec["fps"], "pushes", len(rec["pushes"]))
+
+
+def real(done):
+    """Plan «real»: die echten Situationen, je --laeufe mal (anderer Seed pro Lauf)"""
+    rep = max(1, int(K.get("laeufe", 1)))
+    last_place = last_cond = ""
+    for place, ck, ev, ablauf in REAL:
+        keys = ["%s|%s|%s" % (place, ck, ev) + ("" if r == 0 else "#%d" % (r + 1)) for r in range(rep)]
+        if all(k in done for k in keys):
+            continue
+        if "ort|" + place in done:
+            log("Ort", place, "übersprungen (stürzt beim Laden ab)")
+            continue
+        if place != last_place:
+            wait_ok()
+            goto_place(place)
+            last_place, last_cond = place, ""
+        if ck != last_cond:
+            ST["fall"] = "%s|%s|*" % (place, ck)
+            set_cond(ck)
+            time.sleep(15)
+            last_cond = ck
+        for key in keys:
+            if key not in done:
+                _real_case(place, ck, ev, ablauf, key)
+
+
+EXTRAS = {"blend": blend, "linse": linse, "kopf": kopf, "ruhig": ruhig, "nebenfunde": nebenfunde, "real": real}

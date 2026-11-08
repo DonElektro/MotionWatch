@@ -1,8 +1,15 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 07.11.2026 · Version **3.58.0** · MoveEye **3.62.1** (Drei Spuren ab 03.11.2026: Simulator und MoveEye mit eigenen Nummern, Verträglichkeit über `MW_MIN` in `scripts/abgleich.gd` / `SIM_MIN` in MoveEye Teil 545; 3.0.0 bis 3.55.2 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 08.11.2026 · Version **3.59.0** · MoveEye **3.63.2** (Drei Spuren ab 03.11.2026: Simulator und MoveEye mit eigenen Nummern, Verträglichkeit über `MW_MIN` in `scripts/abgleich.gd` / `SIM_MIN` in MoveEye Teil 545; 3.0.0 bis 3.55.2 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.59.0 (MoveEye 3.63.2): Privatsphäre und echte Einbruch-Abläufe (sim-szenen)
+
+- privatplatz.gd: Besucher meiden den eigenen Platz (Schalter unter Besuch → Verhalten), ausgenommen Einbrecher, Diebe, Gäste,
+  Spiele, Geschichten; Test privatplatz_test.gd. Bekannte Lücke: ferienpark_leben.gd setzt Figuren direkt (gehen noch über den Platz).
+- einbruch.gd: «Nachts ums Zelt schleichen, dann stehlen», «Velo-Diebstahl»; Erkennungstest Plan «real» (in «alle»), Dauerrechnen
+  ERK_PLAENE mit «real».
 
 ## NEU in 3.58.0 (MoveEye 3.62.1): Bäume und Sträucher (Flora Paket 1), Piper im Simulator
 

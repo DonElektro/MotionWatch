@@ -23,6 +23,9 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 3.63.2: Fehlerkorrektur: langes Drücken auf «Ansicht» – öffnet sich das Menü unter dem Finger, schliesst es das Loslassen
+    nicht mehr sofort. Dazu Sim 3.59.0: Besucher meiden deinen Platz, neue Einbruch-Abläufe (Nachts ums Zelt schleichen,
+    Velo-Diebstahl), Erkennungstest-Plan «real».
   * 3.63.1: Fehlerkorrektur: Selbsttest «Fertig kaufen» (639zj) erkennt den Eintrag im Fenster «Mehr» auch, wenn der Datentausch
     ihn umhüllt (nur im CI mit Fenster sichtbar).
   * 3.63.0: 📁 Datentausch unter Mehr: Fotos, Videos und Dokumente teilen (Für alle / Meine Dateien, Ordner, Vorschaubilder,
@@ -106,9 +109,6 @@ Features
     ./kiosk_ein.sh macht den PC zur reinen Simulator-Maschine (Vollbild, sendet an MoveEye, Neustart nach Absturz, SSH);
     Ctrl+Alt+D = normales Mint, ./kiosk_aus.sh stellt alles zurück.
   * 3.43.1: MoveEye bietet unter /sim jetzt auch den Simulator für Linux zum Herunterladen an.
-  * 3.43.0: Gehäuse v5.2b: SD-Schlitz für eine Verlängerung und USB-C-Öffnung (je mit Stopfen), Kopf 06 mit Status-LED, Rippen
-    und Trennsteg ≥ 1,5 mm, Sicherung 5 A, 13 Entwicklungs-Sockel (12 V an der GX16), Lochraster im Zwischenboden, Platz für
-    Lampentreiber und Sicherung, Reserve-Öffnung mit Stopfen; microSD-Verlängerung in der Teileliste.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -117,10 +117,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_3_63_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_3_63_2.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_3_63_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_3_63_1.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_3_63_2.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_3_63_2.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -137,7 +137,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "3.63.1"
+APP_VERSION = "3.63.2"
 
 
 def default_data_dir():
@@ -262,8 +262,8 @@ def prepare_settings_file():
 
 
 
-ZD_FILE = "moveeye_daten_3_63_1.zip"
-ZD_SHA256 = "968cb4a0bdf050741a1899cf61c2647e180fba8b06b352f888990ede0975a544"
+ZD_FILE = "moveeye_daten_3_63_2.zip"
+ZD_SHA256 = "96338579219885a79478e93cf54ce12e773fb7ed2ae9428bf285c9775f7c4ac2"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -24564,13 +24564,13 @@ def tools_cfg(key, value, mac=None):
 
 
 
-SIM3D = {"version": "3.58.0", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 51804614,
-         "sha256": "555ac3bd18258a197ed433cef77319396e6a2dc68758a5d50633a146f18798e0"}
+SIM3D = {"version": "3.59.0", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 51821365,
+         "sha256": "bbbf2db8a45f1858785b6853e901b044cda9672b798c44f90bef9c1f46e51f15"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 
 
-SIM3D_LINUX = {"version": "3.58.0", "file": "simulator3d/MoveEyeSim3D_Linux.zip", "size": 45832283,
-               "sha256": "8f24318b823cf7708eb5f5144db3b974885ca0403a75a8e6887edb0c990b4d09", "stem": "MoveEyeSim3D_Linux",
+SIM3D_LINUX = {"version": "3.59.0", "file": "simulator3d/MoveEyeSim3D_Linux.zip", "size": 45850098,
+               "sha256": "13d95cc66e8ace8dfd2fce2bc6d16f745bde729f6513fd7a0a3fa8f42b05f694", "stem": "MoveEyeSim3D_Linux",
                "label": "MoveEye Sim (Linux)"}
 SIM3D_LINUX_DL = {"running": False, "got": 0, "msg": ""}
 
@@ -48766,7 +48766,7 @@ class App:
 		self.watch = watch
 		self.web = web or WebStream(watch)
 		self.root = tk.Tk()
-		self.root.title("MoveEye 3.63.1")
+		self.root.title("MoveEye 3.63.2")
 		try:
 			import base64
 			self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -49144,7 +49144,7 @@ class App:
 			if not small:
 				vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
 				vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))
-			Tip(nm, f"{tr('Build')} 3.63.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+			Tip(nm, f"{tr('Build')} 3.63.2 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
 			self._egg_taps = []
 			for w_ in tl.winfo_children():
 				w_.bind("<Button-1>", self._egg_tap, add="+")
