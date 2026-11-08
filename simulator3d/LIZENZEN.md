@@ -107,6 +107,11 @@ Buche, Ahorn, Esche, Eiche, Birke, Obstbaum, Hasel, Holunder, Alpenrose, Blätte
 ~1.2 MB) sind mit `werkzeuge/flora_fernbilder.gd` aus genau diesen Bäumen gerendert.
 Keine fremde Datei.
 
+Wege und Strassen («Wege und Strassen», Zweig sim-wege: Asphalt mit Rissen, Flicken, Markierung, Schachtdeckeln, Bankett,
+Randsteine, Feldwege mit Fahrspuren und Steinen – `scripts/wege.gd`, `shaders/strasse.gdshader`, `shaders/feldweg.gdshader`):
+**selbst gebaut**, alles Muster im Shader aus dem Ort gerechnet. Die Asphalt-Struktur nutzt das eigene Foto von Elektro
+`texturen/weg_asphalt_01.jpg` (Abschnitt «Foto-Texturen im Bergtal»). Keine fremde Datei, keine Marken oder Logos.
+
 ## Foto-Texturen im Bergtal (ab 3.37) – `texturen/`, `scripts/bergtal_texturen.gd`
 
 Die Foto-Texturen (Wiese, Alpweide, Geröll, Alpenrosen, Kalkfels, Felsplatten, Wald von oben, Seegrund, Asphalt) sind aus

@@ -1,23 +1,16 @@
 {
- "version": "3D-5.62.2",
- "ver": "3.62.2",
- "name": "MoveEye Sim 3.62.2",
+ "version": "3D-5.63.0",
+ "ver": "3.63.0",
+ "name": "MoveEye Sim 3.63.0",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 54306040,
- "sha256": "37d5f7edc81ec03c47e355a10a5e3eb103defbed36c589cd37ce6ef9596ce981",
- "notes": "HP-Update: neue Versionen kommen auch beim Dauerrechnen an",
+ "size": 54321973,
+ "sha256": "d79b4a83cc8422d1778d04bef5278d9d33b5703f39f98eb6bdf76307aadb2c19",
+ "notes": "Wege und Strassen: Asphalt, Feldwege, weicher Rand",
  "mw_min": "3.55.0",
  "linux": {
   "file": "simulator3d/MoveEyeSim3D_Linux.zip",
-  "ver": "3.62.2",
-  "size": 48336215,
-  "sha256": "d0a9b56c865d96fe8609d2d5e08a8589e6f55b3e58e6eff3f50975d338b7afc6"
- },
- "pi": {
-  "file": "simulator3d/MoveEyeSim3D_Pi.zip",
-  "ver": "3.62.2",
-  "size": 37844743,
-  "sha256": "ec098d2826ae0380e68ec75958f9dffa94d9a4938ab302ea46c96cc48d4992aa",
-  "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.62.2/MoveEyeSim3D_Pi.zip"
+  "ver": "3.63.0",
+  "size": 48353301,
+  "sha256": "d27087288ac3a02352f866e9b5f6ca59926cec93062ae5da5dc1295cacf562bf"
  }
 }

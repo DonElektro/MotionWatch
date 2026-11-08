@@ -1,8 +1,13 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 08.11.2026 · Version **3.62.2** · MoveEye **3.63.2** (Drei Spuren ab 03.11.2026: Simulator und MoveEye mit eigenen Nummern, Verträglichkeit über `MW_MIN` in `scripts/abgleich.gd` / `SIM_MIN` in MoveEye Teil 545; 3.0.0 bis 3.55.2 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 08.11.2026 · Version **3.63.0** · MoveEye **3.63.2** (Drei Spuren ab 03.11.2026: Simulator und MoveEye mit eigenen Nummern, Verträglichkeit über `MW_MIN` in `scripts/abgleich.gd` / `SIM_MIN` in MoveEye Teil 545; 3.0.0 bis 3.55.2 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.63.0 (MoveEye 3.63.2): Wege und Strassen, Schritt 1 (sim-wege)
+
+- wege.gd, strasse.gdshader / feldweg.gdshader, geo.gd / gelaende.gd / scenes.gd; nur Normal / Hoch (Gras.an), Lite, MW_FLORA=alt
+  und --quality unverändert. Bilder: werkzeuge/wege_bilder.gd.
 
 ## NEU in 3.62.2 (MoveEye 3.63.2): HP-Update HP_FASSUNG 6
 
