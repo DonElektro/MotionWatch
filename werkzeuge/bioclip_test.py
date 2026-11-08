@@ -143,6 +143,56 @@ def blume():
     return cv2.imencode(".jpg", cv2.GaussianBlur(im, (5, 5), 0), [cv2.IMWRITE_JPEG_QUALITY, 90])[1].tobytes()
 
 
+INFO = {
+    "Taraxacum officinale": {"l": "de", "t": "Gewöhnlicher Löwenzahn", "r": 1, "q": "Q131219",
+                             "x": "Der Gewöhnliche Löwenzahn ist eine Pflanzenart aus der Familie der Korbblütler. Er wächst auf Wiesen.",
+                             "ed": ["Die jungen Blätter können als Salat gegessen werden."], "look": [["Scharfer Hahnenfuss", 1]],
+                             "h": "bis 30 cm", "iucn": "nicht gefährdet", "hab": "Wiese"},
+    "Taraxacum erythrospermum": {"l": "de", "t": "Rotfrüchtiger Löwenzahn", "x": "Die Blätter sind essbar, wie beim Löwenzahn."},
+    "Ranunculus acris": {"l": "de", "t": "Scharfer Hahnenfuss", "x": "Der Scharfe Hahnenfuss ist eine Pflanzenart.",
+                         "tox": ["Alle Pflanzenteile sind giftig."], "ed": ["Wird als Salat gegessen."]},
+    "Boletus edulis": {"l": "de", "t": "Gemeiner Steinpilz", "x": "Der Gemeine Steinpilz ist eine Pilzart.",
+                       "ed": ["Der Gemeine Steinpilz hat eine große Bedeutung als Speisepilz."]},
+    "Coccinella septempunctata": {"l": "en", "t": "Coccinella septempunctata", "x": "The seven-spot ladybird is a ladybird beetle."},
+    "Vulpes vulpes": {"l": "de", "t": "Rotfuchs", "x": "Der Rotfuchs ist ein Raubtier.", "iucn": "nicht gefährdet"},
+}
+ESS = re.compile(r"essbar|Speisepilz|genießbar|Wildgemüse|gegessen|verzehr|\bedible\b|\beaten\b", re.I)
+
+
+def fake_info():
+    import sqlite3
+    import zlib
+    d = tempfile.mkdtemp(prefix="mw_bio_info_")
+    p = os.path.join(d, "i.sqlite")
+    con = sqlite3.connect(p)
+    con.execute("CREATE TABLE info (sci TEXT PRIMARY KEY, z BLOB NOT NULL)")
+    con.execute("CREATE TABLE meta (k TEXT PRIMARY KEY, v TEXT)")
+    con.executemany("INSERT INTO info VALUES (?, ?)", [(k, zlib.compress(json.dumps(v, ensure_ascii=False).encode())) for k, v in INFO.items()])
+    con.commit(); con.close()
+    b = open(p, "rb").read()
+    shutil.rmtree(d, ignore_errors=True)
+    return b
+
+
+def essbar_verstoesse(obj, where="", out=None):
+    """«essbar» nie ohne Warnung: jedes «edible» hat die Warnung, jede Karte, deren sichtbarer Text vom Essen spricht, hat
+    «edible» (mit Warnung), «note_ed» (Warnung) oder ist «giftig»"""
+    out = [] if out is None else out
+    if isinstance(obj, dict):
+        if "edible" in obj and not ("145" in str((obj.get("edible") or {}).get("warn") or "") and "Wikipedia" in str(obj["edible"]["warn"])):
+            out.append(where + ": «edible» ohne Warnung")
+        if "tax" in obj and "empty" in obj:                       # a card
+            vis = " ".join([str(obj.get("text") or "")] + [str(x) for x in (obj.get("edible") or {}).get("s") or []])
+            if ESS.search(vis) and not (obj.get("edible") or obj.get("note_ed") or obj.get("tox")):
+                out.append(where + ": Text spricht vom Essen, aber keine Warnung")
+        for k, v in obj.items():
+            essbar_verstoesse(v, where + "." + str(k), out)
+    elif isinstance(obj, list):
+        for i, v in enumerate(obj):
+            essbar_verstoesse(v, where + "[%d]" % i, out)
+    return out
+
+
 def laden(datei):
     home = tempfile.mkdtemp(prefix="mw_bio_home_")
     os.environ["MOTIONWATCH_HOME"] = home
@@ -209,7 +259,9 @@ def teil_a(datei, echt="", fotos="", browser=False, bilder="", pins=False):
             r = c.get(f"/api/tausch/bio?id={fid}&lang=de", headers=H[who])
         else:
             r = c.post("/api/tausch/bio", json={"action": action, "id": fid, "lang": "de"}, headers=H[who])
-        return r.status_code, (r.get_json(silent=True) or {})
+        j_ = r.get_json(silent=True) or {}
+        verstoss.extend(essbar_verstoesse(j_, "%s/%s" % (who, action)))
+        return r.status_code, j_
 
     def warten(who, fid, guest=None, limit=60.0):
         t0 = time.time()
@@ -228,6 +280,11 @@ def teil_a(datei, echt="", fotos="", browser=False, bilder="", pins=False):
         ns["BIO_FILES"][w] = pin(n_, b_)
         srv.files["/bioclip-1/" + n_] = b_
     ns["BIO_BASE"]["url"] = srv.url + "bioclip-1/"
+    info_b = fake_info()
+    ns["BIO_INFO"].update(size=len(info_b), sha256=hashlib.sha256(info_b).hexdigest())
+    ns["BIO_INFO_BASE"]["url"] = srv.url + "bioclip-info-1/"
+    srv.files["/bioclip-info-1/" + ns["BIO_INFO"]["name"]] = info_b
+    verstoss = []
 
     gelb, rot, braun = (0.98, 0.84, 0.10), (0.88, 0.10, 0.08), (0.50, 0.33, 0.18)
     _c, j = upload("Anna", "Wiese.jpg", bild(gelb)); fid = j["file"]["id"]
@@ -306,6 +363,7 @@ def teil_a(datei, echt="", fotos="", browser=False, bilder="", pins=False):
             break
         time.sleep(0.05)
     ok(ns["bio_installed"](), f"geladen und geprüft ({time.time() - t0:.1f} s, Zustände {sorted(x for x in seen if x)})")
+    ok(ns["bio_info_installed"](), "Artinfos mit dem Modell geladen und geprüft")
 
     print("A) Rechnen, Ergebnis, Zwischenspeicher", flush=True)
     calls = {"n": 0}
@@ -325,6 +383,25 @@ def teil_a(datei, echt="", fotos="", browser=False, bilder="", pins=False):
         ok(re.fullmatch(r"\d{1,3}\u00a0%", top[0].get("pct", "")) and top[0].get("group_t") == "Pflanze" and top[0].get("rank_t") == "Art"
            and top[0].get("family_name") == "Korbblütler" and len(top) == 3, f"Prozent, Pflanze, Art, Familie ({top[0]})")
         ok(re.match(r"Gemeiner Löwenzahn – Taraxacum officinale – \d+\u00a0%", res.get("line", "")), "Zeile «Gemeiner Löwenzahn – Taraxacum officinale – NN %»")
+        print("A) Artinfo-Karten", flush=True)
+        i0, i1, i2 = [(t.get("info") or {}) for t in top]
+        ok(res.get("info") == "ok" and res.get("foot", "").startswith("Nur zur Orientierung") and "145" in res["foot"], "Hinweis unter jedem Ergebnis (Tox Info Suisse 145)")
+        ok(i0.get("text", "").startswith("Der Gewöhnliche Löwenzahn") and i0.get("url") == "https://de.wikipedia.org/wiki/Gew%C3%B6hnlicher_L%C3%B6wenzahn"
+           and "action=history" in i0.get("hist", ""), "Karte: Text, Link zum Artikel, Autoren (Versionsgeschichte)")
+        ok((i0.get("edible") or {}).get("warn", "").startswith("Essbar laut Wikipedia – Verwechslungsgefahr mit giftigen Arten, nie nur nach App-Bestimmung essen. Notfall: Tox Info Suisse 145")
+           and i0["edible"]["s"] == ["Die jungen Blätter können als Salat gegessen werden."], "essbar: genau mit der Warnung des Besitzers")
+        ok(i0.get("look") == [{"name": "Scharfer Hahnenfuss", "tox": True, "url": "https://de.wikipedia.org/wiki/Scharfer_Hahnenfuss"}], "Verwechslung mit ☠️")
+        ok(["Höhe", "bis 30 cm"] in (i0.get("facts") or []) and ["Rote Liste (IUCN)", "nicht gefährdet"] in i0["facts"], "Fakten: Höhe, Rote Liste")
+        ok("edible" not in i1 and i1.get("note_ed", "").startswith("Essbar laut Wikipedia"), "Text sagt «essbar», ohne Regel: Warnung trotzdem")
+        ok(top[2].get("tox") and (i2.get("tox") or {}).get("s") == ["Alle Pflanzenteile sind giftig."] and "edible" not in i2, "giftig: ☠️, nie zusätzlich essbar")
+        ok(res.get("lbl", {}).get("tox") == "☠️ Giftig" and res["lbl"].get("info") == "Artinfo", "Beschriftungen auf Deutsch")
+        r_en = c.get(f"/api/tausch/bio?id={fid}&lang=en", headers=H["Anna"]).get_json()
+        verstoss.extend(essbar_verstoesse(r_en, "en"))
+        e0 = r_en["res"]["top"][0]["info"]
+        ok(e0["edible"]["warn"].startswith("Edible according to Wikipedia") and e0["text"].startswith("Der Gewöhnliche") and r_en["res"]["foot"].startswith("For orientation"),
+           "Englisch: Warnung übersetzt, Inhalt bleibt Deutsch")
+        r_fr = c.get(f"/api/tausch/bio?id={fid}&lang=fr", headers=H["Anna"]).get_json()
+        ok(r_fr["res"]["top"][0]["info"]["edible"]["warn"].startswith("Comestible selon") and "145" in r_fr["res"]["foot"], "Französisch")
         p_ = BIO.get("proc")
         ok(p_ is not None and p_.poll() is None, "Rechen-Prozess läuft (warm)")
         if p_ is not None and hasattr(os, "getpriority"):
@@ -379,6 +456,24 @@ def teil_a(datei, echt="", fotos="", browser=False, bilder="", pins=False):
         code3, j3 = bio(None, ja["file"]["id"], "start", guest=tok)
         ok(j3.get("st") == "done", "fertiges Ergebnis zählt nicht zur Bremse")
         ns["BIO_RATE"] = (30, 90)
+        print("A) Artinfos einzeln laden", flush=True)
+        ns["bio_info_close"]()
+        os.remove(os.path.join(home, "bioclip", "info.ok")); os.remove(ns["bio_info_path"]())
+        code, j = bio("Anna", fid)
+        ok(j.get("st") == "done" and j["res"].get("info") == "missing" and "info" not in j["res"]["top"][0] and j.get("info_mb") == 1
+           and j["res"].get("foot"), "ohne Artinfos: Ergebnis + Hinweis, Knopf «Artinfos laden»")
+        code, j = bio(None, fid, "info", guest=tok)
+        ok(not ns["BIO_DL"]["running"] and not ns["bio_info_installed"](), "Gast lädt keine Artinfos")
+        code, j = bio("Anna", fid, "info")
+        t0 = time.time()
+        while (j.get("st") == "loading" or ns["BIO_DL"]["running"]) and time.time() - t0 < 30:
+            time.sleep(0.05); code, j = bio("Anna", fid)
+        ok(ns["bio_info_installed"]() and j.get("st") == "done" and j["res"].get("info") == "ok" and j["res"]["top"][0].get("info"),
+           f"«Artinfos laden»: nur die Artinfos, danach in der Karte ({time.time() - t0:.1f} s)")
+        ok(ns["bio_installed"](), "Modell blieb dabei unangetastet")
+        code, j = bio(None, rid, "start", guest=tok)
+        ok(j.get("st") == "done" and (j["res"]["top"][0].get("info") or {}).get("en_t") == "(englisch)", "Gast: Karte (englischer Text markiert)")
+        ok(not verstoss, f"«essbar» nie ohne Warnung (alle Antworten): {verstoss[:3]}")
         CFG["tausch_bio"] = False
         ok(bio("Anna", fid)[1].get("st") == "off" and c.get("/api/tausch?area=all", headers=H["Anna"]).get_json().get("bio") is False,
            "Schalter aus: kein Bestimmen, kein Knopf")
@@ -403,6 +498,7 @@ def teil_a(datei, echt="", fotos="", browser=False, bilder="", pins=False):
         ok(ns["bio_installed"](), "Benutzer kann das Modell nicht löschen")
         code, j = bio("admin", bid, "delete")
         ok(code == 200 and not ns["bio_installed"]() and not os.path.exists(ns["bio_path"]("model")), "Admin löscht das Modell")
+        ok(not ns["bio_info_installed"]() and not os.path.exists(ns["bio_info_path"]()), "… und die Artinfos")
     with BIO["lock"]:
         ns["bio_worker_stop"]()
     shutil.rmtree(root, ignore_errors=True)
@@ -492,6 +588,20 @@ def teil_b(ns, app, home, PW, bilder, tok, echt):
             ok(("Gemeiner Löwenzahn" in txt or echt) and "%" in txt and "das Bild verlässt das Gerät nie" in txt, f"{name}: Ergebnis im Panel ({txt[:120]!r})")
             ok(pg.locator(".tz-bio .row").count() == 3, f"{name}: drei Arten")
             pg.screenshot(path=os.path.join(bilder, f"bioclip_ergebnis_{name}.png"))
+            if not echt:                                      # species card: open, «essbar» only with the warning, ☠️, footer
+                ok(pg.locator(".tz-bio .row").nth(2).locator(".toxb").count() == 1, f"{name}: ☠️ Giftig sichtbar ohne Aufklappen")
+                ok("Tox Info Suisse 145" in pg.inner_text(".tz-bio .foot"), f"{name}: Hinweis unter dem Ergebnis")
+                pg.locator(".tz-bio .row.first details.info summary").click(); pg.wait_for_timeout(300)
+                bad = pg.evaluate("""() => [...document.querySelectorAll('.tz-bio .ib')].filter(e => /essbar|Speisepilz|gegessen/i.test(e.innerText)
+                                     && !/Tox Info Suisse 145/.test(e.innerText) && !e.querySelector('.itox')).map(e => e.innerText.slice(0, 80))""")
+                ok(not bad, f"{name}: «essbar» nur mit Warnung im Browser {bad}")
+                ok(pg.locator(".tz-bio .row.first .ied .iwarn").count() == 1 and pg.locator(".tz-bio .row.first a", has_text="Ganzer Artikel").count() == 1,
+                   f"{name}: Karte offen: Warnung, Link zum Artikel")
+                pg.locator(".tz-bio .row.first .ilook").scroll_into_view_if_needed(); pg.wait_for_timeout(200)
+                pg.screenshot(path=os.path.join(bilder, f"bioinfo_karte_{name}.png"))
+                pg.locator(".tz-bio .row").nth(2).locator("details.info summary").click(); pg.wait_for_timeout(200)
+                pg.locator(".tz-bio .row").nth(2).locator(".itox").scroll_into_view_if_needed(); pg.wait_for_timeout(200)
+                pg.screenshot(path=os.path.join(bilder, f"bioinfo_giftig_{name}.png"))
             box = pg.locator(".tz-bio").bounding_box()
             ok(box and box["x"] >= 0 and box["x"] + box["width"] <= vp_["width"] + 1, f"{name}: Panel passt in die Breite")
             pg.click(".tz-bio .hd button"); pg.wait_for_timeout(200)
@@ -528,6 +638,10 @@ def teil_b(ns, app, home, PW, bilder, tok, echt):
         t_ = pg.inner_text(".tz-bio")
         ok(("Steinpilz" in t_ or echt) and "%" in t_, f"Gast: Ergebnis ({t_[:80]!r})")
         pg.screenshot(path=os.path.join(bilder, "bioclip_gast_handy.png"))
+        if not echt:
+            pg.locator(".tz-bio .row.first details.info summary").click(); pg.wait_for_timeout(300)
+            ok("Tox Info Suisse 145" in pg.inner_text(".tz-bio .foot"), "Gast: Hinweis unter dem Ergebnis")
+            pg.screenshot(path=os.path.join(bilder, "bioinfo_gast_handy.png"))
         ok(pg.locator(".it", has_text="Notiz.txt").count() == 1, "Gast sieht die Liste")
         pg.click(".lb .bar button:last-child"); pg.locator(".it", has_text="Notiz.txt").click(); pg.wait_for_timeout(300)
         ok(pg.locator(".lb .tz-biob").count() == 0, "Gast: kein 🌿 bei Text")
