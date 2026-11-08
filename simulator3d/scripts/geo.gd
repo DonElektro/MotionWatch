@@ -617,6 +617,8 @@ func build(s) -> void:
 		notes.append("MoveEye steht in einem Gebäude – das Gebäude wurde weggelassen.")
 	if b3d_on and b3d_meshes.is_empty() and b3d_reason != "":
 		notes.append(("Häuser aus OpenStreetMap" if counts.get("buildings", 0) > 0 else "Keine Häuser") + ": 3D-Gebäude von swisstopo nicht geladen (" + b3d_reason + ").")
+	if osm.is_empty():
+		notes.append("OpenStreetMap nicht erreichbar: Strassen, Wald, Wasser und Zäune fehlen (beim nächsten Laden neuer Versuch).")
 	if not notes.is_empty():
 		main.geo_note = " ".join(PackedStringArray(notes))
 	counts["trees"] = counts.get("trees", 0)
