@@ -33,6 +33,9 @@ on:
       grund:
         description: "nur fürs Protokoll (der Selbst-Start schreibt «weiter»)"
         default: "von Hand"
+      varianten:
+        description: "nur Erkennung: leer = wie immer (reihum); sonst nur diese Varianten auf main, ohne die Grundpläne (z. B. tiere_grundformen,tiere_modelle)"
+        default: ""
 permissions:
   contents: read
 # Keine concurrency-Gruppe: sie würde wartende Zeitplan-Läufe laufend abbrechen («cancelled»). Die Vorprüfung startet nichts,
@@ -54,6 +57,7 @@ jobs:
       stunden: ${{ steps.p.outputs.stunden }}
       frist: ${{ steps.p.outputs.frist }}
       anzeige: ${{ steps.p.outputs.anzeige }}
+      varianten: ${{ steps.p.outputs.varianten }}
     steps:
       - name: HP frei? Welche Stände?
         id: p
@@ -65,9 +69,12 @@ jobs:
           IN_STUNDEN: ${{ github.event.inputs.stunden }}
           IN_ANZ: ${{ github.event.inputs.anzeige }}
           IN_GRUND: ${{ github.event.inputs.grund }}
+          IN_VAR: ${{ github.event.inputs.varianten }}
         run: |
           ARBEIT="${IN_ARBEIT:-auto}"; STUNDEN="${IN_STUNDEN:-3}"; ANZ="${IN_ANZ:-xvfb}"
           fehler() { echo "::error::$*"; exit 1; }
+          VAR="${IN_VAR:-}"
+          [[ "$VAR" =~ ^[a-z0-9_,]{0,120}$ ]] || fehler "varianten: nur a-z, 0-9, _ und Komma"
           case "$ARBEIT" in auto|erkennung|ki|langzeit) ;; *) fehler "arbeit: auto, erkennung, ki oder langzeit" ;; esac
           if ! [[ "$STUNDEN" =~ ^[0-9]{1,2}$ ]] || [ "$STUNDEN" -lt 1 ] || [ "$STUNDEN" -gt 12 ]; then fehler "stunden: 1 bis 12"; fi
           case "$ANZ" in xvfb|bildschirm) ;; *) fehler "anzeige: xvfb oder bildschirm" ;; esac
@@ -134,7 +141,7 @@ jobs:
           print(json.dumps(out, separators=(",", ":")))
           PY
           {
-            echo "los=$los"; echo "kandidaten=$(cat kand.json)"; echo "arbeit=$ARBEIT"; echo "stunden=$STUNDEN"; echo "anzeige=$ANZ"
+            echo "los=$los"; echo "kandidaten=$(cat kand.json)"; echo "arbeit=$ARBEIT"; echo "stunden=$STUNDEN"; echo "anzeige=$ANZ"; echo "varianten=$VAR"
           } >> "$GITHUB_OUTPUT"
           if [ "$los" = 1 ]; then
             echo "### Dauerrechnen (HP): $ARBEIT, höchstens $STUNDEN Std. · Stände: $(python3 -c 'import json,sys; d=json.load(open("kand.json")); print(", ".join([d["main"]["name"]] + ([d["vorher"]["name"]] if d.get("vorher") else []) + [z["name"] for z in d["zweige"]]))')" >> "$GITHUB_STEP_SUMMARY"
@@ -155,6 +162,7 @@ jobs:
       ARBEIT: ${{ needs.vorpruefung.outputs.arbeit }}
       STUNDEN: ${{ needs.vorpruefung.outputs.frist }}
       ANZEIGE: ${{ needs.vorpruefung.outputs.anzeige }}
+      VARIANTEN: ${{ needs.vorpruefung.outputs.varianten }}
       PYTHONUNBUFFERED: "1"
     steps:
       - name: Werkzeug (Stand dieses Workflows)
@@ -175,7 +183,8 @@ jobs:
       - name: Arbeit wählen
         id: w
         run: |
-          "$PY" werkzeug/werkzeuge/test_runner/dauer.py waehlen --kandidaten "$KAND" --arbeit "$ARBEIT"
+          "$PY" werkzeug/werkzeuge/test_runner/dauer.py waehlen --kandidaten "$KAND" --arbeit "$ARBEIT" \
+            ${VARIANTEN:+--varianten "$VARIANTEN" --nur-varianten}
           G="$(sed -n 's/^grund=//p' "$GITHUB_OUTPUT" | tail -n 1)"; N="$(sed -n 's/^name=//p' "$GITHUB_OUTPUT" | tail -n 1)"
           echo "### ${N:-Nichts zu tun}: ${G}" >> "$GITHUB_STEP_SUMMARY"
       - name: MoveEye und Simulator (gewählter Stand)
@@ -256,4 +265,5 @@ jobs:
           ARBEIT: ${{ needs.vorpruefung.outputs.arbeit }}
           STUNDEN: ${{ needs.vorpruefung.outputs.stunden }}
           ANZ: ${{ needs.vorpruefung.outputs.anzeige }}
-        run: gh workflow run dauer_hp.yml -R "$R" --ref main -f arbeit="$ARBEIT" -f stunden="$STUNDEN" -f anzeige="$ANZ" -f grund=weiter
+          VAR: ${{ needs.vorpruefung.outputs.varianten }}
+        run: gh workflow run dauer_hp.yml -R "$R" --ref main -f arbeit="$ARBEIT" -f stunden="$STUNDEN" -f anzeige="$ANZ" -f grund=weiter -f varianten="$VAR"
