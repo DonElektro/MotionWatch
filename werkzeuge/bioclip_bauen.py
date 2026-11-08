@@ -37,6 +37,7 @@ import urllib.request
 
 UA = {"User-Agent": "MoveEye-bioclip-build/1 (github.com/DonElektro/MotionWatch)"}
 HF_REPO = "imageomics/bioclip"
+HF_DEMO = "imageomics/bioclip-demo"                # Space: txt_emb_species.npy / .json (wie pybioclip)
 RANKS = ("kingdom", "phylum", "class", "order", "family", "genus", "species")
 LANGS = ("de", "fr", "it", "en")
 GBIF_KINGDOM = {"Plantae": 6, "Animalia": 1, "Fungi": 5}
@@ -104,25 +105,47 @@ def sha256(p):
 
 
 # ---- 1. BioCLIP von Hugging Face (feste Revision) ---------------------------------------------------------------------------
-def hf_holen(rev, ziel):
+def hf_holen(rev, ziel, demo_rev=""):
+    """Gewichte aus imageomics/bioclip (Modell, MIT), die fertigen Arten-Einbettungen von pybioclip aus dem Space
+    imageomics/bioclip-demo (dort holt sie auch pybioclip: txt_emb_species.npy / .json) - beide mit fester Revision"""
     from huggingface_hub import HfApi, hf_hub_download
     api = HfApi()
     info = api.model_info(HF_REPO, revision=rev or None, files_metadata=True)
     rev = info.sha
     files = {s.rfilename: s.size for s in info.siblings}
-    print("Hugging Face %s @ %s" % (HF_REPO, rev))
+    print("Hugging Face %s @ %s, Lizenz %s" % (HF_REPO, rev, (info.card_data or {}).get("license") if info.card_data else "?"))
     for n, s in sorted(files.items()):
         print("  %-40s %s" % (n, s))
-    want = ["open_clip_config.json", "txt_emb_species.npy", "txt_emb_species.json"]
     w = next((n for n in ("open_clip_model.safetensors", "open_clip_pytorch_model.bin") if n in files), None)
-    if not w:
+    if not w or "open_clip_config.json" not in files:
         sys.exit("keine open_clip-Gewichte im Repository")
-    out = {}
-    for n in want + [w]:
-        if n not in files:
-            sys.exit("fehlt im Repository: " + n)
-        out[n] = hf_hub_download(HF_REPO, n, revision=rev, cache_dir=ziel)
-    return rev, out, w
+    out = {n: hf_hub_download(HF_REPO, n, revision=rev, cache_dir=ziel) for n in ("open_clip_config.json", w)}
+    sp = api.space_info(HF_DEMO, revision=demo_rev or None, files_metadata=True)
+    demo_rev = sp.sha
+    sfiles = {s.rfilename: s.size for s in sp.siblings}
+    print("Hugging Face Space %s @ %s, Lizenz %s" % (HF_DEMO, demo_rev, (sp.card_data or {}).get("license") if sp.card_data else "?"))
+    for n, s in sorted(sfiles.items()):
+        if n.endswith((".npy", ".json", ".py", ".md", ".txt")):
+            print("  %-40s %s" % (n, s))
+    for n in ("txt_emb_species.npy", "txt_emb_species.json"):
+        cand = [x for x in sfiles if x == n or x.endswith("/" + n)]
+        if not cand:
+            sys.exit("fehlt im Space: " + n)
+        out[n] = hf_hub_download(HF_DEMO, cand[0], revision=demo_rev, repo_type="space", cache_dir=ziel)
+    return rev, demo_rev, out, w
+
+
+def txt_emb(model, tok, texte):
+    """wie pybioclip get_txt_emb: jede der 80 OpenAI-Vorlagen, normiert, gemittelt, wieder normiert"""
+    import torch
+    from open_clip.zero_shot_metadata import OPENAI_IMAGENET_TEMPLATES as TPL
+    out = []
+    with torch.no_grad():
+        for t in texte:
+            e = model.encode_text(tok([f(t) for f in TPL]))
+            e = torch.nn.functional.normalize(e, dim=-1).mean(dim=0)
+            out.append((e / e.norm()).numpy())
+    return out
 
 
 def modell_laden(paths, wname):
@@ -289,6 +312,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--aus", required=True)
     ap.add_argument("--rev", default="")
+    ap.add_argument("--demo-rev", default="")
     ap.add_argument("--pflanzen", type=int, default=3500)
     ap.add_argument("--tiere", type=int, default=6500)
     ap.add_argument("--pilze", type=int, default=1500)
@@ -300,7 +324,7 @@ def main():
     os.makedirs(a.aus, exist_ok=True)
     cache = os.path.join(os.path.dirname(os.path.abspath(a.aus)), "hf_cache")
     t0 = time.time()
-    rev, paths, wname = hf_holen(a.rev, cache)
+    rev, demo_rev, paths, wname = hf_holen(a.rev, cache, a.demo_rev)
     model, pre, pc = modell_laden(paths, wname)
     scale = float(model.logit_scale.exp().item())
     print("logit_scale.exp() = %.4f" % scale)
@@ -331,6 +355,47 @@ def main():
         e = T[r]
         tax = list(e[0] if isinstance(e[0], (list, tuple)) else e)[:7]
         taxa.append([str(x or "") for x in tax])
+    # Gegenprobe: dieselben Einbettungen mit dem Text-Teil selbst rechnen (Format wie pybioclip) – und so die Zusatz-Arten
+    # ergänzen, die TreeOfLife nicht kennt (Taxonomie dann vom GBIF-Backbone, englischer Name von Wikidata)
+    import open_clip
+    tok = open_clip.get_tokenizer("ViT-B-16")
+    fmts = {"taxonomic + common": lambda tx, c: " ".join(tx) + (" with common name " + c if c else ""),
+            "taxonomic": lambda tx, c: " ".join(tx), "common": lambda tx, c: c or " ".join(tx)}
+    probe = [n for n in ("Vulpes vulpes", "Taraxacum officinale", "Turdus merula", "Amanita muscaria", "Apis mellifera",
+                         "Felis catus", "Fagus sylvatica", "Coccinella septempunctata") if n in idx]
+    best, best_c = "taxonomic + common", -1.0
+    fmt_cos = {}
+    for fn, f in fmts.items():
+        cs = []
+        for n in probe:
+            e = T[idx[n][0]]
+            tx, com = [str(x or "") for x in e[0]][:7], str(e[1] or "") if len(e) > 1 else ""
+            v = txt_emb(model, tok, [f(tx, com)])[0]
+            d = np.asarray(E[:, idx[n][0]] if by_col else E[idx[n][0]], dtype=np.float32)
+            cs.append(float(v @ (d / np.linalg.norm(d))))
+        fmt_cos[fn] = round(sum(cs) / max(1, len(cs)), 4)
+        if fmt_cos[fn] > best_c:
+            best, best_c = fn, fmt_cos[fn]
+    print("Gegenprobe Text-Format (Kosinus zu den pybioclip-Einbettungen):", fmt_cos, "->", best)
+    add = [n for n in miss if n in extra]
+    own = []
+    if add and best_c > 0.98:
+        en = wikidata(add)
+        for n in add:
+            try:
+                j = getj("https://api.gbif.org/v1/species/match?" + urllib.parse.urlencode({"name": n, "strict": "true"}))
+            except Exception:
+                continue
+            if j.get("rank") != "SPECIES" or j.get("matchType") not in ("EXACT",) or not all(j.get(k) for k in RANKS[:6]):
+                continue
+            tx = [j[k] for k in RANKS[:6]] + [n.split(" ", 1)[1]]
+            own.append((n, tx, (en.get(n) or {}).get("en", "")))
+        vecs = txt_emb(model, tok, [fmts[best](tx, c) for _n, tx, c in own])
+        for (n, tx, c), v in zip(own, vecs):
+            picked.append(n); taxa.append(tx)
+        if own:
+            M = np.vstack([M, np.asarray(vecs, dtype=np.float32)])
+    print("Zusatz-Arten selbst gerechnet (nicht in TreeOfLife): %d %s" % (len(own), ", ".join(n for n, _t, _c in own[:20])))
     higher = set()
     for t in taxa:
         higher.update(x for x in t[:6] if x)
@@ -339,13 +404,14 @@ def main():
     nde = sum(1 for n in picked if "de" in names.get(n, {}))
     print("deutsche Namen: %d von %d Arten (%.0f %%)" % (nde, len(picked), 100.0 * nde / max(1, len(picked))))
     np.save(os.path.join(a.aus, "bioclip-1-arten.npy"), M.astype(np.float16))
-    meta = {"format": 1, "model": "BioCLIP 1 (imageomics/bioclip, ViT-B/16, MIT)", "hf_rev": rev, "logit_scale": round(scale, 4),
+    meta = {"format": 1, "model": "BioCLIP 1 (imageomics/bioclip, ViT-B/16, MIT)", "hf_rev": rev, "demo_rev": demo_rev,
+            "text_format": best, "text_format_cos": fmt_cos, "own": [n for n, _t, _c in own], "logit_scale": round(scale, 4),
             "ranks": list(RANKS), "size": 224, "mean": list(pc.get("mean") or (0.48145466, 0.4578275, 0.40821073)),
             "std": list(pc.get("std") or (0.26862954, 0.26130258, 0.27577711)), "n": len(taxa), "taxa": taxa,
             "names": {k: v for k, v in names.items() if v},
             "built": time.strftime("%Y-%m-%d"),
             "sources": {"model": "BioCLIP (Stevens et al., CVPR 2024), huggingface.co/imageomics/bioclip, MIT",
-                        "embeddings": "txt_emb_species.npy/.json from imageomics/bioclip (TreeOfLife-10M taxonomy), MIT",
+                        "embeddings": "txt_emb_species.npy/.json as used by pybioclip (Space imageomics/bioclip-demo, TreeOfLife-10M taxonomy); extra species computed with the BioCLIP text encoder, taxonomy GBIF Backbone (CC BY 4.0)",
                         "selection": "most reported species in CH/LI (and DE/AT) after occurrence counts on GBIF.org, plus pets, farm animals, garden and crop plants",
                         "names": "Wikidata (CC0), taxon common name P1843 / labels"}}
     with open(os.path.join(a.aus, "bioclip-1-arten.json"), "w", encoding="utf-8") as f:
@@ -423,7 +489,7 @@ def main():
             for _ in range(5):
                 s2.run(None, {"image": x})
             res["ms"]["%s_%dthreads" % (k, th)] = {"load_ms": int(tl * 1000), "run_ms": int((time.time() - t1) / 5 * 1000)}
-    res["n_arten"] = len(picked); res["n_de"] = nde; res["hf_rev"] = rev; res["sekunden"] = int(time.time() - t0)
+    res["n_arten"] = len(picked); res["n_de"] = nde; res["hf_rev"] = rev; res["demo_rev"] = demo_rev; res["text_format_cos"] = fmt_cos; res["sekunden"] = int(time.time() - t0)
     with open(os.path.join(a.aus, "pruefung.json"), "w") as f:
         json.dump(res, f, indent=1)
     print(json.dumps(res, indent=1))

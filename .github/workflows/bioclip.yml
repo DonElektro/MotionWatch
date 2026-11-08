@@ -29,6 +29,9 @@ on:
       hf_rev:
         description: "Revision (Commit) von imageomics/bioclip, leer = aktuelle"
         default: ""
+      demo_rev:
+        description: "Revision des Space imageomics/bioclip-demo (txt_emb_species), leer = aktuelle"
+        default: ""
       loeschen:
         description: "Statt bauen: Probe-Release + Tag löschen (nur bioclipprobe-…, nur Vorabversion)"
         default: ""
@@ -80,9 +83,10 @@ jobs:
       - name: Bauen und prüfen (bioclip_bauen.py)
         env:
           HF_REV: ${{ inputs.hf_rev }}
+          DEMO_REV: ${{ inputs.demo_rev }}
         run: |
           set -e
-          python3 werkzeuge/bioclip_bauen.py --aus "$RUNNER_TEMP/bio" --rev "$HF_REV" 2>&1 | tee "$RUNNER_TEMP/bau.log"
+          python3 werkzeuge/bioclip_bauen.py --aus "$RUNNER_TEMP/bio" --rev "$HF_REV" --demo-rev "$DEMO_REV" 2>&1 | tee "$RUNNER_TEMP/bau.log"
           ls -la "$RUNNER_TEMP/bio"
           python3 - "$RUNNER_TEMP/bio/pruefung.json" <<'PY'
           import json, sys
