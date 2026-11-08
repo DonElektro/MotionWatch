@@ -489,7 +489,35 @@ assert D.erk_key(n["sha"], n["plan"], n["variante"]) == "erkennung|%s|%s@bestaet
 assert D.naechstes(z, kand, "erkennung", time.time(), ()) is None, "--varianten keine: nichts mehr"
 for plan in D.ERK_VAR_PLAENE:
     z["erledigt"][D.erk_key("a" * 40, plan, "bestaetigung2")] = {"t": 2, "status": "fertig", "paket": "x"}
+# Flora Paket 4 B: danach die Tier-Varianten, Runde für Runde abwechselnd Grundformen / Modelle (Pläne tier, nacht)
+n = D.naechstes(z, kand, "erkennung", time.time())
+assert n and n["variante"] == "tiere_grundformen" and n["plan"] == "tier" and n["runde"] == 1 and n["laeufe"] == 1, n
+folge = []
+for i in range(4 * D.TIERE_RUNDEN):
+    n = D.naechstes(z, kand, "erkennung", time.time())
+    if n is None:
+        break
+    k = D.erk_key(n["sha"], n["plan"], n["variante"], n["runde"])
+    assert k not in z["erledigt"], k
+    folge.append((n["runde"], n["variante"], n["plan"]))
+    z["erledigt"][k] = {"t": 3, "status": "fertig", "paket": "20261108-0%05d-erkennung" % i, "stand": "main"}
+assert len(folge) == 4 * D.TIERE_RUNDEN, len(folge)
+assert folge[:4] == [(1, "tiere_grundformen", "tier"), (1, "tiere_grundformen", "nacht"), (1, "tiere_modelle", "tier"), (1, "tiere_modelle", "nacht")], folge[:4]
+assert folge[4][0] == 2 and D.erk_key("a" * 40, "tier", "tiere_modelle", 2).endswith("tier@tiere_modelle#2")
 assert D.naechstes(z, kand, "erkennung", time.time()) is None, "alles gemessen"
+# tiere.md: alle Pakete der Tier-Varianten zusammen
+def tfall(key, art, det, pers):
+    return {"key": key, "event": "tier", "animal": art, "detected": det, "false_person": pers, "cond": "tag", "fps": 4.0, "pushes": []}
+for i, (r, v, plan) in enumerate(folge[:4]):
+    os.makedirs(os.path.join(D.DAUER, "pakete", "20261108-0%05d-erkennung" % i), exist_ok=True)
+    R = [tfall("t1", "deer", v == "tiere_modelle", False), tfall("t2", "dog", False, v == "tiere_grundformen")]
+    with open(os.path.join(D.DAUER, "pakete", "20261108-0%05d-erkennung" % i, "results.jsonl"), "w") as f:
+        f.write("".join(json.dumps(x) + "\n" for x in R))
+ak4 = {"id": "20261108-000003-erkennung", "sha": "a" * 40, "stand": "main", "plan": "nacht", "laeufe": 1, "variante": "tiere_modelle", "runde": 1}
+D.erk_vergleich(z, ak4)
+md = open(os.path.join(D.DAUER, "tiere.md"), encoding="utf-8").read()
+assert "| **alle** | 0 % Tier · 50 % Person (4) | 50 % Tier · 0 % Person (4) |" in md, md
+assert "| deer | 0 % Tier · 0 % Person (2) | 100 % Tier · 0 % Person (2) |" in md, md
 # Bericht nebeneinander: weniger Pushes, eine Person weniger erkannt
 def fall(key, ev, det, pushes, secs=60):
     return {"key": key, "event": ev, "detected": det, "pushes": [[p, 5] for p in pushes], "secs": secs, "place": "camping", "cond": "tag"}
@@ -508,7 +536,7 @@ assert "Personen erkannt -50 Prozentpunkte, Pushes/h 80.0 → 20.0, falsche Push
 print("ok")
 EOF6
 rc=$?
-[ "$rc" = 0 ] && ok "Varianten: nach allen Ständen main mit doppelter Bestätigung, «keine» schaltet ab, varianten.md mit Erkennung und Pushes/h" \
+[ "$rc" = 0 ] && ok "Varianten: nach allen Ständen main mit doppelter Bestätigung, «keine» schaltet ab, varianten.md mit Erkennung und Pushes/h; Tier-Varianten Runde für Runde, tiere.md" \
 	|| { fehler "Varianten (Exit $rc)"; cat "$W/var6.log"; }
 
 echo
