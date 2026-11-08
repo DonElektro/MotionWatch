@@ -75,6 +75,9 @@ func _run() -> void:
 	vp.render_target_update_mode = SubViewport.UPDATE_DISABLED
 	vp.own_world_3d = false
 	root.add_child(vp)
+	var fl = main.get_node_or_null("flora_licht")             # Paket 2: the free view's colour grading also in these pictures
+	if fl != null:
+		fl.attach(vp)
 	cam = Camera3D.new()
 	cam.cull_mask = 1
 	cam.far = 2000.0

@@ -11,6 +11,7 @@ uniform float snow_amount = 0.0;
 uniform float wet = 0.0;
 uniform float puddle = 0.0;           // 3D-3.98: puddles after long rain
 uniform float detail = 1.0;
+#include "res://shaders/gras_boden.gdshaderinc"
 
 varying vec3 wpos;
 
@@ -28,6 +29,7 @@ void fragment() {
 	float green = smoothstep(0.0, 0.06, c.g - max(c.r, c.b) * 0.95);
 	float near = detail * (1.0 - smoothstep(30.0, 90.0, length(VERTEX)));
 	c *= 1.0 + near * green * (0.35 * (fine - 0.5) + 0.2 * (mid - 0.5));
+	c = p2_boden(c, wpos.xz, length(VERTEX), green * (1.0 - snow_amount), 1.0, noise_tex);   // Paket 2
 	c = mix(c, snow.rgb * (0.92 + 0.08 * fine), snow_amount);
 	float pd = puddle * smoothstep(0.30, 0.22, texture(noise_tex, wpos.xz * 0.012).r + 0.15 * (mid - 0.5));
 	ALBEDO = mix(clamp(c, 0.0, 1.0) * (1.0 - 0.35 * wet), vec3(0.05, 0.055, 0.06), pd);

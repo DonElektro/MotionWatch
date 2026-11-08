@@ -1186,6 +1186,7 @@ func _ground() -> void:
 	_gm.set_shader_parameter("noise_tex", m.noise_tex)
 	_gm.set_shader_parameter("detail", 0.0 if lite else 1.0)
 	info["photo"] = Texturen.ground(m, _gm)              # 3.30: Foto-Texturen (aus: photo = 0, wie vorher)
+	load("res://scripts/gras.gd").boden(m, _gm)        # «Flora und Fauna» Paket 2: far ring, gusts (Normal / Hoch)
 	_season_params(_gm)
 	m.ground_mats = [_gm]
 	_chunk_mi.clear()
