@@ -198,12 +198,27 @@ def volltext(title):
     """ganzer Artikel als Text (mit == Abschnitten ==) + verlinkte Artikel"""
     q = {"action": "query", "format": "json", "formatversion": "2", "prop": "extracts|links", "explaintext": "1",
          "exsectionformat": "wiki", "pllimit": "max", "plnamespace": "0", "redirects": "1", "titles": title, "maxlag": "5"}
-    try:
-        j = getj(API["de"] + "?" + urllib.parse.urlencode(q))
-    except Exception:
-        return title, "", []
-    ps = (j.get("query") or {}).get("pages") or [{}]
-    return title, ps[0].get("extract") or "", [x["title"] for x in ps[0].get("links") or []]
+    for i in range(6):                                       # «maxlag» / Fehler kommen als JSON: nochmals
+        try:
+            j = getj(API["de"] + "?" + urllib.parse.urlencode(q))
+        except Exception:
+            j = {}
+        ps = (j.get("query") or {}).get("pages") or []
+        if ps and ps[0].get("extract"):
+            links = [x["title"] for x in ps[0].get("links") or []]
+            cont = j.get("continue") or {}
+            while cont.get("plcontinue") and len(links) < 3000:  # mehr als 500 Links: weiter holen (ohne den Text nochmals)
+                try:
+                    k = getj(API["de"] + "?" + urllib.parse.urlencode({"action": "query", "format": "json", "formatversion": "2",
+                             "prop": "links", "pllimit": "max", "plnamespace": "0", "redirects": "1", "titles": title,
+                             "plcontinue": cont["plcontinue"]}))
+                except Exception:
+                    break
+                links += [x["title"] for x in ((k.get("query") or {}).get("pages") or [{}])[0].get("links") or []]
+                cont = k.get("continue") or {}
+            return title, ps[0]["extract"], links
+        time.sleep(2 + 3 * i)
+    return title, "", []
 
 
 SKIP_SEC = re.compile(r"Literatur|Weblinks|Einzelnachweis|Quellen|Anmerkung|Siehe auch|Belege|Fußnote|Weiterführend", re.I)
@@ -364,6 +379,7 @@ def main():
             full[tit] = (txt, links)
             if k % 1000 == 0:
                 print("  Volltexte %d / %d" % (k, len(de_t)), flush=True)
+    print("Volltexte: %d, davon leer %d" % (len(full), sum(1 for v in full.values() if not v[0])), flush=True)
     rows, cov = {}, {"arten": len(want), "de": 0, "en": 0, "keiner": 0, "giftig": 0, "giftig_wd": 0, "essbar": 0, "verwechslung": 0,
                      "hoehe": 0, "iucn": 0, "lebensraum": 0}
     for n in want:
