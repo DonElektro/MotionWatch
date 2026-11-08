@@ -557,9 +557,26 @@ n = D.naechstes(z, kand, "erkennung", time.time(), D.TIERE_VAR, True)
 assert n["variante"] == "tiere_grundformen" and n["plan"] == "tier" and n["runde"] == 1 and n["sha"] == "a" * 40, n
 n = D.naechstes(z, kand, "erkennung", time.time(), ("bestaetigung2",), True)
 assert n["variante"] == "bestaetigung2" and n["sha"] == "a" * 40, n
+# neuer main-Stand: die Tier-Runden zählen weiter (über Stände der letzten 14 Tage), Grundpläne / bestaetigung2 pro Stand
+jetzt = time.time()
+for plan in ("tier", "nacht"):
+    z["erledigt"][D.erk_key("a" * 40, plan, "tiere_grundformen")] = {"t": int(jetzt) - 3600, "status": "fertig", "paket": "x"}
+z["erledigt"][D.erk_key("a" * 40, D.ERK_VAR_PLAENE[0], "bestaetigung2")] = {"t": int(jetzt) - 3600, "status": "fertig", "paket": "x"}
+kand2 = D.kandidaten_lesen(json.dumps({"main": {"name": "main", "sha": "c" * 40}, "vorher": {"name": "v1", "sha": "b" * 40}}))
+n = D.naechstes(z, kand2, "erkennung", jetzt, D.TIERE_VAR, True)
+assert n["sha"] == "c" * 40 and n["variante"] == "tiere_modelle" and n["plan"] == "tier" and n["runde"] == 1, ("neuer Stand: weiter bei Modelle", n)
+n = D.naechstes(z, kand2, "erkennung", jetzt, ("bestaetigung2",), True)
+assert n["sha"] == "c" * 40 and n["variante"] == "bestaetigung2" and n["plan"] == D.ERK_VAR_PLAENE[0], ("bestaetigung2 pro Stand", n)
+n = D.naechstes(z, kand2, "erkennung", jetzt)
+assert n["sha"] == "c" * 40 and n["plan"] == D.ERK_PLAENE[0] and not n.get("variante"), ("Grundplan pro Stand", n)
+for k in list(z["erledigt"]):
+    if "tiere_grundformen" in k:
+        z["erledigt"][k]["t"] = int(jetzt) - 15 * 86400
+n = D.naechstes(z, kand2, "erkennung", jetzt, D.TIERE_VAR, True)
+assert n["variante"] == "tiere_grundformen" and n["runde"] == 1, ("älter als 14 Tage: zählt nicht mehr", n)
 EOF6B
 rc=$?
-[ "$rc" = 0 ] && ok "naechstes: nur_varianten lässt die Grundpläne aus, ohne Angabe unverändert" || { fehler "nur-varianten (Exit $rc)"; cat "$W/var6b.log"; }
+[ "$rc" = 0 ] && ok "naechstes: nur_varianten lässt die Grundpläne aus, ohne Angabe unverändert; Tier-Runden zählen über main-Stände (14 Tage)" || { fehler "nur-varianten (Exit $rc)"; cat "$W/var6b.log"; }
 : > "$W/aus6b"
 MW_DAUER="$W/dauer6b_cli" python3 "$D" waehlen --kandidaten "$K" --arbeit erkennung --varianten tiere_grundformen,tiere_modelle --nur-varianten \
 	--ausgabe "$W/aus6b" > "$W/w6b.log" 2>&1
