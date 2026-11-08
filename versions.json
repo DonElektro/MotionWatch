@@ -1,13 +1,13 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-08 21:08",
+ "generated": "2026-11-08 21:19",
  "versions": [
   {
    "version": "3.65.0",
    "file": "webcam_bewegung_3_65_0.py",
    "url": "",
    "sha256": "649f37a39891451935af3ed5afe8ac6d8ecd0d35bbbd87d4678b8bea4a1922dc",
-   "date": "2026-11-08 21:08",
+   "date": "2026-11-08 21:10",
    "notes": "Spielesammlung GS-1.4: 36 neue Browserspiele (12 Kevlaschef Games, 24 Quantum Games) – am Handy mit Antippen, am PC mit Tasten, offline, in 5 Sprachen; © 2026 Kevlaschef, mit Erlaubnis des Rechteinhabers.",
    "size": 3734534,
    "sig": "f359dff1d223d132418b1d635c594c8755c9bafd74201ecfb8913b91be3e5f8cd852a586d83f9b7518ee0bef97464e7600f4d6eaa699380b15f28fc77ea94607",
@@ -168,23 +168,23 @@
   }
  ],
  "sim": {
-  "ver": "3.65.1",
-  "version": "3D-5.65.1",
-  "notes": "Fehlerkorrektur: Hoch auf Software-Vulkan startet sofort mit Normal",
+  "ver": "3.66.0",
+  "version": "3D-5.66.0",
+  "notes": "Echte 3D-Gebäude von swisstopo wieder da (eigener Draco-Entpacker), klare Hinweise bei fehlenden Kartendaten",
   "mw_min": "3.55.0",
   "win": {
-   "ver": "3.65.1",
+   "ver": "3.66.0",
    "file": "simulator3d/MotionWatch3D_Simulator.zip",
-   "size": 54355793,
-   "sha256": "fcecaa506d6adaf7c6aa603ce65a1864e005ae37bc2a3819a8cdc7176d3d0faa",
-   "sig": "4dd291f996f68f7c43b7d8791b036286eddf1a1105d0929265600588c2b5b9388aad7fd380b9407b3d29d6082a9e4585d3a322f1ca7ea08d90f32d366795920a"
+   "size": 54406645,
+   "sha256": "f8aef227b450c341fc4d9c93977b2d00a45b8345f4e1be971d688af021788c33",
+   "sig": "dc4493b062b23f424e64b6144cd1f4df9b94e07d8699b0633b75bb8503ca196df39cdfb6d66569d8c40efb40ed8f8d5c65e17a021c2a31cabd7e194c04c99605"
   },
   "linux": {
-   "ver": "3.65.1",
+   "ver": "3.66.0",
    "file": "simulator3d/MoveEyeSim3D_Linux.zip",
-   "size": 48391199,
-   "sha256": "e7305bff9903c295ae8d8d5861e93b6b5d5b92f33f427addb7745a4a54c0d177",
-   "sig": "cb0339c9e88526e3a36968db4bc48b2aa0d3cb3fd4aa25e5786e56027ce050f6db8958e72a18161f55c41f96db0266b55afbe182ac15db9aa42c9ff49ebd300f"
+   "size": 48436997,
+   "sha256": "8077acdae8d2336b36bab97c6cca767fe88d257719dececf263f0431171cdcb1",
+   "sig": "a3c31b8a5022dcd602ce03f36fd185a87a92612f615f31d35fc26766c1581157749109ab4b3f773672b2e80a3beff7a2ff5f0f68732f9545c8be68924993350f"
   }
  }
 }

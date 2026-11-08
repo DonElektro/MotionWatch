@@ -128,3 +128,7 @@ Nicht benutzte Fotos liegen in `texturen/unbenutzt/` (nicht im Export).
 Gelände, Pflanzen, Gebäude, Tiere, Himmel, Töne und Texturen (ausser den Foto-Texturen oben) entstehen ebenfalls im Code (Formen, Rauschen,
 Shader in `shaders/`). Kartendaten eines echten Orts kommen beim Laden von swisstopo / OpenStreetMap
 (Nachweis in der Karte des Simulators).
+
+**Draco-Entpacker** (`scripts/draco.gd`, ab Sim 3.66.0): eigene GDScript-Umsetzung nach dem veröffentlichten Draco-Datenformat
+(Google Draco, Apache-2.0); kein fremder Code übernommen, keine Bibliothek beigelegt. Nötig für die 3D-Gebäude von swisstopo
+(swissBUILDINGS3D © swisstopo, freie Nutzung mit Quellenangabe), die Draco-komprimiert geliefert werden.

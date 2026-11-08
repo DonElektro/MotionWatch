@@ -1,8 +1,33 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 08.11.2026 · Version **3.65.1** · MoveEye **3.64.0** (Drei Spuren ab 03.11.2026: Simulator und MoveEye mit eigenen Nummern, Verträglichkeit über `MW_MIN` in `scripts/abgleich.gd` / `SIM_MIN` in MoveEye Teil 545; 3.0.0 bis 3.55.2 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 08.11.2026 · Version **3.66.0** · MoveEye **3.65.0** (Drei Spuren ab 03.11.2026: Simulator und MoveEye mit eigenen Nummern, Verträglichkeit über `MW_MIN` in `scripts/abgleich.gd` / `SIM_MIN` in MoveEye Teil 545; 3.0.0 bis 3.55.2 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.66.0 (MoveEye 3.65.0): echte 3D-Gebäude von swisstopo in «Ort von der Karte»
+
+- **Ursache, warum es nie ging:** swisstopo liefert swissBUILDINGS3D (3D Tiles, `v1/tileset.json` → `20260520/tileset.json` →
+  Regionsdateien `tilesetNN.json` 5–10 MB → b3dm auf Stufe 11) als glTF mit **KHR_draco_mesh_compression** (Draco 2.2, Edgebreaker
+  mit Valenz-Kodierung, Positionen quantisiert + Parallelogramm-Vorhersage). Godot 4.3 kann Draco nicht → jede Kachel «glTF nicht
+  lesbar» → still OSM-Klötze. Baum, Verweise und Bounding-Volumes waren in Ordnung.
+- **Lösung:** `scripts/draco.gd` = eigener Draco-Entpacker in GDScript (nur Dreiecke + Positionen + `_BATCHID`; Edgebreaker
+  Standard/Valenz, Durchlauf depth-first/max-prediction-degree, rANS, tagged/raw, Vorhersage Differenz/Parallelogramm/
+  Multi-/Constrained-Multi-Parallelogramm, Wrap, Quantisierung). Gewählt, weil gleich auf Windows, Linux und Pi, ohne Bibliothek,
+  ohne Export-Änderung (GDExtension mit Google-Draco wäre schneller, braucht aber drei Binärdateien und Pflege; einen unkomprimierten
+  Dienst von swisstopo gibt es auf den erlaubten Adressen nicht). Geprüft gegen die min/max-Werte in jeder Kachel und einen
+  unabhängigen Python-Entpacker (78 Teile Seon + Luzern gleich), Fuzz ohne Hänger. Test: `werkzeuge/b3d_test.gd` (Kachel in
+  `werkzeuge/testdaten/`, © swisstopo).
+- `b3d.gd` neu: eigener glb-Leser (Knotenbaum, matrix/TRS, CESIUM_RTC, auch unkomprimierte Accessoren), 3D Tiles 1.1 `contents`,
+  relative Adressen (`_join`), oberste tileset.json immer frisch (nennt die aktuelle Fassung), Regionsdateien zstd im Cache,
+  entpackte Kacheln im Cache (`DRACO_CACHE`, Name ändern wenn draco.gd anders entpackt), Entpacken in einem Thread.
+  Pro Haus (Kachel + `_BATCHID`) ein Grundriss (`geo.b3d_foot`): Hindernis-Kasten wie bei OSM (`geo._b3d_obstacle`), `geo.buildings`,
+  Haus um MoveEye weg (`b3d.head_in` → Hinweis). Wände «caravan», Dächer «stone» für die Wärmekamera (wie OSM), 2 × 2 Teile × Wand/Dach
+  = höchstens 8 Netze. Splitter < 0,02 m² weg, auf Lite < 0,25 m² (~20 % weniger Dreiecke). OSM-Häuser zählen dann nur noch
+  (`counts.osm_buildings`); Hindernisse kommen von swisstopo, also auch ohne Overpass.
+- **Nicht mehr still:** `geo.b3d_reason` (kurz), Zeile in Schritt 2 der Karte (Details im Tooltip und in
+  `user://orte/3d_gebaeude_bericht.txt`), `main.geo_note` in der Statuszeile, Test-Befehl `geo` → `b3d`, `b3d_reason`, `b3d_diag`.
+- Messung hier (x86, headless): Seon 20 Kacheln, 192 Häuser, 73 000 Dreiecke; Luzern Altstadt 23 Kacheln, 283 Häuser, 185 000 Dreiecke,
+  Entpacken 2,8 s (aus dem Cache 0,2 s). Bilder: `werkzeuge/gebaeude_bilder.gd` (auch Wärmebild und Kopfkamera, `--b3d on|off`).
 
 ## NEU in 3.65.1 (MoveEye 3.64.0): Hoch-Schutz (sim-hoch-schutz)
 

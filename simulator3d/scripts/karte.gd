@@ -130,7 +130,7 @@ func _ready() -> void:
 		main.UI.primary(load_btn)
 	bottom.add_child(load_btn)
 	var attr := Label.new()
-	attr.text = "Karte und Luftbild © swisstopo · Gebäude, Wald, Strassen © OpenStreetMap-Mitwirkende · Höhen © swisstopo / Terrarium"
+	attr.text = "Karte, Luftbild und 3D-Gebäude © swisstopo · Gebäude, Wald, Strassen © OpenStreetMap-Mitwirkende · Höhen © swisstopo / Terrarium"
 	attr.add_theme_font_size_override("font_size", 11)
 	attr.add_theme_color_override("font_color", Color(0.6, 0.64, 0.7))
 	v.add_child(attr)
@@ -477,9 +477,11 @@ func _page_env() -> void:
 	var place: String = sel_name if sel_name != "" else geo.place_name
 	_text("%s – so sieht es dort aus:" % place, 16, Color(1, 1, 1))
 	_text("Erkannt: %s  (%s)" % [geo.env_name(geo.env), geo.env_why], 14, Color(0.55, 0.85, 1.0))
-	var b3: String = "3D-Gebäude von swisstopo: " + ("ja, %d Kacheln" % geo.b3d_meshes.size() if not geo.b3d_meshes.is_empty() else "nein – Häuser aus OpenStreetMap")
-	_text(b3 + ("" if geo.b3d_meshes.is_empty() == false else "  ·  " + " · ".join(PackedStringArray(geo.b3d_diag))), 13,
-			Color(0.6, 0.9, 0.6) if not geo.b3d_meshes.is_empty() else Color(1.0, 0.75, 0.4))
+	var b3: String = "3D-Gebäude von swisstopo: " + ("ja, %d Häuser" % geo.b3d_foot.size() if not geo.b3d_meshes.is_empty() else
+			("aus" if not geo.b3d_on else "nicht geladen – " + geo.b3d_reason + (". Häuser aus OpenStreetMap (einfache Klötze)." if not geo.osm.is_empty() else ". OpenStreetMap fehlt auch: keine Häuser.")))
+	var b3l := _text(b3, 13, Color(0.6, 0.9, 0.6) if not geo.b3d_meshes.is_empty() else Color(1.0, 0.75, 0.4))
+	b3l.tooltip_text = "\n".join(PackedStringArray(geo.b3d_diag))          # the details (also in user://orte/3d_gebaeude_bericht.txt)
+	b3l.mouse_filter = Control.MOUSE_FILTER_STOP
 	_text("Die Umgebung bestimmt, welche Dinge zusätzlich in die Szene kommen. Gebäude, Strassen, Wald und Wasser kommen immer vom echten Ort.", 13, Color(0.7, 0.74, 0.8))
 	var opts := []
 	for e in geo.ENVS:

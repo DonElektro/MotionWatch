@@ -1339,6 +1339,12 @@
   "it": "%d di %d fatti",
   "rm": "%d da %d fatg"
  },
+ "%d von %d Kacheln gelesen, %d Häuser, %d Dreiecke, %.0f kB, %d ms entpackt (Draco %d ms, %d Teile aus dem Speicher)": {
+  "en": "%d of %d tiles read, %d houses, %d triangles, %.0f kB, %d ms unpacked (Draco %d ms, %d parts from the cache)",
+  "fr": "%d tuiles sur %d lues, %d maisons, %d triangles, %.0f ko, %d ms décompressé (Draco %d ms, %d parties du cache)",
+  "it": "%d di %d riquadri letti, %d case, %d triangoli, %.0f kB, %d ms decompresso (Draco %d ms, %d parti dalla cache)",
+  "rm": "%d da %d plattas legidas, %d chasas, %d triangels, %.0f kB, %d ms extratg (Draco %d ms, %d parts da la memoria)"
+ },
  "%d von 3 Sternen": {
   "en": "%d of 3 stars",
   "fr": "%d étoiles sur 3",
@@ -2332,6 +2338,12 @@
   "it": ", finito",
   "rm": ", finì"
  },
+ ", Häuser aus OpenStreetMap": {
+  "en": ", houses from OpenStreetMap",
+  "fr": ", maisons d'OpenStreetMap",
+  "it": ", case da OpenStreetMap",
+  "rm": ", chasas dad OpenStreetMap"
+ },
  ", meist bei «%s»": {
   "en": ", mostly at «%s»",
   "fr": ", surtout à « %s »",
@@ -2375,6 +2387,18 @@
   "it": "-servo bloccato",
   "rm": "-servo bloccà",
   "?": "dynamisch angehängt («Schwenk»+…) – Phase 2: ganze Vorlage"
+ },
+ ". Häuser aus OpenStreetMap (einfache Klötze).": {
+  "en": ". Houses from OpenStreetMap (simple blocks).",
+  "fr": ". Maisons d'OpenStreetMap (blocs simples).",
+  "it": ". Case da OpenStreetMap (blocchi semplici).",
+  "rm": ". Chasas dad OpenStreetMap (blocs simpels)."
+ },
+ ". OpenStreetMap fehlt auch: keine Häuser.": {
+  "en": ". OpenStreetMap is missing too: no houses.",
+  "fr": ". OpenStreetMap manque aussi : pas de maisons.",
+  "it": ". Manca anche OpenStreetMap: nessuna casa.",
+  "rm": ". Er OpenStreetMap manca: naginas chasas."
  },
  ". Rechtsklick auf ein Ding = weg. Nochmals drücken = nichts setzen.": {
   "en": ". Right click on a thing = away. Press again = place nothing.",
@@ -3006,11 +3030,23 @@
   "it": "Stampante 3D (Bambu Lab X2D) ed essiccatore",
   "rm": "Stampader 3D (Bambu Lab X2D) e sitgader da filament"
  },
+ "3D-Gebäude nicht geladen (": {
+  "en": "3D buildings not loaded (",
+  "fr": "Bâtiments 3D non chargés (",
+  "it": "Edifici 3D non caricati (",
+  "rm": "Edifizis 3D betg chargiads ("
+ },
  "3D-Gebäude von swisstopo: ": {
   "en": "3D buildings from swisstopo: ",
   "fr": "Bâtiments 3D de swisstopo : ",
   "it": "Edifici 3D da swisstopo: ",
   "rm": "Edifizis 3D da swisstopo: "
+ },
+ "3D-Gebäude: ": {
+  "en": "3D buildings: ",
+  "fr": "Bâtiments 3D : ",
+  "it": "Edifici 3D: ",
+  "rm": "Edifizis 3D: "
  },
  "3D-Gebäude: Format nicht lesbar – Häuser aus OpenStreetMap": {
   "en": "3D buildings: format not readable – houses from OpenStreetMap",
@@ -3173,6 +3209,12 @@
   "fr": "850 nm, 120°",
   "it": "850 nm, 120°",
   "rm": "850 nm, 120°"
+ },
+ ": 3D-Gebäude von swisstopo nicht geladen (": {
+  "en": ": 3D buildings from swisstopo not loaded (",
+  "fr": " : bâtiments 3D de swisstopo non chargés (",
+  "it": ": edifici 3D di swisstopo non caricati (",
+  "rm": ": edifizis 3D da swisstopo betg chargiads ("
  },
  ": in die Welt ziehen, oder anklicken und in die Welt klicken": {
   "en": ": drag into the world, or click and click into the world",
@@ -11937,6 +11979,288 @@
   "it": "Aquilone (sull’albero / a terra)",
   "rm": "Dragun (en la planta / sin il terren)"
  },
+ "Draco mit Metadaten": {
+  "en": "Draco with metadata",
+  "fr": "Draco avec métadonnées",
+  "it": "Draco con metadati",
+  "rm": "Draco cun metadatas"
+ },
+ "Draco nicht lesbar": {
+  "en": "Draco not readable",
+  "fr": "Draco illisible",
+  "it": "Draco non leggibile",
+  "rm": "Draco betg legibel"
+ },
+ "Draco sequentiell (nur Edgebreaker)": {
+  "en": "Draco sequential (only Edgebreaker)",
+  "fr": "Draco séquentiel (Edgebreaker seulement)",
+  "it": "Draco sequenziale (solo Edgebreaker)",
+  "rm": "Draco sequenzial (mo Edgebreaker)"
+ },
+ "Draco-Edgebreaker Art %d": {
+  "en": "Draco Edgebreaker type %d",
+  "fr": "Draco Edgebreaker type %d",
+  "it": "Draco Edgebreaker tipo %d",
+  "rm": "Draco Edgebreaker tip %d"
+ },
+ "Draco-Version %d.%d (nur 2.2)": {
+  "en": "Draco version %d.%d (only 2.2)",
+  "fr": "Version Draco %d.%d (seulement 2.2)",
+  "it": "Versione Draco %d.%d (solo 2.2)",
+  "rm": "Versiun Draco %d.%d (mo 2.2)"
+ },
+ "Draco: %d statt %d Dreiecke": {
+  "en": "Draco: %d instead of %d triangles",
+  "fr": "Draco : %d au lieu de %d triangles",
+  "it": "Draco: %d invece di %d triangoli",
+  "rm": "Draco: %d empè da %d triangels"
+ },
+ "Draco: C entartet": {
+  "en": "Draco: C degenerate",
+  "fr": "Draco : C dégénéré",
+  "it": "Draco: C degenere",
+  "rm": "Draco: C degenerà"
+ },
+ "Draco: C kaputt": {
+  "en": "Draco: C broken",
+  "fr": "Draco : C cassé",
+  "it": "Draco: C rotto",
+  "rm": "Draco: C donnegià"
+ },
+ "Draco: C ohne Kante": {
+  "en": "Draco: C without edge",
+  "fr": "Draco : C sans arête",
+  "it": "Draco: C senza spigolo",
+  "rm": "Draco: C senza ur"
+ },
+ "Draco: Daten zu kurz": {
+  "en": "Draco: data too short",
+  "fr": "Draco : données trop courtes",
+  "it": "Draco: dati troppo corti",
+  "rm": "Draco: datas memia curtas"
+ },
+ "Draco: Durchlauf %d": {
+  "en": "Draco: traversal %d",
+  "fr": "Draco : parcours %d",
+  "it": "Draco: attraversamento %d",
+  "rm": "Draco: percurs %d"
+ },
+ "Draco: Kanten fehlen": {
+  "en": "Draco: edges missing",
+  "fr": "Draco : arêtes manquantes",
+  "it": "Draco: spigoli mancanti",
+  "rm": "Draco: urs mancan"
+ },
+ "Draco: Kanten unplausibel": {
+  "en": "Draco: edges implausible",
+  "fr": "Draco : arêtes invraisemblables",
+  "it": "Draco: spigoli non plausibili",
+  "rm": "Draco: urs betg plausiblas"
+ },
+ "Draco: keine Attribute": {
+  "en": "Draco: no attributes",
+  "fr": "Draco : pas d'attributs",
+  "it": "Draco: nessun attributo",
+  "rm": "Draco: nagins attributs"
+ },
+ "Draco: keine Dreiecke (Art %d)": {
+  "en": "Draco: no triangles (type %d)",
+  "fr": "Draco : pas de triangles (type %d)",
+  "it": "Draco: nessun triangolo (tipo %d)",
+  "rm": "Draco: nagins triangels (tip %d)"
+ },
+ "Draco: Kopf unplausibel": {
+  "en": "Draco: header implausible",
+  "fr": "Draco : en-tête invraisemblable",
+  "it": "Draco: intestazione non plausibile",
+  "rm": "Draco: chau betg plausibel"
+ },
+ "Draco: Positionen mit anderen Attributen zusammen": {
+  "en": "Draco: positions together with other attributes",
+  "fr": "Draco : positions avec d'autres attributs",
+  "it": "Draco: posizioni insieme ad altri attributi",
+  "rm": "Draco: posiziuns ensemen cun auters attributs"
+ },
+ "Draco: Positionen nicht zuerst": {
+  "en": "Draco: positions not first",
+  "fr": "Draco : positions pas en premier",
+  "it": "Draco: posizioni non per prime",
+  "rm": "Draco: posiziuns betg l'emprim"
+ },
+ "Draco: Positionen unter anderer Nummer": {
+  "en": "Draco: positions under another number",
+  "fr": "Draco : positions sous un autre numéro",
+  "it": "Draco: posizioni sotto un altro numero",
+  "rm": "Draco: posiziuns sut in auter numer"
+ },
+ "Draco: Positions-Art %d": {
+  "en": "Draco: position type %d",
+  "fr": "Draco : type de position %d",
+  "it": "Draco: tipo di posizione %d",
+  "rm": "Draco: tip da posiziun %d"
+ },
+ "Draco: Quantisierung kaputt": {
+  "en": "Draco: quantization broken",
+  "fr": "Draco : quantification cassée",
+  "it": "Draco: quantizzazione rotta",
+  "rm": "Draco: quantisaziun donnegiada"
+ },
+ "Draco: R/L kaputt": {
+  "en": "Draco: R/L broken",
+  "fr": "Draco : R/L cassé",
+  "it": "Draco: R/L rotto",
+  "rm": "Draco: R/L donnegià"
+ },
+ "Draco: R/L ohne Kante": {
+  "en": "Draco: R/L without edge",
+  "fr": "Draco : R/L sans arête",
+  "it": "Draco: R/L senza spigolo",
+  "rm": "Draco: R/L senza ur"
+ },
+ "Draco: rANS-Anfang kaputt": {
+  "en": "Draco: rANS start broken",
+  "fr": "Draco : début rANS cassé",
+  "it": "Draco: inizio rANS rotto",
+  "rm": "Draco: entschatta rANS donnegiada"
+ },
+ "Draco: rANS-Bits kaputt": {
+  "en": "Draco: rANS bits broken",
+  "fr": "Draco : bits rANS cassés",
+  "it": "Draco: bit rANS rotti",
+  "rm": "Draco: bits rANS donnegiads"
+ },
+ "Draco: rANS-Daten zu kurz": {
+  "en": "Draco: rANS data too short",
+  "fr": "Draco : données rANS trop courtes",
+  "it": "Draco: dati rANS troppo corti",
+  "rm": "Draco: datas rANS memia curtas"
+ },
+ "Draco: rANS-Tabelle kaputt": {
+  "en": "Draco: rANS table broken",
+  "fr": "Draco : table rANS cassée",
+  "it": "Draco: tabella rANS rotta",
+  "rm": "Draco: tabella rANS donnegiada"
+ },
+ "Draco: rANS-Tabelle unvollständig": {
+  "en": "Draco: rANS table incomplete",
+  "fr": "Draco : table rANS incomplète",
+  "it": "Draco: tabella rANS incompleta",
+  "rm": "Draco: tabella rANS incumpletta"
+ },
+ "Draco: Rohwerte kaputt": {
+  "en": "Draco: raw values broken",
+  "fr": "Draco : valeurs brutes cassées",
+  "it": "Draco: valori grezzi rotti",
+  "rm": "Draco: valurs brutas donnegiadas"
+ },
+ "Draco: S im Kreis": {
+  "en": "Draco: S in a loop",
+  "fr": "Draco : S en boucle",
+  "it": "Draco: S in cerchio",
+  "rm": "Draco: S en circul"
+ },
+ "Draco: S kaputt": {
+  "en": "Draco: S broken",
+  "fr": "Draco : S cassé",
+  "it": "Draco: S rotto",
+  "rm": "Draco: S donnegià"
+ },
+ "Draco: S ohne Kante": {
+  "en": "Draco: S without edge",
+  "fr": "Draco : S sans arête",
+  "it": "Draco: S senza spigolo",
+  "rm": "Draco: S senza ur"
+ },
+ "Draco: S ohne zweite Kante": {
+  "en": "Draco: S without second edge",
+  "fr": "Draco : S sans deuxième arête",
+  "it": "Draco: S senza secondo spigolo",
+  "rm": "Draco: S senza segund ur"
+ },
+ "Draco: Startfläche kaputt": {
+  "en": "Draco: start face broken",
+  "fr": "Draco : face de départ cassée",
+  "it": "Draco: faccia iniziale rotta",
+  "rm": "Draco: surfatscha da partenza donnegiada"
+ },
+ "Draco: Symbol %d": {
+  "en": "Draco: symbol %d",
+  "fr": "Draco : symbole %d",
+  "it": "Draco: simbolo %d",
+  "rm": "Draco: simbol %d"
+ },
+ "Draco: Symbol kaputt": {
+  "en": "Draco: symbol broken",
+  "fr": "Draco : symbole cassé",
+  "it": "Draco: simbolo rotto",
+  "rm": "Draco: simbol donnegià"
+ },
+ "Draco: Symbol-Art %d": {
+  "en": "Draco: symbol type %d",
+  "fr": "Draco : type de symbole %d",
+  "it": "Draco: tipo di simbolo %d",
+  "rm": "Draco: tip da simbol %d"
+ },
+ "Draco: Symbolbreite %d": {
+  "en": "Draco: symbol width %d",
+  "fr": "Draco : largeur de symbole %d",
+  "it": "Draco: larghezza simbolo %d",
+  "rm": "Draco: ladezza dal simbol %d"
+ },
+ "Draco: Teilung kaputt": {
+  "en": "Draco: split broken",
+  "fr": "Draco : division cassée",
+  "it": "Draco: divisione rotta",
+  "rm": "Draco: partiziun donnegiada"
+ },
+ "Draco: Teilung verpasst": {
+  "en": "Draco: split missed",
+  "fr": "Draco : division manquée",
+  "it": "Draco: divisione mancata",
+  "rm": "Draco: partiziun manchentada"
+ },
+ "Draco: Teilungen unplausibel": {
+  "en": "Draco: splits implausible",
+  "fr": "Draco : divisions invraisemblables",
+  "it": "Draco: divisioni non plausibili",
+  "rm": "Draco: partiziuns betg plausiblas"
+ },
+ "Draco: Transform %d": {
+  "en": "Draco: transform %d",
+  "fr": "Draco : transformation %d",
+  "it": "Draco: trasformazione %d",
+  "rm": "Draco: transfurmaziun %d"
+ },
+ "Draco: Valenz-Kontext unplausibel": {
+  "en": "Draco: valence context implausible",
+  "fr": "Draco : contexte de valence invraisemblable",
+  "it": "Draco: contesto di valenza non plausibile",
+  "rm": "Draco: context da valenza betg plausibel"
+ },
+ "Draco: Valenz-Symbole fehlen": {
+  "en": "Draco: valence symbols missing",
+  "fr": "Draco : symboles de valence manquants",
+  "it": "Draco: simboli di valenza mancanti",
+  "rm": "Draco: simbols da valenza mancan"
+ },
+ "Draco: Vorhersage %d": {
+  "en": "Draco: prediction %d",
+  "fr": "Draco : prédiction %d",
+  "it": "Draco: previsione %d",
+  "rm": "Draco: previsiun %d"
+ },
+ "Draco: zu viele Ecken": {
+  "en": "Draco: too many corners",
+  "fr": "Draco : trop de coins",
+  "it": "Draco: troppi angoli",
+  "rm": "Draco: memia blers chantuns"
+ },
+ "Draco: zu viele Symbole": {
+  "en": "Draco: too many symbols",
+  "fr": "Draco : trop de symboles",
+  "it": "Draco: troppi simboli",
+  "rm": "Draco: memia blers simbols"
+ },
  "Draussen": {
   "en": "Outdoors",
   "fr": "Dehors",
@@ -18234,11 +18558,23 @@
   "it": "glTF %s (glb %d), estensioni: %s",
   "rm": "glTF %s (glb %d), extensiuns: %s"
  },
+ "glTF braucht %s – nicht unterstützt": {
+  "en": "glTF needs %s – not supported",
+  "fr": "glTF nécessite %s – non pris en charge",
+  "it": "glTF richiede %s – non supportato",
+  "rm": "glTF dovra %s – betg sustegnì"
+ },
  "glTF nicht lesbar: ": {
   "en": "glTF not readable: ",
   "fr": "glTF illisible : ",
   "it": "glTF illeggibile: ",
   "rm": "glTF betg legibel: "
+ },
+ "glTF-Kopf unlesbar": {
+  "en": "glTF header unreadable",
+  "fr": "en-tête glTF illisible",
+  "it": "intestazione glTF illeggibile",
+  "rm": "chau glTF betg legibel"
  },
  "Glühwürmchen am Holzstapel": {
   "en": "Fireflies at the woodpile",
@@ -20503,6 +20839,12 @@
   "it": "Frequente: di giorno sui pascoli (in letargo d'inverno).",
   "rm": "Frequent: il di sin las pastgiras (l'enviern en sien d'enviern)."
  },
+ "Häuser aus OpenStreetMap": {
+  "en": "Houses from OpenStreetMap",
+  "fr": "Maisons d'OpenStreetMap",
+  "it": "Case da OpenStreetMap",
+  "rm": "Chasas dad OpenStreetMap"
+ },
  "Häuser in 3D von swisstopo": {
   "en": "Houses in 3D from swisstopo",
   "fr": "Maisons en 3D de swisstopo",
@@ -20574,6 +20916,12 @@
   "fr": "Hauteur de la tête de caméra : glisser (ou ◀ ▶ sur la manette)",
   "it": "Altezza della testa della telecamera: trascinare (o ◀ ▶ sul controller)",
   "rm": "Autezza dal chau da la camera: trair (u ◀ ▶ al controller)"
+ },
+ "Höhe korrigiert um %.1f m (10 %%: %.1f, 50 %%: %.1f, 90 %%: %.1f, %d Häuser)": {
+  "en": "Height corrected by %.1f m (10 %%: %.1f, 50 %%: %.1f, 90 %%: %.1f, %d houses)",
+  "fr": "Hauteur corrigée de %.1f m (10 %% : %.1f, 50 %% : %.1f, 90 %% : %.1f, %d maisons)",
+  "it": "Altezza corretta di %.1f m (10 %%: %.1f, 50 %%: %.1f, 90 %%: %.1f, %d case)",
+  "rm": "Autezza curregida per %.1f m (10 %%: %.1f, 50 %%: %.1f, 90 %%: %.1f, %d chasas)"
  },
  "Höhe: %.2f m": {
   "en": "Height: %.2f m",
@@ -21241,6 +21589,12 @@
   "it": "sempre, anche senza pioggia",
   "rm": "adina, er senza plievgia"
  },
+ "implizite Kacheln (3D Tiles 1.1) – nicht unterstützt": {
+  "en": "implicit tiles (3D Tiles 1.1) – not supported",
+  "fr": "tuiles implicites (3D Tiles 1.1) – non prises en charge",
+  "it": "riquadri impliciti (3D Tiles 1.1) – non supportati",
+  "rm": "plattas implicitas (3D Tiles 1.1) – betg sustegnidas"
+ },
  "IMX708": {
   "en": "IMX708",
   "fr": "IMX708",
@@ -21835,6 +22189,12 @@
   "it": "sì – ognuno sceglie sul telefonino",
   "rm": "gea – mintgin tscherna sin il telefonin"
  },
+ "ja, %d Häuser": {
+  "en": "yes, %d houses",
+  "fr": "oui, %d maisons",
+  "it": "sì, %d case",
+  "rm": "gea, %d chasas"
+ },
  "ja, %d Kacheln": {
   "en": "yes, %d tiles",
   "fr": "oui, %d tuiles",
@@ -22303,11 +22663,23 @@
   "it": "Pressacavo M12 (uscita relè)",
   "rm": "Passacabel M12 (sortida relais)"
  },
+ "Kachel fehlt: ": {
+  "en": "Tile missing: ",
+  "fr": "Tuile manquante : ",
+  "it": "Riquadro mancante: ",
+  "rm": "Platta manca: "
+ },
  "Kachel leer: ": {
   "en": "Tile empty: ",
   "fr": "Tuile vide : ",
   "it": "Riquadro vuoto: ",
   "rm": "Platta vida: "
+ },
+ "Kachel ohne Dreiecke": {
+  "en": "Tile without triangles",
+  "fr": "Tuile sans triangles",
+  "it": "Riquadro senza triangoli",
+  "rm": "Platta senza triangels"
  },
  "Kachel ohne Dreiecke: ": {
   "en": "Tile without triangles: ",
@@ -22315,11 +22687,29 @@
   "it": "Riquadro senza triangoli: ",
   "rm": "Platta senza triangels: "
  },
+ "Kachel ohne glTF": {
+  "en": "Tile without glTF",
+  "fr": "Tuile sans glTF",
+  "it": "Riquadro senza glTF",
+  "rm": "Platta senza glTF"
+ },
  "Kachel-Steuerung des Simulators auf dem Handy": {
   "en": "Tile control of the simulator on the phone",
   "fr": "Commande par tuiles du simulateur sur le téléphone",
   "it": "Comando a riquadri del simulatore sul telefonino",
   "rm": "Manischament cun plattas dal simulatur sin il telefonin"
+ },
+ "Kacheln nicht geladen (": {
+  "en": "Tiles not loaded (",
+  "fr": "Tuiles non chargées (",
+  "it": "Riquadri non caricati (",
+  "rm": "Plattas betg chargiadas ("
+ },
+ "Kacheln nicht lesbar": {
+  "en": "Tiles not readable",
+  "fr": "Tuiles illisibles",
+  "it": "Riquadri non leggibili",
+  "rm": "Plattas betg legiblas"
  },
  "Kaffee mit Aussicht. So darf jeder Tag anfangen.": {
   "en": "Coffee with a view. Every day may start like this.",
@@ -22933,6 +23323,12 @@
   "it": "Mappa, bussola, SmallTV e CPU come schede",
   "rm": "Charta, bussola, SmallTV e CPU sco registers"
  },
+ "Karte, Luftbild und 3D-Gebäude © swisstopo · Gebäude, Wald, Strassen © OpenStreetMap-Mitwirkende · Höhen © swisstopo / Terrarium": {
+  "en": "Map, aerial image and 3D buildings © swisstopo · Buildings, forest, roads © OpenStreetMap contributors · Heights © swisstopo / Terrarium",
+  "fr": "Carte, photo aérienne et bâtiments 3D © swisstopo · Bâtiments, forêt, routes © contributeurs d'OpenStreetMap · Altitudes © swisstopo / Terrarium",
+  "it": "Carta, foto aerea ed edifici 3D © swisstopo · Edifici, bosco, strade © contributori di OpenStreetMap · Altitudini © swisstopo / Terrarium",
+  "rm": "Charta, maletg aviatic ed edifizis 3D © swisstopo · Edifizis, guaud, vias © collavuraturs dad OpenStreetMap · Autezzas © swisstopo / Terrarium"
+ },
  "Karte: ": {
   "en": "Map: ",
   "fr": "Carte : ",
@@ -23251,6 +23647,12 @@
   "it": "nessuna risposta",
   "rm": "nagina resposta"
  },
+ "keine Antwort von swisstopo": {
+  "en": "no answer from swisstopo",
+  "fr": "pas de réponse de swisstopo",
+  "it": "nessuna risposta da swisstopo",
+  "rm": "nagina resposta da swisstopo"
+ },
  "keine Aufnahme": {
   "en": "no picture",
   "fr": "pas d'image",
@@ -23262,6 +23664,12 @@
   "fr": "aucun fichier choisi",
   "it": "nessun file scelto",
   "rm": "nagina datoteca tschernida"
+ },
+ "keine Draco-Daten": {
+  "en": "no Draco data",
+  "fr": "pas de données Draco",
+  "it": "nessun dato Draco",
+  "rm": "naginas datas Draco"
  },
  "keine Figur": {
   "en": "no figure",
@@ -23281,11 +23689,29 @@
   "it": "Nessun percorso furtivo salvato per questa scena – prima giocare con «percorsi propri».",
   "rm": "Naginas vias da sa stular memorisadas per questa scena – l’emprim giugar cun «atgnas vias»."
  },
+ "Keine Häuser": {
+  "en": "No houses",
+  "fr": "Pas de maisons",
+  "it": "Nessuna casa",
+  "rm": "Naginas chasas"
+ },
+ "keine Häuser im Nahbereich": {
+  "en": "no houses nearby",
+  "fr": "pas de maisons à proximité",
+  "it": "nessuna casa nelle vicinanze",
+  "rm": "naginas chasas en la vischinanza"
+ },
  "Keine Jacke": {
   "en": "No jacket",
   "fr": "Pas de veste",
   "it": "Niente giacca",
   "rm": "Nagina giacca"
+ },
+ "keine Kacheln für diesen Ort": {
+  "en": "no tiles for this place",
+  "fr": "pas de tuiles pour ce lieu",
+  "it": "nessun riquadro per questo luogo",
+  "rm": "naginas plattas per quest lieu"
  },
  "keine Klasse (%s)": {
   "en": "no class (%s)",
@@ -24505,6 +24931,12 @@
   "fr": "Chargement de %s … %.1f sur %.1f MB",
   "it": "Carico %s … %.1f di %.1f MB",
   "rm": "Chargiar %s … %.1f da %.1f MB"
+ },
+ "Lade 3D-Gebäude von swisstopo": {
+  "en": "Loading 3D buildings from swisstopo",
+  "fr": "Chargement des bâtiments 3D de swisstopo",
+  "it": "Caricamento edifici 3D da swisstopo",
+  "rm": "Chargiar edifizis 3D da swisstopo"
  },
  "Lade 3D-Gebäude von swisstopo … %d von %d": {
   "en": "Loading 3D buildings from swisstopo … %d of %d",
@@ -26367,6 +26799,12 @@
   "fr": "Plus",
   "it": "Altro",
   "rm": "Dapli"
+ },
+ "mehr als %d Kacheln – Rest weggelassen": {
+  "en": "more than %d tiles – the rest left out",
+  "fr": "plus de %d tuiles – le reste est omis",
+  "it": "più di %d riquadri – il resto omesso",
+  "rm": "dapli che %d plattas – il rest laschà davent"
  },
  "Mehr Kraft, ruhiges Wetter, Standort auf der Karte. Rätsel: Pfeile zeigen den Weg.": {
   "en": "More strength, calm weather, your position on the map. Puzzles: arrows show the way.",
@@ -29814,6 +30252,12 @@
   "it": "non trovato (repository o workflow?)",
   "rm": "betg chattà (repository u workflow?)"
  },
+ "nicht geladen – ": {
+  "en": "not loaded – ",
+  "fr": "non chargé – ",
+  "it": "non caricato – ",
+  "rm": "betg chargià – "
+ },
  "nicht gerettet": {
   "en": "not rescued",
   "fr": "pas sauvé",
@@ -30984,6 +31428,12 @@
   "it": "Verde oliva",
   "rm": "Verd oliva"
  },
+ "OpenStreetMap nicht erreichbar: Strassen, Wald, Wasser und Zäune fehlen (beim nächsten Laden neuer Versuch).": {
+  "en": "OpenStreetMap not reachable: roads, forest, water and fences are missing (new try at the next load).",
+  "fr": "OpenStreetMap inaccessible : routes, forêt, eau et clôtures manquent (nouvel essai au prochain chargement).",
+  "it": "OpenStreetMap non raggiungibile: mancano strade, bosco, acqua e recinzioni (nuovo tentativo al prossimo caricamento).",
+  "rm": "OpenStreetMap betg cuntanschibel: vias, guaud, aua e saivs mancan (nov emprova cun il proxim chargiar)."
+ },
  "Orange": {
   "en": "Orange",
   "fr": "Orange",
@@ -31121,6 +31571,12 @@
   "fr": "Couple (à deux)",
   "it": "Coppia (in due)",
   "rm": "Pèr (a dus)"
+ },
+ "Packe 3D-Gebäude aus … %d von %d": {
+  "en": "Unpacking 3D buildings … %d of %d",
+  "fr": "Décompression des bâtiments 3D … %d sur %d",
+  "it": "Decompressione edifici 3D … %d di %d",
+  "rm": "Extrair edifizis 3D … %d da %d"
  },
  "Packe aus …": {
   "en": "Unpacking …",
@@ -37351,6 +37807,12 @@
   "it": "swissBUILDINGS3D (swisstopo)",
   "rm": "swissBUILDINGS3D (swisstopo)"
  },
+ "swisstopo nicht erreichbar – Verzeichnis aus dem Speicher": {
+  "en": "swisstopo not reachable – index from the cache",
+  "fr": "swisstopo inaccessible – index du cache",
+  "it": "swisstopo non raggiungibile – indice dalla cache",
+  "rm": "swisstopo betg cuntanschibel – register da la memoria"
+ },
  "swisstopo swissALTI3D": {
   "en": "swisstopo swissALTI3D",
   "fr": "swisstopo swissALTI3D",
@@ -39110,6 +39572,12 @@
   "it": "sconosciuto · ",
   "rm": "nunenconuschent · "
  },
+ "unbekannte Antwort von swisstopo": {
+  "en": "unknown answer from swisstopo",
+  "fr": "réponse inconnue de swisstopo",
+  "it": "risposta sconosciuta da swisstopo",
+  "rm": "resposta nunenconuschenta da swisstopo"
+ },
  "unbekannte KI-Hilfe: ": {
   "en": "unknown AI help: ",
   "fr": "aide IA inconnue : ",
@@ -39121,6 +39589,12 @@
   "fr": "Scénario inconnu.",
   "it": "Scenario sconosciuto.",
   "rm": "Scenari nunenconuschent."
+ },
+ "unbekannter Fehler": {
+  "en": "unknown error",
+  "fr": "erreur inconnue",
+  "it": "errore sconosciuto",
+  "rm": "errur nunenconuschenta"
  },
  "unbekannter Inhalt": {
   "en": "unknown content",
@@ -40219,6 +40693,18 @@
   "fr": "Bateau coulé (seulement depuis le ponton)",
   "it": "Barca affondata (solo dal pontile)",
   "rm": "Bartga sfundrada (mo dal punt)"
+ },
+ "Verzeichnis nicht lesbar": {
+  "en": "Index not readable",
+  "fr": "Index illisible",
+  "it": "Indice non leggibile",
+  "rm": "Register betg legibel"
+ },
+ "Verzeichnis nicht lesbar: ": {
+  "en": "Index not readable: ",
+  "fr": "Index illisible : ",
+  "it": "Indice non leggibile: ",
+  "rm": "Register betg legibel: "
  },
  "Vibration (erwischt, Treffer, Alarm, die Kamera sieht dich)": {
   "en": "Vibration (caught, hit, alarm, the camera sees you)",

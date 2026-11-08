@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 7628 (Stellen: 10626)
-Übersetzt: en 7628, fr 7628, it 7628, rm 7628
+Texte gesamt: 7697 (Stellen: 10703)
+Übersetzt: en 7697, fr 7697, it 7697, rm 7697
 Unsicher markiert: 31
-Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 514 Stellen
-Nicht mehr im Code (noch in texte.json): 340
+Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 520 Stellen
+Nicht mehr im Code (noch in texte.json): 352
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 68 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1
-Übersprungen (Grund: Anzahl): kennung 27595, schlüssel 20939, keine Wörter 12994, index 9828, technisch 3648, doc 2391, einheit 339, log 175, englisch 143, pfad 125, stringname 103, html 68, klasse 36, shader 6
+Übersprungen (Grund: Anzahl): kennung 27662, schlüssel 21055, keine Wörter 13045, index 9896, technisch 3656, doc 2404, einheit 339, log 175, englisch 143, pfad 125, stringname 103, html 68, klasse 36, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   werkstatt_daten.gd       533     4
@@ -59,15 +59,17 @@ Pro Datei (Texte / davon dynamische Stellen):
   entdecken.gd              57     0
   quick.gd                  55     2
   bergtal_erleben_b.gd      55     0
+  karte.gd                  49    10
   abenteuer_rucksack.gd     48     3
+  draco.gd                  47     0
   scenes.gd                 47     0
-  karte.gd                  46     8
   maggie_zwei_team.gd       46     0
   mwpc.gd                   46    12
   gamerules.gd              45     4
   horror_raetsel.gd         44     0
   symbole.gd                44     1
   ferienpark_leben.gd       43     2
+  geo.gd                    43     9
   protokoll.gd              42    16
   sicherung.gd              42     1
   pir.gd                    41     0
@@ -86,7 +88,6 @@ Pro Datei (Texte / davon dynamische Stellen):
   mikrofon.gd               37     0
   simreal.gd                37     0
   gamemore.gd               36     1
-  geo.gd                    36     7
   maggie_vorfuehrung.gd     35     7
   fenster.gd                34     0
   gameziele.gd              34     0
@@ -99,6 +100,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   news.gd                   29     1
   padmap.gd                 28    19
   explore.gd                28     2
+  b3d.gd                    28     5
   power.gd                  28    10
   main_status.gd            27    12
   devtool_spieltest.gd      27     0
@@ -138,7 +140,6 @@ Pro Datei (Texte / davon dynamische Stellen):
   weitwinkel.gd             16     0
   main_start.gd             16     2
   menschen.gd               16     0
-  b3d.gd                    15     3
   gamesneak.gd              15     0
   abenteuer_blinki.gd       14     0
   home_editor.gd            14     3
@@ -323,9 +324,11 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   karte.gd:335  'Nichts gefunden'
   karte.gd:403  ' (beim ersten Mal etwa eine Minute, danach ist der Ort gespeichert)'
   karte.gd:480  '3D-Gebäude von swisstopo: '
-  karte.gd:504  'Dazu kommen: '
-  karte.gd:512  'ja'
-  karte.gd:512  'keine'
+  karte.gd:481  'aus'
+  karte.gd:481  'nicht geladen – '
+  karte.gd:506  'Dazu kommen: '
+  karte.gd:514  'ja'
+  karte.gd:514  'keine'
   abenteuer_moveeye.gd:136  'offen'
   abenteuer_moveeye.gd:142  'offen'
   abenteuer_moveeye.gd:251  'offen'
@@ -492,9 +495,11 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   statisten.gd:111  'keine'
   tunnel.gd:17  'aus'
   tunnel.gd:37  'aus'
-  b3d.gd:86  'Kachel leer: '
-  b3d.gd:186  'glTF nicht lesbar: '
-  b3d.gd:208  'Kachel ohne Dreiecke: '
+  b3d.gd:65  '3D-Gebäude: '
+  b3d.gd:126  'Kacheln nicht geladen ('
+  b3d.gd:127  'Kacheln nicht lesbar'
+  b3d.gd:220  'Verzeichnis nicht lesbar: '
+  b3d.gd:243  'Kachel fehlt: '
   bergtal.gd:245  'Aussicht: '
   bergtal.gd:254  'Schlafplatz: '
   bergtal.gd:256  'Aussicht: '
@@ -618,13 +623,15 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   gameshutter.gd:713  ' · Sim-KI'
   gametools.gd:343  'Licht '
   gametools.gd:346  'Energie ['
-  geo.gd:206  'Ortssuche: '
-  geo.gd:304  'way[landuse];relation[landuse~"forest|orchard"];way[waterway];node[natural=tree];way[barrier];way[leisure~"pitch|swimming_pool|park"];way[amenity=parking];);out geom;'
-  geo.gd:325  ' – Internet da?'
-  geo.gd:325  'Laden nicht möglich: '
-  geo.gd:412  ' geladen (Höhen: '
-  geo.gd:1537  ' (Fluss)'
-  geo.gd:1633  'Ort: %s (%.5f, %.5f)\n%s\n'
+  geo.gd:211  'Ortssuche: '
+  geo.gd:309  'way[landuse];relation[landuse~"forest|orchard"];way[waterway];node[natural=tree];way[barrier];way[leisure~"pitch|swimming_pool|park"];way[amenity=parking];);out geom;'
+  geo.gd:330  ' – Internet da?'
+  geo.gd:330  'Laden nicht möglich: '
+  geo.gd:411  '3D-Gebäude nicht geladen ('
+  geo.gd:430  ' geladen (Höhen: '
+  geo.gd:619  ': 3D-Gebäude von swisstopo nicht geladen ('
+  geo.gd:1577  ' (Fluss)'
+  geo.gd:1673  'Ort: %s (%.5f, %.5f)\n%s\n'
   grafik_hoch.gd:310  'Hoch gewählt, aber aus: '
   headpad.gd:106  '\nAuslöser: Bildmitte (Kreis) auf einen Spieler, dann der runde Knopf im Bild oder R2 am Controller.'
   headpad.gd:108  '\nController: '

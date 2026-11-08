@@ -218,7 +218,7 @@ func _control(d: Dictionary) -> Dictionary:
 		return {"ok": true, "panel": [int(main.ui_root.size.x), int(main.ui_root.position.x)], "win": main.get_viewport().get_visible_rect().size, "wide": out.slice(0, 60), "float": [main.cam_float.position, main.cam_float.size, main.cam_float.visible] if main.cam_float != null else []}
 	elif a == "geo":                                   # for tests: the place (loading, what was built)
 		return {"ok": true, "busy": main.geo.busy, "loaded": main.geo.loaded, "info": main.geo.info, "counts": main.geo.counts, "terrain": main.terrain,
-				"h0": main.geo.h0, "src": main.geo.dem_source, "note": main.geo_note, "y": main.ground_y(float(d.get("x", 0.0)), float(d.get("z", 0.0))),
+				"h0": main.geo.h0, "src": main.geo.dem_source, "note": main.geo_note, "b3d": main.geo.b3d_stats, "b3d_reason": main.geo.b3d_reason, "b3d_diag": main.geo.b3d_diag, "y": main.ground_y(float(d.get("x", 0.0)), float(d.get("z", 0.0))),
 				"map": main.karte.visible, "map_info": main.karte.status_text(), "dark": main.is_dark(), "anims": main.anims.size(), "b3d_night": main.geo.b3d_mat.get_shader_parameter("night") if main.geo.b3d_mat != null else -1, "sun": [snappedf(main.sun_pos().x, 0.1), snappedf(main.sun_pos().y, 0.1),
 				snappedf(main.horizon_el(main.sun_pos().y), 0.1), main.sun_behind_hills(), snappedf(main.sun.light_energy, 0.01)]}
 	elif a == "map":                                   # for tests: open the map at a place, zoom

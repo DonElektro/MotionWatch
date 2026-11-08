@@ -1,23 +1,16 @@
 {
- "version": "3D-5.65.1",
- "ver": "3.65.1",
- "name": "MoveEye Sim 3.65.1",
+ "version": "3D-5.66.0",
+ "ver": "3.66.0",
+ "name": "MoveEye Sim 3.66.0",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 54355793,
- "sha256": "fcecaa506d6adaf7c6aa603ce65a1864e005ae37bc2a3819a8cdc7176d3d0faa",
- "notes": "Fehlerkorrektur: Hoch auf Software-Vulkan startet sofort mit Normal",
+ "size": 54406645,
+ "sha256": "f8aef227b450c341fc4d9c93977b2d00a45b8345f4e1be971d688af021788c33",
+ "notes": "Echte 3D-Gebäude von swisstopo wieder da (eigener Draco-Entpacker), klare Hinweise bei fehlenden Kartendaten",
  "mw_min": "3.55.0",
  "linux": {
   "file": "simulator3d/MoveEyeSim3D_Linux.zip",
-  "ver": "3.65.1",
-  "size": 48391199,
-  "sha256": "e7305bff9903c295ae8d8d5861e93b6b5d5b92f33f427addb7745a4a54c0d177"
- },
- "pi": {
-  "file": "simulator3d/MoveEyeSim3D_Pi.zip",
-  "ver": "3.65.1",
-  "size": 37894828,
-  "sha256": "a008a61a14cb0b8384ed183c79e33aa3dca5ea51df01147c9102af5dc66015e2",
-  "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.65.1/MoveEyeSim3D_Pi.zip"
+  "ver": "3.66.0",
+  "size": 48436997,
+  "sha256": "8077acdae8d2336b36bab97c6cca767fe88d257719dececf263f0431171cdcb1"
  }
 }
