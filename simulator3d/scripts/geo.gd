@@ -4,7 +4,7 @@ extends Node
 ## free Terrarium tiles), the aerial picture (swisstopo SWISSIMAGE) and buildings, trees, forests, roads, water, fences and
 ## hedges (OpenStreetMap, Overpass), keeps everything in user://orte/cache/ (once loaded it works without internet) and
 ## builds the scene «ort» from it: MoveEye stands in the middle, north is -z.
-## Data: © swisstopo (free use with source, OGD) · © OpenStreetMap contributors (ODbL) · Terrarium: Mapzen / AWS open data.
+## Data: © swisstopo (free use with source, OGD; also swissBUILDINGS3D) · © OpenStreetMap contributors (ODbL) · Terrarium: Mapzen / AWS open data.
 
 const Wege = preload("res://scripts/wege.gd")    # «Wege und Strassen»: Asphalt, Feldwege (Normal / Hoch)
 const NEAR := 200.0              # half side of the detailed square around the head (m)
@@ -46,9 +46,14 @@ var rect_far := Rect2()
 var osm: Array = []
 var counts := {}                 # what was built (for the info line and tests)
 var gen := 0                     # a newer load cancels an older one
-var b3d_meshes: Array = []       # buildings of swisstopo in 3D (b3d.gd); empty = houses from OpenStreetMap
+var b3d_meshes: Array = []       # buildings of swisstopo in 3D (b3d.gd): [{"mesh", "t": thermal key}]; empty = houses from OpenStreetMap
 var b3d_on := true
 var b3d_diag: Array = []
+var b3d_reason := ""             # 3.65.0: why there are no 3D buildings, in a few words (shown on the map and in the status line)
+var b3d_foot: Array = []         # one per swisstopo building: {"poly", "base", "top"} (obstacles, «not inside a house»)
+var b3d_head_in := false
+var b3d_tiles := 0
+var b3d_stats := {}
 var _last_err := ""
 
 
@@ -389,15 +394,28 @@ func load_place(la: float, lo: float, nm: String, rebuild := true) -> void:
 						for grown in Geometry2D.offset_polygon(poly, 0.8):   # a bit bigger: also its walls go
 							keep.append(grown)
 		var b3 = load("res://scripts/b3d.gd").new()
+		var t_b3 := Time.get_ticks_msec()
 		b3d_meshes = await b3.fetch_buildings(self, my_gen, keep)
 		b3d_diag = b3.diag
+		b3d_reason = b3.reason if b3d_meshes.is_empty() else ""
+		if b3d_meshes.is_empty() and b3d_reason == "":
+			b3d_reason = "unbekannter Fehler"
+		b3d_foot = b3.foot
+		b3d_head_in = b3.head_in
+		b3d_tiles = b3.tiles_ok
+		b3d_stats = {"tiles": b3.tiles_ok, "of": b3.contents.size(), "houses": b3.foot.size(), "tris": b3.tris, "kb": int(b3.bytes_in / 1024), "ms_decode": b3.ms_decode, "ms": Time.get_ticks_msec() - t_b3}
 		_save_b3d_report()
 		if my_gen != gen:
 			return
-		if b3d_meshes.is_empty() and b3.info != "":
-			problems.append(b3.info.trim_prefix("3D-Gebäude: "))
-		elif not b3d_meshes.is_empty():
+		if b3d_meshes.is_empty():
+			problems.append("3D-Gebäude nicht geladen (" + b3d_reason + ")" + (", Häuser aus OpenStreetMap" if not osm.is_empty() else ""))
+		else:
 			problems.append("Häuser in 3D von swisstopo")
+	else:
+		b3d_reason = ""
+		b3d_foot = []
+		b3d_head_in = false
+		b3d_tiles = 0
 	# aerial pictures
 	photo_near_img = got[2]["img"]
 	photo_near_img.generate_mipmaps()
@@ -528,11 +546,14 @@ func build(s) -> void:
 	if not b3d_meshes.is_empty():
 		var bm := ShaderMaterial.new()
 		bm.shader = load("res://shaders/b3d.gdshader")
-		for mesh in b3d_meshes:
-			main.add_mesh(sc.root, mesh, Vector3.ZERO, bm, "caravan")
+		for part in b3d_meshes:                           # walls «caravan», roofs «stone» for the thermal camera, as the OSM houses
+			main.add_mesh(sc.root, part["mesh"], Vector3.ZERO, bm, part["t"])
 		b3d_mat = bm
 		main.anims.append(_b3d_night)
-		counts["b3d"] = b3d_meshes.size()
+		counts["b3d"] = b3d_tiles
+		counts["b3d_tris"] = int(b3d_stats.get("tris", 0))
+		for f in b3d_foot:                                # obstacles and «not inside a house» from the swisstopo footprints
+			_b3d_obstacle(f)
 	var trees_at := []                                  # [pos, size, conifer, prio]
 	var roads := []
 	var head_in := false
@@ -591,8 +612,15 @@ func build(s) -> void:
 	_far_trees()
 	_camp()
 	_env_props(use_env)
-	if head_in:
-		main.geo_note = "MoveEye steht in einem Gebäude – das Gebäude wurde weggelassen."
+	var notes := []
+	if head_in or (b3d_head_in and not b3d_meshes.is_empty()):
+		notes.append("MoveEye steht in einem Gebäude – das Gebäude wurde weggelassen.")
+	if b3d_on and b3d_meshes.is_empty() and b3d_reason != "":
+		notes.append(("Häuser aus OpenStreetMap" if counts.get("buildings", 0) > 0 else "Keine Häuser") + ": 3D-Gebäude von swisstopo nicht geladen (" + b3d_reason + ").")
+	if osm.is_empty():
+		notes.append("OpenStreetMap nicht erreichbar: Strassen, Wald, Wasser und Zäune fehlen (beim nächsten Laden neuer Versuch).")
+	if not notes.is_empty():
+		main.geo_note = " ".join(PackedStringArray(notes))
 	counts["trees"] = counts.get("trees", 0)
 	sc = null
 
@@ -893,13 +921,8 @@ func _building(poly: PackedVector2Array, tg: Dictionary) -> void:
 		hi = max(hi, gy)
 	var y0 := lo - 0.4
 	var top := hi + h
-	if not b3d_meshes.is_empty():                      # swisstopo draws the house: only the obstacle
-		if not r.is_empty():
-			var c0 := Vector3(r["c"].x, 0, r["c"].y)
-			main.add_obstacle_box(c0, 2.0 * float(r["a"]) + 0.3, 2.0 * float(r["b"]) + 0.3, -atan2((r["u"] as Vector2).y, (r["u"] as Vector2).x))
-			main.set_obstacle_height(hi + h + roof_h - lo)
-		buildings.append({"poly": poly, "top": hi + h + roof_h, "h": h})
-		counts["buildings"] = counts.get("buildings", 0) + 1
+	if not b3d_meshes.is_empty():                      # swisstopo draws the house and gives the obstacle (_b3d_obstacle)
+		counts["osm_buildings"] = counts.get("osm_buildings", 0) + 1
 		return
 	var plain := h < 3.6 or kind in ["garage", "garages", "shed", "carport", "roof", "barn", "farm_auxiliary", "stable"]
 	var ci := rng.randi_range(0, 4) if not kind in ["barn", "farm_auxiliary", "stable", "shed", "hut", "cabin"] else 5
@@ -953,6 +976,23 @@ func _building(poly: PackedVector2Array, tg: Dictionary) -> void:
 		main.add_obstacle_box(c3, 2.0 * float(r["a"]) + 0.3, 2.0 * float(r["b"]) + 0.3, -atan2(u.y, u.x))
 		main.set_obstacle_height(top + roof_h - lo)
 	buildings.append({"poly": poly, "top": top + roof_h, "h": h})
+	counts["buildings"] = counts.get("buildings", 0) + 1
+
+
+func _b3d_obstacle(f: Dictionary) -> void:
+	"""a swisstopo building: obstacle box (as for the OSM houses) with its height, and into «buildings»"""
+	var poly: PackedVector2Array = f["poly"]
+	if abs(_area(poly)) < 6.0:
+		return
+	var r := _min_rect(poly)
+	var top: float = f["top"]
+	var lo := INF
+	for p in poly:
+		lo = min(lo, height(p.x, p.y))
+	if not r.is_empty():
+		main.add_obstacle_box(Vector3(r["c"].x, 0, r["c"].y), 2.0 * float(r["a"]) + 0.3, 2.0 * float(r["b"]) + 0.3, -atan2((r["u"] as Vector2).y, (r["u"] as Vector2).x))
+		main.set_obstacle_height(top - lo)
+	buildings.append({"poly": poly, "top": top, "h": max(2.4, top - lo)})
 	counts["buildings"] = counts.get("buildings", 0) + 1
 
 

@@ -1,0 +1,4 @@
+swissbuildings3d_luzern_1060_1273.b3dm
+  Eine Kachel von swissBUILDINGS3D (3D Tiles, Luzern Altstadt), © swisstopo, freie Nutzung mit Quellenangabe (OGD).
+  https://3d.geo.admin.ch/ch.swisstopo.swissbuildings3d.3d/v1/20260520/11/1060/1273.b3dm (geholt am 08.11.2026)
+  Für werkzeuge/b3d_test.gd (Draco-Entpacker draco.gd). glTF mit KHR_draco_mesh_compression, Draco 2.2, Edgebreaker (Valenz).
