@@ -75,7 +75,19 @@ Schnüffeln, Fressen). Grundlage: **Quaternius «Ultimate Animated Animals»** (
 SHA-256 `2f36e3c9…64c7`), Lizenz **CC0 1.0 Universal** (gemeinfrei, <https://creativecommons.org/publicdomain/zero/1.0/>) –
 dasselbe Paket wie Maggie, bezogen am 07.11.2026 aus derselben öffentlichen GitHub-Kopie (laoniutoushx/TD-demo-2024-04-03).
 Angepasst mit `werkzeuge/tier_modelle.py` (ein Netz, Fell-Farben eines Rotfuchses als Vertex-Farben, weiche Normalen, nur die
-gebrauchten Bewegungen). Fell: `shaders/maggie_fell.gdshader` (selbst geschrieben). Das Wärmebild bleibt aus den Grundformen.
+gebrauchten Bewegungen). Fell: `shaders/maggie_fell.gdshader` (selbst geschrieben). Das Wärmebild kam bis Paket 2 aus den Grundformen, seit Paket 3 aus
+einem Zwilling des Modells mit denselben Temperaturen.
+
+## Tiere mit Skelett («Flora und Fauna», Paket 3 «Tiere echt», Zweig sim-flora-tiere) – `modelle/{reh,hund_husky,hund_shiba,katze,igel,fuchs}_glb.bin`
+
+Ab Stufe «Normal» (nicht Lite, nicht im Prüfstand) sind Reh, Hund (Husky- und Shiba-Form in vier Farbschlägen), Katze
+(vier Farbschläge), Igel und Fuchs Modelle mit Skelett. Grundlage: **Quaternius «Ultimate Animated Animals»** (Juli 2021),
+Modelle «Deer» (`glTF/Deer.gltf`, SHA-256 `b8afd064…7e7333`), «Husky» (`glTF/Husky.gltf`, `0cfd85dd…0f8d97`), «ShibaInu»
+(`3236979b…0f6b`) und «Fox» (`2f36e3c9…64c7`), Lizenz **CC0 1.0 Universal** (gemeinfrei,
+<https://creativecommons.org/publicdomain/zero/1.0/>), bezogen am 08.11.2026 aus derselben öffentlichen GitHub-Kopie
+(laoniutoushx/TD-demo-2024-04-03). Katze und Igel sind mit `werkzeuge/tier_modelle.py` aus dem Fuchs umgeformt (Knochenlängen,
+Dicke, kürzere Schnauze; Igel-Stacheln im Code erzeugt), alle Fell-Farben, das Rehbock-Gehörn (`scripts/tier_modell.gd`) und
+das Wärmebild der Modelle (`shaders/thermal_tier.gdshader`) sind selbst gebaut.
 
 Blatt- und Nadelbilder der Baumkronen, Blätterbüschel, Gras-Farben (`scripts/flora.gd`, `shaders/blatt_karten.gdshader`,
 `shaders/foliage.gdshader`, `shaders/gras_halme.gdshader`): **selbst gebaut**, beim Start im Code erzeugt, keine fremde Datei.
