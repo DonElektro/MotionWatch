@@ -186,7 +186,7 @@ VIEW3_JS = r"""
   const LB = {head: "Head view", thermal: "Thermal view", wide: "Wide view"};
   const DS = {head: "The camera of the head", thermal: "Thermal picture half transparent over the head picture", wide: "The overview camera - the frame shows where the head looks"};
   const NA = {thermal: "No thermal camera chosen", wide: "No wide-angle camera (overview)"};
-  let thWant = null, thT = 0, noClick = 0;
+  let thWant = null, thT = 0, noClick = 0, eatClick = false;
   const thOn = () => (thWant !== null && Date.now() - thT < 4000) ? thWant : !!(J().cfg || {}).thermal_on;
   const game = () => { const G = ((J().state || {}).sim || {}).game; return !!(G && G.mode === "mwhand" && (G.round === "play" || G.round === "countdown")); };   // the hunter aims in the head picture
   function avail(v) {
@@ -302,13 +302,17 @@ VIEW3_JS = r"""
   document.addEventListener("pointerdown", e => {
     const b = e.target.closest && e.target.closest(LP); if (!b || b.disabled) return;
     if (lp) clearTimeout(lp.t);
-    lp = {x: e.clientX, y: e.clientY, t: setTimeout(() => { lp = null; noClick = Date.now() + 900; menu(b); }, 550)};
+    lp = {x: e.clientX, y: e.clientY, t: setTimeout(() => { lp = null; noClick = Date.now() + 900; eatClick = true; menu(b); }, 550)};
   }, true);
   const lpEnd = e => { if (lp && (e.type !== "pointermove" || Math.hypot(e.clientX - lp.x, e.clientY - lp.y) > 12)) { clearTimeout(lp.t); lp = null; } };
   ["pointerup", "pointercancel", "pointermove"].forEach(n => document.addEventListener(n, lpEnd, true));
   document.addEventListener("contextmenu", e => { const b = e.target.closest && e.target.closest(LP); if (b) { e.preventDefault(); noClick = Date.now() + 900; menu(b); } }, true);
   document.addEventListener("click", e => {
-    if (Date.now() < noClick && e.target.closest && e.target.closest(LP)) { e.stopPropagation(); e.preventDefault(); return; }   // the click after a long press
+    // the click when the finger lifts after a long press: always swallow it. 3.63.2: when the menu opens under the finger,
+    // pointerdown (button) and pointerup (menu) differ and the click goes to <body> - before, that closed the menu at once
+    if (eatClick && Date.now() < noClick) { eatClick = false; e.stopPropagation(); e.preventDefault(); return; }
+    eatClick = false;
+    if (Date.now() < noClick && e.target.closest && e.target.closest(LP)) { e.stopPropagation(); e.preventDefault(); return; }
     if (!MN.hidden && !MN.contains(e.target)) MN.hidden = true;
   }, true);
   addEventListener("keydown", e => { if (e.key === "Escape" && !MN.hidden) MN.hidden = true; });

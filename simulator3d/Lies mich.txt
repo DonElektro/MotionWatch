@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.58.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.59.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -487,6 +487,15 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.59.0
+3.59.0: Besucher meiden deinen Platz (Privatsphäre, Schalter unter Besuch → Verhalten; Einbrecher, Diebe, Gäste, Spiele und
+Geschichten ausgenommen). Neue Einbruch-Abläufe: «Nachts ums Zelt schleichen, dann stehlen» (Rucksack, Kühlbox oder Handy vom
+Tisch) und «Velo-Diebstahl» (lange am Schloss, dann wegfahren, tragen oder schieben); im Erkennungstest als Plan «real» (auch in
+«alle», darum ist die Gesamtzahl von «alle» nicht mehr mit älteren Läufen vergleichbar: 6 echte Fälle mehr), Soll Person, mit
+«Person vor dem Griff».
+So testest du: Besuch → Verhalten «Platz meiden» an: Spaziergänger gehen um deinen Platz herum; unter Einbruch «Nachts ums Zelt
+schleichen» und «Velo-Diebstahl» starten und schauen, ob MoveEye vor dem Griff warnt.
 
 NEU IN 3.58.0
 3.58.0: Bäume und Sträucher echt: Fichte, Tanne, Lärche, Föhre, Arve, Bergföhre, Buche, Ahorn, Esche, Birke, Eiche, Obstbaum,

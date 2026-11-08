@@ -51,7 +51,7 @@ ERSATZ = os.environ.get("MW_DAUER_ERSATZ") or ""              # nur für dauer_t
 
 ARTEN = ("erkennung", "ki", "langzeit")
 NAMEN = {"erkennung": "Erkennung messen", "ki": "KI-Trainingsbilder", "langzeit": "Langzeittest"}
-ERK_PLAENE = ("ursache", "kriechen", "nacht", "tier", "wind")  # reihum, je Plan alle Stände (so lassen sie sich vergleichen)
+ERK_PLAENE = ("ursache", "kriechen", "nacht", "tier", "wind", "real")  # reihum, je Plan alle Stände (so lassen sie sich vergleichen)
 ERK_LAEUFE = 3
 # Varianten (Paket «Fehlalarme und Pushes»): main zusätzlich mit anderen Einstellungen messen (erkennungstest.py --variante),
 # erst wenn alle Stände mit allen Plänen gemessen sind; nur diese Pläne (Personen + Leerlauf, Nacht, Wind = Pushes/h).

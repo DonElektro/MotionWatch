@@ -195,8 +195,8 @@ def lauf(pg, a, base, pruef, gname, voll):
     def lang_druecken(sel):
         weg()                                             # the tour (#g2-ov) may come between two steps
         ruhig(); b = ruhig(sel)
-        # hold 1.2 s (long press = 550 ms in 639zv): Chrome handles input before timers - on a busy runner the release must
-        # not overtake the timer of the long press
+        # hold 1.2 s (long press = 550 ms in 639zv). The menu can open under the finger (button lower after the header grew):
+        # the click on release then goes to <body> - 639zv swallows it since 3.63.2 (before: menu closed at once, CI flaky)
         pg.mouse.move(b["x"] + b["width"] / 2, b["y"] + b["height"] / 2); pg.mouse.down(); pg.wait_for_timeout(1200); pg.mouse.up()
         warte(lambda: pg.evaluate("() => { const m = document.getElementById('v3-menu'); return !!(m && !m.hidden); }"), 3000)
 
@@ -249,6 +249,17 @@ def lauf(pg, a, base, pruef, gname, voll):
           "lang drücken: Menü mit Kopf, Wärmebild, Weitwinkel, kleines Bild (%s)" % mn)
     pruef(pg.evaluate(V3)["cur"] == "head", "lang drücken schaltet nicht weiter")
     foto("4_menu")
+    # the finger lifts over the menu (it opened under the finger): the click after the long press must not close it (3.63.2)
+    pg.keyboard.press("Escape"); pg.wait_for_timeout(300)
+    b = ruhig("#lv-b-cam")
+    pg.mouse.move(b["x"] + b["width"] / 2, b["y"] + b["height"] / 2); pg.mouse.down()
+    offen = warte(lambda: pg.evaluate("() => { const m = document.getElementById('v3-menu'); return !!(m && !m.hidden); }"), 3000)
+    mb = pg.locator("#v3-menu").bounding_box() if offen else None
+    if mb:
+        pg.mouse.move(mb["x"] + mb["width"] / 2, mb["y"] + 6)
+    pg.mouse.up(); pg.wait_for_timeout(500)
+    pruef(bool(offen) and pg.evaluate("() => !document.getElementById('v3-menu').hidden") and pg.evaluate(V3)["cur"] == "head",
+          "lang drücken, Finger über dem Menü loslassen: Menü bleibt offen, schaltet nicht weiter")
     pg.click("#v3-menu button[data-v='wide']"); pg.wait_for_timeout(500)
     pruef(pg.evaluate(V3)["cur"] == "wide" and pg.evaluate("() => document.getElementById('v3-menu').hidden"), "Menü: Weitwinkel gewählt, Menü zu")
     # 3. swap with the small picture
