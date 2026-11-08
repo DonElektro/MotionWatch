@@ -1,13 +1,13 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-08 00:56",
+ "generated": "2026-11-08 01:04",
  "versions": [
   {
    "version": "3.63.2",
    "file": "webcam_bewegung_3_63_2.py",
    "url": "",
    "sha256": "d15e69a5eedc80630cc0f78c3d0fea888822511d1cdf9d291aecf6adb9031695",
-   "date": "2026-11-08 00:56",
+   "date": "2026-11-08 01:01",
    "notes": "Fehlerkorrektur: langes Drücken auf «Ansicht» – öffnet sich das Menü unter dem Finger, schliesst es das Loslassen nicht mehr sofort. Dazu Sim 3.59.0: Besucher meiden deinen Platz, neue Einbruch-Abläufe (Nachts ums Zelt schleichen, Velo-Diebstahl), Erkennungstest-Plan «real».",
    "size": 3697199,
    "sig": "9b524623aabbd52ca81ee98b3c68504eb1a3afae584cd3ef009a05def00207adb66a5b1a574b2055cbadbb042423773fea9608a13d40f7973f689b812bf1dc08",
@@ -185,6 +185,14 @@
    "size": 45850098,
    "sha256": "13d95cc66e8ace8dfd2fce2bc6d16f745bde729f6513fd7a0a3fa8f42b05f694",
    "sig": "83af8a8589f6b9aaa24f6d74c9b1760a22fb2d0c32b74caaf47934fdc2649a120b2101fa7a1108a8410cb56ad7f5a9e8764360d396074145a1be8ced04b45307"
+  },
+  "pi": {
+   "ver": "3.59.0",
+   "file": "simulator3d/MoveEyeSim3D_Pi.zip",
+   "size": 38203035,
+   "sha256": "2b8d09dae6ed8c37eed2410a7c56a9119b2d12d64894050a4afa115cf30b6fc4",
+   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.59.0/MoveEyeSim3D_Pi.zip",
+   "sig": "c7a995160364cb2abb9d0211e065a54db95b68ee15ac0ad6fbc730e4e6c007cb3f268b3893bb9153b4c89fb45b15756a2fabd4e93611925822262778d5a51108"
   }
  }
 }
