@@ -340,6 +340,10 @@ func _snow(dt: float) -> void:
 		cover = 0.95 * (1.0 - exp(-snow_cm / 1.6))
 	elif main.weather == "snow":
 		cover = 0.85
+	if main.get("jahreszeiten") != null and load("res://scripts/gras.gd").an(main):
+		# «Wege und Strassen» (Normal / Hoch): «Schnee liegt im Winter» (jahreszeiten.snow_now) - the snow lying in winter is
+		# not taken away by the snow cover of the weather (it set 0 without a snowfall). Lite / Prüfstand as before.
+		cover = maxf(cover, float(main.jahreszeiten.snow_now()))
 	main.grass_mat.set_shader_parameter("snow_amount", cover)
 	for gm in main.ground_mats:
 		gm.set_shader_parameter("snow_amount", cover)

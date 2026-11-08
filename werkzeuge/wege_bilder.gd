@@ -5,7 +5,7 @@ extends SceneTree
 ##       -- --no-update --grafik normal --ansichten <ansichten.json> --aus <ordner/prefix_>
 ## ansichten.json: [{"name", "scene", "hour", "pos": [x,y,z], "look": [x,y,z], "fov", "tier": {"kind", "at": [x,z], "to": [x,z]},
 ##                  "wind", "fps_s", "weather", "puddle", "wet", "pan", "tilt",
-##                  "saison", "snow" (on / off / auto),
+##                  "saison", "snow" (on / off / auto), "snow_cm" (Schneedecke von wetter.gd),
 ##                  "tal": Bergtal-Koordinaten (pos / look = x, Höhe über Boden, z)}]
 ## Schreibt <prefix><name>.png (freie Ansicht, ohne Bedienung), <prefix><name>_kopf.png (Bild der Kopfkamera für MoveEye)
 ## und <prefix>fps.json (Bilder pro Sekunde je Ansicht, gemessen mit derselben Kameralage in der grossen Ansicht).
@@ -140,8 +140,8 @@ func _run() -> void:
 			main.control({"action": "jahreszeiten", "do": "set", "key": "mode", "value": str(v["saison"])})
 		if v.has("snow") and main.get("jahreszeiten") != null:
 			main.jahreszeiten.snow_mode = str(v["snow"])
-			if main.get("wetter") != null and str(v["snow"]) == "on":
-				main.wetter.snow_cm = 8.0                    # wetter.gd «Schnee bleibt liegen»: as after a snowfall
+			if main.get("wetter") != null and v.has("snow_cm"):
+				main.wetter.snow_cm = float(v["snow_cm"])     # wetter.gd «Schnee bleibt liegen»: e.g. 8 = as after a snowfall
 			main.jahreszeiten.update()
 		if v.has("pan"):                                     # the MoveEye head: pan / tilt like a servo packet of MoveEye
 			if main.patrol != null:
