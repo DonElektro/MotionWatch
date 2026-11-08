@@ -148,6 +148,21 @@ def run(a):
     P = Prozesse()
     env = dict(os.environ)
     try:
+        bild = env.get("MW_PRUEFSTAND_DISPLAY", "")                 # Flora Paket 4 A: die Grafikkarte des HP (z. B. :0)
+        if bild:
+            ok = False
+            if shutil.which("xset"):
+                try:
+                    ok = subprocess.run(["xset", "-display", bild, "q"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                                        timeout=10).returncode == 0
+                except Exception:
+                    ok = False
+            if not ok:
+                log("Display %s nicht erreichbar (Bildschirm für den Runner nicht freigegeben?) – Abbruch, kein Rückfall auf Xvfb" % bild,
+                    wichtig=True)
+                return 4, None
+            env["DISPLAY"] = bild
+            log("Bildschirm", bild, "(Grafikkarte)")
         if not env.get("DISPLAY") and not a.ohne_xvfb:              # no screen: a virtual one
             if not shutil.which("Xvfb"):
                 sys.exit("Kein Bildschirm und kein Xvfb (sudo apt install xvfb)")
