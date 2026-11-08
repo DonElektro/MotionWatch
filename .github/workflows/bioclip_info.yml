@@ -25,6 +25,9 @@ on:
       tag:
         description: "Tag für «echt» (bioclip-info-N)"
         default: bioclip-info-1
+      loeschen:
+        description: "Statt bauen: Probe-Release + Tag löschen (nur bioclipinfoprobe-N, nur Vorabversion)"
+        default: ""
 permissions:
   contents: write
 concurrency:
@@ -36,7 +39,7 @@ env:
 jobs:
   bauen:
     name: BioCLIP-Infos · ${{ inputs.nur || 'stich' }} · ${{ inputs.release || 'keins' }}
-    if: github.repository == 'DonElektro/MotionWatch'
+    if: github.repository == 'DonElektro/MotionWatch' && (github.event_name == 'push' || inputs.loeschen == '')
     runs-on: ubuntu-24.04
     timeout-minutes: 240
     steps:
@@ -132,3 +135,22 @@ jobs:
           gh release download "$TAG" -R "$GITHUB_REPOSITORY" -p bioclip-info-1.sqlite -D "$RUNNER_TEMP/zurueck"
           s=$(sed -n 's/.*sha256=\([0-9a-f]*\).*/\1/p' "$B/pins.txt"); echo "$s  $RUNNER_TEMP/zurueck/bioclip-info-1.sqlite" | sha256sum -c -
           echo "latest bleibt: $(gh api repos/$GITHUB_REPOSITORY/releases/latest --jq .tag_name)"
+
+  weg:
+    name: Probe löschen · ${{ inputs.loeschen }}
+    if: github.repository == 'DonElektro/MotionWatch' && github.event_name == 'workflow_dispatch' && inputs.loeschen != ''
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Probe-Release und Tag löschen (nur bioclipinfoprobe-N, nur Vorabversion, nie «latest»)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.loeschen }}
+        run: |
+          set -e
+          echo "$TAG" | grep -Eq '^bioclipinfoprobe-[0-9]+$' || { echo "::error::nur bioclipinfoprobe-N, nicht $TAG"; exit 1; }
+          pre=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" --jq .prerelease)
+          [ "$pre" = "true" ] || { echo "::error::$TAG ist keine Vorabversion - nicht gelöscht"; exit 1; }
+          [ "$TAG" != "$(gh api repos/$GITHUB_REPOSITORY/releases/latest --jq .tag_name)" ] || { echo "::error::$TAG ist latest"; exit 1; }
+          gh release delete "$TAG" -R "$GITHUB_REPOSITORY" --yes --cleanup-tag
+          echo "gelöscht: $TAG" >> "$GITHUB_STEP_SUMMARY"
