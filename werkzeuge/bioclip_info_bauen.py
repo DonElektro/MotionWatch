@@ -143,6 +143,24 @@ def wikidata(names, items=None):
 
 
 # ---- Wikipedia --------------------------------------------------------------------------------------------------------------
+def taxon_titel(titles):
+    """welche deutschen Artikel sind Lebewesen (Wikidata-Objekt mit Taxon-Name P225)? - für die Verwechslungs-Arten"""
+    out = set()
+    lst = sorted(set(titles))
+    for i in range(0, len(lst), 100):
+        part = lst[i:i + 100]
+        vals = " ".join('"%s"@de' % t.replace("\\", "").replace('"', "") for t in part)
+        q = ("SELECT ?t WHERE { VALUES ?t { %s } ?a schema:name ?t ; schema:isPartOf <https://de.wikipedia.org/> ; schema:about ?it . "
+             "?it wdt:P225 ?tn . }" % vals)
+        try:
+            j = getj(WD + "?" + urllib.parse.urlencode({"query": q, "format": "json"}), timeout=180)
+        except Exception as e:
+            print("  Taxon-Titel %d: %s" % (i, e), flush=True); continue
+        out.update(b["t"]["value"] for b in j["results"]["bindings"])
+        time.sleep(0.5)
+    return out
+
+
 def _norm(x):
     return re.sub(r"[-\s.×]", "", (x or "").lower())
 
@@ -372,7 +390,7 @@ def pruefen(text, own, namen, pflanze_pilz, dbg=None):
                 dbg.append("  [essbar verworfen: %s] %s" % (why, s[:200]))
     seen = set()
     look = [x for x in look if not (x in seen or seen.add(x))]
-    return tox[:2], ed[:2], look[:6]
+    return tox[:2], ed[:2], look[:30]
 
 
 def hoehe(vals):
@@ -485,6 +503,18 @@ def main():
         cov["essbar"] += int(bool(e.get("ed")))
         cov["verwechslung"] += int(bool(e.get("look")))
         rows[n] = e
+    # Verwechslung: nur verlinkte Artikel über Lebewesen (keine «Zwiebel», «Hyphe», «Mittelmeerraum»)
+    alle = {x for r in rows.values() for x in r.get("look") or []}
+    tax_ok = taxon_titel(alle) | {r.get("t") for r in rows.values() if r.get("l") == "de"}
+    print("Verwechslung: %d verlinkte Artikel, davon %d Lebewesen" % (len(alle), len(alle & tax_ok)), flush=True)
+    cov["verwechslung"] = 0
+    for r in rows.values():
+        if r.get("look"):
+            r["look"] = [x for x in r["look"] if x in tax_ok][:6]
+            if not r["look"]:
+                del r["look"]
+            else:
+                cov["verwechslung"] += 1
     # Verwechslung: ☠️ für verlinkte Arten, die selbst «giftig» sind
     tox_titles = {r.get("t") for r in rows.values() if r.get("l") == "de" and (r.get("tox") or r.get("toxwd"))}
     for r in rows.values():
