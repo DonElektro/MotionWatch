@@ -106,6 +106,9 @@ jobs:
       - name: «🌿 Bestimmen» im Datentausch (Ersatz-Modell, Rechte, Gäste, Laden mit Prüfsumme, Zwischenspeicher, besetzt, Browser)
         timeout-minutes: 6
         run: python3 werkzeuge/bioclip_test.py --browser
+      - name: Spielesammlung (Paket GS-1.4, GAMES_PKG, jedes neue Spiel am Handy und PC ohne Internet)
+        timeout-minutes: 12
+        run: python3 werkzeuge/spiele_test.py
       - name: Simulator intern (gefälschtes Pi-Paket - holen, prüfen, auspacken, starten, beenden, zurück)
         timeout-minutes: 4
         run: python3 werkzeuge/sim_intern_test.py
