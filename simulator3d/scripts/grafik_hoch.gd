@@ -29,6 +29,13 @@ extends Node
 const FILE := "user://grafik_stufe.json"
 const STUFEN := [["normal", "Normal (wie bisher)"], ["hoch", "Hoch (fotorealistisch – braucht eine gute Grafikkarte)"]]
 const FLAG := "--hoch-fwd"            # dieser Prozess wurde für «Hoch» mit Forward+ gestartet
+# Schutz (Besitzer 08.11.2026: Hoch auf dem HP blieb beim Laden hängen): Vulkan «läuft» auf manchen Rechnern nur in Software
+# (llvmpipe / lavapipe / SwiftShader) - dann sofort zurück zu Normal. Und: kommt nach einem Hoch-Start das erste Bild nicht
+# innerhalb von WACHHUND_S, startet der Simulator selbst mit Normal neu (Merker «pending» wie bisher).
+const SOFTWARE := ["llvmpipe", "lavapipe", "swiftshader", "software"]
+const WACHHUND_S := 60.0
+static var _wachhund: Thread = null
+static var _bild_da := false
 
 var main
 var stufe := "normal"                 # gespeicherte Wahl
@@ -92,8 +99,24 @@ static func start_check(m, args: Array) -> bool:
 	var gi := args.find("--grafik")
 	if gi >= 0 and gi + 1 < args.size() and str(args[gi + 1]).to_lower() != "hoch":
 		want = false                                      # Tests: --grafik lite | normal | auto = diesmal ohne Hoch
-	if forward_plus():
-		if bool(d.get("pending", false)):
+	var probe := OS.get_environment("MW_HOCH_PROBE")              # Prüfung ohne Vulkan: «software» = so tun, als liefe Forward+ in Software
+	if forward_plus() or probe in ["software", "haengt"]:
+		var soft := probe == "software" or (probe == "" and software_renderer())
+		if soft and (want or FLAG in args) and "--hoch-software" not in args:
+			d["stufe"] = "normal"                         # Vulkan nur in Software (z. B. Intel HD 4600 unter Linux): unbrauchbar langsam
+			d["pending"] = false
+			d["failed"] = true
+			d["grund"] = "software"
+			d["unmoeglich"] = true
+			_write(d)
+			print("graphics Hoch: Vulkan runs in software only (%s) - back to Normal" % RenderingServer.get_video_adapter_name())
+			_restart(m, false, true)
+			return true
+		if bool(d.get("pending", false)) and FLAG in args:
+			_wachhund_start()                             # «pending» bleibt, bis das erste Bild da ist (_erstes_bild)
+			if probe == "haengt":
+				OS.delay_msec(int(float(OS.get_environment("MW_HOCH_WACHHUND_S")) * 1000.0) + 3000)   # Prüfung: der Start hängt
+		elif bool(d.get("pending", false)):
 			d["pending"] = false
 			_write(d)
 		return false
@@ -112,9 +135,81 @@ static func start_check(m, args: Array) -> bool:
 	return true
 
 
-static func _restart(m, fwd: bool, early := false) -> void:
-	"""neu starten (mit / ohne Forward+). early: ganz am Anfang von main._ready - noch nichts geladen und nichts offen, also
-	auch nichts speichern (release_ports würde sonst die Einstellungen mit den Standardwerten überschreiben)"""
+static func software_renderer() -> bool:
+	"""Vulkan läuft, aber auf dem Prozessor (llvmpipe / lavapipe / SwiftShader) - für Hoch viel zu langsam"""
+	if RenderingServer.get_rendering_device() != null and RenderingServer.get_video_adapter_type() == RenderingDevice.DEVICE_TYPE_CPU:
+		return true
+	var s := (RenderingServer.get_video_adapter_name() + " " + RenderingServer.get_video_adapter_vendor()).to_lower()
+	for w in SOFTWARE:
+		if w in s:
+			return true
+	return false
+
+
+static func _wachhund_start() -> void:
+	if _wachhund != null:
+		return
+	_bild_da = false
+	_wachhund = Thread.new()
+	_wachhund.start(_wachhund_lauf)
+
+
+static func _wachhund_lauf() -> void:
+	"""eigener Faden: hängt der Start (das erste Bild kommt nicht), mit Normal neu starten und diesen Prozess beenden"""
+	var t0 := Time.get_ticks_msec()
+	var frist := WACHHUND_S
+	if OS.get_environment("MW_HOCH_WACHHUND_S").is_valid_float():
+		frist = float(OS.get_environment("MW_HOCH_WACHHUND_S"))   # Prüfung: kürzer
+	while Time.get_ticks_msec() - t0 < int(frist * 1000.0):
+		if _bild_da:
+			return
+		OS.delay_msec(250)
+	if _bild_da:
+		return
+	var d := _read()
+	d["stufe"] = "normal"
+	d["pending"] = false
+	d["failed"] = true
+	d["grund"] = "haengt"
+	_write(d)
+	print("graphics Hoch: no first frame after %d s - restart with Normal" % int(frist))
+	OS.create_process(OS.get_executable_path(), _args(false))
+	OS.kill(OS.get_process_id())
+
+
+static func modes() -> Array:
+	"""die Stufen für «System › Grafik» (quality.gd MODES); ging Hoch auf diesem Rechner nicht (nur Software-Vulkan), steht
+	das bei Hoch dabei - wählbar bleibt es"""
+	var out: Array = []
+	var nein := bool(_read().get("unmoeglich", false))
+	for mm in load("res://scripts/quality.gd").MODES:
+		if mm[0] == "hoch" and nein:
+			out.append(["hoch", "Hoch – auf diesem Rechner nicht möglich (keine Grafikkarte mit Vulkan)"])
+		else:
+			out.append(mm)
+	return out
+
+
+func _erstes_bild() -> void:
+	"""das erste Bild nach einem Hoch-Start ist gezeichnet: Start gelungen («pending» weg, Wachhund still)"""
+	_bild_da = true
+	if _wachhund != null and _wachhund.is_started():
+		_wachhund.wait_to_finish()                         # er merkt es nach höchstens 0.25 s
+		_wachhund = null
+	var d := _read()
+	var ch := false
+	if bool(d.get("pending", false)):
+		d["pending"] = false
+		ch = true
+	if forward_plus() and not software_renderer() and bool(d.get("unmoeglich", false)):
+		d.erase("unmoeglich")                             # jetzt mit einer echten Grafikkarte: der Hinweis fällt weg
+		ch = true
+	if ch:
+		_write(d)
+
+
+static func _args(fwd: bool) -> Array:
+	"""die Befehlszeile für einen Neustart (mit / ohne Forward+)"""
 	var a: Array = []
 	var skip := false
 	for x in OS.get_cmdline_args():
@@ -140,6 +235,13 @@ static func _restart(m, fwd: bool, early := false) -> void:
 	if fwd:
 		a.append(FLAG)
 	a.append_array(["--old-pid", str(OS.get_process_id())])
+	return a
+
+
+static func _restart(m, fwd: bool, early := false) -> void:
+	"""neu starten (mit / ohne Forward+). early: ganz am Anfang von main._ready - noch nichts geladen und nichts offen, also
+	auch nichts speichern (release_ports würde sonst die Einstellungen mit den Standardwerten überschreiben)"""
+	var a := _args(fwd)
 	print("graphics: restart with %s" % ("Forward+ (Hoch)" if fwd else "the normal renderer"))
 	if not early and m != null and m.has_method("release_ports"):
 		m.release_ports()
@@ -153,9 +255,18 @@ func _ready() -> void:
 	stufe = "hoch" if str(d.get("stufe", "normal")) == "hoch" or _arg_hoch(Array(OS.get_cmdline_user_args())) else "normal"
 	dof_free = bool(d.get("dof", false))
 	if bool(d.get("failed", false)):
+		var grund := str(d.get("grund", ""))
 		d.erase("failed")
+		d.erase("grund")
 		_write(d)
-		main.start_info = "Grafik «Hoch» braucht Vulkan – auf diesem PC ging es nicht, deshalb wieder «Normal»."
+		if grund == "software":
+			main.start_info = "Hoch braucht eine Grafikkarte mit Vulkan – dieser Rechner hat keine. Grafik bleibt auf Normal."
+		elif grund == "haengt":
+			main.start_info = "Grafik «Hoch» kam nicht in Gang (kein Bild nach einer Minute) – Grafik bleibt auf Normal."
+		else:
+			main.start_info = "Grafik «Hoch» braucht Vulkan – auf diesem PC ging es nicht, deshalb wieder «Normal»."
+	if _wachhund != null or (forward_plus() and bool(d.get("unmoeglich", false))):
+		RenderingServer.frame_post_draw.connect(_erstes_bild, CONNECT_ONE_SHOT)
 	if "--no-preview" in OS.get_cmdline_user_args():
 		main.preview_on = false                         # Messungen: keine Vorschaubilder der Kameras im Fenster
 	get_tree().node_added.connect(_on_node_added)

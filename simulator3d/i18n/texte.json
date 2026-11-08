@@ -18354,6 +18354,12 @@
   "it": "La grafica «Alta» non funziona insieme a «Lite».",
   "rm": "La grafica «Aut» na funcziuna betg ensemen cun «Lite»."
  },
+ "Grafik «Hoch» kam nicht in Gang (kein Bild nach einer Minute) – Grafik bleibt auf Normal.": {
+  "en": "Graphics «High» did not get going (no picture after one minute) – graphics stay on Normal.",
+  "fr": "Le graphisme «Élevé» n’a pas démarré (aucune image après une minute) – le graphisme reste sur Normal.",
+  "it": "La grafica «Alta» non è partita (nessuna immagine dopo un minuto) – la grafica resta su Normale.",
+  "rm": "La grafica «Aut» n’è betg partida (nagin maletg suenter ina minuta) – la grafica resta sin Normal."
+ },
  "Grafik «Hoch» war zu langsam – für diese Sitzung aus (die Wahl bleibt gespeichert).": {
   "en": "Graphics «High» was too slow – off for this session (the choice stays saved).",
   "fr": "Le graphisme «Élevé» était trop lent – désactivé pour cette session (le choix reste enregistré).",
@@ -19981,6 +19987,12 @@
   "it": "Alta attiva (Forward+ / Vulkan)",
   "rm": "Aut activ (Forward+ / Vulkan)"
  },
+ "Hoch braucht eine Grafikkarte mit Vulkan – dieser Rechner hat keine. Grafik bleibt auf Normal.": {
+  "en": "High needs a graphics card with Vulkan – this computer has none. Graphics stay on Normal.",
+  "fr": "Élevé nécessite une carte graphique avec Vulkan – cet ordinateur n’en a pas. Le graphisme reste sur Normal.",
+  "it": "Alta richiede una scheda grafica con Vulkan – questo computer non ne ha. La grafica resta su Normale.",
+  "rm": "Aut dovra ina carta grafica cun Vulkan – quest computer n’ha nagina. La grafica resta sin Normal."
+ },
  "Hoch gewählt, aber aus: ": {
   "en": "High chosen, but off: ",
   "fr": "Élevé choisi, mais désactivé : ",
@@ -20004,6 +20016,12 @@
   "fr": "Haut au-dessus du lac – les montagnes se reflètent dans l’eau.",
   "it": "Alto sopra il lago – le montagne si specchiano nell’acqua.",
   "rm": "Aut sur il lai – las muntognas sa reflecteschan en l’aua."
+ },
+ "Hoch – auf diesem Rechner nicht möglich (keine Grafikkarte mit Vulkan)": {
+  "en": "High – not possible on this computer (no graphics card with Vulkan)",
+  "fr": "Élevé – impossible sur cet ordinateur (pas de carte graphique avec Vulkan)",
+  "it": "Alta – non possibile su questo computer (nessuna scheda grafica con Vulkan)",
+  "rm": "Aut – betg pussaivel sin quest computer (nagina carta grafica cun Vulkan)"
  },
  "Hoch: Licht prallt von Flächen ab, Dunst, weiche Schatten, Spiegelungen auf Wasser und nassen Flächen, bessere Oberflächen. Braucht eine gute Grafikkarte (Vulkan); der Simulator startet dafür einmal neu.": {
   "en": "High: light bounces off surfaces, haze, soft shadows, reflections on water and wet surfaces, better surfaces. Needs a good graphics card (Vulkan); the simulator restarts once for it.",
