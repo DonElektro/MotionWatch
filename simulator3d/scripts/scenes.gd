@@ -92,6 +92,7 @@ const Worlds = preload("res://scripts/worlds.gd")
 const Quality = preload("res://scripts/quality.gd")
 const Flora = preload("res://scripts/flora.gd")      # «Flora und Fauna» Phase 1: echtere Kronen, Blatt-Karten, Gras
 const Veg = preload("res://scripts/vegetation.gd")
+const Wege = preload("res://scripts/wege.gd")        # «Wege und Strassen»: Asphalt, Feldwege (Normal / Hoch)
 var clip := 0.0
 var excl: Array = []
 var no_road := false
@@ -391,7 +392,9 @@ func road(z: float, width := 5.0) -> void:
 	data["road_z"] = z + 1.2
 	if no_road:
 		return
-	put(root, m.box(400, 0.04, width), Vector3(0, 0.02, z), Color(0.42, 0.4, 0.37), "road")
+	var mi := put(root, m.box(400, 0.04, width), Vector3(0, 0.02, z), Color(0.42, 0.4, 0.37), "road")
+	if clip <= 0.0 and Wege.an(m):
+		Wege.szene_strasse(self, mi, z, width)          # «Wege und Strassen»: real asphalt (Normal / Hoch; thermal twin unchanged)
 
 
 var _meadow_mat: ShaderMaterial

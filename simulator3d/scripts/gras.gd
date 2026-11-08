@@ -296,7 +296,7 @@ static func ground(m) -> void:
 			while k < line.size() - 1 and segs.size() < PFAD_MAX:
 				var k2 := mini(k + step, line.size() - 1)
 				segs.append(Color(line[k].x, line[k].y, line[k2].x, line[k2].y))
-				rads.append(float(pa[1]))
+				rads.append(-float(pa[1]) if str(pa[2]) == "erde" else float(pa[1]))   # Wege: negative = field path (grass in the middle)
 				k = k2
 	for ln in trampel(m):                                        # the trodden lines between the places
 		if segs.size() >= PFAD_MAX:

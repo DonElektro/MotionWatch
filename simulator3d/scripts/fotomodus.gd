@@ -253,6 +253,11 @@ func _show_scene(v: bool) -> void:
 	for n in main.flat_nodes:                      # like main._build_scene
 		if is_instance_valid(n):
 			n.visible = not main.terrain
+	# «Wege und Strassen» (Normal / Hoch): ... and like gelaende.on_scene after it - with hills the flat meadow at y = 0 stays
+	# hidden (it covered every hollow and the paths in it). Lite / alt as before.
+	if main.gelaende != null and main.gelaende.on and main.flat_nodes.size() >= 2 and load("res://scripts/wege.gd").an(main):
+		main.flat_nodes[0].visible = false
+		main.flat_nodes[1].visible = false
 
 
 # ---- the painted parts in front ----------------------------------------------------------------------------------------
