@@ -619,6 +619,7 @@ func _terrain_meshes() -> void:
 	fm.set_shader_parameter("noise_tex", main.noise_tex)
 	fm.set_shader_parameter("detail", 0.0)
 	main.ground_mats = [tm, fm]
+	load("res://scripts/gras.gd").boden(main, tm)       # «Flora und Fauna» Paket 2: meadow near, far ring, gusts (Normal / Hoch)
 	var near := _grid_mesh(near_h, near_n, NEAR, NEAR_STEP, false, true)
 	var far := _grid_mesh(far_h, far_n, FAR, FAR_STEP, true, false)
 	for pair in [[near, tm], [far, fm]]:

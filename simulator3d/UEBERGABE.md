@@ -1,8 +1,14 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 08.11.2026 · Version **3.59.0** · MoveEye **3.63.2** (Drei Spuren ab 03.11.2026: Simulator und MoveEye mit eigenen Nummern, Verträglichkeit über `MW_MIN` in `scripts/abgleich.gd` / `SIM_MIN` in MoveEye Teil 545; 3.0.0 bis 3.55.2 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 08.11.2026 · Version **3.60.0** · MoveEye **3.63.2** (Drei Spuren ab 03.11.2026: Simulator und MoveEye mit eigenen Nummern, Verträglichkeit über `MW_MIN` in `scripts/abgleich.gd` / `SIM_MIN` in MoveEye Teil 545; 3.0.0 bis 3.55.2 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.60.0 (MoveEye 3.63.2): Flora Paket 2: Boden, Trampelpfade, Farbstimmung (sim-flora-gras)
+
+- gras.gd (nur Normal / Hoch, Flora.stufe), Boden-Shader gras_boden.gdshaderinc in terrain / bergtal_boden / ferienpark_boden,
+  Trampelpfade zwischen Tür, Tisch, Grill, Zelt; farbstimmung.gd (CanvasLayer, freie Ansicht, etwa halb so stark; mit --quality aus),
+  Prüfung werkzeuge/farbstimmung_pruefen.gd. Lite, MW_FLORA=alt und --quality unverändert.
 
 ## NEU in 3.59.0 (MoveEye 3.63.2): Privatsphäre und echte Einbruch-Abläufe (sim-szenen)
 

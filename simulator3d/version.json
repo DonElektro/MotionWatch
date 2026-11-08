@@ -1,23 +1,16 @@
 {
- "version": "3D-5.59.0",
- "ver": "3.59.0",
- "name": "MoveEye Sim 3.59.0",
+ "version": "3D-5.60.0",
+ "ver": "3.60.0",
+ "name": "MoveEye Sim 3.60.0",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 51821365,
- "sha256": "bbbf2db8a45f1858785b6853e901b044cda9672b798c44f90bef9c1f46e51f15",
- "notes": "Besucher meiden deinen Platz, Einbruch-Abläufe Zelt und Velo, Plan «real»",
+ "size": 51837400,
+ "sha256": "83122c216d2512ecde8d2b95064a20d07830bf3a9f4c8a97daabf6d09899dcb2",
+ "notes": "Boden mit Gras- und Erdtönen, Trampelpfade, Jahreszeiten/Nacht am Boden, Farbstimmung halb so stark",
  "mw_min": "3.55.0",
  "linux": {
   "file": "simulator3d/MoveEyeSim3D_Linux.zip",
-  "ver": "3.59.0",
-  "size": 45850098,
-  "sha256": "13d95cc66e8ace8dfd2fce2bc6d16f745bde729f6513fd7a0a3fa8f42b05f694"
- },
- "pi": {
-  "file": "simulator3d/MoveEyeSim3D_Pi.zip",
-  "ver": "3.59.0",
-  "size": 38203035,
-  "sha256": "2b8d09dae6ed8c37eed2410a7c56a9119b2d12d64894050a4afa115cf30b6fc4",
-  "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.59.0/MoveEyeSim3D_Pi.zip"
+  "ver": "3.60.0",
+  "size": 45867135,
+  "sha256": "87ea401d7cafc87fbbaffeccd5469e8d4254682e3d825eceb3c57836452a5ac3"
  }
 }

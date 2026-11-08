@@ -251,6 +251,7 @@ func _ground() -> void:
 	fm.set_shader_parameter("noise_tex", m.noise_tex)
 	fm.set_shader_parameter("detail", 0.0)
 	m.ground_mats = [tm, fm]
+	load("res://scripts/gras.gd").boden(m, tm)       # «Flora und Fauna» Paket 2: meadow near, far ring, gusts (Normal / Hoch)
 	for pair in [[near, tm], [far, fm]]:
 		var mi: MeshInstance3D = m.add_mesh(park, pair[0], Vector3.ZERO, pair[1], "x")
 		var th: MeshInstance3D = park.get_child(park.get_child_count() - 1)

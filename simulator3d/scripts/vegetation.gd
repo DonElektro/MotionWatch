@@ -22,6 +22,7 @@ extends RefCounted
 
 const Quality = preload("res://scripts/quality.gd")
 const Flora = preload("res://scripts/flora.gd")      # «Flora und Fauna» Phase 1
+const Gras = preload("res://scripts/gras.gd")        # «Flora und Fauna» Paket 2 (rings, flower heads, trodden grass)
 const CELL := 20.0
 const GRASS_FAR := 55.0
 const GRASS_FAR_LITE := 35.0
@@ -104,6 +105,8 @@ static func blade_mat(sc, stiff := 1.0) -> ShaderMaterial:
 	if sc.m.gelaende != null:
 		sc.m.gelaende.veg_mats.append(gm)              # wind + cloud shadows (gelaende._process)
 	sc.m.ground_mats.append(gm)                        # snow (main._update_sky)
+	if sc.m.get("wind_fx") != null:
+		sc.m.wind_fx.blade_mats.append(gm)             # Paket 2: gusts (only Normal / Hoch, wind_fx.gd)
 	return gm
 
 
@@ -204,13 +207,20 @@ static func grass(sc, n: int, dmin: float, dmax: float, keep_clear := Callable()
 		var sz = sc.rng.randf_range(0.75, 1.35)
 		var col: Color = greens[sc.rng.randi() % greens.size()].lerp(Color(0.62, 0.58, 0.32), 0.35 if tall and sc.rng.randf() < 0.4 else 0.0)
 		var t = Transform3D(b.scaled(Vector3(sz, sz * sc.rng.randf_range(0.85, 1.2), sz)), p - Vector3(0, 0.01, 0))
+		var tf := Gras.trodden(sc.m, p)                      # Paket 2: lower next to the paths (no random numbers)
+		if tf < 1.0:
+			t.basis.y *= tf
 		var key := _cell_key(p)
 		var cells: Dictionary = tall_cells if tall else short_cells
 		if not cells.has(key):
 			cells[key] = []
 		cells[key].append([t, col])
+	var fine_cells := {}
+	Gras.near_grass(sc, dmin, dmax, keep_clear, fine_cells, _cell_key)   # Paket 2: the near ring (own random numbers)
 	var mat := blade_mat(sc, 1.0)
 	Flora.grass_params(sc.m, mat, far)
+	if not fine_cells.is_empty():
+		_cells_to_nodes(sc, fine_cells, Gras.fine_mesh(), mat, far)
 	if Flora.neu(sc.m) and not tall_cells.is_empty():          # the tall grass ends 15 m later: its own fade
 		var mat_t := blade_mat(sc, 1.0)
 		Flora.grass_params(sc.m, mat_t, far + 15.0)
@@ -247,11 +257,12 @@ static func flowers(sc, n: int, dmin: float, dmax: float, keep_clear := Callable
 		var c: Color = cols[sc.rng.randi() % cols.size()]
 		blooms[key].append([Transform3D(Basis(Vector3.UP, sc.rng.randf() * TAU).scaled(Vector3.ONE * sc.rng.randf_range(0.8, 1.4)),
 				p + Vector3(0, 0.28 * hh, 0)), c])
+	Gras.near_flowers(sc, dmin, dmax, keep_clear, cols, stems, blooms, _cell_key)   # Paket 2: more near, in patches
 	var sm := blade_mat(sc, 1.6)
 	sm.set_shader_parameter("tint_amt", 0.0)              # flowers keep their colours
 	Flora.grass_params(sc.m, sm, far)
 	_cells_to_nodes(sc, stems, _stem, sm, far)
-	return _cells_to_nodes(sc, blooms, _bloom, sm, far)
+	return _cells_to_nodes(sc, blooms, Gras.head_mesh() if Gras.an(sc.m) else _bloom, sm, far)   # Paket 2: real flower heads
 
 
 # ---- bushes ------------------------------------------------------------------------------------------------------------

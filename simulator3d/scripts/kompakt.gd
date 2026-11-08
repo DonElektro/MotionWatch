@@ -243,6 +243,7 @@ func _ground() -> void:
 	tm.set_shader_parameter("photo", _paint())
 	tm.set_shader_parameter("rect", Vector4(-NEAR, -NEAR, 2.0 * NEAR, 2.0 * NEAR))
 	tm.set_shader_parameter("noise_tex", m.noise_tex)
+	load("res://scripts/gras.gd").boden(m, tm)         # «Flora und Fauna» Paket 2: meadow near, far ring, gusts (Normal / Hoch)
 	var fm := ShaderMaterial.new()
 	fm.shader = tm.shader
 	fm.set_shader_parameter("photo", _paint_far())

@@ -7,12 +7,14 @@ extends Node
 ## Flags and laundry (cloth.gdshader) and loose tarps (flap.gdshader) move as before (main.cloth_mats).
 
 const Quality = preload("res://scripts/quality.gd")
+const Flora = preload("res://scripts/flora.gd")      # «Flora und Fauna» Paket 2: one gust wave for grass, ground, trees
 const SAVE := "user://wind_fx.json"
 
 var main
 var on := true                         # «Wind bewegt Gras, Büsche, Bäume und Zelte»
 var grass_mats := {}                   # colour -> ShaderMaterial
 var tent_mats: Array = []
+var blade_mats: Array = []             # Paket 2: grass blades and flowers (vegetation.gd blade_mat)
 var dir_a := 0.65                      # where the wind blows to (rad, world x/z); turns slowly
 var _t := 0.0
 
@@ -102,6 +104,21 @@ func _process(dt: float) -> void:
 		if is_instance_valid(fm):
 			fm.set_shader_parameter("gust_amt", am[1])
 			fm.set_shader_parameter("dir", d)
+	# Paket 2 (Normal / Hoch only; Lite, alt, --quality: as before): the same wave over grass and ground
+	var p2: bool = Flora.stufe(main) in ["normal", "hoch"]
+	for m in grass_mats.values():
+		m.set_shader_parameter("wave_k", 0.02 if p2 else 0.035)
+	for i in range(blade_mats.size() - 1, -1, -1):
+		var bm = blade_mats[i]
+		if bm == null or (bm as RefCounted).get_reference_count() <= 1:
+			blade_mats.remove_at(i)                      # the scene was changed
+			continue
+		bm.set_shader_parameter("gust_amt", am[0] if p2 else 0.0)
+		bm.set_shader_parameter("dir", d)
+	if main.grass_mat != null:
+		main.grass_mat.set_shader_parameter("gust_amt", am[0] if p2 else 0.0)
+		main.grass_mat.set_shader_parameter("dir", d)
+		main.grass_mat.set_shader_parameter("wind", w)
 
 
 func add_controls() -> void:

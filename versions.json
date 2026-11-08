@@ -1,6 +1,6 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-08 01:04",
+ "generated": "2026-11-08 09:42",
  "versions": [
   {
    "version": "3.63.2",
@@ -168,31 +168,23 @@
   }
  ],
  "sim": {
-  "ver": "3.59.0",
-  "version": "3D-5.59.0",
-  "notes": "Besucher meiden deinen Platz, Einbruch-Abläufe Zelt und Velo, Plan «real»",
+  "ver": "3.60.0",
+  "version": "3D-5.60.0",
+  "notes": "Boden mit Gras- und Erdtönen, Trampelpfade, Jahreszeiten/Nacht am Boden, Farbstimmung halb so stark",
   "mw_min": "3.55.0",
   "win": {
-   "ver": "3.59.0",
+   "ver": "3.60.0",
    "file": "simulator3d/MotionWatch3D_Simulator.zip",
-   "size": 51821365,
-   "sha256": "bbbf2db8a45f1858785b6853e901b044cda9672b798c44f90bef9c1f46e51f15",
-   "sig": "cf1745d67ee4de2752ee99f469bbe8531371426227c7a4a31b6d4d215f10b9e0e33e30dec7685c7660228c2c6cfd6839efc278ff4adb6b27131c45cf9c018301"
+   "size": 51837400,
+   "sha256": "83122c216d2512ecde8d2b95064a20d07830bf3a9f4c8a97daabf6d09899dcb2",
+   "sig": "bde8294f5b9edc8356562a2fd1d3f9a2a2133cb82c27344ba913446e183435e85ec52bbfbd42ee8d80a55bc1f5a7e1feb6a5b15e649246242631f998aa64eb04"
   },
   "linux": {
-   "ver": "3.59.0",
+   "ver": "3.60.0",
    "file": "simulator3d/MoveEyeSim3D_Linux.zip",
-   "size": 45850098,
-   "sha256": "13d95cc66e8ace8dfd2fce2bc6d16f745bde729f6513fd7a0a3fa8f42b05f694",
-   "sig": "83af8a8589f6b9aaa24f6d74c9b1760a22fb2d0c32b74caaf47934fdc2649a120b2101fa7a1108a8410cb56ad7f5a9e8764360d396074145a1be8ced04b45307"
-  },
-  "pi": {
-   "ver": "3.59.0",
-   "file": "simulator3d/MoveEyeSim3D_Pi.zip",
-   "size": 38203035,
-   "sha256": "2b8d09dae6ed8c37eed2410a7c56a9119b2d12d64894050a4afa115cf30b6fc4",
-   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.59.0/MoveEyeSim3D_Pi.zip",
-   "sig": "c7a995160364cb2abb9d0211e065a54db95b68ee15ac0ad6fbc730e4e6c007cb3f268b3893bb9153b4c89fb45b15756a2fabd4e93611925822262778d5a51108"
+   "size": 45867135,
+   "sha256": "87ea401d7cafc87fbbaffeccd5469e8d4254682e3d825eceb3c57836452a5ac3",
+   "sig": "178d82b253c3621d39ae3f92a0f1248d65354ee521376c8b395d365bd92836d78ca86b3285168e4143072b391bc32c16ab4d734caa4f7a55f4c773bd2454f00f"
   }
  }
 }

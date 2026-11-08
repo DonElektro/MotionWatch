@@ -77,6 +77,7 @@ static func ground(m) -> void:
 	var gm: ShaderMaterial = m.grass_mat
 	if gm == null:
 		return
+	load("res://scripts/gras.gd").ground(m)            # Paket 2: worn path edges, far ring, gusts (or off)
 	var st := stufe(m)
 	if st in ["alt", "lite"]:
 		if gm.has_meta("flora_tex"):
