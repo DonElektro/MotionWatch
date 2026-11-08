@@ -6,6 +6,7 @@ extends Node
 ## builds the scene «ort» from it: MoveEye stands in the middle, north is -z.
 ## Data: © swisstopo (free use with source, OGD) · © OpenStreetMap contributors (ODbL) · Terrarium: Mapzen / AWS open data.
 
+const Wege = preload("res://scripts/wege.gd")    # «Wege und Strassen»: Asphalt, Feldwege (Normal / Hoch)
 const NEAR := 200.0              # half side of the detailed square around the head (m)
 const NEAR_STEP := 2.5           # grid of the near terrain (m)
 const FAR := 1600.0              # half side of the far terrain (only the look: hills, valleys, forests far away)
@@ -1108,6 +1109,8 @@ func _road(l: PackedVector2Array, tg: Dictionary) -> void:
 				road_segs[key].append(sg)
 	if paved:
 		_ribbon(l, w, 0.05, "road", Color(0.36, 0.36, 0.37))
+	elif t == "track" and Wege.an(main):
+		_ribbon(l, w, 0.04, "road_feld", Color(0.56, 0.52, 0.44))   # «Wege und Strassen»: Feldweg (Normal / Hoch)
 	else:
 		_ribbon(l, w, 0.04, "road_g", Color(0.56, 0.52, 0.44))
 	counts["roads"] = counts.get("roads", 0) + 1
@@ -1122,6 +1125,8 @@ func _road(l: PackedVector2Array, tg: Dictionary) -> void:
 func _ribbon(l: PackedVector2Array, w: float, lift: float, key: String, col: Color) -> void:
 	if l.size() < 2:
 		return
+	if key in ["road", "road_feld"] and Wege.an(main):
+		_wege_runs(l, w, lift, key)                      # the visible road (the thermal twin keeps this strip)
 	if not ribbon_st.has(key):
 		var st := SurfaceTool.new()
 		st.begin(Mesh.PRIMITIVE_TRIANGLES)
@@ -1154,6 +1159,46 @@ func _ribbon(l: PackedVector2Array, w: float, lift: float, key: String, col: Col
 		prev_r = vr
 
 
+var wege_runs := {}              # «Wege und Strassen» (Normal / Hoch): key -> [[line, width, lift]] (one mesh per key)
+
+
+func _wege_runs(l: PackedVector2Array, w: float, lift: float, key: String) -> void:
+	"""the parts of the line inside the detailed square, every 3 m a point (like _ribbon)"""
+	var pts := Wege.dense(Array(l), 3.0)
+	var run := PackedVector2Array()
+	if not wege_runs.has(key):
+		wege_runs[key] = []
+	for p in pts:
+		if abs(p.x) > NEAR + 30.0 or abs(p.y) > NEAR + 30.0:
+			if run.size() >= 2:
+				wege_runs[key].append([run, w, lift])
+			run = PackedVector2Array()
+			continue
+		run.append(p)
+	if run.size() >= 2:
+		wege_runs[key].append([run, w, lift])
+
+
+func _wege_mesh(key: String, mi: MeshInstance3D) -> void:
+	"""«Wege und Strassen»: the visible mesh of ribbon key becomes the real road / field path (Normal / Hoch)"""
+	if wege_runs.has(key):
+		var st := SurfaceTool.new()
+		var any := false
+		for r in wege_runs[key]:
+			var feld: bool = key == "road_feld"
+			var am: ArrayMesh = Wege.band(main, r[0], float(r[1]) * 0.5, 0.45 if feld else 0.6, float(r[2]),
+					Wege.COLS_FELD if feld else Wege.COLS_STRASSE)
+			st.append_from(am, 0, Transform3D.IDENTITY)
+			any = true
+		if not any:
+			return
+		mi.mesh = st.commit()
+		if key == "road_feld":
+			mi.material_override = Wege.feld_mat(main, "erde", Color(0.42, 0.37, 0.29), Color(0.32, 0.28, 0.22))
+		else:
+			mi.material_override = Wege.strasse_mat(main, {"centre": true, "edge": true})
+
+
 func _finish_ribbons() -> void:
 	for key in ribbon_st:
 		var mat := StandardMaterial3D.new()
@@ -1164,7 +1209,9 @@ func _finish_ribbons() -> void:
 		var tk := "pond" if key == "water" else "road"
 		var mi: MeshInstance3D = main.add_mesh(sc.root, (ribbon_st[key][0] as SurfaceTool).commit(), Vector3.ZERO, mat, tk)
 		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		_wege_mesh(key, mi)
 	ribbon_st = {}
+	wege_runs = {}
 	_finish_buildings()
 
 

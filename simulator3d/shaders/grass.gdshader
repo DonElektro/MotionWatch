@@ -86,7 +86,12 @@ void fragment() {
 				vec2 ab = pfad[i].zw - a;
 				float t = clamp(dot(w.xz - a, ab) / max(dot(ab, ab), 1e-4), 0.0, 1.0);
 				float d = length(w.xz - a - ab * t);
-				wear = max(wear, smoothstep(pfad_r[i] + 0.9, pfad_r[i] * 0.6, d));
+				float pr = pfad_r[i];
+				if (pr < 0.0) {                                             // field path: worn tracks, grass in the middle
+					pr = -pr;
+					d = max(d, 2.0 * abs(d - clamp(pr * 0.62, 0.45, 0.85)) + pr * 0.25);
+				}
+				wear = max(wear, smoothstep(pr + 0.9, pr * 0.6, d));
 			}
 		}
 		float brk = texture(noise_tex, w.xz * 0.55 + 0.4).r;

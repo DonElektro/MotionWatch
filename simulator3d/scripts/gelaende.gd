@@ -29,6 +29,7 @@ extends Node
 ##        | walk (kind, from [x,z], to [x,z]) – ein Besucher, z. B. hinter der Hecke}
 
 const Quality = preload("res://scripts/quality.gd")
+const Wege = preload("res://scripts/wege.gd")     # «Wege und Strassen» (Normal / Hoch)
 const FILE := "user://gelaende.json"
 const SAVE := ["g_relief", "g_plants"]
 var main
@@ -294,6 +295,12 @@ func path(parent: Node3D, pts: Array, width := 1.6, kind := "kies") -> MeshInsta
 		var am2 := ArrayMesh.new()
 		am2.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arr2)
 		mi.mesh = am2
+		if kind in ["erde", "kies"]:
+			# «Wege und Strassen»: Feldweg with two gravel tracks and grass in the middle, gravel path; soft edge into the
+			# meadow (a rim of 0.45 m where the ground shows through bit by bit). Same width for on_path (grass stays put).
+			var pm: ShaderMaterial = mi.material_override
+			mi.mesh = Wege.band(main, line, width * 0.5, 0.45, 0.025, Wege.COLS_FELD, 0.08)
+			mi.material_override = Wege.feld_mat(main, kind, pm.get_shader_parameter("base"), pm.get_shader_parameter("grit"))
 	paths.append([line, width * 0.5, kind])
 	return mi
 
