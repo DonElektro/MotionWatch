@@ -159,6 +159,9 @@ def run(a):
         senv = dict(env, HOME=os.path.join(tmp, "home"))
         os.makedirs(senv["HOME"], exist_ok=True)
         sim_args = ["--no-update", "--stream", "--solo", "--scene", a.szene, "--hour", "12", "--port", str(a.sim_port), "--quality", a.qualitaet]
+        if env.get("MW_PRUEFSTAND_GRAFIK"):                        # Flora Paket 4 A: A/B mit fester Grafik (normal)
+            sim_args += ["--grafik", env["MW_PRUEFSTAND_GRAFIK"]]
+            log("Grafik:", env["MW_PRUEFSTAND_GRAFIK"], "· Aussehen:", "neu (MW_FLORA=%s)" % env["MW_FLORA"] if env.get("MW_FLORA") else "alt")
         if a.sim_bin:
             cmd = [a.sim_bin, "--"] + sim_args
         else:

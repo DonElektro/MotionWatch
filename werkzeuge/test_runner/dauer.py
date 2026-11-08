@@ -5,7 +5,9 @@ spielt. Läuft als Benutzer des Runners (mwrunner) in den Workflows .github/work
   dauer.py waehlen --kandidaten JSON [--arbeit auto|erkennung|ki|langzeit] [--varianten bestaetigung2|keine] [--ausgabe …]
       nächstes Arbeitspaket: zuerst ein angefangenes, sonst reihum (1) Erkennung messen (Stände vergleichen, 3 Läufe pro
       Fall; sind alle Stände gemessen: main zusätzlich mit jeder Variante, z. B. doppelte Bestätigung an - Bericht
-      varianten.md mit Erkennung und Pushes/h nebeneinander), (2) KI-Trainingsbilder aus dem Simulator, (3) Langzeittest. «nichts», wenn gespielt wird, alles erledigt ist
+      varianten.md mit Erkennung und Pushes/h nebeneinander; Flora Paket 4 B: danach die Tier-Varianten tiere_grundformen /
+      tiere_modelle mit den Plänen tier und nacht, Runde für Runde abwechselnd, MW_DAUER_TIERE_RUNDEN mal (8), Bericht
+      tiere.md über alle Runden, im Job-Protokoll als Zeilen «TIERE | …»), (2) KI-Trainingsbilder aus dem Simulator, (3) Langzeittest. «nichts», wenn gespielt wird, alles erledigt ist
       oder das HP-Update an der Reihe ist (seit 20 Std. nicht mehr geprüft: dann bleibt der HP frei, bis es gelaufen ist).
   dauer.py rechnen --paket ID --stand DIR --sim-bin BIN [--ki-ordner K] [--stunden 3] [--anzeige xvfb] [--ausgabe …]
       das Paket rechnen, bis es fertig ist, die Zeit um ist oder jemand spielt. Stand gesichert wird pro Fall (Erkennung:
@@ -65,8 +67,13 @@ ERK_PLAENE = ("ursache", "kriechen", "nacht", "tier", "wind", "real")  # reihum,
 ERK_LAEUFE = 3
 # Varianten (Paket «Fehlalarme und Pushes»): main zusätzlich mit anderen Einstellungen messen (erkennungstest.py --variante),
 # erst wenn alle Stände mit allen Plänen gemessen sind; nur diese Pläne (Personen + Leerlauf, Nacht, Wind = Pushes/h).
-ERK_VARIANTEN = tuple(v.strip() for v in (os.environ.get("MW_DAUER_VARIANTEN") or "bestaetigung2").split(",")
+ERK_VARIANTEN = tuple(v.strip() for v in (os.environ.get("MW_DAUER_VARIANTEN") or "bestaetigung2,tiere_grundformen,tiere_modelle").split(",")
                       if v.strip() and v.strip() != "keine")
+# Flora Paket 4 B: die Tier-Varianten messen eigene Pläne (nur die Tier-Fälle zählen) und das mehrmals, abwechselnd
+# Grundformen / Modelle (Runde 1: beide, Runde 2: beide …) - Ziel ≥ 200 Tier-Fälle pro Variante (tier 20 + nacht 8 pro Runde).
+TIERE_VAR = ("tiere_grundformen", "tiere_modelle")
+VAR_PLAENE_JE = {"tiere_grundformen": ("tier", "nacht"), "tiere_modelle": ("tier", "nacht")}
+TIERE_RUNDEN = int(os.environ.get("MW_DAUER_TIERE_RUNDEN") or 8)
 ERK_VAR_PLAENE = tuple(v.strip() for v in (os.environ.get("MW_DAUER_VAR_PLAENE") or "ursache,nacht,wind").split(",") if v.strip())
 VAR_RE = re.compile(r"^[a-z0-9_]{1,30}$")
 KI_PAKETE, KI_BILDER = 6, 150                                  # ein Paket = 6 × 150 Bilder (je Bildpaket gesichert)
@@ -229,9 +236,9 @@ def kandidaten_lesen(txt):
     return out
 
 
-def erk_key(sha, plan, variante=""):
-    """erkennung|<sha>|<plan>[@<variante>] (drei Teile wie bisher; die Variante hängt am Plan)"""
-    return "erkennung|%s|%s" % (sha, plan + ("@" + variante if variante else ""))
+def erk_key(sha, plan, variante="", runde=0):
+    """erkennung|<sha>|<plan>[@<variante>[#runde]] (drei Teile wie bisher; die Variante hängt am Plan, Runde ab 2 dazu)"""
+    return "erkennung|%s|%s" % (sha, plan + ("@" + variante if variante else "") + ("#%d" % runde if runde > 1 else ""))
 
 
 def naechstes(z, kand, art, jetzt, varianten=None):
@@ -242,10 +249,20 @@ def naechstes(z, kand, art, jetzt, varianten=None):
             for k in kand:
                 if erk_key(k["sha"], plan) not in z["erledigt"]:
                     return {"art": art, "sha": k["sha"], "stand": k["name"], "plan": plan, "laeufe": ERK_LAEUFE}
-        for v in (ERK_VARIANTEN if varianten is None else varianten):
-            for plan in ERK_VAR_PLAENE:
+        vs = ERK_VARIANTEN if varianten is None else varianten
+        for v in vs:
+            if v in TIERE_VAR:
+                continue
+            for plan in VAR_PLAENE_JE.get(v, ERK_VAR_PLAENE):
                 if erk_key(main["sha"], plan, v) not in z["erledigt"]:
                     return {"art": art, "sha": main["sha"], "stand": main["name"], "plan": plan, "laeufe": ERK_LAEUFE, "variante": v}
+        tv = [v for v in TIERE_VAR if v in vs]
+        for runde in range(1, TIERE_RUNDEN + 1):                 # Tier-Varianten: Runde für Runde abwechselnd
+            for v in tv:
+                for plan in VAR_PLAENE_JE[v]:
+                    if erk_key(main["sha"], plan, v, runde) not in z["erledigt"]:
+                        return {"art": art, "sha": main["sha"], "stand": main["name"], "plan": plan, "laeufe": 1, "variante": v,
+                                "runde": runde}
         return None
     if art == "ki":
         n = sum(1 for key in z["erledigt"] if key.startswith("ki|%s|" % main["sha"]))
@@ -294,7 +311,7 @@ def waehlen(a):
         if not n:
             continue
         pid = time.strftime("%Y%m%d-%H%M%S", time.localtime(jetzt)) + "-" + art
-        key = {"erkennung": erk_key(n["sha"], n["plan"], n.get("variante", "")), "ki": "ki|%s|%s" % (n["sha"], pid),
+        key = {"erkennung": erk_key(n["sha"], n["plan"], n.get("variante", ""), int(n.get("runde", 0))), "ki": "ki|%s|%s" % (n["sha"], pid),
                "langzeit": "langzeit|%s|%s" % (n["sha"], time.strftime("%Y-%m-%d", time.localtime(jetzt)))}[art]
         z["aktiv"] = dict(n, id=pid, key=key, start=int(jetzt), versuche=0, rechenzeit_s=0)
         if a.arbeit == "auto":
@@ -414,6 +431,9 @@ def erk_vergleich(z, ak):
     R = B.lesen(os.path.join(o, "results.jsonl"))
     v = ak.get("variante") or ""
     pk = ak["plan"] + ("@" + v if v else "")
+    if v in TIERE_VAR:
+        tiere_bericht(z, o)
+        return
     if v:
         e0 = z["erledigt"].get(erk_key(ak["sha"], ak["plan"]))
         alt = os.path.join(DAUER, "pakete", e0["paket"], "results.jsonl") if e0 and e0.get("paket") else ""
@@ -432,6 +452,38 @@ def erk_vergleich(z, ak):
                     f.write(B.markdown(R, {"plan": ak["plan"], "stand": ak["stand"], "commit": ak["sha"]}, B.lesen(alt)))
                 log("Vergleich geschrieben: gegen", e.get("stand", p[1][:10]))
                 return
+
+
+def tiere_bericht(z, o):
+    """Flora Paket 4 B: alle fertigen Pakete der Tier-Varianten (jeder Stand, jede Runde) zusammen - tiere.md im Paket-Ordner
+    und in dauer/tiere.md (die Tiere des Simulators ändern sich mit main kaum; die Stände stehen in der Liste)"""
+    sys.path.insert(0, ERK)
+    try:
+        import bericht as B
+    except ImportError:
+        return
+    reihen, staende = {v: [] for v in TIERE_VAR}, set()
+    for key, e in z["erledigt"].items():
+        p = key.split("|")
+        if len(p) != 3 or p[0] != "erkennung" or "@" not in p[2] or not e.get("paket"):
+            continue
+        v = p[2].split("@", 1)[1].split("#")[0]
+        f = os.path.join(DAUER, "pakete", e["paket"], "results.jsonl")
+        if v in reihen and os.path.exists(f):
+            reihen[v] += B.lesen(f)
+            staende.add(str(e.get("stand", p[1][:10])))
+    txt = "# Flora Paket 4 B: Tiere als Grundformen gegen Modelle\n\nStände: %s\n\n" % ", ".join(sorted(staende)) + \
+        B.tiere_vergleich([("grundformen", reihen["tiere_grundformen"]), ("modelle", reihen["tiere_modelle"])])
+    for ziel in (os.path.join(o, "tiere.md"), os.path.join(DAUER, "tiere.md")):
+        try:
+            with open(ziel, "w", encoding="utf-8") as fh:
+                fh.write(txt)
+        except OSError:
+            pass
+    log("Tier-Vergleich geschrieben (tiere.md):", ", ".join("%s %d" % (k, len([r for r in R if r.get("event") == "tier"])) for k, R in reihen.items()))
+    for zeile in txt.splitlines():                              # auch ins Protokoll des Workflows (Artefakte sind nicht für alle lesbar)
+        if zeile.startswith("|"):
+            log("TIERE " + zeile)
 
 
 def rechnen(a):

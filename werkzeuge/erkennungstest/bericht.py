@@ -219,6 +219,33 @@ def varianten(reihen):
     return "\n".join(out) + "\n"
 
 
+def tiere_vergleich(reihen):
+    """Flora Paket 4 B: [(Name, results)] -> Markdown: die Tier-Fälle (Pläne tier / nacht) je Variante - als Tier erkannt,
+    fälschlich als Person, nach Tierart und nach Bedingung (alle Läufe zusammen, auch mehrere Pakete)"""
+    def zeilen(R):
+        return [r for r in faelle(R) if r.get("event") == "tier"]
+    rs = [(n, zeilen(R)) for n, R in reihen]
+    out = ["## Tiere: Grundformen gegen Modelle\n",
+           "| | " + " | ".join("%s (%d Fälle)" % (n, len(x)) for n, x in rs) + " |", "|---|" + "---|" * len(rs)]
+
+    def zelle(x):
+        if not x:
+            return "–"
+        t = sum(1 for r in x if r.get("detected"))
+        p = sum(1 for r in x if r.get("false_person"))
+        return "%d %% Tier · %d %% Person (%d)" % (round(100.0 * t / len(x)), round(100.0 * p / len(x)), len(x))
+    out.append("| **alle** | " + " | ".join(zelle(x) for _n, x in rs) + " |")
+    arten = sorted({str(r.get("animal") or "?") for _n, x in rs for r in x})
+    for art in arten:
+        out.append("| %s | %s |" % (art, " | ".join(zelle([r for r in x if str(r.get("animal") or "?") == art]) for _n, x in rs)))
+    for c in sorted({str(r.get("cond")) for _n, x in rs for r in x}):
+        out.append("| Bedingung %s | %s |" % (c, " | ".join(zelle([r for r in x if str(r.get("cond")) == c]) for _n, x in rs)))
+    fps = [(n, [float(r.get("fps") or 0) for r in x if r.get("fps")]) for n, x in rs]
+    out.append("| Bilder/s MoveEye (Mittel) | " + " | ".join(("%.1f" % (sum(f) / len(f))) if f else "–" for _n, f in fps) + " |")
+    out.append("\nTier = MoveEye meldet ein Tier (richtig); Person = MoveEye meldet fälschlich eine Person.")
+    return "\n".join(out) + "\n"
+
+
 def main():
     ap = argparse.ArgumentParser(description="Erkennungstest: Bericht aus results.jsonl")
     ap.add_argument("results", nargs="?", default="")
