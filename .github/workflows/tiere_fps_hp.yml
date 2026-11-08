@@ -1,0 +1,81 @@
+# Flora Paket 3 «Tiere echt»: Bilder/s auf dem HP (Intel HD 4600) mit Normal und Hoch, je mit den Grundformen und den
+# Tier-Modellen (werkzeuge/tier_fps.sh, tier_bilder.gd aus dem Stand dieses Workflows; der Simulator aus «stand»). Start:
+#   gh api -X POST repos/DonElektro/MotionWatch/actions/workflows/tiere_fps_hp.yml/dispatches -f ref=main -f 'inputs[stand]=…'
+# Das Ergebnis steht im Log und in der Zusammenfassung (Zeilen «TIERFPS stufe tiere ansicht {fps, draw_calls, primitives}»).
+# Spielen hat Vorrang: dauer.py halten hält die Messung an und startet sie danach neu.
+name: Tiere Bilder/s (HP)
+on:
+  workflow_dispatch:
+    inputs:
+      stand:
+        description: "Zweig oder Commit (Simulator-Quelltext von diesem Stand)"
+        default: "main"
+      anzeige:
+        description: "bildschirm (Grafikkarte, für echte Bilder/s) oder xvfb (ohne Grafikkarte, nur zum Prüfen)"
+        type: choice
+        options: [bildschirm, xvfb]
+        default: bildschirm
+permissions:
+  contents: read
+concurrency:
+  group: moveeye-hp-tiere-fps
+  cancel-in-progress: false
+jobs:
+  messen:
+    if: github.repository_owner == 'DonElektro'
+    runs-on: [self-hosted, moveeye-hp]
+    timeout-minutes: 120
+    env:
+      ANZEIGE: ${{ github.event.inputs.anzeige }}
+    steps:
+      - name: Werkzeug (Stand dieses Workflows)
+        uses: actions/checkout@v4
+        with:
+          path: werkzeug
+          sparse-checkout: |
+            werkzeuge/test_runner
+            werkzeuge/tier_fps.sh
+            werkzeuge/tier_bilder.gd
+            werkzeuge/tier_fps_ansichten.json
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+      - name: Simulator (gewählter Stand)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.stand }}
+          path: stand
+          sparse-checkout: |
+            simulator3d
+          persist-credentials: false
+      - name: Godot und Import
+        run: |
+          PY="${MW_RUNNER_PY:-${MW_RUNNER_HOME:-$HOME}/venv/bin/python}"; echo "PY=$PY" >> "$GITHUB_ENV"
+          CACHE="${MW_RUNNER_HOME:-$HOME}/cache"
+          G="$CACHE/godot/Godot_v4.3-stable_linux.x86_64"
+          if [ ! -x "$G" ]; then
+            mkdir -p "$CACHE/godot" && cd "$CACHE/godot"
+            curl -fsSL --retry 3 -o g.zip https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip
+            unzip -q -o g.zip && rm g.zip && chmod +x Godot_v4.3-stable_linux.x86_64
+            cd "$GITHUB_WORKSPACE"
+          fi
+          echo "G=$G" >> "$GITHUB_ENV"
+          HOME="$RUNNER_TEMP/godot_home" timeout 900 "$G" --headless --import --path stand/simulator3d > "$RUNNER_TEMP/import.log" 2>&1 || true
+          tail -2 "$RUNNER_TEMP/import.log"
+      - name: Messen
+        timeout-minutes: 100
+        run: |
+          O="$RUNNER_TEMP/tiere_fps"
+          if [ "$ANZEIGE" = "bildschirm" ]; then
+            DISPLAY=:0 "$PY" werkzeug/werkzeuge/test_runner/dauer.py halten --warten-max 21600 -- \
+              bash werkzeug/werkzeuge/tier_fps.sh "$G" stand/simulator3d "$O"
+          else
+            "$PY" werkzeug/werkzeuge/test_runner/dauer.py halten --warten-max 21600 -- \
+              xvfb-run -a -s "-screen 0 1280x720x24" bash werkzeug/werkzeuge/tier_fps.sh "$G" stand/simulator3d "$O"
+          fi
+      - name: Bericht
+        if: always()
+        run: |
+          echo '### Tiere Bilder/s (HP)' >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          cat "$RUNNER_TEMP/tiere_fps/ergebnis.txt" >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || echo "kein Ergebnis" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"

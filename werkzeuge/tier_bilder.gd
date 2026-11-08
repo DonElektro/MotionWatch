@@ -3,7 +3,8 @@ extends SceneTree
 ##   cd simulator3d && HOME=<test-home> xvfb-run -a -s "-screen 0 1280x720x24" <godot> --path . -s "$PWD/../werkzeuge/tier_bilder.gd" \
 ##       -- --no-update --grafik normal [--flora alt|normal|hoch] --ansichten <ansichten.json> --aus <ordner/prefix_>
 ## ansichten.json: [{"name", "scene", "hour", "pos": [x,y,z], "look": [x,y,z], "fov", "ground",
-##                  "tiere": [{"kind", "at": [x,z], "to": [x,z], "walk_s", "stand": true}], "waerme": true, "fps_s",
+##                  "tiere": [{"kind", "at": [x,z], "to": [x,z], "walk_s", "stand": true, "idle": "lie", "freeze"}],
+##                  "waerme": true, "fps_s",
 ##                  "blick": [x,y,z], "hoehe", "vor_kopf": true, "ir": true}]
 ##   blick: die Kamera schaut aus dieser Richtung auf die Tiere (alle im Bild); vor_kopf: die Tiere vor die MoveEye-Kamera
 ##   (at / to = [rechts, vorne] in m), Infrarot an, dazu <prefix><name>_kopf.png (Bild der MoveEye-Kamera)
@@ -85,7 +86,9 @@ func _run() -> void:
 	if qi >= 0:
 		main._set_quality(args[qi + 1])
 	var Fl = load("res://scripts/flora.gd")
-	print("TIERE flora=", Fl.stufe(main), " quality=", main.quality, " grafik=", main.grafik_mode)
+	print("TIERE flora=", Fl.stufe(main), " quality=", main.quality, " grafik=", main.grafik_mode, " gpu=",
+			RenderingServer.get_video_adapter_name(), " forward_plus=", RenderingServer.get_rendering_device() != null,
+			" MW_TIERE=", OS.get_environment("MW_TIERE"))
 	vp = SubViewport.new()
 	vp.size = Vector2i(1280, 720)
 	vp.world_3d = root.world_3d
@@ -168,8 +171,23 @@ func _run() -> void:
 				continue
 			if tier.get("stand", false):
 				a.wait_until = a.now_s() + 1000.0
+			if tier.has("idle"):                                       # e.g. "lie", "graze", "sniff"
+				a.idle_kind = str(tier["idle"])
+				a.idle_until = a.now_s() + 1000.0
+				a.wait_until = a.now_s() + 1000.0
 			actors.append([a, tier])
 			walk = maxf(walk, float(tier.get("walk_s", 2.5)))
+		for vg in v.get("voegel", []):                                 # birds of fauna.gd: on the ground or on a tree
+			var at2: Array = vg.get("at", [0, -10])
+			if vg.get("perch", false):
+				main.fauna.perch_flock(str(vg["kind"]))
+			else:
+				main.fauna.ground_flock(str(vg["kind"]), Vector3(at2[0], 0, at2[1]))
+			if vg.has("scheuchen_s"):                                  # somebody comes: they fly up (frozen in the air)
+				await wait(0.8)
+				main.tiere._test_threat = [Vector3(at2[0], 0, at2[1]), 1e9]
+				await wait(float(vg["scheuchen_s"]))
+				main.fauna.process_mode = Node.PROCESS_MODE_DISABLED
 		await wait(walk)
 		for e in actors:
 			if is_instance_valid(e[0]) and (e[1] as Dictionary).get("freeze", true):
@@ -211,6 +229,9 @@ func _run() -> void:
 			var hc: Image = main.vps[0].get_texture().get_image()
 			if hc != null:
 				hc.save_png(out + str(v["name"]) + "_kopf.png")
+		main.fauna.process_mode = Node.PROCESS_MODE_INHERIT
+		if main.tiere != null:
+			main.tiere._test_threat = null
 		res[str(v["name"])] = {"fps": snappedf(fps, 0.01), "draw_calls": dc, "primitives": prim, "tiere": actors.size()}
 		print("TIERE view ", v["name"], " ", res[str(v["name"])])
 		for e in actors:
