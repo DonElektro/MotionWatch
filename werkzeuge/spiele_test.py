@@ -9,6 +9,8 @@
      Touch-Spiele: das Antippen muss im Spiel ankommen. Der eigene Zurück-Link führt zur Spielesammlung von MoveEye.
   3. Wobbly Truck (ab GS-1.5, mit ?test=1): Truck und Motorrad auf beiden Strecken, ein Salto und ein Wheelie werden erkannt,
      der Looping gelingt auf «Normal» und ist keine Falle, Einstellungen werden gespeichert, Rekord je Strecke und Fahrzeug.
+     GS-1.6: auf «Einfach» landet ein schiefer Sprung ohne Eingabe gerade, ein Salto wird trotzdem erkannt, kein Abwurf mit ★;
+     der schwebende «✕ Zurück» von MoveEye ist ausgeblendet (eigener Link oben, sonst über der Bremse).
 
   python3 werkzeuge/spiele_test.py                    # Paket + Browser, nur die Spiele mit 5 Sprachen (ab GS-1.4)
   python3 werkzeuge/spiele_test.py --alle             # dazu die älteren Spiele (2048, Tetris …)
@@ -218,7 +220,7 @@ def spiel_pruefen(br, base, g, fehler, warn, bilder, zeile):
 WT_BOT = """window.__bot = (W, I) => { const a = W.B.a, w = W.B.w, sl = Math.atan((W.H(W.B.x + .04) - W.H(W.B.x - .04)) / .08);
   if (W.air.on && W.air.t > 0.12) { const tgt = Math.round((a - sl) / 6.283) * 6.283 + sl, e = a + w * 0.3 - tgt; I.gas = e < -0.12; I.brake = e > 0.12; }
   else { const d = a - sl, dw = d - Math.round(d / 6.283) * 6.283; I.brake = false; I.gas = dw < 0.35; } };"""
-WT_RUN = """([veh, trk, scen]) => { const W = window.__wt, I = W.inp; W.freeze(true); W.select(veh, trk); W.start();
+WT_RUN = """([veh, trk, scen, diff]) => { const W = window.__wt, I = W.inp; W.freeze(true); W.SET.diff = diff == null ? 1 : diff; W.select(veh, trk); W.start();
   const r = {state0: W.state}; I.gas = I.brake = I.trick = false;
   if (scen === 'fahren') { W.place(5, 0, 0, 0, 0, 0); W.sim(1.5, () => { __bot(W, I); }); r.dx = W.B.x - 5; }
   if (scen === 'salto') { W.place(8, 9, 9, 6, 0, 0);          // in the air: lean back until one turn, then land level
@@ -227,6 +229,9 @@ WT_RUN = """([veh, trk, scen]) => { const W = window.__wt, I = W.inp; W.freeze(t
   if (scen === 'looping') { const L = W.loops[0]; W.place(L.cx - 60, 0, 6, 0, 0, 0); W.sim(10, () => { __bot(W, I); }); r.x = W.B.x - L.cx; }
   if (scen === 'langsam') { const L = W.loops[0]; W.place(L.cx - 12, 0, 8, 0, 0, 0); W.sim(25, () => { __bot(W, I); }); r.x = W.B.x - L.cx; }
   if (scen === 'sturz') { W.place(8, 6, 6, 0, Math.PI, 0); W.sim(4); }
+  if (scen === 'schief') { W.place(8, 8, 9, 6, 0.9, 2.5); W.sim(5); }     // Einfach: crooked jump, no input -> lands level by itself
+  if (scen === 'halbsalto') { W.place(8, 9, 9, 6, 0, 0); W.sim(5, () => { I.gas = W.air.on && W.B.a < 4.0; }); }   // tilt, let go, assist finishes
+  if (scen === 'superman') { W.place(8, 8, 9, 6, 0, 0); W.sim(5, () => { I.trick = true; }); }                      // ★ held into the landing
   I.gas = I.brake = I.trick = false; r.state = W.state; r.ids = W.log.map(e => e.id); return r; }"""
 
 
@@ -258,6 +263,17 @@ def wobbly_pruefen(br, base, fehler, bilder):
                     fehler.append(f"{d} {name}: {veh}/{trk} {scen}: «{want}» nicht erkannt ({r['state']}, {r['ids']})")
                 else:
                     ok.append(f"{scen}-{veh}")
+            for veh, trk, scen, want in (("truck", "hills", "schief", "bigair"), ("bike", "stunt", "schief", "bigair"),
+                                         ("truck", "stunt", "halbsalto", "backflip"), ("bike", "hills", "halbsalto", "backflip"),
+                                         ("bike", "stunt", "superman", "superman")):
+                r = pg.evaluate(WT_RUN, [veh, trk, scen, 0])          # difficulty «Einfach»: automatic air control
+                if want not in r["ids"] or r["state"] != "play":
+                    fehler.append(f"{d} {name}: Einfach {veh}/{trk} {scen}: «{want}» / Landung ohne Sturz fehlt ({r['state']}, {r['ids']})")
+                else:
+                    ok.append(f"einfach-{scen}-{veh}")
+            # MoveEye's floating «✕ Zurück» (#mw-back) would cover the Brake pedal: the game hides it (own header link)
+            if pg.evaluate("() => { const b = document.getElementById('mw-back'); return !b || getComputedStyle(b).display !== 'none'; }"):
+                fehler.append(f"{d} {name}: schwebender Zurück-Knopf nicht ausgeblendet (überdeckt die Bremse)")
             for veh in ("truck", "bike"):           # too slow for the loop: fall off or pass behind it, never stuck in it
                 r = pg.evaluate(WT_RUN, [veh, "stunt", "langsam"])
                 if r["state"] == "play" and r["x"] < 15:
