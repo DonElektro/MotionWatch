@@ -36,7 +36,7 @@ const ARTEN := {
 	"wolf": {"ruecken_m": 0.87, "auge_m": 0.012},
 	"badger": {"ruecken_m": 0.334, "auge_m": 0.006},
 	"boar": {"ruecken_m": 0.84, "auge_m": 0.009},
-	"hare": {"ruecken_m": 0.37, "auge_m": 0.01},
+	"hare": {"ruecken_m": 0.37, "auge_m": 0.007},
 }
 # Farbschläge: [dunkel, mittel, hell, Helligkeit «hell» im Original] (lineare Farben, maggie_fell.gdshader)
 const VARIANTEN := {
@@ -70,6 +70,9 @@ const DATEI := {"fox": "fuchs", "deer": "reh", "dog": "hund", "cat": "katze", "h
 # Schwanz-Haltung (Grad um die Querachse des Knochens, nach der Bewegung dazu): die Katze trägt ihn hoch, beim Schleichen tief
 const SCHWANZ_HOCH := {"cat": [["Tail1", -55.0], ["Tail2", -25.0], ["Tail3", 15.0], ["Tail5", 20.0]]}
 const BEINE := ["FrontUpperLeg", "FrontLowerLeg", "BackUpperLeg", "BackLowerLeg"]
+# Hase in Ruhe: «gedrückt» sitzen - Keule nach vorne, Unterschenkel nach hinten, Hinterpfote flach (Grad um die Querachse
+# der Knochen); der Körper sinkt um SENKEN Modell-Einheiten (werkzeuge: Pfoten dann am Boden)
+const HOCKE := {"hare": {"bones": [["BackLeg", -45.0], ["BackUpperLeg", 90.0], ["BackLowerLeg", 45.0]], "senken": 0.9}}
 
 static var _cache := {}           # datei -> {"bytes", "meta"}
 static var fehler := ""
@@ -95,6 +98,8 @@ var _schwanz: Array = []          # [bone, Grad]
 var _beine: Array = []            # [bone, Faktor] fürs Liegen
 var _tief := 1.0
 var _schwanz_k := 1.0
+var _hocke: Array = []            # [bone, Grad]
+var _hocke_k := 0.0
 
 
 static func an(stufe: String) -> bool:
@@ -282,11 +287,20 @@ func _aufbauen(act, k: String, sc: Node3D, v: Dictionary, m: Dictionary) -> bool
 	_augen()
 	if k == "deer" and _bock():
 		_geweih(temps)
+	if k == "boar":
+		_hauer(temps)
 	if k == "hedgehog":
 		for bn in ["Head", "Neck3", "FrontUpperLeg.L", "FrontUpperLeg.R", "BackUpperLeg.L", "BackUpperLeg.R", "Tail1"]:
 			var bi := sk.find_bone(bn)
 			if bi >= 0:
 				_igel_bones.append(bi)
+	if HOCKE.has(k):
+		for e in HOCKE[k]["bones"]:
+			for side in [".L", ".R"]:
+				var hb := sk.find_bone(str(e[0]) + side)
+				if hb >= 0:
+					_hocke.append([hb, deg_to_rad(float(e[1]))])
+		_hocke_k = 1.0
 	for e in SCHWANZ_HOCH.get(k, []):
 		var ti := sk.find_bone(str(e[0]))
 		if ti >= 0:
@@ -459,6 +473,40 @@ func _geweih(t: Dictionary) -> void:
 		ba.add_child(gt)
 
 
+func _hauer(t: Dictionary) -> void:
+	"""Wildschwein: kurze, nach oben gebogene Hauer (Eckzähne) seitlich hinter der Rüsselscheibe - am Kopf-Knochen"""
+	var hi := sk.find_bone("Head")
+	if hi < 0:
+		return
+	var ba := BoneAttachment3D.new()
+	ba.bone_name = "Head"
+	sk.add_child(ba)
+	var inv := sk.get_bone_global_rest(hi).affine_inverse()
+	var nase: Array = meta.get("nase", [0.0, 1.6, 2.3])
+	var cm := CylinderMesh.new()
+	cm.top_radius = 0.0
+	cm.bottom_radius = 0.009 / einheit
+	cm.height = 0.065 / einheit
+	cm.radial_segments = 5
+	cm.rings = 1
+	var mt := StandardMaterial3D.new()
+	mt.albedo_color = Color(0.86, 0.83, 0.74)
+	mt.roughness = 0.4
+	for s in [-1.0, 1.0]:
+		var base := Vector3(s * 0.052 / einheit, float(nase[1]) - 0.045 / einheit, float(nase[2]) - 0.06 / einheit)
+		var b := Basis(Vector3.FORWARD, -s * 0.5) * Basis(Vector3.RIGHT, -0.35)    # nach oben, aussen, leicht nach hinten
+		for layer in [1, 2]:
+			if layer == 2 and t.is_empty():
+				continue
+			var m := MeshInstance3D.new()
+			m.mesh = cm
+			m.material_override = mt if layer == 1 else a.main.tmat_fixed(float(t["kuehl"]))
+			m.layers = layer
+			m.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			m.transform = inv * Transform3D(b, base + b.y * cm.height * 0.5)
+			ba.add_child(m)
+
+
 func _play(n: String, blend := 0.3, spd := 1.0) -> void:
 	if not ap.has_animation(n):
 		return
@@ -521,6 +569,9 @@ func _process(dt: float) -> void:
 	_tief = low
 	_schwanz_k = move_toward(_schwanz_k, 0.2 if low < 0.95 or bool(a.fled) else 1.0, dt * 2.0)
 	holder.scale = Vector3(einheit, einheit * lerpf(holder.scale.y / einheit, low, clampf(dt * 4.0, 0.0, 1.0)), einheit)
+	if not _hocke.is_empty():                                   # Hase: sitzt in Ruhe gedrückt, hoppelt / springt sonst
+		_hocke_k = move_toward(_hocke_k, 1.0 if spd <= 0.04 else 0.0, dt * 3.0)
+		holder.position.y -= _hocke_k * float(HOCKE[kind]["senken"]) * einheit / maxf(0.01, sy)
 	if lie > 0.0:                                              # liegen (actor.gd _lie_k): der Körper sinkt, die Beine falten sich
 		holder.position.y -= lie * float(ARTEN[kind]["ruecken_m"]) * 0.5 / maxf(0.01, sy)
 	_lie = lie
@@ -557,6 +608,10 @@ func _haltung() -> void:
 	for e in _schwanz:
 		var bi: int = e[0]
 		sk.set_bone_pose_rotation(bi, sk.get_bone_pose_rotation(bi) * Quaternion(Vector3.RIGHT, float(e[1]) * _schwanz_k))
+	if _hocke_k > 0.01:
+		for e in _hocke:
+			var hb2: int = e[0]
+			sk.set_bone_pose_rotation(hb2, sk.get_bone_pose_rotation(hb2) * Quaternion(Vector3.RIGHT, float(e[1]) * _hocke_k))
 	if _lie > 0.01:
 		for e in _beine:
 			var bi2: int = e[0]

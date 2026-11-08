@@ -645,14 +645,17 @@ def farbe_schwein(t, g, P):
 def farbe_hase(t, g, P):
     """Feldhase: «gesprenkelt» gelbbraun (Agouti), Rücken dunkler, Flanke rötlicher, Bauch weiss, Ohrspitzen schwarz,
     Schwanz oben schwarz, unten weiss; grosse dunkle Augen"""
-    BRAUN = np.array([0.25, 0.18, 0.11])
-    DUNKEL = np.array([0.11, 0.08, 0.05])
-    ROT = np.array([0.31, 0.20, 0.11])
+    BRAUN = np.array([0.28, 0.215, 0.145])
+    DUNKEL = np.array([0.10, 0.08, 0.055])
+    ROT = np.array([0.31, 0.225, 0.14])
     WEISS = np.array([0.66, 0.63, 0.56])
     y, z = P[:, 1], P[:, 2]
-    nz = noise3(P, 18.0, 2.0)
+    nz = noise3(P, 26.0, 2.0)
     nz2 = noise3(P, 4.0, 5.5)
-    col = BRAUN * (0.75 + 0.5 * nz[:, None])
+    nz3 = noise3(P, 41.0, 7.3)
+    # Agouti: jedes Haar gebändert - feine helle (gelbgraue) und dunkle (schwarze Spitzen) Sprenkel
+    col = BRAUN * (0.7 + 0.6 * nz[:, None])
+    col = col * (1 - 0.55 * sst(0.62, 0.8, nz3)[:, None]) + np.array([0.42, 0.36, 0.26]) * 0.35 * sst(0.25, 0.08, nz3)[:, None]
     top = sst(0.25, 0.75, (y - (t.rueck_y - 0.4)) / 0.4 + 0.4 * (nz2 - 0.5))
     col = col * (1 - top[:, None]) + DUNKEL * top[:, None]
     flank = 1 - sst(0.3, 0.6, (y - t.bauch_y) / max(1e-6, t.rueck_y - t.bauch_y))
@@ -709,7 +712,24 @@ def schwein_vorform(P, t):
 
 
 def hase_vorform(P, t):
-    return _schnauze(P, t, 2.0, 0.45, 1.05, 0.0)
+    """Fuchs -> Feldhase (Ruhelage): runder Kopf mit kurzer, stumpfer Schnauze, grosse seitliche Augen, runde Keulen"""
+    P = _schnauze(P, t, 1.95, 0.3, 1.15, 0.0)
+    head = np.clip(t.wsum(["Head"]) * 1.2, 0, 1) * (1 - np.clip(t.wpre("Ear") * 2.0, 0, 1))
+    hc = np.array([0.0, 2.1, 1.95])                       # Kopfmitte (Fuchs)
+    d = P - hc
+    P = P + d * (head[:, None] * np.array([0.12, 0.18, 0.0]))   # runder, höherer Schädel
+    eye = t.mat == "Eyes"
+    for sd in (1, -1):
+        m = eye & (P[:, 0] * sd > 0)
+        if m.any():
+            c = P[m].mean(axis=0)
+            P[m] = c + (P[m] - c) * 1.9 + np.array([0.03 * sd, 0.0, -0.03])   # grosse Augen, etwas seitlicher
+    # runde, hohe Keulen: hinten am Rumpf nach aussen und oben
+    hint = np.clip(t.wsum(["Back", "BackShoulder.L", "BackShoulder.R", "BackLeg.L", "BackLeg.R"]) * 1.2, 0, 1) * sst(-0.2, -0.7, P[:, 2])
+    mid = np.array([0.0, 1.75, -0.75])
+    q = P - mid
+    P = P + q * (hint[:, None] * np.array([0.22, 0.18, 0.12]))
+    return P
 
 
 def _beine(d, s_front, s_back, s_dicke=1.0):
@@ -758,13 +778,15 @@ SCHWEIN_D = _beine({"Back": (1.35, 1.3, 1.1), "Torso": (1.45, 1.35, 1.1), "Torso
                     "Head": (1.1, 1.15, 1.0)}, 0.62, 0.6, 1.35)
 _ohren(SCHWEIN_L, SCHWEIN_D, 0.75, (0.85, 0.85, 0.85))
 _schwanz(SCHWEIN_L, SCHWEIN_D, 8, 0.6, (0.22, 0.22, 0.22))
-HASE_L = _laengen({"Neck1": 0.5, "Neck2": 0.5, "Neck3": 0.65, "Torso": 0.8, "Torso2": 0.8}, 0.5, 0.75)
+HASE_L = _laengen({"Neck1": 0.45, "Neck2": 0.45, "Neck3": 0.6, "Torso": 0.75, "Torso2": 0.75}, 0.38, 0.85)
 HASE_D = _beine({"Back": (1.15, 1.3, 1.1), "Torso": (1.15, 1.3, 1.15), "Torso2": (1.05, 1.2, 1.0), "Torso3": (0.95, 1.1, 0.95),
-                 "Body": (1.15, 1.2, 1.1), "Head": (0.95, 1.1, 1.0), "Neck1": (1.1, 1.0, 1.1), "Neck2": (1.1, 1.0, 1.1)}, 0.5, 0.75, 1.0)
+                 "Body": (1.2, 1.25, 1.15), "Head": (1.0, 1.1, 0.95), "Neck1": (1.15, 1.0, 1.15), "Neck2": (1.1, 1.0, 1.1)}, 0.38, 0.85, 0.8)
 for _s in ("L", "R"):
-    HASE_D["BackUpperLeg." + _s] = (1.4, 0.75, 1.4)            # kräftige Keulen
-    HASE_D["BackLeg." + _s] = (1.4, 1.1, 1.4)
-    HASE_D["BackLowerLeg." + _s] = (1.0, 0.95, 1.6)            # lange Hinterpfoten
+    HASE_D["BackUpperLeg." + _s] = (1.3, 0.95, 1.3)            # lange Unterschenkel
+    HASE_D["BackLeg." + _s] = (1.3, 1.15, 1.5)                 # kräftige Keulen
+    HASE_D["BackLowerLeg." + _s] = (1.0, 1.15, 1.7)            # lange Hinterpfoten
+    HASE_D["FrontUpperLeg." + _s] = (0.7, 0.38, 0.7)           # kurze, dünne Vorderläufe
+    HASE_D["FrontLowerLeg." + _s] = (0.7, 0.38, 0.7)
 _ohren(HASE_L, HASE_D, 2.6, (0.5, 1.7, 0.65))
 _schwanz(HASE_L, HASE_D, 8, 0.12, (0.6, 0.6, 0.6))
 

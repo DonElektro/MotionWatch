@@ -1,6 +1,6 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-08 16:34",
+ "generated": "2026-11-08 17:05",
  "versions": [
   {
    "version": "3.63.2",
@@ -168,31 +168,23 @@
   }
  ],
  "sim": {
-  "ver": "3.62.0",
-  "version": "3D-5.62.0",
-  "notes": "Wolf, Dachs, Wildschwein, Hase und Vögel als Modelle, Liegen und Sitzen",
+  "ver": "3.62.1",
+  "version": "3D-5.62.1",
+  "notes": "Wildschwein mit Hauern, Hase überarbeitet",
   "mw_min": "3.55.0",
   "win": {
-   "ver": "3.62.0",
+   "ver": "3.62.1",
    "file": "simulator3d/MotionWatch3D_Simulator.zip",
-   "size": 54308016,
-   "sha256": "d88736d21f508547c71228149cf4ded41215f649ee126698d805bc5b97795f58",
-   "sig": "857d72707ba2151f7b7a29c43163b226be81b4efa76411a6313f3fe722beec170018f9d7a81463422cf9a252e264c891e7df6992e36b0efec9d20d0dba7a7b07"
+   "size": 54307117,
+   "sha256": "3ad38b619fb55359aa771eca0fa26fab95fd14ac95c6d731f6ba271682ed4152",
+   "sig": "93ce7eb256c8825bab37d1e8144692dd31a941cb3e20d1efebf9fc666d962d4e95995f04c708d331ff770daf38916936c5ce43df48c1e9f5c9b05cb9c6ed600a"
   },
   "linux": {
-   "ver": "3.62.0",
+   "ver": "3.62.1",
    "file": "simulator3d/MoveEyeSim3D_Linux.zip",
-   "size": 48336913,
-   "sha256": "02b0333e707b4ce321680a8d7574666cb57603a937efe7afb2578731ca416e05",
-   "sig": "392a7b2d7bfe022526be8480443c991ade50612bd1d22765b5d3924011cc38efd48987abce3fc4718541175912ab45b08cd8582f548490f997fa90cb36811704"
-  },
-  "pi": {
-   "ver": "3.62.0",
-   "file": "simulator3d/MoveEyeSim3D_Pi.zip",
-   "size": 37842353,
-   "sha256": "1db0a9381bd0534b0ad1e5f1603d512fad72c3601793723f05d9face10533094",
-   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.62.0/MoveEyeSim3D_Pi.zip",
-   "sig": "fc78a598f09c8aa84c7c2bf5097316856ccee375136989a5e0b0bc6759c18fea574ef2311b0b0ad1e0111be89be77d80bcf020e40fb00a77e158d9219cecb900"
+   "size": 48333568,
+   "sha256": "ec26eb1239c9b2e9e2032eadce7376e98eb1ed8d4a7279b4b9536ced6ca335d7",
+   "sig": "4ab1d7215590706edfb5f5a741f2894b79b486ba2e6604391b977891a05a6d6abb7b8a208692347d2edd4a1113e5ea43ece4613130817c22daaa6264d17e630b"
   }
  }
 }

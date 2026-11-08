@@ -1,23 +1,16 @@
 {
- "version": "3D-5.62.0",
- "ver": "3.62.0",
- "name": "MoveEye Sim 3.62.0",
+ "version": "3D-5.62.1",
+ "ver": "3.62.1",
+ "name": "MoveEye Sim 3.62.1",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 54308016,
- "sha256": "d88736d21f508547c71228149cf4ded41215f649ee126698d805bc5b97795f58",
- "notes": "Wolf, Dachs, Wildschwein, Hase und Vögel als Modelle, Liegen und Sitzen",
+ "size": 54307117,
+ "sha256": "3ad38b619fb55359aa771eca0fa26fab95fd14ac95c6d731f6ba271682ed4152",
+ "notes": "Wildschwein mit Hauern, Hase überarbeitet",
  "mw_min": "3.55.0",
  "linux": {
   "file": "simulator3d/MoveEyeSim3D_Linux.zip",
-  "ver": "3.62.0",
-  "size": 48336913,
-  "sha256": "02b0333e707b4ce321680a8d7574666cb57603a937efe7afb2578731ca416e05"
- },
- "pi": {
-  "file": "simulator3d/MoveEyeSim3D_Pi.zip",
-  "ver": "3.62.0",
-  "size": 37842353,
-  "sha256": "1db0a9381bd0534b0ad1e5f1603d512fad72c3601793723f05d9face10533094",
-  "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.62.0/MoveEyeSim3D_Pi.zip"
+  "ver": "3.62.1",
+  "size": 48333568,
+  "sha256": "ec26eb1239c9b2e9e2032eadce7376e98eb1ed8d4a7279b4b9536ced6ca335d7"
  }
 }
