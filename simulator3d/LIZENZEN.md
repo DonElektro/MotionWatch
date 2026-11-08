@@ -111,6 +111,9 @@ Wege und Strassen («Wege und Strassen», Zweig sim-wege: Asphalt mit Rissen, Fl
 Randsteine, Feldwege mit Fahrspuren und Steinen – `scripts/wege.gd`, `shaders/strasse.gdshader`, `shaders/feldweg.gdshader`):
 **selbst gebaut**, alles Muster im Shader aus dem Ort gerechnet. Die Asphalt-Struktur nutzt das eigene Foto von Elektro
 `texturen/weg_asphalt_01.jpg` (Abschnitt «Foto-Texturen im Bergtal»). Keine fremde Datei, keine Marken oder Logos.
+Dazu (Schritt 2): Wanderwege, Stufen, Wegweiser und Pfosten mit Raute (`shaders/wanderweg.gdshader`, `shaders/wege_laub.gdshaderinc`),
+Leitpfosten, Strassenlampen, Bank, Leitplanke, Zaun, Hundekot-Kasten (Robidog-artig, ohne Marke) und Briefkasten – ebenfalls im
+Code gebaut; die Orts- und Zielnamen auf den Wegweisern sind erfunden.
 
 ## Foto-Texturen im Bergtal (ab 3.37) – `texturen/`, `scripts/bergtal_texturen.gd`
 

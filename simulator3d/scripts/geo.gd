@@ -1217,6 +1217,8 @@ func _finish_ribbons() -> void:
 		_wege_mesh(key, mi)
 	ribbon_st = {}
 	wege_runs = {}
+	if Wege.an(main) and not park_segs.is_empty():
+		counts["park_strips"] = Wege.park_streifen(main, sc.root, park_segs)   # Schritt 2b: yellow fields where cars park
 	_finish_buildings()
 
 

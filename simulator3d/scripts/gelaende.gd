@@ -492,6 +492,7 @@ func camping_plants(sc) -> void:
 		smooth_paths()
 		if trail.size() >= 2:
 			paths.append([trail, 0.45, "pfad"])
+		Wege.camping_strassenrand(sc)                    # Schritt 2b: lamps, bench, delineators, guardrail, fence (no obstacles)
 
 
 # ---- tests ---------------------------------------------------------------------------------------------------------------
