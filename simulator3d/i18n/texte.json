@@ -27232,6 +27232,12 @@
   "it": "Modello senza scheletro / animazioni",
   "rm": "Model senza skelet / moviments"
  },
+ "Modell ohne Skelett / Bewegungen / Kennzahlen": {
+  "en": "Model without skeleton / animations / key figures",
+  "fr": "Modèle sans squelette / animations / repères",
+  "it": "Modello senza scheletro / animazioni / parametri",
+  "rm": "Model senza skelet / moviments / cifras"
+ },
  "Module an den Wänden": {
   "en": "Modules on the walls",
   "fr": "Modules sur les parois",

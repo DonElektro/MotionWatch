@@ -1,6 +1,6 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-08 09:46",
+ "generated": "2026-11-08 16:08",
  "versions": [
   {
    "version": "3.63.2",
@@ -168,31 +168,23 @@
   }
  ],
  "sim": {
-  "ver": "3.60.0",
-  "version": "3D-5.60.0",
-  "notes": "Boden mit Gras- und Erdtönen, Trampelpfade, Jahreszeiten/Nacht am Boden, Farbstimmung halb so stark",
+  "ver": "3.61.0",
+  "version": "3D-5.61.0",
+  "notes": "Tiere als Modelle mit Skelett (Reh, Hund, Katze, Igel, Fuchs), Bildschirm für HP-Tests",
   "mw_min": "3.55.0",
   "win": {
-   "ver": "3.60.0",
+   "ver": "3.61.0",
    "file": "simulator3d/MotionWatch3D_Simulator.zip",
-   "size": 51837400,
-   "sha256": "83122c216d2512ecde8d2b95064a20d07830bf3a9f4c8a97daabf6d09899dcb2",
-   "sig": "bde8294f5b9edc8356562a2fd1d3f9a2a2133cb82c27344ba913446e183435e85ec52bbfbd42ee8d80a55bc1f5a7e1feb6a5b15e649246242631f998aa64eb04"
+   "size": 53315963,
+   "sha256": "ecc691304bc64869624618ad8ebcb8c6422a5aa3a9fc24a7b0298d7ae1443270",
+   "sig": "80faf7a18b4f9bcd87b91dd7157c381bfc4e31880b144cd9b32bb980bbecb099bef53f1744aa355924d308947c2ac0ba6cbbbf03213973a2a0a55c333956430b"
   },
   "linux": {
-   "ver": "3.60.0",
+   "ver": "3.61.0",
    "file": "simulator3d/MoveEyeSim3D_Linux.zip",
-   "size": 45867135,
-   "sha256": "87ea401d7cafc87fbbaffeccd5469e8d4254682e3d825eceb3c57836452a5ac3",
-   "sig": "178d82b253c3621d39ae3f92a0f1248d65354ee521376c8b395d365bd92836d78ca86b3285168e4143072b391bc32c16ab4d734caa4f7a55f4c773bd2454f00f"
-  },
-  "pi": {
-   "ver": "3.60.0",
-   "file": "simulator3d/MoveEyeSim3D_Pi.zip",
-   "size": 38217469,
-   "sha256": "db6f01cb465e461589778620faf6689fee90d1cff9d6c1b075b365f5aa0debf8",
-   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.60.0/MoveEyeSim3D_Pi.zip",
-   "sig": "963ad085804ee6c68c893c627bdce1fcdc94ced9f2b91267da09432675bc39ddee92e30f8a4d8a0d2ad9d08162cae24d934aab44f5d99613fbc8de8999d8a10e"
+   "size": 47348657,
+   "sha256": "d0b64957336e0c0f3cc052985d7195e3b536f614924d2afa9e7dc9a2fb9e9426",
+   "sig": "5588cce52069a7743028dfe86606991599df4ac522d439926a4fff58124a837163ce2bacb469d020eb0244e0786c1bfee7072c1618dacfd8620b1073c7d1b80f"
   }
  }
 }
