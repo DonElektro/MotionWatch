@@ -1,23 +1,16 @@
 {
- "version": "3D-5.60.0",
- "ver": "3.60.0",
- "name": "MoveEye Sim 3.60.0",
+ "version": "3D-5.61.0",
+ "ver": "3.61.0",
+ "name": "MoveEye Sim 3.61.0",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 51837400,
- "sha256": "83122c216d2512ecde8d2b95064a20d07830bf3a9f4c8a97daabf6d09899dcb2",
- "notes": "Boden mit Gras- und Erdtönen, Trampelpfade, Jahreszeiten/Nacht am Boden, Farbstimmung halb so stark",
+ "size": 53315963,
+ "sha256": "ecc691304bc64869624618ad8ebcb8c6422a5aa3a9fc24a7b0298d7ae1443270",
+ "notes": "Tiere als Modelle mit Skelett (Reh, Hund, Katze, Igel, Fuchs), Bildschirm für HP-Tests",
  "mw_min": "3.55.0",
  "linux": {
   "file": "simulator3d/MoveEyeSim3D_Linux.zip",
-  "ver": "3.60.0",
-  "size": 45867135,
-  "sha256": "87ea401d7cafc87fbbaffeccd5469e8d4254682e3d825eceb3c57836452a5ac3"
- },
- "pi": {
-  "file": "simulator3d/MoveEyeSim3D_Pi.zip",
-  "ver": "3.60.0",
-  "size": 38217469,
-  "sha256": "db6f01cb465e461589778620faf6689fee90d1cff9d6c1b075b365f5aa0debf8",
-  "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.60.0/MoveEyeSim3D_Pi.zip"
+  "ver": "3.61.0",
+  "size": 47348657,
+  "sha256": "d0b64957336e0c0f3cc052985d7195e3b536f614924d2afa9e7dc9a2fb9e9426"
  }
 }

@@ -1,8 +1,15 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 08.11.2026 · Version **3.60.0** · MoveEye **3.63.2** (Drei Spuren ab 03.11.2026: Simulator und MoveEye mit eigenen Nummern, Verträglichkeit über `MW_MIN` in `scripts/abgleich.gd` / `SIM_MIN` in MoveEye Teil 545; 3.0.0 bis 3.55.2 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 08.11.2026 · Version **3.61.0** · MoveEye **3.63.2** (Drei Spuren ab 03.11.2026: Simulator und MoveEye mit eigenen Nummern, Verträglichkeit über `MW_MIN` in `scripts/abgleich.gd` / `SIM_MIN` in MoveEye Teil 545; 3.0.0 bis 3.55.2 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.61.0 (MoveEye 3.63.2): Tier-Modelle (Flora Paket 3, Schritt 1), Bildschirm für HP-Tests
+
+- tier_modell.gd: Reh, Hund (Husky / Shiba), Katze, Igel, Fuchs als GLB mit Skelett (modelle/*_glb.bin, werkzeuge/tier_modelle.py),
+  thermal_tier.gdshader; nur Normal / Hoch (MW_TIERE=modell|alt für Tests). Pi-Paket ohne diese Modelle (Lite nutzt sie nie;
+  fehlen sie, bleiben die Grundformen).
+- HP-Update HP_FASSUNG 5: TEST_BENUTZER=mwrunner, xhost +SI:localuser:mwrunner in der laufenden Kiosk-Sitzung.
 
 ## NEU in 3.60.0 (MoveEye 3.63.2): Flora Paket 2: Boden, Trampelpfade, Farbstimmung (sim-flora-gras)
 

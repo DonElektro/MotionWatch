@@ -80,6 +80,18 @@ rm -f -- "$PAUSE_DIR/kiosk_pause" "$PAUSE_DIR/fortschritt.json" "$PAUSE_DIR/bild
 rmdir -- "$PAUSE_DIR" 2>/dev/null
 weg "$TMPFILES"
 weg "$KIOSK_TEST"
+# Bildschirm-Freigabe (HP_FASSUNG 5) in der laufenden Sitzung zurücknehmen: nur der Eintrag für $RU (ohne die Datei gilt sie nach dem
+# nächsten Start der Sitzung ohnehin nicht mehr)
+if command -v xhost >/dev/null 2>&1; then
+	for pid in $(pgrep -f 'kiosk_sitzung\.sh' 2>/dev/null); do
+		xu="$(stat -c %U "/proc/$pid" 2>/dev/null)"
+		if [ -z "$xu" ] || [ "$xu" = root ]; then continue; fi
+		xa="$(tr '\0' '\n' < "/proc/$pid/environ" 2>/dev/null | sed -n 's/^XAUTHORITY=//p' | head -n 1)"
+		if [ -z "$xa" ] || ! tr '\0' '\n' < "/proc/$pid/environ" 2>/dev/null | grep -qx 'DISPLAY=:0'; then continue; fi
+		runuser -u "$xu" -- env DISPLAY=:0 XAUTHORITY="$xa" xhost "-SI:localuser:$RU" >/dev/null 2>&1 && echo "  Bildschirm-Freigabe für $RU zurückgenommen"
+		break
+	done
+fi
 weg "$CONF"
 weg "$LIB/job_start.sh"
 weg "$LIB/job_ende.sh"
