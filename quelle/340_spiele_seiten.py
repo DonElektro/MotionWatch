@@ -279,6 +279,7 @@ canvas{width:100%;aspect-ratio:4/3;background:#fff;border-radius:12px;touch-acti
 .pill{display:inline-block;padding:3px 10px;border-radius:999px;background:#24324a;font-size:13px;margin:2px}
 a.gl{display:flex;gap:10px;align-items:center;text-decoration:none;color:var(--txt);background:#1c2a3d;border:1px solid var(--line);border-radius:12px;padding:10px}
 a.gl img{width:44px;height:44px;border-radius:10px;object-fit:cover;background:#0b121c}a.gl b{display:block}a.gl span{font-size:12px;color:var(--mut)}
+/*GAMETILES*/#coll{--mwg-tile:#1c2a3d;--mwg-mut:var(--mut)}
 .hidden{display:none!important}
 </style></head><body>
 <header><img src="/icon-192.png" alt=""><h1>🎲 Spielecke</h1><div class="me" id="me"></div><button class="sec" id="quit" style="padding:8px 12px" title="Spielecke verlassen">🚪 Verlassen</button></header>
@@ -296,7 +297,7 @@ a.gl img{width:44px;height:44px;border-radius:10px;object-fit:cover;background:#
   <div class="card"><h2>🏆 Punkte</h2><div id="players"></div><div id="hostbox" class="hidden" style="margin-top:8px"><button class="sec" id="resetsc">Punkte auf 0</button></div></div>
   <div class="card hidden" id="simcard"><h2>🎯 Team gegen MoveEye (3D-Simulator)</h2><p class="mut" id="simtxt"></p>
     <a id="simgo" href="#" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none;background:var(--amber);color:#0e1621;font-weight:700;padding:13px;border-radius:12px">🏃 Mitspielen</a></div>
-  <div class="card" id="collcard"><h2>🕹 Spielesammlung (für dich allein)</h2><div id="coll" class="grid"></div></div>
+  <div class="card" id="collcard"><h2>🕹 Spielesammlung (für dich allein)</h2><div id="coll" class="mwg"></div></div>
 </div>
 <script>
 const KEY = "__KEY__", BASE = "/p/" + KEY;
@@ -363,11 +364,11 @@ function render() {
     + (SG.runners >= SG.max ? "Alle " + SG.max + " Läuferplätze sind besetzt – du schaust zuerst durch die Kamera zu." : (SG.max - SG.runners) + " von " + SG.max + " Läuferplätzen frei.")
     + (SG.round === "play" ? " Eine Runde läuft gerade." : ""); }
   // collection
-  const GG = {touch: "👆 Für Handy und Tablet (Touch)", buttons: "🎮 Mit Bildschirm-Tasten", keys: "⌨️ Am PC mit Tastatur und Maus"};        // 2.95.54: touch games first, GS-1.4: «keys» last
+  const GG = {touch: "👆 Für Handy und Tablet (Touch)", buttons: "🎮 Mit Bildschirm-Tasten (am PC mit der Tastatur)", keys: "⌨️ Am PC mit Tastatur und Maus"};        // 2.95.54: touch games first, GS-1.4: «keys» last; = GAME_GROUPS
   const GO = {touch: 0, buttons: 1, keys: 2}, gsorted = (V.games || []).slice().sort((a, b) => (GO[a.input] || 0) - (GO[b.input] || 0));
   let gprev = null;
-  $("#coll").innerHTML = gsorted.length ? gsorted.map(g => { const hd = g.input && g.input !== gprev ? `<div style="font-weight:700;margin:12px 0 4px;grid-column:1/-1">${GG[g.input] || ""}</div>` : ""; gprev = g.input; return hd + `<a class="gl" href="${BASE}/g/${g.dir}/" target="_blank">${/\./.test(g.icon || "") ? `<img src="${BASE}/g/${g.dir}/${g.icon}" alt="" onerror="this.style.visibility='hidden'">` : `<span style="font-size:30px;width:44px;text-align:center;flex:0 0 44px">${esc(g.icon || "🎮")}</span>`}<div><b>${esc(g.name)}</b><span>${esc(g.desc || "")}</span></div></a>`; }).join("")
-    : "<div class='mut'>Die Spielesammlung ist auf diesem Gerät noch nicht installiert (MoveEye → Reiter Spielecke).</div>";
+  $("#coll").innerHTML = gsorted.length ? gsorted.map(g => { const hd = g.input && g.input !== gprev ? `<div class="gh">${GG[g.input] || ""}</div>` : ""; gprev = g.input; return hd + `<a class="c" href="${BASE}/g/${g.dir}/" target="_blank"><div class="i">${/\./.test(g.icon || "") ? `<img src="${BASE}/g/${g.dir}/${g.icon}" alt="" onerror="this.style.visibility='hidden'">` : esc(g.icon || "🎮")}</div><div class="n">${esc(g.name)}</div><div class="d">${esc(g.desc || "")}</div></a>`; }).join("")   // Spieltab: the tiles of /spiele (GAME_TILES_CSS)
+    : "<div class='mut' style='grid-column:1/-1'>Die Spielesammlung ist auf diesem Gerät noch nicht installiert (MoveEye → Reiter Spielecke).</div>";
   renderGame();
 }
 function gameChooser() {
@@ -602,6 +603,7 @@ poll();
 __NTJS__
 </script></body></html>
 """
+PARTY_PAGE = PARTY_PAGE.replace("/*GAMETILES*/", GAME_TILES_CSS, 1)      # Spieltab: same game tiles as /spiele and the admin tab
 
 
 SIMGAME = {"t": 0.0, "busy": False, "g": None}   # the game in the simulator, fetched now and then (2.95.22: «Team gegen MoveEye»)
