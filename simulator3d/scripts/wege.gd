@@ -38,13 +38,16 @@ static func _register(m, mt: ShaderMaterial) -> void:
 
 static func strasse_mat(m, o := {}) -> ShaderMaterial:
 	"""Asphalt: o = {centre: Leitlinie (gestrichelt), edge: Randlinien, park: [von, bis, Seite ±1] gelbe Parkfelder (m längs),
-	hoch: Hoch-Stufe (mehr Feinheit)}"""
+	bays: 1 Parkstreifen (Felder längs) / 2 Parkplatz (zwei Reihen quer), bay_col: Farbe der Felder (gelb / weiss)}"""
 	if _shader_strasse == null:
 		_shader_strasse = load("res://shaders/strasse.gdshader")
 	var mt := ShaderMaterial.new()
 	mt.shader = _shader_strasse
 	mt.set_shader_parameter("centre_line", 1.0 if o.get("centre", true) else 0.0)
 	mt.set_shader_parameter("edge_line", 1.0 if o.get("edge", true) else 0.0)
+	mt.set_shader_parameter("bays", float(o.get("bays", 0)))
+	if o.has("bay_col"):
+		mt.set_shader_parameter("bay_col", o["bay_col"])
 	var pk: Array = o.get("park", [])
 	if pk.size() == 3:
 		mt.set_shader_parameter("park", Vector3(float(pk[0]), float(pk[1]), float(pk[2])))
@@ -84,10 +87,11 @@ static func dense(pts: Array, step := 0.8) -> PackedVector2Array:
 	return line
 
 
-static func band(m, line: PackedVector2Array, hw: float, rim: float, lift: float, cols: Array, wob := 0.0, hfn := Callable()) -> ArrayMesh:
+static func band(m, line: PackedVector2Array, hw: float, rim: float, lift: float, cols: Array, wob := 0.0, hfn := Callable(), hs := PackedFloat32Array()) -> ArrayMesh:
 	"""ein Band entlang line (x/z): quer an den Stellen cols (Bruchteil von -1 … 1 der ganzen halben Breite hw + rim), jede
 	Ecke auf dem Boden (m.ground_y, oder hfn(x, z) in den Koordinaten des Netzes, z. B. Bergtal H) + lift.
-	UV = (quer m, längs m), UV2 = (hw, rim). Dreiecke schauen nach oben. wob: der Rand ist nicht ganz gerade (wie gelaende.path)"""
+	UV = (quer m, längs m), UV2 = (hw, rim). Dreiecke schauen nach oben. wob: der Rand ist nicht ganz gerade (wie gelaende.path).
+	hs: eine Höhe je Punkt der Linie (quer eben - eine Strasse auf Dämmen und Brücken, Bergtal)"""
 	var verts := PackedVector3Array()
 	var norms := PackedVector3Array()
 	var uvs := PackedVector2Array()
@@ -107,7 +111,13 @@ static func band(m, line: PackedVector2Array, hw: float, rim: float, lift: float
 		for c in cols:
 			var off: float = float(c) * (hw * w + rim)
 			var q: Vector2 = p + side * off
-			var gy: float = float(hfn.call(q.x, q.y)) if hfn.is_valid() else (mesh_y(G, q.x, q.y) if hilly else m.ground_y(q.x, q.y))
+			var gy: float
+			if not hs.is_empty():
+				gy = hs[mini(k, hs.size() - 1)]
+			elif hfn.is_valid():
+				gy = float(hfn.call(q.x, q.y))
+			else:
+				gy = mesh_y(G, q.x, q.y) if hilly else m.ground_y(q.x, q.y)
 			verts.append(Vector3(q.x, gy + lift, q.y))
 			if hfn.is_valid():
 				var e := 0.75
@@ -161,6 +171,27 @@ static func mesh_y(G, x: float, z: float) -> float:
 	if fu + fv <= 1.0:
 		return h00 + fu * (h10 - h00) + fv * (h01 - h00)
 	return h11 + (1.0 - fu) * (h01 - h11) + (1.0 - fv) * (h10 - h11)
+
+
+static func grid_fn(hfn: Callable, lo: float, step: float) -> Callable:
+	"""die Höhe eines Boden-Gitters (Ecken aus hfn, Zelle step ab lo, zwei Dreiecke je Zelle wie in ferienpark / kompakt / bergtal
+	_grid) - genau wie gezeichnet, damit ein Weg an Terrassen und Knicken nicht in den Boden sinkt oder darüber schwebt"""
+	return func(x: float, z: float) -> float:
+		var u := (x - lo) / step
+		var v := (z - lo) / step
+		var i0 := floorf(u)
+		var j0 := floorf(v)
+		var fu := u - i0
+		var fv := v - j0
+		var x0 := lo + i0 * step
+		var z0 := lo + j0 * step
+		var h00 := float(hfn.call(x0, z0))
+		var h10 := float(hfn.call(x0 + step, z0))
+		var h01 := float(hfn.call(x0, z0 + step))
+		if fu + fv <= 1.0:
+			return h00 + fu * (h10 - h00) + fv * (h01 - h00)
+		var h11 := float(hfn.call(x0 + step, z0 + step))
+		return h11 + (1.0 - fu) * (h01 - h11) + (1.0 - fv) * (h10 - h11)
 
 
 const COLS_STRASSE := [-1.0, -0.86, -0.5, 0.0, 0.5, 0.86, 1.0]
@@ -600,3 +631,190 @@ static func camping_trail(sc) -> PackedVector2Array:
 		next = s + 35.0
 	mark_posts(m, sc.root, posts)
 	return line
+
+
+# =============================================================================================================================
+# Schritt 2b: am Strassenrand, Strassen der anderen Welten, gelbe Parkfelder
+# =============================================================================================================================
+const WEISS := Color(0.9, 0.9, 0.88)
+const GELB := Color(0.88, 0.7, 0.12)
+
+
+static func strassen_band(m, parent: Node3D, line: PackedVector2Array, hw: float, o: Dictionary, hfn := Callable(), hs := PackedFloat32Array(),
+		lift := 0.06, rim := 0.6, vis := 0.0, mat: ShaderMaterial = null) -> ShaderMaterial:
+	"""eine Asphalt-Strasse als Band in parent (Koordinaten von parent; hfn / hs: Höhe dort), in Stücken von 200 m (vis > 0:
+	Sichtweite); nur sichtbar (Ebene 1). Gibt das Material zurück (für weitere Stücke derselben Art)."""
+	if mat == null:
+		mat = strasse_mat(m, o)
+	var pieces := {}
+	var hp := {}
+	for k in range(line.size()):
+		var key := Vector2i(int(floor(line[k].x / 200.0)), int(floor(line[k].y / 200.0)))
+		if not pieces.has(key):
+			pieces[key] = PackedVector2Array()
+			hp[key] = PackedFloat32Array()
+			if k > 0:
+				pieces[key].append(line[k - 1])
+				if not hs.is_empty():
+					hp[key].append(hs[k - 1])
+		pieces[key].append(line[k])
+		if not hs.is_empty():
+			hp[key].append(hs[k])
+	for key in pieces:
+		var run: PackedVector2Array = pieces[key]
+		if run.size() < 2:
+			continue
+		var mi := MeshInstance3D.new()
+		mi.mesh = band(m, run, hw, rim, lift, COLS_STRASSE, 0.0, hfn, hp[key])
+		mi.material_override = mat
+		mi.layers = 1
+		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		if vis > 0.0:
+			mi.visibility_range_end = vis
+		parent.add_child(mi)
+	return mat
+
+
+static func parkplatz(m, parent: Node3D, c: Vector2, sx: float, sz: float, rot: float, hfn: Callable, col: Color, lift := 0.08) -> void:
+	"""ein Parkplatz (Rechteck sx × sz um c, gedreht um rot): Asphalt mit zwei Reihen Felder quer (2.5 m), Fahrgasse in der Mitte"""
+	var ax := Vector2(cos(rot), -sin(rot))                # local x in the plane (Basis(UP, rot) * (1, 0, 0))
+	var line := dense([c - ax * sx * 0.5, c + ax * sx * 0.5], 2.0)
+	strassen_band(m, parent, line, sz * 0.5, {"centre": false, "edge": false, "bays": 2, "bay_col": col}, hfn, PackedFloat32Array(), lift, 0.3)
+
+
+# ---- am Strassenrand -----------------------------------------------------------------------------------------------------
+static func kleinzeug(m, parent: Node3D, list: Array, vis := 120.0) -> MeshInstance3D:
+	"""kleine Dinge am Weg in EINEM Netz (ein Zeichenaufruf; Farben je Ecke; nur sichtbar, kein Hindernis, nicht im Wärmebild):
+	list = [[Art, Vector3 Fuss, yaw]] - «leitpfosten» (weiss, schwarzes Band, Rückstrahler), «robidog» (grüner Kasten für
+	Hundekot-Säckli mit Behälter, ohne Marke), «briefkasten» (anthrazit, auf Pfosten)"""
+	if list.is_empty():
+		return null
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for e in list:
+		var p: Vector3 = e[1]
+		var yaw: float = e[2]
+		var f := Vector2(sin(yaw), cos(yaw))              # front (+z of the thing turned by yaw)
+		var sd := Vector2(cos(yaw), -sin(yaw))
+		match str(e[0]):
+			"leitpfosten":                                # Swiss delineator: white, 1 m, black band at the top, reflectors
+				_box(st, p + Vector3(0, 0.45, 0), f, sd, 0.1, 0.9, 0.12, Color(0.93, 0.93, 0.92))
+				_box(st, p + Vector3(0, 0.95, 0), f, sd, 0.101, 0.1, 0.121, Color(0.06, 0.06, 0.06))
+				for k in [0, 1]:
+					var c: Vector3 = p + Vector3(f.x, 0, f.y) * (0.061 if k == 0 else -0.061) + Vector3(0, 0.82, 0)
+					var sv := Vector3(sd.x, 0, sd.y) * 0.025
+					var uv := Vector3(0, 0.05, 0)
+					_quad_c(st, c - sv - uv, c + sv - uv, c + sv + uv, c - sv + uv, Vector3(f.x, 0, f.y) * (1.0 if k == 0 else -1.0),
+							Color(0.95, 0.55, 0.05) if k == 0 else Color(0.95, 0.95, 0.95))
+			"robidog":                                    # dog-waste station: post, bag box, bin (green, no brand)
+				_box(st, p + Vector3(0, 0.6, 0), f, sd, 0.08, 1.2, 0.08, Color(0.2, 0.35, 0.22))
+				_box(st, p + Vector3(0, 1.08, 0) + Vector3(f.x, 0, f.y) * 0.1, f, sd, 0.28, 0.34, 0.12, Color(0.16, 0.45, 0.24))
+				_box(st, p + Vector3(0, 0.62, 0) + Vector3(f.x, 0, f.y) * 0.16, f, sd, 0.34, 0.46, 0.24, Color(0.14, 0.38, 0.2))
+				_box(st, p + Vector3(0, 0.86, 0) + Vector3(f.x, 0, f.y) * 0.16, f, sd, 0.36, 0.03, 0.26, Color(0.1, 0.25, 0.14))
+				var c2: Vector3 = p + Vector3(f.x, 0, f.y) * 0.161 + Vector3(0, 1.1, 0)     # a white dog sign (a simple shape)
+				var sv2 := Vector3(sd.x, 0, sd.y) * 0.07
+				var uv2 := Vector3(0, 0.05, 0)
+				_quad_c(st, c2 - sv2 - uv2, c2 + sv2 - uv2, c2 + sv2 + uv2, c2 - sv2 + uv2, Vector3(f.x, 0, f.y), Color(0.95, 0.95, 0.95))
+			"briefkasten":                                # letterbox on a post
+				_box(st, p + Vector3(0, 0.55, 0), f, sd, 0.07, 1.1, 0.07, Color(0.3, 0.3, 0.31))
+				_box(st, p + Vector3(0, 1.22, 0), f, sd, 0.38, 0.34, 0.3, Color(0.23, 0.24, 0.26))
+				_box(st, p + Vector3(0, 1.3, 0) + Vector3(f.x, 0, f.y) * 0.151, f, sd, 0.26, 0.02, 0.005, Color(0.08, 0.08, 0.08))
+				var c3: Vector3 = p + Vector3(f.x, 0, f.y) * 0.152 + Vector3(0, 1.16, 0)    # name plate
+				var sv3 := Vector3(sd.x, 0, sd.y) * 0.08
+				var uv3 := Vector3(0, 0.025, 0)
+				_quad_c(st, c3 - sv3 - uv3, c3 + sv3 - uv3, c3 + sv3 + uv3, c3 - sv3 + uv3, Vector3(f.x, 0, f.y), Color(0.85, 0.85, 0.8))
+	if _mark_mat == null:
+		_mark_mat = StandardMaterial3D.new()
+		_mark_mat.vertex_color_use_as_albedo = true
+		_mark_mat.roughness = 0.8
+	var mi := MeshInstance3D.new()
+	mi.mesh = st.commit()
+	mi.material_override = _mark_mat
+	mi.layers = 1
+	mi.visibility_range_end = vis
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	parent.add_child(mi)
+	return mi
+
+
+static func lampen_licht(m, bib, parent: Node3D, near := Vector3.ZERO, nmax := 6, rmax := 90.0) -> int:
+	"""die Lichter der Strassenlampen einer Bib: OmniLight (12 m, warm) wie die Lampen der Plätze - licht.gd schaltet sie in
+	der Dämmerung ein (main.lamps), die Leuchte glüht (glow_mat). Nur die nächsten nmax (HD 4600)."""
+	var near_l := []
+	for l in bib.lamps:
+		var wp: Vector3 = bib.to_world * (l[0] as Vector3)
+		if wp.distance_to(near) < rmax:
+			near_l.append([wp.distance_to(near), l])
+	near_l.sort_custom(func(a, b): return a[0] < b[0])
+	var n := mini(nmax, near_l.size())
+	for i in range(n):
+		var l: Array = near_l[i][1]
+		var ol := OmniLight3D.new()
+		ol.position = l[0]
+		ol.light_color = Color(1.0, 0.82, 0.55)
+		ol.omni_range = 12.0
+		ol.light_energy = 0.0
+		ol.shadow_enabled = false
+		parent.add_child(ol)
+		m.lamps.append(ol)
+	return n
+
+
+static func camping_strassenrand(sc) -> void:
+	"""Camping-Platz an der Strasse (nur Normal / Hoch, nach den Pflanzen; nichts davon ist ein Hindernis - die Szene bleibt
+	gleich): zwei Strassenlampen vor dem Platz (leuchten nachts), Bank beim Wegweiser, Robidog-artiger Kasten beim Wanderweg,
+	Briefkasten an der Einfahrt, Leitpfosten ausserhalb, Leitplanke gegenüber, ein Weidezaun am Wanderweg"""
+	var m = sc.m
+	var road_c := float(sc.data.get("road_z", -27.8)) - 1.2
+	var hw := 2.5
+	var Bib = load("res://scripts/bib_berg.gd")
+	var bib = Bib.new(m, sc, sc.root, Transform3D.IDENTITY)
+	var gy := func(x: float, z: float) -> Vector3: return Vector3(x, m.ground_y(x, z), z)
+	for x in [-17.0, 9.0]:                                 # street lamps on the side of the place, arm over the road
+		bib.add("lamp", gy.call(x, road_c + hw + 0.9), PI / 2.0, {"style": "street", "noob": true})
+	bib.add("bench", gy.call(-26.6, road_c + hw + 2.3), PI, {"noob": true})
+	for k in range(4):                                     # guardrail on the other side, where the meadow falls away
+		bib.add("guardrail", gy.call(32.0 + k * 4.0, road_c - hw - 0.7), 0.0, {"len": 4.0, "noob": true})
+	var trail_dir := (CAMP_TRAIL[9] - CAMP_TRAIL[8]).normalized()
+	for k in range(5):                                     # a pasture fence west of the trail in the field
+		var q: Vector2 = CAMP_TRAIL[7] + Vector2(-4.0, 0.0) + trail_dir * (2.5 * k + 1.25)
+		bib.add("fence", gy.call(q.x, q.y), atan2(-trail_dir.y, trail_dir.x), {"len": 2.5, "h": 1.1, "noob": true})
+	bib.finish()
+	lampen_licht(m, bib, sc.root)
+	var list := []
+	for side in [-1.0, 1.0]:                               # delineators every 50 m outside the place (both sides)
+		for x in [-145.0, -95.0, -45.0, 45.0, 95.0, 145.0]:
+			var z: float = road_c + float(side) * (hw + 0.85)
+			list.append(["leitpfosten", gy.call(x, z), 0.0 if side > 0.0 else PI])
+	list.append(["robidog", gy.call(-18.2, -12.2), deg_to_rad(-30.0)])
+	list.append(["briefkasten", gy.call(3.2, road_c + hw + 1.4), PI])
+	kleinzeug(m, sc.root, list)
+
+
+# ---- gelbe Parkfelder am Strassenrand (Ort von der Karte: wo geo.gd Autos parkiert) ------------------------------------------
+static func park_streifen(m, parent: Node3D, segs: Array) -> int:
+	"""segs = [[a, b, halbe Breite der Strasse]] - auf beiden Seiten ein Parkstreifen (Asphalt, gelbe Felder längs, 5.5 m) genau
+	dort, wo geo.gd die Autos abstellt (Mitte halbe Breite + 1.3 m). Ein Netz, ein Zeichenaufruf."""
+	var st := SurfaceTool.new()
+	var n := 0
+	for sg in segs:
+		var a: Vector2 = sg[0]
+		var b: Vector2 = sg[1]
+		if a.distance_to(b) < 5.0:
+			continue
+		var d := (b - a).normalized()
+		var side := Vector2(-d.y, d.x)
+		for sgn in [-1.0, 1.0]:
+			var off: Vector2 = side * sgn * (float(sg[2]) + 1.3)
+			var line := dense([a + off + d * 0.5, b + off - d * 0.5], 3.0)
+			st.append_from(band(m, line, 1.1, 0.0, 0.06, COLS_FELD), 0, Transform3D.IDENTITY)
+			n += 1
+	if n == 0:
+		return 0
+	var mi := MeshInstance3D.new()
+	mi.mesh = st.commit()
+	mi.material_override = strasse_mat(m, {"centre": false, "edge": false, "bays": 1, "bay_col": GELB})
+	mi.layers = 1
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	parent.add_child(mi)
+	return n

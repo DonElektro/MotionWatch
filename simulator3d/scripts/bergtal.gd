@@ -1589,13 +1589,18 @@ func _roads_and_trails() -> void:
 	var rh := PackedFloat32Array()
 	for i in range(road_pts.size()):
 		rh.append(road_h[mini(i, road_h.size() - 1)] - 0.05)
-	_ribbon(road_pts, rh, 5.6, rc, 0.07, 380.0 if lite else 900.0)
+	var neu2 := Wege.an(m)                                    # «Wege und Strassen» 2b: the road in the new look (Normal / Hoch)
+	_ribbon(road_pts, rh, 5.6, rc, 0.07, 380.0 if lite else 900.0, "road", neu2)
 	if season != "winter":
 		for side in [-1.0, 1.0]:                             # the white edge lines
 			var lp := PackedVector2Array()
 			for i in range(road_pts.size()):
 				lp.append(road_pts[i] + _side(road_pts, i) * side * 2.5)     # K2: same side as the ribbon
-			_ribbon(lp, rh, 0.14, Color(0.85, 0.85, 0.82), 0.09, 140.0 if lite else 260.0)
+			_ribbon(lp, rh, 0.14, Color(0.85, 0.85, 0.82), 0.09, 140.0 if lite else 260.0, "road", neu2)
+	if neu2:
+		var smt: ShaderMaterial = Wege.strassen_band(m, tal, road_pts, 2.8, {"centre": true, "edge": season != "winter"}, Callable(), rh, 0.07, 0.6, 900.0)
+		if season == "winter":
+			smt.set_shader_parameter("snow_fest", 0.9)        # snow-packed (the old road was grey-white in winter)
 	var tc := Color(0.42, 0.34, 0.24) if season != "winter" else Color(0.8, 0.82, 0.86)
 	var neu := Wege.an(m)
 	for tr in TRAILS:
@@ -1624,7 +1629,12 @@ func _roads_and_trails() -> void:
 		mt.albedo_color = Color(0.3, 0.3, 0.31) if season != "winter" else Color(0.6, 0.62, 0.64)
 		if season != "winter":
 			Texturen.way(m, mt, "asphalt", 3.0)              # 3.30 Foto-Texturen
-		m.add_mesh(tal, st.commit(), Vector3.ZERO, mt, "road")
+		var pmi: MeshInstance3D = m.add_mesh(tal, st.commit(), Vector3.ZERO, mt, "road")
+		if neu2:                                             # 2b: asphalt with white fields (the old one stays for the thermal picture)
+			pmi.visible = false
+			Wege.parkplatz(m, tal, c, float(pk[1]), float(pk[2]), float(pk[3]), Wege.grid_fn(Callable(self, "H"), LO, STEP), Wege.WEISS)
+			if season == "winter":
+				(tal.get_child(tal.get_child_count() - 1) as MeshInstance3D).material_override.set_shader_parameter("snow_fest", 0.9)
 
 
 func _wanderwege() -> void:
@@ -1632,8 +1642,22 @@ func _wanderwege() -> void:
 	Bergwege Geröll; Ecken abgerundet, sanftes Pendeln (höchstens ~1 m neben dem alten Verlauf: Bäume, Wegweiser, Ziele
 	stimmen weiter); Stufen, wo der Weg steil ist (Holz unten, Stein oben). Jahreszeit des Bergtals: Herbst Laub, Winter Schnee.
 	In Stücken von 200 m mit Sichtweite wie bisher; nur sichtbar (das alte Band bleibt fürs Wärmebild)."""
-	var hfn := Callable(self, "H")
+	var hfn := Wege.grid_fn(Callable(self, "H"), LO, STEP)     # (2b) exactly like the ground mesh (no sinking at the knees)
 	var mats := {}
+	var rgrid := {}                                          # (2b) the road in cells of 20 m: where a trail crosses it
+	for q in road_pts:
+		var ck := Vector2i(int(floor(q.x / 20.0)), int(floor(q.y / 20.0)))
+		if not rgrid.has(ck):
+			rgrid[ck] = []
+		rgrid[ck].append(q)
+	var near_road := func(p: Vector2) -> bool:
+		var c0 := Vector2i(int(floor(p.x / 20.0)), int(floor(p.y / 20.0)))
+		for dx in [-1, 0, 1]:
+			for dz in [-1, 0, 1]:
+				for q in rgrid.get(c0 + Vector2i(dx, dz), []):
+					if (q as Vector2).distance_to(p) < 3.6:
+						return true
+		return false
 	var n_steps := 0
 	for ti in range(TRAILS.size()):
 		var tr: Array = TRAILS[ti]
@@ -1650,11 +1674,17 @@ func _wanderwege() -> void:
 		var hw: float = [1.3, 0.9, 0.6][lvl] * 0.5
 		var line := Wege.meander(Wege.dense(Wege.rounded(tr[1], 7.0), 1.0), [0.45, 0.35, 0.25][lvl], float(ti) * 1.7, 15.0)
 		var pieces := {}
+		var runs := []                                     # (2b) not over the road: the trail stops at its edge
 		for k in range(line.size()):
-			var key := "%d,%d" % [int(floor(line[k].x / 200.0)), int(floor(line[k].y / 200.0))]
+			if near_road.call(line[k]):
+				continue
+			var key := "%d,%d,%d" % [int(floor(line[k].x / 200.0)), int(floor(line[k].y / 200.0)), runs.size()]
+			if k > 0 and near_road.call(line[k - 1]):
+				runs.append(k)
+				key = "%d,%d,%d" % [int(floor(line[k].x / 200.0)), int(floor(line[k].y / 200.0)), runs.size()]
 			if not pieces.has(key):
 				pieces[key] = PackedVector2Array()
-				if k > 0:
+				if k > 0 and not near_road.call(line[k - 1]):
 					pieces[key].append(line[k - 1])            # no gap between two pieces
 			pieces[key].append(line[k])
 		for key in pieces:

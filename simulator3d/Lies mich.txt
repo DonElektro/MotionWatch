@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.64.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.65.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -487,6 +487,13 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.65.0
+3.65.0: Wege und Strassen (Schritt 2b): am Strassenrand Leitpfosten, Schilder und Lampen (leuchten in der Nacht), Strassen im
+Ferienpark, im Bergdorf und im Bergtal neu, gelbe Parkfelder wie auf der Karte, Fahrbahn-Streifen folgen dem Boden; nur mit Grafik
+«Normal» / «Hoch» (Lite und Prüfstand: wie bisher).
+So testest du: Grafik «Normal», Ferienpark, Bergdorf und Bergtal: Strassenrand und Parkfelder ansehen, auf Nacht stellen (Lampen
+leuchten); mit Grafik «Lite» wie in 3.64.0.
 
 NEU IN 3.64.0
 3.64.0: Wege und Strassen (Schritt 2a): Wanderwege mit gelben Wegweisern, Kurven und Stufen am Hang, Laub im Herbst, Schnee und

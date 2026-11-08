@@ -15,6 +15,10 @@ uniform float centre_line = 1.0;      // dashed white centre line (Leitlinie 3 m
 uniform float edge_line = 1.0;        // white edge lines
 uniform vec3 park = vec3(0.0);        // yellow parking fields: along from .x to .y (m), side .z (±1, 0 = none)
 uniform float snow_amount = 0.0;
+uniform float snow_fest = 0.0;        // Schritt 2b: Bergtal winter (the weather does not take it away)
+uniform float bays = 0.0;             // Schritt 2b: 1 = a parking strip (fields along it over its whole width, 5.5 m),
+                                      // 2 = a car park (two rows of fields 2.5 m × 5 m across, lane in the middle)
+uniform vec4 bay_col : source_color = vec4(0.88, 0.7, 0.12, 1.0);   // yellow (private / reserved) or white
 uniform float wet = 0.0;
 uniform float puddle = 0.0;
 uniform float cloud_amt = 0.0;
@@ -110,12 +114,26 @@ void fragment() {
 		wl *= 1.0 - step(inner - 0.1, px) * step(px, hw);            // no white edge line along the fields
 		yl = max(yl, (1.0 - smoothstep(0.065, 0.08, abs(px - (hw - 0.28)))));
 	}
+	float bl = 0.0;
+	if (bays > 0.5 && bays < 1.5) {
+		float fr = 1.0 - smoothstep(0.05, 0.065, abs(ax - (hw - 0.12)));
+		float st = 1.0 - smoothstep(0.05, 0.065, abs(mod(y + 0.06, 5.5) - 0.06));
+		bl = max(fr, st * step(ax, hw - 0.12));
+		wl = 0.0;
+	} else if (bays > 1.5) {
+		float row = step(hw - 5.2, ax);                              // the two rows at the sides, lane in the middle
+		float st = 1.0 - smoothstep(0.05, 0.065, abs(mod(y + 0.06, 2.5) - 0.06));
+		float fr = 1.0 - smoothstep(0.05, 0.065, abs(ax - (hw - 5.2)));
+		bl = max(st * row * step(ax, hw - 0.15), fr);
+		wl = 0.0;
+	}
 	float wear = smoothstep(0.25, 0.65, texture(noise_tex, w.xz * 1.3 + 0.2).r + 0.25 * (1.0 - tr));
 	wl *= wear * (1.0 - mh);
 	yl *= wear * (1.0 - mh);
 	c = mix(c, vec3(0.86, 0.86, 0.83), wl * 0.9);
 	c = mix(c, vec3(0.88, 0.7, 0.12), yl * 0.9);
-	float rough = mix(0.88, 0.78, tr) - 0.12 * (wl + yl);
+	c = mix(c, bay_col.rgb, bl * wear * (1.0 - mh) * 0.9);
+	float rough = mix(0.88, 0.78, tr) - 0.12 * (wl + yl + bl);
 
 	// ---- edge: the asphalt breaks off unevenly into the gravel shoulder (Bankett), which fades into the meadow ----
 	float edge = hw + 0.08 * (mid - 0.5) + 0.04 * (nf - 0.5);
@@ -143,7 +161,7 @@ void fragment() {
 	}
 	c *= 1.0 - 0.45 * wet * (1.0 - sh * 0.4);
 	rough = mix(rough, 0.3, wet * (1.0 - sh * 0.5));
-	float sn = snow_amount * (1.0 - 0.75 * tr * (1.0 - sh));            // tyres keep the tracks free
+	float sn = max(snow_amount, snow_fest) * (1.0 - (snow_fest > 0.0 ? 0.45 : 0.75) * tr * (1.0 - sh));   // tyres keep the tracks free
 	c = mix(c, snow.rgb * (0.9 + 0.1 * nf), clamp(sn * (0.8 + 0.4 * mid), 0.0, 1.0));
 	rough = mix(rough, 0.8, sn);
 	c *= 1.0 - cloud_amt * smoothstep(0.52, 0.68, texture(noise_tex, (w.xz + cloud_off) * 0.0035).r);
