@@ -14,6 +14,7 @@ uniform float snow_line = 900.0;      // season: above this height the ground is
 uniform float snow_cover = 0.0;       // season: 1 = everything white (winter), except steep rock
 uniform vec3 grass_tint = vec3(1.0);  // season: spring fresh, summer, autumn brown-yellow
 uniform float detail = 1.0;
+#include "res://shaders/gras_boden.gdshaderinc"
 // K3 (31.10.2026): rooms in the hill (bunker, cave - bergtal_orte.gd): the ground is not drawn inside them. Only in a copy
 // of this shader with «#define CLIPS» (bergtal.gd clip_ground) on the few chunks with such a room (discard costs a little).
 // clip_a = (centre x, centre z, half x, half z), clip_b = (cos, sin of the turn, floor y, ceiling y), all in valley coordinates
@@ -217,6 +218,7 @@ void fragment() {
 		}
 	}
 	c = mix(c, rock, rk);
+	c = p2_boden(c, wpos.xz, length(wpos - CAMERA_POSITION_WORLD), green * (1.0 - rk), 0.0, noise_tex);   // Paket 2 (own photos: no near photo)
 	// snow: above the snow line (lower on the side facing north), never on very steep rock
 	float north = clamp(-lnrm.z, 0.0, 1.0);
 	float line = snow_line - 90.0 * north + 60.0 * (big - 0.5);

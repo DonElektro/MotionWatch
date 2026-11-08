@@ -12,7 +12,7 @@ extends RefCounted
 
 const Flora = preload("res://scripts/flora.gd")
 const NAH := 12.0
-const PFAD_MAX := 48
+const PFAD_MAX := 32                 # HD 4600: at most 32 segments, only within 60 m (grass.gdshader)
 
 static var _fine: ArrayMesh = null
 static var _head: ArrayMesh = null
@@ -109,7 +109,7 @@ static func near_grass(sc, dmin: float, dmax: float, keep_clear: Callable, cells
 	if not an(sc.m) or dmin >= NAH:
 		return
 	var hi := minf(dmax, NAH)
-	var n := int((5200 if Flora.stufe(sc.m) == "hoch" else 2600) * (hi * hi - dmin * dmin) / (NAH * NAH))
+	var n := int((4200 if Flora.stufe(sc.m) == "hoch" else 2600) * (hi * hi - dmin * dmin) / (NAH * NAH))   # Hoch: 4200 (was 5200)
 	var r := _rng(dmin, hi, 71)
 	var greens := [Color(0.3, 0.5, 0.17), Color(0.34, 0.52, 0.19), Color(0.27, 0.45, 0.15), Color(0.4, 0.52, 0.22)]
 	for i in range(n):
@@ -158,20 +158,124 @@ static func near_flowers(sc, dmin: float, dmax: float, keep_clear: Callable, col
 
 
 static func trodden(m, p: Vector3) -> float:
-	"""neben Wegen ist das Gras niedergetreten: Höhen-Faktor 0.45 … 1"""
-	if m.gelaende == null or not an(m):
+	"""neben Wegen und auf Trampelpfaden ist das Gras niedergetreten: Höhen-Faktor 0.45 … 1"""
+	if not an(m):
 		return 1.0
 	var q := Vector2(p.x, p.z)
-	if m.gelaende.on_path(q, 0.5):
-		return 0.45
-	if m.gelaende.on_path(q, 1.1):
-		return 0.7
+	if m.gelaende != null:
+		if m.gelaende.on_path(q, 0.5):
+			return 0.45
+		if m.gelaende.on_path(q, 1.1):
+			return 0.7
+	for ln in trampel(m):
+		var d := Geometry2D.get_closest_point_to_segment(q, ln[0], ln[1]).distance_to(q)
+		if d < 0.45:
+			return 0.5
+		if d < 0.9:
+			return 0.75
 	return 1.0
+
+
+# ---- Trampelpfade zwischen den Plätzen (Zelt, Grill, Tisch, Tür des Wohnwagens, nächster Weg) -----------------------------
+static var _tr_key := -1
+static var _tr: Array = []
+
+
+static func _spot(n: Node3D) -> Vector2:
+	"""Mitte eines Test-Dings (Knoten am Ort, oder Knoten bei 0 mit Teilen am Ort)"""
+	if n.position != Vector3.ZERO:
+		return Vector2(n.position.x, n.position.z)
+	var c := Vector3.ZERO
+	var k := 0
+	for ch in n.get_children():
+		if ch is Node3D:
+			c += (ch as Node3D).position
+			k += 1
+	return Vector2(c.x, c.z) / maxf(1.0, k)
+
+
+static func trampel(m) -> Array:
+	"""[[a, b], …] (x/z): kurze Stücke eines leicht gewundenen Trampelpfads; ohne Zufall (aus den Orten gerechnet), nichts
+	daran ist ein Hindernis oder ändert, wo etwas steht"""
+	var sc = m.get("scenes")
+	if sc == null or sc.root == null:
+		return []
+	var key: int = sc.root.get_instance_id()
+	if key == _tr_key:
+		return _tr
+	_tr_key = key
+	_tr = []
+	var pts := {}
+	var tp: Dictionary = m.get("test_props") if m.get("test_props") != null else {}
+	for nm in ["Zelt", "Grill", "Tisch"]:
+		if tp.has(nm) and is_instance_valid(tp[nm]):
+			var q := _spot(tp[nm])
+			if nm == "Zelt":                                     # in front of the tent door
+				var tn: Node3D = tp[nm]
+				var fz: Vector3 = tn.transform.basis.z.normalized()
+				q += Vector2(fz.x, fz.z) * 2.2
+			pts[nm] = q
+	var od = m.obj.get("door") if m.get("obj") != null else null
+	if od is Vector3:
+		pts["Tür"] = Vector2(od.x, od.z)
+	var chain := []
+	for nm in ["Tür", "Tisch", "Grill", "Zelt"]:
+		if pts.has(nm):
+			chain.append(pts[nm])
+	var lines := []
+	for i in range(chain.size() - 1):
+		lines.append([chain[i], chain[i + 1]])
+	if m.gelaende != null and not m.gelaende.paths.is_empty():
+		for nm in ["Tür", "Zelt"]:                               # to the nearest path
+			if not pts.has(nm):
+				continue
+			var best := Vector2.ZERO
+			var bd := 1e9
+			for pa in m.gelaende.paths:
+				for v in (pa[0] as PackedVector2Array):
+					var d: float = v.distance_to(pts[nm])
+					if d < bd:
+						bd = d
+						best = v
+			if bd < 25.0:
+				lines.append([pts[nm], best])
+	for ln in lines:                                             # gently winding, pieces of ~3 m
+		var a: Vector2 = ln[0]
+		var b: Vector2 = ln[1]
+		var L := a.distance_to(b)
+		if L < 1.5:
+			continue
+		var n := maxi(2, int(L / 3.0))
+		var side := (b - a).normalized().orthogonal()
+		var prev := a
+		for k in range(1, n + 1):
+			var u := float(k) / n
+			var h := sin(u * PI * 2.0 + a.x * 0.7 + b.y * 0.3) * 0.5 * sin(u * PI)
+			var q2 := a.lerp(b, u) + side * h
+			_tr.append([prev, q2])
+			prev = q2
+	return _tr
+
+
+static func boden(m, mat: ShaderMaterial) -> void:
+	"""die grossen Böden (Weltkarten, Ferienpark, kompakt, Bergtal): gras_boden.gdshaderinc an / aus"""
+	if mat == null:
+		return
+	if not an(m):
+		mat.set_shader_parameter("p2", 0.0)
+		return
+	mat.set_shader_parameter("p2", 1.0)
+	var t := "res://texturen/wiese_alp_01.jpg"
+	if ResourceLoader.exists(t):
+		mat.set_shader_parameter("p2_wiese", load(t))
+	if m.get("wind_fx") != null and not m.wind_fx.blade_mats.has(mat):
+		m.wind_fx.blade_mats.append(mat)                       # gusts: the same wave (wind_fx.gd)
 
 
 # ---- Boden ---------------------------------------------------------------------------------------------------------------
 static func ground(m) -> void:
 	"""Boden-Shader: Paket 2 an / aus (gleiche Material-Instanz in allen Szenen: immer beide Fälle setzen)"""
+	load("res://scripts/farbstimmung.gd").ensure(m, an(m))          # free view only: colour grading (farbstimmung.gd)
 	var gm: ShaderMaterial = m.grass_mat
 	if gm == null:
 		return
@@ -187,13 +291,18 @@ static func ground(m) -> void:
 	if m.gelaende != null:
 		for pa in m.gelaende.paths:
 			var line: PackedVector2Array = pa[0]
-			var step := maxi(1, int(line.size() / 12))           # ~12 pieces per path are enough for a worn edge
+			var step := maxi(1, int(line.size() / 7))            # ~7 pieces per path are enough for a worn edge
 			var k := 0
 			while k < line.size() - 1 and segs.size() < PFAD_MAX:
 				var k2 := mini(k + step, line.size() - 1)
 				segs.append(Color(line[k].x, line[k].y, line[k2].x, line[k2].y))
 				rads.append(float(pa[1]))
 				k = k2
+	for ln in trampel(m):                                        # the trodden lines between the places
+		if segs.size() >= PFAD_MAX:
+			break
+		segs.append(Color(ln[0].x, ln[0].y, ln[1].x, ln[1].y))
+		rads.append(0.2)
 	var n := segs.size()
 	segs.resize(PFAD_MAX)
 	rads.resize(PFAD_MAX)

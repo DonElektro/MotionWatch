@@ -225,6 +225,8 @@ func path_mat(kind: String) -> ShaderMaterial:
 			pm.set_shader_parameter("grit", Color(0.27, 0.21, 0.15))
 			pm.set_shader_parameter("grain", 0.35)
 			pm.set_shader_parameter("tracks", 1.0)         # two wheel tracks, grass in the middle
+			if load("res://scripts/gras.gd").an(main):
+				pm.set_shader_parameter("edge_grass", Color(0.2, 0.3, 0.14))   # Paket 2: the path shows now - its grass like the meadow
 		"platten":
 			pm.set_shader_parameter("base", Color(0.55, 0.53, 0.5))
 			pm.set_shader_parameter("grit", Color(0.4, 0.39, 0.37))
@@ -279,6 +281,19 @@ func path(parent: Node3D, pts: Array, width := 1.6, kind := "kies") -> MeshInsta
 	am.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arr)
 	var mi: MeshInstance3D = main.add_mesh(parent, am, Vector3.ZERO, path_mat(kind), "road")
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	if load("res://scripts/gras.gd").an(main):
+		# «Flora und Fauna» Paket 2: the triangles faced down (culled from above - the path was invisible). Normal / Hoch:
+		# the visible path turned up; the thermal twin keeps the old mesh (thermal picture unchanged), Lite / alt as before.
+		var flip := idx.duplicate()
+		for t in range(0, flip.size(), 3):
+			var tmp := flip[t + 1]
+			flip[t + 1] = flip[t + 2]
+			flip[t + 2] = tmp
+		var arr2 := arr.duplicate()
+		arr2[Mesh.ARRAY_INDEX] = flip
+		var am2 := ArrayMesh.new()
+		am2.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arr2)
+		mi.mesh = am2
 	paths.append([line, width * 0.5, kind])
 	return mi
 

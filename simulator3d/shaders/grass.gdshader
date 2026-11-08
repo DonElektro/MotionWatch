@@ -26,8 +26,8 @@ uniform float tex_far = 70.0;
 // sample near against tiles, worn edges along the paths (pfad: segments a.xy -> b.xy, pfad_r: half width), the far ring of
 // the meadow (fell_k: grass texture, flower speckles) and the gust sheen (same wave as grass and crowns). p2 = 0: as before.
 uniform float p2 = 0.0;
-uniform vec4 pfad[48];
-uniform float pfad_r[48];
+uniform vec4 pfad[32];
+uniform float pfad_r[32];
 uniform int pfad_n = 0;
 uniform float fell_k = 0.0;
 uniform float wind = 0.0;
@@ -77,8 +77,8 @@ void fragment() {
 	if (p2 > 0.0) {
 		float dc2 = length(VERTEX);
 		float wear = 0.0;
-		if (dc2 < 90.0) {
-			for (int i = 0; i < 48; i++) {
+		if (dc2 < 60.0) {                                                   // HD 4600: only near, at most 32 pieces
+			for (int i = 0; i < 32; i++) {
 				if (i >= pfad_n) {
 					break;
 				}
