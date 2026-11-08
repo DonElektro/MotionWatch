@@ -123,7 +123,7 @@ neueste **signierte** Version; ist die letzte Prüfung über 20 Std. her, lässt
 ist (so mindestens einmal am Tag). Es spielt ein, was sich geändert hat:
 Kiosk (`kiosk_sitzung.sh`, Testbild), Haken und Dienst-Einstellungen des Runners, fehlende Pakete, den Simulator im
 Kiosk-Ordner und sich selbst (ab 3.55.0 auch `hp_wache.py` und den Ordner `/run/moveeye-spiel`, mit HP_FASSUNG 4 auch
-«Controller koppeln»: bluez, Dienst, Ctrl+Alt+B). Die Anmeldung des Runners
+«Controller koppeln»: bluez, Dienst, Ctrl+Alt+B; mit HP_FASSUNG 5 den **Bildschirm für die Tests**, siehe unten). Die Anmeldung des Runners
 (Token) fasst es nie an. Läuft ein Test oder wird gespielt, wird verschoben (nächster Blick in 15 Min.).
 
 Geprüft wird wie beim Pi: Signatur (Ed25519, öffentlicher Schlüssel im Skript) des Eintrags in `versions.json` →
@@ -168,6 +168,12 @@ Danach einmal neu starten, damit der Kiosk die Pause-Funktion kennt: `sudo reboo
 Optionen: `--bildschirm` erlaubt den Tests, den echten Bildschirm (Grafikkarte HD 4600) statt Xvfb zu benutzen
 (Workflow-Eingabe «anzeige: bildschirm»). Das ist schneller, gibt dem Runner-Benutzer aber Zugriff auf die Anzeige –
 nur einschalten, wenn am HP nichts anderes als der Kiosk läuft. `--name NAME` für einen anderen Runner-Namen.
+
+**Bildschirm über das HP-Update (HP_FASSUNG 5, Besitzer 08.11.2026):** ohne Eintippen am HP setzt `moveeye-hp-update` in einer
+Pause `TEST_BENUTZER=mwrunner` in `/etc/moveeye-kiosk-test.conf` (die anderen Zeilen bleiben) – wie `--bildschirm`. Läuft die
+Sitzung des Kiosks, gibt es den Bildschirm sofort frei: als Benutzer des Kiosks `xhost +SI:localuser:mwrunner` (nur dieser
+lokale Benutzer, nie `xhost +` für alle); sonst tut es `kiosk_sitzung.sh` beim nächsten Start der Sitzung. Danach geht die
+Workflow-Eingabe «anzeige: bildschirm». Zurück: `runner_entfernen.sh` (entfernt die Datei, nimmt die Freigabe zurück).
 
 ## 2. Prüfen, ob der Runner online ist
 

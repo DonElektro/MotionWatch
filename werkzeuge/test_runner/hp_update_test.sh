@@ -9,6 +9,8 @@
 #  3. Drei Spuren: ein Sim-Release allein (Block «sim» in versions.json, ohne neue Programmdatei) wird eingespielt;
 #     verfälschter Block «sim» = abgelehnt (kein Ausweichen auf die Programmdatei), ältere Sim = abgelehnt, neue MoveEye bei
 #     gleicher Sim = nichts zu laden.
+#  5. Bildschirm für Tests (HP_FASSUNG 5): TEST_BENUTZER in /etc/moveeye-kiosk-test.conf (die anderen Zeilen bleiben),
+#     xhost +SI:localuser:<Runner> in der laufenden Sitzung als Benutzer des Kiosks (nie «xhost +»), einmal.
 #  4. Controller koppeln (HP_FASSUNG 4): controller_koppeln.sh / controller_fenster.py, Pfad-Einheit + Dienst (nur die
 #     feste Aufgabe, kein sudo / polkit für den Kiosk), Ctrl+Alt+B in openbox.xml (einmal), bluez / rfkill nachinstalliert.
 # Der echte Signierschlüssel wird nie gebraucht. Braucht root (runuser, chown), python3, unzip, zip, curl.
@@ -123,6 +125,22 @@ for b in systemctl apt-get apt-cache systemd-run systemd-tmpfiles modinfo; do
 	printf '#!/bin/sh\necho "%s $*" >> "%s/aufrufe.txt"\n[ "%s $1 $2" = "systemctl is-active -q" ] && exit 0\nexit 0\n' "$b" "$W" "$b" > "$B/$b"
 	chmod 755 "$B/$b"
 done
+# Bildschirm für Tests: Ersatz-xhost (läuft als Benutzer des Kiosks), Einstellung von runner_einrichten.sh, XAUTHORITY der Sitzung
+: > "$W/xhost.txt"; chmod 666 "$W/xhost.txt"
+printf '#!/bin/sh
+echo "xhost $(id -un) $DISPLAY $XAUTHORITY $*" >> "%s/xhost.txt"
+if [ $# -eq 0 ]; then echo "access control enabled, only authorized clients can connect"; sed -n "s/^.*+//p" "%s/xhost.txt"; fi
+exit 0
+' "$W" "$W" > "$B/xhost"
+chmod 755 "$B/xhost"
+printf '# MoveEye Kiosk: Pause für Testläufe (runner_einrichten.sh)
+PAUSE_DATEI=/run/moveeye-test/kiosk_pause
+PAUSE_MAX_S=25200
+TEST_BENUTZER=""
+' > "$X/etc/moveeye-kiosk-test.conf"
+chmod 644 "$X/etc/moveeye-kiosk-test.conf"
+echo "geheim" > "$W/xauth"; chown nobody "$W/xauth"; chmod 600 "$W/xauth"
+export MOVEEYE_HP_XAUTH="$W/xauth"
 # Test-Schlüssel und signierte Ersatz-Version 9.0.0 mit einer Linux-ZIP aus linux_paket.sh
 printf '#!/bin/sh\necho neu\n' > "$W/sim.x86_64"
 bash "$R/werkzeuge/linux_paket.sh" "$W/sim.x86_64" "$W/q/main/simulator3d/MoveEyeSim3D_Linux.zip" > /dev/null || fehler "linux_paket.sh"
@@ -154,7 +172,7 @@ sed -e "s#^UPDATE_PUBKEY=\"[0-9a-f]*\"#UPDATE_PUBKEY=\"$(cat "$W/pub.txt")\"#" \
 	-e "s#\"/usr/local/#\"$X/usr/local/#g" -e "s#\"/etc/#\"$X/etc/#g" -e "s#\"/var/lib/#\"$X/var/lib/#g" \
 	-e "s#\"/var/log/#\"$X/var/log/#g" -e "s#\"/run/moveeye-test/#\"$X/run/moveeye-test/#g" \
 	-e "s#\"/run/moveeye-spiel/#\"$X/run/moveeye-spiel/#g" \
-	-e "s#/run/lock/moveeye-hp-update.lock#$W/sperre#g" "$U" > "$T"
+	-e "s#/run/lock/moveeye-hp-update.lock#$W/sperre#g" -e 's#^RU="mwrunner"#RU="daemon"#' "$U" > "$T"
 grep -q "$(cat "$W/pub.txt")" "$T" || fehler "Test-Schlüssel nicht eingesetzt"
 mkdir -p "$X/var/log"
 lauf() { PATH="$B:$PATH" MOVEEYE_HP_QUELLE="file://$W/$1" bash "$T" > "$W/lauf.log" 2>&1; }
@@ -204,10 +222,18 @@ ls "$X/etc/polkit-1" "$X/etc/sudoers.d" >/dev/null 2>&1 && fehler "polkit / sudo
 grep -q "apt-get install .*bluez" "$W/aufrufe.txt" && grep -q "apt-get install .*rfkill" "$W/aufrufe.txt" && ok "bluez, rfkill nachinstalliert" \
 	|| echo "  (bluez / rfkill waren schon da)"
 grep -q "modinfo hid_playstation" "$W/aufrufe.txt" && ok "Treiber hid-playstation geprüft" || fehler "hid-playstation nicht geprüft"
+# 5. Bildschirm für Tests
+KT="$X/etc/moveeye-kiosk-test.conf"
+[ "$(grep -c '^TEST_BENUTZER=' "$KT")" = 1 ] && grep -qx 'TEST_BENUTZER=daemon' "$KT" && grep -qx 'PAUSE_DATEI=/run/moveeye-test/kiosk_pause' "$KT" \
+	&& grep -qx 'PAUSE_MAX_S=25200' "$KT" && [ "$(stat -c %U:%a "$KT")" = root:644 ] \
+	&& ok "TEST_BENUTZER=<Runner> gesetzt, Pause-Zeilen bleiben (root, 644)" || { fehler "moveeye-kiosk-test.conf"; cat "$KT"; }
+grep -qx "xhost nobody :0 $W/xauth +SI:localuser:daemon" "$W/xhost.txt" && ! grep -qE ' \+$| \+ |\+$' <(sed 's/+SI:localuser:daemon//' "$W/xhost.txt") \
+	&& ok "xhost +SI:localuser:<Runner> in der laufenden Sitzung (als Benutzer des Kiosks, nur dieser Benutzer)" || { fehler "xhost"; cat "$W/xhost.txt"; }
 
 : > "$W/aufrufe.txt"
 lauf q; grep -q "Schon eingespielt" "$W/lauf.log" && ok "zweiter Lauf: nichts zu tun" || { fehler "zweiter Lauf"; sed 's/^/    /' "$W/lauf.log"; }
 PATH="$B:$PATH" MOVEEYE_HP_QUELLE="file://$W/q" bash "$T" --immer > "$W/lauf.log" 2>&1
+[ "$(grep -c '+SI:localuser' "$W/xhost.txt")" = 1 ] && ok "xhost nur einmal (schon freigegeben: nichts)" || { fehler "xhost mehrmals"; cat "$W/xhost.txt"; }
 grep -q "(0 Datei(en) neu)" "$W/lauf.log" && ! grep -q "restart" "$W/aufrufe.txt" && ok "--immer: idempotent, kein Neustart" \
 	|| { fehler "--immer nicht idempotent"; sed 's/^/    /' "$W/lauf.log" "$W/aufrufe.txt"; }
 lauf alt; grep -q "ABGELEHNT: 8.0.0 ist älter" "$W/lauf.log" && ok "ältere Version abgelehnt" || { fehler "Rückschritt nicht abgelehnt"; sed 's/^/    /' "$W/lauf.log"; }

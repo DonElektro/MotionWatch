@@ -48,7 +48,8 @@ RU="mwrunner"
 PAUSE="/run/moveeye-test/kiosk_pause"
 SPIEL="/run/moveeye-spiel/spielen"
 SPIEL_TMPFILES="/etc/tmpfiles.d/moveeye-spiel.conf"
-HP_FASSUNG=4                     # 4 = Controller koppeln (Bluetooth), 3 = drei Spuren (Sim aus versions.json «sim»); erhöhen, wenn dieses Skript bei gleicher Version mehr einspielt als die Fassung davor
+KIOSK_TEST="/etc/moveeye-kiosk-test.conf"   # von runner_einrichten.sh (Pause-Datei, TEST_BENUTZER); runner_entfernen.sh nimmt sie weg
+HP_FASSUNG=5                     # 5 = Bildschirm für die Testläufe (TEST_BENUTZER, xhost), 4 = Controller koppeln (Bluetooth), 3 = drei Spuren (Sim aus versions.json «sim»); erhöhen, wenn dieses Skript bei gleicher Version mehr einspielt als die Fassung davor
 STATUS_PORT=8761
 # Pakete, die Kiosk und Testbild brauchen (nur fehlende werden installiert, nichts wird entfernt)
 PAKETE="python3-tk x11-xserver-utils libxss1 unzip curl bluez rfkill"   # bluez, rfkill: Controller per Bluetooth koppeln
@@ -337,6 +338,46 @@ kiosk() {   # kiosk ORDNER -> setzt KIOSK_NEU
 	koppeln_dienst
 	openbox_taste && KIOSK_NEU=1
 	status_firewall
+	test_bildschirm
+	return 0
+}
+
+test_bildschirm() {   # HP_FASSUNG 5 (Besitzer 08.11.2026): der Test-Runner darf den Bildschirm (echte Grafikkarte) benutzen
+	# 1. TEST_BENUTZER=$RU in $KIOSK_TEST (die anderen Zeilen bleiben; kiosk_sitzung.sh gibt den Bildschirm damit bei jedem
+	#    Start der Sitzung frei). 2. Sofort, ohne Neustart: läuft die Sitzung des Kiosks, dort «xhost +SI:localuser:$RU» -
+	#    nur dieser eine lokale Benutzer, nie «xhost +» für alle. Nur wenn der Runner eingerichtet ist; nur in einer Pause
+	#    (wie alles in lauf()). Zurück: runner_entfernen.sh (entfernt $KIOSK_TEST und nimmt die Freigabe zurück).
+	local tmp u pid xa=""
+	id "$RU" >/dev/null 2>&1 || return 0
+	if [ ! -f "$KIOSK_TEST" ] || [ -L "$KIOSK_TEST" ] || [ "$(stat -c %u "$KIOSK_TEST")" != 0 ]; then
+		log "Bildschirm für Tests: $KIOSK_TEST fehlt (runner_einrichten.sh) - übersprungen"; return 0
+	fi
+	if ! grep -qx "TEST_BENUTZER=$RU" "$KIOSK_TEST"; then
+		tmp="$(mktemp)"
+		grep -v '^TEST_BENUTZER=' "$KIOSK_TEST" > "$tmp"
+		echo "TEST_BENUTZER=$RU" >> "$tmp"
+		install -m 644 "$tmp" "$KIOSK_TEST" && log "Bildschirm für Tests: TEST_BENUTZER=$RU in $KIOSK_TEST"
+		rm -f "$tmp"
+		GEAENDERT=$((GEAENDERT + 1))
+	fi
+	command -v xhost >/dev/null 2>&1 || return 0
+	u="$(kiosk_benutzer)" || return 0
+	if [ -n "${MOVEEYE_HP_XAUTH:-}" ]; then
+		xa="$MOVEEYE_HP_XAUTH"                                    # nur zum Prüfen (hp_update_test.sh)
+	else
+		for pid in $(pgrep -u "$u" 2>/dev/null); do          # die laufende Sitzung des Kiosks auf :0: ihre XAUTHORITY
+			tr '\0' '\n' < "/proc/$pid/environ" 2>/dev/null | grep -qx 'DISPLAY=:0' || continue
+			xa="$(tr '\0' '\n' < "/proc/$pid/environ" 2>/dev/null | sed -n 's/^XAUTHORITY=//p' | head -n 1)"
+			[ -n "$xa" ] && break
+		done
+	fi
+	if [ -z "$xa" ] || [ ! -r "$xa" ]; then log "Bildschirm für Tests: keine laufende Sitzung auf :0 - gilt ab dem nächsten Start der Sitzung"; return 0; fi
+	if runuser -u "$u" -- env DISPLAY=:0 XAUTHORITY="$xa" xhost 2>/dev/null | grep -qx "SI:localuser:$RU"; then return 0; fi
+	if runuser -u "$u" -- env DISPLAY=:0 XAUTHORITY="$xa" xhost "+SI:localuser:$RU" >/dev/null 2>&1; then
+		log "Bildschirm für Tests: in der laufenden Sitzung freigegeben (nur der lokale Benutzer $RU)"
+	else
+		log "Hinweis: xhost in der laufenden Sitzung ging nicht - gilt ab dem nächsten Start der Sitzung"
+	fi
 	return 0
 }
 
