@@ -30,7 +30,7 @@ on:
         description: "Revision des Space imageomics/bioclip-demo (txt_emb_species), leer = aktuelle"
         default: ""
       loeschen:
-        description: "Statt bauen: Probe-Release + Tag löschen (nur bioclipprobe-…, nur Vorabversion)"
+        description: "Statt bauen: Release + Tag löschen - bioclipprobe-… (Vorabversion) oder ein abgelöstes bioclip-N (N kleiner als BIO_TAG in 639zzd)"
         default: ""
 permissions:
   contents: write
@@ -161,14 +161,28 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
-      - name: Probe-Release und Tag löschen (nie bioclip-N)
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: quelle/639zzd_bestimmen.py
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+      - name: Release und Tag löschen (Probe, oder ein abgelöstes bioclip-N - nie das von MoveEye benutzte, nie «latest»)
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ inputs.loeschen }}
         run: |
           set -e
-          echo "$TAG" | grep -Eq '^bioclipprobe-[0-9]+$' || { echo "::error::nur bioclipprobe-N, nicht $TAG"; exit 1; }
-          pre=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" --jq .prerelease)
-          [ "$pre" = "true" ] || { echo "::error::$TAG ist keine Vorabversion - nicht gelöscht"; exit 1; }
+          latest=$(gh api "repos/$GITHUB_REPOSITORY/releases/latest" --jq .tag_name)
+          [ "$TAG" != "$latest" ] || { echo "::error::$TAG ist «latest» - nicht gelöscht"; exit 1; }
+          if echo "$TAG" | grep -Eq '^bioclipprobe-[0-9]+$'; then
+            pre=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" --jq .prerelease)
+            [ "$pre" = "true" ] || { echo "::error::$TAG ist keine Vorabversion - nicht gelöscht"; exit 1; }
+          elif echo "$TAG" | grep -Eq '^bioclip-[0-9]+$'; then
+            cur=$(sed -n 's/^BIO_TAG = "bioclip-\([0-9]*\)"$/\1/p' quelle/639zzd_bestimmen.py)
+            [ -n "$cur" ] || { echo "::error::BIO_TAG in 639zzd nicht gefunden"; exit 1; }
+            [ "${TAG#bioclip-}" -lt "$cur" ] || { echo "::error::$TAG ist nicht älter als bioclip-$cur (MoveEye lädt dieses) - nicht gelöscht"; exit 1; }
+          else
+            echo "::error::nur bioclipprobe-N oder bioclip-N, nicht $TAG"; exit 1
+          fi
           gh release delete "$TAG" -R "$GITHUB_REPOSITORY" --yes --cleanup-tag
           echo "gelöscht: $TAG" >> "$GITHUB_STEP_SUMMARY"
