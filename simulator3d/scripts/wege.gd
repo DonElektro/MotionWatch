@@ -104,7 +104,7 @@ static func band(m, line: PackedVector2Array, hw: float, rim: float, lift: float
 		for c in cols:
 			var off: float = float(c) * (hw * w + rim)
 			var q: Vector2 = p + side * off
-			verts.append(Vector3(q.x, m.ground_y(q.x, q.y) + lift, q.y))
+			verts.append(Vector3(q.x, (mesh_y(G, q.x, q.y) if hilly else m.ground_y(q.x, q.y)) + lift, q.y))
 			norms.append(G.normal_at(q.x, q.y) if hilly else Vector3.UP)
 			uvs.append(Vector2(off, along))
 			uv2.append(Vector2(hw * w, rim))
@@ -133,6 +133,27 @@ static func band(m, line: PackedVector2Array, hw: float, rim: float, lift: float
 	return am
 
 
+static func mesh_y(G, x: float, z: float) -> float:
+	"""die Höhe des Boden-Gitters von gelaende.gd genau wie gezeichnet (zwei Dreiecke je Zelle, nicht bilinear wie
+	G.height): sonst sinkt ein Weg auf Hügeln stellenweise unter den Boden (der alte Weg war dort unsichtbar)"""
+	if absf(x) >= G.half or absf(z) >= G.half:
+		return 0.0
+	var u: float = (x + G.half) / G.step
+	var v: float = (z + G.half) / G.step
+	var nn: int = G.n
+	var i0 := clampi(int(floor(u)), 0, nn - 2)
+	var j0 := clampi(int(floor(v)), 0, nn - 2)
+	var fu := clampf(u - i0, 0.0, 1.0)
+	var fv := clampf(v - j0, 0.0, 1.0)
+	var h00: float = G.h[j0 * nn + i0]
+	var h10: float = G.h[j0 * nn + i0 + 1]
+	var h01: float = G.h[(j0 + 1) * nn + i0]
+	var h11: float = G.h[(j0 + 1) * nn + i0 + 1]
+	if fu + fv <= 1.0:
+		return h00 + fu * (h10 - h00) + fv * (h01 - h00)
+	return h11 + (1.0 - fu) * (h01 - h11) + (1.0 - fv) * (h10 - h11)
+
+
 const COLS_STRASSE := [-1.0, -0.86, -0.5, 0.0, 0.5, 0.86, 1.0]
 const COLS_FELD := [-1.0, -0.7, -0.35, 0.0, 0.35, 0.7, 1.0]
 
@@ -140,14 +161,12 @@ const COLS_FELD := [-1.0, -0.7, -0.35, 0.0, 0.35, 0.7, 1.0]
 # ---- Szenen ----------------------------------------------------------------------------------------------------------------
 static func szene_strasse(sc, mi: MeshInstance3D, z: float, width: float) -> void:
 	"""scenes.road (eine gerade Strasse entlang x bei z): das sichtbare Netz wird zur echten Strasse (Normal / Hoch);
-	der Zwilling im Wärmebild bleibt die alte Kiste. Am Camping-Platz Randsteine vor dem Platz und gelbe Parkfelder."""
+	der Zwilling im Wärmebild bleibt die alte Kiste. Am Camping-Platz Randsteine (Schrägbord) vor dem Platz."""
 	var m = sc.m
 	var line := dense([Vector2(-200.0, z), Vector2(200.0, z)], 4.0)
 	var hw := width * 0.5
 	var o := {"centre": width >= 5.0, "edge": true}
-	var camping := str(m.scene) == "camping"
-	if camping:
-		o["park"] = [-22.0 + 200.0, -4.0 + 200.0, 1.0]      # three yellow fields (private, the camping place) on its side
+	var camping := str(m.scene) == "camping"            # (no yellow fields here: cars park beside the road, fahrzeuge.gd)
 	mi.mesh = band(m, line, hw, 0.6, 0.03, COLS_STRASSE)
 	mi.position = Vector3.ZERO
 	mi.material_override = strasse_mat(m, o)
@@ -161,8 +180,9 @@ static var _kerb_mat: StandardMaterial3D = null
 
 
 static func randstein(m, parent: Node3D, a: Vector2, b: Vector2, hw: float, side: float) -> MeshInstance3D:
-	"""Randstein (Granit, 12 cm hoch, 15 cm breit) entlang einer geraden Strasse a → b auf der Seite side; nur sichtbar
-	(Ebene 1, kein Hindernis, nicht im Wärmebild). Die Enden sind abgesenkt."""
+	"""Randstein als Schrägbord (Granit, 7 cm hoch, schräg zur Strasse, 18 cm breit: Autos fahren zum Parkieren darüber)
+	entlang einer geraden Strasse a → b auf der Seite side; nur sichtbar (Ebene 1, kein Hindernis, nicht im Wärmebild).
+	Die Enden sind abgesenkt."""
 	var d := (b - a).normalized()
 	var n := Vector2(-d.y, d.x) * side
 	var L := a.distance_to(b)
@@ -174,20 +194,21 @@ static func randstein(m, parent: Node3D, a: Vector2, b: Vector2, hw: float, side
 		var t1 := float(i + 1) / seg - 0.008 / L         # a fine joint (8 mm)
 		var p0 := a.lerp(b, t0) + n * hw
 		var p1 := a.lerp(b, t1) + n * hw
-		var h0 := 0.12 * clampf(minf(t0, 1.0 - t0) * L / 0.8, 0.25, 1.0)   # lowered ends
-		var h1 := 0.12 * clampf(minf(t1, 1.0 - t1) * L / 0.8, 0.25, 1.0)
+		var h0 := 0.07 * clampf(minf(t0, 1.0 - t0) * L / 0.8, 0.25, 1.0)   # lowered ends
+		var h1 := 0.07 * clampf(minf(t1, 1.0 - t1) * L / 0.8, 0.25, 1.0)
 		var y0: float = m.ground_y(p0.x, p0.y)
 		var y1: float = m.ground_y(p1.x, p1.y)
-		var o := n * 0.15
+		var o := n * 0.18
 		var lo0 := Vector3(p0.x, y0 + 0.03, p0.y)
 		var lo1 := Vector3(p1.x, y1 + 0.03, p1.y)
-		var hi0 := Vector3(p0.x, y0 + 0.03 + h0, p0.y)
-		var hi1 := Vector3(p1.x, y1 + 0.03 + h1, p1.y)
-		var ho0 := hi0 + Vector3(o.x, 0, o.y)
-		var ho1 := hi1 + Vector3(o.x, 0, o.y)
-		var lo0o := Vector3(p0.x + o.x, y0, p0.y + o.y)
-		var lo1o := Vector3(p1.x + o.x, y1, p1.y + o.y)
-		_quad(st, lo0, lo1, hi1, hi0, Vector3(-n.x, 0, -n.y))   # face to the road
+		var sl := n * 0.07                                # the slanted face
+		var hi0 := Vector3(p0.x + sl.x, y0 + 0.03 + h0, p0.y + sl.y)
+		var hi1 := Vector3(p1.x + sl.x, y1 + 0.03 + h1, p1.y + sl.y)
+		var ho0 := hi0 + Vector3(o.x - sl.x * 0.5, 0, o.y - sl.y * 0.5)
+		var ho1 := hi1 + Vector3(o.x - sl.x * 0.5, 0, o.y - sl.y * 0.5)
+		var lo0o := Vector3(ho0.x, y0, ho0.z)
+		var lo1o := Vector3(ho1.x, y1, ho1.z)
+		_quad(st, lo0, lo1, hi1, hi0, Vector3(-n.x, 1.0, -n.y).normalized())   # slanted face to the road
 		_quad(st, hi0, hi1, ho1, ho0, Vector3.UP)               # top
 		_quad(st, ho0, ho1, lo1o, lo0o, Vector3(n.x, 0, n.y))   # back (to the meadow)
 	if _kerb_mat == null:
