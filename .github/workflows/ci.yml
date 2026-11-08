@@ -103,6 +103,9 @@ jobs:
       - name: Datentausch (Dateien, Texte mit Versionen, Chats, Rechte, Gäste, Grenzen, Hochladen in Stücken, Browser)
         timeout-minutes: 8
         run: python3 werkzeuge/tausch_test.py --browser
+      - name: «🌿 Bestimmen» im Datentausch (Ersatz-Modell, Rechte, Gäste, Laden mit Prüfsumme, Zwischenspeicher, besetzt, Browser)
+        timeout-minutes: 6
+        run: python3 werkzeuge/bioclip_test.py --browser
       - name: Simulator intern (gefälschtes Pi-Paket - holen, prüfen, auspacken, starten, beenden, zurück)
         timeout-minutes: 4
         run: python3 werkzeuge/sim_intern_test.py

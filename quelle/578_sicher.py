@@ -401,6 +401,10 @@ def sx_housekeeping_start():
     threading.Thread(target=run, daemon=True, name="sx-housekeeping").start()
 
 
+VIEW_GET = VIEW_GET + ("/sx/ui.js",)           # 3.64.0: the script of every page for every logged-in user (only texts + language;
+                                               # before: «Familie» / «Nur ansehen» … got 403 on every page)
+
+
 # ---- the web addresses (called once by the web server, 550) --------------------------------------------------------------
 def sx_routes(app, watch, reply, body):
     from flask import Response, request, g
