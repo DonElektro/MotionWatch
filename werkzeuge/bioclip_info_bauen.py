@@ -65,7 +65,7 @@ VERW = re.compile(r"verwechs|Verwechs|Doppelgänger|zum Verwechseln", re.I)
 NEG_ED = re.compile(r"\bnicht\s+(essbar|genießbar|zum\s+Verzehr|gegessen|verzehrt)|\bunessbar|\bungenießbar|\bkein(e|en)?\s+Speisepilz"
                     r"|\bnicht\s+geeignet|\bungeeignet", re.I)
 ED = re.compile(r"\bessbar\w*|\bSpeisepilz\w*|\bWildgemüse\b|\bals\s+(Salat|Gemüse|Gewürz|Würze|Tee|Wildgemüse|Kompott|Speise\w*|"
-                r"Nahrungsmittel|Küchenkraut)\b[^.;]{0,40}\b(verwendet|genutzt|gegessen|verzehrt|zubereitet|gebraucht)"
+                r"Nahrungsmittel|Küchenkraut|Obst|Wildobst)\b[^.;]{0,40}\b(verwendet|genutzt|gegessen|verzehrt|zubereitet|gebraucht)"
                 r"|\bwerden\b[^.;]{0,50}\b(roh|gekocht|gegart|gebraten)?\s*gegessen\b|\bwird\b[^.;]{0,50}\bgegessen\b"
                 r"|\bzu\s+(Marmelade|Konfitüre|Saft|Gelee|Pesto|Likör|Kompott|Mus)\w*\s+verarbeitet")
 
@@ -95,16 +95,20 @@ def sha256(p):
 
 
 # ---- Wikidata: Artikel-Titel + Fakten ---------------------------------------------------------------------------------------
-def wikidata(names):
+def wikidata(names, items=None):
+    """lateinischer Name -> Artikel-Titel + Fakten. items: {Name: Q-Nummer} statt der Suche über P225 (Schreibvarianten)"""
     out = {}
-    lst = sorted(set(names))
+    lst = sorted(set(names)) if items is None else sorted(items)
     for i in range(0, len(lst), 80):
         part = lst[i:i + 80]
-        vals = " ".join('"%s"' % n.replace('"', "") for n in part)
+        if items is None:
+            bind = "VALUES ?name { %s } ?item wdt:P225 ?name ." % " ".join('"%s"' % n.replace('"', "") for n in part)
+        else:
+            bind = "VALUES (?item ?name) { %s }" % " ".join('(wd:%s "%s")' % (items[n], n.replace('"', "")) for n in part)
         q = """SELECT ?name ?item ?rank ?de ?en (GROUP_CONCAT(DISTINCT ?iucnL; separator="|") AS ?iucn)
   (GROUP_CONCAT(DISTINCT ?edL; separator="|") AS ?ed) (GROUP_CONCAT(DISTINCT ?chL; separator="|") AS ?ch)
   (GROUP_CONCAT(DISTINCT ?habL; separator="|") AS ?hab) (GROUP_CONCAT(DISTINCT ?h; separator="|") AS ?hs) WHERE {
-  VALUES ?name { %s } ?item wdt:P225 ?name .
+  %s
   OPTIONAL { ?item wdt:P105 ?rank }
   OPTIONAL { ?de schema:about ?item ; schema:isPartOf <https://de.wikipedia.org/> }
   OPTIONAL { ?en schema:about ?item ; schema:isPartOf <https://en.wikipedia.org/> }
@@ -114,7 +118,7 @@ def wikidata(names):
   OPTIONAL { ?item wdt:P2974 ?hb . ?hb rdfs:label ?habL FILTER(LANG(?habL) = "de") }
   OPTIONAL { ?item p:P2048/psv:P2048 [ wikibase:quantityAmount ?ha ; wikibase:quantityUnit ?hu ] .
              ?hu rdfs:label ?hul FILTER(LANG(?hul) = "en") BIND(CONCAT(STR(?ha), " ", ?hul) AS ?h) }
-} GROUP BY ?name ?item ?rank ?de ?en""" % vals
+} GROUP BY ?name ?item ?rank ?de ?en""" % bind
         try:
             j = getj(WD + "?" + urllib.parse.urlencode({"query": q, "format": "json"}), timeout=180)
         except Exception as e:
@@ -137,6 +141,30 @@ def wikidata(names):
 
 
 # ---- Wikipedia --------------------------------------------------------------------------------------------------------------
+def _norm(x):
+    return re.sub(r"[-\s.×]", "", (x or "").lower())
+
+
+def suchen(n):
+    """Schreibvarianten (Atropa belladonna / bella-donna): Wikidata-Suche, dann P225 ohne Bindestriche / Leerzeichen vergleichen"""
+    try:
+        j = getj("https://www.wikidata.org/w/api.php?" + urllib.parse.urlencode(
+            {"action": "wbsearchentities", "search": n, "language": "en", "type": "item", "limit": "7", "format": "json"}))
+        ids = [x["id"] for x in j.get("search") or []]
+        if not ids:
+            return n, None
+        e = getj("https://www.wikidata.org/w/api.php?" + urllib.parse.urlencode(
+            {"action": "wbgetentities", "ids": "|".join(ids), "props": "claims", "format": "json"}))
+    except Exception:
+        return n, None
+    for q in ids:
+        for c in ((e.get("entities") or {}).get(q, {}).get("claims") or {}).get("P225") or []:
+            v = ((c.get("mainsnak") or {}).get("datavalue") or {}).get("value")
+            if isinstance(v, str) and _norm(v) == _norm(n):
+                return n, q
+    return n, None
+
+
 def intros(L, titles):
     """Titel -> (Einleitung als Text, revid, endgültiger Titel) - 20 pro Anfrage"""
     out = {}
@@ -176,18 +204,28 @@ def volltext(title):
     return title, ps[0].get("extract") or "", [x["title"] for x in ps[0].get("links") or []]
 
 
-def saetze(text):
+SKIP_SEC = re.compile(r"Literatur|Weblinks|Einzelnachweis|Quellen|Anmerkung|Siehe auch|Belege|Fußnote|Weiterführend", re.I)
+VERW_SEC = re.compile(r"Verwechs|Doppelgänger|Ähnliche Arten|Abgrenzung|Unterscheidung", re.I)
+
+
+def saetze(text, mit_abschnitt=False):
+    """Sätze; ohne Literatur / Weblinks / Einzelnachweise. mit_abschnitt: (Satz, Überschrift des Abschnitts)"""
     for a in _ABK:
         text = text.replace(a, a.replace(".", "․"))
-    out = []
+    out, sec = [], ""
     for para in text.split("\n"):
         para = para.strip()
-        if not para or para.startswith("=="):
+        if not para:
+            continue
+        m = re.match(r"^=+\s*(.*?)\s*=+$", para)
+        if m:
+            sec = m.group(1); continue
+        if SKIP_SEC.search(sec):
             continue
         for s in re.split(r"(?<=[.!?])\s+(?=[A-ZÄÖÜ„«(])", para):
             s = s.replace("․", ".").strip()
             if s:
-                out.append(s)
+                out.append((s, sec) if mit_abschnitt else s)
     return out
 
 
@@ -218,22 +256,40 @@ def andere_namen(s, own, namen):
     return hits
 
 
-def pruefen(text, own, namen, links, pflanze_pilz):
+DIESE = re.compile(r"^(Diese|Jene|Beide|Alle drei|Alle diese|Solche)\b")
+NUR_TIER = re.compile(r"\bungefährlich\b|\bfür\s+(den\s+)?Menschen\s+(un|nicht)|\bfür\s+(viele\s+|manche\s+|einige\s+|andere\s+)?"
+                      r"(Tiere|Hunde|Katzen|Pferde|Rinder|Schafe|Ziegen|Vieh|Weidetiere|Haustiere|Vögel|Fische|Insekten|Nagetiere|Kaninchen)", re.I)
+EDISH = re.compile(r"essbar|Speise|Gemüse|Salat|Gewürz|gegessen|verzehr|Küche|Obst|Marmelade|Konfitüre", re.I)
+
+
+def pruefen(text, own, namen, links, pflanze_pilz, dbg=None):
     tox, ed, look = [], [], []
-    for s in saetze(text):
+    for s, sec in saetze(text, True):
         if len(s) > 500:
             continue
-        verw = bool(VERW.search(s))
+        verw = bool(VERW.search(s)) or bool(VERW_SEC.search(sec))
         other = andere_namen(s, own, namen)
         if verw:
             for t in links:
                 if t not in own and len(t) > 3 and re.search(r"(?<![A-Za-zÄÖÜäöüß])" + re.escape(t) + r"(?![a-zäöüß])", s):
                     look.append(t)
+            if dbg is not None and (TOX.search(s) or EDISH.search(s)):
+                dbg.append("  [Verwechslung] " + s[:200])
             continue
-        if TOX.search(s) and not NEG_TOX.search(s) and not other:
-            tox.append(s)
-        elif pflanze_pilz and ED.search(s) and not NEG_ED.search(s) and not TOXWORD.search(s) and not other:
-            ed.append(s)
+        if TOX.search(s):
+            why = "Verneinung" if NEG_TOX.search(s) else "andere Art %s" % sorted(other) if other else "nur Tiere" if NUR_TIER.search(s) \
+                else "«Diese …»" if DIESE.search(s) else ""
+            if not why:
+                tox.append(s)
+            elif dbg is not None:
+                dbg.append("  [giftig verworfen: %s] %s" % (why, s[:200]))
+        elif pflanze_pilz and EDISH.search(s):
+            why = "kein Muster" if not ED.search(s) else "Verneinung" if NEG_ED.search(s) else "Gift-Wort" if TOXWORD.search(s) \
+                else "andere Art %s" % sorted(other) if other else "«Diese …»" if DIESE.search(s) else ""
+            if not why:
+                ed.append(s)
+            elif dbg is not None:
+                dbg.append("  [essbar verworfen: %s] %s" % (why, s[:200]))
     seen = set()
     look = [x for x in look if not (x in seen or seen.add(x))]
     return tox[:2], ed[:2], look[:6]
@@ -276,6 +332,12 @@ def main():
                 want.append(x)
     print("Arten: %d (Liste %d)" % (len(want), len(taxa)), flush=True)
     W = wikidata(want)
+    miss = [n for n in want if n not in W]
+    with cf.ThreadPoolExecutor(4) as ex:
+        found = {n: q for n, q in ex.map(suchen, miss) if q}
+    if found:
+        W.update(wikidata([], found))
+    print("Wikidata: %d ohne Treffer über P225, davon %d über die Suche gefunden (Schreibvarianten)" % (len(miss), len(found)), flush=True)
     print("Wikidata: %d Treffer, %d mit de-Artikel, %d mit en-Artikel" % (len(W), sum("de" in w["tit"] for w in W.values()),
                                                                        sum("en" in w["tit"] for w in W.values())), flush=True)
     de_t = {n: w["tit"]["de"] for n, w in W.items() if "de" in w["tit"]}
@@ -305,15 +367,19 @@ def main():
         w = W.get(n) or {"tit": {}, "iucn": [], "ed": [], "ch": [], "hab": [], "h": [], "q": ""}
         e = {"q": w.get("q", "")}
         own = {n, t[5]}
-        dn = (names.get(n) or {}).get("de")
-        if dn:
-            own.add(dn)
+        for x in (n, t[5], t[4]):
+            d_ = (names.get(x) or {}).get("de")
+            if d_:
+                own.add(d_)
         if n in de_t and de_t[n] in I_de:
             x, rev, tit = I_de[de_t[n]]
             own.add(tit)
             e.update(l="de", t=tit, x=kuerzen(x), r=rev)
             txt, links = full.get(de_t[n], ("", []))
-            tox, ed, look = pruefen(txt or x, own, namen, links, t[0] in ("Plantae", "Fungi"))
+            dbg = [] if a.nur else None
+            tox, ed, look = pruefen(txt or x, own, namen, links, t[0] in ("Plantae", "Fungi"), dbg)
+            if dbg:
+                print("--- %s: verworfene Sätze\n%s" % (n, "\n".join(dbg)))
             if tox:
                 e["tox"] = tox
             if ed and not tox:
