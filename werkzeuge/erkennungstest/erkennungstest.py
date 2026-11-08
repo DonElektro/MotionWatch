@@ -107,7 +107,12 @@ VARIANTEN = {
                       "die KI zweimal nacheinander sieht)", {"alarm_confirm2": True}),
     "bestaetigung2_aus": ("Doppelte Bestätigung aus (Gegenprobe, falls sie einmal ab Werk an ist)", {"alarm_confirm2": False}),
     "windschutz_aus": ("Windschutz für Pflanzen-Bereiche aus (wind_guard, 639zy)", {"wind_guard": False}),
+    # Flora Paket 4 B: dieselben Fälle mit den Tieren als Grundformen bzw. als Modelle mit Skelett (Simulator-Umgebung
+    # MW_TIERE, SIM_UMGEBUNG unten); MoveEye-Einstellungen ab Werk. Das Dauerrechnen misst beide abwechselnd mehrmals.
+    "tiere_grundformen": ("Simulator: Tiere als Grundformen (MW_TIERE=alt, Gegenstück zu tiere_modelle)", {}),
+    "tiere_modelle": ("Simulator: Tiere als Modelle mit Skelett (MW_TIERE=modell, Flora Paket 3)", {}),
 }
+SIM_UMGEBUNG = {"tiere_grundformen": {"MW_TIERE": "alt"}, "tiere_modelle": {"MW_TIERE": "modell"}}
 
 
 def variante_einstellungen(name):
@@ -425,6 +430,9 @@ def main():
         env["DISPLAY"] = disp
         # --- Simulator: eigener HOME (Einstellungen und Berichte mischen sich nicht mit dem Kiosk)
         senv = dict(env, HOME=os.path.join(tmp, "sim_home"))
+        senv.update(SIM_UMGEBUNG.get(a.variante, {}))              # Flora Paket 4: Umgebung des Simulators je Variante
+        if a.variante in SIM_UMGEBUNG:
+            log("Simulator-Umgebung:", " ".join("%s=%s" % kv for kv in SIM_UMGEBUNG[a.variante].items()))
         os.makedirs(senv["HOME"], exist_ok=True)
         sargs = ["--no-update", "--stream", "--scene", "camping", "--hour", "12", "--port", str(a.sim_port), "--quality", "simple",
                  "--grafik", a.grafik, "--mini-tiny"]
