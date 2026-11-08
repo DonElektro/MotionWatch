@@ -2,7 +2,7 @@
 """MoveEye Dauerrechnen (3.55.0) - der Simulator-PC (HP, Test-Runner «moveeye-hp») rechnet rund um die Uhr, solange niemand
 spielt. Läuft als Benutzer des Runners (mwrunner) in den Workflows .github/workflows/dauer_hp.yml und erkennung_hp.yml.
 
-  dauer.py waehlen --kandidaten JSON [--arbeit auto|erkennung|ki|langzeit] [--varianten bestaetigung2|keine] [--ausgabe …]
+  dauer.py waehlen --kandidaten JSON [--arbeit auto|erkennung|ki|langzeit] [--varianten bestaetigung2|keine [--nur-varianten]] [--ausgabe …]
       nächstes Arbeitspaket: zuerst ein angefangenes, sonst reihum (1) Erkennung messen (Stände vergleichen, 3 Läufe pro
       Fall; sind alle Stände gemessen: main zusätzlich mit jeder Variante, z. B. doppelte Bestätigung an - Bericht
       varianten.md mit Erkennung und Pushes/h nebeneinander; Flora Paket 4 B: danach die Tier-Varianten tiere_grundformen /
@@ -241,11 +241,12 @@ def erk_key(sha, plan, variante="", runde=0):
     return "erkennung|%s|%s" % (sha, plan + ("@" + variante if variante else "") + ("#%d" % runde if runde > 1 else ""))
 
 
-def naechstes(z, kand, art, jetzt, varianten=None):
-    """(art, Angaben) der nächsten Arbeit dieser Art oder None"""
+def naechstes(z, kand, art, jetzt, varianten=None, nur_varianten=False):
+    """(art, Angaben) der nächsten Arbeit dieser Art oder None. nur_varianten (mit varianten): die Grundpläne aller Stände
+    auslassen, nur die genannten Varianten auf main (z. B. die Tier-Stichprobe tagsüber)"""
     main = kand[0]
     if art == "erkennung":
-        for plan in ERK_PLAENE:
+        for plan in (() if nur_varianten and varianten else ERK_PLAENE):
             for k in kand:
                 if erk_key(k["sha"], plan) not in z["erledigt"]:
                     return {"art": art, "sha": k["sha"], "stand": k["name"], "plan": plan, "laeufe": ERK_LAEUFE}
@@ -307,7 +308,7 @@ def waehlen(a):
         if not all(VAR_RE.match(v) for v in var):
             raise SystemExit("Varianten: nur a-z, 0-9, _")
     for art in arten:
-        n = naechstes(z, kand, art, jetzt, var)
+        n = naechstes(z, kand, art, jetzt, var, bool(a.nur_varianten))
         if not n:
             continue
         pid = time.strftime("%Y%m%d-%H%M%S", time.localtime(jetzt)) + "-" + art
@@ -1196,6 +1197,8 @@ def main():
     w.add_argument("--arbeit", default="auto", choices=("auto",) + ARTEN)
     w.add_argument("--varianten", default="", help="Erkennung: diese Varianten für main (Komma; «keine» = aus; Standard: "
                    + (",".join(ERK_VARIANTEN) or "keine") + ", Umgebung MW_DAUER_VARIANTEN)")
+    w.add_argument("--nur-varianten", action="store_true", help="Erkennung: nur die Varianten aus --varianten, ohne die "
+                   "Grundpläne der Stände (ohne --varianten wirkungslos)")
     w.add_argument("--ausgabe", default=os.environ.get("GITHUB_OUTPUT", ""))
     r = sub.add_parser("rechnen")
     r.add_argument("--paket", required=True)

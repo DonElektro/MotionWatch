@@ -539,6 +539,37 @@ rc=$?
 [ "$rc" = 0 ] && ok "Varianten: nach allen Ständen main mit doppelter Bestätigung, «keine» schaltet ab, varianten.md mit Erkennung und Pushes/h; Tier-Varianten Runde für Runde, tiere.md" \
 	|| { fehler "Varianten (Exit $rc)"; cat "$W/var6.log"; }
 
+# 6b. Nur bestimmte Varianten (dauer_hp.yml «varianten», z. B. die Tier-Stichprobe tagsüber): ohne die Grundpläne der Stände
+echo "--- 6b. --varianten … --nur-varianten: gleich die Tier-Varianten; ohne Angabe wie bisher"
+MW_DAUER="$W/dauer6b" python3 - "$R/werkzeuge/test_runner" > "$W/var6b.log" 2>&1 <<'EOF6B'
+import json, sys, time
+sys.path.insert(0, sys.argv[1])
+import dauer as D
+kand = D.kandidaten_lesen(json.dumps({"main": {"name": "main", "sha": "a" * 40}, "vorher": {"name": "v1", "sha": "b" * 40}}))
+z = {"erledigt": {}}
+n = D.naechstes(z, kand, "erkennung", time.time())
+assert n["plan"] == D.ERK_PLAENE[0] and not n.get("variante"), ("ohne Angabe: Grundplan zuerst", n)
+n = D.naechstes(z, kand, "erkennung", time.time(), D.TIERE_VAR)
+assert n["plan"] == D.ERK_PLAENE[0] and not n.get("variante"), ("--varianten ohne --nur-varianten: wie bisher", n)
+n = D.naechstes(z, kand, "erkennung", time.time(), (), True)
+assert n["plan"] == D.ERK_PLAENE[0] and not n.get("variante"), ("«keine» mit --nur-varianten: wirkungslos", n)
+n = D.naechstes(z, kand, "erkennung", time.time(), D.TIERE_VAR, True)
+assert n["variante"] == "tiere_grundformen" and n["plan"] == "tier" and n["runde"] == 1 and n["sha"] == "a" * 40, n
+n = D.naechstes(z, kand, "erkennung", time.time(), ("bestaetigung2",), True)
+assert n["variante"] == "bestaetigung2" and n["sha"] == "a" * 40, n
+EOF6B
+rc=$?
+[ "$rc" = 0 ] && ok "naechstes: nur_varianten lässt die Grundpläne aus, ohne Angabe unverändert" || { fehler "nur-varianten (Exit $rc)"; cat "$W/var6b.log"; }
+: > "$W/aus6b"
+MW_DAUER="$W/dauer6b_cli" python3 "$D" waehlen --kandidaten "$K" --arbeit erkennung --varianten tiere_grundformen,tiere_modelle --nur-varianten \
+	--ausgabe "$W/aus6b" > "$W/w6b.log" 2>&1
+[ "$(wert variante "$W/aus6b")" = tiere_grundformen ] && [ "$(wert plan "$W/aus6b")" = tier ] && ok "waehlen --varianten tiere_… --nur-varianten: Paket tier@tiere_grundformen" \
+	|| { fehler "waehlen --nur-varianten: $(tr '\n' ' ' < "$W/aus6b")"; cat "$W/w6b.log"; }
+: > "$W/aus6b"
+MW_DAUER="$W/dauer6b_cli2" python3 "$D" waehlen --kandidaten "$K" --arbeit erkennung --ausgabe "$W/aus6b" > "$W/w6b.log" 2>&1
+[ "$(wert variante "$W/aus6b")" = standard ] && [ "$(wert plan "$W/aus6b")" = ursache ] \
+	&& ok "waehlen ohne --varianten: Grundplan «ursache» wie bisher" || { fehler "waehlen ohne Angabe: $(tr '\n' ' ' < "$W/aus6b")"; cat "$W/w6b.log"; }
+
 echo
 if [ $F -eq 0 ]; then echo "Dauerrechnen-Test: OK"; else echo "Dauerrechnen-Test: $F Fehler"; fi
 exit $F
