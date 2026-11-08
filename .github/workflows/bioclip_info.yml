@@ -4,7 +4,7 @@
 # Besitzers und hängt die SQLite-Datei als Release-Asset an «bioclip-info-N» (nie «latest»).
 #   Stichprobe (schnell, ohne Release):
 #     gh api -X POST repos/DonElektro/MotionWatch/actions/workflows/bioclip_info.yml/dispatches -f ref=<zweig> -f 'inputs[nur]=stich'
-#   Alles, echt:  … -f 'inputs[nur]=' -f 'inputs[release]=echt' -f 'inputs[tag]=bioclip-info-1'
+#   Alles, echt:  … -f 'inputs[nur]=alle' -f 'inputs[release]=echt' -f 'inputs[tag]=bioclip-info-1'
 #   Danach Grösse + sha256 (pins.txt / Release-Notiz) in BIO_INFO (Teil 639zzd) eintragen.
 # Keine Geheimnisse: nur GITHUB_TOKEN.
 name: BioCLIP-Infos
@@ -15,7 +15,7 @@ on:
   workflow_dispatch:
     inputs:
       nur:
-        description: "stich = nur die Stichprobe (schnell) · leer = alle Arten · oder Arten mit Komma"
+        description: "stich = nur die Stichprobe (schnell) · alle = alle Arten · oder Arten mit Komma"
         default: stich
       release:
         description: "keins · probe (Vorabversion bioclipinfoprobe-<Lauf>) · echt (Release <tag>)"
@@ -79,6 +79,7 @@ jobs:
         run: |
           set -e
           [ "$NUR" = "stich" ] && NUR="Allium ursinum"             # die Stichprobe (STICH) kommt immer dazu
+          [ "$NUR" = "alle" ] && NUR=""
           python3 werkzeuge/bioclip_info_bauen.py --arten "$RUNNER_TEMP/in/bioclip-1-arten.json" --aus "$RUNNER_TEMP/info" --nur "$NUR"
           ls -la "$RUNNER_TEMP/info"
       - name: Zusammenfassung
@@ -99,7 +100,7 @@ jobs:
           NUR: ${{ inputs.nur }}
         run: |
           set -e
-          [ -z "$NUR" ] || { echo "::error::Release nur mit allen Arten (nur leer)"; exit 1; }
+          [ "$NUR" = "alle" ] || { echo "::error::Release nur mit allen Arten (nur = alle)"; exit 1; }
           B="$RUNNER_TEMP/info"
           {
             if [ "$REL" = "probe" ]; then echo "PROBELAUF (Vorabversion) - nicht für Geräte, wird wieder gelöscht."; echo; fi
