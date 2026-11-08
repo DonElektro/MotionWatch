@@ -3,7 +3,7 @@ extends RefCounted
 ## hardware/gehaeuse/bau.json. NICHT VON HAND ÄNDERN (Texte dort ändern, dann «gehaeuse_bauen.py --texte»).
 ## Texte deutsch (T.t übersetzt sie, Übersetzungen kommen aus bau.json in i18n/texte.json).
 
-const QUELLE_SHA := "2b035752c4ac4d77aac96447b817ac8ef8ad9d4d7bc507c140fafa41e4f83e80"
+const QUELLE_SHA := "277c8ad3c0acd8b3845d0a80b9143ec538e34a0737c6d4dc80b248156407189d"
 const VERSION := "5.3.1"
 const KOPF_FARBE := "#f59a4a"   # Kopfteil (dreht / neigt) in MoveEye-Orange
 const KOPF_TEILE := ["turntable", "yoke", "arm2", "head", "side", "lamp1", "lamp2", "head52"]

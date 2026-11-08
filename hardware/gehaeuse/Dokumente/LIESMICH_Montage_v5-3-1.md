@@ -41,10 +41,10 @@ So liegen die Anschlüsse hinter den Öffnungen, die es schon gibt:
 
 | Was | Wo | Geprüft am Modell |
 |---|---|---|
-| 8,4-V-Buchse (Laden) | Service-Fenster, x 116 / Achse z 38,75 | Hülse Ø 5,5 geht durch, 0,35 mm Luft |
-| USB-A (5 V OUT) | Service-Fenster, x 102 | Stecker geht durch, 0,55 mm Luft |
-| Schalter ON/OFF | Service-Fenster, x 84, ca. 8 mm hinter der Wandaussenseite | mit einem Stift Ø 3 erreichbar |
-| WARNING-LEDs (Verpolung) | hinter den Lüftungsschlitzen, x 137–149 | gerade Sicht durch 2 Schlitze |
+| 8,4-V-Buchse (Laden) | Service-Fenster, x 115,3 / Achse z 38,75, steht 2,8 mm über die Platine vor | Hülse Ø 5,5 geht durch: 0,35 mm Luft nach unten, 1,65 mm zum Fensterrand |
+| USB-A (5 V OUT) | Service-Fenster, x 99,5 | Stecker geht durch, 0,55 mm Luft |
+| Schalter ON/OFF | Service-Fenster, x 84,2; der Schieber steht 4,5 mm vor, ca. 6 mm hinter der Wandaussenseite | mit einem Stift Ø 3 erreichbar |
+| WARNING-LEDs (Verpolung) | hinter den Lüftungsschlitzen, x 137,5–146,5 | gerade Sicht durch 2 Schlitze |
 
 ![Lüftungswand von aussen: Buchse, USB-A und Schalter im Service-Fenster, LEDs hinter den Schlitzen](../Bilder/Vorschau_v5-3-1_4_Lueftungswand_aussen.png)
 ![Schnitt durch die 8,4-V-Buchse](../Bilder/Vorschau_v5-3-1_3_Schnitt_Buchse.png)
@@ -125,17 +125,23 @@ Geprüft (Waveshare-Wiki «UPS HAT», Produktseite SKU 18306):
 - Ladegerät 8,4 V / 2 A, Ausgang 5 V bis 2,5 A
 - I2C INA219 auf 0x42
 
-Lochbild wie beim Pi (58 × 49) und HAT oben auf dem Pi mit den Bauteilen unten: Fotos des Besitzers.
-Eine Masszeichnung mit Höhen gibt es auf der Wiki-Seite nicht. Das Bild auf der Produktseite war von hier aus nicht abrufbar.
-Alles in dieser Tabelle ist aus den Fotos geschätzt. Parameter oben in `Quellcode/upsalt531.py`:
+Aus der **Masszeichnung von Waveshare** (Draufsicht, ausgemessen auf ca. ±0,5 mm):
+
+- Lochbild 58 × 49 (23,5 / 3,5 / 3,5), also gleich wie beim Pi
+- 8,4-V-Buchse x 47,3, steht 2,8 mm vor
+- USB-A x 31,5
+- Schalter x 16,2, der Schieber steht 4,5 mm vor
+- WARNING-LEDs x 69,5–78,5, 4,8 mm von der Kante
+- Batteriehalter x 1,7–84,4, y 7,6–49,8
+
+x zählt ab der Pi-Seite ohne USB, y ab der Kante mit den Buchsen. HAT oben auf dem Pi, Bauteile unten: Fotos des Besitzers.
+Die Zeichnung hat **keine Höhen**. Alles in der Tabelle ist geschätzt. Parameter oben in `Quellcode/upsalt531.py`:
 
 | Was | Parameter | Annahme | Warum wichtig |
 |---|---|---|---|
 | **Höhe HAT-Unterseite → Oberkante Zellen** | `HAT_TOP_H` | 22,0 mm | **Deckel:** nur 1,25 mm Luft. Waveshare nennt 42,05 mm «Gesamthöhe auf dem Pi»; mit der normalen Leiste (ca. 11 mm) wären das bis 27,9 mm, dann passt der Stapel **nicht** unter den Deckel. |
-| 8,4-V-Buchse: Lage x, Achse unter der Platine, Überstand | `JACK_X`, `JACK_AXIS`, `JACK_OUT`, `JACK_*` | x 48 ab der Pi-Seite ohne USB, 6,5 mm, 1 mm | bestimmt die Höhe des ganzen Stapels und ob der Stecker durch das Fenster passt (0,35 mm Luft) |
-| USB-A, Schalter, Spule | `USBA_*`, `SW_*`, `IND_*` | x 34 / x 16 / x 10 | Fenster, Luft über dem Pi |
-| Batteriehalter: Lage | `HOLDER_X0/X1`, `HOLDER_Y0/Y1` | x 2–83, y 7–49 | Kabelkamm (frei ab y 14), Kabelweg CAM0 |
-| WARNING-LEDs | `LED_*` | x 69–81, 4 mm von der Kante | Sicht durch die Lüftungsschlitze |
+| 8,4-V-Buchse: Achse unter der Platine, Körper | `JACK_AXIS`, `JACK_W/L/H` | 6,5 mm; 9 × 14 × 11 mm | bestimmt die Höhe des ganzen Stapels und ob der Stecker durch das Fenster passt (0,35 mm Luft) |
+| Höhe USB-A, Schalter, Spule (unten) | `USBA_H`, `SW_H`, `IND_*` | 7 / 4,5 / 7 mm, Spule bei x 10 | Luft über dem Pi |
 | Abstand Pi → HAT (Bolzen, GPIO-Verlängerung) | `HAT_GAP` | 17 mm | Höhe der Adapter-Bolzen; mit den echten Teilen messen |
 | Active Cooler Höhe | `COOL_H` (aus v5.3 `COOL_TOP`) | 14,4 mm über der Platine | Luft über dem Lüfter (2,6 mm) |
 | Platinendicke HAT | `HAT_T` | 1,6 mm | Höhe |

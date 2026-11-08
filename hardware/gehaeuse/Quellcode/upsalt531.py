@@ -13,7 +13,8 @@ und der Pi darunter so tief, wie die Abstandsbolzen es verlangen. Der Pi liegt 6
 innen (y) als in v5.3: so liegen 8,4-V-Buchse, USB-A und Schalter im Service-Fenster, und der Batteriehalter bleibt vom
 Kabelkamm (x 121–128 an der Lüftungswand) frei.
 
-Masse mit «NACHMESSEN» sind aus den Fotos des Besitzers geschätzt. Geprüft (Waveshare-Wiki / Produktseite 18306):
+Lage in x/y aus der Masszeichnung von Waveshare (Draufsicht, Bild des Besitzers vom 08.11.2026; Pixel ausgemessen, ca. ±0,5 mm).
+Masse mit «NACHMESSEN» sind geschätzt (Höhen: die Zeichnung hat keine). Geprüft (Waveshare-Wiki / Produktseite 18306):
 Platine 56 × 85 mm, Befestigungslöcher Ø 3,0, 2 × 18650 (Zellenlänge < 67 mm), Ladegerät 8,4 V / 2 A, Ausgang 5 V bis
 2,5 A, Gesamthöhe «42,05 mm nach dem Aufstecken auf den Pi» (Bezug unklar – siehe HAT_TOP_H).
 Koordinaten wie v5.py (Unterteil: x 0..LX innen, x = 0 Stirnwand innen, y = 0 Lüftungswand innen, z = 0 Bodenunterseite).
@@ -32,25 +33,25 @@ from v5 import (LX, LY, WALL, ZF, TOPZ, Plane)
 # --- altes UPS HAT (geprüft: Waveshare-Wiki «UPS HAT», Produktseite SKU 18306)
 HAT_L, HAT_W = 85.0, 56.0            # Platine (x entlang des Pi, y quer) – Waveshare
 HAT_HOLE_D = 3.0                     # Befestigungslöcher – Waveshare
-HAT_HOLES = [(3.5, 3.5), (61.5, 3.5), (3.5, 52.5), (61.5, 52.5)]   # Lochbild wie Pi (58 × 49) – Foto des Besitzers
+HAT_HOLES = [(3.5, 3.5), (61.5, 3.5), (3.5, 52.5), (61.5, 52.5)]   # Lochbild wie Pi (58 × 49; 23,5 / 3,5 / 3,5) – Masszeichnung
 CELL_D, CELL_L = 18.4, 65.2          # 18650 (Waveshare: Länge < 67 mm, Zellen ohne Schutzplatine)
 HAT_T = 1.6                          # NACHMESSEN: Platinendicke
 # --- Oberseite: Batteriehalter mit 2 × 18650 (lokal: x ab der Pi-Seite ohne USB, y ab der Kante mit den Buchsen)
-HOLDER_X0, HOLDER_X1 = 2.0, 83.0     # NACHMESSEN: Halter entlang x (Foto: fast die ganze Länge, Kontakte an den Enden)
-HOLDER_Y0, HOLDER_Y1 = 7.0, 49.0     # NACHMESSEN: Halter quer (Foto: neben dem Aufdruck OFF/ON · 5V OUT · 8.4V bis zur Stiftleiste)
+HOLDER_X0, HOLDER_X1 = 1.7, 84.4     # Halter entlang x – Masszeichnung (fast die ganze Länge)
+HOLDER_Y0, HOLDER_Y1 = 7.6, 49.8     # Halter quer – Masszeichnung (zwischen Buchsen-Reihe und Stiftleiste)
 HAT_TOP_H = 22.0                     # NACHMESSEN: Unterseite HAT-Platine -> Oberkante Zellen (1,6 + Halterboden + Ø 18,4 + Wand)
                                      #   Waveshare nennt 42,05 mm Gesamthöhe auf dem Pi – mit der normalen Buchsenleiste
                                      #   (ca. 11 mm Abstand) wären das bis 27,9 mm; dann passt der Stapel NICHT unter den Deckel.
 # --- Unterseite (zum Pi hin), alle an der Kante y = 0 des HAT (= Lüftungswand-Seite)
-JACK_X, JACK_W, JACK_L, JACK_H = 48.0, 9.0, 14.0, 11.0   # NACHMESSEN: 8,4-V-Hohlbuchse (Mitte x, Breite, Länge in y, Höhe)
+JACK_X, JACK_W, JACK_L, JACK_H = 47.3, 9.0, 14.0, 11.0   # 8,4-V-Hohlbuchse: Mitte x – Masszeichnung; Breite, Länge, Höhe NACHMESSEN
 JACK_AXIS = 6.5                      # NACHMESSEN: Achse unter der Platine (übliche Hohlbuchse 5,5 / 2,1 mm)
-JACK_OUT = 1.0                       # NACHMESSEN: so weit steht die Buchse über die Platinenkante vor
+JACK_OUT = 2.8                       # Überstand über die Platinenkante – Masszeichnung
 PLUG_D, PLUG_L = 5.5, 9.5            # Stecker 5,5 / 2,1 mm: Hülse Ø 5,5, Länge 9,5 (dahinter der dickere Griff)
-USBA_X, USBA_W, USBA_L, USBA_H = 34.0, 13.2, 14.0, 7.0   # NACHMESSEN: USB-A-Buchse (5 V OUT)
-SW_X, SW_W, SW_L, SW_H = 16.0, 9.0, 4.5, 4.5             # NACHMESSEN: Schiebeschalter ON/OFF
-SW_OUT = 1.5                         # NACHMESSEN: Schieber steht über die Kante vor (Foto)
+USBA_X, USBA_W, USBA_L, USBA_H = 31.5, 13.2, 14.0, 7.0   # USB-A (5 V OUT): Mitte x – Masszeichnung (Lötlaschen); Rest NACHMESSEN
+SW_X, SW_W, SW_L, SW_H = 16.2, 9.0, 4.5, 4.5             # Schiebeschalter ON/OFF: Mitte x – Masszeichnung; Körper NACHMESSEN
+SW_OUT = 4.5                         # Schieber steht über die Kante vor – Masszeichnung
 IND_X, IND_Y, IND_S, IND_H = 10.0, 18.0, 10.0, 7.0       # NACHMESSEN: hohe SMD-Spule (Mitte x, y, Kante, Höhe)
-LED_X0, LED_X1, LED_Y = 69.0, 81.0, 4.0                  # NACHMESSEN: WARNING-LEDs oben (Verpolung der Zellen)
+LED_X0, LED_X1, LED_Y = 69.5, 78.5, 4.8                  # WARNING-LEDs oben (Verpolung der Zellen) – Masszeichnung
 # --- Stapel
 HAT_GAP = 17.0                       # Pi-Platine oben -> HAT-Platine unten: Abstandsbolzen M2,5 × 17 (wie für Pi 5 + Active
                                      #   Cooler üblich) und eine GPIO-Verlängerung 2 × 20; NACHMESSEN mit den echten Teilen
@@ -182,7 +183,7 @@ def hat_under():
     return U(hat_jack(),
              box(xu - USBA_W / 2, xu + USBA_W / 2, PY, PY + USBA_L, ZH - USBA_H, ZH),
              box(xs - SW_W / 2, xs + SW_W / 2, PY, PY + SW_L, ZH - SW_H, ZH),
-             box(xs - 1.0, xs + 1.0, PY - SW_OUT, PY, ZH - SW_H + 1.0, ZH - 1.0),
+             box(xs - 1.4, xs + 1.4, PY - SW_OUT, PY, ZH - SW_H + 1.0, ZH - 1.0),
              box(PX + IND_X - IND_S / 2, PX + IND_X + IND_S / 2, PY + IND_Y - IND_S / 2, PY + IND_Y + IND_S / 2, ZH - IND_H, ZH),
              box(PX + 7.1, PX + 57.9, PY + 50.0, PY + 55.0, ZH - 8.5, ZH))
 
