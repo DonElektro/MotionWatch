@@ -645,9 +645,9 @@ def farbe_schwein(t, g, P):
 def farbe_hase(t, g, P):
     """Feldhase: «gesprenkelt» gelbbraun (Agouti), Rücken dunkler, Flanke rötlicher, Bauch weiss, Ohrspitzen schwarz,
     Schwanz oben schwarz, unten weiss; grosse dunkle Augen"""
-    BRAUN = np.array([0.30, 0.20, 0.10])
-    DUNKEL = np.array([0.13, 0.09, 0.05])
-    ROT = np.array([0.38, 0.22, 0.10])
+    BRAUN = np.array([0.25, 0.18, 0.11])
+    DUNKEL = np.array([0.11, 0.08, 0.05])
+    ROT = np.array([0.31, 0.20, 0.11])
     WEISS = np.array([0.66, 0.63, 0.56])
     y, z = P[:, 1], P[:, 2]
     nz = noise3(P, 18.0, 2.0)
@@ -765,7 +765,7 @@ for _s in ("L", "R"):
     HASE_D["BackUpperLeg." + _s] = (1.4, 0.75, 1.4)            # kräftige Keulen
     HASE_D["BackLeg." + _s] = (1.4, 1.1, 1.4)
     HASE_D["BackLowerLeg." + _s] = (1.0, 0.95, 1.6)            # lange Hinterpfoten
-_ohren(HASE_L, HASE_D, 2.2, (0.55, 1.5, 0.7))
+_ohren(HASE_L, HASE_D, 2.6, (0.5, 1.7, 0.65))
 _schwanz(HASE_L, HASE_D, 8, 0.12, (0.6, 0.6, 0.6))
 
 TORSO = ["Torso", "Torso2", "Torso3", "Back"]
