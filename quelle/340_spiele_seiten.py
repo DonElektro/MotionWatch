@@ -4,7 +4,7 @@ SPIELE_PAGE = """<!doctype html><html lang="de"><head><meta charset="utf-8"><met
 body{margin:0;background:#0E1621;color:#E8EEF5;font-family:system-ui,sans-serif}main{max-width:720px;margin:0 auto;padding:20px 16px}
 h1{font-size:26px;margin:6px 0 4px}p{color:#9FB0C3;margin:4px 0 16px}.g{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
 a.c{display:block;background:#16263A;border-radius:14px;padding:14px;color:inherit;text-decoration:none}a.c:active{transform:scale(.98)}
-.i{font-size:34px}.n{font-weight:700;margin:6px 0 2px}.d{font-size:13px;color:#9FB0C3}.big{background:#E9A23B;color:#0E1621;font-weight:700;
+.i{font-size:34px}.i img{width:56px;height:56px;border-radius:12px;object-fit:cover;display:block}.n{font-weight:700;margin:6px 0 2px}.d{font-size:13px;color:#9FB0C3}.big{background:#E9A23B;color:#0E1621;font-weight:700;
 display:block;text-align:center;padding:14px;border-radius:14px;text-decoration:none;margin:0 0 18px}</style></head><body><main>
 <h1>🎲 Spielecke</h1>__PARTY__<p>__NOTE__</p><div class="g">__GAMES__</div></main></body></html>"""
 
@@ -134,19 +134,30 @@ def games_url(game, fn="", host=""):
 
 
 GAME_GROUPS = {"touch": "👆 Für Handy und Tablet (Touch)", "buttons": "🎮 Mit Bildschirm-Tasten (am PC mit der Tastatur)"}   # 2.95.54
+GAME_GROUPS["keys"] = "⌨️ Am PC mit Tastatur und Maus"      # GS-1.4: games without touch controls (Quantum games)
+
+
+def _game_icon(x, host=""):
+    """GS-1.4: the icon is an emoji or a picture in the game folder (thumb.svg / thumb.png, like in the game corner)"""
+    from html import escape as _e
+    ic = str(x.get("icon") or "🎮")
+    if "." not in ic:
+        return _e(ic)
+    src = games_url(x["dir"], ic, host) or "/spiele/g/" + x["dir"] + "/" + ic
+    return f'<img src="{_e(src, quote=True)}" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'">'
 
 
 def spiele_page(host=""):
     from html import escape as _e
     gl = games_list()
     cards = ""
-    for grp in (["touch", "buttons"] if any(x.get("input") for x in gl) else [None]):     # 2.95.54: touch games first
+    for grp in (list(GAME_GROUPS) if any(x.get("input") for x in gl) else [None]):     # 2.95.54: touch games first (GS-1.4: then «keys»)
         part = [x for x in gl if grp is None or x.get("input", "touch") == grp]
         if not part:
             continue
         if grp:
             cards += f'<div style="grid-column:1/-1;font-weight:700;margin:14px 0 2px">{_e(GAME_GROUPS[grp])}</div>'
-        cards += "".join(f'<a class="c" href="{_e(games_url(x["dir"], x.get("start", "index.html"), host) or "/spiele/g/" + x["dir"] + "/" + x.get("start", "index.html"))}"><div class="i">{_e(x.get("icon", "🎮"))}</div>'
+        cards += "".join(f'<a class="c" href="{_e(games_url(x["dir"], x.get("start", "index.html"), host) or "/spiele/g/" + x["dir"] + "/" + x.get("start", "index.html"))}"><div class="i">{_game_icon(x, host)}</div>'
                          f'<div class="n">{_e(x.get("name", x["dir"]))}</div><div class="d">{_e(x.get("desc", ""))}</div></a>' for x in part)
     party = (f'<a class="big" href="/p/{PARTY["key"]}/">👥 Zum Spieleabend (Quiz, Werwolf, Malen, 4 gewinnt)</a>' if party_on()
              else '<p>Der Spieleabend (Quiz, Werwolf, Malen …) ist gerade zu – öffnen kann ihn, wer MoveEye verwaltet.</p>')
@@ -342,8 +353,8 @@ function render() {
     + (SG.runners >= SG.max ? "Alle " + SG.max + " Läuferplätze sind besetzt – du schaust zuerst durch die Kamera zu." : (SG.max - SG.runners) + " von " + SG.max + " Läuferplätzen frei.")
     + (SG.round === "play" ? " Eine Runde läuft gerade." : ""); }
   // collection
-  const GG = {touch: "👆 Für Handy und Tablet (Touch)", buttons: "🎮 Mit Bildschirm-Tasten"};        // 2.95.54: touch games first
-  const gsorted = (V.games || []).slice().sort((a, b) => (a.input === "buttons") - (b.input === "buttons"));
+  const GG = {touch: "👆 Für Handy und Tablet (Touch)", buttons: "🎮 Mit Bildschirm-Tasten", keys: "⌨️ Am PC mit Tastatur und Maus"};        // 2.95.54: touch games first, GS-1.4: «keys» last
+  const GO = {touch: 0, buttons: 1, keys: 2}, gsorted = (V.games || []).slice().sort((a, b) => (GO[a.input] || 0) - (GO[b.input] || 0));
   let gprev = null;
   $("#coll").innerHTML = gsorted.length ? gsorted.map(g => { const hd = g.input && g.input !== gprev ? `<div style="font-weight:700;margin:12px 0 4px;grid-column:1/-1">${GG[g.input] || ""}</div>` : ""; gprev = g.input; return hd + `<a class="gl" href="${BASE}/g/${g.dir}/" target="_blank">${/\./.test(g.icon || "") ? `<img src="${BASE}/g/${g.dir}/${g.icon}" alt="" onerror="this.style.visibility='hidden'">` : `<span style="font-size:30px;width:44px;text-align:center;flex:0 0 44px">${esc(g.icon || "🎮")}</span>`}<div><b>${esc(g.name)}</b><span>${esc(g.desc || "")}</span></div></a>`; }).join("")
     : "<div class='mut'>Die Spielesammlung ist auf diesem Gerät noch nicht installiert (MoveEye → Reiter Spielecke).</div>";
