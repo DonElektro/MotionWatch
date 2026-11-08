@@ -1,0 +1,125 @@
+# BioCLIP-Infos (MoveEye Teil 639zzd, Artinfo-Karte unter «🌿 Bestimmen»): baut hier auf einem GitHub-Rechner die Artinfos zu
+# allen Arten der Liste aus Release BIO_TAG (werkzeuge/bioclip_info_bauen.py): wörtliche Einleitung aus der deutschen Wikipedia
+# (sonst englisch), «giftig» / «essbar» nur aus ausdrücklichen Sätzen, Fakten aus Wikidata. Prüft die Stichprobe des
+# Besitzers und hängt die SQLite-Datei als Release-Asset an «bioclip-info-N» (nie «latest»).
+#   Stichprobe (schnell, ohne Release):
+#     gh api -X POST repos/DonElektro/MotionWatch/actions/workflows/bioclip_info.yml/dispatches -f ref=<zweig> -f 'inputs[nur]=stich'
+#   Alles, echt:  … -f 'inputs[nur]=' -f 'inputs[release]=echt' -f 'inputs[tag]=bioclip-info-1'
+#   Danach Grösse + sha256 (pins.txt / Release-Notiz) in BIO_INFO (Teil 639zzd) eintragen.
+# Keine Geheimnisse: nur GITHUB_TOKEN.
+name: BioCLIP-Infos
+on:
+  push:
+    branches: [mw-bioclip-info]
+    paths: [".github/workflows/bioclip_info.yml", "werkzeuge/bioclip_info_bauen.py"]
+  workflow_dispatch:
+    inputs:
+      nur:
+        description: "stich = nur die Stichprobe (schnell) · leer = alle Arten · oder Arten mit Komma"
+        default: stich
+      release:
+        description: "keins · probe (Vorabversion bioclipinfoprobe-<Lauf>) · echt (Release <tag>)"
+        type: choice
+        options: [keins, probe, echt]
+        default: keins
+      tag:
+        description: "Tag für «echt» (bioclip-info-N)"
+        default: bioclip-info-1
+permissions:
+  contents: write
+concurrency:
+  group: bioclip-info
+  cancel-in-progress: false
+env:
+  PYTHONUNBUFFERED: "1"
+
+jobs:
+  bauen:
+    name: BioCLIP-Infos · ${{ inputs.nur || 'stich' }} · ${{ inputs.release || 'keins' }}
+    if: github.repository == 'DonElektro/MotionWatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prüfen (Tag noch nicht da) und die Artenliste aus dem Release von BIO_TAG holen (sha256 wie in 639zzd)
+        id: v
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REL: ${{ inputs.release || 'keins' }}
+          TAG: ${{ inputs.tag || 'bioclip-info-1' }}
+        run: |
+          set -e
+          if [ "$REL" = "echt" ]; then
+            echo "$TAG" | grep -Eq '^bioclip-info-[0-9]{1,3}$' || { echo "::error::Tag $TAG ist nicht bioclip-info-N"; exit 1; }
+            tag="$TAG"
+          else
+            tag="bioclipinfoprobe-$GITHUB_RUN_NUMBER"
+          fi
+          if [ "$REL" != "keins" ] && gh release view "$tag" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "::error::Release $tag gibt es schon - nie überschreiben"; exit 1
+          fi
+          bt=$(sed -n 's/^BIO_TAG = "\(bioclip-[0-9]*\)"$/\1/p' quelle/639zzd_bestimmen.py)
+          want=$(python3 - <<'PY'
+          import re
+          s = open("quelle/639zzd_bestimmen.py", encoding="utf-8").read()
+          m = re.search(r'"labels": \{"name": "bioclip-1-arten.json", "size": \d+,\s*"sha256": "([0-9a-f]{64})"', s)
+          print(m.group(1))
+          PY
+          )
+          mkdir -p "$RUNNER_TEMP/in"
+          gh release download "$bt" -R "$GITHUB_REPOSITORY" -p bioclip-1-arten.json -D "$RUNNER_TEMP/in"
+          echo "$want  $RUNNER_TEMP/in/bioclip-1-arten.json" | sha256sum -c -
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"; echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"; echo "bt=$bt" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Bauen und Stichprobe prüfen (bioclip_info_bauen.py)
+        env:
+          NUR: ${{ github.event_name == 'push' && 'stich' || inputs.nur }}
+        run: |
+          set -e
+          [ "$NUR" = "stich" ] && NUR="Allium ursinum"             # die Stichprobe (STICH) kommt immer dazu
+          python3 werkzeuge/bioclip_info_bauen.py --arten "$RUNNER_TEMP/in/bioclip-1-arten.json" --aus "$RUNNER_TEMP/info" --nur "$NUR"
+          ls -la "$RUNNER_TEMP/info"
+      - name: Zusammenfassung
+        if: always()
+        run: |
+          {
+            echo "### BioCLIP-Infos"
+            echo '```'; cat "$RUNNER_TEMP/info/pins.txt" 2>/dev/null; cat "$RUNNER_TEMP/info/abdeckung.json" 2>/dev/null; echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Release anlegen, Asset hochladen, zurücklesen
+        if: inputs.release == 'probe' || inputs.release == 'echt'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.v.outputs.tag }}
+          SHA: ${{ steps.v.outputs.sha }}
+          BT: ${{ steps.v.outputs.bt }}
+          REL: ${{ inputs.release }}
+          NUR: ${{ inputs.nur }}
+        run: |
+          set -e
+          [ -z "$NUR" ] || { echo "::error::Release nur mit allen Arten (nur leer)"; exit 1; }
+          B="$RUNNER_TEMP/info"
+          {
+            if [ "$REL" = "probe" ]; then echo "PROBELAUF (Vorabversion) - nicht für Geräte, wird wieder gelöscht."; echo; fi
+            echo "Artinfos für MoveEye «🌿 Bestimmen» (Teil 639zzd), zu den Arten aus $BT. Offline auf dem Gerät."
+            echo
+            echo "Texte: Wikipedia (deutsch, sonst englisch), CC BY-SA 4.0 - Autoren: die Versionsgeschichte des jeweiligen Artikels (Link pro Eintrag)."
+            echo "Fakten: Wikidata (CC0). «giftig» / «essbar» nur aus ausdrücklichen Sätzen (Regeln in der Tabelle meta)."
+            echo
+            sed 's/^PIN /pin: /' "$B/pins.txt"
+            echo "abdeckung: $(tr -d '\n ' < "$B/abdeckung.json")"
+            echo "commit: $SHA"
+            echo "lauf: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          } > notes.md
+          A="$B/bioclip-info-1.sqlite $B/abdeckung.json $B/stichprobe.txt"
+          if [ "$REL" = "probe" ]; then
+            gh release create "$TAG" $A -R "$GITHUB_REPOSITORY" --target "$SHA" --title "Probe · BioCLIP-Infos" --notes-file notes.md --prerelease --latest=false
+          else
+            gh release create "$TAG" $A -R "$GITHUB_REPOSITORY" --target "$SHA" --title "BioCLIP-Infos · Artinfo-Karten (Datentausch)" --notes-file notes.md --latest=false
+          fi
+          mkdir -p "$RUNNER_TEMP/zurueck"
+          gh release download "$TAG" -R "$GITHUB_REPOSITORY" -p bioclip-info-1.sqlite -D "$RUNNER_TEMP/zurueck"
+          s=$(sed -n 's/.*sha256=\([0-9a-f]*\).*/\1/p' "$B/pins.txt"); echo "$s  $RUNNER_TEMP/zurueck/bioclip-info-1.sqlite" | sha256sum -c -
+          echo "latest bleibt: $(gh api repos/$GITHUB_REPOSITORY/releases/latest --jq .tag_name)"
