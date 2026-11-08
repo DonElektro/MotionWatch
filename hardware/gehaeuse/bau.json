@@ -1,7 +1,7 @@
 {
  "_hinweis": "Eine Quelle für die Texte zum Gehäuse v5.1: Teile, Materialliste (Menge, Bezeichnung) und Montageschritte, in de / en / fr / it / rm (ein einzelner Text = in allen Sprachen gleich). werkzeuge/gehaeuse_bauen.py macht daraus simulator3d/scripts/werkstatt_daten.gd, die Übersetzungen in simulator3d/i18n/texte.json und quelle/639v_daten_gehaeuse.py. Ausführlich (mit Hinweisen und Bestellliste): Dokumente/Materialliste.md und Dokumente/LIESMICH_Montage_v5-1.md.",
- "version": "5.3.0",
- "stand": "07.11.2026",
+ "version": "5.3.1",
+ "stand": "08.11.2026",
  "masse": {
   "de": "Unterteil 183 × 97 × 71,5 mm (mit Füssen 77,5 mm), Gesamthöhe ca. 161 mm, Kopf 58 × 58 mm",
   "en": "Lower part 183 × 97 × 71.5 mm (77.5 mm with feet), total height about 161 mm, head 58 × 58 mm",
@@ -5900,7 +5900,8 @@
   "v5-3/MoveEye_v5-3_24_Stopfen_Lichtleiter.3mf",
   "v5-3/MoveEye_v5-3_25_Halter_Wand_Baum.3mf",
   "v5-3/MoveEye_v5-3_26_Akkuklappe.3mf",
-  "v5-3/MoveEye_v5-3_27_Luftkanal.3mf"
+  "v5-3/MoveEye_v5-3_27_Luftkanal.3mf",
+  "v5-3/MoveEye_v5-3_28_Adapter_UPS_HAT_alt.3mf"
  ],
  "ui_bauen": [
   {

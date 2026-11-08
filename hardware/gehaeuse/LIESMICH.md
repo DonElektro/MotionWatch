@@ -141,6 +141,15 @@ denselben Reitern: Übersicht · Teile · Einkauf · Drucken · Montage · Verka
   `printcheck53.py`, Bilder `prev53.py`. In `bau.json`: Variante «v53», Teile mit `art` v53, `gehaeuse_v53`, Montagetexte
   «v53» je Schritt; «wenn: v52» gilt auch für v5.3, Druckteile mit «nicht: v53» fallen in v5.3 weg.
 
+- **5.3.1** (08.11.2026, Nachtrag zu v5.3, kein Teil von v5.3 geändert): **28 Adapter altes UPS HAT** (provisorisch) für das
+  ältere Waveshare «UPS HAT» (SKU 18306, 2 × 18650, INA219 auf 0x42) im Akku-Zaun statt UPS HAT (E) + Zellen, wie der
+  Entwicklungs-Sockel 13. Pi 5 tiefer auf 4 Bolzen, HAT 17 mm darüber, Zellen oben; 8,4-V-Buchse, USB-A und Schalter im
+  Service-Fenster, LEDs hinter den Lüftungsschlitzen; Zwischenboden 09 und Luftkanal 27 bleiben draussen. Nur drinnen, Laden
+  nur mit dem 8,4-V-Ladegerät am HAT, nie über GX16 / Pololu. Quelle `Quellcode/upsalt531.py`, Druck
+  [Druckdateien/v5-3/MoveEye_v5-3_28_Adapter_UPS_HAT_alt.3mf](Druckdateien/v5-3/MoveEye_v5-3_28_Adapter_UPS_HAT_alt.3mf),
+  Anleitung mit Warnungen und NACHMESSEN [Dokumente/LIESMICH_Montage_v5-3-1.md](Dokumente/LIESMICH_Montage_v5-3-1.md);
+  prüfen im Ordner `Quellcode/`: `check531.py`, `printcheck531.py`, `druckcheck531.py`, Bilder `prev531.py`.
+
 - **Archiv «PanTilt v6» (22.10.2026):** `PanTilt_v6_X2D_alle_Teile.3mf`, 7 Teile mit der alten Nummerierung
   (1_Gehaeuse_Unterteil … 7_Rueckdeckel), Unterteil 122 × 87 × 48 mm. Das ist die **ältere** PanTilt-Linie (v4, geschlossener
   Kopf mit Rückdeckel – der gescheiterte Druck), nicht neuer als v5.1. Nicht im Repository (6,8 MB), nur als Archiv abgelegt.
