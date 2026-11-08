@@ -74,6 +74,7 @@ ERK_VARIANTEN = tuple(v.strip() for v in (os.environ.get("MW_DAUER_VARIANTEN") o
 TIERE_VAR = ("tiere_grundformen", "tiere_modelle")
 VAR_PLAENE_JE = {"tiere_grundformen": ("tier", "nacht"), "tiere_modelle": ("tier", "nacht")}
 TIERE_RUNDEN = int(os.environ.get("MW_DAUER_TIERE_RUNDEN") or 8)
+TIERE_TAGE = 14                       # Tier-Runden zählen über main-Stände dieser Tage (main ändert sich oft, die Stichprobe nicht)
 ERK_VAR_PLAENE = tuple(v.strip() for v in (os.environ.get("MW_DAUER_VAR_PLAENE") or "ursache,nacht,wind").split(",") if v.strip())
 VAR_RE = re.compile(r"^[a-z0-9_]{1,30}$")
 KI_PAKETE, KI_BILDER = 6, 150                                  # ein Paket = 6 × 150 Bilder (je Bildpaket gesichert)
@@ -241,6 +242,20 @@ def erk_key(sha, plan, variante="", runde=0):
     return "erkennung|%s|%s" % (sha, plan + ("@" + variante if variante else "") + ("#%d" % runde if runde > 1 else ""))
 
 
+def tiere_erledigt(z, sha, plan, v, runde, jetzt):
+    """Tier-Varianten (Stichprobe über viele Runden): eine Runde gilt als gemessen, wenn sie für diesen main-Stand ODER für
+    einen anderen main-Stand der letzten TIERE_TAGE Tage erledigt ist - sonst finge jeder neue main-Stand wieder bei Runde 1
+    an. Grundpläne und andere Varianten bleiben pro Stand."""
+    if erk_key(sha, plan, v, runde) in z["erledigt"]:
+        return True
+    ende = "|" + erk_key("", plan, v, runde).split("|", 2)[2]
+    for key, e in z["erledigt"].items():
+        if key.startswith("erkennung|") and key.endswith(ende) and key.count("|") == 2 \
+                and jetzt - float((e or {}).get("t") or 0) < TIERE_TAGE * 86400:
+            return True
+    return False
+
+
 def naechstes(z, kand, art, jetzt, varianten=None, nur_varianten=False):
     """(art, Angaben) der nächsten Arbeit dieser Art oder None. nur_varianten (mit varianten): die Grundpläne aller Stände
     auslassen, nur die genannten Varianten auf main (z. B. die Tier-Stichprobe tagsüber)"""
@@ -261,7 +276,7 @@ def naechstes(z, kand, art, jetzt, varianten=None, nur_varianten=False):
         for runde in range(1, TIERE_RUNDEN + 1):                 # Tier-Varianten: Runde für Runde abwechselnd
             for v in tv:
                 for plan in VAR_PLAENE_JE[v]:
-                    if erk_key(main["sha"], plan, v, runde) not in z["erledigt"]:
+                    if not tiere_erledigt(z, main["sha"], plan, v, runde, jetzt):
                         return {"art": art, "sha": main["sha"], "stand": main["name"], "plan": plan, "laeufe": 1, "variante": v,
                                 "runde": runde}
         return None
