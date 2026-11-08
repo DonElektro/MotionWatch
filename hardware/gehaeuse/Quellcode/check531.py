@@ -1,10 +1,10 @@
-"""5.3.1 Prüfung Adapter 28 (altes UPS HAT) im unveränderten Gehäuse v5.3: Kollisionen, Höhe unter dem Deckel, Stecker durch
-das Service-Fenster, LEDs durch die Lüftungsschlitze, Luft über dem Active Cooler, Kabelwege.
+"""5.3.1 Prüfung Adapter 28 (altes UPS HAT, Variante «tief, gedreht») im unveränderten Gehäuse v5.3: Kollisionen, Höhe unter
+dem Deckel (schlimmster und wahrscheinlicher Fall), Ladebuchse in der Reserve-Öffnung, Luft über dem Lüfter, Kabelwege.
 python3 check531.py            (Abstand < 0 = Überschneidung in mm; Werte hängen an den NACHMESSEN-Parametern in upsalt531.py)"""
 import sys, numpy as np
 import v5, v52, v53
 import upsalt531 as u
-from csg import box, cyl_y, T, R
+from csg import box, T, R, cyl_x
 
 H = 0.6
 
@@ -32,21 +32,21 @@ def clearance(pts, other):
 
 
 P = u.placed()
-STAPEL = ("adapter", "pi", "cooler", "camconn", "standoff", "hat", "hatunder", "holder18650", "hatled")
+STAPEL = ("adapter", "pi", "cooler", "camconn", "standoff", "hat", "hatunder", "holder18650", "hatled", "plug90", "dcsocket")
 FEST = ("tub", "lid", "hatch", "feet", "pca", "hub", "soundcard", "servo1", "sdext", "sdplug", "mosfet", "buck", "relay", "jacks", "relayjack",
-        "resjack", "resplug", "btn", "mic", "pir", "lampdrv", "fuseh", "wcam", "irled", "speaker", "probe")
-NICHT = {"shelf": T([0, 0, v5.SHELF_Z - v5.SHELF_T], v5.part_shelf()), "duct": v53.part_duct(),
-         "charger": box(126, 135.5, 62, 80, v5.SHELF_Z, v5.SHELF_Z + 25.4), "pam": box(137, 155, 62, 80, v5.SHELF_Z, v5.SHELF_Z + 6),
-         "stopfen10": T([(v52.SVC_X0 + v52.SVC_X1) / 2, -v5.WALL - 1.5, v5.PI_Z + 4], R([-90, 0, 0], v52.part_service_plug()))}
+        "btn", "mic", "pir", "lampdrv", "fuseh", "wcam", "irled", "speaker", "probe", "shelf", "charger", "pam", "ina", "plug")
+NICHT = {"duct (27)": v53.part_duct(), "resplug (17)": T([v5.LX + v5.WALL + 1.6, v52.RES_Y, v52.RES_ZC], R([0, -90, 0], v52.part_res_plug()))}
 probleme = []
 
 print("== Stapel (Höhen) ==")
-print("  Pi unten z %.2f | Kühler oben %.2f | HAT unten %.2f | Zellen oben %.2f | Deckel unten %.2f" % (u.PZ, u.PZ + 1.6 + u.COOL_H, u.ZH, u.TOP, v5.TOPZ))
-print("  Luft Zellen -> Deckel %.2f mm, Luft Lüfter -> HAT %.2f mm" % (v5.TOPZ - u.TOP, u.ZH - u.PZ - 1.6 - u.COOL_H))
+print("  Pi unten z %.2f | Kühler oben %.2f | HAT unten %.2f | Zellen oben %.2f (schlimmster Fall) / %.2f (wahrscheinlich) | Deckel unten %.2f"
+      % (u.PZ, u.PZ + 1.6 + u.COOL_H, u.ZH, u.TOP, u.TOP_WAHRSCH, v5.TOPZ))
+print("  Luft Zellen -> Deckel %.2f / %.2f mm, Luft Lüfter -> HAT %.2f mm, Stifte oben bis z %.2f"
+      % (v5.TOPZ - u.TOP, v5.TOPZ - u.TOP_WAHRSCH, u.ZH - u.PZ - 1.6 - u.COOL_H, u.ZH + u.HAT_T + u.PINS_TOP))
 if v5.TOPZ - u.TOP < 0.5:
-    probleme.append("Zellen zu hoch für den Deckel (%.2f mm)" % (v5.TOPZ - u.TOP))
+    probleme.append("Zellen zu hoch für den Deckel (schlimmster Fall, %.2f mm)" % (v5.TOPZ - u.TOP))
 
-print("== Kollisionen Stapel <-> Gehäuse v5.3 (unverändert) ==")
+print("== Kollisionen Stapel <-> Gehäuse v5.3 (unverändert, schlimmster Fall) ==")
 pts = {k: shell_points(P[k]) for k in STAPEL}
 for k in STAPEL:
     worst = []
@@ -59,60 +59,41 @@ for k in STAPEL:
         d, p = clearance(pts[k], P[f])
         worst.append((d, f, p))
     worst.sort(key=lambda t: t[0])
-    txt = ", ".join("%s %.2f" % (f, d) for d, f, p in worst[:4]) or "nichts in der Nähe"
-    print("  %-12s %s" % (k, txt))
+    print("  %-12s %s" % (k, ", ".join("%s %.2f" % (f, d) for d, f, p in worst[:4]) or "nichts in der Nähe"))
     for d, f, p in worst:
         klemm = k == "adapter" and f == "tub" and d >= -(0.1 + v52.SOCK_CLAMP) and any(abs(p[1] - yc) <= 2.1 for yc in (20.0, 60.0)) and p[2] < v5.ZF + 3.6
+        wand = k == "dcsocket" and f == "tub" and p[0] > v5.LX - 0.5         # Buchse sitzt in der Wand (gewollt)
         if klemm:
             print("  %-12s (Klemmrippe drückt %.2f mm gegen den Akku-Zaun – gewollt wie Sockel 13)" % ("", -d))
-        if d < 0.0 and not klemm:
+        if d < 0.0 and not klemm and not wand:
             probleme.append("%s schneidet %s (%.2f mm bei %s)" % (k, f, d, np.round(p, 1).tolist()))
-
-print("== Teile v5.3, die mit dem Adapter draussen bleiben (nur Info) ==")
-for n, node in NICHT.items():
-    ws = []
-    for k in ("pi", "cooler", "hat", "hatunder", "holder18650"):
-        ws.append((clearance(pts[k], node)[0], k))
-    d, k = min(ws)
-    print("  %-10s kleinster Abstand %.2f mm (%s)%s" % (n, d, k, "  -> weglassen" if d < 0 else ""))
-
-print("== Zugang von aussen (Stopfen 10 draussen) ==")
-tub = P["tub"]
-for nm, node in (("Stecker 8,4 V (Hülse Ø 5,5 + 0,3)", u.plug_sleeve(0.3)), ("USB-A-Stecker (Metall + 0,3)", u.usb_plug(0.3))):
-    d, p = clearance(shell_points(node, 0.3), tub)
-    print("  %-34s Abstand zum Unterteil %.2f mm" % (nm, d))
-    if d < 0:
-        probleme.append(nm + " stösst an das Unterteil (%.2f mm bei %s)" % (d, np.round(p, 1).tolist()))
-xs = u.PX + u.SW_X
-d, p = clearance(shell_points(cyl_y(xs, u.ZH - u.SW_H / 2, -v5.WALL - 3, u.PY - u.SW_OUT, 3.0), 0.3), tub)
-print("  %-34s Abstand zum Unterteil %.2f mm (Stift Ø 3 durch das Fenster)" % ("Schalter ON/OFF", d))
+# Reserve-Öffnung: Gewinde Ø 11 der Buchse muss durch das Loch (Ø 12,3)
+d, p = clearance(shell_points(cyl_x(u.DCB_Y, u.DCB_Z, v5.LX - 1, v5.LX + v5.WALL + 1, 11.0), 0.3), P["tub"])
+print("  Ladebuchse: Gewinde Ø 11 in der Reserve-Öffnung Ø %.1f, Abstand %.2f mm" % (v52.RES_D, d))
 if d < 0:
-    probleme.append("Schalter nicht erreichbar")
-# LEDs: gerader Blick von aussen (-y) durch die Lüftungsschlitze
-zl = u.ZH + u.HAT_T + 0.4
-frei = []
-for x in np.arange(u.PX + u.LED_X0, u.PX + u.LED_X1 + 0.01, 0.25):
-    ray = np.array([(x, y, zl) for y in np.arange(-v5.WALL - 1, u.PY + u.LED_Y - 1.5, 0.2)])
-    if tub.sdf(ray).min() > 0:
-        frei.append(round(x, 2))
-print("  LEDs (x %.0f..%.0f): gerade Sicht durch die Lüftungsschlitze bei x %s" % (u.PX + u.LED_X0, u.PX + u.LED_X1,
-      "%.1f..%.1f (%d von %d Stellen)" % (min(frei), max(frei), len(frei), int((u.LED_X1 - u.LED_X0) / 0.25) + 1) if frei else "– keine"))
-if not frei:
-    probleme.append("LEDs von aussen nicht sichtbar")
+    probleme.append("Ladebuchse passt nicht in die Reserve-Öffnung")
+
+print("== Teile v5.3, die draussen bleiben (nur Info) ==")
+for n, node in NICHT.items():
+    ws = [(clearance(pts[k], node)[0], k) for k in ("holder18650", "hat", "dcsocket")]
+    d, k = min(ws)
+    print("  %-12s kleinster Abstand %.2f mm (%s)%s" % (n, d, k, "  -> weglassen" if d < 0 else ""))
 
 print("== Kabel CAM0 / CAM1 (Vorschlag; Modell = Stab Ø 3, gerechnet als Flachkabel 0,3 mm: Abstand + 1,35) ==")
 FLACH = 1.35
 for nm, pts_ in (("cam0", u.cable_cam0_pts()), ("cam1", u.cable_cam1_pts())):
-    kn = P[nm]
-    ps = shell_points(kn, 0.3, band=0.6)
-    for f in ("lid", "tub", "holder18650", "hat", "hatunder", "cooler", "pi"):
+    ps = shell_points(P[nm], 0.3, band=0.6)
+    for f in ("lid", "tub", "holder18650", "hat", "hatunder", "plug90", "cooler", "pi", "shelf", "charger", "hub", "relay", "servo1"):
         d, p = clearance(ps, P[f])
         d += FLACH
-        print("  %s <-> %-12s %.2f mm%s" % (nm, f, d, "" if d >= 0 else "  (bei %s)" % np.round(p, 1).tolist()))
+        if d < 3.0:
+            print("  %s <-> %-12s %.2f mm%s" % (nm, f, d, "" if d >= 0 else "  (bei %s)" % np.round(p, 1).tolist()))
         if d < 0:
             probleme.append("Kabel %s schneidet %s (%.2f mm bei %s)" % (nm, f, d, np.round(p, 1).tolist()))
     L = sum(np.linalg.norm(np.subtract(a, b)) for a, b in zip(pts_[:-1], pts_[1:]))
     print("  %s Länge ca. %.0f mm" % (nm, L))
+pt_ = u.pigtail_pts()
+print("  Ladekabel (Winkelstecker -> Einbaubuchse) ca. %.0f mm" % sum(np.linalg.norm(np.subtract(a, b)) for a, b in zip(pt_[:-1], pt_[1:])))
 
 print("== Adapter ==")
 lo, hi = P["adapter"].bbox()
