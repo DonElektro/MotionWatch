@@ -84,9 +84,10 @@ weg "$KIOSK_TEST"
 # nächsten Start der Sitzung ohnehin nicht mehr)
 if command -v xhost >/dev/null 2>&1; then
 	for pid in $(pgrep -f 'kiosk_sitzung\.sh' 2>/dev/null); do
-		xu="$(stat -c %U "/proc/$pid" 2>/dev/null)"; [ -n "$xu" ] && [ "$xu" != root ] || continue
+		xu="$(stat -c %U "/proc/$pid" 2>/dev/null)"
+		if [ -z "$xu" ] || [ "$xu" = root ]; then continue; fi
 		xa="$(tr '\0' '\n' < "/proc/$pid/environ" 2>/dev/null | sed -n 's/^XAUTHORITY=//p' | head -n 1)"
-		tr '\0' '\n' < "/proc/$pid/environ" 2>/dev/null | grep -qx 'DISPLAY=:0' && [ -n "$xa" ] || continue
+		if [ -z "$xa" ] || ! tr '\0' '\n' < "/proc/$pid/environ" 2>/dev/null | grep -qx 'DISPLAY=:0'; then continue; fi
 		runuser -u "$xu" -- env DISPLAY=:0 XAUTHORITY="$xa" xhost "-SI:localuser:$RU" >/dev/null 2>&1 && echo "  Bildschirm-Freigabe für $RU zurückgenommen"
 		break
 	done
