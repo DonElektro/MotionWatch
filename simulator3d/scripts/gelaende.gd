@@ -299,10 +299,22 @@ func path(parent: Node3D, pts: Array, width := 1.6, kind := "kies") -> MeshInsta
 			# «Wege und Strassen»: Feldweg with two gravel tracks and grass in the middle, gravel path; soft edge into the
 			# meadow (a rim of 0.45 m where the ground shows through bit by bit). Same width for on_path (grass stays put).
 			var pm: ShaderMaterial = mi.material_override
-			mi.mesh = Wege.band(main, line, width * 0.5, 0.45, 0.025, Wege.COLS_FELD, 0.08)
+			# Schritt 2: in curves instead of straight pieces (Catmull-Rom through the same points); the straight line stays
+			# in paths until the trees stand (smooth_paths), so they stand where they did
+			var sline := Wege.spline(pts, 0.8)
+			mi.mesh = Wege.band(main, sline, width * 0.5, 0.45, 0.025, Wege.COLS_FELD, 0.08)
 			mi.material_override = Wege.feld_mat(main, kind, pm.get_shader_parameter("base"), pm.get_shader_parameter("grit"))
+			paths.append([line, width * 0.5, kind, sline])
+			return mi
 	paths.append([line, width * 0.5, kind])
 	return mi
+
+
+func smooth_paths() -> void:
+	"""«Wege und Strassen» Schritt 2: the curved line of each path (built in path()) from now on"""
+	for pa in paths:
+		if pa.size() > 3:
+			pa[0] = pa[3]
 
 
 func on_path(p: Vector2, margin := 0.3) -> bool:
@@ -465,9 +477,21 @@ func camping_plants(sc) -> void:
 	Veg.scatter(sc, 100, 60.0, 120.0, ["tree:fichte:0.9-1.6", "tree:fichte:0.9-1.6", "tree:laub:0.9-1.5", "tree:kiefer:0.9-1.3",
 			"tree:eiche:0.9-1.3", "tree:birke:0.9-1.3"], kc, 3.0)
 	var tall := [[Vector2(-15.0, -20.0), 6.0], [_v2(main.pos_of(22.0, 26.0)), 6.0], [Vector2(12.0, -16.0), 4.0], [Vector2(-28.0, 16.0), 6.0]]
-	Veg.grass(sc, 2600, 2.5, 15.0, kc, {"tall": 0.05, "tall_spots": tall})     # dense near the camera
-	Veg.grass(sc, 3600, 15.0, 50.0, kc, {"tall": 0.1, "tall_spots": tall})
-	Veg.flowers(sc, 900, 4.0, 42.0, kc)
+	# «Wege und Strassen» Schritt 2 (Normal / Hoch): the paths in curves and a hiking trail with a signpost, after trees and
+	# bushes. Grass and flowers use the same random numbers as before (kc unchanged) and leave out what lies on the new
+	# shapes (hide) - the scene stays the same (obstacles, trees, what comes after); then the new lines count (smooth_paths)
+	var hide := Callable()
+	var trail := PackedVector2Array()
+	if Wege.an(main):
+		trail = Wege.camping_trail(sc)
+		hide = Wege.hide_fn(self, trail)
+	Veg.grass(sc, 2600, 2.5, 15.0, kc, {"tall": 0.05, "tall_spots": tall, "hide": hide})     # dense near the camera
+	Veg.grass(sc, 3600, 15.0, 50.0, kc, {"tall": 0.1, "tall_spots": tall, "hide": hide})
+	Veg.flowers(sc, 900, 4.0, 42.0, kc, [], hide)
+	if Wege.an(main):
+		smooth_paths()
+		if trail.size() >= 2:
+			paths.append([trail, 0.45, "pfad"])
 
 
 # ---- tests ---------------------------------------------------------------------------------------------------------------

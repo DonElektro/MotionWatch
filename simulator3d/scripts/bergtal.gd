@@ -27,6 +27,7 @@ const Texturen = preload("res://scripts/bergtal_texturen.gd")      # 3.30 Foto-T
 const Waerme = preload("res://scripts/waerme.gd")              # Paket A1: Fell-/Federtemperaturen von Murmeltier, Adler, Geier
 const Ziele = preload("res://scripts/bergtal_ziele.gd")        # real-berg-orte: Tuffwasserfall, Chalchstock (Gipfel mit Antenne)
 const Wegweiser = preload("res://scripts/bergtal_wegweiser.gd") # real-berg-orte: gelbe Wegweiser, Zeiten aus dem Weg
+const Wege = preload("res://scripts/wege.gd")                  # «Wege und Strassen» Schritt 2: Wanderwege (Normal / Hoch)
 
 const ALT0 := 1500.0                 # metres above sea level at the north end (height 0)
 const LO := -1024.0                  # the height map: from LO to -LO in both directions
@@ -1527,7 +1528,7 @@ func _bed_at(si: int, z: float) -> float:
 
 
 # ---- road and trails (ribbons on the ground, in pieces so the far ones are not drawn) ------------------------------------
-func _ribbon(pts: PackedVector2Array, hs: PackedFloat32Array, w: float, col: Color, lift: float, vis: float, tk := "road") -> void:
+func _ribbon(pts: PackedVector2Array, hs: PackedFloat32Array, w: float, col: Color, lift: float, vis: float, tk := "road", hide_vis := false) -> void:
 	var mt := StandardMaterial3D.new()
 	mt.albedo_color = col
 	mt.roughness = 0.95
@@ -1558,6 +1559,7 @@ func _ribbon(pts: PackedVector2Array, hs: PackedFloat32Array, w: float, col: Col
 		var mi: MeshInstance3D = m.add_mesh(tal, (pieces[key] as SurfaceTool).commit(), Vector3.ZERO, mt, tk)
 		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		mi.visibility_range_end = vis
+		mi.visible = not hide_vis                            # «Wege und Strassen»: the trail is drawn by wege.gd (thermal stays)
 		var th: MeshInstance3D = tal.get_child(tal.get_child_count() - 1)
 		th.visibility_range_end = vis
 
@@ -1595,9 +1597,12 @@ func _roads_and_trails() -> void:
 				lp.append(road_pts[i] + _side(road_pts, i) * side * 2.5)     # K2: same side as the ribbon
 			_ribbon(lp, rh, 0.14, Color(0.85, 0.85, 0.82), 0.09, 140.0 if lite else 260.0)
 	var tc := Color(0.42, 0.34, 0.24) if season != "winter" else Color(0.8, 0.82, 0.86)
+	var neu := Wege.an(m)
 	for tr in TRAILS:
 		var tcol := tc if season == "winter" or int(tr[2]) == 0 else Color(0.6, 0.57, 0.5)   # «wie auf den Fotos»: mountain trails light gravel
-		_ribbon(dense(tr[1], 3.0), PackedFloat32Array(), [1.3, 0.9, 0.6][int(tr[2])], tcol, 0.08, 160.0 if lite else 330.0, "road")
+		_ribbon(dense(tr[1], 3.0), PackedFloat32Array(), [1.3, 0.9, 0.6][int(tr[2])], tcol, 0.08, 160.0 if lite else 330.0, "road", neu)
+	if neu:
+		_wanderwege()
 	# parking at the pass and at the alp (K2: the ground under them is flat - generate())
 	for pk in PARKINGS:
 		var c: Vector2 = pk[0]
@@ -1620,6 +1625,52 @@ func _roads_and_trails() -> void:
 		if season != "winter":
 			Texturen.way(m, mt, "asphalt", 3.0)              # 3.30 Foto-Texturen
 		m.add_mesh(tal, st.commit(), Vector3.ZERO, mt, "road")
+
+
+func _wanderwege() -> void:
+	"""«Wege und Strassen» Schritt 2 (Normal / Hoch): die Wanderwege als echte Pfade (wanderweg.gdshader) - festgetretene Erde,
+	Bergwege Geröll; Ecken abgerundet, sanftes Pendeln (höchstens ~1 m neben dem alten Verlauf: Bäume, Wegweiser, Ziele
+	stimmen weiter); Stufen, wo der Weg steil ist (Holz unten, Stein oben). Jahreszeit des Bergtals: Herbst Laub, Winter Schnee.
+	In Stücken von 200 m mit Sichtweite wie bisher; nur sichtbar (das alte Band bleibt fürs Wärmebild)."""
+	var hfn := Callable(self, "H")
+	var mats := {}
+	var n_steps := 0
+	for ti in range(TRAILS.size()):
+		var tr: Array = TRAILS[ti]
+		var lvl := int(tr[2])
+		if not mats.has(lvl):
+			var mt: ShaderMaterial = Wege.wander_mat(m, {"rock": [0.15, 0.6, 0.8][lvl], "roots": [0.7, 0.25, 0.0][lvl],
+					"earth": [Color(0.36, 0.29, 0.2), Color(0.42, 0.38, 0.32), Color(0.44, 0.42, 0.38)][lvl]})
+			if season == "herbst":
+				mt.set_shader_parameter("laub", [0.6, 0.25, 0.0][lvl])
+				mt.set_meta("laub_fest", true)
+			if season == "winter":
+				mt.set_shader_parameter("snow_fest", 0.95)
+			mats[lvl] = mt
+		var hw: float = [1.3, 0.9, 0.6][lvl] * 0.5
+		var line := Wege.meander(Wege.dense(Wege.rounded(tr[1], 7.0), 1.0), [0.45, 0.35, 0.25][lvl], float(ti) * 1.7, 15.0)
+		var pieces := {}
+		for k in range(line.size()):
+			var key := "%d,%d" % [int(floor(line[k].x / 200.0)), int(floor(line[k].y / 200.0))]
+			if not pieces.has(key):
+				pieces[key] = PackedVector2Array()
+				if k > 0:
+					pieces[key].append(line[k - 1])            # no gap between two pieces
+			pieces[key].append(line[k])
+		for key in pieces:
+			var run: PackedVector2Array = pieces[key]
+			if run.size() < 2:
+				continue
+			var mi := MeshInstance3D.new()
+			mi.mesh = Wege.band(m, run, hw, 0.35, 0.1, Wege.COLS_FELD, 0.0, hfn)
+			mi.material_override = mats[lvl]
+			mi.layers = 1
+			mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			mi.visibility_range_end = 160.0 if lite else 330.0
+			tal.add_child(mi)
+		if season != "winter":
+			n_steps += Wege.steps(m, tal, line, hw, hfn, lvl > 0 or H(line[0].x, line[0].y) > 400.0)
+	info["trail_steps"] = n_steps
 
 
 # ---- plants and rocks --------------------------------------------------------------------------------------------------
