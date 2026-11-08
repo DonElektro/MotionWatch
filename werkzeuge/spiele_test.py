@@ -6,6 +6,7 @@
      aussen in neuen Spielen (nur die eigenen Dateien), GAMES_PKG in quelle/320 passt zu Grösse und SHA-256 der ZIP.
   2. Browser (Playwright, ohne Internet - jede Anfrage nach aussen ist ein Fehler): jedes Spiel am Handy (390 × 844,
      Touch) und am PC (1280 × 800) laden, Start-Knopf antippen bzw. klicken, ein paar Eingaben; keine JavaScript-Fehler.
+     Ab 3.66.1 mit dem echten «✕ Zurück» aus quelle/340 (GAME_BACK): er darf keinen Knopf, Link und kein Feld überdecken.
      Touch-Spiele: das Antippen muss im Spiel ankommen. Der eigene Zurück-Link führt zur Spielesammlung von MoveEye.
   3. Wobbly Truck (ab GS-1.5, mit ?test=1): Truck und Motorrad auf beiden Strecken, ein Salto und ein Wheelie werden erkannt,
      der Looping gelingt auf «Normal» und ist keine Falle, Einstellungen werden gespeichert, Rekord je Strecke und Fahrzeug.
@@ -37,6 +38,21 @@ REPO = os.path.dirname(HIER)
 SPRACHEN = ("de", "en", "fr", "it", "rm")
 GRUPPEN = ("touch", "buttons", "keys")
 ZURUECK = '<div id="mw-back"><a href="/zurueck-zur-sammlung">✕ Zurück</a></div>'
+try:    # 3.66.1: the real button of MoveEye (quelle/340 GAME_BACK) with its placement script
+    _q = open(os.path.join(REPO, "quelle", "340_spiele_seiten.py"), encoding="utf-8").read()
+    ZURUECK = re.search(r'GAME_BACK = """(.*?)"""', _q, re.S).group(1).replace("__BACK__", "/zurueck-zur-sammlung")
+except (OSError, AttributeError):
+    pass
+# the floating «✕ Zurück» must never lie on a button, link or form field of the game (or it is hidden: own back link)
+UEBERDECKT = """() => { const b = document.getElementById('mw-back'); if (!b || getComputedStyle(b).display === 'none') return null;
+  const r = b.firstElementChild.getBoundingClientRect(), out = new Set();
+  if (r.left < 0 || r.top < 0 || r.right > innerWidth || r.bottom > innerHeight) out.add('ausserhalb');
+  for (let i = 0; i <= 4; i++) for (let j = 0; j <= 2; j++)
+    for (const e of document.elementsFromPoint(Math.min(innerWidth - 1, r.left + 2 + (r.width - 4) * i / 4), Math.min(innerHeight - 1, r.top + 2 + (r.height - 4) * j / 2))) {
+      if (b.contains(e) || e === document.body || e === document.documentElement) continue;
+      const c = e.closest('a,button,input,select,textarea,label,[role=button],[onclick]');
+      if (c) out.add(c.tagName.toLowerCase() + (c.id ? '#' + c.id : '') + ' ' + (c.textContent || '').trim().slice(0, 16)); }
+  return [...out]; }"""
 START = ["#bPlay", "#playBtn", "#btnPlay", "#startBtn", "#play", "button.play", "[data-t=play]",
          ".q-shade[data-card=ready] .play"]
 
@@ -185,6 +201,12 @@ def spiel_pruefen(br, base, g, fehler, warn, bilder, zeile):
                 pg.mouse.click(cx, cy); pg.wait_for_timeout(300)
             pg.wait_for_timeout(600)
             T = pg.evaluate("() => window.__mwT")
+            for zeit in (0, 2800):                     # after the inputs and once more after the next re-check of the button
+                pg.wait_for_timeout(zeit)
+                ue = pg.evaluate(UEBERDECKT)
+                if ue:
+                    fehler.append(f"{d} {name}: «✕ Zurück» überdeckt {', '.join(ue)}")
+                    break
             st = pg.evaluate(ZUSTAND)
             if mobil:
                 ok = (T["pd"] + T["md"] + T["ts"]) > 0
@@ -202,6 +224,7 @@ def spiel_pruefen(br, base, g, fehler, warn, bilder, zeile):
                 if pg.locator('a[href="../"], a[href="index.html"]').count():
                     href_ok = pg.evaluate("""() => { const a = document.querySelector('a[href="../"], a[href="index.html"]');
                       let to = null; const b = document.querySelector('#mw-back a'); if (!b) return 'kein #mw-back';
+                      b.removeAttribute('onclick');   // the real button goes back in the history: here only where it leads
                       b.addEventListener('click', e => { to = b.getAttribute('href'); e.preventDefault(); }, {once: true});
                       a.dispatchEvent(new MouseEvent('click', {bubbles: true, cancelable: true})); return to || 'nicht umgeleitet'; }""")
                     if href_ok != "/zurueck-zur-sammlung":
