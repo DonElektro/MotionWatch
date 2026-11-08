@@ -1,7 +1,24 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-08 20:22",
+ "generated": "2026-11-08 21:08",
  "versions": [
+  {
+   "version": "3.65.0",
+   "file": "webcam_bewegung_3_65_0.py",
+   "url": "",
+   "sha256": "649f37a39891451935af3ed5afe8ac6d8ecd0d35bbbd87d4678b8bea4a1922dc",
+   "date": "2026-11-08 21:08",
+   "notes": "Spielesammlung GS-1.4: 36 neue Browserspiele (12 Kevlaschef Games, 24 Quantum Games) – am Handy mit Antippen, am PC mit Tasten, offline, in 5 Sprachen; © 2026 Kevlaschef, mit Erlaubnis des Rechteinhabers.",
+   "size": 3734534,
+   "sig": "f359dff1d223d132418b1d635c594c8755c9bafd74201ecfb8913b91be3e5f8cd852a586d83f9b7518ee0bef97464e7600f4d6eaa699380b15f28fc77ea94607",
+   "data": {
+    "file": "moveeye_daten_3_65_0.zip",
+    "url": "",
+    "sha256": "7174de31f1e0a13d2833ad6f960889aea8853a0710f31bc86804f05a3d2bac8b",
+    "size": 4883623,
+    "sig": "e650cfd6258b4287d5596d8209a470f7f94897c1a194034030e73dc4deb3931f5c0a0b446ac6703408f94f175880293adbdd71e147ce15c9135fe0d54d2f6c07"
+   }
+  },
   {
    "version": "3.64.0",
    "file": "webcam_bewegung_3_64_0.py",
@@ -139,23 +156,6 @@
    }
   },
   {
-   "version": "3.56.0",
-   "file": "webcam_bewegung_3_56_0.py",
-   "url": "",
-   "sha256": "6daaaecfeda9c87f6b7d342a1f8a38e5c192c313e62e35e16cca0dbc73b1a421",
-   "date": "2026-11-07 11:18",
-   "notes": "Drei Spuren: MoveEye, Simulator und Gehäuse haben je eine eigene Nummer und erscheinen einzeln; MoveEye prüft den Simulator für /sim über die signierte Liste (versions.json «sim»), der HP holt neue Simulatoren selbst, das Versions-Paar warnt nur noch unter der Mindestversion.",
-   "size": 4950616,
-   "sig": "33fb1c0d917db99326c117ce42eff62904755c4089852ccd3c9cc643febd8f15b71410915bc9e9fb221b970fe6243cc20fa6e4e97a34cd97467e9ddbb0387e03",
-   "data": {
-    "file": "moveeye_daten_3_56_0.zip",
-    "url": "",
-    "sha256": "54e2a16729033fcaaa4b9182c08c9649ab6df68d856a89f5c69166fd1b311023",
-    "size": 4098539,
-    "sig": "4fbea139ad7b654e84a7780821ef3c747beb6c415cdeed3ba0971814fbe49fbf8f243253961b025ccaa246efe682bf9f456155940bf101a544d5151400353108"
-   }
-  },
-  {
    "version": "3.0.2",
    "file": "webcam_bewegung_3_0_2.py",
    "url": "",
@@ -185,14 +185,6 @@
    "size": 48391199,
    "sha256": "e7305bff9903c295ae8d8d5861e93b6b5d5b92f33f427addb7745a4a54c0d177",
    "sig": "cb0339c9e88526e3a36968db4bc48b2aa0d3cb3fd4aa25e5786e56027ce050f6db8958e72a18161f55c41f96db0266b55afbe182ac15db9aa42c9ff49ebd300f"
-  },
-  "pi": {
-   "ver": "3.65.1",
-   "file": "simulator3d/MoveEyeSim3D_Pi.zip",
-   "size": 37894828,
-   "sha256": "a008a61a14cb0b8384ed183c79e33aa3dca5ea51df01147c9102af5dc66015e2",
-   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.65.1/MoveEyeSim3D_Pi.zip",
-   "sig": "c3fbc4a723d0a445873d3d1c1710251d4a43e41147b8aa192f56e31c798c0c34d6567d78edb26f89c7dfbd8bfc8a59db8849994304455fb7f4ccd24559dbb205"
   }
  }
 }
