@@ -20,7 +20,8 @@ Auswahl der Arten (Entscheid Besitzer: alles – Pflanzen, Tiere, Pilze, Insekte
     häufigsten aus Deutschland, Österreich und Liechtenstein (Mitteleuropa), dazu Haustiere, Nutztiere, Garten- und
     Kulturpflanzen (Liste EXTRA unten);
   * nur Arten, die BioCLIP selbst kennt (txt_emb_species.json aus imageomics/bioclip, TreeOfLife-10M): dann sind die
-    Einbettungen genau die von pybioclip (Format «a photo of <Taxonomie> with common name <Name>», 80 Vorlagen gemittelt).
+    Einbettungen genau die von pybioclip (txt_emb_species: nur die 7 Stufen der Taxonomie als Text, 80 Vorlagen gemittelt -
+    die Gegenprobe im Lauf misst das nach: Kosinus 1.000 für «taxonomic», 0.99 mit Trivialname).
   * Höhere Stufen (Gattung, Familie, Ordnung, Klasse) entstehen auf dem Pi durch Zusammenzählen (wie pybioclip «rank»).
 Namen: Wikidata (CC0) – Eigenschaft «Trivialname» (P1843), sonst die Bezeichnung, wenn sie nicht nur der lateinische Name ist.
 """

@@ -77,7 +77,7 @@ jobs:
       - name: Pakete (torch nur hier, CPU)
         run: |
           pip install -q torch==2.5.1 --index-url https://download.pytorch.org/whl/cpu
-          pip install -q open_clip_torch==2.29.0 huggingface_hub==0.26.2 onnx==1.17.0 onnxruntime==1.20.1 pillow==11.0.0 \
+          pip install -q open_clip_torch==2.29.0 huggingface_hub==0.26.2 onnx==1.17.0 "onnxscript<0.3" onnxruntime==1.20.1 pillow==11.0.0 \
             "numpy<2.2" opencv-python-headless==4.10.0.84 flask cryptography
           python3 -c "import torch, open_clip, onnxruntime; print(torch.__version__, open_clip.__version__, onnxruntime.__version__)"
       - name: Bauen und prüfen (bioclip_bauen.py)

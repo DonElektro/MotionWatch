@@ -13,7 +13,7 @@
 #     Fortschritt, freiem Platz (immer tausch_free_gb frei, wie der Datentausch) und harter Grösse; danach offline.
 #   * Auswahl der Arten: die in der Schweiz (und Liechtenstein, Deutschland, Österreich) am häufigsten gemeldeten Arten
 #     (GBIF.org) + Haustiere, Nutztiere, Garten- und Kulturpflanzen, nur Arten, die BioCLIP kennt (Einbettungen wie
-#     pybioclip: TreeOfLife-Taxonomie + Name, 80 Vorlagen). Höhere Stufen: Wahrscheinlichkeiten zusammengezählt (pybioclip
+#     pybioclip: die TreeOfLife-Taxonomie als Text, 80 Vorlagen). Höhere Stufen: Wahrscheinlichkeiten zusammengezählt (pybioclip
 #     «rank»). Namen: Wikidata (CC0).
 #   * Rechnen in einem eigenen Python-Prozess mit «nice 10» (BIO_WORKER, 2 Threads): die Erkennung behält den Vorrang, der
 #     Webserver wartet nie (Auftrag im Hintergrund, die Seite fragt nach). Immer nur ein Bild auf einmal (sonst «gleich weiter»),
