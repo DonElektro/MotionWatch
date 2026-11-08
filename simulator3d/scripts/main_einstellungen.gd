@@ -463,7 +463,7 @@ func _register_controls() -> void:
 	# F1 (Konzept-Wunsch): EINE Wahl «Grafik-Modus» Automatisch / Lite / Normal / Hoch; die Feinheiten (Grafik-Details,
 	# «Automatisch leichter», Tiefenschärfe) nur unter «Experte»
 	main.add_control("select", "grafik_mode", "Grafik-Modus", func(): return main.grafik_mode, func(v): main.set_grafik_mode(str(v)), "Grafik",
-			{"options": Quality.MODES, "tip": "Hoch: Licht prallt von Flächen ab, Dunst, weiche Schatten, Spiegelungen auf Wasser und nassen Flächen, bessere Oberflächen. Braucht eine gute Grafikkarte (Vulkan); der Simulator startet dafür einmal neu."})
+			{"options": preload("res://scripts/grafik_hoch.gd").modes(), "tip": "Hoch: Licht prallt von Flächen ab, Dunst, weiche Schatten, Spiegelungen auf Wasser und nassen Flächen, bessere Oberflächen. Braucht eine gute Grafikkarte (Vulkan); der Simulator startet dafür einmal neu."})
 	main.add_control("select", "quality", "Grafik-Details (Schatten, Leuchten, Wolken)", func(): return main.quality, func(v): main._set_quality(v), "Grafik",
 			{"expert": true, "options": [["simple", "einfach (schnell)"], ["medium", "mittel"], ["nice", "schön (Schatten, Leuchten, Wolken)"],
 						 ["ultra", "ultra (für starke Grafikkarten; mit Vulkan noch mehr Effekte)"]]})

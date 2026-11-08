@@ -1,6 +1,6 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-08 19:43",
+ "generated": "2026-11-08 20:18",
  "versions": [
   {
    "version": "3.64.0",
@@ -168,31 +168,23 @@
   }
  ],
  "sim": {
-  "ver": "3.65.0",
-  "version": "3D-5.65.0",
-  "notes": "Strassenrand, Lampen in der Nacht, Strassen im Ferienpark, Bergdorf und Bergtal, Parkfelder",
+  "ver": "3.65.1",
+  "version": "3D-5.65.1",
+  "notes": "Fehlerkorrektur: Hoch auf Software-Vulkan startet sofort mit Normal",
   "mw_min": "3.55.0",
   "win": {
-   "ver": "3.65.0",
+   "ver": "3.65.1",
    "file": "simulator3d/MotionWatch3D_Simulator.zip",
-   "size": 54352856,
-   "sha256": "846298d321fbefdcb75c773a76176f7b04378282cc7fa94ff38f8f385096753f",
-   "sig": "9a40034789e530755db80a2d98a58616d83eced9c1ab105545d075e2e6fcf1daf6fc6553edddf03da48922fb9c1f0551cd76cdf0883e9abce3f8f273b9b71607"
+   "size": 54355793,
+   "sha256": "fcecaa506d6adaf7c6aa603ce65a1864e005ae37bc2a3819a8cdc7176d3d0faa",
+   "sig": "4dd291f996f68f7c43b7d8791b036286eddf1a1105d0929265600588c2b5b9388aad7fd380b9407b3d29d6082a9e4585d3a322f1ca7ea08d90f32d366795920a"
   },
   "linux": {
-   "ver": "3.65.0",
+   "ver": "3.65.1",
    "file": "simulator3d/MoveEyeSim3D_Linux.zip",
-   "size": 48383901,
-   "sha256": "23fe36c01cc169f8386cf5fb540d1026e23f222f90e2a6d2f58c9a56a49829f6",
-   "sig": "c6aeb01de29cc8ae8137e09bf984bca2bef7843b57ff15466001f842c49c4be2c82f940bc14ff6347141258eb9c91394e2451c0105272196ac927cd1c0ac3b05"
-  },
-  "pi": {
-   "ver": "3.65.0",
-   "file": "simulator3d/MoveEyeSim3D_Pi.zip",
-   "size": 37893592,
-   "sha256": "d64dcc2a0228c37f5ae6836acc942901268bd403549bd0ab5475630c0a6ae329",
-   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.65.0/MoveEyeSim3D_Pi.zip",
-   "sig": "3a887244e73aac5f39ac342d54a9651b507d308c8e9e322a24b3a10e4f98833c63762150a1daf140472269003abccdb0358afa536925d9571d83a686df329902"
+   "size": 48391199,
+   "sha256": "e7305bff9903c295ae8d8d5861e93b6b5d5b92f33f427addb7745a4a54c0d177",
+   "sig": "cb0339c9e88526e3a36968db4bc48b2aa0d3cb3fd4aa25e5786e56027ce050f6db8958e72a18161f55c41f96db0266b55afbe182ac15db9aa42c9ff49ebd300f"
   }
  }
 }

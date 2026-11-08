@@ -1,8 +1,12 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 08.11.2026 · Version **3.65.0** · MoveEye **3.64.0** (Drei Spuren ab 03.11.2026: Simulator und MoveEye mit eigenen Nummern, Verträglichkeit über `MW_MIN` in `scripts/abgleich.gd` / `SIM_MIN` in MoveEye Teil 545; 3.0.0 bis 3.55.2 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 08.11.2026 · Version **3.65.1** · MoveEye **3.64.0** (Drei Spuren ab 03.11.2026: Simulator und MoveEye mit eigenen Nummern, Verträglichkeit über `MW_MIN` in `scripts/abgleich.gd` / `SIM_MIN` in MoveEye Teil 545; 3.0.0 bis 3.55.2 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU in 3.65.1 (MoveEye 3.64.0): Hoch-Schutz (sim-hoch-schutz)
+
+- grafik_hoch.gd: Software-Vulkan -> sofort Normal mit Hinweis, Wachhund 60 s ohne erstes Bild -> Normal; Test werkzeuge/hoch_schutz_test.sh.
 
 ## NEU in 3.65.0 (MoveEye 3.64.0): Wege Schritt 2b (sim-wege3)
 
