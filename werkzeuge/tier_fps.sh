@@ -6,6 +6,11 @@ VULKAN_OK=0
 G="$1"; P="$2"; O="$3"; H="$(cd "$(dirname "$0")" && pwd)"
 mkdir -p "$O" "$O/home"
 : > "$O/ergebnis.txt"
+if [ -n "$DISPLAY" ] && command -v xset >/dev/null && ! xset -display "$DISPLAY" q >/dev/null 2>&1; then
+  echo "TIERFPS Display $DISPLAY nicht erreichbar (Bildschirm für den Runner nicht freigegeben? runner_einrichten.sh --bildschirm)" | tee -a "$O/ergebnis.txt"
+  exit 0
+fi
+command -v glxinfo >/dev/null && glxinfo -B 2>/dev/null | grep -E "renderer string|version string" | head -2 | sed "s/^/TIERFPS GL: /" | tee -a "$O/ergebnis.txt"
 # hoch = Forward+ (Vulkan); geht Vulkan nicht, kommt zusätzlich hoch_gl (Stufe Hoch mit OpenGL, ohne Neustart: --no-hoch)
 for stufe in normal hoch hoch_gl; do
   [ "$stufe" = hoch_gl ] && [ "$VULKAN_OK" = 1 ] && continue
@@ -20,5 +25,6 @@ for stufe in normal hoch hoch_gl; do
     grep -a "TIERE flora=" "$L" | head -1 | sed "s/^/[$stufe $tiere] /" | tee -a "$O/ergebnis.txt"
     grep -a "TIERE view" "$L" | sed "s/^TIERE view /TIERFPS $stufe $tiere /" | tee -a "$O/ergebnis.txt"
     grep -a -m3 "SCRIPT ERROR\|Vulkan\|vulkan" "$L" | sed "s/^/[$stufe $tiere] /"
+    grep -aq "TIERE view" "$L" || { echo "[$stufe $tiere] kein Ergebnis - Ende des Logs:"; tail -n 12 "$L" | cut -c1-200 | sed "s/^/[$stufe $tiere]   /"; }
   done
 done
