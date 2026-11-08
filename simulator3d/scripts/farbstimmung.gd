@@ -61,16 +61,19 @@ func _update() -> void:
 	var gold := clampf(1.0 - absf(h - 13.0) / 6.0, 0.0, 1.0)
 	gold = 1.0 - gold                                         # far from noon -> golden
 	var dark: bool = main.has_method("is_dark") and main.is_dark()
-	var tint := Vector3(1.0, 1.0, 1.0).lerp(Vector3(1.07, 1.0, 0.88), smoothstep(0.55, 0.9, gold))
-	var lift := Vector3(0.0, 0.004, 0.012)
-	var sat := 1.04
-	var con := 0.05
+	# owner 08.11.2026: about half the earlier strength - noon nearly neutral, evening only gently warm, night only slightly blue
+	var tint := Vector3(1.0, 1.0, 1.0).lerp(Vector3(1.035, 1.0, 0.94), smoothstep(0.55, 0.9, gold))
+	var lift := Vector3(0.0, 0.002, 0.006)
+	var sat := 1.02
+	var con := 0.025
+	var vign := 0.08
 	if dark:
-		tint = Vector3(0.96, 0.98, 1.05)                      # night: a little blue, not brighter
-		lift = Vector3(0.0, 0.0, 0.006)
-		sat = 0.92
-		con = 0.06
+		tint = Vector3(0.98, 0.99, 1.025)                     # night: a little blue, not brighter
+		lift = Vector3(0.0, 0.0, 0.003)
+		sat = 0.96
+		con = 0.03
 	mat.set_shader_parameter("tint", tint)
 	mat.set_shader_parameter("lift", lift)
 	mat.set_shader_parameter("sat", sat)
 	mat.set_shader_parameter("contrast", con)
+	mat.set_shader_parameter("vign", vign)
