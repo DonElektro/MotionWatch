@@ -23,6 +23,8 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 3.69.2: Spielecke über https: die Bilder der Kacheln (Kevlaschef, Quantum, FOTAQ) erscheinen wieder – sie kommen jetzt vom
+    gleichen Server wie die Seite
   * 3.69.1: iPhone «Zum Home-Bildschirm»: MoveEye-Symbol statt schwarzem «M» – das Symbol steckt jetzt direkt in der Seite (iOS
     lädt es sonst nicht über das eigene Zertifikat)
   * 3.69.0: Spielecke: «Flight of the Amazon Queen» (1995, CD-Fassung mit Sprachausgabe, Deutsch/Englisch) – ScummVM im Browser,
@@ -108,8 +110,6 @@ Features
   * 3.49.0: Erkennung: deutlich mehr Personen erkannt (Test 3: 42 % → 69 %, Kinder 92 %); Auto-Tune gedeckelt, Wind-Regel nur
     letzte 2 Min., aufrechte KI-Person sofort «Person?» und nie «Tier», Autos/Scheinwerfer nachts keine Person, Kopf schwenkt
     beim Verfolgen mit.
-  * 3.48.1: Werkstatt im Simulator wie in MoveEye (Karte unter dem Bild, Symbole, Farben), Knopftexte zweizeilig statt
-    abgeschnitten; echte 3D-Modelle für Füsse und Stopfen, echte Lage auf den Druckplatten.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -118,10 +118,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_3_69_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_3_69_2.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_3_69_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_3_69_1.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_3_69_2.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_3_69_2.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -138,7 +138,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "3.69.1"
+APP_VERSION = "3.69.2"
 
 
 def default_data_dir():
@@ -263,8 +263,8 @@ def prepare_settings_file():
 
 
 
-ZD_FILE = "moveeye_daten_3_69_1.zip"
-ZD_SHA256 = "b02b1ce35b5689fc9c8ee9764959cd85f8595b6b6a0ac834f2a916a22dbe2d82"
+ZD_FILE = "moveeye_daten_3_69_2.zip"
+ZD_SHA256 = "17fd3db716560c8056e9ac75af77e5508a91ee2a0723891856e4c82524b2959f"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -48891,7 +48891,7 @@ class App:
 		self.watch = watch
 		self.web = web or WebStream(watch)
 		self.root = tk.Tk()
-		self.root.title("MoveEye 3.69.1")
+		self.root.title("MoveEye 3.69.2")
 		try:
 			import base64
 			self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -49269,7 +49269,7 @@ class App:
 			if not small:
 				vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
 				vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))
-			Tip(nm, f"{tr('Build')} 3.69.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+			Tip(nm, f"{tr('Build')} 3.69.2 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
 			self._egg_taps = []
 			for w_ in tl.winfo_children():
 				w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -56482,7 +56482,7 @@ App._refresh = _kr_tk_refresh
 
 
 
-INFO_PARTS = 279
+INFO_PARTS = 280
 INFO_START = "2026-10-16"
 FBX = {"shot": None, "shot_t": 0.0, "lines": 0}
 
@@ -87875,6 +87875,110 @@ def fotaq_selftest():
 
 
 SELFTEST_EXTRA.append(("Flight of the Amazon Queen in the game corner (ScummVM, 639zzg)", fotaq_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+GAME_THUMBS = {"thumb.svg": "image/svg+xml", "thumb.png": "image/png"}
+GAME_THUMB_MAX = 1 << 20
+PERM_GET["games"] = tuple(PERM_GET.get("games", ())) + ("/party/thumb/",)
+
+
+def game_thumb_file(game):
+	""
+	x = next((x for x in games_list() if x.get("dir") == game), None)
+	ic = str((x or {}).get("icon") or "")
+	if ic not in GAME_THUMBS:
+		return None
+	p_ = games_file(game, ic)
+	try:
+		if not p_ or os.path.getsize(p_) > GAME_THUMB_MAX:
+			return None
+	except OSError:
+		return None
+	return p_, GAME_THUMBS[ic]
+
+
+def game_thumb_src(game, icon, base):
+	""
+	return base + "/thumb/" + game if str(icon or "") in GAME_THUMBS else ""
+
+
+
+_game_icon_639zzh = _game_icon
+
+
+
+def _game_icon(x, host=""):
+	from html import escape as _e
+	src = game_thumb_src(x.get("dir", ""), x.get("icon"), "/spiele")
+	if not src:
+		return _game_icon_639zzh(x if "." not in str(x.get("icon") or "") else dict(x, icon="🎮"), host)
+	return f'<img src="{_e(src, quote=True)}" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'">'
+
+
+
+PARTY_PAGE = PARTY_PAGE.replace('<img src="${BASE}/g/${g.dir}/${g.icon}"', '<img src="${BASE}/thumb/${g.dir}"', 1)
+TOOLS_PAGE = (TOOLS_PAGE.replace('im.src = "/games/" + x.dir + "/" + s_;', 'im.src = "/party/thumb/" + x.dir;', 1)
+              .replace('im.src = "/games/fotaq/thumb.svg";', 'im.src = "/party/thumb/fotaq";', 1))
+
+
+
+_smalltv_routes_639zzh = smalltv_routes
+
+
+def smalltv_routes(app, reply, body):
+	_smalltv_routes_639zzh(app, reply, body)
+	from flask import Response, request
+	import hmac
+
+	def send(game):
+		r = game_thumb_file(game)
+		h = {"X-Content-Type-Options": "nosniff", "Cache-Control": "max-age=3600",
+             "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; img-src data:; sandbox"}
+		if not r:
+			return Response("not found", 404, mimetype="text/plain", headers=h)
+		with open(r[0], "rb") as f:
+			return Response(f.read(GAME_THUMB_MAX + 1), mimetype=r[1], headers=h)
+
+	@app.route("/party/thumb/<game>")
+	def game_thumb_admin(game):
+		return send(game)
+
+	@app.route("/spiele/thumb/<game>")
+	def game_thumb_spiele(game):
+		if not lan_guest_ip(request.remote_addr, request.headers.get("X-Forwarded-For", "") or request.headers.get("Forwarded", "")):
+			return Response("not found", 404, mimetype="text/plain")
+		return send(game)
+
+	@app.route("/p/<key>/thumb/<game>")
+	def game_thumb_party(key, game):
+		if not (party_on() and hmac.compare_digest(str(PARTY.get("key") or ""), key)):
+			return Response("closed", 404, mimetype="text/plain")
+		return send(game)
+
+
+
+def gthumb_selftest():
+	assert '<img src="${BASE}/thumb/${g.dir}"' in PARTY_PAGE and "/g/${g.dir}/${g.icon}" not in PARTY_PAGE, "game evening: tiles from /p/<key>/thumb/"
+	assert 'im.src = "/party/thumb/" + x.dir;' in TOOLS_PAGE and 'im.src = "/party/thumb/fotaq";' in TOOLS_PAGE, "admin tab: tiles from /party/thumb/"
+	assert '"/games/" + x.dir + "/" + s_' not in TOOLS_PAGE and "/games/fotaq/thumb.svg" not in TOOLS_PAGE
+	assert 'src="/spiele/thumb/qg-orbit"' in _game_icon({"dir": "qg-orbit", "icon": "thumb.svg"}, "pi:5001") and _game_icon({"dir": "x", "icon": "🎲"}) == "🎲"
+	assert _game_icon({"dir": "x", "icon": "index.html"}, "pi:5001") == "🎮", "another file: the symbol, never the games port"
+	assert game_thumb_src("x", "../../etc/passwd", "/spiele") == "" and game_thumb_src("x", "index.html", "/spiele") == ""
+	assert role_allows("custom", "/party/thumb/qg-orbit", "GET", {}, {"games"}) and not role_allows("custom", "/party/thumb/qg-orbit", "GET", {}, set())
+	return "tile pictures from the same origin (/party, /spiele, /p/<key>) - no http:// picture on an https page; only thumb.svg / thumb.png"
+
+
+SELFTEST_EXTRA.append(("Game tiles: pictures from the same origin (639zzh, 3.69.2)", gthumb_selftest))
 if __name__ == "__main__":
 	ap = argparse.ArgumentParser()
 	ap.add_argument("--cam", type=int, default=None, help="USB camera number (same as --source usb:N)")

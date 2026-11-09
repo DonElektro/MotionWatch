@@ -662,7 +662,11 @@ def fotaq_moveeye(datei, fehler, warn, bilder, release="", pins=""):
     ok(ns["games_list"](extra=False) == [], "games_list(extra=False): die Sammlung allein (leer)")
     r = c.get("/spiele", environ_base={"REMOTE_ADDR": "192.168.1.20"})
     t = r.get_data(as_text=True)
-    ok(r.status_code == 200 and "Flight of the Amazon Queen" in t and "fotaq/thumb.svg" in t and "👆" in t, "/spiele zeigt die Kachel mit Bild")
+    ok(r.status_code == 200 and "Flight of the Amazon Queen" in t and 'src="/spiele/thumb/fotaq"' in t and "👆" in t, "/spiele zeigt die Kachel mit Bild")
+    r = c.get("/spiele/thumb/fotaq", environ_base={"REMOTE_ADDR": "192.168.1.20"})
+    ok(r.status_code == 200 and r.mimetype == "image/svg+xml", f"Bild der Kachel vom gleichen Ursprung (3.69.2, {r.status_code} {r.mimetype})")
+    r = c.get("/party/thumb/fotaq", headers=H)
+    ok(r.status_code == 200 and r.mimetype == "image/svg+xml", f"Reiter Spielecke: Bild aus DATA_DIR/fotaq ({r.status_code})")
     # the games port (own origin), like the phones use it
     import socket
     with socket.socket() as sk:
@@ -809,8 +813,114 @@ def fotaq_mw_bilder(ns, app, PW, bilder, fehler, nur_admin=""):
         srv.shutdown()
 
 
+_PNG_1PX = ("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==")
+
+
+def kacheln_https(datei, fehler, ohne_browser=False):
+    """3.69.2: the tile pictures (admin tab, /spiele, /p/<key>/) come from the same origin - over https no http:// picture
+    (mixed content: Safari blocks it, the tile stays empty); the thumb routes give only thumb.svg / thumb.png of listed games"""
+    import base64
+    import ssl
+    import subprocess
+    import socket
+    from werkzeug.serving import make_server
+    home = tempfile.mkdtemp(prefix="mw_kachel_home_")
+    os.environ["MOTIONWATCH_HOME"] = home
+    ns = {"__name__": "mw_kachel_test", "__file__": os.path.abspath(datei)}
+    exec(compile(open(datei, encoding="utf-8").read(), datei, "exec"), ns)
+    ns["DATA_DIR"] = home
+    ns["log_event"] = lambda *a, **k: None
+    ns["lan_guest_ip"] = lambda ip, fwd="": not fwd          # test: 127.0.0.1 = own Wi-Fi, with X-Forwarded-For = outside
+
+    def ok(c, what):
+        print(("  ✓ " if c else "  ✗ ") + what, flush=True)
+        if not c:
+            fehler.append("Kacheln https: " + what)
+    gd = os.path.join(home, "games")
+    spiele = [("t-svg", "thumb.svg", b'<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect width="64" height="64" fill="#2a7"/></svg>'),
+              ("t-png", "thumb.png", base64.b64decode(_PNG_1PX)), ("t-emoji", "🎲", None), ("t-html", "index.html", None)]
+    for d, ic, data in spiele:
+        os.makedirs(os.path.join(gd, d), exist_ok=True)
+        open(os.path.join(gd, d, "index.html"), "w").write("<!doctype html><title>x</title>")
+        if data:
+            open(os.path.join(gd, d, ic), "wb").write(data)
+    json.dump({"version": "GS-T", "games": [{"dir": d, "name": "Spiel " + d, "icon": ic, "input": "touch", "start": "index.html"} for d, ic, _ in spiele]},
+              open(os.path.join(gd, "games.json"), "w"))
+    ns["GAMESRV"]["port"] = 5999                    # the games port «runs»: before 3.69.2 the pictures pointed to http://<host>:5999
+    PW = "Admin-Pass-123"
+    assert ns["web_pw_set"](PW)[0]
+    ws = ns["WebStream"](None)
+    ws._serve = lambda app, ctx: None
+    ws.start()
+    app = ws.app
+    ns["party_open"](2)
+    key = ns["PARTY"]["key"]
+    c = app.test_client(use_cookies=False)
+    H = {"Authorization": "Basic " + base64.b64encode(f"admin:{PW}".encode()).decode()}
+    B = "https://pi.local:5001"
+    img_http = re.compile(r'<img[^>]+src="http://|\.src\s*=\s*"http://|<img src="\$\{[^}]*\}"[^>]*>|im\.src = "/games/')
+    for B_ in (B, "http://pi.local:5000"):
+        for path, h in (("/spiele", {}), ("/p/%s/" % key, {}), ("/party", H), ("/tools", H)):
+            r = c.get(path, base_url=B_, headers=h)
+            html = r.get_data(as_text=True)
+            bad = [m.group(0)[:80] for m in img_http.finditer(html) if "/thumb/" not in m.group(0)]
+            ok(r.status_code == 200 and not bad, f"{B_.split(':')[0]} {path}: keine http://-Bilder ({r.status_code} {bad[:2]})")
+    html = c.get("/spiele", base_url=B).get_data(as_text=True)
+    ok('src="/spiele/thumb/t-svg"' in html and 'src="/spiele/thumb/t-png"' in html and "http://pi.local:5999/g/t-svg/" in html,
+       "/spiele: Bilder vom gleichen Ursprung, das Spiel selbst weiter auf dem Spiele-Port")
+    for path, h, want, ct in (("/party/thumb/t-svg", H, 200, "image/svg+xml"), ("/party/thumb/t-png", H, 200, "image/png"),
+                              ("/party/thumb/t-emoji", H, 404, ""), ("/party/thumb/t-html", H, 404, ""), ("/party/thumb/nix", H, 404, ""),
+                              ("/party/thumb/t-svg", {}, 401, ""), ("/spiele/thumb/t-svg", {}, 200, "image/svg+xml"),
+                              ("/spiele/thumb/t-svg", {"X-Forwarded-For": "203.0.113.9"}, 404, ""),
+                              ("/p/%s/thumb/t-png" % key, {}, 200, "image/png"), ("/p/falsch/thumb/t-png", {}, 404, "")):
+        r = c.get(path, base_url=B, headers=h)
+        good = r.status_code == want and (not ct or (r.mimetype == ct and r.headers.get("X-Content-Type-Options") == "nosniff"
+                                                      and "sandbox" in r.headers.get("Content-Security-Policy", "")))
+        ok(good, f"{path} {'(angemeldet)' if h is H else '(außen)' if h else ''}: {r.status_code} {r.mimetype}")
+    if ohne_browser:
+        return
+    from playwright.sync_api import sync_playwright
+    tmp = tempfile.mkdtemp(prefix="mw_kachel_tls_")
+    subprocess.run(["openssl", "req", "-x509", "-newkey", "rsa:2048", "-nodes", "-keyout", os.path.join(tmp, "k.pem"), "-out", os.path.join(tmp, "c.pem"),
+                    "-days", "1", "-subj", "/CN=localhost"], check=True, capture_output=True)
+    ctx_ = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    ctx_.load_cert_chain(os.path.join(tmp, "c.pem"), os.path.join(tmp, "k.pem"))
+    with socket.socket() as sk:
+        sk.bind(("127.0.0.1", 0)); port = sk.getsockname()[1]
+    srv = make_server("127.0.0.1", port, app, threaded=True, ssl_context=ctx_)
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    base = f"https://localhost:{port}"
+    try:
+        with sync_playwright() as pw:
+            br = pw.chromium.launch()
+            for name, vp, mob in (("handy", {"width": 390, "height": 2400}, True), ("pc", {"width": 1280, "height": 2400}, False)):
+                bctx = br.new_context(viewport=vp, is_mobile=mob, has_touch=mob, ignore_https_errors=True,
+                                      http_credentials={"username": "admin", "password": PW}, locale="de-CH")
+                bctx.add_init_script("try{localStorage.setItem('mw-lang','de')}catch(e){}")
+                for path in ("/spiele", "/p/%s/" % key, "/party"):
+                    pg = bctx.new_page(); http_imgs = []
+                    pg.on("request", lambda rq, l=http_imgs: l.append(rq.url) if rq.resource_type == "image" and rq.url.startswith("http://") else None)
+                    pg.goto(base + path); pg.wait_for_timeout(1500)
+                    if path.startswith("/p/") and pg.locator("#nm").is_visible():          # the game evening: join first
+                        pg.fill("#nm", "Test-" + name); pg.click("#go"); pg.wait_for_timeout(2500)
+                    pg.evaluate("document.querySelectorAll('img').forEach(i => { i.loading = 'eager'; })")
+                    pg.wait_for_timeout(800)
+                    st = pg.evaluate("[...document.querySelectorAll('a.c img')].map(i => [i.getAttribute('src'), i.complete && i.naturalWidth > 0])")
+                    srcs = {s for s, _ in st}
+                    want = {s for s in srcs if s and ("t-svg" in s or "t-png" in s)}
+                    ok(len(want) == 2 and all(g for s, g in st if s in want) and not http_imgs,
+                       f"{name} {path.split('/')[1] or path}: {len(want)} Kachel-Bilder geladen über https, keine http://-Bilder ({st} {http_imgs[:2]})")
+                    pg.close()
+                bctx.close()
+            br.close()
+    finally:
+        srv.shutdown()
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
 def main():
     ap = argparse.ArgumentParser(description="Test der Spielesammlung (Paket und Browser)")
+    ap.add_argument("--kacheln-https", action="store_true", help="3.69.2: Kachel-Bilder über https vom gleichen Ursprung (gebaute Datei, Browser)")
     ap.add_argument("--zip", default=os.path.join(REPO, "games", "MotionWatch_Spiele.zip"))
     ap.add_argument("--alle", action="store_true", help="auch die älteren Spiele im Browser prüfen")
     ap.add_argument("--nur", default="", help="nur diese Ordner (Komma-Liste)")
@@ -824,6 +934,12 @@ def main():
     ap.add_argument("--fotaq-pins", default="", help="mit --fotaq-release: pins.txt (sonst aus dem Release)")
     a = ap.parse_args()
     fehler, warn = [], []
+    if a.kacheln_https:
+        kacheln_https(a.datei or _neueste_datei(), fehler, a.ohne_browser)
+        for f in fehler:
+            print("FEHLER:", f)
+        print("Kacheln-https-Test:", "OK" if not fehler else f"{len(fehler)} Fehler")
+        sys.exit(1 if fehler else 0)
     if a.fotaq_moveeye:
         fotaq_moveeye(a.datei or _neueste_datei(), fehler, warn, a.bilder, a.fotaq_release, a.fotaq_pins)
         for w in warn:
