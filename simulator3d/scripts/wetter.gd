@@ -374,8 +374,12 @@ func _lens_climate(dt: float) -> void:
 		dry = 0.05 * (1.0 + float(main.wind) / 20.0) * (1.1 - rh / 100.0) * (1.0 + 3.0 * sunk) + (0.06 if lens_t - dew_c > 3.0 else 0.0)
 	var R := rain_mmh() if main.lens_drops else 0.0
 	var tilt: float = rad_to_deg(main.head_pitch.rotation.x) if main.head_pitch != null else 0.0
+	var sf := soft_drops_ok()
 	for i in range(lenses.size()):
 		var L = lenses[i]
+		if L.soft != sf:                                           # sim-kamerabild: unscharfe Tropfen (nur Normal / Hoch)
+			L.soft = sf
+			L._dirty = true
 		var r := rate
 		if main.cond.get("fogged", false):
 			r = maxf(r, 0.5 if L.fog < (0.8 if i == 0 else 0.5) else 0.0)
@@ -598,6 +602,28 @@ func _is_tent(mt: StandardMaterial3D) -> bool:
 
 
 # ---- Knöpfe und Test -------------------------------------------------------------------------------------------------
+func soft_drops_ok() -> bool:
+	"""sim-kamerabild: Tropfen unscharf und durchscheinend, langsamer ansetzend - nur Normal / Hoch; Lite und feste Testläufe
+	(Prüfstand, --quality, Testlauf) bleiben Bild für Bild wie vorher, bis der Besitzer entscheidet"""
+	if preload("res://scripts/quality.gd").lite() or "--quality" in OS.get_cmdline_user_args():
+		return false
+	if main.get("testrun") != null and main.testrun.running:
+		return false
+	if main.get("pruef") != null and main.pruef.running:
+		return false
+	return true
+
+
+func lens_hint() -> String:
+	"""kurzer Hinweis für die Statuszeile, wenn viel Wasser auf der Linse der Kopfkamera ist (leer = sauber)"""
+	if lenses.is_empty() or not w_lens:
+		return ""
+	var d: Dictionary = lenses[0].info()
+	if float(d.get("cover", 0.0)) > 0.06 or float(d.get("fog", 0.0)) > 0.45:
+		return "Linse verschmutzt (%s) – «Linse putzen»" % ("Beschlag" if float(d.get("fog", 0.0)) > 0.45 else "Tropfen")
+	return ""
+
+
 func wipe() -> void:
 	for L in lenses:
 		L.wipe()
