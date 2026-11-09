@@ -1,8 +1,28 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 08.11.2026 · Version **3.66.0** · MoveEye **3.65.0** (Drei Spuren ab 03.11.2026: Simulator und MoveEye mit eigenen Nummern, Verträglichkeit über `MW_MIN` in `scripts/abgleich.gd` / `SIM_MIN` in MoveEye Teil 545; 3.0.0 bis 3.55.2 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 09.11.2026 · Version **3.67.0** · MoveEye **3.69.2** (Drei Spuren ab 03.11.2026: Simulator und MoveEye mit eigenen Nummern, Verträglichkeit über `MW_MIN` in `scripts/abgleich.gd` / `SIM_MIN` in MoveEye Teil 545; 3.0.0 bis 3.55.2 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
+
+## NEU (Branch sim-fassaden, Nummer setzt der Integrator): verschiedene Fassaden und Dachfarben der swisstopo-Häuser
+
+- Nur Normal / Hoch (`fassaden.gd` `enabled()`: nicht Lite, kein Testlauf, kein Prüfstand). Lite und Prüfstand unverändert
+  (gleiche Netze, `b3d.gdshader`); keine Ziehung aus einem RandomNumberGenerator, Samen = LV95-Lage des Hauses (`hf()`).
+- `fassaden.gd`: Art pro Haus aus OSM-Tags (building, building:levels, roof:shape, building:colour, roof:colour, start_date) oder
+  aus Grösse / Höhe / Dach / Nachbarn (Haus, Wohnblock, Bauernhaus, Chalet, Scheune, Geschäft, Industrie, Garage, Kirche);
+  Fassadenfarbe (Weiss, Crème, Ocker, Hellgrau, Pastell; Holz), Geschosshöhe, Fensterläden (grün / rot / braun / grau / keine);
+  Dachfarbe aus SWISSIMAGE im Grundriss (Median, ohne Schatten / Blendung / Bäume, zur nächsten echten Dachfarbe gezogen),
+  sonst Palette. `wall_planes()`: Anfang und Länge jeder ebenen Wand (Fenster mittig in Spalten).
+- `b3d._finish`: pro Ecke COLOR (Fassade, a = Art) + CUSTOM0 (u0, Wandlänge, Boden, Traufe) + CUSTOM1 (Geschoss, Läden,
+  Samen Haus, Samen Wand); Dächer COLOR (Dachfarbe, a = flach). Shader `b3d_fassade.gdshader` (Fenster nach Geschossen,
+  Läden, Sockel, Haustür, Garagentore, Schaufenster, Balkone, Chalet-Holz, Scheunenbretter, Wellblech) und `b3d_dach.gdshader`
+  (Ziegelreihen / Kies). Wärmezwillinge und Hindernisse unverändert. Luftbild wird jetzt vor den 3D-Gebäuden gesetzt.
+- Seon ohne OSM (Overpass war aus): 117 Häuser, 44 Wohnblöcke, 24 Bauernhäuser, 3 Scheunen, 2 Chalets, 2 Garagen;
+  Dachfarbe aus dem Luftbild 130, Palette 62 (Häuser ausserhalb des nahen Luftbilds).
+
+## NEU in 3.67.0 (MoveEye 3.69.2): Fassaden (sim-fassaden)
+
+- fassaden.gd: Art pro Haus (OSM-Tags oder Grösse / Höhe / Dach / Nachbarn), Fassadenfarbe, Geschosse, Läden; Dachfarbe aus SWISSIMAGE; Shader b3d_fassade / b3d_dach; nur Normal / Hoch (enabled()), Samen = LV95-Lage.
 
 ## NEU in 3.66.0 (MoveEye 3.65.0): echte 3D-Gebäude von swisstopo in «Ort von der Karte»
 

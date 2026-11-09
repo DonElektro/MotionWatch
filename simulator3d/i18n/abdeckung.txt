@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 7697 (Stellen: 10703)
-Übersetzt: en 7697, fr 7697, it 7697, rm 7697
+Texte gesamt: 7701 (Stellen: 10713)
+Übersetzt: en 7701, fr 7701, it 7701, rm 7701
 Unsicher markiert: 31
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 520 Stellen
 Nicht mehr im Code (noch in texte.json): 352
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 68 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1
-Übersprungen (Grund: Anzahl): kennung 27662, schlüssel 21055, keine Wörter 13045, index 9896, technisch 3656, doc 2404, einheit 339, log 175, englisch 143, pfad 125, stringname 103, html 68, klasse 36, shader 6
+Übersprungen (Grund: Anzahl): kennung 27720, schlüssel 21095, keine Wörter 13056, index 9941, technisch 3658, doc 2410, einheit 339, log 175, englisch 143, pfad 125, stringname 103, html 68, klasse 36, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   werkstatt_daten.gd       533     4
@@ -95,12 +95,12 @@ Pro Datei (Texte / davon dynamische Stellen):
   gametools.gd              33     2
   tour.gd                   31     1
   bergtal_wegweiser.gd      30     0
+  b3d.gd                    29     5
   zwilling.gd               29     3
   gamemission.gd            29     0
   news.gd                   29     1
   padmap.gd                 28    19
   explore.gd                28     2
-  b3d.gd                    28     5
   power.gd                  28    10
   main_status.gd            27    12
   devtool_spieltest.gd      27     0
@@ -161,6 +161,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   recorder.gd               11     2
   schnittstelle.gd          10     7
   bedienleiste.gd           10     0
+  fassaden.gd                9     0
   tier_modell.gd             9     1
   gameschwitzen.gd           9     0
   padroles.gd                9     1
@@ -495,11 +496,11 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   statisten.gd:111  'keine'
   tunnel.gd:17  'aus'
   tunnel.gd:37  'aus'
-  b3d.gd:65  '3D-Gebäude: '
-  b3d.gd:126  'Kacheln nicht geladen ('
-  b3d.gd:127  'Kacheln nicht lesbar'
-  b3d.gd:220  'Verzeichnis nicht lesbar: '
-  b3d.gd:243  'Kachel fehlt: '
+  b3d.gd:66  '3D-Gebäude: '
+  b3d.gd:127  'Kacheln nicht geladen ('
+  b3d.gd:128  'Kacheln nicht lesbar'
+  b3d.gd:221  'Verzeichnis nicht lesbar: '
+  b3d.gd:244  'Kachel fehlt: '
   bergtal.gd:245  'Aussicht: '
   bergtal.gd:254  'Schlafplatz: '
   bergtal.gd:256  'Aussicht: '
@@ -627,11 +628,11 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   geo.gd:309  'way[landuse];relation[landuse~"forest|orchard"];way[waterway];node[natural=tree];way[barrier];way[leisure~"pitch|swimming_pool|park"];way[amenity=parking];);out geom;'
   geo.gd:330  ' – Internet da?'
   geo.gd:330  'Laden nicht möglich: '
-  geo.gd:411  '3D-Gebäude nicht geladen ('
+  geo.gd:420  '3D-Gebäude nicht geladen ('
   geo.gd:430  ' geladen (Höhen: '
-  geo.gd:619  ': 3D-Gebäude von swisstopo nicht geladen ('
-  geo.gd:1577  ' (Fluss)'
-  geo.gd:1673  'Ort: %s (%.5f, %.5f)\n%s\n'
+  geo.gd:627  ': 3D-Gebäude von swisstopo nicht geladen ('
+  geo.gd:1585  ' (Fluss)'
+  geo.gd:1681  'Ort: %s (%.5f, %.5f)\n%s\n'
   grafik_hoch.gd:310  'Hoch gewählt, aber aus: '
   headpad.gd:106  '\nAuslöser: Bildmitte (Kreis) auf einen Spieler, dann der runde Knopf im Bild oder R2 am Controller.'
   headpad.gd:108  '\nController: '

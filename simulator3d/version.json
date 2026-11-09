@@ -1,23 +1,16 @@
 {
- "version": "3D-5.66.0",
- "ver": "3.66.0",
- "name": "MoveEye Sim 3.66.0",
+ "version": "3D-5.67.0",
+ "ver": "3.67.0",
+ "name": "MoveEye Sim 3.67.0",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 54406645,
- "sha256": "f8aef227b450c341fc4d9c93977b2d00a45b8345f4e1be971d688af021788c33",
- "notes": "Echte 3D-Gebäude von swisstopo wieder da (eigener Draco-Entpacker), klare Hinweise bei fehlenden Kartendaten",
+ "size": 54427103,
+ "sha256": "4e8c2c1ba9d1345a3da3fb20a237b4d5276263a9ccc6e1612e8a8b3ca3eb522d",
+ "notes": "Verschiedene Fassaden und Dachfarben der swisstopo-Häuser (Normal / Hoch)",
  "mw_min": "3.55.0",
  "linux": {
   "file": "simulator3d/MoveEyeSim3D_Linux.zip",
-  "ver": "3.66.0",
-  "size": 48436997,
-  "sha256": "8077acdae8d2336b36bab97c6cca767fe88d257719dececf263f0431171cdcb1"
- },
- "pi": {
-  "file": "simulator3d/MoveEyeSim3D_Pi.zip",
-  "ver": "3.66.0",
-  "size": 37939683,
-  "sha256": "103c26d06c4120302f0f2a60086f78080dec05fde6b1c9f69519c249c7b54005",
-  "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.66.0/MoveEyeSim3D_Pi.zip"
+  "ver": "3.67.0",
+  "size": 48454965,
+  "sha256": "b7add1591f6e81b969580ed4b3b86264d2a2e1b5ea665c7d49414319631f0493"
  }
 }

@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.66.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.67.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -487,6 +487,14 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.67.0
+3.67.0: «Ort von der Karte»: die swisstopo-Häuser sehen jetzt verschieden aus – Wohnhaus, Wohnblock, Bauernhaus, Chalet,
+Scheune, Geschäft, Industrie, Garage, Kirche, mit Fenstern nach Geschossen, Fensterläden, Türen, Balkonen und Holz; die
+Dachfarbe kommt aus dem Luftbild (SWISSIMAGE). Jedes Haus sieht bei jedem Laden gleich aus (aus seiner Lage berechnet).
+Nur in Normal und Hoch; Lite, Prüfstand, Hindernisse und Wärmebild unverändert.
+So testest du: in der Karte einen Ort in der Schweiz laden (z. B. Seon oder Luzern Altstadt), Grafik Normal oder Hoch:
+verschiedene Fassaden und Dachfarben statt gleicher grauer Häuser; zweimal laden: gleiche Häuser; Lite: wie bisher.
 
 NEU IN 3.66.0
 3.66.0: «Ort von der Karte»: die echten 3D-Gebäude von swisstopo (swissBUILDINGS3D) erscheinen wieder – sie kommen Draco-

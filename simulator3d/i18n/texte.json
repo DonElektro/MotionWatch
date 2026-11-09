@@ -15484,6 +15484,12 @@
   "it": "Dominante di colore della foto sulle figure (modalità foto)",
   "rm": "Tinta da la foto sin las figuras (modus foto)"
  },
+ "Fassaden: %s; Dachfarbe aus dem Luftbild %d, ausgedacht %d, OSM-Angaben bei %d Häusern": {
+  "en": "Facades: %s; roof colour from the aerial picture %d, made up %d, OSM details for %d houses",
+  "fr": "Façades : %s ; couleur du toit d'après la photo aérienne %d, inventée %d, données OSM pour %d maisons",
+  "it": "Facciate: %s; colore del tetto dalla foto aerea %d, inventato %d, dati OSM per %d case",
+  "rm": "Fatschadas: %s; colur dal tetg da la fotografia aviatica %d, inventada %d, indicaziuns OSM per %d chasas"
+ },
  "Fast voll: Programme schliessen (Browser-Tabs), den Simulator neu starten.": {
   "en": "Almost full: close programs (browser tabs), restart the simulator.",
   "fr": "Presque plein : fermer des programmes (onglets du navigateur), redémarrer le simulateur.",
@@ -18035,6 +18041,12 @@
   "fr": "Histoires",
   "it": "Storie",
   "rm": "Istorgias"
+ },
+ "Geschäft": {
+  "en": "Shop",
+  "fr": "Commerce",
+  "it": "Negozio",
+  "rm": "Butia"
  },
  "geschätzt": {
   "en": "estimated",
@@ -21882,6 +21894,12 @@
   "fr": "Mise en service",
   "it": "Messa in funzione",
   "rm": "Messa en funcziun"
+ },
+ "Industrie": {
+  "en": "Industry",
+  "fr": "Industrie",
+  "it": "Industria",
+  "rm": "Industria"
  },
  "Infanteriewerk Gufer\nZutritt auf eigene Gefahr": {
   "en": "Infantry fort Gufer\nEnter at your own risk",
@@ -43215,6 +43233,12 @@
   "fr": "où ?",
   "it": "dove?",
   "rm": "nua?"
+ },
+ "Wohnblock": {
+  "en": "Apartment block",
+  "fr": "Immeuble locatif",
+  "it": "Condominio",
+  "rm": "Bloc d'abitaziuns"
  },
  "Wohnhaus": {
   "en": "House",

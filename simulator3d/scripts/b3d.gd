@@ -32,6 +32,7 @@ var ms_draco := 0
 var from_cache := 0              # primitives taken unpacked from the cache
 const DRACO_CACHE := "draco-v1"  # (part of the cache name: change it when draco.gd decodes differently)
 var tris := 0
+var fassaden_stats := {}
 # collected triangles (local coordinates, before the height correction): 3 vertices each, building key per triangle
 var _tv := PackedVector3Array()
 var _tk := PackedInt32Array()
@@ -592,12 +593,35 @@ func _finish(keep_out: Array) -> Array:
 	# slivers (< 0.02 m²) are left out; on Lite also small details (< 0.25 m²: chimneys, edges): ~20 % fewer triangles, 0.2 % less area
 	var lite: bool = preload("res://scripts/quality.gd").lite()
 	var min_a2: float = pow(2.0 * (0.25 if lite else 0.02), 2.0)
-	var parts := {}
+	# the roofs must face up; else the winding is the other way round (decided first: the facades need the final normals)
 	var up_n := 0
 	var dn_n := 0
 	for kb in keep:
+		for t in by[kb[0]]:
+			var nrm := (_tv[t * 3 + 2] - _tv[t * 3]).cross(_tv[t * 3 + 1] - _tv[t * 3])
+			if nrm.length_squared() >= min_a2 and absf(nrm.normalized().y) > 0.4:
+				if nrm.y > 0.0:
+					up_n += 1
+				else:
+					dn_n += 1
+	var flip := dn_n > up_n
+	# sim-fassaden: facades and roof colours per house (fassaden.gd), only Normal / Hoch, not in a test run / the Prüfstand
+	var styled: bool = not lite and preload("res://scripts/fassaden.gd").enabled(geo.main)
+	var fas = null
+	if styled:
+		var cts := PackedVector2Array()
+		for kb in keep:
+			var cc2 := Vector2.ZERO
+			for p in kb[1]:
+				cc2 += p
+			cts.append(cc2 / (kb[1] as PackedVector2Array).size())
+		fas = preload("res://scripts/fassaden.gd").new(geo, cts)
+	var parts := {}
+	for kb in keep:
 		var ts: Array = by[kb[0]]
 		var ctr: Vector2 = (kb[1] as PackedVector2Array)[0]
+		var walls := []
+		var roofs := []
 		for t in ts:
 			var a := _tv[t * 3] + Vector3(0, off, 0)
 			var b := _tv[t * 3 + 1] + Vector3(0, off, 0)
@@ -606,41 +630,97 @@ func _finish(keep_out: Array) -> Array:
 			if nrm.length_squared() < min_a2:              # (|cross| = 2 × area)
 				continue
 			nrm = nrm.normalized()
-			var roof: bool = absf(nrm.y) > 0.4
-			if roof:
-				if nrm.y > 0.0:
-					up_n += 1
-				else:
-					dn_n += 1
-			var key := Vector3i(1 if ctr.x >= 0.0 else 0, 1 if ctr.y >= 0.0 else 0, 1 if roof else 0)
-			if not parts.has(key):
-				parts[key] = [[], []]
-			var pv: Array = parts[key][0]
-			var pn: Array = parts[key][1]
-			pv.append_array([a, b, cc])
-			pn.append_array([nrm, nrm, nrm])
-			tris += 1
+			if flip:
+				var tmp := b
+				b = cc
+				cc = tmp
+				nrm = -nrm
+			if absf(nrm.y) > 0.4:
+				roofs.append([a, b, cc, nrm])
+			else:
+				walls.append([a, b, cc, nrm])
 		var hull: PackedVector2Array = kb[1]
-		foot.append({"poly": hull, "base": float(kb[2]) + off, "top": float(kb[3]) + off})
-	var flip := dn_n > up_n                               # (the roofs must face up; else the winding is the other way round)
+		var base := float(kb[2]) + off
+		var top := float(kb[3]) + off
+		var st := {}
+		var wp := []
+		if styled:
+			var lows := []                                  # the eave: low edge of the roofs, by area (small porch roofs do not count)
+			var fl_a := 0.0
+			var all_a := 0.0
+			for rt in roofs:
+				var ar: float = ((rt[2] - rt[0]) as Vector3).cross(rt[1] - rt[0]).length() * 0.5
+				lows.append([minf(rt[0].y, minf(rt[1].y, rt[2].y)), ar])
+				all_a += ar
+				if rt[3].y > 0.97:
+					fl_a += ar
+			lows.sort_custom(func(x, y): return x[0] < y[0])
+			var eave := top
+			var acc := 0.0
+			for lw in lows:
+				acc += lw[1]
+				if acc >= all_a * 0.25:
+					eave = lw[0]
+					break
+			eave = clampf(eave, base + 2.2, top)
+			var cc3 := Vector2.ZERO
+			for p in hull:
+				cc3 += p
+			cc3 /= hull.size()
+			st = fas.style(geo.to_ll(cc3), hull, base, top, eave, fl_a / maxf(all_a, 0.01))
+			wp = fas.wall_planes(walls, int(st["sid"]))
+		for side in [0, 1]:
+			var list: Array = walls if side == 0 else roofs
+			if list.is_empty():
+				continue
+			var key := Vector3i(1 if ctr.x >= 0.0 else 0, 1 if ctr.y >= 0.0 else 0, side)
+			if not parts.has(key):
+				parts[key] = [[], [], [], [], []]           # vertices, normals, colours, custom0, custom1
+			var pa: Array = parts[key]
+			for i in range(list.size()):
+				var tr: Array = list[i]
+				pa[0].append_array([tr[0], tr[1], tr[2]])
+				pa[1].append_array([tr[3], tr[3], tr[3]])
+				if styled:
+					if side == 0:
+						var wcol: Color = st["wall"]
+						wcol.a = (float(st["kind"]) + 0.5) / 16.0
+						var c0 := [wp[i][0], wp[i][1], st["base"], st["eave"]]
+						var c1 := [st["storey"], float(st["shut"]), st["seed"], wp[i][2]]
+						for m in range(3):
+							pa[2].append(wcol)
+							pa[3].append_array(c0)
+							pa[4].append_array(c1)
+					else:
+						var rcol: Color = st["roof"]
+						rcol.a = 1.0 if st["flat"] else 0.0
+						for m in range(3):
+							pa[2].append(rcol)
+							pa[3].append_array([st["seed"], float(st["kind"]), st["base"], st["eave"]])
+				tris += 1
+		foot.append({"poly": hull, "base": base, "top": top, "kind": int(st.get("kind", -1))})
 	var out := []
 	for key in parts:
-		var pv := PackedVector3Array(parts[key][0])
-		var pn := PackedVector3Array(parts[key][1])
-		if flip:
-			for i in range(0, pv.size(), 3):
-				var tmp := pv[i + 1]
-				pv[i + 1] = pv[i + 2]
-				pv[i + 2] = tmp
-			for i in range(pn.size()):
-				pn[i] = -pn[i]
+		var pa: Array = parts[key]
 		var arr := []
 		arr.resize(Mesh.ARRAY_MAX)
-		arr[Mesh.ARRAY_VERTEX] = pv
-		arr[Mesh.ARRAY_NORMAL] = pn
+		arr[Mesh.ARRAY_VERTEX] = PackedVector3Array(pa[0])
+		arr[Mesh.ARRAY_NORMAL] = PackedVector3Array(pa[1])
+		var flags := 0
+		if styled:
+			arr[Mesh.ARRAY_COLOR] = PackedColorArray(pa[2])
+			arr[Mesh.ARRAY_CUSTOM0] = PackedFloat32Array(pa[3])
+			flags = Mesh.ARRAY_CUSTOM_RGBA_FLOAT << Mesh.ARRAY_FORMAT_CUSTOM0_SHIFT
+			if key.z == 0:
+				arr[Mesh.ARRAY_CUSTOM1] = PackedFloat32Array(pa[4])
+				flags |= Mesh.ARRAY_CUSTOM_RGBA_FLOAT << Mesh.ARRAY_FORMAT_CUSTOM1_SHIFT
 		var am := ArrayMesh.new()
-		am.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arr)
-		out.append({"mesh": am, "t": "stone" if key.z == 1 else "caravan"})   # like the houses of OpenStreetMap: walls «caravan», roofs «stone»
+		am.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arr, [], {}, flags)
+		# like the houses of OpenStreetMap: walls «caravan», roofs «stone»; «styled»: the shaders with facades (geo.build)
+		out.append({"mesh": am, "t": "stone" if key.z == 1 else "caravan", "roof": key.z == 1, "styled": styled})
+	if styled:
+		fassaden_stats = fas.stats
+		_note("Fassaden: %s; Dachfarbe aus dem Luftbild %d, ausgedacht %d, OSM-Angaben bei %d Häusern" % [str(fas.stats["kinds"]), fas.stats["aerial"], fas.stats["palette"], fas.stats["tags"]])
 	_tv = PackedVector3Array()
 	_tk = PackedInt32Array()
 	return out
