@@ -46,7 +46,7 @@ def main():
     ap.add_argument("--port", type=int, default=5137)
     ap.add_argument("--bilder", default="", help="Ordner für Bildschirmfotos (kamerawahl_*.png)")
     a = ap.parse_args()
-    datei = a.datei or sorted(glob.glob(os.path.join(REPO, "webcam_bewegung_*.py")),
+    datei = os.path.abspath(a.datei) if a.datei else sorted(glob.glob(os.path.join(REPO, "webcam_bewegung_*.py")),
                               key=lambda p: [int(x) for x in re.findall(r"\d+", os.path.basename(p))])[-1]
     with socket.socket() as sk:
         try:

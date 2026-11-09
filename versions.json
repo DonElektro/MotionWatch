@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-09 21:04",
+ "generated": "2026-11-09 22:40",
  "versions": [
+  {
+   "version": "3.71.0",
+   "file": "webcam_bewegung_3_71_0.py",
+   "url": "",
+   "sha256": "ca33ad4bd60a6c0622c6974b9f44e85bb0aac4399b0486ec5252f3d3b4323e1e",
+   "date": "2026-11-09 22:40",
+   "notes": "Live-Bild am echten Gerät: kleine Bilder aller Kameras (Kopf, Weitwinkel, Wärmebild, USB-, Pi- und Netzwerk-Kameras) oben links – antippen zeigt diese Kamera gross (nur die Anzeige, Erkennung und Einstellungen bleiben); fehlt Kopf, Weitwinkel oder Wärmebild, eine graue Kachel «nicht angeschlossen»; bei vielen Kameras «⋯ Kameras»",
+   "size": 3843552,
+   "sig": "01d6f0b16aff468870347140a9bb583ad60933a59af2230b1d274a88ca1f15dfa95e575867e1387ba1a789617ec64a750774fe1576753b2c90e83c704187580b",
+   "data": {
+    "file": "moveeye_daten_3_71_0.zip",
+    "url": "",
+    "sha256": "ee9b408ab94fd0712cb6f9c2c9e82b43b3b67f2a921f95a48c61e21b015075ae",
+    "size": 4917068,
+    "sig": "abcb705dfac24c4b541de548d9a112fb1a4669b9831506b1cb80ba50cda02468fb68461b884c35bd92887b11f35856697d2e23d05459849833f2fa0e534b430a"
+   }
+  },
   {
    "version": "3.70.2",
    "file": "webcam_bewegung_3_70_2.py",
    "url": "",
    "sha256": "df0a2213d3aab94080280a6816ca21709824abf4c3892ca0ce4bf63f6aa6d87f",
-   "date": "2026-11-09 21:04",
+   "date": "2026-11-09 21:16",
    "notes": "Flight of the Amazon Queen: Hinweis «Am PC spielen – auf iPad/iPhone stürzt es ab» auf der Kachel (jetzt in der Gruppe «⌨️ Am PC mit Tastatur und Maus»); auf iPad/iPhone kommt vor dem Start eine Warnung mit «Trotzdem starten»",
    "size": 3825328,
    "sig": "f85e3e87d17845dd5e8589af9dd44a8257390c21d2380d0f96d864117a1f9952bfc5ecf3a8c0606d25e14735e6132d91860faaf673175da1dae123c7bc4d8707",
@@ -136,23 +153,6 @@
     "sha256": "96338579219885a79478e93cf54ce12e773fb7ed2ae9428bf285c9775f7c4ac2",
     "size": 4869953,
     "sig": "5741426fbc043dbadb7ca241e7b631da0a57323a9cfae3f568900e03a4c94b18aa1aeec95afe78fdb71d61ae4cbd03dc66e39f76b38ba8fca85fdfe4c81f7a0c"
-   }
-  },
-  {
-   "version": "3.62.1",
-   "file": "webcam_bewegung_3_62_1.py",
-   "url": "",
-   "sha256": "e606e3ddc7ea23d19e616542f46ba0439b75a92d548b61f1397350999a1e30fd",
-   "date": "2026-11-07 23:03",
-   "notes": "Piper: «Piper installieren» richtet auch espeak-ng selbst ein, wenn es fehlt (apt, ohne Passwort-Abfrage, mit Zeitlimit; als root direkt, sonst sudo -n), mit Fortschritt und klarer Meldung, wenn es nicht geht («espeak-ng konnte nicht installiert werden – …»).",
-   "size": 3612293,
-   "sig": "9610d0d5652ef82d64b6f8926577f5568a31b440c6505bf1e53d273178f657b0648a5e832ac62add2eff9f6f3cdbe43ecc76c8bddd0dc006d03ea8a33c99710f",
-   "data": {
-    "file": "moveeye_daten_3_62_1.zip",
-    "url": "",
-    "sha256": "03685cc0ff7666eed3346271731c1e95b04b60fd3f473adfee6f521143c9ed83",
-    "size": 4835682,
-    "sig": "265e985fe5935d33e90a276b98b118b884345ba204df2fcf39c13de1973b9457c485f21822ff17bcafd8af6831aa6ba9bb7b573b35e1dcf2e57086acdb9e280d"
    }
   },
   {
