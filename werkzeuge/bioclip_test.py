@@ -280,7 +280,8 @@ def teil_a(datei, echt="", fotos="", browser=False, bilder="", pins=False):
         ns["BIO_FILES"][w] = pin(n_, b_)
         srv.files["/bioclip-1/" + n_] = b_
     ns["BIO_BASE"]["url"] = srv.url + "bioclip-1/"
-    info_b = fake_info()
+    real_info = os.environ.get("MW_BIO_INFO_DB", "")             # Bildschirmfotos mit der echten Artinfo-Datei
+    info_b = open(real_info, "rb").read() if real_info else fake_info()
     ns["BIO_INFO"].update(size=len(info_b), sha256=hashlib.sha256(info_b).hexdigest())
     ns["BIO_INFO_BASE"]["url"] = srv.url + "bioclip-info-1/"
     srv.files["/bioclip-info-1/" + ns["BIO_INFO"]["name"]] = info_b
@@ -383,7 +384,7 @@ def teil_a(datei, echt="", fotos="", browser=False, bilder="", pins=False):
         ok(re.fullmatch(r"\d{1,3}\u00a0%", top[0].get("pct", "")) and top[0].get("group_t") == "Pflanze" and top[0].get("rank_t") == "Art"
            and top[0].get("family_name") == "Korbblütler" and len(top) == 3, f"Prozent, Pflanze, Art, Familie ({top[0]})")
         ok(re.match(r"Gemeiner Löwenzahn – Taraxacum officinale – \d+\u00a0%", res.get("line", "")), "Zeile «Gemeiner Löwenzahn – Taraxacum officinale – NN %»")
-        print("A) Artinfo-Karten", flush=True)
+        print("A) Artinfo-Karten" + (" (echte Datei: Inhalte anders, nur für Bildschirmfotos)" if real_info else ""), flush=True)
         i0, i1, i2 = [(t.get("info") or {}) for t in top]
         ok(res.get("info") == "ok" and res.get("foot", "").startswith("Nur zur Orientierung") and "145" in res["foot"], "Hinweis unter jedem Ergebnis (Tox Info Suisse 145)")
         ok(i0.get("text", "").startswith("Der Gewöhnliche Löwenzahn") and i0.get("url") == "https://de.wikipedia.org/wiki/Gew%C3%B6hnlicher_L%C3%B6wenzahn"
@@ -600,7 +601,8 @@ def teil_b(ns, app, home, PW, bilder, tok, echt):
                 pg.locator(".tz-bio .row.first .ilook").scroll_into_view_if_needed(); pg.wait_for_timeout(200)
                 pg.screenshot(path=os.path.join(bilder, f"bioinfo_karte_{name}.png"))
                 pg.locator(".tz-bio .row").nth(2).locator("details.info summary").click(); pg.wait_for_timeout(200)
-                pg.locator(".tz-bio .row").nth(2).locator(".itox").scroll_into_view_if_needed(); pg.wait_for_timeout(200)
+                if pg.locator(".tz-bio .row").nth(2).locator(".itox").count():   # (mit der echten Datei evtl. nicht giftig)
+                    pg.locator(".tz-bio .row").nth(2).locator(".itox").scroll_into_view_if_needed(); pg.wait_for_timeout(200)
                 pg.screenshot(path=os.path.join(bilder, f"bioinfo_giftig_{name}.png"))
             box = pg.locator(".tz-bio").bounding_box()
             ok(box and box["x"] >= 0 and box["x"] + box["width"] <= vp_["width"] + 1, f"{name}: Panel passt in die Breite")

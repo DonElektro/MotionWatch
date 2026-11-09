@@ -49,7 +49,9 @@ BIO_FILES = {
                "sha256": "d8cb52c4f9bae2f51147579bc71c1b65e0dfd66133115c3f9ca204423e6ec699"},
 }
 # Artinfos (Workflow «BioCLIP-Infos»); size 0 = noch nicht freigegeben (dann zeigt MoveEye nur die Taxonomie + den Hinweis)
-BIO_INFO = {"tag": "bioclip-info-1", "name": "bioclip-info-1.sqlite", "size": 0, "sha256": ""}
+# Release bioclip-info-1, Lauf 42540619256, 09.11.2026 (= «digest» von GitHub): 10'321 Arten, de 6'495 / en 1'733 Texte
+BIO_INFO = {"tag": "bioclip-info-1", "name": "bioclip-info-1.sqlite", "size": 2744320,
+            "sha256": "cc2c1fb599b8517dd4bbed1aa5762c8d173736907b6fc28186f0bbcdb8611990"}
 BIO_INFO_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/" + BIO_INFO["tag"] + "/"}   # Tests: lokal
 BIO_INFO_MAX = 40 * 1024 * 1024
 BIO_EDIBLE_WARN = ("Edible according to Wikipedia – risk of confusion with poisonous species, never eat based only on an app "

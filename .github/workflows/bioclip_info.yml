@@ -5,13 +5,10 @@
 #   Stichprobe (schnell, ohne Release):
 #     gh api -X POST repos/DonElektro/MotionWatch/actions/workflows/bioclip_info.yml/dispatches -f ref=<zweig> -f 'inputs[nur]=stich'
 #   Alles, echt:  … -f 'inputs[nur]=alle' -f 'inputs[release]=echt' -f 'inputs[tag]=bioclip-info-1'
-#   Danach Grösse + sha256 (pins.txt / Release-Notiz) in BIO_INFO (Teil 639zzd) eintragen.
+#   Danach Grösse + sha256 (pins.txt / Release-Notiz) in BIO_INFO (Teil 639zzd) eintragen (zuletzt bioclip-info-1, Lauf 42540619256).
 # Keine Geheimnisse: nur GITHUB_TOKEN.
 name: BioCLIP-Infos
 on:
-  push:
-    branches: [mw-bioclip-info]
-    paths: [".github/workflows/bioclip_info.yml", "werkzeuge/bioclip_info_bauen.py"]
   workflow_dispatch:
     inputs:
       nur:
@@ -39,7 +36,7 @@ env:
 jobs:
   bauen:
     name: BioCLIP-Infos · ${{ inputs.nur || 'stich' }} · ${{ inputs.release || 'keins' }}
-    if: github.repository == 'DonElektro/MotionWatch' && (github.event_name == 'push' || inputs.loeschen == '')
+    if: github.repository == 'DonElektro/MotionWatch' && inputs.loeschen == ''
     runs-on: ubuntu-24.04
     timeout-minutes: 240
     steps:
@@ -78,7 +75,7 @@ jobs:
           python-version: "3.12"
       - name: Bauen und Stichprobe prüfen (bioclip_info_bauen.py)
         env:
-          NUR: ${{ github.event_name == 'push' && 'stich' || inputs.nur }}
+          NUR: ${{ inputs.nur }}
         run: |
           set -e
           [ "$NUR" = "stich" ] && NUR="Allium ursinum"             # die Stichprobe (STICH) kommt immer dazu
@@ -138,7 +135,7 @@ jobs:
 
   weg:
     name: Probe löschen · ${{ inputs.loeschen }}
-    if: github.repository == 'DonElektro/MotionWatch' && github.event_name == 'workflow_dispatch' && inputs.loeschen != ''
+    if: github.repository == 'DonElektro/MotionWatch' && inputs.loeschen != ''
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
