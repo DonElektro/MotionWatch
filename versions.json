@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-09 00:10",
+ "generated": "2026-11-09 06:38",
  "versions": [
+  {
+   "version": "3.67.0",
+   "file": "webcam_bewegung_3_67_0.py",
+   "url": "",
+   "sha256": "55b1db5b9a13d48f752b992b997eabc5f1e80ecf571558401c0567a5519f1d2d",
+   "date": "2026-11-09 06:38",
+   "notes": "🌿 Bestimmen: zu jeder erkannten Art eine kurze Infokarte (Beschreibung aus Wikipedia, gekürzt, mit Quelle und Lizenz CC BY-SA 4.0 auf jeder Karte; Link zum ganzen Artikel), für über 10'000 Arten offline – die Datei (2,7 MB, feste Prüfsumme) wird mit dem Modell geladen.",
+   "size": 3757424,
+   "sig": "7e3a9ca2c192e2a875bee50c4468131bb10789fe34fec1179020893738495ce645e02cc92b794d9feb21eaefb7888f13b0d0af28282e381b0895fe42b14e8c03",
+   "data": {
+    "file": "moveeye_daten_3_67_0.zip",
+    "url": "",
+    "sha256": "f3f405b7558bfddfee6c65bdbdf65248cc4670398eca64d932a32a09de07991a",
+    "size": 4885203,
+    "sig": "9ff6c9f10b788ea72e17d2be45f282385aad36ccc950b8e82316406037633dce27969e503b4df0f28431c351398972477f716135d25f65eccd76a43df504150c"
+   }
+  },
   {
    "version": "3.66.1",
    "file": "webcam_bewegung_3_66_1.py",
    "url": "",
    "sha256": "43c5621a3446ce93cbe9d74c6c189affb38d6f85af9b85791f0a799bb32a63b6",
-   "date": "2026-11-09 00:10",
+   "date": "2026-11-09 00:20",
    "notes": "Spielesammlung GS-1.6: Wobbly Truck mit Landehilfe im leichten Modus; der Knopf «✕ Zurück» sucht sich in allen Spielen einen freien Platz (oder bleibt weg, wenn das Spiel einen eigenen Zurück-Link hat) und überdeckt keine Spiel-Knöpfe mehr.",
    "size": 3738628,
    "sig": "b5bb5d35d7b69495bcb53a89d9311ce9002ad664b88c3781a7b085a01f688221ebb32d75d32bd4df8d2b4b1342d6ee4edecdc0caa37f92b2a10a97e23cef9005",
@@ -136,23 +153,6 @@
     "sha256": "b29ea6f5d1dec51e052f0b3c8f0a3bc842c00b2fa3476774bcda30790f872e42",
     "size": 4785308,
     "sig": "f2fdbbc09407af651c915017a61f6f63e3286b5edc6fc27f33b41753b427d5cf0789bb3a5755425c590ed7176387fd6dafcfb126d678a1264d69c41335de4001"
-   }
-  },
-  {
-   "version": "3.58.0",
-   "file": "webcam_bewegung_3_58_0.py",
-   "url": "",
-   "sha256": "42233e1dcce930a2c56d6cab58812f4f5596f27f3f7190a63a5d55f5e61f82a2",
-   "date": "2026-11-07 21:33",
-   "notes": "Weitwinkel = Wache: leichte KI im Weitwinkelbild – nur Personen rufen den Kopf (Tiere / Fahrzeuge wählbar), Auslösezonen im Weitwinkelbild (Zonen-Editor 🔭), nachts mit Wärmebild kein Personen-Alarm ohne Wärme (ab Werk an, ohne Wärmebild wie bisher); Anleitung «Weitwinkel einrichten und testen».",
-   "size": 5020080,
-   "sig": "1035f24a1d487f68eff6fa7af53942754d21ceed51a2e6910ec0d80b5a25fd1d8c35c20ed564d67752e880c0e1edf08ab329dd1031f672cd449a4085c7e0f109",
-   "data": {
-    "file": "moveeye_daten_3_58_0.zip",
-    "url": "",
-    "sha256": "22512e5a96f1e4a6c90dc42705f38399871d9c7e36d2a28943650d50030ce343",
-    "size": 4109495,
-    "sig": "56de2277810459926e54c2ef223cbfad2ecb16de8f7d7ae984cb4d376fc76214a86a88aa7c841208d6fa6ed886f3e39058975d2425498212a3db5d59f9f25f03"
    }
   },
   {

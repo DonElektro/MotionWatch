@@ -22,8 +22,15 @@
 #     nochmals hochgeladen) wird nicht nochmals gerechnet. Höchstens BIO_CACHE_N Ergebnisse.
 #   * Eingabe ist das Vorschaubild (t/<id>_p.jpg, 1280 px, von 639zzc neu gerechnet): nie die Original-Bytes, keine
 #     Pixel-Bomben, dasselbe, was Gäste sehen.
+#   * Artinfo-Karte (Wunsch Besitzer 08.11.2026): zu jeder der drei Arten eine aufklappbare Karte – Einleitung der deutschen
+#     Wikipedia (gekürzt auf ganze Sätze, sonst englisch «(englisch)»), ☠️ «Giftig» gut sichtbar, «essbar» NUR wenn Wikipedia
+#     es ausdrücklich sagt und NUR zusammen mit der Warnung BIO_EDIBLE_WARN (_bio_edible ist die einzige Stelle, die «essbar»
+#     erzeugt), Verwechslungs-Arten, Wikidata-Fakten (Höhe, Rote Liste IUCN, Lebensraum), Link zum Artikel + Autoren
+#     (CC BY-SA 4.0); unter jedem Ergebnis BIO_FOOT. Nichts erfunden oder übersetzt: gebaut im Workflow «BioCLIP-Infos»
+#     (werkzeuge/bioclip_info_bauen.py, Regeln «giftig» / «essbar» dort in REGELN), eine SQLite-Datei als Release-Asset
+#     (BIO_INFO, feste Grösse + sha256), geladen mit dem Modell oder einzeln («📖 Artinfos laden»), danach offline.
 # Selbsttest bio_selftest; Tests werkzeuge/bioclip_test.py (Ersatz-Modell, Rechte, Gäste, Zwischenspeicher, besetzt, Laden,
-# Browser) und im Workflow «BioCLIP» mit dem echten Modell (--echt).
+# Artinfo, «essbar» nie ohne Warnung, Browser) und im Workflow «BioCLIP» mit dem echten Modell (--echt).
 # ----------------------------------------------------------------------------
 BIO_TAG = "bioclip-3"
 BIO_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/" + BIO_TAG + "/"}   # Tests: lokaler Server
@@ -41,6 +48,16 @@ BIO_FILES = {
     "labels": {"name": "bioclip-1-arten.json", "size": 1523047,
                "sha256": "d8cb52c4f9bae2f51147579bc71c1b65e0dfd66133115c3f9ca204423e6ec699"},
 }
+# Artinfos (Workflow «BioCLIP-Infos»); size 0 = noch nicht freigegeben (dann zeigt MoveEye nur die Taxonomie + den Hinweis)
+# Release bioclip-info-1, Lauf 42540619256, 09.11.2026 (= «digest» von GitHub): 10'321 Arten, de 6'495 / en 1'733 Texte
+BIO_INFO = {"tag": "bioclip-info-1", "name": "bioclip-info-1.sqlite", "size": 2744320,
+            "sha256": "cc2c1fb599b8517dd4bbed1aa5762c8d173736907b6fc28186f0bbcdb8611990"}
+BIO_INFO_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/" + BIO_INFO["tag"] + "/"}   # Tests: lokal
+BIO_INFO_MAX = 40 * 1024 * 1024
+BIO_EDIBLE_WARN = ("Edible according to Wikipedia – risk of confusion with poisonous species, never eat based only on an app "
+                   "identification. Emergency: Tox Info Suisse 145")
+BIO_FOOT = "For orientation only – not for identifying edible species. Suspected poisoning: Tox Info Suisse 145."
+BIO_EDIBLE_WORDS = re.compile(r"essbar|Speisepilz|genießbar|geniessbar|Wildgemüse|gegessen|verzehr|\bedible\b|\beaten\b|culinary", re.I)
 BIO_MAX_BYTES = 400 * 1024 * 1024        # harte Obergrenze für alle Dateien zusammen (ein falscher Eintrag lädt nie mehr)
 BIO_IDLE_S = 10 * 60
 BIO_IDLE_TICK = 20                       # how often the idle watch looks
@@ -63,6 +80,7 @@ for _p in TZ_PERMS:                                        # the start of a job 
 BIO = {"lock": threading.Lock(), "proc": None, "q": None, "last": 0.0, "err": "", "ms": None, "load_ms": None, "job": "",
        "install": "", "jobs": {}, "sha": {}, "mem": {}, "idle_thread": False}
 BIO_DL = {"running": False, "got": 0, "total": 0, "msg": "", "stop": False, "done": False}
+BIO_DB = {"lock": threading.Lock(), "con": None}
 
 
 def bio_dir():
@@ -113,6 +131,117 @@ def bio_runtime():
         return importlib.util.find_spec("onnxruntime") is not None and importlib.util.find_spec("numpy") is not None
     except (ImportError, ValueError):
         return False
+
+
+# ---- species info (SQLite, read only) --------------------------------------------------------------------------------------------
+def bio_info_pinned():
+    f = BIO_INFO
+    return (isinstance(f.get("size"), int) and 0 < f["size"] <= BIO_INFO_MAX and bool(re.fullmatch(r"[0-9a-f]{64}", str(f.get("sha256") or "")))
+            and bool(re.fullmatch(r"[A-Za-z0-9._-]{1,80}", f.get("name") or "")))
+
+
+def bio_info_path():
+    return os.path.join(bio_dir(), BIO_INFO["name"])
+
+
+def bio_info_installed():
+    if not bio_info_pinned():
+        return False
+    try:
+        if os.path.getsize(bio_info_path()) != BIO_INFO["size"]:
+            return False
+        with open(os.path.join(bio_dir(), "info.ok"), encoding="utf-8") as fh:
+            return fh.read().strip() == BIO_INFO["sha256"]
+    except OSError:
+        return False
+
+
+def bio_info_close():
+    with BIO_DB["lock"]:
+        if BIO_DB["con"] is not None:
+            try:
+                BIO_DB["con"].close()
+            except Exception:
+                pass
+        BIO_DB["con"] = None
+
+
+def bio_info_get(sci):
+    """the raw entry of a species (dict) or None"""
+    import sqlite3
+    import zlib
+    if not bio_info_installed():
+        return None
+    with BIO_DB["lock"]:
+        try:
+            if BIO_DB["con"] is None:
+                BIO_DB["con"] = sqlite3.connect("file:" + urllib.parse.quote(bio_info_path()) + "?mode=ro&immutable=1", uri=True,
+                                                check_same_thread=False)
+            row = BIO_DB["con"].execute("SELECT z FROM info WHERE sci = ?", (str(sci)[:120],)).fetchone()
+        except Exception:
+            BIO_DB["con"] = None
+            return None
+    if not row:
+        return None
+    try:
+        e = json.loads(zlib.decompress(row[0]).decode("utf-8"))
+    except (zlib.error, ValueError):
+        return None
+    return e if isinstance(e, dict) else None
+
+
+def _bio_edible(sents, L):
+    """the ONLY place that creates «edible» - always with the warning (owner: never «essbar» without it)"""
+    s = [str(x)[:400] for x in (sents or []) if str(x).strip()][:2]
+    return {"warn": tr(BIO_EDIBLE_WARN, L), "s": s} if s else None
+
+
+def _bio_wiki_url(lang, title, rev=None, hist=False):
+    from urllib.parse import quote
+    host = "https://%s.wikipedia.org" % ("en" if lang == "en" else "de")
+    if hist:
+        return host + "/w/index.php?title=" + quote(title.replace(" ", "_")) + "&action=history"
+    return host + "/wiki/" + quote(title.replace(" ", "_"))
+
+
+def bio_card(e, tax, L):
+    """one species card for the page (texts of the interface in L; the content stays German, else English)"""
+    L = norm_lang(L)
+    tax = [str(x) for x in (tax or []) if x]
+    c = {"tax": " › ".join(tax[:6] + ([tax[5] + " " + tax[6]] if len(tax) >= 7 else [])), "empty": True}
+    if not isinstance(e, dict):
+        return c
+    if e.get("x") and e.get("t"):
+        lang = "en" if e.get("l") == "en" else "de"
+        c.update(empty=False, lang=lang, text=str(e["x"])[:900], title=str(e["t"])[:120], url=_bio_wiki_url(lang, e["t"]),
+                 hist=_bio_wiki_url(lang, e["t"], hist=True))
+        if lang == "en":
+            c["en_t"] = tr("(English)", L)
+    tox = [str(x)[:400] for x in (e.get("tox") or [])][:2]
+    if tox or e.get("toxwd"):
+        c["tox"] = {"s": tox, "src": "Wikipedia" if tox else "Wikidata"}
+        if not tox:
+            c["tox"]["s"] = [tr("Marked as poisonous in Wikidata.", L)]
+    elif e.get("ed"):
+        ed = _bio_edible(e["ed"], L)
+        if ed:
+            c["edible"] = ed
+    look = []
+    for x in (e.get("look") or [])[:6]:
+        if isinstance(x, (list, tuple)) and x:
+            look.append({"name": str(x[0])[:80], "tox": bool(len(x) > 1 and x[1]), "url": _bio_wiki_url("de", str(x[0]))})
+    if look:
+        c["look"] = look
+    facts = []
+    for k, lab in (("h", "Height"), ("iucn", "Red List (IUCN)"), ("hab", "Habitat")):
+        if e.get(k):
+            facts.append([tr(lab, L), str(e[k])[:120]])
+    if facts:
+        c["facts"] = facts
+    if not c.get("tox") and not c.get("edible") and BIO_EDIBLE_WORDS.search(c.get("text") or ""):
+        c["note_ed"] = tr(BIO_EDIBLE_WARN, L)                # the text itself speaks of eating: never without the warning
+    c["empty"] = not (c.get("text") or c.get("tox") or c.get("edible") or look or facts)
+    return c
 
 
 # ---- the worker (own process, nice 10): ONNX image encoder + the ready text embeddings, numpy only ------------------------------
@@ -396,6 +525,7 @@ def bio_format(raw, L):
     L = norm_lang(L)
     names = raw.get("names") or {}
     top = []
+    info_ok = bio_info_installed()
     for t in raw.get("top") or []:
         tax = list(t.get("tax") or [])[:7]
         if len(tax) < 7:
@@ -407,6 +537,10 @@ def bio_format(raw, L):
         top.append({"sci": sci, "name": bio_name(names, sci, L), "p": float(t.get("p") or 0), "pct": bio_pct(t.get("p"), L),
                     "group": grp, "icon": ic, "group_t": tr(gt, L), "rank": "species", "rank_t": tr("Species", L),
                     "family": fam, "family_name": bio_name(names, fam, L)})
+        if info_ok:
+            card = bio_card(bio_info_get(sci), tax, L)
+            top[-1]["info"] = card
+            top[-1]["tox"] = bool(card.get("tox"))
     ms = raw.get("ms")
     sec = ("%.1f s" % (ms / 1000.0)) if isinstance(ms, (int, float)) else ""
     out = {"top": top, "sure": None, "unsure": False, "ms": ms, "n": raw.get("n"), "sec": sec if L == "en" else sec.replace(".", ",")}
@@ -426,6 +560,12 @@ def bio_format(raw, L):
         out["note"] = tr("Unsure - maybe no plant, animal or fungus in the picture, or a species MoveEye does not know.", L)
     elif best < BIO_FALLBACK_BELOW:
         out["note"] = tr("Not sure about the species - compare with the pictures in a field guide.", L)
+    out["foot"] = tr(BIO_FOOT, L)                          # under every result, always
+    out["info"] = "ok" if info_ok else ("missing" if bio_info_pinned() else "none")
+    out["lbl"] = {k: tr(v, L) for k, v in (("info", "Species info"), ("tox", "☠️ Poisonous"), ("look", "Risk of confusion with:"),
+                                           ("art", "Whole article"), ("lic", "Text: Wikipedia, CC BY-SA 4.0, abridged –"),
+                                           ("auth", "authors"), ("none", "No species info for this species."),
+                                           ("wd", "Facts: Wikidata (CC0)"), ("load", "Load species info"))}
     out["line"] = (" · ".join(
         "%s – %s – %s" % (x["name"], x["sci"], x["pct"]) if x["name"] else "%s – %s" % (x["sci"], x["pct"]) for x in top))
     return out
@@ -480,11 +620,13 @@ def bio_free_need():
     return int(float(CFG.get("tausch_free_gb", 2.0)) * TZ_GB)
 
 
-def bio_download(wait=False):
-    """load the model once (background); (ok, error)"""
-    if not bio_pinned():
+def bio_download(wait=False, model=True):
+    """load the model and the species info once (background; model=False: only the species info); (ok, error)"""
+    want_m = model and not bio_installed()
+    want_i = bio_info_pinned() and not bio_info_installed()
+    if want_m and not bio_pinned():
         return False, "The identification comes with an update"
-    if bio_installed():
+    if not want_m and not want_i:
         return True, ""
     if BIO_DL["running"]:
         return True, ""
@@ -492,14 +634,41 @@ def bio_download(wait=False):
         free = shutil.disk_usage(DATA_DIR).free
     except OSError:
         free = 1 << 40
-    have = sum(os.path.getsize(bio_path(w)) for w in BIO_FILES if os.path.isfile(bio_path(w)))
-    if free - (bio_total() - have) < bio_free_need():
+    need = (bio_total() - sum(os.path.getsize(bio_path(w)) for w in BIO_FILES if os.path.isfile(bio_path(w)))) if want_m else 0
+    need += BIO_INFO["size"] if want_i else 0
+    if free - need < bio_free_need():
         return False, "not enough free space on the memory card"
-    BIO_DL.update(running=True, got=0, total=bio_total(), msg="", stop=False, done=False)
+    BIO_DL.update(running=True, got=0, total=(bio_total() if want_m else 0) + (BIO_INFO["size"] if want_i else 0), msg="",
+                  stop=False, done=False)
 
     def work():
         try:
             os.makedirs(bio_dir(), exist_ok=True)
+            if want_i:                                       # the species info first: small, useful at once
+                bio_info_close()
+                try:
+                    os.remove(os.path.join(bio_dir(), "info.ok"))
+                except OSError:
+                    pass
+                pin = {"size": BIO_INFO["size"], "sha256": BIO_INFO["sha256"]}
+                if not (os.path.isfile(bio_info_path()) and piper_check_file(bio_info_path(), pin)[0]):
+                    bio_fetch(BIO_INFO_BASE["url"] + BIO_INFO["name"], bio_info_path(), pin, BIO_DL)
+                else:
+                    BIO_DL["got"] += pin["size"]
+                import sqlite3
+                con = sqlite3.connect("file:" + urllib.parse.quote(bio_info_path()) + "?mode=ro", uri=True)
+                try:
+                    n = con.execute("SELECT count(*) FROM info").fetchone()[0]
+                finally:
+                    con.close()
+                if not n:
+                    raise ValueError("the species info is empty")
+                with open(os.path.join(bio_dir(), "info.ok"), "w", encoding="utf-8") as f:
+                    f.write(BIO_INFO["sha256"])
+                log_event("sys", f"Species info loaded and checked ({n} species)")
+            if not want_m:
+                BIO_DL["done"] = True
+                return
             try:
                 os.remove(os.path.join(bio_dir(), "bioclip.ok"))
             except OSError:
@@ -536,16 +705,17 @@ def bio_delete():
         return False, "busy right now - try again in a moment"
     with BIO["lock"]:
         bio_worker_stop()
-    for w in BIO_FILES:
-        for p in (bio_path(w), bio_path(w) + ".part"):
-            try:
-                os.remove(p)
-            except OSError:
-                pass
-    try:
-        os.remove(os.path.join(bio_dir(), "bioclip.ok"))
-    except OSError:
-        pass
+    bio_info_close()
+    for p in [x for w in BIO_FILES for x in (bio_path(w), bio_path(w) + ".part")] + [bio_info_path(), bio_info_path() + ".part"]:
+        try:
+            os.remove(p)
+        except OSError:
+            pass
+    for m in ("bioclip.ok", "info.ok"):
+        try:
+            os.remove(os.path.join(bio_dir(), m))
+        except OSError:
+            pass
     log_event("sys", f"Species identification deleted (frees about {bio_total() // 1048576} MB)")
     return True, ""
 
@@ -614,13 +784,15 @@ def bio_can(m):
 
 
 def bio_state(fid, who, L, action="state", rate_key=None):
-    """what the panel shows for this picture; who None = guest. Actions: state, start, download, cancel, install, delete.
+    """what the panel shows for this picture; who None = guest. Actions: state, start, download, info, cancel, install, delete.
     rate_key: only real work counts (a job, a download), never a look at the state or a result from the cache"""
     L = norm_lang(L)
     guest = who is None
     admin = bool(who and who.get("is_admin"))
     m = bio_file(fid, who)
-    base = {"ok": True, "mb": max(1, round(bio_total() / 1048576.0)), "can_dl": not guest, "can_install": admin, "can_delete": admin}
+    info_need = BIO_INFO["size"] if bio_info_pinned() and not bio_info_installed() else 0
+    base = {"ok": True, "mb": max(1, round((bio_total() + info_need) / 1048576.0)), "info_mb": max(1, round(info_need / 1048576.0)),
+            "can_dl": not guest, "can_install": admin, "can_delete": admin}
     if not CFG.get("tausch_bio", True) or not CFG.get("tausch_on", True):
         return dict(base, ok=False, st="off", msg=tr("Identifying species is switched off.", L))
     if m is None:
@@ -648,9 +820,16 @@ def bio_state(fid, who, L, action="state", rate_key=None):
         return dict(base, st="runtime", msg=msg)
     if not bio_pinned():
         return dict(base, ok=False, st="err", msg=tr("The identification comes with an update", L))
+    if action == "info" and not guest and not BIO_DL["running"] and bio_installed() and info_need:
+        if rate_key and not tausch_rate(rate_key, "bio", BIO_RATE[1]):
+            return dict(base, ok=False, st="err", msg=tr("Too many requests in a short time - wait a few minutes.", L))
+        ok, err = bio_download(model=False)
+        if not ok:
+            return dict(base, ok=False, st="err", msg=tr(err, L))
     if BIO_DL["running"]:
         pct = int(100 * BIO_DL["got"] / max(1, BIO_DL["total"]))
-        return dict(base, st="loading", pct=pct, msg=trf("Loading BioCLIP … {p} % of {mb} MB", L, p=pct, mb=base["mb"]))
+        return dict(base, st="loading", pct=pct, msg=trf("Loading BioCLIP … {p} % of {mb} MB", L, p=pct,
+                                                          mb=max(1, round(BIO_DL["total"] / 1048576.0))))
     if not bio_installed():
         if action == "download" and not guest:
             if rate_key and not tausch_rate(rate_key, "bio", BIO_RATE[1]):
@@ -750,7 +929,7 @@ def smalltv_routes(app, reply, body):                     # + 639zzd
         L = norm_lang(d.get("lang") or CFG.get("lang"))
         if "files_view" not in who["perms"]:
             return reply({"ok": False, "st": "err", "msg": tr("not allowed for your user", L)}, 403)
-        return answer(str(d.get("id") or ""), who, L, act if act in ("state", "start", "download", "cancel", "install", "delete") else "state",
+        return answer(str(d.get("id") or ""), who, L, act if act in ("state", "start", "download", "info", "cancel", "install", "delete") else "state",
                       who["key"])
 
     @app.route("/g/<token>/tausch/bio/<fid>", methods=["GET", "POST"])
@@ -792,6 +971,15 @@ BIO_CSS = r"""
 .tz-bio .msg{font-size:14px;margin:6px 0}.tz-bio .msg.bad{color:var(--red,#ff6b6b)}
 .tz-bio .act{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 2px}.tz-bio .act button{min-height:38px;padding:4px 14px}
 .tz-bio .ft{font-size:11.5px;color:var(--mut,#8b9bb0);margin-top:10px;line-height:1.4}
+.tz-bio .toxb{color:#fff;background:var(--red,#d93636);border-radius:6px;padding:0 6px;font-weight:700}
+.tz-bio details.info{margin-top:6px;border:1px solid var(--line,#1f2b3a);border-radius:10px;background:var(--panel2,#0f1620)}
+.tz-bio details.info summary{cursor:pointer;padding:6px 10px;font-size:13px;color:var(--acc2,#8ab4f8);list-style-position:inside}
+.tz-bio .ib{padding:2px 10px 10px;font-size:13.5px;line-height:1.45}.tz-bio .ib q{display:block;margin:4px 0 0;font-style:italic;quotes:"„" "“"}
+.tz-bio .itox{border:2px solid var(--red,#d93636);border-radius:8px;padding:6px 9px;margin:6px 0}.tz-bio .itox b{color:var(--red,#ff6b6b);font-size:15px}
+.tz-bio .ied{border:2px solid var(--yel,#e3b341);border-radius:8px;padding:6px 9px;margin:6px 0}.tz-bio .iwarn{color:var(--yel,#e3b341);display:block}
+.tz-bio .itx{margin:6px 0}.tz-bio .ilook{margin:6px 0}.tz-bio .ifa{margin:6px 0;display:grid;gap:2px}.tz-bio .ifa span{color:var(--mut,#8b9bb0)}
+.tz-bio .itax,.tz-bio .isrc{font-size:11.5px;color:var(--mut,#8b9bb0);margin-top:6px;overflow-wrap:anywhere}
+.tz-bio .ib a{color:var(--acc2,#8ab4f8)}.tz-bio .foot{font-size:12.5px;margin:10px 0 0;padding:7px 9px;border-radius:8px;background:var(--field,#0c121a)}
 .tz-bio .spin{display:inline-block;animation:tzbs 1.2s linear infinite}@keyframes tzbs{to{transform:rotate(360deg)}}
 """
 
@@ -812,6 +1000,25 @@ function tzBioPanel(f, ov, url, extra, T) {
       const j = await r.json(); return j && j.st ? j : {st: "err", msg: (j && (j.msg || j.error)) || ("error " + r.status)}; }
     catch (e) { return {st: "err", msg: T("No connection to MoveEye.")}; }
   }
+  function link(txt, href) { const a = mk("a", "", txt); a.href = href; a.target = "_blank"; a.rel = "noopener noreferrer"; return a; }
+  // one species card: «essbar» only together with its warning (never alone); content as text, never as HTML
+  function card(c, lb, open) {
+    const d = mk("details", "info"), sm = mk("summary", "", "📖 " + (lb.info || "") + (c.en_t ? " " + c.en_t : "")), b = mk("div", "ib");
+    d.appendChild(sm); d.appendChild(b); if (open) d.open = true;
+    if (c.tox) { const x = mk("div", "itox"); x.appendChild(mk("b", "", lb.tox || "☠️")); (c.tox.s || []).forEach(t => x.appendChild(mk("q", "", t))); b.appendChild(x); }
+    if (c.edible && c.edible.warn) { const x = mk("div", "ied"); x.appendChild(mk("b", "iwarn", "⚠️ " + c.edible.warn)); (c.edible.s || []).forEach(t => x.appendChild(mk("q", "", t))); b.appendChild(x); }
+    if (c.note_ed && !c.edible && !c.tox) b.appendChild(mk("div", "ied", "")).appendChild(mk("b", "iwarn", "⚠️ " + c.note_ed));
+    if (c.text) b.appendChild(mk("p", "itx", c.text));
+    if (c.look) { const x = mk("div", "ilook"); x.appendChild(document.createTextNode((lb.look || "") + " "));
+      c.look.forEach((l, j) => { if (j) x.appendChild(document.createTextNode(", ")); x.appendChild(link((l.tox ? "☠️ " : "") + l.name, l.url)); }); b.appendChild(x); }
+    if (c.facts) { const x = mk("div", "ifa"); c.facts.forEach(f => { const r_ = mk("div"); r_.append(mk("span", "", f[0] + ": "), mk("b", "", f[1])); x.appendChild(r_); }); b.appendChild(x); }
+    if (c.empty) b.appendChild(mk("p", "itx", lb.none || ""));
+    b.appendChild(mk("div", "itax", c.tax || ""));
+    if (c.url) { const x = mk("div", "isrc"); x.append(link(lb.art + " ↗", c.url), document.createTextNode(" · " + lb.lic + " "), link(lb.auth, c.hist));
+      if (c.facts) x.appendChild(document.createTextNode(" · " + lb.wd)); b.appendChild(x); }
+    else if (c.facts) b.appendChild(mk("div", "isrc", lb.wd));
+    return d;
+  }
   function btn(txt, action, cls) { const b = mk("button", cls || "", txt); b.type = "button"; b.onclick = () => step(action); return b; }
   function show(r) {
     bd.textContent = "";
@@ -821,15 +1028,18 @@ function tzBioPanel(f, ov, url, extra, T) {
         const row = mk("div", "row" + (i === 0 ? " first" : "")), k = mk("div", "k"), n = mk("div", "n"), sp = mk("span"), pb = mk("div", "pb"), pi = mk("i");
         k.append(mk("span", "", t_.icon + " " + t_.group_t), mk("span", "", "· " + t_.rank_t));
         if (t_.family) k.append(mk("span", "", "· " + (t_.family_name ? t_.family_name + " (" + t_.family + ")" : t_.family)));
+        if (t_.tox) k.prepend(mk("span", "toxb", (res.lbl || {}).tox || "☠️"));
         if (t_.name) { sp.append(mk("b", "", t_.name), document.createTextNode(" – ")); }
         sp.append(mk("i", "", t_.sci));
         n.append(sp, mk("b", "p", t_.pct)); pi.style.width = Math.max(1, Math.round(100 * t_.p)) + "%"; pb.appendChild(pi);
-        row.append(k, n, pb); bd.appendChild(row);
+        row.append(k, n, pb); if (t_.info) row.appendChild(card(t_.info, res.lbl || {}, i === 0 && !!t_.tox)); bd.appendChild(row);
       });
       if (res.sure) { const s = mk("div", "sure"); s.append(document.createTextNode("✔ " + T("Sure is:") + " " + res.sure.rank_t + " "));
         if (res.sure.name) s.append(mk("b", "", res.sure.name), document.createTextNode(" – "));
         s.append(mk("i", "", res.sure.sci), document.createTextNode(" – " + res.sure.pct)); bd.appendChild(s); }
       if (res.note) bd.appendChild(mk("div", "note", "⚠ " + res.note));
+      if (res.info === "missing" && r.can_dl) { const a = mk("div", "act"); a.appendChild(btn("📖 " + ((res.lbl || {}).load || "") + " (" + (r.info_mb || 1) + "\u00a0MB)", "info", "sec")); bd.appendChild(a); }
+      if (res.foot) bd.appendChild(mk("div", "foot", "⚠️ " + res.foot));
       if (!(res.top || []).length) bd.appendChild(mk("div", "msg", T("Nothing found.")));
       const sec = res.sec || "";
       ft.textContent = (res.cached ? "↺ " : (sec ? "⏱ " + sec + " · " : "")) + T("Computed on this MoveEye - the picture never leaves the device.") + " BioCLIP (MIT) · " + T("Names: Wikidata");
@@ -928,6 +1138,31 @@ def tausch_guest_html(token):                              # + 639zzd
 BIO_JS_KEYS = ("Identify", "Close", "Load", "Cancel", "Install", "Try again", "Sure is:", "Nothing found.", "No connection to MoveEye.",
                "Computed on this MoveEye - the picture never leaves the device.", "Names: Wikidata")
 _HX_BIO = {
+    BIO_EDIBLE_WARN: ("Essbar laut Wikipedia – Verwechslungsgefahr mit giftigen Arten, nie nur nach App-Bestimmung essen. Notfall: Tox Info Suisse 145",
+                      "Comestible selon Wikipédia – risque de confusion avec des espèces toxiques, ne jamais manger sur la seule base d’une identification par application. Urgence : Tox Info Suisse 145",
+                      "Commestibile secondo Wikipedia – rischio di confusione con specie velenose, non mangiare mai solo in base a un’identificazione con l’app. Emergenza: Tox Info Suisse 145",
+                      "Mangiabel tenor Wikipedia – privel da confusiun cun spezias tissientas, mai mangiar mo tenor ina determinaziun cun l’app. Urgenza: Tox Info Suisse 145"),
+    BIO_FOOT: ("Nur zur Orientierung – nicht zum Bestimmen von Essbarem. Vergiftungsverdacht: Tox Info Suisse 145.",
+               "Seulement pour s’orienter – pas pour identifier ce qui est comestible. Suspicion d’intoxication : Tox Info Suisse 145.",
+               "Solo per orientarsi – non per identificare ciò che è commestibile. Sospetto di avvelenamento: Tox Info Suisse 145.",
+               "Mo per s’orientar – betg per determinar quai ch’è mangiabel. Suspect d’intoxicaziun: Tox Info Suisse 145."),
+    "Species info": ("Artinfo", "Infos sur l’espèce", "Info sulla specie", "Infurmaziuns davart la spezia"),
+    "☠️ Poisonous": ("☠️ Giftig", "☠️ Toxique", "☠️ Velenoso", "☠️ Tissient"),
+    "Risk of confusion with:": ("Verwechslungsgefahr mit:", "Risque de confusion avec :", "Rischio di confusione con:", "Privel da confusiun cun:"),
+    "Whole article": ("Ganzer Artikel", "Article complet", "Articolo completo", "Artitgel cumplet"),
+    "Text: Wikipedia, CC BY-SA 4.0, abridged –": ("Text: Wikipedia, CC BY-SA 4.0, gekürzt –", "Texte : Wikipédia, CC BY-SA 4.0, abrégé –",
+                                                 "Testo: Wikipedia, CC BY-SA 4.0, abbreviato –", "Text: Wikipedia, CC BY-SA 4.0, scurznì –"),
+    "authors": ("Autoren", "auteurs", "autori", "auturs"),
+    "No species info for this species.": ("Zu dieser Art gibt es keine Artinfo.", "Pas d’infos pour cette espèce.",
+                                          "Nessuna info per questa specie.", "Per questa spezia na datti nagina infurmaziun."),
+    "Facts: Wikidata (CC0)": ("Fakten: Wikidata (CC0)", "Faits : Wikidata (CC0)", "Dati: Wikidata (CC0)", "Fatgs: Wikidata (CC0)"),
+    "Load species info": ("Artinfos laden", "Charger les infos des espèces", "Caricare le info sulle specie", "Chargiar las infurmaziuns da spezias"),
+    "(English)": ("(englisch)", "(en anglais)", "(in inglese)", "(englais)"),
+    "Marked as poisonous in Wikidata.": ("In Wikidata als giftig vermerkt.", "Indiqué comme toxique dans Wikidata.",
+                                         "Indicato come velenoso in Wikidata.", "Notà sco tissientà en Wikidata."),
+    "Height": ("Höhe", "Hauteur", "Altezza", "Autezza"),
+    "Red List (IUCN)": ("Rote Liste (IUCN)", "Liste rouge (UICN)", "Lista rossa (IUCN)", "Glista cotschna (IUCN)"),
+    "Habitat": ("Lebensraum", "Habitat", "Habitat", "Spazi da viver"),
     "Identify": ("Bestimmen", "Identifier", "Identificare", "Determinar"),
     "Close": ("Schliessen", "Fermer", "Chiudi", "Serrar"),
     "Load": ("Laden", "Charger", "Caricare", "Chargiar"),
@@ -1030,25 +1265,25 @@ _HELP_BIO = {
            'Beim ersten Mal lädt MoveEye das Modell einmal (etwa 340 MB, feste Prüfsumme), danach geht es ohne Internet; ein Bild braucht auf dem Pi 5 wenige Sekunden. '
            'Bekannt sind rund 10\'000 Arten, die in der Schweiz und in Mitteleuropa am häufigsten gemeldet werden, dazu Haustiere, Nutztiere, Garten- und Kulturpflanzen. '
            'Ausschalten: Einstellungen → System → Datentausch. <b>Modell und Lizenzen:</b> BioCLIP (Stevens et al., CVPR 2024, Imageomics Institute), MIT; '
-           'Auswahl der Arten nach den Fundmeldungen auf GBIF.org; Namen von Wikidata (CC0); Rechnung mit onnxruntime (MIT). Bitte Ergebnisse vor dem Essen von Pilzen oder Pflanzen nie als sicher nehmen.</li>'),
+           'Auswahl der Arten nach den Fundmeldungen auf GBIF.org; Namen von Wikidata (CC0); Rechnung mit onnxruntime (MIT). Bitte Ergebnisse vor dem Essen von Pilzen oder Pflanzen nie als sicher nehmen.</li><li><b>📖 Artinfo</b> (aufklappen bei jeder Art): die Einleitung des Wikipedia-Artikels (deutsch, sonst englisch), gekürzt, ☠️ <b>Giftig</b>, wenn der Artikel es ausdrücklich sagt, Verwechslungs-Arten, Höhe / Rote Liste / Lebensraum aus Wikidata und der Link zum ganzen Artikel. «Essbar» steht nur, wenn Wikipedia es ausdrücklich sagt, und immer mit der Warnung. Nichts davon ist von MoveEye erfunden oder übersetzt; die Artinfos werden einmal geladen (wenige MB) und gehen danach offline. <b>Nur zur Orientierung – nicht zum Bestimmen von Essbarem. Vergiftungsverdacht: Tox Info Suisse 145.</b> <b>Lizenzen:</b> Texte aus Wikipedia, CC BY-SA 4.0 (Autoren: die Versionsgeschichte des jeweiligen Artikels, Link in jeder Karte; Texte gekürzt); Fakten aus Wikidata (CC0).</li>'),
     "en": ('<li><b>🌿 Identify</b> (at every picture, also for guests): MoveEye names the three most likely species with common and Latin name and percent '
            '(plants, animals, fungi, insects); when the species is unsure, the sure genus or family. It is computed only on the device – the picture never leaves MoveEye. '
            'The first time MoveEye loads the model once (about 340 MB, fixed checksum), after that it works without internet; a picture takes a few seconds on the Pi 5. '
            'It knows about 10,000 species most often reported in Switzerland and Central Europe, plus pets, farm animals, garden and crop plants. '
            'Switch off: Settings → System → File exchange. <b>Model and licences:</b> BioCLIP (Stevens et al., CVPR 2024, Imageomics Institute), MIT; '
-           'species chosen after the occurrence records on GBIF.org; names from Wikidata (CC0); inference with onnxruntime (MIT). Never rely on it before eating mushrooms or plants.</li>'),
+           'species chosen after the occurrence records on GBIF.org; names from Wikidata (CC0); inference with onnxruntime (MIT). Never rely on it before eating mushrooms or plants.</li><li><b>📖 Species info</b> (unfold at each species): the lead of the Wikipedia article (German, else English), abridged, ☠️ <b>Poisonous</b> when the article says so explicitly, species it can be confused with, height / Red List / habitat from Wikidata and the link to the whole article. «Edible» only appears when Wikipedia says so explicitly, and always with the warning. Nothing is invented or translated by MoveEye; the species info is loaded once (a few MB), then offline. <b>For orientation only – not for identifying edible species. Suspected poisoning: Tox Info Suisse 145.</b> <b>Licences:</b> texts from Wikipedia, CC BY-SA 4.0 (authors: the history of each article, linked in every card; texts abridged); facts from Wikidata (CC0).</li>'),
     "fr": ('<li><b>🌿 Identifier</b> (à chaque image, aussi pour les invités) : MoveEye donne les trois espèces les plus probables avec nom et nom latin et pourcentage '
            '(plantes, animaux, champignons, insectes) ; si l’espèce est incertaine, le genre ou la famille sûrs. Calcul uniquement sur l’appareil – l’image ne quitte jamais MoveEye. '
            'La première fois, MoveEye charge le modèle (env. 340 Mo, somme de contrôle fixe), ensuite sans internet. Environ 10 000 espèces de Suisse et d’Europe centrale, animaux domestiques et plantes cultivées. '
-           '<b>Modèle et licences :</b> BioCLIP (Stevens et al., CVPR 2024), MIT ; sélection d’après GBIF.org ; noms : Wikidata (CC0) ; calcul : onnxruntime (MIT). Ne jamais s’y fier avant de manger champignons ou plantes.</li>'),
+           '<b>Modèle et licences :</b> BioCLIP (Stevens et al., CVPR 2024), MIT ; sélection d’après GBIF.org ; noms : Wikidata (CC0) ; calcul : onnxruntime (MIT). Ne jamais s’y fier avant de manger champignons ou plantes.</li><li><b>📖 Infos sur l’espèce</b> : début de l’article Wikipédia (en allemand, sinon en anglais), abrégé, ☠️ <b>Toxique</b> si l’article le dit expressément, confusions possibles, faits de Wikidata, lien vers l’article. «Comestible» seulement si Wikipédia le dit expressément, toujours avec l’avertissement. <b>Seulement pour s’orienter – pas pour identifier ce qui est comestible. Suspicion d’intoxication : Tox Info Suisse 145.</b> <b>Licences :</b> textes de Wikipédia, CC BY-SA 4.0 (auteurs : historique de chaque article, lien dans chaque fiche) ; faits de Wikidata (CC0).</li>'),
     "it": ('<li><b>🌿 Identificare</b> (su ogni immagine, anche per gli ospiti): MoveEye indica le tre specie più probabili con nome, nome latino e percentuale '
            '(piante, animali, funghi, insetti); se la specie è incerta, il genere o la famiglia sicuri. Calcolo solo sul dispositivo – l’immagine non lascia mai MoveEye. '
            'La prima volta MoveEye carica il modello (circa 340 MB, somma di controllo fissa), poi senza internet. Circa 10 000 specie di Svizzera ed Europa centrale, animali domestici e piante coltivate. '
-           '<b>Modello e licenze:</b> BioCLIP (Stevens et al., CVPR 2024), MIT; selezione secondo GBIF.org; nomi: Wikidata (CC0); calcolo: onnxruntime (MIT). Mai fidarsi prima di mangiare funghi o piante.</li>'),
+           '<b>Modello e licenze:</b> BioCLIP (Stevens et al., CVPR 2024), MIT; selezione secondo GBIF.org; nomi: Wikidata (CC0); calcolo: onnxruntime (MIT). Mai fidarsi prima di mangiare funghi o piante.</li><li><b>📖 Info sulla specie</b>: inizio dell’articolo di Wikipedia (in tedesco, altrimenti in inglese), abbreviato, ☠️ <b>Velenoso</b> se l’articolo lo dice espressamente, specie confondibili, dati di Wikidata, link all’articolo. «Commestibile» solo se Wikipedia lo dice espressamente, sempre con l’avvertenza. <b>Solo per orientarsi – non per identificare ciò che è commestibile. Sospetto di avvelenamento: Tox Info Suisse 145.</b> <b>Licenze:</b> testi da Wikipedia, CC BY-SA 4.0 (autori: cronologia di ogni articolo, link in ogni scheda); dati da Wikidata (CC0).</li>'),
     "rm": ('<li><b>🌿 Determinar</b> (tar mintga maletg, er per giasts): MoveEye num las trais spezias las pli probablas cun num, num latin e pertschient '
            '(plantas, animals, bulieus, insects); sche la spezia è malsegira, il gener u la famiglia segira. Calculà mo sin l’apparat – il maletg na banduna mai MoveEye. '
            'L’emprima giada chargia MoveEye il model (var 340 MB, summa da controlla fixa), lura senza internet. Var 10 000 spezias da la Svizra e da l’Europa centrala, animals da chasa e plantas cultivadas. '
-           '<b>Model e licenzas:</b> BioCLIP (Stevens et al., CVPR 2024), MIT; selecziun tenor GBIF.org; nums: Wikidata (CC0); calculaziun: onnxruntime (MIT). Mai sa fidar avant che mangiar bulieus u plantas.</li>'),
+           '<b>Model e licenzas:</b> BioCLIP (Stevens et al., CVPR 2024), MIT; selecziun tenor GBIF.org; nums: Wikidata (CC0); calculaziun: onnxruntime (MIT). Mai sa fidar avant che mangiar bulieus u plantas.</li><li><b>📖 Infurmaziuns davart la spezia</b>: l’entschatta da l’artitgel da Wikipedia (tudestg, uschiglio englais), scurznida, ☠️ <b>Tissient</b> sche l’artitgel di quai expressivamain, spezias da confusiun, fatgs da Wikidata, link a l’artitgel. «Mangiabel» mo sche Wikipedia di quai expressivamain, adina cun l’avertiment. <b>Mo per s’orientar – betg per determinar quai ch’è mangiabel. Suspect d’intoxicaziun: Tox Info Suisse 145.</b> <b>Licenzas:</b> texts da Wikipedia, CC BY-SA 4.0 (auturs: istorgia da mintga artitgel, link en mintga carta); fatgs da Wikidata (CC0).</li>'),
 }
 
 
@@ -1101,7 +1336,27 @@ def bio_selftest():
     assert "🌿" in HELP_PAGE and "BioCLIP" in HELP_PAGE
     assert role_allows("view", "/api/tausch/bio", "POST", {}) and role_allows("view", "/api/tausch/bio", "GET", {})
     assert not role_allows("kid", "/api/tausch/bio", "POST", {})
-    return "pins, result «Gemeiner Löwenzahn – Taraxacum officinale – 87 %», plant / insect, genus when unsure, cache key, hooks, rights"
+    # species info: «essbar» only with the warning, «giftig» wins, footer always, nothing when there is nothing
+    assert bio_info_pinned() or not BIO_INFO["size"], "BIO_INFO: either a full pin or none"
+    c = bio_card({"l": "de", "t": "Bärlauch", "x": "Der Bärlauch …", "ed": ["Alle Pflanzenteile des Bärlauchs sind essbar."],
+                  "look": [["Maiglöckchen", 1], ["Herbstzeitlose", 1]]}, ["Plantae", "", "", "", "Amaryllidaceae", "Allium", "ursinum"], "de")
+    assert c["edible"]["warn"].startswith("Essbar laut Wikipedia – Verwechslungsgefahr") and "Tox Info Suisse 145" in c["edible"]["warn"], c
+    assert c["look"][0] == {"name": "Maiglöckchen", "tox": True, "url": "https://de.wikipedia.org/wiki/Maigl%C3%B6ckchen"} and not c.get("tox")
+    c = bio_card({"l": "de", "t": "Eibe", "x": "…", "tox": ["Alle Teile sind stark giftig."], "ed": ["Der Samenmantel ist essbar."]}, tx, "de")
+    assert c["tox"]["s"] == ["Alle Teile sind stark giftig."] and "edible" not in c, "giftig: nie zusätzlich essbar"
+    c = bio_card({"q": "Q1", "toxwd": ["poisonous mushroom"]}, tx, "fr")
+    assert c["tox"]["src"] == "Wikidata" and c["empty"] is False and "text" not in c
+    c = bio_card(None, tx, "de")
+    assert c["empty"] and c["tax"].endswith("Taraxacum officinale") and "edible" not in c and "tox" not in c
+    assert bio_card({"l": "en", "t": "X", "x": "…"}, tx, "it")["en_t"] == "(in inglese)"
+    for L_ in LANGS:
+        assert "145" in tr(BIO_EDIBLE_WARN, L_) and "145" in tr(BIO_FOOT, L_), L_
+    assert _bio_edible([], "de") is None
+    c = bio_card({"l": "de", "t": "X", "x": "Der Samenmantel ist essbar und ungiftig."}, tx, "de")
+    assert "edible" not in c and c["note_ed"].startswith("Essbar laut Wikipedia"), "Text spricht von essbar: Warnung trotzdem"
+    r = bio_format(dict(raw, top=raw["top"][:1]), "de")
+    assert r["foot"].startswith("Nur zur Orientierung") and r["info"] in ("ok", "missing", "none")
+    return "pins, result «Gemeiner Löwenzahn – Taraxacum officinale – 87 %», plant / insect, genus when unsure, cache key, hooks, rights, species card («essbar» only with the warning)"
 
 
 SELFTEST_EXTRA.append(("Species identification «🌿 Bestimmen» (BioCLIP, 639zzd)", bio_selftest))
