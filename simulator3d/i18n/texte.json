@@ -7015,6 +7015,12 @@
   "it": "Mostra il rapporto",
   "rm": "Mussar il rapport"
  },
+ "Beschlag": {
+  "en": "fog",
+  "fr": "buée",
+  "it": "condensa",
+  "rm": "vapur"
+ },
  "Beschlagene Linse": {
   "en": "Fogged lens",
   "fr": "Objectif embué",
@@ -25874,6 +25880,12 @@
   "it": "Pulire l'obiettivo (gocce e condensa)",
   "rm": "Nettegiar la lentilla (daguts e vapur)"
  },
+ "Linse verschmutzt (%s) – «Linse putzen»": {
+  "en": "Lens dirty (%s) – «Clean lens»",
+  "fr": "Objectif sale (%s) – « Nettoyer l’objectif »",
+  "it": "Obiettivo sporco (%s) – «Pulire l’obiettivo»",
+  "rm": "Lentilla malnetta (%s) – «Nettegiar la lentilla»"
+ },
  "Linsen und Fenster": {
   "en": "Lenses and windows",
   "fr": "Objectifs et fenêtres",
@@ -39289,6 +39301,12 @@
   "fr": "Mur en pierres sèches avec trous",
   "it": "Muro a secco con buchi",
   "rm": "Mir sitg cun rusnas"
+ },
+ "Tropfen": {
+  "en": "drops",
+  "fr": "gouttes",
+  "it": "gocce",
+  "rm": "gutas"
  },
  "Tropfen auf der Linse": {
   "en": "Drops on the lens",

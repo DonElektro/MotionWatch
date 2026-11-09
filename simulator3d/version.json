@@ -1,23 +1,16 @@
 {
- "version": "3D-5.67.0",
- "ver": "3.67.0",
- "name": "MoveEye Sim 3.67.0",
+ "version": "3D-5.67.1",
+ "ver": "3.67.1",
+ "name": "MoveEye Sim 3.67.1",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 54427103,
- "sha256": "4e8c2c1ba9d1345a3da3fb20a237b4d5276263a9ccc6e1612e8a8b3ca3eb522d",
- "notes": "Verschiedene Fassaden und Dachfarben der swisstopo-Häuser (Normal / Hoch)",
+ "size": 54423791,
+ "sha256": "56909729dc6367afe39ed5c7353fa13665878bf7fae830f77773d06067a8778e",
+ "notes": "Weiche Tropfen auf der Linse, Hinweis «Linse verschmutzt» (an MoveEye: «lens»)",
  "mw_min": "3.55.0",
  "linux": {
   "file": "simulator3d/MoveEyeSim3D_Linux.zip",
-  "ver": "3.67.0",
-  "size": 48454965,
-  "sha256": "b7add1591f6e81b969580ed4b3b86264d2a2e1b5ea665c7d49414319631f0493"
- },
- "pi": {
-  "file": "simulator3d/MoveEyeSim3D_Pi.zip",
-  "ver": "3.67.0",
-  "size": 37957739,
-  "sha256": "427b273c14e845fbd83dea0ef6dcc6d0d965a0c4797a18414f005d605fbfef5a",
-  "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.67.0/MoveEyeSim3D_Pi.zip"
+  "ver": "3.67.1",
+  "size": 48453813,
+  "sha256": "6d79a12ef2c965f1aa5437d6fa46ad1988e3eb111991b3c1a71fc2d98752847b"
  }
 }

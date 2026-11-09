@@ -23,6 +23,8 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 3.70.1: Simulator-Betrieb: Hinweis «💧 Linse verschmutzt», wenn im Simulator viel Wasser oder Beschlag auf der Linse ist, mit
+    Knopf «🧽 Linse putzen» (ab Sim 3.67.1)
   * 3.70.0: Spielecke: Wobbly Truck mit neuer Stunt-Piste – 14 wechselnde Abschnitte (Half-Pipe, Tunnel, Lücken, Trampolin …),
     Supersprünge, neue Stunts, eigener Rekord (Spielesammlung GS-1.7)
   * 3.69.2: Spielecke über https: die Bilder der Kacheln (Kevlaschef, Quantum, FOTAQ) erscheinen wieder – sie kommen jetzt vom
@@ -106,9 +108,6 @@ Features
     › Spielen), Touch-Stick «gehen»; Erkennungstests auf dem Simulator-PC (HP) als eigener GitHub-Runner.
   * 3.51.0: Gehäuse v5.3 ist Standard: Messing-Gewindeeinsätze M3, Halter für Wand/Baum mit Gurt, Akkuklappe im Boden (Zellen
     tauschen ohne Ausbau), Luftkanal für den Pi-Lüfter, Zugentlastung; neue Platte C; v5.2/v5.1 wählbar.
-  * 3.50.0: Werkstatt «Bauen» als eigenständige Datei MoveEye_Werkstatt.html: läuft offline im Browser ohne Pi (alle Reiter, 3D,
-    Einzelteile, Druckplatten, Pakete, 5 Sprachen); bei jedem Release unter GitHub-Releases
-    (latest/download/MoveEye_Werkstatt.html) und im Bausatz.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -117,10 +116,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_3_70_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_3_70_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_3_70_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_3_70_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_3_70_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_3_70_1.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -137,7 +136,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "3.70.0"
+APP_VERSION = "3.70.1"
 
 
 def default_data_dir():
@@ -262,8 +261,8 @@ def prepare_settings_file():
 
 
 
-ZD_FILE = "moveeye_daten_3_70_0.zip"
-ZD_SHA256 = "ddb112a56c8ed2bc9c2de643259c9e9f29c60f9f18855e0127fd659283f00e4b"
+ZD_FILE = "moveeye_daten_3_70_1.zip"
+ZD_SHA256 = "e185ebfee034f39cc23a9f00205b9f41f825d21bd98c27759425893a827a0711"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -24569,13 +24568,13 @@ def tools_cfg(key, value, mac=None):
 
 
 
-SIM3D = {"version": "3.67.0", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 54427103,
-         "sha256": "4e8c2c1ba9d1345a3da3fb20a237b4d5276263a9ccc6e1612e8a8b3ca3eb522d"}
+SIM3D = {"version": "3.67.1", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 54423791,
+         "sha256": "56909729dc6367afe39ed5c7353fa13665878bf7fae830f77773d06067a8778e"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 
 
-SIM3D_LINUX = {"version": "3.67.0", "file": "simulator3d/MoveEyeSim3D_Linux.zip", "size": 48454965,
-               "sha256": "b7add1591f6e81b969580ed4b3b86264d2a2e1b5ea665c7d49414319631f0493", "stem": "MoveEyeSim3D_Linux",
+SIM3D_LINUX = {"version": "3.67.1", "file": "simulator3d/MoveEyeSim3D_Linux.zip", "size": 48453813,
+               "sha256": "6d79a12ef2c965f1aa5437d6fa46ad1988e3eb111991b3c1a71fc2d98752847b", "stem": "MoveEyeSim3D_Linux",
                "label": "MoveEye Sim (Linux)"}
 SIM3D_LINUX_DL = {"running": False, "got": 0, "msg": ""}
 
@@ -29525,6 +29524,7 @@ class SimLink:
 		SIM["follower"] = bool(rep_.get("follower"))
 		SIM["head"] = rep_.get("head_deg") if isinstance(rep_.get("head_deg"), list) else None
 		weit_from_sim(rep_.get("wide"))
+		sim_lens_take(rep_.get("lens"))
 		SIM["leader"] = str(rep_.get("leader") or "")[:40] if SIM["follower"] else ""
 		SIM["msg"] = "connected - only watching (another MoveEye steers the simulator)" if SIM["follower"] else "connected"
 		if time.time() - SIMDIARY["t"] >= 30:
@@ -40682,6 +40682,11 @@ class WebStream:
 					if c_ in ("scenario", "delete"):
 						log_event("sys", f"Simulator: {c_} {q_.get('id', '')[:80]}")
 					return reply(dict(r, ok=True))
+				if act_ == "lens_wipe":
+					ok_l, err_l = sim_lens_wipe()
+					if not ok_l:
+						return reply({"ok": False, "error": tr_err(err_l, lang)}, 400)
+					return reply({"ok": True})
 				if act_ == "dataset":
 					if d.get("export"):
 						try:
@@ -46942,6 +46947,77 @@ def sim_stats():
 
 
 
+
+
+STATE.setdefault("sim_lens", None)
+
+
+def sim_lens_take(v):
+	""
+	if not isinstance(v, dict):
+		STATE["sim_lens"] = None
+		return None
+
+	def one(x):
+		x = x if isinstance(x, dict) else {}
+		try:
+			return {"cover": round(min(1.0, max(0.0, float(x.get("cover") or 0.0))), 3), "fog": round(min(1.0, max(0.0, float(x.get("fog") or 0.0))), 2),
+                    "drops": max(0, int(x.get("drops") or 0))}
+		except (TypeError, ValueError):
+			return {"cover": 0.0, "fog": 0.0, "drops": 0}
+	r = {"head": one(v.get("head")), "wide": one(v.get("wide")) if isinstance(v.get("wide"), dict) else None, "dirty": bool(v.get("dirty"))}
+	was = bool((STATE.get("sim_lens") or {}).get("dirty"))
+	STATE["sim_lens"] = r
+	if r["dirty"] and not was:
+		log_event("sys", f"Simulator: lens dirty (drops / fog, {int(round(r['head']['cover'] * 100))} % covered) - «Clean lens» in the simulator")
+	return r
+
+
+def sim_lens_wipe():
+	""
+	try:
+		r = sim_control({"action": "wetter", "do": "wipe"})
+	except Exception:
+		return False, "simulator not reachable"
+	if not isinstance(r, dict) or not r.get("ok"):
+		return False, str((r or {}).get("error") or "not supported - update the simulator") if isinstance(r, dict) else "simulator not reachable"
+	if isinstance(STATE.get("sim_lens"), dict):
+		STATE["sim_lens"] = dict(STATE["sim_lens"], dirty=False)
+	log_event("sys", "Simulator: lens cleaned")
+	return True, ""
+
+
+def sim_lens_selftest():
+	saved = STATE.get("sim_lens")
+	try:
+		assert sim_lens_take(None) is None and STATE["sim_lens"] is None, "nothing reported must clear the hint"
+		r = sim_lens_take({"head": {"cover": 0.12, "fog": 0.0, "drops": 40}, "wide": {"cover": 0.05, "fog": 0.1, "drops": 9}, "dirty": True})
+		assert r["dirty"] and STATE["sim_lens"]["head"]["drops"] == 40 and abs(STATE["sim_lens"]["wide"]["fog"] - 0.1) < 1e-9
+		r = sim_lens_take({"head": {"cover": "x", "drops": None}, "dirty": 0})
+		assert r == {"head": {"cover": 0.0, "fog": 0.0, "drops": 0}, "wide": None, "dirty": False}, r
+		r = sim_lens_take({"head": {"cover": 7, "fog": -1}, "dirty": "yes"})
+		assert r["head"]["cover"] == 1.0 and r["head"]["fog"] == 0.0 and r["dirty"]
+		import inspect
+		assert 'rep_.get("lens")' in inspect.getsource(SimLink.tick), "350 SimLink.tick does not pass «lens» on"
+		assert 'id = "b-lens"' in WEB_PAGE and "lens_wipe" in WEB_PAGE, "hint not in the main page"
+		for k in _HX_LINSE:
+			assert DE.get(k) and all(TRX[L].get(k) for L in ("fr", "it", "rm")), f"text not translated: {k}"
+	finally:
+		STATE["sim_lens"] = saved
+	return "lens of the simulator: hint and «Clean lens» (558l)"
+
+
+SELFTEST_EXTRA.append(("Simulator lens dirty -> hint «Clean lens» (558l)", sim_lens_selftest))
+
+
+
+
+
+
+
+
+
+
 SIMMIC_KIND = {"bg": (40, 6000, 0, 0), "wind": (20, 400, 0, 0.3), "rain": (1200, 7500, 0, 0), "water": (180, 1500, 0, 6.0),
                "frogs": (150, 900, 260, 9.0), "crickets": (4200, 5200, 4600, 18.0), "birds": (2000, 6500, 3400, 7.0),
                "owl": (300, 600, 400, 0.8), "dog": (250, 2000, 500, 1.7), "cows": (600, 3000, 720, 1.2), "road": (20, 300, 0, 0.1),
@@ -48890,7 +48966,7 @@ class App:
 		self.watch = watch
 		self.web = web or WebStream(watch)
 		self.root = tk.Tk()
-		self.root.title("MoveEye 3.70.0")
+		self.root.title("MoveEye 3.70.1")
 		try:
 			import base64
 			self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -49268,7 +49344,7 @@ class App:
 			if not small:
 				vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
 				vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))
-			Tip(nm, f"{tr('Build')} 3.70.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+			Tip(nm, f"{tr('Build')} 3.70.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
 			self._egg_taps = []
 			for w_ in tl.winfo_children():
 				w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -56481,7 +56557,7 @@ App._refresh = _kr_tk_refresh
 
 
 
-INFO_PARTS = 280
+INFO_PARTS = 282
 INFO_START = "2026-10-16"
 FBX = {"shot": None, "shot_t": 0.0, "lines": 0}
 
@@ -76856,6 +76932,23 @@ def fertig_selftest():
 
 
 SELFTEST_EXTRA.append(("Ready-made device: hint on /build, order over the feedback (639zj)", fertig_selftest))
+_HX_LINSE = _zd('639zl_uebersetzungen_linse/HX_LINSE', _zd_hx({
+    'Lens dirty': 'Linse verschmutzt',
+    'Lens dirty – in the simulator «Clean lens»': 'Linse verschmutzt – im Simulator «Linse putzen»',
+    'Clean lens': 'Linse putzen',
+    'Clean the lens in the simulator?': 'Linse im Simulator putzen?',
+    'Lens cleaned in the simulator': 'Linse im Simulator geputzt',
+    'covered': 'bedeckt',
+    'drops and fog on the lens of the head camera': 'Tropfen und Beschlag auf der Linse der Kopfkamera',
+}))
+for _k, _v in _HX_LINSE.items():
+	DE.setdefault(_k, _v[0])
+	for _i, _L in enumerate(('fr', 'it', 'rm')):
+		TRX[_L].setdefault(_k, _v[_i + 1])
+
+LENS_JS = _zd('639zl_uebersetzungen_linse/LENS_JS', "")
+LENS_JS = LENS_JS.replace("/*LNDE*/{}", json.dumps({k: v[0] for k, v in _HX_LINSE.items()}, ensure_ascii=False))
+WEB_PAGE = WEB_PAGE.replace("</body>", LENS_JS + "</body>", 1)
 
 
 

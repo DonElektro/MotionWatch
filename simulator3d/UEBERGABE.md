@@ -1,6 +1,6 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 09.11.2026 · Version **3.67.0** · MoveEye **3.69.2** (Drei Spuren ab 03.11.2026: Simulator und MoveEye mit eigenen Nummern, Verträglichkeit über `MW_MIN` in `scripts/abgleich.gd` / `SIM_MIN` in MoveEye Teil 545; 3.0.0 bis 3.55.2 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 09.11.2026 · Version **3.67.1** · MoveEye **3.70.0** (Drei Spuren ab 03.11.2026: Simulator und MoveEye mit eigenen Nummern, Verträglichkeit über `MW_MIN` in `scripts/abgleich.gd` / `SIM_MIN` in MoveEye Teil 545; 3.0.0 bis 3.55.2 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
@@ -31,6 +31,10 @@ Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weite
   (Ziegelreihen / Kies). Wärmezwillinge und Hindernisse unverändert. Luftbild wird jetzt vor den 3D-Gebäuden gesetzt.
 - Seon ohne OSM (Overpass war aus): 117 Häuser, 44 Wohnblöcke, 24 Bauernhäuser, 3 Scheunen, 2 Chalets, 2 Garagen;
   Dachfarbe aus dem Luftbild 130, Palette 62 (Häuser ausserhalb des nahen Luftbilds).
+
+## NEU in 3.67.1 (MoveEye 3.70.0): Kamerabild (sim-kamerabild)
+
+- linse.gdshader / wetter.gd soft_drops_ok(): weiche Tropfen nur Normal / Hoch; lens_reply() -> world_reply «lens» (optional), Steuerung wetter do wipe.
 
 ## NEU in 3.67.0 (MoveEye 3.69.2): Fassaden (sim-fassaden)
 
