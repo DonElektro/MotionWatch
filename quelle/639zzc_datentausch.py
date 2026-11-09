@@ -1054,49 +1054,14 @@ def tausch_chat_change(who, fid, n, text=None, lang=None):
 
 # ---- previews (thumbnails 320 px, preview 1280 px - always computed anew, never the original bytes) ------------------------------
 def tausch_img_dims(path):
-    """(width, height) from the head of a PNG / JPEG / GIF / BMP / WebP, or None - checked before decoding (pixel bombs)"""
-    import struct
+    """(width, height) from the head of a PNG / JPEG / GIF / BMP / WebP / TIFF, or None - checked before decoding (pixel bombs).
+    3.68.1: the reading itself is img_head() in part 639zzf (shared with the upload of «Untersuchen» and the AI helper)."""
     try:
         with open(path, "rb") as f:
-            h = f.read(32)
-            if h.startswith(b"\x89PNG\r\n\x1a\n") and h[12:16] == b"IHDR":
-                return struct.unpack(">II", h[16:24])
-            if h[:4] in (b"GIF8",):
-                return struct.unpack("<HH", h[6:10])
-            if h[:2] == b"BM":
-                w, hh = struct.unpack("<ii", h[18:26])
-                return abs(w), abs(hh)
-            if h[:4] == b"RIFF" and h[8:12] == b"WEBP":
-                f.seek(12)
-                c = f.read(30)
-                if c[:4] == b"VP8X":
-                    return 1 + int.from_bytes(c[12:15], "little"), 1 + int.from_bytes(c[15:18], "little")
-                if c[:4] == b"VP8 ":
-                    return struct.unpack("<HH", c[14:18])[0] & 0x3fff, struct.unpack("<HH", c[14:18])[1] & 0x3fff
-                if c[:4] == b"VP8L":
-                    b = int.from_bytes(c[9:13], "little")
-                    return (b & 0x3fff) + 1, ((b >> 14) & 0x3fff) + 1
-                return None
-            if h[:2] == b"\xff\xd8":
-                f.seek(2)
-                for _i in range(400):
-                    m = f.read(2)
-                    while m[:1] == b"\xff" and m[1:2] == b"\xff":
-                        m = m[1:] + f.read(1)
-                    if len(m) < 2 or m[0] != 0xFF:
-                        return None
-                    mk = m[1]
-                    if mk in (0xD8, 0x01) or 0xD0 <= mk <= 0xD7:
-                        continue
-                    ln = struct.unpack(">H", f.read(2))[0]
-                    if 0xC0 <= mk <= 0xCF and mk not in (0xC4, 0xC8, 0xCC):
-                        d = f.read(5)
-                        hh, w = struct.unpack(">HH", d[1:5])
-                        return w, hh
-                    f.seek(ln - 2, 1)
-    except (OSError, struct.error, ValueError):
+            r = img_head(f)
+    except OSError:
         return None
-    return None
+    return (r[1], r[2]) if r else None
 
 
 def _tz_jpg_write(img, path, side, q):
@@ -1121,10 +1086,8 @@ def tausch_thumb_make(root, m):
     img = None
     if kind == "image":
         dims = tausch_img_dims(src)
-        if dims is None and m["size"] > 30 * TZ_MB:
-            return False
-        if dims and (dims[0] * dims[1] > 60_000_000 or min(dims) <= 0):
-            return False                                     # pixel bomb / absurd picture: only the symbol
+        if dims is None or not (0 < dims[0] <= IMG_SIDE_MAX and 0 < dims[1] <= IMG_SIDE_MAX and dims[0] * dims[1] <= IMG_MP_MAX):
+            return False                                     # 3.68.1: head unreadable / pixel bomb / absurd picture: only the symbol, nothing decoded
         flag = cv2.IMREAD_COLOR
         if dims and dims[0] * dims[1] > 16_000_000 and tausch_ext(m["name"]) in ("jpg", "jpeg"):
             flag = cv2.IMREAD_REDUCED_COLOR_4

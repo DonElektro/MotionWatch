@@ -23,6 +23,8 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 3.68.1: Härtung: hochgeladene Bilder (Untersuchen, Datentausch-Vorschau, KI-Helfer) – Grösse aus dem Dateikopf
+    (JPEG/PNG/WebP), Pixelbomben über 60 MP oder 20 000 px je Seite werden ohne Dekodieren abgewiesen
   * 3.68.0: 🔍 Untersuchen: im Live-Bild einen Bereich (oder das ganze Bild) untersuchen – KI und BioCLIP sagen, was zu sehen
     ist, mit Infokarten; wahlweise fährt der Kopf zuerst dorthin (Recht «Kopf»); «📷 Foto untersuchen» für ein eigenes Foto (bis
     15 MB); Funde landen im Datentausch-Ordner «Funde» (Grenzen und freier Platz wie jeder Upload); Gäste ohne Kopf-Bewegung;
@@ -109,9 +111,6 @@ Features
     Platten als ZIP; MoveEye und Simulator.
   * 3.47.1: Druckdateien herunterladen klappt auch auf dem Pi ohne Projektordner (Pi holt die Datei selbst, sauberer Dateiname);
     «Alle als ZIP» nur für die gewählte Variante, mit Kurzanleitung.
-  * 3.47.0: Gehäuse-Abgleich v5.2: Montage-Texte v5.2, Szene immer v5.2 mit Stopfen 12/19, Grau #9a9ea3 und Kopf orange, «Stand
-    MoveEye X.Y.Z» im Bausatz, Akku UPS HAT (E) mit 4 × 21700 in Texten und Simulator, Bausatz-Link auf /info/; Trailer nur noch
-    im Entwickler-Bereich; Entwickler heisst «Elektro», keine privaten Angaben mehr in Programm und Druckdateien.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -120,10 +119,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_3_68_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_3_68_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_3_68_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_3_68_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_3_68_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_3_68_1.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -140,7 +139,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "3.68.0"
+APP_VERSION = "3.68.1"
 
 
 def default_data_dir():
@@ -265,8 +264,8 @@ def prepare_settings_file():
 
 
 
-ZD_FILE = "moveeye_daten_3_68_0.zip"
-ZD_SHA256 = "d117185f56addeb3c1f570ca2b4c50dd70e8c717fb627dd97391884574d70cbd"
+ZD_FILE = "moveeye_daten_3_68_1.zip"
+ZD_SHA256 = "f2fb33069445a88c3470ab46026f9dc9393e2cf35c7d55f2b24f4132cdaf980d"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -17212,6 +17211,8 @@ def helper_server_start():
 			if n <= 0 or n > 3 << 20:
 				return self._js({"ok": False, "error": "picture too big"}, 413)
 			jpg = self.rfile.read(n)
+			if not img_head_ok(jpg, ("jpeg", "png", "webp"))[0]:
+				return self._js({"ok": False, "error": "not a picture or too big"}, 413)
 			q = dict(x.split("=", 1) for x in (self.path.split("?", 1)[1].split("&") if "?" in self.path else []) if "=" in x)
 			try:
 				HELPER["serve_from"] = self.client_address[0]
@@ -48816,7 +48817,7 @@ class App:
 		self.watch = watch
 		self.web = web or WebStream(watch)
 		self.root = tk.Tk()
-		self.root.title("MoveEye 3.68.0")
+		self.root.title("MoveEye 3.68.1")
 		try:
 			import base64
 			self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -49194,7 +49195,7 @@ class App:
 			if not small:
 				vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
 				vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))
-			Tip(nm, f"{tr('Build')} 3.68.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+			Tip(nm, f"{tr('Build')} 3.68.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
 			self._egg_taps = []
 			for w_ in tl.winfo_children():
 				w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -56407,7 +56408,7 @@ App._refresh = _kr_tk_refresh
 
 
 
-INFO_PARTS = 277
+INFO_PARTS = 278
 INFO_START = "2026-10-16"
 FBX = {"shot": None, "shot_t": 0.0, "lines": 0}
 
@@ -84351,49 +84352,14 @@ def tausch_chat_change(who, fid, n, text=None, lang=None):
 
 
 def tausch_img_dims(path):
-	""
-	import struct
+	"""
+"""
 	try:
 		with open(path, "rb") as f:
-			h = f.read(32)
-			if h.startswith(b"\x89PNG\r\n\x1a\n") and h[12:16] == b"IHDR":
-				return struct.unpack(">II", h[16:24])
-			if h[:4] in (b"GIF8",):
-				return struct.unpack("<HH", h[6:10])
-			if h[:2] == b"BM":
-				w, hh = struct.unpack("<ii", h[18:26])
-				return abs(w), abs(hh)
-			if h[:4] == b"RIFF" and h[8:12] == b"WEBP":
-				f.seek(12)
-				c = f.read(30)
-				if c[:4] == b"VP8X":
-					return 1 + int.from_bytes(c[12:15], "little"), 1 + int.from_bytes(c[15:18], "little")
-				if c[:4] == b"VP8 ":
-					return struct.unpack("<HH", c[14:18])[0] & 0x3fff, struct.unpack("<HH", c[14:18])[1] & 0x3fff
-				if c[:4] == b"VP8L":
-					b = int.from_bytes(c[9:13], "little")
-					return (b & 0x3fff) + 1, ((b >> 14) & 0x3fff) + 1
-				return None
-			if h[:2] == b"\xff\xd8":
-				f.seek(2)
-				for _i in range(400):
-					m = f.read(2)
-					while m[:1] == b"\xff" and m[1:2] == b"\xff":
-						m = m[1:] + f.read(1)
-					if len(m) < 2 or m[0] != 0xFF:
-						return None
-					mk = m[1]
-					if mk in (0xD8, 0x01) or 0xD0 <= mk <= 0xD7:
-						continue
-					ln = struct.unpack(">H", f.read(2))[0]
-					if 0xC0 <= mk <= 0xCF and mk not in (0xC4, 0xC8, 0xCC):
-						d = f.read(5)
-						hh, w = struct.unpack(">HH", d[1:5])
-						return w, hh
-					f.seek(ln - 2, 1)
-	except (OSError, struct.error, ValueError):
+			r = img_head(f)
+	except OSError:
 		return None
-	return None
+	return (r[1], r[2]) if r else None
 
 
 def _tz_jpg_write(img, path, side, q):
@@ -84418,9 +84384,7 @@ def tausch_thumb_make(root, m):
 	img = None
 	if kind == "image":
 		dims = tausch_img_dims(src)
-		if dims is None and m["size"] > 30 * TZ_MB:
-			return False
-		if dims and (dims[0] * dims[1] > 60_000_000 or min(dims) <= 0):
+		if dims is None or not (0 < dims[0] <= IMG_SIDE_MAX and 0 < dims[1] <= IMG_SIDE_MAX and dims[0] * dims[1] <= IMG_MP_MAX):
 			return False
 		flag = cv2.IMREAD_COLOR
 		if dims and dims[0] * dims[1] > 16_000_000 and tausch_ext(m["name"]) in ("jpg", "jpeg"):
@@ -87034,10 +86998,7 @@ def smalltv_routes(app, reply, body):
 		data = request.get_data(cache=False)
 		img = None
 		if data[:2] == b"\xff\xd8" or data[:8] == b"\x89PNG\r\n\x1a\n" or data[:4] == b"RIFF":
-			try:
-				img = cv2.imdecode(np.frombuffer(data, np.uint8), cv2.IMREAD_COLOR)
-			except (cv2.error, ValueError):
-				img = None
+			img = img_decode_checked(data, formats=("jpeg", "png", "webp"))
 		if img is None or img.size == 0 or img.shape[0] * img.shape[1] > 60_000_000:
 			return reply({"ok": False, "st": "err", "msg": tr("This is not a photo MoveEye can read (JPEG, PNG or WebP).", L)}, 400)
 		if max(img.shape[:2]) > 2400:
@@ -87267,6 +87228,165 @@ def unt_selftest():
 
 
 SELFTEST_EXTRA.append(("Examine a snapshot «🔍 Untersuchen» (639zze)", unt_selftest))
+
+
+
+
+
+
+
+
+
+
+import io as _io_bk
+import struct as _struct_bk
+
+IMG_MP_MAX = 60_000_000
+IMG_SIDE_MAX = 20_000
+
+
+def img_head(src):
+	""
+	f = _io_bk.BytesIO(src) if isinstance(src, (bytes, bytearray, memoryview)) else src
+	try:
+		f.seek(0)
+		h = f.read(32)
+		if h.startswith(b"\x89PNG\r\n\x1a\n"):
+			if h[12:16] != b"IHDR" or len(h) < 24:
+				return None
+			w, hh = _struct_bk.unpack(">II", h[16:24])
+			return "png", w, hh
+		if h[:6] in (b"GIF87a", b"GIF89a") and len(h) >= 10:
+			w, hh = _struct_bk.unpack("<HH", h[6:10])
+			return "gif", w, hh
+		if h[:2] == b"BM" and len(h) >= 26:
+			w, hh = _struct_bk.unpack("<ii", h[18:26])
+			return "bmp", abs(w), abs(hh)
+		if h[:4] == b"RIFF" and h[8:12] == b"WEBP":
+			c = h[12:32] + f.read(10)
+			if c[:4] == b"VP8 " and len(c) >= 18:
+				if c[11:14] != b"\x9d\x01\x2a":
+					return None
+				w, hh = _struct_bk.unpack("<HH", c[14:18])
+				return "webp", w & 0x3fff, hh & 0x3fff
+			if c[:4] == b"VP8L" and len(c) >= 13:
+				if c[8] != 0x2f:
+					return None
+				b = int.from_bytes(c[9:13], "little")
+				return "webp", (b & 0x3fff) + 1, ((b >> 14) & 0x3fff) + 1
+			if c[:4] == b"VP8X" and len(c) >= 18:
+				return "webp", 1 + int.from_bytes(c[12:15], "little"), 1 + int.from_bytes(c[15:18], "little")
+			return None
+		if h[:4] in (b"II*\x00", b"MM\x00*"):
+			e = "<" if h[:2] == b"II" else ">"
+			f.seek(_struct_bk.unpack(e + "I", h[4:8])[0])
+			n = _struct_bk.unpack(e + "H", f.read(2))[0]
+			w = hh = None
+			for _i in range(min(n, 500)):
+				tag, typ, _cnt = _struct_bk.unpack(e + "HHI", f.read(8))
+				v = f.read(4)
+				val = _struct_bk.unpack(e + "H", v[:2])[0] if typ == 3 else _struct_bk.unpack(e + "I", v)[0] if typ == 4 else None
+				if tag == 256:
+					w = val
+				elif tag == 257:
+					hh = val
+			return ("tiff", w, hh) if w is not None and hh is not None else None
+		if h[:2] == b"\xff\xd8":
+			f.seek(2)
+			for _i in range(1000):
+				m = f.read(2)
+				while m[:1] == b"\xff" and m[1:2] == b"\xff":
+					m = m[1:] + f.read(1)
+				if len(m) < 2 or m[0] != 0xFF:
+					return None
+				mk = m[1]
+				if mk == 0x01 or 0xD0 <= mk <= 0xD7:
+					continue
+				if mk in (0xD8, 0xD9, 0xDA):
+					return None
+				ln = _struct_bk.unpack(">H", f.read(2))[0]
+				if ln < 2:
+					return None
+				if 0xC0 <= mk <= 0xCF and mk not in (0xC4, 0xC8, 0xCC):
+					d = f.read(5)
+					hh, w = _struct_bk.unpack(">HH", d[1:5])
+					return "jpeg", w, hh
+				f.seek(ln - 2, 1)
+			return None
+	except (OSError, _struct_bk.error, ValueError, IndexError, TypeError):
+		return None
+	return None
+
+
+def img_head_ok(src, formats=None):
+	""
+	r = img_head(src)
+	if r is None:
+		return False, "head unreadable"
+	fmt, w, hh = r
+	if formats and fmt not in formats:
+		return False, "format " + fmt
+	if w <= 0 or hh <= 0:
+		return False, "empty"
+	if w > IMG_SIDE_MAX or hh > IMG_SIDE_MAX or w * hh > IMG_MP_MAX:
+		return False, "too big %dx%d" % (w, hh)
+	return True, (w, hh)
+
+
+def img_decode_checked(data, flag=None, formats=None):
+	""
+	if not img_head_ok(data, formats)[0]:
+		return None
+	try:
+		return cv2.imdecode(np.frombuffer(data, np.uint8), cv2.IMREAD_COLOR if flag is None else flag)
+	except (cv2.error, ValueError, MemoryError):
+		return None
+
+
+
+def _bk_bomb(fmt, w, hh):
+	""
+	if fmt == "png":
+		return b"\x89PNG\r\n\x1a\n" + b"\x00\x00\x00\x0dIHDR" + _struct_bk.pack(">II", w, hh) + b"\x08\x02\x00\x00\x00" + b"\x00" * 4
+	if fmt == "jpeg":
+		return b"\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x00\x00\x01\x00\x01\x00\x00" + b"\xff\xc0\x00\x11\x08" + _struct_bk.pack(">HH", hh, w) + b"\x03" + b"\x00" * 9
+	if fmt == "vp8x":
+		return b"RIFF\x00\x00\x00\x00WEBPVP8X\x0a\x00\x00\x00\x00\x00\x00\x00" + (w - 1).to_bytes(3, "little") + (hh - 1).to_bytes(3, "little")
+	if fmt == "vp8l":
+		return b"RIFF\x00\x00\x00\x00WEBPVP8L\x05\x00\x00\x00\x2f" + ((w - 1) | ((hh - 1) << 14)).to_bytes(4, "little")
+	if fmt == "vp8":
+		return b"RIFF\x00\x00\x00\x00WEBPVP8 \x0a\x00\x00\x00\x00\x00\x00\x9d\x01\x2a" + _struct_bk.pack("<HH", w, hh)
+	raise ValueError(fmt)
+
+
+def bk_selftest():
+	for fmt in ("png", "jpeg"):
+		assert img_head(_bk_bomb(fmt, 65000, 65000))[1:] == (65000, 65000), fmt
+		assert not img_head_ok(_bk_bomb(fmt, 65000, 65000))[0] and not img_head_ok(_bk_bomb(fmt, 30000, 100))[0], fmt
+		assert img_head_ok(_bk_bomb(fmt, 4000, 3000)) == (True, (4000, 3000)), fmt
+	assert img_head(_bk_bomb("vp8x", 16384, 16384))[1:] == (16384, 16384) and not img_head_ok(_bk_bomb("vp8x", 16384, 16384))[0]
+	assert img_head(_bk_bomb("vp8l", 16384, 16000))[1:] == (16384, 16000) and not img_head_ok(_bk_bomb("vp8l", 16384, 16000))[0]
+	assert img_head(_bk_bomb("vp8", 16383, 16383))[1:] == (16383, 16383) and not img_head_ok(_bk_bomb("vp8", 16383, 16383))[0]
+	seen, imd = [], cv2.imdecode
+	try:
+		cv2.imdecode = lambda *a: seen.append(1)
+		for b in (_bk_bomb("png", 65000, 65000), _bk_bomb("jpeg", 9000, 9000), _bk_bomb("vp8x", 16384, 16384), b"no picture"):
+			assert img_decode_checked(b) is None
+	finally:
+		cv2.imdecode = imd
+	assert not seen, "decoded although refused"
+	for fmt, ext in (("jpeg", ".jpg"), ("png", ".png"), ("webp", ".webp")):
+		ok, buf = cv2.imencode(ext, np.full((30, 40, 3), 128, np.uint8))
+		if ok:
+			assert img_head(buf.tobytes()) == (fmt, 40, 30), (fmt, img_head(buf.tobytes()))
+			im = img_decode_checked(buf.tobytes(), formats=("jpeg", "png", "webp"))
+			assert im is not None and im.shape[:2] == (30, 40), fmt
+	assert img_head(b"\xff\xd8\xff\xda\x00\x02") is None and img_head(b"\x89PNG\r\n\x1a\n") is None and img_head(b"RIFF\x00\x00\x00\x00WEBPVP8 ") is None
+	assert not img_head_ok(_bk_bomb("png", 0, 10))[0] and img_head_ok(_bk_bomb("png", 100, 100), formats=("jpeg",))[0] is False
+	return "JPEG SOF / PNG IHDR / WebP VP8 VP8L VP8X read from the head; bombs (> 60 MP, > %d px a side, unreadable) refused without decoding" % IMG_SIDE_MAX
+
+
+SELFTEST_EXTRA.append(("Picture size from the file head (639zzf)", bk_selftest))
 if __name__ == "__main__":
 	ap = argparse.ArgumentParser()
 	ap.add_argument("--cam", type=int, default=None, help="USB camera number (same as --source usb:N)")

@@ -34,6 +34,13 @@ REPO = os.path.dirname(HIER)
 sys.path.insert(0, HIER)
 from bioclip_test import Srv, bild, fake_info, fake_model, fake_tables   # noqa: E402
 
+# Pixelbomben (3.68.1): nur der Dateikopf, er nennt riesige Masse - wie _bk_bomb() in quelle/639zzf
+PNG_BOMB = b"\x89PNG\r\n\x1a\n\x00\x00\x00\x0dIHDR" + (65000).to_bytes(4, "big") * 2 + b"\x08\x02\x00\x00\x00" + b"\0" * 4
+JPG_HEAD = b"\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x00\x00\x01\x00\x01\x00\x00\xff\xc0\x00\x11\x08"
+JPG_BOMB = JPG_HEAD + (9000).to_bytes(2, "big") * 2 + b"\x03" + b"\0" * 9
+JPG_LANG = JPG_HEAD + (100).to_bytes(2, "big") + (30000).to_bytes(2, "big") + b"\x03" + b"\0" * 9
+WEBP_BOMB = b"RIFF\0\0\0\0WEBPVP8X\x0a\0\0\0\0\0\0\0" + (16383).to_bytes(3, "little") * 2
+
 FEHLER = []
 N = {"ok": 0}
 PW = "Unters-" + base64.b16encode(os.urandom(5)).decode().lower()
@@ -256,6 +263,11 @@ def teil_b(datei, browser, bilder):
         ok(c == 200 and bytes(b[:2]) == b"\xff\xd8", "Bild des Ergebnisses abrufbar")
         ok(req("/api/untersuchen/upload?lang=de", raw=b"kein bild", user=A, ctype="application/octet-stream")[0] == 400, "kein Foto: abgewiesen")
         ok(req("/api/untersuchen/upload?lang=de", raw=b"\xff\xd8" + b"0" * (16 * 1024 * 1024), user=A, ctype="application/octet-stream")[0] == 413, "zu gross: vor dem Lesen abgewiesen")
+        # 3.68.1: winzige Dateien mit riesigen Massen im Kopf - abgewiesen, ohne zu dekodieren (639zzf; Speicher bleibt klein)
+        for name, bomb in (("PNG 65000²", PNG_BOMB), ("JPEG 9000²", JPG_BOMB), ("WebP VP8X 16384²", WEBP_BOMB), ("JPEG 30000×100", JPG_LANG)):
+            t0 = time.time()
+            c, j = req("/api/untersuchen/upload?lang=de", raw=bomb, user=A, ctype="application/octet-stream")
+            ok(c == 400 and time.time() - t0 < 3.0, f"Pixelbombe {name} ({len(bomb)} Bytes): abgewiesen ({c}, {time.time() - t0:.1f} s)")
         c, j = req("/api/guest", {"action": "create", "hours": 2})
         gp = req("/api/guest")[1]["path"]
         c, j = unters({"cam": "head", "box": [0.3, 0.3, 0.3, 0.3], "aim": True}, None, gp + "/untersuchen")

@@ -484,10 +484,7 @@ def smalltv_routes(app, reply, body):                     # + 639zze
         data = request.get_data(cache=False)
         img = None
         if data[:2] == b"\xff\xd8" or data[:8] == b"\x89PNG\r\n\x1a\n" or data[:4] == b"RIFF":
-            try:
-                img = cv2.imdecode(np.frombuffer(data, np.uint8), cv2.IMREAD_COLOR)
-            except (cv2.error, ValueError):
-                img = None
+            img = img_decode_checked(data, formats=("jpeg", "png", "webp"))    # 3.68.1: size from the head first (639zzf)
         if img is None or img.size == 0 or img.shape[0] * img.shape[1] > 60_000_000:
             return reply({"ok": False, "st": "err", "msg": tr("This is not a photo MoveEye can read (JPEG, PNG or WebP).", L)}, 400)
         if max(img.shape[:2]) > 2400:                            # enough for the AI and BioCLIP, keeps the Pi fast

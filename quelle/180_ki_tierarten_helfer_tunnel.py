@@ -880,6 +880,8 @@ def helper_server_start():
             if n <= 0 or n > 3 << 20:
                 return self._js({"ok": False, "error": "picture too big"}, 413)
             jpg = self.rfile.read(n)
+            if not img_head_ok(jpg, ("jpeg", "png", "webp"))[0]:      # 3.68.1: size from the head before decoding (639zzf)
+                return self._js({"ok": False, "error": "not a picture or too big"}, 413)
             q = dict(x.split("=", 1) for x in (self.path.split("?", 1)[1].split("&") if "?" in self.path else []) if "=" in x)
             try:
                 HELPER["serve_from"] = self.client_address[0]

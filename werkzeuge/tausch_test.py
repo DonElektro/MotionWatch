@@ -191,6 +191,22 @@ def teil_a(datei):
     ok(code == 200 and j["file"]["risky"] and not j["file"]["thumb"], "SVG gespeichert, ohne Vorschau")
     r = c.get(f"/tausch/dl/{sid}", headers=H["Anna"])
     ok(r.mimetype == "application/octet-stream" and r.headers["Content-Disposition"].startswith("attachment"), f"SVG nur als Download {r.mimetype}")
+    # 3.68.1: Pixelbomben (winzige Datei, riesige Masse im Kopf) - gespeichert, aber ohne Vorschau und ohne Dekodieren (639zzf)
+    seen, _imd = [], cv2.imdecode
+    cv2.imdecode = lambda buf, flag: (seen.append(len(buf)), _imd(buf, flag))[1]
+    try:
+        for name, bomb in (("bombe.png", ns["_bk_bomb"]("png", 65000, 65000)), ("bombe.jpg", ns["_bk_bomb"]("jpeg", 9000, 9000)),
+                           ("bombe.webp", ns["_bk_bomb"]("vp8x", 16384, 16384)), ("kaputt.png", b"\x89PNG\r\n\x1a\n" + b"\0" * 40)):
+            code, j = upload("Anna", name, bomb)
+            bid = j.get("file", {}).get("id", "")
+            for _i in range(60):
+                if TZ["files"].get(bid, {}).get("thumb") is not None:
+                    break
+                time.sleep(0.1)
+            ok(code == 200 and TZ["files"].get(bid, {}).get("thumb") is False and len(bomb) not in seen,
+               f"{name} ({len(bomb)} Bytes): ohne Vorschau, nicht dekodiert ({code} thumb={TZ['files'].get(bid, {}).get('thumb')} seen={seen})")
+    finally:
+        cv2.imdecode = _imd
     ok(c.get(f"/tausch/view/{sid}", headers=H["Anna"]).status_code == 415, "SVG nie im Browser")
     for bad in ("..%2F..%2Fversions.json", "../../x", "0123456789abcdeg", "%00"):
         ok(c.get("/tausch/dl/" + bad, headers=H["Anna"]).status_code in (404, 308), f"Pfad-Trick {bad}")

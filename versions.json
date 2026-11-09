@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-09 07:29",
+ "generated": "2026-11-09 08:28",
  "versions": [
   {
-   "version": "3.68.0",
-   "file": "webcam_bewegung_3_68_0.py",
+   "version": "3.68.1",
+   "file": "webcam_bewegung_3_68_1.py",
    "url": "",
-   "sha256": "1d8fbd300f8a7ff3e9e320e161458f6ce30f362afcc96415525a104ead2c6609",
-   "date": "2026-11-09 07:29",
-   "notes": "🔍 Untersuchen: im Live-Bild einen Bereich (oder das ganze Bild) untersuchen – KI und BioCLIP sagen, was zu sehen ist, mit Infokarten; wahlweise fährt der Kopf zuerst dorthin (Recht «Kopf»); «📷 Foto untersuchen» für ein eigenes Foto (bis 15 MB); Funde landen im Datentausch-Ordner «Funde» (Grenzen und freier Platz wie jeder Upload); Gäste ohne Kopf-Bewegung; Knopf im Pi-Fenster.",
-   "size": 3786567,
-   "sig": "41e2ef999bff52a3a3c138005bf658f02e16151b9e028d705f4850e832034e4cf4bf23d2056b082e80c00ed918e8f17b49504fc81b910d2a1f981b3916c2bd04",
+   "sha256": "e2c83f5e8dae42638d02d2a17220e7da2e30429f8a14cca1e492f037e81e2c8a",
+   "date": "2026-11-09 08:28",
+   "notes": "Härtung: hochgeladene Bilder (Untersuchen, Datentausch-Vorschau, KI-Helfer) – Grösse aus dem Dateikopf (JPEG/PNG/WebP), Pixelbomben über 60 MP oder 20 000 px je Seite werden ohne Dekodieren abgewiesen",
+   "size": 3791078,
+   "sig": "3b2c9846d8103ec0d98bd1dfc0c7c1651355ca631979ddf2b790395c58dcfb75b6e837d2b53d3f28960a8fe35b42cc38b04486567e214216969e5c52c2e70408",
    "data": {
-    "file": "moveeye_daten_3_68_0.zip",
+    "file": "moveeye_daten_3_68_1.zip",
     "url": "",
-    "sha256": "d117185f56addeb3c1f570ca2b4c50dd70e8c717fb627dd97391884574d70cbd",
-    "size": 4897280,
-    "sig": "e20f3bc26b1bfa1064adae53096702c20810b49340d63df6a4d2efecd1198ec94ad0f4afc596f1b08d4daeac058b5efcc88f9758736b040b971cab0997b8aa0d"
+    "sha256": "f2fb33069445a88c3470ab46026f9dc9393e2cf35c7d55f2b24f4132cdaf980d",
+    "size": 4898311,
+    "sig": "421fad494968314e5a40730b3a344754ab6a4e562d557cd7ca16aab2d89a081fc131bbd8206d32e78bcb7c073b845b10973c1950af1a656a8c026ae81b65d10b"
    }
   },
   {
