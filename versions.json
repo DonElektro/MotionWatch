@@ -1,13 +1,13 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-09 20:37",
+ "generated": "2026-11-09 20:45",
  "versions": [
   {
    "version": "3.70.1",
    "file": "webcam_bewegung_3_70_1.py",
    "url": "",
    "sha256": "c1439015df39ff6b08e57fdef9eb9c1ab7319df84b3c000a99e1c952b398734c",
-   "date": "2026-11-09 20:37",
+   "date": "2026-11-09 20:43",
    "notes": "Simulator-Betrieb: Hinweis «💧 Linse verschmutzt», wenn im Simulator viel Wasser oder Beschlag auf der Linse ist, mit Knopf «🧽 Linse putzen» (ab Sim 3.67.1)",
    "size": 3819939,
    "sig": "c18931ccd584a8b562de0c97150cd811b887459be5363d72f2ade196ba776a600ee2405020acdfba5c2cf5c99f2be2d9c1375ec404c07b8e8b9255278fd3590c",
@@ -185,6 +185,14 @@
    "size": 48453813,
    "sha256": "6d79a12ef2c965f1aa5437d6fa46ad1988e3eb111991b3c1a71fc2d98752847b",
    "sig": "30393dbdcf3832b121d6a62c4528368415894f87f4c8eabf27d27b8e44d89cf153c757c3009342f2d279f6d6e6e6906da677fef6acc6c945f57fceeee0e7c00e"
+  },
+  "pi": {
+   "ver": "3.67.1",
+   "file": "simulator3d/MoveEyeSim3D_Pi.zip",
+   "size": 37960698,
+   "sha256": "235956198ae849f36e6ab944b21772929d1a9b5e6abc7741934f18599874b5ca",
+   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.67.1/MoveEyeSim3D_Pi.zip",
+   "sig": "13f0bdfecada08308e103d25b200b0c37c9d41bfb8d18935e143049d8775749e88223bbb4ccb0ea609b48309117ceb8883c7afee7bec24f75a24346af1c56d04"
   }
  }
 }
