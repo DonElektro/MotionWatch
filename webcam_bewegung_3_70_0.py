@@ -23,6 +23,48 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 3.70.0: Spielecke: Wobbly Truck mit neuer Stunt-Piste – 14 wechselnde Abschnitte (Half-Pipe, Tunnel, Lücken, Trampolin …),
+    Supersprünge, neue Stunts, eigener Rekord (Spielesammlung GS-1.7)
+  * 3.69.2: Spielecke über https: die Bilder der Kacheln (Kevlaschef, Quantum, FOTAQ) erscheinen wieder – sie kommen jetzt vom
+    gleichen Server wie die Seite
+  * 3.69.1: iPhone «Zum Home-Bildschirm»: MoveEye-Symbol statt schwarzem «M» – das Symbol steckt jetzt direkt in der Seite (iOS
+    lädt es sonst nicht über das eigene Zertifikat)
+  * 3.69.0: Spielecke: «Flight of the Amazon Queen» (1995, CD-Fassung mit Sprachausgabe, Deutsch/Englisch) – ScummVM im Browser,
+    Admin lädt es einmal (Sprache wählen, feste Prüfsumme, 2 GB bleiben frei)
+  * 3.68.1: Härtung: hochgeladene Bilder (Untersuchen, Datentausch-Vorschau, KI-Helfer) – Grösse aus dem Dateikopf
+    (JPEG/PNG/WebP), Pixelbomben über 60 MP oder 20 000 px je Seite werden ohne Dekodieren abgewiesen
+  * 3.68.0: 🔍 Untersuchen: im Live-Bild einen Bereich (oder das ganze Bild) untersuchen – KI und BioCLIP sagen, was zu sehen
+    ist, mit Infokarten; wahlweise fährt der Kopf zuerst dorthin (Recht «Kopf»); «📷 Foto untersuchen» für ein eigenes Foto (bis
+    15 MB); Funde landen im Datentausch-Ordner «Funde» (Grenzen und freier Platz wie jeder Upload); Gäste ohne Kopf-Bewegung;
+    Knopf im Pi-Fenster.
+  * 3.67.0: 🌿 Bestimmen: zu jeder erkannten Art eine kurze Infokarte (Beschreibung aus Wikipedia, gekürzt, mit Quelle und Lizenz
+    CC BY-SA 4.0 auf jeder Karte; Link zum ganzen Artikel), für über 10'000 Arten offline – die Datei (2,7 MB, feste Prüfsumme)
+    wird mit dem Modell geladen.
+  * 3.66.1: Spielesammlung GS-1.6: Wobbly Truck mit Landehilfe im leichten Modus; der Knopf «✕ Zurück» sucht sich in allen
+    Spielen einen freien Platz (oder bleibt weg, wenn das Spiel einen eigenen Zurück-Link hat) und überdeckt keine Spiel-Knöpfe
+    mehr.
+  * 3.66.0: Spielesammlung GS-1.5: Wobbly Truck mit Motorrad, Stunt-Piste, Stunts, Kombos und Einstellungen; Spielecke (Mehr →
+    Spielecke) und Gast-Spieleabend mit denselben Spiel-Kacheln wie die Spielesammlung, kurz «✓ N Spiele installiert».
+  * 3.65.0: Spielesammlung GS-1.4: 36 neue Browserspiele (12 Kevlaschef Games, 24 Quantum Games) – am Handy mit Antippen, am PC
+    mit Tasten, offline, in 5 Sprachen; © 2026 Kevlaschef, mit Erlaubnis des Rechteinhabers.
+  * 3.64.0: 🌿 Bestimmen im Datentausch: MoveEye erkennt auf einem Foto die Art (Pflanze, Tier, Pilz, Insekt; BioCLIP, ganz auf
+    dem Pi, über 10'000 Arten), Top 3 mit deutschem und lateinischem Namen; das Modell (etwa 350 MB, feste Prüfsumme) wird beim
+    ersten Mal nach einer Rückfrage geladen. Fehlerkorrektur: Benutzer mit eigener Rolle (z. B. «Familie») bekamen auf jeder
+    Seite eine Fehlermeldung für zwei Seiten-Skripte. Gehäuse-Daten 5.3.1 (Adapter 28 für das alte UPS HAT) auch in MoveEye.
+  * 3.63.2: Fehlerkorrektur: langes Drücken auf «Ansicht» – öffnet sich das Menü unter dem Finger, schliesst es das Loslassen
+    nicht mehr sofort. Dazu Sim 3.59.0: Besucher meiden deinen Platz, neue Einbruch-Abläufe (Nachts ums Zelt schleichen,
+    Velo-Diebstahl), Erkennungstest-Plan «real».
+  * 3.63.1: Fehlerkorrektur: Selbsttest «Fertig kaufen» (639zj) erkennt den Eintrag im Fenster «Mehr» auch, wenn der Datentausch
+    ihn umhüllt (nur im CI mit Fenster sichtbar).
+  * 3.63.0: 📁 Datentausch unter Mehr: Fotos, Videos und Dokumente teilen (Für alle / Meine Dateien, Ordner, Vorschaubilder,
+    Hochladen in Stücken), 📝 Texte im Browser bearbeiten mit Versionen, 💬 Chats; neue Rechte pro Benutzer, Gäste nur ansehen,
+    Grenzen und immer 2 GB frei, Push gebündelt.
+  * 3.62.1: Piper: «Piper installieren» richtet auch espeak-ng selbst ein, wenn es fehlt (apt, ohne Passwort-Abfrage, mit
+    Zeitlimit; als root direkt, sonst sudo -n), mit Fortschritt und klarer Meldung, wenn es nicht geht («espeak-ng konnte nicht
+    installiert werden – …»).
+  * 3.62.0: Piper-Stimme: MoveEye spricht Ansagen mit einer natürlichen Offline-Stimme (Thorsten; Stimme pro Sprache, Tempo,
+    Lautstärke, «Stimme testen»), einmal geladen mit fester Prüfsumme; Ansagen auch im Browser («🔊 Ton im Browser»), im
+    Pi-Fenster und im Simulator; ohne Piper die alte Stimme.
   * 3.61.0: Simulator intern: MoveEye Sim läuft abgespeckt direkt auf dem Pi 5 (Reiter Simulator → «🧪 Simulator intern (auf
     diesem Pi) ausprobieren»), Paket signiert geprüft, «Beenden» = zurück zur vorherigen Verbindung; alte Desktop-Symbole «MW
     Sim · Basis» und x86-«MoveEye Sim» werden aufgeräumt. Dazu Sim 3.57.0: Gerät wie das echte (Gehäuse v5.3), Pflanzen
@@ -67,48 +109,6 @@ Features
   * 3.50.0: Werkstatt «Bauen» als eigenständige Datei MoveEye_Werkstatt.html: läuft offline im Browser ohne Pi (alle Reiter, 3D,
     Einzelteile, Druckplatten, Pakete, 5 Sprachen); bei jedem Release unter GitHub-Releases
     (latest/download/MoveEye_Werkstatt.html) und im Bausatz.
-  * 3.49.0: Erkennung: deutlich mehr Personen erkannt (Test 3: 42 % → 69 %, Kinder 92 %); Auto-Tune gedeckelt, Wind-Regel nur
-    letzte 2 Min., aufrechte KI-Person sofort «Person?» und nie «Tier», Autos/Scheinwerfer nachts keine Person, Kopf schwenkt
-    beim Verfolgen mit.
-  * 3.48.1: Werkstatt im Simulator wie in MoveEye (Karte unter dem Bild, Symbole, Farben), Knopftexte zweizeilig statt
-    abgeschnitten; echte 3D-Modelle für Füsse und Stopfen, echte Lage auf den Druckplatten.
-  * 3.48.0: Werkstatt: Teil antippen → «Nur dieses Teil zeigen» mit Grösse, Druck-/Zukauf-Infos, 3MF-Download, «Liegend wie
-    gedruckt», «Wo es hingehört» (Sprung zum Montageschritt); neue Ansicht «Druckplatten» A/B mit Download je Platte und allen
-    Platten als ZIP; MoveEye und Simulator.
-  * 3.47.1: Druckdateien herunterladen klappt auch auf dem Pi ohne Projektordner (Pi holt die Datei selbst, sauberer Dateiname);
-    «Alle als ZIP» nur für die gewählte Variante, mit Kurzanleitung.
-  * 3.47.0: Gehäuse-Abgleich v5.2: Montage-Texte v5.2, Szene immer v5.2 mit Stopfen 12/19, Grau #9a9ea3 und Kopf orange, «Stand
-    MoveEye X.Y.Z» im Bausatz, Akku UPS HAT (E) mit 4 × 21700 in Texten und Simulator, Bausatz-Link auf /info/; Trailer nur noch
-    im Entwickler-Bereich; Entwickler heisst «Elektro», keine privaten Angaben mehr in Programm und Druckdateien.
-  * 3.46.0: Gehäuse v5.2 ist jetzt überall Standard (v5.1 bleibt wählbar); Selbstbau-Paket MoveEye_Bausatz.zip (Anleitung als
-    PDF in 5 Sprachen, Druckdateien, Bestelllisten, signierte Software) als GitHub-Release; USB-Installer für den Simulator-PC
-    (Ubuntu 24.04, Kiosk).
-  * 3.45.0: Varianten: ehrliche Selbstdiagnose ohne Servo-Treiber (PCA9685) und ohne Wärmebild, Relais ab Werk aus, eine
-    Mover-Fahrt löst keinen «Gerät bewegt»-Alarm mehr aus; Bau-Infos: Stopfen 18–24, Kanal 4 auf das IR-Modul, Ladequelle, 3
-    Pakete (Basis/Komplett/Autark); Hinweis «fixfertig kaufen» in Bauen, Simulator-Werkstatt und Pi-Fenster; /info/ als
-    Produktseite.
-  * 3.44.2: Versionshinweis: eine kleine Zeile unten rechts mit Knopf und ✕ statt eines bildschirmhohen Balkens.
-  * 3.44.1: Simulator-Fenster und Kamerabild passen in die Bildschirmhöhe (zentriert, unverzerrt); Klicks treffen trotz Rändern
-    genau.
-  * 3.44.0: Simulator: Tastatur statt Scrollrad: + / − zoomt überall, Bild↑/↓ blättert Listen, Pfeile drehen die Ansicht,
-    F1 zeigt die Tasten-Hilfe, Scrollbalken sind sichtbar und ziehbar, Shift+Bild↑/↓ bewegt den Mast. Linux-Kiosk:
-    ./kiosk_ein.sh macht den PC zur reinen Simulator-Maschine (Vollbild, sendet an MoveEye, Neustart nach Absturz, SSH);
-    Ctrl+Alt+D = normales Mint, ./kiosk_aus.sh stellt alles zurück.
-  * 3.43.1: MoveEye bietet unter /sim jetzt auch den Simulator für Linux zum Herunterladen an.
-  * 3.43.0: Gehäuse v5.2b: SD-Schlitz für eine Verlängerung und USB-C-Öffnung (je mit Stopfen), Kopf 06 mit Status-LED, Rippen
-    und Trennsteg ≥ 1,5 mm, Sicherung 5 A, 13 Entwicklungs-Sockel (12 V an der GX16), Lochraster im Zwischenboden, Platz für
-    Lampentreiber und Sicherung, Reserve-Öffnung mit Stopfen; microSD-Verlängerung in der Teileliste.
-  * 3.42.0: Linux-Version mit eigenem Update-Paket, ./installieren.sh legt Menü- und Desktop-Eintrag an (ohne sudo).
-    Sparmodus: bei ≤ 4 GB Arbeitsspeicher oder älterer Intel-Grafik wählt «Automatisch» Lite; eigene Wahl hat Vorrang.
-    Lade-LED an GPIO 6: an beim Laden, langsam blinkend = voll, schnell = Akku fast leer (Schalter «Lade-LED»).
-    Gehäuse v5.2: Unterteil mit Fenster für die Weitwinkel-Kamera, IR-Modul 120° mit Trennsteg und Kabelkamm;
-    Druckkorrekturen an Drehteller, Gabel, Arm 2 und Lampenhalter; Kamerakopf im Simulator orange.
-  * 3.41.1: Fix: Solar-Strommesser (INA219) ab Werk auf 0x44 statt 0x41 (kollidierte mit dem Servo-Treiber), Shunt 0,01 Ω
-    passend zum Gravity-Modul; Bau-Infos ergänzt (Step-Down ab Akku, 3. MOSFET, Schrauben, Lade-LED an GPIO 6).
-  * 3.41.0: Im Fenster «Neu in …» führt bei jeder Neuerung ein kleiner Link direkt zur Funktion (MoveEye und Simulator);
-    Schalter «Links zu Neuerungen» im Entwickler-Bereich.
-  * 3.40.0: Bauen: MoveEye komplett selbst bauen – ein Menüeintrag in MoveEye und Simulator, 10 Reiter, 3D im Browser auch ohne
-    Simulator, Varianten, Einkaufsliste, alle Druckteile als 3MF, Verkabelungsplan, «Mein Bau».
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -117,10 +117,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_3_61_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_3_70_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_3_61_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_3_61_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_3_70_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_3_70_0.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -137,7 +137,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "3.61.0"
+APP_VERSION = "3.70.0"
 
 
 def default_data_dir():
@@ -262,8 +262,8 @@ def prepare_settings_file():
 
 
 
-ZD_FILE = "moveeye_daten_3_61_0.zip"
-ZD_SHA256 = "c12a3a463fa865279a6414149c5342af01a4df2e3794b45520a6d0e4e360e045"
+ZD_FILE = "moveeye_daten_3_70_0.zip"
+ZD_SHA256 = "ddb112a56c8ed2bc9c2de643259c9e9f29c60f9f18855e0127fd659283f00e4b"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -2938,6 +2938,9 @@ def users_selftest():
 	assert role_allows("family", "/api/audio", "POST", {"action": "siren"}) and not role_allows("family", "/settings", "GET", {})
 	assert not role_allows("family", "/api/users", "GET", {}) and not role_allows("family", "/api/set", "POST", {"key": "web_port"})
 	assert role_allows("operate", "/api/arm", "POST", {}) and not role_allows("view", "/api/arm", "POST", {})
+	for r_ in ("kid", "friend", "family", "view"):
+		assert all(role_allows(r_, p_, "GET", {}) for p_ in ("/sx/ui.js", "/fbx/ui.js") if p_ in str(VIEW_GET)), r_
+	assert role_allows("custom", "/fbx/ui.js", "GET", {}, set()) or "/fbx/ui.js" not in str(VIEW_GET)
 	assert role_allows("custom", "/api/set", "POST", {"key": "record"}, {"settings"})
 	assert not role_allows("custom", "/api/set", "POST", {"key": "users"}, {"settings"})
 	assert not role_allows("custom", "/api/text", "POST", {"key": "notify_url"}, {"settings"})
@@ -17206,6 +17209,8 @@ def helper_server_start():
 			if n <= 0 or n > 3 << 20:
 				return self._js({"ok": False, "error": "picture too big"}, 413)
 			jpg = self.rfile.read(n)
+			if not img_head_ok(jpg, ("jpeg", "png", "webp"))[0]:
+				return self._js({"ok": False, "error": "not a picture or too big"}, 413)
 			q = dict(x.split("=", 1) for x in (self.path.split("?", 1)[1].split("&") if "?" in self.path else []) if "=" in x)
 			try:
 				HELPER["serve_from"] = self.client_address[0]
@@ -24564,13 +24569,13 @@ def tools_cfg(key, value, mac=None):
 
 
 
-SIM3D = {"version": "3.57.0", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 50399264,
-         "sha256": "2286accdea657b5bd842a2c14a302db9ebf3147882d61297898eeab547a77f92"}
+SIM3D = {"version": "3.67.0", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 54427103,
+         "sha256": "4e8c2c1ba9d1345a3da3fb20a237b4d5276263a9ccc6e1612e8a8b3ca3eb522d"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 
 
-SIM3D_LINUX = {"version": "3.57.0", "file": "simulator3d/MoveEyeSim3D_Linux.zip", "size": 44426291,
-               "sha256": "cc577931e302dda25a7f864e22503402d9c488423e5bc14cb00e447149eff56a", "stem": "MoveEyeSim3D_Linux",
+SIM3D_LINUX = {"version": "3.67.0", "file": "simulator3d/MoveEyeSim3D_Linux.zip", "size": 48454965,
+               "sha256": "b7add1591f6e81b969580ed4b3b86264d2a2e1b5ea665c7d49414319631f0493", "stem": "MoveEyeSim3D_Linux",
                "label": "MoveEye Sim (Linux)"}
 SIM3D_LINUX_DL = {"running": False, "got": 0, "msg": ""}
 
@@ -27542,7 +27547,7 @@ threading.Thread(target=_extra_cams_boot, daemon=True, name="extracams-boot").st
 
 PARTY = {"key": "", "until": 0.0, "game": "lobby", "seq": 0, "players": {}, "host": "", "g": {}, "tools": {}}
 PARTY_COND = threading.Condition()
-GAMES_PKG = {"version": "GS-1.3", "file": "games/MotionWatch_Spiele.zip", "size": 13881572, "sha256": "201b9b0b0271fce9f2f273d3c0cbd6da4ff79015eda91512ee38cbf92f73305a"}
+GAMES_PKG = {"version": "GS-1.7", "file": "games/MotionWatch_Spiele.zip", "size": 14640699, "sha256": "d495c905e6395a01a89ec61e939cf9cb4133e4bc88d12e5a11dee760733bf720"}
 GAMES_DL = {"running": False, "msg": "", "got": 0}
 
 QUIZ = [("Wie heisst der höchste Berg der Schweiz?", "Dufourspitze (4634 m)"), ("Wie viele Kantone hat die Schweiz?", "26"),
@@ -27615,7 +27620,7 @@ def games_all_open(hours=6.0, who="web"):
 
 """
 	party_open(hours)
-	if not games_list() and not GAMES_DL.get("running"):
+	if not games_list(extra=False) and not GAMES_DL.get("running"):
 		threading.Thread(target=games_install, daemon=True, name="games-dl").start()
 	if CFG.get("sim_on") and SIM.get("ok"):
 		def _sim():
@@ -28495,11 +28500,21 @@ def lan_guest_ip(ip, fwd=""):
 SPIELE_PAGE = """<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Spielecke</title><link rel="icon" href="/icon-192.png"><style>
 body{margin:0;background:#0E1621;color:#E8EEF5;font-family:system-ui,sans-serif}main{max-width:720px;margin:0 auto;padding:20px 16px}
-h1{font-size:26px;margin:6px 0 4px}p{color:#9FB0C3;margin:4px 0 16px}.g{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
-a.c{display:block;background:#16263A;border-radius:14px;padding:14px;color:inherit;text-decoration:none}a.c:active{transform:scale(.98)}
-.i{font-size:34px}.n{font-weight:700;margin:6px 0 2px}.d{font-size:13px;color:#9FB0C3}.big{background:#E9A23B;color:#0E1621;font-weight:700;
+h1{font-size:26px;margin:6px 0 4px}p{color:#9FB0C3;margin:4px 0 16px}
+/*GAMETILES*/.big{background:#E9A23B;color:#0E1621;font-weight:700;
 display:block;text-align:center;padding:14px;border-radius:14px;text-decoration:none;margin:0 0 18px}</style></head><body><main>
-<h1>🎲 Spielecke</h1>__PARTY__<p>__NOTE__</p><div class="g">__GAMES__</div></main></body></html>"""
+<h1>🎲 Spielecke</h1>__PARTY__<p>__NOTE__</p><div class="g mwg">__GAMES__</div></main></body></html>"""
+
+
+GAME_TILES_CSS = """.mwg{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+@media (max-width:520px){.mwg{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.mwg a.c{display:block;background:var(--mwg-tile,#16263A);border-radius:14px;padding:14px;color:inherit;text-decoration:none;min-width:0;overflow-wrap:anywhere}
+.mwg a.c:hover{filter:brightness(1.12)}.mwg a.c:active{transform:scale(.98)}
+.mwg .i{font-size:34px}.mwg .i img{width:56px;height:56px;border-radius:12px;object-fit:cover;display:block}
+.mwg .n{font-weight:700;margin:6px 0 2px}.mwg .d{font-size:13px;color:var(--mwg-mut,#9FB0C3)}
+.mwg .gh{grid-column:1/-1;font-weight:700;margin:14px 0 2px}
+"""
+SPIELE_PAGE = SPIELE_PAGE.replace("/*GAMETILES*/", GAME_TILES_CSS, 1)
 
 
 GAMESRV = {"port": 0, "msg": ""}
@@ -28529,19 +28544,42 @@ def games_server_start():
 				self.send_error(404); return
 			if m.group(2) == "" and not path.endswith("/"):
 				self.send_response(301); self.send_header("Location", path + "/"); self.end_headers(); return
+			ct = ("application/wasm" if p_.endswith(".wasm") else mimetypes.guess_type(p_)[0]) or "application/octet-stream"
+			hdr = {"Content-Type": ct + ("; charset=utf-8" if ct.startswith("text/") or ct.endswith("javascript") else ""),
+                   "Cache-Control": "max-age=3600", "X-Content-Type-Options": "nosniff"}
 			try:
+				if ct != "text/html":
+					from email.utils import formatdate, parsedate_to_datetime
+					st_ = os.stat(p_)
+					lm = formatdate(int(st_.st_mtime), usegmt=True)
+					ims = self.headers.get("If-Modified-Since")
+					try:
+						same = bool(ims) and int(parsedate_to_datetime(ims).timestamp()) >= int(st_.st_mtime)
+					except (TypeError, ValueError, OverflowError):
+						same = False
+					if same:
+						self.send_response(304); self.send_header("Last-Modified", lm); self.send_header("Cache-Control", hdr["Cache-Control"])
+						self.end_headers(); return
+					with open(p_, "rb") as f:
+						self.send_response(200)
+						for k_, v_ in hdr.items():
+							self.send_header(k_, v_)
+						self.send_header("Content-Length", str(st_.st_size)); self.send_header("Last-Modified", lm)
+						self.end_headers()
+						shutil.copyfileobj(f, self.wfile, 1 << 18)
+					return
 				with open(p_, "rb") as f:
 					data = f.read()
+			except (BrokenPipeError, ConnectionResetError):
+				return
 			except OSError:
 				self.send_error(404); return
-			ct = mimetypes.guess_type(p_)[0] or "application/octet-stream"
-			if ct == "text/html":
-				h_ = (self.headers.get("Host") or "").rsplit(":", 1)[0]
-				data = games_inject_back(data, f"http://{h_}:{CFG['web_port']}/spiele" if h_ else "/")
+			h_ = (self.headers.get("Host") or "").rsplit(":", 1)[0]
+			data = games_inject_back(data, f"http://{h_}:{CFG['web_port']}/spiele" if h_ else "/")
 			self.send_response(200)
-			self.send_header("Content-Type", ct + ("; charset=utf-8" if ct.startswith("text/") or ct.endswith("javascript") else ""))
-			self.send_header("Content-Length", str(len(data))); self.send_header("Cache-Control", "max-age=3600")
-			self.send_header("X-Content-Type-Options", "nosniff")
+			for k_, v_ in hdr.items():
+				self.send_header(k_, v_)
+			self.send_header("Content-Length", str(len(data)))
 			self.end_headers(); self.wfile.write(data)
 
 	class S(socketserver.ThreadingMixIn, http.server.HTTPServer):
@@ -28556,9 +28594,28 @@ def games_server_start():
 	threading.Thread(target=srv.serve_forever, daemon=True, name="games").start()
 
 
-GAME_BACK = """<div id="mw-back" style="position:fixed;bottom:10px;left:10px;opacity:.85;z-index:2147483647;font:600 15px system-ui,sans-serif">
-<a href="__BACK__" onclick="if(history.length>1){history.back();return false}try{window.close()}catch(e){}" style="display:inline-block;
-background:rgba(14,22,33,.85);color:#fff;text-decoration:none;padding:8px 13px;border-radius:12px;border:1px solid rgba(255,255,255,.25)">✕ Zurück</a></div>"""
+
+
+
+
+GAME_BACK = """<div id="mw-back" style="position:fixed;top:calc(8px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);opacity:.88;z-index:2147483647;font:600 15px system-ui,sans-serif">
+<a href="__BACK__" onclick="if(history.length>1){history.back();return false}try{window.close()}catch(e){}" style="display:inline-flex;align-items:center;
+box-sizing:border-box;min-height:40px;min-width:44px;background:rgba(14,22,33,.85);color:#fff;text-decoration:none;padding:8px 13px;border-radius:12px;
+border:1px solid rgba(255,255,255,.25);white-space:nowrap;-webkit-tap-highlight-color:transparent">✕ Zurück</a></div>
+<script>(function(){var d=document,b=d.getElementById("mw-back");if(!b||b.__mw)return;b.__mw=1;
+var T="calc(8px + env(safe-area-inset-top,0px))",B="calc(8px + env(safe-area-inset-bottom,0px))",L="calc(8px + env(safe-area-inset-left,0px))",R="calc(8px + env(safe-area-inset-right,0px))";
+var P=[[T,"","","50%","translateX(-50%)"],[T,"","",L,""],[T,"",R,"",""],["",B,"","50%","translateX(-50%)"],["50%","","",L,"translateY(-50%)"],["50%","",R,"","translateY(-50%)"]],cur=-1;
+function set(i){var p=P[i],s=b.style;s.top=p[0]||"auto";s.bottom=p[1]||"auto";s.right=p[2]||"auto";s.left=p[3]||"auto";s.transform=p[4]||"none";cur=i}
+function own(){var a=d.querySelectorAll('a[href="../"],a[href="index.html"]');for(var i=0;i<a.length;i++){if(b.contains(a[i]))continue;
+ var r=a[i].getBoundingClientRect();if(r.width>0&&r.height>0&&r.bottom>0&&r.top<innerHeight&&r.right>0&&r.left<innerWidth&&getComputedStyle(a[i]).visibility!=="hidden")return true}return false}
+function busy(){var r=b.firstElementChild.getBoundingClientRect();for(var i=0;i<=4;i++)for(var j=0;j<=2;j++){
+ var x=Math.min(innerWidth-1,Math.max(0,r.left+2+(r.width-4)*i/4)),y=Math.min(innerHeight-1,Math.max(0,r.top+2+(r.height-4)*j/2)),e=d.elementsFromPoint(x,y);
+ for(var k=0;k<e.length;k++){var q=e[k];if(b.contains(q)||q===d.body||q===d.documentElement)continue;
+  if(q.closest&&q.closest("a,button,input,select,textarea,label,[role=button],[onclick]"))return true}}return false}
+function fit(force){if(own()){b.style.display="none";return}b.style.display="";if(!force&&cur>=0&&!busy())return;
+ for(var i=0;i<P.length;i++){set(i);if(!busy())return}set(0)}
+fit(1);addEventListener("load",function(){fit(1)});setTimeout(function(){fit()},1200);setInterval(function(){fit()},2500);
+addEventListener("resize",function(){setTimeout(function(){fit(1)},250)})})();</script>"""
 
 
 
@@ -28627,19 +28684,30 @@ def games_url(game, fn="", host=""):
 
 
 GAME_GROUPS = {"touch": "👆 Für Handy und Tablet (Touch)", "buttons": "🎮 Mit Bildschirm-Tasten (am PC mit der Tastatur)"}
+GAME_GROUPS["keys"] = "⌨️ Am PC mit Tastatur und Maus"
+
+
+def _game_icon(x, host=""):
+	""
+	from html import escape as _e
+	ic = str(x.get("icon") or "🎮")
+	if "." not in ic:
+		return _e(ic)
+	src = games_url(x["dir"], ic, host) or "/spiele/g/" + x["dir"] + "/" + ic
+	return f'<img src="{_e(src, quote=True)}" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'">'
 
 
 def spiele_page(host=""):
 	from html import escape as _e
 	gl = games_list()
 	cards = ""
-	for grp in (["touch", "buttons"] if any(x.get("input") for x in gl) else [None]):
+	for grp in (list(GAME_GROUPS) if any(x.get("input") for x in gl) else [None]):
 		part = [x for x in gl if grp is None or x.get("input", "touch") == grp]
 		if not part:
 			continue
 		if grp:
-			cards += f'<div style="grid-column:1/-1;font-weight:700;margin:14px 0 2px">{_e(GAME_GROUPS[grp])}</div>'
-		cards += "".join(f'<a class="c" href="{_e(games_url(x["dir"], x.get("start", "index.html"), host) or "/spiele/g/" + x["dir"] + "/" + x.get("start", "index.html"))}"><div class="i">{_e(x.get("icon", "🎮"))}</div>'
+			cards += f'<div class="gh">{_e(GAME_GROUPS[grp])}</div>'
+		cards += "".join(f'<a class="c" href="{_e(games_url(x["dir"], x.get("start", "index.html"), host) or "/spiele/g/" + x["dir"] + "/" + x.get("start", "index.html"))}"><div class="i">{_game_icon(x, host)}</div>'
                          f'<div class="n">{_e(x.get("name", x["dir"]))}</div><div class="d">{_e(x.get("desc", ""))}</div></a>' for x in part)
 	party = (f'<a class="big" href="/p/{PARTY["key"]}/">👥 Zum Spieleabend (Quiz, Werwolf, Malen, 4 gewinnt)</a>' if party_on()
              else '<p>Der Spieleabend (Quiz, Werwolf, Malen …) ist gerade zu – öffnen kann ihn, wer MoveEye verwaltet.</p>')
@@ -28647,7 +28715,7 @@ def spiele_page(host=""):
 	return SPIELE_PAGE.replace("__PARTY__", party).replace("__NOTE__", note).replace("__GAMES__", cards)
 
 
-def games_list():
+def games_list(extra=True):
 	try:
 		with open(os.path.join(games_dir(), "games.json")) as f:
 			d = json.load(f)
@@ -28715,6 +28783,7 @@ def games_file(game, fn):
 
 
 PARTY_PAGE = _zd('340_spiele_seiten/PARTY_PAGE', ZD_PAGE)
+PARTY_PAGE = PARTY_PAGE.replace("/*GAMETILES*/", GAME_TILES_CSS, 1)
 
 
 SIMGAME = {"t": 0.0, "busy": False, "g": None}
@@ -38537,6 +38606,7 @@ BT_JS = _zd('450_web_gemeinsam/BT_JS', "")
 BASE_CSS = _zd('450_web_gemeinsam/BASE_CSS', "")
 
 TOOLS_PAGE = _zd('460_web_werkzeugseite/TOOLS_PAGE', ZD_PAGE)
+TOOLS_PAGE = TOOLS_PAGE.replace("/*GAMETILES*/", GAME_TILES_CSS, 1)
 
 
 SIMMAP_JS = _zd('470_web_simulatorseite/SIMMAP_JS', "")
@@ -38664,6 +38734,52 @@ def app_icon_png(size, variant="", icon=None):
 	return _ICONS[key]
 
 
+_APPLE_ICON_URI = {}
+
+
+def apple_icon_href(variant=None):
+	"""
+
+"""
+	v = host_variant() if variant is None else variant
+	key = (app_icon_id(), v)
+	if key not in _APPLE_ICON_URI:
+		import base64
+		raw = app_icon_png(180, v)
+		out = raw
+		im = cv2.imdecode(np.frombuffer(raw, np.uint8), cv2.IMREAD_COLOR) if raw else None
+		if im is not None:
+			for q in (8, 16):
+				p = ((im.astype(np.int16) // q) * q + q // 2).clip(0, 255).astype(np.uint8)
+				ok, buf = cv2.imencode(".png", p, [cv2.IMWRITE_PNG_COMPRESSION, 9])
+				if ok:
+					out = buf.tobytes()
+				if len(out) <= 8000:
+					break
+		_APPLE_ICON_URI[key] = ("data:image/png;base64," + base64.b64encode(out).decode()) if out else "/apple-touch-icon.png"
+	return _APPLE_ICON_URI[key]
+
+
+def apple_icon_link():
+	""
+	return '<link rel="apple-touch-icon" href="' + apple_icon_href() + '">'
+
+
+def apple_icon_selftest():
+	import base64
+	u = apple_icon_href("int")
+	assert u.startswith("data:image/png;base64,") and apple_icon_href("int") is u, "inline and cached"
+	raw = base64.b64decode(u.split(",", 1)[1])
+	im = cv2.imdecode(np.frombuffer(raw, np.uint8), cv2.IMREAD_COLOR)
+	assert im is not None and im.shape[:2] == (180, 180) and len(u) < 12000, (len(u), None if im is None else im.shape)
+	p = render_page("<html><head></head><body></body></html>", "live")
+	assert '<link rel="apple-touch-icon" href="data:image/png;base64,' in p and 'href="/apple-touch-icon.png' not in p, "render_page: inline icon"
+	return "180 px, %d bytes inline (data: URI, cached per icon and address)" % len(u)
+
+
+SELFTEST_EXTRA.append(("Home-screen icon inline for iOS (500, 3.69.1)", apple_icon_selftest))
+
+
 def app_manifest():
 	v = host_variant(); name = app_title(v)
 	return json.dumps({"name": name, "short_name": name, "start_url": "/", "scope": "/", "display": "standalone",
@@ -38698,6 +38814,7 @@ def i18n_js(lang, help_=False):
 def render_page(page, active):
 	""
 	page = page.replace("<head>", "<head>" + ui_seed_script() + i18n_loader(active == "help") + PWA_HEAD.replace(
+        '<link rel="apple-touch-icon" href="/apple-touch-icon.png">', apple_icon_link()).replace(
         'content="MoveEye">', 'content="' + app_title(host_variant()) + '">').replace(".png\"", ".png?i=" + app_icon_id() + "\"")
         + "<script>window.MW_ICON=" + json.dumps(app_icon_id()) + ";</script>" + makeover_head()
         + ("<style>:root{--mw-icon:url(/app-icon/anim.svg?i=" + app_icon_id() + ")}</style>"
@@ -40833,7 +40950,8 @@ class WebStream:
 		def party_page(key):
 			if not _pkey(key):
 				return Response("<h2 style='font-family:sans-serif'>Die Spielecke ist geschlossen.</h2>", 404, mimetype="text/html")
-			return Response(PARTY_PAGE.replace("__KEY__", key).replace("__NTJS__", NT_JS), mimetype="text/html", headers={"Cache-Control": "no-store"})
+			return Response(PARTY_PAGE.replace("__KEY__", key).replace("__NTJS__", NT_JS).replace('<meta charset="utf-8">', '<meta charset="utf-8">' + apple_icon_link(), 1),
+                             mimetype="text/html", headers={"Cache-Control": "no-store"})
 
 		@app.route("/p/<key>/join", methods=["POST"])
 		def party_join(key):
@@ -41198,7 +41316,7 @@ class WebStream:
 		def spiele_home():
 			if not _lan_ok():
 				return Response(_lan_no, 403, mimetype="text/html")
-			return Response(spiele_page(request.host), mimetype="text/html", headers={"Cache-Control": "no-store"})
+			return Response(spiele_page(request.host).replace('<meta charset="utf-8">', '<meta charset="utf-8">' + apple_icon_link(), 1), mimetype="text/html", headers={"Cache-Control": "no-store"})
 
 		@app.route("/spiele/g/<game>/")
 		@app.route("/spiele/g/<game>/<path:fn>")
@@ -41253,6 +41371,10 @@ class WebStream:
 					PARTY["host"] = d["id"]; party_bump()
 				elif a_ == "install":
 					threading.Thread(target=games_install, daemon=True).start()
+				elif a_ in ("fotaq_install", "fotaq_cancel", "fotaq_delete", "fotaq_remove"):
+					ok_, e_ = fotaq_action(a_, d)
+					if not ok_:
+						return reply({"ok": False, "error": tr(e_, norm_lang(d.get("lang") or CFG.get("lang"))), "fotaq": fotaq_state()}, 400)
 			base = (CFG.get("public_url") or "").strip().rstrip("/")
 			local = page_address().rstrip("/") if "page_address" in globals() else request.host_url.rstrip("/")
 			url = (local or request.host_url.rstrip("/")) + "/p/" + PARTY["key"] + "/" if party_on() else ""
@@ -41260,7 +41382,7 @@ class WebStream:
                           "players": [{"id": k, "name": v["name"], "score": v["score"], "host": k == PARTY["host"], "on": time.time() - v["t"] < 25}
                                       for k, v in PARTY["players"].items()], "game": PARTY["game"],
                           "games": games_list(), "games_ver": games_installed_version(), "rest": toolmode_state(), "games_pkg": GAMES_PKG, "dl": dict(GAMES_DL),
-                          "remote": base, "all": games_all_state()})
+                          "fotaq": fotaq_state(), "remote": base, "all": games_all_state()})
 
 		@app.route("/api/simtest/pic/<int:rid>/<name>")
 		def api_simtest_pic(rid, name):
@@ -41877,8 +41999,14 @@ class WebStream:
 		@app.route("/api/tts", methods=["POST"])
 		def api_tts():
 			d = body(); lang = norm_lang(d.get("lang"))
+			TTS["id"] = ""
 			ok, msg = tts_say(d.get("text"), d.get("voice") or lang, bool(d.get("save")))
-			return reply({"ok": ok, "error": tr_err(msg, lang) if not ok else None, "file": msg if ok and d.get("save") else ""}, 200 if ok else 400)
+			sid = "" if d.get("save") else str(TTS.get("id") or "")
+			note = ""
+			if not ok and sid and msg == "no loudspeaker selected":
+				ok, note = True, tr("no loudspeaker selected - only in the browser", lang)
+			return reply({"ok": ok, "error": tr_err(msg, lang) if not ok else None, "file": msg if ok and d.get("save") else "",
+                          "id": sid if ok else "", "note": note}, 200 if ok else 400)
 
 		@app.route("/api/sensors", methods=["POST"])
 		def api_sensors():
@@ -42477,6 +42605,8 @@ class WebStream:
 						return reply({"ok": True, "ignored": len(CFG.get("simprof_ignore") or [])})
 				n = simprof_answer([str(k) for k in (d.get("take") or [])][:200])
 				return reply({"ok": True, "taken": n})
+			if getattr(g, "role", "admin") != "admin":
+				return reply({"ok": True, "q": None})
 			return reply({"ok": True, "q": simprof_state(lang)})
 
 		@app.route("/api/alerts")
@@ -43052,8 +43182,8 @@ class WebStream:
 				return sx_err(404, "guest")
 			keep = COMMON_JS[COMMON_JS.index("function keepStream"):COMMON_JS.index("\nconst post")]
 			gt = {L: {k: TRX[L][k] for k in GUEST_KEYS if TRX[L].get(k)} for L in ("fr", "it", "rm")}
-			return Response(GUEST_PAGE.replace("__BASE__", "/g/" + token).replace("/*KEEP*/", keep).replace("/*GT*/{}", json.dumps(gt, ensure_ascii=False)),
-                            mimetype="text/html")
+			return Response(GUEST_PAGE.replace("__BASE__", "/g/" + token).replace("/*KEEP*/", keep).replace("/*GT*/{}", json.dumps(gt, ensure_ascii=False))
+                            .replace('<meta charset="utf-8">', '<meta charset="utf-8">' + apple_icon_link(), 1), mimetype="text/html")
 
 		@app.route("/g/<token>/state")
 		def guest_state(token):
@@ -48760,7 +48890,7 @@ class App:
 		self.watch = watch
 		self.web = web or WebStream(watch)
 		self.root = tk.Tk()
-		self.root.title("MoveEye 3.61.0")
+		self.root.title("MoveEye 3.70.0")
 		try:
 			import base64
 			self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -49138,7 +49268,7 @@ class App:
 			if not small:
 				vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
 				vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))
-			Tip(nm, f"{tr('Build')} 3.61.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+			Tip(nm, f"{tr('Build')} 3.70.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
 			self._egg_taps = []
 			for w_ in tl.winfo_children():
 				w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -49998,6 +50128,8 @@ class App:
 			ttk.Button(tf, text=tr("Save as own sound"), command=lambda: tts_do(True)).pack(side="left", expand=True, fill="x")
 			self.status_labels["Announcement"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
 			self.status_labels["Announcement"].pack(anchor="w", pady=(2, 0))
+			if "piper_tk_box" in globals():
+				piper_tk_box(self, sbody)
 			ttk.Label(sbody, text=tr("Own sounds (.wav / .mp3): put the files into") + " " + sounds_dir(), style="Mut.TLabel",
                       wraplength=330, justify="left").pack(anchor="w", pady=(4, 0))
 			tk.Label(sbody, text=tr("Bluetooth").upper(), bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 7, "bold"), anchor="w").pack(fill="x", pady=(8, 0))
@@ -53923,6 +54055,10 @@ def sx_housekeeping_start():
 	threading.Thread(target=run, daemon=True, name="sx-housekeeping").start()
 
 
+VIEW_GET = VIEW_GET + ("/sx/ui.js",)
+
+
+
 
 def sx_routes(app, watch, reply, body):
 	from flask import Response, request, g
@@ -56345,7 +56481,7 @@ App._refresh = _kr_tk_refresh
 
 
 
-INFO_PARTS = 273
+INFO_PARTS = 280
 INFO_START = "2026-10-16"
 FBX = {"shot": None, "shot_t": 0.0, "lines": 0}
 
@@ -56514,6 +56650,10 @@ def fbx_ui_js():
 
 
 FBX_JS = _zd('584_info_rueckmeldung/FBX_JS', "")
+
+
+VIEW_GET = VIEW_GET + ("/fbx/ui.js", "/api/simprofile")
+
 
 
 def fbx_routes(app, watch, reply, body):
@@ -62674,14 +62814,21 @@ for _k, _v in _HX_KONZEPT.items():
 	DE.setdefault(_k, _v[0])
 	for _i, _L in enumerate(('fr', 'it', 'rm')):
 		TRX[_L].setdefault(_k, _v[_i + 1])
-_HX_GAME = {
-    'Quick start': ('Schnellstart', 'Démarrage rapide', 'Avvio rapido', 'Start svelt'),
-    'runners at most': ('Läufer höchstens', 'coureurs au plus', 'corridori al massimo', 'currids al pli'),
-    'Duel': ('Duell', 'Duel', 'Duello', 'Duel'),
-    'MoveEye against the guard': ('MoveEye gegen den Wächter', 'MoveEye contre le gardien', 'MoveEye contro il guardiano', 'MoveEye cunter il guardian'),
-    'Guesses «Who gets through?»': ('Tipps «Wer kommt durch?»', 'Pronostics «Qui passe ?»', 'Pronostici «Chi passa?»', 'Pronostics «Tgi passa?»'),
-    'Level': ('Stufe', 'Niveau', 'Livello', 'Nivel'),
-}
+_HX_GAME = _zd('606_uebersetzungen_game/HX_GAME', _zd_hx({
+    'Quick start': 'Schnellstart',
+    'runners at most': 'Läufer höchstens',
+    'Duel': 'Duell',
+    'MoveEye against the guard': 'MoveEye gegen den Wächter',
+    'Guesses «Who gets through?»': 'Tipps «Wer kommt durch?»',
+    'Level': 'Stufe',
+    'Touch (phone, tablet)': 'Touch (Handy, Tablet)',
+    'With on-screen buttons': 'Mit Bildschirm-Tasten',
+    'With keyboard and mouse (PC)': 'Am PC mit Tastatur und Maus',
+    'games installed': 'Spiele installiert',
+    'For phone and tablet (touch)': 'Für Handy und Tablet (Touch)',
+    'With on-screen buttons (on the PC with the keyboard)': 'Mit Bildschirm-Tasten (am PC mit der Tastatur)',
+    'On the PC with keyboard and mouse': 'Am PC mit Tastatur und Maus',
+}))
 for _k, _v in _HX_GAME.items():
 	DE.setdefault(_k, _v[0])
 	for _i, _L in enumerate(('fr', 'it', 'rm')):
@@ -73585,7 +73732,7 @@ SELFTEST_EXTRA.append(("Error help with QR code (simulator3d/fehler_katalog.json
 
 
 
-GEH_QUELLE_SHA = 'c3f799224806a51b6254b10f6d11b4d017f6c0a691c2d374c056ee988c808763'
+GEH_QUELLE_SHA = '143217515ac5b3cac7fa040087de0338713210eae3deae6434a32c26677fc9de'
 GEH_BAU = json.loads(_zd('639v_daten_gehaeuse/GEH_BAU', '{}'))
 GEH_UI_DE = {"Case & build": "Gehäuse & Bau", "Guide, parts list, print files – in 3D in the workshop of the simulator": "Anleitung, Materialliste, Druckdateien – in 3D in der Werkstatt des Simulators", "Case": "Gehäuse", "View in the simulator": "Im Simulator ansehen", "Opens the workshop in the 3D simulator: turn, explode, see through, click parts, assembly step by step.": "Öffnet die Werkstatt im 3D-Simulator: drehen, zerlegen, durchsichtig, Teile anklicken, Montage Schritt für Schritt.", "Simulator not connected – start it and connect it on the page Simulator.": "Simulator nicht verbunden – starte ihn und verbinde ihn auf der Seite «Simulator».", "Opened in the simulator.": "Im Simulator geöffnet.", "Print files": "Druckdateien", "3MF plates for the Bambu Lab X2D (PETG, no supports)": "3MF-Platten für den Bambu Lab X2D (PETG, ohne Stützen)", "Single STL files: in the hand-over package (ZIP, about 60 MB), not in the repository.": "Einzelne STL-Dateien: im Übergabe-Paket (ZIP, ca. 60 MB), nicht im Repository.", "Assembly step by step": "Montage Schritt für Schritt", "Show this step in the simulator": "Diesen Schritt im Simulator zeigen", "Parts list": "Materialliste", "Qty": "Menge", "Part number": "Teilenummer", "Guides and source (GitHub)": "Anleitungen und Quellcode (GitHub)", "Detailed guide v5.1": "Ausführliche Anleitung v5.1", "Full parts list with order list": "Ganze Materialliste mit Bestellliste", "Measure first: UPS HAT (E) with its cells (assumed 90 × 80 × 26 mm) before printing the lower part.": "Zuerst nachmessen: UPS HAT (E) mit Akkus (angenommen 90 × 80 × 26 mm), bevor das Unterteil gedruckt wird.", "Own work of Elektro – parametric Python model.": "Eigenes Werk von Elektro – parametrisches Python-Modell.", "Step": "Schritt"}
 GEH_UI_TRX = _zd('639v_daten_gehaeuse/GEH_UI_TRX', _ZDDict())
@@ -73596,7 +73743,7 @@ GEH_UI2_TRX = _zd('639v_daten_gehaeuse/GEH_UI2_TRX', _ZDDict())
 
 
 
-BAU3D_QUELLE_SHA = 'c3f799224806a51b6254b10f6d11b4d017f6c0a691c2d374c056ee988c808763'
+BAU3D_QUELLE_SHA = '143217515ac5b3cac7fa040087de0338713210eae3deae6434a32c26677fc9de'
 BAU3D = _zd('639vb_daten_bau3d/BAU3D', _ZDDict())
 BAU3D_GLB = _zd('639vb_daten_bau3d/BAU3D_GLB', [])
 
@@ -76694,7 +76841,9 @@ def fertig_selftest():
 		globals().update(keep)
 		FEEDBACK["sent"] = sent
 	if GUI_OK:
-		assert App._tk_more_bar is _fk_tk_more_bar and "pkg" in App._feedback.__code__.co_varnames, "window: hint and order"
+
+		in_chain = App._tk_more_bar is _fk_tk_more_bar or any(v is _fk_tk_more_bar for k, v in list(globals().items()) if k.endswith("_tk_more_base"))
+		assert in_chain and "pkg" in App._feedback.__code__.co_varnames, "window: hint and order"
 
 	sd = os.path.join(os.path.dirname(os.path.abspath(__file__)), "simulator3d", "scripts")
 	if os.path.isdir(sd):
@@ -82124,6 +82273,5711 @@ def objprof_selftest():
 
 
 SELFTEST_EXTRA.append(("Objects and profiles: profiles by schedule / battery, vehicles per type, parcel / left / gone, energy (639zz)", objprof_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+PIPER_ORT = "onnxruntime==1.20.1"
+PIPER_HF = "https://huggingface.co/rhasspy/piper-voices/resolve/"
+PIPER_BASE = {"url": PIPER_HF}
+PIPER_IDLE_S = 20 * 60
+PIPER_CACHE_N, PIPER_CACHE_MB = 300, 40
+PIPER_TIMEOUT_S = 60.0
+
+
+PIPER_VOICES = {
+    "de_DE-thorsten-medium": {
+        "lang": "de", "name": "Thorsten", "quality": "medium", "rev": "v1.0.0", "path": "de/de_DE/thorsten/medium/",
+        "licence": "CC0 (Thorsten-Voice, github.com/thorstenMueller/Thorsten-Voice)",
+        "model": {"size": 63201294, "sha256": "7e64762d8e5118bb578f2eea6207e1a35a8e0c30595010b666f983fc87bb7819",
+                  "md5": "a129b00fb3078df43c96bab6c94535c0"},
+        "config": {"size": 4819, "sha256": "974adee790533adb273a1ac88f49027d2a1b8f0f2cf4905954a4791e79264e85",
+                   "md5": "843a7bd7272724f750534dd5a26d1aad"}},
+    "de_DE-thorsten-high": {
+        "lang": "de", "name": "Thorsten", "quality": "high", "rev": "v1.0.0", "path": "de/de_DE/thorsten/high/",
+        "licence": "CC0 (Thorsten-Voice, github.com/thorstenMueller/Thorsten-Voice)",
+        "model": {"size": 113895201, "sha256": "9df1c43c61149ef9b39e618e2b861fbe41e1fcea9390b2dac62e8761573ea4f1",
+                  "md5": "256505fe58fb8b9d6ed78b83f6b8a9d2"},
+        "config": {"size": 4875, "sha256": "6de734444e4c3f9e33b7ebe2746dbc19b71e85f613e79c65acf623200b99a76a",
+                   "md5": "e81686e00a9d825e2488ead660bec6fd"}},
+    "en_GB-cori-medium": {
+        "lang": "en", "name": "Cori", "quality": "medium", "rev": "v1.0.0", "path": "en/en_GB/cori/medium/",
+        "licence": "public domain (LibriVox)",
+        "model": {"size": 63531379, "sha256": "1899f98e5fb8310154f3c2973f4b8a929ba7245e722b3d3a85680b833d95f10d",
+                  "md5": "f143307611eccea9d976235d0895f57c"},
+        "config": {"size": 4966, "sha256": "e262c16d7f192f69d4edd6b4ef8a5915379e67495fcc402f1ab15eeb33da3d36",
+                   "md5": "12b1dc45d8919f3475cf296d5f16a4c6"}},
+    "fr_FR-siwis-medium": {
+        "lang": "fr", "name": "Siwis", "quality": "medium", "rev": "v1.0.0", "path": "fr/fr_FR/siwis/medium/",
+        "licence": "CC BY 4.0 (SIWIS French Speech Synthesis Database, Univ. Edinburgh) – Nennung nötig",
+        "model": {"size": 63201294, "sha256": "641d1ab097da2b81128c076810edb052b385decc8be3381814802a64a73baf99",
+                  "md5": "20e876e8c839e9b11a26085858f2300c"},
+        "config": {"size": 4875, "sha256": "39479916c2db192b5ac9764daddd0c744d83e023ad890c6976c0633ae4df8959",
+                   "md5": "a407e7e6901feb79c2ea2a5466076cce"}},
+    "it_IT-paola-medium": {
+        "lang": "it", "name": "Paola", "quality": "medium", "rev": "3f71c558aea760af723ae1c111c62f265892b59f",
+        "path": "it/it_IT/paola/medium/", "licence": "CC0 (paolapersico1/Voice-Dataset-Italian, Herkunft der Aufnahmen prüfen)",
+        "model": {"size": 0, "sha256": "6fc918b5a0ea6137382833dddfa567bffbe6a5060c02043c87192ee59c04210c"},
+        "config": {"size": 0}},
+}
+PIPER_DEFAULT = {"de": "de_DE-thorsten-medium", "fr": "fr_FR-siwis-medium", "it": "it_IT-paola-medium",
+                 "en": "en_GB-cori-medium", "rm": "de_DE-thorsten-medium"}
+PIPER_ENGINES = (("auto", "Piper (else the old voice)"), ("piper", "only Piper (no fallback)"),
+                 ("old", "old voice (pico2wave / espeak-ng)"))
+_PIPER_ID_RE = re.compile(r"^[0-9a-f]{20}$")
+
+for _k, _v in {"tts_engine": "auto", "tts_speed": 1.0, "tts_volume": 80,
+               **{"tts_voice_" + _L: PIPER_DEFAULT[_L] for _L in LANGS}}.items():
+	CFG.setdefault(_k, _v); DEFAULTS.setdefault(_k, _v); FACTORY_CFG.setdefault(_k, _v)
+
+PIPER = {"lock": threading.Lock(), "proc": None, "q": None, "last": 0.0, "model": "", "err": "", "t_err": 0.0,
+         "ms": None, "warm_t": 0.0, "install": "", "install_step": "", "sim_ok": None}
+PIPER_DL = {"voice": "", "running": False, "got": 0, "total": 0, "msg": "", "stop": False, "done": ""}
+
+
+def piper_dir():
+	return os.path.join(DATA_DIR, "piper")
+
+
+def piper_cache_dir():
+	return os.path.join(piper_dir(), "cache")
+
+
+def piper_paths(vid):
+	d = piper_dir()
+	return os.path.join(d, vid + ".onnx"), os.path.join(d, vid + ".onnx.json")
+
+
+def piper_pin_ok(pin):
+	""
+	if not isinstance(pin, dict) or not isinstance(pin.get("size"), int) or pin["size"] <= 0:
+		return False
+	sha, md5 = str(pin.get("sha256") or ""), str(pin.get("md5") or "")
+	if sha and not re.fullmatch(r"[0-9a-f]{64}", sha):
+		return False
+	if md5 and not re.fullmatch(r"[0-9a-f]{32}", md5):
+		return False
+	return bool(sha or md5)
+
+
+def piper_pinned(vid):
+	v = PIPER_VOICES.get(vid)
+	return bool(v) and piper_pin_ok(v.get("model")) and bool((v.get("model") or {}).get("sha256")) and piper_pin_ok(v.get("config"))
+
+
+def piper_installed(vid):
+	""
+	v = PIPER_VOICES.get(vid)
+	if not v or not piper_pinned(vid):
+		return False
+	m, c = piper_paths(vid)
+	try:
+		if os.path.getsize(m) != v["model"]["size"] or os.path.getsize(c) != v["config"]["size"]:
+			return False
+		with open(os.path.join(piper_dir(), vid + ".ok"), encoding="utf-8") as f:
+			return f.read().strip() == v["model"]["sha256"]
+	except OSError:
+		return False
+
+
+def piper_runtime():
+	""
+	import importlib.util
+	try:
+		ort = importlib.util.find_spec("onnxruntime") is not None
+	except (ImportError, ValueError):
+		ort = False
+	return ort, bool(shutil.which("espeak-ng"))
+
+
+def piper_voice_for(lang=None):
+	""
+	L = norm_lang(lang or CFG.get("lang"))
+	if str(CFG.get("tts_engine") or "auto") == "old":
+		return ""
+	vid = str(CFG.get("tts_voice_" + L) or PIPER_DEFAULT.get(L, ""))
+	return vid if vid in PIPER_VOICES else ""
+
+
+def piper_ready(lang=None):
+	vid = piper_voice_for(lang)
+	return bool(vid) and piper_installed(vid) and all(piper_runtime())
+
+
+def piper_key(engine, voice, speed, text):
+	return hashlib.sha256(f"{engine}|{voice}|{float(speed):.2f}|{text}".encode("utf-8")).hexdigest()[:20]
+
+
+def piper_cache_path(sid):
+	return os.path.join(piper_cache_dir(), sid + ".wav")
+
+
+def piper_cache_put(sid, src):
+	try:
+		os.makedirs(piper_cache_dir(), exist_ok=True)
+		dst = piper_cache_path(sid)
+		if os.path.abspath(src) != os.path.abspath(dst):
+			shutil.copyfile(src, dst + ".tmp"); os.replace(dst + ".tmp", dst)
+		piper_cache_trim()
+		return True
+	except OSError:
+		return False
+
+
+def piper_cache_trim():
+	try:
+		fs = [os.path.join(piper_cache_dir(), f) for f in os.listdir(piper_cache_dir()) if f.endswith(".wav")]
+	except OSError:
+		return
+	fs.sort(key=lambda p: os.path.getmtime(p) if os.path.exists(p) else 0)
+	tot = sum(os.path.getsize(p) for p in fs if os.path.exists(p))
+	while fs and (len(fs) > PIPER_CACHE_N or tot > PIPER_CACHE_MB * 1024 * 1024):
+		p = fs.pop(0)
+		try:
+			tot -= os.path.getsize(p); os.remove(p)
+		except OSError:
+			pass
+
+
+def piper_wav_seconds(path):
+	try:
+		import wave
+		with wave.open(path) as w_:
+			return w_.getnframes() / float(w_.getframerate() or 1)
+	except Exception:
+		return 0.0
+
+
+
+PIPER_WORKER = r'''
+import json, os, re, subprocess, sys, time, unicodedata, wave
+def out(d):
+    sys.stdout.write(json.dumps(d) + "\n"); sys.stdout.flush()
+try:
+    import numpy as np
+    import onnxruntime as ort
+except Exception as e:
+    out({"ready": False, "error": "onnxruntime: " + str(e)[:160]}); sys.exit(0)
+S = {}
+PUN = {",": ", ", ";": "; ", ":": ": ", ".": ".", "!": "!", "?": "?"}
+def espeak(chunk, voice):
+    if os.environ.get("MW_PIPER_FAKE_PHON") == "1":
+        return chunk.lower()
+    r = subprocess.run(["espeak-ng", "-q", "--ipa", "-v", voice, "--", chunk], capture_output=True, timeout=20)
+    if r.returncode != 0:
+        raise RuntimeError("espeak-ng: " + (r.stderr or b"").decode("utf-8", "replace").strip()[:120])
+    ph = " ".join(r.stdout.decode("utf-8", "replace").split())
+    return re.sub(r"\([a-z]{2,3}(-[a-z0-9]+)?\)", "", ph)
+def sentences(text, voice):
+    res, cur = [], ""
+    for chunk, p in re.findall(r"([^,;:.!?]*)([,;:.!?]+|$)", text):
+        if chunk.strip():
+            cur += espeak(chunk.strip(), voice)
+        if p:
+            cur += PUN.get(p[0], "")
+            if p[0] in ".!?":
+                if cur.strip(): res.append(cur.strip())
+                cur = ""
+    if cur.strip(): res.append(cur.strip())
+    return res
+def ids(ph, m):
+    pad = list(m.get("_", [0]))
+    x = list(m.get("^", [1])) + pad
+    for c in unicodedata.normalize("NFD", ph):
+        if c in m:
+            x += list(m[c]) + pad
+    return x + list(m.get("$", [2]))
+def load(model, config, threads):
+    if S.get("model") != model:
+        so = ort.SessionOptions(); so.intra_op_num_threads = threads; so.inter_op_num_threads = 1
+        with open(config, encoding="utf-8") as f:
+            cfg = json.load(f)
+        S.clear(); S.update(model=model, cfg=cfg, sess=ort.InferenceSession(model, so, providers=["CPUExecutionProvider"]))
+        S["names"] = {i.name for i in S["sess"].get_inputs()}
+def synth(q):
+    t0 = time.time()
+    load(q["model"], q["config"], int(q.get("threads") or 2))
+    cfg = S["cfg"]; inf = cfg.get("inference") or {}
+    rate = int((cfg.get("audio") or {}).get("sample_rate") or 22050)
+    voice = str((cfg.get("espeak") or {}).get("voice") or q.get("lang") or "de")
+    speed = max(0.5, min(2.0, float(q.get("speed") or 1.0)))
+    sc = np.array([float(inf.get("noise_scale", 0.667)), float(inf.get("length_scale", 1.0)) / speed,
+                   float(inf.get("noise_w", 0.8))], dtype=np.float32)
+    pcm = []
+    for s in sentences(q["text"], voice):
+        x = np.array([ids(s, cfg["phoneme_id_map"])], dtype=np.int64)
+        feed = {"input": x, "input_lengths": np.array([x.shape[1]], dtype=np.int64), "scales": sc}
+        if "sid" in S["names"]:
+            feed["sid"] = np.array([0], dtype=np.int64)
+        a = np.asarray(S["sess"].run(None, feed)[0], dtype=np.float32).reshape(-1)
+        a = a * (32767.0 / max(0.01, float(np.abs(a).max()) if a.size else 1.0))
+        pcm.append(np.clip(a, -32767, 32767).astype("<i2")); pcm.append(np.zeros(int(rate * 0.12), dtype="<i2"))
+    if not pcm:
+        raise RuntimeError("nothing to say")
+    y = np.concatenate(pcm)
+    tmp = q["out"] + ".tmp"
+    with wave.open(tmp, "wb") as w:
+        w.setnchannels(1); w.setsampwidth(2); w.setframerate(rate); w.writeframes(y.tobytes())
+    os.replace(tmp, q["out"])
+    return {"ok": True, "dur": round(len(y) / float(rate), 3), "ms": int((time.time() - t0) * 1000)}
+out({"ready": True, "ort": getattr(ort, "__version__", "?")})
+for line in sys.stdin:
+    try:
+        out(synth(json.loads(line)))
+    except Exception as e:
+        out({"ok": False, "error": str(e)[:200]})
+'''
+
+
+def _piper_reader(p, q):
+	try:
+		for line in p.stdout:
+			try:
+				q.put(json.loads(line))
+			except ValueError:
+				pass
+	except Exception:
+		pass
+	q.put(None)
+
+
+def piper_worker_start():
+	""
+	import queue
+	p = PIPER["proc"]
+	if p is not None and p.poll() is None:
+		return True, ""
+	os.makedirs(piper_dir(), exist_ok=True)
+	cmd = [sys.executable, "-E"] + (["-P"] if sys.version_info >= (3, 11) else []) + ["-c", PIPER_WORKER]
+	if shutil.which("nice"):
+		cmd = ["nice", "-n", "10"] + cmd
+	try:
+		p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True,
+                             bufsize=1, cwd=piper_dir(), env={k: v for k, v in os.environ.items() if k in (
+                                 "PATH", "HOME", "LANG", "LC_ALL", "USER", "MW_PIPER_FAKE_PHON")})
+	except OSError as e:
+		return False, str(e)[:160]
+	q = queue.Queue()
+	threading.Thread(target=_piper_reader, args=(p, q), daemon=True, name="piper-read").start()
+	try:
+		r = q.get(timeout=30)
+	except queue.Empty:
+		r = None
+	if not r or not r.get("ready"):
+		try:
+			p.kill()
+		except OSError:
+			pass
+		return False, (r or {}).get("error") or "Piper did not start"
+	PIPER.update(proc=p, q=q, model="", last=time.time(), warm_t=time.time())
+	_piper_idle_watch()
+	return True, ""
+
+
+def piper_worker_stop():
+	p = PIPER.get("proc")
+	PIPER["proc"] = None
+	if p is not None:
+		try:
+			p.stdin.close()
+		except Exception:
+			pass
+		try:
+			p.wait(timeout=3)
+		except Exception:
+			try:
+				p.kill()
+			except OSError:
+				pass
+
+
+def _piper_idle_watch():
+	if PIPER.get("idle_thread"):
+		return
+	PIPER["idle_thread"] = True
+
+	def run():
+		while True:
+			time.sleep(30)
+			with PIPER["lock"]:
+				if PIPER.get("proc") is not None and time.time() - PIPER["last"] > PIPER_IDLE_S:
+					piper_worker_stop()
+	threading.Thread(target=run, daemon=True, name="piper-idle").start()
+
+
+def piper_synth(text, vid, out, speed=None):
+	""
+	import queue
+	v = PIPER_VOICES.get(vid)
+	if not v or not piper_installed(vid):
+		return False, "voice not loaded", {}
+	m, c = piper_paths(vid)
+	with PIPER["lock"]:
+		ok, err = piper_worker_start()
+		if not ok:
+			PIPER.update(err=err, t_err=time.time())
+			return False, err, {}
+		req = {"text": text, "model": m, "config": c, "out": os.path.abspath(out), "lang": v["lang"],
+               "speed": float(CFG.get("tts_speed") if speed is None else speed), "threads": 2}
+		try:
+			PIPER["proc"].stdin.write(json.dumps(req) + "\n"); PIPER["proc"].stdin.flush()
+			r = PIPER["q"].get(timeout=PIPER_TIMEOUT_S)
+		except (OSError, ValueError, queue.Empty) as e:
+			piper_worker_stop()
+			r = {"ok": False, "error": "Piper: " + (str(e)[:100] or "no answer")}
+		if r is None:
+			piper_worker_stop(); r = {"ok": False, "error": "Piper stopped"}
+		PIPER["last"] = time.time()
+	if not r.get("ok"):
+		PIPER.update(err=str(r.get("error") or "Piper failed")[:200], t_err=time.time())
+		return False, PIPER["err"], {}
+	PIPER.update(err="", ms=r.get("ms"))
+	return True, "", r
+
+
+def piper_warm(lang=None):
+	""
+	if not piper_ready(lang):
+		return False
+
+	def run():
+		with PIPER["lock"]:
+			ok, _e = piper_worker_start()
+			if ok:
+				PIPER["last"] = time.time()
+	threading.Thread(target=run, daemon=True, name="piper-warm").start()
+	return True
+
+
+
+TTS.setdefault("id", ""); TTS.setdefault("engine", ""); TTS.setdefault("text", "")
+_tts_make_639zzb = tts_make
+
+
+
+def tts_make(text, lang, path):
+	text = re.sub(r"[\x00-\x1f]", " ", str(text or "")).strip()[:400]
+	L = norm_lang(lang or CFG.get("lang"))
+	eng = str(CFG.get("tts_engine") or "auto")
+	vid = piper_voice_for(L)
+	TTS.update(id="", engine="", text=text)
+	if vid and eng != "old":
+		sid = piper_key("piper", vid, CFG.get("tts_speed", 1.0), text)
+		cp = piper_cache_path(sid)
+		try:
+			if os.path.isfile(cp) and os.path.getsize(cp) > 100:
+				shutil.copyfile(cp, path); os.utime(cp, None)
+				TTS.update(id=sid, engine="piper")
+				return True, ""
+		except OSError:
+			pass
+		if piper_ready(L):
+			ok, err, _i = piper_synth(text, vid, path)
+			if ok and os.path.isfile(path) and os.path.getsize(path) > 100:
+				piper_cache_put(sid, path)
+				TTS.update(id=sid, engine="piper")
+				return True, ""
+			log_event("sys", f"Piper voice: {err} - old voice instead"[:160])
+			if eng == "piper":
+				return False, err
+		elif eng == "piper":
+			return False, "Piper voice not ready (load the voice under Loudspeaker)"
+	ok, err = _tts_make_639zzb(text, L, path)
+	if ok:
+		sid = piper_key("old", L, 1.0, text)
+		if piper_cache_put(sid, path):
+			TTS.update(id=sid, engine="old")
+	return ok, err
+
+
+_tts_engine_639zzb = tts_engine
+
+
+
+def tts_engine():
+	if str(CFG.get("tts_engine") or "auto") != "old" and piper_ready():
+		return "piper"
+	return _tts_engine_639zzb()
+
+
+def speech_alert(sid, text=""):
+	""
+	if not _PIPER_ID_RE.match(str(sid or "")):
+		return False
+	with ALERTS_COND:
+		ALERTS["seq"] += 1
+		ALERTS["items"].append(dict(seq=ALERTS["seq"], kind="speech", text=str(text or "")[:200], id=sid,
+                                    time=datetime.now().strftime("%H:%M:%S"), ts=time.time()))
+		ALERTS_COND.notify_all()
+	return True
+
+
+def speech_to_sim(path):
+	""
+	try:
+		if not sim_speaker() or not os.path.isfile(path) or os.path.getsize(path) > 4 * 1024 * 1024:
+			return False
+		with open(path, "rb") as f:
+			data = f.read()
+	except (OSError, NameError):
+		return False
+
+	def run():
+		try:
+			req = urllib.request.Request(sim_base() + "/speech", data=data, method="POST",
+                                         headers={"Content-Type": "audio/wav", "User-Agent": "MotionWatch"})
+			with _SIM_OPENER.open(req, timeout=4) as r:
+				PIPER["sim_ok"] = r.status == 200
+		except Exception:
+			PIPER["sim_ok"] = False
+	threading.Thread(target=run, daemon=True, name="speech-sim").start()
+	return True
+
+
+def _announce_file_id(name):
+	""
+	if not any(name.startswith(tr("Announcement", L_) + " ") for L_ in LANGS):
+		return ""
+	p = os.path.join(sounds_dir(), name)
+	try:
+		st = os.stat(p)
+		sid = hashlib.sha256(f"file|{name}|{st.st_size}|{int(st.st_mtime)}".encode("utf-8")).hexdigest()[:20]
+		if not os.path.isfile(piper_cache_path(sid)):
+			piper_cache_put(sid, p)
+		return sid
+	except OSError:
+		return ""
+
+
+_sound_play_639zzb = sound_play
+
+
+
+def sound_play(kind=None, seconds=None, volume=None, reason="test"):
+	k = str(kind or "")
+	sid, path, text = "", "", ""
+	if k == "tts":
+		sid, path, text = TTS.get("id") or "", TTS["file"], TTS.get("text") or ""
+		if volume is None:
+			volume = CFG.get("tts_volume", 80)
+	elif k.startswith("file:"):
+		sid = _announce_file_id(k[5:])
+		path = os.path.join(sounds_dir(), k[5:]) if sid else ""
+		text = os.path.splitext(k[5:])[0] if sid else ""
+	if sid:
+		speech_alert(sid, text)
+		speech_to_sim(path)
+	return _sound_play_639zzb(kind, seconds, volume, reason)
+
+
+
+def piper_url(vid, which):
+	v = PIPER_VOICES[vid]
+	return PIPER_BASE["url"] + v["rev"] + "/" + v["path"] + vid + (".onnx" if which == "model" else ".onnx.json") + "?download=true"
+
+
+def piper_check_file(p, pin):
+	""
+	try:
+		if os.path.getsize(p) != pin["size"]:
+			return False, "size wrong - the file was changed or is damaged"
+		hs = {"sha256": hashlib.sha256(), "md5": hashlib.md5()}
+		with open(p, "rb") as f:
+			while True:
+				b = f.read(1 << 20)
+				if not b:
+					break
+				for h in hs.values():
+					h.update(b)
+	except OSError as e:
+		return False, str(e)[:120]
+	for k, h in hs.items():
+		if pin.get(k) and h.hexdigest() != pin[k]:
+			return False, "checksum wrong - the file was changed or is damaged"
+	return True, ""
+
+
+def piper_fetch(url, dest, pin, dl=None):
+	""
+	dl = PIPER_DL if dl is None else dl
+	part = dest + ".part"
+	have = os.path.getsize(part) if os.path.isfile(part) else 0
+	if have > pin["size"]:
+		os.remove(part); have = 0
+	if have < pin["size"]:
+		hdr = {"Range": f"bytes={have}-"} if have else {}
+		with urllib.request.urlopen(_upd_request(url, hdr), timeout=30) as r:
+			code = getattr(r, "status", 200)
+			if have and code != 206:
+				have = 0
+			elif have and not str(r.headers.get("Content-Range") or "").startswith(f"bytes {have}-"):
+				have = 0
+			dl["got"] += have
+			with open(part, "ab" if have else "wb") as f:
+				while True:
+					if dl.get("stop"):
+						raise InterruptedError("cancelled")
+					b = r.read(1 << 16)
+					if not b:
+						break
+					have += len(b)
+					if have > pin["size"]:
+						raise ValueError("file too large")
+					f.write(b); dl["got"] += len(b)
+	ok, err = piper_check_file(part, pin)
+	if not ok:
+		try:
+			os.remove(part)
+		except OSError:
+			pass
+		raise ValueError(err)
+	os.replace(part, dest)
+
+
+def piper_download(vid, wait=False):
+	""
+	if vid not in PIPER_VOICES:
+		return False, "unknown voice"
+	if not piper_pinned(vid):
+		return False, "This voice is not pinned yet (comes with an update)"
+	if piper_installed(vid):
+		return True, ""
+	if PIPER_DL["running"]:
+		return False, "already running"
+	v = PIPER_VOICES[vid]
+	try:
+		free = shutil.disk_usage(DATA_DIR).free
+	except OSError:
+		free = 1 << 40
+	if free < v["model"]["size"] + 300 * 1024 * 1024:
+		return False, "not enough free space on the memory card"
+	PIPER_DL.update(voice=vid, running=True, got=0, total=v["model"]["size"] + v["config"]["size"], msg="", stop=False, done="")
+
+	def work():
+		try:
+			os.makedirs(piper_dir(), exist_ok=True)
+			m, c = piper_paths(vid)
+			try:
+				os.remove(os.path.join(piper_dir(), vid + ".ok"))
+			except OSError:
+				pass
+			for which, dest in (("config", c), ("model", m)):
+				pin = v[which]
+				if os.path.isfile(dest) and piper_check_file(dest, pin)[0]:
+					PIPER_DL["got"] += pin["size"]; continue
+				piper_fetch(piper_url(vid, which), dest, pin)
+			with open(c, encoding="utf-8") as f:
+				cj = json.load(f)
+			if not isinstance(cj.get("phoneme_id_map"), dict) or not (cj.get("audio") or {}).get("sample_rate"):
+				raise ValueError("the voice description is not a Piper voice")
+			with open(os.path.join(piper_dir(), vid + ".ok"), "w", encoding="utf-8") as f:
+				f.write(v["model"]["sha256"])
+			PIPER_DL["done"] = vid
+			log_event("sys", f"Piper voice {vid} loaded and checked ({v['licence'][:40]})")
+		except InterruptedError:
+			PIPER_DL["msg"] = "cancelled"
+		except Exception as e:
+			try:
+				PIPER_DL["msg"] = (_upd_error(e) if hasattr(e, "code") or hasattr(e, "reason") else str(e))[:160]
+			except Exception:
+				PIPER_DL["msg"] = str(e)[:160]
+			log_event("sys", f"Piper voice {vid} not loaded: {PIPER_DL['msg']}")
+		finally:
+			PIPER_DL["running"] = False
+	if wait:
+		work()
+		return (not PIPER_DL["msg"]), PIPER_DL["msg"]
+	threading.Thread(target=work, daemon=True, name="piper-dl").start()
+	return True, ""
+
+
+def piper_delete(vid):
+	if vid not in PIPER_VOICES or (PIPER_DL["running"] and PIPER_DL["voice"] == vid):
+		return False, "unknown voice"
+	with PIPER["lock"]:
+		piper_worker_stop()
+	for p in list(piper_paths(vid)) + [os.path.join(piper_dir(), vid + x) for x in (".ok", ".onnx.part", ".onnx.json.part")]:
+		try:
+			os.remove(p)
+		except OSError:
+			pass
+	log_event("sys", f"Piper voice {vid} deleted (frees about {PIPER_VOICES[vid]['model']['size'] // 1048576} MB)")
+	return True, ""
+
+
+PIPER_APT_TIMEOUT_S = 600
+
+
+def piper_espeak_install():
+	"""
+
+
+"""
+	if shutil.which("espeak-ng"):
+		return True, ""
+	apt = shutil.which("apt-get")
+	if not apt:
+		return False, "no apt-get on this system - install espeak-ng by hand"
+	pre = [] if (hasattr(os, "geteuid") and os.geteuid() == 0) else ["sudo", "-n"]
+	if pre and not shutil.which("sudo"):
+		return False, "MoveEye has no rights for apt (no sudo) - in a terminal: sudo apt install espeak-ng"
+	env = dict(os.environ, DEBIAN_FRONTEND="noninteractive", APT_LISTCHANGES_FRONTEND="none")
+
+	def run(args, step):
+		PIPER["install_step"] = step
+		try:
+			r = subprocess.run(pre + [apt] + args, capture_output=True, text=True, timeout=PIPER_APT_TIMEOUT_S, env=env,
+                               stdin=subprocess.DEVNULL)
+			return r.returncode, (r.stdout or "") + (r.stderr or "")
+		except subprocess.TimeoutExpired:
+			return -9, "timeout"
+		except OSError as e:
+			return -1, str(e)
+	inst = ["install", "-y", "--no-install-recommends", "-o", "Dpkg::Options::=--force-confold", "espeak-ng"]
+	rc, out = run(inst, "espeak-ng")
+	if rc != 0 and re.search(r"Unable to locate package|has no installation candidate|404\s+Not Found|Failed to fetch", out):
+		rc_u, out_u = run(["update"], "apt-get update")
+		rc, out = run(inst, "espeak-ng") if rc_u == 0 else (rc_u, out_u)
+	PIPER["install_step"] = ""
+	if rc == 0 and shutil.which("espeak-ng"):
+		log_event("sys", "Piper: espeak-ng installed (apt)")
+		return True, ""
+	low = out.lower()
+	if pre and ("password is required" in low or "a terminal is required" in low or "not in the sudoers" in low
+                or "may not run sudo" in low):
+		why = "MoveEye has no rights for apt (sudo asks for a password) - in a terminal: sudo apt install espeak-ng"
+	elif rc == -9:
+		why = "apt took too long (over 10 min.) - try again later"
+	elif "could not get lock" in low or "unable to acquire the dpkg frontend lock" in low or "is another process using it" in low:
+		why = "apt is busy right now (another installation or update) - try again in a few minutes"
+	elif "temporary failure resolving" in low or "could not resolve" in low or "failed to fetch" in low:
+		why = "no internet for apt - try again with internet"
+	elif rc == 0:
+		why = "apt finished, but espeak-ng is still missing"
+	else:
+		why = (out.strip().splitlines() or ["?"])[-1][:120]
+	log_event("sys", "Piper: espeak-ng not installed: " + why)
+	return False, why
+
+
+def piper_install():
+	"""
+"""
+	if PIPER["install"] == "running":
+		return False, "already running"
+	PIPER["install"] = "running"
+	PIPER["install_step"] = ""
+
+	def work():
+		try:
+			fail = []
+			ok_e, why = piper_espeak_install()
+			if not ok_e:
+				fail.append(tr("espeak-ng could not be installed") + " – " + tr(why))
+			if not piper_runtime()[0]:
+				PIPER["install_step"] = "onnxruntime"
+				r = subprocess.run([sys.executable, "-m", "pip", "install", "--break-system-packages", PIPER_ORT],
+                                   capture_output=True, text=True, timeout=1500)
+				if r.returncode == 0:
+					log_event("sys", "Piper: runtime installed (" + PIPER_ORT + ")")
+				else:
+					fail.append("onnxruntime: " + ((r.stderr or r.stdout).strip().splitlines() or ["?"])[-1][:140])
+			PIPER["install"] = "done" if not fail else " · ".join(fail)
+			if fail:
+				log_event("sys", "Piper: " + PIPER["install"])
+		except Exception as e:
+			PIPER["install"] = "failed: " + str(e)[:120]
+		PIPER["install_step"] = ""
+	threading.Thread(target=work, daemon=True, name="piper-install").start()
+	return True, ""
+
+
+def piper_test(lang=None, text=None):
+	""
+	L = norm_lang(lang or CFG.get("lang"))
+	vid = piper_voice_for(L)
+	if vid and not piper_installed(vid) and piper_pinned(vid) and not PIPER_DL["running"]:
+		piper_download(vid)
+	ok, err = tts_say(text or tr("Attention, you are being filmed.", L), L, False)
+	sid = TTS.get("id") or ""
+	if not ok and sid and err == "no loudspeaker selected":
+		return True, "no loudspeaker selected - only in the browser", sid
+	return ok, err if not ok else (tr("speaks with", L) + " " + piper_engine_label(L)), sid
+
+
+def piper_engine_label(lang=None):
+	L = norm_lang(lang or CFG.get("lang"))
+	if TTS.get("engine") == "piper":
+		v = PIPER_VOICES.get(piper_voice_for(L)) or {}
+		return f"Piper · {v.get('name', '?')} ({v.get('quality', '')})"
+	return _tts_engine_639zzb() or "–"
+
+
+def piper_state(lang=None):
+	L = norm_lang(lang or CFG.get("lang"))
+	ort, esp = piper_runtime()
+	vs = []
+	for vid, v in PIPER_VOICES.items():
+		vs.append({"id": vid, "lang": v["lang"], "name": v["name"], "quality": v["quality"], "licence": v["licence"],
+                   "mb": round((v["model"].get("size") or 63000000) / 1048576.0), "pinned": piper_pinned(vid), "installed": piper_installed(vid)})
+	cur = {L_: piper_voice_for(L_) for L_ in LANGS}
+	return {"engine": str(CFG.get("tts_engine") or "auto"), "voices": vs, "chosen": cur, "voice": cur.get(L, ""),
+            "ready": piper_ready(L), "ort": ort, "espeak": esp, "install": PIPER["install"], "install_step": PIPER.get("install_step") or "", "warm": PIPER.get("proc") is not None,
+            "dl": dict({k: PIPER_DL[k] for k in ("voice", "running", "got", "total", "done")}, msg=tr_err(PIPER_DL["msg"], L) if PIPER_DL["msg"] else ""),
+            "err": tr_err(PIPER["err"], L) if PIPER["err"] and time.time() - PIPER["t_err"] < 600 else "", "ms": PIPER.get("ms"),
+            "old": _tts_engine_639zzb() or "", "speed": CFG.get("tts_speed"), "volume": CFG.get("tts_volume"), "sim": PIPER.get("sim_ok")}
+
+
+def piper_text(lang=None):
+	""
+	L = norm_lang(lang or CFG.get("lang"))
+	s = piper_state(L)
+	vid = s["voice"]
+	if PIPER_DL["running"]:
+		pct = int(100 * PIPER_DL["got"] / max(1, PIPER_DL["total"]))
+		return f"{tr('loading the voice …', L)} {pct} %"
+	if s["engine"] == "old" or not vid:
+		return tr("old voice (pico2wave / espeak-ng)", L)
+	parts = []
+	v = PIPER_VOICES[vid]
+	parts.append(f"{tr('Piper voice', L)}: {v['name']} ({v['quality']}) – " + (
+        tr("loaded", L) if piper_installed(vid) else (tr("comes with an update", L) if not piper_pinned(vid)
+                                                                      else trf("{mb} MB to load", L, mb=round(v["model"]["size"] / 1048576.0)))))
+	if not s["ort"]:
+		parts.append(tr("Piper runtime missing (onnxruntime, about 15 MB) – «Install Piper»", L))
+	if not s["espeak"]:
+		parts.append(tr("espeak-ng is missing – «Install Piper» installs it", L))
+	if PIPER["install"] == "running":
+		parts.append(tr("installing …", L) + (f" ({PIPER['install_step']})" if PIPER.get("install_step") else ""))
+	elif PIPER["install"] and PIPER["install"] != "done":
+		parts.append("⚠ " + PIPER["install"])
+	if PIPER_DL["msg"]:
+		parts.append("⚠ " + tr_err(PIPER_DL["msg"], L))
+	if s["err"]:
+		parts.append("⚠ " + s["err"])
+	return " · ".join(parts)
+
+
+
+TEXTS.extend([("Loudspeaker", "tts_engine", "Speech engine", "enum", "tts_engines")]
+             + [("Loudspeaker", "tts_voice_" + _L, _n, "enum", "tts_voices_" + _L) for _L, _n in (
+                 ("de", "Voice German"), ("fr", "Voice French"), ("it", "Voice Italian"), ("en", "Voice English"),
+                 ("rm", "Voice Romansh (no own voice: German)"))])
+TEXT_SPECS.update({k: (kind, extra) for s, k, l, kind, extra in TEXTS if k == "tts_engine" or k.startswith("tts_voice_")})
+_piper_sl = next((i for i, s_ in enumerate(SLIDERS) if s_[1] == "talk_gain"), len(SLIDERS) - 1)
+SLIDERS.insert(_piper_sl + 1, ("Loudspeaker", "tts_speed", "Speech speed", 0.7, 1.4, 0.05))
+SLIDERS.insert(_piper_sl + 2, ("Loudspeaker", "tts_volume", "Speech volume (%)", 10, 100, 5))
+SIMPLE_KEYS.update({"tts_volume"})
+SET_HELP.update({
+    "tts_engine": ("Piper is a natural offline voice (about 60 MB per voice, loaded once from Hugging Face and checked). "
+                   "«Automatic» speaks with Piper and takes the old voice (pico2wave / espeak-ng) while Piper is missing or fails.",
+                   "Piper (else the old voice)"),
+    "tts_speed": ("1.0 = normal; smaller = slower, larger = faster (Piper only).", "1.0."),
+})
+
+_text_choice_pairs_639zzb = text_choice_pairs
+
+
+
+def text_choice_pairs(key):
+	ex = (TEXT_SPECS.get(key) or (None, None))[1]
+	if ex == "tts_engines":
+		return [(k, tr(l)) for k, l in PIPER_ENGINES]
+	if isinstance(ex, str) and ex.startswith("tts_voices_"):
+		L = ex[len("tts_voices_"):]
+		want = "de" if L == "rm" else L
+		out = []
+		for vid, v in PIPER_VOICES.items():
+			if v["lang"] != want:
+				continue
+			st = "✓ " + tr("loaded") if piper_installed(vid) else (f"⬇ {round(v['model']['size'] / 1048576.0)} MB"
+                                                                   if piper_pinned(vid) else tr("comes with an update"))
+			out.append((vid, f"{v['name']} ({v['quality']}) · {st}"))
+		return out + [("old", tr("old voice (pico2wave / espeak-ng)"))]
+	return _text_choice_pairs_639zzb(key)
+
+
+
+_smalltv_routes_639zzb = smalltv_routes
+
+
+def smalltv_routes(app, reply, body):
+	_smalltv_routes_639zzb(app, reply, body)
+	from flask import Response, request, send_file
+
+	@app.route("/api/piper", methods=["GET", "POST"])
+	def piper_api():
+		if request.method == "GET":
+			L = norm_lang(request.args.get("lang"))
+			piper_warm(L)
+			return reply(piper_state(L))
+		d = body(); L = norm_lang(d.get("lang")); a = str(d.get("action") or "")
+		vid = str(d.get("voice") or piper_voice_for(norm_lang(d.get("tlang") or L)))
+		if a == "download":
+			ok, err = piper_download(vid)
+		elif a == "cancel":
+			PIPER_DL["stop"] = True; ok, err = True, ""
+		elif a == "delete":
+			ok, err = piper_delete(vid)
+		elif a == "install":
+			ok, err = piper_install()
+		elif a == "test":
+			ok, msg, sid = piper_test(norm_lang(d.get("tlang") or L), d.get("text"))
+			return reply({"ok": ok, "id": sid, "text": tr_err(msg, L) if msg else "", "error": None if ok else tr_err(msg, L),
+                          "state": piper_state(L)}, 200 if ok else 400)
+		else:
+			ok, err = False, "unknown action"
+		return reply({"ok": ok, "error": tr_err(err, L) if err else None, "state": piper_state(L)}, 200 if ok else 400)
+
+	@app.route("/api/tts_audio/<name>")
+	def piper_audio(name):
+		m = re.fullmatch(r"([0-9a-f]{20})\.wav", name or "")
+		p_ = piper_cache_path(m.group(1)) if m else ""
+		if not p_ or not os.path.isfile(p_):
+			return Response("not found", 404)
+		return send_file(p_, mimetype="audio/wav", max_age=3600)
+
+
+
+_HX_PIPER = _zd('639zzb_piper_stimme/HX_PIPER', _zd_hx({
+    'Speech engine': 'Sprach-Ausgabe',
+    'Piper (else the old voice)': 'Piper (sonst alte Stimme)',
+    'only Piper (no fallback)': 'nur Piper (kein Ersatz)',
+    'old voice (pico2wave / espeak-ng)': 'alte Stimme (pico2wave / espeak-ng)',
+    'Voice German': 'Stimme Deutsch',
+    'Voice French': 'Stimme Französisch',
+    'Voice Italian': 'Stimme Italienisch',
+    'Voice English': 'Stimme Englisch',
+    'Voice Romansh (no own voice: German)': 'Stimme Romanisch (keine eigene: Deutsch)',
+    'Speech speed': 'Sprechtempo',
+    'Speech volume (%)': 'Lautstärke der Ansage (%)',
+    'loaded': 'geladen',
+    '{mb} MB to load': '{mb} MB zu laden',
+    'comes with an update': 'kommt mit einem Update',
+    'Test voice': 'Stimme testen',
+    'Load voice': 'Stimme laden',
+    'Delete voice': 'Stimme löschen',
+    'Cancel': 'Abbrechen',
+    'Install Piper': 'Piper installieren',
+    'Piper voice': 'Piper-Stimme',
+    '🔊 Sound in the browser (announcements)': '🔊 Ton im Browser (Ansagen)',
+    'Attention, you are being filmed.': 'Achtung, Sie werden gefilmt.',
+    'Piper runtime missing (onnxruntime, about 15 MB) – «Install Piper»': 'Piper-Laufzeit fehlt (onnxruntime, etwa 15 MB) – «Piper installieren»',
+    'espeak-ng is missing (sudo apt install espeak-ng)': 'espeak-ng fehlt (sudo apt install espeak-ng)',
+    'espeak-ng is missing – «Install Piper» installs it': 'espeak-ng fehlt – «Piper installieren» richtet es ein',
+    'espeak-ng could not be installed': 'espeak-ng konnte nicht installiert werden',
+    'no apt-get on this system - install espeak-ng by hand': 'kein apt-get auf diesem System – espeak-ng von Hand installieren',
+    'MoveEye has no rights for apt (no sudo) - in a terminal: sudo apt install espeak-ng': 'MoveEye hat keine Rechte für apt (kein sudo) – im Terminal: sudo apt install espeak-ng',
+    'MoveEye has no rights for apt (sudo asks for a password) - in a terminal: sudo apt install espeak-ng': 'MoveEye hat keine Rechte für apt (sudo will ein Passwort) – im Terminal: sudo apt install espeak-ng',
+    'apt took too long (over 10 min.) - try again later': 'apt hat zu lange gebraucht (über 10 Min.) – später nochmals versuchen',
+    'apt is busy right now (another installation or update) - try again in a few minutes': 'apt ist gerade beschäftigt (andere Installation oder Update) – in ein paar Minuten nochmals',
+    'no internet for apt - try again with internet': 'kein Internet für apt – mit Internet nochmals versuchen',
+    'apt finished, but espeak-ng is still missing': 'apt ist fertig, aber espeak-ng fehlt immer noch',
+    'loading the voice …': 'lade die Stimme …',
+    'This voice is not pinned yet (comes with an update)': 'Diese Stimme ist noch nicht freigegeben (kommt mit einem Update)',
+    'speaks with': 'spricht mit',
+    'Licence': 'Lizenz',
+    'installing …': 'installiere …',
+    'Voice is ready': 'Stimme ist bereit',
+    'Loaded once from Hugging Face (checked), then works offline': 'Einmal von Hugging Face geladen (geprüft), danach ohne Internet',
+    'The voice in the browser needs one tap on the page (iPhone: silent switch off)': 'Die Stimme im Browser braucht einmal Antippen der Seite (iPhone: Stummschalter aus)',
+    'Piper voice not ready (load the voice under Loudspeaker)': 'Piper-Stimme nicht bereit (Stimme unter Lautsprecher laden)',
+    'voice not loaded': 'Stimme nicht geladen',
+    'not enough free space on the memory card': 'zu wenig freier Platz auf der Speicherkarte',
+    'size wrong - the file was changed or is damaged': 'Grösse falsch – die Datei wurde verändert oder ist beschädigt',
+    'checksum wrong - the file was changed or is damaged': 'Prüfsumme falsch – die Datei wurde verändert oder ist beschädigt',
+    'the voice description is not a Piper voice': 'die Beschreibung ist keine Piper-Stimme',
+    'no loudspeaker selected - only in the browser': 'kein Lautsprecher gewählt – nur im Browser',
+    'cancelled': 'abgebrochen',
+    'Piper is a natural offline voice (about 60 MB per voice, loaded once from Hugging Face and checked). «Automatic» speaks with Piper and takes the old voice (pico2wave / espeak-ng) while Piper is missing or fails.': 'Piper ist eine natürliche Stimme ohne Internet (etwa 60 MB pro Stimme, einmal von Hugging Face geladen und geprüft). «Automatisch» spricht mit Piper und nimmt die alte Stimme (pico2wave / espeak-ng), solange Piper fehlt oder nicht geht.',
+    '1.0 = normal; smaller = slower, larger = faster (Piper only).': '1.0 = normal; kleiner = langsamer, grösser = schneller (nur Piper).',
+    '1.0.': '1.0.',
+}))
+for _k, _v in _HX_PIPER.items():
+	DE.setdefault(_k, _v[0])
+	for _i, _L in enumerate(("fr", "it", "rm")):
+		TRX[_L].setdefault(_k, _v[_i + 1])
+_PIPER_DE = {_k: _v[0] for _k, _v in _HX_PIPER.items()}
+
+
+PIPER_WEB_JS = _zd('639zzb_piper_stimme/PIPER_WEB_JS', "")
+WEB_PAGE = WEB_PAGE.replace("</body>", PIPER_WEB_JS.replace("/*PIPERDE*/{}", json.dumps(_PIPER_DE, ensure_ascii=False), 1) + "</body>", 1)
+
+
+
+def piper_tk_box(app, parent):
+	import tkinter as tk
+	from tkinter import ttk
+	lab = ttk.Label(parent, text=piper_text(), style="Mut.TLabel", wraplength=330, justify="left")
+	lab.pack(anchor="w", pady=(6, 0))
+	bf = ttk.Frame(parent); bf.pack(fill="x", pady=(4, 0))
+
+	def poll(n=0):
+		try:
+			lab.configure(text=piper_text())
+		except tk.TclError:
+			return
+		if (PIPER_DL["running"] or PIPER["install"] == "running") and n < 3600:
+			parent.after(1000, lambda: poll(n + 1))
+
+	def test():
+		def run():
+			ok, m, _sid = piper_test()
+			try:
+				app._status("Announcement", ("✓ " if ok else "⚠ ") + tr_err(m))
+			except Exception:
+				pass
+		threading.Thread(target=run, daemon=True, name="piper-tk").start()
+		parent.after(800, poll)
+
+	def dl():
+		ok, err = piper_download(piper_voice_for())
+		if not ok:
+			app._status("Announcement", "⚠ " + tr_err(err))
+		poll()
+
+	def inst():
+		piper_install(); poll()
+	ttk.Button(bf, text=tr("Test voice"), command=test).pack(side="left", expand=True, fill="x", padx=(0, 4))
+	ttk.Button(bf, text=tr("Load voice"), command=dl).pack(side="left", expand=True, fill="x", padx=(0, 4))
+	ttk.Button(bf, text=tr("Install Piper"), command=inst).pack(side="left", expand=True, fill="x")
+	return lab
+
+
+
+_HELP_PIPER = _zd('639zzb_piper_stimme/HELP_PIPER', _ZDDict())
+
+
+def _help_piper(doc, lang):
+	if 'id="piper"' in doc:
+		return doc
+	i = doc.find('<section id="tips"')
+	return doc[:i] + _HELP_PIPER[lang] + doc[i:] if i >= 0 else doc
+
+
+_hp_en_piper = HELP_PAGE.find('<div lang="en">')
+if _hp_en_piper > 0:
+	HELP_PAGE = _help_piper(HELP_PAGE[:_hp_en_piper], "de") + _help_piper(HELP_PAGE[_hp_en_piper:], "en")
+for _L in ("fr", "it", "rm"):
+	if HELP_X.get(_L):
+		HELP_X[_L] = _help_piper(HELP_X[_L], _L)
+
+
+def _piper_boot_warm():
+	""
+	def run():
+		time.sleep(90)
+		try:
+			piper_warm()
+		except Exception:
+			pass
+	threading.Thread(target=run, daemon=True, name="piper-boot").start()
+
+
+if __name__ == "__main__" and "--self-test" not in sys.argv:
+	_piper_boot_warm()
+
+
+
+def piper_selftest():
+	""
+	for vid, v in PIPER_VOICES.items():
+		assert re.fullmatch(r"[a-z]{2}_[A-Z]{2}-[a-z_]+-(x_low|low|medium|high)", vid), vid
+		assert v["lang"] in LANGS and v["licence"] and v["path"].endswith("/") and vid.startswith(v["path"].split("/")[1]), vid
+		assert re.fullmatch(r"v\d+\.\d+\.\d+|[0-9a-f]{40}", v["rev"]), f"{vid}: revision must be a tag or a commit"
+		assert re.fullmatch(r"[0-9a-f]{64}", v["model"].get("sha256") or ""), f"{vid}: the model needs a sha256"
+		assert piper_pinned(vid) == (piper_pin_ok(v["model"]) and piper_pin_ok(v["config"])), vid
+		assert piper_url(vid, "model").startswith(PIPER_HF + v["rev"] + "/") or PIPER_BASE["url"] != PIPER_HF
+	for L_ in LANGS:
+		assert PIPER_DEFAULT[L_] in PIPER_VOICES and CFG.get("tts_voice_" + L_), L_
+		ks = [k for k, _l in text_choice_pairs("tts_voice_" + L_)]
+		assert "old" in ks and PIPER_DEFAULT[L_] in ks, (L_, ks)
+	assert piper_pinned("de_DE-thorsten-medium"), "the default German voice must be pinned"
+	assert piper_pinned("fr_FR-siwis-medium") and not piper_pinned("it_IT-paola-medium"), "French on (07.11.2026), Italian locked"
+	assert [k for k, _l in text_choice_pairs("tts_engine")] == ["auto", "piper", "old"]
+	for k, v in _HX_PIPER.items():
+		assert len(v) == 4 and all(v) and k in DE and all(k in TRX[L] for L in ("fr", "it", "rm")), k
+	assert len({piper_key("piper", "a", 1.0, "x"), piper_key("piper", "a", 1.1, "x"), piper_key("piper", "b", 1.0, "x"), piper_key("old", "a", 1.0, "x")}) == 4
+	assert _PIPER_ID_RE.match(piper_key("piper", "a", 1.0, "x"))
+	keep = {k: CFG.get(k) for k in ("tts_engine", "tts_voice_de", "lang")}
+	keep_dir = globals()["DATA_DIR"]
+	tmp = tempfile.mkdtemp(prefix="mw_piper_")
+	G = globals(); keep_make = G["_tts_make_639zzb"]; keep_log = G["log_event"]
+	calls = []
+
+	def fake_old(text, lang, path):
+		calls.append((text, lang))
+		import wave
+		with wave.open(path, "wb") as w_:
+			w_.setnchannels(1); w_.setsampwidth(2); w_.setframerate(16000); w_.writeframes(b"\x00\x01" * 1600)
+		return True, ""
+	try:
+		G["DATA_DIR"] = tmp; G["_tts_make_639zzb"] = fake_old; G["log_event"] = lambda *a, **k: None
+		CFG.update(tts_engine="auto", tts_voice_de="de_DE-thorsten-medium", lang="de")
+		assert not piper_installed("de_DE-thorsten-medium") and not piper_ready("de")
+		out = os.path.join(tmp, "a.wav")
+		ok, err = tts_make("Achtung, Sie werden gefilmt.", "de", out)
+		assert ok and calls and TTS["engine"] == "old" and os.path.isfile(piper_cache_path(TTS["id"])), (ok, err, TTS)
+		CFG["tts_engine"] = "piper"
+		ok, err = tts_make("Hallo", "de", out)
+		assert not ok and "Piper" in err, "only Piper without a voice must fail"
+		CFG["tts_engine"] = "old"
+		assert piper_voice_for("de") == "" and tts_make("Hallo", "de", out)[0]
+		n0 = ALERTS["seq"]
+		assert speech_alert(TTS["id"], "Hallo") and ALERTS["seq"] == n0 + 1 and ALERTS["items"][-1]["kind"] == "speech"
+		assert not speech_alert("../x")
+		ok, err = piper_download("it_IT-paola-medium") if not piper_pinned("it_IT-paola-medium") else (False, "This voice is not pinned yet (comes with an update)")
+		assert not ok and "not pinned" in err
+		js = WEB_PAGE if isinstance(globals().get("WEB_PAGE"), str) else ""
+		assert not js or ("piperBox" in js and "piperBox()" in js), "the card «Piper voice» is missing on the main page"
+		assert not ALERT_JS.strip() or "mwSpeak" in ALERT_JS, "ALERT_JS: the speech player is missing"
+		assert HELP_PAGE.count('<section id="piper"') in (0, 2)
+	finally:
+		G["DATA_DIR"] = keep_dir; G["_tts_make_639zzb"] = keep_make; G["log_event"] = keep_log
+		CFG.update(keep)
+		shutil.rmtree(tmp, ignore_errors=True)
+	n_ok = sum(1 for vid in PIPER_VOICES if piper_pinned(vid))
+	return f"{len(PIPER_VOICES)} voices ({n_ok} pinned), engine {PIPER_ORT}, old voice: {_tts_engine_639zzb() or 'none'}"
+
+
+SELFTEST_EXTRA.append(("Piper voice: pinned voices, fallback to the old voice, cache, browser announcement (639zzb)", piper_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+for _k, _v in {"tausch_on": True, "tausch_guest": True, "tausch_push": True, "tausch_block_exec": True, "tausch_total_gb": 5.0,
+               "tausch_file_mb": 200.0, "tausch_user_gb": 1.0, "tausch_free_gb": 2.0}.items():
+	CFG.setdefault(_k, _v); DEFAULTS.setdefault(_k, _v); FACTORY_CFG.setdefault(_k, _v)
+
+TZ_PERMS = ("files_view", "files_down", "files_up", "files_admin")
+
+USER_PERMS = tuple(p for p in USER_PERMS if p not in TZ_PERMS) + TZ_PERMS
+for _r, _p in {"family": ("files_view", "files_down", "files_up"), "friend": ("files_view", "files_down"),
+               "view": ("files_view", "files_down")}.items():
+	ROLE_PERMS[_r] = tuple(ROLE_PERMS.get(_r, ())) + tuple(p for p in _p if p not in ROLE_PERMS.get(_r, ()))
+for _p in TZ_PERMS:
+	PERM_GET[_p] = ("/tausch", "/tausch/", "/api/tausch")
+	PERM_POST[_p] = {"/api/tausch", "/api/tausch/chunk"}
+USER_UI_HIDE["files_view"] = 'a[href="/tausch"],#m-tausch'
+USER_SETTINGS_DENY.update({"tausch_on", "tausch_guest", "tausch_push", "tausch_block_exec", "tausch_total_gb", "tausch_file_mb",
+                           "tausch_user_gb", "tausch_free_gb"})
+DEMO_BLOCK = tuple(DEMO_BLOCK) + ("/api/tausch",)
+
+_user_perms_tz_base = user_perms
+
+
+def user_perms(u):
+	return tausch_imply(_user_perms_tz_base(u))
+
+
+def tausch_imply(perms):
+	P = set(perms or ())
+	if "files_admin" in P:
+		P.update(TZ_PERMS)
+	if P & set(TZ_PERMS):
+		P.add("files_view")
+	return P
+
+
+TZ_ID = re.compile(r"^[0-9a-f]{16}$")
+TZ_CHUNK = 2 * 1024 * 1024
+TZ_CHUNK_MAX = 8 * 1024 * 1024
+TZ_MAX_FILES = 5000
+TZ_MAX_FOLDERS = 60
+TZ_MAX_OPEN_UPS = 6
+TZ_STALE = 24 * 3600
+TZ_PUSH_QUIET, TZ_PUSH_MAX = 90.0, 600.0
+TZ_GB = 1024 ** 3
+TZ_MB = 1024 ** 2
+TZ = {"lock": threading.RLock(), "root": None, "files": None, "folders": None, "ups": {}, "rate": {}, "push": {},
+      "thumbq": deque(), "thumb_run": False, "chats": {}, "waiters": {}, "waiting": 0, "push_run": False, "root_test": None, "pdftoppm": None}
+
+
+TZ_TYPES = {
+    "jpg": ("image/jpeg", "image"), "jpeg": ("image/jpeg", "image"), "png": ("image/png", "image"), "gif": ("image/gif", "image"),
+    "webp": ("image/webp", "image"), "bmp": ("image/bmp", "image"), "tif": ("image/tiff", "image"), "tiff": ("image/tiff", "image"),
+    "heic": ("image/heic", "image"), "heif": ("image/heif", "image"),
+    "mp4": ("video/mp4", "video"), "m4v": ("video/mp4", "video"), "mov": ("video/quicktime", "video"), "webm": ("video/webm", "video"),
+    "mkv": ("video/x-matroska", "video"), "avi": ("video/x-msvideo", "video"), "3gp": ("video/3gpp", "video"),
+    "mp3": ("audio/mpeg", "audio"), "m4a": ("audio/mp4", "audio"), "aac": ("audio/aac", "audio"), "ogg": ("audio/ogg", "audio"),
+    "opus": ("audio/ogg", "audio"), "wav": ("audio/wav", "audio"), "flac": ("audio/flac", "audio"),
+    "pdf": ("application/pdf", "pdf"),
+    "txt": ("text/plain", "text"), "md": ("text/plain", "text"), "chat": ("application/octet-stream", "chat"),
+    "csv": ("text/csv", "doc"), "rtf": ("application/rtf", "doc"),
+    "doc": ("application/msword", "doc"), "docx": ("application/vnd.openxmlformats-officedocument.wordprocessingml.document", "doc"),
+    "xls": ("application/vnd.ms-excel", "doc"), "xlsx": ("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "doc"),
+    "ppt": ("application/vnd.ms-powerpoint", "doc"), "pptx": ("application/vnd.openxmlformats-officedocument.presentationml.presentation", "doc"),
+    "odt": ("application/vnd.oasis.opendocument.text", "doc"), "ods": ("application/vnd.oasis.opendocument.spreadsheet", "doc"),
+    "odp": ("application/vnd.oasis.opendocument.presentation", "doc"), "pages": ("application/octet-stream", "doc"),
+    "numbers": ("application/octet-stream", "doc"), "key": ("application/octet-stream", "doc"),
+    "zip": ("application/zip", "archive"), "7z": ("application/x-7z-compressed", "archive"), "rar": ("application/vnd.rar", "archive"),
+    "tar": ("application/x-tar", "archive"), "gz": ("application/gzip", "archive"), "tgz": ("application/gzip", "archive"),
+    "bz2": ("application/x-bzip2", "archive"), "xz": ("application/x-xz", "archive"),
+}
+TZ_INLINE = {"video", "audio"}
+
+TZ_BLOCK_EXT = {"exe", "msi", "msp", "com", "scr", "pif", "bat", "cmd", "ps1", "psm1", "psd1", "vbs", "vbe", "js", "jse", "mjs", "cjs",
+                "wsf", "wsh", "hta", "cpl", "dll", "sys", "drv", "lnk", "reg", "inf", "scf", "msc", "gadget", "jar", "class", "sh", "bash",
+                "zsh", "ksh", "csh", "fish", "command", "tool", "py", "pyc", "pyo", "pyw", "pyz", "pl", "pm", "rb", "php", "php3",
+                "php4", "php5", "phtml", "phar", "cgi", "asp", "aspx", "jsp", "lua", "tcl", "awk", "run", "bin", "elf", "out", "so",
+                "ko", "deb", "rpm", "appimage", "snap", "flatpak", "apk", "xapk", "ipa", "app", "pkg", "mpkg", "dmg", "desktop",
+                "service", "url", "webloc", "applescript", "scpt", "workflow", "action", "vb", "ws", "xbap", "application", "appref-ms"}
+
+TZ_RISKY_EXT = {"html", "htm", "xhtml", "shtml", "svg", "svgz", "xml", "xsl", "xslt", "mht", "mhtml", "swf", "pdfxml", "xht"}
+TZ_MAGIC_EXEC = (b"MZ", b"\x7fELF", b"#!", b"\xfe\xed\xfa\xce", b"\xfe\xed\xfa\xcf", b"\xce\xfa\xed\xfe", b"\xcf\xfa\xed\xfe",
+                 b"\xca\xfe\xba\xbe", b"dex\n")
+_TZ_BAD_CH = re.compile(r'[<>:"/\\|?*\x00-\x1f\x7f]')
+_TZ_WIN_RES = {"con", "prn", "aux", "nul"} | {f"com{i}" for i in range(10)} | {f"lpt{i}" for i in range(10)}
+
+
+
+def tausch_clean_name(raw, folder=False):
+	"""
+"""
+	import unicodedata
+	s = str(raw or "")
+	s = s.replace("\\", "/").rsplit("/", 1)[-1]
+	s = unicodedata.normalize("NFC", s)
+	s = "".join(c for c in s if unicodedata.category(c)[0] != "C")
+	s = _TZ_BAD_CH.sub("_", s)
+	s = re.sub(r"\s+", " ", s).strip()
+	s = s.rstrip(". ")
+	if not s:
+		return None, "the file needs a name" if not folder else "the folder needs a name"
+	if s.startswith("."):
+		return None, "hidden files (name starts with «.») are not accepted"
+	lim = 40 if folder else 120
+	stem, ext = os.path.splitext(s)
+	if folder:
+		stem, ext = s, ""
+	if stem.split(".")[0].strip().lower() in _TZ_WIN_RES:
+		stem = "_" + stem
+		s = stem + ext
+	if len(s) > lim:
+		ext = ext[:16]
+		s = stem[:lim - len(ext)].rstrip(". ") + ext
+	while len(s.encode("utf-8")) > 240:
+		s = s[:-1]
+	return s, ""
+
+
+def tausch_ext(name):
+	return os.path.splitext(str(name or ""))[1].lower().lstrip(".")
+
+
+def tausch_blocked(name):
+	""
+	if not CFG.get("tausch_block_exec", True):
+		return False
+	return tausch_ext(name) in TZ_BLOCK_EXT
+
+
+def tausch_magic_exec(head):
+	return bool(CFG.get("tausch_block_exec", True)) and any(bytes(head[:8]).startswith(m) for m in TZ_MAGIC_EXEC)
+
+
+def tausch_type(name):
+	""
+	e = tausch_ext(name)
+	if e in TZ_RISKY_EXT:
+		return "application/octet-stream", "risky", True
+	mime, kind = TZ_TYPES.get(e, ("application/octet-stream", "other"))
+	return mime, kind, False
+
+
+
+def _tz_drive_ok(want):
+	""
+	want = os.path.abspath(want)
+	if not os.path.isdir(want):
+		return False
+	if want.startswith(("/media/", "/mnt/")):
+		q = want
+		while q not in ("/", "/media", "/mnt") and not os.path.ismount(q):
+			q = os.path.dirname(q)
+		return q not in ("/", "/media", "/mnt")
+	return True
+
+
+def tausch_root():
+	""
+	if TZ.get("root_test"):
+		return TZ["root_test"], "sd", ""
+	want = str(CFG.get("storage_path") or "").strip()
+	if want:
+		if not _tz_drive_ok(want):
+			return "", "usb", "missing"
+		k = _dev_kind(_mount_of(want)[0])
+		return os.path.join(want, "MotionWatch", "tausch"), ("ssd" if k == "ssd" else "usb" if k in ("usb", "other") else k), ""
+	root = os.path.join(DATA_DIR, "tausch")
+	k = _dev_kind(_mount_of(DATA_DIR)[0])
+	try:
+		if k == "sd" and SDCARD.get("overlay"):
+			return root, "sd", "ro"
+	except NameError:
+		pass
+	return root, {"sd": "sd", "ssd": "ssd", "usb": "usb"}.get(k, "disk"), ""
+
+
+def tausch_disk_free(path):
+	try:
+		return shutil.disk_usage(path).free
+	except OSError:
+		return 0
+
+
+def _tz_write_json(path, obj):
+	tmp = f"{path}.{os.getpid()}.{threading.get_ident()}.tmp"
+	with open(tmp, "w", encoding="utf-8") as f:
+		json.dump(obj, f, ensure_ascii=False)
+		f.flush()
+	os.replace(tmp, path)
+
+
+def _tz_meta_ok(m):
+	return (isinstance(m, dict) and TZ_ID.match(str(m.get("id", ""))) and isinstance(m.get("name"), str) and m.get("area") in ("all", "mine")
+            and isinstance(m.get("owner"), str) and isinstance(m.get("size"), int) and isinstance(m.get("folder", ""), str))
+
+
+def _tz_load():
+	""
+	root, _kind, prob = tausch_root()
+	if not root or prob == "missing":
+		return None
+	with TZ["lock"]:
+		if TZ["root"] == root and TZ["files"] is not None:
+			return root
+		files, folders, ups = {}, [], {}
+		try:
+			for sub in ("f", "t", "up"):
+				os.makedirs(os.path.join(root, sub), exist_ok=True)
+		except OSError as e:
+			log_event("sys", f"File exchange: folder {root} cannot be made: {e}"[:180])
+			return None
+		for nm in os.listdir(os.path.join(root, "f")):
+			if not nm.endswith(".json") or not TZ_ID.match(nm[:-5]):
+				continue
+			try:
+				with open(os.path.join(root, "f", nm), encoding="utf-8") as f:
+					m = json.load(f)
+			except (OSError, ValueError):
+				continue
+			if _tz_meta_ok(m) and m["id"] == nm[:-5] and os.path.isfile(os.path.join(root, "f", m["id"] + ".bin")):
+				files[m["id"]] = m
+		try:
+			with open(os.path.join(root, "ordner.json"), encoding="utf-8") as f:
+				folders = [x for x in json.load(f) if isinstance(x, dict) and isinstance(x.get("name"), str)][:TZ_MAX_FOLDERS]
+		except (OSError, ValueError, TypeError):
+			folders = []
+		now = time.time()
+		upd = os.path.join(root, "up")
+		names = os.listdir(upd)
+		for nm in names:
+			if not (nm.endswith(".json") and TZ_ID.match(nm[:-5])):
+				continue
+			part = os.path.join(upd, nm[:-5] + ".part")
+			try:
+				with open(os.path.join(upd, nm), encoding="utf-8") as f:
+					u = json.load(f)
+				if isinstance(u, dict) and isinstance(u.get("size"), int) and isinstance(u.get("owner"), str) and now - os.path.getmtime(part) < TZ_STALE:
+					u["have"] = os.path.getsize(part)
+					u["lock"] = threading.Lock()
+					ups[nm[:-5]] = u
+			except (OSError, ValueError, AttributeError):
+				pass
+		for nm in names:
+			if nm.endswith((".json", ".part")) and nm[:-5] in ups:
+				continue
+			try:
+				os.remove(os.path.join(upd, nm))
+			except OSError:
+				pass
+		TZ.update(root=root, files=files, folders=folders, ups=ups, chats={})
+		missing = [fid for fid, m in files.items() if m.get("thumb") is None and m.get("kind") in ("image", "video", "pdf")]
+	for fid in missing:
+		tausch_thumb_queue(fid)
+	return root
+
+
+def _tz_folders_save(root):
+	_tz_write_json(os.path.join(root, "ordner.json"), TZ["folders"])
+
+
+
+def tausch_who(g_):
+	""
+	role = getattr(g_, "role", "admin")
+	if role == "admin":
+		return {"key": "admin", "name": "Admin", "admin": True, "perms": set(TZ_PERMS), "is_admin": True}
+	u = user_get(getattr(g_, "user", ""))
+	P = user_perms(u) if u else tausch_imply(ROLE_PERMS.get(ROLE_OLD.get(role, role), ()))
+	P = {p for p in P if p in TZ_PERMS}
+	name = u["name"] if u else str(getattr(g_, "user", "") or "?")
+	return {"key": name.lower(), "name": name, "admin": "files_admin" in P, "perms": P, "is_admin": False}
+
+
+def tausch_can_see(m, who):
+	if "files_view" not in who["perms"]:
+		return False
+	return m["area"] == "all" or m["owner"] == who["key"] or who["admin"]
+
+
+def tausch_can_down(m, who):
+	return tausch_can_see(m, who) and ("files_down" in who["perms"] or m["owner"] == who["key"])
+
+
+def tausch_can_del(m, who):
+	return tausch_can_see(m, who) and (m["owner"] == who["key"] or who["admin"])
+
+
+def tausch_rate(key, kind, limit, per=600.0, now=None):
+	""
+	now = time.time() if now is None else now
+	with TZ["lock"]:
+		R = TZ["rate"]
+		lst = [x for x in R.get((key, kind), []) if now - x < per]
+		if len(lst) >= limit:
+			R[(key, kind)] = lst
+			return False
+		lst.append(now)
+		R[(key, kind)] = lst
+		if len(R) > 3000:
+			for k in [k for k, v in R.items() if not v or now - v[-1] > per]:
+				R.pop(k, None)
+	return True
+
+
+
+def tausch_usage(owner=None):
+	""
+	with TZ["lock"]:
+		f = sum(m["size"] + int(m.get("hist_size") or 0) for m in (TZ["files"] or {}).values() if owner is None or m["owner"] == owner)
+		r = sum(u["size"] for u in TZ["ups"].values() if owner is None or u["owner"] == owner)
+	return f, r
+
+
+def tausch_limits():
+	return {"total": int(float(CFG.get("tausch_total_gb", 5.0)) * TZ_GB), "file": int(float(CFG.get("tausch_file_mb", 200.0)) * TZ_MB),
+            "user": int(float(CFG.get("tausch_user_gb", 1.0)) * TZ_GB), "min_free": int(float(CFG.get("tausch_free_gb", 2.0)) * TZ_GB)}
+
+
+def tausch_fmt(n, lang=None):
+	""
+	L = cur_lang(lang)
+	n = float(n or 0)
+	if n >= TZ_GB:
+		s, u = f"{n / TZ_GB:.1f}", "GB"
+	elif n >= TZ_MB:
+		s, u = f"{n / TZ_MB:.0f}", "MB"
+	else:
+		s, u = f"{max(1.0, n / 1024) if n else 0:.0f}", "KB"
+	if s.endswith(".0"):
+		s = s[:-2]
+	return (s if L == "en" else s.replace(".", ",")) + " " + u
+
+
+def tausch_room_error(size, who, lang=None):
+	""
+	lim = tausch_limits()
+	root = TZ["root"] or ""
+	if size > lim["file"]:
+		return trf("Too big: at most {n} per file.", lang, n=tausch_fmt(lim["file"], lang))
+	with TZ["lock"]:
+		if len(TZ["files"] or {}) + len(TZ["ups"]) >= TZ_MAX_FILES:
+			return trf("Too many files (at most {n}) - delete old ones first.", lang, n=TZ_MAX_FILES)
+	used, res = tausch_usage()
+	if used + res + size > lim["total"]:
+		return trf("The file exchange is full: {a} of {b} used. Delete old files first.", lang, a=tausch_fmt(used + res, lang),
+                   b=tausch_fmt(lim["total"], lang))
+	if not who.get("is_admin"):
+		u, ur = tausch_usage(who["key"])
+		if u + ur + size > lim["user"]:
+			return trf("Your space is full: {a} of {b} used. Delete some of your files first.", lang, a=tausch_fmt(u + ur, lang),
+                       b=tausch_fmt(lim["user"], lang))
+	with TZ["lock"]:
+		rest = sum(max(0, u["size"] - u.get("have", 0)) for u in TZ["ups"].values())
+	if tausch_disk_free(root) - rest - size < lim["min_free"]:
+		return trf("Not enough free space on the storage: MoveEye always keeps {n} free (for recordings and the system).", lang,
+                   n=tausch_fmt(lim["min_free"], lang))
+	return ""
+
+
+
+def tausch_public(m, who=None):
+	mime, kind, risky = tausch_type(m["name"])
+	d = {"id": m["id"], "name": m["name"], "area": m["area"], "folder": m.get("folder", ""), "size": m["size"], "t": m.get("t", 0),
+         "kind": kind, "ext": tausch_ext(m["name"])[:8], "thumb": m.get("thumb"), "risky": risky,
+         "inline": kind in TZ_INLINE}
+	if who is not None:
+		d.update(by=m.get("owner_name") or m["owner"], mine=m["owner"] == who["key"], dl=tausch_can_down(m, who), rm=tausch_can_del(m, who),
+                 edit=kind in ("text", "chat") and tausch_can_edit(m, who))
+	return d
+
+
+def tausch_list(who, area="all", folder="", lang=None):
+	root = _tz_load()
+	r0, kind, prob = tausch_root()
+	lim = tausch_limits()
+	out = {"ok": True, "on": bool(CFG.get("tausch_on", True)), "area": area, "folder": folder, "files": [], "folders": [],
+           "perms": sorted(who["perms"]), "me": {"name": who["name"], "admin": who["admin"], "is_admin": who["is_admin"]},
+           "store": {"kind": kind, "problem": prob}, "chunk": TZ_CHUNK, "ups": []}
+	if root is None:
+		out["store"]["problem"] = prob or "missing"
+		out["quota"] = {"used": 0, "total": lim["total"], "file_max": lim["file"], "free": 0, "min_free": lim["min_free"]}
+		return out
+	used, res = tausch_usage()
+	mu, mr = tausch_usage(who["key"])
+	out["quota"] = {"used": used + res, "total": lim["total"], "file_max": lim["file"], "free": tausch_disk_free(root),
+                    "min_free": lim["min_free"], "user_used": mu + mr, "user_max": None if who["is_admin"] else lim["user"]}
+	if "files_view" not in who["perms"]:
+		return out
+	with TZ["lock"]:
+		files = list(TZ["files"].values())
+		folders = list(TZ["folders"])
+		ups = [{"id": k, "name": u["name"], "size": u["size"], "have": u.get("have", 0), "area": u["area"], "folder": u.get("folder", "")}
+               for k, u in TZ["ups"].items() if u["owner"] == who["key"]]
+	out["ups"] = ups
+	if area == "all":
+		if folder and not any(x["name"] == folder for x in folders):
+			out["ok"] = False
+			out["error"] = tr("This folder does not exist (any more).", lang)
+			return out
+		if not folder:
+			for x in folders:
+				inside = [m for m in files if m["area"] == "all" and m.get("folder") == x["name"]]
+				out["folders"].append({"name": x["name"], "n": len(inside), "size": sum(m["size"] for m in inside), "t": x.get("t", 0),
+                                       "by": x.get("by_name", ""), "rm": who["admin"] or (x.get("by") == who["key"] and not inside)})
+		out["files"] = [tausch_public(m, who) for m in files if m["area"] == "all" and m.get("folder", "") == folder]
+	else:
+		out["files"] = [tausch_public(m, who) for m in files if m["area"] == "mine" and (m["owner"] == who["key"] or who["admin"])]
+	out["files"].sort(key=lambda x: -x["t"])
+	return out
+
+
+
+def tausch_up_start(who, d, lang=None):
+	if not CFG.get("tausch_on", True):
+		return False, tr("The file exchange is switched off.", lang), {}
+	if "files_up" not in who["perms"]:
+		return False, tr("You may not upload files.", lang), {}
+	root = _tz_load()
+	r0, kind, prob = tausch_root()
+	if root is None:
+		return False, tr("The storage (USB stick / SSD) is not there - plug it in again.", lang), {}
+	if prob == "ro":
+		return False, tr("The memory card is write-protected (overlay) - files would be lost at the next restart. Use a USB stick.", lang), {}
+	name, why = tausch_clean_name(d.get("name"))
+	if name is None:
+		return False, tr(why, lang), {}
+	if tausch_ext(name) == "chat":
+		return False, tr("Chats are made with «New chat».", lang), {}
+	if tausch_blocked(name):
+		return False, trf("Programs and scripts are not accepted (.{e}). Pack them into a ZIP if you really need to share them.", lang,
+                          e=tausch_ext(name)), {}
+	try:
+		size = int(d.get("size"))
+	except (TypeError, ValueError):
+		return False, tr("unknown size", lang), {}
+	if size < 0:
+		return False, tr("unknown size", lang), {}
+	area = "mine" if d.get("area") == "mine" else "all"
+	folder = str(d.get("folder") or "") if area == "all" else ""
+	try:
+		lastmod = int(float(d.get("lastmod") or 0))
+	except (TypeError, ValueError):
+		lastmod = 0
+	with TZ["lock"]:
+		if folder and not any(x["name"] == folder for x in TZ["folders"]):
+			return False, tr("This folder does not exist (any more).", lang), {}
+		for uid, u in TZ["ups"].items():
+			if (u["owner"] == who["key"] and u["name"] == name and u["size"] == size and u["area"] == area
+                    and u.get("folder", "") == folder and u.get("lastmod", 0) == lastmod):
+				u["t"] = time.time()
+				return True, "", {"id": uid, "have": u.get("have", 0), "chunk": TZ_CHUNK, "name": name, "resumed": u.get("have", 0) > 0}
+		if sum(1 for u in TZ["ups"].values() if u["owner"] == who["key"]) >= TZ_MAX_OPEN_UPS:
+			return False, tr("Too many uploads at the same time - wait until the others are done.", lang), {}
+	if not tausch_rate(who["key"], "up", 150):
+		return False, tr("Too many uploads in a short time - wait a few minutes.", lang), {}
+	err = tausch_room_error(size, who, lang)
+	if err:
+		return False, err, {}
+	uid = secrets.token_hex(8)
+	u = {"owner": who["key"], "owner_name": who["name"], "name": name, "size": size, "area": area, "folder": folder, "lastmod": lastmod,
+         "t0": time.time(), "t": time.time()}
+	try:
+		open(os.path.join(root, "up", uid + ".part"), "wb").close()
+		_tz_write_json(os.path.join(root, "up", uid + ".json"), u)
+	except OSError as e:
+		return False, tr("The storage cannot be written to.", lang) + f" ({e.__class__.__name__})", {}
+	with TZ["lock"]:
+		TZ["ups"][uid] = dict(u, have=0, lock=threading.Lock())
+	return True, "", {"id": uid, "have": 0, "chunk": TZ_CHUNK, "name": name, "resumed": False}
+
+
+def _tz_up_get(who, uid, lang=None):
+	if not TZ_ID.match(str(uid or "")):
+		return None, tr("unknown upload", lang)
+	with TZ["lock"]:
+		u = TZ["ups"].get(uid)
+	if u is None or u["owner"] != who["key"]:
+		return None, tr("unknown upload", lang)
+	return u, ""
+
+
+def tausch_up_chunk(who, uid, off, data, lang=None):
+	""
+	if "files_up" not in who["perms"] or not CFG.get("tausch_on", True):
+		return False, tr("You may not upload files.", lang), 0, 403
+	root = _tz_load()
+	if root is None:
+		return False, tr("The storage (USB stick / SSD) is not there - plug it in again.", lang), 0, 409
+	u, err = _tz_up_get(who, uid, lang)
+	if u is None:
+		return False, err, 0, 404
+	if len(data) > TZ_CHUNK_MAX:
+		return False, tr("piece too big", lang), u.get("have", 0), 413
+	if not u["lock"].acquire(timeout=30):
+		return False, tr("busy - try again", lang), u.get("have", 0), 409
+	try:
+		have = u.get("have", 0)
+		if off != have:
+			return False, "offset", have, 409
+		if have + len(data) > u["size"]:
+			return False, tr("more data than announced", lang), have, 400
+		lim = tausch_limits()
+		rest = u["size"] - have - len(data)
+		if tausch_disk_free(root) - len(data) - rest < lim["min_free"] - TZ_CHUNK_MAX:
+			return False, trf("Not enough free space on the storage: MoveEye always keeps {n} free (for recordings and the system).", lang,
+                              n=tausch_fmt(lim["min_free"], lang)), have, 507
+		p = os.path.join(root, "up", uid + ".part")
+		try:
+			with open(p, "r+b") as f:
+				f.seek(have)
+				f.write(data)
+				f.truncate()
+		except OSError as e:
+			return False, tr("The storage cannot be written to.", lang) + f" ({e.__class__.__name__})", have, 507
+		u["have"] = have + len(data)
+		u["t"] = time.time()
+		return True, "", u["have"], 200
+	finally:
+		u["lock"].release()
+
+
+def tausch_up_finish(who, uid, lang=None):
+	root = _tz_load()
+	if root is None:
+		return False, tr("The storage (USB stick / SSD) is not there - plug it in again.", lang), {}
+	u, err = _tz_up_get(who, uid, lang)
+	if u is None:
+		return False, err, {}
+	with u["lock"]:
+		if u.get("have", 0) != u["size"]:
+			return False, tr("The upload is not complete yet.", lang), {"have": u.get("have", 0)}
+		part = os.path.join(root, "up", uid + ".part")
+		try:
+			with open(part, "rb") as f:
+				head = f.read(16)
+		except OSError:
+			head = b""
+		if tausch_magic_exec(head):
+			tausch_up_abort(who, uid, lang, _locked=True)
+			log_event("web", f"File exchange: {who['name']} tried to upload a program («{u['name']}») - refused")
+			return False, tr("This file is a program or script - not accepted.", lang), {}
+		with TZ["lock"]:
+			folder = u.get("folder", "")
+			if folder and not any(x["name"] == folder for x in TZ["folders"]):
+				folder = ""
+			name = _tz_unique(u["name"], u["area"], folder, u["owner"])
+			fid = secrets.token_hex(8)
+			while fid in TZ["files"]:
+				fid = secrets.token_hex(8)
+			mime, kind, risky = tausch_type(name)
+			m = {"id": fid, "name": name, "area": u["area"], "folder": folder, "owner": u["owner"], "owner_name": u.get("owner_name") or u["owner"],
+                 "size": u["size"], "t": int(time.time()), "kind": kind, "thumb": None if kind in ("image", "video", "pdf") and not risky else False}
+			try:
+				os.replace(part, os.path.join(root, "f", fid + ".bin"))
+				_tz_write_json(os.path.join(root, "f", fid + ".json"), m)
+			except OSError as e:
+				return False, tr("The storage cannot be written to.", lang) + f" ({e.__class__.__name__})", {}
+			TZ["files"][fid] = m
+			TZ["ups"].pop(uid, None)
+		try:
+			os.remove(os.path.join(root, "up", uid + ".json"))
+		except OSError:
+			pass
+	where = "Für alle" + (" / " + folder if folder else "") if m["area"] == "all" else "privat"
+	log_event("web", f"File exchange: {who['name']} uploaded «{name}» ({tausch_fmt(m['size'], 'de')}, {where})")
+	if m["thumb"] is None:
+		tausch_thumb_queue(fid)
+	tausch_push_note(who)
+	return True, "", {"file": tausch_public(m, who)}
+
+
+def tausch_up_abort(who, uid, lang=None, _locked=False):
+	root = TZ["root"] or _tz_load()
+	u, err = _tz_up_get(who, uid, lang)
+	if u is None:
+		return False, err
+	with TZ["lock"]:
+		TZ["ups"].pop(uid, None)
+	for ext in (".part", ".json"):
+		try:
+			os.remove(os.path.join(root, "up", uid + ext))
+		except OSError:
+			pass
+	return True, ""
+
+
+def _tz_unique(name, area, folder, owner):
+	""
+	taken = {m["name"].lower() for m in TZ["files"].values() if m["area"] == area and m.get("folder", "") == folder
+             and (area == "all" or m["owner"] == owner)}
+	if name.lower() not in taken:
+		return name
+	stem, ext = os.path.splitext(name)
+	for i in range(2, 1000):
+		n = f"{stem} ({i}){ext}"
+		if n.lower() not in taken:
+			return n
+	return f"{stem} ({secrets.token_hex(2)}){ext}"
+
+
+
+def tausch_delete(who, fid, lang=None):
+	root = _tz_load()
+	if root is None or not TZ_ID.match(str(fid or "")):
+		return False, tr("unknown file", lang)
+	with TZ["lock"]:
+		m = TZ["files"].get(fid)
+		if m is None or not tausch_can_see(m, who):
+			return False, tr("unknown file", lang)
+		if not tausch_can_del(m, who):
+			return False, tr("Only the person who uploaded it (or the administrator) may delete this file.", lang)
+		if not tausch_rate(who["key"], "rm", 300):
+			return False, tr("Too many changes in a short time - wait a few minutes.", lang)
+		TZ["files"].pop(fid, None)
+	for p in (os.path.join(root, "f", fid + ".bin"), os.path.join(root, "f", fid + ".json"), os.path.join(root, "t", fid + ".jpg"),
+              os.path.join(root, "t", fid + "_p.jpg")):
+		try:
+			os.remove(p)
+		except OSError:
+			pass
+	shutil.rmtree(os.path.join(root, "h", fid), ignore_errors=True)
+	with TZ["lock"]:
+		TZ["chats"].pop(fid, None)
+	log_event("web", f"File exchange: {who['name']} deleted «{m['name']}» (from {m.get('owner_name') or m['owner']})")
+	return True, ""
+
+
+def tausch_mkdir(who, name, lang=None):
+	if "files_up" not in who["perms"] or not CFG.get("tausch_on", True):
+		return False, tr("You may not create folders.", lang)
+	root = _tz_load()
+	if root is None:
+		return False, tr("The storage (USB stick / SSD) is not there - plug it in again.", lang)
+	n, why = tausch_clean_name(name, folder=True)
+	if n is None:
+		return False, tr(why, lang)
+	with TZ["lock"]:
+		if any(x["name"].lower() == n.lower() for x in TZ["folders"]):
+			return False, tr("This folder exists already.", lang)
+		if len(TZ["folders"]) >= TZ_MAX_FOLDERS:
+			return False, trf("At most {n} folders.", lang, n=TZ_MAX_FOLDERS)
+		if not tausch_rate(who["key"], "rm", 300):
+			return False, tr("Too many changes in a short time - wait a few minutes.", lang)
+		TZ["folders"].append({"name": n, "by": who["key"], "by_name": who["name"], "t": int(time.time())})
+		TZ["folders"].sort(key=lambda x: x["name"].lower())
+		_tz_folders_save(root)
+	log_event("web", f"File exchange: {who['name']} created the folder «{n}»")
+	return True, ""
+
+
+def tausch_rmdir(who, name, force=False, lang=None):
+	""
+	root = _tz_load()
+	if root is None:
+		return False, tr("unknown folder", lang)
+	with TZ["lock"]:
+		x = next((f for f in TZ["folders"] if f["name"] == name), None)
+		if x is None:
+			return False, tr("unknown folder", lang)
+		inside = [m["id"] for m in TZ["files"].values() if m["area"] == "all" and m.get("folder") == name]
+		if inside and not (who["admin"] and force):
+			return False, tr("The folder is not empty - only the administrator can delete it with all files.", lang)
+		if not inside and not (who["admin"] or x.get("by") == who["key"]):
+			return False, tr("Only the person who created it (or the administrator) may delete this folder.", lang)
+		TZ["folders"] = [f for f in TZ["folders"] if f is not x]
+		_tz_folders_save(root)
+	for fid in inside:
+		tausch_delete(who, fid, lang)
+	log_event("web", f"File exchange: {who['name']} deleted the folder «{name}»" + (f" with {len(inside)} files" if inside else ""))
+	return True, ""
+
+
+
+
+
+
+TZ_TEXT_EXT = {"txt", "md"}
+TZ_TEXT_MAX = 1024 * 1024
+TZ_HIST = 20
+TZ_POST_MAX = 4096
+TZ_CHAT_MAX = 2 * 1024 * 1024
+TZ_EDIT_WIN = 300
+TZ_WAIT_MAX, TZ_WAIT_IP, TZ_WAIT_S = 24, 4, 20.0
+TZ_CHAT_COND = threading.Condition()
+_TZ_CTRL = re.compile(r"[\x00-\x08\x0b-\x1f\x7f​-‏‪-‮⁦-⁩]")
+
+
+def tausch_file(fid):
+	if not TZ_ID.match(str(fid or "")) or _tz_load() is None:
+		return None
+	with TZ["lock"]:
+		return TZ["files"].get(fid)
+
+
+def tausch_is_text(m):
+	return tausch_ext(m["name"]) in TZ_TEXT_EXT
+
+
+def tausch_can_edit(m, who):
+	""
+	return (bool(CFG.get("tausch_on", True)) and tausch_can_see(m, who) and "files_up" in who["perms"]
+            and (m["area"] == "all" or m["owner"] == who["key"] or who["admin"]))
+
+
+def _tz_extra_room(extra, owner, lang=None):
+	""
+	lim = tausch_limits()
+	used, res = tausch_usage()
+	if used + res + extra > lim["total"]:
+		return trf("The file exchange is full: {a} of {b} used. Delete old files first.", lang, a=tausch_fmt(used + res, lang), b=tausch_fmt(lim["total"], lang))
+	if owner != "admin":
+		u, ur = tausch_usage(owner)
+		if u + ur + extra > lim["user"]:
+			return trf("Your space is full: {a} of {b} used. Delete some of your files first.", lang, a=tausch_fmt(u + ur, lang), b=tausch_fmt(lim["user"], lang))
+	if tausch_disk_free(TZ["root"] or "") - extra < lim["min_free"]:
+		return trf("Not enough free space on the storage: MoveEye always keeps {n} free (for recordings and the system).", lang, n=tausch_fmt(lim["min_free"], lang))
+	return ""
+
+
+def _tz_read(root, fid, v=None):
+	p = os.path.join(root, "h", fid, f"{int(v)}.txt") if v else os.path.join(root, "f", fid + ".bin")
+	with open(p, "rb") as f:
+		return f.read(TZ_TEXT_MAX + 1).decode("utf-8", errors="replace")
+
+
+def tausch_text_get(who, fid, v=None, lang=None):
+	m = tausch_file(fid)
+	if m is None or (who is not None and not tausch_can_see(m, who)) or (who is None and m["area"] != "all"):
+		return False, tr("unknown file", lang), {}
+	if not tausch_is_text(m):
+		return False, tr("This is not a text file.", lang), {}
+	if m["size"] > TZ_TEXT_MAX:
+		return False, trf("Too big for the editor (at most {n}) - download it instead.", lang, n=tausch_fmt(TZ_TEXT_MAX, lang)), {}
+	try:
+		if v and not any(h["v"] == int(v) for h in m.get("hist") or []):
+			return False, tr("This version is not kept any more.", lang), {}
+		txt = _tz_read(TZ["root"], fid, v)
+	except (OSError, ValueError):
+		return False, tr("unknown file", lang), {}
+	out = {"id": fid, "name": m["name"], "text": txt, "ver": int(m.get("ver") or 1), "md": tausch_ext(m["name"]) == "md",
+           "t": m.get("ed_t") or m.get("t", 0), "v": int(v) if v else None}
+	if who is not None:
+		out.update(by=m.get("ed_name") or m.get("owner_name") or m["owner"], edit=tausch_can_edit(m, who),
+                   hist=[{"v": h["v"], "t": h["t"], "by": h.get("by", ""), "size": h["size"]} for h in reversed(m.get("hist") or [])])
+	return True, "", out
+
+
+def tausch_text_save(who, fid, text, ver, lang=None, restore=None):
+	""
+	m = tausch_file(fid)
+	if m is None or not tausch_can_see(m, who):
+		return False, tr("unknown file", lang), {}
+	if not tausch_is_text(m):
+		return False, tr("This is not a text file.", lang), {}
+	if not tausch_can_edit(m, who):
+		return False, tr("You may not change this text.", lang), {}
+	root = TZ["root"]
+	if restore is not None:
+		ok, err, old = tausch_text_get(who, fid, restore, lang)
+		if not ok:
+			return False, err, {}
+		text = old["text"]
+	if not isinstance(text, str):
+		return False, tr("no text", lang), {}
+	enc = text.encode("utf-8")
+	if len(enc) > TZ_TEXT_MAX:
+		return False, trf("Too big for the editor (at most {n}) - download it instead.", lang, n=tausch_fmt(TZ_TEXT_MAX, lang)), {}
+	if not tausch_rate(who["key"], "save", 240):
+		return False, tr("Too many changes in a short time - wait a few minutes.", lang), {}
+	with TZ["lock"]:
+		cur = int(m.get("ver") or 1)
+		try:
+			ver = int(ver)
+		except (TypeError, ValueError):
+			ver = -1
+		if ver != cur:
+			try:
+				now_txt = _tz_read(root, fid)
+			except OSError:
+				now_txt = ""
+			return False, trf("Meanwhile {who} has changed something.", lang, who=m.get("ed_name") or m.get("owner_name") or "?"), {
+                "conflict": True, "by": m.get("ed_name") or m.get("owner_name") or "", "ver": cur, "text": now_txt, "t": m.get("ed_t") or m.get("t", 0)}
+		err = _tz_extra_room(len(enc), m["owner"], lang)
+		if err:
+			return False, err, {}
+		hd = os.path.join(root, "h", fid)
+		try:
+			os.makedirs(hd, exist_ok=True)
+			shutil.copyfile(os.path.join(root, "f", fid + ".bin"), os.path.join(hd, f"{cur}.txt"))
+			hist = list(m.get("hist") or []) + [{"v": cur, "t": m.get("ed_t") or m.get("t", 0), "by": m.get("ed_name") or m.get("owner_name") or "",
+                                                 "size": m["size"]}]
+			for h in hist[:-TZ_HIST]:
+				try:
+					os.remove(os.path.join(hd, f"{h['v']}.txt"))
+				except OSError:
+					pass
+			hist = hist[-TZ_HIST:]
+			tmp = os.path.join(root, "f", fid + ".bin.tmp")
+			with open(tmp, "wb") as f:
+				f.write(enc)
+			os.replace(tmp, os.path.join(root, "f", fid + ".bin"))
+		except OSError as e:
+			return False, tr("The storage cannot be written to.", lang) + f" ({e.__class__.__name__})", {}
+		m.update(size=len(enc), ver=cur + 1, ed_name=who["name"], ed_t=int(time.time()), hist=hist, hist_size=sum(h["size"] for h in hist))
+		_tz_write_json(os.path.join(root, "f", fid + ".json"), m)
+	log_event("web", f"File exchange: {who['name']} " + (f"restored version {restore} of" if restore is not None else "changed") + f" «{m['name']}» (version {cur + 1})")
+	return True, "", {"ver": cur + 1}
+
+
+def tausch_create(who, d, kind, lang=None):
+	""
+	if "files_up" not in who["perms"] or not CFG.get("tausch_on", True):
+		return False, tr("You may not upload files.", lang), {}
+	root = _tz_load()
+	if root is None:
+		return False, tr("The storage (USB stick / SSD) is not there - plug it in again.", lang), {}
+	name, why = tausch_clean_name(d.get("name"))
+	if name is None:
+		return False, tr(why, lang), {}
+	if kind == "chat":
+		name = (name[:-5] if name.lower().endswith(".chat") else name)[:110] + ".chat"
+	elif tausch_ext(name) not in TZ_TEXT_EXT:
+		name = name[:115] + ".txt"
+	text = str(d.get("text") or "") if kind == "text" else ""
+	enc = text.encode("utf-8")
+	if len(enc) > TZ_TEXT_MAX:
+		return False, trf("Too big for the editor (at most {n}) - download it instead.", lang, n=tausch_fmt(TZ_TEXT_MAX, lang)), {}
+	area = "mine" if d.get("area") == "mine" else "all"
+	folder = str(d.get("folder") or "") if area == "all" else ""
+	if not tausch_rate(who["key"], "up", 150):
+		return False, tr("Too many uploads in a short time - wait a few minutes.", lang), {}
+	err = tausch_room_error(len(enc), who, lang)
+	if err:
+		return False, err, {}
+	with TZ["lock"]:
+		if folder and not any(x["name"] == folder for x in TZ["folders"]):
+			return False, tr("This folder does not exist (any more).", lang), {}
+		name = _tz_unique(name, area, folder, who["key"])
+		fid = secrets.token_hex(8)
+		m = {"id": fid, "name": name, "area": area, "folder": folder, "owner": who["key"], "owner_name": who["name"], "size": len(enc),
+             "t": int(time.time()), "kind": kind, "thumb": False, "ver": 1}
+		try:
+			with open(os.path.join(root, "f", fid + ".bin"), "wb") as f:
+				f.write(enc)
+			_tz_write_json(os.path.join(root, "f", fid + ".json"), m)
+		except OSError as e:
+			return False, tr("The storage cannot be written to.", lang) + f" ({e.__class__.__name__})", {}
+		TZ["files"][fid] = m
+	log_event("web", f"File exchange: {who['name']} created «{name}»")
+	return True, "", {"file": tausch_public(m, who)}
+
+
+
+def _tz_chat(m):
+	""
+	with TZ["lock"]:
+		ch = TZ["chats"].get(m["id"])
+		if ch is not None:
+			return ch
+		posts = []
+		try:
+			with open(os.path.join(TZ["root"], "f", m["id"] + ".bin"), encoding="utf-8", errors="replace") as f:
+				for line in f:
+					try:
+						x = json.loads(line)
+					except ValueError:
+						continue
+					if isinstance(x, dict) and isinstance(x.get("n"), int) and isinstance(x.get("x"), str):
+						posts.append(x)
+		except OSError:
+			pass
+		ch = TZ["chats"][m["id"]] = {"posts": posts, "rev": len(posts), "erev": 0}
+		return ch
+
+
+def tausch_chat_clean(text):
+	s = _TZ_CTRL.sub("", str(text or "").replace("\r\n", "\n").replace("\r", "\n"))
+	s = re.sub(r"\n{4,}", "\n\n\n", s).strip()
+	return s
+
+
+def tausch_chat_get(who, fid, after=0, rev=-1, lang=None):
+	m = tausch_file(fid)
+	if m is None or (who is not None and not tausch_can_see(m, who)) or (who is None and m["area"] != "all"):
+		return False, tr("unknown file", lang), {}
+	if tausch_ext(m["name"]) != "chat":
+		return False, tr("This is not a chat.", lang), {}
+	ch = _tz_chat(m)
+	now = time.time()
+	with TZ["lock"]:
+		full = rev < ch["erev"] or rev < 0 or rev > ch["rev"]
+		sel = ch["posts"] if full else [x for x in ch["posts"] if x["n"] > after]
+		pub = []
+		for x in sel[-800:]:
+			d = {"n": x["n"], "t": x["t"], "by": x.get("by", ""), "x": "" if x.get("d") else x["x"], "ed": x.get("e", 0), "del": bool(x.get("d"))}
+			if who is not None:
+				mine = x.get("k") == who["key"]
+				d.update(mine=mine, ce=mine and not x.get("d") and now - x["t"] < TZ_EDIT_WIN and tausch_can_edit(m, who),
+                         cd=not x.get("d") and ((mine and now - x["t"] < TZ_EDIT_WIN) or who["admin"]))
+			pub.append(d)
+		out = {"id": fid, "name": os.path.splitext(m["name"])[0], "rev": ch["rev"], "full": full, "posts": pub,
+               "n": len(ch["posts"]), "size": m["size"], "max": TZ_CHAT_MAX, "post_max": TZ_POST_MAX}
+	if who is not None:
+		out["write"] = tausch_can_edit(m, who)
+	return True, "", out
+
+
+def tausch_chat_wait(fid, rev, ip, timeout=TZ_WAIT_S):
+	""
+	with TZ["lock"]:
+		if TZ["waiting"] >= TZ_WAIT_MAX or TZ["waiters"].get(ip, 0) >= TZ_WAIT_IP:
+			return False
+		TZ["waiting"] += 1
+		TZ["waiters"][ip] = TZ["waiters"].get(ip, 0) + 1
+	try:
+		end = time.time() + timeout
+		with TZ_CHAT_COND:
+			while True:
+				ch = TZ["chats"].get(fid)
+				if ch is None or ch["rev"] != rev:
+					return True
+				left = end - time.time()
+				if left <= 0:
+					return True
+				TZ_CHAT_COND.wait(min(left, 5.0))
+	finally:
+		with TZ["lock"]:
+			TZ["waiting"] = max(0, TZ["waiting"] - 1)
+			TZ["waiters"][ip] = max(0, TZ["waiters"].get(ip, 1) - 1)
+			if not TZ["waiters"][ip]:
+				TZ["waiters"].pop(ip, None)
+
+
+def _tz_chat_changed():
+	with TZ_CHAT_COND:
+		TZ_CHAT_COND.notify_all()
+
+
+def _tz_chat_rewrite(m, ch):
+	tmp = os.path.join(TZ["root"], "f", m["id"] + ".bin.tmp")
+	data = "".join(json.dumps(x, ensure_ascii=False) + "\n" for x in ch["posts"]).encode("utf-8")
+	with open(tmp, "wb") as f:
+		f.write(data)
+	os.replace(tmp, os.path.join(TZ["root"], "f", m["id"] + ".bin"))
+	m["size"] = len(data)
+
+
+def tausch_chat_post(who, fid, text, lang=None):
+	m = tausch_file(fid)
+	if m is None or not tausch_can_see(m, who) or tausch_ext(m["name"]) != "chat":
+		return False, tr("unknown file", lang), {}
+	if not tausch_can_edit(m, who):
+		return False, tr("You may not write in this chat.", lang), {}
+	s = tausch_chat_clean(text)
+	if not s:
+		return False, tr("The message is empty.", lang), {}
+	if len(s.encode("utf-8")) > TZ_POST_MAX:
+		return False, trf("Too long: at most {n} per message.", lang, n=tausch_fmt(TZ_POST_MAX, lang)), {}
+	if not tausch_rate(who["key"], "post", 30, per=60.0):
+		return False, tr("Too many messages in a short time - wait a moment.", lang), {}
+	ch = _tz_chat(m)
+	with TZ["lock"]:
+		n = (ch["posts"][-1]["n"] + 1) if ch["posts"] else 1
+		x = {"n": n, "t": int(time.time()), "k": who["key"], "by": who["name"], "x": s}
+		line = (json.dumps(x, ensure_ascii=False) + "\n").encode("utf-8")
+		if m["size"] + len(line) > TZ_CHAT_MAX:
+			return False, tr("This chat is full - start a new one.", lang), {}
+		err = _tz_extra_room(len(line), m["owner"], lang)
+		if err:
+			return False, err, {}
+		try:
+			with open(os.path.join(TZ["root"], "f", fid + ".bin"), "ab") as f:
+				f.write(line)
+		except OSError as e:
+			return False, tr("The storage cannot be written to.", lang) + f" ({e.__class__.__name__})", {}
+		ch["posts"].append(x)
+		ch["rev"] += 1
+		m["size"] += len(line)
+		m["ed_t"] = x["t"]
+		try:
+			_tz_write_json(os.path.join(TZ["root"], "f", fid + ".json"), m)
+		except OSError:
+			pass
+	_tz_chat_changed()
+	tausch_chat_note(m, who)
+	return True, "", {"n": n, "rev": ch["rev"]}
+
+
+def tausch_chat_change(who, fid, n, text=None, lang=None):
+	""
+	m = tausch_file(fid)
+	if m is None or not tausch_can_see(m, who) or tausch_ext(m["name"]) != "chat":
+		return False, tr("unknown file", lang)
+	ch = _tz_chat(m)
+	with TZ["lock"]:
+		x = next((p for p in ch["posts"] if p["n"] == n), None)
+		if x is None or x.get("d"):
+			return False, tr("unknown message", lang)
+		mine = x.get("k") == who["key"] and time.time() - x["t"] < TZ_EDIT_WIN
+		if text is None:
+			if not (mine or who["admin"]):
+				return False, tr("Only your own messages, and only within 5 minutes.", lang)
+			x.update(d=True, x="", e=int(time.time()))
+		else:
+			if not mine or not tausch_can_edit(m, who):
+				return False, tr("Only your own messages, and only within 5 minutes.", lang)
+			s = tausch_chat_clean(text)
+			if not s or len(s.encode("utf-8")) > TZ_POST_MAX:
+				return False, trf("Too long: at most {n} per message.", lang, n=tausch_fmt(TZ_POST_MAX, lang)) if s else tr("The message is empty.", lang)
+			x.update(x=s, e=int(time.time()))
+		ch["rev"] += 1
+		ch["erev"] = ch["rev"]
+		try:
+			_tz_chat_rewrite(m, ch)
+			_tz_write_json(os.path.join(TZ["root"], "f", fid + ".json"), m)
+		except OSError as e:
+			return False, tr("The storage cannot be written to.", lang) + f" ({e.__class__.__name__})"
+	_tz_chat_changed()
+	if text is None:
+		log_event("web", f"File exchange: {who['name']} deleted a message in «{m['name']}»")
+	return True, ""
+
+
+
+def tausch_img_dims(path):
+	"""
+"""
+	try:
+		with open(path, "rb") as f:
+			r = img_head(f)
+	except OSError:
+		return None
+	return (r[1], r[2]) if r else None
+
+
+def _tz_jpg_write(img, path, side, q):
+	hh, ww = img.shape[:2]
+	s = min(1.0, float(side) / max(hh, ww, 1))
+	if s < 1.0:
+		img = cv2.resize(img, (max(1, int(ww * s)), max(1, int(hh * s))), interpolation=cv2.INTER_AREA)
+	ok, buf = cv2.imencode(".jpg", img, [cv2.IMWRITE_JPEG_QUALITY, q])
+	if not ok:
+		return False
+	tmp = path + ".tmp"
+	with open(tmp, "wb") as f:
+		f.write(buf.tobytes())
+	os.replace(tmp, path)
+	return True
+
+
+def tausch_thumb_make(root, m):
+	""
+	src = os.path.join(root, "f", m["id"] + ".bin")
+	kind = tausch_type(m["name"])[1]
+	img = None
+	if kind == "image":
+		dims = tausch_img_dims(src)
+		if dims is None or not (0 < dims[0] <= IMG_SIDE_MAX and 0 < dims[1] <= IMG_SIDE_MAX and dims[0] * dims[1] <= IMG_MP_MAX):
+			return False
+		flag = cv2.IMREAD_COLOR
+		if dims and dims[0] * dims[1] > 16_000_000 and tausch_ext(m["name"]) in ("jpg", "jpeg"):
+			flag = cv2.IMREAD_REDUCED_COLOR_4
+		try:
+			img = cv2.imdecode(np.fromfile(src, dtype=np.uint8), flag)
+		except (cv2.error, ValueError, MemoryError):
+			img = None
+		if img is None and tausch_ext(m["name"]) == "gif":
+			kind = "video"
+	if kind == "video" and img is None:
+		cap = cv2.VideoCapture(src)
+		try:
+			if cap.isOpened():
+				n = cap.get(cv2.CAP_PROP_FRAME_COUNT) or 0
+				fps = cap.get(cv2.CAP_PROP_FPS) or 25
+				if n > 2:
+					cap.set(cv2.CAP_PROP_POS_FRAMES, min(int(fps), int(n // 2)))
+				ok, img = cap.read()
+				if not ok:
+					img = None
+		finally:
+			cap.release()
+	if kind == "pdf" and img is None:
+		exe = TZ["pdftoppm"] if TZ["pdftoppm"] is not None else (shutil.which("pdftoppm") or "")
+		TZ["pdftoppm"] = exe
+		if not exe or m["size"] > 50 * TZ_MB:
+			return False
+		tmpd = tempfile.mkdtemp(prefix="mw_tz_")
+		try:
+			r = subprocess.run([exe, "-f", "1", "-l", "1", "-scale-to", "1280", "-jpeg", "-singlefile", src, os.path.join(tmpd, "s")],
+                               capture_output=True, timeout=25)
+			pj = os.path.join(tmpd, "s.jpg")
+			if r.returncode == 0 and os.path.isfile(pj):
+				img = cv2.imread(pj, cv2.IMREAD_COLOR)
+		except (OSError, subprocess.SubprocessError):
+			img = None
+		finally:
+			shutil.rmtree(tmpd, ignore_errors=True)
+	if img is None or img.size == 0:
+		return False
+	if img.ndim == 2:
+		img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
+	ok1 = _tz_jpg_write(img, os.path.join(root, "t", m["id"] + ".jpg"), 320, 78)
+	ok2 = _tz_jpg_write(img, os.path.join(root, "t", m["id"] + "_p.jpg"), 1280, 84)
+	return bool(ok1 and ok2)
+
+
+def tausch_thumb_queue(fid):
+	with TZ["lock"]:
+		if fid not in TZ["thumbq"]:
+			TZ["thumbq"].append(fid)
+		if TZ["thumb_run"]:
+			return
+		TZ["thumb_run"] = True
+	threading.Thread(target=_tz_thumb_worker, daemon=True, name="tausch-thumbs").start()
+
+
+def _tz_thumb_worker():
+	try:
+		while True:
+			with TZ["lock"]:
+				if not TZ["thumbq"]:
+					TZ["thumb_run"] = False
+					return
+				fid = TZ["thumbq"].popleft()
+				root = TZ["root"]
+				m = (TZ["files"] or {}).get(fid)
+			if m is None or not root:
+				continue
+			try:
+				ok = tausch_thumb_make(root, m)
+			except Exception as e:
+				ok = False
+				log_event("sys", f"File exchange: no preview for «{m['name']}»: {e.__class__.__name__}")
+			with TZ["lock"]:
+				if fid in (TZ["files"] or {}):
+					m["thumb"] = bool(ok)
+					try:
+						_tz_write_json(os.path.join(root, "f", fid + ".json"), m)
+					except OSError:
+						pass
+	except Exception:
+		with TZ["lock"]:
+			TZ["thumb_run"] = False
+
+
+
+
+
+
+
+
+
+_TZ_TL = threading.local()
+
+
+def tausch_push_note(who, n=1, now=None):
+	""
+	if who.get("is_admin") or not CFG.get("tausch_push", True):
+		return
+	_tz_bundle(("up", who["key"]), {"kind": "up", "name": who["name"], "target": "admin"}, n, now)
+
+
+def tausch_chat_note(m, who, now=None):
+	""
+	if not CFG.get("tausch_push", True):
+		return
+	ch = TZ["chats"].get(m["id"]) or {}
+	names = {}
+	for x in ch.get("posts") or []:
+		if x.get("k") and x["k"] != who["key"]:
+			names[x["k"]] = x.get("by") or x["k"]
+	for k, nm in names.items():
+		if m["area"] == "mine" and k != m["owner"] and k != "admin":
+			continue
+		_tz_bundle(("chat", k, m["id"]), {"kind": "chat", "target": k, "target_name": nm, "chat": os.path.splitext(m["name"])[0],
+                                          "authors": {}}, 1, now, author=who["name"])
+
+
+def _tz_bundle(key, base, n, now, author=None):
+	now = time.time() if now is None else now
+	with TZ["lock"]:
+		e = TZ["push"].get(key)
+		if e is None:
+			e = TZ["push"][key] = dict(base, n=0, first=now)
+		e["n"] += n
+		e["last"] = now
+		if author:
+			e["authors"][author] = e["authors"].get(author, 0) + n
+		if TZ["push_run"] or TZ.get("push_manual"):
+			return
+		TZ["push_run"] = True
+	threading.Thread(target=_tz_push_worker, daemon=True, name="tausch-push").start()
+
+
+def tausch_push_text(name, n, lang=None):
+	return trf("{who} uploaded a file", lang, who=name) if n == 1 else trf("{who} uploaded {n} files", lang, who=name, n=n)
+
+
+def tausch_chat_text(e, lang=None):
+	au = list(e.get("authors") or {})
+	who, n, chat = ", ".join(au[:3]) + (" …" if len(au) > 3 else ""), e["n"], e["chat"]
+	if len(au) > 1:
+		return trf("{who} have written {n}× in «{chat}»", lang, who=who, n=n, chat=chat)
+	if n == 1:
+		return trf("{who} wrote in «{chat}»", lang, who=who, chat=chat)
+	return trf("{who} wrote {n}× in «{chat}»", lang, who=who, n=n, chat=chat)
+
+
+def tausch_push_ok():
+	""
+	try:
+		if CFG.get("push_level") in ("persons", "animals"):
+			return False, False
+		if quiet_now():
+			return False, True
+	except NameError:
+		pass
+	return True, False
+
+
+def tausch_push_tick(now=None, force=False):
+	""
+	now = time.time() if now is None else now
+	ok, hold = tausch_push_ok()
+	due = []
+	with TZ["lock"]:
+		for k, e in list(TZ["push"].items()):
+			if not ok and hold and now - e["first"] < 12 * 3600 and not force:
+				continue
+			if force or now - e["last"] >= TZ_PUSH_QUIET or now - e["first"] >= TZ_PUSH_MAX or not ok:
+				due.append(TZ["push"].pop(k))
+	out = []
+	for e in due:
+		if not ok and not force:
+			continue
+		txt = tausch_push_text(e["name"], e["n"]) if e["kind"] == "up" else tausch_chat_text(e)
+		out.append(txt)
+		tausch_push_deliver(e, txt)
+	return out
+
+
+def tausch_push_deliver(e, txt):
+	title_key = "File exchange" if e["kind"] == "up" else "Chat"
+	pub = (CFG.get("public_url") or "").strip().rstrip("/")
+	try:
+		link = (pub or page_address().rstrip("/")) + "/tausch"
+	except Exception:
+		link = ""
+	if e["target"] == "admin":
+		return tausch_push_send(txt, title_key, link)
+	return tausch_push_user(e.get("target_name") or e["target"], txt, title_key, link)
+
+
+def tausch_push_send(txt, title_key="File exchange", link=""):
+	""
+	w = WATCH_REF.get("w")
+	n = getattr(w, "notifier", None) if w is not None else None
+	if n is None or not (n.configured() and CFG.get("notify_on")):
+		return False
+	p = {"event": "info", "persons": 0, "time": datetime.now().isoformat(timespec="seconds"), "text": txt, "info_title": "{name}: " + tr(title_key),
+         "snapshot": None, "rain": False, "wind": "", "source": STATE.get("source_label", ""), "link": link, "tz_admin": True}
+	threading.Thread(target=n._dispatch, args=(p, None, ""), daemon=True, name="tausch-push-admin").start()
+	return True
+
+
+def tausch_push_user(name, txt, title_key, link):
+	""
+	u = user_get(name)
+	if u is None or not users_push_wants(u["name"], "info"):
+		return False
+	title = ("💬 " if title_key == "Chat" else "📁 ") + ((CFG.get("device_name") or "").strip()[:20] or "MoveEye") + ": " + tr(title_key)
+	subs = [x for x in webpush_subs() if str(x.get("user", "")).lower() == u["name"].lower()]
+	if subs and webpush_supported() and CFG.get("webpush_on"):
+		threading.Thread(target=_tz_webpush_to, args=(subs, title, txt, "/tausch"), daemon=True, name="tausch-push-wp").start()
+	if u.get("ntfy"):
+		threading.Thread(target=_users_ntfy_send, args=(u["name"], _users_ntfy_url(u["ntfy"]), title, txt, "info", link),
+                         daemon=True, name="tausch-push-ntfy").start()
+	return True
+
+
+def _tz_webpush_to(subs, title, text, url):
+	n = 0
+	for sb in subs:
+		try:
+			code = webpush_send(sb, {"title": title[:120], "body": text[:400], "url": url, "tag": "mw-info", "urgent": False}, urgent=False)
+			n += 200 <= code < 300
+		except Exception:
+			pass
+	return n
+
+
+def _tz_push_worker():
+	try:
+		while True:
+			time.sleep(10)
+			tausch_push_tick()
+			with TZ["lock"]:
+				if not TZ["push"]:
+					TZ["push_run"] = False
+					return
+	except Exception:
+		with TZ["lock"]:
+			TZ["push_run"] = False
+
+
+_tz_dispatch_base = Notifier._dispatch
+
+
+def _tz_dispatch(self, p, jpg, fname):
+	if not (isinstance(p, dict) and p.get("tz_admin")):
+		return _tz_dispatch_base(self, p, jpg, fname)
+	_TZ_TL.admin_only = True
+	try:
+		return _tz_dispatch_base(self, p, jpg, fname)
+	finally:
+		_TZ_TL.admin_only = False
+
+
+
+Notifier._dispatch = _tz_dispatch
+_tz_webpush_base = Notifier._webpush
+
+
+def _tz_webpush(self, p):
+	if not (isinstance(p, dict) and p.get("tz_admin")):
+		return _tz_webpush_base(self, p)
+	subs = [x for x in webpush_subs() if not x.get("user")]
+	if subs and webpush_supported():
+		_tz_webpush_to(subs, self._title(p), self._text(p), p.get("link") or "/tausch")
+
+
+
+Notifier._webpush = _tz_webpush
+_users_push_dispatch_tz_base = users_push_dispatch
+
+
+def users_push_dispatch(title, text, cat, click=""):
+	if getattr(_TZ_TL, "admin_only", False):
+		return 0
+	return _users_push_dispatch_tz_base(title, text, cat, click)
+
+
+PK_TITLES.setdefault("File exchange", ("📁", "File exchange", "info", False))
+PK_TITLES.setdefault("Chat", ("💬", "Chat", "info", False))
+
+
+
+def _tz_send(path, mime, attach, name=None, cache="private, no-cache"):
+	from flask import send_file
+	r = send_file(path, mimetype=mime, as_attachment=attach, download_name=name, conditional=True, max_age=0)
+	r.headers["X-Content-Type-Options"] = "nosniff"
+	r.headers["Content-Security-Policy"] = "sandbox; default-src 'none'; img-src 'self'; media-src 'self'"
+	r.headers["Cache-Control"] = cache
+	r.headers["Referrer-Policy"] = "no-referrer"
+	r.headers["X-Frame-Options"] = "SAMEORIGIN"
+	return r
+
+
+def _tz_int(v, default=0):
+	try:
+		return int(v)
+	except (TypeError, ValueError):
+		return default
+
+
+def tausch_guest_ok(token):
+	return bool(CFG.get("tausch_on", True) and CFG.get("tausch_guest", True) and guest_ok(token))
+
+
+def tausch_guest_list(folder=""):
+	root = _tz_load()
+	if root is None:
+		return {"ok": True, "files": [], "folders": []}
+	with TZ["lock"]:
+		files = [m for m in TZ["files"].values() if m["area"] == "all" and not tausch_type(m["name"])[2]]
+		folders = list(TZ["folders"])
+	if folder and not any(x["name"] == folder for x in folders):
+		return {"ok": False, "files": [], "folders": []}
+	out = {"ok": True, "folder": folder, "files": [], "folders": []}
+	if not folder:
+		out["folders"] = [{"name": x["name"], "n": sum(1 for m in files if m.get("folder") == x["name"])} for x in folders]
+	out["files"] = sorted(({"id": m["id"], "name": m["name"], "size": m["size"], "t": m.get("t", 0), "kind": tausch_type(m["name"])[1],
+                            "ext": tausch_ext(m["name"])[:8], "thumb": m.get("thumb")} for m in files if m.get("folder", "") == folder),
+                          key=lambda x: -x["t"])
+	return out
+
+
+_smalltv_routes_639zzc = smalltv_routes
+
+
+def smalltv_routes(app, reply, body):
+	_smalltv_routes_639zzc(app, reply, body)
+	from flask import Response, request, g
+
+	def size_guard():
+		if request.path == "/api/tausch/chunk" and request.method == "POST":
+			n = request.content_length
+			if n is None or n > TZ_CHUNK_MAX:
+				return Response(json.dumps({"ok": False, "error": "piece too big"}), 413, mimetype="application/json",
+                                headers={"Connection": "close"})
+		return None
+	app.before_request_funcs.setdefault(None, []).insert(0, size_guard)
+
+	def lang_():
+		return norm_lang(request.args.get("lang") or CFG.get("lang"))
+
+	def nope(code=404, msg="not found"):
+		return reply({"ok": False, "error": tr(msg, lang_())}, code)
+
+	@app.route("/tausch")
+	@app.route("/tausch/")
+	def tausch_page():
+		who = tausch_who(g)
+		if "files_view" not in who["perms"]:
+			return sx_err(403, "error")
+		return Response(tausch_page_html(), mimetype="text/html", headers={"Cache-Control": "no-store"})
+
+	@app.route("/api/tausch", methods=["GET", "POST"])
+	def api_tausch():
+		who = tausch_who(g)
+		if request.method == "GET":
+			L = lang_()
+			if not who["perms"]:
+				return reply({"ok": False, "error": tr("not allowed for your user", L)}, 403)
+			area = "mine" if request.args.get("area") == "mine" else "all"
+			j = tausch_list(who, area, str(request.args.get("folder") or "")[:80], L)
+			return reply(j)
+		d = body()
+		L = norm_lang(d.get("lang") or CFG.get("lang"))
+		a = d.get("action")
+		if not who["perms"]:
+			return reply({"ok": False, "error": tr("not allowed for your user", L)}, 403)
+		if a == "start":
+			ok, err, res = tausch_up_start(who, d, L)
+		elif a == "finish":
+			ok, err, res = tausch_up_finish(who, str(d.get("id") or ""), L)
+		elif a == "abort":
+			ok, err = tausch_up_abort(who, str(d.get("id") or ""), L); res = {}
+		elif a == "delete":
+			ok, err = tausch_delete(who, str(d.get("id") or ""), L); res = {}
+		elif a == "mkdir":
+			ok, err = tausch_mkdir(who, d.get("name"), L); res = {}
+		elif a == "rmdir":
+			ok, err = tausch_rmdir(who, str(d.get("name") or ""), bool(d.get("force")), L); res = {}
+		elif a in ("newtext", "newchat"):
+			ok, err, res = tausch_create(who, d, "text" if a == "newtext" else "chat", L)
+		elif a in ("save", "restore"):
+			ok, err, res = tausch_text_save(who, str(d.get("id") or ""), d.get("text"), d.get("ver"), L,
+                                            restore=_tz_int(d.get("v")) if a == "restore" else None)
+			if res.get("conflict"):
+				return reply(dict(res, ok=False, error=err), 409)
+		elif a == "post":
+			ok, err, res = tausch_chat_post(who, str(d.get("id") or ""), d.get("text"), L)
+		elif a in ("chat_edit", "chat_del"):
+			ok, err = tausch_chat_change(who, str(d.get("id") or ""), _tz_int(d.get("n")), d.get("text") if a == "chat_edit" else None, L); res = {}
+		else:
+			ok, err, res = False, tr("unknown action", L), {}
+		return reply(dict(res, ok=ok, error=err or None), 200 if ok else 400)
+
+	@app.route("/api/tausch/chunk", methods=["POST"])
+	def api_tausch_chunk():
+		who = tausch_who(g)
+		L = lang_()
+		try:
+			off = int(request.args.get("off", "-1"))
+		except ValueError:
+			off = -1
+		data = request.get_data(cache=False)
+		ok, err, have, code = tausch_up_chunk(who, str(request.args.get("id") or ""), off, data, L)
+		return reply({"ok": ok, "error": err or None, "have": have}, code)
+
+	@app.route("/api/tausch/text")
+	def api_tausch_text():
+		who = tausch_who(g)
+		ok, err, res = tausch_text_get(who, str(request.args.get("id") or ""), _tz_int(request.args.get("v")) or None, lang_())
+		return reply(dict(res, ok=ok, error=err or None), 200 if ok else 404)
+
+	def chat_reply(who, fid):
+		rev, after = _tz_int(request.args.get("rev"), -1), _tz_int(request.args.get("after"))
+		if request.args.get("wait") == "1" and rev >= 0 and tausch_file(fid) is not None:
+			m = tausch_file(fid)
+			if who is None or tausch_can_see(m, who):
+				_tz_chat(m)
+				if not tausch_chat_wait(fid, rev, request.headers.get("X-Forwarded-For", "").split(",")[0].strip() or request.remote_addr or "?"):
+					pass
+		ok, err, res = tausch_chat_get(who, fid, after, rev, lang_())
+		return reply(dict(res, ok=ok, error=err or None), 200 if ok else 404)
+
+	@app.route("/api/tausch/chat")
+	def api_tausch_chat():
+		return chat_reply(tausch_who(g), str(request.args.get("id") or ""))
+
+	def file_of(fid, who):
+		if not TZ_ID.match(fid or "") or _tz_load() is None:
+			return None
+		with TZ["lock"]:
+			m = TZ["files"].get(fid)
+		return m if m is not None and tausch_can_see(m, who) else None
+
+	@app.route("/tausch/dl/<fid>")
+	def tausch_dl(fid):
+		who = tausch_who(g)
+		m = file_of(fid, who)
+		if m is None:
+			return nope()
+		if not tausch_can_down(m, who):
+			return nope(403, "You may not download files.")
+		rg = request.headers.get("Range", "")
+		if not rg or rg.startswith("bytes=0-"):
+			if not tausch_rate(who["key"], "dl", 400):
+				return nope(429, "Too many downloads in a short time - wait a few minutes.")
+			log_event("web", f"File exchange: {who['name']} downloaded «{m['name']}»")
+		mime, kind, risky = tausch_type(m["name"])
+		return _tz_send(os.path.join(TZ["root"], "f", fid + ".bin"), "application/octet-stream" if risky else mime, True, m["name"])
+
+	@app.route("/tausch/view/<fid>")
+	def tausch_view(fid):
+		who = tausch_who(g)
+		m = file_of(fid, who)
+		if m is None:
+			return nope()
+		mime, kind, risky = tausch_type(m["name"])
+		if kind not in TZ_INLINE or risky:
+			return nope(415, "no preview for this file")
+		if not tausch_can_down(m, who):
+			return nope(403, "You may not download files.")
+		return _tz_send(os.path.join(TZ["root"], "f", fid + ".bin"), mime, False)
+
+	def thumb(fid, big, who):
+		m = file_of(fid, who) if who is not None else None
+		if who is None:
+			if TZ_ID.match(fid or "") and _tz_load() is not None:
+				with TZ["lock"]:
+					m = TZ["files"].get(fid)
+				if m is not None and (m["area"] != "all" or tausch_type(m["name"])[2]):
+					m = None
+		if m is None or not m.get("thumb"):
+			return nope()
+		p = os.path.join(TZ["root"], "t", fid + ("_p.jpg" if big else ".jpg"))
+		if not os.path.isfile(p):
+			return nope()
+		return _tz_send(p, "image/jpeg", False, cache="private, max-age=86400")
+
+	@app.route("/tausch/thumb/<fid>.jpg")
+	def tausch_thumb(fid):
+		return thumb(fid, False, tausch_who(g))
+
+	@app.route("/tausch/prev/<fid>.jpg")
+	def tausch_prev(fid):
+		return thumb(fid, True, tausch_who(g))
+
+
+	def guest_gate(token):
+		if not tausch_guest_ok(token):
+			return False
+		return tausch_rate("guest|" + (request.remote_addr or "?"), "g", 2000)
+
+	@app.route("/g/<token>/tausch")
+	def tausch_guest_page(token):
+		if not tausch_guest_ok(token):
+			return sx_err(404, "guest")
+		return Response(tausch_guest_html(token), mimetype="text/html", headers={"Cache-Control": "no-store", "Referrer-Policy": "no-referrer"})
+
+	@app.route("/g/<token>/tausch/list")
+	def tausch_guest_listing(token):
+		if not guest_gate(token):
+			return reply({"ok": False}, 404)
+		return reply(tausch_guest_list(str(request.args.get("folder") or "")[:80]))
+
+	@app.route("/g/<token>/tausch/text/<fid>")
+	def tausch_guest_text(token, fid):
+		if not guest_gate(token):
+			return reply({"ok": False}, 404)
+		ok, err, res = tausch_text_get(None, fid, None, lang_())
+		return reply(dict(res, ok=ok), 200 if ok else 404)
+
+	@app.route("/g/<token>/tausch/chat/<fid>")
+	def tausch_guest_chat(token, fid):
+		if not guest_gate(token):
+			return reply({"ok": False}, 404)
+		ok, err, res = tausch_chat_get(None, fid, 0, -1, lang_())
+		return reply(dict(res, ok=ok), 200 if ok else 404)
+
+	@app.route("/g/<token>/tausch/t/<fid>.jpg")
+	def tausch_guest_thumb(token, fid):
+		if not guest_gate(token):
+			return Response("not found", 404)
+		return thumb(fid, False, None)
+
+	@app.route("/g/<token>/tausch/p/<fid>.jpg")
+	def tausch_guest_prev(token, fid):
+		if not guest_gate(token):
+			return Response("not found", 404)
+		return thumb(fid, True, None)
+
+
+
+_TZS = "File exchange"
+TOGGLES.extend([
+    (_TZS, "tausch_on", "File exchange on (Mehr → File exchange)"),
+    (_TZS, "tausch_guest", "Guests see «For everyone» (pictures only, no download)"),
+    (_TZS, "tausch_push", "Push to me when someone uploads files (bundled)"),
+    (_TZS, "tausch_block_exec", "Refuse programs and scripts (.exe, .sh, .py, .js …)"),
+])
+SLIDERS.extend([
+    (_TZS, "tausch_total_gb", "Space for the file exchange in total (GB)", 0.5, 500.0, 0.5),
+    (_TZS, "tausch_file_mb", "At most per file (MB)", 5.0, 2000.0, 5.0),
+    (_TZS, "tausch_user_gb", "At most per user (GB)", 0.1, 100.0, 0.1),
+    (_TZS, "tausch_free_gb", "Always keep free on the storage (GB)", 0.5, 50.0, 0.5),
+])
+SECTIONS.append(_TZS)
+SIMPLE_SECTIONS.add(_TZS)
+SIMPLE_KEYS.add("tausch_on")
+MENU_TITLES.setdefault(_TZS, "File exchange")
+TK_SUB_ICONS[_TZS] = "▤"
+for _g in TK_GROUPS:
+	if _g[0] == "sys" and _TZS not in _g[2]:
+		_g[2].insert(_g[2].index("Updates") if "Updates" in _g[2] else len(_g[2]), _TZS)
+_tz_grp = '{sec: "Updates", ic: "⬆️"}'
+if _tz_grp in WEB_PAGE and '{sec: "File exchange"' not in WEB_PAGE:
+	WEB_PAGE = WEB_PAGE.replace(_tz_grp, '{sec: "File exchange", title: "File exchange", ic: "📁"}, ' + _tz_grp, 1)
+_tz_perm_ui = '["settings", "⚙", "Settings"]];'
+if _tz_perm_ui in WEB_PAGE:
+	WEB_PAGE = WEB_PAGE.replace(_tz_perm_ui, '["settings", "⚙", "Settings"], ["files_view", "📁", "Files: see"], ["files_down", "⬇", "Files: download"],'
+                                ' ["files_up", "⬆", "Files: upload"], ["files_admin", "🗂", "Files: manage all"]];', 1)
+SET_HELP.update({
+    "tausch_total_gb": ("All files of the file exchange together. Uploads stop with a clear message when it is full.", ""),
+    "tausch_free_gb": ("MoveEye never fills the storage: below this free space no upload is accepted (recordings and the system need room).", ""),
+})
+
+
+TZ_MORE_ROW = ('  <a class="mi" href="/tausch" id="m-tausch"><i>📁</i><span><b data-i18n="File exchange">File exchange</b><small data-i18n="Share photos, videos and documents - for everyone or only for you">'
+               'Share photos, videos and documents - for everyone or only for you</small></span><span class="ar">›</span></a>\n')
+_tz_anchor = '  <a class="mi" href="/tools">'
+if 'href="/tausch"' not in MORE_PAGE and _tz_anchor in MORE_PAGE:
+	MORE_PAGE = MORE_PAGE.replace(_tz_anchor, TZ_MORE_ROW + _tz_anchor, 1)
+	MORE_PAGE = MORE_PAGE.replace("/*ALERTS*/", 'fetch("/api/tausch", {cache: "no-store"}).then(r => r.json()).then(j => { if (!j.ok || (!j.on && !(j.me || {}).is_admin)) '
+                                  '{ const e = document.getElementById("m-tausch"); if (e) e.hidden = true; } }).catch(() => {});\n/*ALERTS*/', 1)
+MORE_DE.update({"File exchange": "Datentausch", "Share photos, videos and documents - for everyone or only for you":
+                "Fotos, Videos und Dokumente teilen – für alle oder nur für dich"})
+
+if GUI_OK:
+	_tz_tk_more_base = App._tk_more_bar
+
+	def _tz_tk_more_bar(self, parent):
+		f = _tz_tk_more_base(self, parent)
+		skip = getattr(self, "_fk_more_row", None)
+		i = len([w for w in f.grid_slaves() if w is not skip])
+		self._fbtn(f, "📁 " + tr("File exchange"), lambda: self._open_page("/tausch")).grid(row=i // 3, column=i % 3, sticky="ew", padx=(0, 6), pady=(0, 6))
+		return f
+
+
+	App._tk_more_bar = _tz_tk_more_bar
+
+
+
+GUEST_KEYS = tuple(GUEST_KEYS) + ("Shared files",)
+_tz_gfoot = '<div class="foot" id="ft"></div>'
+if _tz_gfoot in GUEST_PAGE and "gfiles" not in GUEST_PAGE:
+	GUEST_PAGE = GUEST_PAGE.replace(_tz_gfoot, _tz_gfoot + '<div class="foot"><a id="gfiles" href="__BASE__/tausch" hidden style="color:#8ab4f8;font-size:14px">📂 </a></div>', 1)
+	GUEST_PAGE = GUEST_PAGE.replace("\nst();\n</script>", '\nst();\nfetch("__BASE__/tausch/list", {cache: "no-store"}).then(r => { if (r.ok) { const a = $("#gfiles"); '
+                                    'a.textContent += g_("Shared files", "Geteilte Dateien", "Shared files"); a.hidden = false; } }).catch(() => {});\n</script>', 1)
+
+
+
+TAUSCH_PAGE = _zd('639zzc_datentausch/TAUSCH_PAGE', ZD_PAGE)
+
+TAUSCH_GUEST_HTML = _zd('639zzc_datentausch/TAUSCH_GUEST_HTML', ZD_PAGE)
+
+
+
+TZ_MD_JS = _zd('639zzc_datentausch/TZ_MD_JS', "")
+
+TZ_EDIT_JS = _zd('639zzc_datentausch/TZ_EDIT_JS', "")
+
+
+def tausch_page_html():
+	return (render_page(TAUSCH_PAGE, "more").replace("/*TZDE*/{}", json.dumps(_TZ_DE, ensure_ascii=False), 1)
+            .replace("/*TZMD*/", TZ_MD_JS, 1).replace("/*TZEDIT*/", TZ_EDIT_JS, 1))
+
+
+def tausch_guest_html(token):
+	import html as _h
+	L = sx_req_lang()
+	tx = {"note": tr("Shared files · only to look at (no download)", L), "all": tr("For everyone", L), "empty": tr("No files yet.", L),
+          "expired": tr("access expired", L), "only": tr("Preview only - downloading needs a login.", L), "read": tr("read only", L)}
+	return (TAUSCH_GUEST_HTML.replace("/*TX*/{}", json.dumps(tx, ensure_ascii=False).replace("</", "<\\/"), 1).replace("/*TZMD*/", TZ_MD_JS, 1)
+            .replace("__LIVE__", _h.escape(tr("Live", L))).replace("__BASE__", "/g/" + token))
+
+
+
+_HX_TAUSCH = _zd('639zzc_datentausch/HX_TAUSCH', _zd_hx({
+    'File exchange': 'Datentausch',
+    'Share photos, videos and documents - for everyone or only for you': 'Fotos, Videos und Dokumente teilen – für alle oder nur für dich',
+    'For everyone': 'Für alle',
+    'My files': 'Meine Dateien',
+    'Upload': 'Hochladen',
+    'New folder': 'Neuer Ordner',
+    'Name of the new folder': 'Name des neuen Ordners',
+    'Search': 'Suchen',
+    'All types': 'Alle Arten',
+    'Pictures': 'Bilder',
+    'Videos': 'Videos',
+    'Sound': 'Ton',
+    'Documents': 'Dokumente',
+    'Other': 'Andere',
+    'Newest first': 'Neueste zuerst',
+    'Oldest first': 'Älteste zuerst',
+    'Name': 'Name',
+    'Size': 'Grösse',
+    'Uploaded by': 'Hochgeladen von',
+    'Grid': 'Kacheln',
+    'List': 'Liste',
+    'Drop the files here': 'Dateien hier loslassen',
+    'USB stick': 'USB-Stick',
+    'SSD': 'SSD',
+    'Memory card': 'Speicherkarte',
+    'Drive': 'Laufwerk',
+    '{a} of {b} used': '{a} von {b} belegt',
+    'at most {n} per file': 'höchstens {n} pro Datei',
+    '{n} free on the storage': '{n} frei auf dem Speicher',
+    'Your files: {a} of {b}': 'Deine Dateien: {a} von {b}',
+    'The file exchange is switched off.': 'Der Datentausch ist ausgeschaltet.',
+    'Switch it on under Settings → System → File exchange.': 'Einschalten unter Einstellungen → System → Datentausch.',
+    'The storage (USB stick / SSD) is not there - plug it in again.': 'Der Speicher (USB-Stick / SSD) fehlt – bitte wieder einstecken.',
+    'The memory card is write-protected (overlay) - files would be lost at the next restart. Use a USB stick.': 'Die Speicherkarte ist schreibgeschützt (Overlay) – Dateien wären beim nächsten Neustart weg. Bitte einen USB-Stick verwenden.',
+    'Not enough free space on the storage: MoveEye always keeps {n} free (for recordings and the system).': 'Zu wenig Platz auf dem Speicher: MoveEye lässt immer {n} frei (für Aufnahmen und das System).',
+    'Only you see these files. As administrator you also see the private files of the others.': 'Nur du siehst diese Dateien. Als Administrator siehst du auch die privaten Dateien der anderen.',
+    'Only you (and the administrator) see these files.': 'Nur du (und der Administrator) siehst diese Dateien.',
+    'Everybody with access to MoveEye sees these files. Upload with the button or drag files onto the page.': 'Alle mit Zugang zu MoveEye sehen diese Dateien. Hochladen mit dem Knopf oder Dateien auf die Seite ziehen.',
+    'Everybody with access to MoveEye sees these files.': 'Alle mit Zugang zu MoveEye sehen diese Dateien.',
+    'file': 'Datei',
+    'files': 'Dateien',
+    'you': 'du',
+    'Delete the folder with all its files?': 'Ordner mit allen Dateien löschen?',
+    'Delete the folder?': 'Ordner löschen?',
+    'Delete this file? It cannot be undone.': 'Diese Datei löschen? Das lässt sich nicht rückgängig machen.',
+    'Nothing found.': 'Nichts gefunden.',
+    'No private files yet.': 'Noch keine privaten Dateien.',
+    'No files yet.': 'Noch keine Dateien.',
+    'Upload the first one with «Upload».': 'Lade die erste mit «Hochladen» hoch.',
+    'No preview for this kind of file (for safety only as download).': 'Keine Vorschau für diese Art Datei (aus Sicherheitsgründen nur als Download).',
+    'No preview for this file.': 'Keine Vorschau für diese Datei.',
+    'Cancel': 'Abbrechen',
+    'Cancelled': 'Abgebrochen',
+    'Done': 'Fertig',
+    'continues where it stopped …': 'macht dort weiter, wo es aufgehört hat …',
+    'Connection lost - trying again …': 'Verbindung weg – neuer Versuch …',
+    'Connection lost. Choose the same file again later: the upload continues where it stopped.': 'Verbindung weg. Wähle später dieselbe Datei nochmals: das Hochladen macht dort weiter, wo es aufgehört hat.',
+    'No connection to MoveEye.': 'Keine Verbindung zu MoveEye.',
+    'error': 'Fehler',
+    'Shared files': 'Geteilte Dateien',
+    'Shared files · only to look at (no download)': 'Geteilte Dateien · nur ansehen (kein Download)',
+    'Preview only - downloading needs a login.': 'Nur Vorschau – herunterladen geht nur mit Anmeldung.',
+    'Files: see': 'Dateien: ansehen',
+    'Files: download': 'Dateien: herunterladen',
+    'Files: upload': 'Dateien: hochladen',
+    'Files: manage all': 'Dateien: alles verwalten',
+    'File exchange on (Mehr → File exchange)': 'Datentausch an (Mehr → Datentausch)',
+    'Guests see «For everyone» (pictures only, no download)': 'Gäste sehen «Für alle» (nur Bilder, kein Download)',
+    'Push to me when someone uploads files (bundled)': 'Push an mich, wenn jemand Dateien hochlädt (gebündelt)',
+    'Refuse programs and scripts (.exe, .sh, .py, .js …)': 'Programme und Skripte ablehnen (.exe, .sh, .py, .js …)',
+    'Space for the file exchange in total (GB)': 'Platz für den Datentausch gesamt (GB)',
+    'At most per file (MB)': 'Höchstens pro Datei (MB)',
+    'At most per user (GB)': 'Höchstens pro Benutzer (GB)',
+    'Always keep free on the storage (GB)': 'Immer frei lassen auf dem Speicher (GB)',
+    'All files of the file exchange together. Uploads stop with a clear message when it is full.': 'Alle Dateien des Datentauschs zusammen. Ist es voll, stoppt das Hochladen mit einer klaren Meldung.',
+    'MoveEye never fills the storage: below this free space no upload is accepted (recordings and the system need room).': 'MoveEye füllt den Speicher nie ganz: unter diesem freien Platz wird nichts mehr angenommen (Aufnahmen und System brauchen Platz).',
+    'Too big: at most {n} per file.': 'Zu gross: höchstens {n} pro Datei.',
+    'Too many files (at most {n}) - delete old ones first.': 'Zu viele Dateien (höchstens {n}) – zuerst alte löschen.',
+    'The file exchange is full: {a} of {b} used. Delete old files first.': 'Der Datentausch ist voll: {a} von {b} belegt. Zuerst alte Dateien löschen.',
+    'Your space is full: {a} of {b} used. Delete some of your files first.': 'Dein Platz ist voll: {a} von {b} belegt. Zuerst eigene Dateien löschen.',
+    'You may not upload files.': 'Du darfst keine Dateien hochladen.',
+    'You may not download files.': 'Du darfst keine Dateien herunterladen.',
+    'You may not create folders.': 'Du darfst keine Ordner anlegen.',
+    'the file needs a name': 'die Datei braucht einen Namen',
+    'the folder needs a name': 'der Ordner braucht einen Namen',
+    'hidden files (name starts with «.») are not accepted': 'versteckte Dateien (Name beginnt mit «.») werden nicht angenommen',
+    'Programs and scripts are not accepted (.{e}). Pack them into a ZIP if you really need to share them.': 'Programme und Skripte werden nicht angenommen (.{e}). Wenn es wirklich sein muss: in eine ZIP-Datei packen.',
+    'This file is a program or script - not accepted.': 'Diese Datei ist ein Programm oder Skript – nicht angenommen.',
+    'unknown size': 'unbekannte Grösse',
+    'This folder does not exist (any more).': 'Diesen Ordner gibt es nicht (mehr).',
+    'Too many uploads at the same time - wait until the others are done.': 'Zu viele Uploads gleichzeitig – warte, bis die anderen fertig sind.',
+    'Too many uploads in a short time - wait a few minutes.': 'Zu viele Uploads in kurzer Zeit – warte ein paar Minuten.',
+    'Too many downloads in a short time - wait a few minutes.': 'Zu viele Downloads in kurzer Zeit – warte ein paar Minuten.',
+    'Too many changes in a short time - wait a few minutes.': 'Zu viele Änderungen in kurzer Zeit – warte ein paar Minuten.',
+    'The storage cannot be written to.': 'Auf den Speicher kann nicht geschrieben werden.',
+    'unknown upload': 'unbekannter Upload',
+    'piece too big': 'Stück zu gross',
+    'busy - try again': 'beschäftigt – nochmals versuchen',
+    'more data than announced': 'mehr Daten als angekündigt',
+    'The upload is not complete yet.': 'Das Hochladen ist noch nicht fertig.',
+    'unknown file': 'unbekannte Datei',
+    'Only the person who uploaded it (or the administrator) may delete this file.': 'Nur wer die Datei hochgeladen hat (oder der Administrator), darf sie löschen.',
+    'This folder exists already.': 'Diesen Ordner gibt es schon.',
+    'At most {n} folders.': 'Höchstens {n} Ordner.',
+    'unknown folder': 'unbekannter Ordner',
+    'The folder is not empty - only the administrator can delete it with all files.': 'Der Ordner ist nicht leer – nur der Administrator kann ihn mit allen Dateien löschen.',
+    'Only the person who created it (or the administrator) may delete this folder.': 'Nur wer den Ordner angelegt hat (oder der Administrator), darf ihn löschen.',
+    'no preview for this file': 'keine Vorschau für diese Datei',
+    '{who} uploaded a file': '{who} hat eine Datei hochgeladen',
+    'New text': 'Neuer Text',
+    'New chat': 'Neuer Chat',
+    'Chats': 'Chats',
+    'Chat': 'Chat',
+    'Name of the new text (.txt or .md)': 'Name des neuen Texts (.txt oder .md)',
+    'Notes.txt': 'Notizen.txt',
+    'Name of the new chat': 'Name des neuen Chats',
+    'not saved': 'nicht gespeichert',
+    'Version {v}': 'Version {v}',
+    'read only': 'nur lesen',
+    'Edit': 'Bearbeiten',
+    'Preview': 'Vorschau',
+    'Close without saving?': 'Ohne Speichern schliessen?',
+    'Monospace': 'Feste Zeichenbreite',
+    'Versions': 'Versionen',
+    'Save': 'Speichern',
+    'Saved': 'Gespeichert',
+    'Meanwhile {who} has changed something.': 'Inzwischen hat {who} etwas geändert.',
+    'Your text is not saved yet. What now?': 'Dein Text ist noch nicht gespeichert. Was nun?',
+    'Show the differences': 'Unterschiede ansehen',
+    'Overwrite anyway': 'Trotzdem überschreiben',
+    'Save mine as a copy': 'Meine als Kopie speichern',
+    'Too long for a comparison.': 'Zu lang für einen Vergleich.',
+    'now on MoveEye': 'jetzt auf MoveEye',
+    'yours': 'deine',
+    'my version': 'meine Fassung',
+    'No older versions yet.': 'Noch keine älteren Versionen.',
+    'The last 20 versions are kept (they count in the space of the owner).': 'Die letzten 20 Versionen bleiben (sie zählen zum Platz des Besitzers).',
+    'Restore': 'Wiederherstellen',
+    'Show': 'Ansehen',
+    'Send': 'Senden',
+    'Message': 'Nachricht',
+    'No messages yet.': 'Noch keine Nachrichten.',
+    'Write the first one below.': 'Schreib unten die erste.',
+    'changed': 'geändert',
+    'Change': 'Ändern',
+    'Change the message': 'Nachricht ändern',
+    'Delete': 'Löschen',
+    'Download': 'Herunterladen',
+    'Delete this message?': 'Diese Nachricht löschen?',
+    'Message deleted': 'Nachricht gelöscht',
+    'Chats are made with «New chat».': 'Chats entstehen mit «Neuer Chat».',
+    'This is not a text file.': 'Das ist keine Textdatei.',
+    'Too big for the editor (at most {n}) - download it instead.': 'Zu gross für den Editor (höchstens {n}) – bitte herunterladen.',
+    'This version is not kept any more.': 'Diese Version gibt es nicht mehr.',
+    'You may not change this text.': 'Du darfst diesen Text nicht ändern.',
+    'no text': 'kein Text',
+    'This is not a chat.': 'Das ist kein Chat.',
+    'You may not write in this chat.': 'Du darfst in diesem Chat nicht schreiben.',
+    'The message is empty.': 'Die Nachricht ist leer.',
+    'Too long: at most {n} per message.': 'Zu lang: höchstens {n} pro Nachricht.',
+    'Too many messages in a short time - wait a moment.': 'Zu viele Nachrichten in kurzer Zeit – kurz warten.',
+    'This chat is full - start a new one.': 'Dieser Chat ist voll – bitte einen neuen beginnen.',
+    'unknown message': 'unbekannte Nachricht',
+    'Only your own messages, and only within 5 minutes.': 'Nur eigene Nachrichten und nur innert 5 Minuten.',
+    '{who} wrote in «{chat}»': '{who} hat geschrieben in «{chat}»',
+    '{who} wrote {n}× in «{chat}»': '{who} hat {n}× geschrieben in «{chat}»',
+    '{who} have written {n}× in «{chat}»': '{who} haben {n}× geschrieben in «{chat}»',
+    '{who} uploaded {n} files': '{who} hat {n} Dateien hochgeladen',
+}))
+for _k, _v in _HX_TAUSCH.items():
+	DE.setdefault(_k, _v[0])
+	for _i, _L in enumerate(("fr", "it", "rm")):
+		TRX[_L].setdefault(_k, _v[_i + 1])
+_TZ_DE = {_k: _v[0] for _k, _v in _HX_TAUSCH.items()}
+
+
+_HELP_TZ = _zd('639zzc_datentausch/HELP_TZ', _ZDDict())
+
+
+def _help_tz(doc, lang):
+	if 'id="tausch"' in doc:
+		return doc
+	i = doc.find('<section id="tips"')
+	return doc[:i] + _HELP_TZ[lang] + doc[i:] if i >= 0 else doc
+
+
+_hp_en_tz = HELP_PAGE.find('<div lang="en">')
+if _hp_en_tz > 0:
+	HELP_PAGE = _help_tz(HELP_PAGE[:_hp_en_tz], "de") + _help_tz(HELP_PAGE[_hp_en_tz:], "en")
+for _L in ("fr", "it", "rm"):
+	if HELP_X.get(_L):
+		HELP_X[_L] = _help_tz(HELP_X[_L], _L)
+
+
+
+def tausch_selftest():
+	keep = {k: CFG.get(k) for k in ("tausch_on", "tausch_push", "tausch_block_exec", "tausch_total_gb", "tausch_file_mb", "tausch_user_gb",
+                                    "tausch_free_gb", "lang")}
+	keepTZ = {k: TZ.get(k) for k in ("root", "files", "folders", "ups", "rate", "push", "root_test", "chats", "push_manual")}
+	g = globals()
+	sv = {k: g[k] for k in ("tausch_disk_free", "log_event", "tausch_thumb_queue", "tausch_push_send", "tausch_push_user", "tausch_push_ok")}
+	tmp = tempfile.mkdtemp(prefix="mw_tz_")
+	try:
+		g["log_event"] = lambda *a, **k: None
+		g["tausch_thumb_queue"] = lambda fid: None
+		sent = []
+		g["tausch_push_send"] = lambda txt, *a: sent.append(txt) or True
+		g["tausch_push_user"] = lambda name, txt, *a: sent.append((name, txt)) or True
+		g["tausch_push_ok"] = lambda: (True, False)
+		TZ["push_manual"] = True
+		free = {"n": 50 * TZ_GB}
+		g["tausch_disk_free"] = lambda p: free["n"]
+		CFG.update(tausch_on=True, tausch_push=True, tausch_block_exec=True, tausch_total_gb=5.0, tausch_file_mb=200.0, tausch_user_gb=1.0,
+                   tausch_free_gb=2.0, lang="de")
+		TZ.update(root=None, files=None, folders=None, ups={}, rate={}, push={}, root_test=tmp, chats={})
+
+		assert tausch_clean_name("../../etc/passwd")[0] == "passwd" and tausch_clean_name("..\\..\\boot.ini")[0] == "boot.ini"
+		assert tausch_clean_name(".bashrc")[0] is None and tausch_clean_name("..")[0] is None and tausch_clean_name("  ")[0] is None
+		assert tausch_clean_name("Rechnung‮gpj.exe")[0] == "Rechnunggpj.exe" and tausch_blocked("Rechnunggpj.exe")
+		assert tausch_clean_name("Café.jpg")[0] == "Café.jpg" and tausch_clean_name("CON.txt")[0] == "_CON.txt"
+		assert tausch_clean_name('a<b>:c"d|e?f*.png')[0] == "a_b__c_d_e_f_.png" and len(tausch_clean_name("x" * 400 + ".jpg")[0]) == 120
+		assert tausch_blocked("x.SH") and tausch_blocked("bild.jpg.exe") and not tausch_blocked("x.exe.txt") and tausch_type("a.svg")[2]
+		assert tausch_magic_exec(b"MZ\x90\x00") and tausch_magic_exec(b"\x7fELF") and not tausch_magic_exec(b"\xff\xd8\xff")
+
+		P = lambda r: tausch_imply(ROLE_PERMS.get(r, ()))
+		assert P("family") >= {"files_view", "files_down", "files_up"} and "files_admin" not in P("family")
+		assert P("friend") & set(TZ_PERMS) == {"files_view", "files_down"} == P("view") & set(TZ_PERMS)
+		assert not P("kid") & set(TZ_PERMS) and tausch_imply({"files_admin"}) == set(TZ_PERMS) and "files_view" in tausch_imply({"files_up"})
+		assert role_allows("family", "/api/tausch", "POST", {}) and not role_allows("kid", "/tausch", "GET", {})
+		assert role_allows("custom", "/tausch/dl/x", "GET", {}, user_perms({"role": "custom", "perms": ["files_down"]}))
+		assert not role_allows("custom", "/tausch", "GET", {}, user_perms({"role": "custom", "perms": ["live"]}))
+
+		anna = {"key": "anna", "name": "Anna", "admin": False, "perms": P("family"), "is_admin": False}
+		ok, err, r = tausch_up_start(anna, {"name": "Ferien.jpg", "size": 5, "area": "all"})
+		assert ok, err
+		assert tausch_up_chunk(anna, r["id"], 2, b"xx")[3] == 409, "a piece at the wrong place"
+		assert tausch_up_chunk(anna, r["id"], 0, b"\xff\xd8\xff\xe0x")[0]
+		ok, err, res = tausch_up_finish(anna, r["id"])
+		assert ok and res["file"]["name"] == "Ferien.jpg" and sent == [], (err, sent)
+		assert not tausch_up_start(anna, {"name": "gross.mp4", "size": 201 * TZ_MB, "area": "all"})[0]
+		assert not tausch_up_start(anna, {"name": "x.mp4", "size": 1025 * TZ_MB, "area": "mine"})[0] or CFG["tausch_file_mb"] < 1025
+		free["n"] = 2 * TZ_GB + 3
+		assert "frei" in tausch_up_start(anna, {"name": "b.jpg", "size": 10, "area": "all"})[1], "keep 2 GB free"
+		free["n"] = 50 * TZ_GB
+		assert tausch_push_tick(time.time() + 200) == ["Anna hat eine Datei hochgeladen"], TZ["push"]
+		tausch_push_note(anna, 2); tausch_push_note(anna)
+		assert tausch_push_tick(time.time() + 200) == ["Anna hat 3 Dateien hochgeladen"]
+		fid = res["file"]["id"]
+		bob = {"key": "bob", "name": "Bob", "admin": False, "perms": P("friend"), "is_admin": False}
+		assert not tausch_delete(bob, fid)[0] and tausch_delete(anna, fid)[0]
+
+		ok, err, r = tausch_create(anna, {"name": "Plan.md", "area": "all", "text": "eins"}, "text")
+		tid = r["file"]["id"]
+		assert ok and r["file"]["kind"] == "text" and tausch_text_save(anna, tid, "zwei", 1)[0]
+		ok, err, c = tausch_text_save(anna, tid, "drei", 1)
+		assert not ok and c.get("conflict") and c["text"] == "zwei" and c["ver"] == 2, (err, c)
+		assert not tausch_text_save(bob, tid, "x", 2)[0], "friend: no editing"
+		assert tausch_text_save(anna, tid, None, 2, restore=1)[0] and tausch_text_get(anna, tid)[2]["text"] == "eins"
+
+		ok, err, r = tausch_create(anna, {"name": "Ferienplanung", "area": "all"}, "chat")
+		cid = r["file"]["id"]
+		assert r["file"]["name"] == "Ferienplanung.chat" and tausch_chat_post(anna, cid, "Hallo <b>")[0]
+		assert not tausch_chat_post(bob, cid, "hi")[0], "friend reads only"
+		carl = dict(anna, key="carl", name="Carl")
+		TZ["push"].clear()
+		assert tausch_chat_post(carl, cid, "Ja")[0] and tausch_chat_post(carl, cid, "Gut")[0]
+		assert tausch_push_tick(time.time() + 200) == ["Carl hat 2× geschrieben in «Ferienplanung»"], TZ["push"]
+		j = tausch_chat_get(None, cid)[2]
+		assert [p["x"] for p in j["posts"]] == ["Hallo <b>", "Ja", "Gut"] and "k" not in j["posts"][0]
+	finally:
+		CFG.update(keep); TZ.update(keepTZ); g.update(sv)
+		shutil.rmtree(tmp, ignore_errors=True)
+	return "names, programs, rights per role, pieces, limits, 2 GB free, push «Anna hat 3 Dateien hochgeladen», delete rules, text versions, chat"
+
+
+SELFTEST_EXTRA.append(("File exchange: names, rights, limits, pieces, push (639zzc)", tausch_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+BIO_TAG = "bioclip-3"
+BIO_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/" + BIO_TAG + "/"}
+
+
+
+
+
+
+BIO_FILES = {
+    "model": {"name": "bioclip-1-bild-fp32.onnx", "size": 345124167,
+              "sha256": "c88a6b554da4f11caa29887bbbb3b02f2aeed891c49ede400ac1706c64e45687"},
+    "emb": {"name": "bioclip-1-arten.npy", "size": 10568832,
+            "sha256": "d170bb9363f33a6524f6bef666df09b66c137c5f5c410af9d84d5aedc88c6663"},
+    "labels": {"name": "bioclip-1-arten.json", "size": 1523047,
+               "sha256": "d8cb52c4f9bae2f51147579bc71c1b65e0dfd66133115c3f9ca204423e6ec699"},
+}
+
+
+BIO_INFO = {"tag": "bioclip-info-1", "name": "bioclip-info-1.sqlite", "size": 2744320,
+            "sha256": "cc2c1fb599b8517dd4bbed1aa5762c8d173736907b6fc28186f0bbcdb8611990"}
+BIO_INFO_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/" + BIO_INFO["tag"] + "/"}
+BIO_INFO_MAX = 40 * 1024 * 1024
+BIO_EDIBLE_WARN = ("Edible according to Wikipedia – risk of confusion with poisonous species, never eat based only on an app "
+                   "identification. Emergency: Tox Info Suisse 145")
+BIO_FOOT = "For orientation only – not for identifying edible species. Suspected poisoning: Tox Info Suisse 145."
+BIO_EDIBLE_WORDS = re.compile(r"essbar|Speisepilz|genießbar|geniessbar|Wildgemüse|gegessen|verzehr|\bedible\b|\beaten\b|culinary", re.I)
+BIO_MAX_BYTES = 400 * 1024 * 1024
+BIO_IDLE_S = 10 * 60
+BIO_IDLE_TICK = 20
+BIO_TIMEOUT_S = 120.0
+BIO_CACHE_N = 3000
+BIO_THREADS = 2
+BIO_TOPK = 3
+BIO_SURE = 0.60
+BIO_FALLBACK_BELOW = 0.50
+BIO_UNSURE = 0.12
+BIO_RATE = (30, 90)
+BIO_RANKS = ("kingdom", "phylum", "class", "order", "family", "genus", "species")
+
+for _k, _v in {"tausch_bio": True}.items():
+	CFG.setdefault(_k, _v); DEFAULTS.setdefault(_k, _v); FACTORY_CFG.setdefault(_k, _v)
+USER_SETTINGS_DENY.update({"tausch_bio"})
+for _p in TZ_PERMS:
+	PERM_POST[_p] = set(PERM_POST.get(_p, ())) | {"/api/tausch/bio"}
+
+BIO = {"lock": threading.Lock(), "proc": None, "q": None, "last": 0.0, "err": "", "ms": None, "load_ms": None, "job": "",
+       "install": "", "jobs": {}, "sha": {}, "mem": {}, "idle_thread": False}
+BIO_DL = {"running": False, "got": 0, "total": 0, "msg": "", "stop": False, "done": False}
+BIO_DB = {"lock": threading.Lock(), "con": None}
+
+
+def bio_dir():
+	return os.path.join(DATA_DIR, "bioclip")
+
+
+def bio_path(which):
+	return os.path.join(bio_dir(), BIO_FILES[which]["name"])
+
+
+def bio_pinned():
+	""
+	tot = 0
+	for f in BIO_FILES.values():
+		if not isinstance(f.get("size"), int) or f["size"] <= 0 or not re.fullmatch(r"[0-9a-f]{64}", str(f.get("sha256") or "")):
+			return False
+		if not re.fullmatch(r"[A-Za-z0-9._-]{1,80}", f.get("name") or ""):
+			return False
+		tot += f["size"]
+	return tot <= BIO_MAX_BYTES
+
+
+def bio_total():
+	return sum(int(f.get("size") or 0) for f in BIO_FILES.values())
+
+
+def bio_installed():
+	""
+	if not bio_pinned():
+		return False
+	try:
+		for w, f in BIO_FILES.items():
+			if os.path.getsize(bio_path(w)) != f["size"]:
+				return False
+		with open(os.path.join(bio_dir(), "bioclip.ok"), encoding="utf-8") as fh:
+			return fh.read().strip() == bio_ok_mark()
+	except OSError:
+		return False
+
+
+def bio_ok_mark():
+	return ",".join(BIO_FILES[w]["sha256"] for w in sorted(BIO_FILES))
+
+
+def bio_runtime():
+	import importlib.util
+	try:
+		return importlib.util.find_spec("onnxruntime") is not None and importlib.util.find_spec("numpy") is not None
+	except (ImportError, ValueError):
+		return False
+
+
+
+def bio_info_pinned():
+	f = BIO_INFO
+	return (isinstance(f.get("size"), int) and 0 < f["size"] <= BIO_INFO_MAX and bool(re.fullmatch(r"[0-9a-f]{64}", str(f.get("sha256") or "")))
+            and bool(re.fullmatch(r"[A-Za-z0-9._-]{1,80}", f.get("name") or "")))
+
+
+def bio_info_path():
+	return os.path.join(bio_dir(), BIO_INFO["name"])
+
+
+def bio_info_installed():
+	if not bio_info_pinned():
+		return False
+	try:
+		if os.path.getsize(bio_info_path()) != BIO_INFO["size"]:
+			return False
+		with open(os.path.join(bio_dir(), "info.ok"), encoding="utf-8") as fh:
+			return fh.read().strip() == BIO_INFO["sha256"]
+	except OSError:
+		return False
+
+
+def bio_info_close():
+	with BIO_DB["lock"]:
+		if BIO_DB["con"] is not None:
+			try:
+				BIO_DB["con"].close()
+			except Exception:
+				pass
+		BIO_DB["con"] = None
+
+
+def bio_info_get(sci):
+	""
+	import sqlite3
+	import zlib
+	if not bio_info_installed():
+		return None
+	with BIO_DB["lock"]:
+		try:
+			if BIO_DB["con"] is None:
+				BIO_DB["con"] = sqlite3.connect("file:" + urllib.parse.quote(bio_info_path()) + "?mode=ro&immutable=1", uri=True,
+                                                check_same_thread=False)
+			row = BIO_DB["con"].execute("SELECT z FROM info WHERE sci = ?", (str(sci)[:120],)).fetchone()
+		except Exception:
+			BIO_DB["con"] = None
+			return None
+	if not row:
+		return None
+	try:
+		e = json.loads(zlib.decompress(row[0]).decode("utf-8"))
+	except (zlib.error, ValueError):
+		return None
+	return e if isinstance(e, dict) else None
+
+
+def _bio_edible(sents, L):
+	""
+	s = [str(x)[:400] for x in (sents or []) if str(x).strip()][:2]
+	return {"warn": tr(BIO_EDIBLE_WARN, L), "s": s} if s else None
+
+
+def _bio_wiki_url(lang, title, rev=None, hist=False):
+	from urllib.parse import quote
+	host = "https://%s.wikipedia.org" % ("en" if lang == "en" else "de")
+	if hist:
+		return host + "/w/index.php?title=" + quote(title.replace(" ", "_")) + "&action=history"
+	return host + "/wiki/" + quote(title.replace(" ", "_"))
+
+
+def bio_card(e, tax, L):
+	""
+	L = norm_lang(L)
+	tax = [str(x) for x in (tax or []) if x]
+	c = {"tax": " › ".join(tax[:6] + ([tax[5] + " " + tax[6]] if len(tax) >= 7 else [])), "empty": True}
+	if not isinstance(e, dict):
+		return c
+	if e.get("x") and e.get("t"):
+		lang = "en" if e.get("l") == "en" else "de"
+		c.update(empty=False, lang=lang, text=str(e["x"])[:900], title=str(e["t"])[:120], url=_bio_wiki_url(lang, e["t"]),
+                 hist=_bio_wiki_url(lang, e["t"], hist=True))
+		if lang == "en":
+			c["en_t"] = tr("(English)", L)
+	tox = [str(x)[:400] for x in (e.get("tox") or [])][:2]
+	if tox or e.get("toxwd"):
+		c["tox"] = {"s": tox, "src": "Wikipedia" if tox else "Wikidata"}
+		if not tox:
+			c["tox"]["s"] = [tr("Marked as poisonous in Wikidata.", L)]
+	elif e.get("ed"):
+		ed = _bio_edible(e["ed"], L)
+		if ed:
+			c["edible"] = ed
+	look = []
+	for x in (e.get("look") or [])[:6]:
+		if isinstance(x, (list, tuple)) and x:
+			look.append({"name": str(x[0])[:80], "tox": bool(len(x) > 1 and x[1]), "url": _bio_wiki_url("de", str(x[0]))})
+	if look:
+		c["look"] = look
+	facts = []
+	for k, lab in (("h", "Height"), ("iucn", "Red List (IUCN)"), ("hab", "Habitat")):
+		if e.get(k):
+			facts.append([tr(lab, L), str(e[k])[:120]])
+	if facts:
+		c["facts"] = facts
+	if not c.get("tox") and not c.get("edible") and BIO_EDIBLE_WORDS.search(c.get("text") or ""):
+		c["note_ed"] = tr(BIO_EDIBLE_WARN, L)
+	c["empty"] = not (c.get("text") or c.get("tox") or c.get("edible") or look or facts)
+	return c
+
+
+
+BIO_WORKER = r'''
+import json, os, sys, time
+def out(d):
+    sys.stdout.write(json.dumps(d) + "\n"); sys.stdout.flush()
+try:
+    import numpy as np
+    import onnxruntime as ort
+    import cv2
+except Exception as e:
+    out({"ready": False, "error": "runtime: " + str(e)[:160]}); sys.exit(0)
+S = {}
+def load(q):
+    key = (q["model"], q["emb"], q["labels"])
+    if S.get("key") == key:
+        return 0
+    t0 = time.time()
+    S.clear()
+    so = ort.SessionOptions(); so.intra_op_num_threads = int(q.get("threads") or 2); so.inter_op_num_threads = 1
+    sess = ort.InferenceSession(q["model"], so, providers=["CPUExecutionProvider"])
+    with open(q["labels"], encoding="utf-8") as f:
+        L = json.load(f)
+    E = np.load(q["emb"], allow_pickle=False).astype(np.float32)
+    taxa = L["taxa"]
+    if E.ndim != 2 or E.shape[0] != len(taxa):
+        raise ValueError("labels and embeddings do not fit together")
+    E /= np.maximum(np.linalg.norm(E, axis=1, keepdims=True), 1e-6)
+    gid = []
+    for r in range(6):                                   # kingdom … genus: one group number per row (for summing up)
+        m = {}
+        gid.append((np.array([m.setdefault("|".join(t[:r + 1]), len(m)) for t in taxa], dtype=np.int64), m))
+    S.update(key=key, sess=sess, inp=sess.get_inputs()[0].name, E=E, L=L, gid=gid,
+             scale=float(L.get("logit_scale") or 100.0), size=int(L.get("size") or 224),
+             mean=np.array(L.get("mean") or (0.48145466, 0.4578275, 0.40821073), np.float32),
+             std=np.array(L.get("std") or (0.26862954, 0.26130258, 0.27577711), np.float32))
+    return int((time.time() - t0) * 1000)
+def prep(path):
+    im = cv2.imread(path, cv2.IMREAD_COLOR)
+    if im is None:
+        raise ValueError("picture not readable")
+    n = S["size"]; h, w = im.shape[:2]; s = n / float(min(h, w))
+    nw, nh = max(n, round(w * s)), max(n, round(h * s))
+    im = cv2.resize(im, (nw, nh), interpolation=cv2.INTER_AREA if s < 1 else cv2.INTER_CUBIC)
+    y, x = (nh - n) // 2, (nw - n) // 2
+    im = im[y:y + n, x:x + n, ::-1].astype(np.float32) / 255.0
+    return ((im - S["mean"]) / S["std"]).transpose(2, 0, 1)[None].copy()
+def run(q):
+    lm = load(q)
+    t0 = time.time()
+    e = np.asarray(S["sess"].run(None, {S["inp"]: prep(q["img"])})[0], dtype=np.float32).reshape(-1)
+    e /= max(float(np.linalg.norm(e)), 1e-6)
+    lg = S["scale"] * (S["E"] @ e)
+    p = np.exp(lg - lg.max()); p /= p.sum()
+    k = int(q.get("k") or 3)
+    taxa, names = S["L"]["taxa"], S["L"].get("names") or {}
+    top = [{"tax": taxa[i], "p": round(float(p[i]), 5)} for i in np.argsort(-p)[:k]]
+    ranks = {}
+    for r, (g, m) in enumerate(S["gid"]):
+        s = np.bincount(g, weights=p, minlength=len(m))
+        b = int(np.argmax(s))
+        i = int(np.argmax(g == b))
+        ranks[["kingdom", "phylum", "class", "order", "family", "genus"][r]] = {"tax": taxa[i][:r + 1], "p": round(float(s[b]), 5)}
+    want = set()
+    for t in top:
+        want.update([t["tax"][5] + " " + t["tax"][6], t["tax"][4], t["tax"][5]])
+    for v in ranks.values():
+        want.add(v["tax"][-1])
+    return {"ok": True, "top": top, "ranks": ranks, "names": {n: names[n] for n in want if n in names},
+            "ms": int((time.time() - t0) * 1000), "load_ms": lm, "n": len(taxa)}
+out({"ready": True, "ort": getattr(ort, "__version__", "?")})
+for line in sys.stdin:
+    try:
+        out(run(json.loads(line)))
+    except Exception as e:
+        out({"ok": False, "error": (e.__class__.__name__ + ": " + str(e))[:200]})
+'''
+
+
+def _bio_reader(p, q):
+	try:
+		for line in p.stdout:
+			try:
+				q.put(json.loads(line))
+			except ValueError:
+				pass
+	except Exception:
+		pass
+	q.put(None)
+
+
+def bio_worker_start():
+	""
+	import queue
+	p = BIO["proc"]
+	if p is not None and p.poll() is None:
+		return True, ""
+	os.makedirs(bio_dir(), exist_ok=True)
+	cmd = [sys.executable, "-E"] + (["-P"] if sys.version_info >= (3, 11) else []) + ["-c", BIO_WORKER]
+	if shutil.which("nice"):
+		cmd = ["nice", "-n", "10"] + cmd
+	try:
+		p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, bufsize=1,
+                             cwd=bio_dir(), env={k: v for k, v in os.environ.items() if k in ("PATH", "HOME", "LANG", "LC_ALL", "USER",
+                                                                                              "OMP_NUM_THREADS")})
+	except OSError as e:
+		return False, str(e)[:160]
+	q = queue.Queue()
+	threading.Thread(target=_bio_reader, args=(p, q), daemon=True, name="bio-read").start()
+	try:
+		r = q.get(timeout=40)
+	except queue.Empty:
+		r = None
+	if not r or not r.get("ready"):
+		try:
+			p.kill()
+		except OSError:
+			pass
+		return False, (r or {}).get("error") or "the identification did not start"
+	BIO.update(proc=p, q=q, last=time.time())
+	_bio_idle_watch()
+	return True, ""
+
+
+def bio_worker_stop():
+	p = BIO.get("proc")
+	BIO["proc"] = None
+	if p is not None:
+		try:
+			p.stdin.close()
+		except Exception:
+			pass
+		try:
+			p.wait(timeout=3)
+		except Exception:
+			try:
+				p.kill()
+			except OSError:
+				pass
+
+
+def _bio_idle_watch():
+	if BIO.get("idle_thread"):
+		return
+	BIO["idle_thread"] = True
+
+	def run():
+		while True:
+			time.sleep(BIO_IDLE_TICK)
+			with BIO["lock"]:
+				if BIO.get("proc") is not None and not BIO["job"] and time.time() - BIO["last"] > BIO_IDLE_S:
+					bio_worker_stop()
+	threading.Thread(target=run, daemon=True, name="bio-idle").start()
+
+
+def bio_infer(img):
+	""
+	import queue
+	if not bio_installed():
+		return False, "the identification is not loaded yet", {}
+	with BIO["lock"]:
+		ok, err = bio_worker_start()
+		if not ok:
+			BIO["err"] = err
+			return False, err, {}
+		req = {"model": bio_path("model"), "emb": bio_path("emb"), "labels": bio_path("labels"), "img": os.path.abspath(img),
+               "k": BIO_TOPK, "threads": BIO_THREADS}
+		try:
+			BIO["proc"].stdin.write(json.dumps(req) + "\n"); BIO["proc"].stdin.flush()
+			r = BIO["q"].get(timeout=BIO_TIMEOUT_S)
+		except (OSError, ValueError, queue.Empty) as e:
+			bio_worker_stop()
+			r = {"ok": False, "error": "timeout" if isinstance(e, queue.Empty) else str(e)[:100]}
+		if r is None:
+			bio_worker_stop(); r = {"ok": False, "error": "the identification stopped"}
+		BIO["last"] = time.time()
+	if not r.get("ok"):
+		BIO["err"] = str(r.get("error") or "failed")[:200]
+		return False, BIO["err"], {}
+	BIO.update(err="", ms=r.get("ms"), load_ms=r.get("load_ms") or BIO.get("load_ms"))
+	return True, "", r
+
+
+
+def bio_cache_dir():
+	return os.path.join(bio_dir(), "cache")
+
+
+def bio_key(sha):
+	return hashlib.sha256((BIO_TAG + "|" + bio_ok_mark() + "|" + sha).encode()).hexdigest()[:32]
+
+
+def bio_cache_get(sha):
+	k = bio_key(sha)
+	if k in BIO["mem"]:
+		return BIO["mem"][k]
+	try:
+		with open(os.path.join(bio_cache_dir(), k + ".json"), encoding="utf-8") as f:
+			r = json.load(f)
+	except (OSError, ValueError):
+		return None
+	if not isinstance(r, dict) or not isinstance(r.get("top"), list):
+		return None
+	BIO["mem"][k] = r
+	return r
+
+
+def bio_cache_put(sha, raw):
+	k = bio_key(sha)
+	r = {x: raw.get(x) for x in ("top", "ranks", "names", "ms", "n")}
+	BIO["mem"][k] = r
+	if len(BIO["mem"]) > 400:
+		BIO["mem"].pop(next(iter(BIO["mem"])), None)
+	try:
+		os.makedirs(bio_cache_dir(), exist_ok=True)
+		p = os.path.join(bio_cache_dir(), k + ".json")
+		with open(p + ".tmp", "w", encoding="utf-8") as f:
+			json.dump(r, f, ensure_ascii=False, separators=(",", ":"))
+		os.replace(p + ".tmp", p)
+		fs = sorted(glob.glob(os.path.join(bio_cache_dir(), "*.json")), key=lambda x: os.path.getmtime(x))
+		for x in fs[:max(0, len(fs) - BIO_CACHE_N)]:
+			os.remove(x)
+	except OSError:
+		pass
+	return r
+
+
+def bio_file_sha(root, m):
+	""
+	src = os.path.join(root, "f", m["id"] + ".bin")
+	try:
+		st = os.stat(src)
+	except OSError:
+		return ""
+	memo = BIO["sha"].get(m["id"])
+	if memo and memo[0] == st.st_size and memo[1] == st.st_mtime:
+		return memo[2]
+	h = hashlib.sha256()
+	with open(src, "rb") as f:
+		for b in iter(lambda: f.read(1 << 20), b""):
+			h.update(b)
+	BIO["sha"][m["id"]] = (st.st_size, st.st_mtime, h.hexdigest())
+	if len(BIO["sha"]) > 6000:
+		BIO["sha"].pop(next(iter(BIO["sha"])), None)
+	return h.hexdigest()
+
+
+
+BIO_GROUPS = {"plant": ("🌿", "Plant"), "animal": ("🐾", "Animal"), "insect": ("🐞", "Insect"), "fungus": ("🍄", "Fungus"),
+              "other": ("🔬", "Other living thing")}
+BIO_RANK_T = {"species": "Species", "genus": "Genus", "family": "Family", "order": "Order", "class": "Class", "phylum": "Phylum",
+              "kingdom": "Kingdom"}
+
+
+def bio_group(tax):
+	k = str((tax or [""])[0] or "")
+	if k == "Plantae":
+		return "plant"
+	if k == "Fungi":
+		return "fungus"
+	if k == "Animalia":
+		return "insect" if len(tax) > 2 and tax[2] == "Insecta" else "animal"
+	return "other"
+
+
+def bio_name(names, sci, L):
+	d = (names or {}).get(sci) or {}
+	n = (d.get("de") if L in ("de", "rm") else d.get(L)) or ""
+	return n.replace("ß", "ss") if L in ("de", "rm") else n
+
+
+def bio_pct(p, L):
+	v = 100.0 * float(p or 0)
+	s = "<1" if v < 1 else ("%.0f" % v if v >= 10 else ("%.1f" % v).rstrip("0").rstrip("."))
+	return (s if L == "en" else s.replace(".", ",")) + "\u00a0%"
+
+
+def bio_format(raw, L):
+	""
+	L = norm_lang(L)
+	names = raw.get("names") or {}
+	top = []
+	info_ok = bio_info_installed()
+	for t in raw.get("top") or []:
+		tax = list(t.get("tax") or [])[:7]
+		if len(tax) < 7:
+			continue
+		sci = tax[5] + " " + tax[6]
+		grp = bio_group(tax)
+		ic, gt = BIO_GROUPS[grp]
+		fam = tax[4]
+		top.append({"sci": sci, "name": bio_name(names, sci, L), "p": float(t.get("p") or 0), "pct": bio_pct(t.get("p"), L),
+                    "group": grp, "icon": ic, "group_t": tr(gt, L), "rank": "species", "rank_t": tr("Species", L),
+                    "family": fam, "family_name": bio_name(names, fam, L)})
+		if info_ok:
+			card = bio_card(bio_info_get(sci), tax, L)
+			top[-1]["info"] = card
+			top[-1]["tox"] = bool(card.get("tox"))
+	ms = raw.get("ms")
+	sec = ("%.1f s" % (ms / 1000.0)) if isinstance(ms, (int, float)) else ""
+	out = {"top": top, "sure": None, "unsure": False, "ms": ms, "n": raw.get("n"), "sec": sec if L == "en" else sec.replace(".", ",")}
+	best = top[0]["p"] if top else 0.0
+	if best < BIO_FALLBACK_BELOW:
+		rk = raw.get("ranks") or {}
+		for r in ("genus", "family", "order", "class"):
+			v = rk.get(r) or {}
+			if float(v.get("p") or 0) >= BIO_SURE and v.get("tax"):
+				sci = v["tax"][-1]
+				grp = bio_group(v["tax"])
+				out["sure"] = {"rank": r, "rank_t": tr(BIO_RANK_T[r], L), "sci": sci, "name": bio_name(names, sci, L),
+                               "p": float(v["p"]), "pct": bio_pct(v["p"], L), "icon": BIO_GROUPS[grp][0], "group_t": tr(BIO_GROUPS[grp][1], L)}
+				break
+	if best < BIO_UNSURE and not out["sure"]:
+		out["unsure"] = True
+		out["note"] = tr("Unsure - maybe no plant, animal or fungus in the picture, or a species MoveEye does not know.", L)
+	elif best < BIO_FALLBACK_BELOW:
+		out["note"] = tr("Not sure about the species - compare with the pictures in a field guide.", L)
+	out["foot"] = tr(BIO_FOOT, L)
+	out["info"] = "ok" if info_ok else ("missing" if bio_info_pinned() else "none")
+	out["lbl"] = {k: tr(v, L) for k, v in (("info", "Species info"), ("tox", "☠️ Poisonous"), ("look", "Risk of confusion with:"),
+                                           ("art", "Whole article"), ("lic", "Text: Wikipedia, CC BY-SA 4.0, abridged –"),
+                                           ("auth", "authors"), ("none", "No species info for this species."),
+                                           ("wd", "Facts: Wikidata (CC0)"), ("load", "Load species info"))}
+	out["line"] = (" · ".join(
+        "%s – %s – %s" % (x["name"], x["sci"], x["pct"]) if x["name"] else "%s – %s" % (x["sci"], x["pct"]) for x in top))
+	return out
+
+
+
+def bio_url(which):
+	return BIO_BASE["url"] + BIO_FILES[which]["name"]
+
+
+def bio_fetch(url, dest, pin, dl):
+	""
+	part = dest + ".part"
+	have = os.path.getsize(part) if os.path.isfile(part) else 0
+	if have > pin["size"]:
+		os.remove(part); have = 0
+	if have < pin["size"]:
+		hdr = {"User-Agent": "MoveEye/" + APP_VERSION}
+		if have:
+			hdr["Range"] = f"bytes={have}-"
+		with urllib.request.urlopen(urllib.request.Request(url, headers=hdr), timeout=30) as r:
+			code = getattr(r, "status", 200)
+			if have and (code != 206 or not str(r.headers.get("Content-Range") or "").startswith(f"bytes {have}-")):
+				have = 0
+			n = r.headers.get("Content-Length")
+			if n and n.isdigit() and have + int(n) > pin["size"]:
+				raise ValueError("file too large")
+			dl["got"] += have
+			with open(part, "ab" if have else "wb") as f:
+				while True:
+					if dl.get("stop"):
+						raise InterruptedError("cancelled")
+					b = r.read(1 << 16)
+					if not b:
+						break
+					have += len(b)
+					if have > pin["size"]:
+						raise ValueError("file too large")
+					f.write(b); dl["got"] += len(b)
+	ok, err = piper_check_file(part, pin)
+	if not ok:
+		try:
+			os.remove(part)
+		except OSError:
+			pass
+		raise ValueError(err)
+	os.replace(part, dest)
+
+
+def bio_free_need():
+	""
+	return int(float(CFG.get("tausch_free_gb", 2.0)) * TZ_GB)
+
+
+def bio_download(wait=False, model=True):
+	""
+	want_m = model and not bio_installed()
+	want_i = bio_info_pinned() and not bio_info_installed()
+	if want_m and not bio_pinned():
+		return False, "The identification comes with an update"
+	if not want_m and not want_i:
+		return True, ""
+	if BIO_DL["running"]:
+		return True, ""
+	try:
+		free = shutil.disk_usage(DATA_DIR).free
+	except OSError:
+		free = 1 << 40
+	need = (bio_total() - sum(os.path.getsize(bio_path(w)) for w in BIO_FILES if os.path.isfile(bio_path(w)))) if want_m else 0
+	need += BIO_INFO["size"] if want_i else 0
+	if free - need < bio_free_need():
+		return False, "not enough free space on the memory card"
+	BIO_DL.update(running=True, got=0, total=(bio_total() if want_m else 0) + (BIO_INFO["size"] if want_i else 0), msg="",
+                  stop=False, done=False)
+
+	def work():
+		try:
+			os.makedirs(bio_dir(), exist_ok=True)
+			if want_i:
+				bio_info_close()
+				try:
+					os.remove(os.path.join(bio_dir(), "info.ok"))
+				except OSError:
+					pass
+				pin = {"size": BIO_INFO["size"], "sha256": BIO_INFO["sha256"]}
+				if not (os.path.isfile(bio_info_path()) and piper_check_file(bio_info_path(), pin)[0]):
+					bio_fetch(BIO_INFO_BASE["url"] + BIO_INFO["name"], bio_info_path(), pin, BIO_DL)
+				else:
+					BIO_DL["got"] += pin["size"]
+				import sqlite3
+				con = sqlite3.connect("file:" + urllib.parse.quote(bio_info_path()) + "?mode=ro", uri=True)
+				try:
+					n = con.execute("SELECT count(*) FROM info").fetchone()[0]
+				finally:
+					con.close()
+				if not n:
+					raise ValueError("the species info is empty")
+				with open(os.path.join(bio_dir(), "info.ok"), "w", encoding="utf-8") as f:
+					f.write(BIO_INFO["sha256"])
+				log_event("sys", f"Species info loaded and checked ({n} species)")
+			if not want_m:
+				BIO_DL["done"] = True
+				return
+			try:
+				os.remove(os.path.join(bio_dir(), "bioclip.ok"))
+			except OSError:
+				pass
+			for w in ("labels", "emb", "model"):
+				pin, dest = BIO_FILES[w], bio_path(w)
+				if os.path.isfile(dest) and piper_check_file(dest, pin)[0]:
+					BIO_DL["got"] += pin["size"]; continue
+				bio_fetch(bio_url(w), dest, pin, BIO_DL)
+			with open(bio_path("labels"), encoding="utf-8") as f:
+				lj = json.load(f)
+			if not isinstance(lj.get("taxa"), list) or not lj["taxa"]:
+				raise ValueError("the list of species is not a BioCLIP list")
+			with open(os.path.join(bio_dir(), "bioclip.ok"), "w", encoding="utf-8") as f:
+				f.write(bio_ok_mark())
+			BIO_DL["done"] = True
+			log_event("sys", f"Species identification (BioCLIP) loaded and checked ({len(lj['taxa'])} species)")
+		except InterruptedError:
+			BIO_DL["msg"] = "cancelled"
+		except Exception as e:
+			BIO_DL["msg"] = str(getattr(e, "reason", "") or e)[:160] or e.__class__.__name__
+			log_event("sys", f"Species identification not loaded: {BIO_DL['msg']}")
+		finally:
+			BIO_DL["running"] = False
+	if wait:
+		work()
+		return (not BIO_DL["msg"]), BIO_DL["msg"]
+	threading.Thread(target=work, daemon=True, name="bio-dl").start()
+	return True, ""
+
+
+def bio_delete():
+	if BIO_DL["running"] or BIO["job"]:
+		return False, "busy right now - try again in a moment"
+	with BIO["lock"]:
+		bio_worker_stop()
+	bio_info_close()
+	for p in [x for w in BIO_FILES for x in (bio_path(w), bio_path(w) + ".part")] + [bio_info_path(), bio_info_path() + ".part"]:
+		try:
+			os.remove(p)
+		except OSError:
+			pass
+	for m in ("bioclip.ok", "info.ok"):
+		try:
+			os.remove(os.path.join(bio_dir(), m))
+		except OSError:
+			pass
+	log_event("sys", f"Species identification deleted (frees about {bio_total() // 1048576} MB)")
+	return True, ""
+
+
+def bio_install():
+	""
+	if BIO["install"] == "running" or PIPER.get("install") == "running":
+		return False, "already running"
+	BIO["install"] = "running"
+
+	def work():
+		try:
+			r = subprocess.run([sys.executable, "-m", "pip", "install", "--break-system-packages", PIPER_ORT], capture_output=True,
+                               text=True, timeout=1500)
+			BIO["install"] = "done" if r.returncode == 0 else ("onnxruntime: " + ((r.stderr or r.stdout).strip().splitlines() or ["?"])[-1][:140])
+			log_event("sys", "Species identification: runtime " + ("installed (" + PIPER_ORT + ")" if r.returncode == 0 else BIO["install"]))
+		except Exception as e:
+			BIO["install"] = "failed: " + str(e)[:120]
+	threading.Thread(target=work, daemon=True, name="bio-install").start()
+	return True, ""
+
+
+
+def bio_job_run(fid, root, m):
+	J = BIO["jobs"][fid]
+	try:
+		sha = bio_file_sha(root, m)
+		c = bio_cache_get(sha) if sha else None
+		if c is None:
+			prev = os.path.join(root, "t", fid + "_p.jpg")
+			if not os.path.isfile(prev):
+				raise ValueError("no preview for this file")
+			ok, err, raw = bio_infer(prev)
+			if not ok:
+				raise RuntimeError(err)
+			c = bio_cache_put(sha, raw) if sha else raw
+			J["cached"] = False
+		else:
+			J["cached"] = True
+		J.update(st="done", raw=c, t=time.time())
+	except Exception as e:
+		J.update(st="err", err=str(e)[:200], t=time.time())
+	finally:
+		with BIO["lock"]:
+			BIO["job"] = ""
+
+
+def bio_file(fid, who):
+	""
+	if not TZ_ID.match(fid or "") or _tz_load() is None:
+		return None
+	with TZ["lock"]:
+		m = TZ["files"].get(fid)
+	if m is None:
+		return None
+	if who is None:
+		if m["area"] != "all" or tausch_type(m["name"])[2]:
+			return None
+	elif not tausch_can_see(m, who):
+		return None
+	return m
+
+
+def bio_can(m):
+	return tausch_type(m["name"])[1] == "image" and m.get("thumb") is not False
+
+
+def bio_state(fid, who, L, action="state", rate_key=None):
+	"""
+"""
+	L = norm_lang(L)
+	guest = who is None
+	admin = bool(who and who.get("is_admin"))
+	m = bio_file(fid, who)
+	info_need = BIO_INFO["size"] if bio_info_pinned() and not bio_info_installed() else 0
+	base = {"ok": True, "mb": max(1, round((bio_total() + info_need) / 1048576.0)), "info_mb": max(1, round(info_need / 1048576.0)),
+            "can_dl": not guest, "can_install": admin, "can_delete": admin}
+	if not CFG.get("tausch_bio", True) or not CFG.get("tausch_on", True):
+		return dict(base, ok=False, st="off", msg=tr("Identifying species is switched off.", L))
+	if m is None:
+		return dict(base, ok=False, st="err", msg=tr("not found", L))
+	if not bio_can(m):
+		return dict(base, ok=False, st="err", msg=tr("Only pictures can be identified.", L))
+	if action == "delete" and admin:
+		ok, err = bio_delete()
+		return dict(base, ok=ok, st="load" if ok else "err", msg=tr(err, L) if err else tr("deleted", L))
+	if action == "cancel" and not guest:
+		BIO_DL["stop"] = True
+	if action == "install" and admin and not bio_runtime():
+		if rate_key and not tausch_rate(rate_key, "bio", BIO_RATE[1]):
+			return dict(base, ok=False, st="err", msg=tr("Too many requests in a short time - wait a few minutes.", L))
+		ok, err = bio_install()
+		if not ok and err != "already running":
+			return dict(base, ok=False, st="err", msg=tr(err, L))
+	if BIO["install"] == "running":
+		return dict(base, st="installing", msg=tr("Installing the runtime (onnxruntime, about 15 MB) …", L))
+	if not bio_runtime():
+		msg = tr("The runtime onnxruntime is missing (about 15 MB).", L) + " " + (
+            tr("Install it here once (needs internet).", L) if admin else tr("The administrator can install it here.", L))
+		if BIO["install"] and BIO["install"] != "done":
+			msg += " ⚠ " + BIO["install"]
+		return dict(base, st="runtime", msg=msg)
+	if not bio_pinned():
+		return dict(base, ok=False, st="err", msg=tr("The identification comes with an update", L))
+	if action == "info" and not guest and not BIO_DL["running"] and bio_installed() and info_need:
+		if rate_key and not tausch_rate(rate_key, "bio", BIO_RATE[1]):
+			return dict(base, ok=False, st="err", msg=tr("Too many requests in a short time - wait a few minutes.", L))
+		ok, err = bio_download(model=False)
+		if not ok:
+			return dict(base, ok=False, st="err", msg=tr(err, L))
+	if BIO_DL["running"]:
+		pct = int(100 * BIO_DL["got"] / max(1, BIO_DL["total"]))
+		return dict(base, st="loading", pct=pct, msg=trf("Loading BioCLIP … {p} % of {mb} MB", L, p=pct,
+                                                          mb=max(1, round(BIO_DL["total"] / 1048576.0))))
+	if not bio_installed():
+		if action == "download" and not guest:
+			if rate_key and not tausch_rate(rate_key, "bio", BIO_RATE[1]):
+				return dict(base, ok=False, st="err", msg=tr("Too many requests in a short time - wait a few minutes.", L))
+			ok, err = bio_download()
+			if not ok:
+				return dict(base, ok=False, st="err", msg=tr(err, L))
+			return dict(base, st="loading", pct=0, msg=trf("Loading BioCLIP … {p} % of {mb} MB", L, p=0, mb=base["mb"]))
+		if guest:
+			return dict(base, st="load", msg=tr("Identifying is not set up on this MoveEye yet.", L))
+		msg = trf("For identifying, MoveEye loads BioCLIP once ({mb} MB). After that it works without internet, on the device.", L, mb=base["mb"])
+		if BIO_DL["msg"]:
+			msg += " ⚠ " + tr_err(BIO_DL["msg"], L)
+		return dict(base, st="load", msg=msg)
+	J = BIO["jobs"].get(fid)
+	if J and J["st"] == "done" and J.get("raw") is not None:
+		cached = bool(J.get("cached") or J.get("shown"))
+		J["shown"] = True
+		return dict(base, st="done", res=dict(bio_format(J["raw"], L), cached=cached))
+	sha = (BIO["sha"].get(fid) or (0, 0, ""))[2]
+	c = bio_cache_get(sha) if sha else None
+	if c is not None:
+		return dict(base, st="done", res=dict(bio_format(c, L), cached=True))
+	if J and J["st"] == "run":
+		return dict(base, st="run", msg=tr("Identifying … (on the device, a few seconds)", L))
+	if J and J["st"] == "err" and action != "start":
+		return dict(base, ok=False, st="err", msg=tr("Identifying did not work:", L) + " " + tr_err(J.get("err") or "", L))
+	if action != "start":
+		return dict(base, st="idle", msg="")
+	if m.get("thumb") is None:
+		return dict(base, st="wait", msg=tr("The preview is still being made …", L))
+	root = TZ["root"]
+	if J and J["st"] == "run":
+		return dict(base, st="run", msg=tr("Identifying … (on the device, a few seconds)", L))
+	if BIO["job"] and BIO["job"] != fid:
+		return dict(base, st="wait", msg=tr("Another picture is being identified - it continues right after …", L))
+	if rate_key and not tausch_rate(rate_key, "bio", BIO_RATE[0 if guest else 1]):
+		return dict(base, ok=False, st="err", msg=tr("Too many requests in a short time - wait a few minutes.", L))
+	with BIO["lock"]:
+		if BIO["job"] and BIO["job"] != fid:
+			return dict(base, st="wait", msg=tr("Another picture is being identified - it continues right after …", L))
+		BIO["job"] = fid
+		BIO["jobs"][fid] = {"st": "run", "t": time.time()}
+		if len(BIO["jobs"]) > 300:
+			for k in sorted(BIO["jobs"], key=lambda k: BIO["jobs"][k].get("t", 0))[:100]:
+				if k != fid:
+					BIO["jobs"].pop(k, None)
+	threading.Thread(target=bio_job_run, args=(fid, root, m), daemon=True, name="bio-job").start()
+	return dict(base, st="run", msg=tr("Identifying … (on the device, a few seconds)", L))
+
+
+
+_tausch_list_639zzd = tausch_list
+
+
+
+def tausch_list(who, area="all", folder="", lang=None):
+	out = _tausch_list_639zzd(who, area, folder, lang)
+	out["bio"] = bool(CFG.get("tausch_bio", True))
+	return out
+
+
+_tausch_guest_list_639zzd = tausch_guest_list
+
+
+
+def tausch_guest_list(folder=""):
+	out = _tausch_guest_list_639zzd(folder)
+	out["bio"] = bool(CFG.get("tausch_bio", True))
+	return out
+
+
+_smalltv_routes_639zzd = smalltv_routes
+
+
+def smalltv_routes(app, reply, body):
+	_smalltv_routes_639zzd(app, reply, body)
+	from flask import request, g
+
+	def answer(fid, who, L, action, rate_key):
+		r = bio_state(fid, who, L, action, rate_key)
+		if r.get("msg"):
+			r["msg"] = r["msg"].replace(" MB", "\u00a0MB").replace(" Mo", "\u00a0Mo").replace(" %", "\u00a0%")
+		code = 200 if r.get("ok") or r.get("st") in ("load", "runtime") else (404 if r.get("msg") == tr("not found", L) else (
+            429 if r.get("msg") == tr("Too many requests in a short time - wait a few minutes.", L) else 400))
+		return reply(r, code)
+
+	@app.route("/api/tausch/bio", methods=["GET", "POST"])
+	def api_tausch_bio():
+		who = tausch_who(g)
+		if request.method == "GET":
+			d = request.args
+			act = "state"
+		else:
+			d = body()
+			act = str(d.get("action") or "state")
+		L = norm_lang(d.get("lang") or CFG.get("lang"))
+		if "files_view" not in who["perms"]:
+			return reply({"ok": False, "st": "err", "msg": tr("not allowed for your user", L)}, 403)
+		return answer(str(d.get("id") or ""), who, L, act if act in ("state", "start", "download", "info", "cancel", "install", "delete") else "state",
+                      who["key"])
+
+	@app.route("/g/<token>/tausch/bio/<fid>", methods=["GET", "POST"])
+	def tausch_guest_bio(token, fid):
+		if not tausch_guest_ok(token):
+			return reply({"ok": False}, 404)
+		L = sx_req_lang()
+		act = "state"
+		if request.method == "POST":
+			act = "start" if str(body().get("action") or "") == "start" else "state"
+		if not tausch_rate("guest|" + (request.remote_addr or "?"), "g", 2000):
+			return reply({"ok": False}, 404)
+		return answer(fid, None, L, act, "guest|" + (request.remote_addr or "?"))
+
+
+
+TOGGLES.append((_TZS, "tausch_bio", "🌿 Identify species in pictures (BioCLIP, on the device)"))
+SET_HELP.update({"tausch_bio": ("The button «🌿 Identify» at every picture: the three most likely species with name and percent. "
+                                "Runs only on this MoveEye (the picture never leaves the device); BioCLIP is loaded once (about 340 MB).", "")})
+
+
+BIO_CSS = _zd('639zzd_bestimmen/BIO_CSS', "")
+
+
+BIO_PANEL_JS = _zd('639zzd_bestimmen/BIO_PANEL_JS', "")
+
+
+BIO_PAGE_JS = r"""
+  const bioOk = f => !!(S.j && S.j.bio && f.kind === "image" && f.thumb);
+  function bioCard(f, ac) { if (!bioOk(f)) return; const b = el("button", "sec", "🌿"); b.type = "button"; b.title = t("Identify");
+    b.onclick = () => { S.bioAuto = f.id; preview(f); }; ac.insertBefore(b, ac.firstChild); }
+  function bioBar(f, bar, ov) {
+    if (!bioOk(f)) return;
+    const b = el("button", "tz-biob", ""); b.type = "button"; b.title = t("Identify"); b.append("🌿 ", el("span", "lbl", t("Identify")));
+    const dl = bar.querySelector("a.btn");          // phone: the download only as ⬇, so «🌿 Bestimmen» fits
+    if (dl && matchMedia("(max-width:480px)").matches) { dl.title = dl.textContent.replace("⬇", "").trim(); dl.textContent = "⬇"; }
+    const go = () => tzBioPanel(f, ov, "/api/tausch/bio", {id: f.id, lang: LANG}, t);
+    b.onclick = e => { e.stopPropagation(); go(); }; bar.appendChild(b);
+    if (S.bioAuto === f.id) { S.bioAuto = ""; setTimeout(go, 0); }
+  }
+"""
+
+_BIO_HOOKS = (
+    ('/*TZEDIT*/', '/*TZEDIT*/\n  /*TZBIO*/'),
+    ('    it.append(th, tx); if (ac.children.length) it.appendChild(ac);\n    return it;',
+     '    bioCard(f, ac);\n    it.append(th, tx); if (ac.children.length) it.appendChild(ac);\n    return it;'),
+    ('    bar.appendChild(x);\n    if (f.inline && f.dl)', '    bioBar(f, bar, ov);\n    bar.appendChild(x);\n    if (f.inline && f.dl)'),
+    ('</style></head><body>', '/*BIOCSS*/\n</style></head><body>'),
+    ('Object.assign(I18N.de, /*TZDE*/{});', 'Object.assign(I18N.de, /*TZDE*/{});\nObject.assign(I18N.de, /*BIODE*/{});\n/*BIOPANEL*/'),
+)
+for _a, _b in _BIO_HOOKS:
+	if _a in TAUSCH_PAGE and _b not in TAUSCH_PAGE:
+		TAUSCH_PAGE = TAUSCH_PAGE.replace(_a, _b, 1)
+
+_BIO_GHOOKS = (
+    ('    bd.appendChild(el("div", "mut", TX.only));\n', '    bd.appendChild(el("div", "mut", TX.only));\n'
+     '    if (BTX.on && f.kind === "image" && f.thumb) { const b = el("button", "tz-biob", "🌿 " + BTX.t["Identify"]); b.onclick = e => { e.stopPropagation();'
+     ' tzBioPanel(f, ov, "__BASE__/tausch/bio/" + f.id, {}, k => BTX.t[k] || k); }; bar.insertBefore(b, x); }\n'),
+    ('</style></head><body>', '/*BIOCSS*/\n</style></head><body>'),
+    ('/*TZMD*/\n', '/*TZMD*/\nconst BTX = /*BIOTX*/{};\n/*BIOPANEL*/\n'),
+    ('  (j.files || []).forEach(f => { const it', '  BTX.on = !!j.bio;\n  (j.files || []).forEach(f => { const it'),
+)
+for _a, _b in _BIO_GHOOKS:
+	if _a in TAUSCH_GUEST_HTML and _b not in TAUSCH_GUEST_HTML:
+		TAUSCH_GUEST_HTML = TAUSCH_GUEST_HTML.replace(_a, _b, 1)
+
+_tausch_page_html_639zzd = tausch_page_html
+
+
+
+def tausch_page_html():
+	return (_tausch_page_html_639zzd().replace("/*TZBIO*/", BIO_PAGE_JS, 1).replace("/*BIOCSS*/", BIO_CSS, 1)
+            .replace("/*BIOPANEL*/", BIO_PANEL_JS, 1).replace("/*BIODE*/{}", json.dumps(_BIO_DE, ensure_ascii=False), 1))
+
+
+_tausch_guest_html_639zzd = tausch_guest_html
+
+
+
+def tausch_guest_html(token):
+	L = sx_req_lang()
+	tx = {"on": False, "t": {k: tr(k, L) for k in BIO_JS_KEYS}}
+	return (_tausch_guest_html_639zzd(token).replace("/*BIOCSS*/", BIO_CSS, 1).replace("/*BIOPANEL*/", BIO_PANEL_JS, 1)
+            .replace("/*BIOTX*/{}", json.dumps(tx, ensure_ascii=False).replace("</", "<\\/"), 1))
+
+
+
+BIO_JS_KEYS = ("Identify", "Close", "Load", "Cancel", "Install", "Try again", "Sure is:", "Nothing found.", "No connection to MoveEye.",
+               "Computed on this MoveEye - the picture never leaves the device.", "Names: Wikidata")
+_HX_BIO = {
+    BIO_EDIBLE_WARN: ("Essbar laut Wikipedia – Verwechslungsgefahr mit giftigen Arten, nie nur nach App-Bestimmung essen. Notfall: Tox Info Suisse 145",
+                      "Comestible selon Wikipédia – risque de confusion avec des espèces toxiques, ne jamais manger sur la seule base d’une identification par application. Urgence : Tox Info Suisse 145",
+                      "Commestibile secondo Wikipedia – rischio di confusione con specie velenose, non mangiare mai solo in base a un’identificazione con l’app. Emergenza: Tox Info Suisse 145",
+                      "Mangiabel tenor Wikipedia – privel da confusiun cun spezias tissientas, mai mangiar mo tenor ina determinaziun cun l’app. Urgenza: Tox Info Suisse 145"),
+    BIO_FOOT: ("Nur zur Orientierung – nicht zum Bestimmen von Essbarem. Vergiftungsverdacht: Tox Info Suisse 145.",
+               "Seulement pour s’orienter – pas pour identifier ce qui est comestible. Suspicion d’intoxication : Tox Info Suisse 145.",
+               "Solo per orientarsi – non per identificare ciò che è commestibile. Sospetto di avvelenamento: Tox Info Suisse 145.",
+               "Mo per s’orientar – betg per determinar quai ch’è mangiabel. Suspect d’intoxicaziun: Tox Info Suisse 145."),
+    "Species info": ("Artinfo", "Infos sur l’espèce", "Info sulla specie", "Infurmaziuns davart la spezia"),
+    "☠️ Poisonous": ("☠️ Giftig", "☠️ Toxique", "☠️ Velenoso", "☠️ Tissient"),
+    "Risk of confusion with:": ("Verwechslungsgefahr mit:", "Risque de confusion avec :", "Rischio di confusione con:", "Privel da confusiun cun:"),
+    "Whole article": ("Ganzer Artikel", "Article complet", "Articolo completo", "Artitgel cumplet"),
+    "Text: Wikipedia, CC BY-SA 4.0, abridged –": ("Text: Wikipedia, CC BY-SA 4.0, gekürzt –", "Texte : Wikipédia, CC BY-SA 4.0, abrégé –",
+                                                 "Testo: Wikipedia, CC BY-SA 4.0, abbreviato –", "Text: Wikipedia, CC BY-SA 4.0, scurznì –"),
+    "authors": ("Autoren", "auteurs", "autori", "auturs"),
+    "No species info for this species.": ("Zu dieser Art gibt es keine Artinfo.", "Pas d’infos pour cette espèce.",
+                                          "Nessuna info per questa specie.", "Per questa spezia na datti nagina infurmaziun."),
+    "Facts: Wikidata (CC0)": ("Fakten: Wikidata (CC0)", "Faits : Wikidata (CC0)", "Dati: Wikidata (CC0)", "Fatgs: Wikidata (CC0)"),
+    "Load species info": ("Artinfos laden", "Charger les infos des espèces", "Caricare le info sulle specie", "Chargiar las infurmaziuns da spezias"),
+    "(English)": ("(englisch)", "(en anglais)", "(in inglese)", "(englais)"),
+    "Marked as poisonous in Wikidata.": ("In Wikidata als giftig vermerkt.", "Indiqué comme toxique dans Wikidata.",
+                                         "Indicato come velenoso in Wikidata.", "Notà sco tissientà en Wikidata."),
+    "Height": ("Höhe", "Hauteur", "Altezza", "Autezza"),
+    "Red List (IUCN)": ("Rote Liste (IUCN)", "Liste rouge (UICN)", "Lista rossa (IUCN)", "Glista cotschna (IUCN)"),
+    "Habitat": ("Lebensraum", "Habitat", "Habitat", "Spazi da viver"),
+    "Identify": ("Bestimmen", "Identifier", "Identificare", "Determinar"),
+    "Close": ("Schliessen", "Fermer", "Chiudi", "Serrar"),
+    "Load": ("Laden", "Charger", "Caricare", "Chargiar"),
+    "Install": ("Installieren", "Installer", "Installare", "Installar"),
+    "Try again": ("Nochmals", "Réessayer", "Riprova", "Anc ina giada"),
+    "Sure is:": ("Sicher ist:", "Sûr :", "Sicuro:", "Segir è:"),
+    "Computed on this MoveEye - the picture never leaves the device.": (
+        "Gerechnet auf diesem MoveEye – das Bild verlässt das Gerät nie.", "Calculé sur ce MoveEye – l’image ne quitte jamais l’appareil.",
+        "Calcolato su questo MoveEye – l’immagine non lascia mai il dispositivo.", "Calculà sin quest MoveEye – il maletg na banduna mai l’apparat."),
+    "Names: Wikidata": ("Namen: Wikidata", "Noms : Wikidata", "Nomi: Wikidata", "Nums: Wikidata"),
+    "Plant": ("Pflanze", "Plante", "Pianta", "Planta"),
+    "Animal": ("Tier", "Animal", "Animale", "Animal"),
+    "Insect": ("Insekt", "Insecte", "Insetto", "Insect"),
+    "Fungus": ("Pilz", "Champignon", "Fungo", "Bulieu"),
+    "Other living thing": ("Anderes Lebewesen", "Autre être vivant", "Altro essere vivente", "Auter esser vivent"),
+    "Species": ("Art", "Espèce", "Specie", "Spezia"),
+    "Genus": ("Gattung", "Genre", "Genere", "Gener"),
+    "Family": ("Familie", "Famille", "Famiglia", "Famiglia"),
+    "Order": ("Ordnung", "Ordre", "Ordine", "Urden"),
+    "Class": ("Klasse", "Classe", "Classe", "Classa"),
+    "Phylum": ("Stamm", "Embranchement", "Phylum", "Tribu"),
+    "Kingdom": ("Reich", "Règne", "Regno", "Reginam"),
+    "Unsure - maybe no plant, animal or fungus in the picture, or a species MoveEye does not know.": (
+        "Unsicher – vielleicht keine Pflanze, kein Tier und kein Pilz im Bild, oder eine Art, die MoveEye nicht kennt.",
+        "Incertain – peut-être ni plante, ni animal, ni champignon sur l’image, ou une espèce que MoveEye ne connaît pas.",
+        "Incerto – forse nessuna pianta, animale o fungo nell’immagine, o una specie che MoveEye non conosce.",
+        "Malsegir – forsa nagina planta, nagin animal e nagin bulieu sin il maletg, u ina spezia che MoveEye na enconuscha betg."),
+    "Not sure about the species - compare with the pictures in a field guide.": (
+        "Bei der Art nicht sicher – mit den Bildern in einem Bestimmungsbuch vergleichen.",
+        "Pas sûr de l’espèce – compare avec les images d’un guide.", "Specie non sicura – confronta con le immagini di una guida.",
+        "La spezia n’è betg segira – cumparegliar cun ils maletgs d’in cudesch da determinaziun."),
+    "Identifying species is switched off.": ("Das Bestimmen ist ausgeschaltet.", "L’identification est désactivée.",
+                                             "L’identificazione è disattivata.", "La determinaziun è deactivada."),
+    "Only pictures can be identified.": ("Nur Bilder lassen sich bestimmen.", "Seules les images peuvent être identifiées.",
+                                         "Si possono identificare solo immagini.", "Mo maletgs sa laschan determinar."),
+    "Installing the runtime (onnxruntime, about 15 MB) …": ("Laufzeit wird installiert (onnxruntime, etwa 15 MB) …",
+                                                            "Installation du moteur (onnxruntime, env. 15 Mo) …",
+                                                            "Installazione del motore (onnxruntime, circa 15 MB) …",
+                                                            "Il motor vegn installà (onnxruntime, var 15 MB) …"),
+    "The runtime onnxruntime is missing (about 15 MB).": ("Die Laufzeit onnxruntime fehlt (etwa 15 MB).", "Le moteur onnxruntime manque (env. 15 Mo).",
+                                                          "Manca il motore onnxruntime (circa 15 MB).", "Il motor onnxruntime manca (var 15 MB)."),
+    "Install it here once (needs internet).": ("Hier einmal installieren (braucht Internet).", "L’installer ici une fois (internet nécessaire).",
+                                               "Installalo qui una volta (serve internet).", "Installar qua ina giada (basegna internet)."),
+    "The administrator can install it here.": ("Der Administrator kann sie hier installieren.", "L’administrateur peut l’installer ici.",
+                                               "L’amministratore può installarlo qui.", "L’administratur po l’installar qua."),
+    "The identification comes with an update": ("Das Bestimmen kommt mit einem Update", "L’identification arrive avec une mise à jour",
+                                                "L’identificazione arriva con un aggiornamento", "La determinaziun vegn cun in update"),
+    "Loading BioCLIP … {p} % of {mb} MB": ("BioCLIP wird geladen … {p} % von {mb} MB", "Chargement de BioCLIP … {p} % de {mb} Mo",
+                                           "Caricamento di BioCLIP … {p} % di {mb} MB", "BioCLIP vegn chargià … {p} % da {mb} MB"),
+    "Identifying is not set up on this MoveEye yet.": ("Das Bestimmen ist auf diesem MoveEye noch nicht eingerichtet.",
+                                                       "L’identification n’est pas encore installée sur ce MoveEye.",
+                                                       "L’identificazione non è ancora configurata su questo MoveEye.",
+                                                       "La determinaziun n’è anc betg installada sin quest MoveEye."),
+    "For identifying, MoveEye loads BioCLIP once ({mb} MB). After that it works without internet, on the device.": (
+        "Zum Bestimmen lädt MoveEye einmal BioCLIP ({mb} MB). Danach geht es ohne Internet, auf dem Gerät.",
+        "Pour identifier, MoveEye charge une fois BioCLIP ({mb} Mo). Ensuite ça marche sans internet, sur l’appareil.",
+        "Per identificare, MoveEye carica una volta BioCLIP ({mb} MB). Poi funziona senza internet, sul dispositivo.",
+        "Per determinar chargia MoveEye ina giada BioCLIP ({mb} MB). Lura funcziuna quai senza internet, sin l’apparat."),
+    "Identifying … (on the device, a few seconds)": ("Wird bestimmt … (auf dem Gerät, einige Sekunden)", "Identification … (sur l’appareil, quelques secondes)",
+                                                    "Identificazione … (sul dispositivo, alcuni secondi)", "Vegn determinà … (sin l’apparat, intgins secunds)"),
+    "Identifying did not work:": ("Bestimmen ging nicht:", "L’identification n’a pas marché :", "L’identificazione non è riuscita:",
+                                  "La determinaziun n’ha betg funcziunà:"),
+    "The preview is still being made …": ("Das Vorschaubild wird noch gerechnet …", "L’aperçu est encore en cours …",
+                                          "L’anteprima è ancora in preparazione …", "La prevista vegn anc calculada …"),
+    "Another picture is being identified - it continues right after …": (
+        "Gerade wird ein anderes Bild bestimmt – es geht gleich weiter …", "Une autre image est en cours d’identification – ça continue juste après …",
+        "Si sta identificando un’altra immagine – si continua subito dopo …", "Ussa vegn in auter maletg determinà – i cuntinuescha immediat …"),
+    "Too many requests in a short time - wait a few minutes.": ("Zu viele Anfragen in kurzer Zeit – ein paar Minuten warten.",
+                                                                "Trop de demandes en peu de temps – attends quelques minutes.",
+                                                                "Troppe richieste in poco tempo – aspetta qualche minuto.",
+                                                                "Memia bleras dumondas en curt temp – spetgar in pèr minutas."),
+    "busy right now - try again in a moment": ("gerade beschäftigt – gleich nochmals versuchen", "occupé – réessaie dans un instant",
+                                               "occupato – riprova tra un attimo", "occupà – empruvar puspè en in mument"),
+    "the identification is not loaded yet": ("das Bestimmen ist noch nicht geladen", "l’identification n’est pas encore chargée",
+                                             "l’identificazione non è ancora caricata", "la determinaziun n’è anc betg chargiada"),
+    "timeout": ("Zeitüberschreitung", "délai dépassé", "tempo scaduto", "temp surpassà"),
+    "no preview for this file": ("kein Vorschaubild für diese Datei", "pas d’aperçu pour ce fichier", "nessuna anteprima per questo file",
+                                 "nagina prevista per questa datoteca"),
+    "deleted": ("gelöscht", "supprimé", "eliminato", "stizzà"),
+    "🌿 Identify species in pictures (BioCLIP, on the device)": ("🌿 Arten auf Bildern bestimmen (BioCLIP, auf dem Gerät)",
+                                                                "🌿 Identifier les espèces sur les images (BioCLIP, sur l’appareil)",
+                                                                "🌿 Identificare le specie nelle immagini (BioCLIP, sul dispositivo)",
+                                                                "🌿 Determinar spezias sin maletgs (BioCLIP, sin l’apparat)"),
+    "The button «🌿 Identify» at every picture: the three most likely species with name and percent. Runs only on this MoveEye (the picture never leaves the device); BioCLIP is loaded once (about 340 MB).": (
+        "Der Knopf «🌿 Bestimmen» bei jedem Bild: die drei wahrscheinlichsten Arten mit Name und Prozent. Läuft nur auf diesem MoveEye (das Bild verlässt das Gerät nie); BioCLIP wird einmal geladen (etwa 340 MB).",
+        "Le bouton «🌿 Identifier» à chaque image : les trois espèces les plus probables avec nom et pourcentage. Uniquement sur ce MoveEye (l’image ne quitte jamais l’appareil) ; BioCLIP est chargé une fois (env. 340 Mo).",
+        "Il pulsante «🌿 Identificare» su ogni immagine: le tre specie più probabili con nome e percentuale. Solo su questo MoveEye (l’immagine non lascia mai il dispositivo); BioCLIP viene caricato una volta (circa 340 MB).",
+        "Il buttun «🌿 Determinar» tar mintga maletg: las trais spezias las pli probablas cun num e pertschient. Mo sin quest MoveEye (il maletg na banduna mai l’apparat); BioCLIP vegn chargià ina giada (var 340 MB)."),
+}
+for _k, _v in _HX_BIO.items():
+	DE.setdefault(_k, _v[0])
+	for _i, _L in enumerate(("fr", "it", "rm")):
+		TRX[_L].setdefault(_k, _v[_i + 1])
+_BIO_DE = {_k: _HX_BIO[_k][0] if _k in _HX_BIO else DE.get(_k, _k) for _k in BIO_JS_KEYS}
+
+
+_HELP_BIO = _zd('639zzd_bestimmen/HELP_BIO', _ZDDict())
+
+
+def _help_bio(doc, lang):
+	i = doc.find('<section id="tausch"')
+	if i < 0 or "🌿" in doc[i:doc.find("</section>", i)]:
+		return doc
+	j = doc.find("</ul></section>", i)
+	return doc[:j] + _HELP_BIO[lang] + doc[j:] if j > 0 else doc
+
+
+_hp_en_bio = HELP_PAGE.find('<div lang="en">')
+if _hp_en_bio > 0:
+	HELP_PAGE = _help_bio(HELP_PAGE[:_hp_en_bio], "de") + _help_bio(HELP_PAGE[_hp_en_bio:], "en")
+for _L in ("fr", "it", "rm"):
+	if HELP_X.get(_L):
+		HELP_X[_L] = _help_bio(HELP_X[_L], _L)
+
+
+
+def bio_selftest():
+	assert BIO_TAG and BIO_BASE["url"] == "https://github.com/DonElektro/MotionWatch/releases/download/" + BIO_TAG + "/"
+	assert all(re.fullmatch(r"bioclip-1-[a-z0-9-]+\.(onnx|npy|json)", f["name"]) for f in BIO_FILES.values())
+	assert bio_pinned() or all(not f["size"] for f in BIO_FILES.values()), "BIO_FILES: either all pins or none (comes with an update)"
+	assert bio_total() <= BIO_MAX_BYTES
+	tx = ["Plantae", "Tracheophyta", "Magnoliopsida", "Asterales", "Asteraceae", "Taraxacum", "officinale"]
+	raw = {"top": [{"tax": tx, "p": 0.871}, {"tax": tx[:6] + ["erythrospermum"], "p": 0.06},
+                   {"tax": ["Animalia", "Arthropoda", "Insecta", "Coleoptera", "Coccinellidae", "Coccinella", "septempunctata"], "p": 0.004}],
+           "ranks": {"genus": {"tax": tx[:6], "p": 0.95}}, "names": {"Taraxacum officinale": {"de": "Gemeiner Löwenzahn", "en": "Common dandelion"},
+                                                                     "Asteraceae": {"de": "Korbblütler"}}, "ms": 812}
+	r = bio_format(raw, "de")
+	assert r["line"].startswith("Gemeiner Löwenzahn – Taraxacum officinale – 87\u00a0%") and r["sec"] == "0,8 s", r["line"]
+	assert r["top"][0]["group_t"] == "Pflanze" and r["top"][0]["family_name"] == "Korbblütler" and r["top"][2]["group_t"] == "Insekt"
+	assert [x["pct"].replace("\u00a0", " ") for x in r["top"]] == ["87 %", "6 %", "<1 %"], r["top"]
+	assert bio_pct(0.0123, "de") == "1,2\u00a0%" and bio_pct(0.0123, "en") == "1.2\u00a0%"
+	assert not r["sure"] and not r.get("note")
+	assert bio_format(raw, "rm")["top"][0]["name"] == "Gemeiner Löwenzahn" and bio_format(raw, "fr")["top"][0]["name"] == ""
+	assert bio_name({"Urtica dioica": {"de": "Große Brennnessel"}}, "Urtica dioica", "de") == "Grosse Brennnessel"
+	raw["top"][0]["p"] = 0.31
+	r = bio_format(raw, "de")
+	assert r["sure"] and r["sure"]["rank_t"] == "Gattung" and r["sure"]["sci"] == "Taraxacum" and r["note"], r
+	raw["top"][0]["p"], raw["ranks"]["genus"]["p"] = 0.05, 0.2
+	assert bio_format(raw, "de")["unsure"]
+	assert bio_group(["Fungi"]) == "fungus" and bio_group(["Animalia", "Chordata", "Aves"]) == "animal" and bio_group(["Chromista"]) == "other"
+	assert bio_key("a" * 64) != bio_key("b" * 64) and len(bio_key("a" * 64)) == 32
+	for k in BIO_JS_KEYS:
+		assert k in DE or k in _TZ_DE or k in ("Cancel", "Nothing found.", "No connection to MoveEye."), k
+	assert "/*TZBIO*/" in TAUSCH_PAGE and "bioCard(f, ac);" in TAUSCH_PAGE and "bioBar(f, bar, ov);" in TAUSCH_PAGE, "hooks in /tausch"
+	assert "/*BIOTX*/" in TAUSCH_GUEST_HTML and "tzBioPanel(f, ov" in TAUSCH_GUEST_HTML, "hooks in the guest page"
+	assert "🌿" in HELP_PAGE and "BioCLIP" in HELP_PAGE
+	assert role_allows("view", "/api/tausch/bio", "POST", {}) and role_allows("view", "/api/tausch/bio", "GET", {})
+	assert not role_allows("kid", "/api/tausch/bio", "POST", {})
+
+	assert bio_info_pinned() or not BIO_INFO["size"], "BIO_INFO: either a full pin or none"
+	c = bio_card({"l": "de", "t": "Bärlauch", "x": "Der Bärlauch …", "ed": ["Alle Pflanzenteile des Bärlauchs sind essbar."],
+                  "look": [["Maiglöckchen", 1], ["Herbstzeitlose", 1]]}, ["Plantae", "", "", "", "Amaryllidaceae", "Allium", "ursinum"], "de")
+	assert c["edible"]["warn"].startswith("Essbar laut Wikipedia – Verwechslungsgefahr") and "Tox Info Suisse 145" in c["edible"]["warn"], c
+	assert c["look"][0] == {"name": "Maiglöckchen", "tox": True, "url": "https://de.wikipedia.org/wiki/Maigl%C3%B6ckchen"} and not c.get("tox")
+	c = bio_card({"l": "de", "t": "Eibe", "x": "…", "tox": ["Alle Teile sind stark giftig."], "ed": ["Der Samenmantel ist essbar."]}, tx, "de")
+	assert c["tox"]["s"] == ["Alle Teile sind stark giftig."] and "edible" not in c, "giftig: nie zusätzlich essbar"
+	c = bio_card({"q": "Q1", "toxwd": ["poisonous mushroom"]}, tx, "fr")
+	assert c["tox"]["src"] == "Wikidata" and c["empty"] is False and "text" not in c
+	c = bio_card(None, tx, "de")
+	assert c["empty"] and c["tax"].endswith("Taraxacum officinale") and "edible" not in c and "tox" not in c
+	assert bio_card({"l": "en", "t": "X", "x": "…"}, tx, "it")["en_t"] == "(in inglese)"
+	for L_ in LANGS:
+		assert "145" in tr(BIO_EDIBLE_WARN, L_) and "145" in tr(BIO_FOOT, L_), L_
+	assert _bio_edible([], "de") is None
+	c = bio_card({"l": "de", "t": "X", "x": "Der Samenmantel ist essbar und ungiftig."}, tx, "de")
+	assert "edible" not in c and c["note_ed"].startswith("Essbar laut Wikipedia"), "Text spricht von essbar: Warnung trotzdem"
+	r = bio_format(dict(raw, top=raw["top"][:1]), "de")
+	assert r["foot"].startswith("Nur zur Orientierung") and r["info"] in ("ok", "missing", "none")
+	return "pins, result «Gemeiner Löwenzahn – Taraxacum officinale – 87 %», plant / insect, genus when unsure, cache key, hooks, rights, species card («essbar» only with the warning)"
+
+
+SELFTEST_EXTRA.append(("Species identification «🌿 Bestimmen» (BioCLIP, 639zzd)", bio_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+UNT_TIMEOUT_S = 90.0
+UNT_UP_MAX = 15 * 1024 * 1024
+UNT_BIO_MAX = 4
+UNT_RATE = (20, 60)
+UNT_FOLDER = "Funde"
+UNT_MARGIN = 0.15
+UNT_TAP = 0.30
+UNT = {"lock": threading.Lock(), "busy": "", "jobs": {}, "t": 0.0}
+UNT_VEH = {"bicycle", "car", "motorcycle", "bus", "train", "truck", "boat"}
+UNT_LABELS = {"person": "Person", "bird": "Bird", "cat": "Cat", "dog": "Dog", "horse": "Horse", "sheep": "Sheep", "cow": "Cow",
+              "elephant": "Elephant", "bear": "Bear", "zebra": "Zebra", "giraffe": "Giraffe", "animal": "Animal", "bicycle": "Bicycle",
+              "car": "Car", "motorcycle": "Motorcycle", "bus": "Bus", "train": "Train", "truck": "Truck", "boat": "Boat",
+              "vehicle": "Vehicle", "warm": "Warm body"}
+
+for _p in ("live",):
+	PERM_POST[_p] = set(PERM_POST.get(_p, ())) | {"/api/untersuchen", "/api/untersuchen/upload"}
+	PERM_GET[_p] = tuple(PERM_GET.get(_p, ())) + ("/api/untersuchen",)
+
+
+def unt_perms(g_):
+	""
+	role = getattr(g_, "role", "admin")
+	if role == "admin":
+		return {"admin": True, "live": True, "head": True, "key": "admin", "name": "Admin"}
+	u = user_get(getattr(g_, "user", ""))
+	P = set(user_perms(u) if u else ROLE_PERMS.get(ROLE_OLD.get(role, role), ()))
+	name = u["name"] if u else str(getattr(g_, "user", "") or "?")
+	return {"admin": False, "live": "live" in P, "head": "head" in P, "key": name.lower(), "name": name}
+
+
+def unt_box(b):
+	""
+	if not isinstance(b, (list, tuple)) or len(b) < 2:
+		return None
+	try:
+		v = [float(x) for x in b[:4]] + [0.0] * (4 - len(b[:4]))
+	except (TypeError, ValueError):
+		return None
+	x, y, w, h = v
+	if w < 0.02 or h < 0.02:
+		w = h = UNT_TAP
+		x, y = x - w / 2, y - h / 2
+	w, h = min(1.0, max(0.02, w)), min(1.0, max(0.02, h))
+	x, y = min(1.0 - w, max(0.0, x)), min(1.0 - h, max(0.0, y))
+	if w > 0.97 and h > 0.97:
+		return None
+	return [round(x, 4), round(y, 4), round(w, 4), round(h, 4)]
+
+
+
+def unt_cams():
+	""
+	w = WATCH_REF.get("w")
+	return {"head": w is not None, "wide": bool(view3_wide_cam()), "thermal": THERMAL is not None and THERMAL.frame is not None
+            and time.time() - THERMAL.t < 5.0}
+
+
+def unt_frame(cam):
+	""
+	if cam == "thermal":
+		th = THERMAL
+		if th is None or th.frame is None or time.time() - th.t > 5.0:
+			return None, "no thermal picture"
+		try:
+			col, _g = th.color(th.crop(th.frame))
+		except Exception as e:
+			return None, "thermal picture: " + str(e)[:80]
+		return col.copy(), ""
+	if cam == "wide":
+		c = view3_wide_cam()
+		if c is None:
+			return None, "no wide-angle camera"
+		c.raw_until = time.time() + 15
+		for _i in range(40):
+			if c.raw is not None:
+				return c.raw.copy(), ""
+			time.sleep(0.1)
+		return None, "no picture of the wide-angle camera"
+	w = WATCH_REF.get("w")
+	for src in (globals().get("WEB"),):
+		if src is not None and hasattr(src, "raw_until"):
+			src.raw_until = time.time() + 15
+			for _i in range(40):
+				if src.frame_raw is not None:
+					return src.frame_raw.copy(), ""
+				time.sleep(0.1)
+	f = getattr(w, "frame_out", None) if w is not None else None
+	return (f.copy(), "") if f is not None else (None, "no camera picture yet")
+
+
+def unt_aim(box, lang=None):
+	""
+	try:
+		hf, vf = cam_fov()
+		cx, cy = box[0] + box[2] / 2, box[1] + box[3] / 2
+		p0, t0 = servo_pos_deg()
+		dp, dt = (cx - 0.5) * float(hf), -(cy - 0.5) * float(vf)
+		hp, ht = servo_half("pan"), servo_half("tilt")
+		tp = 50.0 + (p0 + dp) / max(1e-6, hp) * 50.0
+		tt = 50.0 + (t0 + dt) / max(1e-6, ht) * 50.0
+		if not servo_goto(tp, tt, who="untersuchen", wait=True, timeout=8.0):
+			return None
+		time.sleep(0.6)
+		p1, t1 = servo_pos_deg()
+		return p1 - p0, t1 - t0
+	except Exception:
+		return None
+
+
+
+def unt_kind(lab):
+	if lab == "person":
+		return "person"
+	if lab in ANIMALS or lab == "animal":
+		return "animal"
+	if lab in UNT_VEH or lab == "vehicle":
+		return "vehicle"
+	return ""
+
+
+def unt_detect(img, thermal=False, warm=True):
+	""
+	H, W = img.shape[:2]
+	out = []
+	boxes, objs = [], []
+	try:
+		if DEMO.get("on"):
+			boxes, objs = demo_ai(img)
+		else:
+			w = WATCH_REF.get("w")
+			ai = getattr(w, "ai", None) if w is not None else None
+			if ai is not None and ai.net is not None:
+				boxes, objs = ai.infer(img, float(CFG.get("ai_conf", 0.5)), float(CFG.get("object_conf", 0.5)))
+	except Exception as e:
+		log_event("ai", f"Examine: AI failed: {str(e)[:120]}")
+	for b in boxes:
+		out.append({"kind": "person", "lab": "person", "conf": round(float(b[4]), 3), "box": [b[0] / W, b[1] / H, b[2] / W, b[3] / H]})
+	for b in objs:
+		lab = COCO_LABELS.get(int(b[5]), "") if len(b) > 5 else ""
+		k = unt_kind(lab)
+		if k and (not thermal or k != "vehicle"):
+			out.append({"kind": k, "lab": lab, "conf": round(float(b[4]), 3), "box": [b[0] / W, b[1] / H, b[2] / W, b[3] / H]})
+	if thermal and warm and THERMAL is not None:
+		try:
+			for b in THERMAL.detect() or []:
+				out.append({"kind": "animal", "lab": "warm", "conf": None, "box": [float(v) for v in b[:4]]})
+		except Exception:
+			pass
+	for o in out:
+		o["box"] = [round(max(0.0, min(1.0, v)), 4) for v in o["box"]]
+	return out
+
+
+def unt_bio(img, box, tmpdir):
+	""
+	H, W = img.shape[:2]
+	x, y, w, h = box
+	x0, y0 = int(max(0, (x - w * UNT_MARGIN) * W)), int(max(0, (y - h * UNT_MARGIN) * H))
+	x1, y1 = int(min(W, (x + w * (1 + UNT_MARGIN)) * W)), int(min(H, (y + h * (1 + UNT_MARGIN)) * H))
+	if x1 - x0 < 16 or y1 - y0 < 16:
+		return None
+	p = os.path.join(tmpdir, "c_%d.jpg" % len(os.listdir(tmpdir)))
+	cv2.imwrite(p, img[y0:y1, x0:x1], [cv2.IMWRITE_JPEG_QUALITY, 92])
+	sha = hashlib.sha256(open(p, "rb").read()).hexdigest()
+	c = bio_cache_get(sha)
+	if c is not None:
+		return c
+	ok, err, raw = bio_infer(p)
+	if not ok:
+		raise RuntimeError(err)
+	return bio_cache_put(sha, raw)
+
+
+
+def unt_save(who, jpg, result, base):
+	""
+	if not CFG.get("tausch_on", True):
+		return {"error": "the file exchange is switched off"}
+	root = _tz_load()
+	if root is None:
+		return {"error": "the storage (USB stick / SSD) is not there"}
+	owner = who or {"key": "guest", "name": "Guest", "is_admin": False}
+	sw = {"key": owner["key"], "name": owner["name"], "is_admin": bool(owner.get("admin")), "perms": set(TZ_PERMS)}
+	data = json.dumps(result, ensure_ascii=False, indent=1).encode("utf-8")
+	err = tausch_room_error(len(jpg) + len(data), sw, "en")
+	if err:
+		return {"error": err}
+	out = {}
+	with TZ["lock"]:
+		if not any(x["name"] == UNT_FOLDER for x in TZ["folders"]):
+			if len(TZ["folders"]) >= TZ_MAX_FOLDERS:
+				return {"error": "too many folders"}
+			TZ["folders"].append({"name": UNT_FOLDER, "by": "moveeye", "by_name": "MoveEye", "t": int(time.time())})
+			TZ["folders"].sort(key=lambda x: x["name"].lower())
+			_tz_folders_save(root)
+		for ext, b in (("jpg", jpg), ("json", data)):
+			name = _tz_unique(base + "." + ext, "all", UNT_FOLDER, sw["key"])
+			fid = secrets.token_hex(8)
+			m = {"id": fid, "name": name, "area": "all", "folder": UNT_FOLDER, "owner": sw["key"], "owner_name": sw["name"], "size": len(b),
+                 "t": int(time.time()), "thumb": None if ext == "jpg" else False}
+			try:
+				with open(os.path.join(root, "f", fid + ".bin"), "wb") as f:
+					f.write(b)
+				_tz_write_json(os.path.join(root, "f", fid + ".json"), m)
+			except OSError as e:
+				return {"error": "the storage cannot be written to (%s)" % e.__class__.__name__}
+			TZ["files"][fid] = m
+			out[ext] = fid
+	tausch_thumb_queue(out["jpg"])
+	return out
+
+
+
+def unt_start(who, cam, box, aim, lang, img=None, src="live"):
+	""
+	cam = cam if cam in ("head", "wide", "thermal") else "head"
+	with UNT["lock"]:
+		if UNT["busy"]:
+			return False, "busy", ""
+		jid = secrets.token_hex(8)
+		UNT["busy"] = jid
+		UNT["jobs"][jid] = {"st": "run", "t": time.time(), "cam": cam, "box": box, "src": src, "step": "picture"}
+		for k in sorted(UNT["jobs"], key=lambda k: UNT["jobs"][k]["t"])[:-40]:
+			UNT["jobs"].pop(k, None)
+	aim = bool(aim and box and cam == "head" and who and who.get("head"))
+
+	def work():
+		J = UNT["jobs"][jid]
+		t0 = time.time()
+		tmp = tempfile.mkdtemp(prefix="mw_unt_")
+		try:
+			pic = img
+			if pic is None:
+				pic, why = unt_frame(cam)
+				if pic is None:
+					raise RuntimeError(why)
+			bx = box
+			if aim:
+				J["step"] = "aim"
+				mv = unt_aim(box)
+				if mv is not None:
+					hf, vf = cam_fov()
+					cx = box[0] + box[2] / 2 - mv[0] / max(1e-6, float(hf))
+					cy = box[1] + box[3] / 2 + mv[1] / max(1e-6, float(vf))
+					bx = [min(1 - box[2], max(0.0, cx - box[2] / 2)), min(1 - box[3], max(0.0, cy - box[3] / 2)), box[2], box[3]]
+					bx = [round(v, 4) for v in bx]
+					J["aimed"] = True
+					p2, _w = unt_frame(cam)
+					if p2 is not None:
+						pic = p2
+			J.update(step="ai", box=bx)
+			H, W = pic.shape[:2]
+			region = pic
+			if bx:
+				x0, y0 = int(bx[0] * W), int(bx[1] * H)
+				region = pic[y0:y0 + max(1, int(bx[3] * H)), x0:x0 + max(1, int(bx[2] * W))]
+			if DEMO.get("on") and img is None:
+				found = [o for o in unt_detect(pic, thermal=cam == "thermal", warm=not bx) if not bx or (
+                    bx[0] <= o["box"][0] + o["box"][2] / 2 <= bx[0] + bx[2] and bx[1] <= o["box"][1] + o["box"][3] / 2 <= bx[1] + bx[3])]
+			else:
+				found = unt_detect(region, thermal=cam == "thermal", warm=not bx)
+			if bx and not (DEMO.get("on") and img is None):
+				for o in found:
+					b = o["box"]
+					o["box"] = [round(bx[0] + b[0] * bx[2], 4), round(bx[1] + b[1] * bx[3], 4), round(b[2] * bx[2], 4), round(b[3] * bx[3], 4)]
+			species, note = [], ""
+			if cam == "thermal":
+				note = "thermal"
+			elif not (bio_runtime() and bio_installed()):
+				note = "nobio"
+			else:
+				J["step"] = "bioclip"
+				parts = [o["box"] for o in found if o["kind"] == "animal"][:UNT_BIO_MAX - 1]
+				parts.append(bx or [0.0, 0.0, 1.0, 1.0])
+				for b in parts:
+					if time.time() - t0 > UNT_TIMEOUT_S:
+						raise TimeoutError("timeout")
+					raw = unt_bio(pic, b, tmp)
+					if raw is not None:
+						species.append({"box": b, "raw": raw, "whole": b == [0.0, 0.0, 1.0, 1.0]})
+			if time.time() - t0 > UNT_TIMEOUT_S:
+				raise TimeoutError("timeout")
+			J.update(found=found, species=species, note=note, size=[W, H])
+
+			ok, buf = cv2.imencode(".jpg", pic, [cv2.IMWRITE_JPEG_QUALITY, 90])
+			jpg = buf.tobytes() if ok else b""
+			J["jpg"] = jpg
+			gp = None
+			try:
+				gp = gps_now()
+			except Exception:
+				gp = None
+			res = unt_result_json(J, gp)
+			base = time.strftime("Fund_%Y-%m-%d_%H%M%S")
+			J["saved"] = unt_save(who, jpg, res, base) if jpg else {"error": "no picture"}
+			free()
+			J.update(st="done", ms=int((time.time() - t0) * 1000))
+			log_event("web", f"Examine ({cam}{', region' if bx else ''}{', head moved' if J.get('aimed') else ''}): "
+                             f"{len(found)} objects, {len(species)} species checks" + (f", saved in «{UNT_FOLDER}»" if "jpg" in J["saved"] else ""))
+		except Exception as e:
+			free()
+			J.update(st="err", err=("timeout" if isinstance(e, TimeoutError) else str(e))[:200])
+		finally:
+			shutil.rmtree(tmp, ignore_errors=True)
+			free()
+
+	def free():
+		with UNT["lock"]:
+			if UNT["busy"] == jid:
+				UNT["busy"] = ""
+				UNT["t"] = time.time()
+
+	def guard():
+		th = threading.Thread(target=work, daemon=True, name="unt-job")
+		th.start()
+		th.join(UNT_TIMEOUT_S + 15)
+		J = UNT["jobs"].get(jid) or {}
+		if J.get("st") == "run":
+			J.update(st="err", err="timeout")
+			with UNT["lock"]:
+				if UNT["busy"] == jid:
+					UNT["busy"] = ""
+	threading.Thread(target=guard, daemon=True, name="unt-guard").start()
+	return True, "", jid
+
+
+def unt_result_json(J, gp):
+	""
+	sp = []
+	for s in J.get("species") or []:
+		f = bio_format(s["raw"], "de")
+		sp.append({"box": s["box"], "whole_picture": s["whole"],
+                   "top": [{"sci": t["sci"], "name_de": t["name"], "p": round(t["p"], 4), "group": t["group"]} for t in f["top"]],
+                   "sure": {k: f["sure"][k] for k in ("rank", "sci", "name", "p")} if f.get("sure") else None})
+	return {"moveeye": APP_VERSION, "time": time.strftime("%Y-%m-%dT%H:%M:%S%z"), "camera": J.get("cam"), "source": J.get("src"),
+            "region": J.get("box"), "head_moved": bool(J.get("aimed")),
+            "location": {"lat": round(gp[0], 5), "lon": round(gp[1], 5), "source": gp[2]} if gp else None,
+            "objects": [{"kind": o["kind"], "label": o["lab"], "conf": o["conf"], "box": o["box"]} for o in J.get("found") or []],
+            "species": sp, "note": J.get("note") or "",
+            "bioclip": "BioCLIP 1 (imageomics/bioclip, MIT)" if sp else None}
+
+
+def unt_state(jid, who, lang):
+	""
+	L = norm_lang(lang)
+	J = UNT["jobs"].get(str(jid or ""))
+	if J is None:
+		return {"ok": False, "st": "err", "msg": tr("not found", L)}
+	if J["st"] == "run":
+		return {"ok": True, "st": "run", "step": J.get("step"), "msg": tr({"picture": "Taking the picture …", "aim": "The head turns there …",
+                                                                           "ai": "Looking for persons, animals and vehicles …",
+                                                                           "bioclip": "Identifying the species (BioCLIP) …"}.get(J.get("step"), "…"), L)}
+	if J["st"] == "err":
+		e = J.get("err") or ""
+		return {"ok": False, "st": "err", "msg": tr("Examining did not work:", L) + " " + tr_err(e, L)}
+	items = []
+	for o in J.get("found") or []:
+		items.append({"kind": o["kind"], "box": o["box"], "label": tr(UNT_LABELS.get(o["lab"], o["lab"]), L),
+                      "icon": {"person": "🧍", "animal": "🐾", "vehicle": "🚗"}.get(o["kind"], "•"),
+                      "pct": bio_pct(o["conf"], L) if o.get("conf") is not None else ""})
+	for s in J.get("species") or []:
+		f = bio_format(s["raw"], L)
+		t0 = (f.get("top") or [{}])[0]
+		lab = (t0.get("name") or t0.get("sci") or "?") if not f.get("unsure") else tr("unsure", L)
+		if f.get("sure") and f["top"] and f["top"][0]["p"] < BIO_FALLBACK_BELOW:
+			lab = (f["sure"]["name"] or f["sure"]["sci"])
+		items.append({"kind": "species", "box": s["box"], "whole": s["whole"], "label": lab, "icon": t0.get("icon", "🌿"),
+                      "pct": t0.get("pct", ""), "tox": bool(t0.get("tox")), "res": f})
+	sv = J.get("saved") or {}
+	note = {"thermal": tr("Thermal picture: only persons and animals - BioCLIP does not work on thermal pictures.", L),
+            "nobio": tr("Species: BioCLIP is not loaded yet.", L) + " " + (tr("Load it under Datentausch → 🌿 or here.", L) if who and who.get("admin")
+                                                                            else tr("The administrator can load it.", L))}.get(J.get("note") or "", "")
+	return {"ok": True, "st": "done", "cam": J["cam"], "box": J.get("box"), "aimed": bool(J.get("aimed")), "items": items, "note": note,
+            "nobio": J.get("note") == "nobio", "can_load": bool(who and who.get("admin")), "size": J.get("size"), "ms": J.get("ms"),
+            "saved": ({"folder": UNT_FOLDER, "jpg": sv.get("jpg"), "msg": trf("Saved in Datentausch → «{f}»", L, f=UNT_FOLDER)} if sv.get("jpg")
+                      else {"msg": tr("Not saved:", L) + " " + tr_err(sv.get("error") or "", L)}),
+            "foot": tr(BIO_FOOT, L), "src": J.get("src"),
+            "lbl": {k: tr(v, L) for k, v in (("info", "Species info"), ("tox", "☠️ Poisonous"), ("look", "Risk of confusion with:"),
+                                             ("art", "Whole article"), ("lic", "Text: Wikipedia, CC BY-SA 4.0, abridged –"), ("auth", "authors"),
+                                             ("none", "No species info for this species."), ("wd", "Facts: Wikidata (CC0)"), ("load", "Load species info"))}}
+
+
+def unt_text(st, lang=None):
+	""
+	if st.get("st") != "done":
+		return st.get("msg") or ""
+	lines = []
+	for it in st.get("items") or []:
+		if it["kind"] == "species":
+			lines.append("%s %s – %s" % (it["icon"], it["label"], it["pct"]) + ("  ☠️" if it.get("tox") else ""))
+		else:
+			lines.append("%s %s%s" % (it["icon"], it["label"], (" – " + it["pct"]) if it["pct"] else ""))
+	if not lines:
+		lines.append(tr("Nothing found.", lang))
+	if st.get("note"):
+		lines.append("ℹ " + st["note"])
+	lines.append((st.get("saved") or {}).get("msg") or "")
+	return "\n".join(x for x in lines if x)
+
+
+def unt_image(jid):
+	J = UNT["jobs"].get(str(jid or ""))
+	return (J or {}).get("jpg")
+
+
+
+_smalltv_routes_639zze = smalltv_routes
+
+
+def smalltv_routes(app, reply, body):
+	_smalltv_routes_639zze(app, reply, body)
+	from flask import Response, request, g
+
+	def size_guard():
+		if request.path in ("/api/untersuchen/upload",) and request.method == "POST":
+			n = request.content_length
+			if n is None or n > UNT_UP_MAX:
+				return Response(json.dumps({"ok": False, "st": "err", "msg": "photo too big"}), 413, mimetype="application/json",
+                                headers={"Connection": "close"})
+		return None
+	app.before_request_funcs.setdefault(None, []).insert(0, size_guard)
+
+	def start(who, d, L, rate_key, img=None, src="live"):
+		if not tausch_rate(rate_key, "unt", UNT_RATE[0 if who is None else 1]):
+			return reply({"ok": False, "st": "err", "msg": tr("Too many requests in a short time - wait a few minutes.", L)}, 429)
+		ok, err, jid = unt_start(who, str(d.get("cam") or "head"), unt_box(d.get("box")), bool(d.get("aim")) and who is not None, L, img, src)
+		if not ok:
+			return reply({"ok": False, "st": "wait" if err == "busy" else "err",
+                          "msg": tr("Another examination is running - it continues right after …", L) if err == "busy" else tr_err(err, L)},
+                         409 if err == "busy" else 400)
+		return reply({"ok": True, "st": "run", "id": jid})
+
+	@app.route("/api/untersuchen", methods=["GET", "POST"])
+	def api_untersuchen():
+		who = unt_perms(g)
+		if request.method == "GET":
+			L = norm_lang(request.args.get("lang") or CFG.get("lang"))
+			if not who["live"]:
+				return reply({"ok": False, "st": "err", "msg": tr("not allowed for your user", L)}, 403)
+			if request.args.get("id"):
+				return reply(unt_state(request.args.get("id"), who, L))
+			return reply({"ok": True, "cams": unt_cams(), "head": who["head"], "busy": bool(UNT["busy"]),
+                          "bio": bio_installed() and bio_runtime(), "admin": who["admin"]})
+		d = body()
+		L = norm_lang(d.get("lang") or CFG.get("lang"))
+		if not who["live"]:
+			return reply({"ok": False, "st": "err", "msg": tr("not allowed for your user", L)}, 403)
+		if d.get("action") == "bio_load":
+			if not who["admin"]:
+				return reply({"ok": False, "st": "err", "msg": tr("Only the administrator may load models.", L)}, 403)
+			ok, err = bio_download()
+			return reply({"ok": ok, "st": "loading" if ok else "err", "msg": tr(err, L) if err else ""}, 200 if ok else 400)
+		if d.get("aim") and not who["head"]:
+			return reply({"ok": False, "st": "err", "msg": tr("You may not move the head.", L)}, 403)
+		return start(who, d, L, who["key"])
+
+	@app.route("/api/untersuchen/upload", methods=["POST"])
+	def api_untersuchen_upload():
+		who = unt_perms(g)
+		L = norm_lang(request.args.get("lang") or CFG.get("lang"))
+		if not who["live"]:
+			return reply({"ok": False, "st": "err", "msg": tr("not allowed for your user", L)}, 403)
+		data = request.get_data(cache=False)
+		img = None
+		if data[:2] == b"\xff\xd8" or data[:8] == b"\x89PNG\r\n\x1a\n" or data[:4] == b"RIFF":
+			img = img_decode_checked(data, formats=("jpeg", "png", "webp"))
+		if img is None or img.size == 0 or img.shape[0] * img.shape[1] > 60_000_000:
+			return reply({"ok": False, "st": "err", "msg": tr("This is not a photo MoveEye can read (JPEG, PNG or WebP).", L)}, 400)
+		if max(img.shape[:2]) > 2400:
+			k = 2400.0 / max(img.shape[:2])
+			img = cv2.resize(img, (int(img.shape[1] * k), int(img.shape[0] * k)), interpolation=cv2.INTER_AREA)
+		return start(who, {"cam": "head", "box": None}, L, who["key"], img, "upload")
+
+	@app.route("/api/untersuchen/img/<jid>.jpg")
+	def api_untersuchen_img(jid):
+		who = unt_perms(g)
+		b = unt_image(jid) if who["live"] else None
+		if not b:
+			return Response("not found", 404)
+		return Response(b, mimetype="image/jpeg", headers={"Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff"})
+
+	def guest_gate(token):
+		if not guest_ok(token):
+			return False
+		return tausch_rate("guest|" + (request.remote_addr or "?"), "g", 2000)
+
+	@app.route("/g/<token>/untersuchen", methods=["GET", "POST"])
+	def guest_untersuchen(token):
+		if not guest_gate(token):
+			return reply({"ok": False}, 404)
+		L = sx_req_lang()
+		if request.method == "GET":
+			if request.args.get("id"):
+				return reply(unt_state(request.args.get("id"), None, L))
+			return reply({"ok": True, "cams": {"head": True, "wide": False, "thermal": False}, "head": False, "busy": bool(UNT["busy"])})
+		d = body()
+		d["aim"] = False
+		return start(None, {"cam": "head", "box": d.get("box")}, L, "guest|" + (request.remote_addr or "?"))
+
+
+
+UNT_CSS = _zd('639zze_untersuchen/UNT_CSS', "")
+
+UNT_JS = _zd('639zze_untersuchen/UNT_JS', "")
+
+
+def unt_live_html():
+	return ("<style>" + BIO_CSS + UNT_CSS + "</style><script>\nObject.assign(I18N.de, " + json.dumps(_UNT_DE, ensure_ascii=False) + ");\n"
+            + BIO_PANEL_JS + "\nif (document.body.dataset.tab === \"live\") { window.UNT_CFG = {api: \"/api/untersuchen\", img: \"#video\", tools: \"live\"};\n"
+            + UNT_JS + "}\n</script>")
+
+
+if "/*UNT*/" not in WEB_PAGE:
+	WEB_PAGE = WEB_PAGE.replace("</body>", "<!--UNT-->/*UNT*/</body>", 1)
+_render_page_639zze = render_page
+
+
+
+def render_page(page, active):
+	out = _render_page_639zze(page, active)
+	if "<!--UNT-->/*UNT*/" in out:
+		out = out.replace("<!--UNT-->/*UNT*/", unt_live_html(), 1)
+	return out
+
+
+_GUEST_UNT = "<style>" + "/*BIOCSS*/" + "</style><script>/*UNTG*/</script>"
+if "/*UNTG*/" not in GUEST_PAGE and "\nst();\n" in GUEST_PAGE:
+	GUEST_PAGE = GUEST_PAGE.replace("</body>", _GUEST_UNT + "</body>", 1)
+
+
+def unt_guest_js(lang, token):
+	L = norm_lang(lang)
+	tx = {k: tr(k, L) for k in _HX_UNT}
+	tx.update({k: tr(k, L) for k in BIO_JS_KEYS})
+	tx.update({"Head view": tr("Head view", L), "Cancel": tr("Cancel", L), "Close": tr("Close", L), "Nothing found.": tr("Nothing found.", L)})
+	return ("window.UTX = " + json.dumps(tx, ensure_ascii=False).replace("</", "<\\/") + ";\n" + BIO_PANEL_JS
+            + "\nwindow.UNT_CFG = {api: " + json.dumps("/g/" + token + "/untersuchen") + ", img: \"#v\", tools: \"guest\", guest: true};\n" + UNT_JS)
+
+
+_smalltv_routes_639zze2 = smalltv_routes
+
+
+def smalltv_routes(app, reply, body):
+	_smalltv_routes_639zze2(app, reply, body)
+	from flask import request
+
+	@app.after_request
+	def unt_guest_inject(resp):
+		try:
+			p = request.path
+			if (p.startswith("/g/") and p.count("/") == 2 and resp.status_code == 200 and resp.mimetype == "text/html"
+                    and not resp.direct_passthrough):
+				html = resp.get_data(as_text=True)
+				if "/*UNTG*/" in html:
+					tok = p.split("/")[2]
+					html = html.replace("/*BIOCSS*/", BIO_CSS + UNT_CSS, 1).replace("/*UNTG*/", unt_guest_js(sx_req_lang(), tok).replace("</script", "<\\/script"), 1)
+					resp.set_data(html)
+		except Exception:
+			pass
+		return resp
+
+
+
+if GUI_OK:
+	_unt_tk_more_base = App._tk_more_bar
+
+	def _unt_tk_more_bar(self, parent):
+		f = _unt_tk_more_base(self, parent)
+		skip = getattr(self, "_fk_more_row", None)
+		i = len([w for w in f.grid_slaves() if w is not skip])
+
+		def run():
+			def work():
+				ok, err, jid = unt_start({"admin": True, "live": True, "head": True, "key": "admin", "name": "Admin"}, "head", None, False, CFG.get("lang"))
+				txt = tr_err(err) if not ok else ""
+				if ok:
+					end = time.time() + UNT_TIMEOUT_S + 20
+					while time.time() < end and (UNT["jobs"].get(jid) or {}).get("st") == "run":
+						time.sleep(0.3)
+					txt = unt_text(unt_state(jid, {"admin": True}, CFG.get("lang")), CFG.get("lang"))
+				try:
+					self.root.after(0, lambda: messagebox.showinfo("🔍 " + tr("Examine"), txt))
+				except Exception:
+					pass
+			threading.Thread(target=work, daemon=True, name="unt-tk").start()
+			try:
+				self._status("🔍 " + tr("Taking the picture …"))
+			except Exception:
+				pass
+		self._fbtn(f, "🔍 " + tr("Examine"), run).grid(row=i // 3, column=i % 3, sticky="ew", padx=(0, 6), pady=(0, 6))
+		return f
+
+
+	App._tk_more_bar = _unt_tk_more_bar
+
+
+
+_HX_UNT = _zd('639zze_untersuchen/HX_UNT', _zd_hx({
+    'Examine': 'Untersuchen',
+    'Examine: snapshot, tap a spot or drag a box': 'Untersuchen: Sofortbild, Stelle antippen oder Rahmen ziehen',
+    'Examine a photo (upload from the phone)': 'Foto untersuchen (vom Handy hochladen)',
+    'Tap a spot or drag a box in the picture - or examine the whole picture.': 'Im Bild eine Stelle antippen oder einen Rahmen ziehen – oder das ganze Bild untersuchen.',
+    'Whole picture': 'Ganzes Bild',
+    'Examine this region?': 'Diesen Bereich untersuchen?',
+    'Other region': 'Anderer Bereich',
+    '🎯 Turn the head there first (pan / tilt)': '🎯 Zuerst den Kopf dorthin drehen (schwenken / neigen)',
+    'Taking the picture …': 'Bild wird aufgenommen …',
+    'The head turns there …': 'Der Kopf dreht dorthin …',
+    'Looking for persons, animals and vehicles …': 'Suche nach Personen, Tieren und Fahrzeugen …',
+    'Identifying the species (BioCLIP) …': 'Art wird bestimmt (BioCLIP) …',
+    'Examining did not work:': 'Untersuchen ging nicht:',
+    'Another examination is running - it continues right after …': 'Gerade läuft eine andere Untersuchung – es geht gleich weiter …',
+    'Thermal picture: only persons and animals - BioCLIP does not work on thermal pictures.': 'Wärmebild: nur Personen und Tiere – BioCLIP bestimmt keine Arten auf Wärmebildern.',
+    'Species: BioCLIP is not loaded yet.': 'Arten: BioCLIP ist noch nicht geladen.',
+    'Load it under Datentausch → 🌿 or here.': 'Laden unter Datentausch → 🌿 oder hier.',
+    'The administrator can load it.': 'Der Administrator kann es laden.',
+    'Saved in Datentausch → «{f}»': 'Gespeichert im Datentausch → «{f}»',
+    'Not saved:': 'Nicht gespeichert:',
+    'Photo examined': 'Foto untersucht',
+    'Examined': 'Untersucht',
+    'find': 'Fund',
+    'finds': 'Funde',
+    'Load BioCLIP': 'BioCLIP laden',
+    'Loading BioCLIP …': 'BioCLIP wird geladen …',
+    'Only the administrator may load models.': 'Nur der Administrator darf Modelle laden.',
+    'You may not move the head.': 'Du darfst den Kopf nicht bewegen.',
+    'This is not a photo MoveEye can read (JPEG, PNG or WebP).': 'Das ist kein Foto, das MoveEye lesen kann (JPEG, PNG oder WebP).',
+    'unsure': 'unsicher',
+    'Person': 'Person',
+    'Bird': 'Vogel',
+    'Cat': 'Katze',
+    'Dog': 'Hund',
+    'Horse': 'Pferd',
+    'Sheep': 'Schaf',
+    'Cow': 'Kuh',
+    'Elephant': 'Elefant',
+    'Bear': 'Bär',
+    'Zebra': 'Zebra',
+    'Giraffe': 'Giraffe',
+    'Animal': 'Tier',
+    'Bicycle': 'Velo',
+    'Car': 'Auto',
+    'Motorcycle': 'Motorrad',
+    'Bus': 'Bus',
+    'Train': 'Zug',
+    'Truck': 'Lastwagen',
+    'Boat': 'Boot',
+    'Vehicle': 'Fahrzeug',
+    'Warm body': 'Warmer Körper',
+    'Guest': 'Gast',
+}))
+for _k, _v in _HX_UNT.items():
+	DE.setdefault(_k, _v[0])
+	for _i, _L in enumerate(("fr", "it", "rm")):
+		TRX[_L].setdefault(_k, _v[_i + 1])
+_UNT_DE = {_k: _v[0] for _k, _v in _HX_UNT.items()}
+_UNT_DE.update({k: DE.get(k, k) for k in BIO_JS_KEYS + ("Head view", "Wide view", "Thermal view", "Cancel", "Close")})
+
+
+_HELP_UNT = _zd('639zze_untersuchen/HELP_UNT', _ZDDict())
+
+
+def _help_unt(doc, lang):
+	if 'id="untersuchen"' in doc:
+		return doc
+	i = doc.find('<section id="tips"')
+	return doc[:i] + _HELP_UNT[lang] + doc[i:] if i >= 0 else doc
+
+
+_hp_en_unt = HELP_PAGE.find('<div lang="en">')
+if _hp_en_unt > 0:
+	HELP_PAGE = _help_unt(HELP_PAGE[:_hp_en_unt], "de") + _help_unt(HELP_PAGE[_hp_en_unt:], "en")
+for _L in ("fr", "it", "rm"):
+	if HELP_X.get(_L):
+		HELP_X[_L] = _help_unt(HELP_X[_L], _L)
+
+
+
+def unt_selftest():
+	assert unt_box(None) is None and unt_box([0, 0, 1, 1]) is None
+	b = unt_box([0.5, 0.5])
+	assert b == [0.35, 0.35, 0.3, 0.3], b
+	assert unt_box([0.9, 0.9, 0.5, 0.5]) == [0.5, 0.5, 0.5, 0.5] and unt_box(["x"]) is None
+	assert unt_kind("person") == "person" and unt_kind("dog") == "animal" and unt_kind("truck") == "vehicle" and unt_kind("chair") == ""
+	J = {"cam": "head", "src": "live", "box": [0.1, 0.1, 0.5, 0.5], "aimed": True,
+         "found": [{"kind": "animal", "lab": "dog", "conf": 0.8, "box": [0.2, 0.2, 0.1, 0.1]}], "species": []}
+	r = unt_result_json(J, (47.37, 8.54, "fixed"))
+	assert r["location"] == {"lat": 47.37, "lon": 8.54, "source": "fixed"} and r["objects"][0]["label"] == "dog" and r["head_moved"]
+	assert "/api/untersuchen" in PERM_POST["live"] and role_allows("kid", "/api/untersuchen", "POST", {}) and not role_allows("custom", "/api/untersuchen", "POST", {}, set())
+	assert "<!--UNT-->/*UNT*/" in WEB_PAGE and "/*UNTG*/" in GUEST_PAGE and 'id="untersuchen"' in HELP_PAGE
+	assert tr("Examine", "de") == "Untersuchen" and tr("Warm body", "fr") == "Corps chaud"
+	return "region / tap, kinds, result JSON (place, objects), rights, page hooks, texts"
+
+
+SELFTEST_EXTRA.append(("Examine a snapshot «🔍 Untersuchen» (639zze)", unt_selftest))
+
+
+
+
+
+
+
+
+
+
+import io as _io_bk
+import struct as _struct_bk
+
+IMG_MP_MAX = 60_000_000
+IMG_SIDE_MAX = 20_000
+
+
+def img_head(src):
+	""
+	f = _io_bk.BytesIO(src) if isinstance(src, (bytes, bytearray, memoryview)) else src
+	try:
+		f.seek(0)
+		h = f.read(32)
+		if h.startswith(b"\x89PNG\r\n\x1a\n"):
+			if h[12:16] != b"IHDR" or len(h) < 24:
+				return None
+			w, hh = _struct_bk.unpack(">II", h[16:24])
+			return "png", w, hh
+		if h[:6] in (b"GIF87a", b"GIF89a") and len(h) >= 10:
+			w, hh = _struct_bk.unpack("<HH", h[6:10])
+			return "gif", w, hh
+		if h[:2] == b"BM" and len(h) >= 26:
+			w, hh = _struct_bk.unpack("<ii", h[18:26])
+			return "bmp", abs(w), abs(hh)
+		if h[:4] == b"RIFF" and h[8:12] == b"WEBP":
+			c = h[12:32] + f.read(10)
+			if c[:4] == b"VP8 " and len(c) >= 18:
+				if c[11:14] != b"\x9d\x01\x2a":
+					return None
+				w, hh = _struct_bk.unpack("<HH", c[14:18])
+				return "webp", w & 0x3fff, hh & 0x3fff
+			if c[:4] == b"VP8L" and len(c) >= 13:
+				if c[8] != 0x2f:
+					return None
+				b = int.from_bytes(c[9:13], "little")
+				return "webp", (b & 0x3fff) + 1, ((b >> 14) & 0x3fff) + 1
+			if c[:4] == b"VP8X" and len(c) >= 18:
+				return "webp", 1 + int.from_bytes(c[12:15], "little"), 1 + int.from_bytes(c[15:18], "little")
+			return None
+		if h[:4] in (b"II*\x00", b"MM\x00*"):
+			e = "<" if h[:2] == b"II" else ">"
+			f.seek(_struct_bk.unpack(e + "I", h[4:8])[0])
+			n = _struct_bk.unpack(e + "H", f.read(2))[0]
+			w = hh = None
+			for _i in range(min(n, 500)):
+				tag, typ, _cnt = _struct_bk.unpack(e + "HHI", f.read(8))
+				v = f.read(4)
+				val = _struct_bk.unpack(e + "H", v[:2])[0] if typ == 3 else _struct_bk.unpack(e + "I", v)[0] if typ == 4 else None
+				if tag == 256:
+					w = val
+				elif tag == 257:
+					hh = val
+			return ("tiff", w, hh) if w is not None and hh is not None else None
+		if h[:2] == b"\xff\xd8":
+			f.seek(2)
+			for _i in range(1000):
+				m = f.read(2)
+				while m[:1] == b"\xff" and m[1:2] == b"\xff":
+					m = m[1:] + f.read(1)
+				if len(m) < 2 or m[0] != 0xFF:
+					return None
+				mk = m[1]
+				if mk == 0x01 or 0xD0 <= mk <= 0xD7:
+					continue
+				if mk in (0xD8, 0xD9, 0xDA):
+					return None
+				ln = _struct_bk.unpack(">H", f.read(2))[0]
+				if ln < 2:
+					return None
+				if 0xC0 <= mk <= 0xCF and mk not in (0xC4, 0xC8, 0xCC):
+					d = f.read(5)
+					hh, w = _struct_bk.unpack(">HH", d[1:5])
+					return "jpeg", w, hh
+				f.seek(ln - 2, 1)
+			return None
+	except (OSError, _struct_bk.error, ValueError, IndexError, TypeError):
+		return None
+	return None
+
+
+def img_head_ok(src, formats=None):
+	""
+	r = img_head(src)
+	if r is None:
+		return False, "head unreadable"
+	fmt, w, hh = r
+	if formats and fmt not in formats:
+		return False, "format " + fmt
+	if w <= 0 or hh <= 0:
+		return False, "empty"
+	if w > IMG_SIDE_MAX or hh > IMG_SIDE_MAX or w * hh > IMG_MP_MAX:
+		return False, "too big %dx%d" % (w, hh)
+	return True, (w, hh)
+
+
+def img_decode_checked(data, flag=None, formats=None):
+	""
+	if not img_head_ok(data, formats)[0]:
+		return None
+	try:
+		return cv2.imdecode(np.frombuffer(data, np.uint8), cv2.IMREAD_COLOR if flag is None else flag)
+	except (cv2.error, ValueError, MemoryError):
+		return None
+
+
+
+def _bk_bomb(fmt, w, hh):
+	""
+	if fmt == "png":
+		return b"\x89PNG\r\n\x1a\n" + b"\x00\x00\x00\x0dIHDR" + _struct_bk.pack(">II", w, hh) + b"\x08\x02\x00\x00\x00" + b"\x00" * 4
+	if fmt == "jpeg":
+		return b"\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x00\x00\x01\x00\x01\x00\x00" + b"\xff\xc0\x00\x11\x08" + _struct_bk.pack(">HH", hh, w) + b"\x03" + b"\x00" * 9
+	if fmt == "vp8x":
+		return b"RIFF\x00\x00\x00\x00WEBPVP8X\x0a\x00\x00\x00\x00\x00\x00\x00" + (w - 1).to_bytes(3, "little") + (hh - 1).to_bytes(3, "little")
+	if fmt == "vp8l":
+		return b"RIFF\x00\x00\x00\x00WEBPVP8L\x05\x00\x00\x00\x2f" + ((w - 1) | ((hh - 1) << 14)).to_bytes(4, "little")
+	if fmt == "vp8":
+		return b"RIFF\x00\x00\x00\x00WEBPVP8 \x0a\x00\x00\x00\x00\x00\x00\x9d\x01\x2a" + _struct_bk.pack("<HH", w, hh)
+	raise ValueError(fmt)
+
+
+def bk_selftest():
+	for fmt in ("png", "jpeg"):
+		assert img_head(_bk_bomb(fmt, 65000, 65000))[1:] == (65000, 65000), fmt
+		assert not img_head_ok(_bk_bomb(fmt, 65000, 65000))[0] and not img_head_ok(_bk_bomb(fmt, 30000, 100))[0], fmt
+		assert img_head_ok(_bk_bomb(fmt, 4000, 3000)) == (True, (4000, 3000)), fmt
+	assert img_head(_bk_bomb("vp8x", 16384, 16384))[1:] == (16384, 16384) and not img_head_ok(_bk_bomb("vp8x", 16384, 16384))[0]
+	assert img_head(_bk_bomb("vp8l", 16384, 16000))[1:] == (16384, 16000) and not img_head_ok(_bk_bomb("vp8l", 16384, 16000))[0]
+	assert img_head(_bk_bomb("vp8", 16383, 16383))[1:] == (16383, 16383) and not img_head_ok(_bk_bomb("vp8", 16383, 16383))[0]
+	seen, imd = [], cv2.imdecode
+	try:
+		cv2.imdecode = lambda *a: seen.append(1)
+		for b in (_bk_bomb("png", 65000, 65000), _bk_bomb("jpeg", 9000, 9000), _bk_bomb("vp8x", 16384, 16384), b"no picture"):
+			assert img_decode_checked(b) is None
+	finally:
+		cv2.imdecode = imd
+	assert not seen, "decoded although refused"
+	for fmt, ext in (("jpeg", ".jpg"), ("png", ".png"), ("webp", ".webp")):
+		ok, buf = cv2.imencode(ext, np.full((30, 40, 3), 128, np.uint8))
+		if ok:
+			assert img_head(buf.tobytes()) == (fmt, 40, 30), (fmt, img_head(buf.tobytes()))
+			im = img_decode_checked(buf.tobytes(), formats=("jpeg", "png", "webp"))
+			assert im is not None and im.shape[:2] == (30, 40), fmt
+	assert img_head(b"\xff\xd8\xff\xda\x00\x02") is None and img_head(b"\x89PNG\r\n\x1a\n") is None and img_head(b"RIFF\x00\x00\x00\x00WEBPVP8 ") is None
+	assert not img_head_ok(_bk_bomb("png", 0, 10))[0] and img_head_ok(_bk_bomb("png", 100, 100), formats=("jpeg",))[0] is False
+	return "JPEG SOF / PNG IHDR / WebP VP8 VP8L VP8X read from the head; bombs (> 60 MP, > %d px a side, unreadable) refused without decoding" % IMG_SIDE_MAX
+
+
+SELFTEST_EXTRA.append(("Picture size from the file head (639zzf)", bk_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+FOTAQ_TAG = "fotaq-1"
+FOTAQ_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/" + FOTAQ_TAG + "/"}
+
+
+FOTAQ_FILES = {
+    "engine": {"name": "fotaq-engine-1.zip", "size": 12049091, "sha256": "6feab69b314ecc491f011ab9eaa0d0df670bd5be86e908c66e7491559ac31de5", "unpacked": 18533041},
+    "de": {"name": "fotaq-de-1.zip", "size": 108739455, "sha256": "c824460b7152c43c468c8c0dbfb2d436c17b7cfe84109358989d39316b1853ae", "unpacked": 108739281},
+    "en": {"name": "fotaq-en-1.zip", "size": 51225404, "sha256": "9af0594435d6ff0caa4b7956d31a31b006c5e49c1b940d9074d9c1b1add64279", "unpacked": 51227796},
+}
+FOTAQ_MAX_BYTES = 400 * 1024 * 1024
+FOTAQ_GAME = {"dir": "fotaq", "start": "index.html", "icon": "thumb.svg", "input": "touch",
+              "name": "Flight of the Amazon Queen",
+              "desc": "Abenteuer-Klassiker (1995) mit Sprachausgabe – Deutsch oder Englisch.",
+              "names": {L: "Flight of the Amazon Queen" for L in ("de", "en", "fr", "it", "rm")},
+              "descs": {"de": "Abenteuer-Klassiker (1995) mit Sprachausgabe – Deutsch oder Englisch.",
+                        "en": "Classic adventure (1995) with speech – German or English.",
+                        "fr": "Jeu d’aventure classique (1995) avec voix – allemand ou anglais.",
+                        "it": "Avventura classica (1995) con voci – tedesco o inglese.",
+                        "rm": "Gieu d’aventura classic (1995) cun vusch – tudestg u englais."}}
+FOTAQ_DL = {"running": False, "got": 0, "total": 0, "msg": "", "stop": False, "done": False, "phase": ""}
+
+
+def fotaq_dir():
+	return os.path.join(DATA_DIR, "fotaq")
+
+
+def fotaq_dl_dir():
+	return os.path.join(DATA_DIR, "fotaq_dl")
+
+
+def fotaq_pinned():
+	""
+	for f in FOTAQ_FILES.values():
+		if not isinstance(f.get("size"), int) or not 0 < f["size"] <= FOTAQ_MAX_BYTES or not re.fullmatch(r"[0-9a-f]{64}", str(f.get("sha256") or "")):
+			return False
+		if not isinstance(f.get("unpacked"), int) or not 0 < f["unpacked"] <= FOTAQ_MAX_BYTES:
+			return False
+		if not re.fullmatch(r"fotaq-[a-z]+-\d{1,3}\.zip", f.get("name") or ""):
+			return False
+	return True
+
+
+def fotaq_total():
+	return sum(int(f.get("size") or 0) for f in FOTAQ_FILES.values())
+
+
+def fotaq_unpacked():
+	return sum(int(f.get("unpacked") or 0) for f in FOTAQ_FILES.values())
+
+
+FOTAQ_LANGS = ("de", "en")
+FOTAQ_LANG_NAMES = {"de": "Deutsch", "en": "English"}
+
+
+def _fotaq_ok_read():
+	""
+	try:
+		with open(os.path.join(fotaq_dir(), "fotaq.ok"), encoding="utf-8") as fh:
+			d = json.load(fh)
+		return d if isinstance(d, dict) and d.get("tag") == FOTAQ_TAG and isinstance(d.get("parts"), dict) else {}
+	except (OSError, ValueError):
+		return {}
+
+
+def _fotaq_ok_write(parts):
+	with open(os.path.join(fotaq_dir(), "fotaq.ok.new"), "w", encoding="utf-8") as fh:
+		json.dump({"tag": FOTAQ_TAG, "parts": parts}, fh)
+	os.replace(os.path.join(fotaq_dir(), "fotaq.ok.new"), os.path.join(fotaq_dir(), "fotaq.ok"))
+
+
+def _fotaq_part_ok(parts, k):
+	return parts.get(k) == FOTAQ_FILES[k]["sha256"] and (k == "engine" or os.path.isdir(os.path.join(fotaq_dir(), "data", "games", k)))
+
+
+def fotaq_langs():
+	""
+	if not fotaq_pinned():
+		return []
+	parts = _fotaq_ok_read().get("parts") or {}
+	if not _fotaq_part_ok(parts, "engine"):
+		return []
+	return [L for L in FOTAQ_LANGS if _fotaq_part_ok(parts, L)]
+
+
+def fotaq_installed():
+	""
+	d = fotaq_dir()
+	return bool(fotaq_langs()) and all(os.path.isfile(os.path.join(d, f)) for f in ("index.html", "scummvm.js", "scummvm.wasm", "thumb.svg"))
+
+
+def _fotaq_games_index(root, langs):
+	""
+	p = os.path.join(root, "data", "games", "index.json")
+	os.makedirs(os.path.dirname(p), exist_ok=True)
+	with open(p + ".new", "w", encoding="utf-8") as fh:
+		json.dump({L: {} for L in langs}, fh)
+	os.replace(p + ".new", p)
+
+
+def _fotaq_unzip(zp, dest, limit, prefix=""):
+	""
+	tot = 0
+	with zipfile.ZipFile(zp) as z:
+		infos = z.infolist()
+		for i in infos:
+			n = i.filename
+			if n.startswith("/") or "\\" in n or ".." in n.split("/") or not re.fullmatch(r"[A-Za-z0-9._ /+-]{1,200}", n):
+				raise ValueError("bad file name in the package")
+			if prefix and not n.startswith(prefix):
+				raise ValueError("unexpected file in the package")
+			if (i.external_attr >> 16) & 0o170000 == 0o120000:
+				raise ValueError("link in the package")
+			tot += i.file_size
+		if tot > limit + 1024:
+			raise ValueError("package larger than announced")
+		for i in infos:
+			if i.is_dir():
+				continue
+			p = os.path.join(dest, *i.filename[len(prefix):].split("/"))
+			os.makedirs(os.path.dirname(p), exist_ok=True)
+			with z.open(i) as src, open(p, "wb") as out:
+				while True:
+					if FOTAQ_DL.get("stop"):
+						raise InterruptedError("cancelled")
+					b = src.read(1 << 20)
+					if not b:
+						break
+					out.write(b)
+	return tot
+
+
+def fotaq_need(langs):
+	""
+	have = fotaq_langs()
+	eng = bool(have)
+	parts = ([] if eng else ["engine"]) + [L for L in FOTAQ_LANGS if L in langs and L not in have]
+	return parts, sum(FOTAQ_FILES[k]["size"] for k in parts), sum(FOTAQ_FILES[k]["unpacked"] for k in parts)
+
+
+def fotaq_download(langs=FOTAQ_LANGS, wait=False):
+	""
+	if not fotaq_pinned():
+		return False, "comes with an update"
+	langs = [L for L in FOTAQ_LANGS if L in (langs or ())]
+	if not langs:
+		return False, "choose at least one language"
+	if FOTAQ_DL["running"]:
+		return True, ""
+	parts, size, unz = fotaq_need(langs)
+	if not [k for k in parts if k != "engine"]:
+		return True, ""
+	try:
+		free = shutil.disk_usage(DATA_DIR).free
+	except OSError:
+		free = 1 << 40
+	dd = fotaq_dl_dir()
+	have = sum(os.path.getsize(p) for p in (os.path.join(dd, FOTAQ_FILES[k]["name"] + x) for k in parts for x in ("", ".part")) if os.path.isfile(p))
+	if free - (size - have + unz) < bio_free_need():
+		return False, "not enough free space on the memory card"
+	FOTAQ_DL.update(running=True, got=0, total=size, msg="", stop=False, done=False, phase="load")
+
+	def work():
+		new_root = "engine" in parts
+		tmp = fotaq_dir() + ".new"
+		done = []
+		try:
+			os.makedirs(dd, exist_ok=True)
+			for k in parts:
+				f = FOTAQ_FILES[k]
+				dest = os.path.join(dd, f["name"])
+				if os.path.isfile(dest) and piper_check_file(dest, f)[0]:
+					FOTAQ_DL["got"] += f["size"]; continue
+				bio_fetch(FOTAQ_BASE["url"] + f["name"], dest, f, FOTAQ_DL)
+			FOTAQ_DL["phase"] = "unpack"
+			if new_root:
+				shutil.rmtree(tmp, ignore_errors=True)
+				os.makedirs(tmp)
+				_fotaq_unzip(os.path.join(dd, FOTAQ_FILES["engine"]["name"]), tmp, FOTAQ_FILES["engine"]["unpacked"])
+				with open(os.path.join(tmp, "fotaq.json"), encoding="utf-8") as fh:
+					man = json.load(fh)
+				if man.get("tag") != FOTAQ_TAG:
+					raise ValueError("the package is not " + FOTAQ_TAG)
+				for L in FOTAQ_LANGS:
+					shutil.rmtree(os.path.join(tmp, "data", "games", L), ignore_errors=True)
+				shutil.rmtree(fotaq_dir(), ignore_errors=True)
+				os.replace(tmp, fotaq_dir())
+				_fotaq_ok_write({"engine": FOTAQ_FILES["engine"]["sha256"]})
+			for L in [k for k in parts if k != "engine"]:
+				g = os.path.join(fotaq_dir(), "data", "games")
+				lt = os.path.join(g, L + ".new")
+				shutil.rmtree(lt, ignore_errors=True)
+				os.makedirs(lt)
+				_fotaq_unzip(os.path.join(dd, FOTAQ_FILES[L]["name"]), lt, FOTAQ_FILES[L]["unpacked"], prefix="data/games/%s/" % L)
+				shutil.rmtree(os.path.join(g, L), ignore_errors=True)
+				os.replace(lt, os.path.join(g, L))
+				pr = _fotaq_ok_read().get("parts") or {}
+				pr[L] = FOTAQ_FILES[L]["sha256"]
+				_fotaq_ok_write(pr)
+				done.append(L)
+				try:
+					os.remove(os.path.join(dd, FOTAQ_FILES[L]["name"]))
+				except OSError:
+					pass
+			_fotaq_games_index(fotaq_dir(), fotaq_langs())
+			if fotaq_langs():
+				shutil.rmtree(dd, ignore_errors=True)
+			FOTAQ_DL["done"] = True
+			log_event("sys", f"Flight of the Amazon Queen: {', '.join(FOTAQ_LANG_NAMES[L] for L in done)} installed ({FOTAQ_TAG})")
+		except InterruptedError:
+			FOTAQ_DL["msg"] = "cancelled"
+		except Exception as e:
+			FOTAQ_DL["msg"] = str(getattr(e, "reason", "") or e)[:160] or e.__class__.__name__
+			log_event("sys", f"Flight of the Amazon Queen not installed: {FOTAQ_DL['msg']}")
+		finally:
+			shutil.rmtree(tmp, ignore_errors=True)
+			for L in FOTAQ_LANGS:
+				shutil.rmtree(os.path.join(fotaq_dir(), "data", "games", L + ".new"), ignore_errors=True)
+			if os.path.isdir(fotaq_dir()) and not fotaq_langs():
+				shutil.rmtree(fotaq_dir(), ignore_errors=True)
+			FOTAQ_DL.update(running=False, phase="")
+	if wait:
+		work()
+		return (not FOTAQ_DL["msg"]), FOTAQ_DL["msg"]
+	threading.Thread(target=work, daemon=True, name="fotaq-dl").start()
+	return True, ""
+
+
+def fotaq_cancel():
+	if FOTAQ_DL["running"]:
+		FOTAQ_DL["stop"] = True
+	return True, ""
+
+
+def fotaq_delete():
+	if FOTAQ_DL["running"]:
+		return False, "busy right now - try again in a moment"
+	for p in (fotaq_dir(), fotaq_dir() + ".new", fotaq_dl_dir()):
+		shutil.rmtree(p, ignore_errors=True)
+	log_event("sys", "Flight of the Amazon Queen deleted")
+	return True, ""
+
+
+def fotaq_remove_lang(L):
+	""
+	if FOTAQ_DL["running"]:
+		return False, "busy right now - try again in a moment"
+	have = fotaq_langs()
+	if L not in have:
+		return True, ""
+	if have == [L]:
+		return fotaq_delete()
+	pr = _fotaq_ok_read().get("parts") or {}
+	pr.pop(L, None)
+	_fotaq_ok_write(pr)
+	shutil.rmtree(os.path.join(fotaq_dir(), "data", "games", L), ignore_errors=True)
+	_fotaq_games_index(fotaq_dir(), fotaq_langs())
+	log_event("sys", f"Flight of the Amazon Queen: {FOTAQ_LANG_NAMES[L]} removed")
+	return True, ""
+
+
+def fotaq_state():
+	""
+	try:
+		free = shutil.disk_usage(DATA_DIR).free
+	except OSError:
+		free = 0
+	have = fotaq_langs()
+	return {"pinned": fotaq_pinned(), "installed": fotaq_installed(), "langs": have, "tag": FOTAQ_TAG,
+            "parts": {k: {"size": f["size"], "unpacked": f["unpacked"]} for k, f in FOTAQ_FILES.items()},
+            "engine": bool(have), "size": fotaq_total(), "unpacked": fotaq_unpacked(), "free": free, "free_need": bio_free_need(),
+            "dl": {k: FOTAQ_DL[k] for k in ("running", "got", "total", "msg", "done", "phase")}}
+
+
+def fotaq_action(a, d=None):
+	""
+	d = d or {}
+	if a == "fotaq_install":
+		ls = d.get("langs")
+		return fotaq_download(ls if isinstance(ls, list) else list(FOTAQ_LANGS))
+	if a == "fotaq_cancel":
+		return fotaq_cancel()
+	if a == "fotaq_delete":
+		return fotaq_delete()
+	if a == "fotaq_remove":
+		return fotaq_remove_lang(str(d.get("lang") or ""))
+	return False, "unknown action"
+
+
+
+_games_list_639zzg = games_list
+
+
+
+def games_list(extra=True):
+	gl = _games_list_639zzg()
+	if extra and fotaq_installed():
+		gl = [x for x in gl if x.get("dir") != FOTAQ_GAME["dir"]] + [dict(FOTAQ_GAME)]
+	return gl
+
+
+_games_file_639zzg = games_file
+
+
+
+def games_file(game, fn):
+	if game != FOTAQ_GAME["dir"]:
+		return _games_file_639zzg(game, fn)
+	if not fotaq_installed():
+		return None
+	base = os.path.realpath(fotaq_dir())
+	p_ = os.path.realpath(os.path.join(base, fn or FOTAQ_GAME["start"]))
+	if not p_.startswith(base + os.sep) or not os.path.isfile(p_) or os.path.basename(p_) in ("fotaq.ok", "fotaq.ok.new") or ".new" + os.sep in p_[len(base):] + os.sep:
+		return None
+	return p_
+
+
+
+_HX_FOTAQ = _zd('639zzg_fotaq/HX_FOTAQ', _zd_hx({
+    'comes with an update': 'kommt mit einem Update',
+    'Adventure with speech, German or English. Loaded once from GitHub (fixed checksum), then it runs offline in the browser (ScummVM).': 'Abenteuer mit Sprachausgabe, Deutsch oder Englisch. Wird einmal von GitHub geladen (feste Prüfsumme), läuft danach offline im Browser (ScummVM).',
+    'Install': 'Installieren',
+    'Remove': 'Entfernen',
+    'Cancel': 'Abbrechen',
+    'installed': 'installiert',
+    'unpacking …': 'entpacken …',
+    'cancelled': 'abgebrochen',
+    'not enough free space on the memory card': 'zu wenig Platz auf der Speicherkarte',
+    'choose at least one language': 'mindestens eine Sprache wählen',
+    'Add': 'Dazu laden',
+    'Languages:': 'Sprachen:',
+    'fotaq-ask': '«Flight of the Amazon Queen» jetzt laden? %s MB von GitHub (danach %s MB auf der Speicherkarte, 2 GB bleiben frei).',
+    'fotaq-del-lang': 'Diese Sprache entfernen? Die Spielstände bleiben in den Browsern.',
+    'fotaq-del': '«Flight of the Amazon Queen» entfernen? Die Spielstände bleiben in den Browsern.',
+}))
+for _k, _v in _HX_FOTAQ.items():
+	DE.setdefault(_k, _v[0])
+	for _i, _L in enumerate(("fr", "it", "rm")):
+		TRX[_L].setdefault(_k, _v[_i + 1])
+FOTAQ_JS_DE = {_k: _v[0] for _k, _v in _HX_FOTAQ.items()}
+FOTAQ_JS_EN = {"fotaq-ask": "Load «Flight of the Amazon Queen» now? %s MB from GitHub (then %s MB on the memory card, 2 GB stay free).",
+               "fotaq-del": "Remove «Flight of the Amazon Queen»? The saved games stay in the browsers.",
+               "fotaq-del-lang": "Remove this language? The saved games stay in the browsers."}
+TOOLS_PAGE = TOOLS_PAGE.replace("/*FOTAQ_I18N*/", "Object.assign(I18N.de," + json.dumps(FOTAQ_JS_DE, ensure_ascii=False) + ");"
+                                "I18N.en=I18N.en||{};Object.assign(I18N.en," + json.dumps(FOTAQ_JS_EN, ensure_ascii=False) + ");", 1)
+
+
+_HELP_FOTAQ = {
+    "de": '<li><b>🛩 Flight of the Amazon Queen</b> (Abenteuer von 1995, CD-Fassung mit Sprachausgabe, Deutsch oder Englisch): einmal laden unter Mehr → Spielecke: Sprache wählen (Deutsch etwa 120 MB, Englisch etwa 63 MB, beide 172 MB von GitHub, feste Prüfsumme, 2 GB bleiben frei), jede Sprache später einzeln dazu oder weg, danach als Kachel in der Spielesammlung, auch ohne Internet. Antippen = Klick, lange drücken oder «🖱 Rechts» = Rechtsklick, «☰ Menü» = Speichern, Laden, Lautstärke. Spielstände bleiben im Browser des Geräts. Am Handy quer halten. Auf dem Handy braucht das Spiel viel Speicher (Deutsch ~110 MB Daten), ältere Geräte schaffen es eventuell nicht. <b>Lizenz:</b> Spiel © 1995 John Passfield &amp; Steven Stamatiadis, Freeware (Readme bei den Daten); ScummVM © The ScummVM Team, GPL v3 – Quellcode und Bau-Ablauf: Link auf der Startseite des Spiels.</li>',
+    "en": '<li><b>🛩 Flight of the Amazon Queen</b> (adventure from 1995, CD version with speech, German or English): load it once under More → Game corner: choose the languages (German about 120 MB, English about 63 MB, both 172 MB from GitHub, fixed checksum, 2 GB stay free), add or remove each language later, then it is a tile in the game collection, also without internet. Tap = click, long press or «🖱 Right» = right click, «☰ Menu» = save, load, volume. Saved games stay in the browser of the device. Hold the phone sideways. On phones the game needs a lot of memory (German ~110 MB of data), older devices may not manage. <b>Licence:</b> game © 1995 John Passfield &amp; Steven Stamatiadis, freeware (readme with the data); ScummVM © The ScummVM Team, GPL v3 – source code and build: link on the start page of the game.</li>',
+    "fr": '<li><b>🛩 Flight of the Amazon Queen</b> (aventure de 1995, version CD avec voix, allemand ou anglais) : charger une fois sous Plus → Coin jeux → « ⬇ Installer » (env. 170 Mo depuis GitHub, somme fixe, 2 Go restent libres), ensuite une tuile de la collection, aussi sans Internet. Toucher = clic, appui long ou « 🖱 Droite » = clic droit, « ☰ Menu » = sauvegarder, charger. <b>Licence :</b> jeu © 1995 John Passfield &amp; Steven Stamatiadis, freeware ; ScummVM © The ScummVM Team, GPL v3 (source : lien sur la page du jeu).</li>',
+    "it": '<li><b>🛩 Flight of the Amazon Queen</b> (avventura del 1995, versione CD con voci, tedesco o inglese): caricare una volta sotto Altro → Angolo giochi → «⬇ Installa» (circa 170 MB da GitHub, somma fissa, 2 GB restano liberi), poi è una tessera della raccolta, anche senza Internet. Toccare = clic, pressione lunga o «🖱 Destro» = clic destro, «☰ Menu» = salvare, caricare. <b>Licenza:</b> gioco © 1995 John Passfield &amp; Steven Stamatiadis, freeware; ScummVM © The ScummVM Team, GPL v3 (sorgente: link sulla pagina del gioco).</li>',
+    "rm": '<li><b>🛩 Flight of the Amazon Queen</b> (aventura da 1995, versiun CD cun vusch, tudestg u englais): chargiar ina giada sut Dapli → Chantun da gieus → «⬇ Installar» (var 170 MB da GitHub, summa fixa, 2 GB restan libers), lura ina cachel da la collecziun, er senza internet. Tutgar = clic, smatgar ditg u «🖱 Dretg» = clic dretg, «☰ Menu» = memorisar, chargiar. <b>Licenza:</b> gieu © 1995 John Passfield &amp; Steven Stamatiadis, freeware; ScummVM © The ScummVM Team, GPL v3 (code: link sin la pagina dal gieu).</li>',
+}
+
+
+def _help_fotaq(doc, lang):
+	i = doc.find('<section id="games"')
+	if i < 0 or "Amazon Queen" in doc[i:doc.find("</section>", i)]:
+		return doc
+	j = doc.find("</ul></section>", i)
+	return doc[:j] + _HELP_FOTAQ[lang] + doc[j:] if j > 0 else doc
+
+
+_hp_en_fotaq = HELP_PAGE.find('<div lang="en">')
+if _hp_en_fotaq > 0:
+	HELP_PAGE = _help_fotaq(HELP_PAGE[:_hp_en_fotaq], "de") + _help_fotaq(HELP_PAGE[_hp_en_fotaq:], "en")
+for _L in ("fr", "it", "rm"):
+	if HELP_X.get(_L):
+		HELP_X[_L] = _help_fotaq(HELP_X[_L], _L)
+
+
+
+def fotaq_selftest():
+	assert FOTAQ_BASE["url"] == "https://github.com/DonElektro/MotionWatch/releases/download/" + FOTAQ_TAG + "/"
+	assert re.fullmatch(r"fotaq-\d{1,3}", FOTAQ_TAG)
+	n = FOTAQ_TAG.split("-")[1]
+	assert all(f["name"] == "fotaq-%s-%s.zip" % (k, n) for k, f in FOTAQ_FILES.items()), "FOTAQ_FILES: names fit FOTAQ_TAG"
+	assert fotaq_pinned() or all(not f["size"] and not f["sha256"] for f in FOTAQ_FILES.values()), "FOTAQ_FILES: either all pins or none"
+	assert fotaq_total() <= 3 * FOTAQ_MAX_BYTES
+	assert FOTAQ_GAME["input"] in GAME_GROUPS and FOTAQ_GAME["icon"] == "thumb.svg"
+	assert all(FOTAQ_GAME["names"].get(L) and FOTAQ_GAME["descs"].get(L) for L in ("de", "en", "fr", "it", "rm"))
+	assert FOTAQ_GAME["desc"] == FOTAQ_GAME["descs"]["de"]
+	assert "Amazon Queen" in HELP_PAGE and all("Amazon Queen" in HELP_X.get(L, "Amazon Queen") for L in ("fr", "it", "rm"))
+	assert "fotaqPaint" in TOOLS_PAGE and "/*FOTAQ_I18N*/" not in TOOLS_PAGE
+	if not fotaq_installed():
+		assert all(x.get("dir") != "fotaq" for x in games_list()) and games_file("fotaq", "index.html") is None
+	assert games_file("fotaq", "../settings.json") is None and games_file("fotaq", "/etc/passwd") is None
+	return True
+
+
+SELFTEST_EXTRA.append(("Flight of the Amazon Queen in the game corner (ScummVM, 639zzg)", fotaq_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+GAME_THUMBS = {"thumb.svg": "image/svg+xml", "thumb.png": "image/png"}
+GAME_THUMB_MAX = 1 << 20
+PERM_GET["games"] = tuple(PERM_GET.get("games", ())) + ("/party/thumb/",)
+
+
+def game_thumb_file(game):
+	""
+	x = next((x for x in games_list() if x.get("dir") == game), None)
+	ic = str((x or {}).get("icon") or "")
+	if ic not in GAME_THUMBS:
+		return None
+	p_ = games_file(game, ic)
+	try:
+		if not p_ or os.path.getsize(p_) > GAME_THUMB_MAX:
+			return None
+	except OSError:
+		return None
+	return p_, GAME_THUMBS[ic]
+
+
+def game_thumb_src(game, icon, base):
+	""
+	return base + "/thumb/" + game if str(icon or "") in GAME_THUMBS else ""
+
+
+
+_game_icon_639zzh = _game_icon
+
+
+
+def _game_icon(x, host=""):
+	from html import escape as _e
+	src = game_thumb_src(x.get("dir", ""), x.get("icon"), "/spiele")
+	if not src:
+		return _game_icon_639zzh(x if "." not in str(x.get("icon") or "") else dict(x, icon="🎮"), host)
+	return f'<img src="{_e(src, quote=True)}" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'">'
+
+
+
+PARTY_PAGE = PARTY_PAGE.replace('<img src="${BASE}/g/${g.dir}/${g.icon}"', '<img src="${BASE}/thumb/${g.dir}"', 1)
+TOOLS_PAGE = (TOOLS_PAGE.replace('im.src = "/games/" + x.dir + "/" + s_;', 'im.src = "/party/thumb/" + x.dir;', 1)
+              .replace('im.src = "/games/fotaq/thumb.svg";', 'im.src = "/party/thumb/fotaq";', 1))
+
+
+
+_smalltv_routes_639zzh = smalltv_routes
+
+
+def smalltv_routes(app, reply, body):
+	_smalltv_routes_639zzh(app, reply, body)
+	from flask import Response, request
+	import hmac
+
+	def send(game):
+		r = game_thumb_file(game)
+		h = {"X-Content-Type-Options": "nosniff", "Cache-Control": "max-age=3600",
+             "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; img-src data:; sandbox"}
+		if not r:
+			return Response("not found", 404, mimetype="text/plain", headers=h)
+		with open(r[0], "rb") as f:
+			return Response(f.read(GAME_THUMB_MAX + 1), mimetype=r[1], headers=h)
+
+	@app.route("/party/thumb/<game>")
+	def game_thumb_admin(game):
+		return send(game)
+
+	@app.route("/spiele/thumb/<game>")
+	def game_thumb_spiele(game):
+		if not lan_guest_ip(request.remote_addr, request.headers.get("X-Forwarded-For", "") or request.headers.get("Forwarded", "")):
+			return Response("not found", 404, mimetype="text/plain")
+		return send(game)
+
+	@app.route("/p/<key>/thumb/<game>")
+	def game_thumb_party(key, game):
+		if not (party_on() and hmac.compare_digest(str(PARTY.get("key") or ""), key)):
+			return Response("closed", 404, mimetype="text/plain")
+		return send(game)
+
+
+
+def gthumb_selftest():
+	assert '<img src="${BASE}/thumb/${g.dir}"' in PARTY_PAGE and "/g/${g.dir}/${g.icon}" not in PARTY_PAGE, "game evening: tiles from /p/<key>/thumb/"
+	assert 'im.src = "/party/thumb/" + x.dir;' in TOOLS_PAGE and 'im.src = "/party/thumb/fotaq";' in TOOLS_PAGE, "admin tab: tiles from /party/thumb/"
+	assert '"/games/" + x.dir + "/" + s_' not in TOOLS_PAGE and "/games/fotaq/thumb.svg" not in TOOLS_PAGE
+	assert 'src="/spiele/thumb/qg-orbit"' in _game_icon({"dir": "qg-orbit", "icon": "thumb.svg"}, "pi:5001") and _game_icon({"dir": "x", "icon": "🎲"}) == "🎲"
+	assert _game_icon({"dir": "x", "icon": "index.html"}, "pi:5001") == "🎮", "another file: the symbol, never the games port"
+	assert game_thumb_src("x", "../../etc/passwd", "/spiele") == "" and game_thumb_src("x", "index.html", "/spiele") == ""
+	assert role_allows("custom", "/party/thumb/qg-orbit", "GET", {}, {"games"}) and not role_allows("custom", "/party/thumb/qg-orbit", "GET", {}, set())
+	return "tile pictures from the same origin (/party, /spiele, /p/<key>) - no http:// picture on an https page; only thumb.svg / thumb.png"
+
+
+SELFTEST_EXTRA.append(("Game tiles: pictures from the same origin (639zzh, 3.69.2)", gthumb_selftest))
 if __name__ == "__main__":
 	ap = argparse.ArgumentParser()
 	ap.add_argument("--cam", type=int, default=None, help="USB camera number (same as --source usb:N)")

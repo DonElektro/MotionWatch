@@ -1,7 +1,24 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-09 18:57",
+ "generated": "2026-11-09 19:19",
  "versions": [
+  {
+   "version": "3.70.0",
+   "file": "webcam_bewegung_3_70_0.py",
+   "url": "",
+   "sha256": "737cb334e3261cf065e3f752d27376f36cab14ab51b25d271b368b22b9ed85c9",
+   "date": "2026-11-09 19:19",
+   "notes": "Spielecke: Wobbly Truck mit neuer Stunt-Piste – 14 wechselnde Abschnitte (Half-Pipe, Tunnel, Lücken, Trampolin …), Supersprünge, neue Stunts, eigener Rekord (Spielesammlung GS-1.7)",
+   "size": 3816250,
+   "sig": "a185a1609a5a29e427122ccb54d8f8b545e9958db53ac27321b665a30f0c9a4b0217254119e76e5d54e05cb0951cbc699cd76fc6e8d6cbfd7687b7be0940710e",
+   "data": {
+    "file": "moveeye_daten_3_70_0.zip",
+    "url": "",
+    "sha256": "ddb112a56c8ed2bc9c2de643259c9e9f29c60f9f18855e0127fd659283f00e4b",
+    "size": 4904931,
+    "sig": "8c07aaadc67f2229e9bf70d17237ef994af261474444260d467a6e4900365f57d579090873fb9d2dbe1fa818bfdeec68bdd0d532c3f387df23395d36f1d50305"
+   }
+  },
   {
    "version": "3.69.2",
    "file": "webcam_bewegung_3_69_2.py",
@@ -136,23 +153,6 @@
     "sha256": "03685cc0ff7666eed3346271731c1e95b04b60fd3f473adfee6f521143c9ed83",
     "size": 4835682,
     "sig": "265e985fe5935d33e90a276b98b118b884345ba204df2fcf39c13de1973b9457c485f21822ff17bcafd8af6831aa6ba9bb7b573b35e1dcf2e57086acdb9e280d"
-   }
-  },
-  {
-   "version": "3.61.0",
-   "file": "webcam_bewegung_3_61_0.py",
-   "url": "",
-   "sha256": "4912b457d5ba60a39161d08878c61763d0ad566c015db1c17c1dccc4100a0d9b",
-   "date": "2026-11-07 21:39",
-   "notes": "Simulator intern: MoveEye Sim läuft abgespeckt direkt auf dem Pi 5 (Reiter Simulator → «🧪 Simulator intern (auf diesem Pi) ausprobieren»), Paket signiert geprüft, «Beenden» = zurück zur vorherigen Verbindung; alte Desktop-Symbole «MW Sim · Basis» und x86-«MoveEye Sim» werden aufgeräumt. Dazu Sim 3.57.0: Gerät wie das echte (Gehäuse v5.3), Pflanzen natürlicher, PS5-Controller am Simulator-PC.",
-   "size": 3568830,
-   "sig": "22535685f60d34fc9b824155efed2346bd8df4575374312b27cbd14fd5bac2692e35d734bb3f9afa82fac12472d5e2287303c62d886f32cb2e04656256502407",
-   "data": {
-    "file": "moveeye_daten_3_61_0.zip",
-    "url": "",
-    "sha256": "c12a3a463fa865279a6414149c5342af01a4df2e3794b45520a6d0e4e360e045",
-    "size": 4821324,
-    "sig": "345324c5fa3fcc12f427cd8742da7ab81b297485beefe66eca08bd3be5abe9bf8106d36ee66ae8d6c5dd5360bf13c7d451a76fe71711f696cb6606ff7115650a"
    }
   },
   {
