@@ -208,17 +208,45 @@ def paket_ordner(pid):
     return os.path.join(DAUER, "pakete", pid)
 
 
+def tiere_pakete(z, jetzt=None):
+    """Paket-IDs der Tier-Varianten (erledigt, jünger als TIERE_TAGE) - ihre results.jsonl braucht tiere.md"""
+    jetzt = time.time() if jetzt is None else jetzt
+    out = set()
+    for key, e in z.get("erledigt", {}).items():
+        p = key.split("|")
+        if len(p) == 3 and p[0] == "erkennung" and "@" in p[2] and (e or {}).get("paket") \
+                and p[2].split("@", 1)[1].split("#")[0] in TIERE_VAR and jetzt - float(e.get("t") or 0) < TIERE_TAGE * 86400:
+            out.add(e["paket"])
+    return out
+
+
 def aufraeumen(z):
-    """nur die letzten BEHALTEN Paket-Ordner behalten (nur Ordner mit genau diesem Namensmuster, nie das angefangene)"""
+    """nur die letzten BEHALTEN Paket-Ordner behalten (nur Ordner mit genau diesem Namensmuster, nie das angefangene).
+    Ältere Pakete der Tier-Varianten (jünger als TIERE_TAGE) behalten nur results.jsonl - tiere.md zählt sie weiter."""
     d = os.path.join(DAUER, "pakete")
     try:
         alle = sorted(n for n in os.listdir(d) if ID_RE.match(n))
     except OSError:
         return
     aktiv = (z.get("aktiv") or {}).get("id")
+    tiere = tiere_pakete(z)
     for n in alle[:-BEHALTEN]:
-        if n != aktiv:
-            shutil.rmtree(os.path.join(d, n), ignore_errors=True)
+        if n == aktiv:
+            continue
+        o = os.path.join(d, n)
+        if n in tiere and os.path.isfile(os.path.join(o, "results.jsonl")):
+            for x in os.listdir(o):
+                if x != "results.jsonl":
+                    f = os.path.join(o, x)
+                    if os.path.isdir(f) and not os.path.islink(f):
+                        shutil.rmtree(f, ignore_errors=True)
+                    else:
+                        try:
+                            os.remove(f)
+                        except OSError:
+                            pass
+            continue
+        shutil.rmtree(o, ignore_errors=True)
 
 
 def kandidaten_lesen(txt):
