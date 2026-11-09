@@ -541,7 +541,7 @@ rc=$?
 
 # 6b. Nur bestimmte Varianten (dauer_hp.yml «varianten», z. B. die Tier-Stichprobe tagsüber): ohne die Grundpläne der Stände
 echo "--- 6b. --varianten … --nur-varianten: gleich die Tier-Varianten; ohne Angabe wie bisher"
-MW_DAUER="$W/dauer6b" python3 - "$R/werkzeuge/test_runner" > "$W/var6b.log" 2>&1 <<'EOF6B'
+MW_DAUER="$W/dauer6b" python3 - "$R/werkzeuge/test_runner" "$R/werkzeuge/erkennungstest" > "$W/var6b.log" 2>&1 <<'EOF6B'
 import json, sys, time
 sys.path.insert(0, sys.argv[1])
 import dauer as D
@@ -574,9 +574,35 @@ for k in list(z["erledigt"]):
         z["erledigt"][k]["t"] = int(jetzt) - 15 * 86400
 n = D.naechstes(z, kand2, "erkennung", jetzt, D.TIERE_VAR, True)
 assert n["variante"] == "tiere_grundformen" and n["runde"] == 1, ("älter als 14 Tage: zählt nicht mehr", n)
+# Aufräumen: alte Tier-Pakete behalten results.jsonl (tiere.md zählt sie weiter), andere alte Pakete gehen wie bisher
+import os
+sys.path.insert(0, sys.argv[2])
+pk = os.path.join(D.DAUER, "pakete")
+zt = {"erledigt": {}}
+tier_alt, norm_alt, tier_uralt = "20261101-000001-erkennung", "20261101-000002-erkennung", "20261101-000003-erkennung"
+zt["erledigt"][D.erk_key("d" * 40, "tier", "tiere_grundformen")] = {"t": int(jetzt) - 86400, "status": "fertig", "paket": tier_alt, "stand": "main"}
+zt["erledigt"][D.erk_key("d" * 40, "ursache")] = {"t": int(jetzt) - 86400, "status": "fertig", "paket": norm_alt, "stand": "main"}
+zt["erledigt"][D.erk_key("e" * 40, "tier", "tiere_modelle")] = {"t": int(jetzt) - 15 * 86400, "status": "fertig", "paket": tier_uralt, "stand": "main"}
+fall = lambda key: {"key": key, "event": "tier", "animal": "deer", "detected": False, "false_person": True, "cond": "nacht", "fps": 4.0, "pushes": []}
+for n in [tier_alt, norm_alt, tier_uralt] + ["20261108-1000%02d-erkennung" % i for i in range(D.BEHALTEN)]:
+    os.makedirs(os.path.join(pk, n, "protokolle"), exist_ok=True)
+    with open(os.path.join(pk, n, "results.jsonl"), "w") as f:
+        f.write(json.dumps(fall("t1")) + "\n" + json.dumps(fall("t2")) + "\n")
+    open(os.path.join(pk, n, "simulator.log"), "w").write("x" * 1000)
+    open(os.path.join(pk, n, "protokolle", "a.log"), "w").write("x")
+D.aufraeumen(zt)
+assert sorted(os.listdir(os.path.join(pk, tier_alt))) == ["results.jsonl"], ("Tier-Paket: nur results.jsonl", os.listdir(os.path.join(pk, tier_alt)))
+assert not os.path.exists(os.path.join(pk, norm_alt)), "anderes altes Paket: gelöscht wie bisher"
+assert not os.path.exists(os.path.join(pk, tier_uralt)), "Tier-Paket älter als 14 Tage: gelöscht"
+assert len([n for n in os.listdir(pk) if n.startswith("20261108-1000")]) == D.BEHALTEN, "die letzten BEHALTEN bleiben ganz"
+assert os.path.exists(os.path.join(pk, "20261108-100000-erkennung", "simulator.log")), "neue Pakete unverändert"
+o = os.path.join(D.DAUER, "out6b"); os.makedirs(o, exist_ok=True)
+D.tiere_bericht(zt, o)
+md = open(os.path.join(o, "tiere.md"), encoding="utf-8").read()
+assert "grundformen (2 Fälle)" in md, md
 EOF6B
 rc=$?
-[ "$rc" = 0 ] && ok "naechstes: nur_varianten lässt die Grundpläne aus, ohne Angabe unverändert; Tier-Runden zählen über main-Stände (14 Tage)" || { fehler "nur-varianten (Exit $rc)"; cat "$W/var6b.log"; }
+[ "$rc" = 0 ] && ok "naechstes: nur_varianten lässt die Grundpläne aus, ohne Angabe unverändert; Tier-Runden zählen über main-Stände (14 Tage); alte Tier-Pakete behalten results.jsonl" || { fehler "nur-varianten (Exit $rc)"; cat "$W/var6b.log"; }
 : > "$W/aus6b"
 MW_DAUER="$W/dauer6b_cli" python3 "$D" waehlen --kandidaten "$K" --arbeit erkennung --varianten tiere_grundformen,tiere_modelle --nur-varianten \
 	--ausgabe "$W/aus6b" > "$W/w6b.log" 2>&1
