@@ -18,6 +18,9 @@
   python3 werkzeuge/spiele_test.py --ohne-browser     # nur das Paket
   python3 werkzeuge/spiele_test.py --bilder ORDNER    # Bildschirmfotos (Handy und PC) jedes Spiels
   python3 werkzeuge/spiele_test.py --nur-fotaq [--fotaq ORDNER]   # nur «Flight of the Amazon Queen» (ScummVM, 639zzg)
+  python3 werkzeuge/spiele_test.py --fotaq-moveeye [--datei X.py] [--bilder ORDNER] [--fotaq-release URL]
+      # FOTAQ in MoveEye: Laden nur durch den Admin, Pins, freier Platz, veränderte / zu grosse Datei, Entpacken, Kachel,
+      # Spiele-Port (wasm-Typ, 304, keine Pfade nach aussen), Entfernen; mit --fotaq-release die echten Assets + das Spiel
 
 FOTAQ (ab MoveEye 639zzg): ist das Paket da (--fotaq, MW_FOTAQ oder ~/.config/motionwatch/fotaq), lädt es am Handy (quer),
 iPad und PC die Startseite (Sprachwahl, Copyright, «✕ Zurück» überdeckt nichts), startet Deutsch und Englisch (ScummVM wählt
@@ -373,7 +376,7 @@ def _ueber(a, b):
     return a["x"] < b["x"] + b["width"] - 1 and a["x"] + a["width"] > b["x"] + 1 and a["y"] < b["y"] + b["height"] - 1 and a["y"] + a["height"] > b["y"] + 1
 
 
-def fotaq_pruefen(br, base, fehler, warn, bilder):
+def fotaq_pruefen(br, base, fehler, warn, bilder, nur=None):
     import time
 
     def bild(pg, name):
@@ -381,6 +384,8 @@ def fotaq_pruefen(br, base, fehler, warn, bilder):
             pg.screenshot(path=os.path.join(bilder, f"fotaq_{name}.png"))
 
     for gname, vp, touch in FOTAQ_GERAETE:
+        if nur and gname not in nur:
+            continue
         for L in ("de", "en"):
             ctx = br.new_context(viewport=vp, is_mobile=touch, has_touch=touch, device_scale_factor=2 if touch else 1)
             aussen = []
@@ -416,7 +421,7 @@ def fotaq_pruefen(br, base, fehler, warn, bilder):
                 while time.time() - t0 < 150:
                     pg.wait_for_timeout(2000)
                     log = pg.evaluate("() => (window.FOTAQ && FOTAQ.log || []).join('\\n')")
-                    if any(x in log for x in FOTAQ_SCHLECHT):
+                    if any(x in log for x in FOTAQ_SCHLECHT) or any("ExitStatus" in x for x in fe):
                         fehler.append(f"{tag}: ScummVM meldet einen Fehler: " + " | ".join(z for z in log.splitlines() if any(x in z for x in FOTAQ_SCHLECHT))[:300])
                         break
                     if "User picked target" in log and pg.locator("#load").is_hidden() and _hell(pg.locator("#stage").screenshot()) > 0.03:
@@ -521,6 +526,205 @@ def fotaq_lauf(pfad, fehler, warn, bilder):
         s.shutdown()
 
 
+# ---- MoveEye side of FOTAQ (639zzg): load (pins, free space, wrong checksum), unpack, games port, tile, admin tab ------------------
+def _neueste_datei():
+    import glob
+    return sorted(glob.glob(os.path.join(REPO, "webcam_bewegung_*.py")),
+                  key=lambda p: [int(x) for x in re.findall(r"\d+", os.path.basename(p))])[-1]
+
+
+def _fake_fotaq(tag):
+    """three tiny ZIP like the real package (engine, de, en) -> {name: bytes}"""
+    import io
+    n = tag.split("-")[1]
+    eng = {"index.html": open(os.path.join(HIER, "fotaq", "index.html"), "rb").read(), "thumb.svg": open(os.path.join(HIER, "fotaq", "thumb.svg"), "rb").read(),
+           "scummvm.js": b"/* test */", "scummvm.wasm": b"\0asm\1\0\0\0", "LIZENZEN.txt": "Test-Paket".encode(),
+           "fotaq.json": json.dumps({"tag": tag}).encode(), "data/index.json": b'{"games":{},"queen.tbl":4}', "data/queen.tbl": b"QTBL"}
+    out = {}
+    for k, files in (("engine", eng), ("de", {"data/games/de/queen.1c": os.urandom(300000), "data/games/de/readme.txt": b"FOTAQ Freeware"}),
+                     ("en", {"data/games/en/queen.1c": os.urandom(200000), "data/games/en/readme.txt": b"FOTAQ Freeware"})):
+        b = io.BytesIO()
+        with zipfile.ZipFile(b, "w") as z:
+            for p, d in files.items():
+                z.writestr(p, d)
+        out[f"fotaq-{k}-{n}.zip"] = (k, b.getvalue(), sum(len(d) for d in files.values()))
+    return out
+
+
+def fotaq_moveeye(datei, fehler, warn, bilder, release="", pins=""):
+    import base64
+    import time
+    import urllib.request
+    sys.path.insert(0, HIER)
+    from piper_test import Srv
+    home = tempfile.mkdtemp(prefix="mw_fotaq_home_")
+    os.environ["MOTIONWATCH_HOME"] = home
+    ns = {"__name__": "mw_fotaq_test", "__file__": os.path.abspath(datei)}
+    exec(compile(open(datei, encoding="utf-8").read(), datei, "exec"), ns)
+    ns["DATA_DIR"] = home
+    ns["log_event"] = lambda *a, **k: None
+    ns["lan_guest_ip"] = lambda ip, fwd="": not fwd          # test: 127.0.0.1 counts as own Wi-Fi (on the device: tunnel = outside)
+    CFG, F, DL = ns["CFG"], ns["FOTAQ_FILES"], ns["FOTAQ_DL"]
+
+    def ok(c, what):
+        print(("  ✓ " if c else "  ✗ ") + what, flush=True)
+        if not c:
+            fehler.append("FOTAQ MoveEye: " + what)
+    ok(not ns["fotaq_pinned"]() or all(f["size"] for f in F.values()), "Pins im Programm: alle oder keine")
+    ok(ns["fotaq_selftest"](), "Selbsttest 639zzg")
+    srv = Srv()
+    tag = ns["FOTAQ_TAG"]
+    if release:                                    # the real assets of a (probe) release: pins from its pins.txt
+        tx = open(pins, encoding="utf-8").read() if os.path.isfile(pins) else urllib.request.urlopen(release.rstrip("/") + "/pins.txt", timeout=60).read().decode()
+        tag = re.search(r"fotaq(?:probe)?-\d+", release.rstrip("/").rsplit("/", 1)[-1]).group(0)
+        ns["FOTAQ_TAG"] = tag
+        for m in re.finditer(r"^PIN (fotaq-([a-z]+)-\d+\.zip) size=(\d+) sha256=([0-9a-f]{64}) unpacked=(\d+)", tx, re.M):
+            F[m.group(2)] = {"name": m.group(1), "size": int(m.group(3)), "sha256": m.group(4), "unpacked": int(m.group(5))}
+        ns["FOTAQ_BASE"]["url"] = release.rstrip("/") + "/"
+    else:
+        for name, (k, b, unz) in _fake_fotaq(tag).items():
+            F[k] = {"name": name, "size": len(b), "sha256": hashlib.sha256(b).hexdigest(), "unpacked": unz}
+            srv.files["/" + tag + "/" + name] = b
+        ns["FOTAQ_BASE"]["url"] = srv.url + tag + "/"
+    CFG.update(https_extra=False, lang="de", tausch_free_gb=0.1)
+    PW = "Admin-Pass-123"
+    assert ns["web_pw_set"](PW)[0]
+    okk, err = ns["users_action"]({"action": "add", "name": "Anna", "password": "anna-pass-1", "role": "family"})
+    assert okk, err
+    ws = ns["WebStream"](None)
+    ws._serve = lambda app, ctx: None
+    ws.start()
+    app = ws.app
+    c = app.test_client(use_cookies=False)
+    H = {"Authorization": "Basic " + base64.b64encode(f"admin:{PW}".encode()).decode()}
+    HA = {"Authorization": "Basic " + base64.b64encode(b"Anna:anna-pass-1").decode()}
+
+    def party(d=None, h=H):
+        r = c.post("/api/party", json=d, headers=h) if d else c.get("/api/party", headers=h)
+        return r.status_code, (r.get_json(silent=True) or {})
+
+    def warten(limit=900):
+        t0 = time.time()
+        while DL["running"] and time.time() - t0 < limit:
+            time.sleep(0.2)
+    code, j = party()
+    fs = j.get("fotaq") or {}
+    ok(code == 200 and fs.get("pinned") and not fs.get("installed"), f"/api/party: fotaq gepinnt, nicht installiert ({fs.get('size')} Bytes)")
+    ok(all(x.get("dir") != "fotaq" for x in j.get("games", [])), "nicht installiert: keine Kachel")
+    code, j = party({"action": "fotaq_install"}, HA)
+    ok(code == 403, f"Familie darf nicht laden ({code})")
+    CFG["tausch_free_gb"] = 1e6                     # rule: always tausch_free_gb free
+    code, j = party({"action": "fotaq_install"})
+    ok(code == 400 and "Platz" in str(j.get("error")) and not DL["running"], f"zu wenig Platz: nicht geladen ({code} {j.get('error')})")
+    CFG["tausch_free_gb"] = 0.1
+    if not release:
+        de = "/" + tag + "/" + F["de"]["name"]
+        srv.tamper.add(de)
+        party({"action": "fotaq_install"}); warten()
+        ok(not ns["fotaq_installed"]() and "checksum" in DL["msg"], f"veränderte Datei abgelehnt ({DL['msg']})")
+        srv.tamper.discard(de)
+        srv.extra = b"x" * 10
+        party({"action": "fotaq_install"}); warten()
+        ok(not ns["fotaq_installed"]() and ("large" in DL["msg"] or "size" in DL["msg"] or "checksum" in DL["msg"]), f"zu grosse Datei abgelehnt ({DL['msg']})")
+        srv.extra = b""
+    t0 = time.time()
+    code, j = party({"action": "fotaq_install"})
+    seen = 0
+    while DL["running"] and time.time() - t0 < 1800:
+        seen = max(seen, DL["got"]); time.sleep(0.3)
+    ok(code == 200 and ns["fotaq_installed"](), f"geladen und entpackt in {time.time() - t0:.0f} s ({DL['msg'] or 'ok'})")
+    ok(not os.path.exists(ns["fotaq_dl_dir"]()), "ZIP danach gelöscht")
+    gl = ns["games_list"]()
+    g = next((x for x in gl if x.get("dir") == "fotaq"), None)
+    ok(g is not None and g["input"] == "touch" and g["icon"] == "thumb.svg", "Kachel in der Gruppe «👆 Touch»")
+    ok(ns["games_list"](extra=False) == [], "games_list(extra=False): die Sammlung allein (leer)")
+    r = c.get("/spiele", environ_base={"REMOTE_ADDR": "192.168.1.20"})
+    t = r.get_data(as_text=True)
+    ok(r.status_code == 200 and "Flight of the Amazon Queen" in t and "fotaq/thumb.svg" in t and "👆" in t, "/spiele zeigt die Kachel mit Bild")
+    # the games port (own origin), like the phones use it
+    import socket
+    with socket.socket() as sk:
+        sk.bind(("127.0.0.1", 0)); wp = sk.getsockname()[1]
+    CFG["web_port"] = wp - 2
+    ns["games_server_start"]()
+    gp = ns["GAMESRV"]["port"]
+    ok(gp == wp, f"Spiele-Port läuft ({gp})")
+    op = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+
+    def get(path, hdr=None):
+        try:
+            with op.open(urllib.request.Request(f"http://127.0.0.1:{gp}{path}", headers=hdr or {}), timeout=60) as x:
+                return x.status, dict(x.headers), x.read()
+        except urllib.error.HTTPError as e:
+            return e.code, dict(e.headers), b""
+    s_, h_, b_ = get("/g/fotaq/")
+    ok(s_ == 200 and b'id="mw-back"' in b_ and b"Flight of the Amazon Queen" in b_, "Port: Startseite mit «✕ Zurück» von MoveEye")
+    s_, h_, b_ = get("/g/fotaq/scummvm.wasm")
+    ok(s_ == 200 and h_.get("Content-Type", "").startswith("application/wasm") and "Last-Modified" in h_, f"Port: scummvm.wasm als application/wasm ({h_.get('Content-Type')}, {len(b_)} Bytes)")
+    s2, _h, b2 = get("/g/fotaq/scummvm.wasm", {"If-Modified-Since": h_.get("Last-Modified", "")})
+    ok(s2 == 304 and not b2, f"Port: unverändert -> 304 ({s2})")
+    for bad in ("/g/fotaq/fotaq.ok", "/g/fotaq/../settings.json", "/g/fotaq/%2e%2e/settings.json", "/g/fotaq/data/../../fotaq_dl/x"):
+        s_, _h, _b = get(bad)
+        ok(s_ == 404, f"Port: {bad} -> 404 ({s_})")
+    q = os.path.join(ns["fotaq_dir"](), "data", "games", "de")
+    big = max((os.path.join(q, x) for x in os.listdir(q)), key=os.path.getsize)
+    s_, h_, b_ = get("/g/fotaq/data/games/de/" + os.path.basename(big))
+    ok(s_ == 200 and len(b_) == os.path.getsize(big), f"Port: Spieldaten gestreamt ({len(b_)} Bytes)")
+    if bilder:
+        fotaq_mw_bilder(ns, app, PW, bilder, fehler)
+    if release:                                     # the real game from the real games port of MoveEye
+        from playwright.sync_api import sync_playwright
+        with sync_playwright() as pw:
+            br = pw.chromium.launch(args=FOTAQ_ARGS)
+            fotaq_pruefen(br, f"http://127.0.0.1:{gp}", fehler, warn, bilder, nur=("handy", "pc"))
+            br.close()
+    code, j = party({"action": "fotaq_delete"})
+    ok(code == 200 and not ns["fotaq_installed"]() and not os.path.exists(ns["fotaq_dir"]()), "Entfernen")
+    shutil.rmtree(home, ignore_errors=True)
+
+
+def fotaq_mw_bilder(ns, app, PW, bilder, fehler):
+    """screenshots: the tile on /spiele (phone) and the admin tab «Spielecke» (phone, PC)"""
+    from playwright.sync_api import sync_playwright
+    from werkzeug.serving import make_server
+    import socket
+    with socket.socket() as sk:
+        sk.bind(("127.0.0.1", 0)); port = sk.getsockname()[1]
+    srv = make_server("127.0.0.1", port, app, threaded=True)
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    base = f"http://127.0.0.1:{port}"
+    os.makedirs(bilder, exist_ok=True)
+    try:
+        with sync_playwright() as pw:
+            br = pw.chromium.launch()
+            for name, vp, mob in (("handy", {"width": 390, "height": 844}, True), ("pc", {"width": 1280, "height": 900}, False)):
+                ctx = br.new_context(viewport=vp, is_mobile=mob, has_touch=mob, device_scale_factor=2 if mob else 1,
+                                     http_credentials={"username": "admin", "password": PW}, locale="de-CH")
+                ctx.add_init_script("try{localStorage.setItem('mw-lang','de');localStorage.setItem('mw-theme','dark')}catch(e){}")
+                pg = ctx.new_page(); errs = []
+                pg.on("pageerror", lambda e, errs=errs: errs.append(str(e)[:200]))
+                pg.goto(base + "/spiele"); pg.wait_for_timeout(800)
+                tile = pg.locator("a.c", has_text="Flight of the Amazon Queen")
+                if not tile.count():
+                    fehler.append(f"FOTAQ MoveEye {name}: keine Kachel auf /spiele")
+                else:
+                    tile.scroll_into_view_if_needed(); pg.wait_for_timeout(300)
+                    pg.screenshot(path=os.path.join(bilder, f"fotaq_kachel_{name}.png"))
+                pg.goto(base + "/party"); pg.wait_for_timeout(2500)
+                fb = pg.locator("#fotaq-box")
+                if not fb.count():
+                    fehler.append(f"FOTAQ MoveEye {name}: Abschnitt im Reiter Spielecke fehlt")
+                else:
+                    fb.scroll_into_view_if_needed(); pg.wait_for_timeout(300)
+                    pg.screenshot(path=os.path.join(bilder, f"fotaq_admin_{name}.png"))
+                for e in errs:
+                    fehler.append(f"FOTAQ MoveEye {name}: JavaScript: {e}")
+                ctx.close()
+            br.close()
+    finally:
+        srv.shutdown()
+
+
 def main():
     ap = argparse.ArgumentParser(description="Test der Spielesammlung (Paket und Browser)")
     ap.add_argument("--zip", default=os.path.join(REPO, "games", "MotionWatch_Spiele.zip"))
@@ -530,8 +734,20 @@ def main():
     ap.add_argument("--bilder", default="", help="Ordner für Bildschirmfotos")
     ap.add_argument("--fotaq", default="", help="Ordner des FOTAQ-Pakets (sonst MW_FOTAQ oder ~/.config/motionwatch/fotaq; fehlt es: übersprungen)")
     ap.add_argument("--nur-fotaq", action="store_true", help="nur «Flight of the Amazon Queen» prüfen")
+    ap.add_argument("--fotaq-moveeye", action="store_true", help="FOTAQ in MoveEye: Laden, Prüfsumme, Platz, Spiele-Port, Kachel (gebaute Datei)")
+    ap.add_argument("--datei", default="", help="mit --fotaq-moveeye: die gebaute MoveEye-Datei (sonst die neueste)")
+    ap.add_argument("--fotaq-release", default="", help="mit --fotaq-moveeye: echte Assets dieses Releases (…/releases/download/<tag>) statt Test-ZIP")
+    ap.add_argument("--fotaq-pins", default="", help="mit --fotaq-release: pins.txt (sonst aus dem Release)")
     a = ap.parse_args()
     fehler, warn = [], []
+    if a.fotaq_moveeye:
+        fotaq_moveeye(a.datei or _neueste_datei(), fehler, warn, a.bilder, a.fotaq_release, a.fotaq_pins)
+        for w in warn:
+            print("Warnung:", w)
+        for f in fehler:
+            print("FEHLER:", f)
+        print("FOTAQ-MoveEye-Test:", "OK" if not fehler else f"{len(fehler)} Fehler")
+        sys.exit(1 if fehler else 0)
     if a.nur_fotaq:
         fotaq_lauf(a.fotaq, fehler, warn, a.bilder)
         for w in warn:

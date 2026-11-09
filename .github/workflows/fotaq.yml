@@ -44,8 +44,8 @@ env:
   DL: "https://downloads.scummvm.org/frs/extras/Flight%20of%20the%20Amazon%20Queen"
   DE_ZIP: FOTAQ_Ger_talkie-1.0.zip                          # CD, deutsche Sprache und Texte, Sprache/Effekte als Ogg Vorbis
   EN_ZIP: FOTAQ_Talkie-1.1.zip                              # CD, englisch, Sprache/Effekte als MP3
-  DE_SHA256: ""                                             # leer = beim ersten Lauf messen (nur keins / probe)
-  EN_SHA256: ""
+  DE_SHA256: 6e2826993a94864c1dd3d299369cb320a119cede4be14bf3f59b0471fa20768f   # gemessen im Lauf 42593712197 (09.11.2026)
+  EN_SHA256: a25cdd5e003a0a5e402af99b218cc7ea81ad032cb36b8c05df3bd1167038d8a8
 
 jobs:
   bauen:
@@ -97,7 +97,8 @@ jobs:
           for p in werkzeuge/fotaq/*.patch; do echo "== $p"; git -C "$RUNNER_TEMP/scummvm" apply --verbose "$GITHUB_WORKSPACE/$p"; done
           grep -q "EMSDK_VERSION:-$EMSDK_VERSION" "$RUNNER_TEMP/scummvm/dists/emscripten/build.sh" || { echo "::error::build.sh nutzt ein anderes emsdk"; exit 1; }
       - name: emsdk und Bibliotheken (Cache)
-        uses: actions/cache@v4
+        id: ecache
+        uses: actions/cache/restore@v4
         with:
           path: |
             ${{ runner.temp }}/scummvm/dists/emscripten/emsdk-${{ env.EMSDK_VERSION }}
@@ -117,6 +118,14 @@ jobs:
           grep -E "Vorbis|MAD|libmad|Ogg|zlib|PNG" config.h config.mk 2>/dev/null | head -20 || true
           grep -q "define USE_VORBIS" config.h && grep -q "define USE_MAD" config.h || { echo "::error::Vorbis oder MAD fehlt im Bau"; exit 1; }
           ls -la build-emscripten build-emscripten/data
+      - name: emsdk und Bibliotheken speichern (Cache, auch wenn ein späterer Schritt fehlschlägt)
+        if: steps.ecache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ${{ runner.temp }}/scummvm/dists/emscripten/emsdk-${{ env.EMSDK_VERSION }}
+            ${{ runner.temp }}/scummvm/dists/emscripten/libs
+          key: fotaq-emsdk-${{ env.EMSDK_VERSION }}-mad-${{ env.STV }}-1
       - name: Lizenztexte der Bibliotheken sammeln
         run: |
           set -e

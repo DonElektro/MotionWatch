@@ -136,6 +136,11 @@ body.play #pick{display:none}body.play #game{display:flex;flex-direction:column}
     window.Module = {
       // the game folder (data/games/de or /en, served next to this page), own save folder per language (IndexedDB, persists)
       arguments: ["--path=/data/games/" + L, "--savepath=/home/web_user/saves/" + L, "--subtitles", "queen"],
+      // patch 0003: called right after ScummVM mounted the persistent HOME (IndexedDB): the save folder must exist
+      onHomeMounted: function (home, FS) {
+        try { FS.mkdirTree(home + "/saves/" + L); } catch (e) { FOTAQ.log.push("E: saves: " + e); }
+        if (home !== "/home/web_user") FOTAQ.log.push("E: HOME is " + home + ", not /home/web_user");
+      },
       canvas: canvas,
       print: function (t) { FOTAQ.log.push(String(t)); if (FOTAQ.log.length > 400) FOTAQ.log.shift(); console.log(t); },
       printErr: function (t) { FOTAQ.log.push("E: " + t); if (FOTAQ.log.length > 400) FOTAQ.log.shift(); console.warn(t); },

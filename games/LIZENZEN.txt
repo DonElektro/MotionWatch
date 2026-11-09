@@ -104,3 +104,14 @@ Quantum Games     (qg-*/: Orbit, Tunnel, Superposition, Entangled, Particle Coll
   Physik-Einstellungen, Rekord je Strecke und Fahrzeug.
   Angepasst nur für MoveEye: externe Schriften (Google Fonts) entfernt (es gelten die Ersatzschriften im CSS),
   Zurück-Link der Spiele führt zur Spielesammlung von MoveEye, Vorschaubilder der Quantum-Spiele aus deren Menü.
+
+Flight of the Amazon Queen  (fotaq/, eigenes Paket, nicht in dieser ZIP: Release «fotaq-N», Teil 639zzg)
+  Spiel: © 1995 John Passfield & Steven Stamatiadis – Freeware. Frei weitergeben auf jedem Medium, solange die
+  Readme-Datei und alle Copyright-Hinweise und Haftungsausschlüsse erhalten bleiben; nicht einzeln verkaufen,
+  Aufnahme in eine grössere Sammlung erlaubt. CD-Fassung mit Sprachausgabe, Deutsch und Englisch, UNVERÄNDERT von
+  den Freeware-Downloads von ScummVM (FOTAQ_Ger_talkie-1.0.zip, FOTAQ_Talkie-1.1.zip; Readme liegt bei den Daten).
+  Engine: ScummVM (nur die Queen-Engine, WebAssembly) – © The ScummVM Team, GPL-3.0-or-later.
+  Quelle: https://github.com/scummvm/scummvm (Tag und Commit im Paket: LIZENZEN.txt, fotaq.json);
+  Patches und Bau-Ablauf: werkzeuge/fotaq/ und .github/workflows/fotaq.yml in https://github.com/DonElektro/MotionWatch
+  Bibliotheken: SDL 3 (zlib), libvorbis / libogg (BSD-3-Clause), libmad (GPL-2.0-or-later), zlib, libpng, Emscripten (MIT).
+  Lizenztexte: im Paket (lizenzen/, LIZENZEN.txt). Startseite und Symbol: MoveEye (MIT).

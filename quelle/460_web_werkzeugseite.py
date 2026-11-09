@@ -534,7 +534,7 @@ async function partyLoad() {
   if (r) { PTY = r; partyPaint(); }
   ptyT = setTimeout(partyLoad, SEL === "party" ? 3000 : 20000);
 }
-async function partyDo(d) { const r = await post("/api/party", d); if (r && r.ok) { PTY = r; partyPaint(); } }
+async function partyDo(d) { const r = await post("/api/party", Object.assign({lang: LANG}, d)); if (r && r.ok) { PTY = r; partyPaint(); } else if (r && r.error) toast(t(r.error)); }   // 639zzg: show the error (FOTAQ: no room …)
 function partyPaint() {
   const P = PTY || {}, box = $("#party-box"); if (!box) return;
   const sm = $("#s-party"); if (sm) sm.textContent = P.on ? "🟢 " + t("open") + " · " + (P.players || []).length + " " + t("players") : "";
@@ -573,14 +573,46 @@ function partyPaint() {
   rr.appendChild(rb); box.appendChild(rr);
   if (P.lan_url) { const lr = el("div", "mut"); lr.style.margin = "8px 0"; lr.append(t("Without login in your own Wi-Fi:") + " "); const la = el("a", "", P.lan_url); la.href = P.lan_url; la.target = "_blank"; lr.appendChild(la); box.appendChild(lr); }
   const h = el("h3", "", "🕹 " + t("Game collection")); h.style.margin = "16px 0 6px"; box.appendChild(h);
-  const gl = P.games || [];
+  const gl = (P.games || []).filter(x => x.dir !== "fotaq");     // 639zzg: FOTAQ has its own box below (not part of the collection ZIP)
   const GC = gcollNodes(P, gl);                               // Spieltab: kept between the repaints (open list, loaded pictures)
   box.appendChild(GC ? GC.sum : el("div", "mut", t("coll-note")));
   const ib = el("button", gl.length ? "sec" : "", (P.dl && P.dl.running) ? "⏳ " + Math.round((P.dl.got || 0) / 1e6) + " MB …" : (gl.length && P.games_ver === (P.games_pkg || {}).version ? "✓ " + t("Up to date") : "⬇ " + t("Install / update") + " (" + Math.round(((P.games_pkg || {}).size || 0) / 1e6) + " MB)"));
   ib.type = "button"; ib.disabled = !!(P.dl && P.dl.running); ib.onclick = () => partyDo({action: "install"}); box.appendChild(ib);
   if (P.dl && P.dl.msg && !P.dl.running) box.appendChild(el("div", "mut", t(P.dl.msg)));
   if (GC) box.appendChild(GC.grid);
+  fotaqPaint(box, P.fotaq);
 }
+// 639zzg: «Flight of the Amazon Queen» (ScummVM in the browser) - its own package, loaded once by the administrator
+function fotaqPaint(box, F) {
+  if (!F) return;
+  const MB = n => Math.round((n || 0) / 1e6), D = F.dl || {};
+  const w = el("div", "adp"); w.id = "fotaq-box"; w.style.cssText = "margin:14px 0 4px;padding:12px;border:1px solid var(--line);border-radius:12px";
+  const hd = el("div", "adp-h"); const im = document.createElement("img"); im.src = "/games/fotaq/thumb.svg"; im.alt = ""; im.style.cssText = "width:40px;height:40px;border-radius:9px;flex:none";
+  if (!F.installed) im.style.display = "none";
+  const tt = el("b", "", "🛩 Flight of the Amazon Queen"); hd.style.cssText = "display:flex;gap:10px;align-items:center;justify-content:flex-start"; hd.append(im, tt); w.appendChild(hd);
+  w.appendChild(el("div", "mut", t("Adventure with speech, German or English. Loaded once from GitHub (fixed checksum), then it runs offline in the browser (ScummVM).")));
+  const row = el("div", "trow"); row.style.marginTop = "8px";
+  if (D.running) {
+    row.appendChild(el("span", "", D.phase === "unpack" ? "⏳ " + t("unpacking …") : "⏳ " + MB(D.got) + " / " + MB(D.total) + " MB"));
+    const pr = document.createElement("progress"); pr.max = D.total || 1; pr.value = D.phase === "unpack" ? D.total || 1 : D.got || 0; pr.style.cssText = "flex:1 1 120px";
+    const cb = el("button", "sec", t("Cancel")); cb.type = "button"; cb.onclick = () => partyDo({action: "fotaq_cancel"}); row.append(pr, cb);
+  } else if (F.installed) {
+    const pl = el("a", "btn", "▶ " + t("Play myself")); pl.href = "/games/fotaq/"; pl.target = "_blank";
+    const db = el("button", "sec", "🗑 " + t("Remove")); db.type = "button"; db.onclick = () => { if (confirm(t("fotaq-del"))) partyDo({action: "fotaq_delete"}); };
+    row.append(el("span", "", "✓ " + t("installed")), pl, db);
+  } else if (!F.pinned) {
+    row.appendChild(el("span", "mut", t("comes with an update")));
+  } else {
+    const ib = el("button", "", "⬇ " + t("Install") + " (" + MB(F.size) + " MB)"); ib.type = "button"; ib.id = "fotaq-install";
+    ib.onclick = () => { if (confirm(t("fotaq-ask").replace("%s", MB(F.size)).replace("%s", MB(F.unpacked)))) partyDo({action: "fotaq_install"}); };
+    row.appendChild(ib);
+    if (!F.room) row.appendChild(el("span", "mut", "⚠ " + t("not enough free space on the memory card")));
+  }
+  w.appendChild(row);
+  if (D.msg && !D.running) w.appendChild(el("div", "mut", "⚠ " + t(D.msg)));
+  box.appendChild(w);
+}
+/*FOTAQ_I18N*/
 // Spieltab: the game collection as tiles like on /spiele (same CSS GAME_TILES_CSS from part 340): picture or emoji, name, short
 // description, the same group headings. Each tile opens the game like the former buttons (/games/<dir>/, new tab).
 let GCOLL = null;

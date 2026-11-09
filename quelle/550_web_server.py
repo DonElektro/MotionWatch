@@ -1033,6 +1033,10 @@ class WebStream:
                     PARTY["host"] = d["id"]; party_bump()
                 elif a_ == "install":
                     threading.Thread(target=games_install, daemon=True).start()
+                elif a_ in ("fotaq_install", "fotaq_cancel", "fotaq_delete"):    # 639zzg: Flight of the Amazon Queen
+                    ok_, e_ = fotaq_action(a_)
+                    if not ok_:
+                        return reply({"ok": False, "error": tr(e_, norm_lang(d.get("lang") or CFG.get("lang"))), "fotaq": fotaq_state()}, 400)
             base = (CFG.get("public_url") or "").strip().rstrip("/")
             local = page_address().rstrip("/") if "page_address" in globals() else request.host_url.rstrip("/")
             url = (local or request.host_url.rstrip("/")) + "/p/" + PARTY["key"] + "/" if party_on() else ""
@@ -1040,7 +1044,7 @@ class WebStream:
                           "players": [{"id": k, "name": v["name"], "score": v["score"], "host": k == PARTY["host"], "on": time.time() - v["t"] < 25}
                                       for k, v in PARTY["players"].items()], "game": PARTY["game"],
                           "games": games_list(), "games_ver": games_installed_version(), "rest": toolmode_state(), "games_pkg": GAMES_PKG, "dl": dict(GAMES_DL),
-                          "remote": base, "all": games_all_state()})
+                          "fotaq": fotaq_state(), "remote": base, "all": games_all_state()})
 
         @app.route("/api/simtest/pic/<int:rid>/<name>")
         def api_simtest_pic(rid, name):
