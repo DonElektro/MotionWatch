@@ -109,6 +109,9 @@ jobs:
       - name: Spielesammlung (Paket GS-1.4, GAMES_PKG, jedes neue Spiel am Handy und PC ohne Internet)
         timeout-minutes: 12
         run: python3 werkzeuge/spiele_test.py
+      - name: «🔍 Untersuchen» im Live-Bild (Ausschnitt, Kopf, Weitwinkel, Wärmebild, Hochladen, Rechte, Gäste, Funde, Zeitlimit, Browser)
+        timeout-minutes: 6
+        run: python3 werkzeuge/untersuchen_test.py --browser
       - name: Simulator intern (gefälschtes Pi-Paket - holen, prüfen, auspacken, starten, beenden, zurück)
         timeout-minutes: 4
         run: python3 werkzeuge/sim_intern_test.py
