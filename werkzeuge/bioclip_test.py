@@ -179,7 +179,7 @@ def essbar_verstoesse(obj, where="", out=None):
     «edible» (mit Warnung), «note_ed» (Warnung) oder ist «giftig»"""
     out = [] if out is None else out
     if isinstance(obj, dict):
-        if "edible" in obj and not ("145" in str((obj.get("edible") or {}).get("warn") or "") and "Wikipedia" in str(obj["edible"]["warn"])):
+        if "edible" in obj and not ("145" in str((obj.get("edible") or {}).get("warn") or "") and re.search(r"Wikip[eé]dia", str(obj["edible"]["warn"]))):
             out.append(where + ": «edible» ohne Warnung")
         if "tax" in obj and "empty" in obj:                       # a card
             vis = " ".join([str(obj.get("text") or "")] + [str(x) for x in (obj.get("edible") or {}).get("s") or []])
