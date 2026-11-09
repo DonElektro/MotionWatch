@@ -345,6 +345,11 @@ class WebStream:
                     if c_ in ("scenario", "delete"):
                         log_event("sys", f"Simulator: {c_} {q_.get('id', '')[:80]}")
                     return reply(dict(r, ok=True))
+                if act_ == "lens_wipe":                          # 558l: «Linse putzen» in the simulator (button of the lens hint)
+                    ok_l, err_l = sim_lens_wipe()
+                    if not ok_l:
+                        return reply({"ok": False, "error": tr_err(err_l, lang)}, 400)
+                    return reply({"ok": True})
                 if act_ == "dataset":                            # 2.95.53: KI-Prüfung mit Simulator-Bildern
                     if d.get("export"):                          # 2.95.99: a training set (YOLO) made in the simulator, saved on its PC
                         try:

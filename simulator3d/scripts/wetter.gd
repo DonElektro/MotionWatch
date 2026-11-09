@@ -614,12 +614,25 @@ func soft_drops_ok() -> bool:
 	return true
 
 
+func lens_reply():
+	"""für MoveEye (world_reply «lens»): Wasser auf den Linsen - Kopf / Weitwinkel {cover 0..1, fog 0..1, drops}, dirty = der
+	Hinweis «Linse putzen» gilt (gleiche Schwelle wie lens_hint); null, wenn die Tropfen-Physik aus ist"""
+	if lenses.is_empty() or not w_lens:
+		return null
+	var out := {}
+	for i in range(lenses.size()):
+		var d: Dictionary = lenses[i].info()
+		out["head" if i == 0 else "wide"] = {"cover": d.get("cover", 0.0), "fog": d.get("fog", 0.0), "drops": d.get("drops", 0)}
+	out["dirty"] = lens_hint() != ""
+	return out
+
+
 func lens_hint() -> String:
 	"""kurzer Hinweis für die Statuszeile, wenn viel Wasser auf der Linse der Kopfkamera ist (leer = sauber)"""
 	if lenses.is_empty() or not w_lens:
 		return ""
 	var d: Dictionary = lenses[0].info()
-	if float(d.get("cover", 0.0)) > 0.06 or float(d.get("fog", 0.0)) > 0.45:
+	if float(d.get("cover", 0.0)) > 0.04 or float(d.get("fog", 0.0)) > 0.45:
 		return "Linse verschmutzt (%s) – «Linse putzen»" % ("Beschlag" if float(d.get("fog", 0.0)) > 0.45 else "Tropfen")
 	return ""
 

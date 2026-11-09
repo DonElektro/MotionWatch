@@ -4,6 +4,18 @@ Stand: 09.11.2026 · Version **3.67.0** · MoveEye **3.69.2** (Drei Spuren ab 03
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
+## NEU (Branch sim-kamerabild, Nummer setzt der Integrator): Tropfen auf der Linse unscharf, «Linse verschmutzt» an MoveEye
+
+- Ursache der dunkelgrünen Scheiben im Kamerabild (3.67.0): Tropfen von linse.gd fast deckend, scharf, dunkler Rand, gebrochenes
+  Bild der Wiese. Jetzt (nur Normal / Hoch, `wetter.soft_drops_ok()`; Lite, Prüfstand, `--quality`, Testlauf wie vorher):
+  `linse.gdshader soft_drops` = weich gezeichnet, wenig verschoben, milchig, Deckung ~55 %, weicher Rand; `linse.gd soft` =
+  weicheres Profil, Fleck 1,35 × Tropfen, Tropfen setzen mit 35 % an.
+- `wetter.lens_hint()` (Kopfkamera: > 4 % bedeckt oder Beschlag > 0,45) -> Statuszeile «Linse verschmutzt (…) – «Linse putzen»».
+- Schnittstelle: world_reply `lens` = `wetter.lens_reply()` {head / wide {cover, fog, drops}, dirty} (null: Physik aus; optional,
+  kein SIM_MIN / MW_MIN); MoveEye 558l / 639zl zeigt Chip und Live-Zeile mit Knopf «Linse putzen» (control `wetter` do wipe).
+- Brauner Boden: reine NoIR-Abbildung (mit «NoIR-Farben» 0 ist die Wiese grün wie in der freien Ansicht) – unverändert.
+- Werkzeug: `werkzeuge/kamerabild_bilder.gd` (freie Ansicht / Kopf / Weitwinkel / Wärmebild, `--noir`, `--splash`).
+
 ## NEU (Branch sim-fassaden, Nummer setzt der Integrator): verschiedene Fassaden und Dachfarben der swisstopo-Häuser
 
 - Nur Normal / Hoch (`fassaden.gd` `enabled()`: nicht Lite, kein Testlauf, kein Prüfstand). Lite und Prüfstand unverändert
