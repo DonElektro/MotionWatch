@@ -314,16 +314,21 @@ def unt_start(who, cam, box, aim, lang, img=None, src="live"):
             res = unt_result_json(J, gp)
             base = time.strftime("Fund_%Y-%m-%d_%H%M%S")
             J["saved"] = unt_save(who, jpg, res, base) if jpg else {"error": "no picture"}
+            free()                                               # free before «done»: the page may start the next one at once
             J.update(st="done", ms=int((time.time() - t0) * 1000))
             log_event("web", f"Examine ({cam}{', region' if bx else ''}{', head moved' if J.get('aimed') else ''}): "
                              f"{len(found)} objects, {len(species)} species checks" + (f", saved in «{UNT_FOLDER}»" if "jpg" in J["saved"] else ""))
         except Exception as e:
+            free()
             J.update(st="err", err=("timeout" if isinstance(e, TimeoutError) else str(e))[:200])
         finally:
             shutil.rmtree(tmp, ignore_errors=True)
-            with UNT["lock"]:
-                if UNT["busy"] == jid:
-                    UNT["busy"] = ""
+            free()
+
+    def free():
+        with UNT["lock"]:
+            if UNT["busy"] == jid:
+                UNT["busy"] = ""
                 UNT["t"] = time.time()
 
     def guard():                                                 # the time limit: the page gets an answer in any case

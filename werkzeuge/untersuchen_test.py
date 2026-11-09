@@ -77,7 +77,7 @@ def teil_a(datei):
     import numpy as np
     import cv2
     img = np.full((240, 320, 3), 120, np.uint8)
-    ns["unt_frame"] = lambda cam: (img.copy(), "")
+    ns["unt_frame"] = lambda cam: (time.sleep(0.4), (img.copy(), ""))[1]   # slow enough for the «busy» check
     ns["unt_detect"] = lambda im, thermal=False, warm=True: [{"kind": "animal", "lab": "dog", "conf": 0.9, "box": [0.1, 0.1, 0.2, 0.2]}]
     ns["bio_installed"] = lambda: False
     who = {"admin": False, "live": True, "head": False, "key": "anna", "name": "Anna"}
@@ -274,7 +274,7 @@ def teil_b(datei, browser, bilder):
         r = json.loads(b) if c == 200 else {}
         ok(r.get("location", {}).get("lat") == 46.95 and "objects" in r and "time" in r, f"JSON mit Ort, Zeit, Objekten ({str(r)[:100]})")
         if browser:
-            teil_c(base, gp, bilder)
+            teil_c(base, gp, bilder, tmp)
     finally:
         p.terminate()
         try:
@@ -290,11 +290,11 @@ def teil_b(datei, browser, bilder):
 
 
 # ---------------------------------------------------------------------------------------------------------------------- C
-def teil_c(base, gp, bilder):
+def teil_c(base, gp, bilder, tmp):
     from playwright.sync_api import sync_playwright
     print("C) Browser", flush=True)
     os.makedirs(bilder, exist_ok=True)
-    up = os.path.join(tempfile.mkdtemp(prefix="mw_unt_up_"), "Wiese.jpg")
+    up = os.path.join(tmp, "Wiese.jpg")   # wird mit tmp weggeräumt
     open(up, "wb").write(bild((0.98, 0.84, 0.10), 1200, 900))
     with sync_playwright() as pw:
         br = pw.chromium.launch(args=["--no-proxy-server"])
