@@ -547,6 +547,11 @@ def main():
                                                                  "OK" if okk else "FALSCH", json.dumps(e, ensure_ascii=False, indent=1)))
     if "Allium ursinum" in rows and not rows["Allium ursinum"].get("look"):
         bad.append("Bärlauch: keine Verwechslungs-Arten gefunden")
+    if a.nur:                                                    # Probelauf: auch die übrigen gewünschten Arten zeigen
+        for n in want:
+            if n not in STICH and n in rows:
+                lines.append("=== %s (%s) – %s · ohne Erwartung\n%s" % (n, (names.get(n) or {}).get("de", ""), rows[n].get("t", "-"),
+                                                                       json.dumps(rows[n], ensure_ascii=False, indent=1)))
     open(os.path.join(a.aus, "stichprobe.txt"), "w", encoding="utf-8").write("\n".join(lines) + "\n")
     print("\n".join(lines))
     print("Abdeckung:", json.dumps(cov))
