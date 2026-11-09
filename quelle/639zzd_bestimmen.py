@@ -985,7 +985,7 @@ BIO_CSS = r"""
 
 # one panel for both pages: T(key) = the text in the language, url = the address for this picture, body() = the request data
 BIO_PANEL_JS = r"""
-function tzBioPanel(f, ov, url, extra, T) {
+function tzBioPanel(f, ov, url, extra, T, pre) {               // pre: a ready result (639zze «Untersuchen»)
   const mk = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x !== undefined) e.textContent = x; return e; };
   let pan = ov.querySelector(".tz-bio"); if (pan) pan.remove();
   pan = mk("div", "tz-bio"); pan.setAttribute("role", "dialog"); pan.setAttribute("aria-label", T("Identify"));
@@ -1069,8 +1069,10 @@ function tzBioPanel(f, ov, url, extra, T) {
     else if (r.st === "loading" || r.st === "installing") timer = setTimeout(() => step("state"), 1500);
     else if ((prev === "loading" || prev === "installing") && r.st !== "err" && r.st !== "done") step("start");
   }
+  if (pre) { show(pre); return pan; }
   bd.appendChild(mk("div", "msg", "⏳ …"));
   step("start");
+  return pan;
 }
 """
 
