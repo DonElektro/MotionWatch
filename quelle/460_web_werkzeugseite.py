@@ -591,6 +591,7 @@ function fotaqPaint(box, F) {
   if (!F.installed) im.style.display = "none";
   const tt = el("b", "", "🛩 Flight of the Amazon Queen"); hd.style.cssText = "display:flex;gap:10px;align-items:center;justify-content:flex-start"; hd.append(im, tt); w.appendChild(hd);
   w.appendChild(el("div", "mut", t("Adventure with speech, German or English. Loaded once from GitHub (fixed checksum), then it runs offline in the browser (ScummVM).")));
+  const wn = el("div", "", "⚠️ " + t("Play on the PC – it crashes on iPad/iPhone")); wn.id = "fotaq-note"; wn.style.cssText = "font-weight:600;color:var(--warn,#e9a23b);margin-top:4px"; w.appendChild(wn);   // 3.70.2
   const row = el("div", "trow"); row.style.marginTop = "8px";
   const extra = el("div"), PT = F.parts || {}, have = F.langs || [], LN = {de: "Deutsch", en: "English"};
   const need = ls => { const k = (F.engine ? [] : ["engine"]).concat(ls.filter(L => !have.includes(L)));   // what a choice still loads
@@ -646,7 +647,9 @@ function gcollNodes(P, gl) {
       const ic = el("div", "i"), s_ = String(x.icon || "🎮");
       if (s_.includes(".")) { const im = document.createElement("img"); im.src = "/games/" + x.dir + "/" + s_; im.alt = ""; im.loading = "lazy"; im.onerror = () => { im.style.visibility = "hidden"; }; ic.appendChild(im); }
       else ic.textContent = s_;
-      a.append(ic, el("div", "n", L(x)("name", "names") || x.dir), el("div", "d", L(x)("desc", "descs"))); grid.appendChild(a); }); });
+      a.append(ic, el("div", "n", L(x)("name", "names") || x.dir), el("div", "d", L(x)("desc", "descs")));
+      if (L(x)("note", "notes")) a.appendChild(el("div", "w", "⚠️ " + L(x)("note", "notes")));   // 3.70.2: note (FOTAQ: «Am PC spielen …»)
+      grid.appendChild(a); }); });
   GCOLL = {sig, sum, grid};
   return GCOLL;
 }

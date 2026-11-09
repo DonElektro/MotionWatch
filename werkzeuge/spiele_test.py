@@ -23,6 +23,8 @@
   python3 werkzeuge/spiele_test.py --fotaq-moveeye [--datei X.py] [--bilder ORDNER] [--fotaq-release URL]
       # FOTAQ in MoveEye: Laden nur durch den Admin, Pins, freier Platz, veränderte / zu grosse Datei, Entpacken, Kachel,
       # Spiele-Port (wasm-Typ, 304, keine Pfade nach aussen), Entfernen; mit --fotaq-release die echten Assets + das Spiel
+      # 3.70.2: Kachel in der PC-Gruppe mit Hinweis (/spiele, Gästeseite, Reiter Spielecke), Warnseite start.html nur mit
+      # iPhone / iPad / iPad als Mac (Touch), «Trotzdem starten» -> index.html, am PC (Windows, Mac) gleich weiter
 
 FOTAQ (ab MoveEye 639zzg): ist das Paket da (--fotaq, MW_FOTAQ oder ~/.config/motionwatch/fotaq), lädt es am Handy (quer),
 iPad und PC die Startseite (Sprachwahl, Copyright, «✕ Zurück» überdeckt nichts), startet Deutsch und Englisch (ScummVM wählt
@@ -689,11 +691,17 @@ def fotaq_moveeye(datei, fehler, warn, bilder, release="", pins=""):
     ok(not os.path.exists(ns["fotaq_dl_dir"]()), "ZIP danach gelöscht")
     gl = ns["games_list"]()
     g = next((x for x in gl if x.get("dir") == "fotaq"), None)
-    ok(g is not None and g["input"] == "touch" and g["icon"] == "thumb.svg", "Kachel in der Gruppe «👆 Touch»")
+    ok(g is not None and g["input"] == "keys" and g["icon"] == "thumb.svg" and g["start"] == "start.html", "Kachel in der Gruppe «⌨️ Am PC mit Tastatur und Maus» (3.70.2)")
+    ok(g is not None and g.get("note") == "Am PC spielen – auf iPad/iPhone stürzt es ab" and len(g.get("notes") or {}) == 5, "Kachel: Hinweis «Am PC spielen …» (5 Sprachen)")
     ok(ns["games_list"](extra=False) == [], "games_list(extra=False): die Sammlung allein (leer)")
     r = c.get("/spiele", environ_base={"REMOTE_ADDR": "192.168.1.20"})
     t = r.get_data(as_text=True)
-    ok(r.status_code == 200 and "Flight of the Amazon Queen" in t and 'src="/spiele/thumb/fotaq"' in t and "👆" in t, "/spiele zeigt die Kachel mit Bild")
+    ok(r.status_code == 200 and "Flight of the Amazon Queen" in t and 'src="/spiele/thumb/fotaq"' in t and "⌨️ Am PC mit Tastatur und Maus" in t and "👆" not in t,
+       "/spiele zeigt die Kachel mit Bild in der PC-Gruppe")
+    ok("⚠️ Am PC spielen – auf iPad/iPhone stürzt es ab" in t and "/g/fotaq/start.html" in t, "/spiele: Hinweis auf der Kachel, Link auf die Warnseite")
+    pv = ns["party_view"]("") if "party_view" in ns else {}
+    ok(any(x.get("dir") == "fotaq" and x.get("note") and x.get("input") == "keys" for x in (pv.get("games") or [])), "Gästeseite /p/<key>/: Kachel mit Hinweis in der PC-Gruppe")
+    ok("g.note ?" in ns["PARTY_PAGE"] and 'L(x)("note", "notes")' in ns["TOOLS_PAGE"] and 'id = "fotaq-note"' in ns["TOOLS_PAGE"], "Gästeseite und Reiter Spielecke zeigen den Hinweis")
     r = c.get("/spiele/thumb/fotaq", environ_base={"REMOTE_ADDR": "192.168.1.20"})
     ok(r.status_code == 200 and r.mimetype == "image/svg+xml", f"Bild der Kachel vom gleichen Ursprung (3.69.2, {r.status_code} {r.mimetype})")
     r = c.get("/party/thumb/fotaq", headers=H)
@@ -716,7 +724,12 @@ def fotaq_moveeye(datei, fehler, warn, bilder, release="", pins=""):
         except urllib.error.HTTPError as e:
             return e.code, dict(e.headers), b""
     s_, h_, b_ = get("/g/fotaq/")
-    ok(s_ == 200 and b'id="mw-back"' in b_ and b"Flight of the Amazon Queen" in b_, "Port: Startseite mit «✕ Zurück» von MoveEye")
+    ok(s_ == 200 and b'id="mw-back"' in b_ and b"Flight of the Amazon Queen" in b_ and "Trotzdem starten".encode() in b_, "Port: Warnseite (3.70.2) mit «✕ Zurück» von MoveEye")
+    s2, _h, b2 = get("/g/fotaq/start.html")
+    ok(s2 == 200 and b2 == b_, "Port: start.html = Warnseite")
+    s_, h_, b_ = get("/g/fotaq/index.html")
+    ok(s_ == 200 and b'id="mw-back"' in b_ and b'id="backPick"' in b_ and b"Trotzdem starten" not in b_, "Port: index.html = Startseite des Pakets (unverändert)")
+    fotaq_ios_warnung(gp, ok)
     s_, h_, b_ = get("/g/fotaq/scummvm.wasm")
     ok(s_ == 200 and h_.get("Content-Type", "").startswith("application/wasm") and "Last-Modified" in h_, f"Port: scummvm.wasm als application/wasm ({h_.get('Content-Type')}, {len(b_)} Bytes)")
     s2, _h, b2 = get("/g/fotaq/scummvm.wasm", {"If-Modified-Since": h_.get("Last-Modified", "")})
@@ -739,6 +752,53 @@ def fotaq_moveeye(datei, fehler, warn, bilder, release="", pins=""):
     code, j = party({"action": "fotaq_delete"})
     ok(code == 200 and not ns["fotaq_installed"]() and not os.path.exists(ns["fotaq_dir"]()), "Entfernen")
     shutil.rmtree(home, ignore_errors=True)
+
+
+FOTAQ_UA = {
+    "iPhone": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1",
+    "iPad": "Mozilla/5.0 (iPad; CPU OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1",
+    "iPad als Mac": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Safari/605.1.15",
+    "Mac": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Safari/605.1.15",
+    "Windows": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+}
+
+
+def fotaq_ios_warnung(gp, ok):
+    """3.70.2: iPhone / iPad (also as Mac with touch) see the warning with «Trotzdem starten», which goes on to index.html;
+    a PC (Windows, Mac without touch) goes straight on; English browser -> English text"""
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        print("  (Playwright fehlt: Warnseite im Browser nicht geprüft)", flush=True)
+        return
+    url = f"http://127.0.0.1:{gp}/g/fotaq/"
+    with sync_playwright() as pw:
+        br = pw.chromium.launch()
+        for name, touch, lang in (("iPhone", True, "de-CH"), ("iPad", True, "de-CH"), ("iPad als Mac", True, "en-GB"), ("Mac", False, "de-CH"), ("Windows", False, "de-CH")):
+            ios = name.startswith("i")
+            cx = br.new_context(user_agent=FOTAQ_UA[name], has_touch=touch, is_mobile=name == "iPhone", locale=lang,
+                                viewport={"width": 390, "height": 844} if name == "iPhone" else {"width": 1024, "height": 1366} if ios else {"width": 1280, "height": 800})
+            pg = cx.new_page()
+            errs = []
+            pg.on("pageerror", lambda e: errs.append(str(e)))
+            pg.goto(url, wait_until="domcontentloaded")
+            if ios:
+                pg.wait_for_selector("#fotaq-warn:not([hidden])", timeout=8000)
+                tx = pg.inner_text("#warn")
+                want = ("On iPad/iPhone the game crashes after about a minute. Play on the PC." if lang.startswith("en")
+                        else "Auf iPad/iPhone stürzt das Spiel nach etwa einer Minute ab. Am PC spielen.")
+                ok(want in tx and "/g/fotaq/" in pg.url and "index.html" not in pg.url, f"{name}: Warnung vor dem Start ({tx.strip()[:60]} …)")
+                bt = pg.inner_text("#go")
+                ok(("Start anyway" if lang.startswith("en") else "Trotzdem starten") in bt, f"{name}: Knopf «{bt.strip()}»")
+                pg.click("#go")
+                pg.wait_for_url("**/g/fotaq/index.html", timeout=8000)
+                ok(pg.url.endswith("/g/fotaq/index.html"), f"{name}: «Trotzdem starten» -> Startseite des Spiels")
+            else:
+                pg.wait_for_url("**/g/fotaq/index.html", timeout=8000)
+                ok(pg.url.endswith("/g/fotaq/index.html") and pg.locator("#fotaq-warn").count() == 0, f"{name}: keine Warnung, gleich zur Startseite")
+            ok(not [e for e in errs if "start" in e.lower() or "fotaq" in e.lower()], f"{name}: keine JS-Fehler der Warnseite")
+            cx.close()
+        br.close()
 
 
 def _launcher_sprachen(ns):

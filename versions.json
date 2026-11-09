@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-09 20:45",
+ "generated": "2026-11-09 21:04",
  "versions": [
   {
-   "version": "3.70.1",
-   "file": "webcam_bewegung_3_70_1.py",
+   "version": "3.70.2",
+   "file": "webcam_bewegung_3_70_2.py",
    "url": "",
-   "sha256": "c1439015df39ff6b08e57fdef9eb9c1ab7319df84b3c000a99e1c952b398734c",
-   "date": "2026-11-09 20:43",
-   "notes": "Simulator-Betrieb: Hinweis «💧 Linse verschmutzt», wenn im Simulator viel Wasser oder Beschlag auf der Linse ist, mit Knopf «🧽 Linse putzen» (ab Sim 3.67.1)",
-   "size": 3819939,
-   "sig": "c18931ccd584a8b562de0c97150cd811b887459be5363d72f2ade196ba776a600ee2405020acdfba5c2cf5c99f2be2d9c1375ec404c07b8e8b9255278fd3590c",
+   "sha256": "df0a2213d3aab94080280a6816ca21709824abf4c3892ca0ce4bf63f6aa6d87f",
+   "date": "2026-11-09 21:04",
+   "notes": "Flight of the Amazon Queen: Hinweis «Am PC spielen – auf iPad/iPhone stürzt es ab» auf der Kachel (jetzt in der Gruppe «⌨️ Am PC mit Tastatur und Maus»); auf iPad/iPhone kommt vor dem Start eine Warnung mit «Trotzdem starten»",
+   "size": 3825328,
+   "sig": "f85e3e87d17845dd5e8589af9dd44a8257390c21d2380d0f96d864117a1f9952bfc5ecf3a8c0606d25e14735e6132d91860faaf673175da1dae123c7bc4d8707",
    "data": {
-    "file": "moveeye_daten_3_70_1.zip",
+    "file": "moveeye_daten_3_70_2.zip",
     "url": "",
-    "sha256": "e185ebfee034f39cc23a9f00205b9f41f825d21bd98c27759425893a827a0711",
-    "size": 4907038,
-    "sig": "25aabf511c7e97d36a4b545872c518f84112ee2e05884fc5817d7f6a624ba70c4e13d446906f3ca522cad96d0db2a8a165127c9dbde666284cfb2e58e193f704"
+    "sha256": "da7c35e25b21998b626f6c09ed54319e2dc05fe4f5d3570aa037be929784cfdd",
+    "size": 4908374,
+    "sig": "a58624852722c558b25c075a768ca51b324e14941e27b3a3f4515c04007da59ae70183e0bf28015cfc8086cbf04c826b2ec2be64ebc4087efb7277f00f248d01"
    }
   },
   {
