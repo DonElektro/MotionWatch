@@ -368,8 +368,17 @@ def _hell(png):
     import io
     from PIL import Image
     im = Image.open(io.BytesIO(png)).convert("L").resize((160, 100))
-    px = list(im.getdata())
-    return sum(1 for v in px if v > 24) / len(px)
+    h = im.histogram()
+    return sum(h[25:]) / (160 * 100)
+
+
+def _diff(a, b):
+    """share of pixels that changed clearly between two screenshots"""
+    import io
+    from PIL import Image, ImageChops
+    x = Image.open(io.BytesIO(a)).convert("L").resize((160, 100)); y = Image.open(io.BytesIO(b)).convert("L").resize((160, 100))
+    d = ImageChops.difference(x, y).point(lambda v: 255 if v > 30 else 0)
+    return d.histogram()[255] / (160 * 100)
 
 
 def _ueber(a, b):
@@ -460,28 +469,37 @@ def fotaq_pruefen(br, base, fehler, warn, bilder, nur=None):
                             fehler.append(f"{tag}: Rechtsklick per Touch kommt nicht an (lange drücken {n1}, Knopf {n2 - n1})")
                         else:
                             info.append("Rechtsklick ok")
-                    # «☰ Menu» (F1 = journal of the game: save, load, options): the picture changes
-                    vor = pg.locator("#stage").screenshot()
+                    # «⏭ Skip» (Esc from the page) through the intro into the first room: then the room stands still
+                    sk = pg.locator("#kSkip")
+                    for _ in range(8):
+                        sk.tap() if touch else sk.click()
+                        pg.wait_for_timeout(2500)
+                    r1 = pg.locator("#stage").screenshot(); pg.wait_for_timeout(1500); r2 = pg.locator("#stage").screenshot()
+                    still = _diff(r1, r2)
+                    bild(pg, f"{L}_raum_{gname}")
+                    if still > 0.12:
+                        fehler.append(f"{tag}: «⏭ Weiter» führt nicht durch das Intro (Bild ändert noch {still:.0%})")
+                    else:
+                        info.append("Weiter ok")
+                    # «☰ Menu» (F1 from the page = journal of the game: save, load, options): the picture changes a lot
                     m = pg.locator("#kMenu")
                     m.tap() if touch else m.click()
                     pg.wait_for_timeout(2500)
                     nach = pg.locator("#stage").screenshot()
-                    if gname != "handy":
-                        bild(pg, f"{L}_menue_{gname}")
-                    if vor == nach:
-                        warn.append(f"{tag}: «☰ Menü» ändert das Bild nicht (Tagebuch nicht geöffnet?)")
+                    bild(pg, f"{L}_menue_{gname}")
+                    if _diff(r2, nach) < 0.3:
+                        fehler.append(f"{tag}: «☰ Menü» öffnet das Tagebuch nicht (Änderung {_diff(r2, nach):.0%})")
                     else:
                         info.append("Menü ok")
-                    if gname == "pc" and L == "de":     # quick save (F11) after the intro, then it must be in IndexedDB, also after reload
-                        pg.keyboard.press("Escape"); pg.wait_for_timeout(1500)
-                        for _ in range(6):
-                            pg.keyboard.press("Escape"); pg.wait_for_timeout(2500)
+                    sk.tap() if touch else sk.click()                       # Esc closes the journal again
+                    pg.wait_for_timeout(1500)
+                    if gname == "pc" and L == "de":     # quick save (F11) in the room, then it must be in IndexedDB, also after reload
                         pg.keyboard.press("F11"); pg.wait_for_timeout(3000)
                         bild(pg, f"{L}_gespeichert_{gname}")
                         keys = pg.evaluate(FOTAQ_IDB) or []
                         sv = [k for k in keys if "/saves/de/" in k and not k.endswith("/de")]
                         if not sv:
-                            warn.append(f"{tag}: Schnellspeichern (F11) ergab keinen Spielstand in IndexedDB ({len(keys)} Einträge: {', '.join(keys[:6])})")
+                            fehler.append(f"{tag}: Schnellspeichern (F11) ergab keinen Spielstand in IndexedDB ({len(keys)} Einträge: {', '.join(keys[:6])})")
                         else:
                             pg.reload(wait_until="load"); pg.wait_for_timeout(800)
                             keys2 = pg.evaluate(FOTAQ_IDB) or []
@@ -676,7 +694,7 @@ def fotaq_moveeye(datei, fehler, warn, bilder, release="", pins=""):
         from playwright.sync_api import sync_playwright
         with sync_playwright() as pw:
             br = pw.chromium.launch(args=FOTAQ_ARGS)
-            fotaq_pruefen(br, f"http://127.0.0.1:{gp}", fehler, warn, bilder, nur=("handy", "pc"))
+            fotaq_pruefen(br, f"http://127.0.0.1:{gp}", fehler, warn, bilder)
             br.close()
     code, j = party({"action": "fotaq_delete"})
     ok(code == 200 and not ns["fotaq_installed"]() and not os.path.exists(ns["fotaq_dir"]()), "Entfernen")
