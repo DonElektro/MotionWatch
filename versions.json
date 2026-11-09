@@ -1,13 +1,13 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-09 18:13",
+ "generated": "2026-11-09 18:52",
  "versions": [
   {
    "version": "3.69.2",
    "file": "webcam_bewegung_3_69_2.py",
    "url": "",
    "sha256": "335134d10331ae6cd6489b957a8b6a7187e29cb756e861b5e0a425e033fdcc63",
-   "date": "2026-11-09 18:13",
+   "date": "2026-11-09 18:29",
    "notes": "Spielecke über https: die Bilder der Kacheln (Kevlaschef, Quantum, FOTAQ) erscheinen wieder – sie kommen jetzt vom gleichen Server wie die Seite",
    "size": 3816329,
    "sig": "07af2c1c85cbf0317f9f594e9b612dfea6b69fb3a2f4a31585a9f7a2dcb35339f9b6feac716fff2a70bd2fb065a71a7f5b6fdafe295c9ef525621b6f5fffb708",
@@ -168,31 +168,23 @@
   }
  ],
  "sim": {
-  "ver": "3.66.0",
-  "version": "3D-5.66.0",
-  "notes": "Echte 3D-Gebäude von swisstopo wieder da (eigener Draco-Entpacker), klare Hinweise bei fehlenden Kartendaten",
+  "ver": "3.67.0",
+  "version": "3D-5.67.0",
+  "notes": "Verschiedene Fassaden und Dachfarben der swisstopo-Häuser (Normal / Hoch)",
   "mw_min": "3.55.0",
   "win": {
-   "ver": "3.66.0",
+   "ver": "3.67.0",
    "file": "simulator3d/MotionWatch3D_Simulator.zip",
-   "size": 54406645,
-   "sha256": "f8aef227b450c341fc4d9c93977b2d00a45b8345f4e1be971d688af021788c33",
-   "sig": "dc4493b062b23f424e64b6144cd1f4df9b94e07d8699b0633b75bb8503ca196df39cdfb6d66569d8c40efb40ed8f8d5c65e17a021c2a31cabd7e194c04c99605"
+   "size": 54427103,
+   "sha256": "4e8c2c1ba9d1345a3da3fb20a237b4d5276263a9ccc6e1612e8a8b3ca3eb522d",
+   "sig": "d3175e39e72adeab6c568c7a02cdb0a953e90136fd02575e6107cd3eb2def2bd24cec7fdb8ba5581f792ffbaf87cebb89e1a78001afb5c68a48e13b63e3ab004"
   },
   "linux": {
-   "ver": "3.66.0",
+   "ver": "3.67.0",
    "file": "simulator3d/MoveEyeSim3D_Linux.zip",
-   "size": 48436997,
-   "sha256": "8077acdae8d2336b36bab97c6cca767fe88d257719dececf263f0431171cdcb1",
-   "sig": "a3c31b8a5022dcd602ce03f36fd185a87a92612f615f31d35fc26766c1581157749109ab4b3f773672b2e80a3beff7a2ff5f0f68732f9545c8be68924993350f"
-  },
-  "pi": {
-   "ver": "3.66.0",
-   "file": "simulator3d/MoveEyeSim3D_Pi.zip",
-   "size": 37939683,
-   "sha256": "103c26d06c4120302f0f2a60086f78080dec05fde6b1c9f69519c249c7b54005",
-   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.66.0/MoveEyeSim3D_Pi.zip",
-   "sig": "d9c92c97f6482d8853e86f130aa786d909b53a8f44c48a873b7dbebc48a036e205d54546cccb96503dafb61e1e86f7f236b15012a9f04757834426685e712206"
+   "size": 48454965,
+   "sha256": "b7add1591f6e81b969580ed4b3b86264d2a2e1b5ea665c7d49414319631f0493",
+   "sig": "df5b671c7b7296034bf1a25950c672796531d64b172194cdc9a284f9a1f8e08a24b1c0166c0ff4a978ceca9f6d82939a9dddea5b8aab23a8853987055447d40f"
   }
  }
 }
