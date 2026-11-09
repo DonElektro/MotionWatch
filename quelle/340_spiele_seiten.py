@@ -15,6 +15,7 @@ GAME_TILES_CSS = """.mwg{display:grid;grid-template-columns:repeat(auto-fill,min
 .mwg .i{font-size:34px}.mwg .i img{width:56px;height:56px;border-radius:12px;object-fit:cover;display:block}
 .mwg .n{font-weight:700;margin:6px 0 2px}.mwg .d{font-size:13px;color:var(--mwg-mut,#9FB0C3)}
 .mwg .gh{grid-column:1/-1;font-weight:700;margin:14px 0 2px}
+.mwg .w{font-size:12px;font-weight:600;color:var(--mwg-warn,#E9A23B);margin-top:4px}
 """
 SPIELE_PAGE = SPIELE_PAGE.replace("/*GAMETILES*/", GAME_TILES_CSS, 1)
 
@@ -210,7 +211,8 @@ def spiele_page(host=""):
         if grp:
             cards += f'<div class="gh">{_e(GAME_GROUPS[grp])}</div>'
         cards += "".join(f'<a class="c" href="{_e(games_url(x["dir"], x.get("start", "index.html"), host) or "/spiele/g/" + x["dir"] + "/" + x.get("start", "index.html"))}"><div class="i">{_game_icon(x, host)}</div>'
-                         f'<div class="n">{_e(x.get("name", x["dir"]))}</div><div class="d">{_e(x.get("desc", ""))}</div></a>' for x in part)
+                         f'<div class="n">{_e(x.get("name", x["dir"]))}</div><div class="d">{_e(x.get("desc", ""))}</div>'
+                         + (f'<div class="w">⚠️ {_e(x["note"])}</div>' if x.get("note") else "") + '</a>' for x in part)   # 3.70.2: note (FOTAQ)
     party = (f'<a class="big" href="/p/{PARTY["key"]}/">👥 Zum Spieleabend (Quiz, Werwolf, Malen, 4 gewinnt)</a>' if party_on()
              else '<p>Der Spieleabend (Quiz, Werwolf, Malen …) ist gerade zu – öffnen kann ihn, wer MoveEye verwaltet.</p>')
     note = "Einzelspiele – laufen direkt im Browser:" if gl else "Die Spielesammlung ist noch nicht installiert (MoveEye → Reiter Spielecke)."
@@ -409,7 +411,7 @@ function render() {
   const GG = {touch: "👆 Für Handy und Tablet (Touch)", buttons: "🎮 Mit Bildschirm-Tasten (am PC mit der Tastatur)", keys: "⌨️ Am PC mit Tastatur und Maus"};        // 2.95.54: touch games first, GS-1.4: «keys» last; = GAME_GROUPS
   const GO = {touch: 0, buttons: 1, keys: 2}, gsorted = (V.games || []).slice().sort((a, b) => (GO[a.input] || 0) - (GO[b.input] || 0));
   let gprev = null;
-  $("#coll").innerHTML = gsorted.length ? gsorted.map(g => { const hd = g.input && g.input !== gprev ? `<div class="gh">${GG[g.input] || ""}</div>` : ""; gprev = g.input; return hd + `<a class="c" href="${BASE}/g/${g.dir}/" target="_blank"><div class="i">${/\./.test(g.icon || "") ? `<img src="${BASE}/g/${g.dir}/${g.icon}" alt="" onerror="this.style.visibility='hidden'">` : esc(g.icon || "🎮")}</div><div class="n">${esc(g.name)}</div><div class="d">${esc(g.desc || "")}</div></a>`; }).join("")   // Spieltab: the tiles of /spiele (GAME_TILES_CSS)
+  $("#coll").innerHTML = gsorted.length ? gsorted.map(g => { const hd = g.input && g.input !== gprev ? `<div class="gh">${GG[g.input] || ""}</div>` : ""; gprev = g.input; return hd + `<a class="c" href="${BASE}/g/${g.dir}/" target="_blank"><div class="i">${/\./.test(g.icon || "") ? `<img src="${BASE}/g/${g.dir}/${g.icon}" alt="" onerror="this.style.visibility='hidden'">` : esc(g.icon || "🎮")}</div><div class="n">${esc(g.name)}</div><div class="d">${esc(g.desc || "")}</div>${g.note ? `<div class="w">⚠️ ${esc(g.note)}</div>` : ""}</a>`; }).join("")   // 3.70.2: note (FOTAQ) · Spieltab: the tiles of /spiele (GAME_TILES_CSS)
     : "<div class='mut' style='grid-column:1/-1'>Die Spielesammlung ist auf diesem Gerät noch nicht installiert (MoveEye → Reiter Spielecke).</div>";
   renderGame();
 }

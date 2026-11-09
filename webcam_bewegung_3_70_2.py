@@ -23,6 +23,8 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 3.70.2: Flight of the Amazon Queen: Hinweis «Am PC spielen – auf iPad/iPhone stürzt es ab» auf der Kachel (jetzt in der
+    Gruppe «⌨️ Am PC mit Tastatur und Maus»); auf iPad/iPhone kommt vor dem Start eine Warnung mit «Trotzdem starten»
   * 3.70.1: Simulator-Betrieb: Hinweis «💧 Linse verschmutzt», wenn im Simulator viel Wasser oder Beschlag auf der Linse ist, mit
     Knopf «🧽 Linse putzen» (ab Sim 3.67.1)
   * 3.70.0: Spielecke: Wobbly Truck mit neuer Stunt-Piste – 14 wechselnde Abschnitte (Half-Pipe, Tunnel, Lücken, Trampolin …),
@@ -106,8 +108,6 @@ Features
     während eines Tests).
   * 3.52.0: Geschichten: «× Beenden» und Esc auf jeder Karte, alle Fenster im Handy-Stream, Geschichten vom Handy starten (Mehr
     › Spielen), Touch-Stick «gehen»; Erkennungstests auf dem Simulator-PC (HP) als eigener GitHub-Runner.
-  * 3.51.0: Gehäuse v5.3 ist Standard: Messing-Gewindeeinsätze M3, Halter für Wand/Baum mit Gurt, Akkuklappe im Boden (Zellen
-    tauschen ohne Ausbau), Luftkanal für den Pi-Lüfter, Zugentlastung; neue Platte C; v5.2/v5.1 wählbar.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -116,10 +116,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_3_70_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_3_70_2.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_3_70_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_3_70_1.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_3_70_2.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_3_70_2.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -136,7 +136,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "3.70.1"
+APP_VERSION = "3.70.2"
 
 
 def default_data_dir():
@@ -261,8 +261,8 @@ def prepare_settings_file():
 
 
 
-ZD_FILE = "moveeye_daten_3_70_1.zip"
-ZD_SHA256 = "e185ebfee034f39cc23a9f00205b9f41f825d21bd98c27759425893a827a0711"
+ZD_FILE = "moveeye_daten_3_70_2.zip"
+ZD_SHA256 = "da7c35e25b21998b626f6c09ed54319e2dc05fe4f5d3570aa037be929784cfdd"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -28512,6 +28512,7 @@ GAME_TILES_CSS = """.mwg{display:grid;grid-template-columns:repeat(auto-fill,min
 .mwg .i{font-size:34px}.mwg .i img{width:56px;height:56px;border-radius:12px;object-fit:cover;display:block}
 .mwg .n{font-weight:700;margin:6px 0 2px}.mwg .d{font-size:13px;color:var(--mwg-mut,#9FB0C3)}
 .mwg .gh{grid-column:1/-1;font-weight:700;margin:14px 0 2px}
+.mwg .w{font-size:12px;font-weight:600;color:var(--mwg-warn,#E9A23B);margin-top:4px}
 """
 SPIELE_PAGE = SPIELE_PAGE.replace("/*GAMETILES*/", GAME_TILES_CSS, 1)
 
@@ -28707,7 +28708,8 @@ def spiele_page(host=""):
 		if grp:
 			cards += f'<div class="gh">{_e(GAME_GROUPS[grp])}</div>'
 		cards += "".join(f'<a class="c" href="{_e(games_url(x["dir"], x.get("start", "index.html"), host) or "/spiele/g/" + x["dir"] + "/" + x.get("start", "index.html"))}"><div class="i">{_game_icon(x, host)}</div>'
-                         f'<div class="n">{_e(x.get("name", x["dir"]))}</div><div class="d">{_e(x.get("desc", ""))}</div></a>' for x in part)
+                         f'<div class="n">{_e(x.get("name", x["dir"]))}</div><div class="d">{_e(x.get("desc", ""))}</div>'
+                         + (f'<div class="w">⚠️ {_e(x["note"])}</div>' if x.get("note") else "") + '</a>' for x in part)
 	party = (f'<a class="big" href="/p/{PARTY["key"]}/">👥 Zum Spieleabend (Quiz, Werwolf, Malen, 4 gewinnt)</a>' if party_on()
              else '<p>Der Spieleabend (Quiz, Werwolf, Malen …) ist gerade zu – öffnen kann ihn, wer MoveEye verwaltet.</p>')
 	note = "Einzelspiele – laufen direkt im Browser:" if gl else "Die Spielesammlung ist noch nicht installiert (MoveEye → Reiter Spielecke)."
@@ -48966,7 +48968,7 @@ class App:
 		self.watch = watch
 		self.web = web or WebStream(watch)
 		self.root = tk.Tk()
-		self.root.title("MoveEye 3.70.1")
+		self.root.title("MoveEye 3.70.2")
 		try:
 			import base64
 			self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -49344,7 +49346,7 @@ class App:
 			if not small:
 				vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
 				vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))
-			Tip(nm, f"{tr('Build')} 3.70.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+			Tip(nm, f"{tr('Build')} 3.70.2 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
 			self._egg_taps = []
 			for w_ in tl.winfo_children():
 				w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -87576,6 +87578,9 @@ SELFTEST_EXTRA.append(("Picture size from the file head (639zzf)", bk_selftest))
 
 
 
+
+
+
 FOTAQ_TAG = "fotaq-1"
 FOTAQ_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/" + FOTAQ_TAG + "/"}
 
@@ -87586,7 +87591,7 @@ FOTAQ_FILES = {
     "en": {"name": "fotaq-en-1.zip", "size": 51225404, "sha256": "9af0594435d6ff0caa4b7956d31a31b006c5e49c1b940d9074d9c1b1add64279", "unpacked": 51227796},
 }
 FOTAQ_MAX_BYTES = 400 * 1024 * 1024
-FOTAQ_GAME = {"dir": "fotaq", "start": "index.html", "icon": "thumb.svg", "input": "touch",
+FOTAQ_GAME = {"dir": "fotaq", "start": "start.html", "icon": "thumb.svg", "input": "keys",
               "name": "Flight of the Amazon Queen",
               "desc": "Abenteuer-Klassiker (1995) mit Sprachausgabe – Deutsch oder Englisch.",
               "names": {L: "Flight of the Amazon Queen" for L in ("de", "en", "fr", "it", "rm")},
@@ -87885,6 +87890,8 @@ def games_file(game, fn):
 		return _games_file_639zzg(game, fn)
 	if not fotaq_installed():
 		return None
+	if (fn or "") in ("", "start.html"):
+		return fotaq_start_file()
 	base = os.path.realpath(fotaq_dir())
 	p_ = os.path.realpath(os.path.join(base, fn or FOTAQ_GAME["start"]))
 	if not p_.startswith(base + os.sep) or not os.path.isfile(p_) or os.path.basename(p_) in ("fotaq.ok", "fotaq.ok.new") or ".new" + os.sep in p_[len(base):] + os.sep:
@@ -87908,6 +87915,10 @@ _HX_FOTAQ = _zd('639zzg_fotaq/HX_FOTAQ', _zd_hx({
     'Languages:': 'Sprachen:',
     'fotaq-ask': '«Flight of the Amazon Queen» jetzt laden? %s MB von GitHub (danach %s MB auf der Speicherkarte, 2 GB bleiben frei).',
     'fotaq-del-lang': 'Diese Sprache entfernen? Die Spielstände bleiben in den Browsern.',
+    'Play on the PC – it crashes on iPad/iPhone': 'Am PC spielen – auf iPad/iPhone stürzt es ab',
+    'On iPad/iPhone the game crashes after about a minute. Play on the PC.': 'Auf iPad/iPhone stürzt das Spiel nach etwa einer Minute ab. Am PC spielen.',
+    'Start anyway': 'Trotzdem starten',
+    'Back to the games': 'Zurück zu den Spielen',
     'fotaq-del': '«Flight of the Amazon Queen» entfernen? Die Spielstände bleiben in den Browsern.',
 }))
 for _k, _v in _HX_FOTAQ.items():
@@ -87915,6 +87926,73 @@ for _k, _v in _HX_FOTAQ.items():
 	for _i, _L in enumerate(("fr", "it", "rm")):
 		TRX[_L].setdefault(_k, _v[_i + 1])
 FOTAQ_JS_DE = {_k: _v[0] for _k, _v in _HX_FOTAQ.items()}
+FOTAQ_NOTE = "Play on the PC – it crashes on iPad/iPhone"
+FOTAQ_WARN = "On iPad/iPhone the game crashes after about a minute. Play on the PC."
+FOTAQ_GAME["note"] = _HX_FOTAQ[FOTAQ_NOTE][0]
+FOTAQ_GAME["notes"] = dict(zip(("de", "en", "fr", "it", "rm"), (_HX_FOTAQ[FOTAQ_NOTE][0], FOTAQ_NOTE) + tuple(_HX_FOTAQ[FOTAQ_NOTE][1:])))
+
+
+def fotaq_start_html():
+	"""
+
+
+"""
+	tx = {}
+	for i, L in enumerate(("de", "en", "fr", "it", "rm")):
+		tx[L] = {n: (k if L == "en" else _HX_FOTAQ[k][0 if L == "de" else i - 1]) for n, k in
+                 (("warn", FOTAQ_WARN), ("start", "Start anyway"), ("back", "Back to the games"), ("note", FOTAQ_NOTE))}
+	return ("""<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0e1621"><title>Flight of the Amazon Queen</title><link rel="icon" href="thumb.svg">
+<script>(function () {
+  var ua = navigator.userAgent || "", ios = /iPad|iPhone|iPod/.test(ua) || (/Macintosh/.test(ua) && (navigator.maxTouchPoints || 0) > 0);
+  window.FOTAQ_IOS = ios;
+  window.fotaqGo = function () { location.replace("index.html" + location.search + location.hash); };
+  if (!ios) window.fotaqGo();
+})();</script>
+<style>:root{--bg:#0e1621;--panel:#16263a;--line:#24324a;--txt:#e8eef5;--mut:#9fb0c3;--acc:#e9a23b}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--txt);font:17px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:520px;margin:0 auto;padding:calc(64px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom))}
+header{display:flex;align-items:center;gap:12px;margin-bottom:16px}header img{width:56px;height:56px;border-radius:12px;flex:none}
+h1{font-size:21px;margin:0;line-height:1.2}
+#warn{background:var(--panel);border:1px solid var(--acc);border-radius:14px;padding:14px 16px;font-weight:600}
+.row{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+button{font:inherit;font-weight:700;border-radius:12px;padding:12px 16px;min-height:46px;cursor:pointer;border:1px solid var(--line)}
+#go{background:var(--acc);color:#0e1621;border-color:var(--acc)}#back{background:var(--panel);color:var(--txt)}
+</style></head><body>
+<main id="fotaq-warn" hidden><header><img src="thumb.svg" alt=""><h1>Flight of the Amazon Queen</h1></header>
+<div id="warn">⚠️ <span id="wt"></span></div>
+<div class="row"><button type="button" id="go"></button><button type="button" id="back"></button></div></main>
+<script>(function () {
+  var TX = __TX__, d = document, L = "de", ls = navigator.languages || [navigator.language || "de"];
+  for (var i = 0; i < ls.length; i++) { var x = String(ls[i] || "").slice(0, 2).toLowerCase(); if (TX[x]) { L = x; break; } }
+  var T = TX[L]; d.documentElement.lang = L;
+  d.getElementById("wt").textContent = T.warn; d.getElementById("go").textContent = "▶ " + T.start; d.getElementById("back").textContent = "‹ " + T.back;
+  d.getElementById("go").onclick = window.fotaqGo;
+  d.getElementById("back").onclick = function () { var b = d.querySelector("#mw-back a"); if (b) b.click(); else history.back(); };
+  if (window.FOTAQ_IOS) d.getElementById("fotaq-warn").hidden = false;
+})();</script>
+</body></html>
+""").replace("__TX__", json.dumps(tx, ensure_ascii=False).replace("</", "<\\/"))
+
+
+def fotaq_start_file():
+	""
+	p = os.path.join(DATA_DIR, "fotaq_start.html")
+	b = fotaq_start_html().encode("utf-8")
+	try:
+		with open(p, "rb") as fh:
+			if fh.read() == b:
+				return p
+	except OSError:
+		pass
+	try:
+		with open(p + ".new", "wb") as fh:
+			fh.write(b)
+		os.replace(p + ".new", p)
+	except OSError:
+		return None
+	return p
 FOTAQ_JS_EN = {"fotaq-ask": "Load «Flight of the Amazon Queen» now? %s MB from GitHub (then %s MB on the memory card, 2 GB stay free).",
                "fotaq-del": "Remove «Flight of the Amazon Queen»? The saved games stay in the browsers.",
                "fotaq-del-lang": "Remove this language? The saved games stay in the browsers."}
@@ -87923,11 +88001,11 @@ TOOLS_PAGE = TOOLS_PAGE.replace("/*FOTAQ_I18N*/", "Object.assign(I18N.de," + jso
 
 
 _HELP_FOTAQ = {
-    "de": '<li><b>🛩 Flight of the Amazon Queen</b> (Abenteuer von 1995, CD-Fassung mit Sprachausgabe, Deutsch oder Englisch): einmal laden unter Mehr → Spielecke: Sprache wählen (Deutsch etwa 120 MB, Englisch etwa 63 MB, beide 172 MB von GitHub, feste Prüfsumme, 2 GB bleiben frei), jede Sprache später einzeln dazu oder weg, danach als Kachel in der Spielesammlung, auch ohne Internet. Antippen = Klick, lange drücken oder «🖱 Rechts» = Rechtsklick, «☰ Menü» = Speichern, Laden, Lautstärke. Spielstände bleiben im Browser des Geräts. Am Handy quer halten. Auf dem Handy braucht das Spiel viel Speicher (Deutsch ~110 MB Daten), ältere Geräte schaffen es eventuell nicht. <b>Lizenz:</b> Spiel © 1995 John Passfield &amp; Steven Stamatiadis, Freeware (Readme bei den Daten); ScummVM © The ScummVM Team, GPL v3 – Quellcode und Bau-Ablauf: Link auf der Startseite des Spiels.</li>',
-    "en": '<li><b>🛩 Flight of the Amazon Queen</b> (adventure from 1995, CD version with speech, German or English): load it once under More → Game corner: choose the languages (German about 120 MB, English about 63 MB, both 172 MB from GitHub, fixed checksum, 2 GB stay free), add or remove each language later, then it is a tile in the game collection, also without internet. Tap = click, long press or «🖱 Right» = right click, «☰ Menu» = save, load, volume. Saved games stay in the browser of the device. Hold the phone sideways. On phones the game needs a lot of memory (German ~110 MB of data), older devices may not manage. <b>Licence:</b> game © 1995 John Passfield &amp; Steven Stamatiadis, freeware (readme with the data); ScummVM © The ScummVM Team, GPL v3 – source code and build: link on the start page of the game.</li>',
-    "fr": '<li><b>🛩 Flight of the Amazon Queen</b> (aventure de 1995, version CD avec voix, allemand ou anglais) : charger une fois sous Plus → Coin jeux → « ⬇ Installer » (env. 170 Mo depuis GitHub, somme fixe, 2 Go restent libres), ensuite une tuile de la collection, aussi sans Internet. Toucher = clic, appui long ou « 🖱 Droite » = clic droit, « ☰ Menu » = sauvegarder, charger. <b>Licence :</b> jeu © 1995 John Passfield &amp; Steven Stamatiadis, freeware ; ScummVM © The ScummVM Team, GPL v3 (source : lien sur la page du jeu).</li>',
-    "it": '<li><b>🛩 Flight of the Amazon Queen</b> (avventura del 1995, versione CD con voci, tedesco o inglese): caricare una volta sotto Altro → Angolo giochi → «⬇ Installa» (circa 170 MB da GitHub, somma fissa, 2 GB restano liberi), poi è una tessera della raccolta, anche senza Internet. Toccare = clic, pressione lunga o «🖱 Destro» = clic destro, «☰ Menu» = salvare, caricare. <b>Licenza:</b> gioco © 1995 John Passfield &amp; Steven Stamatiadis, freeware; ScummVM © The ScummVM Team, GPL v3 (sorgente: link sulla pagina del gioco).</li>',
-    "rm": '<li><b>🛩 Flight of the Amazon Queen</b> (aventura da 1995, versiun CD cun vusch, tudestg u englais): chargiar ina giada sut Dapli → Chantun da gieus → «⬇ Installar» (var 170 MB da GitHub, summa fixa, 2 GB restan libers), lura ina cachel da la collecziun, er senza internet. Tutgar = clic, smatgar ditg u «🖱 Dretg» = clic dretg, «☰ Menu» = memorisar, chargiar. <b>Licenza:</b> gieu © 1995 John Passfield &amp; Steven Stamatiadis, freeware; ScummVM © The ScummVM Team, GPL v3 (code: link sin la pagina dal gieu).</li>',
+    "de": '<li><b>🛩 Flight of the Amazon Queen</b> (Abenteuer von 1995, CD-Fassung mit Sprachausgabe, Deutsch oder Englisch): einmal laden unter Mehr → Spielecke: Sprache wählen (Deutsch etwa 120 MB, Englisch etwa 63 MB, beide 172 MB von GitHub, feste Prüfsumme, 2 GB bleiben frei), jede Sprache später einzeln dazu oder weg, danach als Kachel in der Spielesammlung, auch ohne Internet. Antippen = Klick, lange drücken oder «🖱 Rechts» = Rechtsklick, «☰ Menü» = Speichern, Laden, Lautstärke. Spielstände bleiben im Browser des Geräts. Am Handy quer halten. <b>Auf iPad/iPhone stürzt das Spiel nach etwa einer Minute ab – am PC spielen</b> (vor dem Start kommt dort ein Hinweis mit «Trotzdem starten»). Auf dem Handy braucht das Spiel viel Speicher (Deutsch ~110 MB Daten), ältere Geräte schaffen es eventuell nicht. <b>Lizenz:</b> Spiel © 1995 John Passfield &amp; Steven Stamatiadis, Freeware (Readme bei den Daten); ScummVM © The ScummVM Team, GPL v3 – Quellcode und Bau-Ablauf: Link auf der Startseite des Spiels.</li>',
+    "en": '<li><b>🛩 Flight of the Amazon Queen</b> (adventure from 1995, CD version with speech, German or English): load it once under More → Game corner: choose the languages (German about 120 MB, English about 63 MB, both 172 MB from GitHub, fixed checksum, 2 GB stay free), add or remove each language later, then it is a tile in the game collection, also without internet. Tap = click, long press or «🖱 Right» = right click, «☰ Menu» = save, load, volume. Saved games stay in the browser of the device. Hold the phone sideways. <b>On iPad/iPhone the game crashes after about a minute – play on the PC</b> (there a note with «Start anyway» comes before the start). On phones the game needs a lot of memory (German ~110 MB of data), older devices may not manage. <b>Licence:</b> game © 1995 John Passfield &amp; Steven Stamatiadis, freeware (readme with the data); ScummVM © The ScummVM Team, GPL v3 – source code and build: link on the start page of the game.</li>',
+    "fr": '<li><b>🛩 Flight of the Amazon Queen</b> (aventure de 1995, version CD avec voix, allemand ou anglais) : charger une fois sous Plus → Coin jeux → « ⬇ Installer » (env. 170 Mo depuis GitHub, somme fixe, 2 Go restent libres), ensuite une tuile de la collection, aussi sans Internet. Toucher = clic, appui long ou « 🖱 Droite » = clic droit, « ☰ Menu » = sauvegarder, charger. <b>Sur iPad/iPhone, le jeu plante après environ une minute – jouer sur le PC.</b> <b>Licence :</b> jeu © 1995 John Passfield &amp; Steven Stamatiadis, freeware ; ScummVM © The ScummVM Team, GPL v3 (source : lien sur la page du jeu).</li>',
+    "it": '<li><b>🛩 Flight of the Amazon Queen</b> (avventura del 1995, versione CD con voci, tedesco o inglese): caricare una volta sotto Altro → Angolo giochi → «⬇ Installa» (circa 170 MB da GitHub, somma fissa, 2 GB restano liberi), poi è una tessera della raccolta, anche senza Internet. Toccare = clic, pressione lunga o «🖱 Destro» = clic destro, «☰ Menu» = salvare, caricare. <b>Su iPad/iPhone il gioco si blocca dopo circa un minuto – giocare sul PC.</b> <b>Licenza:</b> gioco © 1995 John Passfield &amp; Steven Stamatiadis, freeware; ScummVM © The ScummVM Team, GPL v3 (sorgente: link sulla pagina del gioco).</li>',
+    "rm": '<li><b>🛩 Flight of the Amazon Queen</b> (aventura da 1995, versiun CD cun vusch, tudestg u englais): chargiar ina giada sut Dapli → Chantun da gieus → «⬇ Installar» (var 170 MB da GitHub, summa fixa, 2 GB restan libers), lura ina cachel da la collecziun, er senza internet. Tutgar = clic, smatgar ditg u «🖱 Dretg» = clic dretg, «☰ Menu» = memorisar, chargiar. <b>Sin iPad/iPhone s’interrumpa il gieu suenter var ina minuta – giugar al PC.</b> <b>Licenza:</b> gieu © 1995 John Passfield &amp; Steven Stamatiadis, freeware; ScummVM © The ScummVM Team, GPL v3 (code: link sin la pagina dal gieu).</li>',
 }
 
 
@@ -87958,6 +88036,11 @@ def fotaq_selftest():
 	assert FOTAQ_GAME["input"] in GAME_GROUPS and FOTAQ_GAME["icon"] == "thumb.svg"
 	assert all(FOTAQ_GAME["names"].get(L) and FOTAQ_GAME["descs"].get(L) for L in ("de", "en", "fr", "it", "rm"))
 	assert FOTAQ_GAME["desc"] == FOTAQ_GAME["descs"]["de"]
+	assert FOTAQ_GAME["input"] == "keys" and all(FOTAQ_GAME["notes"].get(L) for L in ("de", "en", "fr", "it", "rm")), "3.70.2: PC group + note"
+	assert FOTAQ_GAME["note"] == "Am PC spielen – auf iPad/iPhone stürzt es ab" == FOTAQ_GAME["notes"]["de"]
+	h_ = fotaq_start_html()
+	assert "Trotzdem starten" in h_ and "Auf iPad/iPhone stürzt das Spiel nach etwa einer Minute ab. Am PC spielen." in h_ and "Démarrer quand même" in h_
+	assert 'location.replace("index.html"' in h_ and 'href="index.html"' not in h_ and "maxTouchPoints" in h_
 	assert "Amazon Queen" in HELP_PAGE and all("Amazon Queen" in HELP_X.get(L, "Amazon Queen") for L in ("fr", "it", "rm"))
 	assert "fotaqPaint" in TOOLS_PAGE and "/*FOTAQ_I18N*/" not in TOOLS_PAGE
 	if not fotaq_installed():
