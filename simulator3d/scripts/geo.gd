@@ -383,6 +383,15 @@ func load_place(la: float, lo: float, nm: String, rebuild := true) -> void:
 				far_h[j * far_n + i] = height(p.x, p.y, true)
 			else:
 				far_h[j * far_n + i] = _terrarium(df["img"], df["rect"], p) + off - h0
+	# aerial pictures (sim-fassaden: before the 3D buildings, their roof colours come from it)
+	photo_near_img = got[2]["img"]
+	photo_near_img.generate_mipmaps()
+	photo_near = ImageTexture.create_from_image(photo_near_img)
+	rect_near = got[2]["rect"]
+	photo_far_img = got[3]["img"]
+	photo_far_img.generate_mipmaps()
+	photo_far = ImageTexture.create_from_image(photo_far_img)
+	rect_far = got[3]["rect"]
 	# buildings of swisstopo in 3D (from 3D-3.10), else the houses of OpenStreetMap
 	b3d_meshes = []
 	if b3d_on:
@@ -403,7 +412,7 @@ func load_place(la: float, lo: float, nm: String, rebuild := true) -> void:
 		b3d_foot = b3.foot
 		b3d_head_in = b3.head_in
 		b3d_tiles = b3.tiles_ok
-		b3d_stats = {"tiles": b3.tiles_ok, "of": b3.contents.size(), "houses": b3.foot.size(), "tris": b3.tris, "kb": int(b3.bytes_in / 1024), "ms_decode": b3.ms_decode, "ms": Time.get_ticks_msec() - t_b3}
+		b3d_stats = {"tiles": b3.tiles_ok, "of": b3.contents.size(), "houses": b3.foot.size(), "tris": b3.tris, "kb": int(b3.bytes_in / 1024), "ms_decode": b3.ms_decode, "ms": Time.get_ticks_msec() - t_b3, "fassaden": b3.fassaden_stats}
 		_save_b3d_report()
 		if my_gen != gen:
 			return
@@ -416,15 +425,6 @@ func load_place(la: float, lo: float, nm: String, rebuild := true) -> void:
 		b3d_foot = []
 		b3d_head_in = false
 		b3d_tiles = 0
-	# aerial pictures
-	photo_near_img = got[2]["img"]
-	photo_near_img.generate_mipmaps()
-	photo_near = ImageTexture.create_from_image(photo_near_img)
-	rect_near = got[2]["rect"]
-	photo_far_img = got[3]["img"]
-	photo_far_img.generate_mipmaps()
-	photo_far = ImageTexture.create_from_image(photo_far_img)
-	rect_far = got[3]["rect"]
 	busy = false
 	loaded = true
 	info = place_name + " geladen (Höhen: " + dem_source + ")" + (" – " + ", ".join(problems) if not problems.is_empty() else "")
@@ -546,9 +546,17 @@ func build(s) -> void:
 	if not b3d_meshes.is_empty():
 		var bm := ShaderMaterial.new()
 		bm.shader = load("res://shaders/b3d.gdshader")
+		var wm: ShaderMaterial = null                     # sim-fassaden (Normal / Hoch): facades and roofs per house (fassaden.gd)
+		var rm: ShaderMaterial = null
+		if bool(b3d_meshes[0].get("styled", false)):
+			wm = ShaderMaterial.new()
+			wm.shader = load("res://shaders/b3d_fassade.gdshader")
+			rm = ShaderMaterial.new()
+			rm.shader = load("res://shaders/b3d_dach.gdshader")
 		for part in b3d_meshes:                           # walls «caravan», roofs «stone» for the thermal camera, as the OSM houses
-			main.add_mesh(sc.root, part["mesh"], Vector3.ZERO, bm, part["t"])
-		b3d_mat = bm
+			var mt: ShaderMaterial = bm if wm == null else (rm if part.get("roof", false) else wm)
+			main.add_mesh(sc.root, part["mesh"], Vector3.ZERO, mt, part["t"])
+		b3d_mat = bm if wm == null else wm
 		main.anims.append(_b3d_night)
 		counts["b3d"] = b3d_tiles
 		counts["b3d_tris"] = int(b3d_stats.get("tris", 0))
