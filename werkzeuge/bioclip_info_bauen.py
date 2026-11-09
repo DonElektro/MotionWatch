@@ -41,6 +41,8 @@ giftig: (1) ein Satz im deutschen Artikel sagt es aus: «giftig» als Aussage (�
   «giftig für …»), «giftigste», «Giftpflanze», «Giftpilz», «Giftschlange», «giftige Pflanze / Pilz / Art»; der Satz enthält
   keine Verneinung («nicht giftig», «ungiftig», «kein Gift»), kein «verwechseln / Verwechslung / Doppelgänger / ähnlich» und
   keinen deutschen Namen einer anderen Art der Liste; oder (2) Wikidata P789 «poisonous / deadly» oder P1552 «poisonous».
+  Ausnahmen: Sätze über andere / allgemein («Diese …», «Die meisten …», «Viele …»), «nur für Tiere giftig». Wikidata P789 mit
+  «essbar» UND «giftig» zugleich (z. B. roh giftig) = unklar: weder ☠️ aus Wikidata noch «essbar».
 essbar: nur Pflanzen und Pilze; ein Satz im deutschen Artikel: «essbar», «Speisepilz», «Wildgemüse», «als Salat / Gemüse /
   Gewürz / Tee … verwendet / gegessen», «werden … gegessen», «zu Marmelade / Konfitüre / Saft / Gelee / Pesto verarbeitet»;
   ohne Verneinung («nicht essbar», «ungenießbar», «kein Speisepilz»), ohne ein Wort zu «giftig» im selben Satz, ohne
@@ -350,7 +352,7 @@ def andere_namen(s, own, namen):
     return hits
 
 
-DIESE = re.compile(r"^(Diese|Jene|Beide|Alle drei|Alle diese|Solche)\b")
+DIESE = re.compile(r"^(Diese|Jene|Beide|Alle drei|Alle diese|Solche|Die meisten|Viele|Einige|Manche|Andere|Zahlreiche|Mehrere)\b")
 NUR_TIER = re.compile(r"\bungefährlich\b|\bfür\s+(den\s+)?Menschen\s+(un|nicht)|\bfür\s+(viele\s+|manche\s+|einige\s+|andere\s+)?"
                       r"(Tiere|Hunde|Katzen|Pferde|Rinder|Schafe|Ziegen|Vieh|Weidetiere|Haustiere|Vögel|Fische|Insekten|Nagetiere|Kaninchen)", re.I)
 EDISH = re.compile(r"essbar|Speise|Gemüse|Salat|Gewürz|gegessen|verzehr|Küche|Obst|Marmelade|Konfitüre", re.I)
@@ -488,7 +490,11 @@ def main():
         else:
             cov["keiner"] += 1
         wd_tox = [x for x in w["ed"] + w["ch"] if re.search(r"poison|deadly|toxic", x, re.I)]
-        if wd_tox:
+        wd_ed = [x for x in w["ed"] if re.search(r"edible|choice", x, re.I) and not re.search(r"inedible", x, re.I)]
+        if wd_tox and wd_ed:                                       # Wikidata sagt beides (z. B. roh giftig): unklar = nichts
+            e.pop("ed", None)
+            e["wd_unklar"] = 1
+        elif wd_tox:
             e["toxwd"] = wd_tox[:2]
             e.pop("ed", None)                                      # unklar = nichts zu «essbar»
         h = hoehe(w["h"])
