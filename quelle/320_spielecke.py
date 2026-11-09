@@ -77,7 +77,7 @@ def games_all_open(hours=6.0, who="web"):
     missing) and the game of the 3D simulator «Team gegen MoveEye» (when the simulation runs). The players scan one QR code,
     type their name and are in; the page of the game corner shows the collection and the simulator game too."""
     party_open(hours)
-    if not games_list() and not GAMES_DL.get("running"):
+    if not games_list(extra=False) and not GAMES_DL.get("running"):    # 639zzg: FOTAQ alone is not the collection
         threading.Thread(target=games_install, daemon=True, name="games-dl").start()
     if CFG.get("sim_on") and SIM.get("ok"):
         def _sim():

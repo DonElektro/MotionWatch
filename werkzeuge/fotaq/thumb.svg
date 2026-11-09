@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<!-- MoveEye: own icon for «Flight of the Amazon Queen» (no box art): seaplane at sunset over the jungle river. CC0. -->
+<defs>
+<linearGradient id="s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b1d5c"/><stop offset=".55" stop-color="#d9663a"/><stop offset="1" stop-color="#f2b84b"/></linearGradient>
+<linearGradient id="w" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2f7d8c"/><stop offset="1" stop-color="#174652"/></linearGradient>
+<clipPath id="c"><rect width="128" height="128" rx="26"/></clipPath>
+</defs>
+<g clip-path="url(#c)">
+<rect width="128" height="128" fill="url(#s)"/>
+<circle cx="84" cy="78" r="20" fill="#ffd879" opacity=".95"/>
+<path d="M0 86 C14 74 22 80 32 72 C42 64 50 76 60 70 C72 63 80 74 92 68 C104 62 114 72 128 66 V128 H0Z" fill="#1f4d2b"/>
+<path d="M0 100 C20 94 40 102 64 97 C88 92 108 100 128 96 V128 H0Z" fill="url(#w)"/>
+<path d="M14 108 h22 M54 114 h26 M92 106 h18" stroke="#9fd6de" stroke-width="2.5" stroke-linecap="round" opacity=".7"/>
+<!-- palm left -->
+<path d="M20 98 C22 84 21 74 26 62" stroke="#13301b" stroke-width="4" fill="none" stroke-linecap="round"/>
+<path d="M26 62 C16 56 8 60 4 66 C12 62 18 62 26 62Z M26 62 C30 52 40 50 46 54 C38 54 32 57 26 62Z M26 62 C20 52 12 50 8 52 C16 54 21 57 26 62Z M26 62 C34 60 42 64 44 70 C38 65 32 63 26 62Z" fill="#13301b"/>
+<!-- seaplane -->
+<g transform="translate(64 40) rotate(-8)">
+<path d="M-30 0 C-20 -6 14 -6 26 -2 C30 -1 30 3 26 4 C14 7 -20 6 -30 2Z" fill="#f4f0e6"/>
+<path d="M-26 -1 L-34 -12 L-28 -12 L-18 -2Z" fill="#c43c3c"/>
+<path d="M-6 -3 L4 -22 L12 -22 L6 -3Z M-4 3 L4 14 L10 14 L6 3Z" fill="#c43c3c"/>
+<path d="M14 -3 C17 -4 21 -4 23 -2" stroke="#2a3b55" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+<path d="M-12 6 L-14 12 M10 6 L12 12" stroke="#f4f0e6" stroke-width="2"/>
+<path d="M-22 13 H20" stroke="#f4f0e6" stroke-width="3.2" stroke-linecap="round"/>
+<ellipse cx="29" cy="1" rx="1.6" ry="8" fill="#2a3b55" opacity=".7"/>
+</g>
+</g>
+</svg>

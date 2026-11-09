@@ -1,0 +1,31 @@
+diff --git a/dists/emscripten/custom_shell-pre.js b/dists/emscripten/custom_shell-pre.js
+index c567e00..4dc7fcf 100644
+--- a/dists/emscripten/custom_shell-pre.js
++++ b/dists/emscripten/custom_shell-pre.js
+@@ -1,5 +1,6 @@
+ /*global Module*/
+-Module["arguments"] = [];
++// MoveEye: keep arguments the page already set (language choice), else the ones from the address (#...)
++Module["arguments"] = Module["arguments"] || [];
+ 
+ // Add all parameters passed via the fragment identifier
+ if (window.location.hash.length > 0) {
+@@ -9,17 +10,5 @@ if (window.location.hash.length > 0) {
+     })
+ }
+ 
+-// MIDI support
++// MoveEye: no Web MIDI request (it asks the user for a permission; the game uses the built-in AdLib emulation)
+ var midiOutputMap;
+-if (!("requestMIDIAccess" in navigator)) {
+-	console.error("No MIDI support in your browser.");
+-} else {
+-	navigator
+-		.requestMIDIAccess({ sysex: true, software: true })
+-		.then((midiAccess) => {
+-			midiOutputMap = midiAccess.outputs;
+-			midiAccess.onstatechange = (e) => {
+-				midiOutputMap = e.target.outputs;
+-			};
+-		});
+-}

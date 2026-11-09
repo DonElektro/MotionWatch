@@ -46,19 +46,42 @@ def games_server_start():
                 self.send_error(404); return
             if m.group(2) == "" and not path.endswith("/"):
                 self.send_response(301); self.send_header("Location", path + "/"); self.end_headers(); return
+            ct = ("application/wasm" if p_.endswith(".wasm") else mimetypes.guess_type(p_)[0]) or "application/octet-stream"
+            hdr = {"Content-Type": ct + ("; charset=utf-8" if ct.startswith("text/") or ct.endswith("javascript") else ""),
+                   "Cache-Control": "max-age=3600", "X-Content-Type-Options": "nosniff"}
             try:
+                if ct != "text/html":                   # 639zzg: big files (FOTAQ ~110 MB) streamed, «Last-Modified» -> 304
+                    from email.utils import formatdate, parsedate_to_datetime
+                    st_ = os.stat(p_)
+                    lm = formatdate(int(st_.st_mtime), usegmt=True)
+                    ims = self.headers.get("If-Modified-Since")
+                    try:
+                        same = bool(ims) and int(parsedate_to_datetime(ims).timestamp()) >= int(st_.st_mtime)
+                    except (TypeError, ValueError, OverflowError):
+                        same = False
+                    if same:
+                        self.send_response(304); self.send_header("Last-Modified", lm); self.send_header("Cache-Control", hdr["Cache-Control"])
+                        self.end_headers(); return
+                    with open(p_, "rb") as f:
+                        self.send_response(200)
+                        for k_, v_ in hdr.items():
+                            self.send_header(k_, v_)
+                        self.send_header("Content-Length", str(st_.st_size)); self.send_header("Last-Modified", lm)
+                        self.end_headers()
+                        shutil.copyfileobj(f, self.wfile, 1 << 18)
+                    return
                 with open(p_, "rb") as f:
                     data = f.read()
+            except (BrokenPipeError, ConnectionResetError):
+                return
             except OSError:
                 self.send_error(404); return
-            ct = mimetypes.guess_type(p_)[0] or "application/octet-stream"
-            if ct == "text/html":
-                h_ = (self.headers.get("Host") or "").rsplit(":", 1)[0]
-                data = games_inject_back(data, f"http://{h_}:{CFG['web_port']}/spiele" if h_ else "/")
+            h_ = (self.headers.get("Host") or "").rsplit(":", 1)[0]
+            data = games_inject_back(data, f"http://{h_}:{CFG['web_port']}/spiele" if h_ else "/")
             self.send_response(200)
-            self.send_header("Content-Type", ct + ("; charset=utf-8" if ct.startswith("text/") or ct.endswith("javascript") else ""))
-            self.send_header("Content-Length", str(len(data))); self.send_header("Cache-Control", "max-age=3600")
-            self.send_header("X-Content-Type-Options", "nosniff")
+            for k_, v_ in hdr.items():
+                self.send_header(k_, v_)
+            self.send_header("Content-Length", str(len(data)))
             self.end_headers(); self.wfile.write(data)
 
     class S(socketserver.ThreadingMixIn, http.server.HTTPServer):
@@ -194,7 +217,7 @@ def spiele_page(host=""):
     return SPIELE_PAGE.replace("__PARTY__", party).replace("__NOTE__", note).replace("__GAMES__", cards)
 
 
-def games_list():
+def games_list(extra=True):                 # extra: 639zzg adds «Flight of the Amazon Queen» (own folder)
     try:
         with open(os.path.join(games_dir(), "games.json")) as f:
             d = json.load(f)
