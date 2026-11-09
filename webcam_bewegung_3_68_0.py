@@ -23,6 +23,49 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 3.68.0: 🔍 Untersuchen: im Live-Bild einen Bereich (oder das ganze Bild) untersuchen – KI und BioCLIP sagen, was zu sehen
+    ist, mit Infokarten; wahlweise fährt der Kopf zuerst dorthin (Recht «Kopf»); «📷 Foto untersuchen» für ein eigenes Foto (bis
+    15 MB); Funde landen im Datentausch-Ordner «Funde» (Grenzen und freier Platz wie jeder Upload); Gäste ohne Kopf-Bewegung;
+    Knopf im Pi-Fenster.
+  * 3.67.0: 🌿 Bestimmen: zu jeder erkannten Art eine kurze Infokarte (Beschreibung aus Wikipedia, gekürzt, mit Quelle und Lizenz
+    CC BY-SA 4.0 auf jeder Karte; Link zum ganzen Artikel), für über 10'000 Arten offline – die Datei (2,7 MB, feste Prüfsumme)
+    wird mit dem Modell geladen.
+  * 3.66.1: Spielesammlung GS-1.6: Wobbly Truck mit Landehilfe im leichten Modus; der Knopf «✕ Zurück» sucht sich in allen
+    Spielen einen freien Platz (oder bleibt weg, wenn das Spiel einen eigenen Zurück-Link hat) und überdeckt keine Spiel-Knöpfe
+    mehr.
+  * 3.66.0: Spielesammlung GS-1.5: Wobbly Truck mit Motorrad, Stunt-Piste, Stunts, Kombos und Einstellungen; Spielecke (Mehr →
+    Spielecke) und Gast-Spieleabend mit denselben Spiel-Kacheln wie die Spielesammlung, kurz «✓ N Spiele installiert».
+  * 3.65.0: Spielesammlung GS-1.4: 36 neue Browserspiele (12 Kevlaschef Games, 24 Quantum Games) – am Handy mit Antippen, am PC
+    mit Tasten, offline, in 5 Sprachen; © 2026 Kevlaschef, mit Erlaubnis des Rechteinhabers.
+  * 3.64.0: 🌿 Bestimmen im Datentausch: MoveEye erkennt auf einem Foto die Art (Pflanze, Tier, Pilz, Insekt; BioCLIP, ganz auf
+    dem Pi, über 10'000 Arten), Top 3 mit deutschem und lateinischem Namen; das Modell (etwa 350 MB, feste Prüfsumme) wird beim
+    ersten Mal nach einer Rückfrage geladen. Fehlerkorrektur: Benutzer mit eigener Rolle (z. B. «Familie») bekamen auf jeder
+    Seite eine Fehlermeldung für zwei Seiten-Skripte. Gehäuse-Daten 5.3.1 (Adapter 28 für das alte UPS HAT) auch in MoveEye.
+  * 3.63.2: Fehlerkorrektur: langes Drücken auf «Ansicht» – öffnet sich das Menü unter dem Finger, schliesst es das Loslassen
+    nicht mehr sofort. Dazu Sim 3.59.0: Besucher meiden deinen Platz, neue Einbruch-Abläufe (Nachts ums Zelt schleichen,
+    Velo-Diebstahl), Erkennungstest-Plan «real».
+  * 3.63.1: Fehlerkorrektur: Selbsttest «Fertig kaufen» (639zj) erkennt den Eintrag im Fenster «Mehr» auch, wenn der Datentausch
+    ihn umhüllt (nur im CI mit Fenster sichtbar).
+  * 3.63.0: 📁 Datentausch unter Mehr: Fotos, Videos und Dokumente teilen (Für alle / Meine Dateien, Ordner, Vorschaubilder,
+    Hochladen in Stücken), 📝 Texte im Browser bearbeiten mit Versionen, 💬 Chats; neue Rechte pro Benutzer, Gäste nur ansehen,
+    Grenzen und immer 2 GB frei, Push gebündelt.
+  * 3.62.1: Piper: «Piper installieren» richtet auch espeak-ng selbst ein, wenn es fehlt (apt, ohne Passwort-Abfrage, mit
+    Zeitlimit; als root direkt, sonst sudo -n), mit Fortschritt und klarer Meldung, wenn es nicht geht («espeak-ng konnte nicht
+    installiert werden – …»).
+  * 3.62.0: Piper-Stimme: MoveEye spricht Ansagen mit einer natürlichen Offline-Stimme (Thorsten; Stimme pro Sprache, Tempo,
+    Lautstärke, «Stimme testen»), einmal geladen mit fester Prüfsumme; Ansagen auch im Browser («🔊 Ton im Browser»), im
+    Pi-Fenster und im Simulator; ohne Piper die alte Stimme.
+  * 3.61.0: Simulator intern: MoveEye Sim läuft abgespeckt direkt auf dem Pi 5 (Reiter Simulator → «🧪 Simulator intern (auf
+    diesem Pi) ausprobieren»), Paket signiert geprüft, «Beenden» = zurück zur vorherigen Verbindung; alte Desktop-Symbole «MW
+    Sim · Basis» und x86-«MoveEye Sim» werden aufgeräumt. Dazu Sim 3.57.0: Gerät wie das echte (Gehäuse v5.3), Pflanzen
+    natürlicher, PS5-Controller am Simulator-PC.
+  * 3.60.0: Fehlalarme und Pushes: MoveEye merkt sich Fehlalarm-Stellen und fragt nach 3 Fehlalarmen in 7 Tagen einmal «künftig
+    ignorieren?», Windschutz für Pflanzen-Bereiche, Alarme in der Pause gebündelt («+N weitere in M Min.» mit Bildstreifen),
+    Zonen-Name im Push, kurzer Clip (ab Werk aus), «Bilder bleiben zu Hause» (ab Werk aus); doppelte Bestätigung im
+    Erkennungstest messbar · Objekte und Profile: Erkennungsprofile 🏕️ Nacht am Zelt · 🌳 Garten tagsüber · 🏠 Hausüberwachung · 🔋
+    Akku sparen (von Hand, per Zeitplan, vom Modus oder bei tiefem Akku; ohne Profil wie bisher), Wildtiere mit Namen («🦊 Fuchs
+    beim Zelt»), Fahrzeuge je Art melden / nur protokollieren / ignorieren, «📦 Paket vor der Tür», liegen gelassene und
+    verschwundene Gegenstände; im Akku- und Nachtprofil rechnet die KI weniger.
   * 3.59.0: MoveEye-Datei schlank: Hauptdatei von 5,0 auf 3,4 MB (mehr in die Zusatzdatei: Übersetzungen, Anleitung, Web-Teile;
     gebaute Datei ohne Kommentare, mit Tabs, gleiche Zeilennummern). Ohne Zusatzdatei startet MoveEye wieder im Kern, mit «Jetzt
     nachladen». Grenze: Warnung ab 4 MiB, Abbruch ab 5 MiB.
@@ -69,37 +112,6 @@ Features
   * 3.47.0: Gehäuse-Abgleich v5.2: Montage-Texte v5.2, Szene immer v5.2 mit Stopfen 12/19, Grau #9a9ea3 und Kopf orange, «Stand
     MoveEye X.Y.Z» im Bausatz, Akku UPS HAT (E) mit 4 × 21700 in Texten und Simulator, Bausatz-Link auf /info/; Trailer nur noch
     im Entwickler-Bereich; Entwickler heisst «Elektro», keine privaten Angaben mehr in Programm und Druckdateien.
-  * 3.46.0: Gehäuse v5.2 ist jetzt überall Standard (v5.1 bleibt wählbar); Selbstbau-Paket MoveEye_Bausatz.zip (Anleitung als
-    PDF in 5 Sprachen, Druckdateien, Bestelllisten, signierte Software) als GitHub-Release; USB-Installer für den Simulator-PC
-    (Ubuntu 24.04, Kiosk).
-  * 3.45.0: Varianten: ehrliche Selbstdiagnose ohne Servo-Treiber (PCA9685) und ohne Wärmebild, Relais ab Werk aus, eine
-    Mover-Fahrt löst keinen «Gerät bewegt»-Alarm mehr aus; Bau-Infos: Stopfen 18–24, Kanal 4 auf das IR-Modul, Ladequelle, 3
-    Pakete (Basis/Komplett/Autark); Hinweis «fixfertig kaufen» in Bauen, Simulator-Werkstatt und Pi-Fenster; /info/ als
-    Produktseite.
-  * 3.44.2: Versionshinweis: eine kleine Zeile unten rechts mit Knopf und ✕ statt eines bildschirmhohen Balkens.
-  * 3.44.1: Simulator-Fenster und Kamerabild passen in die Bildschirmhöhe (zentriert, unverzerrt); Klicks treffen trotz Rändern
-    genau.
-  * 3.44.0: Simulator: Tastatur statt Scrollrad: + / − zoomt überall, Bild↑/↓ blättert Listen, Pfeile drehen die Ansicht,
-    F1 zeigt die Tasten-Hilfe, Scrollbalken sind sichtbar und ziehbar, Shift+Bild↑/↓ bewegt den Mast. Linux-Kiosk:
-    ./kiosk_ein.sh macht den PC zur reinen Simulator-Maschine (Vollbild, sendet an MoveEye, Neustart nach Absturz, SSH);
-    Ctrl+Alt+D = normales Mint, ./kiosk_aus.sh stellt alles zurück.
-  * 3.43.1: MoveEye bietet unter /sim jetzt auch den Simulator für Linux zum Herunterladen an.
-  * 3.43.0: Gehäuse v5.2b: SD-Schlitz für eine Verlängerung und USB-C-Öffnung (je mit Stopfen), Kopf 06 mit Status-LED, Rippen
-    und Trennsteg ≥ 1,5 mm, Sicherung 5 A, 13 Entwicklungs-Sockel (12 V an der GX16), Lochraster im Zwischenboden, Platz für
-    Lampentreiber und Sicherung, Reserve-Öffnung mit Stopfen; microSD-Verlängerung in der Teileliste.
-  * 3.42.0: Linux-Version mit eigenem Update-Paket, ./installieren.sh legt Menü- und Desktop-Eintrag an (ohne sudo).
-    Sparmodus: bei ≤ 4 GB Arbeitsspeicher oder älterer Intel-Grafik wählt «Automatisch» Lite; eigene Wahl hat Vorrang.
-    Lade-LED an GPIO 6: an beim Laden, langsam blinkend = voll, schnell = Akku fast leer (Schalter «Lade-LED»).
-    Gehäuse v5.2: Unterteil mit Fenster für die Weitwinkel-Kamera, IR-Modul 120° mit Trennsteg und Kabelkamm;
-    Druckkorrekturen an Drehteller, Gabel, Arm 2 und Lampenhalter; Kamerakopf im Simulator orange.
-  * 3.41.1: Fix: Solar-Strommesser (INA219) ab Werk auf 0x44 statt 0x41 (kollidierte mit dem Servo-Treiber), Shunt 0,01 Ω
-    passend zum Gravity-Modul; Bau-Infos ergänzt (Step-Down ab Akku, 3. MOSFET, Schrauben, Lade-LED an GPIO 6).
-  * 3.41.0: Im Fenster «Neu in …» führt bei jeder Neuerung ein kleiner Link direkt zur Funktion (MoveEye und Simulator);
-    Schalter «Links zu Neuerungen» im Entwickler-Bereich.
-  * 3.40.0: Bauen: MoveEye komplett selbst bauen – ein Menüeintrag in MoveEye und Simulator, 10 Reiter, 3D im Browser auch ohne
-    Simulator, Varianten, Einkaufsliste, alle Druckteile als 3MF, Verkabelungsplan, «Mein Bau».
-  * 3.39.2: Datenschutz: Push- und E-Mail-Meldungen zeigen statt des WLAN-Namens nur noch «bekanntes WLAN».
-  * 3.39.1: Simulator intern aufgeräumt, schnellerer Start.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -108,10 +120,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_3_59_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_3_68_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_3_59_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_3_59_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_3_68_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_3_68_0.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -128,7 +140,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "3.59.0"
+APP_VERSION = "3.68.0"
 
 
 def default_data_dir():
@@ -253,8 +265,8 @@ def prepare_settings_file():
 
 
 
-ZD_FILE = "moveeye_daten_3_59_0.zip"
-ZD_SHA256 = "b29ea6f5d1dec51e052f0b3c8f0a3bc842c00b2fa3476774bcda30790f872e42"
+ZD_FILE = "moveeye_daten_3_68_0.zip"
+ZD_SHA256 = "d117185f56addeb3c1f570ca2b4c50dd70e8c717fb627dd97391884574d70cbd"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -2929,6 +2941,9 @@ def users_selftest():
 	assert role_allows("family", "/api/audio", "POST", {"action": "siren"}) and not role_allows("family", "/settings", "GET", {})
 	assert not role_allows("family", "/api/users", "GET", {}) and not role_allows("family", "/api/set", "POST", {"key": "web_port"})
 	assert role_allows("operate", "/api/arm", "POST", {}) and not role_allows("view", "/api/arm", "POST", {})
+	for r_ in ("kid", "friend", "family", "view"):
+		assert all(role_allows(r_, p_, "GET", {}) for p_ in ("/sx/ui.js", "/fbx/ui.js") if p_ in str(VIEW_GET)), r_
+	assert role_allows("custom", "/fbx/ui.js", "GET", {}, set()) or "/fbx/ui.js" not in str(VIEW_GET)
 	assert role_allows("custom", "/api/set", "POST", {"key": "record"}, {"settings"})
 	assert not role_allows("custom", "/api/set", "POST", {"key": "users"}, {"settings"})
 	assert not role_allows("custom", "/api/text", "POST", {"key": "notify_url"}, {"settings"})
@@ -18142,7 +18157,7 @@ def own_ai_selftest():
 	got_t = own_ai_decode(o.transpose(0, 2, 1), nc, [0.5, 0.5, 0.5], r, dx, dy, w, h)
 	assert got_t == got, "transposed output"
 	cm = own_ai_classmap(["person", "animal", "vehicle", "dog", "fox", "toaster-robot"])
-	assert cm[0] == (1, True) and cm[1] == (OWN_AI_ANIMAL_ID, False) and cm[2] == (3, False) and cm[3] == (18, False) and cm[4] == (OWN_AI_ANIMAL_ID, False) and cm[5] is None
+	assert cm[0] == (1, True) and cm[1] == (OWN_AI_ANIMAL_ID, False) and cm[2] == (3, False) and cm[3] == (18, False) and cm[4] == (WILD_IDS["fox"], False) and cm[5] is None
 	assert COCO_LABELS[OWN_AI_ANIMAL_ID] in ANIMALS
 	try:
 		own_ai_decode(np.zeros((1, 9, 5), np.float32), nc, [0.5] * 3, 1, 0, 0, w, h); raise AssertionError("wrong shape not found")
@@ -24555,15 +24570,23 @@ def tools_cfg(key, value, mac=None):
 
 
 
-SIM3D = {"version": "3.56.0", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 49961650,
-         "sha256": "894aa4af3f94a36e04b15deb2ea04dcf900abcd11a26760ca20817da59189abf"}
+SIM3D = {"version": "3.66.0", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 54406645,
+         "sha256": "f8aef227b450c341fc4d9c93977b2d00a45b8345f4e1be971d688af021788c33"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 
 
-SIM3D_LINUX = {"version": "3.56.0", "file": "simulator3d/MoveEyeSim3D_Linux.zip", "size": 43977805,
-               "sha256": "66fbf70e6f1aa6ca7a467ba1ef7ad6f8abcda4d9fd29ec473206d708e1fa4ef4", "stem": "MoveEyeSim3D_Linux",
+SIM3D_LINUX = {"version": "3.66.0", "file": "simulator3d/MoveEyeSim3D_Linux.zip", "size": 48436997,
+               "sha256": "8077acdae8d2336b36bab97c6cca767fe88d257719dececf263f0431171cdcb1", "stem": "MoveEyeSim3D_Linux",
                "label": "MoveEye Sim (Linux)"}
 SIM3D_LINUX_DL = {"running": False, "got": 0, "msg": ""}
+
+
+
+
+SIM3D_PI = {"version": "3.56.0", "file": "simulator3d/MoveEyeSim3D_Pi.zip", "size": 0,
+            "sha256": "", "stem": "MoveEyeSim3D_Pi", "label": "MoveEye Sim (Pi)", "url": ""}
+SIM3D_PI_DL = {"running": False, "got": 0, "msg": ""}
+SIM3D_PI_URL_RE = re.compile(r"^https://github\.com/DonElektro/MotionWatch/releases/download/sim-\d{1,3}\.\d{1,3}\.\d{1,3}/MoveEyeSim3D_Pi\.zip$")
 
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
          "sha256": "7e278179dc8f1c79b964248ad0a5cb500cc42f2010587a07b7641fe9f0577385", "stem": "MotionWatch_PythonSimulator",
@@ -24635,7 +24658,7 @@ def sim_auto_update_check():
 	""
 	try:
 		v = sim_versions()
-		if not v.get("newer"):
+		if not v.get("newer") or simpi_running():
 			return
 		key = (sim_base(), v["latest"])
 		if key in SIM_AUTOUPD:
@@ -24695,7 +24718,7 @@ def sim_manifest_verify(blk):
 	out = {}
 	if not isinstance(blk, dict):
 		return out
-	for key, pkg in (("win", SIM3D), ("linux", SIM3D_LINUX)):
+	for key, pkg in (("win", SIM3D), ("linux", SIM3D_LINUX), ("pi", SIM3D_PI)):
 		e = blk.get(key)
 		if not isinstance(e, dict):
 			continue
@@ -24706,8 +24729,13 @@ def sim_manifest_verify(blk):
 			continue
 		if not (VER_RE.match(v) and fn == pkg["file"] and re.fullmatch(r"[0-9a-f]{64}", sha) and 0 < size <= 2 * 1024 ** 3):
 			continue
+		url = str(e.get("url") or "")
+		if key == "pi" and not SIM3D_PI_URL_RE.match(url):
+			continue
 		if sig_ok(v, fn, sha, e.get("sig")):
 			out[key] = {"ver": v, "file": fn, "size": size, "sha256": sha, "sig": str(e.get("sig"))}
+			if key == "pi":
+				out[key]["url"] = url
 	return out
 
 
@@ -24715,12 +24743,14 @@ def sim_manifest_take(blk, save=True):
 	""
 	ok = sim_manifest_verify(blk)
 	changed = []
-	for key, pkg in (("win", SIM3D), ("linux", SIM3D_LINUX)):
+	for key, pkg in (("win", SIM3D), ("linux", SIM3D_LINUX), ("pi", SIM3D_PI)):
 		e = ok.get(key)
 		if not e or not sim_vkey(e["ver"]) or not sim_vkey(pkg["version"]) or sim_vkey(e["ver"]) < sim_vkey(pkg["version"]):
 			continue
 		if (pkg["version"], pkg["size"], pkg["sha256"]) != (e["ver"], e["size"], e["sha256"]):
 			pkg.update(version=e["ver"], size=e["size"], sha256=e["sha256"])
+			if key == "pi":
+				pkg["url"] = e["url"]
 			changed.append(key)
 	if ok:
 		SIMMAN.update(t=time.time(), src="versions.json")
@@ -24788,7 +24818,7 @@ def sim3d_fetch(pkg=None, dl=None):
 		try:
 			src = CFG["update_url"].strip()
 			base = src.rsplit("/", 1)[0] + "/" if src.startswith("https://") else SIM3D_BASE
-			if SIM3D is globals()["SIM3D"] or SIM3D is globals()["SIM3D_LINUX"]:
+			if SIM3D is globals()["SIM3D"] or SIM3D is globals()["SIM3D_LINUX"] or SIM3D is globals()["SIM3D_PI"]:
 				sim_manifest_refresh(base)
 				if sim3d_ready(SIM3D):
 					return
@@ -24796,7 +24826,10 @@ def sim3d_fetch(pkg=None, dl=None):
 			p = os.path.join(DATA_DIR, "sim3d", SIM3D["stem"] + "_" + want["version"] + ".zip"); tmp = p + ".part"
 			os.makedirs(os.path.dirname(p), exist_ok=True)
 			h = hashlib.sha256()
-			with urllib.request.urlopen(_upd_request(base + SIM3D["file"]), timeout=30) as r, open(tmp, "wb") as f:
+			if not want["size"] or not want["sha256"]:
+				raise ValueError("no signed package known yet")
+			src_url = SIM3D.get("url") or (base + SIM3D["file"])
+			with urllib.request.urlopen(_upd_request(src_url), timeout=30) as r, open(tmp, "wb") as f:
 				while True:
 					b = r.read(1 << 16)
 					if not b:
@@ -27515,7 +27548,7 @@ threading.Thread(target=_extra_cams_boot, daemon=True, name="extracams-boot").st
 
 PARTY = {"key": "", "until": 0.0, "game": "lobby", "seq": 0, "players": {}, "host": "", "g": {}, "tools": {}}
 PARTY_COND = threading.Condition()
-GAMES_PKG = {"version": "GS-1.3", "file": "games/MotionWatch_Spiele.zip", "size": 13881572, "sha256": "201b9b0b0271fce9f2f273d3c0cbd6da4ff79015eda91512ee38cbf92f73305a"}
+GAMES_PKG = {"version": "GS-1.6", "file": "games/MotionWatch_Spiele.zip", "size": 14633505, "sha256": "2766080ba932c76ee57cb19290d4d2b18092fa858beaee58304c06a300898b42"}
 GAMES_DL = {"running": False, "msg": "", "got": 0}
 
 QUIZ = [("Wie heisst der höchste Berg der Schweiz?", "Dufourspitze (4634 m)"), ("Wie viele Kantone hat die Schweiz?", "26"),
@@ -28468,11 +28501,21 @@ def lan_guest_ip(ip, fwd=""):
 SPIELE_PAGE = """<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Spielecke</title><link rel="icon" href="/icon-192.png"><style>
 body{margin:0;background:#0E1621;color:#E8EEF5;font-family:system-ui,sans-serif}main{max-width:720px;margin:0 auto;padding:20px 16px}
-h1{font-size:26px;margin:6px 0 4px}p{color:#9FB0C3;margin:4px 0 16px}.g{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
-a.c{display:block;background:#16263A;border-radius:14px;padding:14px;color:inherit;text-decoration:none}a.c:active{transform:scale(.98)}
-.i{font-size:34px}.n{font-weight:700;margin:6px 0 2px}.d{font-size:13px;color:#9FB0C3}.big{background:#E9A23B;color:#0E1621;font-weight:700;
+h1{font-size:26px;margin:6px 0 4px}p{color:#9FB0C3;margin:4px 0 16px}
+/*GAMETILES*/.big{background:#E9A23B;color:#0E1621;font-weight:700;
 display:block;text-align:center;padding:14px;border-radius:14px;text-decoration:none;margin:0 0 18px}</style></head><body><main>
-<h1>🎲 Spielecke</h1>__PARTY__<p>__NOTE__</p><div class="g">__GAMES__</div></main></body></html>"""
+<h1>🎲 Spielecke</h1>__PARTY__<p>__NOTE__</p><div class="g mwg">__GAMES__</div></main></body></html>"""
+
+
+GAME_TILES_CSS = """.mwg{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+@media (max-width:520px){.mwg{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.mwg a.c{display:block;background:var(--mwg-tile,#16263A);border-radius:14px;padding:14px;color:inherit;text-decoration:none;min-width:0;overflow-wrap:anywhere}
+.mwg a.c:hover{filter:brightness(1.12)}.mwg a.c:active{transform:scale(.98)}
+.mwg .i{font-size:34px}.mwg .i img{width:56px;height:56px;border-radius:12px;object-fit:cover;display:block}
+.mwg .n{font-weight:700;margin:6px 0 2px}.mwg .d{font-size:13px;color:var(--mwg-mut,#9FB0C3)}
+.mwg .gh{grid-column:1/-1;font-weight:700;margin:14px 0 2px}
+"""
+SPIELE_PAGE = SPIELE_PAGE.replace("/*GAMETILES*/", GAME_TILES_CSS, 1)
 
 
 GAMESRV = {"port": 0, "msg": ""}
@@ -28529,9 +28572,28 @@ def games_server_start():
 	threading.Thread(target=srv.serve_forever, daemon=True, name="games").start()
 
 
-GAME_BACK = """<div id="mw-back" style="position:fixed;bottom:10px;left:10px;opacity:.85;z-index:2147483647;font:600 15px system-ui,sans-serif">
-<a href="__BACK__" onclick="if(history.length>1){history.back();return false}try{window.close()}catch(e){}" style="display:inline-block;
-background:rgba(14,22,33,.85);color:#fff;text-decoration:none;padding:8px 13px;border-radius:12px;border:1px solid rgba(255,255,255,.25)">✕ Zurück</a></div>"""
+
+
+
+
+GAME_BACK = """<div id="mw-back" style="position:fixed;top:calc(8px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);opacity:.88;z-index:2147483647;font:600 15px system-ui,sans-serif">
+<a href="__BACK__" onclick="if(history.length>1){history.back();return false}try{window.close()}catch(e){}" style="display:inline-flex;align-items:center;
+box-sizing:border-box;min-height:40px;min-width:44px;background:rgba(14,22,33,.85);color:#fff;text-decoration:none;padding:8px 13px;border-radius:12px;
+border:1px solid rgba(255,255,255,.25);white-space:nowrap;-webkit-tap-highlight-color:transparent">✕ Zurück</a></div>
+<script>(function(){var d=document,b=d.getElementById("mw-back");if(!b||b.__mw)return;b.__mw=1;
+var T="calc(8px + env(safe-area-inset-top,0px))",B="calc(8px + env(safe-area-inset-bottom,0px))",L="calc(8px + env(safe-area-inset-left,0px))",R="calc(8px + env(safe-area-inset-right,0px))";
+var P=[[T,"","","50%","translateX(-50%)"],[T,"","",L,""],[T,"",R,"",""],["",B,"","50%","translateX(-50%)"],["50%","","",L,"translateY(-50%)"],["50%","",R,"","translateY(-50%)"]],cur=-1;
+function set(i){var p=P[i],s=b.style;s.top=p[0]||"auto";s.bottom=p[1]||"auto";s.right=p[2]||"auto";s.left=p[3]||"auto";s.transform=p[4]||"none";cur=i}
+function own(){var a=d.querySelectorAll('a[href="../"],a[href="index.html"]');for(var i=0;i<a.length;i++){if(b.contains(a[i]))continue;
+ var r=a[i].getBoundingClientRect();if(r.width>0&&r.height>0&&r.bottom>0&&r.top<innerHeight&&r.right>0&&r.left<innerWidth&&getComputedStyle(a[i]).visibility!=="hidden")return true}return false}
+function busy(){var r=b.firstElementChild.getBoundingClientRect();for(var i=0;i<=4;i++)for(var j=0;j<=2;j++){
+ var x=Math.min(innerWidth-1,Math.max(0,r.left+2+(r.width-4)*i/4)),y=Math.min(innerHeight-1,Math.max(0,r.top+2+(r.height-4)*j/2)),e=d.elementsFromPoint(x,y);
+ for(var k=0;k<e.length;k++){var q=e[k];if(b.contains(q)||q===d.body||q===d.documentElement)continue;
+  if(q.closest&&q.closest("a,button,input,select,textarea,label,[role=button],[onclick]"))return true}}return false}
+function fit(force){if(own()){b.style.display="none";return}b.style.display="";if(!force&&cur>=0&&!busy())return;
+ for(var i=0;i<P.length;i++){set(i);if(!busy())return}set(0)}
+fit(1);addEventListener("load",function(){fit(1)});setTimeout(function(){fit()},1200);setInterval(function(){fit()},2500);
+addEventListener("resize",function(){setTimeout(function(){fit(1)},250)})})();</script>"""
 
 
 
@@ -28600,19 +28662,30 @@ def games_url(game, fn="", host=""):
 
 
 GAME_GROUPS = {"touch": "👆 Für Handy und Tablet (Touch)", "buttons": "🎮 Mit Bildschirm-Tasten (am PC mit der Tastatur)"}
+GAME_GROUPS["keys"] = "⌨️ Am PC mit Tastatur und Maus"
+
+
+def _game_icon(x, host=""):
+	""
+	from html import escape as _e
+	ic = str(x.get("icon") or "🎮")
+	if "." not in ic:
+		return _e(ic)
+	src = games_url(x["dir"], ic, host) or "/spiele/g/" + x["dir"] + "/" + ic
+	return f'<img src="{_e(src, quote=True)}" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'">'
 
 
 def spiele_page(host=""):
 	from html import escape as _e
 	gl = games_list()
 	cards = ""
-	for grp in (["touch", "buttons"] if any(x.get("input") for x in gl) else [None]):
+	for grp in (list(GAME_GROUPS) if any(x.get("input") for x in gl) else [None]):
 		part = [x for x in gl if grp is None or x.get("input", "touch") == grp]
 		if not part:
 			continue
 		if grp:
-			cards += f'<div style="grid-column:1/-1;font-weight:700;margin:14px 0 2px">{_e(GAME_GROUPS[grp])}</div>'
-		cards += "".join(f'<a class="c" href="{_e(games_url(x["dir"], x.get("start", "index.html"), host) or "/spiele/g/" + x["dir"] + "/" + x.get("start", "index.html"))}"><div class="i">{_e(x.get("icon", "🎮"))}</div>'
+			cards += f'<div class="gh">{_e(GAME_GROUPS[grp])}</div>'
+		cards += "".join(f'<a class="c" href="{_e(games_url(x["dir"], x.get("start", "index.html"), host) or "/spiele/g/" + x["dir"] + "/" + x.get("start", "index.html"))}"><div class="i">{_game_icon(x, host)}</div>'
                          f'<div class="n">{_e(x.get("name", x["dir"]))}</div><div class="d">{_e(x.get("desc", ""))}</div></a>' for x in part)
 	party = (f'<a class="big" href="/p/{PARTY["key"]}/">👥 Zum Spieleabend (Quiz, Werwolf, Malen, 4 gewinnt)</a>' if party_on()
              else '<p>Der Spieleabend (Quiz, Werwolf, Malen …) ist gerade zu – öffnen kann ihn, wer MoveEye verwaltet.</p>')
@@ -28688,6 +28761,7 @@ def games_file(game, fn):
 
 
 PARTY_PAGE = _zd('340_spiele_seiten/PARTY_PAGE', ZD_PAGE)
+PARTY_PAGE = PARTY_PAGE.replace("/*GAMETILES*/", GAME_TILES_CSS, 1)
 
 
 SIMGAME = {"t": 0.0, "busy": False, "g": None}
@@ -31910,9 +31984,13 @@ def sim_manifest_check(folder, m):
 	simtxt = ""
 	if sim is not None and os.path.isdir(os.path.join(folder, "simulator3d")):
 		ok_ = sim_manifest_verify(sim)
-		for key in ("win", "linux"):
+		for key in ("win", "linux", "pi"):
 			e = sim.get(key) if isinstance(sim, dict) else None
 			if e is None:
+				continue
+			if key == "pi" and not os.path.isfile(os.path.join(folder, str(e.get("file") or ""))):
+				if key not in ok_:
+					bad.append(f"simulator pi {e.get('ver')} (signature / url)")
 				continue
 			p_ = os.path.join(folder, str(e.get("file") or ""))
 			sha = ""
@@ -31996,9 +32074,14 @@ def sim_manifest_block(folder, seed=b""):
 	if d.get("mw_min") and VER_RE.match(str(d.get("mw_min"))):
 		blk["mw_min"] = str(d["mw_min"])
 	lx = d.get("linux") if isinstance(d.get("linux"), dict) else {}
-	for key, e in (("win", d), ("linux", lx)):
+	px = d.get("pi") if isinstance(d.get("pi"), dict) else {}
+	for key, e in (("win", d), ("linux", lx), ("pi", px)):
 		fn, v = str(e.get("file") or ""), str(e.get("ver") or ver)
-		if not fn or not VER_RE.match(v) or fn not in ("simulator3d/MotionWatch3D_Simulator.zip", "simulator3d/MoveEyeSim3D_Linux.zip"):
+		if not fn or not VER_RE.match(v) or fn not in ("simulator3d/MotionWatch3D_Simulator.zip", "simulator3d/MoveEyeSim3D_Linux.zip",
+                                                        "simulator3d/MoveEyeSim3D_Pi.zip"):
+			continue
+		if key == "pi" and not SIM3D_PI_URL_RE.match(str(e.get("url") or "")):
+			print("Note: simulator3d/version.json «pi» without a Release-asset url - «sim» without pi")
 			continue
 		fp = os.path.join(folder, fn)
 		if not os.path.isfile(fp):
@@ -32013,6 +32096,8 @@ def sim_manifest_block(folder, seed=b""):
 			print(f"Note: {fn} does not fit simulator3d/version.json (size / checksum) - «sim» without {key}")
 			continue
 		blk[key] = {"ver": v, "file": fn, "size": size, "sha256": sha}
+		if key == "pi":
+			blk[key]["url"] = str(e["url"])
 		if seed:
 			blk[key]["sig"] = _ED[1](seed, _sig_msg(v, fn, sha)).hex()
 	return blk if ("win" in blk or "linux" in blk) else None
@@ -33383,7 +33468,7 @@ class MotionWatch:
 			if t0 < getattr(self, "clean_until", 0.0):
 				self.frame_clean = frame.copy(); self.frame_clean_t = t0
 			H, W = frame.shape[:2]
-			pw = CFG["proc_width"]; ph = int(H * pw / W); sx = W / pw; sy = H / ph
+			pw = prof_proc_width(CFG["proc_width"]); ph = int(H * pw / W); sx = W / pw; sy = H / ph
 			if (pw, ph) != getattr(self, "_proc_size", (pw, ph)):
 				self._reset_models()
 			self._proc_size = (pw, ph)
@@ -33432,6 +33517,7 @@ class MotionWatch:
 				g = self.preprocess(fog_gray(gray, t0), rain_mode)
 				fg = self.foreground(g, small, rain_mode, wind_boost)
 				self.ai.full = full_
+				prof_motion(self.ai, fg, t0)
 				ai_boxes = [b for b in self.ai.detect(small) if zone_box_ok(b, pw, ph, "person")]
 				ai_objs = [o for o in self.ai.objects if zone_box_ok(o, pw, ph, "animal" if COCO_LABELS.get(o[5]) in ANIMALS else "other")]
 				rec_animals = [o for o in ai_objs if COCO_LABELS.get(o[5]) in ANIMALS]
@@ -33513,6 +33599,10 @@ class MotionWatch:
 				if present & ANIMALS:
 					present.add("animal")
 				species_update(ai_objs, frame, pw, ph, t0)
+				try:
+					prof_frame(self, small, full_, ai_objs, person_boxes, pw, ph, t0)
+				except Exception as e:
+					log_event("sys", f"Objects / profiles: {type(e).__name__}: {e}"[:160])
 				if CFG["diary_on"] and not CFG["sim_on"]:
 					for o in ai_objs:
 						lab = COCO_LABELS.get(o[5], "object")
@@ -38494,6 +38584,7 @@ BT_JS = _zd('450_web_gemeinsam/BT_JS', "")
 BASE_CSS = _zd('450_web_gemeinsam/BASE_CSS', "")
 
 TOOLS_PAGE = _zd('460_web_werkzeugseite/TOOLS_PAGE', ZD_PAGE)
+TOOLS_PAGE = TOOLS_PAGE.replace("/*GAMETILES*/", GAME_TILES_CSS, 1)
 
 
 SIMMAP_JS = _zd('470_web_simulatorseite/SIMMAP_JS', "")
@@ -41834,8 +41925,14 @@ class WebStream:
 		@app.route("/api/tts", methods=["POST"])
 		def api_tts():
 			d = body(); lang = norm_lang(d.get("lang"))
+			TTS["id"] = ""
 			ok, msg = tts_say(d.get("text"), d.get("voice") or lang, bool(d.get("save")))
-			return reply({"ok": ok, "error": tr_err(msg, lang) if not ok else None, "file": msg if ok and d.get("save") else ""}, 200 if ok else 400)
+			sid = "" if d.get("save") else str(TTS.get("id") or "")
+			note = ""
+			if not ok and sid and msg == "no loudspeaker selected":
+				ok, note = True, tr("no loudspeaker selected - only in the browser", lang)
+			return reply({"ok": ok, "error": tr_err(msg, lang) if not ok else None, "file": msg if ok and d.get("save") else "",
+                          "id": sid if ok else "", "note": note}, 200 if ok else 400)
 
 		@app.route("/api/sensors", methods=["POST"])
 		def api_sensors():
@@ -42434,6 +42531,8 @@ class WebStream:
 						return reply({"ok": True, "ignored": len(CFG.get("simprof_ignore") or [])})
 				n = simprof_answer([str(k) for k in (d.get("take") or [])][:200])
 				return reply({"ok": True, "taken": n})
+			if getattr(g, "role", "admin") != "admin":
+				return reply({"ok": True, "q": None})
 			return reply({"ok": True, "q": simprof_state(lang)})
 
 		@app.route("/api/alerts")
@@ -48717,7 +48816,7 @@ class App:
 		self.watch = watch
 		self.web = web or WebStream(watch)
 		self.root = tk.Tk()
-		self.root.title("MoveEye 3.59.0")
+		self.root.title("MoveEye 3.68.0")
 		try:
 			import base64
 			self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -49095,7 +49194,7 @@ class App:
 			if not small:
 				vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
 				vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))
-			Tip(nm, f"{tr('Build')} 3.59.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+			Tip(nm, f"{tr('Build')} 3.68.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
 			self._egg_taps = []
 			for w_ in tl.winfo_children():
 				w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -49955,6 +50054,8 @@ class App:
 			ttk.Button(tf, text=tr("Save as own sound"), command=lambda: tts_do(True)).pack(side="left", expand=True, fill="x")
 			self.status_labels["Announcement"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
 			self.status_labels["Announcement"].pack(anchor="w", pady=(2, 0))
+			if "piper_tk_box" in globals():
+				piper_tk_box(self, sbody)
 			ttk.Label(sbody, text=tr("Own sounds (.wav / .mp3): put the files into") + " " + sounds_dir(), style="Mut.TLabel",
                       wraplength=330, justify="left").pack(anchor="w", pady=(4, 0))
 			tk.Label(sbody, text=tr("Bluetooth").upper(), bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 7, "bold"), anchor="w").pack(fill="x", pady=(8, 0))
@@ -50017,6 +50118,7 @@ class App:
 			self.status_labels["Simulator"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
 			self.status_labels["Simulator"].pack(anchor="w", pady=(4, 0))
 			ttk.Button(sbody, text=tr("Simulation on / off") + "  (F9)", command=lambda: self._sim_toggle("window")).pack(fill="x", pady=(6, 0))
+			simpi_tk_build(self, sbody)
 			kidata_tk_build(self, sbody)
 			falearn_tk_build(self, sbody)
 		if sec == "Security":
@@ -50716,6 +50818,12 @@ class App:
 			cb = ttk.Combobox(f, values=opts, state="readonly", width=11)
 			cb.set(opts[0] if key not in sc["actions"] else (opts[1] if sc["actions"][key] else opts[2]))
 			cb.grid(row=10 + r, column=2, columnspan=2, sticky="e", pady=1); fv[key] = cb
+		pf_keys = [""] + list(PROF_ORDER)
+		pf_opts = ["– " + tr("unchanged") + " –"] + [PROFILES[k]["icon"] + " " + tr(PROFILES[k]["name"]) for k in PROF_ORDER]
+		ttk.Label(f, text=tr("Detection profile")).grid(row=10 + len(SCHED_FEATURES), column=0, columnspan=2, sticky="w", pady=(6, 0))
+		pf_cb = ttk.Combobox(f, values=pf_opts, state="readonly", width=22)
+		pf_cb.current(pf_keys.index(sc.get("profile", "")) if sc.get("profile", "") in pf_keys else 0)
+		pf_cb.grid(row=10 + len(SCHED_FEATURES), column=2, columnspan=2, sticky="e", pady=(6, 0))
 
 		def save():
 			for t_ in (sv.get().strip(), ev.get().strip()):
@@ -50728,7 +50836,7 @@ class App:
 			schedule_save(i, {"name": nv.get(), "enabled": en.get(), "days": [d for d, v in enumerate(dv) if v.get()],
                               "start": sv.get().strip(), "end": ev.get().strip(), "actions": acts,
                               "sun": sun_keys[max(0, sun_cb.current())], "sun_offset": int(offv.get()) if offv.get().strip().lstrip("-").isdigit() else 0,
-                              "presence": pr_keys[max(0, pr_cb.current())], "skip": skv.get()})
+                              "presence": pr_keys[max(0, pr_cb.current())], "skip": skv.get(), "profile": pf_keys[max(0, pf_cb.current())]})
 			dlg.destroy(); self._schedule_rebuild()
 		bf = ttk.Frame(f); bf.grid(row=11 + len(SCHED_FEATURES), column=0, columnspan=4, sticky="ew", pady=(12, 0))
 		ttk.Button(bf, text=tr("Save"), command=save).pack(side="left", expand=True, fill="x", padx=(0, 4))
@@ -53873,6 +53981,10 @@ def sx_housekeeping_start():
 	threading.Thread(target=run, daemon=True, name="sx-housekeeping").start()
 
 
+VIEW_GET = VIEW_GET + ("/sx/ui.js",)
+
+
+
 
 def sx_routes(app, watch, reply, body):
 	from flask import Response, request, g
@@ -56295,7 +56407,7 @@ App._refresh = _kr_tk_refresh
 
 
 
-INFO_PARTS = 270
+INFO_PARTS = 277
 INFO_START = "2026-10-16"
 FBX = {"shot": None, "shot_t": 0.0, "lines": 0}
 
@@ -56464,6 +56576,10 @@ def fbx_ui_js():
 
 
 FBX_JS = _zd('584_info_rueckmeldung/FBX_JS', "")
+
+
+VIEW_GET = VIEW_GET + ("/fbx/ui.js", "/api/simprofile")
+
 
 
 def fbx_routes(app, watch, reply, body):
@@ -62624,14 +62740,21 @@ for _k, _v in _HX_KONZEPT.items():
 	DE.setdefault(_k, _v[0])
 	for _i, _L in enumerate(('fr', 'it', 'rm')):
 		TRX[_L].setdefault(_k, _v[_i + 1])
-_HX_GAME = {
-    'Quick start': ('Schnellstart', 'Démarrage rapide', 'Avvio rapido', 'Start svelt'),
-    'runners at most': ('Läufer höchstens', 'coureurs au plus', 'corridori al massimo', 'currids al pli'),
-    'Duel': ('Duell', 'Duel', 'Duello', 'Duel'),
-    'MoveEye against the guard': ('MoveEye gegen den Wächter', 'MoveEye contre le gardien', 'MoveEye contro il guardiano', 'MoveEye cunter il guardian'),
-    'Guesses «Who gets through?»': ('Tipps «Wer kommt durch?»', 'Pronostics «Qui passe ?»', 'Pronostici «Chi passa?»', 'Pronostics «Tgi passa?»'),
-    'Level': ('Stufe', 'Niveau', 'Livello', 'Nivel'),
-}
+_HX_GAME = _zd('606_uebersetzungen_game/HX_GAME', _zd_hx({
+    'Quick start': 'Schnellstart',
+    'runners at most': 'Läufer höchstens',
+    'Duel': 'Duell',
+    'MoveEye against the guard': 'MoveEye gegen den Wächter',
+    'Guesses «Who gets through?»': 'Tipps «Wer kommt durch?»',
+    'Level': 'Stufe',
+    'Touch (phone, tablet)': 'Touch (Handy, Tablet)',
+    'With on-screen buttons': 'Mit Bildschirm-Tasten',
+    'With keyboard and mouse (PC)': 'Am PC mit Tastatur und Maus',
+    'games installed': 'Spiele installiert',
+    'For phone and tablet (touch)': 'Für Handy und Tablet (Touch)',
+    'With on-screen buttons (on the PC with the keyboard)': 'Mit Bildschirm-Tasten (am PC mit der Tastatur)',
+    'On the PC with keyboard and mouse': 'Am PC mit Tastatur und Maus',
+}))
 for _k, _v in _HX_GAME.items():
 	DE.setdefault(_k, _v[0])
 	for _i, _L in enumerate(('fr', 'it', 'rm')):
@@ -73535,7 +73658,7 @@ SELFTEST_EXTRA.append(("Error help with QR code (simulator3d/fehler_katalog.json
 
 
 
-GEH_QUELLE_SHA = 'c3f799224806a51b6254b10f6d11b4d017f6c0a691c2d374c056ee988c808763'
+GEH_QUELLE_SHA = '143217515ac5b3cac7fa040087de0338713210eae3deae6434a32c26677fc9de'
 GEH_BAU = json.loads(_zd('639v_daten_gehaeuse/GEH_BAU', '{}'))
 GEH_UI_DE = {"Case & build": "Gehäuse & Bau", "Guide, parts list, print files – in 3D in the workshop of the simulator": "Anleitung, Materialliste, Druckdateien – in 3D in der Werkstatt des Simulators", "Case": "Gehäuse", "View in the simulator": "Im Simulator ansehen", "Opens the workshop in the 3D simulator: turn, explode, see through, click parts, assembly step by step.": "Öffnet die Werkstatt im 3D-Simulator: drehen, zerlegen, durchsichtig, Teile anklicken, Montage Schritt für Schritt.", "Simulator not connected – start it and connect it on the page Simulator.": "Simulator nicht verbunden – starte ihn und verbinde ihn auf der Seite «Simulator».", "Opened in the simulator.": "Im Simulator geöffnet.", "Print files": "Druckdateien", "3MF plates for the Bambu Lab X2D (PETG, no supports)": "3MF-Platten für den Bambu Lab X2D (PETG, ohne Stützen)", "Single STL files: in the hand-over package (ZIP, about 60 MB), not in the repository.": "Einzelne STL-Dateien: im Übergabe-Paket (ZIP, ca. 60 MB), nicht im Repository.", "Assembly step by step": "Montage Schritt für Schritt", "Show this step in the simulator": "Diesen Schritt im Simulator zeigen", "Parts list": "Materialliste", "Qty": "Menge", "Part number": "Teilenummer", "Guides and source (GitHub)": "Anleitungen und Quellcode (GitHub)", "Detailed guide v5.1": "Ausführliche Anleitung v5.1", "Full parts list with order list": "Ganze Materialliste mit Bestellliste", "Measure first: UPS HAT (E) with its cells (assumed 90 × 80 × 26 mm) before printing the lower part.": "Zuerst nachmessen: UPS HAT (E) mit Akkus (angenommen 90 × 80 × 26 mm), bevor das Unterteil gedruckt wird.", "Own work of Elektro – parametric Python model.": "Eigenes Werk von Elektro – parametrisches Python-Modell.", "Step": "Schritt"}
 GEH_UI_TRX = _zd('639v_daten_gehaeuse/GEH_UI_TRX', _ZDDict())
@@ -73546,7 +73669,7 @@ GEH_UI2_TRX = _zd('639v_daten_gehaeuse/GEH_UI2_TRX', _ZDDict())
 
 
 
-BAU3D_QUELLE_SHA = 'c3f799224806a51b6254b10f6d11b4d017f6c0a691c2d374c056ee988c808763'
+BAU3D_QUELLE_SHA = '143217515ac5b3cac7fa040087de0338713210eae3deae6434a32c26677fc9de'
 BAU3D = _zd('639vb_daten_bau3d/BAU3D', _ZDDict())
 BAU3D_GLB = _zd('639vb_daten_bau3d/BAU3D_GLB', [])
 
@@ -76644,7 +76767,9 @@ def fertig_selftest():
 		globals().update(keep)
 		FEEDBACK["sent"] = sent
 	if GUI_OK:
-		assert App._tk_more_bar is _fk_tk_more_bar and "pkg" in App._feedback.__code__.co_varnames, "window: hint and order"
+
+		in_chain = App._tk_more_bar is _fk_tk_more_bar or any(v is _fk_tk_more_bar for k, v in list(globals().items()) if k.endswith("_tk_more_base"))
+		assert in_chain and "pkg" in App._feedback.__code__.co_varnames, "window: hint and order"
 
 	sd = os.path.join(os.path.dirname(os.path.abspath(__file__)), "simulator3d", "scripts")
 	if os.path.isdir(sd):
@@ -78433,6 +78558,8715 @@ def weit_wache_selftest():
 
 
 SELFTEST_EXTRA.append(("Wide camera as guard: light AI classes, trigger zones, night thermal fusion (639zw)", weit_wache_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SIMPI = {"proc": None, "xvfb": None, "phase": "idle", "msg": "", "want": False, "confirm": False, "who": "", "t": 0.0,
+          "port": 0, "mode": "", "warn": [], "watch": False, "bad": 0}
+SIMPI_LOCK = threading.Lock()
+SIMPI_PORTS = (8765, 8775, 8785)
+SIMPI_RAM_MIN = 700
+SIMPI_RAM_WARN = 1500
+SIMPI_RAM_STOP = 250
+SIMPI_TEMP_WARN = 70.0
+SIMPI_TEMP_MAX = 80.0
+SIMPI_TEMP_STOP = 85.0
+SIMPI_DISK_MIN = 400
+SIMPI_NICE = 15
+SIMPI_EXE = "MoveEyeSim3D.arm64"
+
+
+def simpi_dir():
+	return os.path.join(DATA_DIR, "sim3d")
+
+
+def simpi_inst_dir(pkg=None):
+	return os.path.join(simpi_dir(), "pi_" + (pkg or SIM3D_PI)["version"])
+
+
+def simpi_state_file():
+	return os.path.join(simpi_dir(), "intern.json")
+
+
+def simpi_arch_ok():
+	""
+	import platform
+	if os.environ.get("MW_SIMPI_TEST") == "1":
+		return True
+	return sys.platform.startswith("linux") and platform.machine().lower() in ("aarch64", "arm64")
+
+
+def simpi_possible():
+	""
+	if not simpi_arch_ok():
+		return False, "only on a Raspberry Pi 5 with a 64-bit system (arm64)"
+	return True, ""
+
+
+def _simpi_read():
+	try:
+		with open(simpi_state_file(), encoding="utf-8") as f:
+			d = json.load(f)
+		return d if isinstance(d, dict) else {}
+	except (OSError, ValueError):
+		return {}
+
+
+def _simpi_write(d):
+	try:
+		os.makedirs(simpi_dir(), exist_ok=True)
+		tmp = simpi_state_file() + ".tmp"
+		with open(tmp, "w", encoding="utf-8") as f:
+			json.dump(d, f)
+		os.replace(tmp, simpi_state_file())
+	except OSError:
+		pass
+
+
+def _simpi_pid_alive(pid, exe=""):
+	""
+	try:
+		pid = int(pid)
+		if pid <= 1:
+			return False
+		os.kill(pid, 0)
+	except (ValueError, TypeError, ProcessLookupError):
+		return False
+	except PermissionError:
+		pass
+	if not exe:
+		return True
+	try:
+		with open(f"/proc/{pid}/cmdline", "rb") as f:
+			return os.path.basename(exe).encode() in f.read()
+	except OSError:
+		return True
+
+
+def simpi_running():
+	""
+	p = SIMPI["proc"]
+	if p is not None and p.poll() is None:
+		return True
+	d = _simpi_read()
+	return bool(d.get("pid")) and _simpi_pid_alive(d.get("pid"), d.get("exe", ""))
+
+
+def simpi_resources():
+	""
+	out = {"ram_free": None, "ram_total": None, "temp": None, "load": None, "disk_free": None}
+	try:
+		mi = {}
+		with open("/proc/meminfo") as f:
+			for line in f:
+				k, _s, v = line.partition(":")
+				mi[k.strip()] = int(v.split()[0]) // 1024
+		out["ram_free"] = mi.get("MemAvailable"); out["ram_total"] = mi.get("MemTotal")
+	except (OSError, ValueError, IndexError):
+		pass
+	try:
+		with open("/sys/class/thermal/thermal_zone0/temp") as f:
+			out["temp"] = round(int(f.read().strip()) / 1000.0, 1)
+	except (OSError, ValueError):
+		pass
+	try:
+		out["load"] = round(os.getloadavg()[0] / max(1, os.cpu_count() or 1), 2)
+	except (OSError, AttributeError):
+		pass
+	try:
+		os.makedirs(simpi_dir(), exist_ok=True)
+		st = os.statvfs(simpi_dir())
+		out["disk_free"] = int(st.f_bavail * st.f_frsize / 1048576)
+	except (OSError, AttributeError):
+		pass
+	return out
+
+
+def simpi_check(res=None):
+	""
+	r = res or simpi_resources()
+	warn = []
+	if r["ram_free"] is not None:
+		if r["ram_free"] < SIMPI_RAM_MIN:
+			return "too little free memory (%d MB) - close other programs first" % r["ram_free"], warn
+		if r["ram_free"] < SIMPI_RAM_WARN:
+			warn.append("little free memory")
+	if r["temp"] is not None:
+		if r["temp"] >= SIMPI_TEMP_MAX:
+			return "the Pi is too hot (%.0f °C) - let it cool down first" % r["temp"], warn
+		if r["temp"] >= SIMPI_TEMP_WARN:
+			warn.append("the Pi is warm")
+	need = SIMPI_DISK_MIN if not os.path.isfile(os.path.join(simpi_inst_dir(), "MoveEyeSim3D", SIMPI_EXE)) else 50
+	if r["disk_free"] is not None and r["disk_free"] < need:
+		return "too little room on the memory card (%d MB free)" % r["disk_free"], warn
+	if r["load"] is not None and r["load"] > 0.9:
+		warn.append("the Pi is busy")
+	return "", warn
+
+
+def _simpi_sha(path):
+	import hashlib
+	h = hashlib.sha256()
+	with open(path, "rb") as f:
+		for b in iter(lambda: f.read(1 << 20), b""):
+			h.update(b)
+	return h.hexdigest()
+
+
+def simpi_install(pkg=None):
+	""
+	pkg = pkg or SIM3D_PI
+	z_ = sim3d_path(pkg)
+	d_ = simpi_inst_dir(pkg)
+	exe = os.path.join(d_, "MoveEyeSim3D", SIMPI_EXE)
+	mark = os.path.join(d_, "geprueft.json")
+	try:
+		m = json.load(open(mark, encoding="utf-8"))
+		if m.get("zip") == pkg["sha256"] and os.path.isfile(exe) and _simpi_sha(exe) == m.get("exe"):
+			return exe, ""
+	except (OSError, ValueError, AttributeError):
+		pass
+	if not sim3d_ready(pkg) or _simpi_sha(z_) != pkg["sha256"]:
+		try:
+			os.remove(z_)
+		except OSError:
+			pass
+		return "", "the package is damaged - it is fetched again at the next start"
+	tmp = d_ + ".neu"
+	shutil.rmtree(tmp, ignore_errors=True)
+	try:
+		with zipfile.ZipFile(z_) as z:
+			for info in z.infolist():
+				n = info.filename
+				if (n.startswith("/") or "\\" in n or ".." in n.split("/") or not n.startswith("MoveEyeSim3D/")
+                        or ((info.external_attr >> 16) & 0o170000) == 0o120000):
+					raise ValueError("bad file name in the package")
+			z.extractall(tmp)
+		x_ = os.path.join(tmp, "MoveEyeSim3D", SIMPI_EXE)
+		if not os.path.isfile(x_):
+			raise ValueError(SIMPI_EXE + " missing in the package")
+		for root_, ds, fs in os.walk(tmp):
+			os.chmod(root_, 0o755)
+			for f in fs:
+				os.chmod(os.path.join(root_, f), 0o755 if f.endswith((".arm64", ".sh")) else 0o644)
+		with open(os.path.join(tmp, "geprueft.json"), "w", encoding="utf-8") as f:
+			json.dump({"zip": pkg["sha256"], "exe": _simpi_sha(x_), "version": pkg["version"]}, f)
+		shutil.rmtree(d_, ignore_errors=True)
+		os.replace(tmp, d_)
+	except (OSError, ValueError, zipfile.BadZipFile) as e:
+		shutil.rmtree(tmp, ignore_errors=True)
+		return "", "unpacking: " + str(e)[:120]
+	for old in glob.glob(os.path.join(simpi_dir(), "pi_*")):
+		if old != d_ and os.path.isdir(old) and os.path.basename(old)[3:4].isdigit():
+			shutil.rmtree(old, ignore_errors=True)
+	log_event("sys", f"{pkg['label']} {pkg['version']} checked and unpacked ({d_})")
+	return exe, ""
+
+
+def _simpi_user():
+	"""
+"""
+	import pwd
+	me = os.getuid() if hasattr(os, "getuid") else 1000
+	if me != 0 or os.environ.get("MW_SIMPI_TEST") == "1":
+		p = pwd.getpwuid(me)
+		return me, p.pw_gid, p.pw_dir, p.pw_name, os.environ.get("XDG_RUNTIME_DIR") or f"/run/user/{me}"
+	for d in sorted(glob.glob("/run/user/*")):
+		try:
+			uid = int(os.path.basename(d))
+		except ValueError:
+			continue
+		if uid >= 1000 and (glob.glob(os.path.join(d, "wayland-*")) or os.path.exists(os.path.join(d, "bus"))):
+			try:
+				p = pwd.getpwuid(uid)
+				return uid, p.pw_gid, p.pw_dir, p.pw_name, d
+			except KeyError:
+				continue
+	sudo_u = os.environ.get("SUDO_USER")
+	if sudo_u:
+		try:
+			p = pwd.getpwnam(sudo_u)
+			if p.pw_uid != 0:
+				return p.pw_uid, p.pw_gid, p.pw_dir, p.pw_name, f"/run/user/{p.pw_uid}"
+		except KeyError:
+			pass
+	return None
+
+
+def _simpi_display(rt):
+	""
+	env = {}
+	if os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY"):
+		for k in ("DISPLAY", "WAYLAND_DISPLAY", "XAUTHORITY"):
+			if os.environ.get(k):
+				env[k] = os.environ[k]
+		return env, "x11" if env.get("DISPLAY") else "wayland"
+	way = next((os.path.basename(x) for x in sorted(glob.glob(os.path.join(rt, "wayland-*"))) if not x.endswith(".lock")), "")
+	if os.path.exists("/tmp/.X11-unix/X0"):
+		env["DISPLAY"] = ":0"
+		if way:
+			env["WAYLAND_DISPLAY"] = way
+		return env, "x11"
+	if way:
+		env["WAYLAND_DISPLAY"] = way
+		return env, "wayland"
+	return env, ""
+
+
+def _simpi_port_free(port):
+	import socket
+	s_ = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	try:
+		s_.settimeout(0.3)
+		return s_.connect_ex(("127.0.0.1", port)) != 0
+	finally:
+		s_.close()
+
+
+def simpi_cmd(exe, port, wayland=False):
+	""
+	pre = []
+	if shutil.which("nice"):
+		pre = ["nice", "-n", str(SIMPI_NICE)]
+	eng = ["--resolution", "1024x600", "--max-fps", "20"] + (["--display-driver", "wayland"] if wayland else [])
+	return pre + [exe] + eng + ["--", "--grafik", "lite", "--quality", "simple", "--no-update", "--no-tour", "--no-hoch",
+                                "--no-inhalte", "--stream", "--port", str(port), "--moveeye-intern"]
+
+
+def _simpi_url_set(url):
+	CFG["sim_url"] = url
+	SIM.update(t=0.0, ok=False, msg="connecting …")
+	w = WATCH_REF.get("w")
+	if CFG.get("sim_on") and w is not None and str(CFG.get("source", "")).startswith("sim:"):
+		try:
+			w._open_gen += 1; w._start_opener(CFG["source"])
+		except Exception:
+			pass
+
+
+def _simpi_launch(exe, who):
+	""
+	u = _simpi_user()
+	if u is None:
+		return False, "no user at the desktop of the Pi found (the simulator never runs as root)"
+	uid, gid, home, name, rt = u
+	env_d, kind = _simpi_display(rt)
+	data = os.path.join(simpi_dir(), "intern_daten")
+	os.makedirs(data, exist_ok=True)
+	kw = {}
+	if hasattr(os, "getuid") and os.getuid() == 0:
+		import pwd
+		try:
+			groups = os.getgrouplist(name, gid)
+		except OSError:
+			groups = [gid]
+		kw = {"user": uid, "group": gid, "extra_groups": [g_ for g_ in groups if g_ != 0]}
+		for root_, ds, fs in os.walk(data):
+			for x in [root_] + [os.path.join(root_, f) for f in fs]:
+				try:
+					os.chown(x, uid, gid)
+				except OSError:
+					pass
+	env = {"PATH": os.environ.get("PATH", "/usr/bin:/bin"), "HOME": home, "USER": name, "LANG": os.environ.get("LANG", "C.UTF-8"),
+           "XDG_RUNTIME_DIR": rt, "XDG_DATA_HOME": data, "XDG_CONFIG_HOME": os.path.join(data, "config"),
+           "XDG_CACHE_HOME": os.path.join(data, "cache")}
+	if os.path.exists(os.path.join(rt, "bus")):
+		env["DBUS_SESSION_BUS_ADDRESS"] = f"unix:path={rt}/bus"
+	env.update(env_d)
+	xv = None
+	if not kind:
+		xvfb = shutil.which("Xvfb")
+		if not xvfb:
+			return False, "no desktop on the Pi - Raspberry Pi OS with desktop needed (or: sudo apt install xvfb, very slow)"
+		n_ = 77
+		while os.path.exists(f"/tmp/.X11-unix/X{n_}") and n_ < 90:
+			n_ += 1
+		try:
+			xv = subprocess.Popen([xvfb, f":{n_}", "-screen", "0", "1024x600x24", "-nolisten", "tcp"], env=env,
+                                  stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True, **kw)
+		except Exception as e:
+			return False, "Xvfb: " + str(e)[:100]
+		time.sleep(1.5)
+		env["DISPLAY"] = f":{n_}"; kind = "xvfb"
+	port = next((p for p in SIMPI_PORTS if _simpi_port_free(p)), 0)
+	if not port:
+		if xv is not None:
+			xv.terminate()
+		return False, "the simulator ports 8765 / 8775 / 8785 are all busy on the Pi"
+	try:
+		logf = open(os.path.join(data, "simulator.log"), "wb")
+		p = subprocess.Popen(simpi_cmd(exe, port, kind == "wayland"), cwd=os.path.dirname(exe), env=env, stdin=subprocess.DEVNULL,
+                             stdout=logf, stderr=subprocess.STDOUT, start_new_session=True, **kw)
+		logf.close()
+	except Exception as e:
+		if xv is not None:
+			xv.terminate()
+		return False, "start: " + str(e)[:120]
+	st_ = _simpi_read()
+	prev = st_.get("prev") if st_.get("pid") and _simpi_pid_alive(st_.get("pid"), st_.get("exe", "")) else None
+	if not isinstance(prev, dict):
+		prev = {"url": CFG.get("sim_url") or "", "on": bool(CFG.get("sim_on")), "auto": bool(CFG.get("sim_auto")),
+                "source": CFG.get("source", "")}
+	SIMPI.update(proc=p, xvfb=xv, port=port, mode=kind, t=time.time())
+	_simpi_write({"pid": p.pid, "exe": exe, "port": port, "mode": kind, "xvfb": xv.pid if xv is not None else 0,
+                   "t": time.time(), "prev": prev, "version": SIM3D_PI["version"], "who": who})
+	CFG["sim_auto"] = False
+	_simpi_url_set(f"http://127.0.0.1:{port}")
+	ok_, err_ = (True, "")
+	if not CFG.get("sim_on"):
+		ok_, err_ = sim_set(True, who, True)
+	save_settings()
+	log_event("sys", f"Simulator intern {SIM3D_PI['version']} started on this Pi ({kind}, port {port}, nice {SIMPI_NICE}, {who})"
+                     + (f" - before: {prev.get('url')} ({'on' if prev.get('on') else 'off'})" if prev.get("url") else ""))
+	_simpi_watch_start()
+	return ok_, err_
+
+
+def _simpi_work():
+	""
+	try:
+		if not sim3d_ready(SIM3D_PI):
+			SIMPI["phase"] = "loading"
+			sim3d_fetch(SIM3D_PI, SIM3D_PI_DL)
+			time.sleep(0.3)
+			while SIM3D_PI_DL["running"]:
+				time.sleep(0.5)
+			if not sim3d_ready(SIM3D_PI):
+				SIMPI["msg"] = SIM3D_PI_DL["msg"] or "could not be fetched"
+				return
+		SIMPI["phase"] = "unpacking"
+		exe, err = simpi_install()
+		if err:
+			SIMPI["msg"] = err
+			return
+		SIMPI["phase"] = "starting"
+		ok_, err_ = _simpi_launch(exe, SIMPI["who"])
+		if not ok_:
+			SIMPI["msg"] = err_
+	except Exception as e:
+		SIMPI["msg"] = str(e)[:160]
+	finally:
+		SIMPI["phase"] = "idle"; SIMPI["want"] = False
+
+
+def simpi_start(who="web", confirm=False, force=False):
+	""
+	ok, why = simpi_possible()
+	if not ok:
+		return False, why, ""
+	if simpi_running():
+		return True, "", ""
+	with SIMPI_LOCK:
+		if SIMPI["want"]:
+			return True, "", ""
+		block, warn = simpi_check()
+		SIMPI["warn"] = warn
+		if block and not force:
+			return False, block, ""
+		if CFG.get("armed") and not CFG.get("sim_on") and not confirm:
+			return False, "MoveEye is armed. The simulation replaces the real camera - nothing real is watched then. Disarm and switch the simulation on?", "armed"
+		SIMPI.update(want=True, msg="", who=who, phase="loading" if not sim3d_ready(SIM3D_PI) else "unpacking")
+	threading.Thread(target=_simpi_work, daemon=True, name="simintern").start()
+	return True, "", ""
+
+
+def _simpi_kill(pid, grace=8.0):
+	import signal
+	try:
+		pid = int(pid)
+	except (TypeError, ValueError):
+		return
+	if pid <= 1:
+		return
+	for sig, wait in ((signal.SIGTERM, grace), (signal.SIGKILL, 2.0)):
+		try:
+			os.killpg(pid, sig)
+		except (ProcessLookupError, PermissionError, OSError):
+			try:
+				os.kill(pid, sig)
+			except (ProcessLookupError, PermissionError, OSError):
+				return
+		t0 = time.time()
+		while time.time() - t0 < wait:
+			p = SIMPI["proc"]
+			if p is not None and p.pid == pid:
+				if p.poll() is not None:
+					return
+			elif not _simpi_pid_alive(pid):
+				return
+			time.sleep(0.2)
+
+
+def _simpi_restore(who, why=""):
+	""
+	st_ = _simpi_read()
+	prev = st_.get("prev") if isinstance(st_.get("prev"), dict) else None
+	port = int(st_.get("port") or SIMPI["port"] or 0)
+	mine = port and sim_base().rstrip("/") == f"http://127.0.0.1:{port}"
+	if prev is not None and (mine or not CFG.get("sim_url")):
+		u = str(prev.get("url") or "")
+		if u == f"http://127.0.0.1:{port}":
+			u = "http://127.0.0.1:8765"
+		_simpi_url_set(u or "http://127.0.0.1:8765")
+		CFG["sim_auto"] = bool(prev.get("auto", True))
+		if not prev.get("on") and CFG.get("sim_on"):
+			sim_set(False, who)
+		save_settings()
+	try:
+		os.remove(simpi_state_file())
+	except OSError:
+		pass
+	SIMPI.update(proc=None, xvfb=None, port=0, mode="")
+	log_event("sys", "Simulator intern stopped (" + who + ")" + (": " + why if why else "")
+              + (f" - back to {CFG.get('sim_url')} ({'on' if CFG.get('sim_on') else 'off'})" if prev else ""))
+
+
+def simpi_stop(who="web", why=""):
+	""
+	st_ = _simpi_read()
+	p = SIMPI["proc"]
+	pid = p.pid if p is not None else st_.get("pid")
+	if pid:
+		SIMPI["phase"] = "stopping"
+		_simpi_kill(pid)
+	for x in (SIMPI["xvfb"].pid if SIMPI["xvfb"] is not None else 0, st_.get("xvfb") or 0):
+		if x:
+			_simpi_kill(x, 2.0)
+	if p is not None:
+		try:
+			p.wait(timeout=1)
+		except Exception:
+			pass
+	_simpi_restore(who, why)
+	SIMPI["phase"] = "idle"; SIMPI["want"] = False
+	if why:
+		SIMPI["msg"] = why
+	return True, ""
+
+
+def _simpi_watch():
+	""
+	while True:
+		time.sleep(10)
+		try:
+			st_ = _simpi_read()
+			if not st_.get("pid"):
+				if SIMPI["proc"] is None:
+					SIMPI["watch"] = False
+					return
+				continue
+			if not simpi_running():
+				SIMPI["msg"] = "the simulator was closed - back to the connection before"
+				for x in (st_.get("xvfb") or 0,):
+					if x:
+						_simpi_kill(x, 2.0)
+				_simpi_restore("closed", "window closed or crashed")
+				continue
+			r = simpi_resources()
+			hot = r["temp"] is not None and r["temp"] >= SIMPI_TEMP_STOP
+			low = r["ram_free"] is not None and r["ram_free"] < SIMPI_RAM_STOP
+			SIMPI["bad"] = SIMPI["bad"] + 1 if (hot or low) else 0
+			if SIMPI["bad"] >= 2:
+				SIMPI["bad"] = 0
+				why = "too hot (%.0f °C)" % r["temp"] if hot else "too little free memory (%d MB)" % r["ram_free"]
+				simpi_stop("guard", why)
+				log_event("sys", "Simulator intern: stopped by the guard - " + why + " (MoveEye's detection goes first)")
+		except Exception:
+			pass
+
+
+def _simpi_watch_start():
+	if not SIMPI["watch"]:
+		SIMPI["watch"] = True
+		threading.Thread(target=_simpi_watch, daemon=True, name="simpi-watch").start()
+
+
+def simpi_state():
+	""
+	ok, why = simpi_possible()
+	on = simpi_running()
+	st_ = _simpi_read() if on else {}
+	if on:
+		_simpi_watch_start()
+	prev = st_.get("prev") if isinstance(st_.get("prev"), dict) else None
+	port = int(st_.get("port") or SIMPI["port"] or 0)
+	size = SIM3D_PI.get("size") or 0
+	res = simpi_resources()
+	phase = "running" if on and SIMPI["phase"] in ("idle", "starting") else SIMPI["phase"]
+	return {"possible": ok, "why": why, "on": on, "phase": phase, "version": SIM3D_PI["version"], "size_mb": round(size / 1e6),
+            "ready": bool(size) and sim3d_ready(SIM3D_PI), "pct": int(100 * SIM3D_PI_DL["got"] / size) if size else 0,
+            "msg": SIMPI["msg"], "warn": SIMPI["warn"] if not on else simpi_check(res)[1], "port": port,
+            "mode": st_.get("mode") or SIMPI["mode"], "since": int(time.time() - float(st_.get("t") or time.time())) if on else None,
+            "connected": bool(on and port and sim_base().rstrip("/") == f"http://127.0.0.1:{port}" and SIM.get("ok")),
+            "prev": {"url": prev.get("url", ""), "on": bool(prev.get("on"))} if prev else None, "res": res,
+            "armed": bool(CFG.get("armed")) and not CFG.get("sim_on")}
+
+
+def simpi_routes(app, reply, body):
+	""
+	from flask import g, request
+
+	@app.route("/api/simintern", methods=["GET", "POST"])
+	def api_simintern():
+		if getattr(g, "role", "admin") != "admin":
+			return reply({"ok": False, "error": "not allowed"}, 403)
+		if request.method == "GET":
+			s_ = simpi_state(); L_ = norm_lang(request.args.get("lang"))
+			s_["msg"] = tr_err(s_["msg"], L_) if s_["msg"] else ""
+			return reply(dict(s_, ok=True))
+		d = body(); lang = norm_lang(d.get("lang"))
+		a_ = str(d.get("action") or "")
+		who_ = "web " + (request.remote_addr or "?")
+		if a_ == "start":
+			ok_, err_, need = simpi_start(who_, bool(d.get("confirm")), bool(d.get("force")))
+			if need:
+				return reply({"ok": False, "need_confirm": need, "error": tr_err(err_, lang), "state": simpi_state()})
+			return reply({"ok": ok_, "error": tr_err(err_, lang) if err_ else None, "state": simpi_state()}, 200 if ok_ else 400)
+		if a_ == "stop":
+			ok_, err_ = simpi_stop(who_)
+			return reply({"ok": ok_, "error": tr_err(err_, lang) if err_ else None, "state": simpi_state()})
+		return reply({"ok": False, "error": "unknown action"}, 400)
+
+
+_smalltv_routes_simpi_base = smalltv_routes
+
+
+def smalltv_routes(app, reply, body):
+	_smalltv_routes_simpi_base(app, reply, body)
+	simpi_routes(app, reply, body)
+	threading.Thread(target=lambda: (time.sleep(30), simpi_launcher_cleanup()), daemon=True, name="simpi-starter").start()
+
+
+
+
+
+
+
+
+
+
+SIMPI_STARTER_MARK = "starter_aufgeraeumt.json"
+
+
+def _simpi_desktop_exec(path):
+	""
+	name = exe = ""
+	try:
+		with open(path, encoding="utf-8", errors="replace") as f:
+			sec = ""
+			for line in f.read(65536).splitlines():
+				line = line.strip()
+				if line.startswith("["):
+					sec = line
+				elif sec == "[Desktop Entry]" and line.startswith("Exec="):
+					exe = line[5:]
+				elif sec == "[Desktop Entry]" and line.startswith("Name="):
+					name = line[5:]
+	except OSError:
+		pass
+	return name, exe
+
+
+def simpi_starter_kind(path):
+	""
+	if not path.endswith(".desktop") or os.path.islink(path) or not os.path.isfile(path):
+		return ""
+	_n, exe = _simpi_desktop_exec(path)
+	if re.search(r"(^|[\s/\"'])motionwatch_simulator\.py([\s\"']|$)", exe) and "/simulator/" in exe:
+		return "basis"
+	if re.search(r"MoveEyeSim3D\.x86_64([\s\"']|$)", exe) and simpi_arch_ok():
+		return "x86"
+	return ""
+
+
+def _simpi_homes():
+	""
+	import pwd
+	out = []
+	if os.environ.get("MW_SIMPI_HOME"):
+		return [(os.environ["MW_SIMPI_HOME"], os.getuid(), os.getgid())]
+	if hasattr(os, "getuid") and os.getuid() != 0:
+		return [(os.path.expanduser("~"), os.getuid(), os.getgid())]
+	seen = set()
+	names = [os.environ.get("SUDO_USER") or ""] + [pwd.getpwuid(int(os.path.basename(d))).pw_name
+                                                   for d in glob.glob("/run/user/*") if os.path.basename(d).isdigit()
+                                                   and int(os.path.basename(d)) >= 1000 and _simpi_safe_pw(int(os.path.basename(d)))]
+	for n in names:
+		try:
+			p = pwd.getpwnam(n) if n else None
+		except KeyError:
+			p = None
+		if p and p.pw_uid >= 1000 and p.pw_dir not in seen:
+			seen.add(p.pw_dir); out.append((p.pw_dir, p.pw_uid, p.pw_gid))
+	return out
+
+
+def _simpi_safe_pw(uid):
+	import pwd
+	try:
+		pwd.getpwuid(uid); return True
+	except KeyError:
+		return False
+
+
+def _simpi_new_starter(folder, uid, gid):
+	""
+	url = f"http://127.0.0.1:{int(CFG.get('web_port') or 5000)}/sim"
+	p = os.path.join(folder, "moveeye-sim-intern.desktop")
+	if os.path.exists(p):
+		return ""
+	txt = ("[Desktop Entry]\nType=Application\nVersion=1.0\nName=MoveEye Sim (intern)\n"
+           "Comment=Reiter Simulator von MoveEye - «Simulator intern» auf diesem Pi (langsamer, nur zum Vorführen)\n"
+           f"Exec=xdg-open {url}\nIcon=applications-science\nTerminal=false\nCategories=Education;Science;Simulation;\n")
+	try:
+		with open(p, "w", encoding="utf-8") as f:
+			f.write(txt)
+		os.chmod(p, 0o755)
+		if hasattr(os, "getuid") and os.getuid() == 0:
+			os.chown(p, uid, gid)
+		return p
+	except OSError:
+		return ""
+
+
+def simpi_launcher_cleanup(force=False):
+	""
+	mark = os.path.join(simpi_dir(), SIMPI_STARTER_MARK)
+	try:
+		if not force and json.load(open(mark, encoding="utf-8")).get("version") == APP_VERSION:
+			return []
+	except (OSError, ValueError, AttributeError):
+		pass
+	moved, made = [], []
+	bin_ = os.path.join(simpi_dir(), "_to_delete", time.strftime("%Y%m%d-%H%M%S"))
+	for home, uid, gid in _simpi_homes():
+		for folder in (os.path.join(home, "Desktop"), os.path.join(home, "Schreibtisch"), os.path.join(home, ".local", "share", "applications")):
+			if not os.path.isdir(folder) or os.path.islink(folder):
+				continue
+			hit = False
+			for f in sorted(os.listdir(folder)):
+				src = os.path.join(folder, f)
+				kind = simpi_starter_kind(src)
+				if not kind:
+					continue
+				try:
+					os.makedirs(bin_, exist_ok=True)
+					dst = os.path.join(bin_, folder.strip("/").replace("/", "_") + "__" + f)
+					shutil.move(src, dst)
+					moved.append((src, dst)); hit = True
+					log_event("sys", f"Old simulator launcher removed ({'MW Sim · Basis' if kind == 'basis' else 'MoveEye Sim x86_64'}): "
+                                     f"{src} -> {dst} (the program files stay)")
+				except OSError as e:
+					log_event("sys", f"Old simulator launcher {src} could not be moved: {e}"[:200])
+			if hit and simpi_arch_ok():
+				n_ = _simpi_new_starter(folder, uid, gid)
+				if n_:
+					made.append(n_)
+					log_event("sys", f"Launcher «MoveEye Sim (intern)» added: {n_}")
+	try:
+		os.makedirs(simpi_dir(), exist_ok=True)
+		with open(mark, "w", encoding="utf-8") as f:
+			json.dump({"version": APP_VERSION, "t": int(time.time()), "moved": moved, "new": made}, f)
+	except OSError:
+		pass
+	return moved
+
+
+
+def simpi_tk_build(app, parent):
+	ok, _why = simpi_possible()
+	if not ok and not simpi_running():
+		return
+	ttk.Label(parent, text="🧪 " + tr("Simulator intern (on this Pi)"), style="Mut.TLabel").pack(anchor="w", pady=(8, 0))
+	ttk.Label(parent, text=tr("si-note"), style="Mut.TLabel", wraplength=330, justify="left").pack(anchor="w")
+	lbl = ttk.Label(parent, text="", style="Mut.TLabel", wraplength=330, justify="left")
+	btn = ttk.Button(parent, text="")
+
+	def paint():
+		try:
+			s_ = simpi_state()
+			btn.config(text=("⏹ " + tr("Stop the simulator intern")) if s_["on"] else ("🧪 " + tr("Try the simulator intern")),
+                       state="disabled" if s_["phase"] in ("loading", "unpacking", "starting", "stopping") else "normal")
+			lbl.config(text=simpi_line(s_))
+			app.root.after(3000, paint)
+		except Exception:
+			pass
+
+	def go():
+		s_ = simpi_state()
+		if s_["on"]:
+			threading.Thread(target=lambda: simpi_stop("window"), daemon=True).start()
+		else:
+			ok_, err_, need = simpi_start("window")
+			if need and messagebox.askyesno("MoveEye", tr(err_), parent=app.root):
+				ok_, err_, need = simpi_start("window", True)
+			if not ok_ and err_ and not need:
+				lbl.config(text="⚠ " + tr_err(err_))
+	btn.config(command=go)
+	btn.pack(fill="x", pady=(4, 0))
+	lbl.pack(anchor="w", pady=(2, 0))
+	paint()
+
+
+def simpi_line(s_, lang=None):
+	""
+	T = lambda k: tr(k, lang)
+	if s_["phase"] == "loading":
+		return T("fetching the package") + f" … {s_['pct']} %"
+	if s_["phase"] == "unpacking":
+		return T("checking and unpacking …")
+	if s_["phase"] == "starting":
+		return T("starting …")
+	if s_["phase"] == "stopping":
+		return T("stopping …")
+	if s_["on"]:
+		p_ = s_.get("prev") or {}
+		return (T("running on this Pi") + f" · Port {s_['port']}" + (" · " + T("connected") if s_["connected"] else "")
+                + ("\n" + T("Stop: back to") + " " + p_["url"] + (" (" + T("simulation on") + ")" if p_.get("on") else "") if p_.get("url") else ""))
+	return ("⚠ " + tr_err(s_["msg"], lang) + "\n" if s_["msg"] else "") + (
+        T("package ready") if s_["ready"] else T("fetched at the first start") + (f" ({s_['size_mb']} MB)" if s_["size_mb"] else ""))
+
+
+
+SIMPI_HTML = ('<details class="sub" id="c-intern" hidden><summary><svg viewBox="0 0 24 24"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3"/>'
+               '<path d="M7.5 15h9"/></svg><span data-i18n="si-title">si-title</span><span class="mut" id="si-chip" style="font-weight:400;flex:none"></span></summary>'
+               '<div id="si-box"></div></details>')
+SIMPI_JS = _zd('639zx_sim_intern/SIMPI_JS', "")
+
+_HX_SIMPI = _zd('639zx_sim_intern/HX_SIMPI', _zd_hx({
+    'si-title': 'Simulator intern (auf diesem Pi) ausprobieren',
+    'si-note': 'Langsamer, nur zum Vorführen / Ausprobieren: MoveEye Sim läuft abgespeckt (Lite-Grafik, kleines Fenster) direkt auf diesem Pi – unterwegs ohne HP oder PC. Beim ersten Mal wird das Paket geholt und wie ein Update geprüft. «Beenden» stellt die Verbindung von vorher wieder her (z. B. den HP). Die Erkennung von MoveEye hat Vorrang.',
+    'Simulator intern (on this Pi)': 'Simulator intern (auf diesem Pi)',
+    'Try the simulator intern': 'Simulator intern starten',
+    'Stop the simulator intern': 'Simulator intern beenden',
+    'Simulator intern runs on this Pi': 'Simulator intern läuft auf diesem Pi',
+    'slower, only for showing and trying out': 'langsamer, nur zum Vorführen / Ausprobieren',
+    'Stop': 'Beenden',
+    'runs': 'läuft',
+    'free memory': 'Speicher frei',
+    'load': 'Last',
+    'fetching the package': 'Paket wird geholt',
+    'checking and unpacking …': 'prüfen und auspacken …',
+    'starting …': 'startet …',
+    'stopping …': 'wird beendet …',
+    'running on this Pi': 'läuft auf diesem Pi',
+    'connected': 'verbunden',
+    'connecting …': 'verbindet …',
+    'without screen (Xvfb, very slow)': 'ohne Bildschirm (Xvfb, sehr langsam)',
+    'package ready': 'Paket bereit',
+    'checked like an update': 'geprüft wie ein Update',
+    'fetched at the first start': 'wird beim ersten Start geholt',
+    'Stop: back to': 'Beenden: zurück zu',
+    'simulation on': 'Simulation ein',
+    'simulation off': 'Simulation aus',
+    'the connection before': 'der Verbindung von vorher',
+    'MoveEye is armed - the simulation replaces the real camera while it runs.': 'MoveEye ist scharf – die Simulation ersetzt die echte Kamera, solange sie läuft.',
+    'not for this Pi - use «Simulator intern»': 'nicht für diesen Pi – «Simulator intern» nehmen',
+    'little free memory': 'wenig Speicher frei',
+    'the Pi is warm': 'der Pi ist warm',
+    'the Pi is busy': 'der Pi ist ausgelastet',
+    'only on a Raspberry Pi 5 with a 64-bit system (arm64)': 'nur auf einem Raspberry Pi 5 mit 64-Bit-System (arm64)',
+    'no signed package known yet': 'noch kein signiertes Simulator-Paket für den Pi – es kommt mit einem der nächsten Simulator-Releases',
+    'the simulator was closed - back to the connection before': 'der Simulator wurde geschlossen – zurück zur Verbindung von vorher',
+    'the package is damaged - it is fetched again at the next start': 'das Paket ist beschädigt – es wird beim nächsten Start neu geholt',
+    'no user at the desktop of the Pi found (the simulator never runs as root)': 'kein Benutzer am Desktop des Pi gefunden (der Simulator läuft nie als root)',
+    'no desktop on the Pi - Raspberry Pi OS with desktop needed (or: sudo apt install xvfb, very slow)': 'kein Desktop auf dem Pi – Raspberry Pi OS mit Desktop nötig (oder: sudo apt install xvfb, sehr langsam)',
+    'the simulator ports 8765 / 8775 / 8785 are all busy on the Pi': 'die Simulator-Ports 8765 / 8775 / 8785 sind auf dem Pi alle belegt',
+    'window closed or crashed': 'Fenster geschlossen oder abgestürzt',
+    'could not be fetched': 'konnte nicht geholt werden',
+}))
+
+_SIMPI_PATTERNS = {
+    "too little free memory (%d MB) - close other programs first": ('zu wenig Speicher frei (%d MB) – zuerst andere Programme schliessen',
+                                                                    'trop peu de mémoire libre (%d Mo) – fermer d’abord d’autres programmes',
+                                                                    'troppo poca memoria libera (%d MB) – chiudere prima altri programmi',
+                                                                    'memia pauca memoria libra (%d MB) – serrar l’emprim auters programs'),
+    "the Pi is too hot (%.0f °C) - let it cool down first": ('der Pi ist zu heiss (%.0f °C) – zuerst abkühlen lassen',
+                                                            'le Pi est trop chaud (%.0f °C) – le laisser refroidir d’abord',
+                                                            'il Pi è troppo caldo (%.0f °C) – lasciarlo prima raffreddare',
+                                                            'il Pi è memia chaud (%.0f °C) – l’emprim laschar sfradentar'),
+    "too hot (%.0f °C)": ('zu heiss (%.0f °C)', 'trop chaud (%.0f °C)', 'troppo caldo (%.0f °C)', 'memia chaud (%.0f °C)'),
+    "too little free memory (%d MB)": ('zu wenig Speicher frei (%d MB)', 'trop peu de mémoire libre (%d Mo)', 'troppo poca memoria libera (%d MB)',
+                                       'memia pauca memoria libra (%d MB)'),
+    "too little room on the memory card (%d MB free)": ('zu wenig Platz auf der Speicherkarte (%d MB frei)',
+                                                        'trop peu de place sur la carte mémoire (%d Mo libres)',
+                                                        'troppo poco spazio sulla scheda di memoria (%d MB liberi)',
+                                                        'memia pauc plaz sin la carta da memoria (%d MB libers)'),
+}
+for _k, _v in _HX_SIMPI.items():
+	DE.setdefault(_k, _v[0])
+	for _i, _L in enumerate(('fr', 'it', 'rm')):
+		TRX[_L].setdefault(_k, _v[_i + 1])
+
+
+def simpi_tr_num(msg, lang=None):
+	""
+	L = norm_lang(lang or CFG.get("lang"))
+	for en, tx in _SIMPI_PATTERNS.items():
+		rx = "^" + re.escape(en).replace(re.escape("%d"), r"(\d+)").replace(re.escape("%.0f"), r"(\d+)") + "$"
+		m = re.match(rx, str(msg))
+		if m:
+			if L == "en":
+				return msg
+			i = {"de": 0, "fr": 1, "it": 2, "rm": 3}.get(L, 0)
+			return tx[i].replace("%d", m.group(1)).replace("%.0f", m.group(1))
+	return None
+
+
+_tr_err_simpi_base = tr_err
+
+
+def tr_err(msg, lang=None):
+	x = simpi_tr_num(msg, lang) if isinstance(msg, str) and ("MB" in msg or "°C" in msg) else None
+	return x if x is not None else _tr_err_simpi_base(msg, lang)
+
+
+
+_SIMPI_ANKER = '<details class="sub" id="c-tunnel">'
+if _SIMPI_ANKER in SIM_PAGE:
+	SIM_PAGE = SIM_PAGE.replace(_SIMPI_ANKER, SIMPI_HTML + _SIMPI_ANKER, 1)
+	SIM_PAGE = SIM_PAGE.replace("</body>", SIMPI_JS.replace("/*SIDE*/{}", json.dumps({k: v[0] for k, v in _HX_SIMPI.items()},
+                                                                                      ensure_ascii=False).replace("</", "<\\/")) + "</body>", 1)
+
+
+_HELP_SIMPI = {
+    "de": '<li><b>🧪 Simulator intern (ab MoveEye 3.59.0):</b> unterwegs ohne HP oder PC läuft MoveEye Sim abgespeckt direkt auf dem Pi 5 '
+          '(Reiter Simulator → Verbindung → «Simulator intern (auf diesem Pi) ausprobieren»). Langsamer, nur zum Vorführen und '
+          'Ausprobieren. Das Paket wird beim ersten Mal geholt und wie ein Update geprüft; «Beenden» stellt die Verbindung von vorher '
+          'wieder her. Braucht Raspberry Pi OS mit Desktop; ist der Pi zu heiss oder der Speicher knapp, beendet MoveEye den Simulator selbst.</li>',
+    "en": '<li><b>🧪 Simulator intern (from MoveEye 3.59.0):</b> on the go without the HP or a PC, MoveEye Sim runs slimmed down right on the Pi 5 '
+          '(tab Simulator → Connection → «Try the simulator intern (on this Pi)»). Slower, only for showing and trying out. The package '
+          'is fetched the first time and checked like an update; «Stop» brings back the connection before. Needs Raspberry Pi OS with '
+          'desktop; when the Pi gets too hot or the memory runs short, MoveEye stops the simulator itself.</li>',
+    "fr": '<li><b>🧪 Simulateur interne (dès MoveEye 3.59.0) :</b> en déplacement sans HP ni PC, MoveEye Sim tourne en version allégée directement '
+          'sur le Pi 5 (onglet Simulateur → Connexion). Plus lent, seulement pour montrer et essayer. Le paquet est téléchargé la première '
+          'fois et vérifié comme une mise à jour ; « Arrêter » rétablit la connexion d’avant.</li>',
+    "it": '<li><b>🧪 Simulatore interno (da MoveEye 3.59.0):</b> in viaggio senza HP né PC, MoveEye Sim gira in versione ridotta direttamente sul '
+          'Pi 5 (scheda Simulatore → Collegamento). Più lento, solo per mostrare e provare. Il pacchetto viene scaricato la prima volta e '
+          'verificato come un aggiornamento; «Termina» ripristina il collegamento di prima.</li>',
+    "rm": '<li><b>🧪 Simulatur intern (a partir da MoveEye 3.59.0):</b> en viadi senza HP u PC gira MoveEye Sim en versiun reducida directamain sin '
+          'il Pi 5 (register Simulatur → Colliaziun). Pli plaun, mo per preschentar ed empruvar. Il pachet vegn chargià giu l’emprima giada '
+          'e verifitgà sco in update; «Terminar» restabilescha la colliaziun da pli baud.</li>',
+}
+
+
+def _help_simpi(doc, lang):
+	i = doc.find('<section id="simview"')
+	if i < 0 or "Simulator intern" in doc[i:i + 6000] or "interne (dès" in doc[i:i + 6000]:
+		return doc
+	j = doc.find("</ul></section>", i)
+	return doc[:j] + _HELP_SIMPI[lang] + doc[j:] if j > 0 else doc
+
+
+_hp_en_simpi = HELP_PAGE.find('<div lang="en">')
+if _hp_en_simpi > 0:
+	HELP_PAGE = _help_simpi(HELP_PAGE[:_hp_en_simpi], "de") + _help_simpi(HELP_PAGE[_hp_en_simpi:], "en")
+for _L in ("fr", "it", "rm"):
+	if HELP_X.get(_L):
+		HELP_X[_L] = _help_simpi(HELP_X[_L], _L)
+
+
+def simpi_selftest():
+	assert 'id="c-intern"' in SIM_PAGE and "/api/simintern" in SIM_PAGE, "page Simulator: «Simulator intern»"
+	assert SIM3D_PI["file"] == "simulator3d/MoveEyeSim3D_Pi.zip" and SIM3D_PI["stem"] == "MoveEyeSim3D_Pi", "SIM3D_PI (300)"
+	assert not SIM3D_PI["sha256"] or re.fullmatch(r"[0-9a-f]{64}", SIM3D_PI["sha256"]), "SIM3D_PI sha256"
+	c = simpi_cmd("/x/MoveEyeSim3D.arm64", 8775)
+	assert "--no-update" in c and c[c.index("--port") + 1] == "8775" and "--grafik" in c and c.index("--") > c.index("/x/MoveEyeSim3D.arm64"), "command"
+	for k in _HX_SIMPI:
+		assert all(_HX_SIMPI[k]), "translation " + k
+	assert tr_err("too little free memory (612 MB) - close other programs first", "de").startswith("zu wenig Speicher frei (612 MB)"), "tr_err"
+	return "Simulator intern: page, package, command, translations"
+
+
+SELFTEST_EXTRA.append(("Simulator intern on the Pi (639zx)", simpi_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ALARM_CONFIRM2_WERK = False
+for _k, _v in {"alarm_confirm2": ALARM_CONFIRM2_WERK, "fp_spot_learn": True, "wind_guard": True, "wind_guard_kmh": 40.0,
+               "push_bundle": True, "push_bundle_after": False, "push_zone_name": True, "push_clip": False, "push_clip_s": 4.0,
+               "push_clip_kb": 800.0, "push_home_pics": False}.items():
+	if _k == "alarm_confirm2":
+		CFG[_k] = _v; DEFAULTS[_k] = _v; FACTORY_CFG[_k] = _v
+		continue
+	CFG.setdefault(_k, _v); DEFAULTS.setdefault(_k, _v); FACTORY_CFG.setdefault(_k, _v)
+
+FP_GRID = (6, 4)
+FP_NEED, FP_DAYS, FP_NO_DAYS, FP_TOK_DAYS = 3, 7, 30, 3
+WG_GRID = (8, 6)
+WG_TAU_S, WG_VEG, WG_HOLD_S = 60.0, 0.5, 6.0
+CLIP_FPS, CLIP_KEEP_S = 6.0, 7.0
+PB_KEEP, PB_DAYS = 200, 14
+_FP_LOCK = threading.Lock()
+FPS = {"file": "", "data": None, "busy": False}
+WG = {"occ": None, "t": 0.0, "seen": {}, "held": 0, "passed": 0, "log_t": 0.0, "why": "", "since": time.time()}
+FPB = {"lock": threading.Lock(), "items": [], "n": 0, "first": 0.0}
+CLIP = {"buf": deque(), "last": 0.0, "state": {}}
+PB_RE = re.compile(r"^[0-9a-f]{16}$")
+_FP_TOK_RE = re.compile(r"^[A-Za-z0-9_\-]{20,40}$")
+
+
+
+def fp_file():
+	return FPS["file"] or os.path.join(DATA_DIR, "fehlalarm_stellen.json")
+
+
+def fp_load():
+	if FPS["data"] is not None and FPS.get("for") == fp_file():
+		return FPS["data"]
+	d = None
+	try:
+		with open(fp_file(), encoding="utf-8") as f:
+			d = json.load(f)
+	except (OSError, ValueError):
+		d = None
+	if not isinstance(d, dict):
+		d = {}
+	d.setdefault("v", 1)
+	d["notes"] = [n for n in d.get("notes") or [] if isinstance(n, dict) and isinstance(n.get("key"), str)][-400:]
+	d["asked"] = {k: v for k, v in (d.get("asked") or {}).items() if isinstance(v, dict)}
+	FPS["data"], FPS["for"] = d, fp_file()
+	return d
+
+
+def fp_save():
+	d = FPS["data"]
+	if d is None:
+		return
+	try:
+		p = fp_file()
+		os.makedirs(os.path.dirname(os.path.abspath(p)), exist_ok=True)
+		with open(p + ".tmp", "w", encoding="utf-8") as f:
+			json.dump(d, f, ensure_ascii=False)
+		os.replace(p + ".tmp", p)
+	except OSError as e:
+		log_event("sys", f"False alarm spots not saved: {e}"[:160])
+
+
+def fp_cell(fx, fy):
+	c = max(0, min(FP_GRID[0] - 1, int(float(fx) * FP_GRID[0])))
+	r = max(0, min(FP_GRID[1] - 1, int(float(fy) * FP_GRID[1])))
+	return c, r
+
+
+def fp_feet(boxes):
+	""
+	bs = [b for b in boxes or [] if isinstance(b, (list, tuple)) and len(b) >= 4]
+	if not bs:
+		return None
+	b = max(bs, key=lambda b_: float(b_[2]) * float(b_[3]))
+	return (float(b[0]) + float(b[2]) / 2.0, float(b[1]) + float(b[3]) * 0.85)
+
+
+def fp_key(x):
+	""
+	pt = fp_feet(x.get("boxes"))
+	if pt is None:
+		return None, None
+	c, r = fp_cell(*pt)
+	pb = "%d/%d" % (round(float(x.get("pan") or 50) / 5.0), round(float(x.get("tilt") or 50) / 5.0)) if x.get("srv") else "-"
+	return "%s|%s|%d,%d" % (str(x.get("src") or "?")[:40], pb, c, r), pt
+
+
+def fp_spot_note(x, now=None):
+	""
+	if not CFG.get("fp_spot_learn", True) or not isinstance(x, dict) or x.get("sim") or CFG.get("sim_on"):
+		return None
+	key, pt = fp_key(x)
+	if key is None:
+		return None
+	now = time.time() if now is None else now
+	sid = str(x.get("stamp") or x.get("id") or "")
+	with _FP_LOCK:
+		d = fp_load()
+		if any(n.get("id") == sid for n in d["notes"]):
+			return key
+		d["notes"].append({"id": sid, "lid": str(x.get("id") or sid), "t": float(x.get("t") or now), "key": key,
+                           "pt": [round(pt[0], 3), round(pt[1], 3)], "pan": x.get("pan"), "tilt": x.get("tilt"),
+                           "srv": bool(x.get("srv")), "src": str(x.get("src") or "")[:40]})
+		d["notes"] = [n for n in d["notes"] if now - float(n.get("t") or 0) < 30 * 86400][-400:]
+		fp_save()
+	log_event("person", f"False alarm spot noted ({key.rsplit('|', 1)[-1]})")
+	fp_spot_check(key, now)
+	return key
+
+
+def fp_spot_forget(sid):
+	with _FP_LOCK:
+		d = fp_load()
+		n0 = len(d["notes"])
+		d["notes"] = [n for n in d["notes"] if n.get("id") != sid and n.get("lid") != sid]
+		if len(d["notes"]) != n0:
+			fp_save()
+
+
+def fp_spot_due(key, now):
+	""
+	d = fp_load()
+	ns = [n for n in d["notes"] if n.get("key") == key and now - float(n.get("t") or 0) < FP_DAYS * 86400]
+	if len(ns) < FP_NEED:
+		return None
+	a = d["asked"].get(key)
+	if a and (a.get("ans") == "yes" or now - float(a.get("t") or 0) < FP_NO_DAYS * 86400):
+		return None
+	return ns
+
+
+def fp_spot_check(key, now):
+	with _FP_LOCK:
+		ns = fp_spot_due(key, now)
+		if not ns:
+			return None
+		last = max(ns, key=lambda n: float(n.get("t") or 0))
+		c, r = (int(v) for v in key.rsplit("|", 1)[-1].split(","))
+		tok = secrets.token_urlsafe(18)
+		e = {"t": now, "tok": tok, "ans": "", "n": len(ns), "lid": last.get("lid"), "cell": [c, r], "pan": last.get("pan"),
+             "tilt": last.get("tilt"), "srv": bool(last.get("srv")), "src": last.get("src", "")}
+		fp_load()["asked"][key] = e
+		fp_save()
+	log_event("person", f"{len(ns)} false alarms at the same spot in {FP_DAYS} days - asking once whether to ignore it")
+	try:
+		fp_spot_ask(key, e)
+	except Exception as ex:
+		log_event("sys", f"False alarm spot question: {ex}"[:160])
+	return tok
+
+
+def fp_by_tok(tok):
+	if not isinstance(tok, str) or not _FP_TOK_RE.match(tok):
+		return None, None
+	for k, e in fp_load()["asked"].items():
+		if e.get("tok") and secrets.compare_digest(str(e["tok"]), tok):
+			return k, e
+	return None, None
+
+
+def fp_open(e, now=None):
+	now = time.time() if now is None else now
+	return bool(e) and not e.get("ans") and now - float(e.get("t") or 0) < FP_TOK_DAYS * 86400
+
+
+def fp_cell_points(cell):
+	c, r = cell
+	x0, x1 = c / float(FP_GRID[0]), (c + 1) / float(FP_GRID[0])
+	y0, y1 = r / float(FP_GRID[1]), (r + 1) / float(FP_GRID[1])
+	return [[round(x0, 4), round(y0, 4)], [round(x1, 4), round(y0, 4)], [round(x1, 4), round(y1, 4)], [round(x0, 4), round(y1, 4)]]
+
+
+def fp_spot_answer(tok, act, who="push"):
+	""
+	if act not in ("yes", "no"):
+		return False, tr("This question is no longer open.")
+	with _FP_LOCK:
+		key, e = fp_by_tok(tok)
+		if not fp_open(e):
+			return False, tr("This question is no longer open.")
+		if act == "no":
+			e["ans"], e["ans_t"] = "no", int(time.time())
+			fp_save()
+			log_event("person", f"False alarm spot {key.rsplit('|', 1)[-1]}: not ignored ({who})")
+			return True, tr("OK - this spot is not ignored. MoveEye does not ask again for 30 days.")
+		if e.get("src") and str(STATE.get("source_label") or "")[:40] != e["src"]:
+			return False, tr("The camera has changed since - no zone added.")
+		if len(ZONES) >= MAX_ZONES:
+			return False, tr("Too many zones - delete one under Zones first.")
+		pts = fp_cell_points(e["cell"])
+		n = 1 + sum(1 for z in ZONES if str(z.get("name", "")).startswith(tr("False alarm spot")))
+		z = {"name": ("%s %d" % (tr("False alarm spot"), n))[:40], "mode": "ignore", "kinds": "person", "points": pts}
+		if e.get("srv"):
+			try:
+				z["anchor"] = True
+				z["ang"] = sleep_to_ang(pts, float(e.get("pan") or 50), float(e.get("tilt") or 50))
+			except Exception:
+				z.pop("anchor", None); z.pop("ang", None)
+		ok, err = zones_set([dict(z_) for z_ in ZONES] + [z])
+		if not ok:
+			return False, tr_err(err)
+		e["ans"], e["ans_t"] = "yes", int(time.time())
+		fp_save()
+	log_event("person", f"False alarm spot {key.rsplit('|', 1)[-1]}: ignore zone «{z['name']}» added ({who})")
+	return True, tr("Done - an ignore zone was added here. You can change it under Zones.")
+
+
+def fp_spot_pic(e):
+	""
+	try:
+		p = alx_label_path(str(e.get("lid") or ""), ".jpg")
+		img = cv2.imread(p) if p and os.path.exists(p) else None
+		if img is None:
+			return None
+		h, w = img.shape[:2]
+		pts = fp_cell_points(e["cell"])
+		x0, y0 = int(pts[0][0] * w), int(pts[0][1] * h)
+		x1, y1 = int(pts[2][0] * w) - 1, int(pts[2][1] * h) - 1
+		ov = img.copy()
+		cv2.rectangle(ov, (x0, y0), (x1, y1), (0, 200, 255), -1)
+		img = cv2.addWeighted(ov, 0.25, img, 0.75, 0)
+		cv2.rectangle(img, (x0, y0), (x1, y1), (0, 200, 255), 3)
+		if w > 800:
+			img = cv2.resize(img, (800, int(h * 800 / w)), interpolation=cv2.INTER_AREA)
+		ok, buf = cv2.imencode(".jpg", img, [cv2.IMWRITE_JPEG_QUALITY, 75])
+		return buf.tobytes() if ok else None
+	except Exception:
+		return None
+
+
+def fp_spot_ask(key, e):
+	""
+	w = WATCH_REF.get("w")
+	if w is None or not (Notifier.configured() and CFG.get("notify_on")):
+		return False
+	base = alx_base()
+	p = {"event": "info", "persons": 0, "time": datetime.now().isoformat(timespec="seconds"),
+         "text": tr("False alarms often come from here – ignore this spot from now on?"),
+         "info_title": "{name}: " + tr("False alarm spot"), "snapshot": None, "rain": False, "wind": "",
+         "source": STATE.get("source_label", ""), "link": (base + "/na/fs/" + e["tok"]) if base else "", "fs_tok": e["tok"]}
+	jpg = fp_spot_pic(e)
+	threading.Thread(target=w.notifier._dispatch, args=(p, jpg, "spot.jpg" if jpg else ""), daemon=True).start()
+	return True
+
+
+def fp_buttons(p, lang=None):
+	tok = p.get("fs_tok") or ""
+	base = alx_base()
+	if not tok or not base:
+		return []
+	return [(tr("Yes, ignore", lang), f"{base}/na/fs/{tok}/yes"), (tr("No", lang), f"{base}/na/fs/{tok}/no")]
+
+
+_fp_ntfy_actions_before = alx_ntfy_actions
+_fp_tg_markup_before = alx_telegram_markup
+
+
+
+def alx_ntfy_actions(p):
+	if p.get("fs_tok"):
+		return "; ".join(f"http, {' '.join(lab.replace(',', ' ').replace(';', ' ').split())}, {url}, method=POST, clear=true" for lab, url in fp_buttons(p))
+	return _fp_ntfy_actions_before(p)
+
+
+
+def alx_telegram_markup(p):
+	if p.get("fs_tok"):
+		b = fp_buttons(p)
+		return {"inline_keyboard": [[{"text": lab, "url": url} for lab, url in b]]} if b else None
+	return _fp_tg_markup_before(p)
+
+
+def fp_pending(now=None):
+	now = time.time() if now is None else now
+	out = []
+	for k, e in fp_load()["asked"].items():
+		if fp_open(e, now):
+			out.append({"tok": e["tok"], "n": int(e.get("n") or 0), "t": int(e.get("t") or 0), "cell": e.get("cell")})
+	return sorted(out, key=lambda x: -x["t"])
+
+
+_fp_alx_label_before = alx_label
+
+
+def alx_label(lid, label, who="web"):
+	ok, err = _fp_alx_label_before(lid, label, who)
+	if ok:
+		try:
+			x = _alx_label_load(lid)
+			if label == "nothing":
+				fp_spot_note(x)
+			elif x:
+				fp_spot_forget(str(x.get("stamp") or lid))
+		except Exception as e:
+			log_event("sys", f"False alarm spot: {e}"[:160])
+	return ok, err
+
+
+_fp_rec_set_false_before = rec_set_false
+_FP_REC_STAMP = re.compile(r"^person_(\d{8}_\d{6})\.(mp4|jpg)$")
+
+
+def rec_set_false(names, cause, watch=None):
+	n = _fp_rec_set_false_before(names, cause, watch)
+	try:
+		for name in (names if isinstance(names, list) else [])[:50]:
+			m = _FP_REC_STAMP.match(os.path.basename(str(name)))
+			if not m:
+				continue
+			if cause in FA_CAUSES:
+				x = _alx_label_load(m.group(1))
+				if x:
+					fp_spot_note(x)
+			else:
+				fp_spot_forget(m.group(1))
+	except Exception as e:
+		log_event("sys", f"False alarm spot: {e}"[:160])
+	return n
+
+
+_fp_ctx_note_before = alarm_ctx_note
+
+
+
+def alarm_ctx_note(w, stamp, snap, frame, persons):
+	lid = _fp_ctx_note_before(w, stamp, snap, frame, persons)
+	try:
+		ctx = ALX.get("ctx")
+		if ctx and ctx.get("id") == lid:
+			pan, tilt = servo_pos()
+			ctx.update(pan=round(float(pan), 1), tilt=round(float(tilt), 1), srv=SRV.get("pos") is not None)
+	except Exception:
+		pass
+	return lid
+
+
+
+def wg_feed(fg_mask, person_boxes, now=None):
+	""
+	if not CFG.get("wind_guard", True) or fg_mask is None or fg_mask.size == 0:
+		return
+	now = time.time() if now is None else now
+	m = (fg_mask > 0).astype(np.uint8)
+	for b in person_boxes or []:
+		x, y, w, h = (int(v) for v in b[:4])
+		m[max(0, y):y + h, max(0, x):x + w] = 0
+	frac = cv2.resize(m.astype(np.float32), WG_GRID, interpolation=cv2.INTER_AREA)
+	act = (frac > 0.004).astype(np.float32)
+	dt = min(5.0, max(0.0, now - WG["t"])) if WG["t"] else 0.2
+	WG["t"] = now
+	a = 1.0 - math.exp(-dt / WG_TAU_S)
+	WG["occ"] = act * a + (WG["occ"] if WG["occ"] is not None and WG["occ"].shape == act.shape else np.zeros_like(act)) * (1.0 - a)
+
+
+def wg_veg(fx, fy):
+	o = WG["occ"]
+	if o is None:
+		return False
+	c = max(0, min(WG_GRID[0] - 1, int(fx * WG_GRID[0])))
+	r = max(0, min(WG_GRID[1] - 1, int(fy * WG_GRID[1])))
+	return bool(o[r, c] >= WG_VEG)
+
+
+def wg_wind():
+	""
+	lim = max(10.0, float(CFG.get("wind_guard_kmh") or 40.0))
+	st = STATE.get("storm") or {}
+	try:
+		g = st.get("gust")
+		if g is not None and float(g) >= lim:
+			return f"gusts {float(g):.0f} km/h"
+		v = st.get("wind")
+		if v is not None and float(v) >= lim * 0.6:
+			return f"wind {float(v):.0f} km/h"
+	except (TypeError, ValueError):
+		pass
+	if STATE.get("wind_level") in ("strong", "storm"):
+		return "picture: " + str(STATE.get("wind_level"))
+	return ""
+
+
+def wind_guard_filter(w, persons, now):
+	""
+	if not persons or not CFG.get("wind_guard", True) or WG["occ"] is None:
+		return persons
+	why = wg_wind()
+	if not why:
+		WG["seen"].clear()
+		return persons
+	pw, ph = getattr(w, "_proc_size", None) or (0, 0)
+	if not pw or not ph:
+		return persons
+	ai = [b for b in (getattr(getattr(w, "ai", None), "boxes", None) or [])]
+	warm = now - float(getattr(w, "last_warm", 0.0) or 0.0) < 3.0
+	out, held = [], 0
+	for b in persons:
+		x, y, bw, bh = (float(v) for v in b[:4])
+		fx, fy = (x + bw / 2.0) / pw, (y + bh * 0.85) / ph
+		cx, cy = (x + bw / 2.0) / pw, (y + bh / 2.0) / ph
+		if warm or not (wg_veg(fx, fy) or wg_veg(cx, cy)) or any(iou(tuple(b[:4]), tuple(a[:4])) > 0.2 for a in ai):
+			out.append(b)
+			continue
+		k = (int(cx * WG_GRID[0]), int(cy * WG_GRID[1]))
+		first, last = WG["seen"].get(k, (now, now))
+		if now - last > 2.0:
+			first = now
+		WG["seen"][k] = (first, now)
+		if now - first >= WG_HOLD_S:
+			out.append(b)
+			if now - first < WG_HOLD_S + 0.6:
+				WG["passed"] += 1
+				log_event("wind", f"Wind protection: movement in a plant area stayed {WG_HOLD_S:.0f} s - counts ({why})")
+			continue
+		held += 1
+	if held:
+		WG["held"] += held; WG["why"] = why
+		if now - WG["log_t"] > 30:
+			WG["log_t"] = now
+			log_event("wind", f"Wind protection: movement in a plant area held back ({why}; no AI person, no heat)")
+	return out
+
+
+_fp_wind_before = WeatherAnalyzer.wind
+
+
+def _fp_wind(self, fg_mask, person_boxes):
+	r = _fp_wind_before(self, fg_mask, person_boxes)
+	try:
+		wg_feed(fg_mask, person_boxes)
+	except Exception:
+		pass
+	return r
+
+
+
+WeatherAnalyzer.wind = _fp_wind
+
+
+
+def _fp_thumb(frame, wd=240):
+	if frame is None:
+		return None
+	h, w = frame.shape[:2]
+	return cv2.resize(frame, (wd, max(2, int(h * wd / max(1, w)))), interpolation=cv2.INTER_AREA) if w > wd else frame.copy()
+
+
+def fp_bundle_add(frame, now=None):
+	now = time.time() if now is None else now
+	with FPB["lock"]:
+		if not FPB["n"]:
+			FPB["first"] = now
+		FPB["n"] += 1
+		t_ = _fp_thumb(frame)
+		if t_ is not None:
+			FPB["items"].append((now, t_))
+			if len(FPB["items"]) > 8:
+				FPB["items"].pop(4)
+
+
+def fp_bundle_pop():
+	with FPB["lock"]:
+		out = (FPB["n"], FPB["first"], list(FPB["items"]))
+		FPB.update(n=0, first=0.0, items=[])
+	return out
+
+
+def fp_pick4(items):
+	if len(items) <= 4:
+		return [f for _t, f in items]
+	idx = sorted({round(i * (len(items) - 1) / 3.0) for i in range(4)})
+	return [items[i][1] for i in idx]
+
+
+def fp_strip(jpg, thumbs, width=None):
+	""
+	if not thumbs:
+		return jpg
+	main = None
+	if jpg:
+		try:
+			main = cv2.imdecode(np.frombuffer(jpg, np.uint8), cv2.IMREAD_COLOR)
+		except Exception:
+			main = None
+	W = int(width or (main.shape[1] if main is not None else 960))
+	cw = W // 4
+	ch = max(int(t_.shape[0] * cw / max(1, t_.shape[1])) for t_ in thumbs)
+	strip = np.full((ch + 6, W, 3), 24, np.uint8)
+	for i, t_ in enumerate(thumbs[:4]):
+		th = cv2.resize(t_, (cw - 4, max(2, int(t_.shape[0] * (cw - 4) / max(1, t_.shape[1])))), interpolation=cv2.INTER_AREA)
+		strip[3:3 + th.shape[0], i * cw + 2:i * cw + 2 + th.shape[1]] = th[:ch]
+	img = strip if main is None else np.vstack([main, strip])
+	ok, buf = cv2.imencode(".jpg", img, [cv2.IMWRITE_JPEG_QUALITY, 80])
+	return buf.tobytes() if ok else jpg
+
+
+def fp_more_text(n, m):
+	return pk_trf("+{n} more in {m} min", n=int(n), m=int(m))
+
+
+def fp_bundle_take(p, jpg, now=None):
+	""
+	now = time.time() if now is None else now
+	if not CFG.get("push_bundle", True):
+		fp_bundle_pop()
+		return jpg
+	if not p.get("more"):
+		return jpg
+	n, first, items = fp_bundle_pop()
+	if not n:
+		return jpg
+	p["more_min"] = max(1, int(math.ceil((now - first) / 60.0)))
+	return fp_strip(jpg, fp_pick4(items)) if items else jpg
+
+
+def fp_bundle_tick(w, now):
+	""
+	if not (CFG.get("push_bundle", True) and CFG.get("push_bundle_after")) or not FPB["n"]:
+		return
+	n_ = getattr(w, "notifier", None)
+	if n_ is None or now - float(getattr(n_, "last", 0.0)) < float(CFG["notify_cooldown"]):
+		return
+	if now - FPB["first"] < 5:
+		return
+	n, first, items = fp_bundle_pop()
+	if not n or not (n_.configured() and CFG.get("notify_on") and is_armed()):
+		return
+	n_.more = 0
+	pub = str(CFG.get("public_url") or "").strip().rstrip("/")
+	p = {"event": "person", "persons": 1, "time": datetime.fromtimestamp(first).isoformat(timespec="seconds"), "snapshot": None,
+         "rain": bool(STATE.get("rain_mode")), "wind": STATE.get("wind_level", ""), "source": STATE.get("source_label", ""),
+         "link": pub + "/recordings" if pub else "", "more": n, "more_min": max(1, int(math.ceil((now - first) / 60.0))),
+         "bundle_only": True, "_fp": 1}
+	jpg = fp_strip(None, fp_pick4(items), 720) if items else None
+	log_event("web", f"Bundle of {n} detections in the pause sent")
+	threading.Thread(target=n_._dispatch, args=(p, jpg, "bundle.jpg" if jpg else ""), daemon=True).start()
+
+
+_fp_person_before = Notifier.person
+
+
+def _fp_person(self, count, snapshot_path=None, frame=None):
+	try:
+		if count and CFG.get("push_bundle", True) and is_armed() and CFG["notify_on"] and self.configured() \
+                and time.time() - self.last < CFG["notify_cooldown"] and push_allowed("person")[0]:
+			fp_bundle_add(frame)
+	except Exception:
+		pass
+	return _fp_person_before(self, count, snapshot_path, frame)
+
+
+
+Notifier.person = _fp_person
+
+
+
+_FP_AUTO_NAME = re.compile(r"^(Zone|Zona)\s*\d+$", re.I)
+
+
+def fp_zone_name(boxes):
+	""
+	pt = fp_feet(boxes)
+	if pt is None:
+		return ""
+	best, ba = "", 9.0
+	for z in list(ZONES):
+		if z.get("mode") in ("privacy", "sleep", "line") or not zone_here(z):
+			continue
+		nm = str(z.get("name") or "").strip()
+		if not nm or _FP_AUTO_NAME.match(nm) or len(z.get("points") or []) < 3:
+			continue
+		if point_in_poly(pt[0], pt[1], z["points"]):
+			pts = z["points"]
+			a = abs(sum(pts[i][0] * pts[i - 1][1] - pts[i - 1][0] * pts[i][1] for i in range(len(pts)))) / 2.0
+			if a < ba:
+				best, ba = nm[:40], a
+	return best
+
+
+_fp_push_short_before = push_short
+
+
+def push_short(p):
+	q = p
+	if p.get("more") and p.get("more_min"):
+		q = dict(p); q.pop("more", None)
+	r = _fp_push_short_before(q)
+	try:
+		ev = Notifier._event(p)
+		if ev == "person" and p.get("zone") and CFG.get("push_zone_name", True) and not str(CFG.get("msg_person_title") or "").strip():
+			n = int(p.get("persons") or 1)
+			old = pk_tr("Person detected") if n <= 1 else pk_trf("{n} persons", n=n)
+			new = pk_trf("Person at «{zone}»", zone=p["zone"]) if n <= 1 else trf("{n} persons at «{zone}»", n=n, zone=p["zone"])
+			if old in r["title"]:
+				r["title"] = pk_line(r["title"].replace(old, new, 1), 60)
+		extra = []
+		if q is not p:
+			extra.append(fp_more_text(p["more"], p["more_min"]))
+		if p.get("home_id"):
+			extra.append("🏠 " + tr("picture at home"))
+		if extra:
+			r["text"] = pk_line(" · ".join(x for x in [r["text"]] + extra if x))
+	except Exception:
+		pass
+	return r
+
+
+_fp_push_long_before = push_long
+
+
+def push_long(p):
+	q = p
+	if p.get("more") and p.get("more_min"):
+		q = dict(p); q.pop("more", None)
+	t_ = _fp_push_long_before(q)
+	try:
+		if p.get("zone") and CFG.get("push_zone_name", True) and Notifier._event(p) == "person":
+			t_ += " · " + trf("Zone «{zone}»", zone=p["zone"])
+		if q is not p:
+			t_ += " " + trf("(+{n} more detections in {m} min)", n=int(p["more"]), m=int(p["more_min"]))
+		if p.get("home_id") and p.get("link"):
+			t_ += " · 🏠 " + tr("picture at home") + ": " + p["link"]
+	except Exception:
+		pass
+	return t_
+
+
+
+def pb_dir():
+	return os.path.join(DATA_DIR, "push_bilder")
+
+
+def pb_prune():
+	d = pb_dir()
+	try:
+		fs = sorted(os.listdir(d), key=lambda f_: os.path.getmtime(os.path.join(d, f_)))
+	except OSError:
+		return
+	old = time.time() - PB_DAYS * 86400
+	ids = []
+	for f_ in fs:
+		i = f_.split(".")[0]
+		if i not in ids:
+			ids.append(i)
+	drop = set(ids[:max(0, len(ids) - PB_KEEP)])
+	for f_ in fs:
+		try:
+			if f_.split(".")[0] in drop or os.path.getmtime(os.path.join(d, f_)) < old:
+				os.remove(os.path.join(d, f_))
+		except OSError:
+			pass
+
+
+def pb_store(data, ext, pid=None):
+	""
+	if not data or ext not in ("jpg", "mp4", "gif"):
+		return ""
+	pid = pid if pid and PB_RE.match(pid) else secrets.token_hex(8)
+	try:
+		os.makedirs(pb_dir(), exist_ok=True)
+		with open(os.path.join(pb_dir(), pid + "." + ext), "wb") as f:
+			f.write(data)
+		pb_prune()
+		return pid
+	except OSError as e:
+		log_event("web", f"Picture of the message not kept: {e}"[:160])
+		return ""
+
+
+def pb_link(pid):
+	base = alx_base()
+	return (base + "/pb/" + pid) if base and pid else ""
+
+
+def fp_home(p, jpg):
+	""
+	if not CFG.get("push_home_pics") or not jpg:
+		return
+	pid = pb_store(jpg, "jpg")
+	if not pid:
+		return
+	p["home_id"] = pid
+	if Notifier._event(p) in ("person", "prealarm", "warm", "noise", "tamper", "test"):
+		p["link"] = pb_link(pid) or p.get("link", "")
+
+
+_fp_sx_push_jpg_before = sx_push_jpg
+
+
+def sx_push_jpg(jpg):
+	if CFG.get("push_home_pics"):
+		return None
+	return _fp_sx_push_jpg_before(jpg)
+
+
+_fp_email_send_before = email_send
+
+
+def email_send(subject, text, jpg=None, fname="photo.jpg"):
+	if CFG.get("push_home_pics"):
+		jpg = None
+	return _fp_email_send_before(subject, text, jpg, fname)
+
+
+
+def fp_clip_feed(frame, now):
+	if not CFG.get("push_clip") or frame is None or not is_armed():
+		if CLIP["buf"]:
+			CLIP["buf"].clear()
+		return
+	if now - CLIP["last"] < 1.0 / CLIP_FPS:
+		return
+	CLIP["last"] = now
+	CLIP["buf"].append((now, _fp_thumb(frame, 320)))
+	while CLIP["buf"] and now - CLIP["buf"][0][0] > CLIP_KEEP_S:
+		CLIP["buf"].popleft()
+
+
+def _fp_even(frames, wd):
+	out = []
+	for f_ in frames:
+		h, w = f_.shape[:2]
+		nw = max(16, int(wd) // 2 * 2); nh = max(16, int(h * nw / max(1, w)) // 2 * 2)
+		out.append(cv2.resize(f_, (nw, nh), interpolation=cv2.INTER_AREA))
+	return out
+
+
+def fp_clip_gif(frames, fps):
+	from PIL import Image
+	ims = [Image.fromarray(cv2.cvtColor(f_, cv2.COLOR_BGR2RGB)).convert("P", palette=Image.ADAPTIVE, colors=64) for f_ in frames]
+	import io as _io
+	b = _io.BytesIO()
+	ims[0].save(b, format="GIF", save_all=True, append_images=ims[1:], duration=int(1000 / max(1.0, fps)), loop=0, optimize=True)
+	return b.getvalue()
+
+
+def fp_clip_mp4(frames, fps):
+	h, w = frames[0].shape[:2]
+	tmp = tempfile.mkdtemp(prefix="mw_clip_")
+	out = os.path.join(tmp, "clip.mp4")
+	try:
+		if shutil.which("ffmpeg"):
+			r = subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "rawvideo", "-pix_fmt", "bgr24", "-s", f"{w}x{h}", "-r", f"{fps:.2f}",
+                                "-i", "-", "-an", "-c:v", "libx264", "-preset", "veryfast", "-crf", "32", "-pix_fmt", "yuv420p",
+                                "-movflags", "+faststart", out], input=b"".join(f_.tobytes() for f_ in frames), capture_output=True, timeout=40)
+			if r.returncode == 0 and os.path.getsize(out) > 0:
+				with open(out, "rb") as f:
+					return f.read()
+		vw = cv2.VideoWriter(out, cv2.VideoWriter_fourcc(*"mp4v"), fps, (w, h))
+		if not vw.isOpened():
+			return b""
+		for f_ in frames:
+			vw.write(f_)
+		vw.release()
+		with open(out, "rb") as f:
+			return f.read()
+	except (OSError, subprocess.SubprocessError):
+		return b""
+	finally:
+		shutil.rmtree(tmp, ignore_errors=True)
+
+
+def fp_clip_make(frames, fps, fmt, cap_kb):
+	""
+	cap = int(max(50, float(cap_kb)) * 1024)
+	last = (b"", 0, 0)
+	for wd, step in ((320, 1), (240, 2), (160, 3)):
+		fr = _fp_even(frames[::step], wd)
+		f2 = fps / step
+		try:
+			data = fp_clip_gif(fr, f2) if fmt == "gif" else fp_clip_mp4(fr, f2)
+		except Exception:
+			data = b""
+		last = (data, f2, wd)
+		if data and len(data) <= cap:
+			return last
+	return (b"", last[1], last[2]) if not last[0] or len(last[0]) > cap else last
+
+
+def _fp_multipart(fields, fname, ctype, data, field):
+	b = uuid.uuid4().hex
+	parts = [f'--{b}\r\nContent-Disposition: form-data; name="{k}"\r\n\r\n{v}\r\n'.encode() for k, v in fields]
+	parts.append((f'--{b}\r\nContent-Disposition: form-data; name="{field}"; filename="{fname}"\r\n'
+                  f'Content-Type: {ctype}\r\n\r\n').encode() + data + b"\r\n")
+	parts.append(f"--{b}--\r\n".encode())
+	return b"".join(parts), "multipart/form-data; boundary=" + b
+
+
+def fp_clip_channel():
+	""
+	kind = CFG.get("notify_type")
+	if kind == "telegram" and CFG.get("telegram_token") and CFG.get("telegram_chat"):
+		return "telegram"
+	url = str(CFG.get("notify_url") or "").strip()
+	if url and (kind == "ntfy" or push_url_is_ntfy(url)):
+		return "ntfy"
+	return ""
+
+
+def fp_clip_send(notifier, p, data, fmt):
+	title = notifier._title(p) + " · 🎬"
+	ch = fp_clip_channel()
+	if ch == "ntfy":
+		h = {"Title": _hdr(title), "Filename": "clip." + fmt, "Message": _hdr(tr("Clip of the alarm")), "Priority": "default"}
+		if p.get("link"):
+			h["Click"] = p["link"]
+		req = urllib.request.Request(str(CFG["notify_url"]).strip(), data=data, headers=h, method="PUT")
+	elif ch == "telegram":
+		base = f"{TELEGRAM_API}/bot{CFG['telegram_token']}"
+		field, meth, ct = ("video", "/sendVideo", "video/mp4") if fmt == "mp4" else ("animation", "/sendAnimation", "image/gif")
+		body_, ctype = _fp_multipart((("chat_id", CFG["telegram_chat"]), ("caption", title)), "clip." + fmt, ct, data, field)
+		req = urllib.request.Request(base + meth, data=body_, headers={"Content-Type": ctype})
+	else:
+		return False, "no channel"
+	with urllib.request.urlopen(req, timeout=30) as r:
+		return True, f"HTTP {r.status}"
+
+
+def fp_clip_job(notifier, p, t0):
+	dur = max(3.0, min(5.0, float(CFG.get("push_clip_s") or 4.0)))
+	pre, post = dur * 0.6, dur * 0.4
+	time.sleep(max(0.0, t0 + post + 0.3 - time.time()))
+	frames = [f_ for t_, f_ in list(CLIP["buf"]) if t0 - pre <= t_ <= t0 + post]
+	st = {"t": int(time.time()), "frames": len(frames), "bytes": 0, "fmt": "", "sent": "", "home": ""}
+	CLIP["state"] = st
+	if len(frames) < 6:
+		st["sent"] = "too few pictures"
+		return st
+	home = bool(CFG.get("push_home_pics"))
+	ch = fp_clip_channel()
+	fmt = "gif" if (ch == "ntfy" and not home) else "mp4"
+	data, fps, wd = fp_clip_make(frames, len(frames) / dur, fmt, CFG.get("push_clip_kb") or 800)
+	st.update(bytes=len(data), fmt=fmt, width=wd)
+	if not data:
+		st["sent"] = "too big"
+		log_event("web", f"Clip not sent: bigger than {int(float(CFG.get('push_clip_kb') or 800))} KB also when small")
+		return st
+	if home:
+		st["home"] = pb_store(data, fmt, p.get("home_id")) or ""
+		st["sent"] = "home"
+		return st
+	try:
+		if sandbox_active():
+			st["sent"] = "test inbox"
+			return st
+	except NameError:
+		pass
+	if sim_net_down() or not ch or not CFG.get("notify_on"):
+		st["sent"] = "no channel"
+		return st
+	try:
+		ok, msg = fp_clip_send(notifier, p, data, fmt)
+		st["sent"] = "ok" if ok else msg
+		log_event("web", f"Clip sent ({fmt}, {len(data) // 1024} KB, {ch})")
+	except Exception as e:
+		msg = str(e)
+		for s_ in (CFG.get("telegram_token"), str(CFG.get("notify_url") or "").strip()):
+			if s_:
+				msg = msg.replace(s_, "***")
+		st["sent"] = "failed"
+		log_event("web", f"Clip failed: {msg}"[:200])
+	return st
+
+
+
+_fp_dispatch_before = Notifier._dispatch
+
+
+def _fp_dispatch(self, p, jpg, fname):
+	try:
+		ev = Notifier._event(p)
+		if ev == "person" and not p.get("late") and not p.get("_fp"):
+			p["_fp"] = 1
+			now = time.time()
+			ctx = ALX.get("ctx")
+			if ctx and now - float(ctx.get("t") or 0) < 15 and CFG.get("push_zone_name", True) and "zone" not in p:
+				z = fp_zone_name(ctx.get("boxes"))
+				if z:
+					p["zone"] = z
+			jpg = fp_bundle_take(p, jpg, now)
+			if jpg and fname in ("", None):
+				fname = "snapshot.jpg"
+			fp_home(p, jpg)
+			if CFG.get("push_clip") and int(p.get("persons") or 0) > 0:
+				threading.Thread(target=fp_clip_job, args=(self, dict(p), now), daemon=True, name="fp-clip").start()
+		elif ev == "person" and p.get("bundle_only") and not p.get("home_id"):
+			fp_home(p, jpg)
+		elif ev != "person" and not p.get("home_id") and not p.get("late"):
+			fp_home(p, jpg)
+	except Exception as e:
+		log_event("sys", f"Push extras: {e}"[:160])
+	return _fp_dispatch_before(self, p, jpg, fname)
+
+
+
+Notifier._dispatch = _fp_dispatch
+
+
+_alarm_gate_639zy = alarm_gate
+
+
+def alarm_gate(w, frame, persons, now):
+	try:
+		fp_clip_feed(frame, now)
+	except Exception:
+		pass
+	try:
+		persons = wind_guard_filter(w, persons, now)
+	except Exception as e:
+		if now - WG.get("err_t", 0.0) > 300:
+			WG["err_t"] = now
+			log_event("sys", f"Wind protection: {e}"[:160])
+	out = _alarm_gate_639zy(w, frame, persons, now)
+	try:
+		fp_bundle_tick(w, now)
+	except Exception:
+		pass
+	return out
+
+
+def fp_state():
+	return {"pending": fp_pending(), "notes": len(fp_load()["notes"]), "learn": bool(CFG.get("fp_spot_learn", True)),
+            "wind": {"on": bool(CFG.get("wind_guard", True)), "strong": wg_wind(), "held": WG["held"], "passed": WG["passed"],
+                     "plant_fields": int((WG["occ"] >= WG_VEG).sum()) if WG["occ"] is not None else 0},
+            "bundle": {"on": bool(CFG.get("push_bundle", True)), "waiting": FPB["n"]},
+            "clip": {"on": bool(CFG.get("push_clip")), "last": CLIP.get("state") or {}},
+            "home_pics": bool(CFG.get("push_home_pics")), "confirm2": bool(CFG.get("alarm_confirm2"))}
+
+
+
+_smalltv_routes_639zy = smalltv_routes
+
+
+def smalltv_routes(app, reply, body):
+	_smalltv_routes_639zy(app, reply, body)
+	from flask import Response, request
+	import html as _html
+
+	def _fails(ip, now):
+		rec = [x for x in ALX["fails"].get(ip, []) if now - x < 600]
+		ALX["fails"][ip] = rec
+		return rec
+
+	@app.route("/na/fs/<tok>/<act>", methods=["GET", "POST"])
+	def fp_web_answer(tok, act):
+		ip = request.remote_addr or "?"
+		now = time.time()
+		rec = _fails(ip, now)
+		if len(rec) >= 20:
+			return sx_err(429, "keys")
+		with _FP_LOCK:
+			key, e = fp_by_tok(tok)
+		if not fp_open(e, now) or act not in ("yes", "no", "bild.jpg"):
+			rec.append(now)
+			return Response(_ALX_PAGE % ("MoveEye", _html.escape(tr("This question is no longer open.")), ""), 404, mimetype="text/html")
+		if act == "bild.jpg":
+			jpg = fp_spot_pic(e)
+			return Response(jpg, mimetype="image/jpeg", headers={"Cache-Control": "no-store"}) if jpg else Response("not found", 404)
+		if request.method == "GET":
+			img = f'<p><img src="/na/fs/{tok}/bild.jpg" alt="" style="max-width:100%;border-radius:10px"></p>'
+			q = _html.escape(tr("False alarms often come from here – ignore this spot from now on?"))
+			info = _html.escape(trf("{n} false alarms in 7 days", n=int(e.get("n") or 0)))
+			btn = lambda a, lab, bg: (f'<form method="post" action="/na/fs/{tok}/{a}" style="display:inline-block;margin:4px">'
+                                      f'<button type="submit" style="background:{bg}">{_html.escape(lab)}</button></form>')
+			return Response(_ALX_PAGE % ("🎯 " + _html.escape(tr("False alarm spot")), info + "</p>" + img + "<p>" + q,
+                                         btn("yes", tr("Yes, ignore"), "#2f81f7") + btn("no", tr("No"), "#4a5361")), mimetype="text/html")
+		ok, txt = fp_spot_answer(tok, act, "push button")
+		if "text/html" in (request.headers.get("Accept") or "") or request.form is not None and request.content_type and "form" in request.content_type:
+			return Response(_ALX_PAGE % ("MoveEye", ("✓ " if ok else "⚠ ") + _html.escape(txt), ""), 200 if ok else 409, mimetype="text/html")
+		return Response(txt, 200 if ok else 409, mimetype="text/plain")
+
+	@app.route("/api/fehlalarm_stellen", methods=["GET", "POST"])
+	def fp_api():
+		if request.method == "POST":
+			d = body()
+			ok, txt = fp_spot_answer(str(d.get("tok") or ""), str(d.get("act") or ""), "web")
+			return reply({"ok": ok, "text": txt, "error": None if ok else txt}, 200 if ok else 409)
+		return reply(fp_state())
+
+	@app.route("/pb/<name>")
+	def pb_web(name):
+		m = re.fullmatch(r"([0-9a-f]{16})(?:\.(jpg|mp4|gif))?", name or "")
+		if not m:
+			return Response("not found", 404)
+		pid, ext = m.group(1), m.group(2)
+		if ext:
+			p_ = os.path.join(pb_dir(), pid + "." + ext)
+			if not os.path.isfile(p_):
+				return Response("not found", 404)
+			from flask import send_file
+			return send_file(p_, mimetype={"jpg": "image/jpeg", "mp4": "video/mp4", "gif": "image/gif"}[ext], max_age=3600)
+		have = [x for x in ("jpg", "gif", "mp4") if os.path.isfile(os.path.join(pb_dir(), pid + "." + x))]
+		if not have:
+			return Response(_ALX_PAGE % ("MoveEye", _html.escape(tr("not found")), ""), 404, mimetype="text/html")
+		parts = []
+		for x in have:
+			parts.append(f'<p><video src="/pb/{pid}.mp4" controls autoplay muted playsinline loop style="max-width:100%"></video></p>'
+                         if x == "mp4" else f'<p><img src="/pb/{pid}.{x}" alt="" style="max-width:100%;border-radius:10px"></p>')
+		return Response(_ALX_PAGE % ("🏠 " + _html.escape(tr("Picture of the message")), "", "".join(parts)
+                                     + '<p><a href="/recordings" style="color:#8ab4f8">' + _html.escape(tr("Recordings")) + "</a></p>"),
+                        mimetype="text/html", headers={"Cache-Control": "no-store"})
+
+
+
+_FP_TG = [
+    ("fp_spot_learn", "Learn false-alarm spots: after 3 false alarms at the same place within 7 days, ask once whether to ignore it (never without your answer)"),
+    ("push_bundle", "Bundle alarms during the pause: the next message says «+N more in M min» with a strip of up to 4 small pictures"),
+    ("push_bundle_after", "After the pause, send the bundle also on its own (without a new alarm)"),
+    ("push_zone_name", "Zone name in the message («Person at «Entrance»»)"),
+    ("push_clip", "Short clip with the alarm (3-5 s, small; ntfy and Telegram)"),
+    ("push_home_pics", "Pictures stay at home: messages contain only text and a link to the picture / clip on MoveEye"),
+]
+_fp_i = next((i for i, t_ in enumerate(TOGGLES) if t_[1] == "sim_info_push"), len(TOGGLES) - 1)
+for _j, (_k, _l) in enumerate(_FP_TG):
+	TOGGLES.insert(_fp_i + 1 + _j, ("Notifications", _k, _l))
+_fp_s = next((i for i, s_ in enumerate(SLIDERS) if s_[1] == "notify_cooldown"), len(SLIDERS) - 1)
+SLIDERS.insert(_fp_s + 1, ("Notifications", "push_clip_s", "Clip length (s)", 3.0, 5.0, 0.5))
+SLIDERS.insert(_fp_s + 2, ("Notifications", "push_clip_kb", "Clip at most (KB)", 200.0, 3000.0, 100.0))
+_fp_c = next((i for i, t_ in enumerate(TOGGLES) if t_[1] == "alarm_heat_fusion"), len(TOGGLES) - 1)
+_fp_sec = TOGGLES[_fp_c][0] if 0 <= _fp_c < len(TOGGLES) and TOGGLES[_fp_c][1] == "alarm_heat_fusion" else "Detection"
+TOGGLES.insert(_fp_c + 1, (_fp_sec, "wind_guard",
+                           "Wind protection: in strong wind, movement in plant areas (leaves that move all the time) needs the AI or the thermal camera - or 6 s longer"))
+_fp_w = next((i for i, s_ in enumerate(SLIDERS) if s_[0] == _fp_sec), len(SLIDERS) - 1)
+SLIDERS.insert(_fp_w + 1, (_fp_sec, "wind_guard_kmh", "Wind protection from gusts of (km/h)", 20.0, 80.0, 5.0))
+PK_TITLES.setdefault("False alarm spot", ("🎯", "False alarm spot", "info", False))
+
+
+_HX_FP = _zd('639zy_fehlalarm_push/HX_FP', _zd_hx({
+    'Learn false-alarm spots: after 3 false alarms at the same place within 7 days, ask once whether to ignore it (never without your answer)': 'Fehlalarm-Stellen lernen: nach 3 Fehlalarmen an derselben Stelle in 7 Tagen einmal fragen, ob sie ignoriert werden soll (nie ohne deine Antwort)',
+    'Bundle alarms during the pause: the next message says «+N more in M min» with a strip of up to 4 small pictures': 'Alarme in der Pause bündeln: die nächste Meldung sagt «+N weitere in M Min.» mit einem Streifen von bis zu 4 kleinen Bildern',
+    'After the pause, send the bundle also on its own (without a new alarm)': 'Nach der Pause die Sammlung auch allein schicken (ohne neuen Alarm)',
+    'Zone name in the message («Person at «Entrance»»)': 'Zonen-Name in der Meldung («Person bei «Eingangstür»»)',
+    'Short clip with the alarm (3-5 s, small; ntfy and Telegram)': 'Kurzer Clip zum Alarm (3–5 s, klein; ntfy und Telegram)',
+    'Pictures stay at home: messages contain only text and a link to the picture / clip on MoveEye': 'Bilder bleiben zu Hause: Meldungen nur mit Text und einem Link zum Bild / Clip auf dem MoveEye',
+    'Clip length (s)': 'Länge des Clips (s)',
+    'Clip at most (KB)': 'Clip höchstens (KB)',
+    'Wind protection: in strong wind, movement in plant areas (leaves that move all the time) needs the AI or the thermal camera - or 6 s longer': 'Windschutz: bei starkem Wind braucht Bewegung in Pflanzen-Bereichen (Blätter, die sich dauernd bewegen) die KI oder das Wärmebild – oder 6 s länger',
+    'Wind protection from gusts of (km/h)': 'Windschutz ab Böen von (km/h)',
+    'False alarm spot': 'Fehlalarm-Stelle',
+    'False alarms often come from here – ignore this spot from now on?': 'Hier kommen oft Fehlalarme – künftig ignorieren?',
+    'Yes, ignore': 'Ja, ignorieren',
+    'No': 'Nein',
+    '+{n} more in {m} min': '+{n} weitere in {m} Min.',
+    '(+{n} more detections in {m} min)': '(+{n} weitere Erkennungen in {m} Min.)',
+    '{n} persons at «{zone}»': '{n} Personen bei «{zone}»',
+    'Zone «{zone}»': 'Zone «{zone}»',
+    'picture at home': 'Bild zu Hause',
+    'Picture of the message': 'Bild der Meldung',
+    'Clip of the alarm': 'Clip zum Alarm',
+    '{n} false alarms in 7 days': '{n} Fehlalarme in 7 Tagen',
+    'This question is no longer open.': 'Diese Frage ist nicht mehr offen.',
+    'Done - an ignore zone was added here. You can change it under Zones.': 'Erledigt – hier gibt es jetzt eine Ignorier-Zone. Ändern kannst du sie unter Zonen.',
+    'OK - this spot is not ignored. MoveEye does not ask again for 30 days.': 'Gut – diese Stelle wird nicht ignoriert. MoveEye fragt 30 Tage lang nicht mehr.',
+    'The camera has changed since - no zone added.': 'Die Kamera ist inzwischen eine andere – keine Zone angelegt.',
+    'Too many zones - delete one under Zones first.': 'Zu viele Zonen – zuerst unter Zonen eine löschen.',
+}))
+for _k, _v in _HX_FP.items():
+	DE.setdefault(_k, _v[0])
+	for _i, _L in enumerate(("fr", "it", "rm")):
+		TRX[_L].setdefault(_k, _v[_i + 1])
+_FP_DE = {_k: _v[0] for _k, _v in _HX_FP.items()}
+
+
+FP_WEB_JS = _zd('639zy_fehlalarm_push/FP_WEB_JS', "")
+WEB_PAGE = WEB_PAGE.replace("</body>", FP_WEB_JS.replace("/*FPDE*/{}", json.dumps(_FP_DE, ensure_ascii=False), 1) + "</body>", 1)
+
+
+_HELP_FP = _zd('639zy_fehlalarm_push/HELP_FP', _ZDDict())
+
+
+def _help_fp(doc, lang):
+	if 'id="false-pushes"' in doc:
+		return doc
+	i = doc.find('<section id="tips"')
+	return doc[:i] + _HELP_FP[lang] + doc[i:] if i >= 0 else doc
+
+
+_hp_en_fp = HELP_PAGE.find('<div lang="en">')
+if _hp_en_fp > 0:
+	HELP_PAGE = _help_fp(HELP_PAGE[:_hp_en_fp], "de") + _help_fp(HELP_PAGE[_hp_en_fp:], "en")
+for _L in ("fr", "it", "rm"):
+	if HELP_X.get(_L):
+		HELP_X[_L] = _help_fp(HELP_X[_L], _L)
+
+
+
+def fp_selftest():
+	keep = {k: CFG.get(k) for k in ("fp_spot_learn", "wind_guard", "wind_guard_kmh", "push_bundle", "push_bundle_after", "push_zone_name",
+                                    "push_clip", "push_clip_s", "push_clip_kb", "push_home_pics", "sim_on", "public_url", "lang",
+                                    "msg_person_title", "notify_cooldown", "msg_icons")}
+	keep_st = {k: STATE.get(k) for k in ("storm", "wind_level", "source_label")}
+	keep_z = [dict(z) for z in ZONES]
+	keep_fps = dict(FPS); keep_wg = dict(WG); keep_ctx = ALX.get("ctx")
+	tmp = tempfile.mkdtemp(prefix="mw_fp_")
+	_ls = log_event
+	g = globals()
+	sv = {k: g[k] for k in ("fp_spot_ask", "zones_set", "save_settings", "pb_dir", "alx_base")}
+	try:
+		g["log_event"] = lambda *a, **k: None
+		g["save_settings"] = lambda *a, **k: None
+		CFG.update(sim_on=False, lang="de", fp_spot_learn=True, msg_person_title="", msg_icons=True)
+		STATE["source_label"] = "Pi-Kamera 0"
+		FPS.update(file=os.path.join(tmp, "stellen.json"), data=None)
+		asked = []
+		g["fp_spot_ask"] = lambda key, e: asked.append((key, e["tok"])) or True
+		g["alx_base"] = lambda: "https://moveeye.example"
+
+		assert DEFAULTS["alarm_confirm2"] is ALARM_CONFIRM2_WERK and FACTORY_CFG["alarm_confirm2"] is ALARM_CONFIRM2_WERK
+		assert any(x[1] == "alarm_confirm2" for x in TOGGLES)
+
+		now = time.time()
+		bx = lambda x, y: {"boxes": [[x, y, 0.06, 0.2]], "src": "Pi-Kamera 0", "srv": False}
+		for i, (x, y) in enumerate([(0.10, 0.60), (0.12, 0.62), (0.11, 0.58)]):
+			fp_spot_note(dict(bx(x, y), id="20261101_10000%d" % i, stamp="20261101_10000%d" % i, t=now - 3600 * (i + 1)), now)
+		assert len(asked) == 1, asked
+		key, tok = asked[0]
+		assert key.endswith("|-|0,3"), key
+		fp_spot_note(dict(bx(0.11, 0.60), id="20261101_100009", stamp="20261101_100009", t=now - 60), now)
+		fp_spot_note(dict(bx(0.11, 0.60), id="20261101_100009", stamp="20261101_100009", t=now - 60), now)
+		assert len(asked) == 1 and len(fp_load()["notes"]) == 4, "asked once, the same alarm counted once"
+		fp_spot_note(dict(bx(0.8, 0.2), id="20261101_100010", stamp="20261101_100010", t=now), now)
+		assert len(asked) == 1, "other field: no question"
+		FPS["data"] = None; fp_load()
+		old_notes = [n for n in fp_load()["notes"] if n["key"] == key]
+		assert len(old_notes) == 4 and fp_open(fp_by_tok(tok)[1])
+		for n in fp_load()["notes"]:
+			n["t"] -= 8 * 86400
+		fp_load()["asked"].clear()
+		assert fp_spot_due(key, now) is None
+		for n in fp_load()["notes"]:
+			n["t"] += 8 * 86400
+		assert fp_spot_due(key, now) and fp_spot_check(key, now)
+		tok = fp_pending(now)[0]["tok"]
+		CFG["sim_on"] = True
+		assert fp_spot_note(dict(bx(0.5, 0.5), id="x1", stamp="x1"), now) is None, "never in the simulation"
+		CFG["sim_on"] = False
+		made = []
+		g["zones_set"] = lambda lst: made.append(lst) or (True, "")
+		assert fp_spot_answer(tok, "maybe")[0] is False
+		STATE["source_label"] = "USB 1"
+		assert fp_spot_answer(tok, "yes")[0] is False and not made, "other camera: no zone"
+		STATE["source_label"] = "Pi-Kamera 0"
+		ok, txt = fp_spot_answer(tok, "yes")
+		assert ok and made and made[-1][-1]["mode"] == "ignore" and made[-1][-1]["kinds"] == "person", made
+		assert made[-1][-1]["points"] == [[0.0, 0.75], [0.1667, 0.75], [0.1667, 1.0], [0.0, 1.0]], made[-1][-1]["points"]
+		assert fp_spot_answer(tok, "no")[0] is False, "a key works once"
+		assert fp_spot_due(key, now + 40 * 86400) is None, "after «yes»: never again"
+		fp_load()["asked"][key].update(ans="no", t=now - 31 * 86400)
+		assert fp_spot_due(key, now), "after «no»: again after 30 days"
+		ntf = alx_ntfy_actions({"fs_tok": tok})
+		assert ntf.count("http, ") == 2 and f"/na/fs/{tok}/yes" in ntf and "Ja ignorieren" in ntf, ntf
+		tg = alx_telegram_markup({"fs_tok": tok})
+		assert [b["text"] for b in tg["inline_keyboard"][0]] == ["Ja, ignorieren", "Nein"]
+
+		WG.update(occ=None, t=0.0, seen={}, held=0, passed=0, log_t=0.0)
+		fg = np.zeros((270, 480), np.uint8); fg[0:90, 0:120] = 255
+		for i in range(400):
+			wg_feed(fg, [], now - 120 + i * 0.3)
+		assert wg_veg(0.1, 0.1) and not wg_veg(0.8, 0.8), WG["occ"]
+
+		class _Ai:
+			boxes = []
+
+		class _W:
+			_proc_size = (480, 270); ai = _Ai(); last_warm = 0.0
+		P = [(20, 10, 30, 60)]
+		CFG["wind_guard"] = True
+		STATE.update(storm={"gust": 20, "wind": 5}, wind_level="calm")
+		assert wind_guard_filter(_W(), P, now) == P, "no strong wind: as before"
+		STATE["storm"] = {"gust": 55, "wind": 30}
+		assert wind_guard_filter(_W(), P, now) == [] and WG["held"] == 1, "strong wind, plant field, motion only: held"
+		assert wind_guard_filter(_W(), [(380, 180, 30, 60)], now) == [(380, 180, 30, 60)], "outside the plant fields: as before"
+		_W.ai.boxes = [(22, 12, 28, 58, 0.8)]
+		assert wind_guard_filter(_W(), P, now + 1) == P, "the AI sees a person: alarm"
+		_W.ai.boxes = []; _W.last_warm = now + 1
+		assert wind_guard_filter(_W(), P, now + 1.5) == P, "heat: alarm"
+		_W.last_warm = 0.0
+		held = [wind_guard_filter(_W(), P, now + 10 + dt) for dt in (0.0, 1.5, 3.0, 4.5)]
+		assert held == [[]] * 4 and wind_guard_filter(_W(), P, now + 16.1) == P, "6 s longer: counts"
+		CFG["wind_guard"] = False
+		assert wind_guard_filter(_W(), P, now + 20) == P, "switch off: as before"
+		CFG["wind_guard"] = True; STATE["storm"] = {}; STATE["wind_level"] = "storm"
+		assert wg_wind().startswith("picture"), "without a wind meter: the picture"
+
+		FPB.update(n=0, first=0.0, items=[])
+		fr = np.full((270, 480, 3), 90, np.uint8)
+		for i in range(6):
+			fp_bundle_add(fr, now - 240 + i * 30)
+		p = {"event": "person", "persons": 1, "time": "2026-11-07T22:10:00", "more": 6}
+		ok_, buf = cv2.imencode(".jpg", fr)
+		j2 = fp_bundle_take(p, buf.tobytes(), now)
+		im2 = cv2.imdecode(np.frombuffer(j2, np.uint8), cv2.IMREAD_COLOR)
+		assert p["more_min"] == 4 and im2.shape[1] == 480 and im2.shape[0] > 270 and FPB["n"] == 0, (p, im2.shape)
+		s = push_short(p)
+		assert "+6 weitere in 4 Min." in s["text"] and "+6 weitere ·" not in s["text"] + " ·", s
+		assert "(+6 weitere Erkennungen in 4 Min.)" in push_long(p)
+		assert len(fp_pick4([(i, i) for i in range(8)])) == 4
+
+		ZONES[:] = [{"id": "aaaaaaaa", "name": "Eingangstür", "mode": "only", "points": [[0, 0.5], [0.5, 0.5], [0.5, 1], [0, 1]]},
+                    {"id": "bbbbbbbb", "name": "Zone 2", "mode": "only", "points": [[0, 0.6], [0.3, 0.6], [0.3, 1], [0, 1]]},
+                    {"id": "cccccccc", "name": "Nachbar", "mode": "privacy", "points": [[0, 0], [1, 0], [1, 1], [0, 1]]}]
+		assert fp_zone_name([[0.1, 0.5, 0.1, 0.3]]) == "Eingangstür" and fp_zone_name([[0.7, 0.1, 0.1, 0.2]]) == ""
+		s = push_short({"event": "person", "persons": 1, "time": "2026-11-07T22:10:00", "zone": "Eingangstür"})
+		assert "Person bei «Eingangstür»" in s["title"], s
+		s = push_short({"event": "person", "persons": 2, "time": "2026-11-07T22:10:00", "zone": "Eingangstür"})
+		assert "2 Personen bei «Eingangstür»" in s["title"], s
+		CFG["push_zone_name"] = False
+		assert "Eingangstür" not in push_short({"event": "person", "persons": 1, "time": "2026-11-07T22:10:00", "zone": "Eingangstür"})["title"]
+		CFG["push_zone_name"] = True
+
+		frames = [np.random.RandomState(i).randint(0, 255, (180, 320, 3), np.uint8) for i in range(24)]
+		try:
+			import PIL
+			have_pil = True
+		except ImportError:
+			have_pil = False
+		d_, f_, w_ = fp_clip_make(frames, 6.0, "gif", 3000)
+		assert (d_[:6] in (b"GIF89a", b"GIF87a") and len(d_) <= 3000 * 1024) or (not have_pil and d_ == b""), len(d_)
+		d_, f_, w_ = fp_clip_make(frames, 6.0, "gif", 50)
+		assert d_ == b"" or len(d_) <= 50 * 1024, "never above the limit"
+		m_, f_, w_ = fp_clip_make([np.full((180, 320, 3), 60, np.uint8)] * 24, 6.0, "mp4", 800)
+		assert m_ == b"" or (len(m_) <= 800 * 1024 and m_[4:8] == b"ftyp"), len(m_)
+		if shutil.which("ffmpeg"):
+			assert m_, "ffmpeg is there: a clip"
+
+		g["pb_dir"] = lambda: os.path.join(tmp, "pb")
+		CFG["push_home_pics"] = True
+		p = {"event": "person", "persons": 1, "time": "2026-11-07T22:10:00", "link": "https://moveeye.example/recordings"}
+		fp_home(p, b"\xff\xd8jpg")
+		assert PB_RE.match(p["home_id"]) and p["link"] == "https://moveeye.example/pb/" + p["home_id"], p
+		assert os.path.isfile(os.path.join(tmp, "pb", p["home_id"] + ".jpg"))
+		assert sx_push_jpg(b"x") is None and "🏠 Bild zu Hause" in push_short(p)["text"]
+		CFG["push_home_pics"] = False
+		q = {"event": "person", "persons": 1, "time": "2026-11-07T22:10:00", "link": "x"}
+		fp_home(q, b"jpg")
+		assert "home_id" not in q and q["link"] == "x" and sx_push_jpg(b"x") == b"x", "off: as before"
+
+		for k in ("fp_spot_learn", "wind_guard", "push_bundle", "push_bundle_after", "push_zone_name", "push_clip", "push_home_pics"):
+			assert any(x[1] == k for x in TOGGLES), k
+		assert DEFAULTS["push_clip"] is False and DEFAULTS["push_home_pics"] is False and DEFAULTS["push_bundle"] is True
+		for k, v in _HX_FP.items():
+			assert len(v) == 4 and all(v) and k in DE and all(k in TRX[L] for L in ("fr", "it", "rm")), k
+		assert "fp-ask" in WEB_PAGE or not WEB_PAGE.strip()
+		assert HELP_PAGE.count('<section id="false-pushes"') in (0, 2)
+	finally:
+		g.update(sv)
+		g["log_event"] = _ls
+		CFG.update(keep); STATE.update(keep_st); ZONES[:] = keep_z
+		FPS.clear(); FPS.update(keep_fps); WG.clear(); WG.update(keep_wg); ALX["ctx"] = keep_ctx
+		FPB.update(n=0, first=0.0, items=[])
+		shutil.rmtree(tmp, ignore_errors=True)
+	return "Fehlalarme und Pushes: spots (3 in 7 days, once, yes/no), wind protection, bundle «+N in M min» + strip, zone name, clip limit, pictures at home"
+
+
+SELFTEST_EXTRA.append(("False alarms and pushes: spots, wind protection, bundling, zone name, clip, pictures at home (639zy)", fp_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+_OP_DEF = {"det_profile": "", "prof_batt_on": False, "prof_batt_pct": 20,
+           "veh_car": "log", "veh_moto": "log", "veh_bike": "log", "veh_truck": "log",
+           "obj_pkg_on": True, "obj_pkg_min": 2, "obj_pkg_zone": "", "obj_left_on": True, "obj_left_min": 10,
+           "obj_gone_on": True, "obj_remember_min": 30, "obj_remembered": [], "ai_model_big": False}
+for _k, _v in _OP_DEF.items():
+	CFG.setdefault(_k, json.loads(json.dumps(_v)))
+	DEFAULTS.setdefault(_k, json.loads(json.dumps(_v)))
+
+_OPS = "Detection profile"
+PROF_ORDER = ("night", "garden", "home", "battery")
+
+
+
+PROFILES = {
+    "night": {"icon": "🏕️", "name": "Night at the tent", "info": "Persons and large animals. The AI only looks when something moves - saves a lot.",
+              "animals": "big", "vehicles": False, "things": (), "ai_k": 1, "motion_only": True, "proc_max": 0, "big": False},
+    "garden": {"icon": "🌳", "name": "Garden by day", "info": "Persons and all animals with their names. Remembered things (bike, cool box) are watched.",
+               "animals": "all", "vehicles": False, "things": ("gone",), "ai_k": 1, "motion_only": False, "proc_max": 0, "big": True},
+    "home": {"icon": "🏠", "name": "House watch", "info": "Persons, vehicles and parcels: a parcel at the door, things left behind or gone.",
+             "animals": "none", "vehicles": True, "things": ("package", "left", "gone"), "ai_k": 1, "motion_only": False, "proc_max": 0, "big": True},
+    "battery": {"icon": "🔋", "name": "Save battery", "info": "Only persons. The AI looks seldom, small pictures - for long nights on the battery.",
+                "animals": "none", "vehicles": False, "things": (), "ai_k": 4, "motion_only": False, "proc_max": 320, "big": False},
+}
+PROF_NONE = {"icon": "⚙️", "name": "Own settings", "info": "No profile: MoveEye works as set up (as before).",
+             "animals": "none", "vehicles": True, "things": (), "ai_k": 1, "motion_only": False, "proc_max": 0, "big": False}
+PROF = {"eff": "", "why": "manual", "batt": False, "over": None, "sched": None, "seen_manual": None, "tick_t": 0.0,
+        "since": time.time(), "ai_skipped": 0, "ai_runs": 0, "checks": 0, "check_t": 0.0, "check_ms": 0, "last_events": deque(maxlen=12),
+        "big_on": False, "paused": ""}
+PROF_MOTION_HOLD = 3.0
+PROF_MOTION_FRAC = 0.0015
+OBJ_CHECK_S = 60.0
+OBJ_GONE_MISSES = 2
+OBJ_PUSH_GAP = 600.0
+VEH_POLICIES = ("report", "log", "ignore")
+VEH_TYPES = {"car": ("veh_car", "🚗", "Car"), "moto": ("veh_moto", "🏍️", "Motorbike"), "bike": ("veh_bike", "🚲", "Bicycle"),
+             "truck": ("veh_truck", "🚚", "Van / truck")}
+VEH_OF_LABEL = {"car": "car", "motorcycle": "moto", "bicycle": "bike", "truck": "truck", "bus": "truck", "van": "truck"}
+
+
+
+
+WILD = {"fox": ("🦊", "Fox"), "roe deer": ("🦌", "Roe deer"), "badger": ("🦡", "Badger"), "hedgehog": ("🦔", "Hedgehog"),
+        "wild boar": ("🐗", "Wild boar"), "red deer": ("🦌", "Red deer"), "hare": ("🐇", "Hare"), "marten": ("🐾", "Marten"),
+        "wolf": ("🐺", "Wolf"), "lynx": ("🐈", "Lynx"), "squirrel": ("🐿️", "Squirrel"), "chamois": ("🐐", "Chamois"),
+        "ibex": ("🐐", "Ibex"), "cat": ("🐈", "Cat"), "dog": ("🐕", "Dog"), "bird": ("🐦", "Bird"), "horse": ("🐎", "Horse"),
+        "sheep": ("🐑", "Sheep"), "cow": ("🐄", "Cow"), "bear": ("🐻", "Bear"), "elephant": ("🐘", "Elephant"),
+        "zebra": ("🦓", "Zebra"), "giraffe": ("🦒", "Giraffe"), "animal": ("🐾", "Animal")}
+WILD_FIVE = ("fox", "roe deer", "badger", "hedgehog", "wild boar")
+
+
+WILD_BIG = {"fox", "roe deer", "badger", "wild boar", "red deer", "wolf", "lynx", "bear", "horse", "cow", "sheep", "chamois", "ibex",
+            "elephant", "zebra", "giraffe"}
+WILD_BIG_H = 0.15
+
+WILD_IDS = {"fox": 93, "roe deer": 94, "badger": 95, "hedgehog": 96, "wild boar": 97, "red deer": 98, "hare": 99, "marten": 100,
+            "wolf": 101, "lynx": 102, "squirrel": 103, "chamois": 104, "ibex": 105}
+WILD_ALIAS = {"deer": "roe deer", "roe": "roe deer", "reh": "roe deer", "boar": "wild boar", "rabbit": "hare", "fuchs": "fox",
+              "dachs": "badger", "igel": "hedgehog", "wildschwein": "wild boar"}
+for _n, _i in WILD_IDS.items():
+	COCO_LABELS.setdefault(_i, _n)
+	ANIMALS.add(_n)
+
+_WILD_WORDS = (("roe", "roe deer"), ("reh", "roe deer"), ("boar", "wild boar"), ("wildschwein", "wild boar"), ("wild pig", "wild boar"),
+               ("badger", "badger"), ("dachs", "badger"), ("hedgehog", "hedgehog"), ("igel", "hedgehog"), ("fox", "fox"), ("fuchs", "fox"),
+               ("red deer", "red deer"), ("stag", "red deer"), ("hirsch", "red deer"), ("deer", "roe deer"), ("hare", "hare"), ("rabbit", "hare"),
+               ("marten", "marten"), ("marder", "marten"), ("wolf", "wolf"), ("lynx", "lynx"), ("luchs", "lynx"), ("squirrel", "squirrel"),
+               ("chamois", "chamois"), ("gämse", "chamois"), ("ibex", "ibex"), ("steinbock", "ibex"), ("cat", "cat"), ("katze", "cat"),
+               ("dog", "dog"), ("hund", "dog"), ("bird", "bird"), ("vogel", "bird"))
+
+
+def wild_canon(label):
+	""
+	s = str(label or "").strip().lower()
+	if not s:
+		return ""
+	s = WILD_ALIAS.get(s, s)
+	if s in WILD:
+		return s
+	for w, k in _WILD_WORDS:
+		if w in s:
+			return k
+	return "animal" if s in ANIMALS else ""
+
+
+def wild_name(label, box=None, species=None, lang=None):
+	""
+	k = wild_canon(species[0]) if species else ""
+	if not k or k == "animal":
+		k = wild_canon(label) or "animal"
+	ic, en = WILD.get(k, WILD["animal"])
+	return k, ic, tr(en, lang)
+
+
+_own_ai_classmap_op_base = own_ai_classmap
+
+
+def own_ai_classmap(names):
+	out = list(_own_ai_classmap_op_base(names))
+	for i, nm in enumerate(names):
+		k = WILD_ALIAS.get(str(nm).strip().lower(), str(nm).strip().lower())
+		if k in WILD_IDS and (out[i] is None or out[i][0] == OWN_AI_ANIMAL_ID):
+			out[i] = (WILD_IDS[k], False)
+	return out
+
+
+
+THING_NAMES = {"backpack": ("🎒", "Backpack"), "handbag": ("👜", "Bag"), "suitcase": ("🧳", "Suitcase"), "umbrella": ("☂️", "Umbrella"),
+               "bicycle": ("🚲", "Bicycle"), "motorcycle": ("🏍️", "Motorbike"), "chair": ("🪑", "Chair"), "bench": ("🪑", "Bench"),
+               "skateboard": ("🛹", "Skateboard"), "surfboard": ("🏄", "Surfboard"), "skis": ("🎿", "Skis"), "sports ball": ("⚽", "Ball"),
+               "object": ("📦", "Object"), "package": ("📦", "Parcel")}
+THING_LABELS = set(THING_NAMES) - {"object", "package"}
+PKG_LABELS = {"object", "suitcase"}
+BAG_LABELS = {"backpack", "handbag", "suitcase", "umbrella"}
+GONE_LABELS = {"bicycle", "motorcycle", "suitcase", "backpack", "handbag", "chair", "umbrella", "skateboard", "surfboard", "skis", "sports ball", "object"}
+
+_ZONE_DE = {"zelt": "beim Zelt", "vorzelt": "im Vorzelt", "tür": "vor der Tür", "haustür": "vor der Haustür", "türe": "vor der Türe",
+            "eingang": "beim Eingang", "einfahrt": "bei der Einfahrt", "garage": "bei der Garage", "garten": "im Garten",
+            "terrasse": "auf der Terrasse", "sitzplatz": "beim Sitzplatz", "weg": "auf dem Weg", "strasse": "auf der Strasse",
+            "auto": "beim Auto", "velo": "beim Velo", "wohnmobil": "beim Wohnmobil", "wohnwagen": "beim Wohnwagen", "feuerstelle": "bei der Feuerstelle",
+            "grill": "beim Grill", "hof": "im Hof", "parkplatz": "auf dem Parkplatz", "tor": "beim Tor", "briefkasten": "beim Briefkasten",
+            "hecke": "bei der Hecke", "wiese": "auf der Wiese", "waldrand": "am Waldrand", "lager": "beim Lager", "biwak": "beim Biwak"}
+_ZONE_PREP = {"de": ("beim ", "bei ", "vor ", "am ", "im ", "an ", "auf ", "hinter ", "neben ", "unter "),
+              "en": ("at ", "near ", "by ", "in ", "on ", "behind ", "in front of "), "fr": ("près ", "devant ", "à ", "au ", "dans ", "sur "),
+              "it": ("presso ", "davanti ", "vicino ", "al ", "alla ", "nel ", "sul "), "rm": ("tar ", "davant ", "en ", "sin ", "sper ")}
+_ZONE_FMT = {"en": "at {z}", "fr": "près de {z}", "it": "presso {z}", "rm": "tar {z}"}
+
+
+def obj_zone_phrase(zone, lang=None):
+	""
+	z = str(zone or "").strip()
+	if not z:
+		return ""
+	L = norm_lang(lang) if lang else cur_lang()
+	if z.lower().startswith(_ZONE_PREP.get(L, ()) or ("at ",)):
+		return z
+	if L == "de":
+		return _ZONE_DE.get(z.lower()) or ("bei «" + z + "»")
+	return _ZONE_FMT.get(L, "at {z}").format(z=z)
+
+
+def obj_push_text(kind, key="", zone="", lang=None):
+	"""
+"""
+	L = norm_lang(lang) if lang else cur_lang()
+	where = obj_zone_phrase(zone, L)
+	if kind == "animal":
+		_k, ic, nm = wild_name(key, lang=L)
+		title = (nm + " " + where) if where else trf("{x} seen", L, x=nm)
+	elif kind == "vehicle":
+		_ck, ic, en = VEH_TYPES.get(key, VEH_TYPES["car"])
+		nm = tr(en, L)
+		title = (nm + " " + where) if where else trf("{x} seen", L, x=nm)
+	elif kind == "package":
+		ic, nm = "📦", tr("Parcel", L)
+		title = (nm + " " + where) if where else tr("Parcel put down", L)
+	else:
+		ic, en = THING_NAMES.get(key, THING_NAMES["object"])
+		nm = tr(en, L)
+		if kind == "left":
+			title = trf("{x} left behind {where}", L, x=nm, where=where).replace("  ", " ").strip() if where else trf("{x} left behind", L, x=nm)
+		else:
+			ic = ic if key != "object" else "❓"
+			title = trf("{x} gone", L, x=nm) + ((" · " + where) if where else "")
+	return ic, title.strip(), nm
+
+
+PUSH_CLASS.update({"obj_animal": "animal", "obj_vehicle": "other", "obj_thing": "other", "obj_gone": None})
+_PROF_PUSH_T = {}
+
+
+def obj_push(ev, ic, title, text, jpg=None, gap_key=None):
+	""
+	now = time.time()
+	if gap_key is not None:
+		if now - _PROF_PUSH_T.get(gap_key, 0.0) < OBJ_PUSH_GAP:
+			return False
+	w = WATCH_REF.get("w")
+	n = getattr(w, "notifier", None) if w is not None else None
+	if n is None or not is_armed() or not CFG.get("notify_on") or not n.configured():
+		return False
+	ok, why = push_allowed(ev)
+	if not ok:
+		_px_held(ev, why)
+		return False
+	if gap_key is not None:
+		_PROF_PUSH_T[gap_key] = now
+	if jpg is not None:
+		jpg = sx_push_jpg(jpg)
+	pub = CFG["public_url"].strip().rstrip("/")
+	p = {"event": "info", "persons": 0, "time": datetime.now().isoformat(timespec="seconds"), "text": text, "info_title": "{name}: " + title,
+         "obj_ic": ic, "obj_title": title, "obj_ev": ev, "snapshot": None, "rain": bool(STATE.get("rain_mode")), "wind": STATE.get("wind_level", ""),
+         "source": STATE.get("source_label", ""), "link": pub + "/" if pub else ""}
+	threading.Thread(target=n._dispatch, args=(p, jpg if CFG.get("push_pics") != "text" else None, "objekt.jpg"), daemon=True).start()
+	return True
+
+
+_push_kind_op_base = push_kind
+
+
+def push_kind(p):
+	if p.get("obj_ic") and p.get("obj_title"):
+		return {"ic": p["obj_ic"], "title": str(p["obj_title"]), "text": _pk_cut(_PK_SIM.sub(" ", str(p.get("text") or "")).strip()),
+                "cls": "alarm", "pic": True, "test": False}
+	return _push_kind_op_base(p)
+
+
+def obj_zone_of(box, pw=1.0, ph=1.0):
+	""
+	try:
+		nx, ny = (box[0] + box[2] / 2.0) / pw, (box[1] + box[3] * 0.85) / ph
+		for z in ZONES:
+			if z.get("mode") in ("ignore", "privacy", "sleep", "line") or not zone_here(z):
+				continue
+			if point_in_poly(nx, ny, z["points"]) and str(z.get("name") or "").strip():
+				return str(z["name"]).strip()[:24]
+	except Exception:
+		pass
+	return ""
+
+
+def _obj_jpg(frame, box=None, pw=1.0, ph=1.0):
+	""
+	if frame is None:
+		return None
+	try:
+		img = frame.copy()
+		if box is not None:
+			H, W = img.shape[:2]; sx, sy = W / float(pw), H / float(ph)
+			x, y, w_, h_ = [int(v) for v in (box[0] * sx, box[1] * sy, box[2] * sx, box[3] * sy)]
+			cv2.rectangle(img, (x, y), (x + w_, y + h_), (0, 160, 255), 2)
+		img = apply_privacy(img)
+		ok, buf = cv2.imencode(".jpg", img, [cv2.IMWRITE_JPEG_QUALITY, 80])
+		return buf.tobytes() if ok else None
+	except Exception:
+		return None
+
+
+
+def prof_def(pid=None):
+	pid = PROF["eff"] if pid is None else pid
+	return PROFILES.get(pid, PROF_NONE)
+
+
+def prof_energy(pid=None):
+	""
+	d = prof_def(pid)
+	things = tuple(t for t in d["things"] if CFG.get({"package": "obj_pkg_on", "left": "obj_left_on", "gone": "obj_gone_on"}[t], True))
+	return {"ai_k": max(1, int(d["ai_k"])), "motion_only": bool(d["motion_only"]), "proc_max": int(d["proc_max"] or 0),
+            "things": things, "big": bool(d["big"] and CFG.get("ai_model_big"))}
+
+
+def _prof_sched(now=None):
+	""
+	now = now or sim_now()
+	with LOCK:
+		plans = [dict(s) for s in SCHEDULES]
+	got = (None, "")
+	for s in plans:
+		try:
+			if s.get("profile") in PROFILES and schedule_active(s, now):
+				got = (s["name"], s["profile"])
+		except Exception:
+			pass
+	return got
+
+
+def prof_effective(now=None, battery=None):
+	""
+	b = STATE.get("battery") if battery is None else battery
+	b = b or {}
+	if CFG.get("prof_batt_on") and b.get("on") and b.get("pct") is not None:
+		try:
+			pct = float(b["pct"]); thr = float(CFG.get("prof_batt_pct") or 20)
+		except (TypeError, ValueError):
+			pct, thr = 100.0, 0.0
+		charging = bool(b.get("charging")) or (b.get("src") == "ups" and b.get("on_battery") is False)
+		if PROF["batt"]:
+			if charging or pct >= thr + 5:
+				PROF["batt"] = False
+		elif not charging and pct < thr:
+			PROF["batt"] = True
+	else:
+		PROF["batt"] = False
+	if PROF["batt"]:
+		return "battery", "battery"
+	sn, sp = _prof_sched(now)
+	if (sn, sp) != PROF["sched"]:
+		PROF["sched"] = (sn, sp); PROF["over"] = None
+	if sp and PROF["over"] != (sn, sp):
+		return sp, "schedule:" + str(sn)
+	m = str(CFG.get("det_profile") or "")
+	if m in PROFILES:
+		return m, "manual"
+	md = prof_mode_default(now)
+	if md:
+		return md, "mode:" + str(CFG.get("mode") or "")
+	return "", "manual"
+
+
+PROF_MODE_NIGHT = (20, 7)
+
+
+def prof_mode_default(now=None):
+	""
+	m = str(CFG.get("mode") or "")
+	if m == "camping":
+		h = (now or sim_now()).hour
+		return "night" if h >= PROF_MODE_NIGHT[0] or h < PROF_MODE_NIGHT[1] else ""
+	return {"home": "home", "wild": "garden"}.get(m, "")
+
+
+def prof_tick(force=False, now=None, battery=None):
+	""
+	t = time.time()
+	if not force and t - PROF["tick_t"] < 2.0:
+		return PROF["eff"]
+	PROF["tick_t"] = t
+	m = str(CFG.get("det_profile") or "")
+	if PROF["seen_manual"] is None:
+		PROF["seen_manual"] = m
+	elif m != PROF["seen_manual"]:
+		PROF["seen_manual"] = m
+		sn, sp = _prof_sched(now)
+		PROF["sched"] = (sn, sp)
+		PROF["over"] = (sn, sp) if sp else None
+	pid, why = prof_effective(now, battery)
+	if pid != PROF["eff"] or why != PROF["why"]:
+		old = PROF["eff"]
+		PROF.update(eff=pid, why=why, since=t)
+		d = prof_def(pid)
+		log_event("sys", f"Detection profile: {d['icon']} {d['name']} ({prof_why_text(why, 'en')})")
+		if not prof_energy(pid)["things"]:
+			THINGS.reset(keep_remembered=True); CHANGE.reset()
+		if prof_def(old)["proc_max"] != d["proc_max"]:
+			pass
+	big = prof_energy(pid)["big"] and CFG.get("ai_model") == "own"
+	if big != PROF["big_on"]:
+		PROF["big_on"] = big
+		if own_big_paths()[0]:
+			try:
+				own_ai_switched()
+			except Exception as e:
+				log_event("ai", f"Bigger model: {e}"[:160])
+	STATE["det_profile"] = {"id": pid, "why": why}
+	return pid
+
+
+def prof_set(pid, who="web"):
+	pid = str(pid or "")
+	if pid and pid not in PROFILES:
+		return False, "unknown profile"
+	CFG["det_profile"] = pid
+	save_settings()
+	log_event("sys", f"Detection profile chosen ({who}): {prof_def(pid)['name']}")
+	prof_tick(force=True)
+	return True, ""
+
+
+def prof_why_text(why, lang=None):
+	if why == "battery":
+		return trf("battery below {p} %", lang, p=int(CFG.get("prof_batt_pct") or 20))
+	if str(why).startswith("mode:"):
+		mn = dict((x[0], x[2]) for x in MODES).get(why.split(":", 1)[1], why.split(":", 1)[1])
+		return trf("by the mode «{n}»", lang, n=tr(mn, lang))
+	if str(why).startswith("schedule:"):
+		return trf("schedule «{n}»", lang, n=why.split(":", 1)[1])
+	return tr("chosen by hand", lang)
+
+
+
+def prof_proc_width(pw):
+	""
+	try:
+		prof_tick()
+	except Exception as e:
+		log_event("sys", f"Detection profile: {e}"[:160])
+	cap = prof_energy()["proc_max"]
+	return min(int(pw), cap) if cap else pw
+
+
+def prof_motion(ai, fg, t0):
+	""
+	try:
+		if fg is not None and fg.size and cv2.countNonZero(fg) >= PROF_MOTION_FRAC * fg.size:
+			ai.prof_motion_t = t0
+		elif STATE.get("warm") or time.time() - float(SENS.get("pir_t") or 0) < 2.0:
+			ai.prof_motion_t = t0
+	except Exception:
+		pass
+
+
+_prof_detect_base = AIDetector.detect
+
+
+def _prof_detect(self, frame):
+	if DEMO.get("on"):
+		return _prof_detect_base(self, frame)
+	e = prof_energy()
+	if e["motion_only"] and time.time() - float(getattr(self, "prof_motion_t", 0.0) or 0.0) > PROF_MOTION_HOLD:
+		if self.boxes or self.objects:
+			self.boxes = []; self.objects = []
+		PROF["ai_skipped"] += 1
+		if CFG.get("ai_enabled") and self.net is not None:
+			STATE["ai_status"] = "waiting for movement (profile)"
+		return self.boxes
+	if e["ai_k"] > 1:
+		self._prof_n = getattr(self, "_prof_n", 0) + 1
+		if self._prof_n % e["ai_k"]:
+			PROF["ai_skipped"] += 1
+			return self.boxes
+	PROF["ai_runs"] += 1
+	return _prof_detect_base(self, frame)
+
+
+
+AIDetector.detect = _prof_detect
+
+_wk_ai_op_base = wk_ai
+
+
+def wk_ai():
+	if PROF["eff"] == "battery":
+		return None, "battery profile"
+	return _wk_ai_op_base()
+
+
+OWN_BIG_ONNX, OWN_BIG_JSON = "moveeye_model_gross.onnx", "moveeye_model_gross.json"
+
+
+def own_big_paths():
+	for d in ai_model_dirs():
+		a, b = os.path.join(d, OWN_BIG_ONNX), os.path.join(d, OWN_BIG_JSON)
+		if os.path.isfile(a) and os.path.isfile(b):
+			return a, b
+	return None, None
+
+
+_own_ai_paths_op_base = own_ai_paths
+
+
+def own_ai_paths():
+	if PROF.get("big_on"):
+		a, b = own_big_paths()
+		if a:
+			return a, b
+	return _own_ai_paths_op_base()
+
+
+
+_clean_schedule_op_base = _clean_schedule
+
+
+def _clean_schedule(s, i):
+	out = _clean_schedule_op_base(s, i)
+	if out is not None:
+		out["profile"] = s.get("profile") if isinstance(s, dict) and s.get("profile") in PROFILES else ""
+	return out
+
+
+_schedule_save_op_base = schedule_save
+
+
+def schedule_save(index, data):
+	if isinstance(data, dict) and "profile" not in data and isinstance(index, int) and 0 <= index < len(SCHEDULES):
+		data = dict(data, profile=SCHEDULES[index].get("profile", ""))
+	r = _schedule_save_op_base(index, data)
+	prof_tick(force=True)
+	return r
+
+
+
+class SeenWatch:
+	"""
+"""
+
+	def __init__(self, confirm_s=1.5, gone_s=300.0, grace_s=0.0):
+		self.confirm_s, self.gone_s, self.grace_s = confirm_s, gone_s, grace_s
+		self.s = {}; self.t0 = None
+
+	def feed(self, t, seen):
+		""
+		if self.t0 is None:
+			self.t0 = t
+		out = []
+		for k, ex in seen.items():
+			st = self.s.get(k)
+			if st is None or t - st["last"] > self.gone_s:
+				st = self.s[k] = {"first": t, "last": t, "done": False, "base": t - self.t0 < self.grace_s}
+			st["last"] = t
+			if not st["done"] and t - st["first"] >= self.confirm_s:
+				st["done"] = True
+				if not st["base"]:
+					out.append((k, ex))
+		for k in [k for k, st in self.s.items() if t - st["last"] > self.gone_s]:
+			del self.s[k]
+		return out
+
+
+ANIMAL_WATCH = SeenWatch(confirm_s=1.5, gone_s=300.0)
+VEHICLE_WATCH = SeenWatch(confirm_s=1.5, gone_s=120.0, grace_s=30.0)
+
+
+def prof_animal_policy(key, box=None, ph=1.0, pid=None):
+	""
+	a = prof_def(pid)["animals"]
+	if a == "all":
+		return "report"
+	if a == "big":
+		if key in WILD_BIG or (key == "animal" and box is not None and box[3] >= WILD_BIG_H * ph):
+			return "report"
+	return "log"
+
+
+def veh_policy(vtype, pid=None):
+	""
+	k = VEH_TYPES.get(vtype, VEH_TYPES["car"])[0]
+	p = CFG.get(k) if CFG.get(k) in VEH_POLICIES else "log"
+	if p == "report" and not prof_def(pid)["vehicles"]:
+		return "log"
+	return p
+
+
+
+class ThingsWatch:
+	""
+
+	def __init__(self):
+		self.reset()
+
+	def reset(self, keep_remembered=False):
+		keep = [tr_ for tr_ in getattr(self, "tracks", []) if tr_["remembered"]] if keep_remembered else []
+		for tr_ in keep:
+			tr_["miss"] = 0; tr_["patch"] = None
+		self.tracks = keep; self.n = 0; self.next_id = max([tr_["id"] for tr_ in keep] + [0]) + 1; self.ghosts = []
+
+	@staticmethod
+	def _same(a, b):
+		return a == b or "object" in (a, b) and (a in PKG_LABELS or b in PKG_LABELS)
+
+	def observe(self, t, items, persons, pkg_zone=lambda b: True, allowed=("package", "left", "gone"), cfg=None):
+		""
+		c = cfg or CFG
+		ev = []
+		used = set()
+		for lab, box, conf in items:
+			best, bi = None, 0.3
+			for tr_ in self.tracks:
+				if id(tr_) in used or not self._same(tr_["label"], lab):
+					continue
+				v = iou(tr_["box"], box)
+				if v > bi:
+					best, bi = tr_, v
+			if best is None:
+				best = {"id": self.next_id, "label": lab, "box": tuple(box), "first": t, "last": t, "seen": 0, "miss": 0,
+                        "base": self.n == 0, "remembered": False, "rep": set(), "patch": None}
+				self.next_id += 1
+				self.tracks.append(best)
+			else:
+				best["box"] = tuple(0.7 * a + 0.3 * b for a, b in zip(best["box"], box))
+				if best["label"] == "object" and lab != "object":
+					best["label"] = lab
+			best["last"] = t; best["seen"] += 1; best["miss"] = 0
+			used.add(id(best))
+		near = lambda b: any(iou(_grow(b, 0.25), p) > 0.0 for p in persons)
+		for tr_ in list(self.tracks):
+			if id(tr_) in used:
+				age = t - tr_["first"]
+				if tr_["base"] or near(tr_["box"]):
+					pass
+				elif "package" in allowed and tr_["label"] in PKG_LABELS and pkg_zone(tr_["box"]) and "pkg" not in tr_["rep"] \
+                        and age >= float(c.get("obj_pkg_min", 2)) * 60.0 - 1:
+					tr_["rep"].update(("pkg", "left")); ev.append(("package", tr_))
+				elif "left" in allowed and tr_["label"] in BAG_LABELS and "left" not in tr_["rep"] and not (
+                        "package" in allowed and tr_["label"] in PKG_LABELS and pkg_zone(tr_["box"])) \
+                        and age >= float(c.get("obj_left_min", 10)) * 60.0 - 1:
+					tr_["rep"].add("left"); ev.append(("left", tr_))
+				if "gone" in allowed and not tr_["remembered"] and tr_["label"] in GONE_LABELS \
+                        and age >= float(c.get("obj_remember_min", 30)) * 60.0 - 1:
+					tr_["remembered"] = True; ev.append(("remembered", tr_))
+				continue
+			if near(tr_["box"]):
+				continue
+			tr_["miss"] += 1
+			if tr_["remembered"] and "gone" in allowed and tr_["miss"] >= OBJ_GONE_MISSES:
+				ev.append(("gone", tr_)); self.tracks.remove(tr_); self.ghosts.append((t, tr_["box"]))
+			elif not tr_["remembered"] and tr_["miss"] >= 3:
+				self.tracks.remove(tr_)
+		self.ghosts = [g for g in self.ghosts if t - g[0] < 3600]
+		self.n += 1
+		return ev
+
+	def remember_now(self):
+		n = 0
+		for tr_ in self.tracks:
+			if tr_["label"] in GONE_LABELS and not tr_["remembered"]:
+				tr_["remembered"] = True; n += 1
+		return n
+
+	def forget(self):
+		for tr_ in self.tracks:
+			tr_["remembered"] = False
+		self.ghosts = []
+
+
+def _grow(b, k):
+	return (b[0] - b[2] * k, b[1] - b[3] * k, b[2] * (1 + 2 * k), b[3] * (1 + 2 * k))
+
+
+class StaticChange:
+	"""
+"""
+	W = 160
+
+	def __init__(self):
+		self.reset()
+
+	def reset(self):
+		self.ref = None; self.prev = None; self.prev_blobs = []; self.age = {}
+
+	def _gray(self, img):
+		g = img if img.ndim == 2 else cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+		h, w = g.shape[:2]
+		g = cv2.resize(g, (self.W, max(8, int(h * self.W / float(w)))), interpolation=cv2.INTER_AREA)
+		return cv2.GaussianBlur(g, (5, 5), 0)
+
+	def patch(self, img, box):
+		g = self._gray(img); H, W = g.shape[:2]
+		x, y, w, h = int(box[0] * W), int(box[1] * H), max(2, int(box[2] * W)), max(2, int(box[3] * H))
+		return g[max(0, y):y + h, max(0, x):x + w].copy()
+
+	def same_patch(self, img, box, patch):
+		""
+		if patch is None or patch.size < 4:
+			return True
+		cur = self.patch(img, box)
+		if cur.shape != patch.shape or cur.size < 4:
+			return True
+		a = cur.astype(np.float32) - cur.mean(); b = patch.astype(np.float32) - patch.mean()
+		den = float(np.sqrt((a * a).sum() * (b * b).sum()))
+		if den < 1e-3:
+			return abs(float(cur.mean()) - float(patch.mean())) < 25
+		return float((a * b).sum()) / den >= 0.55 and abs(float(cur.mean()) - float(patch.mean())) < 45
+
+	def update(self, img, persons=(), ghosts=(), keep=()):
+		"""
+"""
+		g = self._gray(img)
+		H, W = g.shape[:2]
+		if self.ref is None or self.ref.shape != g.shape:
+			self.ref = g.astype(np.float32); self.prev = g; self.prev_blobs = []; return []
+		if abs(float(g.mean()) - float(self.ref.mean())) > 25:
+			self.ref = g.astype(np.float32); self.prev = g; self.prev_blobs = []; return []
+		ref8 = cv2.convertScaleAbs(self.ref)
+		d = cv2.absdiff(g, ref8)
+		m = (d > 28).astype(np.uint8) * 255
+		m = cv2.morphologyEx(m, cv2.MORPH_OPEN, np.ones((3, 3), np.uint8))
+		m = cv2.morphologyEx(m, cv2.MORPH_CLOSE, np.ones((5, 5), np.uint8))
+		if cv2.countNonZero(m) > 0.3 * m.size:
+			self.ref = g.astype(np.float32); self.prev = g; self.prev_blobs = []; return []
+		cnts, _ = cv2.findContours(m, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+		blobs = []
+		for c_ in cnts:
+			x, y, w, h = cv2.boundingRect(c_)
+			a = w * h / float(W * H)
+			if not 0.002 <= a <= 0.15:
+				continue
+			b = (x / float(W), y / float(H), w / float(W), h / float(H))
+			if any(iou(_grow(b, 0.2), p) > 0.0 for p in persons):
+				continue
+			blobs.append((b, (x, y, w, h)))
+		out, learn = [], np.ones_like(g, np.float32)
+		for b, (x, y, w, h) in blobs:
+			reg_now, reg_prev = g[y:y + h, x:x + w], self.prev[y:y + h, x:x + w]
+			ghost = any(iou(b, gb) > 0.3 for _t, gb in ghosts)
+			if not ghost:
+				e_now = float(cv2.Canny(reg_now, 40, 120).mean()); e_ref = float(cv2.Canny(ref8[y:y + h, x:x + w], 40, 120).mean())
+				ghost = e_ref > 4.0 and e_now < 0.6 * e_ref
+			if ghost:
+				self.ref[y:y + h, x:x + w] = g[y:y + h, x:x + w]; continue
+			key = (round(b[0], 1), round(b[1], 1))
+			stable = any(iou(b, pb) > 0.4 for pb in self.prev_blobs) and float(cv2.absdiff(reg_now, reg_prev).mean()) < 10
+			self.age[key] = self.age.get(key, 0) + 1
+			if any(iou(b, k) > 0.3 for k in keep) or self.age[key] < 20:
+				learn[y:y + h, x:x + w] = 0.0
+			if stable:
+				out.append(b)
+		self.age = {k: v for k, v in self.age.items() if any((round(b[0], 1), round(b[1], 1)) == k for b, _r in blobs)}
+		rate = 0.2 * learn
+		self.ref = self.ref * (1.0 - rate) + g.astype(np.float32) * rate
+		self.prev = g; self.prev_blobs = [b for b, _r in blobs]
+		return out
+
+
+THINGS = ThingsWatch()
+CHANGE = StaticChange()
+
+
+def _obj_pkg_zone(box):
+	""
+	want = str(CFG.get("obj_pkg_zone") or "").strip()
+	zs = [z for z in ZONES if z.get("mode") not in ("ignore", "privacy", "sleep", "line")]
+	if want:
+		zs = [z for z in zs if str(z.get("name") or "").strip() == want]
+		if not zs:
+			return False
+	if not zs:
+		return True
+	nx, ny = box[0] + box[2] / 2.0, box[1] + box[3] * 0.85
+	return any(point_in_poly(nx, ny, z["points"]) for z in zs)
+
+
+def _obj_remembered_save():
+	CFG["obj_remembered"] = [{"label": tr_["label"], "box": [round(v, 3) for v in tr_["box"]]} for tr_ in THINGS.tracks if tr_["remembered"]][:20]
+	save_settings()
+
+
+def _obj_remembered_load():
+	if THINGS.tracks or not isinstance(CFG.get("obj_remembered"), list):
+		return
+	for r in CFG["obj_remembered"][:20]:
+		try:
+			if r.get("label") in GONE_LABELS and len(r.get("box") or []) == 4:
+				THINGS.tracks.append({"id": THINGS.next_id, "label": r["label"], "box": tuple(float(v) for v in r["box"]), "first": time.time(),
+                                      "last": time.time(), "seen": 1, "miss": 0, "base": True, "remembered": True, "rep": set(), "patch": None})
+				THINGS.next_id += 1
+		except (AttributeError, TypeError, ValueError):
+			pass
+
+
+def things_check(w, small, full, persons_n, t0, objs=None):
+	""
+	t1 = time.time()
+	ph, pw = small.shape[:2]
+	if objs is None:
+		objs = list(getattr(w.ai, "objects", []) or [])
+		try:
+			if getattr(w.ai, "net", None) is not None and CFG.get("ai_enabled") and not DEMO.get("on"):
+				_b, objs = w.ai.infer(small, 2.0, min(0.5, float(CFG.get("object_conf", 0.4))))
+		except Exception as e:
+			log_event("ai", f"Things check: {e}"[:160])
+	items = [(COCO_LABELS.get(o[5]), (o[0] / pw, o[1] / ph, o[2] / pw, o[3] / ph), o[4]) for o in objs
+             if COCO_LABELS.get(o[5]) in THING_LABELS and o[4] >= 0.35]
+	_obj_remembered_load()
+	keep = []
+	for tr_ in THINGS.tracks:
+		if tr_["remembered"] and tr_["label"] == "object":
+			keep.append(tr_["box"])
+			if tr_["patch"] is None:
+				tr_["patch"] = CHANGE.patch(small, tr_["box"])
+			elif CHANGE.same_patch(small, tr_["box"], tr_["patch"]):
+				items.append(("object", tr_["box"], 0.5))
+	for b in CHANGE.update(small, persons_n, THINGS.ghosts, keep):
+		if not any(iou(b, it[1]) > 0.3 for it in items):
+			items.append(("object", b, 0.5))
+	allowed = prof_energy()["things"]
+	evs = THINGS.observe(t0, items, persons_n, _obj_pkg_zone, allowed)
+	for kind, tr_ in evs:
+		for t_ in THINGS.tracks:
+			if t_ is tr_ and tr_["remembered"] and tr_["label"] == "object" and tr_["patch"] is None:
+				tr_["patch"] = CHANGE.patch(small, tr_["box"])
+		obj_event(kind, tr_, full, pw, ph)
+	if any(k in ("remembered", "gone") for k, _t in evs):
+		_obj_remembered_save()
+	PROF["checks"] += 1; PROF["check_t"] = t0; PROF["check_ms"] = int((time.time() - t1) * 1000)
+	return evs
+
+
+def obj_event(kind, tr_, full, pw=1.0, ph=1.0):
+	""
+	box_n = tr_["box"]
+	zone = obj_zone_of(box_n, 1.0, 1.0)
+	if kind == "remembered":
+		ic, en = THING_NAMES.get(tr_["label"], THING_NAMES["object"])
+		log_event("ai", f"Thing remembered: {en} ({zone or 'picture'})")
+		return
+	ic, title, _nm = obj_push_text(kind, tr_["label"], zone)
+	_ic, en_title, _n = obj_push_text(kind, tr_["label"], zone, "en")
+	log_event("ai", f"{ic} {en_title}")
+	PROF["last_events"].appendleft({"t": datetime.now().strftime("%H:%M"), "ic": ic, "kind": kind, "label": tr_["label"], "zone": zone})
+	jpg = _obj_jpg(full, (box_n[0] * pw, box_n[1] * ph, box_n[2] * pw, box_n[3] * ph), pw, ph) if full is not None else None
+	if jpg is None and full is not None:
+		jpg = _obj_jpg(full)
+	text = datetime.now().strftime("%H:%M") + " · " + tr("Things check")
+	obj_push("obj_gone" if kind == "gone" else "obj_thing", ic, title, text, jpg, gap_key=(kind, tr_["label"], zone, round(box_n[0], 1)))
+
+
+
+def prof_frame(w, small, full, ai_objs, person_boxes, pw, ph, t0):
+	""
+	sees = {}
+	vs = {}
+	for o in ai_objs:
+		lab = COCO_LABELS.get(o[5], "")
+		if lab in ANIMALS:
+			sp = species_for(o[:4]) if CFG.get("species_on") and SPECIES["cache"] else None
+			k, _ic, _nm = wild_name(lab, o, sp, "en")
+			if k not in sees or o[2] * o[3] > sees[k][2] * sees[k][3]:
+				sees[k] = o
+		elif lab in VEH_OF_LABEL:
+			vt = VEH_OF_LABEL[lab]
+			if vt not in vs or o[2] * o[3] > vs[vt][2] * vs[vt][3]:
+				vs[vt] = o
+	for k, o in ANIMAL_WATCH.feed(t0, sees):
+		zone = obj_zone_of(o, pw, ph)
+		pol = prof_animal_policy(k, o, ph)
+		ic, title, _nm = obj_push_text("animal", k, zone)
+		_i, en_title, _n = obj_push_text("animal", k, zone, "en")
+		log_event("ai", f"{ic} {en_title} (AI {int(o[4] * 100)} %)")
+		PROF["last_events"].appendleft({"t": datetime.now().strftime("%H:%M"), "ic": ic, "kind": "animal", "label": k, "zone": zone})
+		if pol == "report":
+			obj_push("obj_animal", ic, title, datetime.now().strftime("%H:%M") + f" · {tr('AI')} {int(o[4] * 100)} %",
+                     _obj_jpg(full, o, pw, ph), gap_key=("animal", k, zone))
+	for vt, o in VEHICLE_WATCH.feed(t0, vs):
+		pol = veh_policy(vt)
+		if pol == "ignore":
+			continue
+		zone = obj_zone_of(o, pw, ph)
+		ic, title, _nm = obj_push_text("vehicle", vt, zone)
+		_i, en_title, _n = obj_push_text("vehicle", vt, zone, "en")
+		log_event("car", f"{ic} {en_title}")
+		PROF["last_events"].appendleft({"t": datetime.now().strftime("%H:%M"), "ic": ic, "kind": "vehicle", "label": vt, "zone": zone})
+		if pol == "report":
+			obj_push("obj_vehicle", ic, title, datetime.now().strftime("%H:%M"), _obj_jpg(full, o, pw, ph), gap_key=("vehicle", vt, zone))
+	e = prof_energy()
+	if not e["things"]:
+		PROF["paused"] = ""
+		return
+	if t0 - PROF["check_t"] < OBJ_CHECK_S:
+		return
+	pos = (round(float(CFG.get("pan", 0)), 1), round(float(CFG.get("tilt", 0)), 1))
+	if CFG.get("patrol") or STATE.get("tracking") or manual_active():
+		PROF["check_t"] = t0
+		if PROF["paused"] != "moves":
+			PROF["paused"] = "moves"; log_event("ai", "Things check paused: the camera moves (patrol / following)")
+		return
+	if PROF.get("pos") != pos:
+		PROF["pos"] = pos; CHANGE.reset()
+	PROF["paused"] = ""
+	persons_n = [(b[0] / pw, b[1] / ph, b[2] / pw, b[3] / ph) for b in person_boxes]
+	try:
+		things_check(w, small, full, persons_n, t0)
+	except Exception as e_:
+		PROF["check_t"] = t0
+		log_event("ai", f"Things check: {type(e_).__name__}: {e_}"[:160])
+
+
+
+def prof_state(lang=None):
+	L = norm_lang(lang) if lang else cur_lang()
+	prof_tick()
+	pid = PROF["eff"]; d = prof_def(pid); e = prof_energy(pid)
+	parts = []
+	if e["motion_only"]:
+		parts.append(tr("AI only at movement", L))
+	if e["ai_k"] > 1:
+		parts.append(trf("AI only every {k}th picture", L, k=e["ai_k"]))
+	if e["proc_max"]:
+		parts.append(trf("small pictures ({w} px)", L, w=e["proc_max"]))
+	parts.append(tr("things check every minute", L) if e["things"] else tr("things check off", L))
+	if e["big"]:
+		parts.append(tr("bigger model allowed", L))
+	things = []
+	for tr_ in THINGS.tracks[:12]:
+		ic, en = THING_NAMES.get(tr_["label"], THING_NAMES["object"])
+		st = tr("remembered", L) if tr_["remembered"] else (tr("reported", L) if tr_["rep"] else tr("seen", L))
+		things.append({"ic": ic, "name": tr(en, L), "state": st, "since": datetime.fromtimestamp(tr_["first"]).strftime("%H:%M"),
+                       "zone": obj_zone_of(tr_["box"])})
+	evs = [dict(x, name=(obj_push_text(x["kind"], x["label"], x["zone"], L)[1] if x["kind"] in ("animal", "vehicle", "package", "left", "gone") else x["label"]))
+           for x in list(PROF["last_events"])[:6]]
+	return {"ok": True, "id": pid, "chosen": str(CFG.get("det_profile") or ""), "why": PROF["why"], "why_text": prof_why_text(PROF["why"], L),
+            "icon": d["icon"], "name": tr(d["name"], L), "energy": " · ".join(parts),
+            "list": [{"id": "", "icon": PROF_NONE["icon"], "name": tr(PROF_NONE["name"], L), "info": tr(PROF_NONE["info"], L)}] +
+                    [{"id": k, "icon": PROFILES[k]["icon"], "name": tr(PROFILES[k]["name"], L), "info": tr(PROFILES[k]["info"], L)} for k in PROF_ORDER],
+            "things": things, "events": evs, "paused": tr("paused: the camera moves", L) if PROF["paused"] == "moves" else "",
+            "batt_on": bool(CFG.get("prof_batt_on")), "batt_pct": int(CFG.get("prof_batt_pct") or 20),
+            "checks": PROF["checks"], "ai_skipped": PROF["ai_skipped"], "ai_runs": PROF["ai_runs"]}
+
+
+def prof_routes(app, reply, body):
+	from flask import request
+
+	@app.route("/api/profile", methods=["GET", "POST"])
+	def api_profile():
+		if request.method == "GET":
+			return reply(prof_state(request.args.get("lang")))
+		d = body(); a = d.get("action")
+		if a == "set":
+			ok, err = prof_set(d.get("id", ""), "web")
+			if not ok:
+				return reply({"ok": False, "error": err}, 400)
+		elif a == "remember":
+			n = THINGS.remember_now(); _obj_remembered_save(); log_event("ai", f"Things remembered by hand: {n}")
+		elif a == "forget":
+			THINGS.forget(); _obj_remembered_save(); log_event("ai", "Remembered things forgotten")
+		else:
+			return reply({"ok": False, "error": "unknown action"}, 400)
+		return reply(prof_state(d.get("lang")))
+
+
+_smalltv_routes_op_base = smalltv_routes
+
+
+def smalltv_routes(app, reply, body):
+	_smalltv_routes_op_base(app, reply, body)
+	prof_routes(app, reply, body)
+
+
+
+TOGGLES.extend([
+    (_OPS, "prof_batt_on", "Battery low: switch to «Save battery»"),
+    (_OPS, "obj_pkg_on", "Parcel at the door (House watch)"),
+    (_OPS, "obj_left_on", "Thing left behind (House watch)"),
+    (_OPS, "obj_gone_on", "Remembered thing gone (House / Garden)"),
+    ("AI detection", "ai_model_big", "Bigger own model in House / Garden (only after a measurement on the Pi)"),
+])
+SLIDERS.extend([
+    (_OPS, "prof_batt_pct", "… below (%)", 5, 60, 1),
+    (_OPS, "obj_pkg_min", "Parcel: lies there for (min)", 1, 30, 1),
+    (_OPS, "obj_left_min", "Left behind after (min)", 2, 120, 1),
+    (_OPS, "obj_remember_min", "Remember a thing after (min)", 5, 240, 5),
+])
+TEXTS.extend([
+    (_OPS, "det_profile", "Profile", "enum", "det_profiles"),
+    (_OPS, "obj_pkg_zone", "Zone for parcels", "enum", "obj_zones"),
+    ("Vehicle filter", "veh_car", "🚗 Car", "enum", "veh_policy"),
+    ("Vehicle filter", "veh_moto", "🏍️ Motorbike", "enum", "veh_policy"),
+    ("Vehicle filter", "veh_bike", "🚲 Bicycle", "enum", "veh_policy"),
+    ("Vehicle filter", "veh_truck", "🚚 Van / truck", "enum", "veh_policy"),
+])
+TEXT_SPECS.update({k: (kind, extra) for s, k, l, kind, extra in TEXTS if k in _OP_DEF})
+SECTIONS.append(_OPS)
+TK_SUB_ICONS[_OPS] = "◈"
+SIMPLE_SECTIONS.update({_OPS, "Vehicle filter"})
+SIMPLE_KEYS.update({"det_profile", "prof_batt_on", "obj_pkg_on", "obj_left_on", "obj_gone_on", "veh_car", "veh_moto", "veh_bike", "veh_truck"})
+MENU_MAIN.update({"veh_car", "veh_moto", "veh_bike", "veh_truck"})
+MENU_TITLES.setdefault(_OPS, "Detection profile")
+SET_HELP.update({
+    "det_profile": ("One choice for what MoveEye reports and how much the AI computes: Night at the tent, Garden by day, House watch, "
+                    "Save battery. A schedule can choose a profile (field «Detection profile»), the battery too. «Own settings» = as before.",
+                    "Night at the tent for camping nights on the battery."),
+    "prof_batt_on": ("Below the threshold MoveEye switches to «Save battery» by itself (only persons, the AI seldom) and back when "
+                     "the battery charges or is 5 % above it.", "On for battery operation."),
+    "obj_pkg_on": ("Only in «House watch»: a new thing that lies still in the zone for parcels for a few minutes (nobody next to "
+                   "it) - one message with the picture.", "On."),
+    "obj_left_on": ("Only in «House watch»: a backpack, bag or suitcase that stays where somebody put it down.", "On."),
+    "obj_gone_on": ("In «House watch» and «Garden by day»: a bike, cool box or chair that was there for a while (or was remembered "
+                    "with «Remember now») disappears.", "On."),
+    "ai_model_big": ("A bigger own model (file moveeye_model_gross.onnx) only in the profiles House and Garden. Off until it has "
+                     "been measured on the Pi (time per picture, temperature, battery).", "Off."),
+    "veh_car": ("Per type of vehicle: report (push message, in the profile «House watch»), only log, or ignore.", "Only log."),
+})
+for _k in ("veh_moto", "veh_bike", "veh_truck"):
+	SET_HELP[_k] = SET_HELP["veh_car"]
+
+_text_choice_pairs_op_base = text_choice_pairs
+
+
+def text_choice_pairs(key):
+	extra = (TEXT_SPECS.get(key) or (None, None))[1]
+	if extra == "det_profiles":
+		return [("", PROF_NONE["icon"] + " " + tr(PROF_NONE["name"]))] + [(k, PROFILES[k]["icon"] + " " + tr(PROFILES[k]["name"])) for k in PROF_ORDER]
+	if extra == "veh_policy":
+		return [("report", tr("report")), ("log", tr("only log")), ("ignore", tr("ignore"))]
+	if extra == "obj_zones":
+		names = [str(z.get("name") or "").strip() for z in ZONES if z.get("mode") not in ("ignore", "privacy", "sleep", "line")]
+		cur = str(CFG.get("obj_pkg_zone") or "")
+		return [("", tr("any zone (without zones: the picture)"))] + [(n, n) for n in dict.fromkeys(names + ([cur] if cur else [])) if n]
+	return _text_choice_pairs_op_base(key)
+
+
+_set_text_op_base = set_text
+
+
+def set_text(key, value):
+	ok, err = _set_text_op_base(key, value)
+	if ok and key == "det_profile":
+		save_settings(); prof_tick(force=True)
+	return ok, err
+
+
+
+WEB_PAGE = WEB_PAGE.replace('{card: "tune", title: "Improve detection", ic: "🎯"}, ',
+                            '{card: "tune", title: "Improve detection", ic: "🎯"}, {sec: "Detection profile", title: "Detection profile", ic: "🎛️"}, ', 1)
+_OP_SEC_OLD = 'if (sec.id === "Extra display" && window.stvPanel) stvPanel(d);'
+WEB_PAGE = WEB_PAGE.replace(_OP_SEC_OLD, _OP_SEC_OLD + '\n    if (sec.id === "Detection profile" && window.profPanel) profPanel(d);   // 639zz: detection profiles', 1)
+
+_OP_SCHED_OLD = 'mk("Skip dates (YYYY-MM-DD, ranges with .., MM-DD every year)", skip));'
+_OP_SCHED_NEW = ('mk("Skip dates (YYYY-MM-DD, ranges with .., MM-DD every year)", skip),\n'
+                 '             mk("Detection profile", mkSel(window.profOpts ? profOpts() : [["", "–"]], cur.profile || "", v => { cur.profile = v; save(); })));   // 639zz')
+WEB_PAGE = WEB_PAGE.replace(_OP_SCHED_OLD, _OP_SCHED_NEW, 1)
+
+PROF_CSS = r"""
+#profpanel .pfnow{font-weight:600;margin-bottom:2px}
+#profpanel .pfgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin:8px 0}
+#profpanel .pfb{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:9px 10px;border-radius:12px;
+  border:1px solid var(--line,#2a3442);background:var(--card,transparent);color:inherit;font:inherit;cursor:pointer;min-height:84px}
+#profpanel .pfb .pi{font-size:24px;line-height:1}
+#profpanel .pfb .pn{font-weight:600;font-size:14px}
+#profpanel .pfb .pd{font-size:12px;opacity:.75;line-height:1.3}
+#profpanel .pfb.on{border-color:#2f7cf6;background:rgba(47,124,246,.14);box-shadow:inset 0 0 0 1px #2f7cf6}
+#profpanel .pfb.auto{outline:2px dashed #2f7cf6;outline-offset:2px}
+#profpanel .pfrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}#profpanel .pfrow button{flex:1 1 140px}
+#profpanel .pfl{font-size:13px;white-space:pre-wrap;margin-top:6px}
+"""
+
+PROF_JS = _zd('639zz_objekte_profile/PROF_JS', "")
+PROF_JS_KEYS = ["Active", "Own settings", "Night at the tent", "Garden by day", "House watch", "Save battery", "unchanged", "Remember now",
+                "Remember the things in view - a message when one is gone", "Forget", "Things", "Last reports",
+                "Automatic: choose a profile in a schedule (Protection → Schedule), or below: battery low.", "Detection profile"]
+
+
+def prof_web_de_refresh():
+	""
+	global WEB_PAGE
+	m = re.search(r"/\*PROFDE\*/(\{.*?\});", WEB_PAGE)
+	if m:
+		WEB_PAGE = WEB_PAGE[:m.start(1)] + json.dumps({_k: DE.get(_k, _k) for _k in PROF_JS_KEYS}, ensure_ascii=False) + WEB_PAGE[m.end(1):]
+
+
+WEB_PAGE = WEB_PAGE.replace("</body>", PROF_JS.replace('/*PROFCSS*/""', json.dumps(PROF_CSS), 1) + "</body>", 1)
+
+
+
+def _prof_tk_build_section(self, sec, sbody, settings_parent=None):
+	_prof_tk_build_section_before(self, sec, sbody, settings_parent)
+	if sec != _OPS:
+		return
+	try:
+		_prof_tk_panel(self, sbody)
+	except Exception as e:
+		log_event("sys", f"Window: detection profile: {e}"[:160])
+
+
+def _prof_tk_panel(app, sbody):
+	box = ttk.Frame(sbody); box.pack(fill="x", pady=(6, 0))
+	now = ttk.Label(box, text="", wraplength=340, justify="left"); now.pack(anchor="w")
+	grid = ttk.Frame(box); grid.pack(fill="x", pady=(4, 0))
+	btns = {}
+	rows = [("", PROF_NONE)] + [(k, PROFILES[k]) for k in PROF_ORDER]
+	for i, (pid, d) in enumerate(rows):
+		b = ttk.Button(grid, text=d["icon"] + " " + tr(d["name"]), command=lambda p=pid: (prof_set(p, "window"), tick(once=True)))
+		b.grid(row=i // 2, column=i % 2, sticky="ew", padx=2, pady=2); btns[pid] = b
+	grid.columnconfigure(0, weight=1); grid.columnconfigure(1, weight=1)
+	en = ttk.Label(box, text="", style="Mut.TLabel", wraplength=340, justify="left"); en.pack(anchor="w", pady=(4, 0))
+	bf = ttk.Frame(box); bf.pack(fill="x", pady=(4, 0))
+	ttk.Button(bf, text="📌 " + tr("Remember now"), command=lambda: (THINGS.remember_now(), _obj_remembered_save())).pack(side="left", expand=True, fill="x", padx=(0, 4))
+	ttk.Button(bf, text="✕ " + tr("Forget"), command=lambda: (THINGS.forget(), _obj_remembered_save())).pack(side="left", expand=True, fill="x")
+	th = ttk.Label(box, text="", style="Mut.TLabel", wraplength=340, justify="left"); th.pack(anchor="w", pady=(4, 0))
+
+	def tick(once=False):
+		try:
+			if not now.winfo_exists():
+				return
+			j = prof_state()
+			now.config(text=tr("Active") + ": " + j["icon"] + " " + j["name"] + "\n" + j["why_text"] + (" · " + j["paused"] if j["paused"] else ""))
+			for pid, b in btns.items():
+				b.state(["pressed"] if pid == j["chosen"] else ["!pressed"])
+			en.config(text="⚡ " + j["energy"])
+			lines = [x["ic"] + " " + x["name"] + " · " + x["state"] + " · " + x["since"] for x in j["things"]]
+			lines += [x["t"] + "  " + x["ic"] + " " + x["name"] for x in j["events"][:4]]
+			th.config(text="\n".join(lines))
+			if not once:
+				app.root.after(3000, tick)
+		except Exception:
+			pass
+	tick()
+
+
+_prof_tk_build_section_before = App._build_section
+
+App._build_section = _prof_tk_build_section
+for _g in TK_GROUPS:
+	if _g[0] == "detect" and _OPS not in _g[2]:
+		_g[2].insert(_g[2].index("Improve detection") + 1 if "Improve detection" in _g[2] else 0, _OPS)
+
+
+
+_HX_OBJPROF = _zd('639zz_objekte_profile/HX_OBJPROF', _zd_hx({
+    'Detection profile': 'Erkennungsprofil',
+    'Profile': 'Profil',
+    'Own settings': 'Eigene Einstellungen',
+    'No profile: MoveEye works as set up (as before).': 'Kein Profil: MoveEye arbeitet wie eingestellt (wie bisher).',
+    'Night at the tent': 'Nacht am Zelt',
+    'Persons and large animals. The AI only looks when something moves - saves a lot.': 'Personen und grosse Tiere. Die KI schaut nur, wenn sich etwas bewegt – spart viel.',
+    'Garden by day': 'Garten tagsüber',
+    'Persons and all animals with their names. Remembered things (bike, cool box) are watched.': 'Personen und alle Tiere mit Namen. Gemerkte Dinge (Velo, Kühlbox) werden bewacht.',
+    'House watch': 'Hausüberwachung',
+    'Persons, vehicles and parcels: a parcel at the door, things left behind or gone.': 'Personen, Fahrzeuge und Pakete: Paket vor der Tür, liegen gelassene oder verschwundene Dinge.',
+    'Save battery': 'Akku sparen',
+    'Only persons. The AI looks seldom, small pictures - for long nights on the battery.': 'Nur Personen. Die KI schaut selten, kleine Bilder – für lange Nächte am Akku.',
+    'Active': 'Aktiv',
+    'chosen by hand': 'von Hand gewählt',
+    'by the mode «{n}»': 'vom Modus «{n}»',
+    'schedule «{n}»': 'Zeitplan «{n}»',
+    'battery below {p} %': 'Akku unter {p} %',
+    'AI only at movement': 'KI nur bei Bewegung',
+    'AI only every {k}th picture': 'KI nur jedes {k}. Bild',
+    'small pictures ({w} px)': 'kleine Bilder ({w} px)',
+    'things check every minute': 'Dinge-Prüfung jede Minute',
+    'things check off': 'Dinge-Prüfung aus',
+    'bigger model allowed': 'grösseres Modell erlaubt',
+    'Things check': 'Dinge-Prüfung',
+    'Things': 'Dinge',
+    'Last reports': 'Letzte Meldungen',
+    'remembered': 'gemerkt',
+    'reported': 'gemeldet',
+    'seen': 'gesehen',
+    'paused: the camera moves': 'Pause: die Kamera bewegt sich',
+    'Remember now': 'Jetzt merken',
+    'Remember the things in view - a message when one is gone': 'Die Dinge im Bild merken – Meldung, wenn eines fehlt',
+    'Forget': 'Vergessen',
+    'Automatic: choose a profile in a schedule (Protection → Schedule), or below: battery low.': 'Automatisch: im Zeitplan ein Profil wählen (Schutz → Zeitplan) oder unten: bei tiefem Akku.',
+    'Battery low: switch to «Save battery»': 'Akku tief: auf «Akku sparen» wechseln',
+    '… below (%)': '… unter (%)',
+    'Parcel at the door (House watch)': 'Paket vor der Tür (Hausüberwachung)',
+    'Thing left behind (House watch)': 'Gegenstand liegen gelassen (Hausüberwachung)',
+    'Remembered thing gone (House / Garden)': 'Gemerkter Gegenstand weg (Haus / Garten)',
+    'Bigger own model in House / Garden (only after a measurement on the Pi)': 'Grösseres eigenes Modell in Haus / Garten (erst nach Messung am Pi)',
+    'Parcel: lies there for (min)': 'Paket: liegt dort seit (Min.)',
+    'Left behind after (min)': 'Liegen gelassen nach (Min.)',
+    'Remember a thing after (min)': 'Gegenstand merken nach (Min.)',
+    'Zone for parcels': 'Zone für Pakete',
+    'any zone (without zones: the picture)': 'jede Zone (ohne Zonen: das ganze Bild)',
+    'report': 'melden',
+    'only log': 'nur protokollieren',
+    'ignore': 'ignorieren',
+    '🚗 Car': '🚗 Auto',
+    '🏍️ Motorbike': '🏍️ Töff',
+    '🚲 Bicycle': '🚲 Velo',
+    '🚚 Van / truck': '🚚 Lieferwagen / Lastwagen',
+    'Car': 'Auto',
+    'Motorbike': 'Töff',
+    'Bicycle': 'Velo',
+    'Van / truck': 'Lieferwagen',
+    'Fox': 'Fuchs',
+    'Roe deer': 'Reh',
+    'Badger': 'Dachs',
+    'Hedgehog': 'Igel',
+    'Wild boar': 'Wildschwein',
+    'Red deer': 'Hirsch',
+    'Hare': 'Hase',
+    'Marten': 'Marder',
+    'Wolf': 'Wolf',
+    'Lynx': 'Luchs',
+    'Squirrel': 'Eichhörnchen',
+    'Chamois': 'Gämse',
+    'Ibex': 'Steinbock',
+    'Cat': 'Katze',
+    'Dog': 'Hund',
+    'Bird': 'Vogel',
+    'Horse': 'Pferd',
+    'Sheep': 'Schaf',
+    'Cow': 'Kuh',
+    'Bear': 'Bär',
+    'Elephant': 'Elefant',
+    'Zebra': 'Zebra',
+    'Giraffe': 'Giraffe',
+    'Animal': 'Tier',
+    'Backpack': 'Rucksack',
+    'Bag': 'Tasche',
+    'Suitcase': 'Koffer',
+    'Umbrella': 'Schirm',
+    'Chair': 'Stuhl',
+    'Bench': 'Bank',
+    'Skateboard': 'Skateboard',
+    'Surfboard': 'Surfbrett',
+    'Skis': 'Ski',
+    'Ball': 'Ball',
+    'Object': 'Gegenstand',
+    'Parcel': 'Paket',
+    'Parcel put down': 'Paket abgelegt',
+    '{x} seen': '{x} gesehen',
+    '{x} left behind': '{x} liegen gelassen',
+    '{x} left behind {where}': '{x} {where} liegen gelassen',
+    '{x} gone': '{x} weg',
+    'AI': 'KI',
+    'waiting for movement (profile)': 'wartet auf Bewegung (Profil)',
+    'One choice for what MoveEye reports and how much the AI computes: Night at the tent, Garden by day, House watch, Save battery. A schedule can choose a profile (field «Detection profile»), the battery too. «Own settings» = as before.': 'Eine Wahl dafür, was MoveEye meldet und wie viel die KI rechnet: Nacht am Zelt, Garten tagsüber, Hausüberwachung, Akku sparen. Ein Zeitplan kann ein Profil wählen (Feld «Erkennungsprofil»), der Akku auch. «Eigene Einstellungen» = wie bisher.',
+    'Night at the tent for camping nights on the battery.': 'Nacht am Zelt für Camping-Nächte am Akku.',
+    'Below the threshold MoveEye switches to «Save battery» by itself (only persons, the AI seldom) and back when the battery charges or is 5 % above it.': 'Unter der Schwelle wechselt MoveEye selbst auf «Akku sparen» (nur Personen, die KI selten) und zurück, sobald der Akku lädt oder 5 % darüber ist.',
+    'On for battery operation.': 'Ein beim Betrieb mit Akku.',
+    'Only in «House watch»: a new thing that lies still in the zone for parcels for a few minutes (nobody next to it) - one message with the picture.': 'Nur in «Hausüberwachung»: ein neuer Gegenstand, der ein paar Minuten still in der Zone für Pakete liegt (niemand daneben) – eine Meldung mit Bild.',
+    'On.': 'Ein.',
+    'Off.': 'Aus.',
+    'Only log.': 'Nur protokollieren.',
+    'Only in «House watch»: a backpack, bag or suitcase that stays where somebody put it down.': 'Nur in «Hausüberwachung»: ein Rucksack, eine Tasche oder ein Koffer, der liegen bleibt, wo ihn jemand abgestellt hat.',
+    'In «House watch» and «Garden by day»: a bike, cool box or chair that was there for a while (or was remembered with «Remember now») disappears.': 'In «Hausüberwachung» und «Garten tagsüber»: ein Velo, eine Kühlbox oder ein Stuhl, der eine Weile da war (oder mit «Jetzt merken» gemerkt wurde), verschwindet.',
+    'A bigger own model (file moveeye_model_gross.onnx) only in the profiles House and Garden. Off until it has been measured on the Pi (time per picture, temperature, battery).': 'Ein grösseres eigenes Modell (Datei moveeye_model_gross.onnx) nur in den Profilen Haus und Garten. Aus, bis es am Pi gemessen ist (Zeit pro Bild, Temperatur, Akku).',
+    'Per type of vehicle: report (push message, in the profile «House watch»), only log, or ignore.': 'Je Fahrzeugart: melden (Push-Nachricht, im Profil «Hausüberwachung»), nur protokollieren oder ignorieren.',
+}))
+DE["Motorbike"] = "Töff"
+for _k, _v in _HX_OBJPROF.items():
+	DE.setdefault(_k, _v[0])
+	for _i, _L in enumerate(('fr', 'it', 'rm')):
+		TRX[_L].setdefault(_k, _v[_i + 1])
+prof_web_de_refresh()
+
+
+_OP_HELP = (
+    ('<section id="detect" data-icon="🎯"><h2>Erkennung</h2>',
+     "<p><b>🎛️ Erkennungsprofil:</b> Eine Wahl dafür, was MoveEye meldet und wie viel die KI rechnet (Einstellungen → Erkennung). "
+     "<i>🏕️ Nacht am Zelt</i>: Personen und grosse Tiere (Reh, Wildschwein, Fuchs, Dachs …), die KI schaut nur bei Bewegung – spart viel. "
+     "<i>🌳 Garten tagsüber</i>: Personen und alle Tiere mit Namen («🦊 Fuchs beim Zelt»), gemerkte Dinge werden bewacht. "
+     "<i>🏠 Hausüberwachung</i>: Personen, Fahrzeuge, «📦 Paket vor der Tür», liegen gelassene und verschwundene Dinge (Prüfung etwa jede Minute). "
+     "<i>🔋 Akku sparen</i>: nur Personen, die KI selten, kleine Bilder. Wechsel von Hand, per Zeitplan (Feld «Erkennungsprofil») oder bei tiefem Akku. "
+     "Ohne Profil bleibt alles wie bisher. Fahrzeuge je Art (Auto, Töff, Velo, Lieferwagen): melden, nur protokollieren oder ignorieren "
+     "(Erkennung → Fahrzeugfilter). Namen der Wildtiere kommen vom Tierarten-Modell oder vom eigenen Modell mit Wildtier-Klassen – "
+     "das Standard-Modell kennt Fuchs, Reh, Dachs, Igel und Wildschwein nicht. Ein Paket erkennt MoveEye als neuen Gegenstand, der still liegen bleibt.</p>"),
+    ('<section id="detect" data-icon="🎯"><h2>Detection</h2>',
+     "<p><b>🎛️ Detection profile:</b> One choice for what MoveEye reports and how much the AI computes (Settings → Detection). "
+     "<i>🏕️ Night at the tent</i>: persons and large animals, the AI only looks at movement - saves a lot. <i>🌳 Garden by day</i>: persons "
+     "and all animals with names («🦊 Fox at Tent»), remembered things are watched. <i>🏠 House watch</i>: persons, vehicles, «📦 parcel "
+     "at the door», things left behind or gone (checked about once a minute). <i>🔋 Save battery</i>: only persons, the AI seldom, small "
+     "pictures. Switch by hand, by a schedule (field «Detection profile») or when the battery is low. Without a profile all stays as before. "
+     "Vehicles per type (car, motorbike, bicycle, van): report, only log or ignore (Detection → Vehicle filter). The names of wild animals "
+     "come from the species model or from an own model with wildlife classes - the standard model does not know fox, roe deer, badger, "
+     "hedgehog and wild boar. A parcel is found as a new object that stays still.</p>"),
+)
+for _h_old, _h_new in _OP_HELP:
+	if _h_old in HELP_PAGE:
+		HELP_PAGE = HELP_PAGE.replace(_h_old, _h_old + _h_new, 1)
+
+
+
+def objprof_selftest():
+	"""
+"""
+	keep_cfg = {k: json.loads(json.dumps(CFG.get(k))) for k in list(_OP_DEF) + ["ai_model", "mode"]}
+	keep_prof = {k: PROF[k] for k in ("eff", "why", "batt", "over", "sched", "seen_manual", "tick_t", "big_on")}
+	with LOCK:
+		keep_sched = [dict(s) for s in SCHEDULES]
+	keep_zones = [dict(z) for z in ZONES]
+	keep_things = (THINGS.tracks, THINGS.n, THINGS.ghosts)
+	_save = globals().get("save_settings")
+	try:
+		globals()["save_settings"] = lambda *a, **k: None
+
+		e0 = prof_energy("")
+		assert e0 == {"ai_k": 1, "motion_only": False, "proc_max": 0, "things": (), "big": False}, e0
+		CFG["ai_model_big"] = True
+		for pid in PROFILES:
+			e = prof_energy(pid)
+			assert e["ai_k"] >= 1 and (e["proc_max"] == 0 or e["proc_max"] <= 320)
+			assert bool(e["things"]) == (pid in ("home", "garden")), (pid, e)
+			assert e["big"] == (pid in ("home", "garden")), (pid, e)
+		assert prof_energy("night")["motion_only"] and prof_energy("battery")["ai_k"] >= 4 and prof_energy("battery")["proc_max"] == 320
+		CFG["ai_model_big"] = False
+		assert not any(prof_energy(p)["big"] for p in PROFILES)
+		CFG["obj_pkg_on"] = False
+		assert prof_energy("home")["things"] == ("left", "gone")
+		CFG["obj_pkg_on"] = True
+
+		CFG.update(det_profile="garden", prof_batt_on=False)
+		PROF.update(batt=False, over=None, sched=None, seen_manual=None)
+		with LOCK:
+			SCHEDULES[:] = [_clean_schedule({"name": "Nacht", "days": list(range(7)), "start": "22:00", "end": "06:00", "profile": "night", "actions": {}}, 0)]
+		assert SCHEDULES[0]["profile"] == "night"
+		day, night = datetime(2026, 11, 9, 14, 0), datetime(2026, 11, 9, 23, 30)
+		assert prof_tick(True, day, {}) == "garden" and PROF["why"] == "manual"
+		assert prof_tick(True, night, {}) == "night" and PROF["why"] == "schedule:Nacht"
+		assert prof_tick(True, datetime(2026, 11, 10, 5, 59), {}) == "night"
+		CFG["det_profile"] = "home"
+		assert prof_tick(True, night, {}) == "home"
+		assert prof_tick(True, day, {}) == "home"
+		assert prof_tick(True, night, {}) == "night"
+		CFG["prof_batt_on"] = True; CFG["prof_batt_pct"] = 20
+		assert prof_tick(True, night, {"on": True, "pct": 19, "on_battery": True}) == "battery" and PROF["why"] == "battery"
+		assert prof_tick(True, day, {"on": True, "pct": 23, "on_battery": True}) == "battery"
+		assert prof_tick(True, day, {"on": True, "pct": 26, "on_battery": True}) == "home"
+		assert prof_tick(True, day, {"on": True, "pct": 10, "charging": True}) == "home"
+		CFG["prof_batt_on"] = False
+		assert prof_tick(True, day, {"on": True, "pct": 5, "on_battery": True}) == "home"
+
+		CFG["det_profile"] = ""; CFG["mode"] = "camping"
+		assert prof_tick(True, datetime(2026, 11, 9, 20, 30), {}) == "night"
+		assert PROF["why"] == "mode:camping" and prof_why_text(PROF["why"], "de") == "vom Modus «Camping»"
+		assert prof_tick(True, datetime(2026, 11, 10, 6, 59), {}) == "night"
+		assert prof_tick(True, day, {}) == "" and PROF["why"] == "manual"
+		CFG["mode"] = "home"; assert prof_tick(True, day, {}) == "home" and PROF["why"] == "mode:home"
+		CFG["mode"] = "wild"; assert prof_tick(True, day, {}) == "garden"
+		assert prof_tick(True, night, {}) == "night" and PROF["why"] == "schedule:Nacht"
+		CFG["det_profile"] = "battery"; assert prof_tick(True, day, {}) == "battery" and PROF["why"] == "manual"
+		CFG["mode"] = "transport"; CFG["det_profile"] = ""; assert prof_tick(True, day, {}) == ""
+		CFG["det_profile"] = "home"; prof_tick(True, day, {})
+
+		CFG.update(veh_car="report", veh_moto="ignore", veh_bike="log", veh_truck="report")
+		assert veh_policy("car", "home") == "report" and veh_policy("car", "night") == "log" and veh_policy("car", "") == "report"
+		assert veh_policy("moto", "home") == "ignore" and veh_policy("bike", "home") == "log" and veh_policy("truck", "battery") == "log"
+		vw = SeenWatch(confirm_s=1.5, gone_s=120.0, grace_s=30.0)
+		assert vw.feed(0.0, {"car": 1}) == [] and vw.feed(2.0, {"car": 1}) == []
+		assert vw.feed(40.0, {"bike": 1}) == [] and vw.feed(42.0, {"bike": 1}) == [("bike", 1)]
+		assert vw.feed(43.0, {"bike": 1}) == []
+		assert vw.feed(300.0, {"bike": 1}) == [] and vw.feed(302.0, {"bike": 1}) == [("bike", 1)]
+
+		assert wild_canon("red fox;Fuchs") == "fox" and wild_canon("porcupine, hedgehog") == "hedgehog" and wild_canon("wild boar, boar") == "wild boar"
+		assert wild_canon("deer") == "roe deer" and wild_canon("badger") == "badger" and wild_canon("dog") == "dog" and wild_canon("toaster") == ""
+		assert wild_name("dog", species=("red fox", 0.8), lang="de")[2] == "Fuchs"
+		cm = own_ai_classmap(["person", "animal", "fox", "roe deer", "badger", "hedgehog", "wild boar", "dog"])
+		assert cm[1] == (OWN_AI_ANIMAL_ID, False) and [c[0] for c in cm[2:7]] == [WILD_IDS[k] for k in WILD_FIVE] and cm[7] == (18, False)
+		assert all(COCO_LABELS[WILD_IDS[k]] in ANIMALS for k in WILD_FIVE)
+		assert prof_animal_policy("fox", pid="night") == "report" and prof_animal_policy("hedgehog", pid="night") == "log"
+		assert prof_animal_policy("hedgehog", pid="garden") == "report" and prof_animal_policy("fox", pid="battery") == "log"
+		assert prof_animal_policy("animal", (0, 0, 10, 40), 100, "night") == "report" and prof_animal_policy("animal", (0, 0, 10, 5), 100, "night") == "log"
+
+		assert obj_push_text("animal", "fox", "Zelt", "de")[:2] == ("🦊", "Fuchs beim Zelt")
+		assert obj_push_text("animal", "wild boar", "", "de")[1] == "Wildschwein gesehen"
+		assert obj_push_text("package", "", "Tür", "de")[:2] == ("📦", "Paket vor der Tür")
+		assert obj_push_text("package", "", "", "de")[1] == "Paket abgelegt"
+		assert obj_push_text("left", "backpack", "Zelt", "de")[1] == "Rucksack beim Zelt liegen gelassen"
+		assert obj_push_text("gone", "bicycle", "", "de")[1] == "Velo weg"
+		assert obj_push_text("vehicle", "moto", "Einfahrt", "de")[1] == "Töff bei der Einfahrt"
+		assert obj_push_text("animal", "fox", "Tent", "en")[1] == "Fox at Tent" and obj_push_text("animal", "fox", "Velo-Platz", "de")[1] == "Fuchs bei «Velo-Platz»"
+		assert obj_push_text("animal", "roe deer", "", "fr")[1] == "Chevreuil vu"
+		pk = push_kind({"event": "info", "text": "22:14 · KI 80 %", "info_title": "{name}: Fuchs beim Zelt", "obj_ic": "🦊", "obj_title": "Fuchs beim Zelt"})
+		assert pk["ic"] == "🦊" and pk["title"] == "Fuchs beim Zelt" and pk["cls"] == "alarm"
+
+		ZONES[:] = [{"id": 1, "name": "Tür", "mode": "only", "points": [[0.0, 0.5], [0.5, 0.5], [0.5, 1.0], [0.0, 1.0]]}]
+		tw = ThingsWatch(); ok_zone = _obj_pkg_zone
+		tw.observe(0, [("bicycle", (0.7, 0.2, 0.2, 0.3), 0.8)], [], ok_zone)
+		box = (0.2, 0.7, 0.1, 0.1)
+		assert tw.observe(60, [("object", box, 0.5)], [(0.15, 0.4, 0.2, 0.5)], ok_zone) == []
+		assert tw.observe(120, [("object", box, 0.5)], [], ok_zone) == []
+		ev = tw.observe(180, [("object", box, 0.5)], [], ok_zone)
+		assert [k for k, _t in ev] == ["package"], ev
+		assert tw.observe(240, [("object", box, 0.5)], [], ok_zone) == []
+		bag = (0.7, 0.7, 0.08, 0.1)
+		tw.observe(300, [("object", box, 0.5), ("backpack", bag, 0.7)], [], ok_zone)
+		evs = []
+		for i in range(1, 12):
+			evs += tw.observe(300 + 60 * i, [("object", box, 0.5), ("backpack", bag, 0.7)], [], ok_zone)
+		assert [k for k, _t in evs] == ["left"], evs
+		tw2 = ThingsWatch()
+		tw2.observe(0, [("bicycle", (0.7, 0.2, 0.2, 0.3), 0.8)], [], ok_zone)
+		assert tw2.remember_now() == 1
+		assert tw2.observe(60, [], [(0.68, 0.15, 0.25, 0.4)], ok_zone) == []
+		assert tw2.observe(120, [], [], ok_zone) == []
+		ev = tw2.observe(180, [], [], ok_zone)
+		assert [k for k, _t in ev] == ["gone"] and not tw2.tracks, ev
+		tw3 = ThingsWatch()
+		evs = []
+		for i in range(0, 33):
+			evs += tw3.observe(60 * i, [("bicycle", (0.6, 0.3, 0.2, 0.3), 0.8)], [], ok_zone, ("gone",))
+		assert [k for k, _t in evs] == ["remembered"], evs
+		assert [k for k, _t in tw3.observe(33 * 60, [], [], ok_zone, ("gone",)) + tw3.observe(34 * 60, [], [], ok_zone, ("gone",))] == ["gone"]
+		assert tw3.observe(0, [("backpack", bag, 0.7)], [], ok_zone, ()) == []
+
+		rng = np.random.RandomState(3)
+		bg = (rng.rand(270, 480) * 60 + 90).astype(np.uint8); bg = cv2.GaussianBlur(bg, (7, 7), 0)
+		sc = StaticChange()
+		assert sc.update(bg) == [] and sc.update(bg) == []
+		fr = bg.copy(); cv2.rectangle(fr, (100, 180), (150, 230), 30, -1); cv2.rectangle(fr, (100, 180), (150, 230), 230, 2)
+		assert sc.update(fr) == []
+		got = sc.update(fr)
+		assert len(got) == 1 and abs(got[0][0] - 100 / 480.0) < 0.03 and abs(got[0][1] - 180 / 270.0) < 0.03, got
+		assert sc.update(cv2.add(fr, 60)) == []
+		sc2 = StaticChange(); sc2.update(bg); sc2.update(bg)
+		assert sc2.update(fr, persons=[(0.18, 0.6, 0.15, 0.3)]) == [] and sc2.update(fr, persons=[(0.18, 0.6, 0.15, 0.3)]) == []
+		p_ = sc.patch(fr, got[0])
+		assert sc.same_patch(fr, got[0], p_) and not sc.same_patch(bg, got[0], p_)
+
+		class _A:
+			boxes, objects, net, prof_motion_t = [], [], None, 0.0
+		a_ = _A(); calls = []
+		base = globals()["_prof_detect_base"]
+		try:
+			globals()["_prof_detect_base"] = lambda self, f: calls.append(1) or []
+			dm = DEMO.get("on"); DEMO["on"] = False
+			PROF["eff"] = "night"
+			_prof_detect(a_, None); assert not calls
+			a_.prof_motion_t = time.time(); _prof_detect(a_, None); assert len(calls) == 1
+			PROF["eff"] = "battery"; calls.clear()
+			for _i in range(8):
+				_prof_detect(a_, None)
+			assert len(calls) == 2, calls
+			PROF["eff"] = ""; calls.clear()
+			for _i in range(3):
+				_prof_detect(a_, None)
+			assert len(calls) == 3
+			PROF["eff"] = "battery"; PROF["tick_t"] = time.time()
+			assert prof_proc_width(640) == 320 and prof_proc_width(256) == 256
+		finally:
+			globals()["_prof_detect_base"] = base; DEMO["on"] = dm
+	finally:
+		globals()["save_settings"] = _save
+		for k, v in keep_cfg.items():
+			CFG[k] = v
+		PROF.update(keep_prof)
+		with LOCK:
+			SCHEDULES[:] = keep_sched
+		ZONES[:] = keep_zones
+		THINGS.tracks, THINGS.n, THINGS.ghosts = keep_things
+	return "profiles by time / battery, vehicles per type, parcel / left behind / gone, energy per profile, push words"
+
+
+SELFTEST_EXTRA.append(("Objects and profiles: profiles by schedule / battery, vehicles per type, parcel / left / gone, energy (639zz)", objprof_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+PIPER_ORT = "onnxruntime==1.20.1"
+PIPER_HF = "https://huggingface.co/rhasspy/piper-voices/resolve/"
+PIPER_BASE = {"url": PIPER_HF}
+PIPER_IDLE_S = 20 * 60
+PIPER_CACHE_N, PIPER_CACHE_MB = 300, 40
+PIPER_TIMEOUT_S = 60.0
+
+
+PIPER_VOICES = {
+    "de_DE-thorsten-medium": {
+        "lang": "de", "name": "Thorsten", "quality": "medium", "rev": "v1.0.0", "path": "de/de_DE/thorsten/medium/",
+        "licence": "CC0 (Thorsten-Voice, github.com/thorstenMueller/Thorsten-Voice)",
+        "model": {"size": 63201294, "sha256": "7e64762d8e5118bb578f2eea6207e1a35a8e0c30595010b666f983fc87bb7819",
+                  "md5": "a129b00fb3078df43c96bab6c94535c0"},
+        "config": {"size": 4819, "sha256": "974adee790533adb273a1ac88f49027d2a1b8f0f2cf4905954a4791e79264e85",
+                   "md5": "843a7bd7272724f750534dd5a26d1aad"}},
+    "de_DE-thorsten-high": {
+        "lang": "de", "name": "Thorsten", "quality": "high", "rev": "v1.0.0", "path": "de/de_DE/thorsten/high/",
+        "licence": "CC0 (Thorsten-Voice, github.com/thorstenMueller/Thorsten-Voice)",
+        "model": {"size": 113895201, "sha256": "9df1c43c61149ef9b39e618e2b861fbe41e1fcea9390b2dac62e8761573ea4f1",
+                  "md5": "256505fe58fb8b9d6ed78b83f6b8a9d2"},
+        "config": {"size": 4875, "sha256": "6de734444e4c3f9e33b7ebe2746dbc19b71e85f613e79c65acf623200b99a76a",
+                   "md5": "e81686e00a9d825e2488ead660bec6fd"}},
+    "en_GB-cori-medium": {
+        "lang": "en", "name": "Cori", "quality": "medium", "rev": "v1.0.0", "path": "en/en_GB/cori/medium/",
+        "licence": "public domain (LibriVox)",
+        "model": {"size": 63531379, "sha256": "1899f98e5fb8310154f3c2973f4b8a929ba7245e722b3d3a85680b833d95f10d",
+                  "md5": "f143307611eccea9d976235d0895f57c"},
+        "config": {"size": 4966, "sha256": "e262c16d7f192f69d4edd6b4ef8a5915379e67495fcc402f1ab15eeb33da3d36",
+                   "md5": "12b1dc45d8919f3475cf296d5f16a4c6"}},
+    "fr_FR-siwis-medium": {
+        "lang": "fr", "name": "Siwis", "quality": "medium", "rev": "v1.0.0", "path": "fr/fr_FR/siwis/medium/",
+        "licence": "CC BY 4.0 (SIWIS French Speech Synthesis Database, Univ. Edinburgh) – Nennung nötig",
+        "model": {"size": 63201294, "sha256": "641d1ab097da2b81128c076810edb052b385decc8be3381814802a64a73baf99",
+                  "md5": "20e876e8c839e9b11a26085858f2300c"},
+        "config": {"size": 4875, "sha256": "39479916c2db192b5ac9764daddd0c744d83e023ad890c6976c0633ae4df8959",
+                   "md5": "a407e7e6901feb79c2ea2a5466076cce"}},
+    "it_IT-paola-medium": {
+        "lang": "it", "name": "Paola", "quality": "medium", "rev": "3f71c558aea760af723ae1c111c62f265892b59f",
+        "path": "it/it_IT/paola/medium/", "licence": "CC0 (paolapersico1/Voice-Dataset-Italian, Herkunft der Aufnahmen prüfen)",
+        "model": {"size": 0, "sha256": "6fc918b5a0ea6137382833dddfa567bffbe6a5060c02043c87192ee59c04210c"},
+        "config": {"size": 0}},
+}
+PIPER_DEFAULT = {"de": "de_DE-thorsten-medium", "fr": "fr_FR-siwis-medium", "it": "it_IT-paola-medium",
+                 "en": "en_GB-cori-medium", "rm": "de_DE-thorsten-medium"}
+PIPER_ENGINES = (("auto", "Piper (else the old voice)"), ("piper", "only Piper (no fallback)"),
+                 ("old", "old voice (pico2wave / espeak-ng)"))
+_PIPER_ID_RE = re.compile(r"^[0-9a-f]{20}$")
+
+for _k, _v in {"tts_engine": "auto", "tts_speed": 1.0, "tts_volume": 80,
+               **{"tts_voice_" + _L: PIPER_DEFAULT[_L] for _L in LANGS}}.items():
+	CFG.setdefault(_k, _v); DEFAULTS.setdefault(_k, _v); FACTORY_CFG.setdefault(_k, _v)
+
+PIPER = {"lock": threading.Lock(), "proc": None, "q": None, "last": 0.0, "model": "", "err": "", "t_err": 0.0,
+         "ms": None, "warm_t": 0.0, "install": "", "install_step": "", "sim_ok": None}
+PIPER_DL = {"voice": "", "running": False, "got": 0, "total": 0, "msg": "", "stop": False, "done": ""}
+
+
+def piper_dir():
+	return os.path.join(DATA_DIR, "piper")
+
+
+def piper_cache_dir():
+	return os.path.join(piper_dir(), "cache")
+
+
+def piper_paths(vid):
+	d = piper_dir()
+	return os.path.join(d, vid + ".onnx"), os.path.join(d, vid + ".onnx.json")
+
+
+def piper_pin_ok(pin):
+	""
+	if not isinstance(pin, dict) or not isinstance(pin.get("size"), int) or pin["size"] <= 0:
+		return False
+	sha, md5 = str(pin.get("sha256") or ""), str(pin.get("md5") or "")
+	if sha and not re.fullmatch(r"[0-9a-f]{64}", sha):
+		return False
+	if md5 and not re.fullmatch(r"[0-9a-f]{32}", md5):
+		return False
+	return bool(sha or md5)
+
+
+def piper_pinned(vid):
+	v = PIPER_VOICES.get(vid)
+	return bool(v) and piper_pin_ok(v.get("model")) and bool((v.get("model") or {}).get("sha256")) and piper_pin_ok(v.get("config"))
+
+
+def piper_installed(vid):
+	""
+	v = PIPER_VOICES.get(vid)
+	if not v or not piper_pinned(vid):
+		return False
+	m, c = piper_paths(vid)
+	try:
+		if os.path.getsize(m) != v["model"]["size"] or os.path.getsize(c) != v["config"]["size"]:
+			return False
+		with open(os.path.join(piper_dir(), vid + ".ok"), encoding="utf-8") as f:
+			return f.read().strip() == v["model"]["sha256"]
+	except OSError:
+		return False
+
+
+def piper_runtime():
+	""
+	import importlib.util
+	try:
+		ort = importlib.util.find_spec("onnxruntime") is not None
+	except (ImportError, ValueError):
+		ort = False
+	return ort, bool(shutil.which("espeak-ng"))
+
+
+def piper_voice_for(lang=None):
+	""
+	L = norm_lang(lang or CFG.get("lang"))
+	if str(CFG.get("tts_engine") or "auto") == "old":
+		return ""
+	vid = str(CFG.get("tts_voice_" + L) or PIPER_DEFAULT.get(L, ""))
+	return vid if vid in PIPER_VOICES else ""
+
+
+def piper_ready(lang=None):
+	vid = piper_voice_for(lang)
+	return bool(vid) and piper_installed(vid) and all(piper_runtime())
+
+
+def piper_key(engine, voice, speed, text):
+	return hashlib.sha256(f"{engine}|{voice}|{float(speed):.2f}|{text}".encode("utf-8")).hexdigest()[:20]
+
+
+def piper_cache_path(sid):
+	return os.path.join(piper_cache_dir(), sid + ".wav")
+
+
+def piper_cache_put(sid, src):
+	try:
+		os.makedirs(piper_cache_dir(), exist_ok=True)
+		dst = piper_cache_path(sid)
+		if os.path.abspath(src) != os.path.abspath(dst):
+			shutil.copyfile(src, dst + ".tmp"); os.replace(dst + ".tmp", dst)
+		piper_cache_trim()
+		return True
+	except OSError:
+		return False
+
+
+def piper_cache_trim():
+	try:
+		fs = [os.path.join(piper_cache_dir(), f) for f in os.listdir(piper_cache_dir()) if f.endswith(".wav")]
+	except OSError:
+		return
+	fs.sort(key=lambda p: os.path.getmtime(p) if os.path.exists(p) else 0)
+	tot = sum(os.path.getsize(p) for p in fs if os.path.exists(p))
+	while fs and (len(fs) > PIPER_CACHE_N or tot > PIPER_CACHE_MB * 1024 * 1024):
+		p = fs.pop(0)
+		try:
+			tot -= os.path.getsize(p); os.remove(p)
+		except OSError:
+			pass
+
+
+def piper_wav_seconds(path):
+	try:
+		import wave
+		with wave.open(path) as w_:
+			return w_.getnframes() / float(w_.getframerate() or 1)
+	except Exception:
+		return 0.0
+
+
+
+PIPER_WORKER = r'''
+import json, os, re, subprocess, sys, time, unicodedata, wave
+def out(d):
+    sys.stdout.write(json.dumps(d) + "\n"); sys.stdout.flush()
+try:
+    import numpy as np
+    import onnxruntime as ort
+except Exception as e:
+    out({"ready": False, "error": "onnxruntime: " + str(e)[:160]}); sys.exit(0)
+S = {}
+PUN = {",": ", ", ";": "; ", ":": ": ", ".": ".", "!": "!", "?": "?"}
+def espeak(chunk, voice):
+    if os.environ.get("MW_PIPER_FAKE_PHON") == "1":
+        return chunk.lower()
+    r = subprocess.run(["espeak-ng", "-q", "--ipa", "-v", voice, "--", chunk], capture_output=True, timeout=20)
+    if r.returncode != 0:
+        raise RuntimeError("espeak-ng: " + (r.stderr or b"").decode("utf-8", "replace").strip()[:120])
+    ph = " ".join(r.stdout.decode("utf-8", "replace").split())
+    return re.sub(r"\([a-z]{2,3}(-[a-z0-9]+)?\)", "", ph)
+def sentences(text, voice):
+    res, cur = [], ""
+    for chunk, p in re.findall(r"([^,;:.!?]*)([,;:.!?]+|$)", text):
+        if chunk.strip():
+            cur += espeak(chunk.strip(), voice)
+        if p:
+            cur += PUN.get(p[0], "")
+            if p[0] in ".!?":
+                if cur.strip(): res.append(cur.strip())
+                cur = ""
+    if cur.strip(): res.append(cur.strip())
+    return res
+def ids(ph, m):
+    pad = list(m.get("_", [0]))
+    x = list(m.get("^", [1])) + pad
+    for c in unicodedata.normalize("NFD", ph):
+        if c in m:
+            x += list(m[c]) + pad
+    return x + list(m.get("$", [2]))
+def load(model, config, threads):
+    if S.get("model") != model:
+        so = ort.SessionOptions(); so.intra_op_num_threads = threads; so.inter_op_num_threads = 1
+        with open(config, encoding="utf-8") as f:
+            cfg = json.load(f)
+        S.clear(); S.update(model=model, cfg=cfg, sess=ort.InferenceSession(model, so, providers=["CPUExecutionProvider"]))
+        S["names"] = {i.name for i in S["sess"].get_inputs()}
+def synth(q):
+    t0 = time.time()
+    load(q["model"], q["config"], int(q.get("threads") or 2))
+    cfg = S["cfg"]; inf = cfg.get("inference") or {}
+    rate = int((cfg.get("audio") or {}).get("sample_rate") or 22050)
+    voice = str((cfg.get("espeak") or {}).get("voice") or q.get("lang") or "de")
+    speed = max(0.5, min(2.0, float(q.get("speed") or 1.0)))
+    sc = np.array([float(inf.get("noise_scale", 0.667)), float(inf.get("length_scale", 1.0)) / speed,
+                   float(inf.get("noise_w", 0.8))], dtype=np.float32)
+    pcm = []
+    for s in sentences(q["text"], voice):
+        x = np.array([ids(s, cfg["phoneme_id_map"])], dtype=np.int64)
+        feed = {"input": x, "input_lengths": np.array([x.shape[1]], dtype=np.int64), "scales": sc}
+        if "sid" in S["names"]:
+            feed["sid"] = np.array([0], dtype=np.int64)
+        a = np.asarray(S["sess"].run(None, feed)[0], dtype=np.float32).reshape(-1)
+        a = a * (32767.0 / max(0.01, float(np.abs(a).max()) if a.size else 1.0))
+        pcm.append(np.clip(a, -32767, 32767).astype("<i2")); pcm.append(np.zeros(int(rate * 0.12), dtype="<i2"))
+    if not pcm:
+        raise RuntimeError("nothing to say")
+    y = np.concatenate(pcm)
+    tmp = q["out"] + ".tmp"
+    with wave.open(tmp, "wb") as w:
+        w.setnchannels(1); w.setsampwidth(2); w.setframerate(rate); w.writeframes(y.tobytes())
+    os.replace(tmp, q["out"])
+    return {"ok": True, "dur": round(len(y) / float(rate), 3), "ms": int((time.time() - t0) * 1000)}
+out({"ready": True, "ort": getattr(ort, "__version__", "?")})
+for line in sys.stdin:
+    try:
+        out(synth(json.loads(line)))
+    except Exception as e:
+        out({"ok": False, "error": str(e)[:200]})
+'''
+
+
+def _piper_reader(p, q):
+	try:
+		for line in p.stdout:
+			try:
+				q.put(json.loads(line))
+			except ValueError:
+				pass
+	except Exception:
+		pass
+	q.put(None)
+
+
+def piper_worker_start():
+	""
+	import queue
+	p = PIPER["proc"]
+	if p is not None and p.poll() is None:
+		return True, ""
+	os.makedirs(piper_dir(), exist_ok=True)
+	cmd = [sys.executable, "-E"] + (["-P"] if sys.version_info >= (3, 11) else []) + ["-c", PIPER_WORKER]
+	if shutil.which("nice"):
+		cmd = ["nice", "-n", "10"] + cmd
+	try:
+		p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True,
+                             bufsize=1, cwd=piper_dir(), env={k: v for k, v in os.environ.items() if k in (
+                                 "PATH", "HOME", "LANG", "LC_ALL", "USER", "MW_PIPER_FAKE_PHON")})
+	except OSError as e:
+		return False, str(e)[:160]
+	q = queue.Queue()
+	threading.Thread(target=_piper_reader, args=(p, q), daemon=True, name="piper-read").start()
+	try:
+		r = q.get(timeout=30)
+	except queue.Empty:
+		r = None
+	if not r or not r.get("ready"):
+		try:
+			p.kill()
+		except OSError:
+			pass
+		return False, (r or {}).get("error") or "Piper did not start"
+	PIPER.update(proc=p, q=q, model="", last=time.time(), warm_t=time.time())
+	_piper_idle_watch()
+	return True, ""
+
+
+def piper_worker_stop():
+	p = PIPER.get("proc")
+	PIPER["proc"] = None
+	if p is not None:
+		try:
+			p.stdin.close()
+		except Exception:
+			pass
+		try:
+			p.wait(timeout=3)
+		except Exception:
+			try:
+				p.kill()
+			except OSError:
+				pass
+
+
+def _piper_idle_watch():
+	if PIPER.get("idle_thread"):
+		return
+	PIPER["idle_thread"] = True
+
+	def run():
+		while True:
+			time.sleep(30)
+			with PIPER["lock"]:
+				if PIPER.get("proc") is not None and time.time() - PIPER["last"] > PIPER_IDLE_S:
+					piper_worker_stop()
+	threading.Thread(target=run, daemon=True, name="piper-idle").start()
+
+
+def piper_synth(text, vid, out, speed=None):
+	""
+	import queue
+	v = PIPER_VOICES.get(vid)
+	if not v or not piper_installed(vid):
+		return False, "voice not loaded", {}
+	m, c = piper_paths(vid)
+	with PIPER["lock"]:
+		ok, err = piper_worker_start()
+		if not ok:
+			PIPER.update(err=err, t_err=time.time())
+			return False, err, {}
+		req = {"text": text, "model": m, "config": c, "out": os.path.abspath(out), "lang": v["lang"],
+               "speed": float(CFG.get("tts_speed") if speed is None else speed), "threads": 2}
+		try:
+			PIPER["proc"].stdin.write(json.dumps(req) + "\n"); PIPER["proc"].stdin.flush()
+			r = PIPER["q"].get(timeout=PIPER_TIMEOUT_S)
+		except (OSError, ValueError, queue.Empty) as e:
+			piper_worker_stop()
+			r = {"ok": False, "error": "Piper: " + (str(e)[:100] or "no answer")}
+		if r is None:
+			piper_worker_stop(); r = {"ok": False, "error": "Piper stopped"}
+		PIPER["last"] = time.time()
+	if not r.get("ok"):
+		PIPER.update(err=str(r.get("error") or "Piper failed")[:200], t_err=time.time())
+		return False, PIPER["err"], {}
+	PIPER.update(err="", ms=r.get("ms"))
+	return True, "", r
+
+
+def piper_warm(lang=None):
+	""
+	if not piper_ready(lang):
+		return False
+
+	def run():
+		with PIPER["lock"]:
+			ok, _e = piper_worker_start()
+			if ok:
+				PIPER["last"] = time.time()
+	threading.Thread(target=run, daemon=True, name="piper-warm").start()
+	return True
+
+
+
+TTS.setdefault("id", ""); TTS.setdefault("engine", ""); TTS.setdefault("text", "")
+_tts_make_639zzb = tts_make
+
+
+
+def tts_make(text, lang, path):
+	text = re.sub(r"[\x00-\x1f]", " ", str(text or "")).strip()[:400]
+	L = norm_lang(lang or CFG.get("lang"))
+	eng = str(CFG.get("tts_engine") or "auto")
+	vid = piper_voice_for(L)
+	TTS.update(id="", engine="", text=text)
+	if vid and eng != "old":
+		sid = piper_key("piper", vid, CFG.get("tts_speed", 1.0), text)
+		cp = piper_cache_path(sid)
+		try:
+			if os.path.isfile(cp) and os.path.getsize(cp) > 100:
+				shutil.copyfile(cp, path); os.utime(cp, None)
+				TTS.update(id=sid, engine="piper")
+				return True, ""
+		except OSError:
+			pass
+		if piper_ready(L):
+			ok, err, _i = piper_synth(text, vid, path)
+			if ok and os.path.isfile(path) and os.path.getsize(path) > 100:
+				piper_cache_put(sid, path)
+				TTS.update(id=sid, engine="piper")
+				return True, ""
+			log_event("sys", f"Piper voice: {err} - old voice instead"[:160])
+			if eng == "piper":
+				return False, err
+		elif eng == "piper":
+			return False, "Piper voice not ready (load the voice under Loudspeaker)"
+	ok, err = _tts_make_639zzb(text, L, path)
+	if ok:
+		sid = piper_key("old", L, 1.0, text)
+		if piper_cache_put(sid, path):
+			TTS.update(id=sid, engine="old")
+	return ok, err
+
+
+_tts_engine_639zzb = tts_engine
+
+
+
+def tts_engine():
+	if str(CFG.get("tts_engine") or "auto") != "old" and piper_ready():
+		return "piper"
+	return _tts_engine_639zzb()
+
+
+def speech_alert(sid, text=""):
+	""
+	if not _PIPER_ID_RE.match(str(sid or "")):
+		return False
+	with ALERTS_COND:
+		ALERTS["seq"] += 1
+		ALERTS["items"].append(dict(seq=ALERTS["seq"], kind="speech", text=str(text or "")[:200], id=sid,
+                                    time=datetime.now().strftime("%H:%M:%S"), ts=time.time()))
+		ALERTS_COND.notify_all()
+	return True
+
+
+def speech_to_sim(path):
+	""
+	try:
+		if not sim_speaker() or not os.path.isfile(path) or os.path.getsize(path) > 4 * 1024 * 1024:
+			return False
+		with open(path, "rb") as f:
+			data = f.read()
+	except (OSError, NameError):
+		return False
+
+	def run():
+		try:
+			req = urllib.request.Request(sim_base() + "/speech", data=data, method="POST",
+                                         headers={"Content-Type": "audio/wav", "User-Agent": "MotionWatch"})
+			with _SIM_OPENER.open(req, timeout=4) as r:
+				PIPER["sim_ok"] = r.status == 200
+		except Exception:
+			PIPER["sim_ok"] = False
+	threading.Thread(target=run, daemon=True, name="speech-sim").start()
+	return True
+
+
+def _announce_file_id(name):
+	""
+	if not any(name.startswith(tr("Announcement", L_) + " ") for L_ in LANGS):
+		return ""
+	p = os.path.join(sounds_dir(), name)
+	try:
+		st = os.stat(p)
+		sid = hashlib.sha256(f"file|{name}|{st.st_size}|{int(st.st_mtime)}".encode("utf-8")).hexdigest()[:20]
+		if not os.path.isfile(piper_cache_path(sid)):
+			piper_cache_put(sid, p)
+		return sid
+	except OSError:
+		return ""
+
+
+_sound_play_639zzb = sound_play
+
+
+
+def sound_play(kind=None, seconds=None, volume=None, reason="test"):
+	k = str(kind or "")
+	sid, path, text = "", "", ""
+	if k == "tts":
+		sid, path, text = TTS.get("id") or "", TTS["file"], TTS.get("text") or ""
+		if volume is None:
+			volume = CFG.get("tts_volume", 80)
+	elif k.startswith("file:"):
+		sid = _announce_file_id(k[5:])
+		path = os.path.join(sounds_dir(), k[5:]) if sid else ""
+		text = os.path.splitext(k[5:])[0] if sid else ""
+	if sid:
+		speech_alert(sid, text)
+		speech_to_sim(path)
+	return _sound_play_639zzb(kind, seconds, volume, reason)
+
+
+
+def piper_url(vid, which):
+	v = PIPER_VOICES[vid]
+	return PIPER_BASE["url"] + v["rev"] + "/" + v["path"] + vid + (".onnx" if which == "model" else ".onnx.json") + "?download=true"
+
+
+def piper_check_file(p, pin):
+	""
+	try:
+		if os.path.getsize(p) != pin["size"]:
+			return False, "size wrong - the file was changed or is damaged"
+		hs = {"sha256": hashlib.sha256(), "md5": hashlib.md5()}
+		with open(p, "rb") as f:
+			while True:
+				b = f.read(1 << 20)
+				if not b:
+					break
+				for h in hs.values():
+					h.update(b)
+	except OSError as e:
+		return False, str(e)[:120]
+	for k, h in hs.items():
+		if pin.get(k) and h.hexdigest() != pin[k]:
+			return False, "checksum wrong - the file was changed or is damaged"
+	return True, ""
+
+
+def piper_fetch(url, dest, pin, dl=None):
+	""
+	dl = PIPER_DL if dl is None else dl
+	part = dest + ".part"
+	have = os.path.getsize(part) if os.path.isfile(part) else 0
+	if have > pin["size"]:
+		os.remove(part); have = 0
+	if have < pin["size"]:
+		hdr = {"Range": f"bytes={have}-"} if have else {}
+		with urllib.request.urlopen(_upd_request(url, hdr), timeout=30) as r:
+			code = getattr(r, "status", 200)
+			if have and code != 206:
+				have = 0
+			elif have and not str(r.headers.get("Content-Range") or "").startswith(f"bytes {have}-"):
+				have = 0
+			dl["got"] += have
+			with open(part, "ab" if have else "wb") as f:
+				while True:
+					if dl.get("stop"):
+						raise InterruptedError("cancelled")
+					b = r.read(1 << 16)
+					if not b:
+						break
+					have += len(b)
+					if have > pin["size"]:
+						raise ValueError("file too large")
+					f.write(b); dl["got"] += len(b)
+	ok, err = piper_check_file(part, pin)
+	if not ok:
+		try:
+			os.remove(part)
+		except OSError:
+			pass
+		raise ValueError(err)
+	os.replace(part, dest)
+
+
+def piper_download(vid, wait=False):
+	""
+	if vid not in PIPER_VOICES:
+		return False, "unknown voice"
+	if not piper_pinned(vid):
+		return False, "This voice is not pinned yet (comes with an update)"
+	if piper_installed(vid):
+		return True, ""
+	if PIPER_DL["running"]:
+		return False, "already running"
+	v = PIPER_VOICES[vid]
+	try:
+		free = shutil.disk_usage(DATA_DIR).free
+	except OSError:
+		free = 1 << 40
+	if free < v["model"]["size"] + 300 * 1024 * 1024:
+		return False, "not enough free space on the memory card"
+	PIPER_DL.update(voice=vid, running=True, got=0, total=v["model"]["size"] + v["config"]["size"], msg="", stop=False, done="")
+
+	def work():
+		try:
+			os.makedirs(piper_dir(), exist_ok=True)
+			m, c = piper_paths(vid)
+			try:
+				os.remove(os.path.join(piper_dir(), vid + ".ok"))
+			except OSError:
+				pass
+			for which, dest in (("config", c), ("model", m)):
+				pin = v[which]
+				if os.path.isfile(dest) and piper_check_file(dest, pin)[0]:
+					PIPER_DL["got"] += pin["size"]; continue
+				piper_fetch(piper_url(vid, which), dest, pin)
+			with open(c, encoding="utf-8") as f:
+				cj = json.load(f)
+			if not isinstance(cj.get("phoneme_id_map"), dict) or not (cj.get("audio") or {}).get("sample_rate"):
+				raise ValueError("the voice description is not a Piper voice")
+			with open(os.path.join(piper_dir(), vid + ".ok"), "w", encoding="utf-8") as f:
+				f.write(v["model"]["sha256"])
+			PIPER_DL["done"] = vid
+			log_event("sys", f"Piper voice {vid} loaded and checked ({v['licence'][:40]})")
+		except InterruptedError:
+			PIPER_DL["msg"] = "cancelled"
+		except Exception as e:
+			try:
+				PIPER_DL["msg"] = (_upd_error(e) if hasattr(e, "code") or hasattr(e, "reason") else str(e))[:160]
+			except Exception:
+				PIPER_DL["msg"] = str(e)[:160]
+			log_event("sys", f"Piper voice {vid} not loaded: {PIPER_DL['msg']}")
+		finally:
+			PIPER_DL["running"] = False
+	if wait:
+		work()
+		return (not PIPER_DL["msg"]), PIPER_DL["msg"]
+	threading.Thread(target=work, daemon=True, name="piper-dl").start()
+	return True, ""
+
+
+def piper_delete(vid):
+	if vid not in PIPER_VOICES or (PIPER_DL["running"] and PIPER_DL["voice"] == vid):
+		return False, "unknown voice"
+	with PIPER["lock"]:
+		piper_worker_stop()
+	for p in list(piper_paths(vid)) + [os.path.join(piper_dir(), vid + x) for x in (".ok", ".onnx.part", ".onnx.json.part")]:
+		try:
+			os.remove(p)
+		except OSError:
+			pass
+	log_event("sys", f"Piper voice {vid} deleted (frees about {PIPER_VOICES[vid]['model']['size'] // 1048576} MB)")
+	return True, ""
+
+
+PIPER_APT_TIMEOUT_S = 600
+
+
+def piper_espeak_install():
+	"""
+
+
+"""
+	if shutil.which("espeak-ng"):
+		return True, ""
+	apt = shutil.which("apt-get")
+	if not apt:
+		return False, "no apt-get on this system - install espeak-ng by hand"
+	pre = [] if (hasattr(os, "geteuid") and os.geteuid() == 0) else ["sudo", "-n"]
+	if pre and not shutil.which("sudo"):
+		return False, "MoveEye has no rights for apt (no sudo) - in a terminal: sudo apt install espeak-ng"
+	env = dict(os.environ, DEBIAN_FRONTEND="noninteractive", APT_LISTCHANGES_FRONTEND="none")
+
+	def run(args, step):
+		PIPER["install_step"] = step
+		try:
+			r = subprocess.run(pre + [apt] + args, capture_output=True, text=True, timeout=PIPER_APT_TIMEOUT_S, env=env,
+                               stdin=subprocess.DEVNULL)
+			return r.returncode, (r.stdout or "") + (r.stderr or "")
+		except subprocess.TimeoutExpired:
+			return -9, "timeout"
+		except OSError as e:
+			return -1, str(e)
+	inst = ["install", "-y", "--no-install-recommends", "-o", "Dpkg::Options::=--force-confold", "espeak-ng"]
+	rc, out = run(inst, "espeak-ng")
+	if rc != 0 and re.search(r"Unable to locate package|has no installation candidate|404\s+Not Found|Failed to fetch", out):
+		rc_u, out_u = run(["update"], "apt-get update")
+		rc, out = run(inst, "espeak-ng") if rc_u == 0 else (rc_u, out_u)
+	PIPER["install_step"] = ""
+	if rc == 0 and shutil.which("espeak-ng"):
+		log_event("sys", "Piper: espeak-ng installed (apt)")
+		return True, ""
+	low = out.lower()
+	if pre and ("password is required" in low or "a terminal is required" in low or "not in the sudoers" in low
+                or "may not run sudo" in low):
+		why = "MoveEye has no rights for apt (sudo asks for a password) - in a terminal: sudo apt install espeak-ng"
+	elif rc == -9:
+		why = "apt took too long (over 10 min.) - try again later"
+	elif "could not get lock" in low or "unable to acquire the dpkg frontend lock" in low or "is another process using it" in low:
+		why = "apt is busy right now (another installation or update) - try again in a few minutes"
+	elif "temporary failure resolving" in low or "could not resolve" in low or "failed to fetch" in low:
+		why = "no internet for apt - try again with internet"
+	elif rc == 0:
+		why = "apt finished, but espeak-ng is still missing"
+	else:
+		why = (out.strip().splitlines() or ["?"])[-1][:120]
+	log_event("sys", "Piper: espeak-ng not installed: " + why)
+	return False, why
+
+
+def piper_install():
+	"""
+"""
+	if PIPER["install"] == "running":
+		return False, "already running"
+	PIPER["install"] = "running"
+	PIPER["install_step"] = ""
+
+	def work():
+		try:
+			fail = []
+			ok_e, why = piper_espeak_install()
+			if not ok_e:
+				fail.append(tr("espeak-ng could not be installed") + " – " + tr(why))
+			if not piper_runtime()[0]:
+				PIPER["install_step"] = "onnxruntime"
+				r = subprocess.run([sys.executable, "-m", "pip", "install", "--break-system-packages", PIPER_ORT],
+                                   capture_output=True, text=True, timeout=1500)
+				if r.returncode == 0:
+					log_event("sys", "Piper: runtime installed (" + PIPER_ORT + ")")
+				else:
+					fail.append("onnxruntime: " + ((r.stderr or r.stdout).strip().splitlines() or ["?"])[-1][:140])
+			PIPER["install"] = "done" if not fail else " · ".join(fail)
+			if fail:
+				log_event("sys", "Piper: " + PIPER["install"])
+		except Exception as e:
+			PIPER["install"] = "failed: " + str(e)[:120]
+		PIPER["install_step"] = ""
+	threading.Thread(target=work, daemon=True, name="piper-install").start()
+	return True, ""
+
+
+def piper_test(lang=None, text=None):
+	""
+	L = norm_lang(lang or CFG.get("lang"))
+	vid = piper_voice_for(L)
+	if vid and not piper_installed(vid) and piper_pinned(vid) and not PIPER_DL["running"]:
+		piper_download(vid)
+	ok, err = tts_say(text or tr("Attention, you are being filmed.", L), L, False)
+	sid = TTS.get("id") or ""
+	if not ok and sid and err == "no loudspeaker selected":
+		return True, "no loudspeaker selected - only in the browser", sid
+	return ok, err if not ok else (tr("speaks with", L) + " " + piper_engine_label(L)), sid
+
+
+def piper_engine_label(lang=None):
+	L = norm_lang(lang or CFG.get("lang"))
+	if TTS.get("engine") == "piper":
+		v = PIPER_VOICES.get(piper_voice_for(L)) or {}
+		return f"Piper · {v.get('name', '?')} ({v.get('quality', '')})"
+	return _tts_engine_639zzb() or "–"
+
+
+def piper_state(lang=None):
+	L = norm_lang(lang or CFG.get("lang"))
+	ort, esp = piper_runtime()
+	vs = []
+	for vid, v in PIPER_VOICES.items():
+		vs.append({"id": vid, "lang": v["lang"], "name": v["name"], "quality": v["quality"], "licence": v["licence"],
+                   "mb": round((v["model"].get("size") or 63000000) / 1048576.0), "pinned": piper_pinned(vid), "installed": piper_installed(vid)})
+	cur = {L_: piper_voice_for(L_) for L_ in LANGS}
+	return {"engine": str(CFG.get("tts_engine") or "auto"), "voices": vs, "chosen": cur, "voice": cur.get(L, ""),
+            "ready": piper_ready(L), "ort": ort, "espeak": esp, "install": PIPER["install"], "install_step": PIPER.get("install_step") or "", "warm": PIPER.get("proc") is not None,
+            "dl": dict({k: PIPER_DL[k] for k in ("voice", "running", "got", "total", "done")}, msg=tr_err(PIPER_DL["msg"], L) if PIPER_DL["msg"] else ""),
+            "err": tr_err(PIPER["err"], L) if PIPER["err"] and time.time() - PIPER["t_err"] < 600 else "", "ms": PIPER.get("ms"),
+            "old": _tts_engine_639zzb() or "", "speed": CFG.get("tts_speed"), "volume": CFG.get("tts_volume"), "sim": PIPER.get("sim_ok")}
+
+
+def piper_text(lang=None):
+	""
+	L = norm_lang(lang or CFG.get("lang"))
+	s = piper_state(L)
+	vid = s["voice"]
+	if PIPER_DL["running"]:
+		pct = int(100 * PIPER_DL["got"] / max(1, PIPER_DL["total"]))
+		return f"{tr('loading the voice …', L)} {pct} %"
+	if s["engine"] == "old" or not vid:
+		return tr("old voice (pico2wave / espeak-ng)", L)
+	parts = []
+	v = PIPER_VOICES[vid]
+	parts.append(f"{tr('Piper voice', L)}: {v['name']} ({v['quality']}) – " + (
+        tr("loaded", L) if piper_installed(vid) else (tr("comes with an update", L) if not piper_pinned(vid)
+                                                                      else trf("{mb} MB to load", L, mb=round(v["model"]["size"] / 1048576.0)))))
+	if not s["ort"]:
+		parts.append(tr("Piper runtime missing (onnxruntime, about 15 MB) – «Install Piper»", L))
+	if not s["espeak"]:
+		parts.append(tr("espeak-ng is missing – «Install Piper» installs it", L))
+	if PIPER["install"] == "running":
+		parts.append(tr("installing …", L) + (f" ({PIPER['install_step']})" if PIPER.get("install_step") else ""))
+	elif PIPER["install"] and PIPER["install"] != "done":
+		parts.append("⚠ " + PIPER["install"])
+	if PIPER_DL["msg"]:
+		parts.append("⚠ " + tr_err(PIPER_DL["msg"], L))
+	if s["err"]:
+		parts.append("⚠ " + s["err"])
+	return " · ".join(parts)
+
+
+
+TEXTS.extend([("Loudspeaker", "tts_engine", "Speech engine", "enum", "tts_engines")]
+             + [("Loudspeaker", "tts_voice_" + _L, _n, "enum", "tts_voices_" + _L) for _L, _n in (
+                 ("de", "Voice German"), ("fr", "Voice French"), ("it", "Voice Italian"), ("en", "Voice English"),
+                 ("rm", "Voice Romansh (no own voice: German)"))])
+TEXT_SPECS.update({k: (kind, extra) for s, k, l, kind, extra in TEXTS if k == "tts_engine" or k.startswith("tts_voice_")})
+_piper_sl = next((i for i, s_ in enumerate(SLIDERS) if s_[1] == "talk_gain"), len(SLIDERS) - 1)
+SLIDERS.insert(_piper_sl + 1, ("Loudspeaker", "tts_speed", "Speech speed", 0.7, 1.4, 0.05))
+SLIDERS.insert(_piper_sl + 2, ("Loudspeaker", "tts_volume", "Speech volume (%)", 10, 100, 5))
+SIMPLE_KEYS.update({"tts_volume"})
+SET_HELP.update({
+    "tts_engine": ("Piper is a natural offline voice (about 60 MB per voice, loaded once from Hugging Face and checked). "
+                   "«Automatic» speaks with Piper and takes the old voice (pico2wave / espeak-ng) while Piper is missing or fails.",
+                   "Piper (else the old voice)"),
+    "tts_speed": ("1.0 = normal; smaller = slower, larger = faster (Piper only).", "1.0."),
+})
+
+_text_choice_pairs_639zzb = text_choice_pairs
+
+
+
+def text_choice_pairs(key):
+	ex = (TEXT_SPECS.get(key) or (None, None))[1]
+	if ex == "tts_engines":
+		return [(k, tr(l)) for k, l in PIPER_ENGINES]
+	if isinstance(ex, str) and ex.startswith("tts_voices_"):
+		L = ex[len("tts_voices_"):]
+		want = "de" if L == "rm" else L
+		out = []
+		for vid, v in PIPER_VOICES.items():
+			if v["lang"] != want:
+				continue
+			st = "✓ " + tr("loaded") if piper_installed(vid) else (f"⬇ {round(v['model']['size'] / 1048576.0)} MB"
+                                                                   if piper_pinned(vid) else tr("comes with an update"))
+			out.append((vid, f"{v['name']} ({v['quality']}) · {st}"))
+		return out + [("old", tr("old voice (pico2wave / espeak-ng)"))]
+	return _text_choice_pairs_639zzb(key)
+
+
+
+_smalltv_routes_639zzb = smalltv_routes
+
+
+def smalltv_routes(app, reply, body):
+	_smalltv_routes_639zzb(app, reply, body)
+	from flask import Response, request, send_file
+
+	@app.route("/api/piper", methods=["GET", "POST"])
+	def piper_api():
+		if request.method == "GET":
+			L = norm_lang(request.args.get("lang"))
+			piper_warm(L)
+			return reply(piper_state(L))
+		d = body(); L = norm_lang(d.get("lang")); a = str(d.get("action") or "")
+		vid = str(d.get("voice") or piper_voice_for(norm_lang(d.get("tlang") or L)))
+		if a == "download":
+			ok, err = piper_download(vid)
+		elif a == "cancel":
+			PIPER_DL["stop"] = True; ok, err = True, ""
+		elif a == "delete":
+			ok, err = piper_delete(vid)
+		elif a == "install":
+			ok, err = piper_install()
+		elif a == "test":
+			ok, msg, sid = piper_test(norm_lang(d.get("tlang") or L), d.get("text"))
+			return reply({"ok": ok, "id": sid, "text": tr_err(msg, L) if msg else "", "error": None if ok else tr_err(msg, L),
+                          "state": piper_state(L)}, 200 if ok else 400)
+		else:
+			ok, err = False, "unknown action"
+		return reply({"ok": ok, "error": tr_err(err, L) if err else None, "state": piper_state(L)}, 200 if ok else 400)
+
+	@app.route("/api/tts_audio/<name>")
+	def piper_audio(name):
+		m = re.fullmatch(r"([0-9a-f]{20})\.wav", name or "")
+		p_ = piper_cache_path(m.group(1)) if m else ""
+		if not p_ or not os.path.isfile(p_):
+			return Response("not found", 404)
+		return send_file(p_, mimetype="audio/wav", max_age=3600)
+
+
+
+_HX_PIPER = _zd('639zzb_piper_stimme/HX_PIPER', _zd_hx({
+    'Speech engine': 'Sprach-Ausgabe',
+    'Piper (else the old voice)': 'Piper (sonst alte Stimme)',
+    'only Piper (no fallback)': 'nur Piper (kein Ersatz)',
+    'old voice (pico2wave / espeak-ng)': 'alte Stimme (pico2wave / espeak-ng)',
+    'Voice German': 'Stimme Deutsch',
+    'Voice French': 'Stimme Französisch',
+    'Voice Italian': 'Stimme Italienisch',
+    'Voice English': 'Stimme Englisch',
+    'Voice Romansh (no own voice: German)': 'Stimme Romanisch (keine eigene: Deutsch)',
+    'Speech speed': 'Sprechtempo',
+    'Speech volume (%)': 'Lautstärke der Ansage (%)',
+    'loaded': 'geladen',
+    '{mb} MB to load': '{mb} MB zu laden',
+    'comes with an update': 'kommt mit einem Update',
+    'Test voice': 'Stimme testen',
+    'Load voice': 'Stimme laden',
+    'Delete voice': 'Stimme löschen',
+    'Cancel': 'Abbrechen',
+    'Install Piper': 'Piper installieren',
+    'Piper voice': 'Piper-Stimme',
+    '🔊 Sound in the browser (announcements)': '🔊 Ton im Browser (Ansagen)',
+    'Attention, you are being filmed.': 'Achtung, Sie werden gefilmt.',
+    'Piper runtime missing (onnxruntime, about 15 MB) – «Install Piper»': 'Piper-Laufzeit fehlt (onnxruntime, etwa 15 MB) – «Piper installieren»',
+    'espeak-ng is missing (sudo apt install espeak-ng)': 'espeak-ng fehlt (sudo apt install espeak-ng)',
+    'espeak-ng is missing – «Install Piper» installs it': 'espeak-ng fehlt – «Piper installieren» richtet es ein',
+    'espeak-ng could not be installed': 'espeak-ng konnte nicht installiert werden',
+    'no apt-get on this system - install espeak-ng by hand': 'kein apt-get auf diesem System – espeak-ng von Hand installieren',
+    'MoveEye has no rights for apt (no sudo) - in a terminal: sudo apt install espeak-ng': 'MoveEye hat keine Rechte für apt (kein sudo) – im Terminal: sudo apt install espeak-ng',
+    'MoveEye has no rights for apt (sudo asks for a password) - in a terminal: sudo apt install espeak-ng': 'MoveEye hat keine Rechte für apt (sudo will ein Passwort) – im Terminal: sudo apt install espeak-ng',
+    'apt took too long (over 10 min.) - try again later': 'apt hat zu lange gebraucht (über 10 Min.) – später nochmals versuchen',
+    'apt is busy right now (another installation or update) - try again in a few minutes': 'apt ist gerade beschäftigt (andere Installation oder Update) – in ein paar Minuten nochmals',
+    'no internet for apt - try again with internet': 'kein Internet für apt – mit Internet nochmals versuchen',
+    'apt finished, but espeak-ng is still missing': 'apt ist fertig, aber espeak-ng fehlt immer noch',
+    'loading the voice …': 'lade die Stimme …',
+    'This voice is not pinned yet (comes with an update)': 'Diese Stimme ist noch nicht freigegeben (kommt mit einem Update)',
+    'speaks with': 'spricht mit',
+    'Licence': 'Lizenz',
+    'installing …': 'installiere …',
+    'Voice is ready': 'Stimme ist bereit',
+    'Loaded once from Hugging Face (checked), then works offline': 'Einmal von Hugging Face geladen (geprüft), danach ohne Internet',
+    'The voice in the browser needs one tap on the page (iPhone: silent switch off)': 'Die Stimme im Browser braucht einmal Antippen der Seite (iPhone: Stummschalter aus)',
+    'Piper voice not ready (load the voice under Loudspeaker)': 'Piper-Stimme nicht bereit (Stimme unter Lautsprecher laden)',
+    'voice not loaded': 'Stimme nicht geladen',
+    'not enough free space on the memory card': 'zu wenig freier Platz auf der Speicherkarte',
+    'size wrong - the file was changed or is damaged': 'Grösse falsch – die Datei wurde verändert oder ist beschädigt',
+    'checksum wrong - the file was changed or is damaged': 'Prüfsumme falsch – die Datei wurde verändert oder ist beschädigt',
+    'the voice description is not a Piper voice': 'die Beschreibung ist keine Piper-Stimme',
+    'no loudspeaker selected - only in the browser': 'kein Lautsprecher gewählt – nur im Browser',
+    'cancelled': 'abgebrochen',
+    'Piper is a natural offline voice (about 60 MB per voice, loaded once from Hugging Face and checked). «Automatic» speaks with Piper and takes the old voice (pico2wave / espeak-ng) while Piper is missing or fails.': 'Piper ist eine natürliche Stimme ohne Internet (etwa 60 MB pro Stimme, einmal von Hugging Face geladen und geprüft). «Automatisch» spricht mit Piper und nimmt die alte Stimme (pico2wave / espeak-ng), solange Piper fehlt oder nicht geht.',
+    '1.0 = normal; smaller = slower, larger = faster (Piper only).': '1.0 = normal; kleiner = langsamer, grösser = schneller (nur Piper).',
+    '1.0.': '1.0.',
+}))
+for _k, _v in _HX_PIPER.items():
+	DE.setdefault(_k, _v[0])
+	for _i, _L in enumerate(("fr", "it", "rm")):
+		TRX[_L].setdefault(_k, _v[_i + 1])
+_PIPER_DE = {_k: _v[0] for _k, _v in _HX_PIPER.items()}
+
+
+PIPER_WEB_JS = _zd('639zzb_piper_stimme/PIPER_WEB_JS', "")
+WEB_PAGE = WEB_PAGE.replace("</body>", PIPER_WEB_JS.replace("/*PIPERDE*/{}", json.dumps(_PIPER_DE, ensure_ascii=False), 1) + "</body>", 1)
+
+
+
+def piper_tk_box(app, parent):
+	import tkinter as tk
+	from tkinter import ttk
+	lab = ttk.Label(parent, text=piper_text(), style="Mut.TLabel", wraplength=330, justify="left")
+	lab.pack(anchor="w", pady=(6, 0))
+	bf = ttk.Frame(parent); bf.pack(fill="x", pady=(4, 0))
+
+	def poll(n=0):
+		try:
+			lab.configure(text=piper_text())
+		except tk.TclError:
+			return
+		if (PIPER_DL["running"] or PIPER["install"] == "running") and n < 3600:
+			parent.after(1000, lambda: poll(n + 1))
+
+	def test():
+		def run():
+			ok, m, _sid = piper_test()
+			try:
+				app._status("Announcement", ("✓ " if ok else "⚠ ") + tr_err(m))
+			except Exception:
+				pass
+		threading.Thread(target=run, daemon=True, name="piper-tk").start()
+		parent.after(800, poll)
+
+	def dl():
+		ok, err = piper_download(piper_voice_for())
+		if not ok:
+			app._status("Announcement", "⚠ " + tr_err(err))
+		poll()
+
+	def inst():
+		piper_install(); poll()
+	ttk.Button(bf, text=tr("Test voice"), command=test).pack(side="left", expand=True, fill="x", padx=(0, 4))
+	ttk.Button(bf, text=tr("Load voice"), command=dl).pack(side="left", expand=True, fill="x", padx=(0, 4))
+	ttk.Button(bf, text=tr("Install Piper"), command=inst).pack(side="left", expand=True, fill="x")
+	return lab
+
+
+
+_HELP_PIPER = _zd('639zzb_piper_stimme/HELP_PIPER', _ZDDict())
+
+
+def _help_piper(doc, lang):
+	if 'id="piper"' in doc:
+		return doc
+	i = doc.find('<section id="tips"')
+	return doc[:i] + _HELP_PIPER[lang] + doc[i:] if i >= 0 else doc
+
+
+_hp_en_piper = HELP_PAGE.find('<div lang="en">')
+if _hp_en_piper > 0:
+	HELP_PAGE = _help_piper(HELP_PAGE[:_hp_en_piper], "de") + _help_piper(HELP_PAGE[_hp_en_piper:], "en")
+for _L in ("fr", "it", "rm"):
+	if HELP_X.get(_L):
+		HELP_X[_L] = _help_piper(HELP_X[_L], _L)
+
+
+def _piper_boot_warm():
+	""
+	def run():
+		time.sleep(90)
+		try:
+			piper_warm()
+		except Exception:
+			pass
+	threading.Thread(target=run, daemon=True, name="piper-boot").start()
+
+
+if __name__ == "__main__" and "--self-test" not in sys.argv:
+	_piper_boot_warm()
+
+
+
+def piper_selftest():
+	""
+	for vid, v in PIPER_VOICES.items():
+		assert re.fullmatch(r"[a-z]{2}_[A-Z]{2}-[a-z_]+-(x_low|low|medium|high)", vid), vid
+		assert v["lang"] in LANGS and v["licence"] and v["path"].endswith("/") and vid.startswith(v["path"].split("/")[1]), vid
+		assert re.fullmatch(r"v\d+\.\d+\.\d+|[0-9a-f]{40}", v["rev"]), f"{vid}: revision must be a tag or a commit"
+		assert re.fullmatch(r"[0-9a-f]{64}", v["model"].get("sha256") or ""), f"{vid}: the model needs a sha256"
+		assert piper_pinned(vid) == (piper_pin_ok(v["model"]) and piper_pin_ok(v["config"])), vid
+		assert piper_url(vid, "model").startswith(PIPER_HF + v["rev"] + "/") or PIPER_BASE["url"] != PIPER_HF
+	for L_ in LANGS:
+		assert PIPER_DEFAULT[L_] in PIPER_VOICES and CFG.get("tts_voice_" + L_), L_
+		ks = [k for k, _l in text_choice_pairs("tts_voice_" + L_)]
+		assert "old" in ks and PIPER_DEFAULT[L_] in ks, (L_, ks)
+	assert piper_pinned("de_DE-thorsten-medium"), "the default German voice must be pinned"
+	assert piper_pinned("fr_FR-siwis-medium") and not piper_pinned("it_IT-paola-medium"), "French on (07.11.2026), Italian locked"
+	assert [k for k, _l in text_choice_pairs("tts_engine")] == ["auto", "piper", "old"]
+	for k, v in _HX_PIPER.items():
+		assert len(v) == 4 and all(v) and k in DE and all(k in TRX[L] for L in ("fr", "it", "rm")), k
+	assert len({piper_key("piper", "a", 1.0, "x"), piper_key("piper", "a", 1.1, "x"), piper_key("piper", "b", 1.0, "x"), piper_key("old", "a", 1.0, "x")}) == 4
+	assert _PIPER_ID_RE.match(piper_key("piper", "a", 1.0, "x"))
+	keep = {k: CFG.get(k) for k in ("tts_engine", "tts_voice_de", "lang")}
+	keep_dir = globals()["DATA_DIR"]
+	tmp = tempfile.mkdtemp(prefix="mw_piper_")
+	G = globals(); keep_make = G["_tts_make_639zzb"]; keep_log = G["log_event"]
+	calls = []
+
+	def fake_old(text, lang, path):
+		calls.append((text, lang))
+		import wave
+		with wave.open(path, "wb") as w_:
+			w_.setnchannels(1); w_.setsampwidth(2); w_.setframerate(16000); w_.writeframes(b"\x00\x01" * 1600)
+		return True, ""
+	try:
+		G["DATA_DIR"] = tmp; G["_tts_make_639zzb"] = fake_old; G["log_event"] = lambda *a, **k: None
+		CFG.update(tts_engine="auto", tts_voice_de="de_DE-thorsten-medium", lang="de")
+		assert not piper_installed("de_DE-thorsten-medium") and not piper_ready("de")
+		out = os.path.join(tmp, "a.wav")
+		ok, err = tts_make("Achtung, Sie werden gefilmt.", "de", out)
+		assert ok and calls and TTS["engine"] == "old" and os.path.isfile(piper_cache_path(TTS["id"])), (ok, err, TTS)
+		CFG["tts_engine"] = "piper"
+		ok, err = tts_make("Hallo", "de", out)
+		assert not ok and "Piper" in err, "only Piper without a voice must fail"
+		CFG["tts_engine"] = "old"
+		assert piper_voice_for("de") == "" and tts_make("Hallo", "de", out)[0]
+		n0 = ALERTS["seq"]
+		assert speech_alert(TTS["id"], "Hallo") and ALERTS["seq"] == n0 + 1 and ALERTS["items"][-1]["kind"] == "speech"
+		assert not speech_alert("../x")
+		ok, err = piper_download("it_IT-paola-medium") if not piper_pinned("it_IT-paola-medium") else (False, "This voice is not pinned yet (comes with an update)")
+		assert not ok and "not pinned" in err
+		js = WEB_PAGE if isinstance(globals().get("WEB_PAGE"), str) else ""
+		assert not js or ("piperBox" in js and "piperBox()" in js), "the card «Piper voice» is missing on the main page"
+		assert not ALERT_JS.strip() or "mwSpeak" in ALERT_JS, "ALERT_JS: the speech player is missing"
+		assert HELP_PAGE.count('<section id="piper"') in (0, 2)
+	finally:
+		G["DATA_DIR"] = keep_dir; G["_tts_make_639zzb"] = keep_make; G["log_event"] = keep_log
+		CFG.update(keep)
+		shutil.rmtree(tmp, ignore_errors=True)
+	n_ok = sum(1 for vid in PIPER_VOICES if piper_pinned(vid))
+	return f"{len(PIPER_VOICES)} voices ({n_ok} pinned), engine {PIPER_ORT}, old voice: {_tts_engine_639zzb() or 'none'}"
+
+
+SELFTEST_EXTRA.append(("Piper voice: pinned voices, fallback to the old voice, cache, browser announcement (639zzb)", piper_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+for _k, _v in {"tausch_on": True, "tausch_guest": True, "tausch_push": True, "tausch_block_exec": True, "tausch_total_gb": 5.0,
+               "tausch_file_mb": 200.0, "tausch_user_gb": 1.0, "tausch_free_gb": 2.0}.items():
+	CFG.setdefault(_k, _v); DEFAULTS.setdefault(_k, _v); FACTORY_CFG.setdefault(_k, _v)
+
+TZ_PERMS = ("files_view", "files_down", "files_up", "files_admin")
+
+USER_PERMS = tuple(p for p in USER_PERMS if p not in TZ_PERMS) + TZ_PERMS
+for _r, _p in {"family": ("files_view", "files_down", "files_up"), "friend": ("files_view", "files_down"),
+               "view": ("files_view", "files_down")}.items():
+	ROLE_PERMS[_r] = tuple(ROLE_PERMS.get(_r, ())) + tuple(p for p in _p if p not in ROLE_PERMS.get(_r, ()))
+for _p in TZ_PERMS:
+	PERM_GET[_p] = ("/tausch", "/tausch/", "/api/tausch")
+	PERM_POST[_p] = {"/api/tausch", "/api/tausch/chunk"}
+USER_UI_HIDE["files_view"] = 'a[href="/tausch"],#m-tausch'
+USER_SETTINGS_DENY.update({"tausch_on", "tausch_guest", "tausch_push", "tausch_block_exec", "tausch_total_gb", "tausch_file_mb",
+                           "tausch_user_gb", "tausch_free_gb"})
+DEMO_BLOCK = tuple(DEMO_BLOCK) + ("/api/tausch",)
+
+_user_perms_tz_base = user_perms
+
+
+def user_perms(u):
+	return tausch_imply(_user_perms_tz_base(u))
+
+
+def tausch_imply(perms):
+	P = set(perms or ())
+	if "files_admin" in P:
+		P.update(TZ_PERMS)
+	if P & set(TZ_PERMS):
+		P.add("files_view")
+	return P
+
+
+TZ_ID = re.compile(r"^[0-9a-f]{16}$")
+TZ_CHUNK = 2 * 1024 * 1024
+TZ_CHUNK_MAX = 8 * 1024 * 1024
+TZ_MAX_FILES = 5000
+TZ_MAX_FOLDERS = 60
+TZ_MAX_OPEN_UPS = 6
+TZ_STALE = 24 * 3600
+TZ_PUSH_QUIET, TZ_PUSH_MAX = 90.0, 600.0
+TZ_GB = 1024 ** 3
+TZ_MB = 1024 ** 2
+TZ = {"lock": threading.RLock(), "root": None, "files": None, "folders": None, "ups": {}, "rate": {}, "push": {},
+      "thumbq": deque(), "thumb_run": False, "chats": {}, "waiters": {}, "waiting": 0, "push_run": False, "root_test": None, "pdftoppm": None}
+
+
+TZ_TYPES = {
+    "jpg": ("image/jpeg", "image"), "jpeg": ("image/jpeg", "image"), "png": ("image/png", "image"), "gif": ("image/gif", "image"),
+    "webp": ("image/webp", "image"), "bmp": ("image/bmp", "image"), "tif": ("image/tiff", "image"), "tiff": ("image/tiff", "image"),
+    "heic": ("image/heic", "image"), "heif": ("image/heif", "image"),
+    "mp4": ("video/mp4", "video"), "m4v": ("video/mp4", "video"), "mov": ("video/quicktime", "video"), "webm": ("video/webm", "video"),
+    "mkv": ("video/x-matroska", "video"), "avi": ("video/x-msvideo", "video"), "3gp": ("video/3gpp", "video"),
+    "mp3": ("audio/mpeg", "audio"), "m4a": ("audio/mp4", "audio"), "aac": ("audio/aac", "audio"), "ogg": ("audio/ogg", "audio"),
+    "opus": ("audio/ogg", "audio"), "wav": ("audio/wav", "audio"), "flac": ("audio/flac", "audio"),
+    "pdf": ("application/pdf", "pdf"),
+    "txt": ("text/plain", "text"), "md": ("text/plain", "text"), "chat": ("application/octet-stream", "chat"),
+    "csv": ("text/csv", "doc"), "rtf": ("application/rtf", "doc"),
+    "doc": ("application/msword", "doc"), "docx": ("application/vnd.openxmlformats-officedocument.wordprocessingml.document", "doc"),
+    "xls": ("application/vnd.ms-excel", "doc"), "xlsx": ("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "doc"),
+    "ppt": ("application/vnd.ms-powerpoint", "doc"), "pptx": ("application/vnd.openxmlformats-officedocument.presentationml.presentation", "doc"),
+    "odt": ("application/vnd.oasis.opendocument.text", "doc"), "ods": ("application/vnd.oasis.opendocument.spreadsheet", "doc"),
+    "odp": ("application/vnd.oasis.opendocument.presentation", "doc"), "pages": ("application/octet-stream", "doc"),
+    "numbers": ("application/octet-stream", "doc"), "key": ("application/octet-stream", "doc"),
+    "zip": ("application/zip", "archive"), "7z": ("application/x-7z-compressed", "archive"), "rar": ("application/vnd.rar", "archive"),
+    "tar": ("application/x-tar", "archive"), "gz": ("application/gzip", "archive"), "tgz": ("application/gzip", "archive"),
+    "bz2": ("application/x-bzip2", "archive"), "xz": ("application/x-xz", "archive"),
+}
+TZ_INLINE = {"video", "audio"}
+
+TZ_BLOCK_EXT = {"exe", "msi", "msp", "com", "scr", "pif", "bat", "cmd", "ps1", "psm1", "psd1", "vbs", "vbe", "js", "jse", "mjs", "cjs",
+                "wsf", "wsh", "hta", "cpl", "dll", "sys", "drv", "lnk", "reg", "inf", "scf", "msc", "gadget", "jar", "class", "sh", "bash",
+                "zsh", "ksh", "csh", "fish", "command", "tool", "py", "pyc", "pyo", "pyw", "pyz", "pl", "pm", "rb", "php", "php3",
+                "php4", "php5", "phtml", "phar", "cgi", "asp", "aspx", "jsp", "lua", "tcl", "awk", "run", "bin", "elf", "out", "so",
+                "ko", "deb", "rpm", "appimage", "snap", "flatpak", "apk", "xapk", "ipa", "app", "pkg", "mpkg", "dmg", "desktop",
+                "service", "url", "webloc", "applescript", "scpt", "workflow", "action", "vb", "ws", "xbap", "application", "appref-ms"}
+
+TZ_RISKY_EXT = {"html", "htm", "xhtml", "shtml", "svg", "svgz", "xml", "xsl", "xslt", "mht", "mhtml", "swf", "pdfxml", "xht"}
+TZ_MAGIC_EXEC = (b"MZ", b"\x7fELF", b"#!", b"\xfe\xed\xfa\xce", b"\xfe\xed\xfa\xcf", b"\xce\xfa\xed\xfe", b"\xcf\xfa\xed\xfe",
+                 b"\xca\xfe\xba\xbe", b"dex\n")
+_TZ_BAD_CH = re.compile(r'[<>:"/\\|?*\x00-\x1f\x7f]')
+_TZ_WIN_RES = {"con", "prn", "aux", "nul"} | {f"com{i}" for i in range(10)} | {f"lpt{i}" for i in range(10)}
+
+
+
+def tausch_clean_name(raw, folder=False):
+	"""
+"""
+	import unicodedata
+	s = str(raw or "")
+	s = s.replace("\\", "/").rsplit("/", 1)[-1]
+	s = unicodedata.normalize("NFC", s)
+	s = "".join(c for c in s if unicodedata.category(c)[0] != "C")
+	s = _TZ_BAD_CH.sub("_", s)
+	s = re.sub(r"\s+", " ", s).strip()
+	s = s.rstrip(". ")
+	if not s:
+		return None, "the file needs a name" if not folder else "the folder needs a name"
+	if s.startswith("."):
+		return None, "hidden files (name starts with «.») are not accepted"
+	lim = 40 if folder else 120
+	stem, ext = os.path.splitext(s)
+	if folder:
+		stem, ext = s, ""
+	if stem.split(".")[0].strip().lower() in _TZ_WIN_RES:
+		stem = "_" + stem
+		s = stem + ext
+	if len(s) > lim:
+		ext = ext[:16]
+		s = stem[:lim - len(ext)].rstrip(". ") + ext
+	while len(s.encode("utf-8")) > 240:
+		s = s[:-1]
+	return s, ""
+
+
+def tausch_ext(name):
+	return os.path.splitext(str(name or ""))[1].lower().lstrip(".")
+
+
+def tausch_blocked(name):
+	""
+	if not CFG.get("tausch_block_exec", True):
+		return False
+	return tausch_ext(name) in TZ_BLOCK_EXT
+
+
+def tausch_magic_exec(head):
+	return bool(CFG.get("tausch_block_exec", True)) and any(bytes(head[:8]).startswith(m) for m in TZ_MAGIC_EXEC)
+
+
+def tausch_type(name):
+	""
+	e = tausch_ext(name)
+	if e in TZ_RISKY_EXT:
+		return "application/octet-stream", "risky", True
+	mime, kind = TZ_TYPES.get(e, ("application/octet-stream", "other"))
+	return mime, kind, False
+
+
+
+def _tz_drive_ok(want):
+	""
+	want = os.path.abspath(want)
+	if not os.path.isdir(want):
+		return False
+	if want.startswith(("/media/", "/mnt/")):
+		q = want
+		while q not in ("/", "/media", "/mnt") and not os.path.ismount(q):
+			q = os.path.dirname(q)
+		return q not in ("/", "/media", "/mnt")
+	return True
+
+
+def tausch_root():
+	""
+	if TZ.get("root_test"):
+		return TZ["root_test"], "sd", ""
+	want = str(CFG.get("storage_path") or "").strip()
+	if want:
+		if not _tz_drive_ok(want):
+			return "", "usb", "missing"
+		k = _dev_kind(_mount_of(want)[0])
+		return os.path.join(want, "MotionWatch", "tausch"), ("ssd" if k == "ssd" else "usb" if k in ("usb", "other") else k), ""
+	root = os.path.join(DATA_DIR, "tausch")
+	k = _dev_kind(_mount_of(DATA_DIR)[0])
+	try:
+		if k == "sd" and SDCARD.get("overlay"):
+			return root, "sd", "ro"
+	except NameError:
+		pass
+	return root, {"sd": "sd", "ssd": "ssd", "usb": "usb"}.get(k, "disk"), ""
+
+
+def tausch_disk_free(path):
+	try:
+		return shutil.disk_usage(path).free
+	except OSError:
+		return 0
+
+
+def _tz_write_json(path, obj):
+	tmp = f"{path}.{os.getpid()}.{threading.get_ident()}.tmp"
+	with open(tmp, "w", encoding="utf-8") as f:
+		json.dump(obj, f, ensure_ascii=False)
+		f.flush()
+	os.replace(tmp, path)
+
+
+def _tz_meta_ok(m):
+	return (isinstance(m, dict) and TZ_ID.match(str(m.get("id", ""))) and isinstance(m.get("name"), str) and m.get("area") in ("all", "mine")
+            and isinstance(m.get("owner"), str) and isinstance(m.get("size"), int) and isinstance(m.get("folder", ""), str))
+
+
+def _tz_load():
+	""
+	root, _kind, prob = tausch_root()
+	if not root or prob == "missing":
+		return None
+	with TZ["lock"]:
+		if TZ["root"] == root and TZ["files"] is not None:
+			return root
+		files, folders, ups = {}, [], {}
+		try:
+			for sub in ("f", "t", "up"):
+				os.makedirs(os.path.join(root, sub), exist_ok=True)
+		except OSError as e:
+			log_event("sys", f"File exchange: folder {root} cannot be made: {e}"[:180])
+			return None
+		for nm in os.listdir(os.path.join(root, "f")):
+			if not nm.endswith(".json") or not TZ_ID.match(nm[:-5]):
+				continue
+			try:
+				with open(os.path.join(root, "f", nm), encoding="utf-8") as f:
+					m = json.load(f)
+			except (OSError, ValueError):
+				continue
+			if _tz_meta_ok(m) and m["id"] == nm[:-5] and os.path.isfile(os.path.join(root, "f", m["id"] + ".bin")):
+				files[m["id"]] = m
+		try:
+			with open(os.path.join(root, "ordner.json"), encoding="utf-8") as f:
+				folders = [x for x in json.load(f) if isinstance(x, dict) and isinstance(x.get("name"), str)][:TZ_MAX_FOLDERS]
+		except (OSError, ValueError, TypeError):
+			folders = []
+		now = time.time()
+		upd = os.path.join(root, "up")
+		names = os.listdir(upd)
+		for nm in names:
+			if not (nm.endswith(".json") and TZ_ID.match(nm[:-5])):
+				continue
+			part = os.path.join(upd, nm[:-5] + ".part")
+			try:
+				with open(os.path.join(upd, nm), encoding="utf-8") as f:
+					u = json.load(f)
+				if isinstance(u, dict) and isinstance(u.get("size"), int) and isinstance(u.get("owner"), str) and now - os.path.getmtime(part) < TZ_STALE:
+					u["have"] = os.path.getsize(part)
+					u["lock"] = threading.Lock()
+					ups[nm[:-5]] = u
+			except (OSError, ValueError, AttributeError):
+				pass
+		for nm in names:
+			if nm.endswith((".json", ".part")) and nm[:-5] in ups:
+				continue
+			try:
+				os.remove(os.path.join(upd, nm))
+			except OSError:
+				pass
+		TZ.update(root=root, files=files, folders=folders, ups=ups, chats={})
+		missing = [fid for fid, m in files.items() if m.get("thumb") is None and m.get("kind") in ("image", "video", "pdf")]
+	for fid in missing:
+		tausch_thumb_queue(fid)
+	return root
+
+
+def _tz_folders_save(root):
+	_tz_write_json(os.path.join(root, "ordner.json"), TZ["folders"])
+
+
+
+def tausch_who(g_):
+	""
+	role = getattr(g_, "role", "admin")
+	if role == "admin":
+		return {"key": "admin", "name": "Admin", "admin": True, "perms": set(TZ_PERMS), "is_admin": True}
+	u = user_get(getattr(g_, "user", ""))
+	P = user_perms(u) if u else tausch_imply(ROLE_PERMS.get(ROLE_OLD.get(role, role), ()))
+	P = {p for p in P if p in TZ_PERMS}
+	name = u["name"] if u else str(getattr(g_, "user", "") or "?")
+	return {"key": name.lower(), "name": name, "admin": "files_admin" in P, "perms": P, "is_admin": False}
+
+
+def tausch_can_see(m, who):
+	if "files_view" not in who["perms"]:
+		return False
+	return m["area"] == "all" or m["owner"] == who["key"] or who["admin"]
+
+
+def tausch_can_down(m, who):
+	return tausch_can_see(m, who) and ("files_down" in who["perms"] or m["owner"] == who["key"])
+
+
+def tausch_can_del(m, who):
+	return tausch_can_see(m, who) and (m["owner"] == who["key"] or who["admin"])
+
+
+def tausch_rate(key, kind, limit, per=600.0, now=None):
+	""
+	now = time.time() if now is None else now
+	with TZ["lock"]:
+		R = TZ["rate"]
+		lst = [x for x in R.get((key, kind), []) if now - x < per]
+		if len(lst) >= limit:
+			R[(key, kind)] = lst
+			return False
+		lst.append(now)
+		R[(key, kind)] = lst
+		if len(R) > 3000:
+			for k in [k for k, v in R.items() if not v or now - v[-1] > per]:
+				R.pop(k, None)
+	return True
+
+
+
+def tausch_usage(owner=None):
+	""
+	with TZ["lock"]:
+		f = sum(m["size"] + int(m.get("hist_size") or 0) for m in (TZ["files"] or {}).values() if owner is None or m["owner"] == owner)
+		r = sum(u["size"] for u in TZ["ups"].values() if owner is None or u["owner"] == owner)
+	return f, r
+
+
+def tausch_limits():
+	return {"total": int(float(CFG.get("tausch_total_gb", 5.0)) * TZ_GB), "file": int(float(CFG.get("tausch_file_mb", 200.0)) * TZ_MB),
+            "user": int(float(CFG.get("tausch_user_gb", 1.0)) * TZ_GB), "min_free": int(float(CFG.get("tausch_free_gb", 2.0)) * TZ_GB)}
+
+
+def tausch_fmt(n, lang=None):
+	""
+	L = cur_lang(lang)
+	n = float(n or 0)
+	if n >= TZ_GB:
+		s, u = f"{n / TZ_GB:.1f}", "GB"
+	elif n >= TZ_MB:
+		s, u = f"{n / TZ_MB:.0f}", "MB"
+	else:
+		s, u = f"{max(1.0, n / 1024) if n else 0:.0f}", "KB"
+	if s.endswith(".0"):
+		s = s[:-2]
+	return (s if L == "en" else s.replace(".", ",")) + " " + u
+
+
+def tausch_room_error(size, who, lang=None):
+	""
+	lim = tausch_limits()
+	root = TZ["root"] or ""
+	if size > lim["file"]:
+		return trf("Too big: at most {n} per file.", lang, n=tausch_fmt(lim["file"], lang))
+	with TZ["lock"]:
+		if len(TZ["files"] or {}) + len(TZ["ups"]) >= TZ_MAX_FILES:
+			return trf("Too many files (at most {n}) - delete old ones first.", lang, n=TZ_MAX_FILES)
+	used, res = tausch_usage()
+	if used + res + size > lim["total"]:
+		return trf("The file exchange is full: {a} of {b} used. Delete old files first.", lang, a=tausch_fmt(used + res, lang),
+                   b=tausch_fmt(lim["total"], lang))
+	if not who.get("is_admin"):
+		u, ur = tausch_usage(who["key"])
+		if u + ur + size > lim["user"]:
+			return trf("Your space is full: {a} of {b} used. Delete some of your files first.", lang, a=tausch_fmt(u + ur, lang),
+                       b=tausch_fmt(lim["user"], lang))
+	with TZ["lock"]:
+		rest = sum(max(0, u["size"] - u.get("have", 0)) for u in TZ["ups"].values())
+	if tausch_disk_free(root) - rest - size < lim["min_free"]:
+		return trf("Not enough free space on the storage: MoveEye always keeps {n} free (for recordings and the system).", lang,
+                   n=tausch_fmt(lim["min_free"], lang))
+	return ""
+
+
+
+def tausch_public(m, who=None):
+	mime, kind, risky = tausch_type(m["name"])
+	d = {"id": m["id"], "name": m["name"], "area": m["area"], "folder": m.get("folder", ""), "size": m["size"], "t": m.get("t", 0),
+         "kind": kind, "ext": tausch_ext(m["name"])[:8], "thumb": m.get("thumb"), "risky": risky,
+         "inline": kind in TZ_INLINE}
+	if who is not None:
+		d.update(by=m.get("owner_name") or m["owner"], mine=m["owner"] == who["key"], dl=tausch_can_down(m, who), rm=tausch_can_del(m, who),
+                 edit=kind in ("text", "chat") and tausch_can_edit(m, who))
+	return d
+
+
+def tausch_list(who, area="all", folder="", lang=None):
+	root = _tz_load()
+	r0, kind, prob = tausch_root()
+	lim = tausch_limits()
+	out = {"ok": True, "on": bool(CFG.get("tausch_on", True)), "area": area, "folder": folder, "files": [], "folders": [],
+           "perms": sorted(who["perms"]), "me": {"name": who["name"], "admin": who["admin"], "is_admin": who["is_admin"]},
+           "store": {"kind": kind, "problem": prob}, "chunk": TZ_CHUNK, "ups": []}
+	if root is None:
+		out["store"]["problem"] = prob or "missing"
+		out["quota"] = {"used": 0, "total": lim["total"], "file_max": lim["file"], "free": 0, "min_free": lim["min_free"]}
+		return out
+	used, res = tausch_usage()
+	mu, mr = tausch_usage(who["key"])
+	out["quota"] = {"used": used + res, "total": lim["total"], "file_max": lim["file"], "free": tausch_disk_free(root),
+                    "min_free": lim["min_free"], "user_used": mu + mr, "user_max": None if who["is_admin"] else lim["user"]}
+	if "files_view" not in who["perms"]:
+		return out
+	with TZ["lock"]:
+		files = list(TZ["files"].values())
+		folders = list(TZ["folders"])
+		ups = [{"id": k, "name": u["name"], "size": u["size"], "have": u.get("have", 0), "area": u["area"], "folder": u.get("folder", "")}
+               for k, u in TZ["ups"].items() if u["owner"] == who["key"]]
+	out["ups"] = ups
+	if area == "all":
+		if folder and not any(x["name"] == folder for x in folders):
+			out["ok"] = False
+			out["error"] = tr("This folder does not exist (any more).", lang)
+			return out
+		if not folder:
+			for x in folders:
+				inside = [m for m in files if m["area"] == "all" and m.get("folder") == x["name"]]
+				out["folders"].append({"name": x["name"], "n": len(inside), "size": sum(m["size"] for m in inside), "t": x.get("t", 0),
+                                       "by": x.get("by_name", ""), "rm": who["admin"] or (x.get("by") == who["key"] and not inside)})
+		out["files"] = [tausch_public(m, who) for m in files if m["area"] == "all" and m.get("folder", "") == folder]
+	else:
+		out["files"] = [tausch_public(m, who) for m in files if m["area"] == "mine" and (m["owner"] == who["key"] or who["admin"])]
+	out["files"].sort(key=lambda x: -x["t"])
+	return out
+
+
+
+def tausch_up_start(who, d, lang=None):
+	if not CFG.get("tausch_on", True):
+		return False, tr("The file exchange is switched off.", lang), {}
+	if "files_up" not in who["perms"]:
+		return False, tr("You may not upload files.", lang), {}
+	root = _tz_load()
+	r0, kind, prob = tausch_root()
+	if root is None:
+		return False, tr("The storage (USB stick / SSD) is not there - plug it in again.", lang), {}
+	if prob == "ro":
+		return False, tr("The memory card is write-protected (overlay) - files would be lost at the next restart. Use a USB stick.", lang), {}
+	name, why = tausch_clean_name(d.get("name"))
+	if name is None:
+		return False, tr(why, lang), {}
+	if tausch_ext(name) == "chat":
+		return False, tr("Chats are made with «New chat».", lang), {}
+	if tausch_blocked(name):
+		return False, trf("Programs and scripts are not accepted (.{e}). Pack them into a ZIP if you really need to share them.", lang,
+                          e=tausch_ext(name)), {}
+	try:
+		size = int(d.get("size"))
+	except (TypeError, ValueError):
+		return False, tr("unknown size", lang), {}
+	if size < 0:
+		return False, tr("unknown size", lang), {}
+	area = "mine" if d.get("area") == "mine" else "all"
+	folder = str(d.get("folder") or "") if area == "all" else ""
+	try:
+		lastmod = int(float(d.get("lastmod") or 0))
+	except (TypeError, ValueError):
+		lastmod = 0
+	with TZ["lock"]:
+		if folder and not any(x["name"] == folder for x in TZ["folders"]):
+			return False, tr("This folder does not exist (any more).", lang), {}
+		for uid, u in TZ["ups"].items():
+			if (u["owner"] == who["key"] and u["name"] == name and u["size"] == size and u["area"] == area
+                    and u.get("folder", "") == folder and u.get("lastmod", 0) == lastmod):
+				u["t"] = time.time()
+				return True, "", {"id": uid, "have": u.get("have", 0), "chunk": TZ_CHUNK, "name": name, "resumed": u.get("have", 0) > 0}
+		if sum(1 for u in TZ["ups"].values() if u["owner"] == who["key"]) >= TZ_MAX_OPEN_UPS:
+			return False, tr("Too many uploads at the same time - wait until the others are done.", lang), {}
+	if not tausch_rate(who["key"], "up", 150):
+		return False, tr("Too many uploads in a short time - wait a few minutes.", lang), {}
+	err = tausch_room_error(size, who, lang)
+	if err:
+		return False, err, {}
+	uid = secrets.token_hex(8)
+	u = {"owner": who["key"], "owner_name": who["name"], "name": name, "size": size, "area": area, "folder": folder, "lastmod": lastmod,
+         "t0": time.time(), "t": time.time()}
+	try:
+		open(os.path.join(root, "up", uid + ".part"), "wb").close()
+		_tz_write_json(os.path.join(root, "up", uid + ".json"), u)
+	except OSError as e:
+		return False, tr("The storage cannot be written to.", lang) + f" ({e.__class__.__name__})", {}
+	with TZ["lock"]:
+		TZ["ups"][uid] = dict(u, have=0, lock=threading.Lock())
+	return True, "", {"id": uid, "have": 0, "chunk": TZ_CHUNK, "name": name, "resumed": False}
+
+
+def _tz_up_get(who, uid, lang=None):
+	if not TZ_ID.match(str(uid or "")):
+		return None, tr("unknown upload", lang)
+	with TZ["lock"]:
+		u = TZ["ups"].get(uid)
+	if u is None or u["owner"] != who["key"]:
+		return None, tr("unknown upload", lang)
+	return u, ""
+
+
+def tausch_up_chunk(who, uid, off, data, lang=None):
+	""
+	if "files_up" not in who["perms"] or not CFG.get("tausch_on", True):
+		return False, tr("You may not upload files.", lang), 0, 403
+	root = _tz_load()
+	if root is None:
+		return False, tr("The storage (USB stick / SSD) is not there - plug it in again.", lang), 0, 409
+	u, err = _tz_up_get(who, uid, lang)
+	if u is None:
+		return False, err, 0, 404
+	if len(data) > TZ_CHUNK_MAX:
+		return False, tr("piece too big", lang), u.get("have", 0), 413
+	if not u["lock"].acquire(timeout=30):
+		return False, tr("busy - try again", lang), u.get("have", 0), 409
+	try:
+		have = u.get("have", 0)
+		if off != have:
+			return False, "offset", have, 409
+		if have + len(data) > u["size"]:
+			return False, tr("more data than announced", lang), have, 400
+		lim = tausch_limits()
+		rest = u["size"] - have - len(data)
+		if tausch_disk_free(root) - len(data) - rest < lim["min_free"] - TZ_CHUNK_MAX:
+			return False, trf("Not enough free space on the storage: MoveEye always keeps {n} free (for recordings and the system).", lang,
+                              n=tausch_fmt(lim["min_free"], lang)), have, 507
+		p = os.path.join(root, "up", uid + ".part")
+		try:
+			with open(p, "r+b") as f:
+				f.seek(have)
+				f.write(data)
+				f.truncate()
+		except OSError as e:
+			return False, tr("The storage cannot be written to.", lang) + f" ({e.__class__.__name__})", have, 507
+		u["have"] = have + len(data)
+		u["t"] = time.time()
+		return True, "", u["have"], 200
+	finally:
+		u["lock"].release()
+
+
+def tausch_up_finish(who, uid, lang=None):
+	root = _tz_load()
+	if root is None:
+		return False, tr("The storage (USB stick / SSD) is not there - plug it in again.", lang), {}
+	u, err = _tz_up_get(who, uid, lang)
+	if u is None:
+		return False, err, {}
+	with u["lock"]:
+		if u.get("have", 0) != u["size"]:
+			return False, tr("The upload is not complete yet.", lang), {"have": u.get("have", 0)}
+		part = os.path.join(root, "up", uid + ".part")
+		try:
+			with open(part, "rb") as f:
+				head = f.read(16)
+		except OSError:
+			head = b""
+		if tausch_magic_exec(head):
+			tausch_up_abort(who, uid, lang, _locked=True)
+			log_event("web", f"File exchange: {who['name']} tried to upload a program («{u['name']}») - refused")
+			return False, tr("This file is a program or script - not accepted.", lang), {}
+		with TZ["lock"]:
+			folder = u.get("folder", "")
+			if folder and not any(x["name"] == folder for x in TZ["folders"]):
+				folder = ""
+			name = _tz_unique(u["name"], u["area"], folder, u["owner"])
+			fid = secrets.token_hex(8)
+			while fid in TZ["files"]:
+				fid = secrets.token_hex(8)
+			mime, kind, risky = tausch_type(name)
+			m = {"id": fid, "name": name, "area": u["area"], "folder": folder, "owner": u["owner"], "owner_name": u.get("owner_name") or u["owner"],
+                 "size": u["size"], "t": int(time.time()), "kind": kind, "thumb": None if kind in ("image", "video", "pdf") and not risky else False}
+			try:
+				os.replace(part, os.path.join(root, "f", fid + ".bin"))
+				_tz_write_json(os.path.join(root, "f", fid + ".json"), m)
+			except OSError as e:
+				return False, tr("The storage cannot be written to.", lang) + f" ({e.__class__.__name__})", {}
+			TZ["files"][fid] = m
+			TZ["ups"].pop(uid, None)
+		try:
+			os.remove(os.path.join(root, "up", uid + ".json"))
+		except OSError:
+			pass
+	where = "Für alle" + (" / " + folder if folder else "") if m["area"] == "all" else "privat"
+	log_event("web", f"File exchange: {who['name']} uploaded «{name}» ({tausch_fmt(m['size'], 'de')}, {where})")
+	if m["thumb"] is None:
+		tausch_thumb_queue(fid)
+	tausch_push_note(who)
+	return True, "", {"file": tausch_public(m, who)}
+
+
+def tausch_up_abort(who, uid, lang=None, _locked=False):
+	root = TZ["root"] or _tz_load()
+	u, err = _tz_up_get(who, uid, lang)
+	if u is None:
+		return False, err
+	with TZ["lock"]:
+		TZ["ups"].pop(uid, None)
+	for ext in (".part", ".json"):
+		try:
+			os.remove(os.path.join(root, "up", uid + ext))
+		except OSError:
+			pass
+	return True, ""
+
+
+def _tz_unique(name, area, folder, owner):
+	""
+	taken = {m["name"].lower() for m in TZ["files"].values() if m["area"] == area and m.get("folder", "") == folder
+             and (area == "all" or m["owner"] == owner)}
+	if name.lower() not in taken:
+		return name
+	stem, ext = os.path.splitext(name)
+	for i in range(2, 1000):
+		n = f"{stem} ({i}){ext}"
+		if n.lower() not in taken:
+			return n
+	return f"{stem} ({secrets.token_hex(2)}){ext}"
+
+
+
+def tausch_delete(who, fid, lang=None):
+	root = _tz_load()
+	if root is None or not TZ_ID.match(str(fid or "")):
+		return False, tr("unknown file", lang)
+	with TZ["lock"]:
+		m = TZ["files"].get(fid)
+		if m is None or not tausch_can_see(m, who):
+			return False, tr("unknown file", lang)
+		if not tausch_can_del(m, who):
+			return False, tr("Only the person who uploaded it (or the administrator) may delete this file.", lang)
+		if not tausch_rate(who["key"], "rm", 300):
+			return False, tr("Too many changes in a short time - wait a few minutes.", lang)
+		TZ["files"].pop(fid, None)
+	for p in (os.path.join(root, "f", fid + ".bin"), os.path.join(root, "f", fid + ".json"), os.path.join(root, "t", fid + ".jpg"),
+              os.path.join(root, "t", fid + "_p.jpg")):
+		try:
+			os.remove(p)
+		except OSError:
+			pass
+	shutil.rmtree(os.path.join(root, "h", fid), ignore_errors=True)
+	with TZ["lock"]:
+		TZ["chats"].pop(fid, None)
+	log_event("web", f"File exchange: {who['name']} deleted «{m['name']}» (from {m.get('owner_name') or m['owner']})")
+	return True, ""
+
+
+def tausch_mkdir(who, name, lang=None):
+	if "files_up" not in who["perms"] or not CFG.get("tausch_on", True):
+		return False, tr("You may not create folders.", lang)
+	root = _tz_load()
+	if root is None:
+		return False, tr("The storage (USB stick / SSD) is not there - plug it in again.", lang)
+	n, why = tausch_clean_name(name, folder=True)
+	if n is None:
+		return False, tr(why, lang)
+	with TZ["lock"]:
+		if any(x["name"].lower() == n.lower() for x in TZ["folders"]):
+			return False, tr("This folder exists already.", lang)
+		if len(TZ["folders"]) >= TZ_MAX_FOLDERS:
+			return False, trf("At most {n} folders.", lang, n=TZ_MAX_FOLDERS)
+		if not tausch_rate(who["key"], "rm", 300):
+			return False, tr("Too many changes in a short time - wait a few minutes.", lang)
+		TZ["folders"].append({"name": n, "by": who["key"], "by_name": who["name"], "t": int(time.time())})
+		TZ["folders"].sort(key=lambda x: x["name"].lower())
+		_tz_folders_save(root)
+	log_event("web", f"File exchange: {who['name']} created the folder «{n}»")
+	return True, ""
+
+
+def tausch_rmdir(who, name, force=False, lang=None):
+	""
+	root = _tz_load()
+	if root is None:
+		return False, tr("unknown folder", lang)
+	with TZ["lock"]:
+		x = next((f for f in TZ["folders"] if f["name"] == name), None)
+		if x is None:
+			return False, tr("unknown folder", lang)
+		inside = [m["id"] for m in TZ["files"].values() if m["area"] == "all" and m.get("folder") == name]
+		if inside and not (who["admin"] and force):
+			return False, tr("The folder is not empty - only the administrator can delete it with all files.", lang)
+		if not inside and not (who["admin"] or x.get("by") == who["key"]):
+			return False, tr("Only the person who created it (or the administrator) may delete this folder.", lang)
+		TZ["folders"] = [f for f in TZ["folders"] if f is not x]
+		_tz_folders_save(root)
+	for fid in inside:
+		tausch_delete(who, fid, lang)
+	log_event("web", f"File exchange: {who['name']} deleted the folder «{name}»" + (f" with {len(inside)} files" if inside else ""))
+	return True, ""
+
+
+
+
+
+
+TZ_TEXT_EXT = {"txt", "md"}
+TZ_TEXT_MAX = 1024 * 1024
+TZ_HIST = 20
+TZ_POST_MAX = 4096
+TZ_CHAT_MAX = 2 * 1024 * 1024
+TZ_EDIT_WIN = 300
+TZ_WAIT_MAX, TZ_WAIT_IP, TZ_WAIT_S = 24, 4, 20.0
+TZ_CHAT_COND = threading.Condition()
+_TZ_CTRL = re.compile(r"[\x00-\x08\x0b-\x1f\x7f​-‏‪-‮⁦-⁩]")
+
+
+def tausch_file(fid):
+	if not TZ_ID.match(str(fid or "")) or _tz_load() is None:
+		return None
+	with TZ["lock"]:
+		return TZ["files"].get(fid)
+
+
+def tausch_is_text(m):
+	return tausch_ext(m["name"]) in TZ_TEXT_EXT
+
+
+def tausch_can_edit(m, who):
+	""
+	return (bool(CFG.get("tausch_on", True)) and tausch_can_see(m, who) and "files_up" in who["perms"]
+            and (m["area"] == "all" or m["owner"] == who["key"] or who["admin"]))
+
+
+def _tz_extra_room(extra, owner, lang=None):
+	""
+	lim = tausch_limits()
+	used, res = tausch_usage()
+	if used + res + extra > lim["total"]:
+		return trf("The file exchange is full: {a} of {b} used. Delete old files first.", lang, a=tausch_fmt(used + res, lang), b=tausch_fmt(lim["total"], lang))
+	if owner != "admin":
+		u, ur = tausch_usage(owner)
+		if u + ur + extra > lim["user"]:
+			return trf("Your space is full: {a} of {b} used. Delete some of your files first.", lang, a=tausch_fmt(u + ur, lang), b=tausch_fmt(lim["user"], lang))
+	if tausch_disk_free(TZ["root"] or "") - extra < lim["min_free"]:
+		return trf("Not enough free space on the storage: MoveEye always keeps {n} free (for recordings and the system).", lang, n=tausch_fmt(lim["min_free"], lang))
+	return ""
+
+
+def _tz_read(root, fid, v=None):
+	p = os.path.join(root, "h", fid, f"{int(v)}.txt") if v else os.path.join(root, "f", fid + ".bin")
+	with open(p, "rb") as f:
+		return f.read(TZ_TEXT_MAX + 1).decode("utf-8", errors="replace")
+
+
+def tausch_text_get(who, fid, v=None, lang=None):
+	m = tausch_file(fid)
+	if m is None or (who is not None and not tausch_can_see(m, who)) or (who is None and m["area"] != "all"):
+		return False, tr("unknown file", lang), {}
+	if not tausch_is_text(m):
+		return False, tr("This is not a text file.", lang), {}
+	if m["size"] > TZ_TEXT_MAX:
+		return False, trf("Too big for the editor (at most {n}) - download it instead.", lang, n=tausch_fmt(TZ_TEXT_MAX, lang)), {}
+	try:
+		if v and not any(h["v"] == int(v) for h in m.get("hist") or []):
+			return False, tr("This version is not kept any more.", lang), {}
+		txt = _tz_read(TZ["root"], fid, v)
+	except (OSError, ValueError):
+		return False, tr("unknown file", lang), {}
+	out = {"id": fid, "name": m["name"], "text": txt, "ver": int(m.get("ver") or 1), "md": tausch_ext(m["name"]) == "md",
+           "t": m.get("ed_t") or m.get("t", 0), "v": int(v) if v else None}
+	if who is not None:
+		out.update(by=m.get("ed_name") or m.get("owner_name") or m["owner"], edit=tausch_can_edit(m, who),
+                   hist=[{"v": h["v"], "t": h["t"], "by": h.get("by", ""), "size": h["size"]} for h in reversed(m.get("hist") or [])])
+	return True, "", out
+
+
+def tausch_text_save(who, fid, text, ver, lang=None, restore=None):
+	""
+	m = tausch_file(fid)
+	if m is None or not tausch_can_see(m, who):
+		return False, tr("unknown file", lang), {}
+	if not tausch_is_text(m):
+		return False, tr("This is not a text file.", lang), {}
+	if not tausch_can_edit(m, who):
+		return False, tr("You may not change this text.", lang), {}
+	root = TZ["root"]
+	if restore is not None:
+		ok, err, old = tausch_text_get(who, fid, restore, lang)
+		if not ok:
+			return False, err, {}
+		text = old["text"]
+	if not isinstance(text, str):
+		return False, tr("no text", lang), {}
+	enc = text.encode("utf-8")
+	if len(enc) > TZ_TEXT_MAX:
+		return False, trf("Too big for the editor (at most {n}) - download it instead.", lang, n=tausch_fmt(TZ_TEXT_MAX, lang)), {}
+	if not tausch_rate(who["key"], "save", 240):
+		return False, tr("Too many changes in a short time - wait a few minutes.", lang), {}
+	with TZ["lock"]:
+		cur = int(m.get("ver") or 1)
+		try:
+			ver = int(ver)
+		except (TypeError, ValueError):
+			ver = -1
+		if ver != cur:
+			try:
+				now_txt = _tz_read(root, fid)
+			except OSError:
+				now_txt = ""
+			return False, trf("Meanwhile {who} has changed something.", lang, who=m.get("ed_name") or m.get("owner_name") or "?"), {
+                "conflict": True, "by": m.get("ed_name") or m.get("owner_name") or "", "ver": cur, "text": now_txt, "t": m.get("ed_t") or m.get("t", 0)}
+		err = _tz_extra_room(len(enc), m["owner"], lang)
+		if err:
+			return False, err, {}
+		hd = os.path.join(root, "h", fid)
+		try:
+			os.makedirs(hd, exist_ok=True)
+			shutil.copyfile(os.path.join(root, "f", fid + ".bin"), os.path.join(hd, f"{cur}.txt"))
+			hist = list(m.get("hist") or []) + [{"v": cur, "t": m.get("ed_t") or m.get("t", 0), "by": m.get("ed_name") or m.get("owner_name") or "",
+                                                 "size": m["size"]}]
+			for h in hist[:-TZ_HIST]:
+				try:
+					os.remove(os.path.join(hd, f"{h['v']}.txt"))
+				except OSError:
+					pass
+			hist = hist[-TZ_HIST:]
+			tmp = os.path.join(root, "f", fid + ".bin.tmp")
+			with open(tmp, "wb") as f:
+				f.write(enc)
+			os.replace(tmp, os.path.join(root, "f", fid + ".bin"))
+		except OSError as e:
+			return False, tr("The storage cannot be written to.", lang) + f" ({e.__class__.__name__})", {}
+		m.update(size=len(enc), ver=cur + 1, ed_name=who["name"], ed_t=int(time.time()), hist=hist, hist_size=sum(h["size"] for h in hist))
+		_tz_write_json(os.path.join(root, "f", fid + ".json"), m)
+	log_event("web", f"File exchange: {who['name']} " + (f"restored version {restore} of" if restore is not None else "changed") + f" «{m['name']}» (version {cur + 1})")
+	return True, "", {"ver": cur + 1}
+
+
+def tausch_create(who, d, kind, lang=None):
+	""
+	if "files_up" not in who["perms"] or not CFG.get("tausch_on", True):
+		return False, tr("You may not upload files.", lang), {}
+	root = _tz_load()
+	if root is None:
+		return False, tr("The storage (USB stick / SSD) is not there - plug it in again.", lang), {}
+	name, why = tausch_clean_name(d.get("name"))
+	if name is None:
+		return False, tr(why, lang), {}
+	if kind == "chat":
+		name = (name[:-5] if name.lower().endswith(".chat") else name)[:110] + ".chat"
+	elif tausch_ext(name) not in TZ_TEXT_EXT:
+		name = name[:115] + ".txt"
+	text = str(d.get("text") or "") if kind == "text" else ""
+	enc = text.encode("utf-8")
+	if len(enc) > TZ_TEXT_MAX:
+		return False, trf("Too big for the editor (at most {n}) - download it instead.", lang, n=tausch_fmt(TZ_TEXT_MAX, lang)), {}
+	area = "mine" if d.get("area") == "mine" else "all"
+	folder = str(d.get("folder") or "") if area == "all" else ""
+	if not tausch_rate(who["key"], "up", 150):
+		return False, tr("Too many uploads in a short time - wait a few minutes.", lang), {}
+	err = tausch_room_error(len(enc), who, lang)
+	if err:
+		return False, err, {}
+	with TZ["lock"]:
+		if folder and not any(x["name"] == folder for x in TZ["folders"]):
+			return False, tr("This folder does not exist (any more).", lang), {}
+		name = _tz_unique(name, area, folder, who["key"])
+		fid = secrets.token_hex(8)
+		m = {"id": fid, "name": name, "area": area, "folder": folder, "owner": who["key"], "owner_name": who["name"], "size": len(enc),
+             "t": int(time.time()), "kind": kind, "thumb": False, "ver": 1}
+		try:
+			with open(os.path.join(root, "f", fid + ".bin"), "wb") as f:
+				f.write(enc)
+			_tz_write_json(os.path.join(root, "f", fid + ".json"), m)
+		except OSError as e:
+			return False, tr("The storage cannot be written to.", lang) + f" ({e.__class__.__name__})", {}
+		TZ["files"][fid] = m
+	log_event("web", f"File exchange: {who['name']} created «{name}»")
+	return True, "", {"file": tausch_public(m, who)}
+
+
+
+def _tz_chat(m):
+	""
+	with TZ["lock"]:
+		ch = TZ["chats"].get(m["id"])
+		if ch is not None:
+			return ch
+		posts = []
+		try:
+			with open(os.path.join(TZ["root"], "f", m["id"] + ".bin"), encoding="utf-8", errors="replace") as f:
+				for line in f:
+					try:
+						x = json.loads(line)
+					except ValueError:
+						continue
+					if isinstance(x, dict) and isinstance(x.get("n"), int) and isinstance(x.get("x"), str):
+						posts.append(x)
+		except OSError:
+			pass
+		ch = TZ["chats"][m["id"]] = {"posts": posts, "rev": len(posts), "erev": 0}
+		return ch
+
+
+def tausch_chat_clean(text):
+	s = _TZ_CTRL.sub("", str(text or "").replace("\r\n", "\n").replace("\r", "\n"))
+	s = re.sub(r"\n{4,}", "\n\n\n", s).strip()
+	return s
+
+
+def tausch_chat_get(who, fid, after=0, rev=-1, lang=None):
+	m = tausch_file(fid)
+	if m is None or (who is not None and not tausch_can_see(m, who)) or (who is None and m["area"] != "all"):
+		return False, tr("unknown file", lang), {}
+	if tausch_ext(m["name"]) != "chat":
+		return False, tr("This is not a chat.", lang), {}
+	ch = _tz_chat(m)
+	now = time.time()
+	with TZ["lock"]:
+		full = rev < ch["erev"] or rev < 0 or rev > ch["rev"]
+		sel = ch["posts"] if full else [x for x in ch["posts"] if x["n"] > after]
+		pub = []
+		for x in sel[-800:]:
+			d = {"n": x["n"], "t": x["t"], "by": x.get("by", ""), "x": "" if x.get("d") else x["x"], "ed": x.get("e", 0), "del": bool(x.get("d"))}
+			if who is not None:
+				mine = x.get("k") == who["key"]
+				d.update(mine=mine, ce=mine and not x.get("d") and now - x["t"] < TZ_EDIT_WIN and tausch_can_edit(m, who),
+                         cd=not x.get("d") and ((mine and now - x["t"] < TZ_EDIT_WIN) or who["admin"]))
+			pub.append(d)
+		out = {"id": fid, "name": os.path.splitext(m["name"])[0], "rev": ch["rev"], "full": full, "posts": pub,
+               "n": len(ch["posts"]), "size": m["size"], "max": TZ_CHAT_MAX, "post_max": TZ_POST_MAX}
+	if who is not None:
+		out["write"] = tausch_can_edit(m, who)
+	return True, "", out
+
+
+def tausch_chat_wait(fid, rev, ip, timeout=TZ_WAIT_S):
+	""
+	with TZ["lock"]:
+		if TZ["waiting"] >= TZ_WAIT_MAX or TZ["waiters"].get(ip, 0) >= TZ_WAIT_IP:
+			return False
+		TZ["waiting"] += 1
+		TZ["waiters"][ip] = TZ["waiters"].get(ip, 0) + 1
+	try:
+		end = time.time() + timeout
+		with TZ_CHAT_COND:
+			while True:
+				ch = TZ["chats"].get(fid)
+				if ch is None or ch["rev"] != rev:
+					return True
+				left = end - time.time()
+				if left <= 0:
+					return True
+				TZ_CHAT_COND.wait(min(left, 5.0))
+	finally:
+		with TZ["lock"]:
+			TZ["waiting"] = max(0, TZ["waiting"] - 1)
+			TZ["waiters"][ip] = max(0, TZ["waiters"].get(ip, 1) - 1)
+			if not TZ["waiters"][ip]:
+				TZ["waiters"].pop(ip, None)
+
+
+def _tz_chat_changed():
+	with TZ_CHAT_COND:
+		TZ_CHAT_COND.notify_all()
+
+
+def _tz_chat_rewrite(m, ch):
+	tmp = os.path.join(TZ["root"], "f", m["id"] + ".bin.tmp")
+	data = "".join(json.dumps(x, ensure_ascii=False) + "\n" for x in ch["posts"]).encode("utf-8")
+	with open(tmp, "wb") as f:
+		f.write(data)
+	os.replace(tmp, os.path.join(TZ["root"], "f", m["id"] + ".bin"))
+	m["size"] = len(data)
+
+
+def tausch_chat_post(who, fid, text, lang=None):
+	m = tausch_file(fid)
+	if m is None or not tausch_can_see(m, who) or tausch_ext(m["name"]) != "chat":
+		return False, tr("unknown file", lang), {}
+	if not tausch_can_edit(m, who):
+		return False, tr("You may not write in this chat.", lang), {}
+	s = tausch_chat_clean(text)
+	if not s:
+		return False, tr("The message is empty.", lang), {}
+	if len(s.encode("utf-8")) > TZ_POST_MAX:
+		return False, trf("Too long: at most {n} per message.", lang, n=tausch_fmt(TZ_POST_MAX, lang)), {}
+	if not tausch_rate(who["key"], "post", 30, per=60.0):
+		return False, tr("Too many messages in a short time - wait a moment.", lang), {}
+	ch = _tz_chat(m)
+	with TZ["lock"]:
+		n = (ch["posts"][-1]["n"] + 1) if ch["posts"] else 1
+		x = {"n": n, "t": int(time.time()), "k": who["key"], "by": who["name"], "x": s}
+		line = (json.dumps(x, ensure_ascii=False) + "\n").encode("utf-8")
+		if m["size"] + len(line) > TZ_CHAT_MAX:
+			return False, tr("This chat is full - start a new one.", lang), {}
+		err = _tz_extra_room(len(line), m["owner"], lang)
+		if err:
+			return False, err, {}
+		try:
+			with open(os.path.join(TZ["root"], "f", fid + ".bin"), "ab") as f:
+				f.write(line)
+		except OSError as e:
+			return False, tr("The storage cannot be written to.", lang) + f" ({e.__class__.__name__})", {}
+		ch["posts"].append(x)
+		ch["rev"] += 1
+		m["size"] += len(line)
+		m["ed_t"] = x["t"]
+		try:
+			_tz_write_json(os.path.join(TZ["root"], "f", fid + ".json"), m)
+		except OSError:
+			pass
+	_tz_chat_changed()
+	tausch_chat_note(m, who)
+	return True, "", {"n": n, "rev": ch["rev"]}
+
+
+def tausch_chat_change(who, fid, n, text=None, lang=None):
+	""
+	m = tausch_file(fid)
+	if m is None or not tausch_can_see(m, who) or tausch_ext(m["name"]) != "chat":
+		return False, tr("unknown file", lang)
+	ch = _tz_chat(m)
+	with TZ["lock"]:
+		x = next((p for p in ch["posts"] if p["n"] == n), None)
+		if x is None or x.get("d"):
+			return False, tr("unknown message", lang)
+		mine = x.get("k") == who["key"] and time.time() - x["t"] < TZ_EDIT_WIN
+		if text is None:
+			if not (mine or who["admin"]):
+				return False, tr("Only your own messages, and only within 5 minutes.", lang)
+			x.update(d=True, x="", e=int(time.time()))
+		else:
+			if not mine or not tausch_can_edit(m, who):
+				return False, tr("Only your own messages, and only within 5 minutes.", lang)
+			s = tausch_chat_clean(text)
+			if not s or len(s.encode("utf-8")) > TZ_POST_MAX:
+				return False, trf("Too long: at most {n} per message.", lang, n=tausch_fmt(TZ_POST_MAX, lang)) if s else tr("The message is empty.", lang)
+			x.update(x=s, e=int(time.time()))
+		ch["rev"] += 1
+		ch["erev"] = ch["rev"]
+		try:
+			_tz_chat_rewrite(m, ch)
+			_tz_write_json(os.path.join(TZ["root"], "f", fid + ".json"), m)
+		except OSError as e:
+			return False, tr("The storage cannot be written to.", lang) + f" ({e.__class__.__name__})"
+	_tz_chat_changed()
+	if text is None:
+		log_event("web", f"File exchange: {who['name']} deleted a message in «{m['name']}»")
+	return True, ""
+
+
+
+def tausch_img_dims(path):
+	""
+	import struct
+	try:
+		with open(path, "rb") as f:
+			h = f.read(32)
+			if h.startswith(b"\x89PNG\r\n\x1a\n") and h[12:16] == b"IHDR":
+				return struct.unpack(">II", h[16:24])
+			if h[:4] in (b"GIF8",):
+				return struct.unpack("<HH", h[6:10])
+			if h[:2] == b"BM":
+				w, hh = struct.unpack("<ii", h[18:26])
+				return abs(w), abs(hh)
+			if h[:4] == b"RIFF" and h[8:12] == b"WEBP":
+				f.seek(12)
+				c = f.read(30)
+				if c[:4] == b"VP8X":
+					return 1 + int.from_bytes(c[12:15], "little"), 1 + int.from_bytes(c[15:18], "little")
+				if c[:4] == b"VP8 ":
+					return struct.unpack("<HH", c[14:18])[0] & 0x3fff, struct.unpack("<HH", c[14:18])[1] & 0x3fff
+				if c[:4] == b"VP8L":
+					b = int.from_bytes(c[9:13], "little")
+					return (b & 0x3fff) + 1, ((b >> 14) & 0x3fff) + 1
+				return None
+			if h[:2] == b"\xff\xd8":
+				f.seek(2)
+				for _i in range(400):
+					m = f.read(2)
+					while m[:1] == b"\xff" and m[1:2] == b"\xff":
+						m = m[1:] + f.read(1)
+					if len(m) < 2 or m[0] != 0xFF:
+						return None
+					mk = m[1]
+					if mk in (0xD8, 0x01) or 0xD0 <= mk <= 0xD7:
+						continue
+					ln = struct.unpack(">H", f.read(2))[0]
+					if 0xC0 <= mk <= 0xCF and mk not in (0xC4, 0xC8, 0xCC):
+						d = f.read(5)
+						hh, w = struct.unpack(">HH", d[1:5])
+						return w, hh
+					f.seek(ln - 2, 1)
+	except (OSError, struct.error, ValueError):
+		return None
+	return None
+
+
+def _tz_jpg_write(img, path, side, q):
+	hh, ww = img.shape[:2]
+	s = min(1.0, float(side) / max(hh, ww, 1))
+	if s < 1.0:
+		img = cv2.resize(img, (max(1, int(ww * s)), max(1, int(hh * s))), interpolation=cv2.INTER_AREA)
+	ok, buf = cv2.imencode(".jpg", img, [cv2.IMWRITE_JPEG_QUALITY, q])
+	if not ok:
+		return False
+	tmp = path + ".tmp"
+	with open(tmp, "wb") as f:
+		f.write(buf.tobytes())
+	os.replace(tmp, path)
+	return True
+
+
+def tausch_thumb_make(root, m):
+	""
+	src = os.path.join(root, "f", m["id"] + ".bin")
+	kind = tausch_type(m["name"])[1]
+	img = None
+	if kind == "image":
+		dims = tausch_img_dims(src)
+		if dims is None and m["size"] > 30 * TZ_MB:
+			return False
+		if dims and (dims[0] * dims[1] > 60_000_000 or min(dims) <= 0):
+			return False
+		flag = cv2.IMREAD_COLOR
+		if dims and dims[0] * dims[1] > 16_000_000 and tausch_ext(m["name"]) in ("jpg", "jpeg"):
+			flag = cv2.IMREAD_REDUCED_COLOR_4
+		try:
+			img = cv2.imdecode(np.fromfile(src, dtype=np.uint8), flag)
+		except (cv2.error, ValueError, MemoryError):
+			img = None
+		if img is None and tausch_ext(m["name"]) == "gif":
+			kind = "video"
+	if kind == "video" and img is None:
+		cap = cv2.VideoCapture(src)
+		try:
+			if cap.isOpened():
+				n = cap.get(cv2.CAP_PROP_FRAME_COUNT) or 0
+				fps = cap.get(cv2.CAP_PROP_FPS) or 25
+				if n > 2:
+					cap.set(cv2.CAP_PROP_POS_FRAMES, min(int(fps), int(n // 2)))
+				ok, img = cap.read()
+				if not ok:
+					img = None
+		finally:
+			cap.release()
+	if kind == "pdf" and img is None:
+		exe = TZ["pdftoppm"] if TZ["pdftoppm"] is not None else (shutil.which("pdftoppm") or "")
+		TZ["pdftoppm"] = exe
+		if not exe or m["size"] > 50 * TZ_MB:
+			return False
+		tmpd = tempfile.mkdtemp(prefix="mw_tz_")
+		try:
+			r = subprocess.run([exe, "-f", "1", "-l", "1", "-scale-to", "1280", "-jpeg", "-singlefile", src, os.path.join(tmpd, "s")],
+                               capture_output=True, timeout=25)
+			pj = os.path.join(tmpd, "s.jpg")
+			if r.returncode == 0 and os.path.isfile(pj):
+				img = cv2.imread(pj, cv2.IMREAD_COLOR)
+		except (OSError, subprocess.SubprocessError):
+			img = None
+		finally:
+			shutil.rmtree(tmpd, ignore_errors=True)
+	if img is None or img.size == 0:
+		return False
+	if img.ndim == 2:
+		img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
+	ok1 = _tz_jpg_write(img, os.path.join(root, "t", m["id"] + ".jpg"), 320, 78)
+	ok2 = _tz_jpg_write(img, os.path.join(root, "t", m["id"] + "_p.jpg"), 1280, 84)
+	return bool(ok1 and ok2)
+
+
+def tausch_thumb_queue(fid):
+	with TZ["lock"]:
+		if fid not in TZ["thumbq"]:
+			TZ["thumbq"].append(fid)
+		if TZ["thumb_run"]:
+			return
+		TZ["thumb_run"] = True
+	threading.Thread(target=_tz_thumb_worker, daemon=True, name="tausch-thumbs").start()
+
+
+def _tz_thumb_worker():
+	try:
+		while True:
+			with TZ["lock"]:
+				if not TZ["thumbq"]:
+					TZ["thumb_run"] = False
+					return
+				fid = TZ["thumbq"].popleft()
+				root = TZ["root"]
+				m = (TZ["files"] or {}).get(fid)
+			if m is None or not root:
+				continue
+			try:
+				ok = tausch_thumb_make(root, m)
+			except Exception as e:
+				ok = False
+				log_event("sys", f"File exchange: no preview for «{m['name']}»: {e.__class__.__name__}")
+			with TZ["lock"]:
+				if fid in (TZ["files"] or {}):
+					m["thumb"] = bool(ok)
+					try:
+						_tz_write_json(os.path.join(root, "f", fid + ".json"), m)
+					except OSError:
+						pass
+	except Exception:
+		with TZ["lock"]:
+			TZ["thumb_run"] = False
+
+
+
+
+
+
+
+
+
+_TZ_TL = threading.local()
+
+
+def tausch_push_note(who, n=1, now=None):
+	""
+	if who.get("is_admin") or not CFG.get("tausch_push", True):
+		return
+	_tz_bundle(("up", who["key"]), {"kind": "up", "name": who["name"], "target": "admin"}, n, now)
+
+
+def tausch_chat_note(m, who, now=None):
+	""
+	if not CFG.get("tausch_push", True):
+		return
+	ch = TZ["chats"].get(m["id"]) or {}
+	names = {}
+	for x in ch.get("posts") or []:
+		if x.get("k") and x["k"] != who["key"]:
+			names[x["k"]] = x.get("by") or x["k"]
+	for k, nm in names.items():
+		if m["area"] == "mine" and k != m["owner"] and k != "admin":
+			continue
+		_tz_bundle(("chat", k, m["id"]), {"kind": "chat", "target": k, "target_name": nm, "chat": os.path.splitext(m["name"])[0],
+                                          "authors": {}}, 1, now, author=who["name"])
+
+
+def _tz_bundle(key, base, n, now, author=None):
+	now = time.time() if now is None else now
+	with TZ["lock"]:
+		e = TZ["push"].get(key)
+		if e is None:
+			e = TZ["push"][key] = dict(base, n=0, first=now)
+		e["n"] += n
+		e["last"] = now
+		if author:
+			e["authors"][author] = e["authors"].get(author, 0) + n
+		if TZ["push_run"] or TZ.get("push_manual"):
+			return
+		TZ["push_run"] = True
+	threading.Thread(target=_tz_push_worker, daemon=True, name="tausch-push").start()
+
+
+def tausch_push_text(name, n, lang=None):
+	return trf("{who} uploaded a file", lang, who=name) if n == 1 else trf("{who} uploaded {n} files", lang, who=name, n=n)
+
+
+def tausch_chat_text(e, lang=None):
+	au = list(e.get("authors") or {})
+	who, n, chat = ", ".join(au[:3]) + (" …" if len(au) > 3 else ""), e["n"], e["chat"]
+	if len(au) > 1:
+		return trf("{who} have written {n}× in «{chat}»", lang, who=who, n=n, chat=chat)
+	if n == 1:
+		return trf("{who} wrote in «{chat}»", lang, who=who, chat=chat)
+	return trf("{who} wrote {n}× in «{chat}»", lang, who=who, n=n, chat=chat)
+
+
+def tausch_push_ok():
+	""
+	try:
+		if CFG.get("push_level") in ("persons", "animals"):
+			return False, False
+		if quiet_now():
+			return False, True
+	except NameError:
+		pass
+	return True, False
+
+
+def tausch_push_tick(now=None, force=False):
+	""
+	now = time.time() if now is None else now
+	ok, hold = tausch_push_ok()
+	due = []
+	with TZ["lock"]:
+		for k, e in list(TZ["push"].items()):
+			if not ok and hold and now - e["first"] < 12 * 3600 and not force:
+				continue
+			if force or now - e["last"] >= TZ_PUSH_QUIET or now - e["first"] >= TZ_PUSH_MAX or not ok:
+				due.append(TZ["push"].pop(k))
+	out = []
+	for e in due:
+		if not ok and not force:
+			continue
+		txt = tausch_push_text(e["name"], e["n"]) if e["kind"] == "up" else tausch_chat_text(e)
+		out.append(txt)
+		tausch_push_deliver(e, txt)
+	return out
+
+
+def tausch_push_deliver(e, txt):
+	title_key = "File exchange" if e["kind"] == "up" else "Chat"
+	pub = (CFG.get("public_url") or "").strip().rstrip("/")
+	try:
+		link = (pub or page_address().rstrip("/")) + "/tausch"
+	except Exception:
+		link = ""
+	if e["target"] == "admin":
+		return tausch_push_send(txt, title_key, link)
+	return tausch_push_user(e.get("target_name") or e["target"], txt, title_key, link)
+
+
+def tausch_push_send(txt, title_key="File exchange", link=""):
+	""
+	w = WATCH_REF.get("w")
+	n = getattr(w, "notifier", None) if w is not None else None
+	if n is None or not (n.configured() and CFG.get("notify_on")):
+		return False
+	p = {"event": "info", "persons": 0, "time": datetime.now().isoformat(timespec="seconds"), "text": txt, "info_title": "{name}: " + tr(title_key),
+         "snapshot": None, "rain": False, "wind": "", "source": STATE.get("source_label", ""), "link": link, "tz_admin": True}
+	threading.Thread(target=n._dispatch, args=(p, None, ""), daemon=True, name="tausch-push-admin").start()
+	return True
+
+
+def tausch_push_user(name, txt, title_key, link):
+	""
+	u = user_get(name)
+	if u is None or not users_push_wants(u["name"], "info"):
+		return False
+	title = ("💬 " if title_key == "Chat" else "📁 ") + ((CFG.get("device_name") or "").strip()[:20] or "MoveEye") + ": " + tr(title_key)
+	subs = [x for x in webpush_subs() if str(x.get("user", "")).lower() == u["name"].lower()]
+	if subs and webpush_supported() and CFG.get("webpush_on"):
+		threading.Thread(target=_tz_webpush_to, args=(subs, title, txt, "/tausch"), daemon=True, name="tausch-push-wp").start()
+	if u.get("ntfy"):
+		threading.Thread(target=_users_ntfy_send, args=(u["name"], _users_ntfy_url(u["ntfy"]), title, txt, "info", link),
+                         daemon=True, name="tausch-push-ntfy").start()
+	return True
+
+
+def _tz_webpush_to(subs, title, text, url):
+	n = 0
+	for sb in subs:
+		try:
+			code = webpush_send(sb, {"title": title[:120], "body": text[:400], "url": url, "tag": "mw-info", "urgent": False}, urgent=False)
+			n += 200 <= code < 300
+		except Exception:
+			pass
+	return n
+
+
+def _tz_push_worker():
+	try:
+		while True:
+			time.sleep(10)
+			tausch_push_tick()
+			with TZ["lock"]:
+				if not TZ["push"]:
+					TZ["push_run"] = False
+					return
+	except Exception:
+		with TZ["lock"]:
+			TZ["push_run"] = False
+
+
+_tz_dispatch_base = Notifier._dispatch
+
+
+def _tz_dispatch(self, p, jpg, fname):
+	if not (isinstance(p, dict) and p.get("tz_admin")):
+		return _tz_dispatch_base(self, p, jpg, fname)
+	_TZ_TL.admin_only = True
+	try:
+		return _tz_dispatch_base(self, p, jpg, fname)
+	finally:
+		_TZ_TL.admin_only = False
+
+
+
+Notifier._dispatch = _tz_dispatch
+_tz_webpush_base = Notifier._webpush
+
+
+def _tz_webpush(self, p):
+	if not (isinstance(p, dict) and p.get("tz_admin")):
+		return _tz_webpush_base(self, p)
+	subs = [x for x in webpush_subs() if not x.get("user")]
+	if subs and webpush_supported():
+		_tz_webpush_to(subs, self._title(p), self._text(p), p.get("link") or "/tausch")
+
+
+
+Notifier._webpush = _tz_webpush
+_users_push_dispatch_tz_base = users_push_dispatch
+
+
+def users_push_dispatch(title, text, cat, click=""):
+	if getattr(_TZ_TL, "admin_only", False):
+		return 0
+	return _users_push_dispatch_tz_base(title, text, cat, click)
+
+
+PK_TITLES.setdefault("File exchange", ("📁", "File exchange", "info", False))
+PK_TITLES.setdefault("Chat", ("💬", "Chat", "info", False))
+
+
+
+def _tz_send(path, mime, attach, name=None, cache="private, no-cache"):
+	from flask import send_file
+	r = send_file(path, mimetype=mime, as_attachment=attach, download_name=name, conditional=True, max_age=0)
+	r.headers["X-Content-Type-Options"] = "nosniff"
+	r.headers["Content-Security-Policy"] = "sandbox; default-src 'none'; img-src 'self'; media-src 'self'"
+	r.headers["Cache-Control"] = cache
+	r.headers["Referrer-Policy"] = "no-referrer"
+	r.headers["X-Frame-Options"] = "SAMEORIGIN"
+	return r
+
+
+def _tz_int(v, default=0):
+	try:
+		return int(v)
+	except (TypeError, ValueError):
+		return default
+
+
+def tausch_guest_ok(token):
+	return bool(CFG.get("tausch_on", True) and CFG.get("tausch_guest", True) and guest_ok(token))
+
+
+def tausch_guest_list(folder=""):
+	root = _tz_load()
+	if root is None:
+		return {"ok": True, "files": [], "folders": []}
+	with TZ["lock"]:
+		files = [m for m in TZ["files"].values() if m["area"] == "all" and not tausch_type(m["name"])[2]]
+		folders = list(TZ["folders"])
+	if folder and not any(x["name"] == folder for x in folders):
+		return {"ok": False, "files": [], "folders": []}
+	out = {"ok": True, "folder": folder, "files": [], "folders": []}
+	if not folder:
+		out["folders"] = [{"name": x["name"], "n": sum(1 for m in files if m.get("folder") == x["name"])} for x in folders]
+	out["files"] = sorted(({"id": m["id"], "name": m["name"], "size": m["size"], "t": m.get("t", 0), "kind": tausch_type(m["name"])[1],
+                            "ext": tausch_ext(m["name"])[:8], "thumb": m.get("thumb")} for m in files if m.get("folder", "") == folder),
+                          key=lambda x: -x["t"])
+	return out
+
+
+_smalltv_routes_639zzc = smalltv_routes
+
+
+def smalltv_routes(app, reply, body):
+	_smalltv_routes_639zzc(app, reply, body)
+	from flask import Response, request, g
+
+	def size_guard():
+		if request.path == "/api/tausch/chunk" and request.method == "POST":
+			n = request.content_length
+			if n is None or n > TZ_CHUNK_MAX:
+				return Response(json.dumps({"ok": False, "error": "piece too big"}), 413, mimetype="application/json",
+                                headers={"Connection": "close"})
+		return None
+	app.before_request_funcs.setdefault(None, []).insert(0, size_guard)
+
+	def lang_():
+		return norm_lang(request.args.get("lang") or CFG.get("lang"))
+
+	def nope(code=404, msg="not found"):
+		return reply({"ok": False, "error": tr(msg, lang_())}, code)
+
+	@app.route("/tausch")
+	@app.route("/tausch/")
+	def tausch_page():
+		who = tausch_who(g)
+		if "files_view" not in who["perms"]:
+			return sx_err(403, "error")
+		return Response(tausch_page_html(), mimetype="text/html", headers={"Cache-Control": "no-store"})
+
+	@app.route("/api/tausch", methods=["GET", "POST"])
+	def api_tausch():
+		who = tausch_who(g)
+		if request.method == "GET":
+			L = lang_()
+			if not who["perms"]:
+				return reply({"ok": False, "error": tr("not allowed for your user", L)}, 403)
+			area = "mine" if request.args.get("area") == "mine" else "all"
+			j = tausch_list(who, area, str(request.args.get("folder") or "")[:80], L)
+			return reply(j)
+		d = body()
+		L = norm_lang(d.get("lang") or CFG.get("lang"))
+		a = d.get("action")
+		if not who["perms"]:
+			return reply({"ok": False, "error": tr("not allowed for your user", L)}, 403)
+		if a == "start":
+			ok, err, res = tausch_up_start(who, d, L)
+		elif a == "finish":
+			ok, err, res = tausch_up_finish(who, str(d.get("id") or ""), L)
+		elif a == "abort":
+			ok, err = tausch_up_abort(who, str(d.get("id") or ""), L); res = {}
+		elif a == "delete":
+			ok, err = tausch_delete(who, str(d.get("id") or ""), L); res = {}
+		elif a == "mkdir":
+			ok, err = tausch_mkdir(who, d.get("name"), L); res = {}
+		elif a == "rmdir":
+			ok, err = tausch_rmdir(who, str(d.get("name") or ""), bool(d.get("force")), L); res = {}
+		elif a in ("newtext", "newchat"):
+			ok, err, res = tausch_create(who, d, "text" if a == "newtext" else "chat", L)
+		elif a in ("save", "restore"):
+			ok, err, res = tausch_text_save(who, str(d.get("id") or ""), d.get("text"), d.get("ver"), L,
+                                            restore=_tz_int(d.get("v")) if a == "restore" else None)
+			if res.get("conflict"):
+				return reply(dict(res, ok=False, error=err), 409)
+		elif a == "post":
+			ok, err, res = tausch_chat_post(who, str(d.get("id") or ""), d.get("text"), L)
+		elif a in ("chat_edit", "chat_del"):
+			ok, err = tausch_chat_change(who, str(d.get("id") or ""), _tz_int(d.get("n")), d.get("text") if a == "chat_edit" else None, L); res = {}
+		else:
+			ok, err, res = False, tr("unknown action", L), {}
+		return reply(dict(res, ok=ok, error=err or None), 200 if ok else 400)
+
+	@app.route("/api/tausch/chunk", methods=["POST"])
+	def api_tausch_chunk():
+		who = tausch_who(g)
+		L = lang_()
+		try:
+			off = int(request.args.get("off", "-1"))
+		except ValueError:
+			off = -1
+		data = request.get_data(cache=False)
+		ok, err, have, code = tausch_up_chunk(who, str(request.args.get("id") or ""), off, data, L)
+		return reply({"ok": ok, "error": err or None, "have": have}, code)
+
+	@app.route("/api/tausch/text")
+	def api_tausch_text():
+		who = tausch_who(g)
+		ok, err, res = tausch_text_get(who, str(request.args.get("id") or ""), _tz_int(request.args.get("v")) or None, lang_())
+		return reply(dict(res, ok=ok, error=err or None), 200 if ok else 404)
+
+	def chat_reply(who, fid):
+		rev, after = _tz_int(request.args.get("rev"), -1), _tz_int(request.args.get("after"))
+		if request.args.get("wait") == "1" and rev >= 0 and tausch_file(fid) is not None:
+			m = tausch_file(fid)
+			if who is None or tausch_can_see(m, who):
+				_tz_chat(m)
+				if not tausch_chat_wait(fid, rev, request.headers.get("X-Forwarded-For", "").split(",")[0].strip() or request.remote_addr or "?"):
+					pass
+		ok, err, res = tausch_chat_get(who, fid, after, rev, lang_())
+		return reply(dict(res, ok=ok, error=err or None), 200 if ok else 404)
+
+	@app.route("/api/tausch/chat")
+	def api_tausch_chat():
+		return chat_reply(tausch_who(g), str(request.args.get("id") or ""))
+
+	def file_of(fid, who):
+		if not TZ_ID.match(fid or "") or _tz_load() is None:
+			return None
+		with TZ["lock"]:
+			m = TZ["files"].get(fid)
+		return m if m is not None and tausch_can_see(m, who) else None
+
+	@app.route("/tausch/dl/<fid>")
+	def tausch_dl(fid):
+		who = tausch_who(g)
+		m = file_of(fid, who)
+		if m is None:
+			return nope()
+		if not tausch_can_down(m, who):
+			return nope(403, "You may not download files.")
+		rg = request.headers.get("Range", "")
+		if not rg or rg.startswith("bytes=0-"):
+			if not tausch_rate(who["key"], "dl", 400):
+				return nope(429, "Too many downloads in a short time - wait a few minutes.")
+			log_event("web", f"File exchange: {who['name']} downloaded «{m['name']}»")
+		mime, kind, risky = tausch_type(m["name"])
+		return _tz_send(os.path.join(TZ["root"], "f", fid + ".bin"), "application/octet-stream" if risky else mime, True, m["name"])
+
+	@app.route("/tausch/view/<fid>")
+	def tausch_view(fid):
+		who = tausch_who(g)
+		m = file_of(fid, who)
+		if m is None:
+			return nope()
+		mime, kind, risky = tausch_type(m["name"])
+		if kind not in TZ_INLINE or risky:
+			return nope(415, "no preview for this file")
+		if not tausch_can_down(m, who):
+			return nope(403, "You may not download files.")
+		return _tz_send(os.path.join(TZ["root"], "f", fid + ".bin"), mime, False)
+
+	def thumb(fid, big, who):
+		m = file_of(fid, who) if who is not None else None
+		if who is None:
+			if TZ_ID.match(fid or "") and _tz_load() is not None:
+				with TZ["lock"]:
+					m = TZ["files"].get(fid)
+				if m is not None and (m["area"] != "all" or tausch_type(m["name"])[2]):
+					m = None
+		if m is None or not m.get("thumb"):
+			return nope()
+		p = os.path.join(TZ["root"], "t", fid + ("_p.jpg" if big else ".jpg"))
+		if not os.path.isfile(p):
+			return nope()
+		return _tz_send(p, "image/jpeg", False, cache="private, max-age=86400")
+
+	@app.route("/tausch/thumb/<fid>.jpg")
+	def tausch_thumb(fid):
+		return thumb(fid, False, tausch_who(g))
+
+	@app.route("/tausch/prev/<fid>.jpg")
+	def tausch_prev(fid):
+		return thumb(fid, True, tausch_who(g))
+
+
+	def guest_gate(token):
+		if not tausch_guest_ok(token):
+			return False
+		return tausch_rate("guest|" + (request.remote_addr or "?"), "g", 2000)
+
+	@app.route("/g/<token>/tausch")
+	def tausch_guest_page(token):
+		if not tausch_guest_ok(token):
+			return sx_err(404, "guest")
+		return Response(tausch_guest_html(token), mimetype="text/html", headers={"Cache-Control": "no-store", "Referrer-Policy": "no-referrer"})
+
+	@app.route("/g/<token>/tausch/list")
+	def tausch_guest_listing(token):
+		if not guest_gate(token):
+			return reply({"ok": False}, 404)
+		return reply(tausch_guest_list(str(request.args.get("folder") or "")[:80]))
+
+	@app.route("/g/<token>/tausch/text/<fid>")
+	def tausch_guest_text(token, fid):
+		if not guest_gate(token):
+			return reply({"ok": False}, 404)
+		ok, err, res = tausch_text_get(None, fid, None, lang_())
+		return reply(dict(res, ok=ok), 200 if ok else 404)
+
+	@app.route("/g/<token>/tausch/chat/<fid>")
+	def tausch_guest_chat(token, fid):
+		if not guest_gate(token):
+			return reply({"ok": False}, 404)
+		ok, err, res = tausch_chat_get(None, fid, 0, -1, lang_())
+		return reply(dict(res, ok=ok), 200 if ok else 404)
+
+	@app.route("/g/<token>/tausch/t/<fid>.jpg")
+	def tausch_guest_thumb(token, fid):
+		if not guest_gate(token):
+			return Response("not found", 404)
+		return thumb(fid, False, None)
+
+	@app.route("/g/<token>/tausch/p/<fid>.jpg")
+	def tausch_guest_prev(token, fid):
+		if not guest_gate(token):
+			return Response("not found", 404)
+		return thumb(fid, True, None)
+
+
+
+_TZS = "File exchange"
+TOGGLES.extend([
+    (_TZS, "tausch_on", "File exchange on (Mehr → File exchange)"),
+    (_TZS, "tausch_guest", "Guests see «For everyone» (pictures only, no download)"),
+    (_TZS, "tausch_push", "Push to me when someone uploads files (bundled)"),
+    (_TZS, "tausch_block_exec", "Refuse programs and scripts (.exe, .sh, .py, .js …)"),
+])
+SLIDERS.extend([
+    (_TZS, "tausch_total_gb", "Space for the file exchange in total (GB)", 0.5, 500.0, 0.5),
+    (_TZS, "tausch_file_mb", "At most per file (MB)", 5.0, 2000.0, 5.0),
+    (_TZS, "tausch_user_gb", "At most per user (GB)", 0.1, 100.0, 0.1),
+    (_TZS, "tausch_free_gb", "Always keep free on the storage (GB)", 0.5, 50.0, 0.5),
+])
+SECTIONS.append(_TZS)
+SIMPLE_SECTIONS.add(_TZS)
+SIMPLE_KEYS.add("tausch_on")
+MENU_TITLES.setdefault(_TZS, "File exchange")
+TK_SUB_ICONS[_TZS] = "▤"
+for _g in TK_GROUPS:
+	if _g[0] == "sys" and _TZS not in _g[2]:
+		_g[2].insert(_g[2].index("Updates") if "Updates" in _g[2] else len(_g[2]), _TZS)
+_tz_grp = '{sec: "Updates", ic: "⬆️"}'
+if _tz_grp in WEB_PAGE and '{sec: "File exchange"' not in WEB_PAGE:
+	WEB_PAGE = WEB_PAGE.replace(_tz_grp, '{sec: "File exchange", title: "File exchange", ic: "📁"}, ' + _tz_grp, 1)
+_tz_perm_ui = '["settings", "⚙", "Settings"]];'
+if _tz_perm_ui in WEB_PAGE:
+	WEB_PAGE = WEB_PAGE.replace(_tz_perm_ui, '["settings", "⚙", "Settings"], ["files_view", "📁", "Files: see"], ["files_down", "⬇", "Files: download"],'
+                                ' ["files_up", "⬆", "Files: upload"], ["files_admin", "🗂", "Files: manage all"]];', 1)
+SET_HELP.update({
+    "tausch_total_gb": ("All files of the file exchange together. Uploads stop with a clear message when it is full.", ""),
+    "tausch_free_gb": ("MoveEye never fills the storage: below this free space no upload is accepted (recordings and the system need room).", ""),
+})
+
+
+TZ_MORE_ROW = ('  <a class="mi" href="/tausch" id="m-tausch"><i>📁</i><span><b data-i18n="File exchange">File exchange</b><small data-i18n="Share photos, videos and documents - for everyone or only for you">'
+               'Share photos, videos and documents - for everyone or only for you</small></span><span class="ar">›</span></a>\n')
+_tz_anchor = '  <a class="mi" href="/tools">'
+if 'href="/tausch"' not in MORE_PAGE and _tz_anchor in MORE_PAGE:
+	MORE_PAGE = MORE_PAGE.replace(_tz_anchor, TZ_MORE_ROW + _tz_anchor, 1)
+	MORE_PAGE = MORE_PAGE.replace("/*ALERTS*/", 'fetch("/api/tausch", {cache: "no-store"}).then(r => r.json()).then(j => { if (!j.ok || (!j.on && !(j.me || {}).is_admin)) '
+                                  '{ const e = document.getElementById("m-tausch"); if (e) e.hidden = true; } }).catch(() => {});\n/*ALERTS*/', 1)
+MORE_DE.update({"File exchange": "Datentausch", "Share photos, videos and documents - for everyone or only for you":
+                "Fotos, Videos und Dokumente teilen – für alle oder nur für dich"})
+
+if GUI_OK:
+	_tz_tk_more_base = App._tk_more_bar
+
+	def _tz_tk_more_bar(self, parent):
+		f = _tz_tk_more_base(self, parent)
+		skip = getattr(self, "_fk_more_row", None)
+		i = len([w for w in f.grid_slaves() if w is not skip])
+		self._fbtn(f, "📁 " + tr("File exchange"), lambda: self._open_page("/tausch")).grid(row=i // 3, column=i % 3, sticky="ew", padx=(0, 6), pady=(0, 6))
+		return f
+
+
+	App._tk_more_bar = _tz_tk_more_bar
+
+
+
+GUEST_KEYS = tuple(GUEST_KEYS) + ("Shared files",)
+_tz_gfoot = '<div class="foot" id="ft"></div>'
+if _tz_gfoot in GUEST_PAGE and "gfiles" not in GUEST_PAGE:
+	GUEST_PAGE = GUEST_PAGE.replace(_tz_gfoot, _tz_gfoot + '<div class="foot"><a id="gfiles" href="__BASE__/tausch" hidden style="color:#8ab4f8;font-size:14px">📂 </a></div>', 1)
+	GUEST_PAGE = GUEST_PAGE.replace("\nst();\n</script>", '\nst();\nfetch("__BASE__/tausch/list", {cache: "no-store"}).then(r => { if (r.ok) { const a = $("#gfiles"); '
+                                    'a.textContent += g_("Shared files", "Geteilte Dateien", "Shared files"); a.hidden = false; } }).catch(() => {});\n</script>', 1)
+
+
+
+TAUSCH_PAGE = _zd('639zzc_datentausch/TAUSCH_PAGE', ZD_PAGE)
+
+TAUSCH_GUEST_HTML = _zd('639zzc_datentausch/TAUSCH_GUEST_HTML', ZD_PAGE)
+
+
+
+TZ_MD_JS = _zd('639zzc_datentausch/TZ_MD_JS', "")
+
+TZ_EDIT_JS = _zd('639zzc_datentausch/TZ_EDIT_JS', "")
+
+
+def tausch_page_html():
+	return (render_page(TAUSCH_PAGE, "more").replace("/*TZDE*/{}", json.dumps(_TZ_DE, ensure_ascii=False), 1)
+            .replace("/*TZMD*/", TZ_MD_JS, 1).replace("/*TZEDIT*/", TZ_EDIT_JS, 1))
+
+
+def tausch_guest_html(token):
+	import html as _h
+	L = sx_req_lang()
+	tx = {"note": tr("Shared files · only to look at (no download)", L), "all": tr("For everyone", L), "empty": tr("No files yet.", L),
+          "expired": tr("access expired", L), "only": tr("Preview only - downloading needs a login.", L), "read": tr("read only", L)}
+	return (TAUSCH_GUEST_HTML.replace("/*TX*/{}", json.dumps(tx, ensure_ascii=False).replace("</", "<\\/"), 1).replace("/*TZMD*/", TZ_MD_JS, 1)
+            .replace("__LIVE__", _h.escape(tr("Live", L))).replace("__BASE__", "/g/" + token))
+
+
+
+_HX_TAUSCH = _zd('639zzc_datentausch/HX_TAUSCH', _zd_hx({
+    'File exchange': 'Datentausch',
+    'Share photos, videos and documents - for everyone or only for you': 'Fotos, Videos und Dokumente teilen – für alle oder nur für dich',
+    'For everyone': 'Für alle',
+    'My files': 'Meine Dateien',
+    'Upload': 'Hochladen',
+    'New folder': 'Neuer Ordner',
+    'Name of the new folder': 'Name des neuen Ordners',
+    'Search': 'Suchen',
+    'All types': 'Alle Arten',
+    'Pictures': 'Bilder',
+    'Videos': 'Videos',
+    'Sound': 'Ton',
+    'Documents': 'Dokumente',
+    'Other': 'Andere',
+    'Newest first': 'Neueste zuerst',
+    'Oldest first': 'Älteste zuerst',
+    'Name': 'Name',
+    'Size': 'Grösse',
+    'Uploaded by': 'Hochgeladen von',
+    'Grid': 'Kacheln',
+    'List': 'Liste',
+    'Drop the files here': 'Dateien hier loslassen',
+    'USB stick': 'USB-Stick',
+    'SSD': 'SSD',
+    'Memory card': 'Speicherkarte',
+    'Drive': 'Laufwerk',
+    '{a} of {b} used': '{a} von {b} belegt',
+    'at most {n} per file': 'höchstens {n} pro Datei',
+    '{n} free on the storage': '{n} frei auf dem Speicher',
+    'Your files: {a} of {b}': 'Deine Dateien: {a} von {b}',
+    'The file exchange is switched off.': 'Der Datentausch ist ausgeschaltet.',
+    'Switch it on under Settings → System → File exchange.': 'Einschalten unter Einstellungen → System → Datentausch.',
+    'The storage (USB stick / SSD) is not there - plug it in again.': 'Der Speicher (USB-Stick / SSD) fehlt – bitte wieder einstecken.',
+    'The memory card is write-protected (overlay) - files would be lost at the next restart. Use a USB stick.': 'Die Speicherkarte ist schreibgeschützt (Overlay) – Dateien wären beim nächsten Neustart weg. Bitte einen USB-Stick verwenden.',
+    'Not enough free space on the storage: MoveEye always keeps {n} free (for recordings and the system).': 'Zu wenig Platz auf dem Speicher: MoveEye lässt immer {n} frei (für Aufnahmen und das System).',
+    'Only you see these files. As administrator you also see the private files of the others.': 'Nur du siehst diese Dateien. Als Administrator siehst du auch die privaten Dateien der anderen.',
+    'Only you (and the administrator) see these files.': 'Nur du (und der Administrator) siehst diese Dateien.',
+    'Everybody with access to MoveEye sees these files. Upload with the button or drag files onto the page.': 'Alle mit Zugang zu MoveEye sehen diese Dateien. Hochladen mit dem Knopf oder Dateien auf die Seite ziehen.',
+    'Everybody with access to MoveEye sees these files.': 'Alle mit Zugang zu MoveEye sehen diese Dateien.',
+    'file': 'Datei',
+    'files': 'Dateien',
+    'you': 'du',
+    'Delete the folder with all its files?': 'Ordner mit allen Dateien löschen?',
+    'Delete the folder?': 'Ordner löschen?',
+    'Delete this file? It cannot be undone.': 'Diese Datei löschen? Das lässt sich nicht rückgängig machen.',
+    'Nothing found.': 'Nichts gefunden.',
+    'No private files yet.': 'Noch keine privaten Dateien.',
+    'No files yet.': 'Noch keine Dateien.',
+    'Upload the first one with «Upload».': 'Lade die erste mit «Hochladen» hoch.',
+    'No preview for this kind of file (for safety only as download).': 'Keine Vorschau für diese Art Datei (aus Sicherheitsgründen nur als Download).',
+    'No preview for this file.': 'Keine Vorschau für diese Datei.',
+    'Cancel': 'Abbrechen',
+    'Cancelled': 'Abgebrochen',
+    'Done': 'Fertig',
+    'continues where it stopped …': 'macht dort weiter, wo es aufgehört hat …',
+    'Connection lost - trying again …': 'Verbindung weg – neuer Versuch …',
+    'Connection lost. Choose the same file again later: the upload continues where it stopped.': 'Verbindung weg. Wähle später dieselbe Datei nochmals: das Hochladen macht dort weiter, wo es aufgehört hat.',
+    'No connection to MoveEye.': 'Keine Verbindung zu MoveEye.',
+    'error': 'Fehler',
+    'Shared files': 'Geteilte Dateien',
+    'Shared files · only to look at (no download)': 'Geteilte Dateien · nur ansehen (kein Download)',
+    'Preview only - downloading needs a login.': 'Nur Vorschau – herunterladen geht nur mit Anmeldung.',
+    'Files: see': 'Dateien: ansehen',
+    'Files: download': 'Dateien: herunterladen',
+    'Files: upload': 'Dateien: hochladen',
+    'Files: manage all': 'Dateien: alles verwalten',
+    'File exchange on (Mehr → File exchange)': 'Datentausch an (Mehr → Datentausch)',
+    'Guests see «For everyone» (pictures only, no download)': 'Gäste sehen «Für alle» (nur Bilder, kein Download)',
+    'Push to me when someone uploads files (bundled)': 'Push an mich, wenn jemand Dateien hochlädt (gebündelt)',
+    'Refuse programs and scripts (.exe, .sh, .py, .js …)': 'Programme und Skripte ablehnen (.exe, .sh, .py, .js …)',
+    'Space for the file exchange in total (GB)': 'Platz für den Datentausch gesamt (GB)',
+    'At most per file (MB)': 'Höchstens pro Datei (MB)',
+    'At most per user (GB)': 'Höchstens pro Benutzer (GB)',
+    'Always keep free on the storage (GB)': 'Immer frei lassen auf dem Speicher (GB)',
+    'All files of the file exchange together. Uploads stop with a clear message when it is full.': 'Alle Dateien des Datentauschs zusammen. Ist es voll, stoppt das Hochladen mit einer klaren Meldung.',
+    'MoveEye never fills the storage: below this free space no upload is accepted (recordings and the system need room).': 'MoveEye füllt den Speicher nie ganz: unter diesem freien Platz wird nichts mehr angenommen (Aufnahmen und System brauchen Platz).',
+    'Too big: at most {n} per file.': 'Zu gross: höchstens {n} pro Datei.',
+    'Too many files (at most {n}) - delete old ones first.': 'Zu viele Dateien (höchstens {n}) – zuerst alte löschen.',
+    'The file exchange is full: {a} of {b} used. Delete old files first.': 'Der Datentausch ist voll: {a} von {b} belegt. Zuerst alte Dateien löschen.',
+    'Your space is full: {a} of {b} used. Delete some of your files first.': 'Dein Platz ist voll: {a} von {b} belegt. Zuerst eigene Dateien löschen.',
+    'You may not upload files.': 'Du darfst keine Dateien hochladen.',
+    'You may not download files.': 'Du darfst keine Dateien herunterladen.',
+    'You may not create folders.': 'Du darfst keine Ordner anlegen.',
+    'the file needs a name': 'die Datei braucht einen Namen',
+    'the folder needs a name': 'der Ordner braucht einen Namen',
+    'hidden files (name starts with «.») are not accepted': 'versteckte Dateien (Name beginnt mit «.») werden nicht angenommen',
+    'Programs and scripts are not accepted (.{e}). Pack them into a ZIP if you really need to share them.': 'Programme und Skripte werden nicht angenommen (.{e}). Wenn es wirklich sein muss: in eine ZIP-Datei packen.',
+    'This file is a program or script - not accepted.': 'Diese Datei ist ein Programm oder Skript – nicht angenommen.',
+    'unknown size': 'unbekannte Grösse',
+    'This folder does not exist (any more).': 'Diesen Ordner gibt es nicht (mehr).',
+    'Too many uploads at the same time - wait until the others are done.': 'Zu viele Uploads gleichzeitig – warte, bis die anderen fertig sind.',
+    'Too many uploads in a short time - wait a few minutes.': 'Zu viele Uploads in kurzer Zeit – warte ein paar Minuten.',
+    'Too many downloads in a short time - wait a few minutes.': 'Zu viele Downloads in kurzer Zeit – warte ein paar Minuten.',
+    'Too many changes in a short time - wait a few minutes.': 'Zu viele Änderungen in kurzer Zeit – warte ein paar Minuten.',
+    'The storage cannot be written to.': 'Auf den Speicher kann nicht geschrieben werden.',
+    'unknown upload': 'unbekannter Upload',
+    'piece too big': 'Stück zu gross',
+    'busy - try again': 'beschäftigt – nochmals versuchen',
+    'more data than announced': 'mehr Daten als angekündigt',
+    'The upload is not complete yet.': 'Das Hochladen ist noch nicht fertig.',
+    'unknown file': 'unbekannte Datei',
+    'Only the person who uploaded it (or the administrator) may delete this file.': 'Nur wer die Datei hochgeladen hat (oder der Administrator), darf sie löschen.',
+    'This folder exists already.': 'Diesen Ordner gibt es schon.',
+    'At most {n} folders.': 'Höchstens {n} Ordner.',
+    'unknown folder': 'unbekannter Ordner',
+    'The folder is not empty - only the administrator can delete it with all files.': 'Der Ordner ist nicht leer – nur der Administrator kann ihn mit allen Dateien löschen.',
+    'Only the person who created it (or the administrator) may delete this folder.': 'Nur wer den Ordner angelegt hat (oder der Administrator), darf ihn löschen.',
+    'no preview for this file': 'keine Vorschau für diese Datei',
+    '{who} uploaded a file': '{who} hat eine Datei hochgeladen',
+    'New text': 'Neuer Text',
+    'New chat': 'Neuer Chat',
+    'Chats': 'Chats',
+    'Chat': 'Chat',
+    'Name of the new text (.txt or .md)': 'Name des neuen Texts (.txt oder .md)',
+    'Notes.txt': 'Notizen.txt',
+    'Name of the new chat': 'Name des neuen Chats',
+    'not saved': 'nicht gespeichert',
+    'Version {v}': 'Version {v}',
+    'read only': 'nur lesen',
+    'Edit': 'Bearbeiten',
+    'Preview': 'Vorschau',
+    'Close without saving?': 'Ohne Speichern schliessen?',
+    'Monospace': 'Feste Zeichenbreite',
+    'Versions': 'Versionen',
+    'Save': 'Speichern',
+    'Saved': 'Gespeichert',
+    'Meanwhile {who} has changed something.': 'Inzwischen hat {who} etwas geändert.',
+    'Your text is not saved yet. What now?': 'Dein Text ist noch nicht gespeichert. Was nun?',
+    'Show the differences': 'Unterschiede ansehen',
+    'Overwrite anyway': 'Trotzdem überschreiben',
+    'Save mine as a copy': 'Meine als Kopie speichern',
+    'Too long for a comparison.': 'Zu lang für einen Vergleich.',
+    'now on MoveEye': 'jetzt auf MoveEye',
+    'yours': 'deine',
+    'my version': 'meine Fassung',
+    'No older versions yet.': 'Noch keine älteren Versionen.',
+    'The last 20 versions are kept (they count in the space of the owner).': 'Die letzten 20 Versionen bleiben (sie zählen zum Platz des Besitzers).',
+    'Restore': 'Wiederherstellen',
+    'Show': 'Ansehen',
+    'Send': 'Senden',
+    'Message': 'Nachricht',
+    'No messages yet.': 'Noch keine Nachrichten.',
+    'Write the first one below.': 'Schreib unten die erste.',
+    'changed': 'geändert',
+    'Change': 'Ändern',
+    'Change the message': 'Nachricht ändern',
+    'Delete': 'Löschen',
+    'Download': 'Herunterladen',
+    'Delete this message?': 'Diese Nachricht löschen?',
+    'Message deleted': 'Nachricht gelöscht',
+    'Chats are made with «New chat».': 'Chats entstehen mit «Neuer Chat».',
+    'This is not a text file.': 'Das ist keine Textdatei.',
+    'Too big for the editor (at most {n}) - download it instead.': 'Zu gross für den Editor (höchstens {n}) – bitte herunterladen.',
+    'This version is not kept any more.': 'Diese Version gibt es nicht mehr.',
+    'You may not change this text.': 'Du darfst diesen Text nicht ändern.',
+    'no text': 'kein Text',
+    'This is not a chat.': 'Das ist kein Chat.',
+    'You may not write in this chat.': 'Du darfst in diesem Chat nicht schreiben.',
+    'The message is empty.': 'Die Nachricht ist leer.',
+    'Too long: at most {n} per message.': 'Zu lang: höchstens {n} pro Nachricht.',
+    'Too many messages in a short time - wait a moment.': 'Zu viele Nachrichten in kurzer Zeit – kurz warten.',
+    'This chat is full - start a new one.': 'Dieser Chat ist voll – bitte einen neuen beginnen.',
+    'unknown message': 'unbekannte Nachricht',
+    'Only your own messages, and only within 5 minutes.': 'Nur eigene Nachrichten und nur innert 5 Minuten.',
+    '{who} wrote in «{chat}»': '{who} hat geschrieben in «{chat}»',
+    '{who} wrote {n}× in «{chat}»': '{who} hat {n}× geschrieben in «{chat}»',
+    '{who} have written {n}× in «{chat}»': '{who} haben {n}× geschrieben in «{chat}»',
+    '{who} uploaded {n} files': '{who} hat {n} Dateien hochgeladen',
+}))
+for _k, _v in _HX_TAUSCH.items():
+	DE.setdefault(_k, _v[0])
+	for _i, _L in enumerate(("fr", "it", "rm")):
+		TRX[_L].setdefault(_k, _v[_i + 1])
+_TZ_DE = {_k: _v[0] for _k, _v in _HX_TAUSCH.items()}
+
+
+_HELP_TZ = _zd('639zzc_datentausch/HELP_TZ', _ZDDict())
+
+
+def _help_tz(doc, lang):
+	if 'id="tausch"' in doc:
+		return doc
+	i = doc.find('<section id="tips"')
+	return doc[:i] + _HELP_TZ[lang] + doc[i:] if i >= 0 else doc
+
+
+_hp_en_tz = HELP_PAGE.find('<div lang="en">')
+if _hp_en_tz > 0:
+	HELP_PAGE = _help_tz(HELP_PAGE[:_hp_en_tz], "de") + _help_tz(HELP_PAGE[_hp_en_tz:], "en")
+for _L in ("fr", "it", "rm"):
+	if HELP_X.get(_L):
+		HELP_X[_L] = _help_tz(HELP_X[_L], _L)
+
+
+
+def tausch_selftest():
+	keep = {k: CFG.get(k) for k in ("tausch_on", "tausch_push", "tausch_block_exec", "tausch_total_gb", "tausch_file_mb", "tausch_user_gb",
+                                    "tausch_free_gb", "lang")}
+	keepTZ = {k: TZ.get(k) for k in ("root", "files", "folders", "ups", "rate", "push", "root_test", "chats", "push_manual")}
+	g = globals()
+	sv = {k: g[k] for k in ("tausch_disk_free", "log_event", "tausch_thumb_queue", "tausch_push_send", "tausch_push_user", "tausch_push_ok")}
+	tmp = tempfile.mkdtemp(prefix="mw_tz_")
+	try:
+		g["log_event"] = lambda *a, **k: None
+		g["tausch_thumb_queue"] = lambda fid: None
+		sent = []
+		g["tausch_push_send"] = lambda txt, *a: sent.append(txt) or True
+		g["tausch_push_user"] = lambda name, txt, *a: sent.append((name, txt)) or True
+		g["tausch_push_ok"] = lambda: (True, False)
+		TZ["push_manual"] = True
+		free = {"n": 50 * TZ_GB}
+		g["tausch_disk_free"] = lambda p: free["n"]
+		CFG.update(tausch_on=True, tausch_push=True, tausch_block_exec=True, tausch_total_gb=5.0, tausch_file_mb=200.0, tausch_user_gb=1.0,
+                   tausch_free_gb=2.0, lang="de")
+		TZ.update(root=None, files=None, folders=None, ups={}, rate={}, push={}, root_test=tmp, chats={})
+
+		assert tausch_clean_name("../../etc/passwd")[0] == "passwd" and tausch_clean_name("..\\..\\boot.ini")[0] == "boot.ini"
+		assert tausch_clean_name(".bashrc")[0] is None and tausch_clean_name("..")[0] is None and tausch_clean_name("  ")[0] is None
+		assert tausch_clean_name("Rechnung‮gpj.exe")[0] == "Rechnunggpj.exe" and tausch_blocked("Rechnunggpj.exe")
+		assert tausch_clean_name("Café.jpg")[0] == "Café.jpg" and tausch_clean_name("CON.txt")[0] == "_CON.txt"
+		assert tausch_clean_name('a<b>:c"d|e?f*.png')[0] == "a_b__c_d_e_f_.png" and len(tausch_clean_name("x" * 400 + ".jpg")[0]) == 120
+		assert tausch_blocked("x.SH") and tausch_blocked("bild.jpg.exe") and not tausch_blocked("x.exe.txt") and tausch_type("a.svg")[2]
+		assert tausch_magic_exec(b"MZ\x90\x00") and tausch_magic_exec(b"\x7fELF") and not tausch_magic_exec(b"\xff\xd8\xff")
+
+		P = lambda r: tausch_imply(ROLE_PERMS.get(r, ()))
+		assert P("family") >= {"files_view", "files_down", "files_up"} and "files_admin" not in P("family")
+		assert P("friend") & set(TZ_PERMS) == {"files_view", "files_down"} == P("view") & set(TZ_PERMS)
+		assert not P("kid") & set(TZ_PERMS) and tausch_imply({"files_admin"}) == set(TZ_PERMS) and "files_view" in tausch_imply({"files_up"})
+		assert role_allows("family", "/api/tausch", "POST", {}) and not role_allows("kid", "/tausch", "GET", {})
+		assert role_allows("custom", "/tausch/dl/x", "GET", {}, user_perms({"role": "custom", "perms": ["files_down"]}))
+		assert not role_allows("custom", "/tausch", "GET", {}, user_perms({"role": "custom", "perms": ["live"]}))
+
+		anna = {"key": "anna", "name": "Anna", "admin": False, "perms": P("family"), "is_admin": False}
+		ok, err, r = tausch_up_start(anna, {"name": "Ferien.jpg", "size": 5, "area": "all"})
+		assert ok, err
+		assert tausch_up_chunk(anna, r["id"], 2, b"xx")[3] == 409, "a piece at the wrong place"
+		assert tausch_up_chunk(anna, r["id"], 0, b"\xff\xd8\xff\xe0x")[0]
+		ok, err, res = tausch_up_finish(anna, r["id"])
+		assert ok and res["file"]["name"] == "Ferien.jpg" and sent == [], (err, sent)
+		assert not tausch_up_start(anna, {"name": "gross.mp4", "size": 201 * TZ_MB, "area": "all"})[0]
+		assert not tausch_up_start(anna, {"name": "x.mp4", "size": 1025 * TZ_MB, "area": "mine"})[0] or CFG["tausch_file_mb"] < 1025
+		free["n"] = 2 * TZ_GB + 3
+		assert "frei" in tausch_up_start(anna, {"name": "b.jpg", "size": 10, "area": "all"})[1], "keep 2 GB free"
+		free["n"] = 50 * TZ_GB
+		assert tausch_push_tick(time.time() + 200) == ["Anna hat eine Datei hochgeladen"], TZ["push"]
+		tausch_push_note(anna, 2); tausch_push_note(anna)
+		assert tausch_push_tick(time.time() + 200) == ["Anna hat 3 Dateien hochgeladen"]
+		fid = res["file"]["id"]
+		bob = {"key": "bob", "name": "Bob", "admin": False, "perms": P("friend"), "is_admin": False}
+		assert not tausch_delete(bob, fid)[0] and tausch_delete(anna, fid)[0]
+
+		ok, err, r = tausch_create(anna, {"name": "Plan.md", "area": "all", "text": "eins"}, "text")
+		tid = r["file"]["id"]
+		assert ok and r["file"]["kind"] == "text" and tausch_text_save(anna, tid, "zwei", 1)[0]
+		ok, err, c = tausch_text_save(anna, tid, "drei", 1)
+		assert not ok and c.get("conflict") and c["text"] == "zwei" and c["ver"] == 2, (err, c)
+		assert not tausch_text_save(bob, tid, "x", 2)[0], "friend: no editing"
+		assert tausch_text_save(anna, tid, None, 2, restore=1)[0] and tausch_text_get(anna, tid)[2]["text"] == "eins"
+
+		ok, err, r = tausch_create(anna, {"name": "Ferienplanung", "area": "all"}, "chat")
+		cid = r["file"]["id"]
+		assert r["file"]["name"] == "Ferienplanung.chat" and tausch_chat_post(anna, cid, "Hallo <b>")[0]
+		assert not tausch_chat_post(bob, cid, "hi")[0], "friend reads only"
+		carl = dict(anna, key="carl", name="Carl")
+		TZ["push"].clear()
+		assert tausch_chat_post(carl, cid, "Ja")[0] and tausch_chat_post(carl, cid, "Gut")[0]
+		assert tausch_push_tick(time.time() + 200) == ["Carl hat 2× geschrieben in «Ferienplanung»"], TZ["push"]
+		j = tausch_chat_get(None, cid)[2]
+		assert [p["x"] for p in j["posts"]] == ["Hallo <b>", "Ja", "Gut"] and "k" not in j["posts"][0]
+	finally:
+		CFG.update(keep); TZ.update(keepTZ); g.update(sv)
+		shutil.rmtree(tmp, ignore_errors=True)
+	return "names, programs, rights per role, pieces, limits, 2 GB free, push «Anna hat 3 Dateien hochgeladen», delete rules, text versions, chat"
+
+
+SELFTEST_EXTRA.append(("File exchange: names, rights, limits, pieces, push (639zzc)", tausch_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+BIO_TAG = "bioclip-3"
+BIO_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/" + BIO_TAG + "/"}
+
+
+
+
+
+
+BIO_FILES = {
+    "model": {"name": "bioclip-1-bild-fp32.onnx", "size": 345124167,
+              "sha256": "c88a6b554da4f11caa29887bbbb3b02f2aeed891c49ede400ac1706c64e45687"},
+    "emb": {"name": "bioclip-1-arten.npy", "size": 10568832,
+            "sha256": "d170bb9363f33a6524f6bef666df09b66c137c5f5c410af9d84d5aedc88c6663"},
+    "labels": {"name": "bioclip-1-arten.json", "size": 1523047,
+               "sha256": "d8cb52c4f9bae2f51147579bc71c1b65e0dfd66133115c3f9ca204423e6ec699"},
+}
+
+
+BIO_INFO = {"tag": "bioclip-info-1", "name": "bioclip-info-1.sqlite", "size": 2744320,
+            "sha256": "cc2c1fb599b8517dd4bbed1aa5762c8d173736907b6fc28186f0bbcdb8611990"}
+BIO_INFO_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/" + BIO_INFO["tag"] + "/"}
+BIO_INFO_MAX = 40 * 1024 * 1024
+BIO_EDIBLE_WARN = ("Edible according to Wikipedia – risk of confusion with poisonous species, never eat based only on an app "
+                   "identification. Emergency: Tox Info Suisse 145")
+BIO_FOOT = "For orientation only – not for identifying edible species. Suspected poisoning: Tox Info Suisse 145."
+BIO_EDIBLE_WORDS = re.compile(r"essbar|Speisepilz|genießbar|geniessbar|Wildgemüse|gegessen|verzehr|\bedible\b|\beaten\b|culinary", re.I)
+BIO_MAX_BYTES = 400 * 1024 * 1024
+BIO_IDLE_S = 10 * 60
+BIO_IDLE_TICK = 20
+BIO_TIMEOUT_S = 120.0
+BIO_CACHE_N = 3000
+BIO_THREADS = 2
+BIO_TOPK = 3
+BIO_SURE = 0.60
+BIO_FALLBACK_BELOW = 0.50
+BIO_UNSURE = 0.12
+BIO_RATE = (30, 90)
+BIO_RANKS = ("kingdom", "phylum", "class", "order", "family", "genus", "species")
+
+for _k, _v in {"tausch_bio": True}.items():
+	CFG.setdefault(_k, _v); DEFAULTS.setdefault(_k, _v); FACTORY_CFG.setdefault(_k, _v)
+USER_SETTINGS_DENY.update({"tausch_bio"})
+for _p in TZ_PERMS:
+	PERM_POST[_p] = set(PERM_POST.get(_p, ())) | {"/api/tausch/bio"}
+
+BIO = {"lock": threading.Lock(), "proc": None, "q": None, "last": 0.0, "err": "", "ms": None, "load_ms": None, "job": "",
+       "install": "", "jobs": {}, "sha": {}, "mem": {}, "idle_thread": False}
+BIO_DL = {"running": False, "got": 0, "total": 0, "msg": "", "stop": False, "done": False}
+BIO_DB = {"lock": threading.Lock(), "con": None}
+
+
+def bio_dir():
+	return os.path.join(DATA_DIR, "bioclip")
+
+
+def bio_path(which):
+	return os.path.join(bio_dir(), BIO_FILES[which]["name"])
+
+
+def bio_pinned():
+	""
+	tot = 0
+	for f in BIO_FILES.values():
+		if not isinstance(f.get("size"), int) or f["size"] <= 0 or not re.fullmatch(r"[0-9a-f]{64}", str(f.get("sha256") or "")):
+			return False
+		if not re.fullmatch(r"[A-Za-z0-9._-]{1,80}", f.get("name") or ""):
+			return False
+		tot += f["size"]
+	return tot <= BIO_MAX_BYTES
+
+
+def bio_total():
+	return sum(int(f.get("size") or 0) for f in BIO_FILES.values())
+
+
+def bio_installed():
+	""
+	if not bio_pinned():
+		return False
+	try:
+		for w, f in BIO_FILES.items():
+			if os.path.getsize(bio_path(w)) != f["size"]:
+				return False
+		with open(os.path.join(bio_dir(), "bioclip.ok"), encoding="utf-8") as fh:
+			return fh.read().strip() == bio_ok_mark()
+	except OSError:
+		return False
+
+
+def bio_ok_mark():
+	return ",".join(BIO_FILES[w]["sha256"] for w in sorted(BIO_FILES))
+
+
+def bio_runtime():
+	import importlib.util
+	try:
+		return importlib.util.find_spec("onnxruntime") is not None and importlib.util.find_spec("numpy") is not None
+	except (ImportError, ValueError):
+		return False
+
+
+
+def bio_info_pinned():
+	f = BIO_INFO
+	return (isinstance(f.get("size"), int) and 0 < f["size"] <= BIO_INFO_MAX and bool(re.fullmatch(r"[0-9a-f]{64}", str(f.get("sha256") or "")))
+            and bool(re.fullmatch(r"[A-Za-z0-9._-]{1,80}", f.get("name") or "")))
+
+
+def bio_info_path():
+	return os.path.join(bio_dir(), BIO_INFO["name"])
+
+
+def bio_info_installed():
+	if not bio_info_pinned():
+		return False
+	try:
+		if os.path.getsize(bio_info_path()) != BIO_INFO["size"]:
+			return False
+		with open(os.path.join(bio_dir(), "info.ok"), encoding="utf-8") as fh:
+			return fh.read().strip() == BIO_INFO["sha256"]
+	except OSError:
+		return False
+
+
+def bio_info_close():
+	with BIO_DB["lock"]:
+		if BIO_DB["con"] is not None:
+			try:
+				BIO_DB["con"].close()
+			except Exception:
+				pass
+		BIO_DB["con"] = None
+
+
+def bio_info_get(sci):
+	""
+	import sqlite3
+	import zlib
+	if not bio_info_installed():
+		return None
+	with BIO_DB["lock"]:
+		try:
+			if BIO_DB["con"] is None:
+				BIO_DB["con"] = sqlite3.connect("file:" + urllib.parse.quote(bio_info_path()) + "?mode=ro&immutable=1", uri=True,
+                                                check_same_thread=False)
+			row = BIO_DB["con"].execute("SELECT z FROM info WHERE sci = ?", (str(sci)[:120],)).fetchone()
+		except Exception:
+			BIO_DB["con"] = None
+			return None
+	if not row:
+		return None
+	try:
+		e = json.loads(zlib.decompress(row[0]).decode("utf-8"))
+	except (zlib.error, ValueError):
+		return None
+	return e if isinstance(e, dict) else None
+
+
+def _bio_edible(sents, L):
+	""
+	s = [str(x)[:400] for x in (sents or []) if str(x).strip()][:2]
+	return {"warn": tr(BIO_EDIBLE_WARN, L), "s": s} if s else None
+
+
+def _bio_wiki_url(lang, title, rev=None, hist=False):
+	from urllib.parse import quote
+	host = "https://%s.wikipedia.org" % ("en" if lang == "en" else "de")
+	if hist:
+		return host + "/w/index.php?title=" + quote(title.replace(" ", "_")) + "&action=history"
+	return host + "/wiki/" + quote(title.replace(" ", "_"))
+
+
+def bio_card(e, tax, L):
+	""
+	L = norm_lang(L)
+	tax = [str(x) for x in (tax or []) if x]
+	c = {"tax": " › ".join(tax[:6] + ([tax[5] + " " + tax[6]] if len(tax) >= 7 else [])), "empty": True}
+	if not isinstance(e, dict):
+		return c
+	if e.get("x") and e.get("t"):
+		lang = "en" if e.get("l") == "en" else "de"
+		c.update(empty=False, lang=lang, text=str(e["x"])[:900], title=str(e["t"])[:120], url=_bio_wiki_url(lang, e["t"]),
+                 hist=_bio_wiki_url(lang, e["t"], hist=True))
+		if lang == "en":
+			c["en_t"] = tr("(English)", L)
+	tox = [str(x)[:400] for x in (e.get("tox") or [])][:2]
+	if tox or e.get("toxwd"):
+		c["tox"] = {"s": tox, "src": "Wikipedia" if tox else "Wikidata"}
+		if not tox:
+			c["tox"]["s"] = [tr("Marked as poisonous in Wikidata.", L)]
+	elif e.get("ed"):
+		ed = _bio_edible(e["ed"], L)
+		if ed:
+			c["edible"] = ed
+	look = []
+	for x in (e.get("look") or [])[:6]:
+		if isinstance(x, (list, tuple)) and x:
+			look.append({"name": str(x[0])[:80], "tox": bool(len(x) > 1 and x[1]), "url": _bio_wiki_url("de", str(x[0]))})
+	if look:
+		c["look"] = look
+	facts = []
+	for k, lab in (("h", "Height"), ("iucn", "Red List (IUCN)"), ("hab", "Habitat")):
+		if e.get(k):
+			facts.append([tr(lab, L), str(e[k])[:120]])
+	if facts:
+		c["facts"] = facts
+	if not c.get("tox") and not c.get("edible") and BIO_EDIBLE_WORDS.search(c.get("text") or ""):
+		c["note_ed"] = tr(BIO_EDIBLE_WARN, L)
+	c["empty"] = not (c.get("text") or c.get("tox") or c.get("edible") or look or facts)
+	return c
+
+
+
+BIO_WORKER = r'''
+import json, os, sys, time
+def out(d):
+    sys.stdout.write(json.dumps(d) + "\n"); sys.stdout.flush()
+try:
+    import numpy as np
+    import onnxruntime as ort
+    import cv2
+except Exception as e:
+    out({"ready": False, "error": "runtime: " + str(e)[:160]}); sys.exit(0)
+S = {}
+def load(q):
+    key = (q["model"], q["emb"], q["labels"])
+    if S.get("key") == key:
+        return 0
+    t0 = time.time()
+    S.clear()
+    so = ort.SessionOptions(); so.intra_op_num_threads = int(q.get("threads") or 2); so.inter_op_num_threads = 1
+    sess = ort.InferenceSession(q["model"], so, providers=["CPUExecutionProvider"])
+    with open(q["labels"], encoding="utf-8") as f:
+        L = json.load(f)
+    E = np.load(q["emb"], allow_pickle=False).astype(np.float32)
+    taxa = L["taxa"]
+    if E.ndim != 2 or E.shape[0] != len(taxa):
+        raise ValueError("labels and embeddings do not fit together")
+    E /= np.maximum(np.linalg.norm(E, axis=1, keepdims=True), 1e-6)
+    gid = []
+    for r in range(6):                                   # kingdom … genus: one group number per row (for summing up)
+        m = {}
+        gid.append((np.array([m.setdefault("|".join(t[:r + 1]), len(m)) for t in taxa], dtype=np.int64), m))
+    S.update(key=key, sess=sess, inp=sess.get_inputs()[0].name, E=E, L=L, gid=gid,
+             scale=float(L.get("logit_scale") or 100.0), size=int(L.get("size") or 224),
+             mean=np.array(L.get("mean") or (0.48145466, 0.4578275, 0.40821073), np.float32),
+             std=np.array(L.get("std") or (0.26862954, 0.26130258, 0.27577711), np.float32))
+    return int((time.time() - t0) * 1000)
+def prep(path):
+    im = cv2.imread(path, cv2.IMREAD_COLOR)
+    if im is None:
+        raise ValueError("picture not readable")
+    n = S["size"]; h, w = im.shape[:2]; s = n / float(min(h, w))
+    nw, nh = max(n, round(w * s)), max(n, round(h * s))
+    im = cv2.resize(im, (nw, nh), interpolation=cv2.INTER_AREA if s < 1 else cv2.INTER_CUBIC)
+    y, x = (nh - n) // 2, (nw - n) // 2
+    im = im[y:y + n, x:x + n, ::-1].astype(np.float32) / 255.0
+    return ((im - S["mean"]) / S["std"]).transpose(2, 0, 1)[None].copy()
+def run(q):
+    lm = load(q)
+    t0 = time.time()
+    e = np.asarray(S["sess"].run(None, {S["inp"]: prep(q["img"])})[0], dtype=np.float32).reshape(-1)
+    e /= max(float(np.linalg.norm(e)), 1e-6)
+    lg = S["scale"] * (S["E"] @ e)
+    p = np.exp(lg - lg.max()); p /= p.sum()
+    k = int(q.get("k") or 3)
+    taxa, names = S["L"]["taxa"], S["L"].get("names") or {}
+    top = [{"tax": taxa[i], "p": round(float(p[i]), 5)} for i in np.argsort(-p)[:k]]
+    ranks = {}
+    for r, (g, m) in enumerate(S["gid"]):
+        s = np.bincount(g, weights=p, minlength=len(m))
+        b = int(np.argmax(s))
+        i = int(np.argmax(g == b))
+        ranks[["kingdom", "phylum", "class", "order", "family", "genus"][r]] = {"tax": taxa[i][:r + 1], "p": round(float(s[b]), 5)}
+    want = set()
+    for t in top:
+        want.update([t["tax"][5] + " " + t["tax"][6], t["tax"][4], t["tax"][5]])
+    for v in ranks.values():
+        want.add(v["tax"][-1])
+    return {"ok": True, "top": top, "ranks": ranks, "names": {n: names[n] for n in want if n in names},
+            "ms": int((time.time() - t0) * 1000), "load_ms": lm, "n": len(taxa)}
+out({"ready": True, "ort": getattr(ort, "__version__", "?")})
+for line in sys.stdin:
+    try:
+        out(run(json.loads(line)))
+    except Exception as e:
+        out({"ok": False, "error": (e.__class__.__name__ + ": " + str(e))[:200]})
+'''
+
+
+def _bio_reader(p, q):
+	try:
+		for line in p.stdout:
+			try:
+				q.put(json.loads(line))
+			except ValueError:
+				pass
+	except Exception:
+		pass
+	q.put(None)
+
+
+def bio_worker_start():
+	""
+	import queue
+	p = BIO["proc"]
+	if p is not None and p.poll() is None:
+		return True, ""
+	os.makedirs(bio_dir(), exist_ok=True)
+	cmd = [sys.executable, "-E"] + (["-P"] if sys.version_info >= (3, 11) else []) + ["-c", BIO_WORKER]
+	if shutil.which("nice"):
+		cmd = ["nice", "-n", "10"] + cmd
+	try:
+		p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, bufsize=1,
+                             cwd=bio_dir(), env={k: v for k, v in os.environ.items() if k in ("PATH", "HOME", "LANG", "LC_ALL", "USER",
+                                                                                              "OMP_NUM_THREADS")})
+	except OSError as e:
+		return False, str(e)[:160]
+	q = queue.Queue()
+	threading.Thread(target=_bio_reader, args=(p, q), daemon=True, name="bio-read").start()
+	try:
+		r = q.get(timeout=40)
+	except queue.Empty:
+		r = None
+	if not r or not r.get("ready"):
+		try:
+			p.kill()
+		except OSError:
+			pass
+		return False, (r or {}).get("error") or "the identification did not start"
+	BIO.update(proc=p, q=q, last=time.time())
+	_bio_idle_watch()
+	return True, ""
+
+
+def bio_worker_stop():
+	p = BIO.get("proc")
+	BIO["proc"] = None
+	if p is not None:
+		try:
+			p.stdin.close()
+		except Exception:
+			pass
+		try:
+			p.wait(timeout=3)
+		except Exception:
+			try:
+				p.kill()
+			except OSError:
+				pass
+
+
+def _bio_idle_watch():
+	if BIO.get("idle_thread"):
+		return
+	BIO["idle_thread"] = True
+
+	def run():
+		while True:
+			time.sleep(BIO_IDLE_TICK)
+			with BIO["lock"]:
+				if BIO.get("proc") is not None and not BIO["job"] and time.time() - BIO["last"] > BIO_IDLE_S:
+					bio_worker_stop()
+	threading.Thread(target=run, daemon=True, name="bio-idle").start()
+
+
+def bio_infer(img):
+	""
+	import queue
+	if not bio_installed():
+		return False, "the identification is not loaded yet", {}
+	with BIO["lock"]:
+		ok, err = bio_worker_start()
+		if not ok:
+			BIO["err"] = err
+			return False, err, {}
+		req = {"model": bio_path("model"), "emb": bio_path("emb"), "labels": bio_path("labels"), "img": os.path.abspath(img),
+               "k": BIO_TOPK, "threads": BIO_THREADS}
+		try:
+			BIO["proc"].stdin.write(json.dumps(req) + "\n"); BIO["proc"].stdin.flush()
+			r = BIO["q"].get(timeout=BIO_TIMEOUT_S)
+		except (OSError, ValueError, queue.Empty) as e:
+			bio_worker_stop()
+			r = {"ok": False, "error": "timeout" if isinstance(e, queue.Empty) else str(e)[:100]}
+		if r is None:
+			bio_worker_stop(); r = {"ok": False, "error": "the identification stopped"}
+		BIO["last"] = time.time()
+	if not r.get("ok"):
+		BIO["err"] = str(r.get("error") or "failed")[:200]
+		return False, BIO["err"], {}
+	BIO.update(err="", ms=r.get("ms"), load_ms=r.get("load_ms") or BIO.get("load_ms"))
+	return True, "", r
+
+
+
+def bio_cache_dir():
+	return os.path.join(bio_dir(), "cache")
+
+
+def bio_key(sha):
+	return hashlib.sha256((BIO_TAG + "|" + bio_ok_mark() + "|" + sha).encode()).hexdigest()[:32]
+
+
+def bio_cache_get(sha):
+	k = bio_key(sha)
+	if k in BIO["mem"]:
+		return BIO["mem"][k]
+	try:
+		with open(os.path.join(bio_cache_dir(), k + ".json"), encoding="utf-8") as f:
+			r = json.load(f)
+	except (OSError, ValueError):
+		return None
+	if not isinstance(r, dict) or not isinstance(r.get("top"), list):
+		return None
+	BIO["mem"][k] = r
+	return r
+
+
+def bio_cache_put(sha, raw):
+	k = bio_key(sha)
+	r = {x: raw.get(x) for x in ("top", "ranks", "names", "ms", "n")}
+	BIO["mem"][k] = r
+	if len(BIO["mem"]) > 400:
+		BIO["mem"].pop(next(iter(BIO["mem"])), None)
+	try:
+		os.makedirs(bio_cache_dir(), exist_ok=True)
+		p = os.path.join(bio_cache_dir(), k + ".json")
+		with open(p + ".tmp", "w", encoding="utf-8") as f:
+			json.dump(r, f, ensure_ascii=False, separators=(",", ":"))
+		os.replace(p + ".tmp", p)
+		fs = sorted(glob.glob(os.path.join(bio_cache_dir(), "*.json")), key=lambda x: os.path.getmtime(x))
+		for x in fs[:max(0, len(fs) - BIO_CACHE_N)]:
+			os.remove(x)
+	except OSError:
+		pass
+	return r
+
+
+def bio_file_sha(root, m):
+	""
+	src = os.path.join(root, "f", m["id"] + ".bin")
+	try:
+		st = os.stat(src)
+	except OSError:
+		return ""
+	memo = BIO["sha"].get(m["id"])
+	if memo and memo[0] == st.st_size and memo[1] == st.st_mtime:
+		return memo[2]
+	h = hashlib.sha256()
+	with open(src, "rb") as f:
+		for b in iter(lambda: f.read(1 << 20), b""):
+			h.update(b)
+	BIO["sha"][m["id"]] = (st.st_size, st.st_mtime, h.hexdigest())
+	if len(BIO["sha"]) > 6000:
+		BIO["sha"].pop(next(iter(BIO["sha"])), None)
+	return h.hexdigest()
+
+
+
+BIO_GROUPS = {"plant": ("🌿", "Plant"), "animal": ("🐾", "Animal"), "insect": ("🐞", "Insect"), "fungus": ("🍄", "Fungus"),
+              "other": ("🔬", "Other living thing")}
+BIO_RANK_T = {"species": "Species", "genus": "Genus", "family": "Family", "order": "Order", "class": "Class", "phylum": "Phylum",
+              "kingdom": "Kingdom"}
+
+
+def bio_group(tax):
+	k = str((tax or [""])[0] or "")
+	if k == "Plantae":
+		return "plant"
+	if k == "Fungi":
+		return "fungus"
+	if k == "Animalia":
+		return "insect" if len(tax) > 2 and tax[2] == "Insecta" else "animal"
+	return "other"
+
+
+def bio_name(names, sci, L):
+	d = (names or {}).get(sci) or {}
+	n = (d.get("de") if L in ("de", "rm") else d.get(L)) or ""
+	return n.replace("ß", "ss") if L in ("de", "rm") else n
+
+
+def bio_pct(p, L):
+	v = 100.0 * float(p or 0)
+	s = "<1" if v < 1 else ("%.0f" % v if v >= 10 else ("%.1f" % v).rstrip("0").rstrip("."))
+	return (s if L == "en" else s.replace(".", ",")) + "\u00a0%"
+
+
+def bio_format(raw, L):
+	""
+	L = norm_lang(L)
+	names = raw.get("names") or {}
+	top = []
+	info_ok = bio_info_installed()
+	for t in raw.get("top") or []:
+		tax = list(t.get("tax") or [])[:7]
+		if len(tax) < 7:
+			continue
+		sci = tax[5] + " " + tax[6]
+		grp = bio_group(tax)
+		ic, gt = BIO_GROUPS[grp]
+		fam = tax[4]
+		top.append({"sci": sci, "name": bio_name(names, sci, L), "p": float(t.get("p") or 0), "pct": bio_pct(t.get("p"), L),
+                    "group": grp, "icon": ic, "group_t": tr(gt, L), "rank": "species", "rank_t": tr("Species", L),
+                    "family": fam, "family_name": bio_name(names, fam, L)})
+		if info_ok:
+			card = bio_card(bio_info_get(sci), tax, L)
+			top[-1]["info"] = card
+			top[-1]["tox"] = bool(card.get("tox"))
+	ms = raw.get("ms")
+	sec = ("%.1f s" % (ms / 1000.0)) if isinstance(ms, (int, float)) else ""
+	out = {"top": top, "sure": None, "unsure": False, "ms": ms, "n": raw.get("n"), "sec": sec if L == "en" else sec.replace(".", ",")}
+	best = top[0]["p"] if top else 0.0
+	if best < BIO_FALLBACK_BELOW:
+		rk = raw.get("ranks") or {}
+		for r in ("genus", "family", "order", "class"):
+			v = rk.get(r) or {}
+			if float(v.get("p") or 0) >= BIO_SURE and v.get("tax"):
+				sci = v["tax"][-1]
+				grp = bio_group(v["tax"])
+				out["sure"] = {"rank": r, "rank_t": tr(BIO_RANK_T[r], L), "sci": sci, "name": bio_name(names, sci, L),
+                               "p": float(v["p"]), "pct": bio_pct(v["p"], L), "icon": BIO_GROUPS[grp][0], "group_t": tr(BIO_GROUPS[grp][1], L)}
+				break
+	if best < BIO_UNSURE and not out["sure"]:
+		out["unsure"] = True
+		out["note"] = tr("Unsure - maybe no plant, animal or fungus in the picture, or a species MoveEye does not know.", L)
+	elif best < BIO_FALLBACK_BELOW:
+		out["note"] = tr("Not sure about the species - compare with the pictures in a field guide.", L)
+	out["foot"] = tr(BIO_FOOT, L)
+	out["info"] = "ok" if info_ok else ("missing" if bio_info_pinned() else "none")
+	out["lbl"] = {k: tr(v, L) for k, v in (("info", "Species info"), ("tox", "☠️ Poisonous"), ("look", "Risk of confusion with:"),
+                                           ("art", "Whole article"), ("lic", "Text: Wikipedia, CC BY-SA 4.0, abridged –"),
+                                           ("auth", "authors"), ("none", "No species info for this species."),
+                                           ("wd", "Facts: Wikidata (CC0)"), ("load", "Load species info"))}
+	out["line"] = (" · ".join(
+        "%s – %s – %s" % (x["name"], x["sci"], x["pct"]) if x["name"] else "%s – %s" % (x["sci"], x["pct"]) for x in top))
+	return out
+
+
+
+def bio_url(which):
+	return BIO_BASE["url"] + BIO_FILES[which]["name"]
+
+
+def bio_fetch(url, dest, pin, dl):
+	""
+	part = dest + ".part"
+	have = os.path.getsize(part) if os.path.isfile(part) else 0
+	if have > pin["size"]:
+		os.remove(part); have = 0
+	if have < pin["size"]:
+		hdr = {"User-Agent": "MoveEye/" + APP_VERSION}
+		if have:
+			hdr["Range"] = f"bytes={have}-"
+		with urllib.request.urlopen(urllib.request.Request(url, headers=hdr), timeout=30) as r:
+			code = getattr(r, "status", 200)
+			if have and (code != 206 or not str(r.headers.get("Content-Range") or "").startswith(f"bytes {have}-")):
+				have = 0
+			n = r.headers.get("Content-Length")
+			if n and n.isdigit() and have + int(n) > pin["size"]:
+				raise ValueError("file too large")
+			dl["got"] += have
+			with open(part, "ab" if have else "wb") as f:
+				while True:
+					if dl.get("stop"):
+						raise InterruptedError("cancelled")
+					b = r.read(1 << 16)
+					if not b:
+						break
+					have += len(b)
+					if have > pin["size"]:
+						raise ValueError("file too large")
+					f.write(b); dl["got"] += len(b)
+	ok, err = piper_check_file(part, pin)
+	if not ok:
+		try:
+			os.remove(part)
+		except OSError:
+			pass
+		raise ValueError(err)
+	os.replace(part, dest)
+
+
+def bio_free_need():
+	""
+	return int(float(CFG.get("tausch_free_gb", 2.0)) * TZ_GB)
+
+
+def bio_download(wait=False, model=True):
+	""
+	want_m = model and not bio_installed()
+	want_i = bio_info_pinned() and not bio_info_installed()
+	if want_m and not bio_pinned():
+		return False, "The identification comes with an update"
+	if not want_m and not want_i:
+		return True, ""
+	if BIO_DL["running"]:
+		return True, ""
+	try:
+		free = shutil.disk_usage(DATA_DIR).free
+	except OSError:
+		free = 1 << 40
+	need = (bio_total() - sum(os.path.getsize(bio_path(w)) for w in BIO_FILES if os.path.isfile(bio_path(w)))) if want_m else 0
+	need += BIO_INFO["size"] if want_i else 0
+	if free - need < bio_free_need():
+		return False, "not enough free space on the memory card"
+	BIO_DL.update(running=True, got=0, total=(bio_total() if want_m else 0) + (BIO_INFO["size"] if want_i else 0), msg="",
+                  stop=False, done=False)
+
+	def work():
+		try:
+			os.makedirs(bio_dir(), exist_ok=True)
+			if want_i:
+				bio_info_close()
+				try:
+					os.remove(os.path.join(bio_dir(), "info.ok"))
+				except OSError:
+					pass
+				pin = {"size": BIO_INFO["size"], "sha256": BIO_INFO["sha256"]}
+				if not (os.path.isfile(bio_info_path()) and piper_check_file(bio_info_path(), pin)[0]):
+					bio_fetch(BIO_INFO_BASE["url"] + BIO_INFO["name"], bio_info_path(), pin, BIO_DL)
+				else:
+					BIO_DL["got"] += pin["size"]
+				import sqlite3
+				con = sqlite3.connect("file:" + urllib.parse.quote(bio_info_path()) + "?mode=ro", uri=True)
+				try:
+					n = con.execute("SELECT count(*) FROM info").fetchone()[0]
+				finally:
+					con.close()
+				if not n:
+					raise ValueError("the species info is empty")
+				with open(os.path.join(bio_dir(), "info.ok"), "w", encoding="utf-8") as f:
+					f.write(BIO_INFO["sha256"])
+				log_event("sys", f"Species info loaded and checked ({n} species)")
+			if not want_m:
+				BIO_DL["done"] = True
+				return
+			try:
+				os.remove(os.path.join(bio_dir(), "bioclip.ok"))
+			except OSError:
+				pass
+			for w in ("labels", "emb", "model"):
+				pin, dest = BIO_FILES[w], bio_path(w)
+				if os.path.isfile(dest) and piper_check_file(dest, pin)[0]:
+					BIO_DL["got"] += pin["size"]; continue
+				bio_fetch(bio_url(w), dest, pin, BIO_DL)
+			with open(bio_path("labels"), encoding="utf-8") as f:
+				lj = json.load(f)
+			if not isinstance(lj.get("taxa"), list) or not lj["taxa"]:
+				raise ValueError("the list of species is not a BioCLIP list")
+			with open(os.path.join(bio_dir(), "bioclip.ok"), "w", encoding="utf-8") as f:
+				f.write(bio_ok_mark())
+			BIO_DL["done"] = True
+			log_event("sys", f"Species identification (BioCLIP) loaded and checked ({len(lj['taxa'])} species)")
+		except InterruptedError:
+			BIO_DL["msg"] = "cancelled"
+		except Exception as e:
+			BIO_DL["msg"] = str(getattr(e, "reason", "") or e)[:160] or e.__class__.__name__
+			log_event("sys", f"Species identification not loaded: {BIO_DL['msg']}")
+		finally:
+			BIO_DL["running"] = False
+	if wait:
+		work()
+		return (not BIO_DL["msg"]), BIO_DL["msg"]
+	threading.Thread(target=work, daemon=True, name="bio-dl").start()
+	return True, ""
+
+
+def bio_delete():
+	if BIO_DL["running"] or BIO["job"]:
+		return False, "busy right now - try again in a moment"
+	with BIO["lock"]:
+		bio_worker_stop()
+	bio_info_close()
+	for p in [x for w in BIO_FILES for x in (bio_path(w), bio_path(w) + ".part")] + [bio_info_path(), bio_info_path() + ".part"]:
+		try:
+			os.remove(p)
+		except OSError:
+			pass
+	for m in ("bioclip.ok", "info.ok"):
+		try:
+			os.remove(os.path.join(bio_dir(), m))
+		except OSError:
+			pass
+	log_event("sys", f"Species identification deleted (frees about {bio_total() // 1048576} MB)")
+	return True, ""
+
+
+def bio_install():
+	""
+	if BIO["install"] == "running" or PIPER.get("install") == "running":
+		return False, "already running"
+	BIO["install"] = "running"
+
+	def work():
+		try:
+			r = subprocess.run([sys.executable, "-m", "pip", "install", "--break-system-packages", PIPER_ORT], capture_output=True,
+                               text=True, timeout=1500)
+			BIO["install"] = "done" if r.returncode == 0 else ("onnxruntime: " + ((r.stderr or r.stdout).strip().splitlines() or ["?"])[-1][:140])
+			log_event("sys", "Species identification: runtime " + ("installed (" + PIPER_ORT + ")" if r.returncode == 0 else BIO["install"]))
+		except Exception as e:
+			BIO["install"] = "failed: " + str(e)[:120]
+	threading.Thread(target=work, daemon=True, name="bio-install").start()
+	return True, ""
+
+
+
+def bio_job_run(fid, root, m):
+	J = BIO["jobs"][fid]
+	try:
+		sha = bio_file_sha(root, m)
+		c = bio_cache_get(sha) if sha else None
+		if c is None:
+			prev = os.path.join(root, "t", fid + "_p.jpg")
+			if not os.path.isfile(prev):
+				raise ValueError("no preview for this file")
+			ok, err, raw = bio_infer(prev)
+			if not ok:
+				raise RuntimeError(err)
+			c = bio_cache_put(sha, raw) if sha else raw
+			J["cached"] = False
+		else:
+			J["cached"] = True
+		J.update(st="done", raw=c, t=time.time())
+	except Exception as e:
+		J.update(st="err", err=str(e)[:200], t=time.time())
+	finally:
+		with BIO["lock"]:
+			BIO["job"] = ""
+
+
+def bio_file(fid, who):
+	""
+	if not TZ_ID.match(fid or "") or _tz_load() is None:
+		return None
+	with TZ["lock"]:
+		m = TZ["files"].get(fid)
+	if m is None:
+		return None
+	if who is None:
+		if m["area"] != "all" or tausch_type(m["name"])[2]:
+			return None
+	elif not tausch_can_see(m, who):
+		return None
+	return m
+
+
+def bio_can(m):
+	return tausch_type(m["name"])[1] == "image" and m.get("thumb") is not False
+
+
+def bio_state(fid, who, L, action="state", rate_key=None):
+	"""
+"""
+	L = norm_lang(L)
+	guest = who is None
+	admin = bool(who and who.get("is_admin"))
+	m = bio_file(fid, who)
+	info_need = BIO_INFO["size"] if bio_info_pinned() and not bio_info_installed() else 0
+	base = {"ok": True, "mb": max(1, round((bio_total() + info_need) / 1048576.0)), "info_mb": max(1, round(info_need / 1048576.0)),
+            "can_dl": not guest, "can_install": admin, "can_delete": admin}
+	if not CFG.get("tausch_bio", True) or not CFG.get("tausch_on", True):
+		return dict(base, ok=False, st="off", msg=tr("Identifying species is switched off.", L))
+	if m is None:
+		return dict(base, ok=False, st="err", msg=tr("not found", L))
+	if not bio_can(m):
+		return dict(base, ok=False, st="err", msg=tr("Only pictures can be identified.", L))
+	if action == "delete" and admin:
+		ok, err = bio_delete()
+		return dict(base, ok=ok, st="load" if ok else "err", msg=tr(err, L) if err else tr("deleted", L))
+	if action == "cancel" and not guest:
+		BIO_DL["stop"] = True
+	if action == "install" and admin and not bio_runtime():
+		if rate_key and not tausch_rate(rate_key, "bio", BIO_RATE[1]):
+			return dict(base, ok=False, st="err", msg=tr("Too many requests in a short time - wait a few minutes.", L))
+		ok, err = bio_install()
+		if not ok and err != "already running":
+			return dict(base, ok=False, st="err", msg=tr(err, L))
+	if BIO["install"] == "running":
+		return dict(base, st="installing", msg=tr("Installing the runtime (onnxruntime, about 15 MB) …", L))
+	if not bio_runtime():
+		msg = tr("The runtime onnxruntime is missing (about 15 MB).", L) + " " + (
+            tr("Install it here once (needs internet).", L) if admin else tr("The administrator can install it here.", L))
+		if BIO["install"] and BIO["install"] != "done":
+			msg += " ⚠ " + BIO["install"]
+		return dict(base, st="runtime", msg=msg)
+	if not bio_pinned():
+		return dict(base, ok=False, st="err", msg=tr("The identification comes with an update", L))
+	if action == "info" and not guest and not BIO_DL["running"] and bio_installed() and info_need:
+		if rate_key and not tausch_rate(rate_key, "bio", BIO_RATE[1]):
+			return dict(base, ok=False, st="err", msg=tr("Too many requests in a short time - wait a few minutes.", L))
+		ok, err = bio_download(model=False)
+		if not ok:
+			return dict(base, ok=False, st="err", msg=tr(err, L))
+	if BIO_DL["running"]:
+		pct = int(100 * BIO_DL["got"] / max(1, BIO_DL["total"]))
+		return dict(base, st="loading", pct=pct, msg=trf("Loading BioCLIP … {p} % of {mb} MB", L, p=pct,
+                                                          mb=max(1, round(BIO_DL["total"] / 1048576.0))))
+	if not bio_installed():
+		if action == "download" and not guest:
+			if rate_key and not tausch_rate(rate_key, "bio", BIO_RATE[1]):
+				return dict(base, ok=False, st="err", msg=tr("Too many requests in a short time - wait a few minutes.", L))
+			ok, err = bio_download()
+			if not ok:
+				return dict(base, ok=False, st="err", msg=tr(err, L))
+			return dict(base, st="loading", pct=0, msg=trf("Loading BioCLIP … {p} % of {mb} MB", L, p=0, mb=base["mb"]))
+		if guest:
+			return dict(base, st="load", msg=tr("Identifying is not set up on this MoveEye yet.", L))
+		msg = trf("For identifying, MoveEye loads BioCLIP once ({mb} MB). After that it works without internet, on the device.", L, mb=base["mb"])
+		if BIO_DL["msg"]:
+			msg += " ⚠ " + tr_err(BIO_DL["msg"], L)
+		return dict(base, st="load", msg=msg)
+	J = BIO["jobs"].get(fid)
+	if J and J["st"] == "done" and J.get("raw") is not None:
+		cached = bool(J.get("cached") or J.get("shown"))
+		J["shown"] = True
+		return dict(base, st="done", res=dict(bio_format(J["raw"], L), cached=cached))
+	sha = (BIO["sha"].get(fid) or (0, 0, ""))[2]
+	c = bio_cache_get(sha) if sha else None
+	if c is not None:
+		return dict(base, st="done", res=dict(bio_format(c, L), cached=True))
+	if J and J["st"] == "run":
+		return dict(base, st="run", msg=tr("Identifying … (on the device, a few seconds)", L))
+	if J and J["st"] == "err" and action != "start":
+		return dict(base, ok=False, st="err", msg=tr("Identifying did not work:", L) + " " + tr_err(J.get("err") or "", L))
+	if action != "start":
+		return dict(base, st="idle", msg="")
+	if m.get("thumb") is None:
+		return dict(base, st="wait", msg=tr("The preview is still being made …", L))
+	root = TZ["root"]
+	if J and J["st"] == "run":
+		return dict(base, st="run", msg=tr("Identifying … (on the device, a few seconds)", L))
+	if BIO["job"] and BIO["job"] != fid:
+		return dict(base, st="wait", msg=tr("Another picture is being identified - it continues right after …", L))
+	if rate_key and not tausch_rate(rate_key, "bio", BIO_RATE[0 if guest else 1]):
+		return dict(base, ok=False, st="err", msg=tr("Too many requests in a short time - wait a few minutes.", L))
+	with BIO["lock"]:
+		if BIO["job"] and BIO["job"] != fid:
+			return dict(base, st="wait", msg=tr("Another picture is being identified - it continues right after …", L))
+		BIO["job"] = fid
+		BIO["jobs"][fid] = {"st": "run", "t": time.time()}
+		if len(BIO["jobs"]) > 300:
+			for k in sorted(BIO["jobs"], key=lambda k: BIO["jobs"][k].get("t", 0))[:100]:
+				if k != fid:
+					BIO["jobs"].pop(k, None)
+	threading.Thread(target=bio_job_run, args=(fid, root, m), daemon=True, name="bio-job").start()
+	return dict(base, st="run", msg=tr("Identifying … (on the device, a few seconds)", L))
+
+
+
+_tausch_list_639zzd = tausch_list
+
+
+
+def tausch_list(who, area="all", folder="", lang=None):
+	out = _tausch_list_639zzd(who, area, folder, lang)
+	out["bio"] = bool(CFG.get("tausch_bio", True))
+	return out
+
+
+_tausch_guest_list_639zzd = tausch_guest_list
+
+
+
+def tausch_guest_list(folder=""):
+	out = _tausch_guest_list_639zzd(folder)
+	out["bio"] = bool(CFG.get("tausch_bio", True))
+	return out
+
+
+_smalltv_routes_639zzd = smalltv_routes
+
+
+def smalltv_routes(app, reply, body):
+	_smalltv_routes_639zzd(app, reply, body)
+	from flask import request, g
+
+	def answer(fid, who, L, action, rate_key):
+		r = bio_state(fid, who, L, action, rate_key)
+		if r.get("msg"):
+			r["msg"] = r["msg"].replace(" MB", "\u00a0MB").replace(" Mo", "\u00a0Mo").replace(" %", "\u00a0%")
+		code = 200 if r.get("ok") or r.get("st") in ("load", "runtime") else (404 if r.get("msg") == tr("not found", L) else (
+            429 if r.get("msg") == tr("Too many requests in a short time - wait a few minutes.", L) else 400))
+		return reply(r, code)
+
+	@app.route("/api/tausch/bio", methods=["GET", "POST"])
+	def api_tausch_bio():
+		who = tausch_who(g)
+		if request.method == "GET":
+			d = request.args
+			act = "state"
+		else:
+			d = body()
+			act = str(d.get("action") or "state")
+		L = norm_lang(d.get("lang") or CFG.get("lang"))
+		if "files_view" not in who["perms"]:
+			return reply({"ok": False, "st": "err", "msg": tr("not allowed for your user", L)}, 403)
+		return answer(str(d.get("id") or ""), who, L, act if act in ("state", "start", "download", "info", "cancel", "install", "delete") else "state",
+                      who["key"])
+
+	@app.route("/g/<token>/tausch/bio/<fid>", methods=["GET", "POST"])
+	def tausch_guest_bio(token, fid):
+		if not tausch_guest_ok(token):
+			return reply({"ok": False}, 404)
+		L = sx_req_lang()
+		act = "state"
+		if request.method == "POST":
+			act = "start" if str(body().get("action") or "") == "start" else "state"
+		if not tausch_rate("guest|" + (request.remote_addr or "?"), "g", 2000):
+			return reply({"ok": False}, 404)
+		return answer(fid, None, L, act, "guest|" + (request.remote_addr or "?"))
+
+
+
+TOGGLES.append((_TZS, "tausch_bio", "🌿 Identify species in pictures (BioCLIP, on the device)"))
+SET_HELP.update({"tausch_bio": ("The button «🌿 Identify» at every picture: the three most likely species with name and percent. "
+                                "Runs only on this MoveEye (the picture never leaves the device); BioCLIP is loaded once (about 340 MB).", "")})
+
+
+BIO_CSS = _zd('639zzd_bestimmen/BIO_CSS', "")
+
+
+BIO_PANEL_JS = _zd('639zzd_bestimmen/BIO_PANEL_JS', "")
+
+
+BIO_PAGE_JS = r"""
+  const bioOk = f => !!(S.j && S.j.bio && f.kind === "image" && f.thumb);
+  function bioCard(f, ac) { if (!bioOk(f)) return; const b = el("button", "sec", "🌿"); b.type = "button"; b.title = t("Identify");
+    b.onclick = () => { S.bioAuto = f.id; preview(f); }; ac.insertBefore(b, ac.firstChild); }
+  function bioBar(f, bar, ov) {
+    if (!bioOk(f)) return;
+    const b = el("button", "tz-biob", ""); b.type = "button"; b.title = t("Identify"); b.append("🌿 ", el("span", "lbl", t("Identify")));
+    const dl = bar.querySelector("a.btn");          // phone: the download only as ⬇, so «🌿 Bestimmen» fits
+    if (dl && matchMedia("(max-width:480px)").matches) { dl.title = dl.textContent.replace("⬇", "").trim(); dl.textContent = "⬇"; }
+    const go = () => tzBioPanel(f, ov, "/api/tausch/bio", {id: f.id, lang: LANG}, t);
+    b.onclick = e => { e.stopPropagation(); go(); }; bar.appendChild(b);
+    if (S.bioAuto === f.id) { S.bioAuto = ""; setTimeout(go, 0); }
+  }
+"""
+
+_BIO_HOOKS = (
+    ('/*TZEDIT*/', '/*TZEDIT*/\n  /*TZBIO*/'),
+    ('    it.append(th, tx); if (ac.children.length) it.appendChild(ac);\n    return it;',
+     '    bioCard(f, ac);\n    it.append(th, tx); if (ac.children.length) it.appendChild(ac);\n    return it;'),
+    ('    bar.appendChild(x);\n    if (f.inline && f.dl)', '    bioBar(f, bar, ov);\n    bar.appendChild(x);\n    if (f.inline && f.dl)'),
+    ('</style></head><body>', '/*BIOCSS*/\n</style></head><body>'),
+    ('Object.assign(I18N.de, /*TZDE*/{});', 'Object.assign(I18N.de, /*TZDE*/{});\nObject.assign(I18N.de, /*BIODE*/{});\n/*BIOPANEL*/'),
+)
+for _a, _b in _BIO_HOOKS:
+	if _a in TAUSCH_PAGE and _b not in TAUSCH_PAGE:
+		TAUSCH_PAGE = TAUSCH_PAGE.replace(_a, _b, 1)
+
+_BIO_GHOOKS = (
+    ('    bd.appendChild(el("div", "mut", TX.only));\n', '    bd.appendChild(el("div", "mut", TX.only));\n'
+     '    if (BTX.on && f.kind === "image" && f.thumb) { const b = el("button", "tz-biob", "🌿 " + BTX.t["Identify"]); b.onclick = e => { e.stopPropagation();'
+     ' tzBioPanel(f, ov, "__BASE__/tausch/bio/" + f.id, {}, k => BTX.t[k] || k); }; bar.insertBefore(b, x); }\n'),
+    ('</style></head><body>', '/*BIOCSS*/\n</style></head><body>'),
+    ('/*TZMD*/\n', '/*TZMD*/\nconst BTX = /*BIOTX*/{};\n/*BIOPANEL*/\n'),
+    ('  (j.files || []).forEach(f => { const it', '  BTX.on = !!j.bio;\n  (j.files || []).forEach(f => { const it'),
+)
+for _a, _b in _BIO_GHOOKS:
+	if _a in TAUSCH_GUEST_HTML and _b not in TAUSCH_GUEST_HTML:
+		TAUSCH_GUEST_HTML = TAUSCH_GUEST_HTML.replace(_a, _b, 1)
+
+_tausch_page_html_639zzd = tausch_page_html
+
+
+
+def tausch_page_html():
+	return (_tausch_page_html_639zzd().replace("/*TZBIO*/", BIO_PAGE_JS, 1).replace("/*BIOCSS*/", BIO_CSS, 1)
+            .replace("/*BIOPANEL*/", BIO_PANEL_JS, 1).replace("/*BIODE*/{}", json.dumps(_BIO_DE, ensure_ascii=False), 1))
+
+
+_tausch_guest_html_639zzd = tausch_guest_html
+
+
+
+def tausch_guest_html(token):
+	L = sx_req_lang()
+	tx = {"on": False, "t": {k: tr(k, L) for k in BIO_JS_KEYS}}
+	return (_tausch_guest_html_639zzd(token).replace("/*BIOCSS*/", BIO_CSS, 1).replace("/*BIOPANEL*/", BIO_PANEL_JS, 1)
+            .replace("/*BIOTX*/{}", json.dumps(tx, ensure_ascii=False).replace("</", "<\\/"), 1))
+
+
+
+BIO_JS_KEYS = ("Identify", "Close", "Load", "Cancel", "Install", "Try again", "Sure is:", "Nothing found.", "No connection to MoveEye.",
+               "Computed on this MoveEye - the picture never leaves the device.", "Names: Wikidata")
+_HX_BIO = {
+    BIO_EDIBLE_WARN: ("Essbar laut Wikipedia – Verwechslungsgefahr mit giftigen Arten, nie nur nach App-Bestimmung essen. Notfall: Tox Info Suisse 145",
+                      "Comestible selon Wikipédia – risque de confusion avec des espèces toxiques, ne jamais manger sur la seule base d’une identification par application. Urgence : Tox Info Suisse 145",
+                      "Commestibile secondo Wikipedia – rischio di confusione con specie velenose, non mangiare mai solo in base a un’identificazione con l’app. Emergenza: Tox Info Suisse 145",
+                      "Mangiabel tenor Wikipedia – privel da confusiun cun spezias tissientas, mai mangiar mo tenor ina determinaziun cun l’app. Urgenza: Tox Info Suisse 145"),
+    BIO_FOOT: ("Nur zur Orientierung – nicht zum Bestimmen von Essbarem. Vergiftungsverdacht: Tox Info Suisse 145.",
+               "Seulement pour s’orienter – pas pour identifier ce qui est comestible. Suspicion d’intoxication : Tox Info Suisse 145.",
+               "Solo per orientarsi – non per identificare ciò che è commestibile. Sospetto di avvelenamento: Tox Info Suisse 145.",
+               "Mo per s’orientar – betg per determinar quai ch’è mangiabel. Suspect d’intoxicaziun: Tox Info Suisse 145."),
+    "Species info": ("Artinfo", "Infos sur l’espèce", "Info sulla specie", "Infurmaziuns davart la spezia"),
+    "☠️ Poisonous": ("☠️ Giftig", "☠️ Toxique", "☠️ Velenoso", "☠️ Tissient"),
+    "Risk of confusion with:": ("Verwechslungsgefahr mit:", "Risque de confusion avec :", "Rischio di confusione con:", "Privel da confusiun cun:"),
+    "Whole article": ("Ganzer Artikel", "Article complet", "Articolo completo", "Artitgel cumplet"),
+    "Text: Wikipedia, CC BY-SA 4.0, abridged –": ("Text: Wikipedia, CC BY-SA 4.0, gekürzt –", "Texte : Wikipédia, CC BY-SA 4.0, abrégé –",
+                                                 "Testo: Wikipedia, CC BY-SA 4.0, abbreviato –", "Text: Wikipedia, CC BY-SA 4.0, scurznì –"),
+    "authors": ("Autoren", "auteurs", "autori", "auturs"),
+    "No species info for this species.": ("Zu dieser Art gibt es keine Artinfo.", "Pas d’infos pour cette espèce.",
+                                          "Nessuna info per questa specie.", "Per questa spezia na datti nagina infurmaziun."),
+    "Facts: Wikidata (CC0)": ("Fakten: Wikidata (CC0)", "Faits : Wikidata (CC0)", "Dati: Wikidata (CC0)", "Fatgs: Wikidata (CC0)"),
+    "Load species info": ("Artinfos laden", "Charger les infos des espèces", "Caricare le info sulle specie", "Chargiar las infurmaziuns da spezias"),
+    "(English)": ("(englisch)", "(en anglais)", "(in inglese)", "(englais)"),
+    "Marked as poisonous in Wikidata.": ("In Wikidata als giftig vermerkt.", "Indiqué comme toxique dans Wikidata.",
+                                         "Indicato come velenoso in Wikidata.", "Notà sco tissientà en Wikidata."),
+    "Height": ("Höhe", "Hauteur", "Altezza", "Autezza"),
+    "Red List (IUCN)": ("Rote Liste (IUCN)", "Liste rouge (UICN)", "Lista rossa (IUCN)", "Glista cotschna (IUCN)"),
+    "Habitat": ("Lebensraum", "Habitat", "Habitat", "Spazi da viver"),
+    "Identify": ("Bestimmen", "Identifier", "Identificare", "Determinar"),
+    "Close": ("Schliessen", "Fermer", "Chiudi", "Serrar"),
+    "Load": ("Laden", "Charger", "Caricare", "Chargiar"),
+    "Install": ("Installieren", "Installer", "Installare", "Installar"),
+    "Try again": ("Nochmals", "Réessayer", "Riprova", "Anc ina giada"),
+    "Sure is:": ("Sicher ist:", "Sûr :", "Sicuro:", "Segir è:"),
+    "Computed on this MoveEye - the picture never leaves the device.": (
+        "Gerechnet auf diesem MoveEye – das Bild verlässt das Gerät nie.", "Calculé sur ce MoveEye – l’image ne quitte jamais l’appareil.",
+        "Calcolato su questo MoveEye – l’immagine non lascia mai il dispositivo.", "Calculà sin quest MoveEye – il maletg na banduna mai l’apparat."),
+    "Names: Wikidata": ("Namen: Wikidata", "Noms : Wikidata", "Nomi: Wikidata", "Nums: Wikidata"),
+    "Plant": ("Pflanze", "Plante", "Pianta", "Planta"),
+    "Animal": ("Tier", "Animal", "Animale", "Animal"),
+    "Insect": ("Insekt", "Insecte", "Insetto", "Insect"),
+    "Fungus": ("Pilz", "Champignon", "Fungo", "Bulieu"),
+    "Other living thing": ("Anderes Lebewesen", "Autre être vivant", "Altro essere vivente", "Auter esser vivent"),
+    "Species": ("Art", "Espèce", "Specie", "Spezia"),
+    "Genus": ("Gattung", "Genre", "Genere", "Gener"),
+    "Family": ("Familie", "Famille", "Famiglia", "Famiglia"),
+    "Order": ("Ordnung", "Ordre", "Ordine", "Urden"),
+    "Class": ("Klasse", "Classe", "Classe", "Classa"),
+    "Phylum": ("Stamm", "Embranchement", "Phylum", "Tribu"),
+    "Kingdom": ("Reich", "Règne", "Regno", "Reginam"),
+    "Unsure - maybe no plant, animal or fungus in the picture, or a species MoveEye does not know.": (
+        "Unsicher – vielleicht keine Pflanze, kein Tier und kein Pilz im Bild, oder eine Art, die MoveEye nicht kennt.",
+        "Incertain – peut-être ni plante, ni animal, ni champignon sur l’image, ou une espèce que MoveEye ne connaît pas.",
+        "Incerto – forse nessuna pianta, animale o fungo nell’immagine, o una specie che MoveEye non conosce.",
+        "Malsegir – forsa nagina planta, nagin animal e nagin bulieu sin il maletg, u ina spezia che MoveEye na enconuscha betg."),
+    "Not sure about the species - compare with the pictures in a field guide.": (
+        "Bei der Art nicht sicher – mit den Bildern in einem Bestimmungsbuch vergleichen.",
+        "Pas sûr de l’espèce – compare avec les images d’un guide.", "Specie non sicura – confronta con le immagini di una guida.",
+        "La spezia n’è betg segira – cumparegliar cun ils maletgs d’in cudesch da determinaziun."),
+    "Identifying species is switched off.": ("Das Bestimmen ist ausgeschaltet.", "L’identification est désactivée.",
+                                             "L’identificazione è disattivata.", "La determinaziun è deactivada."),
+    "Only pictures can be identified.": ("Nur Bilder lassen sich bestimmen.", "Seules les images peuvent être identifiées.",
+                                         "Si possono identificare solo immagini.", "Mo maletgs sa laschan determinar."),
+    "Installing the runtime (onnxruntime, about 15 MB) …": ("Laufzeit wird installiert (onnxruntime, etwa 15 MB) …",
+                                                            "Installation du moteur (onnxruntime, env. 15 Mo) …",
+                                                            "Installazione del motore (onnxruntime, circa 15 MB) …",
+                                                            "Il motor vegn installà (onnxruntime, var 15 MB) …"),
+    "The runtime onnxruntime is missing (about 15 MB).": ("Die Laufzeit onnxruntime fehlt (etwa 15 MB).", "Le moteur onnxruntime manque (env. 15 Mo).",
+                                                          "Manca il motore onnxruntime (circa 15 MB).", "Il motor onnxruntime manca (var 15 MB)."),
+    "Install it here once (needs internet).": ("Hier einmal installieren (braucht Internet).", "L’installer ici une fois (internet nécessaire).",
+                                               "Installalo qui una volta (serve internet).", "Installar qua ina giada (basegna internet)."),
+    "The administrator can install it here.": ("Der Administrator kann sie hier installieren.", "L’administrateur peut l’installer ici.",
+                                               "L’amministratore può installarlo qui.", "L’administratur po l’installar qua."),
+    "The identification comes with an update": ("Das Bestimmen kommt mit einem Update", "L’identification arrive avec une mise à jour",
+                                                "L’identificazione arriva con un aggiornamento", "La determinaziun vegn cun in update"),
+    "Loading BioCLIP … {p} % of {mb} MB": ("BioCLIP wird geladen … {p} % von {mb} MB", "Chargement de BioCLIP … {p} % de {mb} Mo",
+                                           "Caricamento di BioCLIP … {p} % di {mb} MB", "BioCLIP vegn chargià … {p} % da {mb} MB"),
+    "Identifying is not set up on this MoveEye yet.": ("Das Bestimmen ist auf diesem MoveEye noch nicht eingerichtet.",
+                                                       "L’identification n’est pas encore installée sur ce MoveEye.",
+                                                       "L’identificazione non è ancora configurata su questo MoveEye.",
+                                                       "La determinaziun n’è anc betg installada sin quest MoveEye."),
+    "For identifying, MoveEye loads BioCLIP once ({mb} MB). After that it works without internet, on the device.": (
+        "Zum Bestimmen lädt MoveEye einmal BioCLIP ({mb} MB). Danach geht es ohne Internet, auf dem Gerät.",
+        "Pour identifier, MoveEye charge une fois BioCLIP ({mb} Mo). Ensuite ça marche sans internet, sur l’appareil.",
+        "Per identificare, MoveEye carica una volta BioCLIP ({mb} MB). Poi funziona senza internet, sul dispositivo.",
+        "Per determinar chargia MoveEye ina giada BioCLIP ({mb} MB). Lura funcziuna quai senza internet, sin l’apparat."),
+    "Identifying … (on the device, a few seconds)": ("Wird bestimmt … (auf dem Gerät, einige Sekunden)", "Identification … (sur l’appareil, quelques secondes)",
+                                                    "Identificazione … (sul dispositivo, alcuni secondi)", "Vegn determinà … (sin l’apparat, intgins secunds)"),
+    "Identifying did not work:": ("Bestimmen ging nicht:", "L’identification n’a pas marché :", "L’identificazione non è riuscita:",
+                                  "La determinaziun n’ha betg funcziunà:"),
+    "The preview is still being made …": ("Das Vorschaubild wird noch gerechnet …", "L’aperçu est encore en cours …",
+                                          "L’anteprima è ancora in preparazione …", "La prevista vegn anc calculada …"),
+    "Another picture is being identified - it continues right after …": (
+        "Gerade wird ein anderes Bild bestimmt – es geht gleich weiter …", "Une autre image est en cours d’identification – ça continue juste après …",
+        "Si sta identificando un’altra immagine – si continua subito dopo …", "Ussa vegn in auter maletg determinà – i cuntinuescha immediat …"),
+    "Too many requests in a short time - wait a few minutes.": ("Zu viele Anfragen in kurzer Zeit – ein paar Minuten warten.",
+                                                                "Trop de demandes en peu de temps – attends quelques minutes.",
+                                                                "Troppe richieste in poco tempo – aspetta qualche minuto.",
+                                                                "Memia bleras dumondas en curt temp – spetgar in pèr minutas."),
+    "busy right now - try again in a moment": ("gerade beschäftigt – gleich nochmals versuchen", "occupé – réessaie dans un instant",
+                                               "occupato – riprova tra un attimo", "occupà – empruvar puspè en in mument"),
+    "the identification is not loaded yet": ("das Bestimmen ist noch nicht geladen", "l’identification n’est pas encore chargée",
+                                             "l’identificazione non è ancora caricata", "la determinaziun n’è anc betg chargiada"),
+    "timeout": ("Zeitüberschreitung", "délai dépassé", "tempo scaduto", "temp surpassà"),
+    "no preview for this file": ("kein Vorschaubild für diese Datei", "pas d’aperçu pour ce fichier", "nessuna anteprima per questo file",
+                                 "nagina prevista per questa datoteca"),
+    "deleted": ("gelöscht", "supprimé", "eliminato", "stizzà"),
+    "🌿 Identify species in pictures (BioCLIP, on the device)": ("🌿 Arten auf Bildern bestimmen (BioCLIP, auf dem Gerät)",
+                                                                "🌿 Identifier les espèces sur les images (BioCLIP, sur l’appareil)",
+                                                                "🌿 Identificare le specie nelle immagini (BioCLIP, sul dispositivo)",
+                                                                "🌿 Determinar spezias sin maletgs (BioCLIP, sin l’apparat)"),
+    "The button «🌿 Identify» at every picture: the three most likely species with name and percent. Runs only on this MoveEye (the picture never leaves the device); BioCLIP is loaded once (about 340 MB).": (
+        "Der Knopf «🌿 Bestimmen» bei jedem Bild: die drei wahrscheinlichsten Arten mit Name und Prozent. Läuft nur auf diesem MoveEye (das Bild verlässt das Gerät nie); BioCLIP wird einmal geladen (etwa 340 MB).",
+        "Le bouton «🌿 Identifier» à chaque image : les trois espèces les plus probables avec nom et pourcentage. Uniquement sur ce MoveEye (l’image ne quitte jamais l’appareil) ; BioCLIP est chargé une fois (env. 340 Mo).",
+        "Il pulsante «🌿 Identificare» su ogni immagine: le tre specie più probabili con nome e percentuale. Solo su questo MoveEye (l’immagine non lascia mai il dispositivo); BioCLIP viene caricato una volta (circa 340 MB).",
+        "Il buttun «🌿 Determinar» tar mintga maletg: las trais spezias las pli probablas cun num e pertschient. Mo sin quest MoveEye (il maletg na banduna mai l’apparat); BioCLIP vegn chargià ina giada (var 340 MB)."),
+}
+for _k, _v in _HX_BIO.items():
+	DE.setdefault(_k, _v[0])
+	for _i, _L in enumerate(("fr", "it", "rm")):
+		TRX[_L].setdefault(_k, _v[_i + 1])
+_BIO_DE = {_k: _HX_BIO[_k][0] if _k in _HX_BIO else DE.get(_k, _k) for _k in BIO_JS_KEYS}
+
+
+_HELP_BIO = _zd('639zzd_bestimmen/HELP_BIO', _ZDDict())
+
+
+def _help_bio(doc, lang):
+	i = doc.find('<section id="tausch"')
+	if i < 0 or "🌿" in doc[i:doc.find("</section>", i)]:
+		return doc
+	j = doc.find("</ul></section>", i)
+	return doc[:j] + _HELP_BIO[lang] + doc[j:] if j > 0 else doc
+
+
+_hp_en_bio = HELP_PAGE.find('<div lang="en">')
+if _hp_en_bio > 0:
+	HELP_PAGE = _help_bio(HELP_PAGE[:_hp_en_bio], "de") + _help_bio(HELP_PAGE[_hp_en_bio:], "en")
+for _L in ("fr", "it", "rm"):
+	if HELP_X.get(_L):
+		HELP_X[_L] = _help_bio(HELP_X[_L], _L)
+
+
+
+def bio_selftest():
+	assert BIO_TAG and BIO_BASE["url"] == "https://github.com/DonElektro/MotionWatch/releases/download/" + BIO_TAG + "/"
+	assert all(re.fullmatch(r"bioclip-1-[a-z0-9-]+\.(onnx|npy|json)", f["name"]) for f in BIO_FILES.values())
+	assert bio_pinned() or all(not f["size"] for f in BIO_FILES.values()), "BIO_FILES: either all pins or none (comes with an update)"
+	assert bio_total() <= BIO_MAX_BYTES
+	tx = ["Plantae", "Tracheophyta", "Magnoliopsida", "Asterales", "Asteraceae", "Taraxacum", "officinale"]
+	raw = {"top": [{"tax": tx, "p": 0.871}, {"tax": tx[:6] + ["erythrospermum"], "p": 0.06},
+                   {"tax": ["Animalia", "Arthropoda", "Insecta", "Coleoptera", "Coccinellidae", "Coccinella", "septempunctata"], "p": 0.004}],
+           "ranks": {"genus": {"tax": tx[:6], "p": 0.95}}, "names": {"Taraxacum officinale": {"de": "Gemeiner Löwenzahn", "en": "Common dandelion"},
+                                                                     "Asteraceae": {"de": "Korbblütler"}}, "ms": 812}
+	r = bio_format(raw, "de")
+	assert r["line"].startswith("Gemeiner Löwenzahn – Taraxacum officinale – 87\u00a0%") and r["sec"] == "0,8 s", r["line"]
+	assert r["top"][0]["group_t"] == "Pflanze" and r["top"][0]["family_name"] == "Korbblütler" and r["top"][2]["group_t"] == "Insekt"
+	assert [x["pct"].replace("\u00a0", " ") for x in r["top"]] == ["87 %", "6 %", "<1 %"], r["top"]
+	assert bio_pct(0.0123, "de") == "1,2\u00a0%" and bio_pct(0.0123, "en") == "1.2\u00a0%"
+	assert not r["sure"] and not r.get("note")
+	assert bio_format(raw, "rm")["top"][0]["name"] == "Gemeiner Löwenzahn" and bio_format(raw, "fr")["top"][0]["name"] == ""
+	assert bio_name({"Urtica dioica": {"de": "Große Brennnessel"}}, "Urtica dioica", "de") == "Grosse Brennnessel"
+	raw["top"][0]["p"] = 0.31
+	r = bio_format(raw, "de")
+	assert r["sure"] and r["sure"]["rank_t"] == "Gattung" and r["sure"]["sci"] == "Taraxacum" and r["note"], r
+	raw["top"][0]["p"], raw["ranks"]["genus"]["p"] = 0.05, 0.2
+	assert bio_format(raw, "de")["unsure"]
+	assert bio_group(["Fungi"]) == "fungus" and bio_group(["Animalia", "Chordata", "Aves"]) == "animal" and bio_group(["Chromista"]) == "other"
+	assert bio_key("a" * 64) != bio_key("b" * 64) and len(bio_key("a" * 64)) == 32
+	for k in BIO_JS_KEYS:
+		assert k in DE or k in _TZ_DE or k in ("Cancel", "Nothing found.", "No connection to MoveEye."), k
+	assert "/*TZBIO*/" in TAUSCH_PAGE and "bioCard(f, ac);" in TAUSCH_PAGE and "bioBar(f, bar, ov);" in TAUSCH_PAGE, "hooks in /tausch"
+	assert "/*BIOTX*/" in TAUSCH_GUEST_HTML and "tzBioPanel(f, ov" in TAUSCH_GUEST_HTML, "hooks in the guest page"
+	assert "🌿" in HELP_PAGE and "BioCLIP" in HELP_PAGE
+	assert role_allows("view", "/api/tausch/bio", "POST", {}) and role_allows("view", "/api/tausch/bio", "GET", {})
+	assert not role_allows("kid", "/api/tausch/bio", "POST", {})
+
+	assert bio_info_pinned() or not BIO_INFO["size"], "BIO_INFO: either a full pin or none"
+	c = bio_card({"l": "de", "t": "Bärlauch", "x": "Der Bärlauch …", "ed": ["Alle Pflanzenteile des Bärlauchs sind essbar."],
+                  "look": [["Maiglöckchen", 1], ["Herbstzeitlose", 1]]}, ["Plantae", "", "", "", "Amaryllidaceae", "Allium", "ursinum"], "de")
+	assert c["edible"]["warn"].startswith("Essbar laut Wikipedia – Verwechslungsgefahr") and "Tox Info Suisse 145" in c["edible"]["warn"], c
+	assert c["look"][0] == {"name": "Maiglöckchen", "tox": True, "url": "https://de.wikipedia.org/wiki/Maigl%C3%B6ckchen"} and not c.get("tox")
+	c = bio_card({"l": "de", "t": "Eibe", "x": "…", "tox": ["Alle Teile sind stark giftig."], "ed": ["Der Samenmantel ist essbar."]}, tx, "de")
+	assert c["tox"]["s"] == ["Alle Teile sind stark giftig."] and "edible" not in c, "giftig: nie zusätzlich essbar"
+	c = bio_card({"q": "Q1", "toxwd": ["poisonous mushroom"]}, tx, "fr")
+	assert c["tox"]["src"] == "Wikidata" and c["empty"] is False and "text" not in c
+	c = bio_card(None, tx, "de")
+	assert c["empty"] and c["tax"].endswith("Taraxacum officinale") and "edible" not in c and "tox" not in c
+	assert bio_card({"l": "en", "t": "X", "x": "…"}, tx, "it")["en_t"] == "(in inglese)"
+	for L_ in LANGS:
+		assert "145" in tr(BIO_EDIBLE_WARN, L_) and "145" in tr(BIO_FOOT, L_), L_
+	assert _bio_edible([], "de") is None
+	c = bio_card({"l": "de", "t": "X", "x": "Der Samenmantel ist essbar und ungiftig."}, tx, "de")
+	assert "edible" not in c and c["note_ed"].startswith("Essbar laut Wikipedia"), "Text spricht von essbar: Warnung trotzdem"
+	r = bio_format(dict(raw, top=raw["top"][:1]), "de")
+	assert r["foot"].startswith("Nur zur Orientierung") and r["info"] in ("ok", "missing", "none")
+	return "pins, result «Gemeiner Löwenzahn – Taraxacum officinale – 87 %», plant / insect, genus when unsure, cache key, hooks, rights, species card («essbar» only with the warning)"
+
+
+SELFTEST_EXTRA.append(("Species identification «🌿 Bestimmen» (BioCLIP, 639zzd)", bio_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+UNT_TIMEOUT_S = 90.0
+UNT_UP_MAX = 15 * 1024 * 1024
+UNT_BIO_MAX = 4
+UNT_RATE = (20, 60)
+UNT_FOLDER = "Funde"
+UNT_MARGIN = 0.15
+UNT_TAP = 0.30
+UNT = {"lock": threading.Lock(), "busy": "", "jobs": {}, "t": 0.0}
+UNT_VEH = {"bicycle", "car", "motorcycle", "bus", "train", "truck", "boat"}
+UNT_LABELS = {"person": "Person", "bird": "Bird", "cat": "Cat", "dog": "Dog", "horse": "Horse", "sheep": "Sheep", "cow": "Cow",
+              "elephant": "Elephant", "bear": "Bear", "zebra": "Zebra", "giraffe": "Giraffe", "animal": "Animal", "bicycle": "Bicycle",
+              "car": "Car", "motorcycle": "Motorcycle", "bus": "Bus", "train": "Train", "truck": "Truck", "boat": "Boat",
+              "vehicle": "Vehicle", "warm": "Warm body"}
+
+for _p in ("live",):
+	PERM_POST[_p] = set(PERM_POST.get(_p, ())) | {"/api/untersuchen", "/api/untersuchen/upload"}
+	PERM_GET[_p] = tuple(PERM_GET.get(_p, ())) + ("/api/untersuchen",)
+
+
+def unt_perms(g_):
+	""
+	role = getattr(g_, "role", "admin")
+	if role == "admin":
+		return {"admin": True, "live": True, "head": True, "key": "admin", "name": "Admin"}
+	u = user_get(getattr(g_, "user", ""))
+	P = set(user_perms(u) if u else ROLE_PERMS.get(ROLE_OLD.get(role, role), ()))
+	name = u["name"] if u else str(getattr(g_, "user", "") or "?")
+	return {"admin": False, "live": "live" in P, "head": "head" in P, "key": name.lower(), "name": name}
+
+
+def unt_box(b):
+	""
+	if not isinstance(b, (list, tuple)) or len(b) < 2:
+		return None
+	try:
+		v = [float(x) for x in b[:4]] + [0.0] * (4 - len(b[:4]))
+	except (TypeError, ValueError):
+		return None
+	x, y, w, h = v
+	if w < 0.02 or h < 0.02:
+		w = h = UNT_TAP
+		x, y = x - w / 2, y - h / 2
+	w, h = min(1.0, max(0.02, w)), min(1.0, max(0.02, h))
+	x, y = min(1.0 - w, max(0.0, x)), min(1.0 - h, max(0.0, y))
+	if w > 0.97 and h > 0.97:
+		return None
+	return [round(x, 4), round(y, 4), round(w, 4), round(h, 4)]
+
+
+
+def unt_cams():
+	""
+	w = WATCH_REF.get("w")
+	return {"head": w is not None, "wide": bool(view3_wide_cam()), "thermal": THERMAL is not None and THERMAL.frame is not None
+            and time.time() - THERMAL.t < 5.0}
+
+
+def unt_frame(cam):
+	""
+	if cam == "thermal":
+		th = THERMAL
+		if th is None or th.frame is None or time.time() - th.t > 5.0:
+			return None, "no thermal picture"
+		try:
+			col, _g = th.color(th.crop(th.frame))
+		except Exception as e:
+			return None, "thermal picture: " + str(e)[:80]
+		return col.copy(), ""
+	if cam == "wide":
+		c = view3_wide_cam()
+		if c is None:
+			return None, "no wide-angle camera"
+		c.raw_until = time.time() + 15
+		for _i in range(40):
+			if c.raw is not None:
+				return c.raw.copy(), ""
+			time.sleep(0.1)
+		return None, "no picture of the wide-angle camera"
+	w = WATCH_REF.get("w")
+	for src in (globals().get("WEB"),):
+		if src is not None and hasattr(src, "raw_until"):
+			src.raw_until = time.time() + 15
+			for _i in range(40):
+				if src.frame_raw is not None:
+					return src.frame_raw.copy(), ""
+				time.sleep(0.1)
+	f = getattr(w, "frame_out", None) if w is not None else None
+	return (f.copy(), "") if f is not None else (None, "no camera picture yet")
+
+
+def unt_aim(box, lang=None):
+	""
+	try:
+		hf, vf = cam_fov()
+		cx, cy = box[0] + box[2] / 2, box[1] + box[3] / 2
+		p0, t0 = servo_pos_deg()
+		dp, dt = (cx - 0.5) * float(hf), -(cy - 0.5) * float(vf)
+		hp, ht = servo_half("pan"), servo_half("tilt")
+		tp = 50.0 + (p0 + dp) / max(1e-6, hp) * 50.0
+		tt = 50.0 + (t0 + dt) / max(1e-6, ht) * 50.0
+		if not servo_goto(tp, tt, who="untersuchen", wait=True, timeout=8.0):
+			return None
+		time.sleep(0.6)
+		p1, t1 = servo_pos_deg()
+		return p1 - p0, t1 - t0
+	except Exception:
+		return None
+
+
+
+def unt_kind(lab):
+	if lab == "person":
+		return "person"
+	if lab in ANIMALS or lab == "animal":
+		return "animal"
+	if lab in UNT_VEH or lab == "vehicle":
+		return "vehicle"
+	return ""
+
+
+def unt_detect(img, thermal=False, warm=True):
+	""
+	H, W = img.shape[:2]
+	out = []
+	boxes, objs = [], []
+	try:
+		if DEMO.get("on"):
+			boxes, objs = demo_ai(img)
+		else:
+			w = WATCH_REF.get("w")
+			ai = getattr(w, "ai", None) if w is not None else None
+			if ai is not None and ai.net is not None:
+				boxes, objs = ai.infer(img, float(CFG.get("ai_conf", 0.5)), float(CFG.get("object_conf", 0.5)))
+	except Exception as e:
+		log_event("ai", f"Examine: AI failed: {str(e)[:120]}")
+	for b in boxes:
+		out.append({"kind": "person", "lab": "person", "conf": round(float(b[4]), 3), "box": [b[0] / W, b[1] / H, b[2] / W, b[3] / H]})
+	for b in objs:
+		lab = COCO_LABELS.get(int(b[5]), "") if len(b) > 5 else ""
+		k = unt_kind(lab)
+		if k and (not thermal or k != "vehicle"):
+			out.append({"kind": k, "lab": lab, "conf": round(float(b[4]), 3), "box": [b[0] / W, b[1] / H, b[2] / W, b[3] / H]})
+	if thermal and warm and THERMAL is not None:
+		try:
+			for b in THERMAL.detect() or []:
+				out.append({"kind": "animal", "lab": "warm", "conf": None, "box": [float(v) for v in b[:4]]})
+		except Exception:
+			pass
+	for o in out:
+		o["box"] = [round(max(0.0, min(1.0, v)), 4) for v in o["box"]]
+	return out
+
+
+def unt_bio(img, box, tmpdir):
+	""
+	H, W = img.shape[:2]
+	x, y, w, h = box
+	x0, y0 = int(max(0, (x - w * UNT_MARGIN) * W)), int(max(0, (y - h * UNT_MARGIN) * H))
+	x1, y1 = int(min(W, (x + w * (1 + UNT_MARGIN)) * W)), int(min(H, (y + h * (1 + UNT_MARGIN)) * H))
+	if x1 - x0 < 16 or y1 - y0 < 16:
+		return None
+	p = os.path.join(tmpdir, "c_%d.jpg" % len(os.listdir(tmpdir)))
+	cv2.imwrite(p, img[y0:y1, x0:x1], [cv2.IMWRITE_JPEG_QUALITY, 92])
+	sha = hashlib.sha256(open(p, "rb").read()).hexdigest()
+	c = bio_cache_get(sha)
+	if c is not None:
+		return c
+	ok, err, raw = bio_infer(p)
+	if not ok:
+		raise RuntimeError(err)
+	return bio_cache_put(sha, raw)
+
+
+
+def unt_save(who, jpg, result, base):
+	""
+	if not CFG.get("tausch_on", True):
+		return {"error": "the file exchange is switched off"}
+	root = _tz_load()
+	if root is None:
+		return {"error": "the storage (USB stick / SSD) is not there"}
+	owner = who or {"key": "guest", "name": "Guest", "is_admin": False}
+	sw = {"key": owner["key"], "name": owner["name"], "is_admin": bool(owner.get("admin")), "perms": set(TZ_PERMS)}
+	data = json.dumps(result, ensure_ascii=False, indent=1).encode("utf-8")
+	err = tausch_room_error(len(jpg) + len(data), sw, "en")
+	if err:
+		return {"error": err}
+	out = {}
+	with TZ["lock"]:
+		if not any(x["name"] == UNT_FOLDER for x in TZ["folders"]):
+			if len(TZ["folders"]) >= TZ_MAX_FOLDERS:
+				return {"error": "too many folders"}
+			TZ["folders"].append({"name": UNT_FOLDER, "by": "moveeye", "by_name": "MoveEye", "t": int(time.time())})
+			TZ["folders"].sort(key=lambda x: x["name"].lower())
+			_tz_folders_save(root)
+		for ext, b in (("jpg", jpg), ("json", data)):
+			name = _tz_unique(base + "." + ext, "all", UNT_FOLDER, sw["key"])
+			fid = secrets.token_hex(8)
+			m = {"id": fid, "name": name, "area": "all", "folder": UNT_FOLDER, "owner": sw["key"], "owner_name": sw["name"], "size": len(b),
+                 "t": int(time.time()), "thumb": None if ext == "jpg" else False}
+			try:
+				with open(os.path.join(root, "f", fid + ".bin"), "wb") as f:
+					f.write(b)
+				_tz_write_json(os.path.join(root, "f", fid + ".json"), m)
+			except OSError as e:
+				return {"error": "the storage cannot be written to (%s)" % e.__class__.__name__}
+			TZ["files"][fid] = m
+			out[ext] = fid
+	tausch_thumb_queue(out["jpg"])
+	return out
+
+
+
+def unt_start(who, cam, box, aim, lang, img=None, src="live"):
+	""
+	cam = cam if cam in ("head", "wide", "thermal") else "head"
+	with UNT["lock"]:
+		if UNT["busy"]:
+			return False, "busy", ""
+		jid = secrets.token_hex(8)
+		UNT["busy"] = jid
+		UNT["jobs"][jid] = {"st": "run", "t": time.time(), "cam": cam, "box": box, "src": src, "step": "picture"}
+		for k in sorted(UNT["jobs"], key=lambda k: UNT["jobs"][k]["t"])[:-40]:
+			UNT["jobs"].pop(k, None)
+	aim = bool(aim and box and cam == "head" and who and who.get("head"))
+
+	def work():
+		J = UNT["jobs"][jid]
+		t0 = time.time()
+		tmp = tempfile.mkdtemp(prefix="mw_unt_")
+		try:
+			pic = img
+			if pic is None:
+				pic, why = unt_frame(cam)
+				if pic is None:
+					raise RuntimeError(why)
+			bx = box
+			if aim:
+				J["step"] = "aim"
+				mv = unt_aim(box)
+				if mv is not None:
+					hf, vf = cam_fov()
+					cx = box[0] + box[2] / 2 - mv[0] / max(1e-6, float(hf))
+					cy = box[1] + box[3] / 2 + mv[1] / max(1e-6, float(vf))
+					bx = [min(1 - box[2], max(0.0, cx - box[2] / 2)), min(1 - box[3], max(0.0, cy - box[3] / 2)), box[2], box[3]]
+					bx = [round(v, 4) for v in bx]
+					J["aimed"] = True
+					p2, _w = unt_frame(cam)
+					if p2 is not None:
+						pic = p2
+			J.update(step="ai", box=bx)
+			H, W = pic.shape[:2]
+			region = pic
+			if bx:
+				x0, y0 = int(bx[0] * W), int(bx[1] * H)
+				region = pic[y0:y0 + max(1, int(bx[3] * H)), x0:x0 + max(1, int(bx[2] * W))]
+			if DEMO.get("on") and img is None:
+				found = [o for o in unt_detect(pic, thermal=cam == "thermal", warm=not bx) if not bx or (
+                    bx[0] <= o["box"][0] + o["box"][2] / 2 <= bx[0] + bx[2] and bx[1] <= o["box"][1] + o["box"][3] / 2 <= bx[1] + bx[3])]
+			else:
+				found = unt_detect(region, thermal=cam == "thermal", warm=not bx)
+			if bx and not (DEMO.get("on") and img is None):
+				for o in found:
+					b = o["box"]
+					o["box"] = [round(bx[0] + b[0] * bx[2], 4), round(bx[1] + b[1] * bx[3], 4), round(b[2] * bx[2], 4), round(b[3] * bx[3], 4)]
+			species, note = [], ""
+			if cam == "thermal":
+				note = "thermal"
+			elif not (bio_runtime() and bio_installed()):
+				note = "nobio"
+			else:
+				J["step"] = "bioclip"
+				parts = [o["box"] for o in found if o["kind"] == "animal"][:UNT_BIO_MAX - 1]
+				parts.append(bx or [0.0, 0.0, 1.0, 1.0])
+				for b in parts:
+					if time.time() - t0 > UNT_TIMEOUT_S:
+						raise TimeoutError("timeout")
+					raw = unt_bio(pic, b, tmp)
+					if raw is not None:
+						species.append({"box": b, "raw": raw, "whole": b == [0.0, 0.0, 1.0, 1.0]})
+			if time.time() - t0 > UNT_TIMEOUT_S:
+				raise TimeoutError("timeout")
+			J.update(found=found, species=species, note=note, size=[W, H])
+
+			ok, buf = cv2.imencode(".jpg", pic, [cv2.IMWRITE_JPEG_QUALITY, 90])
+			jpg = buf.tobytes() if ok else b""
+			J["jpg"] = jpg
+			gp = None
+			try:
+				gp = gps_now()
+			except Exception:
+				gp = None
+			res = unt_result_json(J, gp)
+			base = time.strftime("Fund_%Y-%m-%d_%H%M%S")
+			J["saved"] = unt_save(who, jpg, res, base) if jpg else {"error": "no picture"}
+			free()
+			J.update(st="done", ms=int((time.time() - t0) * 1000))
+			log_event("web", f"Examine ({cam}{', region' if bx else ''}{', head moved' if J.get('aimed') else ''}): "
+                             f"{len(found)} objects, {len(species)} species checks" + (f", saved in «{UNT_FOLDER}»" if "jpg" in J["saved"] else ""))
+		except Exception as e:
+			free()
+			J.update(st="err", err=("timeout" if isinstance(e, TimeoutError) else str(e))[:200])
+		finally:
+			shutil.rmtree(tmp, ignore_errors=True)
+			free()
+
+	def free():
+		with UNT["lock"]:
+			if UNT["busy"] == jid:
+				UNT["busy"] = ""
+				UNT["t"] = time.time()
+
+	def guard():
+		th = threading.Thread(target=work, daemon=True, name="unt-job")
+		th.start()
+		th.join(UNT_TIMEOUT_S + 15)
+		J = UNT["jobs"].get(jid) or {}
+		if J.get("st") == "run":
+			J.update(st="err", err="timeout")
+			with UNT["lock"]:
+				if UNT["busy"] == jid:
+					UNT["busy"] = ""
+	threading.Thread(target=guard, daemon=True, name="unt-guard").start()
+	return True, "", jid
+
+
+def unt_result_json(J, gp):
+	""
+	sp = []
+	for s in J.get("species") or []:
+		f = bio_format(s["raw"], "de")
+		sp.append({"box": s["box"], "whole_picture": s["whole"],
+                   "top": [{"sci": t["sci"], "name_de": t["name"], "p": round(t["p"], 4), "group": t["group"]} for t in f["top"]],
+                   "sure": {k: f["sure"][k] for k in ("rank", "sci", "name", "p")} if f.get("sure") else None})
+	return {"moveeye": APP_VERSION, "time": time.strftime("%Y-%m-%dT%H:%M:%S%z"), "camera": J.get("cam"), "source": J.get("src"),
+            "region": J.get("box"), "head_moved": bool(J.get("aimed")),
+            "location": {"lat": round(gp[0], 5), "lon": round(gp[1], 5), "source": gp[2]} if gp else None,
+            "objects": [{"kind": o["kind"], "label": o["lab"], "conf": o["conf"], "box": o["box"]} for o in J.get("found") or []],
+            "species": sp, "note": J.get("note") or "",
+            "bioclip": "BioCLIP 1 (imageomics/bioclip, MIT)" if sp else None}
+
+
+def unt_state(jid, who, lang):
+	""
+	L = norm_lang(lang)
+	J = UNT["jobs"].get(str(jid or ""))
+	if J is None:
+		return {"ok": False, "st": "err", "msg": tr("not found", L)}
+	if J["st"] == "run":
+		return {"ok": True, "st": "run", "step": J.get("step"), "msg": tr({"picture": "Taking the picture …", "aim": "The head turns there …",
+                                                                           "ai": "Looking for persons, animals and vehicles …",
+                                                                           "bioclip": "Identifying the species (BioCLIP) …"}.get(J.get("step"), "…"), L)}
+	if J["st"] == "err":
+		e = J.get("err") or ""
+		return {"ok": False, "st": "err", "msg": tr("Examining did not work:", L) + " " + tr_err(e, L)}
+	items = []
+	for o in J.get("found") or []:
+		items.append({"kind": o["kind"], "box": o["box"], "label": tr(UNT_LABELS.get(o["lab"], o["lab"]), L),
+                      "icon": {"person": "🧍", "animal": "🐾", "vehicle": "🚗"}.get(o["kind"], "•"),
+                      "pct": bio_pct(o["conf"], L) if o.get("conf") is not None else ""})
+	for s in J.get("species") or []:
+		f = bio_format(s["raw"], L)
+		t0 = (f.get("top") or [{}])[0]
+		lab = (t0.get("name") or t0.get("sci") or "?") if not f.get("unsure") else tr("unsure", L)
+		if f.get("sure") and f["top"] and f["top"][0]["p"] < BIO_FALLBACK_BELOW:
+			lab = (f["sure"]["name"] or f["sure"]["sci"])
+		items.append({"kind": "species", "box": s["box"], "whole": s["whole"], "label": lab, "icon": t0.get("icon", "🌿"),
+                      "pct": t0.get("pct", ""), "tox": bool(t0.get("tox")), "res": f})
+	sv = J.get("saved") or {}
+	note = {"thermal": tr("Thermal picture: only persons and animals - BioCLIP does not work on thermal pictures.", L),
+            "nobio": tr("Species: BioCLIP is not loaded yet.", L) + " " + (tr("Load it under Datentausch → 🌿 or here.", L) if who and who.get("admin")
+                                                                            else tr("The administrator can load it.", L))}.get(J.get("note") or "", "")
+	return {"ok": True, "st": "done", "cam": J["cam"], "box": J.get("box"), "aimed": bool(J.get("aimed")), "items": items, "note": note,
+            "nobio": J.get("note") == "nobio", "can_load": bool(who and who.get("admin")), "size": J.get("size"), "ms": J.get("ms"),
+            "saved": ({"folder": UNT_FOLDER, "jpg": sv.get("jpg"), "msg": trf("Saved in Datentausch → «{f}»", L, f=UNT_FOLDER)} if sv.get("jpg")
+                      else {"msg": tr("Not saved:", L) + " " + tr_err(sv.get("error") or "", L)}),
+            "foot": tr(BIO_FOOT, L), "src": J.get("src"),
+            "lbl": {k: tr(v, L) for k, v in (("info", "Species info"), ("tox", "☠️ Poisonous"), ("look", "Risk of confusion with:"),
+                                             ("art", "Whole article"), ("lic", "Text: Wikipedia, CC BY-SA 4.0, abridged –"), ("auth", "authors"),
+                                             ("none", "No species info for this species."), ("wd", "Facts: Wikidata (CC0)"), ("load", "Load species info"))}}
+
+
+def unt_text(st, lang=None):
+	""
+	if st.get("st") != "done":
+		return st.get("msg") or ""
+	lines = []
+	for it in st.get("items") or []:
+		if it["kind"] == "species":
+			lines.append("%s %s – %s" % (it["icon"], it["label"], it["pct"]) + ("  ☠️" if it.get("tox") else ""))
+		else:
+			lines.append("%s %s%s" % (it["icon"], it["label"], (" – " + it["pct"]) if it["pct"] else ""))
+	if not lines:
+		lines.append(tr("Nothing found.", lang))
+	if st.get("note"):
+		lines.append("ℹ " + st["note"])
+	lines.append((st.get("saved") or {}).get("msg") or "")
+	return "\n".join(x for x in lines if x)
+
+
+def unt_image(jid):
+	J = UNT["jobs"].get(str(jid or ""))
+	return (J or {}).get("jpg")
+
+
+
+_smalltv_routes_639zze = smalltv_routes
+
+
+def smalltv_routes(app, reply, body):
+	_smalltv_routes_639zze(app, reply, body)
+	from flask import Response, request, g
+
+	def size_guard():
+		if request.path in ("/api/untersuchen/upload",) and request.method == "POST":
+			n = request.content_length
+			if n is None or n > UNT_UP_MAX:
+				return Response(json.dumps({"ok": False, "st": "err", "msg": "photo too big"}), 413, mimetype="application/json",
+                                headers={"Connection": "close"})
+		return None
+	app.before_request_funcs.setdefault(None, []).insert(0, size_guard)
+
+	def start(who, d, L, rate_key, img=None, src="live"):
+		if not tausch_rate(rate_key, "unt", UNT_RATE[0 if who is None else 1]):
+			return reply({"ok": False, "st": "err", "msg": tr("Too many requests in a short time - wait a few minutes.", L)}, 429)
+		ok, err, jid = unt_start(who, str(d.get("cam") or "head"), unt_box(d.get("box")), bool(d.get("aim")) and who is not None, L, img, src)
+		if not ok:
+			return reply({"ok": False, "st": "wait" if err == "busy" else "err",
+                          "msg": tr("Another examination is running - it continues right after …", L) if err == "busy" else tr_err(err, L)},
+                         409 if err == "busy" else 400)
+		return reply({"ok": True, "st": "run", "id": jid})
+
+	@app.route("/api/untersuchen", methods=["GET", "POST"])
+	def api_untersuchen():
+		who = unt_perms(g)
+		if request.method == "GET":
+			L = norm_lang(request.args.get("lang") or CFG.get("lang"))
+			if not who["live"]:
+				return reply({"ok": False, "st": "err", "msg": tr("not allowed for your user", L)}, 403)
+			if request.args.get("id"):
+				return reply(unt_state(request.args.get("id"), who, L))
+			return reply({"ok": True, "cams": unt_cams(), "head": who["head"], "busy": bool(UNT["busy"]),
+                          "bio": bio_installed() and bio_runtime(), "admin": who["admin"]})
+		d = body()
+		L = norm_lang(d.get("lang") or CFG.get("lang"))
+		if not who["live"]:
+			return reply({"ok": False, "st": "err", "msg": tr("not allowed for your user", L)}, 403)
+		if d.get("action") == "bio_load":
+			if not who["admin"]:
+				return reply({"ok": False, "st": "err", "msg": tr("Only the administrator may load models.", L)}, 403)
+			ok, err = bio_download()
+			return reply({"ok": ok, "st": "loading" if ok else "err", "msg": tr(err, L) if err else ""}, 200 if ok else 400)
+		if d.get("aim") and not who["head"]:
+			return reply({"ok": False, "st": "err", "msg": tr("You may not move the head.", L)}, 403)
+		return start(who, d, L, who["key"])
+
+	@app.route("/api/untersuchen/upload", methods=["POST"])
+	def api_untersuchen_upload():
+		who = unt_perms(g)
+		L = norm_lang(request.args.get("lang") or CFG.get("lang"))
+		if not who["live"]:
+			return reply({"ok": False, "st": "err", "msg": tr("not allowed for your user", L)}, 403)
+		data = request.get_data(cache=False)
+		img = None
+		if data[:2] == b"\xff\xd8" or data[:8] == b"\x89PNG\r\n\x1a\n" or data[:4] == b"RIFF":
+			try:
+				img = cv2.imdecode(np.frombuffer(data, np.uint8), cv2.IMREAD_COLOR)
+			except (cv2.error, ValueError):
+				img = None
+		if img is None or img.size == 0 or img.shape[0] * img.shape[1] > 60_000_000:
+			return reply({"ok": False, "st": "err", "msg": tr("This is not a photo MoveEye can read (JPEG, PNG or WebP).", L)}, 400)
+		if max(img.shape[:2]) > 2400:
+			k = 2400.0 / max(img.shape[:2])
+			img = cv2.resize(img, (int(img.shape[1] * k), int(img.shape[0] * k)), interpolation=cv2.INTER_AREA)
+		return start(who, {"cam": "head", "box": None}, L, who["key"], img, "upload")
+
+	@app.route("/api/untersuchen/img/<jid>.jpg")
+	def api_untersuchen_img(jid):
+		who = unt_perms(g)
+		b = unt_image(jid) if who["live"] else None
+		if not b:
+			return Response("not found", 404)
+		return Response(b, mimetype="image/jpeg", headers={"Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff"})
+
+	def guest_gate(token):
+		if not guest_ok(token):
+			return False
+		return tausch_rate("guest|" + (request.remote_addr or "?"), "g", 2000)
+
+	@app.route("/g/<token>/untersuchen", methods=["GET", "POST"])
+	def guest_untersuchen(token):
+		if not guest_gate(token):
+			return reply({"ok": False}, 404)
+		L = sx_req_lang()
+		if request.method == "GET":
+			if request.args.get("id"):
+				return reply(unt_state(request.args.get("id"), None, L))
+			return reply({"ok": True, "cams": {"head": True, "wide": False, "thermal": False}, "head": False, "busy": bool(UNT["busy"])})
+		d = body()
+		d["aim"] = False
+		return start(None, {"cam": "head", "box": d.get("box")}, L, "guest|" + (request.remote_addr or "?"))
+
+
+
+UNT_CSS = _zd('639zze_untersuchen/UNT_CSS', "")
+
+UNT_JS = _zd('639zze_untersuchen/UNT_JS', "")
+
+
+def unt_live_html():
+	return ("<style>" + BIO_CSS + UNT_CSS + "</style><script>\nObject.assign(I18N.de, " + json.dumps(_UNT_DE, ensure_ascii=False) + ");\n"
+            + BIO_PANEL_JS + "\nif (document.body.dataset.tab === \"live\") { window.UNT_CFG = {api: \"/api/untersuchen\", img: \"#video\", tools: \"live\"};\n"
+            + UNT_JS + "}\n</script>")
+
+
+if "/*UNT*/" not in WEB_PAGE:
+	WEB_PAGE = WEB_PAGE.replace("</body>", "<!--UNT-->/*UNT*/</body>", 1)
+_render_page_639zze = render_page
+
+
+
+def render_page(page, active):
+	out = _render_page_639zze(page, active)
+	if "<!--UNT-->/*UNT*/" in out:
+		out = out.replace("<!--UNT-->/*UNT*/", unt_live_html(), 1)
+	return out
+
+
+_GUEST_UNT = "<style>" + "/*BIOCSS*/" + "</style><script>/*UNTG*/</script>"
+if "/*UNTG*/" not in GUEST_PAGE and "\nst();\n" in GUEST_PAGE:
+	GUEST_PAGE = GUEST_PAGE.replace("</body>", _GUEST_UNT + "</body>", 1)
+
+
+def unt_guest_js(lang, token):
+	L = norm_lang(lang)
+	tx = {k: tr(k, L) for k in _HX_UNT}
+	tx.update({k: tr(k, L) for k in BIO_JS_KEYS})
+	tx.update({"Head view": tr("Head view", L), "Cancel": tr("Cancel", L), "Close": tr("Close", L), "Nothing found.": tr("Nothing found.", L)})
+	return ("window.UTX = " + json.dumps(tx, ensure_ascii=False).replace("</", "<\\/") + ";\n" + BIO_PANEL_JS
+            + "\nwindow.UNT_CFG = {api: " + json.dumps("/g/" + token + "/untersuchen") + ", img: \"#v\", tools: \"guest\", guest: true};\n" + UNT_JS)
+
+
+_smalltv_routes_639zze2 = smalltv_routes
+
+
+def smalltv_routes(app, reply, body):
+	_smalltv_routes_639zze2(app, reply, body)
+	from flask import request
+
+	@app.after_request
+	def unt_guest_inject(resp):
+		try:
+			p = request.path
+			if (p.startswith("/g/") and p.count("/") == 2 and resp.status_code == 200 and resp.mimetype == "text/html"
+                    and not resp.direct_passthrough):
+				html = resp.get_data(as_text=True)
+				if "/*UNTG*/" in html:
+					tok = p.split("/")[2]
+					html = html.replace("/*BIOCSS*/", BIO_CSS + UNT_CSS, 1).replace("/*UNTG*/", unt_guest_js(sx_req_lang(), tok).replace("</script", "<\\/script"), 1)
+					resp.set_data(html)
+		except Exception:
+			pass
+		return resp
+
+
+
+if GUI_OK:
+	_unt_tk_more_base = App._tk_more_bar
+
+	def _unt_tk_more_bar(self, parent):
+		f = _unt_tk_more_base(self, parent)
+		skip = getattr(self, "_fk_more_row", None)
+		i = len([w for w in f.grid_slaves() if w is not skip])
+
+		def run():
+			def work():
+				ok, err, jid = unt_start({"admin": True, "live": True, "head": True, "key": "admin", "name": "Admin"}, "head", None, False, CFG.get("lang"))
+				txt = tr_err(err) if not ok else ""
+				if ok:
+					end = time.time() + UNT_TIMEOUT_S + 20
+					while time.time() < end and (UNT["jobs"].get(jid) or {}).get("st") == "run":
+						time.sleep(0.3)
+					txt = unt_text(unt_state(jid, {"admin": True}, CFG.get("lang")), CFG.get("lang"))
+				try:
+					self.root.after(0, lambda: messagebox.showinfo("🔍 " + tr("Examine"), txt))
+				except Exception:
+					pass
+			threading.Thread(target=work, daemon=True, name="unt-tk").start()
+			try:
+				self._status("🔍 " + tr("Taking the picture …"))
+			except Exception:
+				pass
+		self._fbtn(f, "🔍 " + tr("Examine"), run).grid(row=i // 3, column=i % 3, sticky="ew", padx=(0, 6), pady=(0, 6))
+		return f
+
+
+	App._tk_more_bar = _unt_tk_more_bar
+
+
+
+_HX_UNT = _zd('639zze_untersuchen/HX_UNT', _zd_hx({
+    'Examine': 'Untersuchen',
+    'Examine: snapshot, tap a spot or drag a box': 'Untersuchen: Sofortbild, Stelle antippen oder Rahmen ziehen',
+    'Examine a photo (upload from the phone)': 'Foto untersuchen (vom Handy hochladen)',
+    'Tap a spot or drag a box in the picture - or examine the whole picture.': 'Im Bild eine Stelle antippen oder einen Rahmen ziehen – oder das ganze Bild untersuchen.',
+    'Whole picture': 'Ganzes Bild',
+    'Examine this region?': 'Diesen Bereich untersuchen?',
+    'Other region': 'Anderer Bereich',
+    '🎯 Turn the head there first (pan / tilt)': '🎯 Zuerst den Kopf dorthin drehen (schwenken / neigen)',
+    'Taking the picture …': 'Bild wird aufgenommen …',
+    'The head turns there …': 'Der Kopf dreht dorthin …',
+    'Looking for persons, animals and vehicles …': 'Suche nach Personen, Tieren und Fahrzeugen …',
+    'Identifying the species (BioCLIP) …': 'Art wird bestimmt (BioCLIP) …',
+    'Examining did not work:': 'Untersuchen ging nicht:',
+    'Another examination is running - it continues right after …': 'Gerade läuft eine andere Untersuchung – es geht gleich weiter …',
+    'Thermal picture: only persons and animals - BioCLIP does not work on thermal pictures.': 'Wärmebild: nur Personen und Tiere – BioCLIP bestimmt keine Arten auf Wärmebildern.',
+    'Species: BioCLIP is not loaded yet.': 'Arten: BioCLIP ist noch nicht geladen.',
+    'Load it under Datentausch → 🌿 or here.': 'Laden unter Datentausch → 🌿 oder hier.',
+    'The administrator can load it.': 'Der Administrator kann es laden.',
+    'Saved in Datentausch → «{f}»': 'Gespeichert im Datentausch → «{f}»',
+    'Not saved:': 'Nicht gespeichert:',
+    'Photo examined': 'Foto untersucht',
+    'Examined': 'Untersucht',
+    'find': 'Fund',
+    'finds': 'Funde',
+    'Load BioCLIP': 'BioCLIP laden',
+    'Loading BioCLIP …': 'BioCLIP wird geladen …',
+    'Only the administrator may load models.': 'Nur der Administrator darf Modelle laden.',
+    'You may not move the head.': 'Du darfst den Kopf nicht bewegen.',
+    'This is not a photo MoveEye can read (JPEG, PNG or WebP).': 'Das ist kein Foto, das MoveEye lesen kann (JPEG, PNG oder WebP).',
+    'unsure': 'unsicher',
+    'Person': 'Person',
+    'Bird': 'Vogel',
+    'Cat': 'Katze',
+    'Dog': 'Hund',
+    'Horse': 'Pferd',
+    'Sheep': 'Schaf',
+    'Cow': 'Kuh',
+    'Elephant': 'Elefant',
+    'Bear': 'Bär',
+    'Zebra': 'Zebra',
+    'Giraffe': 'Giraffe',
+    'Animal': 'Tier',
+    'Bicycle': 'Velo',
+    'Car': 'Auto',
+    'Motorcycle': 'Motorrad',
+    'Bus': 'Bus',
+    'Train': 'Zug',
+    'Truck': 'Lastwagen',
+    'Boat': 'Boot',
+    'Vehicle': 'Fahrzeug',
+    'Warm body': 'Warmer Körper',
+    'Guest': 'Gast',
+}))
+for _k, _v in _HX_UNT.items():
+	DE.setdefault(_k, _v[0])
+	for _i, _L in enumerate(("fr", "it", "rm")):
+		TRX[_L].setdefault(_k, _v[_i + 1])
+_UNT_DE = {_k: _v[0] for _k, _v in _HX_UNT.items()}
+_UNT_DE.update({k: DE.get(k, k) for k in BIO_JS_KEYS + ("Head view", "Wide view", "Thermal view", "Cancel", "Close")})
+
+
+_HELP_UNT = _zd('639zze_untersuchen/HELP_UNT', _ZDDict())
+
+
+def _help_unt(doc, lang):
+	if 'id="untersuchen"' in doc:
+		return doc
+	i = doc.find('<section id="tips"')
+	return doc[:i] + _HELP_UNT[lang] + doc[i:] if i >= 0 else doc
+
+
+_hp_en_unt = HELP_PAGE.find('<div lang="en">')
+if _hp_en_unt > 0:
+	HELP_PAGE = _help_unt(HELP_PAGE[:_hp_en_unt], "de") + _help_unt(HELP_PAGE[_hp_en_unt:], "en")
+for _L in ("fr", "it", "rm"):
+	if HELP_X.get(_L):
+		HELP_X[_L] = _help_unt(HELP_X[_L], _L)
+
+
+
+def unt_selftest():
+	assert unt_box(None) is None and unt_box([0, 0, 1, 1]) is None
+	b = unt_box([0.5, 0.5])
+	assert b == [0.35, 0.35, 0.3, 0.3], b
+	assert unt_box([0.9, 0.9, 0.5, 0.5]) == [0.5, 0.5, 0.5, 0.5] and unt_box(["x"]) is None
+	assert unt_kind("person") == "person" and unt_kind("dog") == "animal" and unt_kind("truck") == "vehicle" and unt_kind("chair") == ""
+	J = {"cam": "head", "src": "live", "box": [0.1, 0.1, 0.5, 0.5], "aimed": True,
+         "found": [{"kind": "animal", "lab": "dog", "conf": 0.8, "box": [0.2, 0.2, 0.1, 0.1]}], "species": []}
+	r = unt_result_json(J, (47.37, 8.54, "fixed"))
+	assert r["location"] == {"lat": 47.37, "lon": 8.54, "source": "fixed"} and r["objects"][0]["label"] == "dog" and r["head_moved"]
+	assert "/api/untersuchen" in PERM_POST["live"] and role_allows("kid", "/api/untersuchen", "POST", {}) and not role_allows("custom", "/api/untersuchen", "POST", {}, set())
+	assert "<!--UNT-->/*UNT*/" in WEB_PAGE and "/*UNTG*/" in GUEST_PAGE and 'id="untersuchen"' in HELP_PAGE
+	assert tr("Examine", "de") == "Untersuchen" and tr("Warm body", "fr") == "Corps chaud"
+	return "region / tap, kinds, result JSON (place, objects), rights, page hooks, texts"
+
+
+SELFTEST_EXTRA.append(("Examine a snapshot «🔍 Untersuchen» (639zze)", unt_selftest))
 if __name__ == "__main__":
 	ap = argparse.ArgumentParser()
 	ap.add_argument("--cam", type=int, default=None, help="USB camera number (same as --source usb:N)")
