@@ -1,0 +1,16 @@
+diff --git a/backends/fs/emscripten/emscripten-fs-factory.cpp b/backends/fs/emscripten/emscripten-fs-factory.cpp
+index 6047b19..bfc3976 100644
+--- a/backends/fs/emscripten/emscripten-fs-factory.cpp
++++ b/backends/fs/emscripten/emscripten-fs-factory.cpp
+@@ -45,6 +45,11 @@ EM_ASYNC_JS(void, _initSettings, (const char *pathPtr), {
+ 		await new Promise((resolve, reject) => {
+ 			FS.syncfs(true, (err) => err ? reject(err) : resolve());
+ 		});
++
++		// MoveEye: the page may prepare folders in the persistent HOME (e.g. the save folder per language)
++		if (typeof Module["onHomeMounted"] === "function") {
++			Module["onHomeMounted"](path, FS);
++		}
+ 		
+ 		// Check if settings file exists and download if needed
+ 		if (!FS.analyzePath(settingsPath).exists) {
