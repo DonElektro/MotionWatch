@@ -17,6 +17,13 @@
   python3 werkzeuge/spiele_test.py --alle             # dazu die älteren Spiele (2048, Tetris …)
   python3 werkzeuge/spiele_test.py --ohne-browser     # nur das Paket
   python3 werkzeuge/spiele_test.py --bilder ORDNER    # Bildschirmfotos (Handy und PC) jedes Spiels
+  python3 werkzeuge/spiele_test.py --nur-fotaq [--fotaq ORDNER]   # nur «Flight of the Amazon Queen» (ScummVM, 639zzg)
+
+FOTAQ (ab MoveEye 639zzg): ist das Paket da (--fotaq, MW_FOTAQ oder ~/.config/motionwatch/fotaq), lädt es am Handy (quer),
+iPad und PC die Startseite (Sprachwahl, Copyright, «✕ Zurück» überdeckt nichts), startet Deutsch und Englisch (ScummVM wählt
+das Spiel, die Spielfläche zeigt ein Bild, keine JavaScript-Fehler), prüft die Knöpfe neben dem Spiel, Rechtsklick per Touch
+(lange drücken, «🖱 Rechts»), «☰ Menü» und am PC Schnellspeichern (F11) mit Spielstand in IndexedDB nach dem Neuladen.
+Fehlt das Paket, wird der Teil übersprungen.
 
 Die Spiele laufen hier wie am Spiele-Port von MoveEye unter /g/<ordner>/ und bekommen einen «✕ Zurück»-Knopf (#mw-back).
 """
@@ -330,6 +337,190 @@ def wobbly_pruefen(br, base, fehler, bilder):
         ctx.close()
 
 
+# ---- «Flight of the Amazon Queen» (ScummVM, WebAssembly; MoveEye 639zzg): only when the package is there ------------------------
+FOTAQ_GERAETE = (("handy", {"width": 844, "height": 390}, True),        # the phone sideways (the page asks for it)
+                 ("ipad", {"width": 1180, "height": 820}, True),
+                 ("pc", {"width": 1280, "height": 800}, False))
+FOTAQ_ARGS = ["--enable-unsafe-swiftshader", "--use-angle=swiftshader", "--ignore-gpu-blocklist", "--autoplay-policy=no-user-gesture-required"]
+FOTAQ_SCHLECHT = ("failed to instantiate engine", "Couldn't identify game", "could not find any game", "Unrecognized game",
+                  "Aborted(", "RuntimeError", "unreachable")
+# IndexedDB of ScummVM (IDBFS, database = mount point HOME, store FILE_DATA): the keys (paths) of the files
+FOTAQ_IDB = """() => new Promise(res => { const q = indexedDB.open('/home/web_user'); q.onerror = () => res(null);
+  q.onsuccess = () => { const db = q.result; if (!db.objectStoreNames.contains('FILE_DATA')) { res([]); return; }
+    const r = db.transaction('FILE_DATA').objectStore('FILE_DATA').getAllKeys(); r.onsuccess = () => res(r.result.map(String)); r.onerror = () => res(null); }; })"""
+
+
+def fotaq_ordner(pfad=""):
+    """the unpacked package (index.html, scummvm.wasm, data/games/de|en); '' = not installed"""
+    home = os.environ.get("MOTIONWATCH_HOME", "") or os.path.expanduser("~/.config/motionwatch")
+    for p in ([pfad] if pfad else []) + [os.environ.get("MW_FOTAQ", ""), os.path.join(home, "fotaq")]:
+        if p and all(os.path.isfile(os.path.join(p, f)) for f in ("index.html", "scummvm.js", "scummvm.wasm")) \
+                and all(os.path.isdir(os.path.join(p, "data", "games", L)) for L in ("de", "en")):
+            return os.path.abspath(p)
+    return ""
+
+
+def _hell(png):
+    """share of the picture that is not (nearly) black"""
+    import io
+    from PIL import Image
+    im = Image.open(io.BytesIO(png)).convert("L").resize((160, 100))
+    px = list(im.getdata())
+    return sum(1 for v in px if v > 24) / len(px)
+
+
+def _ueber(a, b):
+    return a["x"] < b["x"] + b["width"] - 1 and a["x"] + a["width"] > b["x"] + 1 and a["y"] < b["y"] + b["height"] - 1 and a["y"] + a["height"] > b["y"] + 1
+
+
+def fotaq_pruefen(br, base, fehler, warn, bilder):
+    import time
+
+    def bild(pg, name):
+        if bilder:
+            pg.screenshot(path=os.path.join(bilder, f"fotaq_{name}.png"))
+
+    for gname, vp, touch in FOTAQ_GERAETE:
+        for L in ("de", "en"):
+            ctx = br.new_context(viewport=vp, is_mobile=touch, has_touch=touch, device_scale_factor=2 if touch else 1)
+            aussen = []
+            ctx.route("**/*", lambda r, a=aussen: r.continue_() if r.request.url.startswith(base) or r.request.url.startswith(("data:", "blob:"))
+                      else (a.append(r.request.url[:100]), r.abort()))
+            pg = ctx.new_page()
+            fe = []
+            pg.on("pageerror", lambda e, fe=fe: fe.append(str(e)[:300]))
+            pg.on("console", lambda m, fe=fe: fe.append("console.error: " + m.text[:200]) if m.type == "error" and "Failed to load resource" not in m.text else None)
+            tag = f"FOTAQ {gname} {L}"
+            info = []
+            try:
+                if L == "de" and touch:                 # the language choice upright (as it opens on the phone / iPad)
+                    pg.set_viewport_size({"width": min(vp["width"], vp["height"]), "height": max(vp["width"], vp["height"])})
+                pg.goto(f"{base}/g/fotaq/index.html", wait_until="load", timeout=30000)
+                pg.wait_for_timeout(500)
+                for s in ("#btn-de", "#btn-en", "#backPick", "a[href='LIZENZEN.txt']"):
+                    if not pg.locator(s).is_visible():
+                        fehler.append(f"{tag}: {s} fehlt auf der Startseite")
+                cred = pg.locator(".cred").inner_text()
+                if "Passfield" not in cred or "ScummVM" not in cred:
+                    fehler.append(f"{tag}: Copyright-Zeile fehlt ({cred[:80]})")
+                ue = pg.evaluate(UEBERDECKT)
+                if ue:
+                    fehler.append(f"{tag}: «✕ Zurück» überdeckt {', '.join(ue)}")
+                if L == "de" and touch:
+                    bild(pg, f"auswahl_{gname}")
+                    pg.set_viewport_size(vp)
+                b = pg.locator(f"#btn-{L}")
+                b.tap() if touch else b.click()
+                t0 = time.time()
+                ok = False
+                while time.time() - t0 < 150:
+                    pg.wait_for_timeout(2000)
+                    log = pg.evaluate("() => (window.FOTAQ && FOTAQ.log || []).join('\\n')")
+                    if any(x in log for x in FOTAQ_SCHLECHT):
+                        fehler.append(f"{tag}: ScummVM meldet einen Fehler: " + " | ".join(z for z in log.splitlines() if any(x in z for x in FOTAQ_SCHLECHT))[:300])
+                        break
+                    if "User picked target" in log and pg.locator("#load").is_hidden() and _hell(pg.locator("#stage").screenshot()) > 0.03:
+                        ok = True
+                        break
+                dt = round(time.time() - t0)
+                if not ok:
+                    log = pg.evaluate("() => (window.FOTAQ && FOTAQ.log || []).slice(-12).join(' | ')")
+                    fehler.append(f"{tag}: das Spiel startet nicht (kein Bild nach {dt} s; {pg.locator('#loadTxt').inner_text()[:60]}; Log: {log[:400]})")
+                    bild(pg, f"{L}_{gname}_fehler")
+                else:
+                    info.append(f"läuft nach {dt} s")
+                    pg.wait_for_timeout(9000 if L == "de" else 6000)       # into the intro (pictures, speech)
+                    bild(pg, f"{L}_{gname}")
+                    if not pg.evaluate("() => { const r = document.querySelector('#canvas').getBoundingClientRect(); return r.width > 200 && r.height > 120; }"):
+                        fehler.append(f"{tag}: Spielfläche zu klein")
+                    st = pg.locator("#stage").bounding_box()
+                    for s in ("#kMenu", "#kSkip", "#kRight", "#backGame"):    # the toolbar sits beside the game, never over it
+                        r1 = pg.locator(s).bounding_box()
+                        if not r1:
+                            fehler.append(f"{tag}: Knopf {s} fehlt")
+                        elif _ueber(r1, st):
+                            fehler.append(f"{tag}: Knopf {s} liegt über dem Spiel")
+                    if touch:                           # right click by touch: long press, and «🖱 Right» + tap -> mouse button 2 on the canvas
+                        pg.evaluate("() => { window.__r = 0; document.querySelector('#canvas').addEventListener('mousedown', e => { if (e.button === 2) __r++; }); }")
+                        x, y = st["x"] + st["width"] * .5, st["y"] + st["height"] * .45
+                        cdp = ctx.new_cdp_session(pg)
+                        cdp.send("Input.dispatchTouchEvent", {"type": "touchStart", "touchPoints": [{"x": x, "y": y}]})
+                        pg.wait_for_timeout(750)
+                        cdp.send("Input.dispatchTouchEvent", {"type": "touchEnd", "touchPoints": []})
+                        pg.wait_for_timeout(300)
+                        n1 = pg.evaluate("() => __r")
+                        pg.locator("#kRight").tap(); pg.wait_for_timeout(200); pg.touchscreen.tap(x, y); pg.wait_for_timeout(300)
+                        n2 = pg.evaluate("() => __r")
+                        if n1 < 1 or n2 < 2:
+                            fehler.append(f"{tag}: Rechtsklick per Touch kommt nicht an (lange drücken {n1}, Knopf {n2 - n1})")
+                        else:
+                            info.append("Rechtsklick ok")
+                    # «☰ Menu» (F1 = journal of the game: save, load, options): the picture changes
+                    vor = pg.locator("#stage").screenshot()
+                    m = pg.locator("#kMenu")
+                    m.tap() if touch else m.click()
+                    pg.wait_for_timeout(2500)
+                    nach = pg.locator("#stage").screenshot()
+                    if gname != "handy":
+                        bild(pg, f"{L}_menue_{gname}")
+                    if vor == nach:
+                        warn.append(f"{tag}: «☰ Menü» ändert das Bild nicht (Tagebuch nicht geöffnet?)")
+                    else:
+                        info.append("Menü ok")
+                    if gname == "pc" and L == "de":     # quick save (F11) after the intro, then it must be in IndexedDB, also after reload
+                        pg.keyboard.press("Escape"); pg.wait_for_timeout(1500)
+                        for _ in range(6):
+                            pg.keyboard.press("Escape"); pg.wait_for_timeout(2500)
+                        pg.keyboard.press("F11"); pg.wait_for_timeout(3000)
+                        bild(pg, f"{L}_gespeichert_{gname}")
+                        keys = pg.evaluate(FOTAQ_IDB) or []
+                        sv = [k for k in keys if "/saves/de/" in k and not k.endswith("/de")]
+                        if not sv:
+                            warn.append(f"{tag}: Schnellspeichern (F11) ergab keinen Spielstand in IndexedDB ({len(keys)} Einträge: {', '.join(keys[:6])})")
+                        else:
+                            pg.reload(wait_until="load"); pg.wait_for_timeout(800)
+                            keys2 = pg.evaluate(FOTAQ_IDB) or []
+                            if not all(k in keys2 for k in sv):
+                                fehler.append(f"{tag}: Spielstand nach dem Neuladen weg")
+                            else:
+                                info.append("Spielstand bleibt (" + ", ".join(os.path.basename(k) for k in sv) + ")")
+            except Exception as e:
+                fehler.append(f"{tag}: {e.__class__.__name__}: {str(e)[:200]}")
+            for x in fe:
+                fehler.append(f"{tag}: JavaScript: {x}")
+            for u in sorted(set(aussen)):
+                fehler.append(f"{tag}: Anfrage nach aussen {u}")
+            print(f"{tag:<18} " + (" · ".join(info) or "-"), flush=True)
+            ctx.close()
+
+
+def fotaq_lauf(pfad, fehler, warn, bilder):
+    d = fotaq_ordner(pfad)
+    if not d:
+        print("FOTAQ: Paket nicht installiert – übersprungen (--fotaq ORDNER oder MW_FOTAQ)", flush=True)
+        return
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        sys.exit("Playwright fehlt (pip install playwright && python3 -m playwright install chromium)")
+    import mimetypes
+    mimetypes.add_type("application/wasm", ".wasm")
+    if os.path.basename(d) != "fotaq":                 # served like on the device: /g/fotaq/ (the folder must be called «fotaq»)
+        fehler.append(f"FOTAQ: der Ordner muss «fotaq» heissen ({d})")
+        return
+    s = server(os.path.dirname(d))
+    try:
+        base = f"http://127.0.0.1:{s.server_address[1]}"
+        if bilder:
+            os.makedirs(bilder, exist_ok=True)
+        with sync_playwright() as pw:
+            br = pw.chromium.launch(args=FOTAQ_ARGS)
+            fotaq_pruefen(br, base, fehler, warn, bilder)
+            br.close()
+    finally:
+        s.shutdown()
+
+
 def main():
     ap = argparse.ArgumentParser(description="Test der Spielesammlung (Paket und Browser)")
     ap.add_argument("--zip", default=os.path.join(REPO, "games", "MotionWatch_Spiele.zip"))
@@ -337,11 +528,22 @@ def main():
     ap.add_argument("--nur", default="", help="nur diese Ordner (Komma-Liste)")
     ap.add_argument("--ohne-browser", action="store_true")
     ap.add_argument("--bilder", default="", help="Ordner für Bildschirmfotos")
+    ap.add_argument("--fotaq", default="", help="Ordner des FOTAQ-Pakets (sonst MW_FOTAQ oder ~/.config/motionwatch/fotaq; fehlt es: übersprungen)")
+    ap.add_argument("--nur-fotaq", action="store_true", help="nur «Flight of the Amazon Queen» prüfen")
     a = ap.parse_args()
     fehler, warn = [], []
+    if a.nur_fotaq:
+        fotaq_lauf(a.fotaq, fehler, warn, a.bilder)
+        for w in warn:
+            print("Warnung:", w)
+        for f in fehler:
+            print("FEHLER:", f)
+        print("FOTAQ-Test:", "OK" if not fehler else f"{len(fehler)} Fehler")
+        sys.exit(1 if fehler else 0)
     gj = paket_pruefen(a.zip, fehler, warn)
     print(f"Paket {gj.get('version')}: {len(gj['games'])} Spiele", flush=True)
     if not a.ohne_browser:
+        fotaq_lauf(a.fotaq, fehler, warn, a.bilder)
         try:
             from playwright.sync_api import sync_playwright
         except ImportError:

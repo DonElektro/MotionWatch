@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0e1621">
+<title>Flight of the Amazon Queen</title>
+<link rel="icon" href="thumb.svg">
+<!-- MoveEye: launcher for «Flight of the Amazon Queen» (CD version with speech) in ScummVM (WebAssembly).
+     Package built by .github/workflows/fotaq.yml (werkzeuge/fotaq/). Language choice first: the tap also unlocks the sound.
+     The toolbar sits beside the game (portrait: below, landscape: right), never over it. -->
+<style>
+:root{--bg:#0e1621;--panel:#16263a;--line:#24324a;--txt:#e8eef5;--mut:#9fb0c3;--acc:#e9a23b;--blue:#3b8cff}
+*{box-sizing:border-box}html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);font:16px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif}
+body{overscroll-behavior:none}
+#mw-back{display:none!important}  /* MoveEye's floating «✕ Zurück»: this page has its own «‹» (it clicks #mw-back) */
+#pick{max-width:560px;margin:0 auto;padding:calc(18px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom))}
+#pick header{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+#pick header img{width:64px;height:64px;border-radius:14px;flex:none}
+#pick h1{font-size:22px;margin:0;line-height:1.2}
+#pick .sub{color:var(--mut);font-size:14px;margin:2px 0 0}
+a.back{display:inline-flex;align-items:center;gap:4px;color:var(--txt);text-decoration:none;background:var(--panel);border:1px solid var(--line);
+  border-radius:12px;padding:8px 12px;font-weight:600;min-height:40px;margin-bottom:14px}
+.langs{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:8px 0 16px}
+.langs button{font:inherit;color:var(--txt);background:var(--panel);border:2px solid var(--line);border-radius:16px;padding:18px 12px;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:6px;min-height:112px;touch-action:manipulation}
+.langs button b{font-size:19px}.langs button span{font-size:13px;color:var(--mut)}.langs button .fl{font-size:30px;line-height:1}
+.langs button.last{border-color:var(--acc)}
+.langs button:active{transform:scale(.98)}
+.help{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-size:14px;color:var(--mut)}
+.help b{color:var(--txt)}.help ul{margin:6px 0 0;padding-left:18px}.help li{margin:3px 0}
+.cred{font-size:12px;color:var(--mut);margin-top:16px}.cred a{color:var(--mut)}
+#game{position:fixed;inset:0;display:none;background:#000}
+body.play #pick{display:none}body.play #game{display:flex;flex-direction:column}
+#stage{position:relative;flex:1 1 auto;min-height:0;min-width:0}
+#canvas{position:absolute;inset:0;width:100%;height:100%;display:block;border:0;padding:0;margin:0;outline:none;background:#000;
+  touch-action:none;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+#bar{flex:none;display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;background:var(--bg);
+  padding:8px max(8px,env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left))}
+#bar a,#bar button{font:600 15px system-ui,sans-serif;color:var(--txt);background:var(--panel);border:1px solid var(--line);border-radius:12px;
+  min-width:46px;min-height:44px;padding:6px 10px;display:inline-flex;align-items:center;justify-content:center;gap:5px;text-decoration:none;
+  cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+#bar button.on{background:var(--blue);border-color:var(--blue);color:#fff}
+#bar .t{font-weight:500;font-size:13px}
+@media (orientation:landscape) and (max-height:600px){
+  body.play #game{flex-direction:row}
+  #bar{flex-direction:column;flex-wrap:nowrap;justify-content:flex-start;overflow-y:auto;
+    padding:max(6px,env(safe-area-inset-top)) max(6px,env(safe-area-inset-right)) max(6px,env(safe-area-inset-bottom)) 6px}
+  #bar .t{display:none}
+}
+#load{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:rgba(14,22,33,.92);border:1px solid var(--line);
+  border-radius:14px;padding:14px 18px;text-align:center;min-width:220px;max-width:86%;pointer-events:none;z-index:2}
+#load progress{width:100%;height:8px;margin-top:8px;accent-color:var(--acc)}
+#load.err{border-color:#ff5a5f}
+#tip{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);background:rgba(14,22,33,.9);border-radius:10px;padding:6px 12px;
+  font-size:13px;color:var(--mut);pointer-events:none;z-index:2;white-space:nowrap;max-width:94%;overflow:hidden;text-overflow:ellipsis}
+.hidden{display:none!important}
+</style></head><body>
+<div id="pick">
+  <a class="back" href="../" id="backPick">‹ <span data-de="Spiele" data-en="Games">Spiele</span></a>
+  <header><img src="thumb.svg" alt=""><div><h1>Flight of the Amazon Queen</h1>
+    <p class="sub" data-de="Abenteuer (1995) · CD-Fassung mit Sprachausgabe" data-en="Adventure (1995) · CD version with speech">Abenteuer (1995) · CD-Fassung mit Sprachausgabe</p></div></header>
+  <div class="langs">
+    <button type="button" id="btn-de" data-lang="de"><span class="fl">🇩🇪</span><b>Deutsch</b><span>Sprache und Texte</span></button>
+    <button type="button" id="btn-en" data-lang="en"><span class="fl">🇬🇧</span><b>English</b><span>Speech and texts</span></button>
+  </div>
+  <div class="help" id="help"></div>
+  <p class="cred">Flight of the Amazon Queen © 1995 John Passfield &amp; Steven Stamatiadis (Freeware) ·
+    ScummVM © The ScummVM Team (GPL v3) · <a href="LIZENZEN.txt" target="_blank" data-de="Lizenzen und Quellcode" data-en="Licences and source code">Lizenzen und Quellcode</a></p>
+</div>
+<div id="game">
+  <div id="stage"><canvas id="canvas" tabindex="-1" oncontextmenu="event.preventDefault()"></canvas>
+    <div id="load"><div id="loadTxt">…</div><progress id="loadBar" max="1" value="0"></progress></div>
+    <div id="tip" class="hidden"></div></div>
+  <div id="bar">
+    <a href="../" id="backGame" title="Zurück">‹ <span class="t" data-de="Spiele" data-en="Games">Spiele</span></a>
+    <button type="button" id="kMenu" title="Menü (F1)">☰ <span class="t" data-de="Menü" data-en="Menu">Menü</span></button>
+    <button type="button" id="kSkip" title="Überspringen (Esc)">⏭ <span class="t" data-de="Weiter" data-en="Skip">Weiter</span></button>
+    <button type="button" id="kRight" title="Rechtsklick">🖱 <span class="t" data-de="Rechts" data-en="Right">Rechts</span></button>
+    <button type="button" id="kFull" title="Vollbild">⛶</button>
+  </div>
+</div>
+<script>
+(function () {
+  "use strict";
+  var d = document, $ = function (s) { return d.querySelector(s); };
+  // MoveEye: the own back links click the «✕ Zurück» of MoveEye (#mw-back), like the other games
+  d.addEventListener("click", function (e) { var a = e.target.closest && e.target.closest("a"); if (!a || a.closest("#mw-back")) return;
+    var h = a.getAttribute("href"); if (h !== "../" && h !== "index.html") return; var b = d.querySelector("#mw-back a"); if (b) { e.preventDefault(); e.stopPropagation(); b.click(); } }, true);
+  var UI = (navigator.language || "de").slice(0, 2) === "de" ? "de" : "en", last = "";
+  try { last = localStorage.getItem("fotaq-lang") || ""; } catch (e) {}
+  if (last) UI = last;
+  var TX = {
+    de: {help: "<b>So spielst du</b><ul><li><b>Antippen</b> = Klick: hingehen, Befehl wählen (unten im Spiel), Gegenstand benutzen.</li>"
+        + "<li><b>Lange drücken</b> oder <b>🖱 Rechts</b> und dann antippen = Rechtsklick (Standard-Befehl, z.&nbsp;B. «Anschauen»).</li>"
+        + "<li><b>☰ Menü</b>: Spielstand speichern und laden, Lautstärke, Ende. Die Spielstände bleiben in diesem Browser.</li>"
+        + "<li><b>⏭ Weiter</b>: Zwischensequenz oder Gespräch überspringen.</li><li>Am Handy: quer halten. Am PC: Maus und Tastatur (F1 = Menü, Esc = überspringen).</li></ul>",
+      wasm: "ScummVM wird geladen …", data: "Spieldaten laden", start: "Spiel startet …", err: "Fehler beim Laden – Seite neu laden.", right: "Nächstes Antippen = Rechtsklick", rot: "Tipp: Handy quer halten"},
+    en: {help: "<b>How to play</b><ul><li><b>Tap</b> = click: walk, pick a command (bottom of the game), use an object.</li>"
+        + "<li><b>Long press</b>, or <b>🖱 Right</b> then tap = right click (default command, e.g. «Look at»).</li>"
+        + "<li><b>☰ Menu</b>: save and load, volume, quit. Saved games stay in this browser.</li>"
+        + "<li><b>⏭ Skip</b>: skip a cutscene or a conversation.</li><li>On the phone: hold it sideways. On the PC: mouse and keyboard (F1 = menu, Esc = skip).</li></ul>",
+      wasm: "Loading ScummVM …", data: "Loading game data", start: "Starting the game …", err: "Loading failed – reload the page.", right: "Next tap = right click", rot: "Tip: hold the phone sideways"}
+  };
+  function lang(L) { UI = L; d.documentElement.lang = L; $("#help").innerHTML = TX[L].help;
+    d.querySelectorAll("[data-de]").forEach(function (e) { e.textContent = e.getAttribute("data-" + L); }); }
+  lang(UI);
+  if (last) { var lb = $("#btn-" + last); if (lb) lb.classList.add("last"); }
+
+  // ---- loading indicator: wasm, then the game data (the HTTP filesystem of ScummVM fetches whole files) ----
+  var loadEl = $("#load"), loadTxt = $("#loadTxt"), loadBar = $("#loadBar"), started = false, busy = 0;
+  function status(t, got, tot) { if (started && !busy) { loadEl.classList.add("hidden"); return; } loadEl.classList.remove("hidden"); loadTxt.textContent = t;
+    if (tot) { loadBar.max = tot; loadBar.value = got; loadBar.classList.remove("hidden"); } else loadBar.classList.add("hidden"); }
+  if (!Response.prototype.bytes) Response.prototype.bytes = function () { return this.arrayBuffer().then(function (b) { return new Uint8Array(b); }); };
+  var f0 = window.fetch.bind(window);
+  window.fetch = function (u, o) {             // progress for the big game files (queen.1c, about 40-60 MB)
+    var url = typeof u === "string" ? u : (u && u.url) || "";
+    if (!/data\/games\/[a-z]+\/[^\/]+$/.test(url) || /index\.json$/.test(url)) return f0(u, o);
+    busy++;
+    return f0(u, o).then(function (r) {
+      var tot = +(r.headers.get("Content-Length") || 0);
+      if (!r.ok || !r.body || !r.body.getReader || tot < 2e6) { busy--; return r; }
+      var rd = r.body.getReader(), parts = [], got = 0;
+      function pump() { return rd.read().then(function (x) {
+        if (x.done) { busy--; status(""); return new Response(new Blob(parts), {status: r.status, statusText: r.statusText, headers: r.headers}); }
+        parts.push(x.value); got += x.value.length;
+        status(TX[UI].data + " · " + Math.round(got / 1e6) + " / " + Math.round(tot / 1e6) + " MB", got, tot); return pump(); }); }
+      return pump();
+    }, function (e) { busy--; throw e; });
+  };
+
+  // ---- ScummVM ----
+  function start(L) {
+    try { localStorage.setItem("fotaq-lang", L); } catch (e) {}
+    lang(L); d.body.classList.add("play"); status(TX[L].wasm);
+    window.FOTAQ = {lang: L, t0: Date.now(), log: []};
+    var canvas = $("#canvas");
+    window.Module = {
+      // the game folder (data/games/de or /en, served next to this page), own save folder per language (IndexedDB, persists)
+      arguments: ["--path=/data/games/" + L, "--savepath=/home/web_user/saves/" + L, "--subtitles", "queen"],
+      canvas: canvas,
+      print: function (t) { FOTAQ.log.push(String(t)); if (FOTAQ.log.length > 400) FOTAQ.log.shift(); console.log(t); },
+      printErr: function (t) { FOTAQ.log.push("E: " + t); if (FOTAQ.log.length > 400) FOTAQ.log.shift(); console.warn(t); },
+      setStatus: function (t) { if (t && !started) status(t); },
+      monitorRunDependencies: function () {},
+      onRuntimeInitialized: function () { started = true; FOTAQ.ready = Date.now(); status(TX[L].start); setTimeout(function () { if (!busy) status(""); }, 1500); fit(); }
+    };
+    var s = d.createElement("script"); s.src = "scummvm.js"; s.async = true;
+    s.onerror = function () { loadEl.classList.add("err"); status(TX[L].err); };
+    d.body.appendChild(s);
+    if (matchMedia("(orientation: portrait)").matches && Math.min(innerWidth, innerHeight) < 600) tip(TX[L].rot, 4000);
+  }
+  d.querySelectorAll(".langs button").forEach(function (b) { b.addEventListener("click", function () { start(b.getAttribute("data-lang")); }); });
+  addEventListener("error", function (e) { if (d.body.classList.contains("play")) { loadEl.classList.add("err"); status(TX[UI].err + " (" + (e.message || "") + ")"); } });
+  function fit() { setTimeout(function () { dispatchEvent(new Event("resize")); }, 60); }
+  addEventListener("orientationchange", fit);
+
+  // ---- on-screen buttons: keys for ScummVM (SDL reads the «code» of the key) ----
+  function key(code, k, kc) {
+    ["keydown", "keyup"].forEach(function (ty, i) { setTimeout(function () {
+      var ev = new KeyboardEvent(ty, {key: k, code: code, keyCode: kc, which: kc, bubbles: true, cancelable: true});
+      try { Object.defineProperty(ev, "keyCode", {get: function () { return kc; }}); Object.defineProperty(ev, "which", {get: function () { return kc; }}); } catch (e) {}
+      (d.activeElement && d.activeElement !== d.body ? d.activeElement : canvas()).dispatchEvent(ev); }, i * 80); });
+  }
+  function canvas() { return $("#canvas"); }
+  $("#kMenu").addEventListener("click", function () { key("F1", "F1", 112); });
+  $("#kSkip").addEventListener("click", function () { key("Escape", "Escape", 27); });
+  var fs = d.documentElement.requestFullscreen || d.documentElement.webkitRequestFullscreen;
+  if (!fs) $("#kFull").classList.add("hidden");
+  $("#kFull").addEventListener("click", function () {
+    if (d.fullscreenElement || d.webkitFullscreenElement) (d.exitFullscreen || d.webkitExitFullscreen).call(d);
+    else try { fs.call($("#game")); } catch (e) {} fit(); });
+  d.addEventListener("fullscreenchange", fit);
+
+  // ---- right click by touch: long press (0.5 s, finger still) or «🖱 Right» and then tap. A short tap stays the left click
+  // of ScummVM itself (2-finger tap is a right click there as well). The right click goes to the canvas as a mouse event. ----
+  var armed = false, lp = null, tipT = 0;
+  function tip(t, ms) { var e = $("#tip"); e.textContent = t; e.classList.remove("hidden"); clearTimeout(tipT); tipT = setTimeout(function () { e.classList.add("hidden"); }, ms || 2000); }
+  function mouse(ty, x, y, btn) { var c = canvas();
+    c.dispatchEvent(new MouseEvent(ty, {clientX: x, clientY: y, screenX: x, screenY: y, button: btn, buttons: ty === "mouseup" ? 0 : (btn === 2 ? 2 : 1), bubbles: true, cancelable: true, view: window})); }
+  function rightClick(x, y) { mouse("mousemove", x, y, 0); setTimeout(function () { mouse("mousedown", x, y, 2); }, 20);
+    setTimeout(function () { mouse("mouseup", x, y, 2); }, 90); if (navigator.vibrate) navigator.vibrate(30); }
+  $("#kRight").addEventListener("click", function () { armed = !armed; this.classList.toggle("on", armed); if (armed) tip(TX[UI].right); });
+  var stage = $("#stage");
+  stage.addEventListener("touchstart", function (e) {
+    if (e.touches.length !== 1) { if (lp) { clearTimeout(lp.t); lp = null; } return; }
+    var t = e.touches[0];
+    if (armed) { e.preventDefault(); e.stopPropagation(); lp = {x: t.clientX, y: t.clientY, armed: true}; return; }
+    lp = {x: t.clientX, y: t.clientY, t: setTimeout(function () { if (lp) { lp.done = true; rightClick(lp.x, lp.y); } }, 500)};
+  }, {capture: true, passive: false});
+  stage.addEventListener("touchmove", function (e) {
+    if (!lp) return; var t = e.touches[0];
+    if (lp.armed) { e.preventDefault(); e.stopPropagation(); lp.x = t.clientX; lp.y = t.clientY; return; }
+    if (Math.abs(t.clientX - lp.x) > 12 || Math.abs(t.clientY - lp.y) > 12) { clearTimeout(lp.t); lp = null; }
+  }, {capture: true, passive: false});
+  stage.addEventListener("touchend", function (e) {
+    if (!lp) return;
+    if (lp.armed) { e.preventDefault(); e.stopPropagation(); rightClick(lp.x, lp.y); armed = false; $("#kRight").classList.remove("on"); }
+    else clearTimeout(lp.t);
+    lp = null;
+  }, {capture: true, passive: false});
+  stage.addEventListener("touchcancel", function () { if (lp) clearTimeout(lp.t); lp = null; }, true);
+})();
+</script>
+</body></html>
