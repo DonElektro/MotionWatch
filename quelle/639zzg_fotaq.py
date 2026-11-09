@@ -25,10 +25,11 @@
 FOTAQ_TAG = "fotaq-1"
 FOTAQ_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/" + FOTAQ_TAG + "/"}   # Tests: lokaler Server
 # Werte aus dem Workflow «FOTAQ» (pins.txt / Release-Notiz von FOTAQ_TAG); size 0 = noch nicht freigegeben (kommt mit einem Update).
+# fotaq-1: Lauf 42600071456 (09.11.2026) von main e80c566, ScummVM v2026.4.0 (7d2709da).
 FOTAQ_FILES = {
-    "engine": {"name": "fotaq-engine-1.zip", "size": 0, "sha256": "", "unpacked": 0},
-    "de": {"name": "fotaq-de-1.zip", "size": 0, "sha256": "", "unpacked": 0},
-    "en": {"name": "fotaq-en-1.zip", "size": 0, "sha256": "", "unpacked": 0},
+    "engine": {"name": "fotaq-engine-1.zip", "size": 12049091, "sha256": "6feab69b314ecc491f011ab9eaa0d0df670bd5be86e908c66e7491559ac31de5", "unpacked": 18533041},
+    "de": {"name": "fotaq-de-1.zip", "size": 108739455, "sha256": "c824460b7152c43c468c8c0dbfb2d436c17b7cfe84109358989d39316b1853ae", "unpacked": 108739281},
+    "en": {"name": "fotaq-en-1.zip", "size": 51225404, "sha256": "9af0594435d6ff0caa4b7956d31a31b006c5e49c1b940d9074d9c1b1add64279", "unpacked": 51227796},
 }
 FOTAQ_MAX_BYTES = 400 * 1024 * 1024      # harte Obergrenze für die drei ZIP und für das Entpackte (je)
 FOTAQ_GAME = {"dir": "fotaq", "start": "index.html", "icon": "thumb.svg", "input": "touch",

@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-09 08:28",
+ "generated": "2026-11-09 11:29",
  "versions": [
+  {
+   "version": "3.69.0",
+   "file": "webcam_bewegung_3_69_0.py",
+   "url": "",
+   "sha256": "7673ba420a5d5dd7859d42b2244e24cbf8ce37bce71e829e598dbc46ebd5f07b",
+   "date": "2026-11-09 11:29",
+   "notes": "Spielecke: «Flight of the Amazon Queen» (1995, CD-Fassung mit Sprachausgabe, Deutsch/Englisch) – ScummVM im Browser, Admin lädt es einmal (Sprache wählen, feste Prüfsumme, 2 GB bleiben frei)",
+   "size": 3810716,
+   "sig": "5053d17c15d683f637efb1b628a22dcd974da017fa5c3323d67d69ad9f9c54c59a4d71f21204452546349e19f7ce3e93d7aff1d96233475310647198c3e4860e",
+   "data": {
+    "file": "moveeye_daten_3_69_0.zip",
+    "url": "",
+    "sha256": "242fbc5e4fc2a8920890d0a6abb12d0a38f56624956d1d8d1ab4017151de279a",
+    "size": 4903638,
+    "sig": "c2789cab225f64ea82bade38c911427a5cc6a875f906649cac49c631f3a5457ac912d782be3d8f89c2b5a2218e2ade7dde6a92b378ed5fcc48390440ff0f430a"
+   }
+  },
   {
    "version": "3.68.1",
    "file": "webcam_bewegung_3_68_1.py",
    "url": "",
    "sha256": "e2c83f5e8dae42638d02d2a17220e7da2e30429f8a14cca1e492f037e81e2c8a",
-   "date": "2026-11-09 08:28",
+   "date": "2026-11-09 08:34",
    "notes": "Härtung: hochgeladene Bilder (Untersuchen, Datentausch-Vorschau, KI-Helfer) – Grösse aus dem Dateikopf (JPEG/PNG/WebP), Pixelbomben über 60 MP oder 20 000 px je Seite werden ohne Dekodieren abgewiesen",
    "size": 3791078,
    "sig": "3b2c9846d8103ec0d98bd1dfc0c7c1651355ca631979ddf2b790395c58dcfb75b6e837d2b53d3f28960a8fe35b42cc38b04486567e214216969e5c52c2e70408",
@@ -136,23 +153,6 @@
     "sha256": "c12a3a463fa865279a6414149c5342af01a4df2e3794b45520a6d0e4e360e045",
     "size": 4821324,
     "sig": "345324c5fa3fcc12f427cd8742da7ab81b297485beefe66eca08bd3be5abe9bf8106d36ee66ae8d6c5dd5360bf13c7d451a76fe71711f696cb6606ff7115650a"
-   }
-  },
-  {
-   "version": "3.60.0",
-   "file": "webcam_bewegung_3_60_0.py",
-   "url": "",
-   "sha256": "b0e0141366ee3bff2e8f99b1f82a05ecba6f0d32a312f1c5a0e20d351f5aaffc",
-   "date": "2026-11-07 20:10",
-   "notes": "Fehlalarme und Pushes: MoveEye merkt sich Fehlalarm-Stellen und fragt nach 3 Fehlalarmen in 7 Tagen einmal «künftig ignorieren?», Windschutz für Pflanzen-Bereiche, Alarme in der Pause gebündelt («+N weitere in M Min.» mit Bildstreifen), Zonen-Name im Push, kurzer Clip (ab Werk aus), «Bilder bleiben zu Hause» (ab Werk aus); doppelte Bestätigung im Erkennungstest messbar · Objekte und Profile: Erkennungsprofile 🏕️ Nacht am Zelt · 🌳 Garten tagsüber · 🏠 Hausüberwachung · 🔋 Akku sparen (von Hand, per Zeitplan, vom Modus oder bei tiefem Akku; ohne Profil wie bisher), Wildtiere mit Namen («🦊 Fuchs be",
-   "size": 3531045,
-   "sig": "c0e5cbc0880b463a5b938e0a6c56b0b358fa13b33f36baa3f2da27039b485327713fa8821929abf11db7b16f6874ce381305c27b4400bf75bf18beee75501003",
-   "data": {
-    "file": "moveeye_daten_3_60_0.zip",
-    "url": "",
-    "sha256": "ad16b982e0de3b8451d961e68a653edfcb5e5b90fb531f136d2ebfcacb841deb",
-    "size": 4811182,
-    "sig": "dc62df47b9740de7c47faa1511a231401343e3523f8d77f12dc3a83e167796fdb34c1d47472bdc43909400e69e2bb62f01e68c3c9477f075b1894bf8ef0b2d03"
    }
   },
   {
