@@ -592,23 +592,38 @@ function fotaqPaint(box, F) {
   const tt = el("b", "", "🛩 Flight of the Amazon Queen"); hd.style.cssText = "display:flex;gap:10px;align-items:center;justify-content:flex-start"; hd.append(im, tt); w.appendChild(hd);
   w.appendChild(el("div", "mut", t("Adventure with speech, German or English. Loaded once from GitHub (fixed checksum), then it runs offline in the browser (ScummVM).")));
   const row = el("div", "trow"); row.style.marginTop = "8px";
+  const extra = el("div"), PT = F.parts || {}, have = F.langs || [], LN = {de: "Deutsch", en: "English"};
+  const need = ls => { const k = (F.engine ? [] : ["engine"]).concat(ls.filter(L => !have.includes(L)));   // what a choice still loads
+    return [k.reduce((a, x) => a + ((PT[x] || {}).size || 0), 0), k.reduce((a, x) => a + ((PT[x] || {}).unpacked || 0), 0)]; };
+  const ask = ls => { const [dl, un] = need(ls); if (confirm(t("fotaq-ask").replace("%s", MB(dl)).replace("%s", MB(un)))) partyDo({action: "fotaq_install", langs: ls}); };
   if (D.running) {
     row.appendChild(el("span", "", D.phase === "unpack" ? "⏳ " + t("unpacking …") : "⏳ " + MB(D.got) + " / " + MB(D.total) + " MB"));
     const pr = document.createElement("progress"); pr.max = D.total || 1; pr.value = D.phase === "unpack" ? D.total || 1 : D.got || 0; pr.style.cssText = "flex:1 1 120px";
     const cb = el("button", "sec", t("Cancel")); cb.type = "button"; cb.onclick = () => partyDo({action: "fotaq_cancel"}); row.append(pr, cb);
+  } else if (!F.pinned) {
+    row.appendChild(el("span", "mut", t("comes with an update")));
   } else if (F.installed) {
     const pl = el("a", "btn", "▶ " + t("Play myself")); pl.href = "/games/fotaq/"; pl.target = "_blank";
     const db = el("button", "sec", "🗑 " + t("Remove")); db.type = "button"; db.onclick = () => { if (confirm(t("fotaq-del"))) partyDo({action: "fotaq_delete"}); };
     row.append(el("span", "", "✓ " + t("installed")), pl, db);
-  } else if (!F.pinned) {
-    row.appendChild(el("span", "mut", t("comes with an update")));
+    ["de", "en"].forEach(L => { const r = el("div", "trow"); r.style.marginTop = "6px"; r.dataset.lang = L;
+      if (have.includes(L)) { const x = el("button", "sec", t("Remove")); x.type = "button"; x.id = "fotaq-rm-" + L;
+        x.onclick = () => { if (confirm(t("fotaq-del-lang"))) partyDo({action: "fotaq_remove", lang: L}); }; r.append(el("span", "", "✓ " + LN[L]), x); }
+      else { const x = el("button", "", "⬇ " + t("Add") + " (" + MB(need([L])[0]) + " MB)"); x.type = "button"; x.id = "fotaq-add-" + L;
+        x.onclick = () => ask([L]); r.append(el("span", "mut", LN[L]), x); }
+      extra.appendChild(r); });
   } else {
-    const ib = el("button", "", "⬇ " + t("Install") + " (" + MB(F.size) + " MB)"); ib.type = "button"; ib.id = "fotaq-install";
-    ib.onclick = () => { if (confirm(t("fotaq-ask").replace("%s", MB(F.size)).replace("%s", MB(F.unpacked)))) partyDo({action: "fotaq_install"}); };
-    row.appendChild(ib);
-    if (!F.room) row.appendChild(el("span", "mut", "⚠ " + t("not enough free space on the memory card")));
+    const sel = window.FOTAQ_SEL || (window.FOTAQ_SEL = {de: true, en: true}), ib = el("button", "", ""); ib.type = "button"; ib.id = "fotaq-install";
+    const upd = () => { const ls = ["de", "en"].filter(L => sel[L]); ib.disabled = !ls.length;
+      ib.textContent = "⬇ " + t("Install") + " (" + MB(need(ls)[0]) + " MB)"; };
+    row.appendChild(el("span", "", t("Languages:")));
+    ["de", "en"].forEach(L => { const lb = el("label", ""); lb.style.cssText = "display:inline-flex;gap:6px;align-items:center";
+      const cb = document.createElement("input"); cb.type = "checkbox"; cb.checked = sel[L]; cb.id = "fotaq-l-" + L;
+      cb.onchange = () => { sel[L] = cb.checked; upd(); }; lb.append(cb, LN[L] + " (" + MB((PT[L] || {}).size) + " MB)"); row.appendChild(lb); });
+    ib.onclick = () => ask(["de", "en"].filter(L => sel[L])); upd(); row.appendChild(ib);
+    if (F.free - need(["de"])[0] - need(["de"])[1] < F.free_need) row.appendChild(el("span", "mut", "⚠ " + t("not enough free space on the memory card")));
   }
-  w.appendChild(row);
+  w.append(row, extra);
   if (D.msg && !D.running) w.appendChild(el("div", "mut", "⚠ " + t(D.msg)));
   box.appendChild(w);
 }

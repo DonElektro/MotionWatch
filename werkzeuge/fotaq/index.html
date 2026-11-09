@@ -23,7 +23,7 @@ a.back{display:inline-flex;align-items:center;gap:4px;color:var(--txt);text-deco
 .langs button{font:inherit;color:var(--txt);background:var(--panel);border:2px solid var(--line);border-radius:16px;padding:18px 12px;cursor:pointer;
   display:flex;flex-direction:column;align-items:center;gap:6px;min-height:112px;touch-action:manipulation}
 .langs button b{font-size:19px}.langs button span{font-size:13px;color:var(--mut)}.langs button .fl{font-size:30px;line-height:1}
-.langs button.last{border-color:var(--acc)}
+.langs button.last{border-color:var(--acc)}.langs.one{grid-template-columns:1fr}
 .langs button:active{transform:scale(.98)}
 .help{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-size:14px;color:var(--mut)}
 .help b{color:var(--txt)}.help ul{margin:6px 0 0;padding-left:18px}.help li{margin:3px 0}
@@ -104,6 +104,14 @@ body.play #pick{display:none}body.play #game{display:flex;flex-direction:column}
     d.querySelectorAll("[data-de]").forEach(function (e) { e.textContent = e.getAttribute("data-" + L); }); }
   lang(UI);
   if (last) { var lb = $("#btn-" + last); if (lb) lb.classList.add("last"); }
+  // MoveEye installs the languages one by one: only offer the ones that are there (index of ScummVM's HTTP filesystem)
+  window.FOTAQ_LANGS = null;
+  fetch("data/games/index.json", {cache: "no-store"}).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
+    var have = j ? Object.keys(j).filter(function (k) { return k === "de" || k === "en"; }) : ["de", "en"];
+    window.FOTAQ_LANGS = have;
+    ["de", "en"].forEach(function (L) { var b = $("#btn-" + L); if (b) b.classList.toggle("hidden", have.indexOf(L) < 0); });
+    if (have.length === 1) $(".langs").classList.add("one");
+  }).catch(function () { window.FOTAQ_LANGS = ["de", "en"]; });
 
   // ---- loading indicator: wasm, then the game data (the HTTP filesystem of ScummVM fetches whole files) ----
   var loadEl = $("#load"), loadTxt = $("#loadTxt"), loadBar = $("#loadBar"), started = false, busy = 0;

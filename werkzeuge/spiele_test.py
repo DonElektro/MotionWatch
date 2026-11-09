@@ -645,8 +645,12 @@ def fotaq_moveeye(datei, fehler, warn, bilder, release="", pins=""):
         party({"action": "fotaq_install"}); warten()
         ok(not ns["fotaq_installed"]() and ("large" in DL["msg"] or "size" in DL["msg"] or "checksum" in DL["msg"]), f"zu grosse Datei abgelehnt ({DL['msg']})")
         srv.extra = b""
+    if bilder:
+        fotaq_mw_bilder(ns, app, PW, bilder, fehler, nur_admin="_auswahl")
+    if not release:                                  # languages one by one (wish of the owner): DE only, EN later, DE away
+        fotaq_sprachen(ns, c, party, warten, srv, tag, ok)
     t0 = time.time()
-    code, j = party({"action": "fotaq_install"})
+    code, j = party({"action": "fotaq_install", "langs": ["de", "en"]})
     seen = 0
     while DL["running"] and time.time() - t0 < 1800:
         seen = max(seen, DL["got"]); time.sleep(0.3)
@@ -663,10 +667,11 @@ def fotaq_moveeye(datei, fehler, warn, bilder, release="", pins=""):
     import socket
     with socket.socket() as sk:
         sk.bind(("127.0.0.1", 0)); wp = sk.getsockname()[1]
-    CFG["web_port"] = wp - 2
-    ns["games_server_start"]()
+    if not ns["GAMESRV"]["port"]:
+        CFG["web_port"] = wp - 2
+        ns["games_server_start"]()
     gp = ns["GAMESRV"]["port"]
-    ok(gp == wp, f"Spiele-Port läuft ({gp})")
+    ok(gp > 0, f"Spiele-Port läuft ({gp})")
     op = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 
     def get(path, hdr=None):
@@ -701,7 +706,58 @@ def fotaq_moveeye(datei, fehler, warn, bilder, release="", pins=""):
     shutil.rmtree(home, ignore_errors=True)
 
 
-def fotaq_mw_bilder(ns, app, PW, bilder, fehler):
+def _launcher_sprachen(ns):
+    """the language buttons the start page shows (served by the games port of MoveEye, real index.html)"""
+    from playwright.sync_api import sync_playwright
+    ns["games_server_start"]() if not ns["GAMESRV"]["port"] else None
+    with sync_playwright() as pw:
+        br = pw.chromium.launch()
+        pg = br.new_page()
+        pg.goto(f"http://127.0.0.1:{ns['GAMESRV']['port']}/g/fotaq/index.html")
+        pg.wait_for_function("() => window.FOTAQ_LANGS !== null && window.FOTAQ_LANGS !== undefined", timeout=10000)
+        out = [L for L in ("de", "en") if pg.locator("#btn-" + L).is_visible()]
+        br.close()
+    return out
+
+
+def fotaq_sprachen(ns, c, party, warten, srv, tag, ok):
+    import socket
+    F, DL = ns["FOTAQ_FILES"], ns["FOTAQ_DL"]
+    if not ns["GAMESRV"]["port"]:
+        with socket.socket() as sk:
+            sk.bind(("127.0.0.1", 0)); wp = sk.getsockname()[1]
+        ns["CFG"]["web_port"] = wp - 2
+        ns["games_server_start"]()
+    gi = lambda: json.load(open(os.path.join(ns["fotaq_dir"](), "data", "games", "index.json")))
+    eng = "/" + tag + "/" + F["engine"]["name"]
+    code, j = party({"action": "fotaq_install", "langs": []})
+    ok(code == 400 and not DL["running"], f"keine Sprache gewählt: nicht geladen ({code} {j.get('error')})")
+    st = party()[1]["fotaq"]
+    ok(st["parts"]["de"]["size"] == F["de"]["size"] and not st["engine"], "Zustand nennt die Grösse jeder Sprache")
+    party({"action": "fotaq_install", "langs": ["de"]}); warten()
+    n0 = sum(1 for h in srv.hits if h[0] == eng)
+    st = party()[1]["fotaq"]
+    ok(ns["fotaq_installed"]() and st["langs"] == ["de"] and not os.path.exists(os.path.join(ns["fotaq_dir"](), "data", "games", "en")),
+       f"nur Deutsch installiert ({st['langs']}, {DL['msg'] or 'ok'})")
+    ok(gi() == {"de": {}}, f"data/games/index.json nur de ({gi()})")
+    ok(_launcher_sprachen(ns) == ["de"], "Startseite bietet nur Deutsch an")
+    ok(ns["fotaq_need"](["de", "en"])[1] == F["en"]["size"], "Englisch dazu: nur die Englisch-ZIP (Engine schon da)")
+    party({"action": "fotaq_install", "langs": ["en"]}); warten()
+    st = party()[1]["fotaq"]
+    ok(st["langs"] == ["de", "en"] and sum(1 for h in srv.hits if h[0] == eng) == n0, f"Englisch später dazu, Engine nicht nochmals geladen ({st['langs']})")
+    ok(_launcher_sprachen(ns) == ["de", "en"], "Startseite bietet beide Sprachen an")
+    code, j = party({"action": "fotaq_remove", "lang": "de"})
+    st = party()[1]["fotaq"]
+    ok(code == 200 and st["langs"] == ["en"] and not os.path.exists(os.path.join(ns["fotaq_dir"](), "data", "games", "de")) and gi() == {"en": {}},
+       f"Deutsch entfernt, Englisch bleibt ({st['langs']})")
+    ok(_launcher_sprachen(ns) == ["en"], "Startseite bietet nur Englisch an")
+    r = c.get("/spiele", environ_base={"REMOTE_ADDR": "192.168.1.20"})
+    ok("Flight of the Amazon Queen" in r.get_data(as_text=True), "Kachel bleibt mit einer Sprache")
+    code, j = party({"action": "fotaq_remove", "lang": "en"})
+    ok(code == 200 and not ns["fotaq_installed"]() and not os.path.exists(ns["fotaq_dir"]()), "letzte Sprache entfernt: alles weg, keine Kachel")
+
+
+def fotaq_mw_bilder(ns, app, PW, bilder, fehler, nur_admin=""):
     """screenshots: the tile on /spiele (phone) and the admin tab «Spielecke» (phone, PC)"""
     from playwright.sync_api import sync_playwright
     from werkzeug.serving import make_server
@@ -723,7 +779,9 @@ def fotaq_mw_bilder(ns, app, PW, bilder, fehler):
                 pg.on("pageerror", lambda e, errs=errs: errs.append(str(e)[:200]))
                 pg.goto(base + "/spiele"); pg.wait_for_timeout(800)
                 tile = pg.locator("a.c", has_text="Flight of the Amazon Queen")
-                if not tile.count():
+                if nur_admin:
+                    pass
+                elif not tile.count():
                     fehler.append(f"FOTAQ MoveEye {name}: keine Kachel auf /spiele")
                 else:
                     tile.scroll_into_view_if_needed(); pg.wait_for_timeout(300)
@@ -734,7 +792,15 @@ def fotaq_mw_bilder(ns, app, PW, bilder, fehler):
                     fehler.append(f"FOTAQ MoveEye {name}: Abschnitt im Reiter Spielecke fehlt")
                 else:
                     fb.scroll_into_view_if_needed(); pg.wait_for_timeout(300)
-                    pg.screenshot(path=os.path.join(bilder, f"fotaq_admin_{name}.png"))
+                    pg.screenshot(path=os.path.join(bilder, f"fotaq_admin{nur_admin}_{name}.png"))
+                    if nur_admin and fb.locator("#fotaq-l-en").count():          # the size follows the choice
+                        b0 = fb.locator("#fotaq-install").inner_text(); fb.locator("#fotaq-l-en").click(); pg.wait_for_timeout(200)
+                        b1 = fb.locator("#fotaq-install").inner_text(); fb.locator("#fotaq-l-de").click(); pg.wait_for_timeout(200)
+                        dis = fb.locator("#fotaq-install").is_disabled(); fb.locator("#fotaq-l-de").click(); fb.locator("#fotaq-l-en").click()
+                        if b0 == b1 or not dis:
+                            fehler.append(f"FOTAQ MoveEye {name}: Grösse folgt der Sprachwahl nicht ({b0} / {b1}, ohne Sprache gesperrt: {dis})")
+                        else:
+                            print(f"  ✓ {name}: Knopf «{b0}» → nur Deutsch «{b1}», ohne Sprache gesperrt", flush=True)
                 for e in errs:
                     fehler.append(f"FOTAQ MoveEye {name}: JavaScript: {e}")
                 ctx.close()

@@ -1033,8 +1033,8 @@ class WebStream:
                     PARTY["host"] = d["id"]; party_bump()
                 elif a_ == "install":
                     threading.Thread(target=games_install, daemon=True).start()
-                elif a_ in ("fotaq_install", "fotaq_cancel", "fotaq_delete"):    # 639zzg: Flight of the Amazon Queen
-                    ok_, e_ = fotaq_action(a_)
+                elif a_ in ("fotaq_install", "fotaq_cancel", "fotaq_delete", "fotaq_remove"):    # 639zzg: Flight of the Amazon Queen
+                    ok_, e_ = fotaq_action(a_, d)
                     if not ok_:
                         return reply({"ok": False, "error": tr(e_, norm_lang(d.get("lang") or CFG.get("lang"))), "fotaq": fotaq_state()}, 400)
             base = (CFG.get("public_url") or "").strip().rstrip("/")
