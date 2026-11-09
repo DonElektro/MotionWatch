@@ -181,7 +181,7 @@ class WebStream:
             if who:
                 fails.pop(ip, None)
                 g.user, g.role = who
-                if request.method == "GET" and not request.path.startswith(("/api/", "/video", "/cam_feed", "/cam_snap", "/sim/", "/snapshot")):
+                if request.method == "GET" and not request.path.startswith(("/api/", "/video", "/cam_feed", "/cam_snap", "/cam_thumb", "/cam_view", "/sim/", "/snapshot")):
                     g.new_trust = trust_add(who[0], who[1], request.headers.get("User-Agent", ""), ip)   # remember this device
                 return None
             if a:
