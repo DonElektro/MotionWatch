@@ -15,6 +15,10 @@ uniform float strength = 1.0;
 uniform float refr = 0.055;         // wie stark ein Tropfen das Bild verschiebt (Anteil der Bildbreite)
 uniform float blur_px = 3.0;
 uniform float mul_expo = 1.0;      // 1 = das gelesene Bild ist noch unbelichtet (Test: 0)
+// sim-kamerabild (Normal / Hoch, nicht in festen Testläufen): die Tropfen sitzen auf dem Fenster des Gehäuses, ein paar mm vor
+// der Linse - weit unscharf: weiche, durchscheinende, etwas milchige Flecken statt scharfer Scheiben mit dunklem Rand.
+// 0 = wie vorher (Lite, Prüfstand: gleiche Bilder).
+uniform float soft_drops = 0.0;
 
 // Godot 4.3 Kompatibilität (GLES3): das Bildschirm-Bild (color_buffer) ist erst nach den eigenen Funktionen deklariert -
 // darum wird es nicht in einer Funktion gelesen, sondern mit einem Makro direkt in fragment() (sonst «color_buffer undeclared»
@@ -40,6 +44,16 @@ void fragment() {
 		a = 0.92;
 	} else if (th >= 0.03) {
 		th = th / 0.745;                                                   // Wasser: B bis 190 (darüber Schnee)
+		if (soft_drops > 0.5) {
+			// unscharf: das Bild dahinter weich gezeichnet und nur wenig verschoben, ein heller Schleier (Streulicht im Wasser),
+			// durchscheinend mit weichem Rand - so sehen Tropfen auf der Scheibe vor einer Kamera mit Fokus auf die Ferne aus
+			vec2 uv = clamp(SCREEN_UV - n * refr * 0.3 * th, vec2(0.002), vec2(0.998));
+			vec3 bl = (GRAB(uv, blur_px * (3.0 + 3.0 * th)) + GRAB(uv, blur_px * (1.5 + 1.5 * th))) * 0.5 * e;
+			col = mix(bl, vec3(dot(bl, vec3(0.333))), 0.2) * 0.95 + vec3(0.045 * (0.3 + 0.7 * e));
+			float spec = pow(max(0.0, dot(normalize(n + vec2(0.0001)), normalize(vec2(-0.55, -0.75)))), 6.0) * th;
+			col += vec3(spec * 0.18 * (0.25 + 0.75 * e));
+			a = smoothstep(0.0, 0.9, th) * 0.55;
+		} else {
 		// Wassertropfen: kleine Linse - verkehrtes, verschwommenes Bild der Umgebung
 		vec2 uv = clamp(SCREEN_UV - n * refr * (0.4 + th), vec2(0.002), vec2(0.998));
 		col = GRAB(uv, blur_px * (1.0 + 1.5 * th)) * e;
@@ -47,6 +61,7 @@ void fragment() {
 		float spec = pow(max(0.0, dot(normalize(n + vec2(0.0001)), normalize(vec2(-0.55, -0.75)))), 12.0) * smoothstep(0.35, 0.75, 1.0 - th) * th;
 		col += vec3(spec * 1.6 * (0.25 + 0.75 * e));
 		a = smoothstep(0.03, 0.16, th) * 0.96;
+		}
 	} else {
 		col = vec3(0.0);
 		a = 0.0;

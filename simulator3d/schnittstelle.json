@@ -40,7 +40,8 @@
     "sky": "Himmel und Licht der Szene (licht.gd): lux am Geraet (Himmel + Lampen), sky_lux, phase (tag / buergerlich / nautisch / astronomisch / nacht), sun_el, moon_el, moon_illum, lp (land / dorf / stadt) -> MoveEye liest es noch nicht (spaeter: Nacht-Umschaltung pruefen, Kamera-Paket Blendung)",
     "season": "Jahreszeit und Tageslauf (jahreszeiten.gd): season (fruehling / sommer / herbst / winter), doy, sunrise, sunset (H:MM Schweizer Zeit), day_h, snow (Schnee liegt), occupancy (Campingplatz 0..1) -> MoveEye liest es noch nicht (spaeter: Tagebuch, Nacht-Zeiten pruefen)",
     "egg": "Bergtal-Geheimnis: {st, x, y, r} wo das Murmeltier im Bild der Kopfkamera ist, nur solange man ein Herz zeichnen kann (bergtal_ei.gd) -> 639z Live-Ansicht",
-    "ui": "P2 Abgleich der Ansicht: eigene Aenderungen des Simulators {n, base, set}, PIN-Anfrage {unlock}, MoveEye aktualisieren {update_mw} - nur der Leiter, nur nach einer Aenderung -> 639zb ui_take (net.gd, abgleich.gd)"
+    "ui": "P2 Abgleich der Ansicht: eigene Aenderungen des Simulators {n, base, set}, PIN-Anfrage {unlock}, MoveEye aktualisieren {update_mw} - nur der Leiter, nur nach einer Aenderung -> 639zb ui_take (net.gd, abgleich.gd)",
+    "lens": "Wasser auf den Linsen (wetter.gd lens_reply): head / wide {cover, fog, drops}, dirty (Hinweis «Linse putzen») -> 558l sim_lens_take: Chip und Live-Zeile «Linse verschmutzt»"
   },
   "state": {
     "v": "Version des Zustands",
@@ -137,7 +138,8 @@
     "vorfuehrung": "Vorfuehrmodus Maggie (maggie_vorfuehrung.gd): do start (len kurz | ganz, knoepfe true = Spiel-Knöpfe zeigen) | pause | weiter | kapitel (n) | stop | info -> 639m Seite /sim/vorfuehrung (nur Besitzer; Simulator: nur dieser PC / verbundenes MoveEye)",
     "spielbereich": "Reiter Spielen (639i): Kopfzeile level + slot {n, name}, resume {id, title, where, pct} (Weiterspielen-Hinweis), stories [{id, title, short, dauer, age, pct, where, started, done, locked, soon, pic, last}] (Regal Geschichten, Bild /story_pic/<id>.jpg), chapters (Entdecken: Orte der Reihe nach, start = Hinreisen), badges (-> Entdeckungsbuch, 139 auch ueber entdecken badges), kids, blinki",
     "egg": "Entwickler-Test Bergtal-Geheimnis (bergtal_ei.gd): do info | light | signal | beam | cave | heart (x, y | auto) | draw | belly | look | reset -> 639z (heart aus der Live-Ansicht)",
-    "mehr": "Mehr des Simulators: diag (Selbstdiagnose) und log (Protokoll) -> 639zb health_check / diag_zip"
+    "mehr": "Mehr des Simulators: diag (Selbstdiagnose) und log (Protokoll) -> 639zb health_check / diag_zip",
+    "wetter": "Wetter-Test / «Linse putzen» (do: wipe) -> 558l sim_lens_wipe (Knopf auf der Seite)"
   },
   "_meta": {
     "world_reply": [

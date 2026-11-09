@@ -3079,7 +3079,8 @@ func world_reply() -> Dictionary:
 	r["spieltest"] = spieltest.reply() if spieltest != null else null   # Spieltest-Assistent: Meldung nach jeder Runde -> MoveEye 635a (Push)
 	r["sky"] = licht.reply() if licht != null else null   # «Licht & Nacht»: lux am Gerät, Dämmerung, Sonne, Mond (MoveEye liest es noch nicht)
 	r["season"] = jahreszeiten.reply() if jahreszeiten != null else null   # «Jahreszeiten»: Jahreszeit, Sonnenauf-/untergang, Belegung (MoveEye liest es noch nicht)
-	r["egg"] = bt_ei.reply() if bt_ei != null and is_instance_valid(bt_ei) else null   # Bergtal-Geheimnis (nur wenn es etwas zu zeichnen gibt) -> MoveEye 639z
+	r["egg"] = bt_ei.reply() if bt_ei != null and is_instance_valid(bt_ei) else null
+	r["lens"] = wetter.lens_reply() if wetter != null else null   # sim-kamerabild: Tropfen / Beschlag auf der Linse -> MoveEye 558l «Linse putzen»   # Bergtal-Geheimnis (nur wenn es etwas zu zeichnen gibt) -> MoveEye 639z
 	if simwerte != null:
 		r.merge(simwerte.reply())                     # Simulator-Werte: battery, pi_temp, net, clock, place, forecast (power.gd)
 	return r
@@ -3936,7 +3937,7 @@ func _control(d: Dictionary) -> Dictionary:
 	#     "game_shut", "game_mwcatch", "shoot", "replay", "planner", "blindmap", "dataset", "farecreate", "whatif",
 	#     "input", "pad", "padview", "press", "rover", "view_look", "netmap", "nacht", "parcours", "sabotage",
 	#     "templates", "twin", "visits", "weit", "entdecken", "werkstatt", "trailer", "vorfuehrung", "spielbereich",
-	#     "egg", "sicherung", "mehr", "localplay"]
+	#     "egg", "sicherung", "mehr", "localplay", "wetter"]
 	return _mod("steuerung")._control(d)
 
 

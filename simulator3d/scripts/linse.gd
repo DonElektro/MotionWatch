@@ -32,6 +32,7 @@ const MAX_DROPS := 170
 
 var enabled := true
 var strength := 1.0
+var soft := false               # sim-kamerabild: unscharfe, durchscheinende Tropfen und langsameres Ansetzen (wetter.gd: Normal / Hoch)
 var mat: ShaderMaterial
 var quad: MeshInstance3D
 var img: Image
@@ -115,6 +116,8 @@ func step(dt: float, dt_sim: float) -> bool:
 	var cap := MAX_DROPS if not Quality.lite() else 70
 	# 1. neue Tropfen / Flocken (Poisson: im Mittel rate · dt)
 	var rate := (2.2 * pow(rain_mmh, 0.7) + 1.6 * pow(snow_mmh, 0.7)) * exposure()
+	if soft:
+		rate *= 0.35                                  # das Dach des Gehäuses hält das meiste ab: Tropfen setzen langsamer an
 	_acc += rate * dt
 	while _acc >= 1.0:
 		_acc -= 1.0
@@ -168,6 +171,7 @@ func step(dt: float, dt_sim: float) -> bool:
 		_dirty = false
 		mat.set_shader_parameter("fog", fog * strength)
 		mat.set_shader_parameter("strength", strength)
+		mat.set_shader_parameter("soft_drops", 1.0 if soft else 0.0)
 		return true
 	return false
 
@@ -262,6 +266,8 @@ func _draw() -> void:
 		var cy: float = d[1]
 		var r: float = d[2]
 		var snow: bool = d[4] == 1
+		if soft and not snow:
+			r *= 1.35                                 # unscharf: der Fleck ist grösser als der Tropfen
 		var x0 := maxi(0, int(cx - r - 1.0))
 		var x1 := mini(W - 1, int(cx + r + 1.0))
 		var y0 := maxi(0, int(cy - r * (1.25 if d[3] > 0.0 else 1.0) - 1.0))
@@ -273,7 +279,7 @@ func _draw() -> void:
 				var q := dx * dx + dy * dy
 				if q >= 1.0:
 					continue
-				var th := sqrt(1.0 - q)                 # Halbkugel
+				var th := sqrt(1.0 - q) if not soft or snow else (1.0 - q) * (1.0 - q * 0.3)   # Halbkugel / unscharf: weicher Rand
 				var o := (yy * W + xx) * 4
 				var tb := int(th * 190.0)
 				if snow:
