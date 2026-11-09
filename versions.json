@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-09 06:38",
+ "generated": "2026-11-09 07:29",
  "versions": [
+  {
+   "version": "3.68.0",
+   "file": "webcam_bewegung_3_68_0.py",
+   "url": "",
+   "sha256": "1d8fbd300f8a7ff3e9e320e161458f6ce30f362afcc96415525a104ead2c6609",
+   "date": "2026-11-09 07:29",
+   "notes": "🔍 Untersuchen: im Live-Bild einen Bereich (oder das ganze Bild) untersuchen – KI und BioCLIP sagen, was zu sehen ist, mit Infokarten; wahlweise fährt der Kopf zuerst dorthin (Recht «Kopf»); «📷 Foto untersuchen» für ein eigenes Foto (bis 15 MB); Funde landen im Datentausch-Ordner «Funde» (Grenzen und freier Platz wie jeder Upload); Gäste ohne Kopf-Bewegung; Knopf im Pi-Fenster.",
+   "size": 3786567,
+   "sig": "41e2ef999bff52a3a3c138005bf658f02e16151b9e028d705f4850e832034e4cf4bf23d2056b082e80c00ed918e8f17b49504fc81b910d2a1f981b3916c2bd04",
+   "data": {
+    "file": "moveeye_daten_3_68_0.zip",
+    "url": "",
+    "sha256": "d117185f56addeb3c1f570ca2b4c50dd70e8c717fb627dd97391884574d70cbd",
+    "size": 4897280,
+    "sig": "e20f3bc26b1bfa1064adae53096702c20810b49340d63df6a4d2efecd1198ec94ad0f4afc596f1b08d4daeac058b5efcc88f9758736b040b971cab0997b8aa0d"
+   }
+  },
   {
    "version": "3.67.0",
    "file": "webcam_bewegung_3_67_0.py",
    "url": "",
    "sha256": "55b1db5b9a13d48f752b992b997eabc5f1e80ecf571558401c0567a5519f1d2d",
-   "date": "2026-11-09 06:38",
+   "date": "2026-11-09 06:43",
    "notes": "🌿 Bestimmen: zu jeder erkannten Art eine kurze Infokarte (Beschreibung aus Wikipedia, gekürzt, mit Quelle und Lizenz CC BY-SA 4.0 auf jeder Karte; Link zum ganzen Artikel), für über 10'000 Arten offline – die Datei (2,7 MB, feste Prüfsumme) wird mit dem Modell geladen.",
    "size": 3757424,
    "sig": "7e3a9ca2c192e2a875bee50c4468131bb10789fe34fec1179020893738495ce645e02cc92b794d9feb21eaefb7888f13b0d0af28282e381b0895fe42b14e8c03",
@@ -136,23 +153,6 @@
     "sha256": "ad16b982e0de3b8451d961e68a653edfcb5e5b90fb531f136d2ebfcacb841deb",
     "size": 4811182,
     "sig": "dc62df47b9740de7c47faa1511a231401343e3523f8d77f12dc3a83e167796fdb34c1d47472bdc43909400e69e2bb62f01e68c3c9477f075b1894bf8ef0b2d03"
-   }
-  },
-  {
-   "version": "3.59.0",
-   "file": "webcam_bewegung_3_59_0.py",
-   "url": "",
-   "sha256": "4fd1fa47f0953371c048e7c62da4f8eb4cb1e26a44dfdbf852cb9d12870fe11e",
-   "date": "2026-11-07 19:00",
-   "notes": "MoveEye-Datei schlank: Hauptdatei von 5,0 auf 3,4 MB (mehr in die Zusatzdatei: Übersetzungen, Anleitung, Web-Teile; gebaute Datei ohne Kommentare, mit Tabs, gleiche Zeilennummern). Ohne Zusatzdatei startet MoveEye wieder im Kern, mit «Jetzt nachladen». Grenze: Warnung ab 4 MiB, Abbruch ab 5 MiB.",
-   "size": 3416329,
-   "sig": "54158c576ecc486a62597a89f612a5a406edf7791e1d4f4964b5bf037c2dc5ed5ddffaa89094c0d16c8ef62cf3ed39e3a96196fc83365c63f3ddfbc65e41b300",
-   "data": {
-    "file": "moveeye_daten_3_59_0.zip",
-    "url": "",
-    "sha256": "b29ea6f5d1dec51e052f0b3c8f0a3bc842c00b2fa3476774bcda30790f872e42",
-    "size": 4785308,
-    "sig": "f2fdbbc09407af651c915017a61f6f63e3286b5edc6fc27f33b41753b427d5cf0789bb3a5755425c590ed7176387fd6dafcfb126d678a1264d69c41335de4001"
    }
   },
   {
