@@ -23,6 +23,8 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 3.69.1: iPhone «Zum Home-Bildschirm»: MoveEye-Symbol statt schwarzem «M» – das Symbol steckt jetzt direkt in der Seite (iOS
+    lädt es sonst nicht über das eigene Zertifikat)
   * 3.69.0: Spielecke: «Flight of the Amazon Queen» (1995, CD-Fassung mit Sprachausgabe, Deutsch/Englisch) – ScummVM im Browser,
     Admin lädt es einmal (Sprache wählen, feste Prüfsumme, 2 GB bleiben frei)
   * 3.68.1: Härtung: hochgeladene Bilder (Untersuchen, Datentausch-Vorschau, KI-Helfer) – Grösse aus dem Dateikopf
@@ -108,9 +110,6 @@ Features
     beim Verfolgen mit.
   * 3.48.1: Werkstatt im Simulator wie in MoveEye (Karte unter dem Bild, Symbole, Farben), Knopftexte zweizeilig statt
     abgeschnitten; echte 3D-Modelle für Füsse und Stopfen, echte Lage auf den Druckplatten.
-  * 3.48.0: Werkstatt: Teil antippen → «Nur dieses Teil zeigen» mit Grösse, Druck-/Zukauf-Infos, 3MF-Download, «Liegend wie
-    gedruckt», «Wo es hingehört» (Sprung zum Montageschritt); neue Ansicht «Druckplatten» A/B mit Download je Platte und allen
-    Platten als ZIP; MoveEye und Simulator.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -119,10 +118,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_3_69_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_3_69_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_3_69_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_3_69_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_3_69_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_3_69_1.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -139,7 +138,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "3.69.0"
+APP_VERSION = "3.69.1"
 
 
 def default_data_dir():
@@ -264,8 +263,8 @@ def prepare_settings_file():
 
 
 
-ZD_FILE = "moveeye_daten_3_69_0.zip"
-ZD_SHA256 = "242fbc5e4fc2a8920890d0a6abb12d0a38f56624956d1d8d1ab4017151de279a"
+ZD_FILE = "moveeye_daten_3_69_1.zip"
+ZD_SHA256 = "b02b1ce35b5689fc9c8ee9764959cd85f8595b6b6a0ac834f2a916a22dbe2d82"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -38736,6 +38735,52 @@ def app_icon_png(size, variant="", icon=None):
 	return _ICONS[key]
 
 
+_APPLE_ICON_URI = {}
+
+
+def apple_icon_href(variant=None):
+	"""
+
+"""
+	v = host_variant() if variant is None else variant
+	key = (app_icon_id(), v)
+	if key not in _APPLE_ICON_URI:
+		import base64
+		raw = app_icon_png(180, v)
+		out = raw
+		im = cv2.imdecode(np.frombuffer(raw, np.uint8), cv2.IMREAD_COLOR) if raw else None
+		if im is not None:
+			for q in (8, 16):
+				p = ((im.astype(np.int16) // q) * q + q // 2).clip(0, 255).astype(np.uint8)
+				ok, buf = cv2.imencode(".png", p, [cv2.IMWRITE_PNG_COMPRESSION, 9])
+				if ok:
+					out = buf.tobytes()
+				if len(out) <= 8000:
+					break
+		_APPLE_ICON_URI[key] = ("data:image/png;base64," + base64.b64encode(out).decode()) if out else "/apple-touch-icon.png"
+	return _APPLE_ICON_URI[key]
+
+
+def apple_icon_link():
+	""
+	return '<link rel="apple-touch-icon" href="' + apple_icon_href() + '">'
+
+
+def apple_icon_selftest():
+	import base64
+	u = apple_icon_href("int")
+	assert u.startswith("data:image/png;base64,") and apple_icon_href("int") is u, "inline and cached"
+	raw = base64.b64decode(u.split(",", 1)[1])
+	im = cv2.imdecode(np.frombuffer(raw, np.uint8), cv2.IMREAD_COLOR)
+	assert im is not None and im.shape[:2] == (180, 180) and len(u) < 12000, (len(u), None if im is None else im.shape)
+	p = render_page("<html><head></head><body></body></html>", "live")
+	assert '<link rel="apple-touch-icon" href="data:image/png;base64,' in p and 'href="/apple-touch-icon.png' not in p, "render_page: inline icon"
+	return "180 px, %d bytes inline (data: URI, cached per icon and address)" % len(u)
+
+
+SELFTEST_EXTRA.append(("Home-screen icon inline for iOS (500, 3.69.1)", apple_icon_selftest))
+
+
 def app_manifest():
 	v = host_variant(); name = app_title(v)
 	return json.dumps({"name": name, "short_name": name, "start_url": "/", "scope": "/", "display": "standalone",
@@ -38770,6 +38815,7 @@ def i18n_js(lang, help_=False):
 def render_page(page, active):
 	""
 	page = page.replace("<head>", "<head>" + ui_seed_script() + i18n_loader(active == "help") + PWA_HEAD.replace(
+        '<link rel="apple-touch-icon" href="/apple-touch-icon.png">', apple_icon_link()).replace(
         'content="MoveEye">', 'content="' + app_title(host_variant()) + '">').replace(".png\"", ".png?i=" + app_icon_id() + "\"")
         + "<script>window.MW_ICON=" + json.dumps(app_icon_id()) + ";</script>" + makeover_head()
         + ("<style>:root{--mw-icon:url(/app-icon/anim.svg?i=" + app_icon_id() + ")}</style>"
@@ -40905,7 +40951,8 @@ class WebStream:
 		def party_page(key):
 			if not _pkey(key):
 				return Response("<h2 style='font-family:sans-serif'>Die Spielecke ist geschlossen.</h2>", 404, mimetype="text/html")
-			return Response(PARTY_PAGE.replace("__KEY__", key).replace("__NTJS__", NT_JS), mimetype="text/html", headers={"Cache-Control": "no-store"})
+			return Response(PARTY_PAGE.replace("__KEY__", key).replace("__NTJS__", NT_JS).replace('<meta charset="utf-8">', '<meta charset="utf-8">' + apple_icon_link(), 1),
+                             mimetype="text/html", headers={"Cache-Control": "no-store"})
 
 		@app.route("/p/<key>/join", methods=["POST"])
 		def party_join(key):
@@ -41270,7 +41317,7 @@ class WebStream:
 		def spiele_home():
 			if not _lan_ok():
 				return Response(_lan_no, 403, mimetype="text/html")
-			return Response(spiele_page(request.host), mimetype="text/html", headers={"Cache-Control": "no-store"})
+			return Response(spiele_page(request.host).replace('<meta charset="utf-8">', '<meta charset="utf-8">' + apple_icon_link(), 1), mimetype="text/html", headers={"Cache-Control": "no-store"})
 
 		@app.route("/spiele/g/<game>/")
 		@app.route("/spiele/g/<game>/<path:fn>")
@@ -43136,8 +43183,8 @@ class WebStream:
 				return sx_err(404, "guest")
 			keep = COMMON_JS[COMMON_JS.index("function keepStream"):COMMON_JS.index("\nconst post")]
 			gt = {L: {k: TRX[L][k] for k in GUEST_KEYS if TRX[L].get(k)} for L in ("fr", "it", "rm")}
-			return Response(GUEST_PAGE.replace("__BASE__", "/g/" + token).replace("/*KEEP*/", keep).replace("/*GT*/{}", json.dumps(gt, ensure_ascii=False)),
-                            mimetype="text/html")
+			return Response(GUEST_PAGE.replace("__BASE__", "/g/" + token).replace("/*KEEP*/", keep).replace("/*GT*/{}", json.dumps(gt, ensure_ascii=False))
+                            .replace('<meta charset="utf-8">', '<meta charset="utf-8">' + apple_icon_link(), 1), mimetype="text/html")
 
 		@app.route("/g/<token>/state")
 		def guest_state(token):
@@ -48844,7 +48891,7 @@ class App:
 		self.watch = watch
 		self.web = web or WebStream(watch)
 		self.root = tk.Tk()
-		self.root.title("MoveEye 3.69.0")
+		self.root.title("MoveEye 3.69.1")
 		try:
 			import base64
 			self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -49222,7 +49269,7 @@ class App:
 			if not small:
 				vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
 				vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))
-			Tip(nm, f"{tr('Build')} 3.69.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+			Tip(nm, f"{tr('Build')} 3.69.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
 			self._egg_taps = []
 			for w_ in tl.winfo_children():
 				w_.bind("<Button-1>", self._egg_tap, add="+")

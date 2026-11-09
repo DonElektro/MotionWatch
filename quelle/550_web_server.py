@@ -613,7 +613,8 @@ class WebStream:
         def party_page(key):
             if not _pkey(key):
                 return Response("<h2 style='font-family:sans-serif'>Die Spielecke ist geschlossen.</h2>", 404, mimetype="text/html")
-            return Response(PARTY_PAGE.replace("__KEY__", key).replace("__NTJS__", NT_JS), mimetype="text/html", headers={"Cache-Control": "no-store"})
+            return Response(PARTY_PAGE.replace("__KEY__", key).replace("__NTJS__", NT_JS).replace('<meta charset="utf-8">', '<meta charset="utf-8">' + apple_icon_link(), 1),          # 3.69.1: icon inline (500)
+                             mimetype="text/html", headers={"Cache-Control": "no-store"})
 
         @app.route("/p/<key>/join", methods=["POST"])
         def party_join(key):
@@ -978,7 +979,7 @@ class WebStream:
         def spiele_home():
             if not _lan_ok():
                 return Response(_lan_no, 403, mimetype="text/html")
-            return Response(spiele_page(request.host), mimetype="text/html", headers={"Cache-Control": "no-store"})
+            return Response(spiele_page(request.host).replace('<meta charset="utf-8">', '<meta charset="utf-8">' + apple_icon_link(), 1), mimetype="text/html", headers={"Cache-Control": "no-store"})
 
         @app.route("/spiele/g/<game>/")
         @app.route("/spiele/g/<game>/<path:fn>")
@@ -2844,8 +2845,8 @@ class WebStream:
                 return sx_err(404, "guest")
             keep = COMMON_JS[COMMON_JS.index("function keepStream"):COMMON_JS.index("\nconst post")]
             gt = {L: {k: TRX[L][k] for k in GUEST_KEYS if TRX[L].get(k)} for L in ("fr", "it", "rm")}
-            return Response(GUEST_PAGE.replace("__BASE__", "/g/" + token).replace("/*KEEP*/", keep).replace("/*GT*/{}", json.dumps(gt, ensure_ascii=False)),
-                            mimetype="text/html")
+            return Response(GUEST_PAGE.replace("__BASE__", "/g/" + token).replace("/*KEEP*/", keep).replace("/*GT*/{}", json.dumps(gt, ensure_ascii=False))
+                            .replace('<meta charset="utf-8">', '<meta charset="utf-8">' + apple_icon_link(), 1), mimetype="text/html")       # 3.69.1: icon inline (500)
 
         @app.route("/g/<token>/state")
         def guest_state(token):

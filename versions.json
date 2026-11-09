@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-09 11:29",
+ "generated": "2026-11-09 17:31",
  "versions": [
   {
-   "version": "3.69.0",
-   "file": "webcam_bewegung_3_69_0.py",
+   "version": "3.69.1",
+   "file": "webcam_bewegung_3_69_1.py",
    "url": "",
-   "sha256": "7673ba420a5d5dd7859d42b2244e24cbf8ce37bce71e829e598dbc46ebd5f07b",
-   "date": "2026-11-09 11:29",
-   "notes": "Spielecke: «Flight of the Amazon Queen» (1995, CD-Fassung mit Sprachausgabe, Deutsch/Englisch) – ScummVM im Browser, Admin lädt es einmal (Sprache wählen, feste Prüfsumme, 2 GB bleiben frei)",
-   "size": 3810716,
-   "sig": "5053d17c15d683f637efb1b628a22dcd974da017fa5c3323d67d69ad9f9c54c59a4d71f21204452546349e19f7ce3e93d7aff1d96233475310647198c3e4860e",
+   "sha256": "5b78088f2a8f1e43e2c51936767b7e64a59e99e0a3151d676d2eef9f408e874e",
+   "date": "2026-11-09 17:30",
+   "notes": "iPhone «Zum Home-Bildschirm»: MoveEye-Symbol statt schwarzem «M» – das Symbol steckt jetzt direkt in der Seite (iOS lädt es sonst nicht über das eigene Zertifikat)",
+   "size": 3812606,
+   "sig": "13f221df630eb6bf1bee0a8ee5f9a710253974a08ce5364b62919bdacb044b85d5722f88665a8a855db2077ea09d04d4c017d771b2f83ae74e2a3f4adfcca50d",
    "data": {
-    "file": "moveeye_daten_3_69_0.zip",
+    "file": "moveeye_daten_3_69_1.zip",
     "url": "",
-    "sha256": "242fbc5e4fc2a8920890d0a6abb12d0a38f56624956d1d8d1ab4017151de279a",
-    "size": 4903638,
-    "sig": "c2789cab225f64ea82bade38c911427a5cc6a875f906649cac49c631f3a5457ac912d782be3d8f89c2b5a2218e2ade7dde6a92b378ed5fcc48390440ff0f430a"
+    "sha256": "b02b1ce35b5689fc9c8ee9764959cd85f8595b6b6a0ac834f2a916a22dbe2d82",
+    "size": 4904138,
+    "sig": "f6247df688e5343560acbdc103ced8a4fe0e683eb0909c4379cfaa7f71d2538d4b5911e6915aa2b621ae929114c41cf25acaced8015ea43aba57ee70fbf25d0a"
    }
   },
   {

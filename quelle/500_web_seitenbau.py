@@ -69,6 +69,52 @@ def app_icon_png(size, variant="", icon=None):
     return _ICONS[key]
 
 
+_APPLE_ICON_URI = {}
+
+
+def apple_icon_href(variant=None):
+    """3.69.1: the 180 px icon inline as data: URI for «Zum Home-Bildschirm». iOS fetches a linked apple-touch-icon in the
+    background and silently refuses MoveEye's own (self-signed) certificate - then it shows a black letter. A few KB only:
+    colours in steps of 8 (16 when still over 8 KB), PNG level 9. Cached per icon and host variant (not per request)."""
+    v = host_variant() if variant is None else variant
+    key = (app_icon_id(), v)
+    if key not in _APPLE_ICON_URI:
+        import base64
+        raw = app_icon_png(180, v)
+        out = raw
+        im = cv2.imdecode(np.frombuffer(raw, np.uint8), cv2.IMREAD_COLOR) if raw else None
+        if im is not None:
+            for q in (8, 16):
+                p = ((im.astype(np.int16) // q) * q + q // 2).clip(0, 255).astype(np.uint8)
+                ok, buf = cv2.imencode(".png", p, [cv2.IMWRITE_PNG_COMPRESSION, 9])
+                if ok:
+                    out = buf.tobytes()
+                if len(out) <= 8000:
+                    break
+        _APPLE_ICON_URI[key] = ("data:image/png;base64," + base64.b64encode(out).decode()) if out else "/apple-touch-icon.png"
+    return _APPLE_ICON_URI[key]
+
+
+def apple_icon_link():
+    """<link rel="apple-touch-icon"> with the inline icon - for pages that are not built by render_page (guest, games)"""
+    return '<link rel="apple-touch-icon" href="' + apple_icon_href() + '">'
+
+
+def apple_icon_selftest():
+    import base64
+    u = apple_icon_href("int")
+    assert u.startswith("data:image/png;base64,") and apple_icon_href("int") is u, "inline and cached"
+    raw = base64.b64decode(u.split(",", 1)[1])
+    im = cv2.imdecode(np.frombuffer(raw, np.uint8), cv2.IMREAD_COLOR)
+    assert im is not None and im.shape[:2] == (180, 180) and len(u) < 12000, (len(u), None if im is None else im.shape)
+    p = render_page("<html><head></head><body></body></html>", "live")
+    assert '<link rel="apple-touch-icon" href="data:image/png;base64,' in p and 'href="/apple-touch-icon.png' not in p, "render_page: inline icon"
+    return "180 px, %d bytes inline (data: URI, cached per icon and address)" % len(u)
+
+
+SELFTEST_EXTRA.append(("Home-screen icon inline for iOS (500, 3.69.1)", apple_icon_selftest))
+
+
 def app_manifest():
     v = host_variant(); name = app_title(v)
     return json.dumps({"name": name, "short_name": name, "start_url": "/", "scope": "/", "display": "standalone",

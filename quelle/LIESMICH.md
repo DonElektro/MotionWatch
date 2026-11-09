@@ -138,7 +138,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `470_web_simulatorseite.py` | Web: Seite Simulator | 1339 |
 | `480_daten_app_symbole.py` | Daten: App-Symbole (PNG) | 4376 |
 | `490_daten_simulator_symbole.py` | Daten: Symbole der Simulatoren | 99 |
-| `500_web_seitenbau.py` | Web: App-Symbol, Seiten zusammensetzen | 80 |
+| `500_web_seitenbau.py` | Web: App-Symbol, Seiten zusammensetzen; Home-Bildschirm-Symbol für iOS inline als data:-URI (`apple_icon_href`, 3.69.1: iOS lädt verlinkte Symbole nicht über das eigene Zertifikat) | 126 |
 | `510_web_kopf_alarm.py` | Web: Service Worker, Kopf, Alarm, gemeinsames JavaScript | 494 |
 | `520_web_seiten_kameras_zonen_tagebuch.py` | Web: Kameras, Zonen, Tagebuch, Gast, Protokoll | 730 |
 | `523_web_zeitleiste.py` | Web: Seite «Zeitleiste» (Verlauf), /api/timeline, /api/weekreport | 330 |

@@ -44,6 +44,7 @@ def i18n_js(lang, help_=False):
 def render_page(page, active):
     """Fill the shared pieces into a page template."""
     page = page.replace("<head>", "<head>" + ui_seed_script() + i18n_loader(active == "help") + PWA_HEAD.replace(
+        '<link rel="apple-touch-icon" href="/apple-touch-icon.png">', apple_icon_link()).replace(      # 3.69.1: inline (500)
         'content="MoveEye">', 'content="' + app_title(host_variant()) + '">').replace(".png\"", ".png?i=" + app_icon_id() + "\"")
         + "<script>window.MW_ICON=" + json.dumps(app_icon_id()) + ";</script>" + makeover_head()
         + ("<style>:root{--mw-icon:url(/app-icon/anim.svg?i=" + app_icon_id() + ")}</style>"
