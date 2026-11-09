@@ -202,8 +202,11 @@ VIEW3_JS = r"""
     return post("/api/set", {key: "thermal_on", value: on}).then(r => { if (r && r.ok === false) { thWant = null; say("⚠ " + (r.error || "error")); }
       if (typeof refresh === "function") refresh(); return r; });
   }
+  const kwb = () => (window.mwKamWahl && window.mwKamWahl.big()) || null;   // 639zzi: another camera in the big picture (view only)
+  const kwClear = () => { try { if (window.mwKamWahl) window.mwKamWahl.clear(); } catch (e) {} };
   function set(v, quiet) {
     if (!avail(v)) return Promise.resolve({ok: false, error: T(NA[v] || "")});
+    kwClear();
     let p = Promise.resolve({ok: true});
     if (v === "wide") V.view = "wide"; else { V.view = "head"; p = setTh(v === "thermal"); }
     save(); apply();
@@ -213,6 +216,7 @@ VIEW3_JS = r"""
   function next() { const L = order(), i = L.indexOf(cur()); return set(L[(i + 1) % L.length]); }
   function swap() {                                       // big <-> small: the wide picture and the head picture (thermal stays as it is)
     if (!avail("wide")) return Promise.resolve({ok: false});
+    kwClear();
     V.view = cur() === "wide" ? "head" : "wide"; save(); apply(); say("⇅ " + T("Views swapped") + " · " + IC[cur()] + " " + T(LB[cur()]));
     return Promise.resolve({ok: true});
   }
@@ -255,13 +259,13 @@ VIEW3_JS = r"""
   function apply() {
     toolBtn();
     const i = info(), c = cur(), h = host(), sv = document.body.classList.contains("sv-on");
-    const K = vimg.mwKeep;
-    if (K && K.retarget) K.retarget(c === "wide" ? "/cam_feed/" + i.wide : "/video_feed");    // one stream: only its address changes
-    vimg.dataset.v3 = c;
-    TAG.hidden = c === "head"; TAG.textContent = IC[c] + " " + T(LB[c]);
+    const K = vimg.mwKeep, kb = kwb();
+    if (K && K.retarget) K.retarget(kb ? kb.src : c === "wide" ? "/cam_feed/" + i.wide : "/video_feed");    // one stream: only its address changes
+    vimg.dataset.v3 = kb ? "kw" : c;
+    TAG.hidden = !kb && c === "head"; TAG.textContent = kb ? kb.ic + " " + kb.lb : IC[c] + " " + T(LB[c]);
     if (h && OV.parentNode !== h) h.appendChild(OV);
     if (h && MB.parentNode !== h) h.appendChild(MB);
-    const showM = !!h && V.pip && avail("wide") && !sv;
+    const showM = !!h && V.pip && avail("wide") && !sv && !kb;
     MB.hidden = !showM;
     if (sv || vimg.dataset.hold === "1") MI.dataset.hold = "1"; else delete MI.dataset.hold;   // covered (Sim-Ansicht): closed like the big one
     if (showM) {
@@ -270,11 +274,12 @@ VIEW3_JS = r"""
       else MI.mwKeep.retarget(null, sn);
       ML.textContent = c === "wide" ? (IC[thOn() && avail("thermal") ? "thermal" : "head"] + " " + T(LB[thOn() && avail("thermal") ? "thermal" : "head"])) : "🔭 " + T("Wide view");
     }
-    frameIn(OV, FR, vimg, c === "wide" && !!h);
+    frameIn(OV, FR, vimg, c === "wide" && !!h && !kb);
     frameIn(MOV, MFR, MI, c !== "wide" && showM);
     const tip = T("Camera view") + ": " + T(LB[c]) + " · " + T("Camera view: head → thermal → wide angle (hold: choose)");
     if (TB) { TB.textContent = IC[c]; TB.title = tip; TB.setAttribute("aria-label", tip); TB.hidden = order().length < 2; }
     try { if (typeof QSJ !== "undefined" && QSJ && typeof qsPaint === "function") qsPaint(QSJ); } catch (e) {}
+    try { if (window.mwKamWahl) window.mwKamWahl.paint(); } catch (e) {}
   }
   // ---- the menu (long press / right click): the three views, the small picture ----
   function menu(anchor) {
@@ -324,10 +329,12 @@ VIEW3_JS = r"""
         on: () => cur() !== "head", ok: () => order().length > 1, icf: () => IC[cur()], go: () => click()});
     }
   } catch (e) {}
-  window.mwView3 = {cur: cur, set: set, next: next, swap: swap, avail: avail, menu: menu, canSwap: () => avail("wide"), icon: () => IC[cur()],
+  // 639zzi (tiles of every camera): only WHICH picture is big - never thermal_on or another setting
+  const look = v => { kwClear(); V.view = v === "wide" && avail("wide") ? "wide" : "head"; save(); apply(); };
+  window.mwView3 = {cur: cur, set: set, next: next, swap: swap, avail: avail, menu: menu, canSwap: () => avail("wide"), icon: () => IC[cur()], look: look, apply: () => apply(),
     pipSrc: () => cur() === "wide" ? "/cam_snap/" + info().wide : null, state: () => ({view: V.view, pip: V.pip, cur: cur(), order: order()})};
   addEventListener("resize", () => setTimeout(apply, 60));
-  vimg.addEventListener("load", () => { if (cur() === "wide") frameIn(OV, FR, vimg, !!host()); });
+  vimg.addEventListener("load", () => { if (cur() === "wide" && !kwb()) frameIn(OV, FR, vimg, !!host()); });
   setInterval(apply, 700);
   setTimeout(apply, 0);
 })();
