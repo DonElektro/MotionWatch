@@ -12,6 +12,8 @@
      der Looping gelingt auf «Normal» und ist keine Falle, Einstellungen werden gespeichert, Rekord je Strecke und Fahrzeug.
      GS-1.6: auf «Einfach» landet ein schiefer Sprung ohne Eingabe gerade, ein Salto wird trotzdem erkannt, kein Abwurf mit ★;
      der schwebende «✕ Zurück» von MoveEye ist ausgeblendet (eigener Link oben, sonst über der Bremse).
+     GS-1.7: jeder Abschnitt der neuen Stunt-Piste ist mit beiden Fahrzeugen auf «Einfach» und «Normal» befahrbar (ohne Rettung),
+     ein Supersprung landet auf «Einfach» ohne Eingabe in der Luft, der alte Rekord der Stunt-Piste bleibt sichtbar.
 
   python3 werkzeuge/spiele_test.py                    # Paket + Browser, nur die Spiele mit 5 Sprachen (ab GS-1.4)
   python3 werkzeuge/spiele_test.py --alle             # dazu die älteren Spiele (2048, Tetris …)
@@ -250,9 +252,17 @@ def spiel_pruefen(br, base, g, fehler, warn, bilder, zeile):
 
 
 # Wobbly Truck (GS-1.5): ?test=1 gives a fixed seed and window.__wt (deterministic simulation with fixed time steps)
-WT_BOT = """window.__bot = (W, I) => { const a = W.B.a, w = W.B.w, sl = Math.atan((W.H(W.B.x + .04) - W.H(W.B.x - .04)) / .08);
+WT_BOT = """window.__bot = (W, I) => { const a = W.B.a, w = W.B.w, x = W.B.x, sl = Math.atan((W.H(x + .04) - W.H(x - .04)) / .08);
+  const m = (W.mods || []).find(q => x >= q.x0 && x < q.x1) || {}, intun = m.tun && x > m.tun[0] - 10 && x < m.tun[1];   // a careful driver: no wheelie into the tunnel
   if (W.air.on && W.air.t > 0.12) { const tgt = Math.round((a - sl) / 6.283) * 6.283 + sl, e = a + w * 0.3 - tgt; I.gas = e < -0.12; I.brake = e > 0.12; }
-  else { const d = a - sl, dw = d - Math.round(d / 6.283) * 6.283; I.brake = false; I.gas = dw < 0.35; } };"""
+  else { const d = a - sl, dw = d - Math.round(d / 6.283) * 6.283; I.brake = false; I.gas = dw < (intun ? 0.04 : 0.35); } };"""
+# GS-1.7: drive through one section of the Stunt-Piste (the first of its kind), or a Supersprung without any input in the air
+WT_MODUL = """([veh, diff, typ, frei]) => { const W = window.__wt, I = W.inp; W.freeze(true); W.SET.diff = diff; W.SET.real = 40; W.select(veh, 'stunt'); W.start();
+  W.H(6000); const m = W.mods.find(q => q.t === typ); if (!m) return {fehlt: 1};
+  W.place(m.x0 + 0.5, 0, 12, 0, 0, 0); const n0 = W.log.length;
+  W.sim(45, () => { if (frei) { I.gas = W.B.x < m.sj.x; I.brake = false; } else __bot(W, I); return W.B.x > m.x1 + 3 || W.state !== 'play'; });
+  I.gas = I.brake = false; return {state: W.state, durch: W.B.x > m.x1 + 3, rettung: W.nRescue, ids: W.log.slice(n0).map(e => e.id).join(',')}; }"""
+WT_MODULE = ("wheelie", "kickers", "loop", "dloop", "wall", "halfpipe", "stairs", "gaps", "dropin", "whoops", "tunnel", "tramp", "coinarcs", "super")
 WT_RUN = """([veh, trk, scen, diff]) => { const W = window.__wt, I = W.inp; W.freeze(true); W.SET.diff = diff == null ? 1 : diff; W.select(veh, trk); W.start();
   const r = {state0: W.state}; I.gas = I.brake = I.trick = false;
   if (scen === 'fahren') { W.place(5, 0, 0, 0, 0, 0); W.sim(1.5, () => { __bot(W, I); }); r.dx = W.B.x - 5; }
@@ -312,9 +322,30 @@ def wobbly_pruefen(br, base, fehler, bilder):
                 if r["state"] == "play" and r["x"] < 15:
                     fehler.append(f"{d} {name}: {veh} bleibt beim Looping hängen ({r})")
             r = pg.evaluate(WT_RUN, ["bike", "stunt", "sturz"])  # upside down onto the head: crash, then game over with a best score
-            best = pg.evaluate("() => localStorage.getItem('kv-game-wobbly-truck-best-stunt-bike')")
+            best = pg.evaluate("() => localStorage.getItem('kv-game-wobbly-truck-best-stunt2-bike')")
             if r["state"] != "over" or not best:
                 fehler.append(f"{d} {name}: Sturz / Rekord je Strecke und Fahrzeug fehlt ({r['state']}, {best})")
+            if mobil:   # GS-1.7: every section drivable (Einfach and Normal, both vehicles), Supersprung on Einfach without input
+                nm = 0
+                for veh in ("truck", "bike"):
+                    for diff in (0, 1):
+                        for typ in WT_MODULE:
+                            r = pg.evaluate(WT_MODUL, [veh, diff, typ, False])
+                            if r.get("fehlt") or r["state"] != "play" or not r["durch"] or r["rettung"]:
+                                fehler.append(f"{d} {name}: Abschnitt {typ} mit {veh} auf {['Einfach', 'Normal'][diff]} nicht befahrbar ({r})")
+                            else:
+                                nm += 1
+                    r = pg.evaluate(WT_MODUL, [veh, 0, "super", True])
+                    if r.get("state") != "play" or "super" not in r.get("ids", ""):
+                        fehler.append(f"{d} {name}: Supersprung mit {veh} auf Einfach ohne Eingabe nicht gelandet ({r})")
+                    else:
+                        ok.append(f"supersprung-frei-{veh}")
+                ok.append(f"{nm}/{2 * 2 * len(WT_MODULE)} Abschnitte")
+                # the old Stunt-Piste record stays visible («alte Strecke»), the new course has its own slot
+                txt = pg.evaluate("""() => { localStorage.setItem('kv-game-wobbly-truck-best-stunt-bike', '8339'); __wt.select('bike', 'stunt'); __wt.menu();
+                    const e = document.querySelector('em[data-best=stunt]'); return e ? e.textContent : ''; }""")
+                if "8339" not in txt:
+                    fehler.append(f"{d} Handy: alter Rekord der Stunt-Piste wird nicht gezeigt ({txt!r})")
             if mobil:   # the trick button is there for the motorbike while playing
                 pg.evaluate("() => { __wt.select('bike', 'stunt'); __wt.start(); }")
                 if not pg.locator("#trickP").is_visible():
