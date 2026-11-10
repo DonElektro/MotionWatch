@@ -239,6 +239,7 @@ class WeatherAnalyzer:
         self.prev_gray = None
         self.rain_hist = deque(maxlen=30)
         self.wind_hist = deque(maxlen=45)
+        self.wind_log = LogHold(WIND_LOG_HOLD_S, WIND_LOG_GAP_S, "calm")   # 3.72: only lasting changes of the level go to the log
 
     def rain(self, gray):
         if self.prev_gray is None:
@@ -280,6 +281,72 @@ class WeatherAnalyzer:
 
 
 # ----------------------------------------------------------------------------
+# 3.72: no flip-flop lines in the log («walk_frames 9 -> 8 -> 9» several times a second, «Wind: calm / breezy / strong»
+# every few seconds - 104 of 163 lines in five minutes). The values behind them wander around a limit; a dead band and a
+# hold time keep the small back-and-forth out, real changes come through as before.
+# ----------------------------------------------------------------------------
+# walk_frames = pictures per second x walk_seconds, rounded. The measured rate wobbles by a few tenths, so the product keeps
+# crossing «x.5». Dead band 0.75: the value stays while the exact product is at most 0.75 pictures away (pure rounding: 0.5 -
+# so at most a quarter picture more, about 3 % of the time a walker must be seen at 8 pictures). A step outside the band
+# must last WALK_HOLD_S; a jump of 2 pictures or more (power saving, another camera) is taken after WALK_JUMP_HOLD_S - long
+# enough to skip a single wild reading (right after the start the measured rate jumps: «6 -> 11 -> 14 -> 16 -> 5» in one
+# second), short against the 5 to 10 seconds the rate itself needs to settle.
+WALK_DEADBAND = 0.75
+WALK_HOLD_S = 10.0
+WALK_JUMP = 2.0
+WALK_JUMP_HOLD_S = 2.0
+# wind level: it rises at the limits as before (0.55 strong, 0.8 storm - what the detection looks at), it falls only when the
+# score is WIND_DEADBAND below the limit. The score is a mean of 45 pictures and wobbles by about 0.01 to 0.02; the levels
+# are 0.25 wide, so 0.03 is small against them. The threshold boost (wind_boost) is computed from the score, unchanged.
+# The log: a level must last WIND_LOG_HOLD_S (a gust of a few seconds is no change of the weather), at most one line per
+# WIND_LOG_GAP_S.
+WIND_LEVELS = ("calm", "breezy", "strong", "storm")
+WIND_DEADBAND = 0.03
+WIND_LOG_HOLD_S = 20.0
+WIND_LOG_GAP_S = 120.0
+
+
+def walk_frames_step(cur, ideal, since, now):
+    """the auto-tuner's walk_frames with a dead band: (new value or None, start of the waiting time or None)"""
+    ideal = max(4.0, min(24.0, float(ideal)))
+    want = int(max(4, min(24, round(ideal))))
+    diff = abs(ideal - cur)
+    if want == cur or diff <= WALK_DEADBAND:
+        return None, None
+    if since is None:
+        return None, now
+    if now - since >= (WALK_JUMP_HOLD_S if diff >= WALK_JUMP else WALK_HOLD_S):
+        return want, None
+    return None, since
+
+
+def wind_level_of(ws, thr, prev=None):
+    """the wind level of a score; coming down from «prev» only when the score is WIND_DEADBAND below the limit"""
+    def lv(x):
+        return "calm" if x < thr else ("breezy" if x < 0.55 else ("strong" if x < 0.8 else "storm"))
+    raw = lv(ws)
+    if prev in WIND_LEVELS and WIND_LEVELS.index(raw) < WIND_LEVELS.index(prev):
+        return WIND_LEVELS[min(WIND_LEVELS.index(prev), WIND_LEVELS.index(lv(ws + WIND_DEADBAND)))]
+    return raw
+
+
+class LogHold:
+    """decides when a changed state is worth a log line: it must have lasted «hold» seconds, at most one line per «gap»"""
+    def __init__(self, hold, gap, first=None):
+        self.hold, self.gap = float(hold), float(gap)
+        self.logged, self.cand, self.t_cand, self.t_log = first, first, 0.0, None
+
+    def feed(self, value, now):
+        """True = write the line for «value» now"""
+        if value != self.cand:
+            self.cand, self.t_cand = value, now
+        if value == self.logged or now - self.t_cand < self.hold or (self.t_log is not None and now - self.t_log < self.gap):
+            return False
+        self.logged, self.t_log = value, now
+        return True
+
+
+# ----------------------------------------------------------------------------
 # Auto-tuner
 # ----------------------------------------------------------------------------
 class AutoTuner:
@@ -291,6 +358,7 @@ class AutoTuner:
         autotune_start_values()                                 # real-erkennung-fix: no extreme values of an earlier scene (577)
         self.noise_areas, self.noise_frac = [], []
         self.last_eval = time.time()
+        self.wf_since = None
         self.new_candidates = self.became_person = self.near_miss = self.walkers = 0
         self.seen_ids = set()
         self.base_min_area = None
@@ -315,8 +383,10 @@ class AutoTuner:
         now = time.time()
         if CFG["min_area"] > autotune_area_cap(fg.size):        # real-erkennung-fix: also a value from before / by hand (577)
             self._set("min_area", autotune_area_cap(fg.size), "at most %.1f %% of the picture" % (AUTOTUNE_AREA_MAX * 100))
-        if fps > 1:
-            self._set("walk_frames", max(4, min(24, round(fps * CFG["walk_seconds"]))), "fps")
+        if fps > 1:                                             # 3.72: with a dead band (walk_frames_step) - no back and forth in the log
+            wf, self.wf_since = walk_frames_step(CFG["walk_frames"], fps * CFG["walk_seconds"], getattr(self, "wf_since", None), now)
+            if wf is not None:
+                self._set("walk_frames", wf, "fps")
         if not self.calibrated:
             n, _, stats, _ = cv2.connectedComponentsWithStats(fg, 8)
             if n > 1:

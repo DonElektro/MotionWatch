@@ -1041,6 +1041,8 @@ TRX['rm'].update({
     'grey at night (good with a NoIR camera)': 'grisch la notg (bun cun ina camera NoIR)',
     'handbag': 'tastga',
     'hide': 'reducir',
+    'hint': 'avis',
+    'hints': 'avis',
     'hold time must be a number': 'il temp da tegnair sto esser in numer',
     'home': 'a chasa',
     'horse': 'chaval',
