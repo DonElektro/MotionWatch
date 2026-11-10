@@ -314,6 +314,7 @@ def teil_c(base, gp, bilder, tmp):
             ctx = br.new_context(viewport=vp, is_mobile=mob, has_touch=mob, device_scale_factor=2 if mob else 1,
                                  http_credentials={"username": "admin", "password": PW}, locale="de-CH")
             ctx.add_init_script("try{localStorage.setItem('mw-lang','de');localStorage.setItem('mw-theme','dark');localStorage.removeItem('mw-view3');localStorage.setItem('mw-tours-seen','[\"live\",\"more\",\"guest\"]')}catch(e){}")
+            ctx.add_init_script("try{localStorage.setItem('mw-lv-knoepfe','1')}catch(e){}")   # 639zzj: buttons / tiles always shown (tested in live_sauber_test.py)
             pg = ctx.new_page(); errs = []
             pg.on("pageerror", lambda e: errs.append(str(e)[:200]))
             pg.goto(base + "/", wait_until="domcontentloaded")

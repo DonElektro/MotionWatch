@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-09 22:40",
+ "generated": "2026-11-10 17:29",
  "versions": [
   {
-   "version": "3.71.0",
-   "file": "webcam_bewegung_3_71_0.py",
+   "version": "3.71.1",
+   "file": "webcam_bewegung_3_71_1.py",
    "url": "",
-   "sha256": "ca33ad4bd60a6c0622c6974b9f44e85bb0aac4399b0486ec5252f3d3b4323e1e",
-   "date": "2026-11-09 22:40",
-   "notes": "Live-Bild am echten Gerät: kleine Bilder aller Kameras (Kopf, Weitwinkel, Wärmebild, USB-, Pi- und Netzwerk-Kameras) oben links – antippen zeigt diese Kamera gross (nur die Anzeige, Erkennung und Einstellungen bleiben); fehlt Kopf, Weitwinkel oder Wärmebild, eine graue Kachel «nicht angeschlossen»; bei vielen Kameras «⋯ Kameras»",
-   "size": 3843552,
-   "sig": "01d6f0b16aff468870347140a9bb583ad60933a59af2230b1d274a88ca1f15dfa95e575867e1387ba1a789617ec64a750774fe1576753b2c90e83c704187580b",
+   "sha256": "aa6d783d0c178ef4ecc137273768f835ae15468fa82ab1cce9b4c4afb809115e",
+   "date": "2026-11-10 17:28",
+   "notes": "Live-Bild aufgeräumt: Die Knöpfe oben im Bild und die kleinen Kamera-Bilder erscheinen erst, wenn du das Bild antippst (am PC: Maus darüber), und verschwinden nach 4 Sekunden wieder. Immer zeigen: Einstellungen → Netzwerk & Zugang → Web-Stream → «Knöpfe im Live-Bild immer zeigen» (Experte, gilt nur auf diesem Gerät). Kameras heissen jetzt auch auf Deutsch «USB-Kamera» und «Pi-Kamera»",
+   "size": 3849282,
+   "sig": "38a8cdedf4669f41eb792f93ed9905408fd9d7011d9a53e7dcaec774d999a8f76dd72a5a9e0e07c4325d4a15737c9782c3a3e7635c7f56d68efee1dcbfd52509",
    "data": {
-    "file": "moveeye_daten_3_71_0.zip",
+    "file": "moveeye_daten_3_71_1.zip",
     "url": "",
-    "sha256": "ee9b408ab94fd0712cb6f9c2c9e82b43b3b67f2a921f95a48c61e21b015075ae",
-    "size": 4917068,
-    "sig": "abcb705dfac24c4b541de548d9a112fb1a4669b9831506b1cb80ba50cda02468fb68461b884c35bd92887b11f35856697d2e23d05459849833f2fa0e534b430a"
+    "sha256": "cda301fb5e4eb31112e412e0f8ce6b595ae1053925d6d28e065221a9624a2d42",
+    "size": 4921511,
+    "sig": "e3d765ddb0ac8fc6d6651e6635733673ae494d9a7bf9f857cf98fbbdd9c0c98eba6627502f2bc48e0a5f3f0080cea371e0f003eccff45fcbbf21cf97a2e4a00f"
    }
   },
   {
