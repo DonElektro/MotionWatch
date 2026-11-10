@@ -112,6 +112,12 @@ jobs:
       - name: Spiele-Kacheln über https (Bilder vom gleichen Ursprung, keine http://-Bilder, Browser)
         timeout-minutes: 5
         run: python3 werkzeuge/spiele_test.py --kacheln-https
+      - name: Fertige Spiele zum Nachladen (nur der Admin lädt, Prüfsumme, Platz, Entpacken, Kachel, Spiele-Port, Entfernen - mit Ersatz-Paketen)
+        timeout-minutes: 4
+        run: python3 werkzeuge/fertigspiele_test.py
+      - name: Spiele unter «Mehr» - ein Einstieg «Spielen», Kachel «Spielecke», Freigeben von der Spielecke aus
+        timeout-minutes: 5
+        run: python3 werkzeuge/spiele_ordnen_test.py
       - name: «🔍 Untersuchen» im Live-Bild (Ausschnitt, Kopf, Weitwinkel, Wärmebild, Hochladen, Rechte, Gäste, Funde, Zeitlimit, Browser)
         timeout-minutes: 6
         run: python3 werkzeuge/untersuchen_test.py --browser
