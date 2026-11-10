@@ -58,6 +58,15 @@ FS_GAMES = {
             "Exploration de donjon rétro : toucher pour marcher, combattre, lancer des sorts. Anglais, peu de texte.",
             "Dungeon crawl rétro: tocca per camminare, combattere, lanciare incantesimi. Inglese, poco testo.",
             "Gieu da rollas retro en il tschaler: tutgar per ir, cumbatter e striunar. Englais, pauc text."))},
+    "fs-hexgl": {
+        "file": {"name": "fspiele-hexgl-1.zip", "size": 15373699, "sha256": "dc1d8058dae4f22b457ace5f37314ae99603e53b2c3581cc040461ac1c349e5b", "unpacked": 15352741},
+        "licence": "MIT / CC BY-NC 3.0 · Thibaut Despoulain (BKcore)",
+        "tile": _fs_tile("fs-hexgl", "index.html", "touch", "HexGL", (
+            "Futuristisches 3D-Rennen: links lenken, rechts Gas. Handy quer halten. Englisch, wenig Text.",
+            "Futuristic 3D racing: steer on the left, accelerate on the right. Hold the phone sideways. English, little text.",
+            "Course 3D futuriste : diriger à gauche, accélérer à droite. Tenir le téléphone à l’horizontale. Anglais, peu de texte.",
+            "Corsa 3D futuristica: sterza a sinistra, accelera a destra. Tieni il telefono in orizzontale. Inglese, poco testo.",
+            "Cursa 3D futuristica: manischar a sanestra, gas a dretga. Tegnair il telefonin a travers. Englais, pauc text."))},
 }
 FS_DL = {"running": False, "id": "", "got": 0, "total": 0, "msg": "", "stop": False, "done": False, "phase": ""}
 FS_HIDE = ("fspiel.ok", "fspiel.ok.new")

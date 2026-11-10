@@ -225,7 +225,53 @@ def spiel_heroine(L, bilder, ok):
     return "Verlies läuft, Spielstand bleibt"
 
 
-SPIELE = {"fs-angst": {"lauf": spiel_angst, "quer": False}, "fs-heroine": {"lauf": spiel_heroine, "quer": False}}
+def spiel_hexgl(L, bilder, ok):
+    pg = L.pg
+    L.warte(1500)
+    L.bild(bilder, "1_menue")
+    ct = pg.locator("#s-controlType").inner_text()
+    ok(("TOUCH" in ct.upper()) == L.touch, f"Steuerung von selbst gewählt: «{ct}»")
+    ok("analytics" not in pg.content() and "_gaq" not in pg.content() and pg.evaluate("() => typeof Leap === 'undefined' && typeof _gaq === 'undefined'"), "kein Google Analytics, keine Leap-Bibliothek")
+    seen = []
+    for _ in range(4):                                         # the kinds of control: Leap Motion is skipped
+        L.tipp_el("#s-controlType"); seen.append(pg.locator("#s-controlType").inner_text().upper())
+    ok(not any("LEAP" in s for s in seen) and len(set(seen)) == 3, f"Menü Steuerung ohne Leap Motion ({', '.join(x.split(': ')[-1] for x in seen[:3])})")
+    while ("TOUCH" in pg.locator("#s-controlType").inner_text().upper()) != L.touch or (not L.touch and "KEYBOARD" not in pg.locator("#s-controlType").inner_text().upper()):
+        L.tipp_el("#s-controlType")
+    L.tipp_el("#s-quality"); L.tipp_el("#s-quality")           # LOW: quick in the test browser without a graphics card
+    L.tipp_el("#start")
+    L.warte(600)
+    L.bild(bilder, "2_hilfe")
+    L.tipp_el("#step-2")
+    pg.wait_for_function("() => document.getElementById('step-4').style.display === 'block'", timeout=240000)
+    L.warte(6000)
+    L.bild(bilder, "3_rennen")
+    ok(pg.evaluate("() => !!document.querySelector('#main canvas') && !!window.hexGL && !!hexGL.gameplay"), "Rennen geladen (Canvas, Spielablauf)")
+    h = hell(pg.screenshot())
+    ok(h[0] > 0.2 and h[1] >= 8, f"3D-Bild ist da (hell {h[0]:.2f}, {h[1]} Farben)")
+    vw, vh = pg.viewport_size["width"], pg.viewport_size["height"]
+    v0 = pg.evaluate("() => hexGL.components.shipControls.getRealSpeed ? hexGL.components.shipControls.getRealSpeed() : hexGL.components.shipControls.speed")
+    if L.touch:                                                # right half: accelerate (hold)
+        cdp = L.ctx.new_cdp_session(pg)
+        cdp.send("Input.dispatchTouchEvent", {"type": "touchStart", "touchPoints": [{"x": vw * 0.8, "y": vh * 0.6, "id": 1}]})
+        L.warte(5000)
+        v1 = pg.evaluate("() => hexGL.components.shipControls.speed")
+        L.bild(bilder, "4_gas")
+        cdp.send("Input.dispatchTouchEvent", {"type": "touchEnd", "touchPoints": []})
+    else:
+        pg.keyboard.down("ArrowUp")                            # the countdown first (slow without a graphics card)
+        for _ in range(30):
+            L.warte(2000)
+            v1 = pg.evaluate("() => hexGL.components.shipControls.speed")
+            if v1 > 0.3:
+                break
+        L.bild(bilder, "4_gas")
+        pg.keyboard.up("ArrowUp")
+    ok(v1 > 0 and v1 > (v0 or 0), f"das Schiff beschleunigt per {'Berührung rechts' if L.touch else 'Pfeiltaste'} (Tempo {v0} -> {v1:.2f})")
+    return "Rennen läuft"
+
+
+SPIELE = {"fs-angst": {"lauf": spiel_angst, "quer": False}, "fs-heroine": {"lauf": spiel_heroine, "quer": False}, "fs-hexgl": {"lauf": spiel_hexgl, "quer": True}}
 
 
 def main():

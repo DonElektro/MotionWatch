@@ -29,6 +29,7 @@ NAME_OK = re.compile(r"[A-Za-z0-9._ /+-]{1,200}")
 QUELLEN = {
     "fs-angst": {"repo": "https://github.com/jonasreich/anxiety", "commit": "2148ce8e9f1d72574e73a22876295b107864bae7", "ordner": "jonasreich_anxiety"},
     "fs-heroine": {"repo": "https://github.com/clintbellanger/heroine-dusk", "commit": "2a1f01deff724212a7843e363f9c656fd0b13430", "ordner": "clintbellanger_heroine-dusk"},
+    "fs-hexgl": {"repo": "https://github.com/BKcore/HexGL", "commit": "6addc95a2fce3bf05f4d751823cc054c61a16d68", "ordner": "BKcore_HexGL"},
 }
 
 
@@ -136,7 +137,64 @@ def bau_heroine(src, dst, q):
             "  * LIZENZEN.txt (diese Datei), GPL-3.0.txt (Lizenztext).", ""]
 
 
-BAU = {"fs-angst": bau_angst, "fs-heroine": bau_heroine}
+# ---- HexGL -------------------------------------------------------------------------------------------------------------------------
+def bau_hexgl(src, dst, q):
+    kopiere(src, dst, ["index.html", "launch.js", "favicon.png", "LICENSE", "README.md", "audio", "bkcore", "bkcore.coffee", "css", "geometries", "libs",
+                       "textures", "textures.full"],
+            ohne=("libs/Editor.html", "libs/Editor_files", "libs/Three.r53.js", "libs/leap-0.4.1.min.js", "bkcore.coffee/tests.html", "*.coffee",
+                  "textures/particles/cloud - Copie.png", "textures/particles/spark - Copie.png",
+                  "textures.full/particles/cloud - Copie.png", "textures.full/particles/spark - Copie.png"))
+    t = lies(os.path.join(src, "index.html"))
+    a, b = t.index('    <script type="text/javascript">\n    //analytics'), t.index("  </head>")
+    if "google-analytics.com/ga.js" not in t[a:b] or t[a:b].count("</script>") != 1:
+        sys.exit("fs-hexgl: der Analytics-Block in index.html sieht anders aus")
+    t = t[:a] + t[b:]                                          # Google Analytics: gone
+    for alt in ('    <meta property="og:url" content="http://hexgl.bkcore.com/" />\n', '    <meta property="og:image" content="http://hexgl.bkcore.com/image.png" />\n',
+                '    <meta property="fb:admins" content="1482017639" />\n', '    <link rel="shortcut icon" href="http://hexgl.bkcore.com/favicon.png" type="image/png">\n'):
+        t = ersetze(t, alt, "", "index.html")
+    t = ersetze(t, '<link rel="icon" href="http://hexgl.bkcore.com/favicon.png" type="image/png">', '<link rel="icon" href="favicon.png" type="image/png">', "index.html")
+    t = ersetze(t, '    <script src="libs/leap-0.4.1.min.js"></script>\n', "", "index.html")     # Leap Motion: would open a WebSocket
+    schreib(os.path.join(dst, "index.html"), t)
+    # the menu offers «Leap Motion Controller» as third kind of control - without the library: skip it (touch / keyboard / gamepad stay)
+    l = lies(os.path.join(src, "launch.js"))
+    l = ersetze(l, "return f(a[3] = (a[3] + 1) % a[1].length);",
+                "a[3] = (a[3] + 1) % a[1].length;\n      if (a[0] === 'controlType' && a[3] === 2) a[3] = 3;   /* MoveEye: no Leap Motion */\n      return f();", "launch.js")
+    l = ersetze(l, "return window.location.href = 'http://get.webgl.org/';", "return false;   /* MoveEye: no link to the outside */", "launch.js")
+    schreib(os.path.join(dst, "launch.js"), l)
+    shutil.copyfile(os.path.join(HIER, "hexgl", "thumb.png"), os.path.join(dst, "thumb.png"))
+    shutil.copyfile(os.path.join(HIER, "hexgl", "OFL-1.1.txt"), os.path.join(dst, "css", "BebasNeue-OFL-1.1.txt"))
+    return ["HexGL für MoveEye (%s)" % TAG, "",
+            "Spiel: HexGL, futuristisches Rennspiel (HTML5 / WebGL) von Thibaut Despoulain (BKcore), http://bkcore.com",
+            "  Mitwirkende: townxelliot, mahesh.kk. Schiffsmodell «HexMKI»: Charnel. Streckentextur: Nobiax.",
+            "  Quelle: %s (Commit %s)" % (q["repo"], q["commit"]),
+            "",
+            "Lizenz - ACHTUNG, ZWEI ANGABEN IN DER QUELLE:",
+            "  * README.md: «Unless specified in the file, HexGL's code and resources are now licensed under the MIT License.»",
+            "    Der MIT-Text liegt bei (LICENSE, Copyright (c) 2015 Thibaut Despoulain).",
+            "  * Die neun Dateien in bkcore/hexgl/ (der Kern des Spiels) tragen im Kopf noch den Vermerk «Creative Commons",
+            "    Attribution-NonCommercial 3.0 Unported» (https://creativecommons.org/licenses/by-nc/3.0/). Nach dem Wortlaut des",
+            "    README («unless specified in the file») gilt für diese Dateien CC BY-NC 3.0: Weitergabe und Änderung mit",
+            "    Namensnennung sind erlaubt, aber NICHT für kommerzielle Zwecke. Die Vermerke sind unverändert im Paket.",
+            "  * Klänge (audio/LICENSE, unverändert im Paket): boost.ogg von IFartInUrGeneralDirection (CC BY 3.0), wind.ogg von",
+            "    kangaroovindaloo (CC BY 3.0, bearbeitet von Licson), destroyed.ogg von beman87 (CC BY 3.0, bearbeitet von Licson),",
+            "    crash.ogg von qubodup (gemeinfrei), bg.ogg von mu6k (gemeinfrei, bearbeitet von Licson); nach OGG gewandelt von baleboy.",
+            "    CC BY 3.0: https://creativecommons.org/licenses/by/3.0/",
+            "  * Schrift «Bebas Neue» (css/BebasNeue-webfont.*): Ryoichi Tsunekawa (Dharma Type), SIL Open Font License 1.1",
+            "    (css/BebasNeue-OFL-1.1.txt). Die Quelle selbst nennt für die Schrift keine Lizenz.",
+            "  * Bibliotheken: three.js (MIT, mrdoob und Mitwirkende; ShaderExtras, Detector, postprocessing gehören dazu),",
+            "    stats.js (MIT, mrdoob), dat.GUI (Apache License 2.0, Data Arts Team, Google Creative Lab).",
+            "",
+            "Änderungen von MoveEye (werkzeuge/fertigspiele/paket.py):",
+            "  * index.html: Google Analytics entfernt; Verweise auf hexgl.bkcore.com entfernt (Symbol = favicon.png im Paket);",
+            "    Leap-Motion-Bibliothek nicht mehr geladen.",
+            "  * launch.js: die Steuerung «Leap Motion Controller» wird im Menü übersprungen; kein Link zu get.webgl.org.",
+            "  * Nicht im Paket: package.zip, Editor (libs/Editor*), libs/Three.r53.js, libs/leap-0.4.1.min.js, CoffeeScript-Quellen",
+            "    (*.coffee, die erzeugten .js sind dabei), Manifest-Dateien, doppelte Bilder «… - Copie.png».",
+            "  * Neu: thumb.png (Kachelbild, aus einem Bild des Spiels), css/BebasNeue-OFL-1.1.txt, diese Datei.",
+            "  * MoveEye setzt beim Ausliefern den Knopf «✕ Zurück» auf die Seite.", ""]
+
+
+BAU = {"fs-angst": bau_angst, "fs-heroine": bau_heroine, "fs-hexgl": bau_hexgl}
 
 
 def holen(ordner, q):

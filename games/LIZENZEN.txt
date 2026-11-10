@@ -138,3 +138,16 @@ Heroine Dusk  (fs-heroine/, eigenes Paket, nicht in dieser ZIP: Release «fspiel
   Kachelbild thumb.png (Bild aus dem Spiel, CC-BY-SA 3.0). Quelle davon: werkzeuge/fertigspiele/ in
   https://github.com/DonElektro/MotionWatch
   Lizenztexte: im Paket (README.md, GPL-3.0.txt, LIZENZEN.txt).
+
+HexGL  (fs-hexgl/, eigenes Paket, nicht in dieser ZIP: Release «fspiele-N», Teil 639zzn)
+  Spiel: HexGL von Thibaut Despoulain (BKcore), http://bkcore.com – Mitwirkende: townxelliot, mahesh.kk;
+  Schiffsmodell: Charnel; Streckentextur: Nobiax.
+  Lizenz: MIT laut README («unless specified in the file»); die neun Dateien in bkcore/hexgl/ tragen aber noch den
+  Vermerk «Creative Commons Attribution-NonCommercial 3.0» – für sie gilt nach dem Wortlaut CC BY-NC 3.0
+  (nicht für kommerzielle Zwecke). Klänge: CC BY 3.0 (IFartInUrGeneralDirection, kangaroovindaloo, beman87) und
+  gemeinfrei (qubodup, mu6k), bearbeitet von Licson, siehe audio/LICENSE. Schrift Bebas Neue: Dharma Type, SIL OFL 1.1.
+  Bibliotheken: three.js, stats.js (MIT), dat.GUI (Apache-2.0).
+  Quelle: https://github.com/BKcore/HexGL (Commit im Paket: fspiel.json)
+  Für MoveEye geändert: Google Analytics und Verweise nach aussen entfernt, Leap-Motion-Steuerung entfernt,
+  Editor, package.zip und CoffeeScript-Quellen weggelassen; Kachelbild thumb.png.
+  Lizenztexte: im Paket (LICENSE, audio/LICENSE, css/BebasNeue-OFL-1.1.txt, LIZENZEN.txt).
