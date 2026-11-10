@@ -126,3 +126,15 @@ Abenteuer mit Angst  (fs-angst/, eigenes Paket, nicht in dieser ZIP: Release «f
   Für MoveEye geändert: zwei nicht freie Klänge (Pokémon-Titelmelodie © The Pokémon Company, «Hadouken!» © Capcom)
   durch Stille ersetzt; misc/ und sharing/ weggelassen; Kachelbild thumb.png.
   Lizenztexte: im Paket (LICENSE.txt, README.md, LIZENZEN.txt). Ab etwa 12 Jahren (Kraftausdrücke, im Spiel abschaltbar).
+
+Heroine Dusk  (fs-heroine/, eigenes Paket, nicht in dieser ZIP: Release «fspiele-N», Teil 639zzn)
+  Heroine Dusk is created by Clint Bellanger http://clintbellanger.net
+  Heroine Dusk features music by Yubatake http://opengameart.org/users/yubatake
+  Lizenz: Code GPL-3.0-or-later, Grafik CC-BY-SA 3.0 (oder später), Musik CC-BY 3.0; Optionen-Menü von Justin Jacobs (WTFPL).
+  «Heroine Dusk» ist eine Marke (™) von Clint Bellanger; dies ist keine offizielle Quelle des Spiels (offiziell:
+  http://heroinedusk.com). Das Spiel ist UNVERÄNDERT (Ordner spiel/ = release/ der Quelle, Byte für Byte).
+  Quelle: https://github.com/clintbellanger/heroine-dusk (Commit im Paket: fspiel.json)
+  Von MoveEye dazu: start.html (Startseite für Handys: viewport, Leiste mit «‹ Spiele» und den Urhebern; GPL-3.0-or-later),
+  Kachelbild thumb.png (Bild aus dem Spiel, CC-BY-SA 3.0). Quelle davon: werkzeuge/fertigspiele/ in
+  https://github.com/DonElektro/MotionWatch
+  Lizenztexte: im Paket (README.md, GPL-3.0.txt, LIZENZEN.txt).

@@ -28,6 +28,7 @@ TAG = "fspiele-1"
 NAME_OK = re.compile(r"[A-Za-z0-9._ /+-]{1,200}")
 QUELLEN = {
     "fs-angst": {"repo": "https://github.com/jonasreich/anxiety", "commit": "2148ce8e9f1d72574e73a22876295b107864bae7", "ordner": "jonasreich_anxiety"},
+    "fs-heroine": {"repo": "https://github.com/clintbellanger/heroine-dusk", "commit": "2a1f01deff724212a7843e363f9c656fd0b13430", "ordner": "clintbellanger_heroine-dusk"},
 }
 
 
@@ -97,7 +98,45 @@ def bau_angst(src, dst, q):
             "Einstellungen des Spiels: «ohne Fluchen»), Alkohol und Sexualität als Themen - ab etwa 12 Jahren.", ""]
 
 
-BAU = {"fs-angst": bau_angst}
+# ---- Heroine Dusk ------------------------------------------------------------------------------------------------------------------
+def bau_heroine(src, dst, q):
+    # the game itself («release/») byte for byte as the author made it (trademark note in the README) - in the folder spiel/
+    kopiere(os.path.join(src, "release"), os.path.join(dst, "spiel"), ["."])
+    kopiere(src, dst, ["README.md"])
+    idx = lies(os.path.join(src, "release", "index.html"))
+    skripte = re.findall(r'<script type="text/javascript" src="(js/[a-z]+\.js)"></script>', idx)
+    if len(skripte) != 25 or 'onload="init()"' not in idx or '<canvas id="gamecanvas" width="160" height="120">' not in idx or 'id="bgmusic"' not in idx:
+        sys.exit("fs-heroine: release/index.html sieht anders aus (%d Skripte) - Startseite von MoveEye anpassen" % len(skripte))
+    start = lies(os.path.join(HIER, "heroine", "start.html"))
+    start = ersetze(start, "<!--SKRIPTE-->", "\n".join('    <script type="text/javascript" src="%s"></script>' % s for s in skripte), "start.html")
+    schreib(os.path.join(dst, "start.html"), start)
+    shutil.copyfile(os.path.join(HIER, "heroine", "thumb.png"), os.path.join(dst, "thumb.png"))
+    shutil.copyfile(os.path.join(HIER, "heroine", "GPL-3.0.txt"), os.path.join(dst, "GPL-3.0.txt"))
+    return ["Heroine Dusk für MoveEye (%s)" % TAG, "",
+            "Heroine Dusk is created by Clint Bellanger http://clintbellanger.net",
+            "Heroine Dusk features music by Yubatake http://opengameart.org/users/yubatake",
+            "",
+            "Lizenzen (README.md des Spiels, unverändert im Paket):",
+            "  * Code: GNU General Public License Version 3 oder später (Text: GPL-3.0.txt). Der Quellcode ist das Spiel selbst",
+            "    (JavaScript, Ordner spiel/js/), vollständig und unverändert.",
+            "  * Grafik: Creative Commons Attribution-ShareAlike 3.0 (CC-BY-SA 3.0, spätere Fassungen erlaubt),",
+            "    https://creativecommons.org/licenses/by-sa/3.0/ - Clint Bellanger.",
+            "  * Musik: Yubatake, Creative Commons Attribution 3.0 (CC-BY 3.0), https://creativecommons.org/licenses/by/3.0/",
+            "  * Optionen-Menü: Justin Jacobs (WTFPL). Farbpalette: DawnBringer. Weitere Danksagungen im README.md.",
+            "  Quelle: %s (Commit %s), Ordner release/" % (q["repo"], q["commit"]),
+            "",
+            "Marke: «Heroine Dusk» ist eine Marke (™) von Clint Bellanger. Dies ist KEINE offizielle Quelle des Spiels und MoveEye",
+            "ist nicht sein Urheber; offizielle Seite: http://heroinedusk.com. Das Spiel ist inhaltlich UNVERÄNDERT: der Ordner",
+            "spiel/ ist Byte für Byte der Ordner release/ der Quelle.",
+            "",
+            "Von MoveEye dazu (werkzeuge/fertigspiele/, nichts am Spiel geändert):",
+            "  * start.html: Startseite für Handys (Angabe «viewport», Platz für den Knopf «✕ Zurück»). Sie lädt dieselben Skripte in",
+            "    derselben Reihenfolge wie spiel/index.html und ist wie der Code des Spiels unter der GPL v3 oder später.",
+            "  * thumb.png: Kachelbild (verkleinertes Bild aus dem Spiel, ohne das Logo; CC-BY-SA 3.0, Clint Bellanger).",
+            "  * LIZENZEN.txt (diese Datei), GPL-3.0.txt (Lizenztext).", ""]
+
+
+BAU = {"fs-angst": bau_angst, "fs-heroine": bau_heroine}
 
 
 def holen(ordner, q):

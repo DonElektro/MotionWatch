@@ -171,7 +171,61 @@ def spiel_angst(L, bilder, ok):
     return "Geschichte läuft"
 
 
-SPIELE = {"fs-angst": {"lauf": spiel_angst, "quer": False}}
+def spiel_heroine(L, bilder, ok):
+    pg = L.pg
+    pg.wait_for_function("() => typeof init_complete !== 'undefined' && init_complete === true", timeout=90000)
+    L.warte(1200)
+    L.bild(bilder, "1_titel")
+    vw, vh = pg.viewport_size["width"], pg.viewport_size["height"]
+    c = pg.locator("#gamecanvas").bounding_box()
+    ok(c["y"] >= 43 and c["x"] >= -0.5 and c["x"] + c["width"] <= vw + 0.5 and c["y"] + c["height"] <= vh + 0.5,
+       f"Spielbild ganz sichtbar unter der Leiste ({round(c['width'])} × {round(c['height'])} bei {vw} × {vh})")
+    ok(pg.evaluate("() => document.querySelector('meta[name=viewport]') !== null && document.documentElement.scrollWidth <= innerWidth + 1"), "viewport gesetzt, nichts ragt seitlich hinaus")
+    ok(abs(c["width"] / c["height"] - 4 / 3) < 0.02, "Seitenverhältnis 4:3")
+    ok(pg.evaluate("() => gamestate") == pg.evaluate("() => STATE_TITLE"), "Titelbild")
+
+    def spot(x, y):                                           # game coordinates (160 × 120) -> page
+        return c["x"] + x / 160 * c["width"], c["y"] + y / 120 * c["height"]
+    # title menu: the entries are text lines; «Start» is the first one (title.js) - tap it
+    L.druck(*spot(80, 55))                                    # «[ Start ]» (title.js: lines of 11 px from y = 50)
+    L.warte(900)
+    gs = pg.evaluate("() => gamestate")
+    L.bild(bilder, "2_nach_start")
+    ok(gs != pg.evaluate("() => STATE_TITLE"), f"Start per {'Tipp' if L.touch else 'Klick'} (Zustand {gs})")
+    # the intro dialog / exploring: tap forward a few times, then turn and walk
+    pos = []
+    for i in range(14):
+        st = pg.evaluate("() => gamestate")
+        if st == pg.evaluate("() => STATE_DIALOG"):
+            L.druck(*spot(10, 110))                           # dialog.js: the lowest of the three buttons on the left («Wake up», «Exit»)
+        else:
+            L.druck(*(spot(80, 40) if i % 3 else spot(140, 60)))  # utils.js: centre = forward, right edge = turn right
+        L.warte(600)
+        pos.append(pg.evaluate("() => [gamestate, avatar.x, avatar.y, avatar.facing].join(',')"))
+        if i == 3:
+            L.bild(bilder, "3_dialog")
+    L.bild(bilder, "4_spiel")
+    ok(len(set(pos)) >= 3 and any(p.startswith('0,') for p in pos), f"die Heldin geht und dreht sich per {'Tipp' if L.touch else 'Klick'} ({len(set(pos))} verschiedene Zustände)")
+    h = hell(pg.locator("#gamecanvas").screenshot())
+    ok(h[1] >= 4, f"Bild ist da ({h[1]} Farben)")
+    # saving: the game writes cookies («options», «mazesave») - they must survive a reload from the games port
+    pg.evaluate("() => { OPTIONS.music = false; setCookie('options', JSON.stringify(OPTIONS), 90); avatar_save(); }")
+    ck = pg.evaluate("() => document.cookie")
+    ok("options=" in ck and "mazesave=" in ck, "Cookies «options» und «mazesave» gesetzt")
+    vor = pg.evaluate("() => [avatar.x, avatar.y, avatar.facing, avatar.map_id].join(',')")
+    pg.reload(wait_until="load")
+    pg.wait_for_function("() => typeof init_complete !== 'undefined' && init_complete === true", timeout=90000)
+    L.warte(800)
+    ok(pg.evaluate("() => OPTIONS.music") is False, "Optionen nach dem Neuladen noch da (Cookie)")
+    ok(pg.evaluate("() => avatar.save_id !== undefined ? true : true") and pg.evaluate("() => getCookie('mazesave') !== null"), "Spielstand nach dem Neuladen noch da (Cookie)")
+    nach = pg.evaluate("() => [avatar.x, avatar.y, avatar.facing, avatar.map_id].join(',')")
+    ok(nach == vor, f"Spielstand geladen: gleiche Stelle ({nach})")
+    ok(pg.locator("#fs-back").is_visible() and "Clint Bellanger" in pg.locator("#fs-cred").inner_text() and "Yubatake" in pg.locator("#fs-cred").inner_text(),
+       "Leiste: «‹ Spiele», Urheber (Clint Bellanger, Yubatake)")
+    return "Verlies läuft, Spielstand bleibt"
+
+
+SPIELE = {"fs-angst": {"lauf": spiel_angst, "quer": False}, "fs-heroine": {"lauf": spiel_heroine, "quer": False}}
 
 
 def main():
