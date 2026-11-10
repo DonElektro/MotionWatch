@@ -942,7 +942,7 @@ Object.assign(I18N.de, {
   "Lock the settings now? Only the main switches stay usable. Unlocking needs the PIN.": "Einstellungen jetzt sperren? Nur die wichtigsten Schalter bleiben bedienbar. Entsperren nur mit der PIN.",
   "Operator mode on": "Bedienmodus ein", "PIN:": "PIN:", "Settings unlocked": "Einstellungen entsperrt",
   "Pause the program for": "Programm pausieren für", "⏸ Pause program": "⏸ Programm pausieren",
-  "all ok": "alles ok", "hide": "einklappen", "tap: show all values": "antippen: alle Werte zeigen", "Quick": "Schnell",
+  "all ok": "alles ok", "hide": "einklappen", "hint": "Hinweis", "hints": "Hinweise", "pre-alarm": "Voralarm", "tap: show all values": "antippen: alle Werte zeigen", "Quick": "Schnell",
   "Dark theme": "Dunkel", "Light theme": "Hell", "Hide header": "Kopfzeile ausblenden",
   "UPS HAT": "USV-Akku", "on battery": "Akkubetrieb", "charging": "lädt", "mains power": "Netzbetrieb",
   "New version": "Neue Version", "Update now": "Jetzt aktualisieren", "later": "später",
@@ -2639,6 +2639,13 @@ function tidyHeader(s, c) {
 }
 // ---- compact header ----
 var QUIET = ["b-person", "b-cpu", "b-fps", "b-wifi", "b-audio", "b-conn", "b-pres", "b-src"];
+// chips that are yellow / red / orange because of what MoveEye is DOING (recording, lamp on, by hand, operator mode, simulation,
+// remote access, away) - a state, no warning; «low light» is a state too, only fog (view limited) counts
+var HDR_STATE = ["b-arm", "b-ok", "b-me", "b-rec", "b-lights", "b-pat", "b-lock", "b-sim", "b-remote", "b-pres", "b-tl", "b-mode", "b-turbo", "b-eco", "b-camp", "b-view"];
+function hdrWarnChips(s) {
+  return [...document.querySelectorAll("header .chips .badge")].filter(b => !b.hidden && !b.classList.contains("vh") && !HDR_STATE.includes(b.id)
+    && (b.classList.contains("red") || b.classList.contains("yel") || b.classList.contains("org")) && (b.id !== "b-light" || !!(s && s.fog)));
+}
 let hdrOpenUntil = 0;
 function compactHeader(s, c) {
   const H = document.querySelector("header"); if (!H) return;
@@ -2657,12 +2664,16 @@ function compactHeader(s, c) {
   QUIET.forEach(id => { const b = $("#" + id); if (!b) return;
     const normal = !b.classList.contains("red") && !b.classList.contains("yel") && !b.classList.contains("org") && !(id === "b-person" && s.persons);
     b.classList.toggle("q", normal); if (normal && !b.hidden && !b.classList.contains("vh")) quiet++; });
+  // 3.72: «all ok» only while NO chip warns (self-check, wind, power, no password, a red CPU, a person …) - before, one
+  // normal value was enough and «✓ alles ok» stood next to «🩺 2». With warnings the chip counts them; a tap still opens the values.
+  const warn = hdrWarnChips(s).length;
   const ok = $("#b-ok");
   if (ok) {
-    ok.hidden = !quiet; ok.textContent = H.classList.contains("hx") ? "✓ " + t("hide") : "✓ " + t("all ok");
+    const txt = () => H.classList.contains("hx") ? "✓ " + t("hide") : (warn ? warn + " " + t(warn === 1 ? "hint" : "hints") : "✓ " + t("all ok"));
+    ok.hidden = !quiet; ok.textContent = txt(); ok.dataset.warn = warn;
+    ok.classList.toggle("grn", !warn);
     ok.title = t("tap: show all values");
-    if (!ok.dataset.on) { ok.dataset.on = "1"; ok.onclick = () => { const x = !H.classList.contains("hx"); H.classList.toggle("hx", x);
-      hdrOpenUntil = x ? Date.now() + 10000 : 0; ok.textContent = x ? "✓ " + t("hide") : "✓ " + t("all ok"); }; }
+    ok.onclick = () => { const x = !H.classList.contains("hx"); H.classList.toggle("hx", x); hdrOpenUntil = x ? Date.now() + 10000 : 0; ok.textContent = txt(); };
     if (hdrOpenUntil && Date.now() > hdrOpenUntil) { hdrOpenUntil = 0; H.classList.remove("hx"); }
   }
 }
@@ -3634,6 +3645,7 @@ function scPick() {
       if (key) { const c = el("button", "sec", "📋"); c.type = "button"; c.title = t("Copy"); c.onclick = () => { try { navigator.clipboard.writeText(u); toast("✓ " + t("copied")); } catch (e) { prompt(t(n), u); } };
         r.append(c, qrBtn(u, t(n), {secret: true})); }
       r.append(lab, cd); box.appendChild(r); });
+    const pn = el("div", "mut", "🔢 " + t("sc-pin-note")); pn.id = "sc-pin-note"; pn.style.marginTop = "6px"; box.appendChild(pn);   // 3.72 (fix 4): …/disarm needs ?pin=… when a PIN is set
     box.appendChild(el("div", "mut", t("sc-key-note2"))).style.marginTop = "6px";
     KEYS.forEach(k => { const r = el("div"); r.style.cssText = "display:flex;gap:8px;align-items:center;margin:4px 0";
       const tx = el("span", "", "🔑 " + k.name + " · " + t("last used") + " " + (k.seen ? new Date(k.seen * 1000).toLocaleString() : t("never"))); tx.style.flex = "1";

@@ -1177,6 +1177,18 @@ def web_specs():
 
 
 SECTIONS_ON_SIM_PAGE = ("Simulator",)       # 2.98.14 (Konzept): these settings are on the page Simulator, not under Einstellungen
+SECTIONS_OWN_CONTENT = {"Security"}          # 3.72: sections whose card is built by the page itself (password, users, app keys, security
+#                                              check) - delivered to the administrator even when no switch is left (the last one,
+#                                              «login_https_only», went in 3.23 and the whole card vanished with it)
+
+
+def schema_for_admin():
+    """True = /api/schema is being read by the administrator (or outside a request: window, self-test)"""
+    try:
+        from flask import g, has_request_context
+        return (not has_request_context()) or getattr(g, "role", "admin") == "admin"
+    except Exception:
+        return True
 
 
 def web_schema(lang=None, only=None):
@@ -1196,7 +1208,7 @@ def web_schema(lang=None, only=None):
         toggles = [{"key": k, "label": tr(l, lang), "value": bool(CFG.get(k))} for s, k, l in TOGGLES if s == sec and k != "web_stream" and not hid(k)]
         sliders = [{"key": k, "label": tr(l, lang), "min": lo, "max": hi, "step": st, "value": CFG.get(k)} for s, k, l, lo, hi, st in SLIDERS if s == sec and not hid(k)]
         texts = [x for x in web_texts(lang) if x["section"] == sec and not hid(x["key"])]
-        if toggles or sliders or texts:
+        if toggles or sliders or texts or (sec in SECTIONS_OWN_CONTENT and schema_for_admin()):
             out.append({"id": sec, "name": tr(sec, lang), "toggles": toggles, "sliders": sliders, "texts": texts})
     return out
 

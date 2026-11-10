@@ -213,7 +213,7 @@ class MqttBridge:
                 arm(0)
             elif v in ("DISARM", "OFF"):
                 was = is_armed() or bool(CFG["armed"])
-                disarm()
+                disarm()                                 # fix 4: on purpose WITHOUT the PIN (own user / password of the broker), see 135
                 if was:                                  # 2.95.33: the owner learns when MQTT switched the camera off
                     try:
                         WATCH_REF["w"].notifier.info(tr("Disarmed via MQTT / Home Assistant"))

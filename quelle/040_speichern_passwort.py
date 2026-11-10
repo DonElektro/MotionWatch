@@ -240,26 +240,47 @@ def users_action(d, who="admin"):
 
 # 2.95.35: ONE list of what users without admin rights may read. Everything else (also every new function) is only for
 # the administrator. 2.98.42: by rights (USER_PERMS) instead of two roles; every user may read BASE, each right adds its part.
+# Fix Rechte (Prüfung 10.11.2026): every address counts EXACTLY, or as a folder when it ends with «/» (view_get_ok / perm_get_ok
+# below). Before, VIEW_GET was a list of beginnings: «/api/fa» (Fehlalarm) also opened /api/factory/backup/<name> (the old
+# settings with password hashes and push addresses) to every logged-in user, «/api/audio» the live sound /api/audio/live.
+# A new address under an old one (e.g. /api/ui_sync) must be named here.
 VIEW_GET_PAGES = {"/", "/help", "/quick", "/more"}
 VIEW_GET = ("/api/tunnel", "/api/helper", "/api/info", "/api/nettest", "/api/state", "/api/alerts", "/api/appearance", "/api/version",
             "/api/health", "/api/gps", "/api/zones", "/api/webpush", "/api/ui", "/api/battery", "/api/sensors", "/api/qs", "/api/schedule",
-            "/api/schema", "/api/triggers", "/api/fa", "/api/appicon", "/api/audio", "/i18n/", "/app-icon/", "/sim-icon/", "/api/simbar", "/api/news")
+            "/api/schema", "/api/triggers", "/api/fa", "/api/appicon", "/api/audio", "/i18n/", "/app-icon/", "/sim-icon/", "/api/simbar", "/api/news",
+            "/api/ui_simple", "/api/ui_sync")           # these two came through the beginning «/api/ui» before: Simple / Expert, version pair
 PERM_GET = {"live": ("/cams", "/preview", "/api/cams", "/api/frame.jpg", "/video_feed", "/cam_feed/", "/cam_snap/", "/snapshot.jpg", "/api/audio/live",
                      "/sim/view.jpg", "/sim/view.mjpg"),
             "rec": ("/recordings", "/diary", "/kino", "/api/kino", "/api/dataset.zip", "/api/recordings", "/api/places", "/rec/file/", "/rec/play/",
                     "/rec/thumb/", "/rec/share/", "/rec/report/", "/api/day", "/api/diary", "/diary/img/", "/api/timelapse", "/timelapse/",
                     "/api/species", "/api/loop", "/api/report"),
-            "arm": ("/protect", "/zones"),
+            "arm": ("/protect", "/zones", "/api/protect"),      # fix: who sees the page «Schutz» also gets its state
             "games": ("/party", "/api/party"),
             "settings": ("/settings",)}
 VIEW_POST = {"/api/webpush", "/api/time", "/api/gps"}
 PERM_POST = {"rec": {"/api/rec/prepare", "/rec/zip", "/api/rec/fav", "/api/rec/false"},
-             "arm": {"/api/arm", "/api/night", "/api/camping", "/api/quick", "/api/mode", "/api/tunnel", "/api/helper", "/api/info", "/api/nettest", "/api/tv"},
+             "arm": {"/api/arm", "/api/night", "/api/camping", "/api/quick", "/api/mode", "/api/helper", "/api/info", "/api/nettest", "/api/tv"},
              "light": {"/api/light", "/api/disco"},
              "talk": {"/api/talk", "/api/talk/stop", "/api/tts"},
              "head": {"/api/follow", "/api/mover", "/api/move", "/api/stick"},
              "settings": {"/api/zones", "/api/schedule"}}
+# fix: «arm» does NOT switch the remote access (POST /api/tunnel: on / off, new code) - like the setting «tunnel_on»
+# (USER_SETTINGS_DENY) that is for the administrator. /api/protect: only the level and «Schutz testen» (PERM_PROTECT_ACTIONS);
+# the PIN, the escalation and the presence stay with the administrator.
+PERM_PROTECT_ACTIONS = ("level", "test")
 PERM_SET_KEYS = {"arm": {"thermal_on", "nightvision", "show_objects", "show_mask"}, "head": {"track_person", "track_motion"}}
+
+
+def view_get_ok(path, table=None):
+    """is this address in the list (VIEW_GET)? Exactly, or below an entry that ends with «/» - never by its beginning only"""
+    return any(path == x or (x.endswith("/") and path.startswith(x)) for x in (VIEW_GET if table is None else table))
+
+
+def perm_get_ok(path, table):
+    """the addresses of one right (PERM_GET): exactly, below a folder («/rec/file/»), or below an /api/ address
+    (/api/recordings/stats) - but not /api/recordingsX"""
+    return any(path == x or (x.endswith("/") and path.startswith(x)) or (x.startswith("/api/") and path.startswith(x + "/"))
+               for x in table)
 
 
 def role_allows(role, path, method, d, perms=None):
@@ -272,10 +293,9 @@ def role_allows(role, path, method, d, perms=None):
             return True
         if path.startswith(ADMIN_GET):
             return False
-        if path in VIEW_GET_PAGES or path.startswith(VIEW_GET):
+        if path in VIEW_GET_PAGES or view_get_ok(path):
             return True
-        return any(path == x or (x.endswith("/") and path.startswith(x)) or (x.startswith("/api/") and path.startswith(x))
-                   for p in P for x in PERM_GET.get(p, ()))
+        return any(perm_get_ok(path, PERM_GET.get(p, ())) for p in P)
     if path == "/api/servo":                                  # 2.98.35: Not-Aus is for everybody, the rest for the administrator
         return d.get("op") == "estop"
     if path == "/api/webpush":
@@ -291,6 +311,8 @@ def role_allows(role, path, method, d, perms=None):
         return "settings" in P and isinstance(d.get("key"), str) and d.get("key") not in USER_SETTINGS_DENY
     if path == "/api/audio":
         return ("siren" in P and d.get("action") in ("test", "siren", "stop")) or ("talk" in P and d.get("action") == "stop")
+    if path == "/api/protect":
+        return "arm" in P and d.get("action") in PERM_PROTECT_ACTIONS
     if path == "/api/action":
         return "head" in P and d.get("action") in ("center", "patrol")
     return any(path in PERM_POST.get(p, ()) for p in P)
@@ -543,6 +565,11 @@ def _settings_migrations(cfg_in):
             log_event("sys", "Settings of an older version taken over: " + "; ".join(did))
     except Exception as e:
         log_event("sys", f"Settings migration (232): {e}"[:150])
+    try:                                                     # fix 3: a device that is armed after «Aus» («Wachsam») with the siren
+        if CFG.get("armed"):                                 # of «Voll» still on (older version) - taken back at the start (135)
+            protect_siren_sync()
+    except Exception as e:
+        log_event("sys", f"Settings migration (135): {e}"[:150])
     for _f, _n in ((lambda: shortcut_migrate(cfg_in), "573"), (place_report_migrate, "317")):   # aufr: shortcut key -> app key, public path -> zone
         try:
             did = _f()
@@ -600,6 +627,16 @@ def save_settings():
         _SAVE_T["last"] = time.monotonic()
         save_settings_now()
     _save_timer = threading.Timer(wait, go); _save_timer.daemon = True; _save_timer.start()
+
+
+def save_settings_flush():
+    """fix 11: write now (atomic, fsync) - for what must survive a power cut in the next seconds: armed / disarmed.
+    A waiting debounced save is dropped (this one contains it)."""
+    global _save_timer
+    if _save_timer:
+        _save_timer.cancel(); _save_timer = None
+    _SAVE_T["last"] = time.monotonic()
+    save_settings_now()
 
 
 # «Reset settings» (before: a plain confirm, also removed the password) is now «Reset to factory settings» with password /

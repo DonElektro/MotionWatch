@@ -218,6 +218,23 @@ class WebStream:
             lang = norm_lang(((d or {}).get("lang") if isinstance(d, dict) else None) or request.args.get("lang") or CFG["lang"])
             return reply({"ok": False, "error": tr("not allowed for your user", lang)}, 403)
 
+        def web_pin(d=None):
+            """the PIN of a request: in the body ("pin", the page «Schutz») or in the header X-MW-PIN (the PIN question of
+            every page, 639zzk)"""
+            v = (d or {}).get("pin") if isinstance(d, dict) else None
+            return v if str(v or "").strip() else (request.headers.get("X-MW-PIN") or "")
+
+        @app.before_request
+        def pin_guard():                            # fix 4: the PIN for everything the browser switches off (web_disarms, 135)
+            if request.method != "POST" or not CFG.get("protect_pin") or not CFG.get("armed"):
+                return None
+            d = request.get_json(force=True, silent=True)
+            err = web_pin_guard(request.path, request.method, d, web_pin(d))
+            if err is None:
+                return None
+            lang = norm_lang((d.get("lang") if isinstance(d, dict) else None) or request.args.get("lang") or CFG["lang"])
+            return reply({"ok": False, "error": tr(err, lang), "need_pin": True}, 403)
+
         @app.after_request
         def gzip_text(resp):                        # 2.98.40 (Besitzer: menus build up slowly): pages are ~800 KB - gzip makes
             try:                                    # ~5× less over Wi-Fi / Tailscale; registered first = runs last
@@ -1510,6 +1527,12 @@ class WebStream:
             if action == "arm":
                 arm(); txt = "armed" if is_armed() else "arming (delay " + str(CFG.get("arm_delay", "")) + " s)"
             elif action == "disarm":
+                if CFG.get("protect_pin") and CFG.get("armed"):       # fix 4: with a PIN the shortcut needs it too: …/disarm?pin=1234
+                    ok_, err_ = protect_pin_check(request.args.get("pin"), "shortcut")
+                    if not ok_:
+                        log_event("web", f"Shortcut from {ip}: disarm refused ({err_})")
+                        return Response(err_ + " - a PIN for switching off is set: add ?pin=… to the address of the shortcut", 403)
+                    protect_cancel_escalation()
                 disarm(); txt = "disarmed"
             elif action == "siren_off":
                 sound_stop(); txt = "siren off"
@@ -1633,6 +1656,7 @@ class WebStream:
                                      "address": page_address("10.42.0.1")}
                 if getattr(g, "role", "admin") != "admin":
                     st["guest"] = {}
+                    st["tunnel"] = dict(st["tunnel"], code="")   # fix 6: the code of the remote access only for the administrator
             cfg = {k: CFG[k] for k in web_specs()}
             cfg.update({k: CFG[k] for k in ("thermal_source", "deter_person_act", "deter_big_act", "deter_small_act", "deter_warm_act", "backup_type", "audio_in", "patrol_mode",
                                             "siren_on", "web_stream", "sensors", "qs_layout")})        # for the green arrows (overview)
@@ -1747,12 +1771,13 @@ class WebStream:
                 arm(0)
             elif a == "disarm":
                 if CFG.get("protect_pin"):                 # 2.95.105: disarming needs the PIN
-                    ok_, err_ = protect_disarm(body().get("pin"), "web")
+                    ok_, err_ = protect_disarm(web_pin(body()), "web")
                     if not ok_:
                         return reply({"ok": False, "error": tr(err_, norm_lang(body().get("lang"))), "need_pin": True}, 403)
                 else:
                     protect_cancel_escalation()
                     CFG["protect_level"] = "off"
+                    protect_siren_sync()                   # fix 3 (135)
                     disarm()
             else:
                 return reply({"ok": False, "error": "unknown action"}, 400)
@@ -1899,7 +1924,9 @@ class WebStream:
             if a == "level":
                 lv = str(d.get("level") or "")
                 if lv == "off" and CFG.get("protect_pin"):
-                    ok, err = protect_disarm(d.get("pin"), "web")
+                    ok, err = protect_disarm(web_pin(d), "web")
+                    if not ok:
+                        return reply(dict(protect_status(lang, True), ok=False, error=tr(err, lang), need_pin=True), 403)
                 else:
                     ok, err = protect_set(lv, "web", d.get("answers") if isinstance(d.get("answers"), dict) else None)
             elif a == "pin":
@@ -1908,6 +1935,7 @@ class WebStream:
                 ok, err = protect_test(lang)
             elif a == "escalate":
                 CFG["escalate_on"] = bool(d.get("on", CFG.get("escalate_on")))
+                protect_auto_user("escalate_on")                  # fix 3 (135): the user's own choice - the level leaves it alone
                 try:
                     CFG["escalate_siren_s"] = max(0, min(600, int(d.get("s", CFG.get("escalate_siren_s", 30)))))
                 except (TypeError, ValueError):
@@ -2166,12 +2194,17 @@ class WebStream:
         @app.route("/api/tunnel", methods=["GET", "POST"])
         def api_tunnel():
             if request.method == "POST":
+                if getattr(g, "role", "admin") != "admin":       # fix Rechte: the remote access is for the administrator (as «tunnel_on»)
+                    return reply({"ok": False, "error": tr("not allowed for your user", norm_lang(body().get("lang") or CFG["lang"]))}, 403)
                 d = body()
                 if "on" in d:
                     CFG["tunnel_on"] = bool(d["on"]); save_settings()
                 if d.get("new_code"):
                     CFG["tunnel_code"] = ""; tunnel_code()
-            return reply({"ok": True, "tunnel": tunnel_state(), "address": page_address() or request.host_url})
+            ts_ = tunnel_state()
+            if getattr(g, "role", "admin") != "admin":           # every user sees whether it is on - the code only the administrator
+                ts_["code"] = ""
+            return reply({"ok": True, "tunnel": ts_, "address": page_address() or request.host_url})
 
         @app.route("/api/disco", methods=["POST"])
         def api_disco():

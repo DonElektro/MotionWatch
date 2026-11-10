@@ -29,6 +29,11 @@ _HX_AUFR = {
         'Copie les adresses maintenant – la clé n’est montrée que cette fois.', 'Copia ora gli indirizzi – la chiave viene mostrata solo questa volta.',
         'Copiar ussa las adressas – la clav vegn mussada mo questa giada.'),
     'app key': ('App-Schlüssel', 'clé d’app', 'chiave app', 'clav d’app'),
+    # 3.72 (fix 4): with a PIN for switching off the shortcut «Disarm» needs it too - the PIN itself never stands in a link or QR code
+    'sc-pin-note': ('Ist eine PIN fürs Ausschalten gesetzt, braucht «Ausschalten» sie auch: im Kurzbefehl selbst ?pin=… an die Adresse hängen. Die PIN steht nie in einem QR-Code oder kopierten Link.',
+                    'Si un PIN pour désactiver est défini, « Désactiver » en a besoin aussi : ajoute toi-même ?pin=… à l’adresse dans le raccourci. Le PIN ne figure jamais dans un code QR ni dans un lien copié.',
+                    'Se è impostato un PIN per spegnere, serve anche a «Disattiva»: aggiungi tu stesso ?pin=… all’indirizzo nel comando rapido. Il PIN non compare mai in un codice QR o in un link copiato.',
+                    'Sch’in PIN per stizzar è definì, dovra «Deactivar» el er: agiuntar sez ?pin=… a l’adressa en il cumond curt. Il PIN na stat mai en in code QR u en ina colliaziun copiada.'),
     'sc-key-note2': ('Der Schlüssel ist ein App-Schlüssel, der nur diese Adressen öffnet (nicht den Rest von MoveEye). MoveEye speichert nur seinen Fingerabdruck – darum steht er nur direkt nach dem Erstellen hier. Jeder App-Schlüssel (Einstellungen → Sicherheit) geht hier auch. Von unterwegs über die Tailscale-Adresse.',
                      'La clé est une clé d’app qui n’ouvre que ces adresses (pas le reste de MoveEye). MoveEye ne garde que son empreinte – elle n’apparaît donc ici que juste après sa création. Toute clé d’app (Réglages → Sécurité) fonctionne aussi. En déplacement : par l’adresse Tailscale.',
                      'La chiave è una chiave app che apre solo questi indirizzi (non il resto di MoveEye). MoveEye ne conserva solo l’impronta – per questo appare qui solo subito dopo la creazione. Funziona anche ogni chiave app (Impostazioni → Sicurezza). In viaggio: tramite l’indirizzo Tailscale.',
@@ -84,9 +89,10 @@ for _k, _v in _HX_AUFR.items():
 
 # the pages with their own German dictionary
 _AUFR_MAIN = ["Positions, test, diagnosis, Not-Aus", "only the shortcut addresses /k/", "Copy the addresses now - the key is shown only this one time.", "app key",
-              "sc-key-note2", "These app keys work here too:", "One more shortcut key", "Make a shortcut key", "All app keys", "vm-device", "Animal species"]
+              "sc-key-note2", "sc-pin-note", "These app keys work here too:", "One more shortcut key", "Make a shortcut key", "All app keys", "vm-device", "Animal species"]
 _AUFR_EN = {k: k for k in _AUFR_MAIN}
 _AUFR_EN.update({"sc-key-note2": "The key is an app key that opens only these addresses (not the rest of MoveEye). MoveEye keeps only its fingerprint - so it stands here only right after it is made. Every app key (Settings → Security) works here too. On the road: through the Tailscale address.",
+                 "sc-pin-note": "If a PIN for switching off is set, «Disarm» needs it too: add ?pin=… to the address in the shortcut yourself. The PIN is never in a QR code or a copied link.",
                  "vm-device": "Showing and hiding is for this device only - like «◫ View» of the live page."})
 WEB_PAGE = WEB_PAGE.replace("/*AUFRDE*/{}", json.dumps({k: DE[k] for k in _AUFR_MAIN}, ensure_ascii=False), 1).replace(
     "/*AUFREN*/{}", json.dumps({k: v for k, v in _AUFR_EN.items() if v != k}, ensure_ascii=False), 1)

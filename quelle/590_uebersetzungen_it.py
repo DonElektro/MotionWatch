@@ -1041,6 +1041,8 @@ TRX['it'].update({
     'grey at night (good with a NoIR camera)': 'grigio di notte (adatto a una telecamera NoIR)',
     'handbag': 'borsetta',
     'hide': 'comprimi',
+    'hint': 'avviso',
+    'hints': 'avvisi',
     'hold time must be a number': 'il tempo di mantenimento deve essere un numero',
     'home': 'a casa',
     'horse': 'cavallo',

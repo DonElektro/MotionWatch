@@ -25,7 +25,7 @@ self.addEventListener("notificationclick", e => {
 def i18n_loader(help_=False):
     """Runs first: for French, Italian and Romansh the page gets its translation file (cached by the browser per version)."""
     return ("<script>" + LANG_JS.replace("</", "<\\/") + "\n(function(){var l='';try{l=localStorage.getItem('mw-lang')||'';}catch(e){}if(!l)l=" + json.dumps(CFG["lang"]) + ";"
-            "window.LX=function(s){var d=window.I18NX;return (d&&d[s])||'';};"
+            "window.LX=function(s){var d=window.I18NX,x=(l==='de'||l==='rm')&&window.I18NDX;return (d&&d[s])||(x&&x[s])||'';};"   # 3.72: German gaps (639zzl)
             "if(['fr','it','rm'].indexOf(l)>=0)document.write('<script src=\"/i18n/'+l+'.js?v=" + APP_VERSION + ("&h=1" if help_ else "")
             + "\"><\\/script>');})();</script>")
 
@@ -662,6 +662,7 @@ Object.assign(I18N.de, {"Protection": "Schutz", "History": "Verlauf", "Message l
 const t = s => (LANG === "de" && I18N.de[s]) || (window.LX ? LX(s) : "") || (LANG === "rm" && I18N.de[s]) || (I18N.en && I18N.en[s]) || s;
 function applyI18n() {
   document.querySelectorAll("[data-i18n]").forEach(e => e.textContent = t(e.dataset.i18n));
+  document.querySelectorAll("[data-i18n-ph]").forEach(e => e.placeholder = t(e.dataset.i18nPh));   // 3.72: placeholders too («Password» on Kameras)
   const b = $("#btn-lang"); if (b) b.textContent = (LANG || "en").toUpperCase();
   document.documentElement.lang = LANG;
 }

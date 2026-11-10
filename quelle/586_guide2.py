@@ -371,12 +371,24 @@ FACTORY_KEEP = {
 FACTORY_WORD = "ZURÜCKSETZEN"
 FACTORY_WORDS = {"ZURÜCKSETZEN", "ZURUECKSETZEN", "RESET", "RÉINITIALISER", "REINITIALISER", "RIPRISTINA", "RESETTAR"}
 FACTORY_DATA = ["sightings.json", "sim_diary.jsonl", "alarm_tracks.json", "places.json", "place", "refscan", "gehtest", "logs", "motionwatch.log"]
-_BACKUP_RE = re.compile(r"^motionwatch_settings\.before_reset_\d{8}-\d{6}\.json$")
+_BACKUP_RE = re.compile(r"^motionwatch_settings\.before_reset_(\d{8}-\d{6})\.json$")
 
 
 def factory_word(lang=None):
     """the word to type: German «ZURÜCKSETZEN», the other languages «RESET» (both are always accepted)"""
     return FACTORY_WORD if cur_lang(lang) == "de" else "RESET"
+
+
+def factory_backup_when(name):
+    """«dd.mm.yyyy hh:mm» from the time in the file name, None when it is no copy of the settings. 3.72: taken from the pattern -
+    before, fixed positions (n[33:48]) were one character off, no date could be read and the list stayed empty"""
+    m = _BACKUP_RE.match(str(name or ""))
+    if not m:
+        return None
+    try:
+        return datetime.strptime(m.group(1), "%Y%m%d-%H%M%S").strftime("%d.%m.%Y %H:%M")
+    except ValueError:
+        return None
 
 
 def factory_backups():
@@ -385,13 +397,27 @@ def factory_backups():
     except OSError:
         names = []
     out = []
-    for n in names[:10]:
+    for n in names:
+        if len(out) >= 10:
+            break
+        when = factory_backup_when(n)
+        if when is None:                                  # the digits are no real date (20269999-…): not one of ours
+            continue
         try:
-            out.append({"name": n, "kb": max(1, os.path.getsize(os.path.join(DATA_DIR, n)) // 1024),
-                        "when": datetime.strptime(n[33:48], "%Y%m%d-%H%M%S").strftime("%d.%m.%Y %H:%M")})
-        except (OSError, ValueError):
+            out.append({"name": n, "kb": max(1, os.path.getsize(os.path.join(DATA_DIR, n)) // 1024), "when": when})
+        except OSError:
             pass
     return out
+
+
+def factory_admin():
+    """the factory reset and the copies of the old settings: only the administrator, logged in himself (no user with a role,
+    no app key). The rights table (040) says the same - checked twice on purpose."""
+    try:
+        from flask import g
+        return getattr(g, "role", "admin") == "admin" and not getattr(g, "appkey", None)
+    except (ImportError, RuntimeError):                                          # outside a request (window, self-test)
+        return True
 
 
 def factory_backup_path(name):
@@ -539,6 +565,8 @@ def g2_routes(app, watch, reply, body):
     @app.route("/api/factory", methods=["GET", "POST"])
     def api_factory():
         lang = norm_lang(request.args.get("lang") or CFG["lang"])
+        if not factory_admin():                                   # fix Rechte: the list of the copies too
+            return reply({"ok": False, "error": tr("not allowed for your user", lang)}, 403)
         if request.method == "GET":
             return reply(dict(factory_info(lang), ok=True))
         d = body(); lang = norm_lang(d.get("lang") or lang)
@@ -550,6 +578,8 @@ def g2_routes(app, watch, reply, body):
 
     @app.route("/api/factory/backup/<name>")
     def api_factory_backup(name):
+        if not factory_admin():                                   # fix Rechte: the old settings (password hashes, push addresses,
+            return Response("not allowed", 403)                   # keys) only for the administrator - also not with an app key
         p = factory_backup_path(name)
         if not p:
             return Response("not found", 404)
