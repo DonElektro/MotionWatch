@@ -229,6 +229,8 @@ CFG = {
     "refscan_photos": 2, "refscan_settle": 1.5, "refscan_sens": 50, "refscan_min_area": 0.6,   # reference scan (2.95.97)
     "refscan_on_arm": False, "refscan_every": 0, "refscan_push": True, "refscan_push_all": False, "refscan_pano_on": False, "refscan_pano_day": "",
     "protect_level": "off", "protect_pin": "", "escalate_on": False, "escalate_siren_s": 30,   # 2.95.105: protection (135)
+    "protect_auto": ["?"],       # fix 3: what the level «Voll» switched on itself (escalate_on, siren_on) - taken back by «Wachsam»; ["?"] = older file (135)
+    "sched_manual": {},          # fix 11: «switched by hand while a schedule forces it» survives a restart: {key: {"v": forced value, "t": time}} (030)
     "tamper_on": True,           # sabotage: camera covered or turned away (picture check)
     "tamper_motion": True,       # motion sensor MPU-6050 (I2C 0x68), if fitted: device moved / knocked over
     "tamper_power": True,        # power cut while armed = alarm (needs the UPS HAT)

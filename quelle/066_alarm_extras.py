@@ -130,7 +130,11 @@ def alx_do(act, e, who="push"):
         except NameError:
             pass
         CFG["protect_level"] = "off"
-        disarm()
+        try:
+            protect_siren_sync()                         # fix 3 (135): «Aus» takes back what «Voll» switched on
+        except NameError:
+            pass
+        disarm()                                         # fix 4: on purpose WITHOUT the PIN (the secret link of this alarm), see 135
         sound_stop()
         ALX["hold_until"] = 0.0
         log_event("sys", f"Protection switched off from the push message ({who})")

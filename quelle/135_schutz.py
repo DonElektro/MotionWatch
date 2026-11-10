@@ -38,6 +38,7 @@ def protect_set(level, who="web", answers=None):
     A = answers or {}
     if level == "off":
         CFG["protect_level"] = "off"
+        protect_siren_sync()                             # fix 3: «Aus» takes back what «Voll» switched on (disarm saves)
         disarm()
         return True, ""
     CFG["protect_level"] = level
@@ -49,11 +50,9 @@ def protect_set(level, who="web", answers=None):
     if level == "full" or A.get("things"):
         CFG["refscan_on_arm"] = True                     # compare with the reference when armed (guarded things)
     react = A.get("react") or ("siren" if level == "full" else "push")
-    CFG["escalate_on"] = react == "siren"
     if react in ("light", "siren"):
         CFG["light_white_auto"] = "alarm_dark" if CFG.get("light_white_auto") in ("", "dark") else CFG["light_white_auto"]
-    if react == "siren" and CFG.get("siren_on") == "off":
-        CFG["siren_on"] = "person"
+    protect_siren_sync(level, react)                     # fix 3: the siren and the escalation follow the level (also back to off)
     for k in ("protect_level", "notify_on", "tamper_on", "gps_theft", "refscan_on_arm", "escalate_on", "siren_on"):
         sched_user_changed(k)
     save_settings()
@@ -66,6 +65,69 @@ def protect_set(level, who="web", answers=None):
         refscan_start("scan", "protection assistant")     # no reference yet: take it now (before the countdown ends)
     log_event("sys", f"Protection: {level} ({who})")
     return True, ""
+
+
+# ---- fix 3 (Prüfung 10.11.2026): the level decides about the siren - in ONE place --------------------------------------------
+# Before: «Voll» switched the siren on («Sirene bei Alarm» = Person, «Sirene nach 30 s») and nothing ever switched it off again.
+# «Voll» -> «Wachsam» left the siren on (it even sounded at once), «Voll» -> «Aus» -> switching on again (button, shortcut,
+# schedule, mode) showed «Wachsam» while the siren after 30 s was still active - «Wachsam» is described as «nur Meldungen».
+# Now: what a level switched on is remembered in CFG["protect_auto"] and taken back when the level no longer wants it:
+#   «Voll»     siren after the wait ON, «Sirene bei Alarm» from «aus» to «Person»
+#   «Wachsam»  siren after the wait OFF; «Sirene bei Alarm» back to «aus» IF the level had switched it on
+#   armed in another way after «Aus» (= «Wachsam»): the same as «Wachsam», for what the level had switched on
+# What the user chose himself stays: «Sirene bei Alarm» in the settings of the loudspeaker (set_text, 030) and the switch
+# «Sirene nach … s» on the page «Schutz» (protect_auto_user) - also in «Wachsam», the page shows it («🚨 Sirene»).
+# An older settings file does not know who switched what (["?"]): a siren after the wait that is on counts as switched on by
+# «Voll» (with «Sirene bei Alarm» = Person, exactly what «Voll» sets) - it is the left-over this fix is about.
+PROTECT_AUTO_KEYS = ("escalate_on", "siren_on")
+
+
+def _protect_auto():
+    a = CFG.get("protect_auto")
+    if not isinstance(a, list) or "?" in a:              # older settings file: see above
+        a = ["escalate_on"] + (["siren_on"] if CFG.get("siren_on") == "person" else []) if CFG.get("escalate_on") else []
+    return [k for k in PROTECT_AUTO_KEYS if k in a]
+
+
+def protect_auto_user(key):
+    """the user chose this himself (loudspeaker setting, switch on the page «Schutz»): the level no longer takes it back"""
+    a = _protect_auto()
+    CFG["protect_auto"] = [k for k in a if k != key]
+
+
+def protect_siren_sync(level=None, react=None):
+    """ONE function for every way of switching on: protect_set (level = the chosen one, react = answer of the assistant) and
+    arm() / the schedule / the camping profile / the start of the program (level None = no level chosen now). Returns True
+    when a setting changed (the caller saves)."""
+    auto = _protect_auto()
+    was = (CFG.get("escalate_on"), CFG.get("siren_on"), CFG.get("protect_auto"))
+    if level is None:
+        # no level chosen now: «Voll» / «Wachsam» chosen before stay as they were set then; after «Aus» the state is
+        # «Wachsam» (protect_level) - what «Voll» had switched on goes off
+        if (CFG.get("protect_level") or "off") == "off":
+            if "escalate_on" in auto:
+                CFG["escalate_on"] = False
+            if "siren_on" in auto and CFG.get("siren_on") == "person":
+                CFG["siren_on"] = "off"
+            auto = []
+    elif (react or ("siren" if level == "full" else "push")) == "siren":
+        if not CFG.get("escalate_on"):
+            CFG["escalate_on"] = True; auto.append("escalate_on")
+        if CFG.get("siren_on") == "off":
+            CFG["siren_on"] = "person"; auto.append("siren_on")
+    else:
+        CFG["escalate_on"] = False                       # a level chosen now always decides about the wait (as before)
+        if "siren_on" in auto and CFG.get("siren_on") == "person":
+            CFG["siren_on"] = "off"
+        auto = []
+    CFG["protect_auto"] = [k for k in PROTECT_AUTO_KEYS if k in auto]
+    changed = was != (CFG.get("escalate_on"), CFG.get("siren_on"), CFG.get("protect_auto"))
+    if was[:2] != (CFG.get("escalate_on"), CFG.get("siren_on")):
+        if not CFG.get("escalate_on"):
+            protect_cancel_escalation()
+        log_event("sys", "Protection: siren " + ("on" if CFG.get("siren_on") != "off" else "off") + ", siren after the wait "
+                  + ("on" if CFG.get("escalate_on") else "off") + (" (follows the level)" if level is None else f" (level {level})"))
+    return changed
 
 
 # ---- the traffic light ---------------------------------------------------------------------------------------------------
@@ -210,12 +272,17 @@ def protect_pin_ok(pin):
         return False
 
 
-def protect_disarm(pin, source="web"):
-    """disarm with the PIN (if one is set). 3 wrong PINs within 10 minutes: theft alarm (push with picture)"""
+def protect_pin_check(pin, source="web"):
+    """the PIN for switching off (if one is set): (ok, error). 3 wrong PINs within 10 minutes: theft alarm (push with
+    picture), 5: blocked for 10 minutes. No PIN given: «PIN needed» - not counted (the page then asks for it)."""
+    if not CFG.get("protect_pin"):
+        return True, ""
     now = time.time()
     PROTECT["pin_fails"] = [t for t in PROTECT["pin_fails"] if now - t < 600]
     if len(PROTECT["pin_fails"]) >= 5:
         return False, "too many wrong PINs - try again in 10 minutes"
+    if not str(pin or "").strip():
+        return False, "PIN needed"
     if not protect_pin_ok(pin):
         PROTECT["pin_fails"].append(now)
         log_event("sys", f"Protection: wrong PIN for disarming ({source})")
@@ -229,9 +296,82 @@ def protect_disarm(pin, source="web"):
             siren_alarm("tamper")
         return False, "wrong PIN"
     PROTECT["pin_fails"] = []
+    return True, ""
+
+
+def protect_disarm(pin, source="web"):
+    """disarm with the PIN (if one is set), see protect_pin_check"""
+    ok, err = protect_pin_check(pin, source)
+    if not ok:
+        return False, err
     protect_cancel_escalation()
     protect_set("off", source)
     return True, ""
+
+
+# ---- fix 4 (Entscheid des Besitzers «Überall im Browser», 10.11.2026): the PIN for everything the browser / the web API
+# switches off. Before, only «Aus» (POST /api/arm, /api/protect) asked for it - the mode «Transport», the shortcut address
+# /k/<key>/disarm, «all off» of several devices, «Camping off» or «simulation on» switched the protection off without it.
+# web_disarms() is the ONE list of these requests; the web server asks it before every POST (pin_guard, 550) and answers
+# 403 {"need_pin": true} - the page then shows the PIN question (639zzk) and sends the request again with the header X-MW-PIN.
+# A new address that switches off belongs into this list.
+# WITHOUT the PIN on purpose (not the browser; Besitzer): the button «Aus» in a push message (/na/, 066 - the secret link
+# of this one alarm), MQTT (270 - own user and password), the clap switch (250 - with a PIN it only arms), the buttons on
+# the device (163a - own switch «btn_allow_disarm»), a command of another MoveEye (260: it calls /api/arm there - with a
+# PIN on that device the answer is «PIN needed», as before) and everything automatic: schedules (030 arm_by_schedule),
+# presence (150), «Heute Nacht bewachen» in the morning (130), the modes that end by themselves (mode_tick).
+# Not locked out: the administrator knows the PIN; a forgotten PIN: «Reset to factory settings» with the web password
+# (586), or the settings file - as before.
+def mode_disarms(m, gamer_watch=None):
+    """would switching to this mode switch the protection off? (mode_set, 130)"""
+    m = str(m or ""); old = CFG.get("mode") or ""
+    if m == old or not CFG.get("armed"):
+        return False
+    if m == "transport":
+        return True
+    prev = CFG.get("mode_prev") if isinstance(CFG.get("mode_prev"), dict) else {}
+    cprev = CFG.get("camping_prev") if isinstance(CFG.get("camping_prev"), dict) else {}
+    if m == "":                                          # back to the own settings: armed as it was before the mode
+        return not prev.get("armed", True)
+    if m == "gamer" and old == "camping" and CFG.get("camping"):   # leaving the camping profile gives its old state back,
+        watch = CFG.get("mode_gamer_watch") if gamer_watch is None else gamer_watch    # the gamer mode only arms with «watch on»
+        return not watch and not cprev.get("armed", True)
+    return False
+
+
+def web_disarms(path, d):
+    """would this POST of the web API switch the protection off? (only asked while armed / arming and with a PIN)"""
+    if not CFG.get("armed") or not isinstance(d, dict):
+        return False
+    if path == "/api/mode":
+        return "mode" in d and mode_disarms(d.get("mode"), bool(d["mode_gamer_watch"]) if "mode_gamer_watch" in d else None)
+    if path == "/api/camping":
+        if d.get("on"):
+            return False
+        if (CFG.get("mode") or "") == "camping":
+            return mode_disarms("")
+        cprev = CFG.get("camping_prev") if isinstance(CFG.get("camping_prev"), dict) else {}
+        return bool(CFG.get("camping")) and not cprev.get("armed", True)
+    if path == "/api/set":
+        return d.get("key") == "armed" and not d.get("value")
+    if path == "/api/fleet":
+        return d.get("action") == "disarm" and d.get("id") in ("all", "me")
+    if path == "/api/sim":                               # «disarm and simulate?» (sim_set with confirm, 340)
+        return bool(d.get("on")) and bool(d.get("confirm")) and not CFG.get("sim_on")
+    if path == "/api/simintern":                         # the same for the simulator on the Pi (639zx)
+        return d.get("action") == "start" and bool(d.get("confirm")) and not CFG.get("sim_on")
+    return False
+
+
+def web_pin_guard(path, method, d, pin):
+    """None = go on; else the error text for the answer 403 {"need_pin": true}. Called by the web server before a POST."""
+    if method != "POST" or not CFG.get("protect_pin") or not web_disarms(path, d):
+        return None
+    ok, err = protect_pin_check(pin, "web " + path)
+    if ok:
+        protect_cancel_escalation()
+        return None
+    return err
 
 
 # ---- «Schutz testen» ---------------------------------------------------------------------------------------------------

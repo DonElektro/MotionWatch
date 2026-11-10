@@ -31,7 +31,7 @@ NACHT_BUSY = ("ruhig", "normal", "viel")
 NACHT_TEMPO = {"echt": 1.0, "schnell": 8.0}
 # the settings the run touches (protect_set «full» + relays) - put back afterwards
 NACHT_KEYS = ("armed", "protect_level", "notify_on", "tamper_on", "gps_theft", "refscan_on_arm", "escalate_on", "siren_on",
-              "light_white_auto", "relays_on")
+              "light_white_auto", "relays_on", "protect_auto")    # protect_auto: what «Voll» switched on itself (135) - back with the rest
 NACHT_ALARM_EVS = ("person", "warm", "prealarm", "noise", "tamper")
 NACHT_PRIO = {"incident": 0, "people": 1, "animal": 2, "vehicle": 3, "weather": 4}
 # cause keys of the simulator (nachtlauf.gd KINDS) -> English text (translated in 599e)
@@ -377,7 +377,7 @@ def nacht_stop(role="admin", locked=None):
 
 
 def _nacht_thread(opts, auto):
-    snap = {k: CFG.get(k) for k in NACHT_KEYS}
+    snap = {k: (list(CFG[k]) if isinstance(CFG.get(k), list) else CFG.get(k)) for k in NACHT_KEYS}
     run, stopped, err = None, False, ""
     L = None
     SANDBOX["force"] += 1                               # nothing reaches the phone as a real alarm, the siren only in the simulator

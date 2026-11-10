@@ -394,6 +394,16 @@ def factory_backups():
     return out
 
 
+def factory_admin():
+    """the factory reset and the copies of the old settings: only the administrator, logged in himself (no user with a role,
+    no app key). The rights table (040) says the same - checked twice on purpose."""
+    try:
+        from flask import g
+        return getattr(g, "role", "admin") == "admin" and not getattr(g, "appkey", None)
+    except (ImportError, RuntimeError):                                          # outside a request (window, self-test)
+        return True
+
+
 def factory_backup_path(name):
     n = os.path.basename(str(name or ""))
     p = os.path.join(DATA_DIR, n)
@@ -539,6 +549,8 @@ def g2_routes(app, watch, reply, body):
     @app.route("/api/factory", methods=["GET", "POST"])
     def api_factory():
         lang = norm_lang(request.args.get("lang") or CFG["lang"])
+        if not factory_admin():                                   # fix Rechte: the list of the copies too
+            return reply({"ok": False, "error": tr("not allowed for your user", lang)}, 403)
         if request.method == "GET":
             return reply(dict(factory_info(lang), ok=True))
         d = body(); lang = norm_lang(d.get("lang") or lang)
@@ -550,6 +562,8 @@ def g2_routes(app, watch, reply, body):
 
     @app.route("/api/factory/backup/<name>")
     def api_factory_backup(name):
+        if not factory_admin():                                   # fix Rechte: the old settings (password hashes, push addresses,
+            return Response("not allowed", 403)                   # keys) only for the administrator - also not with an app key
         p = factory_backup_path(name)
         if not p:
             return Response("not found", 404)
