@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-10 20:20",
+ "generated": "2026-11-10 21:10",
  "versions": [
+  {
+   "version": "3.73.0",
+   "file": "webcam_bewegung_3_73_0.py",
+   "url": "",
+   "sha256": "0c1ab2b560dd31abbc3b2a39275e45359b45c9ce0cd609edc7a17241ec6cd061",
+   "date": "2026-11-10 21:10",
+   "notes": "Spielecke: Wobbly Truck mit Nitro, Zeitlupe bei grossen Stunts, Effekten und Ton, grosser Combo-Anzeige, Geist-Fahrer (deine beste Fahrt fährt mit), fünf Welten (Wüste, Wald, Schnee, Vulkan, Nacht), neuen Elementen (Sprungfeder, Einsturzbrücke, Feuerringe, Felsen, Eis, Schlamm) und einer Verfolgungsjagd alle 1000 m – der Rekord der Stunt-Piste beginnt neu, der alte bleibt als «alte Strecke» sichtbar. Neues Spiel «Was nun?»: Bilder-Rätsel mit 5 Bildern, Sternen, Tipp-Knopf und Geheimnissen (Idee von Elektro). Spielesammlung einmal neu laden: Mehr → Spielecke → «Installieren / aktualisieren»",
+   "size": 3875011,
+   "sig": "ca392b01ac03c6ea637b33ff90f763eee39f5088f7c56f9de1fbf5dc2ee842ca2b0824876861deadc3917aaf5bdb479b82c5516dd5f92563cfad7146d2118307",
+   "data": {
+    "file": "moveeye_daten_3_73_0.zip",
+    "url": "",
+    "sha256": "e131b35cf806559a4bed106161bfe842150dca8b61599e245a52b7bae29b09f2",
+    "size": 4932588,
+    "sig": "dd9459d6f1f0c6faae2377273ddccd0eb07d2ece306c9e6a029affcce9a53ade59899f0ae140ca41f1324f0ba2e57c34f4211ea101053c722c62aa8273038e0e"
+   }
+  },
   {
    "version": "3.72.0",
    "file": "webcam_bewegung_3_72_0.py",
    "url": "",
    "sha256": "aa31a5e3cf0eb4accf676ba23cd981efd698957bb2b07eef7920fd0adcbd5cec",
-   "date": "2026-11-10 20:19",
+   "date": "2026-11-10 20:47",
    "notes": "Sicherheit und Anzeige nachgebessert: Die PIN fürs Ausschalten gilt jetzt überall im Browser (auch Modus «Transport», «Camping aus» und der Kurzbefehl). Benutzer ohne Admin-Rechte kommen nicht mehr an alte Einstellungs-Kopien und schalten den Fernzugriff nicht. «Wachsam» lässt die Sirene von «Voll» nicht mehr an, Ein / Aus wird sofort gespeichert. Die Karte «Sicherheit» ist wieder da, oben steht «N Hinweise» statt «alles ok», wenn etwas gemeldet wird, deutsche Seiten sind durchgehend deutsch, und das Protokoll ist ruhiger",
    "size": 3874701,
    "sig": "08148f332e51c1b3ae67d05ff6e5a048d34d54a62ea74d2abcd108f4de0db980bc1f9481d5d906534207e2e52f01b663e693e531b9b610a448f3e38b8c912d06",
@@ -136,23 +153,6 @@
     "sha256": "7174de31f1e0a13d2833ad6f960889aea8853a0710f31bc86804f05a3d2bac8b",
     "size": 4883623,
     "sig": "e650cfd6258b4287d5596d8209a470f7f94897c1a194034030e73dc4deb3931f5c0a0b446ac6703408f94f175880293adbdd71e147ce15c9135fe0d54d2f6c07"
-   }
-  },
-  {
-   "version": "3.64.0",
-   "file": "webcam_bewegung_3_64_0.py",
-   "url": "",
-   "sha256": "758bca65f6bc8dc89263c4ff3ad6e10e0d90e7b9d68035281135956b4901d62a",
-   "date": "2026-11-08 19:09",
-   "notes": "🌿 Bestimmen im Datentausch: MoveEye erkennt auf einem Foto die Art (Pflanze, Tier, Pilz, Insekt; BioCLIP, ganz auf dem Pi, über 10'000 Arten), Top 3 mit deutschem und lateinischem Namen; das Modell (etwa 350 MB, feste Prüfsumme) wird beim ersten Mal nach einer Rückfrage geladen. Fehlerkorrektur: Benutzer mit eigener Rolle (z. B. «Familie») bekamen auf jeder Seite eine Fehlermeldung für zwei Seiten-Skripte. Gehäuse-Daten 5.3.1 (Adapter 28 für das alte UPS HAT) auch in MoveEye.",
-   "size": 3735465,
-   "sig": "740bad488ffb2c528c9d30b41583a9164c163586fc83024b334e74f5f5298df09606f2187a2010cf013d7be19047f3ae32fbf7fb70bfa29ce3259b8051d96a0d",
-   "data": {
-    "file": "moveeye_daten_3_64_0.zip",
-    "url": "",
-    "sha256": "392116d8da89aef3bcbe3fb6b6afc496ccd6ebed4953c718b6769ba0df951a64",
-    "size": 4882238,
-    "sig": "cef6ed020cfc934a3b2290ae235f54948b726d711eeeafc6373237109a3ee14c6d43030d6912351eccbce5d3953f2fdcb87203b5214e571a075c6fce70513209"
    }
   },
   {

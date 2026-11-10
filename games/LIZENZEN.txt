@@ -1,4 +1,4 @@
-Motion Watch Spielesammlung GS-1.10
+Motion Watch Spielesammlung GS-1.11
 Die Spiele bis GS-1.3 sind Open Source (unten), dazu die Kevlaschef- und Quantum-Spiele (ganz unten). Angepasst nur für den Offline-Betrieb:
 Werbung, Statistik (Google Analytics), externe Schriften und nicht lizenzierte Musik/Töne entfernt.
 
@@ -37,6 +37,12 @@ Memory  (memory/)
   Autor: Motion Watch (eigenes Spiel)
   Quelle: https://github.com/DonElektro/MotionWatch
   Selbst geschrieben für Motion Watch, frei verwendbar (MIT).
+
+Was nun?  (wasnun/)
+  Lizenz: MIT
+  Autor: MoveEye (eigenes Spiel, Idee: Elektro)
+  Quelle: https://github.com/DonElektro/MotionWatch
+  Selbst geschrieben und gezeichnet für MoveEye, frei verwendbar (MIT). Keine fremden Bilder, Töne oder Bibliotheken.
 
 Hextris  (hextris/)
   Lizenz: GPL-3.0
