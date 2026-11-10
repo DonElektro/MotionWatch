@@ -36,7 +36,7 @@
     return h + '</g>';
   }
   WASNUN.szene({
-    id: 'werkstatt', titel: 'In der Werkstatt',
+    id: 'werkstatt', titel: 'In der Werkstatt', stufe: 2,
     ziel: 'Der alte Roboter Rosto steht still. Bring ihn wieder zum Laufen!',
     start: function () { return { schluessel: 'haken', lade: false, batterie: 'lade', eimer: 'oben', an: false, dose: false }; },
     tasche: function (s) {

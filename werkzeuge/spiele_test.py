@@ -44,10 +44,14 @@ das Spiel, die Spielfläche zeigt ein Bild, keine JavaScript-Fehler), prüft die
 (lange drücken, «🖱 Rechts»), «☰ Menü» und am PC Schnellspeichern (F11) mit Spielstand in IndexedDB nach dem Neuladen.
 Fehlt das Paket, wird der Teil übersprungen.
 
-«Was nun?» (eigenes Bilder-Rätsel, Quelle games/wasnun/, mit ?test=1): jedes der 5 Bilder wird am Handy (hoch und quer)
+«Was nun?» (eigenes Bilder-Rätsel, Quelle games/wasnun/, mit ?test=1): jedes der 10 Bilder wird am Handy (hoch und quer)
 und am PC bis zum Sternebild gelöst; lustige falsche Stellen kosten nichts, das Geheimnis zählt, eine Sackgasse spult genau
 einen Schritt zurück, der Tipp zeigt die Gegend und gibt höchstens 1 Stern, Tipp-Flächen mindestens 44 px, Fortschritt
-bleibt nach dem Neuladen und das Spiel läuft ohne Speicher. Solange es nicht in der ZIP ist:
+bleibt nach dem Neuladen und das Spiel läuft ohne Speicher. Ab Bild 6 (GS-1.12) dazu: Dinge wählen / abwählen, jede
+falsche Kombination und jedes Ding am falschen Ort (kostet nichts, nichts geht verloren), Sackgassen mit Dingen in der
+Leiste, jeder Lösungsweg samt Abzeichen «Meister-Lösung», Tipps für Dinge und Kombinationen, ein Spielstand aus 3.73.0
+bleibt erhalten, und je Bild 150 zufällige Tipps, nach denen es noch lösbar sein muss. Für den Stand der Quelle
+(solange die ZIP ihn nicht enthält):
 python3 werkzeuge/spiel_einbauen.py games/wasnun --nach /tmp/t.zip && python3 werkzeuge/spiele_test.py --zip /tmp/t.zip --nur wasnun
 
 Die Spiele laufen hier wie am Spiele-Port von MoveEye unter /g/<ordner>/ und bekommen einen «✕ Zurück»-Knopf (#mw-back).
@@ -513,7 +517,24 @@ WN = {
                   "sack": ["magnet", "schublade", "schublade", "robo", "hebel"], "zeit": "magnet"},
     "kueche": {"gags": ["maus", "katze", "glocke", "uhr", "mond", "toaster", "besen", "napf"], "geheim": "schrank", "sack": ["wecker"], "zeit": "maus"},
 }
-WN_Z = "() => ({z: JSON.stringify(__wn.S.zustand), fehler: __wn.S.fehler, tipp: __wn.S.tipp, spul: __wn.S.spul, fertig: __wn.S.fertig, next: __wn.naechster()})"
+# ab Bild 6 (GS-1.12): Dinge mitnehmen, kombinieren, an einer Stelle benutzen; zwei Ansichten; zwei Lösungswege; Zeit.
+# gags: lustige Stellen («!x» = neutrale Stelle wie die Tür zwischen zwei Ansichten); sack: je Sackgasse zuerst der Lösung
+# folgen, bis «vor» (JavaScript über den Zustand s) stimmt, dann «tu» (["s", Stelle] oder ["p", Ding in der Leiste]) - der
+# letzte Tipp davon muss genau einen Schritt zurückspulen, mit allem, was in der Leiste war.
+WN2 = {
+    "weiher": {"gags": ["mann", "axt", "haus", "tanne", "mond", "boot", "laterne", "schnee", "feuer"], "geheim": "loch",
+               "sack": [{"vor": "s.tasche.includes('eimer_heiss')", "tu": [["p", "eimer_heiss"], ["s", "mann"]]}]},
+    "dachboden": {"gags": ["schirm", "geist", "wanne", "luke", "affe", "lampe", "wimpel", "koffer", "pferd"], "geheim": "bildnis",
+                  "sack": [{"vor": "true", "tu": [["s", "kissen"]]}]},
+    "leuchtturm": {"gags": ["lampe", "tuer", "tuempel", "schiff", "glocke", "fahne", "klippen", "fenster", "moewe", "wolke"], "geheim": "krake",
+                   "sack": [{"vor": "s.tuer", "tu": [["s", "rad"], ["s", "rad"], ["s", "tuer"]]}]},
+    "museum": {"gags": ["krone", "sockel", "ruestung", "heizung", "bild1", "kamera", "fenster", "!tuer", "waechter", "schirm", "kaffee", "wuhr", "brett", "!tuer2"], "geheim": "helm",
+               "sack": [{"vor": "true", "tu": [["s", "lichtsch"]]}, {"vor": "s.sicht === 'wache' && s.tasche.includes('oel')", "tu": [["s", "hebel"]]}]},
+    "uhrturm": {"gags": ["kuckuck", "luecke", "ra", "trommel", "pendel", "riesen", "blatt", "luke", "gewicht"], "geheim": "spinne",
+                "sack": [{"vor": "s.gewicht === 'oben' && s.rad === 'drin'", "tu": [["s", "pendel"]]}]},
+}
+WN_ALT = '{"sterne":{"garten":3,"zeltplatz":2,"alp":3,"werkstatt":1,"kueche":2},"geheim":{"garten":1,"alp":1},"stumm":false}'   # ein Spielstand aus 3.73.0 (GS-1.11)
+WN_Z = "() => ({z: JSON.stringify(__wn.S.zustand), fehler: __wn.S.fehler, tipp: __wn.S.tipp, spul: __wn.S.spul, fertig: __wn.S.fertig, next: (__wn.next ? __wn.next() : __wn.naechster()), tasche: (__wn.S.zustand.tasche || []).join(','), wahl: __wn.S.wahl})"
 
 
 def wasnun_pruefen(br, pw, base, fehler, bilder):
@@ -594,16 +615,190 @@ def wasnun_pruefen(br, pw, base, fehler, bilder):
     def sterne(pg):
         return pg.locator("#ende .gs svg.an").count()
 
+    # ---- ab Bild 6: Dinge in der Leiste -------------------------------------------------------------------------------------
+    def platz(pg, touch, did, name=""):
+        frei(pg)
+        p = next((x for x in pg.evaluate("() => __wn.plaetze()") if x["id"] == did), None)
+        if not p:
+            fehler.append(f"{d} {name}: «{did}» liegt nicht in der Leiste"); return False
+        if p["w"] < 43.9 or p["h"] < 43.9:
+            fehler.append(f"{d} {name}: Platz von «{did}» nur {p['w']:.0f} × {p['h']:.0f} px")
+        (pg.touchscreen.tap if touch else pg.mouse.click)(p["x"], p["y"])
+        pg.wait_for_timeout(30)
+        frei(pg)
+        return True
+
+    def abwaehlen(pg, touch, name):
+        w = pg.evaluate("() => __wn.S.wahl")
+        if w:
+            platz(pg, touch, w, name)
+
+    def schritt2(pg, touch, name, weg=""):
+        """der nächste richtige Schritt (Stelle, Ding an Stelle, zwei Dinge kombinieren, oder warten); gibt ihn zurück"""
+        n = pg.evaluate("w => __wn.naechster(w || undefined)", weg)
+        if n.get("warte"):
+            pg.wait_for_timeout(300); return n
+        abwaehlen(pg, touch, name)
+        if n.get("kombi"):
+            platz(pg, touch, n["kombi"][0], name); platz(pg, touch, n["kombi"][1], name)
+        else:
+            if n.get("ding"):
+                platz(pg, touch, n["ding"], name)
+            tippe(pg, touch, n["stelle"], "gut", name)
+        return n
+
+    def unsinn(pg, touch, name, sz, getan):
+        """alles ausprobieren, was nichts bringt: jedes neue Ding wählen / abwählen, am Geheimnis benutzen, falsch kombinieren"""
+        z = pg.evaluate(WN_Z)
+        for did in [x for x in z["tasche"].split(",") if x and ("d", x) not in getan]:
+            getan.add(("d", did))
+            platz(pg, touch, did, name)
+            if pg.evaluate("() => __wn.S.wahl") != did or not pg.locator("#tasche .platz.wahl").count():
+                fehler.append(f"{d} {name}: {sz} «{did}» lässt sich nicht wählen (hervorgehoben)")
+            platz(pg, touch, did, name)
+            if pg.evaluate("() => __wn.S.wahl"):
+                fehler.append(f"{d} {name}: {sz} «{did}» lässt sich nicht abwählen")
+            platz(pg, touch, did, name); tippe(pg, touch, WN2[sz]["geheim"], "", name)       # am falschen Ort benutzen
+            z2 = pg.evaluate(WN_Z)
+            if z2["z"] != z["z"] or z2["fehler"] != z["fehler"] or z2["wahl"]:
+                fehler.append(f"{d} {name}: {sz} «{did}» an der falschen Stelle ändert oder kostet etwas ({z2})")
+        for k in pg.evaluate("() => __wn.kombis()"):
+            if k["gibt"] or ("k", k["a"], k["b"]) in getan:
+                continue
+            getan.add(("k", k["a"], k["b"]))
+            platz(pg, touch, k["a"], name); platz(pg, touch, k["b"], name)
+            z2 = pg.evaluate(WN_Z)
+            if z2["z"] != z["z"] or z2["fehler"] != z["fehler"] or z2["wahl"] or not pg.inner_text("#text").strip():
+                fehler.append(f"{d} {name}: {sz} falsche Kombination {k['a']} + {k['b']} ändert oder kostet etwas ({z2})")
+
+    def loese2(pg, touch, name, sz, weg="", bis="", probieren=None, tipps=False, bilder_ab=""):
+        """der Lösung folgen: bis zum Sternebild oder bis «bis» stimmt. probieren: Menge für unsinn(); tipps: vor jedem Schritt den Tipp prüfen"""
+        n, gewartet, hatbild = 0, 0, set()
+        while n < 40 and gewartet < 80:
+            z = pg.evaluate(WN_Z)
+            if z["fertig"] or (bis and pg.evaluate("() => { const s = __wn.S.zustand; return !!(" + bis + "); }")):
+                break
+            if touch:
+                groessen(pg, name, sz)
+            if len(z["tasche"].split(",")) > 4:
+                fehler.append(f"{d} {name}: {sz} mehr als 4 Dinge in der Leiste ({z['tasche']})")
+            if probieren is not None:
+                unsinn(pg, touch, name, sz, probieren)
+            if bilder_ab and "mitte" not in hatbild and z["tasche"].count(",") >= 1:
+                hatbild.add("mitte"); bild(pg, f"{bilder_ab}_mitte", name)
+            if tipps:
+                tipp_pruefen(pg, touch, name, sz, weg, n)
+            s_ = schritt2(pg, touch, name, weg)
+            if s_.get("warte"):
+                gewartet += 1; continue
+            z2 = pg.evaluate(WN_Z)
+            if z2["z"] == z["z"] and not z2["fertig"]:
+                fehler.append(f"{d} {name}: {sz} Schritt {s_} bringt nichts ({pg.inner_text('#text')[:80]})"); return False
+            if z2["fehler"] != z["fehler"]:
+                fehler.append(f"{d} {name}: {sz} richtiger Schritt {s_} zählt als Fehlversuch")
+            if bilder_ab and s_.get("kombi") and "kombi" not in hatbild:
+                hatbild.add("kombi"); bild(pg, f"{bilder_ab}_kombi", name)
+            n += 1
+        if bis:
+            return True
+        try:
+            pg.wait_for_selector("#ende:not([hidden]) .gs", timeout=8000)
+        except Exception:
+            fehler.append(f"{d} {name}: {sz} Weg «{weg}»: nach {n} Schritten kein Sternebild (nicht lösbar?)"); return False
+        return True
+
+    def tipp_pruefen(pg, touch, name, sz, weg, n):
+        """Tipp-Knopf: beim ersten Mal nachfragen; Kreis über der Gegend, bei zwei Dingen pulsieren beide in der Leiste"""
+        nx = pg.evaluate("() => __wn.naechster()")
+        b = pg.locator("#bTipp"); (b.tap if touch else b.click)()
+        if pg.locator("#tJa").count():
+            j = pg.locator("#tJa"); (j.tap if touch else j.click)()
+        pg.wait_for_timeout(120)
+        txt = pg.inner_text("#text")
+        if nx.get("kombi"):
+            if pg.locator("#tasche .platz.puls").count() != 2 or "zusammen" not in txt:
+                fehler.append(f"{d} {name}: {sz} Tipp für eine Kombination zeigt nicht beide Dinge ({txt[:60]})")
+        else:
+            c = pg.evaluate("""id => { const c = document.querySelector('#fx .tippkreis'); if (!c) return null; const b = document.getElementById('bild').getBoundingClientRect(),
+              st = __wn.stellen().find(x => x.id === id), k = b.width / 800, x = b.left + c.cx.baseVal.value * k, y = b.top + c.cy.baseVal.value * k;
+              return {r: c.r.baseVal.value * k, d: Math.hypot(x - st.x, y - st.y)}; }""", nx.get("stelle"))
+            if not c or c["d"] > c["r"] or c["r"] < 38:
+                fehler.append(f"{d} {name}: {sz} Tipp-Kreis zeigt nicht die Gegend von «{nx.get('stelle')}» ({c})")
+            if nx.get("ding") and n > 0 and not pg.locator("#tasche .platz.puls").count():
+                fehler.append(f"{d} {name}: {sz} genauerer Tipp zeigt das nötige Ding «{nx['ding']}» nicht")
+        if not txt.strip():
+            fehler.append(f"{d} {name}: {sz} Tipp ohne Text")
+
+    def neu(pg, touch, name, i, sz):
+        """ein Bild ab Nummer 6: am Handy alles (Unsinn, Geheimnis, Sackgassen, Tipps, jeder Lösungsweg), am PC jeder Weg sauber"""
+        k = WN2[sz]
+        wege = pg.evaluate("() => __wn.wege()")
+        nochmal = lambda: (pg.locator("#eNochmal").tap if touch else pg.locator("#eNochmal").click)()
+        if touch:
+            groessen(pg, name, sz)
+            for g in k["gags"]:
+                frei_ = g.startswith("!")
+                z = pg.evaluate(WN_Z); t0 = pg.inner_text("#text")
+                tippe(pg, touch, g.lstrip("!"), "", name)
+                z2 = pg.evaluate(WN_Z)
+                if z2["fehler"] or (not frei_ and z2["next"] != z["next"]):
+                    fehler.append(f"{d} {name}: {sz} lustige Stelle «{g}» kostet etwas oder ändert den Weg ({z2})")
+                if pg.inner_text("#text") == t0:
+                    fehler.append(f"{d} {name}: {sz} Stelle «{g}» sagt nichts Neues")
+            tippe(pg, touch, k["geheim"], "", name)
+            if not pg.evaluate("id => !!__wn.MERK.geheim[id]", sz) or "Geheimnis gefunden" not in pg.inner_text("#text") or pg.evaluate(WN_Z)["fehler"]:
+                fehler.append(f"{d} {name}: {sz} Geheimnis «{k['geheim']}» nicht gezählt")
+            getan = set()
+            for nr, sk in enumerate(k["sack"]):
+                loese2(pg, touch, name, sz, wege[0], bis=sk["vor"], probieren=getan)
+                for j, (art, was) in enumerate(sk["tu"]):
+                    z = pg.evaluate(WN_Z)
+                    platz(pg, touch, was, name) if art == "p" else tippe(pg, touch, was, "gut", name)
+                    if j == len(sk["tu"]) - 1:
+                        z2 = pg.evaluate(WN_Z)
+                        vorher = json.loads(z["z"]); nachher = json.loads(z2["z"])
+                        if z2["spul"] != z["spul"] + 1 or z2["fehler"] != z["fehler"] + 1 or nachher != vorher:
+                            fehler.append(f"{d} {name}: {sz} Sackgasse «{was}» spult nicht genau einen Schritt zurück ({z} -> {z2})")
+                        if "Zurückgespult" not in pg.inner_text("#text"):
+                            fehler.append(f"{d} {name}: {sz} Sackgasse ohne freundliche Meldung")
+                        bild(pg, f"{i + 1}_nach_sackgasse{nr + 1}", name)
+            if loese2(pg, touch, name, sz, wege[0], probieren=getan):
+                if sterne(pg) != 2 or pg.evaluate("id => __wn.MERK.sterne[id]", sz) != 2:
+                    fehler.append(f"{d} {name}: {sz} mit {len(k['sack'])} Fehlversuch(en) {sterne(pg)} Sterne statt 2")
+            nochmal()
+            if loese2(pg, touch, name, sz, wege[-1], tipps=True) and (sterne(pg) != 1 or pg.evaluate("id => __wn.MERK.sterne[id]", sz) != 2):
+                fehler.append(f"{d} {name}: {sz} mit Tipp {sterne(pg)} Sterne (soll 1), gemerkt bleibt 2")
+            nochmal()
+        for nr, w in enumerate(wege):
+            if nr:
+                nochmal()
+            if loese2(pg, touch, name, sz, w, bilder_ab=f"{i + 1}" if nr == 0 else f"{i + 1}_meister"):
+                if sterne(pg) != 3:
+                    fehler.append(f"{d} {name}: {sz} Weg «{w}» ohne Fehlversuch {sterne(pg)} Sterne statt 3")
+                abz = pg.locator("#ende .abz").count() > 0
+                if abz != (w == "meister"):
+                    fehler.append(f"{d} {name}: {sz} Weg «{w}»: Abzeichen Meister-Lösung {'da' if abz else 'fehlt'}")
+                if not pg.inner_text("#ende .gesch").strip():
+                    fehler.append(f"{d} {name}: {sz} Sternebild ohne Schluss-Geschichte")
+                pg.wait_for_timeout(700)
+                bild(pg, f"{i + 1}_sterne" + ("" if nr == 0 else "_meister"), name)
+        if len(wege) > 1 and not pg.evaluate("id => !!__wn.MERK.meister[id]", sz):
+            fehler.append(f"{d} {name}: {sz} Meister-Lösung nicht gemerkt")
+
     for name, touch in (("Handy", True), ("PC", False)):
         ctx = br.new_context(**pw.devices["iPhone 13"]) if touch else br.new_context(viewport={"width": 1280, "height": 800})
         pg = seite(ctx, name)
         try:
             ids = pg.evaluate("() => __wn.SZ.map(s => s.id)")
-            if ids != list(WN):
-                fehler.append(f"{d} {name}: Bilder {ids} statt {list(WN)}")
+            if ids == list(WN):                # eine ZIP mit der ersten Fassung (5 Bilder, bis GS-1.11): nur diese prüfen
+                if touch:
+                    print(f"{d}: diese ZIP enthält noch die Fassung mit 5 Bildern – die Bilder 6-10 (games/wasnun/) sind nicht geprüft", flush=True)
+            elif ids != list(WN) + list(WN2):
+                fehler.append(f"{d} {name}: Bilder {ids} statt {list(WN) + list(WN2)}")
+            voll = f"{3 * len(ids)}/{3 * len(ids)}"; geh = f"{len(ids)}/{len(ids)}"; 
             if pg.locator("#karten .karte.zu").count() != len(ids) - 1:
                 fehler.append(f"{d} {name}: am Anfang sollen alle Bilder ausser dem ersten gesperrt sein")
-            if "0/15" not in pg.inner_text("#chipSterne") or "0/5" not in pg.inner_text("#chipGeheim"):
+            if f"0/{3 * len(ids)}" not in pg.inner_text("#chipSterne") or f"0/{len(ids)}" not in pg.inner_text("#chipGeheim"):
                 fehler.append(f"{d} {name}: Anzeige Sterne / Geheimnisse am Anfang falsch")
             (pg.locator("#karten .karte").nth(1).tap if touch else pg.locator("#karten .karte").nth(1).click)(force=True)
             pg.wait_for_timeout(200)
@@ -618,6 +813,10 @@ def wasnun_pruefen(br, pw, base, fehler, bilder):
                 (karte.tap if touch else karte.click)()
                 pg.wait_for_function("i => __wn.S.i === i", arg=i)
                 bild(pg, f"{i + 1}_start", name)
+                if sz in WN2:
+                    neu(pg, touch, name, i, sz)
+                    b = pg.locator("#eAlle"); (b.tap if touch else b.click)()
+                    continue
                 if touch:
                     # 1. Durchgang: Ausprobieren, Geheimnis, Sackgasse, falscher Moment -> 2 Sterne
                     groessen(pg, name, sz)
@@ -653,7 +852,7 @@ def wasnun_pruefen(br, pw, base, fehler, bilder):
                     pg.locator("#bTipp").tap(); pg.locator("#tJa").tap()
                     pg.wait_for_selector("#fx .tippkreis", timeout=3000)
                     bild(pg, f"{i + 1}_tipp", name)
-                    c = pg.evaluate("""() => { const c = document.querySelector('#fx .tippkreis'), id = __wn.naechster(), b = document.getElementById('bild').getBoundingClientRect(),
+                    c = pg.evaluate("""() => { const c = document.querySelector('#fx .tippkreis'), id = (__wn.next ? __wn.next() : __wn.naechster()), b = document.getElementById('bild').getBoundingClientRect(),
                       st = __wn.stellen().find(x => x.id === id), k = b.width / 800, x = b.left + c.cx.baseVal.value * k, y = b.top + c.cy.baseVal.value * k;
                       return {r: c.r.baseVal.value * k, d: Math.hypot(x - st.x, y - st.y)}; }""")
                     if c["d"] > c["r"] or c["r"] < 50:
@@ -670,12 +869,12 @@ def wasnun_pruefen(br, pw, base, fehler, bilder):
                 b = pg.locator("#eAlle")
                 (b.tap if touch else b.click)()
             bild(pg, "wahl_fertig", name)
-            if "15/15" not in pg.inner_text("#chipSterne") or (touch and "5/5" not in pg.inner_text("#chipGeheim")):
+            if voll not in pg.inner_text("#chipSterne") or (touch and geh not in pg.inner_text("#chipGeheim")):
                 fehler.append(f"{d} {name}: am Schluss {pg.inner_text('#chipSterne')} / {pg.inner_text('#chipGeheim')}")
             # Ton-Schalter und Fortschritt bleiben nach dem Neuladen
             (pg.locator("#bTon").tap if touch else pg.locator("#bTon").click)()
             pg.reload(wait_until="load"); pg.wait_for_function("() => window.__wn")
-            if "15/15" not in pg.inner_text("#chipSterne") or pg.locator("#bTon").get_attribute("aria-pressed") != "true" or pg.locator("#karten .karte.zu").count():
+            if voll not in pg.inner_text("#chipSterne") or pg.locator("#karten .krone").count() != (2 if len(ids) > 5 else 0) or pg.locator("#bTon").get_attribute("aria-pressed") != "true" or pg.locator("#karten .karte.zu").count():
                 fehler.append(f"{d} {name}: Fortschritt oder Ton-Schalter nach dem Neuladen weg")
             if pg.evaluate("() => { const b = document.getElementById('mw-back'); return !!b && getComputedStyle(b).display !== 'none'; }"):
                 fehler.append(f"{d} {name}: schwebender Zurück-Knopf nicht ausgeblendet (das Spiel hat oben «‹ Spiele»)")
@@ -690,22 +889,89 @@ def wasnun_pruefen(br, pw, base, fehler, bilder):
     ctx.add_init_script("Object.defineProperty(window, 'localStorage', {get() { throw new Error('gesperrt'); }});")
     pg = seite(ctx, "Handy quer, ohne Speicher")
     try:
-        for i, sz in enumerate(WN):
+        ids = pg.evaluate("() => __wn.SZ.map(s => s.id)")
+        for i, sz in enumerate(ids):
             pg.locator("#karten .karte").nth(i).tap()
             pg.wait_for_function("i => __wn.S.i === i", arg=i)
-            if i in (0, 4):
+            if i in (0, 4, 5, 8):
                 bild(pg, f"{i + 1}_start", "quer")
-            if not loese(pg, True, "quer", sz) or sterne(pg) != 3:
+            if not (loese2(pg, True, "quer", sz) if sz in WN2 else loese(pg, True, "quer", sz)) or sterne(pg) != 3:
                 fehler.append(f"{d} quer / ohne Speicher: {sz} nicht mit 3 Sternen gelöst")
             if pg.evaluate("() => document.documentElement.scrollWidth > innerWidth + 1 || document.documentElement.scrollHeight > innerHeight + 1"):
                 fehler.append(f"{d} quer: {sz} läuft über den Bildschirm")
             pg.locator("#eAlle").tap()
-        if "15/15" not in pg.inner_text("#chipSterne"):
+        if f"{3 * len(ids)}/{3 * len(ids)}" not in pg.inner_text("#chipSterne"):
             fehler.append(f"{d} ohne Speicher: Fortschritt gilt nicht einmal bis zum Schliessen ({pg.inner_text('#chipSterne')})")
     except Exception as e:
         fehler.append(f"{d} quer: {e.__class__.__name__}: {str(e)[:300]}")
     ctx.close()
-    print(f"{d}: 5 Bilder gelöst (Handy hoch und quer, PC), Sackgassen, Tipps, Geheimnisse geprüft", flush=True)
+    if len(ids) <= 5:
+        print(f"{d}: 5 Bilder gelöst (Handy hoch und quer, PC), Sackgassen, Tipps, Geheimnisse geprüft", flush=True)
+        return
+
+    # ein Spielstand aus 3.73.0 (nur Bilder 1-5) bleibt erhalten: Sterne, Geheimnisse, Bild 6 ist offen, neue Einträge kommen dazu
+    ctx = br.new_context(viewport={"width": 1280, "height": 800})
+    ctx.add_init_script("if (!localStorage.getItem('mw-wasnun-v1')) localStorage.setItem('mw-wasnun-v1', " + json.dumps(WN_ALT) + ");")
+    pg = seite(ctx, "alter Spielstand")
+    try:
+        if "11/30" not in pg.inner_text("#chipSterne") or "2/10" not in pg.inner_text("#chipGeheim"):
+            fehler.append(f"{d} alter Spielstand: {pg.inner_text('#chipSterne')} / {pg.inner_text('#chipGeheim')} statt 11/30 und 2/10")
+        zu = [int(x) for x in pg.evaluate("() => [...document.querySelectorAll('#karten .karte.zu')].map(k => k.dataset.i)")]
+        if zu != [6, 7, 8, 9]:
+            fehler.append(f"{d} alter Spielstand: gesperrt sind {zu}, erwartet nur die Bilder 8-10 und 7 (Index 6-9)")
+        pg.locator("#karten .karte").nth(5).click()
+        pg.wait_for_function("() => __wn.S.i === 5")
+        loese2(pg, False, "alter Spielstand", "weiher")
+        pg.locator("#eAlle").click()
+        m = json.loads(pg.evaluate("() => localStorage.getItem('mw-wasnun-v1')"))
+        alt = json.loads(WN_ALT)
+        if any(m["sterne"].get(k_) != v for k_, v in alt["sterne"].items()) or m["sterne"].get("weiher") != 3 or m["geheim"] != alt["geheim"]:
+            fehler.append(f"{d} alter Spielstand: nach einem neuen Bild stimmt der Speicher nicht mehr ({m})")
+    except Exception as e:
+        fehler.append(f"{d} alter Spielstand: {e.__class__.__name__}: {str(e)[:300]}")
+    ctx.close()
+
+    # Zufalls-Lauf: je neues Bild 150 zufällige Tipps (Stellen, Dinge, Kombinationen, daneben) - danach muss es noch lösbar sein
+    import random
+    ctx = br.new_context(viewport={"width": 1280, "height": 800})
+    pg = seite(ctx, "Zufalls-Lauf")
+    pg.goto(url + "&alle=1&tempo=40", wait_until="load"); pg.wait_for_function("() => window.__wn")
+    try:
+        for i, sz in enumerate(WN2, start=len(WN)):
+            rnd = random.Random(20261110 + i)
+            pg.evaluate("i => __wn.start(i)", i)
+            geloest = zurueck = 0
+            for n in range(150):
+                frei(pg)
+                if pg.evaluate("() => __wn.S.fertig"):
+                    pg.wait_for_selector("#eNochmal", timeout=8000); pg.locator("#eNochmal").click(); geloest += 1; continue
+                st = [x for x in pg.evaluate("() => __wn.stellen()") if x["x"] is not None]
+                pl = pg.evaluate("() => __wn.plaetze()")
+                w = rnd.random()
+                if pl and w < 0.3:
+                    x = rnd.choice(pl); pg.mouse.click(x["x"], x["y"])
+                elif w < 0.95:
+                    x = rnd.choice(st); pg.mouse.click(x["x"], x["y"])
+                else:
+                    b = pg.locator("#bild").bounding_box(); pg.mouse.click(b["x"] + rnd.random() * b["width"], b["y"] + rnd.random() * b["height"])
+                pg.wait_for_timeout(15)
+                frei(pg)
+                z = pg.evaluate(WN_Z)
+                if len([x for x in z["tasche"].split(",") if x]) > 4:
+                    fehler.append(f"{d} Zufalls-Lauf: {sz} mehr als 4 Dinge in der Leiste ({z['tasche']})"); break
+            zurueck = pg.evaluate("() => __wn.S.spul")
+            frei(pg)
+            if pg.evaluate("() => __wn.S.fertig"):
+                geloest += 1
+            elif not loese2(pg, False, "Zufalls-Lauf", sz):
+                fehler.append(f"{d} Zufalls-Lauf: {sz} ist nach 150 zufälligen Tipps nicht mehr lösbar ({pg.evaluate(WN_Z)})")
+            else:
+                geloest += 1
+            print(f"{d}: Zufalls-Lauf {sz}: 150 Tipps, {zurueck} Sackgassen, danach lösbar ({geloest}-mal gelöst)", flush=True)
+    except Exception as e:
+        fehler.append(f"{d} Zufalls-Lauf: {e.__class__.__name__}: {str(e)[:300]}")
+    ctx.close()
+    print(f"{d}: 10 Bilder gelöst (Handy hoch und quer, PC), Dinge und Kombinationen, Sackgassen, Tipps, Geheimnisse, alter Spielstand geprüft", flush=True)
 
 
 # ---- «Flight of the Amazon Queen» (ScummVM, WebAssembly; MoveEye 639zzg): only when the package is there ------------------------

@@ -23,7 +23,7 @@
       + (voll ? '<ellipse cx="0" cy="-29" rx="14" ry="3" fill="#6b3f22"/><g class="a-schweb"><path class="d n" style="stroke:#fff" d="M-6 -40q-6 -8 0 -16t0 -16M8 -42q-6 -8 0 -16t0 -14"/></g>' : '') + '</g>';
   }
   WASNUN.szene({
-    id: 'zeltplatz', titel: 'Zeltplatz am Morgen',
+    id: 'zeltplatz', titel: 'Zeltplatz am Morgen', stufe: 1,
     ziel: 'Der Camper schläft noch. Ein heisser Kaffee würde ihn wecken – aber die Feuerstelle ist kalt.',
     start: function () { return { holz: false, wasser: false, feuer: false, kessel: 'kalt', tasse: false, camper: false }; },
     bild: function (s) {

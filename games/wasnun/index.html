@@ -80,6 +80,22 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;-webkit-appearance:non
 #tasche.voll{border-style:solid;border-color:var(--amber);background:#1d2b3e;animation:pop .35s ease-out}
 #tasche .leer{font-size:11px;color:#5d7089;text-align:center;line-height:1.15;width:42px}
 @keyframes pop{from{transform:scale(.6)}}
+/* ab Bild 6: Leiste mit 4 Plätzen, Dinge wählbar und kombinierbar */
+#leiste.viel{flex-direction:column;align-items:stretch;gap:6px;padding:8px 12px}
+#leiste.viel #text{order:1;min-height:42px}
+#tasche.viel{order:2;border:0;padding:0;min-height:0;gap:8px;justify-content:flex-start;background:none;animation:none}
+.platz{flex:0 0 auto;width:58px;height:58px;border-radius:14px;border:2px dashed #33465f;background:transparent;padding:4px;display:flex;align-items:center;justify-content:center}
+button.platz{border-style:solid;border-color:#4a6183;background:#1d2b3e;cursor:pointer;touch-action:manipulation}
+button.platz svg{width:46px;height:46px;display:block;pointer-events:none}
+button.platz.wahl{border-color:var(--amber);border-width:3px;background:#2a3a52;box-shadow:0 0 0 3px rgba(233,162,59,.35),0 0 16px rgba(233,162,59,.55);transform:translateY(-5px) scale(1.06)}
+button.platz.neu{animation:pop .4s cubic-bezier(.3,1.6,.5,1)}
+button.platz.puls{animation:ppuls .7s ease-in-out 4}
+@keyframes ppuls{50%{box-shadow:0 0 0 6px rgba(255,210,63,.55);border-color:#ffd23f;transform:scale(1.1)}}
+.stufe{display:flex;align-items:center;gap:3px;margin-top:3px;font-size:12px;color:var(--mut)}
+.stufe i{width:8px;height:8px;border-radius:50%;background:#2a3a52;display:block}
+.stufe b{font-weight:600;margin-left:4px}
+.stufe.st1 i.an{background:#3fcf6b}.stufe.st2 i.an{background:#ffd23f}.stufe.st3 i.an{background:#ff9a3c}.stufe.st4 i.an{background:#ff5a5f}
+.krone{color:#ffd23f;font-weight:700}
 #titel2{display:none;flex:0 0 auto;text-align:center;font-weight:700;font-size:16px;padding:9px 12px 8px;background:#0a111a}
 @media (max-width:520px){
   .bar .ib span{display:none}
@@ -92,6 +108,9 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;-webkit-appearance:non
   #spiel{flex-direction:row}
   #leiste{flex:0 0 clamp(150px,24vw,230px);flex-direction:column;align-items:stretch;justify-content:center;border-top:0;border-left:1px solid var(--line);padding:8px 10px}
   #tasche{align-self:flex-start}
+  #leiste.viel{justify-content:center}
+  #tasche.viel{flex-wrap:wrap}
+  .platz{width:52px;height:52px}
   #text{flex:0 1 auto;font-size:14.5px}
 }
 
@@ -115,6 +134,8 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;-webkit-appearance:non
 #ende .gs svg:nth-child(3){animation-delay:.5s}
 @keyframes stern{from{transform:scale(0) rotate(-90deg)}}
 #ende p{margin:4px 0;color:var(--mut);font-size:14.5px}
+#ende p.gesch{color:var(--txt);font-style:italic;margin:2px 0 8px}
+#ende p.abz{display:inline-block;background:#2a3a52;border:1px solid #ffd23f;border-radius:999px;padding:3px 12px;color:#ffd23f;font-weight:700;margin:0 0 8px}
 #ende p b{color:var(--txt)}
 #ende .kn{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:12px}
 #ende .kn button{min-height:46px;padding:0 16px;border-radius:12px;background:#24324a;font-weight:700}
@@ -185,6 +206,11 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;-webkit-appearance:non
 <script src="szenen/03_alp.js"></script>
 <script src="szenen/04_werkstatt.js"></script>
 <script src="szenen/05_kueche.js"></script>
+<script src="szenen/06_weiher.js"></script>
+<script src="szenen/07_dachboden.js"></script>
+<script src="szenen/08_leuchtturm.js"></script>
+<script src="szenen/09_museum.js"></script>
+<script src="szenen/10_uhrturm.js"></script>
 <script>WASNUN.los();</script>
 <script>/* MoveEye: der eigene Zurück-Link («../») führt zur Spielesammlung von MoveEye (löst den Knopf «✕ Zurück» aus) */
 document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest("a");if(!a||a.closest("#mw-back"))return;var h=a.getAttribute("href");if(h!=="../"&&h!=="index.html")return;var b=document.querySelector("#mw-back a");if(b){e.preventDefault();e.stopPropagation();b.click()}},true);</script>
