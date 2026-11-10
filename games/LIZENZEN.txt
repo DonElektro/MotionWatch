@@ -1,4 +1,4 @@
-Motion Watch Spielesammlung GS-1.9
+Motion Watch Spielesammlung GS-1.10
 Die Spiele bis GS-1.3 sind Open Source (unten), dazu die Kevlaschef- und Quantum-Spiele (ganz unten). Angepasst nur für den Offline-Betrieb:
 Werbung, Statistik (Google Analytics), externe Schriften und nicht lizenzierte Musik/Töne entfernt.
 
@@ -106,7 +106,8 @@ Quantum Games     (qg-*/: Orbit, Tunnel, Superposition, Entangled, Particle Coll
   GS-1.8: Nitro (Stunts füllen den Balken), Zeitlupe bei grossen Stunts, Kamera-Zoom, Staub / Funken / Bremsspuren,
   Motor- und Nitro-Klang (im Browser erzeugt, keine Tondateien), grosse Combo-Anzeige, Schalter «Bildwackeln» und «Effekte».
   GS-1.9: Geisterfahrer – die beste Fahrt je Strecke, Fahrzeug und Schwierigkeit fährt halb durchsichtig mit (nur auf dem Gerät gespeichert).
-  GS-1.9: Geisterfahrer – die beste Fahrt je Strecke, Fahrzeug und Schwierigkeit fährt halb durchsichtig mit (nur auf dem Gerät gespeichert).
+  GS-1.10: Welten (Wüste, Wald, Schnee, Vulkan, Nacht mit Scheinwerfer), Sprungbrett, Einsturzbrücke, Feuerringe, rollende
+  Felsen, Eis und Schlamm, Verfolgung (Lawine / Lava …) etwa alle 1000 m; neuer Rekord-Platz der Stunt-Piste.
   Angepasst nur für MoveEye: externe Schriften (Google Fonts) entfernt (es gelten die Ersatzschriften im CSS),
   Zurück-Link der Spiele führt zur Spielesammlung von MoveEye, Vorschaubilder der Quantum-Spiele aus deren Menü.
 
