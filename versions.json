@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-10 23:07",
+ "generated": "2026-11-10 23:54",
  "versions": [
+  {
+   "version": "3.76.0",
+   "file": "webcam_bewegung_3_76_0.py",
+   "url": "",
+   "sha256": "799cecc11dc13bd5af82a98d144e76ba1c3c7caa9a63ba269ea8df24a17666a2",
+   "date": "2026-11-10 23:54",
+   "notes": "Spielecke: neues Schach ersetzt das alte – letzter Zug markiert, mögliche Felder als Punkte, animierte Züge, alles auf Deutsch, 8 Stärke-Stufen, Tipp-Knopf, Lern-Modus mit Warnung vor groben Fehlern, Zug zurück, zu zweit am selben Gerät, die Partie wird gespeichert. Spielesammlung einmal neu laden: Mehr → Spielen → Spielecke → «Installieren / aktualisieren»",
+   "size": 3897974,
+   "sig": "bdc06449eb420343d829802e06b2a7bca8be3214836f8260f25bde3b0cff562b6fcfd39781176b6dc8f1044f99657a1e60788d521ac0f53bb59d3d06f65fe408",
+   "data": {
+    "file": "moveeye_daten_3_76_0.zip",
+    "url": "",
+    "sha256": "7b9d0dff15fce0406fa81c147e349a57d007e53f197cc8252ac85a408c3fab09",
+    "size": 4937208,
+    "sig": "1461572eac35182c722819a71b746b29effd141c3098db8e7d0a46b94e107ae19d70011d508e2178847b82ff290f8e08f5f77b17bc27af65086f9451ab62ab0f"
+   }
+  },
   {
    "version": "3.75.0",
    "file": "webcam_bewegung_3_75_0.py",
    "url": "",
    "sha256": "12a3f19e54c86d117f4672f23f35917b08beef8fd6e6852cbd004f49de40fd5c",
-   "date": "2026-11-10 23:07",
+   "date": "2026-11-10 23:24",
    "notes": "Spiel «Was nun?»: fünf neue Bilder (jetzt zehn) mit Schwierigkeitsgraden von leicht bis Meister. Ab Bild 6 kann man Dinge mitnehmen und kombinieren; manche Bilder haben zwei Lösungswege und eine Meister-Lösung. Bisherige Sterne bleiben erhalten. Spielesammlung einmal neu laden: Mehr → Spielen → Spielecke → «Installieren / aktualisieren»",
    "size": 3897629,
    "sig": "66309bd9280f45c896d2ad5208afeaa2fa523fbd26d34e1a2ffc6c5d64bd0e66766c44a39bc4fcdd2f1cba53e592c33e6c8168656778575996b85ae2b64c9704",
@@ -136,23 +153,6 @@
     "sha256": "f2fb33069445a88c3470ab46026f9dc9393e2cf35c7d55f2b24f4132cdaf980d",
     "size": 4898311,
     "sig": "421fad494968314e5a40730b3a344754ab6a4e562d557cd7ca16aab2d89a081fc131bbd8206d32e78bcb7c073b845b10973c1950af1a656a8c026ae81b65d10b"
-   }
-  },
-  {
-   "version": "3.67.0",
-   "file": "webcam_bewegung_3_67_0.py",
-   "url": "",
-   "sha256": "55b1db5b9a13d48f752b992b997eabc5f1e80ecf571558401c0567a5519f1d2d",
-   "date": "2026-11-09 06:43",
-   "notes": "🌿 Bestimmen: zu jeder erkannten Art eine kurze Infokarte (Beschreibung aus Wikipedia, gekürzt, mit Quelle und Lizenz CC BY-SA 4.0 auf jeder Karte; Link zum ganzen Artikel), für über 10'000 Arten offline – die Datei (2,7 MB, feste Prüfsumme) wird mit dem Modell geladen.",
-   "size": 3757424,
-   "sig": "7e3a9ca2c192e2a875bee50c4468131bb10789fe34fec1179020893738495ce645e02cc92b794d9feb21eaefb7888f13b0d0af28282e381b0895fe42b14e8c03",
-   "data": {
-    "file": "moveeye_daten_3_67_0.zip",
-    "url": "",
-    "sha256": "f3f405b7558bfddfee6c65bdbdf65248cc4670398eca64d932a32a09de07991a",
-    "size": 4885203,
-    "sig": "9ff6c9f10b788ea72e17d2be45f282385aad36ccc950b8e82316406037633dce27969e503b4df0f28431c351398972477f716135d25f65eccd76a43df504150c"
    }
   },
   {
