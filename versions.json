@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-10 21:10",
+ "generated": "2026-11-10 21:54",
  "versions": [
+  {
+   "version": "3.74.0",
+   "file": "webcam_bewegung_3_74_0.py",
+   "url": "",
+   "sha256": "b8a7ea39f2de49d557b7024b8e0a433947f41a13165c6b06b134d0d43c748b43",
+   "date": "2026-11-10 21:54",
+   "notes": "Spielecke: drei neue Spiele zum Nachladen unter Mehr → Spielen → Spielecke → «Weitere Spiele zum Nachladen»: «Abenteuer mit Angst» (interaktive Geschichte, ab ca. 12 Jahren), «Heroine Dusk» (Verlies-Rollenspiel, Englisch) und «HexGL» (3D-Rennspiel). Unter «Mehr» gibt es nur noch einen Eingang «Spielen»; die Spielecke ist dort die oberste Kachel, «Spiele freigeben» steht auf der Spielecke",
+   "size": 3897608,
+   "sig": "bd69d46159da771f17c3eaa1039fd7e30062fd991841120b239b0c66ed62126b9a5c3f900b8f0df289e91b17817648e2b99d76d4fe48456642a3ae82c9e7390d",
+   "data": {
+    "file": "moveeye_daten_3_74_0.zip",
+    "url": "",
+    "sha256": "ff546f6caee4a5386e01ce428ddd60f8bc688326245ce93bb3cfa0f5ab07c315",
+    "size": 4936880,
+    "sig": "14dc46f8b2e4bc8cbcc432dd7afe09e21758f259152c69492088a9eea258ffa6db8a402202e49c9fe68879e92eb7fab53b7b8274dbb83944a1a65481e0a7be09"
+   }
+  },
   {
    "version": "3.73.0",
    "file": "webcam_bewegung_3_73_0.py",
    "url": "",
    "sha256": "0c1ab2b560dd31abbc3b2a39275e45359b45c9ce0cd609edc7a17241ec6cd061",
-   "date": "2026-11-10 21:10",
+   "date": "2026-11-10 21:30",
    "notes": "Spielecke: Wobbly Truck mit Nitro, Zeitlupe bei grossen Stunts, Effekten und Ton, grosser Combo-Anzeige, Geist-Fahrer (deine beste Fahrt fährt mit), fünf Welten (Wüste, Wald, Schnee, Vulkan, Nacht), neuen Elementen (Sprungfeder, Einsturzbrücke, Feuerringe, Felsen, Eis, Schlamm) und einer Verfolgungsjagd alle 1000 m – der Rekord der Stunt-Piste beginnt neu, der alte bleibt als «alte Strecke» sichtbar. Neues Spiel «Was nun?»: Bilder-Rätsel mit 5 Bildern, Sternen, Tipp-Knopf und Geheimnissen (Idee von Elektro). Spielesammlung einmal neu laden: Mehr → Spielecke → «Installieren / aktualisieren»",
    "size": 3875011,
    "sig": "ca392b01ac03c6ea637b33ff90f763eee39f5088f7c56f9de1fbf5dc2ee842ca2b0824876861deadc3917aaf5bdb479b82c5516dd5f92563cfad7146d2118307",
@@ -136,23 +153,6 @@
     "sha256": "3e70a17a52e342f80646dd9654e6f5fe07c89f7536adb50270060a6ada72569a",
     "size": 4885326,
     "sig": "12b4fa45f26440d56fc2a2cae4a5032137fa3d766976c293d0399537e3b77822bf832e143bcc826279e5111704b7f7ffc60e228a8b7a59fa4a0b40f6fb59460c"
-   }
-  },
-  {
-   "version": "3.65.0",
-   "file": "webcam_bewegung_3_65_0.py",
-   "url": "",
-   "sha256": "649f37a39891451935af3ed5afe8ac6d8ecd0d35bbbd87d4678b8bea4a1922dc",
-   "date": "2026-11-08 21:10",
-   "notes": "Spielesammlung GS-1.4: 36 neue Browserspiele (12 Kevlaschef Games, 24 Quantum Games) – am Handy mit Antippen, am PC mit Tasten, offline, in 5 Sprachen; © 2026 Kevlaschef, mit Erlaubnis des Rechteinhabers.",
-   "size": 3734534,
-   "sig": "f359dff1d223d132418b1d635c594c8755c9bafd74201ecfb8913b91be3e5f8cd852a586d83f9b7518ee0bef97464e7600f4d6eaa699380b15f28fc77ea94607",
-   "data": {
-    "file": "moveeye_daten_3_65_0.zip",
-    "url": "",
-    "sha256": "7174de31f1e0a13d2833ad6f960889aea8853a0710f31bc86804f05a3d2bac8b",
-    "size": 4883623,
-    "sig": "e650cfd6258b4287d5596d8209a470f7f94897c1a194034030e73dc4deb3931f5c0a0b446ac6703408f94f175880293adbdd71e147ce15c9135fe0d54d2f6c07"
    }
   },
   {
