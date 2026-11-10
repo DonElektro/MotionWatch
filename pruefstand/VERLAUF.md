@@ -19,6 +19,7 @@ Spalten nah / mittel / weit: Personen nach Grösse im Bild (Höhe ≥ 100 Bildpu
 
 | Datum | Motion Watch | Simulator | Testlauf | Pushes richtig / falsch | Personen erkannt | Wärmebild | nah / mittel / weit | Reaktion | Tiere gemeldet | Flackern | Bilder/s | KI | Rechner |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 2026-11-10 16:51 | 3.71.1 | ? · Aussehen neu · Tiere Modelle | Kurz (Tag + Nacht) | **2** / **1** | 10 / 10 (**100 %**) | 2 / 2 | 5/5 / 2/2 / 1/1 | 3.2 s | 3 / 3 | 0 | 1.8 | mit KI | GitHub (ubuntu, 4 Kerne) · Intel(R) Xeon(R) 6973P-C |
 | 2026-11-10 08:33 | 3.71.0 | ? · Aussehen neu · Tiere Modelle | Kurz (Tag + Nacht) | **3** / **0** | 10 / 10 (**100 %**) | 2 / 2 | 5/5 / 2/2 / 1/1 | 2.3 s | 3 / 3 | 1 | 1.3 | mit KI | GitHub (ubuntu, 4 Kerne) · AMD EPYC 7763 |
 | 2026-11-10 08:33 | 3.71.0 | ? · Aussehen neu · Tiere Modelle | Kurz (Tag + Nacht) · ohne Kamera-Effekte | **3** / **1** | 10 / 10 (**100 %**) | 1 / 1 | 6/6 / 3/3 / – | 2.9 s | 3 / 3 | 4 | 1.4 | mit KI | GitHub (ubuntu, 4 Kerne) · AMD EPYC 7763 |
 | 2026-11-09 21:57 | 3.71.0 | 3.67.1 | Kurz (Tag + Nacht) | **2** / **1** | 10 / 10 (**100 %**) | 1 / 1 | 6/6 / 2/2 / 1/1 | 0.9 s | 2 / 3 | 9 | 2.3 | mit KI | GitHub (ubuntu, 4 Kerne) · AMD EPYC 9V74 |
@@ -263,17 +264,10 @@ Spalten nah / mittel / weit: Personen nach Grösse im Bild (Höhe ≥ 100 Bildpu
 
 ## Einzelheiten pro Phase (letzter Lauf)
 
-**Kurz (Tag + Nacht)** – 2026-11-10 08:33, Motion Watch 3.71.0
+**Kurz (Tag + Nacht)** – 2026-11-10 16:51, Motion Watch 3.71.1
 
 | Phase | Pushes richtig / falsch | Personen | Wärmebild | Reaktion | Tiere | Flackern | verpasst, weil … |
 |---|---|---|---|---|---|---|---|
-| Tag, Wind | 2 / 0 | 6 / 6 | – | 2.7 s | 2 / 2 | 1 | – |
-| Nacht mit Infrarot | 1 / 0 | 4 / 4 | 2 / 2 | 1.8 s | 1 / 1 | 0 | – |
-
-**Kurz (Tag + Nacht) · ohne Kamera-Effekte** – 2026-11-10 08:33, Motion Watch 3.71.0
-
-| Phase | Pushes richtig / falsch | Personen | Wärmebild | Reaktion | Tiere | Flackern | verpasst, weil … |
-|---|---|---|---|---|---|---|---|
-| Tag, Wind | 1 / 1 | 6 / 6 | – | 3.5 s | 2 / 2 | 1 | – |
-| Nacht mit Infrarot | 2 / 0 | 4 / 4 | 1 / 1 | 1.9 s | 1 / 1 | 3 | – |
+| Tag, Wind | 1 / 1 | 6 / 6 | – | 4.3 s | 2 / 2 | 0 | – |
+| Nacht mit Infrarot | 1 / 0 | 4 / 4 | 2 / 2 | 1.6 s | 1 / 1 | 0 | – |
 
