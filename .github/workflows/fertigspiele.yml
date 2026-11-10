@@ -1,0 +1,169 @@
+# Fertige Spiele (MoveEye Spielecke, Teil 639zzn): packt die fertigen freien Browserspiele («Abenteuer mit Angst», «Heroine Dusk» …)
+# mit werkzeuge/fertigspiele/paket.py – Quellen von GitHub an einem festen Commit, nur kopiert (kein Bau-Skript der Quelle
+# läuft) –, prüft, dass Grösse + sha256 zu FS_GAMES in quelle/639zzn passen, und testet jedes Spiel im Browser über den
+# Spiele-Port von MoveEye (werkzeuge/fertigspiele_test.py --pakete). Assets an «fspiele-N» (nie «latest»), Probe an «fspieleprobe-<Lauf>».
+#   Nur bauen + testen:  gh api -X POST repos/DonElektro/MotionWatch/actions/workflows/fertigspiele.yml/dispatches -f ref=<zweig>
+#   Probe-Release:       … -f 'inputs[release]=probe'
+#   Echt:                … -f ref=main -f 'inputs[release]=echt' -f 'inputs[tag]=fspiele-1'
+#   Probe wegräumen:     … -f 'inputs[loeschen]=fspieleprobe-N'
+# Die ZIP sind reproduzierbar: «echt» bricht ab, wenn ein ZIP nicht genau zu den Pins im Programm passt.
+# Keine Geheimnisse: nur GITHUB_TOKEN.
+name: Fertige Spiele
+on:
+  workflow_dispatch:
+    inputs:
+      release:
+        description: "keins · probe (Vorabversion fspieleprobe-<Lauf>) · echt (Release <tag>, nur von main)"
+        type: choice
+        options: [keins, probe, echt]
+        default: keins
+      tag:
+        description: "Tag für «echt» (fspiele-N, = TAG in werkzeuge/fertigspiele/paket.py)"
+        default: fspiele-1
+      loeschen:
+        description: "Statt bauen: Probe-Release + Tag löschen (nur fspieleprobe-N, nur Vorabversion)"
+        default: ""
+permissions:
+  contents: write
+concurrency:
+  group: fertigspiele
+  cancel-in-progress: false
+env:
+  PYTHONUNBUFFERED: "1"
+  REL: ${{ inputs.release || 'keins' }}
+
+jobs:
+  bauen:
+    name: Fertige Spiele · ${{ inputs.release || 'keins' }}
+    if: github.repository == 'DonElektro/MotionWatch' && inputs.loeschen == ''
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Prüfen (Tag, Zweig, Release noch nicht da)
+        id: v
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag || 'fspiele-1' }}
+        run: |
+          set -e
+          sha=$(git rev-parse HEAD)
+          ptag=$(sed -n 's/^TAG = "\(fspiele-[0-9]*\)"$/\1/p' werkzeuge/fertigspiele/paket.py)
+          qtag=$(sed -n 's/^FS_TAG = "\(fspiele-[0-9]*\)"$/\1/p' quelle/639zzn_fertigspiele.py)
+          [ -n "$ptag" ] && [ "$ptag" = "$qtag" ] || { echo "::error::TAG in paket.py ($ptag) und FS_TAG in quelle/639zzn ($qtag) passen nicht"; exit 1; }
+          if [ "$REL" = "echt" ]; then
+            [ "$TAG" = "$ptag" ] || { echo "::error::Tag $TAG ist nicht $ptag (paket.py)"; exit 1; }
+            msha=$(git ls-remote origin refs/heads/main | cut -f1)
+            [ "$GITHUB_REF_NAME" = "main" ] && [ "$sha" = "$msha" ] || { echo "::error::echt nur vom aktuellen main ($msha), nicht $GITHUB_REF_NAME ($sha)"; exit 1; }
+            tag="$TAG"
+          else
+            tag="fspieleprobe-$GITHUB_RUN_NUMBER"
+          fi
+          if [ "$REL" != "keins" ] && gh release view "$tag" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "::error::Release $tag gibt es schon - nie überschreiben"; exit 1
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"; echo "sha=$sha" >> "$GITHUB_OUTPUT"; echo "n=${ptag#*-}" >> "$GITHUB_OUTPUT"
+      - name: Quellen holen (fester Commit) und Pakete bauen (paket.py)
+        run: |
+          set -e
+          python3 -I werkzeuge/fertigspiele/paket.py --holen --quellen "$RUNNER_TEMP/quellen" --aus "$RUNNER_TEMP/out"
+          ls -la "$RUNNER_TEMP/out"
+          for d in "$RUNNER_TEMP"/out/fs-*/; do echo "== $d"; cat "$d/LIZENZEN.txt"; done
+      - name: Pins im Programm = gebaute Pakete (quelle/639zzn, FS_GAMES)
+        run: |
+          set -e
+          python3 - "$RUNNER_TEMP/out/pins.txt" <<'PY'
+          import re, sys
+          src = open("quelle/639zzn_fertigspiele.py", encoding="utf-8").read()
+          bad = 0
+          for m in re.finditer(r"^PIN (\S+) size=(\d+) sha256=([0-9a-f]{64}) unpacked=(\d+)", open(sys.argv[1]).read(), re.M):
+              want = '"file": {"name": "%s", "size": %s, "sha256": "%s", "unpacked": %s}' % m.groups()
+              ok = want in src
+              print(("ok   " if ok else "FEHLT ") + want)
+              bad += not ok
+          if bad:
+              print("::error::%d Paket(e) passen nicht zu FS_GAMES in quelle/639zzn_fertigspiele.py" % bad)
+              sys.exit(1 if __import__("os").environ.get("REL") == "echt" else 0)
+          PY
+      - name: MoveEye bauen und die Spiele im Browser testen (fertigspiele_test.py, Handy und PC)
+        run: |
+          set -e
+          pip install -q opencv-python-headless numpy flask pillow cryptography playwright==1.49.1
+          python3 -m playwright install --with-deps chromium > /dev/null
+          python3 werkzeuge/bauen.py | tail -2
+          mkdir -p "$RUNNER_TEMP/bilder"
+          python3 -W ignore werkzeuge/fertigspiele_test.py
+          python3 -W ignore werkzeuge/fertigspiele_test.py --pakete "$RUNNER_TEMP/out" --bilder "$RUNNER_TEMP/bilder" ${{ (inputs.release || 'keins') != 'echt' && '--ohne-pins' || '' }}
+      - name: Bilder und Pins als Artefakt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fertigspiele-test-${{ github.run_number }}
+          path: |
+            ${{ runner.temp }}/bilder
+            ${{ runner.temp }}/out/pins.txt
+          retention-days: 14
+          if-no-files-found: ignore
+      - name: Zusammenfassung
+        if: always()
+        run: |
+          { echo "### Fertige Spiele"; echo '```'; cat "$RUNNER_TEMP/out/pins.txt" 2>/dev/null; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+      - name: Release anlegen, Assets hochladen, zurücklesen
+        if: env.REL == 'probe' || env.REL == 'echt'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.v.outputs.tag }}
+          SHA: ${{ steps.v.outputs.sha }}
+        run: |
+          set -e
+          O="$RUNNER_TEMP/out"
+          : > "$O/LIZENZEN.txt"
+          for d in "$O"/fs-*/; do { cat "$d/LIZENZEN.txt"; echo; echo "------------------------------------------------------------"; echo; } >> "$O/LIZENZEN.txt"; done
+          {
+            if [ "$REL" = "probe" ]; then echo "PROBELAUF (Vorabversion) - nicht für Geräte, wird wieder gelöscht."; echo; fi
+            echo "Fertige freie Browserspiele für die Spielecke von MoveEye (Teil 639zzn): jedes ZIP ist ein Spiel, einzeln nachladbar."
+            echo "Urheber, Lizenzen und die Änderungen von MoveEye stehen in LIZENZEN.txt (auch in jedem ZIP), die Quellen mit festem Commit in"
+            echo "https://github.com/$GITHUB_REPOSITORY/blob/$SHA/werkzeuge/fertigspiele/paket.py"
+            echo
+            sed 's/^PIN /pin: /' "$O/pins.txt"
+            echo "commit: $SHA"
+            echo "lauf: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          } > notes.md
+          A="$(ls "$O"/fspiele-*.zip | tr '\n' ' ') $O/pins.txt $O/LIZENZEN.txt"
+          for i in 1 2 3; do
+            if [ "$REL" = "probe" ]; then
+              gh release create "$TAG" $A -R "$GITHUB_REPOSITORY" --target "$SHA" --title "Probe · Fertige Spiele" --notes-file notes.md --prerelease --latest=false && break
+            else
+              gh release create "$TAG" $A -R "$GITHUB_REPOSITORY" --target "$SHA" --title "Fertige Spiele · Spielecke" --notes-file notes.md --latest=false && break
+            fi
+            echo "Versuch $i fehlgeschlagen, warte"; sleep 20
+            gh release view "$TAG" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1 && { echo "::error::Release halb angelegt - bitte von Hand prüfen"; exit 1; }
+          done
+          mkdir -p "$RUNNER_TEMP/zurueck"
+          gh release download "$TAG" -R "$GITHUB_REPOSITORY" -p 'fspiele-*.zip' -D "$RUNNER_TEMP/zurueck"
+          for f in "$RUNNER_TEMP"/zurueck/*.zip; do
+            s=$(grep "^PIN $(basename "$f") " "$O/pins.txt" | sed 's/.*sha256=\([0-9a-f]*\).*/\1/'); echo "$s  $f" | sha256sum -c -
+          done
+          echo "latest bleibt: $(gh api repos/$GITHUB_REPOSITORY/releases/latest --jq .tag_name)"
+
+  weg:
+    name: Probe löschen · ${{ inputs.loeschen }}
+    if: github.repository == 'DonElektro/MotionWatch' && inputs.loeschen != ''
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Probe-Release und Tag löschen (nur fspieleprobe-N, nur Vorabversion, nie «latest»)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.loeschen }}
+        run: |
+          set -e
+          echo "$TAG" | grep -Eq '^fspieleprobe-[0-9]+$' || { echo "::error::nur fspieleprobe-N, nicht $TAG"; exit 1; }
+          pre=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" --jq .prerelease)
+          [ "$pre" = "true" ] || { echo "::error::$TAG ist keine Vorabversion - nicht gelöscht"; exit 1; }
+          [ "$TAG" != "$(gh api repos/$GITHUB_REPOSITORY/releases/latest --jq .tag_name)" ] || { echo "::error::$TAG ist latest"; exit 1; }
+          gh release delete "$TAG" -R "$GITHUB_REPOSITORY" --yes --cleanup-tag
+          echo "gelöscht: $TAG" >> "$GITHUB_STEP_SUMMARY"
