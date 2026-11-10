@@ -116,3 +116,13 @@ Flight of the Amazon Queen  (fotaq/, eigenes Paket, nicht in dieser ZIP: Release
   Patches und Bau-Ablauf: werkzeuge/fotaq/ und .github/workflows/fotaq.yml in https://github.com/DonElektro/MotionWatch
   Bibliotheken: SDL 3 (zlib), libvorbis / libogg (BSD-3-Clause), libmad (GPL-2.0-or-later), zlib, libpng, Emscripten (MIT).
   Lizenztexte: im Paket (lizenzen/, LIZENZEN.txt). Startseite und Symbol: MoveEye (MIT).
+
+Abenteuer mit Angst  (fs-angst/, eigenes Paket, nicht in dieser ZIP: Release «fspiele-N», Teil 639zzn)
+  Spiel: «Adventures With Anxiety» von Nicky Case (Grafik, Code, Text), Musik von Monplaisir, zusätzlicher Code von
+  Spacie; deutsche Fassung «Abenteuer mit Angst!» von Jonas Reich.
+  Lizenz: CC0 1.0 (gemeinfrei) für Grafik, Code und Musik. Geräusche von freesound.org (Creative Commons, Liste mit
+  Urhebern und Links im README.md des Pakets) und von Kenney.nl (CC0). Bibliotheken: Howler.js, MinPubSub, RSVP.js (MIT).
+  Quelle: https://github.com/jonasreich/anxiety (Commit im Paket: fspiel.json), abgeleitet von https://github.com/ncase/anxiety
+  Für MoveEye geändert: zwei nicht freie Klänge (Pokémon-Titelmelodie © The Pokémon Company, «Hadouken!» © Capcom)
+  durch Stille ersetzt; misc/ und sharing/ weggelassen; Kachelbild thumb.png.
+  Lizenztexte: im Paket (LICENSE.txt, README.md, LIZENZEN.txt). Ab etwa 12 Jahren (Kraftausdrücke, im Spiel abschaltbar).
