@@ -1,0 +1,69 @@
+Schach für MoveEye
+==================
+
+Ein Schachspiel für die Spielecke von MoveEye, zusammengestellt aus freien Bausteinen. Alles liegt in diesem Ordner,
+zur Laufzeit wird nichts aus dem Internet geholt.
+
+Lizenz
+------
+Das Spiel als Ganzes (kombiniertes Werk): GNU General Public License, Version 3 oder neuer (GPL-3.0-or-later),
+Text in lizenzen/GPL-3.0.txt. Grund: Brett (Chessground) und Motor (Stockfish) stehen unter der GPL.
+Die eigenen Dateien (index.html, partie.js, motor.js, motor-js-worker.js, schach.js, thumb.svg) sind von MoveEye
+(Idee: Elektro) und stehen ebenfalls unter GPL-3.0-or-later. Der vollständige Quelltext liegt offen im Projekt:
+https://github.com/DonElektro/MotionWatch (Ordner games/schach/).
+Kein Produkt von Lichess oder Chess.com; deren Namen stehen hier nur als Herkunftsangabe.
+
+Bausteine (Ordner lib/, alle unverändert übernommen bzw. nur zusammengefasst)
+-----------------------------------------------------------------------------
+1. Brett: Chessground 10.5.0 (npm: @lichess-org/chessground) – GPL-3.0-or-later
+   https://github.com/lichess-org/chessground
+   lib/chessground.js           = dist/ des npm-Pakets, mit esbuild zu einer lesbaren Datei zusammengefasst (siehe unten)
+   lib/chessground.base.css     = assets/chessground.base.css (unverändert)
+   lib/chessground.brown.css    = assets/chessground.brown.css (unverändert, Brettfarben)
+   lib/chessground.cburnett.css = assets/chessground.cburnett.css (unverändert, Figuren als eingebettete SVG)
+2. Figuren «cburnett» von Colin M. L. Burnett – GPL-2.0-or-later; so geführt in
+   https://github.com/lichess-org/lila/blob/master/COPYING.md (public/piece/cburnett, «GPLv2+»),
+   Autor: https://en.wikipedia.org/wiki/User:Cburnett (dort zusätzlich unter BSD und GFDL angeboten; hier gilt GPL).
+3. Regeln: chess.js 1.4.0 – BSD-2-Clause, Jeff Hlywa – https://github.com/jhlywa/chess.js
+   lib/chess.js = dist/esm/chess.js des npm-Pakets, mit esbuild als klassisches Skript verpackt (siehe unten)
+   Lizenztext: lizenzen/chess.js-LICENSE.txt
+4. Computer-Gegner: Stockfish 19 «lite single» aus Stockfish.js 19.0.1 (npm: stockfish@19.0.1) – GPL-3.0
+   https://github.com/nmrugg/stockfish.js (Nathan Rugg / Chess.com), nach Stockfish
+   https://github.com/official-stockfish/Stockfish (T. Romstad, M. Costalba, J. Kiiski, G. Linscott u. a.)
+   lib/stockfish-19-lite-single.js   = bin/stockfish-19-lite-single.js (unverändert; vom Hersteller verkleinert)
+   lib/stockfish-19-lite-single.wasm = bin/stockfish-19-lite-single.wasm (unverändert; das kleine Netz ist eingebettet)
+   Quelltext dazu: genau diese Fassung unter https://github.com/nmrugg/stockfish.js/tree/v19.0.1 (Bau mit build.js,
+   emscripten; siehe README dort). Ein Faden, kein SharedArrayBuffer, kein Asyncify.
+5. Ersatz-Motor ohne WebAssembly: js-chess-engine 2.4.6 – MIT, Josef Jadrny
+   https://github.com/josefjadrny/js-chess-engine
+   lib/js-chess-engine.js = dist/ des npm-Pakets, mit esbuild zusammengefasst (siehe unten)
+   Lizenztext: lizenzen/js-chess-engine-LICENSE.txt
+
+So sind die zusammengefassten Dateien entstanden (einmalig, MoveEye selbst hat keinen Bau-Schritt dafür)
+---------------------------------------------------------------------------------------------------------
+  npm install --ignore-scripts @lichess-org/chessground@10.5.0 chess.js@1.4.0 js-chess-engine@2.4.6 stockfish@19.0.1 esbuild@0.28.2
+
+  e_cg.js:     import { Chessground } from '@lichess-org/chessground'; globalThis.Chessground = Chessground;
+  e_chess.js:  import { Chess } from 'chess.js'; globalThis.Chess = Chess;
+  e_jce.js:    import * as jce from 'js-chess-engine'; globalThis.JsChessEngine = jce;
+
+  npx esbuild e_cg.js    --bundle --format=iife --target=es2019 --outfile=lib/chessground.js
+  npx esbuild e_chess.js --bundle --format=iife --target=es2019 --outfile=lib/chess.js
+  npx esbuild e_jce.js   --bundle --format=iife --target=es2019 --platform=browser --outfile=lib/js-chess-engine.js
+
+Nicht verkleinert, also lesbar. Die CSS-Dateien und die beiden Stockfish-Dateien sind Kopien aus den npm-Paketen.
+
+Aufbau der eigenen Dateien
+--------------------------
+  partie.js            Regeln und Partie ohne Bildschirm: Startstellung (FEN) + Zugliste (UCI); partie.zug(...) ist der
+                       eine Weg für jeden Zug und liefert den neuen Zustand. Läuft auch in Node.
+  motor.js             Rechner im Web Worker: zuerst Stockfish (WebAssembly); lädt er nicht (9 s) oder antwortet er nicht
+                       (Bedenkzeit + 5 s), übernimmt motor-js-worker.js (js-chess-engine). Die Info-Zeile zeigt, wer rechnet.
+  schach.js            Ablauf: Spieler-Objekte (Mensch, Motor; später «fern»), spiel.ziehe(uci), Stufen, Tipp, Lern-Modus,
+                       Bewertungsbalken, Töne (WebAudio), Speichern (localStorage «moveeye-schach-einst» / «-partie»).
+  index.html           Seite und Aussehen. Mit ?test=1 gibt es window.__schach für werkzeuge/spiele_test.py,
+                       mit ?motor=js rechnet von Anfang an der Ersatz-Motor.
+
+Vorbereitet, aber nicht gebaut: zwei Handys über MoveEye. Die Partie ist als {startFen, zuege} übertragbar, jede Seite
+ist ein Spieler-Objekt; ein «Fern»-Spieler bräuchte nur amZug() (auf den Zug der Gegenseite warten) und gegnerZog(uci)
+(den eigenen Zug weiterschicken). In diesem Ordner gibt es keinen Netz-Code.

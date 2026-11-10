@@ -50,6 +50,15 @@ einen Schritt zurück, der Tipp zeigt die Gegend und gibt höchstens 1 Stern, Ti
 bleibt nach dem Neuladen und das Spiel läuft ohne Speicher. Solange es nicht in der ZIP ist:
 python3 werkzeuge/spiel_einbauen.py games/wasnun --nach /tmp/t.zip && python3 werkzeuge/spiele_test.py --zip /tmp/t.zip --nur wasnun
 
+Schach (Quelle games/schach/, mit ?test=1; Brett Chessground, Regeln chess.js, Motor Stockfish als WebAssembly, Ersatz in
+JavaScript): am iPhone 13 (hoch), Handy quer und PC: Brett so breit wie der Bildschirm, Antippen zeigt die Zielfelder, Zug
+bewegt und markiert, Antwort des Computers auf der untersten und obersten Stufe in der Bedenkzeit, Tipp-Pfeil, Lern-Modus
+(Dame eingestellt, Matt erlaubt, Patt; beide Knöpfe), Zug zurück, Umwandlung, Rochade, en passant, Matt / Patt / Remis,
+zu zweit mit automatischem Drehen, Aufgeben, Einstellungen, Speichern und «Weiterspielen», ohne Speicher, Ersatz-Motor bei
+gesperrter .wasm-Datei und bei hängendem Motor, ganze Partien Motor gegen Motor über die Regeln, keine Anfrage nach
+aussen, keine Fehler in der Konsole, alle Knöpfe mindestens 44 px. Solange es nicht in der ZIP ist:
+python3 werkzeuge/spiel_einbauen.py games/schach --nach /tmp/t.zip && python3 werkzeuge/spiele_test.py --zip /tmp/t.zip --nur schach
+
 Die Spiele laufen hier wie am Spiele-Port von MoveEye unter /g/<ordner>/ und bekommen einen «✕ Zurück»-Knopf (#mw-back).
 """
 import argparse
@@ -114,6 +123,8 @@ def paket_pruefen(zp, fehler, warn):
                 if g.get("desc") != (g.get("descs") or {}).get("de"):
                     fehler.append(f"{d}: desc ist nicht die deutsche Beschreibung")
                 for n in namen:                   # new games: nothing from outside (fonts, scripts, statistics)
+                    if n.startswith(d + "/lib/") and d == "schach":
+                        continue                  # unveränderte Bausteine: Adressen nur im Lizenzkopf; der Browser-Test beweist «keine Anfrage nach aussen»
                     if n.startswith(d + "/") and n.endswith((".html", ".js", ".css")):
                         t = z.read(n).decode("utf-8", "replace")
                         for u in re.findall(r"(?:https?:)?//[A-Za-z0-9.-]+\.[a-z]{2,}[^\s\"')]*", t):
@@ -706,6 +717,479 @@ def wasnun_pruefen(br, pw, base, fehler, bilder):
         fehler.append(f"{d} quer: {e.__class__.__name__}: {str(e)[:300]}")
     ctx.close()
     print(f"{d}: 5 Bilder gelöst (Handy hoch und quer, PC), Sackgassen, Tipps, Geheimnisse geprüft", flush=True)
+
+
+# ---- Schach (eigene Zusammenstellung, Quelle games/schach/, mit ?test=1 -> window.__schach) ---------------------------------------
+SCHACH_KLEIN = """() => [...document.querySelectorAll('button, a.back, select')].filter(e => { const r = e.getBoundingClientRect(), c = getComputedStyle(e);
+  return r.width > 0 && r.height > 0 && c.visibility !== 'hidden' && !e.closest('#mw-back') && (r.width < 43.9 || r.height < 43.9); })
+  .map(e => (e.id || e.textContent.trim().slice(0, 16)) + ' ' + Math.round(e.getBoundingClientRect().width) + '×' + Math.round(e.getBoundingClientRect().height))"""
+SCHACH_FEN = {
+    "dame": "r1b3k1/5ppp/5n2/8/8/7P/5PP1/3Q2K1 w - - 0 1",                       # Dd1-d7 stellt die Dame ein
+    "narr": "rnbqkbnr/pppp1ppp/8/4p3/8/5P2/PPPPP1PP/RNBQKBNR w KQkq - 0 2",     # g2-g4 erlaubt Dh4 matt
+    "matt1": "6k1/5ppp/8/8/8/8/8/R3K3 w - - 0 1",                               # Ta8 matt
+    "umw": "8/P6k/8/8/8/8/7K/8 w - - 0 1",
+    "patt": "7k/8/8/6Q1/8/8/8/6K1 w - - 0 1",                                   # Dg6 setzt patt
+    "rochade": "r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1",
+    "ep": "4k3/8/8/3pP3/8/8/8/4K3 w - d6 0 1",
+    "50": "8/8/4k3/8/8/4K3/8/R7 w - - 99 80",
+    "material": "8/8/4k3/8/8/8/4Kp2/8 w - - 0 1",                               # Kxf2: nur noch zwei Könige
+    "mitte": "r1bq1rk1/pp2bppp/2n1pn2/2pp4/3P1B2/2PBPN2/PP1N1PPP/R2QK2R w KQ - 0 8",
+}
+
+
+def schach_pruefen(br, pw, base, fehler, bilder):
+    d = "schach"
+    url = f"{base}/g/{d}/index.html?test=1"
+    mess = {}
+
+    def f(name, text):
+        fehler.append(f"{d} {name}: {text}")
+
+    def seite(name, geraet=None, ohne_wasm=False, ohne_speicher=False, **kw):
+        ctx = br.new_context(**(dict(geraet) if geraet else {}), **kw)
+        aussen = []
+
+        def weg(r):
+            u = r.request.url
+            if not u.startswith(base) and not u.startswith(("data:", "blob:")):
+                aussen.append(u[:100]); return r.abort()
+            if ohne_wasm and u.split("?")[0].endswith(".wasm"):
+                return r.abort()
+            return r.continue_()
+        ctx.route("**/*", weg)
+        if ohne_speicher:
+            ctx.add_init_script("for (const k of ['getItem', 'setItem', 'removeItem']) Storage.prototype[k] = () => { throw new Error('SecurityError'); };")
+        pg = ctx.new_page()
+        pg.on("pageerror", lambda e: None if ohne_wasm and ("wasm" in str(e).lower() or "Failed to fetch" in str(e)) else f(name, f"JavaScript: {str(e)[:300]}"))
+        pg.on("console", lambda m: f(name, f"console.error: {m.text[:200]}") if m.type == "error" and not (ohne_wasm and ("wasm" in m.text.lower() or "Failed to load resource" in m.text)) else None)
+        pg.__aussen = aussen
+        pg.goto(url, wait_until="load", timeout=30000)
+        pg.wait_for_function("() => window.__schach && document.querySelectorAll('#brett piece').length >= 32", timeout=10000)
+        pg.evaluate("""() => { window.__anim = 0; new MutationObserver(l => { for (const m of l) if (m.target.classList && m.target.classList.contains('anim')) __anim++; })
+          .observe(document.getElementById('brett'), {subtree: true, attributes: true, attributeFilter: ['class']}); }""")
+        return ctx, pg
+
+    def z(pg):
+        return pg.evaluate("() => __schach.zustand()")
+
+    def bild(pg, was):
+        if bilder:
+            pg.wait_for_timeout(350)
+            pg.screenshot(path=os.path.join(bilder, f"schach_{was}.png"))
+
+    def tippe(pg, feld, touch=True):
+        p = pg.evaluate("f => __schach.feld(f)", feld)
+        (pg.touchscreen.tap if touch else pg.mouse.click)(p["x"], p["y"])
+        pg.wait_for_timeout(120)
+
+    def druecke(pg, sel, touch=True):
+        (pg.locator(sel).tap if touch else pg.locator(sel).click)()
+        pg.wait_for_timeout(120)
+
+    def warte(pg, js, ms=15000, arg=None):
+        pg.wait_for_function(js, arg=arg, timeout=ms, polling=40)
+
+    def motor(pg, art="wasm", ms=20000):
+        warte(pg, "a => __schach.zustand().bereit && __schach.zustand().motor === a", ms, art)
+
+    def stelle(pg, fen, **o):
+        pg.evaluate("([f, o]) => __schach.stelle(f, o)", [SCHACH_FEN.get(fen, fen) if fen else None, o])
+        pg.wait_for_timeout(150)
+
+    def klein(pg, name, wo):
+        k = pg.evaluate(SCHACH_KLEIN)
+        if k:
+            f(name, f"{wo}: Knöpfe unter 44 px: {', '.join(k[:6])}")
+
+    def passt(pg, name, wo):
+        m = pg.evaluate("""() => { const h = document.getElementById('haupt'), b = document.getElementById('brett').getBoundingClientRect(), k = document.getElementById('mw-back');
+          return {breit: document.documentElement.scrollWidth > innerWidth + 1 || h.scrollWidth > h.clientWidth + 1, hoch: h.scrollHeight > h.clientHeight + 1, b: b.width, bh: b.height,
+                  aus: b.left < -0.5 || b.right > innerWidth + 0.5 || b.top < 0 || b.bottom > innerHeight + 0.5, zurueck: !!k && getComputedStyle(k).display !== 'none', w: innerWidth}; }""")
+        if m["breit"]:
+            f(name, f"{wo}: die Seite läuft seitlich über den Bildschirm")
+        if m["hoch"]:
+            f(name, f"{wo}: nicht alles hat Platz (senkrecht)")
+        if m["aus"] or abs(m["b"] - m["bh"]) > 1:
+            f(name, f"{wo}: Brett nicht ganz sichtbar oder nicht quadratisch ({m['b']:.0f} × {m['bh']:.0f})")
+        if m["zurueck"]:
+            f(name, f"{wo}: der schwebende «✕ Zurück» ist sichtbar (das Spiel hat den eigenen Link «‹ Spiele»)")
+        return m
+
+    # ---------- 1. iPhone 13 hochkant: der ganze Ablauf ----------
+    name = "iPhone"
+    ctx, pg = seite(name, pw.devices["iPhone 13"])
+    try:
+        if not pg.locator("#dNeu").is_visible():
+            f(name, "beim ersten Start fehlt das Fenster «Neues Spiel»")
+        klein(pg, name, "Start")
+        bild(pg, "01_start")
+        druecke(pg, "#bSpielen")
+        m = passt(pg, name, "Brett")
+        if m["b"] < m["w"] - 1.5:
+            f(name, f"das Brett ist nicht so breit wie der Bildschirm ({m['b']:.0f} von {m['w']} px)")
+        klein(pg, name, "Spiel")
+        motor(pg)
+        if "Stockfish" not in pg.inner_text("#info"):
+            f(name, f"Info-Zeile nennt den Motor nicht: {pg.inner_text('#info')!r}")
+        # Antippen zeigt die erlaubten Felder
+        tippe(pg, "e2")
+        n = pg.locator("#brett square.move-dest").count()
+        if n != 2:
+            f(name, f"e2 angetippt: {n} Zielfelder statt 2")
+        bild(pg, "02_zielpunkte")
+        tippe(pg, "g1")
+        if pg.locator("#brett square.move-dest").count() != 2 or pg.locator("#brett square.selected").count() != 1:
+            f(name, "Springer g1 angetippt: Zielfelder / Auswahl stimmen nicht")
+        tippe(pg, "e2")
+        t0 = pg.evaluate("() => performance.now()")
+        tippe(pg, "e4")
+        warte(pg, "() => __schach.zustand().zugNr >= 2 && __schach.zustand().menschDran", 8000)
+        mess["erster Zug bis Antwort (Lern-Prüfung + Stufe 3) ms"] = round(pg.evaluate("() => performance.now()") - t0)
+        st = z(pg)
+        if st["zuege"][0] != "e2e4":
+            f(name, f"Zug e2-e4 kam nicht an: {st['zuege']}")
+        if pg.locator("#brett square.last-move").count() != 2:
+            f(name, "der letzte Zug ist nicht markiert (2 Felder)")
+        if pg.evaluate("() => __anim") < 1:
+            f(name, "kein Zug wurde bewegt gezeigt (Klasse «anim» kam nie)")
+        if mess["erster Zug bis Antwort (Lern-Prüfung + Stufe 3) ms"] > 5000:
+            f(name, "die Antwort des Computers dauerte über 5 s")
+        if "e4" not in pg.inner_text("#zuege") or "1." not in pg.inner_text("#zuege"):
+            f(name, f"Zugliste: {pg.inner_text('#zuege')!r}")
+        if not (st["toene"].get("zug", 0) + st["toene"].get("schlag", 0) >= 2) or st["tonLaeuft"] != "running":
+            f(name, f"Töne: {st['toene']} / AudioContext {st['tonLaeuft']}")
+        bild(pg, "03_letzter_zug")
+        # Tipp
+        druecke(pg, "#bTipp")
+        warte(pg, "() => !!__schach.zustand().tippPfeil", 6000)
+        pg.wait_for_timeout(200)
+        if pg.locator("#brett svg.cg-shapes g > *").count() < 1 or "Tipp:" not in pg.inner_text("#status"):
+            f(name, f"Tipp: kein Pfeil oder kein Text ({pg.inner_text('#status')!r})")
+        bild(pg, "04_tipp")
+        tp = z(pg)["tippPfeil"]
+        tippe(pg, tp[0]); tippe(pg, tp[1])                           # der empfohlene Zug: keine Warnung
+        warte(pg, "() => __schach.zustand().zugNr >= 4 && __schach.zustand().menschDran", 8000)
+        if pg.locator("#dWarn").is_visible() or z(pg)["tippPfeil"]:
+            f(name, "nach dem empfohlenen Zug: Warnung oder Pfeil noch da")
+        # Zug zurück (eigener Zug und Antwort)
+        druecke(pg, "#bZurueck")
+        st = z(pg)
+        if st["zugNr"] != 2 or not st["menschDran"]:
+            f(name, f"Zug zurück: {st['zugNr']} Halbzüge statt 2")
+        # Bedenkzeit: unterste und oberste Stufe
+        stelle(pg, "mitte", stufe=1, lern=False)
+        for stufe in (1, 8):
+            ms = [pg.evaluate("s => __schach.motorZug(s, 1000)", stufe) for _ in range(4 if stufe == 1 else 2)]
+            mess[f"Stufe {stufe} Antwort ms (Bedenkzeit 1000)"] = [x["ms"] for x in ms]
+            if any(not x["zug"] for x in ms) or max(x["ms"] for x in ms) > 1600:
+                f(name, f"Stufe {stufe}: Antwort fehlt oder zu spät: {ms}")
+        ms = pg.evaluate("() => __schach.motorZug(8, 300)")
+        mess["Stufe 8 Antwort ms (Bedenkzeit 300)"] = ms["ms"]
+        if not ms["zug"] or ms["ms"] > 900:
+            f(name, f"Stufe 8 mit 0,3 s: {ms}")
+        # Lern-Modus: Dame einstellen
+        stelle(pg, "dame", stufe=3, lern=True)
+        tippe(pg, "d1"); tippe(pg, "d7")
+        warte(pg, "() => !document.getElementById('dWarn').hidden", 6000)
+        t = pg.inner_text("#warnText")
+        if "Dame" not in t or "Trotzdem ziehen?" not in t:
+            f(name, f"Lern-Modus: Warnung nennt die Dame nicht: {t!r}")
+        klein(pg, name, "Warnung")
+        bild(pg, "05_lern_warnung")
+        druecke(pg, "#bNochmal")
+        pg.wait_for_timeout(300)
+        st = z(pg)
+        if st["zugNr"] != 0 or st["fen"] != SCHACH_FEN["dame"] or not st["menschDran"] or pg.locator("#dWarn").is_visible():
+            f(name, f"«Nochmal überlegen»: Zug nicht zurückgenommen ({st['fen']})")
+        tippe(pg, "d1"); tippe(pg, "d7")
+        warte(pg, "() => !document.getElementById('dWarn').hidden", 6000)
+        druecke(pg, "#bTrotzdem")
+        warte(pg, "() => __schach.zustand().zugNr >= 1", 3000)
+        if z(pg)["zuege"][0] != "d1d7":
+            f(name, "«Trotzdem ziehen»: der Zug gilt nicht")
+        # ein guter Zug: keine Warnung (bester Zug des Motors)
+        stelle(pg, "dame", stufe=3, lern=True)
+        warte(pg, "() => !!__schach.zustand().analyse", 6000)
+        a = z(pg)["analyse"]["zug"]
+        tippe(pg, a[:2]); tippe(pg, a[2:4])
+        warte(pg, "() => __schach.zustand().zugNr >= 1", 6000)
+        if pg.locator("#dWarn").is_visible():
+            f(name, "Lern-Modus warnt beim besten Zug")
+        # Lern-Modus aus: kein Fenster
+        stelle(pg, "dame", stufe=3, lern=False)
+        tippe(pg, "d1"); tippe(pg, "d7")
+        warte(pg, "() => __schach.zustand().zugNr >= 1", 3000)
+        if pg.locator("#dWarn").is_visible():
+            f(name, "Lern-Modus aus: trotzdem eine Warnung")
+        # Narrenmatt: Warnung «matt», dann setzt der Computer (Stufe 8) matt
+        stelle(pg, "narr", stufe=8, lern=True)
+        tippe(pg, "g2"); tippe(pg, "g4")
+        warte(pg, "() => !document.getElementById('dWarn').hidden", 6000)
+        if "matt" not in pg.inner_text("#warnText"):
+            f(name, f"Lern-Modus: Matt-Warnung fehlt: {pg.inner_text('#warnText')!r}")
+        druecke(pg, "#bTrotzdem")
+        warte(pg, "() => !!__schach.zustand().ende && !document.getElementById('dEnde').hidden", 8000)
+        st = z(pg)
+        if st["ende"] != {"art": "matt", "sieger": "b"} or "Schachmatt" not in pg.inner_text("#endeTitel") or "Schachmatt" not in pg.inner_text("#status"):
+            f(name, f"Matt durch den Computer: {st['ende']} / {pg.inner_text('#endeTitel')!r}")
+        if pg.locator("#brett square.check").count() != 1:
+            f(name, "der König im Schach ist nicht hervorgehoben")
+        druecke(pg, "#bEndeBrett")
+        druecke(pg, "#bZurueck")
+        st = z(pg)
+        if st["ende"] or st["zugNr"] != 0 or not st["menschDran"]:
+            f(name, f"Zug zurück nach dem Matt: {st['zugNr']} Halbzüge, Ende {st['ende']}")
+        # selbst matt setzen
+        stelle(pg, "matt1", stufe=1, lern=True)
+        tippe(pg, "a1"); tippe(pg, "a8")
+        warte(pg, "() => !!__schach.zustand().ende && !document.getElementById('dEnde').hidden", 6000)
+        st = z(pg)
+        if st["ende"] != {"art": "matt", "sieger": "w"} or "gewonnen" not in pg.inner_text("#endeTitel") or st["toene"].get("matt", 0) < 1:
+            f(name, f"selbst matt gesetzt: {st['ende']} / {pg.inner_text('#endeTitel')!r}")
+        if st["san"][-1] != "Ta8#":
+            f(name, f"deutsche Notation: {st['san']}")
+        bild(pg, "06_spielende")
+        # Patt (mit Warnung, weil klar besser)
+        stelle(pg, "patt", stufe=1, lern=True)
+        tippe(pg, "g5"); tippe(pg, "g6")
+        warte(pg, "() => !document.getElementById('dWarn').hidden", 6000)
+        if "patt" not in pg.inner_text("#warnText"):
+            f(name, f"Patt-Warnung: {pg.inner_text('#warnText')!r}")
+        druecke(pg, "#bTrotzdem")
+        warte(pg, "() => !!__schach.zustand().ende && !document.getElementById('dEnde').hidden", 4000)
+        if z(pg)["ende"]["art"] != "patt" or "Patt" not in pg.inner_text("#endeTitel"):
+            f(name, f"Patt: {z(pg)['ende']} / {pg.inner_text('#endeTitel')!r}")
+        # Umwandlung: abbrechen, dann Springer
+        stelle(pg, "umw", stufe=1, lern=False)
+        tippe(pg, "a7"); tippe(pg, "a8")
+        warte(pg, "() => !document.getElementById('dUmw').hidden", 3000)
+        if pg.locator("#umw button").count() != 4:
+            f(name, "Umwandlung: keine 4 Figuren zur Wahl")
+        klein(pg, name, "Umwandlung")
+        bild(pg, "07_umwandlung")
+        druecke(pg, "#bUmwAbbr")
+        pg.wait_for_timeout(250)
+        if z(pg)["zugNr"] != 0 or z(pg)["fen"] != SCHACH_FEN["umw"]:
+            f(name, "Umwandlung abgebrochen: der Bauer steht nicht wieder auf a7")
+        tippe(pg, "a7"); tippe(pg, "a8")
+        warte(pg, "() => !document.getElementById('dUmw').hidden", 3000)
+        druecke(pg, "#umw button[data-u=n]")
+        warte(pg, "() => __schach.zustand().zugNr >= 1", 3000)
+        st = z(pg)
+        if st["zuege"][0] != "a7a8n" or st["san"][0] != "a8S":
+            f(name, f"Umwandlung in einen Springer: {st['zuege']} {st['san']}")
+        # zu zweit: kein Computerzug, Rochade, en passant, automatisch drehen
+        stelle(pg, "rochade", gegner="mensch", lern=False)
+        tippe(pg, "e1"); tippe(pg, "g1")
+        pg.wait_for_timeout(900)
+        st = z(pg)
+        if st["zugNr"] != 1 or st["san"] != ["0-0"] or not st["fen"].startswith("r3k2r/8/8/8/8/8/8/R4RK1 b") or not st["menschDran"]:
+            f(name, f"zu zweit, kurze Rochade: {st['san']} {st['fen']}")
+        tippe(pg, "e8"); tippe(pg, "c8")
+        pg.wait_for_timeout(300)
+        if z(pg)["san"] != ["0-0", "0-0-0"]:
+            f(name, f"zu zweit, lange Rochade von Schwarz: {z(pg)['san']}")
+        if "Weiss ist am Zug" not in pg.inner_text("#status"):
+            f(name, f"zu zweit: Status {pg.inner_text('#status')!r}")
+        stelle(pg, "ep", gegner="mensch", lern=False)
+        tippe(pg, "e5"); tippe(pg, "d6")
+        pg.wait_for_timeout(300)
+        if not z(pg)["fen"].startswith("4k3/8/3P4/8/8/8/8/4K3 b"):
+            f(name, f"en passant: {z(pg)['fen']}")
+        pg.evaluate("() => __schach.setze('autodrehen', true)")
+        stelle(pg, None, gegner="mensch", lern=False)
+        tippe(pg, "e2"); tippe(pg, "e4")
+        warte(pg, "() => __schach.zustand().drehung === 'b'", 3000)
+        tippe(pg, "e7"); tippe(pg, "e5")
+        warte(pg, "() => __schach.zustand().drehung === 'w' && __schach.zustand().zugNr === 2", 3000)
+        pg.evaluate("() => __schach.setze('autodrehen', false)")
+        druecke(pg, "#bDrehen")
+        if z(pg)["drehung"] != "b" or pg.locator("#brett.orientation-black").count() != 1:
+            f(name, "«Brett drehen» dreht nicht")
+        # Remis: Wiederholung, 50 Züge, zu wenig Material
+        stelle(pg, None, gegner="mensch", lern=False)
+        for u in ("g1f3", "g8f6", "f3g1", "f6g8") * 2:
+            pg.evaluate("u => __schach.ziehe(u)", u)
+        if (z(pg)["ende"] or {}).get("art") != "wiederholung":
+            f(name, f"dreimal dieselbe Stellung: {z(pg)['ende']}")
+        stelle(pg, "50", gegner="mensch", lern=False)
+        tippe(pg, "a1"); tippe(pg, "a2")
+        pg.wait_for_timeout(250)
+        if (z(pg)["ende"] or {}).get("art") != "50zuege":
+            f(name, f"50-Züge-Regel: {z(pg)['ende']}")
+        stelle(pg, "material", gegner="mensch", lern=False)
+        tippe(pg, "e2"); tippe(pg, "f2")
+        pg.wait_for_timeout(250)
+        if (z(pg)["ende"] or {}).get("art") != "material" or "Remis" not in pg.inner_text("#status"):
+            f(name, f"zu wenig Material: {z(pg)['ende']}")
+        # Aufgeben (mit Rückfrage), geschlagene Figuren
+        stelle(pg, "dame", stufe=1, lern=False)
+        tippe(pg, "d1"); tippe(pg, "d7")
+        warte(pg, "() => __schach.zustand().zugNr >= 2 && __schach.zustand().menschDran", 6000)
+        druecke(pg, "#bAufgeben")
+        if not pg.locator("#dFrage").is_visible():
+            f(name, "Aufgeben ohne Rückfrage")
+        druecke(pg, "#bFrageJa")
+        warte(pg, "() => !!__schach.zustand().ende", 3000)
+        if z(pg)["ende"] != {"art": "aufgabe", "sieger": "b"}:
+            f(name, f"Aufgeben: {z(pg)['ende']}")
+        # Einstellungen: Stufe, Bedenkzeit, Töne, Balken; Über
+        druecke(pg, "#bEndeBrett") if pg.locator("#dEnde").is_visible() else pg.wait_for_timeout(700)
+        if pg.locator("#dEnde").is_visible():
+            druecke(pg, "#bEndeBrett")
+        druecke(pg, "#bEinst")
+        klein(pg, name, "Einstellungen")
+        bild(pg, "08_einstellungen")
+        pg.select_option("#selStufe2", "5"); pg.select_option("#selZeit", "500")
+        druecke(pg, "#schTon"); druecke(pg, "#schBalken")
+        druecke(pg, "#bEinstZu")
+        st = z(pg)
+        if st["einst"]["stufe"] != 5 or st["einst"]["zeit"] != 500 or st["einst"]["ton"] or st["einst"]["balken"] or pg.locator("#balken").is_visible():
+            f(name, f"Einstellungen greifen nicht: {st['einst']}")
+        passt(pg, name, "ohne Balken")
+        druecke(pg, "#bUeber")
+        t = pg.inner_text("#dUeber")
+        for wort in ("Chessground", "Stockfish", "chess.js", "js-chess-engine", "cburnett", "General Public License"):
+            if wort not in t:
+                f(name, f"«Über»: {wort} fehlt")
+        bild(pg, "09_ueber")
+        druecke(pg, "#bUeberZu")
+        # Speichern und Weiterspielen
+        druecke(pg, "#bNeu"); druecke(pg, "#segFarbe button[data-w=b]"); pg.select_option("#selStufe", "2"); druecke(pg, "#bSpielen")
+        warte(pg, "() => __schach.zustand().zugNr >= 1 && __schach.zustand().menschDran", 8000)        # der Computer (Weiss) hat begonnen
+        st = z(pg)
+        if st["mensch"] != "b" or st["drehung"] != "b" or st["stufe"] != 2:
+            f(name, f"mit Schwarz spielen: {st['mensch']} / Brett {st['drehung']} / Stufe {st['stufe']}")
+        tippe(pg, "e7"); tippe(pg, "e6")
+        warte(pg, "() => __schach.zustand().zugNr >= 3 && __schach.zustand().menschDran", 8000)
+        vor = z(pg)
+        pg.reload(wait_until="load")
+        pg.wait_for_function("() => window.__schach && document.querySelectorAll('#brett piece').length > 0", timeout=10000)
+        if not pg.locator("#dWeiter").is_visible():
+            f(name, "nach dem Neuladen fehlt «Weiterspielen»")
+        bild(pg, "10_weiterspielen")
+        druecke(pg, "#bWeiter")
+        st = z(pg)
+        if st["fen"] != vor["fen"] or st["zuege"] != vor["zuege"] or st["mensch"] != "b" or st["stufe"] != 2 or st["drehung"] != "b":
+            f(name, f"Weiterspielen: Stand stimmt nicht ({st['zuege']} statt {vor['zuege']})")
+        if st["einst"]["zeit"] != 500 or st["einst"]["ton"] or st["einst"]["balken"] or st["einst"]["stufe"] != 2 or st["einst"]["farbe"] != "b":
+            f(name, f"Einstellungen nach dem Neuladen: {st['einst']}")
+        motor(pg)
+        tippe(pg, "d7"); tippe(pg, "d5")
+        warte(pg, "() => __schach.zustand().zugNr >= 5", 8000)
+        # Motor hängt: Wechsel auf den Ersatz, die Suche kommt trotzdem
+        pg.evaluate("() => { const w = Motor._w, alt = w.postMessage.bind(w); w.postMessage = t => { if (!/^go/.test(t)) alt(t); }; }")
+        r = pg.evaluate("() => __schach.motorZug(8, 300)")
+        st = z(pg)
+        mess["Motor hängt: Antwort vom Ersatz nach ms"] = r["ms"]
+        if not r["zug"] or st["motor"] != "js" or "Ersatz" not in pg.inner_text("#info"):
+            f(name, f"hängender Motor: kein Wechsel auf den Ersatz ({r}, Motor {st['motor']}, Info {pg.inner_text('#info')!r})")
+        # Motor gegen Motor über die Regeln: kein unerlaubter Zug, kein Hängen
+        pg.reload(wait_until="load")
+        pg.wait_for_function("() => window.__schach", timeout=10000)
+        motor(pg)
+        for w, s, zeit in ((1, 1, 40), (1, 2, 40), (2, 3, 40), (3, 1, 40)):
+            r = pg.evaluate("o => __schach.selbstspiel(o)", {"w": w, "s": s, "zeit": zeit, "max": 400})
+            mess[f"Selbstspiel Stufe {w} gegen {s}"] = f"{r.get('halbzuege')} Halbzüge, Ende {(r.get('ende') or {}).get('art', 'Zuggrenze')}, längste Antwort {r.get('maxMs')} ms"
+            if r.get("fehler") or r.get("zufall"):
+                f(name, f"Selbstspiel {w} gegen {s}: {r}")
+        if pg.__aussen:
+            f(name, f"Anfragen nach aussen: {sorted(set(pg.__aussen))[:3]}")
+    except Exception as e:
+        f(name, f"{e.__class__.__name__}: {str(e)[:300]}")
+    ctx.close()
+
+    # ---------- 2. WebAssembly gesperrt: der Ersatz-Motor übernimmt von selbst ----------
+    name = "ohne wasm"
+    ctx, pg = seite(name, pw.devices["iPhone 13"], ohne_wasm=True)
+    try:
+        druecke(pg, "#bSpielen")
+        t0 = pg.evaluate("() => performance.now()")
+        motor(pg, "js", 25000)
+        mess["Ersatz-Motor bereit nach ms (wasm gesperrt)"] = round(pg.evaluate("() => performance.now()") - t0)
+        if "Ersatz-Motor" not in pg.inner_text("#info"):
+            f(name, f"Info-Zeile: {pg.inner_text('#info')!r}")
+        tippe(pg, "e2"); tippe(pg, "e4")
+        warte(pg, "() => __schach.zustand().zugNr >= 2 && __schach.zustand().menschDran", 10000)
+        druecke(pg, "#bTipp")
+        warte(pg, "() => !!__schach.zustand().tippPfeil", 8000)
+        stelle(pg, "dame", stufe=3, lern=True)
+        tippe(pg, "d1"); tippe(pg, "d7")
+        warte(pg, "() => !document.getElementById('dWarn').hidden", 8000)
+        if "Dame" not in pg.inner_text("#warnText"):
+            f(name, f"Lern-Modus mit dem Ersatz-Motor: {pg.inner_text('#warnText')!r}")
+        druecke(pg, "#bNochmal")
+        stelle(pg, "mitte", stufe=8, lern=False)
+        ms = [pg.evaluate("s => __schach.motorZug(s, 1000)", s) for s in (1, 4, 8, 8)]
+        mess["Ersatz-Motor Antwort ms (Stufen 1, 4, 8, 8)"] = [x["ms"] for x in ms]
+        if any(not x["zug"] for x in ms) or max(x["ms"] for x in ms) > 4000:
+            f(name, f"Ersatz-Motor: Antwort fehlt oder über 4 s: {ms}")
+        r = pg.evaluate("o => __schach.selbstspiel(o)", {"w": 3, "s": 2, "zeit": 40, "max": 160})
+        mess["Selbstspiel Ersatz-Motor Stufe 3 gegen 2"] = f"{r.get('halbzuege')} Halbzüge, Ende {(r.get('ende') or {}).get('art', 'Zuggrenze')}, längste Antwort {r.get('maxMs')} ms"
+        if r.get("fehler") or r.get("zufall"):
+            f(name, f"Selbstspiel: {r}")
+        if pg.__aussen:
+            f(name, f"Anfragen nach aussen: {sorted(set(pg.__aussen))[:3]}")
+    except Exception as e:
+        f(name, f"{e.__class__.__name__}: {str(e)[:300]}")
+    ctx.close()
+
+    # ---------- 3. ohne Speicher (privates Fenster): spielbar, kein Fehler ----------
+    name = "ohne Speicher"
+    ctx, pg = seite(name, pw.devices["iPhone 13"], ohne_speicher=True)
+    try:
+        druecke(pg, "#bSpielen")
+        motor(pg)
+        tippe(pg, "d2"); tippe(pg, "d4")
+        warte(pg, "() => __schach.zustand().zugNr >= 2 && __schach.zustand().menschDran", 8000)
+        druecke(pg, "#bLern")
+        if z(pg)["einst"]["lern"]:
+            f(name, "Lern-Modus lässt sich oben nicht ausschalten")
+    except Exception as e:
+        f(name, f"{e.__class__.__name__}: {str(e)[:300]}")
+    ctx.close()
+
+    # ---------- 4. Handy quer und PC (Maus: klicken und ziehen) ----------
+    for name, vp, touch in (("quer", {"width": 844, "height": 390}, True), ("PC", {"width": 1280, "height": 800}, False)):
+        ctx, pg = seite(name, None, viewport=vp, is_mobile=touch, has_touch=touch, device_scale_factor=2 if touch else 1)
+        try:
+            klein(pg, name, "Start")
+            druecke(pg, "#bSpielen", touch)
+            m = passt(pg, name, "Brett")
+            if m["b"] < (280 if touch else 560):
+                f(name, f"Brett nur {m['b']:.0f} px")
+            klein(pg, name, "Spiel")
+            motor(pg)
+            if touch:
+                tippe(pg, "e2"); tippe(pg, "e4")
+            else:                                                     # ziehen mit der Maus
+                a, b_ = pg.evaluate("() => [__schach.feld('e2'), __schach.feld('e4')]")
+                pg.mouse.move(a["x"], a["y"]); pg.mouse.down(); pg.mouse.move((a["x"] + b_["x"]) / 2, (a["y"] + b_["y"]) / 2, steps=4)
+                pg.mouse.move(b_["x"], b_["y"], steps=4); pg.mouse.up()
+            warte(pg, "() => __schach.zustand().zugNr >= 2 && __schach.zustand().menschDran", 8000)
+            if z(pg)["zuege"][0] != "e2e4":
+                f(name, f"Zug kam nicht an: {z(pg)['zuege']}")
+            if not touch:
+                tippe(pg, "g1", False); tippe(pg, "f3", False)        # klicken – klicken
+                warte(pg, "() => __schach.zustand().zugNr >= 4 && __schach.zustand().menschDran", 8000)
+            druecke(pg, "#bTipp", touch)
+            warte(pg, "() => !!__schach.zustand().tippPfeil", 6000)
+            passt(pg, name, "nach Zügen")
+            bild(pg, "11_quer" if touch else "12_pc")
+            stelle(pg, "dame", stufe=3, lern=True)
+            tippe(pg, "d1", touch); tippe(pg, "d7", touch)
+            warte(pg, "() => !document.getElementById('dWarn').hidden", 6000)
+            klein(pg, name, "Warnung")
+            bild(pg, "11_quer_warnung" if touch else "12_pc_warnung")
+            druecke(pg, "#bNochmal", touch)
+            if pg.__aussen:
+                f(name, f"Anfragen nach aussen: {sorted(set(pg.__aussen))[:3]}")
+        except Exception as e:
+            f(name, f"{e.__class__.__name__}: {str(e)[:300]}")
+        ctx.close()
+    for k, v in mess.items():
+        print(f"  {d}: {k}: {v}", flush=True)
+    print(f"{d}: Brett, Zielfelder, Tipp, Lern-Modus, Matt / Patt / Remis, Umwandlung, zu zweit, Speichern, Ersatz-Motor, Selbstspiele geprüft", flush=True)
 
 
 # ---- «Flight of the Amazon Queen» (ScummVM, WebAssembly; MoveEye 639zzg): only when the package is there ------------------------
@@ -1386,6 +1870,8 @@ def main():
     print(f"Paket {gj.get('version')}: {len(gj['games'])} Spiele", flush=True)
     if os.path.isfile(os.path.join(REPO, "games", "wasnun", "kachel.json")) and not any(g.get("dir") == "wasnun" for g in gj["games"]):
         warn.append("«Was nun?» liegt in games/wasnun/, ist aber noch nicht in dieser ZIP (python3 werkzeuge/spiel_einbauen.py games/wasnun)")
+    if os.path.isfile(os.path.join(REPO, "games", "schach", "kachel.json")) and not any(g.get("dir") == "schach" for g in gj["games"]):
+        warn.append("Das neue Schach liegt in games/schach/, ist aber noch nicht in dieser ZIP (python3 werkzeuge/spiel_einbauen.py games/schach --hinter adarkroom --entfernen chess)")
     if not a.ohne_browser:
         fotaq_lauf(a.fotaq, fehler, warn, a.bilder)
         try:
@@ -1416,6 +1902,8 @@ def main():
                     wobbly_pruefen(br, base, fehler, a.bilder)
                 if any(g["dir"] == "wasnun" for g in spiele):
                     wasnun_pruefen(br, pw, base, fehler, a.bilder)
+                if any(g["dir"] == "schach" for g in spiele):
+                    schach_pruefen(br, pw, base, fehler, a.bilder)
                 br.close()
             s.shutdown()
         finally:
