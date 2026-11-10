@@ -14,11 +14,6 @@
      der schwebende «✕ Zurück» von MoveEye ist ausgeblendet (eigener Link oben, sonst über der Bremse).
      GS-1.7: jeder Abschnitt der neuen Stunt-Piste ist mit beiden Fahrzeugen auf «Einfach» und «Normal» befahrbar (ohne Rettung),
      ein Supersprung landet auf «Einfach» ohne Eingabe in der Luft, der alte Rekord der Stunt-Piste bleibt sichtbar.
-  4. «Was nun?» (eigenes Bilder-Rätsel, Quelle games/wasnun/, mit ?test=1): jedes der 5 Bilder wird am Handy (hoch und quer)
-     und am PC bis zum Sternebild gelöst; lustige falsche Stellen kosten nichts, das Geheimnis zählt, eine Sackgasse spult genau
-     einen Schritt zurück, der Tipp zeigt die Gegend und gibt höchstens 1 Stern, Tipp-Flächen mindestens 44 px, Fortschritt
-     bleibt nach dem Neuladen und das Spiel läuft ohne Speicher. Solange es nicht in der ZIP ist:
-     python3 werkzeuge/spiel_einbauen.py games/wasnun --nach /tmp/t.zip && python3 werkzeuge/spiele_test.py --zip /tmp/t.zip --nur wasnun
 
   python3 werkzeuge/spiele_test.py                    # Paket + Browser, nur die Spiele mit 5 Sprachen (ab GS-1.4)
   python3 werkzeuge/spiele_test.py --alle             # dazu die älteren Spiele (2048, Tetris …)
@@ -36,6 +31,12 @@ iPad und PC die Startseite (Sprachwahl, Copyright, «✕ Zurück» überdeckt ni
 das Spiel, die Spielfläche zeigt ein Bild, keine JavaScript-Fehler), prüft die Knöpfe neben dem Spiel, Rechtsklick per Touch
 (lange drücken, «🖱 Rechts»), «☰ Menü» und am PC Schnellspeichern (F11) mit Spielstand in IndexedDB nach dem Neuladen.
 Fehlt das Paket, wird der Teil übersprungen.
+
+«Was nun?» (eigenes Bilder-Rätsel, Quelle games/wasnun/, mit ?test=1): jedes der 5 Bilder wird am Handy (hoch und quer)
+und am PC bis zum Sternebild gelöst; lustige falsche Stellen kosten nichts, das Geheimnis zählt, eine Sackgasse spult genau
+einen Schritt zurück, der Tipp zeigt die Gegend und gibt höchstens 1 Stern, Tipp-Flächen mindestens 44 px, Fortschritt
+bleibt nach dem Neuladen und das Spiel läuft ohne Speicher. Solange es nicht in der ZIP ist:
+python3 werkzeuge/spiel_einbauen.py games/wasnun --nach /tmp/t.zip && python3 werkzeuge/spiele_test.py --zip /tmp/t.zip --nur wasnun
 
 Die Spiele laufen hier wie am Spiele-Port von MoveEye unter /g/<ordner>/ und bekommen einen «✕ Zurück»-Knopf (#mw-back).
 """
