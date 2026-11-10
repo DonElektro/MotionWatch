@@ -14,6 +14,9 @@
      der schwebende «✕ Zurück» von MoveEye ist ausgeblendet (eigener Link oben, sonst über der Bremse).
      GS-1.7: jeder Abschnitt der neuen Stunt-Piste ist mit beiden Fahrzeugen auf «Einfach» und «Normal» befahrbar (ohne Rettung),
      ein Supersprung landet auf «Einfach» ohne Eingabe in der Luft, der alte Rekord der Stunt-Piste bleibt sichtbar.
+     GS-1.8: Stunts füllen das Nitro, der Schub macht schneller und kostet keinen Sprit extra, unter der Mindestfüllung zündet
+     er nicht; der Nitro-Knopf am Handy ist mindestens 44 px gross und überdeckt weder Pedale noch den Zurück-Link;
+     «Bildwackeln» und «Effekte» werden gespeichert; die Partikelzahl bleibt begrenzt.
 
   python3 werkzeuge/spiele_test.py                    # Paket + Browser, nur die Spiele mit 5 Sprachen (ab GS-1.4)
   python3 werkzeuge/spiele_test.py --alle             # dazu die älteren Spiele (2048, Tetris …)
@@ -280,6 +283,19 @@ WT_RUN = """([veh, trk, scen, diff]) => { const W = window.__wt, I = W.inp; W.fr
   I.gas = I.brake = I.trick = false; r.state = W.state; r.ids = W.log.map(e => e.id); return r; }"""
 
 
+# GS-1.8: nitro. Two identical runs on the flat start of the hills, one with a boost: faster, same fuel, the bar is used up
+WT_NITRO = """() => { const W = window.__wt, I = W.inp, r = {}; W.freeze(true); W.SET.diff = 1; W.SET.real = 40;
+  for (const mit of [0, 1]) { W.select('truck', 'hills'); W.start(); W.place(5, 0, 0, 0, 0, 0); I.gas = true; W.sim(1.0);
+    if (mit) { W.setNitro(10); r.zuwenig = W.fireNitro(); W.setNitro(100); r.zuendet = W.fireNitro(); }
+    W.sim(1.0); r['v' + mit] = Math.hypot(W.B.vx, W.B.vy); r['sprit' + mit] = W.fuel; r['x' + mit] = W.B.x; if (mit) { r.rest = W.nitro; W.sim(3, () => !W.nitroOn); r.leer = W.nitro; r.aus = !W.nitroOn; r.teile = W.parts; } }
+  I.gas = false; r.log = W.log.some(e => e.id === 'nitro'); return r; }"""
+WT_KNOEPFE = """() => { const b = id => { const e = document.getElementById(id), r = e.getBoundingClientRect(); return getComputedStyle(e).display === 'none' ? null : [r.left, r.top, r.right, r.bottom]; };
+  const n = b('nitroP'), out = []; if (!n) return ['fehlt']; if (n[2] - n[0] < 44 || n[3] - n[1] < 44) out.push('kleiner als 44 px');
+  if (n[0] < 0 || n[1] < 0 || n[2] > innerWidth || n[3] > innerHeight) out.push('ausserhalb');
+  for (const id of ['gasP', 'brakeP', 'trickP', 'backLink', 'setBtn', 'muteBtn', 'restartBtn']) { const o = b(id); if (o && n[0] < o[2] && o[0] < n[2] && n[1] < o[3] && o[1] < n[3]) out.push('überdeckt ' + id); }
+  return out; }"""
+
+
 def wobbly_pruefen(br, base, fehler, bilder):
     """Wobbly Truck: both vehicles on both tracks, a flip and a wheelie are detected, the loop works on Normal and is no trap,
     settings are saved (and «Standard» resets them), the best score is kept per track and vehicle"""
@@ -348,20 +364,45 @@ def wobbly_pruefen(br, base, fehler, bilder):
                     const e = document.querySelector('em[data-best=stunt]'); return e ? e.textContent : ''; }""")
                 if "8339" not in txt:
                     fehler.append(f"{d} Handy: alter Rekord der Stunt-Piste wird nicht gezeigt ({txt!r})")
+            # GS-1.8 nitro: stunts fill it, the boost is faster, costs no extra fuel, does not fire below the minimum
+            r = pg.evaluate(WT_RUN, ["truck", "hills", "salto"])
+            if not pg.evaluate("() => __wt.nitro > 5"):
+                fehler.append(f"{d} {name}: ein Salto füllt das Nitro nicht")
+            r = pg.evaluate(WT_NITRO)
+            if r["zuwenig"] or not r["zuendet"] or not r["log"] or r["v1"] < r["v0"] + 2 or abs(r["sprit1"] - r["sprit0"]) > 0.01 or r["leer"] > 0.5 or not r["aus"] or r["teile"] > 260:
+                fehler.append(f"{d} {name}: Nitro (zündet, schneller, kein Sprit extra, leer, Partikel begrenzt) stimmt nicht ({r})")
+            else:
+                ok.append("nitro")
             if mobil:   # the trick button is there for the motorbike while playing
                 pg.evaluate("() => { __wt.select('bike', 'stunt'); __wt.start(); }")
                 if not pg.locator("#trickP").is_visible():
                     fehler.append(f"{d} Handy: Trick-Knopf fehlt beim Motorrad")
+                for quer in (False, True):      # GS-1.8: the nitro button (portrait and landscape) is big enough and covers nothing
+                    pg.set_viewport_size({"width": 844, "height": 390} if quer else vp)
+                    pg.wait_for_timeout(150)
+                    kn = pg.evaluate(WT_KNOEPFE)
+                    if kn:
+                        fehler.append(f"{d} Handy{' quer' if quer else ''}: Nitro-Knopf: {', '.join(kn)}")
+                pg.evaluate("() => { __wt.freeze(true); __wt.setNitro(100); }")
+                pg.locator("#nitroP").tap()
+                if not pg.evaluate("() => __wt.nitroOn"):
+                    fehler.append(f"{d} Handy: Tipp auf den Nitro-Knopf zündet nicht")
+                else:
+                    ok.append("nitro-knopf")
             # settings: saved in localStorage, «Standard» resets
             pg.evaluate("() => { __wt.freeze(false); __wt.showSettings(); }")
             pg.locator("[data-diff='2']").click()
             pg.locator("#s_real").fill("80")
+            pg.locator("#s_shake").uncheck()            # GS-1.8: «Bildwackeln» and «Effekte»
+            pg.locator("[data-fx='0']").click()
             s = pg.evaluate("() => JSON.parse(localStorage.getItem('kv-game-wobbly-truck-settings') || '{}')")
+            if s.get("shake") != 0 or s.get("fx") != 0:
+                fehler.append(f"{d} {name}: «Bildwackeln» / «Effekte» nicht gespeichert ({s})")
             if s.get("diff") != 2 or s.get("real") != 80:
                 fehler.append(f"{d} {name}: Einstellungen nicht gespeichert ({s})")
             pg.locator("#resetBtn").click()
             s = pg.evaluate("() => JSON.parse(localStorage.getItem('kv-game-wobbly-truck-settings') || '{}')")
-            if s.get("diff") != 1 or s.get("real") != 40:
+            if s.get("diff") != 1 or s.get("real") != 40 or s.get("shake") != 1 or s.get("fx") != 1:
                 fehler.append(f"{d} {name}: «Standard» setzt nicht zurück ({s})")
             if bilder:
                 pg.screenshot(path=os.path.join(bilder, f"spiel_{d}_einstellungen_{'handy' if mobil else 'pc'}.png"))
