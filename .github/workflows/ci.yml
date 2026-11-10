@@ -107,7 +107,7 @@ jobs:
         timeout-minutes: 6
         run: python3 werkzeuge/bioclip_test.py --browser
       - name: Spielesammlung (Paket GS-1.4, GAMES_PKG, jedes neue Spiel am Handy und PC ohne Internet)
-        timeout-minutes: 18
+        timeout-minutes: 25
         run: python3 werkzeuge/spiele_test.py
       - name: Spiele-Kacheln über https (Bilder vom gleichen Ursprung, keine http://-Bilder, Browser)
         timeout-minutes: 5

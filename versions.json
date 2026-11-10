@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-10 21:54",
+ "generated": "2026-11-10 23:07",
  "versions": [
+  {
+   "version": "3.75.0",
+   "file": "webcam_bewegung_3_75_0.py",
+   "url": "",
+   "sha256": "12a3f19e54c86d117f4672f23f35917b08beef8fd6e6852cbd004f49de40fd5c",
+   "date": "2026-11-10 23:07",
+   "notes": "Spiel «Was nun?»: fünf neue Bilder (jetzt zehn) mit Schwierigkeitsgraden von leicht bis Meister. Ab Bild 6 kann man Dinge mitnehmen und kombinieren; manche Bilder haben zwei Lösungswege und eine Meister-Lösung. Bisherige Sterne bleiben erhalten. Spielesammlung einmal neu laden: Mehr → Spielen → Spielecke → «Installieren / aktualisieren»",
+   "size": 3897629,
+   "sig": "66309bd9280f45c896d2ad5208afeaa2fa523fbd26d34e1a2ffc6c5d64bd0e66766c44a39bc4fcdd2f1cba53e592c33e6c8168656778575996b85ae2b64c9704",
+   "data": {
+    "file": "moveeye_daten_3_75_0.zip",
+    "url": "",
+    "sha256": "179b8bd3e5115c3b2d2b8e0198bb85d67307b50eed7d43d45390f9331f06573c",
+    "size": 4936966,
+    "sig": "5ffaef69eebd1db7e60ff2790fb33cff0e00199544904953983e7eddfb3ec664fb674e27fcde45131b86bcae45bfb6b962c58968eeff93a310f7f05f09f7140f"
+   }
+  },
   {
    "version": "3.74.0",
    "file": "webcam_bewegung_3_74_0.py",
    "url": "",
    "sha256": "b8a7ea39f2de49d557b7024b8e0a433947f41a13165c6b06b134d0d43c748b43",
-   "date": "2026-11-10 21:54",
+   "date": "2026-11-10 22:04",
    "notes": "Spielecke: drei neue Spiele zum Nachladen unter Mehr → Spielen → Spielecke → «Weitere Spiele zum Nachladen»: «Abenteuer mit Angst» (interaktive Geschichte, ab ca. 12 Jahren), «Heroine Dusk» (Verlies-Rollenspiel, Englisch) und «HexGL» (3D-Rennspiel). Unter «Mehr» gibt es nur noch einen Eingang «Spielen»; die Spielecke ist dort die oberste Kachel, «Spiele freigeben» steht auf der Spielecke",
    "size": 3897608,
    "sig": "bd69d46159da771f17c3eaa1039fd7e30062fd991841120b239b0c66ed62126b9a5c3f900b8f0df289e91b17817648e2b99d76d4fe48456642a3ae82c9e7390d",
@@ -136,23 +153,6 @@
     "sha256": "f3f405b7558bfddfee6c65bdbdf65248cc4670398eca64d932a32a09de07991a",
     "size": 4885203,
     "sig": "9ff6c9f10b788ea72e17d2be45f282385aad36ccc950b8e82316406037633dce27969e503b4df0f28431c351398972477f716135d25f65eccd76a43df504150c"
-   }
-  },
-  {
-   "version": "3.66.1",
-   "file": "webcam_bewegung_3_66_1.py",
-   "url": "",
-   "sha256": "43c5621a3446ce93cbe9d74c6c189affb38d6f85af9b85791f0a799bb32a63b6",
-   "date": "2026-11-09 00:20",
-   "notes": "Spielesammlung GS-1.6: Wobbly Truck mit Landehilfe im leichten Modus; der Knopf «✕ Zurück» sucht sich in allen Spielen einen freien Platz (oder bleibt weg, wenn das Spiel einen eigenen Zurück-Link hat) und überdeckt keine Spiel-Knöpfe mehr.",
-   "size": 3738628,
-   "sig": "b5bb5d35d7b69495bcb53a89d9311ce9002ad664b88c3781a7b085a01f688221ebb32d75d32bd4df8d2b4b1342d6ee4edecdc0caa37f92b2a10a97e23cef9005",
-   "data": {
-    "file": "moveeye_daten_3_66_1.zip",
-    "url": "",
-    "sha256": "3e70a17a52e342f80646dd9654e6f5fe07c89f7536adb50270060a6ada72569a",
-    "size": 4885326,
-    "sig": "12b4fa45f26440d56fc2a2cae4a5032137fa3d766976c293d0399537e3b77822bf832e143bcc826279e5111704b7f7ffc60e228a8b7a59fa4a0b40f6fb59460c"
    }
   },
   {

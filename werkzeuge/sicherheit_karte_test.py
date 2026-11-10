@@ -197,7 +197,7 @@ def lauf(br, a, pruef, geheim):
     ein.nth(0).fill(ADMIN_PW); ein.nth(1).fill(ADMIN_PW)
     weg(pg)
     pg.locator("#pwd-ov button", has_text="Speichern").first.click()
-    ok = warte(pg, lambda: holen(a.port, "/api/state")[0] == 401, 8000)
+    ok = warte(pg, lambda: holen(a.port, "/api/state")[0] == 401, 20000)   # 8 s reichten auf einem langsamen CI-Rechner einmal nicht (3.73.0)
     pruef(bool(ok), "Passwort gesetzt: ohne Anmeldung kommt 401")
     ctx.close()
     pruef(holen(a.port, "/api/state", "admin", ADMIN_PW)[0] == 200, "Anmeldung mit dem neuen Passwort geht")
