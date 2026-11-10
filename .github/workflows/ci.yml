@@ -118,6 +118,21 @@ jobs:
       - name: Rechte und Schutz (Kind / Familie / ohne Rechte, PIN für alles im Browser, Stufe → Sirene, Zeitplan nach hartem Neustart)
         timeout-minutes: 8
         run: python3 werkzeuge/rechte_schutz_test.py --browser
+      - name: Karte «Sicherheit» wieder da (Administrator sieht sie, andere Benutzer nicht)
+        timeout-minutes: 5
+        run: python3 werkzeuge/sicherheit_karte_test.py
+      - name: Kopf-Chip «N Hinweise» statt «alles ok», wenn etwas gemeldet wird
+        timeout-minutes: 4
+        run: python3 werkzeuge/kopf_chip_test.py
+      - name: Werkseinstellungen - Liste der Kopien mit Datum
+        timeout-minutes: 4
+        run: python3 werkzeuge/werkskopie_test.py
+      - name: Deutsche Lücken (keine englischen Texte im deutschen Web, /messages übersetzt)
+        timeout-minutes: 8
+        run: python3 werkzeuge/deutsch_luecken_test.py
+      - name: Ruhiges Protokoll (kein Hin und Her bei walk_frames und Wind)
+        timeout-minutes: 5
+        run: python3 werkzeuge/protokoll_ruhe_test.py
       - name: Simulator intern (gefälschtes Pi-Paket - holen, prüfen, auspacken, starten, beenden, zurück)
         timeout-minutes: 4
         run: python3 werkzeuge/sim_intern_test.py

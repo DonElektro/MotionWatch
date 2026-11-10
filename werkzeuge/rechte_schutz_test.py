@@ -200,6 +200,9 @@ def rechte(G, pruef):
     pruef(c == 200 and GEHEIM.encode() in raw, "Administrator: alte Einstellungen herunterladen (%d)" % c)
     c, j = G.req("/api/factory")
     pruef(c == 200 and "backups" in j, "Administrator: /api/factory mit der Liste der Kopien (%d)" % c)
+    bk = [b for b in (j.get("backups") or []) if b.get("name") == SICHERUNG]      # 3.72: with the date fix of 586 the copy is really listed
+    pruef(len(bk) == 1 and bk[0].get("when") == "01.01.2026 00:00" and bk[0].get("kb", 0) >= 1,
+          "Administrator: die Kopie steht in der Liste, mit Datum (%s)" % (j.get("backups"),))
     c, raw = G.req("/api/factory/backup/" + SICHERUNG, wer=None, roh=True)
     pruef(c == 401 and GEHEIM.encode() not in raw, "ohne Anmeldung: 401 (%d)" % c)
     for n in BENUTZER:

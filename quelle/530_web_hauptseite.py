@@ -3645,6 +3645,7 @@ function scPick() {
       if (key) { const c = el("button", "sec", "📋"); c.type = "button"; c.title = t("Copy"); c.onclick = () => { try { navigator.clipboard.writeText(u); toast("✓ " + t("copied")); } catch (e) { prompt(t(n), u); } };
         r.append(c, qrBtn(u, t(n), {secret: true})); }
       r.append(lab, cd); box.appendChild(r); });
+    const pn = el("div", "mut", "🔢 " + t("sc-pin-note")); pn.id = "sc-pin-note"; pn.style.marginTop = "6px"; box.appendChild(pn);   // 3.72 (fix 4): …/disarm needs ?pin=… when a PIN is set
     box.appendChild(el("div", "mut", t("sc-key-note2"))).style.marginTop = "6px";
     KEYS.forEach(k => { const r = el("div"); r.style.cssText = "display:flex;gap:8px;align-items:center;margin:4px 0";
       const tx = el("span", "", "🔑 " + k.name + " · " + t("last used") + " " + (k.seen ? new Date(k.seen * 1000).toLocaleString() : t("never"))); tx.style.flex = "1";
