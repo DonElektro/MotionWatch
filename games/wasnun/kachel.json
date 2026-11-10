@@ -1,0 +1,29 @@
+{
+ "dir": "wasnun",
+ "name": "Was nun?",
+ "desc": "Bilder-Rätsel: antippen, was als Nächstes passieren muss. 5 Bilder mit Kettenreaktionen, Sternen und Geheimnissen.",
+ "icon": "thumb.svg",
+ "start": "index.html",
+ "input": "touch",
+ "names": {
+  "de": "Was nun?",
+  "en": "What now?",
+  "fr": "Et maintenant ?",
+  "it": "E adesso?",
+  "rm": "E ussa?"
+ },
+ "descs": {
+  "de": "Bilder-Rätsel: antippen, was als Nächstes passieren muss. 5 Bilder mit Kettenreaktionen, Sternen und Geheimnissen.",
+  "en": "Picture puzzles: tap what has to happen next. 5 scenes with chain reactions, stars and secrets (game texts in German).",
+  "fr": "Énigmes en images : touche ce qui doit se passer ensuite. 5 scènes avec réactions en chaîne, étoiles et secrets (textes en allemand).",
+  "it": "Enigmi a immagini: tocca ciò che deve succedere dopo. 5 scene con reazioni a catena, stelle e segreti (testi in tedesco).",
+  "rm": "Legns cun maletgs: tutga quai che sto capitar sco proxim. 5 scenas cun reacziuns en chadaina, stailas e secrets (texts en tudestg)."
+ },
+ "lizenz": [
+  "Was nun?  (wasnun/)",
+  "  Lizenz: MIT",
+  "  Autor: MoveEye (eigenes Spiel, Idee: Elektro)",
+  "  Quelle: https://github.com/DonElektro/MotionWatch",
+  "  Selbst geschrieben und gezeichnet für MoveEye, frei verwendbar (MIT). Keine fremden Bilder, Töne oder Bibliotheken."
+ ]
+}

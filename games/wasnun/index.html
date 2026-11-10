@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0e1621">
+<title>Was nun?</title>
+<!-- «Was nun?» - eigenes Spiel für MoveEye (MIT). Bilder-Rätsel: antippen, was als Nächstes passieren muss.
+     Aufbau: index.html (Seite, Aussehen) · spiel.js (Ablauf, Sterne, Tipp, Ton, Speichern) · szenen/NN_name.js (je ein Bild).
+     Ein neues Bild = eine neue Datei in szenen/ und eine <script>-Zeile unten. Mehr dazu im Kopf von spiel.js. -->
+<style>
+:root{--bg:#0e1621;--panel:#16212f;--line:#24324a;--txt:#e8eef6;--mut:#8ea0b6;--acc:#3b8cff;--amber:#e9a23b;--grn:#3fcf6b}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);font:16px/1.35 system-ui,-apple-system,"Segoe UI",sans-serif;
+  overflow:hidden;overscroll-behavior:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}
+body{position:fixed;inset:0;display:flex;flex-direction:column;width:100%;
+  padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+button{font:inherit;color:inherit;border:0;cursor:pointer;-webkit-appearance:none;appearance:none}
+[hidden]{display:none!important}
+/* MoveEye setzt einen schwebenden «✕ Zurück» (#mw-back) auf jede Spielseite. Dieses Spiel hat oben links einen eigenen
+   Link «‹ Spiele», der denselben Knopf auslöst - der schwebende wird darum hier ausgeblendet (wie bei Wobbly Truck). */
+#mw-back{display:none!important}
+
+.bar{flex:0 0 48px;display:flex;align-items:center;gap:4px;padding:0 6px;background:var(--panel);border-bottom:1px solid var(--line);min-width:0}
+.back,.ib{display:inline-flex;align-items:center;justify-content:center;gap:4px;min-width:44px;min-height:44px;padding:0 8px;border-radius:10px;
+  background:transparent;color:var(--mut);text-decoration:none;font-size:14px;font-weight:600;flex:0 0 auto;white-space:nowrap}
+.back:hover,.ib:hover{color:var(--txt);background:#1d2b3e}
+.ib svg,.back svg{display:block}
+.title{flex:1 1 auto;min-width:0;text-align:center;font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hud{display:flex;align-items:center;gap:2px;flex:0 0 auto}
+#hudSterne{display:inline-flex;gap:1px;padding:0 4px}
+#hudSterne svg{width:17px;height:17px}
+.st-an{fill:#ffd23f;stroke:#b98a00}.st-aus{fill:#2a3a52;stroke:#3a4c68}
+#bTipp.lockt{animation:lock 1.2s ease-in-out infinite;color:#ffd23f}
+@keyframes lock{50%{transform:scale(1.18) rotate(-8deg)}}
+
+/* ---- Bildwahl ---- */
+#wahl{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 14px 24px}
+#wahl .in{max-width:860px;margin:0 auto}
+#wahl h1{font-size:24px;margin:2px 0 2px}
+#wahl p{color:var(--mut);margin:2px 0 10px;font-size:14px}
+.zeile{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px}
+.chip{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:5px 11px;font-size:13px;font-weight:600;white-space:nowrap}
+.karten{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.karte{position:relative;display:block;text-align:left;background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:0;overflow:hidden;color:var(--txt)}
+.karte:active{transform:scale(.98)}
+.karte .mini{display:block;width:100%;aspect-ratio:4/3;background:#223}
+.karte .mini svg{display:block;width:100%;height:100%}
+.karte .u{display:block;padding:7px 10px 9px}.karte .n{display:block}
+.karte .n{font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.karte .s{display:flex;align-items:center;gap:1px;margin-top:3px;min-height:18px}
+.karte .s svg{width:16px;height:16px}
+.karte .s .g{margin-left:auto;font-size:12px;color:var(--mut)}
+.karte.zu{color:var(--mut)}
+.karte.zu .mini svg{filter:grayscale(1) brightness(.45)}
+.karte .schloss{position:absolute;left:0;right:0;top:0;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center}
+.karte.neu{border-color:var(--amber)}
+.regel{margin-top:16px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 12px;font-size:13.5px;color:var(--mut)}
+.regel b{color:var(--txt)}
+.regel .r{display:flex;align-items:center;gap:8px;margin:4px 0}
+.regel .r svg{width:15px;height:15px;flex:0 0 auto}
+.regel .r span.st{display:inline-flex;flex:0 0 56px}
+
+/* ---- Spiel ---- */
+#spiel{flex:1 1 auto;display:flex;flex-direction:column;min-height:0;min-width:0}
+#buehne{flex:1 1 auto;position:relative;min-height:0;min-width:0;display:flex;align-items:center;justify-content:center;background:#0a111a;overflow:hidden}
+#rahmen{position:relative;flex:0 0 auto}
+#bild,#fx{position:absolute;inset:0;width:100%;height:100%;display:block}
+#bild{touch-action:none;cursor:pointer;border-radius:6px;background:#9fd3ee}
+#fx{pointer-events:none}
+#leiste{flex:0 0 auto;display:flex;align-items:center;gap:10px;min-height:64px;padding:6px 12px;background:var(--panel);border-top:1px solid var(--line)}
+#text{flex:1 1 auto;min-width:0;font-size:15.5px;font-weight:600}
+#text.neu{animation:texth .35s ease-out}
+@keyframes texth{from{opacity:.2;transform:translateY(5px)}}
+#text .frage{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+#text .frage button{background:#24324a;border-radius:10px;min-height:44px;padding:0 14px;font-weight:700}
+#text .frage button.ja{background:var(--amber);color:#0e1621}
+#tasche{flex:0 0 auto;display:flex;align-items:center;gap:6px;min-width:58px;min-height:52px;padding:3px 8px;border-radius:12px;border:2px dashed #33465f}
+#tasche svg{width:44px;height:44px;display:block}
+#tasche.voll{border-style:solid;border-color:var(--amber);background:#1d2b3e;animation:pop .35s ease-out}
+#tasche .leer{font-size:11px;color:#5d7089;text-align:center;line-height:1.15;width:42px}
+@keyframes pop{from{transform:scale(.6)}}
+#titel2{display:none;flex:0 0 auto;text-align:center;font-weight:700;font-size:16px;padding:9px 12px 8px;background:#0a111a}
+@media (max-width:520px){
+  .bar .ib span{display:none}
+  .bar .ib{min-width:42px;padding:0 4px}
+  body.imspiel .title{visibility:hidden}
+  body.imspiel #titel2{display:block}
+}
+@media (orientation:landscape) and (max-height:520px){
+  .bar{flex-basis:44px}
+  #spiel{flex-direction:row}
+  #leiste{flex:0 0 clamp(150px,24vw,230px);flex-direction:column;align-items:stretch;justify-content:center;border-top:0;border-left:1px solid var(--line);padding:8px 10px}
+  #tasche{align-self:flex-start}
+  #text{flex:0 1 auto;font-size:14.5px}
+}
+
+/* ---- Rückspulen ---- */
+#spul{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:0}
+#spul div{background:rgba(14,22,33,.82);border-radius:20px;padding:10px 20px;font-weight:800;font-size:20px;display:flex;align-items:center;gap:10px}
+.rueck #spul{animation:spul .9s linear}
+.rueck #bild{animation:spulbild .9s linear}
+@keyframes spul{0%{opacity:0}15%,80%{opacity:1}100%{opacity:0}}
+@keyframes spulbild{0%{filter:none;transform:none}20%{filter:sepia(.9) contrast(1.1);transform:skewX(-2deg) translateX(-6px)}40%{transform:skewX(2deg) translateX(6px)}
+  60%{transform:skewX(-2deg) translateX(-5px)}80%{filter:sepia(.9) contrast(1.1);transform:skewX(1deg) translateX(3px)}100%{filter:none;transform:none}}
+
+/* ---- Schluss ---- */
+#ende{position:absolute;inset:0;z-index:5;background:rgba(8,13,20,.72);display:flex;align-items:center;justify-content:center;padding:14px}
+#ende .k{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:16px 18px;max-width:380px;width:100%;text-align:center;animation:pop .3s ease-out;max-height:100%;overflow:auto}
+#ende h2{margin:0 0 4px;font-size:22px}
+#ende .gs{display:flex;justify-content:center;gap:6px;margin:8px 0}
+#ende .gs svg{width:58px;height:58px}
+#ende .gs svg.an{animation:stern .5s cubic-bezier(.3,1.6,.5,1) both}
+#ende .gs svg:nth-child(2){animation-delay:.25s;transform-origin:center}
+#ende .gs svg:nth-child(3){animation-delay:.5s}
+@keyframes stern{from{transform:scale(0) rotate(-90deg)}}
+#ende p{margin:4px 0;color:var(--mut);font-size:14.5px}
+#ende p b{color:var(--txt)}
+#ende .kn{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:12px}
+#ende .kn button{min-height:46px;padding:0 16px;border-radius:12px;background:#24324a;font-weight:700}
+#ende .kn button.haupt{background:var(--amber);color:#0e1621}
+
+/* ---- gemeinsame Zeichen-Klassen der Bilder (Comic-Stil: Flächen mit dunklem Rand) ---- */
+.l{stroke:#3a3340;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}
+.d{stroke:#3a3340;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.n{fill:none}
+.dreh{transform-box:fill-box;transform-origin:50% 50%}
+.fuss{transform-box:fill-box;transform-origin:50% 100%}
+.kopf{transform-box:fill-box;transform-origin:50% 0%}
+.linksu{transform-box:fill-box;transform-origin:0% 100%}
+.rechtsu{transform-box:fill-box;transform-origin:100% 100%}
+.linksm{transform-box:fill-box;transform-origin:0% 50%}
+@keyframes wipp{50%{transform:translateY(-3px)}}
+@keyframes atmen{50%{transform:scale(1.03,.97)}}
+@keyframes blinz{0%,92%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+@keyframes flack{0%,100%{transform:scale(1,1)}25%{transform:scale(.92,1.08)}50%{transform:scale(1.06,.94)}75%{transform:scale(.96,1.05)}}
+@keyframes schweb{50%{transform:translateY(-8px)}}
+@keyframes wedel{0%,100%{transform:rotate(-7deg)}50%{transform:rotate(7deg)}}
+.a-wipp{animation:wipp 2.4s ease-in-out infinite}
+.a-atmen{animation:atmen 3s ease-in-out infinite}
+.a-blinz{animation:blinz 4.5s linear infinite}
+.a-flack{animation:flack .7s ease-in-out infinite}
+.a-schweb{animation:schweb 3.2s ease-in-out infinite}
+.a-wedel{animation:wedel 1.6s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.a-wipp,.a-atmen,.a-schweb,.a-wedel{animation:none}}
+</style>
+</head>
+<body>
+<header class="bar">
+  <a class="back" href="../" id="backLink"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg><span>Spiele</span></a>
+  <button class="ib" id="bBilder" type="button" hidden aria-label="Alle Bilder"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><rect x="13" y="13" width="8" height="8" rx="2"/></svg><span>Bilder</span></button>
+  <div class="title" id="titel">Was nun?</div>
+  <div class="hud">
+    <span id="hudSterne" hidden></span>
+    <button class="ib" id="bNeu" type="button" hidden aria-label="Bild neu beginnen"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg></button>
+    <button class="ib" id="bTipp" type="button" hidden aria-label="Tipp"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.3 1 2.1h5c0-.8.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></svg></button>
+    <button class="ib" id="bTon" type="button" aria-label="Ton"></button>
+  </div>
+</header>
+
+<main id="wahl"><div class="in">
+  <h1>Was nun?</h1>
+  <p>Schau dir das Bild an und tippe auf das, was als Nächstes passieren muss.</p>
+  <div class="zeile"><span class="chip" id="chipSterne"></span><span class="chip" id="chipGeheim"></span></div>
+  <div class="karten" id="karten"></div>
+  <div class="regel" id="regel"></div>
+</div></main>
+
+<main id="spiel" hidden>
+  <div id="titel2"></div>
+  <div id="buehne">
+    <div id="rahmen">
+      <svg id="bild" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Rätselbild"></svg>
+      <svg id="fx" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div id="spul"><div><svg width="30" height="30" viewBox="0 0 24 24" fill="#ffd23f"><path d="M11 6v12L2.5 12zM21 6v12l-8.5-6z"/></svg><span>Zurück …</span></div></div>
+    </div>
+    <div id="ende" hidden></div>
+  </div>
+  <div id="leiste"><div id="tasche" hidden></div><div id="text" aria-live="polite"></div></div>
+</main>
+
+<script src="spiel.js"></script>
+<script src="szenen/01_garten.js"></script>
+<script src="szenen/02_zeltplatz.js"></script>
+<script src="szenen/03_alp.js"></script>
+<script src="szenen/04_werkstatt.js"></script>
+<script src="szenen/05_kueche.js"></script>
+<script>WASNUN.los();</script>
+<script>/* MoveEye: der eigene Zurück-Link («../») führt zur Spielesammlung von MoveEye (löst den Knopf «✕ Zurück» aus) */
+document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest("a");if(!a||a.closest("#mw-back"))return;var h=a.getAttribute("href");if(h!=="../"&&h!=="index.html")return;var b=document.querySelector("#mw-back a");if(b){e.preventDefault();e.stopPropagation();b.click()}},true);</script>
+</body>
+</html>
