@@ -21,6 +21,7 @@ SPIELE_PAGE = SPIELE_PAGE.replace("/*GAMETILES*/", GAME_TILES_CSS, 1)
 
 
 GAMESRV = {"port": 0, "msg": ""}
+GAMES_MOVED = {"chess": "schach"}     # 3.76.0: a game that got a new folder - old bookmarks (/g/chess/chess.html) go to the new game
 STREAMS = {"n": 0, "ip": {}, "lock": threading.Lock()}
 
 
@@ -43,6 +44,8 @@ def games_server_start():
             path = unquote(urlsplit(self.path).path)
             m = re.fullmatch(r"/g/([A-Za-z0-9_\-]{1,40})/?(.*)", path)
             p_ = games_file(m.group(1), m.group(2)) if m else None
+            if not p_ and m and m.group(1) in GAMES_MOVED and games_file(GAMES_MOVED[m.group(1)], ""):   # the old folder is gone, the new game is there
+                self.send_response(301); self.send_header("Location", "/g/" + GAMES_MOVED[m.group(1)] + "/"); self.end_headers(); return
             if not p_:
                 self.send_error(404); return
             if m.group(2) == "" and not path.endswith("/"):

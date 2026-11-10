@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+  <!-- Kachelbild «Schach» für MoveEye: selbst gezeichnet (Brett, Springer, Tipp-Pfeil, Zielpunkte) -->
+  <defs><clipPath id="r"><rect width="200" height="200" rx="18"/></clipPath></defs>
+  <g clip-path="url(#r)">
+    <rect width="200" height="200" fill="#f0d9b5"/>
+    <g fill="#b58863">
+      <rect x="50" y="0" width="50" height="50"/><rect x="150" y="0" width="50" height="50"/>
+      <rect x="0" y="50" width="50" height="50"/><rect x="100" y="50" width="50" height="50"/>
+      <rect x="50" y="100" width="50" height="50"/><rect x="150" y="100" width="50" height="50"/>
+      <rect x="0" y="150" width="50" height="50"/><rect x="100" y="150" width="50" height="50"/>
+    </g>
+    <rect x="0" y="100" width="50" height="50" fill="#cdd26a"/>
+    <rect x="50" y="0" width="50" height="50" fill="#aaa23a"/>
+    <circle cx="175" cy="25" r="8" fill="#14551e" opacity=".5"/>
+    <circle cx="175" cy="125" r="8" fill="#14551e" opacity=".5"/>
+    <circle cx="125" cy="175" r="8" fill="#14551e" opacity=".5"/>
+    <g stroke="#15781b" stroke-width="11" stroke-linecap="round" fill="none" opacity=".85">
+      <path d="M25 125L25 42"/><path d="M25 25L56 25"/>
+    </g>
+    <path d="M52 8L80 25L52 42z" fill="#15781b" opacity=".85"/>
+    <g stroke="#23201c" stroke-width="5" stroke-linejoin="round" stroke-linecap="round">
+      <path d="M84 176h74v-12q0-8-8-12q10-34-2-58q-10-22-32-28l-6-12l-8 12q-8 2-12 8l-22 28q-4 6 2 12q6 6 14 0l14-10q4 12-6 26q-10 14-8 24q-8 4-8 12z" fill="#fbfaf6"/>
+      <path d="M150 152h-60" fill="none"/>
+    </g>
+    <circle cx="104" cy="88" r="4.5" fill="#23201c"/>
+  </g>
+</svg>
