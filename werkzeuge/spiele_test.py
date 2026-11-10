@@ -17,6 +17,10 @@
      GS-1.8: Stunts füllen das Nitro, der Schub macht schneller und kostet keinen Sprit extra, unter der Mindestfüllung zündet
      er nicht; der Nitro-Knopf am Handy ist mindestens 44 px gross und überdeckt weder Pedale noch den Zurück-Link;
      «Bildwackeln» und «Effekte» werden gespeichert; die Partikelzahl bleibt begrenzt.
+     GS-1.9: Geisterfahrer – die beste Fahrt je Strecke / Fahrzeug / Schwierigkeit wird gespeichert (klein, höchstens 18 kB),
+     fährt bei der nächsten Fahrt an der aufgezeichneten Stelle mit, nur eine bessere Fahrt ersetzt sie; abschaltbar;
+     kaputte Daten oder ein voller Speicher stören das Spiel nicht; die Wilden Hügel der Bestfahrt kommen (ohne ?test=1)
+     mit demselben Startwert wieder, ohne Haken gibt es neue Hügel ohne Geist.
 
   python3 werkzeuge/spiele_test.py                    # Paket + Browser, nur die Spiele mit 5 Sprachen (ab GS-1.4)
   python3 werkzeuge/spiele_test.py --alle             # dazu die älteren Spiele (2048, Tetris …)
@@ -289,6 +293,30 @@ WT_NITRO = """() => { const W = window.__wt, I = W.inp, r = {}; W.freeze(true); 
     if (mit) { W.setNitro(10); r.zuwenig = W.fireNitro(); W.setNitro(100); r.zuendet = W.fireNitro(); }
     W.sim(1.0); r['v' + mit] = Math.hypot(W.B.vx, W.B.vy); r['sprit' + mit] = W.fuel; r['x' + mit] = W.B.x; if (mit) { r.rest = W.nitro; W.sim(3, () => !W.nitroOn); r.leer = W.nitro; r.aus = !W.nitroOn; r.teile = W.parts; } }
   I.gas = false; r.log = W.log.some(e => e.id === 'nitro'); return r; }"""
+# GS-1.9: ghost. A run of some seconds ends (crash), the next run has its ghost; a worse run does not replace it
+WT_GEIST = """([veh, trk]) => { const W = window.__wt, I = W.inp, r = {}, K = 'kv-game-wobbly-truck-ghost-';
+  const lauf = (sek) => { W.start(); W.place(5, 0, 0, 0, 0, 0); W.sim(sek, () => { __bot(W, I); }); const x = W.B.x; I.gas = I.brake = false; W.crash(); W.sim(4, () => W.state === 'over'); return x; };
+  const keys = () => Object.keys(localStorage).filter(k => k.startsWith(K));
+  W.freeze(true); W.SET.diff = 1; W.SET.real = 40; W.SET.ghost = 1; W.SET.ghostHills = 1; keys().forEach(k => localStorage.removeItem(k)); W.select(veh, trk);
+  const a = []; for (let i = 0; i < 400; i++) a.push(Math.round(i * 31.3), Math.round(Math.sin(i) * 400), Math.round(i * 5 - 300)); const d = W.gDec(W.gEnc(a));
+  r.codec = d.n === 400 && Math.abs(d.x[399] - a[1197] * .05) < .01 && Math.abs(d.y[200] - a[601] * .05) < .01 && Math.abs(d.a[399] - a[1199] * .02) < .01;
+  W.start(); r.ohne = W.ghost === null; r.x1 = lauf(6); r.s1 = W.score(); r.over = W.state; r.seed1 = W.seed;
+  r.keys = keys(); r.len = r.keys.length ? localStorage.getItem(r.keys[0]).length : 0;
+  W.start(); r.g = W.ghost; r.seed2 = W.seed; const p = W.ghostAt(3), q = W.ghostAt(0); r.p = !!(p && p.x > 8 && p.x < r.x1 + 1 && q && Math.abs(q.x - 3) < 0.6);
+  lauf(2); r.s2 = W.score(); W.start(); r.bleibt = !!(W.ghost && W.ghost.s === r.s1);                      // a worse run: the ghost stays
+  lauf(9); r.s3 = W.score(); W.start(); r.besser = !!(W.ghost && W.ghost.s === r.s3 && r.s3 > r.s1);       // a better run replaces it
+  W.SET.ghost = 0; W.start(); r.aus = W.ghost === null; W.SET.ghost = 1;
+  W.SET.diff = 0; W.applyPhys(); W.start(); r.andere = W.ghost === null; W.SET.diff = 1; W.applyPhys();   // another difficulty has its own ghost
+  localStorage.setItem(r.keys[0], '{"v":1,"s":5,"seed":7,"d":"###kaputt###"}'); W.start(); r.kaputt = W.ghost === null && W.state === 'play';
+  localStorage.setItem(r.keys[0], 'x'); W.start(); r.kaputt = r.kaputt && W.ghost === null && W.state === 'play';
+  const alt = Storage.prototype.setItem; Storage.prototype.setItem = () => { throw new Error('QuotaExceededError'); };    // storage full
+  try { lauf(4); r.voll = W.state === 'over'; } catch (e) { r.voll = false; r.vollFehler = String(e); } Storage.prototype.setItem = alt;
+  keys().forEach(k => localStorage.removeItem(k)); return r; }"""
+WT_GEIST_HUEGEL = """() => { const W = window.__wt, I = W.inp, r = {}; W.freeze(true); W.SET.diff = 1; W.SET.ghost = 1; W.SET.ghostHills = 1; W.select('truck', 'hills');
+  W.start(); W.place(5, 0, 0, 0, 0, 0); W.sim(6, () => { I.gas = W.B.a < 0.3; }); I.gas = false; W.crash(); W.sim(4, () => W.state === 'over'); r.seed1 = W.seed; r.h1 = W.H(300);
+  W.start(); r.seed2 = W.seed; r.h2 = W.H(300); r.geist = !!W.ghost;
+  W.SET.ghostHills = 0; const s = new Set(); for (let i = 0; i < 4; i++) { W.start(); s.add(W.seed); r.ohne = W.ghost === null; } r.neu = s.size > 1; W.SET.ghostHills = 1;
+  W.menu(); r.zeile = !!document.getElementById('ghostHills'); return r; }"""
 WT_KNOEPFE = """() => { const b = id => { const e = document.getElementById(id), r = e.getBoundingClientRect(); return getComputedStyle(e).display === 'none' ? null : [r.left, r.top, r.right, r.bottom]; };
   const n = b('nitroP'), out = []; if (!n) return ['fehlt']; if (n[2] - n[0] < 44 || n[3] - n[1] < 44) out.push('kleiner als 44 px');
   if (n[0] < 0 || n[1] < 0 || n[2] > innerWidth || n[3] > innerHeight) out.push('ausserhalb');
@@ -373,6 +401,26 @@ def wobbly_pruefen(br, base, fehler, bilder):
                 fehler.append(f"{d} {name}: Nitro (zündet, schneller, kein Sprit extra, leer, Partikel begrenzt) stimmt nicht ({r})")
             else:
                 ok.append("nitro")
+            for veh, trk in (("truck", "stunt"), ("bike", "hills")):      # GS-1.9 ghost of the best run
+                r = pg.evaluate(WT_GEIST, [veh, trk])
+                gut = (r["codec"] and r["ohne"] and r["over"] == "over" and len(r["keys"]) == 1 and 40 < r["len"] <= 18300 and r["g"] and r["seed1"] == r["seed2"]
+                       and r["p"] and r["bleibt"] and r["besser"] and r["aus"] and r["andere"] and r["kaputt"] and r["voll"])
+                if not gut:
+                    fehler.append(f"{d} {name}: Geisterfahrer {veh}/{trk} stimmt nicht ({r})")
+                else:
+                    ok.append(f"geist-{veh}")
+            if mobil:   # the hills of the best run come back with the same seed (only without ?test=1: there the seed is fixed anyway)
+                pg2 = ctx.new_page()
+                pg2.on("pageerror", lambda e, fe=fe: fe.append(str(e)[:300]))
+                pg2.goto(f"{base}/g/{d}/index.html", wait_until="load", timeout=30000)
+                pg2.wait_for_timeout(300)
+                r = pg2.evaluate(WT_GEIST_HUEGEL)
+                if r["seed1"] != r["seed2"] or abs(r["h1"] - r["h2"]) > 1e-9 or not r["geist"] or not r["ohne"] or not r["neu"] or not r["zeile"]:
+                    fehler.append(f"{d} Handy: Hügel der Bestfahrt / neue Hügel ohne Geist stimmt nicht ({r})")
+                else:
+                    ok.append("geist-hügel")
+                pg2.evaluate("() => Object.keys(localStorage).filter(k => k.includes('-ghost-')).forEach(k => localStorage.removeItem(k))")
+                pg2.close()
             if mobil:   # the trick button is there for the motorbike while playing
                 pg.evaluate("() => { __wt.select('bike', 'stunt'); __wt.start(); }")
                 if not pg.locator("#trickP").is_visible():
