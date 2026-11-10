@@ -502,7 +502,9 @@ KAMWAHL_JS = r"""
   const V3 = () => window.mwView3 || null;
   const active = () => list().length > 0 && may() && !document.body.classList.contains("sv-on") && !document.body.classList.contains("sim-on");
   const find = k => list().find(x => x.k === k) || null;
-  const nm = it => it.lb ? T(it.lb) : it.name;
+  // 639zzj (Besitzer, 10.11.2026): the server names USB / Pi cameras in English («USB camera: Name», «Pi camera 0») - the prefix in the page language
+  const kwCamName = s => String(s || "").replace(/^(USB camera|Pi camera)(?=[: ]|$)/, m => T(m));
+  const nm = it => it.lb ? T(it.lb) : kwCamName(it.name);
   function selItem() {                                    // another camera big (not head / wide: they belong to 639zv)
     if (!S.sel || !active()) return null;
     const it = find(S.sel);
@@ -536,7 +538,7 @@ KAMWAHL_JS = r"""
       b.title = T(it.lb) + ": " + T("Not connected") + " – " + T(it.hint || "");
     } else {
       img = E("img"); img.alt = ""; img.draggable = false; b.append(img, lab);
-      b.title = nm(it) + (it.trio && it.name ? " (" + it.name + ")" : "") + " · " + T("Tap: show this camera big (only the view - detection and settings stay)");
+      b.title = nm(it) + (it.trio && it.name ? " (" + kwCamName(it.name) + ")" : "") + " · " + T("Tap: show this camera big (only the view - detection and settings stay)");
       keepStream(img, {snap: "/cam_thumb/" + encodeURIComponent(it.k), every: 1000, onlost: on => b.classList.toggle("kw-wait", on)});
     }
     b.setAttribute("aria-label", b.title);
@@ -598,7 +600,7 @@ KAMWAHL_JS = r"""
     MN.appendChild(E("div", "v3mh", "📷 " + T("All cameras")));
     list().forEach(it => {
       const na = it.trio && !it.ok, b = E("button", it.k === big ? "on" : na ? "na" : ""); b.type = "button"; b.dataset.k = it.k; b.setAttribute("role", "menuitemradio");
-      const tx = E("span"); tx.append(nm(it), E("small", "", it.k === big ? T("In the big picture") : na ? T("Not connected") : !it.ok ? T("No picture right now") : (it.lb ? it.name : "")));
+      const tx = E("span"); tx.append(nm(it), E("small", "", it.k === big ? T("In the big picture") : na ? T("Not connected") : !it.ok ? T("No picture right now") : (it.lb ? kwCamName(it.name) : "")));
       b.append(E("span", "v3i", it.ic), tx);
       b.onclick = e => { e.stopPropagation(); MN.hidden = true; pick(it.k); };
       MN.appendChild(b);

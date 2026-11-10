@@ -89,6 +89,7 @@ def main():
                 print("== %s %dx%d" % (gname, vp["width"], vp["height"]), flush=True)
                 ctx = br.new_context(viewport=vp, is_mobile=True, has_touch=True, device_scale_factor=dsf,
                                      http_credentials={"username": "admin", "password": PASSWORT})
+                ctx.add_init_script("try{localStorage.setItem('mw-lv-knoepfe','1')}catch(e){}")   # 639zzj: buttons / tiles always shown (tested in live_sauber_test.py)
                 pg = ctx.new_page()
                 jsf = []
                 pg.on("pageerror", lambda e: jsf.append(str(e)[:300]))
