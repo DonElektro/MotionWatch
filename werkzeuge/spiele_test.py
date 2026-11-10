@@ -14,6 +14,18 @@
      der schwebende «✕ Zurück» von MoveEye ist ausgeblendet (eigener Link oben, sonst über der Bremse).
      GS-1.7: jeder Abschnitt der neuen Stunt-Piste ist mit beiden Fahrzeugen auf «Einfach» und «Normal» befahrbar (ohne Rettung),
      ein Supersprung landet auf «Einfach» ohne Eingabe in der Luft, der alte Rekord der Stunt-Piste bleibt sichtbar.
+     GS-1.8: Stunts füllen das Nitro, der Schub macht schneller und kostet keinen Sprit extra, unter der Mindestfüllung zündet
+     er nicht; der Nitro-Knopf am Handy ist mindestens 44 px gross und überdeckt weder Pedale noch den Zurück-Link;
+     «Bildwackeln» und «Effekte» werden gespeichert; die Partikelzahl bleibt begrenzt.
+     GS-1.9: Geisterfahrer – die beste Fahrt je Strecke / Fahrzeug / Schwierigkeit wird gespeichert (klein, höchstens 18 kB),
+     fährt bei der nächsten Fahrt an der aufgezeichneten Stelle mit, nur eine bessere Fahrt ersetzt sie; abschaltbar;
+     kaputte Daten oder ein voller Speicher stören das Spiel nicht; die Wilden Hügel der Bestfahrt kommen (ohne ?test=1)
+     mit demselben Startwert wieder, ohne Haken gibt es neue Hügel ohne Geist.
+     GS-1.10: neue Abschnitte (Sprungbrett, Einsturzbrücke, Feuerringe, Steinschlag, Eis, Schlamm, Verfolgung) sind auf
+     «Einfach» und «Normal» befahrbar; Feuerring gibt Bonus, die Brücke stürzt unter einem stehenden Fahrzeug ein (Rettung),
+     Fels mit Nitro wird zertrümmert; Welten wechseln etwa alle 500 m, eine Verfolgung etwa alle 1000 m: auf «Einfach»
+     wird man nur mitgerissen, auf «Normal» ist es ein Sturz; Hindernisse der Hügel kommen aus dem Startwert; neuer
+     Rekord-Platz «stunt3», die älteren Rekorde bleiben sichtbar.
 
   python3 werkzeuge/spiele_test.py                    # Paket + Browser, nur die Spiele mit 5 Sprachen (ab GS-1.4)
   python3 werkzeuge/spiele_test.py --alle             # dazu die älteren Spiele (2048, Tetris …)
@@ -31,6 +43,12 @@ iPad und PC die Startseite (Sprachwahl, Copyright, «✕ Zurück» überdeckt ni
 das Spiel, die Spielfläche zeigt ein Bild, keine JavaScript-Fehler), prüft die Knöpfe neben dem Spiel, Rechtsklick per Touch
 (lange drücken, «🖱 Rechts»), «☰ Menü» und am PC Schnellspeichern (F11) mit Spielstand in IndexedDB nach dem Neuladen.
 Fehlt das Paket, wird der Teil übersprungen.
+
+«Was nun?» (eigenes Bilder-Rätsel, Quelle games/wasnun/, mit ?test=1): jedes der 5 Bilder wird am Handy (hoch und quer)
+und am PC bis zum Sternebild gelöst; lustige falsche Stellen kosten nichts, das Geheimnis zählt, eine Sackgasse spult genau
+einen Schritt zurück, der Tipp zeigt die Gegend und gibt höchstens 1 Stern, Tipp-Flächen mindestens 44 px, Fortschritt
+bleibt nach dem Neuladen und das Spiel läuft ohne Speicher. Solange es nicht in der ZIP ist:
+python3 werkzeuge/spiel_einbauen.py games/wasnun --nach /tmp/t.zip && python3 werkzeuge/spiele_test.py --zip /tmp/t.zip --nur wasnun
 
 Die Spiele laufen hier wie am Spiele-Port von MoveEye unter /g/<ordner>/ und bekommen einen «✕ Zurück»-Knopf (#mw-back).
 """
@@ -260,11 +278,30 @@ WT_BOT = """window.__bot = (W, I) => { const a = W.B.a, w = W.B.w, x = W.B.x, sl
   else { const d = a - sl, dw = d - Math.round(d / 6.283) * 6.283; I.brake = false; I.gas = dw < (intun ? 0.04 : 0.35); } };"""
 # GS-1.7: drive through one section of the Stunt-Piste (the first of its kind), or a Supersprung without any input in the air
 WT_MODUL = """([veh, diff, typ, frei]) => { const W = window.__wt, I = W.inp; W.freeze(true); W.SET.diff = diff; W.SET.real = 40; W.select(veh, 'stunt'); W.start();
-  W.H(6000); const m = W.mods.find(q => q.t === typ); if (!m) return {fehlt: 1};
+  W.H(8000); const m = W.mods.find(q => q.t === typ); if (!m) return {fehlt: 1};
   W.place(m.x0 + 0.5, 0, 12, 0, 0, 0); const n0 = W.log.length;
   W.sim(45, () => { if (frei) { I.gas = W.B.x < m.sj.x; I.brake = false; } else __bot(W, I); return W.B.x > m.x1 + 3 || W.state !== 'play'; });
   I.gas = I.brake = false; return {state: W.state, durch: W.B.x > m.x1 + 3, rettung: W.nRescue, ids: W.log.slice(n0).map(e => e.id).join(',')}; }"""
-WT_MODULE = ("wheelie", "kickers", "loop", "dloop", "wall", "halfpipe", "stairs", "gaps", "dropin", "whoops", "tunnel", "tramp", "coinarcs", "super")
+WT_MODULE = ("wheelie", "kickers", "loop", "dloop", "wall", "halfpipe", "stairs", "gaps", "dropin", "whoops", "tunnel", "tramp", "coinarcs", "super",
+             "spring", "crumble", "rings", "rocks", "ice", "mud", "boss")        # GS-1.10
+WT_MUSS = {"spring": "spring", "crumble": "crumble", "rings": "ring", "boss": "boss"}   # the stunt a clean run through the section must bring
+# GS-1.10: worlds, zones, rings, bridge, boulders, chase
+WT_WELT = """() => { const W = window.__wt, I = W.inp, r = {}; W.freeze(true); W.SET.diff = 1; W.SET.real = 40; W.applyPhys(); I.gas = I.brake = false;
+  W.select('truck', 'stunt'); W.start(); W.H(7000);
+  r.welten = W.laps.map(l => l.th).slice(0, 6).join(''); r.weltLang = Math.max(...W.laps.slice(1, 8).map((l, i) => l.x0 - W.laps[i].x0));
+  const b = W.bosses.map(q => q.x0); r.boss = b.length; r.bossAbst = b.slice(1).map((x, i) => Math.round(x - b[i]));
+  r.zonen = [...new Set(W.zones.map(z => z.t))].sort().join(','); r.sortiert = W.zones.every((z, i) => !i || z.x0 >= W.zones[i - 1].x1); r.ringe = W.rings.length;
+  const rg = W.rings[0]; W.place(rg.x - 2.5, 0, 14, 0, 0, 0); const y0 = W.B.y; W.place(rg.x - 2.5, rg.y - 0.4 - y0, 14, 2, 0, 0); W.sim(0.5); r.ring = W.log.some(e => e.id === 'ring');
+  W.start(); W.H(7000); let m = W.mods.find(q => q.t === 'crumble'); W.place((m.br.r[0] + m.br.r[1]) / 2, 0, 0, 0, 0, 0); W.sim(4); r.bruecke = W.nRescue >= 1 && W.state === 'play';
+  W.start(); W.H(7000); m = W.mods.find(q => q.t === 'rocks'); W.place(m.x0 + 12, 0, 12, 0, 0, 0); W.setNitro(100); W.sim(0.2); W.sim(6, () => { I.gas = true; if (!W.nitroOn && W.nitro >= 30) W.fireNitro(); if (!W.nitroOn) W.setNitro(100); return W.log.some(e => e.id === 'smash'); });
+  I.gas = false; r.fels = W.log.some(e => e.id === 'smash') && W.state === 'play';
+  for (const d of [0, 1]) { W.SET.diff = d; W.applyPhys(); W.start(); W.H(3000); m = W.mods.find(q => q.t === 'boss'); W.place(m.boss[0] + 4, 0, 0, 0, 0, 0); W.sim(9, () => W.state !== 'play');
+    r['jagd' + d] = W.state + ':' + W.log.filter(e => /boss/.test(e.id)).map(e => e.id).join(','); }
+  W.SET.diff = 1; W.applyPhys();
+  const hf = () => { W.select('truck', 'hills'); W.start(); W.place(1900, 0, 0, 0, 0, 0); W.snap(); W.sim(0.6); return JSON.stringify([W.zones, W.rings.map(q => [q.x, q.y]), W.trig.map(q => q.x), W.bosses.map(q => [q.x0, q.x1, q.th])]); };
+  const h1 = hf(), h2 = hf(); r.huegelGleich = h1 === h2; r.huegelZonen = W.zones.length; r.huegelBoss = W.bosses.length ? W.bosses[0].x0 : 0; r.huegelWelt = [0, 600, 1100, 1600, 2100, 2600].map(x => W.worldAt(x)).join('');
+  localStorage.setItem('kv-game-wobbly-truck-best-stunt2-truck', '7777'); W.select('truck', 'stunt'); W.menu(); const e = document.querySelector('em[data-best=stunt]'); r.alt = e ? e.textContent : '';
+  localStorage.removeItem('kv-game-wobbly-truck-best-stunt2-truck'); return r; }"""
 WT_RUN = """([veh, trk, scen, diff]) => { const W = window.__wt, I = W.inp; W.freeze(true); W.SET.diff = diff == null ? 1 : diff; W.select(veh, trk); W.start();
   const r = {state0: W.state}; I.gas = I.brake = I.trick = false;
   if (scen === 'fahren') { W.place(5, 0, 0, 0, 0, 0); W.sim(1.5, () => { __bot(W, I); }); r.dx = W.B.x - 5; }
@@ -278,6 +315,43 @@ WT_RUN = """([veh, trk, scen, diff]) => { const W = window.__wt, I = W.inp; W.fr
   if (scen === 'halbsalto') { W.place(8, 9, 9, 6, 0, 0); W.sim(5, () => { I.gas = W.air.on && W.B.a < 4.0; }); }   // tilt, let go, assist finishes
   if (scen === 'superman') { W.place(8, 8, 9, 6, 0, 0); W.sim(5, () => { I.trick = true; }); }                      // ★ held into the landing
   I.gas = I.brake = I.trick = false; r.state = W.state; r.ids = W.log.map(e => e.id); return r; }"""
+
+
+# GS-1.8: nitro. Two identical runs on the flat start of the hills, one with a boost: faster, same fuel, the bar is used up
+WT_NITRO = """() => { const W = window.__wt, I = W.inp, r = {}; W.freeze(true); W.SET.diff = 1; W.SET.real = 40;
+  for (const mit of [0, 1]) { W.select('truck', 'hills'); W.start(); W.place(5, 0, 0, 0, 0, 0); I.gas = true; W.sim(1.0);
+    if (mit) { W.setNitro(10); r.zuwenig = W.fireNitro(); W.setNitro(100); r.zuendet = W.fireNitro(); }
+    W.sim(1.0); r['v' + mit] = Math.hypot(W.B.vx, W.B.vy); r['sprit' + mit] = W.fuel; r['x' + mit] = W.B.x; if (mit) { r.rest = W.nitro; W.sim(3, () => !W.nitroOn); r.leer = W.nitro; r.aus = !W.nitroOn; r.teile = W.parts; } }
+  I.gas = false; r.log = W.log.some(e => e.id === 'nitro'); return r; }"""
+# GS-1.9: ghost. A run of some seconds ends (crash), the next run has its ghost; a worse run does not replace it
+WT_GEIST = """([veh, trk]) => { const W = window.__wt, I = W.inp, r = {}, K = 'kv-game-wobbly-truck-ghost-';
+  const lauf = (sek) => { W.start(); W.place(5, 0, 0, 0, 0, 0); W.sim(sek, () => { __bot(W, I); }); const x = W.B.x; I.gas = I.brake = false; W.crash(); W.sim(4, () => W.state === 'over'); return x; };
+  const keys = () => Object.keys(localStorage).filter(k => k.startsWith(K));
+  W.freeze(true); W.SET.diff = 1; W.SET.real = 40; W.SET.ghost = 1; W.SET.ghostHills = 1; keys().forEach(k => localStorage.removeItem(k)); W.select(veh, trk);
+  const a = []; for (let i = 0; i < 400; i++) a.push(Math.round(i * 31.3), Math.round(Math.sin(i) * 400), Math.round(i * 5 - 300)); const d = W.gDec(W.gEnc(a));
+  r.codec = d.n === 400 && Math.abs(d.x[399] - a[1197] * .05) < .01 && Math.abs(d.y[200] - a[601] * .05) < .01 && Math.abs(d.a[399] - a[1199] * .02) < .01;
+  W.start(); r.ohne = W.ghost === null; r.x1 = lauf(6); r.s1 = W.score(); r.over = W.state; r.seed1 = W.seed;
+  r.keys = keys(); r.len = r.keys.length ? localStorage.getItem(r.keys[0]).length : 0;
+  W.start(); r.g = W.ghost; r.seed2 = W.seed; const p = W.ghostAt(3), q = W.ghostAt(0); r.p = !!(p && p.x > 8 && p.x < r.x1 + 1 && q && Math.abs(q.x - 3) < 0.6);
+  lauf(2); r.s2 = W.score(); W.start(); r.bleibt = !!(W.ghost && W.ghost.s === r.s1);                      // a worse run: the ghost stays
+  lauf(9); r.s3 = W.score(); W.start(); r.besser = !!(W.ghost && W.ghost.s === r.s3 && r.s3 > r.s1);       // a better run replaces it
+  W.SET.ghost = 0; W.start(); r.aus = W.ghost === null; W.SET.ghost = 1;
+  W.SET.diff = 0; W.applyPhys(); W.start(); r.andere = W.ghost === null; W.SET.diff = 1; W.applyPhys();   // another difficulty has its own ghost
+  localStorage.setItem(r.keys[0], '{"v":1,"s":5,"seed":7,"d":"###kaputt###"}'); W.start(); r.kaputt = W.ghost === null && W.state === 'play';
+  localStorage.setItem(r.keys[0], 'x'); W.start(); r.kaputt = r.kaputt && W.ghost === null && W.state === 'play';
+  const alt = Storage.prototype.setItem; Storage.prototype.setItem = () => { throw new Error('QuotaExceededError'); };    // storage full
+  try { lauf(4); r.voll = W.state === 'over'; } catch (e) { r.voll = false; r.vollFehler = String(e); } Storage.prototype.setItem = alt;
+  keys().forEach(k => localStorage.removeItem(k)); return r; }"""
+WT_GEIST_HUEGEL = """() => { const W = window.__wt, I = W.inp, r = {}; W.freeze(true); W.SET.diff = 1; W.SET.ghost = 1; W.SET.ghostHills = 1; W.select('truck', 'hills');
+  W.start(); W.place(5, 0, 0, 0, 0, 0); W.sim(6, () => { I.gas = W.B.a < 0.3; }); I.gas = false; W.crash(); W.sim(4, () => W.state === 'over'); r.seed1 = W.seed; r.h1 = W.H(300);
+  W.start(); r.seed2 = W.seed; r.h2 = W.H(300); r.geist = !!W.ghost;
+  W.SET.ghostHills = 0; const s = new Set(); for (let i = 0; i < 4; i++) { W.start(); s.add(W.seed); r.ohne = W.ghost === null; } r.neu = s.size > 1; W.SET.ghostHills = 1;
+  W.menu(); r.zeile = !!document.getElementById('ghostHills'); return r; }"""
+WT_KNOEPFE = """() => { const b = id => { const e = document.getElementById(id), r = e.getBoundingClientRect(); return getComputedStyle(e).display === 'none' ? null : [r.left, r.top, r.right, r.bottom]; };
+  const n = b('nitroP'), out = []; if (!n) return ['fehlt']; if (n[2] - n[0] < 44 || n[3] - n[1] < 44) out.push('kleiner als 44 px');
+  if (n[0] < 0 || n[1] < 0 || n[2] > innerWidth || n[3] > innerHeight) out.push('ausserhalb');
+  for (const id of ['gasP', 'brakeP', 'trickP', 'backLink', 'setBtn', 'muteBtn', 'restartBtn']) { const o = b(id); if (o && n[0] < o[2] && o[0] < n[2] && n[1] < o[3] && o[1] < n[3]) out.push('überdeckt ' + id); }
+  return out; }"""
 
 
 def wobbly_pruefen(br, base, fehler, bilder):
@@ -324,7 +398,7 @@ def wobbly_pruefen(br, base, fehler, bilder):
                 if r["state"] == "play" and r["x"] < 15:
                     fehler.append(f"{d} {name}: {veh} bleibt beim Looping hängen ({r})")
             r = pg.evaluate(WT_RUN, ["bike", "stunt", "sturz"])  # upside down onto the head: crash, then game over with a best score
-            best = pg.evaluate("() => localStorage.getItem('kv-game-wobbly-truck-best-stunt2-bike')")
+            best = pg.evaluate("() => localStorage.getItem('kv-game-wobbly-truck-best-stunt3-bike')")
             if r["state"] != "over" or not best:
                 fehler.append(f"{d} {name}: Sturz / Rekord je Strecke und Fahrzeug fehlt ({r['state']}, {best})")
             if mobil:   # GS-1.7: every section drivable (Einfach and Normal, both vehicles), Supersprung on Einfach without input
@@ -333,7 +407,7 @@ def wobbly_pruefen(br, base, fehler, bilder):
                     for diff in (0, 1):
                         for typ in WT_MODULE:
                             r = pg.evaluate(WT_MODUL, [veh, diff, typ, False])
-                            if r.get("fehlt") or r["state"] != "play" or not r["durch"] or r["rettung"]:
+                            if r.get("fehlt") or r["state"] != "play" or not r["durch"] or r["rettung"] or (typ in WT_MUSS and WT_MUSS[typ] not in r["ids"].split(",")):
                                 fehler.append(f"{d} {name}: Abschnitt {typ} mit {veh} auf {['Einfach', 'Normal'][diff]} nicht befahrbar ({r})")
                             else:
                                 nm += 1
@@ -348,20 +422,74 @@ def wobbly_pruefen(br, base, fehler, bilder):
                     const e = document.querySelector('em[data-best=stunt]'); return e ? e.textContent : ''; }""")
                 if "8339" not in txt:
                     fehler.append(f"{d} Handy: alter Rekord der Stunt-Piste wird nicht gezeigt ({txt!r})")
+            # GS-1.8 nitro: stunts fill it, the boost is faster, costs no extra fuel, does not fire below the minimum
+            r = pg.evaluate(WT_RUN, ["truck", "hills", "salto"])
+            if not pg.evaluate("() => __wt.nitro > 5"):
+                fehler.append(f"{d} {name}: ein Salto füllt das Nitro nicht")
+            r = pg.evaluate(WT_NITRO)
+            if r["zuwenig"] or not r["zuendet"] or not r["log"] or r["v1"] < r["v0"] + 2 or abs(r["sprit1"] - r["sprit0"]) > 0.01 or r["leer"] > 0.5 or not r["aus"] or r["teile"] > 260:
+                fehler.append(f"{d} {name}: Nitro (zündet, schneller, kein Sprit extra, leer, Partikel begrenzt) stimmt nicht ({r})")
+            else:
+                ok.append("nitro")
+            r = pg.evaluate(WT_WELT)                 # GS-1.10 worlds, new elements, chase
+            gut = (r["welten"].startswith("01234") and r["weltLang"] < 1000 and r["boss"] >= 4 and all(850 <= x <= 1500 for x in r["bossAbst"])
+                   and r["zonen"] == "ice,mud,spring" and r["sortiert"] and r["ringe"] >= 6 and r["ring"] and r["bruecke"] and r["fels"]
+                   and r["jagd0"].startswith("play:") and "bosspush" in r["jagd0"] and r["jagd1"].split(":")[0] in ("crash", "over")
+                   and r["huegelGleich"] and r["huegelZonen"] >= 3 and r["huegelBoss"] == 1000 and r["huegelWelt"] == "523401" and "7777" in r["alt"])
+            if not gut:
+                fehler.append(f"{d} {name}: Welten / neue Elemente / Verfolgung stimmen nicht ({r})")
+            else:
+                ok.append("welten")
+            for veh, trk in (("truck", "stunt"), ("bike", "hills")):      # GS-1.9 ghost of the best run
+                r = pg.evaluate(WT_GEIST, [veh, trk])
+                gut = (r["codec"] and r["ohne"] and r["over"] == "over" and len(r["keys"]) == 1 and 40 < r["len"] <= 18300 and r["g"] and r["seed1"] == r["seed2"]
+                       and r["p"] and r["bleibt"] and r["besser"] and r["aus"] and r["andere"] and r["kaputt"] and r["voll"])
+                if not gut:
+                    fehler.append(f"{d} {name}: Geisterfahrer {veh}/{trk} stimmt nicht ({r})")
+                else:
+                    ok.append(f"geist-{veh}")
+            if mobil:   # the hills of the best run come back with the same seed (only without ?test=1: there the seed is fixed anyway)
+                pg2 = ctx.new_page()
+                pg2.on("pageerror", lambda e, fe=fe: fe.append(str(e)[:300]))
+                pg2.goto(f"{base}/g/{d}/index.html", wait_until="load", timeout=30000)
+                pg2.wait_for_timeout(300)
+                r = pg2.evaluate(WT_GEIST_HUEGEL)
+                if r["seed1"] != r["seed2"] or abs(r["h1"] - r["h2"]) > 1e-9 or not r["geist"] or not r["ohne"] or not r["neu"] or not r["zeile"]:
+                    fehler.append(f"{d} Handy: Hügel der Bestfahrt / neue Hügel ohne Geist stimmt nicht ({r})")
+                else:
+                    ok.append("geist-hügel")
+                pg2.evaluate("() => Object.keys(localStorage).filter(k => k.includes('-ghost-')).forEach(k => localStorage.removeItem(k))")
+                pg2.close()
             if mobil:   # the trick button is there for the motorbike while playing
                 pg.evaluate("() => { __wt.select('bike', 'stunt'); __wt.start(); }")
                 if not pg.locator("#trickP").is_visible():
                     fehler.append(f"{d} Handy: Trick-Knopf fehlt beim Motorrad")
+                for quer in (False, True):      # GS-1.8: the nitro button (portrait and landscape) is big enough and covers nothing
+                    pg.set_viewport_size({"width": 844, "height": 390} if quer else vp)
+                    pg.wait_for_timeout(150)
+                    kn = pg.evaluate(WT_KNOEPFE)
+                    if kn:
+                        fehler.append(f"{d} Handy{' quer' if quer else ''}: Nitro-Knopf: {', '.join(kn)}")
+                pg.evaluate("() => { __wt.freeze(true); __wt.setNitro(100); }")
+                pg.locator("#nitroP").tap()
+                if not pg.evaluate("() => __wt.nitroOn"):
+                    fehler.append(f"{d} Handy: Tipp auf den Nitro-Knopf zündet nicht")
+                else:
+                    ok.append("nitro-knopf")
             # settings: saved in localStorage, «Standard» resets
             pg.evaluate("() => { __wt.freeze(false); __wt.showSettings(); }")
             pg.locator("[data-diff='2']").click()
             pg.locator("#s_real").fill("80")
+            pg.locator("#s_shake").uncheck()            # GS-1.8: «Bildwackeln» and «Effekte»
+            pg.locator("[data-fx='0']").click()
             s = pg.evaluate("() => JSON.parse(localStorage.getItem('kv-game-wobbly-truck-settings') || '{}')")
+            if s.get("shake") != 0 or s.get("fx") != 0:
+                fehler.append(f"{d} {name}: «Bildwackeln» / «Effekte» nicht gespeichert ({s})")
             if s.get("diff") != 2 or s.get("real") != 80:
                 fehler.append(f"{d} {name}: Einstellungen nicht gespeichert ({s})")
             pg.locator("#resetBtn").click()
             s = pg.evaluate("() => JSON.parse(localStorage.getItem('kv-game-wobbly-truck-settings') || '{}')")
-            if s.get("diff") != 1 or s.get("real") != 40:
+            if s.get("diff") != 1 or s.get("real") != 40 or s.get("shake") != 1 or s.get("fx") != 1:
                 fehler.append(f"{d} {name}: «Standard» setzt nicht zurück ({s})")
             if bilder:
                 pg.screenshot(path=os.path.join(bilder, f"spiel_{d}_einstellungen_{'handy' if mobil else 'pc'}.png"))
@@ -371,6 +499,213 @@ def wobbly_pruefen(br, base, fehler, bilder):
             fehler.append(f"{d} {name}: JavaScript: {x}")
         print(f"{d:<20} {name:<6} Stunts/Looping: {', '.join(ok) or '-'}", flush=True)
         ctx.close()
+
+
+# «Was nun?» (eigenes Spiel, Bilder-Rätsel): mit ?test=1 gibt es window.__wn (Zustand, nächste richtige Stelle, Tipp-Flächen
+# in Bildschirm-Pixeln, «richtiger Moment»); Bewegungen laufen 6-mal schneller. Getippt wird echt (Touch bzw. Maus).
+# Je Bild: lustige falsche Stellen (kosten nichts), das Geheimnis, eine Sackgasse (spult genau einen Schritt zurück),
+# ein falscher Moment, der Tipp-Knopf (Gegend pulsiert, höchstens 1 Stern) und die ganze Lösung bis zum Sternebild.
+WN = {
+    "garten": {"gags": ["hahn", "vogel", "apfel", "sonne", "wolke", "maulwurf", "igel", "sprenger", "krone"], "geheim": "busch", "sack": ["knoten", "hahn"]},
+    "zeltplatz": {"gags": ["zelt", "tasse", "feuer", "fahne", "vogel", "rucksack", "tanne", "sonne", "kessel"], "geheim": "stiefel", "sack": ["holz", "zuendholz"], "zeit": "zuendholz"},
+    "alp": {"gags": ["horn", "kuh", "kraehe", "tuer", "kamin", "kanne", "edelweiss", "sonne"], "geheim": "gipfel", "sack": ["kaese"]},
+    "werkstatt": {"gags": ["schublade", "robo", "hebel", "radio", "stock", "werkzeug", "fenster", "lampe"], "geheim": "mausloch",
+                  "sack": ["magnet", "schublade", "schublade", "robo", "hebel"], "zeit": "magnet"},
+    "kueche": {"gags": ["maus", "katze", "glocke", "uhr", "mond", "toaster", "besen", "napf"], "geheim": "schrank", "sack": ["wecker"], "zeit": "maus"},
+}
+WN_Z = "() => ({z: JSON.stringify(__wn.S.zustand), fehler: __wn.S.fehler, tipp: __wn.S.tipp, spul: __wn.S.spul, fertig: __wn.S.fertig, next: __wn.naechster()})"
+
+
+def wasnun_pruefen(br, pw, base, fehler, bilder):
+    d = "wasnun"
+    url = f"{base}/g/{d}/index.html?test=1"
+
+    def seite(ctx, name):
+        ctx.route("**/*", lambda r: r.continue_() if r.request.url.startswith(base) else r.abort())
+        pg = ctx.new_page()
+        pg.on("pageerror", lambda e: fehler.append(f"{d} {name}: JavaScript: {str(e)[:300]}"))
+        pg.on("console", lambda m: fehler.append(f"{d} {name}: console.error: {m.text[:200]}") if m.type == "error" else None)
+        pg.goto(url, wait_until="load", timeout=30000)
+        pg.wait_for_function("() => window.__wn && document.querySelectorAll('#karten .karte').length > 0", timeout=10000)
+        return pg
+
+    def bild(pg, was, name):
+        if bilder:
+            pg.wait_for_timeout(250)
+            pg.screenshot(path=os.path.join(bilder, f"wasnun_{was}_{name}.png"))
+
+    def frei(pg):
+        pg.wait_for_function("() => __wn.frei()", timeout=20000)
+
+    def tippe(pg, touch, sid, wann="gut", name=""):
+        """eine Stelle wirklich antippen (wann: 'gut' = richtiger Moment abwarten, 'schlecht' = falschen, '' = sofort)"""
+        frei(pg)
+        if wann:
+            pg.wait_for_function(f"id => __wn.frei() && __wn.{wann}(id)", arg=sid, timeout=20000, polling=40)
+        st = next((x for x in pg.evaluate("() => __wn.stellen()") if x["id"] == sid), None)
+        if not st or st["x"] is None:
+            fehler.append(f"{d} {name}: Stelle «{sid}» ist nicht antippbar"); return False
+        (pg.touchscreen.tap if touch else pg.mouse.click)(st["x"], st["y"])
+        pg.wait_for_timeout(30)
+        frei(pg)
+        return True
+
+    def groessen(pg, name, sz):
+        for x in pg.evaluate("() => __wn.stellen()"):
+            if x["w"] < 43.9 or x["h"] < 43.9:
+                fehler.append(f"{d} {name}: {sz} Stelle «{x['id']}» nur {x['w']:.0f} × {x['h']:.0f} px (mindestens 44)")
+            if x["x"] is None:
+                fehler.append(f"{d} {name}: {sz} Stelle «{x['id']}» ist ganz verdeckt")
+
+    def loese(pg, touch, name, sz, mitte="", falsch=""):
+        """der Lösung folgen bis zum Sternebild; falsch: bei dieser Stelle zuerst einmal im falschen Moment tippen"""
+        n = 0
+        while n < 14:
+            z = pg.evaluate(WN_Z)
+            if z["fertig"]:
+                break
+            if touch:
+                groessen(pg, name, sz)
+            if falsch and z["next"] == falsch:
+                tippe(pg, touch, falsch, "schlecht", name)
+                z2 = pg.evaluate(WN_Z)
+                if z2["fehler"] != z["fehler"] + 1 or z2["z"] != z["z"]:
+                    fehler.append(f"{d} {name}: {sz} falscher Moment bei «{falsch}» zählt nicht als ein Fehlversuch ohne Verlust ({z2})")
+                falsch = ""
+                continue
+            if not tippe(pg, touch, z["next"], "gut", name):
+                return False
+            z2 = pg.evaluate(WN_Z)
+            if z2["z"] == z["z"] and not z2["fertig"]:
+                fehler.append(f"{d} {name}: {sz} Schritt «{z['next']}» bringt nichts ({pg.inner_text('#text')[:80]})"); return False
+            if z2["fehler"] != z["fehler"]:
+                fehler.append(f"{d} {name}: {sz} richtiger Schritt «{z['next']}» zählt als Fehlversuch")
+            n += 1
+            if mitte and n == 2:
+                bild(pg, mitte, name)
+        try:
+            pg.wait_for_selector("#ende:not([hidden]) .gs", timeout=8000)
+        except Exception:
+            fehler.append(f"{d} {name}: {sz} nach {n} Schritten kein Sternebild (nicht lösbar?)"); return False
+        if mitte and not 4 <= n <= 8:               # the clean run from the start
+            fehler.append(f"{d} {name}: {sz} hat {n} Schritte (soll 4 bis 8)")
+        return True
+
+    def sterne(pg):
+        return pg.locator("#ende .gs svg.an").count()
+
+    for name, touch in (("Handy", True), ("PC", False)):
+        ctx = br.new_context(**pw.devices["iPhone 13"]) if touch else br.new_context(viewport={"width": 1280, "height": 800})
+        pg = seite(ctx, name)
+        try:
+            ids = pg.evaluate("() => __wn.SZ.map(s => s.id)")
+            if ids != list(WN):
+                fehler.append(f"{d} {name}: Bilder {ids} statt {list(WN)}")
+            if pg.locator("#karten .karte.zu").count() != len(ids) - 1:
+                fehler.append(f"{d} {name}: am Anfang sollen alle Bilder ausser dem ersten gesperrt sein")
+            if "0/15" not in pg.inner_text("#chipSterne") or "0/5" not in pg.inner_text("#chipGeheim"):
+                fehler.append(f"{d} {name}: Anzeige Sterne / Geheimnisse am Anfang falsch")
+            (pg.locator("#karten .karte").nth(1).tap if touch else pg.locator("#karten .karte").nth(1).click)(force=True)
+            pg.wait_for_timeout(200)
+            if pg.evaluate("() => __wn.S.i") != -1:
+                fehler.append(f"{d} {name}: ein gesperrtes Bild lässt sich öffnen")
+            bild(pg, "wahl_anfang", name)
+            for i, sz in enumerate(ids):
+                k = WN.get(sz, {})
+                karte = pg.locator("#karten .karte").nth(i)
+                if "zu" in (karte.get_attribute("class") or ""):
+                    fehler.append(f"{d} {name}: {sz} ist nach dem Lösen des Bildes davor nicht offen"); break
+                (karte.tap if touch else karte.click)()
+                pg.wait_for_function("i => __wn.S.i === i", arg=i)
+                bild(pg, f"{i + 1}_start", name)
+                if touch:
+                    # 1. Durchgang: Ausprobieren, Geheimnis, Sackgasse, falscher Moment -> 2 Sterne
+                    groessen(pg, name, sz)
+                    z0 = pg.evaluate(WN_Z)
+                    for g in k.get("gags", []):
+                        t0 = pg.inner_text("#text")
+                        tippe(pg, touch, g, "", name)
+                        z = pg.evaluate(WN_Z)
+                        if z["fehler"] or z["next"] != z0["next"]:
+                            fehler.append(f"{d} {name}: {sz} lustige Stelle «{g}» kostet etwas oder ändert den Weg ({z})")
+                        if pg.inner_text("#text") == t0:
+                            fehler.append(f"{d} {name}: {sz} Stelle «{g}» sagt nichts Neues")
+                    tippe(pg, touch, k["geheim"], "", name)
+                    if not pg.evaluate("id => !!__wn.MERK.geheim[id]", sz) or "Geheimnis gefunden" not in pg.inner_text("#text") or pg.evaluate(WN_Z)["fehler"]:
+                        fehler.append(f"{d} {name}: {sz} Geheimnis «{k['geheim']}» nicht gezählt")
+                    for j, s_ in enumerate(k["sack"]):
+                        z = pg.evaluate(WN_Z)
+                        tippe(pg, touch, s_, "gut", name)
+                        if j == len(k["sack"]) - 1:
+                            pg.wait_for_function("() => __wn.frei()")
+                            z2 = pg.evaluate(WN_Z)
+                            if z2["spul"] != z["spul"] + 1 or z2["fehler"] != z["fehler"] + 1 or z2["z"] != z["z"]:
+                                fehler.append(f"{d} {name}: {sz} Sackgasse «{s_}» spult nicht genau einen Schritt zurück ({z} -> {z2})")
+                            if "Zurückgespult" not in pg.inner_text("#text"):
+                                fehler.append(f"{d} {name}: {sz} Sackgasse ohne freundliche Meldung")
+                            bild(pg, f"{i + 1}_nach_sackgasse", name)
+                    ok = loese(pg, touch, name, sz, falsch=k.get("zeit", ""))
+                    soll = 2
+                    if ok and (sterne(pg) != soll or pg.evaluate("id => __wn.MERK.sterne[id]", sz) != soll):
+                        fehler.append(f"{d} {name}: {sz} mit Fehlversuchen {sterne(pg)} Sterne statt {soll}")
+                    # 2. Durchgang: mit Tipp -> 1 Stern, das bessere Ergebnis bleibt
+                    pg.locator("#eNochmal").tap()
+                    pg.locator("#bTipp").tap(); pg.locator("#tJa").tap()
+                    pg.wait_for_selector("#fx .tippkreis", timeout=3000)
+                    bild(pg, f"{i + 1}_tipp", name)
+                    c = pg.evaluate("""() => { const c = document.querySelector('#fx .tippkreis'), id = __wn.naechster(), b = document.getElementById('bild').getBoundingClientRect(),
+                      st = __wn.stellen().find(x => x.id === id), k = b.width / 800, x = b.left + c.cx.baseVal.value * k, y = b.top + c.cy.baseVal.value * k;
+                      return {r: c.r.baseVal.value * k, d: Math.hypot(x - st.x, y - st.y)}; }""")
+                    if c["d"] > c["r"] or c["r"] < 50:
+                        fehler.append(f"{d} {name}: {sz} Tipp-Kreis zeigt nicht die Gegend der nächsten Stelle ({c})")
+                    if loese(pg, touch, name, sz) and (sterne(pg) != 1 or pg.evaluate("id => __wn.MERK.sterne[id]", sz) != soll):
+                        fehler.append(f"{d} {name}: {sz} mit Tipp {sterne(pg)} Sterne (soll 1), gemerkt bleibt {soll}")
+                    pg.locator("#eNochmal").tap()
+                # sauberer Durchgang -> 3 Sterne
+                if loese(pg, touch, name, sz, mitte=f"{i + 1}_mitte"):
+                    if sterne(pg) != 3:
+                        fehler.append(f"{d} {name}: {sz} ohne Fehlversuch {sterne(pg)} Sterne statt 3")
+                    pg.wait_for_timeout(700)
+                    bild(pg, f"{i + 1}_sterne", name)
+                b = pg.locator("#eAlle")
+                (b.tap if touch else b.click)()
+            bild(pg, "wahl_fertig", name)
+            if "15/15" not in pg.inner_text("#chipSterne") or (touch and "5/5" not in pg.inner_text("#chipGeheim")):
+                fehler.append(f"{d} {name}: am Schluss {pg.inner_text('#chipSterne')} / {pg.inner_text('#chipGeheim')}")
+            # Ton-Schalter und Fortschritt bleiben nach dem Neuladen
+            (pg.locator("#bTon").tap if touch else pg.locator("#bTon").click)()
+            pg.reload(wait_until="load"); pg.wait_for_function("() => window.__wn")
+            if "15/15" not in pg.inner_text("#chipSterne") or pg.locator("#bTon").get_attribute("aria-pressed") != "true" or pg.locator("#karten .karte.zu").count():
+                fehler.append(f"{d} {name}: Fortschritt oder Ton-Schalter nach dem Neuladen weg")
+            if pg.evaluate("() => { const b = document.getElementById('mw-back'); return !!b && getComputedStyle(b).display !== 'none'; }"):
+                fehler.append(f"{d} {name}: schwebender Zurück-Knopf nicht ausgeblendet (das Spiel hat oben «‹ Spiele»)")
+            if pg.evaluate("() => document.documentElement.scrollWidth > innerWidth + 1"):
+                fehler.append(f"{d} {name}: Seite breiter als der Bildschirm")
+        except Exception as e:
+            fehler.append(f"{d} {name}: {e.__class__.__name__}: {str(e)[:300]}")
+        ctx.close()
+
+    # quer am Handy: Tipp-Flächen gross genug, nichts läuft über; und ganz ohne Speicher (localStorage wirft)
+    ctx = br.new_context(**pw.devices["iPhone 13 landscape"])
+    ctx.add_init_script("Object.defineProperty(window, 'localStorage', {get() { throw new Error('gesperrt'); }});")
+    pg = seite(ctx, "Handy quer, ohne Speicher")
+    try:
+        for i, sz in enumerate(WN):
+            pg.locator("#karten .karte").nth(i).tap()
+            pg.wait_for_function("i => __wn.S.i === i", arg=i)
+            if i in (0, 4):
+                bild(pg, f"{i + 1}_start", "quer")
+            if not loese(pg, True, "quer", sz) or sterne(pg) != 3:
+                fehler.append(f"{d} quer / ohne Speicher: {sz} nicht mit 3 Sternen gelöst")
+            if pg.evaluate("() => document.documentElement.scrollWidth > innerWidth + 1 || document.documentElement.scrollHeight > innerHeight + 1"):
+                fehler.append(f"{d} quer: {sz} läuft über den Bildschirm")
+            pg.locator("#eAlle").tap()
+        if "15/15" not in pg.inner_text("#chipSterne"):
+            fehler.append(f"{d} ohne Speicher: Fortschritt gilt nicht einmal bis zum Schliessen ({pg.inner_text('#chipSterne')})")
+    except Exception as e:
+        fehler.append(f"{d} quer: {e.__class__.__name__}: {str(e)[:300]}")
+    ctx.close()
+    print(f"{d}: 5 Bilder gelöst (Handy hoch und quer, PC), Sackgassen, Tipps, Geheimnisse geprüft", flush=True)
 
 
 # ---- «Flight of the Amazon Queen» (ScummVM, WebAssembly; MoveEye 639zzg): only when the package is there ------------------------
@@ -1049,6 +1384,8 @@ def main():
         sys.exit(1 if fehler else 0)
     gj = paket_pruefen(a.zip, fehler, warn)
     print(f"Paket {gj.get('version')}: {len(gj['games'])} Spiele", flush=True)
+    if os.path.isfile(os.path.join(REPO, "games", "wasnun", "kachel.json")) and not any(g.get("dir") == "wasnun" for g in gj["games"]):
+        warn.append("«Was nun?» liegt in games/wasnun/, ist aber noch nicht in dieser ZIP (python3 werkzeuge/spiel_einbauen.py games/wasnun)")
     if not a.ohne_browser:
         fotaq_lauf(a.fotaq, fehler, warn, a.bilder)
         try:
@@ -1077,6 +1414,8 @@ def main():
                           + ("" if len(fehler) == n0 else f"   ✗ {len(fehler) - n0} Fehler"), flush=True)
                 if any(g["dir"] == "kv-wobbly-truck" for g in spiele):
                     wobbly_pruefen(br, base, fehler, a.bilder)
+                if any(g["dir"] == "wasnun" for g in spiele):
+                    wasnun_pruefen(br, pw, base, fehler, a.bilder)
                 br.close()
             s.shutdown()
         finally:
