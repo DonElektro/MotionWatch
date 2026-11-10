@@ -4,49 +4,77 @@
 
      id        kurzer Name (wird gespeichert, nie ändern)
      titel     Name auf der Kachel
+     stufe     Schwierigkeit 1 leicht · 2 mittel · 3 knifflig · 4 Meister (steht auf der Kachel)
      ziel      ein Satz: worum geht es (steht am Anfang unter dem Bild)
-     start()   -> Zustand am Anfang (einfaches Objekt, nur Zahlen / Texte / true / false)
+     start()   -> Zustand am Anfang (einfaches Objekt, nur Zahlen / Texte / true / false / Listen davon)
      bild(s)   -> SVG-Inhalt (Text) für den Zustand s, Zeichenfläche 800 x 600. Keine url(#…)-Verweise (die Kacheln
-                  zeigen dasselbe Bild klein), keine Schrift im Bild.
+                  zeigen dasselbe Bild klein), keine Schrift im Bild. Zwei Ansichten desselben Ortes: ein Feld im
+                  Zustand (z. B. s.sicht) und bild() / wenn() danach richten; gewechselt wird mit a.wechsel().
      stellen   Liste der Tipp-Flächen, die erste passende gewinnt:
-                 {id, r: [x, y, breite, höhe] oder s => […], wenn: s => true/false (fehlt: immer),
+                 {id, r: [x, y, breite, höhe] oder (s, t) => […], wenn: s => true/false (fehlt: immer),
                   gut: (s, t) => true/false (nur bei «richtiger Moment»: ist JETZT sicher der richtige Augenblick?),
-                 schlecht: (s, t) => true/false (dazu für den Test: JETZT ist sicher der falsche Augenblick),
-                  tipp: async (s, a) => Ergebnis}
+                  schlecht: (s, t) => true/false (dazu für den Test: JETZT ist sicher der falsche Augenblick),
+                  tipp: async (s, a) => Ergebnis          (Antippen ohne gewähltes Ding)
+                  mit: {dingId: async (s, a) => Ergebnis} (Antippen MIT diesem gewählten Ding; fehlt der Eintrag,
+                        sagt das Spiel freundlich, dass das Ding hier nicht hilft - kostet nichts)}
                Mindestgrösse einer Fläche: 92 x 92 (das sind 44 px auf einem iPhone hochkant).
-     naechster(s) -> id der Stelle, die als Nächstes richtig ist (für den Tipp-Knopf und den Test)
-     lauf(s, t, q)   (fehlt meist) wird für jedes Bild des Bildschirms gerufen: bewegt Dinge für «richtiger Moment»;
+     naechster(s, weg, t) -> was als Nächstes richtig ist (für den Tipp-Knopf und den Test):
+                 'stelleId'  oder  {stelle: 'id', ding: 'dingId'}  oder  {kombi: ['dingA', 'dingB']}
+                 oder {stelle: 'id', warte: true} (hier läuft gerade etwas ab, Geduld); dazu wahlweise wink: 'Satz'
+                 (kommt ab dem zweiten Tipp im selben Bild dazu). weg: Name eines Lösungswegs aus «wege» (fehlt: der erste).
+     wege      (fehlt meist) Namen der Lösungswege, z. B. ['normal', 'meister'] - der Test spielt jeden davon.
+     lauf(s, t, q)   (fehlt meist) wird für jedes Bild des Bildschirms gerufen: bewegt Dinge («richtiger Moment», Zeit);
                      t = Sekunden seit Beginn, q(sel) = Element im Bild
-     tasche(s)       (fehlt meist) -> null oder {name, svg} für das getragene Ding (SVG-Inhalt, Fläche 60 x 60)
+     uhr(s, t)       (fehlt meist) etwa viermal pro Sekunde, wenn gerade nichts läuft: etwas ist mit der Zeit fertig
+                     geworden -> {setze: {…}, text: 'Satz', ton: 'name', fehl: true/false} (sonst nichts zurückgeben).
+                     Zeitpunkte merkt man sich im Zustand (z. B. a.mal({feuerAb: a.t})).
 
-   In tipp(s, a): s ist eine Arbeitskopie des Zustands, a hilft:
-     a.mal({…})                 Zustand ändern und neu zeichnen (gilt erst mit a.weiter / a.fertig)
+   DINGE ZUM MITNEHMEN (ab Bild 6; die Leiste unten hat 4 Plätze):
+     dinge     {dingId: {name: 'Eimer', svg: 'SVG-Inhalt 60 x 60' oder s => '…'}}  - alles, was in der Tasche sein kann.
+               Der Zustand braucht dann die Liste s.tasche (am Anfang meist []). Nie mehr als 4 Dinge zugleich.
+     kombi     [{a: 'ast', b: 'zeitung', gibt: 'fackel', text: 'Satz', setze: {…}, wenn: s => …}]  zwei Dinge werden eines;
+               oder {a, b, nein: 'Satz'} für einen eigenen Spruch, wenn es (noch) nicht passt. Alles andere: «Das passt
+               nicht zusammen» - kostet nichts, nichts geht verloren.
+     nutzlos(s, dingId, stelleId) (fehlt meist) -> eigener Spruch, wenn ein Ding an einer Stelle nichts bringt.
+     Bedienung: Ding antippen = gewählt (leuchtet), nochmals = abgewählt; zweites Ding antippen = kombinieren;
+     Stelle im Bild antippen = dort benutzen. Ein Ding, das seinen Zustand ändert, ist einfach ein neues Ding (a.tausch).
+     Alt (Bilder 4 und 5): tasche(s) -> null oder {name, svg} zeigt ein einzelnes getragenes Ding ohne Auswahl.
+
+   In tipp(s, a) / mit[…](s, a): s ist eine Arbeitskopie des Zustands, a hilft:
+     a.mal({…})                 Zustand ändern und neu zeichnen (gilt erst mit a.weiter / a.fertig / a.wechsel)
      await a.anim(sel, kf, ms)  Element bewegen (Web Animations: Liste von Schritten wie [{transform:…}, {transform:…}])
      await a.warte(ms)          kurz warten            a.ton('name')   Geräusch (Liste unten: TON)
      a.nr                       das wievielte Mal wurde diese Stelle angetippt (1, 2, 3 …)   a.t  Sekunden seit Beginn
+     a.ding                     das gewählte Ding (nur in mit[…])
+     a.hat('id')   a.nimm('id')   a.gib('id') (weglegen / verbrauchen)   a.tausch('alt', 'neu')
    und das Ergebnis (immer mit return):
      return a.weiter('Text')     richtiger Schritt, der neue Zustand gilt
-     return a.fertig('Text')     Bild gelöst
+     return a.fertig('Text')     Bild gelöst; der Text steht als kleine Geschichte im Sternebild.
+                                 a.fertig('Text', {meister: true}) = der elegantere Weg, gibt das Abzeichen «Meister-Lösung»
+     return a.wechsel('Text')    nur die Ansicht gewechselt (oder sonst etwas Neutrales): der Zustand gilt, zählt nicht
      return a.gag('Text')        lustig, aber nutzlos: nichts ändert sich, kostet nichts   (a.gag('Text', true): Änderung bleibt)
      return a.fehl('Text')       entscheidender Fehlversuch (z. B. falscher Moment): zählt für die Sterne
-     return a.sackgasse('Text')  falsche Reihenfolge: das Bild spult sichtbar zum letzten guten Stand zurück, zählt für die Sterne
+     return a.sackgasse('Text')  falsche Reihenfolge: das Bild spult sichtbar zum letzten guten Stand zurück (auch die
+                                 Tasche), zählt für die Sterne
      return a.geheim('Text')     das versteckte Extra dieses Bildes
 
    STERNE: 3 = ohne Fehlversuch und ohne Tipp · 2 = höchstens 3 Fehlversuche, ohne Tipp · 1 = mit Tipp (oder mehr Fehlversuche).
-   Lustige falsche Stellen kosten nie etwas - Ausprobieren soll Spass machen. */
+   Lustige falsche Stellen und unsinniges Kombinieren kosten nie etwas - Ausprobieren soll Spass machen.
+   Gespeichert wird unter «mw-wasnun-v1» (Sterne, Geheimnisse, Meister-Lösungen je Bild-id): neue Bilder kommen dazu,
+   alte Einträge bleiben. */
 (function () {
   'use strict';
   var SZ = [], KEY = 'mw-wasnun-v1', MIN = 92;
   var Q = (function () { try { return new URLSearchParams(location.search); } catch (e) { return { get: function () { return null; } }; } })();
-  var TEST = Q.get('test') === '1', ZEIG = Q.get('zeig') === '1', TEMPO = TEST ? 6 : 1;
+  var TEST = Q.get('test') === '1', ZEIG = Q.get('zeig') === '1', TEMPO = TEST ? Math.max(1, +Q.get('tempo') || 6) : 1, PLATZ = 4;
   var $ = function (id) { return document.getElementById(id); };
   var bild, fx;
-  var S = { i: -1, sz: null, zustand: null, busy: false, fertig: false, fehler: 0, tipp: false, ohne: 0, t0: 0, n: {}, akt: null, spul: 0 };
-  var MERK = { sterne: {}, geheim: {}, stumm: false };
+  var S = { i: -1, sz: null, zustand: null, busy: false, fertig: false, fehler: 0, tipp: false, ohne: 0, t0: 0, n: {}, akt: null, spul: 0, wahl: null, neu: null, tippN: 0, meister: false, schluss: '', uhrT: 0, nein: 0 };
+  var MERK = { sterne: {}, geheim: {}, meister: {}, stumm: false };
 
   // ---- Speichern (geht auch ohne: dann gilt der Fortschritt bis zum Schliessen der Seite) ----
   function laden() {
-    try { var d = JSON.parse(localStorage.getItem(KEY) || '{}'); if (d && typeof d === 'object') { MERK.sterne = d.sterne || {}; MERK.geheim = d.geheim || {}; MERK.stumm = !!d.stumm; } } catch (e) {}
+    try { var d = JSON.parse(localStorage.getItem(KEY) || '{}'); if (d && typeof d === 'object') { MERK.sterne = d.sterne || {}; MERK.geheim = d.geheim || {}; MERK.meister = d.meister || {}; MERK.stumm = !!d.stumm; } } catch (e) {}
   }
   function sichern() { try { localStorage.setItem(KEY, JSON.stringify(MERK)); } catch (e) {} }
 
@@ -174,6 +202,7 @@
   };
 
   // ---- Helfer ----
+  var STUFEN = ['', 'leicht', 'mittel', 'knifflig', 'Meister'];
   function klon(o) { return JSON.parse(JSON.stringify(o)); }
   function warte(ms) { return new Promise(function (r) { setTimeout(r, ms / TEMPO); }); }
   function zeit() { return (performance.now() - S.t0) / 1000; }
@@ -189,7 +218,7 @@
     } catch (e) { return warte(ms); }
   }
   function male(s) { bild.innerHTML = S.sz.bild(s); if (S.sz.lauf) try { S.sz.lauf(s, zeit(), q); } catch (e) {} tasche(s); if (ZEIG) zeigeStellen(s); }
-  function rect(st, s) { return typeof st.r === 'function' ? st.r(s) : st.r; }
+  function rect(st, s) { return typeof st.r === 'function' ? st.r(s, zeit()) : st.r; }
   function finde(x, y, s) {
     var L = S.sz.stellen;
     for (var i = 0; i < L.length; i++) {
@@ -210,12 +239,29 @@
     $('hudSterne').setAttribute('title', 'Sterne für dieses Bild');
     $('bTipp').classList.toggle('lockt', !S.fertig && !S.tipp && (S.ohne >= 6 || S.fehler >= 2));
   }
+  function ding(id, s) {
+    var d = (S.sz.dinge || {})[id] || { name: id, svg: '' };
+    return { name: d.name, svg: typeof d.svg === 'function' ? d.svg(s) : d.svg };
+  }
+  function platz(id) { var L = $('tasche').querySelectorAll('.platz[data-d]'); for (var i = 0; i < L.length; i++) if (L[i].getAttribute('data-d') === id) return L[i]; return null; }
   function tasche(s) {
-    var e = $('tasche'), sz = S.sz;
-    if (!sz || !sz.tasche) { e.hidden = true; return; }
+    var e = $('tasche'), sz = S.sz, L = $('leiste');
+    if (!sz) { e.hidden = true; return; }
+    if (sz.dinge) {                      // ab Bild 6: bis 4 Dinge, wählbar und kombinierbar
+      var T = s.tasche || [], h = '';
+      L.classList.add('viel'); e.hidden = false; e.className = 'viel';
+      if (S.wahl && T.indexOf(S.wahl) < 0) S.wahl = null;
+      for (var i = 0; i < Math.max(PLATZ, T.length); i++) {
+        if (T[i]) { var d = ding(T[i], s); h += '<button type="button" class="platz' + (S.wahl === T[i] ? ' wahl' : '') + (S.neu === T[i] ? ' neu' : '') + '" data-d="' + T[i] + '" aria-label="' + d.name + '" aria-pressed="' + (S.wahl === T[i]) + '" title="' + d.name + '"><svg viewBox="0 0 60 60">' + d.svg + '</svg></button>'; }
+        else h += '<span class="platz frei"></span>';
+      }
+      e.innerHTML = h; S.neu = null; return;
+    }
+    L.classList.remove('viel');
+    if (!sz.tasche) { e.hidden = true; return; }
     e.hidden = false;
-    var d = sz.tasche(s), war = e.getAttribute('data-n') || '';
-    if (d) { if (war !== d.name) { e.className = ''; void e.offsetWidth; } e.className = 'voll'; e.setAttribute('data-n', d.name); e.setAttribute('title', d.name); e.innerHTML = '<svg viewBox="0 0 60 60">' + d.svg + '</svg>'; }
+    var x = sz.tasche(s), war = e.getAttribute('data-n') || '';
+    if (x) { if (war !== x.name) { e.className = ''; void e.offsetWidth; } e.className = 'voll'; e.setAttribute('data-n', x.name); e.setAttribute('title', x.name); e.innerHTML = '<svg viewBox="0 0 60 60">' + x.svg + '</svg>'; }
     else { e.className = ''; e.setAttribute('data-n', ''); e.innerHTML = '<div class="leer">Tasche leer</div>'; }
   }
   function tonKnopf() {
@@ -246,30 +292,47 @@
   }
 
   // ---- was eine Stelle beim Antippen tun kann ----
-  function Akt(st) { this.s = klon(S.zustand); this.t = zeit(); this.nr = S.n[st.id] = (S.n[st.id] || 0) + 1; }
+  function Akt(st, dingId) { this.s = klon(S.zustand); this.t = zeit(); this.ding = dingId || null; this.nr = S.n[st.id] = (S.n[st.id] || 0) + 1; }
   Akt.prototype = {
     mal: function (p) { for (var k in p) this.s[k] = p[k]; male(this.s); },
     anim: anim, warte: warte, ton: ton, q: q,
+    hat: function (id) { return (this.s.tasche || []).indexOf(id) >= 0; },
+    nimm: function (id) { var T = (this.s.tasche || []).slice(); if (T.indexOf(id) < 0) T.push(id); S.neu = id; this.mal({ tasche: T }); },
+    gib: function (id) { this.mal({ tasche: (this.s.tasche || []).filter(function (x) { return x !== id; }) }); },
+    tausch: function (alt, neu) { S.neu = neu; this.mal({ tasche: (this.s.tasche || []).map(function (x) { return x === alt ? neu : x; }) }); },
     weiter: function (t) { return { art: 'weiter', text: t }; },
-    fertig: function (t) { return { art: 'fertig', text: t }; },
+    fertig: function (t, o) { return { art: 'fertig', text: t, meister: !!(o && o.meister) }; },
+    wechsel: function (t) { return { art: 'wechsel', text: t }; },
     gag: function (t, bleibt) { return { art: 'gag', text: t, bleibt: !!bleibt }; },
     fehl: function (t) { return { art: 'fehl', text: t }; },
     sackgasse: function (t) { return { art: 'sackgasse', text: t }; },
     geheim: function (t) { return { art: 'geheim', text: t }; }
   };
+  var NUTZLOS = ['«%» hilft hier nicht weiter.', 'Damit? Hier? Das bringt nichts.', '«%» passt hier nicht. Vielleicht woanders.'];
+  var NEIN = ['Das passt nicht zusammen.', '«%a» und «%b»? Daraus wird nichts.', 'Hübsche Idee – aber das hält nicht zusammen.'];
 
   function tippe(x, y) {
     if (S.busy || S.fertig || !S.sz) return;
     welle(x, y);
-    var st = finde(x, y, S.zustand);
-    if (!st) { ton('tap'); return; }
+    var st = finde(x, y, S.zustand), dg = S.wahl, fn;
+    if (!st) { if (dg) { S.wahl = null; tasche(S.zustand); } ton('tap'); return; }
+    if (dg) {
+      S.wahl = null; fn = st.mit && st.mit[dg];
+      if (!fn) {                         // das Ding bringt hier nichts: freundlich sagen, kostet nichts
+        tasche(S.zustand); ton('boing'); S.ohne++;
+        sag((S.sz.nutzlos && S.sz.nutzlos(S.zustand, dg, st.id)) || NUTZLOS[S.nein++ % NUTZLOS.length].replace('%', ding(dg, S.zustand).name));
+        hud(); return;
+      }
+    } else fn = st.tipp;
+    if (!fn) { ton('tap'); return; }
     S.busy = true;
-    var a = new Akt(st);
+    var a = new Akt(st, dg);
     S.akt = a.s;                       // lauf() sieht während der Aktion die Arbeitskopie (Bewegtes springt nicht)
-    Promise.resolve().then(function () { return st.tipp(a.s, a); }).then(null, function (e) { if (window.console) console.error(e); return { art: 'gag', text: '' }; }).then(function (r) {
+    Promise.resolve().then(function () { return fn(a.s, a); }).then(null, function (e) { if (window.console) console.error(e); return { art: 'gag', text: '' }; }).then(function (r) {
       r = r || { art: 'gag', text: '' };
       if (r.art === 'weiter') { S.zustand = a.s; S.ohne = 0; ton('ok'); sag(r.text); male(S.zustand); }
-      else if (r.art === 'fertig') { S.zustand = a.s; S.fertig = true; sag(r.text); male(S.zustand); return warte(900).then(schluss); }
+      else if (r.art === 'wechsel') { S.zustand = a.s; if (r.text) sag(r.text); male(S.zustand); }
+      else if (r.art === 'fertig') { S.zustand = a.s; S.fertig = true; S.meister = r.meister; S.schluss = r.text; sag(r.text); male(S.zustand); return warte(900).then(schluss); }
       else if (r.art === 'geheim') {
         var neu = !MERK.geheim[S.sz.id]; MERK.geheim[S.sz.id] = 1; sichern(); ton('geheim');
         sag((neu ? 'Geheimnis gefunden! ' : 'Das Geheimnis kennst du schon: ') + (r.text || ''));
@@ -288,7 +351,42 @@
     }).then(function () { S.akt = null; S.busy = false; hud(); });
   }
 
-  // ---- Tipp: die Gegend pulsiert, nicht die genaue Stelle ----
+  // ---- Dinge in der Leiste: wählen, abwählen, zwei kombinieren ----
+  function kombiFinde(a, b, s) {
+    var L = S.sz.kombi || [];
+    for (var i = 0; i < L.length; i++) { var k = L[i]; if (((k.a === a && k.b === b) || (k.a === b && k.b === a)) && (!k.wenn || k.wenn(s))) return k; }
+    return null;
+  }
+  function platzTipp(id) {
+    if (S.busy || S.fertig || !S.sz || !S.sz.dinge) return;
+    var s = S.zustand, d = ding(id, s);
+    if (!S.wahl) { S.wahl = id; ton('tap'); tasche(s); sag('«' + d.name + '» gewählt. Tippe auf eine Stelle im Bild – oder auf ein zweites Ding zum Kombinieren.'); return; }
+    if (S.wahl === id) { S.wahl = null; ton('tap'); tasche(s); sag('«' + d.name + '» wieder eingesteckt.'); return; }
+    var a = S.wahl, k = kombiFinde(a, id, s), ea = platz(a), eb = platz(id);
+    S.wahl = null; S.busy = true;
+    var fertig = function () { S.busy = false; hud(); };
+    if (k && k.gibt) {
+      var ra = ea.getBoundingClientRect(), rb = eb.getBoundingClientRect(), dx = (rb.left - ra.left) / 2, dy = (rb.top - ra.top) / 2;
+      ton('plopp');
+      Promise.all([anim(ea, [{ transform: 'translate(0,0)' }, { transform: 'translate(' + dx + 'px,' + dy + 'px) scale(.8) rotate(-12deg)' }], 380),
+        anim(eb, [{ transform: 'translate(0,0)' }, { transform: 'translate(' + (-dx) + 'px,' + (-dy) + 'px) scale(.8) rotate(12deg)' }], 380)]).then(function () {
+        var n = klon(s); n.tasche = n.tasche.filter(function (x) { return x !== a && x !== id; }); n.tasche.push(k.gibt);
+        if (k.setze) for (var f in k.setze) n[f] = k.setze[f];
+        S.zustand = n; S.neu = k.gibt; S.ohne = 0; ton('ok'); male(n);
+        sag(k.text || ('Daraus wird: «' + ding(k.gibt, n).name + '».'));
+      }).then(fertig);
+    } else {
+      ton('boing'); S.ohne++;
+      var kf = [{ transform: 'translateX(0)' }, { transform: 'translateX(-6px)' }, { transform: 'translateX(6px)' }, { transform: 'translateX(-4px)' }, { transform: 'translateX(0)' }];
+      sag(k && k.nein ? k.nein : NEIN[S.nein++ % NEIN.length].replace('%a', d.name).replace('%b', ding(a, s).name));
+      Promise.all([anim(ea, kf, 350, { fill: 'none' }), anim(eb, kf, 350, { fill: 'none' })]).then(function () { tasche(s); }).then(fertig);
+    }
+  }
+
+  // ---- Tipp: die Gegend pulsiert, nicht die genaue Stelle; ab dem zweiten Tipp im selben Bild etwas genauer ----
+  function norm(n) { return !n ? {} : typeof n === 'string' ? { stelle: n } : n; }
+  function naechster(weg) { return norm(S.sz.naechster(S.zustand, weg || (S.sz.wege || [])[0], zeit())); }
+  function pulsPlatz(id) { var e = platz(id); if (e) { e.classList.remove('puls'); void e.offsetWidth; e.classList.add('puls'); } }
   function tippFrage() {
     if (S.busy || S.fertig) return;
     if (S.tipp) return tippZeigen();
@@ -297,17 +395,29 @@
     $('tNein').onclick = function () { sag(S.sz.ziel); };
   }
   function tippZeigen() {
-    var id = S.sz.naechster(S.zustand), st = null;
-    S.sz.stellen.forEach(function (x) { if (x.id === id && !st) st = x; });
+    var n = naechster(), st = null, genau = ++S.tippN > 1, s = S.zustand;
+    ton('tipp');
+    if (n.kombi) {
+      pulsPlatz(n.kombi[0]); pulsPlatz(n.kombi[1]);
+      sag(genau ? '«' + ding(n.kombi[0], s).name + '» und «' + ding(n.kombi[1], s).name + '» gehören zusammen: eines antippen, dann das andere.' : 'Zwei Dinge in deiner Tasche gehören zusammen.');
+      return;
+    }
+    S.sz.stellen.forEach(function (x) { if (x.id === n.stelle && !st && (!x.wenn || x.wenn(s))) st = x; });
     if (!st) return;
-    var r = rect(st, S.zustand), n = (S.n['?'] = (S.n['?'] || 0) + 1);
-    var cx = r[0] + r[2] / 2 + [28, -30, 12][n % 3], cy = r[1] + r[3] / 2 + [-22, 18, 30][n % 3], R = Math.max(r[2], r[3]) / 2 + 70;
+    var r = rect(st, s), k = (S.n['?'] = (S.n['?'] || 0) + 1), w = genau ? 0.5 : 1;
+    var cx = r[0] + r[2] / 2 + w * [28, -30, 12][k % 3], cy = r[1] + r[3] / 2 + w * [-22, 18, 30][k % 3], R = Math.max(r[2], r[3]) / 2 + (genau ? 40 : 70);
     cx = Math.max(R * 0.6, Math.min(800 - R * 0.6, cx)); cy = Math.max(R * 0.6, Math.min(600 - R * 0.6, cy));
-    ton('tipp'); sag('Schau mal in diese Gegend …');
+    var t = n.warte ? 'Hier tut sich gerade etwas. Hab einen Moment Geduld …'
+      : n.ding ? (genau ? 'Hier hilft: «' + ding(n.ding, s).name + '». Erst das Ding antippen, dann die Stelle.' : 'Schau mal in diese Gegend … und in deine Tasche.')
+      : 'Schau mal in diese Gegend …';
+    if (genau && n.wink) t += ' ' + n.wink;
+    sag(t);
+    if (n.ding && genau) pulsPlatz(n.ding);
     var c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
     c.setAttribute('class', 'tippkreis'); c.setAttribute('cx', cx); c.setAttribute('cy', cy); c.setAttribute('r', R);
     c.setAttribute('fill', 'rgba(255,210,63,.22)'); c.setAttribute('stroke', '#ffd23f'); c.setAttribute('stroke-width', 6); c.setAttribute('stroke-dasharray', '14 12');
     c.style.transformBox = 'fill-box'; c.style.transformOrigin = '50% 50%';
+    var alt = fx.querySelectorAll('.tippkreis'); for (var i = 0; i < alt.length; i++) alt[i].remove();
     fx.appendChild(c);
     var weg = function () { c.remove(); };
     if (c.animate) c.animate([{ transform: 'scale(.8)', opacity: 0 }, { transform: 'scale(1.05)', opacity: 1 }, { transform: 'scale(.92)', opacity: 0.6 }, { transform: 'scale(1.05)', opacity: 1 }, { transform: 'scale(.92)', opacity: 0.6 }, { transform: 'scale(1.05)', opacity: 1 }, { transform: 'scale(1.1)', opacity: 0 }], { duration: 3200 }).onfinish = weg;
@@ -315,8 +425,13 @@
   }
 
   // ---- Bildwahl ----
+  function stufeHtml(n) {
+    var h = '<span class="stufe st' + n + '" title="Schwierigkeit: ' + STUFEN[n] + '">';
+    for (var i = 1; i <= 4; i++) h += '<i' + (i <= n ? ' class="an"' : '') + '></i>';
+    return h + '<b>' + STUFEN[n] + '</b></span>';
+  }
   function wahl() {
-    S.sz = null; S.i = -1;
+    S.sz = null; S.i = -1; S.wahl = null;
     $('spiel').hidden = true; $('wahl').hidden = false; $('ende').hidden = true;
     ['bBilder', 'bTipp', 'bNeu', 'hudSterne'].forEach(function (k) { $(k).hidden = true; });
     $('titel').textContent = 'Was nun?';
@@ -325,11 +440,12 @@
     SZ.forEach(function (sz, i) {
       var n = MERK.sterne[sz.id] || 0, auf = offen(i); sum += n; if (MERK.geheim[sz.id]) geh++;
       if (auf && !n && erste < 0) erste = i;
-      h += '<button type="button" class="karte' + (auf ? '' : ' zu') + (i === erste ? ' neu' : '') + '" data-i="' + i + '"' + (auf ? '' : ' aria-disabled="true"') + ' aria-label="Bild ' + (i + 1) + ': ' + sz.titel + (auf ? '' : ' (noch gesperrt)') + '">'
+      h += '<button type="button" class="karte' + (auf ? '' : ' zu') + (i === erste ? ' neu' : '') + '" data-i="' + i + '"' + (auf ? '' : ' aria-disabled="true"') + ' aria-label="Bild ' + (i + 1) + ': ' + sz.titel + ', ' + STUFEN[sz.stufe || 1] + (auf ? '' : ' (noch gesperrt)') + '">'
         + '<span class="mini"><svg viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice">' + sz.bild(sz.start()) + '</svg></span>'
         + (auf ? '' : '<span class="schloss"><svg width="54" height="54" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="3" fill="#e9a23b" stroke="#0e1621" stroke-width="1.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3" fill="none" stroke="#e9a23b" stroke-width="2.5" stroke-linecap="round"/><circle cx="12" cy="15.5" r="1.8" fill="#0e1621"/></svg></span>')
-        + '<span class="u"><span class="n">' + (i + 1) + ' · ' + sz.titel + '</span><span class="s">' + (auf ? sterneHtml(n) : '<span class="g" style="margin:0">Zuerst Bild ' + i + ' lösen</span>')
-        + (auf ? '<span class="g">' + (MERK.geheim[sz.id] ? 'Geheimnis ✓' : '') + '</span>' : '') + '</span></span></button>';
+        + '<span class="u"><span class="n">' + (i + 1) + ' · ' + sz.titel + '</span>' + stufeHtml(sz.stufe || 1)
+        + '<span class="s">' + (auf ? sterneHtml(n) : '<span class="g" style="margin:0">Zuerst Bild ' + i + ' lösen</span>')
+        + (auf ? '<span class="g">' + (MERK.meister[sz.id] ? '<span class="krone" title="Meister-Lösung gefunden">♛</span> ' : '') + (MERK.geheim[sz.id] ? 'Geheimnis ✓' : '') + '</span>' : '') + '</span></span></button>';
     });
     $('karten').innerHTML = h;
     $('chipSterne').textContent = 'Sterne ' + sum + '/' + SZ.length * 3;
@@ -339,36 +455,44 @@
       + '<div class="r"><span class="st">' + sterneHtml(2) + '</span><span>höchstens 3 Fehlversuche, ohne Tipp</span></div>'
       + '<div class="r"><span class="st">' + sterneHtml(1) + '</span><span>mit Tipp (Lampe oben) oder mehr Fehlversuche</span></div>'
       + '<div style="margin-top:6px">Ein Fehlversuch ist nur, wenn etwas schiefgeht und das Bild zurückspult oder der Moment falsch war. '
-      + '<b>Herumtippen kostet nichts</b> – fast alles im Bild macht etwas Lustiges. In jedem Bild ist dazu ein Geheimnis versteckt.</div>';
+      + '<b>Herumtippen kostet nichts</b> – fast alles im Bild macht etwas Lustiges. In jedem Bild ist dazu ein Geheimnis versteckt.</div>'
+      + '<div style="margin-top:8px"><b>Ab Bild 6: Dinge mitnehmen</b><br>Was du einsteckst, liegt unten in der Leiste. Ein Ding antippen und dann eine Stelle im Bild: Du benutzt es dort. '
+      + 'Ein Ding antippen und dann ein zweites: Du setzt beide zusammen. Passt es nicht, kostet das nichts. Manche Bilder haben zwei Lösungen – die elegantere gibt das Abzeichen <span class="krone">♛</span> Meister-Lösung.</div>';
   }
 
   function starte(i) {
     if (!SZ[i] || !offen(i)) return;
     var sz = SZ[i];
     S.i = i; S.sz = sz; S.zustand = sz.start(); S.busy = false; S.fertig = false; S.fehler = 0; S.tipp = false; S.ohne = 0; S.n = {}; S.t0 = performance.now();
+    S.wahl = null; S.neu = null; S.tippN = 0; S.meister = false; S.akt = null;
+    if (sz.dinge && !S.zustand.tasche) S.zustand.tasche = [];
     $('wahl').hidden = true; $('spiel').hidden = false; $('ende').hidden = true; $('buehne').classList.remove('rueck');
     ['bBilder', 'bTipp', 'bNeu', 'hudSterne'].forEach(function (k) { $(k).hidden = false; });
     $('titel').textContent = $('titel2').textContent = (i + 1) + ' · ' + sz.titel;
     document.body.classList.add('imspiel');
     fx.innerHTML = '';
-    passe(); male(S.zustand); sag(sz.ziel); hud();
+    male(S.zustand); passe(); sag(sz.ziel); hud();
   }
 
   function schluss() {
     var sz = S.sz, n = sterneJetzt(), alt = MERK.sterne[sz.id] || 0;
     if (n > alt) MERK.sterne[sz.id] = n;
+    if (S.meister) MERK.meister[sz.id] = 1;
     sichern(); ton('fertig');
     for (var k = 0; k < n; k++) setTimeout(function () { ton('stern'); }, 500 + k * 250);
     var warum = S.tipp ? 'Mit Tipp gelöst – ohne Tipp gibt es mehr Sterne.'
       : S.fehler === 0 ? 'Ohne Fehlversuch und ohne Tipp!'
       : S.fehler <= 3 ? (S.fehler === 1 ? '1 Fehlversuch' : S.fehler + ' Fehlversuche') + ' – ohne gibt es 3 Sterne.'
       : S.fehler + ' Fehlversuche – mit höchstens 3 gibt es 2 Sterne.';
-    var letzte = S.i === SZ.length - 1;
+    var letzte = S.i === SZ.length - 1, zwei = (sz.wege || []).length > 1;
     $('ende').innerHTML = '<div class="k"><h2>' + ['Geschafft!', 'Geschafft!', 'Gut gemacht!', 'Natürlich!'][n] + '</h2><div class="gs" aria-label="' + n + ' von 3 Sternen">' + sterneHtml(n) + '</div>'
+      + (S.meister ? '<p class="abz"><span class="krone">♛</span> Meister-Lösung</p>' : '')
+      + (S.schluss ? '<p class="gesch">' + S.schluss.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</p>' : '')
       + '<p><b>' + warum + '</b></p>'
       + (alt > n ? '<p>Dein bestes Ergebnis hier bleibt: ' + alt + ' Sterne.</p>' : '')
       + '<p>' + (MERK.geheim[sz.id] ? 'Geheimnis in diesem Bild: gefunden ✓' : 'In diesem Bild ist noch ein Geheimnis versteckt.') + '</p>'
-      + (letzte ? '<p>Das war das letzte Bild dieser ersten Runde. Weitere folgen!</p>' : '')
+      + (zwei && !MERK.meister[sz.id] ? '<p>Dieses Bild hat noch eine zweite, elegantere Lösung.</p>' : '')
+      + (letzte ? '<p>Das war das letzte Bild. Alle Sterne und Geheimnisse schon gefunden?</p>' : '')
       + '<div class="kn">' + (letzte ? '' : '<button type="button" class="haupt" id="eWeiter">Nächstes Bild</button>')
       + '<button type="button" id="eNochmal">Nochmal</button><button type="button"' + (letzte ? ' class="haupt"' : '') + ' id="eAlle">Alle Bilder</button></div></div>';
     $('ende').hidden = false; hud();
@@ -377,8 +501,19 @@
     $('eAlle').onclick = wahl;
   }
 
+  function uhr() {                       // etwas ist mit der Zeit fertig geworden (Eis geschmolzen, Schiff angekommen …)
+    var r = null; try { r = S.sz.uhr(S.zustand, zeit()); } catch (e) {}
+    if (!r) return;
+    var n = klon(S.zustand); if (r.setze) for (var f in r.setze) n[f] = r.setze[f];
+    S.zustand = n; if (r.fehl) S.fehler++;
+    ton(r.ton || (r.fehl ? 'fehl' : 'plopp')); male(n); if (r.text) sag(r.text); hud();
+  }
   function schleife() {
-    if (S.sz && S.sz.lauf && !$('spiel').hidden) { try { S.sz.lauf(S.busy && S.akt ? S.akt : S.zustand, zeit(), q); } catch (e) {} }
+    if (S.sz && !$('spiel').hidden) {
+      var t = performance.now();
+      if (S.sz.lauf) { try { S.sz.lauf(S.busy && S.akt ? S.akt : S.zustand, zeit(), q); } catch (e) {} }
+      if (S.sz.uhr && !S.busy && !S.fertig && t - S.uhrT > 240) { S.uhrT = t; uhr(); }
+    }
     requestAnimationFrame(schleife);
   }
 
@@ -389,6 +524,7 @@
       bild = $('bild'); fx = $('fx');
       laden(); tonKnopf(); wahl();
       $('karten').addEventListener('click', function (e) { var k = e.target.closest && e.target.closest('.karte'); if (!k) return; var i = +k.getAttribute('data-i'); if (offen(i)) starte(i); else { ton('fehl'); } });
+      $('tasche').addEventListener('click', function (e) { var p = e.target.closest && e.target.closest('.platz[data-d]'); if (p) platzTipp(p.getAttribute('data-d')); });
       var runter = function (e) {
         if (e.button) return; e.preventDefault();
         var r = bild.getBoundingClientRect(); if (!r.width) return;
@@ -406,9 +542,15 @@
       requestAnimationFrame(schleife);
       if (TEST) window.__wn = {
         S: S, SZ: SZ, MERK: MERK, MIN: MIN, frei: function () { return !S.busy; }, start: starte, wahl: wahl,
-        naechster: function () { return S.sz ? S.sz.naechster(S.zustand) : null; },
-        gut: function (id) { var ok = true; S.sz.stellen.forEach(function (st) { if (st.id === id && st.gut) ok = st.gut(S.zustand, zeit()); }); return ok; },
+        // immer in der Form {stelle, ding, kombi, warte}; für alte Tests: next() gibt nur die Stelle
+        naechster: function (weg) { return S.sz ? naechster(weg) : null; },
+        next: function () { return S.sz ? (naechster().stelle || null) : null; },
+        wege: function () { return S.sz.wege || ['']; },
+        gut: function (id) { var ok = true; S.sz.stellen.forEach(function (st) { if (st.id === id && st.gut && (!st.wenn || st.wenn(S.zustand))) ok = st.gut(S.zustand, zeit()); }); return ok; },
         schlecht: function (id) { var x = false; S.sz.stellen.forEach(function (st) { if (st.id === id && st.schlecht) x = st.schlecht(S.zustand, zeit()); }); return x; },
+        // Dinge in der Leiste mit Bildschirm-Platz, und welche Paare jetzt wirklich etwas ergeben
+        plaetze: function () { var o = []; $('tasche').querySelectorAll('.platz[data-d]').forEach(function (e) { var r = e.getBoundingClientRect(); o.push({ id: e.getAttribute('data-d'), x: r.left + r.width / 2, y: r.top + r.height / 2, w: e.offsetWidth, h: e.offsetHeight, wahl: e.classList.contains('wahl') }); }); return o; },
+        kombis: function () { var T = S.zustand.tasche || [], o = []; for (var i = 0; i < T.length; i++) for (var j = i + 1; j < T.length; j++) { var k = kombiFinde(T[i], T[j], S.zustand); o.push({ a: T[i], b: T[j], gibt: k && k.gibt ? k.gibt : null }); } return o; },
         // Punkt auf dem Bildschirm, an dem ein Tipp wirklich diese Stelle trifft, dazu ihre Grösse in Bildschirm-Pixeln
         stellen: function () {
           var b = bild.getBoundingClientRect(), k = b.width / 800, out = [];
@@ -418,7 +560,7 @@
               var x = r[0] + r[2] * [0.5, 0.3, 0.7, 0.15, 0.85][i], y = r[1] + r[3] * [0.3, 0.7, 0.5][j];
               if (finde(x, y, S.zustand) === st) p = [b.left + x * k, b.top + y * k];
             }
-            out.push({ id: st.id, w: r[2] * k, h: r[3] * k, bw: r[2], bh: r[3], x: p ? p[0] : null, y: p ? p[1] : null, zeit: !!st.gut });
+            out.push({ id: st.id, w: r[2] * k, h: r[3] * k, bw: r[2], bh: r[3], x: p ? p[0] : null, y: p ? p[1] : null, zeit: !!st.gut, mit: st.mit ? Object.keys(st.mit) : [], tipp: !!st.tipp });
           });
           return out;
         }
