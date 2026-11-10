@@ -5,8 +5,13 @@
 #    nur quick (ab 29.10.2026, Ressourcen sparen); sonntags alles inkl. hard; von Hand: frei wählbar
 #  - jeden Sonntag in der Nacht: alles, auch «hard» (Nebel, Scheinwerfer, Spinnennetz, Tropfen …), 3 Zufallsstarts (Streuung)
 #  - von Hand (Actions → Prüfstand → Run workflow): alles wählbar; «rechner: hp» = auf dem Simulator-PC (self-hosted Runner
-#    «moveeye-hp», werkzeuge/test_runner/ANLEITUNG.md; Simulator aus dem Linux-Paket, kein Godot, Lite-Grafik). Ist der HP aus,
+#    «moveeye-hp», werkzeuge/test_runner/ANLEITUNG.md; Simulator aus dem Linux-Paket, kein Godot; Grafik Normal, nur bei «standard» Lite). Ist der HP aus,
 #    bricht der Wächter nach 15 Min. ab. Automatisch (neue Version, Sonntag) läuft der Prüfstand immer auf GitHub.
+#  - Aussehen (Entscheid des Besitzers 10.11.2026 nach A/B #2 und der Tier-Stichprobe): Standard ist das neue Flora-Aussehen
+#    (MW_FLORA=normal, Grafik Normal) mit den Tier-Modellen (MW_TIERE=modell) – auch automatisch (neue Version, Sonntag), wo
+#    es keine Eingaben gibt, und auf den GitHub-Rechnern: dort ist «Grafik Normal» ohnehin die Stufe, die der Simulator selbst
+#    wählt (llvmpipe auf 16 GB ist kein «schwacher PC», Lite schaltet --quality nicht automatisch ein) – Lite würde das neue
+#    Aussehen gar nicht zeigen. «alt» / «standard» / «grundformen» = nur zum Vergleich, nicht in VERLAUF.md.
 name: Prüfstand
 on:
   workflow_dispatch:
@@ -39,12 +44,17 @@ on:
         options: [github, hp]
         default: github
       flora:
-        description: "Aussehen (Flora Paket 4 A): standard (wie bisher) · alt / neu = A/B-Vergleich mit Grafik Normal, altes bzw. neues Aussehen (Bäume, Gras, Boden, Tiere, Vögel); A/B nicht in VERLAUF.md"
+        description: "Aussehen: neu (Standard: Flora-Aussehen – Bäume, Gras, Boden, Vögel – mit Grafik Normal, kommt in VERLAUF.md) · alt (altes Aussehen, Grafik Normal) · standard (altes Aussehen, Grafik wie bis 3.71.0); alt und standard nur zum Vergleich, nicht in VERLAUF.md"
         type: choice
-        options: [standard, alt, neu]
-        default: standard
+        options: [neu, alt, standard]
+        default: neu
+      tiere:
+        description: "Tiere im Simulator: modelle (Standard: Tiere mit Skelett, MW_TIERE=modell) oder grundformen (die alten Formen, MW_TIERE=alt – nur zum Vergleich, nicht in VERLAUF.md)"
+        type: choice
+        options: [modelle, grundformen]
+        default: modelle
       anzeige:
-        description: "Nur rechner hp: xvfb (virtueller Bildschirm, wie bisher) oder bildschirm (Grafikkarte :0 – nur wenn für den Runner freigegeben; sonst Abbruch)"
+        description: "Nur rechner hp: xvfb (virtueller Bildschirm, Standard) oder bildschirm (Grafikkarte :0 – nur wenn für den Runner freigegeben; sonst Abbruch)"
         type: choice
         options: [xvfb, bildschirm]
         default: xvfb
@@ -124,8 +134,12 @@ jobs:
           IN_REAL: ${{ github.event.inputs.realismus }}
           IN_ROH: ${{ github.event.inputs.roh_plaene }}
           IN_MAL: ${{ github.event.inputs.mal }}
-          MW_FLORA: ${{ github.event.inputs.flora == 'neu' && 'normal' || '' }}
-          MW_PRUEFSTAND_GRAFIK: ${{ (github.event.inputs.flora == 'alt' || github.event.inputs.flora == 'neu') && 'normal' || '' }}
+          # ohne Eingaben (neue Version, Sonntag): neu + modelle, wie beim Start von Hand ohne Änderung
+          AUSSEHEN: ${{ github.event.inputs.flora || 'neu' }}
+          TIERE: ${{ github.event.inputs.tiere || 'modelle' }}
+          MW_FLORA: ${{ (github.event.inputs.flora || 'neu') == 'neu' && 'normal' || '' }}
+          MW_PRUEFSTAND_GRAFIK: ${{ (github.event.inputs.flora || 'neu') != 'standard' && 'normal' || '' }}
+          MW_TIERE: ${{ (github.event.inputs.tiere || 'modelle') == 'grundformen' && 'alt' || 'modell' }}
           MW_PRUEFSTAND_DISPLAY: ${{ (github.event.inputs.rechner == 'hp' && github.event.inputs.anzeige == 'bildschirm') && ':0' || '' }}
         run: |
           PLAENE="quick"; SEEDS=1; WDH=1; REAL="an"; ROH=""; MAL=2     # 29.10.2026 (Besitzer: Ressourcen sparen): pro Version nur «quick»
@@ -135,10 +149,9 @@ jobs:
             PLAENE="${IN_PLAENE:-$PLAENE}"; SEEDS="${IN_SEEDS:-1}"; WDH="${IN_WDH:-1}"; REAL="${IN_REAL:-an,aus}"; ROH="$IN_ROH"; MAL="${IN_MAL:-2}"
             if [ "$IN_SCHWER" = "true" ] && ! echo ",$PLAENE," | grep -q ",hard,"; then PLAENE="$PLAENE,hard"; fi
           fi
-          AUSSEHEN="${{ github.event.inputs.flora }}"
-          [ -n "$MW_PRUEFSTAND_GRAFIK" ] && RECHNER="$RECHNER · A/B Aussehen $AUSSEHEN, Grafik Normal"
+          # Aussehen und Tiere stehen in VERLAUF.md in der Spalte «Simulator» (pruefstand.py, aus MW_FLORA / MW_TIERE / Grafik)
           [ -n "$MW_PRUEFSTAND_DISPLAY" ] && RECHNER="$RECHNER · Grafikkarte"
-          echo "Testläufe: $PLAENE · Zufallsstarts $SEEDS · Wiederholungen $WDH · Kamera-Effekte $REAL (ohne: ${ROH:-alle}) · Besucher ×$MAL · Aussehen ${AUSSEHEN:-standard}"
+          echo "Testläufe: $PLAENE · Zufallsstarts $SEEDS · Wiederholungen $WDH · Kamera-Effekte $REAL (ohne: ${ROH:-alle}) · Besucher ×$MAL · Aussehen $AUSSEHEN · Tiere $TIERE"
           "$PY" pruefstand/pruefstand.py "$SIMARG" "$SIMPFAD" --ki-ordner ki \
             --plaene "$PLAENE" --seeds "$SEEDS" --wiederholungen "$WDH" --realismus "$REAL" --roh-plaene "$ROH" --mal "$MAL" \
             --rechner "$RECHNER" --behalten
@@ -161,7 +174,8 @@ jobs:
           path: ki
           retention-days: 3
       - name: Ergebnis ins Repository
-        if: always() && github.event.inputs.flora != 'alt' && github.event.inputs.flora != 'neu'   # A/B: Vergleich, kein Eintrag im Verlauf
+        # nur der Normalfall (Aussehen neu, Tier-Modelle) kommt in den Verlauf; alt / standard / grundformen = Vergleich
+        if: always() && (github.event.inputs.flora || 'neu') == 'neu' && (github.event.inputs.tiere || 'modelle') == 'modelle'
         run: |
           git config user.name "Prüfstand"
           git config user.email "pruefstand@users.noreply.github.com"
@@ -170,7 +184,7 @@ jobs:
           git commit -q -m "Prüfstand: Ergebnis $(ls webcam_bewegung_*.py | sort -V | tail -1 | sed 's/webcam_bewegung_//; s/\.py//; s/_/./g')"
           for i in 1 2 3; do git pull -q --rebase && git push -q && break; sleep 5; done
       - name: Verschlechterung melden
-        if: always() && github.event.inputs.flora != 'alt' && github.event.inputs.flora != 'neu'
+        if: always() && (github.event.inputs.flora || 'neu') == 'neu' && (github.event.inputs.tiere || 'modelle') == 'modelle'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |

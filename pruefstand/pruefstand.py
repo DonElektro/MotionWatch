@@ -251,6 +251,7 @@ def run(a):
         info["besucher_mal"] = a.mal
         info["seeds"] = a.seeds
         info["waermebild"] = a.waermebild
+        info.update(aussehen_aus_umgebung(env))          # 10.11.2026: Aussehen und Tiere (Spalte «Simulator», Vergleich)
         laeufe = [(p, m) for m in a.realismus for p in a.plaene
                   if not (m == "aus" and (p in FIX_PLAENE or (a.roh_plaene and p not in a.roh_plaene)))]
         for plan0, modus in laeufe:
@@ -426,6 +427,31 @@ def alle_ergebnisse():
     return out
 
 
+def aussehen_aus_umgebung(env):
+    """Aussehen des Simulators aus der Umgebung (.github/workflows/pruefstand.yml): neu = MW_FLORA gesetzt (Flora-Aussehen),
+    alt = nur Grafik fest (MW_PRUEFSTAND_GRAFIK), standard = keines von beiden (das Aussehen bis 3.71.0, --quality = Flora «alt»).
+    Tiere: MW_TIERE=modell / alt; ohne Angabe wie der Simulator (tier_modell.gd an(): Modelle nur mit Flora normal / hoch)."""
+    flora = str(env.get("MW_FLORA", "")).strip()
+    grafik = str(env.get("MW_PRUEFSTAND_GRAFIK", "")).strip()
+    aussehen = "neu" if flora and flora != "alt" else ("alt" if grafik or flora == "alt" else "standard")
+    t = str(env.get("MW_TIERE", "")).strip()
+    tiere = "modelle" if t == "modell" else ("grundformen" if t == "alt" else ("modelle" if flora in ("normal", "hoch") else "grundformen"))
+    return {"aussehen": aussehen, "tiere": tiere, "grafik": grafik or "auto"}
+
+
+def aussehen_art(d):
+    """(Aussehen, Tiere) eines Ergebnisses - ältere Dateien ohne Angabe: das alte Aussehen mit Grundformen"""
+    return (d.get("aussehen") or "standard", d.get("tiere") or "grundformen")
+
+
+def aussehen_text(d):
+    """die kleine Marke in der Spalte «Simulator»: nur bei Ergebnissen, die das Aussehen gespeichert haben"""
+    if not d.get("aussehen"):
+        return ""
+    au, ti = aussehen_art(d)
+    return " · Aussehen %s · Tiere %s" % (au, "Modelle" if ti == "modelle" else "Grundformen")
+
+
 def ki_art(d):
     """«mit KI» / «ohne KI» - the status text also has the time per picture, that must not prevent a comparison"""
     k = str(d.get("ki", ""))
@@ -433,16 +459,18 @@ def ki_art(d):
 
 
 def vergleich(info):
-    """this run against the last comparable one (same plan, same computer, AI the same): lines of text, worse?
+    """this run against the last comparable one (same plan, same computer, AI the same, same look and animals): lines of text, worse?
     Prüfstand 2: when both runs have real pushes, one false push more per run (or 15 points fewer persons) is worse;
     otherwise the flicker as before."""
     zeilen, schlechter = [], False
     alte = [d for d in alle_ergebnisse() if d.get("_datei") and d.get("datum") != info.get("datum")]
     for plan, reps in info["plaene"].items():
         k = kennzahlen(reps)
-        vor = [d for d in alte if plan in d.get("plaene", {}) and d.get("rechner") == info.get("rechner") and ki_art(d) == ki_art(info)]
+        vor = [d for d in alte if plan in d.get("plaene", {}) and d.get("rechner") == info.get("rechner") and ki_art(d) == ki_art(info)
+               and aussehen_art(d) == aussehen_art(info)]
         if not vor:
-            zeilen.append("%s: erster Lauf auf diesem Rechner – noch kein Vergleich." % plan_name(plan))
+            zeilen.append("%s: erster Lauf auf diesem Rechner%s – noch kein Vergleich." % (
+                plan_name(plan), (" mit diesem Aussehen (%s, Tiere %s)" % aussehen_art(info)) if info.get("aussehen") else ""))
             continue
         v = vor[-1]
         kv = kennzahlen(v["plaene"][plan])
@@ -477,7 +505,9 @@ def verlauf_schreiben():
          "Automatisch geschrieben von `pruefstand/pruefstand.py` aus den Dateien in `pruefstand/ergebnisse/`. Nicht von Hand ändern.", "",
          "Jeder Testlauf schickt immer dieselben Besucher auf denselben Wegen durch den 3D-Simulator. Der Simulator weiss, wer wann",
          "für eine Kamera sichtbar war, und vergleicht das mit den Meldungen von Motion Watch. Vergleichbar sind nur Zeilen vom",
-         "gleichen Rechner und mit gleichem KI-Stand (ein langsamer Rechner liefert weniger Bilder pro Sekunde).", "",
+         "gleichen Rechner, mit gleichem KI-Stand (ein langsamer Rechner liefert weniger Bilder pro Sekunde) und mit gleichem Aussehen:",
+         "in der Spalte Simulator steht ab 10.11.2026 «Aussehen neu» (Flora-Aussehen mit Grafik Normal, seither Standard) und",
+         "«Tiere Modelle» (Tiere mit Skelett) bzw. «Grundformen»; ohne Angabe = das alte Aussehen mit den Grundformen.", "",
          "**Pushes richtig / falsch** (ab Prüfstand 2): die Push-Nachrichten, die MoveEye wirklich verschickt hat (Test-Postfach der",
          "Simulation). Richtig = eine Person war sichtbar oder im Bild; derselbe Besuch nochmals innert 10 s zählt einmal.",
          "Bei «Ganze Nacht» ist das die Zahl pro Nacht. **Flackern** = jede kurze Personen-Meldung ohne sichtbare Person (hiess",
@@ -504,7 +534,7 @@ def verlauf_schreiben():
             st = (" (%s %%)" % _spanne(k["streuung_quote"])) if k["streuung_quote"] else ""
             zl = (" ×%d" % k["laeufe"] if k["laeufe"] > 1 else "") + ((" · Zufall %s" % ",".join(str(x) for x in k["seeds"])) if k["seeds"] != [1] else "")
             L.append("| %s | %s | %s | %s%s | %s | %d / %d (**%.0f %%**)%s | %s | %s | %s | %d / %d | %d | %s | %s | %s |" % (
-                d.get("datum", "?"), d.get("mw_version", "?"), d.get("sim_version", "?"), plan_name(plan),
+                d.get("datum", "?"), d.get("mw_version", "?"), d.get("sim_version", "?") + aussehen_text(d), plan_name(plan),
                 zl + (" – *%s*" % d["bemerkung"] if d.get("bemerkung") else ""), pt,
                 k["erkannt"], k["personen"], k["quote"], st, ("%d / %d" % (k["waerme_erkannt"], k["waerme"])) if k["waerme"] else "–", gt,
                 ("%.1f s" % k["reaktion"]) if k["reaktion"] is not None else "–", k["tiere_gemeldet"], k["tiere"], k["flackern"],
