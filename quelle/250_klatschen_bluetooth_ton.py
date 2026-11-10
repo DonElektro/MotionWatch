@@ -73,7 +73,7 @@ def clap_action(n):
                 if CFG.get("protect_pin"):                  # 2.97.0: with a PIN, clapping only arms (anyone can clap)
                     done = ""; log_event("sys", "Clap switch: disarming needs the PIN")
                 else:
-                    disarm(); done = tr("disarmed")
+                    disarm(); done = tr("disarmed")          # fix 4: only reached without a PIN (above) - unchanged
             else:
                 arm(); done = tr("armed (countdown)")
     except Exception as e:

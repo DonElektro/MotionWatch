@@ -652,6 +652,8 @@ def set_text(key, value):
         if key == "use_case":
             return use_case_set(value, "settings")
         CFG[key] = value
+        if key == "siren_on":
+            protect_auto_user("siren_on")                # fix 3 (135): chosen by hand - the protection level leaves it alone
         if key == "ai_model":
             own_ai_switched()                           # part 195: load the chosen model (falls back to the standard)
         if key == "net_mode":
@@ -930,11 +932,68 @@ def days_text(days, names=("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")):
     return ", ".join(names[d] for d in days) or "–"
 
 
+def _sched_forced(plans, now):
+    forced = {}
+    for s in plans:
+        if schedule_active(s, now):
+            forced.update(s["actions"])
+    return forced
+
+
+def sched_manual_restore(plans, now=None):
+    """fix 11: after a restart the note «switched by hand» (CFG["sched_manual"]) counts again - as long as the schedule
+    forced the same value the whole time since (the rule of schedule_tick: «until its next change»). Checked in steps
+    through the time the program was not running; a note from the future or of a schedule that is gone is dropped."""
+    SCHED["restored"] = True
+    notes = CFG.get("sched_manual") if isinstance(CFG.get("sched_manual"), dict) else {}
+    if not notes:
+        return
+    now = now or datetime.now()
+    keep = {}
+    for k, n in notes.items():
+        try:
+            v, t0 = n["v"], datetime.fromtimestamp(float(n["t"]))
+        except (TypeError, KeyError, ValueError, OSError, OverflowError):
+            continue
+        if k not in SCHED_KEYS or k not in CFG or t0 > now + timedelta(minutes=5):
+            continue
+        span = max(0.0, (now - t0).total_seconds())
+        step = max(60.0, span / 3000.0)                  # every minute; a long break in at most 3000 steps
+        ok, i = True, 0
+        while ok and i * step <= span:
+            ok = _sched_forced(plans, t0 + timedelta(seconds=i * step)).get(k, None) == v
+            i += 1
+        if ok and _sched_forced(plans, now).get(k, None) == v:
+            keep[k] = n
+    for k, n in keep.items():
+        SCHED["manual"].add(k); SCHED["last"][k] = n["v"]; SCHED["base"][k] = CFG[k]
+    if keep:
+        log_event("sched", "Schedule: switched by hand before the restart - stays: " + ", ".join(sorted(keep)))
+    if keep != notes:
+        CFG["sched_manual"] = keep; save_settings()
+
+
+def _sched_manual_note(forced):
+    """keep CFG["sched_manual"] like SCHED["manual"] (only what a schedule forces now); True = changed"""
+    old = CFG.get("sched_manual") if isinstance(CFG.get("sched_manual"), dict) else {}
+    new = {}
+    for k in sorted(SCHED["manual"]):
+        if k in forced:
+            o = old.get(k) if isinstance(old.get(k), dict) else None
+            new[k] = o if o and o.get("v") == forced[k] else {"v": forced[k], "t": time.time()}
+    if new != old:
+        CFG["sched_manual"] = new
+        return True
+    return False
+
+
 def schedule_tick():
     """Apply all schedules (called once per second by the Scheduler thread and after every edit)."""
     with LOCK:
         plans = [dict(s) for s in SCHEDULES]
     now = sim_now()                                      # the simulated clock while connected (285)
+    if not SCHED.get("restored"):
+        sched_manual_restore(plans)
     forced, active, active_idx = {}, [], []
     for i, s in enumerate(plans):
         if schedule_active(s, now):
@@ -972,6 +1031,8 @@ def schedule_tick():
                 CFG[k] = v0
             log_event("sched", f"Schedule: {labels.get(k, k)} back to {'ON' if CFG[k] else 'OFF'}")
     SCHED["last"] = dict(forced)
+    if _sched_manual_note(forced):                       # fix 11: the schedule took over again - the note on the card goes too
+        save_settings()
     STATE["sched_active"] = list(active); STATE["sched_active_idx"] = active_idx
     STATE["sched_forced"] = dict(forced); STATE["sched_manual"] = sorted(manual)
 
@@ -981,6 +1042,7 @@ def sched_user_changed(key):
     if key in SCHED["last"]:
         SCHED["manual"].add(key)
         SCHED["base"][key] = CFG[key]
+        _sched_manual_note(SCHED["last"])                # fix 11: also on the card (the caller saves) - it survives a restart
 
 
 def schedule_add():

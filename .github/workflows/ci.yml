@@ -115,6 +115,9 @@ jobs:
       - name: «🔍 Untersuchen» im Live-Bild (Ausschnitt, Kopf, Weitwinkel, Wärmebild, Hochladen, Rechte, Gäste, Funde, Zeitlimit, Browser)
         timeout-minutes: 6
         run: python3 werkzeuge/untersuchen_test.py --browser
+      - name: Rechte und Schutz (Kind / Familie / ohne Rechte, PIN für alles im Browser, Stufe → Sirene, Zeitplan nach hartem Neustart)
+        timeout-minutes: 8
+        run: python3 werkzeuge/rechte_schutz_test.py --browser
       - name: Simulator intern (gefälschtes Pi-Paket - holen, prüfen, auspacken, starten, beenden, zurück)
         timeout-minutes: 4
         run: python3 werkzeuge/sim_intern_test.py

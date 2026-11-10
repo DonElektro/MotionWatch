@@ -19,9 +19,20 @@ def arm(delay=None):
         d = 60.0
     d = max(0.0, min(600.0, d))
     CFG["armed"] = True; ARM["at"] = time.time() + d; ARM["announced"] = d <= 0
-    sched_user_changed("armed"); save_settings()
+    arm_level_sync()
+    sched_user_changed("armed"); save_settings_flush()   # fix 11: on the card now - not 2 to 15 s later (a power cut brought the old state back)
     log_event("sys", f"Armed in {d:.0f} s" if d else "Armed")
     arm_tick()
+
+
+def arm_level_sync():
+    """fix 3: every way of switching on (button, shortcut, schedule, mode, camping profile) leaves the siren as the level
+    wants it - the one function is protect_siren_sync (135)"""
+    try:
+        return protect_siren_sync()
+    except Exception as e:
+        log_event("sys", f"Protection level: {e}"[:150])
+        return False
 
 
 def arm_by_schedule(on, name=""):
@@ -35,6 +46,8 @@ def arm_by_schedule(on, name=""):
         except (TypeError, ValueError):
             d = 60.0
         CFG["armed"] = True; ARM["at"] = time.time() + d; ARM["announced"] = d <= 0
+        if arm_level_sync():
+            save_settings()
         log_event("sys", f"Armed in {d:.0f} s (schedule {name})" if d else f"Armed (schedule {name})")
     else:
         CFG["armed"] = False; ARM["at"] = 0.0; ARM["announced"] = True
@@ -47,8 +60,9 @@ def arm_by_schedule(on, name=""):
 
 
 def disarm():
+    """switch the protection off. Who may call this from the web without the PIN: see web_disarms (135)."""
     CFG["armed"] = False; ARM["at"] = 0.0; ARM["announced"] = True
-    sched_user_changed("armed"); save_settings()
+    sched_user_changed("armed"); save_settings_flush()   # fix 11: saved at once (with the note «by hand» of a schedule, 030)
     log_event("sys", "Disarmed - no alarms")
     arm_tick()
 
@@ -504,7 +518,7 @@ def _camping_overlay(on, hotspot_delay=2.0):
         CFG["camping"] = False; CFG["camping_prev"] = {}
         log_event("sys", "Camping profile OFF - previous settings restored")
         if prev.get("armed", True):
-            CFG["armed"] = True; ARM["at"] = 0.0; ARM["announced"] = True; arm_tick()
+            CFG["armed"] = True; ARM["at"] = 0.0; ARM["announced"] = True; arm_level_sync(); arm_tick()
         else:
             disarm()
         if not prev.get("hotspot_on", False) and STATE["hotspot"].get("on"):
