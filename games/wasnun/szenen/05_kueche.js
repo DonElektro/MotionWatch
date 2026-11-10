@@ -36,7 +36,7 @@
   function kaese() { return '<path class="l" fill="#ffd23f" d="M-28 0l44 -26l14 26z"/><path class="l" fill="#f2b705" d="M-28 0h58v10h-58z"/><circle cx="2" cy="-8" r="4" fill="#d99a00"/><circle cx="16" cy="-4" r="3" fill="#d99a00"/>'; }
   var MILCH = '<rect class="l" x="-9" y="-44" width="18" height="12" rx="3" fill="#3b8cff"/><path class="l" fill="#fff" d="M-9 -34q-9 6 -9 18v32q0 6 6 6h24q6 0 6 -6v-32q0 -12 -9 -18z"/><rect x="-17" y="-8" width="34" height="16" fill="#9fd3ee"/><path class="l n" d="M-9 -34q-9 6 -9 18v32q0 6 6 6h24q6 0 6 -6v-32q0 -12 -9 -18z"/>';
   WASNUN.szene({
-    id: 'kueche', titel: 'Küche um Mitternacht',
+    id: 'kueche', titel: 'Küche um Mitternacht', stufe: 3,
     ziel: 'Mitternacht. Die Maus hat Hunger auf den Käse – aber die Katze darf nichts merken.',
     start: function () { return { kuehl: false, milch: 'drin', katze: 'schlaeft', glocke: false, maus: 'loch', toast: false }; },
     tasche: function (s) { return s.milch === 'tasche' ? { name: 'Milch', svg: '<g transform="translate(30 34) scale(.95)">' + MILCH + '</g>' } : null; },

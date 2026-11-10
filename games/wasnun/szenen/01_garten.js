@@ -26,7 +26,7 @@
       : '<g transform="translate(280 500) rotate(-96)">' + e + '</g>') + '</g>';
   }
   WASNUN.szene({
-    id: 'garten', titel: 'Im Garten',
+    id: 'garten', titel: 'Im Garten', stufe: 1,
     ziel: 'Der Igel hat Hunger auf den Apfel. Wie kommt der Apfel zu ihm?',
     start: function () { return { knoten: true, eimer: 'steht', wasser: false, vogel: 'sitzt', apfel: 'baum', brille: false }; },
     bild: function (s) {

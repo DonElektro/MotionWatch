@@ -37,7 +37,7 @@
       + '<ellipse class="d" cx="-12" cy="0" rx="10" ry="5" fill="#8a6a4a"/><ellipse class="d" cx="12" cy="0" rx="10" ry="5" fill="#8a6a4a"/><path class="l n" style="stroke-width:5;stroke:#8a6a4a" d="M-22 -34q8 10 20 8M22 -34q-4 8 -8 8"/></g></g>';
   }
   WASNUN.szene({
-    id: 'alp', titel: 'Auf der Alp',
+    id: 'alp', titel: 'Auf der Alp', stufe: 2,
     ziel: 'Abend auf der Alp: Kuh Berta soll von der Weide heim zur Hütte. Aber sie frisst und frisst …',
     start: function () { return { kraehe: 'sitzt', kaese: 'sims', murmel: 'horn', kuh: 'weide', tor: false, horcht: false }; },
     bild: function (s) {
