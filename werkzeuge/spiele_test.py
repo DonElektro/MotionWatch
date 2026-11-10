@@ -14,6 +14,18 @@
      der schwebende «✕ Zurück» von MoveEye ist ausgeblendet (eigener Link oben, sonst über der Bremse).
      GS-1.7: jeder Abschnitt der neuen Stunt-Piste ist mit beiden Fahrzeugen auf «Einfach» und «Normal» befahrbar (ohne Rettung),
      ein Supersprung landet auf «Einfach» ohne Eingabe in der Luft, der alte Rekord der Stunt-Piste bleibt sichtbar.
+     GS-1.8: Stunts füllen das Nitro, der Schub macht schneller und kostet keinen Sprit extra, unter der Mindestfüllung zündet
+     er nicht; der Nitro-Knopf am Handy ist mindestens 44 px gross und überdeckt weder Pedale noch den Zurück-Link;
+     «Bildwackeln» und «Effekte» werden gespeichert; die Partikelzahl bleibt begrenzt.
+     GS-1.9: Geisterfahrer – die beste Fahrt je Strecke / Fahrzeug / Schwierigkeit wird gespeichert (klein, höchstens 18 kB),
+     fährt bei der nächsten Fahrt an der aufgezeichneten Stelle mit, nur eine bessere Fahrt ersetzt sie; abschaltbar;
+     kaputte Daten oder ein voller Speicher stören das Spiel nicht; die Wilden Hügel der Bestfahrt kommen (ohne ?test=1)
+     mit demselben Startwert wieder, ohne Haken gibt es neue Hügel ohne Geist.
+     GS-1.10: neue Abschnitte (Sprungbrett, Einsturzbrücke, Feuerringe, Steinschlag, Eis, Schlamm, Verfolgung) sind auf
+     «Einfach» und «Normal» befahrbar; Feuerring gibt Bonus, die Brücke stürzt unter einem stehenden Fahrzeug ein (Rettung),
+     Fels mit Nitro wird zertrümmert; Welten wechseln etwa alle 500 m, eine Verfolgung etwa alle 1000 m: auf «Einfach»
+     wird man nur mitgerissen, auf «Normal» ist es ein Sturz; Hindernisse der Hügel kommen aus dem Startwert; neuer
+     Rekord-Platz «stunt3», die älteren Rekorde bleiben sichtbar.
 
   python3 werkzeuge/spiele_test.py                    # Paket + Browser, nur die Spiele mit 5 Sprachen (ab GS-1.4)
   python3 werkzeuge/spiele_test.py --alle             # dazu die älteren Spiele (2048, Tetris …)
@@ -260,11 +272,30 @@ WT_BOT = """window.__bot = (W, I) => { const a = W.B.a, w = W.B.w, x = W.B.x, sl
   else { const d = a - sl, dw = d - Math.round(d / 6.283) * 6.283; I.brake = false; I.gas = dw < (intun ? 0.04 : 0.35); } };"""
 # GS-1.7: drive through one section of the Stunt-Piste (the first of its kind), or a Supersprung without any input in the air
 WT_MODUL = """([veh, diff, typ, frei]) => { const W = window.__wt, I = W.inp; W.freeze(true); W.SET.diff = diff; W.SET.real = 40; W.select(veh, 'stunt'); W.start();
-  W.H(6000); const m = W.mods.find(q => q.t === typ); if (!m) return {fehlt: 1};
+  W.H(8000); const m = W.mods.find(q => q.t === typ); if (!m) return {fehlt: 1};
   W.place(m.x0 + 0.5, 0, 12, 0, 0, 0); const n0 = W.log.length;
   W.sim(45, () => { if (frei) { I.gas = W.B.x < m.sj.x; I.brake = false; } else __bot(W, I); return W.B.x > m.x1 + 3 || W.state !== 'play'; });
   I.gas = I.brake = false; return {state: W.state, durch: W.B.x > m.x1 + 3, rettung: W.nRescue, ids: W.log.slice(n0).map(e => e.id).join(',')}; }"""
-WT_MODULE = ("wheelie", "kickers", "loop", "dloop", "wall", "halfpipe", "stairs", "gaps", "dropin", "whoops", "tunnel", "tramp", "coinarcs", "super")
+WT_MODULE = ("wheelie", "kickers", "loop", "dloop", "wall", "halfpipe", "stairs", "gaps", "dropin", "whoops", "tunnel", "tramp", "coinarcs", "super",
+             "spring", "crumble", "rings", "rocks", "ice", "mud", "boss")        # GS-1.10
+WT_MUSS = {"spring": "spring", "crumble": "crumble", "rings": "ring", "boss": "boss"}   # the stunt a clean run through the section must bring
+# GS-1.10: worlds, zones, rings, bridge, boulders, chase
+WT_WELT = """() => { const W = window.__wt, I = W.inp, r = {}; W.freeze(true); W.SET.diff = 1; W.SET.real = 40; W.applyPhys(); I.gas = I.brake = false;
+  W.select('truck', 'stunt'); W.start(); W.H(7000);
+  r.welten = W.laps.map(l => l.th).slice(0, 6).join(''); r.weltLang = Math.max(...W.laps.slice(1, 8).map((l, i) => l.x0 - W.laps[i].x0));
+  const b = W.bosses.map(q => q.x0); r.boss = b.length; r.bossAbst = b.slice(1).map((x, i) => Math.round(x - b[i]));
+  r.zonen = [...new Set(W.zones.map(z => z.t))].sort().join(','); r.sortiert = W.zones.every((z, i) => !i || z.x0 >= W.zones[i - 1].x1); r.ringe = W.rings.length;
+  const rg = W.rings[0]; W.place(rg.x - 2.5, 0, 14, 0, 0, 0); const y0 = W.B.y; W.place(rg.x - 2.5, rg.y - 0.4 - y0, 14, 2, 0, 0); W.sim(0.5); r.ring = W.log.some(e => e.id === 'ring');
+  W.start(); W.H(7000); let m = W.mods.find(q => q.t === 'crumble'); W.place((m.br.r[0] + m.br.r[1]) / 2, 0, 0, 0, 0, 0); W.sim(4); r.bruecke = W.nRescue >= 1 && W.state === 'play';
+  W.start(); W.H(7000); m = W.mods.find(q => q.t === 'rocks'); W.place(m.x0 + 12, 0, 12, 0, 0, 0); W.setNitro(100); W.sim(0.2); W.sim(6, () => { I.gas = true; if (!W.nitroOn && W.nitro >= 30) W.fireNitro(); if (!W.nitroOn) W.setNitro(100); return W.log.some(e => e.id === 'smash'); });
+  I.gas = false; r.fels = W.log.some(e => e.id === 'smash') && W.state === 'play';
+  for (const d of [0, 1]) { W.SET.diff = d; W.applyPhys(); W.start(); W.H(3000); m = W.mods.find(q => q.t === 'boss'); W.place(m.boss[0] + 4, 0, 0, 0, 0, 0); W.sim(9, () => W.state !== 'play');
+    r['jagd' + d] = W.state + ':' + W.log.filter(e => /boss/.test(e.id)).map(e => e.id).join(','); }
+  W.SET.diff = 1; W.applyPhys();
+  const hf = () => { W.select('truck', 'hills'); W.start(); W.place(1900, 0, 0, 0, 0, 0); W.snap(); W.sim(0.6); return JSON.stringify([W.zones, W.rings.map(q => [q.x, q.y]), W.trig.map(q => q.x), W.bosses.map(q => [q.x0, q.x1, q.th])]); };
+  const h1 = hf(), h2 = hf(); r.huegelGleich = h1 === h2; r.huegelZonen = W.zones.length; r.huegelBoss = W.bosses.length ? W.bosses[0].x0 : 0; r.huegelWelt = [0, 600, 1100, 1600, 2100, 2600].map(x => W.worldAt(x)).join('');
+  localStorage.setItem('kv-game-wobbly-truck-best-stunt2-truck', '7777'); W.select('truck', 'stunt'); W.menu(); const e = document.querySelector('em[data-best=stunt]'); r.alt = e ? e.textContent : '';
+  localStorage.removeItem('kv-game-wobbly-truck-best-stunt2-truck'); return r; }"""
 WT_RUN = """([veh, trk, scen, diff]) => { const W = window.__wt, I = W.inp; W.freeze(true); W.SET.diff = diff == null ? 1 : diff; W.select(veh, trk); W.start();
   const r = {state0: W.state}; I.gas = I.brake = I.trick = false;
   if (scen === 'fahren') { W.place(5, 0, 0, 0, 0, 0); W.sim(1.5, () => { __bot(W, I); }); r.dx = W.B.x - 5; }
@@ -278,6 +309,43 @@ WT_RUN = """([veh, trk, scen, diff]) => { const W = window.__wt, I = W.inp; W.fr
   if (scen === 'halbsalto') { W.place(8, 9, 9, 6, 0, 0); W.sim(5, () => { I.gas = W.air.on && W.B.a < 4.0; }); }   // tilt, let go, assist finishes
   if (scen === 'superman') { W.place(8, 8, 9, 6, 0, 0); W.sim(5, () => { I.trick = true; }); }                      // ★ held into the landing
   I.gas = I.brake = I.trick = false; r.state = W.state; r.ids = W.log.map(e => e.id); return r; }"""
+
+
+# GS-1.8: nitro. Two identical runs on the flat start of the hills, one with a boost: faster, same fuel, the bar is used up
+WT_NITRO = """() => { const W = window.__wt, I = W.inp, r = {}; W.freeze(true); W.SET.diff = 1; W.SET.real = 40;
+  for (const mit of [0, 1]) { W.select('truck', 'hills'); W.start(); W.place(5, 0, 0, 0, 0, 0); I.gas = true; W.sim(1.0);
+    if (mit) { W.setNitro(10); r.zuwenig = W.fireNitro(); W.setNitro(100); r.zuendet = W.fireNitro(); }
+    W.sim(1.0); r['v' + mit] = Math.hypot(W.B.vx, W.B.vy); r['sprit' + mit] = W.fuel; r['x' + mit] = W.B.x; if (mit) { r.rest = W.nitro; W.sim(3, () => !W.nitroOn); r.leer = W.nitro; r.aus = !W.nitroOn; r.teile = W.parts; } }
+  I.gas = false; r.log = W.log.some(e => e.id === 'nitro'); return r; }"""
+# GS-1.9: ghost. A run of some seconds ends (crash), the next run has its ghost; a worse run does not replace it
+WT_GEIST = """([veh, trk]) => { const W = window.__wt, I = W.inp, r = {}, K = 'kv-game-wobbly-truck-ghost-';
+  const lauf = (sek) => { W.start(); W.place(5, 0, 0, 0, 0, 0); W.sim(sek, () => { __bot(W, I); }); const x = W.B.x; I.gas = I.brake = false; W.crash(); W.sim(4, () => W.state === 'over'); return x; };
+  const keys = () => Object.keys(localStorage).filter(k => k.startsWith(K));
+  W.freeze(true); W.SET.diff = 1; W.SET.real = 40; W.SET.ghost = 1; W.SET.ghostHills = 1; keys().forEach(k => localStorage.removeItem(k)); W.select(veh, trk);
+  const a = []; for (let i = 0; i < 400; i++) a.push(Math.round(i * 31.3), Math.round(Math.sin(i) * 400), Math.round(i * 5 - 300)); const d = W.gDec(W.gEnc(a));
+  r.codec = d.n === 400 && Math.abs(d.x[399] - a[1197] * .05) < .01 && Math.abs(d.y[200] - a[601] * .05) < .01 && Math.abs(d.a[399] - a[1199] * .02) < .01;
+  W.start(); r.ohne = W.ghost === null; r.x1 = lauf(6); r.s1 = W.score(); r.over = W.state; r.seed1 = W.seed;
+  r.keys = keys(); r.len = r.keys.length ? localStorage.getItem(r.keys[0]).length : 0;
+  W.start(); r.g = W.ghost; r.seed2 = W.seed; const p = W.ghostAt(3), q = W.ghostAt(0); r.p = !!(p && p.x > 8 && p.x < r.x1 + 1 && q && Math.abs(q.x - 3) < 0.6);
+  lauf(2); r.s2 = W.score(); W.start(); r.bleibt = !!(W.ghost && W.ghost.s === r.s1);                      // a worse run: the ghost stays
+  lauf(9); r.s3 = W.score(); W.start(); r.besser = !!(W.ghost && W.ghost.s === r.s3 && r.s3 > r.s1);       // a better run replaces it
+  W.SET.ghost = 0; W.start(); r.aus = W.ghost === null; W.SET.ghost = 1;
+  W.SET.diff = 0; W.applyPhys(); W.start(); r.andere = W.ghost === null; W.SET.diff = 1; W.applyPhys();   // another difficulty has its own ghost
+  localStorage.setItem(r.keys[0], '{"v":1,"s":5,"seed":7,"d":"###kaputt###"}'); W.start(); r.kaputt = W.ghost === null && W.state === 'play';
+  localStorage.setItem(r.keys[0], 'x'); W.start(); r.kaputt = r.kaputt && W.ghost === null && W.state === 'play';
+  const alt = Storage.prototype.setItem; Storage.prototype.setItem = () => { throw new Error('QuotaExceededError'); };    // storage full
+  try { lauf(4); r.voll = W.state === 'over'; } catch (e) { r.voll = false; r.vollFehler = String(e); } Storage.prototype.setItem = alt;
+  keys().forEach(k => localStorage.removeItem(k)); return r; }"""
+WT_GEIST_HUEGEL = """() => { const W = window.__wt, I = W.inp, r = {}; W.freeze(true); W.SET.diff = 1; W.SET.ghost = 1; W.SET.ghostHills = 1; W.select('truck', 'hills');
+  W.start(); W.place(5, 0, 0, 0, 0, 0); W.sim(6, () => { I.gas = W.B.a < 0.3; }); I.gas = false; W.crash(); W.sim(4, () => W.state === 'over'); r.seed1 = W.seed; r.h1 = W.H(300);
+  W.start(); r.seed2 = W.seed; r.h2 = W.H(300); r.geist = !!W.ghost;
+  W.SET.ghostHills = 0; const s = new Set(); for (let i = 0; i < 4; i++) { W.start(); s.add(W.seed); r.ohne = W.ghost === null; } r.neu = s.size > 1; W.SET.ghostHills = 1;
+  W.menu(); r.zeile = !!document.getElementById('ghostHills'); return r; }"""
+WT_KNOEPFE = """() => { const b = id => { const e = document.getElementById(id), r = e.getBoundingClientRect(); return getComputedStyle(e).display === 'none' ? null : [r.left, r.top, r.right, r.bottom]; };
+  const n = b('nitroP'), out = []; if (!n) return ['fehlt']; if (n[2] - n[0] < 44 || n[3] - n[1] < 44) out.push('kleiner als 44 px');
+  if (n[0] < 0 || n[1] < 0 || n[2] > innerWidth || n[3] > innerHeight) out.push('ausserhalb');
+  for (const id of ['gasP', 'brakeP', 'trickP', 'backLink', 'setBtn', 'muteBtn', 'restartBtn']) { const o = b(id); if (o && n[0] < o[2] && o[0] < n[2] && n[1] < o[3] && o[1] < n[3]) out.push('überdeckt ' + id); }
+  return out; }"""
 
 
 def wobbly_pruefen(br, base, fehler, bilder):
@@ -324,7 +392,7 @@ def wobbly_pruefen(br, base, fehler, bilder):
                 if r["state"] == "play" and r["x"] < 15:
                     fehler.append(f"{d} {name}: {veh} bleibt beim Looping hängen ({r})")
             r = pg.evaluate(WT_RUN, ["bike", "stunt", "sturz"])  # upside down onto the head: crash, then game over with a best score
-            best = pg.evaluate("() => localStorage.getItem('kv-game-wobbly-truck-best-stunt2-bike')")
+            best = pg.evaluate("() => localStorage.getItem('kv-game-wobbly-truck-best-stunt3-bike')")
             if r["state"] != "over" or not best:
                 fehler.append(f"{d} {name}: Sturz / Rekord je Strecke und Fahrzeug fehlt ({r['state']}, {best})")
             if mobil:   # GS-1.7: every section drivable (Einfach and Normal, both vehicles), Supersprung on Einfach without input
@@ -333,7 +401,7 @@ def wobbly_pruefen(br, base, fehler, bilder):
                     for diff in (0, 1):
                         for typ in WT_MODULE:
                             r = pg.evaluate(WT_MODUL, [veh, diff, typ, False])
-                            if r.get("fehlt") or r["state"] != "play" or not r["durch"] or r["rettung"]:
+                            if r.get("fehlt") or r["state"] != "play" or not r["durch"] or r["rettung"] or (typ in WT_MUSS and WT_MUSS[typ] not in r["ids"].split(",")):
                                 fehler.append(f"{d} {name}: Abschnitt {typ} mit {veh} auf {['Einfach', 'Normal'][diff]} nicht befahrbar ({r})")
                             else:
                                 nm += 1
@@ -348,20 +416,74 @@ def wobbly_pruefen(br, base, fehler, bilder):
                     const e = document.querySelector('em[data-best=stunt]'); return e ? e.textContent : ''; }""")
                 if "8339" not in txt:
                     fehler.append(f"{d} Handy: alter Rekord der Stunt-Piste wird nicht gezeigt ({txt!r})")
+            # GS-1.8 nitro: stunts fill it, the boost is faster, costs no extra fuel, does not fire below the minimum
+            r = pg.evaluate(WT_RUN, ["truck", "hills", "salto"])
+            if not pg.evaluate("() => __wt.nitro > 5"):
+                fehler.append(f"{d} {name}: ein Salto füllt das Nitro nicht")
+            r = pg.evaluate(WT_NITRO)
+            if r["zuwenig"] or not r["zuendet"] or not r["log"] or r["v1"] < r["v0"] + 2 or abs(r["sprit1"] - r["sprit0"]) > 0.01 or r["leer"] > 0.5 or not r["aus"] or r["teile"] > 260:
+                fehler.append(f"{d} {name}: Nitro (zündet, schneller, kein Sprit extra, leer, Partikel begrenzt) stimmt nicht ({r})")
+            else:
+                ok.append("nitro")
+            r = pg.evaluate(WT_WELT)                 # GS-1.10 worlds, new elements, chase
+            gut = (r["welten"].startswith("01234") and r["weltLang"] < 1000 and r["boss"] >= 4 and all(850 <= x <= 1500 for x in r["bossAbst"])
+                   and r["zonen"] == "ice,mud,spring" and r["sortiert"] and r["ringe"] >= 6 and r["ring"] and r["bruecke"] and r["fels"]
+                   and r["jagd0"].startswith("play:") and "bosspush" in r["jagd0"] and r["jagd1"].split(":")[0] in ("crash", "over")
+                   and r["huegelGleich"] and r["huegelZonen"] >= 3 and r["huegelBoss"] == 1000 and r["huegelWelt"] == "523401" and "7777" in r["alt"])
+            if not gut:
+                fehler.append(f"{d} {name}: Welten / neue Elemente / Verfolgung stimmen nicht ({r})")
+            else:
+                ok.append("welten")
+            for veh, trk in (("truck", "stunt"), ("bike", "hills")):      # GS-1.9 ghost of the best run
+                r = pg.evaluate(WT_GEIST, [veh, trk])
+                gut = (r["codec"] and r["ohne"] and r["over"] == "over" and len(r["keys"]) == 1 and 40 < r["len"] <= 18300 and r["g"] and r["seed1"] == r["seed2"]
+                       and r["p"] and r["bleibt"] and r["besser"] and r["aus"] and r["andere"] and r["kaputt"] and r["voll"])
+                if not gut:
+                    fehler.append(f"{d} {name}: Geisterfahrer {veh}/{trk} stimmt nicht ({r})")
+                else:
+                    ok.append(f"geist-{veh}")
+            if mobil:   # the hills of the best run come back with the same seed (only without ?test=1: there the seed is fixed anyway)
+                pg2 = ctx.new_page()
+                pg2.on("pageerror", lambda e, fe=fe: fe.append(str(e)[:300]))
+                pg2.goto(f"{base}/g/{d}/index.html", wait_until="load", timeout=30000)
+                pg2.wait_for_timeout(300)
+                r = pg2.evaluate(WT_GEIST_HUEGEL)
+                if r["seed1"] != r["seed2"] or abs(r["h1"] - r["h2"]) > 1e-9 or not r["geist"] or not r["ohne"] or not r["neu"] or not r["zeile"]:
+                    fehler.append(f"{d} Handy: Hügel der Bestfahrt / neue Hügel ohne Geist stimmt nicht ({r})")
+                else:
+                    ok.append("geist-hügel")
+                pg2.evaluate("() => Object.keys(localStorage).filter(k => k.includes('-ghost-')).forEach(k => localStorage.removeItem(k))")
+                pg2.close()
             if mobil:   # the trick button is there for the motorbike while playing
                 pg.evaluate("() => { __wt.select('bike', 'stunt'); __wt.start(); }")
                 if not pg.locator("#trickP").is_visible():
                     fehler.append(f"{d} Handy: Trick-Knopf fehlt beim Motorrad")
+                for quer in (False, True):      # GS-1.8: the nitro button (portrait and landscape) is big enough and covers nothing
+                    pg.set_viewport_size({"width": 844, "height": 390} if quer else vp)
+                    pg.wait_for_timeout(150)
+                    kn = pg.evaluate(WT_KNOEPFE)
+                    if kn:
+                        fehler.append(f"{d} Handy{' quer' if quer else ''}: Nitro-Knopf: {', '.join(kn)}")
+                pg.evaluate("() => { __wt.freeze(true); __wt.setNitro(100); }")
+                pg.locator("#nitroP").tap()
+                if not pg.evaluate("() => __wt.nitroOn"):
+                    fehler.append(f"{d} Handy: Tipp auf den Nitro-Knopf zündet nicht")
+                else:
+                    ok.append("nitro-knopf")
             # settings: saved in localStorage, «Standard» resets
             pg.evaluate("() => { __wt.freeze(false); __wt.showSettings(); }")
             pg.locator("[data-diff='2']").click()
             pg.locator("#s_real").fill("80")
+            pg.locator("#s_shake").uncheck()            # GS-1.8: «Bildwackeln» and «Effekte»
+            pg.locator("[data-fx='0']").click()
             s = pg.evaluate("() => JSON.parse(localStorage.getItem('kv-game-wobbly-truck-settings') || '{}')")
+            if s.get("shake") != 0 or s.get("fx") != 0:
+                fehler.append(f"{d} {name}: «Bildwackeln» / «Effekte» nicht gespeichert ({s})")
             if s.get("diff") != 2 or s.get("real") != 80:
                 fehler.append(f"{d} {name}: Einstellungen nicht gespeichert ({s})")
             pg.locator("#resetBtn").click()
             s = pg.evaluate("() => JSON.parse(localStorage.getItem('kv-game-wobbly-truck-settings') || '{}')")
-            if s.get("diff") != 1 or s.get("real") != 40:
+            if s.get("diff") != 1 or s.get("real") != 40 or s.get("shake") != 1 or s.get("fx") != 1:
                 fehler.append(f"{d} {name}: «Standard» setzt nicht zurück ({s})")
             if bilder:
                 pg.screenshot(path=os.path.join(bilder, f"spiel_{d}_einstellungen_{'handy' if mobil else 'pc'}.png"))
