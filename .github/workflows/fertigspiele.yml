@@ -10,6 +10,8 @@
 # Keine Geheimnisse: nur GITHUB_TOKEN.
 name: Fertige Spiele
 on:
+  push:
+    branches: [mw-fertige-spiele-ci]
   workflow_dispatch:
     inputs:
       release:
@@ -148,6 +150,48 @@ jobs:
             s=$(grep "^PIN $(basename "$f") " "$O/pins.txt" | sed 's/.*sha256=\([0-9a-f]*\).*/\1/'); echo "$s  $f" | sha256sum -c -
           done
           echo "latest bleibt: $(gh api repos/$GITHUB_REPOSITORY/releases/latest --jq .tag_name)"
+
+  puzzles:
+    name: Probe · Simon Tathams Puzzles als WebAssembly bauen (nur dieser Test-Zweig)
+    if: github.event_name == 'push'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - name: Quelle holen
+        run: |
+          set -ex
+          git clone -q https://git.tartarus.org/simon/puzzles.git "$RUNNER_TEMP/puzzles"
+          cd "$RUNNER_TEMP/puzzles"; git log -1 --format='%H %ad %s'; ls; ls html cmake cmake/platforms || true
+          sed -n 1,80p html/jspage.pl || true
+          cat cmake/platforms/emscripten.cmake || true
+          grep -n -i "emscripten\|jspage\|js" Buildscr | head -60 || true
+      - name: emsdk
+        run: |
+          set -ex
+          git clone -q --depth 1 https://github.com/emscripten-core/emsdk "$RUNNER_TEMP/emsdk"
+          cd "$RUNNER_TEMP/emsdk"; ./emsdk install 4.0.10 > /dev/null; ./emsdk activate 4.0.10 > /dev/null
+      - name: Bauen
+        run: |
+          set -x
+          source "$RUNNER_TEMP/emsdk/emsdk_env.sh"
+          cd "$RUNNER_TEMP/puzzles"
+          emcmake cmake -B build-js -DCMAKE_BUILD_TYPE=Release . 2>&1 | tail -30
+          cmake --build build-js -j4 2>&1 | tail -40
+          ls -la build-js | head -150
+          mkdir -p web
+          ( cd build-js && perl ../html/jspage.pl --jspath="" ../html/*.html ) 2>&1 | tail -5 || true
+          ls -la build-js | grep -i html | head -60
+      - name: Probe-Release mit dem Ergebnis
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -x
+          cd "$RUNNER_TEMP/puzzles"
+          git rev-parse HEAD > COMMIT.txt
+          tar czf "$RUNNER_TEMP/puzzles-web.tar.gz" COMMIT.txt LICENCE html cmake emcc*.js Buildscr CMakeLists.txt $(ls build-js/*.js build-js/*.wasm build-js/*.html build-js/*.webmanifest build-js/*.png 2>/dev/null)
+          ls -la "$RUNNER_TEMP/puzzles-web.tar.gz"
+          gh release create "fspieleprobe-$GITHUB_RUN_NUMBER" "$RUNNER_TEMP/puzzles-web.tar.gz" -R "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "Probe · Puzzles (Test)" --notes "PROBELAUF (Vorabversion) - nur zum Testen, wird wieder gelöscht." --prerelease --latest=false
 
   weg:
     name: Probe löschen · ${{ inputs.loeschen }}
