@@ -23,6 +23,10 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 3.71.1: Live-Bild aufgeräumt: Die Knöpfe oben im Bild und die kleinen Kamera-Bilder erscheinen erst, wenn du das Bild
+    antippst (am PC: Maus darüber), und verschwinden nach 4 Sekunden wieder. Immer zeigen: Einstellungen → Netzwerk & Zugang →
+    Web-Stream → «Knöpfe im Live-Bild immer zeigen» (Experte, gilt nur auf diesem Gerät). Kameras heissen jetzt auch auf Deutsch
+    «USB-Kamera» und «Pi-Kamera»
   * 3.71.0: Live-Bild am echten Gerät: kleine Bilder aller Kameras (Kopf, Weitwinkel, Wärmebild, USB-, Pi- und Netzwerk-Kameras)
     oben links – antippen zeigt diese Kamera gross (nur die Anzeige, Erkennung und Einstellungen bleiben); fehlt Kopf,
     Weitwinkel oder Wärmebild, eine graue Kachel «nicht angeschlossen»; bei vielen Kameras «⋯ Kameras»
@@ -106,9 +110,6 @@ Features
   * 3.54.0: Sim-Ansicht: im Simulator-Betrieb zeigt die Live-Seite auf Handy und Tablet ein grosses Simulator-Bild mit grossen
     Knöpfen (Kopf, Folgen, IR, Licht, Sirene, Aufnahme), «⋯ Mehr» und «▦ Klassisch»; «🎮 Spielen» startet ein Spiel mit einem
     Tipp, gespielt wird mit Knöpfen im Browser; das Simulator-Bild wird nicht mehr abgeschnitten (auch der Spiel-Assistent).
-  * 3.53.0: Simulator-PC (HP): während der Erkennungstests zeigt der Kiosk ein Testbild-Dashboard (Live-Bild mit MoveEyes
-    Rahmen, Soll/Ist, Fall N/M, Bilanz, 2 Min. Zusammenfassung am Schluss); neues automatisches, signiertes Update (nachts, nie
-    während eines Tests).
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -117,10 +118,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_3_71_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_3_71_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_3_71_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_3_71_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_3_71_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_3_71_1.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -137,7 +138,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "3.71.0"
+APP_VERSION = "3.71.1"
 
 
 def default_data_dir():
@@ -262,8 +263,8 @@ def prepare_settings_file():
 
 
 
-ZD_FILE = "moveeye_daten_3_71_0.zip"
-ZD_SHA256 = "ee9b408ab94fd0712cb6f9c2c9e82b43b3b67f2a921f95a48c61e21b015075ae"
+ZD_FILE = "moveeye_daten_3_71_1.zip"
+ZD_SHA256 = "cda301fb5e4eb31112e412e0f8ce6b595ae1053925d6d28e065221a9624a2d42"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -48969,7 +48970,7 @@ class App:
 		self.watch = watch
 		self.web = web or WebStream(watch)
 		self.root = tk.Tk()
-		self.root.title("MoveEye 3.71.0")
+		self.root.title("MoveEye 3.71.1")
 		try:
 			import base64
 			self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -49347,7 +49348,7 @@ class App:
 			if not small:
 				vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
 				vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))
-			Tip(nm, f"{tr('Build')} 3.71.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+			Tip(nm, f"{tr('Build')} 3.71.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
 			self._egg_taps = []
 			for w_ in tl.winfo_children():
 				w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -56560,7 +56561,7 @@ App._refresh = _kr_tk_refresh
 
 
 
-INFO_PARTS = 283
+INFO_PARTS = 284
 INFO_START = "2026-10-16"
 FBX = {"shot": None, "shot_t": 0.0, "lines": 0}
 
@@ -88667,6 +88668,98 @@ def kamwahl_selftest():
 
 
 SELFTEST_EXTRA.append(("Camera tiles in the live picture: every source, view only (639zzi)", kamwahl_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+LVK_MS = 4000
+WEB_UI_LOCAL.add("mw-lv-knoepfe")
+
+_HX_LVK = _zd('639zzj_live_sauber/HX_LVK', _zd_hx({
+    'Always show the buttons in the live picture': 'Knöpfe im Live-Bild immer zeigen',
+    'Off: the live picture stays clean - tap it (PC: move the mouse over it) and the buttons and camera tiles show for 4 seconds. Only on this device (this browser).': 'Aus: Das Live-Bild bleibt frei – antippen (PC: Maus darüber), dann erscheinen die Knöpfe und Kamera-Kacheln für 4 Sekunden. Gilt nur auf diesem Gerät (in diesem Browser).',
+    'USB camera': 'USB-Kamera',
+    'Pi camera': 'Pi-Kamera',
+}))
+for _k, _v in _HX_LVK.items():
+	DE.setdefault(_k, _v[0])
+	for _i, _L in enumerate(("fr", "it", "rm")):
+		TRX[_L].setdefault(_k, _v[_i + 1])
+
+LVK_JS = _zd('639zzj_live_sauber/LVK_JS', "")
+WEB_PAGE = WEB_PAGE.replace("</body>", LVK_JS.replace("/*LVKDE*/{}", json.dumps({_k: _v[0] for _k, _v in _HX_LVK.items()}, ensure_ascii=False), 1)
+                            .replace("/*LVKMS*/4000", str(int(LVK_MS)), 1) + "</body>", 1)
+
+_HELP_LVK = {
+    "de": '<li><b>Sauberes Live-Bild:</b> Die Knöpfe auf dem Bild (🎮, 🔍, 📷, Ansicht, Vollbild) und die kleinen Kamera-Bilder sind versteckt. Bild antippen (PC: Maus darüber, Tastatur: Tab) = sie erscheinen für 4 Sekunden, jede Berührung verlängert; ist ein Menü, «Untersuchen» oder die Steuerung offen, bleiben sie. «LIVE» und der Kamera-Name bleiben immer. Immer zeigen: Einstellungen → Netzwerk &amp; Zugang → Web-Stream → «Knöpfe im Live-Bild immer zeigen» (nur in diesem Browser).</li>',
+    "en": '<li><b>Clean live picture:</b> the buttons on the picture (🎮, 🔍, 📷, view, full screen) and the small camera pictures are hidden. Tap the picture (PC: mouse over it, keyboard: Tab) = they show for 4 seconds, every touch adds time; while a menu, «Examine» or the control is open they stay. «LIVE» and the camera name always stay. Always show: Settings → Network &amp; access → Web stream → «Always show the buttons in the live picture» (only in this browser).</li>',
+    "fr": '<li><b>Image en direct dégagée :</b> les boutons sur l’image (🎮, 🔍, 📷, vue, plein écran) et les petites images des caméras sont masqués. Toucher l’image (PC : souris dessus, clavier : Tab) = ils s’affichent 4 secondes, chaque contact prolonge ; si un menu, « Examiner » ou la commande est ouvert, ils restent. « LIVE » et le nom de la caméra restent toujours. Toujours afficher : Réglages → Réseau &amp; accès → Flux web → « Toujours afficher les boutons dans l’image en direct » (seulement dans ce navigateur).</li>',
+    "it": '<li><b>Immagine dal vivo pulita:</b> i pulsanti sull’immagine (🎮, 🔍, 📷, vista, schermo intero) e le piccole immagini delle telecamere sono nascosti. Tocca l’immagine (PC: mouse sopra, tastiera: Tab) = appaiono per 4 secondi, ogni tocco prolunga; se un menu, «Esaminare» o il comando è aperto, restano. «LIVE» e il nome della telecamera restano sempre. Mostrare sempre: Impostazioni → Rete &amp; accesso → Stream web → «Mostra sempre i pulsanti nell’immagine dal vivo» (solo in questo browser).</li>',
+    "rm": '<li><b>Maletg live net:</b> ils buttuns sin il maletg (🎮, 🔍, 📷, vista, entir visur) e las pitschnas maletgs da las cameras èn zuppads. Tutgar il maletg (PC: mieur sur el, tastatura: Tab) = els cumparan per 4 secundas, mintga tutg prolunghescha; sch’in menu, «Examinar» u la direcziun è avert, restan els. «LIVE» ed il num da la camera restan adina. Adina mussar: Parameters → Rait &amp; access → Stream web → «Adina mussar ils buttuns en il maletg live» (mo en quest navigatur).</li>',
+}
+
+
+def _help_lvk(doc, lang):
+	i = doc.find('<section id="views"')
+	if i < 0 or 'id="lvk-help"' in doc:
+		return doc
+	j = doc.find("</ul></section>", i)
+	if j < 0:
+		return doc
+	return doc[:j] + _HELP_LVK[lang].replace("<li>", '<li id="lvk-help">', 1) + doc[j:]
+
+
+_hp_en_lvk = HELP_PAGE.find('<div lang="en">')
+if _hp_en_lvk > 0:
+	HELP_PAGE = _help_lvk(HELP_PAGE[:_hp_en_lvk], "de") + _help_lvk(HELP_PAGE[_hp_en_lvk:], "en")
+for _L in ("fr", "it", "rm"):
+	if HELP_X.get(_L):
+		HELP_X[_L] = _help_lvk(HELP_X[_L], _L)
+
+
+
+def live_sauber_selftest():
+	html = WEB_PAGE
+	assert html.count('id="lvk-css"') == 1 and "/*LVKDE*/" not in html and "/*LVKMS*/" not in html, "Live-Bild sauber not in the page"
+	assert html.find('id="lvk-css"') > html.find('id="kw-css"') > 0, "after 639zzi"
+	for need in ("window.mwLiveKnoepfe", '"mw-lv-knoepfe"', "body.lvc-auto:not(.lvc-show) #lv-tools", "#kw-row img", 'data-view="sec:Web stream"',
+                 "pointer-events:none!important", '"kw-menu", "v3-menu", "lv-menu", "unt-bar"', '"pv-on"', ":focus-visible"):
+		assert need in LVK_JS, "Live-Bild sauber: missing " + need
+	for bad in ("/api/set", "/api/ui\"", ".vtag", "#v3-tag"):
+		assert bad not in LVK_JS.split("<script>")[1], "Live-Bild sauber must not touch: " + bad
+	assert "mw-lv-knoepfe" in WEB_UI_LOCAL, "per browser"
+	for k, v in _HX_LVK.items():
+		assert len(v) == 4 and all(v), k
+		assert k in DE and k in TRX["fr"] and k in TRX["it"] and k in TRX["rm"], k
+	assert tr("USB camera", "de") == "USB-Kamera"
+	assert "kwCamName" in KAMWAHL_JS, "639zzi: the prefix «USB camera» translated"
+	assert HELP_PAGE.count('id="lvk-help"') == 2, "manual: clean live picture"
+	return "live picture clean by default, tap = 4 s, switch per browser, USB prefix translated"
+
+
+SELFTEST_EXTRA.append(("Live picture clean: buttons and tiles after a tap (639zzj)", live_sauber_selftest))
 if __name__ == "__main__":
 	ap = argparse.ArgumentParser()
 	ap.add_argument("--cam", type=int, default=None, help="USB camera number (same as --source usb:N)")
