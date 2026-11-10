@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0e1621">
+<title>Schach</title>
+<!-- Schach für MoveEye. Als Ganzes GPL-3.0-or-later (wegen Brett und Motor), Einzelheiten in LIESMICH.txt und lizenzen/.
+     Aufbau: index.html (Seite, Aussehen) · partie.js (Regeln und Partie, ohne Bildschirm) · motor.js (Rechner im Hintergrund)
+     · motor-js-worker.js (Ersatz-Rechner ohne WebAssembly) · schach.js (Ablauf, Spieler, Bedienung, Ton, Speichern)
+     · lib/ (unveränderte Bausteine: Brett, Regeln, Motoren, Figuren). Alles liegt im Ordner, nichts kommt aus dem Internet. -->
+<link rel="stylesheet" href="lib/chessground.base.css">
+<link rel="stylesheet" href="lib/chessground.brown.css">
+<link rel="stylesheet" href="lib/chessground.cburnett.css">
+<style>
+:root{--bg:#0e1621;--panel:#16212f;--line:#24324a;--txt:#e8eef6;--mut:#8ea0b6;--acc:#3b8cff;--amber:#e9a23b;--grn:#3fcf6b;--rot:#e2574c;--b:320px}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);font:16px/1.3 system-ui,-apple-system,"Segoe UI",sans-serif;
+  overflow:hidden;overscroll-behavior:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}
+body{position:fixed;inset:0;display:flex;flex-direction:column;width:100%;
+  padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+button,select{font:inherit;color:inherit;border:0;cursor:pointer;-webkit-appearance:none;appearance:none}
+[hidden]{display:none!important}
+/* MoveEye setzt einen schwebenden «✕ Zurück» (#mw-back) auf jede Spielseite. Dieses Spiel hat oben links einen eigenen
+   Link «‹ Spiele», der denselben Knopf auslöst - der schwebende wird darum hier ausgeblendet (wie bei «Was nun?»). */
+#mw-back{display:none!important}
+
+.bar{flex:0 0 44px;display:flex;align-items:center;gap:4px;padding:0 6px;background:var(--panel);border-bottom:1px solid var(--line);min-width:0}
+.back,.ib{display:inline-flex;align-items:center;justify-content:center;gap:4px;min-width:44px;min-height:44px;padding:0 8px;border-radius:10px;
+  background:transparent;color:var(--mut);text-decoration:none;font-size:14px;font-weight:600;flex:0 0 auto;white-space:nowrap}
+.back:hover,.ib:hover{color:var(--txt);background:#1d2b3e}
+.back svg,.ib svg{display:block}
+.title{flex:1 1 auto;min-width:0;text-align:center;font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#bLern .p{display:inline-block;width:9px;height:9px;border-radius:50%;background:#44546b;margin-right:2px}
+#bLern.an{color:var(--txt)}#bLern.an .p{background:var(--grn)}
+
+#haupt{flex:1 1 auto;min-height:0;min-width:0;display:flex;flex-direction:column;align-items:center;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch}
+#links{flex:0 0 auto;width:var(--b)}
+#rechts{flex:1 1 auto;width:100%;max-width:560px;min-width:0;display:flex;flex-direction:column;padding:0 8px 4px}
+.quer #haupt{flex-direction:row;align-items:flex-start;justify-content:center;gap:12px;padding:0 8px}
+.quer #rechts{flex:0 1 380px;width:auto;align-self:stretch;min-height:0;padding:6px 0 4px}
+
+.sp{display:flex;align-items:center;gap:6px;height:24px;padding:0 6px;font-size:13px;font-weight:600;min-width:0;white-space:nowrap}
+.sp .nm{overflow:hidden;text-overflow:ellipsis;flex:0 1 auto;min-width:0}
+.sp .gs{display:flex;align-items:center;flex:0 1 auto;min-width:0;overflow:hidden;height:20px}
+.sp .gs .cg-wrap{display:block;flex:0 0 auto;width:16px;height:18px;margin-right:-5px}
+.sp .gs .cg-wrap.neu{margin-left:5px}
+.sp .pl{color:var(--mut);font-weight:700;margin-left:6px}
+.sp .dk{margin-left:auto;color:var(--amber);font-weight:600;font-size:12.5px;display:flex;align-items:center;gap:5px;flex:0 0 auto}
+.sp .dk i{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--amber);animation:pk 1s infinite ease-in-out}
+.sp .dk i:nth-child(2){animation-delay:.15s}.sp .dk i:nth-child(3){animation-delay:.3s}
+@keyframes pk{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}
+.sp.dran .nm::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--grn);margin-right:6px;vertical-align:1px}
+/* kleine Figurenbilder ausserhalb des Bretts (geschlagene Figuren, Umwandlung): dieselben Bilder wie auf dem Brett */
+.fig.cg-wrap piece,.gs .cg-wrap piece{position:static;display:block;width:100%;height:100%;will-change:auto}
+.gs .cg-wrap piece.black{filter:drop-shadow(0 0 1px rgba(255,255,255,.95)) drop-shadow(0 0 1px rgba(255,255,255,.7))}
+
+#brettRahmen{position:relative;width:var(--b);height:var(--b)}
+#brett{width:100%;height:100%;touch-action:none}
+#brett cg-board{box-shadow:none}
+#brett coords{font-size:10px;font-weight:700;line-height:1.1}
+#brett coords.ranks{left:2px;top:0;width:10px;height:100%}
+#brett coords.ranks coord{transform:none;display:block;flex:1 1 0;padding-top:2px}
+#brett coords.files{left:0;bottom:2px;width:100%;height:auto;text-transform:lowercase;text-align:right}
+#brett coords.files coord{flex:1 1 0;padding-right:3px}
+#brett .cg-shapes{opacity:.85}
+#balken{position:relative;height:6px;background:#3a3f48;overflow:hidden}
+#balken i{position:absolute;left:0;top:0;bottom:0;width:50%;background:#f1f1ee;transition:width .5s ease}
+#balken b{position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--amber);opacity:.8}
+
+#status{flex:0 0 auto;min-height:30px;display:flex;align-items:center;padding:3px 4px;font-weight:700;font-size:15px;line-height:1.2}
+#status.schach{color:#ffb4ad}#status.ende{color:var(--amber)}#status.tipp{color:#9fe3b3}
+#zuege{flex:0 0 auto;height:26px;display:flex;align-items:center;gap:8px;overflow-x:auto;overflow-y:hidden;white-space:nowrap;padding:0 4px;
+  font-size:13.5px;color:var(--mut);scrollbar-width:none;-webkit-overflow-scrolling:touch;font-variant-numeric:tabular-nums}
+#zuege::-webkit-scrollbar{display:none}
+#zuege .nr{color:#5f7189;margin-right:3px}
+#zuege span.z{color:var(--txt)}
+#zuege span.z.neu{background:#2b4a1e;color:#d8f5c8;border-radius:5px;padding:1px 4px;margin:0 -4px}
+#zuege .leer{font-style:italic}
+.quer #zuege{flex:1 1 60px;height:auto;min-height:44px;display:block;white-space:normal;overflow-y:auto;overflow-x:hidden;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px 8px;line-height:1.7}
+.quer #zuege .paar{display:inline-block;margin-right:10px}
+#zuege .paar{flex:0 0 auto}
+
+#knoepfe{flex:0 0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:2px 0 0}
+.kn{min-height:44px;border-radius:11px;background:#223149;font-weight:700;font-size:14.5px;padding:0 6px;display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap}
+.kn:active{transform:scale(.97)}
+.kn.haupt{background:var(--acc);color:#fff}
+.kn.gelb{background:var(--amber);color:#0e1621}
+.kn[disabled]{opacity:.4}
+#info{flex:0 0 auto;min-height:17px;padding:2px 4px 0;font-size:11.5px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ---- Fenster (unten angedockt am Handy, damit das Brett sichtbar bleibt) ---- */
+.dlg{position:absolute;inset:0;z-index:20;background:rgba(8,13,20,.45);display:flex;align-items:flex-end;justify-content:center;
+  padding:10px;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px))}
+.dlg.dunkel{background:rgba(8,13,20,.72)}
+.dlg .k{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:14px 16px 14px;max-width:440px;width:100%;max-height:100%;overflow:auto;
+  box-shadow:0 10px 40px rgba(0,0,0,.5);animation:rauf .22s ease-out;-webkit-overflow-scrolling:touch}
+@keyframes rauf{from{transform:translateY(18px);opacity:.3}}
+.quer .dlg.dunkel,.breit .dlg.dunkel{align-items:center}
+/* kleine Fenster (Warnung, Umwandlung, Spielende) verdecken das Brett nicht: quer liegen sie rechts über der Seitenleiste */
+.quer .dlg:not(.dunkel){justify-content:flex-end;align-items:flex-end}
+.quer .dlg:not(.dunkel) .k{max-width:min(440px,calc(100vw - var(--b) - 44px))}
+.dlg h2{margin:0 0 6px;font-size:19px}
+.dlg p{margin:4px 0 10px;color:#c6d2e2;font-size:15px;line-height:1.4}
+.dlg .zl{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.dlg .zl .kn{flex:1 1 130px}
+.dlg label.f{display:block;font-size:12.5px;font-weight:700;color:var(--mut);margin:10px 0 4px;text-transform:none}
+.seg{display:flex;gap:6px}
+.seg button{flex:1 1 0;min-height:44px;border-radius:10px;background:#223149;font-weight:700;font-size:14.5px;padding:0 4px;border:2px solid transparent}
+.seg button.an{border-color:var(--acc);background:#1b3358}
+select.w{display:block;width:100%;min-height:44px;border-radius:10px;background:#223149;padding:0 34px 0 12px;font-weight:600;font-size:15px;
+  background-image:linear-gradient(45deg,transparent 50%,#8ea0b6 50%),linear-gradient(135deg,#8ea0b6 50%,transparent 50%);
+  background-position:calc(100% - 18px) 19px,calc(100% - 12px) 19px;background-size:6px 6px;background-repeat:no-repeat}
+select.w option{background:#16212f;color:#e8eef6}
+.sch{display:flex;align-items:center;gap:10px;min-height:46px;width:100%;background:transparent;text-align:left;padding:2px 0;font-size:15px;font-weight:600}
+.sch .t{flex:1 1 auto;min-width:0}
+.sch .t small{display:block;font-weight:400;color:var(--mut);font-size:12.5px;line-height:1.25}
+.sch .s{flex:0 0 46px;height:28px;border-radius:14px;background:#33435c;position:relative;transition:background .15s}
+.sch .s::after{content:"";position:absolute;left:3px;top:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:transform .15s}
+.sch.an .s{background:var(--grn)}.sch.an .s::after{transform:translateX(18px)}
+.umw{display:flex;gap:8px;justify-content:center}
+.umw button{flex:1 1 0;max-width:86px;min-height:76px;border-radius:12px;background:#d9c4a3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;color:#2a2118;font-size:12px;font-weight:700;padding:4px}
+.umw .fig{display:block;width:48px;height:48px}
+.ueber{font-size:13px;line-height:1.38;color:#c6d2e2}
+.ueber b{color:var(--txt)}
+.ueber ul{margin:6px 0;padding-left:18px}
+.ueber li{margin:2px 0}
+.warn-s{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--amber);color:#0e1621;font-weight:900;margin-right:8px;vertical-align:-5px}
+</style>
+</head>
+<body>
+<div class="bar">
+  <a class="back" href="../" id="backLink"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg><span>Spiele</span></a>
+  <div class="title">Schach</div>
+  <button class="ib" id="bLern" type="button" aria-pressed="false"><span class="p"></span><span>Lern-Modus</span></button>
+  <button class="ib" id="bUeber" type="button" aria-label="Über dieses Spiel"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M12 11v6"/><circle cx="12" cy="7.6" r=".6" fill="currentColor"/></svg></button>
+</div>
+
+<div id="haupt">
+  <div id="links">
+    <div class="sp" id="spOben"><span class="nm"></span><span class="gs"></span><span class="pl"></span><span class="dk" hidden>überlegt <i></i><i></i><i></i></span></div>
+    <div id="balken" title="Bewertung: links Weiss, rechts Schwarz"><i></i><b></b></div>
+    <div id="brettRahmen"><div id="brett"></div></div>
+    <div class="sp" id="spUnten"><span class="nm"></span><span class="gs"></span><span class="pl"></span><span class="dk" hidden>überlegt <i></i><i></i><i></i></span></div>
+  </div>
+  <div id="rechts">
+    <div id="status" role="status" aria-live="polite"></div>
+    <div id="zuege" aria-label="Züge"></div>
+    <div id="knoepfe">
+      <button class="kn haupt" id="bTipp" type="button">Tipp</button>
+      <button class="kn" id="bZurueck" type="button">Zug zurück</button>
+      <button class="kn" id="bDrehen" type="button">Brett drehen</button>
+      <button class="kn" id="bNeu" type="button">Neues Spiel</button>
+      <button class="kn" id="bAufgeben" type="button">Aufgeben</button>
+      <button class="kn" id="bEinst" type="button">Einstellungen</button>
+    </div>
+    <div id="info"></div>
+  </div>
+</div>
+
+<!-- Neues Spiel -->
+<div class="dlg dunkel" id="dNeu" hidden><div class="k">
+  <h2>Neues Spiel</h2>
+  <label class="f">Gegner</label>
+  <div class="seg" id="segGegner"><button type="button" data-w="motor">Computer</button><button type="button" data-w="mensch">Zu zweit</button></div>
+  <div id="nurMotor">
+    <label class="f">Deine Farbe</label>
+    <div class="seg" id="segFarbe"><button type="button" data-w="w">Weiss</button><button type="button" data-w="b">Schwarz</button><button type="button" data-w="zufall">Zufall</button></div>
+    <label class="f" for="selStufe">Stärke des Computers</label>
+    <select class="w" id="selStufe"></select>
+  </div>
+  <button class="sch" id="schLernNeu" type="button"><span class="t">Lern-Modus<small>warnt freundlich vor groben Fehlern, bevor der Zug gilt</small></span><span class="s"></span></button>
+  <div class="zl"><button class="kn" id="bNeuAbbr" type="button">Abbrechen</button><button class="kn haupt" id="bSpielen" type="button">Spielen</button></div>
+</div></div>
+
+<!-- Weiterspielen -->
+<div class="dlg dunkel" id="dWeiter" hidden><div class="k">
+  <h2>Willkommen zurück</h2>
+  <p id="weiterText">Deine letzte Partie ist noch nicht fertig.</p>
+  <div class="zl"><button class="kn" id="bWeiterNeu" type="button">Neues Spiel</button><button class="kn haupt" id="bWeiter" type="button">Weiterspielen</button></div>
+</div></div>
+
+<!-- Umwandlung -->
+<div class="dlg" id="dUmw" hidden><div class="k">
+  <h2>Bauer wird zu …</h2>
+  <div class="umw" id="umw"></div>
+  <div class="zl"><button class="kn" id="bUmwAbbr" type="button">Abbrechen</button></div>
+</div></div>
+
+<!-- Lern-Modus: Warnung -->
+<div class="dlg" id="dWarn" hidden><div class="k">
+  <h2><span class="warn-s">!</span>Achtung</h2>
+  <p id="warnText"></p>
+  <div class="zl"><button class="kn haupt" id="bNochmal" type="button">Nochmal überlegen</button><button class="kn" id="bTrotzdem" type="button">Trotzdem ziehen</button></div>
+</div></div>
+
+<!-- Spielende -->
+<div class="dlg" id="dEnde" hidden><div class="k">
+  <h2 id="endeTitel"></h2>
+  <p id="endeText"></p>
+  <div class="zl"><button class="kn" id="bEndeBrett" type="button">Brett ansehen</button><button class="kn haupt" id="bEndeNeu" type="button">Neues Spiel</button></div>
+</div></div>
+
+<!-- Rückfrage (Aufgeben) -->
+<div class="dlg" id="dFrage" hidden><div class="k">
+  <h2 id="frageTitel"></h2>
+  <p id="frageText"></p>
+  <div class="zl"><button class="kn" id="bFrageNein" type="button">Nein</button><button class="kn gelb" id="bFrageJa" type="button">Ja</button></div>
+</div></div>
+
+<!-- Einstellungen -->
+<div class="dlg dunkel" id="dEinst" hidden><div class="k">
+  <h2>Einstellungen</h2>
+  <div id="einstMotor">
+    <label class="f" for="selStufe2">Stärke des Computers</label>
+    <select class="w" id="selStufe2"></select>
+  </div>
+  <label class="f" for="selZeit">Bedenkzeit des Computers (höchstens)</label>
+  <select class="w" id="selZeit"><option value="300">0,3 Sekunden</option><option value="500">0,5 Sekunden</option><option value="1000">1 Sekunde</option><option value="2000">2 Sekunden</option><option value="3000">3 Sekunden</option></select>
+  <button class="sch" id="schLern" type="button"><span class="t">Lern-Modus<small>warnt vor groben Fehlern, bevor der Zug gilt</small></span><span class="s"></span></button>
+  <button class="sch" id="schTon" type="button"><span class="t">Töne</span><span class="s"></span></button>
+  <button class="sch" id="schBalken" type="button"><span class="t">Bewertungsbalken<small>zeigt über dem Brett, wer besser steht</small></span><span class="s"></span></button>
+  <button class="sch" id="schDrehen" type="button"><span class="t">Brett automatisch drehen<small>zu zweit: nach jedem Zug zur Seite, die dran ist</small></span><span class="s"></span></button>
+  <div class="zl"><button class="kn haupt" id="bEinstZu" type="button">Fertig</button></div>
+</div></div>
+
+<!-- Über -->
+<div class="dlg dunkel" id="dUeber" hidden><div class="k">
+  <h2>Über dieses Schach</h2>
+  <div class="ueber">
+    <p style="margin:0 0 6px">Zusammengestellt für MoveEye aus freien Bausteinen. Alles läuft auf deinem Gerät, ohne Internet.</p>
+    <ul>
+      <li><b>Brett:</b> Chessground 10.5.0, das Brett von Lichess (GPL-3.0-or-later) · github.com/lichess-org/chessground</li>
+      <li><b>Figuren:</b> «cburnett» von Colin M. L. Burnett (GPL-2.0-or-later)</li>
+      <li><b>Regeln:</b> chess.js 1.4.0 von Jeff Hlywa (BSD-2-Clause) · github.com/jhlywa/chess.js</li>
+      <li><b>Computer-Gegner:</b> Stockfish 19 Lite als WebAssembly, Stockfish.js 19.0.1 von Nathan Rugg / Chess.com (GPL-3.0) · github.com/nmrugg/stockfish.js – nach Stockfish von T. Romstad, M. Costalba, J. Kiiski, G. Linscott und vielen weiteren</li>
+      <li><b>Ersatz-Motor:</b> js-chess-engine 2.4.6 von Josef Jadrny (MIT) – springt ein, wenn Stockfish auf einem Gerät nicht läuft</li>
+    </ul>
+    <p style="margin:6px 0 0">Das Spiel als Ganzes steht unter der <b>GNU General Public License 3</b> (oder neuer). Lizenztexte und Quellen: Ordner «lizenzen» und Datei «LIESMICH.txt» im Spielordner; der Quelltext liegt offen im MoveEye-Projekt. Kein Produkt von Lichess oder Chess.com.</p>
+    <p id="ueberMotor" style="margin:8px 0 0;color:#8ea0b6"></p>
+  </div>
+  <div class="zl"><button class="kn haupt" id="bUeberZu" type="button">Schliessen</button></div>
+</div></div>
+
+<script src="lib/chess.js"></script>
+<script src="lib/chessground.js"></script>
+<script src="partie.js"></script>
+<script src="motor.js"></script>
+<script src="schach.js"></script>
+<script>/* MoveEye: der eigene Zurück-Link («../») führt zur Spielesammlung von MoveEye (löst den Knopf «✕ Zurück» aus) */
+document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest("a");if(!a||a.closest("#mw-back"))return;var h=a.getAttribute("href");if(h!=="../"&&h!=="index.html")return;var b=document.querySelector("#mw-back a");if(b){e.preventDefault();e.stopPropagation();b.click()}},true);</script>
+</body>
+</html>

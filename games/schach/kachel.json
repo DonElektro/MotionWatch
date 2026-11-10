@@ -1,0 +1,35 @@
+{
+ "dir": "schach",
+ "name": "Schach",
+ "desc": "Schach gegen den Computer oder zu zweit: 8 Stärke-Stufen vom Anfänger bis zum Grossmeister, Tipps, Lern-Modus (warnt vor groben Fehlern), markierte Züge und Zug zurück.",
+ "icon": "thumb.svg",
+ "start": "index.html",
+ "input": "touch",
+ "names": {
+  "de": "Schach",
+  "en": "Chess",
+  "fr": "Échecs",
+  "it": "Scacchi",
+  "rm": "Schah"
+ },
+ "descs": {
+  "de": "Schach gegen den Computer oder zu zweit: 8 Stärke-Stufen vom Anfänger bis zum Grossmeister, Tipps, Lern-Modus (warnt vor groben Fehlern), markierte Züge und Zug zurück.",
+  "en": "Chess against the computer or for two: 8 strength levels from beginner to grandmaster, hints, learner mode (warns before blunders), marked moves and take-back (game texts in German).",
+  "fr": "Échecs contre l'ordinateur ou à deux : 8 niveaux du débutant au grand maître, conseils, mode apprentissage (avertit avant les grosses fautes), coups marqués et retour en arrière (textes en allemand).",
+  "it": "Scacchi contro il computer o in due: 8 livelli dal principiante al gran maestro, suggerimenti, modalità apprendimento (avvisa prima degli errori gravi), mosse evidenziate e mossa indietro (testi in tedesco).",
+  "rm": "Schah cunter il computer u a dus: 8 stgalims dal principiant fin al grond maister, tips, modus d'emprender (avertescha avant sbagls gronds), tratgs marcads e tratg enavos (texts en tudestg)."
+ },
+ "lizenz": [
+  "Schach  (schach/)",
+  "  Lizenz: GPL-3.0-or-later (als Ganzes; die Bausteine einzeln wie unten)",
+  "  Autor: MoveEye (zusammengestellt und eigener Spielablauf, Idee: Elektro) mit freien Bausteinen",
+  "  Quelle: https://github.com/DonElektro/MotionWatch (games/schach/)",
+  "  Brett: Chessground 10.5.0, Lichess (GPL-3.0-or-later) – https://github.com/lichess-org/chessground",
+  "  Figuren: «cburnett», Colin M. L. Burnett (GPL-2.0-or-later), aus Chessground",
+  "  Regeln: chess.js 1.4.0, Jeff Hlywa (BSD-2-Clause) – https://github.com/jhlywa/chess.js",
+  "  Computer-Gegner: Stockfish 19 Lite (WebAssembly, ein Faden), Stockfish.js 19.0.1, Nathan Rugg / Chess.com (GPL-3.0) – https://github.com/nmrugg/stockfish.js;",
+  "    nach Stockfish (T. Romstad, M. Costalba, J. Kiiski, G. Linscott u. a.) – https://github.com/official-stockfish/Stockfish",
+  "  Ersatz-Motor ohne WebAssembly: js-chess-engine 2.4.6, Josef Jadrny (MIT) – https://github.com/josefjadrny/js-chess-engine",
+  "  Lizenztexte im Ordner lizenzen/, Herkunft und Bau der Dateien in LIESMICH.txt. Kein Produkt von Lichess oder Chess.com."
+ ]
+}
