@@ -371,12 +371,24 @@ FACTORY_KEEP = {
 FACTORY_WORD = "ZURÜCKSETZEN"
 FACTORY_WORDS = {"ZURÜCKSETZEN", "ZURUECKSETZEN", "RESET", "RÉINITIALISER", "REINITIALISER", "RIPRISTINA", "RESETTAR"}
 FACTORY_DATA = ["sightings.json", "sim_diary.jsonl", "alarm_tracks.json", "places.json", "place", "refscan", "gehtest", "logs", "motionwatch.log"]
-_BACKUP_RE = re.compile(r"^motionwatch_settings\.before_reset_\d{8}-\d{6}\.json$")
+_BACKUP_RE = re.compile(r"^motionwatch_settings\.before_reset_(\d{8}-\d{6})\.json$")
 
 
 def factory_word(lang=None):
     """the word to type: German «ZURÜCKSETZEN», the other languages «RESET» (both are always accepted)"""
     return FACTORY_WORD if cur_lang(lang) == "de" else "RESET"
+
+
+def factory_backup_when(name):
+    """«dd.mm.yyyy hh:mm» from the time in the file name, None when it is no copy of the settings. 3.72: taken from the pattern -
+    before, fixed positions (n[33:48]) were one character off, no date could be read and the list stayed empty"""
+    m = _BACKUP_RE.match(str(name or ""))
+    if not m:
+        return None
+    try:
+        return datetime.strptime(m.group(1), "%Y%m%d-%H%M%S").strftime("%d.%m.%Y %H:%M")
+    except ValueError:
+        return None
 
 
 def factory_backups():
@@ -385,11 +397,15 @@ def factory_backups():
     except OSError:
         names = []
     out = []
-    for n in names[:10]:
+    for n in names:
+        if len(out) >= 10:
+            break
+        when = factory_backup_when(n)
+        if when is None:                                  # the digits are no real date (20269999-…): not one of ours
+            continue
         try:
-            out.append({"name": n, "kb": max(1, os.path.getsize(os.path.join(DATA_DIR, n)) // 1024),
-                        "when": datetime.strptime(n[33:48], "%Y%m%d-%H%M%S").strftime("%d.%m.%Y %H:%M")})
-        except (OSError, ValueError):
+            out.append({"name": n, "kb": max(1, os.path.getsize(os.path.join(DATA_DIR, n)) // 1024), "when": when})
+        except OSError:
             pass
     return out
 

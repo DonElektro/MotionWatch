@@ -64,7 +64,7 @@ h3{margin:0 0 8px;font-size:11px;letter-spacing:.09em;color:var(--mut);text-tran
       <div class="add" style="grid-template-columns:2fr 1fr 1fr auto;margin-top:8px">
         <input type="text" id="fl-url" placeholder="http://192.168.1.20:5000" maxlength="140">
         <input type="text" id="fl-name" placeholder="Name" maxlength="40">
-        <input type="password" id="fl-pw" placeholder="Password" maxlength="64" autocomplete="new-password">
+        <input type="password" id="fl-pw" data-i18n-ph="Password" placeholder="Password" maxlength="64" autocomplete="new-password">
         <button class="sec" onclick="fleetAdd()" data-i18n="Add">Add</button>
       </div>
       <div class="btns"><button class="sec" type="button" id="fl-scan" onclick="fleetScan()" data-i18n="🔍 Search in the network">🔍 Search in the network</button></div>

@@ -107,7 +107,7 @@ document.getElementById("clr").onclick = async function () {
   await fetch("/api/messages", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({action: "clear"})});
   load();
 };
-load();
+initAppearance().then(load, load);   // 3.72: the language and theme first - before, the fixed texts and the tabs of this page stayed English
 setInterval(function () { if (SRC === "local" && !document.hidden) load(); }, 20000);
 /*ALERTS*/
 </script><script src="/alx/what.js" defer></script></body></html>

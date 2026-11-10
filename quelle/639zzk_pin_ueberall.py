@@ -202,7 +202,7 @@ def rechte_schutz_selftest():
         assert render_page("<html><head></head><body></body></html>", "live").count('id="mw-pin-ask"') == 1 and "/*PINTX*/" not in PIN_ASK_JS
     finally:
         globals().update(keep_f)
-        CFG.update(keep); PROTECT["pin_fails"] = fails; PROTECT["esc_t"], PROTECT["esc_id"] = esc[0], PROTECT["esc_id"]
+        CFG.update(keep); PROTECT["pin_fails"] = fails; PROTECT["esc_t"], PROTECT["esc_id"] = esc
         SCHED.clear(); SCHED.update(sched)
     return "rights exact (factory, audio/live, tunnel, protect), PIN for everything the web switches off, level -> siren, schedule note"
 

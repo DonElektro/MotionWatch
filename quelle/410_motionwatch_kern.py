@@ -1013,8 +1013,8 @@ class MotionWatch:
                     STATE["wind_score"] = ws
                     boost = 1.0 + max(0.0, ws - CFG["wind_threshold"]) / (1 - CFG["wind_threshold"]) * (CFG["wind_boost_max"] - 1)
                     STATE["wind_boost"] = round(min(CFG["wind_boost_max"], boost), 2)
-                    lvl = "calm" if ws < CFG["wind_threshold"] else ("breezy" if ws < 0.55 else ("strong" if ws < 0.8 else "storm"))
-                    if lvl != STATE["wind_level"]:
+                    lvl = wind_level_of(ws, CFG["wind_threshold"], STATE["wind_level"])   # 3.72: dead band downwards (190)
+                    if self.weather.wind_log.feed(lvl, t0):                            # … and only a level that lasts is logged
                         log_event("wind", f"Wind: {lvl} (score {ws:.2f}, threshold x{STATE['wind_boost']})")
                     STATE["wind_level"] = lvl
                 else:
