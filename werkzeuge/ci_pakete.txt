@@ -1,0 +1,10 @@
+# Python-Pakete der Web-Jobs im CI (.github/workflows/ci.yml, «pip install -r»). Diese Datei ist auch der Schlüssel des
+# pip-Zwischenspeichers: er wird nur neu gefüllt, wenn sich hier etwas ändert (vorher: bei jeder Änderung an ci.yml).
+opencv-python-headless
+numpy
+flask
+pillow
+cryptography
+playwright==1.55.0
+# piper_test.py (= PIPER_ORT, Teil 639zzb)
+onnxruntime==1.20.1

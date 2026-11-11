@@ -2222,6 +2222,7 @@ def main():
     ap.add_argument("--zip", default=os.path.join(REPO, "games", "MotionWatch_Spiele.zip"))
     ap.add_argument("--alle", action="store_true", help="auch die älteren Spiele im Browser prüfen")
     ap.add_argument("--nur", default="", help="nur diese Ordner (Komma-Liste)")
+    ap.add_argument("--ohne", default="", help="diese Ordner auslassen (Komma-Liste) - das CI teilt den Lauf so auf zwei Jobs auf")
     ap.add_argument("--ohne-browser", action="store_true")
     ap.add_argument("--bilder", default="", help="Ordner für Bildschirmfotos")
     ap.add_argument("--fotaq", default="", help="Ordner des FOTAQ-Pakets (sonst MW_FOTAQ oder ~/.config/motionwatch/fotaq; fehlt es: übersprungen)")
@@ -2276,6 +2277,8 @@ def main():
                 os.makedirs(a.bilder, exist_ok=True)
             nur = {x.strip() for x in a.nur.split(",") if x.strip()}
             spiele = [g for g in gj["games"] if (g["dir"] in nur) if nur] or [g for g in gj["games"] if a.alle or "names" in g]
+            ohne = {x.strip() for x in a.ohne.split(",") if x.strip()}
+            spiele = [g for g in spiele if g["dir"] not in ohne]
             with sync_playwright() as pw:
                 br = pw.chromium.launch()
                 print(f"{'Spiel':<20} {'Gruppe':<8} {'Handy: Start / Eingabe':<34} PC: Start", flush=True)
