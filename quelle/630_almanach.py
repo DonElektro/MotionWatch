@@ -4,7 +4,7 @@
 # Überlebens-Almanach für MoveEye: Kapitel -> Artikel. Text: Absätze mit Leerzeile, Listenpunkte mit "- ".
 ALMANAC = [
  ("notfall", "🆘", "Notfall", [
-  ("Notrufnummern Schweiz", """Merk dir diese Nummern – sie funktionieren auch ohne Guthaben und meist auch ohne SIM-Karte:
+  ("Notrufnummern Schweiz", """Merk dir diese Nummern – Notrufe sind kostenlos und gehen auch ohne Guthaben:
 
 - 112 – Euro-Notruf (verbindet überall in Europa)
 - 144 – Sanität / Rettungsdienst
@@ -13,7 +13,9 @@ ALMANAC = [
 - 1414 – Rega (Rettungshelikopter), oder die Rega-App: sie schickt deinen Standort mit
 - 145 – Tox Info Suisse (Vergiftungen, auch Pilze, Pflanzen, Schlangenbisse)
 
-Am Telefon: Wer ruft an? Wo genau (Koordinaten aus der Karten-App, markante Punkte)? Was ist passiert? Wie viele Verletzte? Dann nicht auflegen, bis die Zentrale es sagt."""),
+Die 112 nimmt jedes erreichbare Mobilfunknetz, auch ein fremdes. Kommst du mit 1414 oder der Rega-App nicht durch, wähle 112.
+
+Am Telefon: Wer ruft an? Wo genau (Koordinaten – siehe «Mein Standort» oben im Kapitel –, markante Punkte)? Was ist passiert? Wie viele Verletzte? Dann nicht auflegen, bis die Zentrale es sagt."""),
   ("Kein Netz – was jetzt?", """Kein Empfang heisst nicht, dass kein Notruf geht: 112 nimmt jedes verfügbare Netz, auch das eines anderen Anbieters.
 
 - Ein paar Meter höher oder auf eine Kuppe steigen hilft oft.
@@ -34,7 +36,7 @@ Nachts: Taschenlampe oder Handy-Licht in Richtung Helikopter, aber nie direkt in
 - Notruf 144, Atmung immer wieder kontrollieren, warm halten.
 
 Atmet sie nicht normal: sofort 144 und mit Herzdruckmassage beginnen (30 Mal drücken, Brustmitte, 5–6 cm tief, etwa 2 Mal pro Sekunde). Ein Defibrillator (AED) – oft bei Campingplätzen, Bergbahnen, Gemeindehäusern – führt dich mit Sprache durch alles."""),
-  ("Blutungen", """Stark blutende Wunden: sofort Druck darauf – mit einem sauberen Tuch, notfalls mit der Hand. Den Arm oder das Bein hochhalten. Einen Druckverband anlegen (Polster auf die Wunde, fest umwickeln).
+  ("Blutungen", """Stark blutende Wunden: sofort Druck darauf – mit einem sauberen Tuch, notfalls mit der Hand. Den Arm oder das Bein hochhalten. Einen Druckverband anlegen: sterile Auflage auf die Wunde, ein Polster darauf (zum Beispiel eine ungeöffnete Verbandrolle), fest umwickeln. Die Finger oder Zehen dahinter müssen warm und rosig bleiben. Blutet es durch, einen zweiten Verband darüber wickeln – den ersten nicht entfernen.
 
 Hört es nicht auf: 144. Zwischen Herz und Wunde mit der Faust auf die Arterie drücken. Einen Gegenstand, der in der Wunde steckt, nie herausziehen – drumherum polstern."""),
   ("Verbrennungen", """Sofort 10–20 Minuten mit lauwarmem (nicht eiskaltem) Wasser kühlen – bei Kindern und grossen Flächen kürzer, sonst kühlen sie aus. Kleidung, die nicht klebt, und Schmuck entfernen. Nie Mehl, Butter, Zahnpasta.
@@ -75,11 +77,11 @@ Bise: kalter Nordostwind im Mittelland, vor allem am Genfersee und im Seeland. F
 - Eine Flasche mit warmem Wasser (gut verschlossen) im Schlafsack wärmt stundenlang."""),
  ]),
  ("gesundheit", "🩹", "Gesundheit draussen", [
-  ("Zecken", """In der ganzen Schweiz (unter etwa 1500 m) können Zecken FSME und Borreliose übertragen. Die Impfung gegen FSME wird für fast die ganze Schweiz empfohlen – frag deine Hausärztin.
+  ("Zecken", """Zecken gibt es in der Schweiz bis etwa 2000 m über Meer; sie können FSME und Borreliose übertragen. Die ganze Schweiz ausser dem Kanton Tessin gilt als FSME-Risikogebiet, die Impfung wird dort im Allgemeinen ab 3 Jahren empfohlen – frag deine Hausärztin.
 
 - Lange Hosen, Socken über die Hosenbeine, Zeckenschutzmittel.
 - Abends den ganzen Körper absuchen, auch Kniekehlen, Leisten, Achseln, Haaransatz (bei Kindern Kopf!).
-- Eine Zecke sofort mit Zeckenzange oder -karte nah an der Haut fassen und langsam gerade herausziehen. Nicht drehen, kein Öl, kein Klebstoff.
+- Eine Zecke sofort mit einer feinen Pinzette, Zeckenzange oder -karte direkt über der Haut fassen und mit gleichmässigem Zug gerade herausziehen. Nicht quetschen, kein Öl, kein Klebstoff. Danach die Stelle desinfizieren.
 - Die Stelle markieren und Datum notieren. Wird sie in den nächsten Wochen rot und grösser (Wanderröte) oder kommen Fieber und Gliederschmerzen: zum Arzt."""),
   ("Unterkühlung", """Anzeichen: Zittern, kalte Haut, ungeschickte Bewegungen, Verwirrung. Hört das Zittern auf, wird es gefährlich.
 
@@ -91,7 +93,9 @@ Bise: kalter Nordostwind im Mittelland, vor allem am Genfersee und im Seeland. F
 - In den Schatten, Kleider öffnen, mit nassen Tüchern kühlen, Luft zufächeln.
 - Trinken, wenn die Person wach ist.
 - Vorbeugen: Hut, viel trinken, in der Mittagshitze Pause. In der Höhe ist die Sonne viel stärker – Sonnenschutz auch bei Wolken und auf dem Wasser."""),
-  ("Schlangen in der Schweiz", """In der Schweiz gibt es zwei Giftschlangen: die Aspisviper (vor allem Jura, Alpensüdseite, Wallis) und die Kreuzotter (Alpen, höhere Lagen). Beide sind scheu und beissen nur, wenn man sie bedrängt oder darauftritt.
+  ("Schlangen in der Schweiz", """In der Schweiz gibt es zwei Giftschlangen: die Aspisviper (vor allem Jura, Alpensüdseite, Wallis) und die Kreuzotter (Alpen, höhere Lagen). Beide sind scheu und beissen nur, wenn man sie bedrängt oder darauftritt. Die anderen einheimischen Schlangen – etwa Ringelnatter, Würfelnatter und Schlingnatter – sind harmlos, und die Blindschleiche ist eine beinlose Echse.
+
+Vipern haben senkrechte Pupillen und einen kurzen, gedrungenen Körper, Nattern runde Pupillen. Aber so nah geht man nicht heran: Im Zweifel Abstand halten und der Schlange den Weg frei lassen. Alle Schlangen sind in der Schweiz geschützt.
 
 Nach einem Biss: Ruhe bewahren, nicht aussaugen, nicht abbinden, nicht schneiden. Schmuck entfernen, das Glied ruhig halten. 145 (Tox Info) oder 144 anrufen. Die meisten Bisse sind nicht lebensgefährlich, sollten aber ärztlich angeschaut werden.
 
@@ -129,7 +133,7 @@ Trübes Wasser zuerst durch ein Tuch laufen lassen oder stehen lassen, damit sic
 - Anzündholz: dünne, trockene Ästchen, so dick wie ein Streichholz bis wie ein Finger. Tote Äste, die noch am Baum hängen, sind trockener als die am Boden.
 - Brennholz: armdick, erst nachlegen, wenn das Anzündholz gut brennt.
 
-Als Tipi aufbauen (Zunder in der Mitte, Ästchen schräg darüber) oder als Blockhütte (Hölzer kreuzweise). Von der Windseite her anzünden."""),
+Als Pyramide aufbauen (Zunder in der Mitte, Ästchen schräg darüber wie ein Tipi) – sie brennt schnell an. Als Pagodenfeuer (Hölzer kreuzweise geschichtet wie eine Blockhütte) gibt es gleichmässige Glut zum Kochen. Beim Sternfeuer liegen dicke Äste wie Speichen um die Glut und werden nachgeschoben: sparsam für lange Abende. Von der Windseite her anzünden."""),
   ("Feuer richtig löschen", """Wasser darüber, mit einem Stock umrühren, nochmals Wasser – bis nichts mehr zischt und alles kalt ist (Hand darüber halten). Glut kann unter der Asche tagelang weiterglimmen und bei Wind wieder aufflammen. Nie ein Feuer unbeaufsichtigt lassen."""),
   ("Feuer ohne Streichhölzer", """- Feuerstahl: Funken auf sehr feinen, trockenen Zunder schlagen. Funktioniert auch nass.
 - Batterie und Stahlwolle: die Pole einer 9-Volt-Batterie an feine Stahlwolle halten – sie glüht sofort.
@@ -139,7 +143,9 @@ Als Tipi aufbauen (Zunder in der Mitte, Ästchen schräg darüber) oder als Bloc
  ("orientierung", "🧭", "Orientierung", [
   ("Norden finden mit der Sonne", """Die Sonne steht um die Mittagszeit (in der Schweiz im Sommer etwa um 13:30, im Winter um 12:30) im Süden. Am Morgen ist sie im Osten, am Abend im Westen.
 
-Mit einer Zeigeruhr: den Stundenzeiger auf die Sonne richten. Die Mitte zwischen Stundenzeiger und der 1 (Sommerzeit) bzw. 12 (Winterzeit) zeigt nach Süden."""),
+Mit einer Zeigeruhr: den Stundenzeiger auf die Sonne richten. Die Mitte zwischen Stundenzeiger und der 1 (Sommerzeit) bzw. 12 (Winterzeit) zeigt nach Süden.
+
+Mit einem Stock: einen Stock senkrecht in den Boden stecken und die Spitze seines Schattens mit einem Stein markieren. Nach etwa 20 Minuten die neue Schattenspitze markieren. Die Linie vom ersten zum zweiten Stein zeigt von Westen nach Osten."""),
   ("Norden finden in der Nacht", """Den Grossen Wagen suchen (sieben helle Sterne wie eine Pfanne). Die Strecke der beiden hinteren Sterne des «Wagenkastens» fünfmal verlängern – dort ist der Polarstern, ein nicht besonders heller Stern. Er steht fast genau im Norden und bewegt sich die ganze Nacht nicht."""),
   ("Karte und Handy", """- Lade die Karte des Gebiets vorher herunter (z. B. swisstopo-App – sie zeigt auch Wanderwege und funktioniert offline).
 - Merk dir markante Punkte: Gipfel, Seen, Kirchtürme, Strassen.
@@ -171,8 +177,10 @@ Mutterkühe verteidigen ihre Kälber. Nicht zwischen Kuh und Kalb, Hund an die k
   ("Spannknoten für Zeltleinen", """Mit dem Spannknoten (Rollknoten) lässt sich eine Leine nachspannen: Die Leine um den Hering legen, mit dem losen Ende zweimal um die gespannte Leine wickeln (Richtung Hering), dann einmal ausserhalb davon eine halbe Schlinge. Der Knoten lässt sich schieben und hält unter Zug."""),
   ("Palstek", """Eine feste Schlinge, die sich nicht zuzieht und sich trotzdem leicht wieder öffnen lässt – der wichtigste Knoten draussen.
 
-Merksatz: «Die Schlange kommt aus dem Teich, geht um den Baum herum und wieder zurück in den Teich.» Teich = kleine Schlinge in der Leine, Schlange = loses Ende, Baum = die feste Leine."""),
-  ("Mastwurf", """Zum Festmachen an einem Pfosten oder Ast: zwei Schlingen nebeneinander, die zweite über die erste legen, über den Pfosten stülpen und ziehen. Schnell gemacht, hält aber vor allem unter Zug – für Wichtiges mit einem halben Schlag sichern."""),
+Merksatz: «Die Schlange kommt aus dem Teich, geht um den Baum herum und wieder zurück in den Teich.» Teich = kleine Schlinge in der Leine, Schlange = loses Ende, Baum = die feste Leine.
+
+Wichtig: Der Teich muss so liegen, dass das Stück, das zur grossen Schlinge führt, oben auf der festen Leine liegt – sonst fällt der Knoten auseinander. Das lose Ende soll mindestens eine Handbreit herausschauen."""),
+  ("Mastwurf", """Zum Festmachen an einem Pfosten oder Ast. Mit dem Seilende: einmal um den Pfosten, schräg über die erste Windung kreuzen, noch einmal herum und das Ende unter der Schräge durchstecken. Am offenen Pfosten geht es schneller: zwei Schlingen nebeneinander, die zweite über die erste legen, über den Pfosten stülpen und ziehen. Schnell gemacht, hält aber vor allem unter Zug – für Wichtiges mit einem halben Schlag sichern."""),
   ("Was ins Taschenmesser gehört", """Klinge, Säge, Schere, Dosenöffner, Ahle, Pinzette. Ein Taschenmesser mit Säge ersetzt draussen viel Werkzeug. Messer immer vom Körper weg führen und nach Gebrauch schliessen."""),
  ]),
  ("nacht", "🌌", "Nachthimmel", [
@@ -207,7 +215,7 @@ ALM_PAGE = r"""<!doctype html><html lang="de"><head><meta charset="utf-8"><meta 
 :root{--bg:#0e1621;--panel:#16212f;--line:#24324a;--txt:#e8eef6;--mut:#8ea0b6;--acc:#e9a23b;--fs:17px}
 body.light{--bg:#f6f3ec;--panel:#ffffff;--line:#d9d2c3;--txt:#1d232b;--mut:#5d6773;--acc:#b86e0c}
 body.night{--bg:#0a0000;--panel:#160404;--line:#3a1010;--txt:#ff6a5a;--mut:#b4453a;--acc:#ff6a5a}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:var(--fs)/1.6 Georgia,"Times New Roman",serif}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:var(--fs)/1.6 Georgia,"Times New Roman",serif;overflow-wrap:anywhere}
 header{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);padding:10px 14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;z-index:2}
 header h1{font:700 19px system-ui,sans-serif;margin:0;flex:1 1 auto}
 button,input{font:15px system-ui,sans-serif;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--txt);padding:8px 11px}
@@ -216,8 +224,28 @@ main{max-width:720px;margin:auto;padding:14px}
 .tip{border:1px solid var(--acc);border-radius:14px;padding:12px 14px;margin-bottom:14px}.tip b{font-family:system-ui,sans-serif;color:var(--acc)}
 .ch{margin:18px 0 6px;font:700 15px system-ui,sans-serif;color:var(--mut);text-transform:uppercase;letter-spacing:.06em}
 .it{display:block;width:100%;text-align:left;margin:4px 0;padding:11px 13px;font-size:16px}
+.chs{display:grid;grid-template-columns:1fr 1fr;gap:8px}.chp{display:flex;align-items:center;gap:10px;text-align:left;padding:12px;min-height:64px;font-size:16px;line-height:1.25}
+.chp i{font-style:normal;font-size:26px;flex:0 0 32px;text-align:center}.chp small{display:block;color:var(--mut);font-size:13px}
 article h2{font:700 24px system-ui,sans-serif;margin:6px 0 10px}article p{margin:0 0 12px}article ul{margin:0 0 12px;padding-left:22px}article li{margin:4px 0}
 .nav{display:flex;gap:8px;margin-top:18px}.nav button{flex:1}.mut{color:var(--mut);font:14px system-ui,sans-serif}
+.box{border:1px solid var(--line);background:var(--panel);border-radius:14px;padding:12px 14px;margin:10px 0;font-family:system-ui,sans-serif}
+.box b.h{display:block;font-size:16px;margin-bottom:4px}.box .big{font:700 25px/1.25 ui-monospace,Menlo,Consolas,monospace;letter-spacing:.01em}
+.box .mid{font:600 19px/1.3 ui-monospace,Menlo,Consolas,monospace}.box.warn{border:2px solid var(--acc)}.box.warn b.h{color:var(--acc)}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;align-items:center}.row a{color:var(--acc);font-size:15px}
+#b-sos{font-weight:700;font-size:17px;padding:12px 16px;border:2px solid var(--acc)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;font-size:15px}.kv span:nth-child(odd){color:var(--mut)}
+.figs{display:grid;grid-template-columns:1fr;gap:10px;margin:12px 0}.figs.st{grid-template-columns:1fr 1fr}
+figure{margin:0;border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:8px;cursor:zoom-in;min-width:0}
+figure svg{display:block;width:100%;height:auto}figcaption{font:14px/1.35 system-ui,sans-serif;color:var(--mut);margin-top:6px}
+figcaption b{color:var(--acc)}figure.last{grid-column:1/-1}
+figure.zoom{position:fixed;inset:0;z-index:9;border-radius:0;overflow:auto;cursor:zoom-out;display:flex;flex-direction:column;justify-content:center;background:var(--panel)}
+svg .s,svg .a,svg .t{fill:none;stroke-linecap:round;stroke-linejoin:round}svg .s{stroke:var(--txt);stroke-width:2.2}svg .a{stroke:var(--acc);stroke-width:2.2}
+svg .t{stroke:var(--mut);stroke-width:1.3}svg .f{fill:var(--txt)}svg .af{fill:var(--acc)}svg .m{fill:var(--line)}svg .p{fill:var(--panel);stroke:var(--txt);stroke-width:2;stroke-linejoin:round}
+svg text{font:10px system-ui,sans-serif;fill:var(--txt)}svg .tx{font-size:10px}svg .tm{fill:var(--mut);font-size:9px}svg .tb{font-weight:700;font-size:11.5px}svg .c text,svg text.c{text-anchor:middle}
+svg .k0,svg .k1,svg .k1i{fill:none;stroke-linecap:round;stroke-linejoin:round}svg .k0{stroke:var(--txt);stroke-width:6}svg .k1{stroke:var(--acc);stroke-width:6}
+svg .k1i{stroke:var(--panel);stroke-width:2.2}svg .ka{fill:var(--acc)}svg .kp,svg .kr{fill:var(--line);stroke:var(--mut);stroke-width:1.5}svg .kq{fill:none;stroke:var(--mut);stroke-width:1.5}
+svg .kb{fill:var(--txt)}svg .kt{fill:var(--mut);font-size:11px}
+@media print{header,.nav,#b-sos,#b-sosx,#b-copy{display:none!important}body{background:#fff!important;color:#000!important;--bg:#fff;--panel:#fff;--line:#bbb;--txt:#000;--mut:#444;--acc:#000}figure{break-inside:avoid}main{max-width:none}}
 </style></head><body>
 <header><h1>📖 Überlebens-Almanach</h1><input id="q" type="search" placeholder="Suchen …" style="flex:1 1 140px">
 <button id="b-home" title="Inhalt">☰</button><button id="b-big" title="Grosse Schrift">A+</button><button id="b-theme" title="Hell / Dunkel / Rotlicht (wie überall in MoveEye)">◐</button><button id="b-read" title="Vorlesen">🔊</button></header>
@@ -225,9 +253,11 @@ article h2{font:700 24px system-ui,sans-serif;margin:6px 0 10px}article p{margin
 <script>
 const A = __DATA__;
 const $ = id => document.getElementById(id), m = $("m");
-const esc = s => s.replace(/[&<>"]/g, c => "&#" + c.charCodeAt(0) + ";");
+const esc = s => String(s).replace(/[&<>"]/g, c => "&#" + c.charCodeAt(0) + ";");
 const all = []; A.forEach((c, ci) => c[3].forEach((a, ai) => all.push({ci, ai, ch: c, t: a[0], x: a[1]})));
 const S = {big: false}; try { Object.assign(S, JSON.parse(localStorage.getItem("mw-alm") || "{}")); } catch (e) {}
+let PLUS = {bilder: [], quellen: {}, karte: false}, view = 0, timer = 0;
+const jget = u => fetch(u).then(r => r.json()).catch(() => null);
 function save() { try { localStorage.setItem("mw-alm", JSON.stringify({big: S.big})); } catch (e) {} }
 // aufr: no own red-light switch any more - the almanac follows Hell / Dunkel / Rotlicht of MoveEye (toggleTheme, 510 / 530:
 // localStorage «mw-theme» = light | dark, «mw-night» = 1 for the red light); the button here is the same switch
@@ -238,25 +268,87 @@ function apply() { document.documentElement.style.setProperty("--fs", S.big ? "2
   $("b-big").classList.toggle("on", S.big); $("b-theme").textContent = {light: "☾", dark: "◉", red: "☀"}[s]; }
 function body(x) { return x.split("\n\n").map(b => b.split("\n").every(l => l.startsWith("- ")) ? "<ul>" + b.split("\n").map(l => "<li>" + esc(l.slice(2)) + "</li>").join("") + "</ul>" : "<p>" + esc(b).replace(/\n/g, "<br>") + "</p>").join(""); }
 function tipIdx() { const d = new Date(); return (d.getFullYear() * 400 + d.getMonth() * 31 + d.getDate()) % all.length; }
+function go(h) { view++; clearTimeout(timer); window.speechSynthesis && speechSynthesis.cancel(); m.innerHTML = h; scrollTo(0, 0); return view; }
+function foot() { return '<p class="mut" style="margin-top:22px">Von MoveEye, offline auf dem Gerät, nur auf Deutsch. Ersetzt keinen Erste-Hilfe-Kurs – im Notfall 112 / 144. Weiterlesen (englisch, gemeinfrei): «US Army Survival Manual FM 21-76».</p>'; }
 function home(q) {
-  speechSynthesis && speechSynthesis.cancel();
-  let h = "";
-  if (!q) { const t = all[tipIdx()]; h += '<div class="tip"><b>🌙 Tipp des Abends</b><div style="margin-top:6px"><a href="#" onclick="show(' + all.indexOf(t) + ');return false" style="color:inherit">' + t.ch[1] + " " + esc(t.t) + "</a></div></div>"; }
-  A.forEach((c, ci) => { const items = all.filter(a => a.ci === ci && (!q || (a.t + " " + a.x).toLowerCase().includes(q)));
-    if (!items.length) return; h += '<div class="ch">' + c[1] + " " + esc(c[2]) + "</div>";
-    items.forEach(a => { h += '<button class="it" onclick="show(' + all.indexOf(a) + ')">' + esc(a.t) + "</button>"; }); });
-  if (q && !h) h = '<p class="mut">Nichts gefunden.</p>';
-  h += '<p class="mut" style="margin-top:22px">Von MoveEye, offline auf dem Gerät. Ersetzt keinen Erste-Hilfe-Kurs – im Notfall 112 / 144. Weiterlesen (englisch, gemeinfrei): «US Army Survival Manual FM 21-76».</p>';
-  m.innerHTML = h; scrollTo(0, 0);
+  let h = ""; window.cur = undefined;
+  if (!q) { const t = all[tipIdx()]; location.hash = "";
+    h += '<div class="tip"><b>🌙 Tipp des Abends</b><div style="margin-top:6px"><a href="#" onclick="show(' + all.indexOf(t) + ');return false" style="color:inherit">' + t.ch[1] + " " + esc(t.t) + "</a></div></div>";
+    h += '<div class="chs">' + A.map((c, ci) => '<button class="chp" onclick="chap(' + ci + ')"><i>' + c[1] + "</i><span>" + esc(c[2]) + "<small>" + c[3].length + " Artikel</small></span></button>").join("") + "</div>";
+  } else {
+    A.forEach((c, ci) => { const items = all.filter(a => a.ci === ci && (a.t + " " + a.x).toLowerCase().includes(q));
+      if (!items.length) return; h += '<div class="ch">' + c[1] + " " + esc(c[2]) + "</div>";
+      items.forEach(a => { h += '<button class="it" onclick="show(' + all.indexOf(a) + ')">' + esc(a.t) + "</button>"; }); });
+    if (!h) h = '<p class="mut">Nichts gefunden.</p>';
+  }
+  go(h + foot());
+}
+function chap(ci) {
+  const c = A[ci]; location.hash = "c" + ci; window.cur = undefined;
+  let h = '<div class="ch">' + c[1] + " " + esc(c[2]) + '</div><div id="live"></div>';
+  all.forEach((a, i) => { if (a.ci === ci) h += '<button class="it" onclick="show(' + i + ')">' + esc(a.t) + (PLUS.bilder.includes(a.t) ? ' <span class="mut">· mit Bildern</span>' : "") + "</button>"; });
+  if (PLUS.quellen[c[0]]) h += '<p class="mut" style="margin-top:14px">' + esc(PLUS.quellen[c[0]]) + "</p>";
+  h += '<div class="nav"><button onclick="home(\'\')">☰ Inhalt</button></div>';
+  const v = go(h);
+  if (c[0] === "notfall") live("ort", v); else if (c[0] === "wetter") live("wetter", v); else if (c[0] === "nacht") live("nacht", v);
 }
 function show(i) {
   const a = all[i]; location.hash = "a" + i;
-  m.innerHTML = '<div class="mut">' + a.ch[1] + " " + esc(a.ch[2]) + "</div><article><h2>" + esc(a.t) + "</h2>" + body(a.x) + "</article>" +
-    '<div class="nav"><button onclick="show(' + Math.max(0, i - 1) + ')">‹ Zurück</button><button onclick="home(\'\')">☰ Inhalt</button><button onclick="show(' + Math.min(all.length - 1, i + 1) + ')">Weiter ›</button></div>';
-  window.cur = i; scrollTo(0, 0);
+  const v = go('<div class="mut"><a href="#" onclick="chap(' + a.ci + ');return false" style="color:inherit">' + a.ch[1] + " " + esc(a.ch[2]) + "</a></div><article><h2>" + esc(a.t) + "</h2>" + body(a.x) + '<div id="figs"></div></article>' +
+    (a.ch[0] === "spuren" ? '<p class="mut"><a href="/recordings" style="color:var(--acc)">📼 Was hat meine Kamera gesehen? Zu den Aufnahmen</a></p>' : "") +
+    (a.ch[0] === "essbar" ? '<div class="box warn"><b class="h">⚠ Nie nur nach diesem Almanach oder einer App essen</b>Im Zweifel nicht essen. Vergiftung: Tox Info Suisse <b>145</b> · Notfall <b>144</b>.<div class="row"><a href="/tausch">🌿 Bestimmen (im Datentausch)</a></div></div>' : "") +
+    '<div class="nav"><button onclick="show(' + Math.max(0, i - 1) + ')">‹ Zurück</button><button onclick="chap(' + a.ci + ')">☰ Kapitel</button><button onclick="show(' + Math.min(all.length - 1, i + 1) + ')">Weiter ›</button></div>');
+  window.cur = i;
+  if (PLUS.bilder.includes(a.t)) jget("/almanach/bilder?t=" + encodeURIComponent(a.t)).then(j => { if (v !== view || !j || !j.f) return;
+    const st = j.f.some(f => f.n);
+    $("figs").innerHTML = '<div class="figs' + (st ? " st" : "") + '">' + j.f.map((f, k) => '<figure' + (st && k === j.f.length - 1 ? ' class="last"' : "") + ' onclick="this.classList.toggle(\'zoom\')">' + f.svg +
+      (f.cap ? "<figcaption>" + (f.n ? "<b>" + f.n + ".</b> " : "") + esc(f.cap) + "</figcaption>" : "") + "</figure>").join("") + "</div>"; });
 }
+function copy(t, b) { const done = () => { b.textContent = "Kopiert ✓"; setTimeout(() => { b.textContent = "Kopieren"; }, 2000); };
+  const old = () => { const x = document.createElement("textarea"); x.value = t; document.body.appendChild(x); x.select(); try { document.execCommand("copy"); done(); } catch (e) {} x.remove(); };
+  if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(t).then(done, old); else old(); }
+function mmss(s) { return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); }
+function ortBox(d) { const o = d.ort || {}, s = d.sos || {}; let h = '<div class="box" id="ort"><b class="h">📍 Mein Standort für den Notruf</b>';
+  if (o.ok) { const txt = (o.lv95 ? "LV95 " + o.lv95 + " · " : "") + "WGS84 " + o.wgs;
+    if (o.lv95) h += '<div class="big">' + esc(o.lv95) + '</div><div class="mut">Schweizer Koordinaten (LV95: Ost / Nord)</div>';
+    h += '<div class="' + (o.lv95 ? "mid" : "big") + '">' + esc(o.wgs) + '</div><div class="mut">WGS84 (Breite, Länge) · ' + esc(o.dms) + "</div>";
+    h += '<div class="mut">' + (o.name ? esc(o.name) + " · " : "") + "Standort von MoveEye, " + ({module: "vom GPS-Modul", phone: "vom Handy übernommen", fixed: "aus den Einstellungen"}[o.src] || "gespeichert") +
+      (o.acc ? " (± " + o.acc + " m)" : "") + '. Bist du woanders, gilt dein eigener Standort.</div><div class="row"><button id="b-copy">Kopieren</button>' +
+      (PLUS.karte ? '<a href="/karte">🗺 Offline-Karte</a>' : "") + "</div>";
+    setTimeout(() => { const b = $("b-copy"); if (b) b.onclick = () => copy(txt, b); }, 0);
+  } else h += '<div class="mut" style="font-size:15px">Kein Standort gespeichert – so setzt du ihn: MoveEye-Seite auf dem Handy über https öffnen und den Standort erlauben, oder in den Einstellungen Breitengrad und Längengrad eintragen.' +
+      (PLUS.karte ? ' <a href="/karte" style="color:var(--acc)">🗺 Offline-Karte</a>' : "") + "</div>";
+  h += '</div><div class="box" id="sos"><b class="h">🆘 SOS mit der Lampe</b>';
+  if (!s.lampe) h += '<div class="mut" style="font-size:15px">keine Lampe angeschlossen – MoveEye kann hier nicht blinken. Alpines Notsignal: sechsmal pro Minute ein Zeichen mit Taschenlampe oder Pfeife.</div>';
+  else if (s.on) h += '<div class="mut" style="font-size:15px">MoveEye blinkt · · · — — — · · · und hört in ' + mmss(s.rest) + ' von selbst auf.' + (s.alarm ? " Gerade hat das Alarm-Licht Vorrang." : "") + '</div><div class="row"><button id="b-sosx" class="on">■ Stopp</button></div>';
+  else h += '<div class="mut" style="font-size:15px">MoveEye blinkt mit dem weissen Licht · · · — — — · · · (SOS), 5 Minuten lang. Der Besitzer bekommt eine Nachricht. Nur im Notfall.</div><div class="row"><button id="b-sos">🆘 SOS-Lampe starten</button><span class="mut" id="sosmsg"></span></div>';
+  return h + "</div>"; }
+function sos(act) { fetch("/almanach/sos", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({action: act})}).then(r => r.json()).then(j => {
+    live("ort", view, j && !j.ok ? j.msg : ""); }).catch(() => {}); }
+function wetterBox(d) { const w = d.wetter || {};
+  if (!w.ok) return '<p class="mut" id="wetter">Kein Luftdruck-Sensor (BME280) angeschlossen – hier stünden sonst Luftdruck und Trend. Die Wolken lesen hilft auch.</p>';
+  let sp = ""; const k = w.kurve || [];
+  if (k.length > 2) { const lo = Math.min(...k), hi = Math.max(...k), r = Math.max(1, hi - lo);
+    sp = '<svg viewBox="0 0 240 46" style="width:100%;height:46px;margin-top:6px"><polyline class="a" points="' + k.map((p, i) => (4 + 232 * i / (k.length - 1)).toFixed(1) + "," + (40 - 34 * (p - lo) / r).toFixed(1)).join(" ") + '"/></svg><div class="mut">Verlauf der letzten ' + String(w.stunden).replace(".", ",") + " Stunden (" + lo.toFixed(1) + "–" + hi.toFixed(1) + " hPa)</div>"; }
+  const f = v => v == null ? "–" : (v > 0 ? "+" : "") + String(v).replace(".", ",") + " hPa";
+  return '<div class="box' + (w.stufe ? " warn" : "") + '" id="wetter"><b class="h">' + (w.stufe ? "⚠ " : "🌡 ") + 'Luftdruck jetzt</b><div class="big">' + String(w.p).replace(".", ",") + ' hPa</div>' + sp +
+    '<div class="kv" style="margin-top:6px"><span>letzte Stunde</span><span>' + f(w.h1) + "</span><span>letzte 3 Stunden</span><span>" + f(w.h3) + "</span>" + (w.t != null ? "<span>Temperatur</span><span>" + String(w.t).replace(".", ",") + " °C</span>" : "") + "</div>" +
+    '<p style="margin:8px 0 4px;font-size:16px">' + esc(w.text) + '</p><div class="mut">Faustregel: Fällt der Luftdruck um mehr als etwa 1 hPa pro Stunde, zieht meist eine Front auf; bei mehr als 2 hPa pro Stunde kann Sturm oder ein Gewitter folgen. Sommergewitter kommen aber oft ohne Vorwarnung im Luftdruck – immer auch den Himmel beobachten. Gemessen am Standort von MoveEye (' + esc(w.src) + ").</div></div>"; }
+function nachtBox(d) { const n = d.nacht || {}; if (!n.datum) return "";
+  const r = (a, b) => b ? "<span>" + a + "</span><span>" + esc(b) + "</span>" : "";
+  return '<div class="box" id="nacht"><b class="h">🌙 Heute Nacht · ' + esc(n.datum) + '</b><div class="kv">' + r("Sonnenuntergang", n.sonne_unter) + r("ganz dunkel ab", n.nacht_ab || "wird nicht ganz dunkel") +
+    r("ganz dunkel bis", n.nacht_bis) + r("Sonnenaufgang", n.sonne_auf) + r("Mond", n.mond.icon + " " + n.mond.name + ", " + n.mond.hell + " % beleuchtet") + r("Mondaufgang", n.mond_auf || "heute keiner") + r("Monduntergang", n.mond_unter || "heute keiner") + "</div>" +
+    (n.sterne && n.sterne.length ? '<p style="margin:8px 0 4px;font-size:15px">Um 23 Uhr zu sehen: ' + n.sterne.map(s => esc(s.name) + " (im " + s.wo + ")").join(", ") + ".</p>" : "") +
+    '<div class="mut">' + (n.mond.hell < 30 ? "Wenig Mondlicht – gut für Sterne und Sternschnuppen. " : n.mond.hell > 70 ? "Heller Mond – schwache Sterne und die Milchstrasse sind schlecht zu sehen. " : "") +
+    (n.ort_ok ? "Gerechnet für den Standort von MoveEye." : "Kein Standort gespeichert: gerechnet für die Werkseinstellung (Zürich).") + "</div></div>"; }
+function live(w, v, msg) { jget("/almanach/live?w=" + w).then(d => { const el = $("live"); if (v !== view || !el || !d) return;
+    el.innerHTML = w === "ort" ? ortBox(d) : w === "wetter" ? wetterBox(d) : nachtBox(d);
+    if (w === "ort") { const a = $("b-sos"), x = $("b-sosx"); if (a) a.onclick = () => sos("start"); if (x) x.onclick = () => sos("stop");
+      if (msg && $("sosmsg")) $("sosmsg").textContent = msg;
+      if (d.sos && d.sos.on) timer = setTimeout(() => live(w, v), 2000); }
+    else if (w === "wetter" && d.wetter && d.wetter.ok) timer = setTimeout(() => live(w, v), 60000); }); }
 $("q").oninput = () => home($("q").value.trim().toLowerCase());
-$("b-home").onclick = () => { $("q").value = ""; location.hash = ""; home(""); };
+$("b-home").onclick = () => { $("q").value = ""; home(""); };
 $("b-big").onclick = () => { S.big = !S.big; save(); apply(); };
 $("b-theme").onclick = () => { const n = {light: "dark", dark: "red", red: "light"}[step()], th = n === "light" ? "light" : "dark";
   try { localStorage.setItem("mw-theme", th); localStorage.setItem("mw-night", n === "red" ? "1" : "0"); } catch (e) {}
@@ -265,7 +357,9 @@ $("b-theme").onclick = () => { const n = {light: "dark", dark: "red", red: "ligh
 addEventListener("storage", e => { if (e.key === "mw-theme" || e.key === "mw-night") apply(); });   // switched on another page of MoveEye
 $("b-read").onclick = () => { if (!window.speechSynthesis) return; if (window.MW_VOICE && window.MW_VOICE !== "on") return;    if (speechSynthesis.speaking) { speechSynthesis.cancel(); return; }
   const a = all[window.cur ?? tipIdx()]; const u = new SpeechSynthesisUtterance(a.t + ". " + a.x.replace(/^- /gm, "")); u.lang = "de-CH"; u.rate = 0.95; speechSynthesis.speak(u); };
-apply(); const hm = /^#a(\d+)$/.exec(location.hash); if (hm && all[+hm[1]]) show(+hm[1]); else home("");
+function start() { const hm = /^#([ac])(\d+)$/.exec(location.hash);
+  if (hm && hm[1] === "a" && all[+hm[2]]) show(+hm[2]); else if (hm && hm[1] === "c" && A[+hm[2]]) chap(+hm[2]); else home(""); }
+apply(); jget("/almanach/plus").then(j => { if (j && j.ok) PLUS = j; start(); });
 </script></body></html>"""
 
 
