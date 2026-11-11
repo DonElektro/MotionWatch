@@ -60,6 +60,8 @@
 
    STERNE: 3 = ohne Fehlversuch und ohne Tipp · 2 = höchstens 3 Fehlversuche, ohne Tipp · 1 = mit Tipp (oder mehr Fehlversuche).
    Lustige falsche Stellen und unsinniges Kombinieren kosten nie etwas - Ausprobieren soll Spass machen.
+   TIPP-TEST (versteckt, aus): «?tipp=1» an die Adresse hängen oder fünfmal auf den Titel tippen - dann zeigt ein Punkt, wo der
+   Browser den Finger meldet, und ein Kreuz, wo das Spiel den Tipp im Bild einordnet.
    Gespeichert wird unter «mw-wasnun-v1» (Sterne, Geheimnisse, Meister-Lösungen je Bild-id): neue Bilder kommen dazu,
    alte Einträge bleiben. */
 (function () {
@@ -69,7 +71,7 @@
   var TEST = Q.get('test') === '1', ZEIG = Q.get('zeig') === '1', TEMPO = TEST ? Math.max(1, +Q.get('tempo') || 6) : 1, PLATZ = 4;
   var $ = function (id) { return document.getElementById(id); };
   var bild, fx;
-  var S = { i: -1, sz: null, zustand: null, busy: false, fertig: false, fehler: 0, tipp: false, ohne: 0, t0: 0, n: {}, akt: null, spul: 0, wahl: null, neu: null, tippN: 0, meister: false, schluss: '', uhrT: 0, nein: 0 };
+  var S = { i: -1, sz: null, zustand: null, busy: false, fertig: false, fehler: 0, tipp: false, ohne: 0, t0: 0, n: {}, akt: null, spul: 0, letzte: { x: 0, y: 0, id: '', diff: 0 }, wahl: null, neu: null, tippN: 0, meister: false, schluss: '', uhrT: 0, nein: 0 };
   var MERK = { sterne: {}, geheim: {}, meister: {}, stumm: false };
 
   // ---- Speichern (geht auch ohne: dann gilt der Fortschritt bis zum Schliessen der Seite) ----
@@ -232,7 +234,11 @@
   function offen(i) { return i === 0 || !!MERK.sterne[SZ[i - 1].id] || Q.get('alle') === '1'; }
   function sag(t, frage) {
     var e = $('text'); if (frage) e.innerHTML = t; else e.textContent = t || '';
-    e.classList.remove('neu'); void e.offsetWidth; e.classList.add('neu');
+    $('leiste').classList.toggle('fragt', !!frage);
+    // die Leiste ist fest hoch (das Bild darf nach einem Tipp nicht rutschen): langer Text wird kleiner gesetzt statt höher
+    e.classList.remove('neu', 'k1', 'k2');
+    if (e.scrollHeight > e.clientHeight + 1) { e.classList.add('k1'); if (e.scrollHeight > e.clientHeight + 1) { e.classList.remove('k1'); e.classList.add('k2'); } }
+    void e.offsetWidth; e.classList.add('neu');
   }
   function hud() {
     $('hudSterne').innerHTML = sterneHtml(sterneJetzt());
@@ -276,6 +282,33 @@
     var W = b.clientWidth, H = b.clientHeight, w = Math.min(W, H * 4 / 3);
     $('rahmen').style.width = Math.floor(w) + 'px'; $('rahmen').style.height = Math.floor(w * 0.75) + 'px';
   }
+  // ---- Tipp-Test (versteckt; ?tipp=1 in der Adresse oder fünfmal auf den Titel tippen): ein Punkt dort, wo der Browser den
+  // Finger meldet, ein Kreuz dort, wo das Spiel den Tipp im Bild einordnet, dazu die Zahlen. Liegen beide unter dem Finger, stimmt es.
+  var TIPPTEST = Q.get('tipp') === '1', titelT = [];
+  function tippTestAn(an) {
+    TIPPTEST = an;
+    var i = $('tippinfo'), d = $('tippdot');
+    if (!an) { if (i) i.remove(); if (d) d.remove(); var k = fx.querySelectorAll('.tippkreuz'); for (var j = 0; j < k.length; j++) k[j].remove(); return; }
+    if (!i) { i = document.createElement('div'); i.id = 'tippinfo'; document.body.appendChild(i); }
+    i.textContent = 'Tipp-Test an: Punkt = gemeldeter Finger, Kreuz = Stelle im Bild. Fünfmal auf den Titel tippen schaltet ihn aus.';
+  }
+  function titelTipp() {
+    var t = performance.now(); titelT.push(t); titelT = titelT.filter(function (x) { return t - x < 3000; });
+    if (titelT.length >= 5) { titelT = []; tippTestAn(!TIPPTEST); ton('tipp'); }
+  }
+  function tippTestPunkt(cx, cy, L) {
+    var d = $('tippdot'), i = $('tippinfo'), vv = window.visualViewport;
+    if (!d) { d = document.createElement('div'); d.id = 'tippdot'; document.body.appendChild(d); }
+    d.style.left = cx + 'px'; d.style.top = cy + 'px';
+    var s = 'Finger ' + cx.toFixed(0) + '/' + cy.toFixed(0);
+    if (L) {
+      var k = fx.querySelectorAll('.tippkreuz'); for (var j = 0; j < k.length; j++) k[j].remove();
+      fx.insertAdjacentHTML('beforeend', '<g class="tippkreuz" stroke="#00e5ff" stroke-width="4" stroke-linecap="round"><path d="M' + (L.x - 22) + ' ' + L.y + 'h44M' + L.x + ' ' + (L.y - 22) + 'v44"/></g>');
+      s += ' · Bild ' + L.x.toFixed(0) + '/' + L.y.toFixed(0) + ' · Stelle ' + (L.id || '–') + ' · zwei Messarten weichen ab um ' + L.diff.toFixed(1) + ' px';
+    }
+    s += '\nFenster ' + innerWidth + '×' + innerHeight + (vv ? ' · sichtbar ' + vv.width.toFixed(0) + '×' + vv.height.toFixed(0) + ' ab ' + vv.offsetLeft.toFixed(0) + '/' + vv.offsetTop.toFixed(0) + ' · Zoom ' + vv.scale.toFixed(2) : '') + ' · gerollt ' + (window.scrollX || 0).toFixed(0) + '/' + (window.scrollY || 0).toFixed(0);
+    if (i) i.textContent = s;
+  }
   function welle(x, y) {
     var c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
     c.setAttribute('cx', x); c.setAttribute('cy', y); c.setAttribute('r', 10); c.setAttribute('fill', 'none'); c.setAttribute('stroke', '#fff'); c.setAttribute('stroke-width', 5);
@@ -315,6 +348,7 @@
     if (S.busy || S.fertig || !S.sz) return;
     welle(x, y);
     var st = finde(x, y, S.zustand), dg = S.wahl, fn;
+    S.letzte.id = st ? st.id : '';
     if (!st) { if (dg) { S.wahl = null; tasche(S.zustand); } ton('tap'); return; }
     if (dg) {
       S.wahl = null; fn = st.mit && st.mit[dg];
@@ -525,13 +559,34 @@
       laden(); tonKnopf(); wahl();
       $('karten').addEventListener('click', function (e) { var k = e.target.closest && e.target.closest('.karte'); if (!k) return; var i = +k.getAttribute('data-i'); if (offen(i)) starte(i); else { ton('fehl'); } });
       $('tasche').addEventListener('click', function (e) { var p = e.target.closest && e.target.closest('.platz[data-d]'); if (p) platzTipp(p.getAttribute('data-d')); });
+      // Wo liegt der Tipp im Bild? Gemessen wird im Augenblick des Tipps an der Fläche #tast, die genau über dem Bild liegt:
+      // zuerst mit offsetX / offsetY (die Lage IN der angetippten Fläche, vom Browser selbst gerechnet - unabhängig davon,
+      // ob die Seite gerollt, gezoomt oder von Leisten des Browsers verschoben ist), sonst mit clientX / clientY gegen
+      // getBoundingClientRect(). Kein pageX, kein scrollY, keine gemerkten Masse.
+      var tast = $('tast');
       var runter = function (e) {
         if (e.button) return; e.preventDefault();
-        var r = bild.getBoundingClientRect(); if (!r.width) return;
-        tippe((e.clientX - r.left) / r.width * 800, (e.clientY - r.top) / r.height * 600);
+        var r = tast.getBoundingClientRect(); if (!r.width || !r.height) return;
+        var x = (e.clientX - r.left) / r.width * 800, y = (e.clientY - r.top) / r.height * 600, diff = 0;
+        if (e.target === tast && typeof e.offsetX === 'number' && isFinite(e.offsetX) && tast.clientWidth) {
+          var ox = e.offsetX / tast.clientWidth * 800, oy = e.offsetY / tast.clientHeight * 600;
+          diff = Math.sqrt((ox - x) * (ox - x) + (oy - y) * (oy - y)) * r.width / 800; x = ox; y = oy;
+        }
+        S.letzte = { x: x, y: y, id: '', diff: diff };
+        tippe(x, y);
+        if (TIPPTEST) tippTestPunkt(e.clientX, e.clientY, S.letzte);
       };
-      if (window.PointerEvent) bild.addEventListener('pointerdown', runter);
-      else { bild.addEventListener('mousedown', runter); bild.addEventListener('touchstart', function (e) { var t = e.changedTouches[0]; runter({ clientX: t.clientX, clientY: t.clientY, preventDefault: function () { e.preventDefault(); } }); }, { passive: false }); }
+      if (window.PointerEvent) tast.addEventListener('pointerdown', runter);
+      else { tast.addEventListener('mousedown', runter); tast.addEventListener('touchstart', function (e) { var t = e.changedTouches[0]; runter({ clientX: t.clientX, clientY: t.clientY, preventDefault: function () { e.preventDefault(); } }); }, { passive: false }); }
+      // die Seite selbst rollt nie (nur die Bildwahl, das Sternebild und ein langer Text in sich): sonst läge sie unter dem Finger schief
+      document.addEventListener('touchmove', function (e) { if (!(e.target.closest && e.target.closest('#wahl, #ende .k, #text'))) e.preventDefault(); }, { passive: false });
+      var gerade = function () { if (window.scrollX || window.scrollY) window.scrollTo(0, 0); passe(); };
+      addEventListener('scroll', gerade);
+      if (window.visualViewport) { visualViewport.addEventListener('resize', gerade); visualViewport.addEventListener('scroll', gerade); }
+      if (window.ResizeObserver) new ResizeObserver(passe).observe($('buehne'));
+      $('titel').addEventListener('click', titelTipp); $('titel2').addEventListener('click', titelTipp);
+      document.addEventListener('pointerdown', function (e) { if (TIPPTEST && e.target !== tast) tippTestPunkt(e.clientX, e.clientY, null); }, true);
+      if (TIPPTEST) tippTestAn(true);
       $('bBilder').onclick = wahl;
       $('bNeu').onclick = function () { if (!S.busy && S.sz) starte(S.i); };
       $('bTipp').onclick = tippFrage;
@@ -541,7 +596,7 @@
       addEventListener('resize', passe); addEventListener('orientationchange', function () { setTimeout(passe, 250); });
       requestAnimationFrame(schleife);
       if (TEST) window.__wn = {
-        S: S, SZ: SZ, MERK: MERK, MIN: MIN, frei: function () { return !S.busy; }, start: starte, wahl: wahl,
+        V: 3, S: S, SZ: SZ, MERK: MERK, MIN: MIN, frei: function () { return !S.busy; }, start: starte, wahl: wahl,
         // immer in der Form {stelle, ding, kombi, warte}; für alte Tests: next() gibt nur die Stelle
         naechster: function (weg) { return S.sz ? naechster(weg) : null; },
         next: function () { return S.sz ? (naechster().stelle || null) : null; },

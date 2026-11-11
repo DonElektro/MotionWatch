@@ -50,7 +50,10 @@ einen Schritt zurück, der Tipp zeigt die Gegend und gibt höchstens 1 Stern, Ti
 bleibt nach dem Neuladen und das Spiel läuft ohne Speicher. Ab Bild 6 (GS-1.12) dazu: Dinge wählen / abwählen, jede
 falsche Kombination und jedes Ding am falschen Ort (kostet nichts, nichts geht verloren), Sackgassen mit Dingen in der
 Leiste, jeder Lösungsweg samt Abzeichen «Meister-Lösung», Tipps für Dinge und Kombinationen, ein Spielstand aus 3.73.0
-bleibt erhalten, und je Bild 150 zufällige Tipps, nach denen es noch lösbar sein muss. Für den Stand der Quelle
+bleibt erhalten, und je Bild 150 zufällige Tipps, nach denen es noch lösbar sein muss. Ab GS-1.14: Versatz-Test – ein
+Tipp auf die sichtbare Mitte einer Stelle (oben, Mitte, unten) und eines Platzes der Leiste muss genau dort ankommen, und
+das Bild darf nach dem Tipp nicht rutschen (hochkant, auch gerollt / niedriges Fenster / Ränder / 320 px, und quer);
+der versteckte Tipp-Test (?tipp=1 oder fünfmal auf den Titel) ist sonst aus. WN_VERSATZ_ALT=1 prüft auch eine alte ZIP. Für den Stand der Quelle
 (solange die ZIP ihn nicht enthält):
 python3 werkzeuge/spiel_einbauen.py games/wasnun --nach /tmp/t.zip && python3 werkzeuge/spiele_test.py --zip /tmp/t.zip --nur wasnun
 
@@ -916,6 +919,97 @@ def wasnun_pruefen(br, pw, base, fehler, bilder):
     except Exception as e:
         fehler.append(f"{d} quer: {e.__class__.__name__}: {str(e)[:300]}")
     ctx.close()
+
+    # ---- GS-1.14: liegt ein Tipp genau dort, wo der Finger ist? (Meldung vom echten iPhone: hochkant «etwas darunter») --------
+    # Ursache war: hochkant wuchs / schrumpfte die Textleiste mit jeder Meldung, das mittig gesetzte Bild rutschte nach dem Tipp
+    # um bis 21 px. Jetzt: feste Leiste, das Bild steht still; die Lage kommt im Augenblick des Tipps von der Fläche #tast.
+    def versatz():
+        V = lambda pg: pg.evaluate("() => (window.__wn && __wn.V) || 0")
+        MITTE = """id => { const st = __wn.S.sz.stellen.find(x => x.id === id && (!x.wenn || x.wenn(__wn.S.zustand))), r = typeof st.r === 'function' ? st.r(__wn.S.zustand, 0) : st.r,
+          m = document.getElementById('bild').getScreenCTM(), x = r[0] + r[2] / 2, y = r[1] + r[3] / 2;
+          return {bx: x, by: y, x: m.a * x + m.c * y + m.e, y: m.b * x + m.d * y + m.f}; }"""      # Mitte der Fläche über die Zeichen-Matrix des SVG (nicht über die Rechnung des Spiels)
+        RAHMEN = "() => { const r = document.getElementById('rahmen').getBoundingClientRect(); return [r.left, r.top, r.width, r.height]; }"
+        LAGEN = [("hoch", "iPhone 13", ""), ("hoch, Seite gerollt", "iPhone 13", "roll"), ("hoch, niedriges Fenster", "iPhone 13", "niedrig"),
+                 ("hoch, Ränder (Notch)", "iPhone 13", "rand"), ("hoch, schmal 320", "iPhone 13", "schmal"), ("quer", "iPhone 13 landscape", "")]
+        proben = {0: ["sonne", "wolke", "apfel", "hahn", "igel", "maulwurf", "sprenger"], 5: ["mond", "mann", "axt", "boot", "haus", "schnee", "laterne"]}
+        alt = False
+        for name, geraet, lage in LAGEN:
+            ctx = br.new_context(**pw.devices[geraet])
+            pg = seite(ctx, "Versatz " + name)
+            try:
+                if V(pg) < 3:
+                    alt = True
+                    if not os.environ.get("WN_VERSATZ_ALT"):
+                        ctx.close(); break
+                pg.goto(url + "&alle=1", wait_until="load"); pg.wait_for_function("() => window.__wn")
+                if lage == "niedrig":
+                    pg.set_viewport_size({"width": 390, "height": 520})
+                if lage == "schmal":
+                    pg.set_viewport_size({"width": 320, "height": 568})
+                if lage == "rand":
+                    pg.add_style_tag(content="body{padding:47px 0 34px!important}")
+                # Bildwahl: die Mitte jeder sichtbaren Kachel gehört dieser Kachel (Knöpfe sind echte Elemente der Seite)
+                falsch = pg.evaluate("""() => [...document.querySelectorAll('#karten .karte')].filter(k => { const r = k.getBoundingClientRect(); if (r.top < 60 || r.bottom > innerHeight) return false;
+                  const e = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return !e || e.closest('.karte') !== k; }).map(k => k.dataset.i)""")
+                if falsch:
+                    fehler.append(f"{d} Versatz {name}: Bildwahl – Mitte der Kacheln {falsch} trifft nicht die Kachel")
+                for lvl, ids_ in proben.items():
+                    pg.evaluate("i => __wn.start(i)", lvl); pg.wait_for_timeout(250)
+                    if lage == "roll":       # die Seite darf sich nicht rollen lassen: versuchen, dann muss sie bei 0 stehen
+                        pg.evaluate("() => { window.scrollTo(0, 30); document.documentElement.scrollTop = 30; document.body.scrollTop = 30; }")
+                        pg.mouse.wheel(0, 40); pg.wait_for_timeout(150)
+                        sy = pg.evaluate("() => [window.scrollY, document.documentElement.scrollHeight - innerHeight]")
+                        if sy[0] > 0.5 or sy[1] > 1:
+                            fehler.append(f"{d} Versatz {name}: die Seite lässt sich unter dem Bild rollen (scrollY {sy[0]}, {sy[1]} px zu hoch)")
+                    r0 = pg.evaluate(RAHMEN)
+                    for sid in ids_:
+                        frei(pg)
+                        m = pg.evaluate(MITTE, sid)
+                        pg.touchscreen.tap(m["x"], m["y"]); pg.wait_for_timeout(40); frei(pg); pg.wait_for_timeout(120)
+                        r1 = pg.evaluate(RAHMEN)
+                        if max(abs(a_ - b_) for a_, b_ in zip(r0, r1)) > 0.6:
+                            fehler.append(f"{d} Versatz {name}: Bild {lvl + 1} rutscht nach dem Tipp auf «{sid}» um {r1[1] - r0[1]:+.1f} px (Kasten {r0} -> {r1})"); r0 = r1
+                        if V(pg) >= 3:
+                            L = pg.evaluate("() => __wn.S.letzte")
+                            if L["id"] != sid or abs(L["x"] - m["bx"]) > 1.5 or abs(L["y"] - m["by"]) > 1.5 or L["diff"] > 1:
+                                fehler.append(f"{d} Versatz {name}: Bild {lvl + 1} Tipp auf die Mitte von «{sid}» ({m['bx']:.0f}/{m['by']:.0f}) kommt an bei «{L['id']}» {L['x']:.1f}/{L['y']:.1f} (Messarten ±{L['diff']:.1f} px)")
+                    if lvl == 5 and V(pg) >= 3:      # ein Ding in der Leiste: Mitte des Platzes antippen = gewählt, nochmals = abgewählt
+                        m = pg.evaluate(MITTE, "eimer"); pg.touchscreen.tap(m["x"], m["y"]); pg.wait_for_timeout(40); frei(pg)
+                        b = pg.locator('#tasche .platz[data-d="eimer"]').bounding_box()
+                        e_ = pg.evaluate("p => { const e = document.elementFromPoint(p[0], p[1]); return e && e.closest('.platz') ? e.closest('.platz').dataset.d : ''; }", [b["x"] + b["width"] / 2, b["y"] + b["height"] / 2])
+                        pg.touchscreen.tap(b["x"] + b["width"] / 2, b["y"] + b["height"] / 2); pg.wait_for_timeout(60)
+                        if e_ != "eimer" or pg.evaluate("() => __wn.S.wahl") != "eimer":
+                            fehler.append(f"{d} Versatz {name}: Tipp auf die Mitte des Platzes «eimer» wählt ihn nicht")
+                        pg.touchscreen.tap(b["x"] + b["width"] / 2, b["y"] + b["height"] / 2); pg.wait_for_timeout(60)
+                if V(pg) >= 3 and lage == "":
+                    # Tipp-Test: aus; fünfmal auf den Titel = an (Punkt beim Finger, Kreuz im Bild), nochmals fünfmal = aus
+                    if pg.locator("#tippdot, #tippinfo, #fx .tippkreuz").count():
+                        fehler.append(f"{d} Versatz {name}: der Tipp-Test ist ohne Einschalten sichtbar")
+                    tit = pg.locator("#titel2" if "landscape" not in geraet else "#titel")
+                    for _ in range(5):
+                        tit.tap()
+                    m = pg.evaluate(MITTE, "mond"); pg.touchscreen.tap(m["x"], m["y"]); pg.wait_for_timeout(200); frei(pg)
+                    p_ = pg.evaluate("""() => { const d = document.getElementById('tippdot'), k = document.querySelector('#fx .tippkreuz'); if (!d || !k) return null;
+                      const a = d.getBoundingClientRect(), b = k.getBoundingClientRect(); return [a.left + a.width / 2, a.top + a.height / 2, b.left + b.width / 2, b.top + b.height / 2, document.getElementById('tippinfo').textContent]; }""")
+                    if not p_ or max(abs(p_[0] - m["x"]), abs(p_[1] - m["y"]), abs(p_[2] - m["x"]), abs(p_[3] - m["y"])) > 1.5 or "Stelle mond" not in p_[4]:
+                        fehler.append(f"{d} Versatz {name}: Tipp-Test zeigt Punkt / Kreuz nicht am Tipp ({p_}, Tipp {m})")
+                    bild(pg, "tipptest", "hoch" if "landscape" not in geraet else "quer")
+                    for _ in range(5):
+                        tit.tap()
+                    if pg.locator("#tippdot, #tippinfo, #fx .tippkreuz").count():
+                        fehler.append(f"{d} Versatz {name}: der Tipp-Test lässt sich nicht ausschalten")
+                    pg.goto(url + "&alle=1&tipp=1", wait_until="load"); pg.wait_for_function("() => window.__wn")
+                    if not pg.locator("#tippinfo").count():
+                        fehler.append(f"{d} Versatz {name}: «?tipp=1» schaltet den Tipp-Test nicht ein")
+            except Exception as e:
+                fehler.append(f"{d} Versatz {name}: {e.__class__.__name__}: {str(e)[:300]}")
+            ctx.close()
+        if alt and not os.environ.get("WN_VERSATZ_ALT"):
+            print(f"{d}: diese ZIP hat noch die Fassung vor GS-1.14 – der Versatz-Test (Bild rutscht nach dem Tipp) ist nicht gelaufen", flush=True)
+        else:
+            print(f"{d}: Versatz geprüft – Tipp auf die Mitte von je 7 Stellen in 2 Bildern, hochkant (auch gerollt, niedrig, mit Rändern, 320 px) und quer; das Bild steht still", flush=True)
+
+    versatz()
     if len(ids) <= 5:
         print(f"{d}: 5 Bilder gelöst (Handy hoch und quer, PC), Sackgassen, Tipps, Geheimnisse geprüft", flush=True)
         return
