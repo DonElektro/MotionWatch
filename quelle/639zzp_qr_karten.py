@@ -11,7 +11,14 @@
 #     veränderte Codes: eine kurze Zeile «fremde Karte ignoriert» im Protokoll (höchstens 1× pro Minute, nie der Inhalt - er
 #     könnte ein WLAN-Passwort sein). Sperren: pro Karte (Liste CFG qrk_cards, gelöscht = ungültig) oder alle mit einem neuen
 #     Schlüssel (Warnung; jede Karte kann danach neu gedruckt werden).
-#   * Code (Bytes): «M1» + Kennung (5) + Befehl (1) + Prüfnummer (10) + Werte (Text höchstens QRK_TEXT_MAX Bytes UTF-8).
+#   * Zwei Formen, pro Karte wählbar (Entscheid Besitzer 11.11.2026 nach der Messung):
+#       «Text auf dem MoveEye» (Standard; immer bei Licht / Relais / Kopf / Profil / Aufnahme): der Code ist nur
+#         «M1» + Kennung (5) + Befehl (1) + Prüfnummer (10) = 18 Bytes = 25 × 25 Module; Text und Werte stehen im Karten-Eintrag
+#         auf dem Gerät. Die Prüfnummer deckt Kennung + Befehl - darum bleibt die gedruckte Karte gültig, wenn der Text später
+#         geändert wird (qrk_set_text); sperren / löschen wirkt über den Eintrag, «neuer Schlüssel» über die Prüfnummer.
+#       «Text im Code» (nur Push / Vorlesen / Notiz): dieselben 18 Bytes + der Text (höchstens QRK_TEXT_MAX Bytes UTF-8), die
+#         Prüfnummer deckt auch den Text; grösserer Code = kürzerer Abstand, Text nur mit neuer Karte änderbar.
+#     Streng: jede Karte hat genau einen gültigen Code (die kurze Form einer «Text im Code»-Karte gilt nicht und umgekehrt).
 #     Alphabet der Kennung / Prüfnummer: 32 Zeichen ohne I, O, 0, 1. Kein Passwort, kein WLAN, kein Zugang im Code: die
 #     Werkstatt lehnt Texte mit bekannten Geheimnissen / WLAN-Namen ab (qrk_secret_hit); der Push geht wie jeder andere
 #     durch push_no_ssid (635c).
@@ -65,6 +72,7 @@ QRK_CMDS = {   # letter: (name, icon, label)
     "F": ("profile", "🎛️", "Switch profile"),
 }
 QRK_CMD_ORDER = "PSNRLYHF"
+QRK_TEXT_CMDS = "PSN"                  # commands with a text: the text on the device (default) or in the code
 QRK_SECTION = "QR command cards"
 QRK_DEF = {"qrk_on": False, "qrk_cam_head": True, "qrk_cam_wide": True, "qrk_rate": 1.0, "qrk_cooldown": 10, "qrk_feedback": "speak",
            "qrk_photo": True, "qrk_cpu_max": 85, "qrk_cards": [], "qrk_secret": ""}
@@ -114,9 +122,16 @@ def qrk_mac(cid, cmd, param, key=None):
     return _qrk_b32(hmac.new(k, (QRK_PREFIX + cid + cmd + param).encode("utf-8"), hashlib.sha256).digest(), QRK_MAC_LEN)
 
 
+def qrk_in_code(card):
+    """is the text of this card inside the QR code («Text im Code»)? Else the code holds only id + command + check number and
+    text / values live in the card record on the device («Text auf dem MoveEye»: smaller code, text can be changed later)"""
+    return bool(card.get("tc")) and card["cmd"] in QRK_TEXT_CMDS
+
+
 def qrk_payload(card, key=None):
-    """the text in the QR code of a card"""
-    return QRK_PREFIX + card["id"] + card["cmd"] + qrk_mac(card["id"], card["cmd"], card["p"], key) + card["p"]
+    """the text in the QR code of a card: short form (18 bytes, values on the device) or with the text («Text im Code»)"""
+    p = card["p"] if qrk_in_code(card) else ""
+    return QRK_PREFIX + card["id"] + card["cmd"] + qrk_mac(card["id"], card["cmd"], p, key) + p
 
 
 def qrk_parse(text):
@@ -154,7 +169,7 @@ def qrk_check(text):
     if not hmac.compare_digest(mac, qrk_mac(cid, cmd, p, k)):
         return "foreign", None                              # another MoveEye, an old key or changed by somebody
     c = qrk_card(cid)
-    if c is None or c["cmd"] != cmd or c["p"] != p:
+    if c is None or c["cmd"] != cmd or p != (c["p"] if qrk_in_code(c) else ""):   # strict: each card has exactly one valid code
         return "unknown", None
     if c.get("off"):
         return "revoked", c
@@ -318,7 +333,7 @@ def qrk_create(d, who="admin"):
         while not cid or cid in ids:
             cid = "".join(secrets.choice(QRK_ALPHA) for _ in range(QRK_ID_LEN))
         card = {"id": cid, "name": name, "desc": desc, "cmd": cmd, "p": p, "made": datetime.now().isoformat(timespec="seconds"),
-                "used": "", "n": 0, "off": False, "fp": qrk_key_fp(key)}
+                "used": "", "n": 0, "off": False, "fp": qrk_key_fp(key), "tc": bool(d.get("tc")) and cmd in QRK_TEXT_CMDS}
         lst.append(card)
         CFG["qrk_cards"] = lst
     save_settings()
@@ -344,6 +359,32 @@ def qrk_edit(action, cid, who="admin"):
         CFG["qrk_cards"] = lst
     save_settings()
     log_event("sys", f"QR card {action} ({who}): «{c['name']}»")
+    return True, ""
+
+
+def qrk_set_text(cid, d, who="admin"):
+    """change the text of a card whose text lives on the device - the printed card stays valid (its check number covers
+    only id + command) -> (ok, English error)"""
+    with QRK["lock"]:
+        lst = qrk_cards()
+        c = next((x for x in lst if x["id"] == cid), None)
+        if c is None:
+            return False, "unknown card"
+        if c["cmd"] not in QRK_TEXT_CMDS:
+            return False, "this card has no text"
+        if qrk_in_code(c):
+            return False, "the text is in the code - make a new card"
+        dd = dict(d)
+        if c["cmd"] == "P" and "photo" not in dd:
+            dd["photo"] = c["p"][:1] == "1"
+        p, err = qrk_make_param(c["cmd"], dd)
+        if err:
+            return False, err
+        c["p"] = p
+        c["edited"] = datetime.now().isoformat(timespec="seconds")
+        CFG["qrk_cards"] = lst
+    save_settings()
+    log_event("sys", f"QR card text changed ({who}): «{c['name']}»")
     return True, ""
 
 
@@ -777,7 +818,9 @@ def qrk_card_json(c, lang=None):
     key = qrk_key(False)
     pl = qrk_payload(c, key) if key else ""
     ver, n = qrk_qr_size(pl) if pl else (0, 0)
+    txt = (c["p"][1:] if c["cmd"] == "P" else c["p"]) if c["cmd"] in QRK_TEXT_CMDS else ""
     return {"id": c["id"], "name": c["name"], "desc": c.get("desc", ""), "cmd": c["cmd"], "icon": QRK_CMDS[c["cmd"]][1],
+            "tc": qrk_in_code(c), "text": txt, "editable": c["cmd"] in QRK_TEXT_CMDS and not qrk_in_code(c), "edited": c.get("edited", ""),
             "kind": tr(QRK_CMDS[c["cmd"]][2], L), "what": qrk_what(c, L), "made": c.get("made", ""), "used": c.get("used", ""),
             "n": int(c.get("n") or 0), "off": bool(c.get("off")), "reprint": bool(c.get("fp")) and c.get("fp") != qrk_key_fp(key),
             "ver": ver, "modules": n, "range": {k: qrk_range(n, v[2]) for k, v in QRK_SIZES.items()}}
@@ -957,12 +1000,18 @@ def smalltv_routes(app, reply, body):                     # + 639zzp: the worksh
             cmd = str(d.get("cmd") or "")
             if cmd not in QRK_CMDS:
                 return reply({"ok": False, "error": tr_err("unknown command", L)}, 400)
+            tc = bool(d.get("tc")) and cmd in QRK_TEXT_CMDS
             p, err = qrk_make_param(cmd, d)
-            if err:
+            if err and tc:
                 return reply({"ok": False, "error": tr_err(err, L)})
+            p = p if tc else ""                              # short form: the size never depends on the text
             ver, mods = qrk_qr_size(QRK_PREFIX + "A" * QRK_ID_LEN + cmd + "A" * QRK_MAC_LEN + p)
-            return reply({"ok": True, "ver": ver, "modules": mods, "bytes": QRK_HEAD + len(p.encode("utf-8")),
+            return reply({"ok": True, "ver": ver, "modules": mods, "bytes": QRK_HEAD + len(p.encode("utf-8")), "tc": tc,
+                          "warn": tr_err(err, L) if err and err != "the text is empty" else "",
                           "range": {k: qrk_range(mods, v[2]) for k, v in QRK_SIZES.items()}})
+        if a == "text":
+            ok, err = qrk_set_text(str(d.get("id") or ""), d, "web")
+            return reply({"ok": ok, "error": tr_err(err, L) if err else None}, 200 if ok else 400)
         return reply({"ok": False, "error": "unknown action"}, 400)
 
     @app.route("/api/qrk/card/<cid>.<ext>")
@@ -1019,7 +1068,7 @@ main{padding:16px;max-width:900px;margin:0 auto;box-sizing:border-box}
 .qk-f{display:grid;grid-template-columns:1fr;gap:10px}.qk-f label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--mut)}
 .qk-f label.chk{flex-direction:row;align-items:center;gap:8px;color:var(--txt);font-size:14px;min-height:40px}
 .qk-f input[type=text],.qk-f input[type=number],.qk-f select,.qk-f textarea{font:inherit;font-size:16px;min-height:42px;box-sizing:border-box;width:100%}
-.qk-f textarea{min-height:70px;resize:vertical}
+.qk-f textarea{min-height:70px;resize:vertical;background:var(--field);color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
 .qk-cmds{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}@media(max-width:520px){.qk-cmds{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .qk-cmds button{min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:12.5px;padding:6px 4px;line-height:1.15}
 .qk-cmds button i{font-style:normal;font-size:20px}.qk-cmds button.on{outline:2px solid var(--acc);background:var(--glow)}
@@ -1123,6 +1172,12 @@ details.card>summary{cursor:pointer;font-weight:600}
       F.text = E("textarea"); F.text.id = "qk-text"; F.text.maxLength = C.text_max;
       box.appendChild(inp(CMD === "P" ? t("Text of the push message") : CMD === "S" ? t("Text to read aloud") : t("Text of the note"), F.text));
       if (CMD === "P") { const l = E("label", "chk"); F.photo = E("input"); F.photo.type = "checkbox"; F.photo.checked = true; l.append(F.photo, E("span", "", t("with the photo of the camera"))); box.appendChild(l); }
+      F.tc = sel([["0", t("Text on the MoveEye (recommended)")], ["1", t("Text in the code")]], "0"); F.tc.id = "qk-tc";
+      box.appendChild(inp(t("Where is the text?"), F.tc));
+      const tn = E("div", "qk-hint"); tn.id = "qk-tc-n"; box.appendChild(tn);
+      const tcn = () => { tn.textContent = F.tc.value === "1" ? t("The text is inside the QR code: the code gets bigger and reads only from closer; to change the text you print a new card.")
+        : t("The code stays small and reads from further away; you can change the text later without printing again."); };
+      F.tc.addEventListener("change", tcn); tcn();
     } else if (CMD === "R") {
       F.secs = sel([[30, "30 s"], [60, "1 min"], [120, "2 min"], [300, "5 min"], [600, "10 min"]], 60); box.appendChild(inp(t("Duration"), F.secs));
     } else if (CMD === "L") {
@@ -1145,16 +1200,16 @@ details.card>summary{cursor:pointer;font-weight:600}
     const d = {cmd: CMD, name: $i("qk-name").value, desc: $i("qk-desc").value};
     if (F.text) d.text = F.text.value; if (F.photo) d.photo = F.photo.checked; if (F.secs) d.secs = +F.secs.value;
     if (F.light) d.light = F.light.value; if (F.on) d.on = F.on.value === "1"; if (F.relay) d.relay = F.relay.value === "" ? null : +F.relay.value;
-    if (F.point) d.point = F.point.value; if (F.profile) d.profile = F.profile.value; return d;
+    if (F.point) d.point = F.point.value; if (F.profile) d.profile = F.profile.value; if (F.tc) d.tc = F.tc.value === "1"; return d;
   }
   let ST = 0;
   function sizeSoon() { clearTimeout(ST); ST = setTimeout(size, 250); }
   async function size() {
     const h = $i("qk-size"), r = await api(Object.assign(fields(), {action: "check"}));
     if (!r.ok) { h.className = "qk-hint"; h.textContent = r.error && (F.text && F.text.value) ? "⚠ " + r.error : ""; return; }
-    h.className = "qk-hint" + (r.range.card < 0.45 ? " warn" : "");
-    h.textContent = trf("QR code {m} × {m} modules · reading distance about {a} m (postcard), {b} m (A4) – estimate from a simulation", {m: r.modules, a: fmt(r.range.card), b: fmt(r.range.a4)})
-      + (r.range.card < 0.45 ? " · " + t("A shorter text reads from further away.") : "");
+    h.className = "qk-hint" + (r.range.card < 0.45 || r.warn ? " warn" : "");
+    h.textContent = trf("QR code {m} × {m} modules · reads at about {a} cm (postcard) / {b} m (A4) – estimate from a simulation", {m: r.modules, a: Math.round(r.range.card * 20) * 5, b: fmt(r.range.a4)})
+      + (r.tc ? " · " + t("Text in the code: shorter distance, a shorter text reads further.") : "") + (r.warn ? " · ⚠ " + r.warn : "");
   }
   const fmt = v => (Math.round(v * 10) / 10).toLocaleString(L());
   const trf = (k, o) => t(k).replace(/\{(\w+)\}/g, (m, x) => o[x] != null ? o[x] : m);
@@ -1174,6 +1229,8 @@ details.card>summary{cursor:pointer;font-weight:600}
     a("⬇ PNG", "/api/qrk/card/" + c.id + ".png?dl=1&lang=" + L(), true); a("⬇ SVG", "/api/qrk/card/" + c.id + ".svg?dl=1&lang=" + L(), true);
     if (fresh) return;
     const bt = (txt, fn, cls) => { const x = E("button", cls || "sec", txt); x.type = "button"; x.onclick = fn; bb.appendChild(x); return x; };
+    if (c.editable) bt("✎ " + t("Change the text"), async () => { const v = prompt(t("New text (the printed card stays valid):"), c.text); if (v == null) return;
+      const r = await api({action: "text", id: c.id, text: v}); toast(r.ok ? "✓ " + t("Text changed – no new print needed.") : "⚠ " + (r.error || "error")); load(); });
     if (!c.off) bt("▶ " + t("Try out"), async () => { const r = await api({action: "try", id: c.id}); toast(r.ok ? "✓ " + c.name + (r.msg ? " · " + r.msg : "") : "⚠ " + (r.error || r.msg || "error")); load(); });
     bt(c.off ? "✓ " + t("Allow again") : "⛔ " + t("Revoke card"), async () => { await api({action: c.off ? "unrevoke" : "revoke", id: c.id}); load(); });
     bt("🗑 " + t("Delete"), async () => { if (!confirm(t("Delete this card? Printed copies stop working."))) return; await api({action: "delete", id: c.id}); load(); });
@@ -1186,6 +1243,7 @@ details.card>summary{cursor:pointer;font-weight:600}
       const pv = E("div", "pv"), im = E("img"); im.loading = "lazy"; im.alt = ""; im.src = "/api/qrk/card/" + c.id + ".svg?lang=" + L(); pv.appendChild(im);
       pv.onclick = () => window.open("/karten/print?id=" + c.id + "&lang=" + L(), "_blank", "noopener");
       const b = E("div"); const h = E("b", "", c.icon + " " + c.name);
+      if (c.tc) h.appendChild(E("span", "qk-tag", t("Text in the code")));
       if (c.off) h.appendChild(E("span", "qk-tag off", t("card revoked"))); else if (c.reprint) h.appendChild(E("span", "qk-tag re", t("print again (new key)")));
       b.append(h, E("div", "w", c.what));
       const d = s => s ? s.replace("T", " ").slice(0, 16) : "";
@@ -1441,13 +1499,35 @@ _HX_QRK = {
                                                                           "Une carte ne désactive jamais la protection (pas de «Transport / repos»).",
                                                                           "Una carta non spegne mai la protezione (niente «Trasporto / riposo»).",
                                                                           "Ina carta na stizza mai la protecziun (nagin «Transport / ruaus»)."),
-    "QR code {m} × {m} modules · reading distance about {a} m (postcard), {b} m (A4) – estimate from a simulation": (
-        "QR-Code {m} × {m} Module · Leseabstand etwa {a} m (Postkarte), {b} m (A4) – Schätzung aus einer Simulation",
-        "Code QR {m} × {m} modules · distance de lecture env. {a} m (carte postale), {b} m (A4) – estimation d’une simulation",
-        "Codice QR {m} × {m} moduli · distanza di lettura circa {a} m (cartolina), {b} m (A4) – stima da una simulazione",
-        "Code QR {m} × {m} moduls · distanza da leger circa {a} m (carta postala), {b} m (A4) – stimaziun d’ina simulaziun"),
-    "A shorter text reads from further away.": ("Ein kürzerer Text lässt sich von weiter weg lesen.", "Un texte plus court se lit de plus loin.",
-                                                "Un testo più breve si legge da più lontano.", "In text pli curt sa lascha leger da pli lunsch."),
+    "QR code {m} × {m} modules · reads at about {a} cm (postcard) / {b} m (A4) – estimate from a simulation": (
+        "QR-Code {m} × {m} Module · liest sich auf ca. {a} cm (Postkarte) / {b} m (A4) – Schätzung aus einer Simulation",
+        "Code QR {m} × {m} modules · se lit à env. {a} cm (carte postale) / {b} m (A4) – estimation d’une simulation",
+        "Codice QR {m} × {m} moduli · si legge a circa {a} cm (cartolina) / {b} m (A4) – stima da una simulazione",
+        "Code QR {m} × {m} moduls · sa lascha leger sin ca. {a} cm (carta postala) / {b} m (A4) – stimaziun d’ina simulaziun"),
+    "Text in the code: shorter distance, a shorter text reads further.": (
+        "Text im Code: kürzerer Abstand, ein kürzerer Text reicht weiter.", "Texte dans le code : distance plus courte, un texte plus court se lit de plus loin.",
+        "Testo nel codice: distanza più breve, un testo più corto si legge da più lontano.", "Text en il code: distanza pli curta, in text pli curt tanscha pli lunsch."),
+    "Where is the text?": ("Wo steht der Text?", "Où est le texte ?", "Dove sta il testo?", "Nua stat il text?"),
+    "Text on the MoveEye (recommended)": ("Text auf dem MoveEye (empfohlen)", "Texte sur le MoveEye (recommandé)", "Testo sul MoveEye (consigliato)", "Text sin il MoveEye (recumandà)"),
+    "Text in the code": ("Text im Code", "Texte dans le code", "Testo nel codice", "Text en il code"),
+    "The text is inside the QR code: the code gets bigger and reads only from closer; to change the text you print a new card.": (
+        "Der Text steht im QR-Code: der Code wird grösser und lässt sich nur von näher lesen; für einen anderen Text druckst du eine neue Karte.",
+        "Le texte est dans le code QR : le code devient plus grand et ne se lit que de plus près ; pour changer le texte, tu imprimes une nouvelle carte.",
+        "Il testo è nel codice QR: il codice diventa più grande e si legge solo da più vicino; per cambiare il testo stampi una nuova carta.",
+        "Il text stat en il code QR: il code vegn pli grond e sa lascha leger mo da pli datiers; per in auter text stampas ti ina nova carta."),
+    "The code stays small and reads from further away; you can change the text later without printing again.": (
+        "Der Code bleibt klein und lässt sich von weiter weg lesen; den Text kannst du später ändern, ohne neu zu drucken.",
+        "Le code reste petit et se lit de plus loin ; tu peux changer le texte plus tard sans réimprimer.",
+        "Il codice resta piccolo e si legge da più lontano; puoi cambiare il testo più tardi senza ristampare.",
+        "Il code resta pitschen e sa lascha leger da pli lunsch; il text pos ti midar pli tard senza stampar danovamain."),
+    "Change the text": ("Text ändern", "Changer le texte", "Cambiare il testo", "Midar il text"),
+    "New text (the printed card stays valid):": ("Neuer Text (die gedruckte Karte bleibt gültig):", "Nouveau texte (la carte imprimée reste valable) :",
+                                                 "Nuovo testo (la carta stampata resta valida):", "Nov text (la carta stampada resta valaivla):"),
+    "Text changed – no new print needed.": ("Text geändert – kein neuer Druck nötig.", "Texte changé – pas besoin de réimprimer.",
+                                            "Testo cambiato – non serve ristampare.", "Text midà – i na dovra nagin nov stampar."),
+    "this card has no text": ("diese Karte hat keinen Text", "cette carte n’a pas de texte", "questa carta non ha testo", "questa carta n’ha nagin text"),
+    "the text is in the code - make a new card": ("der Text steht im Code – erstelle eine neue Karte", "le texte est dans le code – crée une nouvelle carte",
+                                                  "il testo è nel codice – crea una nuova carta", "il text stat en il code – crea ina nova carta"),
     "Print": ("Drucken", "Imprimer", "Stampare", "Stampar"),
     "Close": ("Schliessen", "Fermer", "Chiudi", "Serrar"),
     "Try out": ("Ausprobieren", "Essayer", "Provare", "Empruvar"),
@@ -1546,11 +1626,13 @@ _HELP_QRK = {
            'der Weitwinkel-Kamera (nie mit dem Wärmebild), etwa einmal pro Sekunde; bei viel Arbeit des Pi, im Akku-Sparen und in der Simulation macht es Pause.</li>'
            '<li><b>Karten-Werkstatt:</b> Mehr → «▦ Karten-Werkstatt»: Befehl wählen, Text eingeben, Karte drucken (Postkarte 10 × 15 cm, A5 oder A4 – mit der '
            'Druckfunktion des Browsers, 100 %) oder als PNG / SVG speichern. Die Liste zeigt Name, Befehl, erstellt, zuletzt benutzt; Karten sperren, freigeben, löschen, ausprobieren.</li>'
+           '<li><b>Wo steht der Text?</b> «Text auf dem MoveEye» (empfohlen): der Code bleibt klein (25 × 25) und liest sich von weiter weg, den Text kannst du später ändern, ohne neu zu drucken. '
+           '«Text im Code»: der Text steht im QR-Code selbst – grösserer Code, kürzerer Abstand, ein anderer Text braucht eine neue Karte.</li>'
            '<li><b>Sicher:</b> nur Karten dieses MoveEye gelten (eine Prüfnummer mit einem geheimen Schlüssel des Geräts). Fremde oder veränderte Codes werden ignoriert '
            '(eine kurze Zeile im Protokoll). «Alle Karten ungültig machen» erzeugt einen neuen Schlüssel – danach jede Karte neu drucken. Auf einer Karte stehen keine Passwörter und keine WLAN-Namen.</li>'
            '<li><b>Rückmeldung:</b> «Verstanden» (oder ein Ton), ein grüner Rahmen um die Karte im Live-Bild; dieselbe Karte wirkt erst wieder, wenn sie kurz weg war '
            '(Sperrzeit). Jede Benutzung steht im Protokoll und mit Foto in Verlauf → Aufnahmen.</li>'
-           '<li><b>Abstand:</b> geschätzt aus einer Simulation: Postkarte bei Tag etwa 0,5–0,9 m vor der Kopf-Kamera, Weitwinkel näher; A4 etwa doppelt so weit. Kurze Texte reichen weiter. '
+           '<li><b>Abstand:</b> geschätzt aus einer Simulation: Postkarte bei Tag etwa 0,8 m vor der Kopf-Kamera (Text im Code: 0,3–0,6 m), Weitwinkel näher; A4 etwa doppelt so weit. Kurze Texte reichen weiter. '
            'Nachts mit Infrarot kürzer; ein Handy-Bildschirm spiegelt im Infrarot oft.</li></ul></section>\n'),
     "en": ('<section id="qrkarten" data-icon="▦"><h2>QR command cards (experimental)</h2><ul>'
            '<li><b>What:</b> hold a printed card (or a phone screen) with a QR code in front of the camera – MoveEye does what is on it: push message (text from the card, '
@@ -1560,24 +1642,26 @@ _HELP_QRK = {
            'about once a second; it pauses when the Pi is busy, in battery saving and in the simulation.</li>'
            '<li><b>Card workshop:</b> More → «▦ Card workshop»: choose the command, type the text, print the card (postcard 10 × 15 cm, A5 or A4 – with the browser’s print, 100 %) '
            'or save it as PNG / SVG. The list shows name, command, made, last used; revoke, allow again, delete, try out.</li>'
+           '<li><b>Where is the text?</b> «Text on the MoveEye» (recommended): the code stays small (25 × 25) and reads from further away; you can change the text later without printing again. '
+           '«Text in the code»: the text is inside the QR code – a bigger code, a shorter distance, another text needs a new card.</li>'
            '<li><b>Safe:</b> only cards of this MoveEye count (a check number with a secret key of the device). Foreign or changed codes are ignored (a short log line). '
            '«Make all cards invalid» makes a new key – print every card again afterwards. No passwords and no Wi-Fi names on a card.</li>'
            '<li><b>Feedback:</b> «Understood» (or a sound) and a green frame around the card in the live picture; the same card works again only after it was away for a moment '
            '(cooldown). Every use is in the log and, with a photo, in History → Recordings.</li>'
-           '<li><b>Distance:</b> estimated from a simulation: postcard by day about 0.5–0.9 m in front of the head camera, wide angle closer; A4 about twice as far. Short texts read further. '
+           '<li><b>Distance:</b> estimated from a simulation: postcard by day about 0.8 m in front of the head camera (text in the code: 0.3–0.6 m), wide angle closer; A4 about twice as far. Short texts read further. '
            'Shorter at night with infrared; a phone screen often reflects in infrared.</li></ul></section>\n'),
     "fr": ('<section id="qrkarten" data-icon="▦"><h2>Cartes de commande QR (expérimental)</h2><ul><li>Tenir une carte avec un code QR devant la caméra : MoveEye exécute '
            'la commande (push, lecture à voix haute, note avec photo, enregistrement, lumière / relais, position de la tête, profil). Jamais désactiver la protection. '
            'Activer : Réglages → Caméras et tête. Créer et imprimer : Plus → Atelier des cartes. Seules les cartes de ce MoveEye comptent ; une nouvelle clé invalide toutes les cartes. '
-           'Distance (simulation) : carte postale env. 0,5–0,9 m, A4 env. le double.</li></ul></section>\n'),
+           'Distance (simulation) : carte postale env. 0,8 m, A4 env. le double ; «texte dans le code» : plus court, texte non modifiable sans réimprimer.</li></ul></section>\n'),
     "it": ('<section id="qrkarten" data-icon="▦"><h2>Carte di comando QR (sperimentale)</h2><ul><li>Tenere una carta con un codice QR davanti alla telecamera: MoveEye esegue '
            'il comando (push, lettura ad alta voce, nota con foto, registrazione, luce / relè, posizione della testa, profilo). Mai spegnere la protezione. '
            'Attivare: Impostazioni → Telecamere e testa. Creare e stampare: Altro → Laboratorio delle carte. Valgono solo le carte di questo MoveEye; una nuova chiave invalida tutte le carte. '
-           'Distanza (simulazione): cartolina circa 0,5–0,9 m, A4 circa il doppio.</li></ul></section>\n'),
+           'Distanza (simulazione): cartolina circa 0,8 m, A4 circa il doppio; «testo nel codice»: più corta, testo non modificabile senza ristampare.</li></ul></section>\n'),
     "rm": ('<section id="qrkarten" data-icon="▦"><h2>Cartas da cumond QR (experimental)</h2><ul><li>Tegnair ina carta cun code QR davant la camera: MoveEye exequescha '
            'il cumond (push, leger ad aulta vusch, notizia cun foto, registraziun, glisch / relais, posiziun dal chau, profil). Mai stizzar la protecziun. '
            'Activar: Configuraziuns → Cameras e chau. Crear e stampar: Dapli → Ufficina da cartas. I valan mo cartas da quest MoveEye; ina nova clav fa nunvalaivlas tut las cartas. '
-           'Distanza (simulaziun): carta postala circa 0,5–0,9 m, A4 circa il dubel.</li></ul></section>\n'),
+           'Distanza (simulaziun): carta postala circa 0,8 m, A4 circa il dubel; «text en il code»: pli curta, text betg midabel senza stampar danovamain.</li></ul></section>\n'),
 }
 
 
@@ -1608,13 +1692,26 @@ def qrk_selftest():
         card, err = qrk_create({"cmd": "L", "name": "Licht an", "light": "white", "on": True}, "selftest")
         assert card and not err and re.fullmatch(r"[0-9a-f]{64}", CFG["qrk_secret"]), err
         pl = qrk_payload(card)
-        assert pl.startswith("M1" + card["id"] + "L") and pl.endswith("w1") and len(pl) == QRK_HEAD + 2, pl
+        assert pl.startswith("M1" + card["id"] + "L") and len(pl) == QRK_HEAD and qrk_qr_size(pl)[1] == 25, pl   # values on the device
         assert CFG["qrk_secret"] not in pl and CFG["qrk_secret"][:10] not in pl
         assert qrk_check(pl) == ("ok", qrk_card(card["id"]))
-        bad = pl[:-1] + "0"                                     # «light off» with the old check number
+        bad = pl[:7] + "Y" + pl[8:]                             # another command with the old check number
         assert qrk_check(bad)[0] == "foreign" and qrk_check("https://example.org/")[0] == "foreign" and qrk_check("")[0] == "foreign"
-        other = QRK_PREFIX + card["id"] + "L" + qrk_mac(card["id"], "L", "w1", "ab" * 32) + "w1"
+        assert qrk_check(pl + "w0")[0] == "foreign", "values added to a short card"
+        other = QRK_PREFIX + card["id"] + "L" + qrk_mac(card["id"], "L", "", "ab" * 32)
         assert qrk_check(other)[0] == "foreign", "a card of another MoveEye"
+        dev, _e = qrk_create({"cmd": "P", "name": "Essen", "text": "Essen ist fertig", "photo": True}, "selftest")
+        inc, _e = qrk_create({"cmd": "S", "name": "Ansage", "text": "Willkommen", "tc": True}, "selftest")
+        pd, pi = qrk_payload(dev), qrk_payload(inc)
+        assert len(pd) == QRK_HEAD and pi.endswith("Willkommen") and qrk_check(pd)[0] == "ok" and qrk_check(pi)[0] == "ok"
+        assert qrk_set_text(dev["id"], {"text": "Kaffee ist fertig"}) == (True, "") and qrk_payload(qrk_card(dev["id"])) == pd
+        assert qrk_check(pd)[1]["p"] == "1Kaffee ist fertig", "text changed on the device: the printed card stays valid"
+        assert qrk_set_text(inc["id"], {"text": "x"})[0] is False and qrk_set_text(card["id"], {"text": "x"})[0] is False
+        assert qrk_check(pi[:-1] + "m")[0] == "foreign", "text in the code changed"
+        assert qrk_check(pi[:QRK_HEAD])[0] == "foreign" and qrk_check(pd + "1Hallo")[0] == "foreign", "the other form of a card never counts"
+        for _c in (dev, inc):
+            qrk_edit("revoke", _c["id"], "selftest")
+        assert qrk_check(pd)[0] == "revoked" and qrk_check(pi)[0] == "revoked"
         img = cv2.imdecode(np.frombuffer(qr_png(pl, 6), np.uint8), cv2.IMREAD_COLOR)
         img = cv2.copyMakeBorder(img, 60, 60, 120, 120, cv2.BORDER_CONSTANT, value=(140, 140, 140))
         txt, pts = qrk_decode(img)
@@ -1660,7 +1757,7 @@ def qrk_selftest():
                 QRK[k].clear(); QRK[k].update(v)
             else:
                 QRK[k] = v
-    return "check number (own / changed / other device), read a code, cooldown, revoke, new key, no secrets on a card, rights, page hooks"
+    return "check number (own / changed / other device), text on the device / in the code, read a code, cooldown, revoke, new key, no secrets on a card, rights, page hooks"
 
 
 _qrk_spawn_real = qrk_spawn

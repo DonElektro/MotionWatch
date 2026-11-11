@@ -9,7 +9,9 @@
      (gehalten, kurz weg); fremde / veränderte / gesperrte Karte = nichts (Zeile «fremde Karte ignoriert»); jeder Befehl
      (Push an einen lokalen Webhook, Vorlesen, Notiz mit Foto, Aufnahme, Licht, Relais, Kopf, Erkennungsprofil, Modus);
      Weitwinkel allein; Foto + Notiz in Verlauf → Aufnahmen; Rahmen im Live-Bild; Rechte (Familie / Kind: keine Werkstatt,
-     keine Karte, kein Schalter); keine Zugangsdaten im Code (das Bild der Karte gelesen).
+     keine Karte, kein Schalter); keine Zugangsdaten im Code (das Bild der Karte gelesen). Beide Formen: «Text auf dem
+     MoveEye» (Code 18 Bytes, 25 × 25; Text später ändern - die gedruckte Karte gilt weiter und schickt den neuen Text) und
+     «Text im Code» (veränderter Text abgelehnt, nicht änderbar); gesperrt wirkt bei beiden; Hinweis Grösse / Abstand.
   C) --browser: Werkstatt in iPhone-Breite (390 × 844) und am PC: Karte erstellen, Liste, Druckseite; Live-Seite mit dem
      Rahmen um die Karte; Einstellungen → Kameras & Kopf → Abschnitt mit Link; keine JavaScript-Fehler.
      --bilder ORDNER: qr_karten_*.png
@@ -308,7 +310,7 @@ def teil_b(datei, ns, browser, bilder):
         mk = lambda d: req("/api/qrk", dict(d, action="create", lang="de"))
         specs = [{"cmd": "L", "name": "Licht an", "light": "white", "on": True, "desc": "Weisses Licht ein"},
                  {"cmd": "P", "name": "Essen fertig", "text": "Essen ist fertig – kommt zum Zelt!", "photo": True},
-                 {"cmd": "S", "name": "Ansage", "text": "Willkommen auf dem Platz"},
+                 {"cmd": "S", "name": "Ansage", "text": "Willkommen auf dem Platz", "tc": True},      # text in the code
                  {"cmd": "N", "name": "Notiz", "text": "Velo abgeschlossen"},
                  {"cmd": "R", "name": "Film 30 s", "secs": 30},
                  {"cmd": "Y", "name": "Relais ein", "relay": 0, "on": True},
@@ -323,8 +325,14 @@ def teil_b(datei, ns, browser, bilder):
         c, j = mk({"cmd": "F", "name": "Ruhe", "profile": "m:transport"})
         ok(c == 400, "Modus «Transport / Ruhe»: keine Karte")
         C = cards()
-        c, j = req("/api/qrk", {"action": "check", "cmd": "P", "text": "x" * 40, "photo": True})
-        ok(j.get("ok") and j["modules"] == 33 and 0.3 < j["range"]["card"] < 1.0 and j["range"]["a4"] > 1.2, f"Werkstatt: Grösse + Reichweite {j}")
+        c, j = req("/api/qrk", {"action": "check", "cmd": "P", "text": "x" * 40, "photo": True, "tc": True})
+        ok(j.get("ok") and j["modules"] == 33 and 0.5 <= j["range"]["card"] <= 0.7 and j["range"]["a4"] > 1.2, f"Werkstatt «Text im Code», 40 Zeichen: 33 × 33, kürzer {j['range']}")
+        c, j2 = req("/api/qrk", {"action": "check", "cmd": "P", "text": "x" * 40, "photo": True})
+        ok(j2.get("ok") and j2["modules"] == 25 and j2["bytes"] == 18 and j2["range"]["card"] > j["range"]["card"] and j2["range"]["a4"] > 1.7,
+           f"Werkstatt «Text auf dem MoveEye»: 25 × 25, 18 Bytes, weiter {j2['range']}")
+        ok(C["Ansage"]["tc"] and not C["Essen fertig"]["tc"] and C["Essen fertig"]["editable"] and not C["Ansage"]["editable"] and not C["Licht an"]["editable"],
+           "Liste: «Text im Code» / änderbar nur der Text auf dem Gerät")
+        ok(all(c_["modules"] == 25 for n_, c_ in C.items() if n_ != "Ansage") and C["Ansage"]["modules"] > 25, "alle Karten ohne Text im Code: 25 × 25")
         # no key, no password in what the camera reads
         key = ""
         for _i in range(40):                                            # the settings are written a few seconds later
@@ -341,6 +349,9 @@ def teil_b(datei, ns, browser, bilder):
             txts.append(next((t_ for t_ in (d_.detectAndDecode(im)[0] for d_ in dets) if t_), ""))
         ok(len(key) == 64 and all(t.startswith("M1") for t in txts) and not any(key[:16] in t for t in txts) and not any(PW in t for t in txts),
            f"{len(txts)} Karten-Bilder gelesen: Code «M1…», kein Schlüssel, kein Passwort ({txts[0][:24]}…)")
+        T = dict(zip(C, txts))
+        ok(len(T["Essen fertig"]) == 18 and "Essen" not in T["Essen fertig"] and T["Ansage"].endswith("Willkommen auf dem Platz"),
+           "Code: Text auf dem Gerät = 18 Zeichen ohne Text, Text im Code = mit Text")
         c, svg = req(f"/api/qrk/card/{C['Licht an']['id']}.svg")
         ok(c == 200 and b"<svg" in svg and "Licht an".encode() in svg and b"Weisses Licht ein" in svg, "SVG mit Name und Beschreibung")
         c, pg = req(f"/karten/print?id={C['Licht an']['id']}&size=card&lang=de")
@@ -384,17 +395,21 @@ def teil_b(datei, ns, browser, bilder):
             t0 = time.time()
             while time.time() - t0 < limit and not re.search(rx, log_text()):
                 time.sleep(0.5)
-        zeigen_code(pl_ok[:-1] + ("0" if pl_ok[-1] == "1" else "1")); warten_log("foreign card ignored|fremde Karte ignoriert"); time.sleep(2)
+        zeigen_code(pl_ok[:-1] + ("A" if pl_ok[-1] != "A" else "B")); warten_log("foreign card ignored|fremde Karte ignoriert"); time.sleep(2)
         zeigen_code("https://example.org/?pw=geheim"); time.sleep(4)
         weg()
         lt = log_text()
-        ok(cards()["Licht an"]["n"] == 3 and req("/api/state?lang=de")[1]["state"]["light_cfg"]["white"] == "on", "veränderte Karte («Licht aus» mit alter Prüfnummer): nichts")
+        ok(cards()["Licht an"]["n"] == 3 and req("/api/state?lang=de")[1]["state"]["light_cfg"]["white"] == "on", "veränderte Karte (Prüfnummer stimmt nicht): nichts")
         ok("foreign card ignored" in lt or "fremde Karte ignoriert" in lt, "Protokoll: «fremde Karte ignoriert»")
         ok(lt.count("foreign card ignored") + lt.count("fremde Karte ignoriert") == 1 and "geheim" not in lt, "nur eine Zeile, ohne Inhalt")
         req("/api/qrk", {"action": "revoke", "id": C["Licht an"]["id"]})
         time.sleep(4); zeigen(C["Licht an"]["id"]); warten_log("is revoked|gesperrt"); time.sleep(2); weg()
         ok(cards()["Licht an"]["n"] == 3 and cards()["Licht an"]["off"], "gesperrte Karte: nichts")
         ok("is revoked" in log_text() or "gesperrt" in log_text(), "Protokoll: gesperrt")
+        zeigen_code(T["Ansage"][:-1] + "x"); time.sleep(5)             # text in the code, one letter changed
+        zeigen_code(T["Ansage"][:18]); time.sleep(4); weg()             # the short form of a «text in the code» card
+        ok(cards()["Ansage"]["n"] == 0 and not (req("/api/qrk?lang=de")[1]["state"]["last"] or {}).get("name") == "Ansage",
+           "«Text im Code» mit verändertem Text / ohne Text: abgelehnt")
         print("B) jeder Befehl mit der Kamera", flush=True)
         Hook.got.clear()
         for nm in ("Essen fertig", "Ansage", "Notiz", "Film 30 s", "Relais ein", "Kopf Velo", "Profil Nacht", "Modus Haus"):
@@ -418,8 +433,34 @@ def teil_b(datei, ns, browser, bilder):
         ok(uses.get("Kopf Velo") is not None, f"Kopf: teach_goto ({uses.get('Kopf Velo', {}).get('ok')}, {uses.get('Kopf Velo', {}).get('msg_t')})")
         c, j = req("/api/recordings?kind=image&limit=100")
         recs = [x for x in j.get("items", []) if x["name"].startswith("qrcard_")]
-        ok(len(recs) >= 5 and all(x.get("source") == "QR card" for x in recs), f"Verlauf → Aufnahmen: {len(recs)} Fotos (Quelle «QR card»)")
-        ok(any("Velo abgeschlossen" in (x.get("note") or "") for x in recs), "Notiz mit Foto im Verlauf (Text der Karte)")
+        if shutil.disk_usage(tmp).free < 500 * 1024 ** 2:               # under 400 MB free MoveEye deletes old recordings (410)
+            print("  – Verlauf-Fotos nicht geprüft: weniger als 500 MB frei, MoveEye räumt die Aufnahmen selbst weg", flush=True)
+        else:
+            ok(len(recs) >= 5 and all(x.get("source") == "QR card" for x in recs), f"Verlauf → Aufnahmen: {len(recs)} Fotos (Quelle «QR card»)")
+            ok(any("Velo abgeschlossen" in (x.get("note") or "") for x in recs), "Notiz mit Foto im Verlauf (Text der Karte)")
+        print("B) Text auf dem Gerät ändern, sperren (beide Formen)", flush=True)
+        c, j = req("/api/qrk", {"action": "text", "id": C["Essen fertig"]["id"], "text": "Kaffee ist fertig", "lang": "de"})
+        ok(c == 200 and j.get("ok"), "Text der Karte geändert")
+        ok(req("/api/qrk", {"action": "text", "id": C["Ansage"]["id"], "text": "x", "lang": "de"})[0] == 400, "«Text im Code»: nicht änderbar")
+        ok(req("/api/qrk", {"action": "text", "id": C["Essen fertig"]["id"], "text": "WIFI:T:WPA;S:x;P:y;;", "lang": "de"})[0] == 400, "auch beim Ändern: keine Zugangsdaten")
+        c, png = req(f"/api/qrk/card/{C['Essen fertig']['id']}.png")
+        im = cv2.imdecode(np.frombuffer(png, np.uint8), cv2.IMREAD_COLOR)
+        ok(next((t_ for t_ in (d_.detectAndDecode(im)[0] for d_ in dets) if t_), "") == T["Essen fertig"], "der Code der Karte ist derselbe (kein neuer Druck)")
+        Hook.got.clear()
+        time.sleep(6); zeigen_code(T["Essen fertig"])                   # the «printed» code from before the change
+        cc = warten_n("Essen fertig", 2); weg(); time.sleep(3)
+        ok(cc and cc["n"] == 2 and any(b"Kaffee ist fertig" in g for g in Hook.got) and not any(b"Essen ist fertig" in g for g in Hook.got),
+           "alte gedruckte Karte: gilt weiter und schickt den neuen Text")
+        for nm in ("Notiz", "Ansage"):                                  # text on the device / text in the code
+            req("/api/qrk", {"action": "revoke", "id": C[nm]["id"]})
+        n0 = {nm: cards()[nm]["n"] for nm in ("Notiz", "Ansage")}
+        for nm in ("Notiz", "Ansage"):
+            time.sleep(3.5); zeigen_code(T[nm]); warten_log(f"«{nm}» is revoked"); time.sleep(2); weg()
+        cs = cards()
+        ok(all(cs[nm]["n"] == n0[nm] and cs[nm]["off"] for nm in n0) and all(f"«{nm}» is revoked" in log_text() for nm in n0),
+           "gesperrt: Karte mit Text auf dem Gerät und Karte mit Text im Code – beide nichts")
+        for nm in ("Notiz", "Ansage"):
+            req("/api/qrk", {"action": "unrevoke", "id": C[nm]["id"]})
         print("B) nur Weitwinkel", flush=True)
         req("/api/set", {"key": "qrk_cam_head", "value": False})
         req("/api/qrk", {"action": "unrevoke", "id": C["Licht an"]["id"]})
@@ -490,10 +531,17 @@ def teil_c(base, bilder, karte, C, zeigen, weg):
             pg.fill("#qk-text", "Bin in 10 Minuten zurück")
             pg.fill("#qk-desc", "Vor die Kamera halten")
             pg.wait_for_timeout(700)
-            ok("Leseabstand" in pg.inner_text("#qk-size"), f"{name}: Hinweis Grösse / Abstand ({pg.inner_text('#qk-size')[:70]!r})")
+            h1 = pg.inner_text("#qk-size")
+            ok("25 × 25" in h1 and "liest sich auf ca." in h1 and "Text auf dem MoveEye" in pg.inner_text("#qk-fields"), f"{name}: Text auf dem MoveEye (Standard): {h1[:80]!r}")
+            pg.select_option("#qk-tc", "1"); pg.wait_for_timeout(900)
+            h2 = pg.inner_text("#qk-size")
+            ok("25 × 25" not in h2 and "Text im Code" in h2 and "neue Karte" in pg.inner_text("#qk-tc-n"), f"{name}: Text im Code: grösser, Hinweis ({h2[:90]!r})")
+            shot(pg, f"qr_karten_werkstatt_{name}_text_im_code.png")
+            pg.select_option("#qk-tc", "0"); pg.wait_for_timeout(700)
             pg.click("#qk-go")
             pg.wait_for_selector("#qk-new.on img", timeout=10000); pg.wait_for_timeout(600)
             ok("Bin gleich zurück" in pg.inner_text("#qk-new"), f"{name}: neue Karte mit Vorschau")
+            ok(pg.locator(".qk-c button", has_text="Text ändern").count() >= 1, f"{name}: «Text ändern» in der Liste")
             shot(pg, f"qr_karten_werkstatt_{name}.png")
             shot(pg, f"qr_karten_werkstatt_{name}_ganz.png", full_page=True)
             with ctx.expect_page() as pp:
@@ -631,9 +679,13 @@ def main():
         if a.messen:
             messen(ns)
             return 0
-        ns_b = lade(datei, tempfile.mkdtemp(prefix="mw_qrk_home2_"))     # a clean copy for the helpers of B (qr_png)
-        teil_a(ns)
-        teil_b(datei, ns_b, a.browser, a.bilder)
+        home2 = tempfile.mkdtemp(prefix="mw_qrk_home2_")
+        try:
+            ns_b = lade(datei, home2)                                   # a clean copy for the helpers of B (qr_png)
+            teil_a(ns)
+            teil_b(datei, ns_b, a.browser, a.bilder)
+        finally:
+            shutil.rmtree(home2, ignore_errors=True)
     finally:
         shutil.rmtree(home, ignore_errors=True)
     print(f"{N['ok']} Prüfungen ok, {len(FEHLER)} Fehler ({time.time() - t0:.0f} s)")
