@@ -159,6 +159,17 @@ Push-Nachrichten). Einrichtung: `docs/Einrichtung_Raspberry_Pi.md`, Gehäuse: `h
   `main` (oder von Hand, oder «[export]» in der Commit-Nachricht) dazu der Export Linux + Windows ohne Signatur als Artefakt. Helfer und Integrator pushen und warten:
   `werkzeuge/ci_status.sh [zweig|commit] --warten --fehler` (Exit 0 = grün; ohne `--warten` nur die letzten Läufe;
   `--start` startet von Hand, geht erst wenn ci.yml auf main ist). Signieren bleibt lokal, der Schlüssel kommt nie ins CI.
+- **CI in Gruppen** (ab Nov. 2026): die Tests stehen in `werkzeuge/ci_tests.txt` – **neuer Test = eine Zeile dort**
+  (`Gruppe | Limit | Nochmal | Befehl | Name`), `ci.yml` bleibt wie es ist. Jede `werkzeuge/*_test.py` muss dort stehen
+  (in einer Gruppe oder in «hand» mit Grund), sonst ist `python3 werkzeuge/ci_lauf.py --pruefen` rot. Gruppen = parallele
+  Jobs: `basis` (ohne Browser, läuft immer), `kern`, `rechte`, `live`, `daten`, `spiele-1`, `spiele-2`, `simlive` (gegen
+  einen laufenden Simulator). Lokal eine Gruppe wie im CI: `python3 werkzeuge/ci_lauf.py --gruppe live`. Was läuft,
+  entscheidet `werkzeuge/ci_auswahl.py` (Vergleich des ganzen Zweigs mit main; `--dateien …` / `--simulieren 20` zeigt es
+  lokal): **auf main immer alles**; sonst alles ausser den Spiele-Tests (nur bei Änderungen an `games/`, den Spiele-Teilen
+  in `quelle/` und den Spiele-Tests) und dem USB-Installer (nur bei `werkzeuge/usb_installer/`); nur Prüfstand-Ergebnisse /
+  `feedback/` → nur die Grundprüfungen; Änderungen an den CI-Dateien → alles. Übersprungenes steht mit «übersprungen,
+  weil …» in der Zusammenfassung des Laufs; der Job «Ergebnis» ist der eine Haken (auf main rot, sobald irgendetwas
+  übersprungen wurde). «1x» in der Liste = genau ein zweiter Versuch für Tests, die unter Last wackeln (wird als Warnung gemeldet).
 - `python3 -m py_compile` und JavaScript-Prüfung (`node --check` der gerenderten Seiten).
 - Programm mit simulierter Kamera starten (`open_source` ersetzen) und mit Playwright prüfen:
   Handy hoch (390 × 844) und quer, PC; keine JS-Fehler; Bildschirmfotos ansehen.

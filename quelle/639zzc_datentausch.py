@@ -28,6 +28,17 @@
 #     Uploads / Downloads / Löschungen (log_event «web»). Zu grosse Stücke werden vor dem Lesen abgewiesen.
 #   * Push an den Admin (Notifier.info, 060 / 635b): gebündelt pro Benutzer «📁 Anna hat 3 Dateien hochgeladen» (90 s Ruhe
 #     oder höchstens 10 Min.), nur Name + Anzahl, keine Dateinamen. Eigene Uploads des Admins ohne Push.
+#   * Hochladen, das nicht hängen bleibt (Besitzer 08.11.2026: 5-MB-Foto vom iPhone blieb beim ersten 2-MB-Stück bei 0 %):
+#     vorher ging jedes Stück als fetch(Datei-Ausschnitt) ohne Zeitgrenze – kam keine Antwort, begann der neue Versuch nie.
+#     Jetzt (Seite): jedes Stück zuerst in den Speicher lesen (eigene Meldung, wenn die Datei nicht lesbar ist – iCloud-Foto),
+#     senden mit Wächter (45 s ohne Fortschritt und ohne Antwort → abbrechen → neuer Versuch, 6 Versuche), erstes Stück 256 KB,
+#     nach 2 Fehlern 512-KB-Stücke, nach 4 Fehlern 128 KB, Fortschritt auch innerhalb eines Stücks, «Stück 2 von 4», am Schluss
+#     eine ehrliche Meldung mit «Nochmal versuchen» (macht weiter) und einer Diagnose-Zeile für ein Bildschirmfoto.
+#     Gerät: ein Stück, dessen Daten 30 s nicht mehr kommen, wird mit 408 beantwortet (TZ_BODY_IDLE) statt für immer zu warten;
+#     ein Stück wird erst geschrieben, wenn es ganz da ist; dasselbe Stück zweimal → 409 mit dem Stand (Sperre pro Upload).
+#     HEIC (iPhone über «Dateien»; aus der Fotomediathek liefert Safari meist JPEG): wird gespeichert und als Bild geführt,
+#     aber ohne Vorschau (OpenCV liest kein HEIC) – Symbol, «Keine Vorschau», Herunterladen geht.
+#     Nicht beweisbar ohne echtes iPhone: ob Safari wirklich am Datei-Ausschnitt als Anfrage-Körper hängen blieb.
 # Tests: werkzeuge/tausch_test.py (Rechte, Grenzen, Namen, Programme, Stücke, Löschen, Push, Bilder im Browser), Selbsttest
 # tausch_selftest unten.
 # ----------------------------------------------------------------------------
@@ -68,6 +79,8 @@ def tausch_imply(perms):
 TZ_ID = re.compile(r"^[0-9a-f]{16}$")
 TZ_CHUNK = 2 * 1024 * 1024                                 # one piece of an upload (iPhone, tunnel: small enough, few requests)
 TZ_CHUNK_MAX = 8 * 1024 * 1024                             # bigger pieces are refused before they are read
+TZ_BODY_IDLE = 30.0                                        # s: a piece whose data stops coming is given up (answer 408) - the browser
+                                                           # (it waits 45 s) tries again with a smaller piece instead of hanging for ever
 TZ_MAX_FILES = 5000
 TZ_MAX_FOLDERS = 60
 TZ_MAX_OPEN_UPS = 6                                        # open uploads per person
@@ -1429,8 +1442,24 @@ def smalltv_routes(app, reply, body):                     # + 639zzc: /tausch, /
             if n is None or n > TZ_CHUNK_MAX:
                 return Response(json.dumps({"ok": False, "error": "piece too big"}), 413, mimetype="application/json",
                                 headers={"Connection": "close"})
+            sock = request.environ.get("werkzeug.socket")    # the data of a piece must keep coming: without a limit a stalled
+            if sock is not None:                             # phone holds this request (and the bar at 0 %) for ever
+                try:
+                    sock.settimeout(TZ_BODY_IDLE)
+                except (OSError, AttributeError, ValueError):
+                    pass
         return None
     app.before_request_funcs.setdefault(None, []).insert(0, size_guard)
+
+    from werkzeug.exceptions import ClientDisconnected
+
+    def piece_lost():
+        return Response(json.dumps({"ok": False, "error": tr("The piece did not arrive completely.", lang_())}), 408, mimetype="application/json",
+                        headers={"Connection": "close", "Cache-Control": "no-store"})
+
+    @app.errorhandler(ClientDisconnected)
+    def tausch_body_lost(e):                             # the body stopped (also while an earlier check read it): a clear 408 for the page
+        return piece_lost() if request.path == "/api/tausch/chunk" else e
 
     def lang_():
         return norm_lang(request.args.get("lang") or CFG.get("lang"))
@@ -1496,7 +1525,12 @@ def smalltv_routes(app, reply, body):                     # + 639zzc: /tausch, /
             off = int(request.args.get("off", "-1"))
         except ValueError:
             off = -1
-        data = request.get_data(cache=False)
+        try:
+            data = request.get_data(cache=False)
+        except (ClientDisconnected, OSError):                # the data stopped coming (TZ_BODY_IDLE) or the phone hung up
+            return piece_lost()
+        if request.content_length is not None and len(data) != request.content_length:
+            return piece_lost()
         ok, err, have, code = tausch_up_chunk(who, str(request.args.get("id") or ""), off, data, L)
         return reply({"ok": ok, "error": err or None, "have": have}, code)
 
@@ -1731,6 +1765,7 @@ main{padding:14px 16px 60px;max-width:1100px;margin:0 auto}
 .tz-job .r{display:flex;gap:8px;align-items:center}.tz-job .r b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tz-job .tz-bar{margin-top:6px;height:8px}.tz-job.err{border-color:var(--red)}.tz-job.ok{border-color:var(--grn)}
 .tz-job .msg{color:var(--mut);font-size:12px;margin-top:4px}.tz-job.err .msg{color:var(--red)}
+.tz-job .dg{font:11px/1.35 ui-monospace,Menlo,Consolas,monospace;color:var(--mut);margin-top:4px;overflow-wrap:anywhere;-webkit-user-select:all;user-select:all}.tz-job .again{margin-top:6px;min-height:36px;padding:4px 12px}
 .tz-drop{position:fixed;inset:0;z-index:80;background:rgba(10,14,20,.78);display:none;align-items:center;justify-content:center;pointer-events:none}
 .tz-drop.on{display:flex}.tz-drop div{border:3px dashed var(--acc);border-radius:20px;padding:40px 30px;font-size:20px;font-weight:700;color:#fff;text-align:center}
 .tz-empty{color:var(--mut);text-align:center;padding:30px 10px}
@@ -1897,22 +1932,34 @@ Object.assign(I18N.de, /*TZDE*/{});
     document.body.appendChild(ov);
   }
   // ---- upload: one file after the other, in pieces; the same file again continues where it stopped ----
+  // 639zzc (iPhone, Besitzer 08.11.2026: a 5 MB photo stayed at 0 % for ever): every piece is first read into memory (a
+  // photo from the library can be an iCloud / converted item that stalls as a streamed Blob body), sent with a watchdog
+  // (no progress and no answer for UP.idle -> abort -> retry), the first piece is small (the bar moves at once, a problem
+  // shows early), after repeated failures the pieces get smaller, and after the last try there is an honest message with
+  // «Nochmal versuchen» (continues where it stopped) and one line of diagnostics for a screenshot.
+  const UP = Object.assign({first: 262144, small: 524288, tiny: 131072, idle: 45000, read: 30000, tries: 6, wait: 1500, post: 30000}, window.TZ_UP_TEST || {});
   function addFiles(list) {
     if (!has("files_up")) return;
-    [...list].forEach(file => S.jobs.push({file, area: S.area, folder: S.area === "all" ? S.folder : "", have: 0, done: false, err: "", cancel: false, node: null}));
+    [...list].forEach(file => S.jobs.push({file, area: S.area, folder: S.area === "all" ? S.folder : "", have: 0, part: 0, done: false, err: "", cancel: false, node: null}));
     paintJobs(); run();
   }
   function paintJobs() {
     const box = $("#tz-up");
     S.jobs.forEach(jb => {
       if (!jb.node) { jb.node = el("div", "tz-job"); const r = el("div", "r"), x = el("button", "sec", "✕"); x.type = "button"; x.title = t("Cancel");
-        x.onclick = () => { if (jb.done || jb.err) { jb.node.remove(); S.jobs = S.jobs.filter(z => z !== jb); } else { jb.cancel = true; } };
+        x.onclick = () => { if (jb.done || jb.err) { jb.node.remove(); S.jobs = S.jobs.filter(z => z !== jb); } else { jb.cancel = true; if (jb.xhr) try { jb.xhr.abort(); } catch (e) {} } };
         r.append(el("b", "", "⬆ " + jb.file.name), el("span", "mut pc", ""), x); jb.node.append(r, el("div", "tz-bar"), el("div", "msg", ""));
+        const again = el("button", "sec again", "↻ " + t("Try once more")); again.type = "button"; again.hidden = true;
+        again.onclick = () => { if (!jb.err) return; jb.err = ""; jb.retry = false; jb.cancel = false; jb.state = ""; paintJobs(); run(); };
+        jb.node.append(el("div", "dg", ""), again);
         jb.node.querySelector(".tz-bar").appendChild(el("i")); box.appendChild(jb.node); }
-      const p = jb.file.size ? Math.floor(100 * jb.have / jb.file.size) : (jb.done ? 100 : 0);
+      const got = Math.min(jb.file.size, jb.have + (jb.part || 0));
+      const p = jb.file.size ? Math.floor(100 * got / jb.file.size) : (jb.done ? 100 : 0);
       jb.node.querySelector(".tz-bar i").style.width = p + "%"; jb.node.querySelector(".pc").textContent = jb.done ? "✓" : jb.err ? "⚠" : p + " %";
       jb.node.classList.toggle("ok", jb.done); jb.node.classList.toggle("err", !!jb.err);
-      jb.node.querySelector(".msg").textContent = jb.err || (jb.done ? t("Done") : jb.state || (fmt(jb.have) + " / " + fmt(jb.file.size)));
+      jb.node.querySelector(".msg").textContent = jb.err || (jb.done ? t("Done") : (jb.state ? jb.state + " · " : "") + fmt(got) + " / " + fmt(jb.file.size));
+      const dg = jb.node.querySelector(".dg"); dg.hidden = !(jb.err && jb.diag); dg.textContent = jb.err && jb.diag ? jb.diag : "";
+      jb.node.querySelector(".again").hidden = !(jb.err && jb.retry);
     });
   }
   async function run() {
@@ -1920,32 +1967,103 @@ Object.assign(I18N.de, /*TZDE*/{});
     try {
       for (;;) {
         const jb = S.jobs.find(x => !x.done && !x.err && !x.cancel); if (!jb) break;
-        await upOne(jb); paintJobs();
+        try { await upOne(jb); } catch (e) { jb.err = t("error") + ": " + String((e && e.message) || e).slice(0, 80); jb.retry = true; }
+        jb.xhr = null; paintJobs();
         if (jb.done) setTimeout(() => { if (jb.node && jb.done) { jb.node.remove(); S.jobs = S.jobs.filter(z => z !== jb); } }, 6000);
       }
     } finally { S.busy = false; load(); }
   }
+  // a JSON request that cannot wait for ever (start / finish / abort)
+  async function postT(body, ms) {
+    const ac = window.AbortController ? new AbortController() : null, tm = setTimeout(() => { if (ac) ac.abort(); }, ms || UP.post);
+    try { const r = await fetch("/api/tausch", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body), signal: ac ? ac.signal : undefined});
+      return await r.json(); }
+    catch (e) { return {ok: false, error: "", lost: true}; }
+    finally { clearTimeout(tm); }
+  }
+  // one piece of the file into memory (with a limit: a photo that is not on the phone can take for ever)
+  function readPiece(f, a, b) {
+    return new Promise((ok, bad) => {
+      let fin = false; const end = (fn, v) => { if (fin) return; fin = true; clearTimeout(tm); fn(v); };
+      const tm = setTimeout(() => end(bad, new Error("read timeout " + Math.round(UP.read / 1000) + " s")), UP.read);
+      try {
+        const bl = f.slice(a, b);
+        if (bl.arrayBuffer) bl.arrayBuffer().then(v => end(ok, v), e => end(bad, e || new Error("read")));
+        else { const fr = new FileReader(); fr.onload = () => end(ok, fr.result); fr.onerror = () => end(bad, fr.error || new Error("read")); fr.readAsArrayBuffer(bl); }
+      } catch (e) { end(bad, e); }
+    });
+  }
+  // send one piece; rejects with {kind: "timeout" | "net" | "abort", sent} - «timeout» = no progress and no answer for UP.idle
+  function sendPiece(jb, off, buf) {
+    return new Promise((ok, bad) => {
+      const x = new XMLHttpRequest(); let last = Date.now(), sent = 0, fin = false;
+      const end = (fn, v) => { if (fin) return; fin = true; clearInterval(iv); if (jb.xhr === x) jb.xhr = null; fn(v); };
+      const iv = setInterval(() => { if (Date.now() - last > UP.idle) { end(bad, {kind: "timeout", sent}); try { x.abort(); } catch (e) {} } }, 250);
+      x.open("POST", "/api/tausch/chunk?id=" + jb.id + "&off=" + off + "&lang=" + LANG);
+      x.setRequestHeader("Content-Type", "application/octet-stream");
+      if (x.upload) x.upload.onprogress = e => { last = Date.now(); sent = e.loaded; jb.part = Math.min(e.loaded, buf.byteLength); paintJobs(); };
+      x.onload = () => { let k; try { k = JSON.parse(x.responseText); } catch (e) { k = {ok: false}; } end(ok, {status: x.status, k: k || {ok: false}}); };
+      x.onerror = () => end(bad, {kind: "net", sent}); x.onabort = () => end(bad, {kind: "abort", sent});
+      jb.xhr = x; x.send(buf);
+    });
+  }
   async function upOne(jb) {
-    const f = jb.file;
-    const r = await post("/api/tausch", {action: "start", name: f.name, size: f.size, lastmod: f.lastModified || 0, area: jb.area, folder: jb.folder, lang: LANG});
-    if (!r.ok) { jb.err = r.error || t("error"); return; }
-    jb.id = r.id; jb.have = r.have || 0; const cs = r.chunk || 2097152;
+    const f = jb.file, D = {n: 0, of: 0, off: 0, len: 0, sent: 0, ms: 0, tries: 0, http: "-", last: ""};
+    jb.err = ""; jb.retry = false; jb.diag = ""; jb.part = 0;
+    const fail = (msg, retry) => { jb.err = msg; jb.retry = !!retry; jb.part = 0;                 // one line for a screenshot - only after a failure
+      jb.diag = "Diagnose: Stück " + D.n + "/" + D.of + " · ab " + D.off + " · " + D.len + " B · gesendet " + D.sent + " B · " + (D.ms / 1000).toFixed(1) + " s · Versuch " + D.tries
+        + " · HTTP " + D.http + " · " + (D.last || "-") + " · Datei " + f.size + " B " + (f.type || "?") + " · " + location.protocol.replace(":", "") + (navigator.onLine === false ? " offline" : ""); };
+    const startBody = {action: "start", name: f.name, size: f.size, lastmod: f.lastModified || 0, area: jb.area, folder: jb.folder, lang: LANG};
+    const r = await postT(startBody);
+    if (!r.ok) { D.last = r.lost ? "start: no answer" : "start: refused"; fail(r.lost ? t("No connection to MoveEye.") : (r.error || t("error")), r.lost); return; }
+    jb.id = r.id; jb.have = r.have || 0; const big = r.chunk || 2097152; let cs = Math.min(big, jb.cs || big), n = 0, stuck = 0;
     if (r.resumed) jb.state = t("continues where it stopped …");
+    const abort = async () => { await postT({action: "abort", id: jb.id, lang: LANG}); jb.err = t("Cancelled"); jb.retry = false; jb.diag = ""; jb.part = 0; };
     while (jb.have < f.size) {
-      if (jb.cancel) { await post("/api/tausch", {action: "abort", id: jb.id, lang: LANG}); jb.err = t("Cancelled"); return; }
-      const end = Math.min(jb.have + cs, f.size); let res = null, k = null;
-      for (let tries = 0; tries < 6 && !res; tries++) {
-        try { res = await fetch("/api/tausch/chunk?id=" + jb.id + "&off=" + jb.have + "&lang=" + LANG, {method: "POST", headers: {"Content-Type": "application/octet-stream"}, body: f.slice(jb.have, end)}); }
-        catch (e) { jb.state = t("Connection lost - trying again …"); paintJobs(); await sleep(1500 * (tries + 1)); }
+      if (jb.cancel) { await abort(); return; }
+      let res = null, fails = 0;
+      while (fails < UP.tries && !res && !jb.cancel) {
+        const len = Math.min(n === 0 ? Math.min(UP.first, cs) : cs, f.size - jb.have), t0 = Date.now();    // the first piece is small: the bar moves at once
+        D.n = n + 1; D.of = n + 1 + Math.ceil((f.size - jb.have - len) / cs); D.off = jb.have; D.len = len; D.tries = fails + 1; D.sent = 0; D.http = "-";
+        let buf = null;
+        try { buf = await readPiece(f, jb.have, jb.have + len); if (!buf || buf.byteLength !== len) throw new Error("short read " + (buf ? buf.byteLength : 0) + "/" + len); }
+        catch (e) { D.ms = Date.now() - t0; D.last = "read: " + String((e && (e.name ? e.name + " " : "") + (e.message || "")) || e).slice(0, 90);
+          fail(t("The file could not be read. A photo from iCloud: open it in the Photos app first (so it is loaded), then choose it again."), true); return; }
+        if (!fails) jb.state = t("Piece {n} of {m}").replace("{n}", D.n).replace("{m}", D.of);
+        jb.part = 0; paintJobs();
+        try { res = await sendPiece(jb, jb.have, buf); D.ms = Date.now() - t0; D.sent = len; }
+        catch (e) {
+          D.ms = Date.now() - t0; D.sent = e.sent || 0; jb.part = 0;
+          if (jb.cancel) break;
+          fails++; D.last = e.kind === "timeout" ? "timeout: no progress / answer for " + Math.round(UP.idle / 1000) + " s" : "network error (connection dropped)";
+          if (fails >= 2 && cs > UP.small) cs = UP.small;                    // smaller pieces get through where big ones do not
+          if (fails >= 4 && cs > UP.tiny) cs = UP.tiny;
+          jb.cs = cs;
+          if (fails >= UP.tries) break;
+          jb.state = t(e.kind === "timeout" ? "No answer - trying again …" : "Connection lost - trying again …") + " (" + (fails + 1) + "/" + UP.tries + ")"; paintJobs();
+          await sleep(Math.min(UP.wait * fails, 4 * UP.wait));
+          const s = await postT(startBody);                                // the piece may have arrived after all: ask where the upload stands
+          if (s.ok && s.id === jb.id && typeof s.have === "number") jb.have = s.have;
+          if (jb.have >= f.size) break;
+        }
+        buf = null;
       }
-      if (!res) { jb.err = t("Connection lost. Choose the same file again later: the upload continues where it stopped."); return; }
-      try { k = await res.json(); } catch (e) { k = {ok: false}; }
-      if (res.status === 409 && typeof k.have === "number") { jb.have = k.have; continue; }
-      if (!k.ok) { jb.err = k.error || ("error " + res.status); return; }
-      jb.have = k.have; jb.state = ""; paintJobs();
+      if (jb.cancel) { await abort(); return; }
+      if (jb.have >= f.size) break;
+      if (!res) { fail(t("MoveEye did not answer - the upload stopped. «Try again» continues where it stopped."), true); return; }
+      const k = res.k; D.http = res.status;
+      if (res.status === 409 && typeof k.have === "number" && k.have !== jb.have) { jb.have = k.have; jb.part = 0; stuck = 0; continue; }
+      if (res.status === 409 || res.status === 408 || res.status >= 500 && res.status !== 507) {          // busy / the body did not arrive / a hiccup: a few more times
+        D.last = "HTTP " + res.status + (k.error ? " " + String(k.error).slice(0, 60) : "");
+        if (res.status === 408 && cs > UP.small) jb.cs = cs = UP.small;
+        if (++stuck >= UP.tries) { fail(k.error || t("MoveEye did not answer - the upload stopped. «Try again» continues where it stopped."), true); return; }
+        jb.state = t("No answer - trying again …") + " (" + (stuck + 1) + "/" + UP.tries + ")"; jb.part = 0; paintJobs(); await sleep(UP.wait); continue; }
+      if (!k.ok) { D.last = "HTTP " + res.status; fail(k.error || ("error " + res.status), false); return; }
+      jb.have = k.have; jb.part = 0; n++; stuck = 0; jb.state = ""; paintJobs();
     }
-    const z = await post("/api/tausch", {action: "finish", id: jb.id, lang: LANG});
-    if (!z.ok) { jb.err = z.error || t("error"); return; }
+    jb.state = ""; jb.part = 0; paintJobs();
+    const z = await postT({action: "finish", id: jb.id, lang: LANG}, 4 * UP.post);
+    if (!z.ok) { D.n = D.n || 1; D.of = D.of || 1; D.last = z.lost ? "finish: no answer" : "finish: refused"; fail(z.lost ? t("No connection to MoveEye.") : (z.error || t("error")), z.lost); return; }
     jb.done = true; jb.have = f.size;
   }
   $("#tz-upb").onclick = () => $("#tz-file").click();
@@ -2337,6 +2455,20 @@ _HX_TAUSCH = {
         "Connexion perdue. Choisis plus tard le même fichier : l’envoi reprend là où il s’est arrêté.",
         "Connessione persa. Scegli più tardi lo stesso file: il caricamento riprende da dove si era fermato.",
         "Colliaziun interrutta. Tscherna pli tard la medema datoteca: il chargiar si cuntinuescha là nua ch’el ha chalà."),
+    "No answer - trying again …": ("Keine Antwort – neuer Versuch …", "Pas de réponse – nouvel essai …", "Nessuna risposta – nuovo tentativo …",
+                                   "Nagina resposta – nov emprov …"),
+    "Piece {n} of {m}": ("Stück {n} von {m}", "Morceau {n} sur {m}", "Pezzo {n} di {m}", "Toc {n} da {m}"),
+    "Try once more": ("Nochmal versuchen", "Réessayer", "Riprova", "Empruvar anc ina giada"),
+    "MoveEye did not answer - the upload stopped. «Try again» continues where it stopped.": (
+        "MoveEye hat nicht geantwortet – das Hochladen ist stehen geblieben. «Nochmal versuchen» macht dort weiter, wo es aufgehört hat.",
+        "MoveEye n’a pas répondu – l’envoi s’est arrêté. «Réessayer» reprend là où il s’est arrêté.",
+        "MoveEye non ha risposto – il caricamento si è fermato. «Riprova» riprende da dove si era fermato.",
+        "MoveEye n’ha betg respundì – il chargiar si è sa fermà. «Empruvar anc ina giada» cuntinuescha là nua ch’el ha chalà."),
+    "The file could not be read. A photo from iCloud: open it in the Photos app first (so it is loaded), then choose it again.": (
+        "Die Datei konnte nicht gelesen werden. Ein Foto aus iCloud: bitte zuerst in der Fotos-App öffnen (damit es geladen ist), dann nochmals wählen.",
+        "Le fichier n’a pas pu être lu. Une photo d’iCloud : ouvre-la d’abord dans l’app Photos (pour qu’elle soit chargée), puis choisis-la à nouveau.",
+        "Impossibile leggere il file. Una foto di iCloud: aprila prima nell’app Foto (così viene caricata), poi sceglila di nuovo.",
+        "La datoteca n’ha betg pudì vegnir legida. Ina foto dad iCloud: l’avra l’emprim en l’app Fotos (per ch’ella saja chargiada), lura la tscherna anc ina giada."),
     "No connection to MoveEye.": ("Keine Verbindung zu MoveEye.", "Pas de connexion à MoveEye.", "Nessuna connessione a MoveEye.", "Nagina colliaziun cun MoveEye."),
     "error": ("Fehler", "erreur", "errore", "errur"),
     "Shared files": ("Geteilte Dateien", "Fichiers partagés", "File condivisi", "Datotecas partidas"),
@@ -2423,6 +2555,8 @@ _HX_TAUSCH = {
     "The storage cannot be written to.": ("Auf den Speicher kann nicht geschrieben werden.", "Impossible d’écrire sur le support.",
                                           "Impossibile scrivere sul supporto.", "I na po betg vegnir scrit sin la memoria."),
     "unknown upload": ("unbekannter Upload", "envoi inconnu", "caricamento sconosciuto", "chargiament nunenconuschent"),
+    "The piece did not arrive completely.": ("Das Stück ist nicht ganz angekommen.", "Le morceau n’est pas arrivé en entier.", "Il pezzo non è arrivato per intero.",
+                                             "Il toc n’è betg arrivà cumplettamain."),
     "piece too big": ("Stück zu gross", "morceau trop gros", "pezzo troppo grande", "toc memia grond"),
     "busy - try again": ("beschäftigt – nochmals versuchen", "occupé – réessaie", "occupato – riprova", "occupà – empruvar anc ina giada"),
     "more data than announced": ("mehr Daten als angekündigt", "plus de données qu’annoncé", "più dati di quelli annunciati", "dapli datas che annunzià"),

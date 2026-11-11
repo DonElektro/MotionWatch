@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-11 23:06",
+ "generated": "2026-11-11 23:16",
  "versions": [
+  {
+   "version": "3.79.0",
+   "file": "webcam_bewegung_3_79_0.py",
+   "url": "",
+   "sha256": "4cabab328ca836c767e3aa8ad385ba9e7d39f2641cbbff0fb6d6bdb2124bfdd9",
+   "date": "2026-11-11 23:16",
+   "notes": "Datentausch: Fotos vom iPhone bleiben nicht mehr bei 0 % hängen (jedes Stück hat jetzt ein Zeitlimit, wird bei Bedarf wiederholt und in kleineren Stücken gesendet; nach einem Fehler geht es mit «Nochmal versuchen» dort weiter, wo es aufgehört hat). Erster Start ruhiger: Hinweise erscheinen nacheinander statt gleichzeitig; nach einer Neuinstallation keine Versions-Neuigkeiten.",
+   "size": 3924663,
+   "sig": "78746829313a97c103d4f74e3a1c886a613ee953d42854a91e16754161888f53b11909ac9b2ccaaaf344a9c0dc7bd861eac5668818375ef29a5771391cb10a09",
+   "data": {
+    "file": "moveeye_daten_3_79_0.zip",
+    "url": "",
+    "sha256": "d7d7b9179b40406c23485e51059d4f45e4002facdb2ab8a08b9d0aa19cffae75",
+    "size": 4948336,
+    "sig": "1a9f3eb6ad388f2a48de79219c5e9d1491154e788eff742738d51eea6413166d5fd398ca38985ed0a183c327bc2e90c06fdbcf1143c961aea295cbc3f4508408"
+   }
+  },
   {
    "version": "3.78.0",
    "file": "webcam_bewegung_3_78_0.py",
    "url": "",
    "sha256": "06c88eac19fbafc28d1f76705bd355aba191648777fe4a525cf5f6891c7c01ea",
-   "date": "2026-11-11 23:06",
+   "date": "2026-11-11 23:11",
    "notes": "«Was nun?»: fünf neue Bilder (jetzt 15), noch schwieriger, mit der neuen Stufe «Meister+»; Bilder mit mehreren Räumen und gegen die Zeit; ein Notizbuch sammelt gefundene Hinweise; Bestzeit pro Bild; bisherige Sterne bleiben erhalten.",
    "size": 3923006,
    "sig": "50fc93ca827d37a803d098d5ca56598da80646ec0a7e0f42297862cbfff2d8e443f04caf2c0dc937f237f73c29cfef3f2e99a7958e739133f5d26b9e3b8ef505",
@@ -136,23 +153,6 @@
     "sha256": "cda301fb5e4eb31112e412e0f8ce6b595ae1053925d6d28e065221a9624a2d42",
     "size": 4921511,
     "sig": "e3d765ddb0ac8fc6d6651e6635733673ae494d9a7bf9f857cf98fbbdd9c0c98eba6627502f2bc48e0a5f3f0080cea371e0f003eccff45fcbbf21cf97a2e4a00f"
-   }
-  },
-  {
-   "version": "3.70.2",
-   "file": "webcam_bewegung_3_70_2.py",
-   "url": "",
-   "sha256": "df0a2213d3aab94080280a6816ca21709824abf4c3892ca0ce4bf63f6aa6d87f",
-   "date": "2026-11-09 21:16",
-   "notes": "Flight of the Amazon Queen: Hinweis «Am PC spielen – auf iPad/iPhone stürzt es ab» auf der Kachel (jetzt in der Gruppe «⌨️ Am PC mit Tastatur und Maus»); auf iPad/iPhone kommt vor dem Start eine Warnung mit «Trotzdem starten»",
-   "size": 3825328,
-   "sig": "f85e3e87d17845dd5e8589af9dd44a8257390c21d2380d0f96d864117a1f9952bfc5ecf3a8c0606d25e14735e6132d91860faaf673175da1dae123c7bc4d8707",
-   "data": {
-    "file": "moveeye_daten_3_70_2.zip",
-    "url": "",
-    "sha256": "da7c35e25b21998b626f6c09ed54319e2dc05fe4f5d3570aa037be929784cfdd",
-    "size": 4908374,
-    "sig": "a58624852722c558b25c075a768ca51b324e14941e27b3a3f4515c04007da59ae70183e0bf28015cfc8086cbf04c826b2ec2be64ebc4087efb7277f00f248d01"
    }
   },
   {

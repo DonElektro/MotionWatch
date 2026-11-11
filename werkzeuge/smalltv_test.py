@@ -45,7 +45,11 @@ def main():
         nonlocal fails
         print(("✓ " if cond else "✗ ") + text)
         fails += 0 if cond else 1
-    v = g["_stv_json"](a.sim, "/v.json", 5)
+    try:
+        v = g["_stv_json"](a.sim, "/v.json", 5)
+    except Exception as e:       # e. g. HTTP 404: something else answers there, or the simulator is not sending (no --stream)
+        sys.exit(f"Unter {a.sim} antwortet kein Simulator mit virtuellem SmallTV ({e}). Der Test braucht einen laufenden "
+                 "3D-Simulator, der sendet: Godot … --path simulator3d -- --no-update --no-tour --stream --port 9461, dann --sim http://127.0.0.1:9461")
     ok(g["stv_is_geekmagic"](v) and v.get("sim"), f"/v.json: {v}")
     for quirks in (False, True):
         ctl(a.sim, {"action": "smalltv", "reset": True, "all": True, "quirks": quirks})
@@ -113,7 +117,16 @@ def main():
         g["STV"]["alarm"] = None; g["STV"]["game"] = None
         e = {"id": "x", "on": True, "status": True, "alarm": True, "game": True, "brt": 60, "rot": True}
         t0 = 30.0 * 100000
-        k = [g["stv_plan"](e, t0 + dt)[1] for dt in (0, 60, 120)]
+        # Fehler-Hilfe (639u, ab 3.33.0): with an active error (without hardware always: «no camera picture») the error page
+        # takes every other 20 s - the rotation itself is checked with that page paused, the error page on its own
+        fx_pause = g["FX"].get("stv_pause")
+        try:
+            if g["fx_active"](g["CFG"].get("lang")):
+                ok(g["stv_plan"](e, t0 + 60)[0] == "fehler", "Fehler-Seite mit QR in jeder zweiten 20-s-Scheibe, solange ein Fehler ansteht")
+            g["FX"]["stv_pause"] = True
+            k = [g["stv_plan"](e, t0 + dt)[1] for dt in (0, 60, 120)]
+        finally:
+            g["FX"]["stv_pause"] = fx_pause
         ok(k[0] == k[1] and k[1] != k[2], "Live-Bild nur jede zweite Live-Zeitscheibe neu (ein neues Bild alle 2 min)")
         n_on, n_off = g["stv_per_day"](e), g["stv_per_day"](dict(e, rot=False))
         ok(n_off < n_on <= 1300, f"Bilder pro Tag: ohne Wechsel {n_off}, mit Wechsel {n_on}")
