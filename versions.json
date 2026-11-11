@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-11 23:16",
+ "generated": "2026-11-11 23:57",
  "versions": [
+  {
+   "version": "3.80.0",
+   "file": "webcam_bewegung_3_80_0.py",
+   "url": "",
+   "sha256": "0166b09d68dc1b67a93cab448a57935c572e83be3cc97f27e06a7b4555a3a0fb",
+   "date": "2026-11-11 23:57",
+   "notes": "Neu (Versuch, ab Werk aus): QR-Befehls-Karten. Eine gedruckte Karte vor die Kamera halten löst einen Befehl aus: Push mit eigenem Text (auch mit Foto), Text vorlesen, Notiz im Verlauf, Aufnahme starten, Licht/Relais, Kopf auf eine Position, Profil wechseln. Karten erstellst du in der «Karten-Werkstatt» unter Mehr; es gelten nur Karten von deinem MoveEye; Ausschalten per Karte geht nicht. Einschalten: Einstellungen → Kameras & Kopf → «QR-Befehls-Karten». Reichweite etwa 80 cm bei Postkartengrösse, etwa 2 m bei A4 (geschätzt, nicht an der echten Kamera gemessen).",
+   "size": 3980994,
+   "sig": "4b7a17f6283e7d701b7e9c1f723de2eba0e193a6c4d28dc7d9f3138a76c0a5d259f02cbbba42d64fcb43f1d6de26f80fad19f30dbd2e2ca2a50a7e6baf799c0c",
+   "data": {
+    "file": "moveeye_daten_3_80_0.zip",
+    "url": "",
+    "sha256": "b4c219b68f67742bf231dc2fbf6f530f5161180c5a308e074f5b798e1ca5aadb",
+    "size": 4971954,
+    "sig": "127504c647cad470f0618d7a272e9b3ee732c94a7f7f895653ac6e7a906c1cddbc762c2560adb3273879c58004fc80553146ae82e7e6a68cac59cd4ab949dc09"
+   }
+  },
   {
    "version": "3.79.0",
    "file": "webcam_bewegung_3_79_0.py",
    "url": "",
    "sha256": "4cabab328ca836c767e3aa8ad385ba9e7d39f2641cbbff0fb6d6bdb2124bfdd9",
-   "date": "2026-11-11 23:16",
+   "date": "2026-11-11 23:55",
    "notes": "Datentausch: Fotos vom iPhone bleiben nicht mehr bei 0 % hängen (jedes Stück hat jetzt ein Zeitlimit, wird bei Bedarf wiederholt und in kleineren Stücken gesendet; nach einem Fehler geht es mit «Nochmal versuchen» dort weiter, wo es aufgehört hat). Erster Start ruhiger: Hinweise erscheinen nacheinander statt gleichzeitig; nach einer Neuinstallation keine Versions-Neuigkeiten.",
    "size": 3924663,
    "sig": "78746829313a97c103d4f74e3a1c886a613ee953d42854a91e16754161888f53b11909ac9b2ccaaaf344a9c0dc7bd861eac5668818375ef29a5771391cb10a09",
@@ -136,23 +153,6 @@
     "sha256": "b2b9bf0f7d98009b683f767f430adc414f9450718b65d964aceeb4534fc954d7",
     "size": 4932329,
     "sig": "232b546026a1f8c77f0e2aeee9939e2339214b9ce5ff982e1e3cd945be5a81b6c1e4f4c90be4ab23a639197d505e8f249396eeaba2fdc8e174f12d8df2c9e10d"
-   }
-  },
-  {
-   "version": "3.71.1",
-   "file": "webcam_bewegung_3_71_1.py",
-   "url": "",
-   "sha256": "aa6d783d0c178ef4ecc137273768f835ae15468fa82ab1cce9b4c4afb809115e",
-   "date": "2026-11-10 17:49",
-   "notes": "Live-Bild aufgeräumt: Die Knöpfe oben im Bild und die kleinen Kamera-Bilder erscheinen erst, wenn du das Bild antippst (am PC: Maus darüber), und verschwinden nach 4 Sekunden wieder. Immer zeigen: Einstellungen → Netzwerk & Zugang → Web-Stream → «Knöpfe im Live-Bild immer zeigen» (Experte, gilt nur auf diesem Gerät). Kameras heissen jetzt auch auf Deutsch «USB-Kamera» und «Pi-Kamera»",
-   "size": 3849282,
-   "sig": "38a8cdedf4669f41eb792f93ed9905408fd9d7011d9a53e7dcaec774d999a8f76dd72a5a9e0e07c4325d4a15737c9782c3a3e7635c7f56d68efee1dcbfd52509",
-   "data": {
-    "file": "moveeye_daten_3_71_1.zip",
-    "url": "",
-    "sha256": "cda301fb5e4eb31112e412e0f8ce6b595ae1053925d6d28e065221a9624a2d42",
-    "size": 4921511,
-    "sig": "e3d765ddb0ac8fc6d6651e6635733673ae494d9a7bf9f857cf98fbbdd9c0c98eba6627502f2bc48e0a5f3f0080cea371e0f003eccff45fcbbf21cf97a2e4a00f"
    }
   },
   {
