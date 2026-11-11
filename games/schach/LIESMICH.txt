@@ -8,7 +8,7 @@ Lizenz
 ------
 Das Spiel als Ganzes (kombiniertes Werk): GNU General Public License, Version 3 oder neuer (GPL-3.0-or-later),
 Text in lizenzen/GPL-3.0.txt. Grund: Brett (Chessground) und Motor (Stockfish) stehen unter der GPL.
-Die eigenen Dateien (index.html, partie.js, motor.js, motor-js-worker.js, schach.js, thumb.svg) sind von MoveEye
+Die eigenen Dateien (index.html, partie.js, motor.js, motor-js-worker.js, fern.js, schach.js, thumb.svg) sind von MoveEye
 (Idee: Elektro) und stehen ebenfalls unter GPL-3.0-or-later. Der vollständige Quelltext liegt offen im Projekt:
 https://github.com/DonElektro/MotionWatch (Ordner games/schach/).
 Kein Produkt von Lichess oder Chess.com; deren Namen stehen hier nur als Herkunftsangabe.
@@ -64,6 +64,15 @@ Aufbau der eigenen Dateien
   index.html           Seite und Aussehen. Mit ?test=1 gibt es window.__schach für werkzeuge/spiele_test.py,
                        mit ?motor=js rechnet von Anfang an der Ersatz-Motor.
 
-Vorbereitet, aber nicht gebaut: zwei Handys über MoveEye. Die Partie ist als {startFen, zuege} übertragbar, jede Seite
-ist ein Spieler-Objekt; ein «Fern»-Spieler bräuchte nur amZug() (auf den Zug der Gegenseite warten) und gegnerZog(uci)
-(den eigenen Zug weiterschicken). In diesem Ordner gibt es keinen Netz-Code.
+  fern.js              Zwei Handys über MoveEye: Verbindung zum Pi (MoveEye-Teil 639zzr) unter «…/schachfern/» am gleichen
+                       Ursprung wie die Seite (Spiele-Port, Hauptadresse mit Anmeldung, Gäste-Link /p/<schlüssel>/, /spiele).
+                       Long Polling (bis 15 s), sonst kurzes Abfragen; Code + Sitz-Schlüssel in localStorage
+                       («moveeye-schach-fern»), nie in Link oder QR-Code. Ohne MoveEye (Datei direkt geöffnet) bleibt der
+                       Modus «Zwei Handys» mit einem Hinweis aus.
+
+Zwei Handys («Zwei Handys» im Fenster «Neues Spiel»): ein Handy erstellt das Spiel und zeigt einen Code aus 4 Zeichen und
+einen QR-Code (Adresse der Seite + Code), das zweite tritt mit dem Code bei, weitere schauen zu. Der Pi hält nur Start-
+stellung + Zugliste und prüft jeden Zug selbst (eigene kleine Regel-Prüfung in Python, mit chess.js verglichen:
+werkzeuge/schach_fern_test.py). Remis, «Zug zurück» und Revanche (Farben getauscht) brauchen das Ja des Gegners. Tipps,
+Lern-Modus und Balken rechnen nur auf dem eigenen Handy (bei zwei Handys zuerst aus); beide sehen «Tipps sind an», wenn
+einer sie nutzt. In diesem Ordner liegt kein Server-Code.
