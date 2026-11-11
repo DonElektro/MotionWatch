@@ -179,7 +179,9 @@ GUIDE_JS = r"""
   const queue = []; let busy = false;
   function setLevel(v) { fetch("/api/text", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({key: "tips_level", value: v})}).catch(() => {}); }
   function showNext() {
-    if (busy || !queue.length) return; const x = queue.shift(); if (seen.has(x.k)) { showNext(); return; } busy = true;
+    if (busy || !queue.length) return;
+    if (window.MWQ && MWQ.busy()) { setTimeout(showNext, 1200); return; }      // 639zzs: never over a dialog or the tour
+    const x = queue.shift(); if (seen.has(x.k)) { showNext(); return; } busy = true;
     const c = document.createElement("div"); c.id = "gd-card"; c.setAttribute("role", "status");
     const b = document.createElement("b"); b.textContent = "💡 " + titleOf(x) + (recent(x.v) ? " " : "");
     if (recent(x.v)) { const n = document.createElement("span"); n.className = "gd-new"; n.textContent = tx("NEW"); b.appendChild(n); }

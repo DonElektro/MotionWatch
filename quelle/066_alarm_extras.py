@@ -716,6 +716,10 @@ ALX_WHAT_JS = r"""(function () {
     var vc = document.getElementById("vcard"); if (!vc) return;
     box = document.createElement("div"); box.id = "alx-what"; vc.parentNode.insertBefore(box, vc.nextSibling);
   }
+  var Q = main && window.MWQ ? window.MWQ : null;       // 639zzs: the Live page shows one thing at a time
+  if (Q) Q.expect("what");
+  function onLive() { var tb = document.body.getAttribute("data-tab"); return !tb || tb === "live"; }
+  var wasLive = onLive();
   var st = document.createElement("style");
   st.textContent = "#alx-what .aw{background:var(--panel,#18202b);border:1px solid var(--line,#2a3442);border-radius:12px;padding:10px;margin:10px 0}" +
     "#alx-what .aw-h{font-weight:700;margin-bottom:6px}#alx-what .aw-i{display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap;margin-top:8px}" +
@@ -751,14 +755,16 @@ ALX_WHAT_JS = r"""(function () {
     if (!r || !r.ok) return;
     TX = r.tx || {}; LL = r.lang || L;
     var items = (r.items || []).filter(function (m) { return main ? (!m.label && Date.now() / 1000 - m.t < 12 * 3600) : true; });
+    if (main && !onLive()) items = [];                   // another tab of the page: nothing to ask there
     box.textContent = "";
-    if (!items.length) return;
+    if (!items.length) { if (Q) Q.skip("what"); return; }
+    if (Q && !Q.is("what")) { Q.add("what", "#alx-what .aw", load); return; }     // 639zzs: one thing at a time - after dialogs, tour and banner
     var c = E("div", "aw"); c.appendChild(E("div", "aw-h", "❓ " + tx("What was it?")));
     items.slice(0, main ? 1 : 8).forEach(function (m) { c.appendChild(item(m)); });
     c.appendChild(E("div", "aw-m", tx("Answers are kept as training pictures (picture + boxes); «Nothing» counts as a false alarm.")));
     box.appendChild(c);
   }
   setTimeout(load, 1200); setInterval(function () { if (!document.hidden) load(); }, 20000);
-  setInterval(function () { if (lng() !== L) load(); }, 2000);    // the language was set / switched
+  setInterval(function () { var lv = onLive(), ch = lv !== wasLive; wasLive = lv; if (lng() !== L || (main && ch)) load(); }, 2000);    // the language was set / switched (or the tab, 639zzs)
 })();
 """
