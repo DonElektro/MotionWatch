@@ -60,7 +60,8 @@ jobs:
           V="$(dpkg-query -W -f='${db:Status-Abbrev}${Version}' bluez 2>/dev/null)"
           case "$V" in ii*) echo "bluez ${V#ii }" ;; *) echo "bluez fehlt" ;; esac
           echo "bluetooth.service: $(systemctl is-active bluetooth.service 2>/dev/null | head -n 1)"
-          modinfo -F filename hid_playstation >/dev/null 2>&1 && echo "Treiber hid-playstation: da" || echo "Treiber hid-playstation: fehlt"
+          modinfo -F filename hid_playstation >/dev/null 2>&1 && echo "Treiber hid-playstation: da" || echo "Treiber hid-playstation: von hier nicht sichtbar (der Test-Runner darf /lib/modules nicht lesen) - siehe «Treiber» unten"
+          echo "bluetooth.service eingeschaltet: $(systemctl is-enabled bluetooth.service 2>/dev/null | head -n 1)"
           echo "Koppeln (moveeye-controller-koppeln.path): $(systemctl is-enabled moveeye-controller-koppeln.path 2>/dev/null | head -n 1) / $(systemctl is-active moveeye-controller-koppeln.path 2>/dev/null | head -n 1)"
           python3 -I -c "import json;d=json.load(open('/run/moveeye-controller/status.json'));print('Letztes Koppeln:',str(d.get('schritt'))[:20],'-',str(d.get('text'))[:120])" 2>/dev/null || echo "Letztes Koppeln: -"
           echo "Joystick-Geräte (js*): $(compgen -G '/dev/input/js*' | wc -l)"
@@ -79,15 +80,15 @@ jobs:
           echo "-- bluetoothctl show"; if command -v bluetoothctl >/dev/null; then timeout 8 bluetoothctl show 2>&1 | sed 's/\x1b\[[0-9;]*[A-Za-z]//g' | grep -v -i -E "^\s*(Name|Alias):" | ohne | head -n 30; else echo "bluetoothctl fehlt"; fi
           echo "-- dmesg (Bluetooth, letzte Zeilen)"; M="$(dmesg 2>&1 | grep -i -E "blue|btusb|hci" | tail -n 25 | ohne)"; if [ -n "$M" ]; then echo "$M"; else echo "(nichts oder dmesg für diesen Benutzer gesperrt: kernel.dmesg_restrict=$(cat /proc/sys/kernel/dmesg_restrict 2>/dev/null))"; fi
           echo "-- Module geladen"; for m in bluetooth btusb btintel btrtl hidp uhid hid_playstation hid_sony xpad hid_microsoft; do if [ -d "/sys/module/$m" ]; then echo "  $m: geladen"; else echo "  $m: -"; fi; done
-          echo "-- Treiber vorhanden (Kern $(uname -r))"
-          for m in hid_playstation btusb hidp xpad; do
-            f="$(modinfo -F filename "$m" 2>/dev/null | head -n 1)"
-            [ -n "$f" ] || f="$(find "/lib/modules/$(uname -r)" -name "${m//_/[-_]}.ko*" 2>/dev/null | head -n 1)"
-            [ -n "$f" ] || { grep -q -E "/${m//_/[-_]}\.ko" "/lib/modules/$(uname -r)/modules.builtin" 2>/dev/null && f="(fest im Kern)"; }
-            echo "  $m: ${f:-fehlt}" | sed "s#/lib/modules/$(uname -r)/##"
+          echo "-- Treiber (der Test-Runner darf /lib/modules nicht lesen: ProtectKernelModules; darum Paketliste und Kern-Einstellung)"
+          for m in hid-playstation btusb hidp xpad; do
+            f="$(modinfo -F filename "${m//-/_}" 2>/dev/null | head -n 1)"
+            q="$(grep -l -E "/$(uname -r)/.*/${m}\.ko" /var/lib/dpkg/info/linux-modules*.list 2>/dev/null | head -n 1)"
+            q="${q##*/}"; q="${q%.list}"; q="${q%%:*}"
+            echo "  $m: ${f:+Datei da}${f:-Datei von hier nicht sichtbar} · Paket: ${q:--}"
           done
-          command -v modinfo >/dev/null || echo "  (modinfo nicht im Pfad dieses Benutzers)"
-          dpkg-query -W -f='  ${Package} ${db:Status-Abbrev}${Version}\n' bluez "linux-modules-extra-$(uname -r)" usbutils pciutils 2>&1 | cut -c1-120
+          grep -E '^CONFIG_(HID_PLAYSTATION|BT_HCIBTUSB|BT_HIDP|JOYSTICK_XPAD|INPUT_JOYDEV)=' "/boot/config-$(uname -r)" 2>&1 | sed 's/^/  /' | cut -c1-120
+          dpkg-query -W -f='  ${Package} ${db:Status-Abbrev}${Version}\n' bluez "linux-modules-extra-$(uname -r)" "linux-modules-$(uname -r)" linux-firmware linux-generic usbutils pciutils 2>&1 | cut -c1-120
           grep -E "Treiber|hid-playstation|Bluetooth|Controller" /var/log/moveeye-hp-update.log 2>/dev/null | tail -n 6 | cut -c1-200
           for f in /etc/udev/rules.d/*moveeye* /etc/bluetooth/main.conf.d/*moveeye*; do [ -e "$f" ] && echo "  da: $f"; done
           echo "-- Eingabegeräte (nur Namen)"; grep '^N: Name=' /proc/bus/input/devices 2>&1 | cut -c1-100

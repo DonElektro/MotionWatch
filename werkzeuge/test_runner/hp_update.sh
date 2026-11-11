@@ -34,6 +34,13 @@
 # controller_koppeln.sh / controller_fenster.py, die Einheiten moveeye-controller-koppeln.path / .service (der Benutzer des
 # Kiosks legt nur die leere Wunsch-Datei /run/moveeye-spiel/controller_koppeln an, dann koppelt der Dienst als root einen
 # PS5-Controller - kein sudo, keine polkit-Regel) und Ctrl+Alt+B in der Openbox-Einstellung des Kiosks.
+# Controller verwalten (HP_FASSUNG 7, Besitzer 11.11.2026): Fenster mit Liste, Akku, «Trennen», «Vergessen» (Wunsch-Dateien
+# controller_*: die Pfad-Einheit schaut auf das Muster, es zählt nur der Dateiname), auch DualShock 4 und Xbox-Controller;
+# udev-Regel 71-moveeye-controller.rules: das Touchpad des Controllers ist im Kiosk keine Maus, und taucht ein
+# Bluetooth-Adapter auf (USB-Stick eingesteckt, Hochfahren), schaltet der Dienst ihn ein - gekoppelte Controller verbinden
+# sich dann mit der PS-Taste von selbst. Ohne Adapter läuft nichts davon (kein Fehler, keine Verzögerung beim Start).
+# bluetooth.service wird eingeschaltet (startet nur mit Adapter), der Treiber btusb wie hid-playstation geprüft; dazu
+# usbutils / pciutils (HP-Diagnose: lsusb, lspci).
 # Einstellungen: /etc/moveeye-hp-update.conf (SIMULATOR=nein: den Simulator nicht ersetzen). Protokoll: /var/log/moveeye-hp-update.log
 set -u
 REPO_RAW="${MOVEEYE_HP_QUELLE:-https://raw.githubusercontent.com/DonElektro/MotionWatch}"   # nur zum Prüfen änderbar
@@ -53,12 +60,13 @@ PAUSE="/run/moveeye-test/kiosk_pause"
 SPIEL="/run/moveeye-spiel/spielen"
 SPIEL_TMPFILES="/etc/tmpfiles.d/moveeye-spiel.conf"
 KIOSK_TEST="/etc/moveeye-kiosk-test.conf"   # von runner_einrichten.sh (Pause-Datei, TEST_BENUTZER); runner_entfernen.sh nimmt sie weg
-HP_FASSUNG=6                     # 6 = Zeitplan prüft jedes Mal kurz, Neues wartet höchstens 6 Std. auf eine Pause (Marke «wartet»); 5 = Bildschirm für die Testläufe (TEST_BENUTZER, xhost), 4 = Controller koppeln (Bluetooth), 3 = drei Spuren (Sim aus versions.json «sim»); erhöhen, wenn dieses Skript bei gleicher Version mehr einspielt als die Fassung davor
+HP_FASSUNG=7                     # 7 = Controller verwalten (Liste, Trennen, Vergessen, udev-Regel, Adapter einstecken genügt); 6 = Zeitplan prüft jedes Mal kurz, Neues wartet höchstens 6 Std. auf eine Pause (Marke «wartet»); 5 = Bildschirm für die Testläufe (TEST_BENUTZER, xhost), 4 = Controller koppeln (Bluetooth), 3 = drei Spuren (Sim aus versions.json «sim»); erhöhen, wenn dieses Skript bei gleicher Version mehr einspielt als die Fassung davor
 STATUS_PORT=8761
 # Pakete, die Kiosk und Testbild brauchen (nur fehlende werden installiert, nichts wird entfernt)
-PAKETE="python3-tk x11-xserver-utils libxss1 unzip curl bluez rfkill"   # bluez, rfkill: Controller per Bluetooth koppeln
+PAKETE="python3-tk x11-xserver-utils libxss1 unzip curl bluez rfkill usbutils pciutils"   # bluez, rfkill: Controller per Bluetooth koppeln; usbutils, pciutils: HP-Diagnose (lsusb, lspci)
 KOPPELN_DIENST="/etc/systemd/system/moveeye-controller-koppeln.service"
 KOPPELN_PFAD="/etc/systemd/system/moveeye-controller-koppeln.path"
+UDEV_REGEL="/etc/udev/rules.d/71-moveeye-controller.rules"
 MUSTER='^([^ ]*/)?MoveEyeSim3D\.x86_64( |$)'
 
 MODUS=lauf OHNE_LAUF=0 IMMER=0 PLANLAUF=0
@@ -333,15 +341,20 @@ pakete() {
 	apt-get install -y -q --no-install-recommends $fehlt >/dev/null 2>&1 || log "FEHLER: Pakete nicht installiert:$fehlt"
 }
 
-modul_pakete() {   # Treiber des PS5-Controllers (hid-playstation): fehlt er, linux-modules-extra des laufenden Kerns
-	local p
+modul_pakete() {   # Treiber des PS5-Controllers (hid-playstation) und für USB-Bluetooth-Sticks (btusb): fehlt einer,
+	local p m fehlt=""   # linux-modules-extra des laufenden Kerns
 	command -v modinfo >/dev/null 2>&1 || return 0
-	modinfo hid_playstation >/dev/null 2>&1 && return 0
+	for m in hid_playstation btusb; do
+		modinfo "$m" >/dev/null 2>&1 || fehlt="$fehlt $m"
+	done
+	[ -z "$fehlt" ] && return 0
 	p="linux-modules-extra-$(uname -r)"
 	[[ "$p" =~ ^[a-z0-9][a-z0-9.+-]{1,60}$ ]] || return 0
-	dpkg-query -W -f='${Status}' "$p" 2>/dev/null | grep -q 'install ok installed' && return 0
-	apt-cache show "$p" >/dev/null 2>&1 || { log "Hinweis: Treiber hid-playstation fehlt, $p gibt es nicht"; return 0; }
-	log "Treiber für den PS5-Controller nachinstallieren: $p"
+	if dpkg-query -W -f='${Status}' "$p" 2>/dev/null | grep -q 'install ok installed'; then
+		log "Hinweis: Treiber fehlt im Kern $(uname -r):$fehlt ($p ist installiert)"; return 0
+	fi
+	apt-cache show "$p" >/dev/null 2>&1 || { log "Hinweis: Treiber fehlt:$fehlt - $p gibt es nicht"; return 0; }
+	log "Treiber für Controller / Bluetooth nachinstallieren ($fehlt ): $p"
 	DEBIAN_FRONTEND=noninteractive apt-get install -y -q --no-install-recommends "$p" >/dev/null 2>&1 || log "FEHLER: $p nicht installiert"
 }
 
@@ -357,6 +370,7 @@ kiosk() {   # kiosk ORDNER -> setzt KIOSK_NEU
 	einspielen "$d/controller_fenster.py" "$KIOSK_LIB/controller_fenster.py" 644
 	spiel_ordner
 	koppeln_dienst
+	controller_udev
 	openbox_taste && KIOSK_NEU=1
 	status_firewall
 	test_bildschirm
@@ -423,16 +437,18 @@ koppeln_dienst() {   # Controller koppeln: Pfad-Einheit (Wunsch-Datei des Kiosks
 	wunsch="$(dirname "$SPIEL")/controller_koppeln"
 	tmp="$(mktemp)"
 	cat > "$tmp" <<EOF
-# MoveEye: PS5-Controller (DualSense) per Bluetooth koppeln (moveeye-hp-update). Startet nur über
-# moveeye-controller-koppeln.path (Wunsch-Datei des Kiosks) oder von Hand; nimmt keine Angaben an.
+# MoveEye: Controller (PS5 DualSense und andere) per Bluetooth koppeln und verwalten (moveeye-hp-update). Startet nur über
+# moveeye-controller-koppeln.path (Wunsch-Dateien des Kiosks: es zählt nur der Dateiname), über udev (ein Bluetooth-Adapter
+# taucht auf) oder von Hand; nimmt keine Angaben an. Kein Startlimit: das Skript bremst selbst (1 s pro Lauf).
 [Unit]
-Description=MoveEye: PS5-Controller per Bluetooth koppeln
+Description=MoveEye: Controller per Bluetooth koppeln
 After=bluetooth.service
+StartLimitIntervalSec=0
 
 [Service]
 Type=oneshot
 ExecStart=$KIOSK_LIB/controller_koppeln.sh
-TimeoutStartSec=180
+TimeoutStartSec=420
 RuntimeDirectory=moveeye-controller
 RuntimeDirectoryMode=0755
 RuntimeDirectoryPreserve=yes
@@ -443,12 +459,14 @@ PrivateTmp=yes
 EOF
 	neu_ist "$tmp" "$KOPPELN_DIENST" && install -D -m 644 "$tmp" "$KOPPELN_DIENST" && neu=1
 	cat > "$tmp" <<EOF
-# MoveEye: Wunsch «Controller koppeln» (Knopf im Testbild, Ctrl+Alt+B) -> moveeye-controller-koppeln.service
+# MoveEye: Wunsch «Controller koppeln» (Knopf im Testbild / in der Ecke, Ctrl+Alt+B) und Wünsche aus dem Fenster
+# (Liste, Trennen, Vergessen, Abbrechen: leere Dateien controller_*) -> moveeye-controller-koppeln.service
 [Unit]
 Description=MoveEye: Wunsch «Controller koppeln» vom Kiosk
 
 [Path]
 PathExists=$wunsch
+PathExistsGlob=$(dirname "$SPIEL")/controller_*
 Unit=moveeye-controller-koppeln.service
 
 [Install]
@@ -464,6 +482,34 @@ EOF
 		systemctl restart moveeye-controller-koppeln.path >/dev/null 2>&1
 	elif ! systemctl is-enabled -q moveeye-controller-koppeln.path 2>/dev/null; then
 		systemctl enable --now moveeye-controller-koppeln.path >/dev/null 2>&1 || log "FEHLER: moveeye-controller-koppeln.path nicht eingeschaltet"
+	fi
+	return 0
+}
+
+controller_udev() {   # HP_FASSUNG 7: udev-Regel (Touchpad des Controllers keine Maus; Adapter taucht auf -> einschalten) und
+	local tmp        # bluetooth.service eingeschaltet. Ohne Adapter passiert nichts: kein Fehler, keine Verzögerung beim Start.
+	[ -f "$KIOSK_LIB/controller_koppeln.sh" ] || return 0
+	tmp="$(mktemp)"
+	cat > "$tmp" <<'EOF'
+# MoveEye (moveeye-hp-update, HP_FASSUNG 7): Controller am Simulator-PC. Entfernen: diese Datei löschen.
+# 1. Das Touchpad des PS5- / PS4-Controllers ist keine Maus: sonst bewegt jede Berührung den Mauszeiger des Kiosks und
+#    klickt im Simulator (libinput lässt nur dieses Teil-Gerät weg; Tasten, Sticks und das Gamepad selbst bleiben).
+ACTION!="remove", SUBSYSTEM=="input", KERNEL=="event*", ATTRS{name}=="*Controller Touchpad", ENV{LIBINPUT_IGNORE_DEVICE}="1"
+# 2. Ein Bluetooth-Adapter taucht auf (USB-Stick eingesteckt oder beim Hochfahren): der Dienst schaltet ihn ein und
+#    schreibt die Liste - gekoppelte Controller verbinden sich dann mit der PS-Taste von selbst. Ohne Adapter läuft nichts.
+ACTION=="add", SUBSYSTEM=="bluetooth", KERNEL=="hci[0-9]*", TAG+="systemd", ENV{SYSTEMD_WANTS}+="moveeye-controller-koppeln.service"
+EOF
+	if einspielen "$tmp" "$UDEV_REGEL" 644 "Touchpad des Controllers keine Maus; Bluetooth-Adapter einstecken genügt"; then
+		command -v udevadm >/dev/null 2>&1 && { udevadm control --reload >/dev/null 2>&1 || log "Hinweis: udev nicht neu geladen (gilt nach dem nächsten Start)"; }
+		# ist schon ein Adapter da: jetzt einmal einschalten (sonst erst beim nächsten Einstecken / Start)
+		if compgen -G '/sys/class/bluetooth/hci*' >/dev/null; then systemctl start --no-block moveeye-controller-koppeln.service >/dev/null 2>&1; fi
+	fi
+	rm -f "$tmp"
+	# bluetooth.service: eingeschaltet lassen bzw. einschalten (er startet nur, wenn es einen Adapter gibt:
+	# ConditionPathIsDirectory=/sys/class/bluetooth) - sonst käme ein später eingesteckter Stick nicht von selbst in Gang
+	if systemctl cat bluetooth.service >/dev/null 2>&1 && ! systemctl is-enabled -q bluetooth.service 2>/dev/null; then
+		if systemctl enable bluetooth.service >/dev/null 2>&1; then log "bluetooth.service eingeschaltet (startet nur mit Adapter)"
+		else log "Hinweis: bluetooth.service nicht eingeschaltet"; fi
 	fi
 	return 0
 }
