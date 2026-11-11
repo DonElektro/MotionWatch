@@ -2,8 +2,10 @@
 # ----------------------------------------------------------------------------
 # 2.98.18 (Wunsch Besitzer, Code-Pflege):
 #   - Übersetzungen: welche sichtbaren Texte (tr() / trf() im Programm, t() und data-i18n in den Webseiten, die Beschriftungen
-#     der Einstellungen) haben auf Französisch / Italienisch / Romanisch noch keine Übersetzung? Nur eine Warnung im Selbsttest
-#     (Anzahl + die ersten 20), kein Fehler: es erscheint dann Englisch (fr / it) bzw. Deutsch (rm).
+#     der Einstellungen) haben auf Französisch / Italienisch / Romanisch noch keine Übersetzung? Bis 3.77 nur eine Warnung
+#     (es erscheint dann Englisch (fr / it) bzw. Deutsch (rm)). Seit die Lücken geschlossen sind (Teil 639zzm, Prüfung
+#     Punkt 7), ist ein fehlender Text ein Fehler des Selbsttests: gezählt wird pro Sprache genau wie vorher, die Meldung
+#     nennt die Texte. Neue Texte gehören mit allen fünf Sprachen in die Tabelle _HX… des eigenen Teils.
 #   - MIGRATE_ONLY (020): alte Schlüssel, die nur noch aus Dateien älterer Versionen gelesen werden, stehen nirgends sonst
 #     (nicht in CFG, nicht in den Einstellungs-Listen, nicht in der Sicherung / dem Diagnose-Paket).
 # Zusätzliche Prüfungen des Selbsttests stehen in SELFTEST_EXTRA (self_test in 390 ruft sie nach den eigenen auf).
@@ -13,6 +15,10 @@ SELFTEST_EXTRA = []                                         # [(name, function)]
 _I18N_PY = re.compile(r"""(?<![\w.])(?:tr|trf)\(\s*((?:"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'))\s*[,)]""")
 _I18N_JS = re.compile(r"""(?<![\w.$])t\(\s*((?:"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'))\s*[,)]""")
 _I18N_ATTR = re.compile(r"""data-i18n(?:-ph)?=\\?"([^"\\]+)\\?\"""")
+# not texts: a key that only exists to test «unknown text» (639zzl), and attributes put together in Python
+# ('<small data-i18n="' + NAME + '">' - the text itself is checked where NAME is defined, 639zzo)
+I18N_NOT_TEXTS = {"no such text 123"}
+_I18N_CODE = re.compile(r"""^['"] \+ \w+ \+ ['"]$""")
 
 
 def i18n_used_keys(src=None):
@@ -35,7 +41,8 @@ def i18n_used_keys(src=None):
     for lst in (TOGGLES, SLIDERS, TEXTS):
         keys.update(x[2] for x in lst)
     keys.update(SECTIONS)
-    return {k for k in keys if re.search(r"[A-Za-z]{2}", k) and "{" not in k[:1]}
+    return {k for k in keys if re.search(r"[A-Za-z]{2}", k) and "{" not in k[:1] and k not in I18N_NOT_TEXTS
+            and not _I18N_CODE.search(k)}
 
 
 def i18n_missing(langs=("fr", "it", "rm"), src=None):
@@ -45,14 +52,18 @@ def i18n_missing(langs=("fr", "it", "rm"), src=None):
 
 
 def i18n_selftest():
+    """every text in use has a French, an Italian and a Romansh translation (a failure since 639zzm; before: a warning)"""
     miss = i18n_missing()
     n = len(i18n_used_keys())
     if not any(miss.values()):
         return f"{n} texts, all translated"
-    out = [f"{n} texts; warning only - without translation:"]
+    out = [f"{n} texts; without translation:"]
     for L, ks in miss.items():
-        out.append(f"   {L}: {len(ks)} – " + " · ".join(repr(k[:50]) for k in ks[:20]))
-    return "\n".join(out)
+        if ks:
+            out.append(f"   {L}: {len(ks)} – " + " · ".join(repr(k[:50]) for k in ks[:20]))
+    if ZD_FILE and not ZD["ok"]:                            # without the data zip the tables fr / it / rm are not there (012)
+        return "\n".join(out + ["   (not judged: the data file is missing)"])
+    raise AssertionError("\n".join(out + ["   add them in all five languages to the table _HX… of the part that shows the text"]))
 
 
 def migrate_only_selftest():
