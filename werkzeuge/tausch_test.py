@@ -8,8 +8,15 @@
      Löschregeln, Ordner, CSRF (fremde Origin), Push gebündelt (nur Admin, nie andere Benutzer), Texte (Version, Konflikt,
      20 Versionen im Platz, Wiederherstellen), Chat (anhängen, Rechte, Ändern 5 Min., Admin löscht, Warten auf Neues,
      Push an die Mitschreibenden ohne Inhalt), XSS-Versuche als Daten.
+     iPhone: HEIC wird angenommen (ohne Vorschau), ein Stück, dessen Daten stocken, bekommt nach TZ_BODY_IDLE die Antwort
+     408 (echter Server, rohe Verbindung), eine abgebrochene Verbindung schreibt nichts halb, dasselbe Stück viermal zugleich.
   B) --browser: MoveEye ohne Fenster starten, Dateien hochladen (auch über die Seite mit Stücken), Bildschirmfotos iPhone
      (390 × 844) und PC: Liste, Editor (.md Vorschau), Konflikt, Chat, Gast-Seite; keine JavaScript-Fehler; Markdown sicher.
+
+     Hochladen als iPhone (Playwright «iPhone 13»: Grösse, Touch, Kennung – der Motor ist Chromium, NICHT Safari; der
+     letzte Beweis ist das iPhone des Besitzers): 5 MB in Stücken (erstes 256 KB), ein Stück ohne Antwort → Zeitüberschreitung
+     → neuer Versuch → fertig, abgebrochene Verbindung → kleinere Stücke (512 KB, 128 KB), nichts kommt durch → ehrliche
+     Meldung + Diagnose-Zeile + «Nochmal versuchen» (macht weiter), Datei nicht lesbar → klare Meldung.
 
   python3 werkzeuge/tausch_test.py [--datei X.py] [--browser] [--bilder ORDNER]
 """
@@ -271,6 +278,74 @@ def teil_a(datei):
     code, j2 = api("Anna", {"action": "start", "name": "neu.mp4", "size": 10, "area": "all", "lastmod": 5})
     ok(j2.get("have") == 5, f"nach Neustart fortsetzen {j2}")
     api("Anna", {"action": "abort", "id": j2["id"]})
+
+    print("A) iPhone: HEIC, ein Stück das stockt, eine Verbindung die abbricht (echter Server)", flush=True)
+    heic = b"\x00\x00\x00\x18ftypheic\x00\x00\x00\x00mif1heic" + os.urandom(3000)      # as the iPhone sends it through «Dateien»
+    code, j = upload("Anna", "IMG_0042.HEIC", heic)
+    hid = j.get("file", {}).get("id", "")
+    ok(code == 200 and j["file"]["kind"] == "image" and not j["file"].get("risky"), f"HEIC angenommen als Bild {code} {j}")
+    for _i in range(60):
+        if TZ["files"].get(hid, {}).get("thumb") is not None:
+            break
+        time.sleep(0.1)
+    ok(TZ["files"].get(hid, {}).get("thumb") is False, "HEIC: kein Vorschaubild (Symbol), nichts dekodiert")
+    r = c.get(f"/tausch/dl/{hid}", headers=H["Anna"])
+    ok(r.status_code == 200 and r.data == heic and r.mimetype == "image/heic", f"HEIC: Download unverändert ({r.status_code} {r.mimetype})")
+    import socket
+    from werkzeug.serving import make_server
+    ns["TZ_BODY_IDLE"] = 1.5
+    srv = make_server("127.0.0.1", 0, app, threaded=True)
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    sport = srv.server_address[1]
+
+    def roh(kopf_len, daten, uid_, off_, warten=8.0, zu=False):
+        """one piece over a real socket: Content-Length kopf_len, but only «daten» is sent -> (status, seconds, body)"""
+        sk = socket.create_connection(("127.0.0.1", sport), timeout=warten)
+        t0_ = time.time()
+        try:
+            sk.sendall((f"POST /api/tausch/chunk?id={uid_}&off={off_}&lang=de HTTP/1.1\r\nHost: 127.0.0.1:{sport}\r\n"
+                        f"Authorization: {H['Anna']['Authorization']}\r\nContent-Type: application/octet-stream\r\n"
+                        f"Content-Length: {kopf_len}\r\nConnection: close\r\n\r\n").encode() + daten)
+            if zu:
+                sk.close(); return 0, 0.0, b""
+            buf = b""
+            while True:
+                try:
+                    x = sk.recv(65536)
+                except socket.timeout:
+                    return -1, time.time() - t0_, buf
+                if not x:
+                    break
+                buf += x
+            st_ = int(buf.split(b" ", 2)[1]) if buf.startswith(b"HTTP/") else 0
+            return st_, time.time() - t0_, buf.split(b"\r\n\r\n", 1)[-1]
+        finally:
+            try:
+                sk.close()
+            except OSError:
+                pass
+    data = os.urandom(600 * 1024)
+    code, j = api("Anna", {"action": "start", "name": "stockt.bin.zip", "size": len(data), "area": "all", "lastmod": 9})
+    uid = j["id"]
+    st_, dt, body_ = roh(300000, data[:5000], uid, 0)
+    ok(st_ == 408 and 1.0 < dt < 6.0 and b'"ok": false' in body_, f"Stück stockt: Antwort 408 nach {dt:.1f} s statt nie ({st_})")
+    ok(TZ["ups"][uid].get("have", 0) == 0, "Stück stockt: nichts halb geschrieben")
+    roh(300000, data[:5000], uid, 0, zu=True); time.sleep(0.5)
+    ok(TZ["ups"][uid].get("have", 0) == 0, "Verbindung bricht ab: nichts halb geschrieben")
+    st_, dt, body_ = roh(300000, data[:300000], uid, 0)
+    ok(st_ == 200 and json.loads(body_)["have"] == 300000, f"danach das ganze Stück: angenommen ({st_}, {dt:.2f} s)")
+    st_, dt, body_ = roh(300000, data[:300000], uid, 0)
+    ok(st_ == 409 and json.loads(body_)["have"] == 300000, f"dasselbe Stück nochmals (nach einer Zeitüberschreitung im Browser): 409 mit have ({st_})")
+    st_, dt, body_ = roh(len(data) - 300000, data[300000:], uid, 300000)
+    code, j = api("Anna", {"action": "finish", "id": uid})
+    ok(st_ == 200 and code == 200 and open(os.path.join(root, "f", j["file"]["id"] + ".bin"), "rb").read() == data, "Datei nach Stocken / Abbruch vollständig und gleich")
+    code, j = api("Anna", {"action": "start", "name": "zugleich.bin.zip", "size": 400000, "area": "all", "lastmod": 9})
+    d2 = os.urandom(400000); erg = []
+    ths = [threading.Thread(target=lambda: erg.append(roh(200000, d2[:200000], j["id"], 0)[0])) for _i in range(4)]
+    [t.start() for t in ths]; [t.join() for t in ths]
+    ok(sorted(erg) == [200, 409, 409, 409] and TZ["ups"][j["id"]]["have"] == 200000, f"dasselbe Stück viermal zugleich: einmal geschrieben {sorted(erg)}")
+    api("Anna", {"action": "abort", "id": j["id"]})
+    srv.shutdown()
 
     print("A) Push gebündelt, nur an den Admin", flush=True)
     sent.clear(); TZ["push"].clear()
@@ -566,6 +641,7 @@ def teil_b(datei, bilder):
                 pg.screenshot(path=os.path.join(bilder, f"tausch_chat_{name}.png"))
                 ok(not errs, f"{name}: JavaScript-Fehler {errs}")
                 ctx.close()
+            iphone_upload(pw, br, base, tmp, bilder, req)
             ctx = br.new_context(viewport={"width": 390, "height": 844}, is_mobile=True, has_touch=True, device_scale_factor=2, locale="de-CH")
             pg = ctx.new_page(); errs = []
             pg.on("pageerror", lambda e: errs.append(str(e)[:200]))
@@ -586,6 +662,122 @@ def teil_b(datei, bilder):
         except subprocess.TimeoutExpired:
             p.kill()
         shutil.rmtree(tmp, ignore_errors=True)
+
+
+def iphone_upload(pw, br, base, tmp, bilder, req):
+    """the upload page as an iPhone (emulated: size, touch, user agent - the engine is Chromium, not Safari): the server
+    stalls / drops the connection / answers late; the first piece is small, the pieces get smaller, the error is honest"""
+    import hashlib
+    print("B) iPhone: Hochladen bei stockender Verbindung", flush=True)
+    dev = dict(pw.devices["iPhone 13"]); dev.pop("default_browser_type", None)
+    KB, MBy = 1024, 1024 * 1024
+    A = ("Anna", "anna-pass-1")
+
+    def lauf(name, groesse, stoer, test_cfg, danach=None, lese_fehler=False, bild=None):
+        """upload one file through the page; stoer(i, off, laenge) -> "" (through) | "stall" | "drop" for the i-th piece request"""
+        ctx = br.new_context(**dev, http_credentials={"username": A[0], "password": A[1]}, locale="de-CH")
+        ctx.add_init_script("try{localStorage.setItem('mw-lang','de');localStorage.setItem('mw-theme','dark')}catch(e){}")
+        ctx.add_init_script("window.TZ_UP_TEST = %s;" % json.dumps(test_cfg))
+        if lese_fehler:
+            ctx.add_init_script("Blob.prototype.arrayBuffer = function () { return Promise.reject(new DOMException('The file could not be read', 'NotReadableError')); };")
+        pg = ctx.new_page(); errs = []; anfr = []; haenger = []
+        pg.on("pageerror", lambda e: errs.append(str(e)[:200]))
+        st = {"on": True}
+
+        def weg(route):
+            rq = route.request
+            off = int(re.search(r"off=(\d+)", rq.url).group(1)); ln = len(rq.post_data_buffer or b"")
+            wie = stoer(len(anfr), off, ln) if st["on"] else ""
+            anfr.append((off, ln, wie))
+            if wie == "stall":
+                haenger.append(route)                        # never answered: the page must give up by itself
+            elif wie == "drop":
+                route.abort("connectionreset")
+            else:
+                route.continue_()
+        pg.route("**/api/tausch/chunk**", weg)
+        pg.goto(base + "/tausch"); pg.wait_for_selector("#tz-upb", timeout=15000)
+        datei_ = os.path.join(tmp, name); inhalt = os.urandom(groesse); open(datei_, "wb").write(inhalt)
+        pg.set_input_files("#tz-file", datei_)
+        pg.wait_for_selector(".tz-job", timeout=5000)
+        erg = {"anfr": anfr, "pg": pg, "st": st, "inhalt": inhalt}
+        if danach:
+            danach(erg)
+        else:
+            pg.wait_for_function("(n) => [...document.querySelectorAll('.tz-it .nm')].some(e => e.textContent === n)", arg=name, timeout=90000)
+        if bild:
+            foto(pg, bild)
+        erg["errs"] = errs
+        for h in haenger:                                    # the requests that never got an answer
+            try:
+                h.abort()
+            except Exception:
+                pass
+        lst = json.loads(req("/api/tausch?area=all", user=A)[1])["files"]
+        f = next((x for x in lst if x["name"] == name), None)
+        erg["gleich"] = bool(f) and hashlib.sha256(req("/tausch/dl/" + f["id"], user=A)[1]).digest() == hashlib.sha256(inhalt).digest()
+        ctx.close()
+        return erg
+
+    def foto(pg, name_):
+        pg.evaluate("() => { const j = document.querySelector('.tz-job'); if (j) j.scrollIntoView({block: 'center'}); }")
+        pg.screenshot(path=os.path.join(bilder, name_))
+
+    schnell = {"idle": 1500, "wait": 150, "read": 4000}
+    # 1) 5 MB without trouble: a small first piece, then 2 MB pieces
+    ruhig = {"wait": 150}                                    # the real limits (45 s): this machine may be busy
+    e = lauf("foto_5mb.bin.zip", 5 * MBy + 321, lambda i, off, ln: "", ruhig)
+    gr = [x[1] for x in e["anfr"]]
+    ok(gr == [256 * KB, 2 * MBy, 2 * MBy, 5 * MBy + 321 - 256 * KB - 4 * MBy] and e["gleich"], f"5 MB: erstes Stück klein, dann 2 MB, Datei gleich ({e['anfr']})")
+    ok(not e["errs"], f"5 MB: JavaScript-Fehler {e['errs']}")
+    # 2) the report of the Besitzer: the first piece never answers -> timeout -> retry -> success
+    seen = {}
+
+    def nach_haenger(erg):
+        pg = erg["pg"]
+        pg.wait_for_function("() => /Keine Antwort – neuer Versuch/.test(document.querySelector('.tz-job .msg').textContent)", timeout=15000)
+        seen["msg"] = pg.inner_text(".tz-job .msg"); seen["pc"] = pg.inner_text(".tz-job .pc")
+        foto(pg, "tausch_upload_iphone_neuer_versuch.png")
+        pg.wait_for_function("() => [...document.querySelectorAll('.tz-it .nm')].some(e => e.textContent === 'haengt.bin.zip')", timeout=90000)
+    t0 = time.time()
+    e = lauf("haengt.bin.zip", 5 * MBy, lambda i, off, ln: "stall" if i == 0 else "", schnell, danach=nach_haenger)
+    ok(e["gleich"] and e["anfr"][0][2] == "stall" and e["anfr"][1][0] == 0, f"Stück ohne Antwort: Zeitüberschreitung, neuer Versuch, fertig ({time.time() - t0:.0f} s, {e['anfr'][:3]})")
+    ok("neuer Versuch" in seen.get("msg", ""), f"Stück ohne Antwort: die Seite sagt es ({seen})")
+    # 3) the connection drops twice -> smaller pieces (512 KB) for the rest
+    e = lauf("bricht_ab.bin.zip", 3 * MBy, lambda i, off, ln: "drop" if i in (1, 2) else "", ruhig)
+    gr = [x[1] for x in e["anfr"] if not x[2]]
+    ok(e["gleich"] and gr[0] == 256 * KB and max(gr[1:]) == 512 * KB, f"Verbindung bricht zweimal ab: weiter mit 512-KB-Stücken, Datei gleich ({gr})")
+    # 4) four failures in a row -> 128 KB
+    e = lauf("sehr_schlecht.bin.zip", 1 * MBy, lambda i, off, ln: "drop" if 1 <= i <= 4 else "", dict(ruhig, wait=50))
+    gr = [x[1] for x in e["anfr"] if not x[2]]
+    ok(e["gleich"] and max(gr[1:]) == 128 * KB, f"vier Fehler hintereinander: 128-KB-Stücke ({gr[:4]} …)")
+    # 5) nothing gets through after the first piece: honest error, diagnostics, «Nochmal versuchen» continues
+    info = {}
+
+    def nach_fehler(erg):
+        pg = erg["pg"]
+        pg.wait_for_selector(".tz-job.err", timeout=60000)
+        info["msg"] = pg.inner_text(".tz-job .msg"); info["dg"] = pg.inner_text(".tz-job .dg"); info["btn"] = pg.locator(".tz-job .again").is_visible() and "Nochmal versuchen" in pg.inner_text(".tz-job .again")
+        info["pc"] = pg.inner_text(".tz-job .pc")
+        foto(pg, "tausch_upload_iphone_fehler.png")
+        info["n"] = len(erg["anfr"])
+        erg["st"]["on"] = False                               # the network is back
+        pg.click(".tz-job .again")
+        pg.wait_for_function("() => [...document.querySelectorAll('.tz-it .nm')].some(e => e.textContent === 'gibt_auf.bin.zip')", timeout=90000)
+    e = lauf("gibt_auf.bin.zip", 2 * MBy, lambda i, off, ln: "stall" if i >= 1 else "", dict(schnell, wait=50), danach=nach_fehler)
+    ok("hat nicht geantwortet" in info.get("msg", "") and info.get("btn"), f"nichts kommt durch: ehrliche Meldung mit «Nochmal versuchen» ({info.get('msg')})")
+    dg = info.get("dg", "")
+    ok(dg.startswith("Diagnose: Stück 2/") and "ab 262144" in dg and "Versuch 6" in dg and "timeout" in dg and "131072 B" in dg, f"Diagnose-Zeile: {dg}")
+    nach = e["anfr"][info.get("n", 0):]
+    ok(e["gleich"] and nach and nach[0][0] == 256 * KB, f"«Nochmal versuchen» macht bei 256 KB weiter, Datei gleich ({nach[:2]})")
+    # 6) the file cannot be read (a photo that is not on the phone)
+    def nach_lesen(erg):
+        pg = erg["pg"]
+        pg.wait_for_selector(".tz-job.err", timeout=20000)
+        info["lmsg"] = pg.inner_text(".tz-job .msg"); info["ldg"] = pg.inner_text(".tz-job .dg")
+    e = lauf("icloud.bin.zip", 300 * KB, lambda i, off, ln: "", schnell, danach=nach_lesen, lese_fehler=True, bild="tausch_upload_iphone_lesefehler.png")
+    ok("konnte nicht gelesen werden" in info.get("lmsg", "") and "Fotos-App" in info["lmsg"] and "read: NotReadableError" in info.get("ldg", "") and not e["anfr"],
+       f"Datei nicht lesbar: klare Meldung, nichts gesendet ({info.get('lmsg')} · {info.get('ldg')})")
 
 
 def main():
