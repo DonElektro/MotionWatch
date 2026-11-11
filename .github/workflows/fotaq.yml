@@ -10,7 +10,7 @@
 #   Danach Grösse + sha256 (pins.txt / Release-Notiz) in FOTAQ_FILES (quelle/639zzg_fotaq.py) eintragen.
 # GPL: ScummVM-Quellcode = Tag STV (Commit STV_COMMIT) + die Patches in werkzeuge/fotaq/ + dieser Ablauf, alles öffentlich.
 # Getestet: Probe fotaqprobe-2 (Lauf 42596443429, 09.11.2026, auf dem Zweig mw-fotaq mit vorübergehendem Push-Start), wieder gelöscht.
-# iPhone-Test (Job «ios», werkzeuge/fotaq/ios/, VARIANTEN.md dort): baut Test-Varianten der Engine (Spieldaten in Stücken statt
+# iPhone-Test (Job «ios», werkzeuge/fotaq/ios/, Varianten in bauen.sh): baut Test-Varianten der Engine (Spieldaten in Stücken statt
 # ganz im Speicher, kleine Funktionen gegen WebKit-Fehler 304810), misst sie (grösste Funktionen, Speicher der Seite) und legt
 # mit «probe» das Testpaket fotaq-iostest-N.zip an die Vorabversion «fotaqios-<Lauf>» (MoveEye Teil 639zzs lädt es gepinnt).
 #   … -f ref=<zweig> -f 'inputs[ios]=messen'   ·   … -f 'inputs[ios]=probe'   ·   wegräumen: … -f 'inputs[loeschen]=fotaqios-N'

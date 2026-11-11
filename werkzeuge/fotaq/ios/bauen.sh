@@ -3,7 +3,7 @@
 #   bauen.sh <variant> <scummvm folder (patched)> <output folder>
 # Result: <output>/<variant>/ = build-emscripten of ScummVM (scummvm.js, scummvm.wasm, data/), <output>/<variant>.txt = flags
 # and numbers, <output>/mess_<variant>_*.wasm = the same build with function names, with and without Asyncify (only measured).
-# Runs in the workflow «FOTAQ» (job «ios»). The variants are described in VARIANTEN.md next to this file.
+# Runs in the workflow «FOTAQ» (job «ios»). The variants are described at the «case» below.
 set -eo pipefail
 V="$1"; S="$2"; O="$3"; H="$(cd "$(dirname "$0")" && pwd)"
 EMSDK_VERSION="${EMSDK_VERSION:-4.0.10}"
@@ -12,8 +12,16 @@ git checkout -q -- configure
 case "$V" in
   a) # the data in pieces + small memory; Asyncify and -O2 as in fotaq-1 (tells whether the memory for the data was the cause)
      python3 -I "$H/ios_konfig.py" configure --opt O2 | tee "$O/$V.txt" ;;
-  b) # the same, plus small functions: -Oz and Asyncify kept away from code that can never wait (asyncify_remove.txt)
-     python3 -I "$H/ios_konfig.py" configure --opt Oz --extra "-s ASYNCIFY_REMOVE=@$H/asyncify_remove.txt" | tee "$O/$V.txt" ;;
+  b) # the same, plus small functions against WebKit bug 304810:
+     #   -Oz (the compiler inlines far less);
+     #   Binaryen may not merge big functions that have one caller into that caller (it does so AFTER Asyncify has
+     #   rewritten them: «main» grew to 101 KB that way, Queen::QueenEngine::run - the game loop - to 28 KB);
+     #   Asyncify keeps its hands off code that can never be on the stack while the game waits (asyncify_remove.txt:
+     #   mixer and rate converters, MP3 / Vorbis / zlib / PNG decoders, OPL emulation, SDL pixel loops). These are the
+     #   functions that run all the time, so Safari's optimising compiler gets them as small as in a build without Asyncify.
+     #   Safe because nothing below them waits: files are read with synchronous requests (patch 0101), the only waiting
+     #   calls are SDL_Delay and the directory / settings requests of the file system, all above this code.
+     python3 -I "$H/ios_konfig.py" configure --opt Oz --extra "-s ASYNCIFY_REMOVE=@$H/asyncify_remove.txt -s BINARYEN_EXTRA_PASSES=--one-caller-inline-max-function-size=200" | tee "$O/$V.txt" ;;
   *) echo "unknown variant $V"; exit 1 ;;
 esac
 n=$(find . -path ./dists -prune -o \( -name '*.o' -o -name '*.a' \) -type f -print | wc -l)
