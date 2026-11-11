@@ -53,7 +53,7 @@ Leiste, jeder Lösungsweg samt Abzeichen «Meister-Lösung», Tipps für Dinge u
 bleibt erhalten, und je Bild 150 zufällige Tipps, nach denen es noch lösbar sein muss. Ab GS-1.14: Versatz-Test – ein
 Tipp auf die sichtbare Mitte einer Stelle (oben, Mitte, unten) und eines Platzes der Leiste muss genau dort ankommen, und
 das Bild darf nach dem Tipp nicht rutschen (hochkant, auch gerollt / niedriges Fenster / Ränder / 320 px, und quer);
-der versteckte Tipp-Test (?tipp=1 oder fünfmal auf den Titel) ist sonst aus. Ab GS-1.15 (Bilder 11-15): Räume (Zustand bleibt
+der versteckte Tipp-Test (?tipp=1 oder fünfmal auf den Titel) ist sonst aus. Ab GS-1.16 (Bilder 11-15): Räume (Zustand bleibt
 beim Wechseln), Notizbuch (Einträge, bleibt beim Zurückspulen, Blatt auf/zu), Zeitdruck (Warnung, dann zurück zum Haltepunkt,
 alles bleibt, ein Fehlversuch), Bestzeit, Spielstand aus GS-1.14; Zufalls-Lauf 60 Tipps je Bild ab 6, mit --gross 300. WN_VERSATZ_ALT=1 prüft auch eine alte ZIP. Für den Stand der Quelle
 (solange die ZIP ihn nicht enthält):
@@ -550,7 +550,7 @@ WN2 = {
     "uhrturm": {"gags": ["kuckuck", "luecke", "ra", "trommel", "pendel", "riesen", "blatt", "luke", "gewicht"], "geheim": "spinne",
                 "sack": [{"vor": "s.gewicht === 'oben' && s.rad === 'drin'", "tu": [["s", "pendel"]]}]},
 }
-# ab Bild 11 (GS-1.15): mehrere Räume («r:id» = Stelle im Raum r; das Spiel liefert die Tür dorthin), Notizbuch, Bestzeit,
+# ab Bild 11 (GS-1.16): mehrere Räume («r:id» = Stelle im Raum r; das Spiel liefert die Tür dorthin), Notizbuch, Bestzeit,
 # Zeitdruck. sack-Einträge: art «sack» (Sackgasse, spult genau einen Schritt zurück, Standard), «fehl» (ein Fehlversuch,
 # nichts spult) oder «zeit» (die Zeit läuft ab: vorspulen, dann spult das Bild zum Haltepunkt zurück, alles Erreichte bleibt
 # bis auf die Felder in «frei»); «spulen» = so viele Sekunden vorher vorspulen, «warn» = [Sekunden, Text der Warnung].

@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-11 21:28",
+ "generated": "2026-11-11 23:06",
  "versions": [
+  {
+   "version": "3.78.0",
+   "file": "webcam_bewegung_3_78_0.py",
+   "url": "",
+   "sha256": "06c88eac19fbafc28d1f76705bd355aba191648777fe4a525cf5f6891c7c01ea",
+   "date": "2026-11-11 23:06",
+   "notes": "«Was nun?»: fünf neue Bilder (jetzt 15), noch schwieriger, mit der neuen Stufe «Meister+»; Bilder mit mehreren Räumen und gegen die Zeit; ein Notizbuch sammelt gefundene Hinweise; Bestzeit pro Bild; bisherige Sterne bleiben erhalten.",
+   "size": 3923006,
+   "sig": "50fc93ca827d37a803d098d5ca56598da80646ec0a7e0f42297862cbfff2d8e443f04caf2c0dc937f237f73c29cfef3f2e99a7958e739133f5d26b9e3b8ef505",
+   "data": {
+    "file": "moveeye_daten_3_78_0.zip",
+    "url": "",
+    "sha256": "669826493471521449028bcac21f27d548eaa645d0954293b2b31b7c958f4aed",
+    "size": 4940128,
+    "sig": "4fc8de9fbca33bd339beaca5ff3385d5d09e9577981fa7122f1fe435dee08b113478833d39f27651e5f0f66e3e1be02425392596b632b44accb0c5dd9be8480b"
+   }
+  },
   {
    "version": "3.77.0",
    "file": "webcam_bewegung_3_77_0.py",
    "url": "",
    "sha256": "c9f749e5d38e83f2cd0a06a75d7dd8e8893f5b645d416d55c9bc27610bccc7f0",
-   "date": "2026-11-11 21:28",
+   "date": "2026-11-11 22:06",
    "notes": "Schach zu zweit mit je einem Handy: Ein Handy erstellt ein Spiel und zeigt einen kurzen Code (oder QR-Code), das andere tritt bei. Die Partie läuft über dein MoveEye, auch für Gäste, solange «Spiele freigeben» an ist. Remis anbieten, Zug zurück auf Anfrage, Revanche, Zuschauen mit dem Code; nach einer Verbindungspause geht es von selbst weiter. Spielesammlung einmal neu laden: Mehr → Spielen → Spielecke → «Installieren / aktualisieren»",
    "size": 3923070,
    "sig": "b3830e7e8c8458014864c632826310d0f4fa0031e7b2d7b18efc57d1c9351a25575a077265df9e3238a8b436e4a1c5403307c21f9152428f91b09f3fdb0c1c0d",
@@ -136,23 +153,6 @@
     "sha256": "da7c35e25b21998b626f6c09ed54319e2dc05fe4f5d3570aa037be929784cfdd",
     "size": 4908374,
     "sig": "a58624852722c558b25c075a768ca51b324e14941e27b3a3f4515c04007da59ae70183e0bf28015cfc8086cbf04c826b2ec2be64ebc4087efb7277f00f248d01"
-   }
-  },
-  {
-   "version": "3.69.2",
-   "file": "webcam_bewegung_3_69_2.py",
-   "url": "",
-   "sha256": "335134d10331ae6cd6489b957a8b6a7187e29cb756e861b5e0a425e033fdcc63",
-   "date": "2026-11-09 18:29",
-   "notes": "Spielecke über https: die Bilder der Kacheln (Kevlaschef, Quantum, FOTAQ) erscheinen wieder – sie kommen jetzt vom gleichen Server wie die Seite",
-   "size": 3816329,
-   "sig": "07af2c1c85cbf0317f9f594e9b612dfea6b69fb3a2f4a31585a9f7a2dcb35339f9b6feac716fff2a70bd2fb065a71a7f5b6fdafe295c9ef525621b6f5fffb708",
-   "data": {
-    "file": "moveeye_daten_3_69_2.zip",
-    "url": "",
-    "sha256": "17fd3db716560c8056e9ac75af77e5508a91ee2a0723891856e4c82524b2959f",
-    "size": 4904892,
-    "sig": "8797d2808af6bb4f38049c14896bc2f2fd6191e6575ef933abff900b57a7a9d9335a6a50d4d8e263feacb452878809d977644d7162d3ac660c343f585f4bcf09"
    }
   },
   {
