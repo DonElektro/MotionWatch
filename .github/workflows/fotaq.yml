@@ -10,6 +10,10 @@
 #   Danach Grösse + sha256 (pins.txt / Release-Notiz) in FOTAQ_FILES (quelle/639zzg_fotaq.py) eintragen.
 # GPL: ScummVM-Quellcode = Tag STV (Commit STV_COMMIT) + die Patches in werkzeuge/fotaq/ + dieser Ablauf, alles öffentlich.
 # Getestet: Probe fotaqprobe-2 (Lauf 42596443429, 09.11.2026, auf dem Zweig mw-fotaq mit vorübergehendem Push-Start), wieder gelöscht.
+# iPhone-Test (Job «ios», werkzeuge/fotaq/ios/, VARIANTEN.md dort): baut Test-Varianten der Engine (Spieldaten in Stücken statt
+# ganz im Speicher, kleine Funktionen gegen WebKit-Fehler 304810), misst sie (grösste Funktionen, Speicher der Seite) und legt
+# mit «probe» das Testpaket fotaq-iostest-N.zip an die Vorabversion «fotaqios-<Lauf>» (MoveEye Teil 639zzs lädt es gepinnt).
+#   … -f ref=<zweig> -f 'inputs[ios]=messen'   ·   … -f 'inputs[ios]=probe'   ·   wegräumen: … -f 'inputs[loeschen]=fotaqios-N'
 # Keine Geheimnisse: nur GITHUB_TOKEN.
 name: FOTAQ
 on:
@@ -24,8 +28,13 @@ on:
         description: "Tag für «echt» (fotaq-N)"
         default: fotaq-1
       loeschen:
-        description: "Statt bauen: Probe-Release + Tag löschen (nur fotaqprobe-N, nur Vorabversion)"
+        description: "Statt bauen: Probe-Release + Tag löschen (nur fotaqprobe-N / fotaqios-N, nur Vorabversion)"
         default: ""
+      ios:
+        description: "iPhone-Test (werkzeuge/fotaq/ios): nein · messen (Varianten bauen, messen, im Browser testen) · probe (dazu Vorabversion fotaqios-<Lauf> mit dem Testpaket)"
+        type: choice
+        options: [nein, messen, probe]
+        default: nein
 permissions:
   contents: write
 concurrency:
@@ -46,7 +55,7 @@ env:
 jobs:
   bauen:
     name: FOTAQ · ${{ inputs.release || 'keins' }}
-    if: github.repository == 'DonElektro/MotionWatch' && inputs.loeschen == ''
+    if: github.repository == 'DonElektro/MotionWatch' && inputs.loeschen == '' && (inputs.ios || 'nein') == 'nein'
     runs-on: ubuntu-24.04
     timeout-minutes: 90
     steps:
@@ -214,19 +223,152 @@ jobs:
           done
           echo "latest bleibt: $(gh api repos/$GITHUB_REPOSITORY/releases/latest --jq .tag_name)"
 
+  ios:
+    name: FOTAQ iPhone-Test · ${{ inputs.ios }}
+    if: github.repository == 'DonElektro/MotionWatch' && inputs.loeschen == '' && (inputs.ios || 'nein') != 'nein'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    env:
+      IOS: ${{ inputs.ios }}
+      TAG: fotaqios-${{ github.run_number }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prüfen (Vorabversion noch nicht da)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          if [ "$IOS" = "probe" ] && gh release view "$TAG" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then echo "::error::Release $TAG gibt es schon"; exit 1; fi
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+      - name: Spieldaten holen und prüfen (sha256)
+        run: |
+          set -e
+          mkdir -p "$RUNNER_TEMP/dl" && cd "$RUNNER_TEMP/dl"
+          for z in "$DE_ZIP" "$EN_ZIP"; do curl -fsSL --retry 3 -o "$z" "$DL/$z"; done
+          echo "$DE_SHA256  $DE_ZIP" | sha256sum -c -; echo "$EN_SHA256  $EN_ZIP" | sha256sum -c -
+          printf '%s %s %s\n%s %s %s\n' "$DE_ZIP" "$DE_SHA256" "$DL/$DE_ZIP" "$EN_ZIP" "$EN_SHA256" "$DL/$EN_ZIP" > "$RUNNER_TEMP/quellen.txt"
+      - name: ScummVM ${{ env.STV }} holen, Patches von MoveEye + Patches des iPhone-Tests
+        run: |
+          set -e
+          git clone -q --depth 1 --branch "$STV" https://github.com/scummvm/scummvm "$RUNNER_TEMP/scummvm"
+          c=$(git -C "$RUNNER_TEMP/scummvm" rev-parse HEAD)
+          [ "$c" = "$STV_COMMIT" ] || { echo "::error::$STV ist $c, nicht $STV_COMMIT"; exit 1; }
+          for p in werkzeuge/fotaq/*.patch werkzeuge/fotaq/ios/*.patch; do echo "== $p"; git -C "$RUNNER_TEMP/scummvm" apply --verbose "$GITHUB_WORKSPACE/$p"; done
+          grep -q "EMSDK_VERSION:-$EMSDK_VERSION" "$RUNNER_TEMP/scummvm/dists/emscripten/build.sh" || { echo "::error::build.sh nutzt ein anderes emsdk"; exit 1; }
+      - name: emsdk und Bibliotheken (Cache)
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ${{ runner.temp }}/scummvm/dists/emscripten/emsdk-${{ env.EMSDK_VERSION }}
+            ${{ runner.temp }}/scummvm/dists/emscripten/libs
+          key: fotaq-emsdk-${{ env.EMSDK_VERSION }}-mad-${{ env.STV }}-1
+      - name: Variante A bauen und messen
+        run: bash werkzeuge/fotaq/ios/bauen.sh a "$RUNNER_TEMP/scummvm" "$RUNNER_TEMP/ios"
+      - name: Variante B bauen und messen
+        run: bash werkzeuge/fotaq/ios/bauen.sh b "$RUNNER_TEMP/scummvm" "$RUNNER_TEMP/ios"
+      - name: Lizenztexte der Bibliotheken sammeln
+        run: |
+          set -e
+          L="$RUNNER_TEMP/libl"; mkdir -p "$L"
+          E="$RUNNER_TEMP/scummvm/dists/emscripten/emsdk-$EMSDK_VERSION/upstream/emscripten"
+          cp "$E/LICENSE" "$L/Emscripten_LICENSE.txt"
+          for port in sdl3 vorbis ogg zlib libpng; do
+            for f in $(find "$E/cache/ports" -maxdepth 3 -path "*$port*" \( -iname 'COPYING*' -o -iname 'LICENSE*' \) -type f 2>/dev/null | head -3); do
+              cp "$f" "$L/${port}_$(basename "$f" .txt).txt"; done
+          done
+          cp "$RUNNER_TEMP/scummvm/dists/emscripten/libs/libmad-0.15.1b/COPYING" "$L/libmad_COPYING.txt"
+          for need in sdl3 vorbis ogg zlib libmad; do ls "$L" | grep -q "^$need" || { echo "::error::Lizenztext $need fehlt"; exit 1; }; done
+      - name: Pakete bauen (je Variante wie fotaq-N zum Prüfen; das Testpaket mit beiden Varianten)
+        run: |
+          set -e
+          for v in a b; do
+            python3 -I werkzeuge/fotaq/fotaq_paket.py --build "$RUNNER_TEMP/ios/$v" --src "$RUNNER_TEMP/scummvm" \
+              --de "$RUNNER_TEMP/dl/$DE_ZIP" --en "$RUNNER_TEMP/dl/$EN_ZIP" --lizenzen "$RUNNER_TEMP/libl" --tag "fotaqprobe-$GITHUB_RUN_NUMBER" --stv "$STV" \
+              --stv-commit "$STV_COMMIT" --commit "$sha" --quellen "$(cat "$RUNNER_TEMP/quellen.txt")" --aus "$RUNNER_TEMP/out_$v" > /dev/null
+            grep '^SIZE' "$RUNNER_TEMP/out_$v/pins.txt"
+          done
+          if [ -f werkzeuge/fotaq/ios/ios_paket.py ]; then
+            python3 -I werkzeuge/fotaq/ios/ios_paket.py --ios "$RUNNER_TEMP/ios" --paket "$RUNNER_TEMP/out_b/fotaq" --tag "$TAG" --stv "$STV" \
+              --stv-commit "$STV_COMMIT" --commit "$sha" --aus "$RUNNER_TEMP/test"
+            cat "$RUNNER_TEMP/test/pins.txt"
+          fi
+      - name: Stand heute zum Vergleich (Engine von fotaq-1, öffentliches Release-Asset, sha256 fest)
+        run: |
+          set -e
+          B="$RUNNER_TEMP/basis/fotaq"; mkdir -p "$B"
+          curl -fsSL --retry 3 -o "$RUNNER_TEMP/e1.zip" "https://github.com/$GITHUB_REPOSITORY/releases/download/fotaq-1/fotaq-engine-1.zip"
+          echo "6feab69b314ecc491f011ab9eaa0d0df670bd5be86e908c66e7491559ac31de5  $RUNNER_TEMP/e1.zip" | sha256sum -c -
+          unzip -q "$RUNNER_TEMP/e1.zip" -d "$B"
+          cp -r "$RUNNER_TEMP/out_b/fotaq/data/games/de" "$RUNNER_TEMP/out_b/fotaq/data/games/en" "$B/data/games/"
+          cp "$RUNNER_TEMP/out_b/fotaq/data/games/index.json" "$B/data/games/index.json"
+          python3 -I werkzeuge/fotaq/ios/wasm_funktionen.py "$B/scummvm.wasm" --top 5
+      - name: Im Browser testen und messen (Chromium als Handy; echtes Safari gibt es hier nicht)
+        run: |
+          set -e
+          pip install -q playwright==1.49.1 pillow
+          python3 -m playwright install --with-deps chromium > /dev/null
+          mkdir -p "$RUNNER_TEMP/bilder"
+          export MW_FOTAQ_NUR=handy
+          echo "== Stand heute (fotaq-1)"; python3 werkzeuge/spiele_test.py --nur-fotaq --fotaq "$RUNNER_TEMP/basis/fotaq" || echo "::warning::Stand heute: Test meldet Fehler"
+          for v in a b; do
+            echo "== Variante $v (Seite von fotaq-N)"; python3 werkzeuge/spiele_test.py --nur-fotaq --fotaq "$RUNNER_TEMP/out_$v/fotaq" --bilder "$RUNNER_TEMP/bilder/$v"
+          done
+          if [ -f werkzeuge/fotaq_iostest.py ] && [ -d "$RUNNER_TEMP/test/fotaqtest" ]; then
+            echo "== Testpaket (Seite des iPhone-Tests)"
+            python3 werkzeuge/fotaq_iostest.py --paket "$RUNNER_TEMP/test/fotaqtest" --daten "$RUNNER_TEMP/out_b/fotaq/data/games" --bilder "$RUNNER_TEMP/bilder/test"
+          fi
+      - name: Bilder und Protokolle als Artefakt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fotaq-ios-${{ github.run_number }}
+          path: |
+            ${{ runner.temp }}/bilder
+            ${{ runner.temp }}/ios/*.txt
+            ${{ runner.temp }}/ios/*.log
+            ${{ runner.temp }}/test/pins.txt
+          retention-days: 14
+          if-no-files-found: ignore
+      - name: Vorabversion anlegen (Testpaket), zurücklesen
+        if: env.IOS == 'probe'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          O="$RUNNER_TEMP/test"; N="${TAG#*-}"
+          {
+            echo "TESTPAKET (Vorabversion) – «Flight of the Amazon Queen» für den Versuch auf iPhone / iPad. Ersetzt das Spiel NICHT."
+            echo
+            echo "ScummVM $STV (© The ScummVM Team, GPL v3 oder später), nur die Queen-Engine, als WebAssembly, in Test-Varianten gebaut."
+            echo "Quellcode: https://github.com/scummvm/scummvm/tree/$STV (Commit $STV_COMMIT)"
+            echo "Patches und Bau-Ablauf von MoveEye: https://github.com/$GITHUB_REPOSITORY/tree/$sha/werkzeuge/fotaq · https://github.com/$GITHUB_REPOSITORY/blob/$sha/.github/workflows/fotaq.yml"
+            echo "Keine Spieldaten im Paket (die kommen aus dem installierten fotaq-1)."
+            echo
+            sed 's/^PIN /pin: /' "$O/pins.txt"
+            echo "commit: $sha"
+            echo "lauf: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          } > notes.md
+          cp "$O/fotaqtest/LIZENZEN.txt" "$O/LIZENZEN.txt"
+          gh release create "$TAG" "$O/fotaq-iostest-$N.zip" "$O/pins.txt" "$O/LIZENZEN.txt" -R "$GITHUB_REPOSITORY" --target "$sha" \
+            --title "Probe · FOTAQ iPhone-Test" --notes-file notes.md --prerelease --latest=false
+          mkdir -p "$RUNNER_TEMP/zurueck"
+          gh release download "$TAG" -R "$GITHUB_REPOSITORY" -p 'fotaq-iostest-*.zip' -D "$RUNNER_TEMP/zurueck"
+          s=$(grep "^PIN fotaq-iostest-$N.zip " "$O/pins.txt" | sed 's/.*sha256=\([0-9a-f]*\).*/\1/'); echo "$s  $RUNNER_TEMP/zurueck/fotaq-iostest-$N.zip" | sha256sum -c -
+          echo "latest bleibt: $(gh api repos/$GITHUB_REPOSITORY/releases/latest --jq .tag_name)"
+
   weg:
     name: Probe löschen · ${{ inputs.loeschen }}
     if: github.repository == 'DonElektro/MotionWatch' && inputs.loeschen != ''
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
-      - name: Probe-Release und Tag löschen (nur fotaqprobe-N, nur Vorabversion, nie «latest»)
+      - name: Probe-Release und Tag löschen (nur fotaqprobe-N / fotaqios-N, nur Vorabversion, nie «latest»)
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ inputs.loeschen }}
         run: |
           set -e
-          echo "$TAG" | grep -Eq '^fotaqprobe-[0-9]+$' || { echo "::error::nur fotaqprobe-N, nicht $TAG"; exit 1; }
+          echo "$TAG" | grep -Eq '^fotaq(probe|ios)-[0-9]+$' || { echo "::error::nur fotaqprobe-N / fotaqios-N, nicht $TAG"; exit 1; }
           pre=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" --jq .prerelease)
           [ "$pre" = "true" ] || { echo "::error::$TAG ist keine Vorabversion - nicht gelöscht"; exit 1; }
           [ "$TAG" != "$(gh api repos/$GITHUB_REPOSITORY/releases/latest --jq .tag_name)" ] || { echo "::error::$TAG ist latest"; exit 1; }

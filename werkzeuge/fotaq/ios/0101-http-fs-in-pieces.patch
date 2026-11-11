@@ -1,0 +1,191 @@
+diff --git a/backends/fs/emscripten/http-fs.cpp b/backends/fs/emscripten/http-fs.cpp
+index 8d2c429..dc93550 100644
+--- a/backends/fs/emscripten/http-fs.cpp
++++ b/backends/fs/emscripten/http-fs.cpp
+@@ -31,6 +31,8 @@
+ #include "backends/fs/posix/posix-iostream.h"
+ #include "common/debug.h"
+ #include "common/formats/json.h"
++#include "common/stream.h"
++#include "common/util.h"
+ #include <emscripten.h>
+ 
+ HTTPFilesystemNode::HTTPFilesystemNode(const Common::String &path, const Common::String &displayName, const Common::String &baseUrl, bool isValid, bool isDirectory, int size) : _path(path), _displayName(displayName), _url(baseUrl), _isValid(isValid), _isDirectory(isDirectory), _size(size) {
+@@ -139,6 +141,167 @@ EM_ASYNC_JS(bool, _httpFsFetchFile, (const char *url, byte *dataPtr, int dataSiz
+ 	return false;
+ });
+ 
++// MoveEye (iOS test): files are read in pieces (HTTP range requests), not loaded whole into the memory of the page.
++// Synchronous request: works in every call context (no Asyncify needed for reading), the server is in the own network.
++// A server without range support answers 200 with the whole file: kept once in JavaScript (small files only).
++EM_JS(int, _httpFsReadChunk, (const char *url, double offset, int len, byte *dst), {
++	url = UTF8ToString(url);
++	if (url.startsWith("/")) url = url.substring(1);
++	var whole = globalThis['httpFsWhole'] = globalThis['httpFsWhole'] || {};
++	var st = globalThis['httpFsStat'] = globalThis['httpFsStat'] || {requests: 0, bytes: 0, errors: 0, last: ""};
++	try {
++		var t = whole[url];
++		var i = 0;
++		if (t === undefined) {
++			var x = new XMLHttpRequest();
++			x.open("GET", url, false);
++			x.overrideMimeType("text/plain; charset=x-user-defined");
++			x.setRequestHeader("Range", "bytes=" + offset + "-" + (offset + len - 1));
++			x.send(null);
++			st.requests++;
++			st.last = url;
++			if (x.status === 206) {
++				t = x.responseText;
++				if (t.length !== len) {
++					st.errors++;
++					console.error("httpFs: %s: got %d bytes instead of %d", url, t.length, len);
++					return 0;
++				}
++				for (i = 0; i < len; i++) HEAPU8[dst + i] = t.charCodeAt(i) & 255;
++				st.bytes += len;
++				return len;
++			}
++			if (x.status !== 200) {
++				st.errors++;
++				console.error("httpFs: %s: HTTP %d", url, x.status);
++				return 0;
++			}
++			t = x.responseText;
++			st.bytes += t.length;
++			if (t.length <= 16777216) whole[url] = t;
++		}
++		if (offset + len > t.length) {
++			st.errors++;
++			console.error("httpFs: %s: file shorter than its index entry", url);
++			return 0;
++		}
++		for (i = 0; i < len; i++) HEAPU8[dst + i] = t.charCodeAt(offset + i) & 255;
++		return len;
++	} catch (error) {
++		st.errors++;
++		console.error(error);
++		return 0;
++	}
++});
++
++#define HTTPFS_CHUNK_BITS 18
++#define HTTPFS_CHUNK_SIZE (1 << HTTPFS_CHUNK_BITS)
++#define HTTPFS_CHUNK_SLOTS 32
++
++struct HTTPChunkSlot {
++	Common::String url;
++	int32 index;
++	uint32 stamp;
++	byte *data;
++};
++
++static HTTPChunkSlot *g_httpChunkSlots = nullptr;
++static uint32 g_httpChunkStamp = 0;
++
++// one piece of a file from the cache (least recently used piece is replaced); nullptr = could not be loaded
++static const byte *httpFsChunk(const Common::String &url, int32 index, int32 len) {
++	if (!g_httpChunkSlots) {
++		g_httpChunkSlots = new HTTPChunkSlot[HTTPFS_CHUNK_SLOTS];
++		for (int i = 0; i < HTTPFS_CHUNK_SLOTS; i++) {
++			g_httpChunkSlots[i].index = -1;
++			g_httpChunkSlots[i].stamp = 0;
++			g_httpChunkSlots[i].data = nullptr;
++		}
++	}
++	int victim = 0;
++	for (int i = 0; i < HTTPFS_CHUNK_SLOTS; i++) {
++		HTTPChunkSlot &s = g_httpChunkSlots[i];
++		if (s.index == index && s.data && s.url == url) {
++			s.stamp = ++g_httpChunkStamp;
++			return s.data;
++		}
++		if (s.stamp < g_httpChunkSlots[victim].stamp)
++			victim = i;
++	}
++	HTTPChunkSlot &v = g_httpChunkSlots[victim];
++	if (!v.data)
++		v.data = (byte *)malloc(HTTPFS_CHUNK_SIZE);
++	if (!v.data)
++		return nullptr;
++	v.index = -1;
++	if (_httpFsReadChunk(url.c_str(), (double)index * HTTPFS_CHUNK_SIZE, len, v.data) != len) {
++		v.stamp = 0;
++		return nullptr;
++	}
++	v.url = url;
++	v.index = index;
++	v.stamp = ++g_httpChunkStamp;
++	return v.data;
++}
++
++class HTTPChunkStream : public Common::SeekableReadStream {
++	Common::String _url;
++	int64 _size;
++	int64 _pos;
++	bool _eos;
++	bool _err;
++
++public:
++	HTTPChunkStream(const Common::String &url, int64 size) : _url(url), _size(size), _pos(0), _eos(false), _err(false) {}
++
++	bool eos() const override { return _eos; }
++	bool err() const override { return _err; }
++	void clearErr() override {
++		_eos = false;
++		_err = false;
++	}
++	int64 pos() const override { return _pos; }
++	int64 size() const override { return _size; }
++
++	bool seek(int64 offset, int whence = SEEK_SET) override {
++		int64 p = offset;
++		if (whence == SEEK_CUR)
++			p = _pos + offset;
++		else if (whence == SEEK_END)
++			p = _size + offset;
++		if (p < 0 || p > _size)
++			return false;
++		_pos = p;
++		_eos = false;
++		return true;
++	}
++
++	uint32 read(void *dataPtr, uint32 dataSize) override {
++		byte *dst = (byte *)dataPtr;
++		uint32 done = 0;
++		if ((int64)dataSize > _size - _pos) {
++			dataSize = (uint32)(_size - _pos);
++			_eos = true;
++		}
++		while (done < dataSize) {
++			int32 index = (int32)(_pos >> HTTPFS_CHUNK_BITS);
++			int32 off = (int32)(_pos & (HTTPFS_CHUNK_SIZE - 1));
++			int64 left = _size - ((int64)index << HTTPFS_CHUNK_BITS);
++			int32 len = left < HTTPFS_CHUNK_SIZE ? (int32)left : HTTPFS_CHUNK_SIZE;
++			const byte *c = httpFsChunk(_url, index, len);
++			if (!c) {
++				_err = true;
++				break;
++			}
++			uint32 n = MIN<uint32>(dataSize - done, (uint32)(len - off));
++			memcpy(dst + done, c + off, n);
++			done += n;
++			_pos += n;
++		}
++		return done;
++	}
++};
++
+ bool HTTPFilesystemNode::getChildren(AbstractFSList &myList, ListMode mode, bool hidden) const {
+ 	if (!_isValid) {
+ 		return false;
+@@ -218,6 +381,9 @@ AbstractFSNode *HTTPFilesystemNode::getParent() const {
+ 
+ Common::SeekableReadStream *HTTPFilesystemNode::createReadStream() {
+ 	debug(5, "*HTTPFilesystemNode::createReadStream() %s (size %d) ", _path.c_str(), _size);
++	// MoveEye (iOS test): read in pieces over HTTP instead of copying the whole file into the memory file system
++	if (_size > 0)
++		return new HTTPChunkStream(_url, _size);
+ 	Common::String fsCachePath = Common::normalizePath("/.cache/" + _path, '/');
+ 	POSIXFilesystemNode *cacheFile = new POSIXFilesystemNode(fsCachePath);
+ 	// todo: this should not be cached on the filesystem, but in memory
