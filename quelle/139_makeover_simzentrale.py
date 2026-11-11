@@ -150,7 +150,7 @@ SIMHUB_JS = r"""
     "week-note": "Sonntags zur Stunde des Nacht-Tests ein Testlauf «standard». Ist er klar schlechter als letzte Woche, kommt ein Push.", "2nd device": "2. Gerät", "P_opposite": "gegenüber", "P_door": "bewacht Zelt / Tür", "P_bike": "bewacht Velo",
     "P_car": "bewacht Auto", "P_left": "links", "P_right": "rechts", "Mover": "Mover", "M_alarm": "fährt zum Alarm", "M_dock": "fährt zur Ladestation", "M_goto": "fährt hin",
     "patrols": "patrouilliert", "charging": "lädt", "ready": "bereit", "Statistics & versions": "Statistik & Versionen", "4 weeks, per version": "4 Wochen, pro Version",
-    "Second device in the simulator": "Zweites Gerät im Simulator", "dev-note": "Ein zweites MoveEye verbindet sich mit Port 8785 des Simulators (z. B. eine zweite Kopie auf dem PC). Unter Kameras → Geräte hinzufügen: dann meldet MoveEye die Übergabe, wenn eine Person von einem Gerät zum anderen geht.",
+    "Second device in the simulator": "Zweites Gerät im Simulator", "A second MoveEye connects to port 8785 of the simulator (e.g. a second copy on the PC). Add it under Cameras → Devices: then MoveEye reports the handover when a person walks from one device to the other.": "Ein zweites MoveEye verbindet sich mit Port 8785 des Simulators (z. B. eine zweite Kopie auf dem PC). Unter Kameras → Geräte hinzufügen: dann meldet MoveEye die Übergabe, wenn eine Person von einem Gerät zum anderen geht.",
     "Patrol": "Patrouille", "Drive to the alarm": "Zum Alarm fahren", "To the charger": "Zur Ladestation", "At a person alarm: drive there by itself": "Bei Personen-Alarm von selbst hinfahren",
     "rover-note": "Akku hält etwa 30 Minuten Fahrt; unter 20 % fährt der Mover von selbst zur Ladestation.",
     "Visits (blue) and persons recognised in % (green), 4 weeks": "Besuche (blau) und erkannte Personen in % (grün), 4 Wochen", "Per MoveEye version": "Pro MoveEye-Version", "test": "Test",
@@ -195,7 +195,7 @@ SIMHUB_JS = r"""
     if (kind === "devices") {
       s.appendChild(B((H.dev2 ? "✓ " : "") + tt("Second device in the simulator"), () => act("dev2", !H.dev2), H.dev2 ? "" : "sec"));
       ["opposite", "door", "bike", "car", "left", "right"].forEach(p => s.appendChild(B(tt("P_" + p), () => act("dev2_place", p), H.dev2_place === p ? "" : "sec")));
-      s.appendChild(E("div", "mut", tt("dev-note")));
+      s.appendChild(E("div", "mut", tt("A second MoveEye connects to port 8785 of the simulator (e.g. a second copy on the PC). Add it under Cameras → Devices: then MoveEye reports the handover when a person walks from one device to the other.")));
     }
     if (kind === "rover") { const R = H.rover || {};
       s.append(B("▶ " + tt("Patrol"), () => act("rover", "patrol")), B("⏹ " + tt("Stop"), () => act("rover", "patrol_off")), B("🚨 " + tt("Drive to the alarm"), () => act("rover", "alarm")),
@@ -545,6 +545,8 @@ def sim_twin_info():
         return {}
 
 
+# 639zzm: the note of «Second device in the simulator» (SIMHUB_JS) has its English text as key - «dev-note» is also the
+# report note of the simulator page (470), so the card showed that text; fr / it / rm of the new key are in 639zzm.
 # Code-Prüfung K6: «camera height» of the twin line (SIMHUB_JS, tt) in fr / it / rm too - before, the German text showed there
 for _k, _v in {"camera height": ("hauteur de la caméra", "altezza della telecamera", "autezza da la camera")}.items():
     for _i, _L in enumerate(("fr", "it", "rm")):
