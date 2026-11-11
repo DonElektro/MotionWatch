@@ -44,7 +44,7 @@ das Spiel, die Spielfläche zeigt ein Bild, keine JavaScript-Fehler), prüft die
 (lange drücken, «🖱 Rechts»), «☰ Menü» und am PC Schnellspeichern (F11) mit Spielstand in IndexedDB nach dem Neuladen.
 Fehlt das Paket, wird der Teil übersprungen.
 
-«Was nun?» (eigenes Bilder-Rätsel, Quelle games/wasnun/, mit ?test=1): jedes der 10 Bilder wird am Handy (hoch und quer)
+«Was nun?» (eigenes Bilder-Rätsel, Quelle games/wasnun/, mit ?test=1): jedes der 15 Bilder wird am Handy (hoch und quer)
 und am PC bis zum Sternebild gelöst; lustige falsche Stellen kosten nichts, das Geheimnis zählt, eine Sackgasse spult genau
 einen Schritt zurück, der Tipp zeigt die Gegend und gibt höchstens 1 Stern, Tipp-Flächen mindestens 44 px, Fortschritt
 bleibt nach dem Neuladen und das Spiel läuft ohne Speicher. Ab Bild 6 (GS-1.12) dazu: Dinge wählen / abwählen, jede
@@ -53,7 +53,9 @@ Leiste, jeder Lösungsweg samt Abzeichen «Meister-Lösung», Tipps für Dinge u
 bleibt erhalten, und je Bild 150 zufällige Tipps, nach denen es noch lösbar sein muss. Ab GS-1.14: Versatz-Test – ein
 Tipp auf die sichtbare Mitte einer Stelle (oben, Mitte, unten) und eines Platzes der Leiste muss genau dort ankommen, und
 das Bild darf nach dem Tipp nicht rutschen (hochkant, auch gerollt / niedriges Fenster / Ränder / 320 px, und quer);
-der versteckte Tipp-Test (?tipp=1 oder fünfmal auf den Titel) ist sonst aus. WN_VERSATZ_ALT=1 prüft auch eine alte ZIP. Für den Stand der Quelle
+der versteckte Tipp-Test (?tipp=1 oder fünfmal auf den Titel) ist sonst aus. Ab GS-1.15 (Bilder 11-15): Räume (Zustand bleibt
+beim Wechseln), Notizbuch (Einträge, bleibt beim Zurückspulen, Blatt auf/zu), Zeitdruck (Warnung, dann zurück zum Haltepunkt,
+alles bleibt, ein Fehlversuch), Bestzeit, Spielstand aus GS-1.14; Zufalls-Lauf 60 Tipps je Bild ab 6, mit --gross 300. WN_VERSATZ_ALT=1 prüft auch eine alte ZIP. Für den Stand der Quelle
 (solange die ZIP ihn nicht enthält):
 python3 werkzeuge/spiel_einbauen.py games/wasnun --nach /tmp/t.zip && python3 werkzeuge/spiele_test.py --zip /tmp/t.zip --nur wasnun
 
@@ -548,8 +550,35 @@ WN2 = {
     "uhrturm": {"gags": ["kuckuck", "luecke", "ra", "trommel", "pendel", "riesen", "blatt", "luke", "gewicht"], "geheim": "spinne",
                 "sack": [{"vor": "s.gewicht === 'oben' && s.rad === 'drin'", "tu": [["s", "pendel"]]}]},
 }
+# ab Bild 11 (GS-1.15): mehrere Räume («r:id» = Stelle im Raum r; das Spiel liefert die Tür dorthin), Notizbuch, Bestzeit,
+# Zeitdruck. sack-Einträge: art «sack» (Sackgasse, spult genau einen Schritt zurück, Standard), «fehl» (ein Fehlversuch,
+# nichts spult) oder «zeit» (die Zeit läuft ab: vorspulen, dann spult das Bild zum Haltepunkt zurück, alles Erreichte bleibt
+# bis auf die Felder in «frei»); «spulen» = so viele Sekunden vorher vorspulen, «warn» = [Sekunden, Text der Warnung].
+# notizen: was nach dem ersten Durchgang (Weg 1) im Notizbuch stehen muss.
+WN3 = {
+    "uboot": {"gags": ["0:kapitaen", "0:rad", "0:bullauge", "0:sw1", "0:pegel", "1:tuch", "1:torpedo", "1:feuer", "1:matrose", "1:bug", "1:leck",
+                       "2:kaputt", "2:gen", "2:ente", "2:werkzeug", "2:pumpe"], "geheim": "0:sehrohr", "notizen": ["zettel", "tiefe"],
+              "sack": [{"art": "zeit", "vor": "true", "warn": ["(66 - (s.w0 + 0.45 * (__wn.zeit() - s.wt))) / 0.45", "Achtung|Alarm"], "spulen": 200, "frei": ["w0", "wt", "warn"], "behalten": "s.w0 === 40 && s.leck"},
+                       {"vor": "true", "tu": [["g", 0], ["s", "hebel"]]}, {"vor": "true", "tu": [["g", 0], ["s", "luke"]]}]},
+    "bahnhof": {"gags": ["0:uhr", "0:reisender", "0:automat", "0:taube", "0:korb", "0:schranke", "0:katze", "0:tuer",
+                         "1:telefon", "1:fenster", "1:kocher", "1:muetze", "1:buch", "1:gleisbild"], "geheim": "0:laterne", "notizen": ["fahrplan", "gelb", "gleise"],
+                "sack": [{"art": "zeit", "vor": "s.auf", "warn": ["s.frist - (__wn.zeit() - s.ab) - 60", "pfeift"], "spulen": 260, "frei": ["ab", "frist", "warn"], "behalten": "s.auf && s.frist === 100"},
+                         {"vor": "s.rohr === 'hebel'", "tu": [["g", 1], ["s", "signal"]]}, {"vor": "s.w1", "tu": [["g", 1], ["s", "signal"]]}]},
+    "sternwarte": {"gags": ["uhr", "spalt", "astronom", "fernglas", "kugel", "papagei", "katze", "rohr"], "geheim": "fenster", "notizen": ["karte", "schatten", "tagebuch"],
+                   "sack": [{"vor": "s.okular === 'drin'", "tu": [["s", "klappe"], ["s", "lampe"]]},
+                            {"art": "fehl", "vor": "s.klappe && s.dir === 1 && s.alt === 1", "spulen": 40, "tu": [["s", "kuppelrad"], ["s", "rohr"]]}]},
+    "burg": {"gags": ["0:fackel", "0:hellebarde", "0:bruecke", "0:loch", "0:winde", "1:glocke", "1:rabe", "1:kugeln", "1:fenster", "1:seil",
+                      "2:fass", "2:schinken", "2:kerze", "2:ratte", "2:gitter", "3:baecker", "3:hbruecke", "3:frosch", "3:kette", "3:schwan"],
+             "geheim": "3:nebel", "notizen": ["tafel", "kette"],
+             "sack": [{"vor": "s.tafel", "tu": [["g", 0], ["s", "riegel"]]}, {"vor": "s.tafel", "tu": [["g", 1], ["s", "kanone"]]}]},
+    "erfinder": {"gags": ["start", "eimer", "wippe", "kuckuck", "knopf2", "ballon", "kroneRegal", "erfinder", "turbo", "badeente", "luecke", "giess", "windrad", "lampe", "kessel"],
+                 "geheim": "glas", "notizen": ["plan", "kessel"], "sack": [{"vor": "s.apfel && !s.kessel", "tu": [["s", "start"]]}]},
+}
+WN_ALT2 = ('{"sterne":{"garten":3,"zeltplatz":3,"alp":3,"werkstatt":3,"kueche":2,"weiher":3,"dachboden":2,"leuchtturm":3,"museum":3,"uhrturm":2},'
+           '"geheim":{"garten":1,"alp":1,"weiher":1,"museum":1},"meister":{"museum":1},"stumm":false}')   # ein Spielstand aus 3.76.1 (GS-1.14, 10 Bilder)
+WN_GROSS = {"an": False}      # --gross: der Zufalls-Lauf macht 300 statt 60 Tipps je Bild
 WN_ALT = '{"sterne":{"garten":3,"zeltplatz":2,"alp":3,"werkstatt":1,"kueche":2},"geheim":{"garten":1,"alp":1},"stumm":false}'   # ein Spielstand aus 3.73.0 (GS-1.11)
-WN_Z = "() => ({z: JSON.stringify(__wn.S.zustand), fehler: __wn.S.fehler, tipp: __wn.S.tipp, spul: __wn.S.spul, fertig: __wn.S.fertig, next: (__wn.next ? __wn.next() : __wn.naechster()), tasche: (__wn.S.zustand.tasche || []).join(','), wahl: __wn.S.wahl})"
+WN_Z = "() => ({z: JSON.stringify(Object.assign({}, __wn.S.zustand, {warn: 0})), raum: __wn.S.zustand.raum, fehler: __wn.S.fehler, tipp: __wn.S.tipp, spul: __wn.S.spul, fertig: __wn.S.fertig, next: (__wn.next ? __wn.next() : __wn.naechster()), tasche: (__wn.S.zustand.tasche || []).join(','), wahl: __wn.S.wahl})"
 
 
 def wasnun_pruefen(br, pw, base, fehler, bilder):
@@ -643,6 +672,35 @@ def wasnun_pruefen(br, pw, base, fehler, bilder):
         frei(pg)
         return True
 
+    def gehe(pg, touch, raum, name=""):
+        """über die Türen in den Raum «raum» (False, wenn er gerade nicht erreichbar ist)"""
+        for _ in range(8):
+            z = pg.evaluate(WN_Z)
+            if z["raum"] is None or z["raum"] == raum:
+                return True
+            tid = pg.evaluate("r => __wn.tuer(r)", raum)
+            st = next((x for x in pg.evaluate("() => __wn.stellen()") if x["id"] == tid), None)
+            if not st or st["x"] is None:
+                return False
+            tippe(pg, touch, tid, "", name)
+        return False
+
+    def gag_teil(g):
+        frei_, g = g.startswith("!"), g.lstrip("!")
+        r, _, sid = g.rpartition(":")
+        return frei_, (int(r) if r else None), sid
+
+    def gag_tippe(pg, touch, name, sz, g, wo):
+        """eine lustige Stelle antippen und prüfen: kostet nichts, ändert den Weg nicht, sagt etwas"""
+        frei_, r, sid = gag_teil(g)
+        z = pg.evaluate(WN_Z); t0 = pg.inner_text("#text")
+        tippe(pg, touch, sid, "", name)
+        z2 = pg.evaluate(WN_Z)
+        if z2["fehler"] != z["fehler"] or (not frei_ and z2["next"] != z["next"]):
+            fehler.append(f"{d} {name}: {sz} lustige Stelle «{sid}» ({wo}) kostet etwas oder ändert den Weg ({z2})")
+        if pg.inner_text("#text") == t0:
+            fehler.append(f"{d} {name}: {sz} Stelle «{sid}» sagt nichts Neues")
+
     def abwaehlen(pg, touch, name):
         w = pg.evaluate("() => __wn.S.wahl")
         if w:
@@ -652,7 +710,7 @@ def wasnun_pruefen(br, pw, base, fehler, bilder):
         """der nächste richtige Schritt (Stelle, Ding an Stelle, zwei Dinge kombinieren, oder warten); gibt ihn zurück"""
         n = pg.evaluate("w => __wn.naechster(w || undefined)", weg)
         if n.get("warte"):
-            pg.wait_for_timeout(300); return n
+            pg.evaluate("() => __wn.vorspulen && __wn.vorspulen(3)"); pg.wait_for_timeout(300); return n
         abwaehlen(pg, touch, name)
         if n.get("kombi"):
             platz(pg, touch, n["kombi"][0], name); platz(pg, touch, n["kombi"][1], name)
@@ -664,7 +722,22 @@ def wasnun_pruefen(br, pw, base, fehler, bilder):
 
     def unsinn(pg, touch, name, sz, getan):
         """alles ausprobieren, was nichts bringt: jedes neue Ding wählen / abwählen, am Geheimnis benutzen, falsch kombinieren"""
+        k = WN2.get(sz) or WN3.get(sz)
         z = pg.evaluate(WN_Z)
+        offen = [x["id"] for x in pg.evaluate("() => __wn.stellen()") if x["x"] is not None]
+        for g in list(getan.get_aufgeschoben()) if hasattr(getan, "get_aufgeschoben") else []:
+            frei_, r, sid = gag_teil(g)
+            if (r is None or r == z["raum"]) and sid in offen:
+                getan.aufgeschoben.discard(g)
+                if g == k["geheim"]:
+                    tippe(pg, touch, sid, "", name)
+                    if not pg.evaluate("id => !!__wn.MERK.geheim[id]", sz) or "Geheimnis" not in pg.inner_text("#text"):
+                        fehler.append(f"{d} {name}: {sz} Geheimnis «{g}» nicht gezählt")
+                else:
+                    gag_tippe(pg, touch, name, sz, g, "später")
+                z = pg.evaluate(WN_Z)
+        falsch = gag_teil(k["geheim"])
+        falsch = falsch[2] if (falsch[1] is None or falsch[1] == z["raum"]) and falsch[2] in offen else next((gag_teil(g)[2] for g in k["gags"] if not g.startswith("!") and (gag_teil(g)[1] in (None, z["raum"])) and gag_teil(g)[2] in offen), None)
         for did in [x for x in z["tasche"].split(",") if x and ("d", x) not in getan]:
             getan.add(("d", did))
             platz(pg, touch, did, name)
@@ -673,10 +746,11 @@ def wasnun_pruefen(br, pw, base, fehler, bilder):
             platz(pg, touch, did, name)
             if pg.evaluate("() => __wn.S.wahl"):
                 fehler.append(f"{d} {name}: {sz} «{did}» lässt sich nicht abwählen")
-            platz(pg, touch, did, name); tippe(pg, touch, WN2[sz]["geheim"], "", name)       # am falschen Ort benutzen
-            z2 = pg.evaluate(WN_Z)
-            if z2["z"] != z["z"] or z2["fehler"] != z["fehler"] or z2["wahl"]:
-                fehler.append(f"{d} {name}: {sz} «{did}» an der falschen Stelle ändert oder kostet etwas ({z2})")
+            if falsch:
+                platz(pg, touch, did, name); tippe(pg, touch, falsch, "", name)       # am falschen Ort benutzen
+                z2 = pg.evaluate(WN_Z)
+                if z2["z"] != z["z"] or z2["fehler"] != z["fehler"] or z2["wahl"]:
+                    fehler.append(f"{d} {name}: {sz} «{did}» an der falschen Stelle ändert oder kostet etwas ({z2})")
         for k in pg.evaluate("() => __wn.kombis()"):
             if k["gibt"] or ("k", k["a"], k["b"]) in getan:
                 continue
@@ -686,10 +760,16 @@ def wasnun_pruefen(br, pw, base, fehler, bilder):
             if z2["z"] != z["z"] or z2["fehler"] != z["fehler"] or z2["wahl"] or not pg.inner_text("#text").strip():
                 fehler.append(f"{d} {name}: {sz} falsche Kombination {k['a']} + {k['b']} ändert oder kostet etwas ({z2})")
 
-    def loese2(pg, touch, name, sz, weg="", bis="", probieren=None, tipps=False, bilder_ab=""):
+    class Getan(set):
+        def __init__(self):
+            super().__init__(); self.aufgeschoben = set()
+        def get_aufgeschoben(self):
+            return set(self.aufgeschoben)
+
+    def loese2(pg, touch, name, sz, weg="", bis="", probieren=None, tipps=False, bilder_ab="", locker=False):
         """der Lösung folgen: bis zum Sternebild oder bis «bis» stimmt. probieren: Menge für unsinn(); tipps: vor jedem Schritt den Tipp prüfen"""
         n, gewartet, hatbild = 0, 0, set()
-        while n < 40 and gewartet < 80:
+        while n < 70 and gewartet < 80:
             z = pg.evaluate(WN_Z)
             if z["fertig"] or (bis and pg.evaluate("() => { const s = __wn.S.zustand; return !!(" + bis + "); }")):
                 break
@@ -707,12 +787,14 @@ def wasnun_pruefen(br, pw, base, fehler, bilder):
             if s_.get("warte"):
                 gewartet += 1; continue
             z2 = pg.evaluate(WN_Z)
-            if z2["z"] == z["z"] and not z2["fertig"]:
+            if z2["z"] == z["z"] and not z2["fertig"] and not (locker and z2["spul"] != z["spul"]):
                 fehler.append(f"{d} {name}: {sz} Schritt {s_} bringt nichts ({pg.inner_text('#text')[:80]})"); return False
-            if z2["fehler"] != z["fehler"]:
+            if z2["fehler"] != z["fehler"] and not locker:
                 fehler.append(f"{d} {name}: {sz} richtiger Schritt {s_} zählt als Fehlversuch")
             if bilder_ab and s_.get("kombi") and "kombi" not in hatbild:
                 hatbild.add("kombi"); bild(pg, f"{bilder_ab}_kombi", name)
+            if bilder_ab and z2["raum"] is not None and f"raum{z2['raum']}" not in hatbild:
+                hatbild.add(f"raum{z2['raum']}"); bild(pg, f"{bilder_ab}_raum{z2['raum'] + 1}", name)
             n += 1
         if bis:
             return True
@@ -720,6 +802,10 @@ def wasnun_pruefen(br, pw, base, fehler, bilder):
             pg.wait_for_selector("#ende:not([hidden]) .gs", timeout=8000)
         except Exception:
             fehler.append(f"{d} {name}: {sz} Weg «{weg}»: nach {n} Schritten kein Sternebild (nicht lösbar?)"); return False
+        aus = pg.evaluate("""() => { const k = document.querySelector('#ende .k').getBoundingClientRect();
+          return [...document.querySelectorAll('#ende .kn button')].filter(b => { const r = b.getBoundingClientRect(); return r.bottom > k.bottom + 1 || r.top < k.top - 1; }).map(b => b.id); }""")
+        if aus:                              # die Knöpfe des Sternebilds müssen ohne Schieben sichtbar sein
+            fehler.append(f"{d} {name}: {sz} Sternebild: Knopf {aus} ist abgeschnitten")
         return True
 
     def tipp_pruefen(pg, touch, name, sz, weg, n):
@@ -746,40 +832,116 @@ def wasnun_pruefen(br, pw, base, fehler, bilder):
 
     def neu(pg, touch, name, i, sz):
         """ein Bild ab Nummer 6: am Handy alles (Unsinn, Geheimnis, Sackgassen, Tipps, jeder Lösungsweg), am PC jeder Weg sauber"""
-        k = WN2[sz]
+        k = WN2.get(sz) or WN3[sz]
         wege = pg.evaluate("() => __wn.wege()")
-        nochmal = lambda: (pg.locator("#eNochmal").tap if touch else pg.locator("#eNochmal").click)()
+        raeume = pg.evaluate("() => (__wn.S.sz.raeume || []).length")
+        def nochmal():
+            for _ in range(3):               # der Tipp auf «Nochmal» muss angekommen sein, sonst prüft der nächste Durchgang das alte Sternebild
+                (pg.locator("#eNochmal").tap if touch else pg.locator("#eNochmal").click)()
+                try:
+                    pg.wait_for_function("() => !__wn.S.fertig", timeout=1500); return
+                except Exception:
+                    pass
+            fehler.append(f"{d} {name}: {sz} «Nochmal» startet das Bild nicht neu")
         if touch:
             groessen(pg, name, sz)
-            for g in k["gags"]:
-                frei_ = g.startswith("!")
-                z = pg.evaluate(WN_Z); t0 = pg.inner_text("#text")
-                tippe(pg, touch, g.lstrip("!"), "", name)
-                z2 = pg.evaluate(WN_Z)
-                if z2["fehler"] or (not frei_ and z2["next"] != z["next"]):
-                    fehler.append(f"{d} {name}: {sz} lustige Stelle «{g}» kostet etwas oder ändert den Weg ({z2})")
-                if pg.inner_text("#text") == t0:
-                    fehler.append(f"{d} {name}: {sz} Stelle «{g}» sagt nichts Neues")
-            tippe(pg, touch, k["geheim"], "", name)
-            if not pg.evaluate("id => !!__wn.MERK.geheim[id]", sz) or "Geheimnis gefunden" not in pg.inner_text("#text") or pg.evaluate(WN_Z)["fehler"]:
-                fehler.append(f"{d} {name}: {sz} Geheimnis «{k['geheim']}» nicht gezählt")
-            getan = set()
+            getan = Getan()
+            for g in k["gags"]:              # lustige Stellen in den Räumen, die schon erreichbar sind; die anderen später
+                frei_, r, sid = gag_teil(g)
+                if r is not None and not gehe(pg, touch, r, name):
+                    getan.aufgeschoben.add(g); continue
+                gag_tippe(pg, touch, name, sz, g, f"Raum {r + 1}" if r is not None else "")
+            frei_, r, sid = gag_teil(k["geheim"])
+            if r is None or gehe(pg, touch, r, name):
+                tippe(pg, touch, sid, "", name)
+                if not pg.evaluate("id => !!__wn.MERK.geheim[id]", sz) or "Geheimnis gefunden" not in pg.inner_text("#text") or pg.evaluate(WN_Z)["fehler"]:
+                    fehler.append(f"{d} {name}: {sz} Geheimnis «{k['geheim']}» nicht gezählt")
+            else:
+                getan.aufgeschoben.add(k["geheim"])
+            if raeume:                       # durch alle erreichbaren Räume und zurück: der Zustand bleibt gleich
+                z0 = pg.evaluate(WN_Z); r0 = z0["raum"]
+                for r in range(raeume):
+                    if gehe(pg, touch, r, name):
+                        bild(pg, f"{i + 1}_raum{r + 1}_start", name)
+                gehe(pg, touch, r0, name)
+                z1 = pg.evaluate(WN_Z)
+                if z1["z"] != z0["z"] or z1["fehler"] != z0["fehler"]:
+                    fehler.append(f"{d} {name}: {sz} der Zustand ändert sich beim Gang durch die Räume ({z0['z'][:120]} -> {z1['z'][:120]})")
+            nf = 0
             for nr, sk in enumerate(k["sack"]):
+                art = sk.get("art", "sack")
                 loese2(pg, touch, name, sz, wege[0], bis=sk["vor"], probieren=getan)
-                for j, (art, was) in enumerate(sk["tu"]):
+                nn0 = len(pg.evaluate("() => __wn.notizen()"))
+                if art == "zeit":            # die Zeit läuft ab: Warnung, dann zurück zum Haltepunkt, alles Erreichte bleibt
+                    frei(pg)
                     z = pg.evaluate(WN_Z)
-                    platz(pg, touch, was, name) if art == "p" else tippe(pg, touch, was, "gut", name)
+                    if sk.get("warn"):
+                        pg.evaluate("() => { const s = __wn.S.zustand; __wn.vorspulen(Math.max(0, " + sk["warn"][0] + ")); }"); pg.wait_for_timeout(700)
+                        if not re.search(sk["warn"][1], pg.inner_text("#text")):
+                            fehler.append(f"{d} {name}: {sz} keine Warnung vor dem Ablauf der Zeit ({pg.inner_text('#text')[:80]})")
+                    pg.evaluate("s => __wn.vorspulen(s)", sk["spulen"])
+                    try:
+                        pg.wait_for_function("n => __wn.S.spul > n && __wn.frei()", arg=z["spul"], timeout=8000)
+                    except Exception:
+                        fehler.append(f"{d} {name}: {sz} nach Ablauf der Zeit wird nicht zurückgespult"); continue
+                    z2 = pg.evaluate(WN_Z)
+                    v, n_ = json.loads(z["z"]), json.loads(z2["z"])
+                    for f_ in sk.get("frei", []):
+                        v.pop(f_, None); n_.pop(f_, None)
+                    if z2["fehler"] != z["fehler"] + 1 or v != n_ or not pg.evaluate("() => { const s = __wn.S.zustand; return !!(" + sk["behalten"] + "); }"):
+                        fehler.append(f"{d} {name}: {sz} nach Ablauf der Zeit nicht beim Haltepunkt (alles behalten, ein Fehlversuch) ({z['z'][:150]} -> {z2['z'][:150]})")
+                    if "Zurückgespult" not in pg.inner_text("#text"):
+                        fehler.append(f"{d} {name}: {sz} Ablauf der Zeit ohne freundliche Meldung")
+                    pg.wait_for_timeout(500)
+                    if pg.evaluate("n => __wn.S.spul", 0) != z2["spul"]:
+                        fehler.append(f"{d} {name}: {sz} nach dem Zurückspulen läuft die Zeit gleich wieder ab")
+                    bild(pg, f"{i + 1}_nach_zeit", name)
+                    nf += 1
+                    continue
+                if sk.get("spulen"):
+                    pg.evaluate("s => __wn.vorspulen(s)", sk["spulen"]); pg.wait_for_timeout(300)
+                for j, (wie, was) in enumerate(sk["tu"]):
+                    z = pg.evaluate(WN_Z)
+                    if wie == "g":
+                        gehe(pg, touch, was, name); continue
+                    platz(pg, touch, was, name) if wie == "p" else tippe(pg, touch, was, "gut", name)
                     if j == len(sk["tu"]) - 1:
                         z2 = pg.evaluate(WN_Z)
                         vorher = json.loads(z["z"]); nachher = json.loads(z2["z"])
-                        if z2["spul"] != z["spul"] + 1 or z2["fehler"] != z["fehler"] + 1 or nachher != vorher:
-                            fehler.append(f"{d} {name}: {sz} Sackgasse «{was}» spult nicht genau einen Schritt zurück ({z} -> {z2})")
-                        if "Zurückgespult" not in pg.inner_text("#text"):
-                            fehler.append(f"{d} {name}: {sz} Sackgasse ohne freundliche Meldung")
+                        if art == "fehl":
+                            if z2["fehler"] != z["fehler"] + 1 or z2["spul"] != z["spul"]:
+                                fehler.append(f"{d} {name}: {sz} falscher Versuch «{was}» zählt nicht genau einen Fehlversuch ({z} -> {z2})")
+                        else:
+                            if z2["spul"] != z["spul"] + 1 or z2["fehler"] != z["fehler"] + 1 or nachher != vorher:
+                                fehler.append(f"{d} {name}: {sz} Sackgasse «{was}» spult nicht genau einen Schritt zurück ({z} -> {z2})")
+                            if "Zurückgespult" not in pg.inner_text("#text"):
+                                fehler.append(f"{d} {name}: {sz} Sackgasse ohne freundliche Meldung")
                         bild(pg, f"{i + 1}_nach_sackgasse{nr + 1}", name)
+                        nf += 1
+                if len(pg.evaluate("() => __wn.notizen()")) < nn0:
+                    fehler.append(f"{d} {name}: {sz} das Notizbuch verliert beim Zurückspulen Einträge")
+            soll = 2 if nf <= 3 else 1
             if loese2(pg, touch, name, sz, wege[0], probieren=getan):
-                if sterne(pg) != 2 or pg.evaluate("id => __wn.MERK.sterne[id]", sz) != 2:
-                    fehler.append(f"{d} {name}: {sz} mit {len(k['sack'])} Fehlversuch(en) {sterne(pg)} Sterne statt 2")
+                if sterne(pg) != soll or pg.evaluate("id => __wn.MERK.sterne[id]", sz) != soll:
+                    fehler.append(f"{d} {name}: {sz} mit {nf} Fehlversuch(en) {sterne(pg)} Sterne statt {soll}")
+            for g in getan.aufgeschoben:
+                if g == k["geheim"] and pg.evaluate("id => !!__wn.MERK.geheim[id]", sz):
+                    continue
+                fehler.append(f"{d} {name}: {sz} Stelle «{g}» wurde nie erreichbar")
+            if k.get("notizen"):            # Notizbuch: Einträge stehen drin, das Blatt geht auf und zu
+                nz = pg.evaluate("() => __wn.notizen()")
+                fehlt = [x for x in k["notizen"] if x not in nz]
+                if fehlt:
+                    fehler.append(f"{d} {name}: {sz} im Notizbuch fehlt {fehlt} (da: {nz})")
+                pg.locator("#ende").evaluate("e => e.hidden = true")
+                pg.locator("#bNotiz").tap(); pg.wait_for_timeout(150)
+                if pg.locator("#notizbuch:not([hidden]) li").count() != len(nz):
+                    fehler.append(f"{d} {name}: {sz} das Notizbuch zeigt nicht alle Einträge")
+                bild(pg, f"{i + 1}_notizbuch", name)
+                pg.locator("#nZu").tap()
+                if not pg.locator("#notizbuch").evaluate("e => e.hidden"):
+                    fehler.append(f"{d} {name}: {sz} das Notizbuch lässt sich nicht schliessen")
+                pg.locator("#ende").evaluate("e => e.hidden = false")
             nochmal()
             if loese2(pg, touch, name, sz, wege[-1], tipps=True) and (sterne(pg) != 1 or pg.evaluate("id => __wn.MERK.sterne[id]", sz) != 2):
                 fehler.append(f"{d} {name}: {sz} mit Tipp {sterne(pg)} Sterne (soll 1), gemerkt bleibt 2")
@@ -795,6 +957,8 @@ def wasnun_pruefen(br, pw, base, fehler, bilder):
                     fehler.append(f"{d} {name}: {sz} Weg «{w}»: Abzeichen Meister-Lösung {'da' if abz else 'fehlt'}")
                 if not pg.inner_text("#ende .gesch").strip():
                     fehler.append(f"{d} {name}: {sz} Sternebild ohne Schluss-Geschichte")
+                if "⏱" not in pg.inner_text("#ende .zeit") or not pg.evaluate("id => __wn.MERK.zeit[id] > 0", sz):
+                    fehler.append(f"{d} {name}: {sz} keine Bestzeit gespeichert / gezeigt")
                 pg.wait_for_timeout(700)
                 bild(pg, f"{i + 1}_sterne" + ("" if nr == 0 else "_meister"), name)
         if len(wege) > 1 and not pg.evaluate("id => !!__wn.MERK.meister[id]", sz):
@@ -808,8 +972,8 @@ def wasnun_pruefen(br, pw, base, fehler, bilder):
             if ids == list(WN):                # eine ZIP mit der ersten Fassung (5 Bilder, bis GS-1.11): nur diese prüfen
                 if touch:
                     print(f"{d}: diese ZIP enthält noch die Fassung mit 5 Bildern – die Bilder 6-10 (games/wasnun/) sind nicht geprüft", flush=True)
-            elif ids != list(WN) + list(WN2):
-                fehler.append(f"{d} {name}: Bilder {ids} statt {list(WN) + list(WN2)}")
+            elif ids not in (list(WN) + list(WN2), list(WN) + list(WN2) + list(WN3)):
+                fehler.append(f"{d} {name}: Bilder {ids} statt {list(WN) + list(WN2) + list(WN3)}")
             voll = f"{3 * len(ids)}/{3 * len(ids)}"; geh = f"{len(ids)}/{len(ids)}"; 
             if pg.locator("#karten .karte.zu").count() != len(ids) - 1:
                 fehler.append(f"{d} {name}: am Anfang sollen alle Bilder ausser dem ersten gesperrt sein")
@@ -828,7 +992,7 @@ def wasnun_pruefen(br, pw, base, fehler, bilder):
                 (karte.tap if touch else karte.click)()
                 pg.wait_for_function("i => __wn.S.i === i", arg=i)
                 bild(pg, f"{i + 1}_start", name)
-                if sz in WN2:
+                if sz in WN2 or sz in WN3:
                     neu(pg, touch, name, i, sz)
                     b = pg.locator("#eAlle"); (b.tap if touch else b.click)()
                     continue
@@ -889,7 +1053,7 @@ def wasnun_pruefen(br, pw, base, fehler, bilder):
             # Ton-Schalter und Fortschritt bleiben nach dem Neuladen
             (pg.locator("#bTon").tap if touch else pg.locator("#bTon").click)()
             pg.reload(wait_until="load"); pg.wait_for_function("() => window.__wn")
-            if voll not in pg.inner_text("#chipSterne") or pg.locator("#karten .krone").count() != (2 if len(ids) > 5 else 0) or pg.locator("#bTon").get_attribute("aria-pressed") != "true" or pg.locator("#karten .karte.zu").count():
+            if voll not in pg.inner_text("#chipSterne") or pg.locator("#karten .krone").count() != (0 if len(ids) <= 5 else 2 if len(ids) <= 10 else 3) or pg.locator("#bTon").get_attribute("aria-pressed") != "true" or pg.locator("#karten .karte.zu").count():
                 fehler.append(f"{d} {name}: Fortschritt oder Ton-Schalter nach dem Neuladen weg")
             if pg.evaluate("() => { const b = document.getElementById('mw-back'); return !!b && getComputedStyle(b).display !== 'none'; }"):
                 fehler.append(f"{d} {name}: schwebender Zurück-Knopf nicht ausgeblendet (das Spiel hat oben «‹ Spiele»)")
@@ -908,9 +1072,9 @@ def wasnun_pruefen(br, pw, base, fehler, bilder):
         for i, sz in enumerate(ids):
             pg.locator("#karten .karte").nth(i).tap()
             pg.wait_for_function("i => __wn.S.i === i", arg=i)
-            if i in (0, 4, 5, 8):
+            if i in (0, 4, 5, 8, 10, 11, 13, 14):
                 bild(pg, f"{i + 1}_start", "quer")
-            if not (loese2(pg, True, "quer", sz) if sz in WN2 else loese(pg, True, "quer", sz)) or sterne(pg) != 3:
+            if not (loese2(pg, True, "quer", sz) if (sz in WN2 or sz in WN3) else loese(pg, True, "quer", sz)) or sterne(pg) != 3:
                 fehler.append(f"{d} quer / ohne Speicher: {sz} nicht mit 3 Sternen gelöst")
             if pg.evaluate("() => document.documentElement.scrollWidth > innerWidth + 1 || document.documentElement.scrollHeight > innerHeight + 1"):
                 fehler.append(f"{d} quer: {sz} läuft über den Bildschirm")
@@ -1020,11 +1184,11 @@ def wasnun_pruefen(br, pw, base, fehler, bilder):
     ctx.add_init_script("if (!localStorage.getItem('mw-wasnun-v1')) localStorage.setItem('mw-wasnun-v1', " + json.dumps(WN_ALT) + ");")
     pg = seite(ctx, "alter Spielstand")
     try:
-        if "11/30" not in pg.inner_text("#chipSterne") or "2/10" not in pg.inner_text("#chipGeheim"):
-            fehler.append(f"{d} alter Spielstand: {pg.inner_text('#chipSterne')} / {pg.inner_text('#chipGeheim')} statt 11/30 und 2/10")
+        if f"11/{3 * len(ids)}" not in pg.inner_text("#chipSterne") or f"2/{len(ids)}" not in pg.inner_text("#chipGeheim"):
+            fehler.append(f"{d} alter Spielstand: {pg.inner_text('#chipSterne')} / {pg.inner_text('#chipGeheim')} statt 11/{3 * len(ids)} und 2/{len(ids)}")
         zu = [int(x) for x in pg.evaluate("() => [...document.querySelectorAll('#karten .karte.zu')].map(k => k.dataset.i)")]
-        if zu != [6, 7, 8, 9]:
-            fehler.append(f"{d} alter Spielstand: gesperrt sind {zu}, erwartet nur die Bilder 8-10 und 7 (Index 6-9)")
+        if zu != list(range(6, len(ids))):
+            fehler.append(f"{d} alter Spielstand: gesperrt sind {zu}, erwartet die Bilder 7 bis {len(ids)}")
         pg.locator("#karten .karte").nth(5).click()
         pg.wait_for_function("() => __wn.S.i === 5")
         loese2(pg, False, "alter Spielstand", "weiher")
@@ -1037,17 +1201,43 @@ def wasnun_pruefen(br, pw, base, fehler, bilder):
         fehler.append(f"{d} alter Spielstand: {e.__class__.__name__}: {str(e)[:300]}")
     ctx.close()
 
-    # Zufalls-Lauf: je neues Bild 150 zufällige Tipps (Stellen, Dinge, Kombinationen, daneben) - danach muss es noch lösbar sein
+    if len(ids) > 10:     # ein Spielstand aus 3.76.1 (GS-1.14, 10 Bilder): bleibt, Bild 11 offen, Bestzeit kommt dazu
+        ctx = br.new_context(viewport={"width": 1280, "height": 800})
+        ctx.add_init_script("if (!localStorage.getItem('mw-wasnun-v1')) localStorage.setItem('mw-wasnun-v1', " + json.dumps(WN_ALT2) + ");")
+        pg = seite(ctx, "Spielstand GS-1.14")
+        try:
+            alt = json.loads(WN_ALT2)
+            if f"27/{3 * len(ids)}" not in pg.inner_text("#chipSterne") or f"4/{len(ids)}" not in pg.inner_text("#chipGeheim"):
+                fehler.append(f"{d} Spielstand GS-1.14: {pg.inner_text('#chipSterne')} / {pg.inner_text('#chipGeheim')} statt 27/{3 * len(ids)} und 4/{len(ids)}")
+            zu = [int(x) for x in pg.evaluate("() => [...document.querySelectorAll('#karten .karte.zu')].map(k => k.dataset.i)")]
+            if zu != list(range(11, len(ids))) or pg.locator("#karten .krone").count() != 1:
+                fehler.append(f"{d} Spielstand GS-1.14: gesperrt {zu} (erwartet Bilder 12 bis {len(ids)}), Meister-Kronen {pg.locator('#karten .krone').count()}")
+            pg.locator("#karten .karte").nth(10).click()
+            pg.wait_for_function("() => __wn.S.i === 10")
+            loese2(pg, False, "Spielstand GS-1.14", "uboot")
+            pg.locator("#eAlle").click()
+            m = json.loads(pg.evaluate("() => localStorage.getItem('mw-wasnun-v1')"))
+            if any(m["sterne"].get(k_) != v for k_, v in alt["sterne"].items()) or m["sterne"].get("uboot") != 3 or m["geheim"] != alt["geheim"] or m["meister"] != alt["meister"] or not m.get("zeit", {}).get("uboot"):
+                fehler.append(f"{d} Spielstand GS-1.14: nach Bild 11 stimmt der Speicher nicht mehr ({m})")
+            if "⏱" not in pg.locator("#karten .karte").nth(10).inner_text():
+                fehler.append(f"{d} Spielstand GS-1.14: die Kachel von Bild 11 zeigt keine Bestzeit")
+            bild(pg, "wahl_bestzeit", "PC")
+        except Exception as e:
+            fehler.append(f"{d} Spielstand GS-1.14: {e.__class__.__name__}: {str(e)[:300]}")
+        ctx.close()
+
+    # Zufalls-Lauf: je Bild ab 6 zufällige Tipps (Stellen, Dinge, Kombinationen, daneben) - danach muss es noch lösbar sein
     import random
+    N = 300 if WN_GROSS["an"] else 60
     ctx = br.new_context(viewport={"width": 1280, "height": 800})
     pg = seite(ctx, "Zufalls-Lauf")
     pg.goto(url + "&alle=1&tempo=40", wait_until="load"); pg.wait_for_function("() => window.__wn")
     try:
-        for i, sz in enumerate(WN2, start=len(WN)):
+        for i, sz in enumerate(ids[len(WN):], start=len(WN)):
             rnd = random.Random(20261110 + i)
             pg.evaluate("i => __wn.start(i)", i)
             geloest = zurueck = 0
-            for n in range(150):
+            for n in range(N):
                 frei(pg)
                 if pg.evaluate("() => __wn.S.fertig"):
                     pg.wait_for_selector("#eNochmal", timeout=8000); pg.locator("#eNochmal").click(); geloest += 1; continue
@@ -1069,15 +1259,15 @@ def wasnun_pruefen(br, pw, base, fehler, bilder):
             frei(pg)
             if pg.evaluate("() => __wn.S.fertig"):
                 geloest += 1
-            elif not loese2(pg, False, "Zufalls-Lauf", sz):
-                fehler.append(f"{d} Zufalls-Lauf: {sz} ist nach 150 zufälligen Tipps nicht mehr lösbar ({pg.evaluate(WN_Z)})")
+            elif not loese2(pg, False, "Zufalls-Lauf", sz, locker=True):
+                fehler.append(f"{d} Zufalls-Lauf: {sz} ist nach {N} zufälligen Tipps nicht mehr lösbar ({pg.evaluate(WN_Z)})")
             else:
                 geloest += 1
-            print(f"{d}: Zufalls-Lauf {sz}: 150 Tipps, {zurueck} Sackgassen, danach lösbar ({geloest}-mal gelöst)", flush=True)
+            print(f"{d}: Zufalls-Lauf {sz}: {N} Tipps, {zurueck} Mal zurückgespult, danach lösbar ({geloest}-mal gelöst)", flush=True)
     except Exception as e:
         fehler.append(f"{d} Zufalls-Lauf: {e.__class__.__name__}: {str(e)[:300]}")
     ctx.close()
-    print(f"{d}: 10 Bilder gelöst (Handy hoch und quer, PC), Dinge und Kombinationen, Sackgassen, Tipps, Geheimnisse, alter Spielstand geprüft", flush=True)
+    print(f"{d}: {len(ids)} Bilder gelöst (Handy hoch und quer, PC), Dinge und Kombinationen, Räume, Notizbuch, Zeitdruck, Bestzeit, Sackgassen, Tipps, Geheimnisse, alte Spielstände geprüft", flush=True)
 
 
 # ---- Schach (eigene Zusammenstellung, Quelle games/schach/, mit ?test=1 -> window.__schach) ---------------------------------------
@@ -2221,6 +2411,7 @@ def main():
     ap.add_argument("--kacheln-https", action="store_true", help="3.69.2: Kachel-Bilder über https vom gleichen Ursprung (gebaute Datei, Browser)")
     ap.add_argument("--zip", default=os.path.join(REPO, "games", "MotionWatch_Spiele.zip"))
     ap.add_argument("--alle", action="store_true", help="auch die älteren Spiele im Browser prüfen")
+    ap.add_argument("--gross", action="store_true", help="«Was nun?»: Zufalls-Lauf mit 300 statt 60 Tipps je Bild ab 6")
     ap.add_argument("--nur", default="", help="nur diese Ordner (Komma-Liste)")
     ap.add_argument("--ohne-browser", action="store_true")
     ap.add_argument("--bilder", default="", help="Ordner für Bildschirmfotos")
@@ -2231,6 +2422,7 @@ def main():
     ap.add_argument("--fotaq-release", default="", help="mit --fotaq-moveeye: echte Assets dieses Releases (…/releases/download/<tag>) statt Test-ZIP")
     ap.add_argument("--fotaq-pins", default="", help="mit --fotaq-release: pins.txt (sonst aus dem Release)")
     a = ap.parse_args()
+    WN_GROSS["an"] = a.gross
     fehler, warn = [], []
     if a.kacheln_https:
         kacheln_https(a.datei or _neueste_datei(), fehler, a.ohne_browser)
