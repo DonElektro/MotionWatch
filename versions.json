@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-10 23:54",
+ "generated": "2026-11-11 19:02",
  "versions": [
   {
-   "version": "3.76.0",
-   "file": "webcam_bewegung_3_76_0.py",
+   "version": "3.76.1",
+   "file": "webcam_bewegung_3_76_1.py",
    "url": "",
-   "sha256": "799cecc11dc13bd5af82a98d144e76ba1c3c7caa9a63ba269ea8df24a17666a2",
-   "date": "2026-11-10 23:54",
-   "notes": "Spielecke: neues Schach ersetzt das alte – letzter Zug markiert, mögliche Felder als Punkte, animierte Züge, alles auf Deutsch, 8 Stärke-Stufen, Tipp-Knopf, Lern-Modus mit Warnung vor groben Fehlern, Zug zurück, zu zweit am selben Gerät, die Partie wird gespeichert. Spielesammlung einmal neu laden: Mehr → Spielen → Spielecke → «Installieren / aktualisieren»",
-   "size": 3897974,
-   "sig": "bdc06449eb420343d829802e06b2a7bca8be3214836f8260f25bde3b0cff562b6fcfd39781176b6dc8f1044f99657a1e60788d521ac0f53bb59d3d06f65fe408",
+   "sha256": "07337715d9d6417200c983266daeef21101fcc7a671468cabe098f9ba63e8370",
+   "date": "2026-11-11 19:01",
+   "notes": "Spiel «Was nun?»: Im Hochformat reagiert das Spiel jetzt genau dort, wo man tippt (das Bild verschob sich vorher nach dem Antippen leicht). Spielesammlung einmal neu laden: Mehr → Spielen → Spielecke → «Installieren / aktualisieren»",
+   "size": 3897901,
+   "sig": "2778d334c70499e2120f178539318679e5a0b03b64e1778ebf3a75c424bd45b68a8303d3aff692c10c34e67fc702c5cce3d7546a2e72b8191ea85c8645124a0b",
    "data": {
-    "file": "moveeye_daten_3_76_0.zip",
+    "file": "moveeye_daten_3_76_1.zip",
     "url": "",
-    "sha256": "7b9d0dff15fce0406fa81c147e349a57d007e53f197cc8252ac85a408c3fab09",
-    "size": 4937208,
-    "sig": "1461572eac35182c722819a71b746b29effd141c3098db8e7d0a46b94e107ae19d70011d508e2178847b82ff290f8e08f5f77b17bc27af65086f9451ab62ab0f"
+    "sha256": "bcd8666f3d73e6b148d27c53e4f5d401ccffa245088c718bb25f802867f32a6b",
+    "size": 4937150,
+    "sig": "840a65b24fba67222c62fbd366329e1d668e5dd10f888edc6a100f5b759c3b4f78c2004ed390041d368a31b31b5d2a65382be1de13cf5e58e9016169c5250b0a"
    }
   },
   {
