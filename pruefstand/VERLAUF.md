@@ -19,6 +19,7 @@ Spalten nah / mittel / weit: Personen nach Grösse im Bild (Höhe ≥ 100 Bildpu
 
 | Datum | Motion Watch | Simulator | Testlauf | Pushes richtig / falsch | Personen erkannt | Wärmebild | nah / mittel / weit | Reaktion | Tiere gemeldet | Flackern | Bilder/s | KI | Rechner |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 2026-11-11 21:08 | 3.77.0 | ? · Aussehen neu · Tiere Modelle | Kurz (Tag + Nacht) | **3** / **0** | 10 / 10 (**100 %**) | 1 / 1 | 6/6 / 2/2 / 1/1 | 1.5 s | 3 / 3 | 2 | 1.4 | mit KI | GitHub (ubuntu, 4 Kerne) · INTEL(R) XEON(R) PLATINUM 8573C |
 | 2026-11-11 18:24 | 3.76.1 | ? · Aussehen neu · Tiere Modelle | Kurz (Tag + Nacht) | **3** / **0** | 9 / 10 (**90 %**) | 1 / 1 | 6/6 / 2/2 / 0/1 | 4.4 s | 2 / 3 | 0 | 1.2 | mit KI | GitHub (ubuntu, 4 Kerne) · Intel(R) Xeon(R) Platinum 8370C CPU @ 2. |
 | 2026-11-10 23:17 | 3.76.0 | 3.67.1 · Aussehen neu · Tiere Modelle | Kurz (Tag + Nacht) | **3** / **0** | 9 / 10 (**90 %**) | 2 / 2 | 6/6 / 1/1 / 0/1 | 2.5 s | 2 / 3 | 2 | 1.1 | mit KI | GitHub (ubuntu, 4 Kerne) · Intel(R) Xeon(R) Platinum 8370C CPU @ 2. |
 | 2026-11-10 22:26 | 3.75.0 | ? · Aussehen neu · Tiere Modelle | Kurz (Tag + Nacht) | **3** / **0** | 10 / 10 (**100 %**) | 2 / 2 | 5/5 / 2/2 / 1/1 | 2.5 s | 3 / 3 | 2 | 1.7 | mit KI | GitHub (ubuntu, 4 Kerne) · Intel(R) Xeon(R) 6973P-C |
@@ -270,10 +271,10 @@ Spalten nah / mittel / weit: Personen nach Grösse im Bild (Höhe ≥ 100 Bildpu
 
 ## Einzelheiten pro Phase (letzter Lauf)
 
-**Kurz (Tag + Nacht)** – 2026-11-11 18:24, Motion Watch 3.76.1
+**Kurz (Tag + Nacht)** – 2026-11-11 21:08, Motion Watch 3.77.0
 
 | Phase | Pushes richtig / falsch | Personen | Wärmebild | Reaktion | Tiere | Flackern | verpasst, weil … |
 |---|---|---|---|---|---|---|---|
-| Tag, Wind | 2 / 0 | 5 / 6 | – | 6.1 s | 2 / 2 | 0 | 1× zu schnell, 1× zu klein / weit weg |
-| Nacht mit Infrarot | 1 / 0 | 4 / 4 | 1 / 1 | 2.3 s | 0 / 1 | 0 | – |
+| Tag, Wind | 2 / 0 | 6 / 6 | – | 0.8 s | 2 / 2 | 0 | – |
+| Nacht mit Infrarot | 1 / 0 | 4 / 4 | 1 / 1 | 2.4 s | 1 / 1 | 2 | – |
 
