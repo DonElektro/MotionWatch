@@ -23,6 +23,8 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 3.76.1: Spiel «Was nun?»: Im Hochformat reagiert das Spiel jetzt genau dort, wo man tippt (das Bild verschob sich vorher
+    nach dem Antippen leicht). Spielesammlung einmal neu laden: Mehr → Spielen → Spielecke → «Installieren / aktualisieren»
   * 3.76.0: Spielecke: neues Schach ersetzt das alte – letzter Zug markiert, mögliche Felder als Punkte, animierte Züge, alles
     auf Deutsch, 8 Stärke-Stufen, Tipp-Knopf, Lern-Modus mit Warnung vor groben Fehlern, Zug zurück, zu zweit am selben Gerät,
     die Partie wird gespeichert. Spielesammlung einmal neu laden: Mehr → Spielen → Spielecke → «Installieren / aktualisieren»
@@ -113,9 +115,6 @@ Features
   * 3.58.0: Weitwinkel = Wache: leichte KI im Weitwinkelbild – nur Personen rufen den Kopf (Tiere / Fahrzeuge wählbar),
     Auslösezonen im Weitwinkelbild (Zonen-Editor 🔭), nachts mit Wärmebild kein Personen-Alarm ohne Wärme (ab Werk an, ohne
     Wärmebild wie bisher); Anleitung «Weitwinkel einrichten und testen».
-  * 3.57.0: Drei Kamera-Ansichten: Knopf «Ansicht» schaltet das Hauptbild 🎯 Kopf → 🌡 Wärmebild → 🔭 Weitwinkel (mit Rahmen, wohin
-    der Kopf schaut), lang drücken = Auswahl; kleines Übersichtsbild in der Ecke (antippen = tauschen, pro Gerät gemerkt) –
-    Live, Controller-Ansicht, Sim-Ansicht und Pi-Fenster.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -124,10 +123,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_3_76_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_3_76_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_3_76_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_3_76_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_3_76_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_3_76_1.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -144,7 +143,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "3.76.0"
+APP_VERSION = "3.76.1"
 
 
 def default_data_dir():
@@ -269,8 +268,8 @@ def prepare_settings_file():
 
 
 
-ZD_FILE = "moveeye_daten_3_76_0.zip"
-ZD_SHA256 = "7b9d0dff15fce0406fa81c147e349a57d007e53f197cc8252ac85a408c3fab09"
+ZD_FILE = "moveeye_daten_3_76_1.zip"
+ZD_SHA256 = "bcd8666f3d73e6b148d27c53e4f5d401ccffa245088c718bb25f802867f32a6b"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -27883,7 +27882,7 @@ threading.Thread(target=_extra_cams_boot, daemon=True, name="extracams-boot").st
 
 PARTY = {"key": "", "until": 0.0, "game": "lobby", "seq": 0, "players": {}, "host": "", "g": {}, "tools": {}}
 PARTY_COND = threading.Condition()
-GAMES_PKG = {"version": "GS-1.13", "file": "games/MotionWatch_Spiele.zip", "size": 15908488, "sha256": "d6495b67af02d8c78333872f2f0891cdb5bbc27a40824341a5234bf9f989b3a9"}
+GAMES_PKG = {"version": "GS-1.14", "file": "games/MotionWatch_Spiele.zip", "size": 15910492, "sha256": "df326b2bfe4c4b919892e7fb1a9fc14e31034b43af2e122c1dc6ae434a2b12c8"}
 GAMES_DL = {"running": False, "msg": "", "got": 0}
 
 QUIZ = [("Wie heisst der höchste Berg der Schweiz?", "Dufourspitze (4634 m)"), ("Wie viele Kantone hat die Schweiz?", "26"),
@@ -49353,7 +49352,7 @@ class App:
 		self.watch = watch
 		self.web = web or WebStream(watch)
 		self.root = tk.Tk()
-		self.root.title("MoveEye 3.76.0")
+		self.root.title("MoveEye 3.76.1")
 		try:
 			import base64
 			self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -49731,7 +49730,7 @@ class App:
 			if not small:
 				vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
 				vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))
-			Tip(nm, f"{tr('Build')} 3.76.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+			Tip(nm, f"{tr('Build')} 3.76.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
 			self._egg_taps = []
 			for w_ in tl.winfo_children():
 				w_.bind("<Button-1>", self._egg_tap, add="+")
