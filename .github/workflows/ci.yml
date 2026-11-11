@@ -1,8 +1,14 @@
 # CI: die schweren Prüfungen auf GitHub statt auf dem lokalen Rechner (Nov. 2026). Lokal abfragen / warten:
 #   werkzeuge/ci_status.sh [zweig|commit] [--warten] [--fehler]
-#  - Push auf real-*: schnelle Tests (MoveEye + Simulator), ohne Export
-#  - Push auf integration / main: alles, dazu Export Linux + Windows (ohne Signatur) als Artefakt
-#  - von Hand (Actions -> CI -> Run workflow): alles, Export abwählbar; «[export]» in der Commit-Nachricht: Export auch auf real-*
+#  - Push auf real-*: nur was die Änderung betrifft (Job «Auswahl», Regeln in werkzeuge/ci_auswahl.py), ohne Export
+#  - Push auf integration: dasselbe gegenüber main, dazu der Export; ist derselbe Commit schon auf main, nur die Grundprüfungen
+#  - Push auf main: IMMER ALLES, dazu Export Linux + Windows + Pi (ohne Signatur) als Artefakt
+#  - von Hand (Actions -> CI -> Run workflow): alles (Haken «alles» weg: nur was die Änderung betrifft), Export abwählbar;
+#    «[export]» in der Commit-Nachricht: Export auch auf real-*
+# Aufbau: Auswahl -> parallel [MoveEye · Grundprüfungen | MoveEye · Web · <Gruppe> | Simulator … | HP-Update | USB-Installer | Export]
+#         -> Ergebnis (Torwächter: rot, wenn etwas rot ist oder fehlt; auf main auch, wenn irgendetwas übersprungen wurde).
+# NEUER TEST: eine Zeile in werkzeuge/ci_tests.txt (Gruppe | Limit | Nochmal | Befehl | Name) - diese Datei hier bleibt wie sie ist.
+#   Godot-Tests (werkzeuge/*_test.gd) kommen von selbst dazu (Job «Simulator · Testliste»).
 # Keine Geheimnisse: der Signierschlüssel kommt nie hierher (Signieren bleibt lokal), keine ntfy-Themen.
 name: CI
 on:
@@ -10,14 +16,23 @@ on:
     branches: ["real-*", integration, main]
   workflow_dispatch:
     inputs:
+      alles:
+        description: "alles prüfen (auch die Spiele-Tests), egal was geändert wurde"
+        type: boolean
+        default: true
       export:
         description: "Simulator exportieren (Linux + Windows, ohne Signatur)"
         type: boolean
         default: true
+      probe:
+        description: "Probe (nie auf main): so tun, als wären nur diese Dateien geändert – z. B. quelle/560_uebersetzungen_de.py"
+        type: string
+        default: ""
 permissions:
   contents: read
 concurrency:
-  group: ci-${{ github.ref }}
+  # (a probe run by hand never cancels another run and is never cancelled)
+  group: ci-${{ github.ref }}${{ github.event.inputs.probe && format('-probe-{0}', github.run_id) || '' }}
   cancel-in-progress: ${{ startsWith(github.ref, 'refs/heads/real-') }}
 env:
   GODOT_VER: "4.3"
@@ -25,9 +40,39 @@ env:
   PYTHONUNBUFFERED: "1"
 
 jobs:
+  # ---------------------------------------------------------------- Auswahl: was muss für diesen Stand laufen?
+  auswahl:
+    name: Auswahl · was läuft, was wird übersprungen
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: read                     # is the same commit already running on main?
+    outputs:
+      web: ${{ steps.a.outputs.web }}
+      gruppen: ${{ steps.a.outputs.gruppen }}
+      sim: ${{ steps.a.outputs.sim }}
+      hp: ${{ steps.a.outputs.hp }}
+      usb: ${{ steps.a.outputs.usb }}
+      laeuft: ${{ steps.a.outputs.laeuft }}
+      grund: ${{ steps.a.outputs.grund }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: werkzeuge
+      - name: Regeln der Auswahl (Selbsttest)
+        run: python3 werkzeuge/ci_auswahl.py --selbsttest
+      - id: a
+        name: Auswahl (geänderte Dateien gegenüber main)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CI_ALLES: ${{ github.event.inputs.alles }}
+          CI_PROBE: ${{ github.event.inputs.probe }}
+        run: python3 werkzeuge/ci_auswahl.py --auswahl
+
   # ---------------------------------------------------------------- MoveEye
   moveeye:
-    name: MoveEye · bauen --pruefen + Selbsttest
+    name: MoveEye · Grundprüfungen (bauen --pruefen, Selbsttest, Update)
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
@@ -36,48 +81,39 @@ jobs:
         with:
           python-version: "3.11"
           cache: pip
-          cache-dependency-path: .github/workflows/ci.yml
+          cache-dependency-path: werkzeuge/ci_pakete.txt
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
       - name: Pakete
         run: pip install -q opencv-python-headless numpy flask pillow cryptography
-      - name: Quelle und Datei passen zusammen (bauen.py --pruefen)
-        run: python3 werkzeuge/bauen.py --pruefen
-      - name: Bau-Infos passen zum Projektstand (bau_pruefen.py, nur Warnung – nichts wird nachgezogen)
-        run: python3 werkzeuge/bau_pruefen.py --ci
-      - name: Selbsttest (ohne Signaturen)
-        env:
-          MW_SELFTEST_NO_SIG: "1"          # signed only locally at the release
-        run: |
-          f=$(ls webcam_bewegung_*.py | sort -V | tail -1)
-          echo "Teste $f"
-          python3 -m py_compile "$f"
-          python3 "$f" --self-test .
-      - name: Zusatzdatei – gültig / verändert / fehlt, Signatur (Test-Schlüssel), Kern ohne ZIP, Grösse
-        run: |
-          f=$(ls webcam_bewegung_*.py | sort -V | tail -1)
-          python3 werkzeuge/zusatzdaten_test.py --datei "$f"
-      - name: Drei Spuren – Simulator nur im signierten versions.json (Test-Schlüssel), Versionsprüfung je Spur
-        run: |
-          f=$(ls webcam_bewegung_*.py | sort -V | tail -1)
-          python3 werkzeuge/sim_manifest_test.py --datei "$f"
-          python3 werkzeuge/versionen.py --test > /dev/null
-          python3 werkzeuge/versionen_spuren_test.py
+      - name: Testliste vollständig (jede werkzeuge/*_test.py steht in werkzeuge/ci_tests.txt)
+        run: python3 werkzeuge/ci_lauf.py --pruefen
+      - name: Grundprüfungen (Gruppe «basis» aus werkzeuge/ci_tests.txt – Zeit je Test in der Zusammenfassung)
+        run: python3 werkzeuge/ci_lauf.py --gruppe basis
 
-  moveeye-web:
-    name: MoveEye · Web-Rauchtest + Browser (Playwright)
+  # Die Web-Tests in parallelen Gruppen. Welche Gruppen laufen, bestimmt der Job «Auswahl»; die Tests jeder Gruppe stehen
+  # in werkzeuge/ci_tests.txt. Die Spiele-Gruppen (spiele-1, spiele-2) laufen nur bei Spiele-Änderungen - auf main immer.
+  web:
+    name: MoveEye · Web · ${{ matrix.gruppe }}
+    needs: auswahl
+    # (!cancelled: also runs when the selection itself broke - then with every group)
+    if: ${{ !cancelled() && needs.auswahl.outputs.web != 'false' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        gruppe: ${{ fromJSON(needs.auswahl.outputs.gruppen || '["kern","rechte","live","daten","spiele-1","spiele-2"]') }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
           cache: pip
-          cache-dependency-path: .github/workflows/ci.yml
+          cache-dependency-path: werkzeuge/ci_pakete.txt
       - name: Pakete
-        run: pip install -q opencv-python-headless numpy flask pillow cryptography playwright==1.55.0 onnxruntime==1.20.1   # onnxruntime: piper_test.py (= PIPER_ORT, Teil 639zzb)
+        run: pip install -q -r werkzeuge/ci_pakete.txt
       - name: Chromium (Cache)
         id: pwcache
         uses: actions/cache@v4
@@ -91,72 +127,10 @@ jobs:
         run: |
           if [ "${{ steps.pwcache.outputs.cache-hit }}" = "true" ]; then python3 -m playwright install-deps chromium
           else python3 -m playwright install --with-deps chromium; fi
-      - name: Web-Rauchtest (alle Adressen ohne / mit Anmeldung, jede Seite im Browser)
-        timeout-minutes: 15
-        run: python3 werkzeuge/web_rauchtest.py --browser
-      - name: Kamerabilder im Browser (Verbindungen, Selbstheilung, Neu laden bleibt im Reiter)
-        timeout-minutes: 8
-        run: python3 werkzeuge/bildstrom_test.py
-      - name: Drei Kamera-Ansichten (Kopf / Wärmebild / Weitwinkel, Übersichtsbild, pro Gerät gemerkt)
-        timeout-minutes: 8
-        run: python3 werkzeuge/ansichten_test.py
-      - name: Datentausch (Dateien, Texte mit Versionen, Chats, Rechte, Gäste, Grenzen, Hochladen in Stücken, Browser)
-        timeout-minutes: 8
-        run: python3 werkzeuge/tausch_test.py --browser
-      - name: «🌿 Bestimmen» im Datentausch (Ersatz-Modell, Rechte, Gäste, Laden mit Prüfsumme, Zwischenspeicher, besetzt, Browser)
-        timeout-minutes: 6
-        run: python3 werkzeuge/bioclip_test.py --browser
-      - name: Spielesammlung (Paket GS-1.4, GAMES_PKG, jedes neue Spiel am Handy und PC ohne Internet)
-        timeout-minutes: 25
-        run: python3 werkzeuge/spiele_test.py
-      - name: Spiele-Kacheln über https (Bilder vom gleichen Ursprung, keine http://-Bilder, Browser)
-        timeout-minutes: 5
-        run: python3 werkzeuge/spiele_test.py --kacheln-https
-      - name: Fertige Spiele zum Nachladen (nur der Admin lädt, Prüfsumme, Platz, Entpacken, Kachel, Spiele-Port, Entfernen - mit Ersatz-Paketen)
-        timeout-minutes: 4
-        run: python3 werkzeuge/fertigspiele_test.py
-      - name: Schach zu zweit mit je einem Handy (Vermittlung auf dem Pi - Regeln, Code, Sitz-Schlüssel, Grenzen, Gäste, Browser mit zwei Handys)
-        timeout-minutes: 8
-        run: python3 werkzeuge/schach_fern_test.py
-      - name: Erster Start ruhiger (Teil 639zzs - nie mehr als ein Hinweis gleichzeitig, Reihenfolge, neues Gerät ohne «Neu in dieser Version»)
-        timeout-minutes: 8
-        run: python3 werkzeuge/erststart_test.py
-      - name: Spiele unter «Mehr» - ein Einstieg «Spielen», Kachel «Spielecke», Freigeben von der Spielecke aus
-        timeout-minutes: 5
-        run: python3 werkzeuge/spiele_ordnen_test.py
-      - name: «🔍 Untersuchen» im Live-Bild (Ausschnitt, Kopf, Weitwinkel, Wärmebild, Hochladen, Rechte, Gäste, Funde, Zeitlimit, Browser)
-        timeout-minutes: 6
-        run: python3 werkzeuge/untersuchen_test.py --browser
-      - name: Rechte und Schutz (Kind / Familie / ohne Rechte, PIN für alles im Browser, Stufe → Sirene, Zeitplan nach hartem Neustart)
-        timeout-minutes: 8
-        run: python3 werkzeuge/rechte_schutz_test.py --browser
-      - name: Karte «Sicherheit» wieder da (Administrator sieht sie, andere Benutzer nicht)
-        timeout-minutes: 5
-        run: python3 werkzeuge/sicherheit_karte_test.py
-      - name: Kopf-Chip «N Hinweise» statt «alles ok», wenn etwas gemeldet wird
-        timeout-minutes: 4
-        run: python3 werkzeuge/kopf_chip_test.py
-      - name: Werkseinstellungen - Liste der Kopien mit Datum
-        timeout-minutes: 4
-        run: python3 werkzeuge/werkskopie_test.py
-      - name: Deutsche Lücken (keine englischen Texte im deutschen Web, /messages übersetzt)
-        timeout-minutes: 8
-        run: python3 werkzeuge/deutsch_luecken_test.py
-      - name: Ruhiges Protokoll (kein Hin und Her bei walk_frames und Wind)
-        timeout-minutes: 5
-        run: python3 werkzeuge/protokoll_ruhe_test.py
-      - name: Simulator intern (gefälschtes Pi-Paket - holen, prüfen, auspacken, starten, beenden, zurück)
-        timeout-minutes: 4
-        run: python3 werkzeuge/sim_intern_test.py
-      - name: Piper-Stimme (Tabelle, Ersatz alte Stimme, Laden mit Prüfsumme, Browser «Ton im Browser», Simulator /speech)
-        timeout-minutes: 6
-        run: python3 werkzeuge/piper_test.py --browser
-      - name: Werkstatt offline (eine HTML-Datei, file://, Netz gesperrt, keine JS-Fehler, Modell, Reiter)
-        timeout-minutes: 6
-        run: python3 werkzeuge/werkstatt_html.py --aus /tmp/werkstatt --test --bilder /tmp/werkstatt && ls -la /tmp/werkstatt
-      - name: Selbstbau-Paket (bausatz.py, nur Deutsch, ohne Signaturprüfung)
-        timeout-minutes: 5
-        run: python3 werkzeuge/bausatz.py --sprachen de --unsigniert --aus /tmp/bausatz && ls -la /tmp/bausatz
+      - name: Tests der Gruppe «${{ matrix.gruppe }}» (werkzeuge/ci_tests.txt – Zeit je Test in der Zusammenfassung)
+        env:
+          GRUPPE: ${{ matrix.gruppe }}
+        run: python3 werkzeuge/ci_lauf.py --gruppe "$GRUPPE"
 
   # ---------------------------------------------------------------- Simulator
   sim-texte:
@@ -174,6 +148,8 @@ jobs:
   # ---------------------------------------------------------------- USB-Installer (Simulator-PC neu aufsetzen)
   usb-installer:
     name: USB-Installer · ${{ matrix.pruefung }}
+    needs: auswahl
+    if: ${{ !cancelled() && needs.auswahl.outputs.usb != 'false' }}     # only when werkzeuge/usb_installer/ changed; on main always
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     strategy:
@@ -197,6 +173,8 @@ jobs:
   # ---------------------------------------------------------------- Simulator-PC (HP): signiertes Update, Haken, Testbild
   hp-update:
     name: HP-Update · Prüfkette + Einspielen
+    needs: auswahl
+    if: ${{ !cancelled() && needs.auswahl.outputs.hp != 'false' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -216,6 +194,8 @@ jobs:
 
   sim-liste:
     name: Simulator · Testliste
+    needs: auswahl
+    if: ${{ !cancelled() && needs.auswahl.outputs.sim != 'false' }}     # skipped -> the jobs «Simulator · <test>» are skipped with it
     runs-on: ubuntu-24.04
     outputs:
       tests: ${{ steps.l.outputs.tests }}
@@ -309,6 +289,77 @@ jobs:
           path: ${{ runner.temp }}/*.log
           retention-days: 7
 
+  # ---------------------------------------------------------------- Tests gegen einen laufenden Simulator (ohne Bild)
+  sim-live:
+    name: Simulator · läuft (SmallTV, Hospiz live)
+    needs: auswahl
+    if: ${{ !cancelled() && needs.auswahl.outputs.sim != 'false' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      SIM: http://127.0.0.1:9461
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: werkzeuge/ci_pakete.txt
+      - name: Pakete
+        run: pip install -q opencv-python-headless numpy flask pillow cryptography
+      - name: Godot 4.3 (Cache)
+        id: gcache
+        uses: actions/cache@v4
+        with:
+          path: ~/godot
+          key: godot-4.3-stable-linux
+      - name: Godot 4.3 herunterladen
+        if: steps.gcache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ~/godot && cd ~/godot
+          curl -fsSL -o g.zip https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip
+          unzip -q g.zip && rm g.zip && chmod +x Godot_v4.3-stable_linux.x86_64
+      - name: Import (Cache simulator3d/.godot)
+        uses: actions/cache@v4
+        with:
+          path: simulator3d/.godot
+          key: godot-import-${{ hashFiles('simulator3d/**/*.png', 'simulator3d/**/*.glb', 'simulator3d/**/*.ogg', 'simulator3d/**/*.wav', 'simulator3d/**/*.mp3', 'simulator3d/**/*.jpg', 'simulator3d/**/*.gdshader', 'simulator3d/project.godot') }}
+          restore-keys: godot-import-
+      - name: Projekt importieren
+        run: |
+          export HOME="/tmp/ci_home_import"; mkdir -p "$HOME"
+          timeout 900 "$GODOT_BIN" --headless --import --path simulator3d > "$RUNNER_TEMP/import.log" 2>&1 || true
+          tail -5 "$RUNNER_TEMP/import.log"
+      - name: Simulator starten (ohne Bild, sendet auf Port 9461, eigenes Test-HOME)
+        run: |
+          export HOME="/tmp/ci_home_simlive"; rm -rf "$HOME"; mkdir -p "$HOME"     # own test HOME (hospiz_test.py sets a test password there)
+          cd simulator3d
+          nohup "$GODOT_BIN" --headless --path . -- --no-update --no-tour --stream --port 9461 > "$RUNNER_TEMP/simlive.log" 2>&1 &
+          echo $! > "$RUNNER_TEMP/simlive.pid"
+          for i in $(seq 1 180); do
+            curl -fsS -m 3 "$SIM/v.json" > /dev/null 2>&1 && break
+            kill -0 "$(cat "$RUNNER_TEMP/simlive.pid")" 2>/dev/null || break
+            sleep 1
+          done
+          curl -fsS -m 5 "$SIM/v.json" || { tail -60 "$RUNNER_TEMP/simlive.log"; echo "::error::der Simulator antwortet nicht auf $SIM"; exit 1; }
+          if grep -qE "SCRIPT ERROR|Parse Error" "$RUNNER_TEMP/simlive.log"; then grep -E "SCRIPT ERROR|Parse Error" "$RUNNER_TEMP/simlive.log" | head -20; echo "::error::Skript-Fehler beim Start"; exit 1; fi
+      - name: Tests gegen den laufenden Simulator (Gruppe «simlive» aus werkzeuge/ci_tests.txt)
+        env:
+          SIM_HOSPIZ: /tmp/ci_home_simlive/.local/share/godot/app_userdata/MoveEye Sim 3D/bergtal_horror.json
+        run: python3 werkzeuge/ci_lauf.py --gruppe simlive
+      - name: Simulator beenden
+        if: always()
+        run: |
+          kill "$(cat "$RUNNER_TEMP/simlive.pid" 2>/dev/null)" 2>/dev/null || true
+          tail -15 "$RUNNER_TEMP/simlive.log" || true
+      - name: Protokoll aufbewahren
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: log-sim-live
+          path: ${{ runner.temp }}/*.log
+          retention-days: 7
+
   # ---------------------------------------------------------------- Export (nur integration / main / von Hand)
   export:
     name: Export · ${{ matrix.preset }}
@@ -382,3 +433,25 @@ jobs:
           name: MoveEyeSim3D-${{ env.VER }}-${{ matrix.preset == 'Linux' && 'linux' || matrix.preset == 'Linux Pi' && 'pi' || 'windows' }}-${{ github.sha }}
           path: ${{ runner.temp }}/build/
           retention-days: 14
+
+  # ---------------------------------------------------------------- Ergebnis: der eine Haken, auf den ein Release wartet
+  ergebnis:
+    name: Ergebnis · alles Nötige grün, nichts still übersprungen
+    needs: [auswahl, moveeye, web, sim-texte, usb-installer, hp-update, sim-liste, sim, sim-live, export]
+    if: ${{ always() }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: read                     # times of the jobs of this run
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: werkzeuge
+      - name: Ergebnis (rot, wenn ein Job rot ist oder fehlt – auf main auch, wenn etwas übersprungen wurde)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NEEDS: ${{ toJSON(needs) }}
+          CI_EXPORT: ${{ github.event.inputs.export }}
+          CI_NACHRICHT: ${{ github.event.head_commit.message }}
+        run: python3 werkzeuge/ci_auswahl.py --ergebnis
