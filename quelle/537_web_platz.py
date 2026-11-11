@@ -280,6 +280,7 @@ PLACE_MAIN_JS = r"""
   const L = () => (typeof LANG !== "undefined" ? LANG : "en");
   const tab = () => document.body.getAttribute("data-tab") || "";
   let S = null;
+  if (window.MWQ) MWQ.expect("offer");                  // 639zzs: one thing at a time
   function card() {
     const pc = document.getElementById("pr-card"); if (!pc) return;
     let c = document.getElementById("pl-card");
@@ -295,8 +296,9 @@ PLACE_MAIN_JS = r"""
   function offer() {
     let o = document.getElementById("pl-offer");
     const want = S && S.offer && (tab() === "protect" || tab() === "live");
-    if (!want) { if (o) o.remove(); return; }
+    if (!want) { if (o) o.remove(); if (window.MWQ && S) MWQ.skip("offer"); return; }
     if (o) return;
+    if (window.MWQ && !MWQ.is("offer")) { MWQ.add("offer", "#pl-offer", offer); return; }    // 639zzs: after the dialogs and the tour
     o = E("div", "card"); o.id = "pl-offer"; o.style.cssText = "border:2px solid var(--acc);margin:0 0 12px";
     o.appendChild(E("b", "", "📍 " + T(S.offer === "moved" ? "New place? Set it up again" : "MoveEye put up? Set up the place")));
     o.appendChild(E("div", "mut", T("2-3 minutes: the head looks around, you only tap tent, access, valuables.")));

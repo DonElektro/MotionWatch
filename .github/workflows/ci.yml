@@ -118,6 +118,9 @@ jobs:
       - name: Schach zu zweit mit je einem Handy (Vermittlung auf dem Pi - Regeln, Code, Sitz-Schlüssel, Grenzen, Gäste, Browser mit zwei Handys)
         timeout-minutes: 8
         run: python3 werkzeuge/schach_fern_test.py
+      - name: Erster Start ruhiger (Teil 639zzs - nie mehr als ein Hinweis gleichzeitig, Reihenfolge, neues Gerät ohne «Neu in dieser Version»)
+        timeout-minutes: 8
+        run: python3 werkzeuge/erststart_test.py
       - name: Spiele unter «Mehr» - ein Einstieg «Spielen», Kachel «Spielecke», Freigeben von der Spielecke aus
         timeout-minutes: 5
         run: python3 werkzeuge/spiele_ordnen_test.py

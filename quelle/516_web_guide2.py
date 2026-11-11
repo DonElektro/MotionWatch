@@ -131,6 +131,7 @@ G2_LOADER_JS = r"""
 (function () {                                     // 586: guide 2 (tours, tips, setup, factory reset) - one script for every page
   if (window._g2l) return; window._g2l = true;
   let L = "de"; try { L = (typeof LANG !== "undefined" && LANG) || localStorage.getItem("mw-lang") || "de"; } catch (e) {}
+  if (window.MWQ) MWQ.expect(["guide", "tour"]);       // 639zzs: one thing at a time - /g2/ui.js decides in startAll
   const s = document.createElement("script"); s.src = "/g2/ui.js?v=" + encodeURIComponent((window.MW_GUIDE || {}).ver || "") + "&lang=" + encodeURIComponent(L); s.defer = true;
   (document.head || document.documentElement).appendChild(s);
 })();
@@ -343,6 +344,7 @@ details.g2-tt ul{margin:0 0 12px;padding-left:20px}details.g2-tt li{margin:4px 0
   // ---------------------------------------------------------------- tip of the day
   async function tipOfDay() {
     if (PG !== "live" || B.lock) return;
+    if (window.MWQ && !MWQ.is("tip")) { MWQ.add("tip", "#g2-tip", tipOfDay); return; }      // 639zzs: only on a calm page, when it is its turn
     const j = await J("/api/g2?lang=" + LG()); if (!j || !j.tip) return;
     const x = j.tip; if (TOUR || busy() || document.querySelector("#gd-card, #g2-tip")) { setTimeout(tipOfDay, 15000); return; }
     const c = E("div"); c.id = "g2-tip"; c.setAttribute("role", "status");
@@ -655,7 +657,7 @@ details.g2-tt ul{margin:0 0 12px;padding-left:20px}details.g2-tt li{margin:4px 0
         ctx.body.appendChild(g);
         const r = E("div", "row2"); const lk = E("a", "btn sec", T("🖨 Quick start card with QR codes")); lk.href = "/setup-card?lang=" + LG(); lk.target = "_blank"; r.appendChild(lk); ctx.body.appendChild(r);
         if (S.guide.mode !== "full") ctx.foot.appendChild(BT(T("➕ Set up more (thorough)"), "sec", async () => { await gpost({action: "start", mode: "full"}); await refresh(); cur = S.guide.left[0] || "done"; render(); }));
-        ctx.foot.appendChild(BT(T("Let's go"), "", async () => { await gpost({action: "finish"}); close(); if (D.tours[PG] && B.tourAuto) setTimeout(() => tour(PG, false), 600); }));
+        ctx.foot.appendChild(BT(T("Let's go"), "", async () => { await gpost({action: "finish"}); close(); if (D.tours[PG] && B.tourAuto) setTimeout(tourAsk, 600); }));
         ctx.skip = false;
       },
     };
@@ -738,6 +740,7 @@ details.g2-tt ul{margin:0 0 12px;padding-left:20px}details.g2-tt li{margin:4px 0
 
   // ---------------------------------------------------------------- start
   const busy = () => !!document.querySelector(".g2m, #wiz, #spa, .prt-wiz, #g2-bub");
+  const tourAsk = () => { if (window.MWQ) MWQ.add("tour", "#g2-bub", () => tour(PG, false)); else tour(PG, false); };   // 639zzs: when it is its turn
   function startAll() {
     helpButton();
     // 639o: Simple / Expert of these pages is in the bar under the tabs (#mwbar) - no second switch «View of this page» in the page
@@ -749,12 +752,15 @@ details.g2-tt ul{margin:0 0 12px;padding-left:20px}details.g2-tt li{margin:4px 0
     if (st) new MutationObserver(() => { clearTimeout(startAll._d); startAll._d = setTimeout(() => { decorate(); if (!document.getElementById("g2-tt")) paintTT(); }, 150); }).observe(st, {childList: true, subtree: true});
     moreCards(); pill();
     const wantGuide = /[?&]guide=1/.test(location.search) || (!B.setupDone && !B.lock);
-    if (PG === "live" && wantGuide) setTimeout(() => mwGuide(false), 300);
+    const Q = window.MWQ;                              // 639zzs: one thing at a time (setup, news, tour, banner, …)
+    if (PG === "live" && wantGuide) { if (Q) { Q.skip("tour"); setTimeout(() => Q.add("guide", "#g2w", () => mwGuide(false)), 300); } else setTimeout(() => mwGuide(false), 300); }
     else if (B.setupDone && B.tourAuto && D.tours[PG] && !toursSeen().includes(PG)) {
-      let tries = 0;                                   // after other windows (news of the version, protection assistant, guide)
-      const go = () => { if (busy() && tries++ < 20) { setTimeout(go, 2000); return; } if (!busy()) tour(PG, false); };
-      setTimeout(go, 1800);
+      if (Q) { Q.skip("guide"); tourAsk(); }
+      else { let tries = 0;                            // after other windows (news of the version, protection assistant, guide)
+        const go = () => { if (busy() && tries++ < 20) { setTimeout(go, 2000); return; } if (!busy()) tour(PG, false); };
+        setTimeout(go, 1800); }
     }
+    else if (Q) { Q.skip("guide"); Q.skip("tour"); }
     if (B.setupDone) setTimeout(tipOfDay, 6000);
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", startAll); else startAll();

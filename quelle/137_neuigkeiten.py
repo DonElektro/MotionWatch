@@ -111,6 +111,7 @@ def news_state(who="web", lang=None):
         items = [{"v": v, "t": ent[v]} for v in vs]
     items = [news_link_item(x, lang) for x in items]
     return {"version": cur, "show": bool(items) and bool(CFG.get("news_popup", True)), "items": items, "next": news_next(),
+            "fresh": not seen,                               # 639zzs: never seen any = a new device - the browser shows no news then
             "done": len(MAKEOVER_DONE), "total": len(MAKEOVER_ALL), "links": news_links_on(),
             "lt": {"go": news_hint("neu_link", lang), "sim": news_hint("neu_in_sim", lang)}}
 
