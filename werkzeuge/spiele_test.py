@@ -63,7 +63,8 @@ bewegt und markiert, Antwort des Computers auf der untersten und obersten Stufe 
 (Dame eingestellt, Matt erlaubt, Patt; beide Knöpfe), Zug zurück, Umwandlung, Rochade, en passant, Matt / Patt / Remis,
 zu zweit mit automatischem Drehen, Aufgeben, Einstellungen, Speichern und «Weiterspielen», ohne Speicher, Ersatz-Motor bei
 gesperrter .wasm-Datei und bei hängendem Motor, ganze Partien Motor gegen Motor über die Regeln, keine Anfrage nach
-aussen, keine Fehler in der Konsole, alle Knöpfe mindestens 44 px. Solange es nicht in der ZIP ist:
+aussen, keine Fehler in der Konsole, alle Knöpfe mindestens 44 px; «Zwei Handys»: Erstellen / Code-Feld, Prüfung des Codes
+(das Zusammenspiel zweier Handys über MoveEye prüft werkzeuge/schach_fern_test.py). Solange es nicht in der ZIP ist:
 python3 werkzeuge/spiel_einbauen.py games/schach --nach /tmp/t.zip && python3 werkzeuge/spiele_test.py --zip /tmp/t.zip --nur schach
 
 Die Spiele laufen hier wie am Spiele-Port von MoveEye unter /g/<ordner>/ und bekommen einen «✕ Zurück»-Knopf (#mw-back).
@@ -1490,6 +1491,33 @@ def schach_pruefen(br, pw, base, fehler, bilder):
             f(name, f"Selbstspiel: {r}")
         if pg.__aussen:
             f(name, f"Anfragen nach aussen: {sorted(set(pg.__aussen))[:3]}")
+    except Exception as e:
+        f(name, f"{e.__class__.__name__}: {str(e)[:300]}")
+    ctx.close()
+
+    # ---------- 2b. «Zwei Handys» im Fenster «Neues Spiel» (die Vermittlung selbst: werkzeuge/schach_fern_test.py) ----------
+    name = "Zwei Handys"
+    ctx, pg = seite(name, pw.devices["iPhone 13"])
+    try:
+        ctx.route("**/schachfern/**", lambda r: r.fulfill(status=200, content_type="application/json", body='{"ok": false, "fehler": "weg"}'))
+        druecke(pg, "#segGegner button[data-w=fern]")
+        if not (pg.locator("#bFernNeu").is_visible() and pg.locator("#fernCodeEin").is_visible()) or pg.locator("#bSpielen").is_visible() or pg.locator("#selStufe").is_visible():
+            f(name, "«Zwei Handys»: «Neues Spiel erstellen» / Code-Feld fehlen oder «Spielen» / Stärke sichtbar")
+        klein(pg, name, "Zwei Handys")
+        bild(pg, "13_zwei_handys")
+        pg.locator("#fernCodeEin").fill("k7")
+        druecke(pg, "#bFernBei")
+        if "4 Zeichen" not in pg.inner_text("#fernFehler"):
+            f(name, f"zu kurzer Code: {pg.inner_text('#fernFehler')!r}")
+        pg.locator("#fernCodeEin").fill("k7p-3x")
+        if pg.input_value("#fernCodeEin") != "K7P3":
+            f(name, f"Code-Feld: gross, ohne Zeichen dazwischen, 4 lang: {pg.input_value('#fernCodeEin')!r}")
+        druecke(pg, "#bFernBei"); pg.wait_for_timeout(300)
+        if "Kein Spiel mit diesem Code" not in pg.inner_text("#fernFehler") or z(pg)["fern"]:
+            f(name, f"unbekannter Code: {pg.inner_text('#fernFehler')!r}")
+        druecke(pg, "#segGegner button[data-w=motor]")
+        if not pg.locator("#bSpielen").is_visible() or pg.locator("#nurFern").is_visible():
+            f(name, "zurück zu «Computer»: «Spielen» fehlt")
     except Exception as e:
         f(name, f"{e.__class__.__name__}: {str(e)[:300]}")
     ctx.close()

@@ -21,6 +21,7 @@ SPIELE_PAGE = SPIELE_PAGE.replace("/*GAMETILES*/", GAME_TILES_CSS, 1)
 
 
 GAMESRV = {"port": 0, "msg": ""}
+GAMESRV_API = {}                      # 639zzr: address beginning -> handler(h, method, path), the only non-file addresses of the games port
 GAMES_MOVED = {"chess": "schach"}     # 3.76.0: a game that got a new folder - old bookmarks (/g/chess/chess.html) go to the new game
 STREAMS = {"n": 0, "ip": {}, "lock": threading.Lock()}
 
@@ -42,6 +43,9 @@ def games_server_start():
                 self.send_error(403, "only in the own Wi-Fi"); return
             from urllib.parse import unquote, urlsplit
             path = unquote(urlsplit(self.path).path)
+            for pre_, fn_ in GAMESRV_API.items():
+                if path.startswith(pre_):
+                    return fn_(self, "GET", path)
             m = re.fullmatch(r"/g/([A-Za-z0-9_\-]{1,40})/?(.*)", path)
             p_ = games_file(m.group(1), m.group(2)) if m else None
             if not p_ and m and m.group(1) in GAMES_MOVED and games_file(GAMES_MOVED[m.group(1)], ""):   # the old folder is gone, the new game is there
@@ -87,6 +91,16 @@ def games_server_start():
                 self.send_header(k_, v_)
             self.send_header("Content-Length", str(len(data)))
             self.end_headers(); self.wfile.write(data)
+
+        def do_POST(self):                      # 639zzr: only the addresses in GAMESRV_API (chess for two phones)
+            if not lan_guest_ip(self.client_address[0], self.headers.get("X-Forwarded-For", "")):
+                self.send_error(403, "only in the own Wi-Fi"); return
+            from urllib.parse import unquote, urlsplit
+            path = unquote(urlsplit(self.path).path)
+            for pre_, fn_ in GAMESRV_API.items():
+                if path.startswith(pre_):
+                    return fn_(self, "POST", path)
+            self.send_error(405)
 
     class S(socketserver.ThreadingMixIn, http.server.HTTPServer):
         daemon_threads = True
