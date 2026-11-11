@@ -366,7 +366,7 @@ def list_recordings(args, watch=None):
                      "persons": meta.get("persons"), "schedules": [plans[i]["name"] for i in it["sched"]],
                      "playable": (codec in BROWSER_CODECS) if codec else None, "snap": it["snap"], "fav": bool(meta.get("fav")),
                      "recording": it["n"] in live_set, "timelapse": bool(it.get("tl")), "gps": it.get("gps"), "place": it.get("place"),
-                     "false": it["meta"].get("false")})
+                     "false": it["meta"].get("false"), "note": it["meta"].get("note")})   # 639zzp: the note of a QR card
     now = datetime.now()
     points = None
     if args.get("map") == "1":                      # every filtered recording with a location (for the map)
