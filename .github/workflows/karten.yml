@@ -12,6 +12,9 @@
 # überschrieben. Keine Geheimnisse: nur GITHUB_TOKEN.
 name: Offline-Karten
 on:
+  push:                     # VORLÄUFIG (Messlauf auf dem Helfer-Zweig) - vor dem Zusammenführen entfernen
+    branches: [mw-offline-karten]
+    paths: [".github/workflows/karten.yml", "werkzeuge/karten/**"]
   workflow_dispatch:
     inputs:
       release:
