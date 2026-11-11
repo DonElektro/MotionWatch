@@ -815,7 +815,11 @@ KQ_HEAD_JS = r"""<script>
         row.appendChild(s); }
       w.appendChild(row);
     }
-    if (K.admin) w.appendChild(kqInstallBox());
+    if (K.admin) {                                           // only when it is seen (no request while the settings stay closed)
+      const slot = document.createElement("div"); slot.style.minHeight = "1px"; w.appendChild(slot);
+      const go = () => { if (!slot.firstChild) slot.appendChild(kqInstallBox()); };
+      if (window.IntersectionObserver) { const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { io.disconnect(); go(); } }); io.observe(slot); } else go();
+    }
     box.appendChild(w);
   };
   // links «📍 …» to openstreetmap.org (status, diary) open the own map when it is there

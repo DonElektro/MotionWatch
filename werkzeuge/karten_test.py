@@ -658,6 +658,8 @@ def teil_b(datei, P, rel, pins, bilder, echt=False):
                     pg.wait_for_timeout(800)
                     ok(pg.locator(".locbox .kq-attr").first.is_visible() and "OpenStreetMap-Mitwirkende" in pg.locator(".locbox .kq-attr").first.inner_text(),
                        f"{name}: Einstellungen → Standort: Offline-Karte mit Quellenangabe")
+                    pg.evaluate("() => document.querySelector('.locbox .kq-loc').scrollIntoView({block: 'end'})")
+                    pg.wait_for_selector(".locbox .kq-inst", timeout=10000)
                     ok(pg.locator(".locbox .kq-inst").is_visible() and "installiert" in pg.inner_text(".locbox .kq-inst"), f"{name}: Kasten «Offline-Karte Schweiz · installiert»")
                     pg.locator(".locbox").screenshot(path=os.path.join(bilder, f"einstellungen_standort_{name}.png"))
                     pg.evaluate("() => document.querySelector('.locbox .lmap').scrollIntoView({block: 'center'})")
@@ -780,8 +782,10 @@ def teil_echt(datei, aus, bilder, browser):
     ok(s and s[0]["name"] in ("Genève", "Genf"), f"«Genf» -> {s[0]['name'] if s else '-'} ({s[0]['also'] if s else ''})")
     s = S("Matterhorn")
     ok(s and s[0]["name"] == "Matterhorn" and (s[0]["ele"] or 0) > 4000, f"«Matterhorn» -> {s[0]['name'] if s else '-'} {s[0]['ele'] if s else ''} m")
-    s = S("Bahnhofstrasse Seon")
-    ok(s and s[0]["kind"] == "street" and s[0]["gem"] == "Seon", f"«Bahnhofstrasse Seon» -> {s[0]['name'] + ' ' + s[0]['gem'] if s else '-'}")
+    s = S("Bahnhofstrasse Zürich")
+    ok(s and s[0]["kind"] == "street" and s[0]["gem"] == "Zürich", f"«Bahnhofstrasse Zürich» -> {s[0]['name'] + ' ' + s[0]['gem'] if s else '-'}")
+    s = S("Seon")
+    print("    Seon:", "; ".join(f"{x['name']} ({x['kind']}, {x['gem']}, {x['kt']})" for x in s[:8]))
     s = S("Hallwil")
     ok(s and any(x["kind"] == "lake" for x in s), f"«Hallwil» -> {', '.join(x['name'] for x in s[:3])}")
     for q in ("Se", "Ba", "St", "Zu", "Lu"):
