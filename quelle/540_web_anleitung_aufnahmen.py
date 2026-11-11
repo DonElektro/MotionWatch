@@ -840,6 +840,7 @@ function card(it) {
   body.appendChild(el("b", "", it.time));
   body.appendChild(el("div", "mut", [fmtSize(it.size), it.persons ? it.persons + " " + t("persons") : "", it.timelapse ? "⏱ " + t("Timelapse") : (it.source || "")].filter(Boolean).join(" · ")));
   if (it.schedules.length) { const ch = el("div", "chips"); it.schedules.forEach(n => ch.appendChild(el("span", "chip", n))); body.appendChild(ch); }
+  if (it.note) body.appendChild(el("div", "mut", it.note));                    // 639zzp: the note of a QR card
   c.append(th, body);
   c.onclick = () => { if (selecting) { cb.checked = !cb.checked; toggleSel(it.name, cb.checked, c); } else openAt(items.indexOf(it), items); };
   return c;
@@ -889,7 +890,7 @@ function openAt(i, list) {
   if (i < 0 || i >= ML.length) return;
   modalIdx = i; const it = ML[i], token = ++modalToken;
   $("#modal").hidden = false;
-  $("#m-title").textContent = it.time; $("#m-meta").textContent = [fmtSize(it.size), it.source || "", it.schedules.join(", ")].filter(Boolean).join(" · ");
+  $("#m-title").textContent = it.time; $("#m-meta").textContent = [fmtSize(it.size), it.source || "", it.schedules.join(", "), it.note || ""].filter(Boolean).join(" · ");
   $("#m-dl").href = "/rec/file/" + encodeURIComponent(it.name) + "?dl=1"; $("#m-dl").setAttribute("download", it.name);
   $("#m-share").onclick = () => recShare(it); $("#m-share").title = t("Share");
   if (!$("#m-qr") && window.qrBtn) { const q = qrBtn(() => location.origin + "/rec/file/" + encodeURIComponent(ML[modalIdx].name), qrT("Recording"), {note: qrT("Opens the recording on the phone (with the password of MoveEye).")}); q.id = "m-qr"; $("#m-share").after(q); }   // 585
