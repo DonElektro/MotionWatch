@@ -99,7 +99,27 @@ button.platz.puls{animation:ppuls .7s ease-in-out 4}
 .stufe{display:flex;align-items:center;gap:3px;margin-top:3px;font-size:12px;color:var(--mut)}
 .stufe i{width:8px;height:8px;border-radius:50%;background:#2a3a52;display:block}
 .stufe b{font-weight:600;margin-left:4px}
-.stufe.st1 i.an{background:#3fcf6b}.stufe.st2 i.an{background:#ffd23f}.stufe.st3 i.an{background:#ff9a3c}.stufe.st4 i.an{background:#ff5a5f}
+.stufe.st1 i.an{background:#3fcf6b}.stufe.st2 i.an{background:#ffd23f}.stufe.st3 i.an{background:#ff9a3c}.stufe.st4 i.an{background:#ff5a5f}.stufe.st5 i.an{background:#c06bff;box-shadow:0 0 6px #c06bff}
+.karte .bz{display:block;font-size:12px;color:var(--mut);margin-top:2px}
+/* Raum-Anzeige (liegt über dem Bild, oben links) */
+#raumchip{position:absolute;left:8px;top:8px;z-index:3;pointer-events:none;background:rgba(14,22,33,.78);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:3px 10px;font-size:12.5px;font-weight:700;white-space:nowrap;max-width:calc(100% - 16px);overflow:hidden;text-overflow:ellipsis}
+/* Notizbuch: Knopf oben, Blatt über der Bühne */
+#bNotiz{position:relative}
+#bNotiz .zahl{position:absolute;right:2px;top:4px;min-width:16px;height:16px;border-radius:8px;background:var(--amber);color:#0e1621;font-size:11px;font-weight:800;line-height:16px;text-align:center;padding:0 3px}
+#bNotiz:not(.hat) .zahl{display:none}
+#bNotiz.neu{animation:ppuls .7s ease-in-out 3}
+#notizbuch{position:absolute;inset:0;z-index:6;background:rgba(8,13,20,.72);display:flex;align-items:center;justify-content:center;padding:12px}
+#notizbuch .k{background:#f6efd8;color:#2b2233;border-radius:16px;padding:12px 16px;max-width:420px;width:100%;max-height:100%;overflow:auto;box-shadow:0 8px 30px rgba(0,0,0,.5);
+  background-image:repeating-linear-gradient(transparent 0 27px,#d9cfb0 27px 28px)}
+#notizbuch h2{margin:0 0 6px;font-size:20px}
+#notizbuch ol{margin:0;padding-left:22px}
+#notizbuch li{margin:0 0 8px;line-height:1.3}
+#notizbuch li b{display:block;font-size:14px}
+#notizbuch li span{font-size:14.5px}
+#notizbuch .leer{color:#6b5a48;font-size:14.5px}
+#notizbuch .kn{display:flex;justify-content:flex-end;margin-top:6px}
+#notizbuch .kn button{min-height:44px;padding:0 16px;border-radius:12px;background:var(--amber);color:#0e1621;font-weight:700}
+#ende p.zeit{color:var(--txt);font-weight:600}
 .krone{color:#ffd23f;font-weight:700}
 #titel2{display:none;flex:0 0 auto;text-align:center;font-weight:700;font-size:16px;padding:9px 12px 8px;background:#0a111a}
 @media (max-width:520px){
@@ -149,6 +169,9 @@ button.platz.puls{animation:ppuls .7s ease-in-out 4}
 #ende .kn{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:12px}
 #ende .kn button{min-height:46px;padding:0 16px;border-radius:12px;background:#24324a;font-weight:700}
 #ende .kn button.haupt{background:var(--amber);color:#0e1621}
+/* am Handy steht die Schlussgeschichte schon im Textstreifen – im Kärtchen weglassen, damit «Nochmal» / «Weiter» ohne Schieben sichtbar bleiben */
+@media (max-width:520px),(max-height:520px){#ende{padding:8px}#ende .k{padding:12px 14px}#ende p.gesch{display:none}#ende .gs{margin:4px 0}#ende .gs svg{width:46px;height:46px}#ende .kn{margin-top:8px}}
+@media (orientation:landscape) and (max-height:520px){#ende .k{max-width:560px;padding:8px 14px}#ende h2{font-size:19px;margin:0}#ende .gs svg{width:38px;height:38px}#ende p{margin:2px 0}#ende p.abz{margin:0 0 2px;padding:1px 12px}#ende .kn button{min-height:44px}}
 
 /* ---- gemeinsame Zeichen-Klassen der Bilder (Comic-Stil: Flächen mit dunklem Rand) ---- */
 .l{stroke:#3a3340;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}
@@ -183,6 +206,7 @@ button.platz.puls{animation:ppuls .7s ease-in-out 4}
   <div class="hud">
     <span id="hudSterne" hidden></span>
     <button class="ib" id="bNeu" type="button" hidden aria-label="Bild neu beginnen"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg></button>
+    <button class="ib" id="bNotiz" type="button" hidden aria-label="Notizbuch"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h11a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6z"/><path d="M6 3v18M9 8h7M9 12h7M9 16h4M4 7h3M4 12h3M4 17h3"/></svg><span class="zahl"></span></button>
     <button class="ib" id="bTipp" type="button" hidden aria-label="Tipp"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.3 1 2.1h5c0-.8.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></svg></button>
     <button class="ib" id="bTon" type="button" aria-label="Ton"></button>
   </div>
@@ -203,9 +227,11 @@ button.platz.puls{animation:ppuls .7s ease-in-out 4}
       <svg id="bild" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Rätselbild"></svg>
       <div id="tast"></div>
       <svg id="fx" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div id="raumchip" hidden></div>
       <div id="spul"><div><svg width="30" height="30" viewBox="0 0 24 24" fill="#ffd23f"><path d="M11 6v12L2.5 12zM21 6v12l-8.5-6z"/></svg><span>Zurück …</span></div></div>
     </div>
     <div id="ende" hidden></div>
+    <div id="notizbuch" hidden></div>
   </div>
   <div id="leiste"><div id="tasche" hidden></div><div id="text" aria-live="polite"></div></div>
 </main>
@@ -221,6 +247,11 @@ button.platz.puls{animation:ppuls .7s ease-in-out 4}
 <script src="szenen/08_leuchtturm.js"></script>
 <script src="szenen/09_museum.js"></script>
 <script src="szenen/10_uhrturm.js"></script>
+<script src="szenen/11_uboot.js"></script>
+<script src="szenen/12_bahnhof.js"></script>
+<script src="szenen/13_sternwarte.js"></script>
+<script src="szenen/14_burg.js"></script>
+<script src="szenen/15_erfinder.js"></script>
 <script>WASNUN.los();</script>
 <script>/* MoveEye: der eigene Zurück-Link («../») führt zur Spielesammlung von MoveEye (löst den Knopf «✕ Zurück» aus) */
 document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest("a");if(!a||a.closest("#mw-back"))return;var h=a.getAttribute("href");if(h!=="../"&&h!=="index.html")return;var b=document.querySelector("#mw-back a");if(b){e.preventDefault();e.stopPropagation();b.click()}},true);</script>
