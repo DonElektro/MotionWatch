@@ -571,7 +571,7 @@ def main():
     ap.add_argument("--eintragen")
     ap.add_argument("--pbf", action="append", default=[])
     ap.add_argument("--datum")
-    ap.add_argument("--zoom", default="auto", choices=("auto", "14", "15"))
+    ap.add_argument("--zoom", default="15", choices=("auto", "14", "15"))   # Besitzer: lieber mehr Details (z15)
     ap.add_argument("--pmtiles", default="pmtiles")
     a = ap.parse_args()
     if a.kacheln:

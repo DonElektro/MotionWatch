@@ -14,7 +14,7 @@ name: Offline-Karten
 on:
   push:                     # VORLÄUFIG (Messlauf auf dem Helfer-Zweig) - vor dem Zusammenführen entfernen
     branches: [mw-offline-karten]
-    paths: [".github/workflows/karten.yml", "werkzeuge/karten/**"]
+    paths: [".github/workflows/karten.yml", "werkzeuge/karten/**", "werkzeuge/karten_test.py"]
   workflow_dispatch:
     inputs:
       release:
@@ -26,10 +26,10 @@ on:
         description: "Tag für «echt» (karten-N, = TAG in werkzeuge/karten/paket.py und KQ_TAG in quelle/639zzq)"
         default: karten-1
       zoom:
-        description: "höchste Zoomstufe der Karte: auto (z15, wenn unter 800 MB, sonst z14) · 14 · 15"
+        description: "höchste Zoomstufe: 15 (Entscheid Besitzer: mehr Details – Wege, Gebäude, kleine Bäche) · 14 · auto (z15 unter 800 MB)"
         type: choice
-        options: [auto, "14", "15"]
-        default: auto
+        options: ["15", "14", auto]
+        default: "15"
       datum:
         description: "Protomaps-Build JJJJMMTT (leer = der neueste der letzten 15 Tage)"
         default: ""
@@ -98,7 +98,7 @@ jobs:
         run: |
           set -e
           python3 -I werkzeuge/karten/paket.py --kacheln --aus "$RUNNER_TEMP/out" --pmtiles "$RUNNER_TEMP/pmtiles" \
-            --zoom "${{ inputs.zoom || 'auto' }}" ${{ inputs.datum != '' && format('--datum {0}', inputs.datum) || '' }}
+            --zoom "${{ inputs.zoom || '15' }}" ${{ inputs.datum != '' && format('--datum {0}', inputs.datum) || '' }}
           ls -la "$RUNNER_TEMP/out"
           rm -f "$RUNNER_TEMP"/out/ch-z1[45].pmtiles
       - name: Web-Paket (MapLibre, Stil, Schriften, Symbole, Lizenzen)
