@@ -296,6 +296,12 @@ def uebergang(a, tmp):
         ok(False, "Bau der neuen Version %s (bauen.py --neue-version)" % neu_v)
         return
     shutil.rmtree(os.path.join(bau, "quelle"))
+    import zipfile
+    with zipfile.ZipFile(os.path.join(bau, neu_zip)) as z:  # Ablage: stored, so that git keeps only the difference per version
+        zi = z.getinfo("daten.json")
+    ok(zi.compress_type == zipfile.ZIP_STORED and os.path.getsize(os.path.join(bau, neu_zip)) < 32 * 1024 * 1024,
+       "neue Zusatzdatei ungepackt (%.1f MB, Geräte nehmen bis 64 MiB) - alte Geräte mit gepackter ZIP holen sie in A / B / C"
+       % (os.path.getsize(os.path.join(bau, neu_zip)) / 1e6))
 
     # ---- throwaway key, server folder, versions.json --------------------------------------------------------------------
     key = os.path.join(tmp, "test_schluessel.txt")
