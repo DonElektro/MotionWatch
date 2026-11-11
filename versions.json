@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-11 19:02",
+ "generated": "2026-11-11 21:28",
  "versions": [
+  {
+   "version": "3.77.0",
+   "file": "webcam_bewegung_3_77_0.py",
+   "url": "",
+   "sha256": "c9f749e5d38e83f2cd0a06a75d7dd8e8893f5b645d416d55c9bc27610bccc7f0",
+   "date": "2026-11-11 21:28",
+   "notes": "Schach zu zweit mit je einem Handy: Ein Handy erstellt ein Spiel und zeigt einen kurzen Code (oder QR-Code), das andere tritt bei. Die Partie läuft über dein MoveEye, auch für Gäste, solange «Spiele freigeben» an ist. Remis anbieten, Zug zurück auf Anfrage, Revanche, Zuschauen mit dem Code; nach einer Verbindungspause geht es von selbst weiter. Spielesammlung einmal neu laden: Mehr → Spielen → Spielecke → «Installieren / aktualisieren»",
+   "size": 3923070,
+   "sig": "b3830e7e8c8458014864c632826310d0f4fa0031e7b2d7b18efc57d1c9351a25575a077265df9e3238a8b436e4a1c5403307c21f9152428f91b09f3fdb0c1c0d",
+   "data": {
+    "file": "moveeye_daten_3_77_0.zip",
+    "url": "",
+    "sha256": "016f1b88dd6b96f4c1505d239aa01afa7f2b95186ca891f4399679118002298e",
+    "size": 4940121,
+    "sig": "53e5e5f44676f5c8300bac87f74a896e34534d543bbed583ba2d7da9202e10b5e73b47312a05ef32123c64220df3961cabfb0da259e7f7b665dcd2f9a9a8ed09"
+   }
+  },
   {
    "version": "3.76.1",
    "file": "webcam_bewegung_3_76_1.py",
    "url": "",
    "sha256": "07337715d9d6417200c983266daeef21101fcc7a671468cabe098f9ba63e8370",
-   "date": "2026-11-11 19:01",
+   "date": "2026-11-11 19:22",
    "notes": "Spiel «Was nun?»: Im Hochformat reagiert das Spiel jetzt genau dort, wo man tippt (das Bild verschob sich vorher nach dem Antippen leicht). Spielesammlung einmal neu laden: Mehr → Spielen → Spielecke → «Installieren / aktualisieren»",
    "size": 3897901,
    "sig": "2778d334c70499e2120f178539318679e5a0b03b64e1778ebf3a75c424bd45b68a8303d3aff692c10c34e67fc702c5cce3d7546a2e72b8191ea85c8645124a0b",
@@ -136,23 +153,6 @@
     "sha256": "17fd3db716560c8056e9ac75af77e5508a91ee2a0723891856e4c82524b2959f",
     "size": 4904892,
     "sig": "8797d2808af6bb4f38049c14896bc2f2fd6191e6575ef933abff900b57a7a9d9335a6a50d4d8e263feacb452878809d977644d7162d3ac660c343f585f4bcf09"
-   }
-  },
-  {
-   "version": "3.68.1",
-   "file": "webcam_bewegung_3_68_1.py",
-   "url": "",
-   "sha256": "e2c83f5e8dae42638d02d2a17220e7da2e30429f8a14cca1e492f037e81e2c8a",
-   "date": "2026-11-09 08:34",
-   "notes": "Härtung: hochgeladene Bilder (Untersuchen, Datentausch-Vorschau, KI-Helfer) – Grösse aus dem Dateikopf (JPEG/PNG/WebP), Pixelbomben über 60 MP oder 20 000 px je Seite werden ohne Dekodieren abgewiesen",
-   "size": 3791078,
-   "sig": "3b2c9846d8103ec0d98bd1dfc0c7c1651355ca631979ddf2b790395c58dcfb75b6e837d2b53d3f28960a8fe35b42cc38b04486567e214216969e5c52c2e70408",
-   "data": {
-    "file": "moveeye_daten_3_68_1.zip",
-    "url": "",
-    "sha256": "f2fb33069445a88c3470ab46026f9dc9393e2cf35c7d55f2b24f4132cdaf980d",
-    "size": 4898311,
-    "sig": "421fad494968314e5a40730b3a344754ab6a4e562d557cd7ca16aab2d89a081fc131bbd8206d32e78bcb7c073b845b10973c1950af1a656a8c026ae81b65d10b"
    }
   },
   {

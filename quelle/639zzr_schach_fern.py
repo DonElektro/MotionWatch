@@ -703,9 +703,11 @@ def smalltv_routes(app, reply, body):                     # + 639zzr
     import hmac
 
     def run(op):
+        if request.method == "POST" and not 0 <= (request.content_length if request.content_length is not None else -1) <= 4096:
+            return Response(json.dumps({"ok": False, "fehler": "gross"}), 413, mimetype="application/json")   # size first: nothing big (or without a length) is read
         d = (request.get_json(force=True, silent=True) or {}) if request.method == "POST" else {}
-        if request.method == "POST" and (request.content_length or 0) > 4096:
-            return Response(json.dumps({"ok": False, "fehler": "gross"}), 413, mimetype="application/json")
+        if not isinstance(d, dict):
+            d = {}
         st, out = sf_api(op, request.method, request.args.to_dict(), d, sf_ip(request.remote_addr, request.headers.get("X-Forwarded-For", "")))
         if isinstance(out, tuple):
             return Response(out[0], st, mimetype=out[1], headers={"Cache-Control": "no-store", "X-Content-Type-Options": "nosniff",

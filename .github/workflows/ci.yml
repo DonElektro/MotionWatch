@@ -115,6 +115,9 @@ jobs:
       - name: Fertige Spiele zum Nachladen (nur der Admin lädt, Prüfsumme, Platz, Entpacken, Kachel, Spiele-Port, Entfernen - mit Ersatz-Paketen)
         timeout-minutes: 4
         run: python3 werkzeuge/fertigspiele_test.py
+      - name: Schach zu zweit mit je einem Handy (Vermittlung auf dem Pi - Regeln, Code, Sitz-Schlüssel, Grenzen, Gäste, Browser mit zwei Handys)
+        timeout-minutes: 8
+        run: python3 werkzeuge/schach_fern_test.py
       - name: Spiele unter «Mehr» - ein Einstieg «Spielen», Kachel «Spielecke», Freigeben von der Spielecke aus
         timeout-minutes: 5
         run: python3 werkzeuge/spiele_ordnen_test.py
