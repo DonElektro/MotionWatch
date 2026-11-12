@@ -173,7 +173,7 @@ Unter etwa 800 m ist es meist ein Feldhase, über etwa 1500 m meist ein Schneeha
 - Verdacht auf Vergiftung: sofort Tox Info Suisse, Telefon 145. Bei einem medizinischen Notfall: 144.
 - Pflanzenteile, Pilzreste, Rüstabfälle und auch Erbrochenes aufbewahren – Fachleute können daran die Art bestimmen.
 
-MoveEye hilft beim Kennenlernen: Mit «🌿 Bestimmen» im Datentausch schlägt MoveEye zu einem Foto Arten vor. Das ist ein Hinweis zum Nachschlagen, keine Freigabe zum Essen."""),
+MoveEye hilft beim Kennenlernen: Mit «🌿 Bestimmen» im Digitalen Rucksack schlägt MoveEye zu einem Foto Arten vor. Das ist ein Hinweis zum Nachschlagen, keine Freigabe zum Essen."""),
   ("Bärlauch und seine giftigen Doppelgänger", """Die Verwechslung von Bärlauch mit der Herbstzeitlosen ist ein «Klassiker» unter den Vergiftungen.
 
 - Bärlauch: Jedes Blatt hat einen langen, dünnen Stiel und wächst einzeln aus dem Boden. Riecht beim Zerreiben nach Knoblauch.

@@ -332,7 +332,7 @@ def teil_c(base, gp, bilder, tmp):
             pg.locator("#unt-bar button", has_text="Untersuchen").click()
             pg.wait_for_selector("#unt-ov .ub .ul", timeout=60000); pg.wait_for_timeout(600)
             txt = pg.inner_text("#unt-bar")
-            ok("Fund" in txt and "Gespeichert im Datentausch" in txt and "Tox Info Suisse 145" in txt, f"{name}: Ergebnis-Leiste ({txt[:90]!r})")
+            ok("Fund" in txt and "Gespeichert im Digitalen Rucksack" in txt and "Tox Info Suisse 145" in txt, f"{name}: Ergebnis-Leiste ({txt[:90]!r})")
             pg.screenshot(path=os.path.join(bilder, f"untersuchen_ergebnis_{name}.png"))
             pb = pg.evaluate("() => { const b = document.querySelector('#unt-ov .ub.person'); return b ? [parseFloat(b.style.left), parseFloat(b.style.top), parseFloat(b.style.width), parseFloat(b.style.height)] : null; }")
             ok(pb and 10 < pb[0] < 40 and pb[2] > 1.5 and pb[3] > 10, f"{name}: Person-Rahmen dort, wo die Person steht ({pb})")

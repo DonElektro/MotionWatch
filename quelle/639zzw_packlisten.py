@@ -2057,7 +2057,7 @@ button.pl-ib.on{background:var(--org);color:#16110a;border-color:var(--org)}
 <main id="pl">
   <div class="pl-msg" id="pl-msg" hidden></div>
   <section id="pl-ov">
-    <div class="pl-h"><a class="pl-back" href="/tausch">‹ <span data-i18n="File exchange">File exchange</span></a></div>
+    <div class="pl-h"><a class="pl-back" href="/tausch">‹ <span data-i18n="File exchange">Digital backpack</span></a></div>
     <div class="pl-h"><h2>🎒 <span data-i18n="Packing lists">Packing lists</span></h2></div>
     <div class="pl-bar" id="pl-ovbar" hidden><button type="button" id="pl-new">＋ <span data-i18n="New list">New list</span></button>
       <button type="button" class="sec" id="pl-imp">⬇ <span data-i18n="Import">Import</span></button></div>
@@ -2311,7 +2311,7 @@ Object.assign(I18N.de, /*PLDE*/{});
     im.alt = it.name; im.src = "/tausch/pack/b/" + S.L.id + "/" + it.id + ".jpg?p=1&v=" + it.photo; bd.appendChild(im);
     ov.append(bar, bd); ov.addEventListener("click", e => { if (e.target === ov || e.target === bd) ov.remove(); }); document.body.appendChild(ov);
   }
-  // ---- the photo of an item: the upload of the file exchange (same script, cut out of its page) ----
+  // ---- the photo of an item: the upload of the digital backpack (same script, cut out of its page) ----
   let upPaint = null;
   function paintJobs() { if (upPaint) upPaint(); }
   /*PLUP*/
@@ -2777,7 +2777,7 @@ _PL_DE = {_k: DE[_k] for _k in set(re.findall(r'\bt[f]?\(\s*"((?:[^"\\]|\\.)+)"'
 
 # ---- the manual (5 languages) ------------------------------------------------------------------------------------------------------
 _HELP_PL = {
-    "de": ('<section id="packlisten" data-icon="🎒"><h2>Packlisten</h2><p>Unter <i>Mehr → 📁 Datentausch → 🎒 Packlisten</i> (oder direkt <code>/tausch/packlisten</code>) '
+    "de": ('<section id="packlisten" data-icon="🎒"><h2>Packlisten</h2><p>Unter <i>Mehr → 📁 Digitaler Rucksack → 🎒 Packlisten</i> (oder direkt <code>/tausch/packlisten</code>) '
            'führst du Packlisten mit Gewicht, Anzahl, Kategorie, Foto und Häkchen.</p><ul>'
            '<li><b>Schnell eintragen:</b> unten «Name, Gewicht» tippen, z. B. <code>Stirnlampe 85 g</code>, <code>2x Socken 80 g</code>, <code>Zelt (1.8 kg)</code>. Das Gewicht gilt pro Stück.</li>'
            '<li><b>Importieren:</b> Textdatei (ein Gegenstand pro Zeile), Excel (.xlsx), CSV oder Text aus der Notizen-App einfügen. Du siehst immer zuerst eine Vorschau: Spalten zuordnen, Zeilen ändern oder abwählen; Doppeltes ist markiert. Zeilen, die mit «:» enden oder gross geschrieben sind, werden Kategorien.</li>'
@@ -2786,9 +2786,9 @@ _HELP_PL = {
            '<li><b>Gemeinsam packen:</b> alle öffnen dieselbe Liste und haken auf ihrem Handy ab; der Stand erscheint bei allen nach wenigen Sekunden («geändert von …»).</li>'
            '<li><b>Foto:</b> ✎ → «Foto aufnehmen oder wählen». Ohne Foto zeigt MoveEye das Symbol der Kategorie.</li>'
            '<li><b>Mehr (⋯):</b> Vorlagen (Tagestour, Zeltnacht, Winter), Liste kopieren, alle Häkchen zurücksetzen, drucken, Export als CSV, JSON oder ZIP mit Fotos.</li>'
-           '<li><b>Rechte</b> wie der Datentausch: «Dateien: ansehen» sieht die Listen, «Dateien: hochladen» ändert sie; Gäste mit dem Gast-Link sehen gemeinsame Listen nur an. '
-           'Die Listen liegen beim Datentausch (Ordner <code>tausch/pack</code>) und sind wie er in keiner Sicherung – nutze den ZIP-Export.</li></ul></section>\n'),
-    "en": ('<section id="packlisten" data-icon="🎒"><h2>Packing lists</h2><p>Under <i>More → 📁 File exchange → 🎒 Packing lists</i> (or directly <code>/tausch/packlisten</code>) '
+           '<li><b>Rechte</b> wie der Digitale Rucksack: «Dateien: ansehen» sieht die Listen, «Dateien: hochladen» ändert sie; Gäste mit dem Gast-Link sehen gemeinsame Listen nur an. '
+           'Die Listen liegen beim Digitalen Rucksack (Ordner <code>tausch/pack</code>) und sind wie er in keiner Sicherung – nutze den ZIP-Export.</li></ul></section>\n'),
+    "en": ('<section id="packlisten" data-icon="🎒"><h2>Packing lists</h2><p>Under <i>More → 📁 Digital backpack → 🎒 Packing lists</i> (or directly <code>/tausch/packlisten</code>) '
            'you keep packing lists with weight, quantity, category, photo and ticks.</p><ul>'
            '<li><b>Quick add:</b> type «name, weight» at the bottom, e.g. <code>Headlamp 85 g</code>, <code>2x Socks 80 g</code>, <code>Tent (1.8 kg)</code>. The weight is per piece.</li>'
            '<li><b>Import:</b> a text file (one item per line), Excel (.xlsx), CSV, or paste text from a notes app. You always see a preview first: choose the columns, change or untick rows; doubles are marked. Lines ending with «:» or written in capitals become categories.</li>'
@@ -2797,9 +2797,9 @@ _HELP_PL = {
            '<li><b>Packing together:</b> everybody opens the same list and ticks on their own phone; all see the state within a few seconds («changed by …»).</li>'
            '<li><b>Photo:</b> ✎ → «Take or choose a photo». Without a photo MoveEye shows the symbol of the category.</li>'
            '<li><b>More (⋯):</b> templates (day hike, night in the tent, winter), copy a list, reset all ticks, print, export as CSV, JSON or ZIP with photos.</li>'
-           '<li><b>Rights</b> as in the file exchange: «Files: see» sees the lists, «Files: upload» changes them; guests with the guest link only look at shared lists. '
-           'The lists are stored with the file exchange (folder <code>tausch/pack</code>) and, like it, are in no backup – use the ZIP export.</li></ul></section>\n'),
-    "fr": ('<section id="packlisten" data-icon="🎒"><h2>Listes de bagages</h2><p>Sous <i>Plus → 📁 Échange de fichiers → 🎒 Listes de bagages</i> (ou <code>/tausch/packlisten</code>) '
+           '<li><b>Rights</b> as in the digital backpack: «Files: see» sees the lists, «Files: upload» changes them; guests with the guest link only look at shared lists. '
+           'The lists are stored with the digital backpack (folder <code>tausch/pack</code>) and, like it, are in no backup – use the ZIP export.</li></ul></section>\n'),
+    "fr": ('<section id="packlisten" data-icon="🎒"><h2>Listes de bagages</h2><p>Sous <i>Plus → 📁 Sac à dos numérique → 🎒 Listes de bagages</i> (ou <code>/tausch/packlisten</code>) '
            'tu gères des listes avec poids, quantité, catégorie, photo et coches.</p><ul>'
            '<li><b>Ajout rapide :</b> en bas «nom, poids», p. ex. <code>Lampe frontale 85 g</code>, <code>2x Chaussettes 80 g</code>. Le poids vaut par pièce.</li>'
            '<li><b>Importer :</b> fichier texte (un objet par ligne), Excel (.xlsx), CSV ou texte collé. Toujours d’abord un aperçu : colonnes, lignes, doublons marqués.</li>'
@@ -2807,8 +2807,8 @@ _HELP_PL = {
            '<li><b>🛒 À acheter :</b> marque ce qui manque – l’onglet est ta liste de courses.</li>'
            '<li><b>Ensemble :</b> chacun coche sur son téléphone, tous voient l’état après quelques secondes.</li>'
            '<li><b>Plus (⋯) :</b> modèles, copier, enlever les coches, imprimer, export CSV / JSON / ZIP avec photos.</li>'
-           '<li><b>Droits</b> comme l’échange de fichiers : «voir» regarde, «envoyer» modifie ; les invités regardent seulement. Dans aucune sauvegarde – utilise l’export ZIP.</li></ul></section>\n'),
-    "it": ('<section id="packlisten" data-icon="🎒"><h2>Liste di cose da portare</h2><p>In <i>Altro → 📁 Scambio di file → 🎒 Liste</i> (o <code>/tausch/packlisten</code>) '
+           '<li><b>Droits</b> comme le sac à dos numérique : «voir» regarde, «envoyer» modifie ; les invités regardent seulement. Dans aucune sauvegarde – utilise l’export ZIP.</li></ul></section>\n'),
+    "it": ('<section id="packlisten" data-icon="🎒"><h2>Liste di cose da portare</h2><p>In <i>Altro → 📁 Zaino digitale → 🎒 Liste</i> (o <code>/tausch/packlisten</code>) '
            'tieni liste con peso, quantità, categoria, foto e spunte.</p><ul>'
            '<li><b>Aggiunta rapida:</b> in basso «nome, peso», p. es. <code>Lampada frontale 85 g</code>, <code>2x Calze 80 g</code>. Il peso vale per pezzo.</li>'
            '<li><b>Importare:</b> file di testo (un oggetto per riga), Excel (.xlsx), CSV o testo incollato. Sempre prima un’anteprima: colonne, righe, doppi segnati.</li>'
@@ -2816,8 +2816,8 @@ _HELP_PL = {
            '<li><b>🛒 Da comprare:</b> segna ciò che manca – la scheda è la tua lista della spesa.</li>'
            '<li><b>Insieme:</b> ognuno spunta sul proprio telefono, tutti vedono lo stato dopo pochi secondi.</li>'
            '<li><b>Altro (⋯):</b> modelli, copiare, togliere le spunte, stampare, export CSV / JSON / ZIP con foto.</li>'
-           '<li><b>Diritti</b> come lo scambio di file: «vedere» guarda, «caricare» modifica; gli ospiti guardano soltanto. In nessun backup – usa l’export ZIP.</li></ul></section>\n'),
-    "rm": ('<section id="packlisten" data-icon="🎒"><h2>Glistas da pachetar</h2><p>Sut <i>Dapli → 📁 Barat da datotecas → 🎒 Glistas da pachetar</i> (u <code>/tausch/packlisten</code>) '
+           '<li><b>Diritti</b> come lo zaino digitale: «vedere» guarda, «caricare» modifica; gli ospiti guardano soltanto. In nessun backup – usa l’export ZIP.</li></ul></section>\n'),
+    "rm": ('<section id="packlisten" data-icon="🎒"><h2>Glistas da pachetar</h2><p>Sut <i>Dapli → 📁 Satgados digital → 🎒 Glistas da pachetar</i> (u <code>/tausch/packlisten</code>) '
            'has ti glistas cun paisa, quantitad, categoria, foto e crutschs.</p><ul>'
            '<li><b>Agiuntar svelt:</b> giusut «num, paisa», p.ex. <code>Lampa frontala 85 g</code>, <code>2x Chaltschiels 80 g</code>. La paisa vala per toc.</li>'
            '<li><b>Importar:</b> datoteca da text (in object per lingia), Excel (.xlsx), CSV u text encollà. Adina l’emprim ina prevista: colonnas, lingias, dubels marcads.</li>'
@@ -2825,7 +2825,7 @@ _HELP_PL = {
            '<li><b>🛒 Da cumprar:</b> marca quai che manca – il register è tia glista da cumpras.</li>'
            '<li><b>Ensemen:</b> mintgin marca sin ses telefonin, tuts vesan il stadi suenter paucas secundas.</li>'
            '<li><b>Dapli (⋯):</b> models, copiar, allontanar ils crutschs, stampar, export CSV / JSON / ZIP cun fotos.</li>'
-           '<li><b>Dretgs</b> sco il barat da datotecas: «guardar» vesa, «chargiar si» mida; giasts guardan mo. En nagina copia da segirezza – dovra l’export ZIP.</li></ul></section>\n'),
+           '<li><b>Dretgs</b> sco il satgados digital: «guardar» vesa, «chargiar si» mida; giasts guardan mo. En nagina copia da segirezza – dovra l’export ZIP.</li></ul></section>\n'),
 }
 
 
@@ -2961,7 +2961,7 @@ def pl_selftest():
         assert sorted(map(key, back["items"])) == sorted(map(key, Lx["items"])), "CSV out and in again: the same items"
         PL.update(root=None, lists=None)
         assert pl_load() and PL["lists"][lid]["items"][0]["packed"], "read again from the file"
-        assert "pack: jb.pack" in _pl_upload_js() and 'id="tz-pack"' in TAUSCH_PAGE and "/tausch/pack" in TAUSCH_GUEST_HTML, "hooks in the file exchange pages"
+        assert "pack: jb.pack" in _pl_upload_js() and 'id="tz-pack"' in TAUSCH_PAGE and "/tausch/pack" in TAUSCH_GUEST_HTML, "hooks in the pages of the digital backpack"
         assert role_allows("family", "/api/tausch/pack", "POST", {}) and role_allows("friend", "/tausch/packlisten", "GET", {}) and not role_allows("kid", "/tausch/packlisten", "GET", {})
         import html as _h
         hp = pl_print_html(PL["lists"][lid], "de")

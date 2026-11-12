@@ -154,7 +154,7 @@ def lauf(br, a, pruef, base, fr):
     tit = pg.evaluate("() => [...document.querySelectorAll('#settings summary')].map(s => s.textContent.trim())")
     alle = " | ".join(tit)
     pruef("Status-LED & Tasten" in alle and "Status LED & buttons" not in alle, "/settings: «Status-LED & Tasten» statt «Status LED & buttons»")
-    pruef("Datentausch" in alle and "File exchange" not in alle, "/settings: «Datentausch» statt «File exchange»")
+    pruef("Digitaler Rucksack" in alle and "File exchange" not in alle and "Datentausch" not in alle, "/settings: «Digitaler Rucksack» statt «File exchange»")
     if a.bilder:
         pg.evaluate("""() => { const s = [...document.querySelectorAll('#settings summary')].find(x => x.textContent.includes('Status-LED')); if (s) { let d = s.parentElement.parentElement; while (d) { if (d.tagName === 'DETAILS') d.open = true; d = d.parentElement; } s.scrollIntoView({block: 'center'}); } }""")
         pg.wait_for_timeout(500); foto(pg, "einstellungen")
@@ -183,7 +183,7 @@ def lauf(br, a, pruef, base, fr):
     pruef("Play area" in sub and "Spielen" not in sub and mi == "Build yourself", "Englisch: «Play area», «Build yourself» bleiben (%s, %s)" % (sub, mi))
     gehe(pg, "/settings", 5000)
     alle = " | ".join(pg.evaluate("() => [...document.querySelectorAll('#settings summary')].map(s => s.textContent.trim())"))
-    pruef("Status LED & buttons" in alle and "Status-LED" not in alle and "Datentausch" not in alle, "Englisch: Einstellungen ohne deutsche Titel")
+    pruef("Status LED & buttons" in alle and "Status-LED" not in alle and "Digitaler Rucksack" not in alle and "Digital backpack" in alle and "File exchange" not in alle, "Englisch: Einstellungen ohne deutsche Titel")
     ctx.close()
     ctx, pg = seite("fr")
     gehe(pg, "/more")

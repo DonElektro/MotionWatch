@@ -467,10 +467,10 @@ def tr(text, lang=None):
     """Translate an English UI string into the current language. Missing: Romansh falls back to German, the others to English."""
     L = cur_lang(lang)
     if L == "en":
-        return text
+        return EN_SHOW.get(text, text)                      # 639zzy: a renamed area keeps its key («File exchange»), only the name on screen changes
     if L == "de":
         return DE.get(text, text)
-    return TRX[L].get(text) or (DE.get(text, text) if L == "rm" else text)
+    return TRX[L].get(text) or (DE.get(text, text) if L == "rm" else EN_SHOW.get(text, text))
 
 
 def trf(text, lang=None, **kw):
