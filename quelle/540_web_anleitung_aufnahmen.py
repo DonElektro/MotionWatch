@@ -8,7 +8,7 @@ HELP_PAGE = r"""<!doctype html>
 main{padding:16px;max-width:900px;margin:0 auto}
 .hsearch{display:flex;gap:8px;margin-bottom:12px}.hsearch input{flex:1;font-size:16px}
 .toc{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
-.toc a{background:var(--field);border:1px solid var(--line);border-radius:999px;padding:5px 11px;font-size:13px;color:var(--txt);text-decoration:none;white-space:nowrap}
+.toc a{background:var(--field);border:1px solid var(--line);border-radius:999px;padding:5px 11px;font-size:13px;color:var(--txt);text-decoration:none;white-space:nowrap;max-width:100%;box-sizing:border-box;overflow:hidden;text-overflow:ellipsis}
 .toc a:hover{border-color:var(--acc)}
 details.hsec{margin-bottom:10px}
 details.hsec>summary{font-size:15px;letter-spacing:.02em;text-transform:none}

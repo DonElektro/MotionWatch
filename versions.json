@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-12 07:32",
+ "generated": "2026-11-12 07:51",
  "versions": [
   {
-   "version": "3.81.2",
-   "file": "webcam_bewegung_3_81_2.py",
+   "version": "3.81.3",
+   "file": "webcam_bewegung_3_81_3.py",
    "url": "",
-   "sha256": "cca9bad44c57b348464d07610d97c93ef29f6397b59b3af880a2b803f0c21b1f",
-   "date": "2026-11-12 07:32",
-   "notes": "Vorbereitung im Hintergrund: MoveEye kann neue Simulator-Versionen künftig auch als Anhang einer Veröffentlichung holen und weitergeben (spart Platz im Projekt). Für dich ändert sich nichts.",
-   "size": 4023021,
-   "sig": "f2d8edc386a2175d4110988e9f63e84077d9e6c1b4f6a1fcc1b124cd333fb34df67d7fc0eb9b6584a73b0c15a9a30d56db6b27986f317adf18d511f58885bc0b",
+   "sha256": "df97277e9f8186ce7f24094cfe1d7c0203677a88bf8b985d6f2dc3b58ea1d270",
+   "date": "2026-11-12 07:51",
+   "notes": "Anleitung auf Italienisch: die Seite ist am Handy nicht mehr breiter als der Bildschirm (ein langer Eintrag im Inhaltsverzeichnis wird jetzt gekürzt angezeigt).",
+   "size": 4023015,
+   "sig": "75f1d58dc3a0d099cc013e19c59b91d4e56f1ea1d8976d1bb9fc2b55ab2ecb1ce403e54e50431e6c56b2f10cb6847ea67617ece439ab2314936943558943e705",
    "data": {
-    "file": "moveeye_daten_3_81_2.zip",
+    "file": "moveeye_daten_3_81_3.zip",
     "url": "",
-    "sha256": "c1a7f5c3839762cbb654a060a990e4cd94f9b3ed9c9abf6f8ac87e7bebd40d1a",
-    "size": 10347473,
-    "sig": "138694ecc02530296a6da8ae9407dbeeffdb84e58bc7553d04d992b266a09f6792ba6322b56d16c436239e7433705a5024d6d2b09a0d0b5453e5db100d22510d"
+    "sha256": "2cb8ad7607f20a3c70357648232e3291579cb50968c6f8d06517823a55a997cb",
+    "size": 10347723,
+    "sig": "bde5d08e2e845d44a796952b76669082d7758e10b6c3089f18bb1359d51f92f52bc98d78a7b981b7d02860cdb958ac0b3959730b263ac6b9faba4fc60838f501"
    }
   },
   {
