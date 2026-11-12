@@ -296,6 +296,7 @@ article h2{font:700 24px system-ui,sans-serif;margin:6px 0 10px}article p{margin
 figure{margin:0;border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:8px;cursor:zoom-in;min-width:0}
 figure svg{display:block;width:100%;height:auto}figcaption{font:15px/1.4 system-ui,sans-serif;margin-top:6px}
 figcaption{color:var(--txt)}figcaption b{color:var(--acc)}
+#b-x{min-height:44px;min-width:44px}#x-tip{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:11;background:var(--panel);color:var(--txt);border:1px solid var(--acc);border-radius:12px;padding:10px 12px;font:600 15px system-ui,sans-serif}#x-tip[hidden]{display:none}
 #b-back{min-height:44px;min-width:44px;font-weight:600;color:var(--acc);white-space:nowrap;padding:8px 12px}#b-back[hidden]{display:none}
 figure.zoom::before{content:"✕ " attr(data-zu);position:fixed;top:max(10px,env(safe-area-inset-top));right:12px;z-index:10;font:600 15px system-ui,sans-serif;min-height:44px;display:flex;align-items:center;padding:0 14px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--txt)}
 figure.zoom{position:fixed;inset:0;z-index:9;border-radius:0;overflow:auto;cursor:zoom-out;display:flex;flex-direction:column;justify-content:center;background:var(--panel)}
@@ -306,10 +307,11 @@ svg .ko,svg .k0,svg .k1,svg .kh{fill:none;stroke-linecap:butt;stroke-linejoin:ro
 body.night svg .k0{stroke:#000}svg .kh{stroke:var(--mut);stroke-width:2;stroke-dasharray:4 4}svg .ke{stroke:var(--txt);stroke-width:1.6}svg .k0e{fill:var(--panel)}svg .k1e{fill:var(--acc)}
 svg .ka{fill:var(--acc);stroke:var(--txt);stroke-width:1.4;stroke-linejoin:round}svg .kp,svg .kr{fill:var(--line);stroke:var(--mut);stroke-width:1.5}svg .kq{fill:none;stroke:var(--mut);stroke-width:2}
 svg .kb{fill:var(--txt)}svg .kt{fill:var(--txt);font-size:10px}svg .kl{stroke:var(--mut);stroke-width:1;fill:none}
-@media print{header,.nav,#b-sos,#b-sosx,#b-copy,#mw-exit{display:none!important}body{background:#fff!important;color:#000!important;--bg:#fff;--panel:#fff;--line:#ddd;--txt:#000;--mut:#444;--acc:#777}figure{break-inside:avoid;cursor:auto}.figs{grid-template-columns:1fr 1fr}main{max-width:none}svg .k1{stroke:#888}}
+@media print{header,.nav,#b-sos,#b-sosx,#b-copy,#mw-exit,#x-tip{display:none!important}body{background:#fff!important;color:#000!important;--bg:#fff;--panel:#fff;--line:#ddd;--txt:#000;--mut:#444;--acc:#777}figure{break-inside:avoid;cursor:auto}.figs{grid-template-columns:1fr 1fr}main{max-width:none}svg .k1{stroke:#888}}
 </style></head><body>
 <header><button id="b-back" hidden>‹ Zurück</button><h1>📖 Überlebens-Almanach</h1><input id="q" type="search" placeholder="Suchen …" style="flex:1 1 140px">
-<button id="b-home" title="Inhalt">☰</button><button id="b-big" title="Grosse Schrift">A+</button><button id="b-theme" title="Hell / Dunkel / Rotlicht (wie überall in MoveEye)">◐</button><button id="b-read" title="Vorlesen">🔊</button></header>
+<button id="b-home" title="Inhalt">☰</button><button id="b-big" title="Grosse Schrift">A+</button><button id="b-theme" title="Hell / Dunkel / Rotlicht (wie überall in MoveEye)">◐</button><button id="b-read" title="Vorlesen">🔊</button><button id="b-x" title="Almanach schliessen" aria-label="Almanach schliessen">✕</button></header>
+<div id="x-tip" hidden></div>
 <main id="m"></main>
 <script>
 const A = __DATA__;
@@ -439,6 +441,12 @@ function back() { const b = $("b-back"); b.hidden = sicht === "h" && !PLUS.heim;
 $("b-back").onclick = () => { const z = document.querySelector("figure.zoom"); if (z) { z.classList.remove("zoom"); return; }
   if (sicht === "a" && all[window.cur]) chap(all[window.cur].ci); else if (sicht === "c" || sicht === "s") { $("q").value = ""; home(""); }
   else if (PLUS.heim) location.href = PLUS.heim; };
+// «✕» = leave the almanac with one tap, from every view: to MoveEye «Mehr» for a known device. A guest behind a password has no
+// page of MoveEye to go to (no guest page links here, and MoveEye sends no referrer): there the tab is closed if the browser
+// allows it, and otherwise a line says what to do - as the «✕ Zurück» of 340 does on the other guest pages.
+$("b-x").onclick = () => { if (PLUS.heim) { location.href = PLUS.heim; return; }
+  try { window.close(); } catch (e) {}
+  setTimeout(() => { const t = $("x-tip"); t.textContent = PLUS.t_tab || "Diesen Tab schliessen oder die App wegwischen."; t.hidden = false; setTimeout(() => { t.hidden = true; }, 5000); }, 300); };
 addEventListener("hashchange", () => { if (!stumm) start(); });     // the back gesture of the phone / the browser moves through the same views
 function start() { const hm = /^#([ac])(\d+)$/.exec(location.hash);
   if (hm && hm[1] === "a" && all[+hm[2]]) show(+hm[2]); else if (hm && hm[1] === "c" && A[+hm[2]]) chap(+hm[2]); else home(""); }
