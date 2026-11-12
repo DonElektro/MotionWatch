@@ -24,9 +24,11 @@
 # Controller (PS5 / Gamepad): Eingaben am Gamepad zählen in hp_wache.py als Spielen; Ctrl+Alt+B bzw. der Knopf im Testbild legt die
 # Wunsch-Datei «controller_koppeln» neben SPIEL_DATEI an, der Dienst moveeye-controller-koppeln (root, moveeye-hp-update)
 # koppelt dann einen DualSense per Bluetooth. Die Sitzung selbst bekommt dafür keine Rechte.
-# Ohne Tastatur (HP_FASSUNG 7): solange kein Controller angeschlossen ist, zeigt der Kiosk in einer Ecke einen kleinen Knopf
-# mit dem Controller-Symbol (controller_fenster.py --ecke); Antippen öffnet dasselbe Fenster. In /etc/moveeye-kiosk.conf
-# einstellbar: CONTROLLER_KNOPF=unten-rechts | unten-links | oben-rechts | oben-links | aus.
+# Ohne Tastatur (HP_FASSUNG 7): auf Wunsch zeigt der Kiosk, solange kein Controller angeschlossen ist, in einer Ecke einen
+# kleinen Knopf mit dem Controller-Symbol (controller_fenster.py --ecke); Antippen öffnet dasselbe Fenster. In
+# /etc/moveeye-kiosk.conf einstellbar: CONTROLLER_KNOPF=unten-rechts | unten-links | oben-rechts | oben-links | aus.
+# Ab Werk AUS (Sim 3.67.2): der Knopf liegt immer zuoberst, und unten rechts stehen im Simulator die untere Leiste und
+# gleich darüber der grüne Mover-Stick (rover_pad.gd) - genau dort, wo man ohne Controller mit Maus / Finger bedient.
 set -u
 LIB="/usr/local/lib/moveeye-kiosk"
 CONF="/etc/moveeye-kiosk.conf"
@@ -61,7 +63,7 @@ SPIEL_DATEI="/run/moveeye-spiel/spielen"  # Spielen-Wunsch (hp_wache.py, testbil
 SPIEL_RUHE_S=900                          # so lange gilt er nach der letzten Eingabe / Verbindung
 STATUS_PORT=8761                          # Status fürs eigene Netz (MoveEye «HP rechnet»), 0 = aus
 SCHLAF_S=600                              # Testbild und Bildschirm schlafen nach so vielen s ohne Maus / Taste
-CONTROLLER_KNOPF="${CONTROLLER_KNOPF:-unten-rechts}"   # kleiner Knopf «Controller koppeln» in dieser Ecke (aus = keiner)
+CONTROLLER_KNOPF="${CONTROLLER_KNOPF:-aus}"   # kleiner Knopf «Controller koppeln» in einer Ecke (ab Werk aus = keiner)
 # shellcheck source=/dev/null
 [ -r /etc/moveeye-kiosk-test.conf ] && . /etc/moveeye-kiosk-test.conf
 [ -z "$FORTSCHRITT_DATEI" ] && [ -n "$PAUSE_DATEI" ] && FORTSCHRITT_DATEI="$(dirname "$PAUSE_DATEI")/fortschritt.json"

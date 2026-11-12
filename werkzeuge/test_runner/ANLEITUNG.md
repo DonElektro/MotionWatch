@@ -91,9 +91,9 @@ gh run list -R DonElektro/MotionWatch -w "Dauerrechnen (HP)" -L 5
 ## Controller (PS5 DualSense) am HP
 
 - **Per Kabel (geht immer):** Controller mit USB-C anstecken – Linux kennt ihn von selbst (Treiber `hid-playstation`).
-- **Per Bluetooth, ohne Tippen:** Knopf **«Controller koppeln»** – im Testbild (oder Taste **K**), im Kiosk der kleine Knopf
-  mit dem Controller-Symbol in der Ecke unten rechts (nur sichtbar, solange kein Controller angeschlossen ist; Ecke oder
-  `aus` mit `CONTROLLER_KNOPF=…` in `/etc/moveeye-kiosk.conf`), mit Tastatur **Ctrl+Alt+B**. Das Fenster zeigt gross:
+- **Per Bluetooth, ohne Tippen:** Knopf **«Controller koppeln»** – im Testbild (oder Taste **K**), mit Tastatur **Ctrl+Alt+B**; auf Wunsch
+  im Kiosk ein kleiner Knopf mit dem Controller-Symbol in einer Ecke (ab Werk aus, weil er über der Leiste des Simulators
+  läge; einschalten mit `CONTROLLER_KNOPF=oben-links` o. ä. in `/etc/moveeye-kiosk.conf`, nur sichtbar ohne Controller). Das Fenster zeigt gross:
   **«PS-Taste und Create-Taste gedrückt halten, bis die Leiste schnell blau blinkt»**, sucht 60 s und koppelt den ersten
   Controller von selbst. Ergebnis: «Verbunden ✔», «Kein Controller gefunden» oder «Kein Bluetooth-Adapter gefunden –
   USB-Bluetooth-Stick einstecken oder Controller per USB-C-Kabel anschliessen». Danach genügt die PS-Taste.
