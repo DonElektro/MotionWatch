@@ -651,9 +651,9 @@ Features
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
   * 3.81.0: Offline-Karte der Schweiz: Karte und Ortssuche ohne Internet, einmal als Verwalter nachladen unter Einstellungen →
-    Standort (ca. 660 MB, braucht freien Platz auf der SD-Karte); neue Seite «Karte»; Standort durch Antippen oder Suchen
+    Standort (ca. 670 MB, braucht freien Platz auf der SD-Karte); neue Seite «Karte»; Standort durch Antippen oder Suchen
     setzen; Aufnahmen zeigen ihren Ort auf der Karte; im Simulator «Ort von der Karte» ohne Internet wählen. ©
-    OpenStreetMap-Mitwirkende.
+    OpenStreetMap-Mitwirkende. QR-Befehls-Karten: gesperrte QR-Karten bleiben auch nach einem Stromausfall gesperrt.
   * 3.80.0: Neu (Versuch, ab Werk aus): QR-Befehls-Karten. Eine gedruckte Karte vor die Kamera halten löst einen Befehl aus:
     Push mit eigenem Text (auch mit Foto), Text vorlesen, Notiz im Verlauf, Aufnahme starten, Licht/Relais, Kopf auf eine
     Position, Profil wechseln. Karten erstellst du in der «Karten-Werkstatt» unter Mehr; es gelten nur Karten von deinem
