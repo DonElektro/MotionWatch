@@ -324,12 +324,25 @@ def pl_cat_guess(name):
     return "other"
 
 
+def pl_cat_head(text):
+    """a heading of the user: a fixed category when it is exactly its name, else his own words stay («Tourenausrüstung»)"""
+    c = pl_cat_clean(str(text).strip(" :-–—#*=_"))
+    if c == c.upper() and c != c.lower():                    # «TOURENAUSRÜSTUNG» -> «Tourenausrüstung»
+        c = pl_cat_clean(" ".join(w[:1] + w[1:].lower() for w in c.split(" ")))
+    return c if c in PL_CAT_KEYS else c[:1].upper() + c[1:]
+
+
+def pl_cat_icon(cat):
+    """the fixed category whose symbol (and rules) an own category gets: «Kleidung» -> clothes"""
+    k = cat if cat in PL_CAT_KEYS else pl_cat_key(cat)
+    return k if k in PL_CAT_KEYS else "other"
+
+
 def pl_kind_auto(cat, name):
     """food and drink are consumables, a bottle or a filter is not; also gas, fuel, sunscreen … (the user can change it per item)"""
     low = " " + name.lower() + " "
-    if cat == "food" or any(w in low for w in PL_CONS_WORDS):
-        return "cons"
-    if cat == "water" and not any(w in low for w in PL_WATER_GEAR):
+    cat = pl_cat_icon(cat)
+    if any(w in low for w in PL_CONS_WORDS) or (cat in ("food", "water") and not any(w in low for w in PL_WATER_GEAR)):
         return "cons"
     return "base"
 
@@ -354,14 +367,37 @@ def _pl_tidy(s):
     return re.sub(r"\s+([,;:])", r"\1", s)
 
 
+PL_LINE_MAX = 500                                         # one line of a note / a pasted text (a name has 120, a remark 300)
+
+
+def _pl_fence(t):
+    """«== Küche ==», «**KLEIDUNG**», «--- Essen ---»: the text between the same signs at both ends, or None. Written out
+    by hand (3.83.2): as one pattern with a back reference a line of 4000 signs took more than 25 s (it tried every split)."""
+    m = re.match(r"[=*_~]{2,}", t)
+    if m:
+        f = m.group(0)
+        h = t[len(f):len(t) - len(f)].strip() if len(t) > 2 * len(f) and t.endswith(f) else ""
+        return h if h and h[0] not in "=*_~" else None
+    m = re.match(r"-{3,}", t)
+    if m:
+        for k in range(min(len(m.group(0)), len(t) - len(t.rstrip("-")), (len(t) - 1) // 2), 2, -1):
+            h = t[k:len(t) - k].strip()
+            if h and h[0] not in "=*_~":
+                return h
+    return None
+
+
 def pl_parse_line(raw):
     """("cat", text) for a heading, ("item", {...}) for an item, None for nothing (empty, a rule, only signs)"""
-    s = _TZ_CTRL.sub("", _pl_ud.normalize("NFC", str(raw)).replace(" ", " ").replace(" ", " ")).rstrip()
+    s = _TZ_CTRL.sub("", _pl_ud.normalize("NFC", str(raw)[:8 * PL_LINE_MAX]).replace(" ", " ").replace(" ", " ")).rstrip()
     if not s.strip():
         return None
-    m = re.match(r"^\s*#{1,6}\s*(.+?)\s*#*\s*$", s) or re.match(r"^\s*([=*_~]{2,}|-{3,})\s*(?P<h>[^=*_~].*?)\s*\1\s*$", s)
-    if m:
-        h = pl_text(m.groupdict().get("h") or m.group(1), PL_CAT_MAX).strip(_PL_EDGE)
+    lead = len(s) - len(s.lstrip())                          # 3.83.2: runs of blanks inside the line are one blank, and a line has an
+    s = s[:lead] + re.sub(r"[ \t]{2,}", " ", s[lead:])[:PL_LINE_MAX]    # end - the patterns below need time by the square of the length
+    m = re.match(r"^\s*#{1,6}\s*(.+?)\s*#*\s*$", s)
+    f = None if m else _pl_fence(s.strip())
+    if m or f is not None:
+        h = pl_text(m.group(1) if m else f, PL_CAT_MAX).strip(_PL_EDGE)
         return ("cat", h) if h else None
     if re.fullmatch(r"[\s\-=_*~#.·•]+", s):
         return None
@@ -398,7 +434,9 @@ def pl_parse_line(raw):
         if m:                                                # «Zelt – 1800», «Zelt<Tab>1800»: a bare number at the end = grams
             g, s = _pl_grams(m.group(2), "g"), m.group(1)
     ml = list(_PL_L_RE.finditer(s))
-    if ml and _pl_tidy(s[:ml[-1].start()] + " " + s[ml[-1].end():]):
+    rest = _pl_tidy(s[:ml[-1].start()] + " " + s[ml[-1].end():]).lower() if ml else ""
+    if re.search(r"wasser|water|tee\b|saft|getränk|benzin|spiritus|milch|wein|bier|öl\b|sirup|kaffee|eau\b|acqua|drink", rest) and not any(
+            w in rest for w in PL_WATER_GEAR):               # litres of a liquid: a note. «Tasche (20-30 Liter)», «Topf 1 l»: part of the name
         m = ml[-1]
         note = m.group(1) + " " + m.group(2).lower().replace("liter", "l").replace("litres", "l").replace("litre", "l").replace("lt", "l")
         s = s[:m.start()] + " " + s[m.end():]
@@ -428,8 +466,33 @@ def pl_parse_text(text):
     real = [p for p in parsed if p]
     caps = sum(1 for p in real if p[0] == "caps")
     caps_are_items = caps > 0 and caps * 2 > len(real)        # everything is written in capitals: these are items, not headings
-    items, skipped, cat, title = [], 0, None, ""
+    items, skipped, cat, title, heads = [], 0, None, "", []
     idx = [i for i, p in enumerate(parsed) if p]
+    # a bare line («Schlafen») is a heading only when the structure shows it; a plain list (one item per line) stays a list
+    mark = [bool(_PL_BOX.match(ln) or _PL_BULLET.match(ln) or re.match(r"(?: {2,}|\t)\S", ln)) for ln in lines]
+
+    def bare(i):
+        p = parsed[i]
+        return bool(p and p[0] == "item" and not mark[i] and p[1]["g"] is None and p[1]["n"] == 1 and not p[1]["note"] and not p[1]["buy"])
+    B, M, up = [i for i in idx if bare(i)], [i for i in idx if mark[i] and parsed[i][0] == "item"], []
+    if M and len(M) >= len(B):                               # A: a bare line right above bulleted / numbered / ticked / indented lines
+        up = [i for i in B if i + 1 < len(lines) and mark[i + 1] and parsed[i + 1]]
+    elif not M:                                              # B: no bullets at all - blocks between empty lines, each led by a bare line
+        blocks, cur = [], []
+        for i, ln in enumerate(lines + [""]):
+            if ln.strip():
+                cur.append(i)
+            elif cur:
+                blocks.append(cur)
+                cur = []
+        big = [b for b in blocks if len(b) >= 2 and not (parsed[b[0]] and parsed[b[0]][0] != "item")]
+        rest = [i for b in big for i in b[1:] if parsed[i] and parsed[i][0] == "item"]
+        if len(big) >= 2 and all(bare(b[0]) for b in big) and rest and (
+                all(lines[b[0]].strip().lower() in PL_HEAD_EXACT or pl_cat_clean(lines[b[0]]) in PL_CAT_KEYS for b in big)
+                or sum(1 for i in rest if not bare(i)) >= 0.6 * len(rest)):   # … the lines below carry weights / numbers, the first never
+            up = [b[0] for b in big]
+    for i in up:
+        parsed[i] = ("cat", parsed[i][1]["name"])
     if (len(idx) >= 3 and parsed[idx[0]][0] == "item" and idx[1] > idx[0] + 1 and parsed[idx[1]][0] in ("cat", "caps") and not caps_are_items
             and parsed[idx[0]][1]["g"] is None and not re.match(r"\s*[-*+•\[☐☑\d]", lines[idx[0]])):
         title = pl_text(lines[idx[0]], 80)                   # «Wochenende Jura», an empty line, then the first heading: the name of the list
@@ -445,7 +508,8 @@ def pl_parse_text(text):
             else:
                 p = ("cat", " ".join(w[:1] + w[1:].lower() for w in p[1].split(" ")))
         if p[0] == "cat":
-            cat = pl_cat_key(p[1])
+            cat = pl_cat_head(p[1])
+            heads.append([len(items), pl_text(p[1], PL_NAME_MAX), cat])   # for the preview: «as item» puts it back
             continue
         it = p[1]
         it["cat"] = cat or pl_cat_guess(it["name"])
@@ -453,7 +517,7 @@ def pl_parse_text(text):
         items.append(it)
         if len(items) >= PL_ROWS_MAX:
             break
-    return {"items": items, "skipped": skipped, "title": title}
+    return {"items": items, "skipped": skipped, "title": title, "heads": heads}
 
 
 # ---- tables: CSV / pasted table / xlsx -> rows of cells -> items ----------------------------------------------------------------
@@ -469,6 +533,42 @@ def pl_decode(data):
         return data.decode("cp1252", "replace")
 
 
+_PL_HTML_OPEN = re.compile(r"(?i)<!--|<(script|style|head|title)\b")
+_PL_HTML_TAG = "[^<>]{0,2000}>"                           # the rest of a tag: never over the next «<», never endless
+
+
+def pl_html_text(t):
+    """HTML (a note of Apple Notes saved as text, a pasted page) -> plain lines. Nothing is rendered: comments and script /
+    style / head / title are cut out, blocks become line breaks, list points a «- », every other tag goes away, then the
+    entities are decoded. The time grows with the length only (3.83.2: the first version searched from every «<!--» /
+    «<script» / «<li» to the end of the text again - 80 KB of «<!--» took 6 s, a file of 5 MB hours, and MoveEye stood still)."""
+    import html as _h
+    out, pos, nie = [], 0, set()                             # nie: block kinds whose end does not come any more
+    while True:
+        m = _PL_HTML_OPEN.search(t, pos)
+        if not m:
+            out.append(t[pos:])
+            break
+        out.append(t[pos:m.start()])
+        kind = (m.group(1) or "!").lower()
+        end = -1
+        if kind not in nie:
+            if kind == "!":
+                j = t.find("-->", m.end())
+                end = j + 3 if j >= 0 else -1
+            else:
+                c = re.compile(r"(?i)</%s\s{0,20}>" % kind).search(t, m.end())
+                end = c.end() if c else -1
+            if end < 0:
+                nie.add(kind)
+        pos = end if end >= 0 else m.end()                   # no end: only the opening goes away, the rest stays text
+    t = "".join(out)
+    t = re.sub(r"(?i)<li\b" + _PL_HTML_TAG, "\n- ", t)
+    t = re.sub(r"(?i)</t[dh]\s{0,20}>", "\t", t)
+    t = re.sub(r"(?i)</?(?:div|p|br|tr|li|ul|ol|h[1-6]|table|body|html)\b" + _PL_HTML_TAG, "\n", t)
+    return _h.unescape(re.sub(r"<[a-zA-Z/!]" + _PL_HTML_TAG, "", t))
+
+
 def pl_sniff(text, csv_file=False):
     """the separator of a table in this text, or "" (= a note with one item per line). Comma only for a .csv file."""
     lines = [ln for ln in text.replace("\r\n", "\n").replace("\r", "\n").split("\n") if ln.strip()][:80]
@@ -476,7 +576,7 @@ def pl_sniff(text, csv_file=False):
         return ""
     best, best_n = "", 0.0
     for d in ("\t", ";", "|") + ((",",) if csv_file else ()):
-        cnt = [ln.count(d) for ln in lines]
+        cnt = [ln.lstrip().count(d) for ln in lines]         # a tab in front is indentation (Apple Notes), not a column
         have = [c for c in cnt if c]
         if len(have) < max(2, 0.6 * len(lines)):
             continue
@@ -781,7 +881,7 @@ def pl_table_items(rows, guess):
             p = pl_parse_line(c)
             if c.endswith(":") or (p and p[0] in ("cat", "caps")) or c.lower() in PL_HEAD_EXACT or any(
                     c.lower() == tr(en, L).lower() for _k, en, _c, _p in PL_CATS for L in LANGS):
-                cat = pl_cat_key(c.title() if c == c.upper() else c)
+                cat = pl_cat_head(c.title() if c == c.upper() else c)
                 continue
         raw = cell(r, "name") if mp["name"] >= 0 else ""
         if not raw:
@@ -801,7 +901,7 @@ def pl_table_items(rows, guess):
                 it["n"] = int(v)
         if cell(r, "note"):
             it["note"] = pl_text((it["note"] + " · " if it["note"] else "") + cell(r, "note"), PL_NOTE_MAX)
-        it["cat"] = pl_cat_key(cell(r, "cat")) if cell(r, "cat") else (cat or pl_cat_guess(it["name"]))
+        it["cat"] = pl_cat_head(cell(r, "cat")) if cell(r, "cat") else (cat or pl_cat_guess(it["name"]))
         k = kinds.get(cell(r, "kind").lower())
         it["kind"] = k or pl_kind_auto(it["cat"], it["name"])
         if mp["packed"] >= 0:
@@ -837,6 +937,10 @@ def pl_import_preview(data=None, text=None, name="", guess=None, rows=None, lang
                 raise PLError("The text is too long.")
             if "\x00" in text[:2000]:
                 raise PLError("This kind of file cannot be imported. Save the list as .xlsx, CSV or text.")
+            if sum(c < " " and c not in "\t\n\r" for c in text[:4000]) > 8:
+                raise PLError("This kind of file cannot be imported. Save the list as .xlsx, CSV or text.")
+            if len(re.findall(r"(?i)<(?:html|body|div|p|br|li|span|tr)\b[^<>]{0,2000}>", text[:20000])) >= 2:
+                text = pl_html_text(text)
             if ext == "json" or text.lstrip()[:1] == "{":
                 try:
                     j = json.loads(text)
@@ -857,7 +961,7 @@ def pl_import_preview(data=None, text=None, name="", guess=None, rows=None, lang
             d = pl_sniff(text, csv_file=ext in ("csv", "tsv"))
             if not d:
                 res = pl_parse_text(text)
-                return {"kind": "lines", "items": res["items"], "skipped": res["skipped"], "title": res["title"] or title}
+                return {"kind": "lines", "items": res["items"], "skipped": res["skipped"], "title": res["title"] or title, "heads": res["heads"]}
             rows = pl_csv_rows(text, d)
     rows = [[pl_text(c, 300) for c in r[:PL_COLS_MAX]] for r in rows[:PL_ROWS_MAX] if isinstance(r, list)]
     if not rows:
@@ -1045,7 +1149,8 @@ def _pl_pub_head(L, who):
     t = pl_totals(L["items"])
     return {"id": L["id"], "name": L["name"], "area": L["area"], "by": L["owner_name"], "mine": L["owner"] == who["key"], "t": L["t"], "rev": L["rev"],
             "goal_g": L["goal_g"], "note": L["note"], "n": t["n"], "packed": t["packed"], "buy": t["buy"], "total": t["total"], "pack": t["pack"],
-            "edit": pl_can_edit(L, who) and bool(CFG.get("tausch_on", True)), "rm": pl_can_del(L, who), "dl": pl_can_export(L, who)}
+            "edit": pl_can_edit(L, who) and bool(CFG.get("tausch_on", True)), "rm": pl_can_del(L, who), "dl": pl_can_export(L, who),
+            "ci": {c: pl_cat_icon(c) for c in {x["cat"] for x in L["items"]} if c not in PL_CAT_KEYS}}
 
 
 def pl_overview(who, lang=None):
@@ -1130,6 +1235,9 @@ def _pl_new_item(L, who, d):
     except (TypeError, ValueError):
         n = 1
     cat = pl_cat_clean(d.get("cat")) if isinstance(d.get("cat"), str) and d.get("cat").strip() else pl_cat_guess(name)
+    own = {x["cat"] for x in L["items"] if x["cat"] not in PL_CAT_KEYS and pl_cat_icon(x["cat"]) == cat}
+    if len(own) == 1 and not d.get("cat") and not any(x["cat"] == cat for x in L["items"]):
+        cat = own.pop()                                      # a guessed «Kleider» goes to the user's own «Kleidung»
     iid = secrets.token_hex(4)
     have = {x["id"] for x in L["items"]} | {x[0] for x in L["gone"]}
     while iid in have:
@@ -1141,11 +1249,18 @@ def _pl_new_item(L, who, d):
 
 def pl_dups(items, L=None):
     """mark doubles in an import preview: "list" = already in the target list, "import" = twice in this import (nothing is dropped)"""
-    have = {it["name"].casefold() for it in (L["items"] if L else ())}
+    def words(n):                                            # «Wasserflasche/ auch Trinkblase» ~ «Wasserflaschen»: the same stem
+        return frozenset(re.sub(r"(?<=...)(?:en|n|e|s)$", "", w) for w in re.findall(r"[^\W\d_]{3,}", n.casefold())
+                         if w not in ("evtl", "eventuell", "oder", "auch", "inkl", "nach", "und", "aus", "mit", "ggf", "ggfs", "für", "and", "the", "with"))
+    have = {it["name"].casefold(): it["name"] for it in (L["items"] if L else ())}
+    near = [(words(n), n) for n in have.values()]
     seen = set()
     for it in items:
-        k = it["name"].casefold()
+        k, w = it["name"].casefold(), words(it["name"])
         it["dup"] = "list" if k in have else "import" if k in seen else ""
+        like = "" if it["dup"] or not w else next((n for v, n in near if v and (v <= w or w <= v)), "")
+        if like:
+            it["like"] = like                                # only a hint in the preview: nothing is merged, nothing unticked
         seen.add(k)
     return items
 
@@ -1157,6 +1272,8 @@ def pl_action(who, d, lang=None):
         err = _pl_ready(who, lang)
         if err:
             return False, err, {}, 403 if "files_up" not in who["perms"] else 409
+        if isinstance(d.get("cat"), str):                     # the preview turns a row into a heading: which category is that?
+            return True, "", {"cat": pl_cat_head(d["cat"])}, 200
         try:
             if isinstance(d.get("rows"), list):
                 res = pl_import_preview(rows=d["rows"], guess=d.get("guess") if isinstance(d.get("guess"), dict) else None, lang=lang)
@@ -1568,7 +1685,7 @@ def pl_file_name(L, ext):
 
 
 def pl_icon_svg(cat, size=22):
-    c = next((x for x in PL_CATS if x[0] == cat), PL_CATS[-1])
+    c = next(x for x in PL_CATS if x[0] == pl_cat_icon(cat))
     return (f'<svg viewBox="0 0 24 24" width="{size}" height="{size}" fill="none" stroke="{c[2]}" stroke-width="1.7" stroke-linecap="round" '
             f'stroke-linejoin="round" aria-hidden="true"><path d="{c[3]}"/></svg>')
 
@@ -1891,6 +2008,8 @@ button.pl-ib.on{background:var(--org);color:#16110a;border-color:var(--org)}
 .pl-pvf{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}.pl-pvf input,.pl-pvf select{min-height:40px;min-width:0}.pl-pvf .nm{width:100%}
 .pl-pvf .r2{display:grid;grid-template-columns:minmax(0,1fr) 64px minmax(0,1.3fr);gap:6px}
 .pl-pvf small{color:var(--org);font-size:12px}
+.pl-sw2{align-self:flex-start;min-height:40px;padding:4px 12px;font-size:13px}.pl-pvh{align-items:center;justify-content:space-between;gap:10px;padding-left:10px;background:var(--panel2)}.pl-pvh b{min-width:0;overflow-wrap:anywhere}
+#gd-card{bottom:calc(16px + var(--plb,0px) + env(safe-area-inset-bottom,0px))!important}
 .pl-map{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:0 0 10px;background:var(--panel2)}
 .pl-map .g{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 10px;align-items:center}.pl-map select{min-height:40px;width:100%}
 .pl-lb{position:fixed;inset:0;z-index:140;background:rgba(0,0,0,.92);display:flex;flex-direction:column}
@@ -1948,11 +2067,11 @@ Object.assign(I18N.de, /*PLDE*/{});
   const fmtG = g => g == null ? "–" : g < 1000 ? g + " g" : num(g / 1000) + " kg";
   const fmtW = g => g == null ? "" : (g < 1000 || g % 10) ? g + " g" : num(g / 1000) + " kg";          // exact: for a field that is read again
   const catName = c => CK[c] ? t(CK[c].en) : c;
-  const catOrder = c => c === "other" ? [900, ""] : CK[c] ? [CK[c].i, ""] : [800, c.toLowerCase()];
+  const catOrder = c => { const o = CK[((S.L || {}).ci || {})[c]]; return c === "other" ? [900, ""] : CK[c] ? [CK[c].i, ""] : o ? [o.i + .5, c.toLowerCase()] : [800, c.toLowerCase()]; };
   const msg = (txt, bad) => { const m = $("#pl-msg"); m.hidden = !txt; m.textContent = txt || ""; m.classList.toggle("bad", !!bad); };
   const when = s => new Date(s * 1000).toLocaleDateString();
   function icon(cat, size, bg) {
-    const k = CK[cat] || CK.other, b = el("span", "pl-ic"), s = document.createElementNS(NS, "svg"), p = document.createElementNS(NS, "path");
+    const k = CK[cat] || CK[((S.L || {}).ci || {})[cat]] || CK.other, b = el("span", "pl-ic"), s = document.createElementNS(NS, "svg"), p = document.createElementNS(NS, "path");
     s.setAttribute("viewBox", "0 0 24 24"); s.setAttribute("width", size); s.setAttribute("height", size); s.setAttribute("fill", "none"); s.setAttribute("stroke", k.col);
     s.setAttribute("stroke-width", "1.7"); s.setAttribute("stroke-linecap", "round"); s.setAttribute("stroke-linejoin", "round"); s.setAttribute("aria-hidden", "true");
     p.setAttribute("d", k.d); s.appendChild(p); b.appendChild(s); if (bg) { b.style.background = k.col + "26"; b.style.width = b.style.height = "100%"; }
@@ -2262,7 +2381,7 @@ Object.assign(I18N.de, /*PLDE*/{});
     const sh = sheet("⬇ " + t("Import"), true); let P = null, into = target ? target.id : "";
     const step1 = () => {
       sh.bd.textContent = ""; sh.ft.textContent = ""; sh.ft.hidden = true; sh.title.textContent = "⬇ " + t("Import");
-      const fi = el("input"); fi.type = "file"; fi.hidden = true; fi.id = "pl-impfile"; fi.accept = ".txt,.csv,.tsv,.xlsx,.json,.md,text/plain,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+      const fi = el("input"); fi.type = "file"; fi.hidden = true; fi.id = "pl-impfile";      // no «accept»: a list can have any ending (a note saved as .py) - the device looks at the content
       const fb = el("button", "", "📄 " + t("Choose a file")); fb.type = "button"; fb.style.minHeight = "48px"; fb.onclick = () => fi.click();
       const ta = el("textarea"); ta.id = "pl-imptext"; ta.placeholder = t("Paste the text here – one item per line. Example:") + "\n\nKüche:\n- Kocher 90 g\n- 2x Gaskartusche (230 g)\nZelt – 1.8 kg";
       const pv = el("button", "sec", t("Preview")); pv.type = "button"; pv.style.minHeight = "48px"; pv.id = "pl-imppv";
@@ -2275,13 +2394,17 @@ Object.assign(I18N.de, /*PLDE*/{});
         try { r = await fn(); } catch (e) { r = {ok: false, error: t("No connection to MoveEye.")}; } fb.disabled = pv.disabled = false;
         if (!r || !r.ok) { st.classList.add("err"); st.textContent = "⚠ " + ((r && r.error) || t("error")); return; }
         if (!r.items.length && r.kind !== "table") { st.classList.add("err"); st.textContent = "⚠ " + t("Nothing to import was found."); return; }
-        P = r; P.items.forEach(x => x.on = true); step2(); };
+        P = r; P.items.forEach(x => x.on = true); mergeHeads(); step2(); };
       fi.onchange = () => { const f = fi.files && fi.files[0]; fi.value = ""; if (!f) return;
         if (f.size > ((S.ov.caps || {}).import || 5242880)) { st.classList.add("err"); st.textContent = "⚠ " + t("The file is too big."); return; }
         run(async () => { const buf = await f.arrayBuffer(); const r = await fetch("/api/tausch/pack/import?lang=" + LANG + "&name=" + encodeURIComponent(f.name) + "&list=" + into,
           {method: "POST", headers: {"Content-Type": "application/octet-stream"}, body: buf}); return await r.json(); }); };
       pv.onclick = () => { if (!ta.value.trim()) { ta.focus(); return; } run(() => api({action: "preview", text: ta.value, list: into})); };
     };
+    const mergeHeads = () => { let c = null; const hs = P.heads || [], out = [];                 // headings as rows of their own: one tap makes an item of them (and back)
+      P.items.forEach((x, i) => { hs.filter(h => h[0] === i).forEach(h => { c = h[2]; out.push({head: true, name: h[1], cat: h[2], on: false}); }); x.auto = P.kind === "lines"; x.c0 = c ? "other" : x.cat; out.push(x); });
+      hs.filter(h => h[0] >= P.items.length).forEach(h => out.push({head: true, name: h[1], cat: h[2], on: false})); P.items = out; };
+    const recat = () => { let c = null; P.items.forEach(x => { if (x.head) c = x.cat; else if (x.auto) x.cat = c || x.c0; }); };
     const remap = async () => { const r = await api({action: "preview", rows: P.rows, guess: {map: P.map, header: P.header, unit: P.unit}, list: into});
       if (!r.ok) { toast("⚠ " + (r.error || t("error"))); return; } const title = P.title; P = r; P.title = title; P.items.forEach(x => x.on = true); step2(); };
     const step2 = () => {
@@ -2311,14 +2434,20 @@ Object.assign(I18N.de, /*PLDE*/{});
           + (on.length > room ? " · ⚠ " + tf("only {n} more fit into this list", {n: room}) : "");
         go.textContent = "✓ " + tf("Import {n} items", {n: Math.min(on.length, room)}); go.disabled = !on.length; };
       P.items.forEach((x, i) => {
+        const sw = (txt, fn) => { const b = el("button", "sec pl-sw2", txt); b.type = "button"; b.onclick = fn; return b; };
+        if (x.head) { const r = el("div", "pl-pv pl-pvh"); r.append(el("b", "", catName(x.cat) + (catName(x.cat).toLowerCase() === x.name.toLowerCase() ? "" : " («" + x.name + "»)")),
+          sw(t("As item"), () => { Object.assign(x, {head: false, on: true, g: null, w: "", n: 1, note: "", auto: true, c0: "other"}); recat(); step2(); })); box.appendChild(r); return; }
         const r = el("div", "pl-pv"), cl = el("label", "pl-pvc"), c = el("input"), f = el("div", "pl-pvf"), n1 = input(x.name), r2 = el("div", "r2"), w = input(fmtW(x.g), t("Weight")), q = input(x.n, "", "number"), cs = catSelect(x.cat);
         c.type = "checkbox"; c.checked = true; c.setAttribute("aria-label", t("Import") + ": " + x.name); cl.appendChild(c); n1.className = "nm"; n1.maxLength = 120; q.min = 1; q.max = 999; n1.setAttribute("aria-label", t("Name")); w.setAttribute("aria-label", t("Weight")); q.setAttribute("aria-label", t("Quantity"));
-        x.w = fmtW(x.g);
+        if (x.w === undefined) x.w = fmtW(x.g); w.value = x.w; c.checked = x.on; r.classList.toggle("off", !x.on);
         c.onchange = () => { x.on = c.checked; r.classList.toggle("off", !x.on); paintSum(); };
-        n1.oninput = () => { x.name = n1.value; }; w.oninput = () => { x.w = w.value; x.g = null; }; q.oninput = () => { x.n = parseInt(q.value, 10) || 1; paintSum(); }; cs.addEventListener("change", () => { x.cat = cs.value; });
+        n1.oninput = () => { x.name = n1.value; }; w.oninput = () => { x.w = w.value; x.g = null; }; q.oninput = () => { x.n = parseInt(q.value, 10) || 1; paintSum(); }; cs.addEventListener("change", () => { x.cat = cs.value; x.auto = false; });
         r2.append(w, q, cs); f.append(n1, r2);
         if (x.dup) f.appendChild(el("small", "", "⚠ " + t(x.dup === "list" ? "Double: already in the list" : "Double: twice in this import")));
+        if (x.like) f.appendChild(el("small", "", "≈ " + tf("Similar to «{name}» in the list", {name: x.like})));
         if (x.packed || x.buy || x.note) f.appendChild(el("small", "", [x.packed ? "✓ " + t("Packed") : "", x.buy ? "🛒 " + t("To buy") : "", x.note].filter(Boolean).join(" · "))).style.color = "var(--mut)";
+        if (P.kind === "lines") f.appendChild(sw(t("As category"), async () => { const k = await api({action: "preview", cat: x.name}); if (!k.ok) return;
+          Object.assign(x, {head: true, on: false, cat: k.cat}); recat(); step2(); }));
         r.append(cl, f); box.appendChild(r);
       });
       sh.ft.hidden = false; sh.btn("‹ " + t("Back"), "sec", step1).style.flex = "0 0 auto";
@@ -2356,6 +2485,10 @@ Object.assign(I18N.de, /*PLDE*/{});
   const hd = document.querySelector("header");
   const setTop = () => { const st = hd && getComputedStyle(hd); $("#pl").style.setProperty("--plh", (st && (st.position === "sticky" || st.position === "fixed") ? hd.offsetHeight : 0) + "px"); };
   if (hd && window.ResizeObserver) new ResizeObserver(setTop).observe(hd); addEventListener("resize", setTop);
+  // the tip card of the guide (515, #gd-card, fixed at the bottom) never lies on the quick-add bar: it sits above it
+  const setBar = () => { const a = $("#pl-add"), r = a.hidden || $("#pl-li").hidden ? null : a.getBoundingClientRect(), h = window.innerHeight;
+    document.documentElement.style.setProperty("--plb", (r && r.top < h && r.bottom > h - 260 ? Math.max(0, Math.round(h - r.top)) : 0) + "px"); };
+  ["scroll", "resize"].forEach(e => addEventListener(e, setBar, {passive: true})); if (window.visualViewport) visualViewport.addEventListener("resize", setBar); setInterval(setBar, 700);
   (async () => { await initAppearance(); setTop(); route(); })();
 })();
 /*ALERTS*/
@@ -2548,6 +2681,9 @@ _HX_PACK = {
                                      "Dubel: duas giadas en quest import"),
     "«{name}» is in the list twice now": ("«{name}» steht jetzt zweimal in der Liste", "«{name}» est maintenant deux fois dans la liste", "«{name}» ora è due volte nella lista",
                                           "«{name}» stat ussa duas giadas en la glista"),
+    "Similar to «{name}» in the list": ("Ähnlich wie «{name}» in der Liste", "Semblable à «{name}» dans la liste", "Simile a «{name}» nella lista", "Sumegliant a «{name}» en la glista"),
+    "As category": ("Als Kategorie", "Comme catégorie", "Come categoria", "Sco categoria"),
+    "As item": ("Als Gegenstand", "Comme objet", "Come oggetto", "Sco object"),
     "unknown list": ("unbekannte Liste", "liste inconnue", "lista sconosciuta", "glista nunenconuschenta"),
     "The list needs a name.": ("Die Liste braucht einen Namen.", "La liste a besoin d’un nom.", "La lista ha bisogno di un nome.", "La glista dovra in num."),
     "The item needs a name.": ("Der Gegenstand braucht einen Namen.", "L’objet a besoin d’un nom.", "L’oggetto ha bisogno di un nome.", "L’object dovra in num."),

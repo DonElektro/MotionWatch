@@ -23,6 +23,10 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 3.83.2: Packlisten: Import versteht jetzt auch Listen aus Apple Notizen und Markdown-Listen (Überschriften wie **KLEIDUNG**,
+    Gewichte wie «550g» direkt am Wort); eigene Kategorien bleiben erhalten; Überschriften in eingefügtem Text werden als
+    Kategorie erkannt; ähnliche Einträge werden beim Import markiert; die Tipp-Karte verdeckt die Eingabezeile nicht mehr. Sehr
+    lange oder absichtlich verdrehte Zeilen in einer Import-Datei können MoveEye nicht mehr aufhalten.
   * 3.83.1: Almanach: Beschriftungen in den Bildern werden auf keinem Gerät mehr abgeschnitten.
   * 3.83.0: Überlebens-Almanach neu: Bilder in jedem Kapitel, acht Knoten Schritt für Schritt gezeichnet, neue Kapitel
     «Tierspuren» und «Essbar oder giftig?», dein Standort für den Notruf (Schweizer Koordinaten), Luftdruck-Trend, «Heute Nacht»
@@ -109,8 +113,6 @@ Features
   * 3.66.1: Spielesammlung GS-1.6: Wobbly Truck mit Landehilfe im leichten Modus; der Knopf «✕ Zurück» sucht sich in allen
     Spielen einen freien Platz (oder bleibt weg, wenn das Spiel einen eigenen Zurück-Link hat) und überdeckt keine Spiel-Knöpfe
     mehr.
-  * 3.66.0: Spielesammlung GS-1.5: Wobbly Truck mit Motorrad, Stunt-Piste, Stunts, Kombos und Einstellungen; Spielecke (Mehr →
-    Spielecke) und Gast-Spieleabend mit denselben Spiel-Kacheln wie die Spielesammlung, kurz «✓ N Spiele installiert».
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -119,10 +121,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_3_83_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_3_83_2.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_3_83_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_3_83_1.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_3_83_2.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_3_83_2.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -139,7 +141,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "3.83.1"
+APP_VERSION = "3.83.2"
 
 
 def default_data_dir():
@@ -264,8 +266,8 @@ def prepare_settings_file():
 
 
 
-ZD_FILE = "moveeye_daten_3_83_1.zip"
-ZD_SHA256 = "89b6d8a2c597a7d4e2e409a224914b303a276d68b384321642aa8b50645ec101"
+ZD_FILE = "moveeye_daten_3_83_2.zip"
+ZD_SHA256 = "980b6e5f9ae37a96b48fb52ed57043239bc9ffd717f645626c90ca13eac1e3df"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -49565,7 +49567,7 @@ class App:
 		self.watch = watch
 		self.web = web or WebStream(watch)
 		self.root = tk.Tk()
-		self.root.title("MoveEye 3.83.1")
+		self.root.title("MoveEye 3.83.2")
 		try:
 			import base64
 			self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -49943,7 +49945,7 @@ class App:
 			if not small:
 				vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
 				vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))
-			Tip(nm, f"{tr('Build')} 3.83.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+			Tip(nm, f"{tr('Build')} 3.83.2 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
 			self._egg_taps = []
 			for w_ in tl.winfo_children():
 				w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -94683,12 +94685,25 @@ def pl_cat_guess(name):
 	return "other"
 
 
+def pl_cat_head(text):
+	""
+	c = pl_cat_clean(str(text).strip(" :-–—#*=_"))
+	if c == c.upper() and c != c.lower():
+		c = pl_cat_clean(" ".join(w[:1] + w[1:].lower() for w in c.split(" ")))
+	return c if c in PL_CAT_KEYS else c[:1].upper() + c[1:]
+
+
+def pl_cat_icon(cat):
+	""
+	k = cat if cat in PL_CAT_KEYS else pl_cat_key(cat)
+	return k if k in PL_CAT_KEYS else "other"
+
+
 def pl_kind_auto(cat, name):
 	""
 	low = " " + name.lower() + " "
-	if cat == "food" or any(w in low for w in PL_CONS_WORDS):
-		return "cons"
-	if cat == "water" and not any(w in low for w in PL_WATER_GEAR):
+	cat = pl_cat_icon(cat)
+	if any(w in low for w in PL_CONS_WORDS) or (cat in ("food", "water") and not any(w in low for w in PL_WATER_GEAR)):
 		return "cons"
 	return "base"
 
@@ -94713,14 +94728,37 @@ def _pl_tidy(s):
 	return re.sub(r"\s+([,;:])", r"\1", s)
 
 
+PL_LINE_MAX = 500
+
+
+def _pl_fence(t):
+	"""
+"""
+	m = re.match(r"[=*_~]{2,}", t)
+	if m:
+		f = m.group(0)
+		h = t[len(f):len(t) - len(f)].strip() if len(t) > 2 * len(f) and t.endswith(f) else ""
+		return h if h and h[0] not in "=*_~" else None
+	m = re.match(r"-{3,}", t)
+	if m:
+		for k in range(min(len(m.group(0)), len(t) - len(t.rstrip("-")), (len(t) - 1) // 2), 2, -1):
+			h = t[k:len(t) - k].strip()
+			if h and h[0] not in "=*_~":
+				return h
+	return None
+
+
 def pl_parse_line(raw):
 	""
-	s = _TZ_CTRL.sub("", _pl_ud.normalize("NFC", str(raw)).replace(" ", " ").replace(" ", " ")).rstrip()
+	s = _TZ_CTRL.sub("", _pl_ud.normalize("NFC", str(raw)[:8 * PL_LINE_MAX]).replace(" ", " ").replace(" ", " ")).rstrip()
 	if not s.strip():
 		return None
-	m = re.match(r"^\s*#{1,6}\s*(.+?)\s*#*\s*$", s) or re.match(r"^\s*([=*_~]{2,}|-{3,})\s*(?P<h>[^=*_~].*?)\s*\1\s*$", s)
-	if m:
-		h = pl_text(m.groupdict().get("h") or m.group(1), PL_CAT_MAX).strip(_PL_EDGE)
+	lead = len(s) - len(s.lstrip())
+	s = s[:lead] + re.sub(r"[ \t]{2,}", " ", s[lead:])[:PL_LINE_MAX]
+	m = re.match(r"^\s*#{1,6}\s*(.+?)\s*#*\s*$", s)
+	f = None if m else _pl_fence(s.strip())
+	if m or f is not None:
+		h = pl_text(m.group(1) if m else f, PL_CAT_MAX).strip(_PL_EDGE)
 		return ("cat", h) if h else None
 	if re.fullmatch(r"[\s\-=_*~#.·•]+", s):
 		return None
@@ -94757,7 +94795,9 @@ def pl_parse_line(raw):
 		if m:
 			g, s = _pl_grams(m.group(2), "g"), m.group(1)
 	ml = list(_PL_L_RE.finditer(s))
-	if ml and _pl_tidy(s[:ml[-1].start()] + " " + s[ml[-1].end():]):
+	rest = _pl_tidy(s[:ml[-1].start()] + " " + s[ml[-1].end():]).lower() if ml else ""
+	if re.search(r"wasser|water|tee\b|saft|getränk|benzin|spiritus|milch|wein|bier|öl\b|sirup|kaffee|eau\b|acqua|drink", rest) and not any(
+            w in rest for w in PL_WATER_GEAR):
 		m = ml[-1]
 		note = m.group(1) + " " + m.group(2).lower().replace("liter", "l").replace("litres", "l").replace("litre", "l").replace("lt", "l")
 		s = s[:m.start()] + " " + s[m.end():]
@@ -94787,8 +94827,33 @@ def pl_parse_text(text):
 	real = [p for p in parsed if p]
 	caps = sum(1 for p in real if p[0] == "caps")
 	caps_are_items = caps > 0 and caps * 2 > len(real)
-	items, skipped, cat, title = [], 0, None, ""
+	items, skipped, cat, title, heads = [], 0, None, "", []
 	idx = [i for i, p in enumerate(parsed) if p]
+
+	mark = [bool(_PL_BOX.match(ln) or _PL_BULLET.match(ln) or re.match(r"(?: {2,}|\t)\S", ln)) for ln in lines]
+
+	def bare(i):
+		p = parsed[i]
+		return bool(p and p[0] == "item" and not mark[i] and p[1]["g"] is None and p[1]["n"] == 1 and not p[1]["note"] and not p[1]["buy"])
+	B, M, up = [i for i in idx if bare(i)], [i for i in idx if mark[i] and parsed[i][0] == "item"], []
+	if M and len(M) >= len(B):
+		up = [i for i in B if i + 1 < len(lines) and mark[i + 1] and parsed[i + 1]]
+	elif not M:
+		blocks, cur = [], []
+		for i, ln in enumerate(lines + [""]):
+			if ln.strip():
+				cur.append(i)
+			elif cur:
+				blocks.append(cur)
+				cur = []
+		big = [b for b in blocks if len(b) >= 2 and not (parsed[b[0]] and parsed[b[0]][0] != "item")]
+		rest = [i for b in big for i in b[1:] if parsed[i] and parsed[i][0] == "item"]
+		if len(big) >= 2 and all(bare(b[0]) for b in big) and rest and (
+                all(lines[b[0]].strip().lower() in PL_HEAD_EXACT or pl_cat_clean(lines[b[0]]) in PL_CAT_KEYS for b in big)
+                or sum(1 for i in rest if not bare(i)) >= 0.6 * len(rest)):
+			up = [b[0] for b in big]
+	for i in up:
+		parsed[i] = ("cat", parsed[i][1]["name"])
 	if (len(idx) >= 3 and parsed[idx[0]][0] == "item" and idx[1] > idx[0] + 1 and parsed[idx[1]][0] in ("cat", "caps") and not caps_are_items
             and parsed[idx[0]][1]["g"] is None and not re.match(r"\s*[-*+•\[☐☑\d]", lines[idx[0]])):
 		title = pl_text(lines[idx[0]], 80)
@@ -94804,7 +94869,8 @@ def pl_parse_text(text):
 			else:
 				p = ("cat", " ".join(w[:1] + w[1:].lower() for w in p[1].split(" ")))
 		if p[0] == "cat":
-			cat = pl_cat_key(p[1])
+			cat = pl_cat_head(p[1])
+			heads.append([len(items), pl_text(p[1], PL_NAME_MAX), cat])
 			continue
 		it = p[1]
 		it["cat"] = cat or pl_cat_guess(it["name"])
@@ -94812,7 +94878,7 @@ def pl_parse_text(text):
 		items.append(it)
 		if len(items) >= PL_ROWS_MAX:
 			break
-	return {"items": items, "skipped": skipped, "title": title}
+	return {"items": items, "skipped": skipped, "title": title, "heads": heads}
 
 
 
@@ -94828,6 +94894,42 @@ def pl_decode(data):
 		return data.decode("cp1252", "replace")
 
 
+_PL_HTML_OPEN = re.compile(r"(?i)<!--|<(script|style|head|title)\b")
+_PL_HTML_TAG = "[^<>]{0,2000}>"
+
+
+def pl_html_text(t):
+	"""
+
+
+"""
+	import html as _h
+	out, pos, nie = [], 0, set()
+	while True:
+		m = _PL_HTML_OPEN.search(t, pos)
+		if not m:
+			out.append(t[pos:])
+			break
+		out.append(t[pos:m.start()])
+		kind = (m.group(1) or "!").lower()
+		end = -1
+		if kind not in nie:
+			if kind == "!":
+				j = t.find("-->", m.end())
+				end = j + 3 if j >= 0 else -1
+			else:
+				c = re.compile(r"(?i)</%s\s{0,20}>" % kind).search(t, m.end())
+				end = c.end() if c else -1
+			if end < 0:
+				nie.add(kind)
+		pos = end if end >= 0 else m.end()
+	t = "".join(out)
+	t = re.sub(r"(?i)<li\b" + _PL_HTML_TAG, "\n- ", t)
+	t = re.sub(r"(?i)</t[dh]\s{0,20}>", "\t", t)
+	t = re.sub(r"(?i)</?(?:div|p|br|tr|li|ul|ol|h[1-6]|table|body|html)\b" + _PL_HTML_TAG, "\n", t)
+	return _h.unescape(re.sub(r"<[a-zA-Z/!]" + _PL_HTML_TAG, "", t))
+
+
 def pl_sniff(text, csv_file=False):
 	""
 	lines = [ln for ln in text.replace("\r\n", "\n").replace("\r", "\n").split("\n") if ln.strip()][:80]
@@ -94835,7 +94937,7 @@ def pl_sniff(text, csv_file=False):
 		return ""
 	best, best_n = "", 0.0
 	for d in ("\t", ";", "|") + ((",",) if csv_file else ()):
-		cnt = [ln.count(d) for ln in lines]
+		cnt = [ln.lstrip().count(d) for ln in lines]
 		have = [c for c in cnt if c]
 		if len(have) < max(2, 0.6 * len(lines)):
 			continue
@@ -95140,7 +95242,7 @@ def pl_table_items(rows, guess):
 			p = pl_parse_line(c)
 			if c.endswith(":") or (p and p[0] in ("cat", "caps")) or c.lower() in PL_HEAD_EXACT or any(
                     c.lower() == tr(en, L).lower() for _k, en, _c, _p in PL_CATS for L in LANGS):
-				cat = pl_cat_key(c.title() if c == c.upper() else c)
+				cat = pl_cat_head(c.title() if c == c.upper() else c)
 				continue
 		raw = cell(r, "name") if mp["name"] >= 0 else ""
 		if not raw:
@@ -95160,7 +95262,7 @@ def pl_table_items(rows, guess):
 				it["n"] = int(v)
 		if cell(r, "note"):
 			it["note"] = pl_text((it["note"] + " · " if it["note"] else "") + cell(r, "note"), PL_NOTE_MAX)
-		it["cat"] = pl_cat_key(cell(r, "cat")) if cell(r, "cat") else (cat or pl_cat_guess(it["name"]))
+		it["cat"] = pl_cat_head(cell(r, "cat")) if cell(r, "cat") else (cat or pl_cat_guess(it["name"]))
 		k = kinds.get(cell(r, "kind").lower())
 		it["kind"] = k or pl_kind_auto(it["cat"], it["name"])
 		if mp["packed"] >= 0:
@@ -95196,6 +95298,10 @@ def pl_import_preview(data=None, text=None, name="", guess=None, rows=None, lang
 				raise PLError("The text is too long.")
 			if "\x00" in text[:2000]:
 				raise PLError("This kind of file cannot be imported. Save the list as .xlsx, CSV or text.")
+			if sum(c < " " and c not in "\t\n\r" for c in text[:4000]) > 8:
+				raise PLError("This kind of file cannot be imported. Save the list as .xlsx, CSV or text.")
+			if len(re.findall(r"(?i)<(?:html|body|div|p|br|li|span|tr)\b[^<>]{0,2000}>", text[:20000])) >= 2:
+				text = pl_html_text(text)
 			if ext == "json" or text.lstrip()[:1] == "{":
 				try:
 					j = json.loads(text)
@@ -95216,7 +95322,7 @@ def pl_import_preview(data=None, text=None, name="", guess=None, rows=None, lang
 			d = pl_sniff(text, csv_file=ext in ("csv", "tsv"))
 			if not d:
 				res = pl_parse_text(text)
-				return {"kind": "lines", "items": res["items"], "skipped": res["skipped"], "title": res["title"] or title}
+				return {"kind": "lines", "items": res["items"], "skipped": res["skipped"], "title": res["title"] or title, "heads": res["heads"]}
 			rows = pl_csv_rows(text, d)
 	rows = [[pl_text(c, 300) for c in r[:PL_COLS_MAX]] for r in rows[:PL_ROWS_MAX] if isinstance(r, list)]
 	if not rows:
@@ -95404,7 +95510,8 @@ def _pl_pub_head(L, who):
 	t = pl_totals(L["items"])
 	return {"id": L["id"], "name": L["name"], "area": L["area"], "by": L["owner_name"], "mine": L["owner"] == who["key"], "t": L["t"], "rev": L["rev"],
             "goal_g": L["goal_g"], "note": L["note"], "n": t["n"], "packed": t["packed"], "buy": t["buy"], "total": t["total"], "pack": t["pack"],
-            "edit": pl_can_edit(L, who) and bool(CFG.get("tausch_on", True)), "rm": pl_can_del(L, who), "dl": pl_can_export(L, who)}
+            "edit": pl_can_edit(L, who) and bool(CFG.get("tausch_on", True)), "rm": pl_can_del(L, who), "dl": pl_can_export(L, who),
+            "ci": {c: pl_cat_icon(c) for c in {x["cat"] for x in L["items"]} if c not in PL_CAT_KEYS}}
 
 
 def pl_overview(who, lang=None):
@@ -95489,6 +95596,9 @@ def _pl_new_item(L, who, d):
 	except (TypeError, ValueError):
 		n = 1
 	cat = pl_cat_clean(d.get("cat")) if isinstance(d.get("cat"), str) and d.get("cat").strip() else pl_cat_guess(name)
+	own = {x["cat"] for x in L["items"] if x["cat"] not in PL_CAT_KEYS and pl_cat_icon(x["cat"]) == cat}
+	if len(own) == 1 and not d.get("cat") and not any(x["cat"] == cat for x in L["items"]):
+		cat = own.pop()
 	iid = secrets.token_hex(4)
 	have = {x["id"] for x in L["items"]} | {x[0] for x in L["gone"]}
 	while iid in have:
@@ -95500,11 +95610,18 @@ def _pl_new_item(L, who, d):
 
 def pl_dups(items, L=None):
 	""
-	have = {it["name"].casefold() for it in (L["items"] if L else ())}
+	def words(n):
+		return frozenset(re.sub(r"(?<=...)(?:en|n|e|s)$", "", w) for w in re.findall(r"[^\W\d_]{3,}", n.casefold())
+                         if w not in ("evtl", "eventuell", "oder", "auch", "inkl", "nach", "und", "aus", "mit", "ggf", "ggfs", "für", "and", "the", "with"))
+	have = {it["name"].casefold(): it["name"] for it in (L["items"] if L else ())}
+	near = [(words(n), n) for n in have.values()]
 	seen = set()
 	for it in items:
-		k = it["name"].casefold()
+		k, w = it["name"].casefold(), words(it["name"])
 		it["dup"] = "list" if k in have else "import" if k in seen else ""
+		like = "" if it["dup"] or not w else next((n for v, n in near if v and (v <= w or w <= v)), "")
+		if like:
+			it["like"] = like
 		seen.add(k)
 	return items
 
@@ -95516,6 +95633,8 @@ def pl_action(who, d, lang=None):
 		err = _pl_ready(who, lang)
 		if err:
 			return False, err, {}, 403 if "files_up" not in who["perms"] else 409
+		if isinstance(d.get("cat"), str):
+			return True, "", {"cat": pl_cat_head(d["cat"])}, 200
 		try:
 			if isinstance(d.get("rows"), list):
 				res = pl_import_preview(rows=d["rows"], guess=d.get("guess") if isinstance(d.get("guess"), dict) else None, lang=lang)
@@ -95927,7 +96046,7 @@ def pl_file_name(L, ext):
 
 
 def pl_icon_svg(cat, size=22):
-	c = next((x for x in PL_CATS if x[0] == cat), PL_CATS[-1])
+	c = next(x for x in PL_CATS if x[0] == pl_cat_icon(cat))
 	return (f'<svg viewBox="0 0 24 24" width="{size}" height="{size}" fill="none" stroke="{c[2]}" stroke-width="1.7" stroke-linecap="round" '
             f'stroke-linejoin="round" aria-hidden="true"><path d="{c[3]}"/></svg>')
 
@@ -96331,6 +96450,9 @@ _HX_PACK = {
                                      "Dubel: duas giadas en quest import"),
     "«{name}» is in the list twice now": ("«{name}» steht jetzt zweimal in der Liste", "«{name}» est maintenant deux fois dans la liste", "«{name}» ora è due volte nella lista",
                                           "«{name}» stat ussa duas giadas en la glista"),
+    "Similar to «{name}» in the list": ("Ähnlich wie «{name}» in der Liste", "Semblable à «{name}» dans la liste", "Simile a «{name}» nella lista", "Sumegliant a «{name}» en la glista"),
+    "As category": ("Als Kategorie", "Comme catégorie", "Come categoria", "Sco categoria"),
+    "As item": ("Als Gegenstand", "Comme objet", "Come oggetto", "Sco object"),
     "unknown list": ("unbekannte Liste", "liste inconnue", "lista sconosciuta", "glista nunenconuschenta"),
     "The list needs a name.": ("Die Liste braucht einen Namen.", "La liste a besoin d’un nom.", "La lista ha bisogno di un nome.", "La glista dovra in num."),
     "The item needs a name.": ("Der Gegenstand braucht einen Namen.", "L’objet a besoin d’un nom.", "L’oggetto ha bisogno di un nome.", "L’object dovra in num."),
