@@ -1,23 +1,16 @@
 {
- "version": "3D-5.67.1",
- "ver": "3.67.1",
- "name": "MoveEye Sim 3.67.1",
+ "version": "3D-5.67.2",
+ "ver": "3.67.2",
+ "name": "MoveEye Sim 3.67.2",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 54423791,
- "sha256": "56909729dc6367afe39ed5c7353fa13665878bf7fae830f77773d06067a8778e",
- "notes": "Weiche Tropfen auf der Linse, Hinweis «Linse verschmutzt» (an MoveEye: «lens»)",
+ "size": 54429040,
+ "sha256": "951424876f61691a5c558f09ddfd76452d2ce073a6a0e2613e5e229bb05da8b8",
+ "notes": "HP: Controller koppeln ohne Tippen (Knopf «Controller koppeln», Liste mit Akkustand, Trennen, Vergessen); Steuerknüppel zählen jetzt als «Spielen»; mit USB-C-Kabel sofort, mit Bluetooth sobald ein USB-Bluetooth-Stick steckt. Der Simulator holt künftige Versionen als Anhang (spart Platz im Projekt); am Simulator selbst ändert sich nichts.",
  "mw_min": "3.55.0",
  "linux": {
   "file": "simulator3d/MoveEyeSim3D_Linux.zip",
-  "ver": "3.67.1",
-  "size": 48453813,
-  "sha256": "6d79a12ef2c965f1aa5437d6fa46ad1988e3eb111991b3c1a71fc2d98752847b"
- },
- "pi": {
-  "file": "simulator3d/MoveEyeSim3D_Pi.zip",
-  "ver": "3.67.1",
-  "size": 37960698,
-  "sha256": "235956198ae849f36e6ab944b21772929d1a9b5e6abc7741934f18599874b5ca",
-  "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.67.1/MoveEyeSim3D_Pi.zip"
+  "ver": "3.67.2",
+  "size": 48471196,
+  "sha256": "fa02a9c4733950a97c7ede0b6c86743118ee3461bd38b9545d6564ba2ac70b45"
  }
 }
