@@ -128,7 +128,14 @@ Push-Nachrichten). Einrichtung: `docs/Einrichtung_Raspberry_Pi.md`, Gehäuse: `h
   ab 1 KiB in die ZIP, `_HX…`-Tabellen behalten nur Deutsch, die gebaute Datei ohne Kommentare / Docstrings und mit Tabs
   (gleiche Zeilennummern; Originalzeilen in der ZIP, `zd_source()`). Hauptdatei: Warnung ab 4 MiB, Abbruch ab 5 MiB
   (`bauen.py`, `versionen.py --pruefen`), äussere Grenze 8 MiB für Geräte bis 2.98.x. Tests: `werkzeuge/zusatzdaten_test.py`,
-  `werkzeuge/update_uebergang_test.py`. **Ablage entlasten (Nov. 2026):** `daten.json` steht **ungepackt** in der ZIP
+  `werkzeuge/update_uebergang_test.py`. **Regel für Helfer (Hauptdatei kleiner, Nov. 2026):** grosse Daten (Web-Seiten, JS,
+  CSS, SVG, Tabellen, lange Texte) als **ein Literal auf oberster Ebene** schreiben (`NAME_PAGE` / `_HTML` / `_JS` / `_CSS`
+  ab 1 KiB, andere ab 4 KiB; nicht in einer Funktion, nicht mit `+` oder f-Text gebaut) – dann lagert `bauen.py` sie von
+  selbst aus; was ohne ZIP gebraucht wird (Start, Anmelden, Schutz, Alarm, Update, Reparatur), bleibt in der Hauptdatei.
+  Prüfen: jeder Bau zeigt «Grösse: … Luft bis zur Warnung», `bauen.py --groessen` zeigt, was mit welchem Grund bleibt;
+  `werkzeuge/hauptdatei_groesse_test.py` (CI «basis») wird rot unter 150 KiB Luft (`GROESSE_LUFT`). Die Funktionen
+  `…_selftest` stehen als Quelltext in der ZIP (`ZD_PRUEFCODE`, `_zd_fn` in Teil 012): nur für «--self-test», nie im Betrieb
+  aufrufen (sonst bleibt die Funktion in der Hauptdatei). **Ablage entlasten (Nov. 2026):** `daten.json` steht **ungepackt** in der ZIP
   (`ZD_GEPACKT = False` in `bauen.py`, rund 10 MB statt 4.9 MB): git speichert so pro Version nur den Unterschied
   (rund 0.1 MB statt 4.9 MB; `werkzeuge/ablage_test.py` misst es). Nicht wieder packen, die ZIP nie von Hand neu packen.
   Die Geräte nehmen die Programmdatei von der Adresse `url` ihres Eintrags (seit 2.98.x) und suchen die ZIP **daneben**;

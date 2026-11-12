@@ -270,7 +270,7 @@ def zusatz_selftest():
     assert ZD["ok"], f"{ZD_FILE}: {ZD['err']}"
     assert not ZD["miss"], f"{len(ZD['miss'])} literals not in the data file: {ZD['miss'][:5]}"
     src = zd_source()
-    assert not re.search(r"_zd\('\d{3}", src), "a moved-out literal is not back in zd_source()"
+    assert not re.search(r"_zd(_fn)?\('\d{3}", src), "a moved-out literal / check is not back in zd_source()"
     assert len(src) > os.path.getsize(os.path.abspath(__file__)), "zd_source() is not bigger than the file"
     assert update_pick([{"version": "9.0.0", "needs": "99.0.0"}, {"version": "8.0.0", "bridge": True}])["version"] == "8.0.0"
     assert update_pick([{"version": "9.0.0"}])["version"] == "9.0.0"

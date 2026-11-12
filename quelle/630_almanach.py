@@ -58,6 +58,12 @@ Bei schweren oder grossen Verbrennungen und bei Kindern: 144 anrufen. Im Zweifel
 
 Einmal im Jahr durchsehen: Ablaufdaten, verbrauchte Sachen nachfüllen."""),
  ]),
+]
+# Hauptdatei kleiner (Nov. 2026): only the chapter «Notfall» above stays in the program file (ALMANAC is pinned in bauen.py:
+# emergency numbers and first aid are there without the data zip, and almanac_tip() never sees an empty list). The other
+# chapters are a plain literal of their own, so bauen.py moves them into the data zip; with the zip the list is the same
+# as before. Without the zip /almanach shows the chapter «Notfall» as a plain page (alm_notfall_seite below).
+ALMANAC_WEITER = [
  ("wetter", "⛈", "Wetter lesen", [
   ("Gewitter: wie nah ist es?", """Zähle die Sekunden zwischen Blitz und Donner: Drei Sekunden entsprechen etwa einem Kilometer. Wer den Donner hört, ist schon in Reichweite (weniger als etwa 10 km) – jetzt Schutz suchen. Liegen Blitz und Donner 10 Sekunden oder weniger auseinander, besteht unmittelbare Lebensgefahr. Erst wenn eine halbe Stunde lang kein Donner mehr zu hören war, ist das Gewitter vorbei.
 
@@ -233,6 +239,33 @@ Füchse sind neugierig und kommen nahe an Zelte, wenn es nach Essen riecht – M
 Künstliches Licht stört sie beim Finden ihrer Partner. Darum: Wenn ihr Glühwürmchen seht, löscht die Lampen und schaut einfach zu."""),
  ]),
 ]
+ALMANAC.extend(ALMANAC_WEITER)
+
+
+def alm_notfall_seite():
+    """/almanach without the data zip (the page ALM_PAGE and all other chapters are in the zip): the chapter «Notfall» as
+    a plain page without script, with the note that the rest comes back with the data file"""
+    def esc(s):
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+    out = []
+    for _key, icon, name, arts in ALMANAC:
+        out.append("<h1>%s %s</h1>" % (icon, esc(name)))
+        for title, text in arts:
+            out.append("<h2>%s</h2>" % esc(title))
+            for block in text.split("\n\n"):
+                rows = block.split("\n")
+                if all(r.startswith("- ") for r in rows):
+                    out.append("<ul>" + "".join("<li>%s</li>" % esc(r[2:]) for r in rows) + "</ul>")
+                else:
+                    out.append("<p>" + "<br>".join(esc(r) for r in rows) + "</p>")
+    return ('<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,'
+            'initial-scale=1"><title>Überlebens-Almanach – Notfall</title><style>body{margin:0 auto;max-width:640px;padding:16px;'
+            'background:#0e1621;color:#e8eef6;font:17px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}h1{font-size:24px}'
+            'h2{font-size:19px;color:#e9a23b;margin:22px 0 4px}.n{color:#8ea0b6;font-size:14px;border:1px solid #24324a;'
+            'border-radius:10px;padding:10px 12px}a{color:#58a6ff}</style></head><body>' + "".join(out[:1])
+            + '<p class="n">Zusatzdaten fehlen – hier nur das Kapitel «Notfall». Die anderen Kapitel und Bilder kommen mit der '
+            'Zusatzdatei zurück (Update / Reparatur: <a href="/hilfe/fehler/DATA_MISSING">Jetzt nachladen</a>).</p>'
+            + "".join(out[1:]) + "</body></html>")
 
 
 ALM_PAGE = r"""<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">

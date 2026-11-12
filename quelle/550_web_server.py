@@ -729,6 +729,8 @@ class WebStream:
         @app.route("/almanach")
         @app.route("/almanach/")
         def almanac_page():
+            if ZD_FILE and not ZD["ok"]:                     # without the data zip: the chapter «Notfall» as a plain page (630)
+                return Response(alm_notfall_seite(), mimetype="text/html", headers={"Cache-Control": "no-store"})
             return Response(ALM_PAGE.replace("__DATA__", json.dumps(ALMANAC, ensure_ascii=False).replace("</", "<\\/")), mimetype="text/html",
                             headers={"Cache-Control": "no-store"})
 
