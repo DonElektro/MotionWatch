@@ -6,3 +6,7 @@ ausgabe_werkstatt/
 
 # 3.56+ «Simulator intern»: das Pi-Paket (37 MB) ist ein Release-Asset (sim-X.Y.Z), nicht im Repository
 simulator3d/MoveEyeSim3D_Pi.zip
+
+# Simulator-Anhang (ab der Version nach Sim 3.67.2): Windows- und Linux-Paket sind Release-Assets (sim-X.Y.Z). Hier liegen
+# sie nur kurz zum Nachrechnen vor dem Signieren (werkzeuge/sim_anhang.py holen) - nie einchecken.
+simulator3d/anhang/
