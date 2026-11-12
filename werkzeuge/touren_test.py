@@ -375,6 +375,71 @@ def teil_a(datei):
     ok(api({"action": "hoehe_delete"}, H)[0] == 200 and not ns["kh_installed"]() and not os.path.exists(os.path.dirname(ns["kh_path"]())), "Entfernen löscht das Paket")
     ok(c.get("/api/touren?id=" + t["id"], headers=HA).get_json()["tour"]["need"], "danach: wieder der Hinweis auf das Paket")
     shutil.rmtree(home, ignore_errors=True); shutil.rmtree(rel, ignore_errors=True)
+    teil_bau(ns)
+
+
+def teil_bau(ns):
+    """hoehe.py and the workflow «Höhendaten» without the net: a source with the wrong grid is refused (never used silently),
+    a missing package fails the check, sheets are put together, every step of the workflow stops at the first error"""
+    import subprocess
+    import numpy as np
+    print("   Höhenpaket bauen (hoehe.py, Workflow)", flush=True)
+    tmp = tempfile.mkdtemp(prefix="mw_touren_bau_")
+    H = os.path.join(HIER, "karten", "hoehe.py")
+    run = lambda *a: subprocess.run([sys.executable, "-I", H] + list(a), capture_output=True, text=True, timeout=300)
+
+    def asc(path, cell, cols, rows, xll, yll, fn):
+        with open(path, "w") as f:
+            f.write("ncols %d\nnrows %d\nxllcorner %.1f\nyllcorner %.1f\ncellsize %g\nNODATA_value -9999\n" % (cols, rows, xll, yll, cell))
+            for j in range(rows - 1, -1, -1):
+                f.write(" ".join("%.1f" % fn(xll + cell / 2 + i * cell, yll + cell / 2 + j * cell) for i in range(cols)) + "\n")
+    f0 = lambda x, y: 400.0 + (x - 650000) * 0.01 + (y - 240000) * 0.02
+    # like the archive the first run found: DHM200.asc (200 m) beside other files
+    asc(os.path.join(tmp, "DHM200.asc"), 200, 60, 50, 649900, 239900, f0)
+    with zipfile.ZipFile(os.path.join(tmp, "data.zip"), "w") as z:
+        z.write(os.path.join(tmp, "DHM200.asc"), "DHM200.asc"); z.writestr("DHM200.xyz", "x y z\n"); z.writestr("Metadata.txt", "x")
+    r = run("--erkunden", os.path.join(tmp, "data.zip"), "--gitter", "25")
+    ok(r.returncode == 2 and "QUELLE-FALSCH" in r.stdout and "200" in r.stdout and "ARCHIV DHM200.asc" in r.stdout and "QUELLE-GITTER zelle=200 m" in r.stdout,
+       "200-m-Quelle für 25 m: schon beim Erkunden abgelehnt (Exit 2), mit Inhalt des Archivs und erkanntem Gitter")
+    r = run("--quelle", os.path.join(tmp, "data.zip"), "--gitter", "25", "--aus", os.path.join(tmp, "o1"), "--pins")
+    ok(r.returncode == 2 and not os.path.exists(os.path.join(tmp, "o1", "hoehe-ch-1.bin")) and not os.path.exists(os.path.join(tmp, "o1", "pins_hoehe.txt")),
+       "… auch beim Bauen: Exit 2, kein Paket, keine Pins")
+    r = run("--pruefen", os.path.join(tmp, "o1"))
+    ok(r.returncode == 1 and "FEHLT" in (r.stdout + r.stderr), "Prüfschritt ohne Paket: Exit 1 «FEHLT»")
+    r = run("--pins", "--aus", os.path.join(tmp, "o1"))
+    ok(r.returncode == 1, "Pins ohne Paket: Exit 1")
+    ok(run("--erkunden", os.path.join(tmp, "DHM200.asc"), "--gitter", "300").returncode == 2, "300 m aus 200 m (kein ganzes Vielfaches): abgelehnt")
+    r = run("--quelle", os.path.join(tmp, "data.zip"), "--gitter", "200", "--aus", os.path.join(tmp, "o2"), "--pins")
+    ok(r.returncode == 0 and "QUELLE-AUSDEHNUNG LV95 E 2649900–2661900" in r.stdout and "SCHAETZUNG" in r.stdout and os.path.isfile(os.path.join(tmp, "o2", "pins_hoehe.txt")),
+       "200 m aus 200 m ausdrücklich verlangt: gebaut (LV03 -> LV95), Ausdehnung und Schätzung gemeldet")
+    # 25 m in four sheets that share their border rows (like one file per map sheet), mean to 50 m
+    fb = lambda x, y: 500.0 + (x - 650000) * 0.03 + (y - 240000) * 0.05
+    with zipfile.ZipFile(os.path.join(tmp, "blaetter.zip"), "w") as z:
+        for k, (dx, dy) in enumerate(((0, 0), (40, 0), (0, 30), (40, 30))):
+            pth = os.path.join(tmp, "b%d.asc" % k)
+            asc(pth, 25, 41, 31, 649987.5 + dx * 25, 239987.5 + dy * 25, fb)
+            z.write(pth, "dhm25/blatt_%d.asc" % k)
+    r = run("--quelle", os.path.join(tmp, "blaetter.zip"), "--gitter", "25", "--aus", os.path.join(tmp, "o3"), "--pins")
+    r2 = run("--pruefen", os.path.join(tmp, "o3"))
+    ok(r.returncode == 0 and r2.returncode == 0 and "4 Datei(en)" in r.stdout and "PAKET hoehe-ch-1.bin" in r2.stdout and "Gitter 25 m" in r2.stdout and "LAGE Vaduz" in r2.stdout,
+       "vier Blätter mit gemeinsamem Rand: ein Paket, Prüfschritt meldet Gitter, Ausdehnung und die Lage der Ecken")
+    if r.returncode == 0:
+        K = ns["KhFile"](os.path.join(tmp, "o3", "hoehe-ch-1.bin"))
+        worst = max(abs(K.cell(i, j) - fb(650000 + i * 25, 240000 + j * 25)) for i in (0, 17, 40, 41, 80) for j in (0, 30, 31, 60))
+        ok(K.cols == 81 and K.rows == 61 and abs(K.e0 - 2650000) < 0.01 and abs(K.n0 - 1240000) < 0.01 and worst <= 0.3, f"Blätter richtig zusammengesetzt (81 × 61, Abweichung {worst:.2f} m)")
+        K.close()
+    wtx = open(os.path.join(ROOT, ".github", "workflows", "hoehen.yml"), encoding="utf-8").read()      # read as text (no YAML package needed)
+    runs = []
+    for blk in wtx.split("      - name: ")[1:]:
+        if "        run: |\n" in blk:
+            runs.append((blk.split("\n", 1)[0], "\n".join(ln[10:] for ln in blk.split("        run: |\n", 1)[1].split("\n") if ln.startswith("          "))))
+    ok(runs and all(x.startswith("set -euo pipefail") for _n, x in runs), f"Workflow: jeder der {len(runs)} Schritte beginnt mit «set -euo pipefail» (ein Fehler vor «| tee» bleibt ein Fehler)")
+    bau = next(x for n, x in runs if n.startswith("Paket bauen"))
+    ok("--pruefen" in bau and '[ -s "$RUNNER_TEMP/out/hoehe-ch-1.bin" ]' in bau and '[ "$g" = "$GITTER" ]' in bau and any("--erkunden" in x for _n, x in runs),
+       "Workflow: Erkunden vor dem Bau; der Bau-Schritt prüft Paket, Pins und das gebaute Gitter selbst")
+    ok("digitales-hoehenmodell_25/data.zip" not in open(H, encoding="utf-8").read().split("DHM25_URL =")[1] and "DHM25_MM_ASCII_GRID.zip" in open(H, encoding="utf-8").read(),
+       "hoehe.py: Adresse des Matrixmodells (25 m), kein Rückfall auf das 200-m-Archiv")
+    shutil.rmtree(tmp, ignore_errors=True)
 
 
 # ---- B: the page in the browser ----------------------------------------------------------------------------------------------------------
@@ -592,10 +657,13 @@ def teil_hoehe_echt(datei, aus):
                                ("Dufourspitze", 45.9369, 7.8668, 4634, 150)):
         v = K.height(la, lo)
         ok(v is not None and abs(v - h) <= tol, f"{nm}: {v} m (erwartet {h} ± {tol})")
-    for nm, la, lo in (("Vaduz (Liechtenstein)", 47.1410, 9.5215), ("Malbun (Liechtenstein)", 47.1010, 9.6100), ("Konstanz (D)", 47.6600, 9.1750), ("Chamonix (F)", 45.9237, 6.8694),
-                       ("Mailand (I)", 45.4642, 9.1900)):
+    for nm, la, lo in (("Vaduz (Liechtenstein)", 47.1410, 9.5215), ("Malbun (Liechtenstein)", 47.1010, 9.6100), ("Dufourspitze", 45.9369, 7.8668), ("Chiasso", 45.8320, 9.0310),
+                       ("Basel", 47.5596, 7.5886), ("Genf", 46.2044, 6.1432), ("Müstair", 46.6270, 10.4480), ("Schaffhausen, Bargen", 47.7930, 8.6100), ("Konstanz (D)", 47.6600, 9.1750),
+                       ("Chamonix (F)", 45.9237, 6.8694), ("Mailand (I)", 45.4642, 9.1900)):
         v = K.height(la, lo)
         print(f"    ABDECKUNG {nm}: {'keine Höhendaten' if v is None else str(v) + ' m'}", flush=True)
+    for nm, la, lo in (("Dufourspitze", 45.9369, 7.8668), ("Chiasso", 45.8320, 9.0310), ("Basel", 47.5596, 7.5886), ("Genf", 46.2044, 6.1432), ("Müstair", 46.6270, 10.4480)):
+        ok(K.height(la, lo) is not None, f"Ecke der Schweiz mit Höhen: {nm}")
     ok(K.height(45.4642, 9.19) is None and K.height(48.5, 8.0) is None, "weit ausserhalb: keine Höhe")
     ok(K.reads < 0.05 * os.path.getsize(p), f"gelesen {K.reads / 1e3:.0f} KB von {os.path.getsize(p) / 1e6:.1f} MB")
     t0 = time.time()
