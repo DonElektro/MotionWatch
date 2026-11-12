@@ -42,6 +42,7 @@ KT_MAX_WPS = 200
 KT_MAX_TOURS = 300
 KT_MAX_DRAW = 500                                         # points of a hand-drawn route
 KT_NAME_MAX = 120
+KT_ZIP_RAW = 48 * 1024 * 1024                             # «all tours» as one ZIP: so many bytes of GPX, then a note in the ZIP
 KT_XML_ELEMS = 400000
 KT_XML_DEPTH = 40
 KT_SHOW_PTS = 1500                                        # points of the line on the map / in the sketch
@@ -890,18 +891,29 @@ def smalltv_routes(app, reply, body):                     # + 639zzx: /api/toure
         T = kt_load()
         hd = {"X-Content-Type-Options": "nosniff", "Cache-Control": "no-store", "Content-Security-Policy": "sandbox; default-src 'none'"}
         from urllib.parse import quote
+        mine_ = KT_ID.match(tid) and T.get(tid) is not None and T[tid]["owner"] == who["key"]
+        if "files_down" not in who["perms"] and not (mine_ and "files_view" in who["perms"]):   # 3.85.0: a file to take along needs the right
+            return reply({"ok": False, "error": tr("not allowed for your user", lang_())}, 403)    # to download - or it is the own tour (as in 639zzc)
         if tid == "alle" and ext == "zip" and "files_view" in who["perms"]:
             import io
             bio = io.BytesIO()
             with zipfile.ZipFile(bio, "w", zipfile.ZIP_DEFLATED) as z:
-                used = set()
-                for t in sorted(T.values(), key=lambda x: x["t"]):
+                used, raw, left = set(), 0, 0
+                for t in sorted(T.values(), key=lambda x: -x["t"]):      # the newest first: they are in the ZIP for sure
                     if kt_can_see(t, who):
+                        if raw > KT_ZIP_RAW:                 # 3.85.0: 300 long recordings would be 360 MB in the memory of the Pi
+                            left += 1
+                            continue
                         nm = kt_file_name(t, "gpx")
                         if nm.lower() in used:
                             nm = nm[:-4] + "_" + t["id"][:4] + ".gpx"
                         used.add(nm.lower())
-                        z.writestr(nm, kt_gpx(t))
+                        data = kt_gpx(t)
+                        raw += len(data)
+                        z.writestr(nm, data)
+                if left:
+                    z.writestr("NICHT_ALLE.txt", ("Nicht alle Touren haben Platz in einer ZIP-Datei: %d ältere fehlen. Sie lassen sich einzeln "
+                                                  "als GPX oder KML herunterladen.\n%d older tours are missing - download them one by one.\n" % (left, left)).encode("utf-8"))
             return Response(bio.getvalue(), mimetype="application/zip", headers=dict(hd, **{"Content-Disposition": 'attachment; filename="MoveEye_Touren.zip"'}))
         t = T.get(tid) if KT_ID.match(tid) else None
         if t is None or not kt_can_see(t, who) or ext not in ("gpx", "kml"):
@@ -1270,7 +1282,7 @@ KT_JS = r"""
         T(t.kind === "drawn" ? "drawn" : "imported"), t.area === "mine" ? T("Only me") : ""].filter(Boolean).join(" · ")));
       b.append(el("span", "", t.kind === "drawn" ? "✏️" : "🥾"), sp, el("span", "", "›")); b.onclick = () => open(t.id); I.appendChild(b); });
     const M = $("#kt-more"); M.textContent = "";
-    if (S.tours.length) { const a = el("a", "btn sec", "🗜 " + T("All tours as ZIP (GPX)")); a.href = "/touren/x/alle.zip"; a.setAttribute("download", "MoveEye_Touren.zip"); M.appendChild(a); }
+    if (S.tours.length && S.me.down) { const a = el("a", "btn sec", "🗜 " + T("All tours as ZIP (GPX)")); a.href = "/touren/x/alle.zip"; a.setAttribute("download", "MoveEye_Touren.zip"); M.appendChild(a); }
     paintHoehe();
   }
   // ---- the height data (administrator) ----
@@ -1309,7 +1321,7 @@ KT_JS = r"""
       t.points.forEach(w => ul.appendChild(el("li", "", (w.name || "–") + (w.ele != null ? " · " + Math.round(w.ele) + " m" : "")))); D.appendChild(ul); }
     const row = el("div", "kt-row");
     if (hasMap()) row.appendChild(btn("🗺 " + T("Show on the map"), "sec", () => { fit(t.line); $("#kq-map").scrollIntoView({behavior: "smooth", block: "center"}); }));
-    ["gpx", "kml"].forEach(x => { const a = el("a", "btn sec", "⬆ " + x.toUpperCase()); a.href = "/touren/x/" + t.id + "." + x; a.setAttribute("download", ""); a.id = "kt-x-" + x; row.appendChild(a); });
+    if (S.me.down || t.mine) ["gpx", "kml"].forEach(x => { const a = el("a", "btn sec", "⬆ " + x.toUpperCase()); a.href = "/touren/x/" + t.id + "." + x; a.setAttribute("download", ""); a.id = "kt-x-" + x; row.appendChild(a); });
     if (t.edit) {
       if (t.kind === "drawn" && hasMap()) row.appendChild(btn("✏️ " + T("Edit"), "sec", () => draw(t)));
       const rn = btn("✎ " + T("Rename"), "sec", () => { const inp = el("input"); inp.type = "text"; inp.maxLength = 120; inp.value = t.name; inp.id = "kt-rn";

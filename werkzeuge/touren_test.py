@@ -262,6 +262,22 @@ def teil_a(datei):
     r = c.get("/touren/x/alle.zip", headers=HB)
     zn = zipfile.ZipFile(__import__("io").BytesIO(r.data)).namelist()
     ok(r.status_code == 200 and len(zn) == 2 and all(n.endswith(".gpx") for n in zn), f"Alle Touren als ZIP: {zn}")
+    # 3.85.0: ein ZIP hat eine Grenze (sonst stünden 300 lange Aufzeichnungen zugleich im Speicher), die neuesten sind sicher drin
+    gr = ns["KT_ZIP_RAW"]; ns["KT_ZIP_RAW"] = 10
+    try:
+        zn = zipfile.ZipFile(__import__("io").BytesIO(c.get("/touren/x/alle.zip", headers=HB).data)).namelist()
+    finally:
+        ns["KT_ZIP_RAW"] = gr
+    ok(len(zn) == 2 and sum(n.endswith(".gpx") for n in zn) == 1 and "NICHT_ALLE.txt" in zn, f"ZIP über der Grenze: die neueste Tour und ein Hinweis {zn}")
+    # 3.85.0: mitnehmen (GPX / KML / ZIP) braucht das Recht «herunterladen» – ausser bei der eigenen Tour (wie im Datentausch)
+    wer0 = ns["tausch_who"]
+    ns["tausch_who"] = lambda g_: (lambda w: dict(w, perms=w["perms"] - {"files_down"}) if not w["is_admin"] else w)(wer0(g_))
+    try:
+        ok(c.get(f"/touren/x/{T1}.gpx", headers=HB).status_code == 403 and c.get("/touren/x/alle.zip", headers=HB).status_code == 403
+           and c.get(f"/touren/x/{T3}.gpx", headers=HB).status_code == 200 and c.get("/api/touren?id=" + T1, headers=HB).status_code == 200,
+           "ohne «herunterladen»: fremde Tour und ZIP 403, die eigene Tour geht, ansehen geht")
+    finally:
+        ns["tausch_who"] = wer0
     c.post("/api/guest", json={"action": "create", "hours": 2}, headers=H); tok = (c.get("/api/guest", headers=H).get_json() or {}).get("path", "")
     tok = tok.strip("/").split("/")[-1]
     r = c.get(f"/g/{tok}/touren"); tx = r.get_data(as_text=True)
