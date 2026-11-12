@@ -1,0 +1,1 @@
+["Audio::*","OPL::*","mad_*","III_*","ov_*","vorbis_*","_vorbis_*","mapping0_*","floor0_*","floor1_*","res0_*","res1_*","res2_*","mdct_*","ogg_*","oggpack_*","inflate*","png_*","Image::PNGDecoder::*","SDL_Blend*","SDL_Blit*","SDL_ConvertPixels*","SDL_RLE*"]

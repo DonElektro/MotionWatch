@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-12 16:39",
+ "generated": "2026-11-12 17:22",
  "versions": [
+  {
+   "version": "3.84.0",
+   "file": "webcam_bewegung_3_84_0.py",
+   "url": "",
+   "sha256": "55a966f358a48983117c11e2c91fceeabfab400790e0fc34c53c47ef1d5cc3a1",
+   "date": "2026-11-12 17:22",
+   "notes": "Neu für den Besitzer: «Queen – iPhone-Test» (Mehr → Spielecke, im Kasten von «Flight of the Amazon Queen», nur Administrator). Zwei Test-Fassungen A und B für iPhone/iPad – Spieldaten in Stücken, kleineres Programm. Das Spiel selbst bleibt unverändert. Ob der Absturz auf dem iPhone weg ist, zeigt erst das Gerät.",
+   "size": 3824420,
+   "sig": "5f5877228772637ea55204cb0b9e7f8b7d11bc025fe8fc0807a0ab8ff783dbb6f2d0c2bf9862c8e8e0744a848d1a8b8355ed70fddca80ed88537b7269a66db0d",
+   "data": {
+    "file": "moveeye_daten_3_84_0.zip",
+    "url": "",
+    "sha256": "5c5634f63ca81b4094db0f1ef3767583ff5881cd2ddcd679d5508c0a67cb708b",
+    "size": 10900717,
+    "sig": "be5a862d8fce656d1cea698b7f9db9c476e71d497f09295ce6181e3ef9c7843900f8cdb24b65de5326de2b75ba2f6d57d537e8f03fa5bbbaebdb2b7d424eb004"
+   }
+  },
   {
    "version": "3.83.4",
    "file": "webcam_bewegung_3_83_4.py",
    "url": "",
    "sha256": "d7d1144e109a6ffd8fced032473d45fab00297ad803843726186082ddbdc8cfd",
-   "date": "2026-11-12 16:39",
+   "date": "2026-11-12 16:50",
    "notes": "Packlisten: Auch sehr lange, ungewöhnlich gebaute Texte halten MoveEye beim Einlesen nicht mehr auf (eine Prüfung auf GitHub hatte das bei 3.83.3 gezeigt).",
    "size": 3817101,
    "sig": "79a3b62315b4f2071562f4cd1ceb705e4dc275b9fe99bbae793e758dfa7a8c2486dee76e64df9578b484a9c1573f1bf2f5a523498aa9fed603cc2a1fdf1b270a",
@@ -136,23 +153,6 @@
     "sha256": "bcd8666f3d73e6b148d27c53e4f5d401ccffa245088c718bb25f802867f32a6b",
     "size": 4937150,
     "sig": "840a65b24fba67222c62fbd366329e1d668e5dd10f888edc6a100f5b759c3b4f78c2004ed390041d368a31b31b5d2a65382be1de13cf5e58e9016169c5250b0a"
-   }
-  },
-  {
-   "version": "3.75.0",
-   "file": "webcam_bewegung_3_75_0.py",
-   "url": "",
-   "sha256": "12a3f19e54c86d117f4672f23f35917b08beef8fd6e6852cbd004f49de40fd5c",
-   "date": "2026-11-10 23:24",
-   "notes": "Spiel «Was nun?»: fünf neue Bilder (jetzt zehn) mit Schwierigkeitsgraden von leicht bis Meister. Ab Bild 6 kann man Dinge mitnehmen und kombinieren; manche Bilder haben zwei Lösungswege und eine Meister-Lösung. Bisherige Sterne bleiben erhalten. Spielesammlung einmal neu laden: Mehr → Spielen → Spielecke → «Installieren / aktualisieren»",
-   "size": 3897629,
-   "sig": "66309bd9280f45c896d2ad5208afeaa2fa523fbd26d34e1a2ffc6c5d64bd0e66766c44a39bc4fcdd2f1cba53e592c33e6c8168656778575996b85ae2b64c9704",
-   "data": {
-    "file": "moveeye_daten_3_75_0.zip",
-    "url": "",
-    "sha256": "179b8bd3e5115c3b2d2b8e0198bb85d67307b50eed7d43d45390f9331f06573c",
-    "size": 4936966,
-    "sig": "5ffaef69eebd1db7e60ff2790fb33cff0e00199544904953983e7eddfb3ec664fb674e27fcde45131b86bcae45bfb6b962c58968eeff93a310f7f05f09f7140f"
    }
   },
   {

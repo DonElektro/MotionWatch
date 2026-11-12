@@ -71,6 +71,7 @@ daten | 5 | -  | python3 werkzeuge/bausatz.py --sprachen de --unsigniert --aus /
 spiele-1 | 15 | 1x | python3 werkzeuge/spiele_test.py --ohne wasnun | Spielesammlung (Paket, GAMES_PKG, jedes neue Spiel am Handy und PC ohne Internet; «Wobbly Truck», Schach) – ohne «Was nun?»
 spiele-1 | 5  | -  | python3 werkzeuge/spiele_test.py --kacheln-https | Spiele-Kacheln über https (Bilder vom gleichen Ursprung, keine http://-Bilder, Browser)
 spiele-1 | 4  | -  | python3 werkzeuge/fertigspiele_test.py | Fertige Spiele zum Nachladen (nur der Admin lädt, Prüfsumme, Platz, Entpacken, Kachel, Spiele-Port, Entfernen - mit Ersatz-Paketen)
+spiele-1 | 5  | -  | python3 werkzeuge/fotaq_iostest.py --datei "$MW" | «Queen – iPhone-Test» (Teil 639zzv - Laden nur Admin, Pins, veränderte Datei, kein Eintrag ohne das Spiel, keine Kachel, Spiele-Port in Stücken «Range», Entfernen - mit Ersatz-Paket)
 spiele-1 | 5  | -  | python3 werkzeuge/spiele_ordnen_test.py | Spiele unter «Mehr» - ein Einstieg «Spielen», Kachel «Spielecke», Freigeben von der Spielecke aus
 spiele-2 | 22 | 1x | python3 werkzeuge/spiele_test.py --nur wasnun | Spielesammlung: «Was nun?» (15 Bilder: Lösungswege, Versatz, Räume, Notizbuch, Zufalls-Läufe – auf GitHub gemessen etwa 13 Minuten)
 spiele-2 | 8  | -  | python3 werkzeuge/schach_fern_test.py | Schach zu zweit mit je einem Handy (Vermittlung auf dem Pi - Regeln, Code, Sitz-Schlüssel, Grenzen, Gäste, Browser mit zwei Handys)
