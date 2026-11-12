@@ -19,6 +19,7 @@ Spalten nah / mittel / weit: Personen nach Grösse im Bild (Höhe ≥ 100 Bildpu
 
 | Datum | Motion Watch | Simulator | Testlauf | Pushes richtig / falsch | Personen erkannt | Wärmebild | nah / mittel / weit | Reaktion | Tiere gemeldet | Flackern | Bilder/s | KI | Rechner |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 2026-11-12 06:32 | 3.81.1 | ? · Aussehen neu · Tiere Modelle | Kurz (Tag + Nacht) | **2** / **1** | 8 / 10 (**80 %**) | 2 / 3 | 4/4 / 0/1 / 2/2 | 1.7 s | 3 / 3 | 1 | 1.3 | mit KI | GitHub (ubuntu, 4 Kerne) · AMD EPYC 7763 |
 | 2026-11-12 06:12 | 3.81.0 | ? · Aussehen neu · Tiere Modelle | Kurz (Tag + Nacht) | **3** / **0** | 10 / 10 (**100 %**) | 1 / 1 | 6/6 / 2/2 / 1/1 | 2.9 s | 3 / 3 | 4 | 1.7 | mit KI | GitHub (ubuntu, 4 Kerne) · AMD EPYC 9V74 |
 | 2026-11-11 23:18 | 3.80.0 | ? · Aussehen neu · Tiere Modelle | Kurz (Tag + Nacht) | **2** / **1** | 10 / 10 (**100 %**) | 2 / 2 | 6/6 / 2/2 / – | 3.1 s | 3 / 3 | 2 | 1.7 | mit KI | GitHub (ubuntu, 4 Kerne) · INTEL(R) XEON(R) PLATINUM 8573C |
 | 2026-11-11 22:57 | 3.79.0 | 3.67.1 · Aussehen neu · Tiere Modelle | Kurz (Tag + Nacht) | **2** / **0** | 10 / 10 (**100 %**) | 2 / 2 | 5/5 / 3/3 / – | 3.1 s | 3 / 3 | 8 | 1.3 | mit KI | GitHub (ubuntu, 4 Kerne) · AMD EPYC 9V74 |
@@ -275,10 +276,10 @@ Spalten nah / mittel / weit: Personen nach Grösse im Bild (Höhe ≥ 100 Bildpu
 
 ## Einzelheiten pro Phase (letzter Lauf)
 
-**Kurz (Tag + Nacht)** – 2026-11-12 06:12, Motion Watch 3.81.0
+**Kurz (Tag + Nacht)** – 2026-11-12 06:32, Motion Watch 3.81.1
 
 | Phase | Pushes richtig / falsch | Personen | Wärmebild | Reaktion | Tiere | Flackern | verpasst, weil … |
 |---|---|---|---|---|---|---|---|
-| Tag, Wind | 2 / 0 | 6 / 6 | – | 3.5 s | 2 / 2 | 0 | – |
-| Nacht mit Infrarot | 1 / 0 | 4 / 4 | 1 / 1 | 2.0 s | 1 / 1 | 4 | – |
+| Tag, Wind | 2 / 0 | 5 / 6 | – | 1.0 s | 2 / 2 | 0 | 1× zu schnell |
+| Nacht mit Infrarot | 0 / 1 | 3 / 4 | 2 / 3 | 2.7 s | 1 / 1 | 1 | 1× zu dunkel, 1× zu klein / weit weg |
 
