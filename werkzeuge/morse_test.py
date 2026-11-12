@@ -1,0 +1,534 @@
+#!/usr/bin/env python3
+"""Test und Prüfstand «Morse-Modus» (MoveEye Teil 639zzx) – ohne echte Kamera, ohne echte Lampe.
+
+  A) Zeichen und Zeitplan: Tabelle eindeutig, Umlaute / ß / CH, Prosigns (SOS als EIN Zeichen), unbekannte Zeichen werden
+     ausgelassen und gemeldet, dit = 1 / dah = 3 / Pausen 1 / 3 / 7, Farnsworth, Tempo-Grenzen pro Ausgang (kein Weg
+     schneller als die Grenze), Länge.
+  B) Entschlüsseln aus Zeiten (ohne Bild): alle Tempi, Handtastung ±20 % / ±40 %, Farnsworth, gleichmässiges Blinken ist
+     kein Text.
+  C) Synthetische Kamera -> MorseRx: ein blinkender Fleck (Grösse, Helligkeit, Hintergrund, Rauschen, Bild-Zittern,
+     verlorene Bilder, Belichtungszeit, Nachregeln der Belichtung, Wandern der Hand), dazu ein Dauerlicht und ein Blinker
+     mit 1.5 Hz (darf nicht als Text gelesen werden).
+  D) Rundlauf: MoveEyes eigener Sender (morse_encode -> morse_timeline) -> synthetische Kamera -> MorseRx für ALLE Zeichen
+     der Tabelle und alle Prosigns.
+  E) Feindliche Eingabe: zufällige Lichtmuster, Rauschen, springende Uhr, Bildgrösse wechselt, leere Bilder - kein Absturz,
+     Speicher bleibt begrenzt, der Text enthält nur Zeichen der Tabelle und ist gekürzt.
+  F) (mit --datei, die gebaute MoveEye) Modus, Rechte, Adressen, Ausgänge - siehe teil_f.
+  --messen: die Tabelle Bildrate × Tempo × Fleckgrösse -> Zeichenfehler (dauert einige Minuten), --tabelle DATEI schreibt sie.
+
+  python3 werkzeuge/morse_test.py [--datei X.py | --quelle] [--messen] [--tabelle DATEI] [--browser] [--bilder ORDNER]
+"""
+import argparse
+import glob
+import math
+import os
+import random
+import re
+import sys
+import time
+
+import numpy as np
+import cv2
+
+HIER = os.path.dirname(os.path.abspath(__file__))
+REPO = os.path.dirname(HIER)
+FEHLER = []
+N = {"ok": 0}
+
+
+def ok(cond, what):
+    if cond:
+        N["ok"] += 1
+        print("  ✓ " + what, flush=True)
+    else:
+        FEHLER.append(what)
+        print("  ✗ " + what, flush=True)
+
+
+def neueste():
+    return sorted(glob.glob(os.path.join(REPO, "webcam_bewegung_*.py")),
+                  key=lambda p: [int(x) for x in re.findall(r"\d+", os.path.basename(p))])[-1]
+
+
+def lade_kern():
+    """nur der Kern aus quelle/639zzx_morse.py (zwischen den Marken) - für die Entwicklung und die Messung"""
+    src = open(os.path.join(REPO, "quelle", "639zzx_morse.py"), encoding="utf-8").read()
+    a, e = src.index("# ==== MORSE-KERN ANFANG"), src.index("# ==== MORSE-KERN ENDE")
+    ns = {"math": math, "time": time, "np": np, "cv2": cv2}
+    exec(compile(src[a:e], "639zzx_morse.py(kern)", "exec"), ns)
+    return ns
+
+
+def lev(a, b):
+    """Levenshtein-Abstand"""
+    prev = list(range(len(b) + 1))
+    for i, ca in enumerate(a, 1):
+        cur = [i]
+        for j, cb in enumerate(b, 1):
+            cur.append(min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (ca != cb)))
+        prev = cur
+    return prev[-1]
+
+
+def cer(soll, ist):
+    """Zeichenfehler-Rate ohne Leerzeichen (0 = alles richtig, 1 = nichts)"""
+    s, i = soll.replace(" ", ""), ist.replace(" ", "")
+    return min(1.0, lev(s, i) / float(max(1, len(s))))
+
+
+# ---------------------------------------------------------------------------------------------- die synthetische Kamera
+class Kamera:
+    """Bilder 640 × 360 (so gross wie das Arbeitsbild von MoveEye) mit einem blinkenden Fleck.
+    fps Bilder/s · groesse = Radius des Flecks in Pixeln · hell = Helligkeit des Flecks über dem Hintergrund (linear, darf
+    überlaufen) · hg = Hintergrund (0..255) · rausch = Sigma des Bildrauschens · zittern = so viel später (Teil der Bildperiode,
+    gestreut) meldet MoveEye das Bild · verlust = Anteil verlorener Bilder · belichtung = Belichtungszeit (Teil der Bildperiode) · regel = die
+    Kamera regelt die Helligkeit nach (True) · wandern = Pixel, um die der Fleck wandert (Hand) · dauerlicht / blinker =
+    ein zweites Licht, das immer leuchtet / mit 1.5 Hz blinkt."""
+    W, H = 640, 360
+    UNSCHARF = 0.7                      # Pixel (Sigma) Unschärfe der Optik im Arbeitsbild
+
+    def __init__(self, fps=15.0, groesse=3.0, hell=400.0, hg=25.0, rausch=3.0, zittern=0.1, verlust=0.0, belichtung=0.5, regel=True,
+                 wandern=3.0, dauerlicht=False, blinker=False, seed=1):
+        self.fps, self.T = float(fps), 1.0 / float(fps)
+        self.rng = np.random.default_rng(seed)
+        self.rnd = random.Random(seed)
+        self.zittern, self.verlust, self.E, self.regel, self.wandern = zittern, verlust, belichtung, regel, wandern
+        tex = cv2.resize(self.rng.uniform(-0.3, 0.3, (9, 16)).astype(np.float32), (self.W, self.H), interpolation=cv2.INTER_CUBIC)
+        base = np.clip(hg * (1.0 + tex), 0, 255)
+        self.pool = [np.clip(base + self.rng.normal(0, rausch, base.shape), 0, 255).astype(np.float32) for _ in range(6)]
+        self.fleck = self._blob(groesse, hell)
+        self.pos = (self.rng.uniform(0.25, 0.75) * self.W, self.rng.uniform(0.25, 0.75) * self.H)
+        self.extra = []
+        if dauerlicht:
+            self.extra.append((self._blob(4.0, 500.0), (0.12 * self.W, 0.2 * self.H), None))
+        if blinker:
+            self.extra.append((self._blob(4.0, 450.0), (0.88 * self.W, 0.8 * self.H), 1.5))
+        self.gain = 1.0
+        self.ph = self.rng.uniform(0, 6.28, 4)
+
+    @staticmethod
+    def _blob(r, amp):
+        s0 = max(0.2, r / 1.5)
+        s = math.sqrt(s0 * s0 + Kamera.UNSCHARF ** 2)         # die Optik verschmiert: ein kleiner Fleck wird breiter und dunkler
+        n = int(max(3, math.ceil(s * 5))) | 1
+        ax = np.arange(n) - n // 2
+        g = np.exp(-(ax[:, None] ** 2 + ax[None, :] ** 2) / (2.0 * s * s))
+        return (g * amp * (s0 * s0) / (s * s)).astype(np.float32)
+
+    def _add(self, img, blob, pos, k):
+        if k <= 0.0:
+            return
+        n = blob.shape[0]
+        x0, y0 = int(round(pos[0])) - n // 2, int(round(pos[1])) - n // 2
+        xa, ya, xb, yb = max(0, x0), max(0, y0), min(self.W, x0 + n), min(self.H, y0 + n)
+        if xb > xa and yb > ya:
+            img[ya:yb, xa:xb] += blob[ya - y0:yb - y0, xa - x0:xb - x0] * k
+
+    @staticmethod
+    def _anteil(a, b, zeiten):
+        """Anteil von [a, b], in dem das Licht an ist; zeiten = [(von, bis)]"""
+        if b <= a:
+            return 0.0
+        s = 0.0
+        for v, bis in zeiten:
+            if bis <= a:
+                continue
+            if v >= b:
+                break
+            s += min(b, bis) - max(a, v)
+        return s / (b - a)
+
+    def lauf(self, zeiten, dauer):
+        """liefert (Graubild uint8, Zeit) für `dauer` Sekunden"""
+        i = 0
+        while True:
+            t = i * self.T
+            i += 1
+            if t > dauer:
+                return
+            if self.verlust and self.rnd.random() < self.verlust:
+                continue
+            tt = t                                            # die Aufnahme ist im Takt, nur die gemeldete Zeit streut (kommt später an)
+            tm = max(getattr(self, "_tm", -1.0) + 1e-4, t + (abs(self.rnd.gauss(0, self.zittern * self.T)) if self.zittern else 0.0))
+            self._tm = tm
+            img = self.pool[self.rnd.randrange(len(self.pool))].copy()
+            a = tt - self.E * self.T
+            w = self.wandern
+            pos = (self.pos[0] + w * (math.sin(2 * math.pi * 1.3 * tt + self.ph[0]) * 0.4 + math.sin(2 * math.pi * 0.21 * tt + self.ph[1])),
+                   self.pos[1] + w * (math.sin(2 * math.pi * 1.1 * tt + self.ph[2]) * 0.4 + math.sin(2 * math.pi * 0.17 * tt + self.ph[3])))
+            self._add(img, self.fleck, pos, self._anteil(a, tt, zeiten))
+            for blob, p, hz in self.extra:
+                if hz is None:
+                    k = 1.0
+                else:
+                    per = 1.0 / hz
+                    n0 = int(a / per) - 1
+                    k = self._anteil(a, tt, [((n0 + j) * per, (n0 + j) * per + per / 2) for j in range(4)])
+                self._add(img, blob, p, k)
+            if self.regel:                                    # die Kamera regelt nach: träge, auf mittlere Helligkeit
+                img *= self.gain
+                m = float(np.minimum(img, 255.0).mean())
+                ziel = 60.0 if self.pool[0].mean() > 60 else max(25.0, float(self.pool[0].mean()))
+                self.gain = min(4.0, max(0.2, self.gain * (1.0 + 0.2 * (ziel - m) / max(ziel, 1.0))))
+            yield np.clip(img, 0, 255).astype(np.uint8), tm
+
+
+def zeiten_aus(tl, start=1.0, hand=0.0, rnd=None):
+    """Zeitplan [(s, an)] -> [(von, bis)] der AN-Zeiten; hand = ±Anteil, um den jede Länge von Hand streut"""
+    out, t = [], start
+    for d, on in tl:
+        if hand and rnd is not None:
+            d *= 1.0 + rnd.uniform(-hand, hand)
+        if on:
+            out.append((t, t + d))
+        t += d
+    return out, t
+
+
+def senden_empfangen(ns, text, wpm, kam, farnsworth=0, hand=0.0, seed=1):
+    """MoveEyes Sender -> Kamera -> MorseRx. Liefert (empfangener Text, Statistik)"""
+    signs, _skip = ns["morse_encode"](text)
+    tl = ns["morse_timeline"](signs, wpm, farnsworth)
+    zeiten, ende = zeiten_aus(tl, 1.0, hand, random.Random(seed))
+    got = []
+    rx = ns["MorseRx"](lambda txt, info: got.append(txt))
+    u = ns["morse_unit"](farnsworth or wpm)
+    for g, t in kam.lauf(zeiten, ende + max(4.5, 17.0 * u) + 1.0):
+        rx.feed(g, t)
+    return " ".join(got), rx.stats
+
+
+SOLL = "PARIS QTH BERN 59"
+
+
+def zelle(ns, fps, wpm, groesse, n=3, **kw):
+    """mittlere Zeichenfehler-Rate über n Läufe"""
+    s = 0.0
+    hand = kw.pop("hand", 0.0)
+    fw = kw.pop("farnsworth", 0)
+    for seed in range(1, n + 1):
+        kam = Kamera(fps=fps, groesse=groesse, seed=seed * 7 + int(fps) + int(wpm * 3), **kw)
+        got, _st = senden_empfangen(ns, SOLL, wpm, kam, farnsworth=fw, hand=hand, seed=seed)
+        s += cer(SOLL, got)
+    return s / n
+
+
+# ---------------------------------------------------------------------------------------------------------------------- A
+def teil_a(ns):
+    print("A) Zeichen und Zeitplan", flush=True)
+    code, pro = ns["MORSE_CODE"], ns["MORSE_PROSIGNS"]
+    ok(len(set(code.values())) == len(code), f"{len(code)} Zeichen, jedes Morsezeichen nur einmal")
+    ok(all(set(v) <= set(".-") and 1 <= len(v) <= 9 for v in list(code.values()) + list(pro.values())), "nur Punkt und Strich, höchstens 9 Elemente")
+    enc, tl_ = ns["morse_encode"], ns["morse_timeline"]
+    s, skip = enc("Grüße aus Zürich, ä ö ü ch ß!")
+    shown = "".join(x[1] for x in s)
+    ok("Ü" in shown and "ß" in shown and "CH" in shown and "Ä" in shown and "Ö" in shown and not skip, f"Umlaute, ß, CH: «{shown}»")
+    ok(dict((x[1], x[0]) for x in s)["CH"] == "----" and dict((x[1], x[0]) for x in s)["ß"] == "...--..", "CH = ---- und ß = ...--..")
+    s, skip = enc("a€b 😀 c{")
+    ok([x[1] for x in s] == ["A", "B", " ", "C"] and skip == ["€", "😀", "{"], f"unbekannte Zeichen ausgelassen und gemeldet: {skip}")
+    s, skip = enc("<SOS> <sos> <XX>")
+    ok(s[0] == ("...---...", "<SOS>") and s[2][0] == "...---..." and "<" in skip, "SOS als EIN Zeichen (auch klein geschrieben), <XX> ist keines")
+    tl = tl_(enc("<SOS>")[0], 5)
+    ok(len(tl) == 17 and all(abs(d - (0.24 if i % 2 or (i // 2) not in (3, 4, 5) else 0.72)) < 1e-9 for i, (d, _on) in enumerate(tl)),
+       "SOS: 9 Elemente, dazwischen nur 1 Einheit Pause")
+    u = ns["morse_unit"](12)
+    tl = tl_(enc("PARIS PARIS")[0], 12)
+    tot = sum(d for d, _ in tl) + 7 * u
+    ok(abs(tot - 100 * u) < 1e-6 and abs(u - 0.1) < 1e-9, f"PARIS = 50 Einheiten ({tot / u:.1f} für zwei), dit bei 12 WPM = {u * 1000:.0f} ms")
+    tl = tl_(enc("EE E")[0], 10)
+    ok([round(d / ns["morse_unit"](10), 3) for d, _ in tl] == [1, 3, 1, 7, 1], "Pausen 3 (Zeichen) und 7 (Wort) Einheiten")
+    tf = tl_(enc("EE E")[0], 18, 5)
+    ok(abs(tf[0][0] - 1.2 / 18) < 1e-9 and tf[1][0] > 3 * 1.2 / 18 * 3 and abs(tf[3][0] / tf[1][0] - 7 / 3.0) < 1e-6,
+       f"Farnsworth 18 / 5: dit bleibt {tf[0][0] * 1000:.0f} ms, Zeichenpause {tf[1][0]:.2f} s, Wortpause {tf[3][0]:.2f} s")
+    ok(tl_(enc("E")[0], 10, 10) == tl_(enc("E")[0], 10) and tl_(enc("EE")[0], 10, 15) == tl_(enc("EE")[0], 10), "Farnsworth schneller als das Tempo = aus")
+    ts, total = ns["morse_edges"](tl_(enc("AB")[0], 6))
+    on = ns["morse_on_at"]
+    ok(on(ts, total, 0.0) and not on(ts, total, 0.2 + 1e-6) and on(ts, total, 0.4 + 1e-6) and not on(ts, total, total) and not on(ts, total, -1)
+       and not on(ts, total, 1e9), "morse_on_at: Taste nach der Zeit, vor dem Start und nach dem Ende aus")
+    ok(len(enc("E" * 5000)[0]) <= ns["MORSE_TEXT_MAX"] * 2 and len(enc("E " * 5000)[0]) <= ns["MORSE_TEXT_MAX"] * 2, "sehr langer Text wird gekürzt")
+    ok(ns["morse_upper"]("straße é ç") == "STRAßE É C", "Grossschreibung: ß bleibt, é bleibt (in der Tabelle), ç -> C")
+
+
+# ---------------------------------------------------------------------------------------------------------------------- B
+def teil_b(ns):
+    print("B) Entschlüsseln aus Zeiten", flush=True)
+    enc, tl_, dec = ns["morse_encode"], ns["morse_timeline"], ns["morse_decode"]
+
+    def run(text, wpm, hand=0.0, fw=0, seed=3):
+        tl = tl_(enc(text)[0], wpm, fw)
+        rnd = random.Random(seed)
+        d = [x * (1.0 + rnd.uniform(-hand, hand)) for x, _on in tl]
+        ons, gaps = d[0::2], d[1::2] + [None]
+        return dec(ons, gaps)
+    txt = "CQ CQ DE HB9 MOVEEYE K"
+    bad = [w for w in (3, 5, 8, 12, 18, 25) if run(txt, w)["text"] != txt]
+    ok(not bad, f"sauber getastet: 3 bis 25 WPM richtig (falsch bei {bad})")
+    r = run(txt, 12)
+    ok(abs(r["wpm"] - 12) < 0.3 and r["q"] == 1.0 and not r["periodic"], f"Tempo aus dem Signal geschätzt: {r['wpm']} WPM")
+    e20 = sum(cer(txt, run(txt, 8, 0.2, seed=s)["text"]) for s in range(40)) / 40
+    e40 = sum(cer(txt, run(txt, 8, 0.4, seed=s)["text"]) for s in range(40)) / 40
+    ok(e20 <= 0.01, f"Handtastung ±20 %: Zeichenfehler {e20 * 100:.1f} %")
+    ok(e40 <= 0.12, f"Handtastung ±40 %: Zeichenfehler {e40 * 100:.1f} % (die Grenze: Pausen 1.4 und 1.8 Einheiten liegen dicht)")
+    N["hand20"], N["hand40"] = e20, e40
+    ok(run(txt, 18, 0.0, 6)["text"] == txt and run(txt, 15, 0.15, 5)["text"].replace(" ", "") == txt.replace(" ", ""), "Farnsworth 18 / 6 und 15 / 5 (mit ±15 %)")
+    ok(run("SOS", 6)["text"] == "SOS" and run("<SOS>", 6)["text"] == "<SOS>" and run("OOO", 6)["text"] == "OOO" and run("EEE", 6)["text"] == "EEE",
+       "nur Punkte / nur Striche: die Pausen entscheiden (SOS, <SOS>, OOO, EEE)")
+    per = dec([0.33] * 12, [0.33] * 11 + [None])
+    ok(per["periodic"], "gleichmässiges Blinken (1.5 Hz) = «periodic», kein Text")
+    ok(not run("SOS SOS", 6)["periodic"] and not run("HHH", 6)["periodic"], "SOS und HHH sind NICHT gleichmässig")
+    ok(dec([], [])["text"] == "" and dec([0.1], [None])["text"] == "E" and dec([1e-9, 1e9], [0, None])["n"] == 2, "leer, ein Element, unsinnige Zeiten: kein Fehler")
+    r = dec([0.1, 0.1, 0.3, 0.3, 0.1, 0.1, 0.3, 0.1, 0.3], [0.1] * 8 + [None])
+    ok(r["text"] == ns["MORSE_UNKNOWN"] and r["unknown"] == 1, "ein Zeichen, das es nicht gibt, wird «#»")
+
+
+# ---------------------------------------------------------------------------------------------------------------------- C
+def teil_c(ns):
+    print("C) Synthetische Kamera -> MorseRx", flush=True)
+    for fps, wpm, gr in ((30, 10, 3.0), (15, 5, 1.0), (10, 4, 6.0)):
+        e = zelle(ns, fps, wpm, gr, n=2)
+        ok(e <= 0.03, f"{fps} Bilder/s, {wpm} WPM, Fleck {gr:g} px: Zeichenfehler {e * 100:.0f} %")
+    e = zelle(ns, 15, 5, 3.0, n=2, hg=140.0, hell=110.0, rausch=4.0)
+    ok(e <= 0.05, f"Tageslicht (Hintergrund 140, Fleck nur 110 heller): Zeichenfehler {e * 100:.0f} %")
+    e = zelle(ns, 15, 5, 3.0, n=2, wandern=14.0)
+    ok(e <= 0.05, f"Hand wandert ±14 Pixel: Zeichenfehler {e * 100:.0f} %")
+    e = zelle(ns, 15, 5, 3.0, n=2, verlust=0.05, zittern=0.25)
+    ok(e <= 0.1, f"5 % verlorene Bilder, Bildzeit streut 25 %: Zeichenfehler {e * 100:.0f} %")
+    e = zelle(ns, 15, 5, 3.0, n=2, dauerlicht=True, blinker=True)
+    ok(e <= 0.03, f"mit Dauerlicht und Blinker 1.5 Hz daneben: Zeichenfehler {e * 100:.0f} %")
+    # nur Dauerlicht + Blinker, kein Morse: nichts darf als Text gemeldet werden
+    kam = Kamera(fps=15, dauerlicht=True, blinker=True, seed=5)
+    got = []
+    rx = ns["MorseRx"](lambda txt, info: got.append(txt))
+    live = 0
+    for g, t in kam.lauf([], 40.0):
+        if rx.feed(g, t):
+            live += 1
+    ok(not got and not live and rx.stats["periodic"] >= 1, f"Blinker 1.5 Hz allein, 40 s: kein Text, als gleichmässig erkannt ({rx.stats['periodic']}×)")
+    kam = Kamera(fps=15, dauerlicht=True, seed=6)
+    rx = ns["MorseRx"](lambda txt, info: got.append(txt))
+    for g, t in kam.lauf([], 15.0):
+        rx.feed(g, t)
+    ok(not got and rx.stats["tracks"] == 0, "Dauerlicht allein: keine Spur, kein Text")
+    ok(rx.stats["ms"] < 3.0, f"Rechenzeit pro Bild {rx.stats['ms']:.2f} ms (dieser Rechner)")
+    N["ms"] = rx.stats["ms"]
+
+
+# ---------------------------------------------------------------------------------------------------------------------- D
+def teil_d(ns):
+    print("D) Rundlauf Sender -> Kamera -> Empfänger, alle Zeichen", flush=True)
+    code, pro = ns["MORSE_CODE"], ns["MORSE_PROSIGNS"]
+    zeichen = [k for k in code]
+    gruppen = [zeichen[i:i + 6] for i in range(0, len(zeichen), 6)]
+    falsch = []
+    for gi, grp in enumerate(gruppen):
+        text = " ".join("".join(grp[i:i + 3]) for i in range(0, len(grp), 3))
+        soll = "".join(x[1] for x in ns["morse_encode"](text)[0])
+        got, _st = senden_empfangen(ns, text, 6, Kamera(fps=15, groesse=3.0, seed=40 + gi))
+        if got != soll:
+            falsch.append((soll, got))
+    ok(not falsch, f"alle {len(zeichen)} Zeichen der Tabelle kommen gleich zurück (6 WPM, 15 Bilder/s)" + (f" - falsch: {falsch[:3]}" if falsch else ""))
+    gleich = {"AR": "+", "BT": "=", "KN": "("}
+    falsch = []
+    for gi, names in enumerate((["SOS", "AR", "SK", "KA"], ["BT", "HH", "SN", "KN"])):
+        text = " ".join("<" + n + ">" for n in names)
+        soll = " ".join(gleich.get(n, "<" + n + ">") for n in names)
+        got, _st = senden_empfangen(ns, text, 6, Kamera(fps=15, groesse=3.0, seed=60 + gi))
+        if got != soll:
+            falsch.append((soll, got))
+    ok(not falsch, "alle Prosigns (<SOS> <SK> <KA> <HH> <SN>; <AR> = +, <BT> = =, <KN> = ( )" + (f" - falsch: {falsch}" if falsch else ""))
+    got, _st = senden_empfangen(ns, "Grüße aus Zürich", 6, Kamera(fps=15, seed=77))
+    ok(got == "GRÜßE AUS ZÜRICH".replace("ICH", "ICH"), f"«Grüße aus Zürich» -> «{got}»")
+    got, _st = senden_empfangen(ns, "MOVEEYE RUFT", 15, Kamera(fps=30, seed=78), farnsworth=6)
+    ok(got == "MOVEEYE RUFT", f"Farnsworth 15 / 6 bei 30 Bildern/s -> «{got}»")
+
+
+# ---------------------------------------------------------------------------------------------------------------------- E
+def teil_e(ns):
+    print("E) Feindliche Eingabe", flush=True)
+    erlaubt = set("".join(ns["MORSE_DECODE"].values())) | set(" " + ns["MORSE_UNKNOWN"])
+    rnd = random.Random(11)
+    rng = np.random.default_rng(11)
+    got = []
+    rx = ns["MorseRx"](lambda txt, info: got.append(txt))
+    t = 0.0
+    worst = 0
+    flecken = [(rnd.randrange(20, 620), rnd.randrange(20, 340)) for _ in range(12)]
+    zust = [False] * 12
+    t0 = time.time()
+    for i in range(6000):
+        t += rnd.choice((0.01, 0.033, 0.066, 0.1, 0.3))
+        img = rng.integers(0, 40, (360, 640), dtype=np.uint8)
+        for k, (x, y) in enumerate(flecken):
+            if rnd.random() < 0.3:
+                zust[k] = not zust[k]
+            if zust[k]:
+                img[y - 3:y + 3, x - 3:x + 3] = 255
+        if i % 500 == 499:
+            img[:] = 255 if (i // 500) % 2 else 0           # das ganze Bild blitzt
+        live = rx.feed(img, t)
+        if live:
+            worst = max(worst, len(live["text"]))
+            if not set(live["text"]) <= erlaubt:
+                FEHLER.append("fremdes Zeichen im Live-Text")
+        if len(rx.tracks) > rx.TRACKS or any(len(q["key"].ons) > q["key"].EL_MAX or len(q["key"].v) > 401 for q in rx.tracks):
+            FEHLER.append("Speicher wächst"); break
+    dt = time.time() - t0
+    ok(all(set(m) <= erlaubt and len(m) <= ns["MORSE_RX_TEXT_MAX"] for m in got) and worst <= ns["MORSE_RX_TEXT_MAX"],
+       f"6000 Bilder zufälliges Geflacker an 12 Stellen: kein Absturz, {len(got)} «Texte», alle nur Zeichen der Tabelle, höchstens {ns['MORSE_RX_TEXT_MAX']} lang")
+    ok(len(rx.tracks) <= rx.TRACKS and len(rx.ignore) <= 8 and rx.buf.shape[0] == rx.BUF, f"Speicher begrenzt: {len(rx.tracks)} Spuren, Puffer {rx.buf.nbytes // 1024} KB")
+    ok(dt / 6000 * 1000 < 5.0, f"{dt / 6000 * 1000:.2f} ms pro Bild im schlimmsten Fall")
+    # die Uhr springt, die Grösse wechselt, leere / winzige Bilder
+    rx = ns["MorseRx"](None)
+    try:
+        for g, tt in ((np.zeros((360, 640), np.uint8), 5.0), (np.zeros((360, 640), np.uint8), 1.0), (np.zeros((90, 160), np.uint8), 1.1),
+                      (np.zeros((2, 3), np.uint8), 1.2), (np.full((720, 1280), 255, np.uint8), 1.3), (np.zeros((360, 640), np.uint8), 1e12),
+                      (np.zeros((360, 640), np.uint8), -5.0), (np.zeros((360, 640), np.uint8), float("nan"))):
+            rx.feed(g, tt)
+        heil = True
+    except Exception as e:
+        heil = False
+        print("    ", type(e).__name__, e)
+    ok(heil, "Uhr springt zurück / weit vor / NaN, Bildgrösse wechselt, 2 × 3 Pixel: kein Fehler")
+    # ein Sender, der nie aufhört: die Nachricht wird nach EL_MAX Elementen geschlossen
+    got = []
+    rx = ns["MorseRx"](lambda txt, info: got.append(txt))
+    key = ns["MorseKey"]()
+    tt = 0.0
+    for i in range(3000):
+        key.edge(True, tt); tt += 0.1 if i % 3 else 0.3
+        key.edge(False, tt); tt += 0.1 if i % 7 else 0.3
+    ok(len(key.ons) == key.EL_MAX and len(key.gaps) == key.EL_MAX, f"MorseKey nimmt höchstens {key.EL_MAX} Elemente")
+    r = ns["morse_decode"](key.ons, key.gaps)
+    ok(len(r["text"]) <= ns["MORSE_RX_TEXT_MAX"], f"Text einer endlosen Sendung auf {len(r['text'])} Zeichen gekürzt")
+
+
+# ---------------------------------------------------------------------------------------------------------------- messen
+FPS_LISTE = (5, 8, 10, 15, 20, 30)
+WPM_LISTE = (3, 4, 5, 6, 8, 10, 12, 15, 18, 20)
+GR_LISTE = (0.6, 1.5, 4.0)
+GRENZE_K = 0.4          # WPM pro (Bild/s) für die Anzeige: ein dit ist dann 3 Bilder lang (gemessen geht es bis etwa 1.8 Bilder)
+LICHT = (("Nacht (Hintergrund 25, Lampe +400)", dict(hg=25.0, hell=400.0)),
+         ("Dämmerung (Hintergrund 80, Lampe +200)", dict(hg=80.0, hell=200.0)),
+         ("Tag (Hintergrund 140, Lampe +110)", dict(hg=140.0, hell=110.0, rausch=4.0)),
+         ("Tag, schwache Lampe (Hintergrund 140, Lampe +60)", dict(hg=140.0, hell=60.0, rausch=4.0)))
+
+
+def grenze_wpm(fps):
+    """die Grenze für die Anzeige: bis zu diesem Tempo liest die Kamera bei dieser Bildrate sicher"""
+    return GRENZE_K * fps
+
+
+def messen(ns, pfad=None, n=2):
+    zeilen = []
+    out = zeilen.append
+    out("# Morse-Empfang: gemessene Grenzen (synthetische Kamera)")
+    out("")
+    out("Erzeugt mit `python3 werkzeuge/morse_test.py --quelle --messen --tabelle docs/Morse_Messung.md`. Text «%s», %d Läufe pro Feld." % (SOLL, n))
+    out("Kamera: 640 × 360 (Arbeitsbild von MoveEye), Rauschen σ 3, Belichtung = halbe Bildperiode, die Bildzeit kommt bis 10 % der")
+    out("Bildperiode später an, die Kamera regelt die Helligkeit nach, die Optik verschmiert um 0.7 Pixel, der Fleck wandert ±3 Pixel.")
+    out("Zahl = Zeichenfehler in % (0 = alles richtig, 100 = nichts gelesen).")
+    out("")
+    out("**Nicht gemessen: echte Kamera, echte Lampe, echte Entfernung, echtes Tageslicht, die Bildrate von MoveEye auf dem Pi.**")
+    t0 = time.time()
+    beste = {}
+    for gr in GR_LISTE:
+        out("")
+        out("## Bildrate × Tempo, Fleck Radius %g Pixel, Nacht" % gr)
+        out("")
+        out("(Radius im Arbeitsbild 640 breit; im Kamerabild 1280 das Doppelte)")
+        out("")
+        out("| Bilder/s | " + " | ".join("%d WPM" % w for w in WPM_LISTE) + " | liest bis |")
+        out("|---|" + "---|" * (len(WPM_LISTE) + 1))
+        for fps in FPS_LISTE:
+            row, best = [], 0
+            hole = False
+            for w in WPM_LISTE:
+                e = zelle(ns, fps, w, gr, n=n)
+                row.append("%d" % round(e * 100))
+                if e <= 0.02 and not hole:
+                    best = w
+                else:
+                    hole = True
+            beste[(gr, fps)] = best
+            out("| %d | " % fps + " | ".join(row) + " | **%d WPM** |" % best)
+            print("   ", zeilen[-1], f"({time.time() - t0:.0f} s)", flush=True)
+    out("")
+    out("## Fleckgrösse × Licht (15 Bilder/s, 5 WPM)")
+    out("")
+    gl = (0.4, 0.6, 1.0, 1.5, 2.5, 4.0, 10.0)
+    out("| Licht | " + " | ".join("Radius %g" % g for g in gl) + " |")
+    out("|---|" + "---|" * len(gl))
+    for name, kw in LICHT:
+        out("| %s | " % name + " | ".join("%d" % round(zelle(ns, 15, 5, g, n=n, **dict(kw)) * 100) for g in gl) + " |")
+        print("   ", zeilen[-1], flush=True)
+    out("")
+    out("Ein kleiner Fleck ist nach der Optik dunkler: entscheidend ist, dass sein hellster Bildpunkt rund 50 Graustufen")
+    out("(von 255) über dem Hintergrund liegt. Nachts reicht dafür ein Punkt, am Tag braucht es eine helle oder nahe Lampe.")
+    out("")
+    out("## Erschwerte Bedingungen (15 Bilder/s, Fleck 3 Pixel, Nacht)")
+    out("")
+    ws = (3, 5, 6, 8, 10)
+    out("| Bedingung | " + " | ".join("%d WPM" % w for w in ws) + " |")
+    out("|---|" + "---|" * len(ws))
+    for name, kw in (("wie oben", {}),
+                     ("Handtastung ±20 %", dict(hand=0.2)),
+                     ("Handtastung ±30 %", dict(hand=0.3)),
+                     ("Handtastung ±40 %", dict(hand=0.4)),
+                     ("Hand wandert ±14 Pixel", dict(wandern=14.0)),
+                     ("Hand wandert ±40 Pixel", dict(wandern=40.0)),
+                     ("5 % verlorene Bilder, Bildzeit bis 25 % später", dict(verlust=0.05, zittern=0.25)),
+                     ("15 % verlorene Bilder, Bildzeit bis 50 % später", dict(verlust=0.15, zittern=0.5)),
+                     ("kurze Belichtung (1/10 Bildperiode)", dict(belichtung=0.1)),
+                     ("lange Belichtung (ganze Bildperiode)", dict(belichtung=1.0)),
+                     ("Dauerlicht + Blinker 1.5 Hz daneben", dict(dauerlicht=True, blinker=True)),
+                     ("starkes Rauschen σ 10", dict(rausch=10.0)),
+                     ("Farnsworth (Pausen wie 3 WPM)", dict(farnsworth=3))):
+        row = ["%d" % round(zelle(ns, 15, w, 3.0, n=max(n, 3), **dict(kw)) * 100) for w in ws]
+        out("| %s | " % name + " | ".join(row) + " |")
+        print("   ", zeilen[-1], flush=True)
+    out("")
+    out("## Daraus: die Grenze für die Anzeige")
+    out("")
+    out("| Bilder/s | " + " | ".join("Fleck %g" % g for g in GR_LISTE) + " | Anzeige: %.1f × Bilder/s |" % GRENZE_K)
+    out("|---|" + "---|" * (len(GR_LISTE) + 1))
+    passt = True
+    for fps in FPS_LISTE:
+        lim = grenze_wpm(fps)
+        out("| %d | " % fps + " | ".join("%d" % beste[(g, fps)] for g in GR_LISTE) + " | %.0f |" % lim)
+        passt = passt and all(beste[(g, fps)] >= min(int(lim), WPM_LISTE[-1]) for g in GR_LISTE)
+    out("")
+    out("In der Simulation liest der Empfänger, bis ein dit etwa 1.8 Bilder lang ist (rund 0.65 × Bilder pro Sekunde). Die Seite")
+    out("verspricht weniger: «bis etwa **%.1f × Bilder pro Sekunde** WPM» - ein dit ist dann 3 Bilder lang. Die Reserve ist für das," % GRENZE_K)
+    out("was die Simulation nicht kennt (echte Kamera, ungleichmässige Bildzeiten auf dem Pi). "
+        + ("Die Messung hält die Grenze überall ein." if passt else "ACHTUNG: die Messung hält die Grenze NICHT überall ein."))
+    txt = "\n".join(zeilen) + "\n"
+    if pfad:
+        with open(pfad, "w", encoding="utf-8") as f:
+            f.write(txt)
+    print(txt)
+    return passt
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--datei")
+    ap.add_argument("--quelle", action="store_true", help="nur der Kern aus quelle/ (ohne die gebaute Datei)")
+    ap.add_argument("--messen", action="store_true")
+    ap.add_argument("--tabelle")
+    ap.add_argument("--laeufe", type=int, default=2)
+    ap.add_argument("--browser", action="store_true")
+    ap.add_argument("--bilder")
+    a = ap.parse_args()
+    ns = lade_kern()
+    if a.messen:
+        return 0 if messen(ns, a.tabelle, a.laeufe) else 1
+    t0 = time.time()
+    teil_a(ns); teil_b(ns); teil_c(ns); teil_d(ns); teil_e(ns)
+    print(f"\n{N['ok']} Prüfungen bestanden, {len(FEHLER)} Fehler ({time.time() - t0:.0f} s)")
+    for f in FEHLER:
+        print("  ✗ " + f)
+    return 1 if FEHLER else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
