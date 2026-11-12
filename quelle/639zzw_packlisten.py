@@ -368,6 +368,8 @@ def _pl_tidy(s):
 
 
 PL_LINE_MAX = 500                                         # one line of a note / a pasted text (a name has 120, a remark 300)
+_PL_N_GANZ = re.compile(_PL_N)
+_PL_LETTER = re.compile(r"[^\W\d]")
 
 
 def _pl_fence(t):
@@ -385,6 +387,34 @@ def _pl_fence(t):
             if h and h[0] not in "=*_~":
                 return h
     return None
+
+
+def _pl_end_number(s):
+    """«Zelt – 1800», «Zelt: 1800», «Zelt<Tab>1800» -> ("Zelt", "1800"): a bare number at the end after a dash, a colon, a tab or
+    three blanks, and a letter before it; else None. Read from the end by hand (3.83.4): the pattern
+    «start, letter, separator, number, end» tried every start for every separator - a line of 500 signs «a - a - a - …»
+    took 2 ms, 4000 such lines held the whole program up for 9 s (12 s on GitHub's machines)."""
+    t = s.rstrip()
+    i = len(t)
+    while i > 0 and t[i - 1] in "0123456789.,'’":
+        i -= 1
+    num = t[i:]
+    if not num or not _PL_N_GANZ.fullmatch(num):
+        return None
+    p = t[:i]
+    if p[-1:] in ("~", "≈"):
+        p = p[:-1]
+    q = p.rstrip()
+    w = p[len(q):]
+    if len(q) >= 2 and q[-1] in "-–—:|=" and q[-2].isspace():
+        g = q[:-1].rstrip()
+    elif w and q.endswith(":"):
+        g = q[:-1]
+    elif "\t" in w or len(w) >= 3:
+        g = q
+    else:
+        return None
+    return (g, num) if _PL_LETTER.search(g) else None
 
 
 def pl_parse_line(raw):
@@ -430,9 +460,9 @@ def pl_parse_line(raw):
         g = _pl_grams(m.group(1), m.group(2))
         s = s[:m.start()] + " " + s[m.end():]
     else:
-        m = re.match(r"^(.*?[^\W\d].*?)(?:\t+\s*|\s+[-–—:|=]\s*|:\s+|\s{3,})[~≈]?(" + _PL_N + r")\s*$", s)
+        m = _pl_end_number(s)
         if m:                                                # «Zelt – 1800», «Zelt<Tab>1800»: a bare number at the end = grams
-            g, s = _pl_grams(m.group(2), "g"), m.group(1)
+            g, s = _pl_grams(m[1], "g"), m[0]
     ml = list(_PL_L_RE.finditer(s))
     rest = _pl_tidy(s[:ml[-1].start()] + " " + s[ml[-1].end():]).lower() if ml else ""
     if re.search(r"wasser|water|tee\b|saft|getränk|benzin|spiritus|milch|wein|bier|öl\b|sirup|kaffee|eau\b|acqua|drink", rest) and not any(

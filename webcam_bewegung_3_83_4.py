@@ -23,6 +23,8 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 3.83.4: Packlisten: Auch sehr lange, ungewöhnlich gebaute Texte halten MoveEye beim Einlesen nicht mehr auf (eine Prüfung
+    auf GitHub hatte das bei 3.83.3 gezeigt).
   * 3.83.3: Unter der Haube: Die Programmdatei ist um rund 370 KB kleiner (Prüf-Code und Almanach-Texte liegen jetzt im
     Daten-Paket); am Verhalten ändert sich nichts. Ohne Daten-Paket zeigt der Almanach neu wenigstens das Notfall-Kapitel.
   * 3.83.2: Packlisten: Import versteht jetzt auch Listen aus Apple Notizen und Markdown-Listen (Überschriften wie **KLEIDUNG**,
@@ -109,9 +111,6 @@ Features
     ist, mit Infokarten; wahlweise fährt der Kopf zuerst dorthin (Recht «Kopf»); «📷 Foto untersuchen» für ein eigenes Foto (bis
     15 MB); Funde landen im Datentausch-Ordner «Funde» (Grenzen und freier Platz wie jeder Upload); Gäste ohne Kopf-Bewegung;
     Knopf im Pi-Fenster.
-  * 3.67.0: 🌿 Bestimmen: zu jeder erkannten Art eine kurze Infokarte (Beschreibung aus Wikipedia, gekürzt, mit Quelle und Lizenz
-    CC BY-SA 4.0 auf jeder Karte; Link zum ganzen Artikel), für über 10'000 Arten offline – die Datei (2,7 MB, feste Prüfsumme)
-    wird mit dem Modell geladen.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -120,10 +119,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_3_83_3.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_3_83_4.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_3_83_3.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_3_83_3.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_3_83_4.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_3_83_4.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -140,7 +139,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "3.83.3"
+APP_VERSION = "3.83.4"
 
 
 def default_data_dir():
@@ -267,8 +266,8 @@ def prepare_settings_file():
 
 
 
-ZD_FILE = "moveeye_daten_3_83_3.zip"
-ZD_SHA256 = "840f1080d0e478ffecb7c8454ceaeb350433a4994da1fd5b2ade5446ab7fc55f"
+ZD_FILE = "moveeye_daten_3_83_4.zip"
+ZD_SHA256 = "77a5128d5eb0377aa4104e8f5c195de15a10ae765aca04bebb28ff842bdfbd4e"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -49583,7 +49582,7 @@ class App:
 		self.watch = watch
 		self.web = web or WebStream(watch)
 		self.root = tk.Tk()
-		self.root.title("MoveEye 3.83.3")
+		self.root.title("MoveEye 3.83.4")
 		try:
 			import base64
 			self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -49961,7 +49960,7 @@ class App:
 			if not small:
 				vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
 				vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))
-			Tip(nm, f"{tr('Build')} 3.83.3 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+			Tip(nm, f"{tr('Build')} 3.83.4 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
 			self._egg_taps = []
 			for w_ in tl.winfo_children():
 				w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -94546,6 +94545,8 @@ def _pl_tidy(s):
 
 
 PL_LINE_MAX = 500
+_PL_N_GANZ = re.compile(_PL_N)
+_PL_LETTER = re.compile(r"[^\W\d]")
 
 
 def _pl_fence(t):
@@ -94563,6 +94564,34 @@ def _pl_fence(t):
 			if h and h[0] not in "=*_~":
 				return h
 	return None
+
+
+def _pl_end_number(s):
+	"""
+
+
+"""
+	t = s.rstrip()
+	i = len(t)
+	while i > 0 and t[i - 1] in "0123456789.,'’":
+		i -= 1
+	num = t[i:]
+	if not num or not _PL_N_GANZ.fullmatch(num):
+		return None
+	p = t[:i]
+	if p[-1:] in ("~", "≈"):
+		p = p[:-1]
+	q = p.rstrip()
+	w = p[len(q):]
+	if len(q) >= 2 and q[-1] in "-–—:|=" and q[-2].isspace():
+		g = q[:-1].rstrip()
+	elif w and q.endswith(":"):
+		g = q[:-1]
+	elif "\t" in w or len(w) >= 3:
+		g = q
+	else:
+		return None
+	return (g, num) if _PL_LETTER.search(g) else None
 
 
 def pl_parse_line(raw):
@@ -94608,9 +94637,9 @@ def pl_parse_line(raw):
 		g = _pl_grams(m.group(1), m.group(2))
 		s = s[:m.start()] + " " + s[m.end():]
 	else:
-		m = re.match(r"^(.*?[^\W\d].*?)(?:\t+\s*|\s+[-–—:|=]\s*|:\s+|\s{3,})[~≈]?(" + _PL_N + r")\s*$", s)
+		m = _pl_end_number(s)
 		if m:
-			g, s = _pl_grams(m.group(2), "g"), m.group(1)
+			g, s = _pl_grams(m[1], "g"), m[0]
 	ml = list(_PL_L_RE.finditer(s))
 	rest = _pl_tidy(s[:ml[-1].start()] + " " + s[ml[-1].end():]).lower() if ml else ""
 	if re.search(r"wasser|water|tee\b|saft|getränk|benzin|spiritus|milch|wein|bier|öl\b|sirup|kaffee|eau\b|acqua|drink", rest) and not any(
