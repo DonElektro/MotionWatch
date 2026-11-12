@@ -57,6 +57,7 @@ live | 8  | 1x | python3 werkzeuge/live_sauber_test.py | Live-Bild sauber (Knöp
 
 # ---------------------------------------------------------------------------------------------------- daten (Web)
 daten | 8 | -  | python3 werkzeuge/tausch_test.py --browser | Datentausch (Dateien, Texte mit Versionen, Chats, Rechte, Gäste, Grenzen, Hochladen in Stücken, Browser)
+daten | 8 | -  | python3 werkzeuge/almanach_test.py --browser | Überlebens-Almanach (Knoten: Bild = Kreuzungsfolge, halbe Schläge sperren, Bildtexte; Koordinaten, Sonne / Mond; SOS-Lampe: Gäste, Grenzen, Erkennung; jede Seite bei 390 px)
 daten | 6 | -  | python3 werkzeuge/bioclip_test.py --browser | «🌿 Bestimmen» im Datentausch (Ersatz-Modell, Rechte, Gäste, Laden mit Prüfsumme, Zwischenspeicher, besetzt, Browser)
 daten | 8 | 1x | python3 -W ignore werkzeuge/karten_test.py | Offline-Karte Schweiz (Teil 639zzq - Laden gut / falsch, Platz, Byte-Bereiche, Suche, Seiten im Browser ohne Anfrage nach aussen, Quellenangabe, Rechte; mit Ersatz-Dateien)
 daten | 8 | -  | python3 werkzeuge/packlisten_test.py --browser | «🎒 Packlisten» im Datentausch (Import Text / CSV / xlsx mit Vorschau, ZIP-Bomben abgewiesen, Summen, Ziel, Foto, zwei Handys, Rechte, Gäste, Export, Browser iPhone)
