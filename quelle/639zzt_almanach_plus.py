@@ -977,7 +977,10 @@ def smalltv_routes(app, reply, body):                     # + 639zzt: /almanach/
     @app.route("/almanach/plus")
     def alm_plus_route():
         fig = globals().get("ALM_FIG") or {}
+        lg = norm_lang(request.args.get("lang") or CFG.get("lang"))
         return reply({"ok": True, "bilder": sorted(fig), "quellen": globals().get("ALM_QUELLEN") or {},
+                      "heim": "" if alm_who(request)[1] and (CFG["web_password"] or CFG["web_pw_hash"]) else "/more",    # a guest behind a login has nowhere to go back to
+                      "t_zurueck": tr("Back", lg), "t_mehr": tr("More", lg), "t_zu": tr("Close", lg),
                       "karte": any(r.rule.rstrip("/") == "/karte" for r in app.url_map.iter_rules())})
 
     @app.route("/almanach/live")

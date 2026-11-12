@@ -417,6 +417,9 @@ def teil_a(datei, P, rel, pins, tiles):
     r = c.get(f"/karte/t/{T}/14/1/1.mvt", headers=H)
     ok(r.status_code == 204, f"fehlende Kachel: 204 ({r.status_code})")
     ok(c.get(f"/karte/t/karten-99/14/{x_}/{y_}.mvt", headers=H).status_code == 404, "falscher Tag: 404")
+    seite = c.get("/karte", headers=H).get_data(as_text=True)
+    ok(re.search(r'<main>\s*<a class="kq-back" href="/more">‹ <span data-i18n="More">', seite) and ".kq-back{" in seite and "min-height:44px" in seite.split(".kq-back{")[1].split("}")[0],
+       "/karte: ganz oben ein Weg zurück zu «Mehr» (44 px hoch, wie bei den Packlisten)")
     r = c.get("/karte/fonts/Noto Sans Regular/0-255.pbf", headers=H)
     ok(r.status_code == 200 and len(r.data) > 1000, f"Schrift Noto Sans Regular 0-255 ({len(r.data)} Bytes)")
     r = c.get("/karte/fonts/Noto Sans Devanagari Regular v1/2304-2559.pbf", headers=H)
