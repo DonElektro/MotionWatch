@@ -343,9 +343,42 @@ def teil_lesen(ns):
     ok(ns["pl_selftest"]() and any(fn is ns["pl_selftest"] for _n, fn in ns["SELFTEST_EXTRA"]), "Selbsttest pl_selftest läuft und ist eingetragen")
 
 
+def teil_zeit(ns):
+    """3.83.2: no file and no pasted text may hold MoveEye up. The first versions needed time by the square (the tag
+    stripper) or the cube (headings «== x ==») of the length: 80 KB of «<!--» took 6 s, one line of 4000 signs 25 s -
+    and while a pattern runs, the whole program waits (detection too)."""
+    print("A) Zeit: gebaute Eingaben halten MoveEye nicht auf", flush=True)
+    P, E = ns["pl_import_preview"], ns["PLError"]
+    kopf = "<html><body><div>Liste</div><div>Zelt 2 kg</div>"
+    faelle = (("2 MB «<!--» ohne Ende", (kopf + "<!--" * 500000).encode()), ("2 MB «<script » ohne Ende", (kopf + "<script " * 250000).encode()),
+              ("2 MB «<li » ohne «>»", (kopf + "<li " * 500000).encode()), ("2 MB «<a » ohne «>»", (kopf + "<a " * 660000).encode()),
+              ("2 MB «<style>» ohne Ende, dann «</title>»", (kopf + "<style>" * 280000 + "</title>").encode()),
+              ("eine Zeile «== » + 2 MB Leerzeichen", ("== " + " " * 2000000 + "x").encode()), ("eine Zeile 2 MB Bindestriche", ("-" * 2000000 + "a").encode()),
+              ("4000 Zeilen «== » + Leerzeichen", (("== " + " " * 490 + "x\n") * 4000).encode()), ("4000 Zeilen Bindestriche", (("-" * 499 + "a\n") * 4000).encode()),
+              ("4000 Zeilen «2x 2x 2x …»", (("2x " * 166 + "\n") * 4000).encode()), ("4000 Zeilen Leerzeichen + Gewicht", (("a" + " " * 400 + "b 12 g\n") * 4000).encode()),
+              ("4000 Zeilen Klammern", (("a " + "(" * 480 + "\n") * 4000).encode()), ("4000 Zeilen «# » + Leerzeichen + #", (("# a" + " " * 480 + "b #\n") * 4000).encode()))
+    for name, data in faelle:
+        t0 = time.time()
+        try:
+            P(data=data, name="liste.txt")
+        except E:
+            pass
+        dt = time.time() - t0
+        ok(dt < 10.0, f"{name}: {dt:.2f} s (Grenze 10 s)")
+    H = ns["pl_html_text"]
+    ok(H("<div>a</div><!-- x --><script>alert(1)</script><p>b &amp; c</p><style>p{}</style><li>d") .split() == ["a", "b", "&", "c", "-", "d"], "HTML: Kommentar, Skript und Stil sind weg, der Rest ist Text")
+    ok("alert" in H("<div>a</div><script>alert(1)") and "<script" not in H("<div>a</div><script>alert(1)"), "HTML: ein Skript ohne Ende bleibt als blosser Text stehen (ohne das Tag)")
+    L = ns["pl_parse_line"]
+    for txt, want in (("== Küche ==", "Küche"), ("**KLEIDUNG**", "KLEIDUNG"), ("--- Essen ---", "Essen"), ("---- Essen ---", "Essen"), ("~~ Sonstiges ~~", "Sonstiges"), ("__Technik__", "Technik")):
+        ok(L(txt) == ("cat", want), f"Überschrift «{txt}» -> {L(txt)}")
+    for txt in ("== Küche", "** fett", "--- Essen", "**a*", "=== ==="):
+        ok((L(txt) or ("",))[0] != "cat", f"keine Überschrift: «{txt}» -> {L(txt)}")
+
+
 def teil_a(datei):
     ns = laden(datei)
     teil_lesen(ns)
+    teil_zeit(ns)
     CFG, TZ, PL = ns["CFG"], ns["TZ"], ns["PL"]
     GB = ns["TZ_GB"]
     root = tempfile.mkdtemp(prefix="mw_pl_root_")

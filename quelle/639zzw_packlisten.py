@@ -367,14 +367,37 @@ def _pl_tidy(s):
     return re.sub(r"\s+([,;:])", r"\1", s)
 
 
+PL_LINE_MAX = 500                                         # one line of a note / a pasted text (a name has 120, a remark 300)
+
+
+def _pl_fence(t):
+    """«== Küche ==», «**KLEIDUNG**», «--- Essen ---»: the text between the same signs at both ends, or None. Written out
+    by hand (3.83.2): as one pattern with a back reference a line of 4000 signs took more than 25 s (it tried every split)."""
+    m = re.match(r"[=*_~]{2,}", t)
+    if m:
+        f = m.group(0)
+        h = t[len(f):len(t) - len(f)].strip() if len(t) > 2 * len(f) and t.endswith(f) else ""
+        return h if h and h[0] not in "=*_~" else None
+    m = re.match(r"-{3,}", t)
+    if m:
+        for k in range(min(len(m.group(0)), len(t) - len(t.rstrip("-")), (len(t) - 1) // 2), 2, -1):
+            h = t[k:len(t) - k].strip()
+            if h and h[0] not in "=*_~":
+                return h
+    return None
+
+
 def pl_parse_line(raw):
     """("cat", text) for a heading, ("item", {...}) for an item, None for nothing (empty, a rule, only signs)"""
-    s = _TZ_CTRL.sub("", _pl_ud.normalize("NFC", str(raw)).replace(" ", " ").replace(" ", " ")).rstrip()
+    s = _TZ_CTRL.sub("", _pl_ud.normalize("NFC", str(raw)[:8 * PL_LINE_MAX]).replace(" ", " ").replace(" ", " ")).rstrip()
     if not s.strip():
         return None
-    m = re.match(r"^\s*#{1,6}\s*(.+?)\s*#*\s*$", s) or re.match(r"^\s*([=*_~]{2,}|-{3,})\s*(?P<h>[^=*_~].*?)\s*\1\s*$", s)
-    if m:
-        h = pl_text(m.groupdict().get("h") or m.group(1), PL_CAT_MAX).strip(_PL_EDGE)
+    lead = len(s) - len(s.lstrip())                          # 3.83.2: runs of blanks inside the line are one blank, and a line has an
+    s = s[:lead] + re.sub(r"[ \t]{2,}", " ", s[lead:])[:PL_LINE_MAX]    # end - the patterns below need time by the square of the length
+    m = re.match(r"^\s*#{1,6}\s*(.+?)\s*#*\s*$", s)
+    f = None if m else _pl_fence(s.strip())
+    if m or f is not None:
+        h = pl_text(m.group(1) if m else f, PL_CAT_MAX).strip(_PL_EDGE)
         return ("cat", h) if h else None
     if re.fullmatch(r"[\s\-=_*~#.·•]+", s):
         return None
@@ -510,15 +533,40 @@ def pl_decode(data):
         return data.decode("cp1252", "replace")
 
 
+_PL_HTML_OPEN = re.compile(r"(?i)<!--|<(script|style|head|title)\b")
+_PL_HTML_TAG = "[^<>]{0,2000}>"                           # the rest of a tag: never over the next «<», never endless
+
+
 def pl_html_text(t):
-    """HTML (a note of Apple Notes saved as text, a pasted page) -> plain lines. Nothing is rendered: script / style / head are
-    cut out, blocks become line breaks, list points a «- », every other tag goes away, then the entities are decoded."""
+    """HTML (a note of Apple Notes saved as text, a pasted page) -> plain lines. Nothing is rendered: comments and script /
+    style / head / title are cut out, blocks become line breaks, list points a «- », every other tag goes away, then the
+    entities are decoded. The time grows with the length only (3.83.2: the first version searched from every «<!--» /
+    «<script» / «<li» to the end of the text again - 80 KB of «<!--» took 6 s, a file of 5 MB hours, and MoveEye stood still)."""
     import html as _h
-    t = re.sub(r"(?is)<!--.*?-->|<(script|style|head|title)\b.*?</\1\s*>", "", t)
-    t = re.sub(r"(?i)<li\b[^>]*>", "\n- ", t)
-    t = re.sub(r"(?i)</t[dh]\s*>", "\t", t)
-    t = re.sub(r"(?i)</?(?:div|p|br|tr|li|ul|ol|h[1-6]|table|body|html)\b[^>]*>", "\n", t)
-    return _h.unescape(re.sub(r"<[a-zA-Z/!][^>]*>", "", t))
+    out, pos, nie = [], 0, set()                             # nie: block kinds whose end does not come any more
+    while True:
+        m = _PL_HTML_OPEN.search(t, pos)
+        if not m:
+            out.append(t[pos:])
+            break
+        out.append(t[pos:m.start()])
+        kind = (m.group(1) or "!").lower()
+        end = -1
+        if kind not in nie:
+            if kind == "!":
+                j = t.find("-->", m.end())
+                end = j + 3 if j >= 0 else -1
+            else:
+                c = re.compile(r"(?i)</%s\s{0,20}>" % kind).search(t, m.end())
+                end = c.end() if c else -1
+            if end < 0:
+                nie.add(kind)
+        pos = end if end >= 0 else m.end()                   # no end: only the opening goes away, the rest stays text
+    t = "".join(out)
+    t = re.sub(r"(?i)<li\b" + _PL_HTML_TAG, "\n- ", t)
+    t = re.sub(r"(?i)</t[dh]\s{0,20}>", "\t", t)
+    t = re.sub(r"(?i)</?(?:div|p|br|tr|li|ul|ol|h[1-6]|table|body|html)\b" + _PL_HTML_TAG, "\n", t)
+    return _h.unescape(re.sub(r"<[a-zA-Z/!]" + _PL_HTML_TAG, "", t))
 
 
 def pl_sniff(text, csv_file=False):
@@ -891,7 +939,7 @@ def pl_import_preview(data=None, text=None, name="", guess=None, rows=None, lang
                 raise PLError("This kind of file cannot be imported. Save the list as .xlsx, CSV or text.")
             if sum(c < " " and c not in "\t\n\r" for c in text[:4000]) > 8:
                 raise PLError("This kind of file cannot be imported. Save the list as .xlsx, CSV or text.")
-            if len(re.findall(r"(?i)<(?:html|body|div|p|br|li|span|tr)\b[^>]*>", text[:20000])) >= 2:
+            if len(re.findall(r"(?i)<(?:html|body|div|p|br|li|span|tr)\b[^<>]{0,2000}>", text[:20000])) >= 2:
                 text = pl_html_text(text)
             if ext == "json" or text.lstrip()[:1] == "{":
                 try:
