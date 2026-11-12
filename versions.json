@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-12 21:19",
+ "generated": "2026-11-12 22:46",
  "versions": [
+  {
+   "version": "3.86.0",
+   "file": "webcam_bewegung_3_86_0.py",
+   "url": "",
+   "sha256": "ac776ed460f139c34026af929d322adbdcdf6e4221761511e35ff17f53c8ea53",
+   "date": "2026-11-12 22:45",
+   "notes": "Neu: Morse-Modus (Mehr → «📡 Morse-Modus», nur Administrator, mit PIN wenn der Schutz an ist). Solange er läuft, ist der Schutz PAUSIERT – 10 Minuten, höchstens 30, danach ist alles wie vorher. Senden mit weissem Licht, Infrarot, Relais, Status-LED oder Lautsprecher (sichtbares Licht blinkt nie schneller als 3-mal pro Sekunde); Lesen mit der Kamera, der Text erscheint im Live-Bild, im Verlauf und als eine Push-Meldung. Ein empfangener Text ist nie ein Befehl.",
+   "size": 3930216,
+   "sig": "8b27d8283e99863e5fa2e1d2abf51ab8730cb22b059125121653fcd786696a3966f3376cdb1c04aaeefcd28d5262d2331faef510c1b2a96f59bef1850fc83c02",
+   "data": {
+    "file": "moveeye_daten_3_86_0.zip",
+    "url": "",
+    "sha256": "5a4f070a3844f8720b74dd25927f1ac59054de1f797595909185ddb789dec9a4",
+    "size": 11064794,
+    "sig": "31d98c5ff07c929090884531a171a4a799d07f315c0dee09ecd9f39af9efc54f8ae125b95ce48171d156a91c02e433d7e46ff41277cf10f6b14ff035a98e1305"
+   }
+  },
   {
    "version": "3.85.0",
    "file": "webcam_bewegung_3_85_0.py",
    "url": "",
    "sha256": "07d1ab054c8b10f4fc54c575d698df553c72d22fea7e6782c9107cd5ba85f80e",
-   "date": "2026-11-12 21:19",
+   "date": "2026-11-12 22:26",
    "notes": "Vier Teile. (1) Touren auf der Karte: neue Kachel «🗺 Karte» unter «Mehr»; auf der Karte Touren zeichnen, speichern, als GPX/KML oder alle als ZIP mitnehmen; KML/GPX einlesen (auch aus der swisstopo-App) mit Auf-/Abstieg, Höhenprofil und Wanderzeit; Gäste sehen freigegebene Touren nur zum Ansehen. Höhendaten Schweiz für gezeichnete Routen: kommt mit einem Update. (2) Akku: Die Meldung «Akku bis Sonnenaufgang?» kommt nicht mehr nach jedem Neustart – am Netz nie, nach dem Start erst wenn die Schätzung steht, pro Abend einmal (auch über einen Neustart); fast leer meldet weiter sofort. Anzeige am N",
    "size": 3880947,
    "sig": "2f446bfb4ebd044cf07232678286737b0ec8400cd85a0e15a9368517a32d1ddf213ec6f2f99232ddb4baeba121079bb8ef3d304704ef848155685e885dd95504",
@@ -136,23 +153,6 @@
     "sha256": "669826493471521449028bcac21f27d548eaa645d0954293b2b31b7c958f4aed",
     "size": 4940128,
     "sig": "4fc8de9fbca33bd339beaca5ff3385d5d09e9577981fa7122f1fe435dee08b113478833d39f27651e5f0f66e3e1be02425392596b632b44accb0c5dd9be8480b"
-   }
-  },
-  {
-   "version": "3.77.0",
-   "file": "webcam_bewegung_3_77_0.py",
-   "url": "",
-   "sha256": "c9f749e5d38e83f2cd0a06a75d7dd8e8893f5b645d416d55c9bc27610bccc7f0",
-   "date": "2026-11-11 22:06",
-   "notes": "Schach zu zweit mit je einem Handy: Ein Handy erstellt ein Spiel und zeigt einen kurzen Code (oder QR-Code), das andere tritt bei. Die Partie läuft über dein MoveEye, auch für Gäste, solange «Spiele freigeben» an ist. Remis anbieten, Zug zurück auf Anfrage, Revanche, Zuschauen mit dem Code; nach einer Verbindungspause geht es von selbst weiter. Spielesammlung einmal neu laden: Mehr → Spielen → Spielecke → «Installieren / aktualisieren»",
-   "size": 3923070,
-   "sig": "b3830e7e8c8458014864c632826310d0f4fa0031e7b2d7b18efc57d1c9351a25575a077265df9e3238a8b436e4a1c5403307c21f9152428f91b09f3fdb0c1c0d",
-   "data": {
-    "file": "moveeye_daten_3_77_0.zip",
-    "url": "",
-    "sha256": "016f1b88dd6b96f4c1505d239aa01afa7f2b95186ca891f4399679118002298e",
-    "size": 4940121,
-    "sig": "53e5e5f44676f5c8300bac87f74a896e34534d543bbed583ba2d7da9202e10b5e73b47312a05ef32123c64220df3961cabfb0da259e7f7b665dcd2f9a9a8ed09"
    }
   },
   {
