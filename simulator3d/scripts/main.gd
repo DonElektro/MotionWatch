@@ -92,6 +92,7 @@ var game_botguard := true             # 3D-4.x: «Wächter» without a person as
 var game_kiguard := false            # 3D-4.x: «MoveEye als KI-Wächter» (gamekiwaechter.gd) - not saved, only for this session
 var localplay                         # 3D-3.77: localplay.gd - play here at the PC
 var headpad                           # 3D-3.77: headpad.gd - steer the head of MoveEye
+var kopf_selbst = null                # kopf_selbst.gd: without MoveEye «Kopf steuern» turns the head of the simulator itself
 var templates                         # 3D-3.82: templates.gd - «Vorlagen»: scenes, places, kits, own 3D files
 var game_tasks := true                # a task for every round of the game (bonus) - 3D-3.27
 var daily_life := true                # visitors at their own times, the postman and the neighbour every day
@@ -3127,7 +3128,10 @@ func _no_pad_ui_nav() -> void:
 
 
 func mw_look(dir: String, step := 3.0) -> void:
-	"""3D-3.77: turn the head of MoveEye from here (MoveEye 2.95.103: op «look»)"""
+	"""3D-3.77: turn the head of MoveEye from here (MoveEye 2.95.103: op «look»); without MoveEye the simulator turns its
+	head itself (kopf_selbst.gd) - then nothing is sent"""
+	if kopf_selbst != null and kopf_selbst.look(dir, step):
+		return
 	mw_cmd = {"id": max(int(Time.get_unix_time_from_system() * 1000.0), int(mw_cmd.get("id", 0)) + 1), "op": "look", "dir": dir, "step": step}
 
 

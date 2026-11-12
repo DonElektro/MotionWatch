@@ -28498,11 +28498,23 @@
   "it": "MoveEye non è collegato – il secondo turno richiede il vero rilevamento di MoveEye.",
   "rm": "MoveEye n’è betg collià – la segunda runda dovra l’identificaziun vaira da MoveEye."
  },
+ "MoveEye ist nicht verbunden – du steuerst den Kopf selbst.": {
+  "en": "MoveEye is not connected – you steer the head yourself.",
+  "fr": "MoveEye n’est pas connecté – vous pilotez la tête vous-même.",
+  "it": "MoveEye non è collegato – comandi tu la testa.",
+  "rm": "MoveEye n’è betg collià – ti guidas sez il chau."
+ },
  "MoveEye ist nicht verbunden – Kopf, Licht und Folgen gehen nur mit MoveEye": {
   "en": "MoveEye is not connected – head, light and follow only work with MoveEye",
   "fr": "MoveEye n’est pas connecté – tête, lumière et suivi ne marchent qu’avec MoveEye",
   "it": "MoveEye non è collegato – testa, luce e seguire funzionano solo con MoveEye",
   "rm": "MoveEye n’è betg collià – chau, glisch e suandar funcziunan mo cun MoveEye"
+ },
+ "MoveEye ist nicht verbunden – während einer Messung steht der Kopf still.": {
+  "en": "MoveEye is not connected – during a measurement the head stands still.",
+  "fr": "MoveEye n’est pas connecté – pendant une mesure, la tête reste immobile.",
+  "it": "MoveEye non è collegato – durante una misurazione la testa resta ferma.",
+  "rm": "MoveEye n’è betg collià – durant ina mesiraziun stat il chau airi."
  },
  "MoveEye ist nicht verbunden – zuerst in MoveEye die Simulation einschalten.": {
   "en": "MoveEye is not connected – first switch on the simulation in MoveEye.",
@@ -28515,6 +28527,12 @@
   "fr": "MoveEye n’est pas connecté – d’abord «Envoyer à MoveEye» et connecter MoveEye.",
   "it": "MoveEye non è collegato – prima «Inviare a MoveEye» e collegare MoveEye.",
   "rm": "MoveEye n’è betg collià – l’emprim «Trametter a MoveEye» e colliar MoveEye."
+ },
+ "MoveEye ist nicht verbunden. Den Kopf steuert gerade: %s.": {
+  "en": "MoveEye is not connected. The head is steered right now by: %s.",
+  "fr": "MoveEye n’est pas connecté. La tête est pilotée en ce moment par : %s.",
+  "it": "MoveEye non è collegato. La testa è comandata ora da: %s.",
+  "rm": "MoveEye n’è betg collià. Il chau vegn guidà gist da: %s."
  },
  "MoveEye ist nicht verbunden. Rückmeldung auf der Webseite von MoveEye: Mehr → Rückmeldung an den Entwickler (oder 💬 oben).": {
   "en": "MoveEye is not connected. Feedback on the MoveEye web page: More → Feedback to the developer (or 💬 at the top).",

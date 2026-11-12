@@ -773,6 +773,9 @@ func _build_view_bar(layer: CanvasLayer, th: Theme) -> void:
 	main.toolbar = preload("res://scripts/toolbar.gd").new()       # 3D-3.61: everything with the mouse
 	main.toolbar.main = main
 	layer.add_child(main.toolbar)
+	main.kopf_selbst = preload("res://scripts/kopf_selbst.gd").new()   # without MoveEye: «Kopf steuern» turns the head here
+	main.kopf_selbst.main = main
+	main.add_child(main.kopf_selbst)
 	main.headpad = preload("res://scripts/headpad.gd").new()       # 3D-3.77: steer the head of MoveEye
 	main.headpad.main = main
 	main.headpad.theme = th

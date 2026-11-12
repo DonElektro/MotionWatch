@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 7740 (Stellen: 10762)
-Übersetzt: en 7740, fr 7740, it 7740, rm 7740
+Texte gesamt: 7742 (Stellen: 10764)
+Übersetzt: en 7742, fr 7742, it 7742, rm 7742
 Unsicher markiert: 50
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 523 Stellen
-Nicht mehr im Code (noch in texte.json): 352
+Nicht mehr im Code (noch in texte.json): 353
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 68 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1
-Übersprungen (Grund: Anzahl): kennung 27789, schlüssel 21116, keine Wörter 13080, index 9963, technisch 3660, doc 2423, einheit 339, log 175, englisch 143, pfad 125, stringname 103, html 68, klasse 36, shader 6
+Übersprungen (Grund: Anzahl): kennung 27805, schlüssel 21130, keine Wörter 13082, index 9974, technisch 3664, doc 2427, einheit 339, log 175, englisch 143, pfad 125, stringname 103, html 68, klasse 36, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   werkstatt_daten.gd       533     4
@@ -162,6 +162,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   recorder.gd               11     2
   schnittstelle.gd          10     7
   bedienleiste.gd           10     0
+  headpad.gd                10     2
   fassaden.gd                9     0
   tier_modell.gd             9     1
   gameschwitzen.gd           9     0
@@ -169,7 +170,6 @@ Pro Datei (Texte / davon dynamische Stellen):
   gamekiwaechter.gd          8     4
   realism.gd                 8     0
   camphys.gd                 8     1
-  headpad.gd                 8     2
   maggie_helfer.gd           8     0
   abgleich.gd                7     4
   tunnel.gd                  7     2
@@ -462,20 +462,20 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   gamekiwaechter.gd:147  'ein'
   gamekiwaechter.gd:147  '🤖 MoveEye als KI-Wächter: '
   gamemore.gd:23  'aus'
-  hp_kiosk.gd:68  'aus'
-  hp_kiosk.gd:155  'aus'
-  hp_kiosk.gd:195  'aus'
+  hp_kiosk.gd:69  'aus'
+  hp_kiosk.gd:157  'aus'
+  hp_kiosk.gd:197  'aus'
   licht.gd:42  'aus'
-  main.gd:755  ' (Port %d)'
-  main.gd:1659  '  %.0f Mbit/s'
-  main.gd:2287  ' (von MoveEye)'
-  main.gd:2320  'Der Simulator ist belegt: '
-  main.gd:3155  'aus'
-  main.gd:3155  'ein'
-  main.gd:3232  'Sabotage-Test: '
-  main.gd:3232  'aus'
-  main.gd:3286  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
-  main.gd:3289  '\n🚨 Bewacht und weg: '
+  main.gd:756  ' (Port %d)'
+  main.gd:1660  '  %.0f Mbit/s'
+  main.gd:2288  ' (von MoveEye)'
+  main.gd:2321  'Der Simulator ist belegt: '
+  main.gd:3159  'aus'
+  main.gd:3159  'ein'
+  main.gd:3236  'Sabotage-Test: '
+  main.gd:3236  'aus'
+  main.gd:3290  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
+  main.gd:3293  '\n🚨 Bewacht und weg: '
   main_status.gd:14  'Echt-Abgleich: '
   main_status.gd:24  'Trainingspaket: '
   main_status.gd:33  ' · %d offen · %.1f MB'
@@ -657,8 +657,8 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   geo.gd:1585  ' (Fluss)'
   geo.gd:1681  'Ort: %s (%.5f, %.5f)\n%s\n'
   grafik_hoch.gd:310  'Hoch gewählt, aber aus: '
-  headpad.gd:106  '\nAuslöser: Bildmitte (Kreis) auf einen Spieler, dann der runde Knopf im Bild oder R2 am Controller.'
-  headpad.gd:108  '\nController: '
+  headpad.gd:117  '\nAuslöser: Bildmitte (Kreis) auf einen Spieler, dann der runde Knopf im Bild oder R2 am Controller.'
+  headpad.gd:119  '\nController: '
   toolbar.gd:179  '\nController: '
   toolbar.gd:432  'Ansicht: '
   toolbar.gd:434  'Patrouille: '
@@ -705,7 +705,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   maggie_modell.gd:166  'BackLowerLeg.'
   tier_modell.gd:123  'Modell fehlt: '
   main_menues.gd:324  'Blinde Flecken: '
-  main_menues.gd:856  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
+  main_menues.gd:859  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
   main_start.gd:364  'Autostart: '
   main_start.gd:375  'Autologon: '
   main_steuerung.gd:454  'Dein Platz: '
