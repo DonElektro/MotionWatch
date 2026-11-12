@@ -298,8 +298,8 @@ def pruefen():
         probleme.append("der Simulator braucht MoveEye ≥ %s (abgleich.gd MW_MIN), APP_VERSION ist %s - zuerst MoveEye veröffentlichen" % (w["mw_min"], app))
     if vj.get("mw_min") and w["mw_min"] and str(vj.get("mw_min")) != w["mw_min"] and sim_key(gd) == sim_key(ver) and stand == ver:
         warn.append("version.json «mw_min» %s ≠ abgleich.gd MW_MIN %s - --sim-json neu schreiben" % (vj.get("mw_min"), w["mw_min"]))
-    if w["sim_min"] and ver and sim_key(w["sim_min"]) > sim_key(ver):
-        probleme.append("MoveEye braucht Sim ≥ %s (545 SIM_MIN), version.json ist %s - zuerst den Simulator veröffentlichen" % (w["sim_min"], ver))
+    if w["sim_min"] and stand and sim_key(w["sim_min"]) > sim_key(stand):
+        probleme.append("MoveEye braucht Sim ≥ %s (545 SIM_MIN), version.json ist %s - zuerst den Simulator veröffentlichen" % (w["sim_min"], stand))
     ch = geaendert_seit((git_text("log", "-1", "--format=%H", "--", "simulator3d/version.json") or "").strip(),
                         ["simulator3d"] + SIM_HP, SIM_OHNE)          # das Linux-Paket bringt auch den HP-Teil mit (linux_paket.sh)
     if sim_stand(alt_vj) != stand:

@@ -86,7 +86,9 @@ def versionen_selftest():
         assert sim_vkey(a) < sim_vkey(b), f"simulator {a} < {b}"
     assert sim_vkey("3D-5.0.0") == sim_vkey("3.0.0") == sim_vkey("MoveEye Sim 3.0.0") == (3, 0, 0), "bridge 3D-5.0.0 = 3.0.0"
     assert sim_vlegacy("3.0.0") == "3D-5.0.0" and sim_vlegacy("3.10.2") == "3D-5.10.2" and sim_vlegacy("3D-4.82") == "3D-4.82"
-    assert VER_RE.match(SIM_MIN) and sim_vkey(SIM_MIN) <= sim_vkey(SIM3D_EMBED["version"]), f"SIM_MIN {SIM_MIN} newer than the own simulator"
+    # Simulator-Anhang (300): the embedded simulator stays the last one in the repository (Sim 3.67.2) - SIM_MIN may pass it
+    # once newer simulators are Release assets; then the published number (version.json «anhang», below) must meet it
+    assert VER_RE.match(SIM_MIN), f"SIM_MIN {SIM_MIN}"
     p = os.path.join(HERE, "simulator3d", "version.json")
     if not os.path.isfile(p):
         return None                                               # on the Pi: no repository next to the program
@@ -99,11 +101,19 @@ def versionen_selftest():
         # 3 tracks (Besitzer 03.11.2026): each part has its own number - the simulator of this MoveEye may be older than the
         # one in the repository (a release of the simulator alone), never newer
         assert sim_vkey(SIM3D_EMBED["version"]) <= sim_vkey(ver), f"SIM3D {SIM3D_EMBED['version']} newer than version.json {ver}"
-        assert sim_vkey(SIM_MIN) <= sim_vkey(ver), f"MoveEye needs simulator {SIM_MIN}, version.json has {ver}"
-        mm = str(d.get("mw_min") or "")
-        assert not mm or (VER_RE.match(mm) and _vkey(mm) <= _vkey(APP_VERSION)), f"the simulator {ver} needs MoveEye {mm} (this is {APP_VERSION})"
+        ah = d.get("anhang") if isinstance(d.get("anhang"), dict) else {}
+        top = str(ah.get("ver") or ver)                           # the published simulator: the Release asset, else the repository
+        if ah:
+            assert VER_RE.match(top) and sim_vkey(top) > sim_vkey(ver), f"version.json «anhang» {top} must be newer than the packages in the repository ({ver})"
+            assert str(ah.get("version") or "") == sim_vlegacy(top), f"version.json «anhang.version» must be {sim_vlegacy(top)}"
+        else:
+            assert sim_vkey(SIM_MIN) <= sim_vkey(SIM3D_EMBED["version"]), f"SIM_MIN {SIM_MIN} newer than the own simulator"
+        assert sim_vkey(SIM_MIN) <= sim_vkey(top), f"MoveEye needs simulator {SIM_MIN}, version.json has {top}"
+        mm = str(ah.get("mw_min") or d.get("mw_min") or "")
+        assert not mm or (VER_RE.match(mm) and _vkey(mm) <= _vkey(APP_VERSION)), f"the simulator {top} needs MoveEye {mm} (this is {APP_VERSION})"
     return f"MoveEye {APP_VERSION} · Sim {ver or old} (old simulators read {old}) · needs Sim ≥ {SIM_MIN}" + (
-        f", Sim needs MoveEye ≥ {d.get('mw_min')}" if d.get("mw_min") else "")
+        f", Sim needs MoveEye ≥ {d.get('mw_min')}" if d.get("mw_min") else "") + (
+        f" · newest simulator {d['anhang'].get('ver')} as Release asset" if isinstance(d.get("anhang"), dict) else "")
 
 
 SELFTEST_EXTRA.append(("Version numbers: order, file names, bridge for old simulators, minimum of the other track (3 tracks)", versionen_selftest))
