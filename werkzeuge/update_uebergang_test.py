@@ -22,6 +22,14 @@ Teil «uebergang» (ohne Netz, ohne den echten Schlüssel - der Test erzeugt ein
   D  nicht signiert / falsch signiert: die alte Version installiert nicht.
   Br Brücke: sie holt nur die Programmdatei (kennt keine Zusatzdatei); die neue Version startet im Kern und holt ihre
      ZIP selbst neben versions.json; falsche Signatur: nicht installiert.
+  U  Ablage «url» (Review Nov. 2026, heute NICHT in Gebrauch - zeigt, was die Geräte im Feld können, bevor je eine
+     Version als Release-Asset abgelegt wird): versions.json liegt auf Server 1, die neue Programmdatei und ihre ZIP nur
+     auf einem zweiten Server («Asset-Server»), der wie GitHub auf einen dritten umleitet (302). Dazwischen stehen alle
+     Versionen des Repositorys in der Liste (das Gerät hat mehrere Versionen übersprungen).
+     U1 ältestes Gerät: nimmt die neueste, Programm + ZIP vom Asset-Server.  U2 Brücke: Programm vom Asset-Server, die
+     neue Version findet ihre ZIP über ihren Eintrag in versions.json (Teil 397 _zd_entry_urls).
+     U3 Asset fehlt (404) · U4 Asset verändert (Prüfsumme) · U5 falsche Signatur · U6 Asset-Server nicht erreichbar:
+     nichts wird installiert, das Gerät bleibt auf seiner Version. Die echte Umleitung von GitHub ist hier NICHT getestet.
 
 Teil «stand» (der veröffentlichte Stand, mit dem ECHTEN öffentlichen Schlüssel - der geheime wird nie gebraucht):
   S1 jeder Eintrag in versions.json: Programmdatei da (im Ordner, sonst über «url»), Grösse, SHA-256, Signatur gültig;
@@ -117,8 +125,25 @@ class Leise(http.server.SimpleHTTPRequestHandler):
         Leise.log.append(self.path.split("?")[0] + " " + str(a[1] if len(a) > 1 else ""))
 
 
-def server(ordner, cp, kp, port=0):
-    h = functools.partial(Leise, directory=ordner)
+class Umleiter(Leise):
+    """stands in for github.com/…/releases/download/<tag>/<file>: answers 302 to an other server (ziel), like GitHub does"""
+    ziel = ""
+
+    def do_GET(self):
+        Leise.log.append("UMLEITUNG " + self.path.split("?")[0])
+        if not Umleiter.ziel:
+            self.send_error(404)
+            return
+        self.send_response(302)
+        self.send_header("Location", Umleiter.ziel + "/blob/" + self.path.split("?")[0].rsplit("/", 1)[-1] + "?sig=test")
+        self.send_header("Content-Length", "0")
+        self.end_headers()
+
+    do_HEAD = do_GET
+
+
+def server(ordner, cp, kp, port=0, handler=None):
+    h = functools.partial(handler or Leise, directory=ordner)
     s = http.server.ThreadingHTTPServer(("127.0.0.1", port), h)
     ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     ctx.load_cert_chain(cp, kp)
@@ -302,6 +327,12 @@ def uebergang(a, tmp):
         ok(False, "Bau der neuen Version %s (bauen.py --neue-version)" % neu_v)
         return
     shutil.rmtree(os.path.join(bau, "quelle"))
+    import zipfile
+    with zipfile.ZipFile(os.path.join(bau, neu_zip)) as z:  # Ablage: stored, so that git keeps only the difference per version
+        zi = z.getinfo("daten.json")
+    ok(zi.compress_type == zipfile.ZIP_STORED and os.path.getsize(os.path.join(bau, neu_zip)) < 32 * 1024 * 1024,
+       "neue Zusatzdatei ungepackt (%.1f MB, Geräte nehmen bis 64 MiB) - alte Geräte mit gepackter ZIP holen sie in A / B / C"
+       % (os.path.getsize(os.path.join(bau, neu_zip)) / 1e6))
 
     # ---- throwaway key, server folder, versions.json --------------------------------------------------------------------
     key = os.path.join(tmp, "test_schluessel.txt")
@@ -432,8 +463,158 @@ def uebergang(a, tmp):
             # ---- D: wrong signature -----------------------------------------------------------------------------------
             print("D  falsche Signatur")
             falsche_signatur(alt_pfad, alt_v)
+        if not a.alt or a.ablage:
+            ablage_url(tmp, alte, neu_v, neu_py, neu_zip, srv_dir, key, pub, cp, kp, env, home)
     finally:
         srv.shutdown()
+
+
+def ablage_url(tmp, alte, neu_v, neu_py, neu_zip, srv_dir, key, pub, cp, kp, env, home):
+    """part U (see the head): the newest version only as «Release asset» (second server behind a redirect), named by «url»"""
+    print("U  Ablage «url»: neueste Version nur auf dem Asset-Server (mit Umleitung), versions.json auf Server 1")
+    liste = os.path.join(tmp, "u_liste")                    # server 1: versions.json + the older versions of the repository
+    blob = os.path.join(tmp, "u_blob", "blob")              # server 3: where the redirect ends
+    bau_m = os.path.join(tmp, "u_manifest")                 # only to write the list: every program file in one folder
+    for d in (liste, blob, bau_m):
+        os.makedirs(d)
+    progs = programme(REPO)
+    zwischen = []
+    for v in sorted(progs, key=vkey):                       # the versions in between (signed with the throwaway key, no «url»)
+        zn = zd_von(lesen(os.path.join(REPO, progs[v])).decode("utf-8", "replace"))[0]
+        if vkey(v) >= vkey(neu_v) or not zn or not os.path.isfile(os.path.join(REPO, zn)):
+            continue
+        shutil.copy(os.path.join(REPO, progs[v]), bau_m)
+        pub_setzen(os.path.join(bau_m, progs[v]), pub)
+        shutil.copy(os.path.join(bau_m, progs[v]), liste)
+        os.symlink(os.path.join(REPO, zn), os.path.join(liste, zn))
+        zwischen.append(v)
+    shutil.copy(os.path.join(srv_dir, neu_py), bau_m)
+    shutil.copy(os.path.join(srv_dir, neu_zip), bau_m)
+    prog_gut, zip_gut = lesen(os.path.join(srv_dir, neu_py)), lesen(os.path.join(srv_dir, neu_zip))
+
+    def blob_setzen(prog=prog_gut, zp=zip_gut):
+        for n, b in ((neu_py, prog), (neu_zip, zp)):
+            if b is None:
+                if os.path.isfile(os.path.join(blob, n)):
+                    os.remove(os.path.join(blob, n))
+            else:
+                open(os.path.join(blob, n), "wb").write(b)
+
+    blob_setzen()
+    srv1, base1 = server(liste, cp, kp)
+    srv3, base3 = server(os.path.dirname(blob), cp, kp)
+    srv2, base2 = server(tmp, cp, kp, handler=Umleiter)     # the «asset host»: every address answers with a redirect
+    Umleiter.ziel = base3
+    asset = "%s/DonElektro/MotionWatch/releases/download/mw-%s/" % (base2, neu_v)
+    try:
+        r = subprocess.run([sys.executable, os.path.join(bau_m, neu_py), "--make-manifest", bau_m, "--sign-key", key],
+                           capture_output=True, text=True, cwd=bau_m, env=dict(os.environ, MOTIONWATCH_HOME=home + "um"))
+        try:
+            man = json.load(open(os.path.join(bau_m, "versions.json")))
+            e = next(x for x in man["versions"] if x["version"] == neu_v)
+        except (OSError, ValueError, LookupError):
+            print(r.stdout[-1500:] + r.stderr[-1500:])
+            ok(False, "U: versions.json mit allen Versionen dazwischen")
+            return
+        e["url"] = asset + neu_py                           # «url» is not signed: the signature covers version, file name, checksum
+        e["data"]["url"] = asset + neu_zip
+        man_txt = json.dumps(man)
+        ok(len(man["versions"]) == len(zwischen) + 1 and all(x.get("sig") for x in man["versions"]) and not any(x.get("url") for x in man["versions"] if x is not e),
+           "Liste: %d Versionen signiert, nur %s mit «url» (Asset-Server), %d dazwischen ohne" % (len(man["versions"]), neu_v, len(zwischen)))
+        nr = [0]
+
+        def geraet(alt_pfad):
+            nr[0] += 1
+            d = os.path.join(tmp, "u_geraet_%d" % nr[0])
+            return d, geraet_anlegen(d, alt_pfad, pub), "%su%d" % (home, nr[0])
+
+        def liste_setzen(aendern=None):
+            m2 = json.loads(man_txt)
+            if aendern:
+                aendern(next(x for x in m2["versions"] if x["version"] == neu_v))
+            json.dump(m2, open(os.path.join(liste, "versions.json"), "w"))
+
+        def nicht_installiert(alt_pfad, was, teil):
+            d, p, h = geraet(alt_pfad)
+            r = py(p, UPDATE, h, env, base1 + "/versions.json", neu_v)
+            inst = r.get("install") or [None, ""]
+            ok(bool(r.get("found")) and inst[0] is False and teil in str(inst[1]) and not os.path.isfile(os.path.join(d, neu_py))
+               and not os.path.isfile(os.path.join(d, neu_py + ".part")) and not r.get("restart"),
+               "%s %s: nicht installiert, kein Neustart, keine Datei beim Gerät (%s)" % (version_von(alt_pfad), was, str(inst[1])[:90]))
+
+        for alt_pfad in alte:
+            alt_v = version_von(alt_pfad)
+            liste_setzen(); blob_setzen()
+            d, p, h = geraet(alt_pfad)
+            Leise.log.clear()
+            r = py(p, UPDATE, h, env, base1 + "/versions.json", neu_v)
+            wege = sorted(set(x.split(" ")[0] if not x.startswith("UMLEITUNG") else "302:" + x.split(" ")[1].rsplit("/", 1)[-1] for x in Leise.log))
+            if kennt_zusatz(alt_pfad):
+                print("U1 %s -> %s (%d Versionen übersprungen)" % (alt_v, neu_v, len([v for v in zwischen if vkey(v) > vkey(alt_v)])))
+                ok(bool(r.get("found") and r.get("signed")) and r.get("new") == neu_v, "sieht %s als neueste, signiert (angeboten: %s)" % (neu_v, r.get("new")))
+                ok(r.get("install") == [True, ""] and r.get("restart", {}).get("version") == neu_v, "installiert, Neustart in %s (%s)" % (neu_v, r.get("install")))
+                ok(os.path.isfile(os.path.join(d, neu_py)) and lesen(os.path.join(d, neu_py)) == prog_gut, "Programmdatei vom Asset-Server (über die Umleitung)")
+                ok(os.path.isfile(os.path.join(d, neu_zip)) and lesen(os.path.join(d, neu_zip)) == zip_gut, "Zusatzdatei gleich mitgeholt - neben der Programmdatei auf dem Asset-Server")
+                ok("302:" + neu_py in wege and "302:" + neu_zip in wege and "/" + neu_py not in wege, "Weg: " + ", ".join(wege))
+                r = py(os.path.join(d, neu_py), NEU_LADEN, h + "n", env)
+                ok(r.get("app") == neu_v and r.get("ok") is True and r.get("miss") == 0, "neue Version lädt alle Literale (%s)" % r.get("used"))
+                # ---- U3 / U4 / U6 for a device that fetches both files
+                print("U3 Asset fehlt")
+                blob_setzen(prog=None)
+                nicht_installiert(alt_pfad, "Programmdatei fehlt auf dem Asset-Server (404)", "404")
+                blob_setzen(zp=None)
+                d, p, h = geraet(alt_pfad)
+                r = py(p, UPDATE, h, env, base1 + "/versions.json", neu_v)
+                ok(r.get("install") == [True, ""] and not os.path.isfile(os.path.join(d, neu_zip)), "nur die ZIP fehlt: Programm installiert, keine ZIP (%s)" % r.get("install"))
+                r = py(os.path.join(d, neu_py), NEU_LADEN, h + "b", env, base1 + "/versions.json")
+                ok(r.get("ok") is False and r.get("de", 0) > 1000 and bool(r.get("holen")) and r.get("da") is False,
+                   "neue Version startet im Kern und meldet: «%s»" % r.get("holen"))
+                blob_setzen()
+                r = py(os.path.join(d, neu_py), NEU_LADEN, h + "b2", env, base1 + "/versions.json")
+                ok(r.get("holen") == "" and r.get("da") is True, "sobald das Asset da ist: ZIP über den eigenen Eintrag in versions.json geholt")
+                print("U4 Asset verändert")
+                blob_setzen(prog=prog_gut + b"\n# x\n")
+                nicht_installiert(alt_pfad, "veränderte Programmdatei", "checksum")
+                kap = bytearray(zip_gut)
+                kap[2000] ^= 1
+                blob_setzen(zp=bytes(kap))
+                d, p, h = geraet(alt_pfad)
+                r = py(p, UPDATE, h, env, base1 + "/versions.json", neu_v)
+                ok(r.get("install") == [True, ""] and not os.path.isfile(os.path.join(d, neu_zip)), "veränderte ZIP: nie gespeichert (das Programm selbst ist echt und wird installiert)")
+                r = py(os.path.join(d, neu_py), NEU_LADEN, h + "c", env, base1 + "/versions.json")
+                ok("checksum" in str(r.get("holen")) and r.get("da") is False, "die neue Version lehnt sie auch ab (%s)" % r.get("holen"))
+                blob_setzen()
+                print("U5 falsche Signatur")
+                liste_setzen(lambda x: x.update(sig=x["sig"][:-2] + ("00" if not x["sig"].endswith("00") else "11")))
+                nicht_installiert(alt_pfad, "falsche Signatur", "not signed")
+                print("U6 Asset-Server nicht erreichbar")
+                Umleiter.ziel = "https://127.0.0.1:9"       # the redirect ends where nobody listens
+                liste_setzen()
+                nicht_installiert(alt_pfad, "Umleitung ins Leere", "update failed")
+                Umleiter.ziel = base3
+                liste_setzen(lambda x: x.update(url="https://127.0.0.1:9/mw/" + neu_py))
+                nicht_installiert(alt_pfad, "Asset-Server antwortet nicht", "update failed")
+                liste_setzen()
+            else:
+                print("U2 Brücke %s -> %s" % (alt_v, neu_v))
+                ok(bool(r.get("found") and r.get("signed")) and r.get("new") == neu_v, "sieht %s als neueste, signiert (angeboten: %s)" % (neu_v, r.get("new")))
+                ok(r.get("install") == [True, ""] and lesen(os.path.join(d, neu_py)) == prog_gut, "Programmdatei vom Asset-Server (über die Umleitung): %s" % ", ".join(wege))
+                ok(not os.path.isfile(os.path.join(d, neu_zip)), "keine ZIP (die Brücke kennt sie nicht)")
+                Leise.log.clear()
+                r = py(os.path.join(d, neu_py), NEU_LADEN, h + "b", env, base1 + "/versions.json")
+                ok(r.get("app") == neu_v and r.get("ok") is False and r.get("de", 0) > 1000, "neue Version startet im Kern (%s Texte)" % r.get("de"))
+                ok(r.get("holen") == "" and r.get("da") is True and lesen(os.path.join(d, neu_zip)) == zip_gut,
+                   "ZIP nicht neben versions.json - über den eigenen Eintrag («url») vom Asset-Server geholt (%s)" % (r.get("holen") or "ok"))
+                ok(any(x.startswith("/" + neu_zip + " 404") for x in Leise.log) and "UMLEITUNG " + asset[len(base2):] + neu_zip in Leise.log,
+                   "Reihenfolge: zuerst neben versions.json (404), dann der Asset-Server")
+                r = py(os.path.join(d, neu_py), NEU_LADEN, h + "c", env)
+                ok(r.get("ok") is True and r.get("miss") == 0, "nach dem Neustart: alles da")
+                blob_setzen(prog=None)
+                nicht_installiert(alt_pfad, "Programmdatei fehlt auf dem Asset-Server (404)", "404")
+                blob_setzen()
+    finally:
+        for s_ in (srv1, srv2, srv3):
+            s_.shutdown()
 
 
 # ======================================================================================================================
@@ -657,6 +838,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--nur", choices=["uebergang", "stand"], default="", help="nur einen Teil (Standard: beide)")
     ap.add_argument("--alt", default="", help="uebergang: diese alte Programmdatei (Standard: die älteste mit Zusatzdatei im Repository + die Brücke)")
+    ap.add_argument("--ablage", action="store_true", help="uebergang mit --alt: auch Teil U (Ablage «url», Asset-Server mit Umleitung)")
     ap.add_argument("--neu-version", default="", help="uebergang: Nummer der gebauten neuen Version (Standard: nach der neuesten Datei)")
     ap.add_argument("--streng", action="store_true", help="stand: ein Arbeitsstand (neueste Datei passt nicht zu versions.json) ist ein Fehler - CI auf main")
     ap.add_argument("--ordner", default="", help="stand: dieser Ordner statt des Repositorys (Wegwerf-Kopie zum Nachstellen)")

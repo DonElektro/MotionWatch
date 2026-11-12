@@ -112,7 +112,13 @@ Push-Nachrichten). Einrichtung: `docs/Einrichtung_Raspberry_Pi.md`, Gehäuse: `h
   ab 1 KiB in die ZIP, `_HX…`-Tabellen behalten nur Deutsch, die gebaute Datei ohne Kommentare / Docstrings und mit Tabs
   (gleiche Zeilennummern; Originalzeilen in der ZIP, `zd_source()`). Hauptdatei: Warnung ab 4 MiB, Abbruch ab 5 MiB
   (`bauen.py`, `versionen.py --pruefen`), äussere Grenze 8 MiB für Geräte bis 2.98.x. Tests: `werkzeuge/zusatzdaten_test.py`,
-  `werkzeuge/update_uebergang_test.py`.
+  `werkzeuge/update_uebergang_test.py`. **Ablage entlasten (Nov. 2026):** `daten.json` steht **ungepackt** in der ZIP
+  (`ZD_GEPACKT = False` in `bauen.py`, rund 10 MB statt 4.9 MB): git speichert so pro Version nur den Unterschied
+  (rund 0.1 MB statt 4.9 MB; `werkzeuge/ablage_test.py` misst es). Nicht wieder packen, die ZIP nie von Hand neu packen.
+  Die Geräte nehmen die Programmdatei von der Adresse `url` ihres Eintrags (seit 2.98.x) und suchen die ZIP **daneben**;
+  `data.url` lesen sie nicht. Ab der nächsten Version findet eine MoveEye ohne ZIP sie auch über ihren eigenen Eintrag
+  (`_zd_entry_urls`, Teil 397) – vorbereitet, **nicht in Gebrauch**: alles liegt weiter neben `versions.json`
+  (`update_uebergang_test.py` Teil U stellt die andere Ablage mit lokalen Servern nach).
 - **Brücke**: `webcam_bewegung_3_0_2.py` (eine Datei unter 8 MiB, ohne Zusatzdatei) bleibt
   **für immer** im Repository und in versions.json (`"bridge": true`, `BRUECKE` in `versionen.py`, `UPD_BRIDGE` in Teil 397).
   Beim Aufräumen («höchstens 10») nie löschen – `python3 werkzeuge/versionen.py --aufraeumen` lässt sie stehen (sie zählt mit).

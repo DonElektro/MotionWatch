@@ -238,6 +238,14 @@ ZD_KEEP_PREFIX = ("_HX",)          # the translation tables _HX… also carry th
 # Schlank (3.59.0): a table _HX… {English: (de, fr, it, rm)} keeps only {English: de} in the file (fallback _zd_hx, 012);
 # the whole table with fr / it / rm goes to the zip. Tables {English: (fr, it, rm)} (no German) go to the zip as a whole.
 ZD_DATE = (2026, 1, 1, 0, 0, 0)     # fixed time stamp in the zip
+# Ablage entlasten (Review Nov. 2026): daten.json steht UNGEPACKT in der ZIP (ZIP_STORED). Der Inhalt ändert sich von Version
+# zu Version nur zu wenigen Prozent; ungepackt speichert git dafür nur den Unterschied (gemessen 3.69.2 - 3.77.0: 0.06 - 0.11 MB
+# pro Version statt 4.9 MB), gepackt war jede ZIP für git ein ganz neuer Block. Preis: die Geräte laden rund 10 MB statt
+# 4.9 MB (Grenze der Geräte: 64 MiB, ZD_MAX_BYTES in Teil 397 seit der ersten Zusatzdatei; die Programme lesen jede ZIP,
+# gepackt oder nicht). Abbruch weit vor der Grenze der Geräte: ZD_GRENZE. Zurück auf gepackt: ZD_GEPACKT = True - eine schon
+# gebaute ZIP wird nur bei anderem INHALT neu geschrieben (veröffentlichte Dateien bleiben Byte für Byte).
+ZD_GEPACKT = False
+ZD_GRENZE = 32 * 1024 * 1024        # the data zip never gets bigger than half of what the devices accept
 
 
 def zd_name(v):
@@ -532,10 +540,16 @@ def zd_bytes(v, ents, zeilen=()):
     bio = io.BytesIO()
     with zipfile.ZipFile(bio, "w") as z:
         zi = zipfile.ZipInfo("daten.json", ZD_DATE)
-        zi.compress_type = zipfile.ZIP_DEFLATED
+        zi.compress_type = zipfile.ZIP_DEFLATED if ZD_GEPACKT else zipfile.ZIP_STORED
         zi.external_attr = 0o644 << 16
-        z.writestr(zi, zd_json(v, ents, zeilen).encode("utf-8"), compresslevel=9)
-    return bio.getvalue()
+        if ZD_GEPACKT:
+            z.writestr(zi, zd_json(v, ents, zeilen).encode("utf-8"), compresslevel=9)
+        else:
+            z.writestr(zi, zd_json(v, ents, zeilen).encode("utf-8"))
+    out = bio.getvalue()
+    if len(out) > ZD_GRENZE:
+        raise SystemExit("Zusatzdatei zu gross: %d Bytes (Grenze %d, die Geräte nehmen höchstens 64 MiB)" % (len(out), ZD_GRENZE))
+    return out
 
 
 def zd_inhalt(path):
