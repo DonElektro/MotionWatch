@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-12 07:14",
+ "generated": "2026-11-12 07:32",
  "versions": [
   {
-   "version": "3.81.1",
-   "file": "webcam_bewegung_3_81_1.py",
+   "version": "3.81.2",
+   "file": "webcam_bewegung_3_81_2.py",
    "url": "",
-   "sha256": "85ff081ba6c8d5080d7a8fa4416a584f6ebf9a637417cc3d1bed53879ea7f4e7",
-   "date": "2026-11-12 07:14",
-   "notes": "Übersetzungen ergänzt: Französisch, Italienisch und Rätoromanisch sind jetzt vollständig (rund 950 Texte, vor allem Werkzeuge, Simulator-Seite und Spielecke); nicht von Muttersprachlern gegengelesen.",
-   "size": 4015888,
-   "sig": "3675067fe11e3088a8569f691567d392eca5930fcc4e89b758196c7e9257b655621dc1f2e56782dd0e85c409fd4eceeb7179baeeb703fd9047dcc37678285209",
+   "sha256": "cca9bad44c57b348464d07610d97c93ef29f6397b59b3af880a2b803f0c21b1f",
+   "date": "2026-11-12 07:32",
+   "notes": "Vorbereitung im Hintergrund: MoveEye kann neue Simulator-Versionen künftig auch als Anhang einer Veröffentlichung holen und weitergeben (spart Platz im Projekt). Für dich ändert sich nichts.",
+   "size": 4023021,
+   "sig": "f2d8edc386a2175d4110988e9f63e84077d9e6c1b4f6a1fcc1b124cd333fb34df67d7fc0eb9b6584a73b0c15a9a30d56db6b27986f317adf18d511f58885bc0b",
    "data": {
-    "file": "moveeye_daten_3_81_1.zip",
+    "file": "moveeye_daten_3_81_2.zip",
     "url": "",
-    "sha256": "78ddf1fb2c1150d40ffb864245595d6d78c0937928ed619136a3a1cae64d3a59",
-    "size": 10342855,
-    "sig": "2e2afacc29e89984443e7c91316d82718f0db42df7f1675fa9fc75a969d5475750d4ad785d8794c1dc26b53573267ce7416cf47e8d68770ad20408b50769ed05"
+    "sha256": "c1a7f5c3839762cbb654a060a990e4cd94f9b3ed9c9abf6f8ac87e7bebd40d1a",
+    "size": 10347473,
+    "sig": "138694ecc02530296a6da8ae9407dbeeffdb84e58bc7553d04d992b266a09f6792ba6322b56d16c436239e7433705a5024d6d2b09a0d0b5453e5db100d22510d"
    }
   },
   {
