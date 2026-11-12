@@ -414,7 +414,7 @@ kopie() {   # kopie QUELLE ZIEL: Test-Schlüssel und Pfade der Ersatz-Wurzel (wi
 		-e "s#/run/lock/moveeye-hp-update.lock#$W/sperre#g" -e 's#^RU="mwrunner"#RU="daemon"#' "$1" > "$2"
 }
 laufa() { PATH="$B:$PATH" MOVEEYE_HP_QUELLE="file://$W/$1" MOVEEYE_HP_ANHANG="${2:-file://$W/anhang}" bash "$T" > "$W/lauf.log" 2>&1; }
-reste() { ls -d /var/tmp/moveeye-hp-update.* 2>/dev/null | wc -l; }
+reste() { find /var/tmp -maxdepth 1 -name 'moveeye-hp-update.*' 2>/dev/null | wc -l; }
 unveraendert() { grep -q "^echo $1" "$SIMD/MoveEyeSim3D.x86_64" && [ "$(cat "$ZS/sim_version")" = "$2" ]; }
 R0="$(reste)"
 # Sprung 1: ein HP mit dem ALTEN Skript (HP_FASSUNG 6, Testdaten) - die Liste hat schon einen Anhang 9.3.0
