@@ -92,6 +92,21 @@ Push-Nachrichten). Einrichtung: `docs/Einrichtung_Raspberry_Pi.md`, Gehäuse: `h
   `SIM3D` / `SIM3D_LINUX` (Rückfall = Simulator des eigenen Releases). `moveeye-hp-update` (HP_FASSUNG 3) holt die Sim-Nummer
   ebenso aus dem Block `sim` und merkt MoveEye- und Sim-Nummer getrennt. **Alt:** MoveEye vor diesem Umbau kennt nur die
   eingebettete Prüfsumme – nach einem Sim-Release allein liefert es /sim erst nach dem eigenen Update wieder.
+- **Simulator-Anhang (Besitzer 12.11.2026, «Ablage entlasten»):** ab der Version **nach Sim 3.67.2** kommen Windows- und
+  Linux-Paket nicht mehr ins Repository (103 MB pro Version, git kann sie nicht vergleichen), sondern wie das Pi-Paket als
+  Assets an den Release `sim-X.Y.Z` (Workflow «Sim-Pakete», `sim_pi.yml`; nie «latest»). **Die Pakete von Sim 3.67.2 bleiben
+  für immer** unter `simulator3d/MotionWatch3D_Simulator.zip` / `MoveEyeSim3D_Linux.zip` liegen (wie die Brücke 3.0.2) und
+  in `version.json` (oberste Felder, `linux`) und `versions.json` (`sim.win`, `sim.linux`) **eingefroren**: alte Simulatoren,
+  alte MoveEye und ein alter HP holen sie wie bisher und kommen von dort weiter (zwei Schritte). Die neuste Version steht in
+  `version.json` unter `anhang` {ver, version, notes, mw_min, win / linux: {file `simulator3d/anhang/…`, ver, size, sha256,
+  url}} und signiert in `versions.json` unter `sim.anhang`. Regeln überall gleich (Teil 300, `update.gd`, `hp_update.sh`):
+  eigener Dateiname, die Adresse muss genau `…/releases/download/sim-<Nummer>/<Name>` sein, das neuere gültige Paket gewinnt,
+  ein Anhang, der nicht stimmt, wird nie benutzt. Werkzeuge: `werkzeuge/sim_anhang.py holen X.Y.Z` (Assets holen, nachrechnen,
+  nach `simulator3d/anhang/`, `.gitignore`), `versionen.py --anhang-json X.Y.Z "Notiz"`, `bauen.py --nur-signieren` (behält
+  eine gültige Signatur, wenn die geholte Datei wieder weg ist); `sim_anhang.py pfad linux` gibt Workflows das neuste Linux-Paket.
+  **Zurück ins Repository** (Asset-Weg gestört): eine **neuere** Sim-Nummer wie früher exportieren und packen,
+  `MW_SIM_IM_REPO=1 versionen.py --sim-json …` (schreibt `version.json` ohne `anhang`), signieren, beide ZIP committen –
+  kein Gerät braucht dafür ein Update. Tests: `werkzeuge/sim_anhang_test.py`, `sim_anhang_test.gd`, `hp_update_test.sh` Teil 6.
 - **Gehäuse-Daten** in MoveEye (Teil 639v) und im Simulator (`werkstatt_daten.gd`, Modelle) kommen mit deren nächstem Release
   (`gehaeuse_bauen.py --sim`); der Selbsttest meldet abweichende Gehäuse-Daten bis dahin nur als Warnung.
 - **In MoveEye eingebettet** (dann braucht es auch ein MoveEye-Release): `simulator3d/ui_gemeinsam.json`,
@@ -134,6 +149,10 @@ Push-Nachrichten). Einrichtung: `docs/Einrichtung_Raspberry_Pi.md`, Gehäuse: `h
   - 📷 **MoveEye allein:** `bauen.py --version X.Y.Z --neue-version "Was neu ist"` (bettet den aktuellen Simulator als
     Rückfall ein), `versionen.py --pruefen`, `bauen.py --signieren …` (schreibt auch den Block `sim`), Selbsttest, Rauchtest,
     committen, pushen. Kein Sim-Export, kein Bausatz.
+  - 🎮 **Simulator allein, ab der Version nach 3.67.2 (Simulator-Anhang):** Nummer in `main.gd`, `NEU IN X.Y.Z`, `UEBERGABE.md`,
+    `versionen.py --neu-data`; committen, main pushen (kein Export, keine ZIP) → Workflow «Sim-Pakete» (`ver=X.Y.Z`, Probe aus)
+    → `sim_anhang.py holen X.Y.Z`, `pi_asset.py holen X.Y.Z`, `versionen.py --anhang-json X.Y.Z "Notiz"`,
+    `bauen.py --nur-signieren …`, Selbsttest; `version.json` + `versions.json` committen, pushen. Bis 3.67.2 wie folgt:
   - 🎮 **Simulator allein:** `VERSION := "X.Y.Z"` in `main.gd`, Block `NEU IN X.Y.Z` in «Lies mich», Kopf von `UEBERGABE.md`;
     exportieren (Windows + Linux), ZIP + Linux-Paket, `versionen.py --neu-data`, `versionen.py --sim-json X.Y.Z "Notiz"`,
     dann `bauen.py --nur-signieren …` (baut nichts, die MoveEye-Datei bleibt Byte für Byte; Block `sim` neu signiert),

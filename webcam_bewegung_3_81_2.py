@@ -23,6 +23,8 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 3.81.2: Vorbereitung im Hintergrund: MoveEye kann neue Simulator-Versionen künftig auch als Anhang einer Veröffentlichung
+    holen und weitergeben (spart Platz im Projekt). Für dich ändert sich nichts.
   * 3.81.1: Übersetzungen ergänzt: Französisch, Italienisch und Rätoromanisch sind jetzt vollständig (rund 950 Texte, vor allem
     Werkzeuge, Simulator-Seite und Spielecke); nicht von Muttersprachlern gegengelesen.
   * 3.81.0: Offline-Karte der Schweiz: Karte und Ortssuche ohne Internet, einmal als Verwalter nachladen unter Einstellungen →
@@ -110,9 +112,6 @@ Features
     Velo-Diebstahl), Erkennungstest-Plan «real».
   * 3.63.1: Fehlerkorrektur: Selbsttest «Fertig kaufen» (639zj) erkennt den Eintrag im Fenster «Mehr» auch, wenn der Datentausch
     ihn umhüllt (nur im CI mit Fenster sichtbar).
-  * 3.63.0: 📁 Datentausch unter Mehr: Fotos, Videos und Dokumente teilen (Für alle / Meine Dateien, Ordner, Vorschaubilder,
-    Hochladen in Stücken), 📝 Texte im Browser bearbeiten mit Versionen, 💬 Chats; neue Rechte pro Benutzer, Gäste nur ansehen,
-    Grenzen und immer 2 GB frei, Push gebündelt.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -121,10 +120,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_3_81_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_3_81_2.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_3_81_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_3_81_1.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_3_81_2.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_3_81_2.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -141,7 +140,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "3.81.1"
+APP_VERSION = "3.81.2"
 
 
 def default_data_dir():
@@ -266,8 +265,8 @@ def prepare_settings_file():
 
 
 
-ZD_FILE = "moveeye_daten_3_81_1.zip"
-ZD_SHA256 = "78ddf1fb2c1150d40ffb864245595d6d78c0937928ed619136a3a1cae64d3a59"
+ZD_FILE = "moveeye_daten_3_81_2.zip"
+ZD_SHA256 = "c1a7f5c3839762cbb654a060a990e4cd94f9b3ed9c9abf6f8ac87e7bebd40d1a"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -24947,6 +24946,9 @@ def sim_latest_check(force=False):
 						d = json.loads(r.read(65536))
 
 					SIMLATEST[key] = {"version": str(d.get("ver") or d.get("version") or "")[:20], "notes": str(d.get("notes") or "")[:400]}
+					ah = d.get("anhang") if key == "3d" and isinstance(d.get("anhang"), dict) else None
+					if ah and VER_RE.match(str(ah.get("ver") or "")) and (sim_vkey(ah["ver"]) or (0,)) > (sim_vkey(SIMLATEST[key]["version"]) or (0,)):
+						SIMLATEST[key] = {"version": str(ah["ver"]), "notes": str(ah.get("notes") or "")[:400]}
 					SIMLATEST["err"] = ""
 				except Exception as e:
 					SIMLATEST["err"] = _upd_error(e)[:120] if "_upd_error" in globals() else str(e)[:120]
@@ -25033,6 +25035,7 @@ def sim_versions():
             "checked": int(time.time() - SIMLATEST["t"]) if SIMLATEST["t"] else None, "err": SIMLATEST["err"]}
 SIM3D["stem"] = "MotionWatch3D_Simulator"; SIM3D["label"] = "MoveEye Sim · 3D" if "3D-" in SIM3D["version"] else "MoveEye Sim"
 SIM3D_BASE = "https://raw.githubusercontent.com/DonElektro/MotionWatch/main/"
+SIM3D["url"] = ""; SIM3D_LINUX["url"] = ""
 
 
 
@@ -25042,35 +25045,77 @@ SIM3D_BASE = "https://raw.githubusercontent.com/DonElektro/MotionWatch/main/"
 
 
 
-SIM3D_EMBED = {k: SIM3D[k] for k in ("version", "size", "sha256")}
-SIM3D_LINUX_EMBED = {k: SIM3D_LINUX[k] for k in ("version", "size", "sha256")}
+
+
+
+
+
+SIM3D_ANHANG_BASE = "https://github.com/DonElektro/MotionWatch/releases/download/"
+SIM3D_ANHANG = {"win": ("simulator3d/anhang/MotionWatch3D_Simulator.zip", "MotionWatch3D_Simulator.zip"),
+                "linux": ("simulator3d/anhang/MoveEyeSim3D_Linux.zip", "MoveEyeSim3D_Linux.zip")}
+
+
+def sim_anhang_url(key, ver):
+	""
+	return SIM3D_ANHANG_BASE + "sim-" + str(ver) + "/" + SIM3D_ANHANG[key][1]
+
+
+
+
+
+
+
+
+
+SIM3D_EMBED = {k: SIM3D[k] for k in ("version", "size", "sha256", "url")}
+SIM3D_LINUX_EMBED = {k: SIM3D_LINUX[k] for k in ("version", "size", "sha256", "url")}
 SIMMAN = {"t": 0.0, "src": "embedded", "loaded": False}
 SIMMAN_FILE = "sim_manifest.json"
 
 
+def _sim_entry_ok(e, want_file, url_ok):
+	"""
+"""
+	if not isinstance(e, dict):
+		return None
+	v, fn, sha = str(e.get("ver") or ""), str(e.get("file") or ""), str(e.get("sha256") or "").lower()
+	try:
+		size = int(e.get("size") or 0)
+	except (TypeError, ValueError):
+		return None
+	if not (VER_RE.match(v) and fn == want_file and re.fullmatch(r"[0-9a-f]{64}", sha) and 0 < size <= 2 * 1024 ** 3):
+		return None
+	url = str(e.get("url") or "")
+	if url_ok is not None and not url_ok(v, url):
+		return None
+	if not sig_ok(v, fn, sha, e.get("sig")):
+		return None
+	out = {"ver": v, "file": fn, "size": size, "sha256": sha, "sig": str(e.get("sig"))}
+	if url_ok is not None:
+		out["url"] = url
+	return out
+
+
 def sim_manifest_verify(blk):
-	""
+	"""
+"""
 	out = {}
 	if not isinstance(blk, dict):
 		return out
 	for key, pkg in (("win", SIM3D), ("linux", SIM3D_LINUX), ("pi", SIM3D_PI)):
-		e = blk.get(key)
-		if not isinstance(e, dict):
-			continue
-		v, fn, sha = str(e.get("ver") or ""), str(e.get("file") or ""), str(e.get("sha256") or "").lower()
-		try:
-			size = int(e.get("size") or 0)
-		except (TypeError, ValueError):
-			continue
-		if not (VER_RE.match(v) and fn == pkg["file"] and re.fullmatch(r"[0-9a-f]{64}", sha) and 0 < size <= 2 * 1024 ** 3):
-			continue
-		url = str(e.get("url") or "")
-		if key == "pi" and not SIM3D_PI_URL_RE.match(url):
-			continue
-		if sig_ok(v, fn, sha, e.get("sig")):
-			out[key] = {"ver": v, "file": fn, "size": size, "sha256": sha, "sig": str(e.get("sig"))}
-			if key == "pi":
-				out[key]["url"] = url
+
+		e = _sim_entry_ok(blk.get(key), pkg["file"], (lambda v, u: bool(SIM3D_PI_URL_RE.match(u))) if key == "pi" else None)
+		if e:
+			out[key] = e
+	ah = blk.get("anhang")
+	if isinstance(ah, dict):
+		got = {}
+		for key in ("win", "linux"):
+			e = _sim_entry_ok(ah.get(key), SIM3D_ANHANG[key][0], lambda v, u, key=key: u == sim_anhang_url(key, v))
+			if e:
+				got[key] = e
+		if got:
+			out["anhang"] = got
 	return out
 
 
@@ -25080,12 +25125,14 @@ def sim_manifest_take(blk, save=True):
 	changed = []
 	for key, pkg in (("win", SIM3D), ("linux", SIM3D_LINUX), ("pi", SIM3D_PI)):
 		e = ok.get(key)
+		a = (ok.get("anhang") or {}).get(key)
+		if a and sim_vkey(a["ver"]) and (not e or not sim_vkey(e["ver"]) or sim_vkey(a["ver"]) > sim_vkey(e["ver"])):
+			e = a
 		if not e or not sim_vkey(e["ver"]) or not sim_vkey(pkg["version"]) or sim_vkey(e["ver"]) < sim_vkey(pkg["version"]):
 			continue
-		if (pkg["version"], pkg["size"], pkg["sha256"]) != (e["ver"], e["size"], e["sha256"]):
-			pkg.update(version=e["ver"], size=e["size"], sha256=e["sha256"])
-			if key == "pi":
-				pkg["url"] = e["url"]
+		url = e.get("url", "")
+		if (pkg["version"], pkg["size"], pkg["sha256"], pkg.get("url", "")) != (e["ver"], e["size"], e["sha256"], url):
+			pkg.update(version=e["ver"], size=e["size"], sha256=e["sha256"], url=url)
 			changed.append(key)
 	if ok:
 		SIMMAN.update(t=time.time(), src="versions.json")
@@ -25157,13 +25204,14 @@ def sim3d_fetch(pkg=None, dl=None):
 				sim_manifest_refresh(base)
 				if sim3d_ready(SIM3D):
 					return
-			want = {"version": SIM3D["version"], "size": SIM3D["size"], "sha256": SIM3D["sha256"]}
+			want = {"version": SIM3D["version"], "size": SIM3D["size"], "sha256": SIM3D["sha256"],
+                    "url": SIM3D.get("url") or ""}
 			p = os.path.join(DATA_DIR, "sim3d", SIM3D["stem"] + "_" + want["version"] + ".zip"); tmp = p + ".part"
 			os.makedirs(os.path.dirname(p), exist_ok=True)
 			h = hashlib.sha256()
 			if not want["size"] or not want["sha256"]:
 				raise ValueError("no signed package known yet")
-			src_url = SIM3D.get("url") or (base + SIM3D["file"])
+			src_url = want["url"] or (base + SIM3D["file"])
 			with urllib.request.urlopen(_upd_request(src_url), timeout=30) as r, open(tmp, "wb") as f:
 				while True:
 					b = r.read(1 << 16)
@@ -32380,14 +32428,35 @@ def sim_manifest_check(folder, m):
 				sha = h_.hexdigest()
 			if key not in ok_ or not sha or sha != ok_[key]["sha256"] or os.path.getsize(p_) != ok_[key]["size"]:
 				bad.append(f"simulator {key} {e.get('ver')}")
+		ah_ = sim.get("anhang") if isinstance(sim, dict) and isinstance(sim.get("anhang"), dict) else {}
+		for key in ("win", "linux"):
+			e = ah_.get(key)
+			if e is None:
+				continue
+			g_ = (ok_.get("anhang") or {}).get(key)
+			p_ = os.path.join(folder, SIM3D_ANHANG[key][0])
+			if not g_:
+				bad.append(f"simulator asset {key} {e.get('ver') if isinstance(e, dict) else '?'} (signature / url)")
+			elif os.path.isfile(p_):
+				h_ = hashlib.sha256()
+				with open(p_, "rb") as f:
+					for b_ in iter(lambda: f.read(1 << 20), b""):
+						h_.update(b_)
+				if h_.hexdigest() != g_["sha256"] or os.path.getsize(p_) != g_["size"]:
+					bad.append(f"simulator asset {key} {g_['ver']} (file here differs)")
 		try:
 			with open(os.path.join(folder, "simulator3d", "version.json"), encoding="utf-8") as f:
 				vj_ = json.load(f)
 			if str(vj_.get("ver")) != str(sim.get("ver")):
 				bad.append(f"simulator {sim.get('ver')} in versions.json, simulator3d/version.json has {vj_.get('ver')} - sign again")
+			va_ = vj_.get("anhang") if isinstance(vj_.get("anhang"), dict) else {}
+			if str(va_.get("ver") or "") != str(ah_.get("ver") or ""):
+				bad.append(f"simulator asset {ah_.get('ver') or '-'} in versions.json, simulator3d/version.json has {va_.get('ver') or '-'} - sign again")
 		except (OSError, ValueError, AttributeError):
 			pass
-		simtxt = f", simulator {sim.get('ver') if isinstance(sim, dict) else '?'} ({'+'.join(sorted(ok_))})"
+		simtxt = f", simulator {sim.get('ver') if isinstance(sim, dict) else '?'} ({'+'.join(sorted(k for k in ok_ if k != 'anhang'))})"
+		if ok_.get("anhang"):
+			simtxt += f", asset {ah_.get('ver')} ({'+'.join(sorted(ok_['anhang']))})"
 	return bad, simtxt
 
 
@@ -32478,6 +32547,49 @@ def sim_manifest_block(folder, seed=b""):
 			blk[key]["url"] = str(e["url"])
 		if seed:
 			blk[key]["sig"] = _ED[1](seed, _sig_msg(v, fn, sha)).hex()
+	ah = d.get("anhang") if isinstance(d.get("anhang"), dict) else None
+	av = str((ah or {}).get("ver") or "")
+	if ah and VER_RE.match(av):
+		old = {}
+		try:
+			with open(os.path.join(folder, "versions.json"), encoding="utf-8") as f:
+				old = (((json.load(f).get("sim") or {}).get("anhang")) or {})
+		except (OSError, ValueError, AttributeError):
+			pass
+		sub = {"ver": av, "version": str(ah.get("version") or ""), "notes": str(ah.get("notes") or "")[:400]}
+		if ah.get("mw_min") and VER_RE.match(str(ah.get("mw_min"))):
+			sub["mw_min"] = str(ah["mw_min"])
+		for key in ("win", "linux"):
+			e = ah.get(key) if isinstance(ah.get(key), dict) else {}
+			fn, v, url = SIM3D_ANHANG[key][0], str(e.get("ver") or ""), str(e.get("url") or "")
+			sha, size = str(e.get("sha256") or "").lower(), e.get("size")
+			if not e:
+				continue
+			if e.get("file") != fn or v != av or url != sim_anhang_url(key, v) or not re.fullmatch(r"[0-9a-f]{64}", sha) or not isinstance(size, int):
+				print(f"Note: simulator3d/version.json «anhang.{key}» incomplete (file / ver / url / sha256 / size) - left out")
+				continue
+			ent = {"ver": v, "file": fn, "size": size, "sha256": sha, "url": url}
+			fp = os.path.join(folder, fn)
+			if os.path.isfile(fp):
+				h = hashlib.sha256()
+				with open(fp, "rb") as f:
+					for b in iter(lambda: f.read(1 << 20), b""):
+						h.update(b)
+				if h.hexdigest() != sha or os.path.getsize(fp) != size:
+					print(f"Note: {fn} does not fit simulator3d/version.json «anhang.{key}» (size / checksum) - left out")
+					continue
+				if seed:
+					ent["sig"] = _ED[1](seed, _sig_msg(v, fn, sha)).hex()
+			else:
+				o = old.get(key) if isinstance(old, dict) and isinstance(old.get(key), dict) else {}
+				if all(o.get(k) == ent[k] for k in ent) and sig_ok(v, fn, sha, o.get("sig")):
+					ent["sig"] = str(o["sig"])
+				else:
+					print(f"Note: {fn} missing and «anhang.{key}» {v} not signed before - left out (fetch it: werkzeuge/sim_anhang.py holen {v})")
+					continue
+			sub[key] = ent
+		if "win" in sub or "linux" in sub:
+			blk["anhang"] = sub
 	return blk if ("win" in blk or "linux" in blk) else None
 
 
@@ -40417,7 +40529,9 @@ def versionen_selftest():
 		assert sim_vkey(a) < sim_vkey(b), f"simulator {a} < {b}"
 	assert sim_vkey("3D-5.0.0") == sim_vkey("3.0.0") == sim_vkey("MoveEye Sim 3.0.0") == (3, 0, 0), "bridge 3D-5.0.0 = 3.0.0"
 	assert sim_vlegacy("3.0.0") == "3D-5.0.0" and sim_vlegacy("3.10.2") == "3D-5.10.2" and sim_vlegacy("3D-4.82") == "3D-4.82"
-	assert VER_RE.match(SIM_MIN) and sim_vkey(SIM_MIN) <= sim_vkey(SIM3D_EMBED["version"]), f"SIM_MIN {SIM_MIN} newer than the own simulator"
+
+
+	assert VER_RE.match(SIM_MIN), f"SIM_MIN {SIM_MIN}"
 	p = os.path.join(HERE, "simulator3d", "version.json")
 	if not os.path.isfile(p):
 		return None
@@ -40430,11 +40544,19 @@ def versionen_selftest():
 
 
 		assert sim_vkey(SIM3D_EMBED["version"]) <= sim_vkey(ver), f"SIM3D {SIM3D_EMBED['version']} newer than version.json {ver}"
-		assert sim_vkey(SIM_MIN) <= sim_vkey(ver), f"MoveEye needs simulator {SIM_MIN}, version.json has {ver}"
-		mm = str(d.get("mw_min") or "")
-		assert not mm or (VER_RE.match(mm) and _vkey(mm) <= _vkey(APP_VERSION)), f"the simulator {ver} needs MoveEye {mm} (this is {APP_VERSION})"
+		ah = d.get("anhang") if isinstance(d.get("anhang"), dict) else {}
+		top = str(ah.get("ver") or ver)
+		if ah:
+			assert VER_RE.match(top) and sim_vkey(top) > sim_vkey(ver), f"version.json «anhang» {top} must be newer than the packages in the repository ({ver})"
+			assert str(ah.get("version") or "") == sim_vlegacy(top), f"version.json «anhang.version» must be {sim_vlegacy(top)}"
+		else:
+			assert sim_vkey(SIM_MIN) <= sim_vkey(SIM3D_EMBED["version"]), f"SIM_MIN {SIM_MIN} newer than the own simulator"
+		assert sim_vkey(SIM_MIN) <= sim_vkey(top), f"MoveEye needs simulator {SIM_MIN}, version.json has {top}"
+		mm = str(ah.get("mw_min") or d.get("mw_min") or "")
+		assert not mm or (VER_RE.match(mm) and _vkey(mm) <= _vkey(APP_VERSION)), f"the simulator {top} needs MoveEye {mm} (this is {APP_VERSION})"
 	return f"MoveEye {APP_VERSION} · Sim {ver or old} (old simulators read {old}) · needs Sim ≥ {SIM_MIN}" + (
-        f", Sim needs MoveEye ≥ {d.get('mw_min')}" if d.get("mw_min") else "")
+        f", Sim needs MoveEye ≥ {d.get('mw_min')}" if d.get("mw_min") else "") + (
+        f" · newest simulator {d['anhang'].get('ver')} as Release asset" if isinstance(d.get("anhang"), dict) else "")
 
 
 SELFTEST_EXTRA.append(("Version numbers: order, file names, bridge for old simulators, minimum of the other track (3 tracks)", versionen_selftest))
@@ -40483,12 +40605,44 @@ def sim_manifest_selftest():
 		for what, x in bad.items():
 			assert not sim_manifest_take(x, save=False), f"{what} taken"
 			assert SIM3D["sha256"] == SIM3D_EMBED["sha256"] and SIM3D["version"] == SIM3D_EMBED["version"], f"{what}: values changed"
+
+
+		nv2 = "%d.%d.%d" % (a, b, c + 2)
+		fa = SIM3D_ANHANG["win"][0]
+
+		def ah(v=nv2, fn=fa, key=seed, url=None, sig=True):
+			e = {"ver": v, "file": fn, "size": 20, "sha256": sha, "url": sim_anhang_url("win", v) if url is None else url}
+			if sig:
+				e["sig"] = _ED[1](key, _sig_msg(v, fn, sha)).hex()
+			return dict(blk(), anhang={"ver": v, "win": e})
+		back()
+		assert sim_manifest_take(ah(), save=False) == ["win"], "signed asset entry not taken"
+		assert SIM3D["version"] == nv2 and SIM3D["size"] == 20 and SIM3D["url"] == sim_anhang_url("win", nv2), "asset values"
+		assert SIM3D["url"].startswith(SIM3D_ANHANG_BASE + "sim-" + nv2 + "/") and SIM3D_LINUX["url"] == "", "asset address"
+		assert not sim_manifest_take(blk(), save=False) and SIM3D["version"] == nv2, "went back from the asset to an older package"
+		bad_a = {"other host": ah(url="https://example.org/sim-%s/%s" % (nv2, SIM3D_ANHANG["win"][1])),
+                 "address of an other number": ah(url=sim_anhang_url("win", nv)),
+                 "no address": ah(url=""),
+                 "repository file name": ah(fn=SIM3D["file"]),
+                 "unsigned": ah(sig=False),
+                 "other key": dict(blk(), anhang=ah(key=hashlib.sha256(b"another key").digest())["anhang"]),
+                 "not a dict": dict(blk(), anhang="x")}
+		for what, x in bad_a.items():
+			back()
+			assert sim_manifest_take(x, save=False) == ["win"] and SIM3D["version"] == nv and SIM3D["url"] == "", f"asset {what}: not the repository package"
+		back()
+		moved = dict(blk(), win=ah()["anhang"]["win"])
+		assert not sim_manifest_take(moved, save=False) and SIM3D["version"] == SIM3D_EMBED["version"], "asset entry taken as repository package"
+		back()
+		assert sim_manifest_take(ah(v=nv), save=False) == ["win"] and SIM3D["url"] == "", "same number: the repository package wins"
+		back()
 		g["UPDATE_PUBKEY"] = real
 		assert not sim_manifest_take(blk(), save=False), "test key accepted with the real public key"
+		assert not sim_manifest_take(ah(), save=False) and SIM3D["url"] == "", "asset with the test key accepted with the real public key"
 	finally:
 		g["UPDATE_PUBKEY"] = real
 		SIM3D.update(keep[0]); SIM3D_LINUX.update(keep[1]); SIMMAN.clear(); SIMMAN.update(keep[2])
-	return "signed «sim» entry taken; changed, unsigned, other key / file, older refused (test key)"
+	return "signed «sim» entry taken; changed, unsigned, other key / file, older refused; asset entry («anhang») only signed with its own address (test key)"
 
 
 SELFTEST_EXTRA.append(("Simulator checksums from the signed versions.json (3 tracks, 300)", sim_manifest_selftest))
@@ -49412,7 +49566,7 @@ class App:
 		self.watch = watch
 		self.web = web or WebStream(watch)
 		self.root = tk.Tk()
-		self.root.title("MoveEye 3.81.1")
+		self.root.title("MoveEye 3.81.2")
 		try:
 			import base64
 			self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -49790,7 +49944,7 @@ class App:
 			if not small:
 				vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
 				vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))
-			Tip(nm, f"{tr('Build')} 3.81.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+			Tip(nm, f"{tr('Build')} 3.81.2 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
 			self._egg_taps = []
 			for w_ in tl.winfo_children():
 				w_.bind("<Button-1>", self._egg_tap, add="+")

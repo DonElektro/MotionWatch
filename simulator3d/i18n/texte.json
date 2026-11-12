@@ -8930,6 +8930,12 @@
   "it": "Il pacchetto non è riuscito (%s).",
   "rm": "Il pachet n’ha betg funcziunà (%s)."
  },
+ "Das Paket ist auf GitHub nicht zu finden (Fehler 404).": {
+  "en": "The package cannot be found on GitHub (error 404).",
+  "fr": "Le paquet est introuvable sur GitHub (erreur 404).",
+  "it": "Il pacchetto non si trova su GitHub (errore 404).",
+  "rm": "Il pachet na vegn betg chattà sin GitHub (errur 404)."
+ },
  "Das Paket liegt noch bei der Haltestelle, oder?": {
   "en": "The parcel is still at the bus stop, isn't it?",
   "fr": "Le colis est toujours à l'arrêt, non ?",

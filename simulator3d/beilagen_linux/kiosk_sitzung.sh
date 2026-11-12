@@ -24,6 +24,11 @@
 # Controller (PS5 / Gamepad): Eingaben am Gamepad zählen in hp_wache.py als Spielen; Ctrl+Alt+B bzw. der Knopf im Testbild legt die
 # Wunsch-Datei «controller_koppeln» neben SPIEL_DATEI an, der Dienst moveeye-controller-koppeln (root, moveeye-hp-update)
 # koppelt dann einen DualSense per Bluetooth. Die Sitzung selbst bekommt dafür keine Rechte.
+# Ohne Tastatur (HP_FASSUNG 7): auf Wunsch zeigt der Kiosk, solange kein Controller angeschlossen ist, in einer Ecke einen
+# kleinen Knopf mit dem Controller-Symbol (controller_fenster.py --ecke); Antippen öffnet dasselbe Fenster. In
+# /etc/moveeye-kiosk.conf einstellbar: CONTROLLER_KNOPF=unten-rechts | unten-links | oben-rechts | oben-links | aus.
+# Ab Werk AUS (Sim 3.67.2): der Knopf liegt immer zuoberst, und unten rechts stehen im Simulator die untere Leiste und
+# gleich darüber der grüne Mover-Stick (rover_pad.gd) - genau dort, wo man ohne Controller mit Maus / Finger bedient.
 set -u
 LIB="/usr/local/lib/moveeye-kiosk"
 CONF="/etc/moveeye-kiosk.conf"
@@ -58,6 +63,7 @@ SPIEL_DATEI="/run/moveeye-spiel/spielen"  # Spielen-Wunsch (hp_wache.py, testbil
 SPIEL_RUHE_S=900                          # so lange gilt er nach der letzten Eingabe / Verbindung
 STATUS_PORT=8761                          # Status fürs eigene Netz (MoveEye «HP rechnet»), 0 = aus
 SCHLAF_S=600                              # Testbild und Bildschirm schlafen nach so vielen s ohne Maus / Taste
+CONTROLLER_KNOPF="${CONTROLLER_KNOPF:-aus}"   # kleiner Knopf «Controller koppeln» in einer Ecke (ab Werk aus = keiner)
 # shellcheck source=/dev/null
 [ -r /etc/moveeye-kiosk-test.conf ] && . /etc/moveeye-kiosk-test.conf
 [ -z "$FORTSCHRITT_DATEI" ] && [ -n "$PAUSE_DATEI" ] && FORTSCHRITT_DATEI="$(dirname "$PAUSE_DATEI")/fortschritt.json"
@@ -221,10 +227,19 @@ kiosk_teil() {
 	export XDG_CURRENT_DESKTOP=MoveEye-Kiosk XDG_SESSION_DESKTOP=moveeye-kiosk DESKTOP_SESSION=moveeye-kiosk
 	rm -f "$FLAG"
 	"$LIB/kiosk_sitzung.sh" schleife &
-	local sp=$! t0 n=0 wp=0
+	local sp=$! t0 n=0 wp=0 ep=0
 	if [ -r "$WACHE" ]; then "$LIB/kiosk_sitzung.sh" wache & wp=$!; fi
-	# shellcheck disable=SC2064   # sp, wp jetzt einsetzen
-	trap "kill -TERM $sp $wp 2>/dev/null; sim_stoppen; exit 0" TERM HUP INT
+	# kleiner Knopf «Controller koppeln» in der Ecke (zeigt sich nur ohne Controller und ohne Testlauf)
+	case "$CONTROLLER_KNOPF" in
+		unten-rechts|unten-links|oben-rechts|oben-links)
+			if [ -r "$KOPPELN" ] && [ -n "$SPIEL_DATEI" ] && python3 -c 'import tkinter' 2>/dev/null; then
+				python3 -I "$KOPPELN" --ecke "$CONTROLLER_KNOPF" --pause "$PAUSE_DATEI" \
+					--wunsch "$(dirname "$SPIEL_DATEI")/controller_koppeln" >> "$LOGDIR/controller.log" 2>&1 &
+				ep=$!
+			fi ;;
+	esac
+	# shellcheck disable=SC2064   # sp, wp, ep jetzt einsetzen
+	trap "kill -TERM $sp $wp $([ $ep -gt 0 ] && echo $ep) 2>/dev/null; sim_stoppen; exit 0" TERM HUP INT
 	if command -v openbox >/dev/null 2>&1; then
 		while :; do
 			t0=$(date +%s)
@@ -245,6 +260,7 @@ kiosk_teil() {
 	fi
 	kill -TERM "$sp" 2>/dev/null
 	[ "$wp" -gt 0 ] && kill -TERM "$wp" 2>/dev/null
+	[ "$ep" -gt 0 ] && kill -TERM "$ep" 2>/dev/null
 	wait "$sp" 2>/dev/null
 	sim_stoppen
 	trap - TERM HUP INT
