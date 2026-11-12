@@ -252,6 +252,7 @@ ALM_KNOTS = {
         (-40, 96), (40, 96), (84, 96), (124, 96), (160, 98), (186, 86), (196, 62), (184, 38), (158, 28), (134, 40), (118, 68), (100, 98),
         (84, 124), (60, 136), (38, 124), (32, 100), (40, 76), (64, 60), (100, 56), (140, 60), (180, 64), (224, 62)]]}],
         "lab": ((4, 90, "feste Leine"), (260, 112, ">loses Ende", 240, 102, 248, 76)),
+        "det": (5, None),
         "claims": {0: ((4, "o", "über"),), 1: ((5, "u", "hinter"),), 2: ((6, "o", "Von vorn"), (7, "u", "hinten"))},
         "steps": (({0: 12.5}, "Eine Schlaufe legen: das Ende über die feste Leine führen."),
                   ({0: 17.4}, "Unten herum und hinter der festen Leine wieder nach oben."),
@@ -282,7 +283,7 @@ ALM_KNOTS = {
         (120, 128), (156, 82), (167, 78), (156, 84), (120, 89), (84, 94), (73, 100), (84, 99), (120, 103), (156, 107), (200, 111), (228, 113)]}],
         "under": '<rect class="kp" x="84" y="6" width="72" height="224" rx="8"/>',
         "lab": ((4, 146, "feste Leine"), (236, 100, ">loses Ende"), (120, 24, "^Pfosten")),
-        "lock": ((0, 7, 8),),
+        "lock": ((0, 6, 7, 8),),
         "claims": {0: ((1, "v", "vorn"), (2, "h", "hinten")), 1: ((3, "o", "über"), (6, "h", "hinten")), 2: ((8, "u", "unter"),)},
         "steps": (({0: 9.7}, "Das Seil vorn über den Pfosten legen und hinten herum zurückführen."),
                   ({0: 17.7}, "Schräg nach oben über die erste Windung kreuzen und noch einmal hinten herum."),
@@ -294,7 +295,7 @@ ALM_KNOTS = {
         (62, 84), (64, 62), (67, 42), (73, 31), (79, 42), (81, 62), (83, 84), (85, 104), (86, 126)]}],
         "under": '<circle class="kp" cx="214" cy="88" r="7"/>',
         "lab": ((4, 52, "zum Zelt"), (214, 160, "^Hering"), (40, 148, "loses Ende", 78, 140, 84, 130)),
-        "lock": ((0, 14, 15),),
+        "lock": ((0, 13, 14, 15),), "same": ((0, (7, 9, 13)),), "det": (15, None),
         "claims": {0: ((7, "o", "vorn"), (8, "u", "hinten")), 2: ((11, "o", "Über"), (13, "o", "vorn"), (14, "u", "hinten"), (15, "o", "nach vorn"))},
         "steps": (({0: 20.3}, "Um den Hering herum und zurück. Dann das Ende einmal um die gespannte Leine wickeln: vorn hinauf, hinten hinunter."),
                   ({0: 27.3}, "Eine zweite Windung daneben, auf der Seite zum Hering (innen in der Schlinge)."),
@@ -310,7 +311,7 @@ ALM_KNOTS = {
         "under": '<path class="kq" d="M72 8h24M84 8v8"/><circle class="kq" cx="100" cy="304" r="9"/><path class="kq" d="M100 313v15M82 328h36"/>',
         "over": '<ellipse class="kb" cx="85" cy="97" rx="13" ry="11"/>',
         "lab": ((100, 16, "fester Punkt"), (96, 80, "Schlaufenknoten"), (174, 134, "Schlaufe"), (124, 332, "Öse / Haken"), (166, 192, "ziehen"), (166, 294, "loses Ende")),
-        "lock": ((0, 8, 9), (0, 12, 13)),
+        "lock": ((0, 7, 8, 9), (0, 11, 12, 13)), "same": ((0, (7, 11)),), "det": (9, (0,)),
         "claims": {1: ((4, "u", "von hinten"),), 2: ((7, "o", "vorn"), (7, "o", "über"), (8, "u", "hinten"))},
         "steps": (({0: 5.2}, "Die Leine oben festmachen. Auf halber Höhe eine feste Schlaufe in die Leine knoten – zum Beispiel einen Achterknoten mit der doppelt gelegten Leine (hier als Knoten-Punkt gezeichnet)."),
                   ({0: 17.6}, "Das Ende unten durch die Öse, hinauf, von hinten durch die Schlaufe und nach unten ziehen. Die drei Stränge wirken wie ein Flaschenzug."),
@@ -318,6 +319,7 @@ ALM_KNOTS = {
                   (None, "Einen zweiten halben Schlag darunter, gleich herum: wieder durch die entstandene Schlaufe. Festziehen."))},
 }
 ALM_KNOTS["zimmermann"] = _alm_zimmer()
+ALM_KNOTS["zimmermann"]["det"] = (11, None)              # not derived from a table: the value of this drawing, kept so that it cannot change unnoticed
 ALM_KNOTS["zimmermann"]["claims"] = {1: ((8, "u", "hinter"), (9, "o", "vorn"))}
 ALM_KNOTS["zimmermann"]["steps"] = (
     ({0: ALM_KNOTS["zimmermann"]["n_loop"] - 1.4}, "Das Seil einmal um den Stamm legen."),
@@ -331,49 +333,109 @@ ALM_KNOTS["prusik"] = dict(_alm_prusik(2), steps=(
     (2, "Noch einmal herum und wieder durch die eigene Schlinge; die neuen Windungen liegen innen. Sauber nebeneinander legen und festziehen. Für mehr Halt eine dritte Runde.")))
 
 
+def _alm_knot_events(K, G, si):
+    """the letters of strand si in the order of the sequence: [(position, crossing index or None for the post, side 0 / 1)]"""
+    ev = [(x["a"][1], xi, 0) for xi, x in enumerate(G["X"]) if x["a"][0] == si] + [(x["b"][1], xi, 1) for xi, x in enumerate(G["X"]) if x["b"][0] == si]
+    pole, A = K.get("pole"), G["S"][si]
+    if pole:
+        for k in range(len(A) - 1):
+            r = _alm_seg_x(A[k], A[k + 1], (pole[0], pole[1]), (pole[0], pole[2]))
+            if r:
+                ev.append((k + r[0], None, None))
+    ev.sort(key=lambda e: e[0])
+    return ev
+
+
 def alm_knot_locks(K):
-    """Does every half hitch of the knot lock? K["lock"] = [(strand, i, j)]: letter i of the sequence is the last pass of the end
-    round the standing part / post, letter j is the crossing with its own rope right after. A half hitch holds only when the end
-    goes THROUGH the loop it has just laid: it changes the side between the two (behind the line, then over its own rope - or in
-    front of the post, then under its own rope). The same side twice is a plain turn that slips. Checked on the drawing:
-    letter j must be a crossing of the rope with an EARLIER part of the same rope, letter i a crossing with something else
-    (the standing part, another strand, the post). -> list of problems (empty = every hitch locks)"""
+    """Does every half hitch of the knot lock? Checked on the drawing, not only on the letters.
+    K["lock"] = [(strand, h, i, j)], three letters of the sequence in a row:
+      h, i  the two passes of the end round the standing part / post - they must be the SAME thing (the same stretch of rope, or
+            the post) on opposite sides (once in front, once behind): otherwise the end does not go round it at all;
+      j     the crossing with an EARLIER part of its own rope right after - on the other side than i: the end goes THROUGH the
+            loop it has just laid (behind the line, then over its own rope - or in front of the post, then under its own
+            rope). The same side twice is a plain turn that slips.
+    K["same"] = [(strand, (letters))]: front passes of several turns round the same line that must run the same way round
+            (same letter, same direction of travel across the line) - a taut-line hitch with the last hitch the other way
+            round is another knot (ABOK 1857).
+    -> list of problems (empty = every hitch locks)"""
     G = alm_knot_geo(K)
     if G["err"]:
         return list(G["err"])
     out = []
-    for si, i, j in K.get("lock", ()):
-        ev = [(x["a"][1], xi, 0) for xi, x in enumerate(G["X"]) if x["a"][0] == si] + [(x["b"][1], xi, 1) for xi, x in enumerate(G["X"]) if x["b"][0] == si]
-        seq = K["s"][si]["seq"]
-        pole = K.get("pole")
-        A = G["S"][si]
-        if pole:                                           # the passes of the post, in the same order as in alm_knot_geo
-            for k in range(len(A) - 1):
-                r = _alm_seg_x(A[k], A[k + 1], (pole[0], pole[1]), (pole[0], pole[2]))
-                if r:
-                    ev.append((k + r[0], None, None))
-        ev.sort(key=lambda e: e[0])
-        if j != i + 1 or j >= len(ev) or len(ev) != len(seq):
-            out.append("lock %s: not two letters in a row of the sequence" % ((si, i, j),)); continue
-        side = {"o": 1, "v": 1, "u": 0, "h": 0}
-        xj = ev[j][1]
-        if xj is None:
-            out.append("lock %s: letter %d is the post, not the own rope" % ((si, i, j), j)); continue
-        x = G["X"][xj]
-        other = x["b"] if ev[j][2] == 0 else x["a"]
-        if other[0] != si and len(K["s"]) > 1 and K["s"][other[0]].get("seq") and not K.get("lock_other"):
-            out.append("lock %s: letter %d crosses another rope" % ((si, i, j), j)); continue
-        if other[0] == si and not other[1] < ev[j][0]:
-            out.append("lock %s: letter %d does not cross an earlier part of the rope" % ((si, i, j), j)); continue
-        if ev[i][1] is not None:
-            xi_ = G["X"][ev[i][1]]
-            o2 = xi_["b"] if ev[i][2] == 0 else xi_["a"]
-            if o2[0] == si and abs(o2[1] - other[1]) < 14 * 1.5:     # the same stretch of rope as the tuck: no standing part between
-                out.append("lock %s: letter %d is not a pass round the standing part" % ((si, i, j), i)); continue
+    side = {"o": 1, "v": 1, "u": 0, "h": 0}
+
+    def other(si, e):                                      # (strand, position) of what the letter crosses; None = the post
+        if e[1] is None:
+            return None
+        x = G["X"][e[1]]
+        return x["b"] if e[2] == 0 else x["a"]
+    for si, h, i, j in K.get("lock", ()):
+        ev, seq, name = _alm_knot_events(K, G, si), K["s"][si]["seq"], "lock %s" % ((si, h, i, j),)
+        if not (h + 1 == i and i + 1 == j and j < len(ev) and len(ev) == len(seq)):
+            out.append(name + ": not three letters in a row of the sequence"); continue
+        oh, oi, oj = other(si, ev[h]), other(si, ev[i]), other(si, ev[j])
+        if oj is None or oj[0] != si or not oj[1] < ev[h][0]:
+            out.append(name + ": the third letter is not a crossing with an earlier part of the own rope"); continue
+        if (oh is None) != (oi is None) or (oh is not None and (oh[0] != oi[0] or abs(oh[1] - oi[1]) > 28 or abs(oh[1] - oj[1]) < 28)):
+            out.append(name + ": the first two letters are not two passes of the same standing part"); continue
+        if side[seq[h]] == side[seq[i]]:
+            out.append("%s: both passes are %s the standing part - the end does not go round it" % (K.get("name", "?"), "in front of" if side[seq[i]] else "behind")); continue
         if side[seq[i]] == side[seq[j]]:
             out.append("%s: the end passes %s the standing part and %s its own rope - a plain turn, no half hitch"
                        % (K.get("name", "?"), "over" if side[seq[i]] else "behind", "over" if side[seq[j]] else "behind"))
+    for si, idx in K.get("same", ()):
+        ev, seq, A = _alm_knot_events(K, G, si), K["s"][si]["seq"], G["S"][si]
+        way = []
+        for k in idx:
+            o = other(si, ev[k])
+            if o is None:
+                out.append("same %s: letter %d is the post" % ((si, idx), k)); break
+            B = G["S"][o[0]]
+            a, b = min(int(ev[k][0]), len(A) - 2), min(int(o[1]), len(B) - 2)
+            cr = (A[a + 1][0] - A[a][0]) * (B[b + 1][1] - B[b][1]) - (A[a + 1][1] - A[a][1]) * (B[b + 1][0] - B[b][0])
+            way.append((seq[k], cr > 0))
+        if len(set(way)) > 1:
+            out.append("%s: the turns do not run the same way round %s" % (K.get("name", "?"), way))
     return out
+
+
+def alm_knot_det(K, strands=None):
+    """The knot determinant of the drawing (|Alexander polynomial at -1|, from the colouring matrix of the crossings), with the two
+    ends of every counted strand joined far outside - only meaningful when both ends lie on the outside of the drawing (not the
+    Palstek: its end lies inside the loop) and nothing but rope takes part (not the knots round a post). strands: which strands
+    count (the Fuhrmannsknoten: the rope alone, without the drawn eye of the loop knot). Unknot 1, figure-eight 5."""
+    from fractions import Fraction
+    G = alm_knot_geo(K)
+    if G["err"]:
+        return None
+    X = [x for x in G["X"] if strands is None or (x["a"][0] in strands and x["b"][0] in strands)]
+    n, into, out, over = 0, {}, {}, {}
+    for si in sorted({x["a"][0] for x in X} | {x["b"][0] for x in X}):
+        vis = sorted([(x["a"][1], i, 0) for i, x in enumerate(X) if x["a"][0] == si] + [(x["b"][1], i, 1) for i, x in enumerate(X) if x["b"][0] == si])
+        k = max(1, sum(1 for v in vis if X[v[1]]["over"] != v[2])); cur = 0
+        for _pos, xi, sd in vis:
+            if X[xi]["over"] == sd:
+                over[xi] = n + cur % k
+            else:
+                into[xi] = n + cur % k; cur += 1; out[xi] = n + cur % k
+        n += k
+    if n < 2 or len(X) < n - 1:
+        return 1 if n < 2 else None
+    M = [[Fraction(0)] * n for _ in X]
+    for xi in range(len(X)):
+        M[xi][over[xi]] += 2; M[xi][into[xi]] -= 1; M[xi][out[xi]] -= 1
+    M = [r[:-1] for r in M[:n - 1]]
+    d = Fraction(1)
+    for c in range(len(M)):
+        p_ = next((r for r in range(c, len(M)) if M[r][c] != 0), None)
+        if p_ is None:
+            return 0
+        M[c], M[p_] = M[p_], M[c]
+        d *= M[c][c]
+        for r in range(c + 1, len(M)):
+            f = M[r][c] / M[c][c]
+            M[r] = [a - f * b for a, b in zip(M[r], M[c])]
+    return abs(int(d))
 
 
 def alm_knot_steps(key):
@@ -624,7 +686,7 @@ def alm_wetter(now=None):
 # (light after an alarm, deterrence strobe) and the pause always go first, the infrared light is never touched, at most
 # 2 flashes a second (flashing light, like the disco light). A push tells the Besitzer who started it (never a Wi-Fi name).
 ALM_SOS = {"on": False, "t0": 0.0, "until": 0.0, "by": "", "starts": [], "dauer": 300.0, "max": 1, "unit": 0.25, "pushes": [],
-           "flash_t": 0.0, "base": None}        # flash_t: the last time the lamp really flashed for SOS; base: what the light would be without SOS
+           "flash_t": 0.0, "base": None, "lamp": False, "lamp_t": 0.0}        # flash_t: the last time the lamp really flashed for SOS; base: what the light would be without SOS
 _ALM_SOS_PAT = [1, 1, 1, 1, 1, 3, 3, 1, 3, 1, 3, 3, 1, 1, 1, 1, 1, 7]     # on / off alternating, in units: S, O, S, pause
 
 
@@ -731,6 +793,8 @@ def lights_tick():                                        # + 639zzt: SOS with t
         elif alm_sos_lamp() and not _alm_sos_blocked(now):
             ALM_SOS["base"] = bool(res.get("white"))        # what the lamp does again the moment SOS ends (on, auto, disco ...)
             res["white"] = alm_sos_phase(now - ALM_SOS["t0"])
+            if res["white"] != ALM_SOS.get("lamp"):
+                ALM_SOS["lamp"], ALM_SOS["lamp_t"] = res["white"], now
             ALM_SOS["flash_t"] = now
             STATE["lights"] = dict(STATE.get("lights") or {}, white=res["white"], sos=True)
     return res
@@ -785,19 +849,77 @@ def _alm_lowlight(self, bright, t0):
     return _alm_lowlight_410(self, bright, t0)
 
 
+# The sabotage guard (060) keeps running during SOS. Only this: while the lamp flashes in the dark it gets no picture taken with
+# the lamp on or within ALM_SOS_SETTLE_S after a switch - it sees the same dark scene as before and after the SOS, and it can
+# never learn its reference from a lit picture (three dark pictures after that would read as «covered»). A skipped picture is
+# simply not handed over; the guard takes the next one (it wants one a second, the gaps of the SOS pattern are up to 1.75 s).
+ALM_SOS_SETTLE_S = 0.3
+_alm_tamper_feed_060 = TamperGuard.feed
+
+
+def alm_sos_lamp_lit(now=None):
+    """True while a picture may show the SOS lamp: it is on, or it has switched a moment ago (SOS running, in the dark)"""
+    now = time.time() if now is None else now
+    if not ALM_SOS["on"] or now - float(ALM_SOS.get("flash_t") or 0.0) > 1.0 or not alm_sos_dark():
+        return False
+    return bool(ALM_SOS.get("lamp")) or now - float(ALM_SOS.get("lamp_t") or 0.0) < ALM_SOS_SETTLE_S
+
+
+def _alm_tamper_feed(self, small, t0):
+    if alm_sos_lamp_lit():
+        return None                                        # not this picture - the next dark one
+    return _alm_tamper_feed_060(self, small, t0)
+
+
+# wraps: TamperGuard.feed
+TamperGuard.feed = _alm_tamper_feed
 # wraps: MotionWatch.foreground
 MotionWatch.foreground = _alm_foreground
 # wraps: MotionWatch._lowlight_decide
 MotionWatch._lowlight_decide = _alm_lowlight
 
 
-def alm_fern(request):
-    """True when the request comes from outside the Wi-Fi (Tailscale, a tunnel / reverse proxy): no stored location and no SOS
-    start there without a trusted device"""
+_ALM_LOCAL_NETS = [ipaddress.ip_network(n) for n in ("10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "169.254.0.0/16", "127.0.0.0/8",
+                                                     "fc00::/7", "fe80::/10", "::1/128")]
+ALM_FERN_HEADERS = ("X-Forwarded-For", "X-Forwarded-Host", "X-Forwarded-Proto", "Forwarded", "X-Real-IP", "CF-Connecting-IP", "CF-Ray",
+                    "True-Client-IP", "Via", "Tailscale-User-Login", "Tailscale-User-Name")
+
+
+def alm_addr_local(ip):
+    """True only for an address of the own network: private IPv4 (RFC 1918), link-local, loopback, IPv6 ULA / link-local / ::1,
+    also as IPv4-mapped IPv6. Tailscale (100.64.0.0/10, fd7a:115c:a1e0::/48) and every public address are NOT local."""
     try:
-        host = (request.host or "").rsplit(":", 1)[0].strip("[]").lower()
-        return bool(is_remote_ip(request.remote_addr or "") or request.headers.get("X-Forwarded-For") or request.headers.get("X-Forwarded-Host")
-                    or is_remote_ip(host) or host.endswith(".ts.net"))
+        a = ipaddress.ip_address((ip or "").split("%")[0])
+        if getattr(a, "ipv4_mapped", None):
+            a = a.ipv4_mapped
+    except ValueError:
+        return False
+    if is_remote_ip(str(a)):
+        return False
+    return any(a.version == n.version and a in n for n in _ALM_LOCAL_NETS)
+
+
+def alm_fern(request):
+    """True when the request does not provably come from the own Wi-Fi / LAN: no stored location and no SOS start there without a
+    trusted device. Local is ONLY: a local address of the sender AND no header of a proxy / tunnel AND a host name that is not a
+    name for the outside (*.ts.net, a tunnel, the public address of the settings). Everything else counts as outside.
+    (MoveEye has no shared «local or remote» function: 090 is_remote_ip knows Tailscale only, the login of 550 does not ask.)"""
+    try:
+        if not alm_addr_local(request.remote_addr or ""):
+            return True
+        if any(request.headers.get(h) for h in ALM_FERN_HEADERS):
+            return True
+        raw = (request.host or "").strip().lower()
+        host = raw[1:].split("]")[0] if raw.startswith("[") else raw.rsplit(":", 1)[0]
+        if host.endswith((".ts.net", ".trycloudflare.com", ".ngrok.io", ".ngrok-free.app", ".loca.lt")):
+            return True
+        pu = (CFG.get("public_url") or "").strip().lower()
+        if pu and host and host == (urllib.parse.urlparse(pu).hostname or ""):
+            return True
+        try:
+            return not alm_addr_local(str(ipaddress.ip_address(host)))     # an address as host name: only a local one
+        except ValueError:
+            return False                                   # a name inside the network (moveeye.local, the name of the Pi)
     except Exception:
         return True
 
@@ -914,6 +1036,8 @@ def alm_selftest():
     assert alm_knot_geo(dict(ALM_KNOTS["achter"], s=[dict(ALM_KNOTS["achter"]["s"][0], seq="uouououu")]))["err"], "a wrong sequence is found"
     for key, K in ALM_KNOTS.items():
         assert not alm_knot_locks(K), (key, alm_knot_locks(K))
+        if "det" in K:
+            assert alm_knot_det(K, K["det"][1]) == K["det"][0], (key, alm_knot_det(K, K["det"][1]), K["det"])
     bad = dict(ALM_KNOTS["spann"], s=[dict(ALM_KNOTS["spann"]["s"][0], seq="uououo" + "u" + "ouou" + "oo" + "ou" + "u")])
     assert alm_knot_locks(bad) and "plain turn" in alm_knot_locks(bad)[0], "three plain turns are no taut-line hitch"
     bad = dict(ALM_KNOTS["trucker"], s=[dict(ALM_KNOTS["trucker"]["s"][0], seq="uououooouuoouu"), ALM_KNOTS["trucker"]["s"][1]])

@@ -163,7 +163,32 @@ def teil_a(datei):
     ok(not ns["alm_knot_geo"](alt)["err"] and len(locks(alt)) == 2, f"alter Fuhrmannsknoten (zwei glatte Windungen) fällt durch: {locks(alt)}")
     alt = dict(KNOTS["mastwurf"], s=[dict(KNOTS["mastwurf"]["s"][0], seq="uvhovuhvo")])
     ok(not ns["alm_knot_geo"](alt)["err"] and len(locks(alt)) == 1, f"Mastwurf mit dem Ende über der Schräge fällt durch: {locks(alt)}")
-    ok(locks(dict(KNOTS["spann"], lock=((0, 13, 15),))) and locks(dict(KNOTS["spann"], lock=((0, 13, 14),))), "die Prüfung nimmt nur «um die Leine, dann über das eigene Seil»")
+    ok(locks(dict(KNOTS["spann"], lock=((0, 12, 13, 15),))) and locks(dict(KNOTS["spann"], lock=((0, 12, 13, 14),))), "die Prüfung nimmt nur «zweimal um die Leine, dann über das eigene Seil»")
+
+    def gekippt(K, *idx):
+        """derselbe Knoten mit umgedrehten Kreuzungen (Buchstabe idx des Seils und sein Gegenstück)"""
+        G = ns["alm_knot_geo"](K); ev = ns["_alm_knot_events"](K, G, 0); seq = list(K["s"][0]["seq"]); andere = [list(x["seq"]) for x in K["s"]]
+        andere[0] = seq
+        for i in idx:
+            x = G["X"][ev[i][1]]
+            for (st, pos) in (x["a"], x["b"]):
+                evs = ns["_alm_knot_events"](K, G, st)
+                k = next(n for n, e in enumerate(evs) if e[1] == ev[i][1] and abs(e[0] - pos) < 1e-9)
+                andere[st][k] = "u" if andere[st][k] == "o" else "o"
+        return dict(K, s=[dict(x, seq="".join(a)) for x, a in zip(K["s"], andere)])
+    det = ns["alm_knot_det"]
+    ok((det(KNOTS["achter"]), det(KNOTS["spann"]), det(KNOTS["trucker"], (0,)), det(KNOTS["zimmermann"])) == (5, 15, 9, 11), "Knoten-Determinanten: Achter 5, Spannknoten 15, Fuhrmannsknoten 9 (Zimmermannsschlag 11 als fester Wert der Zeichnung)")
+    ok(all("det" in KNOTS[k] for k in ("achter", "spann", "trucker", "zimmermann")) and "det" not in KNOTS["palstek"] and "det" not in KNOTS["mastwurf"], "Determinante nur, wo beide Enden aussen liegen und kein Pfosten mitspielt")
+    v = gekippt(KNOTS["trucker"], 7, 11)                   # Prüfer: das Ende läuft beide Male ganz hinter dem gespannten Strang durch
+    ok(not ns["alm_knot_geo"](v)["err"] and len(locks(v)) == 2 and all("does not go round" in x for x in locks(v)) and det(v, (0,)) != 9,
+       f"Fuhrmannsknoten, dessen halbe Schläge nicht um den Strang gehen, fällt durch: {locks(v)} det {det(v, (0,))}")
+    v = gekippt(KNOTS["spann"], 13, 14, 15)                # Prüfer: der letzte halbe Schlag andersherum (ABOK 1857)
+    ok(not ns["alm_knot_geo"](v)["err"] and any("same way round" in x for x in locks(v)),
+       f"Spannknoten mit dem letzten Schlag andersherum (ABOK 1857) fällt durch die Richtungs-Prüfung (die Determinante bleibt {det(v)}): {locks(v)}")
+    v = gekippt(KNOTS["spann"], 15)
+    ok(det(v) != 15 and locks(v), f"Spannknoten ohne Sperre (alte Zeichnung): Determinante {det(v)} statt 15")
+    v = gekippt(KNOTS["achter"], 4)
+    ok(det(v) != 5, f"eine einzige falsche Kreuzung im Achterknoten ändert die Determinante ({det(v)})")
     # ---- Bildunterschriften: «über / unter», «vor / hinter» stimmen mit der Kreuzungsfolge des Schritts
     seite = {"über": "ov", "vorn": "ov", "von vorn": "ov", "nach vorn": "ov", "unter": "uh", "von unten": "uh", "hinter": "uh", "hinten": "uh", "von hinten": "uh"}
     n_claims = 0
@@ -363,15 +388,30 @@ def teil_a(datei):
        f"im WLAN: Standort für alle; kein CORS-Kopf {dict(r.headers)}")
     r = c.get("/almanach/live?w=ort", headers={"Origin": "http://boese.example"})
     ok("Access-Control-Allow-Origin" not in r.headers, "fremde Webseite: die Antwort ist für sie nicht lesbar (kein CORS)")
-    for fern in ({"X-Forwarded-For": "8.8.8.8"}, {"Host": "moveeye.tail1234.ts.net"}, {"X-Forwarded-Host": "x.example"}):
+    for fern in ({"X-Forwarded-For": "8.8.8.8"}, {"Host": "moveeye.tail1234.ts.net"}, {"X-Forwarded-Host": "x.example"}, {"Forwarded": "for=8.8.8.8"}, {"X-Real-IP": "8.8.8.8"},
+                 {"CF-Connecting-IP": "8.8.8.8"}, {"Via": "1.1 proxy"}, {"Host": "abc.trycloudflare.com"}, {"Host": "203.0.113.9:5000"}, {"Host": "[2001:db8::1]:5000"}):
         j = c.get("/almanach/live?w=ort", headers=fern).get_json()
         ok(j["ort"] == {"ok": False, "fern": True}, f"von aussen {fern}: kein Standort ohne angemeldetes Gerät")
         SOS["starts"].clear()
         r = c.post("/almanach/sos", json={"action": "start"}, headers=fern)
         ok(r.status_code == 403 and not SOS["on"], f"von aussen {fern}: kein SOS-Start als Gast")
     ok(c.get("/almanach/live?w=ort", headers=dict(keks, **{"X-Forwarded-For": "8.8.8.8"})).get_json()["ort"]["ok"], "von aussen mit angemeldetem Gerät: Standort da")
-    r = c.get("/almanach/live?w=ort", environ_base={"REMOTE_ADDR": "100.100.1.2"})
-    ok(r.get_json()["ort"] == {"ok": False, "fern": True}, "Tailscale-Adresse ist «von aussen»")
+    for adr, lokal in (("100.100.1.2", False), ("fd7a:115c:a1e0::5", False), ("8.8.8.8", False), ("203.0.113.9", False), ("2001:db8::7", False), ("2a02:1210::1", False),
+                       ("::ffff:8.8.8.8", False), ("172.32.0.1", False), ("192.168.1.20", True), ("10.3.2.1", True), ("172.20.1.1", True), ("169.254.3.4", True),
+                       ("127.0.0.1", True), ("::1", True), ("fd12:3456::9", True), ("fe80::1%wlan0", True), ("::ffff:192.168.1.20", True), ("", False), ("unsinn", False)):
+        ok(ns["alm_addr_local"](adr) is lokal, f"Adresse {adr!r}: lokal = {lokal}")
+        if adr and adr != "unsinn":
+            j = c.get("/almanach/live?w=ort", environ_base={"REMOTE_ADDR": adr}).get_json()
+            ok(bool(j["ort"].get("ok")) is lokal and bool(j["ort"].get("fern")) is (not lokal), f"Absender {adr}: Standort nur lokal ({j['ort']})")
+            SOS["starts"].clear(); SOS["on"] = False
+            r = c.post("/almanach/sos", json={"action": "start"}, environ_base={"REMOTE_ADDR": adr})
+            ok(r.status_code == (200 if lokal else 403) and SOS["on"] is lokal, f"Absender {adr}: SOS-Start als Gast nur lokal ({r.status_code})")
+            ok(c.post("/almanach/sos", json={"action": "stop"}, environ_base={"REMOTE_ADDR": adr}).status_code == 200 and not SOS["on"], f"Absender {adr}: Stopp geht immer")
+    ok(c.get("/almanach/live?w=ort", environ_base={"REMOTE_ADDR": "8.8.8.8"}, headers=keks).get_json()["ort"]["ok"], "angemeldetes Gerät: Standort von überall")
+    CFG["public_url"] = "https://camp.example.org"
+    ok(c.get("/almanach/live?w=ort", headers={"Host": "camp.example.org"}).get_json()["ort"].get("fern") and c.get("/almanach/live?w=ort", headers={"Host": "moveeye.local:5000"}).get_json()["ort"]["ok"],
+       "die öffentliche Adresse aus den Einstellungen ist «aussen», der Name im Netz nicht")
+    CFG["public_url"] = ""
     SOS["starts"].clear()
     CFG["light_white"] = "off"
     ok(CFG["light_white"] == "off" and CFG["light_white_out"] == "gpio:17", "SOS ändert keine Einstellung")
@@ -427,8 +467,9 @@ def teil_sos_bild(ns, c, sos):
     ns["_alm_lowlight_410"] = lambda self, *a: gerufen.append("ll") or "ll"
     MW, TG = ns["MotionWatch"], ns["TamperGuard"]
     quelle = open(os.path.join(REPO, "quelle", "639zzt_almanach_plus.py"), encoding="utf-8").read()
-    ok("TamperGuard.feed =" not in quelle and "_alm_tamper" not in quelle and 'mt["bg_reset"]' not in quelle.split("def _alm_foreground")[1].split("def alm_fern")[0],
+    ok('mt["bg_reset"]' not in quelle.split("def _alm_foreground")[1].split("def alm_fern")[0],
        "SOS fasst den Sabotage-Schutz nicht an und sperrt den Kopf nicht (kein bg_reset)")
+    ok("TamperGuard.feed = _alm_tamper_feed" in quelle and "return _alm_tamper_feed_060(self, small, t0)" in quelle and "self." not in quelle.split("def _alm_tamper_feed")[1].split("# wraps")[0], "kleinster Haken: der Sabotage-Schutz bekommt ein Bild oder bekommt es nicht")
     k.ai = Kopf(); k.ai.prof_motion_t = 0.0
     dunkel0 = ns["is_dark"]
     nacht = {"an": True}
@@ -468,6 +509,45 @@ def teil_sos_bild(ns, c, sos):
             ok(aus == [0, 0, 0, 0, 0] and k.color_bg is None and not gerufen, f"Blinken gibt keine Bewegung ({aus})")
             ok(k.mt == {"bg_reset": 5.0} and k.ai.prof_motion_t > 1.0, "der Kopf darf weiter auf einen warmen Fleck drehen (kein bg_reset); die KI schaut bei jedem Bild hin, auch im Profil «Nacht»")
             ok(MW._lowlight_decide(k, 200.0, 5.0) is True and not gerufen, "der Nachtmodus bleibt, wie er war")
+            # ---- Sabotage-Schutz während SOS: nur dunkle Bilder, nie ein Bezugsbild mit Lampe; Verdecken wird weiter erkannt
+            rs = np.random.RandomState(3)
+            szene = np.clip(50 + 22 * rs.randn(120, 160), 0, 255).astype(np.uint8)        # the night picture: mean 50, with texture
+            szene = cv2.GaussianBlur(szene, (0, 0), 3); szene = cv2.normalize(szene, None, 15, 95, cv2.NORM_MINMAX)
+            mit_lampe = szene.copy(); mit_lampe[70:, :] = np.clip(mit_lampe[70:, :].astype(int) + 120, 0, 255).astype(np.uint8)
+            zu = np.full((120, 160), 5, np.uint8)
+            g = object.__new__(TG); g.t_last = 0.0; g.pos = (round(CFG["pan"], 1), round(CFG["tilt"], 1)); g.settle = 0.0; g.ref = None; g.n_cov = g.n_mov = 0
+            alarme = []
+            g.alarm = lambda was: alarme.append(was)
+            STATE["tamper"] = {"sensor": False, "last": "", "state": "learning"}; STATE["persons"] = 0
+            feed0 = ns["_alm_tamper_feed_060"]
+            gesehen = []
+            ns["_alm_tamper_feed_060"] = lambda self, small, t: gesehen.append(int(small.mean())) or feed0(self, small, t)
+
+            def takt(i, bild_an, bild_aus, n=1):
+                """ein Zeitpunkt des SOS-Musters: Lampe schalten (lights_tick), dann das Bild, das die Kamera dann sieht"""
+                ns["time"].time = lambda: t0 + 8.5 + i * 0.25 + 0.02
+                an = ns["lights_tick"]()["white"]
+                TG.feed(g, bild_an if an else bild_aus, 1000.0 + i * 2.0)
+                return an
+            an = [takt(i, mit_lampe, szene) for i in range(34)]
+            ok(True in an and False in an and gesehen and max(gesehen) < 60 and len(gesehen) < an.count(False), f"der Sabotage-Schutz bekommt nur dunkle Bilder, und nicht das erste nach dem Umschalten ({len(gesehen)} von 34, hellstes {max(gesehen or [0])})")
+            ok(g.ref is not None and float(g.ref_mean) < 60 and not alarme, f"Bezugsbild im Dunkeln gelernt, kein Fehlalarm ({alarme})")
+            g.ref = None; g.pos = (-1.0, -1.0); gesehen.clear()   # the head has moved during SOS: the guard learns again - never from a lit picture
+            an = [takt(34 + i, mit_lampe, szene) for i in range(34)]
+            ok(gesehen and max(gesehen) < 60 and (g.ref is None or float(g.ref_mean) < 60) and not alarme, "nach einer Kopfbewegung während SOS: neu lernen nur aus dunklen Bildern")
+            g.settle = 0.0
+            an = [takt(68 + i, mit_lampe, szene) for i in range(34)]
+            ok(g.ref is not None and float(g.ref_mean) < 60 and not alarme, f"das neue Bezugsbild ist ein dunkles ({float(g.ref_mean):.0f}), kein «verdeckt» danach ({alarme})")
+            an = [takt(102 + i, zu, zu) for i in range(34)]       # somebody covers the lens while SOS flashes
+            ok(alarme == ["covered"], f"Verdecken während SOS wird erkannt ({alarme})")
+            ns["_alm_tamper_feed_060"] = feed0
+            ok(not ns["alm_sos_lamp_lit"](t0 + 9999) , "ohne laufendes SOS bekommt der Sabotage-Schutz jedes Bild")
+            nacht["an"] = False; STATE["lowlight"] = False
+            SOS["lamp"] = True; SOS["lamp_t"] = ns["time"].time(); SOS["flash_t"] = ns["time"].time()
+            ok(not ns["alm_sos_lamp_lit"](), "am Tag bekommt er auch während SOS jedes Bild")
+            STATE["lowlight"] = True
+            ok(ns["alm_sos_lamp_lit"](), "im Dunkeln mit Lampe an: dieses Bild nicht")
+            SOS["flash_t"] = t0 + 8.2; SOS["lamp"] = False
             code, j = sos("stop")
             ns["time"].time = lambda: t0 + 8.5
             r = ns["lights_tick"]()
