@@ -15,6 +15,8 @@
   C) --browser: Werkstatt in iPhone-Breite (390 × 844) und am PC: Karte erstellen, Liste, Druckseite; Live-Seite mit dem
      Rahmen um die Karte; Einstellungen → Kameras & Kopf → Abschnitt mit Link; keine JavaScript-Fehler.
      --bilder ORDNER: qr_karten_*.png
+  D) sofort gespeichert (3.81.0): Karte sperren / löschen, neuer Schlüssel, ausschalten - gleich danach «Strom weg»
+     (kill -9) und neu starten: gesperrt bleibt gesperrt, gelöscht bleibt weg, der neue Schlüssel gilt, aus bleibt aus.
   --messen: nur die Machbarkeits-Messung (Simulation: Postkarte 10 × 15 cm, QR 8 cm im Kamerabild 1280 × 720 mit
      Perspektive, Unschärfe, Rauschen, Dämmerung, IR-grau; Lesezeit und grösster Abstand) – dauert einige Minuten.
 
@@ -29,6 +31,7 @@ import math
 import os
 import re
 import shutil
+import signal
 import socket
 import subprocess
 import sys
@@ -662,6 +665,97 @@ def messen(ns, n=10):
                 print(f"    {cam:15s} {light:4s} " + " · ".join(f"{k}: {('bis %.1f m (%.0f ms)' % best[k]) if k in best else 'nie sicher'}" for k, _ in decs), flush=True)
 
 
+# ---------------------------------------------------------------------------------------------------------------------- D
+def teil_d(datei):
+    """3.81.0: what takes a card's right away is on the memory card at once (040 save_settings_flush) - revoke, delete, new
+    key, switch off; then «power cut» (kill -9) and a new start. Like section 11 of rechte_schutz_test.py."""
+    print("D) sperren / löschen / neuer Schlüssel / aus: sofort gespeichert (kill -9, neu starten)", flush=True)
+    tmp = tempfile.mkdtemp(prefix="mw_qrk_d_")
+    cfg = os.path.join(tmp, "mw"); os.makedirs(cfg)
+    sf = os.path.join(cfg, "motionwatch_settings.json")
+    json.dump({"cfg": {"source": "demo", "sim_on": False, "sim_url": "http://127.0.0.1:9", "sim_auto": False, "sim_autostart": False,
+                       "sim_autostart_v2": False, "sim_autoupd": False, "update_url": "", "lang": "de", "desktop_notice": False,
+                       "setup_done": True, "https_extra": False, "news_popup": False, "tours_auto": False}}, open(sf, "w"))
+    op = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+    P = {"p": None, "base": "", "log": None}
+
+    def start():
+        with socket.socket() as sk:
+            sk.bind(("127.0.0.1", 0)); port = sk.getsockname()[1]
+        P["log"] = open(os.path.join(tmp, "log.txt"), "a")
+        P["p"] = subprocess.Popen([sys.executable, datei, "--headless", "--demo", "--port", str(port), "--bind", "127.0.0.1", "--config", cfg,
+                                   "--web-password", PW], stdout=P["log"], stderr=subprocess.STDOUT, cwd=tmp)
+        P["base"] = f"http://127.0.0.1:{port}"
+        for _i in range(240):
+            if P["p"].poll() is not None:
+                sys.exit("MoveEye beendet:\n" + open(os.path.join(tmp, "log.txt"), errors="replace").read()[-3000:])
+            try:
+                op.open(P["base"] + "/manifest.webmanifest", timeout=2); break
+            except Exception:
+                time.sleep(1)
+        time.sleep(1.5)
+
+    def strom_weg():                                             # like a power cut: nothing is saved any more
+        P["p"].send_signal(signal.SIGKILL); P["p"].wait(15); P["log"].close()
+
+    def req(path, data=None):
+        h = dict(basic("admin", PW)); h["Content-Type"] = "application/json"
+        r = urllib.request.Request(P["base"] + path, data=json.dumps(data).encode() if data is not None else None, headers=h)
+        try:
+            with op.open(r, timeout=60) as x:
+                return x.status, json.loads(x.read())
+        except urllib.error.HTTPError as e:
+            return e.code, json.loads(e.read() or b"{}")
+
+    def datei_hat(f, limit=30.0):                                # wait until the settings file shows it (the usual delayed save)
+        end = time.time() + limit
+        while time.time() < end:
+            try:
+                if f(json.load(open(sf)).get("cfg", {})):
+                    return True
+            except (OSError, ValueError):
+                pass
+            time.sleep(0.5)
+        return False
+
+    def liste():
+        c, j = req("/api/qrk?lang=de")
+        return {x["name"]: x for x in j.get("cards", [])}, j
+
+    try:
+        start()
+        for nm in ("Eins", "Zwei", "Drei"):
+            req("/api/qrk", {"action": "create", "cmd": "N", "name": nm, "text": "Notiz " + nm, "lang": "de"})
+        req("/api/set", {"key": "qrk_on", "value": True})
+        ok(datei_hat(lambda c: len(c.get("qrk_cards") or []) == 3 and c.get("qrk_on") and len(c.get("qrk_secret") or "") == 64),
+           "Ausgangslage auf der Karte: drei Karten, eingeschaltet, Schlüssel")
+        C, j = liste(); fp0 = j.get("fp")
+        req("/api/qrk", {"action": "revoke", "id": C["Eins"]["id"]})
+        strom_weg(); start()
+        C, j = liste()
+        ok(C.get("Eins", {}).get("off") is True and not C["Zwei"]["off"] and len(C) == 3, "gesperrt, sofort Strom weg, neu gestartet: «Eins» bleibt gesperrt")
+        req("/api/qrk", {"action": "delete", "id": C["Zwei"]["id"]})
+        strom_weg(); start()
+        C, j = liste()
+        ok("Zwei" not in C and len(C) == 2, "gelöscht, sofort Strom weg: «Zwei» bleibt weg (%s)" % sorted(C))
+        req("/api/qrk", {"action": "rotate", "confirm": True})
+        fp1 = liste()[1].get("fp")
+        strom_weg(); start()
+        C, j = liste()
+        ok(bool(fp1) and fp1 != fp0 and j.get("fp") == fp1 and all(x["reprint"] for x in C.values()),
+           "neuer Schlüssel, sofort Strom weg: der neue Schlüssel gilt weiter, alle Karten «neu drucken»")
+        ok(j["state"]["on"] is True, "eingeschaltet geblieben (bis hier)")
+        req("/api/set", {"key": "qrk_on", "value": False})
+        strom_weg(); start()
+        ok(liste()[1]["state"]["on"] is False, "ausgeschaltet, sofort Strom weg: bleibt aus")
+    finally:
+        try:
+            P["p"].kill(); P["p"].wait(10)
+        except Exception:
+            pass
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
 def main():
     ap = argparse.ArgumentParser(description="Test «▦ QR-Befehls-Karten» (639zzp)")
     ap.add_argument("--datei", default="")
@@ -684,6 +778,7 @@ def main():
             ns_b = lade(datei, home2)                                   # a clean copy for the helpers of B (qr_png)
             teil_a(ns)
             teil_b(datei, ns_b, a.browser, a.bilder)
+            teil_d(datei)
         finally:
             shutil.rmtree(home2, ignore_errors=True)
     finally:

@@ -341,6 +341,12 @@ def qrk_create(d, who="admin"):
     return card, ""
 
 
+def qrk_save_now():
+    """what takes a card's right away is on the memory card at once (040 save_settings_flush, like arm / disarm since 3.72.0) -
+    not 2 to 15 s later: a power cut in between would bring a revoked card or the old key back"""
+    save_settings_flush()
+
+
 def qrk_edit(action, cid, who="admin"):
     """revoke / unrevoke / delete one card -> (ok, English error)"""
     with QRK["lock"]:
@@ -357,7 +363,10 @@ def qrk_edit(action, cid, who="admin"):
         else:
             return False, "unknown action"
         CFG["qrk_cards"] = lst
-    save_settings()
+    if action in ("revoke", "delete"):
+        qrk_save_now()                                       # 3.81.0: at once - a revoked / deleted card never comes back
+    else:
+        save_settings()
     log_event("sys", f"QR card {action} ({who}): «{c['name']}»")
     return True, ""
 
@@ -393,6 +402,7 @@ def qrk_rotate(who="admin"):
     with QRK["lock"]:
         CFG["qrk_secret"] = ""
         qrk_key()
+    qrk_save_now()                                           # 3.81.0: the new key at once - the old cards stay invalid after a power cut
     log_event("sys", f"QR cards: new key ({who}) - all printed cards are invalid")
     return True, ""
 
@@ -1320,6 +1330,18 @@ SET_HELP.update({
     "qrk_cooldown": ("The same card works again only after it was out of view for 3 s and this time is over.", "10 s"),
     "qrk_cpu_max": ("Above this CPU load reading pauses (back 10 % below) - the detection always comes first.", "85 %"),
 })
+_set_cfg_qrk = set_cfg
+
+
+# wraps: set_cfg
+def set_cfg(key, value):                                     # + 639zzp (3.81.0): «QR-Karten lesen» aus = sofort gespeichert
+    was = bool(CFG.get("qrk_on"))
+    r = _set_cfg_qrk(key, value)
+    if key == "qrk_on" and was and not CFG.get("qrk_on"):
+        qrk_save_now()
+    return r
+
+
 _text_choice_pairs_qrk = text_choice_pairs
 
 
@@ -1687,6 +1709,8 @@ def qrk_selftest():
     keep_q = {k: (dict(QRK[k]) if isinstance(QRK[k], dict) else QRK[k]) for k in ("seen", "show", "log_t", "last")}
     try:
         globals()["save_settings"] = lambda *a, **k: None
+        flushed = []
+        globals()["qrk_save_now"] = lambda: flushed.append(1)
         globals()["log_event"] = lambda *a, **k: None
         CFG.update(qrk_cards=[], qrk_secret="")
         card, err = qrk_create({"cmd": "L", "name": "Licht an", "light": "white", "on": True}, "selftest")
@@ -1748,8 +1772,14 @@ def qrk_selftest():
         assert '{sec: "QR command cards"' in WEB_PAGE and "window.qrkPanel" in WEB_PAGE and 'id="qrkarten"' in HELP_PAGE
         assert tr("Card workshop", "de") == "Karten-Werkstatt" and tr("Understood", "rm") == "Chapì" and tr("QR card: foreign card ignored", "de").endswith("ignoriert")
         assert "<svg" in qrk_card_svg(qrk_card(card["id"])) and qrk_card_png(qrk_card(card["id"]))[:4] == b"\x89PNG"
+        assert len(flushed) >= 4, "revoke (3×) and the new key are saved at once: %d" % len(flushed)
+        n_ = len(flushed)
+        CFG["qrk_on"] = True
+        set_cfg("qrk_on", False)
+        assert len(flushed) == n_ + 1 and not CFG["qrk_on"], "switching off is saved at once"
     finally:
         globals()["save_settings"] = sv
+        globals()["qrk_save_now"] = _qrk_save_now_real
         globals()["log_event"] = lg
         CFG.update(keep)
         for k, v in keep_q.items():
@@ -1761,4 +1791,5 @@ def qrk_selftest():
 
 
 _qrk_spawn_real = qrk_spawn
+_qrk_save_now_real = qrk_save_now
 SELFTEST_EXTRA.append(("QR command cards «▦ Karten-Werkstatt» (639zzp)", qrk_selftest))
