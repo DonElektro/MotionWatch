@@ -589,6 +589,11 @@ func _build_ui() -> void:
 	main.mehr.main = main
 	main.add_child(main.mehr)
 	main.mehr.build(box_)
+	if preload("res://scripts/hp_kiosk.gd").helper_path() != "":   # only in the kiosk of the simulator PC (kiosk_sitzung.sh): Controller koppeln, Browser, Ausschalten
+		main.hp_kiosk = preload("res://scripts/hp_kiosk.gd").new()
+		main.hp_kiosk.main = main
+		main.add_child(main.hp_kiosk)
+		main.hp_kiosk.build(box_)
 	# Kinder | Erwachsene: on top (3D-3.90); Einfach | Experte is in the bar (leiste)
 	var se: Control = main.simple_seg
 	main.kids_seg = main.UI.segment("Kinder", "Erwachsene", not main.kids_on, func(adult): main._kids_switch(adult), true)   # 3D-3.69

@@ -182,7 +182,8 @@ EOF
 schreibe "$LIB/openbox.xml" 644 <<'EOF'
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- MoveEye Kiosk: Openbox nur als schlanker Fenstermanager. Ctrl+Alt+D = normales Mint, Ctrl+Alt+R = Simulator neu,
-     Ctrl+Alt+B = Controller koppeln (Bluetooth) -->
+     Ctrl+Alt+B = Controller koppeln (Bluetooth), Ctrl+Alt+Z = vom Browser zurück zum Simulator. Der Rand oben gehört der
+     Leiste «Zurück zum Simulator» (browser_leiste.py); der Simulator im Vollbild nutzt ihn trotzdem. -->
 <openbox_config xmlns="http://openbox.org/3.4/rc">
   <focus><focusNew>yes</focusNew><followMouse>no</followMouse></focus>
   <placement><policy>Smart</policy></placement>
@@ -192,10 +193,14 @@ schreibe "$LIB/openbox.xml" 644 <<'EOF'
     <keybind key="C-A-r"><action name="Execute"><command>/usr/local/lib/moveeye-kiosk/kiosk_sitzung.sh neustart</command></action></keybind>
     <keybind key="C-A-b"><action name="Execute"><command>/usr/local/lib/moveeye-kiosk/kiosk_sitzung.sh koppeln</command></action></keybind>
     <keybind key="A-Tab"><action name="NextWindow"/></keybind>
+    <keybind key="C-A-z"><action name="Execute"><command>/usr/local/lib/moveeye-kiosk/hp_knoepfe.sh zurueck</command></action></keybind>
   </keyboard>
   <mouse><context name="Root"></context></mouse>
+  <margins><top>40</top><bottom>0</bottom><left>0</left><right>0</right></margins>
   <applications>
     <application class="*" type="normal"><decor>no</decor></application>
+    <application class="?irefox*" type="normal"><decor>no</decor><maximized>yes</maximized><focus>yes</focus></application>
+    <application class="?hromium*" type="normal"><decor>no</decor><maximized>yes</maximized><focus>yes</focus></application>
   </applications>
 </openbox_config>
 EOF

@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 7705 (Stellen: 10717)
-Übersetzt: en 7705, fr 7705, it 7705, rm 7705
-Unsicher markiert: 31
-Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 520 Stellen
+Texte gesamt: 7740 (Stellen: 10762)
+Übersetzt: en 7740, fr 7740, it 7740, rm 7740
+Unsicher markiert: 50
+Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 523 Stellen
 Nicht mehr im Code (noch in texte.json): 352
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 68 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1
-Übersprungen (Grund: Anzahl): kennung 27748, schlüssel 21100, keine Wörter 13066, index 9953, technisch 3659, doc 2417, einheit 339, log 175, englisch 143, pfad 125, stringname 103, html 68, klasse 36, shader 6
+Übersprungen (Grund: Anzahl): kennung 27789, schlüssel 21116, keine Wörter 13080, index 9963, technisch 3660, doc 2423, einheit 339, log 175, englisch 143, pfad 125, stringname 103, html 68, klasse 36, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   werkstatt_daten.gd       533     4
@@ -83,6 +83,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   maggie_welt.gd            40     0
   kitrain.gd                39     9
   gamejaeger.gd             38     1
+  hp_kiosk.gd               38     3
   trailer_buehne.gd         38     0
   fotomodus.gd              38     0
   mikrofon.gd               37     0
@@ -222,6 +223,25 @@ Unsicher:
   '🦆 Lockvogel: Wer will, wählt auf dem Handy «Lockvogel». Er lässt sich absichtlich sehen, lockt die Kamera weg und holt Teampunkte.': rm: Lockvogel
   "🦊 So geht's: Jeder wählt auf dem Handy einen Lockvogel und bewegt ihn vor der Kamera. Der Pfeil zeigt zur Kamera 📷. Die Dinge haben einen eigenen Knopf (Windstoss, Schwenken, Steigen, Fallen, Schwärmen).": rm: Lockvogel/Schwenken
   'Welche Lockvögel sind erlaubt?': rm: Lockvogel
+  'PS5-Controller per Bluetooth koppeln, Liste mit Akku, Trennen, Vergessen': rm: Fachwörter (herunterfahren / BIOS / Browser) ohne Vorlage aus MoveEye übersetzt
+  'Öffnet den Browser über dem Simulator. Der Simulator hält solange an. Zurück: Leiste oben oder Ctrl+Alt+Z': rm: Fachwörter (herunterfahren / BIOS / Browser) ohne Vorlage aus MoveEye übersetzt
+  'Herunterfahren, neu starten oder neu starten ins BIOS – mit Rückfrage': rm: Fachwörter (herunterfahren / BIOS / Browser) ohne Vorlage aus MoveEye übersetzt
+  'Am Simulator-PC läuft gerade ein Test. Der Browser öffnet jetzt nicht – sonst wird das Ergebnis verfälscht. Bitte später noch einmal.': rm: Fachwörter (herunterfahren / BIOS / Browser) ohne Vorlage aus MoveEye übersetzt
+  'Auf diesem PC ist kein Browser installiert (Firefox oder Chromium). Einmal im normalen Desktop (Ctrl+Alt+D) installieren: sudo apt install firefox': rm: Fachwörter (herunterfahren / BIOS / Browser) ohne Vorlage aus MoveEye übersetzt
+  'Ausschalten aus dem Simulator ist an diesem PC noch nicht eingerichtet (kommt mit dem nächsten Update des Simulator-PCs). Bis dahin: den Einschaltknopf am Gehäuse kurz drücken.': rm: Fachwörter (herunterfahren / BIOS / Browser) ohne Vorlage aus MoveEye übersetzt
+  'Herunterfahren': rm: Fachwörter (herunterfahren / BIOS / Browser) ohne Vorlage aus MoveEye übersetzt
+  'Neu starten': rm: Fachwörter (herunterfahren / BIOS / Browser) ohne Vorlage aus MoveEye übersetzt
+  'Neu starten ins BIOS': rm: Fachwörter (herunterfahren / BIOS / Browser) ohne Vorlage aus MoveEye übersetzt
+  'Wirklich herunterfahren?': rm: Fachwörter (herunterfahren / BIOS / Browser) ohne Vorlage aus MoveEye übersetzt
+  'Wirklich neu starten?': rm: Fachwörter (herunterfahren / BIOS / Browser) ohne Vorlage aus MoveEye übersetzt
+  'Wirklich neu starten ins BIOS?': rm: Fachwörter (herunterfahren / BIOS / Browser) ohne Vorlage aus MoveEye übersetzt
+  'Der laufende Test wird abgebrochen. Was schon fertig gerechnet ist, bleibt; der Rest wird beim nächsten Lauf nachgeholt.': rm: Fachwörter (herunterfahren / BIOS / Browser) ohne Vorlage aus MoveEye übersetzt
+  'Der PC startet neu und zeigt die Einstellungen der Hauptplatine (BIOS). Dort «Exit» wählen, um normal zu starten.': rm: Fachwörter (herunterfahren / BIOS / Browser) ohne Vorlage aus MoveEye übersetzt
+  'Ja, herunterfahren': rm: Fachwörter (herunterfahren / BIOS / Browser) ohne Vorlage aus MoveEye übersetzt
+  'Ja, neu starten': rm: Fachwörter (herunterfahren / BIOS / Browser) ohne Vorlage aus MoveEye übersetzt
+  'Der PC fährt herunter …': rm: Fachwörter (herunterfahren / BIOS / Browser) ohne Vorlage aus MoveEye übersetzt
+  'Der PC startet neu …': rm: Fachwörter (herunterfahren / BIOS / Browser) ohne Vorlage aus MoveEye übersetzt
+  'Der PC startet neu ins BIOS …': rm: Fachwörter (herunterfahren / BIOS / Browser) ohne Vorlage aus MoveEye übersetzt
   '<%d Bytes %s>': technisch (Log)
   'request %d': technisch (Log)
   'KI-Trainingsdaten': GitHub-Release-Titel – nicht umhüllen
@@ -442,6 +462,9 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   gamekiwaechter.gd:147  'ein'
   gamekiwaechter.gd:147  '🤖 MoveEye als KI-Wächter: '
   gamemore.gd:23  'aus'
+  hp_kiosk.gd:68  'aus'
+  hp_kiosk.gd:155  'aus'
+  hp_kiosk.gd:195  'aus'
   licht.gd:42  'aus'
   main.gd:755  ' (Port %d)'
   main.gd:1659  '  %.0f Mbit/s'
@@ -682,7 +705,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   maggie_modell.gd:166  'BackLowerLeg.'
   tier_modell.gd:123  'Modell fehlt: '
   main_menues.gd:324  'Blinde Flecken: '
-  main_menues.gd:851  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
+  main_menues.gd:856  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
   main_start.gd:364  'Autostart: '
   main_start.gd:375  'Autologon: '
   main_steuerung.gd:454  'Dein Platz: '

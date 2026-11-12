@@ -27,6 +27,8 @@ Drei Aufgaben, alles nur mit Daten-Dateien (nichts wird ausgeführt, was von aus
      Controller-Eingaben nicht - das Bedienen dieses Fensters und das Koppeln selbst sind kein Spielen. Und: ist ein
      Controller da, aber PAD_RUHE_S (20 Min.) ohne Eingabe, bittet die Wache den Dienst moveeye-controller-koppeln mit der
      leeren Wunsch-Datei «controller_ruhe», Bluetooth-Controller zu trennen (schont den Akku; die PS-Taste verbindet wieder).
+   - Browser am HP (HP_FASSUNG 8): solange der Browser über dem Kiosk offen ist (Marke «browser_offen» neben der
+     Spielen-Datei, hp_knoepfe.sh frischt sie alle 5 s auf), gilt das als Spielen - es wird nicht gerechnet.
    - Solange gespielt wird: jede Eingabe (Leerlauf-Zähler des X-Servers, libXss), jede Controller-Eingabe, jeder
      Zuschauer-Puls und jeder Spieler auf 8770 / 8771 frischt die Datei auf. 15 Min. ohne das -> die Datei ist abgelaufen (Änderungsdatum älter als --ruhe-s),
      das Rechnen geht dort weiter, wo es stand.
@@ -470,6 +472,7 @@ class Wache:
         self.leer = Leerlauf()
         self.pads = Pads(a.pad_quelle, a.pad_scan_s, a.pad_udev) if a.pad_quelle else None
         self.fenster_marke = os.path.join(os.path.dirname(self.spiel), "fenster_offen")   # controller_fenster.py
+        self.browser_marke = os.path.join(os.path.dirname(self.spiel), "browser_offen")   # hp_knoepfe.sh browser
         self.ruhe_gemeldet = False
         self.zuschauer_t = 0.0                  # letzter Zuschauer-Puls von MoveEye (POST /zuschauer)
         self.n_sek = []
@@ -605,9 +608,15 @@ class Wache:
             return
         eingabe = eingabe or pad
         zusch = jetzt - self.zuschauer_t < self.a.zuschauer_s
+        al = alter(self.browser_marke)                   # HP_FASSUNG 8: Browser offen (hp_knoepfe.sh, Puls alle 5 s) = Spielen
+        brow = al is not None and al < 20
+        if brow and z == "rechnet":
+            self.wunsch("browser")
+            return
+        zusch = zusch or brow
         verb = (verbindungen(AKTIV_PORTS) > 0 if z != "rechnet" else False) or zusch   # beim Rechnen ist 8770 die Wache
         if z == "frei" and (eingabe or verb):
-            self.wunsch(("controller" if pad else "eingabe") if eingabe else "zuschauer" if zusch else "handy")
+            self.wunsch("browser" if brow else ("controller" if pad else "eingabe") if eingabe else "zuschauer" if zusch else "handy")
             return
         if z != "spielen":
             return

@@ -4379,6 +4379,7 @@ func _toggle_phone() -> void:
 
 var feedback_dlg = null                # MoveEye 2.98.33: feedback.gd (made at the first use; from 3D-4.2x by mehr.gd)
 var mehr = null                        # 3D-4.2x: mehr.gd («Mehr»: feedback, tour, self-check, log, look)
+var hp_kiosk = null                    # hp_kiosk.gd: card «Simulator-PC» (only in the kiosk of the project's simulator PC)
 
 
 func _feedback_open() -> void:

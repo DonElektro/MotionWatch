@@ -3643,6 +3643,12 @@
   "it": "Attenzione: %s sta per essere scoperto!",
   "rm": "Attenziun: %s vegn immediat scuvert!"
  },
+ "Achtung: Am Simulator-PC läuft gerade ein Test.": {
+  "en": "Careful: a test is running on the simulator PC right now.",
+  "fr": "Attention : un test est en cours sur le PC du simulateur.",
+  "it": "Attenzione: sul PC del simulatore è in corso un test.",
+  "rm": "Attenziun: sin il PC dal simulatur curra gist in test."
+ },
  "Achtung: Dieser Modus ist unheimlich und hat einige Schreckmomente – plötzliche laute Geräusche und Bilder, Dunkelheit, dichter Nebel. Kein Blut, keine Gewalt. Nicht für kleine Kinder.": {
   "en": "Warning: this mode is eerie and has a few jump scares – sudden loud sounds and pictures, darkness, thick fog. No blood, no violence. Not for small children.",
   "fr": "Attention : ce mode fait peur et contient quelques sursauts – bruits forts et images soudaines, obscurité, brouillard épais. Pas de sang, pas de violence. Pas pour les petits enfants.",
@@ -4741,6 +4747,13 @@
   "it": "sullo stesso I2C del PCA9685: BME280 0x76 / 0x77 · MPU-6050 0x68 · INA219 0x44 (opzionale, solare)",
   "rm": "sin il medem I2C sco il PCA9685: BME280 0x76 / 0x77 · MPU-6050 0x68 · INA219 0x44 (opziunal, solar)"
  },
+ "Am Simulator-PC läuft gerade ein Test. Der Browser öffnet jetzt nicht – sonst wird das Ergebnis verfälscht. Bitte später noch einmal.": {
+  "en": "A test is running on the simulator PC right now. The browser does not open now – it would distort the result. Please try again later.",
+  "fr": "Un test est en cours sur le PC du simulateur. Le navigateur ne s’ouvre pas maintenant – cela fausserait le résultat. Réessayez plus tard.",
+  "it": "Sul PC del simulatore è in corso un test. Il browser ora non si apre – altrimenti il risultato verrebbe falsato. Riprova più tardi.",
+  "rm": "Sin il PC dal simulatur curra gist in test. Il browser na s’avra ussa betg – uschiglio vegniss il resultat falsifitgà. Emprova pli tard anc ina giada.",
+  "?": "rm: Fachwörter (herunterfahren / BIOS / Browser) ohne Vorlage aus MoveEye übersetzt"
+ },
  "Am Strand liegt eine Flasche mit einem Zettel – eine Schatzkarte zum Aussichtspunkt.": {
   "en": "A bottle with a note lies on the beach – a treasure map to the viewpoint.",
   "fr": "Sur la plage, une bouteille contient un message – une carte au trésor vers le belvédère.",
@@ -5533,6 +5546,13 @@
   "it": "Questo PC non ha la sintesi vocale – solo sottotitoli.",
   "rm": "Quest PC n’ha nagina emissiun vocala – mo suttitels."
  },
+ "Auf diesem PC ist kein Browser installiert (Firefox oder Chromium). Einmal im normalen Desktop (Ctrl+Alt+D) installieren: sudo apt install firefox": {
+  "en": "No browser is installed on this PC (Firefox or Chromium). Install it once in the normal desktop (Ctrl+Alt+D): sudo apt install firefox",
+  "fr": "Aucun navigateur n’est installé sur ce PC (Firefox ou Chromium). L’installer une fois dans le bureau normal (Ctrl+Alt+D) : sudo apt install firefox",
+  "it": "Su questo PC non è installato alcun browser (Firefox o Chromium). Installarlo una volta nel desktop normale (Ctrl+Alt+D): sudo apt install firefox",
+  "rm": "Sin quest PC n’è installà nagin browser (Firefox u Chromium). Installar ina giada en il desktop normal (Ctrl+Alt+D): sudo apt install firefox",
+  "?": "rm: Fachwörter (herunterfahren / BIOS / Browser) ohne Vorlage aus MoveEye übersetzt"
+ },
  "Auf diesem PC wurde keine Sprachausgabe gefunden - die Seiten stehen dann nur im Tagebuch.": {
   "en": "No speech output found on this PC - the pages are then only in the diary.",
   "fr": "Aucune synthèse vocale trouvée sur ce PC - les pages restent alors seulement dans le journal.",
@@ -5898,6 +5918,19 @@
   "fr": "Équipement trouvé : %s",
   "it": "Attrezzatura trovata: %s",
   "rm": "Equipament chattà: %s"
+ },
+ "Ausschalten": {
+  "en": "Switch off",
+  "fr": "Éteindre",
+  "it": "Spegnere",
+  "rm": "Stizzar"
+ },
+ "Ausschalten aus dem Simulator ist an diesem PC noch nicht eingerichtet (kommt mit dem nächsten Update des Simulator-PCs). Bis dahin: den Einschaltknopf am Gehäuse kurz drücken.": {
+  "en": "Switching off from the simulator is not set up on this PC yet (it comes with the next update of the simulator PC). Until then: press the power button on the case briefly.",
+  "fr": "L’extinction depuis le simulateur n’est pas encore installée sur ce PC (elle arrive avec la prochaine mise à jour du PC du simulateur). D’ici là : appuyer brièvement sur le bouton d’alimentation du boîtier.",
+  "it": "Lo spegnimento dal simulatore non è ancora configurato su questo PC (arriva con il prossimo aggiornamento del PC del simulatore). Fino ad allora: premere brevemente il pulsante di accensione sul case.",
+  "rm": "Stizzar or dal simulatur n’è anc betg endrizzà sin quest PC (vegn cun il proxim update dal PC dal simulatur). Fin lura: smatgar curt il buttun d’envidar vi da la chascha.",
+  "?": "rm: Fachwörter (herunterfahren / BIOS / Browser) ohne Vorlage aus MoveEye übersetzt"
  },
  "Aussenseite": {
   "en": "outer side",
@@ -8708,6 +8741,12 @@
   "it": "Il set da fonduta!",
   "rm": "Il set da fondue!"
  },
+ "Das geht an diesem PC nicht.": {
+  "en": "That does not work on this PC.",
+  "fr": "Cela ne fonctionne pas sur ce PC.",
+  "it": "Su questo PC non funziona.",
+  "rm": "Quai na funcziuna betg sin quest PC."
+ },
  "Das geht nur in der Szene Bergtal.": {
   "en": "This only works in the scene Mountain valley.",
   "fr": "Possible seulement dans la scène Vallée de montagne.",
@@ -9770,6 +9809,18 @@
   "it": "Il guardiano bot",
   "rm": "Il guardian-bot"
  },
+ "Der Browser ist im Kinder-Modus aus.": {
+  "en": "The browser is off in children’s mode.",
+  "fr": "Le navigateur est désactivé en mode enfants.",
+  "it": "Il browser è disattivato in modalità bambini.",
+  "rm": "Il browser è deactivà en il modus d’uffants."
+ },
+ "Der Browser öffnet … Zurück: Leiste oben oder Ctrl+Alt+Z": {
+  "en": "The browser is opening … Back: the bar at the top or Ctrl+Alt+Z",
+  "fr": "Le navigateur s’ouvre … Retour : la barre en haut ou Ctrl+Alt+Z",
+  "it": "Il browser si apre … Indietro: barra in alto o Ctrl+Alt+Z",
+  "rm": "Il browser s’avra … Enavos: la trav sisum u Ctrl+Alt+Z"
+ },
  "Der Bunker Fort Chrüzli": {
   "en": "The Fort Chrüzli bunker",
   "fr": "Le bunker du fort Chrüzli",
@@ -9986,6 +10037,13 @@
   "it": "Il formaggio del 1897",
   "rm": "Il chaschiel da 1897"
  },
+ "Der laufende Test wird abgebrochen. Was schon fertig gerechnet ist, bleibt; der Rest wird beim nächsten Lauf nachgeholt.": {
+  "en": "The running test is cancelled. What has already been computed stays; the rest is made up in the next run.",
+  "fr": "Le test en cours est interrompu. Ce qui est déjà calculé reste ; le reste sera rattrapé à la prochaine exécution.",
+  "it": "Il test in corso viene interrotto. Ciò che è già stato calcolato resta; il resto viene recuperato alla prossima esecuzione.",
+  "rm": "Il test current vegn interrut. Quai ch’è gia calculà resta; il rest vegn fatg tar la proxima currida.",
+  "?": "rm: Fachwörter (herunterfahren / BIOS / Browser) ohne Vorlage aus MoveEye übersetzt"
+ },
  "Der letzte Start brach beim Einlesen der Foto-Inhalte ab – sie sind jetzt aus (System › Grafik › Experte: «Echte Oberflächen und Himmel»).": {
   "en": "The last start stopped while loading the photo contents – they are off now (System › Graphics › Expert: «Real surfaces and sky»).",
   "fr": "Le dernier démarrage s'est interrompu au chargement des contenus photo – ils sont désactivés (Système › Graphisme › Expert : «Surfaces et ciel réels»).",
@@ -10094,6 +10152,13 @@
   "it": "il percorso è in corso",
   "rm": "il parcurs è en cursa"
  },
+ "Der PC fährt herunter …": {
+  "en": "The PC is shutting down …",
+  "fr": "Le PC s’éteint …",
+  "it": "Il PC si spegne …",
+  "rm": "Il PC vegn serrà …",
+  "?": "rm: Fachwörter (herunterfahren / BIOS / Browser) ohne Vorlage aus MoveEye übersetzt"
+ },
  "Der PC ist langsam – leichter gemacht: %s (nur bis zum Neustart; Bilder für MoveEye unverändert)": {
   "en": "The PC is slow – made lighter: %s (only until restart; pictures for MoveEye unchanged)",
   "fr": "Le PC est lent – allégé : %s (seulement jusqu’au redémarrage ; images pour MoveEye inchangées)",
@@ -10105,6 +10170,27 @@
   "fr": "Le PC est saturé : fermer d’autres programmes, graphisme plus léger, moins de visiteurs à la fois.",
   "it": "Il PC è al limite: chiudere altri programmi, grafica più leggera, meno visitatori insieme.",
   "rm": "Il PC è plain: serrar auters programs, grafica pli levgia, main visitaders a medem temp."
+ },
+ "Der PC startet neu ins BIOS …": {
+  "en": "The PC is restarting into the BIOS …",
+  "fr": "Le PC redémarre dans le BIOS …",
+  "it": "Il PC si riavvia nel BIOS …",
+  "rm": "Il PC reparta en il BIOS …",
+  "?": "rm: Fachwörter (herunterfahren / BIOS / Browser) ohne Vorlage aus MoveEye übersetzt"
+ },
+ "Der PC startet neu und zeigt die Einstellungen der Hauptplatine (BIOS). Dort «Exit» wählen, um normal zu starten.": {
+  "en": "The PC restarts and shows the settings of the mainboard (BIOS). Choose «Exit» there to start normally.",
+  "fr": "Le PC redémarre et affiche les réglages de la carte mère (BIOS). Y choisir « Exit » pour démarrer normalement.",
+  "it": "Il PC si riavvia e mostra le impostazioni della scheda madre (BIOS). Lì scegliere «Exit» per avviare normalmente.",
+  "rm": "Il PC reparta e mussa las configuraziuns da la platta principala (BIOS). Là tscherner «Exit» per partir normalmain.",
+  "?": "rm: Fachwörter (herunterfahren / BIOS / Browser) ohne Vorlage aus MoveEye übersetzt"
+ },
+ "Der PC startet neu …": {
+  "en": "The PC is restarting …",
+  "fr": "Le PC redémarre …",
+  "it": "Il PC si riavvia …",
+  "rm": "Il PC reparta …",
+  "?": "rm: Fachwörter (herunterfahren / BIOS / Browser) ohne Vorlage aus MoveEye übersetzt"
  },
  "der Platz beim Bewegungsmelder": {
   "en": "the spot at the motion sensor",
@@ -10291,6 +10377,12 @@
   "fr": "Le simulateur redémarre …",
   "it": "Il simulatore si riavvia …",
   "rm": "Il simulatur reinvia …"
+ },
+ "Der Simulator wird beendet. Nicht gespeicherte Spielstände gehen verloren.": {
+  "en": "The simulator is closed. Game progress that is not saved is lost.",
+  "fr": "Le simulateur est fermé. Les parties non enregistrées sont perdues.",
+  "it": "Il simulatore viene chiuso. I salvataggi non memorizzati vanno persi.",
+  "rm": "Il simulatur vegn serrà. Stadis da gieu betg memorisads van a perder."
  },
  "Der Sommerschlafsack war für den Winter zu dünn.": {
   "en": "The summer sleeping bag was too thin for winter.",
@@ -19729,6 +19821,20 @@
   "it": "Signor Gerber, escursionista",
   "rm": "Signur Gerber, viandant"
  },
+ "Herunterfahren": {
+  "en": "Shut down",
+  "fr": "Arrêter",
+  "it": "Arresta",
+  "rm": "Serrar il PC",
+  "?": "rm: Fachwörter (herunterfahren / BIOS / Browser) ohne Vorlage aus MoveEye übersetzt"
+ },
+ "Herunterfahren, neu starten oder neu starten ins BIOS – mit Rückfrage": {
+  "en": "Shut down, restart or restart into the BIOS – with a confirmation",
+  "fr": "Arrêter, redémarrer ou redémarrer dans le BIOS – avec confirmation",
+  "it": "Arrestare, riavviare o riavviare nel BIOS – con conferma",
+  "rm": "Serrar, repartir u repartir en il BIOS – cun dumonda da conferma",
+  "?": "rm: Fachwörter (herunterfahren / BIOS / Browser) ohne Vorlage aus MoveEye übersetzt"
+ },
  "Herzschlag, wenn die Kamera dich gleich sieht": {
   "en": "Heartbeat when the camera is about to see you",
   "fr": "Battements de cœur quand la caméra va te voir",
@@ -21991,6 +22097,12 @@
   "it": "lato interno",
   "rm": "vart interna"
  },
+ "Ins BIOS: beim Einschalten Esc, dann F10.": {
+  "en": "Into the BIOS: press Esc when switching on, then F10.",
+  "fr": "Dans le BIOS : à l’allumage Échap, puis F10.",
+  "it": "Nel BIOS: all’accensione Esc, poi F10.",
+  "rm": "En il BIOS: cun envidar Esc, lura F10."
+ },
  "Ins Riedmoos": {
   "en": "Into the Riedmoos",
   "fr": "Dans le Riedmoos",
@@ -22231,11 +22343,24 @@
   "it": "sì, %d riquadri",
   "rm": "gea, %d plattas"
  },
+ "Ja, herunterfahren": {
+  "en": "Yes, shut down",
+  "fr": "Oui, arrêter",
+  "it": "Sì, arresta",
+  "rm": "Gea, serrar",
+  "?": "rm: Fachwörter (herunterfahren / BIOS / Browser) ohne Vorlage aus MoveEye übersetzt"
+ },
  "Ja, hier übernachten": {
   "en": "Yes, sleep here",
   "fr": "Oui, dormir ici",
   "it": "Sì, dormire qui",
   "rm": "Gea, durmir qua"
+ },
+ "Ja, ins BIOS": {
+  "en": "Yes, into the BIOS",
+  "fr": "Oui, dans le BIOS",
+  "it": "Sì, nel BIOS",
+  "rm": "Gea, en il BIOS"
  },
  "Ja, mache ich.": {
   "en": "Yes, I'll do it.",
@@ -22248,6 +22373,13 @@
   "fr": "Oui, bien sûr.",
   "it": "Sì, certo.",
   "rm": "Gea, natiralmain."
+ },
+ "Ja, neu starten": {
+  "en": "Yes, restart",
+  "fr": "Oui, redémarrer",
+  "it": "Sì, riavvia",
+  "rm": "Gea, repartir",
+  "?": "rm: Fachwörter (herunterfahren / BIOS / Browser) ohne Vorlage aus MoveEye übersetzt"
  },
  "Jacke": {
   "en": "Jacket",
@@ -23466,6 +23598,12 @@
   "fr": "Pas de sol au centre de la vue – vise l'endroit et réessaie.",
   "it": "Nessun terreno al centro della vista – guarda il posto e riprova.",
   "rm": "Nagin terren en il center dal maletg – guarda sin la plazza ed emprova anc ina giada."
+ },
+ "Kein Browser installiert": {
+  "en": "No browser installed",
+  "fr": "Aucun navigateur installé",
+  "it": "Nessun browser installato",
+  "rm": "Nagin browser installà"
  },
  "Kein Controller gefunden": {
   "en": "No controller found",
@@ -30150,6 +30288,20 @@
   "it": "Ricarica",
   "rm": "Rechargiar"
  },
+ "Neu starten": {
+  "en": "Restart",
+  "fr": "Redémarrer",
+  "it": "Riavvia",
+  "rm": "Repartir",
+  "?": "rm: Fachwörter (herunterfahren / BIOS / Browser) ohne Vorlage aus MoveEye übersetzt"
+ },
+ "Neu starten ins BIOS": {
+  "en": "Restart into the BIOS",
+  "fr": "Redémarrer dans le BIOS",
+  "it": "Riavvia nel BIOS",
+  "rm": "Repartir en il BIOS",
+  "?": "rm: Fachwörter (herunterfahren / BIOS / Browser) ohne Vorlage aus MoveEye übersetzt"
+ },
  "Neu starten und prüfen": {
   "en": "Restart and check",
   "fr": "Redémarrer et vérifier",
@@ -30881,6 +31033,12 @@
   "fr": "seulement le jour",
   "it": "solo di giorno",
   "rm": "mo di"
+ },
+ "Nur an diesem Simulator-PC.": {
+  "en": "Only on this simulator PC.",
+  "fr": "Uniquement sur ce PC du simulateur.",
+  "it": "Solo su questo PC del simulatore.",
+  "rm": "Mo sin quest PC dal simulatur."
  },
  "nur bei BerryBase (de) gefunden": {
   "en": "only found at BerryBase (de)",
@@ -32670,6 +32828,13 @@
   "fr": "Banc d’essai : chemin furtif du jeu (%s)",
   "it": "Banco di prova: percorso furtivo dal gioco (%s)",
   "rm": "Banc da prova: via da sa stular dal gieu (%s)"
+ },
+ "PS5-Controller per Bluetooth koppeln, Liste mit Akku, Trennen, Vergessen": {
+  "en": "Pair a PS5 controller via Bluetooth, list with battery, disconnect, forget",
+  "fr": "Associer une manette PS5 par Bluetooth, liste avec batterie, déconnecter, oublier",
+  "it": "Associare un controller PS5 via Bluetooth, elenco con batteria, scollegare, dimenticare",
+  "rm": "Colliar in controller PS5 per Bluetooth, glista cun accu, separar, emblidar",
+  "?": "rm: Fachwörter (herunterfahren / BIOS / Browser) ohne Vorlage aus MoveEye übersetzt"
  },
  "Psst … es gibt ein verstecktes Easter Egg.": {
   "en": "Psst … there is a hidden easter egg.",
@@ -35928,6 +36093,12 @@
   "it": "Ripristina il simulatore",
   "rm": "Restaurar il simulatur"
  },
+ "Simulator-PC": {
+  "en": "Simulator PC",
+  "fr": "PC du simulateur",
+  "it": "PC del simulatore",
+  "rm": "PC dal simulatur"
+ },
  "Simulator-Prüfstand": {
   "en": "Simulator test bench",
   "fr": "Banc d’essai du simulateur",
@@ -38598,6 +38769,18 @@
   "fr": "Test terminé – de nouveau ta vraie progression.",
   "it": "Prova terminata – di nuovo il tuo progresso vero.",
   "rm": "Test terminà – puspè tes vair stadi."
+ },
+ "Test läuft": {
+  "en": "Test running",
+  "fr": "Test en cours",
+  "it": "Test in corso",
+  "rm": "Il test curra"
+ },
+ "Test läuft – trotzdem ausschalten?": {
+  "en": "Test running – switch off anyway?",
+  "fr": "Test en cours – éteindre quand même ?",
+  "it": "Test in corso – spegnere comunque?",
+  "rm": "Il test curra – stizzar tuttina?"
  },
  "Test-Spielstand aktiv – dein echter Spielstand bleibt unberührt (bis «Test beenden» oder Neustart).": {
   "en": "Test progress active – your real progress stays untouched (until «End test» or a restart).",
@@ -43180,11 +43363,32 @@
   "it": "Diventa scarso: chiudere i programmi non necessari.",
   "rm": "I vegn stretg: serrar programs betg necessaris."
  },
+ "Wirklich herunterfahren?": {
+  "en": "Really shut down?",
+  "fr": "Vraiment arrêter ?",
+  "it": "Arrestare davvero?",
+  "rm": "Propi serrar il PC?",
+  "?": "rm: Fachwörter (herunterfahren / BIOS / Browser) ohne Vorlage aus MoveEye übersetzt"
+ },
  "Wirklich löschen?": {
   "en": "Really delete?",
   "fr": "Vraiment supprimer ?",
   "it": "Eliminare davvero?",
   "rm": "Propi stizzar?"
+ },
+ "Wirklich neu starten ins BIOS?": {
+  "en": "Really restart into the BIOS?",
+  "fr": "Vraiment redémarrer dans le BIOS ?",
+  "it": "Riavviare davvero nel BIOS?",
+  "rm": "Propi repartir en il BIOS?",
+  "?": "rm: Fachwörter (herunterfahren / BIOS / Browser) ohne Vorlage aus MoveEye übersetzt"
+ },
+ "Wirklich neu starten?": {
+  "en": "Really restart?",
+  "fr": "Vraiment redémarrer ?",
+  "it": "Riavviare davvero?",
+  "rm": "Propi repartir?",
+  "?": "rm: Fachwörter (herunterfahren / BIOS / Browser) ohne Vorlage aus MoveEye übersetzt"
  },
  "WLAN weg": {
   "en": "Wi-Fi gone",
@@ -45131,6 +45335,13 @@
   "it": "Apri (password)",
   "rm": "Avrir (pled-clav)"
  },
+ "Öffnet den Browser über dem Simulator. Der Simulator hält solange an. Zurück: Leiste oben oder Ctrl+Alt+Z": {
+  "en": "Opens the browser on top of the simulator. The simulator pauses meanwhile. Back: the bar at the top or Ctrl+Alt+Z",
+  "fr": "Ouvre le navigateur par-dessus le simulateur. Le simulateur est en pause pendant ce temps. Retour : la barre en haut ou Ctrl+Alt+Z",
+  "it": "Apre il browser sopra il simulatore. Nel frattempo il simulatore è in pausa. Indietro: barra in alto o Ctrl+Alt+Z",
+  "rm": "Avra il browser sur il simulatur. Il simulatur fa pausa durant quai. Enavos: la trav sisum u Ctrl+Alt+Z",
+  "?": "rm: Fachwörter (herunterfahren / BIOS / Browser) ohne Vorlage aus MoveEye übersetzt"
+ },
  "Öffnet die Anleitung im Browser (MoveEye muss verbunden sein)": {
   "en": "Opens the manual in the browser (MoveEye must be connected)",
   "fr": "Ouvre le mode d’emploi dans le navigateur (MoveEye doit être connecté)",
@@ -45598,6 +45809,12 @@
   "fr": "⏹ Arrêter",
   "it": "⏹ Stop",
   "rm": "⏹ Stop"
+ },
+ "⏻ Ausschalten …": {
+  "en": "⏻ Switch off …",
+  "fr": "⏻ Éteindre …",
+  "it": "⏻ Spegnere …",
+  "rm": "⏻ Stizzar …"
  },
  "■ Aufnahme beenden und speichern": {
   "en": "■ Stop recording and save",
@@ -46265,6 +46482,12 @@
   "it": "⭐ Livelli: ogni turno dà punti esperienza (punti, distintivi, compito, compito del giorno). I livelli più alti sbloccano oggetti per la propria figura.",
   "rm": "⭐ Nivels: mintga runda dat puncts d’experientscha (puncts, insignas, incumbensa, incumbensa dal di). Nivels pli auts deblocheschan chaussas per l’atgna figura."
  },
+ "🌐 Browser": {
+  "en": "🌐 Browser",
+  "fr": "🌐 Navigateur",
+  "it": "🌐 Browser",
+  "rm": "🌐 Browser"
+ },
  "🌑 Schatten verstecken: am Tag sieht dich die Kamera im Schatten schlechter": {
   "en": "🌑 Hide in shadows: in daytime the camera sees you worse in the shade",
   "fr": "🌑 Se cacher dans l’ombre : le jour, la caméra te voit moins bien à l’ombre",
@@ -46636,6 +46859,12 @@
   "fr": "🎮 Calibrer la manette (contre la dérive : ne pas toucher les sticks pendant 2 s)",
   "it": "🎮 Calibrare il controller (contro la deriva: non toccare gli stick per 2 s)",
   "rm": "🎮 Calibrar il controller (cunter il drift: betg tutgar ils sticks 2 s)"
+ },
+ "🎮 Controller koppeln": {
+  "en": "🎮 Pair controller",
+  "fr": "🎮 Associer la manette",
+  "it": "🎮 Associa controller",
+  "rm": "🎮 Colliar il controller"
  },
  "🎮 Controller testen (zeigt Stick roh und nach der Drift-Korrektur)": {
   "en": "🎮 Test controller (shows stick raw and after drift correction)",

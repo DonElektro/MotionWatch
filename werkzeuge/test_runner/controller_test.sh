@@ -497,6 +497,12 @@ assert p.ruhe_s(2000.0 + 1200) == 1200.0                                # 20 Min
 os.close(fd); os.remove(os.path.join(d, "js0")); p.scan(4000.0); assert p.ruhe_s(5000.0) == 0.0   # kein Controller mehr: keine Ruhe-Zeit
 EOF
 
+# ---------------------------------------------------------------- 5. Knöpfe des Simulator-PCs (HP_FASSUNG 8)
+# (eigener Test, hier angehängt: so läuft er im CI-Job «HP-Update» mit, ohne dass ci.yml geändert werden muss)
+echo "--- 5. hp_knoepfe_test.sh (Ausschalten, Browser)"
+if bash "$HIER/hp_knoepfe_test.sh" > "$W/knoepfe.log" 2>&1; then ok "hp_knoepfe_test.sh: $(grep -c '^  ok' "$W/knoepfe.log") Prüfungen"
+else fehler "hp_knoepfe_test.sh"; cat "$W/knoepfe.log"; fi
+
 echo
 if [ $F -eq 0 ]; then echo "Controller-Test: OK"; else echo "Controller-Test: $F Fehler"; fi
 exit $F
