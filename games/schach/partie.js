@@ -2,7 +2,7 @@
    Lizenz: GPL-3.0-or-later (siehe LIESMICH.txt). Regeln: chess.js (BSD-2-Clause) in lib/chess.js.
 
    Eine Partie ist vollständig beschrieben durch Startstellung (FEN) + Zugliste (UCI, z. B. «e2e4», «e7e8q»).
-   Alle Züge – vom Menschen an diesem Gerät, vom Computer und später von einem zweiten Handy («fern») – gehen durch
+   Alle Züge – vom Menschen an diesem Gerät, vom Computer und von einem zweiten Handy («fern», fern.js) – gehen durch
    genau eine Funktion: partie.zug(uciOderSan) -> neuer Zustand (oder null, wenn der Zug nicht erlaubt ist).
    Diese Datei kennt weder das Brett noch den Motor noch ein Netz; sie läuft auch in Node (Tests). */
 (function (global) {
@@ -25,6 +25,7 @@
     this.startFen = startFen || START;
     this.zuege = [];                 // UCI
     this.aufgabe = null;             // "w" / "b": diese Seite hat aufgegeben
+    this.remis = false;              // zwei Handys: beide haben sich auf Remis geeinigt
     this._c = new ChessKlasse(this.startFen);
     this._san = [];
   }
@@ -36,12 +37,13 @@
       var z = (o && o.zuege) || [];
       for (var i = 0; i < z.length; i++) if (!p.zug(z[i])) return null;
       if (o.aufgabe === "w" || o.aufgabe === "b") p.aufgabe = o.aufgabe;
+      if (o.remis === true) p.remis = true;
       return p;
     } catch (e) { return null; }
   };
 
   Partie.prototype.speichern = function () {
-    return { v: 1, startFen: this.startFen, zuege: this.zuege.slice(), aufgabe: this.aufgabe };
+    return { v: 1, startFen: this.startFen, zuege: this.zuege.slice(), aufgabe: this.aufgabe, remis: this.remis || undefined };
   };
 
   Partie.prototype.fen = function () { return this._c.fen(); };
@@ -87,17 +89,19 @@
 
   /** n Halbzüge zurücknehmen (hebt auch eine Aufgabe auf) */
   Partie.prototype.zurueck = function (n) {
-    this.aufgabe = null;
+    this.aufgabe = null; this.remis = false;
     for (var i = 0; i < (n || 1) && this.zuege.length; i++) { this._c.undo(); this.zuege.pop(); this._san.pop(); }
     return this.zustand();
   };
 
   Partie.prototype.aufgeben = function (farbe) { if (!this.ende()) this.aufgabe = farbe; return this.zustand(); };
+  Partie.prototype.remisVereinbart = function () { if (!this.ende()) this.remis = true; return this.zustand(); };
 
-  /** null oder {art: matt|patt|wiederholung|50zuege|material|aufgabe, sieger: "w"|"b"|null} */
+  /** null oder {art: matt|patt|wiederholung|50zuege|material|aufgabe|einigung, sieger: "w"|"b"|null} */
   Partie.prototype.ende = function () {
     var c = this._c;
     if (this.aufgabe) return { art: "aufgabe", sieger: this.aufgabe === "w" ? "b" : "w" };
+    if (this.remis) return { art: "einigung", sieger: null };
     if (c.isCheckmate()) return { art: "matt", sieger: c.turn() === "w" ? "b" : "w" };
     if (c.isStalemate()) return { art: "patt", sieger: null };
     if (c.isInsufficientMaterial()) return { art: "material", sieger: null };

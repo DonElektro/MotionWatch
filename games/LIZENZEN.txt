@@ -1,4 +1,4 @@
-Motion Watch Spielesammlung GS-1.14
+Motion Watch Spielesammlung GS-1.16
 Die Spiele bis GS-1.3 sind Open Source (unten), dazu die Kevlaschef- und Quantum-Spiele (ganz unten). Angepasst nur für den Offline-Betrieb:
 Werbung, Statistik (Google Analytics), externe Schriften und nicht lizenzierte Musik/Töne entfernt.
 

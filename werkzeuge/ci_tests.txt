@@ -1,0 +1,76 @@
+# Testliste für das CI (.github/workflows/ci.yml) - EINE Zeile pro Test. Ausgeführt von werkzeuge/ci_lauf.py.
+#
+#   Gruppe | Limit (min) | Nochmal | Befehl | Was geprüft wird
+#
+# Neuen Test einhängen: eine Zeile in die passende Gruppe (am Ende der Gruppe), sonst nichts - ci.yml bleibt wie es ist.
+# Jede Datei werkzeuge/*_test.py MUSS hier stehen (sonst wird «ci_lauf.py --pruefen» im Job «MoveEye» rot): entweder in
+# einer Gruppe oder in der Gruppe «hand» mit dem Grund, warum sie nicht automatisch läuft.
+#
+# Gruppen (jede Gruppe = ein eigener, paralleler Job; welche Gruppe wann läuft: werkzeuge/ci_auswahl.py):
+#   basis          ohne Browser: Bau, Selbsttest, Zusatzdatei, Update, Versionen            - läuft immer
+#   kern           Web: jede Seite, Texte, Kopf, Protokoll                                  - bei jeder Änderung am Programm
+#   rechte         Web: Benutzer, Rechte, PIN, Sicherheit                                   - bei jeder Änderung am Programm
+#   live           Web: Live-Bild, Kameras, Ansichten                                       - bei jeder Änderung am Programm
+#   daten          Web: Datentausch, Stimme, Simulator intern, Werkstatt, Bausatz           - bei jeder Änderung am Programm
+#   spiele-1       Spielesammlung (alles ausser «Was nun?»), Kacheln, fertige Spiele        - nur bei Änderungen an Spielen, auf main immer
+#   spiele-2       «Was nun?» (allein etwa 13 Minuten, gemessen 11.11.2026), Schach zu zweit - nur bei Änderungen an Spielen, auf main immer
+#   simlive        gegen einen laufenden Simulator (Job «Simulator · läuft», Adresse in $SIM) - wenn die Godot-Tests laufen
+#   hand           läuft nicht im CI - der Grund steht in der letzten Spalte
+#
+# Limit: nach so vielen Minuten wird der Test abgebrochen (rot). Nochmal: «1x» = bei Rot genau EIN zweiter Versuch (nur für
+# Tests, die auf einem vollen Rechner bekanntermassen wackeln; ein Erfolg erst im zweiten Versuch wird als Warnung gemeldet),
+# «-» = kein zweiter Versuch. Im Befehl: $MW = die neueste webcam_bewegung_X_Y_Z.py, $CI_STRENG = «--streng» auf main,
+# $SIM = Adresse des laufenden Simulators. Der Befehl darf kein « | » enthalten (Trennzeichen der Spalten).
+
+# ---------------------------------------------------------------------------------------------------- basis (ohne Browser)
+basis | 5  | -  | python3 werkzeuge/bauen.py --pruefen | Quelle und Datei passen zusammen (bauen.py --pruefen)
+basis | 3  | -  | python3 werkzeuge/bau_pruefen.py --ci | Bau-Infos passen zum Projektstand (bau_pruefen.py, nur Warnung – nichts wird nachgezogen)
+basis | 10 | -  | echo "Teste $MW" && python3 -m py_compile "$MW" && MW_SELFTEST_NO_SIG=1 python3 "$MW" --self-test . | Selbsttest (ohne Signaturen – die prüft der Update-Test «stand» mit dem öffentlichen Schlüssel)
+basis | 8  | -  | python3 werkzeuge/zusatzdaten_test.py --datei "$MW" | Zusatzdatei – gültig / verändert / fehlt, Signatur (Test-Schlüssel), Kern ohne ZIP, Grösse
+basis | 5  | -  | python3 werkzeuge/sim_manifest_test.py --datei "$MW" | Drei Spuren – Simulator nur im signierten versions.json (Test-Schlüssel)
+basis | 3  | -  | python3 werkzeuge/versionen.py --test > /dev/null && python3 werkzeuge/versionen_spuren_test.py | Drei Spuren – Versionsprüfung je Spur
+basis | 12 | -  | python3 werkzeuge/update_uebergang_test.py --nur uebergang | Update-Übergang: ältestes Gerät und Brücke holen die neu gebaute Version (HTTPS, ZIP fehlt, USB, falsche Signatur; Wegwerf-Schlüssel)
+basis | 10 | -  | python3 werkzeuge/update_uebergang_test.py --nur stand $CI_STRENG | Veröffentlichter Stand: jede Datei in versions.json da, Prüfsumme, echte Signatur; alte Geräte holen die neueste Version
+
+# ---------------------------------------------------------------------------------------------------- kern (Web)
+kern | 15 | -  | python3 werkzeuge/web_rauchtest.py --browser | Web-Rauchtest (alle Adressen ohne / mit Anmeldung, jede Seite im Browser)
+kern | 8  | -  | python3 werkzeuge/deutsch_luecken_test.py | Deutsche Lücken (keine englischen Texte im deutschen Web, /messages übersetzt)
+kern | 4  | -  | python3 werkzeuge/kopf_chip_test.py | Kopf-Chip «N Hinweise» statt «alles ok», wenn etwas gemeldet wird
+kern | 4  | -  | python3 werkzeuge/werkskopie_test.py | Werkseinstellungen - Liste der Kopien mit Datum
+kern | 5  | -  | python3 werkzeuge/protokoll_ruhe_test.py | Ruhiges Protokoll (kein Hin und Her bei walk_frames und Wind)
+kern | 8  | 1x | python3 werkzeuge/erststart_test.py | Erster Start ruhiger (Teil 639zzs - nie mehr als ein Hinweis gleichzeitig, Reihenfolge, neues Gerät ohne «Neu in dieser Version»)
+
+# ---------------------------------------------------------------------------------------------------- rechte (Web)
+rechte | 8 | -  | python3 werkzeuge/rechte_schutz_test.py --browser | Rechte und Schutz (Kind / Familie / ohne Rechte, PIN für alles im Browser, Stufe → Sirene, Zeitplan nach hartem Neustart)
+rechte | 5 | -  | python3 werkzeuge/sicherheit_karte_test.py | Karte «Sicherheit» wieder da (Administrator sieht sie, andere Benutzer nicht)
+rechte | 12 | 1x | python3 werkzeuge/qr_karten_test.py --browser | QR-Befehls-Karten (Teil 639zzp - Prüfnummer, fremd / verändert / gesperrt, Sperrzeit, aus = kein Lesen, Rechte, Werkstatt im Browser)
+
+# ---------------------------------------------------------------------------------------------------- live (Web)
+live | 8  | 1x | python3 werkzeuge/bildstrom_test.py | Kamerabilder im Browser (Verbindungen, Selbstheilung, Neu laden bleibt im Reiter)
+live | 8  | 1x | python3 werkzeuge/ansichten_test.py | Drei Kamera-Ansichten (Kopf / Wärmebild / Weitwinkel, Übersichtsbild, pro Gerät gemerkt)
+live | 6  | -  | python3 werkzeuge/untersuchen_test.py --browser | «🔍 Untersuchen» im Live-Bild (Ausschnitt, Kopf, Weitwinkel, Wärmebild, Hochladen, Rechte, Gäste, Funde, Zeitlimit, Browser)
+live | 8  | 1x | python3 werkzeuge/kamerawahl_test.py | Kamerawahl (kleine Bilder aller Videoquellen, Antippen wechselt nur das grosse Bild, Passwort nie im Browser)
+live | 8  | 1x | python3 werkzeuge/live_sauber_test.py | Live-Bild sauber (Knöpfe und Kacheln erst nach einem Tipp, 4 s, Vollbild, Maus, Schalter)
+
+# ---------------------------------------------------------------------------------------------------- daten (Web)
+daten | 8 | -  | python3 werkzeuge/tausch_test.py --browser | Datentausch (Dateien, Texte mit Versionen, Chats, Rechte, Gäste, Grenzen, Hochladen in Stücken, Browser)
+daten | 6 | -  | python3 werkzeuge/bioclip_test.py --browser | «🌿 Bestimmen» im Datentausch (Ersatz-Modell, Rechte, Gäste, Laden mit Prüfsumme, Zwischenspeicher, besetzt, Browser)
+daten | 4 | -  | python3 werkzeuge/sim_intern_test.py | Simulator intern (gefälschtes Pi-Paket - holen, prüfen, auspacken, starten, beenden, zurück)
+daten | 6 | 1x | python3 werkzeuge/piper_test.py --browser | Piper-Stimme (Tabelle, Ersatz alte Stimme, Laden mit Prüfsumme, Browser «Ton im Browser», Simulator /speech)
+daten | 6 | -  | python3 werkzeuge/werkstatt_html.py --aus /tmp/werkstatt --test --bilder /tmp/werkstatt && ls -la /tmp/werkstatt | Werkstatt offline (eine HTML-Datei, file://, Netz gesperrt, keine JS-Fehler, Modell, Reiter)
+daten | 5 | -  | python3 werkzeuge/bausatz.py --sprachen de --unsigniert --aus /tmp/bausatz && ls -la /tmp/bausatz | Selbstbau-Paket (bausatz.py, nur Deutsch, ohne Signaturprüfung)
+
+# ---------------------------------------------------------------------------------------------------- spiele (nur bei Spiele-Änderungen, auf main immer)
+spiele-1 | 15 | 1x | python3 werkzeuge/spiele_test.py --ohne wasnun | Spielesammlung (Paket, GAMES_PKG, jedes neue Spiel am Handy und PC ohne Internet; «Wobbly Truck», Schach) – ohne «Was nun?»
+spiele-1 | 5  | -  | python3 werkzeuge/spiele_test.py --kacheln-https | Spiele-Kacheln über https (Bilder vom gleichen Ursprung, keine http://-Bilder, Browser)
+spiele-1 | 4  | -  | python3 werkzeuge/fertigspiele_test.py | Fertige Spiele zum Nachladen (nur der Admin lädt, Prüfsumme, Platz, Entpacken, Kachel, Spiele-Port, Entfernen - mit Ersatz-Paketen)
+spiele-1 | 5  | -  | python3 werkzeuge/spiele_ordnen_test.py | Spiele unter «Mehr» - ein Einstieg «Spielen», Kachel «Spielecke», Freigeben von der Spielecke aus
+spiele-2 | 22 | 1x | python3 werkzeuge/spiele_test.py --nur wasnun | Spielesammlung: «Was nun?» (15 Bilder: Lösungswege, Versatz, Räume, Notizbuch, Zufalls-Läufe – auf GitHub gemessen etwa 13 Minuten)
+spiele-2 | 8  | -  | python3 werkzeuge/schach_fern_test.py | Schach zu zweit mit je einem Handy (Vermittlung auf dem Pi - Regeln, Code, Sitz-Schlüssel, Grenzen, Gäste, Browser mit zwei Handys)
+
+# ---------------------------------------------------------------------------------------------------- simlive (laufender Simulator)
+simlive | 5 | -  | python3 werkzeuge/smalltv_test.py --sim "$SIM" --datei "$MW" | SmallTV (MoveEye Teil 552 / 553) gegen den virtuellen SmallTV des laufenden Simulators
+simlive | 5 | -  | python3 werkzeuge/hospiz_test.py --sim "$SIM" --datei "$SIM_HOSPIZ" | «Das Hospiz» live: kein Start ohne Passwort über /control (Test-HOME)
+
+# ---------------------------------------------------------------------------------------------------- hand (nicht im CI)
+# (zurzeit leer - Beispiel:  hand | - | - | python3 werkzeuge/xyz_test.py | braucht ein echtes Gerät am USB)

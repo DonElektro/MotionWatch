@@ -23,6 +23,62 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 3.80.0: Neu (Versuch, ab Werk aus): QR-Befehls-Karten. Eine gedruckte Karte vor die Kamera halten löst einen Befehl aus:
+    Push mit eigenem Text (auch mit Foto), Text vorlesen, Notiz im Verlauf, Aufnahme starten, Licht/Relais, Kopf auf eine
+    Position, Profil wechseln. Karten erstellst du in der «Karten-Werkstatt» unter Mehr; es gelten nur Karten von deinem
+    MoveEye; Ausschalten per Karte geht nicht. Einschalten: Einstellungen → Kameras & Kopf → «QR-Befehls-Karten». Reichweite
+    etwa 80 cm bei Postkartengrösse, etwa 2 m bei A4 (geschätzt, nicht an der echten Kamera gemessen).
+  * 3.79.0: Datentausch: Fotos vom iPhone bleiben nicht mehr bei 0 % hängen (jedes Stück hat jetzt ein Zeitlimit, wird bei
+    Bedarf wiederholt und in kleineren Stücken gesendet; nach einem Fehler geht es mit «Nochmal versuchen» dort weiter, wo es
+    aufgehört hat). Erster Start ruhiger: Hinweise erscheinen nacheinander statt gleichzeitig; nach einer Neuinstallation keine
+    Versions-Neuigkeiten.
+  * 3.78.0: «Was nun?»: fünf neue Bilder (jetzt 15), noch schwieriger, mit der neuen Stufe «Meister+»; Bilder mit mehreren
+    Räumen und gegen die Zeit; ein Notizbuch sammelt gefundene Hinweise; Bestzeit pro Bild; bisherige Sterne bleiben erhalten.
+  * 3.77.0: Schach zu zweit mit je einem Handy: Ein Handy erstellt ein Spiel und zeigt einen kurzen Code (oder QR-Code), das
+    andere tritt bei. Die Partie läuft über dein MoveEye, auch für Gäste, solange «Spiele freigeben» an ist. Remis anbieten, Zug
+    zurück auf Anfrage, Revanche, Zuschauen mit dem Code; nach einer Verbindungspause geht es von selbst weiter. Spielesammlung
+    einmal neu laden: Mehr → Spielen → Spielecke → «Installieren / aktualisieren»
+  * 3.76.1: Spiel «Was nun?»: Im Hochformat reagiert das Spiel jetzt genau dort, wo man tippt (das Bild verschob sich vorher
+    nach dem Antippen leicht). Spielesammlung einmal neu laden: Mehr → Spielen → Spielecke → «Installieren / aktualisieren»
+  * 3.76.0: Spielecke: neues Schach ersetzt das alte – letzter Zug markiert, mögliche Felder als Punkte, animierte Züge, alles
+    auf Deutsch, 8 Stärke-Stufen, Tipp-Knopf, Lern-Modus mit Warnung vor groben Fehlern, Zug zurück, zu zweit am selben Gerät,
+    die Partie wird gespeichert. Spielesammlung einmal neu laden: Mehr → Spielen → Spielecke → «Installieren / aktualisieren»
+  * 3.75.0: Spiel «Was nun?»: fünf neue Bilder (jetzt zehn) mit Schwierigkeitsgraden von leicht bis Meister. Ab Bild 6 kann man
+    Dinge mitnehmen und kombinieren; manche Bilder haben zwei Lösungswege und eine Meister-Lösung. Bisherige Sterne bleiben
+    erhalten. Spielesammlung einmal neu laden: Mehr → Spielen → Spielecke → «Installieren / aktualisieren»
+  * 3.74.0: Spielecke: drei neue Spiele zum Nachladen unter Mehr → Spielen → Spielecke → «Weitere Spiele zum Nachladen»:
+    «Abenteuer mit Angst» (interaktive Geschichte, ab ca. 12 Jahren), «Heroine Dusk» (Verlies-Rollenspiel, Englisch) und «HexGL»
+    (3D-Rennspiel). Unter «Mehr» gibt es nur noch einen Eingang «Spielen»; die Spielecke ist dort die oberste Kachel, «Spiele
+    freigeben» steht auf der Spielecke
+  * 3.73.0: Spielecke: Wobbly Truck mit Nitro, Zeitlupe bei grossen Stunts, Effekten und Ton, grosser Combo-Anzeige,
+    Geist-Fahrer (deine beste Fahrt fährt mit), fünf Welten (Wüste, Wald, Schnee, Vulkan, Nacht), neuen Elementen (Sprungfeder,
+    Einsturzbrücke, Feuerringe, Felsen, Eis, Schlamm) und einer Verfolgungsjagd alle 1000 m – der Rekord der Stunt-Piste beginnt
+    neu, der alte bleibt als «alte Strecke» sichtbar. Neues Spiel «Was nun?»: Bilder-Rätsel mit 5 Bildern, Sternen, Tipp-Knopf
+    und Geheimnissen (Idee von Elektro). Spielesammlung einmal neu laden: Mehr → Spielecke → «Installieren / aktualisieren»
+  * 3.72.0: Sicherheit und Anzeige nachgebessert: Die PIN fürs Ausschalten gilt jetzt überall im Browser (auch Modus
+    «Transport», «Camping aus» und der Kurzbefehl). Benutzer ohne Admin-Rechte kommen nicht mehr an alte Einstellungs-Kopien und
+    schalten den Fernzugriff nicht. «Wachsam» lässt die Sirene von «Voll» nicht mehr an, Ein / Aus wird sofort gespeichert. Die
+    Karte «Sicherheit» ist wieder da, oben steht «N Hinweise» statt «alles ok», wenn etwas gemeldet wird, deutsche Seiten sind
+    durchgehend deutsch, und das Protokoll ist ruhiger
+  * 3.71.1: Live-Bild aufgeräumt: Die Knöpfe oben im Bild und die kleinen Kamera-Bilder erscheinen erst, wenn du das Bild
+    antippst (am PC: Maus darüber), und verschwinden nach 4 Sekunden wieder. Immer zeigen: Einstellungen → Netzwerk & Zugang →
+    Web-Stream → «Knöpfe im Live-Bild immer zeigen» (Experte, gilt nur auf diesem Gerät). Kameras heissen jetzt auch auf Deutsch
+    «USB-Kamera» und «Pi-Kamera»
+  * 3.71.0: Live-Bild am echten Gerät: kleine Bilder aller Kameras (Kopf, Weitwinkel, Wärmebild, USB-, Pi- und Netzwerk-Kameras)
+    oben links – antippen zeigt diese Kamera gross (nur die Anzeige, Erkennung und Einstellungen bleiben); fehlt Kopf,
+    Weitwinkel oder Wärmebild, eine graue Kachel «nicht angeschlossen»; bei vielen Kameras «⋯ Kameras»
+  * 3.70.2: Flight of the Amazon Queen: Hinweis «Am PC spielen – auf iPad/iPhone stürzt es ab» auf der Kachel (jetzt in der
+    Gruppe «⌨️ Am PC mit Tastatur und Maus»); auf iPad/iPhone kommt vor dem Start eine Warnung mit «Trotzdem starten»
+  * 3.70.1: Simulator-Betrieb: Hinweis «💧 Linse verschmutzt», wenn im Simulator viel Wasser oder Beschlag auf der Linse ist, mit
+    Knopf «🧽 Linse putzen» (ab Sim 3.67.1)
+  * 3.70.0: Spielecke: Wobbly Truck mit neuer Stunt-Piste – 14 wechselnde Abschnitte (Half-Pipe, Tunnel, Lücken, Trampolin …),
+    Supersprünge, neue Stunts, eigener Rekord (Spielesammlung GS-1.7)
+  * 3.69.2: Spielecke über https: die Bilder der Kacheln (Kevlaschef, Quantum, FOTAQ) erscheinen wieder – sie kommen jetzt vom
+    gleichen Server wie die Seite
+  * 3.69.1: iPhone «Zum Home-Bildschirm»: MoveEye-Symbol statt schwarzem «M» – das Symbol steckt jetzt direkt in der Seite (iOS
+    lädt es sonst nicht über das eigene Zertifikat)
+  * 3.69.0: Spielecke: «Flight of the Amazon Queen» (1995, CD-Fassung mit Sprachausgabe, Deutsch/Englisch) – ScummVM im Browser,
+    Admin lädt es einmal (Sprache wählen, feste Prüfsumme, 2 GB bleiben frei)
   * 3.68.1: Härtung: hochgeladene Bilder (Untersuchen, Datentausch-Vorschau, KI-Helfer) – Grösse aus dem Dateikopf
     (JPEG/PNG/WebP), Pixelbomben über 60 MP oder 20 000 px je Seite werden ohne Dekodieren abgewiesen
   * 3.68.0: 🔍 Untersuchen: im Live-Bild einen Bereich (oder das ganze Bild) untersuchen – KI und BioCLIP sagen, was zu sehen
@@ -57,60 +113,6 @@ Features
   * 3.62.0: Piper-Stimme: MoveEye spricht Ansagen mit einer natürlichen Offline-Stimme (Thorsten; Stimme pro Sprache, Tempo,
     Lautstärke, «Stimme testen»), einmal geladen mit fester Prüfsumme; Ansagen auch im Browser («🔊 Ton im Browser»), im
     Pi-Fenster und im Simulator; ohne Piper die alte Stimme.
-  * 3.61.0: Simulator intern: MoveEye Sim läuft abgespeckt direkt auf dem Pi 5 (Reiter Simulator → «🧪 Simulator intern (auf
-    diesem Pi) ausprobieren»), Paket signiert geprüft, «Beenden» = zurück zur vorherigen Verbindung; alte Desktop-Symbole «MW
-    Sim · Basis» und x86-«MoveEye Sim» werden aufgeräumt. Dazu Sim 3.57.0: Gerät wie das echte (Gehäuse v5.3), Pflanzen
-    natürlicher, PS5-Controller am Simulator-PC.
-  * 3.60.0: Fehlalarme und Pushes: MoveEye merkt sich Fehlalarm-Stellen und fragt nach 3 Fehlalarmen in 7 Tagen einmal «künftig
-    ignorieren?», Windschutz für Pflanzen-Bereiche, Alarme in der Pause gebündelt («+N weitere in M Min.» mit Bildstreifen),
-    Zonen-Name im Push, kurzer Clip (ab Werk aus), «Bilder bleiben zu Hause» (ab Werk aus); doppelte Bestätigung im
-    Erkennungstest messbar · Objekte und Profile: Erkennungsprofile 🏕️ Nacht am Zelt · 🌳 Garten tagsüber · 🏠 Hausüberwachung · 🔋
-    Akku sparen (von Hand, per Zeitplan, vom Modus oder bei tiefem Akku; ohne Profil wie bisher), Wildtiere mit Namen («🦊 Fuchs
-    beim Zelt»), Fahrzeuge je Art melden / nur protokollieren / ignorieren, «📦 Paket vor der Tür», liegen gelassene und
-    verschwundene Gegenstände; im Akku- und Nachtprofil rechnet die KI weniger.
-  * 3.59.0: MoveEye-Datei schlank: Hauptdatei von 5,0 auf 3,4 MB (mehr in die Zusatzdatei: Übersetzungen, Anleitung, Web-Teile;
-    gebaute Datei ohne Kommentare, mit Tabs, gleiche Zeilennummern). Ohne Zusatzdatei startet MoveEye wieder im Kern, mit «Jetzt
-    nachladen». Grenze: Warnung ab 4 MiB, Abbruch ab 5 MiB.
-  * 3.58.0: Weitwinkel = Wache: leichte KI im Weitwinkelbild – nur Personen rufen den Kopf (Tiere / Fahrzeuge wählbar),
-    Auslösezonen im Weitwinkelbild (Zonen-Editor 🔭), nachts mit Wärmebild kein Personen-Alarm ohne Wärme (ab Werk an, ohne
-    Wärmebild wie bisher); Anleitung «Weitwinkel einrichten und testen».
-  * 3.57.0: Drei Kamera-Ansichten: Knopf «Ansicht» schaltet das Hauptbild 🎯 Kopf → 🌡 Wärmebild → 🔭 Weitwinkel (mit Rahmen, wohin
-    der Kopf schaut), lang drücken = Auswahl; kleines Übersichtsbild in der Ecke (antippen = tauschen, pro Gerät gemerkt) –
-    Live, Controller-Ansicht, Sim-Ansicht und Pi-Fenster.
-  * 3.56.0: Drei Spuren: MoveEye, Simulator und Gehäuse haben je eine eigene Nummer und erscheinen einzeln; MoveEye prüft den
-    Simulator für /sim über die signierte Liste (versions.json «sim»), der HP holt neue Simulatoren selbst, das Versions-Paar
-    warnt nur noch unter der Mindestversion.
-  * 3.55.2: Kamerabilder: Nur sichtbare Bilder halten eine Verbindung offen; die Vorschauen unter Einstellungen → Kameras kommen
-    als Einzelbilder (2 pro Sekunde); bleibt ein Bild 5 s ohne neues Bild, verbindet es sich selbst neu (kein «noch kein Bild»
-    mehr bis zum Neuladen); ↻ lädt den aktuellen Reiter neu, statt zu Live zu springen.
-  * 3.55.1: Simulator: kein Absturz mehr bei KI-Trainingsbildern «Vielfalt hoch» (Morgen im Bergtal in einer Welt); Tropfen und
-    Beschlag auf der Linse funktionieren jetzt auch im Kompatibilitäts-Modus (Linux/HP), Protokoll ohne Shader-Fehlerflut.
-  * 3.55.0: HP rechnet rund um die Uhr (Erkennung messen, KI-Trainingsbilder, Langzeittest); Spielen am HP oder Zuschauen in
-    MoveEye Live hält das Rechnen sofort an, nach 15 Min. ohne Zuschauer geht es dort weiter; «HP rechnet» im Reiter Simulator
-    zum Zuschauen; Bildschirm schläft nach 10 Min.; HP-Update nur in Pausen.
-  * 3.54.0: Sim-Ansicht: im Simulator-Betrieb zeigt die Live-Seite auf Handy und Tablet ein grosses Simulator-Bild mit grossen
-    Knöpfen (Kopf, Folgen, IR, Licht, Sirene, Aufnahme), «⋯ Mehr» und «▦ Klassisch»; «🎮 Spielen» startet ein Spiel mit einem
-    Tipp, gespielt wird mit Knöpfen im Browser; das Simulator-Bild wird nicht mehr abgeschnitten (auch der Spiel-Assistent).
-  * 3.53.0: Simulator-PC (HP): während der Erkennungstests zeigt der Kiosk ein Testbild-Dashboard (Live-Bild mit MoveEyes
-    Rahmen, Soll/Ist, Fall N/M, Bilanz, 2 Min. Zusammenfassung am Schluss); neues automatisches, signiertes Update (nachts, nie
-    während eines Tests).
-  * 3.52.0: Geschichten: «× Beenden» und Esc auf jeder Karte, alle Fenster im Handy-Stream, Geschichten vom Handy starten (Mehr
-    › Spielen), Touch-Stick «gehen»; Erkennungstests auf dem Simulator-PC (HP) als eigener GitHub-Runner.
-  * 3.51.0: Gehäuse v5.3 ist Standard: Messing-Gewindeeinsätze M3, Halter für Wand/Baum mit Gurt, Akkuklappe im Boden (Zellen
-    tauschen ohne Ausbau), Luftkanal für den Pi-Lüfter, Zugentlastung; neue Platte C; v5.2/v5.1 wählbar.
-  * 3.50.0: Werkstatt «Bauen» als eigenständige Datei MoveEye_Werkstatt.html: läuft offline im Browser ohne Pi (alle Reiter, 3D,
-    Einzelteile, Druckplatten, Pakete, 5 Sprachen); bei jedem Release unter GitHub-Releases
-    (latest/download/MoveEye_Werkstatt.html) und im Bausatz.
-  * 3.49.0: Erkennung: deutlich mehr Personen erkannt (Test 3: 42 % → 69 %, Kinder 92 %); Auto-Tune gedeckelt, Wind-Regel nur
-    letzte 2 Min., aufrechte KI-Person sofort «Person?» und nie «Tier», Autos/Scheinwerfer nachts keine Person, Kopf schwenkt
-    beim Verfolgen mit.
-  * 3.48.1: Werkstatt im Simulator wie in MoveEye (Karte unter dem Bild, Symbole, Farben), Knopftexte zweizeilig statt
-    abgeschnitten; echte 3D-Modelle für Füsse und Stopfen, echte Lage auf den Druckplatten.
-  * 3.48.0: Werkstatt: Teil antippen → «Nur dieses Teil zeigen» mit Grösse, Druck-/Zukauf-Infos, 3MF-Download, «Liegend wie
-    gedruckt», «Wo es hingehört» (Sprung zum Montageschritt); neue Ansicht «Druckplatten» A/B mit Download je Platte und allen
-    Platten als ZIP; MoveEye und Simulator.
-  * 3.47.1: Druckdateien herunterladen klappt auch auf dem Pi ohne Projektordner (Pi holt die Datei selbst, sauberer Dateiname);
-    «Alle als ZIP» nur für die gewählte Variante, mit Kurzanleitung.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -119,10 +121,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_3_68_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_3_80_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_3_68_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_3_68_1.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_3_80_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_3_80_0.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -139,7 +141,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "3.68.1"
+APP_VERSION = "3.80.0"
 
 
 def default_data_dir():
@@ -264,8 +266,8 @@ def prepare_settings_file():
 
 
 
-ZD_FILE = "moveeye_daten_3_68_1.zip"
-ZD_SHA256 = "f2fb33069445a88c3470ab46026f9dc9393e2cf35c7d55f2b24f4132cdaf980d"
+ZD_FILE = "moveeye_daten_3_80_0.zip"
+ZD_SHA256 = "b4c219b68f67742bf231dc2fbf6f530f5161180c5a308e074f5b798e1ca5aadb"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -607,6 +609,8 @@ CFG = {
     "refscan_photos": 2, "refscan_settle": 1.5, "refscan_sens": 50, "refscan_min_area": 0.6,
     "refscan_on_arm": False, "refscan_every": 0, "refscan_push": True, "refscan_push_all": False, "refscan_pano_on": False, "refscan_pano_day": "",
     "protect_level": "off", "protect_pin": "", "escalate_on": False, "escalate_siren_s": 30,
+    "protect_auto": ["?"],
+    "sched_manual": {},
     "tamper_on": True,
     "tamper_motion": True,
     "tamper_power": True,
@@ -1537,6 +1541,8 @@ def set_text(key, value):
 		if key == "use_case":
 			return use_case_set(value, "settings")
 		CFG[key] = value
+		if key == "siren_on":
+			protect_auto_user("siren_on")
 		if key == "ai_model":
 			own_ai_switched()
 		if key == "net_mode":
@@ -1815,11 +1821,68 @@ def days_text(days, names=("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")):
 	return ", ".join(names[d] for d in days) or "–"
 
 
+def _sched_forced(plans, now):
+	forced = {}
+	for s in plans:
+		if schedule_active(s, now):
+			forced.update(s["actions"])
+	return forced
+
+
+def sched_manual_restore(plans, now=None):
+	"""
+
+"""
+	SCHED["restored"] = True
+	notes = CFG.get("sched_manual") if isinstance(CFG.get("sched_manual"), dict) else {}
+	if not notes:
+		return
+	now = now or datetime.now()
+	keep = {}
+	for k, n in notes.items():
+		try:
+			v, t0 = n["v"], datetime.fromtimestamp(float(n["t"]))
+		except (TypeError, KeyError, ValueError, OSError, OverflowError):
+			continue
+		if k not in SCHED_KEYS or k not in CFG or t0 > now + timedelta(minutes=5):
+			continue
+		span = max(0.0, (now - t0).total_seconds())
+		step = max(60.0, span / 3000.0)
+		ok, i = True, 0
+		while ok and i * step <= span:
+			ok = _sched_forced(plans, t0 + timedelta(seconds=i * step)).get(k, None) == v
+			i += 1
+		if ok and _sched_forced(plans, now).get(k, None) == v:
+			keep[k] = n
+	for k, n in keep.items():
+		SCHED["manual"].add(k); SCHED["last"][k] = n["v"]; SCHED["base"][k] = CFG[k]
+	if keep:
+		log_event("sched", "Schedule: switched by hand before the restart - stays: " + ", ".join(sorted(keep)))
+	if keep != notes:
+		CFG["sched_manual"] = keep; save_settings()
+
+
+def _sched_manual_note(forced):
+	""
+	old = CFG.get("sched_manual") if isinstance(CFG.get("sched_manual"), dict) else {}
+	new = {}
+	for k in sorted(SCHED["manual"]):
+		if k in forced:
+			o = old.get(k) if isinstance(old.get(k), dict) else None
+			new[k] = o if o and o.get("v") == forced[k] else {"v": forced[k], "t": time.time()}
+	if new != old:
+		CFG["sched_manual"] = new
+		return True
+	return False
+
+
 def schedule_tick():
 	""
 	with LOCK:
 		plans = [dict(s) for s in SCHEDULES]
 	now = sim_now()
+	if not SCHED.get("restored"):
+		sched_manual_restore(plans)
 	forced, active, active_idx = {}, [], []
 	for i, s in enumerate(plans):
 		if schedule_active(s, now):
@@ -1857,6 +1920,8 @@ def schedule_tick():
 				CFG[k] = v0
 			log_event("sched", f"Schedule: {labels.get(k, k)} back to {'ON' if CFG[k] else 'OFF'}")
 	SCHED["last"] = dict(forced)
+	if _sched_manual_note(forced):
+		save_settings()
 	STATE["sched_active"] = list(active); STATE["sched_active_idx"] = active_idx
 	STATE["sched_forced"] = dict(forced); STATE["sched_manual"] = sorted(manual)
 
@@ -1866,6 +1931,7 @@ def sched_user_changed(key):
 	if key in SCHED["last"]:
 		SCHED["manual"].add(key)
 		SCHED["base"][key] = CFG[key]
+		_sched_manual_note(SCHED["last"])
 
 
 def schedule_add():
@@ -2159,26 +2225,47 @@ def users_action(d, who="admin"):
 
 
 
+
+
+
+
 VIEW_GET_PAGES = {"/", "/help", "/quick", "/more"}
 VIEW_GET = ("/api/tunnel", "/api/helper", "/api/info", "/api/nettest", "/api/state", "/api/alerts", "/api/appearance", "/api/version",
             "/api/health", "/api/gps", "/api/zones", "/api/webpush", "/api/ui", "/api/battery", "/api/sensors", "/api/qs", "/api/schedule",
-            "/api/schema", "/api/triggers", "/api/fa", "/api/appicon", "/api/audio", "/i18n/", "/app-icon/", "/sim-icon/", "/api/simbar", "/api/news")
+            "/api/schema", "/api/triggers", "/api/fa", "/api/appicon", "/api/audio", "/i18n/", "/app-icon/", "/sim-icon/", "/api/simbar", "/api/news",
+            "/api/ui_simple", "/api/ui_sync")
 PERM_GET = {"live": ("/cams", "/preview", "/api/cams", "/api/frame.jpg", "/video_feed", "/cam_feed/", "/cam_snap/", "/snapshot.jpg", "/api/audio/live",
                      "/sim/view.jpg", "/sim/view.mjpg"),
             "rec": ("/recordings", "/diary", "/kino", "/api/kino", "/api/dataset.zip", "/api/recordings", "/api/places", "/rec/file/", "/rec/play/",
                     "/rec/thumb/", "/rec/share/", "/rec/report/", "/api/day", "/api/diary", "/diary/img/", "/api/timelapse", "/timelapse/",
                     "/api/species", "/api/loop", "/api/report"),
-            "arm": ("/protect", "/zones"),
+            "arm": ("/protect", "/zones", "/api/protect"),
             "games": ("/party", "/api/party"),
             "settings": ("/settings",)}
 VIEW_POST = {"/api/webpush", "/api/time", "/api/gps"}
 PERM_POST = {"rec": {"/api/rec/prepare", "/rec/zip", "/api/rec/fav", "/api/rec/false"},
-             "arm": {"/api/arm", "/api/night", "/api/camping", "/api/quick", "/api/mode", "/api/tunnel", "/api/helper", "/api/info", "/api/nettest", "/api/tv"},
+             "arm": {"/api/arm", "/api/night", "/api/camping", "/api/quick", "/api/mode", "/api/helper", "/api/info", "/api/nettest", "/api/tv"},
              "light": {"/api/light", "/api/disco"},
              "talk": {"/api/talk", "/api/talk/stop", "/api/tts"},
              "head": {"/api/follow", "/api/mover", "/api/move", "/api/stick"},
              "settings": {"/api/zones", "/api/schedule"}}
+
+
+
+PERM_PROTECT_ACTIONS = ("level", "test")
 PERM_SET_KEYS = {"arm": {"thermal_on", "nightvision", "show_objects", "show_mask"}, "head": {"track_person", "track_motion"}}
+
+
+def view_get_ok(path, table=None):
+	""
+	return any(path == x or (x.endswith("/") and path.startswith(x)) for x in (VIEW_GET if table is None else table))
+
+
+def perm_get_ok(path, table):
+	"""
+"""
+	return any(path == x or (x.endswith("/") and path.startswith(x)) or (x.startswith("/api/") and path.startswith(x + "/"))
+               for x in table)
 
 
 def role_allows(role, path, method, d, perms=None):
@@ -2191,10 +2278,9 @@ def role_allows(role, path, method, d, perms=None):
 			return True
 		if path.startswith(ADMIN_GET):
 			return False
-		if path in VIEW_GET_PAGES or path.startswith(VIEW_GET):
+		if path in VIEW_GET_PAGES or view_get_ok(path):
 			return True
-		return any(path == x or (x.endswith("/") and path.startswith(x)) or (x.startswith("/api/") and path.startswith(x))
-                   for p in P for x in PERM_GET.get(p, ()))
+		return any(perm_get_ok(path, PERM_GET.get(p, ())) for p in P)
 	if path == "/api/servo":
 		return d.get("op") == "estop"
 	if path == "/api/webpush":
@@ -2210,6 +2296,8 @@ def role_allows(role, path, method, d, perms=None):
 		return "settings" in P and isinstance(d.get("key"), str) and d.get("key") not in USER_SETTINGS_DENY
 	if path == "/api/audio":
 		return ("siren" in P and d.get("action") in ("test", "siren", "stop")) or ("talk" in P and d.get("action") == "stop")
+	if path == "/api/protect":
+		return "arm" in P and d.get("action") in PERM_PROTECT_ACTIONS
 	if path == "/api/action":
 		return "head" in P and d.get("action") in ("center", "patrol")
 	return any(path in PERM_POST.get(p, ()) for p in P)
@@ -2462,6 +2550,11 @@ def _settings_migrations(cfg_in):
 			log_event("sys", "Settings of an older version taken over: " + "; ".join(did))
 	except Exception as e:
 		log_event("sys", f"Settings migration (232): {e}"[:150])
+	try:
+		if CFG.get("armed"):
+			protect_siren_sync()
+	except Exception as e:
+		log_event("sys", f"Settings migration (135): {e}"[:150])
 	for _f, _n in ((lambda: shortcut_migrate(cfg_in), "573"), (place_report_migrate, "317")):
 		try:
 			did = _f()
@@ -2519,6 +2612,16 @@ def save_settings():
 		_SAVE_T["last"] = time.monotonic()
 		save_settings_now()
 	_save_timer = threading.Timer(wait, go); _save_timer.daemon = True; _save_timer.start()
+
+
+def save_settings_flush():
+	"""
+"""
+	global _save_timer
+	if _save_timer:
+		_save_timer.cancel(); _save_timer = None
+	_SAVE_T["last"] = time.monotonic()
+	save_settings_now()
 
 
 
@@ -4829,6 +4932,10 @@ def alx_do(act, e, who="push"):
 		except NameError:
 			pass
 		CFG["protect_level"] = "off"
+		try:
+			protect_siren_sync()
+		except NameError:
+			pass
 		disarm()
 		sound_stop()
 		ALX["hold_until"] = 0.0
@@ -10167,9 +10274,20 @@ def arm(delay=None):
 		d = 60.0
 	d = max(0.0, min(600.0, d))
 	CFG["armed"] = True; ARM["at"] = time.time() + d; ARM["announced"] = d <= 0
-	sched_user_changed("armed"); save_settings()
+	arm_level_sync()
+	sched_user_changed("armed"); save_settings_flush()
 	log_event("sys", f"Armed in {d:.0f} s" if d else "Armed")
 	arm_tick()
+
+
+def arm_level_sync():
+	"""
+"""
+	try:
+		return protect_siren_sync()
+	except Exception as e:
+		log_event("sys", f"Protection level: {e}"[:150])
+		return False
 
 
 def arm_by_schedule(on, name=""):
@@ -10183,6 +10301,8 @@ def arm_by_schedule(on, name=""):
 		except (TypeError, ValueError):
 			d = 60.0
 		CFG["armed"] = True; ARM["at"] = time.time() + d; ARM["announced"] = d <= 0
+		if arm_level_sync():
+			save_settings()
 		log_event("sys", f"Armed in {d:.0f} s (schedule {name})" if d else f"Armed (schedule {name})")
 	else:
 		CFG["armed"] = False; ARM["at"] = 0.0; ARM["announced"] = True
@@ -10195,8 +10315,9 @@ def arm_by_schedule(on, name=""):
 
 
 def disarm():
+	""
 	CFG["armed"] = False; ARM["at"] = 0.0; ARM["announced"] = True
-	sched_user_changed("armed"); save_settings()
+	sched_user_changed("armed"); save_settings_flush()
 	log_event("sys", "Disarmed - no alarms")
 	arm_tick()
 
@@ -10652,7 +10773,7 @@ def _camping_overlay(on, hotspot_delay=2.0):
 		CFG["camping"] = False; CFG["camping_prev"] = {}
 		log_event("sys", "Camping profile OFF - previous settings restored")
 		if prev.get("armed", True):
-			CFG["armed"] = True; ARM["at"] = 0.0; ARM["announced"] = True; arm_tick()
+			CFG["armed"] = True; ARM["at"] = 0.0; ARM["announced"] = True; arm_level_sync(); arm_tick()
 		else:
 			disarm()
 		if not prev.get("hotspot_on", False) and STATE["hotspot"].get("on"):
@@ -10753,6 +10874,7 @@ def protect_set(level, who="web", answers=None):
 	A = answers or {}
 	if level == "off":
 		CFG["protect_level"] = "off"
+		protect_siren_sync()
 		disarm()
 		return True, ""
 	CFG["protect_level"] = level
@@ -10764,11 +10886,9 @@ def protect_set(level, who="web", answers=None):
 	if level == "full" or A.get("things"):
 		CFG["refscan_on_arm"] = True
 	react = A.get("react") or ("siren" if level == "full" else "push")
-	CFG["escalate_on"] = react == "siren"
 	if react in ("light", "siren"):
 		CFG["light_white_auto"] = "alarm_dark" if CFG.get("light_white_auto") in ("", "dark") else CFG["light_white_auto"]
-	if react == "siren" and CFG.get("siren_on") == "off":
-		CFG["siren_on"] = "person"
+	protect_siren_sync(level, react)
 	for k in ("protect_level", "notify_on", "tamper_on", "gps_theft", "refscan_on_arm", "escalate_on", "siren_on"):
 		sched_user_changed(k)
 	save_settings()
@@ -10781,6 +10901,69 @@ def protect_set(level, who="web", answers=None):
 		refscan_start("scan", "protection assistant")
 	log_event("sys", f"Protection: {level} ({who})")
 	return True, ""
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+PROTECT_AUTO_KEYS = ("escalate_on", "siren_on")
+
+
+def _protect_auto():
+	a = CFG.get("protect_auto")
+	if not isinstance(a, list) or "?" in a:
+		a = ["escalate_on"] + (["siren_on"] if CFG.get("siren_on") == "person" else []) if CFG.get("escalate_on") else []
+	return [k for k in PROTECT_AUTO_KEYS if k in a]
+
+
+def protect_auto_user(key):
+	""
+	a = _protect_auto()
+	CFG["protect_auto"] = [k for k in a if k != key]
+
+
+def protect_siren_sync(level=None, react=None):
+	"""
+
+"""
+	auto = _protect_auto()
+	was = (CFG.get("escalate_on"), CFG.get("siren_on"), CFG.get("protect_auto"))
+	if level is None:
+
+
+		if (CFG.get("protect_level") or "off") == "off":
+			if "escalate_on" in auto:
+				CFG["escalate_on"] = False
+			if "siren_on" in auto and CFG.get("siren_on") == "person":
+				CFG["siren_on"] = "off"
+			auto = []
+	elif (react or ("siren" if level == "full" else "push")) == "siren":
+		if not CFG.get("escalate_on"):
+			CFG["escalate_on"] = True; auto.append("escalate_on")
+		if CFG.get("siren_on") == "off":
+			CFG["siren_on"] = "person"; auto.append("siren_on")
+	else:
+		CFG["escalate_on"] = False
+		if "siren_on" in auto and CFG.get("siren_on") == "person":
+			CFG["siren_on"] = "off"
+		auto = []
+	CFG["protect_auto"] = [k for k in PROTECT_AUTO_KEYS if k in auto]
+	changed = was != (CFG.get("escalate_on"), CFG.get("siren_on"), CFG.get("protect_auto"))
+	if was[:2] != (CFG.get("escalate_on"), CFG.get("siren_on")):
+		if not CFG.get("escalate_on"):
+			protect_cancel_escalation()
+		log_event("sys", "Protection: siren " + ("on" if CFG.get("siren_on") != "off" else "off") + ", siren after the wait "
+                  + ("on" if CFG.get("escalate_on") else "off") + (" (follows the level)" if level is None else f" (level {level})"))
+	return changed
 
 
 
@@ -10925,12 +11108,17 @@ def protect_pin_ok(pin):
 		return False
 
 
-def protect_disarm(pin, source="web"):
-	""
+def protect_pin_check(pin, source="web"):
+	"""
+"""
+	if not CFG.get("protect_pin"):
+		return True, ""
 	now = time.time()
 	PROTECT["pin_fails"] = [t for t in PROTECT["pin_fails"] if now - t < 600]
 	if len(PROTECT["pin_fails"]) >= 5:
 		return False, "too many wrong PINs - try again in 10 minutes"
+	if not str(pin or "").strip():
+		return False, "PIN needed"
 	if not protect_pin_ok(pin):
 		PROTECT["pin_fails"].append(now)
 		log_event("sys", f"Protection: wrong PIN for disarming ({source})")
@@ -10944,9 +11132,82 @@ def protect_disarm(pin, source="web"):
 			siren_alarm("tamper")
 		return False, "wrong PIN"
 	PROTECT["pin_fails"] = []
+	return True, ""
+
+
+def protect_disarm(pin, source="web"):
+	""
+	ok, err = protect_pin_check(pin, source)
+	if not ok:
+		return False, err
 	protect_cancel_escalation()
 	protect_set("off", source)
 	return True, ""
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def mode_disarms(m, gamer_watch=None):
+	""
+	m = str(m or ""); old = CFG.get("mode") or ""
+	if m == old or not CFG.get("armed"):
+		return False
+	if m == "transport":
+		return True
+	prev = CFG.get("mode_prev") if isinstance(CFG.get("mode_prev"), dict) else {}
+	cprev = CFG.get("camping_prev") if isinstance(CFG.get("camping_prev"), dict) else {}
+	if m == "":
+		return not prev.get("armed", True)
+	if m == "gamer" and old == "camping" and CFG.get("camping"):
+		watch = CFG.get("mode_gamer_watch") if gamer_watch is None else gamer_watch
+		return not watch and not cprev.get("armed", True)
+	return False
+
+
+def web_disarms(path, d):
+	""
+	if not CFG.get("armed") or not isinstance(d, dict):
+		return False
+	if path == "/api/mode":
+		return "mode" in d and mode_disarms(d.get("mode"), bool(d["mode_gamer_watch"]) if "mode_gamer_watch" in d else None)
+	if path == "/api/camping":
+		if d.get("on"):
+			return False
+		if (CFG.get("mode") or "") == "camping":
+			return mode_disarms("")
+		cprev = CFG.get("camping_prev") if isinstance(CFG.get("camping_prev"), dict) else {}
+		return bool(CFG.get("camping")) and not cprev.get("armed", True)
+	if path == "/api/set":
+		return d.get("key") == "armed" and not d.get("value")
+	if path == "/api/fleet":
+		return d.get("action") == "disarm" and d.get("id") in ("all", "me")
+	if path == "/api/sim":
+		return bool(d.get("on")) and bool(d.get("confirm")) and not CFG.get("sim_on")
+	if path == "/api/simintern":
+		return d.get("action") == "start" and bool(d.get("confirm")) and not CFG.get("sim_on")
+	return False
+
+
+def web_pin_guard(path, method, d, pin):
+	""
+	if method != "POST" or not CFG.get("protect_pin") or not web_disarms(path, d):
+		return None
+	ok, err = protect_pin_check(pin, "web " + path)
+	if ok:
+		protect_cancel_escalation()
+		return None
+	return err
 
 
 
@@ -11118,6 +11379,7 @@ def news_state(who="web", lang=None):
 		items = [{"v": v, "t": ent[v]} for v in vs]
 	items = [news_link_item(x, lang) for x in items]
 	return {"version": cur, "show": bool(items) and bool(CFG.get("news_popup", True)), "items": items, "next": news_next(),
+            "fresh": not seen,
             "done": len(MAKEOVER_DONE), "total": len(MAKEOVER_ALL), "links": news_links_on(),
             "lt": {"go": news_hint("neu_link", lang), "sim": news_hint("neu_in_sim", lang)}}
 
@@ -17623,6 +17885,7 @@ class WeatherAnalyzer:
 		self.prev_gray = None
 		self.rain_hist = deque(maxlen=30)
 		self.wind_hist = deque(maxlen=45)
+		self.wind_log = LogHold(WIND_LOG_HOLD_S, WIND_LOG_GAP_S, "calm")
 
 	def rain(self, gray):
 		if self.prev_gray is None:
@@ -17666,6 +17929,72 @@ class WeatherAnalyzer:
 
 
 
+
+
+
+
+
+
+
+
+WALK_DEADBAND = 0.75
+WALK_HOLD_S = 10.0
+WALK_JUMP = 2.0
+WALK_JUMP_HOLD_S = 2.0
+
+
+
+
+
+WIND_LEVELS = ("calm", "breezy", "strong", "storm")
+WIND_DEADBAND = 0.03
+WIND_LOG_HOLD_S = 20.0
+WIND_LOG_GAP_S = 120.0
+
+
+def walk_frames_step(cur, ideal, since, now):
+	""
+	ideal = max(4.0, min(24.0, float(ideal)))
+	want = int(max(4, min(24, round(ideal))))
+	diff = abs(ideal - cur)
+	if want == cur or diff <= WALK_DEADBAND:
+		return None, None
+	if since is None:
+		return None, now
+	if now - since >= (WALK_JUMP_HOLD_S if diff >= WALK_JUMP else WALK_HOLD_S):
+		return want, None
+	return None, since
+
+
+def wind_level_of(ws, thr, prev=None):
+	""
+	def lv(x):
+		return "calm" if x < thr else ("breezy" if x < 0.55 else ("strong" if x < 0.8 else "storm"))
+	raw = lv(ws)
+	if prev in WIND_LEVELS and WIND_LEVELS.index(raw) < WIND_LEVELS.index(prev):
+		return WIND_LEVELS[min(WIND_LEVELS.index(prev), WIND_LEVELS.index(lv(ws + WIND_DEADBAND)))]
+	return raw
+
+
+class LogHold:
+	""
+	def __init__(self, hold, gap, first=None):
+		self.hold, self.gap = float(hold), float(gap)
+		self.logged, self.cand, self.t_cand, self.t_log = first, first, 0.0, None
+
+	def feed(self, value, now):
+		""
+		if value != self.cand:
+			self.cand, self.t_cand = value, now
+		if value == self.logged or now - self.t_cand < self.hold or (self.t_log is not None and now - self.t_log < self.gap):
+			return False
+		self.logged, self.t_log = value, now
+		return True
+
+
+
+
+
 class AutoTuner:
 	def __init__(self):
 		self.reset()
@@ -17675,6 +18004,7 @@ class AutoTuner:
 		autotune_start_values()
 		self.noise_areas, self.noise_frac = [], []
 		self.last_eval = time.time()
+		self.wf_since = None
 		self.new_candidates = self.became_person = self.near_miss = self.walkers = 0
 		self.seen_ids = set()
 		self.base_min_area = None
@@ -17700,7 +18030,9 @@ class AutoTuner:
 		if CFG["min_area"] > autotune_area_cap(fg.size):
 			self._set("min_area", autotune_area_cap(fg.size), "at most %.1f %% of the picture" % (AUTOTUNE_AREA_MAX * 100))
 		if fps > 1:
-			self._set("walk_frames", max(4, min(24, round(fps * CFG["walk_seconds"]))), "fps")
+			wf, self.wf_since = walk_frames_step(CFG["walk_frames"], fps * CFG["walk_seconds"], getattr(self, "wf_since", None), now)
+			if wf is not None:
+				self._set("walk_frames", wf, "fps")
 		if not self.calibrated:
 			n, _, stats, _ = cv2.connectedComponentsWithStats(fg, 8)
 			if n > 1:
@@ -24571,13 +24903,13 @@ def tools_cfg(key, value, mac=None):
 
 
 
-SIM3D = {"version": "3.66.0", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 54406645,
-         "sha256": "f8aef227b450c341fc4d9c93977b2d00a45b8345f4e1be971d688af021788c33"}
+SIM3D = {"version": "3.67.1", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 54423791,
+         "sha256": "56909729dc6367afe39ed5c7353fa13665878bf7fae830f77773d06067a8778e"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 
 
-SIM3D_LINUX = {"version": "3.66.0", "file": "simulator3d/MoveEyeSim3D_Linux.zip", "size": 48436997,
-               "sha256": "8077acdae8d2336b36bab97c6cca767fe88d257719dececf263f0431171cdcb1", "stem": "MoveEyeSim3D_Linux",
+SIM3D_LINUX = {"version": "3.67.1", "file": "simulator3d/MoveEyeSim3D_Linux.zip", "size": 48453813,
+               "sha256": "6d79a12ef2c965f1aa5437d6fa46ad1988e3eb111991b3c1a71fc2d98752847b", "stem": "MoveEyeSim3D_Linux",
                "label": "MoveEye Sim (Linux)"}
 SIM3D_LINUX_DL = {"running": False, "got": 0, "msg": ""}
 
@@ -27549,7 +27881,7 @@ threading.Thread(target=_extra_cams_boot, daemon=True, name="extracams-boot").st
 
 PARTY = {"key": "", "until": 0.0, "game": "lobby", "seq": 0, "players": {}, "host": "", "g": {}, "tools": {}}
 PARTY_COND = threading.Condition()
-GAMES_PKG = {"version": "GS-1.6", "file": "games/MotionWatch_Spiele.zip", "size": 14633505, "sha256": "2766080ba932c76ee57cb19290d4d2b18092fa858beaee58304c06a300898b42"}
+GAMES_PKG = {"version": "GS-1.16", "file": "games/MotionWatch_Spiele.zip", "size": 15970759, "sha256": "fc1bca65a0615096eb5c99a5951cbcd29bf22ed797b9169806821fbbe9bc193a"}
 GAMES_DL = {"running": False, "msg": "", "got": 0}
 
 QUIZ = [("Wie heisst der höchste Berg der Schweiz?", "Dufourspitze (4634 m)"), ("Wie viele Kantone hat die Schweiz?", "26"),
@@ -27622,7 +27954,7 @@ def games_all_open(hours=6.0, who="web"):
 
 """
 	party_open(hours)
-	if not games_list() and not GAMES_DL.get("running"):
+	if not games_list(extra=False) and not GAMES_DL.get("running"):
 		threading.Thread(target=games_install, daemon=True, name="games-dl").start()
 	if CFG.get("sim_on") and SIM.get("ok"):
 		def _sim():
@@ -28515,11 +28847,14 @@ GAME_TILES_CSS = """.mwg{display:grid;grid-template-columns:repeat(auto-fill,min
 .mwg .i{font-size:34px}.mwg .i img{width:56px;height:56px;border-radius:12px;object-fit:cover;display:block}
 .mwg .n{font-weight:700;margin:6px 0 2px}.mwg .d{font-size:13px;color:var(--mwg-mut,#9FB0C3)}
 .mwg .gh{grid-column:1/-1;font-weight:700;margin:14px 0 2px}
+.mwg .w{font-size:12px;font-weight:600;color:var(--mwg-warn,#E9A23B);margin-top:4px}
 """
 SPIELE_PAGE = SPIELE_PAGE.replace("/*GAMETILES*/", GAME_TILES_CSS, 1)
 
 
 GAMESRV = {"port": 0, "msg": ""}
+GAMESRV_API = {}
+GAMES_MOVED = {"chess": "schach"}
 STREAMS = {"n": 0, "ip": {}, "lock": threading.Lock()}
 
 
@@ -28540,26 +28875,64 @@ def games_server_start():
 				self.send_error(403, "only in the own Wi-Fi"); return
 			from urllib.parse import unquote, urlsplit
 			path = unquote(urlsplit(self.path).path)
+			for pre_, fn_ in GAMESRV_API.items():
+				if path.startswith(pre_):
+					return fn_(self, "GET", path)
 			m = re.fullmatch(r"/g/([A-Za-z0-9_\-]{1,40})/?(.*)", path)
 			p_ = games_file(m.group(1), m.group(2)) if m else None
+			if not p_ and m and m.group(1) in GAMES_MOVED and games_file(GAMES_MOVED[m.group(1)], ""):
+				self.send_response(301); self.send_header("Location", "/g/" + GAMES_MOVED[m.group(1)] + "/"); self.end_headers(); return
 			if not p_:
 				self.send_error(404); return
 			if m.group(2) == "" and not path.endswith("/"):
 				self.send_response(301); self.send_header("Location", path + "/"); self.end_headers(); return
+			ct = ("application/wasm" if p_.endswith(".wasm") else mimetypes.guess_type(p_)[0]) or "application/octet-stream"
+			hdr = {"Content-Type": ct + ("; charset=utf-8" if ct.startswith("text/") or ct.endswith("javascript") else ""),
+                   "Cache-Control": "max-age=3600", "X-Content-Type-Options": "nosniff"}
 			try:
+				if ct != "text/html":
+					from email.utils import formatdate, parsedate_to_datetime
+					st_ = os.stat(p_)
+					lm = formatdate(int(st_.st_mtime), usegmt=True)
+					ims = self.headers.get("If-Modified-Since")
+					try:
+						same = bool(ims) and int(parsedate_to_datetime(ims).timestamp()) >= int(st_.st_mtime)
+					except (TypeError, ValueError, OverflowError):
+						same = False
+					if same:
+						self.send_response(304); self.send_header("Last-Modified", lm); self.send_header("Cache-Control", hdr["Cache-Control"])
+						self.end_headers(); return
+					with open(p_, "rb") as f:
+						self.send_response(200)
+						for k_, v_ in hdr.items():
+							self.send_header(k_, v_)
+						self.send_header("Content-Length", str(st_.st_size)); self.send_header("Last-Modified", lm)
+						self.end_headers()
+						shutil.copyfileobj(f, self.wfile, 1 << 18)
+					return
 				with open(p_, "rb") as f:
 					data = f.read()
+			except (BrokenPipeError, ConnectionResetError):
+				return
 			except OSError:
 				self.send_error(404); return
-			ct = mimetypes.guess_type(p_)[0] or "application/octet-stream"
-			if ct == "text/html":
-				h_ = (self.headers.get("Host") or "").rsplit(":", 1)[0]
-				data = games_inject_back(data, f"http://{h_}:{CFG['web_port']}/spiele" if h_ else "/")
+			h_ = (self.headers.get("Host") or "").rsplit(":", 1)[0]
+			data = games_inject_back(data, f"http://{h_}:{CFG['web_port']}/spiele" if h_ else "/")
 			self.send_response(200)
-			self.send_header("Content-Type", ct + ("; charset=utf-8" if ct.startswith("text/") or ct.endswith("javascript") else ""))
-			self.send_header("Content-Length", str(len(data))); self.send_header("Cache-Control", "max-age=3600")
-			self.send_header("X-Content-Type-Options", "nosniff")
+			for k_, v_ in hdr.items():
+				self.send_header(k_, v_)
+			self.send_header("Content-Length", str(len(data)))
 			self.end_headers(); self.wfile.write(data)
+
+		def do_POST(self):
+			if not lan_guest_ip(self.client_address[0], self.headers.get("X-Forwarded-For", "")):
+				self.send_error(403, "only in the own Wi-Fi"); return
+			from urllib.parse import unquote, urlsplit
+			path = unquote(urlsplit(self.path).path)
+			for pre_, fn_ in GAMESRV_API.items():
+				if path.startswith(pre_):
+					return fn_(self, "POST", path)
+			self.send_error(405)
 
 	class S(socketserver.ThreadingMixIn, http.server.HTTPServer):
 		daemon_threads = True
@@ -28687,14 +29060,15 @@ def spiele_page(host=""):
 		if grp:
 			cards += f'<div class="gh">{_e(GAME_GROUPS[grp])}</div>'
 		cards += "".join(f'<a class="c" href="{_e(games_url(x["dir"], x.get("start", "index.html"), host) or "/spiele/g/" + x["dir"] + "/" + x.get("start", "index.html"))}"><div class="i">{_game_icon(x, host)}</div>'
-                         f'<div class="n">{_e(x.get("name", x["dir"]))}</div><div class="d">{_e(x.get("desc", ""))}</div></a>' for x in part)
+                         f'<div class="n">{_e(x.get("name", x["dir"]))}</div><div class="d">{_e(x.get("desc", ""))}</div>'
+                         + (f'<div class="w">⚠️ {_e(x["note"])}</div>' if x.get("note") else "") + '</a>' for x in part)
 	party = (f'<a class="big" href="/p/{PARTY["key"]}/">👥 Zum Spieleabend (Quiz, Werwolf, Malen, 4 gewinnt)</a>' if party_on()
              else '<p>Der Spieleabend (Quiz, Werwolf, Malen …) ist gerade zu – öffnen kann ihn, wer MoveEye verwaltet.</p>')
 	note = "Einzelspiele – laufen direkt im Browser:" if gl else "Die Spielesammlung ist noch nicht installiert (MoveEye → Reiter Spielecke)."
 	return SPIELE_PAGE.replace("__PARTY__", party).replace("__NOTE__", note).replace("__GAMES__", cards)
 
 
-def games_list():
+def games_list(extra=True):
 	try:
 		with open(os.path.join(games_dir(), "games.json")) as f:
 			d = json.load(f)
@@ -29504,6 +29878,7 @@ class SimLink:
 		SIM["follower"] = bool(rep_.get("follower"))
 		SIM["head"] = rep_.get("head_deg") if isinstance(rep_.get("head_deg"), list) else None
 		weit_from_sim(rep_.get("wide"))
+		sim_lens_take(rep_.get("lens"))
 		SIM["leader"] = str(rep_.get("leader") or "")[:40] if SIM["follower"] else ""
 		SIM["msg"] = "connected - only watching (another MoveEye steers the simulator)" if SIM["follower"] else "connected"
 		if time.time() - SIMDIARY["t"] >= 30:
@@ -33620,8 +33995,8 @@ class MotionWatch:
 					STATE["wind_score"] = ws
 					boost = 1.0 + max(0.0, ws - CFG["wind_threshold"]) / (1 - CFG["wind_threshold"]) * (CFG["wind_boost_max"] - 1)
 					STATE["wind_boost"] = round(min(CFG["wind_boost_max"], boost), 2)
-					lvl = "calm" if ws < CFG["wind_threshold"] else ("breezy" if ws < 0.55 else ("strong" if ws < 0.8 else "storm"))
-					if lvl != STATE["wind_level"]:
+					lvl = wind_level_of(ws, CFG["wind_threshold"], STATE["wind_level"])
+					if self.weather.wind_log.feed(lvl, t0):
 						log_event("wind", f"Wind: {lvl} (score {ws:.2f}, threshold x{STATE['wind_boost']})")
 					STATE["wind_level"] = lvl
 				else:
@@ -37962,7 +38337,7 @@ def list_recordings(args, watch=None):
                      "persons": meta.get("persons"), "schedules": [plans[i]["name"] for i in it["sched"]],
                      "playable": (codec in BROWSER_CODECS) if codec else None, "snap": it["snap"], "fav": bool(meta.get("fav")),
                      "recording": it["n"] in live_set, "timelapse": bool(it.get("tl")), "gps": it.get("gps"), "place": it.get("place"),
-                     "false": it["meta"].get("false")})
+                     "false": it["meta"].get("false"), "note": it["meta"].get("note")})
 	now = datetime.now()
 	points = None
 	if args.get("map") == "1":
@@ -38713,6 +39088,52 @@ def app_icon_png(size, variant="", icon=None):
 	return _ICONS[key]
 
 
+_APPLE_ICON_URI = {}
+
+
+def apple_icon_href(variant=None):
+	"""
+
+"""
+	v = host_variant() if variant is None else variant
+	key = (app_icon_id(), v)
+	if key not in _APPLE_ICON_URI:
+		import base64
+		raw = app_icon_png(180, v)
+		out = raw
+		im = cv2.imdecode(np.frombuffer(raw, np.uint8), cv2.IMREAD_COLOR) if raw else None
+		if im is not None:
+			for q in (8, 16):
+				p = ((im.astype(np.int16) // q) * q + q // 2).clip(0, 255).astype(np.uint8)
+				ok, buf = cv2.imencode(".png", p, [cv2.IMWRITE_PNG_COMPRESSION, 9])
+				if ok:
+					out = buf.tobytes()
+				if len(out) <= 8000:
+					break
+		_APPLE_ICON_URI[key] = ("data:image/png;base64," + base64.b64encode(out).decode()) if out else "/apple-touch-icon.png"
+	return _APPLE_ICON_URI[key]
+
+
+def apple_icon_link():
+	""
+	return '<link rel="apple-touch-icon" href="' + apple_icon_href() + '">'
+
+
+def apple_icon_selftest():
+	import base64
+	u = apple_icon_href("int")
+	assert u.startswith("data:image/png;base64,") and apple_icon_href("int") is u, "inline and cached"
+	raw = base64.b64decode(u.split(",", 1)[1])
+	im = cv2.imdecode(np.frombuffer(raw, np.uint8), cv2.IMREAD_COLOR)
+	assert im is not None and im.shape[:2] == (180, 180) and len(u) < 12000, (len(u), None if im is None else im.shape)
+	p = render_page("<html><head></head><body></body></html>", "live")
+	assert '<link rel="apple-touch-icon" href="data:image/png;base64,' in p and 'href="/apple-touch-icon.png' not in p, "render_page: inline icon"
+	return "180 px, %d bytes inline (data: URI, cached per icon and address)" % len(u)
+
+
+SELFTEST_EXTRA.append(("Home-screen icon inline for iOS (500, 3.69.1)", apple_icon_selftest))
+
+
 def app_manifest():
 	v = host_variant(); name = app_title(v)
 	return json.dumps({"name": name, "short_name": name, "start_url": "/", "scope": "/", "display": "standalone",
@@ -38728,7 +39149,7 @@ SW_JS = _zd('510_web_kopf_alarm/SW_JS', "")
 def i18n_loader(help_=False):
 	""
 	return ("<script>" + LANG_JS.replace("</", "<\\/") + "\n(function(){var l='';try{l=localStorage.getItem('mw-lang')||'';}catch(e){}if(!l)l=" + json.dumps(CFG["lang"]) + ";"
-            "window.LX=function(s){var d=window.I18NX;return (d&&d[s])||'';};"
+            "window.LX=function(s){var d=window.I18NX,x=(l==='de'||l==='rm')&&window.I18NDX;return (d&&d[s])||(x&&x[s])||'';};"
             "if(['fr','it','rm'].indexOf(l)>=0)document.write('<script src=\"/i18n/'+l+'.js?v=" + APP_VERSION + ("&h=1" if help_ else "")
             + "\"><\\/script>');})();</script>")
 
@@ -38747,6 +39168,7 @@ def i18n_js(lang, help_=False):
 def render_page(page, active):
 	""
 	page = page.replace("<head>", "<head>" + ui_seed_script() + i18n_loader(active == "help") + PWA_HEAD.replace(
+        '<link rel="apple-touch-icon" href="/apple-touch-icon.png">', apple_icon_link()).replace(
         'content="MoveEye">', 'content="' + app_title(host_variant()) + '">').replace(".png\"", ".png?i=" + app_icon_id() + "\"")
         + "<script>window.MW_ICON=" + json.dumps(app_icon_id()) + ";</script>" + makeover_head()
         + ("<style>:root{--mw-icon:url(/app-icon/anim.svg?i=" + app_icon_id() + ")}</style>"
@@ -39069,6 +39491,7 @@ G2_LOADER_JS = r"""
 (function () {                                     // 586: guide 2 (tours, tips, setup, factory reset) - one script for every page
   if (window._g2l) return; window._g2l = true;
   let L = "de"; try { L = (typeof LANG !== "undefined" && LANG) || localStorage.getItem("mw-lang") || "de"; } catch (e) {}
+  if (window.MWQ) MWQ.expect(["guide", "tour"]);       // 639zzs: one thing at a time - /g2/ui.js decides in startAll
   const s = document.createElement("script"); s.src = "/g2/ui.js?v=" + encodeURIComponent((window.MW_GUIDE || {}).ver || "") + "&lang=" + encodeURIComponent(L); s.defer = true;
   (document.head || document.documentElement).appendChild(s);
 })();
@@ -39537,6 +39960,18 @@ def web_specs():
 
 
 SECTIONS_ON_SIM_PAGE = ("Simulator",)
+SECTIONS_OWN_CONTENT = {"Security"}
+
+
+
+
+def schema_for_admin():
+	""
+	try:
+		from flask import g, has_request_context
+		return (not has_request_context()) or getattr(g, "role", "admin") == "admin"
+	except Exception:
+		return True
 
 
 def web_schema(lang=None, only=None):
@@ -39556,7 +39991,7 @@ def web_schema(lang=None, only=None):
 		toggles = [{"key": k, "label": tr(l, lang), "value": bool(CFG.get(k))} for s, k, l in TOGGLES if s == sec and k != "web_stream" and not hid(k)]
 		sliders = [{"key": k, "label": tr(l, lang), "min": lo, "max": hi, "step": st, "value": CFG.get(k)} for s, k, l, lo, hi, st in SLIDERS if s == sec and not hid(k)]
 		texts = [x for x in web_texts(lang) if x["section"] == sec and not hid(x["key"])]
-		if toggles or sliders or texts:
+		if toggles or sliders or texts or (sec in SECTIONS_OWN_CONTENT and schema_for_admin()):
 			out.append({"id": sec, "name": tr(sec, lang), "toggles": toggles, "sliders": sliders, "texts": texts})
 	return out
 
@@ -40450,7 +40885,7 @@ class WebStream:
 			if who:
 				fails.pop(ip, None)
 				g.user, g.role = who
-				if request.method == "GET" and not request.path.startswith(("/api/", "/video", "/cam_feed", "/cam_snap", "/sim/", "/snapshot")):
+				if request.method == "GET" and not request.path.startswith(("/api/", "/video", "/cam_feed", "/cam_snap", "/cam_thumb", "/cam_view", "/sim/", "/snapshot")):
 					g.new_trust = trust_add(who[0], who[1], request.headers.get("User-Agent", ""), ip)
 				return None
 			if a:
@@ -40486,6 +40921,23 @@ class WebStream:
 				return None
 			lang = norm_lang(((d or {}).get("lang") if isinstance(d, dict) else None) or request.args.get("lang") or CFG["lang"])
 			return reply({"ok": False, "error": tr("not allowed for your user", lang)}, 403)
+
+		def web_pin(d=None):
+			"""
+"""
+			v = (d or {}).get("pin") if isinstance(d, dict) else None
+			return v if str(v or "").strip() else (request.headers.get("X-MW-PIN") or "")
+
+		@app.before_request
+		def pin_guard():
+			if request.method != "POST" or not CFG.get("protect_pin") or not CFG.get("armed"):
+				return None
+			d = request.get_json(force=True, silent=True)
+			err = web_pin_guard(request.path, request.method, d, web_pin(d))
+			if err is None:
+				return None
+			lang = norm_lang((d.get("lang") if isinstance(d, dict) else None) or request.args.get("lang") or CFG["lang"])
+			return reply({"ok": False, "error": tr(err, lang), "need_pin": True}, 403)
 
 		@app.after_request
 		def gzip_text(resp):
@@ -40614,6 +41066,11 @@ class WebStream:
 					if c_ in ("scenario", "delete"):
 						log_event("sys", f"Simulator: {c_} {q_.get('id', '')[:80]}")
 					return reply(dict(r, ok=True))
+				if act_ == "lens_wipe":
+					ok_l, err_l = sim_lens_wipe()
+					if not ok_l:
+						return reply({"ok": False, "error": tr_err(err_l, lang)}, 400)
+					return reply({"ok": True})
 				if act_ == "dataset":
 					if d.get("export"):
 						try:
@@ -40882,7 +41339,8 @@ class WebStream:
 		def party_page(key):
 			if not _pkey(key):
 				return Response("<h2 style='font-family:sans-serif'>Die Spielecke ist geschlossen.</h2>", 404, mimetype="text/html")
-			return Response(PARTY_PAGE.replace("__KEY__", key).replace("__NTJS__", NT_JS), mimetype="text/html", headers={"Cache-Control": "no-store"})
+			return Response(PARTY_PAGE.replace("__KEY__", key).replace("__NTJS__", NT_JS).replace('<meta charset="utf-8">', '<meta charset="utf-8">' + apple_icon_link(), 1),
+                             mimetype="text/html", headers={"Cache-Control": "no-store"})
 
 		@app.route("/p/<key>/join", methods=["POST"])
 		def party_join(key):
@@ -41247,7 +41705,7 @@ class WebStream:
 		def spiele_home():
 			if not _lan_ok():
 				return Response(_lan_no, 403, mimetype="text/html")
-			return Response(spiele_page(request.host), mimetype="text/html", headers={"Cache-Control": "no-store"})
+			return Response(spiele_page(request.host).replace('<meta charset="utf-8">', '<meta charset="utf-8">' + apple_icon_link(), 1), mimetype="text/html", headers={"Cache-Control": "no-store"})
 
 		@app.route("/spiele/g/<game>/")
 		@app.route("/spiele/g/<game>/<path:fn>")
@@ -41302,6 +41760,10 @@ class WebStream:
 					PARTY["host"] = d["id"]; party_bump()
 				elif a_ == "install":
 					threading.Thread(target=games_install, daemon=True).start()
+				elif a_ in ("fotaq_install", "fotaq_cancel", "fotaq_delete", "fotaq_remove"):
+					ok_, e_ = fotaq_action(a_, d)
+					if not ok_:
+						return reply({"ok": False, "error": tr(e_, norm_lang(d.get("lang") or CFG.get("lang"))), "fotaq": fotaq_state()}, 400)
 			base = (CFG.get("public_url") or "").strip().rstrip("/")
 			local = page_address().rstrip("/") if "page_address" in globals() else request.host_url.rstrip("/")
 			url = (local or request.host_url.rstrip("/")) + "/p/" + PARTY["key"] + "/" if party_on() else ""
@@ -41309,7 +41771,7 @@ class WebStream:
                           "players": [{"id": k, "name": v["name"], "score": v["score"], "host": k == PARTY["host"], "on": time.time() - v["t"] < 25}
                                       for k, v in PARTY["players"].items()], "game": PARTY["game"],
                           "games": games_list(), "games_ver": games_installed_version(), "rest": toolmode_state(), "games_pkg": GAMES_PKG, "dl": dict(GAMES_DL),
-                          "remote": base, "all": games_all_state()})
+                          "fotaq": fotaq_state(), "remote": base, "all": games_all_state()})
 
 		@app.route("/api/simtest/pic/<int:rid>/<name>")
 		def api_simtest_pic(rid, name):
@@ -41769,6 +42231,12 @@ class WebStream:
 			if action == "arm":
 				arm(); txt = "armed" if is_armed() else "arming (delay " + str(CFG.get("arm_delay", "")) + " s)"
 			elif action == "disarm":
+				if CFG.get("protect_pin") and CFG.get("armed"):
+					ok_, err_ = protect_pin_check(request.args.get("pin"), "shortcut")
+					if not ok_:
+						log_event("web", f"Shortcut from {ip}: disarm refused ({err_})")
+						return Response(err_ + " - a PIN for switching off is set: add ?pin=… to the address of the shortcut", 403)
+					protect_cancel_escalation()
 				disarm(); txt = "disarmed"
 			elif action == "siren_off":
 				sound_stop(); txt = "siren off"
@@ -41892,6 +42360,7 @@ class WebStream:
                                      "address": page_address("10.42.0.1")}
 				if getattr(g, "role", "admin") != "admin":
 					st["guest"] = {}
+					st["tunnel"] = dict(st["tunnel"], code="")
 			cfg = {k: CFG[k] for k in web_specs()}
 			cfg.update({k: CFG[k] for k in ("thermal_source", "deter_person_act", "deter_big_act", "deter_small_act", "deter_warm_act", "backup_type", "audio_in", "patrol_mode",
                                             "siren_on", "web_stream", "sensors", "qs_layout")})
@@ -42006,12 +42475,13 @@ class WebStream:
 				arm(0)
 			elif a == "disarm":
 				if CFG.get("protect_pin"):
-					ok_, err_ = protect_disarm(body().get("pin"), "web")
+					ok_, err_ = protect_disarm(web_pin(body()), "web")
 					if not ok_:
 						return reply({"ok": False, "error": tr(err_, norm_lang(body().get("lang"))), "need_pin": True}, 403)
 				else:
 					protect_cancel_escalation()
 					CFG["protect_level"] = "off"
+					protect_siren_sync()
 					disarm()
 			else:
 				return reply({"ok": False, "error": "unknown action"}, 400)
@@ -42158,7 +42628,9 @@ class WebStream:
 			if a == "level":
 				lv = str(d.get("level") or "")
 				if lv == "off" and CFG.get("protect_pin"):
-					ok, err = protect_disarm(d.get("pin"), "web")
+					ok, err = protect_disarm(web_pin(d), "web")
+					if not ok:
+						return reply(dict(protect_status(lang, True), ok=False, error=tr(err, lang), need_pin=True), 403)
 				else:
 					ok, err = protect_set(lv, "web", d.get("answers") if isinstance(d.get("answers"), dict) else None)
 			elif a == "pin":
@@ -42167,6 +42639,7 @@ class WebStream:
 				ok, err = protect_test(lang)
 			elif a == "escalate":
 				CFG["escalate_on"] = bool(d.get("on", CFG.get("escalate_on")))
+				protect_auto_user("escalate_on")
 				try:
 					CFG["escalate_siren_s"] = max(0, min(600, int(d.get("s", CFG.get("escalate_siren_s", 30)))))
 				except (TypeError, ValueError):
@@ -42425,12 +42898,17 @@ class WebStream:
 		@app.route("/api/tunnel", methods=["GET", "POST"])
 		def api_tunnel():
 			if request.method == "POST":
+				if getattr(g, "role", "admin") != "admin":
+					return reply({"ok": False, "error": tr("not allowed for your user", norm_lang(body().get("lang") or CFG["lang"]))}, 403)
 				d = body()
 				if "on" in d:
 					CFG["tunnel_on"] = bool(d["on"]); save_settings()
 				if d.get("new_code"):
 					CFG["tunnel_code"] = ""; tunnel_code()
-			return reply({"ok": True, "tunnel": tunnel_state(), "address": page_address() or request.host_url})
+			ts_ = tunnel_state()
+			if getattr(g, "role", "admin") != "admin":
+				ts_["code"] = ""
+			return reply({"ok": True, "tunnel": ts_, "address": page_address() or request.host_url})
 
 		@app.route("/api/disco", methods=["POST"])
 		def api_disco():
@@ -43109,8 +43587,8 @@ class WebStream:
 				return sx_err(404, "guest")
 			keep = COMMON_JS[COMMON_JS.index("function keepStream"):COMMON_JS.index("\nconst post")]
 			gt = {L: {k: TRX[L][k] for k in GUEST_KEYS if TRX[L].get(k)} for L in ("fr", "it", "rm")}
-			return Response(GUEST_PAGE.replace("__BASE__", "/g/" + token).replace("/*KEEP*/", keep).replace("/*GT*/{}", json.dumps(gt, ensure_ascii=False)),
-                            mimetype="text/html")
+			return Response(GUEST_PAGE.replace("__BASE__", "/g/" + token).replace("/*KEEP*/", keep).replace("/*GT*/{}", json.dumps(gt, ensure_ascii=False))
+                            .replace('<meta charset="utf-8">', '<meta charset="utf-8">' + apple_icon_link(), 1), mimetype="text/html")
 
 		@app.route("/g/<token>/state")
 		def guest_state(token):
@@ -46869,6 +47347,77 @@ def sim_stats():
 
 
 
+
+
+STATE.setdefault("sim_lens", None)
+
+
+def sim_lens_take(v):
+	""
+	if not isinstance(v, dict):
+		STATE["sim_lens"] = None
+		return None
+
+	def one(x):
+		x = x if isinstance(x, dict) else {}
+		try:
+			return {"cover": round(min(1.0, max(0.0, float(x.get("cover") or 0.0))), 3), "fog": round(min(1.0, max(0.0, float(x.get("fog") or 0.0))), 2),
+                    "drops": max(0, int(x.get("drops") or 0))}
+		except (TypeError, ValueError):
+			return {"cover": 0.0, "fog": 0.0, "drops": 0}
+	r = {"head": one(v.get("head")), "wide": one(v.get("wide")) if isinstance(v.get("wide"), dict) else None, "dirty": bool(v.get("dirty"))}
+	was = bool((STATE.get("sim_lens") or {}).get("dirty"))
+	STATE["sim_lens"] = r
+	if r["dirty"] and not was:
+		log_event("sys", f"Simulator: lens dirty (drops / fog, {int(round(r['head']['cover'] * 100))} % covered) - «Clean lens» in the simulator")
+	return r
+
+
+def sim_lens_wipe():
+	""
+	try:
+		r = sim_control({"action": "wetter", "do": "wipe"})
+	except Exception:
+		return False, "simulator not reachable"
+	if not isinstance(r, dict) or not r.get("ok"):
+		return False, str((r or {}).get("error") or "not supported - update the simulator") if isinstance(r, dict) else "simulator not reachable"
+	if isinstance(STATE.get("sim_lens"), dict):
+		STATE["sim_lens"] = dict(STATE["sim_lens"], dirty=False)
+	log_event("sys", "Simulator: lens cleaned")
+	return True, ""
+
+
+def sim_lens_selftest():
+	saved = STATE.get("sim_lens")
+	try:
+		assert sim_lens_take(None) is None and STATE["sim_lens"] is None, "nothing reported must clear the hint"
+		r = sim_lens_take({"head": {"cover": 0.12, "fog": 0.0, "drops": 40}, "wide": {"cover": 0.05, "fog": 0.1, "drops": 9}, "dirty": True})
+		assert r["dirty"] and STATE["sim_lens"]["head"]["drops"] == 40 and abs(STATE["sim_lens"]["wide"]["fog"] - 0.1) < 1e-9
+		r = sim_lens_take({"head": {"cover": "x", "drops": None}, "dirty": 0})
+		assert r == {"head": {"cover": 0.0, "fog": 0.0, "drops": 0}, "wide": None, "dirty": False}, r
+		r = sim_lens_take({"head": {"cover": 7, "fog": -1}, "dirty": "yes"})
+		assert r["head"]["cover"] == 1.0 and r["head"]["fog"] == 0.0 and r["dirty"]
+		import inspect
+		assert 'rep_.get("lens")' in inspect.getsource(SimLink.tick), "350 SimLink.tick does not pass «lens» on"
+		assert 'id = "b-lens"' in WEB_PAGE and "lens_wipe" in WEB_PAGE, "hint not in the main page"
+		for k in _HX_LINSE:
+			assert DE.get(k) and all(TRX[L].get(k) for L in ("fr", "it", "rm")), f"text not translated: {k}"
+	finally:
+		STATE["sim_lens"] = saved
+	return "lens of the simulator: hint and «Clean lens» (558l)"
+
+
+SELFTEST_EXTRA.append(("Simulator lens dirty -> hint «Clean lens» (558l)", sim_lens_selftest))
+
+
+
+
+
+
+
+
+
+
 SIMMIC_KIND = {"bg": (40, 6000, 0, 0), "wind": (20, 400, 0, 0.3), "rain": (1200, 7500, 0, 0), "water": (180, 1500, 0, 6.0),
                "frogs": (150, 900, 260, 9.0), "crickets": (4200, 5200, 4600, 18.0), "birds": (2000, 6500, 3400, 7.0),
                "owl": (300, 600, 400, 0.8), "dog": (250, 2000, 500, 1.7), "cows": (600, 3000, 720, 1.2), "road": (20, 300, 0, 0.1),
@@ -48817,7 +49366,7 @@ class App:
 		self.watch = watch
 		self.web = web or WebStream(watch)
 		self.root = tk.Tk()
-		self.root.title("MoveEye 3.68.1")
+		self.root.title("MoveEye 3.80.0")
 		try:
 			import base64
 			self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -49195,7 +49744,7 @@ class App:
 			if not small:
 				vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
 				vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))
-			Tip(nm, f"{tr('Build')} 3.68.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+			Tip(nm, f"{tr('Build')} 3.80.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
 			self._egg_taps = []
 			for w_ in tl.winfo_children():
 				w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -54854,7 +55403,7 @@ NACHT_BUSY = ("ruhig", "normal", "viel")
 NACHT_TEMPO = {"echt": 1.0, "schnell": 8.0}
 
 NACHT_KEYS = ("armed", "protect_level", "notify_on", "tamper_on", "gps_theft", "refscan_on_arm", "escalate_on", "siren_on",
-              "light_white_auto", "relays_on")
+              "light_white_auto", "relays_on", "protect_auto")
 NACHT_ALARM_EVS = ("person", "warm", "prealarm", "noise", "tamper")
 NACHT_PRIO = {"incident": 0, "people": 1, "animal": 2, "vehicle": 3, "weather": 4}
 
@@ -55200,7 +55749,7 @@ def nacht_stop(role="admin", locked=None):
 
 
 def _nacht_thread(opts, auto):
-	snap = {k: CFG.get(k) for k in NACHT_KEYS}
+	snap = {k: (list(CFG[k]) if isinstance(CFG.get(k), list) else CFG.get(k)) for k in NACHT_KEYS}
 	run, stopped, err = None, False, ""
 	L = None
 	SANDBOX["force"] += 1
@@ -56408,7 +56957,7 @@ App._refresh = _kr_tk_refresh
 
 
 
-INFO_PARTS = 278
+INFO_PARTS = 291
 INFO_START = "2026-10-16"
 FBX = {"shot": None, "shot_t": 0.0, "lines": 0}
 
@@ -57680,12 +58229,24 @@ FACTORY_KEEP = {
 FACTORY_WORD = "ZURÜCKSETZEN"
 FACTORY_WORDS = {"ZURÜCKSETZEN", "ZURUECKSETZEN", "RESET", "RÉINITIALISER", "REINITIALISER", "RIPRISTINA", "RESETTAR"}
 FACTORY_DATA = ["sightings.json", "sim_diary.jsonl", "alarm_tracks.json", "places.json", "place", "refscan", "gehtest", "logs", "motionwatch.log"]
-_BACKUP_RE = re.compile(r"^motionwatch_settings\.before_reset_\d{8}-\d{6}\.json$")
+_BACKUP_RE = re.compile(r"^motionwatch_settings\.before_reset_(\d{8}-\d{6})\.json$")
 
 
 def factory_word(lang=None):
 	""
 	return FACTORY_WORD if cur_lang(lang) == "de" else "RESET"
+
+
+def factory_backup_when(name):
+	"""
+"""
+	m = _BACKUP_RE.match(str(name or ""))
+	if not m:
+		return None
+	try:
+		return datetime.strptime(m.group(1), "%Y%m%d-%H%M%S").strftime("%d.%m.%Y %H:%M")
+	except ValueError:
+		return None
 
 
 def factory_backups():
@@ -57694,13 +58255,27 @@ def factory_backups():
 	except OSError:
 		names = []
 	out = []
-	for n in names[:10]:
+	for n in names:
+		if len(out) >= 10:
+			break
+		when = factory_backup_when(n)
+		if when is None:
+			continue
 		try:
-			out.append({"name": n, "kb": max(1, os.path.getsize(os.path.join(DATA_DIR, n)) // 1024),
-                        "when": datetime.strptime(n[33:48], "%Y%m%d-%H%M%S").strftime("%d.%m.%Y %H:%M")})
-		except (OSError, ValueError):
+			out.append({"name": n, "kb": max(1, os.path.getsize(os.path.join(DATA_DIR, n)) // 1024), "when": when})
+		except OSError:
 			pass
 	return out
+
+
+def factory_admin():
+	"""
+"""
+	try:
+		from flask import g
+		return getattr(g, "role", "admin") == "admin" and not getattr(g, "appkey", None)
+	except (ImportError, RuntimeError):
+		return True
 
 
 def factory_backup_path(name):
@@ -57848,6 +58423,8 @@ def g2_routes(app, watch, reply, body):
 	@app.route("/api/factory", methods=["GET", "POST"])
 	def api_factory():
 		lang = norm_lang(request.args.get("lang") or CFG["lang"])
+		if not factory_admin():
+			return reply({"ok": False, "error": tr("not allowed for your user", lang)}, 403)
 		if request.method == "GET":
 			return reply(dict(factory_info(lang), ok=True))
 		d = body(); lang = norm_lang(d.get("lang") or lang)
@@ -57859,6 +58436,8 @@ def g2_routes(app, watch, reply, body):
 
 	@app.route("/api/factory/backup/<name>")
 	def api_factory_backup(name):
+		if not factory_admin():
+			return Response("not allowed", 403)
 		p = factory_backup_path(name)
 		if not p:
 			return Response("not found", 404)
@@ -64428,6 +65007,7 @@ _HX_AUFR = _zd('632_uebersetzungen_aufr/HX_AUFR', _zd_hx({
     'only the shortcut addresses /k/': 'nur die Kurzbefehl-Adressen /k/',
     'Copy the addresses now - the key is shown only this one time.': 'Adressen jetzt kopieren – der Schlüssel wird nur dieses eine Mal gezeigt.',
     'app key': 'App-Schlüssel',
+    'sc-pin-note': 'Ist eine PIN fürs Ausschalten gesetzt, braucht «Ausschalten» sie auch: im Kurzbefehl selbst ?pin=… an die Adresse hängen. Die PIN steht nie in einem QR-Code oder kopierten Link.',
     'sc-key-note2': 'Der Schlüssel ist ein App-Schlüssel, der nur diese Adressen öffnet (nicht den Rest von MoveEye). MoveEye speichert nur seinen Fingerabdruck – darum steht er nur direkt nach dem Erstellen hier. Jeder App-Schlüssel (Einstellungen → Sicherheit) geht hier auch. Von unterwegs über die Tailscale-Adresse.',
     'These app keys work here too:': 'Diese App-Schlüssel gehen hier auch:',
     'One more shortcut key': 'Noch ein Kurzbefehl-Schlüssel',
@@ -64455,9 +65035,10 @@ for _k, _v in _HX_AUFR.items():
 
 
 _AUFR_MAIN = ["Positions, test, diagnosis, Not-Aus", "only the shortcut addresses /k/", "Copy the addresses now - the key is shown only this one time.", "app key",
-              "sc-key-note2", "These app keys work here too:", "One more shortcut key", "Make a shortcut key", "All app keys", "vm-device", "Animal species"]
+              "sc-key-note2", "sc-pin-note", "These app keys work here too:", "One more shortcut key", "Make a shortcut key", "All app keys", "vm-device", "Animal species"]
 _AUFR_EN = {k: k for k in _AUFR_MAIN}
 _AUFR_EN.update({"sc-key-note2": "The key is an app key that opens only these addresses (not the rest of MoveEye). MoveEye keeps only its fingerprint - so it stands here only right after it is made. Every app key (Settings → Security) works here too. On the road: through the Tailscale address.",
+                 "sc-pin-note": "If a PIN for switching off is set, «Disarm» needs it too: add ?pin=… to the address in the shortcut yourself. The PIN is never in a QR code or a copied link.",
                  "vm-device": "Showing and hiding is for this device only - like «◫ View» of the live page."})
 WEB_PAGE = WEB_PAGE.replace("/*AUFRDE*/{}", json.dumps({k: DE[k] for k in _AUFR_MAIN}, ensure_ascii=False), 1).replace(
     "/*AUFREN*/{}", json.dumps({k: v for k, v in _AUFR_EN.items() if v != k}, ensure_ascii=False), 1)
@@ -76783,6 +77364,23 @@ def fertig_selftest():
 
 
 SELFTEST_EXTRA.append(("Ready-made device: hint on /build, order over the feedback (639zj)", fertig_selftest))
+_HX_LINSE = _zd('639zl_uebersetzungen_linse/HX_LINSE', _zd_hx({
+    'Lens dirty': 'Linse verschmutzt',
+    'Lens dirty – in the simulator «Clean lens»': 'Linse verschmutzt – im Simulator «Linse putzen»',
+    'Clean lens': 'Linse putzen',
+    'Clean the lens in the simulator?': 'Linse im Simulator putzen?',
+    'Lens cleaned in the simulator': 'Linse im Simulator geputzt',
+    'covered': 'bedeckt',
+    'drops and fog on the lens of the head camera': 'Tropfen und Beschlag auf der Linse der Kopfkamera',
+}))
+for _k, _v in _HX_LINSE.items():
+	DE.setdefault(_k, _v[0])
+	for _i, _L in enumerate(('fr', 'it', 'rm')):
+		TRX[_L].setdefault(_k, _v[_i + 1])
+
+LENS_JS = _zd('639zl_uebersetzungen_linse/LENS_JS', "")
+LENS_JS = LENS_JS.replace("/*LNDE*/{}", json.dumps({k: v[0] for k, v in _HX_LINSE.items()}, ensure_ascii=False))
+WEB_PAGE = WEB_PAGE.replace("</body>", LENS_JS + "</body>", 1)
 
 
 
@@ -83329,6 +83927,17 @@ SELFTEST_EXTRA.append(("Piper voice: pinned voices, fallback to the old voice, c
 
 
 
+
+
+
+
+
+
+
+
+
+
+
 for _k, _v in {"tausch_on": True, "tausch_guest": True, "tausch_push": True, "tausch_block_exec": True, "tausch_total_gb": 5.0,
                "tausch_file_mb": 200.0, "tausch_user_gb": 1.0, "tausch_free_gb": 2.0}.items():
 	CFG.setdefault(_k, _v); DEFAULTS.setdefault(_k, _v); FACTORY_CFG.setdefault(_k, _v)
@@ -83366,6 +83975,8 @@ def tausch_imply(perms):
 TZ_ID = re.compile(r"^[0-9a-f]{16}$")
 TZ_CHUNK = 2 * 1024 * 1024
 TZ_CHUNK_MAX = 8 * 1024 * 1024
+TZ_BODY_IDLE = 30.0
+
 TZ_MAX_FILES = 5000
 TZ_MAX_FOLDERS = 60
 TZ_MAX_OPEN_UPS = 6
@@ -84727,8 +85338,24 @@ def smalltv_routes(app, reply, body):
 			if n is None or n > TZ_CHUNK_MAX:
 				return Response(json.dumps({"ok": False, "error": "piece too big"}), 413, mimetype="application/json",
                                 headers={"Connection": "close"})
+			sock = request.environ.get("werkzeug.socket")
+			if sock is not None:
+				try:
+					sock.settimeout(TZ_BODY_IDLE)
+				except (OSError, AttributeError, ValueError):
+					pass
 		return None
 	app.before_request_funcs.setdefault(None, []).insert(0, size_guard)
+
+	from werkzeug.exceptions import ClientDisconnected
+
+	def piece_lost():
+		return Response(json.dumps({"ok": False, "error": tr("The piece did not arrive completely.", lang_())}), 408, mimetype="application/json",
+                        headers={"Connection": "close", "Cache-Control": "no-store"})
+
+	@app.errorhandler(ClientDisconnected)
+	def tausch_body_lost(e):
+		return piece_lost() if request.path == "/api/tausch/chunk" else e
 
 	def lang_():
 		return norm_lang(request.args.get("lang") or CFG.get("lang"))
@@ -84794,7 +85421,12 @@ def smalltv_routes(app, reply, body):
 			off = int(request.args.get("off", "-1"))
 		except ValueError:
 			off = -1
-		data = request.get_data(cache=False)
+		try:
+			data = request.get_data(cache=False)
+		except (ClientDisconnected, OSError):
+			return piece_lost()
+		if request.content_length is not None and len(data) != request.content_length:
+			return piece_lost()
 		ok, err, have, code = tausch_up_chunk(who, str(request.args.get("id") or ""), off, data, L)
 		return reply({"ok": ok, "error": err or None, "have": have}, code)
 
@@ -85076,6 +85708,11 @@ _HX_TAUSCH = _zd('639zzc_datentausch/HX_TAUSCH', _zd_hx({
     'continues where it stopped …': 'macht dort weiter, wo es aufgehört hat …',
     'Connection lost - trying again …': 'Verbindung weg – neuer Versuch …',
     'Connection lost. Choose the same file again later: the upload continues where it stopped.': 'Verbindung weg. Wähle später dieselbe Datei nochmals: das Hochladen macht dort weiter, wo es aufgehört hat.',
+    'No answer - trying again …': 'Keine Antwort – neuer Versuch …',
+    'Piece {n} of {m}': 'Stück {n} von {m}',
+    'Try once more': 'Nochmal versuchen',
+    'MoveEye did not answer - the upload stopped. «Try again» continues where it stopped.': 'MoveEye hat nicht geantwortet – das Hochladen ist stehen geblieben. «Nochmal versuchen» macht dort weiter, wo es aufgehört hat.',
+    'The file could not be read. A photo from iCloud: open it in the Photos app first (so it is loaded), then choose it again.': 'Die Datei konnte nicht gelesen werden. Ein Foto aus iCloud: bitte zuerst in der Fotos-App öffnen (damit es geladen ist), dann nochmals wählen.',
     'No connection to MoveEye.': 'Keine Verbindung zu MoveEye.',
     'error': 'Fehler',
     'Shared files': 'Geteilte Dateien',
@@ -85115,6 +85752,7 @@ _HX_TAUSCH = _zd('639zzc_datentausch/HX_TAUSCH', _zd_hx({
     'Too many changes in a short time - wait a few minutes.': 'Zu viele Änderungen in kurzer Zeit – warte ein paar Minuten.',
     'The storage cannot be written to.': 'Auf den Speicher kann nicht geschrieben werden.',
     'unknown upload': 'unbekannter Upload',
+    'The piece did not arrive completely.': 'Das Stück ist nicht ganz angekommen.',
     'piece too big': 'Stück zu gross',
     'busy - try again': 'beschäftigt – nochmals versuchen',
     'more data than announced': 'mehr Daten als angekündigt',
@@ -87387,6 +88025,4159 @@ def bk_selftest():
 
 
 SELFTEST_EXTRA.append(("Picture size from the file head (639zzf)", bk_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+FOTAQ_TAG = "fotaq-1"
+FOTAQ_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/" + FOTAQ_TAG + "/"}
+
+
+FOTAQ_FILES = {
+    "engine": {"name": "fotaq-engine-1.zip", "size": 12049091, "sha256": "6feab69b314ecc491f011ab9eaa0d0df670bd5be86e908c66e7491559ac31de5", "unpacked": 18533041},
+    "de": {"name": "fotaq-de-1.zip", "size": 108739455, "sha256": "c824460b7152c43c468c8c0dbfb2d436c17b7cfe84109358989d39316b1853ae", "unpacked": 108739281},
+    "en": {"name": "fotaq-en-1.zip", "size": 51225404, "sha256": "9af0594435d6ff0caa4b7956d31a31b006c5e49c1b940d9074d9c1b1add64279", "unpacked": 51227796},
+}
+FOTAQ_MAX_BYTES = 400 * 1024 * 1024
+FOTAQ_GAME = {"dir": "fotaq", "start": "start.html", "icon": "thumb.svg", "input": "keys",
+              "name": "Flight of the Amazon Queen",
+              "desc": "Abenteuer-Klassiker (1995) mit Sprachausgabe – Deutsch oder Englisch.",
+              "names": {L: "Flight of the Amazon Queen" for L in ("de", "en", "fr", "it", "rm")},
+              "descs": {"de": "Abenteuer-Klassiker (1995) mit Sprachausgabe – Deutsch oder Englisch.",
+                        "en": "Classic adventure (1995) with speech – German or English.",
+                        "fr": "Jeu d’aventure classique (1995) avec voix – allemand ou anglais.",
+                        "it": "Avventura classica (1995) con voci – tedesco o inglese.",
+                        "rm": "Gieu d’aventura classic (1995) cun vusch – tudestg u englais."}}
+FOTAQ_DL = {"running": False, "got": 0, "total": 0, "msg": "", "stop": False, "done": False, "phase": ""}
+
+
+def fotaq_dir():
+	return os.path.join(DATA_DIR, "fotaq")
+
+
+def fotaq_dl_dir():
+	return os.path.join(DATA_DIR, "fotaq_dl")
+
+
+def fotaq_pinned():
+	""
+	for f in FOTAQ_FILES.values():
+		if not isinstance(f.get("size"), int) or not 0 < f["size"] <= FOTAQ_MAX_BYTES or not re.fullmatch(r"[0-9a-f]{64}", str(f.get("sha256") or "")):
+			return False
+		if not isinstance(f.get("unpacked"), int) or not 0 < f["unpacked"] <= FOTAQ_MAX_BYTES:
+			return False
+		if not re.fullmatch(r"fotaq-[a-z]+-\d{1,3}\.zip", f.get("name") or ""):
+			return False
+	return True
+
+
+def fotaq_total():
+	return sum(int(f.get("size") or 0) for f in FOTAQ_FILES.values())
+
+
+def fotaq_unpacked():
+	return sum(int(f.get("unpacked") or 0) for f in FOTAQ_FILES.values())
+
+
+FOTAQ_LANGS = ("de", "en")
+FOTAQ_LANG_NAMES = {"de": "Deutsch", "en": "English"}
+
+
+def _fotaq_ok_read():
+	""
+	try:
+		with open(os.path.join(fotaq_dir(), "fotaq.ok"), encoding="utf-8") as fh:
+			d = json.load(fh)
+		return d if isinstance(d, dict) and d.get("tag") == FOTAQ_TAG and isinstance(d.get("parts"), dict) else {}
+	except (OSError, ValueError):
+		return {}
+
+
+def _fotaq_ok_write(parts):
+	with open(os.path.join(fotaq_dir(), "fotaq.ok.new"), "w", encoding="utf-8") as fh:
+		json.dump({"tag": FOTAQ_TAG, "parts": parts}, fh)
+	os.replace(os.path.join(fotaq_dir(), "fotaq.ok.new"), os.path.join(fotaq_dir(), "fotaq.ok"))
+
+
+def _fotaq_part_ok(parts, k):
+	return parts.get(k) == FOTAQ_FILES[k]["sha256"] and (k == "engine" or os.path.isdir(os.path.join(fotaq_dir(), "data", "games", k)))
+
+
+def fotaq_langs():
+	""
+	if not fotaq_pinned():
+		return []
+	parts = _fotaq_ok_read().get("parts") or {}
+	if not _fotaq_part_ok(parts, "engine"):
+		return []
+	return [L for L in FOTAQ_LANGS if _fotaq_part_ok(parts, L)]
+
+
+def fotaq_installed():
+	""
+	d = fotaq_dir()
+	return bool(fotaq_langs()) and all(os.path.isfile(os.path.join(d, f)) for f in ("index.html", "scummvm.js", "scummvm.wasm", "thumb.svg"))
+
+
+def _fotaq_games_index(root, langs):
+	""
+	p = os.path.join(root, "data", "games", "index.json")
+	os.makedirs(os.path.dirname(p), exist_ok=True)
+	with open(p + ".new", "w", encoding="utf-8") as fh:
+		json.dump({L: {} for L in langs}, fh)
+	os.replace(p + ".new", p)
+
+
+def _fotaq_unzip(zp, dest, limit, prefix=""):
+	""
+	tot = 0
+	with zipfile.ZipFile(zp) as z:
+		infos = z.infolist()
+		for i in infos:
+			n = i.filename
+			if n.startswith("/") or "\\" in n or ".." in n.split("/") or not re.fullmatch(r"[A-Za-z0-9._ /+-]{1,200}", n):
+				raise ValueError("bad file name in the package")
+			if prefix and not n.startswith(prefix):
+				raise ValueError("unexpected file in the package")
+			if (i.external_attr >> 16) & 0o170000 == 0o120000:
+				raise ValueError("link in the package")
+			tot += i.file_size
+		if tot > limit + 1024:
+			raise ValueError("package larger than announced")
+		for i in infos:
+			if i.is_dir():
+				continue
+			p = os.path.join(dest, *i.filename[len(prefix):].split("/"))
+			os.makedirs(os.path.dirname(p), exist_ok=True)
+			with z.open(i) as src, open(p, "wb") as out:
+				while True:
+					if FOTAQ_DL.get("stop"):
+						raise InterruptedError("cancelled")
+					b = src.read(1 << 20)
+					if not b:
+						break
+					out.write(b)
+	return tot
+
+
+def fotaq_need(langs):
+	""
+	have = fotaq_langs()
+	eng = bool(have)
+	parts = ([] if eng else ["engine"]) + [L for L in FOTAQ_LANGS if L in langs and L not in have]
+	return parts, sum(FOTAQ_FILES[k]["size"] for k in parts), sum(FOTAQ_FILES[k]["unpacked"] for k in parts)
+
+
+def fotaq_download(langs=FOTAQ_LANGS, wait=False):
+	""
+	if not fotaq_pinned():
+		return False, "comes with an update"
+	langs = [L for L in FOTAQ_LANGS if L in (langs or ())]
+	if not langs:
+		return False, "choose at least one language"
+	if FOTAQ_DL["running"]:
+		return True, ""
+	parts, size, unz = fotaq_need(langs)
+	if not [k for k in parts if k != "engine"]:
+		return True, ""
+	try:
+		free = shutil.disk_usage(DATA_DIR).free
+	except OSError:
+		free = 1 << 40
+	dd = fotaq_dl_dir()
+	have = sum(os.path.getsize(p) for p in (os.path.join(dd, FOTAQ_FILES[k]["name"] + x) for k in parts for x in ("", ".part")) if os.path.isfile(p))
+	if free - (size - have + unz) < bio_free_need():
+		return False, "not enough free space on the memory card"
+	FOTAQ_DL.update(running=True, got=0, total=size, msg="", stop=False, done=False, phase="load")
+
+	def work():
+		new_root = "engine" in parts
+		tmp = fotaq_dir() + ".new"
+		done = []
+		try:
+			os.makedirs(dd, exist_ok=True)
+			for k in parts:
+				f = FOTAQ_FILES[k]
+				dest = os.path.join(dd, f["name"])
+				if os.path.isfile(dest) and piper_check_file(dest, f)[0]:
+					FOTAQ_DL["got"] += f["size"]; continue
+				bio_fetch(FOTAQ_BASE["url"] + f["name"], dest, f, FOTAQ_DL)
+			FOTAQ_DL["phase"] = "unpack"
+			if new_root:
+				shutil.rmtree(tmp, ignore_errors=True)
+				os.makedirs(tmp)
+				_fotaq_unzip(os.path.join(dd, FOTAQ_FILES["engine"]["name"]), tmp, FOTAQ_FILES["engine"]["unpacked"])
+				with open(os.path.join(tmp, "fotaq.json"), encoding="utf-8") as fh:
+					man = json.load(fh)
+				if man.get("tag") != FOTAQ_TAG:
+					raise ValueError("the package is not " + FOTAQ_TAG)
+				for L in FOTAQ_LANGS:
+					shutil.rmtree(os.path.join(tmp, "data", "games", L), ignore_errors=True)
+				shutil.rmtree(fotaq_dir(), ignore_errors=True)
+				os.replace(tmp, fotaq_dir())
+				_fotaq_ok_write({"engine": FOTAQ_FILES["engine"]["sha256"]})
+			for L in [k for k in parts if k != "engine"]:
+				g = os.path.join(fotaq_dir(), "data", "games")
+				lt = os.path.join(g, L + ".new")
+				shutil.rmtree(lt, ignore_errors=True)
+				os.makedirs(lt)
+				_fotaq_unzip(os.path.join(dd, FOTAQ_FILES[L]["name"]), lt, FOTAQ_FILES[L]["unpacked"], prefix="data/games/%s/" % L)
+				shutil.rmtree(os.path.join(g, L), ignore_errors=True)
+				os.replace(lt, os.path.join(g, L))
+				pr = _fotaq_ok_read().get("parts") or {}
+				pr[L] = FOTAQ_FILES[L]["sha256"]
+				_fotaq_ok_write(pr)
+				done.append(L)
+				try:
+					os.remove(os.path.join(dd, FOTAQ_FILES[L]["name"]))
+				except OSError:
+					pass
+			_fotaq_games_index(fotaq_dir(), fotaq_langs())
+			if fotaq_langs():
+				shutil.rmtree(dd, ignore_errors=True)
+			FOTAQ_DL["done"] = True
+			log_event("sys", f"Flight of the Amazon Queen: {', '.join(FOTAQ_LANG_NAMES[L] for L in done)} installed ({FOTAQ_TAG})")
+		except InterruptedError:
+			FOTAQ_DL["msg"] = "cancelled"
+		except Exception as e:
+			FOTAQ_DL["msg"] = str(getattr(e, "reason", "") or e)[:160] or e.__class__.__name__
+			log_event("sys", f"Flight of the Amazon Queen not installed: {FOTAQ_DL['msg']}")
+		finally:
+			shutil.rmtree(tmp, ignore_errors=True)
+			for L in FOTAQ_LANGS:
+				shutil.rmtree(os.path.join(fotaq_dir(), "data", "games", L + ".new"), ignore_errors=True)
+			if os.path.isdir(fotaq_dir()) and not fotaq_langs():
+				shutil.rmtree(fotaq_dir(), ignore_errors=True)
+			FOTAQ_DL.update(running=False, phase="")
+	if wait:
+		work()
+		return (not FOTAQ_DL["msg"]), FOTAQ_DL["msg"]
+	threading.Thread(target=work, daemon=True, name="fotaq-dl").start()
+	return True, ""
+
+
+def fotaq_cancel():
+	if FOTAQ_DL["running"]:
+		FOTAQ_DL["stop"] = True
+	return True, ""
+
+
+def fotaq_delete():
+	if FOTAQ_DL["running"]:
+		return False, "busy right now - try again in a moment"
+	for p in (fotaq_dir(), fotaq_dir() + ".new", fotaq_dl_dir()):
+		shutil.rmtree(p, ignore_errors=True)
+	log_event("sys", "Flight of the Amazon Queen deleted")
+	return True, ""
+
+
+def fotaq_remove_lang(L):
+	""
+	if FOTAQ_DL["running"]:
+		return False, "busy right now - try again in a moment"
+	have = fotaq_langs()
+	if L not in have:
+		return True, ""
+	if have == [L]:
+		return fotaq_delete()
+	pr = _fotaq_ok_read().get("parts") or {}
+	pr.pop(L, None)
+	_fotaq_ok_write(pr)
+	shutil.rmtree(os.path.join(fotaq_dir(), "data", "games", L), ignore_errors=True)
+	_fotaq_games_index(fotaq_dir(), fotaq_langs())
+	log_event("sys", f"Flight of the Amazon Queen: {FOTAQ_LANG_NAMES[L]} removed")
+	return True, ""
+
+
+def fotaq_state():
+	""
+	try:
+		free = shutil.disk_usage(DATA_DIR).free
+	except OSError:
+		free = 0
+	have = fotaq_langs()
+	return {"pinned": fotaq_pinned(), "installed": fotaq_installed(), "langs": have, "tag": FOTAQ_TAG,
+            "parts": {k: {"size": f["size"], "unpacked": f["unpacked"]} for k, f in FOTAQ_FILES.items()},
+            "engine": bool(have), "size": fotaq_total(), "unpacked": fotaq_unpacked(), "free": free, "free_need": bio_free_need(),
+            "dl": {k: FOTAQ_DL[k] for k in ("running", "got", "total", "msg", "done", "phase")}}
+
+
+def fotaq_action(a, d=None):
+	""
+	d = d or {}
+	if a == "fotaq_install":
+		ls = d.get("langs")
+		return fotaq_download(ls if isinstance(ls, list) else list(FOTAQ_LANGS))
+	if a == "fotaq_cancel":
+		return fotaq_cancel()
+	if a == "fotaq_delete":
+		return fotaq_delete()
+	if a == "fotaq_remove":
+		return fotaq_remove_lang(str(d.get("lang") or ""))
+	return False, "unknown action"
+
+
+
+_games_list_639zzg = games_list
+
+
+
+def games_list(extra=True):
+	gl = _games_list_639zzg()
+	if extra and fotaq_installed():
+		gl = [x for x in gl if x.get("dir") != FOTAQ_GAME["dir"]] + [dict(FOTAQ_GAME)]
+	return gl
+
+
+_games_file_639zzg = games_file
+
+
+
+def games_file(game, fn):
+	if game != FOTAQ_GAME["dir"]:
+		return _games_file_639zzg(game, fn)
+	if not fotaq_installed():
+		return None
+	if (fn or "") in ("", "start.html"):
+		return fotaq_start_file()
+	base = os.path.realpath(fotaq_dir())
+	p_ = os.path.realpath(os.path.join(base, fn or FOTAQ_GAME["start"]))
+	if not p_.startswith(base + os.sep) or not os.path.isfile(p_) or os.path.basename(p_) in ("fotaq.ok", "fotaq.ok.new") or ".new" + os.sep in p_[len(base):] + os.sep:
+		return None
+	return p_
+
+
+
+_HX_FOTAQ = _zd('639zzg_fotaq/HX_FOTAQ', _zd_hx({
+    'comes with an update': 'kommt mit einem Update',
+    'Adventure with speech, German or English. Loaded once from GitHub (fixed checksum), then it runs offline in the browser (ScummVM).': 'Abenteuer mit Sprachausgabe, Deutsch oder Englisch. Wird einmal von GitHub geladen (feste Prüfsumme), läuft danach offline im Browser (ScummVM).',
+    'Install': 'Installieren',
+    'Remove': 'Entfernen',
+    'Cancel': 'Abbrechen',
+    'installed': 'installiert',
+    'unpacking …': 'entpacken …',
+    'cancelled': 'abgebrochen',
+    'not enough free space on the memory card': 'zu wenig Platz auf der Speicherkarte',
+    'choose at least one language': 'mindestens eine Sprache wählen',
+    'Add': 'Dazu laden',
+    'Languages:': 'Sprachen:',
+    'fotaq-ask': '«Flight of the Amazon Queen» jetzt laden? %s MB von GitHub (danach %s MB auf der Speicherkarte, 2 GB bleiben frei).',
+    'fotaq-del-lang': 'Diese Sprache entfernen? Die Spielstände bleiben in den Browsern.',
+    'Play on the PC – it crashes on iPad/iPhone': 'Am PC spielen – auf iPad/iPhone stürzt es ab',
+    'On iPad/iPhone the game crashes after about a minute. Play on the PC.': 'Auf iPad/iPhone stürzt das Spiel nach etwa einer Minute ab. Am PC spielen.',
+    'Start anyway': 'Trotzdem starten',
+    'Back to the games': 'Zurück zu den Spielen',
+    'fotaq-del': '«Flight of the Amazon Queen» entfernen? Die Spielstände bleiben in den Browsern.',
+}))
+for _k, _v in _HX_FOTAQ.items():
+	DE.setdefault(_k, _v[0])
+	for _i, _L in enumerate(("fr", "it", "rm")):
+		TRX[_L].setdefault(_k, _v[_i + 1])
+FOTAQ_JS_DE = {_k: _v[0] for _k, _v in _HX_FOTAQ.items()}
+FOTAQ_NOTE = "Play on the PC – it crashes on iPad/iPhone"
+FOTAQ_WARN = "On iPad/iPhone the game crashes after about a minute. Play on the PC."
+FOTAQ_GAME["note"] = _HX_FOTAQ[FOTAQ_NOTE][0]
+FOTAQ_GAME["notes"] = dict(zip(("de", "en", "fr", "it", "rm"), (_HX_FOTAQ[FOTAQ_NOTE][0], FOTAQ_NOTE) + tuple(_HX_FOTAQ[FOTAQ_NOTE][1:])))
+
+
+def fotaq_start_html():
+	"""
+
+
+"""
+	tx = {}
+	for i, L in enumerate(("de", "en", "fr", "it", "rm")):
+		tx[L] = {n: (k if L == "en" else _HX_FOTAQ[k][0 if L == "de" else i - 1]) for n, k in
+                 (("warn", FOTAQ_WARN), ("start", "Start anyway"), ("back", "Back to the games"), ("note", FOTAQ_NOTE))}
+	return ("""<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0e1621"><title>Flight of the Amazon Queen</title><link rel="icon" href="thumb.svg">
+<script>(function () {
+  var ua = navigator.userAgent || "", ios = /iPad|iPhone|iPod/.test(ua) || (/Macintosh/.test(ua) && (navigator.maxTouchPoints || 0) > 0);
+  window.FOTAQ_IOS = ios;
+  window.fotaqGo = function () { location.replace("index.html" + location.search + location.hash); };
+  if (!ios) window.fotaqGo();
+})();</script>
+<style>:root{--bg:#0e1621;--panel:#16263a;--line:#24324a;--txt:#e8eef5;--mut:#9fb0c3;--acc:#e9a23b}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--txt);font:17px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:520px;margin:0 auto;padding:calc(64px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom))}
+header{display:flex;align-items:center;gap:12px;margin-bottom:16px}header img{width:56px;height:56px;border-radius:12px;flex:none}
+h1{font-size:21px;margin:0;line-height:1.2}
+#warn{background:var(--panel);border:1px solid var(--acc);border-radius:14px;padding:14px 16px;font-weight:600}
+.row{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+button{font:inherit;font-weight:700;border-radius:12px;padding:12px 16px;min-height:46px;cursor:pointer;border:1px solid var(--line)}
+#go{background:var(--acc);color:#0e1621;border-color:var(--acc)}#back{background:var(--panel);color:var(--txt)}
+</style></head><body>
+<main id="fotaq-warn" hidden><header><img src="thumb.svg" alt=""><h1>Flight of the Amazon Queen</h1></header>
+<div id="warn">⚠️ <span id="wt"></span></div>
+<div class="row"><button type="button" id="go"></button><button type="button" id="back"></button></div></main>
+<script>(function () {
+  var TX = __TX__, d = document, L = "de", ls = navigator.languages || [navigator.language || "de"];
+  for (var i = 0; i < ls.length; i++) { var x = String(ls[i] || "").slice(0, 2).toLowerCase(); if (TX[x]) { L = x; break; } }
+  var T = TX[L]; d.documentElement.lang = L;
+  d.getElementById("wt").textContent = T.warn; d.getElementById("go").textContent = "▶ " + T.start; d.getElementById("back").textContent = "‹ " + T.back;
+  d.getElementById("go").onclick = window.fotaqGo;
+  d.getElementById("back").onclick = function () { var b = d.querySelector("#mw-back a"); if (b) b.click(); else history.back(); };
+  if (window.FOTAQ_IOS) d.getElementById("fotaq-warn").hidden = false;
+})();</script>
+</body></html>
+""").replace("__TX__", json.dumps(tx, ensure_ascii=False).replace("</", "<\\/"))
+
+
+def fotaq_start_file():
+	""
+	p = os.path.join(DATA_DIR, "fotaq_start.html")
+	b = fotaq_start_html().encode("utf-8")
+	try:
+		with open(p, "rb") as fh:
+			if fh.read() == b:
+				return p
+	except OSError:
+		pass
+	try:
+		with open(p + ".new", "wb") as fh:
+			fh.write(b)
+		os.replace(p + ".new", p)
+	except OSError:
+		return None
+	return p
+FOTAQ_JS_EN = {"fotaq-ask": "Load «Flight of the Amazon Queen» now? %s MB from GitHub (then %s MB on the memory card, 2 GB stay free).",
+               "fotaq-del": "Remove «Flight of the Amazon Queen»? The saved games stay in the browsers.",
+               "fotaq-del-lang": "Remove this language? The saved games stay in the browsers."}
+TOOLS_PAGE = TOOLS_PAGE.replace("/*FOTAQ_I18N*/", "Object.assign(I18N.de," + json.dumps(FOTAQ_JS_DE, ensure_ascii=False) + ");"
+                                "I18N.en=I18N.en||{};Object.assign(I18N.en," + json.dumps(FOTAQ_JS_EN, ensure_ascii=False) + ");", 1)
+
+
+_HELP_FOTAQ = {
+    "de": '<li><b>🛩 Flight of the Amazon Queen</b> (Abenteuer von 1995, CD-Fassung mit Sprachausgabe, Deutsch oder Englisch): einmal laden unter Mehr → Spielecke: Sprache wählen (Deutsch etwa 120 MB, Englisch etwa 63 MB, beide 172 MB von GitHub, feste Prüfsumme, 2 GB bleiben frei), jede Sprache später einzeln dazu oder weg, danach als Kachel in der Spielesammlung, auch ohne Internet. Antippen = Klick, lange drücken oder «🖱 Rechts» = Rechtsklick, «☰ Menü» = Speichern, Laden, Lautstärke. Spielstände bleiben im Browser des Geräts. Am Handy quer halten. <b>Auf iPad/iPhone stürzt das Spiel nach etwa einer Minute ab – am PC spielen</b> (vor dem Start kommt dort ein Hinweis mit «Trotzdem starten»). Auf dem Handy braucht das Spiel viel Speicher (Deutsch ~110 MB Daten), ältere Geräte schaffen es eventuell nicht. <b>Lizenz:</b> Spiel © 1995 John Passfield &amp; Steven Stamatiadis, Freeware (Readme bei den Daten); ScummVM © The ScummVM Team, GPL v3 – Quellcode und Bau-Ablauf: Link auf der Startseite des Spiels.</li>',
+    "en": '<li><b>🛩 Flight of the Amazon Queen</b> (adventure from 1995, CD version with speech, German or English): load it once under More → Game corner: choose the languages (German about 120 MB, English about 63 MB, both 172 MB from GitHub, fixed checksum, 2 GB stay free), add or remove each language later, then it is a tile in the game collection, also without internet. Tap = click, long press or «🖱 Right» = right click, «☰ Menu» = save, load, volume. Saved games stay in the browser of the device. Hold the phone sideways. <b>On iPad/iPhone the game crashes after about a minute – play on the PC</b> (there a note with «Start anyway» comes before the start). On phones the game needs a lot of memory (German ~110 MB of data), older devices may not manage. <b>Licence:</b> game © 1995 John Passfield &amp; Steven Stamatiadis, freeware (readme with the data); ScummVM © The ScummVM Team, GPL v3 – source code and build: link on the start page of the game.</li>',
+    "fr": '<li><b>🛩 Flight of the Amazon Queen</b> (aventure de 1995, version CD avec voix, allemand ou anglais) : charger une fois sous Plus → Coin jeux → « ⬇ Installer » (env. 170 Mo depuis GitHub, somme fixe, 2 Go restent libres), ensuite une tuile de la collection, aussi sans Internet. Toucher = clic, appui long ou « 🖱 Droite » = clic droit, « ☰ Menu » = sauvegarder, charger. <b>Sur iPad/iPhone, le jeu plante après environ une minute – jouer sur le PC.</b> <b>Licence :</b> jeu © 1995 John Passfield &amp; Steven Stamatiadis, freeware ; ScummVM © The ScummVM Team, GPL v3 (source : lien sur la page du jeu).</li>',
+    "it": '<li><b>🛩 Flight of the Amazon Queen</b> (avventura del 1995, versione CD con voci, tedesco o inglese): caricare una volta sotto Altro → Angolo giochi → «⬇ Installa» (circa 170 MB da GitHub, somma fissa, 2 GB restano liberi), poi è una tessera della raccolta, anche senza Internet. Toccare = clic, pressione lunga o «🖱 Destro» = clic destro, «☰ Menu» = salvare, caricare. <b>Su iPad/iPhone il gioco si blocca dopo circa un minuto – giocare sul PC.</b> <b>Licenza:</b> gioco © 1995 John Passfield &amp; Steven Stamatiadis, freeware; ScummVM © The ScummVM Team, GPL v3 (sorgente: link sulla pagina del gioco).</li>',
+    "rm": '<li><b>🛩 Flight of the Amazon Queen</b> (aventura da 1995, versiun CD cun vusch, tudestg u englais): chargiar ina giada sut Dapli → Chantun da gieus → «⬇ Installar» (var 170 MB da GitHub, summa fixa, 2 GB restan libers), lura ina cachel da la collecziun, er senza internet. Tutgar = clic, smatgar ditg u «🖱 Dretg» = clic dretg, «☰ Menu» = memorisar, chargiar. <b>Sin iPad/iPhone s’interrumpa il gieu suenter var ina minuta – giugar al PC.</b> <b>Licenza:</b> gieu © 1995 John Passfield &amp; Steven Stamatiadis, freeware; ScummVM © The ScummVM Team, GPL v3 (code: link sin la pagina dal gieu).</li>',
+}
+
+
+def _help_fotaq(doc, lang):
+	i = doc.find('<section id="games"')
+	if i < 0 or "Amazon Queen" in doc[i:doc.find("</section>", i)]:
+		return doc
+	j = doc.find("</ul></section>", i)
+	return doc[:j] + _HELP_FOTAQ[lang] + doc[j:] if j > 0 else doc
+
+
+_hp_en_fotaq = HELP_PAGE.find('<div lang="en">')
+if _hp_en_fotaq > 0:
+	HELP_PAGE = _help_fotaq(HELP_PAGE[:_hp_en_fotaq], "de") + _help_fotaq(HELP_PAGE[_hp_en_fotaq:], "en")
+for _L in ("fr", "it", "rm"):
+	if HELP_X.get(_L):
+		HELP_X[_L] = _help_fotaq(HELP_X[_L], _L)
+
+
+
+def fotaq_selftest():
+	assert FOTAQ_BASE["url"] == "https://github.com/DonElektro/MotionWatch/releases/download/" + FOTAQ_TAG + "/"
+	assert re.fullmatch(r"fotaq-\d{1,3}", FOTAQ_TAG)
+	n = FOTAQ_TAG.split("-")[1]
+	assert all(f["name"] == "fotaq-%s-%s.zip" % (k, n) for k, f in FOTAQ_FILES.items()), "FOTAQ_FILES: names fit FOTAQ_TAG"
+	assert fotaq_pinned() or all(not f["size"] and not f["sha256"] for f in FOTAQ_FILES.values()), "FOTAQ_FILES: either all pins or none"
+	assert fotaq_total() <= 3 * FOTAQ_MAX_BYTES
+	assert FOTAQ_GAME["input"] in GAME_GROUPS and FOTAQ_GAME["icon"] == "thumb.svg"
+	assert all(FOTAQ_GAME["names"].get(L) and FOTAQ_GAME["descs"].get(L) for L in ("de", "en", "fr", "it", "rm"))
+	assert FOTAQ_GAME["desc"] == FOTAQ_GAME["descs"]["de"]
+	assert FOTAQ_GAME["input"] == "keys" and all(FOTAQ_GAME["notes"].get(L) for L in ("de", "en", "fr", "it", "rm")), "3.70.2: PC group + note"
+	assert FOTAQ_GAME["note"] == "Am PC spielen – auf iPad/iPhone stürzt es ab" == FOTAQ_GAME["notes"]["de"]
+	h_ = fotaq_start_html()
+	assert "Trotzdem starten" in h_ and "Auf iPad/iPhone stürzt das Spiel nach etwa einer Minute ab. Am PC spielen." in h_ and "Démarrer quand même" in h_
+	assert 'location.replace("index.html"' in h_ and 'href="index.html"' not in h_ and "maxTouchPoints" in h_
+	assert "Amazon Queen" in HELP_PAGE and all("Amazon Queen" in HELP_X.get(L, "Amazon Queen") for L in ("fr", "it", "rm"))
+	assert "fotaqPaint" in TOOLS_PAGE and "/*FOTAQ_I18N*/" not in TOOLS_PAGE
+	if not fotaq_installed():
+		assert all(x.get("dir") != "fotaq" for x in games_list()) and games_file("fotaq", "index.html") is None
+	assert games_file("fotaq", "../settings.json") is None and games_file("fotaq", "/etc/passwd") is None
+	return True
+
+
+SELFTEST_EXTRA.append(("Flight of the Amazon Queen in the game corner (ScummVM, 639zzg)", fotaq_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+GAME_THUMBS = {"thumb.svg": "image/svg+xml", "thumb.png": "image/png"}
+GAME_THUMB_MAX = 1 << 20
+PERM_GET["games"] = tuple(PERM_GET.get("games", ())) + ("/party/thumb/",)
+
+
+def game_thumb_file(game):
+	""
+	x = next((x for x in games_list() if x.get("dir") == game), None)
+	ic = str((x or {}).get("icon") or "")
+	if ic not in GAME_THUMBS:
+		return None
+	p_ = games_file(game, ic)
+	try:
+		if not p_ or os.path.getsize(p_) > GAME_THUMB_MAX:
+			return None
+	except OSError:
+		return None
+	return p_, GAME_THUMBS[ic]
+
+
+def game_thumb_src(game, icon, base):
+	""
+	return base + "/thumb/" + game if str(icon or "") in GAME_THUMBS else ""
+
+
+
+_game_icon_639zzh = _game_icon
+
+
+
+def _game_icon(x, host=""):
+	from html import escape as _e
+	src = game_thumb_src(x.get("dir", ""), x.get("icon"), "/spiele")
+	if not src:
+		return _game_icon_639zzh(x if "." not in str(x.get("icon") or "") else dict(x, icon="🎮"), host)
+	return f'<img src="{_e(src, quote=True)}" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'">'
+
+
+
+PARTY_PAGE = PARTY_PAGE.replace('<img src="${BASE}/g/${g.dir}/${g.icon}"', '<img src="${BASE}/thumb/${g.dir}"', 1)
+TOOLS_PAGE = (TOOLS_PAGE.replace('im.src = "/games/" + x.dir + "/" + s_;', 'im.src = "/party/thumb/" + x.dir;', 1)
+              .replace('im.src = "/games/fotaq/thumb.svg";', 'im.src = "/party/thumb/fotaq";', 1))
+
+
+
+_smalltv_routes_639zzh = smalltv_routes
+
+
+def smalltv_routes(app, reply, body):
+	_smalltv_routes_639zzh(app, reply, body)
+	from flask import Response, request
+	import hmac
+
+	def send(game):
+		r = game_thumb_file(game)
+		h = {"X-Content-Type-Options": "nosniff", "Cache-Control": "max-age=3600",
+             "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; img-src data:; sandbox"}
+		if not r:
+			return Response("not found", 404, mimetype="text/plain", headers=h)
+		with open(r[0], "rb") as f:
+			return Response(f.read(GAME_THUMB_MAX + 1), mimetype=r[1], headers=h)
+
+	@app.route("/party/thumb/<game>")
+	def game_thumb_admin(game):
+		return send(game)
+
+	@app.route("/spiele/thumb/<game>")
+	def game_thumb_spiele(game):
+		if not lan_guest_ip(request.remote_addr, request.headers.get("X-Forwarded-For", "") or request.headers.get("Forwarded", "")):
+			return Response("not found", 404, mimetype="text/plain")
+		return send(game)
+
+	@app.route("/p/<key>/thumb/<game>")
+	def game_thumb_party(key, game):
+		if not (party_on() and hmac.compare_digest(str(PARTY.get("key") or ""), key)):
+			return Response("closed", 404, mimetype="text/plain")
+		return send(game)
+
+
+
+def gthumb_selftest():
+	assert '<img src="${BASE}/thumb/${g.dir}"' in PARTY_PAGE and "/g/${g.dir}/${g.icon}" not in PARTY_PAGE, "game evening: tiles from /p/<key>/thumb/"
+	assert 'im.src = "/party/thumb/" + x.dir;' in TOOLS_PAGE and 'im.src = "/party/thumb/fotaq";' in TOOLS_PAGE, "admin tab: tiles from /party/thumb/"
+	assert '"/games/" + x.dir + "/" + s_' not in TOOLS_PAGE and "/games/fotaq/thumb.svg" not in TOOLS_PAGE
+	assert 'src="/spiele/thumb/qg-orbit"' in _game_icon({"dir": "qg-orbit", "icon": "thumb.svg"}, "pi:5001") and _game_icon({"dir": "x", "icon": "🎲"}) == "🎲"
+	assert _game_icon({"dir": "x", "icon": "index.html"}, "pi:5001") == "🎮", "another file: the symbol, never the games port"
+	assert game_thumb_src("x", "../../etc/passwd", "/spiele") == "" and game_thumb_src("x", "index.html", "/spiele") == ""
+	assert role_allows("custom", "/party/thumb/qg-orbit", "GET", {}, {"games"}) and not role_allows("custom", "/party/thumb/qg-orbit", "GET", {}, set())
+	return "tile pictures from the same origin (/party, /spiele, /p/<key>) - no http:// picture on an https page; only thumb.svg / thumb.png"
+
+
+SELFTEST_EXTRA.append(("Game tiles: pictures from the same origin (639zzh, 3.69.2)", gthumb_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+KW_THUMB_W = 256
+KW_THUMB_Q = 60
+KW_THUMB_EVERY = 1.0
+KW_VIEW_W = 640
+KW_VIEW_FPS = 6.0
+KW_LEASE = 5.0
+KW_PV_MAX = 3
+KW_PV_IDLE = 8.0
+KW = {"pv": {}, "thumbs": {}, "th_until": 0.0, "usb": ([], 0.0), "pi": ([], -1e9), "list": ([], 0.0)}
+KW_LOCK = threading.Lock()
+WEB_UI_LOCAL.add("mw-kamwahl")
+PERM_GET["live"] = tuple(PERM_GET.get("live", ())) + ("/cam_thumb/", "/cam_view/")
+
+KW_TRIO_HINT = {"head": "Check the camera under Settings → Cameras & head → Video source.",
+                "wide": "Add the wide-angle camera under Settings → Cameras & head (extra camera as overview).",
+                "thermal": "Choose the thermal camera under Settings → Cameras & head → Thermal camera."}
+
+
+def kw_usb_cams():
+	"""
+
+"""
+	lst, t = KW["usb"]
+	if time.time() - t < 10.0:
+		return lst
+	out = []
+	env = os.environ.get("MW_TEST_V4L")
+	if env is not None:
+		for part in env.split(","):
+			n, _, nm = part.partition(":")
+			if n.strip().isdigit():
+				out.append(("usb:" + n.strip(), "USB camera: " + (nm.strip() or "video" + n.strip())))
+	elif sys.platform.startswith("linux"):
+		for p in sorted(glob.glob("/sys/class/video4linux/video*"), key=lambda x: int(re.sub(r"\D", "", x) or 0)):
+			n = re.sub(r"\D", "", os.path.basename(p))
+			if not n or int(n) > 99:
+				continue
+			nm = _v4l_name(int(n))
+			if any(b in nm.lower() for b in V4L_SKIP):
+				continue
+			try:
+				with open(os.path.join(p, "index")) as f:
+					if f.read().strip() not in ("", "0"):
+						continue
+			except OSError:
+				pass
+			out.append(("usb:" + n, "USB camera: " + (nm or "video" + n)))
+	KW["usb"] = (out, time.time())
+	return out
+
+
+def kw_pi_cams():
+	""
+	lst, t = KW["pi"]
+	if time.time() - t < 60.0:
+		return lst
+	out = [f"pi:{n}" for n in _pi_cams()]
+	KW["pi"] = (out, time.time())
+	return out
+
+
+def kw_used():
+	""
+	u = {str(CFG.get("source") or ""), str(STATE.get("source_id") or ""), str(CFG.get("thermal_source") or ""), str(CFG.get("kopf_ov") or "")}
+	u |= {str(c.spec) for c in CAMS} | {str(x) for x in (CFG.get("extra_cams") or [])}
+	u.discard(""); u.discard("auto")
+	return u
+
+
+def kw_icon(spec):
+	k = str(spec).split(":")[0]
+	return {"usb": "📷", "pi": "🎥", "url": "🌐", "senxor": "🌡"}.get(k, "📹")
+
+
+def kw_head_ok():
+	st = str(STATE.get("source_status") or "")
+	return st == "connected" or st.startswith("switch failed")
+
+
+def kw_thermal_ok():
+	sp = str(CFG.get("thermal_source") or "")
+	if not sp or sp == STATE.get("source_id"):
+		return False
+	if str(STATE.get("thermal") or "").startswith(THERMAL_NOT_FOUND) or thermal_absent(sp, ""):
+		return False
+	return True
+
+
+def kw_list():
+	"""
+
+"""
+	if CFG.get("sim_on"):
+		return []
+	lst, t = KW["list"]
+	if time.time() - t < 1.5:
+		return lst
+	out = [{"k": "head", "ic": "🎯", "lb": "Head view", "name": str(STATE.get("source_label") or source_label(str(CFG.get("source") or "auto"))),
+            "ok": kw_head_ok(), "trio": True, "big": "/video_feed"}]
+	wc = view3_wide_cam()
+	out.append({"k": "wide", "ic": "🔭", "lb": "Wide view", "name": wc.label if wc else "", "ok": bool(wc and wc.status == "connected"),
+                "trio": True, "big": f"/cam_feed/{wc.idx}" if wc else ""})
+	tsp = str(CFG.get("thermal_source") or "")
+	out.append({"k": "thermal", "ic": "🌡", "lb": "Thermal view", "name": source_label(tsp) if tsp else "", "ok": kw_thermal_ok(),
+                "trio": True, "big": "/cam_view/thermal"})
+	for it in out:
+		if not it["ok"]:
+			it["hint"] = KW_TRIO_HINT[it["k"]]
+	for c in list(CAMS):
+		if wc is not None and c is wc:
+			continue
+		out.append({"k": str(c.spec), "ic": kw_icon(c.spec), "name": c.label, "ok": c.status == "connected", "trio": False, "big": f"/cam_feed/{c.idx}"})
+	used = kw_used()
+	others = [(sp, source_label(sp)) for sp in kw_pi_cams()] + kw_usb_cams() + [("url:" + s["id"], s["name"]) for s in CFG.get("ip_sources") or []]
+	for sp, nm in others:
+		if sp in used or any(x["k"] == sp for x in out):
+			continue
+		pv = KW["pv"].get(sp)
+		out.append({"k": sp, "ic": kw_icon(sp), "name": str(nm)[:48], "ok": not (pv is not None and pv.err), "trio": False,
+                    "big": "/cam_view/" + sp})
+	KW["list"] = (out, time.time())
+	return out
+
+
+def kw_find(k):
+	return next((x for x in kw_list() if x["k"] == k), None)
+
+
+
+class KwPreview:
+	""
+	def __init__(self, spec):
+		self.spec = spec; self.frame = None; self.t = 0.0; self.seen = time.time(); self.stop = False; self.err = ""
+		threading.Thread(target=self.loop, daemon=True, name="kwprev").start()
+
+	def touch(self):
+		self.seen = time.time()
+
+	def busy(self):
+		""
+		if self.spec in kw_used() or SOURCES.get("scanning") or CFG.get("sim_on") or toolmode_on():
+			return True
+		return self.spec.split(":")[0] in ("usb", "pi") and not kw_head_ok()
+
+	def _open(self):
+		kind, _, arg = self.spec.partition(":")
+		if kind == "usb" and not DEMO["on"]:
+			idx = int(arg)
+			if _v4l_internal(idx):
+				return None, "no camera"
+			cap = cv2.VideoCapture(idx, cv2.CAP_V4L2)
+			if not cap.isOpened():
+				cap.release(); return None, f"no picture from /dev/video{idx}"
+			cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*"MJPG"))
+			cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640); cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 360)
+			cap.set(cv2.CAP_PROP_FPS, 10); cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+			ok, fr = cap.read()
+			if not ok:
+				cap.release(); return None, f"no picture from /dev/video{idx}"
+			return CvSource(cap, (fr.shape[1], fr.shape[0])), ""
+		src, _sid, _lb, err = open_source(self.spec)
+		return src, err
+
+	def loop(self):
+		src = None
+		try:
+			if self.busy():
+				self.err = "in use"; return
+			src, err = self._open()
+			if src is None:
+				self.err = err or "no picture"; return
+			live = self.spec.startswith("url:")
+			fails, last = 0, 0.0
+			while not self.stop and time.time() - self.seen < KW_PV_IDLE and not self.busy():
+				t0 = time.time()
+				ok, fr = src.read()
+				if not ok or fr is None:
+					fails += 1
+					if fails >= 30:
+						self.err = "connection lost"; break
+					time.sleep(0.05); continue
+				fails = 0
+				if t0 - last >= 1.0 / KW_VIEW_FPS:
+					self.frame, self.t, last = fr, time.time(), t0
+				if not live:
+					time.sleep(max(0.0, 1.0 / KW_VIEW_FPS - (time.time() - t0)))
+		except Exception as e:
+			self.err = str(e)[:120]
+		finally:
+			if src is not None:
+				try:
+					src.release()
+				except Exception:
+					pass
+			self.frame = None
+			with KW_LOCK:
+				if KW["pv"].get(self.spec) is self and not self.err:
+					KW["pv"].pop(self.spec, None)
+				elif KW["pv"].get(self.spec) is self:
+					self.t = time.time()
+
+
+def kw_pv(spec):
+	""
+	with KW_LOCK:
+		p = KW["pv"].get(spec)
+		if p is not None and p.err and time.time() - p.t > 15.0:
+			KW["pv"].pop(spec, None); p = None
+		if p is None:
+			if sum(1 for x in KW["pv"].values() if not x.err) >= KW_PV_MAX:
+				return None
+			p = KwPreview(spec); KW["pv"][spec] = p
+		p.touch()
+		return p
+
+
+def kw_pv_close(kinds=("usb", "pi"), wait=2.0):
+	""
+	ps = [p for s, p in list(KW["pv"].items()) if s.split(":")[0] in kinds]
+	for p in ps:
+		p.stop = True
+	end = time.time() + wait
+	while ps and time.time() < end and any(p.frame is not None for p in ps):
+		time.sleep(0.05)
+
+
+_scan_sources_kw = scan_sources
+
+
+def scan_sources(active_id=""):
+	kw_pv_close()
+	return _scan_sources_kw(active_id)
+
+
+_ThermalCam_wanted_kw = ThermalCam.wanted
+
+
+def _kw_thermal_wanted(self):
+	w = _ThermalCam_wanted_kw(self)
+	if not w and time.time() < KW["th_until"] and not CFG.get("sim_on"):
+		sp = str(CFG.get("thermal_source") or "")
+		if sp and sp != STATE.get("source_id"):
+			return sp
+	return w
+
+
+ThermalCam.wanted = _kw_thermal_wanted
+
+_ExtraCam_process_kw = ExtraCam._process
+
+
+def _kw_extra_process(self, frame, bg):
+	_ExtraCam_process_kw(self, frame, bg)
+	now = time.time()
+	if now < getattr(self, "kw_until", 0.0) and now - getattr(self, "kw_t", 0.0) >= KW_THUMB_EVERY * 0.9:
+		self.kw_t = now; self.kw_frame = kw_small(frame, KW_THUMB_W)
+
+
+ExtraCam._process = _kw_extra_process
+
+
+def kw_small(fr, w):
+	H, W = fr.shape[:2]
+	if W == w:
+		return fr
+	return cv2.resize(fr, (w, max(1, int(H * w / W))), interpolation=cv2.INTER_AREA if W > w else cv2.INTER_CUBIC)
+
+
+def kw_frame(k, it=None):
+	""
+	it = it or kw_find(k)
+	if not it:
+		return None, 0.0
+	now = time.time()
+	if k == "head":
+		w = WATCH_REF.get("w")
+		f = getattr(w, "frame_out", None) if w is not None else None
+		return f, now
+	if k == "thermal":
+		KW["th_until"] = now + KW_LEASE
+		th = THERMAL
+		if th is None or th.frame is None or now - th.t > 3.0:
+			return None, 0.0
+		return th.color(th.crop(th.frame))[0], th.t
+	c = view3_wide_cam() if k == "wide" else next((x for x in CAMS if str(x.spec) == k), None)
+	if c is not None:
+		c.kw_until = now + KW_LEASE
+		return getattr(c, "kw_frame", None), getattr(c, "kw_t", 0.0)
+	if k.startswith(("usb:", "pi:", "url:")):
+		p = kw_pv(k)
+		return (p.frame, p.t) if p is not None else (None, 0.0)
+	return None, 0.0
+
+
+def kw_thumb(k):
+	""
+	it = kw_find(k)
+	if not it or (it["trio"] and not it["ok"]):
+		return None
+	now = time.time()
+	c_ = KW["thumbs"].get(k)
+	if c_ and now - c_[0] < KW_THUMB_EVERY:
+		kw_frame(k, it)
+		return c_[1]
+	end = now + 2.5
+	while True:
+		f, _t = kw_frame(k, it)
+		if f is not None or time.time() >= end:
+			break
+		time.sleep(0.1)
+	if f is None:
+		return c_[1] if c_ else None
+	try:
+		ok, buf = cv2.imencode(".jpg", kw_small(f, KW_THUMB_W), [cv2.IMWRITE_JPEG_QUALITY, KW_THUMB_Q])
+	except cv2.error:
+		return None
+	if not ok:
+		return None
+	KW["thumbs"][k] = (time.time(), buf.tobytes())
+	return KW["thumbs"][k][1]
+
+
+def kw_routes(app):
+	from flask import Response, request
+
+	@app.route("/cam_thumb/<path:key>")
+	def cam_thumb(key):
+		if not kw_find(key):
+			return Response("unknown camera", 404, headers={"Cache-Control": "no-store"})
+		jpg = kw_thumb(key)
+		if not jpg:
+			return Response("no picture yet", 503, headers={"Cache-Control": "no-store"})
+		return Response(jpg, mimetype="image/jpeg", headers={"Cache-Control": "no-store"})
+
+	@app.route("/cam_view/<path:key>")
+	def cam_view(key):
+		it = kw_find(key)
+		if not it or not str(it.get("big") or "").startswith("/cam_view/") or (it["trio"] and not it["ok"]):
+			return Response("unknown camera", 404)
+		rip = request.remote_addr or ""
+
+		def gen():
+			last = None
+			try:
+				remote_stream(rip, +1)
+			except Exception:
+				pass
+			try:
+				while True:
+					t0 = time.time()
+					f, ft = kw_frame(key, it)
+					if f is not None and ft != last:
+						last = ft
+						w = KW_VIEW_W if key != "thermal" else 480
+						ok, buf = cv2.imencode(".jpg", kw_small(f, w), [cv2.IMWRITE_JPEG_QUALITY, 70])
+						if ok:
+							jpg = buf.tobytes()
+							yield (b"--frame\r\nContent-Type: image/jpeg\r\nContent-Length: " + str(len(jpg)).encode() + b"\r\n\r\n" + jpg + b"\r\n")
+					time.sleep(max(0.02, 1.0 / KW_VIEW_FPS - (time.time() - t0)))
+			finally:
+				try:
+					remote_stream(rip, -1)
+				except Exception:
+					pass
+		return Response(gen(), mimetype="multipart/x-mixed-replace; boundary=frame", headers={"Cache-Control": "no-store"})
+
+
+_smalltv_routes_639zzi = smalltv_routes
+
+
+def smalltv_routes(app, reply, body):
+	_smalltv_routes_639zzi(app, reply, body)
+	kw_routes(app)
+
+
+_cams_status_kw = cams_status
+
+
+def cams_status(watch=None):
+	out = _cams_status_kw(watch)
+	try:
+		out[0]["kw"] = kw_list()
+	except Exception:
+		out[0]["kw"] = []
+	return out
+
+
+_HX_KW = _zd('639zzi_kamerawahl/HX_KW', _zd_hx({
+    'Not connected': 'nicht angeschlossen',
+    'In the big picture': 'Im grossen Bild',
+    'Tap: show this camera big (only the view - detection and settings stay)': 'Antippen: diese Kamera gross zeigen (nur die Anzeige – Erkennung und Einstellungen bleiben)',
+    'All cameras': 'Alle Kameras',
+    'No picture right now': 'Gerade kein Bild',
+    'Check the camera under Settings → Cameras & head → Video source.': 'Kamera prüfen unter Einstellungen → Kameras & Kopf → Videoquelle.',
+    'Add the wide-angle camera under Settings → Cameras & head (extra camera as overview).': 'Weitwinkel-Kamera einrichten unter Einstellungen → Kameras & Kopf (Zusatzkamera als Übersicht).',
+    'Choose the thermal camera under Settings → Cameras & head → Thermal camera.': 'Wärmebildkamera wählen unter Einstellungen → Kameras & Kopf → Wärmebild.',
+}))
+for _k, _v in _HX_KW.items():
+	DE.setdefault(_k, _v[0])
+	for _i, _L in enumerate(("fr", "it", "rm")):
+		TRX[_L].setdefault(_k, _v[_i + 1])
+
+KAMWAHL_JS = _zd('639zzi_kamerawahl/KAMWAHL_JS', "")
+WEB_PAGE = WEB_PAGE.replace("</body>", KAMWAHL_JS.replace("/*KWDE*/{}", json.dumps({_k: _v[0] for _k, _v in _HX_KW.items()}, ensure_ascii=False), 1)
+                            + "</body>", 1)
+
+_HELP_KW = {
+    "de": '<li><b>Alle Kameras als kleine Bilder</b> (am echten Gerät): oben links im Live-Bild je ein kleines Bild für Kopf, Weitwinkel, Wärmebild, USB-, Pi- und Netzwerk-Kameras. Antippen = diese Kamera gross – nur die Anzeige, die Erkennung und die Einstellungen bleiben. Fehlt Kopf, Weitwinkel oder Wärmebild: graue Kachel «nicht angeschlossen» (antippen = wo einrichten). Mehr Kameras als Platz: «⋯ Kameras».</li>',
+    "en": '<li><b>Every camera as a small picture</b> (on the real device): top left in the live picture one small picture each for head, wide angle, thermal, USB, Pi and network cameras. Tap = this camera big – only the view, detection and settings stay. Head, wide angle or thermal missing: grey tile «not connected» (tap = where to set it up). More cameras than room: «⋯ Cameras».</li>',
+    "fr": '<li><b>Toutes les caméras en petites images</b> (sur l’appareil réel) : en haut à gauche de l’image en direct, une petite image pour la tête, le grand angle, l’image thermique, les caméras USB, Pi et réseau. Toucher = cette caméra en grand – seulement l’affichage, la détection et les réglages restent. Tête, grand angle ou thermique manquant : vignette grise « non connectée » (toucher = où la configurer). Plus de caméras que de place : « ⋯ Caméras ».</li>',
+    "it": '<li><b>Tutte le telecamere come immagini piccole</b> (sul dispositivo reale): in alto a sinistra nell’immagine live una piccola immagine per testa, grandangolo, immagine termica, telecamere USB, Pi e di rete. Tocca = questa telecamera grande – solo la vista, rilevamento e impostazioni restano. Testa, grandangolo o termica mancante: riquadro grigio «non collegata» (tocca = dove configurarla). Più telecamere che spazio: «⋯ Telecamere».</li>',
+    "rm": '<li><b>Tut las cameras sco pitschens maletgs</b> (sin l’apparat real): sura a sanestra en il maletg live in pitschen maletg per chau, grond angul, maletg termic, cameras USB, Pi e da rait. Tutgar = questa camera grond – mo la vista, la detecziun ed ils parameters restan. Chau, grond angul u maletg termic manca: plattina grischa «betg colliada» (tutgar = nua configurar). Dapli cameras che plaz: «⋯ Cameras».</li>',
+}
+
+
+def _help_kw(doc, lang):
+	i = doc.find('<section id="views"')
+	if i < 0 or 'id="kw-help"' in doc:
+		return doc
+	j = doc.find("</ul></section>", i)
+	if j < 0:
+		return doc
+	return doc[:j] + _HELP_KW[lang].replace("<li>", '<li id="kw-help">', 1) + doc[j:]
+
+
+_hp_en_kw = HELP_PAGE.find('<div lang="en">')
+if _hp_en_kw > 0:
+	HELP_PAGE = _help_kw(HELP_PAGE[:_hp_en_kw], "de") + _help_kw(HELP_PAGE[_hp_en_kw:], "en")
+for _L in ("fr", "it", "rm"):
+	if HELP_X.get(_L):
+		HELP_X[_L] = _help_kw(HELP_X[_L], _L)
+
+
+
+def kamwahl_selftest():
+	html = WEB_PAGE
+	assert html.count('id="kw-css"') == 1 and "/*KWDE*/" not in html, "Kamerawahl not in the live page"
+	assert html.find('id="kw-css"') > html.find('id="v3-css"') > 0, "after 639zv"
+	for need in ("window.mwKamWahl", '"/cam_thumb/"', "keepStream(img", '"mw-kamwahl"', 'me.perms.indexOf("live")', "V3().look(k)"):
+		assert need in KAMWAHL_JS, "Kamerawahl: missing " + need
+	for bad in ("/api/set", "thermal_on", "/api/source"):
+		assert bad not in KAMWAHL_JS, "Kamerawahl must not change settings: " + bad
+	assert "kwClear()" in VIEW3_JS and "kb ? kb.src" in VIEW3_JS and "look: look" in VIEW3_JS, "639zv: hooks for the tiles"
+	for k, v in _HX_KW.items():
+		assert len(v) == 4 and all(v), k
+		assert k in DE and k in TRX["fr"] and k in TRX["it"] and k in TRX["rm"], k
+	for v in KW_TRIO_HINT.values():
+		assert v in _HX_KW, v
+	assert "mw-kamwahl" in WEB_UI_LOCAL
+	assert role_allows("custom", "/cam_thumb/usb:2", "GET", {}, {"live"}) and not role_allows("custom", "/cam_thumb/usb:2", "GET", {}, set())
+	assert role_allows("custom", "/cam_view/thermal", "GET", {}, {"live"}) and not role_allows("custom", "/cam_view/thermal", "GET", {}, {"rec"})
+	assert HELP_PAGE.count('id="kw-help"') == 2, "manual: tiles"
+	keep = ({k: CFG.get(k) for k in ("sim_on", "ip_sources", "thermal_source", "kopf_ov", "source", "extra_cams")}, dict(KW), os.environ.get("MW_TEST_V4L"))
+	try:
+		os.environ["MW_TEST_V4L"] = "7:Test cam"
+		KW.update(list=([], 0.0), usb=([], 0.0), pi=([], 1e18))
+		CFG.update(sim_on=False, thermal_source="", kopf_ov="", source="usb:7", extra_cams=[],
+                   ip_sources=[{"id": "0123abcd", "name": "Gate", "url": "rtsp://user:geheim@10.0.0.9/live"}])
+		L = kw_list(); ks = [x["k"] for x in L]
+		assert ks[:3] == ["head", "wide", "thermal"], ks
+		assert not L[1]["ok"] and not L[2]["ok"] and L[1]["hint"] and L[2]["hint"], L[1:3]
+		assert "usb:7" not in ks, "the main camera is no extra tile"
+		assert "url:0123abcd" in ks and "geheim" not in json.dumps(L) and "rtsp" not in json.dumps(L), "network camera: no address to the browser"
+		CFG["source"] = "pi:0"; KW["list"] = ([], 0.0); KW["usb"] = ([], 0.0)
+		assert "usb:7" in [x["k"] for x in kw_list()]
+		CFG["sim_on"] = True; KW["list"] = ([], 0.0)
+		assert kw_list() == [], "simulator: as before"
+		assert "kw" in cams_status()[0]
+	finally:
+		CFG.update(keep[0]); KW.clear(); KW.update(keep[1])
+		if keep[2] is None:
+			os.environ.pop("MW_TEST_V4L", None)
+		else:
+			os.environ["MW_TEST_V4L"] = keep[2]
+	return "tiles of every camera: list, no network address, rights, simulator unchanged, view only"
+
+
+SELFTEST_EXTRA.append(("Camera tiles in the live picture: every source, view only (639zzi)", kamwahl_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+LVK_MS = 4000
+WEB_UI_LOCAL.add("mw-lv-knoepfe")
+
+_HX_LVK = _zd('639zzj_live_sauber/HX_LVK', _zd_hx({
+    'Always show the buttons in the live picture': 'Knöpfe im Live-Bild immer zeigen',
+    'Off: the live picture stays clean - tap it (PC: move the mouse over it) and the buttons and camera tiles show for 4 seconds. Only on this device (this browser).': 'Aus: Das Live-Bild bleibt frei – antippen (PC: Maus darüber), dann erscheinen die Knöpfe und Kamera-Kacheln für 4 Sekunden. Gilt nur auf diesem Gerät (in diesem Browser).',
+    'USB camera': 'USB-Kamera',
+    'Pi camera': 'Pi-Kamera',
+}))
+for _k, _v in _HX_LVK.items():
+	DE.setdefault(_k, _v[0])
+	for _i, _L in enumerate(("fr", "it", "rm")):
+		TRX[_L].setdefault(_k, _v[_i + 1])
+
+LVK_JS = _zd('639zzj_live_sauber/LVK_JS', "")
+WEB_PAGE = WEB_PAGE.replace("</body>", LVK_JS.replace("/*LVKDE*/{}", json.dumps({_k: _v[0] for _k, _v in _HX_LVK.items()}, ensure_ascii=False), 1)
+                            .replace("/*LVKMS*/4000", str(int(LVK_MS)), 1) + "</body>", 1)
+
+_HELP_LVK = {
+    "de": '<li><b>Sauberes Live-Bild:</b> Die Knöpfe auf dem Bild (🎮, 🔍, 📷, Ansicht, Vollbild) und die kleinen Kamera-Bilder sind versteckt. Bild antippen (PC: Maus darüber, Tastatur: Tab) = sie erscheinen für 4 Sekunden, jede Berührung verlängert; ist ein Menü, «Untersuchen» oder die Steuerung offen, bleiben sie. «LIVE» und der Kamera-Name bleiben immer. Immer zeigen: Einstellungen → Netzwerk &amp; Zugang → Web-Stream → «Knöpfe im Live-Bild immer zeigen» (nur in diesem Browser).</li>',
+    "en": '<li><b>Clean live picture:</b> the buttons on the picture (🎮, 🔍, 📷, view, full screen) and the small camera pictures are hidden. Tap the picture (PC: mouse over it, keyboard: Tab) = they show for 4 seconds, every touch adds time; while a menu, «Examine» or the control is open they stay. «LIVE» and the camera name always stay. Always show: Settings → Network &amp; access → Web stream → «Always show the buttons in the live picture» (only in this browser).</li>',
+    "fr": '<li><b>Image en direct dégagée :</b> les boutons sur l’image (🎮, 🔍, 📷, vue, plein écran) et les petites images des caméras sont masqués. Toucher l’image (PC : souris dessus, clavier : Tab) = ils s’affichent 4 secondes, chaque contact prolonge ; si un menu, « Examiner » ou la commande est ouvert, ils restent. « LIVE » et le nom de la caméra restent toujours. Toujours afficher : Réglages → Réseau &amp; accès → Flux web → « Toujours afficher les boutons dans l’image en direct » (seulement dans ce navigateur).</li>',
+    "it": '<li><b>Immagine dal vivo pulita:</b> i pulsanti sull’immagine (🎮, 🔍, 📷, vista, schermo intero) e le piccole immagini delle telecamere sono nascosti. Tocca l’immagine (PC: mouse sopra, tastiera: Tab) = appaiono per 4 secondi, ogni tocco prolunga; se un menu, «Esaminare» o il comando è aperto, restano. «LIVE» e il nome della telecamera restano sempre. Mostrare sempre: Impostazioni → Rete &amp; accesso → Stream web → «Mostra sempre i pulsanti nell’immagine dal vivo» (solo in questo browser).</li>',
+    "rm": '<li><b>Maletg live net:</b> ils buttuns sin il maletg (🎮, 🔍, 📷, vista, entir visur) e las pitschnas maletgs da las cameras èn zuppads. Tutgar il maletg (PC: mieur sur el, tastatura: Tab) = els cumparan per 4 secundas, mintga tutg prolunghescha; sch’in menu, «Examinar» u la direcziun è avert, restan els. «LIVE» ed il num da la camera restan adina. Adina mussar: Parameters → Rait &amp; access → Stream web → «Adina mussar ils buttuns en il maletg live» (mo en quest navigatur).</li>',
+}
+
+
+def _help_lvk(doc, lang):
+	i = doc.find('<section id="views"')
+	if i < 0 or 'id="lvk-help"' in doc:
+		return doc
+	j = doc.find("</ul></section>", i)
+	if j < 0:
+		return doc
+	return doc[:j] + _HELP_LVK[lang].replace("<li>", '<li id="lvk-help">', 1) + doc[j:]
+
+
+_hp_en_lvk = HELP_PAGE.find('<div lang="en">')
+if _hp_en_lvk > 0:
+	HELP_PAGE = _help_lvk(HELP_PAGE[:_hp_en_lvk], "de") + _help_lvk(HELP_PAGE[_hp_en_lvk:], "en")
+for _L in ("fr", "it", "rm"):
+	if HELP_X.get(_L):
+		HELP_X[_L] = _help_lvk(HELP_X[_L], _L)
+
+
+
+def live_sauber_selftest():
+	html = WEB_PAGE
+	assert html.count('id="lvk-css"') == 1 and "/*LVKDE*/" not in html and "/*LVKMS*/" not in html, "Live-Bild sauber not in the page"
+	assert html.find('id="lvk-css"') > html.find('id="kw-css"') > 0, "after 639zzi"
+	for need in ("window.mwLiveKnoepfe", '"mw-lv-knoepfe"', "body.lvc-auto:not(.lvc-show) #lv-tools", "#kw-row img", 'data-view="sec:Web stream"',
+                 "pointer-events:none!important", '"kw-menu", "v3-menu", "lv-menu", "unt-bar"', '"pv-on"', ":focus-visible"):
+		assert need in LVK_JS, "Live-Bild sauber: missing " + need
+	for bad in ("/api/set", "/api/ui\"", ".vtag", "#v3-tag"):
+		assert bad not in LVK_JS.split("<script>")[1], "Live-Bild sauber must not touch: " + bad
+	assert "mw-lv-knoepfe" in WEB_UI_LOCAL, "per browser"
+	for k, v in _HX_LVK.items():
+		assert len(v) == 4 and all(v), k
+		assert k in DE and k in TRX["fr"] and k in TRX["it"] and k in TRX["rm"], k
+	assert tr("USB camera", "de") == "USB-Kamera"
+	assert "kwCamName" in KAMWAHL_JS, "639zzi: the prefix «USB camera» translated"
+	assert HELP_PAGE.count('id="lvk-help"') == 2, "manual: clean live picture"
+	return "live picture clean by default, tap = 4 s, switch per browser, USB prefix translated"
+
+
+SELFTEST_EXTRA.append(("Live picture clean: buttons and tiles after a tap (639zzj)", live_sauber_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+_HX_PIN = {
+    "PIN needed": ("PIN nötig", "PIN requis", "PIN necessario", "PIN necessari"),
+    "This switches the protection off. Enter the PIN.": (
+        "Das schaltet den Schutz aus. Gib die PIN ein.", "Cela désactive la protection. Saisis le PIN.",
+        "Questo spegne la protezione. Inserisci il PIN.", "Quai stizza la protecziun. Endatescha il PIN."),
+    "Switch off": ("Ausschalten", "Désactiver", "Spegni", "Stizzar"),
+    "Cancel": ("Abbrechen", "Annuler", "Annulla", "Interrumper"),
+}
+for _k, _v in _HX_PIN.items():
+	DE.setdefault(_k, _v[0])
+	for _i, _L in enumerate(("fr", "it", "rm")):
+		TRX[_L].setdefault(_k, _v[_i + 1])
+
+PIN_ASK_JS = _zd('639zzk_pin_ueberall/PIN_ASK_JS', "")
+PIN_ASK_JS = PIN_ASK_JS.replace("/*PINTX*/{}", json.dumps({_k: list(_v) for _k, _v in _HX_PIN.items()}, ensure_ascii=False), 1)
+
+_render_page_before_pin = render_page
+
+
+def render_page(page, active):
+	""
+	out = _render_page_before_pin(page, active)
+	if 'id="mw-pin-ask"' in out:
+		return out
+	i = out.find("<body")
+	j = out.find(">", i) if i >= 0 else -1
+	return out[:j + 1] + PIN_ASK_JS + out[j + 1:] if j >= 0 else out + PIN_ASK_JS
+
+
+
+def rechte_schutz_selftest():
+	""
+
+	for r_ in ("kid", "friend", "family", "view"):
+		for p_ in ("/api/factory", "/api/factory/backup/motionwatch_settings.before_reset_20260101-000000.json", "/api/fax", "/api/statex",
+                   "/api/settings/export", "/api/users"):
+			assert not role_allows(r_, p_, "GET", {}), (r_, p_)
+		assert role_allows(r_, "/api/fa", "GET", {}) and role_allows(r_, "/api/state", "GET", {}) and role_allows(r_, "/i18n/de.js", "GET", {}), r_
+		assert role_allows(r_, "/api/ui", "GET", {}) and role_allows(r_, "/api/ui_simple", "GET", {}) and role_allows(r_, "/api/ui_sync", "GET", {}), r_
+		assert not role_allows(r_, "/api/tunnel", "POST", {"on": True}) and role_allows(r_, "/api/tunnel", "GET", {}), r_
+		assert not role_allows(r_, "/api/factory", "POST", {}), r_
+	assert not role_allows("custom", "/api/audio/live", "GET", {}, set()) and role_allows("custom", "/api/audio/live", "GET", {}, {"live"})
+	assert role_allows("custom", "/api/audio", "GET", {}, set()), "the state of the sound stays for everybody"
+	assert role_allows("view", "/api/recordings/stats", "GET", {}) and not role_allows("view", "/api/recordingsx", "GET", {})
+	assert role_allows("family", "/api/protect", "GET", {}) and role_allows("family", "/api/protect", "POST", {"action": "level", "level": "watch"})
+	assert role_allows("family", "/api/protect", "POST", {"action": "test"})
+	for a_ in ("pin", "escalate", "presence", "fix_push", None):
+		assert not role_allows("family", "/api/protect", "POST", {"action": a_}), a_
+	assert not role_allows("kid", "/api/protect", "GET", {}) and not role_allows("kid", "/api/protect", "POST", {"action": "level"})
+	assert not role_allows("custom", "/api/protect", "GET", {}, set())
+	assert role_allows("admin", "/api/factory/backup/x", "GET", {}) and role_allows("admin", "/api/tunnel", "POST", {})
+	import copy
+	keys = ("armed", "protect_pin", "protect_level", "protect_auto", "escalate_on", "siren_on", "mode", "mode_prev", "camping", "camping_prev",
+            "sim_on", "mode_gamer_watch", "sched_manual")
+	keep = {k: copy.deepcopy(CFG.get(k)) for k in keys}
+	fails = list(PROTECT["pin_fails"]); esc = (PROTECT["esc_t"], PROTECT["esc_id"])
+	sched = {k: copy.deepcopy(v) for k, v in SCHED.items()}
+	with LOCK:
+		plans0 = [dict(s) for s in SCHEDULES]
+	names = ("log_event", "save_settings")
+	keep_f = {n: globals()[n] for n in names}
+	try:
+		for n in names:
+			globals()[n] = lambda *a, **k: None
+
+		CFG.update(armed=True, mode="", mode_prev={}, camping=False, camping_prev={}, sim_on=False, protect_pin="")
+		assert web_disarms("/api/mode", {"mode": "transport"}) and not web_disarms("/api/mode", {"mode": "home"})
+		assert not web_disarms("/api/mode", {"mode_fire_hours": 2}) and not web_disarms("/api/mode", {"mode": ""})
+		assert web_disarms("/api/fleet", {"action": "disarm", "id": "all"}) and web_disarms("/api/fleet", {"action": "disarm", "id": "me"})
+		assert not web_disarms("/api/fleet", {"action": "arm", "id": "all"}) and not web_disarms("/api/fleet", {"action": "disarm", "id": "x1"})
+		assert web_disarms("/api/sim", {"on": True, "confirm": True}) and not web_disarms("/api/sim", {"on": True})
+		assert web_disarms("/api/simintern", {"action": "start", "confirm": True}) and web_disarms("/api/set", {"key": "armed", "value": False})
+		assert not web_disarms("/api/set", {"key": "record", "value": False}) and not web_disarms("/api/arm", {"action": "arm"})
+		CFG.update(mode="home", mode_prev={"armed": False})
+		assert web_disarms("/api/mode", {"mode": ""}), "back to the own settings that were «off»"
+		CFG.update(mode="camping", camping=True, mode_prev={"armed": False}, camping_prev={"armed": False})
+		assert web_disarms("/api/camping", {"on": False}) and not web_disarms("/api/camping", {"on": True})
+		assert web_disarms("/api/mode", {"mode": "gamer", "mode_gamer_watch": False}) and not web_disarms("/api/mode", {"mode": "gamer", "mode_gamer_watch": True})
+		CFG.update(mode="", mode_prev={}, camping=False, camping_prev={})
+		CFG["armed"] = False
+		assert not web_disarms("/api/mode", {"mode": "transport"}), "already off: nothing to protect"
+		CFG["armed"] = True
+		assert web_pin_guard("/api/mode", "POST", {"mode": "transport"}, "") is None, "no PIN set: as before"
+		CFG["protect_pin"] = _pin_hash("4711"); PROTECT["pin_fails"] = []
+		assert web_pin_guard("/api/mode", "POST", {"mode": "transport"}, "") == "PIN needed" and not PROTECT["pin_fails"], "asking is not a wrong PIN"
+		assert web_pin_guard("/api/mode", "POST", {"mode": "transport"}, "0000") == "wrong PIN" and len(PROTECT["pin_fails"]) == 1
+		assert web_pin_guard("/api/mode", "POST", {"mode": "transport"}, "4711") is None and not PROTECT["pin_fails"]
+		assert web_pin_guard("/api/mode", "POST", {"mode": "home"}, "") is None and web_pin_guard("/api/mode", "GET", {"mode": "transport"}, "") is None
+		assert web_pin_guard("/api/light", "POST", {"on": True}, "") is None
+		assert protect_pin_check("4711")[0] and protect_pin_check("")[1] == "PIN needed"
+		PROTECT["pin_fails"] = [time.time()] * 5
+		assert protect_pin_check("4711")[1].startswith("too many"); PROTECT["pin_fails"] = []
+		assert tr("PIN needed", "de") == "PIN nötig"
+
+		CFG.update(protect_pin="", protect_level="full", protect_auto=[], escalate_on=False, siren_on="off")
+		assert protect_siren_sync("full") and CFG["escalate_on"] and CFG["siren_on"] == "person" and CFG["protect_auto"] == ["escalate_on", "siren_on"]
+		assert not protect_siren_sync() and CFG["escalate_on"], "armed again in «Voll»: stays"
+		CFG["protect_level"] = "watch"
+		assert protect_siren_sync("watch") and not CFG["escalate_on"] and CFG["siren_on"] == "off" and CFG["protect_auto"] == [], "Voll -> Wachsam"
+		protect_siren_sync("full"); CFG["protect_level"] = "off"
+		assert CFG["escalate_on"] and protect_siren_sync() and not CFG["escalate_on"] and CFG["siren_on"] == "off", "Voll -> Aus -> an = Wachsam without siren"
+		CFG.update(siren_on="alarm", escalate_on=False, protect_auto=[])
+		protect_siren_sync("full"); assert CFG["siren_on"] == "alarm" and CFG["protect_auto"] == ["escalate_on"]
+		protect_siren_sync("watch"); assert CFG["siren_on"] == "alarm" and not CFG["escalate_on"]
+		protect_siren_sync("full"); protect_auto_user("escalate_on"); CFG["protect_level"] = "off"
+		assert not protect_siren_sync() and CFG["escalate_on"], "the switch «Sirene nach … s» set by hand stays"
+		CFG.update(protect_auto=["?"], escalate_on=True, siren_on="person", protect_level="off")
+		assert protect_siren_sync() and not CFG["escalate_on"] and CFG["siren_on"] == "off" and CFG["protect_auto"] == []
+		CFG.update(protect_auto=["?"], escalate_on=False, siren_on="person", protect_level="off")
+		assert protect_siren_sync() and CFG["siren_on"] == "person" and CFG["protect_auto"] == [], "older file, own siren: stays (only the list is written)"
+		CFG.update(protect_auto=[], siren_on="off", escalate_on=False, protect_level="watch")
+		protect_siren_sync("watch", "siren"); assert CFG["escalate_on"] and CFG["siren_on"] == "person", "assistant: Wachsam with siren"
+
+		now = datetime.now().replace(second=0, microsecond=0)
+		hm = lambda dt: dt.strftime("%H:%M")
+		plan = _clean_schedule({"name": "Nacht", "enabled": True, "start": hm(now - timedelta(minutes=30)), "end": hm(now + timedelta(minutes=30)),
+                                "days": list(range(7)), "actions": {"armed": True}}, 0)
+		if plan and schedule_active(plan, now) and schedule_active(plan, now - timedelta(minutes=20)) and (now - timedelta(minutes=30)).date() == (now + timedelta(minutes=30)).date():
+			CFG["armed"] = False
+			for note, want in (({"armed": {"v": True, "t": time.time() - 600}}, True),
+                               ({"armed": {"v": True, "t": time.time() - 3 * 3600}}, False),
+                               ({"armed": {"v": False, "t": time.time() - 600}}, False),
+                               ({"armed": {"v": True, "t": time.time() + 3600}}, False),
+                               ({"nonsense": {"v": True, "t": time.time()}}, False)):
+				SCHED.update(base={}, manual=set(), last={}, restored=False); CFG["sched_manual"] = copy.deepcopy(note)
+				sched_manual_restore([plan], now)
+				assert ("armed" in SCHED["manual"]) == want and (CFG["sched_manual"] == note) == want, (note, SCHED, CFG["sched_manual"])
+				assert not want or (SCHED["last"] == {"armed": True} and SCHED["base"] == {"armed": False})
+			SCHED.update(base={}, manual=set(), last={"armed": True}); CFG["sched_manual"] = {}
+			sched_user_changed("armed")
+			assert CFG["sched_manual"]["armed"]["v"] is True and abs(CFG["sched_manual"]["armed"]["t"] - time.time()) < 5, "written with the switch"
+			SCHED["manual"].discard("armed"); assert _sched_manual_note({"armed": True}) and CFG["sched_manual"] == {}, "the schedule took over: note gone"
+		assert "save_settings_flush" in globals() and '"mw-pin-ask"' in render_page("<html><head></head><body><p>x</p></body></html>", "live")
+		assert render_page("<html><head></head><body></body></html>", "live").count('id="mw-pin-ask"') == 1 and "/*PINTX*/" not in PIN_ASK_JS
+	finally:
+		globals().update(keep_f)
+		CFG.update(keep); PROTECT["pin_fails"] = fails; PROTECT["esc_t"], PROTECT["esc_id"] = esc
+		SCHED.clear(); SCHED.update(sched)
+	return "rights exact (factory, audio/live, tunnel, protect), PIN for everything the web switches off, level -> siren, schedule note"
+
+
+SELFTEST_EXTRA.append(("Rights and protection: check of 10.11.2026 (639zzk)", rechte_schutz_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+DE.setdefault("missed pictures from the game (hard cases)", "verpasste Bilder aus dem Spiel (schwierige Fälle)")
+_I18N_DE_GAPS = {}
+
+
+_I18N_STR_RE = re.compile(r'"(?=((?:[^"\\\n]|\\.){2,240})")')
+_I18N_ATTR_RE = re.compile(r'data-i18n(?:-title|-ph|-placeholder)?="([^"\n]{2,400})"')
+_I18N_PAIR_RE = re.compile(r'"(?=((?:[^"\\\n]|\\.){2,240})"\s*:\s*"((?:[^"\\\n]|\\.){1,400})")')
+
+
+def _i18n_js_str(k):
+	if "\\" not in k:
+		return k
+	try:
+		return json.loads('"' + k + '"')
+	except ValueError:
+		return None
+
+
+def i18n_de_gaps(text):
+	"""
+
+
+
+
+"""
+	import html as _h
+	attr = {_h.unescape(k) for k in _I18N_ATTR_RE.findall(text)}
+	cand = set(attr)
+	for m in _I18N_STR_RE.finditer(text):
+		k = _i18n_js_str(m.group(1))
+		if k and " " in k.strip() and len(k) >= 8:
+			cand.add(k)
+	cand = {k for k in cand if isinstance(DE.get(k), str) and DE[k] != k}
+	for m in _I18N_PAIR_RE.finditer(text):
+		k = _i18n_js_str(m.group(1))
+		if k in cand and _i18n_js_str(m.group(2)) == DE[k]:
+			cand.discard(k)
+	return {k: DE[k] for k in cand}
+
+
+def i18n_de_fill(page, key):
+	""
+	if "</head>" not in page:
+		return page
+	d = _I18N_DE_GAPS.get(key)
+	if d is None:
+		try:
+			d = i18n_de_gaps(page)
+		except Exception as e:
+			d = {}
+			log_event("sys", f"Web: German texts of the page «{key[0]}»: {type(e).__name__}: {e}"[:160])
+		if len(_I18N_DE_GAPS) > 120:
+			_I18N_DE_GAPS.clear()
+		_I18N_DE_GAPS[key] = d
+	if not d:
+		return page
+	return page.replace("</head>", "<script>window.I18NDX=" + json.dumps(d, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
+                        + ";</script></head>", 1)
+
+
+_render_page_639zzl = render_page
+
+
+
+def render_page(page, active):
+	return i18n_de_fill(_render_page_639zzl(page, active), (active, len(page), hash(page)))
+
+
+
+def deutsch_luecken_selftest():
+	g = i18n_de_gaps('<a data-i18n="Play area">Play area</a><script>const I18N = {de: {"Tools": "Werkzeuge"}}; t("Tools"); t("Status LED & buttons"); t("no such text 123"); t("left");</script>')
+	assert g.get("Play area") == "Spielen" and g.get("Status LED & buttons") == "Status-LED & Tasten", g
+	assert "Tools" not in g and "no such text 123" not in g, "what the page has itself and unknown texts stay out"
+	assert "left" in DE and "left" not in g, "a single word in the script is not taken (one German, many meanings)"
+	assert i18n_de_gaps('<script>const IC = {"Play area": "🎮"}; t("Play area");</script>').get("Play area") == "Spielen", "a key of another table is no German"
+	assert i18n_de_gaps('<b data-i18n="Status LED &amp; buttons"></b>').get("Status LED & buttons"), "HTML attribute with &amp;"
+	for nm, tab, need in (("WEB_PAGE", "settings", ("Status LED & buttons", "File exchange")), ("TOOLS_PAGE", "tools", ("Play area",)),
+                          ("REC_PAGE", "rec", ("Night timeline",))):
+		html = render_page(globals()[nm], tab)
+		assert html.count("window.I18NDX=") == 1, nm
+		dx = json.loads(html.split("window.I18NDX=", 1)[1].split(";</script>", 1)[0].replace("<\\/", "</"))
+		for k in need:
+			assert dx.get(k) == DE[k] != k, (nm, k)
+	for _k, _h, lb in [x for v in NAV_SUB.values() for x in v] + [(k, h, lb) for k, h, lb, _s in NAV_ITEMS]:
+		assert lb in DE, "tab without German: " + lb
+	assert "window.I18NDX" in i18n_loader(), "LX asks the German gaps"
+	return "German gaps: every page gets the German it lacks (tabs, menu «Mehr», group titles)"
+
+
+SELFTEST_EXTRA.append(("German gaps of the web pages (639zzl)", deutsch_luecken_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+FS_TAG = "fspiele-1"
+FS_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/" + FS_TAG + "/"}
+FS_MAX_BYTES = 150 * 1024 * 1024
+FS_LANGS5 = ("de", "en", "fr", "it", "rm")
+
+
+def _fs_tile(gid, start, inp, name, descs, notes=None):
+	""
+	g_ = {"dir": gid, "start": start, "icon": "thumb.png", "input": inp, "name": name, "desc": descs[0],
+          "names": {L: name for L in FS_LANGS5}, "descs": dict(zip(FS_LANGS5, descs))}
+	if notes:
+		g_["note"] = notes[0]
+		g_["notes"] = dict(zip(FS_LANGS5, notes))
+	return g_
+
+
+
+
+FS_GAMES = {
+    "fs-angst": {
+        "file": {"name": "fspiele-angst-1.zip", "size": 37087772, "sha256": "ddd557dde9326dc1e0ddb1e072cfd07950a716c3338ab164fe8e7dc103319d1c", "unpacked": 37063450},
+        "licence": "CC0 · Nicky Case, Monplaisir · Deutsch: Jonas Reich",
+        "tile": _fs_tile("fs-angst", "index.html", "touch", "Abenteuer mit Angst", (
+            "Interaktive Geschichte: Du spielst die Angst eines Menschen. Deutsch, etwa 30 Minuten, mit Ton.",
+            "Interactive story: you play a human’s anxiety. In German, about 30 minutes, with sound.",
+            "Histoire interactive : tu joues l’anxiété d’un humain. En allemand, env. 30 minutes, avec son.",
+            "Storia interattiva: interpreti l’ansia di una persona. In tedesco, circa 30 minuti, con audio.",
+            "Istorgia interactiva: ti giogas la tema d’in uman. Tudestg, var 30 minutas, cun tun."), (
+            "Ab ca. 12 Jahren, mit Kraftausdrücken", "From about age 12, with swearing", "Dès 12 ans env., avec des gros mots",
+            "Da circa 12 anni, con parolacce", "A partir da ca. 12 onns, cun pleds groppos"))},
+    "fs-heroine": {
+        "file": {"name": "fspiele-heroine-1.zip", "size": 41254926, "sha256": "c9163f574b9d575f774b857f5e8627a432f2f84abe784fe47deb2cb2a8d286ff", "unpacked": 41241720},
+        "licence": "GPL v3+ / CC-BY-SA 3.0 · Clint Bellanger · Musik: Yubatake (CC-BY 3.0)",
+        "tile": _fs_tile("fs-heroine", "start.html", "touch", "Heroine Dusk", (
+            "Verlies-Rollenspiel im Retro-Stil: tippen zum Gehen, Kämpfen, Zaubern. Englisch, wenig Text.",
+            "Retro dungeon crawl: tap to walk, fight and cast spells. English, little text.",
+            "Exploration de donjon rétro : toucher pour marcher, combattre, lancer des sorts. Anglais, peu de texte.",
+            "Dungeon crawl rétro: tocca per camminare, combattere, lanciare incantesimi. Inglese, poco testo.",
+            "Gieu da rollas retro en il tschaler: tutgar per ir, cumbatter e striunar. Englais, pauc text."))},
+    "fs-hexgl": {
+        "file": {"name": "fspiele-hexgl-1.zip", "size": 15373699, "sha256": "dc1d8058dae4f22b457ace5f37314ae99603e53b2c3581cc040461ac1c349e5b", "unpacked": 15352741},
+        "licence": "MIT / CC BY-NC 3.0 · Thibaut Despoulain (BKcore)",
+        "tile": _fs_tile("fs-hexgl", "index.html", "touch", "HexGL", (
+            "Futuristisches 3D-Rennen: links lenken, rechts Gas. Handy quer halten. Englisch, wenig Text.",
+            "Futuristic 3D racing: steer on the left, accelerate on the right. Hold the phone sideways. English, little text.",
+            "Course 3D futuriste : diriger à gauche, accélérer à droite. Tenir le téléphone à l’horizontale. Anglais, peu de texte.",
+            "Corsa 3D futuristica: sterza a sinistra, accelera a destra. Tieni il telefono in orizzontale. Inglese, poco testo.",
+            "Cursa 3D futuristica: manischar a sanestra, gas a dretga. Tegnair il telefonin a travers. Englais, pauc text."))},
+}
+FS_DL = {"running": False, "id": "", "got": 0, "total": 0, "msg": "", "stop": False, "done": False, "phase": ""}
+FS_HIDE = ("fspiel.ok", "fspiel.ok.new")
+
+
+def fs_root():
+	return os.path.join(DATA_DIR, "fspiele")
+
+
+def fs_dir(gid):
+	return os.path.join(fs_root(), gid)
+
+
+def fs_dl_dir():
+	return os.path.join(DATA_DIR, "fspiele_dl")
+
+
+def fs_pinned(gid):
+	""
+	f = (FS_GAMES.get(gid) or {}).get("file") or {}
+	return (isinstance(f.get("size"), int) and 0 < f["size"] <= FS_MAX_BYTES and bool(re.fullmatch(r"[0-9a-f]{64}", str(f.get("sha256") or "")))
+            and isinstance(f.get("unpacked"), int) and 0 < f["unpacked"] <= FS_MAX_BYTES
+            and bool(re.fullmatch(r"fspiele-[a-z0-9]+-\d{1,3}\.zip", f.get("name") or "")))
+
+
+def fs_installed(gid):
+	""
+	if not fs_pinned(gid):
+		return False
+	d_ = fs_dir(gid)
+	try:
+		with open(os.path.join(d_, "fspiel.ok"), encoding="utf-8") as fh:
+			ok_ = json.load(fh)
+	except (OSError, ValueError):
+		return False
+	g_ = FS_GAMES[gid]
+	return (isinstance(ok_, dict) and ok_.get("tag") == FS_TAG and ok_.get("sha256") == g_["file"]["sha256"]
+            and all(os.path.isfile(os.path.join(d_, f)) for f in (g_["tile"]["start"], g_["tile"]["icon"])))
+
+
+def _fs_unzip(zp, dest, limit):
+	""
+	tot = 0
+	with zipfile.ZipFile(zp) as z:
+		infos = z.infolist()
+		for i in infos:
+			n = i.filename
+			if n.startswith("/") or "\\" in n or ".." in n.split("/") or not re.fullmatch(r"[A-Za-z0-9._ /+-]{1,200}", n) or os.path.basename(n) in FS_HIDE:
+				raise ValueError("bad file name in the package")
+			if (i.external_attr >> 16) & 0o170000 == 0o120000:
+				raise ValueError("link in the package")
+			tot += i.file_size
+		if tot > limit + 1024:
+			raise ValueError("package larger than announced")
+		for i in infos:
+			if i.is_dir():
+				continue
+			p = os.path.join(dest, *i.filename.split("/"))
+			os.makedirs(os.path.dirname(p), exist_ok=True)
+			with z.open(i) as src, open(p, "wb") as out:
+				while True:
+					if FS_DL.get("stop"):
+						raise InterruptedError("cancelled")
+					b = src.read(1 << 20)
+					if not b:
+						break
+					out.write(b)
+	return tot
+
+
+def fs_download(gid, wait=False):
+	""
+	if gid not in FS_GAMES:
+		return False, "unknown action"
+	if not fs_pinned(gid):
+		return False, "comes with an update"
+	if FS_DL["running"]:
+		return (True, "") if FS_DL["id"] == gid else (False, "busy right now - try again in a moment")
+	if fs_installed(gid):
+		return True, ""
+	f = FS_GAMES[gid]["file"]
+	try:
+		free = shutil.disk_usage(DATA_DIR).free
+	except OSError:
+		free = 1 << 40
+	dd = fs_dl_dir()
+	dest = os.path.join(dd, f["name"])
+	have = sum(os.path.getsize(p) for p in (dest, dest + ".part") if os.path.isfile(p))
+	if free - (f["size"] - have + f["unpacked"]) < bio_free_need():
+		return False, "not enough free space on the memory card"
+	FS_DL.update(running=True, id=gid, got=0, total=f["size"], msg="", stop=False, done=False, phase="load")
+
+	def work():
+		tmp = fs_dir(gid) + ".new"
+		try:
+			os.makedirs(dd, exist_ok=True)
+			if os.path.isfile(dest) and piper_check_file(dest, f)[0]:
+				FS_DL["got"] = f["size"]
+			else:
+				bio_fetch(FS_BASE["url"] + f["name"], dest, f, FS_DL)
+			FS_DL["phase"] = "unpack"
+			shutil.rmtree(tmp, ignore_errors=True)
+			os.makedirs(tmp)
+			_fs_unzip(dest, tmp, f["unpacked"])
+			with open(os.path.join(tmp, "fspiel.json"), encoding="utf-8") as fh:
+				man = json.load(fh)
+			if man.get("tag") != FS_TAG or man.get("id") != gid:
+				raise ValueError("the package is not " + gid + " of " + FS_TAG)
+			with open(os.path.join(tmp, "fspiel.ok"), "w", encoding="utf-8") as fh:
+				json.dump({"tag": FS_TAG, "sha256": f["sha256"]}, fh)
+			shutil.rmtree(fs_dir(gid), ignore_errors=True)
+			os.replace(tmp, fs_dir(gid))
+			shutil.rmtree(dd, ignore_errors=True)
+			FS_DL["done"] = True
+			log_event("sys", f"Game «{FS_GAMES[gid]['tile']['name']}» installed ({FS_TAG})")
+		except InterruptedError:
+			FS_DL["msg"] = "cancelled"
+		except Exception as e:
+			FS_DL["msg"] = str(getattr(e, "reason", "") or e)[:160] or e.__class__.__name__
+			log_event("sys", f"Game «{FS_GAMES[gid]['tile']['name']}» not installed: {FS_DL['msg']}")
+		finally:
+			shutil.rmtree(tmp, ignore_errors=True)
+			FS_DL.update(running=False, phase="")
+	if wait:
+		work()
+		return (not FS_DL["msg"]), FS_DL["msg"]
+	threading.Thread(target=work, daemon=True, name="fspiele-dl").start()
+	return True, ""
+
+
+def fs_cancel():
+	if FS_DL["running"]:
+		FS_DL["stop"] = True
+	return True, ""
+
+
+def fs_delete(gid):
+	if gid not in FS_GAMES:
+		return False, "unknown action"
+	if FS_DL["running"]:
+		return False, "busy right now - try again in a moment"
+	for p in (fs_dir(gid), fs_dir(gid) + ".new", fs_dl_dir()):
+		shutil.rmtree(p, ignore_errors=True)
+	log_event("sys", f"Game «{FS_GAMES[gid]['tile']['name']}» deleted")
+	return True, ""
+
+
+def fs_state():
+	""
+	try:
+		free = shutil.disk_usage(DATA_DIR).free
+	except OSError:
+		free = 0
+	gl = []
+	for gid, g_ in FS_GAMES.items():
+		t_ = g_["tile"]
+		gl.append({"id": gid, "name": t_["name"], "names": t_["names"], "desc": t_["desc"], "descs": t_["descs"], "note": t_.get("note", ""),
+                   "notes": t_.get("notes", {}), "licence": g_["licence"], "pinned": fs_pinned(gid), "installed": fs_installed(gid),
+                   "size": g_["file"]["size"], "unpacked": g_["file"]["unpacked"]})
+	return {"tag": FS_TAG, "games": gl, "free": free, "free_need": bio_free_need(),
+            "dl": {k: FS_DL[k] for k in ("running", "id", "got", "total", "msg", "done", "phase")}}
+
+
+
+_fotaq_action_639zzn = fotaq_action
+
+
+
+def fotaq_action(a, d=None):
+	d = d or {}
+	gid = d.get("fs")
+	if gid is None:
+		return _fotaq_action_639zzn(a, d)
+	gid = str(gid)
+	if a == "fotaq_install":
+		return fs_download(gid)
+	if a == "fotaq_cancel":
+		return fs_cancel()
+	if a == "fotaq_delete":
+		return fs_delete(gid)
+	return False, "unknown action"
+
+
+_fotaq_state_639zzn = fotaq_state
+
+
+
+def fotaq_state():
+	s_ = _fotaq_state_639zzn()
+	s_["fs"] = fs_state()
+	return s_
+
+
+
+_games_list_639zzn = games_list
+
+
+
+def games_list(extra=True):
+	gl = _games_list_639zzn(extra)
+	if extra:
+		mine = [dict(g_["tile"]) for gid, g_ in FS_GAMES.items() if fs_installed(gid)]
+		if mine:
+			gl = [x for x in gl if x.get("dir") not in FS_GAMES] + mine
+	return gl
+
+
+_games_file_639zzn = games_file
+
+
+
+def games_file(game, fn):
+	if game not in FS_GAMES:
+		return _games_file_639zzn(game, fn)
+	if not fs_installed(game):
+		return None
+	base = os.path.realpath(fs_dir(game))
+	p_ = os.path.realpath(os.path.join(base, fn or FS_GAMES[game]["tile"]["start"]))
+	if not p_.startswith(base + os.sep) or not os.path.isfile(p_) or os.path.basename(p_) in FS_HIDE:
+		return None
+	return p_
+
+
+
+_HX_FS = _zd('639zzn_fertigspiele/HX_FS', _zd_hx({
+    'More games to load': 'Weitere Spiele zum Nachladen',
+    'Ready-made free games. Each one is loaded once from GitHub (fixed checksum), then it runs offline in the browser.': 'Fertige freie Spiele. Jedes wird einmal von GitHub geladen (feste Prüfsumme) und läuft danach offline im Browser.',
+    'busy right now - try again in a moment': 'gerade beschäftigt – gleich nochmals versuchen',
+    'fs-ask': '«%s» jetzt laden? %s MB von GitHub (danach %s MB auf der Speicherkarte, 2 GB bleiben frei).',
+    'fs-del': '«%s» entfernen? Die Spielstände bleiben in den Browsern.',
+}))
+for _k, _v in _HX_FS.items():
+	DE.setdefault(_k, _v[0])
+	for _i, _L in enumerate(("fr", "it", "rm")):
+		TRX[_L].setdefault(_k, _v[_i + 1])
+FS_JS_DE = {_k: _v[0] for _k, _v in _HX_FS.items()}
+FS_JS_EN = {"fs-ask": "Load «%s» now? %s MB from GitHub (then %s MB on the memory card, 2 GB stay free).",
+            "fs-del": "Remove «%s»? The saved games stay in the browsers."}
+
+
+FS_TOOLS_JS = _zd('639zzn_fertigspiele/FS_TOOLS_JS', "")
+_FS_HOOK = "  fotaqPaint(box, P.fotaq);\n}\n"
+if TOOLS_PAGE.count(_FS_HOOK) == 1 and "function fsPaint" not in TOOLS_PAGE:
+	TOOLS_PAGE = TOOLS_PAGE.replace(_FS_HOOK, "  fotaqPaint(box, P.fotaq);\n  fsPaint(box, (P.fotaq || {}).fs);\n}\n" + FS_TOOLS_JS
+                                    + "Object.assign(I18N.de," + json.dumps(FS_JS_DE, ensure_ascii=False) + ");"
+                                    "I18N.en=I18N.en||{};Object.assign(I18N.en," + json.dumps(FS_JS_EN, ensure_ascii=False) + ");\n", 1)
+
+
+_HELP_FS = {
+    "de": ("🎁 Weitere Spiele zum Nachladen", "(Mehr → Spielecke, ganz unten): fertige freie Spiele, jedes einzeln mit «⬇ Installieren» von GitHub geladen (feste Prüfsumme, 2 GB bleiben frei) und mit «🗑 Entfernen» wieder gelöscht; danach eine Kachel der Sammlung, auch ohne Internet. Urheber, Lizenzen und Änderungen stehen in jedem Paket (LIZENZEN.txt)."),
+    "en": ("🎁 More games to load", "(More → Game corner, at the bottom): ready-made free games, each loaded on its own with “⬇ Install” from GitHub (fixed checksum, 2 GB stay free) and deleted again with “🗑 Remove”; then it is a tile of the collection, also without Internet. Authors, licences and changes are in every package (LIZENZEN.txt)."),
+    "fr": ("🎁 Autres jeux à charger", "(Plus → Coin jeux, tout en bas) : jeux libres tout prêts, chacun chargé séparément avec « ⬇ Installer » depuis GitHub (somme de contrôle fixe, 2 Go restent libres) et supprimé avec « 🗑 Supprimer » ; ensuite une tuile de la collection, aussi sans Internet. Auteurs, licences et modifications dans chaque paquet (LIZENZEN.txt)."),
+    "it": ("🎁 Altri giochi da caricare", "(Altro → Angolo giochi, in fondo): giochi liberi già pronti, ognuno caricato separatamente con «⬇ Installa» da GitHub (somma di controllo fissa, 2 GB restano liberi) e rimosso con «🗑 Rimuovi»; poi è una tessera della raccolta, anche senza Internet. Autori, licenze e modifiche in ogni pacchetto (LIZENZEN.txt)."),
+    "rm": ("🎁 Ulteriurs gieus per chargiar", "(Dapli → Chantun da gieus, giusut): gieus libers gia pronts, mintgin chargià separadamain cun «⬇ Installar» da GitHub (summa da controlla fixa, 2 GB restan libers) ed allontanà cun «🗑 Allontanar»; lura ina cachel da la collecziun, er senza internet. Auturs, licenzas e midadas en mintga pachet (LIZENZEN.txt)."),
+}
+
+
+def _help_fs_item(lang):
+	""
+	from html import escape as _e
+	h_, x_ = _HELP_FS[lang]
+	out = f"<li><b>{h_}</b> {_e(x_, quote=False)}"
+	for g_ in FS_GAMES.values():
+		t_ = g_["tile"]
+		mb = f" (~{max(1, round(g_['file']['size'] / 1e6))} MB)" if g_["file"]["size"] else ""
+		nt = " ⚠️ " + _e(t_["notes"][lang], quote=False) + "." if t_.get("notes") else ""
+		out += f" <b>{_e(t_['names'][lang])}</b>{mb}: {_e(t_['descs'][lang], quote=False)}{nt} © {_e(g_['licence'], quote=False)}."
+	return out + "</li>"
+
+
+def _help_fs(doc, lang):
+	i = doc.find('<section id="games"')
+	if i < 0 or _HELP_FS[lang][0] in doc[i:doc.find("</section>", i)]:
+		return doc
+	j = doc.find("</ul></section>", i)
+	return doc[:j] + _help_fs_item(lang) + doc[j:] if j > 0 else doc
+
+
+_hp_en_fs = HELP_PAGE.find('<div lang="en">')
+if _hp_en_fs > 0:
+	HELP_PAGE = _help_fs(HELP_PAGE[:_hp_en_fs], "de") + _help_fs(HELP_PAGE[_hp_en_fs:], "en")
+for _L in ("fr", "it", "rm"):
+	if HELP_X.get(_L):
+		HELP_X[_L] = _help_fs(HELP_X[_L], _L)
+
+
+
+def fs_selftest():
+	assert FS_BASE["url"] == "https://github.com/DonElektro/MotionWatch/releases/download/" + FS_TAG + "/"
+	assert re.fullmatch(r"fspiele-\d{1,3}", FS_TAG)
+	n = FS_TAG.split("-")[1]
+	for gid, g_ in FS_GAMES.items():
+		f, t_ = g_["file"], g_["tile"]
+		assert re.fullmatch(r"fs-[a-z0-9]{2,20}", gid) and t_["dir"] == gid and f["name"] == "fspiele-%s-%s.zip" % (gid[3:], n), gid
+		assert fs_pinned(gid) or (not f["size"] and not f["sha256"] and not f["unpacked"]), gid + ": either all pins or none"
+		assert t_["input"] in GAME_GROUPS and t_["icon"] in GAME_THUMBS and t_["start"].endswith(".html")
+		assert all(t_["names"].get(L) and t_["descs"].get(L) for L in FS_LANGS5) and t_["desc"] == t_["descs"]["de"]
+		assert "ß" not in json.dumps(t_, ensure_ascii=False) and g_["licence"]
+		assert not t_.get("note") or all(t_["notes"].get(L) for L in FS_LANGS5)
+		if not fs_installed(gid):
+			assert all(x.get("dir") != gid for x in games_list()) and games_file(gid, t_["start"]) is None
+		assert games_file(gid, "../settings.json") is None and games_file(gid, "/etc/passwd") is None and games_file(gid, "fspiel.ok") is None
+	assert "12 Jahren" in FS_GAMES["fs-angst"]["tile"]["note"]
+	assert fotaq_action("fotaq_install", {"fs": "nope"}) == (False, "unknown action") and fotaq_action("nope", {"fs": next(iter(FS_GAMES))}) == (False, "unknown action")
+	assert fotaq_action("nope") == (False, "unknown action"), "without «fs» the actions of FOTAQ stay as they are"
+	s_ = fotaq_state()
+	assert "pinned" in s_ and [x["id"] for x in s_["fs"]["games"]] == list(FS_GAMES)
+	assert all(x.get("dir") not in FS_GAMES for x in games_list(extra=False))
+	assert "function fsPaint" in TOOLS_PAGE and "fsPaint(box, (P.fotaq || {}).fs);" in TOOLS_PAGE and '"fs-ask"' in TOOLS_PAGE
+	assert _HELP_FS["de"][0] in HELP_PAGE and _HELP_FS["en"][0] in HELP_PAGE and all(_HELP_FS[L][0] in HELP_X.get(L, _HELP_FS[L][0]) for L in ("fr", "it", "rm"))
+	assert all(g_["tile"]["name"] in HELP_PAGE for g_ in FS_GAMES.values())
+	return True
+
+
+SELFTEST_EXTRA.append(("Ready-made free games in the game corner (639zzn)", fs_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+NAV_SUB["more"] = [x for x in NAV_SUB["more"] if x[0] != "party"]
+_nav_html_639zzo = nav_html
+
+
+
+def nav_html(active):
+	h_ = _nav_html_639zzo(active)
+	if active == "party":
+		h_ = h_.replace('<a href="/play" data-i18n=', '<a href="/play" class=on data-i18n=', 1)
+	return h_
+
+
+
+_SO_CARD = '  <div id="games"><div class="gt"><b>🎮 <span data-i18n="Games">Games</span></b><div class="mut" id="g-txt"></div><div id="g-btn"></div></div></div>\n'
+_SO_ENTRY = '<a class="mi" href="/party"><i>🎲</i>'
+_SO_LOAD = "(async () => { await initAppearance(); gmLoad(); })();"
+SO_MORE_OK = MORE_PAGE.count(_SO_CARD) == 1 and MORE_PAGE.count(_SO_ENTRY) == 1 and MORE_PAGE.count(_SO_LOAD) == 1
+if SO_MORE_OK:
+	MORE_PAGE = (MORE_PAGE.replace(_SO_CARD, "", 1)
+                 .replace(_SO_ENTRY, '<a class="mi" href="/party" id="m-party" hidden><i>🎲</i>', 1)
+                 .replace(_SO_LOAD, "(async () => { await initAppearance(); })();\n"
+                          "// 639zzo: the games live under «Spielen»; who may not open that page (users without the administrator role) keeps the entry «Spielecke»\n"
+                          'fetch("/play", {method: "HEAD"}).then(r => { if (!r.ok) document.getElementById("m-party").hidden = false; }).catch(() => {});', 1))
+
+
+SO_TILE_TXT = "Quiz, werewolf, connect four and the game collection – «Open all games» for the guests is there too"
+_HX_SO = {SO_TILE_TXT: ("Quiz, Werwolf, Vier gewinnt und die Spielesammlung – dort auch «Spiele freigeben» für die Gäste",
+                        "Quiz, loup-garou, puissance 4 et la collection de jeux – avec « Ouvrir tous les jeux » pour les invités",
+                        "Quiz, lupo mannaro, forza quattro e la raccolta di giochi – lì anche «Aprire tutti i giochi» per gli ospiti",
+                        "Quiz, luf-uman, quatter en lingia e la collecziun da gieus – là er «Avrir tut ils gieus» per ils giasts")}
+for _k, _v in _HX_SO.items():
+	DE.setdefault(_k, _v[0])
+	for _i, _L in enumerate(("fr", "it", "rm")):
+		TRX[_L].setdefault(_k, _v[_i + 1])
+_SO_MAIN = '<main>\n  <div class="pl-card" id="pl-lv" hidden></div>'
+_SO_TILE = ('<main>\n  <a class="pl-party" id="pl-party" href="/party"><i>🎲</i><span><b data-i18n="Game corner">Game corner</b>'
+            '<small data-i18n="' + SO_TILE_TXT + '">' + SO_TILE_TXT + '</small></span><span class="ar">›</span></a>\n'
+            '  <div class="pl-card" id="pl-lv" hidden></div>')
+_SO_CSS = (".pl-party{display:flex;align-items:center;gap:12px;padding:14px;margin:0 0 12px;border:1px solid var(--acc);border-radius:14px;background:var(--panel);"
+           "color:var(--txt);text-decoration:none}.pl-party:hover{filter:brightness(1.08)}.pl-party i{font-style:normal;font-size:30px;width:40px;text-align:center}"
+           ".pl-party b{display:block;font-size:16px}.pl-party small{color:var(--mut);font-size:12px}.pl-party .ar{margin-left:auto;color:var(--mut);font-size:20px}\n")
+SO_PLAY_OK = PLAY_PAGE.count(_SO_MAIN) == 1 and PLAY_PAGE.count("</style></head><body>") == 1 and 'id="pl-party"' not in PLAY_PAGE
+if SO_PLAY_OK:
+	PLAY_PAGE = PLAY_PAGE.replace(_SO_MAIN, _SO_TILE, 1).replace("</style></head><body>", _SO_CSS + "</style></head><body>", 1)
+_play_page_639zzo = play_page
+
+
+
+def play_page():
+	js = "Object.assign(I18N.de, " + json.dumps({k: DE.get(k, k) for k in ("Game corner", SO_TILE_TXT)}, ensure_ascii=False) + ");"
+	return _play_page_639zzo().replace("const ST = ", js + "\nconst ST = ", 1)
+
+
+
+def _so_help(doc, lang):
+	m_, p_, g_, o_ = (tr(x, lang) for x in ("More", "Play area", "Game corner", "Open all games"))
+	if not doc or p_ in ("", "Play area") and lang != "en":
+		return doc
+	way = f"{m_} → {p_} → {g_}"
+	doc = doc.replace(way, "\x00").replace(f"{m_} → {g_}", way).replace("\x00", way)
+	for a_, b_ in (("«", "»"), ("“", "”"), ("« ", " »")):
+		doc = doc.replace(f"{m_} → {a_}{o_}{b_}", f"{way} → {a_}{o_}{b_}")
+	return doc
+
+
+_hp_en_so = HELP_PAGE.find('<div lang="en">')
+if _hp_en_so > 0:
+	HELP_PAGE = _so_help(HELP_PAGE[:_hp_en_so], "de") + _so_help(HELP_PAGE[_hp_en_so:], "en")
+for _L in ("fr", "it", "rm"):
+	if HELP_X.get(_L):
+		HELP_X[_L] = _so_help(HELP_X[_L], _L)
+
+
+def spiele_ordnen_selftest():
+	assert SO_MORE_OK and SO_PLAY_OK, "MORE_PAGE / PLAY_PAGE look different - adjust part 639zzo"
+	assert [k for k, *_r in NAV_SUB["more"]] == ["more", "play", "help", "tools"] and NAV_OF.get("party") == "more"
+	n_ = nav_html("party")
+	assert 'href="/party"' not in n_ and '<a href="/play" class=on' in n_ and n_.count("class=on") == 1
+	assert nav_html("play").count("class=on") == 1 and 'href="/party"' not in nav_html("more")
+	assert 'id="games"' not in MORE_PAGE and MORE_PAGE.count('href="/party"') == 1 and 'href="/party" id="m-party" hidden' in MORE_PAGE
+	assert "gmLoad(); })" not in MORE_PAGE
+	assert PLAY_PAGE.count('href="/party"') == 1 and PLAY_PAGE.index('id="pl-party"') < PLAY_PAGE.index('id="pl-lv"')
+	assert "Open all games" in TOOLS_PAGE and 'partyDo({action: "all"' in TOOLS_PAGE, "«Spiele freigeben» is on the page of the game corner"
+	assert "ß" not in _HX_SO[SO_TILE_TXT][0] and all(TRX[L].get(SO_TILE_TXT) for L in ("fr", "it", "rm"))
+	assert "Mehr → Spielen → Spielecke" in HELP_PAGE and "Mehr → Spielecke" not in HELP_PAGE and "Mehr → «Spiele freigeben»" not in HELP_PAGE
+	assert role_allows("kid", "/party", "GET", {}) and not role_allows("kid", "/play", "GET", {}) and not role_allows("family", "/api/party", "POST", {"action": "all"})
+	return True
+
+
+SELFTEST_EXTRA.append(("Games under «Mehr»: one entry point (639zzo)", spiele_ordnen_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+QRK_PREFIX = "M1"
+QRK_ID_LEN = 5
+QRK_MAC_LEN = 10
+QRK_HEAD = len(QRK_PREFIX) + QRK_ID_LEN + 1 + QRK_MAC_LEN
+QRK_ALPHA = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+QRK_TEXT_MAX = 100
+QRK_NAME_MAX = 40
+QRK_DESC_MAX = 120
+QRK_CARDS_MAX = 100
+QRK_SCAN_W = 1280
+QRK_GONE_S = 3.0
+QRK_SHOW_S = 4.0
+QRK_FOREIGN_LOG_S = 60.0
+QRK_REC_MAX = 600
+QRK_RANGE_K = 0.26
+QRK_SIZES = {"card": (100, 150, 80, "Postcard 10 × 15 cm"), "a5": (148, 210, 120, "A5"), "a4": (210, 297, 180, "A4")}
+QRK_CMDS = {
+    "P": ("push", "📲", "Push message"),
+    "S": ("say", "🔊", "Read aloud"),
+    "N": ("note", "📝", "Note with photo"),
+    "R": ("rec", "⏺", "Start a recording"),
+    "L": ("light", "💡", "Light on / off"),
+    "Y": ("relay", "⚡", "Relay on / off"),
+    "H": ("head", "🎯", "Head to a position"),
+    "F": ("profile", "🎛️", "Switch profile"),
+}
+QRK_CMD_ORDER = "PSNRLYHF"
+QRK_TEXT_CMDS = "PSN"
+QRK_SECTION = "QR command cards"
+QRK_DEF = {"qrk_on": False, "qrk_cam_head": True, "qrk_cam_wide": True, "qrk_rate": 1.0, "qrk_cooldown": 10, "qrk_feedback": "speak",
+           "qrk_photo": True, "qrk_cpu_max": 85, "qrk_cards": [], "qrk_secret": ""}
+for _k, _v in QRK_DEF.items():
+	CFG.setdefault(_k, json.loads(json.dumps(_v))); DEFAULTS.setdefault(_k, json.loads(json.dumps(_v)))
+	FACTORY_CFG.setdefault(_k, json.loads(json.dumps(_v)))
+
+USER_SETTINGS_DENY.update(QRK_DEF)
+APPKEY_DENY_KEYS.update(QRK_DEF)
+APPKEY_DENY_PATHS.update({"/api/qrk", "/karten"})
+LOCK_DENY_PATHS.add("/api/qrk")
+
+QRK = {"lock": threading.RLock(), "run_lock": threading.Lock(), "thread": None, "pause": "off", "dec": "", "ms": None, "scans": 0,
+       "seen": {}, "show": {}, "log_t": {}, "uses": deque(maxlen=30), "last": None, "cpu_hold": False, "err_t": 0.0}
+
+
+
+def _qrk_b32(b, n):
+	v, bits, out = 0, 0, []
+	for x in b:
+		v = (v << 8) | x; bits += 8
+		while bits >= 5 and len(out) < n:
+			bits -= 5; out.append(QRK_ALPHA[(v >> bits) & 31])
+	return "".join(out)[:n]
+
+
+def qrk_key(make=True):
+	""
+	k = str(CFG.get("qrk_secret") or "")
+	if not re.fullmatch(r"[0-9a-f]{64}", k):
+		if not make:
+			return ""
+		k = secrets.token_hex(32)
+		CFG["qrk_secret"] = k
+		save_settings()
+	return k
+
+
+def qrk_key_fp(k=None):
+	""
+	k = qrk_key(False) if k is None else k
+	return hashlib.sha256(("fp|" + k).encode()).hexdigest()[:8] if k else ""
+
+
+def qrk_mac(cid, cmd, param, key=None):
+	k = bytes.fromhex(key or qrk_key())
+	return _qrk_b32(hmac.new(k, (QRK_PREFIX + cid + cmd + param).encode("utf-8"), hashlib.sha256).digest(), QRK_MAC_LEN)
+
+
+def qrk_in_code(card):
+	"""
+"""
+	return bool(card.get("tc")) and card["cmd"] in QRK_TEXT_CMDS
+
+
+def qrk_payload(card, key=None):
+	""
+	p = card["p"] if qrk_in_code(card) else ""
+	return QRK_PREFIX + card["id"] + card["cmd"] + qrk_mac(card["id"], card["cmd"], p, key) + p
+
+
+def qrk_parse(text):
+	""
+	t = str(text or "")
+	if not t.startswith(QRK_PREFIX) or len(t) < QRK_HEAD:
+		return None
+	cid, cmd, mac, p = t[2:2 + QRK_ID_LEN], t[2 + QRK_ID_LEN], t[3 + QRK_ID_LEN:QRK_HEAD], t[QRK_HEAD:]
+	if cmd not in QRK_CMDS or any(c not in QRK_ALPHA for c in cid + mac):
+		return None
+	return cid, cmd, mac, p
+
+
+def qrk_cards():
+	""
+	out = []
+	for c in CFG.get("qrk_cards") or []:
+		if not isinstance(c, dict) or not isinstance(c.get("id"), str) or c.get("cmd") not in QRK_CMDS or not isinstance(c.get("p"), str):
+			continue
+		out.append(c)
+	return out
+
+
+def qrk_card(cid):
+	return next((c for c in qrk_cards() if c["id"] == cid), None)
+
+
+def qrk_check(text):
+	""
+	r = qrk_parse(text)
+	k = qrk_key(False)
+	if r is None or not k:
+		return "foreign", None
+	cid, cmd, mac, p = r
+	if not hmac.compare_digest(mac, qrk_mac(cid, cmd, p, k)):
+		return "foreign", None
+	c = qrk_card(cid)
+	if c is None or c["cmd"] != cmd or p != (c["p"] if qrk_in_code(c) else ""):
+		return "unknown", None
+	if c.get("off"):
+		return "revoked", c
+	return "ok", c
+
+
+def qrk_qr_size(payload):
+	""
+	n = len(qr_matrix(payload))
+	return (n - 17) // 4, n
+
+
+def qrk_range(modules, qr_mm):
+	""
+	return round(QRK_RANGE_K * qr_mm / max(1, modules), 1)
+
+
+
+_QRK_SECRET_WORDS = re.compile(r"WIFI:|://[^/\s:@]+:[^/\s@]+@|pass(?:wort|word)|kennwort|mot de passe|\bpin\s*[:=]", re.I)
+
+
+def qrk_secret_hit(text):
+	""
+	t = str(text or "")
+	if not t:
+		return False
+	if _QRK_SECRET_WORDS.search(t):
+		return True
+	low = t.lower()
+	vals = [CFG.get(k) for k in ("hotspot_password", "web_password", "protect_pin", "lock_pin", "telegram_token", "telegram_chat",
+                                 "pushover_token", "pushover_user", "email_password", "mqtt_password", "update_token", "guest_token",
+                                 "ext_token", "qrk_secret")]
+	url = str(CFG.get("notify_url") or "").strip().rstrip("/")
+	if url:
+		vals.append(url)
+		vals.append(url.rsplit("/", 1)[-1])
+	try:
+		vals += push_ssids()
+	except Exception:
+		pass
+	hs = str(CFG.get("hotspot_ssid") or "").strip()
+	if hs and hs.lower() != "moveeye":
+		vals.append(hs)
+	for v in vals:
+		v = str(v or "").strip()
+		if len(v) >= 4 and v.lower() in low:
+			return True
+	return False
+
+
+def qrk_points():
+	return [wp_name(w) for w in WAYPOINTS if wp_name(w)]
+
+
+def qrk_modes():
+	""
+	out = []
+	for m, ic, nm in MODES:
+		if m == "transport":
+			continue
+		out.append((m, ic, nm))
+	return out
+
+
+def qrk_make_param(cmd, d):
+	""
+	if cmd in "PSN":
+		txt = re.sub(r"[\x00-\x1f\x7f]", " ", str(d.get("text") or "")).strip()
+		if not txt:
+			return "", "the text is empty"
+		if len(txt.encode("utf-8")) > QRK_TEXT_MAX:
+			return "", "the text is too long"
+		if qrk_secret_hit(txt):
+			return "", "This text contains a password, an access code or a Wi-Fi name - not allowed on a card."
+		return (("1" if d.get("photo") else "0") + txt) if cmd == "P" else txt, ""
+	if cmd == "R":
+		try:
+			s = int(float(d.get("secs") or 60))
+		except (TypeError, ValueError):
+			return "", "invalid value"
+		return str(max(10, min(QRK_REC_MAX, s))), ""
+	if cmd == "L":
+		n = {"white": "w", "ir": "i"}.get(str(d.get("light") or ""))
+		if not n:
+			return "", "invalid value"
+		return n + ("1" if d.get("on") else "0"), ""
+	if cmd == "Y":
+		try:
+			i = int(d.get("relay"))
+		except (TypeError, ValueError):
+			return "", "unknown relay"
+		if not 0 <= i < len(RELAYS):
+			return "", "unknown relay"
+		return f"{i}:{'1' if d.get('on') else '0'}", ""
+	if cmd == "H":
+		nm = str(d.get("point") or "").strip()
+		if nm not in qrk_points():
+			return "", "no such point"
+		if len(nm.encode("utf-8")) > QRK_TEXT_MAX:
+			return "", "the text is too long"
+		return nm, ""
+	if cmd == "F":
+		v = str(d.get("profile") or "")
+		if v.startswith("p:") and (v[2:] == "" or v[2:] in PROFILES):
+			return v, ""
+		if v.startswith("m:") and v[2:] in [m for m, _i, _n in qrk_modes()] + [""]:
+			return v, ""
+		return "", "unknown profile"
+	return "", "unknown command"
+
+
+def qrk_what(card, lang=None, icon=True):
+	""
+	L = norm_lang(lang)
+	cmd, p = card["cmd"], card["p"]
+	ic = QRK_CMDS[cmd][1] if icon else ""
+	if cmd == "P":
+		return ic + " " + tr("Push", L) + (" + " + tr("photo", L) if p[:1] == "1" else "") + ": «" + p[1:] + "»"
+	if cmd in "SN":
+		return ic + " " + tr(QRK_CMDS[cmd][2], L) + ": «" + p + "»"
+	if cmd == "R":
+		return ic + " " + trf("Recording {s} s", L, s=p)
+	if cmd == "L":
+		return ic + " " + tr(LIGHT_NAMES.get("white" if p[:1] == "w" else "ir"), L) + " " + tr("on" if p[1:] == "1" else "off", L)
+	if cmd == "Y":
+		i, _s, on = p.partition(":")
+		nm = RELAYS[int(i)]["name"] if i.isdigit() and int(i) < len(RELAYS) else tr("Relay", L) + " " + str(int(i) + 1 if i.isdigit() else "?")
+		return ic + " " + nm + " " + tr("on" if on == "1" else "off", L)
+	if cmd == "H":
+		return ic + " " + tr("Head to", L) + " «" + p + "»"
+	if cmd == "F":
+		if p.startswith("p:"):
+			d = prof_def(p[2:])
+			return ic + " " + tr("Detection profile", L) + ": " + (d["icon"] + " " if icon else "") + tr(d["name"], L)
+		m = next(((ic_, nm) for mm, ic_, nm in MODES if mm == p[2:]), ("⚙️", "Own settings"))
+		return ic + " " + tr("Mode", L) + ": " + (m[0] + " " if icon else "") + tr(m[1], L)
+	return ic
+
+
+def qrk_create(d, who="admin"):
+	""
+	cmd = str(d.get("cmd") or "")
+	if cmd not in QRK_CMDS:
+		return None, "unknown command"
+	name = re.sub(r"[\x00-\x1f\x7f]", " ", str(d.get("name") or "")).strip()[:QRK_NAME_MAX]
+	desc = re.sub(r"[\x00-\x1f\x7f]", " ", str(d.get("desc") or "")).strip()[:QRK_DESC_MAX]
+	if not name:
+		return None, "the name is empty"
+	if qrk_secret_hit(name) or qrk_secret_hit(desc):
+		return None, "This text contains a password, an access code or a Wi-Fi name - not allowed on a card."
+	p, err = qrk_make_param(cmd, d)
+	if err:
+		return None, err
+	with QRK["lock"]:
+		lst = qrk_cards()
+		if len(lst) >= QRK_CARDS_MAX:
+			return None, "too many cards"
+		key = qrk_key()
+		ids = {c["id"] for c in lst}
+		cid = ""
+		while not cid or cid in ids:
+			cid = "".join(secrets.choice(QRK_ALPHA) for _ in range(QRK_ID_LEN))
+		card = {"id": cid, "name": name, "desc": desc, "cmd": cmd, "p": p, "made": datetime.now().isoformat(timespec="seconds"),
+                "used": "", "n": 0, "off": False, "fp": qrk_key_fp(key), "tc": bool(d.get("tc")) and cmd in QRK_TEXT_CMDS}
+		lst.append(card)
+		CFG["qrk_cards"] = lst
+	save_settings()
+	log_event("sys", f"QR card made ({who}): «{name}» - {QRK_CMDS[cmd][0]}")
+	return card, ""
+
+
+def qrk_edit(action, cid, who="admin"):
+	""
+	with QRK["lock"]:
+		lst = qrk_cards()
+		c = next((x for x in lst if x["id"] == cid), None)
+		if c is None:
+			return False, "unknown card"
+		if action == "revoke":
+			c["off"] = True
+		elif action == "unrevoke":
+			c["off"] = False
+		elif action == "delete":
+			lst.remove(c)
+		else:
+			return False, "unknown action"
+		CFG["qrk_cards"] = lst
+	save_settings()
+	log_event("sys", f"QR card {action} ({who}): «{c['name']}»")
+	return True, ""
+
+
+def qrk_set_text(cid, d, who="admin"):
+	"""
+"""
+	with QRK["lock"]:
+		lst = qrk_cards()
+		c = next((x for x in lst if x["id"] == cid), None)
+		if c is None:
+			return False, "unknown card"
+		if c["cmd"] not in QRK_TEXT_CMDS:
+			return False, "this card has no text"
+		if qrk_in_code(c):
+			return False, "the text is in the code - make a new card"
+		dd = dict(d)
+		if c["cmd"] == "P" and "photo" not in dd:
+			dd["photo"] = c["p"][:1] == "1"
+		p, err = qrk_make_param(c["cmd"], dd)
+		if err:
+			return False, err
+		c["p"] = p
+		c["edited"] = datetime.now().isoformat(timespec="seconds")
+		CFG["qrk_cards"] = lst
+	save_settings()
+	log_event("sys", f"QR card text changed ({who}): «{c['name']}»")
+	return True, ""
+
+
+def qrk_rotate(who="admin"):
+	""
+	with QRK["lock"]:
+		CFG["qrk_secret"] = ""
+		qrk_key()
+	log_event("sys", f"QR cards: new key ({who}) - all printed cards are invalid")
+	return True, ""
+
+
+
+def qrk_decoder_name():
+	return "QRCodeDetectorAruco" if hasattr(cv2, "QRCodeDetectorAruco") else "QRCodeDetector"
+
+
+_QRK_TL = threading.local()
+
+
+def qrk_detector():
+	d = getattr(_QRK_TL, "det", None)
+	if d is None:
+		d = cv2.QRCodeDetectorAruco() if hasattr(cv2, "QRCodeDetectorAruco") else cv2.QRCodeDetector()
+		_QRK_TL.det = d
+	return d
+
+
+def qrk_decode(img):
+	""
+	if img is None or img.size == 0:
+		return "", None
+	H, W = img.shape[:2]
+	g = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) if img.ndim == 3 else img
+	if W > QRK_SCAN_W:
+		g = cv2.resize(g, (QRK_SCAN_W, max(1, int(H * QRK_SCAN_W / W))), interpolation=cv2.INTER_AREA)
+	h, w = g.shape[:2]
+	try:
+		txt, pts, _s = qrk_detector().detectAndDecode(g)
+	except cv2.error:
+		return "", None
+	if not txt or pts is None:
+		return "", None
+	try:
+		P = [[round(float(x) / w, 4), round(float(y) / h, 4)] for x, y in np.asarray(pts, np.float32).reshape(-1, 2)[:4]]
+	except (TypeError, ValueError):
+		P = None
+	return txt, P
+
+
+def qrk_cams():
+	out = []
+	if CFG.get("qrk_cam_head", True):
+		out.append("head")
+	if CFG.get("qrk_cam_wide", True):
+		out.append("wide")
+	return out
+
+
+def qrk_grab(cam):
+	""
+	now = time.time()
+	if cam == "head":
+		w = WATCH_REF.get("w")
+		if w is None:
+			return None, None
+		prev = getattr(w, "frame_raw", None)
+		w.raw_until = max(float(getattr(w, "raw_until", 0.0) or 0.0), now + 0.4)
+		end = now + 0.6
+		while time.time() < end:
+			f = getattr(w, "frame_raw", None)
+			if f is not None and f is not prev:
+				return f, w
+			time.sleep(0.03)
+		return None, w
+	c = view3_wide_cam()
+	if c is None or c.status != "connected":
+		return None, None
+	t_prev = float(getattr(c, "raw_t", 0.0) or 0.0)
+	c.raw_until = max(float(getattr(c, "raw_until", 0.0) or 0.0), now + 0.4)
+	end = now + 0.6
+	while time.time() < end:
+		if c.raw is not None and float(c.raw_t or 0.0) > t_prev:
+			return c.raw, c
+		time.sleep(0.03)
+	return None, c
+
+
+def qrk_pause_reason():
+	""
+	if not CFG.get("qrk_on"):
+		return "off"
+	if not qrk_cams():
+		return "no camera chosen"
+	if not qrk_cards():
+		return "no cards yet"
+	if CFG.get("sim_on"):
+		return "simulation"
+	try:
+		if toolmode_on():
+			return "tool mode"
+	except NameError:
+		pass
+	try:
+		if batt_save_active():
+			return "battery saver"
+	except NameError:
+		pass
+	cpu = STATE.get("cpu")
+	lim = float(CFG.get("qrk_cpu_max") or 85)
+	if cpu is not None:
+		if cpu > lim or (QRK["cpu_hold"] and cpu > lim - 10):
+			QRK["cpu_hold"] = True
+			return "CPU busy"
+		QRK["cpu_hold"] = False
+	w = WATCH_REF.get("w")
+	fps = STATE.get("fps")
+	if w is not None and CFG.get("detection_on") and fps is not None and STATE.get("frames", 0) > 30 and float(fps) < 2.0:
+		return "detection is slow"
+	return ""
+
+
+def qrk_tick():
+	""
+	why = qrk_pause_reason()
+	QRK["pause"] = why
+	if why:
+		return 1.0
+	busy = 0.0
+	for cam in qrk_cams():
+		img, src = qrk_grab(cam)
+		if img is None:
+			continue
+		t0 = time.time()
+		txt, pts = qrk_decode(img)
+		dt = time.time() - t0
+		busy += dt
+		QRK["ms"] = round(dt * 1000.0 if QRK["ms"] is None else 0.8 * QRK["ms"] + 200.0 * dt, 1)
+		QRK["scans"] += 1
+		if txt:
+			qrk_seen(cam, txt, pts, img, src)
+	rate = max(0.5, min(2.0, float(CFG.get("qrk_rate") or 1.0)))
+	return max(1.0 / rate, busy * 8.0)
+
+
+def qrk_loop():
+	try:
+		os.setpriority(os.PRIO_PROCESS, threading.get_native_id(), 10)
+	except (AttributeError, OSError):
+		pass
+	QRK["dec"] = qrk_decoder_name()
+	while True:
+		try:
+			gap = qrk_tick()
+		except Exception as e:
+			gap = 3.0
+			if time.time() - QRK["err_t"] > 300:
+				QRK["err_t"] = time.time()
+				log_event("sys", f"QR cards: {type(e).__name__}: {e}"[:160])
+		time.sleep(gap)
+
+
+def qrk_start():
+	""
+	if QRK["thread"] is not None:
+		return
+	with QRK["lock"]:
+		if QRK["thread"] is None:
+			QRK["thread"] = threading.Thread(target=qrk_loop, daemon=True, name="qr-cards")
+			QRK["thread"].start()
+
+
+
+def qrk_show(cam, pts, kind, label, src=None):
+	QRK["show"][cam] = {"t": time.time(), "pts": pts, "kind": kind, "label": label, "src": src, "img": None}
+
+
+def qrk_seen(cam, text, pts, img, src=None, now=None):
+	"""
+"""
+	now = time.time() if now is None else now
+	L = norm_lang(CFG.get("lang"))
+	st, card = qrk_check(text)
+	if st == "foreign":
+		qrk_show(cam, pts, "bad", "✕ " + tr("foreign card", L), src)
+		if now - QRK["log_t"].get("foreign", 0.0) >= QRK_FOREIGN_LOG_S:
+			QRK["log_t"]["foreign"] = now
+			log_event("sys", "QR card: foreign card ignored")
+		return "foreign"
+	if st in ("revoked", "unknown"):
+		nm = card["name"] if card else "?"
+		qrk_show(cam, pts, "off", "⛔ " + tr("card revoked", L) + (": " + nm if card else ""), src)
+		key = "rev|" + (card["id"] if card else text[2:7])
+		if now - QRK["log_t"].get(key, 0.0) >= QRK_FOREIGN_LOG_S:
+			QRK["log_t"][key] = now
+			log_event("sys", f"QR card «{nm}» is revoked - ignored" if card else "QR card: deleted card ignored")
+		return st
+	s = QRK["seen"].setdefault(card["id"], {"last": 0.0, "fired": 0.0})
+	gone = now - s["last"] >= QRK_GONE_S
+	s["last"] = now
+	cool = max(3.0, float(CFG.get("qrk_cooldown") or 10))
+	qrk_show(cam, pts, "ok", "✓ " + card["name"], src)
+	if not gone or now - s["fired"] < cool:
+		return "hold"
+	s["fired"] = now
+	qrk_spawn(card, img.copy() if img is not None else None, cam)
+	return "run"
+
+
+def qrk_spawn(card, img, cam):
+	""
+	threading.Thread(target=qrk_run, args=(card, img, cam), daemon=True, name="qr-card-run").start()
+
+
+def qrk_feedback(lang=None):
+	""
+	fb = str(CFG.get("qrk_feedback") or "speak")
+	if fb == "off":
+		return False, "off"
+	L = norm_lang(lang or CFG.get("lang"))
+	if fb == "speak":
+		ok, err = tts_say(tr("Understood", L), L)
+		if ok:
+			return True, ""
+	return sound_play("beep2", 0.46, CFG.get("clap_volume", 60), reason="test")
+
+
+def _qrk_jpg(img, q=85):
+	if img is None:
+		return None
+	ok, buf = cv2.imencode(".jpg", img, [cv2.IMWRITE_JPEG_QUALITY, q])
+	return buf.tobytes() if ok else None
+
+
+def qrk_photo(card, img, note):
+	""
+	if img is None:
+		return "no camera picture yet"
+	if CFG.get("sim_on"):
+		return "Simulation: no recordings"
+	try:
+		d = rec_dir()
+		os.makedirs(d, exist_ok=True)
+		name = f"qrcard_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{card['id'].lower()}.jpg"
+		path = os.path.join(d, name)
+		if not cv2.imwrite(path, img, [cv2.IMWRITE_JPEG_QUALITY, 88]):
+			return "could not save the picture"
+		try:
+			gps_tag_jpg(path)
+		except Exception:
+			pass
+		_write_sidecar(name, {"source": "QR card", "note": str(note)[:240], "qrcard": card["id"]})
+		return ""
+	except OSError as e:
+		return str(e)[:120]
+
+
+def qrk_exec(card, img, who="QR card"):
+	""
+	cmd, p = card["cmd"], card["p"]
+	L = norm_lang(CFG.get("lang"))
+	nm = card["name"]
+	if cmd == "P":
+		w = WATCH_REF.get("w")
+		n = getattr(w, "notifier", None) if w is not None else None
+		if n is None:
+			return False, "no camera loop"
+		jpg = _qrk_jpg(img) if p[:1] == "1" and CFG.get("push_pics") != "text" else None
+		pub = str(CFG.get("public_url") or "").strip().rstrip("/")
+		msg = {"event": "info", "persons": 0, "time": datetime.now().isoformat(timespec="seconds"), "text": p[1:],
+               "info_title": "{name}: ▦ " + nm, "obj_ic": "▦", "obj_title": nm, "obj_ev": "qrcard", "snapshot": None,
+               "rain": bool(STATE.get("rain_mode")), "wind": STATE.get("wind_level", ""), "source": STATE.get("source_label", ""),
+               "link": pub + "/" if pub else ""}
+		threading.Thread(target=n._dispatch, args=(msg, jpg, "karte.jpg"), daemon=True).start()
+		return True, "" if n.configured() else "push messages are not set up - only in the message list"
+	if cmd == "S":
+		return tts_say(p, L)
+	if cmd == "N":
+		err = qrk_photo(card, img, "📝 " + p)
+		return (not err), err
+	if cmd == "R":
+		if CFG.get("sim_on"):
+			return False, "Simulation: no recordings"
+		secs = max(10, min(QRK_REC_MAX, int(p) if p.isdigit() else 60))
+		QUICK["rec_until"] = max(QUICK["rec_until"], time.time() + secs)
+		log_event("rec", f"Recording started by the QR card «{nm}» ({secs} s)")
+		return True, ""
+	if cmd == "L":
+		return light_set("white" if p[:1] == "w" else "ir", "on" if p[1:] == "1" else "off")
+	if cmd == "Y":
+		i, _s, on = p.partition(":")
+		if not i.isdigit():
+			return False, "unknown relay"
+		return relay_update(int(i), "mode", "on" if on == "1" else "off")
+	if cmd == "H":
+		i = next((j for j, w in enumerate(WAYPOINTS) if wp_name(w) == p), None)
+		if i is None:
+			return False, "no such point"
+		return teach_goto(i, who="qrcard")
+	if cmd == "F":
+		kind, _s, v = p.partition(":")
+		if kind == "p":
+			return prof_set(v, who)
+		if v == "transport" or mode_disarms(v):
+			return False, "this would switch the protection off - not by card"
+		return mode_set(v, who="qrcard")
+	return False, "unknown command"
+
+
+def qrk_run(card, img, cam, who="QR card", feedback=True):
+	""
+	if not QRK["run_lock"].acquire(timeout=20):
+		return False, "busy"
+	try:
+		L = norm_lang(CFG.get("lang"))
+		if feedback and card["cmd"] != "S":
+			try:
+				qrk_feedback(L)
+			except Exception:
+				pass
+		try:
+			ok, msg = qrk_exec(card, img, who)
+		except Exception as e:
+			ok, msg = False, f"{type(e).__name__}: {e}"[:160]
+		now = datetime.now()
+		with QRK["lock"]:
+			lst = qrk_cards()
+			c = next((x for x in lst if x["id"] == card["id"]), None)
+			if c is not None:
+				c["used"] = now.isoformat(timespec="seconds"); c["n"] = int(c.get("n") or 0) + 1
+				CFG["qrk_cards"] = lst
+		save_settings()
+		what = qrk_what(card, "en")
+		log_event("sys", f"QR card «{card['name']}» ({cam}): {QRK_CMDS[card['cmd']][0]} - " + ("done" if ok and not msg else (msg or "done") if ok else "not done: " + str(msg)))
+		pe = ""
+		if card["cmd"] != "N" and CFG.get("qrk_photo", True) and cam in ("head", "wide"):
+			pe = qrk_photo(card, img, "▦ " + card["name"] + " · " + what)
+		QRK["last"] = {"t": time.time(), "id": card["id"], "name": card["name"], "ok": bool(ok), "msg": str(msg or ""), "cam": cam}
+		QRK["uses"].appendleft({"t": now.strftime("%Y-%m-%d %H:%M:%S"), "id": card["id"], "name": card["name"], "cmd": card["cmd"],
+                                "ok": bool(ok), "msg": str(msg or ""), "cam": cam, "photo": not pe})
+		return ok, msg
+	finally:
+		QRK["run_lock"].release()
+
+
+
+_QRK_COL = {"ok": (80, 220, 90), "off": (40, 160, 245), "bad": (70, 70, 240)}
+
+
+def _qrk_label_img(text, color, hgt):
+	""
+	try:
+		from PIL import Image, ImageDraw
+		f = _font(int(hgt * 0.62))
+		tmp = ImageDraw.Draw(Image.new("RGB", (4, 4)))
+		tw = int(tmp.textlength(text, font=f)) + hgt
+		im = Image.new("RGBA", (tw, hgt), (0, 0, 0, 0))
+		d = ImageDraw.Draw(im)
+		d.rounded_rectangle((0, 0, tw - 1, hgt - 1), radius=hgt // 3, fill=(color[2], color[1], color[0], 235))
+		d.text((hgt // 2, int(hgt * 0.14)), text, font=f, fill=(0, 0, 0, 255))
+		a = np.asarray(im)
+		return cv2.cvtColor(a[:, :, :3], cv2.COLOR_RGB2BGR), a[:, :, 3:4].astype(np.float32) / 255.0
+	except Exception:
+		t = text.encode("ascii", "replace").decode()
+		(tw, th), _b = cv2.getTextSize(t, cv2.FONT_HERSHEY_SIMPLEX, hgt / 40.0, 2)
+		im = np.zeros((hgt, tw + hgt, 3), np.uint8); im[:] = color
+		cv2.putText(im, t, (hgt // 2, int(hgt * 0.72)), cv2.FONT_HERSHEY_SIMPLEX, hgt / 40.0, (0, 0, 0), 2, cv2.LINE_AA)
+		return im, np.ones((hgt, tw + hgt, 1), np.float32)
+
+
+def qrk_draw(frame, cam, src=None):
+	""
+	s = QRK["show"].get(cam)
+	if not s or time.time() - s["t"] > QRK_SHOW_S or frame is None:
+		return
+	if src is not None and s.get("src") is not None and s["src"] is not src:
+		return
+	try:
+		H, W = frame.shape[:2]
+		col = _QRK_COL.get(s["kind"], (255, 255, 255))
+		pts = s.get("pts")
+		if pts:
+			P = np.array([[int(x * W), int(y * H)] for x, y in pts], np.int32).reshape(-1, 1, 2)
+			cv2.polylines(frame, [P], True, (0, 0, 0), 7, cv2.LINE_AA)
+			cv2.polylines(frame, [P], True, col, 4, cv2.LINE_AA)
+			x0, y0, y1 = int(P[:, 0, 0].min()), int(P[:, 0, 1].min()), int(P[:, 0, 1].max())
+		else:
+			x0, y0, y1 = W // 3, H // 3, H // 3
+		hgt = max(24, H // 16)
+		if s["img"] is None or s["img"][2] != hgt:
+			b, a = _qrk_label_img(str(s["label"])[:48], col, hgt)
+			s["img"] = (b, a, hgt)
+		b, a, _h = s["img"]
+		lh, lw = b.shape[:2]
+		x, y = max(0, min(W - lw, x0)), y0 - lh - 6
+		if y < 40:
+			y = min(H - lh, y1 + 6)
+		if lw > W or lh > H:
+			return
+		roi = frame[y:y + lh, x:x + lw]
+		frame[y:y + lh, x:x + lw] = (roi * (1 - a) + b * a).astype(np.uint8)
+	except (cv2.error, ValueError, TypeError, IndexError):
+		pass
+
+
+_walktest_draw_qrk = walktest_draw
+
+
+
+def walktest_draw(frame):
+	_walktest_draw_qrk(frame)
+	if QRK["show"].get("head"):
+		qrk_draw(frame, "head")
+	if QRK["thread"] is None:
+		qrk_start()
+
+
+_weit_ki_frame_qrk = weit_ki_frame
+
+
+
+def weit_ki_frame(c, frame):
+	_weit_ki_frame_qrk(c, frame)
+	if QRK["show"].get("wide"):
+		qrk_draw(frame, "wide", c)
+
+
+
+def qrk_card_json(c, lang=None):
+	L = norm_lang(lang)
+	key = qrk_key(False)
+	pl = qrk_payload(c, key) if key else ""
+	ver, n = qrk_qr_size(pl) if pl else (0, 0)
+	txt = (c["p"][1:] if c["cmd"] == "P" else c["p"]) if c["cmd"] in QRK_TEXT_CMDS else ""
+	return {"id": c["id"], "name": c["name"], "desc": c.get("desc", ""), "cmd": c["cmd"], "icon": QRK_CMDS[c["cmd"]][1],
+            "tc": qrk_in_code(c), "text": txt, "editable": c["cmd"] in QRK_TEXT_CMDS and not qrk_in_code(c), "edited": c.get("edited", ""),
+            "kind": tr(QRK_CMDS[c["cmd"]][2], L), "what": qrk_what(c, L), "made": c.get("made", ""), "used": c.get("used", ""),
+            "n": int(c.get("n") or 0), "off": bool(c.get("off")), "reprint": bool(c.get("fp")) and c.get("fp") != qrk_key_fp(key),
+            "ver": ver, "modules": n, "range": {k: qrk_range(n, v[2]) for k, v in QRK_SIZES.items()}}
+
+
+def qrk_state(lang=None):
+	L = norm_lang(lang)
+	why = QRK["pause"] if CFG.get("qrk_on") else "off"
+	last = QRK["last"]
+	return {"on": bool(CFG.get("qrk_on")), "pause": why, "pause_t": tr(why, L) if why else "", "dec": QRK["dec"] or qrk_decoder_name(),
+            "ms": QRK["ms"], "scans": QRK["scans"], "cams": qrk_cams(), "rate": CFG.get("qrk_rate"), "cooldown": CFG.get("qrk_cooldown"),
+            "last": dict(last, ago=int(time.time() - last["t"]), msg_t=tr_err(last["msg"], L) if last.get("msg") else "") if last else None,
+            "uses": [dict(u, msg_t=tr_err(u["msg"], L) if u.get("msg") else "") for u in list(QRK["uses"])[:10]]}
+
+
+def qrk_choices(lang=None):
+	L = norm_lang(lang)
+	return {"cmds": [{"c": c, "icon": QRK_CMDS[c][1], "label": tr(QRK_CMDS[c][2], L)} for c in QRK_CMD_ORDER],
+            "points": qrk_points(),
+            "relays": [{"i": i, "name": r["name"]} for i, r in enumerate(RELAYS)],
+            "lights": [{"v": "white", "name": tr("White light", L)}, {"v": "ir", "name": tr("Infrared light", L)}],
+            "profiles": [{"v": "p:" + k, "name": PROFILES[k]["icon"] + " " + tr(PROFILES[k]["name"], L), "group": tr("Detection profile", L)} for k in PROF_ORDER]
+                        + [{"v": "p:", "name": PROF_NONE["icon"] + " " + tr(PROF_NONE["name"], L), "group": tr("Detection profile", L)}]
+                        + [{"v": "m:" + m, "name": ic + " " + tr(nm, L), "group": tr("Mode", L)} for m, ic, nm in qrk_modes()],
+            "text_max": QRK_TEXT_MAX, "name_max": QRK_NAME_MAX, "desc_max": QRK_DESC_MAX, "rec_max": QRK_REC_MAX,
+            "sizes": [{"v": k, "name": tr(v[3], L), "qr_cm": v[2] / 10} for k, v in QRK_SIZES.items()], "range_k": QRK_RANGE_K}
+
+
+
+def _qrk_wrap(text, n):
+	words, lines, cur = str(text or "").split(), [], ""
+	for w_ in words:
+		if len(cur) + len(w_) + 1 > n and cur:
+			lines.append(cur); cur = w_
+		else:
+			cur = (cur + " " + w_).strip()
+	if cur:
+		lines.append(cur)
+	return lines[:3]
+
+
+def qrk_card_svg(card, size="card", lang=None):
+	""
+	L = norm_lang(lang)
+	W, H, Q, _n = QRK_SIZES.get(size, QRK_SIZES["card"])
+	M = qr_matrix(qrk_payload(card))
+	n = len(M)
+	k = Q / 80.0
+	x0, y0 = (W - Q) / 2.0, (W - Q) / 2.0
+	path = "".join(f"M{x},{y}h1v1h-1z" for y in range(n) for x in range(n) if M[y][x])
+	nm = html_escape(card["name"])
+	fs = min(9.0, 150.0 / max(8, len(card["name"]))) * k
+	y = y0 + Q + 12 * k
+	parts = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}mm" height="{H}mm" viewBox="0 0 {W} {H}">',
+             f'<rect x="0.3" y="0.3" width="{W - 0.6}" height="{H - 0.6}" rx="{4 * k:.1f}" fill="#fff" stroke="#999" stroke-width="0.3" stroke-dasharray="2 1.5"/>',
+             f'<g transform="translate({x0:.2f},{y0:.2f}) scale({Q / n:.5f})"><path d="{path}" fill="#000" shape-rendering="crispEdges"/></g>',
+             f'<text x="{W / 2}" y="{y:.1f}" font-family="DejaVu Sans,Helvetica,Arial,sans-serif" font-size="{fs:.2f}" font-weight="700" text-anchor="middle" fill="#111">{nm}</text>']
+	y += 7 * k
+	for ln in _qrk_wrap(card.get("desc") or qrk_what(card, L, icon=False).strip(), 40):
+		parts.append(f'<text x="{W / 2}" y="{y:.1f}" font-family="DejaVu Sans,Helvetica,Arial,sans-serif" font-size="{4.2 * k:.2f}" text-anchor="middle" fill="#333">{html_escape(ln)}</text>')
+		y += 5.4 * k
+	foot = "▦ MoveEye · " + tr("QR card", L) + " · " + tr(QRK_CMDS[card["cmd"]][2], L) + " · " + card["id"]
+	parts.append(f'<text x="{W / 2}" y="{H - 6 * k:.1f}" font-family="DejaVu Sans,Helvetica,Arial,sans-serif" font-size="{3.1 * k:.2f}" text-anchor="middle" fill="#777">{html_escape(foot)}</text>')
+	parts.append("</svg>")
+	return "".join(parts)
+
+
+def qrk_card_png(card, size="card", lang=None, dpmm=12):
+	""
+	L = norm_lang(lang)
+	W, H, Q, _n = QRK_SIZES.get(size, QRK_SIZES["card"])
+	M = np.array(qr_matrix(qrk_payload(card)), bool)
+	n = M.shape[0]
+	qpx = int(Q * dpmm) // n * n
+	q = np.where(np.kron(M, np.ones((qpx // n, qpx // n), bool)), 0, 255).astype(np.uint8)
+	img = np.full((int(H * dpmm), int(W * dpmm)), 255, np.uint8)
+	x0 = (img.shape[1] - qpx) // 2; y0 = x0
+	img[y0:y0 + qpx, x0:x0 + qpx] = q
+	try:
+		from PIL import Image, ImageDraw
+		im = Image.fromarray(img).convert("RGB")
+		d = ImageDraw.Draw(im)
+		k = Q / 80.0
+		f1, f2, f3 = _font(int(min(9.0, 150.0 / max(8, len(card["name"]))) * k * dpmm)), _font(int(4.2 * k * dpmm), bold=False), _font(int(3.1 * k * dpmm), bold=False)
+		y = y0 + qpx + int(4 * k * dpmm)
+		d.text((im.width // 2, y), card["name"], font=f1, fill=(17, 17, 17), anchor="mt")
+		y += int(11 * k * dpmm)
+		for ln in _qrk_wrap(card.get("desc") or qrk_what(card, L, icon=False).strip(), 40):
+			d.text((im.width // 2, y), ln, font=f2, fill=(51, 51, 51), anchor="mt"); y += int(5.4 * k * dpmm)
+		d.text((im.width // 2, im.height - int(8 * k * dpmm)), "MoveEye · " + tr("QR card", L) + " · " + tr(QRK_CMDS[card["cmd"]][2], L) + " · " + card["id"],
+               font=f3, fill=(119, 119, 119), anchor="mt")
+		img = cv2.cvtColor(np.asarray(im), cv2.COLOR_RGB2BGR)
+	except Exception:
+		pass
+	ok, buf = cv2.imencode(".png", img)
+	return buf.tobytes() if ok else b""
+
+
+def qrk_print_page(card, size="card", lang=None, auto=False):
+	L = norm_lang(lang)
+	T = lambda s: html_escape(tr(s, L))
+	W, H, Q, _n = QRK_SIZES.get(size, QRK_SIZES["card"])
+	links = " ".join(f'<a href="/karten/print?id={card["id"]}&amp;size={k}&amp;lang={L}"{" class=on" if k == size else ""}>{T(v[3])}</a>'
+                     for k, v in QRK_SIZES.items())
+	page_size = "A4" if size in ("card", "a5") else "A4"
+	return ('<!doctype html><html lang="' + L + '"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+            '<meta name="referrer" content="no-referrer"><title>MoveEye – ' + T("QR card") + ' – ' + html_escape(card["name"]) + '</title><style>'
+            '@page{size:' + page_size + ' portrait;margin:10mm}html,body{background:#fff;color:#111}'
+            'body{font:14px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;margin:0;padding:12px 16px}'
+            '.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 10px}.bar button,.bar a{font:inherit;padding:8px 12px;border-radius:8px;'
+            'border:1px solid #999;background:#f4f4f4;color:#111;cursor:pointer;text-decoration:none;min-height:40px;box-sizing:border-box;display:inline-flex;align-items:center}'
+            '.bar a.on{background:#1f6feb;border-color:#1f6feb;color:#fff}.m{color:#555;margin:0 0 10px;font-size:13px}'
+            '.cv{display:flex;justify-content:center}.cv svg{max-width:100%;height:auto}'
+            '@media print{.bar,.m{display:none}body{padding:0}.cv svg{width:' + str(W) + 'mm;height:' + str(H) + 'mm;max-width:none}}'
+            '</style></head><body><div class="bar"><button type="button" onclick="print()">🖨 ' + T("Print") + '</button>' + links
+            + '<button type="button" onclick="history.length>1?history.back():close()">' + T("Close") + '</button></div>'
+            '<div class="m">' + T("Print at 100 % (no «fit to page»). Cut along the dashed line. Card and phone screen work the same.") + '</div>'
+            '<div class="cv">' + qrk_card_svg(card, size, L) + '</div>'
+            + ('<script>addEventListener("load",function(){setTimeout(function(){try{print();}catch(e){}},300);});</script>' if auto else "")
+            + '<script>window.__mwExit = true;</script></body></html>')
+
+
+
+def qrk_admin_ok(g_):
+	return getattr(g_, "role", "admin") == "admin" and not getattr(g_, "appkey", None)
+
+
+_smalltv_routes_qrk = smalltv_routes
+
+
+
+def smalltv_routes(app, reply, body):
+	_smalltv_routes_qrk(app, reply, body)
+	from flask import Response, request, g
+	qrk_start()
+
+	def nope():
+		if not qrk_admin_ok(g):
+			return reply({"ok": False, "error": tr("Only for the administrator", norm_lang(request.args.get("lang")))}, 403)
+		return None
+
+	@app.route("/api/qrk", methods=["GET", "POST"])
+	def api_qrk():
+		n = nope()
+		if n is not None:
+			return n
+		if request.method == "GET":
+			L = norm_lang(request.args.get("lang") or CFG.get("lang"))
+			return reply({"ok": True, "state": qrk_state(L), "cards": [qrk_card_json(c, L) for c in qrk_cards()][::-1], "choices": qrk_choices(L),
+                          "fp": qrk_key_fp()})
+		d = body()
+		L = norm_lang(d.get("lang") or CFG.get("lang"))
+		a = str(d.get("action") or "")
+		if a == "create":
+			card, err = qrk_create(d, "web")
+			if card is None:
+				return reply({"ok": False, "error": tr_err(err, L)}, 400)
+			return reply({"ok": True, "card": qrk_card_json(card, L)})
+		if a in ("revoke", "unrevoke", "delete"):
+			ok, err = qrk_edit(a, str(d.get("id") or ""), "web")
+			return reply({"ok": ok, "error": tr_err(err, L) if err else None}, 200 if ok else 400)
+		if a == "rotate":
+			if not d.get("confirm"):
+				return reply({"ok": False, "error": tr("Please confirm.", L)}, 400)
+			qrk_rotate("web")
+			return reply({"ok": True})
+		if a == "try":
+			c = qrk_card(str(d.get("id") or ""))
+			if c is None:
+				return reply({"ok": False, "error": tr_err("unknown card", L)}, 400)
+			if c.get("off"):
+				return reply({"ok": False, "error": tr("This card is revoked.", L)}, 400)
+			img, _src = qrk_grab("head")
+			ok, msg = qrk_run(c, img.copy() if img is not None else None, "workshop", "QR card (workshop)", feedback=False)
+			return reply({"ok": ok, "msg": tr_err(msg, L) if msg else ""}, 200)
+		if a == "check":
+			cmd = str(d.get("cmd") or "")
+			if cmd not in QRK_CMDS:
+				return reply({"ok": False, "error": tr_err("unknown command", L)}, 400)
+			tc = bool(d.get("tc")) and cmd in QRK_TEXT_CMDS
+			p, err = qrk_make_param(cmd, d)
+			if err and tc:
+				return reply({"ok": False, "error": tr_err(err, L)})
+			p = p if tc else ""
+			ver, mods = qrk_qr_size(QRK_PREFIX + "A" * QRK_ID_LEN + cmd + "A" * QRK_MAC_LEN + p)
+			return reply({"ok": True, "ver": ver, "modules": mods, "bytes": QRK_HEAD + len(p.encode("utf-8")), "tc": tc,
+                          "warn": tr_err(err, L) if err and err != "the text is empty" else "",
+                          "range": {k: qrk_range(mods, v[2]) for k, v in QRK_SIZES.items()}})
+		if a == "text":
+			ok, err = qrk_set_text(str(d.get("id") or ""), d, "web")
+			return reply({"ok": ok, "error": tr_err(err, L) if err else None}, 200 if ok else 400)
+		return reply({"ok": False, "error": "unknown action"}, 400)
+
+	@app.route("/api/qrk/card/<cid>.<ext>")
+	def api_qrk_card(cid, ext):
+		n = nope()
+		if n is not None:
+			return n
+		c = qrk_card(cid)
+		if c is None or ext not in ("svg", "png"):
+			return Response("not found", 404)
+		size = request.args.get("size") if request.args.get("size") in QRK_SIZES else "card"
+		L = norm_lang(request.args.get("lang") or CFG.get("lang"))
+		fname = "moveeye_karte_" + re.sub(r"[^A-Za-z0-9_-]+", "_", c["name"])[:30] + "_" + c["id"] + "." + ext
+		h = {"Cache-Control": "no-store", "X-Content-Type-Options": "nosniff"}
+		if request.args.get("dl") == "1":
+			h["Content-Disposition"] = f'attachment; filename="{fname}"'
+		if ext == "svg":
+			return Response(qrk_card_svg(c, size, L), mimetype="image/svg+xml", headers=h)
+		return Response(qrk_card_png(c, size, L), mimetype="image/png", headers=h)
+
+	@app.route("/karten")
+	def qrk_page():
+		n = nope()
+		if n is not None:
+			return n
+		return Response(render_page(QRK_PAGE, "more"), mimetype="text/html", headers={"Cache-Control": "no-store"})
+
+	@app.route("/karten/print")
+	def qrk_print():
+		n = nope()
+		if n is not None:
+			return n
+		c = qrk_card(str(request.args.get("id") or ""))
+		if c is None:
+			return Response("not found", 404)
+		size = request.args.get("size") if request.args.get("size") in QRK_SIZES else "card"
+		return Response(qrk_print_page(c, size, request.args.get("lang") or CFG.get("lang"), request.args.get("p") == "1"),
+                        mimetype="text/html", headers={"Cache-Control": "no-store"})
+
+
+QRK_PAGE = _zd('639zzp_qr_karten/QRK_PAGE', ZD_PAGE)
+
+QRK_MORE_ITEM = ('<a class="mi" href="/karten" id="m-qrk"><i>▦</i><span><b data-i18n="Card workshop">Card workshop</b>'
+                 '<small data-i18n="QR command cards: make, print, revoke">QR command cards: make, print, revoke</small></span><span class="ar">›</span></a>\n  ')
+
+_render_page_qrk = render_page
+
+
+
+def render_page(page, active):
+	out = _render_page_qrk(page, active)
+	if "/*QRKDE*/" in out:
+		out = out.replace("/*QRKDE*/", "Object.assign(I18N.de, " + json.dumps(_QRK_DE, ensure_ascii=False).replace("</", "<\\/") + ");", 1)
+	if active == "more" and 'href="/karten"' not in out and '<a class="mi" href="/tools">' in out:
+		try:
+			from flask import g as _g
+			admin = qrk_admin_ok(_g)
+		except Exception:
+			admin = False
+		if admin:
+			i = out.find('<a class="mi" href="/tools">')
+			out = (out[:i] + QRK_MORE_ITEM + out[i:]).replace("</body>", "<script>Object.assign(I18N.de, " + json.dumps(
+                {k: _QRK_DE[k] for k in ("Card workshop", "QR command cards: make, print, revoke")}, ensure_ascii=False) + ");</script></body>", 1)
+	return out
+
+
+
+TOGGLES.extend([
+    (QRK_SECTION, "qrk_on", "Read QR cards (experimental)"),
+    (QRK_SECTION, "qrk_cam_head", "with the head camera"),
+    (QRK_SECTION, "qrk_cam_wide", "with the wide-angle camera"),
+    (QRK_SECTION, "qrk_photo", "Photo of every use in the history"),
+])
+SLIDERS.extend([
+    (QRK_SECTION, "qrk_rate", "Looks per second", 0.5, 2.0, 0.5),
+    (QRK_SECTION, "qrk_cooldown", "Cooldown per card (s)", 3, 60, 1),
+    (QRK_SECTION, "qrk_cpu_max", "Pause above CPU (%)", 50, 95, 5),
+])
+TEXTS.extend([(QRK_SECTION, "qrk_feedback", "Feedback when a card is read", "enum", "qrk_feedback")])
+TEXT_SPECS.update({k: (kind, extra) for s, k, l, kind, extra in TEXTS if k == "qrk_feedback"})
+SECTIONS.append(QRK_SECTION)
+SIMPLE_SECTIONS.add(QRK_SECTION)
+SIMPLE_KEYS.add("qrk_on")
+MENU_TITLES.setdefault(QRK_SECTION, "QR command cards")
+TK_SUB_ICONS[QRK_SECTION] = "▦"
+for _g in TK_GROUPS:
+	if _g[0] == "camera" and QRK_SECTION not in _g[2]:
+		_g[2].append(QRK_SECTION)
+SET_HELP.update({
+    "qrk_on": ("Hold a card with a QR code from the card workshop (More → Card workshop) in front of the camera: MoveEye does what is on it "
+               "(push, announcement, note, recording, light, relay, head position, profile). Only cards of this MoveEye count. "
+               "Reading about once a second; it pauses by itself when the Pi is busy.", "off (experimental)"),
+    "qrk_cooldown": ("The same card works again only after it was out of view for 3 s and this time is over.", "10 s"),
+    "qrk_cpu_max": ("Above this CPU load reading pauses (back 10 % below) - the detection always comes first.", "85 %"),
+})
+_text_choice_pairs_qrk = text_choice_pairs
+
+
+
+def text_choice_pairs(key):
+	ex = (TEXT_SPECS.get(key) or (None, None))[1]
+	if ex == "qrk_feedback":
+		return [("speak", tr("spoken «Understood»")), ("beep", tr("short sound")), ("off", tr("nothing"))]
+	return _text_choice_pairs_qrk(key)
+
+
+
+_QRK_GRP = '{sec: "Timelapse", ic: "⏱️"}]},'
+if _QRK_GRP in WEB_PAGE and '{sec: "QR command cards"' not in WEB_PAGE:
+	WEB_PAGE = WEB_PAGE.replace(_QRK_GRP, '{sec: "Timelapse", ic: "⏱️"}, {sec: "QR command cards", title: "QR command cards", ic: "▦"}]},', 1)
+_QRK_SEC = 'if (sec.id === "Extra display" && window.stvPanel) stvPanel(d);'
+if _QRK_SEC in WEB_PAGE:
+	WEB_PAGE = WEB_PAGE.replace(_QRK_SEC, _QRK_SEC + '\n    if (sec.id === "QR command cards" && window.qrkPanel) qrkPanel(d);   // 639zzp: QR command cards', 1)
+
+QRK_PANEL_JS = _zd('639zzp_qr_karten/QRK_PANEL_JS', "")
+
+
+
+def _qrk_tk_build_section(self, sec, sbody, settings_parent=None):
+	_qrk_tk_build_section_before(self, sec, sbody, settings_parent)
+	if sec != QRK_SECTION:
+		return
+	try:
+		box = ttk.Frame(sbody); box.pack(fill="x", pady=(6, 0))
+		lab = ttk.Label(box, text="", wraplength=340, justify="left", style="Mut.TLabel"); lab.pack(anchor="w")
+		ttk.Button(box, text="▦ " + tr("Open the card workshop"), command=lambda: self._open_page("/karten")).pack(anchor="w", pady=(4, 0))
+
+		def tick():
+			try:
+				if not lab.winfo_exists():
+					return
+				s = qrk_state()
+				lab.config(text=(("⏸ " + tr("Pause") + ": " + s["pause_t"]) if s["on"] and s["pause"] else ("▶ " + tr("Looking for cards")) if s["on"]
+                                 else tr("Off – nothing is read.")) + f" · {len(qrk_cards())} " + tr("cards")
+                           + ((" · " + tr("Last card") + ": «" + s["last"]["name"] + "»") if s["last"] else ""))
+				self.root.after(4000, tick)
+			except Exception:
+				pass
+		tick()
+	except Exception as e:
+		log_event("sys", f"Window: QR cards: {e}"[:160])
+
+
+_qrk_tk_build_section_before = App._build_section
+
+App._build_section = _qrk_tk_build_section
+
+
+
+_HX_QRK = _zd('639zzp_qr_karten/HX_QRK', _zd_hx({
+    'QR command cards': 'QR-Befehls-Karten',
+    'Card workshop': 'Karten-Werkstatt',
+    'QR command cards: make, print, revoke': 'QR-Befehls-Karten: erstellen, drucken, sperren',
+    'experimental': 'experimentell',
+    'Make a card with a QR code: hold it in front of the camera and MoveEye does what is on it. Only cards of this MoveEye count.': 'Eine Karte mit QR-Code erstellen: vor die Kamera halten, und MoveEye macht, was darauf steht. Es gelten nur Karten dieses MoveEye.',
+    'New card': 'Neue Karte',
+    'My cards': 'Meine Karten',
+    'Name on the card': 'Name auf der Karte',
+    'Short description (under the code)': 'Kurze Beschreibung (unter dem Code)',
+    'Make the card': 'Karte erstellen',
+    'Make all cards invalid': 'Alle Karten ungültig machen',
+    'A new key makes every printed card invalid at once (lost or copied cards). You can print each card again afterwards.': 'Ein neuer Schlüssel macht jede gedruckte Karte sofort ungültig (verlorene oder kopierte Karten). Danach kannst du jede Karte neu drucken.',
+    'New key': 'Neuer Schlüssel',
+    'How it works': 'So geht es',
+    'Hold the card still, about an arm’s length in front of the head camera (wide angle: closer). Short texts read from further away.': 'Die Karte ruhig halten, etwa eine Armlänge vor der Kopf-Kamera (Weitwinkel: näher). Kurze Texte lassen sich von weiter weg lesen.',
+    'MoveEye says «Understood» and shows a green frame around the card in the live picture. The same card works again only after it was out of view for a moment (cooldown).': 'MoveEye sagt «Verstanden» und zeigt im Live-Bild einen grünen Rahmen um die Karte. Dieselbe Karte wirkt erst wieder, wenn sie kurz aus dem Bild war (Sperrzeit).',
+    'Every use is in the log and, with a photo, in History → Recordings (source «QR card»).': 'Jede Benutzung steht im Protokoll und mit Foto in Verlauf → Aufnahmen (Quelle «QR-Karte»).',
+    'A card cannot switch the protection off. No passwords or Wi-Fi names on a card.': 'Eine Karte kann den Schutz nicht ausschalten. Keine Passwörter und keine WLAN-Namen auf einer Karte.',
+    'Reading runs only when it is switched on, about once a second, and pauses by itself when the Pi is busy.': 'Gelesen wird nur, wenn es eingeschaltet ist, etwa einmal pro Sekunde, und es pausiert von selbst, wenn der Pi viel zu tun hat.',
+    'Read QR cards (experimental)': 'QR-Karten lesen (experimentell)',
+    'with the head camera': 'mit der Kopf-Kamera',
+    'with the wide-angle camera': 'mit der Weitwinkel-Kamera',
+    'Photo of every use in the history': 'Foto jeder Benutzung im Verlauf',
+    'Looks per second': 'Blicke pro Sekunde',
+    'Cooldown per card (s)': 'Sperrzeit pro Karte (s)',
+    'Pause above CPU (%)': 'Pause über CPU (%)',
+    'Feedback when a card is read': 'Rückmeldung, wenn eine Karte gelesen wird',
+    'spoken «Understood»': 'gesprochen «Verstanden»',
+    'short sound': 'kurzer Ton',
+    'nothing': 'nichts',
+    'Understood': 'Verstanden',
+    'Pause': 'Pause',
+    'Looking for cards': 'Sucht Karten',
+    'Off – nothing is read.': 'Aus – es wird nichts gelesen.',
+    'Decoder': 'Decoder',
+    'Last card': 'Letzte Karte',
+    'Last uses': 'Letzte Benutzungen',
+    'Settings → Cameras & head → QR command cards': 'Einstellungen → Kameras & Kopf → QR-Befehls-Karten',
+    'Open the card workshop': 'Karten-Werkstatt öffnen',
+    'cards': 'Karten',
+    'Push message': 'Push-Nachricht',
+    'Read aloud': 'Vorlesen',
+    'Note with photo': 'Notiz mit Foto',
+    'Start a recording': 'Aufnahme starten',
+    'Light on / off': 'Licht ein / aus',
+    'Relay on / off': 'Relais ein / aus',
+    'Head to a position': 'Kopf auf Position',
+    'Switch profile': 'Profil wechseln',
+    'Text of the push message': 'Text der Push-Nachricht',
+    'Text to read aloud': 'Text zum Vorlesen',
+    'Text of the note': 'Text der Notiz',
+    'with the photo of the camera': 'mit dem Foto der Kamera',
+    'Duration': 'Dauer',
+    'Which light': 'Welches Licht',
+    'On or off': 'Ein oder aus',
+    'Relay': 'Relais',
+    'Position': 'Position',
+    'Mode': 'Modus',
+    'No relay set up yet (Settings → Extra devices → Relays).': 'Noch kein Relais eingerichtet (Einstellungen → Zusatzgeräte → Relais).',
+    'No saved position yet (Teach-in under Head).': 'Noch keine gespeicherte Position (Teach-in beim Kopf).',
+    'A card never switches the protection off (no «Transport / rest»).': 'Eine Karte schaltet den Schutz nie aus (kein «Transport / Ruhe»).',
+    'QR code {m} × {m} modules · reads at about {a} cm (postcard) / {b} m (A4) – estimate from a simulation': 'QR-Code {m} × {m} Module · liest sich auf ca. {a} cm (Postkarte) / {b} m (A4) – Schätzung aus einer Simulation',
+    'Text in the code: shorter distance, a shorter text reads further.': 'Text im Code: kürzerer Abstand, ein kürzerer Text reicht weiter.',
+    'Where is the text?': 'Wo steht der Text?',
+    'Text on the MoveEye (recommended)': 'Text auf dem MoveEye (empfohlen)',
+    'Text in the code': 'Text im Code',
+    'The text is inside the QR code: the code gets bigger and reads only from closer; to change the text you print a new card.': 'Der Text steht im QR-Code: der Code wird grösser und lässt sich nur von näher lesen; für einen anderen Text druckst du eine neue Karte.',
+    'The code stays small and reads from further away; you can change the text later without printing again.': 'Der Code bleibt klein und lässt sich von weiter weg lesen; den Text kannst du später ändern, ohne neu zu drucken.',
+    'Change the text': 'Text ändern',
+    'New text (the printed card stays valid):': 'Neuer Text (die gedruckte Karte bleibt gültig):',
+    'Text changed – no new print needed.': 'Text geändert – kein neuer Druck nötig.',
+    'this card has no text': 'diese Karte hat keinen Text',
+    'the text is in the code - make a new card': 'der Text steht im Code – erstelle eine neue Karte',
+    'Print': 'Drucken',
+    'Close': 'Schliessen',
+    'Try out': 'Ausprobieren',
+    'Revoke card': 'Sperren',
+    'Allow again': 'Wieder freigeben',
+    'Delete': 'Löschen',
+    'Delete this card? Printed copies stop working.': 'Diese Karte löschen? Gedruckte Exemplare wirken dann nicht mehr.',
+    'No cards yet.': 'Noch keine Karten.',
+    'card revoked': 'gesperrt',
+    'print again (new key)': 'neu drucken (neuer Schlüssel)',
+    'made on': 'erstellt',
+    'last used': 'zuletzt benutzt',
+    'never used': 'noch nie benutzt',
+    'about {a} m': 'etwa {a} m',
+    'Really make ALL printed cards invalid? They stop working at once; you can print them again.': 'Wirklich ALLE gedruckten Karten ungültig machen? Sie wirken sofort nicht mehr; du kannst sie neu drucken.',
+    'New key – print the cards again.': 'Neuer Schlüssel – Karten neu drucken.',
+    'Please confirm.': 'Bitte bestätigen.',
+    'This card is revoked.': 'Diese Karte ist gesperrt.',
+    'QR card': 'QR-Karte',
+    'foreign card': 'fremde Karte',
+    'Postcard 10 × 15 cm': 'Postkarte 10 × 15 cm',
+    'Print at 100 % (no «fit to page»). Cut along the dashed line. Card and phone screen work the same.': 'Mit 100 % drucken (nicht «an Seite anpassen»). Entlang der gestrichelten Linie ausschneiden. Karte und Handy-Bildschirm wirken gleich.',
+    'Push': 'Push',
+    'photo': 'Foto',
+    'Recording {s} s': 'Aufnahme {s} s',
+    'Head to': 'Kopf zu',
+    'Head view': 'Kopf',
+    'Wide view': 'Weitwinkel',
+    'off': 'aus',
+    'on': 'ein',
+    'no camera chosen': 'keine Kamera gewählt',
+    'no cards yet': 'noch keine Karten',
+    'simulation': 'Simulation',
+    'tool mode': 'Werkzeug-Modus',
+    'battery saver': 'Akku sparen',
+    'CPU busy': 'CPU ausgelastet',
+    'detection is slow': 'Erkennung ist langsam',
+    'unknown command': 'unbekannter Befehl',
+    'unknown card': 'unbekannte Karte',
+    'the name is empty': 'der Name fehlt',
+    'the text is empty': 'der Text fehlt',
+    'the text is too long': 'der Text ist zu lang',
+    'too many cards': 'zu viele Karten',
+    'unknown profile': 'unbekanntes Profil',
+    'This text contains a password, an access code or a Wi-Fi name - not allowed on a card.': 'Dieser Text enthält ein Passwort, einen Zugangscode oder einen WLAN-Namen – auf einer Karte nicht erlaubt.',
+    'this would switch the protection off - not by card': 'das würde den Schutz ausschalten – nicht per Karte',
+    'push messages are not set up - only in the message list': 'Push-Nachrichten sind nicht eingerichtet – nur in der Liste «Nachrichten»',
+    'no camera loop': 'die Kamera läuft nicht',
+    'no camera picture yet': 'noch kein Kamerabild',
+    'could not save the picture': 'Bild konnte nicht gespeichert werden',
+    'busy': 'besetzt',
+    'QR card: foreign card ignored': 'QR-Karte: fremde Karte ignoriert',
+    'QR card: deleted card ignored': 'QR-Karte: gelöschte Karte ignoriert',
+}))
+for _k, _v in _HX_QRK.items():
+	DE.setdefault(_k, _v[0])
+	for _i, _L in enumerate(("fr", "it", "rm")):
+		TRX[_L].setdefault(_k, _v[_i + 1])
+_QRK_DE = {_k: DE.get(_k, _v[0]) for _k, _v in _HX_QRK.items()}
+_QRK_DE.update({k: DE.get(k, k) for k in ("No connection to MoveEye.", "Only for the administrator", "Detection profile", "Profile")})
+WEB_PAGE = WEB_PAGE.replace("</body>", QRK_PANEL_JS.replace("/*QRKPDE*/{}", json.dumps(
+    {k: _QRK_DE[k] for k in ("Open the card workshop", "Pause", "Looking for cards", "Off – nothing is read.", "cards", "Last card", "QR command cards")},
+    ensure_ascii=False), 1) + "</body>", 1)
+
+
+_HELP_QRK = _zd('639zzp_qr_karten/HELP_QRK', _ZDDict())
+
+
+def _help_qrk(doc, lang):
+	if 'id="qrkarten"' in doc:
+		return doc
+	i = doc.find('<section id="tips"')
+	return doc[:i] + _HELP_QRK[lang] + doc[i:] if i >= 0 else doc
+
+
+_hp_en_qrk = HELP_PAGE.find('<div lang="en">')
+if _hp_en_qrk > 0:
+	HELP_PAGE = _help_qrk(HELP_PAGE[:_hp_en_qrk], "de") + _help_qrk(HELP_PAGE[_hp_en_qrk:], "en")
+for _L in ("fr", "it", "rm"):
+	if HELP_X.get(_L):
+		HELP_X[_L] = _help_qrk(HELP_X[_L], _L)
+
+
+
+def qrk_selftest():
+	keep = {k: json.loads(json.dumps(CFG.get(k))) for k in QRK_DEF}
+	sv, lg = save_settings, log_event
+	keep_q = {k: (dict(QRK[k]) if isinstance(QRK[k], dict) else QRK[k]) for k in ("seen", "show", "log_t", "last")}
+	try:
+		globals()["save_settings"] = lambda *a, **k: None
+		globals()["log_event"] = lambda *a, **k: None
+		CFG.update(qrk_cards=[], qrk_secret="")
+		card, err = qrk_create({"cmd": "L", "name": "Licht an", "light": "white", "on": True}, "selftest")
+		assert card and not err and re.fullmatch(r"[0-9a-f]{64}", CFG["qrk_secret"]), err
+		pl = qrk_payload(card)
+		assert pl.startswith("M1" + card["id"] + "L") and len(pl) == QRK_HEAD and qrk_qr_size(pl)[1] == 25, pl
+		assert CFG["qrk_secret"] not in pl and CFG["qrk_secret"][:10] not in pl
+		assert qrk_check(pl) == ("ok", qrk_card(card["id"]))
+		bad = pl[:7] + "Y" + pl[8:]
+		assert qrk_check(bad)[0] == "foreign" and qrk_check("https://example.org/")[0] == "foreign" and qrk_check("")[0] == "foreign"
+		assert qrk_check(pl + "w0")[0] == "foreign", "values added to a short card"
+		other = QRK_PREFIX + card["id"] + "L" + qrk_mac(card["id"], "L", "", "ab" * 32)
+		assert qrk_check(other)[0] == "foreign", "a card of another MoveEye"
+		dev, _e = qrk_create({"cmd": "P", "name": "Essen", "text": "Essen ist fertig", "photo": True}, "selftest")
+		inc, _e = qrk_create({"cmd": "S", "name": "Ansage", "text": "Willkommen", "tc": True}, "selftest")
+		pd, pi = qrk_payload(dev), qrk_payload(inc)
+		assert len(pd) == QRK_HEAD and pi.endswith("Willkommen") and qrk_check(pd)[0] == "ok" and qrk_check(pi)[0] == "ok"
+		assert qrk_set_text(dev["id"], {"text": "Kaffee ist fertig"}) == (True, "") and qrk_payload(qrk_card(dev["id"])) == pd
+		assert qrk_check(pd)[1]["p"] == "1Kaffee ist fertig", "text changed on the device: the printed card stays valid"
+		assert qrk_set_text(inc["id"], {"text": "x"})[0] is False and qrk_set_text(card["id"], {"text": "x"})[0] is False
+		assert qrk_check(pi[:-1] + "m")[0] == "foreign", "text in the code changed"
+		assert qrk_check(pi[:QRK_HEAD])[0] == "foreign" and qrk_check(pd + "1Hallo")[0] == "foreign", "the other form of a card never counts"
+		for _c in (dev, inc):
+			qrk_edit("revoke", _c["id"], "selftest")
+		assert qrk_check(pd)[0] == "revoked" and qrk_check(pi)[0] == "revoked"
+		img = cv2.imdecode(np.frombuffer(qr_png(pl, 6), np.uint8), cv2.IMREAD_COLOR)
+		img = cv2.copyMakeBorder(img, 60, 60, 120, 120, cv2.BORDER_CONSTANT, value=(140, 140, 140))
+		txt, pts = qrk_decode(img)
+		assert txt == pl and pts and len(pts) == 4, (txt, pts)
+		ran = []
+		globals()["qrk_spawn"] = lambda c, im, cam: ran.append(c["id"])
+		try:
+			t0 = 1000.0
+			QRK["seen"].clear()
+			assert qrk_seen("head", pl, pts, img, now=t0) == "run"
+			assert qrk_seen("head", pl, pts, img, now=t0 + 1) == "hold", "held in view: once"
+			assert qrk_seen("head", pl, pts, img, now=t0 + 2.5) == "hold"
+			assert qrk_seen("head", pl, pts, img, now=t0 + 6) == "hold", "away for 3.5 s but the cooldown (10 s) is not over"
+			assert qrk_seen("head", pl, pts, img, now=t0 + 20) == "run", "away and cooldown over"
+			qrk_edit("revoke", card["id"], "selftest")
+			assert qrk_seen("head", pl, pts, img, now=t0 + 60) == "revoked"
+			qrk_edit("unrevoke", card["id"], "selftest")
+			assert qrk_check(pl)[0] == "ok"
+			qrk_rotate("selftest")
+			assert qrk_check(pl)[0] == "foreign" and qrk_card_json(qrk_card(card["id"]))["reprint"], "new key: all old cards invalid"
+			assert qrk_check(qrk_payload(qrk_card(card["id"])))[0] == "ok", "printed again with the new key"
+		finally:
+			globals()["qrk_spawn"] = _qrk_spawn_real
+		assert len(ran) == 2, ran
+		assert qrk_create({"cmd": "P", "name": "x", "text": "WIFI:T:WPA;S:Zelt;P:geheim123;;"})[0] is None
+		assert qrk_create({"cmd": "P", "name": "x", "text": "Das Passwort ist 1234"})[0] is None
+		assert qrk_create({"cmd": "S", "name": "x", "text": "ä" * 60})[1] == "the text is too long"
+		assert qrk_create({"cmd": "F", "name": "x", "profile": "m:transport"})[1] == "unknown profile", "never «Ruhe» by card"
+		assert qrk_make_param("R", {"secs": 99999})[0] == str(QRK_REC_MAX)
+		CFG["qrk_on"] = False
+		assert qrk_pause_reason() == "off"
+		assert "qrk_secret" in USER_SETTINGS_DENY and "qrk_on" in USER_SETTINGS_DENY and "/api/qrk" in APPKEY_DENY_PATHS
+		assert not role_allows("family", "/karten", "GET", {}) and not role_allows("family", "/api/qrk", "POST", {"action": "create"})
+		assert '{sec: "QR command cards"' in WEB_PAGE and "window.qrkPanel" in WEB_PAGE and 'id="qrkarten"' in HELP_PAGE
+		assert tr("Card workshop", "de") == "Karten-Werkstatt" and tr("Understood", "rm") == "Chapì" and tr("QR card: foreign card ignored", "de").endswith("ignoriert")
+		assert "<svg" in qrk_card_svg(qrk_card(card["id"])) and qrk_card_png(qrk_card(card["id"]))[:4] == b"\x89PNG"
+	finally:
+		globals()["save_settings"] = sv
+		globals()["log_event"] = lg
+		CFG.update(keep)
+		for k, v in keep_q.items():
+			if isinstance(QRK[k], dict):
+				QRK[k].clear(); QRK[k].update(v)
+			else:
+				QRK[k] = v
+	return "check number (own / changed / other device), text on the device / in the code, read a code, cooldown, revoke, new key, no secrets on a card, rights, page hooks"
+
+
+_qrk_spawn_real = qrk_spawn
+SELFTEST_EXTRA.append(("QR command cards «▦ Karten-Werkstatt» (639zzp)", qrk_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SF_START = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+SF_ABC = "ACDEFHJKMNPQRTUVWXY3479"
+SF_GRENZEN = {"spiele": 10, "frist": 24 * 3600, "nach_ende": 1800, "posts": (12, 10.0), "neu_ip": (8, 600.0),
+              "falsch_ip": (15, 300.0), "warten": 15.0, "warter": 40, "online": 25.0, "idle_weg": 600.0}
+SF = {"spiele": {}, "cond": threading.Condition(), "ip": {}, "geladen": False, "warter": 0}
+SF_DATEI = "schach_fern.json"
+SF_OPS_POST = ("neu", "beitreten", "zug", "aktion")
+SF_OPS_GET = ("info", "zustand", "qr")
+PERM_GET["games"] = tuple(PERM_GET.get("games", ())) + ("/schachfern/",)
+PERM_POST["games"] = set(PERM_POST.get("games", ())) | {"/schachfern/" + o for o in SF_OPS_POST}
+
+
+
+_SF_N = (33, 31, 18, 14, -14, -18, -31, -33)
+_SF_K = (1, -1, 16, -16, 15, 17, -15, -17)
+_SF_B = (15, 17, -15, -17)
+_SF_R = (1, -1, 16, -16)
+
+
+def _sf_sq(name):
+	return (int(name[1]) - 1) * 16 + "abcdefgh".index(name[0])
+
+
+def _sf_name(s):
+	return "abcdefgh"[s & 7] + str((s >> 4) + 1)
+
+
+def sf_fen_lesen(fen):
+	""
+	t = str(fen or "").split()
+	if len(t) != 6:
+		raise ValueError("fen")
+	rows = t[0].split("/")
+	if len(rows) != 8:
+		raise ValueError("fen rows")
+	b = [None] * 128
+	for i, row in enumerate(rows):
+		r, f = 7 - i, 0
+		for ch in row:
+			if ch.isdigit():
+				f += int(ch)
+			elif ch in "pnbrqkPNBRQK":
+				if f > 7:
+					raise ValueError("fen row")
+				b[r * 16 + f] = ch; f += 1
+			else:
+				raise ValueError("fen piece")
+		if f != 8:
+			raise ValueError("fen row")
+	if b.count("K") != 1 or b.count("k") != 1 or t[1] not in ("w", "b") or not re.fullmatch(r"-|K?Q?k?q?", t[2]) or not re.fullmatch(r"-|[a-h][36]", t[3]):
+		raise ValueError("fen fields")
+	return {"b": b, "w": t[1], "c": "" if t[2] == "-" else t[2], "ep": -1 if t[3] == "-" else _sf_sq(t[3]), "h": int(t[4]), "f": max(1, int(t[5]))}
+
+
+def sf_fen(p):
+	rows = []
+	for r in range(7, -1, -1):
+		s, n = "", 0
+		for f in range(8):
+			x = p["b"][r * 16 + f]
+			if x is None:
+				n += 1
+			else:
+				s += (str(n) if n else "") + x; n = 0
+		rows.append(s + (str(n) if n else ""))
+	return f"{'/'.join(rows)} {p['w']} {p['c'] or '-'} {_sf_name(p['ep']) if p['ep'] >= 0 else '-'} {p['h']} {p['f']}"
+
+
+def _sf_weiss(x):
+	return x is not None and x.isupper()
+
+
+def _sf_farbe(x):
+	return None if x is None else ("w" if x.isupper() else "b")
+
+
+def sf_angegriffen(b, s, von):
+	""
+	up = von == "w"
+	P, N, B, R, Q, K = ("PNBRQK" if up else "pnbrqk")
+	for d in ((-15, -17) if up else (15, 17)):
+		t = s + d
+		if not t & 0x88 and b[t] == P:
+			return True
+	for d in _SF_N:
+		t = s + d
+		if not t & 0x88 and b[t] == N:
+			return True
+	for d in _SF_K:
+		t = s + d
+		if not t & 0x88 and b[t] == K:
+			return True
+	for dirs, a in ((_SF_B, (B, Q)), (_SF_R, (R, Q))):
+		for d in dirs:
+			t = s + d
+			while not t & 0x88:
+				if b[t] is not None:
+					if b[t] in a:
+						return True
+					break
+				t += d
+	return False
+
+
+def _sf_koenig(b, c):
+	k = "K" if c == "w" else "k"
+	for s in range(128):
+		if not s & 0x88 and b[s] == k:
+			return s
+	return -1
+
+
+def sf_schach(p):
+	return sf_angegriffen(p["b"], _sf_koenig(p["b"], p["w"]), "b" if p["w"] == "w" else "w")
+
+
+def _sf_pseudo(p):
+	b, c = p["b"], p["w"]
+	them = "b" if c == "w" else "w"
+	out = []
+	for s in range(128):
+		if s & 0x88 or b[s] is None or _sf_farbe(b[s]) != c:
+			continue
+		x = b[s].lower()
+		if x == "p":
+			fw, start, last = (16, 1, 7) if c == "w" else (-16, 6, 0)
+			t = s + fw
+			if not t & 0x88 and b[t] is None:
+				if t >> 4 == last:
+					out += [(s, t, q) for q in "qrbn"]
+				else:
+					out.append((s, t, ""))
+					t2 = t + fw
+					if s >> 4 == start and b[t2] is None:
+						out.append((s, t2, ""))
+			for d in (fw - 1, fw + 1):
+				t = s + d
+				if t & 0x88:
+					continue
+				if b[t] is not None and _sf_farbe(b[t]) == them:
+					out += [(s, t, q) for q in "qrbn"] if t >> 4 == last else [(s, t, "")]
+				elif t == p["ep"]:
+					out.append((s, t, ""))
+		elif x in "nk":
+			for d in (_SF_N if x == "n" else _SF_K):
+				t = s + d
+				if not t & 0x88 and (b[t] is None or _sf_farbe(b[t]) == them):
+					out.append((s, t, ""))
+		else:
+			for d in ((_SF_B if x == "b" else _SF_R if x == "r" else _SF_K)):
+				t = s + d
+				while not t & 0x88:
+					if b[t] is None:
+						out.append((s, t, ""))
+					else:
+						if _sf_farbe(b[t]) == them:
+							out.append((s, t, ""))
+						break
+					t += d
+
+	ks, rank = (4, 0) if c == "w" else (116, 112)
+	if b[ks] == ("K" if c == "w" else "k") and not sf_angegriffen(b, ks, them):
+		R = "R" if c == "w" else "r"
+		if ("K" if c == "w" else "k") in p["c"] and b[rank + 7] == R and b[ks + 1] is None and b[ks + 2] is None \
+                and not sf_angegriffen(b, ks + 1, them) and not sf_angegriffen(b, ks + 2, them):
+			out.append((ks, ks + 2, ""))
+		if ("Q" if c == "w" else "q") in p["c"] and b[rank] == R and b[ks - 1] is None and b[ks - 2] is None and b[ks - 3] is None \
+                and not sf_angegriffen(b, ks - 1, them) and not sf_angegriffen(b, ks - 2, them):
+			out.append((ks, ks - 2, ""))
+	return out
+
+
+def sf_ziehe(p, m):
+	""
+	s, t, q = m
+	b = p["b"][:]; c = p["w"]; x = b[s]; them = "b" if c == "w" else "w"
+	cap = b[t] is not None
+	rights = p["c"]
+	if x.lower() == "p" and t == p["ep"] and not cap:
+		b[t - 16 if c == "w" else t + 16] = None; cap = True
+	b[t] = (q.upper() if c == "w" else q) if q else x; b[s] = None
+	if x.lower() == "k":
+		rights = rights.replace("K", "").replace("Q", "") if c == "w" else rights.replace("k", "").replace("q", "")
+		if t - s == 2:
+			b[s + 1] = b[s + 3]; b[s + 3] = None
+		elif s - t == 2:
+			b[s - 1] = b[s - 4]; b[s - 4] = None
+	for sq, r in ((0, "Q"), (7, "K"), (112, "q"), (119, "k")):
+		if s == sq or t == sq:
+			rights = rights.replace(r, "")
+	ep = -1
+	if x.lower() == "p" and abs(t - s) == 32:
+		P = "p" if c == "w" else "P"
+		if (not (t - 1) & 0x88 and b[t - 1] == P) or (not (t + 1) & 0x88 and b[t + 1] == P):
+			ep = (s + t) // 2
+	return {"b": b, "w": them, "c": rights, "ep": ep, "h": 0 if (x.lower() == "p" or cap) else p["h"] + 1,
+            "f": p["f"] + (1 if c == "b" else 0)}
+
+
+def sf_legal(p):
+	""
+	c = p["w"]; them = "b" if c == "w" else "w"; out = []
+	for m in _sf_pseudo(p):
+		n = sf_ziehe(p, m)
+		if not sf_angegriffen(n["b"], _sf_koenig(n["b"], c), them):
+			out.append(m)
+	return out
+
+
+def sf_uci(m):
+	return _sf_name(m[0]) + _sf_name(m[1]) + m[2]
+
+
+def sf_schluessel(p):
+	""
+	return "".join(x or "." for i, x in enumerate(p["b"]) if not i & 0x88) + p["w"] + p["c"] + str(p["ep"])
+
+
+def sf_material_fehlt(p):
+	""
+	n, cnt, farben = 0, {}, []
+	for s in range(128):
+		if s & 0x88 or p["b"][s] is None:
+			continue
+		x = p["b"][s].lower(); n += 1; cnt[x] = cnt.get(x, 0) + 1
+		if x == "b":
+			farben.append(((s >> 4) + (s & 7)) % 2)
+	if n == 2:
+		return True
+	if n == 3 and (cnt.get("b") == 1 or cnt.get("n") == 1):
+		return True
+	if n == cnt.get("b", 0) + 2 and (sum(farben) == 0 or sum(farben) == len(farben)):
+		return True
+	return False
+
+
+def sf_partie(start, zuege):
+	""
+	p = sf_fen_lesen(start)
+	keys = {sf_schluessel(p): 1}
+	leg = sf_legal(p)
+	for u in zuege:
+		m = next((m for m in leg if sf_uci(m) == u), None)
+		if m is None:
+			raise ValueError("illegal " + str(u)[:8])
+		p = sf_ziehe(p, m)
+		k = sf_schluessel(p); keys[k] = keys.get(k, 0) + 1
+		leg = sf_legal(p)
+	return p, keys, leg
+
+
+def sf_ende_regeln(p, keys, leg):
+	""
+	if not leg:
+		return {"art": "matt", "sieger": "b" if p["w"] == "w" else "w"} if sf_schach(p) else {"art": "patt", "sieger": None}
+	if sf_material_fehlt(p):
+		return {"art": "material", "sieger": None}
+	if keys.get(sf_schluessel(p), 0) >= 3:
+		return {"art": "wiederholung", "sieger": None}
+	if p["h"] >= 100:
+		return {"art": "50zuege", "sieger": None}
+	return None
+
+
+def sf_perft(p, d):
+	if d == 0:
+		return 1
+	return sum(sf_perft(sf_ziehe(p, m), d - 1) for m in sf_legal(p)) if d > 1 else len(sf_legal(p))
+
+
+
+def _sf_hash(t):
+	return hashlib.sha256(str(t).encode()).hexdigest()
+
+
+def _sf_datei():
+	return os.path.join(DATA_DIR, SF_DATEI)
+
+
+def _sf_speichern():
+	try:
+		keep = ("code", "nr", "erstellt", "t", "startFen", "zuege", "ende", "sitze", "anfrage", "hilfe", "t_ende")
+		d = {"v": 1, "spiele": {k: {x: G[x] for x in keep if x in G} for k, G in SF["spiele"].items()}}
+		tmp = _sf_datei() + ".tmp"
+		with open(tmp, "w", encoding="utf-8") as f:
+			json.dump(d, f)
+		os.replace(tmp, _sf_datei())
+	except (OSError, TypeError, ValueError):
+		pass
+
+
+def _sf_laden():
+	if SF["geladen"]:
+		return
+	SF["geladen"] = True
+	try:
+		with open(_sf_datei(), encoding="utf-8") as f:
+			d = json.load(f)
+		for k, G in (d.get("spiele") or {}).items():
+			if not (isinstance(G, dict) and re.fullmatch("[%s]{4}" % SF_ABC, str(k))):
+				continue
+			G["code"] = k
+			G["seq"] = secrets.randbelow(10 ** 9)
+			G["posts"] = {"w": [], "b": []}; G["zs"] = {}
+			if _sf_neu_rechnen(G):
+				SF["spiele"][k] = G
+	except (OSError, ValueError, TypeError, AttributeError):
+		pass
+
+
+def _sf_neu_rechnen(G):
+	""
+	try:
+		G["_p"], G["_k"], G["_l"] = sf_partie(G.get("startFen") or SF_START, list(G.get("zuege") or []))
+		return True
+	except (ValueError, TypeError, KeyError, IndexError):
+		return False
+
+
+def _sf_bump(G, speichern=True):
+	G["seq"] = (G.get("seq", 0) + 1) % 10 ** 9
+	G["t"] = time.time()
+	if speichern:
+		_sf_speichern()
+	SF["cond"].notify_all()
+
+
+def _sf_aufraeumen(now=None):
+	""
+	now = now or time.time(); weg = []
+	for k, G in SF["spiele"].items():
+		if now - G.get("t", 0) > SF_GRENZEN["frist"] or (G.get("ende") and now - G.get("t_ende", now) > SF_GRENZEN["nach_ende"]):
+			weg.append(k)
+	for k in weg:
+		SF["spiele"].pop(k, None)
+	if weg:
+		_sf_speichern(); SF["cond"].notify_all()
+	return weg
+
+
+def _sf_grenze(liste, n, s, now):
+	liste[:] = [x for x in liste if now - x < s]
+	if len(liste) >= n:
+		return False
+	liste.append(now)
+	return True
+
+
+def _sf_ip_ok(ip, art, now, zaehlen=True):
+	n, s = SF_GRENZEN[art]
+	L = SF["ip"].setdefault(art + "|" + str(ip), [])
+	L[:] = [x for x in L if now - x < s]
+	if len(L) >= n:
+		return False
+	if zaehlen:
+		L.append(now)
+	if len(SF["ip"]) > 2000:
+		SF["ip"] = {k: v for k, v in SF["ip"].items() if v and now - v[-1] < 900}
+	return True
+
+
+def _sf_sitz(G, token):
+	""
+	if not token:
+		return ""
+	h = _sf_hash(token)
+	import hmac
+	for c in ("w", "b"):
+		if G["sitze"][c].get("h") and hmac.compare_digest(G["sitze"][c]["h"], h):
+			return c
+	return None
+
+
+def _sf_status(G):
+	return "ende" if G.get("ende") else "laeuft" if G["sitze"]["w"].get("h") and G["sitze"]["b"].get("h") else "warte"
+
+
+def sf_sicht(G, sitz, now=None):
+	""
+	now = now or time.time()
+	p = G["_p"]
+	G["zs"] = {k: v for k, v in G.get("zs", {}).items() if now - v < SF_GRENZEN["online"]}
+	return {"ok": True, "code": G["code"], "nr": G["nr"], "seq": G["seq"], "startFen": G["startFen"], "zuege": list(G["zuege"]),
+            "fen": sf_fen(p), "amZug": p["w"], "ende": G.get("ende"), "sitz": sitz or "zuschauer", "status": _sf_status(G),
+            "sitze": {c: {"da": bool(G["sitze"][c].get("h")), "online": bool(G["sitze"][c].get("h")) and now - G["sitze"][c].get("t", 0) < SF_GRENZEN["online"]}
+                      for c in ("w", "b")},
+            "anfrage": G.get("anfrage"), "hilfe": G.get("hilfe"), "zuschauer": len(G["zs"])}
+
+
+def _sf_neues_spiel(farbe, now):
+	while True:
+		code = "".join(secrets.choice(SF_ABC) for _ in range(4))
+		if code not in SF["spiele"]:
+			break
+	if farbe not in ("w", "b"):
+		farbe = secrets.choice("wb")
+	tok = secrets.token_urlsafe(18)
+	G = {"code": code, "nr": 1, "erstellt": now, "t": now, "startFen": SF_START, "zuege": [], "ende": None,
+         "sitze": {"w": {}, "b": {}}, "anfrage": None, "hilfe": {"w": {}, "b": {}}, "seq": secrets.randbelow(10 ** 9),
+         "posts": {"w": [], "b": []}, "zs": {}}
+	G["sitze"][farbe] = {"h": _sf_hash(tok), "t": now}
+	_sf_neu_rechnen(G)
+	return G, tok, farbe
+
+
+def _sf_platz_machen(now):
+	""
+	if len(SF["spiele"]) < SF_GRENZEN["spiele"]:
+		return True
+	ende = sorted((G["t"], k) for k, G in SF["spiele"].items() if G.get("ende"))
+	idle = sorted((G["t"], k) for k, G in SF["spiele"].items() if now - G["t"] > SF_GRENZEN["idle_weg"])
+	for _t, k in ende + idle:
+		SF["spiele"].pop(k, None)
+		if len(SF["spiele"]) < SF_GRENZEN["spiele"]:
+			return True
+	return False
+
+
+def _sf_zurueck(G, von):
+	""
+	n = len(G["zuege"]); p = G["_p"]
+	k = 1 if p["w"] != von else 2
+	if n < k:
+		return False
+	G["zuege"] = G["zuege"][:n - k]
+	_sf_neu_rechnen(G)
+	return True
+
+
+def _sf_eigene_zuege(G, c):
+	start_w = G["startFen"].split()[1] == "w"
+	return sum(1 for i in range(len(G["zuege"])) if ("w" if (i % 2 == 0) == start_w else "b") == c)
+
+
+def _sf_ausfuehren(G, art, von, now):
+	""
+	if art == "remis":
+		G["ende"] = {"art": "einigung", "sieger": None}; G["t_ende"] = now
+	elif art == "zurueck":
+		_sf_zurueck(G, von)
+	elif art == "revanche":
+		G["sitze"] = {"w": G["sitze"]["b"], "b": G["sitze"]["w"]}
+		G["hilfe"] = {"w": dict(G["hilfe"].get("b") or {}, tipps=0), "b": dict(G["hilfe"].get("w") or {}, tipps=0)}
+		G["nr"] += 1; G["zuege"] = []; G["ende"] = None; G.pop("t_ende", None); G["startFen"] = SF_START
+		_sf_neu_rechnen(G)
+	G["anfrage"] = None
+
+
+def sf_api(op, method, args, d, ip="?", warten=True):
+	""
+	now = time.time()
+	args = args or {}; d = d if isinstance(d, dict) else {}
+	if (method == "POST") != (op in SF_OPS_POST) or op not in SF_OPS_POST + SF_OPS_GET:
+		return 404, {"ok": False, "fehler": "unbekannt"}
+	src = d if method == "POST" else args
+	code = re.sub(r"[^A-Z0-9]", "", str(src.get("code") or "").upper())[:8]
+	token = str(src.get("token") or "")[:64]
+	with SF["cond"]:
+		_sf_laden(); _sf_aufraeumen(now)
+		if op == "info":
+			return 200, {"ok": True, "offen": len(SF["spiele"]), "max": SF_GRENZEN["spiele"]}
+		if op == "neu":
+			if not _sf_ip_ok(ip, "neu_ip", now):
+				return 429, {"ok": False, "fehler": "zu_oft"}
+			if not _sf_platz_machen(now):
+				return 429, {"ok": False, "fehler": "voll"}
+			G, tok, farbe = _sf_neues_spiel(str(d.get("farbe") or ""), now)
+			SF["spiele"][G["code"]] = G
+			_sf_bump(G)
+			return 200, dict(sf_sicht(G, farbe, now), token=tok)
+		if not _sf_ip_ok(ip, "falsch_ip", now, zaehlen=False):
+			return 429, {"ok": False, "fehler": "zu_oft"}
+		G = SF["spiele"].get(code)
+		if G is None:
+			_sf_ip_ok(ip, "falsch_ip", now)
+			return 404, {"ok": False, "fehler": "weg"}
+		sitz = _sf_sitz(G, token)
+		if sitz is None:
+			_sf_ip_ok(ip, "falsch_ip", now)
+			return 403, {"ok": False, "fehler": "token"}
+		if op == "qr":
+			u = str(args.get("u") or "")
+			from urllib.parse import urlsplit
+			try:
+				x = urlsplit(u)
+			except ValueError:
+				x = None
+			if not (x and x.scheme in ("http", "https") and x.netloc and "@" not in x.netloc and not x.query and not x.fragment and len(u) < 300
+                    and re.fullmatch(r"(/p/[A-Za-z0-9_\-]{1,64}|/spiele)?/(g|games)/schach/(index\.html)?", x.path)):
+				return 400, {"ok": False, "fehler": "adresse"}
+			return 200, (qr_svg(sf_qr_text(u, G["code"])).encode("utf-8"), "image/svg+xml")
+		if op == "beitreten":
+			if not sitz:
+				frei = [c for c in ("w", "b") if not G["sitze"][c].get("h")]
+				if frei and not G.get("ende"):
+					tok = secrets.token_urlsafe(18)
+					G["sitze"][frei[0]] = {"h": _sf_hash(tok), "t": now}
+					_sf_bump(G)
+					return 200, dict(sf_sicht(G, frei[0], now), token=tok)
+				G.setdefault("zs", {})[_sf_hash(ip)[:12]] = now
+				return 200, dict(sf_sicht(G, "", now), token="")
+			G["sitze"][sitz]["t"] = now
+			return 200, dict(sf_sicht(G, sitz, now), token=token)
+		if op == "zustand":
+			if sitz:
+				G["sitze"][sitz]["t"] = now
+			else:
+				G.setdefault("zs", {})[_sf_hash(ip)[:12]] = now
+			try:
+				seq = int(args.get("seq", -1))
+			except (TypeError, ValueError):
+				seq = -1
+			if warten and str(args.get("warte") or "") == "1" and seq == G["seq"] and SF["warter"] < SF_GRENZEN["warter"]:
+				end = now + SF_GRENZEN["warten"]; SF["warter"] += 1
+				try:
+					while G["seq"] == seq and time.time() < end and SF["spiele"].get(code) is G:
+						SF["cond"].wait(min(1.0, end - time.time()))
+				finally:
+					SF["warter"] -= 1
+				if SF["spiele"].get(code) is not G:
+					return 404, {"ok": False, "fehler": "weg"}
+				sitz = _sf_sitz(G, token) or ""
+				if sitz:
+					G["sitze"][sitz]["t"] = time.time()
+			return 200, sf_sicht(G, sitz)
+
+		if not sitz:
+			return 403, {"ok": False, "fehler": "zuschauer"}
+		G["sitze"][sitz]["t"] = now
+		n_, s_ = SF_GRENZEN["posts"]
+		if not _sf_grenze(G.setdefault("posts", {}).setdefault(sitz, []), n_, s_, now):
+			return 429, {"ok": False, "fehler": "zu_oft", "v": sf_sicht(G, sitz, now)}
+		if op == "zug":
+			uci = str(d.get("uci") or "")
+			try:
+				n = int(d.get("n", -1))
+			except (TypeError, ValueError):
+				n = -1
+			if n == len(G["zuege"]) - 1 and n >= 0 and G["zuege"][n] == uci and G["_p"]["w"] != sitz:
+				return 200, sf_sicht(G, sitz, now)
+			fehler = ("ende" if G.get("ende") else "warte" if _sf_status(G) != "laeuft" else "nicht_dran" if G["_p"]["w"] != sitz
+                      else "nicht_synchron" if n != len(G["zuege"]) else "")
+			if not fehler:
+				m = next((m for m in G["_l"] if sf_uci(m) == uci), None) if re.fullmatch(r"[a-h][1-8][a-h][1-8][qrbn]?", uci) else None
+				if m is None:
+					fehler = "illegal"
+			if fehler:
+				return 409, {"ok": False, "fehler": fehler, "v": sf_sicht(G, sitz, now)}
+			G["_p"] = sf_ziehe(G["_p"], m); G["zuege"].append(uci)
+			k = sf_schluessel(G["_p"]); G["_k"][k] = G["_k"].get(k, 0) + 1
+			G["_l"] = sf_legal(G["_p"])
+			G["anfrage"] = None
+			e = sf_ende_regeln(G["_p"], G["_k"], G["_l"])
+			if e:
+				G["ende"] = e; G["t_ende"] = now
+			_sf_bump(G)
+			return 200, sf_sicht(G, sitz, now)
+		art = str(d.get("art") or "")
+		ander = "b" if sitz == "w" else "w"
+		A = G.get("anfrage")
+		fehler = ""
+		if art == "hilfe":
+			h = G["hilfe"].setdefault(sitz, {})
+			for k_ in ("lern", "balken"):
+				if isinstance(d.get(k_), bool):
+					h[k_] = d[k_]
+			if d.get("tipp") is True:
+				h["tipps"] = min(999, int(h.get("tipps") or 0) + 1)
+		elif art == "aufgeben":
+			if G.get("ende") or _sf_status(G) != "laeuft":
+				fehler = "ende" if G.get("ende") else "warte"
+			else:
+				G["ende"] = {"art": "aufgabe", "sieger": ander}; G["t_ende"] = now; G["anfrage"] = None
+		elif art == "abbrechen":
+			if G["sitze"][ander].get("h"):
+				fehler = "laeuft"
+			else:
+				SF["spiele"].pop(code, None); _sf_speichern(); SF["cond"].notify_all()
+				return 200, {"ok": True, "weg": True}
+		elif art in ("remis", "zurueck", "revanche"):
+			ok_ = (not G.get("ende") and _sf_status(G) == "laeuft") if art != "revanche" else bool(G.get("ende")) and G["sitze"][ander].get("h")
+			if art == "zurueck" and ok_:
+				ok_ = _sf_eigene_zuege(G, sitz) > 0
+			if not ok_:
+				fehler = "geht_nicht"
+			elif A and A.get("von") == ander and A.get("art") == art:
+				_sf_ausfuehren(G, art, ander, now)
+			elif A and A.get("von") == ander:
+				fehler = "offen"
+			else:
+				G["anfrage"] = {"art": art, "von": sitz, "nr": len(G["zuege"])}
+		elif art == "annehmen":
+			if not A or A.get("von") != ander or (A["art"] != "revanche" and (G.get("ende") or A.get("nr") != len(G["zuege"]))):
+				fehler = "keine"
+			else:
+				_sf_ausfuehren(G, A["art"], ander, now)
+		elif art in ("ablehnen", "zurueckziehen"):
+			if A and A.get("von") == (ander if art == "ablehnen" else sitz):
+				G["anfrage"] = None
+		else:
+			return 400, {"ok": False, "fehler": "unbekannt"}
+		if fehler:
+			return 409, {"ok": False, "fehler": fehler, "v": sf_sicht(G, sitz, now)}
+		_sf_bump(G)
+		return 200, sf_sicht(G, _sf_sitz(G, token) or "", now)
+
+
+def sf_qr_text(u, code):
+	""
+	return u + "?fern=" + code
+
+
+def sf_ip(remote, fwd=""):
+	ip = remote or "?"
+	if ip in ("127.0.0.1", "::1") and fwd:
+		ip = fwd.split(",")[0].strip()[:45] or ip
+	return ip
+
+
+
+def sf_spieleport(h, method, path):
+	from urllib.parse import urlsplit, parse_qs
+	op = path[len("/schachfern/"):]
+	hdr = {"Cache-Control": "no-store", "X-Content-Type-Options": "nosniff"}
+	if method == "POST":
+		o = h.headers.get("Origin")
+		if o is not None:
+			try:
+				ok_ = urlsplit(o).netloc.lower() == (h.headers.get("Host") or "").lower()
+			except ValueError:
+				ok_ = False
+			if not ok_:
+				return _sf_antwort(h, 403, {"ok": False, "fehler": "fremd"}, hdr)
+		try:
+			n = int(h.headers.get("Content-Length") or 0)
+		except ValueError:
+			n = -1
+		if not 0 <= n <= 4096:
+			return _sf_antwort(h, 413, {"ok": False, "fehler": "gross"}, hdr)
+		try:
+			d = json.loads(h.rfile.read(n) or b"{}")
+		except ValueError:
+			d = {}
+		args = {}
+	else:
+		d = {}
+		args = {k: v[0] for k, v in parse_qs(urlsplit(h.path).query).items()}
+	try:
+		st, out = sf_api(op, method, args, d, h.client_address[0])
+	except Exception as e:
+		log_event("web", f"Schach (zwei Handys): {e.__class__.__name__}")
+		st, out = 500, {"ok": False, "fehler": "fehler"}
+	return _sf_antwort(h, st, out, hdr)
+
+
+def _sf_antwort(h, st, out, hdr):
+	if isinstance(out, tuple):
+		data, ct = out
+		hdr = dict(hdr, **{"Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; sandbox"})
+	else:
+		data, ct = json.dumps(out).encode("utf-8"), "application/json"
+	try:
+		h.send_response(st)
+		h.send_header("Content-Type", ct + ("; charset=utf-8" if ct == "application/json" else ""))
+		for k, v in hdr.items():
+			h.send_header(k, v)
+		h.send_header("Content-Length", str(len(data)))
+		h.end_headers(); h.wfile.write(data)
+	except (BrokenPipeError, ConnectionResetError):
+		pass
+
+
+GAMESRV_API["/schachfern/"] = sf_spieleport
+
+
+
+_smalltv_routes_639zzr = smalltv_routes
+
+
+def smalltv_routes(app, reply, body):
+	_smalltv_routes_639zzr(app, reply, body)
+	from flask import Response, request
+	import hmac
+
+	def run(op):
+		if request.method == "POST" and not 0 <= (request.content_length if request.content_length is not None else -1) <= 4096:
+			return Response(json.dumps({"ok": False, "fehler": "gross"}), 413, mimetype="application/json")
+		d = (request.get_json(force=True, silent=True) or {}) if request.method == "POST" else {}
+		if not isinstance(d, dict):
+			d = {}
+		st, out = sf_api(op, request.method, request.args.to_dict(), d, sf_ip(request.remote_addr, request.headers.get("X-Forwarded-For", "")))
+		if isinstance(out, tuple):
+			return Response(out[0], st, mimetype=out[1], headers={"Cache-Control": "no-store", "X-Content-Type-Options": "nosniff",
+                                                                  "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; sandbox"})
+		return Response(json.dumps(out), st, mimetype="application/json", headers={"Cache-Control": "no-store"})
+
+	zu = lambda: Response(json.dumps({"ok": False, "fehler": "zu"}), 404, mimetype="application/json", headers={"Cache-Control": "no-store"})
+
+	@app.route("/schachfern/<op>", methods=["GET", "POST"])
+	def schachfern_login(op):
+		return run(op)
+
+	@app.route("/p/<key>/schachfern/<op>", methods=["GET", "POST"])
+	def schachfern_gast(key, op):
+		if not (party_on() and hmac.compare_digest(str(PARTY.get("key") or ""), key)):
+			return zu()
+		return run(op)
+
+	@app.route("/spiele/schachfern/<op>", methods=["GET", "POST"])
+	def schachfern_spiele(op):
+		if not lan_guest_ip(request.remote_addr, request.headers.get("X-Forwarded-For", "") or request.headers.get("Forwarded", "")):
+			return zu()
+		return run(op)
+
+
+
+def sf_selftest():
+	p = sf_fen_lesen(SF_START)
+	assert sf_fen(p) == SF_START and sf_perft(p, 2) == 400, "rules: start position"
+	kiwi = sf_fen_lesen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1")
+	assert len(sf_legal(kiwi)) == 48 and sf_perft(kiwi, 2) == 2039, "rules: castling, en passant, promotion (Kiwipete)"
+	pp, kk, ll = sf_partie(SF_START, ["f2f3", "e7e5", "g2g4", "d8h4"])
+	assert sf_ende_regeln(pp, kk, ll) == {"art": "matt", "sieger": "b"}, "rules: fool's mate"
+	try:
+		sf_partie(SF_START, ["e2e5"]); assert False, "illegal move accepted"
+	except ValueError:
+		pass
+	assert sf_material_fehlt(sf_fen_lesen("8/8/8/8/8/8/5k2/4KB2 w - - 0 1")) and not sf_material_fehlt(sf_fen_lesen("8/8/8/8/8/8/5k2/4KR2 w - - 0 1"))
+	assert "/schachfern/zug" in PERM_POST["games"] and role_allows("kid", "/schachfern/zustand", "GET", {}) and role_allows("kid", "/schachfern/zug", "POST", {})
+	assert not role_allows("custom", "/schachfern/zug", "POST", {}, set()) and not role_allows("custom", "/schachfern/zustand", "GET", {}, set())
+	assert sf_qr_text("http://pi:5003/g/schach/", "ACDE") == "http://pi:5003/g/schach/?fern=ACDE" and GAMESRV_API.get("/schachfern/") is sf_spieleport
+	return "chess for two phones: rules (perft start 400, Kiwipete 2039, mate), rights «games», games port address only /schachfern/"
+
+
+SELFTEST_EXTRA.append(("Chess for two phones: relay and rules (639zzr)", sf_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ERSTSTART_JS = _zd('639zzs_erststart/ERSTSTART_JS', "")
+
+_render_page_before_erststart = render_page
+
+
+def render_page(page, active):
+	""
+	out = _render_page_before_erststart(page, active)
+	if 'id="mw-queue"' in out:
+		return out
+	i = out.find("<body")
+	j = out.find(">", i) if i >= 0 else -1
+	return out[:j + 1] + ERSTSTART_JS + out[j + 1:] if j >= 0 else out
 if __name__ == "__main__":
 	ap = argparse.ArgumentParser()
 	ap.add_argument("--cam", type=int, default=None, help="USB camera number (same as --source usb:N)")

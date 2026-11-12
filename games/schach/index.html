@@ -7,7 +7,7 @@
 <title>Schach</title>
 <!-- Schach für MoveEye. Als Ganzes GPL-3.0-or-later (wegen Brett und Motor), Einzelheiten in LIESMICH.txt und lizenzen/.
      Aufbau: index.html (Seite, Aussehen) · partie.js (Regeln und Partie, ohne Bildschirm) · motor.js (Rechner im Hintergrund)
-     · motor-js-worker.js (Ersatz-Rechner ohne WebAssembly) · schach.js (Ablauf, Spieler, Bedienung, Ton, Speichern)
+     · motor-js-worker.js (Ersatz-Rechner ohne WebAssembly) · fern.js (zwei Handys über MoveEye) · schach.js (Ablauf, Spieler, Bedienung, Ton, Speichern)
      · lib/ (unveränderte Bausteine: Brett, Regeln, Motoren, Figuren). Alles liegt im Ordner, nichts kommt aus dem Internet. -->
 <link rel="stylesheet" href="lib/chessground.base.css">
 <link rel="stylesheet" href="lib/chessground.brown.css">
@@ -125,6 +125,31 @@ select.w option{background:#16212f;color:#e8eef6}
 .ueber b{color:var(--txt)}
 .ueber ul{margin:6px 0;padding-left:18px}
 .ueber li{margin:2px 0}
+/* ---- zwei Handys (fern.js) ---- */
+.seg button small{display:block;font-size:11.5px;font-weight:600;color:var(--mut);margin-top:1px}
+.seg button{line-height:1.12}
+#fern{flex:0 0 auto;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;column-gap:8px;row-gap:1px;min-height:24px;padding:2px 4px 0;font-size:13.5px;font-weight:700;min-width:0}
+#fernIch{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.verb{flex:0 0 auto;margin-left:auto;display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:700;color:var(--mut);white-space:nowrap}
+.verb::before{content:"";width:8px;height:8px;border-radius:50%;background:#5f7189}
+.verb.ok{color:#9fe3b3}.verb.ok::before{background:var(--grn)}
+.verb.warte{color:#f3c983}.verb.warte::before{background:var(--amber)}
+.verb.weg{color:#ffb4ad}.verb.weg::before{background:var(--rot);animation:pk 1s infinite ease-in-out}
+#fernHilfe{flex:0 0 auto;padding:1px 4px 0;font-size:12.5px;line-height:1.25;font-weight:600;color:#f3c983}
+.fhin{font-size:13px!important;color:var(--mut)!important;margin:8px 0 6px!important}
+.ffeh{font-size:14px!important;color:#ffb4ad!important;font-weight:600;margin:6px 0 0!important}
+.kn.breit{width:100%;margin-top:2px}
+.codez{display:flex;gap:8px}
+.codez input{flex:1 1 auto;min-width:0;min-height:48px;border:2px solid #33435c;border-radius:10px;background:#223149;color:var(--txt);padding:0 12px;
+  font:800 24px/1 ui-monospace,Menlo,Consolas,monospace;letter-spacing:6px;text-transform:uppercase;-webkit-user-select:text;user-select:text}
+.codez input:focus{outline:none;border-color:var(--acc)}
+.codez input::placeholder{color:#5f7189;letter-spacing:1px;font-size:16px;font-weight:600}
+.codez .kn{flex:0 0 auto;padding:0 16px}
+.fcode{display:flex;align-items:center;gap:14px;margin:4px 0 6px}
+.fcode .code{flex:1 1 auto;text-align:center;font:800 46px/1 ui-monospace,Menlo,Consolas,monospace;letter-spacing:7px;color:#fff;background:#0e1621;border-radius:12px;padding:16px 4px 14px}
+.fcode img{flex:0 0 auto;width:132px;height:132px;border-radius:8px;background:#fff;image-rendering:pixelated}
+.klein{font-size:12px!important;color:var(--mut)!important;word-break:break-all;-webkit-user-select:text;user-select:text;margin:2px 0 6px!important}
+.warte{color:#f3c983!important;font-weight:700}
 .warn-s{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--amber);color:#0e1621;font-weight:900;margin-right:8px;vertical-align:-5px}
 </style>
 </head>
@@ -144,6 +169,8 @@ select.w option{background:#16212f;color:#e8eef6}
     <div class="sp" id="spUnten"><span class="nm"></span><span class="gs"></span><span class="pl"></span><span class="dk" hidden>überlegt <i></i><i></i><i></i></span></div>
   </div>
   <div id="rechts">
+    <div id="fern" hidden><span id="fernIch"></span><span id="fernVerb" class="verb"></span></div>
+    <div id="fernHilfe" hidden></div>
     <div id="status" role="status" aria-live="polite"></div>
     <div id="zuege" aria-label="Züge"></div>
     <div id="knoepfe">
@@ -162,13 +189,23 @@ select.w option{background:#16212f;color:#e8eef6}
 <div class="dlg dunkel" id="dNeu" hidden><div class="k">
   <h2>Neues Spiel</h2>
   <label class="f">Gegner</label>
-  <div class="seg" id="segGegner"><button type="button" data-w="motor">Computer</button><button type="button" data-w="mensch">Zu zweit</button></div>
-  <div id="nurMotor">
-    <label class="f">Deine Farbe</label>
+  <div class="seg" id="segGegner"><button type="button" data-w="motor">Computer</button><button type="button" data-w="mensch">Zu zweit<small>ein Gerät</small></button><button type="button" data-w="fern">Zwei Handys<small>je eines</small></button></div>
+  <div id="nurFarbe">
+    <label class="f" id="farbeTitel">Deine Farbe</label>
     <div class="seg" id="segFarbe"><button type="button" data-w="w">Weiss</button><button type="button" data-w="b">Schwarz</button><button type="button" data-w="zufall">Zufall</button></div>
+  </div>
+  <div id="nurMotor">
     <label class="f" for="selStufe">Stärke des Computers</label>
     <select class="w" id="selStufe"></select>
   </div>
+  <div id="nurFern" hidden>
+    <button class="kn haupt breit" id="bFernNeu" type="button">Neues Spiel erstellen</button>
+    <label class="f" for="fernCodeEin">Spiel beitreten – Code vom anderen Handy</label>
+    <div class="codez"><input id="fernCodeEin" type="text" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" enterkeyhint="go" placeholder="Code"><button class="kn haupt" id="bFernBei" type="button">Beitreten</button></div>
+    <p class="ffeh" id="fernFehler" hidden></p>
+    <p class="fhin">Jeder spielt auf seinem Handy, MoveEye vermittelt (gleiches WLAN oder Fernzugriff). Tipps und Lern-Modus sieht nur, wer sie nutzt – der Gegner sieht aber, dass sie an sind.</p>
+  </div>
+  <p class="fhin" id="fernVerlassen" hidden>Das laufende Spiel auf zwei Handys gilt dann als aufgegeben.</p>
   <button class="sch" id="schLernNeu" type="button"><span class="t">Lern-Modus<small>warnt freundlich vor groben Fehlern, bevor der Zug gilt</small></span><span class="s"></span></button>
   <div class="zl"><button class="kn" id="bNeuAbbr" type="button">Abbrechen</button><button class="kn haupt" id="bSpielen" type="button">Spielen</button></div>
 </div></div>
@@ -199,6 +236,24 @@ select.w option{background:#16212f;color:#e8eef6}
   <h2 id="endeTitel"></h2>
   <p id="endeText"></p>
   <div class="zl"><button class="kn" id="bEndeBrett" type="button">Brett ansehen</button><button class="kn haupt" id="bEndeNeu" type="button">Neues Spiel</button></div>
+</div></div>
+
+<!-- Zwei Handys: Spiel erstellt, warten auf den Gegner -->
+<div class="dlg dunkel" id="dFernWarte" hidden><div class="k">
+  <h2>Spiel erstellt</h2>
+  <p style="margin-bottom:4px">Code für das zweite Handy:</p>
+  <div class="fcode"><div class="code" id="fernCode">····</div><img id="fernQr" alt="QR-Code zum Beitreten"></div>
+  <p class="klein" id="fernLink"></p>
+  <p>Auf dem zweiten Handy: Schach öffnen → «Zwei Handys» → Code eintippen und «Beitreten». Oder den QR-Code scannen.</p>
+  <p class="warte" id="fernWarteText">Warte auf deinen Gegner …</p>
+  <div class="zl"><button class="kn" id="bFernAbbr" type="button">Spiel löschen</button><button class="kn haupt" id="bFernBrett" type="button">Brett ansehen</button></div>
+</div></div>
+
+<!-- Zwei Handys: Anfrage des Gegners (Remis, Zug zurück, Revanche) -->
+<div class="dlg" id="dAnfrage" hidden><div class="k">
+  <h2 id="anfrageTitel"></h2>
+  <p id="anfrageText"></p>
+  <div class="zl"><button class="kn" id="bAnfrageNein" type="button">Ablehnen</button><button class="kn haupt" id="bAnfrageJa" type="button">Annehmen</button></div>
 </div></div>
 
 <!-- Rückfrage (Aufgeben) -->
@@ -246,6 +301,7 @@ select.w option{background:#16212f;color:#e8eef6}
 <script src="lib/chessground.js"></script>
 <script src="partie.js"></script>
 <script src="motor.js"></script>
+<script src="fern.js"></script>
 <script src="schach.js"></script>
 <script>/* MoveEye: der eigene Zurück-Link («../») führt zur Spielesammlung von MoveEye (löst den Knopf «✕ Zurück» aus) */
 document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest("a");if(!a||a.closest("#mw-back"))return;var h=a.getAttribute("href");if(h!=="../"&&h!=="index.html")return;var b=document.querySelector("#mw-back a");if(b){e.preventDefault();e.stopPropagation();b.click()}},true);</script>

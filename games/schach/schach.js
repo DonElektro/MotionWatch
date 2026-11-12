@@ -4,17 +4,20 @@
    Aufbau (wichtig für später, z. B. zwei Handys über MoveEye):
      - Die Partie (partie.js) kennt nur Stellung und Züge. Sie ist als {startFen, zuege} speicher- und übertragbar.
      - Jede Seite hat einen «Spieler» mit derselben kleinen Schnittstelle:
-         art            "mensch" | "motor" | (später) "fern"
+         art            "mensch" | "motor" | "fern"
          amZug(spiel)   wird gerufen, wenn diese Seite dran ist; der Spieler liefert seinen Zug über spiel.ziehe(uci, art)
-         gegnerZog(uci, zustand)   (freiwillig) erfährt jeden Zug der anderen Seite – ein «Fern»-Spieler schickt ihn weiter
+         gegnerZog(uci, zustand, quelle)   (freiwillig) erfährt jeden Zug der anderen Seite – der «Fern»-Spieler schickt ihn weiter
          abbrechen()    (freiwillig) laufendes Überlegen / Warten beenden
      - spiel.ziehe(uci, quelle) ist der EINE Weg für jeden Zug, egal woher er kommt. Die Bedienung (Brett, Knöpfe) ruft
        nur diese Funktion und zeichnet danach den Zustand.
-   Hier gibt es bewusst keinen Netz-Code. */
+   Zwei Handys («Zwei Handys», ab GS-1.15): der Netz-Teil liegt in fern.js (Verbindung zu MoveEye); hier nur der Ablauf
+   (Abschnitt «Zwei Handys» unten): eigene Seite = MenschSpieler, Gegenseite = FernSpieler. Der Pi prüft jeden Zug und ist
+   massgebend; weicht die eigene Partie ab (Zug zurück angenommen, Revanche, verlorener Zug), wird sie aus seiner Zugliste
+   neu aufgebaut. Tipps und Lern-Modus rechnen nur auf diesem Handy; der Pi erfährt nur, DASS sie an sind (Hinweis für beide). */
 (function () {
   "use strict";
   var $ = function (id) { return document.getElementById(id); };
-  var P = window.Partie, Motor = window.Motor;
+  var P = window.Partie, Motor = window.Motor, Fern = window.Fern;
   var URLP = new URLSearchParams(location.search), TEST = URLP.get("test") === "1";
 
   /* ---------- Stärke-Stufen ----------
@@ -37,7 +40,7 @@
 
   /* ---------- Einstellungen und Speichern (läuft auch ohne Speicher) ---------- */
   var K_EINST = "moveeye-schach-einst", K_PARTIE = "moveeye-schach-partie";
-  var einst = { stufe: 3, farbe: "w", gegner: "motor", lern: true, ton: true, balken: true, zeit: 1000, autodrehen: false };
+  var einst = { stufe: 3, farbe: "w", gegner: "motor", lern: true, ton: true, balken: true, zeit: 1000, autodrehen: false, fernLern: false, fernBalken: false };
   function lies(k) { try { var t = localStorage.getItem(k); return t ? JSON.parse(t) : null; } catch (e) { return null; } }
   function schreib(k, o) { try { localStorage.setItem(k, JSON.stringify(o)); return true; } catch (e) { return false; } }
   function weg(k) { try { localStorage.removeItem(k); } catch (e) {} }
@@ -46,8 +49,8 @@
     if (!e || typeof e !== "object") return;
     if (e.stufe >= 1 && e.stufe <= STUFEN.length) einst.stufe = e.stufe | 0;
     if (["w", "b", "zufall"].indexOf(e.farbe) >= 0) einst.farbe = e.farbe;
-    if (e.gegner === "motor" || e.gegner === "mensch") einst.gegner = e.gegner;
-    ["lern", "ton", "balken", "autodrehen"].forEach(function (k) { if (typeof e[k] === "boolean") einst[k] = e[k]; });
+    if (e.gegner === "motor" || e.gegner === "mensch" || e.gegner === "fern") einst.gegner = e.gegner;
+    ["lern", "ton", "balken", "autodrehen", "fernLern", "fernBalken"].forEach(function (k) { if (typeof e[k] === "boolean") einst[k] = e[k]; });
     if ([300, 500, 1000, 2000, 3000].indexOf(e.zeit) >= 0) einst.zeit = e.zeit;
   })();
   function einstSpeichern() { schreib(K_EINST, einst); }
@@ -55,8 +58,11 @@
   /* ---------- Zustand des Spiels ---------- */
   var spiel = {
     partie: new P(), spieler: { w: new MenschSpieler(), b: new MotorSpieler() }, gegner: "motor", mensch: "w", stufe: 3,
-    drehung: "w", nr: 0, prueft: false, denkt: false, analyse: null, tippPfeil: null, tipps: 0
+    drehung: "w", nr: 0, prueft: false, denkt: false, analyse: null, tippPfeil: null, tipps: 0, fern: null
   };
+  /* Lern-Modus und Bewertungsbalken: bei «Zwei Handys» eigene Schalter (aus, bis man sie selbst einschaltet - Fairness) */
+  function lernAn(modus) { return (modus || spiel.gegner) === "fern" ? einst.fernLern : einst.lern; }
+  function balkenAn() { return spiel.gegner === "fern" ? einst.fernBalken : einst.balken; }
   var cg = null, tonZaehler = {}, letzteWarnung = null;
 
   /* ---------- Spieler ---------- */
@@ -78,6 +84,11 @@
     });
   };
   MotorSpieler.prototype.abbrechen = function () { Motor.stopp(); };
+
+  /** die Gegenseite auf dem anderen Handy: ihre Züge kommen von MoveEye (fernZustand), die eigenen gehen dorthin */
+  function FernSpieler() { this.art = "fern"; }
+  FernSpieler.prototype.amZug = function () { zeichne(); };
+  FernSpieler.prototype.gegnerZog = function (uci, z, quelle) { if (quelle !== "fern" && spiel.fern) fernSende(uci, z.zugNr - 1); };
 
   /** Zug des Computers für eine Stufe: UCI, oder null wenn abgebrochen / kein Motor (der Aufrufer zieht dann zufällig) */
   function motorZug(partie, stufe, zeit) {
@@ -107,7 +118,7 @@
     }
     partieSpeichern();
     var anderer = spiel.spieler[vorher === "w" ? "b" : "w"];
-    if (anderer && anderer.gegnerZog) try { anderer.gegnerZog(uci, z); } catch (e) {}
+    if (anderer && anderer.gegnerZog) try { anderer.gegnerZog(uci, z, quelle); } catch (e) {}
     if (z.ende) { zeichne(z); endeZeigen(z); balkenEnde(z.ende); }
     else naechster();
     return true;
@@ -124,14 +135,21 @@
   function starte(o) {
     abbrechen();
     spiel.nr++; spiel.denkt = false; spiel.prueft = false; spiel.analyse = null; spiel.tippPfeil = null; spiel.tipps = 0; letzteWarnung = null;
-    spiel.gegner = o.gegner === "mensch" ? "mensch" : "motor";
+    if (Motor.name) infoZeile();
+    spiel.gegner = o.gegner === "mensch" || o.gegner === "fern" ? o.gegner : "motor";
+    if (spiel.gegner !== "fern") fernAus();
     spiel.mensch = o.farbe === "b" ? "b" : "w";
     spiel.stufe = o.stufe || einst.stufe;
     spiel.partie = o.partie || new P(o.fen);
-    spiel.spieler.w = spiel.gegner === "motor" && spiel.mensch === "b" ? new MotorSpieler() : new MenschSpieler();
-    spiel.spieler.b = spiel.gegner === "motor" && spiel.mensch === "w" ? new MotorSpieler() : new MenschSpieler();
-    spiel.drehung = o.drehung || (spiel.gegner === "motor" ? spiel.mensch : "w");
-    if (!o.partie) Motor.neuesSpiel();
+    if (spiel.gegner === "fern") {
+      spiel.spieler.w = !o.zuschauer && spiel.mensch === "w" ? new MenschSpieler() : new FernSpieler();
+      spiel.spieler.b = !o.zuschauer && spiel.mensch === "b" ? new MenschSpieler() : new FernSpieler();
+    } else {
+      spiel.spieler.w = spiel.gegner === "motor" && spiel.mensch === "b" ? new MotorSpieler() : new MenschSpieler();
+      spiel.spieler.b = spiel.gegner === "motor" && spiel.mensch === "w" ? new MotorSpieler() : new MenschSpieler();
+    }
+    spiel.drehung = o.drehung || (spiel.gegner === "mensch" ? "w" : spiel.mensch);
+    if (!o.partie || !spiel.partie.zuege.length) Motor.neuesSpiel();
     alleZu();
     partieSpeichern();
     var z = spiel.partie.zustand();
@@ -141,6 +159,7 @@
 
   function partieSpeichern() {
     var p = spiel.partie;
+    if (spiel.gegner === "fern") return;                           // zwei Handys: die Partie liegt auf MoveEye (fern.js merkt Code + Sitz)
     if (!p.zuege.length && p.startFen === P.START) { weg(K_PARTIE); return; }
     schreib(K_PARTIE, { v: 1, partie: p.speichern(), gegner: spiel.gegner, mensch: spiel.mensch, stufe: spiel.stufe, drehung: spiel.drehung });
   }
@@ -151,7 +170,7 @@
 
   function zeichne(z) {
     z = z || spiel.partie.zustand();
-    var frei = !z.ende && menschDran() && !spiel.prueft, d = new Map();
+    var frei = !z.ende && menschDran() && !spiel.prueft && fernFrei(), d = new Map();
     if (frei) Object.keys(z.ziele).forEach(function (k) { d.set(k, z.ziele[k]); });
     cg.set({
       fen: z.fen, orientation: farbe(spiel.drehung), turnColor: farbe(z.amZug), lastMove: z.letzter || [],
@@ -170,6 +189,7 @@
     [[$("spOben"), oben], [$("spUnten"), unten]].forEach(function (x) {
       var el = x[0], c = x[1], gegn = c === "w" ? "b" : "w", name, sp = spiel.spieler[c];
       if (spiel.gegner === "mensch") name = c === "w" ? "Weiss" : "Schwarz";
+      else if (spiel.gegner === "fern") name = fernName(c);
       else name = sp && sp.art === "motor" ? "Computer · " + STUFEN[spiel.stufe - 1].name : "Du (" + (c === "w" ? "Weiss" : "Schwarz") + ")";
       el.querySelector(".nm").textContent = name;
       var h = "", vor = "";
@@ -199,6 +219,14 @@
 
   function endeTexte(e) {
     var zweit = spiel.gegner === "mensch", gew = e.sieger === "w" ? "Weiss" : "Schwarz", ich = e.sieger === spiel.mensch;
+    if (e.art === "einigung") return ["Remis – unentschieden", "Ihr habt euch auf Remis geeinigt."];
+    if (spiel.gegner === "fern") {
+      var sz = fernSitz();
+      if (sz !== "w" && sz !== "b") zweit = true;
+      else if (e.art === "matt") return e.sieger === sz ? ["Schachmatt – du hast gewonnen!", "Glückwunsch! Der König deines Gegners kann nicht mehr entkommen."]
+        : ["Schachmatt – dein Gegner gewinnt", "Dein König kann dem Schach nicht mehr entkommen. Mit «Revanche» spielt ihr nochmals – mit getauschten Farben."];
+      else if (e.art === "aufgabe") return e.sieger === sz ? ["Dein Gegner hat aufgegeben", "Du gewinnst die Partie."] : ["Aufgegeben", "Du hast aufgegeben – dein Gegner gewinnt."];
+    }
     if (e.art === "matt") {
       if (zweit) return ["Schachmatt – " + gew + " gewinnt!", "Der König kann dem Schach nicht mehr entkommen."];
       return ich ? ["Schachmatt – du hast gewonnen!", "Glückwunsch! Der König des Computers kann nicht mehr entkommen."]
@@ -222,7 +250,9 @@
     else if (statusFest && statusFest.nr === spiel.nr) { t = statusFest.text; kl = "tipp"; }
     else {
       var wer = z.amZug === "w" ? "Weiss" : "Schwarz";
-      if (spiel.gegner === "mensch") t = z.schach ? "Schach! " + wer + " muss den König retten." : wer + " ist am Zug.";
+      var fz = spiel.gegner === "fern" ? fernStatusText(z) : null;
+      if (fz) t = fz;
+      else if (spiel.gegner === "mensch") t = z.schach ? "Schach! " + wer + " muss den König retten." : wer + " ist am Zug.";
       else if (menschDran()) t = z.schach ? "Schach! Dein König ist bedroht." : "Du bist am Zug.";
       else t = z.schach ? "Schach! Der Computer überlegt …" : "Der Computer überlegt …";
       if (z.schach) kl = "schach";
@@ -233,16 +263,27 @@
   function knoepfe(z) {
     var eigene = spiel.gegner === "mensch" ? z.zugNr : z.zuege.filter(function (_, i) {
       return ((z.startFen.split(" ")[1] === "b" ? i + 1 : i) % 2 === 0 ? "w" : "b") === spiel.mensch; }).length;
-    $("bZurueck").disabled = !eigene || spiel.prueft;
-    $("bTipp").disabled = !!z.ende || !menschDran() || spiel.prueft;
-    $("bAufgeben").disabled = !!z.ende || !z.zugNr;
-    $("bLern").classList.toggle("an", einst.lern); $("bLern").setAttribute("aria-pressed", einst.lern ? "true" : "false");
-    $("balken").hidden = !einst.balken;
+    var fs = spiel.gegner === "fern" ? fernSitz() : "", spielt = fs === "w" || fs === "b";
+    var lauf = spielt && !z.ende && !!spiel.fern.v && spiel.fern.v.status === "laeuft", offen = spielt && !!spiel.fern.v && !!spiel.fern.v.anfrage;
+    $("bZurueck").textContent = spielt ? "Zug zurück?" : "Zug zurück";
+    $("bDrehen").textContent = spielt ? "Remis anbieten" : "Brett drehen";
+    if (spiel.gegner === "fern") {
+      $("bZurueck").disabled = !lauf || !eigene || offen;
+      $("bDrehen").disabled = spielt && (!lauf || offen);
+      $("bTipp").disabled = !lauf || !menschDran() || spiel.prueft;
+      $("bAufgeben").disabled = !lauf;
+    } else {
+      $("bZurueck").disabled = !eigene || spiel.prueft; $("bDrehen").disabled = false;
+      $("bTipp").disabled = !!z.ende || !menschDran() || spiel.prueft;
+      $("bAufgeben").disabled = !!z.ende || !z.zugNr;
+    }
+    $("bLern").classList.toggle("an", lernAn()); $("bLern").setAttribute("aria-pressed", lernAn() ? "true" : "false");
+    $("balken").hidden = !balkenAn();
   }
 
   function infoZeile() {
     var t = Motor.name;
-    if (spiel.analyse && spiel.analyse.text && einst.balken) t = spiel.analyse.text + " · " + t;
+    if (spiel.analyse && spiel.analyse.text && balkenAn()) t = spiel.analyse.text + " · " + t;
     $("info").textContent = t; $("ueberMotor").textContent = "Aktiver Motor: " + Motor.name;
   }
 
@@ -260,7 +301,7 @@
   /** Stellung des Menschen am Zug kurz mit voller Stärke ansehen: Grundlage für Balken, Tipp und Lern-Modus */
   function analysiere() {
     var p = spiel.partie, nr = spiel.nr;
-    if (!(einst.balken || einst.lern) || !Motor.bereit || p.ende()) return Promise.resolve(null);
+    if (!(balkenAn() || lernAn()) || !Motor.bereit || p.ende()) return Promise.resolve(null);
     if (spiel.analyse && spiel.analyse.zugNr === p.zuege.length) return Promise.resolve(spiel.analyse);
     return Motor.suche(auftrag(p, Math.min(350, einst.zeit))).then(function (r) {
       if (!r || !r.zug || nr !== spiel.nr) return null;
@@ -290,6 +331,7 @@
       spiel.tippPfeil = [von, nach]; spiel.tipps++;
       statusFest = { nr: nr, text: "Tipp: " + (f ? P.NAME[f.type] : "Figur") + " von " + feldName(von) + " nach " + feldName(nach) + (ziel ? " (schlägt " + P.ARTIKEL_AKK[ziel.type] + ")" : "") + "." };
       ton("tipp"); zeichne(); infoZeile();
+      if (spiel.gegner === "fern") fernHilfeMelden({ tipp: true });
       return a;
     });
   }
@@ -303,7 +345,7 @@
        sonst    neutral «kein guter Zug» */
   function lernPruefung(uci) {
     var p = spiel.partie, nr = spiel.nr;
-    if (!einst.lern || !Motor.bereit) return Promise.resolve(null);
+    if (!lernAn() || !Motor.bereit) return Promise.resolve(null);
     var probe = P.laden(p.speichern());
     if (!probe || !probe.zug(uci)) return Promise.resolve(null);
     var basisP = spiel.analyse && spiel.analyse.zugNr === p.zuege.length ? Promise.resolve(spiel.analyse) : Motor.suche(auftrag(p, 250));
@@ -339,7 +381,7 @@
       if (nr !== spiel.nr) return;
       if (u === null) { zeichne(); return; }                    // abgebrochen: Bauer zurück
       var uci = von + nach + u;
-      if (!einst.lern || !Motor.bereit) { if (!spiel.ziehe(uci, "mensch")) zeichne(); return; }
+      if (!lernAn() || !Motor.bereit) { if (!spiel.ziehe(uci, "mensch")) zeichne(); return; }
       spiel.prueft = true; statusZeile(spiel.partie.zustand()); knoepfe(spiel.partie.zustand());
       lernPruefung(uci).then(function (w) {
         if (nr !== spiel.nr) return;
@@ -356,7 +398,7 @@
   }
 
   /* ---------- Fenster ---------- */
-  var FENSTER = ["dNeu", "dWeiter", "dUmw", "dWarn", "dEnde", "dFrage", "dEinst", "dUeber"], wartend = {};
+  var FENSTER = ["dNeu", "dWeiter", "dUmw", "dWarn", "dEnde", "dFrage", "dEinst", "dUeber", "dFernWarte", "dAnfrage"], wartend = {};
   function auf(id) { $(id).hidden = false; }
   function zu(id) { $(id).hidden = true; if (wartend[id]) { var f = wartend[id]; wartend[id] = null; f(null); } }
   function alleZu() { FENSTER.forEach(zu); }
@@ -391,6 +433,8 @@
   function endeZeigen(z) {
     var t = endeTexte(z.ende);
     $("endeTitel").textContent = t[0]; $("endeText").textContent = t[1];
+    var fs = spiel.gegner === "fern" ? fernSitz() : "";
+    $("bEndeNeu").textContent = fs === "w" || fs === "b" ? "Revanche" : "Neues Spiel";
     setTimeout(function () { if (spiel.partie.ende() && spiel.partie.zuege.length === z.zugNr) auf("dEnde"); }, TEST ? 50 : 650);
   }
 
@@ -399,27 +443,41 @@
   var neuWahl = { gegner: "motor", farbe: "w" };
   function neuDialog() {
     neuWahl.gegner = einst.gegner; neuWahl.farbe = einst.farbe;
-    seg($("segGegner"), neuWahl.gegner); seg($("segFarbe"), neuWahl.farbe);
-    $("nurMotor").hidden = neuWahl.gegner !== "motor";
-    $("selStufe").value = String(einst.stufe); schalter($("schLernNeu"), einst.lern);
+    seg($("segFarbe"), neuWahl.farbe);
+    $("fernFehler").hidden = true;
+    gegnerWahl(neuWahl.gegner);
+    $("selStufe").value = String(einst.stufe);
     $("bNeuAbbr").hidden = !spiel.gestartet;
+    $("fernVerlassen").hidden = !fernLaeuft();
     alleZu(); auf("dNeu");
   }
   function einstDialog() {
     $("selStufe2").value = String(spiel.stufe); $("selZeit").value = String(einst.zeit);
     $("einstMotor").hidden = spiel.gegner !== "motor";
-    schalter($("schLern"), einst.lern); schalter($("schTon"), einst.ton); schalter($("schBalken"), einst.balken); schalter($("schDrehen"), einst.autodrehen);
+    schalter($("schLern"), lernAn()); schalter($("schTon"), einst.ton); schalter($("schBalken"), balkenAn()); schalter($("schDrehen"), einst.autodrehen);
     auf("dEinst");
   }
-  function lernSetzen(an) {
-    einst.lern = !!an; einstSpeichern();
-    schalter($("schLern"), einst.lern); schalter($("schLernNeu"), einst.lern);
+  function lernSetzen(an, modus) {
+    modus = modus || spiel.gegner;
+    if (modus === "fern") einst.fernLern = !!an; else einst.lern = !!an;
+    einstSpeichern();
+    schalter($("schLern"), lernAn()); schalter($("schLernNeu"), lernAn(modus));
     knoepfe(spiel.partie.zustand());
-    if (einst.lern && menschDran()) analysiere();
+    if (lernAn() && menschDran()) analysiere();
+    if (spiel.gegner === "fern" && modus === "fern") fernHilfeMelden();
+  }
+  function gegnerWahl(g) {                                     // «Neues Spiel»: Computer · Zu zweit (ein Gerät) · Zwei Handys
+    neuWahl.gegner = g; seg($("segGegner"), g);
+    $("nurMotor").hidden = g !== "motor"; $("nurFern").hidden = g !== "fern";
+    $("nurFarbe").hidden = g === "mensch"; $("bSpielen").hidden = g === "fern";
+    $("farbeTitel").textContent = g === "fern" ? "Deine Farbe (beim Erstellen)" : "Deine Farbe";
+    schalter($("schLernNeu"), lernAn(g));
+    if (g === "fern" && !Fern.basis()) fernFehlerZeigen(FERN_TEXT.kein_pi);
   }
 
   /* ---------- Knöpfe ---------- */
   function zugZurueck() {
+    if (spiel.gegner === "fern") { fernAnfrage("zurueck"); return; }
     var p = spiel.partie;
     if (!p.zuege.length || spiel.prueft) return;
     abbrechen(); alleZu();
@@ -436,13 +494,270 @@
     if (p.ende()) return;
     var c = spiel.gegner === "mensch" ? p.amZug() : spiel.mensch;
     $("frageTitel").textContent = "Aufgeben?";
-    $("frageText").textContent = spiel.gegner === "mensch" ? (c === "w" ? "Weiss" : "Schwarz") + " gibt die Partie auf?" : "Willst du diese Partie wirklich aufgeben?";
+    $("frageText").textContent = spiel.gegner === "mensch" ? (c === "w" ? "Weiss" : "Schwarz") + " gibt die Partie auf?"
+      : spiel.gegner === "fern" ? "Willst du diese Partie wirklich aufgeben? Dein Gegner gewinnt dann." : "Willst du diese Partie wirklich aufgeben?";
     frage("dFrage", { bFrageNein: false, bFrageJa: true }).then(function (ja) {
       if (!ja || p !== spiel.partie || p.ende()) return;
+      if (spiel.gegner === "fern") { fernAktion("aufgeben"); return; }
       abbrechen(); spiel.nr++; spiel.denkt = false;
       var z = p.aufgeben(c); partieSpeichern(); ton("remis"); zeichne(z); endeZeigen(z); balkenEnde(z.ende);
     });
   }
+
+  /* ---------- Zwei Handys (je eines; MoveEye vermittelt, fern.js) ----------
+     spiel.fern = {s: {code, token, sitz}, v: letzter Stand vom Pi, verb: "ok"|"weg", ausstehend: eigener Zug unterwegs {uci, n}} */
+  var FERN_TEXT = {
+    kein_pi: "«Zwei Handys» geht nur, wenn Schach über MoveEye geöffnet wurde (Spielecke oder Spiele-Link).",
+    netz: "Keine Verbindung zu MoveEye. Bist du im selben WLAN oder im Fernzugriff?",
+    voll: "Auf MoveEye sind schon zu viele Spiele offen. Bitte ein altes beenden oder später nochmals versuchen.",
+    zu_oft: "Zu viele Versuche – bitte eine Minute warten.",
+    weg: "Kein Spiel mit diesem Code. Stimmt er?",
+    zu: "Die Spielecke ist geschlossen – frag den Besitzer von MoveEye, ob er die Spiele freigibt.",
+    token: "Dieses Handy gehört nicht mehr zu diesem Spiel.",
+    nicht_dran: "Dein Gegner ist am Zug.", illegal: "Dieser Zug ist nicht erlaubt.", nicht_synchron: "Die Stellung hat sich inzwischen geändert.",
+    ende: "Die Partie ist schon zu Ende.", warte: "Dein Gegner ist noch nicht da.", offen: "Dein Gegner hat dich gerade etwas gefragt – bitte zuerst antworten.",
+    geht_nicht: "Das geht gerade nicht.", keine: "Die Frage ist nicht mehr offen.", laeuft: "Dein Gegner ist schon da – das Spiel läuft."
+  };
+  var FERN_FRAGE = {
+    remis: ["Remis?", "Dein Gegner bietet Remis an. Wenn du annimmst, endet die Partie unentschieden."],
+    zurueck: ["Zug zurücknehmen?", "Dein Gegner möchte seinen letzten Zug zurücknehmen."],
+    revanche: ["Revanche?", "Dein Gegner möchte nochmals spielen – mit getauschten Farben."]
+  };
+  var FERN_MEINE = { remis: "Remis angeboten – warte auf Antwort", zurueck: "Zug zurück gefragt – warte auf Antwort", revanche: "Revanche gefragt – warte auf Antwort" };
+  function fernText(x) { var f = x && x.j && x.j.fehler; return FERN_TEXT[f] || (x && x.st === 0 ? FERN_TEXT.netz : "Das ging nicht (" + (f || (x && x.st)) + ")."); }
+  function FN(c) { return c === "w" ? "Weiss" : "Schwarz"; }
+  function fernSitz() { return spiel.fern ? spiel.fern.s.sitz : ""; }
+  function fernAnders() { var s = fernSitz(); return s === "w" ? "b" : s === "b" ? "w" : ""; }
+  function fernLaeuft() { var f = spiel.fern; return !!f && (f.s.sitz === "w" || f.s.sitz === "b") && !!f.v && f.v.status === "laeuft" && !spiel.partie.ende(); }
+  function fernFrei() { var f = spiel.fern; return !f || (!!f.v && f.v.status === "laeuft" && !f.ausstehend && !f.v.ende); }
+  function fernName(c) {
+    var f = spiel.fern, ich = fernSitz();
+    if (ich !== "w" && ich !== "b") return FN(c);
+    if (c === ich) return "Du (" + FN(c) + ")";
+    var st = f && f.v && f.v.sitze[c], zusatz = !st || !st.da ? " · noch nicht da" : !st.online && !(f.v && f.v.ende) ? " · offline" : "";
+    return "Gegner (" + FN(c) + ")" + zusatz;
+  }
+  function fernStatusText(z) {
+    var f = spiel.fern, v = f && f.v, ich = fernSitz(), wer = FN(z.amZug);
+    if (!v) return "Verbinde mit dem Spiel " + (f ? f.s.code : "") + " …";
+    if (v.status === "warte") return ich === "w" || ich === "b" ? "Warte auf deinen Gegner – Code " + f.s.code : "Warte auf die Spieler …";
+    if (ich !== "w" && ich !== "b") return (z.schach ? "Schach! " : "") + wer + " ist am Zug.";
+    if (f.ausstehend) return f.verb === "weg" ? "Dein Zug wartet – er geht los, sobald die Verbindung wieder da ist." : "Dein Zug wird gesendet …";
+    if (z.amZug === ich) return z.schach ? "Schach! Dein König ist bedroht." : "Du bist am Zug.";
+    return z.schach ? "Schach! Dein Gegner muss den König retten." : "Dein Gegner ist am Zug.";
+  }
+  function fernFehlerZeigen(t) { var el = $("fernFehler"); el.textContent = t; el.hidden = !t; }
+
+  function fernZeile() {
+    var f = spiel.fern, el = $("fern"), hl = $("fernHilfe"), vorher = el.hidden + "|" + hl.hidden + "|" + el.offsetHeight + "|" + hl.offsetHeight;
+    if (!f) { el.hidden = true; hl.hidden = true; }
+    else {
+      var v = f.v, ich = f.s.sitz, ander = fernAnders(), kl, t;
+      $("fernIch").textContent = (ich === "w" || ich === "b" ? "Du bist " + FN(ich) : "Du schaust zu") + " · Code " + f.s.code;
+      if (f.verb === "weg") { kl = "weg"; t = "Verbindung weg – versuche neu"; }
+      else if (!v) { kl = "warte"; t = "verbinde …"; }
+      else if (v.status === "warte") { kl = "warte"; t = "warte auf Gegner"; }
+      else if (ander && !v.sitze[ander].online && !v.ende) { kl = "warte"; t = "Gegner offline"; }
+      else { kl = "ok"; t = "verbunden"; }
+      $("fernVerb").className = "verb " + kl; $("fernVerb").textContent = t;
+      el.hidden = false;
+      var teile = [], hilfe = [];
+      if (v && v.anfrage && v.anfrage.von === ich) teile.push(FERN_MEINE[v.anfrage.art] || "");
+      ["w", "b"].forEach(function (c) {
+        var h = v && v.hilfe && v.hilfe[c], was = [];
+        if (!h) return;
+        if (h.lern) was.push("Lern-Modus");
+        if (h.balken) was.push("Balken");
+        if (h.tipps) was.push(h.tipps + (h.tipps === 1 ? " Tipp" : " Tipps"));
+        if (was.length) hilfe.push((ich === "w" || ich === "b" ? (c === ich ? "du" : "Gegner") : FN(c)) + " (" + was.join(", ") + ")");
+      });
+      if (hilfe.length) teile.push("💡 Tipps sind an: " + hilfe.join(" · "));
+      hl.textContent = teile.join(" · "); hl.hidden = !teile.length;
+    }
+    if (vorher !== el.hidden + "|" + hl.hidden + "|" + el.offsetHeight + "|" + hl.offsetHeight) ordnen();
+  }
+  function fernStatus(st) { if (spiel.fern) { spiel.fern.verb = st; fernZeile(); statusZeile(spiel.partie.zustand()); } }
+
+  /** die Partie aus dem Stand des Pi neu aufbauen (Start, Wiederaufnahme, Revanche, Zug zurück, Abweichung) */
+  function fernAufbauen(v) {
+    var e = v.ende, p = P.laden({ startFen: v.startFen, zuege: v.zuege, aufgabe: e && e.art === "aufgabe" ? (e.sieger === "w" ? "b" : "w") : null, remis: !!(e && e.art === "einigung") });
+    var f = spiel.fern;
+    if (!p) { fernStatus("weg"); return; }
+    f.ausstehend = null;
+    var sz = v.sitz === "w" || v.sitz === "b" ? v.sitz : "zuschauer";
+    if (sz !== f.s.sitz) { f.s.sitz = sz; Fern.sitzung.schreib(f.s); }
+    var warte = !$("dFernWarte").hidden || !f.v0;
+    f.v0 = true;
+    starte({ partie: p, gegner: "fern", farbe: sz === "b" ? "b" : "w", zuschauer: sz === "zuschauer" });
+    if (warte && v.status === "warte") fernWarteZeigen();
+    fernNachher(v);
+  }
+  function fernNachher(v) { fernZeile(); fernFrage(v); zeichne(); }
+  function istAnfang(a, b) { if (a.length > b.length) return false; for (var i = 0; i < a.length; i++) if (a[i] !== b[i]) return false; return true; }
+
+  /** neuer Stand vom Pi (Abfrage oder Antwort auf einen Zug / eine Aktion) */
+  function fernZustand(v) {
+    var f = spiel.fern;
+    if (!f || !v || v.code !== f.s.code) return;
+    var alt = f.v; f.v = v;
+    var p = spiel.partie, L = p.zuege, S = v.zuege;
+    var vs = v.sitz === "w" || v.sitz === "b" ? v.sitz : "zuschauer";
+    if (!alt || alt.nr !== v.nr || v.startFen !== p.startFen || vs !== f.s.sitz) { if (alt && alt.nr !== v.nr) ton("tipp"); fernAufbauen(v); return; }
+    if (istAnfang(L, S) && !(S.length > L.length && p.ende())) {
+      for (var i = L.length; i < S.length; i++) if (!spiel.ziehe(S[i], "fern")) { fernAufbauen(v); return; }
+      if (f.ausstehend && S.length > f.ausstehend.n) f.ausstehend = null;
+    } else if (f.ausstehend && L.length === S.length + 1 && istAnfang(S, L) && L[L.length - 1] === f.ausstehend.uci && S.length === f.ausstehend.n) {
+      if (!f.sendet) fernSende(f.ausstehend.uci, f.ausstehend.n);             // eigener Zug kam (noch) nicht an: nochmals
+    } else { fernAufbauen(v); return; }
+    var e = v.ende, pe = spiel.partie.ende();
+    if (e && !pe) {                                                         // Aufgabe oder Remis-Einigung vom Pi
+      if (e.art === "aufgabe") spiel.partie.aufgabe = e.sieger === "w" ? "b" : "w";
+      else if (e.art === "einigung") spiel.partie.remis = true;
+      else { fernAufbauen(v); return; }
+      abbrechen(); spiel.nr++; spiel.denkt = false;
+      var z = spiel.partie.zustand(); ton("remis"); zeichne(z); endeZeigen(z); balkenEnde(z.ende);
+    } else if (!e && pe && (spiel.partie.aufgabe || spiel.partie.remis)) { fernAufbauen(v); return; }
+    if (alt.status === "warte" && v.status === "laeuft") {                  // der Gegner ist da
+      zu("dFernWarte"); ton("tipp");
+      if (!statusFest || statusFest.nr !== spiel.nr) statusFest = { nr: spiel.nr, text: menschDran() ? "Dein Gegner ist da – du bist am Zug." : "Dein Gegner ist da – er beginnt." };
+    }
+    fernNachher(v);
+  }
+
+  /** Frage des Gegners (Remis, Zug zurück, Revanche) zeigen bzw. wegnehmen, wenn sie nicht mehr offen ist */
+  var fernFrageOffen = "";
+  function fernFrage(v) {
+    var a = v && v.anfrage, ich = fernSitz(), key = a ? a.art + "|" + a.von + "|" + a.nr + "|" + v.nr : "";
+    if (!a || a.von === ich || (ich !== "w" && ich !== "b")) { if (fernFrageOffen) { fernFrageOffen = ""; zu("dAnfrage"); } return; }
+    if (key === fernFrageOffen && !$("dAnfrage").hidden) return;
+    fernFrageOffen = key;
+    var t = FERN_FRAGE[a.art] || ["Frage", ""];
+    $("anfrageTitel").textContent = t[0];
+    $("anfrageText").textContent = t[1] + (a.art === "revanche" ? " Du spielst dann " + FN(ich === "w" ? "b" : "w") + "." : "");
+    zu("dEnde"); auf("dAnfrage"); ton("warn");
+  }
+
+  function fernSende(uci, n) {
+    var f = spiel.fern;
+    if (!f || (f.s.sitz !== "w" && f.s.sitz !== "b")) return;
+    f.ausstehend = { uci: uci, n: n }; f.sendet = true;
+    Fern.zug(f.s, uci, n).then(function (x) {
+      if (f !== spiel.fern) return;
+      f.sendet = false;
+      if (x.st === 200 && x.j.ok) { f.ausstehend = null; fernStatus("ok"); fernZustand(x.j); return; }
+      if (x.st === 0 || x.st === 429 || x.st >= 500 || x.st === 401) {        // keine Verbindung: der Zug bleibt und geht später
+        fernStatus("weg"); statusZeile(spiel.partie.zustand());
+        setTimeout(function () { if (f === spiel.fern && f.ausstehend && !f.sendet) fernSende(f.ausstehend.uci, f.ausstehend.n); }, 1500);
+        return;
+      }
+      f.ausstehend = null;
+      if (x.j && x.j.v) fernZustand(x.j.v);
+      statusFest = { nr: spiel.nr, text: "Der Zug kam nicht an: " + fernText(x) + " Es gilt die Stellung auf MoveEye." }; zeichne();
+    });
+  }
+
+  function fernAktion(art, mehr) {
+    var f = spiel.fern;
+    if (!f) return Promise.resolve(null);
+    return Fern.aktion(f.s, art, mehr).then(function (x) {
+      if (f !== spiel.fern) return x;
+      if (x.st === 200 && x.j.ok && x.j.weg) { fernAus(); neuDialog(); return x; }
+      if (x.st === 200 && x.j.ok) { fernStatus("ok"); fernZustand(x.j); return x; }
+      if (x.j && x.j.v) fernZustand(x.j.v);
+      if (art !== "hilfe") { statusFest = { nr: spiel.nr, text: fernText(x) }; zeichne(); }
+      return x;
+    });
+  }
+  function fernAnfrage(art) { return fernAktion(art); }
+  function fernHilfeMelden(mehr) {
+    var ich = fernSitz();
+    if (ich !== "w" && ich !== "b") return;
+    var d = { lern: einst.fernLern, balken: einst.fernBalken };
+    if (mehr && mehr.tipp) d.tipp = true;
+    fernAktion("hilfe", d);
+  }
+
+  /** eine Sitzung beginnen (nach Erstellen, Beitreten oder beim Öffnen der Seite) */
+  function fernStart(s, v) {
+    if (spiel.fern && spiel.fern.verbindung) spiel.fern.verbindung.stopp();
+    spiel.fern = { s: s, v: null, verb: v ? "ok" : "weg", ausstehend: null, sendet: false };
+    Fern.sitzung.schreib(s);
+    einst.gegner = "fern"; einstSpeichern(); spiel.gestartet = true;
+    var f = spiel.fern;
+    f.verbindung = new Fern.Verbindung(s, { zustand: fernZustand, status: fernStatus, fehler: fernVerloren });
+    if (v) fernZustand(v);
+    else starte({ partie: new P(), gegner: "fern", farbe: s.sitz === "b" ? "b" : "w", zuschauer: s.sitz !== "w" && s.sitz !== "b" });
+    f.verbindung.start();
+    fernHilfeMelden(); fernZeile(); ordnen();
+  }
+  function fernAus() {
+    var f = spiel.fern;
+    if (!f) return;
+    if (f.verbindung) f.verbindung.stopp();
+    spiel.fern = null; Fern.sitzung.weg(); fernFrageOffen = "";
+    fernZeile();
+  }
+  /** vor einem anderen Spiel: ein laufendes Spiel auf zwei Handys gilt als aufgegeben */
+  function fernVerlassen() {
+    var f = spiel.fern;
+    if (!f) return;
+    if (fernLaeuft()) Fern.aktion(f.s, "aufgeben");
+    else if (f.v && f.v.status === "warte" && (f.s.sitz === "w" || f.s.sitz === "b")) Fern.aktion(f.s, "abbrechen");
+    fernAus();
+  }
+  function fernVerloren(x) {                                        // das Spiel gibt es nicht mehr / der Schlüssel gilt nicht mehr
+    var code = spiel.fern ? spiel.fern.s.code : "";
+    fernAus();
+    neuDialog(); gegnerWahl("fern");
+    fernFehlerZeigen(x && x.j && x.j.fehler === "weg" ? "Das Spiel " + code + " gibt es auf MoveEye nicht mehr." : fernText(x));
+  }
+  function fernWiederaufnehmen(s) {
+    $("status").textContent = "Verbinde mit dem Spiel " + s.code + " …";
+    Fern.zustand(s).then(function (x) {
+      if (x.st === 200 && x.j.ok) fernStart({ code: s.code, token: s.token || "", sitz: x.j.sitz }, x.j);
+      else if (x.st === 404 || x.st === 403) { Fern.sitzung.weg(); spiel.fern = { s: s }; fernVerloren(x); }
+      else fernStart(s, null);                                     // gerade keine Verbindung: weiter versuchen
+    });
+  }
+  function fernErstellen() {
+    if (!Fern.basis()) { fernFehlerZeigen(FERN_TEXT.kein_pi); return; }
+    var farbe = neuWahl.farbe, b = $("bFernNeu");
+    einst.farbe = farbe; einstSpeichern();
+    b.disabled = true;
+    fernVerlassen();
+    Fern.neu(farbe).then(function (x) {
+      b.disabled = false;
+      if (!(x.st === 200 && x.j.ok)) { fernFehlerZeigen(fernText(x)); return; }
+      fernStart({ code: x.j.code, token: x.j.token, sitz: x.j.sitz }, x.j);
+      fernWarteZeigen();
+    });
+  }
+  /** Code gross, QR-Code (nur Adresse der Seite + Code) und Link für das zweite Handy */
+  function fernWarteZeigen() {
+    var f = spiel.fern;
+    if (!f || (f.s.sitz !== "w" && f.s.sitz !== "b")) return;
+    $("fernCode").textContent = f.s.code;
+    if ($("fernQr").getAttribute("data-code") !== f.s.code) { $("fernQr").src = Fern.qr(f.s.code); $("fernQr").setAttribute("data-code", f.s.code); }
+    $("fernLink").textContent = Fern.link(f.s.code);
+    $("fernWarteText").textContent = "Warte auf deinen Gegner … Du spielst " + FN(f.s.sitz) + ".";
+    auf("dFernWarte");
+  }
+  function fernBeitreten(code) {
+    code = String(code || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+    if (!Fern.basis()) { fernFehlerZeigen(FERN_TEXT.kein_pi); return; }
+    if (code.length !== 4) { fernFehlerZeigen("Der Code hat 4 Zeichen (Buchstaben und Ziffern)."); return; }
+    var alt = Fern.sitzung.lies(), b = $("bFernBei");
+    b.disabled = true;
+    if (!(alt && alt.code === code)) fernVerlassen();
+    Fern.beitreten(code, alt && alt.code === code ? alt.token : "").then(function (x) {
+      b.disabled = false;
+      if (!(x.st === 200 && x.j.ok)) { fernFehlerZeigen(fernText(x)); return; }
+      fernStart({ code: code, token: x.j.token || "", sitz: x.j.sitz }, x.j);
+      ton("tipp");
+      if (x.j.sitz === "zuschauer") { statusFest = { nr: spiel.nr, text: "Beide Plätze sind besetzt – du schaust zu." }; zeichne(); }
+    });
+  }
+  // das Wiederfinden nach dem Schlafen macht fern.js (Seite wieder sichtbar -> sofort neu fragen)
 
   /* ---------- Töne (WebAudio, erzeugt; erst nach der ersten Berührung) ---------- */
   var ac = null;
@@ -478,7 +793,7 @@
     var h = $("haupt"), W = h.clientWidth, H = h.clientHeight, quer = W >= 560 && W > H * 1.15, b;
     document.body.classList.toggle("quer", quer);
     document.body.classList.toggle("breit", !quer && W >= 700);
-    var leisten = 48 + (einst.balken ? 6 : 0), bedarf = 6;        // Platz für Status, Zugliste, Knöpfe, Info-Zeile (gemessen)
+    var leisten = 48 + (balkenAn() ? 6 : 0), bedarf = 6;        // Platz für Status, Zugliste, Knöpfe, Info-Zeile (gemessen)
     if (!quer) Array.prototype.forEach.call($("rechts").children, function (k) { bedarf += k.offsetHeight; });
     if (quer) b = Math.min(H - leisten - 6, W - 16 - 12 - 290);
     else b = Math.min(W, H - leisten - bedarf);
@@ -513,35 +828,60 @@
 
     $("bTipp").onclick = function () { tipp(); };
     $("bZurueck").onclick = zugZurueck;
-    $("bDrehen").onclick = function () { spiel.drehung = spiel.drehung === "w" ? "b" : "w"; partieSpeichern(); zeichne(); };
+    $("bDrehen").onclick = function () {
+      var fs = spiel.gegner === "fern" ? fernSitz() : "";
+      if (fs === "w" || fs === "b") { fernAnfrage("remis"); return; }       // zwei Handys: hier sitzt «Remis anbieten»
+      spiel.drehung = spiel.drehung === "w" ? "b" : "w"; partieSpeichern(); zeichne();
+    };
     $("bNeu").onclick = neuDialog;
     $("bAufgeben").onclick = aufgeben;
     $("bEinst").onclick = einstDialog;
-    $("bLern").onclick = function () { lernSetzen(!einst.lern); };
+    $("bLern").onclick = function () { lernSetzen(!lernAn()); };
     $("bUeber").onclick = function () { infoZeile(); auf("dUeber"); };
     $("bUeberZu").onclick = function () { zu("dUeber"); };
     $("bEinstZu").onclick = function () { zu("dEinst"); };
     $("bEndeBrett").onclick = function () { zu("dEnde"); };
-    $("bEndeNeu").onclick = neuDialog;
+    $("bEndeNeu").onclick = function () {
+      var fs = spiel.gegner === "fern" ? fernSitz() : "";
+      if (fs === "w" || fs === "b") { zu("dEnde"); fernAnfrage("revanche"); } else neuDialog();
+    };
     $("bNeuAbbr").onclick = function () { zu("dNeu"); };
-    $("segGegner").onclick = function (e) { var b = e.target.closest("button"); if (!b) return; neuWahl.gegner = b.getAttribute("data-w"); seg($("segGegner"), neuWahl.gegner); $("nurMotor").hidden = neuWahl.gegner !== "motor"; };
+    $("segGegner").onclick = function (e) { var b = e.target.closest("button"); if (!b) return; $("fernFehler").hidden = true; gegnerWahl(b.getAttribute("data-w")); };
     $("segFarbe").onclick = function (e) { var b = e.target.closest("button"); if (!b) return; neuWahl.farbe = b.getAttribute("data-w"); seg($("segFarbe"), neuWahl.farbe); };
-    $("schLernNeu").onclick = function () { lernSetzen(!einst.lern); };
+    $("schLernNeu").onclick = function () { lernSetzen(!lernAn(neuWahl.gegner), neuWahl.gegner); };
     $("bSpielen").onclick = function () {
       einst.gegner = neuWahl.gegner; einst.farbe = neuWahl.farbe; einst.stufe = +$("selStufe").value || einst.stufe; einstSpeichern();
       spiel.gestartet = true;
+      fernVerlassen();
       starte({ gegner: einst.gegner, stufe: einst.stufe, farbe: einst.farbe === "zufall" ? (Math.random() < 0.5 ? "w" : "b") : einst.farbe });
     };
+    $("bFernNeu").onclick = fernErstellen;
+    $("bFernBei").onclick = function () { fernBeitreten($("fernCodeEin").value); };
+    $("fernCodeEin").oninput = function () { var v = this.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 4); if (v !== this.value) this.value = v; $("fernFehler").hidden = true; };
+    $("fernCodeEin").onkeydown = function (e) { if (e.key === "Enter") { e.preventDefault(); fernBeitreten(this.value); } };
+    $("bFernBrett").onclick = function () { zu("dFernWarte"); };
+    $("fern").onclick = function () { if (spiel.fern && spiel.fern.v && spiel.fern.v.status === "warte") fernWarteZeigen(); };
+    $("bFernAbbr").onclick = function () { fernAktion("abbrechen"); };
+    $("bAnfrageJa").onclick = function () { zu("dAnfrage"); fernAktion("annehmen"); };
+    $("bAnfrageNein").onclick = function () { zu("dAnfrage"); fernAktion("ablehnen"); };
     $("selStufe2").onchange = function () { spiel.stufe = einst.stufe = +this.value || einst.stufe; einstSpeichern(); partieSpeichern(); zeichne(); };
     $("selZeit").onchange = function () { einst.zeit = +this.value || 1000; einstSpeichern(); };
-    $("schLern").onclick = function () { lernSetzen(!einst.lern); };
+    $("schLern").onclick = function () { lernSetzen(!lernAn()); };
     $("schTon").onclick = function () { einst.ton = !einst.ton; einstSpeichern(); schalter(this, einst.ton); tonStart(); ton("zug"); };
-    $("schBalken").onclick = function () { einst.balken = !einst.balken; einstSpeichern(); schalter(this, einst.balken); ordnen(); zeichne(); infoZeile(); if (einst.balken && menschDran()) analysiere(); };
+    $("schBalken").onclick = function () {
+      if (spiel.gegner === "fern") einst.fernBalken = !einst.fernBalken; else einst.balken = !einst.balken;
+      einstSpeichern(); schalter(this, balkenAn()); ordnen(); zeichne(); infoZeile(); if (balkenAn() && menschDran()) analysiere();
+      if (spiel.gegner === "fern") fernHilfeMelden();
+    };
     $("schDrehen").onclick = function () { einst.autodrehen = !einst.autodrehen; einstSpeichern(); schalter(this, einst.autodrehen); };
 
+    // zwei Handys: ein Spiel dieses Handys (Code + Sitz) läuft noch, oder der Link/QR-Code nennt einen Code (?fern=)
+    var fCode = (URLP.get("fern") || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 4), fS = Fern.sitzung.lies();
+    zeichne();
+    if (Fern.basis() && fS && (!fCode || fCode === fS.code)) { fernWiederaufnehmen(fS); return; }
+    if (fCode) { einst.gegner = "fern"; neuDialog(); $("fernCodeEin").value = fCode; return; }
     // angefangene Partie?
     var g = lies(K_PARTIE), alt = g && g.partie ? P.laden(g.partie) : null;
-    zeichne();
     if (alt && alt.zuege.length && !alt.ende()) {
       var gg = g.gegner === "mensch" ? "mensch" : "motor", st = g.stufe >= 1 && g.stufe <= STUFEN.length ? g.stufe | 0 : einst.stufe;
       $("weiterText").textContent = "Deine letzte Partie ist noch nicht fertig (" + alt.zuege.length + (alt.zuege.length === 1 ? " Zug" : " Züge") + ", "
@@ -557,7 +897,10 @@
     window.__schach = {
       zustand: function () {
         var z = spiel.partie.zustand();
-        return { fen: z.fen, amZug: z.amZug, schach: z.schach, ende: z.ende, zuege: z.zuege, san: z.san, zugNr: z.zugNr, gegner: spiel.gegner, mensch: spiel.mensch,
+        var f = spiel.fern;
+        return { fern: f ? { code: f.s.code, sitz: f.s.sitz, verb: f.verb, status: f.v && f.v.status, nr: f.v && f.v.nr, anfrage: f.v && f.v.anfrage, ausstehend: f.ausstehend,
+                             hilfe: f.v && f.v.hilfe, gegnerOnline: !!(f.v && fernAnders() && f.v.sitze[fernAnders()].online), zeile: $("fern").innerText, hilfeZeile: $("fernHilfe").hidden ? "" : $("fernHilfe").textContent } : null,
+                 fen: z.fen, amZug: z.amZug, schach: z.schach, ende: z.ende, zuege: z.zuege, san: z.san, zugNr: z.zugNr, gegner: spiel.gegner, mensch: spiel.mensch,
                  stufe: spiel.stufe, drehung: spiel.drehung, denkt: spiel.denkt, prueft: spiel.prueft, menschDran: menschDran(), tippPfeil: spiel.tippPfeil,
                  analyse: spiel.analyse, motor: Motor.art, motorName: Motor.name, bereit: Motor.bereit, statistik: Motor.statistik, toene: tonZaehler,
                  warnung: letzteWarnung, einst: einst, tonLaeuft: !!ac && ac.state, material: z.material };
