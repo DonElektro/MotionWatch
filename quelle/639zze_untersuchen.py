@@ -196,7 +196,7 @@ def unt_bio(img, box, tmpdir):
 def unt_save(who, jpg, result, base):
     """the picture + the result (JSON) into «Für alle / Funde»; -> {"jpg": id, "json": id} or {"error": reason}"""
     if not CFG.get("tausch_on", True):
-        return {"error": "the file exchange is switched off"}
+        return {"error": "the digital backpack is switched off"}
     root = _tz_load()
     if root is None:
         return {"error": "the storage (USB stick / SSD) is not there"}
@@ -829,12 +829,12 @@ _HX_UNT = {
         "Maletg termic: mo persunas ed animals – BioCLIP na funcziuna betg sin maletgs termics."),
     "Species: BioCLIP is not loaded yet.": ("Arten: BioCLIP ist noch nicht geladen.", "Espèces : BioCLIP n’est pas encore chargé.",
                                             "Specie: BioCLIP non è ancora caricato.", "Spezias: BioCLIP n’è anc betg chargià."),
-    "Load it under Datentausch → 🌿 or here.": ("Laden unter Datentausch → 🌿 oder hier.", "Le charger sous Échange de fichiers → 🌿 ou ici.",
-                                               "Caricalo in Scambio di file → 🌿 o qui.", "Al chargiar sut Barat da datotecas → 🌿 u qua."),
+    "Load it under Datentausch → 🌿 or here.": ("Laden unter Digitaler Rucksack → 🌿 oder hier.", "Le charger sous Sac à dos numérique → 🌿 ou ici.",
+                                               "Caricalo in Zaino digitale → 🌿 o qui.", "Al chargiar sut Satgados digital → 🌿 u qua."),
     "The administrator can load it.": ("Der Administrator kann es laden.", "L’administrateur peut le charger.", "L’amministratore può caricarlo.",
                                        "L’administratur po al chargiar."),
-    "Saved in Datentausch → «{f}»": ("Gespeichert im Datentausch → «{f}»", "Enregistré dans l’échange de fichiers → «{f}»",
-                                     "Salvato nello scambio di file → «{f}»", "Memorisà en il barat da datotecas → «{f}»"),
+    "Saved in Datentausch → «{f}»": ("Gespeichert im Digitalen Rucksack → «{f}»", "Enregistré dans le sac à dos numérique → «{f}»",
+                                     "Salvato nello zaino digitale → «{f}»", "Memorisà en il satgados digital → «{f}»"),
     "Not saved:": ("Nicht gespeichert:", "Pas enregistré :", "Non salvato:", "Betg memorisà:"),
     "Photo examined": ("Foto untersucht", "Photo examinée", "Foto esaminata", "Foto examinada"),
     "Examined": ("Untersucht", "Examiné", "Esaminato", "Examinà"),
@@ -874,30 +874,30 @@ _HELP_UNT = {
     "de": ('<section id="untersuchen" data-icon="🔍"><h2>Sofortbild untersuchen</h2><ul>'
            '<li><b>🔍 auf dem Live-Bild:</b> Sofortbild der gezeigten Ansicht (Kopf, Weitwinkel oder Wärmebild). Im Bild eine Stelle antippen oder einen Rahmen ziehen = nur dieser Bereich, sonst «Ganzes Bild». '
            'Mit dem Recht «Kopf steuern» kann der Kopf zuerst dorthin drehen («🎯 Zuerst den Kopf dorthin drehen»); ein optisches Zoom hat die Kamera nicht – der Bereich wird aus dem vollen Kamerabild ausgeschnitten.</li>'
-           '<li><b>Was MoveEye findet:</b> Personen, Tiere und Fahrzeuge mit der KI, die Art (Pflanze, Tier, Pilz, Insekt) mit BioCLIP – Rahmen und Beschriftung über dem Bild; Beschriftung antippen = Artinfo-Karte wie im Datentausch. '
+           '<li><b>Was MoveEye findet:</b> Personen, Tiere und Fahrzeuge mit der KI, die Art (Pflanze, Tier, Pilz, Insekt) mit BioCLIP – Rahmen und Beschriftung über dem Bild; Beschriftung antippen = Artinfo-Karte wie im Digitalen Rucksack. '
            'Auf dem <b>Wärmebild</b> nur Personen und Tiere (BioCLIP bestimmt keine Arten auf Wärmebildern). Das Ergebnis bleibt, bis du es schliesst.</li>'
            '<li><b>📷 Foto untersuchen:</b> ein Foto vom Handy hochladen, dieselbe Auswertung.</li>'
-           '<li><b>Gespeichert</b> wird jedes Ergebnis automatisch im Datentausch, Ordner <b>«Funde»</b>: das Bild und eine JSON-Datei (Arten / Objekte, Zeit, Ort, falls bekannt).</li>'
+           '<li><b>Gespeichert</b> wird jedes Ergebnis automatisch im Digitalen Rucksack, Ordner <b>«Funde»</b>: das Bild und eine JSON-Datei (Arten / Objekte, Zeit, Ort, falls bekannt).</li>'
            '<li><b>Gäste</b> mit dem Gast-Link können ein Sofortbild oder einen Ausschnitt untersuchen, den Kopf aber nie bewegen. Modelle (BioCLIP) lädt nur der Administrator. Immer nur eine Untersuchung gleichzeitig; alles rechnet auf dem Gerät.</li>'
            '<li>Im Fenster: «Mehr → 🔍 Untersuchen» (Kopf-Kamera, ganzes Bild, Ergebnis als Text).</li></ul></section>\n'),
     "en": ('<section id="untersuchen" data-icon="🔍"><h2>Examine a snapshot</h2><ul>'
            '<li><b>🔍 on the live picture:</b> a snapshot of the shown view (head, wide angle or thermal). Tap a spot or drag a box = only that region, else «Whole picture». '
            'With the right «steer the head» the head can turn there first («🎯 Turn the head there first»); the camera has no optical zoom – the region is cut from the full camera picture.</li>'
-           '<li><b>What MoveEye finds:</b> persons, animals and vehicles with the AI, the species (plant, animal, fungus, insect) with BioCLIP – boxes and labels over the picture; tap a label = the species card as in the file exchange. '
+           '<li><b>What MoveEye finds:</b> persons, animals and vehicles with the AI, the species (plant, animal, fungus, insect) with BioCLIP – boxes and labels over the picture; tap a label = the species card as in the digital backpack. '
            'On the <b>thermal picture</b> only persons and animals (BioCLIP does not identify species on thermal pictures). The result stays until you close it.</li>'
            '<li><b>📷 Examine a photo:</b> upload a photo from the phone, the same analysis.</li>'
-           '<li>Every result is <b>saved</b> automatically in the file exchange, folder <b>«Funde»</b>: the picture and a JSON file (species / objects, time, place if known).</li>'
+           '<li>Every result is <b>saved</b> automatically in the digital backpack, folder <b>«Funde»</b>: the picture and a JSON file (species / objects, time, place if known).</li>'
            '<li><b>Guests</b> with the guest link can examine a snapshot or a region but never move the head. Only the administrator loads models (BioCLIP). One examination at a time; everything runs on the device.</li>'
            '<li>In the window: «More → 🔍 Examine» (head camera, whole picture, result as text).</li></ul></section>\n'),
     "fr": ('<section id="untersuchen" data-icon="🔍"><h2>Examiner un instantané</h2><ul><li>🔍 sur l’image en direct : instantané de la vue (tête, grand angle, thermique), toucher un endroit ou tracer un cadre ; '
            'la tête peut d’abord tourner vers là (droit «tête»). Personnes, animaux, véhicules (IA) et espèce (BioCLIP) ; sur l’image thermique seulement personnes et animaux. '
-           'Toucher l’étiquette = fiche de l’espèce. 📷 : examiner une photo du téléphone. Enregistré dans l’échange de fichiers, dossier «Funde». Invités : sans bouger la tête.</li></ul></section>\n'),
+           'Toucher l’étiquette = fiche de l’espèce. 📷 : examiner une photo du téléphone. Enregistré dans le sac à dos numérique, dossier «Funde». Invités : sans bouger la tête.</li></ul></section>\n'),
     "it": ('<section id="untersuchen" data-icon="🔍"><h2>Esaminare un’istantanea</h2><ul><li>🔍 sull’immagine dal vivo: istantanea della vista (testa, grandangolo, termica), tocca un punto o traccia un riquadro; '
            'la testa può prima girare lì (diritto «testa»). Persone, animali, veicoli (IA) e specie (BioCLIP); sull’immagine termica solo persone e animali. '
-           'Tocca l’etichetta = scheda della specie. 📷: esaminare una foto del telefono. Salvato nello scambio di file, cartella «Funde». Ospiti: senza muovere la testa.</li></ul></section>\n'),
+           'Tocca l’etichetta = scheda della specie. 📷: esaminare una foto del telefono. Salvato nello zaino digitale, cartella «Funde». Ospiti: senza muovere la testa.</li></ul></section>\n'),
     "rm": ('<section id="untersuchen" data-icon="🔍"><h2>Examinar in maletg instantan</h2><ul><li>🔍 sin il maletg live: maletg instantan da la vista (chau, grond angul, termic), tutgar in lieu u trair in rom; '
            'il chau po l’emprim sa volver là (dretg «chau»). Persunas, animals, vehichels (IA) e spezia (BioCLIP); sin il maletg termic mo persunas ed animals. '
-           'Tutgar l’etichetta = carta da la spezia. 📷: examinar ina foto dal telefonin. Memorisà en il barat da datotecas, ordinatur «Funde». Giasts: senza mover il chau.</li></ul></section>\n'),
+           'Tutgar l’etichetta = carta da la spezia. 📷: examinar ina foto dal telefonin. Memorisà en il satgados digital, ordinatur «Funde». Giasts: senza mover il chau.</li></ul></section>\n'),
 }
 
 
