@@ -15,7 +15,8 @@ Der Pi, die Update-Funktion und die Signatur arbeiten weiter mit dieser einen Da
   python3 werkzeuge/bauen.py --nur-signieren SCHLUESSELDATEI             # Drei Spuren: OHNE zu bauen (Sim- oder Gehäuse-Release:
                                                                          #   die veröffentlichte MoveEye-Datei bleibt Byte für Byte)
                                                                          #   versions.json mit Block «sim» neu signieren, Selbsttest
-  python3 werkzeuge/bauen.py --groessen                                  # was braucht am meisten Platz? (Teile, Literale)
+  python3 werkzeuge/bauen.py --groessen                                  # was braucht am meisten Platz? (Teile, Literale,
+                                                                         #   und was mit welchem Grund in der Hauptdatei bleibt)
 
 Zusatzdaten (31.10.2026, Paket «MoveEye-Datei verkleinern»): grosse Literale (Web-Seiten, JavaScript, Bilder als base64,
 Übersetzungen) und der ältere Teil der Änderungsliste kommen beim Bauen in moveeye_daten_X_Y_Z.zip neben der Datei
@@ -26,6 +27,10 @@ Schlank (07.11.2026, für 3.59.0): zusätzlich kommen kleinere statische Inhalte
 JS / CSS) in die ZIP, die Tabellen _HX… behalten nur Deutsch, und die Hauptdatei hat keine Kommentare und Docstrings von
 Funktionen / Klassen und ist mit Tabs eingerückt (gleiche Zeilennummern; die Originalzeilen stehen in der ZIP, zd_source()
 setzt sie wieder ein). Grenze der Hauptdatei: Warnung ab 4 MiB, Abbruch ab 5 MiB.
+
+Hauptdatei kleiner (12.11.2026): Folgezeilen mit Tabs (ZD_FOLGEZEILEN), der Prüf-Code «…_selftest» als Quelltext in der ZIP
+(ZD_PRUEFCODE, _zd_fn in Teil 012), kleine Anleitungs-Texte (ZD_KLEIN_NAMEN). Jeder Bau zeigt die Grösse und die Luft bis zur
+Warnung; werkzeuge/hauptdatei_groesse_test.py (CI «basis») wird rot, wenn weniger als GROESSE_LUFT (150 KiB) bleiben.
 
 Den Schlüssel nie ins Repository legen.
 """
@@ -234,6 +239,11 @@ ZD_KEEP_NAMES = {"CFG", "TOGGLES", "SLIDERS", "TEXTS", "SECTIONS", "DE", "QUICK_
                  "G2_UI", "SET_HELP", "GONL_DE", "ALMANAC", "PAUSE_PAGE", "LANGS",
                  "FEHLER_KATALOG",                 # Fehler-QR: die Hilfe zu Fehlern geht auch ohne Zusatzdaten (639u)
                  "UI_GEMEINSAM"}                   # Schlank: Menü-Datei (Fenster, Kopf 639t) - ohne Zusatzdaten startete 3.58.0 nicht
+# Hauptdatei kleiner (Nov. 2026): kleine Texte der Anleitung, die schon ab ZD_MIN_KLEIN in die ZIP dürfen. Nur Namen
+# eintragen, die nachgeprüft sind: ein Dict {Sprache: Text}, gelesen nur als NAME[lang] in einer Funktion, die die Anleitung
+# zusammensetzt (ohne ZIP gibt _ZDDict "" zurück, die Anleitung selbst steckt auch in der ZIP). Nie Tabellen, die beim
+# Laden des Programms ausgepackt oder indiziert werden (dann stürzt der Start ohne ZIP ab).
+ZD_KLEIN_NAMEN = {"_HELP_FOTAQ", "_HELP_VERLAUF", "_HELP_FUNNEL", "_HELP_LVK", "_HELP_SIMPI", "_HELP_KW", "_HELP_BLINKI"}
 ZD_KEEP_PREFIX = ("_HX",)          # the translation tables _HX… also carry the German texts (DE) that the start needs
 # Schlank (3.59.0): a table _HX… {English: (de, fr, it, rm)} keeps only {English: de} in the file (fallback _zd_hx, 012);
 # the whole table with fr / it / rm goes to the zip. Tables {English: (fr, it, rm)} (no German) go to the zip as a whole.
@@ -246,6 +256,65 @@ ZD_DATE = (2026, 1, 1, 0, 0, 0)     # fixed time stamp in the zip
 # gebaute ZIP wird nur bei anderem INHALT neu geschrieben (veröffentlichte Dateien bleiben Byte für Byte).
 ZD_GEPACKT = False
 ZD_GRENZE = 32 * 1024 * 1024        # the data zip never gets bigger than half of what the devices accept
+
+
+# Hauptdatei kleiner (Nov. 2026): Prüf-Code. Die Funktionen «…_selftest» laufen nur bei «--self-test» (Integrator, GitHub),
+# nie im Betrieb eines Geräts - sie waren rund 280 KB der Hauptdatei. Ihr Quelltext steht jetzt als Eintrag «Teil/name()» in
+# der Zusatzdatei; in der Hauptdatei bleibt an derselben Zeile «name = _zd_fn('Teil/name()')» und darunter leere Zeilen
+# (gleiche Zeilennummern). _zd_fn (012) übersetzt den Text erst beim ersten Aufruf, mit den Zeilennummern der Hauptdatei.
+# Ohne Zusatzdatei meldet der Selbsttest diese Prüfungen als Fehler «Zusatzdaten fehlen»; der Betrieb braucht sie nicht.
+# Ausgelagert wird eine Funktion nur, wenn sie ausschliesslich vom Selbsttest benutzt wird (pruefcode_namen()).
+ZD_PRUEFCODE = True                 # False: der Prüf-Code bleibt in der Hauptdatei (dann rund 280 KB grösser)
+ZD_PRUEF_RE = re.compile(r"_self_?test$")
+ZD_PRUEF_VON = ("self_test",)       # these functions (the self-test itself) may use a moved-out check
+ZD_PRUEF_LISTE = "SELFTEST_EXTRA"   # … and module-level statements that fill this list
+_PRUEF = {"namen": None}
+
+
+def pruefcode_namen(neu=False):
+    """the top-level functions «…_selftest» that only the self-test uses: referenced only inside one another, inside
+    self_test() and in statements «SELFTEST_EXTRA…»; no decorator, only constants as default values, not in a part of
+    ZD_KEEP_PARTS. Everything else stays in the program file."""
+    if _PRUEF["namen"] is not None and not neu:
+        return _PRUEF["namen"]
+    if not ZD_PRUEFCODE:
+        _PRUEF["namen"] = frozenset()
+        return _PRUEF["namen"]
+    cand, bad, trees = {}, set(), []
+    for n in teile():
+        tree = ast.parse(lesen(n), n)
+        trees.append(tree)
+        for st in tree.body:
+            if isinstance(st, ast.FunctionDef) and ZD_PRUEF_RE.search(st.name):
+                dflt = [d for d in st.args.defaults + st.args.kw_defaults if d is not None]
+                if (st.name in cand or n.startswith(ZD_KEEP_PARTS) or st.decorator_list or st.col_offset
+                        or not all(isinstance(d, ast.Constant) for d in dflt)):
+                    bad.add(st.name)
+                cand[st.name] = n
+
+    def refs(nd, wo):
+        if isinstance(nd, ast.Name) and nd.id in cand and not wo:
+            bad.add(nd.id)
+        for c in ast.iter_child_nodes(nd):
+            refs(c, wo)
+
+    def stmts(body, top):
+        for st in body:
+            if isinstance(st, (ast.FunctionDef, ast.AsyncFunctionDef)) and top:
+                refs(st, st.name in cand or st.name in ZD_PRUEF_VON)
+            elif isinstance(st, (ast.If, ast.Try, ast.With)) and top:
+                for c in ast.iter_child_nodes(st):
+                    if not isinstance(c, ast.stmt) and not isinstance(c, ast.ExceptHandler):
+                        refs(c, False)
+                stmts(st.body, top); stmts(getattr(st, "orelse", []), top); stmts(getattr(st, "finalbody", []), top)
+                for h in getattr(st, "handlers", []):
+                    stmts(h.body, top)
+            else:
+                refs(st, top and ast.unparse(st).startswith(ZD_PRUEF_LISTE))
+    for tree in trees:
+        stmts(tree.body, True)
+    _PRUEF["namen"] = frozenset(set(cand) - bad)
+    return _PRUEF["namen"]
 
 
 def zd_name(v):
@@ -297,7 +366,7 @@ def _zd_statisch(nd, base, hx):
     data (labels of the AI, menu groups of the window, keys for the factory reset …): those stay from ZD_MIN on."""
     if hx:
         return True
-    if base == "TRX" or base.startswith("HELP_"):
+    if base == "TRX" or base.startswith("HELP_") or base in ZD_KLEIN_NAMEN:
         return isinstance(nd, ast.Dict)
     return isinstance(nd, ast.Constant) and isinstance(nd.value, str) and bool(re.search(r"_(PAGE|HTML|JS|CSS)$", base))
 
@@ -406,11 +475,21 @@ def auslagern(name, text):
             else:
                 walk(st, _zd_ctx(st))
     body(tree.body)
+    pruef = pruefcode_namen()
+    for st in tree.body:                                   # Prüf-Code: the whole function «…_selftest» (see ZD_PRUEFCODE)
+        if isinstance(st, ast.FunctionDef) and st.name in pruef:
+            found.append((off[st.lineno - 1], off[st.end_lineno - 1] + st.end_col_offset, None, st.name, 0))
     if not found:
         return text, []
     stem = name[:-3]
     out, ents, pos, used = [], [], 0, {}
     for a, e, nd, ctx, hx in sorted(found, key=lambda x: x[0]):
+        if nd is None:                                     # the stub on the line of the «def», empty lines below it
+            key = "%s/%s()" % (stem, ctx)
+            ph = "%s = _zd_fn(%r)" % (ctx, key) + "\n" * b[a:e].count(b"\n")
+            out.append(b[pos:a]); out.append(ph.encode()); pos = e
+            ents.append((key, ph, b[a:e].decode()))
+            continue
         k = re.sub(r"[^A-Za-z0-9_]+", "_", ctx).strip("_") or "x"
         used[k] = used.get(k, 0) + 1
         key = "%s/%s" % (stem, k) + ("~%d" % used[k] if used[k] > 1 else "")
@@ -423,6 +502,7 @@ def auslagern(name, text):
 
 
 ZD_SCHLANK = True                   # 3.59.0: comments, docstrings of functions / classes, indentation as tabs (_schlank)
+ZD_FOLGEZEILEN = True               # Hauptdatei kleiner: also the continuation lines with tabs (_schlank)
 
 
 def _schlank(text):
@@ -460,8 +540,20 @@ def _schlank(text):
     # indentation: a level of four more spaces becomes one tab, any other step stays spaces (the new indentation of a
     # level always starts with the one of its parent - Python sees the same blocks with tabs of any width)
     cm, starts, stack, prev_end, at_start = {}, [], [("", "")], 0, True
+    im_text, fs_tief, fs_start = set(), 0, 0               # rows that begin inside a string of several lines: never touched
+    t_fs_a, t_fs_e = getattr(tokenize, "FSTRING_START", -1), getattr(tokenize, "FSTRING_END", -1)
     for tok in tokenize.generate_tokens(io.StringIO(mid).readline):
         tt = tok.type
+        if tt == tokenize.STRING:
+            im_text.update(range(tok.start[0] + 1, tok.end[0] + 1))
+        elif tt == t_fs_a:                                 # Python 3.12+: an f-string comes in pieces - the same rows as before
+            fs_tief += 1
+            if fs_tief == 1:
+                fs_start = tok.start[0]
+        elif tt == t_fs_e:
+            fs_tief -= 1
+            if fs_tief == 0:
+                im_text.update(range(fs_start + 1, tok.end[0] + 1))
         if tt == tokenize.COMMENT:
             if not (tok.start[0] == 1 and tok.string.startswith("#!")):
                 cm[tok.start[0]] = tok.start[1]
@@ -487,10 +579,23 @@ def _schlank(text):
         prev_end = tok.end[0]
     for row, col in cm.items():
         new[row - 1] = new[row - 1][:col].rstrip()
+    kopf = set()
     for row, col, old, neu in starts:
         ln = new[row - 1]
+        kopf.add(row)
         if ln[:col] == old:
             new[row - 1] = neu + ln[col:]
+    if ZD_FOLGEZEILEN:
+        # Hauptdatei kleiner (Nov. 2026): continuation lines (inside brackets, aligned with spaces) - every four leading
+        # spaces become one tab, the rest stays. Python ignores the indentation of such a line; zd_source() (012) turns
+        # leading tabs back into four spaces each, so these lines need no entry in "zeilen". Lines that begin inside a
+        # string of several lines are content and stay as they are.
+        for i, ln in enumerate(new):
+            if (i + 1) in im_text or (i + 1) in kopf or not ln.startswith("    "):
+                continue
+            n = len(ln) - len(ln.lstrip(" "))
+            if n < len(ln):
+                new[i] = "\t" * (n // 4) + ln[n - n % 4:]
     out = "\n".join(new)
     if len(new) != len(lines):
         raise SystemExit("Schlank: Zeilenzahl geändert – Fehler in bauen.py")
@@ -509,6 +614,7 @@ def zusammensetzen_klein(zd_sha=None):
     (None = of the zip that these entries give, see zd_bytes)"""
     teile_ = teile()
     v = version()
+    pruefcode_namen(neu=True)
     texts, ents = [], []
     for n in teile_:
         t, e = auslagern(n, lesen(n))
@@ -589,6 +695,11 @@ def groessen(n=15):
     print("\nAusgelagert: %d Literale, %d Bytes · %d Zeilen ohne Kommentare / Docstrings · Hauptdatei %d Bytes (%.2f MiB) · ZIP %d Bytes"
           % (len(ents), sum(len(x[2].encode()) for x in ents), len(zeilen), len(text.encode()), len(text.encode()) / 1048576,
              len(zd_bytes(v, ents, zeilen))))
+    print()
+    groessen_bericht(text)
+    print("\nGrösste Literale, die in der Hauptdatei bleiben (mit Grund):")
+    for sz, part, ctx, why in bleibt_literale(max(n, 40)):
+        print("  %8d  %s/%s – %s" % (sz, part[:-3], ctx[:40], why))
     groesse_pruefen(text)
     return 0
 
@@ -671,6 +782,80 @@ GROESSE_MAX = 5 * 1024 * 1024                 # darüber: Abbruch (die Datei wir
 GROESSE_WARN = 4 * 1024 * 1024                # darüber: Warnung
 
 
+# Hauptdatei kleiner (Nov. 2026): die Hauptdatei war bis 2.6 KB an die Warnung herangewachsen, ohne dass es jemand merkte.
+# Darum (1) bei jedem Bau ein kurzer Grössen-Bericht (groessen_bericht) und (2) ein Test in der CI-Gruppe «basis»
+# (werkzeuge/hauptdatei_groesse_test.py), der rot wird, wenn weniger als GROESSE_LUFT bis zur Warnung bleiben.
+GROESSE_LUFT = 150 * 1024                     # so viel Platz bis zur Warnung muss bleiben (Test «Hauptdatei-Grösse»)
+
+
+def bleibt_literale(n=5):
+    """the biggest literals that stay in the program file after moving out: [(bytes, part, name, reason)], biggest first"""
+    stop = (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Lambda)
+    rows = []
+    for name in teile():
+        if name.startswith("000_"):
+            continue                                       # the list of changes (newest ZD_NEU versions stay on purpose)
+        t, _e = auslagern(name, lesen(name))
+        b = t.encode()
+        off = [0]
+        for ln in b.split(b"\n"):
+            off.append(off[-1] + len(ln) + 1)
+
+        def walk(nd, ctx, wo):
+            if isinstance(nd, ast.expr) and _zd_lit(nd) and not isinstance(nd, ast.UnaryOp):
+                sz = off[nd.end_lineno - 1] + nd.end_col_offset - off[nd.lineno - 1] - nd.col_offset
+                if sz >= ZD_MIN_KLEIN:
+                    base = re.split(r"[.\[]", ctx, maxsplit=1)[0]
+                    if name.startswith(ZD_KEEP_PARTS):
+                        why = "Teil bleibt immer (ZD_KEEP_PARTS)"
+                    elif wo == "_zd_hx":
+                        why = "Deutsch der Tabelle (Start ohne ZIP)"
+                    elif wo:
+                        why = "in %s (nur Literale auf oberster Ebene werden ausgelagert)" % wo
+                    elif base in ZD_KEEP_NAMES:
+                        why = "festgehalten (ZD_KEEP_NAMES)"
+                    elif base.startswith(ZD_KEEP_PREFIX):
+                        why = "Tabelle _HX… in anderer Form"
+                    else:
+                        why = "kleiner als %d Bytes" % (ZD_MIN_KLEIN if _zd_statisch(nd, base, 0) else ZD_MIN)
+                    rows.append((sz, name, ctx, why))
+                return
+            if isinstance(nd, ast.Call) and isinstance(nd.func, ast.Name) and nd.func.id == "_zd_hx" and not wo:
+                wo = "_zd_hx"
+            elif isinstance(nd, stop) and not wo:
+                wo = "Funktion / Klasse %s" % getattr(nd, "name", "")
+            elif isinstance(nd, (ast.For, ast.While, ast.ListComp, ast.DictComp, ast.SetComp, ast.GeneratorExp, ast.JoinedStr)) and not wo:
+                wo = "Schleife / f-Text"
+            for c in ast.iter_child_nodes(nd):
+                walk(c, ctx, wo)
+
+        def body(stmts):
+            for st in stmts:
+                if isinstance(st, (ast.If, ast.Try, ast.With)):
+                    body(st.body); body(getattr(st, "orelse", [])); body(getattr(st, "finalbody", []))
+                    for h in getattr(st, "handlers", []):
+                        body(h.body)
+                else:
+                    walk(st, _zd_ctx(st) if not hasattr(st, "name") else st.name, "")
+        body(ast.parse(t, name).body)
+    return sorted(rows, reverse=True)[:n]
+
+
+def groessen_bericht(text, mit_literalen=True):
+    """a short report on every build: size of the program file, room up to the warning, the biggest literals that stay"""
+    n = len(text.encode("utf-8"))
+    luft = GROESSE_WARN - n
+    print("Grösse: Hauptdatei %d Bytes (%.2f MiB) · Luft bis zur Warnung (4 MiB): %d KiB%s"
+          % (n, n / 1048576.0, luft // 1024, "" if luft >= GROESSE_LUFT else
+             " – WENIGER ALS %d KiB: grosse Daten als Literal auf oberster Ebene schreiben (dann lagert bauen.py sie aus), "
+             "siehe CLAUDE.md «Zusatzdatei» und «bauen.py --groessen»" % (GROESSE_LUFT // 1024)))
+    if mit_literalen:
+        print("        Grösste Literale, die in der Hauptdatei bleiben:")
+        for sz, part, ctx, why in bleibt_literale(5):
+            print("        %7d  %s/%s – %s" % (sz, part[:-3], ctx[:40], why))
+    return luft
+
+
 def groesse_pruefen(text):
     """False = zu gross (Meldung ausgegeben); Warnung ab GROESSE_WARN"""
     n = len(text.encode("utf-8"))
@@ -734,6 +919,7 @@ def main():
             return 1
         print("ok: %s = quelle/ (%d Teile)%s" % (os.path.basename(f), len(teile()),
                                               (" + %s (%d Literale)" % (os.path.basename(zf), len(ents))) if ents else ""))
+        groessen_bericht(text, mit_literalen=False)
         return 0
     if a.neue_version is not None:
         if not groesse_pruefen(zusammensetzen_klein("")[0]):   # vor dem Hochzählen: nichts ändern, wenn es zu gross wird
@@ -771,6 +957,7 @@ def main():
                                                              len(text.encode()) / 1048576))
     if ents:
         print("        %s (%d Literale ausgelagert, %.2f MiB)" % (os.path.basename(zf), len(ents), os.path.getsize(zf) / 1048576))
+    groessen_bericht(text)
     if a.signieren:
         for cmd in ([sys.executable, f, "--make-manifest", ".", "--sign-key", a.signieren], [sys.executable, f, "--self-test", "."]):
             r = subprocess.run(cmd, cwd=REPO, capture_output=True, text=True)
