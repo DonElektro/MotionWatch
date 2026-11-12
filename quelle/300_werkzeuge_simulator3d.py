@@ -714,6 +714,9 @@ def sim_latest_check(force=False):
                         d = json.loads(r.read(65536))
                     # Versionierung 3.0.0: «ver» = the new number (X.Y.Z), «version» = «3D-(X+2).Y.Z» for old simulators
                     SIMLATEST[key] = {"version": str(d.get("ver") or d.get("version") or "")[:20], "notes": str(d.get("notes") or "")[:400]}
+                    ah = d.get("anhang") if key == "3d" and isinstance(d.get("anhang"), dict) else None   # Simulator-Anhang (below)
+                    if ah and VER_RE.match(str(ah.get("ver") or "")) and (sim_vkey(ah["ver"]) or (0,)) > (sim_vkey(SIMLATEST[key]["version"]) or (0,)):
+                        SIMLATEST[key] = {"version": str(ah["ver"]), "notes": str(ah.get("notes") or "")[:400]}
                     SIMLATEST["err"] = ""
                 except Exception as e:
                     SIMLATEST["err"] = _upd_error(e)[:120] if "_upd_error" in globals() else str(e)[:120]
@@ -800,6 +803,29 @@ def sim_versions():
             "checked": int(time.time() - SIMLATEST["t"]) if SIMLATEST["t"] else None, "err": SIMLATEST["err"]}
 SIM3D["stem"] = "MotionWatch3D_Simulator"; SIM3D["label"] = "MoveEye Sim · 3D" if "3D-" in SIM3D["version"] else "MoveEye Sim"
 SIM3D_BASE = "https://raw.githubusercontent.com/DonElektro/MotionWatch/main/"
+SIM3D["url"] = ""; SIM3D_LINUX["url"] = ""                # "" = in the repository (SIM3D_BASE + file); else a Release asset (below)
+
+# ---- Simulator-Anhang (Besitzer 12.11.2026, «Ablage entlasten»): the Windows and the Linux package no longer go into the
+# repository with every simulator release (103 MB each time, git cannot compare them). The last packages in the repository
+# (Sim 3.67.2) stay there for good - old MoveEye versions, old simulators and an HP that has not updated yet fetch them as
+# always and get the rest from the simulator's own update. Newer packages are assets of the GitHub Release «sim-X.Y.Z»
+# (built by the workflow «Sim-Pakete», like the Pi package before) and stand in the signed versions.json under
+# «sim» -> «anhang»: {"ver", "win": {ver, file, size, sha256, url, sig}, "linux": {…}}. Rules:
+#   * «file» is SIM3D_ANHANG[key][0] (an other name than the package in the repository: the signature
+#     «MotionWatch|ver|file|sha256» of an asset never fits the place of a repository package and the other way round);
+#   * «url» must be exactly SIM3D_ANHANG_BASE + "sim-<ver>/<name>" - the address follows from the signed number, a changed
+#     list cannot send the download somewhere else; the content is guarded by the signed sha256 anyway;
+#   * per package the newest correctly signed entry wins (repository or asset; the repository one at the same number), never
+#     older than the embedded / last taken one. Without a valid asset entry everything is as before.
+# MoveEye versions before this change read only «win» / «linux» / «pi» and never see «anhang». ----
+SIM3D_ANHANG_BASE = "https://github.com/DonElektro/MotionWatch/releases/download/"     # tests: a local server
+SIM3D_ANHANG = {"win": ("simulator3d/anhang/MotionWatch3D_Simulator.zip", "MotionWatch3D_Simulator.zip"),
+                "linux": ("simulator3d/anhang/MoveEyeSim3D_Linux.zip", "MoveEyeSim3D_Linux.zip")}
+
+
+def sim_anhang_url(key, ver):
+    """the only address a Release-asset package of this number may have"""
+    return SIM3D_ANHANG_BASE + "sim-" + str(ver) + "/" + SIM3D_ANHANG[key][1]
 
 # ---- Drei Spuren (Besitzer 03.11.2026): the simulator has its own number and can be released without a new MoveEye. The
 # checksums above are only the fallback (the simulator of this MoveEye's own release). The signed versions.json carries the
@@ -809,35 +835,55 @@ SIM3D_BASE = "https://raw.githubusercontent.com/DonElektro/MotionWatch/main/"
 # embedded one or the one taken before (no replay of an old list), replaces version / size / checksum - anything else keeps
 # the values. MoveEye versions from before this change know only their embedded checksum: they serve /sim again after their
 # own update. Test: sim_manifest_selftest (545). ----
-SIM3D_EMBED = {k: SIM3D[k] for k in ("version", "size", "sha256")}
-SIM3D_LINUX_EMBED = {k: SIM3D_LINUX[k] for k in ("version", "size", "sha256")}
+SIM3D_EMBED = {k: SIM3D[k] for k in ("version", "size", "sha256", "url")}
+SIM3D_LINUX_EMBED = {k: SIM3D_LINUX[k] for k in ("version", "size", "sha256", "url")}
 SIMMAN = {"t": 0.0, "src": "embedded", "loaded": False}
 SIMMAN_FILE = "sim_manifest.json"                   # in DATA_DIR/sim3d: the last verified «sim» block (checked again on load)
 
 
+def _sim_entry_ok(e, want_file, url_ok):
+    """one signed package entry {ver, file, size, sha256, sig[, url]} checked -> the clean entry, else None.
+    url_ok: None = a package in the repository (no address), else a function ver -> the only address allowed"""
+    if not isinstance(e, dict):
+        return None
+    v, fn, sha = str(e.get("ver") or ""), str(e.get("file") or ""), str(e.get("sha256") or "").lower()
+    try:
+        size = int(e.get("size") or 0)
+    except (TypeError, ValueError):
+        return None
+    if not (VER_RE.match(v) and fn == want_file and re.fullmatch(r"[0-9a-f]{64}", sha) and 0 < size <= 2 * 1024 ** 3):
+        return None
+    url = str(e.get("url") or "")
+    if url_ok is not None and not url_ok(v, url):
+        return None
+    if not sig_ok(v, fn, sha, e.get("sig")):
+        return None
+    out = {"ver": v, "file": fn, "size": size, "sha256": sha, "sig": str(e.get("sig"))}
+    if url_ok is not None:
+        out["url"] = url
+    return out
+
+
 def sim_manifest_verify(blk):
-    """the parts of a versions.json «sim» block whose signature is valid: {"win": {...}, "linux": {...}} (maybe empty)"""
+    """the parts of a versions.json «sim» block whose signature is valid: {"win": {...}, "linux": {...}, "pi": {...},
+    "anhang": {"win": {...}, "linux": {...}}} (maybe empty; «anhang» = packages as Release assets, see above)"""
     out = {}
     if not isinstance(blk, dict):
         return out
     for key, pkg in (("win", SIM3D), ("linux", SIM3D_LINUX), ("pi", SIM3D_PI)):
-        e = blk.get(key)
-        if not isinstance(e, dict):
-            continue
-        v, fn, sha = str(e.get("ver") or ""), str(e.get("file") or ""), str(e.get("sha256") or "").lower()
-        try:
-            size = int(e.get("size") or 0)
-        except (TypeError, ValueError):
-            continue
-        if not (VER_RE.match(v) and fn == pkg["file"] and re.fullmatch(r"[0-9a-f]{64}", sha) and 0 < size <= 2 * 1024 ** 3):
-            continue
-        url = str(e.get("url") or "")
-        if key == "pi" and not SIM3D_PI_URL_RE.match(url):
-            continue                                              # Pi: only a Release asset of this project (content: signed sha256)
-        if sig_ok(v, fn, sha, e.get("sig")):
-            out[key] = {"ver": v, "file": fn, "size": size, "sha256": sha, "sig": str(e.get("sig"))}
-            if key == "pi":
-                out[key]["url"] = url
+        # Pi: only a Release asset of this project (content: signed sha256)
+        e = _sim_entry_ok(blk.get(key), pkg["file"], (lambda v, u: bool(SIM3D_PI_URL_RE.match(u))) if key == "pi" else None)
+        if e:
+            out[key] = e
+    ah = blk.get("anhang")
+    if isinstance(ah, dict):
+        got = {}
+        for key in ("win", "linux"):
+            e = _sim_entry_ok(ah.get(key), SIM3D_ANHANG[key][0], lambda v, u, key=key: u == sim_anhang_url(key, v))
+            if e:
+                got[key] = e
+        if got:
+            out["anhang"] = got
     return out
 
 
@@ -847,12 +893,14 @@ def sim_manifest_take(blk, save=True):
     changed = []
     for key, pkg in (("win", SIM3D), ("linux", SIM3D_LINUX), ("pi", SIM3D_PI)):
         e = ok.get(key)
+        a = (ok.get("anhang") or {}).get(key)             # Simulator-Anhang: the newer one wins, the repository one at a tie
+        if a and sim_vkey(a["ver"]) and (not e or not sim_vkey(e["ver"]) or sim_vkey(a["ver"]) > sim_vkey(e["ver"])):
+            e = a
         if not e or not sim_vkey(e["ver"]) or not sim_vkey(pkg["version"]) or sim_vkey(e["ver"]) < sim_vkey(pkg["version"]):
             continue                                              # never back: not older than the embedded / the last taken one
-        if (pkg["version"], pkg["size"], pkg["sha256"]) != (e["ver"], e["size"], e["sha256"]):
-            pkg.update(version=e["ver"], size=e["size"], sha256=e["sha256"])
-            if key == "pi":
-                pkg["url"] = e["url"]
+        url = e.get("url", "")
+        if (pkg["version"], pkg["size"], pkg["sha256"], pkg.get("url", "")) != (e["ver"], e["size"], e["sha256"], url):
+            pkg.update(version=e["ver"], size=e["size"], sha256=e["sha256"], url=url)
             changed.append(key)
     if ok:
         SIMMAN.update(t=time.time(), src="versions.json")
@@ -924,13 +972,14 @@ def sim3d_fetch(pkg=None, dl=None):
                 sim_manifest_refresh(base)                    # 3 tracks: the newest signed simulator (versions.json «sim»)
                 if sim3d_ready(SIM3D):
                     return
-            want = {"version": SIM3D["version"], "size": SIM3D["size"], "sha256": SIM3D["sha256"]}   # fixed for this download
+            want = {"version": SIM3D["version"], "size": SIM3D["size"], "sha256": SIM3D["sha256"],
+                    "url": SIM3D.get("url") or ""}                                                    # fixed for this download
             p = os.path.join(DATA_DIR, "sim3d", SIM3D["stem"] + "_" + want["version"] + ".zip"); tmp = p + ".part"
             os.makedirs(os.path.dirname(p), exist_ok=True)
             h = hashlib.sha256()
             if not want["size"] or not want["sha256"]:
                 raise ValueError("no signed package known yet")
-            src_url = SIM3D.get("url") or (base + SIM3D["file"])     # Pi: the Release asset (only with a signed «sim.pi»)
+            src_url = want["url"] or (base + SIM3D["file"])          # a Release asset (Pi, Simulator-Anhang): only signed
             with urllib.request.urlopen(_upd_request(src_url), timeout=30) as r, open(tmp, "wb") as f:
                 while True:
                     b = r.read(1 << 16)

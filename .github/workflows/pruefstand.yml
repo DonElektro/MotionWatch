@@ -96,7 +96,11 @@ jobs:
         run: |
           PY="${MW_RUNNER_PY:-${MW_RUNNER_HOME:-$HOME}/venv/bin/python}"
           [ -x "$PY" ] || { echo "::error::Python fehlt ($PY) – auf dem HP runner_einrichten.sh starten"; exit 1; }
-          unzip -q -o simulator3d/MoveEyeSim3D_Linux.zip -d "$RUNNER_TEMP/sim"
+          # Simulator-Anhang: nennt version.json einen Anhang, ist das neuste Linux-Paket ein Release-Asset (sonst das im Repository)
+          python3 werkzeuge/sim_anhang.py pfad linux --ziel "$RUNNER_TEMP/anhang/MoveEyeSim3D_Linux.zip" > "$RUNNER_TEMP/sim_pfad.txt" \
+            || { cat "$RUNNER_TEMP/sim_pfad.txt"; echo "::error::Linux-Paket des Simulators nicht geholt (Release-Asset)"; exit 1; }
+          cat "$RUNNER_TEMP/sim_pfad.txt"
+          unzip -q -o "$(tail -n 1 "$RUNNER_TEMP/sim_pfad.txt")" -d "$RUNNER_TEMP/sim"
           chmod +x "$RUNNER_TEMP/sim/MoveEyeSim3D/MoveEyeSim3D.x86_64"
           { echo "PY=$PY"; echo "SIMARG=--sim-bin"; echo "SIMPFAD=$RUNNER_TEMP/sim/MoveEyeSim3D/MoveEyeSim3D.x86_64"
             echo "RECHNER=HP EliteDesk 800 G1 ($(nproc) Kerne)"; } >> "$GITHUB_ENV"

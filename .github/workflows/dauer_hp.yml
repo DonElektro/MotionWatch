@@ -214,6 +214,11 @@ jobs:
           Z=stand/simulator3d/MoveEyeSim3D_Linux.zip
           B="$RUNNER_TEMP/sim/MoveEyeSim3D/MoveEyeSim3D.x86_64"
           rm -rf "$RUNNER_TEMP/sim"
+          if [ -f stand/werkzeuge/sim_anhang.py ]; then     # Simulator-Anhang: das Linux-Paket dieses Stands kann ein Release-Asset sein
+            if python3 stand/werkzeuge/sim_anhang.py pfad linux --ziel "$RUNNER_TEMP/anhang/MoveEyeSim3D_Linux.zip" > "$RUNNER_TEMP/sim_pfad.txt"; then
+              Z="$(tail -n 1 "$RUNNER_TEMP/sim_pfad.txt")"
+            else cat "$RUNNER_TEMP/sim_pfad.txt"; Z=/nicht/da; fi
+          fi
           if [ -s "$Z" ] && unzip -q -o "$Z" -d "$RUNNER_TEMP/sim" && [ -f "$B" ]; then
             chmod +x "$B"
             echo "SIMBIN=$B" >> "$GITHUB_ENV"

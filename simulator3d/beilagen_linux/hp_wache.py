@@ -22,6 +22,11 @@ Drei Aufgaben, alles nur mit Daten-Dateien (nichts wird ausgeführt, was von aus
      Sticks gilt als Spielen - auch während gerechnet wird (dann hält das Rechnen an, wie beim Knopf «Spielen»). Gelesen
      werden nur die Joystick-Geräte /dev/input/js* (die Kiosk-Sitzung darf sie lesen: logind «uaccess»); ohne js* die
      event-Geräte, die udev als Joystick kennt (nur Tasten und Steuerkreuz). Nichts davon wird gespeichert.
+     Bluetooth oder Kabel macht keinen Unterschied (beide erscheinen als js*). Ausnahmen (HP_FASSUNG 7): solange das
+     Fenster «Controller koppeln» offen ist (Marke «fenster_offen» neben der Spielen-Datei, controller_fenster.py), zählen
+     Controller-Eingaben nicht - das Bedienen dieses Fensters und das Koppeln selbst sind kein Spielen. Und: ist ein
+     Controller da, aber PAD_RUHE_S (20 Min.) ohne Eingabe, bittet die Wache den Dienst moveeye-controller-koppeln mit der
+     leeren Wunsch-Datei «controller_ruhe», Bluetooth-Controller zu trennen (schont den Akku; die PS-Taste verbindet wieder).
    - Solange gespielt wird: jede Eingabe (Leerlauf-Zähler des X-Servers, libXss), jede Controller-Eingabe, jeder
      Zuschauer-Puls und jeder Spieler auf 8770 / 8771 frischt die Datei auf. 15 Min. ohne das -> die Datei ist abgelaufen (Änderungsdatum älter als --ruhe-s),
      das Rechnen geht dort weiter, wo es stand.
@@ -212,14 +217,20 @@ class Pads:
     JS = struct.Struct("IhBB")                         # struct js_event: Zeit, Wert, Art, Nummer
     EV = struct.Struct("llHHi")                        # struct input_event (64 Bit: timeval, type, code, value)
     JS_TASTE, JS_ACHSE, JS_INIT = 0x01, 0x02, 0x80
-    ACHSE_SCHRITT = 9000                              # so weit muss sich eine Achse seit dem letzten Wert bewegen
+    ACHSE_SCHRITT = 9000                              # so weit muss sich eine Achse seit dem letzten gezählten Stand bewegen
+    HALTEN_AB = 16000                                 # so weit von der Ruhelage: der Stick wird gehalten (z. B. vorwärts laufen)
+    HALTEN_MAX_S = 600.0                              # gehalten zählt höchstens so lange ohne eine andere Eingabe (klemmender Stick)
 
     def __init__(self, quelle="/dev/input", scan_s=5.0, udev="/run/udev/data"):
         self.quelle, self.scan_s, self.udev = quelle, scan_s, udev
         self.fds = {}                                  # Pfad -> fd
         self.art = {}                                  # fd -> "js" | "ev"
         self.rest = {}                                 # fd -> unvollständige Bytes
-        self.achsen = {}                               # (fd, Nummer) -> letzter Wert
+        self.achsen = {}                               # (fd, Nummer) -> letzter gezählter Stand
+        self.ruhe = {}                                 # (fd, Nummer) -> Ruhelage (erster Wert)
+        self.jetzt_wert = {}                           # (fd, Nummer) -> aktueller Wert
+        self.t_bewegt = 0.0                            # letzte Taste / deutliche Bewegung (ohne «gehalten»)
+        self.t_da = 0.0                                # seit wann mindestens ein Controller da ist (0 = keiner)
         self.t_scan = 0.0
         self.t_aktiv = 0.0                             # letzte deutliche Controller-Eingabe
         self.gemeldet = set()
@@ -254,6 +265,8 @@ class Pads:
                 continue
             self.fds[p], self.art[fd], self.rest[fd] = fd, art, b""
             self.gemeldet.discard(p)
+            if not self.t_da:
+                self.t_da = jetzt
             log("Controller", os.path.basename(p), "erkannt - Eingaben zählen als Spielen")
         for p in [p for p in self.fds if not any(p == k for k, _ in kand)]:
             self._zu(p)
@@ -262,8 +275,11 @@ class Pads:
         fd = self.fds.pop(p, None)
         if fd is None:
             return
-        for k in [k for k in self.achsen if k[0] == fd]:
-            del self.achsen[k]
+        for d in (self.achsen, self.ruhe, self.jetzt_wert):
+            for k in [k for k in d if k[0] == fd]:
+                del d[k]
+        if not self.fds:
+            self.t_da = 0.0
         self.art.pop(fd, None)
         self.rest.pop(fd, None)
         try:
@@ -304,9 +320,15 @@ class Pads:
                     aktiv = aktiv or (wert == 1 and not init)
                 elif typ == self.JS_ACHSE:
                     alt = self.achsen.get((fd, nr))
-                    self.achsen[(fd, nr)] = wert
-                    if not init and alt is not None and abs(wert - alt) >= self.ACHSE_SCHRITT:
-                        aktiv = True                   # (der erste Wert einer Achse wird nur gemerkt)
+                    self.jetzt_wert[(fd, nr)] = wert
+                    if alt is None or init:            # der erste Wert einer Achse wird nur gemerkt (Ruhelage)
+                        self.achsen[(fd, nr)] = wert
+                        self.ruhe.setdefault((fd, nr), wert)
+                    elif abs(wert - alt) >= self.ACHSE_SCHRITT:
+                        # seit dem letzten gezählten Stand deutlich bewegt - auch langsam, in vielen kleinen Schritten
+                        # (ein echter Stick meldet jede kleine Änderung); Rauschen um einen Punkt summiert sich nicht
+                        self.achsen[(fd, nr)] = wert
+                        aktiv = True
             else:
                 _, _, typ, code, wert = s.unpack_from(daten, i * s.size)
                 if typ == 1 and wert == 1 and code >= 0x120:           # EV_KEY, BTN_JOYSTICK / BTN_GAMEPAD …
@@ -314,8 +336,22 @@ class Pads:
                 elif typ == 3 and 0x10 <= code <= 0x17 and wert != 0:    # EV_ABS, Steuerkreuz (ABS_HAT*)
                     aktiv = True
         if aktiv:
-            self.t_aktiv = jetzt
+            self.t_aktiv = self.t_bewegt = jetzt
         return aktiv
+
+    def gehalten(self, jetzt):
+        """Wird ein Stick oder Trigger gerade deutlich aus der Ruhelage gehalten (ohne neue Ereignisse: am Anschlag meldet
+        das Gerät nichts mehr)? Zählt als Eingabe, aber höchstens HALTEN_MAX_S nach der letzten echten Bewegung / Taste."""
+        if jetzt - self.t_bewegt > self.HALTEN_MAX_S:
+            return False
+        if any(abs(w - self.ruhe.get(k, w)) >= self.HALTEN_AB for k, w in self.jetzt_wert.items()):
+            self.t_aktiv = jetzt
+            return True
+        return False
+
+    def ruhe_s(self, jetzt):
+        """so lange ist ein Controller da, ohne dass ihn jemand bedient (0 = keiner da)"""
+        return jetzt - max(self.t_da, self.t_aktiv) if self.fds and self.t_da else 0.0
 
 
 def verbindungen(ports):
@@ -433,6 +469,8 @@ class Wache:
             log("Status-Port", a.status_port, "besetzt - ohne Status-Dienst")
         self.leer = Leerlauf()
         self.pads = Pads(a.pad_quelle, a.pad_scan_s, a.pad_udev) if a.pad_quelle else None
+        self.fenster_marke = os.path.join(os.path.dirname(self.spiel), "fenster_offen")   # controller_fenster.py
+        self.ruhe_gemeldet = False
         self.zuschauer_t = 0.0                  # letzter Zuschauer-Puls von MoveEye (POST /zuschauer)
         self.n_sek = []
         self.letzte_aktiv = 0.0
@@ -554,7 +592,14 @@ class Wache:
         jetzt = time.time()
         idle = self.leer.sekunden()
         eingabe = idle is not None and idle < 20
-        pad = self.pads is not None and jetzt - self.pads.t_aktiv < 20
+        pad = False
+        if self.pads is not None:
+            self.pads.gehalten(jetzt)
+            al = alter(self.fenster_marke)
+            if al is not None and al < 8:                # Fenster «Controller koppeln» offen: Bedienen ist kein Spielen
+                self.pads.t_aktiv = min(self.pads.t_aktiv, jetzt - 20)
+            pad = jetzt - self.pads.t_aktiv < 20
+            self.pad_ruhe(jetzt)
         if pad and z == "rechnet":                       # Controller: wie der Knopf «Spielen» - das Rechnen hält an
             self.wunsch("controller")
             return
@@ -574,6 +619,22 @@ class Wache:
                     os.utime(self.spiel, None)
                 except OSError:
                     pass
+
+    def pad_ruhe(self, jetzt):
+        """Controller da, aber lange unbenutzt: den Dienst bitten, Bluetooth-Controller zu trennen (einmal pro Ruhe)"""
+        r = self.pads.ruhe_s(jetzt)
+        if r < self.a.pad_ruhe_s:
+            self.ruhe_gemeldet = False
+            return
+        if self.ruhe_gemeldet or self.a.pad_ruhe_s <= 0:
+            return
+        self.ruhe_gemeldet = True
+        p = os.path.join(os.path.dirname(self.spiel), "controller_ruhe")
+        try:
+            os.close(os.open(p, os.O_WRONLY | os.O_CREAT | getattr(os, "O_NOFOLLOW", 0), 0o644))
+            log("Controller %d Min. ohne Eingabe - Bluetooth-Controller werden getrennt (Akku; die PS-Taste verbindet wieder)" % (r // 60))
+        except OSError:
+            pass
 
     def lauf(self):
         log("HP-Wache startet (Spielen:", self.spiel, "· Status-Port", self.a.status_port or "aus", ")")
@@ -633,6 +694,7 @@ def main():
     ap.add_argument("--zuschauer-s", type=int, default=60, help="so lange gilt ein Zuschauer-Puls von MoveEye (s)")
     ap.add_argument("--pad-quelle", default="/dev/input", help="Ordner mit js* / event* (Controller); leer = aus")
     ap.add_argument("--pad-scan-s", type=float, default=5.0, help="so oft nach neuen Controllern schauen (s)")
+    ap.add_argument("--pad-ruhe-s", type=int, default=1200, help="Controller so lange unbenutzt: Bluetooth trennen (0 = nie)")
     ap.add_argument("--pad-udev", default="/run/udev/data", help=argparse.SUPPRESS)      # nur zum Prüfen
     ap.add_argument("--sim-ports", default=",".join(str(p) for p in SIM_PORTS),
                     help="Port der Handy-Seite des Spiels, auf dem beim Rechnen gelauscht wird")

@@ -14,10 +14,18 @@ const INFO_FILE := "simulator3d/version.json"
 # old name and starts MoveEyeSim3D.exe (written next to it from the same ZIP) instead, see old_name_forward().
 const EXE_STEM := "MoveEyeSim3D"
 const PI_ASSET := "https://github.com/DonElektro/MotionWatch/releases/download/sim-"   # Sim 3.57.0: block «pi» «url»
+# Simulator-Anhang (Sim 3.67.2, Besitzer 12.11.2026 «Ablage entlasten»): from the version AFTER 3.67.2 the Windows and the
+# Linux package are assets of the Release «sim-X.Y.Z» too (not in the repository any more: 103 MB with every version).
+# version.json keeps its top fields and «linux» frozen at Sim 3.67.2 - the packages of 3.67.2 stay in the repository for
+# good, so every older simulator still finds and installs them the old way - and names the newest version in the block
+# «anhang»: {"ver", "notes", "win": {file, size, sha256, url}, "linux": {…}}. This simulator (3.67.2 and newer) takes the
+# block when it is newer (anhang_info). The address must be asset_base + "<ver>/<file name>"; size and SHA-256 are checked
+# as always, nothing is installed otherwise and the running version starts.
 const OLD_STEM := "MotionWatch3D"
 const GONE_FILES := ["Start auf Port 8766.bat"]   # Ports aufräumen: umbenannt (8766 = Tunnel-Port von MoveEye) - nach dem Update weg
 
 var base := BASE
+var asset_base := PI_ASSET     # Release assets «sim-X.Y.Z/…» (tests: a local server)
 var info := {}
 var title: Label
 var text: Label
@@ -76,21 +84,18 @@ func check(current: String, url := "") -> void:
 	if typeof(d) != TYPE_DICTIONARY or not d.has("version") or not d.has("sha256") or not d.has("size"):
 		await _note("Die Versions-Angabe auf GitHub ist nicht lesbar.")
 		return
-	if OS.get_name() == "Linux" and Engine.get_architecture_name() == "arm64":   # Sim 3.57.0: Raspberry Pi 5 - Paket «pi» (arm64)
-		if not has_linux(d, "pi"):
+	var plat := platform()
+	if not pick(d, plat):
+		if plat == "pi":
 			print("update check: no Pi package in version.json")
 			result = "für den Raspberry Pi noch kein Update-Paket"
 			await _note("Für den Raspberry Pi (arm64) gibt es auf GitHub noch kein Update-Paket.")
-			return
-		d = linux_info(d, "pi")
-	elif OS.get_name() == "Linux":                # Paket Linux (Besitzer 01.11.2026): eigenes Paket unter «linux» in version.json
-		if not has_linux(d):
+		else:
 			print("update check: no Linux package in version.json")
 			result = "für Linux noch kein Update-Paket"
 			await _note("Für Linux gibt es auf GitHub noch kein Update-Paket.")
-			return
-		d = linux_info(d)
-	info = d
+		return
+	d = info
 	var latest := V.of_info(d)                    # Versionierung 3.0.0: «ver» (new number), «version» = for old simulators
 	info["version"] = V.plain(latest)             # (the progress text and the messages show the new number)
 	if not newer(latest, current):
@@ -132,6 +137,69 @@ func check(current: String, url := "") -> void:
 		result = "Update auf %s abgebrochen" % info["version"]
 		return
 	await _update()
+
+
+static func platform() -> String:
+	"""which package this simulator needs: «win», «linux» (x86_64) or «pi» (Raspberry Pi 5, arm64)"""
+	if OS.get_name() == "Linux":
+		return "pi" if Engine.get_architecture_name() == "arm64" else "linux"
+	return "win"
+
+
+func pick(d: Dictionary, plat: String) -> bool:
+	"""choose the package for this platform from version.json into «info»: the one in the repository (top fields, «linux»)
+	or the one of the block «anhang» (Release asset) when that is newer. false = there is no package for this platform"""
+	var repo := {}
+	if plat == "pi":                              # Sim 3.57.0: Raspberry Pi 5 - Paket «pi» (arm64)
+		if has_linux(d, "pi"):
+			repo = linux_info(d, "pi")
+	elif plat == "linux":                         # Paket Linux (Besitzer 01.11.2026): eigenes Paket unter «linux» in version.json
+		if has_linux(d):
+			repo = linux_info(d)
+	else:
+		repo = d
+	var a := anhang_info(d, plat, asset_base) if plat != "pi" else {}
+	if not a.is_empty() and (repo.is_empty() or newer(V.of_info(a), V.of_info(repo))):
+		repo = a
+	if repo.is_empty():
+		return false
+	info = repo
+	return true
+
+
+static func anhang_info(d: Dictionary, plat: String, asset: String) -> Dictionary:
+	"""Simulator-Anhang: version.json with the package <plat> («win» / «linux») of the block «anhang» put in the top fields
+	(file, size, sha256, url, ver, version, notes) - {} when there is no complete block or the address is not
+	asset + "<ver>/<file name>" (the address must follow from the number)"""
+	var ah = d.get("anhang")
+	if typeof(ah) != TYPE_DICTIONARY:
+		return {}
+	var e = ah.get(plat)
+	var ver := str(ah.get("ver", "")).strip_edges()
+	if typeof(e) != TYPE_DICTIONARY or not V.is_new(ver) or not (e.has("file") and e.has("sha256") and e.has("size") and e.has("url")):
+		return {}
+	var url := str(e["url"])
+	if url != asset + ver + "/" + str(e["file"]).get_file() or str(e["sha256"]).length() != 64 or int(e["size"]) <= 0:
+		return {}
+	var out := d.duplicate()
+	for k in ["file", "size", "sha256", "url"]:
+		out[k] = e[k]
+	out["ver"] = ver
+	out["version"] = V.legacy(ver)
+	out["notes"] = str(ah.get("notes", ""))
+	if ah.has("mw_min"):
+		out["mw_min"] = ah["mw_min"]
+	return out
+
+
+func download_url(attempt: int) -> String:
+	"""where the package comes from: the Release asset when version.json names one of this project, else the repository"""
+	var u := base + str(info.get("file", "simulator3d/MotionWatch3D_Simulator.zip"))
+	if str(info.get("url", "")).begins_with(asset_base):
+		u = str(info["url"])                        # Sim 3.57.0: the Pi package; Sim 3.67.2: every package of «anhang»
+	if attempt > 0:
+		u += "?v=%s%d" % [str(info["sha256"]).left(12), Time.get_ticks_msec()]
+	return u
 
 
 static func has_linux(d: Dictionary, block: String = "linux") -> bool:
@@ -260,18 +328,13 @@ func _update() -> void:
 	b_skip.visible = false
 	bar.visible = true
 	var zip_path := ProjectSettings.globalize_path("user://update.zip")
-	var file := str(info.get("file", "simulator3d/MotionWatch3D_Simulator.zip"))
 	var ok_file := false
 	for attempt in range(3):                        # GitHub may hand out the old ZIP for some minutes after a new version
-		var u := base + file                        # (cache): then wait and ask again, the address made new (from 3D-3.4)
-		if str(info.get("url", "")).begins_with(PI_ASSET):
-			u = str(info["url"])                    # Sim 3.57.0: the Pi package is a Release asset (not in the repository)
-		if attempt > 0:
+		if attempt > 0:                             # (cache): then wait and ask again, the address made new (from 3D-3.4)
 			for i in range(20 * attempt, 0, -1):
 				text.text = "GitHub liefert noch die alte Datei – neuer Versuch in %d s …" % i
 				await get_tree().create_timer(1.0).timeout
-			u += "?v=%s%d" % [str(info["sha256"]).left(12), Time.get_ticks_msec()]
-		var why := await _download_check(u, zip_path)
+		var why := await _download_check(download_url(attempt), zip_path)
 		if why == "":
 			ok_file = true
 			break
@@ -467,14 +530,21 @@ func _download_check(u: String, zip_path: String) -> String:
 		downloading = true
 		var r: Array = await http.request_completed
 		downloading = false
+		http.download_file = ""
 		if r[0] != HTTPRequest.RESULT_SUCCESS or r[1] != 200:
+			if FileAccess.file_exists(zip_path):
+				DirAccess.remove_absolute(zip_path)     # nothing half-loaded stays
+			if r[1] == 404:
+				return "Das Paket ist auf GitHub nicht zu finden (Fehler 404)."
 			return "Download abgebrochen (Fehler %s / %s)." % [r[0], r[1]]
-	text.text = "Prüfe die Datei …"
+	if text != null:
+		text.text = "Prüfe die Datei …"
 	await get_tree().process_frame
 	var f := FileAccess.open(zip_path, FileAccess.READ)
 	if f == null or f.get_length() != int(info["size"]):
 		if f != null:
 			f.close()
+			DirAccess.remove_absolute(zip_path)
 		return "Die Datei hat die falsche Grösse."
 	var h := HashingContext.new()
 	h.start(HashingContext.HASH_SHA256)

@@ -170,11 +170,32 @@ touch -d '10 minutes ago' "$MW_SPIEL"
 js 2 -30000 0                                                # Stick ganz nach links
 sleep 4
 [ "$(( $(date +%s) - $(stat -c %Y "$MW_SPIEL") ))" -lt 60 ] && ok "Stick-Ausschlag beim Spielen frischt die Spielen-Datei auf" || fehler "nicht aufgefrischt"
+touch -d '10 minutes ago' "$MW_SPIEL"
+sleep 4                                                      # der Stick bleibt am Anschlag (keine neuen Ereignisse)
+[ "$(( $(date +%s) - $(stat -c %Y "$MW_SPIEL") ))" -lt 60 ] && ok "gehaltener Stick (am Anschlag, ohne neue Ereignisse) zählt weiter als Spielen" || fehler "gehaltener Stick zählt nicht"
+js 2 -1000 0                                                 # losgelassen: zurück zur Mitte
+sleep 21                                                     # eine Eingabe gilt 20 s
 ruhig_15min
 warte 6 status2 rechnet && ok "15 Min. ohne Controller -> wieder «rechnet»" || fehler "nach 15 Min."
 rm -f "$MW_SPIEL"
-js 2 -2000 0                                                 # zurück zur Mitte: deutlicher Ausschlag
-warte 5 test -f "$MW_SPIEL" && ok "deutlicher Stick-Ausschlag allein -> Spielen" || fehler "Stick ohne Wirkung"
+js 2 300 0  2 -300 0  2 400 0  2 -200 0                      # Rauschen um die Mitte summiert sich nicht
+sleep 4
+[ ! -e "$MW_SPIEL" ] && ok "Rauschen um die Ruhelage: kein Spielen" || fehler "Rauschen hat Spielen ausgelöst"
+js 2 1500 0  2 3000 0  2 4500 0  2 6000 0  2 7500 0  2 9000 0  2 10500 0  2 12000 0   # langsam geschoben, kleine Schritte
+warte 5 test -f "$MW_SPIEL" && ok "Stick langsam geschoben (viele kleine Schritte, wie ein echter Stick) -> Spielen" || fehler "langsamer Stick ohne Wirkung"
+# Fenster «Controller koppeln» offen (Marke fenster_offen): Tasten am Controller sind kein Spielen
+js 2 0 0
+sleep 21
+ruhig_15min; warte 6 status2 rechnet; rm -f "$MW_SPIEL"
+( for _ in 1 2 3 4 5 6 7 8; do touch "$(dirname "$MW_SPIEL")/fenster_offen"; sleep 1; done ) &
+MARKE=$!
+sleep 1; js 1 1 0  1 0 0  1 1 1  1 0 1                       # ✕ und ○ gedrückt (Fenster bedienen)
+sleep 5
+[ ! -e "$MW_SPIEL" ] && ok "Fenster «Controller koppeln» offen: Tasten am Controller sind kein Spielen" || fehler "Bedienen des Fensters hat Spielen ausgelöst"
+wait "$MARKE"; rm -f "$(dirname "$MW_SPIEL")/fenster_offen"
+sleep 9                                                      # Marke abgelaufen (8 s)
+js 1 1 0  1 0 0
+warte 5 test -f "$MW_SPIEL" && ok "Fenster zu: die nächste Taste am Controller -> Spielen" || fehler "nach dem Fenster keine Wirkung"
 kill "$WP" 2>/dev/null; wait "$WP" 2>/dev/null
 rm -f "$MW_SPIEL"
 # ohne js*: event-Gerät, das udev als Joystick kennt (nur Tasten / Steuerkreuz)

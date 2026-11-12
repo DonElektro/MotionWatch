@@ -13,6 +13,11 @@
 #     xhost +SI:localuser:<Runner> in der laufenden Sitzung als Benutzer des Kiosks (nie «xhost +»), einmal.
 #  4. Controller koppeln (HP_FASSUNG 4): controller_koppeln.sh / controller_fenster.py, Pfad-Einheit + Dienst (nur die
 #     feste Aufgabe, kein sudo / polkit für den Kiosk), Ctrl+Alt+B in openbox.xml (einmal), bluez / rfkill nachinstalliert.
+#  6. Simulator-Anhang: das Linux-Paket als Release-Asset («sim.anhang»). Sprung 1: ein HP mit dem ALTEN Skript (Testdaten
+#     hp_update_fassung6.sh) spielt weiter das Paket im Repository ein und bekommt damit das neue Skript; Sprung 2: das neue
+#     Skript holt den Anhang - nur in einer Pause (nie beim Spielen, nie während der HP rechnet). Asset fehlt / verändert /
+#     falsche Signatur / fremde Adresse / Server nicht erreichbar: nichts eingespielt, kein Rest. Umleitung (https, 302) mit
+#     einem lokalen Server; die echte Umleitung von GitHub ist hier nicht geprüft. Zurück ins Repository: neuere Nummer.
 # Der echte Signierschlüssel wird nie gebraucht. Braucht root (runuser, chown), python3, unzip, zip, curl.
 # shellcheck disable=SC2015,SC2016  # «A && ok || fehler»: ok gibt immer 0 zurück; Ersatz-Befehle in '…' laufen erst später
 set -u
@@ -121,8 +126,8 @@ printf 'SIM=%q\nSIM_ARGS=(--fullscreen)\n' "$SIMD/MoveEyeSim3D.x86_64" > "$X/etc
 sed -n "/^schreibe \"\$LIB\/openbox.xml\" 644 <<'EOF'\$/,/^EOF\$/p" "$R/simulator3d/beilagen_linux/kiosk_ein.sh" | sed '1d;$d' \
 	| grep -v 'kiosk_sitzung.sh koppeln' > "$X/usr/local/lib/moveeye-kiosk/openbox.xml"
 grep -q 'kiosk_sitzung.sh neustart' "$X/usr/local/lib/moveeye-kiosk/openbox.xml" || fehler "Testaufbau: openbox.xml"
-for b in systemctl apt-get apt-cache systemd-run systemd-tmpfiles modinfo; do
-	printf '#!/bin/sh\necho "%s $*" >> "%s/aufrufe.txt"\n[ "%s $1 $2" = "systemctl is-active -q" ] && exit 0\nexit 0\n' "$b" "$W" "$b" > "$B/$b"
+for b in systemctl apt-get apt-cache systemd-run systemd-tmpfiles modinfo udevadm; do
+	printf '#!/bin/sh\necho "%s $*" >> "%s/aufrufe.txt"\n[ "%s $1 $2" = "systemctl is-active -q" ] && exit 0\n[ "%s $1 $2 $3" = "systemctl is-enabled -q bluetooth.service" ] && exit 1\nexit 0\n' "$b" "$W" "$b" "$b" > "$B/$b"
 	chmod 755 "$B/$b"
 done
 # Bildschirm für Tests: Ersatz-xhost (läuft als Benutzer des Kiosks), Einstellung von runner_einrichten.sh, XAUTHORITY der Sitzung
@@ -221,7 +226,22 @@ ls "$X/etc/polkit-1" "$X/etc/sudoers.d" >/dev/null 2>&1 && fehler "polkit / sudo
 	&& ok "openbox.xml: Ctrl+Alt+B dazu (gültiges XML, root)" || { fehler "openbox.xml"; cat "$KL/openbox.xml"; }
 grep -q "apt-get install .*bluez" "$W/aufrufe.txt" && grep -q "apt-get install .*rfkill" "$W/aufrufe.txt" && ok "bluez, rfkill nachinstalliert" \
 	|| echo "  (bluez / rfkill waren schon da)"
-grep -q "modinfo hid_playstation" "$W/aufrufe.txt" && ok "Treiber hid-playstation geprüft" || fehler "hid-playstation nicht geprüft"
+grep -q "modinfo hid_playstation" "$W/aufrufe.txt" && grep -q "modinfo btusb" "$W/aufrufe.txt" && ok "Treiber hid-playstation und btusb geprüft" || fehler "hid-playstation / btusb nicht geprüft"
+# 4b. Controller verwalten (HP_FASSUNG 7)
+grep -qx "PathExistsGlob=$X/run/moveeye-spiel/controller_\*" "$KD.path" && grep -qx "StartLimitIntervalSec=0" "$KD.service" \
+	&& ok "Pfad-Einheit schaut auf alle Wünsche controller_* (Liste, Trennen, Vergessen); Dienst ohne Startlimit" || { fehler "Pfad-Einheit / Dienst (Fassung 7)"; cat "$KD.path" "$KD.service"; }
+UR="$X/etc/udev/rules.d/71-moveeye-controller.rules"
+[ "$(stat -c %U:%a "$UR" 2>/dev/null)" = root:644 ] && [ "$(grep -c '^ACTION' "$UR")" = 2 ] \
+	&& grep -q '^ACTION!="remove", SUBSYSTEM=="input", KERNEL=="event\*", ATTRS{name}=="\*Controller Touchpad", ENV{LIBINPUT_IGNORE_DEVICE}="1"$' "$UR" \
+	&& grep -q '^ACTION=="add", SUBSYSTEM=="bluetooth", KERNEL=="hci\[0-9\]\*", TAG+="systemd", ENV{SYSTEMD_WANTS}+="moveeye-controller-koppeln.service"$' "$UR" \
+	&& ! grep -q 'MODE=\|GROUP=\|RUN+=' "$UR" \
+	&& ok "udev-Regel: Touchpad des Controllers keine Maus; Adapter taucht auf -> Dienst (keine Rechte geändert, kein RUN)" || { fehler "udev-Regel"; cat "$UR"; }
+grep -q "udevadm control --reload" "$W/aufrufe.txt" && ok "udev neu geladen" || fehler "udev nicht neu geladen"
+grep -q "systemctl enable bluetooth.service" "$W/aufrufe.txt" && ! grep -q "systemctl start bluetooth.service\|systemctl restart bluetooth" "$W/aufrufe.txt" \
+	&& ok "bluetooth.service eingeschaltet, nicht gestartet (startet nur mit Adapter)" || fehler "bluetooth.service"
+if compgen -G '/sys/class/bluetooth/hci*' >/dev/null; then echo "  (dieser Rechner hat einen Bluetooth-Adapter: «ohne Adapter» hier nicht prüfbar)"
+else ! grep -q "systemctl start --no-block moveeye-controller-koppeln.service" "$W/aufrufe.txt" && ok "ohne Bluetooth-Adapter: der Dienst wird nicht gestartet (kein Fehler, keine Wartezeit)" || fehler "Dienst ohne Adapter gestartet"; fi
+grep -q "^HP_FASSUNG=7 " "$U" && [ "$(cat "$X/var/lib/moveeye-hp-update/fassung")" = 7 ] && ok "HP_FASSUNG 7 gemerkt" || fehler "HP_FASSUNG"
 # 5. Bildschirm für Tests
 KT="$X/etc/moveeye-kiosk-test.conf"
 [ "$(grep -c '^TEST_BENUTZER=' "$KT")" = 1 ] && grep -qx 'TEST_BENUTZER=daemon' "$KT" && grep -qx 'PAUSE_DATEI=/run/moveeye-test/kiosk_pause' "$KT" \
@@ -336,6 +356,164 @@ d = json.load(open(sys.argv[1])); d["sim"] = json.load(open(sys.argv[1].replace(
 EOF
 MOVEEYE_HP_QUELLE="file://$W/salt" bash "$T" --pruefen > "$W/lauf.log" 2>&1; grep -q "ABGELEHNT: kein Linux-Paket mit der signierten Prüfsumme" "$W/lauf.log" \
 	&& ok "Sim-ZIP verändert (1 Byte): abgelehnt" || { fehler "verändertes Sim-ZIP"; sed 's/^/    /' "$W/lauf.log"; }
+
+# ---------------------------------------------------------------- 6. Simulator-Anhang: Linux-Paket als Release-Asset
+echo "--- 6. Simulator-Anhang (Block «sim.anhang», Release-Asset; Test-Schlüssel)"
+ZS="$X/var/lib/moveeye-hp-update"
+for n in 93 94 95; do printf '#!/bin/sh\necho sim%s\n' "$n" > "$W/sim$n.x86_64"; done
+bash "$R/werkzeuge/linux_paket.sh" "$W/sim93.x86_64" "$W/anhang/sim-9.3.0/MoveEyeSim3D_Linux.zip" > /dev/null || fehler "linux_paket.sh (Sim 9.3.0)"
+bash "$R/werkzeuge/linux_paket.sh" "$W/sim94.x86_64" "$W/anhang94.zip" > /dev/null || fehler "linux_paket.sh (Sim 9.4.0)"
+bash "$R/werkzeuge/linux_paket.sh" "$W/sim95.x86_64" "$W/repo95.zip" > /dev/null || fehler "linux_paket.sh (Sim 9.5.0)"
+python3 - "$R/quelle/380_updates.py" "$W" <<'EOF'
+import hashlib, json, os, shutil, sys
+src, w = sys.argv[1:]
+t = open(src, encoding="utf-8").read()
+a = t.index("def _ed25519_impl"); b = t.index("return public, sign, verify", a) + len("return public, sign, verify")
+ns = {"hashlib": hashlib}; exec(t[a:b], ns)
+public, sign, verify = ns["_ed25519_impl"]()
+seed = hashlib.sha256(b"nur ein Test-Schluessel").digest()
+fl, fa = "simulator3d/MoveEyeSim3D_Linux.zip", "simulator3d/anhang/MoveEyeSim3D_Linux.zip"
+alt = json.load(open(os.path.join(w, "sgleich/main/versions.json")))       # MoveEye 9.2.0 / 9.0.0, Sim 9.1.0 im Repository
+repo = alt["sim"]["linux"]
+def anhang(v, zp, basis, kaputt=False, datei=fa, url=None):
+    z = open(zp, "rb").read(); sh = hashlib.sha256(z).hexdigest()
+    sig = sign(seed, ("MotionWatch|%s|%s|%s" % (v, datei, sh)).encode()).hex()
+    if kaputt:
+        sig = ("0" if sig[0] != "0" else "1") + sig[1:]
+    return {"ver": v, "file": datei, "size": len(z), "sha256": sh, "sig": sig,
+            "url": url or "%s/sim-%s/MoveEyeSim3D_Linux.zip" % (basis, v)}
+def quelle(name, sim):
+    os.makedirs(os.path.join(w, name, "main/simulator3d"), exist_ok=True)
+    json.dump({"versions": alt["versions"], "sim": sim}, open(os.path.join(w, name, "main/versions.json"), "w"))
+    shutil.copyfile(os.path.join(w, "s/main", fl), os.path.join(w, name, "main", fl))        # das eingefrorene Paket (Sim 9.1.0)
+B = "file://" + os.path.join(w, "anhang")
+z93, z94 = os.path.join(w, "anhang/sim-9.3.0/MoveEyeSim3D_Linux.zip"), os.path.join(w, "anhang94.zip")
+def sim(a, linux=repo):
+    return {"ver": "9.1.0", "linux": linux, "anhang": {"ver": a["ver"], "linux": a}}
+quelle("a93", sim(anhang("9.3.0", z93, B)))
+quelle("a94", sim(anhang("9.4.0", z94, B)))                                 # das Asset 9.4.0 liegt (noch) nicht da
+quelle("asig", sim(anhang("9.4.0", z94, B, kaputt=True)))
+quelle("aurl", sim(anhang("9.4.0", z94, B, url="file://" + os.path.join(w, "fremd/sim-9.4.0/MoveEyeSim3D_Linux.zip"))))
+quelle("anum", sim(anhang("9.4.0", z94, B, url=B + "/sim-9.3.0/MoveEyeSim3D_Linux.zip")))
+quelle("aplatz", {"ver": "9.4.0", "linux": anhang("9.4.0", z94, B)})        # ein Asset-Eintrag am Platz des Repository-Pakets
+quelle("aname", sim(anhang("9.4.0", z94, B, datei=fl)))                    # Asset mit dem Dateinamen des Repository-Pakets
+quelle("atot", sim(anhang("9.4.0", z94, "https://127.0.0.1:9/dl")))
+quelle("aweg", {"ver": "9.1.0", "linux": repo})                             # Zurück: kein Anhang mehr, im Repository weiter 9.1.0
+z95 = os.path.join(w, "a95/main", fl)
+os.makedirs(os.path.dirname(z95), exist_ok=True)
+shutil.copyfile(os.path.join(w, "repo95.zip"), z95)
+z = open(z95, "rb").read(); sh = hashlib.sha256(z).hexdigest()
+json.dump({"versions": alt["versions"], "sim": {"ver": "9.5.0", "linux": {"ver": "9.5.0", "file": fl, "size": len(z), "sha256": sh,
+           "sig": sign(seed, ("MotionWatch|9.5.0|%s|%s" % (fl, sh)).encode()).hex()}}}, open(os.path.join(w, "a95/main/versions.json"), "w"))
+EOF
+kopie() {   # kopie QUELLE ZIEL: Test-Schlüssel und Pfade der Ersatz-Wurzel (wie oben für $T)
+	sed -e "s#^UPDATE_PUBKEY=\"[0-9a-f]*\"#UPDATE_PUBKEY=\"$(cat "$W/pub.txt")\"#" \
+		-e "s#\"/usr/local/#\"$X/usr/local/#g" -e "s#\"/etc/#\"$X/etc/#g" -e "s#\"/var/lib/#\"$X/var/lib/#g" \
+		-e "s#\"/var/log/#\"$X/var/log/#g" -e "s#\"/run/moveeye-test/#\"$X/run/moveeye-test/#g" \
+		-e "s#\"/run/moveeye-spiel/#\"$X/run/moveeye-spiel/#g" \
+		-e "s#/run/lock/moveeye-hp-update.lock#$W/sperre#g" -e 's#^RU="mwrunner"#RU="daemon"#' "$1" > "$2"
+}
+laufa() { PATH="$B:$PATH" MOVEEYE_HP_QUELLE="file://$W/$1" MOVEEYE_HP_ANHANG="${2:-file://$W/anhang}" bash "$T" > "$W/lauf.log" 2>&1; }
+reste() { ls -d /var/tmp/moveeye-hp-update.* 2>/dev/null | wc -l; }
+unveraendert() { grep -q "^echo $1" "$SIMD/MoveEyeSim3D.x86_64" && [ "$(cat "$ZS/sim_version")" = "$2" ]; }
+R0="$(reste)"
+# Sprung 1: ein HP mit dem ALTEN Skript (HP_FASSUNG 6, Testdaten) - die Liste hat schon einen Anhang 9.3.0
+ALT="$W/hp_update_alt.sh"
+kopie "$HIER/../testdaten/hp_update_fassung6.sh" "$ALT"
+grep -q '^HP_FASSUNG=6 ' "$ALT" && ! grep -q 'anhang' "$ALT" && ok "Testdaten: altes Skript (HP_FASSUNG 6, kennt keinen Anhang)" || fehler "Testdaten hp_update_fassung6.sh"
+echo "9.0.0" > "$ZS/sim_version"; echo 0 > "$ZS/sim_sha256"; echo 6 > "$ZS/fassung"; printf '#!/bin/sh\necho uralt\n' > "$SIMD/MoveEyeSim3D.x86_64"
+cp "$ALT" "$X/usr/local/sbin/moveeye-hp-update"
+PATH="$B:$PATH" MOVEEYE_HP_QUELLE="file://$W/a93" bash "$ALT" > "$W/lauf.log" 2>&1
+grep -q "Sim 9.1.0 eingespielt" "$W/lauf.log" && unveraendert sim91 9.1.0 \
+	&& ok "Sprung 1: altes Skript spielt Sim 9.1.0 aus dem Repository ein - der Block «anhang» stört es nicht" || { fehler "Sprung 1"; sed 's/^/    /' "$W/lauf.log"; }
+cmp -s "$X/usr/local/sbin/moveeye-hp-update" "$U" && grep -q 'sim.anhang' "$X/usr/local/sbin/moveeye-hp-update" \
+	&& ok "Sprung 1: damit liegt das NEUE Skript auf dem HP (aus dem Paket im Repository)" || fehler "neues Skript nicht eingespielt"
+PATH="$B:$PATH" MOVEEYE_HP_QUELLE="file://$W/a93" bash "$ALT" > "$W/lauf.log" 2>&1
+grep -q "Schon eingespielt" "$W/lauf.log" && ok "altes Skript bliebe bei 9.1.0 stehen (darum trägt das Paket im Repository das neue)" || { fehler "altes Skript, zweiter Lauf"; sed 's/^/    /' "$W/lauf.log"; }
+sed -n 's/^HP_FASSUNG=\([0-9]*\).*/\1/p' "$U" > "$ZS/fassung"
+# Sprung 2: das neue Skript holt den Anhang - aber nie, während gespielt wird oder der HP rechnet
+zpa() { PATH="$B:$PATH" MOVEEYE_HP_QUELLE="file://$W/a93" MOVEEYE_HP_ANHANG="file://$W/anhang" MOVEEYE_HP_UPTIME=99999 bash "$T" --zeitplan > "$W/lauf.log" 2>&1; }
+rm -f "$ZS/wartet" "$ZS/verschoben"; alt6
+mkdir -p "$X/run/moveeye-spiel"; echo '{"grund": "test"}' > "$X/run/moveeye-spiel/spielen"
+zpa; grep -q "Am HP wird gespielt - verschoben" "$W/lauf.log" && unveraendert sim91 9.1.0 && ok "Anhang, es wird gespielt: verschoben, nichts geladen" || { fehler "Anhang beim Spielen"; sed 's/^/    /' "$W/lauf.log"; }
+rm -f "$X/run/moveeye-spiel/spielen"; touch "$X/run/moveeye-test/kiosk_pause"
+zpa; grep -q "Neu: MoveEye 9.2.0 · Sim 9.3.0 - es läuft ein Test, wartet" "$W/lauf.log" && unveraendert sim91 9.1.0 \
+	&& ok "Anhang, der HP rechnet: wartet auf die Pause (Sim 9.3.0 erkannt, nichts geladen)" || { fehler "Anhang beim Rechnen"; sed 's/^/    /' "$W/lauf.log"; }
+rm -f "$X/run/moveeye-test/kiosk_pause"
+zpa; grep -q "Signatur gültig: Sim 9.3.0 (Linux-Paket als Release-Asset" "$W/lauf.log" && grep -q "Sim 9.3.0 eingespielt" "$W/lauf.log" && unveraendert sim93 9.3.0 \
+	&& grep -q "aus: versions.json «sim.anhang»" "$W/lauf.log" \
+	&& ok "Sprung 2: in der Pause Sim 9.3.0 vom Release-Asset eingespielt" || { fehler "Sprung 2"; sed 's/^/    /' "$W/lauf.log"; }
+laufa a93; grep -q "Schon eingespielt" "$W/lauf.log" && ok "Anhang zweimal: nichts zu tun" || { fehler "Anhang zweimal"; sed 's/^/    /' "$W/lauf.log"; }
+MOVEEYE_HP_QUELLE="file://$W/a93" MOVEEYE_HP_ANHANG="file://$W/anhang" bash "$T" --pruefen > "$W/lauf.log" 2>&1 && grep -q "aus: versions.json «sim.anhang»" "$W/lauf.log" \
+	&& ok "--pruefen: Linux-Paket aus dem Anhang" || { fehler "--pruefen mit Anhang"; sed 's/^/    /' "$W/lauf.log"; }
+# Fehler: nichts wird eingespielt, nichts bleibt liegen
+abgelehnt() {   # abgelehnt QUELLE MUSTER BESCHREIBUNG [ANHANG_BASIS]
+	: > "$W/aufrufe.txt"
+	laufa "$1" "${4:-}"; local rc=$?
+	if [ $rc -ne 0 ] && grep -q "$2" "$W/lauf.log" && unveraendert sim93 9.3.0 && ! grep -q "restart" "$W/aufrufe.txt" && [ "$(reste)" = "$R0" ]; then
+		ok "$3: nichts eingespielt, kein Neustart, kein Rest ($(grep -E 'ABGELEHNT' "$W/lauf.log" | sed 's/^[0-9: -]*//' | head -n 1 | cut -c1-110))"
+	else fehler "$3 (Exit $rc)"; sed 's/^/    /' "$W/lauf.log"; fi
+}
+abgelehnt a94 "ABGELEHNT: kein Linux-Paket mit der signierten Prüfsumme" "Asset fehlt"
+grep -q "Release-Asset) nicht geladen" "$W/lauf.log" && ok "Asset fehlt: klare Zeile im Protokoll" || fehler "Asset fehlt: Meldung"
+mkdir -p "$W/anhang/sim-9.4.0"; cp "$W/anhang94.zip" "$W/anhang/sim-9.4.0/MoveEyeSim3D_Linux.zip"
+python3 -c 'import sys; f=open(sys.argv[1], "r+b"); f.seek(-100, 2); b=f.read(1); f.seek(-100, 2); f.write(bytes([b[0] ^ 255]))' "$W/anhang/sim-9.4.0/MoveEyeSim3D_Linux.zip"
+abgelehnt a94 "ABGELEHNT: kein Linux-Paket mit der signierten Prüfsumme" "Asset verändert (1 Byte)"
+cp "$W/anhang94.zip" "$W/anhang/sim-9.4.0/MoveEyeSim3D_Linux.zip"
+abgelehnt asig "ABGELEHNT: Block «sim.anhang»: Signatur" "Anhang: Signatur verfälscht (kein Ausweichen auf das Paket im Repository)"
+abgelehnt aurl "ABGELEHNT: Block «sim.anhang»: Adresse" "Anhang: fremde Adresse"
+abgelehnt anum "ABGELEHNT: Block «sim.anhang»: Adresse" "Anhang: Adresse einer anderen Nummer"
+abgelehnt aname "ABGELEHNT: Block «sim.anhang»: Linux-Paket unvollständig" "Anhang mit dem Dateinamen des Repository-Pakets"
+abgelehnt aplatz "ABGELEHNT: Block «sim»: Linux-Paket unvollständig" "Asset-Eintrag am Platz des Repository-Pakets"
+abgelehnt atot "ABGELEHNT: kein Linux-Paket mit der signierten Prüfsumme" "Asset-Server nicht erreichbar" "https://127.0.0.1:9/dl"
+abgelehnt aweg "ABGELEHNT: Sim 9.1.0 ist älter als die eingespielte Sim 9.3.0" "Anhang entfernt, im Repository nur die ältere 9.1.0"
+# Umleitung wie bei GitHub: https-Server (eigenes Zertifikat) antwortet 302 auf einen zweiten Server
+if command -v openssl >/dev/null 2>&1 && openssl req -x509 -newkey rsa:2048 -nodes -keyout "$W/key.pem" -out "$W/cert.pem" -days 2 \
+		-subj "/CN=127.0.0.1" -addext "subjectAltName=IP:127.0.0.1" > /dev/null 2>&1; then
+	mkdir -p "$W/blob"; cp "$W/anhang94.zip" "$W/blob/MoveEyeSim3D_Linux.zip"
+	python3 - "$W" > "$W/server.log" 2>&1 <<'EOF' &
+import functools, http.server, os, ssl, sys, threading
+w = sys.argv[1]
+class Um(http.server.BaseHTTPRequestHandler):
+    def do_GET(self):
+        open(os.path.join(w, "server_wege.txt"), "a").write(self.path + "\n")
+        self.send_response(302); self.send_header("Location", "https://127.0.0.1:%d/%s" % (ziel[0], self.path.rsplit("/", 1)[-1]))
+        self.send_header("Content-Length", "0"); self.end_headers()
+    def log_message(self, *a): pass
+class Still(http.server.SimpleHTTPRequestHandler):
+    def log_message(self, *a): pass
+def start(port, h):
+    s = http.server.ThreadingHTTPServer(("127.0.0.1", port), h)
+    c = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER); c.load_cert_chain(os.path.join(w, "cert.pem"), os.path.join(w, "key.pem"))
+    s.socket = c.wrap_socket(s.socket, server_side=True)
+    threading.Thread(target=s.serve_forever, daemon=True).start()
+    return s.server_address[1]
+ziel = [start(0, functools.partial(Still, directory=os.path.join(w, "blob")))]
+open(os.path.join(w, "server_da.tmp"), "w").write(str(start(0, Um)))
+os.replace(os.path.join(w, "server_da.tmp"), os.path.join(w, "server_da"))
+threading.Event().wait(120)
+EOF
+	SP=$!
+	for _ in $(seq 50); do [ -e "$W/server_da" ] && break; sleep 0.1; done
+	HB="https://127.0.0.1:$(cat "$W/server_da" 2>/dev/null)/dl"
+	mkdir -p "$W/ahttps/main/simulator3d"; cp "$W/a94/main/simulator3d/MoveEyeSim3D_Linux.zip" "$W/ahttps/main/simulator3d/"
+	python3 - "$W/a94/main/versions.json" "$W/ahttps/main/versions.json" "$HB" <<'EOF'
+import json, sys
+d = json.load(open(sys.argv[1]))                 # die Adresse ist nicht signiert - sie muss nur zur Nummer und zur Basis passen
+d["sim"]["anhang"]["linux"]["url"] = "%s/sim-9.4.0/MoveEyeSim3D_Linux.zip" % sys.argv[3]
+json.dump(d, open(sys.argv[2], "w"))
+EOF
+	CURL_CA_BUNDLE="$W/cert.pem" NO_PROXY=127.0.0.1 no_proxy=127.0.0.1 laufa ahttps "$HB"
+	grep -q "Sim 9.4.0 eingespielt" "$W/lauf.log" && unveraendert sim94 9.4.0 && grep -q "/dl/sim-9.4.0/MoveEyeSim3D_Linux.zip" "$W/server_wege.txt" \
+		&& ok "Umleitung (https -> 302 -> anderer Server): Sim 9.4.0 vom Asset eingespielt" || { fehler "Umleitung"; sed 's/^/    /' "$W/lauf.log"; cat "$W/server.log"; }
+	kill $SP 2>/dev/null
+else
+	fehler "openssl fehlt - die Umleitung (https, 302) ist nicht geprüft"
+fi
+# Zurück zu Paketen im Repository: eine NEUERE Nummer im Repository, kein Anhang mehr
+laufa a95; grep -q "Sim 9.5.0 eingespielt" "$W/lauf.log" && grep -q "aus: versions.json «sim»" "$W/lauf.log" && unveraendert sim95 9.5.0 \
+	&& ok "Zurück: neuere Nummer im Repository ohne Anhang wird eingespielt (nur die Liste und das Repository ändern)" || { fehler "Zurück ins Repository"; sed 's/^/    /' "$W/lauf.log"; }
+[ "$(reste)" = "$R0" ] && ok "kein Arbeitsordner bleibt liegen" || fehler "Arbeitsordner in /var/tmp geblieben"
 
 echo
 if [ $F -eq 0 ]; then echo "HP-Update-Test: OK"; else echo "HP-Update-Test: $F Fehler"; fi

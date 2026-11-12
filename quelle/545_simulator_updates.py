@@ -86,7 +86,9 @@ def versionen_selftest():
         assert sim_vkey(a) < sim_vkey(b), f"simulator {a} < {b}"
     assert sim_vkey("3D-5.0.0") == sim_vkey("3.0.0") == sim_vkey("MoveEye Sim 3.0.0") == (3, 0, 0), "bridge 3D-5.0.0 = 3.0.0"
     assert sim_vlegacy("3.0.0") == "3D-5.0.0" and sim_vlegacy("3.10.2") == "3D-5.10.2" and sim_vlegacy("3D-4.82") == "3D-4.82"
-    assert VER_RE.match(SIM_MIN) and sim_vkey(SIM_MIN) <= sim_vkey(SIM3D_EMBED["version"]), f"SIM_MIN {SIM_MIN} newer than the own simulator"
+    # Simulator-Anhang (300): the embedded simulator stays the last one in the repository (Sim 3.67.2) - SIM_MIN may pass it
+    # once newer simulators are Release assets; then the published number (version.json «anhang», below) must meet it
+    assert VER_RE.match(SIM_MIN), f"SIM_MIN {SIM_MIN}"
     p = os.path.join(HERE, "simulator3d", "version.json")
     if not os.path.isfile(p):
         return None                                               # on the Pi: no repository next to the program
@@ -99,11 +101,19 @@ def versionen_selftest():
         # 3 tracks (Besitzer 03.11.2026): each part has its own number - the simulator of this MoveEye may be older than the
         # one in the repository (a release of the simulator alone), never newer
         assert sim_vkey(SIM3D_EMBED["version"]) <= sim_vkey(ver), f"SIM3D {SIM3D_EMBED['version']} newer than version.json {ver}"
-        assert sim_vkey(SIM_MIN) <= sim_vkey(ver), f"MoveEye needs simulator {SIM_MIN}, version.json has {ver}"
-        mm = str(d.get("mw_min") or "")
-        assert not mm or (VER_RE.match(mm) and _vkey(mm) <= _vkey(APP_VERSION)), f"the simulator {ver} needs MoveEye {mm} (this is {APP_VERSION})"
+        ah = d.get("anhang") if isinstance(d.get("anhang"), dict) else {}
+        top = str(ah.get("ver") or ver)                           # the published simulator: the Release asset, else the repository
+        if ah:
+            assert VER_RE.match(top) and sim_vkey(top) > sim_vkey(ver), f"version.json «anhang» {top} must be newer than the packages in the repository ({ver})"
+            assert str(ah.get("version") or "") == sim_vlegacy(top), f"version.json «anhang.version» must be {sim_vlegacy(top)}"
+        else:
+            assert sim_vkey(SIM_MIN) <= sim_vkey(SIM3D_EMBED["version"]), f"SIM_MIN {SIM_MIN} newer than the own simulator"
+        assert sim_vkey(SIM_MIN) <= sim_vkey(top), f"MoveEye needs simulator {SIM_MIN}, version.json has {top}"
+        mm = str(ah.get("mw_min") or d.get("mw_min") or "")
+        assert not mm or (VER_RE.match(mm) and _vkey(mm) <= _vkey(APP_VERSION)), f"the simulator {top} needs MoveEye {mm} (this is {APP_VERSION})"
     return f"MoveEye {APP_VERSION} · Sim {ver or old} (old simulators read {old}) · needs Sim ≥ {SIM_MIN}" + (
-        f", Sim needs MoveEye ≥ {d.get('mw_min')}" if d.get("mw_min") else "")
+        f", Sim needs MoveEye ≥ {d.get('mw_min')}" if d.get("mw_min") else "") + (
+        f" · newest simulator {d['anhang'].get('ver')} as Release asset" if isinstance(d.get("anhang"), dict) else "")
 
 
 SELFTEST_EXTRA.append(("Version numbers: order, file names, bridge for old simulators, minimum of the other track (3 tracks)", versionen_selftest))
@@ -152,12 +162,44 @@ def sim_manifest_selftest():
         for what, x in bad.items():
             assert not sim_manifest_take(x, save=False), f"{what} taken"
             assert SIM3D["sha256"] == SIM3D_EMBED["sha256"] and SIM3D["version"] == SIM3D_EMBED["version"], f"{what}: values changed"
+        # Simulator-Anhang (300): a newer package as Release asset under «anhang» - taken with its address; anything that is
+        # not exactly «signed + own file name + the address that follows from the number» leaves the repository package
+        nv2 = "%d.%d.%d" % (a, b, c + 2)
+        fa = SIM3D_ANHANG["win"][0]
+
+        def ah(v=nv2, fn=fa, key=seed, url=None, sig=True):
+            e = {"ver": v, "file": fn, "size": 20, "sha256": sha, "url": sim_anhang_url("win", v) if url is None else url}
+            if sig:
+                e["sig"] = _ED[1](key, _sig_msg(v, fn, sha)).hex()
+            return dict(blk(), anhang={"ver": v, "win": e})
+        back()
+        assert sim_manifest_take(ah(), save=False) == ["win"], "signed asset entry not taken"
+        assert SIM3D["version"] == nv2 and SIM3D["size"] == 20 and SIM3D["url"] == sim_anhang_url("win", nv2), "asset values"
+        assert SIM3D["url"].startswith(SIM3D_ANHANG_BASE + "sim-" + nv2 + "/") and SIM3D_LINUX["url"] == "", "asset address"
+        assert not sim_manifest_take(blk(), save=False) and SIM3D["version"] == nv2, "went back from the asset to an older package"
+        bad_a = {"other host": ah(url="https://example.org/sim-%s/%s" % (nv2, SIM3D_ANHANG["win"][1])),
+                 "address of an other number": ah(url=sim_anhang_url("win", nv)),
+                 "no address": ah(url=""),
+                 "repository file name": ah(fn=SIM3D["file"]),
+                 "unsigned": ah(sig=False),
+                 "other key": dict(blk(), anhang=ah(key=hashlib.sha256(b"another key").digest())["anhang"]),
+                 "not a dict": dict(blk(), anhang="x")}
+        for what, x in bad_a.items():
+            back()
+            assert sim_manifest_take(x, save=False) == ["win"] and SIM3D["version"] == nv and SIM3D["url"] == "", f"asset {what}: not the repository package"
+        back()
+        moved = dict(blk(), win=ah()["anhang"]["win"])             # an asset entry at the place of the repository package
+        assert not sim_manifest_take(moved, save=False) and SIM3D["version"] == SIM3D_EMBED["version"], "asset entry taken as repository package"
+        back()
+        assert sim_manifest_take(ah(v=nv), save=False) == ["win"] and SIM3D["url"] == "", "same number: the repository package wins"
+        back()
         g["UPDATE_PUBKEY"] = real
         assert not sim_manifest_take(blk(), save=False), "test key accepted with the real public key"
+        assert not sim_manifest_take(ah(), save=False) and SIM3D["url"] == "", "asset with the test key accepted with the real public key"
     finally:
         g["UPDATE_PUBKEY"] = real
         SIM3D.update(keep[0]); SIM3D_LINUX.update(keep[1]); SIMMAN.clear(); SIMMAN.update(keep[2])
-    return "signed «sim» entry taken; changed, unsigned, other key / file, older refused (test key)"
+    return "signed «sim» entry taken; changed, unsigned, other key / file, older refused; asset entry («anhang») only signed with its own address (test key)"
 
 
 SELFTEST_EXTRA.append(("Simulator checksums from the signed versions.json (3 tracks, 300)", sim_manifest_selftest))

@@ -8,8 +8,9 @@ Ab 3.55.0 (Dauerrechnen): oben steht, welche Arbeit läuft («Erkennung messen»
 Arbeiten zeigen eigene Kacheln (Feld «kacheln»). Knopf «Spielen» unten rechts (Maus); jede Taste / Mausbewegung zeigt ihn
 gross in der Mitte (Enter oder Klick = Spielen, Esc = weiter rechnen). Spielen schreibt die Spielen-Datei (wie hp_wache.py),
 der Test-Runner hält an und gibt den Bildschirm frei – dann kommt keine Zusammenfassung, der Simulator startet gleich.
-Daneben der Knopf «Controller koppeln» (oder Taste K): öffnet controller_fenster.py (PS5-Controller per Bluetooth koppeln,
-der Dienst moveeye-controller-koppeln macht das als root; hier wird nur die leere Wunsch-Datei angelegt).
+Daneben der Knopf «Controller koppeln» (oder Taste K): öffnet controller_fenster.py (Controller per Bluetooth koppeln,
+Liste mit Akku, Trennen, Vergessen; der Dienst moveeye-controller-koppeln macht das als root, das Fenster legt nur leere
+Wunsch-Dateien an).
 Nach 10 Min. ohne Maus / Taste schläft das Bild (schwarz, nichts wird mehr gezeichnet; den Bildschirm schaltet DPMS aus,
 kiosk_sitzung.sh); eine Taste oder die Maus weckt es sofort. «ende»: false im Fortschritt (z. B. HP-Diagnose) = keine
 Zusammenfassung.
@@ -344,9 +345,10 @@ class Testbild:
         # links daneben: «Controller koppeln» (PS5-Controller per Bluetooth)
         t = "Controller koppeln"
         kx1 = x0 - int(h * 0.02)
-        kx0 = kx1 - self.f["klein_fett"].measure(t) - int(h * 0.05)
+        kx0 = kx1 - self.f["klein_fett"].measure(t) - int(bh * 1.3) - int(h * 0.03)
         self.rund(kx0, y0, kx1, y1, int(bh * 0.3), fill=KACHEL, outline=LINIE, width=2, tags=("spiel",))
-        c.create_text((kx0 + kx1) // 2, (y0 + y1) // 2, text=t, fill=FG, font=self.f["klein_fett"], anchor="center", tags=("spiel",))
+        self.gamepad(kx0 + int(bh * 0.7), (y0 + y1) // 2, int(bh * 0.42), GRAU, "spiel")       # Symbol wie beim Knopf «Spielen»
+        c.create_text(kx0 + int(bh * 1.3), (y0 + y1) // 2, text=t, fill=FG, font=self.f["klein_fett"], anchor="w", tags=("spiel",))
         self.koppeln_box = (kx0, y0, kx1, y1)
         if self.hinweis_bis <= time.time():
             return

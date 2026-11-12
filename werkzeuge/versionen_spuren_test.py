@@ -44,6 +44,21 @@ def linux_zip(T, v):
     schreib(T, "simulator3d/MotionWatch3D_Simulator.zip", b"PK-win-" + v.encode())
 
 
+def anhang_zips(T, v, lies=None):
+    """Ersatz-Assets wie von «sim_anhang.py holen»: simulator3d/anhang/*.zip (nicht im Repository)"""
+    for name, exe, kopf, mehr in (("MotionWatch3D_Simulator.zip", "MoveEyeSim3D.exe", b"MZ" + b"\0" * 30, ()),
+                                  ("MoveEyeSim3D_Linux.zip", "MoveEyeSim3D.x86_64", b"\x7fELF\x02\x01" + b"\0" * 12 + b"\x3e\x00" + b"\0" * 12,
+                                   ("installieren.sh", "kiosk_sitzung.sh", "hp/hp_update.sh"))):
+        buf = io.BytesIO()
+        with zipfile.ZipFile(buf, "w") as zf:
+            zf.writestr("MoveEyeSim3D/Lies mich.txt", "NEU IN %s\nTest\n" % (lies or v))
+            zi = zipfile.ZipInfo("MoveEyeSim3D/" + exe); zi.external_attr = 0o755 << 16
+            zf.writestr(zi, kopf + v.encode())
+            for m in mehr:
+                zf.writestr("MoveEyeSim3D/" + m, "#!/bin/sh\n")
+        schreib(T, "simulator3d/anhang/" + name, buf.getvalue())
+
+
 def main():
     W = tempfile.mkdtemp(prefix="spuren_test_")
     T = os.path.join(W, "repo")
@@ -144,6 +159,86 @@ def main():
         rc, out = lauf("--pruefen")
         ok(rc == 1 and "MoveEye braucht Sim ≥ 3.56.0" in out, "MoveEye braucht neueren Sim (SIM_MIN): Problem", out)
         git("checkout", "-q", "--", ".")
+
+        print("--- Simulator-Anhang (Pakete als Release-Asset, die im Repository bleiben eingefroren)")
+        kopf = git("rev-parse", "HEAD").stdout.strip()
+        schreib(T, ".gitignore", "simulator3d/anhang/\n"); commit("gitignore")
+        vj_fest = json.load(open(os.path.join(T, "simulator3d", "version.json")))
+        setz("simulator3d/scripts/main.gd", '"3.55.3"', '"3.56.0"')
+        setz("simulator3d/Lies mich.txt", "NEU IN 3.55.3", "NEU IN 3.56.0\nAnhang\n\nNEU IN 3.55.3")
+        rc, out = lauf("--anhang-json", "3.56.0", "Erste als Asset")
+        ok(rc != 0 and "sim_anhang.py holen 3.56.0" in out, "--anhang-json ohne geholte Assets: Abbruch mit Hinweis", out)
+        anhang_zips(T, "3.56.0", lies="3.55.9")
+        rc, out = lauf("--anhang-json", "3.56.0", "Erste als Asset")
+        ok(rc != 0 and "NEU IN 3.56.0" in out, "--anhang-json mit einem Paket einer anderen Nummer: Abbruch", out)
+        anhang_zips(T, "3.56.0")
+        rc, out = lauf("--anhang-json", "3.55.3", "x")
+        ok(rc != 0 and "muss neuer sein" in out, "--anhang-json mit der Nummer der Pakete im Repository: Abbruch", out)
+        rc, out = lauf("--anhang-json", "3.56.0", "Erste als Asset")
+        vj = json.load(open(os.path.join(T, "simulator3d", "version.json")))
+        ah = vj.get("anhang") or {}
+        ok(rc == 0 and all(vj.get(k) == vj_fest.get(k) for k in ("version", "ver", "file", "size", "sha256", "linux")),
+           "--anhang-json 3.56.0: die obersten Felder und «linux» bleiben eingefroren (Sim 3.55.3 im Repository)", out)
+        ok(ah.get("ver") == "3.56.0" and ah.get("version") == "3D-5.56.0" and ah.get("mw_min") == "3.55.0"
+           and ah["win"]["file"] == "simulator3d/anhang/MotionWatch3D_Simulator.zip" and ah["linux"]["file"] == "simulator3d/anhang/MoveEyeSim3D_Linux.zip"
+           and ah["win"]["url"] == "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.56.0/MotionWatch3D_Simulator.zip"
+           and ah["linux"]["url"].endswith("/sim-3.56.0/MoveEyeSim3D_Linux.zip") and ah["linux"]["size"] > 0 and len(ah["win"]["sha256"]) == 64,
+           "Block «anhang»: Nummer, Brücke, mw_min, eigene Dateinamen, Adresse aus der Nummer", json.dumps(ah))
+        ok("bitte zuerst MoveEye aktualisieren" in vj.get("notes", "") and vj["notes"].startswith(vj_fest["notes"]),
+           "«notes» der eingefrorenen Version: Hinweis für alte Simulatoren / alte MoveEye", vj.get("notes", ""))
+        rc, out = lauf("--anhang-json", "3.56.0", "Erste als Asset")
+        ok(rc == 0 and json.load(open(os.path.join(T, "simulator3d", "version.json")))["notes"] == vj["notes"], "zweimal: der Hinweis steht nur einmal", out)
+        ok("anhang" not in git("status", "--short").stdout, "die geholten Assets erscheinen nicht in git (simulator3d/anhang/ in .gitignore)")
+        rc, out = lauf("--pruefen")
+        ok(rc == 0 and "noch nicht signiert in versions.json «sim.anhang»" in out and "Sim 3.56.0 gesetzt" not in out and "· Sim 3.56.0 ·" in out
+           and "WARNUNG: Simulator geändert" not in out, "--pruefen: ok, veröffentlichte Nummer = Anhang 3.56.0, Hinweis «noch signieren»", out)
+        man = json.load(open(os.path.join(T, "versions.json")))
+        man["sim"]["anhang"] = {"ver": "3.56.0", "win": dict(ah["win"], sig="x"), "linux": dict(ah["linux"], sig="x")}
+        schreib(T, "versions.json", json.dumps(man))
+        rc, out = lauf("--pruefen")
+        ok(rc == 0 and "sim.anhang" not in out and "passt nicht zu version.json" not in out, "«sim.anhang» passt zu version.json", out)
+        shutil.rmtree(os.path.join(T, "simulator3d", "anhang"))
+        rc, out = lauf("--pruefen")
+        ok(rc == 0 and "PROBLEM" not in out, "ohne die geholten Assets (nach dem Signieren gelöscht): weiter ok", out)
+        commit("Sim 3.56.0 als Anhang")
+        rc, out = lauf("--spuren")
+        ok(rc == 0 and "Sim 3.56.0" in out, "--spuren nennt die veröffentlichte Nummer (Anhang)", out)
+        rc, out = lauf("--pruefen")
+        ok(rc == 0 and "WARNUNG: Simulator" not in out, "nach dem Commit: keine Warnung", out)
+        linux_zip(T, "3.56.1")                                   # jemand packt wie früher ins Repository
+        rc, out = lauf("--sim-json", "3.56.1", "falsch")
+        ok(rc != 0 and "Release-Assets" in out, "--sim-json mit Anhang: abgelehnt (neue Versionen sind Assets)", out)
+        vjk = dict(vj, sha256="0" * 64)
+        schreib(T, "simulator3d/version.json", json.dumps(vjk))
+        rc, out = lauf("--pruefen")
+        ok(rc == 1 and "bleiben eingefroren" in out, "eingefrorenes Paket geändert, Anhang noch da: Problem", out)
+        git("checkout", "-q", "--", ".")
+        vjk = json.loads(json.dumps(vj)); vjk["anhang"]["win"]["url"] = "https://example.org/sim-3.56.0/MotionWatch3D_Simulator.zip"
+        schreib(T, "simulator3d/version.json", json.dumps(vjk))
+        rc, out = lauf("--pruefen")
+        ok(rc == 1 and "«anhang.win»" in out, "fremde Adresse im Anhang: Problem", out)
+        vjk = json.loads(json.dumps(vj)); vjk["anhang"]["ver"] = "3.55.0"; vjk["anhang"]["version"] = "3D-5.55.0"
+        schreib(T, "simulator3d/version.json", json.dumps(vjk))
+        rc, out = lauf("--pruefen")
+        ok(rc == 1 and "kleiner geworden" in out, "Anhang-Nummer kleiner: Problem", out)
+        git("checkout", "-q", "--", ".")
+        # Zurück zu Paketen im Repository (der Asset-Weg ist gestört): neuere Nummer, ohne «anhang»
+        setz("simulator3d/scripts/main.gd", '"3.56.0"', '"3.56.1"')
+        setz("simulator3d/Lies mich.txt", "NEU IN 3.56.0", "NEU IN 3.56.1\nzurück\n\nNEU IN 3.56.0")
+        linux_zip(T, "3.56.1")
+        r_ = subprocess.run([sys.executable, os.path.join(HIER, "versionen.py"), "--sim-json", "3.56.1", "Zurück"], env=dict(env, MW_SIM_IM_REPO="1"),
+                            capture_output=True, text=True)
+        vjz = json.load(open(os.path.join(T, "simulator3d", "version.json")))
+        ok(r_.returncode == 0 and "anhang" not in vjz and vjz["ver"] == "3.56.1" and vjz["linux"]["ver"] == "3.56.1",
+           "Zurück: MW_SIM_IM_REPO=1 --sim-json 3.56.1 schreibt wieder Pakete im Repository, ohne «anhang»", r_.stdout + r_.stderr)
+        rc, out = lauf("--pruefen")
+        ok(rc == 0 and "PROBLEM" not in out and "· Sim 3.56.1 ·" in out, "Zurück: --pruefen ok", out)
+        linux_zip(T, "3.55.9")
+        r_ = subprocess.run([sys.executable, os.path.join(HIER, "versionen.py"), "--sim-json", "3.55.9", "Zurück, zu alt"], env=dict(env, MW_SIM_IM_REPO="1"),
+                            capture_output=True, text=True)
+        rc, out = lauf("--pruefen")
+        ok(rc == 1 and "veröffentlichte Sim-Nummer kleiner geworden: 3.56.0 -> 3.55.9" in out, "Zurück mit einer älteren Nummer als der Anhang: Problem", out)
+        git("reset", "-q", "--hard", kopf); git("clean", "-qfdx")
 
         print("--- nur Gehäuse")
         setz("hardware/gehaeuse/Dokumente/Montage.md", "Montage", "Montage neu")

@@ -1176,14 +1176,35 @@ def sim_manifest_check(folder, m):
                 sha = h_.hexdigest()
             if key not in ok_ or not sha or sha != ok_[key]["sha256"] or os.path.getsize(p_) != ok_[key]["size"]:
                 bad.append(f"simulator {key} {e.get('ver')}")
+        ah_ = sim.get("anhang") if isinstance(sim, dict) and isinstance(sim.get("anhang"), dict) else {}
+        for key in ("win", "linux"):                    # Simulator-Anhang: Release assets - signature and address; the file
+            e = ah_.get(key)                            # only when it happens to lie here (simulator3d/anhang/, not in git)
+            if e is None:
+                continue
+            g_ = (ok_.get("anhang") or {}).get(key)
+            p_ = os.path.join(folder, SIM3D_ANHANG[key][0])
+            if not g_:
+                bad.append(f"simulator asset {key} {e.get('ver') if isinstance(e, dict) else '?'} (signature / url)")
+            elif os.path.isfile(p_):
+                h_ = hashlib.sha256()
+                with open(p_, "rb") as f:
+                    for b_ in iter(lambda: f.read(1 << 20), b""):
+                        h_.update(b_)
+                if h_.hexdigest() != g_["sha256"] or os.path.getsize(p_) != g_["size"]:
+                    bad.append(f"simulator asset {key} {g_['ver']} (file here differs)")
         try:
             with open(os.path.join(folder, "simulator3d", "version.json"), encoding="utf-8") as f:
                 vj_ = json.load(f)
             if str(vj_.get("ver")) != str(sim.get("ver")):
                 bad.append(f"simulator {sim.get('ver')} in versions.json, simulator3d/version.json has {vj_.get('ver')} - sign again")
+            va_ = vj_.get("anhang") if isinstance(vj_.get("anhang"), dict) else {}
+            if str(va_.get("ver") or "") != str(ah_.get("ver") or ""):
+                bad.append(f"simulator asset {ah_.get('ver') or '-'} in versions.json, simulator3d/version.json has {va_.get('ver') or '-'} - sign again")
         except (OSError, ValueError, AttributeError):
             pass
-        simtxt = f", simulator {sim.get('ver') if isinstance(sim, dict) else '?'} ({'+'.join(sorted(ok_))})"
+        simtxt = f", simulator {sim.get('ver') if isinstance(sim, dict) else '?'} ({'+'.join(sorted(k for k in ok_ if k != 'anhang'))})"
+        if ok_.get("anhang"):
+            simtxt += f", asset {ah_.get('ver')} ({'+'.join(sorted(ok_['anhang']))})"
     return bad, simtxt
 
 
@@ -1274,6 +1295,49 @@ def sim_manifest_block(folder, seed=b""):
             blk[key]["url"] = str(e["url"])           # not signed itself: the signed sha256 guards the content
         if seed:
             blk[key]["sig"] = _ED[1](seed, _sig_msg(v, fn, sha)).hex()
+    ah = d.get("anhang") if isinstance(d.get("anhang"), dict) else None   # Simulator-Anhang (300): packages as Release assets
+    av = str((ah or {}).get("ver") or "")
+    if ah and VER_RE.match(av):
+        old = {}
+        try:                                              # the list written before: its valid signatures may be kept (below)
+            with open(os.path.join(folder, "versions.json"), encoding="utf-8") as f:
+                old = (((json.load(f).get("sim") or {}).get("anhang")) or {})
+        except (OSError, ValueError, AttributeError):
+            pass
+        sub = {"ver": av, "version": str(ah.get("version") or ""), "notes": str(ah.get("notes") or "")[:400]}
+        if ah.get("mw_min") and VER_RE.match(str(ah.get("mw_min"))):
+            sub["mw_min"] = str(ah["mw_min"])
+        for key in ("win", "linux"):
+            e = ah.get(key) if isinstance(ah.get(key), dict) else {}
+            fn, v, url = SIM3D_ANHANG[key][0], str(e.get("ver") or ""), str(e.get("url") or "")
+            sha, size = str(e.get("sha256") or "").lower(), e.get("size")
+            if not e:
+                continue
+            if e.get("file") != fn or v != av or url != sim_anhang_url(key, v) or not re.fullmatch(r"[0-9a-f]{64}", sha) or not isinstance(size, int):
+                print(f"Note: simulator3d/version.json «anhang.{key}» incomplete (file / ver / url / sha256 / size) - left out")
+                continue
+            ent = {"ver": v, "file": fn, "size": size, "sha256": sha, "url": url}
+            fp = os.path.join(folder, fn)
+            if os.path.isfile(fp):                        # the package lies here (fetched from the Release): count it again
+                h = hashlib.sha256()
+                with open(fp, "rb") as f:
+                    for b in iter(lambda: f.read(1 << 20), b""):
+                        h.update(b)
+                if h.hexdigest() != sha or os.path.getsize(fp) != size:
+                    print(f"Note: {fn} does not fit simulator3d/version.json «anhang.{key}» (size / checksum) - left out")
+                    continue
+                if seed:
+                    ent["sig"] = _ED[1](seed, _sig_msg(v, fn, sha)).hex()
+            else:                                         # not here (it is not in git): only an entry that was signed before
+                o = old.get(key) if isinstance(old, dict) and isinstance(old.get(key), dict) else {}
+                if all(o.get(k) == ent[k] for k in ent) and sig_ok(v, fn, sha, o.get("sig")):
+                    ent["sig"] = str(o["sig"])            # exactly this number, file and checksum carry a valid signature
+                else:
+                    print(f"Note: {fn} missing and «anhang.{key}» {v} not signed before - left out (fetch it: werkzeuge/sim_anhang.py holen {v})")
+                    continue
+            sub[key] = ent
+        if "win" in sub or "linux" in sub:
+            blk["anhang"] = sub
     return blk if ("win" in blk or "linux" in blk) else None
 
 
