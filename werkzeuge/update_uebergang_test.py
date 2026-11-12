@@ -32,6 +32,12 @@ Teil «stand» (der veröffentlichte Stand, mit dem ECHTEN öffentlichen Schlüs
   Ohne --streng (Arbeitszweige): ist die neueste Programmdatei nach dem letzten Release neu gebaut (anderer Inhalt als in
   versions.json), wird NUR dieser eine Eintrag übersprungen und das laut gemeldet. Mit --streng (CI auf main) ist das ein
   Fehler - auf main gibt es kein «grün durch Überspringen».
+  Eine Ausnahme, laut und befristet: «vorstufe.json» neben versions.json ({"version": "X.Y.Z", "grund": "…", "bis":
+  "JJJJ-MM-TT"}, höchstens 3 Tage voraus) erlaubt GENAU den Fall «die neueste Programmdatei X.Y.Z steht noch nicht in
+  versions.json» - für Releases in zwei Stufen (erst Quelle + Workflow auf main, der Workflow baut Release-Dateien, deren
+  Prüfsummen dann in die signierte Fassung kommen). Geräte sehen die Vorstufe nicht (sie folgen versions.json); alle
+  Einträge dort werden weiter ganz geprüft. Passt vorstufe.json nicht (abgelaufen, andere Nummer, Release schon fertig),
+  ist das ein Fehler - die Datei bleibt nie liegen.
 """
 import argparse
 import datetime
@@ -462,6 +468,31 @@ def stand(a, tmp):
         srv.shutdown()
 
 
+VORSTUFE_TAGE = 3
+
+
+def vorstufe_lesen(ordner):
+    """vorstufe.json next to versions.json: an explicitly marked first stage of a release in two stages (the program file
+    is built, but its signed entry follows after a workflow has made the release assets it pins). -> (dict | None, error).
+    Valid only for exactly one version number, with a reason, and for at most VORSTUFE_TAGE days."""
+    p = os.path.join(ordner, "vorstufe.json")
+    if not os.path.isfile(p):
+        return None, ""
+    try:
+        d = json.loads(lesen(p).decode("utf-8"))
+        v, g, bis = str(d["version"]), str(d["grund"]).strip(), datetime.date.fromisoformat(str(d["bis"]))
+    except (ValueError, KeyError, TypeError) as e:
+        return {}, "vorstufe.json ist nicht lesbar (%s) - nötig: version, grund, bis (JJJJ-MM-TT)" % e.__class__.__name__
+    heute = datetime.datetime.now(datetime.timezone.utc).date()
+    if not re.fullmatch(r"\d+\.\d+\.\d+", v) or len(g) < 10:
+        return d, "vorstufe.json: version X.Y.Z und ein Grund (ein Satz) sind nötig"
+    if bis < heute:
+        return d, "vorstufe.json ist abgelaufen (bis %s) - Release fertig machen oder zurücknehmen" % bis
+    if (bis - heute).days > VORSTUFE_TAGE:
+        return d, "vorstufe.json: «bis» liegt mehr als %d Tage voraus (%s)" % (VORSTUFE_TAGE, bis)
+    return d, ""
+
+
 def stand_pruefen(a, tmp, ordner, ents, progs, ca, ctx, base):
     def holen(url):
         if a.ohne_netz and not url.startswith("https://127.0.0.1"):
@@ -482,7 +513,17 @@ def stand_pruefen(a, tmp, ordner, ents, progs, ca, ctx, base):
     elif os.path.isfile(lokal) and sha(lesen(lokal)) != str(top.get("sha256")):
         grund = "%s hat einen anderen Inhalt als in versions.json (nach dem Release neu gebaut)" % tf
     aus = set()
-    if grund and a.streng:
+    vor, vor_fehler = vorstufe_lesen(ordner)
+    vor_gilt = bool(vor and not vor_fehler and neueste_datei and vkey(neueste_datei) > vkey(tv) and vor.get("version") == neueste_datei
+                    and os.path.isfile(lokal) and sha(lesen(lokal)) == str(top.get("sha256")))
+    if vor is not None and not vor_gilt:
+        # a marker that no longer fits (expired, other number, or the release is done) must go - it never lingers
+        ok(False, "vorstufe.json passt zu diesem Stand: " + (vor_fehler or ("neueste Programmdatei %s, veröffentlicht %s - die Vorstufe "
+           "ist vorbei oder eine andere, vorstufe.json löschen" % (progs.get(neueste_datei, "-"), tv))))
+    if grund and vor_gilt:
+        hinweis("VORSTUFE auf main (vorstufe.json, bis %s): %s. Geräte sehen davon nichts - versions.json nennt weiter %s, und "
+                "jeder Eintrag dort wird unten ganz geprüft. Grund: %s" % (vor.get("bis"), grund, tv, vor.get("grund")))
+    elif grund and a.streng:
         ok(False, "veröffentlichter Stand stimmt: " + grund)
     elif grund:
         if not (neueste_datei and vkey(neueste_datei) > vkey(tv) and os.path.isfile(lokal) and sha(lesen(lokal)) == str(top.get("sha256"))):

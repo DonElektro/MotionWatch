@@ -159,6 +159,13 @@ Push-Nachrichten). Einrichtung: `docs/Einrichtung_Raspberry_Pi.md`, Gehäuse: `h
   `main` (oder von Hand, oder «[export]» in der Commit-Nachricht) dazu der Export Linux + Windows ohne Signatur als Artefakt. Helfer und Integrator pushen und warten:
   `werkzeuge/ci_status.sh [zweig|commit] --warten --fehler` (Exit 0 = grün; ohne `--warten` nur die letzten Läufe;
   `--start` startet von Hand, geht erst wenn ci.yml auf main ist). Signieren bleibt lokal, der Schlüssel kommt nie ins CI.
+- **Release in zwei Stufen** (Workflow muss von main laufen und legt Release-Dateien an, deren Prüfsummen erst danach in die
+  signierte Fassung kommen – fertige Spiele 3.74.0, Offline-Karten 3.81.0): Stufe 1 = Quelle + gebaute Datei + Workflow auf main,
+  OHNE Eintrag in versions.json, dazu `vorstufe.json` neben versions.json (`{"version": "X.Y.Z", "grund": "…", "bis":
+  "JJJJ-MM-TT"}`, höchstens 3 Tage voraus). Nur damit bleibt die strenge Prüfung auf main grün (`update_uebergang_test.py --nur stand
+  --streng`, laute Warnung «VORSTUFE»); Geräte sehen nichts, sie folgen versions.json. Stufe 2 = Prüfsummen eintragen, neu bauen,
+  signieren, `vorstufe.json` LÖSCHEN (bleibt sie liegen, läuft sie ab oder nennt sie eine andere Nummer: rot). Die alten
+  Versions-Dateien bleiben in Stufe 1 liegen (`versionen.py --aufraeumen` erst mit dem signierten Eintrag).
 - **CI in Gruppen** (ab Nov. 2026): die Tests stehen in `werkzeuge/ci_tests.txt` – **neuer Test = eine Zeile dort**
   (`Gruppe | Limit | Nochmal | Befehl | Name`), `ci.yml` bleibt wie es ist. Jede `werkzeuge/*_test.py` muss dort stehen
   (in einer Gruppe oder in «hand» mit Grund), sonst ist `python3 werkzeuge/ci_lauf.py --pruefen` rot. Gruppen = parallele
