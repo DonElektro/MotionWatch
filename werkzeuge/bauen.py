@@ -423,6 +423,7 @@ def auslagern(name, text):
 
 
 ZD_SCHLANK = True                   # 3.59.0: comments, docstrings of functions / classes, indentation as tabs (_schlank)
+ZD_FOLGEZEILEN = True               # Hauptdatei kleiner: also the continuation lines with tabs (_schlank)
 
 
 def _schlank(text):
@@ -460,8 +461,20 @@ def _schlank(text):
     # indentation: a level of four more spaces becomes one tab, any other step stays spaces (the new indentation of a
     # level always starts with the one of its parent - Python sees the same blocks with tabs of any width)
     cm, starts, stack, prev_end, at_start = {}, [], [("", "")], 0, True
+    im_text, fs_tief, fs_start = set(), 0, 0               # rows that begin inside a string of several lines: never touched
+    t_fs_a, t_fs_e = getattr(tokenize, "FSTRING_START", -1), getattr(tokenize, "FSTRING_END", -1)
     for tok in tokenize.generate_tokens(io.StringIO(mid).readline):
         tt = tok.type
+        if tt == tokenize.STRING:
+            im_text.update(range(tok.start[0] + 1, tok.end[0] + 1))
+        elif tt == t_fs_a:                                 # Python 3.12+: an f-string comes in pieces - the same rows as before
+            fs_tief += 1
+            if fs_tief == 1:
+                fs_start = tok.start[0]
+        elif tt == t_fs_e:
+            fs_tief -= 1
+            if fs_tief == 0:
+                im_text.update(range(fs_start + 1, tok.end[0] + 1))
         if tt == tokenize.COMMENT:
             if not (tok.start[0] == 1 and tok.string.startswith("#!")):
                 cm[tok.start[0]] = tok.start[1]
@@ -487,10 +500,23 @@ def _schlank(text):
         prev_end = tok.end[0]
     for row, col in cm.items():
         new[row - 1] = new[row - 1][:col].rstrip()
+    kopf = set()
     for row, col, old, neu in starts:
         ln = new[row - 1]
+        kopf.add(row)
         if ln[:col] == old:
             new[row - 1] = neu + ln[col:]
+    if ZD_FOLGEZEILEN:
+        # Hauptdatei kleiner (Nov. 2026): continuation lines (inside brackets, aligned with spaces) - every four leading
+        # spaces become one tab, the rest stays. Python ignores the indentation of such a line; zd_source() (012) turns
+        # leading tabs back into four spaces each, so these lines need no entry in "zeilen". Lines that begin inside a
+        # string of several lines are content and stay as they are.
+        for i, ln in enumerate(new):
+            if (i + 1) in im_text or (i + 1) in kopf or not ln.startswith("    "):
+                continue
+            n = len(ln) - len(ln.lstrip(" "))
+            if n < len(ln):
+                new[i] = "\t" * (n // 4) + ln[n - n % 4:]
     out = "\n".join(new)
     if len(new) != len(lines):
         raise SystemExit("Schlank: Zeilenzahl geändert – Fehler in bauen.py")
