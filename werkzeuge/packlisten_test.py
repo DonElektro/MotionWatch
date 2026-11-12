@@ -782,10 +782,11 @@ def teil_b(datei, bilder):
             ok("🎒" in summe and "Basisgewicht" in summe and "Verbrauch" in summe and "Am Körper" in summe and "Ziel 11 kg" in summe and "darunter" in summe and "6 von 28 gepackt" in summe, f"Summen immer sichtbar: {summe!r}")
             schmal(pg, "Liste"); tippbar(pg, ".pl-tick", "Häkchen", 44); tippbar(pg, ".pl-row .pl-ib, .pl-pic, #pl-more, .pl-tabs button, #pl-addb, #pl-addin", "Knöpfe der Liste")
             bild(pg, "02_liste.png"); bild(pg, "02_liste_ganz.png", full_page=True)
+            # the bar of the sums: at most 96 px (GitHub, 12.11.2026: 80.8 px with the fonts there, limit was 80)
             pg.evaluate("window.scrollTo(0, 900)"); pg.wait_for_timeout(400)
             top = pg.evaluate("() => { const r = document.getElementById('pl-sum').getBoundingClientRect(); return [r.top, r.bottom, window.innerHeight]; }")
             add = pg.evaluate("() => { const r = document.getElementById('pl-add').getBoundingClientRect(); return [r.top, r.bottom, window.innerHeight]; }")
-            ok(0 <= top[0] < 200 and top[1] - top[0] <= 80 and add[1] <= add[2] + 1 and add[0] > add[2] - 90, f"beim Scrollen bleiben Summen oben und «eintragen» unten ({top}, {add})")
+            ok(0 <= top[0] < 200 and top[1] - top[0] <= 96 and add[1] <= add[2] + 1 and add[0] > add[2] - 90, f"beim Scrollen bleiben Summen oben und «eintragen» unten ({top}, {add})")
             bild(pg, "02_liste_gescrollt.png")
             pg.evaluate("window.scrollTo(0, 0)")
             # tick
