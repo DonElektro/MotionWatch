@@ -324,12 +324,25 @@ def pl_cat_guess(name):
     return "other"
 
 
+def pl_cat_head(text):
+    """a heading of the user: a fixed category when it is exactly its name, else his own words stay («Tourenausrüstung»)"""
+    c = pl_cat_clean(str(text).strip(" :-–—#*=_"))
+    if c == c.upper() and c != c.lower():                    # «TOURENAUSRÜSTUNG» -> «Tourenausrüstung»
+        c = pl_cat_clean(" ".join(w[:1] + w[1:].lower() for w in c.split(" ")))
+    return c if c in PL_CAT_KEYS else c[:1].upper() + c[1:]
+
+
+def pl_cat_icon(cat):
+    """the fixed category whose symbol (and rules) an own category gets: «Kleidung» -> clothes"""
+    k = cat if cat in PL_CAT_KEYS else pl_cat_key(cat)
+    return k if k in PL_CAT_KEYS else "other"
+
+
 def pl_kind_auto(cat, name):
     """food and drink are consumables, a bottle or a filter is not; also gas, fuel, sunscreen … (the user can change it per item)"""
     low = " " + name.lower() + " "
-    if cat == "food" or any(w in low for w in PL_CONS_WORDS):
-        return "cons"
-    if cat == "water" and not any(w in low for w in PL_WATER_GEAR):
+    cat = pl_cat_icon(cat)
+    if any(w in low for w in PL_CONS_WORDS) or (cat in ("food", "water") and not any(w in low for w in PL_WATER_GEAR)):
         return "cons"
     return "base"
 
@@ -398,7 +411,9 @@ def pl_parse_line(raw):
         if m:                                                # «Zelt – 1800», «Zelt<Tab>1800»: a bare number at the end = grams
             g, s = _pl_grams(m.group(2), "g"), m.group(1)
     ml = list(_PL_L_RE.finditer(s))
-    if ml and _pl_tidy(s[:ml[-1].start()] + " " + s[ml[-1].end():]):
+    rest = _pl_tidy(s[:ml[-1].start()] + " " + s[ml[-1].end():]).lower() if ml else ""
+    if re.search(r"wasser|water|tee\b|saft|getränk|benzin|spiritus|milch|wein|bier|öl\b|sirup|kaffee|eau\b|acqua|drink", rest) and not any(
+            w in rest for w in PL_WATER_GEAR):               # litres of a liquid: a note. «Tasche (20-30 Liter)», «Topf 1 l»: part of the name
         m = ml[-1]
         note = m.group(1) + " " + m.group(2).lower().replace("liter", "l").replace("litres", "l").replace("litre", "l").replace("lt", "l")
         s = s[:m.start()] + " " + s[m.end():]
@@ -470,7 +485,7 @@ def pl_parse_text(text):
             else:
                 p = ("cat", " ".join(w[:1] + w[1:].lower() for w in p[1].split(" ")))
         if p[0] == "cat":
-            cat = pl_cat_key(p[1])
+            cat = pl_cat_head(p[1])
             heads.append([len(items), pl_text(p[1], PL_NAME_MAX), cat])   # for the preview: «as item» puts it back
             continue
         it = p[1]
@@ -495,6 +510,17 @@ def pl_decode(data):
         return data.decode("cp1252", "replace")
 
 
+def pl_html_text(t):
+    """HTML (a note of Apple Notes saved as text, a pasted page) -> plain lines. Nothing is rendered: script / style / head are
+    cut out, blocks become line breaks, list points a «- », every other tag goes away, then the entities are decoded."""
+    import html as _h
+    t = re.sub(r"(?is)<!--.*?-->|<(script|style|head|title)\b.*?</\1\s*>", "", t)
+    t = re.sub(r"(?i)<li\b[^>]*>", "\n- ", t)
+    t = re.sub(r"(?i)</t[dh]\s*>", "\t", t)
+    t = re.sub(r"(?i)</?(?:div|p|br|tr|li|ul|ol|h[1-6]|table|body|html)\b[^>]*>", "\n", t)
+    return _h.unescape(re.sub(r"<[a-zA-Z/!][^>]*>", "", t))
+
+
 def pl_sniff(text, csv_file=False):
     """the separator of a table in this text, or "" (= a note with one item per line). Comma only for a .csv file."""
     lines = [ln for ln in text.replace("\r\n", "\n").replace("\r", "\n").split("\n") if ln.strip()][:80]
@@ -502,7 +528,7 @@ def pl_sniff(text, csv_file=False):
         return ""
     best, best_n = "", 0.0
     for d in ("\t", ";", "|") + ((",",) if csv_file else ()):
-        cnt = [ln.count(d) for ln in lines]
+        cnt = [ln.lstrip().count(d) for ln in lines]         # a tab in front is indentation (Apple Notes), not a column
         have = [c for c in cnt if c]
         if len(have) < max(2, 0.6 * len(lines)):
             continue
@@ -807,7 +833,7 @@ def pl_table_items(rows, guess):
             p = pl_parse_line(c)
             if c.endswith(":") or (p and p[0] in ("cat", "caps")) or c.lower() in PL_HEAD_EXACT or any(
                     c.lower() == tr(en, L).lower() for _k, en, _c, _p in PL_CATS for L in LANGS):
-                cat = pl_cat_key(c.title() if c == c.upper() else c)
+                cat = pl_cat_head(c.title() if c == c.upper() else c)
                 continue
         raw = cell(r, "name") if mp["name"] >= 0 else ""
         if not raw:
@@ -827,7 +853,7 @@ def pl_table_items(rows, guess):
                 it["n"] = int(v)
         if cell(r, "note"):
             it["note"] = pl_text((it["note"] + " · " if it["note"] else "") + cell(r, "note"), PL_NOTE_MAX)
-        it["cat"] = pl_cat_key(cell(r, "cat")) if cell(r, "cat") else (cat or pl_cat_guess(it["name"]))
+        it["cat"] = pl_cat_head(cell(r, "cat")) if cell(r, "cat") else (cat or pl_cat_guess(it["name"]))
         k = kinds.get(cell(r, "kind").lower())
         it["kind"] = k or pl_kind_auto(it["cat"], it["name"])
         if mp["packed"] >= 0:
@@ -863,6 +889,10 @@ def pl_import_preview(data=None, text=None, name="", guess=None, rows=None, lang
                 raise PLError("The text is too long.")
             if "\x00" in text[:2000]:
                 raise PLError("This kind of file cannot be imported. Save the list as .xlsx, CSV or text.")
+            if sum(c < " " and c not in "\t\n\r" for c in text[:4000]) > 8:
+                raise PLError("This kind of file cannot be imported. Save the list as .xlsx, CSV or text.")
+            if len(re.findall(r"(?i)<(?:html|body|div|p|br|li|span|tr)\b[^>]*>", text[:20000])) >= 2:
+                text = pl_html_text(text)
             if ext == "json" or text.lstrip()[:1] == "{":
                 try:
                     j = json.loads(text)
@@ -1071,7 +1101,8 @@ def _pl_pub_head(L, who):
     t = pl_totals(L["items"])
     return {"id": L["id"], "name": L["name"], "area": L["area"], "by": L["owner_name"], "mine": L["owner"] == who["key"], "t": L["t"], "rev": L["rev"],
             "goal_g": L["goal_g"], "note": L["note"], "n": t["n"], "packed": t["packed"], "buy": t["buy"], "total": t["total"], "pack": t["pack"],
-            "edit": pl_can_edit(L, who) and bool(CFG.get("tausch_on", True)), "rm": pl_can_del(L, who), "dl": pl_can_export(L, who)}
+            "edit": pl_can_edit(L, who) and bool(CFG.get("tausch_on", True)), "rm": pl_can_del(L, who), "dl": pl_can_export(L, who),
+            "ci": {c: pl_cat_icon(c) for c in {x["cat"] for x in L["items"]} if c not in PL_CAT_KEYS}}
 
 
 def pl_overview(who, lang=None):
@@ -1156,6 +1187,9 @@ def _pl_new_item(L, who, d):
     except (TypeError, ValueError):
         n = 1
     cat = pl_cat_clean(d.get("cat")) if isinstance(d.get("cat"), str) and d.get("cat").strip() else pl_cat_guess(name)
+    own = {x["cat"] for x in L["items"] if x["cat"] not in PL_CAT_KEYS and pl_cat_icon(x["cat"]) == cat}
+    if len(own) == 1 and not d.get("cat") and not any(x["cat"] == cat for x in L["items"]):
+        cat = own.pop()                                      # a guessed «Kleider» goes to the user's own «Kleidung»
     iid = secrets.token_hex(4)
     have = {x["id"] for x in L["items"]} | {x[0] for x in L["gone"]}
     while iid in have:
@@ -1167,11 +1201,18 @@ def _pl_new_item(L, who, d):
 
 def pl_dups(items, L=None):
     """mark doubles in an import preview: "list" = already in the target list, "import" = twice in this import (nothing is dropped)"""
-    have = {it["name"].casefold() for it in (L["items"] if L else ())}
+    def words(n):                                            # «Wasserflasche/ auch Trinkblase» ~ «Wasserflaschen»: the same stem
+        return frozenset(re.sub(r"(?<=...)(?:en|n|e|s)$", "", w) for w in re.findall(r"[^\W\d_]{3,}", n.casefold())
+                         if w not in ("evtl", "eventuell", "oder", "auch", "inkl", "nach", "und", "aus", "mit", "ggf", "ggfs", "für", "and", "the", "with"))
+    have = {it["name"].casefold(): it["name"] for it in (L["items"] if L else ())}
+    near = [(words(n), n) for n in have.values()]
     seen = set()
     for it in items:
-        k = it["name"].casefold()
+        k, w = it["name"].casefold(), words(it["name"])
         it["dup"] = "list" if k in have else "import" if k in seen else ""
+        like = "" if it["dup"] or not w else next((n for v, n in near if v and (v <= w or w <= v)), "")
+        if like:
+            it["like"] = like                                # only a hint in the preview: nothing is merged, nothing unticked
         seen.add(k)
     return items
 
@@ -1184,7 +1225,7 @@ def pl_action(who, d, lang=None):
         if err:
             return False, err, {}, 403 if "files_up" not in who["perms"] else 409
         if isinstance(d.get("cat"), str):                     # the preview turns a row into a heading: which category is that?
-            return True, "", {"cat": pl_cat_key(d["cat"])}, 200
+            return True, "", {"cat": pl_cat_head(d["cat"])}, 200
         try:
             if isinstance(d.get("rows"), list):
                 res = pl_import_preview(rows=d["rows"], guess=d.get("guess") if isinstance(d.get("guess"), dict) else None, lang=lang)
@@ -1596,7 +1637,7 @@ def pl_file_name(L, ext):
 
 
 def pl_icon_svg(cat, size=22):
-    c = next((x for x in PL_CATS if x[0] == cat), PL_CATS[-1])
+    c = next(x for x in PL_CATS if x[0] == pl_cat_icon(cat))
     return (f'<svg viewBox="0 0 24 24" width="{size}" height="{size}" fill="none" stroke="{c[2]}" stroke-width="1.7" stroke-linecap="round" '
             f'stroke-linejoin="round" aria-hidden="true"><path d="{c[3]}"/></svg>')
 
@@ -1978,11 +2019,11 @@ Object.assign(I18N.de, /*PLDE*/{});
   const fmtG = g => g == null ? "–" : g < 1000 ? g + " g" : num(g / 1000) + " kg";
   const fmtW = g => g == null ? "" : (g < 1000 || g % 10) ? g + " g" : num(g / 1000) + " kg";          // exact: for a field that is read again
   const catName = c => CK[c] ? t(CK[c].en) : c;
-  const catOrder = c => c === "other" ? [900, ""] : CK[c] ? [CK[c].i, ""] : [800, c.toLowerCase()];
+  const catOrder = c => { const o = CK[((S.L || {}).ci || {})[c]]; return c === "other" ? [900, ""] : CK[c] ? [CK[c].i, ""] : o ? [o.i + .5, c.toLowerCase()] : [800, c.toLowerCase()]; };
   const msg = (txt, bad) => { const m = $("#pl-msg"); m.hidden = !txt; m.textContent = txt || ""; m.classList.toggle("bad", !!bad); };
   const when = s => new Date(s * 1000).toLocaleDateString();
   function icon(cat, size, bg) {
-    const k = CK[cat] || CK.other, b = el("span", "pl-ic"), s = document.createElementNS(NS, "svg"), p = document.createElementNS(NS, "path");
+    const k = CK[cat] || CK[((S.L || {}).ci || {})[cat]] || CK.other, b = el("span", "pl-ic"), s = document.createElementNS(NS, "svg"), p = document.createElementNS(NS, "path");
     s.setAttribute("viewBox", "0 0 24 24"); s.setAttribute("width", size); s.setAttribute("height", size); s.setAttribute("fill", "none"); s.setAttribute("stroke", k.col);
     s.setAttribute("stroke-width", "1.7"); s.setAttribute("stroke-linecap", "round"); s.setAttribute("stroke-linejoin", "round"); s.setAttribute("aria-hidden", "true");
     p.setAttribute("d", k.d); s.appendChild(p); b.appendChild(s); if (bg) { b.style.background = k.col + "26"; b.style.width = b.style.height = "100%"; }
@@ -2292,7 +2333,7 @@ Object.assign(I18N.de, /*PLDE*/{});
     const sh = sheet("⬇ " + t("Import"), true); let P = null, into = target ? target.id : "";
     const step1 = () => {
       sh.bd.textContent = ""; sh.ft.textContent = ""; sh.ft.hidden = true; sh.title.textContent = "⬇ " + t("Import");
-      const fi = el("input"); fi.type = "file"; fi.hidden = true; fi.id = "pl-impfile"; fi.accept = ".txt,.csv,.tsv,.xlsx,.json,.md,text/plain,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+      const fi = el("input"); fi.type = "file"; fi.hidden = true; fi.id = "pl-impfile";      // no «accept»: a list can have any ending (a note saved as .py) - the device looks at the content
       const fb = el("button", "", "📄 " + t("Choose a file")); fb.type = "button"; fb.style.minHeight = "48px"; fb.onclick = () => fi.click();
       const ta = el("textarea"); ta.id = "pl-imptext"; ta.placeholder = t("Paste the text here – one item per line. Example:") + "\n\nKüche:\n- Kocher 90 g\n- 2x Gaskartusche (230 g)\nZelt – 1.8 kg";
       const pv = el("button", "sec", t("Preview")); pv.type = "button"; pv.style.minHeight = "48px"; pv.id = "pl-imppv";
@@ -2355,6 +2396,7 @@ Object.assign(I18N.de, /*PLDE*/{});
         n1.oninput = () => { x.name = n1.value; }; w.oninput = () => { x.w = w.value; x.g = null; }; q.oninput = () => { x.n = parseInt(q.value, 10) || 1; paintSum(); }; cs.addEventListener("change", () => { x.cat = cs.value; x.auto = false; });
         r2.append(w, q, cs); f.append(n1, r2);
         if (x.dup) f.appendChild(el("small", "", "⚠ " + t(x.dup === "list" ? "Double: already in the list" : "Double: twice in this import")));
+        if (x.like) f.appendChild(el("small", "", "≈ " + tf("Similar to «{name}» in the list", {name: x.like})));
         if (x.packed || x.buy || x.note) f.appendChild(el("small", "", [x.packed ? "✓ " + t("Packed") : "", x.buy ? "🛒 " + t("To buy") : "", x.note].filter(Boolean).join(" · "))).style.color = "var(--mut)";
         if (P.kind === "lines") f.appendChild(sw(t("As category"), async () => { const k = await api({action: "preview", cat: x.name}); if (!k.ok) return;
           Object.assign(x, {head: true, on: false, cat: k.cat}); recat(); step2(); }));
@@ -2591,6 +2633,7 @@ _HX_PACK = {
                                      "Dubel: duas giadas en quest import"),
     "«{name}» is in the list twice now": ("«{name}» steht jetzt zweimal in der Liste", "«{name}» est maintenant deux fois dans la liste", "«{name}» ora è due volte nella lista",
                                           "«{name}» stat ussa duas giadas en la glista"),
+    "Similar to «{name}» in the list": ("Ähnlich wie «{name}» in der Liste", "Semblable à «{name}» dans la liste", "Simile a «{name}» nella lista", "Sumegliant a «{name}» en la glista"),
     "As category": ("Als Kategorie", "Comme catégorie", "Come categoria", "Sco categoria"),
     "As item": ("Als Gegenstand", "Comme objet", "Come oggetto", "Sco object"),
     "unknown list": ("unbekannte Liste", "liste inconnue", "lista sconosciuta", "glista nunenconuschenta"),
