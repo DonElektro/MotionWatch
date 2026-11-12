@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-12 15:16",
+ "generated": "2026-11-12 16:39",
  "versions": [
   {
-   "version": "3.83.3",
-   "file": "webcam_bewegung_3_83_3.py",
+   "version": "3.83.4",
+   "file": "webcam_bewegung_3_83_4.py",
    "url": "",
-   "sha256": "62dc4a348ccdc0ff06ef7c6e7e510fdcd7c395a5230b475a550582eab5b51bad",
-   "date": "2026-11-12 15:16",
-   "notes": "Unter der Haube: Die Programmdatei ist um rund 370 KB kleiner (Prüf-Code und Almanach-Texte liegen jetzt im Daten-Paket); am Verhalten ändert sich nichts. Ohne Daten-Paket zeigt der Almanach neu wenigstens das Notfall-Kapitel.",
-   "size": 3816736,
-   "sig": "08ce0d533edca7753f8ace13dc703a5e64c4494ee7e27ae8af6901041205f578588aac2c545c0930b891f7aa6f248589d59c96ab598555e8588ca4ff0ea3a307",
+   "sha256": "d7d1144e109a6ffd8fced032473d45fab00297ad803843726186082ddbdc8cfd",
+   "date": "2026-11-12 16:39",
+   "notes": "Packlisten: Auch sehr lange, ungewöhnlich gebaute Texte halten MoveEye beim Einlesen nicht mehr auf (eine Prüfung auf GitHub hatte das bei 3.83.3 gezeigt).",
+   "size": 3817101,
+   "sig": "79a3b62315b4f2071562f4cd1ceb705e4dc275b9fe99bbae793e758dfa7a8c2486dee76e64df9578b484a9c1573f1bf2f5a523498aa9fed603cc2a1fdf1b270a",
    "data": {
-    "file": "moveeye_daten_3_83_3.zip",
+    "file": "moveeye_daten_3_83_4.zip",
     "url": "",
-    "sha256": "840f1080d0e478ffecb7c8454ceaeb350433a4994da1fd5b2ade5446ab7fc55f",
-    "size": 10889077,
-    "sig": "8c39a2afee0e7efbfcf9ae378b448f54ee4eb7a2a7ccdbd3a9a0519b39337e5e1a9daea12a9b73614ab40841ea7c7c587ebe72a597e1450c95d4e4bf6e923d0d"
+    "sha256": "77a5128d5eb0377aa4104e8f5c195de15a10ae765aca04bebb28ff842bdfbd4e",
+    "size": 10889655,
+    "sig": "57fd4f6f19d6bae9e9e4f2ecbeeacc99a949d0397ebe9180624d98d5129d58115de65942bf1415700a685d01530a04eaa3cd33f4104142278bce52d10b51a30a"
    }
   },
   {

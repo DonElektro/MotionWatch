@@ -356,7 +356,9 @@ def teil_zeit(ns):
               ("eine Zeile «== » + 2 MB Leerzeichen", ("== " + " " * 2000000 + "x").encode()), ("eine Zeile 2 MB Bindestriche", ("-" * 2000000 + "a").encode()),
               ("4000 Zeilen «== » + Leerzeichen", (("== " + " " * 490 + "x\n") * 4000).encode()), ("4000 Zeilen Bindestriche", (("-" * 499 + "a\n") * 4000).encode()),
               ("4000 Zeilen «2x 2x 2x …»", (("2x " * 166 + "\n") * 4000).encode()), ("4000 Zeilen Leerzeichen + Gewicht", (("a" + " " * 400 + "b 12 g\n") * 4000).encode()),
-              ("4000 Zeilen Klammern", (("a " + "(" * 480 + "\n") * 4000).encode()), ("4000 Zeilen «# » + Leerzeichen + #", (("# a" + " " * 480 + "b #\n") * 4000).encode()))
+              ("4000 Zeilen Klammern", (("a " + "(" * 480 + "\n") * 4000).encode()), ("4000 Zeilen «# » + Leerzeichen + #", (("# a" + " " * 480 + "b #\n") * 4000).encode()),
+              ("4000 Zeilen «a - a - a - …»", (("a - " * 124 + "x\n") * 4000).encode()), ("4000 Zeilen «a 1'a 1'…»", (("a 1'" * 124 + "\n") * 4000).encode()),   # 3.83.4
+              ("4000 Zeilen «a: a: … 5»", (("a: " * 160 + "5\n") * 4000).encode()), ("4000 Zeilen Ziffern", (("1 " * 249 + "a\n") * 4000).encode()))
     for name, data in faelle:
         t0 = time.time()
         try:
