@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Test und Prüfstand «Morse-Modus» (MoveEye Teil 639zzx) – ohne echte Kamera, ohne echte Lampe.
+"""Test und Prüfstand «Morse-Modus» (MoveEye Teil 639zzz) – ohne echte Kamera, ohne echte Lampe.
 
   A) Zeichen und Zeitplan: Tabelle eindeutig, Umlaute / ß / CH, Prosigns (SOS als EIN Zeichen), unbekannte Zeichen werden
      ausgelassen und gemeldet, dit = 1 / dah = 3 / Pausen 1 / 3 / 7, Farnsworth, Tempo-Grenzen pro Ausgang (kein Weg
@@ -19,13 +19,24 @@
   python3 werkzeuge/morse_test.py [--datei X.py | --quelle] [--messen] [--tabelle DATEI] [--browser] [--bilder ORDNER]
 """
 import argparse
+import base64
 import glob
+import http.server
+import json
 import math
 import os
 import random
 import re
+import shutil
+import signal
+import socket
+import subprocess
 import sys
+import tempfile
+import threading
 import time
+import urllib.error
+import urllib.request
 
 import numpy as np
 import cv2
@@ -51,11 +62,11 @@ def neueste():
 
 
 def lade_kern():
-    """nur der Kern aus quelle/639zzx_morse.py (zwischen den Marken) - für die Entwicklung und die Messung"""
-    src = open(os.path.join(REPO, "quelle", "639zzx_morse.py"), encoding="utf-8").read()
+    """nur der Kern aus quelle/639zzz_morse.py (zwischen den Marken) - für die Entwicklung und die Messung"""
+    src = open(os.path.join(REPO, "quelle", "639zzz_morse.py"), encoding="utf-8").read()
     a, e = src.index("# ==== MORSE-KERN ANFANG"), src.index("# ==== MORSE-KERN ENDE")
     ns = {"math": math, "time": time, "np": np, "cv2": cv2}
-    exec(compile(src[a:e], "639zzx_morse.py(kern)", "exec"), ns)
+    exec(compile(src[a:e], "639zzz_morse.py(kern)", "exec"), ns)
     return ns
 
 
@@ -402,6 +413,393 @@ def teil_e(ns):
     ok(len(r["text"]) <= ns["MORSE_RX_TEXT_MAX"], f"Text einer endlosen Sendung auf {len(r['text'])} Zeichen gekürzt")
 
 
+# ---------------------------------------------------------------------------------------------------------------------- F
+WRAP = r"""
+import json, os, sys
+D = sys.argv[1]
+src = open(D, encoding="utf-8").read()
+i = src.rfind('\nif __name__ == "__main__":')
+patch = '''
+_mt_read = DemoSource.read
+def _mt_read_blink(self):                                 # a lamp in the demo picture, on by the plan in the file MW_MORSE_PLAN
+    ok_, img_ = _mt_read(self)
+    try:
+        if ok_ and os.path.exists(os.environ["MW_MORSE_PLAN"]):
+            P_ = json.load(open(os.environ["MW_MORSE_PLAN"]))
+            n_ = time.time() - P_["t0"]
+            if any(a_ <= n_ < b_ for a_, b_ in P_["zeiten"]):
+                img_ = img_.copy(); cv2.circle(img_, (P_["x"], P_["y"]), 7, (255, 255, 255), -1)
+    except Exception:
+        pass
+    return ok_, img_
+DemoSource.read = _mt_read_blink
+_mt_hwl = Hardware._lights
+_MT = {"last": {}}
+def _mt_hw_lights(self, wanted):                          # every switch of a GPIO the hardware loop would write, with its time
+    _mt_hwl(self, wanted)
+    try:
+        for g_, (on_, al_) in wanted.items():
+            if _MT["last"].get(g_) != on_:
+                _MT["last"][g_] = on_
+                open(os.environ["MW_MORSE_OUT"], "a").write(json.dumps([time.time(), g_, bool(on_)]) + chr(10))
+        fr_ = LED.get("frame") or {}
+        k_ = fr_.get("layer") == "morse" and fr_.get("br", 0) > 0
+        if _MT["last"].get("led") != k_:
+            _MT["last"]["led"] = k_
+            open(os.environ["MW_MORSE_OUT"], "a").write(json.dumps([time.time(), "led", bool(k_)]) + chr(10))
+    except Exception:
+        pass
+Hardware._lights = _mt_hw_lights
+'''
+src = src[:i] + patch + src[i:]
+sys.argv = [D] + sys.argv[2:]
+g = {"__name__": "__main__", "__file__": D}
+exec(compile(src, D, "exec"), g)
+"""
+PW = "Morse-" + "".join(random.choice("abcdefghjkmnpqrstuvwxyz23456789") for _ in range(10))
+PIN = "4821"
+
+
+class Hook(http.server.BaseHTTPRequestHandler):
+    got = []
+
+    def do_POST(self):
+        n = int(self.headers.get("Content-Length") or 0)
+        Hook.got.append(self.rfile.read(n) + b" | " + json.dumps(dict(self.headers)).encode())
+        self.send_response(200); self.end_headers(); self.wfile.write(b"ok")
+
+    def log_message(self, *a):
+        pass
+
+
+def teil_f(datei, ns, browser, bilder):
+    print("F) MoveEye mit Demo-Kamera: Modus, Rechte, Ausgänge, Empfang", flush=True)
+    hook = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Hook)
+    threading.Thread(target=hook.serve_forever, daemon=True).start()
+    tmp = tempfile.mkdtemp(prefix="mw_morse_f_")
+    cfg = os.path.join(tmp, "mw"); os.makedirs(cfg)
+    plan_f, out_f = os.path.join(tmp, "plan.json"), os.path.join(tmp, "out.txt")
+    rec = os.path.join(tmp, "aufnahmen")
+    st = {"source": "demo", "thermal_source": "", "thermal_on": False, "sim_on": False, "sim_url": "http://127.0.0.1:9", "sim_auto": False,
+          "sim_autostart": False, "sim_autostart_v2": False, "sim_autoupd": False, "update_url": "", "lang": "de", "desktop_notice": False,
+          "setup_done": True, "https_extra": False, "news_popup": False, "tours_auto": False, "notify_type": "webhook",
+          "notify_url": f"http://127.0.0.1:{hook.server_address[1]}/hook", "notify_on": True, "light_white_out": "gpio:17", "light_ir_out": "gpio:27",
+          "armed": True, "protect_level": "watch", "arm_delay": 0, "record_dir": rec, "tamper_on": True, "ai_enabled": False,
+          "latitude": 46.95, "longitude": 7.44, "eco_on": False}
+    json.dump({"cfg": st, "relays": [{"name": "Scheinwerfer", "gpio": 22, "mode": "off", "trigger": "person", "hold": 5.0, "active_low": False}]},
+              open(os.path.join(cfg, "motionwatch_settings.json"), "w"))
+    wrap = os.path.join(tmp, "wrap.py"); open(wrap, "w").write(WRAP)
+    with socket.socket() as sk:
+        sk.bind(("127.0.0.1", 0)); port = sk.getsockname()[1]
+    logf = open(os.path.join(tmp, "log.txt"), "w")
+    env = dict(os.environ, MW_MORSE_PLAN=plan_f, MW_MORSE_OUT=out_f)
+    P = {"p": None}
+
+    def start():
+        P["p"] = subprocess.Popen([sys.executable, wrap, datei, "--headless", "--demo", "--port", str(port), "--bind", "127.0.0.1", "--config", cfg,
+                                   "--web-password", PW], stdout=logf, stderr=subprocess.STDOUT, cwd=tmp, env=env)
+    start()
+    base = f"http://127.0.0.1:{port}"
+    op = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+    A = ("admin", PW)
+
+    def req(path, data=None, user=A, pin=None, origin=None):
+        h = {"Authorization": "Basic " + base64.b64encode(f"{user[0]}:{user[1]}".encode()).decode()} if user else {}
+        h["Content-Type"] = "application/json"
+        if pin:
+            h["X-MW-PIN"] = pin
+        if origin:
+            h["Origin"] = origin
+        r = urllib.request.Request(base + path, data=json.dumps(data).encode() if data is not None else None, headers=h)
+        try:
+            with op.open(r, timeout=60) as x:
+                b = x.read()
+                return x.status, (json.loads(b) if x.headers.get_content_type() == "application/json" else b)
+        except urllib.error.HTTPError as e:
+            b = e.read()
+            try:
+                return e.code, json.loads(b)
+            except ValueError:
+                return e.code, b
+
+    def mstate():
+        return req("/api/morse?lang=de")[1]["state"]
+
+    def warte(was, s=30.0):
+        ende = time.time() + s
+        while time.time() < ende:
+            try:
+                if was():
+                    return True
+            except Exception:
+                pass
+            time.sleep(0.3)
+        return False
+
+    def log_text(q="Morse"):
+        return json.dumps(req("/api/log?limit=3000&q=" + q)[1].get("lines", []), ensure_ascii=False)
+
+    def kanten(g):
+        out = []
+        if os.path.exists(out_f):
+            for ln in open(out_f):
+                t, gg, on = json.loads(ln)
+                if gg == g:
+                    out.append((t, on))
+        return out
+
+    def gesendet(g):
+        """was der Ausgang wirklich getastet hat: (Text, kürzeste AN-Zeit, höchste Zahl Schaltspiele pro Sekunde)"""
+        k = kanten(g)
+        while k and not k[0][1]:
+            k.pop(0)
+        ons, gaps = [], []
+        for i in range(0, len(k) - 1, 2):
+            ons.append(k[i + 1][0] - k[i][0]); gaps.append(k[i + 2][0] - k[i + 1][0] if i + 2 < len(k) else None)
+        r = ns["morse_decode"](ons, gaps)
+        per = [k[i + 2][0] - k[i][0] for i in range(0, len(k) - 2, 2)]
+        return r["text"], (min(ons) if ons else 0.0), (1.0 / min(per) if per else 0.0)
+
+    def blinken(text, wpm, vor=1.5):
+        zeiten, ende = zeiten_aus(ns["morse_timeline"](ns["morse_encode"](text)[0], wpm), vor)
+        json.dump({"t0": time.time(), "zeiten": zeiten, "x": 420, "y": 250}, open(plan_f + ".tmp", "w")); os.replace(plan_f + ".tmp", plan_f)
+        return ende
+    try:
+        ok(warte(lambda: req("/api/state")[0] == 200, 90), "MoveEye läuft (Demo-Kamera)")
+        for n_, r_ in {"Anna": "family", "Kim": "kid"}.items():
+            req("/api/users", {"action": "add", "name": n_, "password": n_.lower() + "-pass-1", "role": r_})
+        warte(lambda: req("/api/state")[1]["state"].get("arm_state") == "armed", 30)
+        print("F) Rechte", flush=True)
+        for wer in (("Anna", "anna-pass-1"), ("Kim", "kim-pass-1")):
+            c = [req("/api/morse", user=wer)[0], req("/morse", user=wer)[0], req("/api/morse", {"action": "start", "minutes": 5}, user=wer)[0],
+                 req("/api/morse", {"action": "send", "text": "SOS", "outs": ["white"], "wpm": 5}, user=wer)[0],
+                 req("/api/morse", {"action": "prefs", "rx_push": True}, user=wer)[0], req("/api/set", {"key": "morse_rx_push", "value": True}, user=wer)[0]]
+            ok(all(x == 403 for x in c), f"{wer[0]}: Seite, Zustand, Start, Senden, Einstellungen = 403 {c}")
+        ok(req("/api/morse", user=None)[0] == 401 and req("/api/morse", {"action": "start", "minutes": 5}, user=None)[0] == 401, "ohne Anmeldung: 401")
+        c, j = req("/api/morse", {"action": "start", "minutes": 5}, origin="https://boese.example")
+        ok(c == 403 and not mstate()["on"], f"POST von einer fremden Webseite (Origin): 403, Modus bleibt aus ({c})")
+        c, j = req("/api/morse", {"action": "send", "text": "SOS", "outs": ["white"], "wpm": 5})
+        ok(c == 409 and not j["ok"], f"Senden ohne Modus: abgelehnt ({c}, {j.get('error')})")
+        ok(req("/api/morse", {"action": "start", "minutes": 0})[0] == 409 and req("/api/morse", {"action": "start", "minutes": 31})[0] == 409
+           and req("/api/morse", {"action": "start", "minutes": "x"})[0] == 409 and req("/api/morse", {"action": "more", "minutes": 5})[0] == 409,
+           "Minuten 0 / 31 / «x», «länger» ohne Modus: abgelehnt")
+        c, html = req("/morse")
+        ok(c == 200 and b"mo-back" in html and b'href="/more"' in html, "Seite /morse für den Administrator, mit Weg zurück")
+        c, more = req("/more")
+        c2, more2 = req("/more", user=("Anna", "anna-pass-1"))
+        ok(b'href="/morse"' in more and b'href="/morse"' not in (more2 if isinstance(more2, bytes) else b""), "Eintrag unter «Mehr» nur für den Administrator")
+        print("F) PIN und Start", flush=True)
+        ok(req("/api/protect", {"action": "pin", "new": PIN})[0] == 200, "PIN für «Aus» gesetzt")
+        c, j = req("/api/morse", {"action": "start", "minutes": 5})
+        ok(c == 403 and j.get("need_pin") and not mstate()["on"], f"Start ohne PIN: 403 «PIN nötig», Modus bleibt aus ({c})")
+        c, j = req("/api/morse", {"action": "start", "minutes": 5}, pin="0000")
+        ok(c == 403 and j.get("need_pin") and not mstate()["on"], "Start mit falscher PIN: 403")
+        ok(req("/api/state")[1]["state"].get("arm_state") == "armed", "vorher: Schutz «Wachsam»")
+        c, j = req("/api/morse", {"action": "start", "minutes": 2}, pin=PIN)
+        s = mstate()
+        ok(c == 200 and s["on"] and 100 < s["rest"] <= 120 and s["by"] == "admin", f"Start mit PIN: Modus läuft, endet in {s['rest']} s, gestartet von «{s['by']}»")
+        pr = req("/api/protect?lang=de")[1]
+        ok(pr.get("morse") and pr.get("level") == "watch", "Schutz-Zustand der Seiten: «Morse-Modus» (die Stufe in den Einstellungen bleibt «Wachsam»)")
+        ok(json.load(open(os.path.join(cfg, "motionwatch_settings.json")))["cfg"].get("armed") is True, "in der Einstellungs-Datei bleibt der Schutz EIN")
+        ok("Morse mode on (admin)" in log_text() and "PAUSED" in log_text(), "Protokoll: «Morse mode on (admin) … PAUSED»")
+        c, j = req("/api/morse", {"action": "more", "minutes": 5})
+        ok(c == 403 and j.get("need_pin"), "«länger» ohne PIN: 403")
+        for _i in range(12):
+            req("/api/morse", {"action": "more", "minutes": 30}, pin=PIN)
+        s = mstate()
+        ok(s["rest"] <= 30 * 60 and not s["more"] and req("/api/morse", {"action": "more", "minutes": 1}, pin=PIN)[0] == 409,
+           f"12-mal «+30 min»: nie länger als 30 Minuten ab Start ({s['rest']} s), danach abgelehnt")
+        r0 = mstate()["rest"]; time.sleep(2.5)
+        for _i in range(5):
+            req("/api/morse?lang=de"); req("/morse")
+        ok(mstate()["rest"] < r0, "Abfragen der Seite verlängert den Modus nicht")
+        print("F) Senden", flush=True)
+        s = mstate()
+        outs = {o["id"]: o for o in s["outs"]}
+        ok(outs["white"]["wpm"] == 7 and outs["ir"]["wpm"] == 20 and outs["relay:22"]["wpm"] == 4 and outs["led"]["wpm"] == 10 and outs["beep"]["wpm"] == 25,
+           "Grenzen: weiss 7, IR 20, Relais 4 (mechanisch), LED 10, Ton 25 WPM")
+        c, j = req("/api/morse", {"action": "plan", "text": "SOS ä€", "outs": ["white", "ir"], "wpm": 25, "lang": "de"})
+        ok(c == 200 and j["plan"]["wpm"] == 7 and j["plan"]["slow"] == "Weisses Licht" and j["plan"]["skipped"] == ["€"] and j["plan"]["shown"] == "SOS Ä",
+           f"Vorschau: 25 WPM gewünscht -> 7 WPM, gebremst durch «{j['plan']['slow']}», ausgelassen {j['plan']['skipped']}")
+        c, j = req("/api/morse", {"action": "plan", "text": "E", "outs": ["relay:22", "ir"], "wpm": 25})
+        ok(j["plan"]["wpm"] == 4, "mechanisches Relais + IR: 4 WPM")
+        req("/api/morse", {"action": "prefs", "ssr": [22]})
+        c, j = req("/api/morse", {"action": "plan", "text": "E", "outs": ["relay:22", "ir"], "wpm": 25})
+        ok(j["plan"]["wpm"] == 7, "als Halbleiter-Relais: 7 WPM (sichtbares Licht)")
+        req("/api/morse", {"action": "prefs", "ssr": []})
+        for bad in ({"text": "", "outs": ["white"], "wpm": 5}, {"text": "SOS", "outs": [], "wpm": 5}, {"text": "SOS", "outs": ["relay:99"], "wpm": 5},
+                    {"text": "S" * 201, "outs": ["white"], "wpm": 5}, {"text": ["SOS"], "outs": ["white"], "wpm": 5}, {"text": "SOS", "outs": "white", "wpm": "x"},
+                    {"text": "€€", "outs": ["white"], "wpm": 5}, {"text": "SOS", "outs": ["beep"], "wpm": 5}):
+            c, j = req("/api/morse", dict(bad, action="send"))
+            ok(c == 400 and not j["ok"] and not mstate()["tx"], f"abgelehnt: {str(bad)[:60]} -> {j.get('error')}")
+        open(out_f, "w").close()
+        c, j = req("/api/morse", {"action": "send", "text": "SOS ok", "outs": ["white", "ir", "relay:22"] + (["led"] if outs["led"]["ok"] else []), "wpm": 25, "lang": "de"})
+        ok(c == 200 and j["plan"]["wpm"] == 4 and j["state"]["tx"] and j["state"]["tx"]["shown"] == "SOS OK",
+           f"Senden auf mehreren Ausgängen zugleich: {(j.get('plan') or {}).get('wpm')} WPM (das Relais bremst) {j.get('error') or ''}")
+        c2, j2 = req("/api/morse", {"action": "send", "text": "E", "outs": ["ir"], "wpm": 5})
+        ok(c2 == 409, "eine zweite Sendung gleichzeitig: abgelehnt")
+        ok(warte(lambda: not mstate()["tx"], (j.get("plan") or {}).get("secs", 0) + 15), "die Sendung endet von selbst")
+        time.sleep(0.5)
+        for g, name in ((17, "weisses Licht"), (27, "IR-Licht"), (22, "Relais"), ("led", "Status-LED")):
+            txt, kurz, hz = gesendet(g)
+            if g == "led" and not kanten(g):
+                print("  – Status-LED: ohne PCA9685 hier nicht getastet", flush=True); continue
+            ok(txt == "SOS OK" and kurz >= 0.3 * 0.8 and hz <= 2.0 * 1.15, f"{name}: getastet «{txt}», kürzeste AN-Zeit {kurz * 1000:.0f} ms, höchstens {hz:.2f} Schaltspiele/s")
+            ok(kanten(g) and kanten(g)[-1][1] is False, f"{name}: nach dem Ende aus (wie vorher)")
+        ok("White light ON" not in log_text("light") and "GPIO22) ON" not in log_text("GPIO22"), "kein «Licht EIN / AUS» pro Zeichen im Protokoll")
+        open(out_f, "w").close()
+        c, j = req("/api/morse", {"action": "send", "text": "PARIS PARIS PARIS", "outs": ["ir"], "wpm": 20})
+        ok(c == 200 and j["plan"]["wpm"] == 20, "IR allein: 20 WPM")
+        time.sleep(2.5)
+        c, j = req("/api/morse", {"action": "tx_stop"})
+        time.sleep(0.4)
+        k = kanten(27)
+        ok(c == 200 and not j["state"]["tx"] and k and k[-1][1] is False, "Stopp mitten in der Sendung: IR-Licht aus")
+        n0 = len(k); time.sleep(1.5)
+        ok(len(kanten(27)) == n0, "nach dem Stopp schaltet nichts mehr")
+        per = [k[i + 2][0] - k[i][0] for i in range(0, len(k) - 2, 2)]
+        ok(per and 1.0 / min(per) <= 8.34 * 1.6, f"IR bei 20 WPM: höchstens {1.0 / min(per):.1f} Schaltspiele/s (Soll 8.3; die Hardware-Schleife taktet mit 20 ms)")
+        for _i in range(8):
+            c, j = req("/api/morse", {"action": "send", "text": "E", "outs": ["ir"], "wpm": 20}); time.sleep(0.25); req("/api/morse", {"action": "tx_stop"})
+        ok(c == 429, f"mehr als 6 Sendungen pro Minute: abgelehnt ({c})")
+        print("F) Empfangen", flush=True)
+        req("/api/morse", {"action": "prefs", "rx": True, "rx_live": True, "rx_hist": True, "rx_push": True, "rx_say": False})
+        ok(warte(lambda: mstate()["rx"]["fps"] > 5, 20), f"der Empfänger bekommt Bilder: {mstate()['rx']['fps']} pro Sekunde, Anzeige «bis etwa {mstate()['rx']['limit']} WPM»")
+        Hook.got.clear()
+        ende = blinken("SOS MOVEEYE", 4)
+        live = []
+        ende_t = time.time() + ende + 8
+        while time.time() < ende_t:
+            r = mstate()["rx"]
+            if r["live"]:
+                live.append(r["live"])
+            if r["msgs"]:
+                break
+            time.sleep(0.5)
+        r = mstate()["rx"]
+        ok(r["msgs"] and r["msgs"][0]["text"] == "SOS MOVEEYE", f"Lampe im Kamerabild, 4 WPM: gelesen «{r['msgs'][0]['text'] if r['msgs'] else ''}»")
+        ok(any(x.startswith("SOS") for x in live), f"die Zeichen erscheinen laufend ({len(live)} Zwischenstände, z. B. «{live[len(live) // 2] if live else ''}»)")
+        ok(warte(lambda: any(b"SOS MOVEEYE" in g for g in Hook.got), 15), "Push mit dem Text (Webhook)")
+        blob = b" ".join(Hook.got)
+        ok(len(Hook.got) == 1 and b"46.95" not in blob and b"7.44" not in blob and b"maps" not in blob.lower() and b"image" not in blob.lower() and b"jpeg" not in blob.lower(),
+           f"genau 1 Push, ohne Ort, ohne Bild ({len(Hook.got)})")
+        def fotos():
+            return [x for x in req("/api/recordings?kind=image&limit=100")[1].get("items", []) if x["name"].startswith("morse_")]
+        if shutil.disk_usage(tmp).free < 500 * 1024 ** 2:               # unter 400 MB frei räumt MoveEye alte Aufnahmen weg (410)
+            print("  – Bild im Verlauf nicht geprüft: weniger als 500 MB frei", flush=True)
+        else:
+            ok(warte(lambda: len(fotos()) >= 1, 10), "Bild im Verlauf → Aufnahmen")
+            f_ = fotos()
+            ok(f_ and f_[0].get("source") == "Morse" and "SOS MOVEEYE" in (f_[0].get("note") or ""), f"Notiz am Bild: Quelle «Morse», der Text ({(f_ or [{}])[0].get('note')})")
+        ok("Morse received (camera" in log_text() and "SOS MOVEEYE" in log_text(), "Protokoll: «Morse received … SOS MOVEEYE»")
+        ok("SABOTAGE" not in log_text("SABOTAGE") and "Pre-alarm" not in log_text("alarm") and "Low-light mode" not in log_text("Low-light"),
+           "während des Modus: keine Sabotage-Meldung, kein Voralarm, kein Wechsel Tag / Nacht")
+        c, jpg = req("/snapshot.jpg")
+        if bilder and isinstance(jpg, bytes) and c == 200:
+            os.makedirs(bilder, exist_ok=True); open(os.path.join(bilder, "morse_livebild.jpg"), "wb").write(jpg)
+        ende = blinken("OK", 4, 1.0)                               # gleich danach: die zweite Push wird zurückgehalten (eine pro 20 s)
+        ok(warte(lambda: len(mstate()["rx"]["msgs"]) >= 2, ende + 10) and mstate()["rx"]["msgs"][0]["text"] == "OK", "zweite Nachricht «OK» gelesen")
+        time.sleep(1.5)
+        ok(len(Hook.got) == 1 and mstate()["rx"]["msgs"][0]["push"] == "held", "zweite Push innerhalb von 20 s: zurückgehalten")
+        if browser:
+            teil_g(base, bilder, blinken, lambda lg: req("/api/set", {"key": "lang", "value": lg}))
+        print("F) Ende des Modus", flush=True)
+        c, j = req("/api/morse", {"action": "stop"})
+        ok(c == 200 and not j["state"]["on"] and not req("/api/protect")[1].get("morse"), "Beenden: Modus aus")
+        ok(warte(lambda: req("/api/state")[1]["state"].get("arm_state") == "armed", 10), "Schutz wieder «Wachsam» (wie vorher)")
+        ok("Morse mode off (button, admin)" in log_text(), "Protokoll: «Morse mode off (button, admin)»")
+        time.sleep(14)
+        ok("SABOTAGE" not in log_text("SABOTAGE"), "nach dem Ende: keine Sabotage-Meldung (der Wächter lernt neu)")
+        print("F) «Strom weg» mitten im Modus", flush=True)
+        req("/api/morse", {"action": "start", "minutes": 30}, pin=PIN)
+        ok(mstate()["on"], "Modus läuft (30 min)")
+        time.sleep(1.0)
+        P["p"].send_signal(signal.SIGKILL); P["p"].wait(timeout=10)
+        ok(json.load(open(os.path.join(cfg, "motionwatch_settings.json")))["cfg"].get("armed") is True, "Einstellungs-Datei nach dem harten Ende: Schutz EIN")
+        start()
+        ok(warte(lambda: req("/api/state")[0] == 200, 90), "neu gestartet")
+        ok(warte(lambda: req("/api/state")[1]["state"].get("arm_state") == "armed", 30) and not mstate()["on"] and not req("/api/protect")[1].get("morse"),
+           "nach dem Neustart: Modus aus, Schutz «Wachsam» - nichts bleibt hängen")
+    finally:
+        try:
+            P["p"].send_signal(signal.SIGKILL); P["p"].wait(timeout=10)
+        except Exception:
+            pass
+        logf.close()
+        hook.shutdown()
+        if FEHLER:
+            try:
+                print("  --- Ende von log.txt ---\n" + "".join(open(os.path.join(tmp, "log.txt"), errors="replace").readlines()[-25:]))
+            except OSError:
+                pass
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
+def teil_g(base, bilder, blinken, sprache):
+    from playwright.sync_api import sync_playwright
+    print("G) Browser", flush=True)
+    if bilder:
+        os.makedirs(bilder, exist_ok=True)
+
+    def shot(pg, n, **k):
+        if bilder:
+            pg.evaluate("() => document.querySelectorAll('#gd-card, .gd-card, #g2-ov').forEach(x => x.remove())")
+            pg.screenshot(path=os.path.join(bilder, n), **k)
+    with sync_playwright() as pw:
+        br = pw.chromium.launch(args=["--no-proxy-server"])
+        for name, vp, mob, lang in (("iphone", {"width": 390, "height": 844}, True, "de"), ("pc", {"width": 1366, "height": 900}, False, "de"),
+                                    ("iphone_fr", {"width": 390, "height": 844}, True, "fr"), ("iphone_it", {"width": 390, "height": 844}, True, "it"),
+                                    ("iphone_rm", {"width": 390, "height": 844}, True, "rm")):
+            ctx = br.new_context(viewport=vp, is_mobile=mob, has_touch=mob, device_scale_factor=2 if mob else 1,
+                                 http_credentials={"username": "admin", "password": PW}, locale="de-CH")
+            ctx.add_init_script("try{localStorage.setItem('mw-lang','%s');localStorage.setItem('mw-theme','dark');"
+                                "localStorage.setItem('mw-tours-seen','[\"live\",\"more\",\"settings\"]')}catch(e){}" % lang)
+            sprache(lang)                                     # eine Sprache für das Gerät (639zb): die Seite folgt der Einstellung
+            pg = ctx.new_page(); errs = []
+            pg.on("pageerror", lambda e: errs.append(str(e)[:200]))
+            if lang != "de":                                  # die Sprache wie der Bediener wählen (langSet)
+                pg.goto(base + "/more", wait_until="domcontentloaded"); pg.wait_for_timeout(1500)
+                with pg.expect_navigation(wait_until="domcontentloaded", timeout=30000):
+                    pg.evaluate("k => { langSet(k); }", lang)
+                pg.wait_for_timeout(800)
+            pg.goto(base + "/morse", wait_until="domcontentloaded")
+            pg.wait_for_selector("#mo-outs .mo-o", timeout=20000)
+            pg.wait_for_selector("#mo-st.on", timeout=10000)
+            titel = {"de": "Morse-Modus", "fr": "Mode morse", "it": "Modalità Morse", "rm": "Modus da morse"}[lang]
+            ok(titel in pg.inner_text("h2") and pg.locator("#mo-st .mo-cd").count() == 1, f"{name}: Seite «{titel}», Modus läuft, Restzeit sichtbar")
+            ok(pg.locator("#mo-back").is_visible() and pg.get_attribute("#mo-back", "href") == "/more", f"{name}: Weg zurück sichtbar")
+            pg.fill("#mo-text", "Grüße <script>alert(1)</script> €")
+            pg.locator("#mo-outs input[data-o='white']").check()
+            pg.wait_for_function("() => document.getElementById('mo-plan').textContent.length > 5", timeout=8000)
+            pl = pg.inner_text("#mo-plan")
+            ok("WPM" in pl and "€" in pl and pg.locator("#mo-plan script").count() == 0 and not pg.locator("#mo-flash").is_hidden(),
+               f"{name}: Vorschau als Text, Hinweis Blinklicht: {pl[:70]!r}")
+            sw = pg.evaluate("() => document.documentElement.scrollWidth")
+            ok(sw <= vp["width"] + 1, f"{name}: kein waagrechtes Scrollen ({sw} px)")
+            raus = pg.evaluate("""() => Array.from(document.querySelectorAll('main button, main select, main label, main .mo-o, main .mo-live, main .mo-hint, main .mo-warn'))
+              .filter(e => e.offsetParent && (e.getBoundingClientRect().right > innerWidth + 1 || e.scrollWidth > e.clientWidth + 2)).map(e => (e.id || e.className) + ':' + e.textContent.slice(0, 30))""")
+            ok(not raus, f"{name}: nichts ragt aus Knopf / Feld {raus[:3]}")
+            eng = pg.evaluate("""() => Array.from(document.querySelectorAll('main *')).filter(e => e.children.length === 0 && e.id !== 'mo-text'
+              && /\\b(the|Morse mode|Send|Receive|Start the|flashes|pictures)\\b/.test(e.textContent)).map(e => e.textContent.slice(0, 40))""")
+            ok(not eng, f"{name}: keine englisch gebliebenen Texte {eng[:3]}")
+            if lang == "de":
+                ok("ß" not in pg.evaluate("() => { const m = document.querySelector('main').cloneNode(true); m.querySelector('#mo-plan').remove(); return m.innerText; }"),
+                   f"{name}: kein «ß» in den deutschen Texten (ausser im eingegebenen Text)")
+            shot(pg, f"morse_{name}.png", full_page=True)
+            if name == "iphone":
+                ende = blinken("HALLO", 4, 0.5)
+                pg.wait_for_function("() => Array.from(document.querySelectorAll('#mo-msgs b')).some(b => b.textContent === 'HALLO')", timeout=int((ende + 15) * 1000))
+                ok(True, "iphone: die empfangene Nachricht «HALLO» erscheint in der Liste")
+                shot(pg, "morse_iphone_empfangen.png", full_page=True)
+                pg.goto(base + "/", wait_until="domcontentloaded"); pg.wait_for_timeout(4000)
+                ok(pg.evaluate("() => document.body.innerText.includes('Morse-Modus')"), "iphone: die Hauptseite zeigt «Morse-Modus» als Schutz-Zustand")
+                shot(pg, "morse_iphone_live.png")
+            ok(not errs, f"{name}: keine JavaScript-Fehler {errs}")
+            ctx.close()
+        sprache("de")
+        br.close()
+
+
 # ---------------------------------------------------------------------------------------------------------------- messen
 FPS_LISTE = (5, 8, 10, 15, 20, 30)
 WPM_LISTE = (3, 4, 5, 6, 8, 10, 12, 15, 18, 20)
@@ -519,11 +917,27 @@ def main():
     ap.add_argument("--browser", action="store_true")
     ap.add_argument("--bilder")
     a = ap.parse_args()
-    ns = lade_kern()
+    datei = None if a.quelle else (a.datei or neueste())
+    home = None
+    if a.messen or a.quelle:
+        ns = lade_kern()
+    else:
+        home = tempfile.mkdtemp(prefix="mw_morse_a_")
+        os.environ["MOTIONWATCH_HOME"] = home
+        ns = {"__name__": "mw_morse_test", "__file__": os.path.abspath(datei)}
+        exec(compile(open(datei, encoding="utf-8").read(), datei, "exec"), ns)
     if a.messen:
         return 0 if messen(ns, a.tabelle, a.laeufe) else 1
     t0 = time.time()
-    teil_a(ns); teil_b(ns); teil_c(ns); teil_d(ns); teil_e(ns)
+    try:
+        teil_a(ns); teil_b(ns); teil_c(ns); teil_d(ns); teil_e(ns)
+        if home:
+            ok(ns["morse_selftest"]().startswith("table"), "Selbsttest morse_selftest (Modus, Grenzen, Licht wie vorher, Text gereinigt)")
+            ok(abs(ns["MORSE_LIMIT_K"] - GRENZE_K) < 1e-9, "die Grenze der Seite (MORSE_LIMIT_K) ist die der Messung")
+            teil_f(datei, ns, a.browser, a.bilder)
+    finally:
+        if home:
+            shutil.rmtree(home, ignore_errors=True)
     print(f"\n{N['ok']} Prüfungen bestanden, {len(FEHLER)} Fehler ({time.time() - t0:.0f} s)")
     for f in FEHLER:
         print("  ✗ " + f)

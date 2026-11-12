@@ -13,7 +13,7 @@ Zahl = Zeichenfehler in % (0 = alles richtig, 100 = nichts gelesen).
 
 | Bilder/s | 3 WPM | 4 WPM | 5 WPM | 6 WPM | 8 WPM | 10 WPM | 12 WPM | 15 WPM | 18 WPM | 20 WPM | liest bis |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 5 | 0 | 100 | 100 | 100 | 93 | 100 | 100 | 86 | 100 | 100 | **3 WPM** |
+| 5 | 0 | 100 | 100 | 100 | 93 | 100 | 100 | 93 | 100 | 100 | **3 WPM** |
 | 8 | 0 | 0 | 0 | 0 | 100 | 100 | 100 | 100 | 100 | 100 | **6 WPM** |
 | 10 | 0 | 0 | 0 | 0 | 100 | 100 | 100 | 100 | 89 | 100 | **6 WPM** |
 | 15 | 0 | 0 | 0 | 0 | 100 | 0 | 100 | 100 | 100 | 100 | **6 WPM** |
@@ -26,8 +26,8 @@ Zahl = Zeichenfehler in % (0 = alles richtig, 100 = nichts gelesen).
 
 | Bilder/s | 3 WPM | 4 WPM | 5 WPM | 6 WPM | 8 WPM | 10 WPM | 12 WPM | 15 WPM | 18 WPM | 20 WPM | liest bis |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 5 | 0 | 100 | 100 | 100 | 100 | 100 | 100 | 93 | 100 | 100 | **3 WPM** |
-| 8 | 0 | 0 | 0 | 0 | 100 | 100 | 100 | 100 | 89 | 100 | **6 WPM** |
+| 5 | 0 | 100 | 100 | 100 | 100 | 100 | 100 | 89 | 100 | 100 | **3 WPM** |
+| 8 | 0 | 0 | 50 | 0 | 100 | 100 | 100 | 100 | 89 | 100 | **4 WPM** |
 | 10 | 0 | 0 | 0 | 0 | 100 | 100 | 100 | 96 | 96 | 100 | **6 WPM** |
 | 15 | 0 | 0 | 0 | 0 | 0 | 0 | 100 | 100 | 100 | 100 | **10 WPM** |
 | 20 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 100 | 100 | **15 WPM** |
@@ -66,8 +66,8 @@ Ein kleiner Fleck ist nach der Optik dunkler: entscheidend ist, dass sein hellst
 | Handtastung ±20 % | 0 | 0 | 0 | 33 | 36 |
 | Handtastung ±30 % | 0 | 0 | 0 | 33 | 67 |
 | Handtastung ±40 % | 26 | 7 | 21 | 55 | 100 |
-| Hand wandert ±14 Pixel | 2 | 0 | 0 | 0 | 100 |
-| Hand wandert ±40 Pixel | 79 | 86 | 74 | 57 | 98 |
+| Hand wandert ±14 Pixel | 0 | 0 | 0 | 0 | 100 |
+| Hand wandert ±40 Pixel | 74 | 71 | 86 | 98 | 83 |
 | 5 % verlorene Bilder, Bildzeit bis 25 % später | 0 | 0 | 0 | 0 | 36 |
 | 15 % verlorene Bilder, Bildzeit bis 50 % später | 0 | 0 | 2 | 21 | 74 |
 | kurze Belichtung (1/10 Bildperiode) | 0 | 0 | 0 | 0 | 0 |
@@ -81,7 +81,7 @@ Ein kleiner Fleck ist nach der Optik dunkler: entscheidend ist, dass sein hellst
 | Bilder/s | Fleck 0.6 | Fleck 1.5 | Fleck 4 | Anzeige: 0.4 × Bilder/s |
 |---|---|---|---|---|
 | 5 | 3 | 3 | 3 | 2 |
-| 8 | 6 | 6 | 4 | 3 |
+| 8 | 6 | 4 | 4 | 3 |
 | 10 | 6 | 6 | 6 | 4 |
 | 15 | 6 | 10 | 8 | 6 |
 | 20 | 8 | 15 | 12 | 8 |
