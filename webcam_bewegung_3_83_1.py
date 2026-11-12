@@ -23,6 +23,7 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 3.83.1: Almanach: Beschriftungen in den Bildern werden auf keinem Gerät mehr abgeschnitten.
   * 3.83.0: Überlebens-Almanach neu: Bilder in jedem Kapitel, acht Knoten Schritt für Schritt gezeichnet, neue Kapitel
     «Tierspuren» und «Essbar oder giftig?», dein Standort für den Notruf (Schweizer Koordinaten), Luftdruck-Trend, «Heute Nacht»
     mit Sonne und Mond, und eine SOS-Lampe, die auch Gäste im WLAN einschalten können. Erste-Hilfe-Texte mit Schweizer Quellen
@@ -110,8 +111,6 @@ Features
     mehr.
   * 3.66.0: Spielesammlung GS-1.5: Wobbly Truck mit Motorrad, Stunt-Piste, Stunts, Kombos und Einstellungen; Spielecke (Mehr →
     Spielecke) und Gast-Spieleabend mit denselben Spiel-Kacheln wie die Spielesammlung, kurz «✓ N Spiele installiert».
-  * 3.65.0: Spielesammlung GS-1.4: 36 neue Browserspiele (12 Kevlaschef Games, 24 Quantum Games) – am Handy mit Antippen, am PC
-    mit Tasten, offline, in 5 Sprachen; © 2026 Kevlaschef, mit Erlaubnis des Rechteinhabers.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -120,10 +119,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_3_83_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_3_83_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_3_83_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_3_83_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_3_83_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_3_83_1.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -140,7 +139,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "3.83.0"
+APP_VERSION = "3.83.1"
 
 
 def default_data_dir():
@@ -265,8 +264,8 @@ def prepare_settings_file():
 
 
 
-ZD_FILE = "moveeye_daten_3_83_0.zip"
-ZD_SHA256 = "d858ad071200674d86f627f86ff591bf01989d54bd1230f159f1b944fb4a5763"
+ZD_FILE = "moveeye_daten_3_83_1.zip"
+ZD_SHA256 = "89b6d8a2c597a7d4e2e409a224914b303a276d68b384321642aa8b50645ec101"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -49566,7 +49565,7 @@ class App:
 		self.watch = watch
 		self.web = web or WebStream(watch)
 		self.root = tk.Tk()
-		self.root.title("MoveEye 3.83.0")
+		self.root.title("MoveEye 3.83.1")
 		try:
 			import base64
 			self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -49944,7 +49943,7 @@ class App:
 			if not small:
 				vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
 				vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))
-			Tip(nm, f"{tr('Build')} 3.83.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+			Tip(nm, f"{tr('Build')} 3.83.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
 			self._egg_taps = []
 			for w_ in tl.winfo_children():
 				w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -93559,7 +93558,7 @@ ALM_KNOTS = {
         (89, 185), (79, 166), (85, 144), (100, 123), (120, 102), (139, 92), (159, 93), (178, 106), (194, 130), (203, 168), (203, 214),
         (188, 252), (148, 272), (114, 260), (103, 230), (102, 204), (102, 176), (102, 146), (102, 112), (102, 86), (103, 64), (110, 50),
         (120, 45), (130, 50), (137, 64), (138, 86), (138, 112), (138, 146), (138, 176), (138, 204), (138, 228)]}],
-        "lab": ((130, 14, "feste Leine («Baum»)"), (70, 172, ">«Teich»"), (120, 294, "^Schlinge"), (147, 238, "loses"), (147, 250, "Ende")),
+        "lab": ((130, 14, "feste Leine"), (130, 26, "(«Baum»)"), (70, 172, ">«Teich»"), (120, 294, "^Schlinge"), (147, 238, "loses"), (147, 250, "Ende")),
         "claims": {1: ((8, "u", "von unten"),), 2: ((10, "u", "Hinter"),)},
         "steps": (({0: 17.4}, "Einen kleinen «Teich» in die feste Leine legen. Wichtig: Das Stück, das weiterläuft, liegt oben über der festen Leine."),
                   ({0: 30.5}, "Das Ende im Bogen herumführen (das gibt die Schlinge) und von unten durch den Teich nach oben stecken."),

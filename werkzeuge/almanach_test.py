@@ -12,6 +12,8 @@
      Wetter: ohne Sensor / mit Sensor (stabil, fällt schnell).
   B) --browser: die Seite im Browser (iPhone-Breite 390): jeder Artikel in Hell, Dunkel und Rotlicht ohne Überbreite,
      Bilder geladen, keine JavaScript-Fehler, keine Anfrage nach aussen; mit --bilder ORDNER Bildschirmfotos.
+     Beschriftungen der Bilder unabhängig von der Schrift des Rechners: auf eine feste, breite Schrift umgerechnet muss
+     jede im Bild bleiben und darf keine andere berühren (LABEL_JS); dazu ein Durchgang mit künstlich breiter Schrift.
 
   python3 werkzeuge/almanach_test.py [--datei X.py] [--browser] [--bilder ORDNER]
 """
@@ -442,6 +444,29 @@ def teil_a(datei):
     return ns, app
 
 
+# Beschriftungen der Bilder, unabhängig von der Schrift des Rechners. Die Schrift ist überall eine andere (hier Inter, auf dem
+# CI-Rechner DejaVu Sans: normal 6 %, fett 14 % breiter, auf einem iPhone San Francisco). Darum misst der Test nicht nur, was er
+# sieht: Er misst im Bild einen Mustertext in normaler und fetter Schrift und rechnet jede Beschriftung auf eine FESTE Breite um -
+# die von DejaVu Sans plus 12 % (Mustertext bei 10 px: 256 normal, 286 fett). Mit einer schmaleren Schrift wird also gestreckt
+# (hier um etwa 19 % / 28 %), mit einer noch breiteren gilt das Gemessene. So verlangt der Test auf jedem Rechner dasselbe:
+# jede Beschriftung liegt, um ihren Ankerpunkt gestreckt, ganz im Bild und berührt keine andere desselben Bildes.
+LABEL_MUSTER = "Hamburgefonstiv ABC xyz 0123456789 äöü,.:"
+LABEL_ZIEL = (25.6, 28.6)                                  # Breite des Mustertexts je px Schriftgrösse: normal, fett
+LABEL_JS = """([muster, ziel]) => { const out = [];
+  for (const s of document.querySelectorAll('#figs figure svg')) { const vb = s.viewBox.baseVal, k = s.getBoundingClientRect().width / vb.width, B = [], F = [];
+    for (const fett of [0, 1]) { const m = document.createElementNS('http://www.w3.org/2000/svg', 'text'); m.textContent = muster; m.setAttribute('style', 'font-size:10px;font-weight:' + (fett ? 700 : 400));
+      s.appendChild(m); F.push(Math.max(1, ziel[fett] * 10 / m.getBBox().width)); m.remove(); }
+    for (const x of s.querySelectorAll('text')) { const b = x.getBBox(); if (!b.width) continue;
+      const cs = getComputedStyle(x), a = cs.textAnchor, f = F[parseInt(cs.fontWeight) >= 600 ? 1 : 0], w = b.width * f, px = parseFloat(cs.fontSize) * k;
+      const x0 = a === 'middle' ? b.x + b.width / 2 - w / 2 : a === 'end' ? b.x + b.width - w : b.x;
+      const o = {t: x.textContent, x0: x0, x1: x0 + w, y0: b.y + b.height * 0.22, y1: b.y + b.height * 0.86};
+      if (o.x0 < 0 || o.x1 > vb.width || b.y < -0.5 || b.y + b.height > vb.height + 1) out.push('am Rand: «' + o.t + '» ' + Math.round(o.x0) + '..' + Math.round(o.x1) + ' von ' + vb.width + ' (×' + f.toFixed(2) + ')');
+      if (px < 12) out.push('zu klein: «' + o.t + '» ' + px.toFixed(1) + ' px');
+      for (const q of B) if (Math.min(o.x1, q.x1) - Math.max(o.x0, q.x0) > 0.5 && Math.min(o.y1, q.y1) - Math.max(o.y0, q.y0) > 0.5) out.push('übereinander: «' + q.t + '» / «' + o.t + '»');
+      B.push(o); } }
+  return out; }"""
+
+
 def teil_sos_bild(ns, c, sos):
     """SOS und die eigene Erkennung: das Blinken ist keine Bewegung; nach dem SOS ist das Licht wie vorher"""
     import numpy as np
@@ -632,11 +657,8 @@ def teil_b(ns, app, bilder):
                        f"{title}: die Warnung steht ganz oben im Artikel")
                 breit(f"{title} ({t})")
                 if want:
-                    bad = pg.evaluate("""() => { const out = []; for (const s of document.querySelectorAll('#figs figure svg')) { const vb = s.viewBox.baseVal, k = s.getBoundingClientRect().width / vb.width;
-                        for (const x of s.querySelectorAll('text')) { const b = x.getBBox(), px = parseFloat(getComputedStyle(x).fontSize) * k;
-                          if (b.x < -0.5 || b.x + b.width > vb.width + 0.5 || b.y < -0.5 || b.y + b.height > vb.height + 1 || px < 12) out.push(x.textContent + ' ' + px.toFixed(1) + 'px ' + Math.round(b.x) + '..' + Math.round(b.x + b.width)); } }
-                        return out; }""")
-                    ok(not bad, f"{title} ({t}): Beschriftung abgeschnitten oder kleiner als 12 px: {bad[:4]}")
+                    bad = pg.evaluate(LABEL_JS, [LABEL_MUSTER, list(LABEL_ZIEL)])
+                    ok(not bad, f"{title} ({t}): Beschriftung abgeschnitten, kleiner als 12 px oder über einer anderen (gerechnet für eine breite Schrift, siehe LABEL_JS): {bad[:4]}")
                 if t != "rot" and (ch in ("knoten", "spuren", "essbar") and want or title in ("Die stabile Seitenlage", "Notsignale", "Schlangen in der Schweiz", "Wolken als Wettervorhersage")):
                     foto("%s_%s_%s" % ({"knoten": "02_knoten", "spuren": "06_spuren", "essbar": "07_essbar"}.get(ch, "08_bild"), re.sub(r"\W+", "_", title)[:24], t))
             for nr, key, sel in ((3, "notfall", "#sos"), (4, "wetter", "#wetter"), (5, "nacht", "#nacht")):
@@ -646,7 +668,22 @@ def teil_b(ns, app, bilder):
                     ok("2'600'001 / 1'200'000" in pg.locator("#ort .big").inner_text() and pg.locator("#b-copy").count() == 1, "Standort gross, mit Kopieren")
                 if t != "rot":
                     foto(f"0{nr}_{key}_{t}")
+        # ---- eine deutlich breitere Schrift (wie auf einem anderen Gerät): jede Beschriftung bleibt in ihrem Bild
         thema("hell")
+        pg.add_style_tag(content="svg text{letter-spacing:.14em!important}")
+        n_breit = 0
+        for i, (ch, title) in enumerate(arts):
+            if title not in FIG:
+                continue
+            pg.evaluate("i => show(i)", i)
+            pg.wait_for_function("n => document.querySelectorAll('#figs figure svg').length === n", arg=len(ns["alm_bilder"](title)), timeout=8000)
+            raus = pg.evaluate("""() => { const out = []; for (const s of document.querySelectorAll('#figs figure svg')) { const r = s.getBoundingClientRect();
+                for (const x of s.querySelectorAll('text')) { const b = x.getBoundingClientRect(); if (b.width && (b.left < r.left - 0.5 || b.right > r.right + 0.5)) out.push(x.textContent); } }
+                return out; }""")
+            n_breit += pg.evaluate("() => document.querySelectorAll('#figs svg text[transform]').length")
+            ok(not raus, f"{title}: mit breiter Schrift ragt eine Beschriftung aus dem Bild: {raus[:4]}")
+        ok(n_breit > 0, "die Seite rückt zu breite Beschriftungen selbst ins Bild zurück (bei der sehr breiten Probe-Schrift greift das)")
+        pg.goto(base + "/almanach/#"); pg.reload(); pg.wait_for_selector(".chp")
         pg.evaluate("i => chap(i)", 0); pg.wait_for_selector("#b-sos")
         pg.click("#b-sos"); pg.wait_for_selector("#b-sosx")
         ok(SOS["on"] and "hört in" in pg.locator("#sos").inner_text(), "SOS-Knopf startet, Stopp-Knopf erscheint")

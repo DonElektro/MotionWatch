@@ -272,7 +272,7 @@ ALM_KNOTS = {
         (89, 185), (79, 166), (85, 144), (100, 123), (120, 102), (139, 92), (159, 93), (178, 106), (194, 130), (203, 168), (203, 214),
         (188, 252), (148, 272), (114, 260), (103, 230), (102, 204), (102, 176), (102, 146), (102, 112), (102, 86), (103, 64), (110, 50),
         (120, 45), (130, 50), (137, 64), (138, 86), (138, 112), (138, 146), (138, 176), (138, 204), (138, 228)]}],
-        "lab": ((130, 14, "feste Leine («Baum»)"), (70, 172, ">«Teich»"), (120, 294, "^Schlinge"), (147, 238, "loses"), (147, 250, "Ende")),
+        "lab": ((130, 14, "feste Leine"), (130, 26, "(«Baum»)"), (70, 172, ">«Teich»"), (120, 294, "^Schlinge"), (147, 238, "loses"), (147, 250, "Ende")),
         "claims": {1: ((8, "u", "von unten"),), 2: ((10, "u", "Hinter"),)},
         "steps": (({0: 17.4}, "Einen kleinen «Teich» in die feste Leine legen. Wichtig: Das Stück, das weiterläuft, liegt oben über der festen Leine."),
                   ({0: 30.5}, "Das Ende im Bogen herumführen (das gibt die Schlinge) und von unten durch den Teich nach oben stecken."),

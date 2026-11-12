@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-12 09:55",
+ "generated": "2026-11-12 13:07",
  "versions": [
   {
-   "version": "3.83.0",
-   "file": "webcam_bewegung_3_83_0.py",
+   "version": "3.83.1",
+   "file": "webcam_bewegung_3_83_1.py",
    "url": "",
-   "sha256": "3aa7aa669a054f5b0cb5de369e609bc4a4d23414c5e9002e1d11f0688f2241bf",
-   "date": "2026-11-12 09:55",
-   "notes": "Überlebens-Almanach neu: Bilder in jedem Kapitel, acht Knoten Schritt für Schritt gezeichnet, neue Kapitel «Tierspuren» und «Essbar oder giftig?», dein Standort für den Notruf (Schweizer Koordinaten), Luftdruck-Trend, «Heute Nacht» mit Sonne und Mond, und eine SOS-Lampe, die auch Gäste im WLAN einschalten können. Erste-Hilfe-Texte mit Schweizer Quellen abgeglichen (Samariter, Rega, SAC, BAG, Tox Info).",
-   "size": 4187883,
-   "sig": "da75a50fa37bf17ef122eaf4c1a66737f2b6cb712c82ec03e0e488b5b6b7a83fe54bb754ffb8287b04194a2ee7a6e082ef8c9666c3b0746143105df907360800",
+   "sha256": "c991fff894111296a393b81f86c7b122d7a0b004a2dbb1543a43a5e24233a178",
+   "date": "2026-11-12 13:07",
+   "notes": "Almanach: Beschriftungen in den Bildern werden auf keinem Gerät mehr abgeschnitten.",
+   "size": 4187770,
+   "sig": "cfa92682130225c3904e9b30e2dc41bd39a07a408bea784de398462f182502a806249e193d0506f50e02bfececab1ce66d5516e0ece36c78ac626fad4974ba0c",
    "data": {
-    "file": "moveeye_daten_3_83_0.zip",
+    "file": "moveeye_daten_3_83_1.zip",
     "url": "",
-    "sha256": "d858ad071200674d86f627f86ff591bf01989d54bd1230f159f1b944fb4a5763",
-    "size": 10510458,
-    "sig": "62ca5e018596944fbd105555f38209a07b5a04321b8993f758b54efe3959d7a87a37b5c550a9515ac712b885740c17df8795dd97252969cd9d18f33434abb80a"
+    "sha256": "89b6d8a2c597a7d4e2e409a224914b303a276d68b384321642aa8b50645ec101",
+    "size": 10512325,
+    "sig": "5d2c8d544f49e85d47daa2bcc54e66d910e5b6df810b448510218c5ffd12dc10f3e24618ef0f12215ed701ff3609f87786658e9e26df83c4d14f31a552c6680e"
    }
   },
   {
