@@ -25,7 +25,8 @@ self.addEventListener("notificationclick", e => {
 def i18n_loader(help_=False):
     """Runs first: for French, Italian and Romansh the page gets its translation file (cached by the browser per version)."""
     return ("<script>" + LANG_JS.replace("</", "<\\/") + "\n(function(){var l='';try{l=localStorage.getItem('mw-lang')||'';}catch(e){}if(!l)l=" + json.dumps(CFG["lang"]) + ";"
-            "window.LX=function(s){var d=window.I18NX,x=(l==='de'||l==='rm')&&window.I18NDX;return (d&&d[s])||(x&&x[s])||'';};"   # 3.72: German gaps (639zzl)
+            "window.I18NEX=" + json.dumps(EN_SHOW, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/") + ";"   # 639zzy: English names on screen that differ from their key
+            "window.LX=function(s){var d=window.I18NX,x=(l==='de'||l==='rm')&&window.I18NDX,e=l!=='de'&&l!=='rm'&&window.I18NEX;return (d&&d[s])||(x&&x[s])||(e&&e[s])||'';};"   # 3.72: German gaps (639zzl)
             "if(['fr','it','rm'].indexOf(l)>=0)document.write('<script src=\"/i18n/'+l+'.js?v=" + APP_VERSION + ("&h=1" if help_ else "")
             + "\"><\\/script>');})();</script>")
 

@@ -7,6 +7,7 @@ LANGS = ("de", "fr", "it", "rm", "en")            # the five languages (Swiss na
 LANG_NAMES = {"de": "Deutsch", "fr": "Français", "it": "Italiano", "rm": "Rumantsch", "en": "English"}
 LOCALES = {"de": "de-CH", "fr": "fr-CH", "it": "it-CH", "rm": "de-CH", "en": "en-GB"}
 TRX = {"fr": {}, "it": {}, "rm": {}}     # English text -> French / Italian / Romansh (filled at the end of the file)
+EN_SHOW = {}                             # English key -> the English text on screen, where a name changed but the key stays (639zzy)
 HELP_X = {}                             # the manual in French / Italian / Romansh (filled at the end of the file)
 LANG_JS = r"""
 // ---- language: menu with the five languages (the choice is kept per device) ----

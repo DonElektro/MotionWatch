@@ -5,6 +5,10 @@
 # ----------------------------------------------------------------------------
 # «Battery almost empty» (log line, push; the charge LED blinks fast from here on, 639zi): UPS HAT on the battery / powerbank estimate
 BATT_LOW_PCT_UPS, BATT_LOW_PCT_BANK = 20, 15
+# readings of the battery since this program started (one every 10 s) and how many the consumption estimate is built from
+# (BatteryMonitor: UPS uhist = one minute, powerbank hist = ten minutes). The night forecast (280 night_warn_reason) does not
+# warn before that window is full - until then the estimate mostly shows the load of the start itself.
+BATT_N = {"n": 0, "ups": 6, "bank": 60}
 _CELL_CURVE = [(3.00, 0), (3.30, 5), (3.50, 15), (3.60, 28), (3.70, 45), (3.80, 60), (3.90, 72), (4.00, 83), (4.10, 93), (4.20, 100)]
 
 
@@ -81,6 +85,7 @@ class BatteryMonitor:
     def __init__(self):
         self.hist = deque(maxlen=60)     # watts, last 10 minutes (every 10 s)
         self.uhist = deque(maxlen=6)     # UPS: voltage / current, last minute
+        BATT_N.update(n=0, ups=self.uhist.maxlen, bank=self.hist.maxlen)
         self._t = time.time(); self._save_t = time.time()
         threading.Thread(target=self.loop, daemon=True).start()
 
@@ -101,6 +106,7 @@ class BatteryMonitor:
             time.sleep(10)
             try:
                 self.tick()
+                BATT_N["n"] += 1
             except Exception as e:
                 log_event("sys", f"Battery estimate: {e}")
 

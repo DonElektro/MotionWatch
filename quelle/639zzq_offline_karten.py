@@ -980,7 +980,7 @@ main{padding:12px;max-width:980px;margin:0 auto}
   }
   if (isFinite(la) && isFinite(lo)) choose(la, lo, P.get("name") || "");
   else info.textContent = T("Tap on the map to choose a point. Two fingers or the wheel zoom.");
-  m.on("click", e => choose(e.lngLat.lat, e.lngLat.lng, ""));
+  m.on("click", e => { if (window.KT && KT.busy) return; choose(e.lngLat.lat, e.lngLat.lng, ""); });   // 639zzx: while a route is drawn the tap sets its point
   const pick = (lat, lon, x) => { m.jumpTo({center: [lon, lat], zoom: x && x.z ? x.z : 14}); choose(lat, lon, x ? x.name : ""); };
   $("#kq-go").onclick = () => kqSearchUI($("#kq-q"), pick);
   $("#kq-q").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); kqSearchUI($("#kq-q"), pick); } });

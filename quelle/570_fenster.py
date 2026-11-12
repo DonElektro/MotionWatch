@@ -777,7 +777,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 3.84.2")
+        self.root.title("MoveEye 3.85.0")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -1155,7 +1155,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 3.84.2 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 3.85.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -2595,8 +2595,11 @@ class App:
         so_ = st.get("solar") or {}; nf_ = st.get("night")
         l_ = [(tr("off") if not CFG["solar_on"] else tr("no current meter found at this address") if not so_.get("ok")
                else f"{so_['w']} W ({so_['v']} V · {so_['a']} A) · {tr('today')} {so_['wh']} Wh · {tr('max.')} {so_['max']} W")]
-        l_.append((tr("Battery lasts until sunrise") if nf_["enough"] else tr("Battery probably too low until sunrise")) + f" ({nf_['sunrise']}): {nf_['have_h']} h / {nf_['need_h']} h"
-                  if nf_ else tr("Night forecast: needs a battery value (Settings → Battery)"))
+        if nf_ and nf_.get("hold"):                       # 280 night_hold: on mains the plain state, while settling nothing yet
+            l_.append("🔌 " + tr("charging" if nf_.get("charging") else "mains power") if nf_["hold"] == "mains" else "…")
+        else:
+            l_.append((tr("Battery lasts until sunrise") if nf_["enough"] else tr("Battery probably too low until sunrise")) + f" ({nf_['sunrise']}): {nf_['have_h']} h / {nf_['need_h']} h"
+                      if nf_ else tr("Night forecast: needs a battery value (Settings → Battery)"))
         self._status("Solar panel", "\n".join(l_))
         if CFG["gpsmod_on"]:
             g_ = GPSMOD

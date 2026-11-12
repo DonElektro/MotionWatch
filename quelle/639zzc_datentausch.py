@@ -251,7 +251,7 @@ def _tz_load():
             for sub in ("f", "t", "up"):
                 os.makedirs(os.path.join(root, sub), exist_ok=True)
         except OSError as e:
-            log_event("sys", f"File exchange: folder {root} cannot be made: {e}"[:180])
+            log_event("sys", f"Digital backpack: folder {root} cannot be made: {e}"[:180])
             return None
         for nm in os.listdir(os.path.join(root, "f")):
             if not nm.endswith(".json") or not TZ_ID.match(nm[:-5]):
@@ -581,7 +581,7 @@ def tausch_up_finish(who, uid, lang=None):
             head = b""
         if tausch_magic_exec(head):
             tausch_up_abort(who, uid, lang, _locked=True)
-            log_event("web", f"File exchange: {who['name']} tried to upload a program («{u['name']}») - refused")
+            log_event("web", f"Digital backpack: {who['name']} tried to upload a program («{u['name']}») - refused")
             return False, tr("This file is a program or script - not accepted.", lang), {}
         with TZ["lock"]:
             folder = u.get("folder", "")
@@ -606,7 +606,7 @@ def tausch_up_finish(who, uid, lang=None):
         except OSError:
             pass
     where = "Für alle" + (" / " + folder if folder else "") if m["area"] == "all" else "privat"
-    log_event("web", f"File exchange: {who['name']} uploaded «{name}» ({tausch_fmt(m['size'], 'de')}, {where})")
+    log_event("web", f"Digital backpack: {who['name']} uploaded «{name}» ({tausch_fmt(m['size'], 'de')}, {where})")
     if m["thumb"] is None:
         tausch_thumb_queue(fid)
     tausch_push_note(who)
@@ -665,7 +665,7 @@ def tausch_delete(who, fid, lang=None):
     shutil.rmtree(os.path.join(root, "h", fid), ignore_errors=True)
     with TZ["lock"]:
         TZ["chats"].pop(fid, None)
-    log_event("web", f"File exchange: {who['name']} deleted «{m['name']}» (from {m.get('owner_name') or m['owner']})")
+    log_event("web", f"Digital backpack: {who['name']} deleted «{m['name']}» (from {m.get('owner_name') or m['owner']})")
     return True, ""
 
 
@@ -688,7 +688,7 @@ def tausch_mkdir(who, name, lang=None):
         TZ["folders"].append({"name": n, "by": who["key"], "by_name": who["name"], "t": int(time.time())})
         TZ["folders"].sort(key=lambda x: x["name"].lower())
         _tz_folders_save(root)
-    log_event("web", f"File exchange: {who['name']} created the folder «{n}»")
+    log_event("web", f"Digital backpack: {who['name']} created the folder «{n}»")
     return True, ""
 
 
@@ -710,7 +710,7 @@ def tausch_rmdir(who, name, force=False, lang=None):
         _tz_folders_save(root)
     for fid in inside:
         tausch_delete(who, fid, lang)
-    log_event("web", f"File exchange: {who['name']} deleted the folder «{name}»" + (f" with {len(inside)} files" if inside else ""))
+    log_event("web", f"Digital backpack: {who['name']} deleted the folder «{name}»" + (f" with {len(inside)} files" if inside else ""))
     return True, ""
 
 
@@ -847,7 +847,7 @@ def tausch_text_save(who, fid, text, ver, lang=None, restore=None):
             return False, tr("The storage cannot be written to.", lang) + f" ({e.__class__.__name__})", {}
         m.update(size=len(enc), ver=cur + 1, ed_name=who["name"], ed_t=int(time.time()), hist=hist, hist_size=sum(h["size"] for h in hist))
         _tz_write_json(os.path.join(root, "f", fid + ".json"), m)
-    log_event("web", f"File exchange: {who['name']} " + (f"restored version {restore} of" if restore is not None else "changed") + f" «{m['name']}» (version {cur + 1})")
+    log_event("web", f"Digital backpack: {who['name']} " + (f"restored version {restore} of" if restore is not None else "changed") + f" «{m['name']}» (version {cur + 1})")
     return True, "", {"ver": cur + 1}
 
 
@@ -890,7 +890,7 @@ def tausch_create(who, d, kind, lang=None):
         except OSError as e:
             return False, tr("The storage cannot be written to.", lang) + f" ({e.__class__.__name__})", {}
         TZ["files"][fid] = m
-    log_event("web", f"File exchange: {who['name']} created «{name}»")
+    log_event("web", f"Digital backpack: {who['name']} created «{name}»")
     return True, "", {"file": tausch_public(m, who)}
 
 
@@ -1061,7 +1061,7 @@ def tausch_chat_change(who, fid, n, text=None, lang=None):
             return False, tr("The storage cannot be written to.", lang) + f" ({e.__class__.__name__})"
     _tz_chat_changed()
     if text is None:
-        log_event("web", f"File exchange: {who['name']} deleted a message in «{m['name']}»")
+        log_event("web", f"Digital backpack: {who['name']} deleted a message in «{m['name']}»")
     return True, ""
 
 
@@ -1174,7 +1174,7 @@ def _tz_thumb_worker():
                 ok = tausch_thumb_make(root, m)
             except Exception as e:                              # a broken file must never stop the worker
                 ok = False
-                log_event("sys", f"File exchange: no preview for «{m['name']}»: {e.__class__.__name__}")
+                log_event("sys", f"Digital backpack: no preview for «{m['name']}»: {e.__class__.__name__}")
             with TZ["lock"]:
                 if fid in (TZ["files"] or {}):
                     m["thumb"] = bool(ok)
@@ -1574,7 +1574,7 @@ def smalltv_routes(app, reply, body):                     # + 639zzc: /tausch, /
         if not rg or rg.startswith("bytes=0-"):
             if not tausch_rate(who["key"], "dl", 400):
                 return nope(429, "Too many downloads in a short time - wait a few minutes.")
-            log_event("web", f"File exchange: {who['name']} downloaded «{m['name']}»")
+            log_event("web", f"Digital backpack: {who['name']} downloaded «{m['name']}»")
         mime, kind, risky = tausch_type(m["name"])
         return _tz_send(os.path.join(TZ["root"], "f", fid + ".bin"), "application/octet-stream" if risky else mime, True, m["name"])
 
@@ -1694,17 +1694,17 @@ SET_HELP.update({
 })
 
 # ---- «Mehr» (525) and the window (572): one entry ------------------------------------------------------------------------------
-TZ_MORE_ROW = ('  <a class="mi" href="/tausch" id="m-tausch"><i>📁</i><span><b data-i18n="File exchange">File exchange</b><small data-i18n="Share photos, videos and documents - for everyone or only for you">'
+TZ_MORE_ROW = ('  <a class="mi" href="/tausch" id="m-tausch"><i>📁</i><span><b data-i18n="File exchange">Digital backpack</b><small data-i18n="Share photos, videos and documents - for everyone or only for you">'
                'Share photos, videos and documents - for everyone or only for you</small></span><span class="ar">›</span></a>\n')
 _tz_anchor = '  <a class="mi" href="/tools">'
 if 'href="/tausch"' not in MORE_PAGE and _tz_anchor in MORE_PAGE:
     MORE_PAGE = MORE_PAGE.replace(_tz_anchor, TZ_MORE_ROW + _tz_anchor, 1)
     MORE_PAGE = MORE_PAGE.replace("/*ALERTS*/", 'fetch("/api/tausch", {cache: "no-store"}).then(r => r.json()).then(j => { if (!j.ok || (!j.on && !(j.me || {}).is_admin)) '
                                   '{ const e = document.getElementById("m-tausch"); if (e) e.hidden = true; } }).catch(() => {});\n/*ALERTS*/', 1)
-MORE_DE.update({"File exchange": "Datentausch", "Share photos, videos and documents - for everyone or only for you":
+MORE_DE.update({"File exchange": "Digitaler Rucksack", "Share photos, videos and documents - for everyone or only for you":
                 "Fotos, Videos und Dokumente teilen – für alle oder nur für dich"})
 
-if GUI_OK:                                                # the window: «📁 Datentausch» under «Mehr» (opens the browser)
+if GUI_OK:                                                # the window: «📁 Digitaler Rucksack» under «Mehr» (opens the browser)
     _tz_tk_more_base = App._tk_more_bar
 
     def _tz_tk_more_bar(self, parent):
@@ -1731,7 +1731,7 @@ if _tz_gfoot in GUEST_PAGE and "gfiles" not in GUEST_PAGE:
 TAUSCH_PAGE = r"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>MoveEye - File exchange</title>
+<title>MoveEye - Digital backpack</title>
 <style>
 /*BASECSS*/
 main{padding:14px 16px 60px;max-width:1100px;margin:0 auto}
@@ -1809,7 +1809,7 @@ main{padding:14px 16px 60px;max-width:1100px;margin:0 auto}
   </span>
 </header>
 <main id="tz">
-  <div class="tz-h"><h2>📁 <span data-i18n="File exchange">File exchange</span></h2><span class="mut" id="tz-store"></span></div>
+  <div class="tz-h"><h2>📁 <span data-i18n="File exchange">Digital backpack</span></h2><span class="mut" id="tz-store"></span></div>
   <div class="tz-card tz-q" id="tz-quota"><div class="tz-qt"><span id="tz-qt1">…</span><span class="mut" id="tz-qt2"></span></div><div class="tz-bar" id="tz-qbar"><i></i></div>
     <div class="tz-qt mut" id="tz-qt3" hidden></div></div>
   <div class="tz-msg" id="tz-msg" hidden></div>
@@ -2360,7 +2360,7 @@ def tausch_guest_html(token):
 
 # ---- texts (English key: Deutsch, français, italiano, rumantsch) --------------------------------------------------------------------
 _HX_TAUSCH = {
-    "File exchange": ("Datentausch", "Échange de fichiers", "Scambio di file", "Barat da datotecas"),
+    "File exchange": ("Digitaler Rucksack", "Sac à dos numérique", "Zaino digitale", "Satgados digital"),
     "Share photos, videos and documents - for everyone or only for you": (
         "Fotos, Videos und Dokumente teilen – für alle oder nur für dich", "Partager photos, vidéos et documents – pour tous ou seulement pour toi",
         "Condividere foto, video e documenti – per tutti o solo per te", "Parter fotos, videos e documents – per tuts u mo per tai"),
@@ -2392,11 +2392,11 @@ _HX_TAUSCH = {
     "at most {n} per file": ("höchstens {n} pro Datei", "au plus {n} par fichier", "al massimo {n} per file", "al pli {n} per datoteca"),
     "{n} free on the storage": ("{n} frei auf dem Speicher", "{n} libres sur le support", "{n} liberi sul supporto", "{n} liber sin la memoria"),
     "Your files: {a} of {b}": ("Deine Dateien: {a} von {b}", "Tes fichiers : {a} sur {b}", "I tuoi file: {a} di {b}", "Tias datotecas: {a} da {b}"),
-    "The file exchange is switched off.": ("Der Datentausch ist ausgeschaltet.", "L’échange de fichiers est désactivé.", "Lo scambio di file è disattivato.",
-                                           "Il barat da datotecas è deactivà."),
+    "The file exchange is switched off.": ("Der Digitale Rucksack ist ausgeschaltet.", "Le sac à dos numérique est désactivé.", "Lo zaino digitale è disattivato.",
+                                           "Il satgados digital è deactivà."),
     "Switch it on under Settings → System → File exchange.": (
-        "Einschalten unter Einstellungen → System → Datentausch.", "L’activer sous Réglages → Système → Échange de fichiers.",
-        "Attivarlo in Impostazioni → Sistema → Scambio di file.", "L’activar sut Configuraziuns → Sistem → Barat da datotecas."),
+        "Einschalten unter Einstellungen → System → Digitaler Rucksack.", "L’activer sous Réglages → Système → Sac à dos numérique.",
+        "Attivarlo in Impostazioni → Sistema → Zaino digitale.", "L’activar sut Configuraziuns → Sistem → Satgados digital."),
     "The storage (USB stick / SSD) is not there - plug it in again.": (
         "Der Speicher (USB-Stick / SSD) fehlt – bitte wieder einstecken.", "Le support (clé USB / SSD) manque – rebranche-le.",
         "Il supporto (chiavetta USB / SSD) manca – ricollegalo.", "La memoria (stick USB / SSD) manca – la tacar puspè."),
@@ -2482,8 +2482,8 @@ _HX_TAUSCH = {
     "Files: download": ("Dateien: herunterladen", "Fichiers : télécharger", "File: scaricare", "Datotecas: telechargiar"),
     "Files: upload": ("Dateien: hochladen", "Fichiers : envoyer", "File: caricare", "Datotecas: chargiar si"),
     "Files: manage all": ("Dateien: alles verwalten", "Fichiers : tout gérer", "File: gestire tutto", "Datotecas: administrar tut"),
-    "File exchange on (Mehr → File exchange)": ("Datentausch an (Mehr → Datentausch)", "Échange de fichiers activé (Plus → Échange de fichiers)",
-                                                "Scambio di file attivo (Altro → Scambio di file)", "Barat da datotecas activ (Dapli → Barat da datotecas)"),
+    "File exchange on (Mehr → File exchange)": ("Digitaler Rucksack an (Mehr → Digitaler Rucksack)", "Sac à dos numérique activé (Plus → Sac à dos numérique)",
+                                                "Zaino digitale attivo (Altro → Zaino digitale)", "Satgados digital activ (Dapli → Satgados digital)"),
     "Guests see «For everyone» (pictures only, no download)": (
         "Gäste sehen «Für alle» (nur Bilder, kein Download)", "Les invités voient «Pour tous» (images seulement, pas de téléchargement)",
         "Gli ospiti vedono «Per tutti» (solo immagini, nessun download)", "Ils giasts vesan «Per tuts» (mo maletgs, nagin download)"),
@@ -2493,14 +2493,14 @@ _HX_TAUSCH = {
     "Refuse programs and scripts (.exe, .sh, .py, .js …)": (
         "Programme und Skripte ablehnen (.exe, .sh, .py, .js …)", "Refuser les programmes et scripts (.exe, .sh, .py, .js …)",
         "Rifiutare programmi e script (.exe, .sh, .py, .js …)", "Refusar programs e scripts (.exe, .sh, .py, .js …)"),
-    "Space for the file exchange in total (GB)": ("Platz für den Datentausch gesamt (GB)", "Place pour l’échange de fichiers au total (Go)",
-                                                  "Spazio per lo scambio di file in totale (GB)", "Spazi per il barat da datotecas en total (GB)"),
+    "Space for the file exchange in total (GB)": ("Platz für den Digitalen Rucksack gesamt (GB)", "Place pour le sac à dos numérique au total (Go)",
+                                                  "Spazio per lo zaino digitale in totale (GB)", "Spazi per il satgados digital en total (GB)"),
     "At most per file (MB)": ("Höchstens pro Datei (MB)", "Au plus par fichier (Mo)", "Al massimo per file (MB)", "Al pli per datoteca (MB)"),
     "At most per user (GB)": ("Höchstens pro Benutzer (GB)", "Au plus par utilisateur (Go)", "Al massimo per utente (GB)", "Al pli per utilisader (GB)"),
     "Always keep free on the storage (GB)": ("Immer frei lassen auf dem Speicher (GB)", "Toujours laisser libre sur le support (Go)",
                                              "Lasciare sempre libero sul supporto (GB)", "Laschar adina liber sin la memoria (GB)"),
     "All files of the file exchange together. Uploads stop with a clear message when it is full.": (
-        "Alle Dateien des Datentauschs zusammen. Ist es voll, stoppt das Hochladen mit einer klaren Meldung.",
+        "Alle Dateien des Digitalen Rucksacks zusammen. Ist es voll, stoppt das Hochladen mit einer klaren Meldung.",
         "Tous les fichiers de l’échange ensemble. Quand c’est plein, l’envoi s’arrête avec un message clair.",
         "Tutti i file dello scambio insieme. Quando è pieno, il caricamento si ferma con un messaggio chiaro.",
         "Tut las datotecas dal barat ensemen. Sch’i è plain, chala il chargiar si cun in messadi cler."),
@@ -2515,8 +2515,8 @@ _HX_TAUSCH = {
         "Zu viele Dateien (höchstens {n}) – zuerst alte löschen.", "Trop de fichiers (au plus {n}) – supprime d’abord les anciens.",
         "Troppi file (al massimo {n}) – elimina prima quelli vecchi.", "Memia bleras datotecas (al pli {n}) – l’emprim stizzar las veglias."),
     "The file exchange is full: {a} of {b} used. Delete old files first.": (
-        "Der Datentausch ist voll: {a} von {b} belegt. Zuerst alte Dateien löschen.", "L’échange de fichiers est plein : {a} sur {b} utilisés. Supprime d’abord d’anciens fichiers.",
-        "Lo scambio di file è pieno: {a} di {b} occupati. Elimina prima file vecchi.", "Il barat da datotecas è plain: {a} da {b} occupà. L’emprim stizzar datotecas veglias."),
+        "Der Digitale Rucksack ist voll: {a} von {b} belegt. Zuerst alte Dateien löschen.", "Le sac à dos numérique est plein : {a} sur {b} utilisés. Supprime d’abord d’anciens fichiers.",
+        "Lo zaino digitale è pieno: {a} di {b} occupati. Elimina prima file vecchi.", "Il satgados digital è plain: {a} da {b} occupà. L’emprim stizzar datotecas veglias."),
     "Your space is full: {a} of {b} used. Delete some of your files first.": (
         "Dein Platz ist voll: {a} von {b} belegt. Zuerst eigene Dateien löschen.", "Ta place est pleine : {a} sur {b} utilisés. Supprime d’abord certains de tes fichiers.",
         "Il tuo spazio è pieno: {a} di {b} occupati. Elimina prima alcuni tuoi file.", "Tes spazi è plain: {a} da {b} occupà. L’emprim stizzar atgnas datotecas."),
@@ -2662,27 +2662,27 @@ _TZ_DE = {_k: _v[0] for _k, _v in _HX_TAUSCH.items()}
 
 # ---- the manual (5 languages) ------------------------------------------------------------------------------------------------------
 _HELP_TZ = {
-    "de": ('<section id="tausch" data-icon="📁"><h2>Datentausch</h2><p>Unter <i>Mehr → 📁 Datentausch</i> (oder direkt <code>/tausch</code>) '
+    "de": ('<section id="tausch" data-icon="📁"><h2>Digitaler Rucksack</h2><p>Unter <i>Mehr → 📁 Digitaler Rucksack</i> (oder direkt <code>/tausch</code>) '
            'teilst du Fotos, Videos und Dokumente mit allen, die Zugang zu MoveEye haben.</p><ul>'
            '<li><b>📂 Für alle</b> sehen alle mit dem Recht «Dateien: ansehen»; wer hochladen darf, kann Ordner anlegen. <b>👤 Meine Dateien</b> sieht nur, wer sie hochgeladen hat (und der Administrator).</li>'
            '<li><b>Hochladen</b> mit dem Knopf oder Dateien auf die Seite ziehen. Grosse Dateien gehen in Stücken; bricht die Verbindung ab, wähle dieselbe Datei nochmals – es geht dort weiter.</li>'
            '<li><b>Rechte</b> (Einstellungen → Sicherheit → Benutzer): Familie darf ansehen, herunterladen und hochladen; Freund und «Nur ansehen» ansehen und herunterladen; Kind nichts. Bei «Eigene Rechte» einzeln ankreuzen.</li>'
            '<li><b>Gäste</b> mit dem Gast-Link sehen «Für alle» nur als Vorschaubilder – kein Download, kein Hochladen; endet mit dem Gast-Link.</li>'
-           '<li><b>Grenzen</b> (Einstellungen → System → Datentausch): gesamt 5 GB, 200 MB pro Datei, 1 GB pro Benutzer; auf dem Speicher bleiben immer 2 GB frei. Programme und Skripte werden abgelehnt.</li>'
+           '<li><b>Grenzen</b> (Einstellungen → System → Digitaler Rucksack): gesamt 5 GB, 200 MB pro Datei, 1 GB pro Benutzer; auf dem Speicher bleiben immer 2 GB frei. Programme und Skripte werden abgelehnt.</li>'
            '<li><b>Speicher:</b> liegen die Aufnahmen auf einem USB-Stick / einer SSD, dann dort im Ordner <code>MotionWatch/tausch</code>, sonst auf der Speicherkarte. Die Dateien bleiben bei Updates und Werkseinstellungen; sie sind in <i>keiner</i> Sicherung.</li>'
            '<li>Lädt jemand Dateien hoch, bekommst du eine Push-Nachricht (gebündelt, nur Name und Anzahl).</li>'
            '<li><b>📝 Texte</b> (.txt, .md bis 1 MB) direkt im Browser bearbeiten (.md mit Vorschau). Hat inzwischen jemand anderes gespeichert, zeigt MoveEye «Inzwischen hat … etwas geändert» mit Unterschieden, Überschreiben oder «Meine als Kopie speichern». Die letzten 20 Versionen bleiben (🕘, Wiederherstellen).</li><li><b>💬 Chats</b> («Neuer Chat»): Nachrichten mit Name und Zeit, neue erscheinen bei allen von selbst. Eigene Nachrichten 5 Minuten lang ändern oder löschen. Wer im Chat geschrieben hat, bekommt eine Push-Nachricht («Anna hat 2× geschrieben in «Ferienplanung»») – ohne Inhalt.</li></ul></section>\n'),
-    "en": ('<section id="tausch" data-icon="📁"><h2>File exchange</h2><p>Under <i>More → 📁 File exchange</i> (or directly <code>/tausch</code>) '
+    "en": ('<section id="tausch" data-icon="📁"><h2>Digital backpack</h2><p>Under <i>More → 📁 Digital backpack</i> (or directly <code>/tausch</code>) '
            'you share photos, videos and documents with everybody who has access to MoveEye.</p><ul>'
            '<li><b>📂 For everyone</b> is seen by all with the right «Files: see»; who may upload can create folders. <b>👤 My files</b> are only seen by the person who uploaded them (and the administrator).</li>'
            '<li><b>Upload</b> with the button or drag files onto the page. Big files go in pieces; if the connection breaks, choose the same file again – it continues.</li>'
            '<li><b>Rights</b> (Settings → Security → Users): family may see, download and upload; friend and «View only» see and download; child nothing. With «Own rights» tick them one by one.</li>'
            '<li><b>Guests</b> with the guest link see «For everyone» as previews only – no download, no upload; it ends with the guest link.</li>'
-           '<li><b>Limits</b> (Settings → System → File exchange): 5 GB in total, 200 MB per file, 1 GB per user; 2 GB always stay free on the storage. Programs and scripts are refused.</li>'
+           '<li><b>Limits</b> (Settings → System → Digital backpack): 5 GB in total, 200 MB per file, 1 GB per user; 2 GB always stay free on the storage. Programs and scripts are refused.</li>'
            '<li><b>Storage:</b> when the recordings are on a USB stick / SSD, there in the folder <code>MotionWatch/tausch</code>, else on the memory card. The files stay through updates and factory settings; they are in <i>no</i> backup.</li>'
            '<li>When somebody uploads files you get a push message (bundled, only name and number).</li>'
            '<li><b>📝 Texts</b> (.txt, .md up to 1 MB) are edited right in the browser (.md with preview). If somebody else saved meanwhile, MoveEye says «Meanwhile … has changed something» with the differences, overwrite or «Save mine as a copy». The last 20 versions stay (🕘, restore).</li><li><b>💬 Chats</b> («New chat»): messages with name and time, new ones appear for everybody by themselves. Change or delete your own messages for 5 minutes. Who wrote in a chat gets a push message («Anna wrote 2× in «Holiday plan»») – without the content.</li></ul></section>\n'),
-    "fr": ('<section id="tausch" data-icon="📁"><h2>Échange de fichiers</h2><p>Sous <i>Plus → 📁 Échange de fichiers</i> (ou <code>/tausch</code>) '
+    "fr": ('<section id="tausch" data-icon="📁"><h2>Sac à dos numérique</h2><p>Sous <i>Plus → 📁 Sac à dos numérique</i> (ou <code>/tausch</code>) '
            'tu partages photos, vidéos et documents avec toutes les personnes ayant accès à MoveEye.</p><ul>'
            '<li><b>📂 Pour tous</b> : visible avec le droit «Fichiers : voir» ; qui peut envoyer peut créer des dossiers. <b>👤 Mes fichiers</b> : seulement pour la personne qui les a envoyés (et l’administrateur).</li>'
            '<li><b>Envoyer</b> avec le bouton ou en glissant des fichiers. Les gros fichiers partent en morceaux ; si la connexion coupe, choisis le même fichier – l’envoi reprend.</li>'
@@ -2691,7 +2691,7 @@ _HELP_TZ = {
            '<li><b>Limites</b> : 5 Go au total, 200 Mo par fichier, 1 Go par utilisateur ; 2 Go restent toujours libres. Programmes et scripts refusés.</li>'
            '<li><b>Stockage :</b> sur la clé USB / SSD des enregistrements (<code>MotionWatch/tausch</code>), sinon sur la carte mémoire ; dans aucune sauvegarde.</li>'
            '<li><b>📝 Textes</b> (.txt, .md) modifiables dans le navigateur, 20 versions gardées ; <b>💬 Chats</b> avec nom et heure, mis à jour tout seuls ; notification sans contenu.</li></ul></section>\n'),
-    "it": ('<section id="tausch" data-icon="📁"><h2>Scambio di file</h2><p>In <i>Altro → 📁 Scambio di file</i> (o <code>/tausch</code>) '
+    "it": ('<section id="tausch" data-icon="📁"><h2>Zaino digitale</h2><p>In <i>Altro → 📁 Zaino digitale</i> (o <code>/tausch</code>) '
            'condividi foto, video e documenti con tutti quelli che hanno accesso a MoveEye.</p><ul>'
            '<li><b>📂 Per tutti</b>: visibile con il diritto «File: vedere»; chi può caricare può creare cartelle. <b>👤 I miei file</b>: solo per chi li ha caricati (e l’amministratore).</li>'
            '<li><b>Caricare</b> con il pulsante o trascinando i file. I file grandi vanno a pezzi; se la connessione cade, scegli lo stesso file – riprende.</li>'
@@ -2700,7 +2700,7 @@ _HELP_TZ = {
            '<li><b>Limiti</b>: 5 GB in totale, 200 MB per file, 1 GB per utente; 2 GB restano sempre liberi. Programmi e script rifiutati.</li>'
            '<li><b>Memoria:</b> sulla chiavetta USB / SSD delle registrazioni (<code>MotionWatch/tausch</code>), altrimenti sulla scheda; in nessun backup.</li>'
            '<li><b>📝 Testi</b> (.txt, .md) modificabili nel browser, 20 versioni conservate; <b>💬 Chat</b> con nome e ora, aggiornate da sole; notifica senza contenuto.</li></ul></section>\n'),
-    "rm": ('<section id="tausch" data-icon="📁"><h2>Barat da datotecas</h2><p>Sut <i>Dapli → 📁 Barat da datotecas</i> (u <code>/tausch</code>) '
+    "rm": ('<section id="tausch" data-icon="📁"><h2>Satgados digital</h2><p>Sut <i>Dapli → 📁 Satgados digital</i> (u <code>/tausch</code>) '
            'partas ti fotos, videos e documents cun tuts che han access a MoveEye.</p><ul>'
            '<li><b>📂 Per tuts</b>: visibel cun il dretg «Datotecas: guardar»; tgi che dastga chargiar si po crear ordinaturs. <b>👤 Mias datotecas</b>: mo per tgi che las ha chargià si (e l’administratur).</li>'
            '<li><b>Chargiar si</b> cun il buttun u trair datotecas sin la pagina. Datotecas grondas van en tocs; sche la colliaziun interrumpa, tscherna la medema datoteca – i cuntinuescha.</li>'
@@ -2808,4 +2808,4 @@ def tausch_selftest():
     return "names, programs, rights per role, pieces, limits, 2 GB free, push «Anna hat 3 Dateien hochgeladen», delete rules, text versions, chat"
 
 
-SELFTEST_EXTRA.append(("File exchange: names, rights, limits, pieces, push (639zzc)", tausch_selftest))
+SELFTEST_EXTRA.append(("Digital backpack (files): names, rights, limits, pieces, push (639zzc)", tausch_selftest))

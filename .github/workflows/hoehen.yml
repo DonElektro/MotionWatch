@@ -1,0 +1,169 @@
+# Höhendaten (MoveEye, Teil 639zzx): baut das Paket «Höhendaten Schweiz» mit werkzeuge/karten/hoehe.py – swisstopo DHM25
+# (25 m, 0,5-m-Stufen; Entscheid des Besitzers 12.11.2026), eine Datei hoehe-ch-N.bin –, prüft es mit bekannten Höhen
+# (werkzeuge/touren_test.py --hoehe-echt, sagt auch, was ausserhalb der Schweiz und in Liechtenstein da ist) und legt es auf
+# Wunsch als Release an. Asset an «hoehen-N» (nie «latest»), Probe an «hoehenprobe-<Lauf>».
+#   Nur bauen + prüfen + messen:  gh api -X POST repos/DonElektro/MotionWatch/actions/workflows/hoehen.yml/dispatches -f ref=main
+#   Probe-Release:                … -f 'inputs[release]=probe'
+#   Echt:                         … -f ref=main -f 'inputs[release]=echt' -f 'inputs[tag]=hoehen-1'
+#   Probe wegräumen:              … -f 'inputs[loeschen]=hoehenprobe-N'
+#   Anderes Gitter (Vielfaches der Quelle, z. B. 50):  … -f 'inputs[gitter]=50'
+#   Eigene Quelle (ESRI-ASCII-Gitter / XYZ / ZIP davon, z. B. ein 10-m-Gitter aus swissALTI3D):  … -f 'inputs[quelle_url]=https://…' -f 'inputs[gitter]=10'
+# Die Pins (Grösse + sha256) stehen danach in pins_hoehe.txt (Release-Notiz und Hinweis im Lauf) und kommen mit
+# `python3 werkzeuge/karten/hoehe.py --eintragen pins_hoehe.txt` in quelle/639zzx (KH_FILE). Ein Release wird nie überschrieben.
+# Quelle: © swisstopo (freie Geodaten, OGD). Keine Geheimnisse: nur GITHUB_TOKEN.
+name: Höhendaten
+on:
+  workflow_dispatch:
+    inputs:
+      release:
+        description: "keins · probe (Vorabversion hoehenprobe-<Lauf>) · echt (Release <tag>, nur von main)"
+        type: choice
+        options: [keins, probe, echt]
+        default: keins
+      tag:
+        description: "Tag für «echt» (hoehen-N, = TAG in werkzeuge/karten/hoehe.py und KH_TAG in quelle/639zzx)"
+        default: hoehen-1
+      gitter:
+        description: "Gitter in Metern (25 = DHM25 wie es ist; 50 / 100 = gemittelt; 10 nur mit eigener Quelle)"
+        default: "25"
+      quelle_url:
+        description: "leer = DHM25 von swisstopo suchen (STAC) · sonst Adresse eines ESRI-ASCII-Gitters / XYZ / ZIP"
+        default: ""
+      loeschen:
+        description: "Statt bauen: Probe-Release + Tag löschen (nur hoehenprobe-N, nur Vorabversion)"
+        default: ""
+permissions:
+  contents: write
+concurrency:
+  group: hoehen
+  cancel-in-progress: false
+env:
+  PYTHONUNBUFFERED: "1"
+  REL: ${{ inputs.release || 'keins' }}
+
+jobs:
+  bauen:
+    name: Höhendaten · ${{ inputs.release || 'keins' }}
+    if: github.repository == 'DonElektro/MotionWatch' && inputs.loeschen == ''
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Prüfen (Tag, Zweig, Release noch nicht da)
+        id: v
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag || 'hoehen-1' }}
+        run: |
+          set -e
+          sha=$(git rev-parse HEAD)
+          ptag=$(sed -n 's/^TAG = "\(hoehen-[0-9]*\)"$/\1/p' werkzeuge/karten/hoehe.py)
+          qtag=$(sed -n 's/^KH_TAG = "\(hoehen-[0-9]*\)"$/\1/p' quelle/639zzx_karten_touren.py)
+          [ -n "$ptag" ] && [ "$ptag" = "$qtag" ] || { echo "::error::TAG in hoehe.py ($ptag) und KH_TAG in quelle/639zzx ($qtag) passen nicht"; exit 1; }
+          if [ "$REL" = "echt" ]; then
+            [ "$TAG" = "$ptag" ] || { echo "::error::Tag $TAG ist nicht $ptag (hoehe.py)"; exit 1; }
+            msha=$(git ls-remote origin refs/heads/main | cut -f1)
+            [ "$GITHUB_REF_NAME" = "main" ] && [ "$sha" = "$msha" ] || { echo "::error::echt nur vom aktuellen main ($msha), nicht $GITHUB_REF_NAME ($sha)"; exit 1; }
+            tag="$TAG"
+          else
+            tag="hoehenprobe-$GITHUB_RUN_NUMBER"
+          fi
+          if [ "$REL" != "keins" ] && gh release view "$tag" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "::error::Release $tag gibt es schon - nie überschreiben"; exit 1
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"; echo "sha=$sha" >> "$GITHUB_OUTPUT"
+      - name: Quelle holen und Paket bauen (hoehe.py)
+        env:
+          QURL: ${{ inputs.quelle_url }}
+          GITTER: ${{ inputs.gitter || '25' }}
+        run: |
+          set -e
+          pip install -q numpy
+          echo "$GITTER" | grep -Eq '^[0-9]{1,4}$' || { echo "::error::Gitter «$GITTER» ist keine Zahl"; exit 1; }
+          mkdir -p "$RUNNER_TEMP/q" "$RUNNER_TEMP/out"
+          if [ -n "$QURL" ]; then
+            echo "$QURL" | grep -Eq '^https://[A-Za-z0-9._~:/?#@!$&()*+,;=%-]+$' || { echo "::error::quelle_url ist keine https-Adresse"; exit 1; }
+            f="$RUNNER_TEMP/q/$(basename "${QURL%%\?*}")"
+            curl -sSfL -o "$f" "$QURL"
+            python3 -I werkzeuge/karten/hoehe.py --quelle "$f" --herkunft "$QURL" --gitter "$GITTER" --aus "$RUNNER_TEMP/out" --pins | tee "$RUNNER_TEMP/bau.txt"
+          else
+            python3 -I werkzeuge/karten/hoehe.py --holen "$RUNNER_TEMP/q" --gitter "$GITTER" --aus "$RUNNER_TEMP/out" --pins | tee "$RUNNER_TEMP/bau.txt"
+          fi
+          grep -E '^(STAC:|QUELLE |im ZIP:|Höhendaten:|PIN |INFO )' "$RUNNER_TEMP/bau.txt" | cut -c1-900 | while read -r l; do echo "::notice title=Höhendaten::$l"; done
+          ls -la "$RUNNER_TEMP/out"
+      - name: MoveEye bauen und das Paket prüfen (touren_test.py --hoehe-echt, Abdeckung Liechtenstein / Ausland)
+        run: |
+          set -e
+          pip install -q opencv-python-headless flask pillow cryptography
+          python3 werkzeuge/bauen.py | tail -2
+          python3 -W ignore werkzeuge/touren_test.py --hoehe-echt "$RUNNER_TEMP/out" | tee "$RUNNER_TEMP/test.txt"
+          grep -E 'ABDECKUNG|Kopf:|✗' "$RUNNER_TEMP/test.txt" | while read -r l; do echo "::notice title=Höhendaten Prüfung::$l"; done
+      - name: Messung als Artefakt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hoehen-${{ github.run_number }}
+          path: |
+            ${{ runner.temp }}/out/pins_hoehe.txt
+            ${{ runner.temp }}/out/hoehe.json
+            ${{ runner.temp }}/bau.txt
+            ${{ runner.temp }}/test.txt
+          retention-days: 14
+          if-no-files-found: ignore
+      - name: Zusammenfassung
+        if: always()
+        run: |
+          { echo "### Höhendaten"; echo '```'; cat "$RUNNER_TEMP/out/pins_hoehe.txt" "$RUNNER_TEMP/out/hoehe.json" "$RUNNER_TEMP/test.txt" 2>/dev/null; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+      - name: Release anlegen, Asset hochladen, zurücklesen
+        if: env.REL == 'probe' || env.REL == 'echt'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.v.outputs.tag }}
+          SHA: ${{ steps.v.outputs.sha }}
+        run: |
+          set -e
+          O="$RUNNER_TEMP/out"
+          {
+            if [ "$REL" = "probe" ]; then echo "PROBELAUF (Vorabversion) - nicht für Geräte, wird wieder gelöscht."; echo; fi
+            echo "Höhendaten Schweiz für MoveEye (Teil 639zzx): Auf- / Abstieg, Höhenprofil und Wanderzeit gezeichneter Routen."
+            echo "Quelle: © swisstopo (freie Geodaten). Gebaut mit https://github.com/$GITHUB_REPOSITORY/blob/$SHA/werkzeuge/karten/hoehe.py"
+            echo
+            sed 's/^PIN /pin: /; s/^INFO /info: /' "$O/pins_hoehe.txt"
+            echo "commit: $SHA"
+            echo "lauf: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          } > notes.md
+          for i in 1 2 3; do
+            if [ "$REL" = "probe" ]; then
+              gh release create "$TAG" "$O/hoehe-ch-1.bin" "$O/pins_hoehe.txt" -R "$GITHUB_REPOSITORY" --target "$SHA" --title "Probe · Höhendaten" --notes-file notes.md --prerelease --latest=false && break
+            else
+              gh release create "$TAG" "$O/hoehe-ch-1.bin" "$O/pins_hoehe.txt" -R "$GITHUB_REPOSITORY" --target "$SHA" --title "Höhendaten Schweiz" --notes-file notes.md --latest=false && break
+            fi
+            echo "Versuch $i fehlgeschlagen, warte"; sleep 30
+            gh release view "$TAG" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1 && { echo "::error::Release halb angelegt - bitte von Hand prüfen"; exit 1; }
+          done
+          mkdir -p "$RUNNER_TEMP/zurueck"
+          gh release download "$TAG" -R "$GITHUB_REPOSITORY" -p 'hoehe-ch-*.bin' -D "$RUNNER_TEMP/zurueck"
+          s=$(sed -n 's/^PIN hoehe .*sha256=\([0-9a-f]*\).*/\1/p' "$O/pins_hoehe.txt"); echo "$s  $RUNNER_TEMP/zurueck/hoehe-ch-1.bin" | sha256sum -c -
+          echo "latest bleibt: $(gh api repos/$GITHUB_REPOSITORY/releases/latest --jq .tag_name)"
+
+  weg:
+    name: Probe löschen · ${{ inputs.loeschen }}
+    if: github.repository == 'DonElektro/MotionWatch' && inputs.loeschen != ''
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Probe-Release und Tag löschen (nur hoehenprobe-N, nur Vorabversion, nie «latest»)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.loeschen }}
+        run: |
+          set -e
+          echo "$TAG" | grep -Eq '^hoehenprobe-[0-9]+$' || { echo "::error::nur hoehenprobe-N, nicht $TAG"; exit 1; }
+          pre=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" --jq .prerelease)
+          [ "$pre" = "true" ] || { echo "::error::$TAG ist keine Vorabversion - nicht gelöscht"; exit 1; }
+          [ "$TAG" != "$(gh api repos/$GITHUB_REPOSITORY/releases/latest --jq .tag_name)" ] || { echo "::error::$TAG ist latest"; exit 1; }
+          gh release delete "$TAG" -R "$GITHUB_REPOSITORY" --yes --cleanup-tag
+          echo "gelöscht: $TAG" >> "$GITHUB_STEP_SUMMARY"

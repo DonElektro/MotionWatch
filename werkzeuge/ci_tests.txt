@@ -39,8 +39,10 @@ basis | 10 | -  | python3 werkzeuge/update_uebergang_test.py --nur stand $CI_STR
 kern | 15 | -  | python3 werkzeuge/web_rauchtest.py --browser | Web-Rauchtest (alle Adressen ohne / mit Anmeldung, jede Seite im Browser)
 kern | 8  | -  | python3 werkzeuge/deutsch_luecken_test.py | Deutsche Lücken (keine englischen Texte im deutschen Web, /messages übersetzt)
 kern | 8  | 1x | python3 werkzeuge/sprachen_tour_test.py | Sprachen-Rundgang (Französisch, Italienisch, Rätoromanisch: die Seiten im Browser, keine englisch gebliebenen Texte)
+kern | 8  | 1x | python3 werkzeuge/rucksack_test.py | «Digitaler Rucksack» statt «Datentausch» (5 Sprachen am Handy: neuer Name an jeder Stelle, kein alter Name sichtbar, Platz, alte Adressen gehen; Dokumente)
 kern | 4  | -  | python3 werkzeuge/kopf_chip_test.py | Kopf-Chip «N Hinweise» statt «alles ok», wenn etwas gemeldet wird
 kern | 4  | -  | python3 werkzeuge/werkskopie_test.py | Werkseinstellungen - Liste der Kopien mit Datum
+kern | 5  | -  | python3 werkzeuge/akku_nacht_test.py | «Akku bis Sonnenaufgang?» nach einem Neustart (am Netz nie, am Akku erst nach der Einschwingzeit, einmal pro Abend auch über Neustarts, kritisch sofort)
 kern | 5  | -  | python3 werkzeuge/protokoll_ruhe_test.py | Ruhiges Protokoll (kein Hin und Her bei walk_frames und Wind)
 kern | 8  | 1x | python3 werkzeuge/erststart_test.py | Erster Start ruhiger (Teil 639zzs - nie mehr als ein Hinweis gleichzeitig, Reihenfolge, neues Gerät ohne «Neu in dieser Version»)
 
@@ -62,6 +64,7 @@ daten | 8 | -  | python3 werkzeuge/almanach_test.py --browser | Überlebens-Alma
 daten | 6 | -  | python3 werkzeuge/bioclip_test.py --browser | «🌿 Bestimmen» im Datentausch (Ersatz-Modell, Rechte, Gäste, Laden mit Prüfsumme, Zwischenspeicher, besetzt, Browser)
 daten | 8 | 1x | python3 -W ignore werkzeuge/karten_test.py | Offline-Karte Schweiz (Teil 639zzq - Laden gut / falsch, Platz, Byte-Bereiche, Suche, Seiten im Browser ohne Anfrage nach aussen, Quellenangabe, Rechte; mit Ersatz-Dateien)
 daten | 8 | -  | python3 werkzeuge/packlisten_test.py --browser | «🎒 Packlisten» im Datentausch (Import Text / CSV / xlsx mit Vorschau, ZIP-Bomben abgewiesen, Summen, Ziel, Foto, zwei Handys, Rechte, Gäste, Export, Browser iPhone)
+daten | 10 | 1x | python3 -W ignore werkzeuge/touren_test.py | «🥾 Touren» auf der Offline-Karte (Teil 639zzx - KML / GPX lesen, böse und grosse Dateien unter Zeitgrenze, Zahlen, Wanderzeit, Rechte, Gäste, Export, Höhenpaket mit Ersatz-Datei, Seite im Browser bei 390 px ohne Anfrage nach aussen)
 daten | 4 | -  | python3 werkzeuge/sim_intern_test.py | Simulator intern (gefälschtes Pi-Paket - holen, prüfen, auspacken, starten, beenden, zurück)
 daten | 6 | 1x | python3 werkzeuge/piper_test.py --browser | Piper-Stimme (Tabelle, Ersatz alte Stimme, Laden mit Prüfsumme, Browser «Ton im Browser», Simulator /speech)
 daten | 6 | -  | python3 werkzeuge/werkstatt_html.py --aus /tmp/werkstatt --test --bilder /tmp/werkstatt && ls -la /tmp/werkstatt | Werkstatt offline (eine HTML-Datei, file://, Netz gesperrt, keine JS-Fehler, Modell, Reiter)

@@ -364,7 +364,7 @@ function show(i) {
     (a.ch[0] === "essbar" ? '<div class="box warn" id="warn"><b class="h">⚠ Nie nur nach diesem Almanach oder einer App essen</b>Im Zweifel nicht essen. Vergiftung: Tox Info Suisse <b>145</b> · Notfall <b>144</b>.</div>' : "") +
     body(a.x) + '<div id="figs"></div></article>' + (PLUS.quellen[a.t] ? '<p class="mut" id="src">' + esc(PLUS.quellen[a.t]) + "</p>" : "") +
     (a.ch[0] === "spuren" ? '<p class="mut"><a href="/recordings" style="color:var(--acc)">📼 Was hat meine Kamera gesehen? Zu den Aufnahmen</a></p>' : "") +
-    (a.ch[0] === "essbar" ? '<p class="mut"><a href="/tausch" style="color:var(--acc)">🌿 Bestimmen (im Datentausch) – ein Hinweis zum Nachschlagen, keine Freigabe zum Essen</a></p>' : "") +
+    (a.ch[0] === "essbar" ? '<p class="mut"><a href="/tausch" style="color:var(--acc)">🌿 Bestimmen (im Digitalen Rucksack) – ein Hinweis zum Nachschlagen, keine Freigabe zum Essen</a></p>' : "") +
     '<div class="nav"><button onclick="show(' + Math.max(0, i - 1) + ')">‹ Zurück</button><button onclick="chap(' + a.ci + ')">☰ Kapitel</button><button onclick="show(' + Math.min(all.length - 1, i + 1) + ')">Weiter ›</button></div>');
   window.cur = i;
   if (PLUS.bilder.includes(a.t)) jget("/almanach/bilder?t=" + encodeURIComponent(a.t)).then(j => { if (v !== view || !j || !j.f) return;
