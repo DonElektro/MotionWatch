@@ -566,7 +566,11 @@ def browser_pruefen(datei, bilder):
             # hints note for both
             pa.locator("#bLern").tap()
             warte(pb, "() => /Tipps sind an: Gegner \\(Lern-Modus\\)/.test(__schach.zustand().fern.hilfeZeile)")
-            ok("Tipps sind an: du (Lern-Modus)" in z(pa)["fern"]["hilfeZeile"], f"«Tipps sind an» bei beiden: B «{z(pb)['fern']['hilfeZeile']}»")
+            try:                                         # A's own line comes with the answer of the Pi (GitHub, 12.11.2026: read too early)
+                warte(pa, "() => /Tipps sind an: du \\(Lern-Modus\\)/.test(__schach.zustand().fern.hilfeZeile)", 8000)
+            except Exception:
+                pass
+            ok("Tipps sind an: du (Lern-Modus)" in z(pa)["fern"]["hilfeZeile"], f"«Tipps sind an» bei beiden: A «{z(pa)['fern']['hilfeZeile']}», B «{z(pb)['fern']['hilfeZeile']}»")
             # spectator
             cc = br.new_context(**dev)
             pc = seite(cc, url_a.replace("?test=1", "?test=1&z=1"), "Zuschauer")
@@ -580,7 +584,12 @@ def browser_pruefen(datei, bilder):
             warte(pa, "() => __schach.zustand().zugNr === 1 && __schach.zustand().menschDran")
             pa.locator("#bDrehen").tap()
             warte(pb, "() => !document.getElementById('dAnfrage').hidden")
-            ok("Remis" in pb.inner_text("#anfrageTitel") and "Remis angeboten" in z(pa)["fern"]["hilfeZeile"], "Remis anbieten: der Gegner wird gefragt, beim Anbieter «warte auf Antwort»")
+            try:
+                warte(pa, "() => /Remis angeboten/.test(__schach.zustand().fern.hilfeZeile)", 8000)
+            except Exception:
+                pass
+            ok("Remis" in pb.inner_text("#anfrageTitel") and "Remis angeboten" in z(pa)["fern"]["hilfeZeile"],
+               f"Remis anbieten: der Gegner wird gefragt, beim Anbieter «warte auf Antwort» (A «{z(pa)['fern']['hilfeZeile']}»)")
             bild(pa, pb, "08_remis_frage")
             pb.locator("#bAnfrageNein").tap()
             warte(pa, "() => !__schach.zustand().fern.anfrage")
