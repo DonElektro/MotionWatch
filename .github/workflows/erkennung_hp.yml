@@ -190,12 +190,17 @@ jobs:
             echo "SIMOPT=--godot" >> "$GITHUB_ENV"; echo "SIMPFAD=$G" >> "$GITHUB_ENV"
           else
             Z=stand/simulator3d/MoveEyeSim3D_Linux.zip
+            if [ -f stand/werkzeuge/sim_anhang.py ]; then   # Simulator-Anhang: das neuste Linux-Paket dieses Stands kann ein Release-Asset sein
+              python3 stand/werkzeuge/sim_anhang.py pfad linux --ziel "$RUNNER_TEMP/anhang/MoveEyeSim3D_Linux.zip" > "$RUNNER_TEMP/sim_pfad.txt" \
+                || { cat "$RUNNER_TEMP/sim_pfad.txt"; echo "::error::Linux-Paket des Simulators nicht geholt (Release-Asset) – simulator: godot wählen"; exit 1; }
+              cat "$RUNNER_TEMP/sim_pfad.txt"; Z="$(tail -n 1 "$RUNNER_TEMP/sim_pfad.txt")"
+            fi
             [ -s "$Z" ] || { echo "::error::$Z fehlt in diesem Stand – simulator: godot wählen"; exit 1; }
             unzip -q -o "$Z" -d "$RUNNER_TEMP/sim"
             B="$RUNNER_TEMP/sim/MoveEyeSim3D/MoveEyeSim3D.x86_64"
             chmod +x "$B"
             echo "SIMOPT=--sim-bin" >> "$GITHUB_ENV"; echo "SIMPFAD=$B" >> "$GITHUB_ENV"
-            python3 -c "import json; d=json.load(open('stand/simulator3d/version.json')); print('Linux-Paket', d.get('linux', {}).get('ver', '?'), '· Quelltext', d.get('ver', '?'))"
+            python3 -c "import json; d=json.load(open('stand/simulator3d/version.json')); print('Linux-Paket', (d.get('anhang') or {}).get('ver') or d.get('linux', {}).get('ver', '?'), '· Quelltext', (d.get('anhang') or {}).get('ver') or d.get('ver', '?'))"
           fi
       - name: Erkennungstest (${{ needs.vorpruefung.outputs.plan }})
         timeout-minutes: 820

@@ -1,22 +1,27 @@
-# Pi-Paket (Sim 3.57.0+, «Simulator intern» auf dem Raspberry Pi 5, Teil 639zx): exportiert das Preset «Linux Pi» (arm64)
-# hier im CI, packt MoveEyeSim3D_Pi.zip (werkzeuge/linux_paket.sh --pi) und hängt es als Release-Asset an sim-X.Y.Z.
-# Die 37 MB kommen so nie ins Repository und es braucht keinen Tag-Push von aussen.
-# Nur von Hand (Actions -> Pi-Paket -> Run workflow, oder: gh workflow run sim_pi.yml -f ver=X.Y.Z).
+# Sim-Pakete (früher «Pi-Paket»): baut die Pakete des Simulators hier im CI und hängt sie als Assets an den Release sim-X.Y.Z.
+#   pi     MoveEyeSim3D_Pi.zip        Raspberry Pi 5 (arm64), «Simulator intern» (MoveEye Teil 639zx) - seit Sim 3.57.0
+#   win    MotionWatch3D_Simulator.zip  Windows   } Simulator-Anhang (Besitzer 12.11.2026, «Ablage entlasten»): ab der Version
+#   linux  MoveEyeSim3D_Linux.zip       Linux/HP  } NACH Sim 3.67.2 - sie kommen nicht mehr ins Repository (103 MB pro Version)
+# pakete=auto (Standard): steht die Nummer als «ver» in simulator3d/version.json (Pakete im Repository, z. B. 3.67.2), nur pi;
+# sonst alle drei. Nur von Hand (Actions -> Sim-Pakete -> Run workflow, oder: gh workflow run sim_pi.yml -f ver=X.Y.Z -f probe=false).
 #
-# Ablauf beim echten Sim-Release:
-#   1. rel_sim.sh X.Y.Z … wie immer, committen, main pushen (main.gd VERSION = X.Y.Z)
+# Ablauf beim echten Sim-Release (ab der Version nach 3.67.2):
+#   1. rel_sim.sh X.Y.Z … (Nummer in main.gd, «Lies mich», UEBERGABE; KEIN Export, keine ZIP), committen, main pushen
 #   2. dieser Workflow mit ver=X.Y.Z (ref main, probe aus): Release sim-X.Y.Z (--latest=false, der Bausatz bleibt «latest»),
-#      Asset MoveEyeSim3D_Pi.zip, SHA-256 und Grösse in den Notizen
-#   3. lokal: PI_NUR=1 rel_sim.sh X.Y.Z - holt das Asset über die REST-API (werkzeuge/pi_asset.py), rechnet SHA-256 und
-#      Grösse selbst nach, schreibt «pi» in version.json und signiert «sim.pi» in versions.json (Schlüssel nur lokal)
-# Sicher, weil MoveEye ein Pi-Paket NUR mit der signierten SHA-256 aus versions.json annimmt: bis Schritt 3 nimmt kein Gerät
-# das Asset, ein später ausgetauschtes Asset passt nicht mehr zur Signatur.
+#      drei Assets, Grösse + SHA-256 in den Notizen; jedes Asset wird über die öffentliche Adresse zurückgeholt (Umleitung)
+#   3. lokal: sim_anhang.py holen X.Y.Z + pi_asset.py holen X.Y.Z (REST-API, rechnen selbst nach), versionen.py --anhang-json,
+#      bauen.py --nur-signieren (Schlüssel nur lokal): «sim.anhang» + «sim.pi» in versions.json; committen, pushen
+# Sicher, weil MoveEye, der HP und (über version.json) der Simulator ein Paket NUR mit der Prüfsumme aus Schritt 3 annehmen:
+# bis dahin nimmt kein Gerät die Assets, ein später ausgetauschtes Asset passt nicht mehr zur Signatur.
 #
 # probe=true (Standard): Probelauf. Release «simprobe-X.Y.Z-<Lauf>» als Vorabversion (prerelease, nicht latest), jeder Zweig
-# erlaubt. Kein Gerät sucht diesen Namen (Geräte: nur sim-X.Y.Z und nur mit Eintrag in versions.json). Danach wegräumen:
+# erlaubt. Kein Gerät sucht diesen Namen. Danach wegräumen:
 #   gh api -X POST …/actions/workflows/sim_pi.yml/dispatches -f ref=main -f 'inputs[loeschen]=simprobe-X.Y.Z-N'
+# abruf=true: Abruf-Probe statt bauen - lädt ein kleines Ersatz-Asset an eine Vorabversion «simprobe-abruf-<Lauf>», holt es
+# über die öffentliche Adresse mit denselben Wegen wie die Geräte zurück (MoveEye: urllib mit _upd_request; HP: curl mit
+# den Schaltern von hp_update.sh; Simulator: Godot HTTPRequest wie update.gd) und löscht die Vorabversion wieder.
 # Keine Geheimnisse: nur GITHUB_TOKEN (contents: write), kein Signierschlüssel.
-name: Pi-Paket
+name: Sim-Pakete
 on:
   workflow_dispatch:
     inputs:
@@ -30,6 +35,13 @@ on:
         description: "Probelauf: Vorabversion simprobe-X.Y.Z-<Lauf> statt sim-X.Y.Z"
         type: boolean
         default: true
+      pakete:
+        description: "auto (Nummer = Pakete im Repository: nur pi; sonst win,linux,pi) oder eine Liste, z. B. pi"
+        default: auto
+      abruf:
+        description: "Abruf-Probe statt bauen: kleines Ersatz-Asset hochladen und wie die Geräte zurückholen (Umleitung)"
+        type: boolean
+        default: false
       loeschen:
         description: "Statt bauen: Probe-Release + Tag löschen (nur simprobe-…, nur Vorabversion)"
         default: ""
@@ -44,8 +56,8 @@ env:
 
 jobs:
   pi:
-    name: Pi-Paket · ${{ inputs.ver }}${{ inputs.probe && ' (Probe)' || '' }}
-    if: github.repository == 'DonElektro/MotionWatch' && inputs.loeschen == ''
+    name: Sim-Pakete · ${{ inputs.ver }}${{ inputs.probe && ' (Probe)' || '' }}
+    if: github.repository == 'DonElektro/MotionWatch' && inputs.loeschen == '' && !inputs.abruf
     runs-on: ubuntu-24.04
     timeout-minutes: 50
     steps:
@@ -59,6 +71,7 @@ jobs:
           VER: ${{ inputs.ver }}
           REF: ${{ inputs.ref }}
           PROBE: ${{ inputs.probe }}
+          PAKETE: ${{ inputs.pakete || 'auto' }}
         run: |
           set -e
           echo "$VER" | grep -Eq '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$' || { echo "::error::ver $VER ist nicht X.Y.Z"; exit 1; }
@@ -82,8 +95,23 @@ jobs:
             t=$(git ls-remote --tags origin "refs/tags/$tag" | cut -f1)
             [ "$t" = "$sha" ] || { echo "::error::Tag $tag zeigt schon auf $t, nicht auf $sha"; exit 1; }
           fi
+          # welche Pakete: «auto» = die Nummer der Pakete im Repository (version.json «ver») bekommt nur das Pi-Paket
+          im_repo=$(python3 -c 'import json; print(json.load(open("simulator3d/version.json")).get("ver") or "")')
+          if [ "$PAKETE" = "auto" ]; then
+            if [ "$VER" = "$im_repo" ]; then PAKETE=pi; else PAKETE=win,linux,pi; fi
+          fi
+          echo "$PAKETE" | grep -Eq '^(win|linux|pi)(,(win|linux|pi))*$' || { echo "::error::pakete «$PAKETE»: auto oder eine Liste aus win, linux, pi"; exit 1; }
+          if [ "$PROBE" != "true" ] && echo ",$PAKETE," | grep -Eq ',(win|linux),'; then
+            python3 - "$VER" "$im_repo" <<'PY' || { echo "::error::Windows- / Linux-Paket als Asset nur für eine Nummer NACH den Paketen im Repository ($im_repo)"; exit 1; }
+          import sys
+          k = lambda v: tuple(int(x) for x in v.split("."))  # noqa: E731
+          sys.exit(0 if k(sys.argv[1]) > k(sys.argv[2]) else 1)
+          PY
+            [ -f werkzeuge/windows_paket.sh ] && [ -f werkzeuge/sim_anhang.py ] || { echo "::error::dieser Stand kennt den Simulator-Anhang noch nicht"; exit 1; }
+          fi
+          echo "pakete=$PAKETE" >> "$GITHUB_OUTPUT"
           echo "tag=$tag" >> "$GITHUB_OUTPUT"; echo "sha=$sha" >> "$GITHUB_OUTPUT"
-          echo "Pi-Paket $VER von $REF ($sha) -> Release $tag"
+          echo "Sim-Pakete $VER ($PAKETE) von $REF ($sha) -> Release $tag"
       - name: Godot 4.3 (Cache)
         id: gcache
         uses: actions/cache@v4
@@ -96,18 +124,20 @@ jobs:
           mkdir -p ~/godot && cd ~/godot
           curl -fsSL -o g.zip https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip
           unzip -q g.zip && rm g.zip && chmod +x Godot_v4.3-stable_linux.x86_64
-      - name: Export-Vorlagen 4.3 arm64 (Cache)
+      - name: Export-Vorlagen 4.3 (Cache wie im CI – Linux, Windows, Linux arm64)
         id: tcache
         uses: actions/cache@v4
         with:
           path: ~/.local/share/godot/export_templates/4.3.stable
-          key: godot-templates-4.3-stable-arm64
-      - name: Export-Vorlagen herunterladen (nur Linux arm64)
+          key: godot-templates-4.3-stable-linux-windows-arm64
+      - name: Export-Vorlagen herunterladen
         if: steps.tcache.outputs.cache-hit != 'true'
         run: |
           d=~/.local/share/godot/export_templates/4.3.stable; mkdir -p "$d" "$RUNNER_TEMP/t" && cd "$RUNNER_TEMP/t"
           curl -fsSL -o t.tpz https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_export_templates.tpz
-          unzip -q t.tpz templates/version.txt templates/linux_release.arm64 templates/linux_debug.arm64
+          unzip -q t.tpz templates/version.txt templates/linux_release.x86_64 templates/linux_debug.x86_64 \
+            templates/windows_release_x86_64.exe templates/windows_debug_x86_64.exe \
+            templates/linux_release.arm64 templates/linux_debug.arm64
           mv templates/* "$d"/ && rm -rf "$RUNNER_TEMP/t" && ls -la "$d"
       - name: Import (Cache simulator3d/.godot)
         uses: actions/cache@v4
@@ -118,12 +148,14 @@ jobs:
       - name: Projekt importieren
         run: timeout 900 "$GODOT_BIN" --headless --import --path simulator3d > "$RUNNER_TEMP/import.log" 2>&1 || true
       - name: Exportieren «Linux Pi» (arm64) und packen
+        if: contains(format(',{0},', steps.v.outputs.pakete), ',pi,')
         run: |
           set -e
           out="$RUNNER_TEMP/build"; mkdir -p "$out"
           timeout 1500 "$GODOT_BIN" --headless --path simulator3d --export-release "Linux Pi" "$out/MoveEyeSim3D.arm64" 2>&1 | tail -30
           test -s "$out/MoveEyeSim3D.arm64" || { echo "::error::Export «Linux Pi» fehlgeschlagen"; exit 1; }
           bash werkzeuge/linux_paket.sh --pi "$out/MoveEyeSim3D.arm64" "$out/MoveEyeSim3D_Pi.zip"
+          rm -f "$out/MoveEyeSim3D.arm64"
           python3 - "$out/MoveEyeSim3D_Pi.zip" "${{ inputs.ver }}" <<'PY'
           import sys, zipfile
           p, v = sys.argv[1:]
@@ -139,43 +171,172 @@ jobs:
           assert "NEU IN %s\n" % v in lies, "Lies mich ohne NEU IN %s" % v
           print("Pi-Paket ok:", len(n), "Dateien")
           PY
-          sz=$(stat -c %s "$out/MoveEyeSim3D_Pi.zip"); sh=$(sha256sum "$out/MoveEyeSim3D_Pi.zip" | cut -d' ' -f1)
-          echo "SZ=$sz" >> "$GITHUB_ENV"; echo "SH=$sh" >> "$GITHUB_ENV"
-          echo "Pi-Paket: $sz Bytes, sha256 $sh"
-      - name: Release anlegen, Asset hochladen, zurücklesen
+      - name: Exportieren «Linux» (x86_64) und packen (mit dem HP-Teil)
+        if: contains(format(',{0},', steps.v.outputs.pakete), ',linux,')
+        run: |
+          set -e
+          out="$RUNNER_TEMP/build"; mkdir -p "$out"
+          timeout 1500 "$GODOT_BIN" --headless --path simulator3d --export-release "Linux" "$out/MoveEyeSim3D.x86_64" 2>&1 | tail -30
+          test -s "$out/MoveEyeSim3D.x86_64" || { echo "::error::Export «Linux» fehlgeschlagen"; exit 1; }
+          bash werkzeuge/linux_paket.sh "$out/MoveEyeSim3D.x86_64" "$out/MoveEyeSim3D_Linux.zip"
+          rm -f "$out/MoveEyeSim3D.x86_64"
+          python3 -c 'import sys; sys.path.insert(0, "werkzeuge"); import versionen; f = versionen.paket_inhalt(sys.argv[1], "linux", sys.argv[2]); print("Linux-Paket:", f or "ok"); sys.exit(1 if f else 0)' \
+            "$out/MoveEyeSim3D_Linux.zip" "${{ inputs.ver }}"
+      - name: Exportieren «Windows Desktop» und packen
+        if: contains(format(',{0},', steps.v.outputs.pakete), ',win,')
+        run: |
+          set -e
+          out="$RUNNER_TEMP/build"; mkdir -p "$out/win"
+          timeout 1500 "$GODOT_BIN" --headless --path simulator3d --export-release "Windows Desktop" "$out/win/MoveEyeSim3D.exe" 2>&1 | tail -30
+          test -s "$out/win/MoveEyeSim3D.exe" || { echo "::error::Export «Windows Desktop» fehlgeschlagen"; exit 1; }
+          test -s "$out/win/MoveEyeSim3D.console.exe" || { echo "::error::MoveEyeSim3D.console.exe fehlt (Notfall-Start.bat braucht sie)"; exit 1; }
+          bash werkzeuge/windows_paket.sh "$out/win/MoveEyeSim3D.exe" "$out/MotionWatch3D_Simulator.zip"
+          rm -rf "$out/win"
+          python3 -c 'import sys; sys.path.insert(0, "werkzeuge"); import versionen; f = versionen.paket_inhalt(sys.argv[1], "win", sys.argv[2]); print("Windows-Paket:", f or "ok"); sys.exit(1 if f else 0)' \
+            "$out/MotionWatch3D_Simulator.zip" "${{ inputs.ver }}"
+      - name: Release anlegen, Assets hochladen, zurücklesen (API und öffentliche Adresse)
         env:
           GH_TOKEN: ${{ github.token }}
           VER: ${{ inputs.ver }}
           TAG: ${{ steps.v.outputs.tag }}
           SHA: ${{ steps.v.outputs.sha }}
           PROBE: ${{ inputs.probe }}
+          PAKETE: ${{ steps.v.outputs.pakete }}
         run: |
           set -e
-          Z="$RUNNER_TEMP/build/MoveEyeSim3D_Pi.zip"
+          O="$RUNNER_TEMP/build"
+          A=""
           {
             if [ "$PROBE" = "true" ]; then echo "PROBELAUF (Vorabversion) - nicht für Geräte, wird wieder gelöscht."; echo; fi
-            echo "MoveEye Sim $VER · Pi-Paket («Simulator intern», Raspberry Pi 5, arm64)"
+            echo "MoveEye Sim $VER · Pakete ($PAKETE)"
             echo
-            echo "Wird von MoveEye nur mit der signierten Prüfsumme aus versions.json «sim.pi» angenommen."
+            echo "Werden von MoveEye, dem Simulator-PC und dem Simulator nur mit der signierten Prüfsumme aus versions.json"
+            echo "(«sim.anhang», «sim.pi») bzw. simulator3d/version.json angenommen."
             echo
-            echo "pi-ver: $VER"
-            echo "pi-size: $SZ"
-            echo "pi-sha256: $SH"
+            echo "sim-ver: $VER"
+            for k in win linux pi; do
+              echo ",$PAKETE," | grep -q ",$k," || continue
+              case $k in win) f=MotionWatch3D_Simulator.zip ;; linux) f=MoveEyeSim3D_Linux.zip ;; pi) f=MoveEyeSim3D_Pi.zip ;; esac
+              [ "$k" = pi ] && echo "pi-ver: $VER"
+              echo "$k-size: $(stat -c %s "$O/$f")"
+              echo "$k-sha256: $(sha256sum "$O/$f" | cut -d' ' -f1)"
+            done
             echo "commit: $SHA"
             echo "lauf: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
           } > notes.md
+          cat notes.md
+          for k in win linux pi; do
+            echo ",$PAKETE," | grep -q ",$k," || continue
+            case $k in win) A="$A $O/MotionWatch3D_Simulator.zip" ;; linux) A="$A $O/MoveEyeSim3D_Linux.zip" ;; pi) A="$A $O/MoveEyeSim3D_Pi.zip" ;; esac
+          done
           if [ "$PROBE" = "true" ]; then
-            gh release create "$TAG" "$Z" -R "$GITHUB_REPOSITORY" --target "$SHA" --title "Probe · Pi-Paket Sim $VER" \
+            gh release create "$TAG" $A -R "$GITHUB_REPOSITORY" --target "$SHA" --title "Probe · Sim-Pakete $VER" \
               --notes-file notes.md --prerelease --latest=false
           else
-            gh release create "$TAG" "$Z" -R "$GITHUB_REPOSITORY" --target "$SHA" --title "MoveEye Sim $VER · Pi-Paket" \
+            gh release create "$TAG" $A -R "$GITHUB_REPOSITORY" --target "$SHA" --title "MoveEye Sim $VER · Pakete" \
               --notes-file notes.md --latest=false
           fi
           mkdir -p "$RUNNER_TEMP/zurueck"
-          gh release download "$TAG" -R "$GITHUB_REPOSITORY" -p MoveEyeSim3D_Pi.zip -D "$RUNNER_TEMP/zurueck"
-          echo "$SH  $RUNNER_TEMP/zurueck/MoveEyeSim3D_Pi.zip" | sha256sum -c -
-          echo "### Pi-Paket $VER -> $TAG" >> "$GITHUB_STEP_SUMMARY"
-          echo "Grösse $SZ Bytes, sha256 \`$SH\`, commit $SHA" >> "$GITHUB_STEP_SUMMARY"
+          gh release download "$TAG" -R "$GITHUB_REPOSITORY" -p '*.zip' -D "$RUNNER_TEMP/zurueck"
+          echo "### Sim-Pakete $VER -> $TAG" >> "$GITHUB_STEP_SUMMARY"
+          for f in $A; do
+            n=$(basename "$f"); s=$(sha256sum "$f" | cut -d' ' -f1); z=$(stat -c %s "$f")
+            echo "$s  $RUNNER_TEMP/zurueck/$n" | sha256sum -c -
+            rm -f "$RUNNER_TEMP/zurueck/$n"
+            # über die öffentliche Adresse, wie die Geräte (Umleitung von github.com): urllib und curl mit den Schaltern des HP
+            u="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/$TAG/$n"
+            if [ -f werkzeuge/sim_anhang.py ]; then python3 werkzeuge/sim_anhang.py abruf "$u" "$z" "$s"; fi
+            curl -fsSL --proto '=https,file' --proto-redir '=https' --retry 3 --connect-timeout 20 --max-time 1800 --max-filesize 400000000 -o "$RUNNER_TEMP/zurueck/c_$n" "$u"
+            echo "$s  $RUNNER_TEMP/zurueck/c_$n" | sha256sum -c -
+            rm -f "$RUNNER_TEMP/zurueck/c_$n"
+            echo "- \`$n\`: $z Bytes, sha256 \`$s\` (API, urllib und curl über die öffentliche Adresse: gleich)" >> "$GITHUB_STEP_SUMMARY"
+          done
+          latest=$(gh api "repos/$GITHUB_REPOSITORY/releases/latest" --jq .tag_name 2>/dev/null || true)
+          echo "latest bleibt: $latest"
+          [ "$latest" != "$TAG" ] || { echo "::error::$TAG ist «latest» geworden - das ist dem Bausatz (geh-…) vorbehalten"; exit 1; }
+          echo "commit $SHA · latest bleibt \`$latest\`" >> "$GITHUB_STEP_SUMMARY"
+
+  abruf:
+    name: Abruf-Probe (Ersatz-Asset über die öffentliche Adresse zurückholen)
+    if: github.repository == 'DonElektro/MotionWatch' && inputs.loeschen == '' && inputs.abruf
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Ersatz-Asset an eine Vorabversion hängen
+        id: a
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          tag="simprobe-abruf-$GITHUB_RUN_NUMBER"
+          head -c 300000 /dev/urandom > "$RUNNER_TEMP/MoveEyeSim3D_Linux.zip"
+          s=$(sha256sum "$RUNNER_TEMP/MoveEyeSim3D_Linux.zip" | cut -d' ' -f1)
+          printf 'ABRUF-PROBE (Vorabversion) - kein Paket, nur 300 kB Zufall; wird gleich wieder gelöscht.\n' > notes.md
+          gh release create "$tag" "$RUNNER_TEMP/MoveEyeSim3D_Linux.zip" -R "$GITHUB_REPOSITORY" --target "$(git rev-parse HEAD)" \
+            --title "Probe · Abruf" --notes-file notes.md --prerelease --latest=false
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"; echo "sha=$s" >> "$GITHUB_OUTPUT"
+          echo "url=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/$tag/MoveEyeSim3D_Linux.zip" >> "$GITHUB_OUTPUT"
+      - name: Wohin leitet GitHub um? (nur zur Ansicht)
+        run: curl -sI "${{ steps.a.outputs.url }}" | grep -iE '^(HTTP|location:)' | sed -E 's/\?.*$/?…/' || true
+      - name: Weg der Workflows (sim_anhang.py abruf, urllib)
+        run: python3 werkzeuge/sim_anhang.py abruf "${{ steps.a.outputs.url }}" 300000 "${{ steps.a.outputs.sha }}"
+      - name: Weg des HP (curl mit den Schaltern von hp_update.sh)
+        run: |
+          set -e
+          grep -q -- "--proto '=https,file' --proto-redir '=https'" werkzeuge/test_runner/hp_update.sh
+          curl -fsSL --proto '=https,file' --proto-redir '=https' --retry 3 --connect-timeout 20 --max-time 1800 --max-filesize 400000000 -o "$RUNNER_TEMP/c.zip" "${{ steps.a.outputs.url }}"
+          echo "${{ steps.a.outputs.sha }}  $RUNNER_TEMP/c.zip" | sha256sum -c -
+      - name: Weg von MoveEye (Programm aus quelle/ gebaut - urllib mit _upd_request und der Umleitungs-Regel aus Teil 390)
+        run: |
+          set -e
+          pip install -q opencv-python-headless numpy flask pillow cryptography
+          python3 werkzeuge/bauen.py | tail -1
+          MW=$(ls webcam_bewegung_*.py | sort -t_ -k3,3n -k4,4n -k5,5n | tail -n 1)
+          MOTIONWATCH_HOME="$RUNNER_TEMP/mwhome" python3 - "$MW" "${{ steps.a.outputs.url }}" "${{ steps.a.outputs.sha }}" <<'PY'
+          import hashlib, os, sys, urllib.request
+          ns = {"__name__": "mw_abruf", "__file__": os.path.abspath(sys.argv[1])}
+          exec(compile(open(sys.argv[1], encoding="utf-8").read(), sys.argv[1], "exec"), ns)
+          with urllib.request.urlopen(ns["_upd_request"](sys.argv[2]), timeout=60) as r:
+              data = r.read()
+              print("MoveEye", ns["APP_VERSION"], "-> Antwort von", r.geturl().split("?")[0][:80])
+          assert hashlib.sha256(data).hexdigest() == sys.argv[3] and len(data) == 300000, "Inhalt stimmt nicht"
+          print("ok: 300000 Bytes, SHA-256 stimmt")
+          PY
+      - name: Godot 4.3 (Cache)
+        id: gcache
+        uses: actions/cache@v4
+        with:
+          path: ~/godot
+          key: godot-4.3-stable-linux
+      - name: Godot 4.3 herunterladen
+        if: steps.gcache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ~/godot && cd ~/godot
+          curl -fsSL -o g.zip https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip
+          unzip -q g.zip && rm g.zip && chmod +x Godot_v4.3-stable_linux.x86_64
+      - name: Weg des Simulators (update.gd, Godot HTTPRequest - sim_anhang_test.gd mit der echten Adresse)
+        env:
+          MW_ANHANG_PROBE: "${{ steps.a.outputs.url }}|300000|${{ steps.a.outputs.sha }}"
+        run: |
+          set -e
+          cd simulator3d
+          timeout 600 "$GODOT_BIN" --headless --path . -s "$PWD/../werkzeuge/sim_anhang_test.gd" -- --no-update > "$RUNNER_TEMP/gd.log" 2>&1 || true
+          grep -E "^[0-9]  |  ok |FEHLER|Sim-Anhang-Test|SCRIPT ERROR" "$RUNNER_TEMP/gd.log"
+          grep -q "echte Adresse geladen" "$RUNNER_TEMP/gd.log" && grep -q "Sim-Anhang-Test OK" "$RUNNER_TEMP/gd.log" && ! grep -q "SCRIPT ERROR" "$RUNNER_TEMP/gd.log"
+      - name: Vorabversion und Tag wieder löschen
+        if: always() && steps.a.outputs.tag != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          pre=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/${{ steps.a.outputs.tag }}" --jq .prerelease)
+          [ "$pre" = "true" ] && gh release delete "${{ steps.a.outputs.tag }}" -R "$GITHUB_REPOSITORY" --yes --cleanup-tag
+          echo "### Abruf-Probe: Ersatz-Asset über die öffentliche Adresse geholt (Wege siehe Schritte), Vorabversion gelöscht" >> "$GITHUB_STEP_SUMMARY"
 
   weg:
     name: Probe löschen · ${{ inputs.loeschen }}
@@ -189,7 +350,7 @@ jobs:
           TAG: ${{ inputs.loeschen }}
         run: |
           set -e
-          echo "$TAG" | grep -Eq '^simprobe-[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}-[0-9]+$' || { echo "::error::nur simprobe-X.Y.Z-N, nicht $TAG"; exit 1; }
+          echo "$TAG" | grep -Eq '^simprobe-([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}|abruf)-[0-9]+$' || { echo "::error::nur simprobe-X.Y.Z-N / simprobe-abruf-N, nicht $TAG"; exit 1; }
           pre=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" --jq .prerelease)
           [ "$pre" = "true" ] || { echo "::error::$TAG ist keine Vorabversion - nicht gelöscht"; exit 1; }
           gh release delete "$TAG" -R "$GITHUB_REPOSITORY" --yes --cleanup-tag
