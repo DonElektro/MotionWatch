@@ -507,6 +507,12 @@ def _pl_xml(data):
     import xml.etree.ElementTree as _ET
     if b"<!DOCTYPE" in data or b"<!ENTITY" in data or b"<!doctype" in data:
         raise PLError("This Excel file is not accepted (unusual content).")
+    # 3.82.0: only UTF-8 (what Excel and every other program writes). In UTF-16 the search above finds nothing (every second
+    # byte is 0) and the parser would expand the entities of a DOCTYPE - so: no byte order mark of UTF-16 / UTF-32, no zero
+    # byte, and an «encoding» in the first line may only say UTF-8.
+    enc = re.match(rb"\s*<\?xml[^>]{0,200}?encoding\s*=\s*[\"']([A-Za-z0-9._-]{1,40})[\"']", data[:300])
+    if data[:2] in (b"\xff\xfe", b"\xfe\xff") or b"\x00" in data or (enc and enc.group(1).lower() not in (b"utf-8", b"utf8")):
+        raise PLError("This Excel file is not accepted (unusual content).")
     try:
         return _ET.fromstring(data)
     except _ET.ParseError:
@@ -2673,7 +2679,7 @@ for _L in ("fr", "it", "rm"):
 
 
 # ---- self-test (without a server; werkzeuge/packlisten_test.py tests the web side) ------------------------------------------------
-def _pl_test_xlsx(rows, extra=None, doctype=""):
+def _pl_test_xlsx(rows, extra=None, doctype="", sst=None):
     """a small real .xlsx (shared strings, numbers, one formula with its stored value) - also used by the test tool"""
     import zipfile as _zf
     from xml.sax.saxutils import escape as _x
@@ -2701,7 +2707,8 @@ def _pl_test_xlsx(rows, extra=None, doctype=""):
                                       '<sheets><sheet name="Liste" sheetId="1" r:id="rId1"/></sheets></workbook>')
         z.writestr("xl/_rels/workbook.xml.rels", '<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
                                                  '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>')
-        z.writestr("xl/sharedStrings.xml", f'<?xml version="1.0"?>{doctype}<sst {ns}>' + "".join(f"<si><t>{_x(s)}</t></si>" for s in strs) + "</sst>")
+        z.writestr("xl/sharedStrings.xml", sst if sst is not None else                          # sst: these bytes instead (tests of the encoding)
+                   f'<?xml version="1.0"?>{doctype}<sst {ns}>' + "".join(f"<si><t>{_x(s)}</t></si>" for s in strs) + "</sst>")
         z.writestr("xl/worksheets/sheet1.xml", f'<?xml version="1.0"?><worksheet {ns}><sheetData>' + "".join(cells) + "</sheetData></worksheet>")
         for nm, data in (extra or {}).items():
             z.writestr(nm, data)
@@ -2745,7 +2752,10 @@ def pl_selftest():
         p = pl_import_preview(data=x, name="Tour.xlsx")
         assert [(i["name"], i["g"], i["n"]) for i in p["items"]] == [("Schlafsack", 950, 1), ("Müesli", 475, 2)] and p["title"] == "Tour", p
         for bad in (_pl_test_xlsx([["a"]], {"xl/media/bombe.bin": b"\0" * (PL_X_TOTAL + 1024)}), _pl_test_xlsx([["a"]], {f"x/{i}.xml": b"<a/>" for i in range(PL_X_ENTRIES + 5)}),
-                    _pl_test_xlsx([["a"]], doctype='<!DOCTYPE s [<!ENTITY a "aaaa">]>'), b"PK\x03\x04kaputt"):
+                    _pl_test_xlsx([["a"]], doctype='<!DOCTYPE s [<!ENTITY a "aaaa">]>'), b"PK\x03\x04kaputt",
+                    _pl_test_xlsx([["a"]], sst=('<?xml version="1.0" encoding="UTF-16"?><!DOCTYPE s [<!ENTITY a "aaaa">]>'
+                                                '<sst><si><t>&a;</t></si></sst>').encode("utf-16")),      # the words are not findable as bytes
+                    _pl_test_xlsx([["a"]], sst=b'<?xml version="1.0" encoding="ISO-8859-1"?><sst><si><t>a</t></si></sst>')):
             try:
                 pl_import_preview(data=bad, name="b.xlsx")
                 raise AssertionError("an unsafe xlsx was read")
