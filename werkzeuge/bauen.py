@@ -248,6 +248,65 @@ ZD_GEPACKT = False
 ZD_GRENZE = 32 * 1024 * 1024        # the data zip never gets bigger than half of what the devices accept
 
 
+# Hauptdatei kleiner (Nov. 2026): Prüf-Code. Die Funktionen «…_selftest» laufen nur bei «--self-test» (Integrator, GitHub),
+# nie im Betrieb eines Geräts - sie waren rund 280 KB der Hauptdatei. Ihr Quelltext steht jetzt als Eintrag «Teil/name()» in
+# der Zusatzdatei; in der Hauptdatei bleibt an derselben Zeile «name = _zd_fn('Teil/name()')» und darunter leere Zeilen
+# (gleiche Zeilennummern). _zd_fn (012) übersetzt den Text erst beim ersten Aufruf, mit den Zeilennummern der Hauptdatei.
+# Ohne Zusatzdatei meldet der Selbsttest diese Prüfungen als Fehler «Zusatzdaten fehlen»; der Betrieb braucht sie nicht.
+# Ausgelagert wird eine Funktion nur, wenn sie ausschliesslich vom Selbsttest benutzt wird (pruefcode_namen()).
+ZD_PRUEFCODE = True                 # False: der Prüf-Code bleibt in der Hauptdatei (dann rund 280 KB grösser)
+ZD_PRUEF_RE = re.compile(r"_self_?test$")
+ZD_PRUEF_VON = ("self_test",)       # these functions (the self-test itself) may use a moved-out check
+ZD_PRUEF_LISTE = "SELFTEST_EXTRA"   # … and module-level statements that fill this list
+_PRUEF = {"namen": None}
+
+
+def pruefcode_namen(neu=False):
+    """the top-level functions «…_selftest» that only the self-test uses: referenced only inside one another, inside
+    self_test() and in statements «SELFTEST_EXTRA…»; no decorator, only constants as default values, not in a part of
+    ZD_KEEP_PARTS. Everything else stays in the program file."""
+    if _PRUEF["namen"] is not None and not neu:
+        return _PRUEF["namen"]
+    if not ZD_PRUEFCODE:
+        _PRUEF["namen"] = frozenset()
+        return _PRUEF["namen"]
+    cand, bad, trees = {}, set(), []
+    for n in teile():
+        tree = ast.parse(lesen(n), n)
+        trees.append(tree)
+        for st in tree.body:
+            if isinstance(st, ast.FunctionDef) and ZD_PRUEF_RE.search(st.name):
+                dflt = [d for d in st.args.defaults + st.args.kw_defaults if d is not None]
+                if (st.name in cand or n.startswith(ZD_KEEP_PARTS) or st.decorator_list or st.col_offset
+                        or not all(isinstance(d, ast.Constant) for d in dflt)):
+                    bad.add(st.name)
+                cand[st.name] = n
+
+    def refs(nd, wo):
+        if isinstance(nd, ast.Name) and nd.id in cand and not wo:
+            bad.add(nd.id)
+        for c in ast.iter_child_nodes(nd):
+            refs(c, wo)
+
+    def stmts(body, top):
+        for st in body:
+            if isinstance(st, (ast.FunctionDef, ast.AsyncFunctionDef)) and top:
+                refs(st, st.name in cand or st.name in ZD_PRUEF_VON)
+            elif isinstance(st, (ast.If, ast.Try, ast.With)) and top:
+                for c in ast.iter_child_nodes(st):
+                    if not isinstance(c, ast.stmt) and not isinstance(c, ast.ExceptHandler):
+                        refs(c, False)
+                stmts(st.body, top); stmts(getattr(st, "orelse", []), top); stmts(getattr(st, "finalbody", []), top)
+                for h in getattr(st, "handlers", []):
+                    stmts(h.body, top)
+            else:
+                refs(st, top and ast.unparse(st).startswith(ZD_PRUEF_LISTE))
+    for tree in trees:
+        stmts(tree.body, True)
+    _PRUEF["namen"] = frozenset(set(cand) - bad)
+    return _PRUEF["namen"]
+
+
 def zd_name(v):
     return "moveeye_daten_%s.zip" % v.replace(".", "_")
 
@@ -406,11 +465,21 @@ def auslagern(name, text):
             else:
                 walk(st, _zd_ctx(st))
     body(tree.body)
+    pruef = pruefcode_namen()
+    for st in tree.body:                                   # Prüf-Code: the whole function «…_selftest» (see ZD_PRUEFCODE)
+        if isinstance(st, ast.FunctionDef) and st.name in pruef:
+            found.append((off[st.lineno - 1], off[st.end_lineno - 1] + st.end_col_offset, None, st.name, 0))
     if not found:
         return text, []
     stem = name[:-3]
     out, ents, pos, used = [], [], 0, {}
     for a, e, nd, ctx, hx in sorted(found, key=lambda x: x[0]):
+        if nd is None:                                     # the stub on the line of the «def», empty lines below it
+            key = "%s/%s()" % (stem, ctx)
+            ph = "%s = _zd_fn(%r)" % (ctx, key) + "\n" * b[a:e].count(b"\n")
+            out.append(b[pos:a]); out.append(ph.encode()); pos = e
+            ents.append((key, ph, b[a:e].decode()))
+            continue
         k = re.sub(r"[^A-Za-z0-9_]+", "_", ctx).strip("_") or "x"
         used[k] = used.get(k, 0) + 1
         key = "%s/%s" % (stem, k) + ("~%d" % used[k] if used[k] > 1 else "")
@@ -535,6 +604,7 @@ def zusammensetzen_klein(zd_sha=None):
     (None = of the zip that these entries give, see zd_bytes)"""
     teile_ = teile()
     v = version()
+    pruefcode_namen(neu=True)
     texts, ents = [], []
     for n in teile_:
         t, e = auslagern(n, lesen(n))
