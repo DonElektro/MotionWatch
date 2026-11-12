@@ -329,8 +329,14 @@ function show(i) {
   window.cur = i;
   if (PLUS.bilder.includes(a.t)) jget("/almanach/bilder?t=" + encodeURIComponent(a.t)).then(j => { if (v !== view || !j || !j.f) return;
     $("figs").innerHTML = '<div class="figs">' + j.f.map(f => '<figure onclick="this.classList.toggle(\'zoom\')">' + f.svg +
-      (f.cap ? "<figcaption>" + (f.n ? "<b>" + f.n + ".</b> " : "") + esc(f.cap) + "</figcaption>" : "") + "</figure>").join("") + "</div>"; });
+      (f.cap ? "<figcaption>" + (f.n ? "<b>" + f.n + ".</b> " : "") + esc(f.cap) + "</figcaption>" : "") + "</figure>").join("") + "</div>"; fit(); });
 }
+// the labels of the pictures on any font (a phone, another computer): the pictures are drawn with room for a font 20 % wider than
+// measured; whatever still reaches over the edge of its picture is moved back in, and a label wider than the picture is pressed
+function fit() { document.querySelectorAll("#figs svg text").forEach(x => { try { const vb = x.ownerSVGElement.viewBox.baseVal; let b = x.getBBox(), d = 0;
+    if (b.width > vb.width - 2) { x.setAttribute("textLength", vb.width - 2); x.setAttribute("lengthAdjust", "spacingAndGlyphs"); b = x.getBBox(); }
+    if (b.x < 1) d = 1 - b.x; else if (b.x + b.width > vb.width - 1) d = vb.width - 1 - b.x - b.width;
+    if (d) x.setAttribute("transform", "translate(" + d.toFixed(1) + ",0)"); } catch (e) {} }); }
 function copy(t, b) { const done = () => { b.textContent = "Kopiert ✓"; setTimeout(() => { b.textContent = "Kopieren"; }, 2000); };
   const old = () => { const x = document.createElement("textarea"); x.value = t; document.body.appendChild(x); x.select(); try { document.execCommand("copy"); done(); } catch (e) {} x.remove(); };
   if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(t).then(done, old); else old(); }
