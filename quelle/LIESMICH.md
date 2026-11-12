@@ -28,6 +28,11 @@ Texte `…_PAGE` / `_HTML` / `_JS` / `_CSS`); die `_HX…`-Tabellen behalten in 
 gebaute Datei hat keine Kommentare und keine Docstrings von Funktionen / Klassen und ist mit Tabs eingerückt – jede Zeile
 bleibt an ihrer Nummer (Fehlermeldungen zeigen dieselben Zeilen), die Originalzeilen stehen in der ZIP (`zeilen`).
 Hier in `quelle/` bleibt alles wie gewohnt (Leerzeichen, Kommentare). Grenze der Hauptdatei: Warnung ab 4 MiB, Abbruch ab 5 MiB.
+**Hauptdatei kleiner** (12.11.2026): auch Zeilen, die in Klammern weitergehen, haben in der gebauten Datei Tabs; die
+Funktionen `…_selftest`, die nur «--self-test» benutzt, stehen als Quelltext in der ZIP (in der Datei bleibt
+`name = _zd_fn("<teil>/name()")` und leere Zeilen, Teil 012) – sie darum nie im Betrieb aufrufen; vom Almanach bleibt nur das
+Kapitel «Notfall» in der Datei (`ALMANAC`), die anderen Kapitel sind `ALMANAC_WEITER`. Grosse Daten immer als ein Literal auf
+oberster Ebene schreiben. Jeder Bau zeigt die Luft bis zur Warnung; `werkzeuge/hauptdatei_groesse_test.py` verlangt 150 KiB.
 Tests: `werkzeuge/zusatzdaten_test.py` (ZIP gültig / verändert / fehlt, Signatur, Kern ohne ZIP),
 `werkzeuge/update_uebergang_test.py` (altes Gerät → neue Version über einen lokalen HTTPS-Server).
 
