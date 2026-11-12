@@ -275,7 +275,7 @@ body.light{--bg:#f6f3ec;--panel:#ffffff;--line:#d9d2c3;--txt:#1d232b;--mut:#5d67
 body.night{--bg:#0a0000;--panel:#160404;--line:#3a1010;--txt:#ff6a5a;--mut:#b4453a;--acc:#ff6a5a}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:var(--fs)/1.6 Georgia,"Times New Roman",serif;overflow-wrap:anywhere}
 header{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);padding:10px 14px;padding-top:max(10px,env(safe-area-inset-top));display:flex;gap:8px;align-items:center;flex-wrap:wrap;z-index:2}
-header h1{font:700 19px system-ui,sans-serif;margin:0;flex:1 1 auto}
+header h1{font:700 17px system-ui,sans-serif;margin:0;flex:1 1 55%;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 button,input{font:15px system-ui,sans-serif;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--txt);padding:8px 11px}
 button.on{background:var(--acc);color:#111;border-color:var(--acc)}
 main{max-width:720px;margin:auto;padding:14px}

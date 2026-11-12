@@ -616,7 +616,9 @@ def zurueck(pg, ns, base, ctx, arts):
         const knoepfe = [...document.querySelectorAll('header button:not([hidden]), header input, header h1')].map(e => e.getBoundingClientRect());
         let ueber = 0; for (let i = 0; i < knoepfe.length; i++) for (let j = i + 1; j < knoepfe.length; j++) { const a = knoepfe[i], c = knoepfe[j];
           if (Math.min(a.right, c.right) - Math.max(a.left, c.left) > 0.5 && Math.min(a.bottom, c.bottom) - Math.max(a.top, c.top) > 0.5) ueber++; }
-        return {x: xr.width >= 44 && xr.height >= 44 && xo === x && xr.left >= 0 && xr.right <= innerWidth && xr.top >= h.top - 1 && xr.bottom <= h.bottom + 1 && x.title === 'Almanach schliessen' && x.getAttribute('aria-label') === 'Almanach schliessen',
+        const h1 = document.querySelector('header h1'), hb = h1.getBoundingClientRect(), rg = document.createRange(); rg.selectNodeContents(h1); const ht = rg.getBoundingClientRect();
+        return {titel: b.hidden || (hb.left >= r.right && Math.abs((hb.top + hb.bottom) / 2 - (r.top + r.bottom) / 2) < 12 && Math.min(ht.right, hb.right) > hb.left + 60 && hb.right <= innerWidth),
+                kopf: Math.round(h.height), x: xr.width >= 44 && xr.height >= 44 && xo === x && xr.left >= 0 && xr.right <= innerWidth && xr.top >= h.top - 1 && xr.bottom <= h.bottom + 1 && x.title === 'Almanach schliessen' && x.getAttribute('aria-label') === 'Almanach schliessen',
                 ueber: ueber, da: !b.hidden && r.width > 0, text: b.textContent, w: r.width, h: r.height, top: r.top, links: r.left, rechts: r.right, inKopf: r.top >= h.top - 1 && r.bottom <= h.bottom + 1,
                 frei: oben === b, breit: innerWidth, zoom: !!document.querySelector('figure.zoom'), hash: location.hash, art: (document.querySelector('article h2') || {}).textContent || '',
                 kap: !!document.querySelector('.ch'), start: !!document.querySelector('.chp')}; }"""
@@ -626,6 +628,7 @@ def zurueck(pg, ns, base, ctx, arts):
             pg.evaluate("window.scrollTo(0, 99999)"); pg.wait_for_timeout(80)
         z = pg.evaluate(lage)
         ok(z["x"] and z["ueber"] == 0, f"{was}: «✕» (Almanach schliessen) sichtbar in der Kopfzeile, mindestens 44 px, nichts überlappt {z}")
+        ok(z["titel"] and z["kopf"] <= 175, f"{was}: der Titel steht rechts neben «‹ Zurück» in derselben Zeile (sein Kasten beginnt erst nach der Taste), die Kopfzeile bleibt bei drei Zeilen {z}")
         ok(z["da"] and z["text"] == text and z["h"] >= 44 and z["w"] >= 44 and z["inKopf"] and z["frei"] and 0 <= z["links"] and z["rechts"] <= z["breit"] and z["top"] < 120,
            f"{was}: Taste «{text}» sichtbar oben in der Kopfzeile, mindestens 44 px, nichts liegt darüber {z}")
         return z
@@ -682,7 +685,17 @@ def zurueck(pg, ns, base, ctx, arts):
         pg.evaluate("i => show(i)", i_pal); pg.wait_for_selector("#figs figure"); pruefe("Gast im Artikel")
     finally:
         CFG["web_password"] = ""; CFG["web_pw_hash"] = ""
+    i_lang = max(range(len(arts)), key=lambda i: len(arts[i][1]))      # der längste Artikel-Titel
     try:
+      for gast in (True, False):                           # Artikel-Ansicht: Gast und bekanntes Gerät, alle fünf Sprachen
+        CFG["web_password"], CFG["web_pw_hash"] = pw0 if gast else ("", "")
+        for lang, wort, mehr in (("en", "‹ Back", ""), ("fr", "‹ Retour", ""), ("it", "‹ Indietro", ""), ("rm", "‹ Enavos", ""), ("de", "‹ Zurück", "")):
+            CFG["lang"] = lang
+            pg.goto(base + "/almanach/#"); pg.reload(); pg.wait_for_selector(".chp")
+            ok(pg.evaluate("PLUS.heim") == ("" if gast else "/more"), f"{'Gast' if gast else 'bekanntes Gerät'} ({lang})")
+            pg.evaluate("i => show(i)", i_lang); pg.wait_for_selector("article h2")
+            pruefe(f"Artikel mit dem längsten Titel, {'Gast' if gast else 'bekanntes Gerät'} ({lang})", text=wort)
+      CFG["web_password"] = ""; CFG["web_pw_hash"] = ""
       for lang, wort, mehr in (("en", "‹ Back", "‹ More"), ("fr", "‹ Retour", "‹ Plus"), ("it", "‹ Indietro", "‹ Altro"), ("rm", "‹ Enavos", "‹ Dapli"), ("de", "‹ Zurück", "‹ Mehr")):
         CFG["lang"] = lang
         pg.goto(base + "/almanach/#"); pg.reload(); pg.wait_for_selector(".chp"); pruefe(f"Inhalt ({lang})", text=mehr)
