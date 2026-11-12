@@ -8,7 +8,7 @@
      der Achterknoten hat die Knoten-Determinante 5 (= echte Acht), der Kreuzknoten ist spiegelgleich (kein Altweiberknoten).
      Koordinaten: swisstopo-Beispiel und Nullpunkt Bern. Sonne / Mond: bekannte Werte (Sonnenwende, Finsternisse 2026).
      SOS: ohne Lampe Meldung; Start, Blinkmuster, Alarm-Licht geht vor, hört von selbst auf (verkürzte Zeit), Stopp,
-     höchstens 3 Starts pro Stunde für Gäste, Push an den Besitzer; ein Gast darf genau diese eine Aktion und sonst nichts.
+     höchstens 1 Start pro Stunde für Gäste (kein Passwort-Raten über diese Adresse), nur im Dunkeln Ruhe für die Bewegungs-Erkennung, Push an den Besitzer; ein Gast darf genau diese eine Aktion und sonst nichts.
      Wetter: ohne Sensor / mit Sensor (stabil, fällt schnell).
   B) --browser: die Seite im Browser (iPhone-Breite 390): jeder Artikel in Hell, Dunkel und Rotlicht ohne Überbreite,
      Bilder geladen, keine JavaScript-Fehler, keine Anfrage nach aussen; mit --bilder ORDNER Bildschirmfotos.
@@ -101,6 +101,7 @@ def svg_punkte(svg):
 # ---------------------------------------------------------------------------------------------------------------------- A
 def teil_a(datei):
     ns = laden(datei)
+    ns['__datei'] = datei
     CFG, STATE, SOS = ns["CFG"], ns["STATE"], ns["ALM_SOS"]
     ALMANAC, FIG, PICS, KNOTS = ns["ALMANAC"], ns["ALM_FIG"], ns["ALM_PICS"], ns["ALM_KNOTS"]
     page = ns["ALM_PAGE"]
@@ -120,7 +121,7 @@ def teil_a(datei):
     ok("kein sicherer Knoten, um zwei Seile zu verbinden" in dict(ALMANAC[keys.index("knoten")][3])["Kreuzknoten"], "Warnung beim Kreuzknoten")
     ok("2 m Abstand" in dict(ALMANAC[keys.index("gesundheit")][3])["Schlangen in der Schweiz"] and "Abstand halten" in PICS["schlangen"][1], "Schlangen: im Zweifel Abstand halten")
     q = ns["ALM_QUELLEN"]
-    ok(all(v.startswith(("Geprüft mit", "Gewitter geprüft mit", "Aufbau der Knoten geprüft mit", "«Heute Nacht»")) for v in q.values()) and not any("Quellen:" in v for v in q.values()),
+    ok(all(v.startswith(("Geprüft mit", "Überlieferte Erfahrungsregeln", "Aufbau der Knoten geprüft mit", "«Heute Nacht»")) for v in q.values()) and all(k in titles or k in keys for k in q) and not any("Quellen:" in v for v in q.values()),
        "Quellenzeilen nennen nur, womit geprüft wurde")
     for weg in ("KORA", "karch", "MeteoSchweiz", "VAPKO – Schweizerische", "Ashley Book"):
         ok(not any(weg in v for v in q.values()), f"Quellenzeile nennt «{weg}», das nicht gelesen wurde")
@@ -151,7 +152,36 @@ def teil_a(datei):
     # ---- Knoten: Bild = Folge
     ok(set(KNOTS) == {"achter", "kreuz", "kreuz1", "palstek", "mastwurf", "spann", "zimmermann", "trucker", "prusik"}, f"Knoten {sorted(KNOTS)}")
     ok(KNOTS["palstek"]["s"][0]["seq"] == "ouuoououuouoou", "Palstek: Folge wie hergeleitet (Ende geht wie die Schlingenseite durch den Teich, liegt innen)")
-    ok(KNOTS["spann"]["s"][0]["seq"] == "uououo" "u" "ouou" "oo" "ou" "u", "Spannknoten: zwei Windungen innen, halber Schlag aussen in gleicher Richtung (ABOK 1855)")
+    ok(KNOTS["spann"]["s"][0]["seq"] == "uououo" "u" "ouou" "ou" "ou" "o", "Spannknoten: zwei Windungen innen, halber Schlag aussen in gleicher Richtung (ABOK 1855)")
+    # ---- halbe Schläge: geht das Ende wirklich durch die Schlaufe, die es gerade gelegt hat?
+    locks = ns["alm_knot_locks"]
+    for key in ("spann", "trucker", "mastwurf"):
+        ok(KNOTS[key].get("lock") and locks(KNOTS[key]) == [], f"{key}: jeder halbe Schlag sperrt {locks(KNOTS[key])}")
+    alt = dict(KNOTS["spann"], s=[dict(KNOTS["spann"]["s"][0], seq="uououo" "u" "ouou" "oo" "ou" "u")])
+    ok(not ns["alm_knot_geo"](alt)["err"] and len(locks(alt)) == 1 and "plain turn" in locks(alt)[0], f"alter Spannknoten (drei glatte Windungen) fällt durch: {locks(alt)}")
+    alt = dict(KNOTS["trucker"], s=[dict(KNOTS["trucker"]["s"][0], seq="uououooouuoouu"), KNOTS["trucker"]["s"][1]])
+    ok(not ns["alm_knot_geo"](alt)["err"] and len(locks(alt)) == 2, f"alter Fuhrmannsknoten (zwei glatte Windungen) fällt durch: {locks(alt)}")
+    alt = dict(KNOTS["mastwurf"], s=[dict(KNOTS["mastwurf"]["s"][0], seq="uvhovuhvo")])
+    ok(not ns["alm_knot_geo"](alt)["err"] and len(locks(alt)) == 1, f"Mastwurf mit dem Ende über der Schräge fällt durch: {locks(alt)}")
+    ok(locks(dict(KNOTS["spann"], lock=((0, 13, 15),))) and locks(dict(KNOTS["spann"], lock=((0, 13, 14),))), "die Prüfung nimmt nur «um die Leine, dann über das eigene Seil»")
+    # ---- Bildunterschriften: «über / unter», «vor / hinter» stimmen mit der Kreuzungsfolge des Schritts
+    seite = {"über": "ov", "vorn": "ov", "von vorn": "ov", "nach vorn": "ov", "unter": "uh", "von unten": "uh", "hinter": "uh", "hinten": "uh", "von hinten": "uh"}
+    n_claims = 0
+    for key, K in KNOTS.items():
+        caps = [st[1] for st in KNOTS["kreuz" if key == "kreuz1" else key]["steps"]]
+        for step, cl in (K.get("claims") or {}).items():
+            for idx, letter, wort in cl:
+                n_claims += 1
+                ok(K["s"][0]["seq"][idx] == letter and letter in seite[wort.lower()] and wort in caps[step], f"{key} Schritt {step + 1}: «{wort}» passt nicht zur Kreuzung {idx} ({K['s'][0]['seq'][idx]}) oder steht nicht im Text")
+        for step, cap in enumerate(caps):                # every such word in a caption of a knot with claims is backed by a claim
+            if key in ("prusik", "kreuz") or (key == "kreuz1" and step > 0):
+                continue
+            for wort in re.findall(r"\b(über|unter|hinter|hinten|vorn)\b", cap.lower()):
+                belegt = [w.lower() for _i, _l, w in (K.get("claims") or {}).get(step, ())]
+                ok(any(wort in b for b in belegt) or (key == "palstek" and wort == "über" and step == 0) or (key == "mastwurf" and step == 2 and wort in ("vorn", "unter")) or (key == "mastwurf" and step == 0 and wort == "über"),
+                   f"{key} Schritt {step + 1}: «{wort}» im Text ohne Beleg in den Kreuzungsdaten")
+    ok(n_claims >= 20, f"{n_claims} Aussagen in Bildunterschriften geprüft")
+    ok(KNOTS["achter"]["s"][0]["seq"] == "ouououou", "Achterknoten: das Ende geht zuerst ÜBER die feste Leine (wie im Text)")
     for key, K in KNOTS.items():
         G = ns["alm_knot_geo"](K)
         ok(not G["err"], f"{key}: {G['err']}")
@@ -232,9 +262,12 @@ def teil_a(datei):
     nt = ns["alm_nacht"](datetime(2026, 3, 3, 12), 46.004, 8.951)
     ok(nt["mond"]["hell"] >= 99 and abs(minuten(nt["mond_auf"]) - minuten(nt["sonne_unter"])) < 30, f"Vollmond geht bei Sonnenuntergang auf ({nt['mond_auf']} / {nt['sonne_unter']})")
     nt = ns["alm_nacht"](datetime(2026, 8, 12, 12), 46.02, 7.75)
-    ok(nt["mond"]["hell"] <= 1 and abs(minuten(nt["mond_unter"]) - minuten(nt["sonne_unter"])) < 15 and nt["mond_auf"] == "05:43", f"Neumond geht mit der Sonne unter ({nt['mond_unter']} / {nt['sonne_unter']}, auf {nt['mond_auf']})")
+    ok(nt["mond"]["hell"] <= 1 and abs(minuten(nt["mond_unter"]) - minuten(nt["sonne_unter"])) < 15 and nt["mond_auf"] == "07:05", f"Neumond geht mit der Sonne unter ({nt['mond_unter']} / {nt['sonne_unter']}, auf {nt['mond_auf']})")
     nt = ns["alm_nacht"](datetime(2026, 6, 21, 12), 46.948, 7.447)
-    ok((nt["mond_auf"], nt["mond_unter"]) == ("13:09", "01:02"), f"Mond Bern 21.6.2026 (eigener Vergleichswert) {nt['mond_auf']} / {nt['mond_unter']}")
+    ok((nt["mond_auf"], nt["mond_unter"]) == ("13:09", "01:18") and nt["sonne_auf"][:2] == "05", f"Mond Bern 21.6.2026: Aufgang am Nachmittag, Untergang in der kommenden Nacht {nt['mond_auf']} / {nt['mond_unter']}")
+    n1 = ns["alm_nacht"](datetime(2026, 6, 22, 1, 0), 46.948, 7.447)
+    ok(n1["datum"] == "21.06.2026" and n1["mond_unter"] == "01:18" and n1 == dict(nt, datum=n1["datum"]), "um 1 Uhr nachts ist «heute Nacht» noch die Nacht von gestern Abend")
+    ok(ns["_alm_dms"](46.9999999, "NS") == "47°00'00.0\" N" and ns["_alm_dms"](7.99999, "OW") == "8°00'00.0\" O" and ns["_alm_dms"](46.5166527, "NS") == "46°30'59.9\" N", "Grad / Minuten / Sekunden: nie 60.0 Sekunden")
 
     # ---- Web: Rechte, SOS, Wetter
     ns["GAMESRV"]["port"] = 1
@@ -254,7 +287,7 @@ def teil_a(datei):
     for path in ("/almanach/", "/almanach/plus", "/almanach/live", "/almanach/bilder?t=Palstek"):
         ok(c.get(path).status_code == 200, f"Gast: {path} offen")
     j = c.get("/almanach/plus").get_json()
-    ok("Palstek" in j["bilder"] and j["quellen"]["essbar"].startswith("Geprüft mit") and j["karte"] in (True, False), "/almanach/plus")
+    ok("Palstek" in j["bilder"] and j["quellen"]["Pilze: nur mit Kontrolle"].startswith("Geprüft mit") and j["karte"] in (True, False), "/almanach/plus")
     ok(len(c.get("/almanach/bilder?t=Palstek").get_json()["f"]) == 4 and c.get("/almanach/bilder?t=gibt es nicht").get_json()["f"] == [], "/almanach/bilder")
     for path, meth in (("/api/state", "get"), ("/api/light", "post"), ("/api/disco", "post"), ("/api/settings", "post"), ("/recordings", "get"), ("/tausch", "get"), ("/api/ui", "post")):
         r = getattr(c, meth)(path, **({"json": {}} if meth == "post" else {}))
@@ -268,8 +301,13 @@ def teil_a(datei):
     r = c.post("/almanach/sos", json={"action": "start"}, headers={"Origin": "http://boese.example"})
     ok(r.status_code == 403 and not SOS["on"], "fremde Webseite kann die Lampe nicht starten")
     code, j = sos("start")
-    ok(code == 200 and j["ok"] and j["sos"]["on"] and 295 <= j["sos"]["rest"] <= 300 and j["sos"]["frei"] == 2, f"Gast startet SOS: {j}")
+    ok(code == 200 and j["ok"] and j["sos"]["on"] and 295 <= j["sos"]["rest"] <= 300 and j["sos"]["frei"] == 0, f"Gast startet SOS: {j}")
     ok(len(SOS["pushes"]) == 1 and SOS["pushes"][0].startswith("SOS-Lampe wurde ausgelöst von einem Gast (") and "WLAN" not in SOS["pushes"][0], f"Push {SOS['pushes']}")
+    for lang, anfang in (("fr", "La lampe SOS a été déclenchée par un invité ("), ("it", "La lampada SOS è stata attivata da un ospite ("), ("rm", "La lampa SOS è vegnida activada da in giast ("),
+                         ("en", "The SOS lamp was started by a guest (")):
+        CFG["lang"] = lang
+        ok(ns["trf"]("The SOS lamp was started by {who}", who=ns["trf"]("a guest ({ip})", ip="1.2.3.4")).startswith(anfang), f"Push-Text {lang}")
+    CFG["lang"] = "de"
     t0 = SOS["t0"]; muster = ""
     real = time.time
     try:
@@ -288,23 +326,53 @@ def teil_a(datei):
     finally:
         ns["time"].time = real
     code, j = sos("start")
-    ok(code == 200 and len(SOS["pushes"]) == 1 and j["sos"]["frei"] == 2, "läuft schon: kein zweiter Push, kein Zähler")
+    ok(code == 200 and len(SOS["pushes"]) == 1 and j["sos"]["frei"] == 0, "läuft schon: kein zweiter Push, kein Zähler")
     code, j = sos("stop")
-    ok(code == 200 and not j["sos"]["on"] and ns["lights_tick"]()["white"] is False, "Stopp")
-    SOS["dauer"] = 0.4
+    ok(code == 200 and not j["sos"]["on"] and ns["lights_tick"]()["white"] is False, "jeder Gast darf stoppen")
     code, j = sos("start")
-    ok(code == 200 and j["sos"]["on"], "zweiter Start")
+    ok(code == 429 and not j["ok"] and "112" in j["msg"] and not SOS["on"], f"zweiter Start eines Gasts in einer Stunde: {code} {j.get('msg')}")
+    # kein Passwort-Raten: ein Passwort in der Anfrage wird hier gar nicht angeschaut - richtig oder falsch gibt dieselbe Antwort
+    gerufen = []
+    login0 = ns["user_login"]
+    ns["user_login"] = lambda *a: gerufen.append(a) or login0(*a)
+    antworten = set()
+    for hd in (A_, basic("admin", "falsch"), basic("admin", ""), basic("Kim", "x"), {}):
+        for _ in range(12):
+            r = c.post("/almanach/sos", json={"action": "start"}, headers=hd)
+            antworten.add((r.status_code, (r.get_json() or {}).get("msg")))
+    ns["user_login"] = login0
+    ok(len(antworten) == 1 and next(iter(antworten))[0] == 429 and not gerufen and not SOS["on"], f"richtiges und falsches Passwort: dieselbe Antwort, keine Passwort-Prüfung ({antworten}, {len(gerufen)} Prüfungen)")
+    ok("user_login" not in re.search(r"def alm_who\(request\):.*?\n\n\n", open(datei, encoding="utf-8").read(), re.S).group(0).split('"""', 2)[2], "alm_who prüft kein Passwort")
+    keks = {"Cookie": "%s=%s" % (ns["TRUST_COOKIE"], ns["trust_add"]("admin", "admin", "Test", "127.0.0.1"))}
+    ok(c.post("/almanach/sos", json={"action": "start"}, headers={"Cookie": ns["TRUST_COOKIE"] + "=erfunden"}).status_code == 429, "ein erfundener Geräte-Schlüssel ist ein Gast")
+    code, j = sos("start", headers=keks)
+    ok(code == 200 and j["sos"]["on"] and SOS["pushes"][-1] == "SOS-Lampe wurde ausgelöst von admin", f"angemeldetes Gerät ohne Grenze: {code} {SOS['pushes'][-1:]}")
+    sos("stop")
+    SOS["dauer"] = 0.4; SOS["starts"].clear()
+    code, j = sos("start")
+    ok(code == 200 and j["sos"]["on"], "Start mit kurzer Dauer")
     time.sleep(0.6)
     ok(ns["lights_tick"]()["white"] is False and not SOS["on"] and not c.get("/almanach/live?w=ort").get_json()["sos"]["on"], "hört von selbst auf")
-    code, j = sos("start"); sos("stop")
-    ok(code == 200 and j["sos"]["frei"] == 0, "dritter Start")
-    code, j = sos("start")
-    ok(code == 429 and not j["ok"] and "112" in j["msg"] and not SOS["on"], f"vierter Start in einer Stunde: {code} {j.get('msg')}")
-    code, j = sos("start", headers=A_)
-    ok(code == 200 and j["sos"]["on"] and SOS["pushes"][-1] == "SOS-Lampe wurde ausgelöst von admin" or SOS["pushes"][-1].startswith("SOS-Lampe wurde ausgelöst von A"), f"Administrator ohne Grenze: {code} {SOS['pushes'][-1:]}")
-    sos("stop")
-    SOS["starts"][:] = [time.time() - 3700] * 3
+    SOS["dauer"] = 300.0
+    SOS["starts"][:] = [time.time() - 3700]
     ok(sos("start")[0] == 200, "nach einer Stunde geht es wieder"); sos("stop")
+    ok(SOS["max"] == 1 and SOS["dauer"] == 300.0, "Gäste: 1 Start pro Stunde, höchstens 5 Minuten")
+    # von aussen (Tailscale, Tunnel): kein Standort, kein SOS-Start ohne angemeldetes Gerät; andere Webseiten lesen nichts
+    r = c.get("/almanach/live?w=ort")
+    ok(r.get_json()["ort"]["ok"] and "Access-Control-Allow-Origin" not in r.headers and r.headers.get("Cross-Origin-Resource-Policy") == "same-origin" and r.headers.get("Cache-Control") == "no-store",
+       f"im WLAN: Standort für alle; kein CORS-Kopf {dict(r.headers)}")
+    r = c.get("/almanach/live?w=ort", headers={"Origin": "http://boese.example"})
+    ok("Access-Control-Allow-Origin" not in r.headers, "fremde Webseite: die Antwort ist für sie nicht lesbar (kein CORS)")
+    for fern in ({"X-Forwarded-For": "8.8.8.8"}, {"Host": "moveeye.tail1234.ts.net"}, {"X-Forwarded-Host": "x.example"}):
+        j = c.get("/almanach/live?w=ort", headers=fern).get_json()
+        ok(j["ort"] == {"ok": False, "fern": True}, f"von aussen {fern}: kein Standort ohne angemeldetes Gerät")
+        SOS["starts"].clear()
+        r = c.post("/almanach/sos", json={"action": "start"}, headers=fern)
+        ok(r.status_code == 403 and not SOS["on"], f"von aussen {fern}: kein SOS-Start als Gast")
+    ok(c.get("/almanach/live?w=ort", headers=dict(keks, **{"X-Forwarded-For": "8.8.8.8"})).get_json()["ort"]["ok"], "von aussen mit angemeldetem Gerät: Standort da")
+    r = c.get("/almanach/live?w=ort", environ_base={"REMOTE_ADDR": "100.100.1.2"})
+    ok(r.get_json()["ort"] == {"ok": False, "fern": True}, "Tailscale-Adresse ist «von aussen»")
+    SOS["starts"].clear()
     CFG["light_white"] = "off"
     ok(CFG["light_white"] == "off" and CFG["light_white_out"] == "gpio:17", "SOS ändert keine Einstellung")
 
@@ -329,6 +397,7 @@ def teil_a(datei):
     nt = c.get("/almanach/live?w=nacht").get_json()["nacht"]
     ok(nt.get("ort_ok") is True and re.fullmatch(r"\d\d:\d\d", nt["sonne_auf"]) and nt["mond"]["name"], f"Heute Nacht {nt}")
     ok("alm_selftest" in ns and ns["alm_selftest"]().startswith("8 knots"), "Selbsttest")
+    SOS["starts"].clear()
     teil_sos_bild(ns, c, sos)
     return ns, app
 
@@ -353,13 +422,19 @@ def teil_sos_bild(ns, c, sos):
     n_roh = int(np.count_nonzero(roh.apply(hell, learningRate=0.002)))
     ok(0.2 * hell.size < n_roh < 0.35 * hell.size, f"ohne Regel wäre der Lampenschein Bewegung ({n_roh} Bildpunkte, unter 35 % des Bildes)")
     gerufen = []
-    alt = (ns["_alm_foreground_410"], ns["_alm_lowlight_410"], ns["_alm_tamper_feed_060"])
+    alt = (ns["_alm_foreground_410"], ns["_alm_lowlight_410"])
     ns["_alm_foreground_410"] = lambda self, *a: gerufen.append("fg") or "fg"
     ns["_alm_lowlight_410"] = lambda self, *a: gerufen.append("ll") or "ll"
-    ns["_alm_tamper_feed_060"] = lambda self, *a: gerufen.append("tg") or "tg"
     MW, TG = ns["MotionWatch"], ns["TamperGuard"]
+    quelle = open(os.path.join(REPO, "quelle", "639zzt_almanach_plus.py"), encoding="utf-8").read()
+    ok("TamperGuard.feed =" not in quelle and "_alm_tamper" not in quelle and 'mt["bg_reset"]' not in quelle.split("def _alm_foreground")[1].split("def alm_fern")[0],
+       "SOS fasst den Sabotage-Schutz nicht an und sperrt den Kopf nicht (kein bg_reset)")
+    k.ai = Kopf(); k.ai.prof_motion_t = 0.0
+    dunkel0 = ns["is_dark"]
+    nacht = {"an": True}
+    ns["is_dark"] = lambda: nacht["an"]
     try:
-        ok(MW.foreground(k, dunkel, dunkel, False, 1.0) == "fg" and MW._lowlight_decide(k, 20.0, 1.0) == "ll" and TG.feed(k, dunkel, 1.0) == "tg" and gerufen == ["fg", "ll", "tg"],
+        ok(MW.foreground(k, dunkel, dunkel, False, 1.0) == "fg" and MW._lowlight_decide(k, 20.0, 1.0) == "ll" and gerufen == ["fg", "ll"],
            "ohne SOS läuft alles durch die Teile 410 / 060")
         CFG.update(light_white_out="gpio:17", light_white="on", tamper_on=True)
         ns["LIGHTS"]["alarm_t"] = 0.0; ns["LIGHTS"]["strobe_until"] = 0.0
@@ -378,16 +453,21 @@ def teil_sos_bild(ns, c, sos):
             ok(muster == "1010100011101110111000101010000000", f"SOS blinkt auch, wenn das Licht auf «Ein» steht ({muster})")
             ok(not [x for x in logs if x.startswith("White light")], f"kein «White light ON / OFF» pro Blinken im Protokoll ({logs[:3]})")
             ns["time"].time = lambda: t0 + 8.2
-            ok(ns["alm_sos_quiet"](), "während des Blinkens: eigenes Licht")
-            STATE["lowlight"] = True; STATE["tamper"] = {"sensor": False, "last": "", "state": "watching"}
-            gerufen.clear(); k.ref = "x"; k.n_cov = 2; k.n_mov = 4; k.settle = 0
+            nacht["an"] = False; STATE["lowlight"] = False
+            gerufen.clear()
+            ok(not ns["alm_sos_quiet"]() and MW.foreground(k, hell, hell, False, 1.0) == "fg" and MW._lowlight_decide(k, 200.0, 5.0) == "ll",
+               "am Tag ändert SOS an der Erkennung nichts")
+            nacht["an"] = True
+            ok(ns["alm_sos_quiet"](), "im Dunkeln, während des Blinkens: eigenes Licht")
+            nacht["an"] = False; STATE["lowlight"] = True
+            ok(ns["alm_sos_quiet"](), "auch wenn nur die Kamera «wenig Licht» meldet")
+            gerufen.clear(); k.mt = {"bg_reset": 5.0}
             aus = []
             for bild in (hell, dunkel, hell, dunkel, hell):
                 aus.append(int(np.count_nonzero(MW.foreground(k, bild, bild, False, 1.0))))
             ok(aus == [0, 0, 0, 0, 0] and k.color_bg is None and not gerufen, f"Blinken gibt keine Bewegung ({aus})")
+            ok(k.mt == {"bg_reset": 5.0} and k.ai.prof_motion_t > 1.0, "der Kopf darf weiter auf einen warmen Fleck drehen (kein bg_reset); die KI schaut bei jedem Bild hin, auch im Profil «Nacht»")
             ok(MW._lowlight_decide(k, 200.0, 5.0) is True and not gerufen, "der Nachtmodus bleibt, wie er war")
-            ok(TG.feed(k, hell, 100.0) is None and k.ref is None and k.n_cov == 0 and k.n_mov == 0 and k.settle == 108.0 and STATE["tamper"]["state"] == "learning" and not gerufen,
-               "der Sabotage-Schutz meldet kein «verdeckt / verdreht», er lernt das Bild danach neu")
             code, j = sos("stop")
             ns["time"].time = lambda: t0 + 8.5
             r = ns["lights_tick"]()
@@ -399,6 +479,7 @@ def teil_sos_bild(ns, c, sos):
             ns["time"].time = lambda: t0 + 20
             ok(ns["lights_tick"]()["white"] is False, "Licht aus bleibt aus")
             ns["disco_set"](True, "tempo", 120, 10, "test")
+            SOS["starts"].clear()
             code, j = sos("start")
             t1 = SOS["t0"]
             ns["time"].time = lambda: t1 + 3 * 0.25 + 0.01      # a gap of the pattern
@@ -413,7 +494,8 @@ def teil_sos_bild(ns, c, sos):
         finally:
             ns["time"].time = real; ns["log_event"] = log0
     finally:
-        ns["_alm_foreground_410"], ns["_alm_lowlight_410"], ns["_alm_tamper_feed_060"] = alt
+        ns["_alm_foreground_410"], ns["_alm_lowlight_410"] = alt
+        ns["is_dark"] = dunkel0
         SOS.update(on=False, flash_t=0.0); SOS["starts"].clear(); CFG["light_white"] = "off"
 
 
@@ -465,6 +547,9 @@ def teil_b(ns, app, bilder):
                 if want:
                     pg.wait_for_function("n => document.querySelectorAll('#figs figure svg').length === n", arg=want, timeout=8000)
                 ok(pg.locator("article h2").inner_text() == title, f"Artikel {title}")
+                if ch == "essbar":
+                    ok(pg.evaluate("() => { const w = document.querySelector('article #warn'); return !!w && w.previousElementSibling.tagName === 'H2' && w.textContent.includes('Nie nur nach diesem Almanach'); }"),
+                       f"{title}: die Warnung steht ganz oben im Artikel")
                 breit(f"{title} ({t})")
                 if want:
                     bad = pg.evaluate("""() => { const out = []; for (const s of document.querySelectorAll('#figs figure svg')) { const vb = s.viewBox.baseVal, k = s.getBoundingClientRect().width / vb.width;

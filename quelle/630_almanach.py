@@ -8,6 +8,7 @@ ALMANAC = [
 
 - 144 – Sanität / Rettungsdienst: für alle medizinischen Notfälle richtig
 - 1414 – Rega (Rettungshelikopter), am besten über die Rega-App: sie schickt deinen Standort mit
+- Im Wallis wird die Bergrettung über 144 alarmiert, nicht über 1414
 - 112 – europäische Notrufnummer; lässt sich auch ohne PIN wählen
 - 117 – Polizei
 - 118 – Feuerwehr
@@ -18,7 +19,6 @@ Am Telefon: Wo ist der Unfallort (Koordinaten – siehe «Mein Standort» oben i
 
 - Den Standort wechseln: ein paar Meter höher oder auf eine Kuppe steigen hilft oft.
 - Kommst du mit der Rega-App oder 1414 nicht durch, versuche die 112.
-- Bei schlechtem Empfang oder fast leerem Akku eine SMS versuchen.
 - Akku sparen: Bildschirm dunkel, nichts anderes laufen lassen.
 - Ohne jedes Netz: alpines Notsignal (siehe «Notsignale»), beim Verletzten bleiben, wenn jemand anderes Hilfe holt.
 
@@ -39,7 +39,7 @@ Für den Helikopter: Beide Arme schräg hoch wie ein Y bedeutet YES = «Ja, wir 
 Atmet die Person nicht normal: sofort 144 und wiederbeleben. 30 Mal in der Mitte der Brust drücken, 5–6 cm tief, 100 bis 120 Mal pro Minute, dann 2 Beatmungen – oder ohne Beatmung einfach weiterdrücken. Ist ein Defibrillator (AED) da: einschalten und den Anweisungen folgen.
 
 Das lernt man am besten in einem Kurs, zum Beispiel bei einem Samariterverein."""),
-  ("Blutungen", """Stark blutende Wunden: sofort fest auf die Wunde drücken – mit allem, was gerade da ist (sauberes Tuch, Verband, notfalls die Hand). Den Arm oder das Bein hochhalten.
+  ("Blutungen", """Stark blutende Wunden: sofort fest auf die Wunde drücken – mit allem, was gerade da ist (sauberes Tuch, Verband, notfalls die Hand). Wenn es geht, den blutenden Arm oder das Bein dabei hochhalten.
 
 Bei starker Blutung sofort 144 anrufen oder jemanden damit beauftragen. Einen kräftigen Druckverband anlegen und weiter drücken, bis Hilfe da ist."""),
   ("Verbrennungen", """Mindestens 10 Minuten unter fliessendem, handwarmem Wasser kühlen (etwa 15–20 °C, nicht eiskalt). Wegen der Gefahr der Unterkühlung nur die verletzte Stelle kühlen – das gilt besonders für Kinder.
@@ -59,7 +59,7 @@ Bei schweren oder grossen Verbrennungen und bei Kindern: 144 anrufen. Im Zweifel
 Einmal im Jahr durchsehen: Ablaufdaten, verbrauchte Sachen nachfüllen."""),
  ]),
  ("wetter", "⛈", "Wetter lesen", [
-  ("Gewitter: die 30/30-Regel", """Zähle die Sekunden zwischen Blitz und Donner: Drei Sekunden entsprechen etwa einem Kilometer. Wer den Donner hört, ist schon in Reichweite (weniger als etwa 10 km) – jetzt Schutz suchen. Liegen Blitz und Donner 10 Sekunden oder weniger auseinander, besteht unmittelbare Lebensgefahr. Erst wenn eine halbe Stunde lang kein Donner mehr zu hören war, ist das Gewitter vorbei.
+  ("Gewitter: wie nah ist es?", """Zähle die Sekunden zwischen Blitz und Donner: Drei Sekunden entsprechen etwa einem Kilometer. Wer den Donner hört, ist schon in Reichweite (weniger als etwa 10 km) – jetzt Schutz suchen. Liegen Blitz und Donner 10 Sekunden oder weniger auseinander, besteht unmittelbare Lebensgefahr. Erst wenn eine halbe Stunde lang kein Donner mehr zu hören war, ist das Gewitter vorbei.
 
 Sicher: feste Gebäude und geschlossene Autos. Unsicher: einzelne Bäume, Baumgruppen, Waldränder, Gipfel, freies Feld. Ein Zelt schützt nicht – es ist so gefährlich wie der Aufenthalt im Freien."""),
   ("Draussen vom Gewitter überrascht", """- Weg von Gipfeln, einzelnen Bäumen, Baumgruppen und Waldrändern. Etwas Schutz bieten eine Mulde oder ein Hohlweg – aber kein Bachbett (Hochwasser).
@@ -191,7 +191,9 @@ Mutterkühe verteidigen ihre Kälber. Nicht zwischen Kuh und Kalb, Hund an die k
  ("knoten", "🪢", "Knoten und Werkzeug", [
   ("Spannknoten für Zeltleinen", """Mit dem Spannknoten lässt sich eine Zeltleine nachspannen: Er lässt sich von Hand verschieben und klemmt, sobald Zug auf die Leine kommt.
 
-Die Leine um den Hering legen. Mit dem losen Ende zwei Windungen um die gespannte Leine machen, innen in der Schlinge. Dann aussen daneben – auf der Zeltseite – einen halben Schlag in derselben Drehrichtung, festziehen.
+Die Leine um den Hering legen. Mit dem losen Ende zwei Windungen um die gespannte Leine machen, innen in der Schlinge. Dann aussen daneben – auf der Zeltseite – einen halben Schlag in derselben Drehrichtung: noch einmal um die Leine und das Ende zwischen gespannter Leine und eigenem Seil hindurch. Festziehen.
+
+Auf glatter oder steifer Leine kann dieser Knoten rutschen – dann eine Windung mehr machen und nach dem Spannen prüfen.
 
 Es gibt mehrere ähnliche Varianten; gezeichnet ist die verbreitete Pfadi-Variante (auf Englisch «taut-line hitch», im Ashley-Knotenbuch Nr. 1855)."""),
   ("Palstek", """Eine feste Schlinge, die sich nicht zuzieht und sich leicht wieder öffnen lässt.
@@ -318,9 +320,11 @@ function chap(ci) {
 }
 function show(i) {
   const a = all[i]; location.hash = "a" + i;
-  const v = go('<div class="mut"><a href="#" onclick="chap(' + a.ci + ');return false" style="color:inherit">' + a.ch[1] + " " + esc(a.ch[2]) + "</a></div><article><h2>" + esc(a.t) + "</h2>" + body(a.x) + '<div id="figs"></div></article>' +
+  const v = go('<div class="mut"><a href="#" onclick="chap(' + a.ci + ');return false" style="color:inherit">' + a.ch[1] + " " + esc(a.ch[2]) + "</a></div><article><h2>" + esc(a.t) + "</h2>" +
+    (a.ch[0] === "essbar" ? '<div class="box warn" id="warn"><b class="h">⚠ Nie nur nach diesem Almanach oder einer App essen</b>Im Zweifel nicht essen. Vergiftung: Tox Info Suisse <b>145</b> · Notfall <b>144</b>.</div>' : "") +
+    body(a.x) + '<div id="figs"></div></article>' + (PLUS.quellen[a.t] ? '<p class="mut" id="src">' + esc(PLUS.quellen[a.t]) + "</p>" : "") +
     (a.ch[0] === "spuren" ? '<p class="mut"><a href="/recordings" style="color:var(--acc)">📼 Was hat meine Kamera gesehen? Zu den Aufnahmen</a></p>' : "") +
-    (a.ch[0] === "essbar" ? '<div class="box warn"><b class="h">⚠ Nie nur nach diesem Almanach oder einer App essen</b>Im Zweifel nicht essen. Vergiftung: Tox Info Suisse <b>145</b> · Notfall <b>144</b>.<div class="row"><a href="/tausch">🌿 Bestimmen (im Datentausch)</a></div></div>' : "") +
+    (a.ch[0] === "essbar" ? '<p class="mut"><a href="/tausch" style="color:var(--acc)">🌿 Bestimmen (im Datentausch) – ein Hinweis zum Nachschlagen, keine Freigabe zum Essen</a></p>' : "") +
     '<div class="nav"><button onclick="show(' + Math.max(0, i - 1) + ')">‹ Zurück</button><button onclick="chap(' + a.ci + ')">☰ Kapitel</button><button onclick="show(' + Math.min(all.length - 1, i + 1) + ')">Weiter ›</button></div>');
   window.cur = i;
   if (PLUS.bilder.includes(a.t)) jget("/almanach/bilder?t=" + encodeURIComponent(a.t)).then(j => { if (v !== view || !j || !j.f) return;
@@ -339,7 +343,8 @@ function ortBox(d) { const o = d.ort || {}, s = d.sos || {}; let h = '<div class
       (o.acc ? " (± " + o.acc + " m)" : "") + '. Bist du woanders, gilt dein eigener Standort.</div><div class="row"><button id="b-copy">Kopieren</button>' +
       (PLUS.karte ? '<a href="/karte">🗺 Offline-Karte</a>' : "") + "</div>";
     setTimeout(() => { const b = $("b-copy"); if (b) b.onclick = () => copy(txt, b); }, 0);
-  } else h += '<div class="mut" style="font-size:15px">Kein Standort gespeichert – so setzt du ihn: MoveEye-Seite auf dem Handy über https öffnen und den Standort erlauben, oder in den Einstellungen Breitengrad und Längengrad eintragen.' +
+  } else if (o.fern) h += '<div class="mut" style="font-size:15px">Der gespeicherte Standort wird nur im WLAN von MoveEye angezeigt (oder auf einem angemeldeten Gerät).</div>';
+  else h += '<div class="mut" style="font-size:15px">Kein Standort gespeichert – so setzt du ihn: MoveEye-Seite auf dem Handy über https öffnen und den Standort erlauben, oder in den Einstellungen Breitengrad und Längengrad eintragen.' +
       (PLUS.karte ? ' <a href="/karte" style="color:var(--acc)">🗺 Offline-Karte</a>' : "") + "</div>";
   h += '</div><div class="box" id="sos"><b class="h">🆘 SOS mit der Lampe</b>';
   if (!s.lampe) h += '<div class="mut" style="font-size:15px">keine Lampe angeschlossen – MoveEye kann hier nicht blinken. Alpines Notsignal: sechsmal pro Minute ein Zeichen (blinken, pfeifen, rufen), eine Minute warten, wiederholen.</div>';

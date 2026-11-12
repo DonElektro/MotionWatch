@@ -9,7 +9,7 @@
 #   3  Verbindung zu MoveEye: /almanach/live (Standort WGS84 + LV95 nach den swisstopo-Näherungsformeln, Luftdruck aus
 #      STORM (280), «Heute Nacht» mit sun_times (030) + Mond), /almanach/sos (SOS mit dem weissen Licht über lights_tick).
 #      Alles unter /almanach/… ist wie der Almanach selbst ohne Anmeldung offen (Gäste im WLAN) - neu ist für Gäste genau
-#      EINE Aktion: SOS-Lampe an / aus (Entscheid Besitzer), begrenzt: 5 Minuten, 3 Starts pro Stunde, Alarm-Licht geht vor,
+#      EINE Aktion: SOS-Lampe an / aus (Entscheid Besitzer), begrenzt: 5 Minuten, für Gäste 1 Start pro Stunde, Alarm-Licht geht vor,
 #      Push an den Besitzer. Sonst nur lesen.
 # Selbsttest alm_selftest; Test werkzeuge/almanach_test.py.
 # ----------------------------------------------------------------------------
@@ -248,17 +248,18 @@ def _alm_zimmer():
 # o = over, u = under, v = in front of the post, h = behind the post. The structures were checked against the articles named in
 # ALM_KNOT_SRC (the drawings are our own, nothing is copied).
 ALM_KNOTS = {
-    "achter": {"name": "Achterknoten", "vb": (264, 164), "s": [{"w": 3, "seq": "uouououo", "p": [(x + 26, y + 4) for x, y in [
+    "achter": {"name": "Achterknoten", "vb": (264, 164), "s": [{"w": 3, "seq": "ouououou", "p": [(x + 26, y + 4) for x, y in [
         (-40, 96), (40, 96), (84, 96), (124, 96), (160, 98), (186, 86), (196, 62), (184, 38), (158, 28), (134, 40), (118, 68), (100, 98),
         (84, 124), (60, 136), (38, 124), (32, 100), (40, 76), (64, 60), (100, 56), (140, 60), (180, 64), (224, 62)]]}],
         "lab": ((4, 90, "feste Leine"), (260, 112, ">loses Ende", 240, 102, 248, 76)),
+        "claims": {0: ((4, "o", "über"),), 1: ((5, "u", "hinter"),), 2: ((6, "o", "Von vorn"), (7, "u", "hinten"))},
         "steps": (({0: 12.5}, "Eine Schlaufe legen: das Ende über die feste Leine führen."),
                   ({0: 17.4}, "Unten herum und hinter der festen Leine wieder nach oben."),
-                  (None, "Von vorn durch die erste Schlaufe stecken und festziehen. Der fertige Knoten sieht aus wie eine 8."))},
+                  (None, "Von vorn in die erste Schlaufe stecken, hinten wieder hinaus, und festziehen. Der fertige Knoten sieht aus wie eine 8."))},
     "kreuz1": {"name": "Kreuzknoten, erster Schritt", "vb": (240, 150), "two": True, "s": [
         {"w": 2, "seq": "ou", "p": [(-12, 118), (40, 118), (84, 114), (118, 98), (134, 76), (120, 54), (100, 36), (92, 14)]},
         {"w": 2, "seq": "uo", "p": [(252, 118), (200, 118), (156, 114), (122, 98), (106, 76), (120, 54), (140, 36), (148, 14)]}],
-        "lab": ((6, 108, "Seil A (hell)"), (234, 108, ">Seil B (dunkel)"))},
+        "lab": ((6, 108, "Seil A (hell)"), (234, 108, ">Seil B (dunkel)")), "claims": {0: ((0, "o", "über"),)}},
     "kreuz": {"name": "Kreuzknoten", "vb": (240, 196), "two": True, "s": [
         {"w": 6, "seq": "uouuou", "p": [(-12, 119.2), (30, 119.2), (60, 119.2), (88, 122.1), (120, 139.5), (152, 156.9), (176, 145.3), (188, 113.4), (188, 78.6),
                                          (176, 46.7), (152, 35.1), (120, 52.5), (88, 69.9), (60, 72.8), (34, 72.8), (14, 72.8)]},
@@ -271,6 +272,7 @@ ALM_KNOTS = {
         (188, 252), (148, 272), (114, 260), (103, 230), (102, 204), (102, 176), (102, 146), (102, 112), (102, 86), (103, 64), (110, 50),
         (120, 45), (130, 50), (137, 64), (138, 86), (138, 112), (138, 146), (138, 176), (138, 204), (138, 228)]}],
         "lab": ((130, 14, "feste Leine («Baum»)"), (70, 172, ">«Teich»"), (120, 294, "^Schlinge"), (147, 238, "loses"), (147, 250, "Ende")),
+        "claims": {1: ((8, "u", "von unten"),), 2: ((10, "u", "Hinter"),)},
         "steps": (({0: 17.4}, "Einen kleinen «Teich» in die feste Leine legen. Wichtig: Das Stück, das weiterläuft, liegt oben über der festen Leine."),
                   ({0: 30.5}, "Das Ende im Bogen herumführen (das gibt die Schlinge) und von unten durch den Teich nach oben stecken."),
                   ({0: 36.5}, "Hinter dem «Baum» – der festen Leine – herum."),
@@ -280,21 +282,25 @@ ALM_KNOTS = {
         (120, 128), (156, 82), (167, 78), (156, 84), (120, 89), (84, 94), (73, 100), (84, 99), (120, 103), (156, 107), (200, 111), (228, 113)]}],
         "under": '<rect class="kp" x="84" y="6" width="72" height="224" rx="8"/>',
         "lab": ((4, 146, "feste Leine"), (236, 100, ">loses Ende"), (120, 24, "^Pfosten")),
+        "lock": ((0, 7, 8),),
+        "claims": {0: ((1, "v", "vorn"), (2, "h", "hinten")), 1: ((3, "o", "über"), (6, "h", "hinten")), 2: ((8, "u", "unter"),)},
         "steps": (({0: 9.7}, "Das Seil vorn über den Pfosten legen und hinten herum zurückführen."),
                   ({0: 17.7}, "Schräg nach oben über die erste Windung kreuzen und noch einmal hinten herum."),
                   (None, "Das Ende unter der Schräge durchstecken, beide Seiten festziehen. Vorn liegen zwei Windungen unter einer Schräge."))},
-    "spann": {"name": "Spannknoten", "vb": (240, 178), "s": [{"w": 10, "seq": "uououo" + "u" + "ouou" + "oo" + "ou" + "u", "p": [
+    "spann": {"name": "Spannknoten", "vb": (240, 178), "s": [{"w": 10, "seq": "uououo" + "u" + "ouou" + "ou" + "ou" + "o", "p": [
         (-40, 62), (30, 62), (100, 62), (160, 62), (198, 62), (217, 67), (229, 84), (224, 106), (204, 126), (176, 137), (146, 136),
         (122, 120), (110, 98), (108, 82), (111, 62), (114, 42), (120, 31), (126, 42), (128, 62), (130, 82), (137, 93), (143, 82),
         (146, 62), (148, 42), (154, 31), (160, 42), (162, 62), (165, 84), (172, 100), (160, 110), (124, 113), (88, 111), (67, 102),
         (62, 84), (64, 62), (67, 42), (73, 31), (79, 42), (81, 62), (83, 84), (85, 104), (86, 126)]}],
         "under": '<circle class="kp" cx="214" cy="88" r="7"/>',
         "lab": ((4, 52, "zum Zelt"), (214, 160, "^Hering"), (40, 148, "loses Ende", 78, 140, 84, 130)),
+        "lock": ((0, 14, 15),),
+        "claims": {0: ((7, "o", "vorn"), (8, "u", "hinten")), 2: ((11, "o", "Über"), (13, "o", "vorn"), (14, "u", "hinten"), (15, "o", "nach vorn"))},
         "steps": (({0: 20.3}, "Um den Hering herum und zurück. Dann das Ende einmal um die gespannte Leine wickeln: vorn hinauf, hinten hinunter."),
                   ({0: 27.3}, "Eine zweite Windung daneben, auf der Seite zum Hering (innen in der Schlinge)."),
-                  (None, "Über die beiden Windungen hinweg auf die Zeltseite und dort einen halben Schlag in gleicher Richtung: das Ende unter dem eigenen Seil durch. Festziehen."))},
+                  (None, "Über die beiden Windungen hinweg auf die Zeltseite. Dort noch einmal vorn hinauf und hinten hinunter – und das Ende zwischen gespannter Leine und eigenem Seil hindurch nach vorn stecken. Festziehen."))},
     "trucker": {"name": "Fuhrmannsknoten", "vb": (240, 344), "s": [
-        {"w": 3, "seq": "uououooouuoouu", "p": [
+        {"w": 3, "seq": "uouou" + "o" + "uouo" + "uouo", "p": [
             (84, 20), (84, 50), (84, 90), (84, 150), (84, 220), (84, 284), (87, 304), (100, 315), (113, 307), (118, 288), (125, 240),
             (131, 192), (133, 162), (135, 149), (144, 143), (153, 149), (155, 164), (158, 186), (158, 202), (146, 215), (128, 224),
             (112, 224), (105, 214), (112, 204), (130, 204), (148, 213), (157, 227), (158, 240), (146, 253), (128, 262), (112, 262),
@@ -304,12 +310,15 @@ ALM_KNOTS = {
         "under": '<path class="kq" d="M72 8h24M84 8v8"/><circle class="kq" cx="100" cy="304" r="9"/><path class="kq" d="M100 313v15M82 328h36"/>',
         "over": '<ellipse class="kb" cx="85" cy="97" rx="13" ry="11"/>',
         "lab": ((100, 16, "fester Punkt"), (96, 80, "Schlaufenknoten"), (174, 134, "Schlaufe"), (124, 332, "Öse / Haken"), (166, 192, "ziehen"), (166, 294, "loses Ende")),
+        "lock": ((0, 8, 9), (0, 12, 13)),
+        "claims": {1: ((4, "u", "von hinten"),), 2: ((7, "o", "vorn"), (7, "o", "über"), (8, "u", "hinten"))},
         "steps": (({0: 5.2}, "Die Leine oben festmachen. Auf halber Höhe eine feste Schlaufe in die Leine knoten – zum Beispiel einen Achterknoten mit der doppelt gelegten Leine (hier als Knoten-Punkt gezeichnet)."),
                   ({0: 17.6}, "Das Ende unten durch die Öse, hinauf, von hinten durch die Schlaufe und nach unten ziehen. Die drei Stränge wirken wie ein Flaschenzug."),
-                  ({0: 27.3}, "Zug halten und das Ende einmal um den gespannten Strang legen und unter sich selbst durchstecken (halber Schlag)."),
-                  (None, "Einen zweiten halben Schlag darunter, gleich herum. Festziehen."))},
+                  ({0: 27.3}, "Zug halten. Das Ende vorn über den gespannten Strang, hinten herum und durch die entstandene Schlaufe stecken (halber Schlag)."),
+                  (None, "Einen zweiten halben Schlag darunter, gleich herum: wieder durch die entstandene Schlaufe. Festziehen."))},
 }
 ALM_KNOTS["zimmermann"] = _alm_zimmer()
+ALM_KNOTS["zimmermann"]["claims"] = {1: ((8, "u", "hinter"), (9, "o", "vorn"))}
 ALM_KNOTS["zimmermann"]["steps"] = (
     ({0: ALM_KNOTS["zimmermann"]["n_loop"] - 1.4}, "Das Seil einmal um den Stamm legen."),
     ({0: ALM_KNOTS["zimmermann"]["n_loop"] + 7.6}, "Das Ende hinter der festen Leine durch und vorn wieder zurück: Es liegt jetzt um die feste Leine."),
@@ -320,6 +329,51 @@ ALM_KNOTS["kreuz"]["steps"] = (
 ALM_KNOTS["prusik"] = dict(_alm_prusik(2), steps=(
     (1, "Die Schlinge hinter dem dicken Seil durchführen und durch sich selbst stecken (Ankerstich)."),
     (2, "Noch einmal herum und wieder durch die eigene Schlinge; die neuen Windungen liegen innen. Sauber nebeneinander legen und festziehen. Für mehr Halt eine dritte Runde.")))
+
+
+def alm_knot_locks(K):
+    """Does every half hitch of the knot lock? K["lock"] = [(strand, i, j)]: letter i of the sequence is the last pass of the end
+    round the standing part / post, letter j is the crossing with its own rope right after. A half hitch holds only when the end
+    goes THROUGH the loop it has just laid: it changes the side between the two (behind the line, then over its own rope - or in
+    front of the post, then under its own rope). The same side twice is a plain turn that slips. Checked on the drawing:
+    letter j must be a crossing of the rope with an EARLIER part of the same rope, letter i a crossing with something else
+    (the standing part, another strand, the post). -> list of problems (empty = every hitch locks)"""
+    G = alm_knot_geo(K)
+    if G["err"]:
+        return list(G["err"])
+    out = []
+    for si, i, j in K.get("lock", ()):
+        ev = [(x["a"][1], xi, 0) for xi, x in enumerate(G["X"]) if x["a"][0] == si] + [(x["b"][1], xi, 1) for xi, x in enumerate(G["X"]) if x["b"][0] == si]
+        seq = K["s"][si]["seq"]
+        pole = K.get("pole")
+        A = G["S"][si]
+        if pole:                                           # the passes of the post, in the same order as in alm_knot_geo
+            for k in range(len(A) - 1):
+                r = _alm_seg_x(A[k], A[k + 1], (pole[0], pole[1]), (pole[0], pole[2]))
+                if r:
+                    ev.append((k + r[0], None, None))
+        ev.sort(key=lambda e: e[0])
+        if j != i + 1 or j >= len(ev) or len(ev) != len(seq):
+            out.append("lock %s: not two letters in a row of the sequence" % ((si, i, j),)); continue
+        side = {"o": 1, "v": 1, "u": 0, "h": 0}
+        xj = ev[j][1]
+        if xj is None:
+            out.append("lock %s: letter %d is the post, not the own rope" % ((si, i, j), j)); continue
+        x = G["X"][xj]
+        other = x["b"] if ev[j][2] == 0 else x["a"]
+        if other[0] != si and len(K["s"]) > 1 and K["s"][other[0]].get("seq") and not K.get("lock_other"):
+            out.append("lock %s: letter %d crosses another rope" % ((si, i, j), j)); continue
+        if other[0] == si and not other[1] < ev[j][0]:
+            out.append("lock %s: letter %d does not cross an earlier part of the rope" % ((si, i, j), j)); continue
+        if ev[i][1] is not None:
+            xi_ = G["X"][ev[i][1]]
+            o2 = xi_["b"] if ev[i][2] == 0 else xi_["a"]
+            if o2[0] == si and abs(o2[1] - other[1]) < 14 * 1.5:     # the same stretch of rope as the tuck: no standing part between
+                out.append("lock %s: letter %d is not a pass round the standing part" % ((si, i, j), i)); continue
+        if side[seq[i]] == side[seq[j]]:
+            out.append("%s: the end passes %s the standing part and %s its own rope - a plain turn, no half hitch"
+                       % (K.get("name", "?"), "over" if side[seq[i]] else "behind", "over" if side[seq[j]] else "behind"))
+    return out
 
 
 def alm_knot_steps(key):
@@ -379,8 +433,8 @@ def alm_ort():
 
 
 def _alm_dms(v, hemi):
-    a = abs(v); dg = int(a); m = int((a - dg) * 60); s = (a - dg - m / 60.0) * 3600
-    return "%d°%02d'%04.1f\" %s" % (dg, m, s, hemi[0] if v >= 0 else hemi[1])
+    t = int(round(abs(v) * 36000.0))                       # tenths of a second, rounded first: never 60.0"
+    return "%d°%02d'%04.1f\" %s" % (t // 36000, t % 36000 // 600, t % 600 / 10.0, hemi[0] if v >= 0 else hemi[1])
 
 
 def _alm_tsd(v):
@@ -438,9 +492,10 @@ def _alm_utc_off(d):
         return 0.0
 
 
-def alm_events(d, lat, lon, body, h0, tz=None):
-    """Minutes after local midnight at which the body («sun» / «moon») crosses the altitude h0 on the day d:
-    ([rising], [setting]). Sampled every 10 minutes, refined by bisection."""
+def alm_events(d, lat, lon, body, h0, tz=None, start=0.0):
+    """Minutes after local midnight of the day d at which the body («sun» / «moon») crosses the altitude h0, in the 24 hours
+    from «start» minutes on (0 = the calendar day, 720 = from noon to the next noon): ([rising], [setting]).
+    Sampled every 10 minutes, refined by bisection."""
     tz = _alm_utc_off(d) if tz is None else tz
     jd0 = _alm_jd(datetime(d.year, d.month, d.day) - timedelta(hours=tz))
 
@@ -454,9 +509,9 @@ def alm_events(d, lat, lon, body, h0, tz=None):
             lim = h0
         return _alm_altaz(ra, dec, jd, lat, lon)[0] - lim
     up, down = [], []
-    a, fa = 0.0, f(0.0)
+    a, fa = float(start), f(float(start))
     for k in range(1, 145):
-        b = k * 10.0; fb = f(b)
+        b = start + k * 10.0; fb = f(b)
         if (fa < 0) != (fb < 0):
             lo, hi, flo = a, b, fa
             for _ in range(12):
@@ -489,21 +544,28 @@ def _alm_hm(m):
 
 
 def alm_nacht(now=None, lat=None, lon=None, tz=None):
-    """«Heute Nacht»: sun, twilight, moon and the constellations of the chapter for the place of MoveEye"""
+    """«Heute Nacht»: the night that comes (or, between midnight and sunrise, the night that is): sunset, darkness, the moon
+    from this noon to the next noon, sunrise of the morning after, and the constellations of the chapter at 23:00"""
     now = now or datetime.now()
     if lat is None:
         lat, lon = here_latlon()
     d = now.date()
     tz = _alm_utc_off(d) if tz is None else tz
+    off = (tz - _alm_utc_off(d)) * 60.0
+    st0 = sun_times(d, lat, lon)                          # the same sunrise / sunset as the schedules and the night mode (030)
+    if isinstance(st0, tuple) and now.hour * 60 + now.minute < st0[0] + off:
+        d = d - timedelta(days=1)                          # after midnight, before sunrise: still the night of yesterday evening
     out = {"datum": d.strftime("%d.%m.%Y"), "lat": round(lat, 2), "lon": round(lon, 2)}
-    st = sun_times(d, lat, lon)                           # the same sunrise / sunset as the schedules and the night mode (030)
+    st, st1 = sun_times(d, lat, lon), sun_times(d + timedelta(days=1), lat, lon)
     if isinstance(st, tuple):
-        off = (tz - _alm_utc_off(d)) * 60.0
-        out["sonne_auf"], out["sonne_unter"] = _alm_hm(st[0] + off), _alm_hm(st[1] + off)
-    up, down = alm_events(d, lat, lon, "sun", -18.0, tz)
-    out["nacht_ab"] = _alm_hm(down[-1]) if down else None  # end of the astronomical twilight in the evening
-    out["nacht_bis"] = _alm_hm(up[0]) if up else None
-    mu, md = alm_events(d, lat, lon, "moon", 0.0, tz)
+        out["sonne_unter"] = _alm_hm(st[1] + off)
+    if isinstance(st1, tuple):
+        out["sonne_auf"] = _alm_hm(st1[0] + off)
+    up, down = alm_events(d, lat, lon, "sun", -18.0, tz, 720.0)
+    out["nacht_ab"] = _alm_hm(down[0]) if down else None   # end of the astronomical twilight this evening
+    later = [u for u in up if not down or u > down[0]]
+    out["nacht_bis"] = _alm_hm(later[0]) if later and down else None
+    mu, md = alm_events(d, lat, lon, "moon", 0.0, tz, 720.0)
     out["mond_auf"] = _alm_hm(mu[0]) if mu else None
     out["mond_unter"] = _alm_hm(md[0]) if md else None
     jd = _alm_jd(datetime(d.year, d.month, d.day, 21) - timedelta(hours=tz))
@@ -561,7 +623,7 @@ def alm_wetter(now=None):
 # Limits: ends by itself (ALM_SOS["dauer"]), guests at most ALM_SOS["max"] starts an hour (all guests together), an alarm
 # (light after an alarm, deterrence strobe) and the pause always go first, the infrared light is never touched, at most
 # 2 flashes a second (flashing light, like the disco light). A push tells the Besitzer who started it (never a Wi-Fi name).
-ALM_SOS = {"on": False, "t0": 0.0, "until": 0.0, "by": "", "starts": [], "dauer": 300.0, "max": 3, "unit": 0.25, "pushes": [],
+ALM_SOS = {"on": False, "t0": 0.0, "until": 0.0, "by": "", "starts": [], "dauer": 300.0, "max": 1, "unit": 0.25, "pushes": [],
            "flash_t": 0.0, "base": None}        # flash_t: the last time the lamp really flashed for SOS; base: what the light would be without SOS
 _ALM_SOS_PAT = [1, 1, 1, 1, 1, 3, 3, 1, 3, 1, 3, 3, 1, 1, 1, 1, 1, 7]     # on / off alternating, in units: S, O, S, pause
 
@@ -598,9 +660,23 @@ def _alm_sos_blocked(now):
         return False
 
 
+# texts that leave the almanac (the push to the Besitzer, in the language of MoveEye): English key: Deutsch, français, italiano, rumantsch
+_HX_ALM = {
+    "The SOS lamp was started by {who}": ("SOS-Lampe wurde ausgelöst von {who}", "La lampe SOS a été déclenchée par {who}",
+                                          "La lampada SOS è stata attivata da {who}", "La lampa SOS è vegnida activada da {who}"),
+    "a guest ({ip})": ("einem Gast ({ip})", "un invité ({ip})", "un ospite ({ip})", "in giast ({ip})"),
+    "someone on the Wi-Fi ({ip})": ("jemandem im WLAN ({ip})", "quelqu’un sur le Wi-Fi ({ip})", "qualcuno nel Wi-Fi ({ip})", "insatgi en il WLAN ({ip})"),
+    "the administrator": ("dem Administrator", "l’administrateur", "l’amministratore", "l’administratur"),
+}
+for _k, _v in _HX_ALM.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+
+
 def alm_sos_push(who):
     """a message to the Besitzer only (the administrator channel of the file exchange, 639zzc: payload «tz_admin»)"""
-    txt = "SOS-Lampe wurde ausgelöst von %s" % who
+    txt = trf("The SOS lamp was started by {who}", who=who)
     ALM_SOS["pushes"].append(txt); del ALM_SOS["pushes"][:-20]
     try:
         w = WATCH_REF.get("w")
@@ -630,7 +706,7 @@ def alm_sos_set(on, who="Gast", guest=True):
         return True, "SOS-Lampe blinkt schon."
     ALM_SOS["starts"] = [t for t in ALM_SOS["starts"] if now - t < 3600]
     if guest and len(ALM_SOS["starts"]) >= ALM_SOS["max"]:
-        return False, "Die SOS-Lampe wurde in der letzten Stunde schon %d-mal gestartet. Bitte später noch einmal – im Notfall 112 / 144 anrufen." % ALM_SOS["max"]
+        return False, "Die SOS-Lampe wurde in der letzten Stunde schon gestartet (Gäste: %d-mal pro Stunde). Im Notfall 112 / 144 anrufen." % ALM_SOS["max"]
     if guest:
         ALM_SOS["starts"].append(now)
     ALM_SOS.update(on=True, t0=now, until=now + float(ALM_SOS["dauer"]), by=who)
@@ -660,33 +736,45 @@ def lights_tick():                                        # + 639zzt: SOS with t
     return res
 
 
-# ---- the own lamp is no movement -----------------------------------------------------------------------------------------------------
+# ---- the own lamp is no movement (only in the dark) ------------------------------------------------------------------------------------
 # MoveEye had no rule for «my own lamp changed the picture»: a lamp that lights the whole picture is caught by «the light of the
 # whole picture changed» (410, more than 35 % of the picture), a lamp that lights only the foreground was movement - at up to two
-# flashes a second a stream of outlines, pre-alarms and, with the AI unsure, alarms. While the SOS lamp flashes (and
-# ALM_SOS_QUIET_S after the last flash) the picture is therefore treated like the picture of a turning camera (410: the picture of
-# now is the background, no outlines): the movement detection pauses, the AI detection of persons keeps running on every picture.
-# The picture check of the sabotage guard (060, «covered / turned») learns again afterwards, and the low-light mode keeps its
-# state instead of counting the flashes as daylight. The exposure control of the camera itself is not in the hands of MoveEye.
+# flashes a second a stream of outlines and pre-alarms. So, and ONLY while it is dark (low-light mode of the camera or night by
+# the sun, the only time the lamp changes the picture): while the SOS lamp flashes and ALM_SOS_QUIET_S after the last flash the
+# movement mask (410 foreground) is empty and the picture of now is the background. Nothing else is touched:
+#   - the AI looks at every picture (also in the profile «Night», where it otherwise waits for movement),
+#   - the thermal camera (warm body, the turn of the head to a warm spot), the sensors, the noise alarm and
+#   - the sabotage guard («covered / turned», moved) work as always; by day nothing at all changes.
+# The low-light mode keeps its state instead of counting the flashes as daylight. The exposure control inside the camera is not
+# in the hands of MoveEye.
 ALM_SOS_QUIET_S = 3.0
 
 
+def alm_sos_dark():
+    try:
+        return bool(STATE.get("lowlight")) or bool(is_dark())
+    except Exception:
+        return False
+
+
 def alm_sos_quiet(now=None):
-    """True while the SOS lamp flashes and a moment after: the changes of the picture are our own light"""
+    """True while the SOS lamp flashes in the dark (and a moment after): the changes of the picture are our own light"""
     now = time.time() if now is None else now
-    return now - float(ALM_SOS.get("flash_t") or 0.0) < ALM_SOS_QUIET_S
+    return now - float(ALM_SOS.get("flash_t") or 0.0) < ALM_SOS_QUIET_S and alm_sos_dark()
 
 
 _alm_foreground_410 = MotionWatch.foreground
 _alm_lowlight_410 = MotionWatch._lowlight_decide
-_alm_tamper_feed_060 = TamperGuard.feed
 
 
 def _alm_foreground(self, gray, small, rain_mode, wind_boost):
     if alm_sos_quiet():
-        self.bg.apply(gray, learningRate=1.0)             # like a turning camera (410): the picture of now is the background
+        self.bg.apply(gray, learningRate=1.0)             # the picture of now is the background: the flash is no movement
         self.color_bg = None
-        self.mt["bg_reset"] = time.time()
+        try:
+            self.ai.prof_motion_t = time.time()           # profile «Night» (639zz): the AI keeps looking although nothing «moves»
+        except AttributeError:
+            pass
         return np.zeros_like(gray)
     return _alm_foreground_410(self, gray, small, rain_mode, wind_boost)
 
@@ -697,37 +785,37 @@ def _alm_lowlight(self, bright, t0):
     return _alm_lowlight_410(self, bright, t0)
 
 
-def _alm_tamper_feed(self, small, t0):
-    if alm_sos_quiet() and CFG["tamper_on"]:
-        self.settle = t0 + 8; self.ref = None; self.n_cov = self.n_mov = 0     # like after an own movement: learn the picture again
-        STATE["tamper"]["state"] = "learning"
-        return
-    return _alm_tamper_feed_060(self, small, t0)
-
-
 # wraps: MotionWatch.foreground
 MotionWatch.foreground = _alm_foreground
 # wraps: MotionWatch._lowlight_decide
 MotionWatch._lowlight_decide = _alm_lowlight
-# wraps: TamperGuard.feed
-TamperGuard.feed = _alm_tamper_feed
+
+
+def alm_fern(request):
+    """True when the request comes from outside the Wi-Fi (Tailscale, a tunnel / reverse proxy): no stored location and no SOS
+    start there without a trusted device"""
+    try:
+        host = (request.host or "").rsplit(":", 1)[0].strip("[]").lower()
+        return bool(is_remote_ip(request.remote_addr or "") or request.headers.get("X-Forwarded-For") or request.headers.get("X-Forwarded-Host")
+                    or is_remote_ip(host) or host.endswith(".ts.net"))
+    except Exception:
+        return True
 
 
 def alm_who(request):
-    """who asks: (name for the push, is a guest). A trusted device or a valid login = the user, everybody else = guest."""
+    """who asks: (name for the push, is a guest). Only a trusted device (the cookie MoveEye sets after a login on its own pages)
+    counts as known. A password in the request is NOT looked at here: this address is open, and a check here would be a way to
+    try passwords without the login brake of the server (550)."""
+    ip = (request.remote_addr or "?")[:45]
     try:
         tf = trust_find(request.cookies.get(TRUST_COOKIE, ""))
         if tf:
-            return str(tf[0][0] or "Administrator"), False
-        a = request.authorization
-        who = user_login(a.username or "", a.password or "") if a else None
-        if who:
-            return str(who[0] or "Administrator"), False
+            return str(tf[0][0] or tr("the administrator")), False
         if not CFG["web_password"] and not CFG["web_pw_hash"]:
-            return "jemandem im WLAN (%s)" % (request.remote_addr or "?"), True      # no password set: nobody is known
+            return trf("someone on the Wi-Fi ({ip})", ip=ip), True      # no password set: nobody is known
     except Exception:
         pass
-    return "einem Gast (%s)" % (request.remote_addr or "?"), True
+    return trf("a guest ({ip})", ip=ip), True
 
 
 def alm_bilder(title):
@@ -775,7 +863,8 @@ def smalltv_routes(app, reply, body):                     # + 639zzt: /almanach/
         w = request.args.get("w") or ""
         d = {"ok": True}
         if w in ("", "ort"):
-            d["ort"] = alm_ort(); d["sos"] = alm_sos_state()
+            d["ort"] = {"ok": False, "fern": True} if alm_fern(request) and alm_who(request)[1] else alm_ort()   # the place only inside the Wi-Fi
+            d["sos"] = alm_sos_state()
         if w in ("", "wetter"):
             d["wetter"] = alm_wetter()
         if w in ("", "nacht"):
@@ -784,13 +873,19 @@ def smalltv_routes(app, reply, body):                     # + 639zzt: /almanach/
                 d["nacht"]["ort_ok"] = bool(sim_place()) or gps_now() is not None
             except Exception as e:
                 d["nacht"] = {"fehler": str(e)[:80]}
-        return reply(d)
+        r = reply(d)
+        r.headers["Cache-Control"] = "no-store"
+        r.headers["Cross-Origin-Resource-Policy"] = "same-origin"     # another web page can neither read nor embed this
+        return r
 
     @app.route("/almanach/sos", methods=["POST"])
     def alm_sos_route():                                   # the ONE thing a guest of the almanac may switch
         d = body()
         who, guest = alm_who(request)
-        ok_, msg = alm_sos_set(str(d.get("action") or "") == "start", who, guest)
+        start = str(d.get("action") or "") == "start"
+        if start and guest and alm_fern(request):
+            return reply({"ok": False, "msg": "Die SOS-Lampe lässt sich nur im WLAN von MoveEye starten.", "sos": alm_sos_state()}, 403)
+        ok_, msg = alm_sos_set(start, who, guest)
         return reply({"ok": ok_, "msg": msg, "sos": alm_sos_state()}, 200 if ok_ else (409 if msg.startswith("keine") else 429))
 
 
@@ -817,10 +912,17 @@ def alm_selftest():
             st = alm_knot_steps(key)
             assert 2 <= len(st) <= 5 and all(s.startswith("<svg") and s.endswith("</svg>") for s, _c in st), key
     assert alm_knot_geo(dict(ALM_KNOTS["achter"], s=[dict(ALM_KNOTS["achter"]["s"][0], seq="uouououu")]))["err"], "a wrong sequence is found"
+    for key, K in ALM_KNOTS.items():
+        assert not alm_knot_locks(K), (key, alm_knot_locks(K))
+    bad = dict(ALM_KNOTS["spann"], s=[dict(ALM_KNOTS["spann"]["s"][0], seq="uououo" + "u" + "ouou" + "oo" + "ou" + "u")])
+    assert alm_knot_locks(bad) and "plain turn" in alm_knot_locks(bad)[0], "three plain turns are no taut-line hitch"
+    bad = dict(ALM_KNOTS["trucker"], s=[dict(ALM_KNOTS["trucker"]["s"][0], seq="uououooouuoouu"), ALM_KNOTS["trucker"]["s"][1]])
+    assert len(alm_knot_locks(bad)) == 2, "two plain turns secure nothing"
+    assert _alm_dms(46.9999999, "NS") == "47°00'00.0\" N" and _alm_dms(-7.5, "OW") == "7°30'00.0\" W", "no 60.0 seconds"
     q0 = ALM_SOS["flash_t"]
     try:
         ALM_SOS["flash_t"] = time.time()
-        assert alm_sos_quiet() and not alm_sos_quiet(time.time() + ALM_SOS_QUIET_S + 1), "the own lamp is no movement"
+        assert alm_sos_quiet() == alm_sos_dark() and not alm_sos_quiet(time.time() + ALM_SOS_QUIET_S + 1), "the own lamp is no movement (in the dark)"
     finally:
         ALM_SOS["flash_t"] = q0
     e, n = alm_lv95(46 + 2 / 60 + 38.87 / 3600, 8 + 43 / 60 + 49.79 / 3600)       # the example of swisstopo
