@@ -27,14 +27,16 @@ basis | 5  | -  | python3 werkzeuge/bauen.py --pruefen | Quelle und Datei passen
 basis | 3  | -  | python3 werkzeuge/bau_pruefen.py --ci | Bau-Infos passen zum Projektstand (bau_pruefen.py, nur Warnung – nichts wird nachgezogen)
 basis | 10 | -  | echo "Teste $MW" && python3 -m py_compile "$MW" && MW_SELFTEST_NO_SIG=1 python3 "$MW" --self-test . | Selbsttest (ohne Signaturen – die prüft der Update-Test «stand» mit dem öffentlichen Schlüssel)
 basis | 8  | -  | python3 werkzeuge/zusatzdaten_test.py --datei "$MW" | Zusatzdatei – gültig / verändert / fehlt, Signatur (Test-Schlüssel), Kern ohne ZIP, Grösse
+basis | 5  | -  | python3 werkzeuge/ablage_test.py | Ablage: Zusatzdatei ungepackt, gleich bei jedem Bau, das Repository wächst pro Version nur um den Unterschied (Wegwerf-Repository)
 basis | 5  | -  | python3 werkzeuge/sim_manifest_test.py --datei "$MW" | Drei Spuren – Simulator nur im signierten versions.json (Test-Schlüssel)
 basis | 3  | -  | python3 werkzeuge/versionen.py --test > /dev/null && python3 werkzeuge/versionen_spuren_test.py | Drei Spuren – Versionsprüfung je Spur
-basis | 12 | -  | python3 werkzeuge/update_uebergang_test.py --nur uebergang | Update-Übergang: ältestes Gerät und Brücke holen die neu gebaute Version (HTTPS, ZIP fehlt, USB, falsche Signatur; Wegwerf-Schlüssel)
+basis | 12 | -  | python3 werkzeuge/update_uebergang_test.py --nur uebergang | Update-Übergang: ältestes Gerät und Brücke holen die neu gebaute Version (HTTPS, ZIP fehlt, USB, falsche Signatur; Wegwerf-Schlüssel; Teil U: Ablage «url» mit Asset-Server und Umleitung)
 basis | 10 | -  | python3 werkzeuge/update_uebergang_test.py --nur stand $CI_STRENG | Veröffentlichter Stand: jede Datei in versions.json da, Prüfsumme, echte Signatur; alte Geräte holen die neueste Version
 
 # ---------------------------------------------------------------------------------------------------- kern (Web)
 kern | 15 | -  | python3 werkzeuge/web_rauchtest.py --browser | Web-Rauchtest (alle Adressen ohne / mit Anmeldung, jede Seite im Browser)
 kern | 8  | -  | python3 werkzeuge/deutsch_luecken_test.py | Deutsche Lücken (keine englischen Texte im deutschen Web, /messages übersetzt)
+kern | 8  | 1x | python3 werkzeuge/sprachen_tour_test.py | Sprachen-Rundgang (Französisch, Italienisch, Rätoromanisch: die Seiten im Browser, keine englisch gebliebenen Texte)
 kern | 4  | -  | python3 werkzeuge/kopf_chip_test.py | Kopf-Chip «N Hinweise» statt «alles ok», wenn etwas gemeldet wird
 kern | 4  | -  | python3 werkzeuge/werkskopie_test.py | Werkseinstellungen - Liste der Kopien mit Datum
 kern | 5  | -  | python3 werkzeuge/protokoll_ruhe_test.py | Ruhiges Protokoll (kein Hin und Her bei walk_frames und Wind)

@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-12 06:50",
+ "generated": "2026-11-12 07:14",
  "versions": [
   {
-   "version": "3.81.0",
-   "file": "webcam_bewegung_3_81_0.py",
+   "version": "3.81.1",
+   "file": "webcam_bewegung_3_81_1.py",
    "url": "",
-   "sha256": "c7eb3b44c316b2052c5b2d78c52088be12c5c8b51805365b502da47e23fcba45",
-   "date": "2026-11-12 06:49",
-   "notes": "Offline-Karte der Schweiz: Karte und Ortssuche ohne Internet, einmal als Verwalter nachladen unter Einstellungen → Standort (ca. 670 MB, braucht freien Platz auf der SD-Karte); neue Seite «Karte»; Standort durch Antippen oder Suchen setzen; Aufnahmen zeigen ihren Ort auf der Karte; im Simulator «Ort von der Karte» ohne Internet wählen. © OpenStreetMap-Mitwirkende. QR-Befehls-Karten: gesperrte QR-Karten bleiben auch nach einem Stromausfall gesperrt.",
-   "size": 4014178,
-   "sig": "b49dc4b9cbb2953ccd746b1497ab8d22f4772e6a8a2d38366af65dc96c3202d9714b6bfc4f6dd11c70c8cd8f09744e0d2d2aced7d7b30158515e9473204de80b",
+   "sha256": "85ff081ba6c8d5080d7a8fa4416a584f6ebf9a637417cc3d1bed53879ea7f4e7",
+   "date": "2026-11-12 07:14",
+   "notes": "Übersetzungen ergänzt: Französisch, Italienisch und Rätoromanisch sind jetzt vollständig (rund 950 Texte, vor allem Werkzeuge, Simulator-Seite und Spielecke); nicht von Muttersprachlern gegengelesen.",
+   "size": 4015888,
+   "sig": "3675067fe11e3088a8569f691567d392eca5930fcc4e89b758196c7e9257b655621dc1f2e56782dd0e85c409fd4eceeb7179baeeb703fd9047dcc37678285209",
    "data": {
-    "file": "moveeye_daten_3_81_0.zip",
+    "file": "moveeye_daten_3_81_1.zip",
     "url": "",
-    "sha256": "b309bda054f91c00eb0733b96ca7cff69cce4a638aa1a71323f9cf4ee7d3a3c1",
-    "size": 4984646,
-    "sig": "692e02582181414a94f0b56c5b075552f3a4c41a7443a3322a00d7cb241f100b4ee9971871bb5a86907168390abda68531364c5af0c7f679750344cfbe29a20e"
+    "sha256": "78ddf1fb2c1150d40ffb864245595d6d78c0937928ed619136a3a1cae64d3a59",
+    "size": 10342855,
+    "sig": "2e2afacc29e89984443e7c91316d82718f0db42df7f1675fa9fc75a969d5475750d4ad785d8794c1dc26b53573267ce7416cf47e8d68770ad20408b50769ed05"
    }
   },
   {

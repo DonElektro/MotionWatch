@@ -7,6 +7,9 @@
 #   zusatz_mitholen(...)    called by update_install() (390) after a new program file was saved: its zip comes along at once
 #                           (so a device from this version on has no minute without web pages).
 # Older devices (2.98.x up to the last version without data zip) only fetch the .py - the new program fetches its zip itself (zusatz_start).
+# Ablage (Review Nov. 2026): zusatz_holen() looks next to versions.json first (as always); only when the zip is not there it
+# reads the list and tries the address of its own entry («url» / «data.url», e.g. a Release asset). Nothing uses this today
+# (every published version lies next to versions.json) - it lets a later version be stored elsewhere without a device change.
 # Brücke (Entscheid Besitzer 31.10.2026): UPD_BRIDGE (3.0.2, one file below 8 MiB, no zip needed) stays in versions.json and in
 # the repository for ever. A version entry with «needs» (lowest version that may install it directly) is offered only to
 # devices with at least that version; older ones get the newest bridge first (update_pick(), used by update_check()).
@@ -138,9 +141,31 @@ def zusatz_restart():
     return True
 
 
+def _zd_entry_urls(src):
+    """Ablage (Review Nov. 2026): the addresses that versions.json at <src> names for THIS version - «url» of its entry (the
+    data zip lies next to the program file, e.g. as a Release asset) and «data.url». Only https, at most two; [] when the
+    list is not reachable or names nothing. The content is safe from any address: ZD_SHA256 stands in this signed program."""
+    out = []
+    try:
+        req = _upd_request(src + ("&" if "?" in src else "?") + "t=" + str(int(time.time())), {"Cache-Control": "no-cache"})
+        with urllib.request.urlopen(req, timeout=15) as r:
+            data = json.loads(r.read(1024 * 1024 + 1)[:1024 * 1024].decode("utf-8"))
+        for e in (data.get("versions") or [])[:200]:
+            if not isinstance(e, dict) or str(e.get("version", "")) != APP_VERSION:
+                continue
+            d = e.get("data") if isinstance(e.get("data"), dict) else {}
+            for u in (str(e.get("url") or ""), str(d.get("url") or "")):
+                if re.match(r"^https://[^\s]{4,400}$", u) and u.rsplit("/", 1)[0] != src.rsplit("/", 1)[0] and u not in out:
+                    out.append(u)
+            break
+    except Exception:
+        pass
+    return out[:2]
+
+
 def zusatz_holen():
     """one try: fetch the zip of this version from the update source (else the repository of the simulator updates,
-    SIM3D_BASE in 300), check it, save it. "" = there now"""
+    SIM3D_BASE in 300; else, Ablage, where versions.json says this version lies), check it, save it. "" = there now"""
     src = CFG["update_url"].strip()
     tries = []
     if src.startswith("/"):
@@ -153,20 +178,28 @@ def zusatz_holen():
     except NameError:
         pass
     err = "no update source set"
-    for url, folder in tries:
+    n_fest = len(tries)
+    i = 0
+    while i < len(tries):
+        url, folder = tries[i]
+        i += 1
         try:
             data = _zd_fetch_bytes(ZD_FILE, src_url=url, src_dir=folder)
         except Exception as e:
             err = f"not reachable: {_upd_error(e)}"[:200]
-            continue
-        err = _zd_check_bytes(data, ZD_SHA256, APP_VERSION)
-        if err:
-            continue
-        try:
-            _zd_save(HERE, ZD_FILE, data)
-        except OSError as e:
-            return f"cannot save: {e}"[:200]
-        return ""
+            data = None
+        if data is not None:
+            err = _zd_check_bytes(data, ZD_SHA256, APP_VERSION)
+            if not err:
+                try:
+                    _zd_save(HERE, ZD_FILE, data)
+                except OSError as e:
+                    return f"cannot save: {e}"[:200]
+                return ""
+        if i == n_fest and len(tries) == n_fest:          # Ablage: not next to the list - where the list says this version lies
+            for lst, _f in list(tries):
+                if lst.startswith("https://"):
+                    tries += [(u, "") for u in _zd_entry_urls(lst) if (u, "") not in tries]
     return err
 
 

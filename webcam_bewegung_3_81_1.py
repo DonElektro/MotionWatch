@@ -23,6 +23,8 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 3.81.1: Übersetzungen ergänzt: Französisch, Italienisch und Rätoromanisch sind jetzt vollständig (rund 950 Texte, vor allem
+    Werkzeuge, Simulator-Seite und Spielecke); nicht von Muttersprachlern gegengelesen.
   * 3.81.0: Offline-Karte der Schweiz: Karte und Ortssuche ohne Internet, einmal als Verwalter nachladen unter Einstellungen →
     Standort (ca. 670 MB, braucht freien Platz auf der SD-Karte); neue Seite «Karte»; Standort durch Antippen oder Suchen
     setzen; Aufnahmen zeigen ihren Ort auf der Karte; im Simulator «Ort von der Karte» ohne Internet wählen. ©
@@ -111,9 +113,6 @@ Features
   * 3.63.0: 📁 Datentausch unter Mehr: Fotos, Videos und Dokumente teilen (Für alle / Meine Dateien, Ordner, Vorschaubilder,
     Hochladen in Stücken), 📝 Texte im Browser bearbeiten mit Versionen, 💬 Chats; neue Rechte pro Benutzer, Gäste nur ansehen,
     Grenzen und immer 2 GB frei, Push gebündelt.
-  * 3.62.1: Piper: «Piper installieren» richtet auch espeak-ng selbst ein, wenn es fehlt (apt, ohne Passwort-Abfrage, mit
-    Zeitlimit; als root direkt, sonst sudo -n), mit Fortschritt und klarer Meldung, wenn es nicht geht («espeak-ng konnte nicht
-    installiert werden – …»).
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -122,10 +121,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_3_81_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_3_81_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_3_81_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_3_81_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_3_81_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_3_81_1.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -142,7 +141,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "3.81.0"
+APP_VERSION = "3.81.1"
 
 
 def default_data_dir():
@@ -267,8 +266,8 @@ def prepare_settings_file():
 
 
 
-ZD_FILE = "moveeye_daten_3_81_0.zip"
-ZD_SHA256 = "b309bda054f91c00eb0733b96ca7cff69cce4a638aa1a71323f9cf4ee7d3a3c1"
+ZD_FILE = "moveeye_daten_3_81_1.zip"
+ZD_SHA256 = "78ddf1fb2c1150d40ffb864245595d6d78c0937928ed619136a3a1cae64d3a59"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -11627,6 +11626,8 @@ def sim_twin_info():
 		return r.get("twin") or {}
 	except Exception:
 		return {}
+
+
 
 
 
@@ -32489,11 +32490,17 @@ def sim_manifest_block(folder, seed=b""):
 
 
 
+
+
 SELFTEST_EXTRA = []
 
 _I18N_PY = re.compile(r"""(?<![\w.])(?:tr|trf)\(\s*((?:"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'))\s*[,)]""")
 _I18N_JS = re.compile(r"""(?<![\w.$])t\(\s*((?:"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'))\s*[,)]""")
 _I18N_ATTR = re.compile(r"""data-i18n(?:-ph)?=\\?"([^"\\]+)\\?\"""")
+
+
+I18N_NOT_TEXTS = {"no such text 123"}
+_I18N_CODE = re.compile(r"""^['"] \+ \w+ \+ ['"]$""")
 
 
 def i18n_used_keys(src=None):
@@ -32516,7 +32523,8 @@ def i18n_used_keys(src=None):
 	for lst in (TOGGLES, SLIDERS, TEXTS):
 		keys.update(x[2] for x in lst)
 	keys.update(SECTIONS)
-	return {k for k in keys if re.search(r"[A-Za-z]{2}", k) and "{" not in k[:1]}
+	return {k for k in keys if re.search(r"[A-Za-z]{2}", k) and "{" not in k[:1] and k not in I18N_NOT_TEXTS
+            and not _I18N_CODE.search(k)}
 
 
 def i18n_missing(langs=("fr", "it", "rm"), src=None):
@@ -32526,14 +32534,18 @@ def i18n_missing(langs=("fr", "it", "rm"), src=None):
 
 
 def i18n_selftest():
+	""
 	miss = i18n_missing()
 	n = len(i18n_used_keys())
 	if not any(miss.values()):
 		return f"{n} texts, all translated"
-	out = [f"{n} texts; warning only - without translation:"]
+	out = [f"{n} texts; without translation:"]
 	for L, ks in miss.items():
-		out.append(f"   {L}: {len(ks)} – " + " · ".join(repr(k[:50]) for k in ks[:20]))
-	return "\n".join(out)
+		if ks:
+			out.append(f"   {L}: {len(ks)} – " + " · ".join(repr(k[:50]) for k in ks[:20]))
+	if ZD_FILE and not ZD["ok"]:
+		return "\n".join(out + ["   (not judged: the data file is missing)"])
+	raise AssertionError("\n".join(out + ["   add them in all five languages to the table _HX… of the part that shows the text"]))
 
 
 def migrate_only_selftest():
@@ -32696,6 +32708,9 @@ SELFTEST_EXTRA.append(("Deterrence turns light / siren to the person or the tent
 
 
 
+
+
+
 ZDL = {"state": "", "msg": "", "t": 0.0, "tries": 0}
 UPD_BRIDGE = "3.0.2"
 ZD_MAX_BYTES = 64 * 1024 * 1024
@@ -32823,6 +32838,28 @@ def zusatz_restart():
 	return True
 
 
+def _zd_entry_urls(src):
+	"""
+
+"""
+	out = []
+	try:
+		req = _upd_request(src + ("&" if "?" in src else "?") + "t=" + str(int(time.time())), {"Cache-Control": "no-cache"})
+		with urllib.request.urlopen(req, timeout=15) as r:
+			data = json.loads(r.read(1024 * 1024 + 1)[:1024 * 1024].decode("utf-8"))
+		for e in (data.get("versions") or [])[:200]:
+			if not isinstance(e, dict) or str(e.get("version", "")) != APP_VERSION:
+				continue
+			d = e.get("data") if isinstance(e.get("data"), dict) else {}
+			for u in (str(e.get("url") or ""), str(d.get("url") or "")):
+				if re.match(r"^https://[^\s]{4,400}$", u) and u.rsplit("/", 1)[0] != src.rsplit("/", 1)[0] and u not in out:
+					out.append(u)
+			break
+	except Exception:
+		pass
+	return out[:2]
+
+
 def zusatz_holen():
 	"""
 """
@@ -32838,20 +32875,28 @@ def zusatz_holen():
 	except NameError:
 		pass
 	err = "no update source set"
-	for url, folder in tries:
+	n_fest = len(tries)
+	i = 0
+	while i < len(tries):
+		url, folder = tries[i]
+		i += 1
 		try:
 			data = _zd_fetch_bytes(ZD_FILE, src_url=url, src_dir=folder)
 		except Exception as e:
 			err = f"not reachable: {_upd_error(e)}"[:200]
-			continue
-		err = _zd_check_bytes(data, ZD_SHA256, APP_VERSION)
-		if err:
-			continue
-		try:
-			_zd_save(HERE, ZD_FILE, data)
-		except OSError as e:
-			return f"cannot save: {e}"[:200]
-		return ""
+			data = None
+		if data is not None:
+			err = _zd_check_bytes(data, ZD_SHA256, APP_VERSION)
+			if not err:
+				try:
+					_zd_save(HERE, ZD_FILE, data)
+				except OSError as e:
+					return f"cannot save: {e}"[:200]
+				return ""
+		if i == n_fest and len(tries) == n_fest:
+			for lst, _f in list(tries):
+				if lst.startswith("https://"):
+					tries += [(u, "") for u in _zd_entry_urls(lst) if (u, "") not in tries]
 	return err
 
 
@@ -49367,7 +49412,7 @@ class App:
 		self.watch = watch
 		self.web = web or WebStream(watch)
 		self.root = tk.Tk()
-		self.root.title("MoveEye 3.81.0")
+		self.root.title("MoveEye 3.81.1")
 		try:
 			import base64
 			self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -49745,7 +49790,7 @@ class App:
 			if not small:
 				vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
 				vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))
-			Tip(nm, f"{tr('Build')} 3.81.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+			Tip(nm, f"{tr('Build')} 3.81.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
 			self._egg_taps = []
 			for w_ in tl.winfo_children():
 				w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -56958,7 +57003,7 @@ App._refresh = _kr_tk_refresh
 
 
 
-INFO_PARTS = 292
+INFO_PARTS = 293
 INFO_START = "2026-10-16"
 FBX = {"shot": None, "shot_t": 0.0, "lines": 0}
 
@@ -89490,6 +89535,33 @@ def deutsch_luecken_selftest():
 
 
 SELFTEST_EXTRA.append(("German gaps of the web pages (639zzl)", deutsch_luecken_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+_HX_LUECKEN = _zd('639zzm_uebersetzungen_luecken/HX_LUECKEN', _ZDDict())
+
+
+_RM_LUECKEN = _zd('639zzm_uebersetzungen_luecken/RM_LUECKEN', _ZDDict())
+
+for _k, _v in _HX_LUECKEN.items():
+	for _i, _L in enumerate(("fr", "it", "rm")):
+		if not TRX[_L].get(_k):
+			TRX[_L][_k] = _v[_i]
+for _k, _v in _RM_LUECKEN.items():
+	if not TRX["rm"].get(_k):
+		TRX["rm"][_k] = _v
 
 
 
