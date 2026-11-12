@@ -294,7 +294,7 @@ def kt_parse(data, fname=""):
                         wp = None
                 el.clear()
         par.close()
-    except _ET.ParseError:
+    except (_ET.ParseError, ValueError, LookupError):       # ValueError / LookupError: a declared encoding Python does not read here (UTF-7 …)
         raise KTError("This file could not be read.")
     pts = [p for s in segs for p in s] or rte
     if len(pts) < 2:

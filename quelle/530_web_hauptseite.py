@@ -2986,6 +2986,7 @@ function solarText(c, s) {
   else L.push("☀️ " + S.w + " W (" + S.v + " V · " + S.a + " A) · " + t("today") + " " + S.wh + " Wh · " + t("max.") + " " + S.max + " W");
   if (n && n.hold === "mains") L.push("🔌 " + t(n.charging ? "charging" : "mains power"));
   else if (n && !n.hold) L.push((n.enough ? "🌙 " + t("Battery lasts until sunrise") : "⚠ " + t("Battery probably too low until sunrise")) + " (" + n.sunrise + "): " + n.have_h + " h / " + n.need_h + " h");
+  else if (n) L.push("🌙 …");                               // settling after the start: the estimate is not ready yet (as in the window, 570)
   else L.push("🌙 " + t("Night forecast: needs a battery value (Settings → Battery)"));
   return L.join("\n");
 }

@@ -239,6 +239,11 @@ def teil_a(datei):
     T2 = j["tour"]["id"]
     ok(code == 200 and j["tour"]["name"] == "<script>alert(1)</script> \"x\" 'y'", "Name mit Spitzklammern bleibt Text (wird nirgends HTML)")
     ok(imp(b"<html>x</html>", HA)[0] == 400 and imp(b"x" * (ns["KT_IMPORT_MAX"] + 5), HA)[0] == 413, "kein KML / GPX: 400 mit Meldung; zu gross: 413")
+    try:                                                    # 3.85.0: eine Kodierung, die hier nicht gelesen wird, ist eine saubere Absage (kein Fehler im Protokoll)
+        ns["kt_parse"](b'<?xml version="1.0" encoding="utf-7"?><kml>+ADwAIQ-DOCTYPE k+AD4-</kml>'); u7 = "angenommen"
+    except Exception as e:
+        u7 = type(e).__name__
+    ok(u7 == "KTError", f"Datei mit Kodierung UTF-7: abgelehnt als «nicht lesbar» ({u7})")
     code, j = api({"action": "save", "name": "Runde am See", "pts": [[47.29, 8.20], [47.30, 8.21], [47.31, 8.20]]}, HB)
     T3 = j["tour"]["id"]
     ok(code == 200 and j["tour"]["kind"] == "drawn" and j["tour"]["pts"] and not j["tour"]["ele"] and j["tour"]["need"] and j["tour"].get("up") is None and 2300 < j["tour"]["m"] < 2900,

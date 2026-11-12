@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-12 19:51",
+ "generated": "2026-11-12 21:19",
  "versions": [
+  {
+   "version": "3.85.0",
+   "file": "webcam_bewegung_3_85_0.py",
+   "url": "",
+   "sha256": "07d1ab054c8b10f4fc54c575d698df553c72d22fea7e6782c9107cd5ba85f80e",
+   "date": "2026-11-12 21:19",
+   "notes": "Vier Teile. (1) Touren auf der Karte: neue Kachel «🗺 Karte» unter «Mehr»; auf der Karte Touren zeichnen, speichern, als GPX/KML oder alle als ZIP mitnehmen; KML/GPX einlesen (auch aus der swisstopo-App) mit Auf-/Abstieg, Höhenprofil und Wanderzeit; Gäste sehen freigegebene Touren nur zum Ansehen. Höhendaten Schweiz für gezeichnete Routen: kommt mit einem Update. (2) Akku: Die Meldung «Akku bis Sonnenaufgang?» kommt nicht mehr nach jedem Neustart – am Netz nie, nach dem Start erst wenn die Schätzung steht, pro Abend einmal (auch über einen Neustart); fast leer meldet weiter sofort. Anzeige am N",
+   "size": 3880947,
+   "sig": "2f446bfb4ebd044cf07232678286737b0ec8400cd85a0e15a9368517a32d1ddf213ec6f2f99232ddb4baeba121079bb8ef3d304704ef848155685e885dd95504",
+   "data": {
+    "file": "moveeye_daten_3_85_0.zip",
+    "url": "",
+    "sha256": "1c2623563a6b00072efa5b3bf4cf54b58babfa723f3ddf0a97d4ce2be81cb799",
+    "size": 10985546,
+    "sig": "8116ba6adfdf09c0cfdb878983fe27dfa75cc6582acc6b4641e3461299ca94ae1b8232519c63ee775515e5d5df1308e157b637039155e713fca861c8f9511508"
+   }
+  },
   {
    "version": "3.84.2",
    "file": "webcam_bewegung_3_84_2.py",
    "url": "",
    "sha256": "02bac0c628917e29e0f12b45d0fb9e8350e50607ad8729b391e55b5b7e306ecd",
-   "date": "2026-11-12 19:51",
+   "date": "2026-11-12 20:45",
    "notes": "Queen – iPhone-Test, zweite Runde (Test fotaqios-10): «Aufgeben» → «Ja» endet neu mit der Tafel «Spiel beendet» und «Nochmal» statt mit einer Fehlermeldung. Fehler bleiben als Tafel mit «Fehler kopieren» stehen. Die Testseite meldet Start, Ende und Fehler an MoveEye: «Meldungen vom Test» im Kasten des Spiels (nur Administrator). Daten-Abrufe werden wiederholt. Den Test einmal neu installieren.",
    "size": 3829136,
    "sig": "e87dae3457a2c7b9bd0c0683428bf6cb278d2eeb0a77857ebc9638570d77e9cfaeee8114cefcf2cb9b0ab298f3b305dc00f6c33dbd984d91c20eb1be558d1100",
@@ -136,23 +153,6 @@
     "sha256": "016f1b88dd6b96f4c1505d239aa01afa7f2b95186ca891f4399679118002298e",
     "size": 4940121,
     "sig": "53e5e5f44676f5c8300bac87f74a896e34534d543bbed583ba2d7da9202e10b5e73b47312a05ef32123c64220df3961cabfb0da259e7f7b665dcd2f9a9a8ed09"
-   }
-  },
-  {
-   "version": "3.76.1",
-   "file": "webcam_bewegung_3_76_1.py",
-   "url": "",
-   "sha256": "07337715d9d6417200c983266daeef21101fcc7a671468cabe098f9ba63e8370",
-   "date": "2026-11-11 19:22",
-   "notes": "Spiel «Was nun?»: Im Hochformat reagiert das Spiel jetzt genau dort, wo man tippt (das Bild verschob sich vorher nach dem Antippen leicht). Spielesammlung einmal neu laden: Mehr → Spielen → Spielecke → «Installieren / aktualisieren»",
-   "size": 3897901,
-   "sig": "2778d334c70499e2120f178539318679e5a0b03b64e1778ebf3a75c424bd45b68a8303d3aff692c10c34e67fc702c5cce3d7546a2e72b8191ea85c8645124a0b",
-   "data": {
-    "file": "moveeye_daten_3_76_1.zip",
-    "url": "",
-    "sha256": "bcd8666f3d73e6b148d27c53e4f5d401ccffa245088c718bb25f802867f32a6b",
-    "size": 4937150,
-    "sig": "840a65b24fba67222c62fbd366329e1d668e5dd10f888edc6a100f5b759c3b4f78c2004ed390041d368a31b31b5d2a65382be1de13cf5e58e9016169c5250b0a"
    }
   },
   {
