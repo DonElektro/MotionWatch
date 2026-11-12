@@ -124,12 +124,14 @@ jobs:
           mkdir -p ~/godot && cd ~/godot
           curl -fsSL -o g.zip https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip
           unzip -q g.zip && rm g.zip && chmod +x Godot_v4.3-stable_linux.x86_64
-      - name: Export-Vorlagen 4.3 (Cache wie im CI – Linux, Windows, Linux arm64)
+      # Eigener Satz (nicht der des CI): dazu die Konsolen-Vorlagen von Windows - ohne sie schreibt Godot keine
+      # MoveEyeSim3D.console.exe (export_console_wrapper=2), und Notfall-Start.bat braucht sie (Probelauf 12.11.2026).
+      - name: Export-Vorlagen 4.3 (Linux, Windows mit Konsolen-Fassung, Linux arm64)
         id: tcache
         uses: actions/cache@v4
         with:
           path: ~/.local/share/godot/export_templates/4.3.stable
-          key: godot-templates-4.3-stable-linux-windows-arm64
+          key: godot-templates-4.3-stable-linux-windows-konsole-arm64
       - name: Export-Vorlagen herunterladen
         if: steps.tcache.outputs.cache-hit != 'true'
         run: |
@@ -137,6 +139,7 @@ jobs:
           curl -fsSL -o t.tpz https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_export_templates.tpz
           unzip -q t.tpz templates/version.txt templates/linux_release.x86_64 templates/linux_debug.x86_64 \
             templates/windows_release_x86_64.exe templates/windows_debug_x86_64.exe \
+            templates/windows_release_x86_64_console.exe templates/windows_debug_x86_64_console.exe \
             templates/linux_release.arm64 templates/linux_debug.arm64
           mv templates/* "$d"/ && rm -rf "$RUNNER_TEMP/t" && ls -la "$d"
       - name: Import (Cache simulator3d/.godot)
