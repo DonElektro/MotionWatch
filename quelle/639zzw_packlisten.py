@@ -428,8 +428,33 @@ def pl_parse_text(text):
     real = [p for p in parsed if p]
     caps = sum(1 for p in real if p[0] == "caps")
     caps_are_items = caps > 0 and caps * 2 > len(real)        # everything is written in capitals: these are items, not headings
-    items, skipped, cat, title = [], 0, None, ""
+    items, skipped, cat, title, heads = [], 0, None, "", []
     idx = [i for i, p in enumerate(parsed) if p]
+    # a bare line («Schlafen») is a heading only when the structure shows it; a plain list (one item per line) stays a list
+    mark = [bool(_PL_BOX.match(ln) or _PL_BULLET.match(ln) or re.match(r"(?: {2,}|\t)\S", ln)) for ln in lines]
+
+    def bare(i):
+        p = parsed[i]
+        return bool(p and p[0] == "item" and not mark[i] and p[1]["g"] is None and p[1]["n"] == 1 and not p[1]["note"] and not p[1]["buy"])
+    B, M, up = [i for i in idx if bare(i)], [i for i in idx if mark[i] and parsed[i][0] == "item"], []
+    if M and len(M) >= len(B):                               # A: a bare line right above bulleted / numbered / ticked / indented lines
+        up = [i for i in B if i + 1 < len(lines) and mark[i + 1] and parsed[i + 1]]
+    elif not M:                                              # B: no bullets at all - blocks between empty lines, each led by a bare line
+        blocks, cur = [], []
+        for i, ln in enumerate(lines + [""]):
+            if ln.strip():
+                cur.append(i)
+            elif cur:
+                blocks.append(cur)
+                cur = []
+        big = [b for b in blocks if len(b) >= 2 and not (parsed[b[0]] and parsed[b[0]][0] != "item")]
+        rest = [i for b in big for i in b[1:] if parsed[i] and parsed[i][0] == "item"]
+        if len(big) >= 2 and all(bare(b[0]) for b in big) and rest and (
+                all(lines[b[0]].strip().lower() in PL_HEAD_EXACT or pl_cat_clean(lines[b[0]]) in PL_CAT_KEYS for b in big)
+                or sum(1 for i in rest if not bare(i)) >= 0.6 * len(rest)):   # … the lines below carry weights / numbers, the first never
+            up = [b[0] for b in big]
+    for i in up:
+        parsed[i] = ("cat", parsed[i][1]["name"])
     if (len(idx) >= 3 and parsed[idx[0]][0] == "item" and idx[1] > idx[0] + 1 and parsed[idx[1]][0] in ("cat", "caps") and not caps_are_items
             and parsed[idx[0]][1]["g"] is None and not re.match(r"\s*[-*+•\[☐☑\d]", lines[idx[0]])):
         title = pl_text(lines[idx[0]], 80)                   # «Wochenende Jura», an empty line, then the first heading: the name of the list
@@ -446,6 +471,7 @@ def pl_parse_text(text):
                 p = ("cat", " ".join(w[:1] + w[1:].lower() for w in p[1].split(" ")))
         if p[0] == "cat":
             cat = pl_cat_key(p[1])
+            heads.append([len(items), pl_text(p[1], PL_NAME_MAX), cat])   # for the preview: «as item» puts it back
             continue
         it = p[1]
         it["cat"] = cat or pl_cat_guess(it["name"])
@@ -453,7 +479,7 @@ def pl_parse_text(text):
         items.append(it)
         if len(items) >= PL_ROWS_MAX:
             break
-    return {"items": items, "skipped": skipped, "title": title}
+    return {"items": items, "skipped": skipped, "title": title, "heads": heads}
 
 
 # ---- tables: CSV / pasted table / xlsx -> rows of cells -> items ----------------------------------------------------------------
@@ -857,7 +883,7 @@ def pl_import_preview(data=None, text=None, name="", guess=None, rows=None, lang
             d = pl_sniff(text, csv_file=ext in ("csv", "tsv"))
             if not d:
                 res = pl_parse_text(text)
-                return {"kind": "lines", "items": res["items"], "skipped": res["skipped"], "title": res["title"] or title}
+                return {"kind": "lines", "items": res["items"], "skipped": res["skipped"], "title": res["title"] or title, "heads": res["heads"]}
             rows = pl_csv_rows(text, d)
     rows = [[pl_text(c, 300) for c in r[:PL_COLS_MAX]] for r in rows[:PL_ROWS_MAX] if isinstance(r, list)]
     if not rows:
@@ -1157,6 +1183,8 @@ def pl_action(who, d, lang=None):
         err = _pl_ready(who, lang)
         if err:
             return False, err, {}, 403 if "files_up" not in who["perms"] else 409
+        if isinstance(d.get("cat"), str):                     # the preview turns a row into a heading: which category is that?
+            return True, "", {"cat": pl_cat_key(d["cat"])}, 200
         try:
             if isinstance(d.get("rows"), list):
                 res = pl_import_preview(rows=d["rows"], guess=d.get("guess") if isinstance(d.get("guess"), dict) else None, lang=lang)
@@ -1891,6 +1919,8 @@ button.pl-ib.on{background:var(--org);color:#16110a;border-color:var(--org)}
 .pl-pvf{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}.pl-pvf input,.pl-pvf select{min-height:40px;min-width:0}.pl-pvf .nm{width:100%}
 .pl-pvf .r2{display:grid;grid-template-columns:minmax(0,1fr) 64px minmax(0,1.3fr);gap:6px}
 .pl-pvf small{color:var(--org);font-size:12px}
+.pl-sw2{align-self:flex-start;min-height:40px;padding:4px 12px;font-size:13px}.pl-pvh{align-items:center;justify-content:space-between;gap:10px;padding-left:10px;background:var(--panel2)}.pl-pvh b{min-width:0;overflow-wrap:anywhere}
+#gd-card{bottom:calc(16px + var(--plb,0px) + env(safe-area-inset-bottom,0px))!important}
 .pl-map{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:0 0 10px;background:var(--panel2)}
 .pl-map .g{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 10px;align-items:center}.pl-map select{min-height:40px;width:100%}
 .pl-lb{position:fixed;inset:0;z-index:140;background:rgba(0,0,0,.92);display:flex;flex-direction:column}
@@ -2275,13 +2305,17 @@ Object.assign(I18N.de, /*PLDE*/{});
         try { r = await fn(); } catch (e) { r = {ok: false, error: t("No connection to MoveEye.")}; } fb.disabled = pv.disabled = false;
         if (!r || !r.ok) { st.classList.add("err"); st.textContent = "⚠ " + ((r && r.error) || t("error")); return; }
         if (!r.items.length && r.kind !== "table") { st.classList.add("err"); st.textContent = "⚠ " + t("Nothing to import was found."); return; }
-        P = r; P.items.forEach(x => x.on = true); step2(); };
+        P = r; P.items.forEach(x => x.on = true); mergeHeads(); step2(); };
       fi.onchange = () => { const f = fi.files && fi.files[0]; fi.value = ""; if (!f) return;
         if (f.size > ((S.ov.caps || {}).import || 5242880)) { st.classList.add("err"); st.textContent = "⚠ " + t("The file is too big."); return; }
         run(async () => { const buf = await f.arrayBuffer(); const r = await fetch("/api/tausch/pack/import?lang=" + LANG + "&name=" + encodeURIComponent(f.name) + "&list=" + into,
           {method: "POST", headers: {"Content-Type": "application/octet-stream"}, body: buf}); return await r.json(); }); };
       pv.onclick = () => { if (!ta.value.trim()) { ta.focus(); return; } run(() => api({action: "preview", text: ta.value, list: into})); };
     };
+    const mergeHeads = () => { let c = null; const hs = P.heads || [], out = [];                 // headings as rows of their own: one tap makes an item of them (and back)
+      P.items.forEach((x, i) => { hs.filter(h => h[0] === i).forEach(h => { c = h[2]; out.push({head: true, name: h[1], cat: h[2], on: false}); }); x.auto = P.kind === "lines"; x.c0 = c ? "other" : x.cat; out.push(x); });
+      hs.filter(h => h[0] >= P.items.length).forEach(h => out.push({head: true, name: h[1], cat: h[2], on: false})); P.items = out; };
+    const recat = () => { let c = null; P.items.forEach(x => { if (x.head) c = x.cat; else if (x.auto) x.cat = c || x.c0; }); };
     const remap = async () => { const r = await api({action: "preview", rows: P.rows, guess: {map: P.map, header: P.header, unit: P.unit}, list: into});
       if (!r.ok) { toast("⚠ " + (r.error || t("error"))); return; } const title = P.title; P = r; P.title = title; P.items.forEach(x => x.on = true); step2(); };
     const step2 = () => {
@@ -2311,14 +2345,19 @@ Object.assign(I18N.de, /*PLDE*/{});
           + (on.length > room ? " · ⚠ " + tf("only {n} more fit into this list", {n: room}) : "");
         go.textContent = "✓ " + tf("Import {n} items", {n: Math.min(on.length, room)}); go.disabled = !on.length; };
       P.items.forEach((x, i) => {
+        const sw = (txt, fn) => { const b = el("button", "sec pl-sw2", txt); b.type = "button"; b.onclick = fn; return b; };
+        if (x.head) { const r = el("div", "pl-pv pl-pvh"); r.append(el("b", "", catName(x.cat) + (catName(x.cat).toLowerCase() === x.name.toLowerCase() ? "" : " («" + x.name + "»)")),
+          sw(t("As item"), () => { Object.assign(x, {head: false, on: true, g: null, w: "", n: 1, note: "", auto: true, c0: "other"}); recat(); step2(); })); box.appendChild(r); return; }
         const r = el("div", "pl-pv"), cl = el("label", "pl-pvc"), c = el("input"), f = el("div", "pl-pvf"), n1 = input(x.name), r2 = el("div", "r2"), w = input(fmtW(x.g), t("Weight")), q = input(x.n, "", "number"), cs = catSelect(x.cat);
         c.type = "checkbox"; c.checked = true; c.setAttribute("aria-label", t("Import") + ": " + x.name); cl.appendChild(c); n1.className = "nm"; n1.maxLength = 120; q.min = 1; q.max = 999; n1.setAttribute("aria-label", t("Name")); w.setAttribute("aria-label", t("Weight")); q.setAttribute("aria-label", t("Quantity"));
-        x.w = fmtW(x.g);
+        if (x.w === undefined) x.w = fmtW(x.g); w.value = x.w; c.checked = x.on; r.classList.toggle("off", !x.on);
         c.onchange = () => { x.on = c.checked; r.classList.toggle("off", !x.on); paintSum(); };
-        n1.oninput = () => { x.name = n1.value; }; w.oninput = () => { x.w = w.value; x.g = null; }; q.oninput = () => { x.n = parseInt(q.value, 10) || 1; paintSum(); }; cs.addEventListener("change", () => { x.cat = cs.value; });
+        n1.oninput = () => { x.name = n1.value; }; w.oninput = () => { x.w = w.value; x.g = null; }; q.oninput = () => { x.n = parseInt(q.value, 10) || 1; paintSum(); }; cs.addEventListener("change", () => { x.cat = cs.value; x.auto = false; });
         r2.append(w, q, cs); f.append(n1, r2);
         if (x.dup) f.appendChild(el("small", "", "⚠ " + t(x.dup === "list" ? "Double: already in the list" : "Double: twice in this import")));
         if (x.packed || x.buy || x.note) f.appendChild(el("small", "", [x.packed ? "✓ " + t("Packed") : "", x.buy ? "🛒 " + t("To buy") : "", x.note].filter(Boolean).join(" · "))).style.color = "var(--mut)";
+        if (P.kind === "lines") f.appendChild(sw(t("As category"), async () => { const k = await api({action: "preview", cat: x.name}); if (!k.ok) return;
+          Object.assign(x, {head: true, on: false, cat: k.cat}); recat(); step2(); }));
         r.append(cl, f); box.appendChild(r);
       });
       sh.ft.hidden = false; sh.btn("‹ " + t("Back"), "sec", step1).style.flex = "0 0 auto";
@@ -2356,6 +2395,10 @@ Object.assign(I18N.de, /*PLDE*/{});
   const hd = document.querySelector("header");
   const setTop = () => { const st = hd && getComputedStyle(hd); $("#pl").style.setProperty("--plh", (st && (st.position === "sticky" || st.position === "fixed") ? hd.offsetHeight : 0) + "px"); };
   if (hd && window.ResizeObserver) new ResizeObserver(setTop).observe(hd); addEventListener("resize", setTop);
+  // the tip card of the guide (515, #gd-card, fixed at the bottom) never lies on the quick-add bar: it sits above it
+  const setBar = () => { const a = $("#pl-add"), r = a.hidden || $("#pl-li").hidden ? null : a.getBoundingClientRect(), h = window.innerHeight;
+    document.documentElement.style.setProperty("--plb", (r && r.top < h && r.bottom > h - 260 ? Math.max(0, Math.round(h - r.top)) : 0) + "px"); };
+  ["scroll", "resize"].forEach(e => addEventListener(e, setBar, {passive: true})); if (window.visualViewport) visualViewport.addEventListener("resize", setBar); setInterval(setBar, 700);
   (async () => { await initAppearance(); setTop(); route(); })();
 })();
 /*ALERTS*/
@@ -2548,6 +2591,8 @@ _HX_PACK = {
                                      "Dubel: duas giadas en quest import"),
     "«{name}» is in the list twice now": ("«{name}» steht jetzt zweimal in der Liste", "«{name}» est maintenant deux fois dans la liste", "«{name}» ora è due volte nella lista",
                                           "«{name}» stat ussa duas giadas en la glista"),
+    "As category": ("Als Kategorie", "Comme catégorie", "Come categoria", "Sco categoria"),
+    "As item": ("Als Gegenstand", "Comme objet", "Come oggetto", "Sco object"),
     "unknown list": ("unbekannte Liste", "liste inconnue", "lista sconosciuta", "glista nunenconuschenta"),
     "The list needs a name.": ("Die Liste braucht einen Namen.", "La liste a besoin d’un nom.", "La lista ha bisogno di un nome.", "La glista dovra in num."),
     "The item needs a name.": ("Der Gegenstand braucht einen Namen.", "L’objet a besoin d’un nom.", "L’oggetto ha bisogno di un nome.", "L’object dovra in num."),

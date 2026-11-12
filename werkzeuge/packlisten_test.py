@@ -207,6 +207,25 @@ def teil_lesen(ns):
     ok(len(r2["items"]) == 4 and r2["items"][0]["name"] == "Zelt" and r2["items"][1]["g"] == 950, f"alles gross geschrieben = Gegenstände, keine Überschriften: {r2}")
     r3 = ns["pl_parse_text"]("Jacke\r\nHose\r\n\r\nSchuhe\r")
     ok([i["name"] for i in r3["items"]] == ["Jacke", "Hose", "Schuhe"], "Zeilenenden von Windows / altem Mac")
+    # bare lines as headings - only when the structure shows it (both directions)
+    T = ns["pl_parse_text"]
+    cats = lambda txt: [(i["name"], i["cat"]) for i in T(txt)["items"]]
+    r = T("Schlafen\n- Zelt 1.8 kg\n- Isomatte\nKochzeug\n- Kocher 90 g\n- Topf\n- Löffel\nFotoausrüstung\n  Kamera\n  Stativ 900 g")
+    ok([(i["name"], i["cat"]) for i in r["items"]] == [("Zelt", "sleep"), ("Isomatte", "sleep"), ("Kocher", "kitchen"), ("Topf", "kitchen"), ("Löffel", "kitchen"),
+                                                      ("Kamera", "electronics"), ("Stativ", "electronics")] and [h[:2] for h in r["heads"]] == [[0, "Schlafen"], [2, "Kochzeug"], [5, "Fotoausrüstung"]],
+       f"blosse Zeile über Aufzählung / Einrückung = Kategorie: {r}")
+    ok(cats("Tour Säntis\n\nKleider\n[ ] Jacke\n[x] Mütze\n\nVelo-Werkzeug\n1. Pumpe 120 g\n2. Flickzeug") == [("Jacke", "clothes"), ("Mütze", "clothes"), ("Pumpe", "tools"), ("Flickzeug", "tools")]
+       and T("Tour Säntis\n\nKleider\n[ ] Jacke\n[x] Mütze\n\nVelo-Werkzeug\n1. Pumpe 120 g\n2. Flickzeug")["title"] == "Tour Säntis", "Kästchen und Nummern unter einer blossen Zeile; Titel bleibt Titel")
+    ok(cats("Schlafen\nZelt 1.8 kg\nSchlafsack 950 g\n\nKüche\nKocher 90 g\nTopf 250 g\nLöffel") == [("Zelt", "sleep"), ("Schlafsack", "sleep"), ("Kocher", "kitchen"), ("Topf", "kitchen"), ("Löffel", "kitchen")],
+       "ohne Aufzählungszeichen: Blöcke mit Leerzeile, erste Zeile ohne Gewicht, darunter Gewichte = Kategorien")
+    ok(cats("Hygiene\nZahnbürste\nSeife\n\nDokumente\nPass\nHalbtax") == [("Zahnbürste", "hygiene"), ("Seife", "hygiene"), ("Pass", "documents"), ("Halbtax", "documents")],
+       "ohne Gewichte: Blöcke, deren erste Zeile eine bekannte Kategorie ist")
+    for txt, was in (("Zelt\nSchlafsack\nIsomatte\nKocher\nTopf", "einfache Liste"), ("Zelt\nSchlafsack\n\nKocher\nTopf\n\nJacke\nHose", "einfache Liste mit Leerzeilen"),
+                     ("Zelt 1.8 kg\nSchlafsack 950 g\n\nKocher 90 g\nTopf", "Gewichte auch in der ersten Zeile"), ("Zelt\nSchlafsack\n- Kocher\nTopf\nLöffel", "ein einzelner Strich in einer einfachen Liste"),
+                     ("Zelt\n\nSchlafsack\n\nKocher", "Leerzeile nach jeder Zeile (Notizen-App)"), ("Schlafsack\nZelt 1.8 kg\nKocher 90 g\nTopf 250 g", "ein Block: die erste Zeile ohne Gewicht bleibt ein Gegenstand")):
+        r = T(txt)
+        ok(not r["heads"] and len(r["items"]) == len([x for x in txt.split("\n") if x.strip()]), f"bleibt eine Liste von Gegenständen ({was}): {[i['name'] for i in r['items']]} {r['heads']}")
+    ok([h[1:] for h in T(NOTIZ)["heads"]] == [["Schlafen", "sleep"], ["Küche", "kitchen"], ["Kleider", "clothes"], ["Wasser", "water"]], f"ausdrückliche Überschriften kommen für die Vorschau mit: {T(NOTIZ)['heads']}")
     P = ns["pl_import_preview"]
     # CSV
     p = P(data=CSV_KOMMA.encode("utf-8"), name="gear.csv")
@@ -753,6 +772,7 @@ def teil_b(datei, bilder):
                 pg = ctx.new_page()
                 pg.on("pageerror", lambda e: konsole.append(f"{user[0]}: {str(e)[:200]}"))
                 pg.on("console", lambda m: konsole.append(f"{user[0]}: {m.text[:200]}") if m.type == "error" else None)
+                pg.on("response", lambda r: konsole.append(f"  -> {r.status} {r.request.method} {r.url[len(base):][:80]}") if r.status in (403, 500) else None)
                 pg.on("request", lambda r: aussen.append(r.url) if not r.url.startswith((base, "data:", "blob:")) else None)
                 return ctx, pg
 
@@ -784,9 +804,9 @@ def teil_b(datei, bilder):
             bild(pg, "02_liste.png"); bild(pg, "02_liste_ganz.png", full_page=True)
             # the bar of the sums: at most 96 px (GitHub, 12.11.2026: 80.8 px with the fonts there, limit was 80)
             pg.evaluate("window.scrollTo(0, 900)"); pg.wait_for_timeout(400)
-            top = pg.evaluate("() => { const r = document.getElementById('pl-sum').getBoundingClientRect(); return [r.top, r.bottom, window.innerHeight]; }")
+            top = pg.evaluate("() => { const r = document.getElementById('pl-sum').getBoundingClientRect(), h = document.querySelector('header').getBoundingClientRect(); return [r.top, r.bottom, window.innerHeight, h.bottom, parseFloat(getComputedStyle(document.body).fontSize)]; }")
             add = pg.evaluate("() => { const r = document.getElementById('pl-add').getBoundingClientRect(); return [r.top, r.bottom, window.innerHeight]; }")
-            ok(0 <= top[0] < 200 and top[1] - top[0] <= 96 and add[1] <= add[2] + 1 and add[0] > add[2] - 90, f"beim Scrollen bleiben Summen oben und «eintragen» unten ({top}, {add})")
+            ok(abs(top[0] - top[3]) <= 2 and top[1] - top[0] <= 7 * top[4] and top[1] < add[0] - 150 and add[1] <= add[2] + 1 and add[1] - add[0] <= 80, f"beim Scrollen bleiben Summen oben und «eintragen» unten ({top}, {add})")
             bild(pg, "02_liste_gescrollt.png")
             pg.evaluate("window.scrollTo(0, 0)")
             # tick
@@ -839,14 +859,22 @@ def teil_b(datei, bilder):
             pg.locator(".pl-menu button", has_text="In diese Liste importieren").tap(); pg.wait_for_selector("#pl-imptext")
             pg.fill("#pl-imptext", "HYGIENE\n- Zahnbürste 15 g\n- [x] Handtuch (120 g)\nKüche:\n2x Gaskartusche 230 g (kaufen)\nGaskocher\n" + XSS + "\nWasser 0,5 l")
             pg.tap("#pl-imppv"); pg.wait_for_selector(".pl-pv", timeout=10000); pg.wait_for_timeout(300)
-            ok(pg.locator(".pl-pv").count() == 6 and "6 Sachen" in pg.inner_text("#pl-pvsum") and "2 doppelt" in pg.inner_text("#pl-pvsum"), f"Vorschau Text: {pg.inner_text('#pl-pvsum')!r}")
+            ok(pg.locator(".pl-pv:not(.pl-pvh)").count() == 6 and "6 Sachen" in pg.inner_text("#pl-pvsum") and "2 doppelt" in pg.inner_text("#pl-pvsum"), f"Vorschau Text: {pg.inner_text('#pl-pvsum')!r}")
             ok(pg.locator(".pl-pv", has_text="Doppelt: schon in der Liste").count() == 2 and pg.evaluate("() => !window.__xss"), "Vorschau: Doppeltes markiert, HTML bleibt Text")
-            vals = pg.evaluate("() => [...document.querySelectorAll('.pl-pv')].map(r => [...r.querySelectorAll('input:not([type=checkbox]), select')].map(e => e.value))")
+            vals = pg.evaluate("() => [...document.querySelectorAll('.pl-pv:not(.pl-pvh)')].map(r => [...r.querySelectorAll('input:not([type=checkbox]), select')].map(e => e.value))")
             ok(vals[0][:4] == ["Zahnbürste", "15 g", "1", "hygiene"] and vals[2][:4] == ["Gaskartusche", "230 g", "2", "kitchen"], f"Vorschau: Felder zum Korrigieren ({vals[:3]})")
             schmal(pg, "Vorschau Text"); tippbar(pg, ".pl-pvc, .pl-shf button", "Vorschau")
             bild(pg, "03_import_text.png")
-            pg.locator(".pl-pv").nth(3).locator("input[type=checkbox]").uncheck()
-            pg.locator(".pl-pv").nth(0).locator("input.nm").fill("Zahnbürste (Bambus)")
+            ok(pg.locator(".pl-pvh").count() == 2 and "Hygiene" in pg.locator(".pl-pvh").first.inner_text() and pg.locator(".pl-pv:not(.pl-pvh) .pl-sw2").count() == 6, "Vorschau: Überschriften als eigene Zeilen, jede Zeile mit «Als Kategorie»")
+            tippbar(pg, ".pl-sw2", "Vorschau: «Als Kategorie / Als Gegenstand»", 40)
+            pg.locator(".pl-pvh", has_text="Küche").locator(".pl-sw2").tap(); pg.wait_for_timeout(300)      # a wrong guess costs one tap - and one tap back
+            v2 = pg.evaluate("() => [...document.querySelectorAll('.pl-pv:not(.pl-pvh)')].map(r => [...r.querySelectorAll('input:not([type=checkbox]), select')].map(e => e.value))")
+            ok(len(v2) == 7 and v2[2][0] == "Küche" and v2[3][3] == "hygiene" and "7 Sachen" in pg.inner_text("#pl-pvsum"), f"«Als Gegenstand»: die Überschrift wird eine Zeile, die Zeilen darunter gehören zur Kategorie davor ({v2[2:4]})")
+            pg.locator(".pl-pv:not(.pl-pvh)").nth(2).locator(".pl-sw2").tap(); pg.wait_for_selector(".pl-pvh >> nth=1"); pg.wait_for_timeout(300)
+            v3 = pg.evaluate("() => [...document.querySelectorAll('.pl-pv:not(.pl-pvh)')].map(r => [...r.querySelectorAll('input:not([type=checkbox]), select')].map(e => e.value))")
+            ok(len(v3) == 6 and v3[2][:4] == ["Gaskartusche", "230 g", "2", "kitchen"] and pg.locator(".pl-pvh").count() == 2, f"«Als Kategorie»: wieder eine Überschrift, die Zeilen darunter folgen ({v3[2]})")
+            pg.locator(".pl-pv:not(.pl-pvh)").nth(3).locator("input[type=checkbox]").uncheck()
+            pg.locator(".pl-pv:not(.pl-pvh)").nth(0).locator("input.nm").fill("Zahnbürste (Bambus)")
             ok("5 Sachen importieren" in pg.inner_text("#pl-impgo"), "abgewählt: «5 Sachen importieren»")
             pg.tap("#pl-impgo"); pg.wait_for_selector(".pl-sh", state="detached"); pg.wait_for_selector(".pl-row:has-text('Zahnbürste (Bambus)')", timeout=10000)
             now = json.loads(req(f"/api/tausch/pack?id={jura}&since=0", user=A)[1])
@@ -951,6 +979,32 @@ def teil_b(datei, bilder):
             schmal(p1, "gemeinsam packen")
             c1.close(); c2.close()
 
+            print("B) Erster Besuch: die Tipp-Karte liegt nie auf der Zeile «eintragen»", flush=True)
+            ctx, pg = neu(Cu)
+            ctx.add_init_script("try{localStorage.setItem('mw-tours-seen','[\"more\",\"live\"]');localStorage.removeItem('mw-tips-seen')}catch(e){}")   # the tour was seen, the card of the page not yet
+            pg.goto(base + "/tausch/packlisten#l=" + jura); pg.wait_for_selector(".pl-row", timeout=15000)
+            frei = "() => { const c = document.getElementById('gd-card'), a = document.getElementById('pl-add'); if (!c || !a) return null; const x = c.getBoundingClientRect(), y = a.getBoundingClientRect(); return [x.bottom <= y.top + 1 || x.top >= y.bottom - 1, Math.round(x.top), Math.round(x.bottom), Math.round(y.top), Math.round(y.bottom), innerHeight]; }"
+            try:
+                pg.wait_for_selector("#gd-card.on", timeout=12000); pg.wait_for_timeout(900)
+                karte = True
+            except Exception:
+                karte = False
+            ok(karte, "erster Besuch: die Tipp-Karte der Seite erscheint (sonst prüft dieser Abschnitt nichts)")
+            if karte:
+                f = pg.evaluate(frei)
+                ok(f and f[0] and f[2] <= f[3] + 1 and f[1] >= 0, f"Tipp-Karte über der Zeile «eintragen», nicht darauf ({f})")
+                bild(pg, "11_tipp_karte.png")
+                pg.evaluate("window.scrollTo(0, 700)"); pg.wait_for_timeout(1000)
+                f = pg.evaluate(frei); ok(f and f[0], f"… auch nach dem Scrollen ({f})")
+                pg.tap("#pl-addin"); pg.set_viewport_size({"width": 390, "height": 420}); pg.wait_for_timeout(1200)     # as far as it can be emulated: the keyboard takes half the screen
+                f = pg.evaluate(frei); ok(f and f[0] and f[4] <= f[5] + 1, f"… und mit halber Höhe (Tastatur offen): Karte und Zeile getrennt, die Zeile sichtbar ({f})")
+                bild(pg, "11_tipp_karte_tastatur.png")
+                pg.fill("#pl-addin", "Tipp-Test 5 g"); pg.press("#pl-addin", "Enter"); pg.wait_for_selector(".pl-row:has-text('Tipp-Test')", timeout=8000)
+                ok(True, "eintragen geht, während die Karte offen ist")
+                pg.locator("#gd-card button.ok").tap(); pg.wait_for_selector("#gd-card", state="detached", timeout=5000)
+                pg.set_viewport_size({"width": 390, "height": 844})
+            ctx.close()
+
             print("B) Nur ansehen (Freund), Gast, PC", flush=True)
             ctx, pg = neu(B)
             pg.goto(base + "/tausch/packlisten#l=" + jura); pg.wait_for_selector(".pl-row", timeout=15000); pg.wait_for_timeout(600)
@@ -977,6 +1031,9 @@ def teil_b(datei, bilder):
             bild(pg, "10_pc.png")
             ctx.close()
             br.close()
+            if any("403 POST /api/ui" in k for k in konsole):          # not ours: the guide stores «seen» for a user without the right (first-visit part above)
+                konsole[:] = [k for k in konsole if "/api/ui" not in k and "status of 403" not in k]
+            konsole[:] = [k for k in konsole if not k.startswith("  -> ")]
             erwartet = [k for k in konsole if "status of 400" in k]      # the two refusals this test provokes (HEIC, the bomb)
             ok(len(erwartet) == 2 and len(konsole) == 2, f"keine Fehler in der Konsole (ausser den zwei gewollten Absagen): {konsole[:6]}")
             ok(not aussen, f"keine Anfrage nach aussen: {aussen[:5]}")
