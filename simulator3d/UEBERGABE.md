@@ -1,6 +1,6 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 09.11.2026 · Version **3.67.1** · MoveEye **3.70.0** (Drei Spuren ab 03.11.2026: Simulator und MoveEye mit eigenen Nummern, Verträglichkeit über `MW_MIN` in `scripts/abgleich.gd` / `SIM_MIN` in MoveEye Teil 545; 3.0.0 bis 3.55.2 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 12.11.2026 · Version **3.67.2** · MoveEye **3.81.3** (Drei Spuren ab 03.11.2026: Simulator und MoveEye mit eigenen Nummern, Verträglichkeit über `MW_MIN` in `scripts/abgleich.gd` / `SIM_MIN` in MoveEye Teil 545; 3.0.0 bis 3.55.2 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
@@ -31,6 +31,13 @@ Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weite
   (Ziegelreihen / Kies). Wärmezwillinge und Hindernisse unverändert. Luftbild wird jetzt vor den 3D-Gebäuden gesetzt.
 - Seon ohne OSM (Overpass war aus): 117 Häuser, 44 Wohnblöcke, 24 Bauernhäuser, 3 Scheunen, 2 Chalets, 2 Garagen;
   Dachfarbe aus dem Luftbild 130, Palette 62 (Häuser ausserhalb des nahen Luftbilds).
+
+## NEU in 3.67.2 (MoveEye 3.81.3): Simulator-Anhang + HP_FASSUNG 7 (mw-sim-anhang, hp-bluetooth-controller)
+
+- update.gd: platform() / pick() / anhang_info(): nimmt das Paket aus dem Block «anhang» von version.json, wenn es neuer ist; Adresse muss genau asset_base + "<ver>/<Dateiname>" sein; Grösse und SHA-256 wie immer; nichts Halbes bleibt liegen. Test: werkzeuge/sim_anhang_test.gd.
+- Sim 3.67.2 ist die LETZTE Version mit Paketen im Repository: version.json (oberste Felder, «linux») und versions.json («sim.win», «sim.linux») bleiben danach eingefroren; Neueres steht unter «anhang» / «sim.anhang» (Workflow «Sim-Pakete», sim_anhang.py, versionen.py --anhang-json). Zurück ins Repository: MW_SIM_IM_REPO=1 versionen.py --sim-json mit einer höheren Nummer.
+- beilagen_linux (HP_FASSUNG 7): controller_fenster.py (Liste, Akku, Trennen, Vergessen, --ecke), controller_koppeln.sh, hp_wache.py (Sticks zählen; gehalten höchstens 10 Min.; Fenster «Controller koppeln» zählt nicht; 20 Min. ohne Eingabe -> Bluetooth trennen), kiosk_sitzung.sh (CONTROLLER_KNOPF, ab Werk aus: der Knopf läge über der unteren Leiste / dem Mover-Stick).
+- Szenen, Kamera, Schnittstelle zu MoveEye: unverändert.
 
 ## NEU in 3.67.1 (MoveEye 3.70.0): Kamerabild (sim-kamerabild)
 

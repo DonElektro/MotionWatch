@@ -1,13 +1,13 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-12 07:51",
+ "generated": "2026-11-12 08:36",
  "versions": [
   {
    "version": "3.81.3",
    "file": "webcam_bewegung_3_81_3.py",
    "url": "",
    "sha256": "df97277e9f8186ce7f24094cfe1d7c0203677a88bf8b985d6f2dc3b58ea1d270",
-   "date": "2026-11-12 07:51",
+   "date": "2026-11-12 08:06",
    "notes": "Anleitung auf Italienisch: die Seite ist am Handy nicht mehr breiter als der Bildschirm (ein langer Eintrag im Inhaltsverzeichnis wird jetzt gekürzt angezeigt).",
    "size": 4023015,
    "sig": "75f1d58dc3a0d099cc013e19c59b91d4e56f1ea1d8976d1bb9fc2b55ab2ecb1ce403e54e50431e6c56b2f10cb6847ea67617ece439ab2314936943558943e705",
@@ -168,31 +168,23 @@
   }
  ],
  "sim": {
-  "ver": "3.67.1",
-  "version": "3D-5.67.1",
-  "notes": "Weiche Tropfen auf der Linse, Hinweis «Linse verschmutzt» (an MoveEye: «lens»)",
+  "ver": "3.67.2",
+  "version": "3D-5.67.2",
+  "notes": "HP: Controller koppeln ohne Tippen (Knopf «Controller koppeln», Liste mit Akkustand, Trennen, Vergessen); Steuerknüppel zählen jetzt als «Spielen»; mit USB-C-Kabel sofort, mit Bluetooth sobald ein USB-Bluetooth-Stick steckt. Der Simulator holt künftige Versionen als Anhang (spart Platz im Projekt); am Simulator selbst ändert sich nichts.",
   "mw_min": "3.55.0",
   "win": {
-   "ver": "3.67.1",
+   "ver": "3.67.2",
    "file": "simulator3d/MotionWatch3D_Simulator.zip",
-   "size": 54423791,
-   "sha256": "56909729dc6367afe39ed5c7353fa13665878bf7fae830f77773d06067a8778e",
-   "sig": "66ba2275c8a424f297524dcca2b2d7200b99339bc0fe7bf6148cb718eb205b3b6515c98f455ab819261dac8ece15dbc4a957bc1c5fa58679515549e866c5040f"
+   "size": 54429040,
+   "sha256": "951424876f61691a5c558f09ddfd76452d2ce073a6a0e2613e5e229bb05da8b8",
+   "sig": "96816fd144e6e7420b0de3648c965e6c23e231a1eccca8db2898e437c79691b40d567360ef6088da9eeab74669aa2aa01ac022ce8777b6b203059e2c652a2803"
   },
   "linux": {
-   "ver": "3.67.1",
+   "ver": "3.67.2",
    "file": "simulator3d/MoveEyeSim3D_Linux.zip",
-   "size": 48453813,
-   "sha256": "6d79a12ef2c965f1aa5437d6fa46ad1988e3eb111991b3c1a71fc2d98752847b",
-   "sig": "30393dbdcf3832b121d6a62c4528368415894f87f4c8eabf27d27b8e44d89cf153c757c3009342f2d279f6d6e6e6906da677fef6acc6c945f57fceeee0e7c00e"
-  },
-  "pi": {
-   "ver": "3.67.1",
-   "file": "simulator3d/MoveEyeSim3D_Pi.zip",
-   "size": 37960698,
-   "sha256": "235956198ae849f36e6ab944b21772929d1a9b5e6abc7741934f18599874b5ca",
-   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.67.1/MoveEyeSim3D_Pi.zip",
-   "sig": "13f0bdfecada08308e103d25b200b0c37c9d41bfb8d18935e143049d8775749e88223bbb4ccb0ea609b48309117ceb8883c7afee7bec24f75a24346af1c56d04"
+   "size": 48471196,
+   "sha256": "fa02a9c4733950a97c7ede0b6c86743118ee3461bd38b9545d6564ba2ac70b45",
+   "sig": "3c0d6ad76326d81ce324c8914ca35b61596ef189eb0e83e04238c5088ad5e2954914805461e7194f7648bb37117d49454eb7d207ff54d89893e10667b26ea80a"
   }
  }
 }
