@@ -789,7 +789,61 @@ GPSMODULE = None
 # Solar panel: an INA219 module (Gravity INA219: shunt 0.01 Ohm = the standard; cheap blue board: 0.1 Ohm, up to 26 V / 3.2 A) between the panel and the charger.
 #   Watts, volts and the yield of the day. Night forecast: does the battery last until sunrise at the present consumption?
 # ----------------------------------------------------------------------------
-SOLAR = {"day": "", "wh": 0.0, "max": 0.0, "t": 0.0, "warned": ""}
+SOLAR = {"day": "", "wh": 0.0, "max": 0.0, "t": 0.0, "warned": "", "warned_read": False}
+NIGHT_WARNED_FILE = "night_warned.json"                    # the evening the forecast warned for - survives a restart / update
+
+
+def night_warned_get():
+    """the day (YYYY-MM-DD) of the last «battery until sunrise?» push; read once from the data folder (3.84.2: it was only
+    in memory, so every restart in the evening - e.g. an update - sent the push again)"""
+    if not SOLAR["warned_read"]:
+        SOLAR["warned_read"] = True
+        try:
+            with open(os.path.join(DATA_DIR, NIGHT_WARNED_FILE), encoding="utf-8") as f:
+                SOLAR["warned"] = str(json.load(f).get("day") or "")
+        except (OSError, ValueError, AttributeError):
+            pass
+    return SOLAR["warned"]
+
+
+def night_warned_set(day):
+    SOLAR["warned"] = day; SOLAR["warned_read"] = True
+    try:
+        os.makedirs(DATA_DIR, exist_ok=True)
+        tmp = os.path.join(DATA_DIR, NIGHT_WARNED_FILE + ".part")
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump({"day": day}, f)
+        os.replace(tmp, os.path.join(DATA_DIR, NIGHT_WARNED_FILE))
+    except OSError:
+        pass
+
+
+def night_warn_reason(nf, b, day, hour, dark):
+    """"" = send the push «battery will probably not last until sunrise» now, else why not. Rules (Besitzer 13.11.2026: the
+    push came one minute after an update restart, on mains power with the battery at 99 %):
+      * mains: a UPS that is not running on its cells (power at the input / charging) is not being emptied - no warning;
+        a powerbank (no UPS) has no such signal and is judged as before.
+      * settling: the forecast divides by the consumption, and that is a mean over a window (100: UPS one minute, powerbank
+        ten minutes). Until the window is full after a program start it mostly shows the load of the start itself
+        (BATT_N, 100) - wait for it.
+      * critical: at or below the «almost empty» limit (BATT_LOW_PCT_…) there is nothing to wait for - at once.
+      * once per evening, and the evening is remembered across restarts (night_warned_get)."""
+    if not nf or nf.get("enough"):
+        return "enough"
+    if not dark or hour < 15:                              # once in the evening (not again after midnight)
+        return "not evening"
+    if night_warned_get() == day:
+        return "already warned"
+    b = b or {}
+    ups = b.get("src") == "ups"
+    if ups and (b.get("on_battery") is False or b.get("charging")):
+        return "mains"
+    pct = b.get("pct")
+    if pct is not None and pct <= (BATT_LOW_PCT_UPS if ups else BATT_LOW_PCT_BANK):
+        return ""
+    if BATT_N["n"] < BATT_N["ups" if ups else "bank"]:
+        return "settling"
+    return ""
 
 
 def ina219_read(addr, shunt, bus=1):
@@ -893,15 +947,13 @@ class SolarMonitor:
         else:
             STATE["solar"] = {"on": False}
         nf = night_forecast(); STATE["night"] = nf
-        if nf and CFG["night_warn"] and not nf["enough"] and is_dark() and SOLAR["warned"] != day:
-            hh = sim_now().hour
-            if hh >= 15:                                       # once in the evening (not again after midnight)
-                SOLAR["warned"] = day
+        if nf and CFG["night_warn"] and not nf["enough"]:
+            w_ = WATCH_REF["w"]
+            if w_ is not None and not night_warn_reason(nf, STATE.get("battery"), day, sim_now().hour, is_dark()):
+                night_warned_set(day)                          # only when the push really goes out; kept across restarts
                 log_event("sys", f"Battery will probably not last until sunrise ({nf['have_h']} h left, {nf['need_h']} h needed)")
-                w_ = WATCH_REF["w"]
-                if w_ is not None:
-                    w_.notifier.info(trf("The battery will probably not last until sunrise ({sr}): about {have} h left, {need} h needed. Charge it or switch on power saving.",
-                                         sr=nf["sunrise"], have=nf["have_h"], need=nf["need_h"]), title="{name}: " + tr("Battery"))
+                w_.notifier.info(trf("The battery will probably not last until sunrise ({sr}): about {have} h left, {need} h needed. Charge it or switch on power saving.",
+                                     sr=nf["sunrise"], have=nf["have_h"], need=nf["need_h"]), title="{name}: " + tr("Battery"))
 
 
 SOLARMON = None
