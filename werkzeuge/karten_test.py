@@ -627,6 +627,8 @@ def teil_b(datei, P, rel, pins, bilder, echt=False):
                    f"{name}: Standort gespeichert ({g['lat']}, {g['lon']}), «automatisch» aus")
                 pg.screenshot(path=os.path.join(bilder, f"karte_tipp_{name}.png"))
                 if mob:                                     # two fingers / pinch: MapLibre zooms (touch)
+                    pg.evaluate("() => document.getElementById('kq-map').scrollIntoView({block: 'end'})"); pg.wait_for_timeout(300)   # 639zzx: the page is longer now
+                    box = pg.locator("#kq-c").bounding_box()
                     z0 = pg.evaluate("() => KQMAP.getZoom()")
                     cdp = ctx.new_cdp_session(pg)
                     cx, cy = box["x"] + box["width"] / 2, box["y"] + box["height"] / 2

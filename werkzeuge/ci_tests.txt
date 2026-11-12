@@ -63,6 +63,7 @@ daten | 8 | -  | python3 werkzeuge/almanach_test.py --browser | Überlebens-Alma
 daten | 6 | -  | python3 werkzeuge/bioclip_test.py --browser | «🌿 Bestimmen» im Datentausch (Ersatz-Modell, Rechte, Gäste, Laden mit Prüfsumme, Zwischenspeicher, besetzt, Browser)
 daten | 8 | 1x | python3 -W ignore werkzeuge/karten_test.py | Offline-Karte Schweiz (Teil 639zzq - Laden gut / falsch, Platz, Byte-Bereiche, Suche, Seiten im Browser ohne Anfrage nach aussen, Quellenangabe, Rechte; mit Ersatz-Dateien)
 daten | 8 | -  | python3 werkzeuge/packlisten_test.py --browser | «🎒 Packlisten» im Datentausch (Import Text / CSV / xlsx mit Vorschau, ZIP-Bomben abgewiesen, Summen, Ziel, Foto, zwei Handys, Rechte, Gäste, Export, Browser iPhone)
+daten | 10 | 1x | python3 -W ignore werkzeuge/touren_test.py | «🥾 Touren» auf der Offline-Karte (Teil 639zzx - KML / GPX lesen, böse und grosse Dateien unter Zeitgrenze, Zahlen, Wanderzeit, Rechte, Gäste, Export, Höhenpaket mit Ersatz-Datei, Seite im Browser bei 390 px ohne Anfrage nach aussen)
 daten | 4 | -  | python3 werkzeuge/sim_intern_test.py | Simulator intern (gefälschtes Pi-Paket - holen, prüfen, auspacken, starten, beenden, zurück)
 daten | 6 | 1x | python3 werkzeuge/piper_test.py --browser | Piper-Stimme (Tabelle, Ersatz alte Stimme, Laden mit Prüfsumme, Browser «Ton im Browser», Simulator /speech)
 daten | 6 | -  | python3 werkzeuge/werkstatt_html.py --aus /tmp/werkstatt --test --bilder /tmp/werkstatt && ls -la /tmp/werkstatt | Werkstatt offline (eine HTML-Datei, file://, Netz gesperrt, keine JS-Fehler, Modell, Reiter)
