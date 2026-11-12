@@ -41,9 +41,19 @@
 # sich dann mit der PS-Taste von selbst. Ohne Adapter läuft nichts davon (kein Fehler, keine Verzögerung beim Start).
 # bluetooth.service wird eingeschaltet (startet nur mit Adapter), der Treiber btusb wie hid-playstation geprüft; dazu
 # usbutils / pciutils (HP-Diagnose: lsusb, lspci).
+# Simulator-Anhang (Besitzer 12.11.2026, «Ablage entlasten»; kommt mit Sim 3.67.2 zusammen mit HP_FASSUNG 7 auf den HP): ab der
+# Version NACH Sim 3.67.2 liegt das Linux-Paket nicht mehr im Repository, sondern als Asset am GitHub-Release «sim-X.Y.Z».
+# Es steht dann signiert unter «sim» -> «anhang» -> «linux» in versions.json: «file» = simulator3d/anhang/MoveEyeSim3D_Linux.zip
+# (anderer Name als das Paket im Repository: die Signatur passt nie an dessen Platz), «url» muss genau
+# ANHANG_BASIS/sim-<Nummer>/MoveEyeSim3D_Linux.zip sein (die Adresse folgt aus der signierten Nummer). Das neuere gültig
+# signierte Paket gewinnt (Repository oder Anhang); ein Anhang, der nicht stimmt, wird abgelehnt (kein Ausweichen).
+# «sim.linux» bleibt für immer Sim 3.67.2 (Paket im Repository): ein HP mit einem älteren Skript spielt wie bisher 3.67.2
+# ein, bekommt damit dieses Skript und holt beim nächsten Lauf den Anhang (zwei Schritte). Geladen wird in den
+# Arbeitsordner; fehlt das Asset, stimmt die Prüfsumme nicht oder antwortet GitHub nicht: nichts wird eingespielt.
 # Einstellungen: /etc/moveeye-hp-update.conf (SIMULATOR=nein: den Simulator nicht ersetzen). Protokoll: /var/log/moveeye-hp-update.log
 set -u
 REPO_RAW="${MOVEEYE_HP_QUELLE:-https://raw.githubusercontent.com/DonElektro/MotionWatch}"   # nur zum Prüfen änderbar
+ANHANG_BASIS="${MOVEEYE_HP_ANHANG:-https://github.com/DonElektro/MotionWatch/releases/download}"   # Release-Assets; nur zum Prüfen änderbar
 UPDATE_PUBKEY="91d5eab3ab9f6e092d78081ca511144235cb9b22b770c3b1047e011d978bd416"            # wie Teil 380 (UPDATE_PUBKEY)
 SELBST="/usr/local/sbin/moveeye-hp-update"
 DIENST="/etc/systemd/system/moveeye-hp-update.service"
@@ -193,8 +203,8 @@ if cmd == "manifest":            # manifest VERSIONS_JSON PUBKEY -> «Version Da
     if not best:
         fail("keine gültig signierte Version in versions.json")
     print(*best)
-elif cmd == "sim":               # sim VERSIONS_JSON PUBKEY -> «SHA Grösse Version» des signierten Linux-Pakets (Block «sim»)
-    pfad, pub = args
+elif cmd == "sim":               # sim VERSIONS_JSON PUBKEY ANHANG_BASIS -> «SHA Grösse Version Adresse» des signierten
+    pfad, pub, basis = args      # Linux-Pakets (Block «sim»); Adresse «-» = Paket im Repository, sonst das Release-Asset
     try:
         with open(pfad, encoding="utf-8") as f:
             m = json.load(f)
@@ -202,20 +212,36 @@ elif cmd == "sim":               # sim VERSIONS_JSON PUBKEY -> «SHA Grösse Ver
         fail("versions.json unlesbar: %s" % e)
     s = m.get("sim") if isinstance(m, dict) else None
     e = s.get("linux") if isinstance(s, dict) else None
-    if not isinstance(e, dict):
+    ah = s.get("anhang") if isinstance(s, dict) else None
+    a = ah.get("linux") if isinstance(ah, dict) else None      # Simulator-Anhang: das Linux-Paket als Release-Asset
+    if not isinstance(e, dict) and not isinstance(a, dict):
         fail("kein Block «sim» mit Linux-Paket in versions.json")
-    v, fn, sh, sig = (str(e.get(k) or "") for k in ("ver", "file", "sha256", "sig"))
-    size = e.get("size")
-    if not VER_RE.match(v) or fn != "simulator3d/MoveEyeSim3D_Linux.zip" or not re.fullmatch(r"[0-9a-f]{64}", sh) \
-            or not isinstance(size, int) or not 0 < size <= 400000000:
-        fail("Block «sim»: Linux-Paket unvollständig")
-    try:
-        ok = ed25519_verify(bytes.fromhex(pub), ("MotionWatch|%s|%s|%s" % (v, fn, sh)).encode(), bytes.fromhex(sig))
-    except ValueError:
-        ok = False
-    if not ok:
-        fail("Block «sim»: Signatur des Linux-Pakets ungültig")
-    print(sh, size, v)
+
+    def paket(e, name, datei, wo):
+        v, fn, sh, sig = (str(e.get(k) or "") for k in ("ver", "file", "sha256", "sig"))
+        size = e.get("size")
+        if not VER_RE.match(v) or fn != datei or not re.fullmatch(r"[0-9a-f]{64}", sh) \
+                or not isinstance(size, int) or not 0 < size <= 400000000:
+            fail("Block «%s»: Linux-Paket unvollständig" % name)
+        url = "-"
+        if wo:
+            url = str(e.get("url") or "")
+            if url != "%s/sim-%s/MoveEyeSim3D_Linux.zip" % (wo.rstrip("/"), v):
+                fail("Block «%s»: Adresse des Linux-Pakets unvollständig oder fremd" % name)
+        try:
+            ok = ed25519_verify(bytes.fromhex(pub), ("MotionWatch|%s|%s|%s" % (v, fn, sh)).encode(), bytes.fromhex(sig))
+        except ValueError:
+            ok = False
+        if not ok:
+            fail("Block «%s»: Signatur des Linux-Pakets ungültig" % name)
+        return sh, size, v, url
+
+    best = paket(e, "sim", "simulator3d/MoveEyeSim3D_Linux.zip", "") if isinstance(e, dict) else None
+    if isinstance(a, dict):
+        x = paket(a, "sim.anhang", "simulator3d/anhang/MoveEyeSim3D_Linux.zip", basis)
+        if best is None or vkey(x[2]) > vkey(best[2]):         # bei gleicher Nummer: das Paket im Repository
+            best = x
+    print(*best)
 elif cmd == "programm":          # programm DATEI SHA VERSION -> «SHA Grösse» der Linux-ZIP (SIM3D_LINUX)
     pfad, sh, v = args
     if sha256(pfad) != sh:
@@ -249,7 +275,7 @@ pruefer() { python3 -I "$PRUEFER" "$@"; }
 # ------------------------------------------------------------------ Laden
 laden() {   # laden URL ZIEL MAX_BYTES
 	case "$1" in https://*|file://*) ;; *) log "Adresse abgelehnt: $1"; return 1 ;; esac
-	curl -fsSL --proto '=https,file' --retry 3 --connect-timeout 20 --max-time 1800 --max-filesize "$3" -o "$2" "$1"
+	curl -fsSL --proto '=https,file' --proto-redir '=https' --retry 3 --connect-timeout 20 --max-time 1800 --max-filesize "$3" -o "$2" "$1"
 }
 
 # ------------------------------------------------------------------ Zustand am HP
@@ -643,7 +669,7 @@ EOF
 }
 
 lauf() {   # einmal: laden, prüfen, einspielen
-	local nur_pruefen="$1" w v fn sh lx_sha="" lx_size="" lx_ver="" alt="" sim_alt="" sim_sha_alt="" zip_ok=0 u herkunft urls
+	local nur_pruefen="$1" w v fn sh lx_sha="" lx_size="" lx_ver="" lx_url="" alt="" sim_alt="" sim_sha_alt="" zip_ok=0 u herkunft urls
 	w="$(mktemp -d /var/tmp/moveeye-hp-update.XXXXXX)" || { log "FEHLER: kein Arbeitsordner"; return 1; }
 	# shellcheck disable=SC2064
 	trap "rm -rf -- '$w'" EXIT
@@ -669,8 +695,11 @@ lauf() {   # einmal: laden, prüfen, einspielen
 	read -r v fn sh < <(pruefer manifest "$w/versions.json" "$UPDATE_PUBKEY" 2> "$w/fehler") || true
 	if [ -z "${sh:-}" ]; then log "ABGELEHNT: $(cat "$w/fehler")"; return 1; fi
 	plog "Signatur gültig: MoveEye $v ($fn)"
-	read -r lx_sha lx_size lx_ver < <(pruefer sim "$w/versions.json" "$UPDATE_PUBKEY" 2> "$w/fehler_sim") || true
-	if [ -n "${lx_ver:-}" ]; then
+	read -r lx_sha lx_size lx_ver lx_url < <(pruefer sim "$w/versions.json" "$UPDATE_PUBKEY" "$ANHANG_BASIS" 2> "$w/fehler_sim") || true
+	if [ -n "${lx_ver:-}" ] && [ "${lx_url:--}" != "-" ]; then
+		herkunft="versions.json «sim.anhang»"
+		plog "Signatur gültig: Sim $lx_ver (Linux-Paket als Release-Asset, eigene Spur)"
+	elif [ -n "${lx_ver:-}" ]; then
 		herkunft="versions.json «sim»"
 		plog "Signatur gültig: Sim $lx_ver (Linux-Paket, eigene Spur)"
 	elif grep -q 'Signatur\|unvollständig' "$w/fehler_sim"; then
@@ -722,14 +751,18 @@ lauf() {   # einmal: laden, prüfen, einspielen
 	fi
 	urls="$REPO_RAW/main/simulator3d/MoveEyeSim3D_Linux.zip"
 	if [ "$herkunft" = Programmdatei ]; then urls="$REPO_RAW/v$v/simulator3d/MoveEyeSim3D_Linux.zip $urls"
+	elif [ "${lx_url:--}" != "-" ]; then urls="$lx_url"          # Simulator-Anhang: nur das Release-Asset (nicht im Repository)
 	else urls="$REPO_RAW/sim-$lx_ver/simulator3d/MoveEyeSim3D_Linux.zip $urls"; fi
 	for u in $urls; do
 		rm -f "$w/linux.zip"
-		laden "$u" "$w/linux.zip" 400000000 || continue
+		if ! laden "$u" "$w/linux.zip" 400000000; then
+			[ "${lx_url:--}" != "-" ] && log "Linux-Paket (Release-Asset) nicht geladen: $u - fehlt es, oder antwortet GitHub nicht?"
+			continue
+		fi
 		if pruefer datei "$w/linux.zip" "$lx_sha" "$lx_size" > /dev/null 2> "$w/fehler"; then zip_ok=1; break; fi
 		log "Linux-Paket von $u: $(cat "$w/fehler") - nicht verwendet"
 	done
-	[ $zip_ok -eq 1 ] || { log "ABGELEHNT: kein Linux-Paket mit der signierten Prüfsumme gefunden"; return 1; }
+	[ $zip_ok -eq 1 ] || { rm -f "$w/linux.zip"; log "ABGELEHNT: kein Linux-Paket mit der signierten Prüfsumme gefunden - nichts eingespielt"; return 1; }
 	log "Linux-Paket geprüft (SHA-256 und Grösse wie signiert, aus: $herkunft)"
 	if [ "$nur_pruefen" -eq 1 ]; then
 		unzip -Z1 "$w/linux.zip" | grep '^MoveEyeSim3D/.*[^/]$' | sed 's/^/  /'
