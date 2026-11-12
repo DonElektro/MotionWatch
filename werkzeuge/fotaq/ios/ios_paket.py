@@ -32,6 +32,12 @@ a.var.on{border-color:var(--blue)}a.var b{display:block}a.var span{font-size:13p
 #hist div{margin-top:4px;color:var(--mut)}#hist div.bad{color:#ff8a8e;font-weight:600}
 #dz{position:absolute;left:4px;top:4px;z-index:3;font:10px/1.25 ui-monospace,Menlo,monospace;color:#fff;background:rgba(0,0,0,.6);padding:2px 5px;
   border-radius:5px;pointer-events:none;max-width:96%;overflow-wrap:anywhere}
+#fqEnd{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:5;background:rgba(14,22,33,.96);border:1px solid var(--line);border-radius:14px;
+  padding:14px 16px;width:min(92%,520px);max-height:92%;overflow:auto;text-align:center}
+#fqEnd.bad{border-color:#ff5a5f}#fqEnd b{display:block;margin-bottom:8px}
+#fqEnd textarea{width:100%;height:92px;font:11px/1.3 ui-monospace,Menlo,monospace;color:var(--txt);background:#0b121b;border:1px solid var(--line);border-radius:8px;padding:6px;resize:none}
+#fqEnd .row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:10px}
+#fqEnd button{font:600 15px system-ui,sans-serif;color:var(--txt);background:var(--panel);border:1px solid var(--line);border-radius:12px;min-height:44px;padding:6px 12px}
 """
 
 
@@ -49,7 +55,7 @@ def seite():
     tausch('  <div class="langs">', '  <div id="vars"></div>\n  <div class="langs">')
     tausch('  <div class="help" id="help"></div>', '  <div id="hist"></div>\n  <div class="help" id="help"></div>')
     tausch('<div id="tip" class="hidden"></div></div>', '<div id="tip" class="hidden"></div><div id="dz"></div></div>')
-    tausch('s.src = "scummvm.js";', 's.src = (window.FOTAQ_VAR || "a") + "/scummvm.js";')
+    tausch('s.src = "scummvm.js";', 's.src = (window.FOTAQ_VAR || "a") + "/scummvm.js"; if (window.FOTAQ_MODULE) window.FOTAQ_MODULE(window.Module);')
     tausch('<script>\n(function () {\n  "use strict";', '<script src="iostest.js"></script>\n<script>\n(function () {\n  "use strict";')
     return t
 
@@ -109,7 +115,8 @@ def main():
     lic = open(os.path.join(a.paket, "LIZENZEN.txt"), encoding="utf-8").read()
     kopf = ["«Queen – iPhone-Test» für MoveEye (%s): Test-Fassungen der Spiel-Engine von «Flight of the Amazon Queen»." % a.tag,
             "Dieses Paket enthält KEINE Spieldaten (sie kommen aus dem installierten Spiel) und ersetzt das Spiel nicht.",
-            "Zusätzlich zu den unten genannten Patches: werkzeuge/fotaq/ios/0101 (Spieldaten in Stücken über HTTP statt ganz im Speicher),",
+            "Zusätzlich zu den unten genannten Patches: werkzeuge/fotaq/ios/0101 (Spieldaten in Stücken über HTTP statt ganz im Speicher, mit Wiederholung),",
+            "0102 (nach dem Spielende endet ScummVM und meldet es der Seite, statt seinen Launcher zu öffnen),",
             "andere Bau-Einstellungen je Variante (werkzeuge/fotaq/ios/bauen.sh, ios_konfig.py), Seite iostest.js (MoveEye, MIT).",
             "Quelle dieser Fassung: https://github.com/DonElektro/MotionWatch/tree/%s/werkzeuge/fotaq" % a.commit, "", "---- Angaben des Spiel-Pakets ----", ""]
     open(os.path.join(root, "LIZENZEN.txt"), "w", encoding="utf-8").write("\n".join(kopf) + lic)
